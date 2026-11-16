@@ -25,6 +25,7 @@
  *   Tracker on+off      0: mt_end and status off, else status on
  *   TrackerChannels m   the voices to play (bit 3 = voice 1 ... bit 0 =
  *                       voice 4); a cleared voice's registers are zeroed
+ *                       and its DMA is switched off
  *   TrackerPause On|Off nonzero: mt_end; 0: enable and play one tick
  *   init: playing = 0; finit: mt_end if TrackInit was called
  *
@@ -41,8 +42,7 @@
  * BUG(orig) of RI's code:
  *   - TrackerChannels: a masked voice does not advance the pattern
  *     offset, so the following voices play the notes of the voice
- *     before (#568); effects (mt_CheckEfx) and the loop pointers of
- *     mt_SetDMA still go to all four voices (#567).
+ *     before (#568).
  * Not a defect: _ciaplayerinit is dead (RTS first), so no interrupt
  * plays the module - SetInt (intlib $C100) and the CIA-B timer setup
  * behind it never run; the code is kept (ciaplayerinit_unreached) and
@@ -59,6 +59,12 @@
  *     Tracker On continues the module; the original's mt_end cleared it
  *     and On only ANDed it: the song stayed stopped until TrackInit or
  *     TrackerPause 0 (#572).
+ *   - TrackerChannels: a masked voice is silent: its audio DMA is
+ *     switched off, and the play routine writes its registers into a
+ *     block nobody reads; the original left its DMA on and still wrote
+ *     the effects of the ticks between the rows (mt_CheckEfx: period,
+ *     volume) and mt_SetDMA's loop pointer and length to Paula, so the
+ *     voice could play its last sample's loop again (#567).
  *   - TrackInit while Tracker Off initialises the song (mt_init without
  *     its filter and mt_end, which touch the hardware); the original's
  *     mt_init returned at once, and Tracker On then played the old song
@@ -371,6 +377,15 @@ _Static_assert(offsetof(struct ptglue, mt_data) == 24, "mt_data");
    the voices behind read their notes from the custom chip registers;
    here mt_end leaves it alone */
 static UBYTE *patdata;
+
+/* the registers the play routine writes for each voice: Paula's, or for
+   a voice TrackerChannels masked a block nobody reads (Fixed (#567): the
+   original's effects of the ticks between the rows and mt_SetDMA's loop
+   pointers still went to the masked voices) */
+static struct AudChannel muted;
+static aud_t *voicehw[4] = {
+    (aud_t *)0xdff0a0, (aud_t *)0xdff0b0, (aud_t *)0xdff0c0, (aud_t *)0xdff0d0
+};
 
 static void mt_end(void);
 static void mt_music_c(void);
@@ -1207,13 +1222,13 @@ static void mt_music_c(void)
     pt.counter++;
     if (pt.counter < pt.speed) {
         for (i = 0; i < 4; i++)
-            mt_checkefx(&CUSTOM.aud[i], &pt.chan[i]);
+            mt_checkefx(voicehw[i], &pt.chan[i]);
         goto nonewposyet;
     }
     pt.counter = 0;
     if (pt.pattdeltime2) {
         for (i = 0; i < 4; i++)
-            mt_checkefx(&CUSTOM.aud[i], &pt.chan[i]);
+            mt_checkefx(voicehw[i], &pt.chan[i]);
     } else {
         /* mt_GetNewNote */
         UBYTE *mod = pt.songdataptr, *sampleinfo = mod + 12, *order = mod + 952;
@@ -1226,14 +1241,14 @@ static void mt_music_c(void)
         /* BUG(orig): a masked voice does not advance d1 (#568) */
         for (i = 0; i < 4; i++)
             if (pt.mask & (8 >> i))
-                mt_playvoice(&CUSTOM.aud[i], &pt.chan[i], &patpos, sampleinfo);
+                mt_playvoice(voicehw[i], &pt.chan[i], &patpos, sampleinfo);
         /* mt_SetDMA */
         dmawait();
         CUSTOM.dmacon = pt.dmacontemp | 0x8000;
         dmawait();
         for (i = 3; i >= 0; i--) {
-            CUSTOM.aud[i].ac_ptr = (UWORD *)pt.chan[i].loopstart;
-            CUSTOM.aud[i].ac_len = pt.chan[i].replen;
+            voicehw[i]->ac_ptr = (UWORD *)pt.chan[i].loopstart;
+            voicehw[i]->ac_len = pt.chan[i].replen;
         }
     }
     /* mt_dskip */
@@ -1386,20 +1401,32 @@ static void cut(aud_t *hw)
  * @brief TrackerChannels mask: the voices to play.
  *
  * Bit 3 = voice 1 ... bit 0 = voice 4 (default 15).  A cleared voice's
- * pointer, length, period and volume are zeroed (its DMA stays).  A
- * masked voice does not advance the pattern offset, so the following
- * voices play the notes of the voice before (BUG(orig) (#568)); effects
- * and the loop pointers still go to all four voices (#567).
+ * pointer, length, period and volume are zeroed and its audio DMA is
+ * switched off; the play routine writes its registers into a block
+ * nobody reads, so no effect and no loop pointer reaches it (Fixed
+ * (#567): the original left the DMA on and still wrote the effects of
+ * the ticks between the rows and mt_SetDMA's loop pointers to Paula).
+ * A masked voice does not advance the pattern offset, so the following
+ * voices play the notes of the voice before (BUG(orig) (#568)).
  * @param mask  d0.b: the voice bits
  */
 static void BLITZ_ROUTINE trackermask_c(UBYTE mask BL_REG(d0))
 {
+    UWORD off = 0;
     int i;
 
     pt.mask = mask;
-    for (i = 0; i < 4; i++)
-        if (!(mask & (8 >> i)))
-            cut(&CUSTOM.aud[i]);
+    for (i = 0; i < 4; i++) {
+        if (mask & (8 >> i)) {
+            voicehw[i] = &CUSTOM.aud[i];
+            continue;
+        }
+        cut(&CUSTOM.aud[i]);
+        voicehw[i] = &muted;
+        off |= (UWORD)(1 << i);
+    }
+    if (off)
+        CUSTOM.dmacon = off;            /* Fixed (#567): the masked voices' DMA off */
 }
 
 /**

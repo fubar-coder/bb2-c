@@ -20,7 +20,7 @@ objects): no command names in common (checked by `rwe_numbers`/`blitzlib numbers
   status on.
 * `TrackerChannels mask` – the voices to play (bit 3 voice 1 … bit 0
   voice 4); the registers of a cleared voice are zeroed (pointer,
-  length, period, volume; its DMA stays on).
+  length, period, volume) and its DMA is switched off.
 * `TrackerPause On|Off` – nonzero: `mt_end`; 0: enable and play one
   tick.
 * init: `playing` = 0; finit: `mt_end` if `TrackInit` was called.
@@ -118,8 +118,7 @@ RI's glue:
 
 * `TrackerChannels`: a masked voice does not advance the pattern
   offset, so the following voices play the notes of the voice before
-  (#568); the effects (`mt_CheckEfx`) and the loop registers of
-  `mt_SetDMA` still go to all four voices (#567).
+  (#568).
 
 Not a defect: `_ciaplayerinit` returns at once (an `RTS` before its
 code), so no interrupt plays the module; the program plays it with
@@ -143,6 +142,17 @@ kind F), in RI's code:
   `mt_Enable` and `Tracker On` only ANDed it with its value: the song
   stayed stopped until `TrackInit` or `TrackerPause 0` (#572; library
   test `rwe_ritrackerlib`, the ticks "Tracker On after Off").
+* `TrackerChannels`: a masked voice is silent. Its audio DMA is
+  switched off with the zeroed registers, and the play routine writes
+  its registers into a block nobody reads (a table of the four voices'
+  register blocks, read once per voice instead of the address computed
+  from the voice number: cheaper). The original left the DMA on and
+  still wrote the effects of the ticks between the rows (`mt_CheckEfx`:
+  period, volume of a slide or tremolo) and `mt_SetDMA`'s loop pointer
+  and length of all four voices to Paula, so a masked voice could
+  become audible again with its last sample's loop (#567; library test
+  `rwe_ritrackerlib`, the redirected registers with the masks $0B and
+  $06).
 * `TrackInit` while `Tracker Off` initialises the song (pattern count,
   sample starts, speed, position); only the filter and `mt_end`, which
   write to the hardware, are left out while off. The original's

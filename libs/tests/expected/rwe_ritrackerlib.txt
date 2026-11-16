@@ -12516,7 +12516,8 @@ TrackerChannels|state|$B|1	bytes 1538 fnv E11A14DB
 TrackerChannels|glue|$B|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackerChannels|module|$B|1 [orig]	bytes 8858 fnv 50A5B116
 TrackerChannels|module|$B|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackerChannels|custom|$B|1	bytes 512 fnv D38D0C50
+TrackerChannels|custom|$B|1 [orig]	bytes 512 fnv D38D0C50
+TrackerChannels|custom|$B|1 [fixed #567]	bytes 512 fnv 290A3376
 TrackerChannels|CIA-A PRA filter|$B|1	$00000002
 TrackerChannels|CIA-B timer A|$B|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 0|1	kept
@@ -12525,7 +12526,8 @@ TrackPlay|state|voice 2 off tick 0|1	bytes 1538 fnv 7972F048
 TrackPlay|glue|voice 2 off tick 0|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 0|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 0|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 0|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 0|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 0|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 0|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 0|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 1|1	kept
@@ -12534,7 +12536,8 @@ TrackPlay|state|voice 2 off tick 1|1	bytes 1538 fnv C307247F
 TrackPlay|glue|voice 2 off tick 1|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 1|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 1|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 1|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 1|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 1|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 1|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 1|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 2|1	kept
@@ -12543,7 +12546,8 @@ TrackPlay|state|voice 2 off tick 2|1	bytes 1538 fnv 458394BF
 TrackPlay|glue|voice 2 off tick 2|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 2|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 2|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 2|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 2|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 2|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 2|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 2|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 3|1	kept
@@ -12552,7 +12556,8 @@ TrackPlay|state|voice 2 off tick 3|1	bytes 1538 fnv 67E35B88
 TrackPlay|glue|voice 2 off tick 3|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 3|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 3|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 3|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 3|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 3|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 3|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 3|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 4|1	kept
@@ -12561,7 +12566,8 @@ TrackPlay|state|voice 2 off tick 4|1	bytes 1538 fnv 2BCC7688
 TrackPlay|glue|voice 2 off tick 4|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 4|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 4|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 4|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 4|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 4|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 4|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 4|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 5|1	kept
@@ -12570,7 +12576,8 @@ TrackPlay|state|voice 2 off tick 5|1	bytes 1538 fnv A121F4BF
 TrackPlay|glue|voice 2 off tick 5|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 5|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 5|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 5|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 5|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 5|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 5|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 5|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 6|1	kept
@@ -12579,7 +12586,8 @@ TrackPlay|state|voice 2 off tick 6|1	bytes 1538 fnv E60320A8
 TrackPlay|glue|voice 2 off tick 6|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 6|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 6|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 6|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 6|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 6|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 6|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 6|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 7|1	kept
@@ -12588,7 +12596,8 @@ TrackPlay|state|voice 2 off tick 7|1	bytes 1538 fnv 9F1566DF
 TrackPlay|glue|voice 2 off tick 7|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 7|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 7|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 7|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 7|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 7|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 7|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 7|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 8|1	kept
@@ -12597,7 +12606,8 @@ TrackPlay|state|voice 2 off tick 8|1	bytes 1538 fnv 7972F048
 TrackPlay|glue|voice 2 off tick 8|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 8|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 8|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 8|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 8|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 8|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 8|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 8|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 9|1	kept
@@ -12606,7 +12616,8 @@ TrackPlay|state|voice 2 off tick 9|1	bytes 1538 fnv C307247F
 TrackPlay|glue|voice 2 off tick 9|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 9|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 9|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 9|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 9|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 9|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 9|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 9|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 10|1	kept
@@ -12615,7 +12626,8 @@ TrackPlay|state|voice 2 off tick 10|1	bytes 1538 fnv 458394BF
 TrackPlay|glue|voice 2 off tick 10|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 10|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 10|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 10|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 10|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 10|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 10|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 10|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 11|1	kept
@@ -12624,7 +12636,8 @@ TrackPlay|state|voice 2 off tick 11|1	bytes 1538 fnv 67E35B88
 TrackPlay|glue|voice 2 off tick 11|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 11|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 11|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 11|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 11|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 11|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 11|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 11|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 12|1	kept
@@ -12633,7 +12646,8 @@ TrackPlay|state|voice 2 off tick 12|1	bytes 1538 fnv 2BCC7688
 TrackPlay|glue|voice 2 off tick 12|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 12|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 12|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 12|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 12|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 12|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 12|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 12|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 13|1	kept
@@ -12642,7 +12656,8 @@ TrackPlay|state|voice 2 off tick 13|1	bytes 1538 fnv A121F4BF
 TrackPlay|glue|voice 2 off tick 13|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 13|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 13|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 13|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 13|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 13|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 13|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 13|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 14|1	kept
@@ -12651,7 +12666,8 @@ TrackPlay|state|voice 2 off tick 14|1	bytes 1538 fnv E60320A8
 TrackPlay|glue|voice 2 off tick 14|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 14|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 14|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 14|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 14|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 14|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 14|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 14|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 15|1	kept
@@ -12660,7 +12676,8 @@ TrackPlay|state|voice 2 off tick 15|1	bytes 1538 fnv 9F1566DF
 TrackPlay|glue|voice 2 off tick 15|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 15|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 15|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 15|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 15|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 15|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 15|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 15|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 16|1	kept
@@ -12669,7 +12686,8 @@ TrackPlay|state|voice 2 off tick 16|1	bytes 1538 fnv 7972F048
 TrackPlay|glue|voice 2 off tick 16|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 16|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 16|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 16|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 16|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 16|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 16|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 16|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 17|1	kept
@@ -12678,7 +12696,8 @@ TrackPlay|state|voice 2 off tick 17|1	bytes 1538 fnv C307247F
 TrackPlay|glue|voice 2 off tick 17|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 17|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 17|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 17|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 17|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 17|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 17|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 17|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 18|1	kept
@@ -12687,7 +12706,8 @@ TrackPlay|state|voice 2 off tick 18|1	bytes 1538 fnv 458394BF
 TrackPlay|glue|voice 2 off tick 18|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 18|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 18|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 18|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 18|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 18|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 18|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 18|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 19|1	kept
@@ -12696,7 +12716,8 @@ TrackPlay|state|voice 2 off tick 19|1	bytes 1538 fnv 67E35B88
 TrackPlay|glue|voice 2 off tick 19|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 19|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 19|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 19|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 19|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 19|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 19|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 19|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 20|1	kept
@@ -12705,7 +12726,8 @@ TrackPlay|state|voice 2 off tick 20|1	bytes 1538 fnv 2BCC7688
 TrackPlay|glue|voice 2 off tick 20|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 20|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 20|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 20|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 20|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 20|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 20|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 20|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 21|1	kept
@@ -12714,7 +12736,8 @@ TrackPlay|state|voice 2 off tick 21|1	bytes 1538 fnv A121F4BF
 TrackPlay|glue|voice 2 off tick 21|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 21|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 21|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 21|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 21|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 21|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 21|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 21|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 22|1	kept
@@ -12723,7 +12746,8 @@ TrackPlay|state|voice 2 off tick 22|1	bytes 1538 fnv E60320A8
 TrackPlay|glue|voice 2 off tick 22|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 22|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 22|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 22|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 22|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 22|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 22|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 22|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 23|1	kept
@@ -12732,7 +12756,8 @@ TrackPlay|state|voice 2 off tick 23|1	bytes 1538 fnv 9F1566DF
 TrackPlay|glue|voice 2 off tick 23|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 23|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 23|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 23|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 23|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 23|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 23|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 23|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 24|1	kept
@@ -12741,7 +12766,8 @@ TrackPlay|state|voice 2 off tick 24|1	bytes 1538 fnv 7972F048
 TrackPlay|glue|voice 2 off tick 24|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 24|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 24|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 24|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 24|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 24|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 24|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 24|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 25|1	kept
@@ -12750,7 +12776,8 @@ TrackPlay|state|voice 2 off tick 25|1	bytes 1538 fnv C307247F
 TrackPlay|glue|voice 2 off tick 25|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 25|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 25|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 25|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 25|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 25|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 25|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 25|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 26|1	kept
@@ -12759,7 +12786,8 @@ TrackPlay|state|voice 2 off tick 26|1	bytes 1538 fnv 458394BF
 TrackPlay|glue|voice 2 off tick 26|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 26|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 26|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 26|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 26|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 26|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 26|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 26|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 27|1	kept
@@ -12768,7 +12796,8 @@ TrackPlay|state|voice 2 off tick 27|1	bytes 1538 fnv 67E35B88
 TrackPlay|glue|voice 2 off tick 27|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 27|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 27|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 27|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 27|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 27|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 27|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 27|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 28|1	kept
@@ -12777,7 +12806,8 @@ TrackPlay|state|voice 2 off tick 28|1	bytes 1538 fnv 2BCC7688
 TrackPlay|glue|voice 2 off tick 28|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 28|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 28|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 28|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 28|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 28|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 28|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 28|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 29|1	kept
@@ -12786,7 +12816,8 @@ TrackPlay|state|voice 2 off tick 29|1	bytes 1538 fnv A121F4BF
 TrackPlay|glue|voice 2 off tick 29|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 29|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 29|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 29|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 29|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 29|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 29|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 29|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 30|1	kept
@@ -12795,7 +12826,8 @@ TrackPlay|state|voice 2 off tick 30|1	bytes 1538 fnv E60320A8
 TrackPlay|glue|voice 2 off tick 30|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 30|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 30|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 30|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 30|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 30|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 30|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 30|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 31|1	kept
@@ -12804,7 +12836,8 @@ TrackPlay|state|voice 2 off tick 31|1	bytes 1538 fnv 9F1566DF
 TrackPlay|glue|voice 2 off tick 31|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 31|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 31|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 31|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 31|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 31|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 31|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 31|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 32|1	kept
@@ -12813,7 +12846,8 @@ TrackPlay|state|voice 2 off tick 32|1	bytes 1538 fnv 7972F048
 TrackPlay|glue|voice 2 off tick 32|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 32|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 32|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 32|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 32|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 32|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 32|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 32|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 33|1	kept
@@ -12822,7 +12856,8 @@ TrackPlay|state|voice 2 off tick 33|1	bytes 1538 fnv C307247F
 TrackPlay|glue|voice 2 off tick 33|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 33|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 33|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 33|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 33|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 33|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 33|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 33|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 34|1	kept
@@ -12831,7 +12866,8 @@ TrackPlay|state|voice 2 off tick 34|1	bytes 1538 fnv 458394BF
 TrackPlay|glue|voice 2 off tick 34|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 34|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 34|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 34|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 34|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 34|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 34|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 34|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 35|1	kept
@@ -12840,7 +12876,8 @@ TrackPlay|state|voice 2 off tick 35|1	bytes 1538 fnv 67E35B88
 TrackPlay|glue|voice 2 off tick 35|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 35|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 35|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 35|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 35|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 35|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 35|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 35|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 36|1	kept
@@ -12849,7 +12886,8 @@ TrackPlay|state|voice 2 off tick 36|1	bytes 1538 fnv 2BCC7688
 TrackPlay|glue|voice 2 off tick 36|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 36|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 36|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 36|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 36|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 36|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 36|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 36|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 37|1	kept
@@ -12858,7 +12896,8 @@ TrackPlay|state|voice 2 off tick 37|1	bytes 1538 fnv A121F4BF
 TrackPlay|glue|voice 2 off tick 37|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 37|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 37|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 37|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 37|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 37|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 37|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 37|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 38|1	kept
@@ -12867,7 +12906,8 @@ TrackPlay|state|voice 2 off tick 38|1	bytes 1538 fnv E60320A8
 TrackPlay|glue|voice 2 off tick 38|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 38|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 38|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 38|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 38|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 38|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 38|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 38|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 39|1	kept
@@ -12876,7 +12916,8 @@ TrackPlay|state|voice 2 off tick 39|1	bytes 1538 fnv 9F1566DF
 TrackPlay|glue|voice 2 off tick 39|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 39|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 39|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 39|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 39|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 39|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 39|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 39|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 40|1	kept
@@ -12885,7 +12926,8 @@ TrackPlay|state|voice 2 off tick 40|1	bytes 1538 fnv 7972F048
 TrackPlay|glue|voice 2 off tick 40|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 40|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 40|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 40|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 40|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 40|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 40|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 40|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 41|1	kept
@@ -12894,7 +12936,8 @@ TrackPlay|state|voice 2 off tick 41|1	bytes 1538 fnv C307247F
 TrackPlay|glue|voice 2 off tick 41|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 41|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 41|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 41|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 41|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 41|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 41|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 41|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 42|1	kept
@@ -12903,7 +12946,8 @@ TrackPlay|state|voice 2 off tick 42|1	bytes 1538 fnv 458394BF
 TrackPlay|glue|voice 2 off tick 42|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 42|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 42|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 42|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 42|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 42|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 42|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 42|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 43|1	kept
@@ -12912,7 +12956,8 @@ TrackPlay|state|voice 2 off tick 43|1	bytes 1538 fnv 67E35B88
 TrackPlay|glue|voice 2 off tick 43|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 43|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 43|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 43|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 43|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 43|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 43|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 43|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 44|1	kept
@@ -12921,7 +12966,8 @@ TrackPlay|state|voice 2 off tick 44|1	bytes 1538 fnv 2BCC7688
 TrackPlay|glue|voice 2 off tick 44|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 44|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 44|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 44|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 44|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 44|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 44|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 44|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 45|1	kept
@@ -12930,7 +12976,8 @@ TrackPlay|state|voice 2 off tick 45|1	bytes 1538 fnv A121F4BF
 TrackPlay|glue|voice 2 off tick 45|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 45|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 45|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 45|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 45|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 45|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 45|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 45|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 46|1	kept
@@ -12939,7 +12986,8 @@ TrackPlay|state|voice 2 off tick 46|1	bytes 1538 fnv E60320A8
 TrackPlay|glue|voice 2 off tick 46|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 46|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 46|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 46|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 46|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 46|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 46|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 46|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 47|1	kept
@@ -12948,7 +12996,8 @@ TrackPlay|state|voice 2 off tick 47|1	bytes 1538 fnv 9F1566DF
 TrackPlay|glue|voice 2 off tick 47|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 47|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 47|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 47|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 47|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 47|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 47|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 47|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 48|1	kept
@@ -12957,7 +13006,8 @@ TrackPlay|state|voice 2 off tick 48|1	bytes 1538 fnv 7972F048
 TrackPlay|glue|voice 2 off tick 48|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 48|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 48|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 48|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 48|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 48|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 48|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 48|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 49|1	kept
@@ -12966,7 +13016,8 @@ TrackPlay|state|voice 2 off tick 49|1	bytes 1538 fnv C307247F
 TrackPlay|glue|voice 2 off tick 49|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 49|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 49|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 49|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 49|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 49|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 49|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 49|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 50|1	kept
@@ -12975,7 +13026,8 @@ TrackPlay|state|voice 2 off tick 50|1	bytes 1538 fnv 458394BF
 TrackPlay|glue|voice 2 off tick 50|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 50|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 50|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 50|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 50|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 50|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 50|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 50|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 51|1	kept
@@ -12984,7 +13036,8 @@ TrackPlay|state|voice 2 off tick 51|1	bytes 1538 fnv 67E35B88
 TrackPlay|glue|voice 2 off tick 51|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 51|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 51|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 51|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 51|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 51|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 51|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 51|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 52|1	kept
@@ -12993,7 +13046,8 @@ TrackPlay|state|voice 2 off tick 52|1	bytes 1538 fnv 2BCC7688
 TrackPlay|glue|voice 2 off tick 52|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 52|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 52|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 52|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 52|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 52|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 52|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 52|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 53|1	kept
@@ -13002,7 +13056,8 @@ TrackPlay|state|voice 2 off tick 53|1	bytes 1538 fnv A121F4BF
 TrackPlay|glue|voice 2 off tick 53|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 53|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 53|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 53|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 53|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 53|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 53|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 53|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 54|1	kept
@@ -13011,7 +13066,8 @@ TrackPlay|state|voice 2 off tick 54|1	bytes 1538 fnv E60320A8
 TrackPlay|glue|voice 2 off tick 54|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 54|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 54|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 54|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 54|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 54|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 54|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 54|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 55|1	kept
@@ -13020,7 +13076,8 @@ TrackPlay|state|voice 2 off tick 55|1	bytes 1538 fnv 9F1566DF
 TrackPlay|glue|voice 2 off tick 55|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 55|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 55|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 55|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 55|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 55|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 55|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 55|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 56|1	kept
@@ -13029,7 +13086,8 @@ TrackPlay|state|voice 2 off tick 56|1	bytes 1538 fnv 7972F048
 TrackPlay|glue|voice 2 off tick 56|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 56|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 56|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 56|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 56|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 56|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 56|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 56|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 57|1	kept
@@ -13038,7 +13096,8 @@ TrackPlay|state|voice 2 off tick 57|1	bytes 1538 fnv C307247F
 TrackPlay|glue|voice 2 off tick 57|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 57|1 [orig]	bytes 8858 fnv C3DC446B
 TrackPlay|module|voice 2 off tick 57|1 [fixed #570]	bytes 8858 fnv 6C10E5FB
-TrackPlay|custom|voice 2 off tick 57|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 57|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 57|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 57|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 57|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 58|1	kept
@@ -13047,7 +13106,8 @@ TrackPlay|state|voice 2 off tick 58|1	bytes 1538 fnv 458394BF
 TrackPlay|glue|voice 2 off tick 58|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 58|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 58|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 58|1	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 58|1 [orig]	bytes 512 fnv CA10A91A
+TrackPlay|custom|voice 2 off tick 58|1 [fixed #567]	bytes 512 fnv B07BB7F9
 TrackPlay|CIA-A PRA filter|voice 2 off tick 58|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 58|1	$00005AA5
 TrackPlay|kept|voice 2 off tick 59|1	kept
@@ -13056,7 +13116,8 @@ TrackPlay|state|voice 2 off tick 59|1	bytes 1538 fnv 67E35B88
 TrackPlay|glue|voice 2 off tick 59|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voice 2 off tick 59|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voice 2 off tick 59|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voice 2 off tick 59|1	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 59|1 [orig]	bytes 512 fnv C6C88A50
+TrackPlay|custom|voice 2 off tick 59|1 [fixed #567]	bytes 512 fnv A44B3395
 TrackPlay|CIA-A PRA filter|voice 2 off tick 59|1	$00000002
 TrackPlay|CIA-B timer A|voice 2 off tick 59|1	$00005AA5
 TrackerChannels|kept|$6|1	kept
@@ -13065,7 +13126,8 @@ TrackerChannels|state|$6|1	bytes 1538 fnv 93ED843F
 TrackerChannels|glue|$6|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackerChannels|module|$6|1 [orig]	bytes 8858 fnv 50A5B116
 TrackerChannels|module|$6|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackerChannels|custom|$6|1	bytes 512 fnv F8A010E5
+TrackerChannels|custom|$6|1 [orig]	bytes 512 fnv F8A010E5
+TrackerChannels|custom|$6|1 [fixed #567]	bytes 512 fnv 0839C2FE
 TrackerChannels|CIA-A PRA filter|$6|1	$00000002
 TrackerChannels|CIA-B timer A|$6|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 0|1	kept
@@ -13074,7 +13136,8 @@ TrackPlay|state|voices 1 and 4 off tick 0|1	bytes 1538 fnv 6CE5EB30
 TrackPlay|glue|voices 1 and 4 off tick 0|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 0|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 0|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 0|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 0|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 0|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 0|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 0|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 1|1	kept
@@ -13083,7 +13146,8 @@ TrackPlay|state|voices 1 and 4 off tick 1|1	bytes 1538 fnv C812D407
 TrackPlay|glue|voices 1 and 4 off tick 1|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 1|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 1|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 1|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 1|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 1|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 1|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 1|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 2|1	kept
@@ -13092,7 +13156,8 @@ TrackPlay|state|voices 1 and 4 off tick 2|1	bytes 1538 fnv 7CDD6A70
 TrackPlay|glue|voices 1 and 4 off tick 2|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 2|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 2|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 2|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 2|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 2|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 2|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 2|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 3|1	kept
@@ -13101,7 +13166,8 @@ TrackPlay|state|voices 1 and 4 off tick 3|1	bytes 1538 fnv B5426217
 TrackPlay|glue|voices 1 and 4 off tick 3|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 3|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 3|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 3|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 3|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 3|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 3|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 3|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 4|1	kept
@@ -13110,7 +13176,8 @@ TrackPlay|state|voices 1 and 4 off tick 4|1	bytes 1538 fnv 17449E60
 TrackPlay|glue|voices 1 and 4 off tick 4|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 4|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 4|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 4|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 4|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 4|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 4|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 4|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 5|1	kept
@@ -13119,7 +13186,8 @@ TrackPlay|state|voices 1 and 4 off tick 5|1	bytes 1538 fnv 996F2167
 TrackPlay|glue|voices 1 and 4 off tick 5|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 5|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 5|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 5|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 5|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 5|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 5|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 5|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 6|1	kept
@@ -13128,7 +13196,8 @@ TrackPlay|state|voices 1 and 4 off tick 6|1	bytes 1538 fnv 12C3EA50
 TrackPlay|glue|voices 1 and 4 off tick 6|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 6|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 6|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 6|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 6|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 6|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 6|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 6|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 7|1	kept
@@ -13137,7 +13206,8 @@ TrackPlay|state|voices 1 and 4 off tick 7|1	bytes 1538 fnv C4B32D77
 TrackPlay|glue|voices 1 and 4 off tick 7|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 7|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 7|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 7|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 7|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 7|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 7|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 7|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 8|1	kept
@@ -13146,7 +13216,8 @@ TrackPlay|state|voices 1 and 4 off tick 8|1	bytes 1538 fnv B64AF240
 TrackPlay|glue|voices 1 and 4 off tick 8|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 8|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 8|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 8|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 8|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 8|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 8|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 8|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 9|1	kept
@@ -13155,7 +13226,8 @@ TrackPlay|state|voices 1 and 4 off tick 9|1	bytes 1538 fnv A3A0D9C7
 TrackPlay|glue|voices 1 and 4 off tick 9|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 9|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 9|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 9|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 9|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 9|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 9|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 9|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 10|1	kept
@@ -13164,7 +13236,8 @@ TrackPlay|state|voices 1 and 4 off tick 10|1	bytes 1538 fnv 4B531EB0
 TrackPlay|glue|voices 1 and 4 off tick 10|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 10|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 10|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 10|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 10|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 10|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 10|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 10|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 11|1	kept
@@ -13173,7 +13246,8 @@ TrackPlay|state|voices 1 and 4 off tick 11|1	bytes 1538 fnv 6C9F6FD7
 TrackPlay|glue|voices 1 and 4 off tick 11|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 11|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 11|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 11|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 11|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 11|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 11|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 11|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 12|1	kept
@@ -13182,7 +13256,8 @@ TrackPlay|state|voices 1 and 4 off tick 12|1	bytes 1538 fnv B2339EA0
 TrackPlay|glue|voices 1 and 4 off tick 12|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 12|1 [orig]	bytes 8858 fnv 50A5B116
 TrackPlay|module|voices 1 and 4 off tick 12|1 [fixed #570]	bytes 8858 fnv 6F30DC66
-TrackPlay|custom|voices 1 and 4 off tick 12|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 12|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 12|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 12|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 12|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 13|1	kept
@@ -13191,7 +13266,8 @@ TrackPlay|state|voices 1 and 4 off tick 13|1	bytes 1538 fnv 33894020
 TrackPlay|glue|voices 1 and 4 off tick 13|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 13|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 13|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 13|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 13|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 13|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 13|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 13|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 14|1	kept
@@ -13200,7 +13276,8 @@ TrackPlay|state|voices 1 and 4 off tick 14|1	bytes 1538 fnv 378E7157
 TrackPlay|glue|voices 1 and 4 off tick 14|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 14|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 14|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 14|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 14|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 14|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 14|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 14|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 15|1	kept
@@ -13209,7 +13286,8 @@ TrackPlay|state|voices 1 and 4 off tick 15|1	bytes 1538 fnv 6001C230
 TrackPlay|glue|voices 1 and 4 off tick 15|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 15|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 15|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 15|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 15|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 15|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 15|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 15|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 16|1	kept
@@ -13218,7 +13296,8 @@ TrackPlay|state|voices 1 and 4 off tick 16|1	bytes 1538 fnv 36CF3E47
 TrackPlay|glue|voices 1 and 4 off tick 16|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 16|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 16|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 16|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 16|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 16|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 16|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 16|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 17|1	kept
@@ -13227,7 +13306,8 @@ TrackPlay|state|voices 1 and 4 off tick 17|1	bytes 1538 fnv 597D3E80
 TrackPlay|glue|voices 1 and 4 off tick 17|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 17|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 17|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 17|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 17|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 17|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 17|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 17|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 18|1	kept
@@ -13236,7 +13316,8 @@ TrackPlay|state|voices 1 and 4 off tick 18|1	bytes 1538 fnv 455F67B7
 TrackPlay|glue|voices 1 and 4 off tick 18|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 18|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 18|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 18|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 18|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 18|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 18|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 18|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 19|1	kept
@@ -13245,7 +13326,8 @@ TrackPlay|state|voices 1 and 4 off tick 19|1	bytes 1538 fnv 28D3FD90
 TrackPlay|glue|voices 1 and 4 off tick 19|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 19|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 19|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 19|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 19|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 19|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 19|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 19|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 20|1	kept
@@ -13254,7 +13336,8 @@ TrackPlay|state|voices 1 and 4 off tick 20|1	bytes 1538 fnv 81EEEFA7
 TrackPlay|glue|voices 1 and 4 off tick 20|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 20|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 20|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 20|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 20|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 20|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 20|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 20|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 21|1	kept
@@ -13263,7 +13346,8 @@ TrackPlay|state|voices 1 and 4 off tick 21|1	bytes 1538 fnv A744EEE0
 TrackPlay|glue|voices 1 and 4 off tick 21|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 21|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 21|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 21|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 21|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 21|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 21|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 21|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 22|1	kept
@@ -13272,7 +13356,8 @@ TrackPlay|state|voices 1 and 4 off tick 22|1	bytes 1538 fnv 15A94197
 TrackPlay|glue|voices 1 and 4 off tick 22|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 22|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 22|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 22|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 22|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 22|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 22|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 22|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 23|1	kept
@@ -13281,7 +13366,8 @@ TrackPlay|state|voices 1 and 4 off tick 23|1	bytes 1538 fnv 81E6F1F0
 TrackPlay|glue|voices 1 and 4 off tick 23|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 23|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 23|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 23|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 23|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 23|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 23|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 23|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 24|1	kept
@@ -13290,7 +13376,8 @@ TrackPlay|state|voices 1 and 4 off tick 24|1	bytes 1538 fnv 3D40CD87
 TrackPlay|glue|voices 1 and 4 off tick 24|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 24|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 24|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 24|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 24|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 24|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 24|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 24|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 25|1	kept
@@ -13299,7 +13386,8 @@ TrackPlay|state|voices 1 and 4 off tick 25|1	bytes 1538 fnv 78376240
 TrackPlay|glue|voices 1 and 4 off tick 25|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 25|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 25|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 25|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 25|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 25|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 25|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 25|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 26|1	kept
@@ -13308,7 +13396,8 @@ TrackPlay|state|voices 1 and 4 off tick 26|1	bytes 1538 fnv B85E4CF7
 TrackPlay|glue|voices 1 and 4 off tick 26|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 26|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 26|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 26|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 26|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 26|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 26|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 26|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 27|1	kept
@@ -13317,7 +13406,8 @@ TrackPlay|state|voices 1 and 4 off tick 27|1	bytes 1538 fnv 09E52650
 TrackPlay|glue|voices 1 and 4 off tick 27|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 27|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 27|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 27|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 27|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 27|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 27|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 27|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 28|1	kept
@@ -13326,7 +13416,8 @@ TrackPlay|state|voices 1 and 4 off tick 28|1	bytes 1538 fnv 0F24BDE7
 TrackPlay|glue|voices 1 and 4 off tick 28|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 28|1 [orig]	bytes 8858 fnv 27A15F61
 TrackPlay|module|voices 1 and 4 off tick 28|1 [fixed #570]	bytes 8858 fnv 2C2388F1
-TrackPlay|custom|voices 1 and 4 off tick 28|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 28|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 28|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 28|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 28|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 29|1	kept
@@ -13335,7 +13426,8 @@ TrackPlay|state|voices 1 and 4 off tick 29|1	bytes 1538 fnv 203A35A7
 TrackPlay|glue|voices 1 and 4 off tick 29|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 29|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 29|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 29|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 29|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 29|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 29|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 29|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 30|1	kept
@@ -13344,7 +13436,8 @@ TrackPlay|state|voices 1 and 4 off tick 30|1	bytes 1538 fnv AED3F810
 TrackPlay|glue|voices 1 and 4 off tick 30|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 30|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 30|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 30|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 30|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 30|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 30|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 30|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 31|1	kept
@@ -13353,7 +13446,8 @@ TrackPlay|state|voices 1 and 4 off tick 31|1	bytes 1538 fnv AE75E1B7
 TrackPlay|glue|voices 1 and 4 off tick 31|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 31|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 31|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 31|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 31|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 31|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 31|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 31|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 32|1	kept
@@ -13362,7 +13456,8 @@ TrackPlay|state|voices 1 and 4 off tick 32|1	bytes 1538 fnv B902D800
 TrackPlay|glue|voices 1 and 4 off tick 32|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 32|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 32|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 32|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 32|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 32|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 32|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 32|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 33|1	kept
@@ -13371,7 +13466,8 @@ TrackPlay|state|voices 1 and 4 off tick 33|1	bytes 1538 fnv C812D407
 TrackPlay|glue|voices 1 and 4 off tick 33|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 33|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 33|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 33|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 33|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 33|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 33|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 33|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 34|1	kept
@@ -13380,7 +13476,8 @@ TrackPlay|state|voices 1 and 4 off tick 34|1	bytes 1538 fnv 7CDD6A70
 TrackPlay|glue|voices 1 and 4 off tick 34|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 34|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 34|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 34|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 34|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 34|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 34|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 34|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 35|1	kept
@@ -13389,7 +13486,8 @@ TrackPlay|state|voices 1 and 4 off tick 35|1	bytes 1538 fnv B5426217
 TrackPlay|glue|voices 1 and 4 off tick 35|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 35|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 35|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 35|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 35|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 35|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 35|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 35|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 36|1	kept
@@ -13398,7 +13496,8 @@ TrackPlay|state|voices 1 and 4 off tick 36|1	bytes 1538 fnv 17449E60
 TrackPlay|glue|voices 1 and 4 off tick 36|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 36|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 36|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 36|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 36|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 36|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 36|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 36|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 37|1	kept
@@ -13407,7 +13506,8 @@ TrackPlay|state|voices 1 and 4 off tick 37|1	bytes 1538 fnv 996F2167
 TrackPlay|glue|voices 1 and 4 off tick 37|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 37|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 37|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 37|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 37|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 37|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 37|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 37|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 38|1	kept
@@ -13416,7 +13516,8 @@ TrackPlay|state|voices 1 and 4 off tick 38|1	bytes 1538 fnv 12C3EA50
 TrackPlay|glue|voices 1 and 4 off tick 38|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 38|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 38|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 38|1	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 38|1 [orig]	bytes 512 fnv 147CCA67
+TrackPlay|custom|voices 1 and 4 off tick 38|1 [fixed #567]	bytes 512 fnv 4731433E
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 38|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 38|1	$00005AA5
 TrackPlay|kept|voices 1 and 4 off tick 39|1	kept
@@ -13425,7 +13526,8 @@ TrackPlay|state|voices 1 and 4 off tick 39|1	bytes 1538 fnv C4B32D77
 TrackPlay|glue|voices 1 and 4 off tick 39|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|voices 1 and 4 off tick 39|1 [orig]	bytes 8858 fnv EA59B158
 TrackPlay|module|voices 1 and 4 off tick 39|1 [fixed #570]	bytes 8858 fnv 22EE8A88
-TrackPlay|custom|voices 1 and 4 off tick 39|1	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 39|1 [orig]	bytes 512 fnv A44B3395
+TrackPlay|custom|voices 1 and 4 off tick 39|1 [fixed #567]	bytes 512 fnv C6C0CCA4
 TrackPlay|CIA-A PRA filter|voices 1 and 4 off tick 39|1	$00000002
 TrackPlay|CIA-B timer A|voices 1 and 4 off tick 39|1	$00005AA5
 TrackerChannels|kept|$F|1	kept
