@@ -1,7 +1,7 @@
 ---
 title: Extensions
 weight: 4
-description: What the compiler of the BB2 C port accepts beyond Blitz Basic 2, and the rule that keeps old sources unchanged.
+description: What the compiler of the BB2 C port accepts beyond Blitz Basic 2, the rule that keeps old sources unchanged, and the four functions it compiles faster.
 ---
 
 Before this page you should know how the compiler options work
@@ -9,8 +9,10 @@ Before this page you should know how the compiler options work
 
 The compiler of the BB2 C port follows one rule for everything it adds:
 an extension may only give a meaning to a source that the original
-refuses. A source that compiles with Blitz Basic 2 compiles to the same
-program with the port, extensions or not.
+refuses. A source that compiles with Blitz Basic 2 compiles to a program
+that does the same with the port, extensions or not. The one place where
+the port's executable differs on purpose is speed: a few functions are
+compiled as inline code ([Faster Int, Frac, Len and Asc](#faster-int-frac-len-and-asc)).
 
 ## #__debug: is runtime error checking on?
 
@@ -47,6 +49,33 @@ Some details:
 The name and the values are those of AmiBlitz3, so a source that uses
 `#__debug` means the same with both. blitz2-ab3 knows it in both of its
 modes ([AB3 mode]({{< relref "/docs/ab3-mode" >}})).
+
+## Faster Int, Frac, Len and Asc
+
+Four functions of the libraries are compiled as a few instructions in
+the program, instead of a call of the library, when their argument
+allows it. The result is the library's, to the last bit, with and
+without runtime error checking; only the executable is different, and
+the program is faster:
+
+| Function | Compiled inline when | Cycles per call on an A500, call → inline |
+|---|---|---|
+| `Int` | the argument is a Quick | 189 → 63 |
+| `Frac` | the argument is a Quick and the call is all of the right side of an assignment to a Quick, as in `q2=Frac(q1)` | 1316 → 62 |
+| `Len` | the argument is a string variable, as in `Len(a$)` | 679 → 63 |
+| `Asc` | the argument is a string variable, as in `Asc(a$)` | 745 → 99 |
+
+`Len` and `Asc` no longer copy the string first, so their time does not
+depend on its length any more: `Len` of a string of 1000 characters took
+8261 cycles and now takes 63.
+
+Everything else is compiled with the call, as before: `Frac` inside a
+larger expression, a condition or `Print`, or with a Float or Long
+target; `Len` and `Asc` of an expression (`Len(a$+b$)`), of a function
+(`Len(Left$(a$,2))`), of a literal, of an array element or of a field of
+a NewType. In AB3 mode `Frac`, `Len` and `Asc` stay library calls too,
+because AmiBlitz3's libraries are different; `Int` is inline there as
+well.
 
 ## Warnings
 
