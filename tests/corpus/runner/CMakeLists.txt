@@ -16,7 +16,7 @@ target_compile_options(lib_corpus PRIVATE -Wall -Wextra)
 set_target_properties(lib_corpus PROPERTIES C_STANDARD 23)
 set(CORPUSRUN_SUBCOMMANDS pass cd drop)
 add_executable(corpusrun main.cpp cmd_pass.cpp cmd_cd.cpp cmd_drop.cpp cd.c)
-target_link_libraries(corpusrun PRIVATE lib_cli lib_corpus lib_cdcache lib_sha256)
+target_link_libraries(corpusrun PRIVATE lib_cli lib_corpus lib_cdcache lib_cdcmp lib_sha256)
 target_compile_options(corpusrun PRIVATE -Wall -Wextra)
 set_target_properties(corpusrun PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
@@ -42,6 +42,16 @@ add_executable(test_cdcache test_cdcache.c)
 target_link_libraries(test_cdcache PRIVATE lib_cdcache)
 target_compile_options(test_cdcache PRIVATE -Wall -Wextra)
 add_test(NAME cdrun_cache COMMAND test_cdcache)
+# the comparison of a CD table with the reference table (cdcmp.h): compile
+# results compared, executables only reported
+add_library(lib_cdcmp STATIC cdcmp.c)
+target_include_directories(lib_cdcmp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_options(lib_cdcmp PRIVATE -Wall -Wextra)
+set_target_properties(lib_cdcmp PROPERTIES C_STANDARD 23)
+add_executable(test_cdcmp test_cdcmp.c)
+target_link_libraries(test_cdcmp PRIVATE lib_cdcmp)
+target_compile_options(test_cdcmp PRIVATE -Wall -Wextra)
+add_test(NAME cdrun_compare COMMAND test_cdcmp)
 # its source= lines with broken input (no emulator needed)
 add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=$<TARGET_FILE:corpusrun>
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/cdrun_source

@@ -2,8 +2,8 @@
 # (record.cmake) with fake runs (FAKE: no runner, no emulator), on files in
 # WORK.  Pass p: program a records the same twice (its a.out is written),
 # b differs in a line (refused: "test not deterministic", b.out unchanged),
-# c has a pair (c.orig.out rewritten, c.fixed-6.out kept) and an exe pair
-# (c.orig.exe from the run), d is left out by the filter (untouched); pass
+# c has a pair (c.orig.out rewritten, c.fixed-6.out kept), d is left out by the
+# filter (untouched); pass
 # q's second run is missing (a failed run: the target fails, nothing
 # written there); a second run limited to p:a finds it unchanged and passes.
 #   cmake -DRESULTS=results -DSCRIPT=record.cmake -DWORK=DIR -P record-target.cmake
@@ -13,19 +13,12 @@ foreach(v RESULTS SCRIPT WORK)
 	endif()
 endforeach()
 file(REMOVE_RECURSE ${WORK})
-set(h1 "1111111111111111111111111111111111111111111111111111111111111111\n")
-set(h2 "2222222222222222222222222222222222222222222222222222222222222222\n")
-set(h3 "3333333333333333333333333333333333333333333333333333333333333333\n")
 foreach(k 1 2)
 	set(r ${WORK}/fake/p/run${k})
 	file(WRITE ${r}/a.out "a new\nrc=0\n")
-	file(WRITE ${r}/a.exe "${h3}")
 	file(WRITE ${r}/b.out "b ${k}\nrc=0\n")
-	file(WRITE ${r}/b.exe "${h3}")
 	file(WRITE ${r}/c.out "c orig\nrc=0\n")
-	file(WRITE ${r}/c.exe "${h1}")
 	file(WRITE ${r}/d.out "d new\nrc=0\n")
-	file(WRITE ${r}/d.exe "${h3}")
 endforeach()
 file(WRITE ${WORK}/fake/q/run1/a.out "a\nrc=0\n")
 set(e ${WORK}/expect)
@@ -33,7 +26,6 @@ file(WRITE ${e}/p/a.out "a old\nrc=0\n")
 file(WRITE ${e}/p/b.out "b old\nrc=0\n")
 file(WRITE ${e}/p/c.orig.out "c old\nrc=0\n")
 file(WRITE ${e}/p/c.fixed-6.out "c fixed\nrc=0\n")
-file(WRITE ${e}/p/c.fixed-46.exe "${h2}")
 file(WRITE ${e}/p/d.out "d old\nrc=0\n")
 file(WRITE ${e}/q/a.out "a old\nrc=0\n")
 file(WRITE ${WORK}/list "p|-|-\nq|-|-\n")
@@ -64,12 +56,9 @@ endfunction()
 run("p:a,p:b,p:c,q" FALSE
 	"test not deterministic: p:b\np:b: b\\.out line 1: expected \"b 1\", got \"b 2\"[^\n]*\nwrote [^\n]*p/a\\.out\n.*q: the runs failed.*refused: p. failed: q")
 holds(p/a.out "a new\nrc=0\n")
-holds(p/a.exe -)
 holds(p/b.out "b old\nrc=0\n")
 holds(p/c.orig.out "c orig\nrc=0\n")
 holds(p/c.fixed-6.out "c fixed\nrc=0\n")
-holds(p/c.orig.exe "${h1}")
-holds(p/c.fixed-46.exe "${h2}")
 holds(p/d.out "d old\nrc=0\n")
 holds(q/a.out "a old\nrc=0\n")
 run("p:a" TRUE "1 passes, 2 at a time\n.*corpus-accept: p: 1 programs, accepted")

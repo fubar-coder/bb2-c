@@ -47,6 +47,14 @@ int main(void)
     CHECK((n = corpus_name("/s/T02_float.BB2")) && !strcmp(n, "T02_float"));
     free(n);
 
+    /* exeinfo: the output is judged, the executable only compared for information;
+       it has no BASE */
+    CHECK(corpus_parse(BASE "config=ref|ref|/a|/b|/c\nconfig=port|exeinfo|/a2|/b|/c\n"
+                       "source=/s\n", &p, err, sizeof err) == 0
+          && p.configs[1].expect == CORPUS_EXEINFO && !p.configs[1].base);
+    corpus_free(&p);
+    CHECK(parse(BASE "config=ref|ref|/a|/b|/c\nconfig=port|exeinfo:ref|/a2|/b|/c\n"
+                "source=/s\n", err, sizeof err) == -1);
     /* exe:BASE compares with another configuration instead of the reference */
     CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
                        "config=prev|exe:clib|/p|/q|/r\nsource=/s\n", &p, err, sizeof err) == 0);
@@ -512,21 +520,15 @@ int main(void)
         CHECK(corpus_update(&p, "clib", NULL, 0, err, sizeof err) == 0 && p.nconfigs == 1
               && !strcmp(p.configs[0].tag, "clib") && !strcmp(p.configs[0].blitz2, "/a2"));
         corpus_free(&p);
-        /* port (exe, compared with the reference): the executables of both,
-           only the sources with an exe pair or a fix (none here) */
-        {
-            struct cexp_fix fx;
-
-            CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
-                               "expect_dir=/nonexistent/corpus\nsource=/s/t01_int.bb2\n"
-                               "source=/s/t02.bb2\n", &p, err, sizeof err) == 0);
-            CHECK(cexp_parse_fix("corpus:t02#46", &fx, err, sizeof err) == 0);
-            CHECK(corpus_update(&p, "port", &fx, 1, err, sizeof err) == 0
-                  && p.update == CORPUS_UPDATE_EXE && p.nconfigs == 2
-                  && !strcmp(p.configs[0].tag, "ref") && !strcmp(p.configs[1].tag, "port")
-                  && p.nsources == 1 && !strcmp(p.sources[0], "/s/t02.bb2") && p.nfix == 1);
-            corpus_free(&p);
-        }
+        /* exeinfo (port against the original): updates only write outputs, so the
+           configuration runs alone like any other */
+        CHECK(corpus_parse(BASE "config=ref|ref|/a|/b|/c\nconfig=port|exeinfo|/a2|/b|/c\n"
+                           "expect_dir=/nonexistent/corpus\nsource=/s/t01_int.bb2\n", &p, err,
+                           sizeof err) == 0);
+        CHECK(corpus_update(&p, "port", NULL, 0, err, sizeof err) == 0
+              && p.update == CORPUS_UPDATE_OUT && p.nconfigs == 1
+              && !strcmp(p.configs[0].tag, "port") && p.nsources == 1);
+        corpus_free(&p);
         /* the observation of one configuration; only some sources */
         CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
                            "expect_dir=/e\nsource=/s/t01_int.bb2\nsource=/s/t02.bb2\n", &p, err,

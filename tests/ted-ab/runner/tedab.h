@@ -247,9 +247,16 @@ int tedab_eval_gate(const char *gdir, struct text *out);
 /* A/B comparison of two run directories (out/ work/ L/; na, nb their
    names): result OK in both, blitz2's rc, requesters, dumps (font fh), the
    files.  0 = same, 1 = different, -1 = a result not OK; the details as
-   report lines */
+   report lines.  exe_info (NULL = every file counts): the two runs are of
+   different compilers, the original's and the port's: a file that exe_info
+   names in an @expect corpus is an executable, and a difference of it is
+   reported ("(informational)") and no difference of the runs */
 int tedab_compare_runs(const char *a, const char *b, const char *na, const char *nb,
-                       const struct teddump_fonts *f, int fh, struct text *out);
+                       const struct teddump_fonts *f, int fh, const struct tedab_test *exe_info,
+                       struct text *out);
+/* the pair k (tedab_pairs index) compares the original's compiler with the
+   port's: one combination has the compiler 5, the other c */
+int tedab_pair_mixed(int k);
 
 /* the verdict of pair k (tedab_pairs index) of test t from compare (the
    result of tedab_compare_runs): SAME or DIFF, FAIL (a result not OK); for a
@@ -276,6 +283,11 @@ struct tedab_sources {
     const char *oracle;         /* tedsave: the TED oracle manifest */
     const char *corpus_out_prev; /* corpus, combinations P5 and Pc: the executables of the
                                     corpus run with the prev build (NULL: corpus_out) */
+    int exe_info;               /* corpus_out is the original's (the pass compares with the
+                                   original): the executable of a combination with the
+                                   port's compiler (Cc, Rc) that differs from it is reported,
+                                   not a problem (an executable is no result against the
+                                   original) */
 };
 /* the expectations of test t in run directory rundir; returns the number of
    problems (report lines to out) */

@@ -12,7 +12,7 @@
 #include "corpusexpect.h"
 #include "sha256.h"
 
-static const char *const obs_names[CEXP_NOBS] = { "out", "serial", "exe" };
+static const char *const obs_names[CEXP_NOBS] = { "out", "serial" };
 
 const char *cexp_obs_name(enum cexp_obs o)
 {
@@ -107,19 +107,6 @@ const struct cexp_prog *cexp_find(const struct cexp_set *s, const char *name)
     return prog_of((struct cexp_set *)s, name, strlen(name), 0);
 }
 
-/* an .exe file's text: 64 lower-case hex digits and a LF */
-static int hash_ok(const uint8_t *d, size_t n)
-{
-    size_t i;
-
-    if (n != CEXP_HASHLEN || d[64] != '\n')
-        return 0;
-    for (i = 0; i < 64; i++)
-        if (!((d[i] >= '0' && d[i] <= '9') || (d[i] >= 'a' && d[i] <= 'f')))
-            return 0;
-    return 1;
-}
-
 int cexp_add(struct cexp_set *s, const char *name, const void *data, size_t len, char *err,
              size_t errlen)
 {
@@ -132,12 +119,12 @@ int cexp_add(struct cexp_set *s, const char *name, const void *data, size_t len,
     char other[160];
 
     if (!ext)
-        return seterr(err, errlen, -2, "%s: not NAME.OBS (OBS out, serial or exe)", name);
+        return seterr(err, errlen, -2, "%s: not NAME.OBS (OBS out or serial)", name);
     for (o = 0; o < CEXP_NOBS && strcmp(ext + 1, obs_names[o]); o++)
         ;
     if (o == CEXP_NOBS)
-        return seterr(err, errlen, -2, "%s: unknown observation .%s (out, serial or exe)", name,
-                      ext + 1);
+        return seterr(err, errlen, -2, "%s: unknown observation .%s (out or serial; the original's "
+                      "executables are not compared)", name, ext + 1);
     base = (size_t)(ext - name);
     /* the qualifier: the part between the last two dots */
     for (dot = ext; dot > name && dot[-1] != '.'; dot--)
@@ -166,13 +153,6 @@ int cexp_add(struct cexp_set *s, const char *name, const void *data, size_t len,
         return seterr(err, errlen, -2, "%s: the program's name is not of [A-Za-z0-9_-]", name);
     if (s->run && q != CEXP_PLAIN)
         return seterr(err, errlen, -2, "%s: a run has no qualified files", name);
-    if (o == CEXP_EXE && q == CEXP_PLAIN && !s->run)
-        return seterr(err, errlen, -2, "%s: an executable is only a pair (NAME.orig.exe and "
-                      "NAME.fixed-N.exe), a program whose executables agree has no .exe file",
-                      name);
-    if (o == CEXP_EXE && !hash_ok(data, len))
-        return seterr(err, errlen, -2, "%s: not a SHA-256 (64 lower-case hex digits and a LF)",
-                      name);
     if (!(p = prog_of(s, name, base, 1)))
         return seterr(err, errlen, -1, "out of memory");
     if (p->f[o][q].data) {
@@ -654,8 +634,6 @@ int cexp_accept(const struct cexp_set *run1, const struct cexp_set *run2,
                 if (!fa->data || !fb->data)
                     fprintf(report, "%s:%s: %s.%s only in run %d\n", pass, name, name,
                             obs_names[o], fa->data ? 1 : 2);
-                else if (o == CEXP_EXE)
-                    fprintf(report, "%s:%s: %s.exe: the executables differ\n", pass, name, name);
                 else
                     fprintf(report, "%s:%s: %s.%s %s (run 1 expected, run 2 got)\n", pass, name,
                             name, obs_names[o], what);
@@ -677,8 +655,6 @@ int cexp_accept(const struct cexp_set *run1, const struct cexp_set *run2,
 
             if (!f->data)
                 continue;
-            if (o == CEXP_EXE && !fixed)
-                continue;       /* no exe pair: ref and port are compared live */
             if (fixed) {
                 if (same_file(f, &op->f[o][CEXP_FIXED])) {
                     char fn[160];
@@ -834,7 +810,7 @@ int cexp_update(const struct cexp_set *run, const struct cexp_set *old, int seri
             cexp_plan_free(&mine);
             continue;
         }
-        /* a FIX that makes no pair: noted (an exe pair may still come) */
+        /* a FIX that makes no pair: noted */
         if (issue && !changed && !(op && op->f[CEXP_OUT][CEXP_FIXED].data))
             fprintf(report, "%s:%s: FIX #%u: the output is unchanged (no output pair)\n", pass,
                     a->name, issue);
@@ -854,61 +830,6 @@ oom:
             rc = 1;
         }
     return rc;
-}
-
-int cexp_update_exe(const struct cexp_set *old, const char *name, const char *ref,
-                    const char *port, const struct cexp_fix *fix, size_t nfix,
-                    struct cexp_plan *pl, FILE *report)
-{
-    const char *pass = old && old->pass ? old->pass : "?";
-    const struct cexp_prog *op = old ? cexp_find(old, name) : NULL;
-    unsigned issue = fix_of(fix, nfix, pass, name);
-    struct cexp_prog t;
-
-    memset(&t, 0, sizeof t);
-    t.name = (char *)name;
-    if (op && op->f[CEXP_EXE][CEXP_FIXED].data) {
-        const struct cexp_file *of = &op->f[CEXP_EXE][CEXP_ORIG];
-
-        if (issue && issue != op->issue[CEXP_EXE]) {
-            fprintf(report, "%s:%s: FIX names #%u, but the program has %s.fixed-%u.exe\n", pass,
-                    name, issue, name, op->issue[CEXP_EXE]);
-            return 1;
-        }
-        if (!port) {
-            fprintf(report, "%s:%s: no executable of port\n", pass, name);
-            return 1;
-        }
-        if (of->data && !memcmp(of->data, port, CEXP_HASHLEN)) {
-            fprintf(report, "%s:%s: the port's executable is %s.orig.exe again (the pair would "
-                    "be equal: a regression, or remove the pair by hand)\n", pass, name, name);
-            return 1;
-        }
-        if (ref && of->data && memcmp(of->data, ref, CEXP_HASHLEN))
-            fprintf(report, "%s:%s: the original's executable is not %s.orig.exe "
-                    "(corpus-expect-record writes it)\n", pass, name, name);
-        if (!of->data && ref && plan_write(pl, &t, CEXP_EXE, CEXP_ORIG, 0, (const uint8_t *)ref,
-                                           CEXP_HASHLEN))
-            return -1;
-        return plan_write(pl, &t, CEXP_EXE, CEXP_FIXED, op->issue[CEXP_EXE],
-                          (const uint8_t *)port, CEXP_HASHLEN) ? -1 : 0;
-    }
-    if (!issue)
-        return 0;
-    if (!ref || !port) {
-        fprintf(report, "%s:%s: FIX #%u: no executable of %s\n", pass, name, issue,
-                ref ? "port" : "ref");
-        return 1;
-    }
-    if (!memcmp(ref, port, CEXP_HASHLEN)) {
-        fprintf(report, "%s:%s: FIX #%u: the executables of ref and port agree (no exe pair)\n",
-                pass, name, issue);
-        return 0;
-    }
-    if (plan_write(pl, &t, CEXP_EXE, CEXP_ORIG, 0, (const uint8_t *)ref, CEXP_HASHLEN)
-        || plan_write(pl, &t, CEXP_EXE, CEXP_FIXED, issue, (const uint8_t *)port, CEXP_HASHLEN))
-        return -1;
-    return 0;
 }
 
 /* --- fix-scope --------------------------------------------------------- */
@@ -941,11 +862,8 @@ void cexp_project(FILE *out, const struct cexp_set *s)
                 fprintf(out, "%s|%s|%s|1%s", s->pass, p->name, obs_names[o], qual[q]);
                 if (q == CEXP_FIXED)
                     fprintf(out, "%u]", p->issue[o]);
-                if (o == CEXP_EXE)
-                    fprintf(out, "\tsha256 %.64s\n", (const char *)f->data);
-                else
-                    fprintf(out, "\tbytes %zu fnv %08lX\n", f->len,
-                            (unsigned long)fnv1a(f->data, f->len));
+                fprintf(out, "\tbytes %zu fnv %08lX\n", f->len,
+                        (unsigned long)fnv1a(f->data, f->len));
             }
     }
 }

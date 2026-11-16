@@ -2,10 +2,10 @@
  * test_corpusexpect.c - the expected data of the corpus as cases
  * (lib/corpusexpect, tests/corpus/expect): the file names and the malformed
  * forms, which file applies to which configuration (design D2 of the
- * OpenSpec change corpus-test-model), an executable pair, the record from
- * two runs, the update from the port with and without FIX, the update of
- * the executables, the projection for fix-scope and a plan applied to a
- * directory.  The sets are built in memory.
+ * OpenSpec change corpus-test-model), executable files refused (OpenSpec
+ * change originals-compare-outputs), the record from two runs, the update
+ * from the port with and without FIX, the projection for fix-scope and a
+ * plan applied to a directory.  The sets are built in memory.
  */
 #define _DEFAULT_SOURCE
 #include <dirent.h>
@@ -15,7 +15,6 @@
 
 #define H1 "1111111111111111111111111111111111111111111111111111111111111111\n"
 #define H2 "2222222222222222222222222222222222222222222222222222222222222222\n"
-#define H3 "3333333333333333333333333333333333333333333333333333333333333333\n"
 
 static int add(struct cexp_set *s, const char *name, const char *data)
 {
@@ -83,8 +82,6 @@ static void test_names(void)
     CHECK(add(&s, "t124_bitmaperr.orig.out", "orig\n") == 0);
     CHECK(add(&s, "t124_bitmaperr.fixed-6.out", "fixed\n") == 0);
     CHECK(add(&s, "t01_int.out", "1\n") == 0);
-    CHECK(add(&s, "t130_blit.orig.exe", H1) == 0);
-    CHECK(add(&s, "t130_blit.fixed-46.exe", H2) == 0);
     CHECK(add(&s, "t130_blit.out", "same\n") == 0);
     CHECK(cexp_check(&s, 1, err, sizeof err) == 0);
     CHECK(s.n == 3 && !strcmp(s.p[0].name, "t01_int") && !strcmp(s.p[2].name, "t130_blit"));
@@ -95,7 +92,7 @@ static void test_names(void)
     cexp_file_name(p, CEXP_OUT, CEXP_ORIG, fn, sizeof fn);
     CHECK(!strcmp(fn, "t124_bitmaperr.orig.out"));
     p = cexp_find(&s, "t130_blit");
-    CHECK(p && p->issue[CEXP_EXE] == 46 && cexp_has(p, CEXP_EXE) && !cexp_has(p, CEXP_SERIAL));
+    CHECK(p && cexp_has(p, CEXP_OUT) && !cexp_has(p, CEXP_SERIAL));
     CHECK(!cexp_find(&s, "t130"));
     cexp_free(&s);
 
@@ -108,15 +105,19 @@ static void test_names(void)
     CHECK(add_refused("t01_int.fixed.out", "x", "unknown qualifier \"fixed\""));
     CHECK(add_refused(".out", "x", "the program's name"));
     CHECK(add_refused("t01 int.out", "x", "the program's name"));
-    CHECK(add_refused("t01_int.exe", H1, "an executable is only a pair"));
-    CHECK(add_refused("t01_int.orig.exe", "123\n", "not a SHA-256"));
-    /* a run's set: plain files, NAME.exe the hash */
+    /* an executable is no observation, in any form (also in a run's set) */
+    CHECK(add_refused("t01_int.exe", H1, "unknown observation .exe"));
+    CHECK(add_refused("t01_int.orig.exe", H1, "unknown observation .exe"));
+    CHECK(add_refused("t01_int.fixed-46.exe", H2, "unknown observation .exe"));
+    /* a run's set: plain files */
     {
         struct cexp_set r;
 
         set_init(&r, "corpus");
         r.run = 1;
-        CHECK(add(&r, "t01_int.exe", H1) == 0);
+        CHECK(cexp_add(&r, "t01_int.exe", H1, sizeof H1 - 1, err, sizeof err) == -2
+              && strstr(err, "unknown observation .exe"));
+        CHECK(add(&r, "t01_int.out", "x\n") == 0);
         CHECK(cexp_add(&r, "t01_int.orig.out", "x", 1, err, sizeof err) == -2
               && strstr(err, "a run has no qualified files"));
         cexp_free(&r);
@@ -132,8 +133,8 @@ static void test_names(void)
                         "t01_int.orig.out and t01_int.fixed-6.out: a pair of equal files"));
     CHECK(check_refused("t01_int.orig.out", "a", NULL, NULL, 1,
                         "t01_int.orig.out: without its [fixed #N] file"));
-    CHECK(check_refused("t01_int.fixed-6.exe", H1, NULL, NULL, 1,
-                        "t01_int.fixed-6.exe: without its [orig] file"));
+    CHECK(check_refused("t01_int.fixed-6.serial", "a", NULL, NULL, 1,
+                        "t01_int.fixed-6.serial: without its [orig] file"));
     /* not strict (record, update): a lone file of a pair is fine */
     {
         struct cexp_set t;
@@ -149,7 +150,7 @@ static void test_names(void)
 static void test_sides(void)
 {
     struct cexp_set s;
-    const struct cexp_prog *plain, *pair, *exe;
+    const struct cexp_prog *plain, *pair;
     enum cexp_qual q[2], m;
 
     CHECK(cexp_side_of_tag("clib") == CEXP_SIDE_PORT);
@@ -161,12 +162,8 @@ static void test_sides(void)
     CHECK(add(&s, "a.out", "same\n") == 0);
     CHECK(add(&s, "b.orig.out", "orig\n") == 0);
     CHECK(add(&s, "b.fixed-6.out", "fixed\n") == 0);
-    CHECK(add(&s, "c.orig.exe", H1) == 0);
-    CHECK(add(&s, "c.fixed-46.exe", H2) == 0);
-    CHECK(add(&s, "c.out", "c\n") == 0);
     plain = cexp_find(&s, "a");
     pair = cexp_find(&s, "b");
-    exe = cexp_find(&s, "c");
     /* unqualified: every configuration */
     CHECK(cexp_applies(plain, CEXP_OUT, CEXP_SIDE_PORT, q) == 1 && q[0] == CEXP_PLAIN);
     CHECK(cexp_applies(plain, CEXP_OUT, CEXP_SIDE_ORIG, q) == 1 && q[0] == CEXP_PLAIN);
@@ -194,11 +191,6 @@ static void test_sides(void)
           && m == CEXP_FIXED);
     CHECK(cexp_judge(pair, CEXP_OUT, CEXP_SIDE_EITHER, (const uint8_t *)"other\n", 6, &m) == 1);
     CHECK(cexp_judge(pair, CEXP_OUT, CEXP_SIDE_EITHER, NULL, 0, &m) == 1);
-    /* an executable pair: ref against [orig], port against [fixed #N] */
-    CHECK(cexp_judge(exe, CEXP_EXE, CEXP_SIDE_ORIG, (const uint8_t *)H1, CEXP_HASHLEN, &m) == 0);
-    CHECK(cexp_judge(exe, CEXP_EXE, CEXP_SIDE_PORT, (const uint8_t *)H2, CEXP_HASHLEN, &m) == 0);
-    CHECK(cexp_judge(exe, CEXP_EXE, CEXP_SIDE_PORT, (const uint8_t *)H1, CEXP_HASHLEN, &m) == 1);
-    CHECK(cexp_judge(plain, CEXP_EXE, CEXP_SIDE_PORT, (const uint8_t *)H1, CEXP_HASHLEN, &m) == -1);
     cexp_free(&s);
 }
 
@@ -265,12 +257,11 @@ static void test_accept(void)
     r1.run = r2.run = 1;
     set_init(&old, "corpus");
     /* a: unqualified, the original changed; b: a pair, [orig] rewritten,
-       [fixed #6] kept; c: new; d: exe pair; e: no exe pair */
+       [fixed #6] kept; c: new; d, e: unchanged */
     CHECK(add(&old, "a.out", "old\n") == 0);
     CHECK(add(&old, "b.orig.out", "orig\n") == 0);
     CHECK(add(&old, "b.fixed-6.out", "fixed\n") == 0);
     CHECK(add(&old, "d.out", "d\n") == 0);
-    CHECK(add(&old, "d.fixed-46.exe", H2) == 0);
     CHECK(add(&old, "e.out", "e\n") == 0);
     {
         const char *progs[] = { "a", "b", "c", "d", "e" };
@@ -284,9 +275,6 @@ static void test_accept(void)
             CHECK(add(&r1, n, outs[i]) == 0 && add(&r2, n, outs[i]) == 0);
         }
     }
-    /* the runs' executables (corpusrun pass --observe writes NAME.exe) */
-    CHECK(add(&r1, "d.exe", H1) == 0 && add(&r2, "d.exe", H1) == 0);
-    CHECK(add(&r1, "e.exe", H3) == 0 && add(&r2, "e.exe", H3) == 0);
     rep_open(&rep);
     CHECK(cexp_accept(&r1, &r2, &old, NULL, 0, &pl, rep.f) == 0);
     t = rep_text(&rep);
@@ -295,9 +283,8 @@ static void test_accept(void)
     CHECK(planned(&pl, "a.out", "new\n"));
     CHECK(planned(&pl, "b.orig.out", "orig2\n") && !planned(&pl, "b.fixed-6.out", "fixed\n"));
     CHECK(planned(&pl, "c.out", "c\n"));
-    CHECK(planned(&pl, "d.orig.exe", H1) && planned(&pl, "d.out", "d\n"));
-    CHECK(!planned(&pl, "e.orig.exe", H3) && !planned(&pl, "e.exe", H3));
-    CHECK(pl.n == 6);
+    CHECK(planned(&pl, "d.out", "d\n") && planned(&pl, "e.out", "e\n"));
+    CHECK(pl.n == 5);
     cexp_plan_free(&pl);
     /* only: just c */
     rep_open(&rep);
@@ -319,7 +306,7 @@ static void test_accept(void)
     CHECK(strstr(t, "test not deterministic: corpus:a\n")
           && strstr(t, "corpus:a: a.out line 1: expected \"new\", got \"neu\""));
     free(t);
-    CHECK(!planned(&pl, "a.out", "new\n") && planned(&pl, "c.out", "c\n") && pl.n == 5);
+    CHECK(!planned(&pl, "a.out", "new\n") && planned(&pl, "c.out", "c\n") && pl.n == 4);
     cexp_plan_free(&pl);
     /* the original gives the [fixed #N] value: the pair would be equal */
     {
@@ -440,52 +427,6 @@ static void test_update(void)
     cexp_free(&old);
 }
 
-static void test_update_exe(void)
-{
-    struct cexp_set old;
-    struct cexp_plan pl = { 0 };
-    struct cexp_fix fix;
-    struct rep rep;
-    char err[300], *t;
-
-    set_init(&old, "corpus");
-    CHECK(add(&old, "t130_blit.out", "x\n") == 0);
-    CHECK(add(&old, "q.orig.exe", H1) == 0);
-    CHECK(add(&old, "q.fixed-46.exe", H2) == 0);
-    CHECK(cexp_parse_fix("corpus:t130_blit#46", &fix, err, sizeof err) == 0);
-    /* a fix whose executables differ: the pair */
-    rep_open(&rep);
-    CHECK(cexp_update_exe(&old, "t130_blit", H1, H2, &fix, 1, &pl, rep.f) == 0);
-    free(rep_text(&rep));
-    CHECK(planned(&pl, "t130_blit.orig.exe", H1) && planned(&pl, "t130_blit.fixed-46.exe", H2));
-    cexp_plan_free(&pl);
-    /* the same without FIX: nothing (the judge compares them live) */
-    rep_open(&rep);
-    CHECK(cexp_update_exe(&old, "t130_blit", H1, H2, NULL, 0, &pl, rep.f) == 0 && !pl.n);
-    free(rep_text(&rep));
-    /* a fix whose executables agree: only noted */
-    rep_open(&rep);
-    CHECK(cexp_update_exe(&old, "t130_blit", H1, H1, &fix, 1, &pl, rep.f) == 0 && !pl.n);
-    t = rep_text(&rep);
-    CHECK(strstr(t, "the executables of ref and port agree"));
-    free(t);
-    /* an existing pair: the port's hash rewritten; the original's differs: reported */
-    rep_open(&rep);
-    CHECK(cexp_update_exe(&old, "q", H3, H3, NULL, 0, &pl, rep.f) == 0);
-    t = rep_text(&rep);
-    CHECK(strstr(t, "corpus:q: the original's executable is not q.orig.exe"));
-    free(t);
-    CHECK(planned(&pl, "q.fixed-46.exe", H3) && pl.n == 1);
-    cexp_plan_free(&pl);
-    /* the port's is the original's again: refused */
-    rep_open(&rep);
-    CHECK(cexp_update_exe(&old, "q", H1, H1, NULL, 0, &pl, rep.f) == 1 && !pl.n);
-    t = rep_text(&rep);
-    CHECK(strstr(t, "corpus:q: the port's executable is q.orig.exe again"));
-    free(t);
-    cexp_free(&old);
-}
-
 static void test_project(void)
 {
     struct cexp_set s;
@@ -496,15 +437,12 @@ static void test_project(void)
     CHECK(add(&s, "t124_bitmaperr.orig.out", "abc") == 0);
     CHECK(add(&s, "t124_bitmaperr.fixed-6.out", "abd") == 0);
     CHECK(add(&s, "t01_int.out", "") == 0);
-    CHECK(add(&s, "t130_blit.orig.exe", H1) == 0);
     rep_open(&rep);
     cexp_project(rep.f, &s);
     t = rep_text(&rep);
     CHECK(!strcmp(t, "corpus_runerr|t01_int|out|1\tbytes 0 fnv 811C9DC5\n"
                      "corpus_runerr|t124_bitmaperr|out|1 [orig]\tbytes 3 fnv 1A47E90B\n"
-                     "corpus_runerr|t124_bitmaperr|out|1 [fixed #6]\tbytes 3 fnv 1F47F0EA\n"
-                     "corpus_runerr|t130_blit|exe|1 [orig]\tsha256 "
-                     "1111111111111111111111111111111111111111111111111111111111111111\n"));
+                     "corpus_runerr|t124_bitmaperr|out|1 [fixed #6]\tbytes 3 fnv 1F47F0EA\n"));
     if (strncmp(t, "corpus_runerr|t01_int|out|1\tbytes 0", 36))
         fprintf(stderr, "projection:\n%s", t);
     free(t);
@@ -542,10 +480,9 @@ static void test_apply(void)
         cexp_plan_free(&pl);
         CHECK(cexp_load(&back, dir, CEXP_STRICT, err, sizeof err) == 0 && back.n == 1
               && !strcmp(back.pass, "corpus"));
-        /* the pair from it, then the executables */
+        /* the pair from it */
         rep_open(&rep);
         CHECK(cexp_update(&run, &s, 0, &fix, 1, &pl, rep.f) == 0);
-        CHECK(cexp_update_exe(&back, "a", H1, H2, &fix, 1, &pl, rep.f) == 0);
         free(rep_text(&rep));
         cexp_free(&back);
         rep_open(&rep);
@@ -563,9 +500,7 @@ static void test_apply(void)
         enum cexp_qual m;
 
         CHECK(p && cexp_judge(p, CEXP_OUT, CEXP_SIDE_PORT, (const uint8_t *)"a2\n", 3, &m) == 0
-              && cexp_judge(p, CEXP_OUT, CEXP_SIDE_ORIG, (const uint8_t *)"a\n", 2, &m) == 0
-              && cexp_judge(p, CEXP_EXE, CEXP_SIDE_PORT, (const uint8_t *)H2, CEXP_HASHLEN, &m) == 0
-              && cexp_judge(p, CEXP_EXE, CEXP_SIDE_ORIG, (const uint8_t *)H1, CEXP_HASHLEN, &m) == 0);
+              && cexp_judge(p, CEXP_OUT, CEXP_SIDE_ORIG, (const uint8_t *)"a\n", 2, &m) == 0);
     }
     cexp_free(&back);
     /* a malformed directory names the file with its path */
@@ -612,7 +547,6 @@ int main(void)
     test_hash_diff();
     test_accept();
     test_update();
-    test_update_exe();
     test_project();
     test_apply();
     return failures ? 1 : 0;

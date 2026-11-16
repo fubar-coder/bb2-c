@@ -1570,8 +1570,30 @@ static void python_list(struct text *t, char **l, size_t n)
     text_add(t, "]");
 }
 
+int tedab_pair_mixed(int k)
+{
+    return k >= 0 && k < TEDAB_NPAIRS
+           && tedab_combo_names[tedab_pairs[k][0]][1] != tedab_combo_names[tedab_pairs[k][1]][1];
+}
+
+/* the file of a pair-comparison name ("work/NAME", "L/NAME") is an
+   executable the test has an @expect corpus for */
+static int is_exe_of(const struct tedab_test *t, const char *name)
+{
+    const char *slash = strchr(name, '/');
+    size_t k;
+
+    if (!slash)
+        return 0;
+    for (k = 0; t && k < t->nexpects; k++)
+        if (!strcmp(t->expects[k].kind, "corpus") && !strcmp(t->expects[k].a, slash + 1))
+            return 1;
+    return 0;
+}
+
 int tedab_compare_runs(const char *a, const char *b, const char *na, const char *nb,
-                       const struct teddump_fonts *f, int fh, struct text *out)
+                       const struct teddump_fonts *f, int fh, const struct tedab_test *exe_info,
+                       struct text *out)
 {
     char *oa = str_printf("%s/out", a), *ob = str_printf("%s/out", b);
     char *ra = oa ? read_text(oa, "result") : NULL, *rb = ob ? read_text(ob, "result") : NULL;
@@ -1678,8 +1700,13 @@ int tedab_compare_runs(const char *a, const char *b, const char *na, const char 
                          fa ? na : nb);
                 diff = 1;
             } else if (lena != lenb || memcmp(fa, fb, lena)) {
-                text_add(out, "    file %.*s.%s differs\n", pl, names[i], slash + 1);
-                diff = 1;
+                if (is_exe_of(exe_info, names[i])) {
+                    text_add(out, "    file %.*s.%s differs (informational: an executable of "
+                             "different compilers)\n", pl, names[i], slash + 1);
+                } else {
+                    text_add(out, "    file %.*s.%s differs\n", pl, names[i], slash + 1);
+                    diff = 1;
+                }
             }
             free(fa);
             free(fb);
@@ -1843,9 +1870,18 @@ int tedab_check_expects(const struct tedab_test *t, const char *rundir,
                      src->combo, e->a, e->kind);
             problems++;
         } else if (wanted && (len != wlen || memcmp(data, want, len))) {
-            text_add(out, "  %s expect: %s differs from the expected contents (%s)\n",
-                     src->combo, e->a, e->kind);
-            problems++;
+            if (src->exe_info && !strcmp(e->kind, "corpus") && src->combo
+                && src->combo[0] && src->combo[1] == 'c' && !src->combo[2]
+                && strcmp(src->combo, tedab_combo_names[TEDAB_PC])) {
+                /* the port's compiler against the original's executable */
+                text_add(out, "  %s expect: %s differs from the expected contents (corpus; "
+                         "informational: against the original only results count)\n",
+                         src->combo, e->a);
+            } else {
+                text_add(out, "  %s expect: %s differs from the expected contents (%s)\n",
+                         src->combo, e->a, e->kind);
+                problems++;
+            }
         }
         if (want != orig && want != o && want != e->data)
             free(want);

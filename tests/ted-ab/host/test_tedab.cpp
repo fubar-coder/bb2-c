@@ -296,7 +296,7 @@ TEST_CASE("@fixed: stale pair of two runs", "[fixed]")
     auto verdict = [&] {
         text out = {};
         int v = tedab_compare_runs((d + "/R5").c_str(), (d + "/C5").c_str(), "R5", "C5", nullptr,
-                                   8, &out);
+                                   8, nullptr, &out);
         free(out.p);
         return tedab_pair_verdict(&t.t, tedab_pair("R5-C5"), v);
     };
@@ -734,7 +734,7 @@ TEST_CASE("bug-orig expectations", "[bugorig]")
     put("out/stdout", "inject: rc=0\nrc=0\n");
     put("out/log", "step 1\n");
     put("out/joined.txt", "  0 |a=1.loop  \xc2\xb7\xc2\xb7loop\n");
-    tedab_sources src = { "R5", nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+    tedab_sources src = { "R5", nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0 };
     auto check = [&](const char *script, std::string *rep = nullptr) {
         Test t(script);
         REQUIRE(t.rc == 0);
@@ -799,7 +799,7 @@ TEST_CASE("expectation corpus: the prev combinations use the prev corpus output"
     auto check = [&](const char *combo, bool with_prev, std::string *rep = nullptr) {
         std::string cur = d + "/cur", prev = d + "/prev";
         tedab_sources src = { combo, nullptr, nullptr, cur.c_str(), nullptr, nullptr,
-                              with_prev ? prev.c_str() : nullptr };
+                              with_prev ? prev.c_str() : nullptr, 0 };
         text out = {};
         int n = tedab_check_expects(&t.t, dir, &src, &out);
         if (rep)
@@ -833,6 +833,115 @@ TEST_CASE("expectation corpus: the prev combinations use the prev corpus output"
         remove((d + "/" + f).c_str());
     for (const char *s : { "/work", "/out", "/cur", "/prev" })
         rmdir((d + s).c_str());
+    rmdir(dir);
+}
+
+// the pass that compares with the original (exe_info): the executable of the
+// port's compiler is information, every other file and the original's
+// compiler stay strict (OpenSpec change originals-compare-outputs)
+TEST_CASE("exe_info: an executable is information against the original", "[test]")
+{
+    char dir[] = "/tmp/test_tedab_XXXXXX";
+    REQUIRE(mkdtemp(dir) != nullptr);
+    std::string d(dir);
+    for (const char *s : { "/work", "/out", "/orig" })
+        mkdir((d + s).c_str(), 0755);
+    auto put = [&](const std::string &name, const std::string &data) {
+        FILE *f = fopen((d + "/" + name).c_str(), "wb");
+        fwrite(data.data(), 1, data.size(), f);
+        fclose(f);
+    };
+    put("orig/t", "the original's executable");
+    put("work/t", "the port's executable");
+    Test t("; @source none\n; @expect corpus t t\n");
+    REQUIRE(t.rc == 0);
+    auto check = [&](const char *combo, int exe_info, std::string *rep = nullptr) {
+        std::string orig = d + "/orig";
+        tedab_sources src = { combo, nullptr, nullptr, orig.c_str(), nullptr, nullptr, nullptr,
+                              exe_info };
+        text out = {};
+        int n = tedab_check_expects(&t.t, dir, &src, &out);
+        if (rep)
+            *rep = out.p ? out.p : "";
+        free(out.p);
+        return n;
+    };
+    std::string rep;
+
+    // the port's compiler: another executable is reported, not counted
+    CHECK(check("Cc", 1, &rep) == 0);
+    CHECK(rep.find("t differs from the expected contents (corpus; informational") != std::string::npos);
+    CHECK(check("Rc", 1) == 0);
+    // broken on purpose: without exe_info (the pass of all) it is a problem
+    CHECK(check("Cc", 0) == 1);
+    // the original's compiler and TED: its executable must be the corpus'
+    CHECK(check("R5", 1) == 1);
+    CHECK(check("C5", 1) == 1);
+    // a missing executable stays a problem
+    remove((d + "/work/t").c_str());
+    CHECK(check("Cc", 1) == 1);
+    remove((d + "/orig/t").c_str());
+    for (const char *s : { "/work", "/out", "/orig" })
+        rmdir((d + s).c_str());
+    rmdir(dir);
+}
+
+TEST_CASE("exe_info: the files of two runs with different compilers", "[test]")
+{
+    char dir[] = "/tmp/test_tedab_XXXXXX";
+    REQUIRE(mkdtemp(dir) != nullptr);
+    std::string d(dir);
+    auto put = [&](const std::string &name, const std::string &data) {
+        FILE *f = fopen((d + "/" + name).c_str(), "wb");
+        fwrite(data.data(), 1, data.size(), f);
+        fclose(f);
+    };
+    for (const char *c : { "R5", "Rc" }) {
+        mkdir((d + "/" + c).c_str(), 0755);
+        mkdir((d + "/" + c + "/out").c_str(), 0755);
+        mkdir((d + "/" + c + "/work").c_str(), 0755);
+        put(std::string(c) + "/out/result", "OK\n");
+        put(std::string(c) + "/out/stdout", "rc=0\n");
+        put(std::string(c) + "/out/log", "step 1\n");
+        put(std::string(c) + "/work/a.bb2", "same\n");
+    }
+    put("R5/work/t", "the original's executable");
+    put("Rc/work/t", "the port's executable");
+    Test t("; @source none\n; @expect corpus t t\n");
+    REQUIRE(t.rc == 0);
+    auto compare = [&](const tedab_test *info, std::string *rep) {
+        text out = {};
+        int v = tedab_compare_runs((d + "/R5").c_str(), (d + "/Rc").c_str(), "R5", "Rc", nullptr,
+                                   8, info, &out);
+        if (rep)
+            *rep = out.p ? out.p : "";
+        free(out.p);
+        return v;
+    };
+    std::string rep;
+
+    CHECK(tedab_pair_mixed(tedab_pair("R5-Rc")));
+    CHECK(tedab_pair_mixed(tedab_pair("C5-Cc")));
+    CHECK(!tedab_pair_mixed(tedab_pair("R5-C5")));
+    CHECK(!tedab_pair_mixed(tedab_pair("Rc-Cc")));
+    CHECK(!tedab_pair_mixed(tedab_pair("Cc-Pc")));
+    // the executable differs: information only
+    CHECK(compare(&t.t, &rep) == 0);
+    CHECK(rep.find("file work.t differs (informational") != std::string::npos);
+    // broken on purpose: strict without exe_info
+    CHECK(compare(nullptr, &rep) == 1);
+    CHECK(rep.find("file work.t differs\n") != std::string::npos);
+    // another file that differs still counts, also with exe_info
+    put("Rc/work/a.bb2", "other\n");
+    CHECK(compare(&t.t, &rep) == 1);
+    CHECK(rep.find("file work.a.bb2 differs\n") != std::string::npos);
+    for (const char *c : { "R5", "Rc" }) {
+        for (const char *f : { "/out/result", "/out/stdout", "/out/log", "/work/a.bb2", "/work/t" })
+            remove((d + "/" + c + f).c_str());
+        rmdir((d + "/" + c + "/out").c_str());
+        rmdir((d + "/" + c + "/work").c_str());
+        rmdir((d + "/" + c).c_str());
+    }
     rmdir(dir);
 }
 

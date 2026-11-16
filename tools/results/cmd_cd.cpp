@@ -99,9 +99,10 @@ void cmd_cd_update(CLI::App &app, int &status)
         "the port's fresh run",
         "Rows whose note starts with \"#NNN:\" and names the CD's result as \"(2.10: HEX)\" (the "
         "masked hash) or \"(2.10: error LINE)\" (refused at that line) are note rows: the note "
-        "stays unless the port's result is the CD's again. Exit status 0 OUT written, 1 the "
-        "tables do not fit (the report on stderr), 2 usage error or a file that cannot be read "
-        "or written.");
+        "stays unless the port's result is the CD's again. A row of the CD's compile result keeps "
+        "the CD's size and hash: the port's executable is not compared. Exit status 0 OUT "
+        "written, 1 the tables do not fit (the report on stderr), 2 usage error or a file that "
+        "cannot be read or written.");
 }
 
 void cmd_cd_reference(CLI::App &app, int &status)

@@ -36,6 +36,12 @@
  *                      BB2C_TEST_RUN, before any session.  "-": the pass
  *                      has no corpus; a script with @expect corpus or
  *                      @xtra norunerr is a problem then (also in lint)
+ *   exe_info=1         corpus_out is the original's (the pass compares with the
+ *                      original): the executable of Cc and Rc (the port's
+ *                      compiler) that differs from it (@expect corpus), and a
+ *                      file of that kind in the pairs R5-Rc and C5-Cc, is
+ *                      reported and no failure: against the original only
+ *                      results count (the others stay strict)
  *   corpus_out_prev=DIR  the same of the corpus run with the prev build: the
  *                      combinations P5 and Pc compare their executables
  *                      (@expect corpus) with it (default corpus_out)
@@ -170,7 +176,7 @@ struct pass {
     char *orig, *orig_by, *record;      /* record=: check or write */
     char *record_to;                    /* record_to= (record=write) */
     struct prevint intended;            /* intended=: PREV_INTENDED (previntended.h) */
-    unsigned timeout, budget, parallel, stack, bugorig, fixed;
+    unsigned timeout, budget, parallel, stack, bugorig, fixed, exe_info;
     unsigned long long min_free;        /* min_free=: MiB, 0 = no check (runwork.h) */
 };
 
@@ -227,6 +233,7 @@ static int parse(const char *text, char *err, size_t errlen)
     } nums[] = {
         { "timeout", &P.timeout }, { "budget", &P.budget }, { "parallel", &P.parallel },
         { "stack", &P.stack }, { "bugorig", &P.bugorig }, { "fixed", &P.fixed },
+        { "exe_info", &P.exe_info },
     };
     const char *line = text;
     unsigned no = 0;
@@ -912,7 +919,7 @@ static void observe(const struct tedab_test *t, const struct run *r, char *state
 {
     char *staged = str_printf("%s/staged/%s/%s", P.work, t->name, t->file ? t->file : "");
     struct tedab_sources src = { "-", staged, P.expect_dir, P.corpus_out, P.cd, P.oracle,
-                                P.corpus_out_prev };
+                                P.corpus_out_prev, (int)P.exe_info };
 
     state_text(r, state, slen);
     tedab_check_expects(t, r->dir, &src, problems);
@@ -1523,7 +1530,7 @@ static int run(FILE *log)
                                               tests[i].file ? tests[i].file : "");
                     struct tedab_sources src = { tedab_combo_names[cc], staged, P.expect_dir,
                                                  P.corpus_out, P.cd, P.oracle,
-                                                 P.corpus_out_prev };
+                                                 P.corpus_out_prev, (int)P.exe_info };
 
                     if (tedab_check_expects(&tests[i], r->dir, &src, &exp))
                         st = "FAIL (expectations)";     /* a result OK alone is no pass */
@@ -1548,7 +1555,9 @@ static int run(FILE *log)
                                        tedab_compare_runs(tr[a]->dir, tr[b]->dir,
                                                           tedab_combo_names[a],
                                                           tedab_combo_names[b], &fonts,
-                                                          tests[i].font, &d));
+                                                          tests[i].font,
+                                                          P.exe_info && tedab_pair_mixed(k)
+                                                          ? &tests[i] : NULL, &d));
                 v = tedab_pair_prev(&P.intended, &tests[i], k, v);
                 if (v == TEDAB_PAIR_INTENDED || (b >= TEDAB_P5 && v == TEDAB_PAIR_DIFF))
                     text_add(&pdiff, "%sted_ab:%s:%s-%s", pdiff.n ? ";" : "", tests[i].name,

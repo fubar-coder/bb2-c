@@ -142,9 +142,10 @@ OPTIONS:
 
 Rows whose note starts with "#NNN:" and names the CD's result as "(2.10: HEX)"
 (the masked hash) or "(2.10: error LINE)" (refused at that line) are note rows:
-the note stays unless the port's result is the CD's again. Exit status 0 OUT
-written, 1 the tables do not fit (the report on stderr), 2 usage error or a file
-that cannot be read or written.
+the note stays unless the port's result is the CD's again. A row of the CD's
+compile result keeps the CD's size and hash: the port's executable is not
+compared. Exit status 0 OUT written, 1 the tables do not fit (the report on
+stderr), 2 usage error or a file that cannot be read or written.
 ```
 
 ```
@@ -173,9 +174,11 @@ whose note starts with `#NNN:` and names the CD's result as `(2.10: HEX)`
 (the masked hash) or `(2.10: error LINE)` (refused at that line) are note
 rows:
 
-* `cd-update`: `NEW` is the port's run; every row is `NEW`'s, a note stays
-  unless the port's result is the CD's again; a changed row without a
-  note is reported (it needs a note by hand);
+* `cd-update`: `NEW` is the port's run; every row is `NEW`'s, but a row
+  with the compile result of the old row keeps the old size and hash (the
+  CD's executable; the report counts the rows with another one); a note
+  stays unless the port's result is the CD's again; a row whose compile
+  result changed without a note is reported (it needs a note by hand);
 * `cd-reference`: `NEW` is the original compiler's run; the note rows of
   `OLD` stay, and their note must name `NEW`'s result.
 
@@ -507,8 +510,7 @@ Usage: results corpus-accept [OPTIONS] RUN1 RUN2 EXPECT_DIR
 the expected data of a corpus pass from two runs of the original
 
 POSITIONALS:
-  RUN1 TEXT REQUIRED          the observations of the first run (NAME.out, NAME.serial,
-                              NAME.exe)
+  RUN1 TEXT REQUIRED          the observations of the first run (NAME.out, NAME.serial)
   RUN2 TEXT REQUIRED          the observations of the second run, another memory layout
   EXPECT_DIR TEXT REQUIRED    the expected data of the pass (tests/corpus/expect/PASS)
 
@@ -519,27 +521,23 @@ OPTIONS:
 The runs must agree ("test not deterministic: PASS:NAME" and the first differing
 line otherwise). A program's output and serial data become NAME.out and
 NAME.serial, or NAME.orig.out and NAME.orig.serial where EXPECT_DIR has the
-[fixed #N] file (kept); its executable NAME.orig.exe where EXPECT_DIR has
-NAME.fixed-N.exe. Exit status 0 every program accepted, 1 a program refused
-(nothing written for it), 2 usage error or a malformed, unreadable or unwritable
-file.
+[fixed #N] file (kept). Exit status 0 every program accepted, 1 a program
+refused (nothing written for it), 2 usage error or a malformed, unreadable or
+unwritable file.
 ```
 
 The expected data of a corpus pass, `tests/corpus/expect/PASS`
 (`tests/README.md`, "Corpus"), from two runs of the original (OpenSpec
 change `corpus-test-model`, design D4; `tools/lib/corpusexpect`). `RUN1`
 and `RUN2` are the observations of the configuration `ref` that
-`corpusrun pass --observe` wrote (`NAME.out`, `NAME.serial`, `NAME.exe`:
-the SHA-256 of the executable), the second with a larger Stack. A
+`corpusrun pass --observe` wrote (`NAME.out`, `NAME.serial`), the second
+with a larger Stack. A
 program whose runs differ is refused with `test not deterministic:
 PASS:NAME` and the first differing line of each file, one without output
 (it does not compile) or, in a serial pass, without serial data too.
 Otherwise its output and serial data become the unqualified files, or
 the `[orig]` files (`NAME.orig.out`, `NAME.orig.serial`) where the
-directory has the `[fixed #N]` file, which stays; its executable becomes
-`NAME.orig.exe` where the directory has `NAME.fixed-N.exe` (else the
-executables of `ref` and `port` are compared live and no file is
-written). A value equal to the `[fixed #N]` file is refused (the pair
+directory has the `[fixed #N]` file, which stays. A value equal to the `[fixed #N]` file is refused (the pair
 would be equal). Nothing is written for a refused program; the others
 are written, an unchanged file is not rewritten, and each written file
 is named. `--only` limits it to the programs named. The target

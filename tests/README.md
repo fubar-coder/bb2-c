@@ -604,7 +604,7 @@ tests, `NAME.serial` (the bytes sent over the serial port), byte by byte
 (`expect_dir=` of `corpusrun pass`,
 [`tests/corpus/runner`](corpus/runner/README.md); the judge is
 `tools/lib/corpusexpect`). Each file is one case of the test model, key
-`PASS|NAME|OBS|1` (`OBS` out, serial, exe). Where original and port agree
+`PASS|NAME|OBS|1` (`OBS` out, serial). Where original and port agree
 the file is unqualified; a fix of an original bug that changes a
 program's output makes it the **pair** `NAME.orig.out` (the original's
 output) and `NAME.fixed-N.out` (the port's after the fix of issue N),
@@ -620,16 +620,20 @@ that applies to it:
 port and orig-clib mix an original and a ported part (whether a fix
 shows depends on the bug), so they accept either file; a port that slips
 back to the original's output fails in clib, a changed original in ref.
-A fix that changes the code but not the output gets the **executable
-pair** `NAME.orig.exe` / `NAME.fixed-N.exe` (each the SHA-256 of the
-executable, 64 hex digits and a LF; with runtime error checking the trap
-blocks zeroed): ref's executable is judged against the first, port's
-against the second, instead of port against ref. These two are judged
-only in `NAME_originals` (port's executable needs the CD's libraries);
-every other program's port executable must equal ref's. A difference
-names the configuration, the file and the first differing line (or the
-two hashes). A file of another form, an unqualified file beside a
-qualified one, two `fixed` files, an unqualified `NAME.exe`, a pair of
+Against the original only outputs and errors count, not executables
+(spec `testing/original-comparisons`): `port` (the configuration
+`exeinfo`) is judged by its output like the others, and its executable is
+compared with ref's for information: a different one is reported
+(`exe differs (informational: HASH, HASH)`, the first 12 digits of each
+SHA-256) and does not fail, a missing one (the port does not compile what
+the original does) fails. So a change that only touches the code (an
+optimization) needs no file and no issue here. The comparison with the
+previous commit stays byte-exact: `prev` (`exe:clib`) must write the
+executable `clib` writes, a change is named in `PREV_INTENDED`. A
+difference names the configuration, the file and the first differing line.
+A file of another form (a `NAME.exe`, `NAME.orig.exe` or
+`NAME.fixed-N.exe` is an unknown observation: a stale file is refused), an
+unqualified file beside a qualified one, two `fixed` files, a pair of
 equal files, one file of a pair without the other, and a missing file
 fail the pass before any session (exit status 2, with the file names).
 
@@ -648,8 +652,8 @@ cmake --build --preset amiga --target corpus-expect-update   # from the port; ne
   `test not deterministic: PASS:NAME` with the first differing line and
   leaves the program's files as they are (the target fails). It writes
   `NAME.out` / `NAME.serial`, or the `[orig]` file where the program has a
-  pair (the `[fixed #N]` file stays), and `NAME.orig.exe` beside a
-  `NAME.fixed-N.exe`. `-DCORPUS_RECORD_FILTER=PASS` or `PASS:NAME`
+  pair (the `[fixed #N]` file stays); it writes no executable.
+  `-DCORPUS_RECORD_FILTER=PASS` or `PASS:NAME`
   (several separated by `,`) limits it; the others are not touched.
   The proof of determinism is limited to the memory layout.
 * `corpus-expect-update` (`tests/corpus/update.cmake`) writes from the
@@ -658,11 +662,8 @@ cmake --build --preset amiga --target corpus-expect-update   # from the port; ne
   file is refused with the program's name and the first differing line,
   unless `-DCORPUS_UPDATE_FIX=PASS:NAME#N` (several separated by `,`)
   names it: then it becomes the pair, `NAME.orig.out` with the old
-  content and `NAME.fixed-N.out` with the port's. Then, with the CD, the
-  executables of ref and port (`--update-expect port`) for the programs
-  with an executable pair (the `[fixed #N]` one rewritten) or a FIX (the
-  pair written if they differ). On an unchanged tree it leaves every
-  file as it is.
+  content and `NAME.fixed-N.out` with the port's. It writes no
+  executable. On an unchanged tree it leaves every file as it is.
 
 A fix that changes a corpus output names the program in
 `CORPUS_UPDATE_FIX`, runs the update, and commits the pair with its
@@ -673,11 +674,14 @@ commit names the program in `PREV_INTENDED` (`corpus:NAME`,
 `corpus_runerr:NAME`, ...). The checks have tests with broken input: the
 malformed forms without the emulator (`corpus_expect_malformed_*`: both
 files, two `fixed`, an unknown qualifier, an equal pair, a lone file, a
-missing file, an unqualified `.exe`), `corpus_expect_fixed_regressed`
+missing file, a `.exe` file alone or as a pair),
+`corpus_expect_fixed_regressed`
 (clib gives the `[orig]` output), in the `originals` preset
 `corpus_originals_orig_changed` (ref differs from the `[orig]` file, port
-matches the `[fixed #1]` one) and `corpus_originals_exe_unlisted` (port's
-executable differs from ref's without a pair), all on the program
+matches the `[fixed #1]` one), `corpus_originals_exe_differs` (port's
+executable differs from ref's, the output is as expected: passes with the
+difference reported) and `corpus_originals_exe_differs_output` (the same
+with a wrong expected output: fails), all on the program
 `t01_int` with expected directories made in the build directory; the
 targets' scripts in `corpus_record_target` (fake runs: a program not
 deterministic, a pair, a filter, a failed run) and `corpus_update_fix`
@@ -687,20 +691,30 @@ deterministic, a pair, a filter, a failed run) and `corpus_update_fix`
 `corpus_cd`: all 724 sources of the CD compiled with blitz2-c (like bb2's
 bb2corpus: `.xtra` of the sources, assigns to CD directories, directory
 of the relative INCLUDEs) and compared with `tests/data/blitz2-cd.tsv`
-(result, error line and message, size, hash with masked trap blocks). The
+(result, error line and message; size and hash with masked trap blocks
+are the original's executable, reference data: another executable of a
+source that compiles is reported, `executable differs (informational)`,
+and does not fail; host tests `cdrun_compare` for the comparison and
+`cdtable` for the table update: a different result, error line or message
+fails, another executable alone does not). The
 table is generated by the original blitz2 2.10:
 
 ```
 cmake --build --preset amiga --target blitz2-cd-reference   # about 35 s
 ```
 
-A row whose note begins with an issue number (`#969: … (2.10: HEX)`) is a
-note row: it holds the port's result for an intended deviation
-(`docs/libs/deviations.md`, kind F), and the note names the reference's
-result: its masked hash, or `(2.10: error LINE)` where the original
+A row whose note begins with an issue number (`#940: … (2.10: error 383)`)
+is a note row: it holds the port's compile result for an intended
+deviation (`docs/libs/deviations.md`, kind F: an error the original does
+not give, another error line, a source the port refuses), and the note
+names the reference's result: `(2.10: error LINE)` where the original
 compiler refused the source at line LINE (the result and line fields of
-its error row; `#940: … (2.10: error 383)`). A row gives that result when
-it is an error row at that line, whatever its message. Both targets write
+its error row), or its masked hash `(2.10: HEX)` where the original
+compiled a source the port refuses. A row gives that result when it is an
+error row at that line, whatever its message. A port that compiles a
+source to another executable (an optimization) needs no note, no issue and
+no row change; an older hash note on a source the port still compiles is
+obsolete (`blitz2-cd-update` drops it). Both targets write
 the table through `results cd-update` and `results cd-reference`
 ([`tools/results`](../tools/results/README.md)) and keep the note rows:
 
@@ -709,11 +723,13 @@ cmake --build --preset amiga --target blitz2-cd-update      # from the port's re
 ```
 
 `blitz2-cd-update` rewrites the table from the port's run (after a fix
-changed a result): a note row keeps its note, and loses it where the
-port's result is the reference's again. A row that changed without a note
-is written and reported (`changed without a note`); add `#NNN: … (2.10:
-HEX)` or `#NNN: … (2.10: error LINE)` by hand, with the old result the
-report names. `blitz2-cd-reference` writes the original's result and
+changed a compile result): a row with the reference's compile result keeps
+the reference's size and hash (the report counts the rows with another
+executable), a note row keeps its note, and loses it where the port's
+result is the reference's again. A row whose compile result changed
+without a note is written and reported (`changed without a note`); add
+`#NNN: … (2.10: HEX)` or `#NNN: … (2.10: error LINE)` by hand, with the
+old result the report names. `blitz2-cd-reference` writes the original's result and
 leaves the note rows as they are; a note that names another result than
 the original's is an error (stale note) and nothing is written, and so is
 a note row without a well formed `(2.10: …)` part. On an unchanged tree both leave the table byte for
@@ -745,7 +761,14 @@ teddrive logs it at `wait freq`, once the requester is idle (`files TITLE
 * `ted_ab_originals` (label `originals`): the four combinations
   (`-DTED_AB_COMBOS=R5,C5`, the reference first) with the CD's libraries
   and the ref run of `corpus_originals` (fixture); needs the CD and the
-  reference build of `ted.s`.
+  reference build of `ted.s`. Against the original only results count
+  (`exe_info=1` in its pass file): the executable of the port's compiler
+  (`Cc`, `Rc`) that differs from the corpus' (`@expect corpus`), and such
+  a file in the pairs `R5-Rc` and `C5-Cc`, is reported
+  (`informational`) and does not fail; `R5` and `C5` (the original's
+  compiler), every other file, the dumps and the return codes stay strict,
+  and so does `ted_ab` (`all`: the port against the port). Tests:
+  the cases `exe_info` of `ted_ab_tedab` (`tests/ted-ab/host`).
 
 Selection: `-DTED_AB_FILTER=02-*,29-cmp-*`, sessions at the same time
 `-DTED_AB_PARALLEL=N` (default 5, as far as emulator slots are free);

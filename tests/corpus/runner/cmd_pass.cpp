@@ -89,7 +89,7 @@ void cmd_pass(CLI::App &app, int &status)
     CLI::App *sub = app.add_subcommand("pass", "one pass of the corpus check in Amiberry: compile, run and compare the sources of a pass file");
     sub->add_option("--update-expect", o->update,
                     "write the expected data of the pass's expect_dir= from the configuration TAG "
-                    "instead of comparing (port: the executables of the reference and TAG)")
+                    "instead of comparing")
         ->type_name("TAG");
     cli::add_repeated(*sub, "--fix", o->fix, 1, "with --update-expect: a program a fix makes differ "
                       "from the original (any number): its changed file becomes the pair "
@@ -97,7 +97,7 @@ void cmd_pass(CLI::App &app, int &status)
         ->type_name("PASS:NAME#N");
     sub->add_option("--observe", o->observe,
                     "run only the configuration TAG and write its observations to --to DIR "
-                    "(NAME.out, NAME.serial, NAME.exe: the SHA-256 of the executable); "
+                    "(NAME.out, NAME.serial); "
                     "not for a pass with orig=, expect= or record=")
         ->type_name("TAG");
     sub->add_option("--to", o->to, "with --observe: the directory of the observations "

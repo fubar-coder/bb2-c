@@ -10,6 +10,7 @@
 #define F_PATH  0
 #define F_RESULT 1
 #define F_LINE  2
+#define F_SIZE  4
 #define F_SHA   5
 #define F_NOTE  7
 
@@ -169,15 +170,23 @@ static const struct row *find(const struct table *t, const char *path)
     return NULL;
 }
 
-/* the fields before the note equal */
+/* the compile result and the fields before the note equal; the size and the
+   hash of an ok row are the original's executable, not part of the result */
 static int same_result(const struct row *a, const struct row *b)
 {
-    int i;
+    int i, ok = !strcmp(a->f[F_RESULT], "ok") && !strcmp(b->f[F_RESULT], "ok");
 
     for (i = 0; i < F_NOTE; i++)
-        if (strcmp(a->f[i], b->f[i]))
+        if ((!ok || (i != F_SIZE && i != F_SHA)) && strcmp(a->f[i], b->f[i]))
             return 0;
     return 1;
+}
+
+/* the executable of two ok rows differs (information) */
+static int exe_differs(const struct row *a, const struct row *b)
+{
+    return !strcmp(a->f[F_RESULT], "ok") && !strcmp(b->f[F_RESULT], "ok")
+           && (strcmp(a->f[F_SIZE], b->f[F_SIZE]) || strcmp(a->f[F_SHA], b->f[F_SHA]));
 }
 
 /* the result of R in the form a note names it: "error LINE" for an error
@@ -196,6 +205,17 @@ static void put_row(struct text *o, const struct row *r, const char *note)
 
     for (i = 0; i < F_NOTE; i++)
         text_add(o, "%s\t", r->f[i]);
+    text_add(o, "%s\n", note);
+}
+
+/* the row R with the size and the hash of EXE (the original's executable) */
+static void put_row_exe(struct text *o, const struct row *r, const struct row *exe,
+                        const char *note)
+{
+    int i;
+
+    for (i = 0; i < F_NOTE; i++)
+        text_add(o, "%s\t", i == F_SIZE || i == F_SHA ? exe->f[i] : r->f[i]);
     text_add(o, "%s\n", note);
 }
 
@@ -221,7 +241,7 @@ int cdtable_merge(enum cdtable_mode mode, const char *fresh, const char *old,
     struct table nt, ot;
     struct text o = { 0 }, rep = { 0 };
     char *err;
-    size_t i;
+    size_t i, nexe = 0;
     int bad = 0;
 
     *out = NULL;
@@ -249,10 +269,17 @@ int cdtable_merge(enum cdtable_mode mode, const char *fresh, const char *old,
                      n->f[F_PATH], r->f[F_NOTE]);
             bad = 1;
         } else if (kind == 0) {
+            if (r && mode == CDTABLE_UPDATE && same_result(n, r)) {
+                /* the same compile result: the table keeps the original's
+                   executable, the port's is only counted */
+                put_row_exe(&o, n, r, n->f[F_NOTE]);
+                nexe += (size_t)exe_differs(n, r);
+                continue;
+            }
             put_row(&o, n, n->f[F_NOTE]);
             if (!r) {
                 text_add(&rep, "%s: new row\n", n->f[F_PATH]);
-            } else if (mode == CDTABLE_UPDATE && !same_result(n, r)) {
+            } else if (mode == CDTABLE_UPDATE) {
                 result_of(r, ref);
                 text_add(&rep, "%s: changed without a note (a fix needs \"#NNN: ... (2.10: %s)\")\n",
                          n->f[F_PATH], ref);
@@ -266,10 +293,14 @@ int cdtable_merge(enum cdtable_mode mode, const char *fresh, const char *old,
                 put_row(&o, r, r->f[F_NOTE]);
                 text_add(&rep, "%s: note kept\n", n->f[F_PATH]);
             }
-        } else if (!strcmp(res, ref)) {
+        } else if (!strcmp(res, ref)
+                   || (!strcmp(n->f[F_RESULT], "ok") && strncmp(ref, "error ", 6))) {
+            /* the port's result is the CD's again: the same hash, or ok where
+               the CD's was an executable (another one is no difference) */
             put_row(&o, n, n->f[F_NOTE]);
-            text_add(&rep, "%s: note dropped (the port's result is the CD's again)\n",
-                     n->f[F_PATH]);
+            text_add(&rep, "%s: note dropped (the port's result is the CD's again%s)\n",
+                     n->f[F_PATH], strcmp(res, ref) ? "; blitz2-cd-reference restores the CD's "
+                     "size and hash" : "");
         } else {
             put_row(&o, n, r->f[F_NOTE]);
             text_add(&rep, "%s: note kept\n", n->f[F_PATH]);
@@ -287,6 +318,9 @@ int cdtable_merge(enum cdtable_mode mode, const char *fresh, const char *old,
             }
         }
     }
+    if (nexe)
+        text_add(&rep, "%zu rows: the port's executable differs from the table's, the CD's "
+                 "(information, the table keeps the CD's)\n", nexe);
     free_table(&nt);
     free_table(&ot);
     *report = rep.p;

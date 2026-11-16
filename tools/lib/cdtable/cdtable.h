@@ -4,21 +4,30 @@
  *
  * The table is TSV with the header
  *   path result line message size sha256_masked xtra note
- * and one row per source of the CD.  A note row is a row whose note
- * starts with "#NNN:" (an issue number): the port's result differs from
- * the CD's on purpose because of that fix.  The row holds the port's
- * values; the note names the CD's result: "(2.10: HEX)", the masked hash
- * (64 lowercase hex digits) of the CD's executable, or "(2.10: error
+ * and one row per source of the CD.  The size and the hash of an ok row are
+ * the CD's executable (reference data): the port's executable is not
+ * compared with it, a port that compiles the source to another executable
+ * needs no note and changes no row (OpenSpec change
+ * originals-compare-outputs).  A note row is a row whose note starts with
+ * "#NNN:" (an issue number): the port's compile result (ok or the error
+ * line) differs from the CD's on purpose because of that fix.  The row
+ * holds the port's values; the note names the CD's result: "(2.10: HEX)", the
+ * masked hash (64 lowercase hex digits) of the CD's executable, or "(2.10: error
  * LINE)" where the CD's compiler refused the source at that line (the
  * fields result and line of an error row; LINE decimal without a leading
  * 0).  A row's result is the one a note names when it is an error row at
  * that line, or a row with that hash.
  *
- *   CDTABLE_UPDATE     FRESH is the port's run.  Every row is FRESH's.  A
- *                      row that was a note row keeps its note unless the
- *                      port's result is the CD's again (a dropped note: the
- *                      fix no longer changes the result).  A row that
- *                      is not a note row but differs from the old table is
+ *   CDTABLE_UPDATE     FRESH is the port's run.  Every row is FRESH's, except
+ *                      that a row of the same compile result as OLD's (ok
+ *                      and ok, or the same error) keeps OLD's size and hash,
+ *                      and the number of such rows with another executable
+ *                      is reported.  A row that was a note row keeps its
+ *                      note unless the port's result is the CD's again (a
+ *                      dropped note: the fix no longer changes the result,
+ *                      or the note names a hash and the port compiles the
+ *                      source).  A row that is not a note row but has
+ *                      another compile result than the old table is
  *                      reported (it needs a note by hand: the new value is
  *                      written).
  *   CDTABLE_REFERENCE  FRESH is the original compiler's run.  Every row is

@@ -99,17 +99,16 @@ set_property(GLOBAL PROPERTY CORPUS_SOURCES ${corpus_tokenised})
 #                  the comparison with the original: ref = the original
 #                  compiler (2.10, BLITZ2/BLITZ2 of the CD) with the CD's
 #                  libraries, port = blitz2-c with the CD's libraries
-#                  (executable identical to ref's), orig-clib = the original
+#                  (its executable is compared with ref's for information
+#                  only), orig-clib = the original
 #                  compiler with the C libraries of this build (are they
 #                  compatible with the original compiler?).  The output of
 #                  all three must be the expected data that applies to
 #                  them: for a program a fix makes differ from the original
 #                  (the pair NAME.orig.out / NAME.fixed-N.out) ref the
 #                  [orig] file, port and orig-clib either, while clib and
-#                  prev in NAME the [fixed #N] one; an executable pair
-#                  (NAME.orig.exe / NAME.fixed-N.exe, SHA-256) replaces the
-#                  comparison of port's executable with ref's.  Skipped
-#                  without the CD.
+#                  prev in NAME the [fixed #N] one.  Skipped without the
+#                  CD.
 #
 # CORPUS_PARALLEL: emulator sessions at the same time (Amiberry's
 # control channel is a socket in a private XDG_RUNTIME_DIR only on Linux;
@@ -196,7 +195,7 @@ function(corpus_pass name)
 		else()
 			string(APPEND text
 				"config=ref|ref|${REF_BLITZ2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
-				"config=port|exe|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
+				"config=port|exeinfo|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
 				"config=orig-clib|output|${REF_BLITZ2}|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n")
 		endif()
 		# the expected data (expect/PASS): every configuration's output must
@@ -287,15 +286,14 @@ set_tests_properties(corpus_serial_expect_same_broken PROPERTIES WILL_FAIL TRUE)
 #       bytes larger: another memory layout), accepted by results
 #       corpus-accept only if both agree ("test not deterministic" names the
 #       program, its files stay); writes NAME.out / NAME.serial, or the
-#       [orig] file of a pair (the [fixed #N] file stays) and NAME.orig.exe
-#       beside a NAME.fixed-N.exe.  Needs Amiberry and the CD.
+#       [orig] file of a pair (the [fixed #N] file stays).  Needs Amiberry
+#       and the CD.
 #       CORPUS_RECORD_FILTER: only these passes or programs (PASS or
 #       PASS:NAME, separated by ,).
 #   corpus-expect-update  from the port (update.cmake): clib's outputs; a
 #       changed unqualified file is refused unless CORPUS_UPDATE_FIX names
 #       the program (PASS:NAME#N, separated by ,: it becomes the pair
-#       NAME.orig.EXT / NAME.fixed-N.EXT); then the executables of ref and
-#       port (with the CD) for the programs with an exe pair or a FIX.
+#       NAME.orig.EXT / NAME.fixed-N.EXT).
 get_property(expect_passes GLOBAL PROPERTY CORPUS_EXPECT_PASSES)
 list(JOIN expect_passes "\n" expect_passes)
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/corpus-expect.list CONTENT "${expect_passes}\n")
@@ -519,8 +517,11 @@ set_tests_properties(corpus_cd_ab3 PROPERTIES LABELS emulator SKIP_RETURN_CODE 7
 #       [fixed #1] file fails (label emulator: no CD needed)
 #   corpus_originals_orig_changed  ref differs from the [orig] file, port
 #       matches the [fixed #1] one (label originals)
-#   corpus_originals_exe_unlisted  port's executable (here with the C
-#       libraries) differs from ref's without an exe pair (label originals)
+#   corpus_originals_exe_differs  port's executable (here with the C
+#       libraries) differs from ref's, the output is as expected: passes,
+#       the difference reported (label originals)
+#   corpus_originals_exe_differs_output  the same with a wrong expected
+#       output: fails on the output (label originals)
 set(selftest ${CMAKE_CURRENT_SOURCE_DIR}/selftest)
 set(selftest_expect ${CMAKE_CURRENT_BINARY_DIR}/selftest-expect)
 file(READ ${CORPUS_EXPECT}/corpus/t01_int.out t01_right)
@@ -551,6 +552,10 @@ corpus_selftest_dir(lone t01_int.fixed-1.out|right)
 corpus_selftest_dir(missing t02_float.out|right)
 corpus_selftest_dir(exe-plain t01_int.out|right
 	"t01_int.exe|0000000000000000000000000000000000000000000000000000000000000000\n")
+corpus_selftest_dir(exe-pair t01_int.out|right
+	"t01_int.orig.exe|0000000000000000000000000000000000000000000000000000000000000000\n"
+	"t01_int.fixed-1.exe|1111111111111111111111111111111111111111111111111111111111111111\n")
+corpus_selftest_dir(wrong-out t01_int.out|wrong)
 corpus_selftest_dir(regressed t01_int.orig.out|right t01_int.fixed-1.out|wrong)
 corpus_selftest_dir(orig-changed t01_int.orig.out|wrong t01_int.fixed-1.out|right)
 corpus_selftest_dir(unlisted t01_int.out|right)
@@ -573,10 +578,10 @@ function(corpus_expect_selftest name want regex dir configs label)
 		if(configs STREQUAL "ref-port-clib")
 			# port with the C libraries: another executable than ref's
 			string(APPEND text
-				"config=port|exe|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n")
+				"config=port|exeinfo|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n")
 		else()
 			string(APPEND text
-				"config=port|exe|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
+				"config=port|exeinfo|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
 		endif()
 		set(n 2)
 	endif()
@@ -606,13 +611,18 @@ corpus_expect_selftest(corpus_expect_malformed_lone 2
 corpus_expect_selftest(corpus_expect_malformed_missing 2
 	"no [^\n]*selftest-expect/missing/t01_int.out \\(the expected output" missing clib "")
 corpus_expect_selftest(corpus_expect_malformed_exe 2
-	"selftest-expect/exe-plain/t01_int.exe: an executable is only a pair" exe-plain clib "")
+	"selftest-expect/exe-plain/t01_int.exe: unknown observation .exe" exe-plain clib "")
+corpus_expect_selftest(corpus_expect_malformed_exe_pair 2
+	"selftest-expect/exe-pair/t01_int.fixed-1.exe: unknown observation .exe" exe-pair clib "")
 corpus_expect_selftest(corpus_expect_fixed_regressed 1
 	"clib: OUTPUT DIFFERS\n  clib: [^\n]*regressed/t01_int.fixed-1.out line 1: expected \"667 1801 -699678 -3\", got \"667 1801 -699678 -2\"\n1 checks, 1 with differences"
 	regressed clib emulator)
 corpus_expect_selftest(corpus_originals_orig_changed 1
 	"ref: OUTPUT DIFFERS; port: exe identical, output as expected \\(matched \\[fixed #1\\]\\)\n  ref: [^\n]*orig-changed/t01_int.orig.out line 1: expected \"667 1801 -699678 -3\", got \"667 1801 -699678 -2\"\n1 checks, 1 with differences"
 	orig-changed ref-port originals)
-corpus_expect_selftest(corpus_originals_exe_unlisted 1
-	"ref: output as expected; port: EXE DIFFERS, output as expected\n1 checks, 1 with differences"
+corpus_expect_selftest(corpus_originals_exe_differs 0
+	"ref: output as expected; port: exe differs \\(informational: [0-9a-f]+, [0-9a-f]+\\), output as expected\n1 checks, 0 with differences"
 	unlisted ref-port-clib originals)
+corpus_expect_selftest(corpus_originals_exe_differs_output 1
+	"ref: OUTPUT DIFFERS; port: exe differs \\(informational: [0-9a-f]+, [0-9a-f]+\\), OUTPUT DIFFERS\n[^\n]*wrong-out/t01_int.out line 1[^\n]*\n[^\n]*wrong-out/t01_int.out line 1[^\n]*\n1 checks, 1 with differences"
+	wrong-out ref-port-clib originals)

@@ -55,8 +55,9 @@
  *
  * Table (TSV, Latin-1): path result line message size sha256_masked xtra
  * note; result ok | error | failed | crash | nostart | skipped; the hash
- * with the trap #1 / #4 parameter blocks zeroed.  Compared: result, line,
- * message, size, sha256_masked.
+ * with the trap #1 / #4 parameter blocks zeroed.  Compared with a
+ * reference table (cdcmp.h): result, line, message; size and sha256_masked
+ * of an ok row (the original's executable) are only reported.
  *
  * Exit status 0 = written (and no difference), 1 = differences or a
  * source= that does not compile, 77 = the emulator or a file is missing
@@ -76,6 +77,7 @@
 #include "cd.h"
 #include "corpus.h"
 #include "sha256.h"
+#include "cdcmp.h"
 #include "statline_emulation.h"
 #include "util.h"
 
@@ -709,109 +711,27 @@ static char *table(void)
     return t.p;
 }
 
-/* rows of a table: path -> the compared fields joined */
-struct row {
-    char *path, *key, *result;
-};
-
-static size_t rows_of(char *t, struct row **out)
-{
-    size_t n = 0;
-    char *l, *save = NULL;
-
-    *out = NULL;
-    for (l = strtok_r(t, "\n", &save); l; l = strtok_r(NULL, "\n", &save)) {
-        char *f[8] = { 0 }, *p = l;
-        size_t k = 0;
-        struct row *r;
-
-        if (!strncmp(l, "path\t", 5))
-            continue;
-        while (k < 8) {
-            f[k++] = p;
-            if (!(p = strchr(p, '\t')))
-                break;
-            *p++ = 0;
-        }
-        if (k < 6 || !(r = realloc(*out, (n + 1) * sizeof *r)))
-            continue;
-        *out = r;
-        r[n].path = f[0];
-        r[n].result = f[1];
-        r[n].key = str_printf("%s\t%s\t%s\t%s\t%s", f[1], f[2], f[3], f[4], f[5]);
-        n++;
-    }
-    return n;
-}
-
 static int compare(const char *mine, FILE *log)
 {
-    size_t len, na, nb, i, k, differ = 0, same = 0, missing = 0;
-    char *ta = (char *)read_file(P.reference, &len), *tb = strdup(mine);
-    struct row *a = NULL, *b = NULL;
-    struct text rep = { 0 };
-    int rc = 1;
+    size_t len;
+    char *ta = (char *)read_file(P.reference, &len), *report = NULL;
+    struct cdcmp_stats st;
+    int rc;
 
-    if (!ta || !tb) {
+    if (!ta) {
         fprintf(log, "%s: cannot read %s\n", me, P.reference);
-        free(ta);
-        free(tb);
         return 2;
     }
-    na = rows_of(ta, &a);
-    nb = rows_of(tb, &b);
-    text_add(&rep, "== %s against %s\n", P.output, P.reference);
-    for (i = 0; i < na; i++) {
-        for (k = 0; k < nb && strcmp(a[i].path, b[k].path); k++)
-            ;
-        if (k == nb) {
-            missing++;
-            text_add(&rep, "   %s: not in %s\n", a[i].path, P.output);
-        } else if (strcmp(a[i].key, b[k].key)) {
-            /* the differing fields: reference -> now */
-            static const char *const fields[] = { "result", "line", "message", "size",
-                                                  "sha256_masked" };
-            const char *x = a[i].key, *y = b[k].key;
-            int f;
-
-            differ++;
-            text_add(&rep, "   %s:", a[i].path);
-            for (f = 0; f < 5; f++) {
-                size_t xl = strcspn(x, "\t"), yl = strcspn(y, "\t");
-
-                if (xl != yl || strncmp(x, y, xl))
-                    text_add(&rep, " %s %.*s -> %.*s", fields[f], (int)xl, x, (int)yl, y);
-                x += xl + (x[xl] == '\t');
-                y += yl + (y[yl] == '\t');
-            }
-            text_add(&rep, "\n");
-        } else
-            same++;
-    }
-    for (k = 0; k < nb; k++) {
-        for (i = 0; i < na && strcmp(a[i].path, b[k].path); i++)
-            ;
-        if (i == na) {
-            missing++;
-            text_add(&rep, "   %s: not in the reference\n", b[k].path);
-        }
-    }
-    text_add(&rep, "%zu sources, %zu equal, %zu different, %zu missing\n", na, same, differ,
-             missing);
-    if (!rep.bad && !write_file(P.report, rep.p, rep.n)) {
-        fwrite(rep.p, 1, rep.n, log);
-        rc = differ || missing ? 1 : 0;
-    } else
-        rc = 2;
-    for (i = 0; i < na; i++)
-        free(a[i].key);
-    for (i = 0; i < nb; i++)
-        free(b[i].key);
-    free(a);
-    free(b);
+    rc = cdcmp_compare(P.reference, P.output, ta, mine, &report, &st);
     free(ta);
-    free(tb);
-    free(rep.p);
+    if (rc == 2) {
+        fprintf(log, "%s: %s", me, report ? report : "malformed table\n");
+    } else if (write_file(P.report, report, strlen(report))) {
+        rc = 2;
+    } else {
+        fputs(report, log);
+    }
+    free(report);
     return rc;
 }
 

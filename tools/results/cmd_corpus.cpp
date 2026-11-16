@@ -7,7 +7,7 @@
  *   results corpus-accept RUN1 RUN2 EXPECT_DIR [--only NAME]...
  *
  * RUN1 and RUN2 are the observations of the configuration ref as
- * corpusrun pass --observe writes them (NAME.out, NAME.serial, NAME.exe),
+ * corpusrun pass --observe writes them (NAME.out, NAME.serial),
  * the second with another memory layout.  Exit status 0 = every program
  * accepted (its files written or unchanged), 1 = a program refused (the
  * runs differ, a run lacks its output, the pair would be equal; nothing
@@ -71,7 +71,7 @@ void cmd_corpus_accept(CLI::App &app, int &status)
     };
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand("corpus-accept", "the expected data of a corpus pass from two runs of the original");
-    sub->add_option("RUN1", o->run1, "the observations of the first run (NAME.out, NAME.serial, NAME.exe)")
+    sub->add_option("RUN1", o->run1, "the observations of the first run (NAME.out, NAME.serial)")
         ->required();
     sub->add_option("RUN2", o->run2, "the observations of the second run, another memory layout")
         ->required();
@@ -82,8 +82,7 @@ void cmd_corpus_accept(CLI::App &app, int &status)
     sub->footer("The runs must agree (\"test not deterministic: PASS:NAME\" and the first differing "
                 "line otherwise). A program's output and serial data become NAME.out and "
                 "NAME.serial, or NAME.orig.out and NAME.orig.serial where EXPECT_DIR has the "
-                "[fixed #N] file (kept); its executable NAME.orig.exe where EXPECT_DIR has "
-                "NAME.fixed-N.exe. Exit status 0 every program accepted, 1 a program refused "
+                "[fixed #N] file (kept). Exit status 0 every program accepted, 1 a program refused "
                 "(nothing written for it), 2 usage error or a malformed, unreadable or unwritable "
                 "file.");
     sub->callback([sub, o, &status] {

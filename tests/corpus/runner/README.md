@@ -50,14 +50,13 @@ POSITIONALS:
 OPTIONS:
   -h,     --help              Print this help message and exit
           --update-expect TAG write the expected data of the pass's expect_dir= from the
-                              configuration TAG instead of comparing (port: the executables of
-                              the reference and TAG)
+                              configuration TAG instead of comparing
           --fix PASS:NAME#N   with --update-expect: a program a fix makes differ from the
                               original (any number): its changed file becomes the pair
                               NAME.orig.EXT / NAME.fixed-N.EXT
           --observe TAG       run only the configuration TAG and write its observations to --to
-                              DIR (NAME.out, NAME.serial, NAME.exe: the SHA-256 of the
-                              executable); not for a pass with orig=, expect= or record=
+                              DIR (NAME.out, NAME.serial); not for a pass with orig=, expect=
+                              or record=
           --to DIR            with --observe: the directory of the observations (emptied first)
           --layout-stack      with --observe: a Stack 16384 bytes larger (the second run of the
                               record: another memory layout)
@@ -92,9 +91,10 @@ for a program a fix makes differ from the original the file of the pair
 that applies to the configuration: `NAME.orig.out` for `ref`,
 `NAME.fixed-N.out` for `clib` and `prev`, either for `port` and
 `orig-clib` (the report says which matched, `(matched [fixed #N])`). A
-program with the pair `NAME.orig.exe` / `NAME.fixed-N.exe` has the
-SHA-256 of `ref`'s executable judged against the first and that of
-`port` against the second instead of comparing the two. A malformed
+configuration `exeinfo` (`port`) is judged by its output like the others
+and its executable is compared with `ref`'s for information (a different
+one is reported, none fails), as against the original only outputs and
+errors count; a `NAME.exe` file is refused. A malformed
 directory or a missing file fails the pass before any session; a pass
 with `expect_dir=` may have the reference as its only configuration.
 
@@ -108,18 +108,13 @@ Options:
   with the program's name and the first differing line unless
   `--fix PASS:NAME#N` names the program, which makes it the pair
   `NAME.orig.out` (the old content) and `NAME.fixed-N.out` (the port's).
-  With `port` (a configuration compared with the reference by its
-  executable) the reference and `port` run, for the programs with an exe
-  pair or a `--fix` only: an exe pair's `NAME.fixed-N.exe` is rewritten
-  from `port`, and a `--fix` program whose executables differ gets the
-  pair. A source that does not compile, has no output or times out is
+  A source that does not compile, has no output or times out is
   refused.
 * `--fix PASS:NAME#N`: with `--update-expect`, a program a fix makes
   differ from the original (`PASS` the name of `expect_dir=`; any number).
 * `--observe TAG --to DIR`: run only the configuration `TAG` and write
-  its observations to `DIR` (emptied first): `NAME.out`, `NAME.serial`
-  and `NAME.exe`, the SHA-256 of the executable (with runtime error
-  checking the trap blocks zeroed); not for a pass with `orig=`, `expect=` or
+  its observations to `DIR` (emptied first): `NAME.out` and `NAME.serial`;
+  not for a pass with `orig=`, `expect=` or
   `record=` (refused, 2). `--layout-stack` gives the session a
   Stack 16384 bytes larger: the two runs of the target
   `corpus-expect-record`, accepted by `results corpus-accept`.

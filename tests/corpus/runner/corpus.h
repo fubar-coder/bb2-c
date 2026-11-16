@@ -57,6 +57,10 @@
  *                     first is the reference (EXPECT ref; none with
  *                     fixed= or regression=on), the others:
  *                     exe = executable identical and output the same,
+ *                     exeinfo = output the same, the executable of the
+ *                     reference only compared for information (a different
+ *                     one is reported, none at all fails: the port against
+ *                     the original, whose executables are not compared),
  *                     output = output the same;
  *                     exe:BASE and output:BASE compare with the
  *                     configuration BASE (another one of the pass)
@@ -72,19 +76,16 @@
  *                     with serial=on DIR/NAME.serial the bytes it sends over
  *                     the serial port; a program a fix makes differ from
  *                     the original has the pair NAME.orig.EXT (the
- *                     original's) and NAME.fixed-N.EXT (the port's) instead,
- *                     an executable the pair NAME.orig.exe / NAME.fixed-N.exe
- *                     (SHA-256).  The output (and serial data) of every
+ *                     original's) and NAME.fixed-N.EXT (the port's) instead
+ *                     (an executable is no observation: a NAME.exe file is
+ *                     refused).  The output (and serial data) of every
  *                     configuration, the reference's too, is compared with
  *                     the files that apply to it (by its tag: ref the
  *                     unqualified or [orig] one, port and orig-clib either,
  *                     the others the unqualified or [fixed #N] one)
  *                     instead of the reference's (or BASE's); the
- *                     executables are compared as before, except where a
- *                     program has an exe pair: the reference's (first
- *                     configuration, tag ref) against NAME.orig.exe, a
- *                     configuration with EXPECT exe against
- *                     NAME.fixed-N.exe.  A malformed directory or a missing
+ *                     executables are compared as before (exeinfo: for
+ *                     information).  A malformed directory or a missing
  *                     file is an error before any session (exit status 2).
  *                     Not with run=off or expect=.  corpus_update writes the
  *                     files instead (corpusrun pass --update-expect)
@@ -213,12 +214,11 @@
 #include "corpusexpect.h"
 #include "previntended.h"
 
-enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_OUTPUT };
+enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_EXEINFO, CORPUS_OUTPUT };
 enum corpus_record { CORPUS_RECORD_NONE, CORPUS_RECORD_CHECK, CORPUS_RECORD_WRITE };
 enum { CORPUS_LAYOUT_STACK = 16384 };     /* layout=stack: bytes more of Stack */
-/* corpus_update: the outputs from the configuration, or the executables
-   of the reference and the configuration */
-enum corpus_update { CORPUS_UPDATE_NONE, CORPUS_UPDATE_OUT, CORPUS_UPDATE_EXE };
+/* corpus_update: the outputs from the configuration */
+enum corpus_update { CORPUS_UPDATE_NONE, CORPUS_UPDATE_OUT };
 
 struct corpus_config {
     char *tag;
@@ -303,15 +303,11 @@ void corpus_skip_missing(struct corpus_pass *p, FILE *log);
 /* the update of the expected data (expect_dir=, corpusrun pass
    --update-expect TAG [--fix PASS:NAME#N]...): the files of expect_dir=
    are read (a malformed directory is an error), the fixes kept for
-   corpus_run.  If TAG is a configuration compared by its executable with
-   the reference (EXPECT exe, no BASE: port), the reference and TAG run and
-   corpus_run writes the executables (cexp_update_exe) of the sources that
-   have an exe pair or a fix of this pass (the others are left out; none:
-   nothing to update, exit status 0); else only TAG runs and corpus_run
-   writes its outputs (cexp_update: a changed unqualified file is refused
-   unless a fix names the program, which makes it the pair).  The pass is
-   the name of expect_dir=.  0 = ok, -1 = no expect_dir=, no configuration
-   TAG, a malformed directory (message in err).  Behind the check of
+   corpus_run.  Only TAG runs and corpus_run writes its outputs
+   (cexp_update: a changed unqualified file is refused unless a fix names
+   the program, which makes it the pair).  The pass is the name of
+   expect_dir=.  0 = ok, -1 = no expect_dir=, no configuration TAG, a
+   malformed directory (message in err).  Behind the check of
    corpus_parse */
 int corpus_update(struct corpus_pass *p, const char *tag, const struct cexp_fix *fix,
                   size_t nfix, char *err, size_t errlen);
@@ -319,9 +315,8 @@ int corpus_update(struct corpus_pass *p, const char *tag, const struct cexp_fix 
 /* the observation of one configuration (corpusrun pass --observe TAG --to
    DIR, the target corpus-expect-record): only TAG runs, and corpus_run
    writes for every source DIR/NAME.out (its output, rc=N behind it), with
-   serial=on DIR/NAME.serial and DIR/NAME.exe (the SHA-256 of its
-   executable, cexp_exe_hash; with runtime error checking the trap blocks
-   zeroed); a source that does not compile gets no files.  The directory is
+   serial=on DIR/NAME.serial; a source that does not compile gets no
+   files.  The directory is
    emptied first; the run's work directory is DIR.work and its report
    DIR.txt (not work= and report=: two observations of one pass run at
    the same time).  layout_stack: the second run of the record (corpus_layout).
