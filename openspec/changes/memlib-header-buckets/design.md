@@ -148,3 +148,25 @@ the analysis; PC-relative reads of firstdata and bklast):
 
 Both fast paths are no slower than today without exec, and each of them
 also saves the exec call (about 1890 measured cycles per pair).
+
+## Bucket size (task 4.2)
+
+Measured on main 5dd3347a + the buckets, two sessions each (perf_bproc,
+perf_brec):
+
+| Loop | Without buckets | k = 4 | k = 8 | Original |
+|---|---:|---:|---:|---:|
+| bproc.pstr | 9600.6 | 8185.0, 8184.6 | **8037.2, 8037.1** | 10038.3 |
+| bproc.fstr | 10290.1 | 8875.0, 8875.0 | **8730.7, 8729.1** | 10783.6 |
+| bproc.pgrow | 12915.1 | 11612.5, 11613.0 | **11087.2, 11089.1** | 13322.6 |
+| brec.rec20 | 6230.7, 6230.2 | 5855.0, 5856.9 | **5327.8, 5328.3** | 6534.8 |
+
+- brec's recursion (22 headers with the global list) needs 6 buckets at
+  k = 4 and 3 at k = 8. Every repetition allocates 4 or 1 of them again,
+  since only one spare stays.
+- bproc stays at depth 1 and makes no bucket call in the loop. Its
+  difference between k = 4 and k = 8 is exec's free list: the 36- or
+  68-byte bucket lies elsewhere among the string blocks.
+- k = 8 is better on every line and is kept. At most one empty bucket of
+  68 bytes (72 with exec's rounding) stays allocated, within the 80 bytes
+  of the proposal.

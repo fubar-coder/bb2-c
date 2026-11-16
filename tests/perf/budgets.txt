@@ -176,6 +176,10 @@
 # own like bproc; from two runs on main 5dd3347a: 6230.7, 6230.2; its
 # target from two runs of the pass perf_brec.pass with the tag orig:
 # 6534.5, 6535.0.
+# The three bproc lines and brec.rec20 from two runs of memlib's list
+# headers in buckets of 8 (OpenSpec change memlib-header-buckets,
+# 2026-11-16): 8037.2/8037.1, 8730.7/8729.1, 11087.2/11089.1 and
+# 5327.8/5328.3 (before: 9600.6, 10290.1, 12915.1 and 6230.7).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -299,11 +303,11 @@ bmisc.infront                129~4      134.9  InFront 4
 bmod.vblmod                 2418~120   2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed                9796~7     9950.0  PlayMed
 bproc.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
-bproc.pstr                    9700     10038.3  pstr{a$} (a Statement with a string parameter and a local string)
-bproc.fstr                   10397     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
-bproc.pgrow                  13048     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
+bproc.pstr                    8121     10038.3  pstr{a$} (a Statement with a string parameter and a local string)
+bproc.fstr                    8822     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
+bproc.pgrow                  11203     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-brec.rec20                   6297     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
+brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1229     1367.5  r$=a$
 bstr.mid                     1464     1553.5  r$=Mid$(a$,3,5)

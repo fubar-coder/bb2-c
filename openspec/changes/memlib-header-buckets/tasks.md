@@ -17,8 +17,8 @@
 
 ## 4. Implementation
 
-- [ ] 4.1 Buckets in memlib (newmem, freelast, codeinit/codefinit, err1) with k = 4; the tests of 3.1-3.3 pass; libs/tests/expected unchanged; prev_results names memlib with its variants, blitz2/acidlibs and the executables.
-- [ ] 4.2 Measure k = 4 against k = 8 on bproc and the recursion line; keep the better one (or 4 when equal) and set the budgets by the README rule.
+- [x] 4.1 Buckets in memlib (newmem, freelast, codeinit/codefinit, err1) with k = 4; the tests of 3.1-3.3 pass; libs/tests/expected unchanged; prev_results names memlib with its variants, blitz2/acidlibs and the executables.
+- [x] 4.2 Measure k = 4 against k = 8 on bproc and the recursion line; keep the better one (or 4 when equal) and set the budgets by the README rule.
 - [ ] 4.3 `docs/libs/deviations.md` row of kind B (headers in buckets, up to two empty buckets stay allocated), and the memlib paragraph of `docs/libs/cmdlibs-port.md`.
 
 ## 5. Acceptance

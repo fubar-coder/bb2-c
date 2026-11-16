@@ -17,6 +17,12 @@
  *   adds one, freelast at the exit frees it with all its blocks); the last
  *   list is the global one.
  *
+ * Intended deviation (kind B): the list headers are not allocated one by
+ * one but taken from buckets of BUCKET_K entries (see there), so a
+ * procedure call makes no exec call for its header; up to one empty
+ * bucket stays allocated until the depth goes down further or the program
+ * ends.
+ *
  * Every routine keeps the registers of its contract: the compiler calls
  * them in the middle of generated code (newmem at procedure entry, with
  * the parameters in d0-d5; perf-analysis thunks.md 1.4), and third-party
@@ -67,9 +73,31 @@ struct memlist {
     struct memblock *first;             /* 04.l first memblock */
 };
 
-/* firstdata, memerr and mess2 are also read by the assembler entries
-   (used: GCC does not see those references) */
+/* The list headers live in buckets of BUCKET_K entries (one AllocMem
+   per bucket, not per header): BUCKET_SIZE bytes, 00.l up (the empty
+   spare bucket above this one, or 0), 04... the entries (8 bytes each,
+   struct memlist).  Headers are taken and given back in stack order
+   (freelast frees the newest list), so the used entries are the first
+   ones of the buckets, the newest is firstdata, and the `next` of an
+   entry that is not the first of its bucket is the entry right below it.
+   bklast is the address of the last entry of firstdata's bucket (0: no
+   list); newmem compares firstdata with it.  At most one empty bucket
+   stays allocated: when a bucket becomes empty, a spare above it is
+   freed; when the last list is freed, its bucket is too.  The strings
+   are for the assembler of newmem and freelast; the static assertions
+   tie them to BUCKET_K. */
+#define BUCKET_K                8
+#define BUCKET_SIZE             (4 + 8 * BUCKET_K)
+#define BUCKET_SIZE_S           "68"    /* BUCKET_SIZE */
+#define BUCKET_LAST_S           "60"    /* the last entry, from the bucket */
+#define BUCKET_UP_OF_LAST       "-60"   /* the bucket's up, from its last entry */
+_Static_assert(BUCKET_SIZE == 68 && BUCKET_SIZE <= 127, "BUCKET_SIZE_S, moveq");
+_Static_assert(4 + 8 * (BUCKET_K - 1) == 60, "BUCKET_LAST_S, BUCKET_UP_OF_LAST");
+
+/* firstdata, bklast, memerr and mess2 are also read by the assembler
+   entries (used: GCC does not see those references) */
 static struct memlist *firstdata __attribute__((used));
+static struct memlist *bklast __attribute__((used));
 static UWORD memerr __attribute__((used));
 
 /* the messages of err1/err2 in the normal code (fixed, #956: in the
@@ -82,8 +110,8 @@ static const char mess2[] __attribute__((used)) = "Unable to Free Memory";
  * @brief Library finit and token $C006 - free ALL memory allocated: every
  * list (local and global) with all its blocks.
  *
- * freelast until there is no list (freelast's Z is firstdata = 0).
- * Keeps all registers (the thunk; freelast keeps d0/d2-d7/a2-a6).
+ * freelast until there is no list (freelast's Z is firstdata = 0); the
+ * freelast of the last list frees the buckets too.  Keeps all registers (the thunk; freelast keeps d0/d2-d7/a2-a6).
  */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
@@ -92,7 +120,8 @@ static void BLITZ_ROUTINE codefinit_c(void)
 }
 BLITZ_THUNK(memlib_codefinit, codefinit_c, "d0-d1/a0-a1");
 
-/* err1 - out of memory: free everything, runtime error.
+/* err1 - out of memory: free everything (every list, and with the last
+   one the buckets), runtime error.
    DIFF: the original jumps here from localloc/newmem with their saved
    registers still on the stack and never returns (the runtime error ends
    the program); here err1 returns and the caller returns 0.  Called from
@@ -107,32 +136,53 @@ static void BLITZ_ROUTINE err1(void)
  * @brief newmem ($C004, at procedure entry) - create a new node (for
  * local stuff): a new current local list.
  *
- * AllocMem(8, MEMF_PUBLIC), the list header in front of firstdata, no
- * blocks.  Keeps d0-d7/a2-a6: the compiler calls it in the procedure
- * prologue with the parameters in d0-d5 (perf-analysis thunks.md 1.4);
- * a0 and a1 are free (the original keeps them), no third-party library
- * calls it.
+ * The list header (8 bytes, no blocks) in front of firstdata.  It is the
+ * next entry of the top bucket (see the buckets above); only when that
+ * bucket is full and has no spare is a new bucket allocated
+ * (AllocMem(BUCKET_SIZE, MEMF_PUBLIC)).  Keeps d0-d7/a2-a6: the compiler
+ * calls it in the procedure prologue with the parameters in d0-d5
+ * (perf-analysis thunks.md 1.4); a0 and a1 are free (the original keeps
+ * them), no third-party library calls it.
  *
- * An assembler entry, the original's code with d0-d1/a6 saved: C cannot
- * keep d0/d1 across AllocMem, and a thunk around the C function saved
- * them a second time.
+ * An assembler entry: the fast path uses a0/a1 only; the bucket change
+ * saves d0-d1/a6 around AllocMem.
  *
- * Errors: no memory for the list header - err1: all memory is freed and
- * the runtime error "Out of Memory!" raised (DIFF: err1 returns, see
- * there).
+ * Errors: no memory for a bucket - err1: all memory is freed and the
+ * runtime error "Out of Memory!" raised (DIFF: err1 returns, see there).
  */
 BLITZ_ASM_ROUTINE(newmem,
-        "   movem.l d0-d1/a6,-(sp)\n"
-        "   moveq   #8,d0\n"                /* sizeof (struct memlist) */
+        "   move.l  _firstdata(pc),a1\n"
+        "   cmpa.l  _bklast(pc),a1\n"
+        "   beq.s   2f\n"                   /* the bucket is full, or none */
+        "   lea     8(a1),a0\n"             /* the next entry */
+        "   move.l  a1,(a0)\n"              /* next */
+        "   clr.l   4(a0)\n"                /* first: no blocks */
+        "   move.l  a0,_firstdata\n"
+        "   rts\n"
+        "2: movem.l d0-d1/a6,-(sp)\n"
+        "   move.l  a1,d0\n"
+        "   beq.s   3f\n"                   /* no list: a first bucket */
+        "   move.l  " BUCKET_UP_OF_LAST "(a1),d0\n"   /* the full bucket's spare */
+        "   bne.s   4f\n"
+        "3: moveq   #" BUCKET_SIZE_S ",d0\n"
         "   moveq   #1,d1\n"                /* MEMF_PUBLIC */
         "   move.l  4.w,a6\n"
         "   jsr     -198(a6)\n"             /* AllocMem */
         "   tst.l   d0\n"
         "   beq.s   1f\n"
         "   move.l  d0,a0\n"
-        "   move.l  _firstdata,(a0)\n"      /* next */
+        "   clr.l   (a0)\n"                 /* up: no spare */
+        "   move.l  _firstdata(pc),d1\n"
+        "   beq.s   4f\n"
+        "   move.l  d1,a1\n"
+        "   move.l  d0," BUCKET_UP_OF_LAST "(a1)\n"   /* above the full one */
+        "4: move.l  d0,a0\n"                /* the bucket (empty) */
+        "   lea     " BUCKET_LAST_S "(a0),a1\n"
+        "   move.l  a1,_bklast\n"
+        "   move.l  _firstdata(pc),4(a0)\n" /* its first entry: next */
+        "   clr.l   8(a0)\n"                /* first: no blocks */
+        "   addq.l  #4,a0\n"
         "   move.l  a0,_firstdata\n"
-        "   clr.l   4(a0)\n"                /* first: no blocks */
         "   movem.l (sp)+,d0-d1/a6\n"
         "   rts\n"
         "1: jsr     _err1(pc)\n"
@@ -148,6 +198,7 @@ BLITZ_ASM_ROUTINE(newmem,
 static ULONG BLITZ_ROUTINE codeinit_c(void)
 {
     firstdata = NULL;
+    bklast = NULL;
     __asm volatile("jsr     _newmem(pc)" : : : "a0", "a1", "cc", "memory");
     memerr = 0;
     return (ULONG)membase;
@@ -303,9 +354,13 @@ BLITZ_ASM_ROUTINE(globfree,
  * @brief freelast ($C005, at procedure exit) - free up most recent node
  * with all its blocks.
  *
- * The list header (8 bytes), then every block with its stored length
- * (FreeMem).  Keeps d0 and d2-d7/a2-a6: the compiler calls it at the end
- * of a procedure with the result of a Function in d0 (perf-analysis
+ * The list header goes back to its bucket, then every block is freed with
+ * its stored length (FreeMem).  When the header was the first entry of
+ * its bucket, that bucket is empty: the spare above it, if any, is freed
+ * (the last two buckets were empty), and the bucket itself stays as the
+ * spare, unless it held the last list (then it is freed too: no list, no
+ * bucket).  Keeps d0 and d2-d7/a2-a6: the compiler calls it at the end of
+ * a procedure with the result of a Function in d0 (perf-analysis
  * thunks.md 1.4); d1, a0 and a1 are free (the original keeps them), no
  * third-party library calls it.
  *
@@ -319,13 +374,15 @@ BLITZ_ASM_ROUTINE(globfree,
 BLITZ_ASM_ROUTINE(freelast,
         "   movem.l d0/a2/a6,-(sp)\n"
         "   move.l  4.w,a6\n"
-        "   move.l  _firstdata,d0\n"
+        "   move.l  _firstdata(pc),d0\n"
         "   beq.s   2f\n"                   /* none: Z = 1 */
         "   move.l  d0,a1\n"
-        "   move.l  (a1),_firstdata\n"
-        "   move.l  4(a1),a2\n"             /* the first block */
-        "   moveq   #8,d0\n"
-        "   jsr     -210(a6)\n"             /* FreeMem the list header */
+        "   move.l  (a1)+,d0\n"             /* next */
+        "   move.l  d0,_firstdata\n"
+        "   move.l  (a1),a2\n"              /* the first block */
+        "   lea     -12(a1),a0\n"           /* the entry below in the bucket */
+        "   cmpa.l  d0,a0\n"
+        "   bne.s   4f\n"                   /* the first entry: the bucket is empty */
         "1: move.l  a2,d0\n"
         "   beq.s   3f\n"
         "   move.l  a2,a1\n"
@@ -335,4 +392,19 @@ BLITZ_ASM_ROUTINE(freelast,
         "   bra.s   1b\n"
         "3: moveq   #-1,d0\n"               /* a list: Z = 0 */
         "2: movem.l (sp)+,d0/a2/a6\n"       /* the CCR stays */
-        "   rts");
+        "   rts\n"
+        "4: move.l  d0,_bklast\n"           /* the full one below, or 0 */
+        "   subq.l  #8,a1\n"                /* this bucket */
+        "   move.l  (a1),d1\n"              /* its spare */
+        "   beq.s   5f\n"
+        "   clr.l   (a1)\n"
+        "   move.l  a1,-(sp)\n"
+        "   move.l  d1,a1\n"
+        "   moveq   #" BUCKET_SIZE_S ",d0\n"
+        "   jsr     -210(a6)\n"             /* FreeMem the spare */
+        "   move.l  (sp)+,a1\n"
+        "5: move.l  _firstdata(pc),d0\n"
+        "   bne.s   1b\n"                   /* this one is the spare now */
+        "   moveq   #" BUCKET_SIZE_S ",d0\n"
+        "   jsr     -210(a6)\n"             /* the last list: FreeMem it */
+        "   bra.s   1b");
