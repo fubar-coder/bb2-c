@@ -31,3 +31,20 @@ foreach(c IN LISTS _cases)
 	set_tests_properties(${name} PROPERTIES LABELS site SKIP_RETURN_CODE 77
 		RESOURCE_LOCK site_hugo_cache TIMEOUT 300)
 endforeach()
+
+# The Doxygen run of the Pages workflow, out of tree
+# (cmake/api-doxygen-test.cmake): the comments of the libraries give no
+# warning (api_doxygen), and a broken comment fails the run
+# (api_doxygen_broken). Label site; skipped (77) without podman or the image.
+foreach(case real broken)
+	if(case STREQUAL "real")
+		set(name api_doxygen)
+	else()
+		set(name api_doxygen_broken)
+	endif()
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
+		-DSOURCE=${PROJECT_SOURCE_DIR} -DCASE=${case} -DWORK=${CMAKE_BINARY_DIR}/${name}
+		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/api-doxygen-test.cmake
+		-P ${WITH_WORKDIR})
+	set_tests_properties(${name} PROPERTIES LABELS site SKIP_RETURN_CODE 77 TIMEOUT 600)
+endforeach()

@@ -220,7 +220,9 @@ the CMake build: the Pages workflow runs it in
 `site/static/api/` (not committed), served as `/bb2-c/api/`. A comment
 error (a `@param` of no parameter, a `@return` on a void routine, an
 unclosed backquote) fails the publication of the site; run it locally
-as `site/README.md` describes.
+as `site/README.md` describes, or as the ctest `api_doxygen` (label `site`,
+out of tree, skipped without podman or the image; `api_doxygen_broken`
+checks that a bad `@param` fails it).
 
 **Command reference** (Blitz programmers): the command tables of the
 built library files, `blitzlib cmdref`, committed in `site/data/libraries/`
