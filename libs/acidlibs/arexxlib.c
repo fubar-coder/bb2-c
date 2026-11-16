@@ -47,8 +47,6 @@
  *     string work area"); SendRexxCommand only for a valid RexxMsg.
  *   - CreateArgString copies (length & $FFFF) characters (DBF) but
  *     allocates length+9 bytes. (#57)
- *   - Without rexxsyslib the internal RexxMsg check shows the alert and
- *     then treats the message as valid with address 0. (#56)
  * Fixed (intended deviation, #52): GetRexxCommand/GetResultString copied
  * ra_Length+1 bytes (the 0 too) and left a3 BEHIND the 0, so a string
  * expression went on one byte too far; a3 now ends on the 0.
@@ -64,6 +62,12 @@
  * Fixed (intended deviation, #55): SendRexxCommand without a public port
  * "REXX" showed its alert and returned with interrupts disabled (exec
  * Disable without the Enable); it enables them before the alert now.
+ * Fixed (intended deviation, #56): without rexxsyslib the internal
+ * RexxMsg check showed its alert and then took the message as valid with
+ * the address 0 (DeleteRexxMsg, ClearRexxMsg, FillRexxMsg,
+ * SendRexxCommand, GetRexxResult, GetRexxCommand, GetResultString read
+ * and wrote low memory, FillRexxMsg the exception vectors); after the
+ * alert the message now counts as no RexxMsg.
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -239,16 +243,16 @@ static ULONG error_routine(ULONG code)
     return code;
 }
 
-/* TstRexxMsg - TRUE if *msg is a RexxMsg (rexxsyslib IsRexxMsg).  Without
-   rexxsyslib: alert, then "valid" with *msg = 0 (ErrorRexxSysLib returns
-   with d0 = 0 and Z set). */
-static int tstrexxmsg(ULONG *msg)
+/* TstRexxMsg - TRUE if msg is a RexxMsg (rexxsyslib IsRexxMsg).  Without
+   rexxsyslib: alert, then FALSE (fixed, #56: ErrorRexxSysLib returned
+   with d0 = 0 and Z set, "valid" with the message address 0). */
+static int tstrexxmsg(ULONG msg)
 {
     if (!RexxSysBase) {
-        *msg = error_routine(ERR_REXXSYS);
-        return 1;
+        error_routine(ERR_REXXSYS);
+        return 0;
     }
-    return IsRexxMsg((struct RexxMsg *)*msg) != 0;
+    return IsRexxMsg((struct RexxMsg *)msg) != 0;
 }
 
 /* TstArgString - TRUE if the string length up to the 0 is ra_Length */
@@ -336,7 +340,7 @@ static void clearrexxmsg(ULONG msg)
     ULONG *slot;
     int n;
 
-    if (!tstrexxmsg(&msg))
+    if (!tstrexxmsg(msg))
         return;
     slot = (ULONG *)((struct RexxMsg *)msg)->rm_Args;
     for (n = ARGSLOTS; n != 0 && *slot; n--) {
@@ -432,8 +436,8 @@ BLITZ_ALIAS(_CreateRexxMsg, createrexxmsg_c);
  *        message (mn_Length bytes, memlib globfree).
  *
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
- * rexxsyslib: its alert, then the message is taken as valid with address
- * 0 (BUG(orig), #56).
+ * rexxsyslib: its alert, then nothing happens (fixed, #56: the original
+ * took the message as valid with address 0).
  *
  * @param msg  d0: the RexxMsg
  */
@@ -442,7 +446,7 @@ static void BLITZ_ROUTINE deleterexxmsg_c(ULONG msg BL_REG(d0))
     struct RexxMsg *m;
     struct bl_regs r;
 
-    if (!tstrexxmsg(&msg))
+    if (!tstrexxmsg(msg))
         return;
     m = (struct RexxMsg *)msg;
     deleteargstring((ULONG)m->rm_FileExt);
@@ -461,8 +465,8 @@ BLITZ_ALIAS(_DeleteRexxMsg, deleterexxmsg_c);
  * cleared).  An integer in a slot is "deleted" if the memory before it
  * looks like an ArgString.
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
- * rexxsyslib: its alert, then the message is taken as valid with address
- * 0 (BUG(orig), #56).
+ * rexxsyslib: its alert, then nothing happens (fixed, #56: the original
+ * took the message as valid with address 0).
  *
  * @param msg  d0: the RexxMsg
  */
@@ -483,8 +487,8 @@ BLITZ_ALIAS(_ClearRexxMsg, clearrexxmsg_c);
  * went to rm_PassPort, the next ones to rm_CommAddr ...).  Errors: no
  * memory - recoverable alert, the rest is not filled.
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
- * rexxsyslib: its alert, then the message is taken as valid with address
- * 0 (BUG(orig), #56).
+ * rexxsyslib: its alert, then nothing happens (fixed, #56: the original
+ * took the message as valid with address 0).
  *
  * @param msg   d0: the RexxMsg
  * @param fill  d1: the FillStruct
@@ -496,7 +500,7 @@ static void BLITZ_ROUTINE fillrexxmsg_c(ULONG msg BL_REG(d0),
     ULONG flags, off = 0, v;
     int n;
 
-    if (!tstrexxmsg(&msg))
+    if (!tstrexxmsg(msg))
         return;
     flags = *(const UWORD *)fill;
     p = (const ULONG *)(fill + 2);
@@ -576,8 +580,8 @@ BLITZ_ALIAS(_DeleteArgString, deleteargstring_c);
  * FIND THE REXXPORT"), after the Enable (fixed, #55: the original showed
  * it and returned with interrupts still disabled).
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
- * rexxsyslib: its alert, then the message is taken as valid with address
- * 0 (BUG(orig), #56).
+ * rexxsyslib: its alert, then nothing happens (fixed, #56: the original
+ * took the message as valid with address 0).
  *
  * @param msg     d0: the RexxMsg
  * @param cmd     d1: the command string
@@ -593,7 +597,7 @@ static void BLITZ_ROUTINE sendrexxcommand_c(ULONG msg BL_REG(d0),
     struct RexxMsg *m;
     struct MsgPort *port;
 
-    if (!tstrexxmsg(&msg))
+    if (!tstrexxmsg(msg))
         return;
     blitz_string = (UBYTE *)cmd;
     m = (struct RexxMsg *)msg;
@@ -648,7 +652,7 @@ static void BLITZ_ROUTINE replyrexxmsg_c(ULONG msg BL_REG(d0),
     struct RexxMsg *m;
 
     blitz_string = (UBYTE *)str;
-    if (!tstrexxmsg(&msg))
+    if (!tstrexxmsg(msg))
         return;                                 /* DIFF: original crashes */
     if (!msg)
         return;
@@ -676,8 +680,8 @@ BLITZ_ALIAS(_ReplyRexxMsg, replyrexxmsg_c);
  *        (2).
  *
  * BUG(orig) (#51): the index (n-1)*4 is a word (MULU, d1.w), n = 0 reads
- * rm_Action.  Without rexxsyslib: the alert, then message 0 is read
- * (#56).
+ * rm_Action.  Without rexxsyslib: the alert, then 0 (fixed, #56: the
+ * original read the field of a message at address 0).
  *
  * @param msg  d0: the RexxMsg
  * @param n    d1: 1 or 2
@@ -686,7 +690,7 @@ BLITZ_ALIAS(_ReplyRexxMsg, replyrexxmsg_c);
 static ULONG BLITZ_ROUTINE getrexxresult_c(ULONG msg BL_REG(d0),
                                            ULONG n BL_REG(d1))
 {
-    if (!tstrexxmsg(&msg))
+    if (!tstrexxmsg(msg))
         return 0;                               /* GRRError */
     /* BUG(orig) (#51): n = 0 reads rm_Action */
     return *(const ULONG *)((const UBYTE *)&((struct RexxMsg *)msg)->rm_Result1
@@ -725,7 +729,7 @@ static ULONG BLITZ_ROUTINE getrexxcommand_c(ULONG msg BL_REG(d0),
 {
     ULONG arg;
 
-    if (!tstrexxmsg(&msg))
+    if (!tstrexxmsg(msg))
         return 0;                               /* GRAError */
     /* BUG(orig) (#51): n = 0 reads rm_Result2 */
     arg = *(const ULONG *)((const UBYTE *)((struct RexxMsg *)msg)->rm_Args
@@ -752,7 +756,7 @@ static ULONG BLITZ_ROUTINE getresultstring_c(ULONG msg BL_REG(d0))
 {
     ULONG arg, len;
 
-    if (!tstrexxmsg(&msg))
+    if (!tstrexxmsg(msg))
         return 0;                               /* GRSError */
     arg = ((struct RexxMsg *)msg)->rm_Result2;
     if (!tstargstring(arg))

@@ -1,0 +1,26 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+inject: alert: SORRY CAN NOT OPEN REXXSYSLIB.LIBRARY PRESS ANY MOUSE BUTTON TO CONTINUE
+inject: alert: SORRY CAN NOT OPEN REXXSYSLIB.LIBRARY PRESS ANY MOUSE BUTTON TO CONTINUE
+result 16255708
+inject: alerts: 2 alerts answered
+inject: openlibfail: 1 opens failed
+inject: rc=0
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/arexxlib-norexxsyslib-msg.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/arexxlib-norexxsyslib-msg
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
