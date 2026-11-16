@@ -180,6 +180,9 @@
 # headers in buckets of 8 (OpenSpec change memlib-header-buckets,
 # 2026-11-16): 8037.2/8037.1, 8730.7/8729.1, 11087.2/11089.1 and
 # 5327.8/5328.3 (before: 9600.6, 10290.1, 12915.1 and 6230.7).
+# bmath.intn and bmath.fracn (Int and Frac of the negative Quick -12.25)
+# from three runs of the library calls (compiler-intrinsics, before the
+# intrinsics, 2026-11-16): 198.7 and 1371.7 in each.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -281,6 +284,8 @@ bmath.abs                     747      764.0  c=Abs(a)
 bmath.qabs                     59       56.5  q3=QAbs(q1)
 bmath.int                     196      192.5  q3=Int(q1)
 bmath.frac                   1331     3718.0  q3=Frac(q1)
+bmath.intn                    204      202.5  q3=Int(q6) (q6=-12.25)
+bmath.fracn                  1389     3679.0  q3=Frac(q6) (q6=-12.25)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
 bmath.qwrap                   112      109.0  q3=QWrap(q1,0,10)
 bmath.peekb                   126      129.0  c=Peek.b(p)
