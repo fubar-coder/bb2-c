@@ -1,0 +1,28 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+start
+caught
+execbase overwritten
+b 7
+inject: allocfail: 1 allocations failed
+inject: rc=0
+inject: track: 1 allocations left, 52 bytes
+inject:   52 bytes, flags $10001
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/memlib-err1-null-list.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/memlib-err1-null-list
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

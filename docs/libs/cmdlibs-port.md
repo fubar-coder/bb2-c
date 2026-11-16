@@ -76,8 +76,10 @@ carried over (for the comparison with AmiBlitz3).
   Headers are taken and given back in stack order, so a bucket needs no
   count. A new bucket is allocated only when every bucket is full. When a
   bucket becomes empty, the spare above it is freed, and the last list
-  takes its bucket with it, so finit, `$C006` and err1 free everything as
-  before. At most one empty bucket stays allocated while the program runs
+  takes its bucket with it, so finit and `$C006` free everything as
+  before. err1 ("Out of Memory!") frees every block and the local lists
+  but keeps the global list header with its first bucket (fixed, #1071).
+  At most one empty bucket stays allocated while the program runs
   (deviations.md, kind B). newmem's fast path is 122 cycles without saves
   or exec (before 214 plus AllocMem), and freelast's header part 142 (146
   plus FreeMem). `bproc.pstr` 8037 cycles per call (original 10038),

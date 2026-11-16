@@ -120,15 +120,49 @@ static void BLITZ_ROUTINE codefinit_c(void)
 }
 BLITZ_THUNK(memlib_codefinit, codefinit_c, "d0-d1/a0-a1");
 
-/* err1 - out of memory: free everything (every list, and with the last
-   one the buckets), runtime error.
+/* err1 - out of memory: free every block of every list, runtime error.
+   Fixed (#1071): the global list header stays, empty, as the only list,
+   so a program that catches the error (SetErr) and goes on still has a
+   list; the original frees the headers too (codefinit), and the next
+   localloc or globalloc linked its block into the list at address 0,
+   writing over ExecBase at address 4.  The local lists are freed with
+   freelast down to the global one; the global list is the first entry of
+   the first bucket (from init), so its blocks are freed here, every
+   bucket above the first one is freed through the `up` chain and bklast
+   is the first bucket's last entry.  Called from globalloc's localloc
+   (firstdata is the global list then, and the local lists, abandoned by
+   the error, stay allocated as in the original) the `up` chain frees the
+   buckets of the local headers too.  Nothing is allocated, so this cannot
+   fail; only a failure of init's first bucket leaves no list (no program
+   code has run then).
    DIFF: the original jumps here from localloc/newmem with their saved
    registers still on the stack and never returns (the runtime error ends
-   the program); here err1 returns and the caller returns 0.  Called from
-   the assembler of newmem too (BLITZ_ROUTINE: GCC emits it). */
+   the program, or SetErr continues at its handler with its own stack);
+   here err1 returns if the trap does, and the caller returns 0.  Called
+   from the assembler of newmem too (BLITZ_ROUTINE: GCC emits it). */
 static void BLITZ_ROUTINE err1(void)
 {
-    codefinit_c();
+    struct memlist *g;
+    struct memblock *b, *nb;
+    ULONG *bk, *up;
+
+    if (firstdata) {
+        while (firstdata->next)
+            __asm volatile("jsr     _freelast(pc)" : : : "d1", "a0", "a1", "cc", "memory");
+        g = firstdata;
+        for (b = g->first; b; b = nb) {
+            nb = b->next;
+            FreeMem(b, b->len);
+        }
+        g->first = NULL;
+        bk = (ULONG *)g - 1;            /* the first bucket */
+        for (up = (ULONG *)*bk; up; up = bk) {
+            bk = (ULONG *)*up;
+            FreeMem(up, BUCKET_SIZE);
+        }
+        *((ULONG *)g - 1) = 0;
+        bklast = g + BUCKET_K - 1;
+    }
     BLITZ_RUNERR(mess1);
 }
 
@@ -147,8 +181,9 @@ static void BLITZ_ROUTINE err1(void)
  * An assembler entry: the fast path uses a0/a1 only; the bucket change
  * saves d0-d1/a6 around AllocMem.
  *
- * Errors: no memory for a bucket - err1: all memory is freed and the
- * runtime error "Out of Memory!" raised (DIFF: err1 returns, see there).
+ * Errors: no memory for a bucket - err1: all blocks are freed (the empty
+ * global list stays) and the runtime error "Out of Memory!" raised
+ * (DIFF: err1 returns, see there).
  */
 BLITZ_ASM_ROUTINE(newmem,
         "   move.l  _firstdata(pc),a1\n"
@@ -226,8 +261,8 @@ BLITZ_ASM_BLOCK(membase,
  * saved a0/a1 and the C function a6 and d2 again, behind a second call
  * level.
  *
- * Errors: out of memory - err1: all memory is freed and the runtime error
- * "Out of Memory!" raised.  DIFF: the original never returns from err1
+ * Errors: out of memory - err1: all blocks are freed (the empty global
+ * list stays) and the runtime error "Out of Memory!" raised.  DIFF: the original never returns from err1
  * (its saved registers stay on the stack); here the result is 0.
  *
  * @param size d0: the size in bytes.
