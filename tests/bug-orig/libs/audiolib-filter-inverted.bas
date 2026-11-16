@@ -5,6 +5,7 @@
 ; manual says "Filter On" turns the filter on.  The bit is read back from
 ; $bfe001 after each statement and the state before the test restored.
 ; Correct: Filter On clears the bit (0), Filter Off sets it (2).
+; @fixed #985
 ; @pass timeout=60
 DEFTYPE .l
 old=Peek.b($BFE001) AND 2

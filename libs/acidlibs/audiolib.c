@@ -30,6 +30,9 @@
  *   - the error check of SetPeriod (sndchk) goes on into dpchk and tests
  *     the PERIOD (d1) as channel mask: SetPeriod with a period > 15 is a
  *     runtime error "Illegal Chanel Mask" with the debugger. (#66)
+ * Fixed (#985): Filter On clears bit 1 of CIAAPRA (the active-low /LED
+ * output: filter on), Filter Off sets it; the original had them the other
+ * way round, against its documentation.
  * Fixed (#950): DiskPlay frees its chip buffer when the open or a read
  * fails (err1-err3); the original kept it, and a program that caught the
  * runtime error (SetErr) and went on lost 2 * DiskBuffer bytes of chip
@@ -230,20 +233,21 @@ static void dealloc(void *mem, ULONG size)
 
 /**
  * @brief Filter On|Off: the audio low pass filter (the power LED bit,
- *        BSET/BCLR #1,$BFE001).
+ *        BCLR/BSET #1,$BFE001).
  *
- * BUG(orig) (#985): bit 1 of CIAAPRA is the active-low /LED output (0 = LED
- * bright, filter on; Amiga Hardware Reference Manual): On sets it and so
- * switches the filter off, Off switches it on.
+ * Fixed (#985): bit 1 of CIAAPRA is the active-low /LED output (0 = LED
+ * bright, filter on; Amiga Hardware Reference Manual): On clears it, Off
+ * sets it.  The original set it for On (BSET) and so switched the filter
+ * off, and Off switched it on.
  *
  * @param on  d0.w: not 0 = on
  */
 static void BLITZ_ROUTINE dofilter_c(UWORD on BL_REG(d0))
 {
     if (on)
-        CIAAPRA |= 2;                           /* BSET #1,$bfe001 */
+        CIAAPRA &= ~2;                          /* Fixed (#985): BCLR */
     else
-        CIAAPRA &= ~2;
+        CIAAPRA |= 2;
 }
 BLITZ_ALIAS(dofilter, dofilter_c);
 
