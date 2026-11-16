@@ -108,6 +108,12 @@
  *    format keeps the bytes per plane in a word: LoadShape refuses an
  *    ILBM with a plane of 64K or more ("Can't Read/Write Shapes File",
  *    nothing loaded), LoadShapes/DecodeShapes such a block. (#263)
+ *  - LoadShape (#263) tested the plane alone (bytes per row x height),
+ *    the error checks of InitShape and GetaShape (#1047) the plane with
+ *    the extra word of every row ((bytes per row + 2) x height, the word
+ *    +24 that BBlit saves per plane and adds to its buffer pointer): a
+ *    picture whose plane was just under 64K but whose +24 was not loaded
+ *    with a wrong +24.  Here LoadShape tests +24 as the checks do. (#1055)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -1029,19 +1035,22 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     first->bltsize = bltsize | (UWORD)((bpr >> 1) + 1);
     HANDLES(first) = 0;
     p = (ULONG)(UWORD)(bpr + 2) * rows;
-    first->xplanesize = (UWORD)p;
-    p = (ULONG)(UWORD)p * depth;
-    first->xsize = (UWORD)p;
-    p = (ULONG)bpr * rows;
     if (p > 0xffff || rows > 1023 || bpr > 124) {
-        /* fixed #263: the shape keeps the bytes per plane in a word; a
-           plane of 64K or more is refused (nothing loaded).  Fixed #1046:
-           so is a picture taller than 1023 rows or wider than 62 words
-           (992 pixels), which the blit size word cannot hold */
+        /* fixed #263: the shape keeps its plane sizes in words; a plane
+           of 64K or more is refused (nothing loaded).  Fixed #1055: the
+           plane with the extra word of every row (+24, what BBlit saves
+           per plane), as the error checks of InitShape and GetaShape
+           test it (#263 tested the plane alone).  Fixed #1046: so is a
+           picture taller than 1023 rows or wider than 62 words (992
+           pixels), which the blit size word cannot hold */
         first->width = 0;
         IJSR(TOK_iffclose, 0, st);
         BLITZ_RUNERR(mess3);
     }
+    first->xplanesize = (UWORD)p;
+    p = (ULONG)(UWORD)p * depth;
+    first->xsize = (UWORD)p;
+    p = (ULONG)bpr * rows;
     first->planesize = (UWORD)p;
     planesize = (UWORD)p;
     p = (ULONG)(UWORD)p * depth;
@@ -1213,15 +1222,17 @@ skipanim:
  * Fixed (#263): the plane steps are unsigned (the original's word steps
  * went backwards for planes of 32K and more); an ILBM with a plane of 64K
  * or more is refused with "Can't Read/Write Shapes File" (the shape
- * keeps the bytes per plane in a word).
+ * keeps the bytes per plane in a word).  Fixed (#1055): the plane with
+ * the extra word of every row ((bytes per row + 2) x height, +24) is
+ * tested, as by the error checks of InitShape and GetaShape.
  *
  * BUG(orig): "BODY" is not checked, the decoder reads whatever follows
  * (#264).
  * Errors (in the normal code, their texts in the error area): "Can't open
  * Shapes File", "ANIM format not supported" (op <> 5), "Illegal ANIM
- * interleave value" (<> 1), "Can't Read/Write Shapes File" (a plane of
- * 64K or more, fixed #263; more than 1023 rows or 62 words, fixed
- * #1046), "Illegal Shape Depth" (0 planes, fixed #1052: the original
+ * interleave value" (<> 1), "Can't Read/Write Shapes File" (a plane with
+ * the extra word of every row of 64K or more, fixed #263, #1055; more
+ * than 1023 rows or 62 words, fixed #1046), "Illegal Shape Depth" (0 planes, fixed #1052: the original
  * wrote 65536 planes of every row behind a block of 0 bytes), "Illegal
  * Shape Size" (a width or height of 0, fixed #1054: the original ran its
  * row or byte loop 65536 times behind a block of 0 bytes).
