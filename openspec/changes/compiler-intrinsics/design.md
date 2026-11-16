@@ -136,6 +136,43 @@ was; the library call sets a3 to the string, and the compiler does not rely
 on that after `Len`/`Asc` (to verify: nested string expressions such as
 `b$=a$+Chr$(Len(a$))`, where a3 is the end of the string being built).
 
+The string variable layout (task 1.2, read from the sources of this
+commit):
+
+- A string variable is a long that holds the address of the characters,
+  0 while the variable has no memory (`libs/acidlibs/strings2lib.c:11-15`:
+  "The variable holds the address of the characters (0 = no memory
+  yet)"). The memory begins with a header of two longs in front of the
+  characters: `-8` the allocated length, `-4` the length of the string;
+  the characters follow, then a 0 byte (`strings2lib.c:12-15`, the
+  structure `struct bb_strmem` in `libs/include/blitzobj.h:327-331`). The
+  assignment (`lastring`/`astring`, `strings2lib.c:83-117`) sets `-4` to
+  the new length and reuses the memory when it fits, else frees it and
+  allocates length + 9 bytes; so the length at `-4` is always the length
+  of the characters, also after a shorter string or "" was assigned (the
+  memory stays, the length is 0).
+- The compiler reads a string variable this way in `stvar`
+  (`programs/blitz2/src/eval.c:2784-2799`, blitz2.s:10617) with the
+  template `stvarget2` (`programs/blitz2/src/main.c:357-366`): `lea
+  off(a5),a2` (a global; `pokela5s` makes it `off(a4)` for a local, as
+  `varmode` says), `moveq #0,Dn : move.l Dn,-(a7)` (the length 0),
+  `tst.l (a2) : beq.w skip` (no memory: length 0, no copy), `move.l
+  (a2),a0 : subq #4,a0 : move.l (a0)+,(a7)` (the length from `-4`, a0 on
+  the characters), `jsr copstring` (`libs/acidlibs/strings1lib.c:45-63`:
+  copies the characters to a3 and ends them with 0).
+- A global variable: the long at `off(a5)`; a local variable (a
+  procedure's): the long at `off(a4)` (the same code with a4, `varmode`
+  set); a field of a NewType (or an array element): `calcvar` leaves the
+  address of the long in a2 (`TF_ADDRINA2`, `structs.h:114`), and `stvar`
+  emits no `lea` (`eval.c:2787`) - the address calculation differs, and
+  the long it finds is the same kind (address of the characters or 0); an
+  unassigned variable holds 0 (globals start cleared; a procedure clears
+  its locals with `clrloc` at its start, `tokens2.c:395-406`, in AB3 mode
+  as `ext_procclrloc` says, `ab3proc.c:295`): the length is 0, `Len`
+  gives 0, `Asc` -1 (`stringfunclib.c:931-939`: -1 for the length 0, else
+  the first byte zero-extended, and a3 set to the string; `Len` is the
+  inline `move.l d0,a3 : move.l -(a2),d0`, `stringfunclib.c:1262-1272`).
+
 Alternatives: also an array element or a field (the issue: "unless easy").
 Rejected for now: the address calculation differs, and with checking on the
 index check must still run; list it under the candidates.
