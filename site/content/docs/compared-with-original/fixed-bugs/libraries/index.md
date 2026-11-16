@@ -2248,6 +2248,27 @@ change what an existing program does:
   at the end
   ([#306](https://github.com/fubar-coder/bb2-c/issues/306)).
 
+### Debugger and runtime error checking {#debugger-fixes}
+
+* When the debugger evaluated an expression such as a short string, it
+  showed the memory behind the string up to 256 characters; it shows only
+  the characters of the string
+  ([#126](https://github.com/fubar-coder/bb2-c/issues/126)).
+* When the current position in a line lay right after a token, for
+  example right after `Print`, the debugger marked the end of the line;
+  it marks the right column in the source
+  ([#127](https://github.com/fubar-coder/bb2-c/issues/127)).
+* RUN with the debugger started the debugger process without flushing
+  the CPU caches, so on a 68020 to 68060 the process could run stale
+  code; the caches are flushed before it starts
+  ([#409](https://github.com/fubar-coder/bb2-c/issues/409)).
+* A runtime error in an interrupt routine of an executable with runtime
+  error checking lost its message on the way to the handler that was
+  there before the program started, and
+  closed `intuition.library` inside the interrupt; the handler gets the
+  message, and `intuition.library` is closed only when the program ends
+  ([#246](https://github.com/fubar-coder/bb2-c/issues/246)).
+
 ## Runtime errors in executables {#runtime-error-texts}
 
 An executable built with runtime error checking stops with a requester

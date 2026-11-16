@@ -749,6 +749,22 @@ rows:
     text: "`NumDays` reads a year of fewer than four digits up to the end of the string, so `\"1/1/78\"` is year 78; the original read past the string."
     page: libraries
     anchor: dates-and-numbers
+  - issue: 126
+    severity: 4
+    topic: "System"
+    library: "debuglib"
+    command: ""
+    text: "When the debugger evaluates an expression such as a short string, it shows only its characters; the original showed the memory behind them, up to 256 characters."
+    page: libraries
+    anchor: debugger-fixes
+  - issue: 127
+    severity: 4
+    topic: "System"
+    library: "debuglib"
+    command: ""
+    text: "After a token, for example right after `Print`, the debugger marks the right column in the source; the original marked the end of the line."
+    page: libraries
+    anchor: debugger-fixes
   - issue: 128
     severity: 4
     topic: "Input"
@@ -1333,6 +1349,14 @@ rows:
     text: "`BlitzKey` gives no character for raw key codes above 104; the original read a character of another key or a byte of the library's code."
     page: libraries
     anchor: input
+  - issue: 246
+    severity: 4
+    topic: "System"
+    library: "rundebuglib"
+    command: ""
+    text: "A runtime error in an interrupt routine of an executable with runtime error checking passes its message on to the handler that was there before; the original lost the message and closed intuition.library in the interrupt."
+    page: libraries
+    anchor: debugger-fixes
   - issue: 247
     severity: 4
     topic: "Windows & screens"
@@ -2373,6 +2397,14 @@ rows:
     text: "`BlitzKeys Off` gives the keyboard input back to the input used before `BlitzKeys On`; the original left it in place, and a second `BlitzKeys On` made reading a line hang."
     page: libraries
     anchor: input
+  - issue: 409
+    severity: 4
+    topic: "System"
+    library: "dhandlerlib"
+    command: ""
+    text: "RUN with the debugger flushes the CPU caches before the debugger process starts; on a 68020 to 68060 the original could run stale code there."
+    page: libraries
+    anchor: debugger-fixes
   - issue: 411
     severity: 4
     topic: "Graphics"
