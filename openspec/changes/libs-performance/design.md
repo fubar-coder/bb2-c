@@ -1007,6 +1007,35 @@ build.
       (`systest_cmdlibs`, recorded from the original: every list state of
       0, 1 and 3 used and 0 or 2 free items with each current item, two
       traversals, KillItem until the list is empty) are unchanged.
+    - Sound/LoopSound (task 13.22): an iteration of `Sound 0,1` is two
+      waits of 12 changes of VHPOSR's line byte (24 lines, 94 % of the
+      value) plus one line for each line boundary that the code between
+      the waits (C) or the code after the second wait, the caller's loop
+      and the code before the first (A + D) crosses. The port's C was
+      536 cycles (the original 394, a line 454) and A + D 728 (332): two
+      lines more. `wait12` and `playsound` are `BL_ALWAYS_INLINE` in the
+      four `BLITZ_ENTRYPOINT` entries (`BLITZ_EP_KEEP_A6()`), which pass
+      the number of volumes and the loop flag as constants where they
+      can; the four channels are unrolled with absolute Paula addresses
+      as Volume (decision 26). GCC's code: A 32, C 334, D 154 (LoopSound
+      158), so A + D plus the caller stays inside one line: 24 lines
+      instead of the original's 25. `binput.sound` 12527.8 -> 11096.6
+      (11552.2), `binput.loopsound` 12523.0 -> 11114.1 (11552.2), 0.96
+      times the original; the fraction of about 0.7 lines (interrupts
+      during the waits) is in both. Cost: audiolib 4192 -> 5420 bytes
+      (accepted, C first). The entries change d0-d6 (with volumes d7
+      too) and a2 (the original d0, d2-d4, d6, d7, a0; no library calls
+      Sound or LoopSound); they lower a2 by the volumes they pop but
+      that of channel 3 (`docs/libs/deviations.md`, kind B). The library
+      case recorded from the original before the change (`systest_cmdlibs`:
+      DMACON and the audio registers patched to a RAM copy in the code of
+      the routine and the routines it calls, every mask, both forms of
+      each command with 0, 1, 2 and 4 volumes) gives the same cases; it
+      first patched at most 24 register addresses, fewer than the 30 of
+      the unrolled code, and so failed for a correct routine (repaired in
+      its own commit). One shared `playsound` with register arguments
+      called from four plain entries (`au2.c` of the analysis) was not
+      enough: A + D 432.
 
 29. **The remaining slower string commands (group 13, tasks 13.1 to
     13.5, 2026-11-16).** Analysis `analyse-g13-strings.md`; C, measured in

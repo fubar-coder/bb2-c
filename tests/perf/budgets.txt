@@ -133,6 +133,11 @@
 # (libs-performance task 13.20, on main 60e0fb53, 2026-11-16): 213.9 and
 # 213.8. bstr.addkill from two runs of AddItem and KillItem as
 # BLITZ_ENTRYPOINT with the list helpers inline (task 13.21): 785.0 both.
+# binput.sound and binput.loopsound from two runs of Sound/LoopSound with
+# the channels unrolled in four BLITZ_ENTRYPOINT entries (task 13.22):
+# 11096.6/11098.1 and 11114.1/11117.6. A call is a whole number of scan
+# lines (454 cycles) plus a fraction: 24 lines now, 25 in the original, so
+# a few cycles more in the routine or its caller can move it by a line.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -197,9 +202,9 @@ binput.inkey                  673      601.7  r$=Inkey$
 binput.mousex                88~4       87.2  c=MouseX
 binput.mousey                  92       86.7  c=MouseY
 binput.mousexspeed             94       87.2  c=MouseXSpeed
-binput.sound                12656    11552.2  Sound 0,1
+binput.sound                11213    11552.2  Sound 0,1
 binput.volume                 210      278.7  Volume 1,32
-binput.loopsound            12653    11552.2  LoopSound 0,1
+binput.loopsound            11232    11552.2  LoopSound 0,1
 bmath.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bmath.asg_l                    36       32.0  c=a
 bmath.lmul                    291      383.0  c=a*b

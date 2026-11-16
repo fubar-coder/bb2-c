@@ -59,7 +59,8 @@
  * the texts of err1-err5 are in the normal code; without the debugger the
  * runtime error is a TRAP #0 with the right message. (#70)
  * DIFF: a2 stays unchanged (the original pops volumes / lengths); Volume
- * lowers it by the volumes it pops but the last.
+ * lowers it by the volumes it pops but the last, Sound and LoopSound by
+ * the volumes they pop but that of channel 3 (`__entrypoint` routines).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -609,18 +610,19 @@ BLITZ_INLINE(dopsound,
 
 /* ----------------------------------------------------- Sound, LoopSound */
 
-/* wait for 12 changes of the low byte of VHPOSR (the beam line) */
-static void wait12(void)
+/* wait for 12 changes of the low byte of VHPOSR (the beam line); inline
+   in the Sound entries, a loop of MOVE.b/CMP.b/BEQ (30 cycles a read) */
+BL_ALWAYS_INLINE void wait12(void)
 {
     UBYTE last = VHPOSR_B, now;
-    int n;
+    WORD n = 11;
 
-    for (n = 0; n < 12; n++) {
+    do {
         do
             now = VHPOSR_B;
         while (now == last);
         last = now;
-    }
+    } while (--n != -1);                        /* DBF */
 }
 
 /* dochansoff - DMA of the channels off, wait; int bits = mask << 7 */
@@ -631,26 +633,38 @@ static UWORD chansoff(UWORD mask)
     return mask << 7;
 }
 
-static void playsound(UWORD mask, WORD nvol, int loop, const UBYTE *args)
+/* the start of channel ch (bit `bit` of the mask) and its repeat part, at
+   the channel's absolute registers */
+#define SND_START(ch, bit)                                                  \
+    if (mask & (bit)) {                                                     \
+        *(volatile UWORD *)AUD(ch, 8) = 0;                                  \
+        *(volatile ULONG *)AUD(ch, 0) = (ULONG)s->data;                     \
+        *(volatile UWORD *)AUD(ch, 6) = s->period;                          \
+        *(volatile UWORD *)AUD(ch, 4) = s->len;                             \
+        *(volatile UWORD *)AUD(ch, 8) = 64;                                 \
+        if (--nvol >= 0)                        /* SUBQ #1,d7:BMI */        \
+            *(volatile UWORD *)AUD(ch, 8) = BL_POPW(sp);                    \
+    }
+#define SND_REPEAT(ch, bit)                                                 \
+    if (mask & (bit)) {                                                     \
+        *(volatile UWORD *)AUD(ch, 4) = len;                                \
+        *(volatile ULONG *)AUD(ch, 0) = ptr;                                \
+    }
+
+/* dosnd - the sound in a3 on the channels of the mask.  Inline in the four
+   entries, which pass nvol and loop as constants where they can; the four
+   channels unrolled (as Volume): one bit test and absolute registers per
+   channel, no loop counter and no address step. */
+BL_ALWAYS_INLINE void playsound(UWORD mask, WORD nvol, int loop, const UBYTE *args)
 {
     struct bb_sound *s = (struct bb_sound *)blitz_string;
     const UBYTE *sp = args;
-    UWORD m = mask, len;
+    UWORD len;
     ULONG ptr;
-    int ch;
 
-    chansoff(mask);
-    for (ch = 0; ch < 4; ch++, m >>= 1) {
-        if (!(m & 1))
-            continue;
-        *(volatile UWORD *)AUD(ch, 8) = 0;
-        *(volatile ULONG *)AUD(ch, 0) = (ULONG)s->data;
-        *(volatile UWORD *)AUD(ch, 6) = s->period;
-        *(volatile UWORD *)AUD(ch, 4) = s->len;
-        *(volatile UWORD *)AUD(ch, 8) = 64;
-        if (--nvol >= 0)                        /* SUBQ #1,d7:BMI */
-            *(volatile UWORD *)AUD(ch, 8) = BL_POPW(sp);
-    }
+    BL_CUSTOMW(BL_CUSTOM, 0x96) = mask;         /* dochansoff */
+    wait12();
+    SND_START(0, 1) SND_START(1, 2) SND_START(2, 4) SND_START(3, 8)
     BL_CUSTOMW(BL_CUSTOM, 0x96) = mask | 0x8000;
     wait12();
     ptr = (ULONG)chzero;
@@ -659,11 +673,7 @@ static void playsound(UWORD mask, WORD nvol, int loop, const UBYTE *args)
         ptr = (ULONG)s->rep;
         len = s->replen;
     }
-    for (ch = 0, m = mask; ch < 4; ch++, m >>= 1)
-        if (m & 1) {
-            *(volatile UWORD *)AUD(ch, 4) = len;
-            *(volatile ULONG *)AUD(ch, 0) = ptr;
-        }
+    SND_REPEAT(0, 1) SND_REPEAT(1, 2) SND_REPEAT(2, 4) SND_REPEAT(3, 8)
 }
 
 /**
@@ -671,80 +681,79 @@ static void playsound(UWORD mask, WORD nvol, int loop, const UBYTE *args)
  *
  * Switches the channels' DMA off, waits for 12 changes of the VHPOSR
  * line byte, starts the sound on every channel of the mask (volume 64 or
- * the next given one) and after another 12 lines sets a zero word in chip memory as the repeat part.
+ * the next given one) and after another 12 lines sets a zero word in chip
+ * memory as the repeat part.
  * Errors (debugger, sndchk): "Uninitialized Sound", "Illegal Chanel
  * Mask" (mask > 15).
  * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
- * d0).
+ * d0).  The four entries are `__entrypoint` routines (they save nothing
+ * and change d0-d6, with volumes d7, and a2; the original changes d0,
+ * d2-d4, d6, d7 and a0).
  *
  * @param mask  d1.w: the channel mask
  */
-void BLITZ_ROUTINE dosound2(UWORD mask BL_REG(d1))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dosound2_c(UWORD mask BL_REG(d1))
 {
+    BLITZ_EP_KEEP_A6();
     playsound(mask, 0, 0, 0);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_ALIAS_EP(dosound2, dosound2_c);
 
 /**
  * @brief Sound Sound#,Channelmask,Vol1[,Vol2...]: Sound with volumes.
  *
- * Switches the channels' DMA off, waits for 12 changes of the VHPOSR
- * line byte, starts the sound on every channel of the mask (volume 64 or
- * the next given one) and after another 12 lines sets a zero word in chip memory as the repeat part.
- * Errors (debugger, sndchk): "Uninitialized Sound", "Illegal Chanel
- * Mask" (mask > 15).
- * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
- * d0).
+ * As Sound Sound#,Channelmask, with the volumes from the a2 stack, one per
+ * channel of the mask (channel 0 first).
  *
  * @param mask  d1.w: the channel mask
  * @param nvol  d7.w: the number of volumes
  * @param args  a2: the compiler's stack with the volumes (words)
  */
-void BLITZ_ROUTINE dosound(UWORD mask BL_REG(d1), WORD nvol BL_REG(d7),
-                           const UBYTE *args BL_REG(a2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dosound_c(UWORD mask BL_REG(d1), WORD nvol BL_REG(d7),
+                                                     const UBYTE *args BL_REG(a2))
 {
+    BLITZ_EP_KEEP_A6();
     playsound(mask, nvol, 0, args);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_ALIAS_EP(dosound, dosound_c);
 
 /**
  * @brief LoopSound Sound#,Channelmask: play the sound and repeat its
  *        repeat part.
  *
- * Switches the channels' DMA off, waits for 12 changes of the VHPOSR
- * line byte, starts the sound on every channel of the mask (volume 64 or
- * the next given one) and after another 12 lines sets the repeat part.
- * Errors (debugger, sndchk): "Uninitialized Sound", "Illegal Chanel
- * Mask" (mask > 15).
- * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
- * d0).
+ * As Sound, but after the second wait the repeat part of the sound is set
+ * as the channels' location and length.
  *
  * @param mask  d1.w: the channel mask
  */
-void BLITZ_ROUTINE dosoundl2(UWORD mask BL_REG(d1))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dosoundl2_c(UWORD mask BL_REG(d1))
 {
+    BLITZ_EP_KEEP_A6();
     playsound(mask, 0, 1, 0);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_ALIAS_EP(dosoundl2, dosoundl2_c);
 
 /**
  * @brief LoopSound Sound#,Channelmask,Vol1[,Vol2...]: LoopSound with
  *        volumes.
  *
- * Switches the channels' DMA off, waits for 12 changes of the VHPOSR
- * line byte, starts the sound on every channel of the mask (volume 64 or
- * the next given one) and after another 12 lines sets the repeat part.
- * Errors (debugger, sndchk): "Uninitialized Sound", "Illegal Chanel
- * Mask" (mask > 15).
- * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
- * d0).
+ * As LoopSound Sound#,Channelmask, with the volumes as Sound.
  *
  * @param mask  d1.w: the channel mask
  * @param nvol  d7.w: the number of volumes
  * @param args  a2: the compiler's stack with the volumes (words)
  */
-void BLITZ_ROUTINE dosoundl(UWORD mask BL_REG(d1), WORD nvol BL_REG(d7),
-                            const UBYTE *args BL_REG(a2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dosoundl_c(UWORD mask BL_REG(d1), WORD nvol BL_REG(d7),
+                                                      const UBYTE *args BL_REG(a2))
 {
+    BLITZ_EP_KEEP_A6();
     playsound(mask, nvol, 1, args);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_ALIAS_EP(dosoundl, dosoundl_c);
 
 /* ------------------------------------------------------------- DiskPlay */
 
