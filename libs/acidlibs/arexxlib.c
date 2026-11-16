@@ -25,7 +25,7 @@
  * a RECOVERABLE alert (it waits for a mouse button), then the routine
  * returns with d0 = the error code (0/4/8) - e.g. CreateRexxMsg returns 4.
  *
- * Kept from the original (BUG(orig)):
+ * Kept from the original, not bugs:
  *   - Not a bug (the library's ArgString test): an integer in a slot of
  *     rm_Args[] is "deleted" by ClearRexxMsg if the memory before it
  *     looks like an ArgString.
@@ -37,8 +37,6 @@
  *   - Not a bug (intended): CreateArgString, CreateRexxMsg, SendRexxCommand,
  *     ReplyRexxMsg set a3 to the (first) string argument ("preserve the BB2
  *     string work area"); SendRexxCommand only for a valid RexxMsg.
- *   - CreateArgString copies (length & $FFFF) characters (DBF) but
- *     allocates length+9 bytes. (#57)
  * Fixed (intended deviation, #52): GetRexxCommand/GetResultString copied
  * ra_Length+1 bytes (the 0 too) and left a3 BEHIND the 0, so a string
  * expression went on one byte too far; a3 now ends on the 0.
@@ -78,6 +76,13 @@
  * flag: an integer 0 ended the list, the arguments behind it were lost.
  * Only a string value of 0 ends it now; ClearRexxMsg, which stopped at
  * the first 0 slot, clears all 16 slots.
+ * Fixed (intended deviation, #57): CreateArgString (and the ArgStrings of
+ * CreateRexxMsg, FillRexxMsg, SendRexxCommand) allocated length+9 bytes
+ * but copied (length & $FFFF) characters (DBF) and stored the low word as
+ * ra_Length: of a string of 64 KB or more only length mod 65536
+ * characters arrived.  ra_Length is a word, so an ArgString holds at most
+ * 65535 characters: a longer string is cut to 65535, allocated and copied
+ * with that length.
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -282,16 +287,22 @@ static int tstargstring(ULONG arg)
 }
 
 /* _CreateArgString (without the a3 part) - BB2 ArgString of `len`
-   characters at s; 0 if there is no memory */
+   characters at s, at most 65535 (ra_Length is a word; fixed, #57: the
+   original allocated len+9 bytes but copied and stored len & $FFFF);
+   0 if there is no memory */
 static ULONG createargstring(const UBYTE *s, ULONG len)
 {
-    struct bl_regs r = { .d0 = len + 9, .d1 = MEMF_PUBLIC | MEMF_CLEAR };
-    ULONG size = len + 9;
+    struct bl_regs r;
+    ULONG size;
     struct RexxArg *mem;
     UBYTE *d;
     UBYTE hash = 0;
     UWORD n;
 
+    if (len > 0xFFFF)
+        len = 0xFFFF;                           /* fixed (#57) */
+    size = len + 9;
+    r = (struct bl_regs){ .d0 = size, .d1 = MEMF_PUBLIC | MEMF_CLEAR };
     mem = (struct RexxArg *)BLITZ_ALIBJSR(TOK_globalloc, r);
     if (!mem)
         return 0;                               /* CASError */
@@ -555,9 +566,10 @@ BLITZ_ALIAS(_FillRexxMsg, fillrexxmsg_c);
  * A RexxArg in memory of memlib (globalloc, MEMF_PUBLIC|MEMF_CLEAR):
  * ra_Size = length+9 with bit 31 set (allocated by Blitz), ra_Length,
  * ra_Flags $46, ra_Hash = byte sum of the characters, the characters and
- * a 0.  BUG(orig) (#57): (length & $FFFF) characters are copied (DBF),
- * length+9 bytes allocated.  a3 = the string afterwards (not a bug,
- * intended).
+ * a 0.  At most 65535 characters (ra_Length is a word): a longer string
+ * is cut to 65535 (fixed, #57: the original allocated length+9 bytes but
+ * copied and stored length & $FFFF).  a3 = the string afterwards (not a
+ * bug, intended).
  *
  * @param s     d0: the string
  * @param lens  a2: the compiler's string stack, -4(a2) = its length
