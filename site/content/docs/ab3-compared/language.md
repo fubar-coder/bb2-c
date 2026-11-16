@@ -149,6 +149,9 @@ Hello Blitz
 * **Code in a comment after `:@`** is compiled, and **a `+` at the start
   of a statement** is accepted (it marks a statement without type check in
   AmiBlitz3).
+* **Sizes in inline assembler.** In inline assembler AB3 mode takes `.s`
+  as a size like `.b`, and `BRA`/`BSR` with any size suffix, as AmiBlitz3
+  does; the branch stays a word branch.
 
 ## Macros
 
