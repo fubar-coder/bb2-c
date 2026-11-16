@@ -107,7 +107,7 @@ Commands that are below the 10 % limit of group 11 but still slower than the ori
 - [x] 13.2 Hex$: a rotate instead of the variable shift by 28 and a 16-byte PC-relative digit table
 - [x] 13.3 Bin$: the same treatment, at the original's 36 cycles per digit (`addx` if needed); a new benchmark line `bstr.bin` with the original's value from `perf-original`
 - [x] 13.4 Long results of Mid$ and Right$: not slower than the original's 8-byte copy (movestring); one shared out-of-line copy if the short case stays at or below the original; a benchmark line with a long Mid$
-- [ ] 13.5 Cvi, Cvl and Cvq: `cvbytes` inline in the entries (the nested-function pattern)
+- [x] 13.5 Cvi, Cvl and Cvq: `cvbytes` inline in the entries (the nested-function pattern)
 
 ## 9. Closing
 

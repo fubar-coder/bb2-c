@@ -1035,6 +1035,21 @@ build.
       string variable instead of n$ moved them the other way): those
       loops depend on the layout of the program; their targets follow
       perf-original.
+    - Cvi, Cvl, Cvq (task 13.5): `cvbytes` was a function with three
+      stack arguments that saved d2-d4 and tested the length per byte
+      (the fix #288). It is `BL_ALWAYS_INLINE` with the length tested
+      once: a string of 2 or 4 bytes or more is read by the original's
+      instructions in a small asm block (`move.b (a0)+,d0 : lsl.w #8,d0 :
+      move.b (a0),d0`, into the low word for Cvi, whose upper word stays
+      the string address's; for Cvl two such words with `swap` between,
+      80 cycles against the original's `lsl.l #8` DBF loop of 168; C
+      gave or-based code about twice the original's for Cvi), a shorter
+      one by the old byte loop. The entries are `BLITZ_ENTRYPOINT` (Cvl
+      takes a2 as a temporary). Nominal cycles from the entry to its
+      `rts` for a string long enough: Cvi about 460 -> 98 (the original
+      62; the length test of #288 is 36 of them), Cvl and Cvq about 600
+      -> 144 (the original about 200). No benchmark loop; the library
+      cases cover 0 to 6 bytes at even and odd addresses.
 
 ## Risks / Trade-offs
 

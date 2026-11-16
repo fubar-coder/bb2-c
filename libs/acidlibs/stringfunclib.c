@@ -52,8 +52,8 @@
  *
  * Registers: the original changes d0-d7, a0, a1, a3 depending on the
  * routine; the entries are the C functions (BLITZ_ALIAS) and keep what
- * the register rule needs; UCase$, Hex$, Bin$, Instr, Right$, UnRight$
- * and Mid$ are BLITZ_ENTRYPOINT (they save nothing;
+ * the register rule needs; UCase$, Hex$, Bin$, Instr, Right$, UnRight$,
+ * Mid$, Cvi, Cvl and Cvq are BLITZ_ENTRYPOINT (they save nothing;
  * they may change a2 as well, as the original does, and no library
  * calls them).
  * CaseSense keeps all registers.  The CCR is no
@@ -1184,14 +1184,30 @@ static ULONG BLITZ_ROUTINE mklstring_c(ULONG v BL_REG(d0))
 BLITZ_ALIAS(mklstring, mklstring_c);
 
 /* cvbytes - the first n bytes of a string of len bytes, big endian;
-   fixed (#288): bytes beyond len count as 0 (the original read them) */
-static ULONG cvbytes(const UBYTE *s, ULONG len, ULONG n)
+   fixed (#288): bytes beyond len count as 0 (the original read them).
+   Inline in the entries (n is 2 or 4).  A string of n bytes or more is
+   read as the original does, MOVE.b (a0)+,d0:LSL.w #8,d0:MOVE.b (a0),d0
+   (Cvi: into the low word of v, the upper word stays; Cvl: two such words
+   with SWAP between them, 80 cycles against the original's LSL.l #8 loop,
+   168), the shorter one by bytes, the missing ones 0. */
+BL_ALWAYS_INLINE ULONG cvbytes(const UBYTE *s, ULONG len, ULONG n, ULONG v)
 {
-    ULONG v = 0, i;
+    ULONG i, w;
 
-    for (i = 0; i < n; i++)
-        v = v << 8 | (i < len ? s[i] : 0);
-    return v;
+    if (len >= n) {
+        if (n == 2)
+            __asm__("move.b  (%1)+,%0\n\tlsl.w   #8,%0\n\tmove.b  (%1),%0"
+                    : "+d"(v), "+a"(s) : : "cc");
+        else
+            __asm__("move.b  (%1)+,%0\n\tlsl.w   #8,%0\n\tmove.b  (%1)+,%0\n\t"
+                    "swap    %0\n\t"
+                    "move.b  (%1)+,%0\n\tlsl.w   #8,%0\n\tmove.b  (%1),%0"
+                    : "+d"(v), "+a"(s) : : "cc");
+        return v;
+    }
+    for (i = 0, w = 0; i < n; i++)
+        w = w << 8 | (i < len ? s[i] : 0);
+    return n == 2 ? (v & 0xffff0000) | w : w;
 }
 
 /**
@@ -1200,8 +1216,9 @@ static ULONG cvbytes(const UBYTE *s, ULONG len, ULONG n)
  * a3 = d0$.  Cvi leaves the upper word of the string address in the
  * upper word of d0 (MOVE.b/LSL #8 on the low word only; Cvi is a word
  * function).  DIFF: the original does not pop the length (a2 unchanged,
- * unlike the other string functions); the C version leaves a2 unchanged
- * as everywhere (same result).
+ * unlike the other string functions); the C version is BLITZ_ENTRYPOINT
+ * and may change a2, as the other entrypoints (the compiler does not read
+ * a2 after the call; same result).
  *
  * Fixed (#288): only the string's own bytes are read, the missing ones of
  * a shorter string are 0 (the original read 2 bytes whatever the length:
@@ -1213,12 +1230,12 @@ static ULONG cvbytes(const UBYTE *s, ULONG len, ULONG n)
  * @param lens a2: the length stack (the string's length)
  * @return d0.w: the word (big endian)
  */
-static ULONG BLITZ_ROUTINE cvistring_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE cvistring_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     blitz_string = (UBYTE *)s;
-    return ((ULONG)s & 0xffff0000) | (UWORD)cvbytes(s, lens[-1], 2);
+    return cvbytes(s, lens[-1], 2, (ULONG)s);
 }
-BLITZ_ALIAS(cvistring, cvistring_c);
+BLITZ_ALIAS_EP(cvistring, cvistring_c);
 
 /**
  * @brief Cvl(String$), Cvq(String$) - the first 4 bytes of the string as
@@ -1235,12 +1252,12 @@ BLITZ_ALIAS(cvistring, cvistring_c);
  * @param lens a2: the length stack (the string's length)
  * @return d0: the long (big endian)
  */
-static ULONG BLITZ_ROUTINE cvlstring_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE cvlstring_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     blitz_string = (UBYTE *)s;
-    return cvbytes(s, lens[-1], 4);
+    return cvbytes(s, lens[-1], 4, 0);
 }
-BLITZ_ALIAS(cvlstring, cvlstring_c);
+BLITZ_ALIAS_EP(cvlstring, cvlstring_c);
 
 /**
  * @brief Len(String$) - the length of the string.
