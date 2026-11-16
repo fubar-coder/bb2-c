@@ -32,13 +32,13 @@
  *     runtime error "Illegal Chanel Mask" with the debugger. (#66)
  *   - LoadSound: Sound too long (>= 128K) after the file was opened: the
  *     file stays open (#67).
- *   - DiskPlay: a file whose length is a multiple of the buffer length
- *     never ends (loadbuff returns "more" at length 0). (#69)
  *   - DiskPlay allocates its chip buffer before it opens the file and does
  *     not free it when the open or a read fails (err1-err3): a program
  *     that catches the runtime error (SetErr) and goes on has lost
  *     2 * DiskBuffer bytes of chip memory until its end (memlib frees
  *     them then). (#950)
+ * Fixed (#69): DiskPlay of a BODY whose length is a multiple of the
+ * buffer length (or 0) ends; loadbuff returned "more" at length 0.
  * Fixed (#68): DecodeSound of chip data marks the sound "cL" (+14: the
  * data is used in place, not freed); dofreesound left the mark in place,
  * so the next sample of that object (DecodeSound of fast memory,
@@ -734,8 +734,9 @@ static void intwait(UWORD bits)
     BL_CUSTOMW(BL_CUSTOM, 0x9c) = bits;
 }
 
-/* loadbuff - next part of the file into the buffer, 0 = more, -1 = end
-   (a length of exactly 0 also returns 0, BUG(orig) (#69)) */
+/* loadbuff - next part of the file into the buffer, 0 = more, -1 = end.
+   Fixed (#69): a length of exactly 0 is the end too (the original returned
+   0 = more, `BEQ 'fail2`, and DiskPlay never ended) */
 static LONG loadbuff(UBYTE **pp, UWORD dma)
 {
     struct bl_regs r = { 0 };
@@ -743,10 +744,8 @@ static LONG loadbuff(UBYTE **pp, UWORD dma)
     UWORD m = dma;
     int ch;
 
-    if (!dlen)
-        return 0;                               /* 'fail2: d0 = 0 */
-    if (dlen < 0)
-        return -1;
+    if (dlen <= 0)
+        return -1;                              /* Fixed (#69) */
     n = dlen;
     if (n > dbufflen)
         n = dbufflen;
@@ -820,8 +819,8 @@ static void diskplay(const UBYTE *name, UWORD mask, WORD nvol, const UBYTE *args
  *
  * Through two halves of a chip buffer (DiskBuffer, default 1024 bytes
  * each), waiting for the audio interrupt bits in INTREQR (busy wait, as
- * in the original).  BUG(orig) (#69): a file whose length is a multiple
- * of the buffer length never ends.  Errors: as LoadSound (no file, no
+ * in the original).  Fixed (#69): a BODY whose length is a multiple of the
+ * buffer length (or 0) ends; the original never returned.  Errors: as LoadSound (no file, no
  * VHDR, read error); (debugger, dpchk) "Illegal Chanel Mask".
  * BUG(orig) (#950): on those errors the chip buffer stays allocated.
  *
@@ -840,7 +839,7 @@ BLITZ_ALIAS(dodplay2, dodplay2_c);
  * @brief DiskPlay Filename$,Channelmask,Vol1[,Vol2...]: DiskPlay with
  *        volumes.
  *
- * As DiskPlay Filename$,Channelmask (BUG(orig) #69 too).
+ * As DiskPlay Filename$,Channelmask.
  *
  * @param name  d0: the file name
  * @param mask  d1.w: the channel mask

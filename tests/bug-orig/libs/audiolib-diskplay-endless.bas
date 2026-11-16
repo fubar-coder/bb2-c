@@ -5,6 +5,7 @@
 ; a BODY of 2048 bytes, the buffer is 1024 bytes: the program hangs in
 ; DiskPlay (the audio DMA plays the last buffer again and again).
 ; Correct: DiskPlay returns after the 2048 bytes.
+; @fixed #69
 ; @configs clib
 ; @pass timeout=30
 ; @pass file=t.8svx|@TESTDATA@/audiolib-diskplay-endless.8svx
