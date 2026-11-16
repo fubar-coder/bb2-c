@@ -1,0 +1,4 @@
+[run]
+error
+exclusive lock -1
+rc=*

@@ -5,6 +5,7 @@
 ; SetErr catches the error; then the program asks for an exclusive lock
 ; on the file, which fails while it is open (object in use).
 ; Correct: after the error the file is closed - the exclusive lock works.
+; @fixed #67
 ; @configs clib
 ; @pass file=big.8svx|@TESTDATA@/audiolib-loadsound-fileopen.8svx
 SetErr

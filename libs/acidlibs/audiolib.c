@@ -30,13 +30,14 @@
  *   - the error check of SetPeriod (sndchk) goes on into dpchk and tests
  *     the PERIOD (d1) as channel mask: SetPeriod with a period > 15 is a
  *     runtime error "Illegal Chanel Mask" with the debugger. (#66)
- *   - LoadSound: Sound too long (>= 128K) after the file was opened: the
- *     file stays open (#67).
  *   - DiskPlay allocates its chip buffer before it opens the file and does
  *     not free it when the open or a read fails (err1-err3): a program
  *     that catches the runtime error (SetErr) and goes on has lost
  *     2 * DiskBuffer bytes of chip memory until its end (memlib frees
  *     them then). (#950)
+ * Fixed (#67): LoadSound and DiskPlay close the file before "Can't Find
+ * VHDR" and "Error Reading File", LoadSound also before "Sound too long";
+ * the original left it open (iffiolib has no finit: open until reboot).
  * Fixed (#69): DiskPlay of a BODY whose length is a multiple of the
  * buffer length (or 0) ends; loadbuff returned "more" at length 0.
  * Fixed (#68): DecodeSound of chip data marks the sound "cL" (+14: the
@@ -312,20 +313,20 @@ struct opened {
 };
 
 /* doopensound - a0 = name: VHDR, then positioned at BODY.  0 on error
-   (after the runtime error trap) */
+   (after the runtime error trap).  Fixed (#67): the file is closed before
+   "Can't Find VHDR" and "Error Reading File" (the original left it open) */
 static int opensound(const UBYTE *name, struct opened *o)
 {
     struct bl_regs r = { .a0 = (ULONG)name };
+    const char *msg = mess2;
 
     if (IFFCALL(TOK_iffopen, r)) {
         BLITZ_RUNERR(mess1);                    /* err1 */
         return 0;
     }
     r.d0 = 0x56484452;                          /* VHDR */
-    if (IFFCALL(TOK_iffchunk, r)) {
-        BLITZ_RUNERR(mess2);
-        return 0;
-    }
+    if (IFFCALL(TOK_iffchunk, r))
+        goto fail;
     if (IFFCALL(TOK_ifflong, r))
         goto err3;
     o->rep = r.d0;                              /* repeat start */
@@ -344,7 +345,10 @@ static int opensound(const UBYTE *name, struct opened *o)
     o->len = r.d0;
     return 1;
 err3:
-    BLITZ_RUNERR(mess3);
+    msg = mess3;
+fail:
+    IFFCALL(TOK_iffclose, r);                   /* Fixed (#67) */
+    BLITZ_RUNERR(msg);
     return 0;
 }
 
@@ -354,8 +358,8 @@ err3:
  * Through iffiolib: VHDR (repeat start and length, period = 3579440 /
  * samplesPerSec, DIVU: overflow below 55 Hz leaves 3579440), then BODY
  * into chip memory.  Errors: "Illegal Sound file" (no file), "Can't Find
- * VHDR", "Error Reading File", "Sound too long" (>= 128K) - BUG(orig)
- * (#67): then the file stays open.
+ * VHDR", "Error Reading File", "Sound too long" (>= 128K).  Fixed (#67):
+ * the file is closed before the last three (the original left it open).
  * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
  * d0).
  *
@@ -372,6 +376,7 @@ void BLITZ_ROUTINE doloadsound(const UBYTE *name BL_REG(d1))
         return;
     s->period = o.period;
     if (o.len >= 65536 * 2) {
+        IFFCALL(TOK_iffclose, r);               /* Fixed (#67) */
         BLITZ_RUNERR(mess4);                    /* err4 */
         return;
     }
