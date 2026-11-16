@@ -2,8 +2,8 @@
 ; mt_CheckMoreEfx (mt_SampleOffset: start + 2 x offset, length - offset)
 ; and then mt_SetPeriod, which writes start and length to Paula and ends
 ; in mt_CheckMoreEfx again: the voice keeps the offset twice (a retrig,
-; a note delay and a following note without a sample number start at
-; the doubled offset).  Tested with ciatrklib (pt23a-9xx-twice:
+; a note delay and a following note without a sample number start at the
+; doubled offset).  Tested with ciatrklib (pt23a-9xx-twice:
 ; ritrackerlib).  The module (generated, loaded with LoadTrackerModule)
 ; plays sample 31 of 2000 words with 902 (256 words) in row 0.  The
 ; program finds the play routine's data in its own code (the library is
@@ -11,7 +11,7 @@
 ; behind it) and reads the start (+4) and the length (+8) of voice 0
 ; after row 0 was played.  The ticks are played by the program
 ; (ChangeTrackerVBlank, PlayTracker: speed 6, row 1 at the 7th tick; the
-; CIA interrupt does not play in the emulator).
+; program counts the ticks itself instead of the CIA interrupt).
 ; Correct: the offset once - start + 512 bytes, length 2000 - 256.
 ; @fixed #473
 ; @rwe ciatrklib

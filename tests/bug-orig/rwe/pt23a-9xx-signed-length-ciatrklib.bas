@@ -10,7 +10,8 @@
 ; voices of 44 bytes behind it) and reads the start (+4) and the length
 ; (+8) of voice 0 after row 0 was played.  The ticks are played by the
 ; program (ChangeTrackerVBlank, PlayTracker: speed 6, row 1 at the 7th
-; tick; the CIA interrupt does not play in the emulator).
+; tick; the program counts the ticks itself instead of the CIA
+; interrupt).
 ; Correct: the start moves (by the offset), the length is not 1.
 ; @fixed #472
 ; @rwe ciatrklib

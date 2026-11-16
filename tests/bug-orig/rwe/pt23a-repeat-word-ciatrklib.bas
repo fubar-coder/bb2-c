@@ -4,12 +4,13 @@
 ; ciatrklib (pt23a-repeat-word: ritrackerlib).  The module (generated,
 ; loaded with LoadTrackerModule) plays sample 31 with a repeat from word
 ; $8000 in row 0 (Paula then reads chip memory behind the module,
-; nothing is written).  The program finds the play routine's data in
-; its own code (the library is linked behind it: the period table, with
-; the four voices of 44 bytes behind it) and reads the start (+4) and
-; loop start (+10) of voice 0 after row 0 was played.  The ticks are
-; played by the program (ChangeTrackerVBlank, PlayTracker: speed 6, row
-; 1 at the 7th tick; the CIA interrupt does not play in the emulator).
+; nothing is written).  The program finds the play routine's data in its
+; own code (the library is linked behind it: the period table, with the
+; four voices of 44 bytes behind it) and reads the start (+4) and loop
+; start (+10) of voice 0 after row 0 was played.  The ticks are played
+; by the program (ChangeTrackerVBlank, PlayTracker: speed 6, row 1 at
+; the 7th tick; the program counts the ticks itself instead of the CIA
+; interrupt).
 ; Correct: the loop starts $10000 bytes behind the start.
 ; @fixed #479
 ; @rwe ciatrklib

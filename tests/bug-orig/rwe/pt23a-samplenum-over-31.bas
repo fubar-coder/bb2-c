@@ -8,8 +8,8 @@
 ; library is linked behind it: the period table, with the four voices of
 ; 44 bytes behind it) and reads the start (+4) of voice 0 after row 1
 ; was played. The rows are played by hand (TrackPlay: one tick; speed 6,
-; row 1 at the 7th tick; the CIA interrupt does not play in the
-; emulator).
+; row 1 at the 7th tick; the library's CIA interrupt setup is dead code,
+; #571).
 ; Correct: a sample number above 31 sets no new sample - the start stays
 ; the one of sample 1.
 ; The same test for ciatrklib: pt23a-samplenum-over-31-ciatrklib.

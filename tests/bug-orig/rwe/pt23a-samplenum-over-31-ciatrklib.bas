@@ -9,7 +9,7 @@
 ; the four voices of 44 bytes behind it) and reads the start (+4) of
 ; voice 0 after row 1 was played.  The ticks are played by the program
 ; (ChangeTrackerVBlank, PlayTracker: speed 6, row 1 at the 7th tick; the
-; CIA interrupt does not play in the emulator).
+; program counts the ticks itself instead of the CIA interrupt).
 ; Correct: a sample number above 31 sets no new sample - the start stays
 ; the one of sample 1.
 ; @fixed #480

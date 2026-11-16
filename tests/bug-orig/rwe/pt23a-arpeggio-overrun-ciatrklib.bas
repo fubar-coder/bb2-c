@@ -12,7 +12,8 @@
 ; 44 bytes and fake_channel behind it).  It reads fake_channel's period
 ; (+6) on the first tick after row 0 (the arpeggio's x).  The ticks are
 ; played by the program (ChangeTrackerVBlank, PlayTracker: speed 6, row
-; 0 at the 6th tick; the CIA interrupt does not play in the emulator).
+; 0 at the 6th tick; the program counts the ticks itself instead of the
+; CIA interrupt).
 ; Correct: four half-tones above index 33 is behind the row - the
 ; highest note of the row, 113.
 ; @fixed #474

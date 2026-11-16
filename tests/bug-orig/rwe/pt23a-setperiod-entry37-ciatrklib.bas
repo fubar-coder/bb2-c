@@ -7,11 +7,11 @@
 ; module (generated, loaded with LoadTrackerModule) plays period 100 in
 ; row 0 on voice 0 (sample 1, finetune 0) and voice 1 (sample 2,
 ; finetune 15).  The program finds the play routine's data in its own
-; code (the library is linked behind it: the period table, with the
-; four voices of 44 bytes behind it) and reads the period (+16) of
-; voices 0 and 1 after row 0 was played.  The ticks are played by the
-; program (ChangeTrackerVBlank, PlayTracker: speed 6, row 1 at the 7th
-; tick; the CIA interrupt does not play in the emulator).
+; code (the library is linked behind it: the period table, with the four
+; voices of 44 bytes behind it) and reads the period (+16) of voices 0
+; and 1 after row 0 was played.  The ticks are played by the program
+; (ChangeTrackerVBlank, PlayTracker: speed 6, row 1 at the 7th tick; the
+; program counts the ticks itself instead of the CIA interrupt).
 ; Correct: the last entry of the row - 113 (finetune 0), 114 (-1).
 ; @fixed #481
 ; @rwe ciatrklib

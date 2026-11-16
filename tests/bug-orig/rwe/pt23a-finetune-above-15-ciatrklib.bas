@@ -9,7 +9,7 @@
 ; four voices of 44 bytes behind it) and reads the period (+16) of voice
 ; 0 after row 0 was played.  The ticks are played by the program
 ; (ChangeTrackerVBlank, PlayTracker: speed 6, row 1 at the 7th tick; the
-; CIA interrupt does not play in the emulator).
+; program counts the ticks itself instead of the CIA interrupt).
 ; Correct: the finetune is masked to 0..15 (16 -> 0): period 428.
 ; @fixed #476
 ; @rwe ciatrklib

@@ -6,12 +6,12 @@
 ; ritrackerlib (pt23a-setperiod-entry37-ciatrklib: ciatrklib).  The
 ; module (generated, loaded into chip memory) plays period 100 in row 0
 ; on voice 0 (sample 1, finetune 0) and voice 1 (sample 2, finetune 15).
-; The program finds the play routine's data in its own code (the
-; library is linked behind it: the period table, with the four voices of
-; 44 bytes behind it) and reads the period (+16) of voices 0 and 1 after
+; The program finds the play routine's data in its own code (the library
+; is linked behind it: the period table, with the four voices of 44
+; bytes behind it) and reads the period (+16) of voices 0 and 1 after
 ; row 0 was played. The rows are played by hand (TrackPlay: one tick;
-; speed 6, row 1 at the 7th tick; the CIA interrupt does not play in the
-; emulator).
+; speed 6, row 1 at the 7th tick; the library's CIA interrupt setup is
+; dead code, #571).
 ; Correct: the last entry of the row - 113 (finetune 0), 114 (-1).
 ; @fixed #481
 ; @rwe ritrackerlib

@@ -8,8 +8,8 @@
 ; is linked behind it: the period table, with the four voices of 44
 ; bytes behind it) and reads the start (+4) and loop start (+10) of
 ; voice 0 after row 0 was played. The rows are played by hand
-; (TrackPlay: one tick; speed 6, row 1 at the 7th tick; the CIA
-; interrupt does not play in the emulator).
+; (TrackPlay: one tick; speed 6, row 1 at the 7th tick; the library's
+; CIA interrupt setup is dead code, #571).
 ; Correct: the loop starts $10000 bytes behind the start.
 ; The same test for ciatrklib: pt23a-repeat-word-ciatrklib.
 ; @fixed #479

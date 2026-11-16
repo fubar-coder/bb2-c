@@ -8,7 +8,7 @@
 ; the period table, with the four voices of 44 bytes behind it) and
 ; reads the period (+16) of voice 0 after row 0 was played. The rows are
 ; played by hand (TrackPlay: one tick; speed 6, row 1 at the 7th tick;
-; the CIA interrupt does not play in the emulator).
+; the library's CIA interrupt setup is dead code, #571).
 ; Correct: the finetune is masked to 0..15 (16 -> 0): period 428.
 ; The same test for ciatrklib: pt23a-finetune-above-15-ciatrklib.
 ; @fixed #476
