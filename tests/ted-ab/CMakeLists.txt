@@ -135,16 +135,19 @@ set_tests_properties(ted_ab_lint_corpus_dash_ok PROPERTIES
 # a reader whose input is not there (the corpus run did not run, or another
 # BB2C_TEST_RUN): exit status 2 before any session, the message names the
 # variable (runner-exit.cmake; the second without a run directory at all)
-file(GENERATE OUTPUT ${work}_fixture_missing.pass CONTENT
-	"${text}work=${work}_fixture_missing\nreport=${work}_fixture_missing.txt\nfilter=00-start\nrun_dir=${work}_fixture_missing.run\n")
+# (the two tests have a work directory and a pass file each: ctest runs them at the same time)
+foreach(v "" _env)
+	file(GENERATE OUTPUT ${work}_fixture_missing${v}.pass CONTENT
+		"${text}work=${work}_fixture_missing${v}\nreport=${work}_fixture_missing${v}.txt\nfilter=00-start\nrun_dir=${work}_fixture_missing${v}.run\n")
+endforeach()
 add_test(NAME ted_ab_fixture_missing COMMAND ${CMAKE_COMMAND} "-DCMD=${TEDAB};run;${work}_fixture_missing.pass"
 	-DWANT=2 "-DREGEX=tedab run: no fixture data [^\n]*_fixture_missing.run/corpus/clib/vol/out: [^\n]*BB2C_TEST_RUN"
 	-DWORK=${work}_fixture_missing -P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/runner-exit.cmake)
 set_tests_properties(ted_ab_fixture_missing PROPERTIES PASS_REGULAR_EXPRESSION "runner-exit: as expected")
-add_test(NAME ted_ab_fixture_missing_env COMMAND ${CMAKE_COMMAND} "-DCMD=${TEDAB};run;${work}_fixture_missing.pass"
+add_test(NAME ted_ab_fixture_missing_env COMMAND ${CMAKE_COMMAND} "-DCMD=${TEDAB};run;${work}_fixture_missing_env.pass"
 	-DWANT=2 "-DREGEX=tedab run: no fixture data [^\n]*_fixture_missing.env/corpus/clib/vol/out: [^\n]*BB2C_TEST_RUN"
 	-DRUN_ENV=${work}_fixture_missing.env
-	-DWORK=${work}_fixture_missing -P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/runner-exit.cmake)
+	-DWORK=${work}_fixture_missing_env -P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/runner-exit.cmake)
 set_tests_properties(ted_ab_fixture_missing_env PROPERTIES PASS_REGULAR_EXPRESSION "runner-exit: as expected")
 add_test(NAME ted_ab COMMAND ${TEDAB} run ${work}.pass)
 math(EXPR limit "3600 + ${EMULATION_QUEUE_WAIT}")

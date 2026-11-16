@@ -395,10 +395,13 @@ set_tests_properties(corpus_min_free PROPERTIES
 # status 2); no emulator needed, and the run leaves no directory.  The
 # same with a runner that must fail: the status 2 does not match (the test
 # corpus_no_amiberry_broken expects the failure of the check, WANT=2).
-set(work ${CMAKE_CURRENT_BINARY_DIR}/corpus_no_amiberry)
-string(REPLACE "corpus_parallel" "corpus_no_amiberry" ntext "${text}")
-file(GENERATE OUTPUT ${work}.pass CONTENT "${ntext}")
+# each variant has a work directory, a PATH directory and a pass file of its own: ctest runs
+# the two at the same time, and one that shared them saw the other's run directory
+# (the check for none left) or removed the PATH directory under it
 foreach(variant "" _broken)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/corpus_no_amiberry${variant})
+	string(REPLACE "corpus_parallel" "corpus_no_amiberry${variant}" ntext "${text}")
+	file(GENERATE OUTPUT ${work}.pass CONTENT "${ntext}")
 	if(variant STREQUAL "")
 		set(want 77)
 	else()
