@@ -58,7 +58,8 @@
  * in the normal code with their texts in the error area.  Here err5 and
  * the texts of err1-err5 are in the normal code; without the debugger the
  * runtime error is a TRAP #0 with the right message. (#70)
- * DIFF: a2 stays unchanged (the original pops volumes / lengths).
+ * DIFF: a2 stays unchanged (the original pops volumes / lengths); Volume
+ * lowers it by the volumes it pops but the last.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -269,6 +270,10 @@ BLITZ_ALIAS(dodiskbuff, dodiskbuff_c);
  *
  * The volumes from the a2 stack, one per set bit (channel 0 first).
  * Errors (debugger, vchk): "Illegal Chanel Mask" (mask > 15).
+ * The four channels unrolled: one bit test and one write to an absolute
+ * AUDxVOL each, no loop counter and no address step (the original's
+ * LSR/BCC/LEA/DBF loop costs 196 cycles for one channel without the call,
+ * this 130).
  *
  * @param mask  d0.w: the channel mask
  * @param args  a2: the compiler's stack with the volumes (words)
@@ -276,11 +281,15 @@ BLITZ_ALIAS(dodiskbuff, dodiskbuff_c);
 static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dovolume_c(UWORD mask BL_REG(d0), const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
-    int ch;
 
-    for (ch = 0; ch < 4; ch++, mask >>= 1)
-        if (mask & 1)
-            *(volatile UWORD *)AUD(ch, 8) = BL_POPW(sp);
+    if (mask & 1)
+        *(volatile UWORD *)AUD(0, 8) = BL_POPW(sp);
+    if (mask & 2)
+        *(volatile UWORD *)AUD(1, 8) = BL_POPW(sp);
+    if (mask & 4)
+        *(volatile UWORD *)AUD(2, 8) = BL_POPW(sp);
+    if (mask & 8)
+        *(volatile UWORD *)AUD(3, 8) = BL_POPW(sp);
 }
 BLITZ_ALIAS_EP(dovolume, dovolume_c);
 

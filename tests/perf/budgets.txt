@@ -82,7 +82,8 @@
 # ChanMask read once of libs-performance task 10.12 on main 8fcb651f
 # (2026-11-16): 9794.8 to 9795.8; it keeps its tolerance.
 # bgfx.qblit8f: B~T from nine runs on main 1084e416 (18080.0 to 18085.8), 2026-11-16.
-# bgfx.scoll from two runs of task 11.5 on main 65066af5 (2026-11-16).
+# bgfx.scoll and binput.volume from two runs of tasks 11.5 and 11.4 on main
+# 65066af5 (2026-11-16).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -143,7 +144,7 @@ binput.mousex                88~4       87.2  c=MouseX
 binput.mousey                  92       86.7  c=MouseY
 binput.mousexspeed             94       87.2  c=MouseXSpeed
 binput.sound                12656    11552.2  Sound 0,1
-binput.volume                 390      278.7  Volume 1,32
+binput.volume                 210      278.7  Volume 1,32
 binput.loopsound            12653    11552.2  LoopSound 0,1
 bmath.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bmath.asg_l                    36       32.0  c=a

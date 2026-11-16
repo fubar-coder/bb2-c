@@ -815,6 +815,67 @@ static void test_smallentries(void)
 
 /* ---------------------------------------------------------- audiolib */
 
+/* Volume Channelmask,Vol1[,Vol2...]: Paula's volume registers are
+   write-only, so every absolute address $DFF0A0-$DFF0DF in the code of
+   the routine (up to its first RTS: MOVE.l #$DFF0A0,a0 in the original,
+   one address per channel in the C build) is patched to a RAM copy,
+   filled with a pattern before each call, and restored afterwards (the
+   method of systest_tracker).  Every mask, with junk in the upper word
+   and in bits 4-15 (which the error check refuses).  Not observed: a2,
+   which the original lowers by the volumes it pops and the C build by
+   all but the last (docs/libs/deviations.md: the compiler does not read
+   a2 after a command). */
+static void test_volume(void)
+{
+    static UBYTE fake[0x40];
+    static UWORD vols[6] = { 0x1111, 0x2222, 0x3333, 0x4444, 0x5555, 0x6666 };
+    static const ULONG masks[] = { 0x5a5a0000, 0x5a5a0001, 0x5a5a0002, 0x5a5a0003,
+                                   0x5a5a0004, 0x5a5a0005, 0x5a5a0006, 0x5a5a0007,
+                                   0x5a5a0008, 0x5a5a0009, 0x5a5a000a, 0x5a5a000b,
+                                   0x5a5a000c, 0x5a5a000d, 0x5a5a000e, 0x5a5a000f,
+                                   0x0000fff0, 0x0000a5a5 };
+    ULONG at[8];
+    UBYTE *p = N("audiolib", "Volume", 0);
+    unsigned i, n = 0;
+
+    ROUT = "Volume";
+    for (i = 0; p && i + 4 <= 80 && W(p + i) != 0x4e75; i += 2) {
+        ULONG v = L(p + i);
+
+        if (v >= 0xdff0a0 && v < 0xdff0e0 && n < 8) {
+            at[n++] = i;
+            p[i] = (UBYTE)((ULONG)fake >> 24);  /* the same offset in fake */
+            p[i + 1] = (UBYTE)((ULONG)fake >> 16);
+            p[i + 2] = (UBYTE)(((ULONG)fake + v - 0xdff0a0) >> 8);
+            p[i + 3] = (UBYTE)((ULONG)fake + v - 0xdff0a0);
+            i += 2;
+        }
+    }
+    if (!n) {
+        NOT_CAPTURED("audio register addresses", "none in the routine's code");
+        return;
+    }
+    CacheClearU();
+    for (i = 0; i < sizeof masks / sizeof masks[0]; i++) {
+        ULONG k;
+
+        for (k = 0; k < sizeof fake; k++)
+            fake[k] = (UBYTE)(0xa5 ^ k);
+        sprintf(VEC, "mask $%lX", masks[i]);
+        DO1(p, R.d[0] = masks[i]; R.a[2] = (ULONG)&vols[6]);
+        OBSBYTES("audio registers", fake, sizeof fake);
+    }
+    for (i = 0; i < n; i++) {                   /* restore the code */
+        ULONG v = 0xdff0a0 + (L(p + at[i]) - (ULONG)fake);
+
+        p[at[i]] = 0;
+        p[at[i] + 1] = 0xdf;
+        p[at[i] + 2] = (UBYTE)(v >> 8);
+        p[at[i] + 3] = (UBYTE)v;
+    }
+    CacheClearU();
+}
+
 /* InitSound Sound#,Length: an empty sound in chip memory.  The Sound
    object comes in a3 (the compiler's !libs {#audiolib,$1380}); the memory
    is memlib's (freed by its finit).  It keeps a0 (#1058). */
@@ -836,6 +897,7 @@ static void test_audiolib(void)
     ROUT = "memlib finit";
     strcpy(VEC, "audiolib");
     DO1(cmd_entry(getlib(&loaded, "memlib"), 8), (void)0);
+    test_volume();
 }
 
 /* ------------------------------------------------------- collisions */
@@ -1276,6 +1338,7 @@ int main(int argc, char **argv)
     KEEPS_FUNCTION("Rnd(Range)", a0|a1);
     /* exception: ElmoreIncLib's IncSound reads (a0) after InitSound */
     KEEPS_STATEMENT("InitSound", a0);
+    KEEPS_STATEMENT("Volume", none);
     /* the small entries (test_smallentries); Plot's d4-d7/a2 are checked
        on the C build only (both change d2 and d3) */
     KEEPS_STATEMENT("Plot", none);

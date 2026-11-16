@@ -837,9 +837,23 @@ build.
     8fcb651f, with the layout-independent `bmod.bas`; the line routine on
     the old main gave 9906.1 and 5793.8).
 
-26. **SColl (task 11.5, 2026-11-16).** Cycles of the
+26. **Volume and SColl (tasks 11.4 and 11.5, 2026-11-16).** Cycles of the
     68000 counted statically without the call, then measured
     (`tests/perf`, cycles per call, two runs).
+    - *Volume:* the disassembly confirmed the earlier guess. GCC made the
+      loop of four passes a counter in d1 and d2, a computed address
+      (`move.l d2,d3 : lsl.l #4,d3 : movea.l #$dff0e8,a0 : suba.l d3,a0`)
+      and two SUBQ per pass; the original's loop is LSR/BCC/LEA/DBF (196
+      cycles for one channel). Unrolled in C, each channel is one bit
+      test and one write to its absolute AUDxVOL (GCC: `btst #0`/`btst
+      #1`, then `move.w d0,ccr` and BNE/BPL for bits 2 and 3): 130
+      cycles, no assembler. GCC reads the volume with `d16(a2)` plus
+      SUBQ instead of `-(a2)`; neither `*--p` nor an empty `asm` with a
+      `"+a"` operand changed that (10 cycles per set bit), and C is
+      already a quarter below the original. The `__entrypoint` function
+      changes a2 by all popped volumes but the last (its last SUBQ is
+      dead), so the library test does not observe a2 (the compiler does
+      not read it). Measured 382.1 -> 204.1 (the original 278.7, 0.73).
     - *SColl:* the original (bytes of the CD's ACIDLIBS) is `LSR #1,d1 :
       LSR #1,d0 : BEQ.w : ADDQ #1,d0 : ADD d0,d1 : BTST d1,colval.l :
       SNE : EXT : RTS`. Its bit is p1 for p0 = 0 and p0 + 1 + p1
@@ -863,8 +877,9 @@ build.
       per-channel values: no table of one channel works). Measured 136.0
       -> 124.0 (the original 126.3, 0.98). `systest_cmdlibs` gets SColl
       for all 64 channel pairs (the bits it reports and d0 with junk in
-      the upper words, the 12 pairs of #110 as `[orig]`/`[fixed #110]`),
-      recorded from the original.
+      the upper words, the 12 pairs of #110 as `[orig]`/`[fixed #110]`)
+      and Volume for every mask (Paula's registers patched to a RAM copy
+      as in `systest_tracker`), recorded from the original.
 
 ## Risks / Trade-offs
 
