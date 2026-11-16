@@ -2956,6 +2956,62 @@ rows:
     text: "A tremolo with the ramp-down waveform follows the position of the tremolo itself; the original took its shape from the position of the voice's vibrato."
     page: libraries
     anchor: protracker-play-routine
+  - issue: 567
+    severity: 2
+    topic: "Sound"
+    library: "ritrackerlib"
+    command: "TrackerChannels"
+    text: "A voice left out by `TrackerChannels` stays silent and free; the original still wrote the module's effects and sample loops to it, so it could become audible again."
+    page: libraries
+    anchor: ritrackerlib-fixes
+  - issue: 568
+    severity: 2
+    topic: "Sound"
+    library: "ritrackerlib"
+    command: "TrackerChannels"
+    text: "With a voice left out by `TrackerChannels`, the other voices play their own notes; with the original, each voice after a left-out one played the notes of the voice before it."
+    page: libraries
+    anchor: trackerchannels-voices
+  - issue: 569
+    severity: 2
+    topic: "Sound"
+    library: "ritrackerlib"
+    command: "TrackPlay"
+    text: "The commands `F80` to `FFF` are tempo commands, as in Protracker; the original took them as speeds of 128 to 255 ticks per row, so the module nearly stopped."
+    page: libraries
+    anchor: ritrackerlib-fixes
+  - issue: 570
+    severity: 5
+    topic: "Sound"
+    library: "ritrackerlib"
+    command: "TrackInit"
+    text: "`TrackInit` no longer clears up to 4 bytes behind a module whose last samples are empty."
+    page: libraries
+    anchor: ritrackerlib-fixes
+  - issue: 571
+    severity: 5
+    topic: "Sound"
+    library: "ritrackerlib"
+    command: "TrackPlay"
+    text: "A tempo command no longer writes to a CIA timer that the library never reserved; it does not change the speed, which the program sets by how often it calls `TrackPlay`."
+    page: libraries
+    anchor: ritrackerlib-fixes
+  - issue: 572
+    severity: 2
+    topic: "Sound"
+    library: "ritrackerlib"
+    command: "Tracker"
+    text: "`Tracker On` after `Tracker Off` continues the module; the original left it stopped until `TrackInit` or `TrackerPause 0`."
+    page: libraries
+    anchor: ritrackerlib-fixes
+  - issue: 573
+    severity: 2
+    topic: "Sound"
+    library: "ritrackerlib"
+    command: "TrackInit, Tracker"
+    text: "`TrackInit` while the player is switched off prepares the module, so `Tracker On` plays it; the original played the module of before, or memory from address 0."
+    page: libraries
+    anchor: ritrackerlib-fixes
   - issue: 461
     severity: 5
     topic: "Strings"

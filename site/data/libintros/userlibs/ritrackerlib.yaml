@@ -13,9 +13,9 @@ intro: |
   `TrackInit` takes its address. The library does not play by itself:
   the program calls `TrackPlay` once per tick, 50 times a second,
   usually from a vertical blank interrupt handler. The speed commands of
-  a module (`Fxx` below 32) work; tempo commands, which a CIA timer would
-  need, do not change the speed
-  ([#571](https://github.com/fubar-coder/bb2-c/issues/571)).
+  a module (`F01` to `F1F`) work, but tempo commands (`F20` to `FFF`)
+  do not change the speed: the program sets it by how often it calls
+  `TrackPlay`.
 
   ```blitzbasic
   LoadBank 0,"mod.tune",2
@@ -29,7 +29,7 @@ intro: |
 
   `TrackerChannels` keeps voices free for sound effects, `TrackerPause`
   pauses and continues the module, and `Tracker` switches the player off
-  and on. The known faults of the play routine, for example with some
-  effect commands, are fixed
-  ([Fixes in the Protracker play routine]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#protracker-play-routine" >}}));
-  one that is kept is described at `TrackInit`.
+  and on. The known faults of the play routine and of these commands are
+  fixed
+  ([Fixes in the Protracker play routine]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#protracker-play-routine" >}}),
+  [Other fixes in ritrackerlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#ritrackerlib-fixes" >}})).

@@ -125,6 +125,9 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
   start, or stayed silent.
 * [Samples without a loop ended in a buzz]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#tracker-sample-end" >}})
   in Protracker modules.
+* [Voices left out by `TrackerChannels` played the wrong notes]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#trackerchannels-voices" >}}):
+  each voice after a left-out one played the notes of the voice before
+  it.
 
 In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})):
 
