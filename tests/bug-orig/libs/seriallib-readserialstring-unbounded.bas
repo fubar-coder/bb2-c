@@ -16,6 +16,7 @@
 ; io_Actual +70).
 ; Correct: ReadSerialString returns at most what fits in the buffer (the
 ; expression is at most 1000000 bytes long), the guard stays intact.
+; @fixed #256
 ; @configs clib
 ; @pass serial=on
 ; @pass jobline=strbuf=1000000

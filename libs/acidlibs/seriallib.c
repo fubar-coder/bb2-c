@@ -18,8 +18,6 @@
  * bytes to the write half, which then gets its own port and signal.
  *
  * Kept from the original (BUG(orig)):
- *   - ReadSerialString reads io_Actual bytes (unlimited) to a3; d0 =
- *     number of bytes, 0 if nothing is waiting. (#256)
  *   - A unit that is not open: runtime error "Serial Device Not Open"
  *     (TRAP #0, also without the debugger; the original then runs into
  *     the message text, the C version returns) (#262).  SerialEvent checks
@@ -63,6 +61,12 @@
  *     when OpenDevice failed (exclusive access), cleared it: the open
  *     device was never closed.  An open unit is now left alone, OpenSerial
  *     returns 0 (#260).
+ *   - ReadSerialString read every byte waiting (io_Actual, unlimited) to
+ *     a3, behind the end of the string buffer when more was waiting than
+ *     the buffer had room for; it reads at most what fits in front of the
+ *     buffer's end with the 0 the compiler appends, the rest stays waiting
+ *     (#256).  ReadSerialString declares strings1lib's init value (the
+ *     buffer) in a0 for it.
  * Kept from the original: the two argument form of WriteSerialString
  * takes a #long (an address of a null terminated string, flags 0), not a
  * string as the help suggests (programs pass addresses).
@@ -91,7 +95,8 @@ void BLITZ_ROUTINE writestring3(UWORD unit BL_REG(d0), ULONG data BL_REG(d1),
                                 const ULONG *lens BL_REG(a2));
 ULONG BLITZ_ROUTINE readobyte(UWORD unit BL_REG(d0));
 ULONG BLITZ_ROUTINE readbyte(UWORD unit BL_REG(d0), UWORD flags BL_REG(d1));
-ULONG BLITZ_ROUTINE readstring(UWORD unit BL_REG(d0));
+ULONG BLITZ_ROUTINE readstring(UWORD unit BL_REG(d0),
+                               const UBYTE *sbuf BL_REG(a0));
 void BLITZ_ROUTINE closeserial(UWORD unit BL_REG(d0));
 void BLITZ_ROUTINE serialbuffer(UWORD unit BL_REG(d0), ULONG len BL_REG(d1));
 void BLITZ_ROUTINE seriallens(UWORD unit BL_REG(d0), UBYTE rlen BL_REG(d1),
@@ -141,7 +146,7 @@ BLITZ_NAME("ReadSerial", "(unit#[,flags 1=wait on])  returns -1 if nothing waiti
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS0();
+BLITZ_LIBS(LIB_strings1lib, BL_LA0);    /* Fixed (#256): the string buffer */
 BLITZ_SUBS(readstring, 0, 0);
 BLITZ_NAME("ReadSerialString", "(unit#)  returns null if nothing waiting");
 
@@ -599,20 +604,25 @@ ULONG BLITZ_ROUTINE readobyte(UWORD unit BL_REG(d0))
  * (_readstring).
  *
  * SDCMD_QUERY, then CMD_READ of io_Actual bytes to a3 (the string
- * buffer), which is advanced over them.  BUG(orig) (#256): the number of
- * bytes is not limited.  No terminating 0 (not a bug: the compiler
+ * buffer), which is advanced over them, at most as many as fit in front
+ * of the end of the buffer with the 0 behind them; the rest stays
+ * waiting.  Fixed (#256): the original did not limit the number of
+ * bytes and wrote behind the buffer.  No terminating 0 (not a bug: the compiler
  * appends clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
  * sbtolong, #257).
  *
  * Errors: "Serial Device Not Open" (TRAP #0, #262; returns 0).
  *
  * @param unit d0.w: the unit
+ * @param sbuf a0: strings1lib's init value, the string buffer (memlib
+ *             globalloc: its block length, size + 8, at -4)
  * @return d0: the number of bytes (string length), 0 if nothing is waiting
  */
-ULONG BLITZ_ROUTINE readstring(UWORD unit BL_REG(d0))
+ULONG BLITZ_ROUTINE readstring(UWORD unit BL_REG(d0),
+                               const UBYTE *sbuf BL_REG(a0))
 {
     struct serio *s = slot(unit, 8, 0);
-    ULONG n;
+    ULONG n, room;
 
     if (!s->request) {
         noser();
@@ -623,6 +633,12 @@ ULONG BLITZ_ROUTINE readstring(UWORD unit BL_REG(d0))
     n = s->io.IOSer.io_Actual;
     if ((LONG)n <= 0)
         return 0;                       /* nobytes2 */
+    /* Fixed (#256): at most what fits, one byte left for the 0 */
+    room = (ULONG)(sbuf + ((const ULONG *)sbuf)[-1] - 8 - blitz_string) - 1;
+    if ((LONG)room <= 0)
+        return 0;
+    if (n > room)
+        n = room;
     s->io.IOSer.io_Command = CMD_READ;
     s->io.IOSer.io_Length = n;
     s->io.IOSer.io_Data = blitz_string;

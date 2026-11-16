@@ -177,3 +177,17 @@ lib 132: entry 22 (nullsub) +$0: $00 != $00
 lib 132: end of the table +$472: $FF != $00
 lib 132: declaration part $48E != $4A6 bytes
 lib 132: relocations in the declaration part 30 != 31
+# seriallib (#256): ReadSerialString declares strings1lib's init value
+# (the string buffer) in a0 to limit its read to the buffer; the original
+# declares no library (!libs 0), the entries behind it move by 4 bytes
+lib 90: entry 4 ReadSerialString +$A: $00 != $FE
+lib 90: entry 5 CloseSerial +$0: $00 != $69
+lib 90: entry 6 SetSerialBuffer +$0: $00 != $69
+lib 90: entry 7 SetSerialLens +$0: $00 != $74
+lib 90: entry 8 SetSerialParams +$0: $00 != $69
+lib 90: entry 9 SerialEvent +$0: $03 != $69
+lib 90: entry 10 ReadSerialMem +$0: $00 != $74
+lib 90: entry 11 WriteSerialMem +$0: $00 != $74
+lib 90: entry 12 (nullsub) +$0: $00 != $67
+lib 90: end of the table +$3C8: $FF != $00
+lib 90: declaration part $3CE != $3D2 bytes
