@@ -1,4 +1,4 @@
-; ilbmifflib-loadbitmap-shortbody-fileopen - LoadBitMap (ilbmbitmap)
+; ilbmifflib-loadbitmap-shortbody-fileopen (#1065) - LoadBitMap (ilbmbitmap)
 ; reads the BODY byte by byte (getme, iffiolib iffbyte); when the file
 ; ends before the picture does it goes to the runtime error "Can't Read
 ; File" without iffclose: the file stays open (iffiolib has no finit,
