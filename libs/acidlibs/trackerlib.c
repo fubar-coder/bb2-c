@@ -38,9 +38,7 @@
  *   - after a pattern break / position jump (D, B) the end of the song is
  *     compared with the first byte of the pattern data instead of the
  *     song length, unless the row was the last of the pattern. (#292)
- *   - set volume (C) writes the volume as a BYTE to AUDxVOL (both halves
- *     of the register) (#293); C and F only clamp positive values (signed
- *     compares) (#294).
+ *   - C and F only clamp positive values (signed compares) (#294).
  * Fixed (intended deviation, #290): a note's sample sets the volume of
  * the voice to the volume byte of the sample; the original took the word
  * with the finetune byte (MOVE.w), so a volume slide (A) of a sample with
@@ -50,6 +48,10 @@
  * doubled as a long; the original doubled it as a word (ASL.w), so a
  * repeat from 64 KB on started too early.  12 cycles fewer per note
  * with a repeat (no AND.l #$FFFF).
+ * Fixed (intended deviation, #293): set volume (C) stores the volume as
+ * a word in the voice and in AUDxVOL; the original wrote it only to
+ * AUDxVOL, as a byte (both halves of the register), so a following
+ * volume slide (A) started from the sample's volume again.
  * Fixed (intended deviation, #295): mt_init clears the sample number of
  * every note in the patterns whose number is above 31 (the module is
  * changed in memory, as the first long of each sample is); the original
@@ -486,7 +488,9 @@ BL_ALWAYS_INLINE void mt_checkcom2(struct voice *v, ULONG aud)
     case 0xc:                                   /* mt_setvol */
         if (v->sparam > 0x40)
             v->sparam = 0x40;
-        *(volatile UBYTE *)(aud + 8) = v->param;   /* MOVE.b */
+        /* Fixed (#293): the volume as a word to the voice and AUDxVOL */
+        v->volume = v->param;
+        RW(aud, 8) = v->volume;
         return;
     case 0xf:                                   /* mt_setspeed */
         if (v->sparam > 0x1f)
@@ -732,7 +736,7 @@ static void freemod2(struct module *m, int blitz)
  *
  * Errors (debugger, playchk): "Uninitialized Module".
  *
- * BUG(orig): the NoiseTracker player's bugs, see the file header (#292 -
+ * BUG(orig): the NoiseTracker player's bugs, see the file header (#292,
  * #294).
  */
 static void BLITZ_ROUTINE doplaymod_a(void) { playmod2(0); }

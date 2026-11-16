@@ -9,6 +9,7 @@
 ; behind it) and reads the volume of voice 0 after row 1 (PlayModule:
 ; speed 6, one row per 6 frames).
 ; Correct: the slide starts at $10 - the voice ends at $0B.
+; @fixed #293
 ; @configs clib
 ; @pass file=setvol.mod|@TESTDATA@/trackerlib-setvol-byte.mod
 DEFTYPE .l
