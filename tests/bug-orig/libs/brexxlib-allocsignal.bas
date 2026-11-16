@@ -7,6 +7,7 @@
 ; start) the program prints "played 0".
 ; Correct (one fix of the issue: PlayWait returns without a signal):
 ; PlayWait returns, the program ends.  The original hangs in PlayWait.
+; @fixed #104
 ; @configs clib
 ; @pass runwrap=@INJECT@|signals
 ; @pass timeout=30

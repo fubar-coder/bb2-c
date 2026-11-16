@@ -40,6 +40,11 @@
  * so the redirection never ended and the events were chained into the
  * memory at a3.  Here it clears tapeadd and returns (bug-orig test
  * brexxlib-tapetrap-a3).
+ * Fixed (#104): a failed AllocSignal(-1) was not noticed: mybit = $FFFF,
+ * mysig = 0 (LSL.l by 63), so PlayWait waited with Wait(0) for ever, and
+ * the finit called FreeSignal(255) and FreeSignal(65535).  Here a failed
+ * signal stays unused: PlayWait returns at once without one, and the
+ * finit frees only the signals it got (bug-orig test brexxlib-allocsignal).
  * BUG(orig), kept:
  *  - Appending an event to a tape clears `mode` (a running Record or
  *    PlayBack stops working, without restoring the hijacked link). (#96)
@@ -57,8 +62,6 @@
  *    short read (no error for a damaged file). (#101)
  *  - Type: a character rawkeylib cannot convert gives code $FFFF. (#102)
  *  - XStatus returns mode including bit 15 ($8001 ...). (#103)
- *  - A failed AllocSignal(-1) is not noticed: mybit = $FFFF, mysig = 0
- *    (LSL.l by 63), FreeSignal(255)/(65535). (#104)
  * DIFF: "Can't Open File" (SaveTape/LoadTape) is `BEQ err1` into the
  * error check area in the original (without the debugger a jump behind
  * the library); here trap and message are in the normal code.
@@ -735,7 +738,7 @@ BLITZ_ALIAS(doplayback2, doplayback2_c);
  */
 static void BLITZ_ROUTINE doplaywait_c(void)
 {
-    if ((UBYTE)mode != 2)
+    if ((UBYTE)mode != 2 || !mysig)             /* no signal: Fixed (#104) */
         return;
     dopb((struct tape *)blitz_string, 0xffff);
     Wait(mysig);
@@ -856,8 +859,8 @@ static void handlercmd(UWORD cmd)
  * handler with priority 51 ("one more than intuition"); clears the macro
  * keys, QuietTrap On, QuickPlay Off; allocates the "playback finished"
  * signal and remembers the task.
- * BUG(orig) (#104): a failed AllocSignal(-1) is not noticed: mybit =
- * $FFFF, mysig = 0 (LSL.l by 63).
+ * Fixed (#104): without a free signal mysig stays 0 (PlayWait then returns
+ * at once) and mybit -1 (not freed); the original took the -1 as the bit.
  */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
@@ -870,7 +873,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
     qplay = 0;
     sig = AllocSignal(-1);
     mybit = (UWORD)(WORD)sig;                   /* MOVE d0,mybit */
-    mysig = ((LONG)sig & 63) < 32 ? 1UL << ((LONG)sig & 63) : 0;  /* LSL.l d0,d1 */
+    mysig = sig >= 0 ? 1UL << sig : 0;
     mytask = FindTask(0);
 }
 BLITZ_THUNK(brexxlib_codeinit, codeinit_c, "d0-d1/a0-a1");
@@ -879,7 +882,8 @@ BLITZ_THUNK(brexxlib_codeinit, codeinit_c, "d0-d1/a0-a1");
  * @brief The finit routine: stop a playback, remove the handler.
  *
  * Removes the input handler, closes input.device and frees both signals.
- * BUG(orig) (#104): after a failed AllocSignal FreeSignal(255)/(65535).
+ * Fixed (#104): only the signals AllocSignal gave (the original freed 255
+ * and 65535 after a failed one).
  */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
@@ -887,8 +891,10 @@ static void BLITZ_ROUTINE codefinit_c(void)
     handlercmd(IND_REMHANDLER);
     CloseDevice((struct IORequest *)&io_request.io);
     /* FreeSignal zero extended (MOVEQ #0,d0:MOVE.b / MOVE) */
-    BL_FREESIGNAL(io_request.port.mp_SigBit);
-    BL_FREESIGNAL(mybit);
+    if (io_request.port.mp_SigBit != 0xff)
+        BL_FREESIGNAL(io_request.port.mp_SigBit);
+    if (mysig)
+        BL_FREESIGNAL(mybit);
 }
 BLITZ_THUNK(brexxlib_codefinit, codefinit_c, "d0-d1/a0-a1");
 
