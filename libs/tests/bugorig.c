@@ -17,6 +17,8 @@
  *                             behind the tables (crunchlib)
  *   crunchlib-pp-readd1       PPDecrunch with an efficiency value of 0
  *                             (crunchlib)
+ *   debuglib-dout2-length     dout2 copies until the output buffer is full
+ *                             (debuglib)
  *   debuglib-findoff-flags    dofindoff: a position right after a token
  *                             (debuglib)
  *   sortlib-word-pivot        Sort of a one element word array reads the
@@ -754,6 +756,83 @@ int bugorig_debuglib_findoff_flags(const char *dir)
                  "(the original (#127) after a token: 8; got %u)", want[i][0], want[i][1], got);
         check(msg, got == want[i][1]);
     }
+    return failures ? 5 : 0;
+}
+
+/* --------------------------------------------- debuglib-dout2-length */
+
+/* dout2, the string output entry of the output handler that debuglib's
+   evaluate installs (douthandler-4, `bra.w _dout2`: d0.w = length, a0 =
+   the string, appended to astring at doutx), called directly.  The
+   handler has no entry of its own: its address is the operand of
+   evaluate's `subq.w #1,a2 : move.l #_douthandler,d0`; doutx is the word
+   in front of the handler's two `bra.w` (douthandler-10), astring the 272
+   bytes in front of "Print " (the layout of debuglib.c's assembler, as
+   asmcmp_debuglib locates the routines).  Correct: a string of length 3,
+   then one of length 2, leave doutx at 3 and 5, and astring holds the
+   five characters and nothing behind them.  Fixed (#126): the original
+   copied until astring was full (doutx 256 after the first call). */
+int bugorig_debuglib_dout2_length(const char *dir)
+{
+    static const char *names[] = { "memlib", "exitslib", "intlib", "switchlib", "runerrlib",
+                                   "debuglib", NULL };
+    static const UBYTE pstring[] = "Print ";
+    static const char src[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    struct lib *l;
+    UBYTE *astring = NULL, *douth = NULL, *p;
+    UWORD *doutx;
+    unsigned nstr = 0, nhandler = 0, rest = 0, i;
+    char msg[200];
+
+    failures = 0;
+    sysload_stubs = dbgstubs;
+    if (!load_c(dir, names)) {
+        check("load debuglib and the libraries it uses (C build)", FALSE);
+        return 20;
+    }
+    l = getlib(&cset, "debuglib");
+    for (p = l->code; p + sizeof pstring <= l->code + l->size; p += 2) {
+        if (!memcmp(p, pstring, sizeof pstring)) {
+            astring = p - 272;
+            nstr++;
+        }
+        if (p + 8 <= l->code + l->size && W(p) == 0x534a && W(p + 2) == 0x203c) {
+            douth = (UBYTE *)L(p + 4);
+            nhandler++;
+        }
+    }
+    check("debuglib has one \"Print \" (behind astring)", nstr == 1);
+    check("debuglib has one subq.w #1,a2 : move.l #douthandler,d0 (evaluate)", nhandler == 1);
+    if (nstr != 1 || nhandler != 1)
+        return 5;
+    check("douthandler lies in debuglib behind two bra.w",
+          douth >= l->code + 10 && douth < l->code + l->size && W(douth - 8) == 0x6000 &&
+          W(douth - 4) == 0x6000);
+    if (failures)
+        return 5;
+    doutx = (UWORD *)(douth - 10);
+    memset(astring, 0x55, 272);
+    *doutx = 0;
+    markregs(&r);
+    r.a[0] = (ULONG)src;
+    r.d[0] = 0x77770003UL;
+    callregs(douth - 4, &r, 0, 0);                                  /* dout2 */
+    snprintf(msg, sizeof msg, "dout2 of 3 characters leaves doutx at 3 (BUG(orig) (#126): 256; "
+             "got %u)", *doutx);
+    check(msg, *doutx == 3);
+    if (*doutx != 3)
+        return 5;
+    markregs(&r);
+    r.a[0] = (ULONG)src + 10;
+    r.d[0] = 0x77770002UL;
+    callregs(douth - 4, &r, 0, 0);
+    snprintf(msg, sizeof msg, "dout2 of 2 more characters leaves doutx at 5 (got %u)", *doutx);
+    check(msg, *doutx == 5);
+    check("astring holds \"ABCKL\"", !memcmp(astring, "ABCKL", 5));
+    for (i = 5; i < 272; i++)
+        rest += astring[i] != 0x55;
+    snprintf(msg, sizeof msg, "astring behind the 5 characters unchanged (%u bytes changed)", rest);
+    check(msg, rest == 0);
     return failures ? 5 : 0;
 }
 

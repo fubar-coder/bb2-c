@@ -401,15 +401,14 @@ static void BLITZ_ROUTINE douthandler_c(UBYTE c BL_REG(d0))
     astring[doutx++] = c;
 }
 
-/* dout2 - output a string of length d0.  BUG(orig) (#126): the length is only
-   tested for 0, the copy runs until astring is full. */
+/* dout2 - output a string of length d0 (at most up to the end of astring).
+   Fixed (#126): the copy stops after d0 characters; the original tested
+   the length only for 0 and copied until astring was full. */
 static void BLITZ_ROUTINE dout2_c(UWORD len BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
     UWORD pos;
 
-    if (!len)
-        return;
-    for (pos = doutx; pos < 256; pos++)
+    for (pos = doutx; len && pos < 256; pos++, len--)
         astring[pos] = *s++;
     doutx = pos;
 }

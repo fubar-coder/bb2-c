@@ -47,6 +47,7 @@ int bugorig_crunchlib_crm_overlap_4gb(const char *dir);
 int bugorig_crunchlib_crm2_readtab(const char *dir);
 int bugorig_crunchlib_pp_readd1(const char *dir);
 int bugorig_debuglib_findoff_flags(const char *dir);
+int bugorig_debuglib_dout2_length(const char *dir);
 int bugorig_sortlib_word_pivot(const char *dir);
 int selftest_keeps_wrong(void);
 int selftest_mem_wrong(void);
@@ -265,6 +266,11 @@ TEST_CASE("crunchlib-crm2-readtab", "[.bug-orig]")
 TEST_CASE("crunchlib-pp-readd1", "[.bug-orig]")
 {
     CHECK(bugorig_crunchlib_pp_readd1(progdir()) == 0);
+}
+
+TEST_CASE("debuglib-dout2-length", "[.bug-orig]")
+{
+    CHECK(bugorig_debuglib_dout2_length(progdir()) == 0);
 }
 
 TEST_CASE("debuglib-findoff-flags", "[.bug-orig]")
