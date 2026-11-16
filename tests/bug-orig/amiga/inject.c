@@ -123,6 +123,15 @@
  *   inuse=PATH             after COMMAND: is PATH still in use (an
  *                          exclusive Lock fails with ERROR_OBJECT_IN_USE,
  *                          e.g. a lock left over); up to 4 times
+ *   freesignal             FreeSignal of the process on a signal it has not
+ *                          allocated (its bit clear in tc_SigAlloc, a
+ *                          number above 31) or on one of the system's
+ *                          signals 0-15 is counted and not done (e.g. a
+ *                          cleanup that frees the signal of a port it never
+ *                          set up); the numbers are written, up to 8
+ *   closedevice            CloseDevice of the process on a request without
+ *                          a device (io_Device 0: OpenDevice failed or was
+ *                          never called) is counted and not done
  * Input while COMMAND runs (by a second process, the driver):
  *   click=TITLE/TEXT       GADGETUP on the gadget with the text TEXT
  *                          (GadgetText->IText) of the window with the title
@@ -174,6 +183,9 @@
  *   alertlog: N alerts           (alertlog) then, in the order raised:
  *   alert XXXXXXXX               the number (hex; up to 16)
  *   opencount: NAME +N           opened minus closed
+ *   freesignal: N calls on a signal not allocated   (freesignal) then:
+ *   freesignal N                 the number (decimal; up to 8)
+ *   closedevice: N calls on a request without a device
  *   current dir at end: start | other
  *   current dir: the start lock was unlocked   (only if so)
  *   in use: PATH | not in use: PATH | missing: PATH
@@ -224,6 +236,8 @@
 #define LVO_CACHECLEARE    (-642)
 #define LVO_OPENDEVICE     (-444)
 #define LVO_OPENFROMLOCK   (-378)
+#define LVO_FREESIGNAL     (-336)
+#define LVO_CLOSEDEVICE    (-450)
 
 struct IntuitionBase *IntuitionBase;
 
@@ -263,6 +277,8 @@ void execalert_patch(void), openfromlock_patch(void);
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
 void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
 void createproc_patch(void), closelib_patch(void), unlock_patch(void), keys_stub(void);
+APTR old_freesignal, old_closedevice;
+void freesignal_patch(void), closedevice_patch(void);
 
 __asm__(
 "   .text\n"
@@ -490,6 +506,32 @@ __asm__(
 "   bne.s   12f\n"
 "   move.l  _old_unlock,-(sp)\n"
 "12: rts\n"
+/* FreeSignal(d0 number): freesignal_pre(number) != 0 -> not done, else
+   the original */
+"   .even\n"
+"_freesignal_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  d0,-(sp)\n"
+"   jsr     _freesignal_pre\n"
+"   addq.l  #4,sp\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   13f\n"
+"   move.l  _old_freesignal,-(sp)\n"
+"13: rts\n"
+/* CloseDevice(a1 ioreq): closedevice_pre(ioreq) != 0 -> not done, else
+   the original */
+"   .even\n"
+"_closedevice_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  a1,-(sp)\n"
+"   jsr     _closedevice_pre\n"
+"   addq.l  #4,sp\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   14f\n"
+"   move.l  _old_closedevice,-(sp)\n"
+"14: rts\n"
 /* OpenFromLock(d1 lock): the original, then openfromlock_post(result,
    lock) */
 "   .even\n"
@@ -890,6 +932,32 @@ ULONG opendev_pre(const char *name, struct IORequest *io)
     odf_done++;
     io->io_Device = NULL;
     io->io_Error = IOERR_OPENFAIL;
+    return 1;
+}
+
+/* freesignal: a FreeSignal on a signal the process has not allocated or
+   on a system signal; closedevice: a CloseDevice without a device */
+#define MAXFS 8
+static int o_freesignal, o_closedevice;
+static ULONG fs_done, fs_num[MAXFS], cd_done;
+
+ULONG freesignal_pre(LONG num)
+{
+    if (!o_freesignal || !ours())
+        return 0;
+    if (num >= 16 && num <= 31 && (SysBase->ThisTask->tc_SigAlloc & (1UL << num)))
+        return 0;
+    if (fs_done < MAXFS)
+        fs_num[fs_done] = (ULONG)num;
+    fs_done++;
+    return 1;
+}
+
+ULONG closedevice_pre(struct IORequest *io)
+{
+    if (!o_closedevice || !ours() || !io || io->io_Device)
+        return 0;
+    cd_done++;
     return 1;
 }
 
@@ -1450,6 +1518,10 @@ static int option(const char *a)
         strcpy(oc_name[noc++], a + 10);
         return 1;
     }
+    if (!strcmp(a, "freesignal"))
+        return o_freesignal = 1;
+    if (!strcmp(a, "closedevice"))
+        return o_closedevice = 1;
     if (!strcmp(a, "cd"))
         return o_cd = 1;
     if (!strncmp(a, "cd=", 3)) {
@@ -1535,6 +1607,10 @@ static void patch(int on)
         old_write = SetFunction(dos, LVO_WRITE, (APTR)write_patch);
         old_opendev = SetFunction(ex, LVO_OPENDEVICE, (APTR)opendev_patch);
         old_openfromlock = SetFunction(dos, LVO_OPENFROMLOCK, (APTR)openfromlock_patch);
+        if (o_freesignal)
+            old_freesignal = SetFunction(ex, LVO_FREESIGNAL, (APTR)freesignal_patch);
+        if (o_closedevice)
+            old_closedevice = SetFunction(ex, LVO_CLOSEDEVICE, (APTR)closedevice_patch);
         if (o_alerts)
             old_alert = SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT,
                                     (APTR)alert_patch);
@@ -1553,6 +1629,10 @@ static void patch(int on)
         SetFunction(dos, LVO_WRITE, old_write);
         SetFunction(ex, LVO_OPENDEVICE, old_opendev);
         SetFunction(dos, LVO_OPENFROMLOCK, old_openfromlock);
+        if (o_closedevice)
+            SetFunction(ex, LVO_CLOSEDEVICE, old_closedevice);
+        if (o_freesignal)
+            SetFunction(ex, LVO_FREESIGNAL, old_freesignal);
         if (o_alerts)
             SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT, old_alert);
         if (o_wbfrontfail)
@@ -1636,7 +1716,7 @@ static const char usage[] =
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
     "    track pad guard guardseg fill=XX freefill=XX datestamp=YYYY-MM-DD\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
-    "    undobuf cacheflush=NAME\n"
+    "    undobuf cacheflush=NAME freesignal closedevice\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
 
 int main(int argc, char **argv)
@@ -1673,6 +1753,7 @@ int main(int argc, char **argv)
             "              [freefill=XX]\n"
             "              [datestamp=YYYY-MM-DD]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
+            "              [freesignal] [closedevice]\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
         return 20;
@@ -1878,6 +1959,19 @@ int main(int argc, char **argv)
     }
     for (k = 0; k < noc; k++) {
         sprintf(line, "inject: opencount: %s %+ld\n", oc_name[k], (long)oc_count[k]);
+        put(line);
+    }
+    if (o_freesignal) {
+        sprintf(line, "inject: freesignal: %lu calls on a signal not allocated\n", fs_done);
+        put(line);
+        for (k = 0; k < (int)fs_done && k < MAXFS; k++) {
+            sprintf(line, "inject: freesignal %lu\n", fs_num[k]);
+            put(line);
+        }
+    }
+    if (o_closedevice) {
+        sprintf(line, "inject: closedevice: %lu calls on a request without a device\n",
+                cd_done);
         put(line);
     }
     if (o_cd) {

@@ -371,7 +371,7 @@ C, binary = source (MED V3 player by T. Kinnunen; SYNTH, RELVOL, IFFMOCT, HOLD, 
 
 ## 88 speaklib
 
-C, binary = source. narrator_rb byte-exact (88 bytes, V37 part at an odd address = VoiceLoc). If translator.library or narrator.device is missing, "Failed To Open Speech Library" occurs even without debugger (TRAP in normal code). BUG(orig): Translate$ writes the phonemes over the argument (length with terminating 0, a3 behind it) (#277); Finit closes device and signal even after a failed init (#278); SetVoice limits with word comparisons (#279). Not a bug (a statement): PhoneticSpeak leaves a3 on the argument. In the emulator (OS 3.2) translator.library and narrator.device are missing → t113 (tests-runerr) checks only the init error; Translate$/SetVoice/VoiceLoc not comparable.
+C, binary = source. narrator_rb byte-exact (88 bytes, V37 part at an odd address = VoiceLoc). If translator.library or narrator.device is missing, init raises "Failed To Open Speech Library" with a TRAP #0 in the normal code: the runtime error with the debugger, a Software Failure without it. BUG(orig): Translate$ writes the phonemes over the argument (length with terminating 0, a3 behind it) (#277); Finit closes device and signal even after a failed init (#278); SetVoice limits with word comparisons (#279). Not a bug (a statement): PhoneticSpeak leaves a3 on the argument. The Workbench of the emulator tests (`workbench-311.hdf`) has translator.library and narrator.device: t113 (tests-runerr) checks VoiceLoc, SetVoice and Translate$ (no Speak: it would play).
 
 ## 140 gadgetslib
 
