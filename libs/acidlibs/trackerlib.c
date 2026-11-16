@@ -35,7 +35,6 @@
  * the module.
  *
  * BUG(orig), kept (as in the NoiseTracker player):
- *   - repeat start * 2 as a word (ASL.w): repeats beyond 64K wrap. (#291)
  *   - after a pattern break / position jump (D, B) the end of the song is
  *     compared with the first byte of the pattern data instead of the
  *     song length, unless the row was the last of the pattern. (#292)
@@ -47,6 +46,10 @@
  * with the finetune byte (MOVE.w), so a volume slide (A) of a sample with
  * finetune jumped to $40 or computed on the whole word.  AUDxVOL still
  * gets the word (Paula reads bits 0-6 only).
+ * Fixed (intended deviation, #291): the repeat start of a sample is
+ * doubled as a long; the original doubled it as a word (ASL.w), so a
+ * repeat from 64 KB on started too early.  12 cycles fewer per note
+ * with a repeat (no AND.l #$FFFF).
  * Fixed (intended deviation, #295): mt_init clears the sample number of
  * every note in the patterns whose number is above 31 (the module is
  * changed in memory, as the first long of each sample is); the original
@@ -524,7 +527,7 @@ BL_ALWAYS_INLINE void mt_playvoice(struct voice *v, ULONG aud, const UBYTE *note
         v->vol = (UBYTE)finevol;
         repeat = SINFO(off, repeat);
         if (repeat) {
-            v->loopstart = v->start + (UWORD)(repeat << 1);
+            v->loopstart = v->start + ((ULONG)repeat << 1); /* Fixed (#291) */
             len = repeat + SINFO(off, replen);
             v->length = len;
             v->looplen = SINFO(off, replen);
@@ -729,7 +732,7 @@ static void freemod2(struct module *m, int blitz)
  *
  * Errors (debugger, playchk): "Uninitialized Module".
  *
- * BUG(orig): the NoiseTracker player's bugs, see the file header (#291 -
+ * BUG(orig): the NoiseTracker player's bugs, see the file header (#292 -
  * #294).
  */
 static void BLITZ_ROUTINE doplaymod_a(void) { playmod2(0); }

@@ -8,6 +8,7 @@
 ; behind it) and reads the start ($4.l) and loop start ($a.l) of voice 0
 ; after row 0 was played (PlayModule: speed 6, one row per 6 frames).
 ; Correct: the loop starts $10000 bytes behind the start.
+; @fixed #291
 ; @configs clib
 ; @pass file=rep.mod|@TESTDATA@/trackerlib-repeat-word.mod
 DEFTYPE .l
