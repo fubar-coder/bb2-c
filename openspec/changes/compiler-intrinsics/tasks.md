@@ -16,7 +16,7 @@ Order: group 1 prepares, groups 2 and 3 are the priority (`Int`, `Frac`), group 
 
 - [x] 2.1 `Int` with a Quick argument inline (design.md Decision 2): truncation towards zero, d0 only, no type word, no `intchk` call; update `stackuse`. Verify: `Int` of the sweep (every integer part at three fractions, boundaries -32768.0, -0.5, 0, 32767.99998) equals the value computed with integer arithmetic; the test `intrinsic-int` passes in both `@runerrs` modes.
 - [x] 2.2 Tests of the cases where `Int` is not an intrinsic: a Float, a Long, a Word, a Byte argument, a string argument (with checking on: "Illegal Type" as before), an expression of type Quick (this one IS an intrinsic: say so in the test), `a=b+Int(q)` with a partial result held in a register. Verify: each compiles with the library call (or inline for the Quick ones) and prints the values of the library path; the stop with "Illegal Type" is unchanged.
-- [ ] 2.3 Measure `bmath.int` with the `perf` preset (before and after, three runs each); tighten the budget in `tests/perf/budgets.txt`; both compilers (`blitz2`, `blitz2-ab3`) compile the tests. Verify: `ctest --preset perf -R bmath` passes with the new budget; the cycles are named in the commit.
+- [x] 2.3 Measure `bmath.int` with the `perf` preset (before and after, three runs each); tighten the budget in `tests/perf/budgets.txt`; both compilers (`blitz2`, `blitz2-ab3`) compile the tests. Verify: `ctest --preset perf -R bmath` passes with the new budget; the cycles are named in the commit.
 
 ## 3. Frac of a Quick used as a Quick (priority)
 
