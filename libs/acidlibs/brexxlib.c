@@ -53,6 +53,9 @@
  * and the handler takes firstval only at a start (newstart), so that the
  * time base of the running Record or PlayBack stays (bug-orig test
  * brexxlib-addtape-mode).
+ * Fixed (#103): XStatus returned the mode word with bit 15 ($8001, $8002,
+ * $8000 until the handler had run); here without it (bug-orig test
+ * brexxlib-xstatus-bit15).
  * BUG(orig), kept:
  *  - ClickButton: the second (button up) call gets d0 as left by the
  *    first one's addtape: 0 normally, but the QuietTrap value when the
@@ -67,7 +70,6 @@
  *  - LoadTape reads the start time unchecked and stops at the first
  *    short read (no error for a damaged file). (#101)
  *  - Type: a character rawkeylib cannot convert gives code $FFFF. (#102)
- *  - XStatus returns mode including bit 15 ($8001 ...). (#103)
  * DIFF: "Can't Open File" (SaveTape/LoadTape) is `BEQ err1` into the
  * error check area in the original (without the debugger a jump behind
  * the library); here trap and message are in the normal code.
@@ -361,13 +363,14 @@ static ULONG addtape(void)
 /**
  * @brief XStatus: what BREXX is doing.
  *
- * BUG(orig) (#103): returns mode including bit 15 ($8001 ...).
+ * Fixed (#103): without bit 15, the handler's flag (the original returned
+ * $8001, $8002 or $8000 until the handler had run).
  *
  * @return d0: mode - 0 nothing, 1 record, 2 playback (MOVEQ #0:MOVE)
  */
 static ULONG BLITZ_ROUTINE doxstatus_c(void)
 {
-    return mode;                                /* MOVEQ #0:MOVE */
+    return mode & 0x7fff;                       /* MOVEQ #0:MOVE */
 }
 BLITZ_ALIAS(doxstatus, doxstatus_c);
 
