@@ -81,7 +81,8 @@ Further macros in `libs/include/blitzlib.h` (details in the comments there):
 | `BLITZ_THUNK`, `_Z`, `_PRE`, `_POST`, `_POP` | entry point that saves registers / sets CCR / clears stack arguments, calls a C function |
 | `BLITZ_ALIBJSR(tok, r)`, `_FORM`, `BLITZ_BLIBJSR` | call a routine of another library (d0/d1/a0/a1 via `struct bl_regs`); like every ALibJsr/BLibJsr macro it has a3 (`blitz_string`) as in/out operand, because a string function moves a3 |
 | `BLITZ_ALIBJSR_A6(tok, base, x)` | the same with a6 loaded (e.g. floatquicklib `$D300` needs the ffplib base), d0 there and back |
-| `BLITZ_BASEJSR(base, off, r)`, `BLITZ_BASEJSR1/2(base, off, x0[, x1])` | `JSR off(a6)` with a6 = base (mathffp, memlib table, system library); 1/2 = operands in d0/d1 |
+| `BLITZ_SYSJSR(base, off, r)`, `BLITZ_SYSJSR1/2(base, off, x0[, x1])` | `JSR off(a6)` with a6 = base to a routine that keeps d2-d7/a2-a6: a system library (AmigaOS convention, e.g. mathffp) or memlib's membase table (its tested contract); only d0/d1/a0/a1 are declared changed; 1/2 = operands in d0/d1, result d0 |
+| `BLITZ_BASEJSR(base, off, r)` | `JSR off(a6)` with a6 = base to a routine with an open contract (e.g. fontlib's previous input handler): every register but a3-a5/a7 declared changed |
 | `BLITZ_ALIBJSR_CCR(tok, r, "cc")`, `BLITZ_ALIBJSR_CCR_D0A0(tok, "cc", &d0, a0)` | call of a routine that answers in the CCR (iffiolib: Z = ok); result `Scc` directly after the call |
 | `BLITZ_ALIBJSR_D4`, `BLITZ_BLIBJSR_D4(tok, d0, d1, d2, d3)` | call with arguments in d0–d3 (e.g. spriteslib ShowSprite) |
 | `BLITZ_ENTRY_C(f)` | code label as `char e_f[]` for table entries with address arithmetic |

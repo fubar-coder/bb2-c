@@ -29,8 +29,8 @@
  * what the register rule needs (docs/libs/deviations.md, "Register
  * preservation"); Rnd keeps a0/a1, which a caller needs.  Val is
  * BLITZ_ENTRYPOINT: it saves nothing and changes d0-d7/a0-a2 like the
- * original (its mathffp calls keep d2-d7, see FFPJSR1).  The CCR is no
- * result.
+ * original (its mathffp calls keep d2-d7, see BLITZ_SYSJSR1).  The CCR is
+ * no result.
  *
  * Inline routines (`$a000,len` prefix, copied into the program): QFrac,
  * QWrap, QAbs, VPos, True, False - assembler text, as in the original.
@@ -742,31 +742,10 @@ GENRND
 
 /* ----------------------------------------------------------------- Val */
 
-/* FFPJSR1(ffp, lvo, x0) / FFPJSR2(ffp, lvo, x0, x1) - JSR lvo(a6) of
-   mathffp with d0 = x0 (and d1 = x1), result d0.  mathffp is a system
-   library: it changes d0, d1, a0 and a1 only (the AmigaOS calling
-   convention; the original keeps its digits and its integer part in
-   d5-d7 across the calls), so unlike BLITZ_BASEJSR1/2 only these are
-   declared changed and GCC keeps the parse state in the other
-   registers instead of saving d2-d7/a2/a6.  a6 is an input and stays. */
-#ifndef BL_CODE_MODEL
-#define FFPJSR2(ffp, lvo, x0, x1) ({                                        \
-    register ULONG _d0 __asm("d0") = (x0);                                  \
-    register ULONG _d1 __asm("d1") = (x1);                                  \
-    register const void *_a6 __asm("a6") = (ffp);                           \
-    __asm volatile("jsr %c3(a6)"                                            \
-        : "+d"(_d0), "+d"(_d1) : "a"(_a6), "i"(lvo) : "a0", "a1", "cc");    \
-    _d0; })
-#define FFPJSR1(ffp, lvo, x0) ({                                            \
-    register ULONG _d0 __asm("d0") = (x0);                                  \
-    register const void *_a6 __asm("a6") = (ffp);                           \
-    __asm volatile("jsr %c2(a6)"                                            \
-        : "+d"(_d0) : "a"(_a6), "i"(lvo) : "d1", "a0", "a1", "cc");         \
-    _d0; })
-#else
-#define FFPJSR1(ffp, lvo, x0) BLITZ_BASEJSR1(ffp, lvo, x0)
-#define FFPJSR2(ffp, lvo, x0, x1) BLITZ_BASEJSR2(ffp, lvo, x0, x1)
-#endif
+/* The mathffp calls are BLITZ_SYSJSR1/2: mathffp is a system library and
+   changes d0, d1, a0 and a1 only (the original keeps its digits and its
+   integer part in d5-d7 across the calls), so GCC keeps the parse state
+   in the other registers instead of saving d2-d7/a2/a6. */
 
 /* The parse state of doval2 is the original's registers as locals of the
    inline helpers: p = a3 (characters), n = d2 (the count, a long:
@@ -824,13 +803,13 @@ BL_ALWAYS_INLINE ULONG notneg(const void *ffp, const UBYTE *p, LONG n)
     ULONG fracflt;                              /* d7: the fraction as float */
 
     if (getdec(&p, &n, &inum, &scale, 0) != '.')
-        return FFPJSR1(ffp, LVO_SPFlt, inum);   /* that's it! */
-    ipart = FFPJSR1(ffp, LVO_SPFlt, inum);
+        return BLITZ_SYSJSR1(ffp, LVO_SPFlt, inum); /* that's it! */
+    ipart = BLITZ_SYSJSR1(ffp, LVO_SPFlt, inum);
     getdec(&p, &n, &frac, &scale, 1);           /* (scale is never 0 now) */
-    x = FFPJSR1(ffp, LVO_SPFlt, scale);         /* divisor to float */
-    fracflt = FFPJSR1(ffp, LVO_SPFlt, frac);    /* fraction to float */
-    x = FFPJSR2(ffp, LVO_SPDiv, fracflt, x);
-    return FFPJSR2(ffp, LVO_SPAdd, x, ipart);
+    x = BLITZ_SYSJSR1(ffp, LVO_SPFlt, scale);       /* divisor to float */
+    fracflt = BLITZ_SYSJSR1(ffp, LVO_SPFlt, frac);  /* fraction to float */
+    x = BLITZ_SYSJSR2(ffp, LVO_SPDiv, fracflt, x);
+    return BLITZ_SYSJSR2(ffp, LVO_SPAdd, x, ipart);
 }
 
 /* gethex - "$" and hex digits (0-9, A-F, a-f), byte arithmetic as in the
@@ -861,7 +840,7 @@ BL_ALWAYS_INLINE ULONG gethex(const void *ffp, const UBYTE *p, LONG n)
         }
         v = (v << 4) + c;                       /* gotdd: ASL.l #4,d0:ADD.b d1,d0 */
     }
-    return FFPJSR1(ffp, LVO_SPFlt, v);          /* dunhx */
+    return BLITZ_SYSJSR1(ffp, LVO_SPFlt, v);        /* dunhx */
 }
 
 /* getbin - "%" and binary digits; count as gethex (BUG(orig) (#302): one byte
@@ -879,7 +858,7 @@ BL_ALWAYS_INLINE ULONG getbin(const void *ffp, const UBYTE *p, LONG n)
             break;
         v = v << 1 | c;                         /* ROXL.l #1,d0 */
     }
-    return FFPJSR1(ffp, LVO_SPFlt, v);
+    return BLITZ_SYSJSR1(ffp, LVO_SPFlt, v);
 }
 
 /**
@@ -929,7 +908,7 @@ static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE doval_c(UBYTE *str BL_REG(d0),
     neg = *p == '-';                            /* (one copy of notneg) */
     v = notneg(ffp, p + neg, n);
     if (neg)
-        v = FFPJSR1(ffp, LVO_SPNeg, v);
+        v = BLITZ_SYSJSR1(ffp, LVO_SPNeg, v);
     return v;
 }
 BLITZ_ALIAS_EP(doval, doval_c);

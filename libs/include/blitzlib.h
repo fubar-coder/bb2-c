@@ -569,17 +569,15 @@ ULONG bl_jsr_clang(ULONG val, struct bl_regs *r);
 #define BL_JSR_(val, r) bl_jsr_clang(val, &(r))
 #endif
 
-/* BLITZ_BASEJSR(base, off, r) - `JSR off(a6)` with a6 = base: call through
-   a jump table / library base that the compiler passed in a register
-   (!libs ...,#la6), e.g. memlib's membase table (JSR (a6) = localloc,
-   JSR 4(a6) = locfree, +8 for the global versions) or a system library
-   (mathffp: JSR -36(a6) = SPFlt).  In/out: r.d0/d1/a0/a1 as with
-   BLITZ_ALIBJSR; the callee may change every register except a3-a5/a7
-   (a6 included), so all others are declared clobbered.  Unlike
-   BLITZ_ALIBJSR, a3 is no operand: the routines called this way (system
-   libraries, memlib's table, fontlib's previous input handler) keep a3.
-   (added by the
-   mathstr group: strings2lib, maxlenlib, floatquicklib, modlib) */
+/* BLITZ_BASEJSR(base, off, r) - `JSR off(a6)` with a6 = base: call
+   through a vector or a library base whose target has an open contract,
+   e.g. fontlib's previous input handler (any library's or program's
+   handler) or a routine of a third-party library the port does not rely
+   on.  In/out: r.d0/d1/a0/a1 as with BLITZ_ALIBJSR; the callee may change
+   every register except a3-a5/a7 (a6 included), so all others are
+   declared clobbered.  Unlike BLITZ_ALIBJSR, a3 is no operand: the
+   routines called this way keep a3.  A library by the AmigaOS convention
+   and memlib's membase table take BLITZ_SYSJSR (below). */
 #ifndef BL_CODE_MODEL
 #define BLITZ_BASEJSR(base, off, r) ({                                      \
     register ULONG _d0 __asm("d0") = (r).d0;                                \
@@ -596,15 +594,66 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
 #define BLITZ_BASEJSR(base, off, r) bl_basejsr_clang(base, off, &(r))
 #endif
 
-/* BLITZ_BASEJSR1(base, off, x0) / BLITZ_BASEJSR2(base, off, x0, x1) -
-   BLITZ_BASEJSR with one operand in d0 / two in d0 and d1 (the others 0),
-   result d0.  The usual form for mathffp (a6 = ffplib base, !libs
-   #ffplib,#la6): BLITZ_BASEJSR2(ffp, LVO_SPAdd, a, b). */
-#define BLITZ_BASEJSR1(base, off, x0) ({                                    \
-    struct bl_regs r_ = { .d0 = (x0) }; BLITZ_BASEJSR(base, off, r_); })
-#define BLITZ_BASEJSR2(base, off, x0, x1) ({                                \
+/* BLITZ_SYSJSR(base, off, r), BLITZ_SYSJSR1(base, off, x0),
+   BLITZ_SYSJSR2(base, off, x0, x1) - `JSR off(a6)` with a6 = base to a
+   routine that keeps d2-d7 and a2-a6:
+   - a library by the AmigaOS convention (d0/d1/a0/a1 scratch, the rest
+     kept): exec, graphics, intuition, diskfont, mathffp, rexxsyslib,
+     translator, ...;
+   - memlib's membase table (blitzhelp.h MEMBASE_xxx: JSR (a6) localloc,
+     JSR 4(a6) locfree, +8 the global versions), by a tested Blitz
+     contract: the KEEPS cases of libs/tests/systest.c ("memlib localloc
+     (table)" and its siblings, recorded from the original) state that
+     localloc and globalloc change d0/d1 only, locfree and globfree d0/a1
+     only.
+   Only d0, d1, a0 and a1 are declared changed, so GCC keeps its values in
+   the other registers across the call instead of saving d2-d7/a2/a6
+   around it; a6 is an input and stays.  `cc` and `memory` are clobbered
+   (the callee writes memory the caller reads: AllocMem, CloseFont, ...).
+   - BLITZ_SYSJSR: r.d0/d1/a0/a1 in and out through struct bl_regs, the
+     general form (also for a second result, e.g. a0 of rexxsyslib
+     ErrorMsg); result d0.
+   - BLITZ_SYSJSR1: d0 = x0 in, result d0; d1/a0/a1 changed.
+   - BLITZ_SYSJSR2: d0 = x0 and d1 = x1 in, result d0; a0/a1 changed.
+     The usual form for mathffp (a6 = the ffplib base, !libs
+     #ffplib,#la6): BLITZ_SYSJSR2(ffp, LVO_SPAdd, a, b).
+   A routine that may change more (a handler, "whatever a6 holds") takes
+   BLITZ_BASEJSR; a call with an argument in d2-d7 or a2-a5 goes through
+   the NDK inline (proto headers with the shadow headers of ndk/safe/). */
+#ifndef BL_CODE_MODEL
+#define BLITZ_SYSJSR(base, off, r) ({                                       \
+    register ULONG _d0 __asm("d0") = (r).d0;                                \
+    register ULONG _d1 __asm("d1") = (r).d1;                                \
+    register ULONG _a0 __asm("a0") = (r).a0;                                \
+    register ULONG _a1 __asm("a1") = (r).a1;                                \
+    register const void *_a6 __asm("a6") = (base);                          \
+    __asm volatile("jsr %c5(a6)"                                            \
+        : "+d"(_d0), "+d"(_d1), "+a"(_a0), "+a"(_a1) : "a"(_a6), "i"(off)   \
+        : "cc", "memory");                                                  \
+    (r).d0 = _d0; (r).d1 = _d1; (r).a0 = _a0; (r).a1 = _a1; _d0; })
+#define BLITZ_SYSJSR1(base, off, x0) ({                                     \
+    register ULONG _d0 __asm("d0") = (x0);                                  \
+    register const void *_a6 __asm("a6") = (base);                          \
+    __asm volatile("jsr %c2(a6)"                                            \
+        : "+d"(_d0) : "a"(_a6), "i"(off)                                    \
+        : "d1", "a0", "a1", "cc", "memory");                                \
+    _d0; })
+#define BLITZ_SYSJSR2(base, off, x0, x1) ({                                 \
+    register ULONG _d0 __asm("d0") = (x0);                                  \
+    register ULONG _d1 __asm("d1") = (x1);                                  \
+    register const void *_a6 __asm("a6") = (base);                          \
+    __asm volatile("jsr %c3(a6)"                                            \
+        : "+d"(_d0), "+d"(_d1) : "a"(_a6), "i"(off)                         \
+        : "a0", "a1", "cc", "memory");                                      \
+    _d0; })
+#else
+#define BLITZ_SYSJSR(base, off, r) bl_basejsr_clang(base, off, &(r))
+#define BLITZ_SYSJSR1(base, off, x0) ({                                     \
+    struct bl_regs r_ = { .d0 = (x0) }; BLITZ_SYSJSR(base, off, r_); })
+#define BLITZ_SYSJSR2(base, off, x0, x1) ({                                 \
     struct bl_regs r_ = { .d0 = (x0), .d1 = (x1) };                         \
-    BLITZ_BASEJSR(base, off, r_); })
+    BLITZ_SYSJSR(base, off, r_); })
+#endif
 
 /* BLITZ_ALIBJSR_A6(tok, base, x) - ALibJsr tok with a6 = `base`, in d0 =
    x, result d0.  BLITZ_ALIBJSR does not load a6 (and declares it

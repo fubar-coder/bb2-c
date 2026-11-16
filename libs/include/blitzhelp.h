@@ -10,9 +10,9 @@
  *   custom chips          BL_CUSTOM BL_CUSTOMW BL_CUSTOML BL_BLITBUSY
  *                         BL_BLITWAIT bl_blitoff BL_INTENA BL_INTS_OFF
  *                         BL_INTS_ON
- *   mathffp               LVO_SPFix ... LVO_SPCeil (with BLITZ_BASEJSR1/2)
+ *   mathffp               LVO_SPFix ... LVO_SPCeil (with BLITZ_SYSJSR1/2)
  *   system lib routines   TOK_globalloc ... (for BLITZ_ALIBJSR),
- *                         MEMBASE_localloc ... (memlib table, BLITZ_BASEJSR)
+ *                         MEMBASE_localloc ... (memlib table, BLITZ_SYSJSR)
  *   command lib routines  TOK_setin ... TOK_iffopen ... TOK_getpal ...
  *
  * Only what several libraries need; anything specific to one library
@@ -190,7 +190,7 @@ BL_ALWAYS_INLINE ULONG bl_blitoff(const UWORD *bpr, WORD x, WORD y)
 
 /* ------------------------------------------------------------ mathffp */
 
-/* mathffp.library LVOs, for BLITZ_BASEJSR/BLITZ_BASEJSR1/2 with a6 = the
+/* mathffp.library LVOs, for BLITZ_SYSJSR/BLITZ_SYSJSR1/2 with a6 = the
    ffplib base (!libs #ffplib,#la6).  (Not named SPFix ...: those are the
    NDK's inline macros.) */
 #define LVO_SPFix   (-30)

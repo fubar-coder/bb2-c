@@ -109,7 +109,8 @@ carried over (for the comparison with AmiBlitz3).
   `libs/include/blitzlib.h`/`blitzhelp.h` instead of locally: `BLITZ_ALIBJSR_A6`
   (ALibJsr with a6, vallib), `BLITZ_ERRCHK_THUNK`/`BLITZ_ERRCHK_MESSAGE`
   (error checks in C with messages in the error check area, linklistlib,
-  vallib), `BLITZ_BASEJSR1/2` + `LVO_SP…` (mathffp), `BL_SETW`/`BL_SETB`/
+  vallib), `BLITZ_SYSJSR`/`BLITZ_SYSJSR1/2` + `LVO_SP…` (system
+  libraries such as mathffp, memlib's table), `BL_SETW`/`BL_SETB`/
   `BL_EXTL`/`BL_SWAP`, `bl_divu_w`/`bl_divs_w` (datelib, modlib),
   `BL_POPL`/`BL_POPW` (a2 cursor, stringfunclib, vallib), `TOK_…`/`MEMBASE_…`
   (memlib, floatquicklib etc.). New ports use these instead of their own

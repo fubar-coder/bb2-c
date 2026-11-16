@@ -94,7 +94,7 @@ The four commands still 10 % or more slower than the original in `perf-analysis/
 
 ## 12. A light call form for system libraries and memlib (analysis: ~/.local/share/bb2-c-work/analyse-sysjsr.md)
 
-- [ ] 12.1 `BLITZ_SYSJSR`, `BLITZ_SYSJSR1`/`2` (and a d0/a1 form if needed) in blitzlib.h: only d0/d1/a0/a1 clobbered, a6 input only; vallib's FFPJSR1/2 move onto it; `BLITZ_BASEJSR1/2` and their texts go
+- [x] 12.1 `BLITZ_SYSJSR`, `BLITZ_SYSJSR1`/`2` (and a d0/a1 form if needed) in blitzlib.h: only d0/d1/a0/a1 clobbered, a6 input only; vallib's FFPJSR1/2 move onto it; `BLITZ_BASEJSR1/2` and their texts go - done (2026-11-16): `BLITZ_SYSJSR` (d0/d1/a0/a1 in and out), `BLITZ_SYSJSR1`/`2`; memlib locfree takes the general form (no d0/a1 form: it costs only `moveq #0,d1`/`move.l d1,a0` on the rare free path); vallib.obj stays byte-identical with `memory`, so bstr.val is unchanged
 - [ ] 12.2 strings2lib and maxlenlib call memlib's table with it (tested contract, systest KEEPS); measure bstr.pstr/bstr.fstr and tighten their budgets
 - [ ] 12.3 The system-library calls (exec, graphics, diskfont, intuition, rexxsyslib, translator; BL_FREESIGNAL) use it; BLITZ_BASEJSR stays for the open-contract calls (fontlib previous handler), sortlib FFP_CC_, runerrlib spfix and gtlib addglist stay private, libs/userlibs/rwe unchanged
 - [ ] 12.4 Update final-table.md
