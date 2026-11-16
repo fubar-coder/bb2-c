@@ -126,6 +126,14 @@ kind F):
   called `mt_music`, so in CIA mode nothing played (#450; test
   `ciatrklib-setciaint-icr-bit`, library test `rwe_ciatrklib`, the cases
   `init (CIA)|AddICRVector ...`).
+* With runtime error checking, `FreeTrackerModule` of the loaded or
+  copied module that plays is the runtime error "Tracker: Stop the module
+  before freeing it." (the error check `_freecheck`); the original's
+  `_slotcheck` let it be freed, and the play routine went on reading the
+  freed memory. Without the debugger it is freed as before: freeing the
+  module that plays is a programming error (the documentation of
+  `LoadTrackerModule`: "The results are unpredictable") (#436; test
+  `ciatrklib-free-while-playing`).
 
 ## BUG(orig), kept
 
@@ -136,8 +144,7 @@ kind F):
   1, flag 0); from other memory it copies to chip memory;
   without memory the slot keeps the old address with flag 2 and the new
   length (a later `FreeTrackerModule` frees memory that was never
-  allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"). `FreeTrackerModule` does not stop a module that
-  plays from the slot (#436).
+  allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * `GetTrackerEvent` changes only d0's low byte; it is declared `#byte`,
   so that is no defect. By design (#446): `ModuleToChip` is an RTS that
   returns its argument; the library's documentation says "the command

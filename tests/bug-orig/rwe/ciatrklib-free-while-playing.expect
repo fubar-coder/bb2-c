@@ -3,5 +3,5 @@ ok
 [run]
 loaded -1
 playing before -1
-playing 0
+REQUESTER: AutoRequest body "Tracker: Stop the module before freeing it." *
 rc=0

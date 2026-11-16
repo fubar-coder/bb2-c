@@ -63,8 +63,6 @@
  *     chip registers ($DFF000 + the pattern offset) instead of the
  *     pattern (#475); effect 8 (the event) is seen only on ticks other
  *     than 0 (#435).
- *   - FreeTrackerModule does not stop a module that plays from the slot
- *     (#436).
  * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
  * declared #byte).  By design (#446): ModuleToChip does nothing and
  * returns its argument; the documentation of the library says so (the
@@ -125,6 +123,12 @@
  * loaded the long at the ADDRESS 1 or 2 (MOVE.l %00000001,D0 without
  * `#`): an address error on a 68000, an invalid bit with ExecBase above
  * 16 MB (in Amiberry the interrupt never played).
+ * Fixed (intended deviation, #436): FreeTrackerModule of the module that
+ * plays is a runtime error ("Tracker: Stop the module before freeing
+ * it.", the error check _freecheck); the original freed it and the play
+ * routine went on reading the freed memory, also with runtime error
+ * checking.  Without the debugger it is still freed (a programming
+ * error, as the documentation of LoadTrackerModule says).
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -155,7 +159,7 @@ void _getmoduleposition(void), _pausemodule(void), _change_playtype(void);
 void _Play_Tracker(void), _Volume_Control(void), _ChangeTrackerMask(void);
 void _maxpatterns(void), _inittrackerlib(void), _finittrackerlib(void);
 void ciatrklib_mt_music(void), _loadcheck(void), _checkused(void);
-void _decodecheck(void), _slotcheck(void);
+void _decodecheck(void), _freecheck(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -202,7 +206,7 @@ BLITZ_NAME("GetTrackerLocation", "(TrackerModule#)");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_freetrackermodule, _slotcheck, 0);
+BLITZ_SUBS(_freetrackermodule, _freecheck, 0);
 BLITZ_NAME("FreeTrackerModule", "TrackerModule#");
 
 BLITZ_AFUNCTION(BL_BYTE);
@@ -1614,8 +1618,10 @@ static ULONG BLITZ_ROUTINE gettrkloc_c(ULONG num BL_REG(d0))
  * @brief FreeTrackerModule TrackerModule#: free a slot's module.
  *
  * The memory of a loaded or copied module is freed; a module that plays
- * from the slot is not stopped (BUG(orig) (#436)).  Error check
- * (_slotcheck): slots 0-8.
+ * from the slot is not stopped.  Error check (_freecheck): slots 0-8,
+ * and not the loaded or copied module that plays (fixed, #436: the
+ * original's _slotcheck let it be freed while the play routine went on
+ * reading it).
  * @param num  d0: the slot
  */
 static void BLITZ_ROUTINE freetrk_c(ULONG num BL_REG(d0))
@@ -1968,6 +1974,7 @@ BLITZ_ERRCHK_MESSAGE(msg00, "Tracker: You may only use slots 0-8.");
 BLITZ_ERRCHK_MESSAGE(msg01, "Tracker: Cannot load module on top of another.");
 BLITZ_ERRCHK_MESSAGE(msg02, "Tracker: Load/Decode module first.");
 BLITZ_ERRCHK_MESSAGE(msg03, "Tracker: Decode to an empty slot.");
+BLITZ_ERRCHK_MESSAGE(msg04, "Tracker: Stop the module before freeing it.");
 
 /* _slotcheck: CMP #9,d0 (word) */
 static void BLITZ_ERRCHK slotcheck_c(ULONG num BL_REG(d0))
@@ -2000,7 +2007,20 @@ static void BLITZ_ERRCHK decodecheck_c(ULONG num BL_REG(d0))
         BLITZ_RUNERR(msg03);
 }
 
+/* FreeTrackerModule: _slotcheck, and the memory of a loaded or copied
+   module (flag 1, 2) that plays (mt_data, mt_Enable) is not freed
+   (fixed, #436: the original has only _slotcheck) */
+static void BLITZ_ERRCHK freecheck_c(ULONG num BL_REG(d0))
+{
+    struct modent *e;
+
+    slotcheck_c(num);
+    e = slot(num);
+    if (e->addr && e->flag && e->addr == ciapart.mt_data && playdata.Enable)
+        BLITZ_RUNERR(msg04);
+}
+
 BLITZ_ERRCHK_THUNK(_loadcheck, loadcheck_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_checkused, checkused_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_decodecheck, decodecheck_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(_slotcheck, slotcheck_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_freecheck, freecheck_c, "d0-d1/a0-a1");
