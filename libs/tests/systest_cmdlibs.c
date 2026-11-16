@@ -4,7 +4,7 @@
  *   entries of vallib, scrolllib, gameiolib, mouselib, collslib,
  *   shapeslib, fontlib, windowslib and blitzkeyslib; the rectangle tests
  *   of collslib, Frac, Val, BlitzKey and Inkey$ (editlib), Print on a bitmap
- *   (printlib, fontlib), Str$ and UStr$ (printlib)
+ *   (printlib, fontlib), Str$ and UStr$ (printlib), Instr (stringfunclib)
  * (plus memlib and strcomplib, which they call) on the Amiga: one set (the
  * original from acidlibs or the C build, as LIBSET says), observed as
  * cases (sysload.h; the expected data
@@ -1416,13 +1416,64 @@ static void test_strstr(void)
     str_case("UStr$", 5, 0xa0000042);
 }
 
+/* ----------------------------------------------------------------- Instr */
+
+/* Instr(String$,Findstring$[,Startpos]): d0 = String$, d1 = Findstring$,
+   d2 = Startpos, the lengths at -4(a2) (String$) and -8(a2); a3 =
+   String$ afterwards.  CaseSense On and Off (Off compares "a".."z" as
+   upper case only: "`", "{", "@" and "[" stay), matches at the start, in
+   the middle, at the end, cut off by the end, the empty strings, and
+   Startpos from 1 to behind the string (Startpos <= 0 and near $7FFFFFFF
+   are the fixed bugs #287 and #1030, with bug-orig tests). */
+static ULONG instrframe[2];
+
+static void instr_case(const char *cs, const char *s, const char *f, LONG start)
+{
+    if (start)
+        sprintf(VEC, "%s \"%s\" \"%s\" from %ld", cs, s, f, start);
+    else
+        sprintf(VEC, "%s \"%s\" \"%s\"", cs, s, f);
+    instrframe[0] = strlen(f);
+    instrframe[1] = strlen(s);
+    DO1(N("stringfunclib", "Instr", start ? 1 : 0), R.d[0] = (ULONG)s; R.d[1] = (ULONG)f;
+        if (start) R.d[2] = start; R.a[2] = (ULONG)&instrframe[2]);
+    OBS("d0", R.d[0]);
+    OBS("a3 - string", R.a[3] - (ULONG)s);
+}
+
+static void test_instr(void)
+{
+    static const char *hay[] = { "Hello, World of Blitz", "", "aaab", "abababc", "a{z`@[",
+                                 "BLITZ blitz" };
+    static const char *needles[] = { "Blitz", "blitz", "BLITZ", "", "H", "z", "o", "World",
+                                     "WORLD", "of B", "xyz", "Blitzz", "aab", "abc", "bab",
+                                     "A{Z", "`@", "@[", "[", "{", "a", "Hello, World of Blitz",
+                                     "Hello, World of Blitz!" };
+    static const LONG starts[] = { 1, 2, 5, 13, 17, 18, 21, 22, 23, 100 };
+    unsigned c, i, j, k;
+
+    for (c = 0; c < 2; c++) {
+        ROUT = "CaseSense";
+        sprintf(VEC, "%s", c ? "Off" : "On");
+        DO1(N("stringfunclib", "CaseSense", 0), R.d[0] = c ? 0 : 0xffff);
+        ROUT = "Instr";
+        for (i = 0; i < sizeof hay / sizeof hay[0]; i++)
+            for (j = 0; j < sizeof needles / sizeof needles[0]; j++) {
+                instr_case(c ? "Off" : "On", hay[i], needles[j], 0);
+                if (i == 0 || i == 3)
+                    for (k = 0; k < sizeof starts / sizeof starts[0]; k++)
+                        instr_case(c ? "Off" : "On", hay[i], needles[j], starts[k]);
+            }
+    }
+}
+
 /* ------------------------------------------------------------------ main */
 
 static const char *names[] = {
     "memlib", "strcomplib", "memacclib", "sortlib", "mathtranslib", "utillib",
     "environlib", "maxslib", "inputoutputlib", "rawkeylib", "windowslib", "blitzkeyslib",
     "floatquicklib", "vallib", "iffiolib", "audiolib", "scrolllib", "gameiolib", "mouselib",
-    "collslib", "shapeslib", "fontlib", "editlib", "printlib", NULL
+    "collslib", "shapeslib", "fontlib", "editlib", "printlib", "stringfunclib", NULL
 };
 
 /* the tokens of the libraries the small entries call and this program
@@ -1553,10 +1604,12 @@ int main(int argc, char **argv)
     KEEPS("BlitzFont _use", d0-d7|a0-a3|a6);
     KEEPS_STATEMENT("Print", none);
     KEEPS("dooutsingle", d1-d7|a0-a3|a6);
-    /* test_strstr */
+    /* test_strstr, test_instr */
     KEEPS_STRFUNCTION("Str$", none);
     KEEPS_STRFUNCTION("UStr$", none);
     KEEPS_STATEMENT("Format", none);
+    KEEPS_STATEMENT("CaseSense", none);
+    KEEPS_STRFUNCTION("Instr", none);
     ffp = OpenLibrary((STRPTR)"mathffp.library", 0);
     ffpbase = (ULONG)ffp;
 
@@ -1589,6 +1642,7 @@ int main(int argc, char **argv)
     test_keys();
     test_print();
     test_strstr();
+    test_instr();
 
     CloseLibrary(ffp);
     printf("%d checks, %d failures\n", checks, failures);

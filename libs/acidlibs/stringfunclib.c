@@ -52,7 +52,9 @@
  *
  * Registers: the original changes d0-d7, a0, a1, a3 depending on the
  * routine; the entries are the C functions (BLITZ_ALIAS) and keep what
- * the register rule needs.  CaseSense keeps all registers.  The CCR is no
+ * the register rule needs; UCase$, Hex$ and Instr are BLITZ_ENTRYPOINT
+ * (they save nothing; Instr changes a2 as well, no library calls it).
+ * CaseSense keeps all registers.  The CCR is no
  * result.
  *
  * Inline routines (`$a000,len` prefix, copied into the program): Chr$,
@@ -892,36 +894,59 @@ BLITZ_ALIAS(ascii, ascii_c);
    s$ minus that of f$, computed once (the original added the length of f$
    to the position and compared signed after the addition: a Startpos near
    $7FFFFFFF made the sum negative, "within the string", and the search
-   compared memory far from it until it "found" f$ somewhere or hung). */
-static ULONG instr(UBYTE *s, const UBYTE *f, LONG start, const ULONG *sp)
+   compared memory far from it until it "found" f$ somewhere or hung).
+   The search: the positions pos+1 .. last are counted (cnt), and a
+   position is compared further only where its character is the first of
+   f$ (the original compares from the first character at each position:
+   the same result, and no other characters are read); CaseSense is
+   tested once, not per character.  Inline in both entries, which save
+   nothing (BLITZ_ENTRYPOINT: the original changes d0-d7/a0-a1 too). */
+BL_ALWAYS_INLINE ULONG instr(UBYTE *s, const UBYTE *f, LONG start, const ULONG *sp)
 {
-    LONG slen, flen, last, n;
-    const UBYTE *scan, *fp;
+    LONG slen, flen, last, cnt, n;
+    const UBYTE *p, *a, *b;
+    UBYTE f0;
     LONG pos = start < 1 ? -1 : start - 2;      /* d4; fixed (#287): start <= 0 */
 
     blitz_string = s;                           /* fix string pointer */
     slen = BL_POPL(sp);                         /* length of string 1 */
     flen = BL_POPL(sp);                         /* length of string 2 */
     last = slen - flen;                         /* fixed (#1030): no overflow */
-    for (;;) {                                  /* instrl */
-        pos++;
-        if (pos > last)                         /* BGT 'done */
-            return 0;                           /* not there */
-        scan = s + pos;
-        fp = f;
-        for (n = flen; n; n--) {                /* 'loop2: BEQ 'found */
-            if (csense) {                       /* 'norm: CMPM.b (a0)+,(a1)+ */
-                if (*scan++ != *fp++)
-                    break;
-            } else {
-                UBYTE sc = upcase(*scan++), fc = upcase(*fp++);
-                if (sc != fc)
-                    break;
+    pos++;                                      /* instrl */
+    if (pos > last)                             /* BGT 'done */
+        return 0;                               /* not there */
+    if (!flen)                                  /* 'loop2: BEQ 'found */
+        return pos + 1;
+    cnt = last - pos;                           /* the positions after pos */
+    p = s + pos;
+    if (csense) {                               /* 'norm: CMPM.b (a0)+,(a1)+ */
+        f0 = *f;
+        do {
+            if (*p++ == f0) {
+                a = p;
+                b = f + 1;
+                for (n = flen - 1; n; n--)
+                    if (*a++ != *b++)
+                        break;
+                if (!n)
+                    return p - s;               /* 'found: pos + 1 */
             }
-        }
-        if (!n)
-            return pos + 1;                     /* 'found */
+        } while (--cnt >= 0);
+    } else {
+        f0 = upcase(*f);
+        do {
+            if (upcase(*p++) == f0) {
+                a = p;
+                b = f + 1;
+                for (n = flen - 1; n; n--)
+                    if (upcase(*a++) != upcase(*b++))
+                        break;
+                if (!n)
+                    return p - s;
+            }
+        } while (--cnt >= 0);
     }
+    return 0;
 }
 
 /**
@@ -937,12 +962,18 @@ static ULONG instr(UBYTE *s, const UBYTE *f, LONG start, const ULONG *sp)
  *             Findstring$'s)
  * @return d0: the 1-based position, 0 if not found
  */
-static ULONG BLITZ_ROUTINE instrstring_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(d1),
-                                         const ULONG *lens BL_REG(a2))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE instrstring_c(UBYTE *s BL_REG(d0),
+                                                          const UBYTE *f BL_REG(d1),
+                                                          const ULONG *lens BL_REG(a2))
 {
-    return instr(s, f, 1, lens);                /* char search pos. (d4 = -1) */
+    ULONG r;
+
+    BLITZ_EP_KEEP_A6();
+    r = instr(s, f, 1, lens);                   /* char search pos. (d4 = -1) */
+    BLITZ_EP_KEEP_A6_END();
+    return r;
 }
-BLITZ_ALIAS(instrstring, instrstring_c);
+BLITZ_ALIAS_EP(instrstring, instrstring_c);
 
 /**
  * @brief Instr(String$,Findstring$,Startpos) - the position of
@@ -964,12 +995,19 @@ BLITZ_ALIAS(instrstring, instrstring_c);
  *              Findstring$'s)
  * @return d0: the 1-based position, 0 if not found
  */
-static ULONG BLITZ_ROUTINE instrstring2_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(d1),
-                                          LONG start BL_REG(d2), const ULONG *lens BL_REG(a2))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE instrstring2_c(UBYTE *s BL_REG(d0),
+                                                           const UBYTE *f BL_REG(d1),
+                                                           LONG start BL_REG(d2),
+                                                           const ULONG *lens BL_REG(a2))
 {
-    return instr(s, f, start, lens);
+    ULONG r;
+
+    BLITZ_EP_KEEP_A6();
+    r = instr(s, f, start, lens);
+    BLITZ_EP_KEEP_A6_END();
+    return r;
 }
-BLITZ_ALIAS(instrstring2, instrstring2_c);
+BLITZ_ALIAS_EP(instrstring2, instrstring2_c);
 
 /**
  * @brief Replace$(String$,Findstring$,Replacestring$) - String$ with

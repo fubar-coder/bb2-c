@@ -89,6 +89,8 @@
 # bstr.str, bgfx.print5 and bgfx.printnum from two runs of the printlib
 # output path of task 11.2 (2026-11-16): 4166.1, 11740.0 and 15610.0 in
 # both; the two Print lines keep their tolerance.
+# bstr.instr from two runs of the Instr search of task 11.3 (2026-11-16):
+# 2281.7 both.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -215,7 +217,7 @@ bstr.val                     1690     1927.0  c=Val(n$)
 bstr.len                      687      731.0  c=Len(a$)
 bstr.chr                      408      411.0  r$=Chr$(65)
 bstr.asc                      756      797.0  c=Asc(a$)
-bstr.instr                   4164     3513.0  c=Instr(a$,"Blitz")
+bstr.instr                   2308     3513.0  c=Instr(a$,"Blitz")
 bstr.ucase                   2774     3124.0  r$=UCase$(a$)
 bstr.hex                     1705     1570.0  r$=Hex$(a)
 bstr.concat                  2179     2318.5  r$=a$+b$

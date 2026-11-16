@@ -87,7 +87,7 @@ The four commands still 10 % or more slower than the original in `perf-analysis/
 
 - [x] 11.1 Val (vallib `getdec`: its state in memory, the loop in C; 1.63 times) - done (2026-11-16): C, the state in registers, the mathffp calls declare only d0/d1/a0/a1 changed, `BLITZ_ENTRYPOINT`; 3138.2 -> 1670.2 (original 1927.0), design decision 27
 - [x] 11.2 Str$ (printlib; 1.20 times) - done (2026-11-16): C, the output call inline in the entries (one register save instead of three), the conversions return their text, the handler `strprint` the original's assembler; 4964.7 -> 4164.6 (original 4131.5), design decision 27
-- [ ] 11.3 Instr (stringfunclib, the search loop; 1.17 times)
+- [x] 11.3 Instr (stringfunclib, the search loop; 1.17 times) - done (2026-11-16): C, inline in `BLITZ_ENTRYPOINT` entries, CaseSense tested once, the first character tested before the rest; 4119.2 -> 2281.7 (original 3513.0), design decision 27
 - [x] 11.4 Volume (audiolib, the mask loop of four passes; 1.37 times) - done (2026-11-16): the four channels unrolled in C, 382.1 -> 204.1 cycles (the original 278.7; design decision 26)
 - [x] 11.5 SColl (collslib): look again for extensions, absolute addressing, spills and the #110 fix's cost; the fix of #110 stays - done (2026-11-16): one path, the #110 fix as NEG/NEG/ADDX instead of ADDQ/ADD, 136.0 -> 124.0 cycles (the original 126.3; design decision 26)
 - [ ] 11.6 Measure, tighten the budgets, update final-table.md

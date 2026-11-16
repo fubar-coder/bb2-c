@@ -929,6 +929,20 @@ build.
       strings (the pairs `[orig]` / `[fixed #233]`, `[fixed #234]` and
       `[fixed #238]` where the values meet those fixed bugs), Print of
       the byte, word, quick, float and type 6 values.
+    - Instr (stringfunclib, task 11.3): `instr` was a function with stack
+      arguments that saved d2-d7/a2/a6, tested CaseSense per character
+      and kept the position in a stack slot. It is `BL_ALWAYS_INLINE` in
+      the two entries (`BLITZ_ENTRYPOINT` with `BLITZ_EP_KEEP_A6`, saving
+      nothing), CaseSense is tested once, and the positions are counted
+      with a test of the first character of Findstring$ before the
+      compare of the rest (`addq/cmp.b -1(a0)/beq/cmpa/bne`, 44 cycles
+      per position; the original compares from the first character at
+      every position, about 106): the same result and no other characters
+      read. `c=Instr(a$,"Blitz")` 4119.2 -> 2281.7 (3513.0), 0.65 times
+      the original. New library cases: Instr with CaseSense On and Off
+      (the characters around "a".."z"), matches at the start, middle and
+      end, cut off by the end, empty strings, Startpos 1 to behind the
+      string.
 
 ## Risks / Trade-offs
 
