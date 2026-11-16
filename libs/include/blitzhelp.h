@@ -269,8 +269,8 @@ BL_ALWAYS_INLINE ULONG bl_blitoff(const UWORD *bpr, WORD x, WORD y)
 #define TOK_ilbmbitmap  ((LIB_ilbmifflib << 7) + 3)  /* a0 = name, a1 = bitmap */
 
 /* memlib's init value (!libs #memlib,#la6): a table of BRA instructions,
-   called with BLITZ_BASEJSR(mem, MEMBASE_xxx, r), same registers as the
-   tokens above. */
+   called with BLITZ_SYSJSR(mem, MEMBASE_xxx, r) or BLITZ_SYSJSR2 (alloc),
+   same registers as the tokens above. */
 #define MEMBASE_localloc   0
 #define MEMBASE_locfree    4
 #define MEMBASE_globalloc  8

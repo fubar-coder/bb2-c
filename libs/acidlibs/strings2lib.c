@@ -34,7 +34,10 @@ BLITZ_NULLSUB(gstringass, 0, 0, LIB_memlib, BL_LA6);    /* $C701 astring */
 BLITZ_LIBFIN();
 
 /* membase table of memlib (blitzhelp.h MEMBASE_xxx): JSR (a6) alloc,
-   JSR 4(a6) free; the global versions are at +8 */
+   JSR 4(a6) free; the global versions are at +8.  Called with
+   BLITZ_SYSJSR/BLITZ_SYSJSR2: by its tested contract (the KEEPS cases of
+   libs/tests/systest.c) alloc changes d0/d1 only and free d0/a1 only, so
+   GCC saves no register for the call. */
 
 /* the header in front of a string's characters: struct bb_strmem
    (blitzobj.h) */
@@ -64,12 +67,11 @@ stringass_new(ULONG len BL_REG(d0), UBYTE **var BL_REG(a2), const UBYTE *mem BL_
         struct bl_regs r;
         h = (struct bb_strmem *)s - 1;
         r = (struct bl_regs){ .d0 = h->alloced + 9, .a1 = (ULONG)h };
-        BLITZ_BASEJSR(mem, MEMBASE_locfree, r);
+        BLITZ_SYSJSR(mem, MEMBASE_locfree, r);
     }
-    {                                           /* 'allocnews */
-        struct bl_regs r = { .d0 = len + 9, .d1 = MEMF_PUBLIC };
-        h = (struct bb_strmem *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
-    }
+    /* 'allocnews */
+    h = (struct bb_strmem *)BLITZ_SYSJSR2(mem, MEMBASE_localloc,
+                                          len + 9, MEMF_PUBLIC);
     h->alloced = len;
     h->len = len;
     s = (UBYTE *)(h + 1);

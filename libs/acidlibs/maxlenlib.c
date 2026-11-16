@@ -36,7 +36,10 @@ BLITZ_NULLSUB(domaxlenl, echk1, 0, LIB_memlib, BL_LA6);     /* $D001 lmaxlen */
 BLITZ_LIBFIN();
 
 /* membase table of memlib (blitzhelp.h MEMBASE_xxx): JSR (a6) alloc,
-   JSR 4(a6) free; the global versions are at +8 */
+   JSR 4(a6) free; the global versions are at +8.  Called with
+   BLITZ_SYSJSR/BLITZ_SYSJSR2: by its tested contract (the KEEPS cases of
+   libs/tests/systest.c) alloc changes d0/d1 only and free d0/a1 only, so
+   GCC saves no register for the call. */
 
 /* the memory of a string variable: struct bb_strmem (blitzobj.h); the
    variable points to `chars` */
@@ -49,16 +52,14 @@ static ULONG maxlen(UBYTE **var, ULONG n, const UBYTE *mem)
         h = (struct bb_strmem *)(*var - 8);        /* SUBQ.l #8,d0 */
         {
             struct bl_regs r = { .d0 = h->alloced + 9, .a1 = (ULONG)h };
-            BLITZ_BASEJSR(mem, MEMBASE_locfree, r);
+            BLITZ_SYSJSR(mem, MEMBASE_locfree, r);
         }
         *var = 0;                               /* CLR.l (a2) */
     }
     if (!n)                                     /* 'nofree: BEQ 'skip */
         return 0;
-    {
-        struct bl_regs r = { .d0 = n + 9, .d1 = MEMF_PUBLIC };
-        h = (struct bb_strmem *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
-    }
+    h = (struct bb_strmem *)BLITZ_SYSJSR2(mem, MEMBASE_localloc,
+                                          n + 9, MEMF_PUBLIC);
     *var = h->chars;
     h->alloced = n;                             /* MOVE.l d2,(a0)+ */
     h->len = 0;                                 /* CLR.l (a0)+ */

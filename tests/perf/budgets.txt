@@ -91,6 +91,9 @@
 # both; the two Print lines keep their tolerance.
 # bstr.instr from two runs of the Instr search of task 11.3 (2026-11-16):
 # 2281.7 both.
+# bstr.pstr and bstr.fstr from two runs of memlib's table called with
+# BLITZ_SYSJSR in strings2lib (libs-performance task 12.2, on main 1a7cdf79,
+# 2026-11-16): 11560.6 and 12252.6 in both.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -228,5 +231,5 @@ bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll
 bstr.addkill                 1039      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
 bstr.resetlist                 87       83.0  ResetList ll()
 bstr.sort201                78576    77694.0  Sort sa()
-bstr.pstr                   12115    11614.0  pstr{a$} (a Statement with a string parameter and a local string)
-bstr.fstr                   12817    12353.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
+bstr.pstr                   11680    11614.0  pstr{a$} (a Statement with a string parameter and a local string)
+bstr.fstr                   12379    12353.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
