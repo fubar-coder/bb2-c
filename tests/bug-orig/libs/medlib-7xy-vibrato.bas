@@ -11,6 +11,7 @@
 ; the first tick of line 1; then the program compares the period written
 ; with the period of the note (trk_prevper, +20 of the track).
 ; Correct: tremolo leaves the period alone - it is the note's period.
+; @fixed #204
 ; @configs clib
 ; @pass file=trem.med|@TESTDATA@/medlib-7xy-vibrato.med
 DEFTYPE .l

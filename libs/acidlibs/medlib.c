@@ -41,7 +41,6 @@
  *     far behind the block and kept at the change of the block
  *     (nxtnoclrln), so the notes are read from the memory behind it (test
  *     medlib-1dxx-word; issue to be filed).
- *   - 7xy with x = 0 jumps into the vibrato code (BEQ nonvib). (#204)
  *   - Fxx 1Fxx: the retrigger nibble is taken from d1 after the delayed
  *     note was played (playfxnote/_PlayNote change d1; only the delay
  *     tick is affected). (#205)
@@ -80,6 +79,10 @@
  * with runtime error checking JumpMed without a playing module is the
  * runtime error "No Module Playing" (jumpmedchk); release code unchanged
  * (an invalid argument).
+ * Fixed (#204): 7xy with x = 0 (a tremolo depth without a speed) jumped
+ * into the vibrato code (BEQ nonvib) in the first tick of the line: the
+ * period moved by the track's vibrato and the tremolo volume was not set.
+ * It goes to the tremolo code (the branch target only).
  * Fixed (#203): Bxx (position jump) stored the word of d4, whose upper byte
  * is left from a track before in the same line (19xx, the soffset or 64
  * _PlayNote leaves): the jump went to position 0, or with a negative word
@@ -1955,7 +1958,7 @@ nonvib: {
             if (q & 0x0f)
                 PT->tremsz = q & 0x0f;
             if (!(q & 0xf0))
-                goto nonvib;                    /* BUG(orig) (#204) */
+                goto nontre;                    /* Fixed (#204): was nonvib */
             PT->tremspd = ((q & 0xf0) >> 2) & 0x3e;
 nontre: {
             WORD prod = bl_muls_w(sinetable[(PT->tremoffs >> 3) & 0x1f], PT->tremsz);
