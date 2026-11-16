@@ -92,7 +92,7 @@ selects the tests then. `host`, `emulator` and `all` leave them out.
 
 The preset `perf` (label `perf`) holds the benchmark of the libraries
 (`perf`, "The benchmark" below): it measures, it does not compare
-results, and it starts seven emulator sessions (about 15 s in all), so
+results, and it starts eight emulator sessions (about 15 s in all), so
 `host`, `emulator`, `all` and the others leave it out. Run it for a change
 that can make a library command slower or faster.
 
@@ -847,12 +847,12 @@ for a test outside the label filter.
 command of the C libraries costs in 68000 cycles and fails when one is
 slower than its budget. Only the preset `perf` runs it. It is one test per
 program (`perf_bmath`, `perf_bstr`, ...), each in an emulator session of its
-own; the preset runs them side by side (`jobs` 7), about 15 s in all. The
+own; the preset runs them side by side (`jobs` 8), about 15 s in all. The
 cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -871,6 +871,15 @@ cycle values do not depend on the host's load or on what else runs
   medlib by 0 to 18002 bytes: 2298 to 2328; a loop at another address gave
   2256 to 2423); a session whose snapshot was made anew still varies by
   about 110.
+  `bproc` has the two string procedure loops (a Statement and a Function with a
+  string parameter and a local string) in a program of their own: every call
+  allocates the local string with exec's AllocMem and frees it again, and
+  AllocMem and FreeMem walk a free list whose shape is the history of the
+  program's allocations, so in `bstr` they moved by up to 2 % whenever a loop
+  was added there (and differed by 375 cycles between a session of the program
+  alone and the session of all programs). Its targets are measured the same
+  way, in a session of its own (the pass `perf_bproc.pass`, tag `orig`), not
+  in `perf-original`'s one session; keep its setup as it is.
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the

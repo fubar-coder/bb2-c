@@ -113,6 +113,23 @@
 # change of the libraries: both loops depend on the program's layout (a
 # new string variable instead of n$ moved them the other way, the port
 # by +282 and the original by -460); their budgets stay.
+# bproc.pstr and bproc.fstr (2026-11-16): the two procedure loops of bstr
+# in a program of their own. Their cost depends on exec's AllocMem and
+# FreeMem (every call allocates the local string and frees it again), which
+# walk a free list whose shape is the history of the program's own
+# allocations: in bstr the loops before them left holes, and any loop
+# added or removed there moved them by up to 2 % (the entry above), their
+# values in the program together with the others (all programs of one
+# session, the target run) and alone in a session of their own differed by
+# 375 cycles. bproc has nothing but the setup and these two loops (adding a
+# few global strings and an array there moved them by 40 cycles, another
+# loop by 0.2); the test runs it in a session of its own, and its targets
+# are measured the same way (perf-original has all programs in one
+# session: for bproc the pass perf_bproc.pass with the tag orig, twice:
+# 10038.1, 10038.6 and 10782.1, 10782.1). The port: 10103.6, 10104.0 and
+# 10794.6, 10794.0 on main 61969ba7 + this change (before: bstr.pstr 11331.0
+# and bstr.fstr 12021.0, the budgets 11680 and 12379), 0.7 % and 0.1 %
+# above the original in the same session.
 # bmath.lmul and the new bmath.lmuls from two runs of longmult in assembler
 # (libs-performance task 13.30, 2026-11-16): 284.6 and 184.6 to 184.7.
 # bmath.qmul from two runs of quickmult in assembler (task 13.31, 2026-11-16):
@@ -263,6 +280,9 @@ bmisc.ntsc                 111~17      100.4  c=NTSC
 bmisc.infront                129~4      134.9  InFront 4
 bmod.vblmod                 2418~120   2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed                9796~7     9950.0  PlayMed
+bproc.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
+bproc.pstr                   10209     10038.4  pstr{a$} (a Statement with a string parameter and a local string)
+bproc.fstr                   10906     10782.1  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1236     1367.5  r$=a$
 bstr.mid                     1470     1553.5  r$=Mid$(a$,3,5)
@@ -284,8 +304,6 @@ bstr.nextitem51               220      217.8  ResetList ll() : While NextItem(ll
 bstr.addkill                  796      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
 bstr.resetlist                 87       83.0  ResetList ll()
 bstr.sort201                78576    77694.0  Sort sa()
-bstr.pstr                   11680    11382.5  pstr{a$} (a Statement with a string parameter and a local string)
-bstr.fstr                   12379    12126.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
 bstr.bin                     1716     2119.0  r$=Bin$(a)
 bstr.midlong                 2417     3136.0  r$=Mid$(n$,3,40) (n$ 60 characters)
 bstr.rightlong               2376     3077.0  r$=Right$(n$,40)
