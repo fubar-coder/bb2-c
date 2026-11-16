@@ -302,6 +302,30 @@ program if the estimate says it is worth it):
 Each measured candidate gets a line in the report with the cycles before,
 the estimate and the risk; the decision is the coordinator's.
 
+Measured (task 5.1, 2026-11-16; the loops in `tests/perf`, two runs with
+the port's libraries, the original's value from two runs with the CD's;
+the estimate from the instruction count plus about 19 cycles for the
+store; the full table with the conditions:
+`compiler-intrinsics-candidates.md` of the report):
+
+| Candidate | Loop | Cycles now | Original | Estimate | Risk |
+|---|---|---|---|---|---|
+| `Sgn(q)` | `bmath.sgnq` | 194.7 | 206.6 | ~73 | low (Int's path) |
+| `Sgn(a)` | `bmath.sgn` | 212.7 | 226.5 | ~73 | low |
+| `q3=Abs(q)` | `bmath.absq` | 3603.2 | 3618.6 | ~55 | high: not bit-identical (Abs is a Float; 24-bit mantissa) |
+| `c=Abs(a)` | `bmath.abs` | 736.5 | 764.0 | ~55 | high, same |
+| `Peek.l(4)` | `bmath.peekc` | 121.2 | 124.6 | ~35 | low; call and set-up only |
+| `Len(s$(3))` | `bstr.lenel` | 719.0 | 770.5 | ~105 | medium (address in a2, index checks) |
+| `Asc(s$(3))` | `bstr.ascel` | 787.1 | 838.5 | ~140 | medium |
+| `Len(rr\name)` | `bstr.lenfld` | 695.5 | 746.5 | ~63 | low (a NewType variable's field is an a5 offset) |
+| `Asc(rr\name)` | `bstr.ascfld` | 761.1 | 812.5 | ~99 | low |
+| `Instr(a$,f$)` | `bstr.instrv` | 2339.6 | 3571.1 | ~1180 | high: a new library entry |
+| `Left$`/`Right$`/`Mid$(a$,..)` | `bstr.left`/`.right`/`.mid` | 1238/1408/1446 | 1299/1496/1554 | ~615/780/820 | high: a new library entry |
+| `Val(n$)` | `bstr.val` | 1669.5 | 1927.0 | ~1160 | medium (Val reading the variable in place) |
+| `Cvi(m$)` | `bstr.cvi` | 535.5 | 469.1 | ~55 | medium (#288's short strings, cvichk) |
+
+No compiler change was made for these.
+
 ## Risks / Trade-offs
 
 - [The context test for `Frac` accepts a case that is not the whole

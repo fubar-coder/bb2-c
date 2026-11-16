@@ -35,7 +35,7 @@ Order: group 1 prepares, groups 2 and 3 are the priority (`Int`, `Frac`), group 
 
 ## 5. Candidates (measure, do not decide)
 
-- [ ] 5.1 For each candidate of design.md Decision 5, measure the current cost in `tests/perf` (add a bench loop where there is none: `Sgn(q)` and `Abs(q)` have lines; `Left$`/`Right$`/`Mid$`/`Instr` with a variable source, `Len`/`Asc` of an array element and a field, `Val`/`Cvi` with a variable do not) and estimate the intrinsic's cost from its instruction count. Verify: a table (candidate, cycles now, estimate, the conditions an intrinsic would need, risk) in `~/.local/share/bb2-c-work/compiler-intrinsics-candidates.md`; no compiler change.
+- [x] 5.1 For each candidate of design.md Decision 5, measure the current cost in `tests/perf` (add a bench loop where there is none: `Sgn(q)` and `Abs(q)` have lines; `Left$`/`Right$`/`Mid$`/`Instr` with a variable source, `Len`/`Asc` of an array element and a field, `Val`/`Cvi` with a variable do not) and estimate the intrinsic's cost from its instruction count. Verify: a table (candidate, cycles now, estimate, the conditions an intrinsic would need, risk) in `~/.local/share/bb2-c-work/compiler-intrinsics-candidates.md`; no compiler change.
 
 ## 6. Documents
 

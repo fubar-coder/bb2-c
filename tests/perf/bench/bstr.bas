@@ -1,6 +1,12 @@
-; bstr - perf benchmark: strings, Read, lists, Sort
+; bstr - perf benchmark: strings, Read, lists, Sort (with Len and Asc of an
+; element and a field, Instr of two variables and Cvi: the candidates of
+; compiler-intrinsics)
 DEFTYPE .l
-Dim t(31)
+NEWTYPE .rec
+  id.w
+  name$
+End NEWTYPE
+Dim t(37)
 a=123456 : c=0
 a$="Hello, World of Blitz" : b$="Hello, World of Blitz" : n$="12345"
 r$=String$(" ",80)
@@ -175,6 +181,38 @@ For i=1 To 2000
 c=Asc(s3$)
 Next
 Gosub tod : t(30)=(tt-t0)&65535
+Dim s$(5) : s$(3)="Hello, World of Blitz" : rr.rec\name="Hello, World of Blitz"
+f$="Blitz" : m$=Mki$(1234)
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Len(s$(3))
+Next
+Gosub tod : t(31)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Asc(s$(3))
+Next
+Gosub tod : t(32)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Len(rr\name)
+Next
+Gosub tod : t(33)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Asc(rr\name)
+Next
+Gosub tod : t(34)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Instr(a$,f$)
+Next
+Gosub tod : t(35)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Cvi(m$)
+Next
+Gosub tod : t(36)=(tt-t0)&65535
 Goto skipdata
 dd:
 Data.l 1,2,3,4
@@ -212,6 +250,12 @@ NPrint "len1000 ",t(27)," 2000 1"
 NPrint "asc10 ",t(28)," 2000 1"
 NPrint "asc100 ",t(29)," 2000 1"
 NPrint "asc1000 ",t(30)," 2000 1"
+NPrint "lenel ",t(31)," 2000 1"
+NPrint "ascel ",t(32)," 2000 1"
+NPrint "lenfld ",t(33)," 2000 1"
+NPrint "ascfld ",t(34)," 2000 1"
+NPrint "instrv ",t(35)," 2000 1"
+NPrint "cvi ",t(36)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

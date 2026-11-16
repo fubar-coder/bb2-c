@@ -199,6 +199,16 @@
 # 61.2/62.5, 99.2/97.0, 97.8/97.0, 97.8/97.0, 99.2/97.0 (the copy and the
 # call: 679.1, 607.1, 1273.0, 8261.1, 745.1, 675.6, 1336.0, 8327.1); the
 # cost no longer grows with the length.
+# The candidates of compiler-intrinsics (task 5.1, measured, not
+# decided): bstr.lenel, ascel, lenfld, ascfld, instrv and cvi (new loops
+# at the end of bstr) and bmath.sgnq, absq and peekc (new loops at the
+# end of bmath), from two runs of the build of task 4.4 (2026-11-16):
+# 717.1/719.0, 787.1/787.0, 695.1/695.5, 761.1/760.5, 2339.2/2339.6,
+# 535.1/535.5, 194.1/194.7, 3602.6/3603.2, 121.0/121.2; the other lines
+# of both programs as before.  Their targets from two runs of the passes
+# perf_bstr.pass and perf_bmath.pass with the tag orig: 770.5/770.7,
+# 838.5/838.7, 746.5/747.2, 812.5/812.7, 3571.1/3571.2, 469.1/469.2,
+# 206.6/207.0, 3618.6/3618.5, 124.6/124.5.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -302,6 +312,9 @@ bmath.int                      67      192.5  q3=Int(q1)
 bmath.frac                     66     3718.0  q3=Frac(q1)
 bmath.intn                     81      202.5  q3=Int(q6) (q6=-12.25)
 bmath.fracn                    85     3679.0  q3=Frac(q6) (q6=-12.25)
+bmath.sgnq                    200      206.6  c=Sgn(q1)
+bmath.absq                   3643     3618.6  q3=Abs(q6) (q6=-12.25)
+bmath.peekc                   126      124.6  c=Peek.l(4)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
 bmath.qwrap                   112      109.0  q3=QWrap(q1,0,10)
 bmath.peekb                   126      129.0  c=Peek.b(p)
@@ -359,3 +372,9 @@ bstr.len1000                   67    15071.1  c=Len(s3$) (s3$ 1000 characters)
 bstr.asc10                    102      611.1  c=Asc(s1$)
 bstr.asc100                   102     1951.2  c=Asc(s2$)
 bstr.asc1000                  104    15135.1  c=Asc(s3$)
+bstr.lenel                    730      770.5  c=Len(s$(3)) (an array element, 21 characters)
+bstr.ascel                    798      838.5  c=Asc(s$(3))
+bstr.lenfld                   706      746.5  c=Len(rr\name) (a field of a NewType variable, 21 characters)
+bstr.ascfld                   772      812.5  c=Asc(rr\name)
+bstr.instrv                  2366     3571.1  c=Instr(a$,f$) (f$="Blitz")
+bstr.cvi                      544      469.1  c=Cvi(m$) (m$=Mki$(1234))

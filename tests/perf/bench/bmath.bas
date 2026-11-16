@@ -1,7 +1,8 @@
 ; bmath - perf benchmark: arithmetic, Mod, Quick/Float conversion, a procedure, Rnd, Sgn, Abs, Int, Frac, QLimit, Peek, Poke
-; (Int and Frac of a positive and of a negative Quick)
+; (Int and Frac of a positive and of a negative Quick; Sgn and Abs of a Quick and
+; Peek of a constant address, the candidates of compiler-intrinsics)
 DEFTYPE .l
-Dim t(44)
+Dim t(47)
 a=123456 : b=789 : c=0 : a2=123456789 : b2=70000 : a4=100 : b4=20
 q1.q=12.5 : q2.q=3.25 : q3.q=0
 q4.q=1000.5 : q5.q=1.0000153 : q6.q=-12.25 : a3=123456789 : b3=65536
@@ -242,6 +243,21 @@ For i=1 To 2000
 q3=Frac(q6)
 Next
 Gosub tod : t(44)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Sgn(q1)
+Next
+Gosub tod : t(45)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+q3=Abs(q6)
+Next
+Gosub tod : t(46)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Peek.l(4)
+Next
+Gosub tod : t(47)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
@@ -289,6 +305,9 @@ NPrint "plocal ",t(41)," 2000 1"
 NPrint "lmuls ",t(42)," 2000 1"
 NPrint "intn ",t(43)," 2000 1"
 NPrint "fracn ",t(44)," 2000 1"
+NPrint "sgnq ",t(45)," 2000 1"
+NPrint "absq ",t(46)," 2000 1"
+NPrint "peekc ",t(47)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255
