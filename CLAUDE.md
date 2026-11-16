@@ -139,8 +139,10 @@ ctest --preset perf                                    # benchmark of the librar
      and the port's output for a bug ordinary programs meet; a source the
      port refuses or compiles differently also goes into `new-errors.md`)
      and one row for the issue in the overview of fixed bugs,
-     `site/data/fixoverview.yaml` (severity 1-4, topic, library or
-     command, one sentence, page and anchor; `site/README.md`) - the site
+     `site/data/fixoverview.yaml` (severity 1-5: 1 changes correct programs, 2 changes behaviour
+     noticeably, 3 new runtime error, 4 new compile error, 5 no side
+     effects; topic, library or command, one sentence, page and anchor;
+     `site/README.md`) - the site
      build fails for an issue linked on a fixed-bugs page without a row;
      the agent's report proposes the severity and the topic;
   4. the label `fixed-in-port` on the issue (every fix);
