@@ -39,6 +39,11 @@
  *   - Bxx (position jump) stores the word of d4: upper byte = rest of the
  *     previous track's d4 (0 after a plain note, the soffset or 64 after
  *     _PlayNote) - the jump target may be wrong. (#203)
+ *   - 1Dxx (pattern break) adds 1 to the word of d4 as Bxx stores it: with
+ *     an upper byte left from a track before, the next line is far behind
+ *     the block and kept at the change of the block (nxtnoclrln), so the
+ *     notes are read from the memory behind it (test medlib-1dxx-word;
+ *     issue to be filed).
  *   - 7xy with x = 0 jumps into the vibrato code (BEQ nonvib). (#204)
  *   - Fxx 1Fxx: the retrigger nibble is taken from d1 after the delayed
  *     note was played (playfxnote/_PlayNote change d1; only the delay
@@ -1483,6 +1488,7 @@ MED_OFFSETS(MED_SET)
 "   move.w  d4,mmd_pseqnum(a3)\n"
 "   st      nextblock(a6)\n"
 "   bra     fx\n"
+/* BUG(orig) (issue to be filed): 1Dxx takes the word of d4 as Bxx does */
 "f_1d:\n"
 "   move.w  #0x1ff,nextblock(a6)\n"     /* nextblock 1, nxtnoclrln -1 */
 "   addq.w  #1,d4\n"
