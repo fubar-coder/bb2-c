@@ -589,6 +589,86 @@ rows:
     text: "`DeSelectBox` clears the selection and `BoxSelected` then returns -1; the original left the box selected."
     page: libraries
     anchor: blitz-mode-boxes
+  - issue: 95
+    severity: 4
+    topic: "Input"
+    library: "brexxlib"
+    command: "TapeTrap"
+    text: "`TapeTrap` without a tape number ends the redirection to a tape; the original went on trapping and chained the next events into the program's string memory."
+    page: libraries
+    anchor: tapes
+  - issue: 96
+    severity: 1
+    topic: "Input"
+    library: "brexxlib"
+    command: "Type, AbsMouse, RelMouse, MouseButton, ClickButton"
+    text: "`Type`, `AbsMouse`, `RelMouse`, `MouseButton` and `ClickButton` leave a running `Record` or `PlayBack` going; the original ended it."
+    page: libraries
+    anchor: simulated-event-ends-tape
+  - issue: 97
+    severity: 1
+    topic: "Input"
+    library: "brexxlib"
+    command: "ClickButton"
+    text: "`ClickButton` releases the button it pressed; the original released the left button after `ClickButton 1` and recorded the right one released for `ClickButton 0` under `TapeTrap`."
+    page: libraries
+    anchor: tapes
+  - issue: 98
+    severity: 1
+    topic: "Input"
+    library: "brexxlib"
+    command: "RelMouse"
+    text: "`RelMouse` makes a relative mouse event (RAWMOUSE); the original made a pointer position event, which put another kind of event onto tapes."
+    page: libraries
+    anchor: tapes
+  - issue: 99
+    severity: 4
+    topic: "Input"
+    library: "brexxlib"
+    command: "PlayWait"
+    text: "`PlayWait` without a tape number waits until the running playback has finished, and `PlayWait Tape#` returns at once for an empty tape; the original refused the first form and hung in the second."
+    page: libraries
+    anchor: tapes
+  - issue: 100
+    severity: 4
+    topic: "Input"
+    library: "brexxlib"
+    command: "PlayBack"
+    text: "`PlayBack` plays a recorded event in front of the first later input event; the original could play it behind input that came after it."
+    page: libraries
+    anchor: tapes
+  - issue: 101
+    severity: 4
+    topic: "Input"
+    library: "brexxlib"
+    command: "LoadTape"
+    text: "`LoadTape` of a file shorter than the 8-byte start time leaves the tape empty; the original took the file's bytes as the start time."
+    page: libraries
+    anchor: tapes
+  - issue: 102
+    severity: 4
+    topic: "Input"
+    library: "brexxlib"
+    command: "Type"
+    text: "`Type` skips a character that has no key; the original typed the key code $FFFF with the Shift key."
+    page: libraries
+    anchor: tapes
+  - issue: 103
+    severity: 1
+    topic: "Input"
+    library: "brexxlib"
+    command: "XStatus"
+    text: "`XStatus` returns 0, 1 or 2; the original returned 32768 more right after `Record`, `PlayBack` or an executed simulated event."
+    page: libraries
+    anchor: tapes
+  - issue: 104
+    severity: 4
+    topic: "Input"
+    library: "brexxlib"
+    command: "PlayWait"
+    text: "Without a free signal `PlayWait` returns at once; the original waited for ever."
+    page: libraries
+    anchor: tapes
   - issue: 110
     severity: 3
     topic: "Graphics"
@@ -1221,6 +1301,14 @@ rows:
     text: "`InitShape` with depth 0 stops with runtime error checking (\"Illegal Shape Depth\"); the original made a shape that `QBlit` blitted as 65536 planes."
     page: libraries
     anchor: bitmaps
+  - issue: 245
+    severity: 4
+    topic: "Input"
+    library: "rawkeylib"
+    command: "BlitzKey"
+    text: "`BlitzKey` gives no character for raw key codes above 104; the original read a character of another key or a byte of the library's code."
+    page: libraries
+    anchor: input
   - issue: 247
     severity: 4
     topic: "Windows & screens"
@@ -2189,6 +2277,14 @@ rows:
     text: "`Show`, `ShowF` and `ShowB` on a slice made without the BPLCON1 instruction change nothing outside the slice; the original wrote to a random address."
     page: libraries
     anchor: blitz-mode-displays
+  - issue: 408
+    severity: 1
+    topic: "Input"
+    library: "blitzkeyslib"
+    command: "BlitzKeys"
+    text: "`BlitzKeys Off` gives the keyboard input back to the input used before `BlitzKeys On`; the original left it in place, and a second `BlitzKeys On` made reading a line hang."
+    page: libraries
+    anchor: input
   - issue: 411
     severity: 4
     topic: "Graphics"

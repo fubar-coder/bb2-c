@@ -1,7 +1,7 @@
 ---
 title: Sources that compile differently
 weight: 3
-description: Sources that Blitz Basic 2 accepted and the BB2 C port refuses or compiles to something else, and the new runtime errors of the libraries, with what the original did and how to change them.
+description: Sources that Blitz Basic 2 accepted and the BB2 C port refuses or compiles to something else, the new runtime errors of the libraries and a form only the port accepts, with what the original did and how to change them.
 ---
 
 Before this page you should know the fixed bugs of the compiler
@@ -15,9 +15,11 @@ original did with it, what the port does, and what to change in a source
 that relies on the old behaviour. A few fixes of the libraries work the
 same way when the program runs: a command that the original carried out
 with a wrong argument stops with a runtime error
-([Runtime errors of the libraries](#runtime-errors)). One case goes the
+([Runtime errors of the libraries](#runtime-errors)). Two cases go the
 other way: `Frac` of a string, which the original refused when compiling,
-compiles and is a runtime error.
+compiles and is a runtime error, and `PlayWait` without a tape number
+([A form the original refused](#forms-the-original-refused)) compiles and
+waits for the playback.
 
 The outputs shown were recorded in an emulator. The original is
 Blitz Basic 2 built from its published source, with the libraries of the
@@ -1384,3 +1386,40 @@ is as before.
 **What to change.** Give a page fewer than 32768 boxes.
 
 Issue: [InitPage with NumBoxes of 32768 or more gives a negative table size (#1043)](https://github.com/fubar-coder/bb2-c/issues/1043).
+
+## A form the original refused {#forms-the-original-refused}
+
+Most cases of this page go one way: the original compiled them and the
+port does not, or compiles them to something else. The case in this
+section goes the other way, as `Frac` of a string does: a source that the
+original refused compiles with the port.
+
+### `PlayWait` without a tape number {#playwait-without-tape}
+
+**What happened.** `PlayWait` is meant to wait until the playback of a
+tape has finished, and its help shows it without an argument. The
+original refused that form:
+
+```
+LoadTape 0,"tape"
+PlayBack 0
+PlayWait
+NPrint "status ",XStatus
+End
+```
+
+The original stopped with "Syntax Error" in line 3. It took only
+`PlayWait Tape#`, which plays `Tape#` in place of a playback that is
+running and waits for its end, and returns at once when no playback
+runs.
+
+**With the port.** `PlayWait` without an argument waits until the running
+playback has finished, and returns at once when none runs; the program
+above prints `status 0` when the tape is over. `PlayWait Tape#` works as
+in the original, except that it returns at once for an empty tape, where
+the original waited for ever.
+
+**What to change.** Nothing. A source that must also compile with the
+original waits with `Repeat : VWait : Until XStatus=0`.
+
+Issue: [PlayWait only restarts a playback that is already running (#99)](https://github.com/fubar-coder/bb2-c/issues/99).

@@ -20,14 +20,17 @@ runtime error checking unless the text says otherwise.
 
 ## Changes for existing programs
 
-Six of the fixes change what an existing program does. Two of them
+Eleven of the fixes change what an existing program does. Two of them
 concern programs that were written to make up for the bug, drawing on
 bitmaps; no known example program, demo or game uses these commands this
 way, but a program of your own might. Two concern the custom copper
 instructions of the display library and change every program that uses
 the commands with the values named. One makes `LoadShape` stop with a
-runtime error on pictures it loaded before. The last one changes which
-ARexx replies carry a result string.
+runtime error on pictures it loaded before, and one changes which ARexx
+replies carry a result string. The last five concern tapes of mouse and
+keyboard events and the keyboard in Blitz mode: the one a program meets
+most easily has a section of its own, the other four are listed after
+it.
 
 ### `RenderToBitmap` with a dither bitmap drew on the wrong bitmap {#rendertobitmap-dither}
 
@@ -219,6 +222,71 @@ the empty string; set RXFF_RESULT, or read the number with
 `GetRexxResult(msg,2)`.
 
 Issue: [ReplyRexxMsg made the result string for the wrong messages (#48)](https://github.com/fubar-coder/bb2-c/issues/48).
+
+### A simulated event ended a running `Record` or `PlayBack` {#simulated-event-ends-tape}
+
+A *tape* holds mouse and keyboard events: `Record` records what the user
+does onto it, and `PlayBack` plays it back. The commands `Type`,
+`AbsMouse`, `RelMouse`, `MouseButton` and `ClickButton` make such events
+themselves, as if the user typed or moved the mouse; they can be used
+while a tape records or plays, for example to type a text into the
+program that a tape drives.
+
+**What happened.** Each of these commands ended a running recording or
+playback, whether its event was executed or went onto a tape with
+`TapeTrap`. `XStatus` was 0 from then on, and the rest of a tape that was
+playing was lost. This program moves the pointer while it records:
+
+```
+Record 0
+VWait 10
+AbsMouse 40,30
+VWait 10
+NPrint "status ",XStatus
+Record
+NPrint "stopped ",XStatus
+End
+```
+
+**With the original**
+
+```
+status 0
+stopped 0
+```
+
+**With the port**
+
+```
+status 1
+stopped 0
+```
+
+The recording goes on after `AbsMouse`, with the same time base, and the
+pointer move is on the tape; `Record` without a tape ends it.
+
+**What to change.** A program that used one of these commands to stop a
+recording or a playback ends it with `Record` or `PlayBack` without a
+tape number.
+
+Issue: [Appending to a tape clears the mode, Record and PlayBack stop (#96)](https://github.com/fubar-coder/bb2-c/issues/96).
+
+### More changes of tapes and the keyboard {#more-tape-and-keyboard-changes}
+
+These four fixes change what a program sees in a smaller way. Each is
+described in the lists of the other fixes below.
+
+* `XStatus` gives only 0, 1 or 2; the original added 32768 right after
+  `Record`, `PlayBack` or a simulated event. A program that compared the
+  value with `And 255` sees no difference
+  ([Tapes and simulated input](#tapes)).
+* `ClickButton` releases the button it pressed, also after an executed
+  `ClickButton 1`, where the original released the left button
+  ([Tapes and simulated input](#tapes)).
+* `RelMouse` makes a relative mouse event, so a tape records it as
+  such; the pointer moves as before ([Tapes and simulated input](#tapes)).
+* `BlitzKeys Off` gives the keyboard input back to the input used before
+  `BlitzKeys On` ([Input](#input)).
 
 ## Dates
 
@@ -1148,6 +1216,16 @@ file requester is the same code and has the same fixes, except for the
 * The runtime error of `Inkey$` from the default input read "Can't Input
   Character from Defualt Input"; it reads "Default"
   ([#193](https://github.com/fubar-coder/bb2-c/issues/193)).
+* `BlitzKey` gives no character for the raw key codes above 104, such as
+  the reset warning and the extra keys of some keyboards; the original
+  read a character of another key or a byte of the library's own code
+  ([#245](https://github.com/fubar-coder/bb2-c/issues/245)).
+* `BlitzKeys Off` gives the keyboard input back to the input used before
+  `BlitzKeys On`, unless the program chose another input in between,
+  such as with `FileInput`, which stays. The original left the input with
+  the keyboard reading of Blitz mode, and after a second `BlitzKeys On`
+  reading a line, such as with `Edit$`, hung for ever
+  ([#408](https://github.com/fubar-coder/bb2-c/issues/408)).
 * `Inkey$` with a negative count tried about 4 billion times to read a
   character and added every character it got behind the end of the
   string buffer; with runtime error checking a negative count is the
@@ -1159,6 +1237,56 @@ file requester is the same code and has the same fixes, except for the
   error came only at the pop after it. It is reported at the first such
   pop
   ([#1032](https://github.com/fubar-coder/bb2-c/issues/1032)).
+
+### Tapes and simulated input {#tapes}
+
+These are the commands that record mouse and keyboard events onto tapes
+and play them back (`Record`, `PlayBack`, `PlayWait`, `LoadTape`), and
+the ones that make such events themselves (`Type`, `AbsMouse`,
+`RelMouse`, `MouseButton`, `ClickButton`). One more fix of them changes
+what an existing program sees:
+[a simulated event ended a running `Record` or `PlayBack`](#simulated-event-ends-tape).
+
+* `TapeTrap` without a tape number ends the redirection of the simulated
+  events to a tape; the original went on trapping them and chained the
+  next events into the program's string memory instead of executing them
+  ([#95](https://github.com/fubar-coder/bb2-c/issues/95)).
+* `ClickButton` releases the button it pressed. The original released
+  the left button after an executed `ClickButton 1`, and under `TapeTrap`
+  with `QuietTrap On` it recorded `ClickButton 0` as the left button
+  pressed and the right one released
+  ([#97](https://github.com/fubar-coder/bb2-c/issues/97)).
+* `RelMouse` makes a relative mouse event (RAWMOUSE), as a real mouse
+  does; the original made a pointer position event (POINTERPOS), which
+  moved the pointer the same way but gave tapes, saved tapes and
+  programs that look at the events another kind of event
+  ([#98](https://github.com/fubar-coder/bb2-c/issues/98)).
+* `PlayWait` without a tape number waits until the running playback has
+  finished, as its help says; the original refused this form with
+  "Syntax Error". `PlayWait Tape#` works as in the original, which plays
+  `Tape#` in place of a running playback and waits for its end, but
+  returns at once for an empty tape, where the original waited for ever
+  ([#99](https://github.com/fubar-coder/bb2-c/issues/99);
+  [`PlayWait` without a tape number]({{< relref "/docs/compared-with-original/new-errors#playwait-without-tape" >}})).
+* `PlayBack` plays a recorded event in front of the first input event
+  that came after its time; the original compared the times only with
+  the first of the input events that arrived together, so it could play
+  a tape event behind input that came after it
+  ([#100](https://github.com/fubar-coder/bb2-c/issues/100)).
+* `LoadTape` of a file shorter than the 8 bytes of the start time leaves
+  the tape empty; the original took the bytes of the file as the start
+  time ([#101](https://github.com/fubar-coder/bb2-c/issues/101)).
+* `Type` skips a character that has no key; the original typed the key
+  code $FFFF with the Shift key
+  ([#102](https://github.com/fubar-coder/bb2-c/issues/102)).
+* `XStatus` returns 0, 1 or 2; right after `Record`, `PlayBack` or an
+  executed simulated event the original returned 32768 more, until the
+  system had handled the next input event
+  ([#103](https://github.com/fubar-coder/bb2-c/issues/103)).
+* Without a free signal, `PlayWait` returns at once instead of waiting
+  for ever, and the end of the program frees no signal that the library
+  did not get
+  ([#104](https://github.com/fubar-coder/bb2-c/issues/104)).
 
 ### Arrays and sorting
 
