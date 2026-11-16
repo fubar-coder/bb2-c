@@ -48,11 +48,7 @@
  *     StopTracker leave as it is: after a pause the next PauseModule
  *     only enables playing (test ciatrklib-pause-state-kept; #1076).
  *   - Play routine (Protracker 2.3A): a sample number > 31 (#480) reads
- *     behind the tables (mt_SongDataPtr ...); F00 stops the module (as in
- *     every Protracker), but mt_end loads a0 with $DFF000: after an F00
- *     on voice 1-3 the voices behind read their notes from the custom
- *     chip registers ($DFF000 + the pattern offset) instead of the
- *     pattern (#475).
+ *     behind the tables (mt_SongDataPtr ...).
  * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
  * declared #byte).  By design (#446): ModuleToChip does nothing and
  * returns its argument; the documentation of the library says so (the
@@ -86,6 +82,11 @@
  *     plays at most the row's last entry; the original compared 37 and
  *     read up to 15 words behind the row: the next finetune's row (a low
  *     note), for finetune -1 mt_chan1temp (#474).
+ *   - F00 stops the module (as in every Protracker), and the voices
+ *     behind an F00 on voice 1-3 read their notes from the pattern; the
+ *     original's mt_end loaded a0, the pattern pointer of mt_GetNewNote,
+ *     with $DFF000, and they read the custom chip registers ($DFF000 +
+ *     the pattern offset) (#475).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -564,9 +565,10 @@ static void globfree(ULONG mem, ULONG size)
 static void mt_end(void);
 static void resetciaint(void);
 
-/* a0 of mt_GetNewNote, the pattern data; mt_end sets a0 to $DFF000, so
-   after an F00 (mt_SetSpeed: BEQ mt_end) the voices behind read their
-   notes from the custom chip registers (BUG(orig), #475) */
+/* a0 of mt_GetNewNote, the pattern data; Fixed (#475): the original's
+   mt_end loaded a0 with $DFF000, so after an F00 (mt_SetSpeed: BEQ mt_end)
+   the voices behind read their notes from the custom chip registers;
+   here mt_end leaves it alone */
 static const UBYTE *patdata;
 
 /* SetCIAInt: the interrupt on timer A of ciaa, else timer B of ciab */
@@ -724,7 +726,6 @@ static void mt_end(void)
     volatile struct Custom *cu = ciapart.endcustom;
 
     playdata.Enable = 0;
-    patdata = (const UBYTE *)cu;        /* LEA $DFF000,A0 (BUG(orig), #475) */
     cu->aud[0].ac_vol = 0;
     cu->aud[1].ac_vol = 0;
     cu->aud[2].ac_vol = 0;

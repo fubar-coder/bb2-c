@@ -55,9 +55,6 @@
  *   - TrackInit while Tracker Off does not initialise the song (mt_init
  *     returns) but enables playing; Tracker On then plays with the old
  *     song pointer (#573).
- *   - F00 (stop: mt_SetSpeed branches to mt_end, which loads a0 with
- *     $DFF000) on voice 1-3: the voices behind read their notes from the
- *     custom chip registers instead of the pattern (#475).
  * Not a defect: effect 8xx (RI's track event) stores its value in
  * nor_TrkEvt on the ticks after the first, which no command reads (an
  * unused variable).
@@ -99,6 +96,10 @@
  *     plays at most the row's last entry; the original compared 37 and
  *     read up to 15 words behind the row: the next finetune's row (a low
  *     note), for finetune -1 the voice data (#474).
+ *   - F00 (stop: mt_SetSpeed branches to mt_end) on voice 1-3: the voices
+ *     behind read their notes from the pattern; the original's mt_end
+ *     loaded a0, the pattern pointer of mt_GetNewNote, with $DFF000, and
+ *     they read the custom chip registers (#475).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -351,9 +352,10 @@ _Static_assert(offsetof(struct ptglue, mt_data) == 24, "mt_data");
 #define SAMPLESTART(off) (*(UBYTE **)((UBYTE *)&pt + offsetof(struct ptdata, samplestarts) + (off)))
 #define W(p) (*(UWORD *)(p))
 
-/* a0 of mt_GetNewNote, the pattern data; mt_end sets a0 to $DFF000, so
-   after an F00 (mt_SetSpeed: BEQ mt_end) the voices behind read their
-   notes from the custom chip registers (BUG(orig), #475) */
+/* a0 of mt_GetNewNote, the pattern data; Fixed (#475): the original's
+   mt_end loaded a0 with $DFF000, so after an F00 (mt_SetSpeed: BEQ mt_end)
+   the voices behind read their notes from the custom chip registers;
+   here mt_end leaves it alone */
 static UBYTE *patdata;
 
 static void mt_end(void);
@@ -476,7 +478,6 @@ nextentry:                              /* mtloop2 */
 static void mt_end(void)
 {
     pt.enable = 0;
-    patdata = (UBYTE *)0xdff000;      /* MOVE.l #$DFF000,A0 */
     CUSTOM.aud[0].ac_vol = 0;
     CUSTOM.aud[1].ac_vol = 0;
     CUSTOM.aud[2].ac_vol = 0;

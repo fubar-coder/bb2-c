@@ -33,7 +33,7 @@
  * pattern breaks, loops, delays, retrigs, invert loop ...), and a
  * second, small module for the speed/tempo corner cases (F80: a speed,
  * BUG(orig) #569; F00 on voice 1 stops, and voices 2-4 then read their notes
- * from the custom chip registers, BUG(orig) #475).  Rows by hand: the first
+ * from the custom chip registers in the original, Fixed (#475)).  Rows by hand: the first
  * 1xx (mt_LowMask 0 in the original, Fixed (#478)), volume above 64, tremolo's ramp-down
  * with a negative vibrato position (Fixed (#482)), 9xx with a note
  * (applied twice by the original, Fixed (#473)), invert loop, retrig,
@@ -134,7 +134,7 @@ static void snapshot(UBYTE *b, UBYTE *g)
 }
 
 /* the custom chip registers before each call: notes for an F00 on voices
-   1-3 (the voices behind read their notes here, BUG(orig), #475): period 428,
+   1-3 (the voices behind read their notes here in the original, #475): period 428,
    sample 1, C20 */
 static void fillfake(void)
 {
@@ -372,7 +372,7 @@ static void build_speed(void)
     note(pat + 16 * 4, 0, 0, 0xe, 0x01);                /* filter */
     note(pat + 16 * 5, 0, 0, 0xf, 0x00);                /* stop on voice 1: voices 2-4 read
                                                            their notes from the custom chip
-                                                           registers (BUG(orig), #475) */
+                                                           registers in the original, #475) */
     modsz = 1084 + 1024 + 100;
     memset(ref + 1084 + 1024, 0x11, 100);
 }

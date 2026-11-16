@@ -47,7 +47,7 @@
  *     a file size with the low byte $FE: the byte add of the original,
  *     fixed #442),
  *     FreeTrackerModule (loaded, copied, linked), ModuleToChip, finit.
- *     F00 on voice 1, 2 and 3 of a small module (BUG(orig) #475: mt_end loads
+ *     F00 on voice 1, 2 and 3 of a small module (#475, fixed: the original's mt_end loads
  *     a0 with $DFF000, the voices behind read their notes from the
  *     custom chip registers): the $DFF000 of mt_end (the original's
  *     LEA operand, the C build's endcustom behind the CIA part) is
@@ -997,7 +997,7 @@ int main(int argc, char **argv)
     stmt("FreeTrackerModule", FREE, 0);
     OBSBYTES("module bytes", mod, reflen);
 
-    /* F00 on voices 1-3 (BUG(orig), #475) */
+    /* F00 on voices 1-3 (the original's bug #475, fixed) */
     f00();
 
     /* DecodeModule from fast memory: a copy in chip memory */

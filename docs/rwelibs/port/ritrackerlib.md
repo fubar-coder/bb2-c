@@ -123,10 +123,6 @@ RI's glue:
   `ciatime` (#571).
 * `Fxx` compares signed (`CMP.B #32: BGE`): F80–FFF set the speed to
   128–255 instead of the tempo (#569).
-* `F00` (`mt_SetSpeed: BEQ mt_end`) on voice 1–3: `mt_end` loads a0 with
-  `$DFF000`, so the following voices of the row read their notes from
-  the custom chip registers (`$DFF000` + pattern offset) instead of the
-  pattern (#475).
 * `TrackerChannels`: a masked voice does not advance the pattern
   offset, so the following voices play the notes of the voice before
   (#568); the effects (`mt_CheckEfx`) and the loop registers of
@@ -193,6 +189,12 @@ kind F), in the play routine:
   finetune −1 the first voice block (#474; library test
   `rwe_ritrackerlib`, the rows by hand with an arpeggio on index 33 of
   sample 1's finetune and of finetune 15).
+* `F00` (`mt_SetSpeed: BEQ mt_end`) on voice 1–3: the following voices
+  of the row read their notes from the pattern; the original's `mt_end`
+  loads a0, the pattern pointer of `mt_GetNewNote`, with `$DFF000`, so
+  they read the custom chip registers (`$DFF000` + pattern offset)
+  (#475; library test `rwe_ritrackerlib`, the second module's F00 on
+  voice 1).
 
 ## Test
 

@@ -186,6 +186,15 @@ kind F):
   low note), for finetune −1 `mt_chan1temp` (#474; bug-orig test
   `pt23a-arpeggio-overrun-ciatrklib`, library test `rwe_ciatrklib`, the
   random arpeggios on masked voices).
+* Play routine: after an F00 on voice 1–3 (it stops the module, as in
+  every Protracker) the voices behind it read their notes from the
+  pattern. The original's `mt_end` loads a0 with `$DFF000` (for its
+  `CLR.W $A8(A0)` …), and in `mt_GetNewNote` a0 is the pattern data: the
+  voices behind read their notes with `MOVE.L 0(A0,D1.L),(A6)` from the
+  custom chip registers at `$DFF000` + the pattern offset and played
+  them. The C build keeps that pointer in `patdata`, which `mt_end` no
+  longer changes (#475; library test `rwe_ciatrklib`, the F00 phase:
+  the cases `voice behind F00: note from $DFF000 + offset`).
 
 ## BUG(orig), kept
 
@@ -213,16 +222,6 @@ kind F):
   `ciatrklib-pause-state-kept`, REPRODUCED; #1076).
 * Play routine (Protracker 2.3A): a sample number above 31 reads behind
   `mt_SampleStarts` (#480).
-* F00: that it stops the module (`mt_SetSpeed`: `BEQ mt_end`) is normal
-  Protracker behaviour. The defect is that `mt_end` loads a0 with
-  `$DFF000` (for its `CLR.W $A8(A0)` …), and in `mt_GetNewNote` a0 is
-  the pattern data: after an F00 on voice 1–3 the voices behind it read
-  their notes with `MOVE.L 0(A0,D1.L),(A6)` from the custom chip
-  registers at `$DFF000` + the pattern offset (registers that change by
-  the moment or are write-only) and play them in the same row. The C
-  build keeps that pointer in `patdata`, which `mt_end` sets to `$DFF000`
-  (checked against the reference build: `LEA $DFF000,A0` in `mt_end`,
-  nothing else changes a0 between the four `mt_PlayVoice` calls) (#475).
 
 ## DIFF and not reproducible
 
