@@ -7,6 +7,7 @@
 ; OpenSerial: the read half gets it, the write half's AllocSignal fails.
 ; Correct: OpenSerial returns 0 with the device closed again (no users),
 ; a later OpenSerial succeeds.
+; @fixed #259
 ; @configs clib
 DEFTYPE .l
 u=OpenSerial("serial.device",0,9600,0)
