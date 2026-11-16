@@ -35,8 +35,6 @@
  *     looks like an ArgString.
  *   - FillRexxMsg: a value of 0 ends the list (also an integer 0); flag
  *     bit 15 = slot 0 is an integer, bit 14 slot 1, ... (#50)
- *   - GetRexxResult/GetRexxCommand: index (n-1)*4 as word (MULU, d1.w),
- *     n = 0 reads rm_Action / rm_Result2. (#51)
  *   - Not a bug (by design): RexxEvent removes the first message like exec
  *     GetMsg (own copy with INTENA and IDNestCnt), returns replies as well
  *     (after ClearRexxMsg).
@@ -68,6 +66,13 @@
  * SendRexxCommand, GetRexxResult, GetRexxCommand, GetResultString read
  * and wrote low memory, FillRexxMsg the exception vectors); after the
  * alert the message now counts as no RexxMsg.
+ * Fixed (intended deviation, #51): GetRexxResult and GetRexxCommand had
+ * no check of n (index (n-1)*4 as a word, MULU and d1.w; n = 0 reads
+ * rm_Action / rm_Result2).  The original has no error check area; here
+ * the library has one: with runtime error checking an n other than 1 or
+ * 2 (GetRexxResult) or outside 1 to 16 (GetRexxCommand) is the runtime
+ * error "Illegal Result Number" / "Illegal Argument Number"; release
+ * code unchanged (an invalid argument).
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -101,12 +106,14 @@ void _SendRexxCommand(void), _ReplyRexxMsg(void), _GetRexxResult(void);
 void _GetRexxCommand(void), _GetResultString(void), _RexxEvent(void);
 void _IsRexxMsg(void), _RexxError(void), SetUpRoutine(void);
 void arexxlib_CloseRoutine(void);
+void getrexxresultchk(void), getrexxcommandchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader{#arexxlib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_arexxlib, init, BL_NORET, finit, 0);
+/* !libheader{#arexxlib,init,0,finit,0}; error field: the error check area
+   of getrexxresultchk/getrexxcommandchk (fixed, #51) */
+BLITZ_LIBHEADER(LIB_arexxlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_STRING, BL_STRING);
@@ -159,13 +166,13 @@ BLITZ_NAME("ReplyRexxMsg", "rexxmsg,Result1,Result2,ResultString");
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_GetRexxResult, 0, 0);
+BLITZ_SUBS(_GetRexxResult, getrexxresultchk, 0);  /* check: fixed #51 */
 BLITZ_NAME("GetRexxResult", "Result=GetRexxResult(rexxmsg,ResultNum)");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_GetRexxCommand, 0, 0);
+BLITZ_SUBS(_GetRexxCommand, getrexxcommandchk, 0);    /* check: fixed #51 */
 BLITZ_NAME("GetRexxCommand", "String=GetRexxCommand(rexxmsg,ARGNum)");
 
 BLITZ_AFUNCTION(BL_STRING);
@@ -679,9 +686,11 @@ BLITZ_ALIAS(_ReplyRexxMsg, replyrexxmsg_c);
  * @brief GetRexxResult(rexxmsg,ResultNum): rm_Result1 (1) or rm_Result2
  *        (2).
  *
- * BUG(orig) (#51): the index (n-1)*4 is a word (MULU, d1.w), n = 0 reads
- * rm_Action.  Without rexxsyslib: the alert, then 0 (fixed, #56: the
- * original read the field of a message at address 0).
+ * Errors (debugger only, getrexxresultchk): "Illegal Result Number" for
+ * an n other than 1 or 2 (fixed, #51: the original had no check; without
+ * the debugger the index (n-1)*4 is a word (MULU, d1.w), n = 0 reads
+ * rm_Action, an invalid argument).  Without rexxsyslib: the alert, then 0
+ * (fixed, #56: the original read the field of a message at address 0).
  *
  * @param msg  d0: the RexxMsg
  * @param n    d1: 1 or 2
@@ -692,7 +701,7 @@ static ULONG BLITZ_ROUTINE getrexxresult_c(ULONG msg BL_REG(d0),
 {
     if (!tstrexxmsg(msg))
         return 0;                               /* GRRError */
-    /* BUG(orig) (#51): n = 0 reads rm_Action */
+    /* n = 0 reads rm_Action (checked by getrexxresultchk, #51) */
     return *(const ULONG *)((const UBYTE *)&((struct RexxMsg *)msg)->rm_Result1
                             + argindex(n));
 }
@@ -717,7 +726,10 @@ static ULONG copyarg(const UBYTE *s)
  *
  * Copies the ArgString to a3 (the string work area), a3 ends on the 0.
  * Fixed (#52): the original left a3 BEHIND the 0.
- * BUG(orig) (#51): the index is a word, n = 0 reads rm_Result2.
+ * Errors (debugger only, getrexxcommandchk): "Illegal Argument Number"
+ * for an n outside 1 to 16 (fixed, #51: the original had no check;
+ * without the debugger the index is a word, n = 0 reads rm_Result2, an
+ * invalid argument).
  *
  * @param msg  d0: the RexxMsg
  * @param n    d1: 1..16
@@ -731,7 +743,7 @@ static ULONG BLITZ_ROUTINE getrexxcommand_c(ULONG msg BL_REG(d0),
 
     if (!tstrexxmsg(msg))
         return 0;                               /* GRAError */
-    /* BUG(orig) (#51): n = 0 reads rm_Result2 */
+    /* n = 0 reads rm_Result2 (checked by getrexxcommandchk, #51) */
     arg = *(const ULONG *)((const UBYTE *)((struct RexxMsg *)msg)->rm_Args
                            + argindex(n));
     if (!tstargstring(arg))
@@ -858,3 +870,46 @@ static ULONG BLITZ_ROUTINE rexxerror_c(ULONG code BL_REG(d0))
     return n;
 }
 BLITZ_ALIAS(_RexxError, rexxerror_c);
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(IllResult, "Illegal Result Number");      /* fixed, #51 */
+BLITZ_ERRCHK_MESSAGE(IllArg, "Illegal Argument Number");       /* fixed, #51 */
+
+/**
+ * @brief The error check of GetRexxResult (debugger only).
+ *
+ * Fixed (#51), not in the original (GetRexxResult did not check the
+ * number): ResultNum must be 1 (rm_Result1) or 2 (rm_Result2), as the
+ * guide says.
+ *
+ * Errors: "Illegal Result Number".
+ *
+ * @param n  d1: ResultNum
+ */
+static void BLITZ_ERRCHK getrexxresultchk_c(ULONG n BL_REG(d1))
+{
+    if (n - 1 >= 2)
+        BLITZ_RUNERR(IllResult);
+}
+
+/**
+ * @brief The error check of GetRexxCommand (debugger only).
+ *
+ * Fixed (#51), not in the original (GetRexxCommand did not check the
+ * number): ARGNum must be a slot of rm_Args[], 1 to 16, as the guide
+ * says.
+ *
+ * Errors: "Illegal Argument Number".
+ *
+ * @param n  d1: ARGNum
+ */
+static void BLITZ_ERRCHK getrexxcommandchk_c(ULONG n BL_REG(d1))
+{
+    if (n - 1 >= ARGSLOTS)
+        BLITZ_RUNERR(IllArg);
+}
+
+/* the thunks of the check functions */
+BLITZ_ERRCHK_THUNK(getrexxresultchk, getrexxresultchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(getrexxcommandchk, getrexxcommandchk_c, "d0-d1/a0-a1");

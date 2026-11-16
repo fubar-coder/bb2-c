@@ -154,3 +154,10 @@ lib 143: declaration part $930 != $92C bytes
 # pushed for it) and gets intchk in the error check area, as Int and Sgn
 lib 120: entry 3 Frac +$8: $05 != $08
 lib 120: relocations in the declaration part 20 != 21
+# #51: GetRexxResult and GetRexxCommand get error checks (getrexxresultchk,
+# getrexxcommandchk); arexxlib gets an error check area for them (the
+# original has none)
+lib 92: header +$2C: code offset set in only one of them
+lib 92: entry 8 GetRexxResult +$C: code offset set in only one of them
+lib 92: entry 9 GetRexxCommand +$C: code offset set in only one of them
+lib 92: relocations in the declaration part 18 != 21
