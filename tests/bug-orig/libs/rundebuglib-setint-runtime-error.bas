@@ -1,4 +1,4 @@
-; rundebuglib-setint-runtime-error - a runtime error inside a SetInt
+; rundebuglib-setint-runtime-error (#1073) - a runtime error inside a SetInt
 ; routine of an executable compiled with runtime error checking: the
 ; routine runs in supervisor mode, and rundebuglib's TRAP #0 handler gives
 ; such a trap to the TRAP #0 vector it found (exec's), with the vectors

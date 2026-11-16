@@ -167,7 +167,7 @@ BLITZ_ASM_BLOCK(traps,
    TRAP #2, intstack), not the ones of the program's start; if the old
    handler returns, the routine is left through its end (gouser puts the
    same vectors back).  The original fell through behind the trap.
-   BUG(orig): the old vector is exec's in practice, and exec stops the
+   BUG(orig) (#1073): the old vector is exec's in practice, and exec stops the
    machine at a trap of supervisor mode: a runtime error in a SetInt
    routine of an executable is never reported, the machine hangs (test
    rundebuglib-setint-runtime-error).  The debugger leaves the routine
