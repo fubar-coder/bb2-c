@@ -47,12 +47,9 @@
  *   - PauseModule toggles its own state, which StartTracker and
  *     StopTracker leave as it is: after a pause the next PauseModule
  *     only enables playing (test ciatrklib-pause-state-kept; #1076).
- *   - Play routine (Protracker 2.3A): the sample
- *     offset (9xx with a note) is applied twice to n_start/n_length
- *     (mt_SetRegs calls mt_CheckMoreEfx before mt_SetPeriod, which runs it
- *     again) (#473); the arpeggio
- *     (#474) and a sample number > 31 (#480) read behind the tables
- *     (mt_chan1temp, mt_SongDataPtr ...); the repeat offset is
+ *   - Play routine (Protracker 2.3A): the arpeggio (#474) and a sample number > 31 (#480) read behind the tables
+ *     (mt_chan1temp, mt_SongDataPtr ...); E8x (Karplus-Strong) with a
+ *     loop length of 0 rewrites 64 KB (#439); the repeat offset is
  *     repeat * 2 as a word (ASL.w) (#479); the sample offset compares
  *     signed with n_length (CMP.w, BGE): 9xx on a length of $8000 words
  *     or more sets the length to 1 (#472); F00 stops the module (as in
@@ -77,6 +74,11 @@
  *     entry of the finetune's row; the original compared 37 entries and
  *     took entry 37, the second of the next row (for finetune -1 the
  *     effect word of voice 1) (#481).
+ *   - 9xx with a note applies the sample offset once to n_start/n_length;
+ *     the original's mt_SetRegs called mt_CheckMoreEfx and then
+ *     mt_SetPeriod, which ran it again: Paula got the offset once, the
+ *     voice (retrig, note delay, a following note without a sample
+ *     number) twice (#473).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -1311,9 +1313,10 @@ static void checkmoreefx(struct chan *ch, aud_t *aud)
     pernop(ch, aud);
 }
 
-/* mt_SetPeriod: a note below 113 (no entry of finetune 0's row fits) takes
-   entry 35 (Fixed (#481): the original took entry 37, behind the row) */
-static void setperiod(struct chan *ch, aud_t *aud)
+/* mt_SetPeriod up to its mt_CheckMoreEfx: a note below 113 (no entry of
+   finetune 0's row fits) takes entry 35 (Fixed (#481): the original took
+   entry 37, behind the row); the sample is started (not with EDx) */
+static inline __attribute__((always_inline)) void setperiod_regs(struct chan *ch, aud_t *aud)
 {
     const UWORD *table = playdata.PeriodTable;
     UWORD note = ch->n.f.note & 0x0fff, idx;
@@ -1325,10 +1328,8 @@ static void setperiod(struct chan *ch, aud_t *aud)
     idx = 35;
 found:
     ch->period = periods(ch->finetune)[idx];
-    if ((CMDW(ch) & 0x0ff0) == 0x0ed0) {        /* note delay */
-        checkmoreefx(ch, aud);
+    if ((CMDW(ch) & 0x0ff0) == 0x0ed0)          /* note delay */
         return;
-    }
     if (!(ch->wavecontrol & 4))
         ch->vibratopos = 0;
     if (!(ch->wavecontrol & 0x40))
@@ -1336,6 +1337,12 @@ found:
     aud->ac_ptr = (UWORD *)ch->start;           /* mt_trenoc */
     aud->ac_len = ch->length;
     playdata.DMACONtemp |= ch->dmabit;
+}
+
+/* mt_SetPeriod */
+static void setperiod(struct chan *ch, aud_t *aud)
+{
+    setperiod_regs(ch, aud);
     checkmoreefx(ch, aud);
 }
 
@@ -1388,9 +1395,15 @@ static void playvoice(struct chan *ch, aud_t *aud, const UBYTE *samples, const U
         settoneporta(ch);
         checkmoreefx(ch, aud);
         return;
-    case 9:                             /* BUG(orig): the offset twice (#473) */
+    case 9:
+        /* the offset, then the sample started from it; Fixed (#473): the
+           original's mt_SetPeriod ran mt_CheckMoreEfx again, which applied
+           the offset a second time to n_start/n_length - here only its
+           mt_UpdateFunk */
         checkmoreefx(ch, aud);
-        break;
+        setperiod_regs(ch, aud);
+        updatefunk(ch);
+        return;
     }
     setperiod(ch, aud);
 }

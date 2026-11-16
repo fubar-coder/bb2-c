@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+voices found -1
+start +512 length 1744
+rc=0

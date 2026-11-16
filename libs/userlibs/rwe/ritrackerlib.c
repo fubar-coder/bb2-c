@@ -74,9 +74,7 @@
  *     finetune byte above 15 from the sample header makes the period
  *     lookups read far behind (#476).
  *   - 9xx: compared signed with the length (samples of 64 KB and more
- *     get length 1) (#472); with a note it is applied twice
- *     (mt_CheckMoreEfx before and after mt_SetPeriod) (#473); loop
- *     offsets are shifted as words (repeat >= 32768 words wraps) (#479).
+ *     get length 1) (#472); loop offsets are shifted as words (repeat >= 32768 words wraps) (#479).
  *   - Sample numbers above 31 read behind mt_SampleStarts and the sample
  *     headers (#480).
  * Fixed in the play routine (intended deviations):
@@ -90,6 +88,11 @@
  *     entry of the finetune's row; the original compared 37 entries and
  *     took entry 37, the second of the next row (for finetune -1 the
  *     effect word of voice 1) (#481).
+ *   - 9xx with a note applies the sample offset once to n_start/n_length;
+ *     the original's mt_SetRegs called mt_CheckMoreEfx and then
+ *     mt_SetPeriod, which ran it again: Paula got the offset once, the
+ *     voice (retrig, note delay, a following note without a sample
+ *     number) twice (#473).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -1035,9 +1038,9 @@ static void checkmoreefx(aud_t *hw, struct chan *c)
     }
 }
 
-/* mt_SetPeriod: the period of the note for the finetune, start the
-   sample (not with EDx) */
-static void mt_setperiod(aud_t *hw, struct chan *c)
+/* mt_SetPeriod up to its mt_CheckMoreEfx: the period of the note for the
+   finetune, start the sample (not with EDx) */
+static inline __attribute__((always_inline)) void setperiod_regs(aud_t *hw, struct chan *c)
 {
     UWORD note = c->note & 0x0fff, off = 0;
     int left;
@@ -1050,10 +1053,8 @@ static void mt_setperiod(aud_t *hw, struct chan *c)
     off = 35 * 2;                       /* Fixed (#481): the original took entry 37 */
 found:
     c->period = PERIOD((ULONG)c->finetune * 36 * 2 + off);
-    if ((cmdword(c) & 0x0ff0) == 0x0ed0) {
-        checkmoreefx(hw, c);
+    if ((cmdword(c) & 0x0ff0) == 0x0ed0)
         return;
-    }
     CUSTOM.dmacon = c->dmabit;
     if (!(c->wavecontrol & 4))
         c->vibratopos = 0;
@@ -1063,6 +1064,12 @@ found:
     hw->ac_len = c->length;
     hw->ac_per = c->period;
     pt.dmacontemp |= c->dmabit;
+}
+
+/* mt_SetPeriod */
+static void mt_setperiod(aud_t *hw, struct chan *c)
+{
+    setperiod_regs(hw, c);
     checkmoreefx(hw, c);
 }
 
@@ -1123,8 +1130,14 @@ static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *patpos, UBYTE *sample
         checkmoreefx(hw, c);
         return;
     case 9:
-        checkmoreefx(hw, c);            /* BUG(orig): 9xx twice (#473) */
-        break;
+        /* the offset, then the sample started from it; Fixed (#473): the
+           original's mt_SetPeriod ran mt_CheckMoreEfx again, which applied
+           the offset a second time to n_start/n_length - here only its
+           mt_UpdateFunk */
+        checkmoreefx(hw, c);
+        setperiod_regs(hw, c);
+        mt_updatefunk(c);
+        return;
     }
     mt_setperiod(hw, c);
 }

@@ -158,8 +158,7 @@ pt23f changelog served as the checklist, no code was taken from it):
   finetune byte above 15 in a sample header reads far behind the table
   (#476).
 * 9xx: the offset is compared signed with the length (samples of 64 KB
-  and more get length 1) (#472); with a note it is applied twice
-  (`mt_CheckMoreEfx` before and after `mt_SetPeriod`) (#473). The loop
+  and more get length 1) (#472). The loop
   start is start + repeat shifted as a word (repeats ≥ 32768 words wrap)
   (#479).
 * Sample numbers above 31 read behind `mt_SampleStarts` and the sample
@@ -182,6 +181,12 @@ kind F), in the play routine:
   entry of the finetune's row; the original compared 37 entries and took
   entry 37, the second of the next row (for finetune −1 the effect word
   of voice 1) (#481; bug-orig test `pt23a-setperiod-entry37`).
+* 9xx with a note applies the sample offset once to `n_start`/`n_length`;
+  the original's `mt_SetRegs` called `mt_CheckMoreEfx` and then
+  `mt_SetPeriod`, which ran it again (Paula got the offset once, the
+  voice twice: a retrig, a note delay or a following note without a
+  sample number started at the doubled offset) (#473; bug-orig test
+  `pt23a-9xx-twice`).
 
 ## Test
 
