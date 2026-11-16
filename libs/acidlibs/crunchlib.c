@@ -41,7 +41,6 @@
  *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
  *     memory in front of the buffer are overwritten (the BB2 docs only
  *     say "works like the Deplode command"). (#116)
- *   - PPDecrunch: ReadD1_SUB with an efficiency value 0 reads 65536 bits. (#118)
  *   - Implode crunches in place while it searches: a result of 0 (not
  *     crunchable) after at least 64 bytes leaves the buffer partly
  *     overwritten. (#114)
@@ -55,6 +54,9 @@
  *     and a sum of the counts without a limit, writing behind the tables
  *     (static data inside the library, as in the original); a count of 0
  *     or a sum of 0 or beyond the table ends the decrunch now (#117).
+ *   - PPDecrunch: ReadD1_SUB read efficiency-1 bits with DBF, a value of 0
+ *     65536 bits; the four efficiency values (offset bit counts) are
+ *     checked for 1-15 first, otherwise nothing is unpacked (#118).
  * Kept from the original, not a bug: after $4012 literal bytes in a row
  * Implode stores the rest of the data uncrunched - a limit of the
  * Imploder format (imtab4); the result decrunches correctly (#113).
@@ -1187,6 +1189,9 @@ static void ppdecrunch(const UBYTE *file, const UBYTE *end, UBYTE *dest)
     if (RL(file) != ID_PP20)
         return;                         /* nopower */
     eff = file + 4;                     /* efficiency */
+    for (int i = 0; i < 4; i++)         /* Fixed (#118): 1-15, else nothing */
+        if ((UBYTE)(eff[i] - 1) > 14)
+            return;
     b.src = end;
     dst = dest;
     b.bits = 1;
@@ -1248,7 +1253,8 @@ static void ppdecrunch(const UBYTE *file, const UBYTE *end, UBYTE *dest)
  * _ppdecrunch: the last long of the packed file holds the original length
  * and the number of empty bits; other files than "PP20" are left alone.
  * All registers kept.
- * BUG(orig) (#118): an efficiency value 0 reads 65536 bits.
+ * Fixed (#118): an efficiency value outside 1-15 unpacks nothing (the
+ * original read 65536 bits for a value of 0 and unpacked garbage).
  * BUG(orig) (#119): no checks of the data.
  *
  * @param start  d0: the packed file
