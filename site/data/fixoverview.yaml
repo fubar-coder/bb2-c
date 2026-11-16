@@ -317,6 +317,38 @@ rows:
     text: "`PeekSound` inside a string expression leaves the sound object intact; the original overwrote it."
     page: compiler
     anchor: object-function-in-string
+  - issue: 48
+    severity: 1
+    topic: "System"
+    library: "arexxlib"
+    command: "ReplyRexxMsg"
+    text: "`ReplyRexxMsg` sends the result string when the sender asked for one (RXFF_RESULT); the original tested the function call bit, so a command asking for a result got none and a function call without the flag got one."
+    page: libraries
+    anchor: replyrexxmsg-result
+  - issue: 49
+    severity: 4
+    topic: "System"
+    library: "arexxlib"
+    command: "ClearRexxMsg, FillRexxMsg"
+    text: "`ClearRexxMsg` and `FillRexxMsg` stop after the 16 argument slots; the original went on into the fields behind them."
+    page: libraries
+    anchor: arexx
+  - issue: 50
+    severity: 4
+    topic: "System"
+    library: "arexxlib"
+    command: "FillRexxMsg, ClearRexxMsg"
+    text: "`FillRexxMsg` keeps a number 0 and the arguments behind it, and `ClearRexxMsg` clears all 16 slots; the original ended the list at a number 0."
+    page: libraries
+    anchor: arexx
+  - issue: 51
+    severity: 3
+    topic: "System"
+    library: "arexxlib"
+    command: "GetRexxResult, GetRexxCommand"
+    text: "With runtime error checking, a number out of range stops `GetRexxResult` (\"Illegal Result Number\") and `GetRexxCommand` (\"Illegal Argument Number\"); the original read the neighbouring fields."
+    page: libraries
+    anchor: arexx
   - issue: 52
     severity: 4
     topic: "System"
@@ -325,6 +357,38 @@ rows:
     text: "Text added after `GetRexxCommand` or `GetResultString` comes out whole; the original left a 0 byte in between and lost its last character."
     page: libraries
     anchor: text-after-string-function
+  - issue: 53
+    severity: 4
+    topic: "System"
+    library: "arexxlib"
+    command: "GetResultString"
+    text: "`GetResultString` clears the result after freeing its string, so a second call gives the empty string; the original read and freed the freed memory again."
+    page: libraries
+    anchor: arexx
+  - issue: 55
+    severity: 4
+    topic: "System"
+    library: "arexxlib"
+    command: "SendRexxCommand"
+    text: "`SendRexxCommand` with no ARexx running enables the interrupts again before its alert; the original left them disabled and the Amiga stopped responding."
+    page: libraries
+    anchor: arexx
+  - issue: 56
+    severity: 4
+    topic: "System"
+    library: "arexxlib"
+    command: ""
+    text: "Without rexxsyslib.library the ARexx message commands do nothing after their alert; the original worked on a message at address 0 and wrote into low memory."
+    page: libraries
+    anchor: arexx
+  - issue: 57
+    severity: 4
+    topic: "System"
+    library: "arexxlib"
+    command: "CreateArgString"
+    text: "An ArgString of a string longer than 65535 characters holds its first 65535 characters; the original copied only the length modulo 65536."
+    page: libraries
+    anchor: arexx
   - issue: 58
     severity: 3
     topic: "Data structures"

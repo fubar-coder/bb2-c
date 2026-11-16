@@ -1316,6 +1316,29 @@ returned, and remove other ports the way they were made.
 
 Issue: [DeleteMsgPort took any address as a port (#1041)](https://github.com/fubar-coder/bb2-c/issues/1041).
 
+### `GetRexxResult` and `GetRexxCommand` with a number out of range {#rexx-numbers}
+
+`GetRexxResult(msg,ResultNum)` reads result 1 or 2 of an ARexx message,
+and `GetRexxCommand(msg,ARGNum)` the text of one of its 16 argument
+slots, counted from 1.
+
+**What happened.** The original did not check the number and read
+whatever lay at that place in the message: `GetRexxResult(msg,0)` gave
+the action of the message, `GetRexxResult(msg,3)` the first argument
+slot, and `GetRexxCommand(msg,0)` took the second result as the address
+of a text.
+
+**With the port.** With runtime error checking, `GetRexxResult` with a
+number other than 1 or 2 is the error "Illegal Result Number", and
+`GetRexxCommand` with a number outside 1 to 16 the error "Illegal
+Argument Number". Without runtime error checking, the program runs as
+with the original.
+
+**What to change.** Read the argument slots with `GetRexxCommand`, and
+other fields of the message with `Peek`.
+
+Issue: [GetRexxResult and GetRexxCommand did not check their number (#51)](https://github.com/fubar-coder/bb2-c/issues/51).
+
 ### `SpotBox` on a page that is not set up {#spotbox-page}
 
 **What happened.** The other Blitz OS commands stop with "UnInitialised
