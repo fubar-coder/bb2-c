@@ -332,7 +332,7 @@ C, declarations identical. Object lib "MenuList" (4 bytes). Not a bug, by design
 
 ## 108 mouselib
 
-C, declarations identical. Almost everything only in Blitz mode (err1 = 1). BUG(orig): Mouse On swaps the JOY0DAT bytes (#223). Not bugs: the interrupt leaves a5 in place (a scratch register for interrupt servers); the sprite number of Pointer is object offset >> 4 (offset = number * 16, correct). MouseX, MouseY, MouseXSpeed and MouseYSpeed are the original's assembler (`MOVE x(pc),d0:SWAP d0:CLR d0`). Test t74 (Blitz mode without Mouse On; interrupt and Pointer with sprite not testable).
+C, declarations identical. Almost everything only in Blitz mode (err1 = 1). Fixed (#223): Mouse On takes the start values of the counters from the right bytes of JOY0DAT (the original swapped them; bug-orig test `mouselib-mouseon-counters`, JOYTEST sets different counters). Not bugs: the interrupt leaves a5 in place (a scratch register for interrupt servers); the sprite number of Pointer is object offset >> 4 (offset = number * 16, correct). MouseX, MouseY, MouseXSpeed and MouseYSpeed are the original's assembler (`MOVE x(pc),d0:SWAP d0:CLR d0`). Test t74 (Blitz mode without Mouse On; interrupt and Pointer with sprite not testable).
 
 ## 162 iffiolib
 

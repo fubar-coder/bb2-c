@@ -22,10 +22,10 @@
  * MouseX/MouseY/MouseXSpeed/MouseYSpeed are Quick: the word in the upper
  * half of d0 (SWAP:CLR).
  *
- * Kept from the original (BUG(orig)):
- *   - Mouse On initialises the last X counter from $DFF00A (the Y
- *     counter) and the last Y counter from $DFF00B (the X counter): the
- *     first interrupt moves the mouse by the difference of the two. (#223)
+ * Fixed (#223): Mouse On initialises the last X counter from $DFF00B and
+ * the last Y counter from $DFF00A; the original had them swapped ($DFF00A
+ * is the Y counter), and the first interrupt moved the mouse by the
+ * difference of the two.
  * Not a bug: mouseint leaves a5 = the a5 of the init when a Pointer is set
  * (a5 is a scratch register for interrupt servers); Pointer: the sprite
  * number is the object offset >> 4 (d0 = offset = number * 16, LSR #4 gives
@@ -257,9 +257,10 @@ BLITZ_ALIAS(domousearea, domousearea_c);
  * On: SetInt (intlib $C100, BLibJsr) with mouseint on level $8015
  * (vertical blank); Off: ClrInt ($C101).
  *
- * BUG(orig) (#223): Mouse On initialises the last X counter from $DFF00A
- * (the Y counter) and the last Y counter from $DFF00B (the X counter):
- * the first interrupt moves the mouse by the difference of the two.
+ * Fixed (#223): Mouse On initialises the last X counter from $DFF00B and
+ * the last Y counter from $DFF00A, as mouseint reads them; the original
+ * had them swapped, and the first interrupt moved the mouse by the
+ * difference of the two.
  *
  * @param on d0: On (<> 0) or Off (0).
  */
@@ -268,8 +269,8 @@ void BLITZ_ROUTINE domouse(WORD on BL_REG(d0))
     struct bl_regs r = { .d0 = 0x8015 };
 
     if (on) {
-        lx = JOY0DAT_HI;                /* BUG(orig) (#223): Y counter */
-        ly = JOY0DAT_LO;                /* BUG(orig) (#223): X counter */
+        lx = JOY0DAT_LO;                /* Fixed (#223): the X counter */
+        ly = JOY0DAT_HI;                /* Fixed (#223): the Y counter */
         r.d1 = (ULONG)mouseint;
         BLITZ_BLIBJSR(TOK_setint, r);
     } else
