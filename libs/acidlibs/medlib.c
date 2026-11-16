@@ -985,8 +985,13 @@ BL_ALWAYS_INLINE struct left playnote_in(UWORD ch, ULONG note, UWORD instr, stru
         goto synthnote;
     PT->synthtype = 0;
 sample:
-    while ((BYTE)n < 0)
+    /* the empty asm hides n from GCC's loop analysis: else it computes the
+       number of passes with a DIVU (about 250 cycles) instead of adding
+       12 per pass (22 cycles, as the original) */
+    while ((BYTE)n < 0) {
         n += 12;
+        __asm("" : "+d"(n));
+    }
     if ((BYTE)n > 62)
         n -= 12;
     if (SAMPLE(sp)->type) {                     /* IFF octaves */
