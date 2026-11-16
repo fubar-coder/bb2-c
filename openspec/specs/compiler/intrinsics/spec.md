@@ -5,7 +5,7 @@ Says when blitz2 and blitz2-ab3 compile a library function as inline code
 instead of a call, and that the inline code gives the same value, leaves
 the same registers and keeps the same error checks as the call.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Int of a Quick is compiled inline
 When the argument of `Int` has the static type Quick (a variable, an array
@@ -145,3 +145,7 @@ keeps the vallib call there.
 #### Scenario: Int in AB3 mode
 - **WHEN** a program in AB3 mode has `c=Int(q1)` with `q1` a Quick
 - **THEN** the compiled code holds no call of `Int`, and the value is the one AmiBlitz3's library gives
+
+#### Scenario: Len and Asc in AB3 mode
+- **WHEN** a program in AB3 mode has `n=Len(a$)` or `n=Asc(a$)` with `a$` a plain string variable
+- **THEN** the compiled code calls AmiBlitz3's library functions (its library 6 has another form), as AmiBlitz3's compiler does
