@@ -1626,11 +1626,11 @@ on Kickstart 1.3 only the first is FAIL, with counted bytes; all PASS
 on Kickstart 3.2), `lsclear_selftest_wrong_*` (wrong expectations must
 fail), `lsclear_ted_a1200` (control: `ted` passes on Kickstart 3.2).
 
-`ab3_cli_s_suffix` (`tests/ab3/cli/asm_short_s.ab3`: the size suffix `.s`
-of an assembler instruction is a Syntax Error in AB3 mode, AmiBlitz3 v3.14.0
-takes it as `.b`) is a one-case `ab3_cli` session; its expectation is
-checked by `ab3_cli_ref_s_suffix` (label `oracle`) against AmiBlitz3's
-compiler. The fix moves the case into the lists of `ab3_cli`/`ab3_cli_ref`.
+A defect of AB3 mode is a one-case `ab3_cli` session of its own (label
+`bug-port`), its expectation checked by a one-case `ab3_cli_ref` session
+(label `oracle`) against AmiBlitz3's compiler; the fix moves the case into
+the lists of `ab3_cli`/`ab3_cli_ref` and removes both sessions (#1068, the
+size suffix `.s`: case `asm_short_s`).
 
 
 ## Oracle data of the TED tests

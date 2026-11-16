@@ -467,7 +467,7 @@ The points (`ext.h`): `ext_makelibs`, `ext_loadlibs`,
 token of AB3 mode), `ext_newsyntax` (AmiBlitz3's new syntax),
 `ext_macargs`, `ext_namelabel`, `ext_dotlabel`, `ext_stmtprefix`,
 `ext_comment`, `ext_letter`, `ext_shared`, `ext_sharedvar`,
-`ext_nextline`, `ext_cnifstart`, `ext_cnifend`, `ext_constant`,
+`ext_nextline`, `ext_cnifstart`, `ext_cnifend`, `ext_asmsize`, `ext_constant`,
 `ext_macrodef`, `ext_macrotoken`, `ext_macrolineend`
 (AmiBlitz3's syntax rules), `ext_funcstmt` (a `Function` called as a
 statement, change `ab3-function-statement`), `ext_procrettype`,

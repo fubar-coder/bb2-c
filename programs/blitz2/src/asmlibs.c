@@ -163,7 +163,7 @@ void asmit(UWORD c)
     if (c != '.') {
         sz = 4;                         /* .dsize: no size check */
     } else {
-        c = getchar3() | 32;
+        c = ext_asmsize(getchar3() | 32);
         if (c == 'w') {
             sz = 4;
             nib = e->size >> 4;

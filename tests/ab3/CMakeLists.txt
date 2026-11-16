@@ -599,6 +599,11 @@ ab3_cli_case(inc_error inc_error.ab3 REF)
 # number is free keeps them (#960: a library's range ends only where the
 # next loaded library's begins): Mildred's MProcessor
 ab3_cli_case(libtoken_past_block libtoken_past_block.ab3 REF)
+# the size suffix .s of an assembler instruction is .b in AB3 mode (#1068;
+# BRA and BSR take a size suffix and stay word branches, as in AmiBlitz3
+# v3.14.0); BB2 mode refuses it, as BB2 2.10 does
+ab3_cli_case(asm_short_s asm_short_s.ab3 REF)
+ab3_cli_case(asm_short_s_bb2 asm_short_s_bb2.bb)
 
 # optimizer_regression.ab3 of AmiBlitz3's develop branch (not in v3.14.0): OPTIMIZE 5
 # (4: new syntax), four functions with a constant on one side of
@@ -659,18 +664,6 @@ endforeach()
 # change.  Label oracle instead of emulator: the presets emulator and all
 # leave them out, the preset oracle runs them (tests/README.md).
 set_tests_properties(ab3_cli_ref ab3_cli_ref_broken ab3_cli_ref_broken_date PROPERTIES LABELS oracle)
-
-# a known defect of the port: the size suffix .s of an assembler instruction
-# is a Syntax Error in AB3 mode (AmiBlitz3 v3.14.0 takes it as .b).  The case
-# is a test of its own (it fails until the defect is fixed, label bug-port,
-# tests/README.md "bug-port tests"); ab3_cli_ref_s_suffix checks the
-# expectation against AmiBlitz3 v3.14.0's compiler (the fix moves the case
-# into the lists above and removes both tests)
-set(s_suffix "asm_short_s|Blitz3|asm_short_s.ab3||${cli_dir}/asm_short_s.expect\n")
-ab3_cli(ab3_cli_s_suffix exe "${s_suffix}")
-ab3_cli(ab3_cli_ref_s_suffix ref "${s_suffix}")
-set_tests_properties(ab3_cli_s_suffix PROPERTIES LABELS "emulator;bug-port")
-set_tests_properties(ab3_cli_ref_s_suffix PROPERTIES LABELS oracle)
 
 # AB3 mode's tokens against AmiBlitz3's (spec ab3-compat/tokenizer,
 # tokenise.cmake): AmiBlitz3 v3.14.0 loads every source in CLI mode and

@@ -13,8 +13,8 @@
  *   TKLAST(id, num, name, help)      the last node of blitz2's list
  *   TK3(id, next, num, name, help)   a node only AmiBlitz3's list has, after
  *   TK3LAST(id, num, name, help)     blitz2's last one; the last one of all
- *   M(bb2, ab3)                      a name or help that differs: blitz2's,
- *                                    AmiBlitz3's
+ *   M(bb2, ab3)                      a name, help or asm datum that
+ *                                    differs: blitz2's, AmiBlitz3's
  *
  * AmiBlitz3's list (AmiBlitz/AmiBlitz3@58a11658,
  * Sourcecodes/Amiblitz3/Compiler/internal_commands.ab3, included by
@@ -23,9 +23,10 @@
  * slots, `Chip` for MOVEP, `BSS` for TAS, `RunErrsOn`/`RunErrsOff`), and 8
  * more tokens (tnum+33..tnum+40, $80D4-$80DB) at the end: 218.  Its help
  * texts are taken only where the name differs or is new; its asm data
- * differs only for BRA/BSR (dest shift 0, size 0: AmiBlitz3's own
- * assembler) - blitz2's data is kept, blitz2-ab3 assembles as blitz2
- * (docs/ab3/variant.md, G7).
+ * differs only for BRA/BSR (dest shift 0, size 0: every size suffix is
+ * taken, and the branch stays a word branch), and AB3 mode has it: so
+ * BRA.s, the size suffix .s of AB3 mode (#1068), assembles as in
+ * AmiBlitz3 v3.14.0.
  */
 
 TK(tok1, tok2, 1, "NEWTYPE", ".Typename")
@@ -144,9 +145,9 @@ TA(opbset, opbtst, fnum+26, "BSET",
 TA(opbtst, opbra, fnum+27, "BTST",
    0x100, imm_^dn_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((15<<12)+sall_), bitchk, (WORD)0)
 TA(opbra, opbsr, fnum+28, "BRA",
-   0x6000, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)2)
+   0x6000, dpc_, 0, (15<<4)+15, M((15<<4)+15, 0), (UWORD)M((15<<12)+nosz_, 0), NULL, (WORD)2)
 TA(opbsr, opchk, fnum+29, "BSR",
-   0x6100, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)2)
+   0x6100, dpc_, 0, (15<<4)+15, M((15<<4)+15, 0), (UWORD)M((15<<12)+nosz_, 0), NULL, (WORD)2)
 TA(opchk, opclr, fnum+30, "CHK",
    0x4180, 0xffd, dn_, (0<<4)+3, (9<<4)+15, (UWORD)((15<<12)+word_), NULL, (WORD)0)
 TA(opclr, opcmp, fnum+31, "CLR",

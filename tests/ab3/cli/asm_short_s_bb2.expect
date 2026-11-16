@@ -1,0 +1,5 @@
+[compile]
+asm_short_s_bb2.bb:5: Syntax Error
+rc=10
+[run]
+no executable

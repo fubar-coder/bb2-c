@@ -239,6 +239,14 @@ void ext_cnifend(void)
     cnifdef = FALSE;
 }
 
+/* Fixed (#1068): the size suffix .s of an assembler instruction is .b
+   (AmiBlitz3.ab3:7015, "CMP.w #"s",d0 : BEQ.w 'bsize ;s equals b"); a
+   branch with .s stays a word branch, as in AmiBlitz3 v3.14.0 */
+UWORD ext_asmsize(UWORD c)
+{
+    return progmode == XTRA_MODE_AB3 && c == 's' ? 'b' : c;
+}
+
 /* AmiBlitz3's constants of the include mechanism (AmiBlitz3.ab3:3405-3440,
    processInclude 20799, next_includefile 19534): #__include is 1 while an
    include is open, else 0.  #__debug (AmiBlitz3's debugmode) is the
