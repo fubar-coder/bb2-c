@@ -14,20 +14,14 @@
  */
 #include "blitzlib.h"
 
-LONG BLITZ_ROUTINE qmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1));
-void lmultiply(void);                   /* assembler, below */
+/* entry points (assembler, defined below) */
+void qmultiply(void), lmultiply(void);
 
 /* !syslibheader{#lmullib,$ca00,$ca02,0,0,0,0,$4000} */
 BLITZ_SYSLIBHEADER(LIB_lmullib, 0xca00, 0xca02, 0, 0, 0, 0, 0x4000);
 BLITZ_NULLSUB(qmultiply, 0, 0);         /* $CA00 quickmult */
 BLITZ_NULLSUB(lmultiply, 0, 0);         /* $CA01 longmult */
 BLITZ_LIBFIN();
-
-/* SWAP: exchange the words of a long */
-static inline ULONG swap(ULONG a)
-{
-    return (a << 16) | (a >> 16);
-}
 
 /**
  * @brief longmult ($CA01): Long multiplication, d0.l = d0.l * d1.l.
@@ -110,55 +104,78 @@ BLITZ_ASM_ROUTINE(lmultiply,
  * @brief quickmult ($CA00): Quick multiplication (16.16 fixed point),
  * d0.q = d0.q * d1.q.
  *
- * The four partial products shifted to keep bits 16..47 of the 64 bit
- * product (modulo 2^32).  The low product contributes only its high word
- * (truncation, no rounding).
+ * The four partial products of the magnitudes shifted to keep bits 16..47
+ * of the 64 bit product (modulo 2^32); the low product contributes only
+ * its high word (truncation, no rounding), so the magnitudes are needed
+ * and the sign is applied last.  The sign lives in the code path: four
+ * entries by the sign bits of a and b lead to two copies of the core, one
+ * followed by NEG.l (no flag register, no TST/BEQ at the end).  The sign
+ * bits are tested as in the original, so $80000000 (magnitude 2^31 as an
+ * unsigned long) counts as negative for both factors.  Negating both
+ * factors for a negative b, as longmult does, would be wrong here: NEG
+ * leaves $80000000 negative, so -32768 * -1/65536 would give -0.5.  The
+ * four MULU
+ * multiply by the words of |b| (lo(b), lo(b), hi(b), hi(b)), the
+ * original's source words, so the MULU time is the original's for every
+ * input (MULU takes 38 + 2 cycles per 1 bit of its source word).
  * Fixed (#199): the original adds the high product hi(a) * hi(b) SWAPped
  * like longmult, so its high word also lands in the low word when hi*hi
- * >= $10000 (300 * 300 gave $5F90.0001).  Now its low word goes to the
+ * >= $10000 (300 * 300 gave $5F90.0001).  Here its low word goes to the
  * high word, together with the high word of lo*lo in one long (MOVE.w,
- * SWAP).  The core is inline assembler so that it stays as cheap as the
- * original's (rule #1019, a hot path): the same four MULU with the same
- * source words (lo(b), hi(b), hi(a), hi(a): their 1 bits set the MULU
- * time), the same saved registers, and the instructions besides the
- * MULU take 52 cycles instead of 60 from 'skip2 on (the core: MOVE.w,
- * SWAP instead of CLR.w, SWAP ... SWAP, ADD.l; with gcc's register
- * copies around it, counted in the built routine).
+ * SWAP).
+ *
+ * Assembler because the cost is in the register use: GCC's code saved
+ * one register more, branched around the sign of a and took two MULU
+ * source words from a (the C version was between 62 cycles faster and 82
+ * slower than the original, depending on the 1 bits of a).  This one is
+ * 42 to 52 cycles faster than the original for every input (12.5 * 3.25:
+ * 308 cycles against 354), counted per instruction (analysis
+ * analyse-g13-mul.md).
+ *
+ * Registers: d0 the product, d1 changed (as in the original), d2-d7 and
+ * a0-a6 kept (internal token: the compiler holds d2-d7 across an
+ * operator; third-party callers, see longmult); the CCR is no result.
  *
  * @param a  d0: the first factor
  * @param b  d1: the second factor
  * @return d0: the product
  */
-LONG qmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
-{
-    ULONG mag_a = a, mag_b = b;         /* d0 d1 */
-    ULONG swap_a, swap_b;               /* |a| and |b| SWAPped */
-    ULONG lolo;                         /* lo*lo, then the two outer words */
-    UWORD neg = 0;                      /* d2.w */
+#define QMUL_CORE                                                           \
+        "   move.l  d0,d3\n"                                                \
+        "   swap    d3\n"                   /* d3 = [lo(a) : hi(a)] */      \
+        "   move.w  d3,d2\n"                                                \
+        "   mulu.w  d1,d2\n"                /* hi(a) * lo(b) */             \
+        "   mulu.w  d1,d0\n"                /* lo(a) * lo(b) */             \
+        "   move.w  d3,d0\n"                /* d0 = [hi(lo*lo) : hi(a)] */  \
+        "   swap    d3\n"                                                   \
+        "   swap    d1\n"                                                   \
+        "   mulu.w  d1,d3\n"                /* lo(a) * hi(b) */             \
+        "   add.l   d3,d2\n"                                                \
+        "   move.w  d0,d3\n"                                                \
+        "   mulu.w  d1,d3\n"                /* hi(a) * hi(b) */             \
+        "   move.w  d3,d0\n"                /* d0 = [hi(lo*lo) : lo(hi*hi)] */ \
+        "   swap    d0\n"                                                   \
+        "   add.l   d2,d0\n"
 
-    if ((LONG)mag_a < 0) {
-        mag_a = -mag_a;
-        neg = 0xffff;
-    }
-    if ((LONG)mag_b < 0) {              /* 'skip */
-        mag_b = -mag_b;
-        neg = ~neg;
-    }
-    swap_a = swap(mag_a);               /* 'skip2 */
-    swap_b = swap(mag_b);
-    __asm__("move.w  %[a],%[lolo]\n\t"
-            "mulu.w  %[b],%[lolo]\n\t"  /* lo(a) * lo(b) */
-            "mulu.w  %[sb],%[a]\n\t"    /* lo(a) * hi(b) */
-            "mulu.w  %[sa],%[b]\n\t"    /* hi(a) * lo(b) */
-            "mulu.w  %[sa],%[sb]\n\t"   /* hi(a) * hi(b) */
-            "move.w  %[sb],%[lolo]\n\t" /* high word of lo*lo, low word of hi*hi */
-            "swap    %[lolo]\n\t"
-            "add.l   %[lolo],%[a]\n\t"
-            "add.l   %[b],%[a]"
-            : [lolo] "=&d"(lolo), [a] "+d"(mag_a), [b] "+d"(mag_b), [sb] "+d"(swap_b)
-            : [sa] "d"(swap_a)
-            : "cc");
-    if (neg)
-        mag_a = -mag_a;                 /* 'skip3 */
-    return (LONG)mag_a;
-}
+BLITZ_ASM_ROUTINE(qmultiply,
+        "   movem.l d2-d3,-(sp)\n"
+        "   tst.l   d1\n"
+        "   bmi.s   2f\n"                   /* b < 0 */
+        "   tst.l   d0\n"
+        "   bmi.s   4f\n"                   /* a < 0, b >= 0 */
+        "1:\n"                              /* the signs alike */
+        QMUL_CORE
+        "   movem.l (sp)+,d2-d3\n"
+        "   rts\n"
+        "2: neg.l   d1\n"
+        "   tst.l   d0\n"
+        "   bmi.s   5f\n"                   /* both < 0 */
+        "3:\n"                              /* the signs unlike */
+        QMUL_CORE
+        "   neg.l   d0\n"
+        "   movem.l (sp)+,d2-d3\n"
+        "   rts\n"
+        "4: neg.l   d0\n"
+        "   bra.s   3b\n"
+        "5: neg.l   d0\n"
+        "   bra.s   1b");

@@ -1076,6 +1076,23 @@ build.
       words, $80000000 as a and as b, the four sign combinations and
       products that overflow, recorded from the original; the seven
       cases where #199 shows are pairs `[orig]` / `[fixed #199]`.
+    - `quickmult` (listing Q1, 100 bytes): Quick truncates the product of
+      the magnitudes, so the magnitudes stay; the sign lives in the code
+      path (four entries by the sign bits, two copies of the core, one
+      followed by NEG.l), so the flag register, its MOVEQ and the final
+      TST/BEQ go and two registers are saved instead of three. The sign
+      bits are tested as in the original: negating both factors for a
+      negative b, as longmult does, is wrong here, because NEG leaves
+      $80000000 negative (`$80000000 * $FFFFFFFF` would give -0.5). The
+      core (52 cycles besides the MULU, the original's 60) keeps the #199
+      fix. 42 to 52 cycles below the original for every input. Paths for
+      zero words of b (listing Q2) were left out: they cost 24 cycles
+      when both words of b are non-zero. `q3=q1*q2` (12.5 * 3.25) 458.1
+      -> 386.8 (434.0). New library cases (quickmult): the four sign
+      combinations, zero factors and words of a and b, $80000000 as a
+      and as b, `$80000000 * $FFFFFFFF`, the truncation of the low
+      product and products whose integer parts overflow; the six cases
+      where #199 shows are pairs `[orig]` / `[fixed #199]`.
 
 ## Risks / Trade-offs
 

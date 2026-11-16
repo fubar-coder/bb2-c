@@ -386,6 +386,34 @@ static void test_lmullib(void)
             OBS("d0", R.d[0]);
         }
     }
+
+    /* every path of quickmult (assembler, the signs select one of four
+       entries): the four sign combinations, zero factors and words of a
+       and b, $80000000 as a and as b ($80000000 * $FFFFFFFF: NEG leaves
+       $80000000 negative), the truncation of the low product, and
+       products whose integer parts overflow (#199) */
+    {
+        static const ULONG edges[][2] = {
+            { 0x000c8000, 0x00034000 }, { 0xfff38000, 0x00034000 },
+            { 0x000c8000, 0xfffcc000 }, { 0xfff38000, 0xfffcc000 },
+            { 0, 0x000c8000 }, { 0x000c8000, 0 },
+            { 0x000c8000, 0x00020000 }, { 0x000c8000, 0x00008000 },
+            { 0x00008000, 0x00034000 },
+            { 0x80000000, 0x00020000 }, { 0x00020000, 0x80000000 },
+            { 0x80000000, 0xffffffff }, { 0xffffffff, 0x80000000 },
+            { 0x80000000, 0x80000000 },
+            { 0x00000001, 0x00000001 }, { 0xffffffff, 0x00000001 },
+            { 0x012c0000, 0x012c0000 }, { 0x7fffffff, 0x7fffffff },
+            { 0x12345678, 0x9abcdef0 },
+        };
+
+        ROUT = "quickmult";
+        for (i = 0; i < sizeof edges / sizeof edges[0]; i++) {
+            sprintf(VEC, "$%08lX,$%08lX", edges[i][0], edges[i][1]);
+            DO1(E("lmullib", 0), R.d[0] = edges[i][0]; R.d[1] = edges[i][1]);
+            OBS("d0", R.d[0]);
+        }
+    }
 }
 
 /* ------------------------------------------------------- floatquicklib */

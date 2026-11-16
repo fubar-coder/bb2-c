@@ -115,6 +115,8 @@
 # by +282 and the original by -460); their budgets stay.
 # bmath.lmul and the new bmath.lmuls from two runs of longmult in assembler
 # (libs-performance task 13.30, 2026-11-16): 284.6 and 184.6 to 184.7.
+# bmath.qmul from two runs of quickmult in assembler (task 13.31, 2026-11-16):
+# 386.8 both.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -196,7 +198,7 @@ bmath.plocal                  333      391.5  plocal{a} (a Statement with two Lo
 bmath.wmul                   89       84.5  w3=w1*w2
 bmath.wdiv                    198      192.0  w3=w1/w2
 bmath.asg_q                  35~5       32.5  q3=q1
-bmath.qmul                    467      434.0  q3=q1*q2
+bmath.qmul                    394      434.0  q3=q1*q2
 bmath.qdiv                   1988     3819.5  q3=q1/q2
 bmath.asg_f                  35~6       34.0  f3=f1
 bmath.fmul                    555      546.0  f3=f1*f2
