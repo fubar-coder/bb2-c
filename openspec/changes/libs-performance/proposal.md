@@ -42,10 +42,11 @@ and that stricter rule is what costs the cycles.
 - **The KEEPS judge** of the library tests follows the rule: a4, a5, a6, a7
   always, a3 for functions, plus the stated exceptions. The result and
   change cases (d0, the end of a string result in a3) stay.
-- **Speed profile** (`-O2`) for strings1lib, strings2lib, medlib and
-  trackerlib, added to `ACIDLIBS_SPEED`.
-- **Assembler blocks** for the hot routines where C does not reach the
-  original, in the decided order: the ldivlib loop; the string copy loops of
+- **Speed profile** (`-O2`) for medlib and trackerlib, added to
+  `ACIDLIBS_SPEED` (strings1lib and strings2lib were measured, and are faster
+  at `-Os` after their copy loops are rewritten, design.md Decision 15).
+- **C first, assembler blocks** only for the hot routines where C stays more
+  than 1 to 2 % behind the original, in the decided order: the ldivlib loop; the string copy loops of
   strings1lib and strings2lib; about 25 small entries (Peek/Poke,
   Joyx/Joyy/Joyb/Joyr, MouseX/Y, RawStatus, collisions, ShapeWidth/Height/
   Handle, Colour/Locate, QLimit/Rnd, Plot/Point); then the blit core and
@@ -73,7 +74,8 @@ issues listed below, any change of the observable behaviour of a command.
 ### Modified Capabilities
 - `testing/library-capture`: the requirement "Kept registers are checked by
   the test program" (the stated set is the rule's set plus the exceptions,
-  no longer the original's intersection).
+  no longer the original's intersection; for the acidlibs only, the RWE
+  userlib test programs keep their sets).
 
 ## Related issues (context only, not fixed by this change)
 

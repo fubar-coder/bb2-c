@@ -1,14 +1,25 @@
 ## ADDED Requirements
 
 ### Requirement: The benchmark measures cycles per command
-A benchmark test SHALL run one loop per command in the emulated A500 (68000, Kickstart 1.3, ECS) with cycle-exact CPU, memory and blitter (`cpu_cycle_exact`, `cpu_memory_cycle_exact`, `blitter_cycle_exact`, `cpu_speed=real`), with runtime error checking off, one emulator session at a time. It SHALL measure with a CIA timer, subtract the cost of the empty loop, and report cycles per call. A repeated run of a command the CPU does alone SHALL differ by at most 1 cycle per call. A loop that waits for the blitter or depends on the frame (Cls, Circle, BBlit, PlayModule per frame) varies more; its budget SHALL state a tolerance derived from the spread of repeated runs.
+A benchmark test SHALL run one loop per command in the emulated A500 (68000, Kickstart 1.3, ECS) with cycle-exact CPU, memory and blitter, runtime error checking off and the emulator in warp mode (no wait for the host clock). It SHALL run one emulator session per bench program, the sessions side by side, measure with a CIA timer, subtract the empty loop, and report cycles per call. The values SHALL NOT depend on the host's load or on how many sessions run.
 
 #### Scenario: A run
 - **WHEN** the benchmark runs
-- **THEN** it reports one value per command in cycles per call, the same within 1 cycle in a second run for a command the CPU does alone, within its stated tolerance for a loop that waits for the blitter or follows the frame
+- **THEN** it reports one value per command in cycles per call, the same whether one session or seven run at a time
+
+#### Scenario: Repeated runs
+- **WHEN** the benchmark runs a second time
+- **THEN** a command the CPU does alone differs by at most 3 cycles per call, and a loop that waits for the blitter or follows the frame stays within its own tolerance
+
+### Requirement: Varying loops carry a tolerance
+A loop that waits for the blitter or depends on the frame (Cls, Circle, BBlit, PlayModule per frame), and a few small loops that move by 2 to 3 cycles, SHALL carry their own tolerance in the budget file, written `B~T`: `B` the highest value of at least five runs, `T` twice their spread; `B + T` is the limit.
+
+#### Scenario: A varying loop
+- **WHEN** a command's runs differ by more than the plain margin
+- **THEN** its budget is `B~T`, and a failure names both values
 
 ### Requirement: Each command has a budget
-A budget file SHALL state per measured command the highest allowed cycles per call. The test SHALL fail for a command whose measurement exceeds its budget and SHALL name the command, the measured and the budgeted value. The budgets SHALL cover at least the commands of the measurement of 2026-11-15 that are slower than the originals (division, string assignment and compare, blits, Show, Print, collisions, Joy, Peek and Poke, Rnd, Sgn/Int/Abs, Plot/Point, drawing primitives, Sort). A budget SHALL be tightened when a step makes the command faster.
+A budget file SHALL state per measured command the highest allowed cycles per call (the larger value of two runs plus 1 %, rounded up, plus 3 cycles, or `B~T`) and the original's value as the target, shown with its factor and never judged. A command over its budget, a measured command without a budget and a budget without a measurement SHALL fail the test, naming the command and the values. A budget SHALL be tightened when a step makes the command faster.
 
 #### Scenario: Over budget
 - **WHEN** a library change makes `Peek.b` cost 217 cycles against a budget of 130

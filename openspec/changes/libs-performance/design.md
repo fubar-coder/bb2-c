@@ -41,9 +41,11 @@ build.
    inline assembler; the user decided for a list of exceptions instead.
 2. **The default is an alias of the C function.** gcc keeps d2-d7 and a2-a6,
    which covers the rule. The thunk is removed for user-level statements and
-   functions only. Internal tokens (operators, strcomp, copstring,
-   lastring/astring, the prologue routines, freelast, clrloc, newmem,
-   localstat), nullsubs and all error checks (`BLITZ_ERRCHK_THUNK`) keep
+   functions only. Internal tokens keep their contracts but, after group 8
+   (Decision 17), most have no thunk any more (operators, conversions,
+   strcomp, the prologue routines and freelast are aliases or assembler
+   entries; copstring, lastring/astring, newmem and localstat keep minimal
+   thunks); nullsubs and all error checks (`BLITZ_ERRCHK_THUNK`) keep
    their thunks.
 3. **Exceptions only for known callers.** Per entry the analysis names the
    caller. Where gcc's output keeps the register by nature the entry is an
@@ -74,7 +76,10 @@ build.
    entry's rule of Decision 1 or its exception. The order is the decided one:
    the ldivlib loop, the string copy loops, the small entries, the blit core
    and sortlib. Each step is measured by the benchmark before and after.
-6. **Speed profile** adds strings1lib, strings2lib (measured +8 and +4
+6. **Speed profile** (final state: medlib and trackerlib join; strings1lib
+   and strings2lib are not in it after their copy loops were rewritten,
+   Decision 15; the text below is the measurement of task 3.1/3.2 as made)
+   adds strings1lib, strings2lib (measured +8 and +4
    bytes, -510 cycles per 21 character assignment), medlib (-630 per PlayMed
    frame, +776 bytes) and trackerlib (-220 per PlayModule frame, +212 bytes)
    to `ACIDLIBS_SPEED` (`libs/acidlibs/CMakeLists.txt:29`). The rest stays
