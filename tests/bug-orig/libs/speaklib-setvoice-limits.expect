@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+rate 40 pitch 65 vol -32768 freq 5000
+rate 40 pitch 65 vol -32000 freq 5000
+rate 400 pitch 320 vol 64 freq 28000
+rc=0

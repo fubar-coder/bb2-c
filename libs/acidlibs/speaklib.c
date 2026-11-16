@@ -15,9 +15,9 @@
  * PhoneticSpeak first waits for the previous one (WaitIO), finit waits
  * for the last one.  SetVoice clips its values and stores them in the
  * request: rate 40-399/400, pitch 65-319/320, mode and sex & 1, volume
- * at most 64, sample frequency 5000-27999/28000 (word compares, BPL/BMI:
- * values beyond +-32767 wrap).  VoiceLoc = address of the V37 part of
- * the request (19 bytes after numchan, at an odd address).
+ * at most 64, sample frequency 5000-27999/28000 (signed word compares).
+ * VoiceLoc = address of the V37 part of the request (19 bytes after
+ * numchan, at an odd address).
  *
  * BUG(orig), kept:
  *   - Translate$ writes the phonemes over its argument (a3 = the
@@ -26,8 +26,9 @@
  *   - Not a bug (a statement, a3 has no meaning after it): PhoneticSpeak
  *     leaves a3 = its argument.
  *   - finit closes the device and frees the signal even when init failed. (#278)
- *   - SetVoice clips with word CMP and BPL/BMI (N flag only, no V): large
- *     negative values whose difference overflows end on the maximum. (#279)
+ * Fixed (#279): SetVoice clips with signed compares (BGE/BLT); the
+ *   original's word CMP and BPL/BMI (N flag only, no V) put large negative
+ *   values whose difference overflows on the maximum.
  * DIFF: a2 stays unchanged (the original pops the string length).
  */
 #include "blitzlib.h"
@@ -150,20 +151,18 @@ BLITZ_THUNK(speaklib_libfinit, libfinit_c, "d1/a0-a1");
 
 /* ---------------------------------------------------------- SetVoice */
 
-/* CMP #c,d / BPL / BMI: sign of the 16 bit difference */
-#define GE(v, c) ((WORD)(UWORD)((v) - (c)) >= 0)
-
 /**
  * @brief SetVoice rate,pitch,expression,sex,volume,freq - set the
  * narrator's voice for the following Speak/PhoneticSpeak.
  *
  * Clips the values and stores them in the request (MOVEM d0-d3,rate /
  * MOVEM d4-d5,vol): rate 40-400, pitch 65-320, mode (expression) and sex
- * & 1, volume at most 64, sample frequency 5000-28000.
+ * & 1, volume at most 64, sample frequency 5000-28000.  The values are
+ * signed words: -32768 is below every minimum.
  *
- * BUG(orig) (#279): the clipping uses word CMP and BPL/BMI (N flag only,
- * no V): values beyond +-32767 wrap, large negative values whose
- * difference overflows end on the maximum.
+ * Fixed (#279): the clipping compares signed (BGE/BLT); the original's
+ * word CMP and BPL/BMI (N flag only, no V) put large negative values
+ * whose difference to the limit overflows on the maximum.
  *
  * @param rate  d0: speaking rate (words per minute, default 150)
  * @param pitch d1: pitch in Hz (default 110)
@@ -172,25 +171,25 @@ BLITZ_THUNK(speaklib_libfinit, libfinit_c, "d1/a0-a1");
  * @param vol   d4: volume (0-64, default 64)
  * @param freq  d5: sample frequency (default 22200)
  */
-static void BLITZ_ROUTINE _setvoice_c(UWORD rate BL_REG(d0), UWORD pitch BL_REG(d1),
+static void BLITZ_ROUTINE _setvoice_c(WORD rate BL_REG(d0), WORD pitch BL_REG(d1),
                                       UWORD mode BL_REG(d2), UWORD sex BL_REG(d3),
-                                      UWORD vol BL_REG(d4), UWORD freq BL_REG(d5))
+                                      WORD vol BL_REG(d4), WORD freq BL_REG(d5))
 {
-    if (!GE(rate, 40))
+    if (rate < 40)
         rate = 40;
-    if (GE(rate, 400))
+    if (rate >= 400)
         rate = 400;
-    if (!GE(pitch, 65))
+    if (pitch < 65)
         pitch = 65;
-    if (GE(pitch, 320))
+    if (pitch >= 320)
         pitch = 320;
     mode &= 1;
     sex &= 1;
-    if (GE(vol, 64))
+    if (vol >= 64)
         vol = 64;
-    if (!GE(freq, 5000))
+    if (freq < 5000)
         freq = 5000;
-    if (GE(freq, 28000))
+    if (freq >= 28000)
         freq = 28000;
     ioreq.rate = rate;                          /* MOVEM d0-d3,rate */
     ioreq.pitch = pitch;
