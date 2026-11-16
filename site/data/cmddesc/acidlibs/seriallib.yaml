@@ -4,30 +4,33 @@
     The flags are the sum of 1 parity on, 2 odd parity (else even), 4
     seven wire handshake, 8 a break waits until the buffer is empty, 16
     high speed mode, 32 shared use of the port, 64 end of file checking
-    and 128 no xON/xOFF.
+    and 128 no xON/xOFF. A unit that is already open is left as it is,
+    and `OpenSerial` returns 0 for it, also with shared use.
 "CloseSerial":
   text: Closes a unit opened with `OpenSerial`.
   notes: |
-    Kept from the original: a write still going on is not stopped
-    ([#258](https://github.com/fubar-coder/bb2-c/issues/258)).
+    A write that is still going on is stopped first.
 "WriteSerial":
   text: Sends one byte to the unit, for a character for example `Asc("b")`, and waits until it is sent.
 "WriteSerialString":
-  text: Sends a string to the unit. With the flag 2, the whole string is sent and the command waits until it is sent; without it, the string is sent up to its first zero byte and the program goes on at once.
+  text: Sends a string to the unit. With the flag 1, the command waits until the string is sent; without it, the program goes on at once. With the flag 2, the whole string is sent; without it, the string is sent up to its first zero byte. 3 sets both.
   notes: |
-    Kept from the original: the flag 1 that the help text names has no
-    effect, and the form without flags takes the address of a string
-    ([#254](https://github.com/fubar-coder/bb2-c/issues/254)).
+    The original took both meanings from the flag 2; a program written
+    for it that passes 2 to wait passes 3. Before the next command that
+    writes to the unit, a program waits for a write that does not wait,
+    with `Wait` and `SerialEvent`. The form without flags takes the
+    address of a string ending in a zero byte, and does not wait.
 "WriteSerialMem":
   text: Sends `Length` bytes from memory at `Address` to the unit and waits until they are sent.
 "ReadSerial":
-  text: The next byte that came in on the unit, or -1 if none is waiting. Use a word variable, as in `c.w=ReadSerial(0)`, to tell -1 from 255.
+  text: The next byte that came in on the unit, or -1 if none is waiting; with the flag 1 it waits for a byte. Use a word variable, as in `c.w=ReadSerial(0)`, to tell -1 from 255.
   notes: |
-    Kept from the original: the flag that makes it wait for a byte is 2,
-    not 1 as the help text says
-    ([#255](https://github.com/fubar-coder/bb2-c/issues/255)).
+    The flag 2, which the original took for waiting, waits as well.
 "ReadSerialString":
   text: All bytes waiting on the unit, as a string; an empty string if none is waiting.
+  notes: |
+    It reads at most what fits in the string buffer; the rest stays
+    waiting for the next read.
 "ReadSerialMem":
   text: Reads `Length` bytes from the unit into memory at `Address` and waits until they have come.
 "SetSerialBuffer":

@@ -12,5 +12,6 @@ intro: |
   If Deplode(Bank(0)) Then NPrint "Unpacked again"
   ```
 
-  The data are not checked: damaged data can overwrite memory anywhere
-  ([#119](https://github.com/fubar-coder/bb2-c/issues/119)).
+  The unpacking commands check the data only in a few places: damaged
+  data can make them write outside the destination. Unpack only data
+  that the packer of the format made.

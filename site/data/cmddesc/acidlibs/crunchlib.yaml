@@ -1,21 +1,27 @@
 "Implode":
   text: Packs the `DataLen` bytes at `Bufferadr` in place with the Imploder method and returns the packed length; 0 if the data cannot be packed (less than 64 bytes, or not shorter enough), -1 if the user broke off with the left mouse button.
   notes: |
-    While it packs, the background colour of the screen flickers. Kept
-    from the original: when the data turn out not to pack, the buffer is
-    already partly overwritten
-    ([#114](https://github.com/fubar-coder/bb2-c/issues/114)); and the
-    search reads up to 254 bytes beyond the data
-    ([#112](https://github.com/fubar-coder/bb2-c/issues/112)).
+    While it packs, the background colour of the screen flickers. It
+    packs in place, so after a result of 0 or -1 the buffer is partly
+    overwritten and the data are lost: implode a copy if you still need
+    them. The search reads up to 254 bytes behind the data.
 "Deplode":
   text: Unpacks Imploder data at `Startadr` in place and returns true (-1), or false (0) if they are not Imploder data.
   notes: |
-    The buffer must be as large as the unpacked data.
+    The buffer must be as large as the unpacked data. The data are not
+    checked; unpack only data packed with the Imploder.
 "CrMDecrunch":
   text: Unpacks Crunch-Mania data at `Bufferadr` in place, or to a second address if one is given.
   notes: |
-    Kept from the original: unpacking in place moves the data in front
-    of the buffer first and overwrites the memory there
-    ([#116](https://github.com/fubar-coder/bb2-c/issues/116)).
+    Unpacking in place, and to a second address that overlaps the data,
+    first moves the packed data in front of the destination, as the
+    Crunch-Mania format requires: keep as many bytes free in front of the
+    buffer as the word at offset 4 of the header gives. The data are not
+    checked beyond their header and tables; unpack only data packed with
+    Crunch-Mania.
 "PPDecrunch":
   text: Unpacks PowerPacker data from `Bufferadr` to `Bufferend`, the end of the packed file, to `Destinationadr`.
+  notes: |
+    Data whose header has an efficiency value outside 1 to 15 are not
+    unpacked. The data are not checked beyond their header; unpack only
+    data packed with PowerPacker.
