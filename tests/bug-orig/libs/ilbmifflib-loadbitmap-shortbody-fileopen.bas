@@ -7,6 +7,7 @@
 ; catches the error; then the program asks for an exclusive lock on the
 ; file, which fails while it is open (object in use).
 ; Correct: after the error the file is closed - the exclusive lock works.
+; @fixed #1065
 ; @configs clib
 ; @pass file=short.iff|@TESTDATA@/ilbmifflib-loadbitmap-shortbody-fileopen.ilbm
 DEFTYPE .l

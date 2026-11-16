@@ -21,11 +21,7 @@
  * mode $8000 (HIRES), pageHeight >= 300 -> |4 (LACE); clears the counts.
  * The file stays open (ILBMInfo closes it).
  *
- * BUG(orig), kept:
- *  - ilbmbitmap (LoadBitMap, LoadScreen): "Can't Read File" of the byte
- *    reader (getme: the file ends inside the BODY) is raised without
- *    iffclose: the file stays open, also after the program's end (bug-orig
- *    test ilbmifflib-loadbitmap-shortbody-fileopen; #1065).
+ * Kept, not bugs:
  *  - Not a bug: ilbmbitmap reads width-in-words*2 bytes per row and
  *    plane and stores only what fits into BytesPerRow/Depth/Rows.
  *  - Not a bug: DecodeILBM (memory): the end test is `end <= pointer`
@@ -65,6 +61,12 @@
  * Fixed (intended deviation, #1053): ilbmbitmap closes the file before
  * "Can't Find IFF 'BODY'"; the original left it open (iffiolib has no
  * finit: open until reboot).
+ *
+ * Fixed (intended deviation, #1065): the byte reader (getme: ilbmbitmap,
+ * that is LoadBitMap and LoadScreen, and ilbmgetbyte, that is shapeslib's
+ * LoadShape) closes the file before "Can't Read File" (a file that ends
+ * inside the BODY); the original left it open.  The callers of
+ * ilbmgetbyte have no other open file: iffiolib has one file at a time.
  *
  * Fixed (intended deviation, #188): ilbmbitmap stores a plane while its
  * number is below the byte Depth (BitMap+5); the original compared with
@@ -239,12 +241,17 @@ BLITZ_THUNK_POST(ilbminit, ilbminit_c, "d1/a1", "move.l _ilbm_a0,a0\n   tst.l d0
 /* ----------------------------------------------------------- ilbmgetbyte */
 
 /* iffbyte, runtime error "Can't Read File" at the end of the data.
-   BUG(orig) (#1065): without iffclose, the file of ilbmbitmap stays open (the
-   callers of ilbmgetbyte, LoadShape, own their file) */
+   Fixed (#1065): the file is closed first (iffiolib's one file: the one
+   of ilbmbitmap, or of the caller of ilbmgetbyte, LoadShape); the
+   original left it open */
 static ULONG getme(ULONG byte, struct iffstuff *st)
 {
-    if (!IFFJSR(TOK_iffbyte, &byte, st))
+    if (!IFFJSR(TOK_iffbyte, &byte, st)) {
+        ULONG zero = 0;
+
+        IFFJSR(TOK_iffclose, &zero, st);                /* Fixed (#1065) */
         BLITZ_RUNERR(mess2);                            /* BNE err2 */
+    }
     return byte;
 }
 
@@ -276,7 +283,8 @@ static ULONG getbyte(ULONG byte, struct iffstuff *st)
  * (for lib 154).
  *
  * Errors: "Can't Read File" at the end of the data (the message in the
- * normal code, fixed: #192).
+ * normal code, fixed: #192; the file closed first, fixed: #1065, the
+ * original left it open).
  *
  * @param byte  d0: the previous byte (returned again inside a repeat run)
  * @param st    a0: iffstuff (from ilbminit)
@@ -300,7 +308,8 @@ BLITZ_THUNK(ilbmgetbyte, ilbmgetbyte_c, "d1/a0-a1");
  * original ignored a failed ilbminit and searched "BODY" in what was left
  * in iffiolib's buffer), "Can't Find IFF 'BODY'" (the messages in the
  * normal code, fixed: #192; the file closed first, fixed: #1053, the
- * original left it open); "Can't Read File" from ilbmgetbyte.
+ * original left it open); "Can't Read File" from the byte reader (the
+ * file closed first, fixed: #1065).
  * Fixed (#188): the depth test is on the byte Depth (the original: the
  * word over Flags and Depth).
  *

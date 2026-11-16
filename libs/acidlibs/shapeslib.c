@@ -1235,7 +1235,9 @@ skipanim:
  * than 1023 rows or 62 words, fixed #1046), "Illegal Shape Depth" (0 planes, fixed #1052: the original
  * wrote 65536 planes of every row behind a block of 0 bytes), "Illegal
  * Shape Size" (a width or height of 0, fixed #1054: the original ran its
- * row or byte loop 65536 times behind a block of 0 bytes).
+ * row or byte loop 65536 times behind a block of 0 bytes); "Can't Read
+ * File" of ilbmifflib's ilbmgetbyte (a file that ends inside the BODY;
+ * it closes the file first, fixed #1065: the original left it open).
  *
  * @param shape a0: the shape (a3 for the IFF calls)
  * @param name  d1: the file name
