@@ -79,7 +79,8 @@ ModulePatterns|filter|slot 0|1 [fixed #449]	$00000002
 ModulePatterns|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
 ModulePatterns|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 ModulePatterns|CIA part|slot 0|1	bytes 110 fnv B6319231
-ModulePatterns|d0|slot 0|1	$00000009
+ModulePatterns|d0|slot 0|1 [orig]	$00000009
+ModulePatterns|d0|slot 0|1 [fixed #445]	$00000006
 GetModuleName$|kept|slot 0|1	kept
 GetModuleName$|popped|slot 0|1	$00000000
 GetModuleName$|d0|slot 0|1	$00000011
@@ -4531,7 +4532,8 @@ ModulePatterns|filter|slot 1|1	$00000002
 ModulePatterns|play routine|slot 1|1	bytes 1584 fnv 02C0868E
 ModulePatterns|modtable|slot 1|1	bytes 110 fnv AFC13282
 ModulePatterns|CIA part|slot 1|1	bytes 110 fnv 3CD8E36E
-ModulePatterns|d0|slot 1|1	$00000009
+ModulePatterns|d0|slot 1|1 [orig]	$00000009
+ModulePatterns|d0|slot 1|1 [fixed #445]	$00000006
 GetModuleName$|kept|slot 1|1	kept
 GetModuleName$|popped|slot 1|1	$00000000
 GetModuleName$|d0|slot 1|1	$00000011

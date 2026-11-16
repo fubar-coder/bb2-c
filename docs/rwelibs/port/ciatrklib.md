@@ -101,6 +101,10 @@ kind F):
 * `DecodeModule`'s copy to chip memory has the size + 3; the original
   added the 3 as a word, so a size with a low word of $FFFD-$FFFF was
   copied 64 KB short (#434; test `ciatrklib-decode-size-word-add`).
+* `ModulePatterns` returns the number of patterns (the highest pattern
+  number of the song positions + 1, from `mt_init`'s scan), as its
+  documentation says; the original returned the song length (byte 950)
+  (#445; library test `rwe_ciatrklib`, the cases `ModulePatterns|d0|...`).
 
 ## BUG(orig), kept
 
@@ -124,9 +128,7 @@ kind F):
   length (a later `FreeTrackerModule` frees memory that was never
   allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"). `FreeTrackerModule` does not stop a module that
   plays from the slot (#436).
-* `ModuleToChip` is an RTS: it returns
-  its argument (#446). `ModulePatterns` returns the song length (byte
-  950) (#445).
+* `ModuleToChip` is an RTS: it returns its argument (#446).
 * `GetTrackerEvent` changes only d0's low byte; it is declared `#byte`,
   so that is no defect.
 * `ModulePositionJump n` jumps to position n + 1 (the next tick's

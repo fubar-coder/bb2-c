@@ -47,7 +47,6 @@
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
  *   - ModuleToChip does nothing and returns its argument (#446).
- *     ModulePatterns returns the song length (byte 950) (#445).
  *   - ModulePositionJump n: the song position becomes n + 1 at the next
  *     tick (mt_NextPosition increments it) (#447).
  *   - TrackerVolume 0 or 64 does not change the volumes of the notes that
@@ -116,6 +115,9 @@
  * Fixed (intended deviation, #434): DecodeModule's copy to chip memory
  * has the size + 3; the original added the 3 as a word (ADD #3,d0), so a
  * size with a low word of $FFFD-$FFFF was copied 64 KB short.
+ * Fixed (intended deviation, #445): ModulePatterns returns the number of
+ * patterns (the highest pattern number of the song positions + 1, as the
+ * documentation says); the original returned the song length (byte 950).
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1722,12 +1724,14 @@ static void BLITZ_ROUTINE stoptracker_c(void)
 }
 
 /**
- * @brief ModulePatterns(Module #): meant to give the number of patterns.
+ * @brief ModulePatterns(Module #): the number of patterns of the module.
  *
- * Returns the song length (byte 950 of the module) instead (BUG(orig)
- * (#445)).  Error check (_checkused): slots 0-8, a module in the slot.
+ * The highest pattern number of the song positions + 1, from mt_init's
+ * scan (fixed, #445: the original returned the song length, byte 950 of
+ * the module).  Error check (_checkused): slots 0-8, a module in the
+ * slot.
  * @param num  d0: the slot
- * @return d0.b: the song length, 0 for an empty slot
+ * @return d0.b: the number of patterns, 0 for an empty slot
  */
 static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG num BL_REG(d0))
 {
@@ -1735,7 +1739,7 @@ static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG num BL_REG(d0))
 
     if (!mod)
         return 0;
-    return mod[950];
+    return (UBYTE)(maxpattern(mod) + 1);        /* Fixed (#445): not 950(a1) */
 }
 
 /* ------------------------------------------------------------ the rest */
