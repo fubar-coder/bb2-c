@@ -109,6 +109,10 @@ kind F):
   as effect Bxx does; the original stored n, which the next tick's
   `mt_NextPosition` incremented (#447; library test `rwe_ciatrklib`,
   `GetModulePosition|d0||2` and the cases of the ticks after it).
+* `TrackerVolume 0` and `64` change the volume of the notes that play,
+  as every other volume does; the original called `Change_Volume_Levels`
+  only for 0 < volume < 64 (#452; library test `rwe_ciatrklib`, the
+  library's variables after `TrackerVolume $0`/`$40`).
 
 ## BUG(orig), kept
 
@@ -137,8 +141,6 @@ kind F):
   returns its argument; the library's documentation says "the command
   has no function" (since 1.02a `DecodeModule` copies a module to chip
   memory, and the command only still tokenises for old programs).
-* `TrackerVolume 0` and `64` do not change the volume of the notes that
-  play (only 0 < volume < 64 calls `Change_Volume_Levels`) (#452).
 * `mt_init` compares the module **length** with the sample addresses
   (`CMP.l a2,a4`): it clears the first long of a sample only when the
   length is greater than its address (for a loaded module practically

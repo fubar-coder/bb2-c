@@ -46,8 +46,6 @@
  *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
- *   - TrackerVolume 0 or 64 does not change the volumes of the notes that
- *     play (only 0 < volume < 64 calls Change_Volume_Levels) (#452).
  *   - mt_init compares the module LENGTH with the sample addresses (CMP.l
  *     a2,a4): the first long of a sample is cleared only when the length
  *     is greater than its address (#438).  Its scan of the song positions
@@ -121,6 +119,9 @@
  * Fixed (intended deviation, #447): ModulePositionJump n continues at
  * song position n; the original stored n, which the next tick's
  * mt_NextPosition incremented, so the song went on at n + 1.
+ * Fixed (intended deviation, #452): TrackerVolume 0 and 64 change the
+ * volumes of the notes that play, as every other volume does; the
+ * original called Change_Volume_Levels only for 0 < volume < 64.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1858,28 +1859,20 @@ static void BLITZ_ROUTINE change_playtype_c(void)
 /**
  * @brief TrackerVolume (Volume Range: 0-64): the master volume.
  *
- * Values above 64 are ignored.  Only 0 < volume < 64 changes the volumes
- * of the notes that play now (Change_Volume_Levels): TrackerVolume 0 or
- * 64 does not (BUG(orig) (#452)); new notes get note volume * master /
- * 64.
+ * Values above 64 are ignored.  Every volume 0-64 also changes the
+ * volumes of the notes that play now (Change_Volume_Levels; fixed, #452:
+ * the original did that only for 0 < volume < 64, so TrackerVolume 0 and
+ * 64 did not reach them); new notes get note volume * master / 64.
  * @param vol  d0.w: the volume
  */
 static void BLITZ_ROUTINE volume_control_c(ULONG vol BL_REG(d0))
 {
-    UWORD level, diff;
-
     if ((UWORD)vol > 0x40)
         return;
     libvars.old_volume = libvars.master_volume;
-    level = libvars.old_volume;
     libvars.master_volume = (UWORD)vol;
-    diff = (UWORD)(libvars.master_volume - libvars.old_volume);
-    level += diff;
-    if ((WORD)(level - 0x40) >= 0)      /* CMP.W #$40,d1: BMI */
-        return;
-    if ((WORD)level <= 0)               /* CMP.w #0,d1: BGT */
-        return;
-    libvars.volume_flag = diff;
+    /* Fixed (#452): no test of 0 < volume < 64 before the change */
+    libvars.volume_flag = (UWORD)(libvars.master_volume - libvars.old_volume);
     change_volume_levels();
 }
 
