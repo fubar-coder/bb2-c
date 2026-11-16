@@ -19,15 +19,19 @@ Every corpus program SHALL have its expected output in `tests/corpus/expect/PASS
 - **THEN** the commit turns `NAME.out` into `NAME.orig.out` (the original's output) and `NAME.fixed-N.out` (the port's output) and names the issue; the program source is not edited to avoid the difference
 
 ### Requirement: Override rows keep the difference from the original visible
-Where expected data is derived from the original (the CD result table `tests/data/blitz2-cd.tsv`, the TED oracle hashes `tests/data/ted-oracle.sha256`), a row holding the port's value for a fixed bug SHALL name the issue (`#NNN`) and the original's value, and the generator SHALL keep such rows when it regenerates the file.
+Where expected data is derived from the original (the CD result table `tests/data/blitz2-cd.tsv`, the TED oracle hashes `tests/data/ted-oracle.sha256`), a row holding the port's value for a fixed bug SHALL name the issue (`#NNN`) and the original's value, and the generator SHALL keep such rows when it regenerates the file. In the CD result table only a differing compile result (an error the original does not give, another error line, a source the port refuses) SHALL need such a note; the size and hash of an `ok` row SHALL be the original's, SHALL be reference data, and a port that compiles the source to another executable SHALL NOT need a note, a row change or an issue.
 
 #### Scenario: Regeneration
 - **WHEN** the generator of the table or the hashes runs again
 - **THEN** every row with an issue number keeps the port's value and the original's value, and no row loses its note
 
 #### Scenario: A fix changes a CD source's result
-- **WHEN** a compiler fix changes the executable of a CD source
-- **THEN** the table update target rewrites that row with the new value, the issue and the original's hash, and the commit contains the change
+- **WHEN** a compiler fix changes the compile result of a CD source (ok or the error line)
+- **THEN** the table update target rewrites that row with the new value, the issue and the original's result, and the commit contains the change
+
+#### Scenario: An optimization changes an executable
+- **WHEN** the port compiles a CD source to another executable and the result stays `ok`
+- **THEN** `corpus_cd` passes and reports the row as an informational executable difference, and the table update leaves the row as it is
 
 ### Requirement: Intended-difference lists
 `refcheck data`, `rwe_declarations_NAME` and the `refcheck asm` tests SHALL accept an explicit list of intended differences with issue numbers, and each listed entry SHALL occur (a stale entry fails), as `blitzlib compare INTENDED` does. `ted_ab` scripts SHALL take a directive `; @fixed #NNN PAIR...` naming the combo pairs that must differ.
@@ -60,7 +64,7 @@ A fixed library check SHALL follow the shared test model (`testing/test-model`):
 - **THEN** `libs_emulator` fails on that case
 
 ### Requirement: A fixed corpus program is a pair of cases
-A corpus program whose original and port differ by a fix SHALL have, for each differing observation (`out`, `serial`, `exe`), a file `NAME.orig.EXT` (the original's value) and a file `NAME.fixed-N.EXT` (the port's value, N the issue) instead of the unqualified file; the `exe` observation SHALL be the SHA-256 of the executable as text. A program with both an unqualified file and a qualified one for the same observation, or with two `fixed` files for one observation, SHALL be reported as malformed with the file name. `tests/corpus/notes.tsv` SHALL NOT exist. The configurations SHALL be judged as follows: `clib` and `prev` against the unqualified and `[fixed #N]` file; `ref` against the unqualified and `[orig]` file; `port` and `orig-clib` against the unqualified file and either qualified file, the report saying which matched; the `exe` cases only in `NAME_originals`, as the port's executable is made with the CD's libraries; a `ref` and `port` executable of a program without `exe` files SHALL be equal.
+A corpus program whose original and port differ by a fix SHALL have, for each differing observation (`out`, `serial`), a file `NAME.orig.EXT` (the original's value) and a file `NAME.fixed-N.EXT` (the port's value, N the issue) instead of the unqualified file. A program with both an unqualified file and a qualified one for the same observation, with two `fixed` files for one observation, or with a file of another observation (`NAME.exe`, `NAME.orig.exe`) SHALL be reported as malformed with the file name. `tests/corpus/notes.tsv` SHALL NOT exist. The configurations SHALL be judged as follows: `clib` and `prev` against the unqualified and `[fixed #N]` file; `ref` against the unqualified and `[orig]` file; `port` and `orig-clib` against the unqualified file and either qualified file, the report saying which matched. The executable of `port` SHALL be compared with `ref`'s for information only (a difference is reported, the test does not fail on it); a `port` that makes no executable where `ref` does SHALL fail.
 
 #### Scenario: The port regresses a fix
 - **WHEN** `clib` gives the original's output for a program with a `[fixed #N]` file
@@ -71,15 +75,19 @@ A corpus program whose original and port differ by a fix SHALL have, for each di
 - **THEN** `NAME_originals` fails on that case
 
 #### Scenario: Code-only fix
-- **WHEN** a fix changes the port's executable but not the output
-- **THEN** the program has `NAME.orig.exe` and `NAME.fixed-N.exe` and no output pair, and `NAME_originals` compares the hashes of `ref` and `port` with them
+- **WHEN** a fix or an optimization changes the port's executable but not the output
+- **THEN** the program has no expect file for it and `NAME_originals` passes, reporting `exe differs (informational)`
 
 #### Scenario: Unlisted executable difference
-- **WHEN** the `port` executable differs from `ref`'s for a program without `exe` files
-- **THEN** `NAME_originals` fails naming the program
+- **WHEN** the `port` executable differs from `ref`'s for a program and the output is as expected
+- **THEN** `NAME_originals` passes and names the difference as informational; it fails only if the output differs or `port` makes no executable
+
+#### Scenario: A stale executable file
+- **WHEN** an expect directory holds `NAME.orig.exe` or `NAME.fixed-N.exe`
+- **THEN** the pass exits with status 2 naming the file before any session starts
 
 ### Requirement: Recording and updating the corpus expected data
-The build target `corpus-expect-record` (not part of ALL, needs the CD and Amiberry, filterable by `PASS` or `PASS:NAME` in `CORPUS_RECORD_FILTER`) SHALL run the `ref` configuration twice with a different memory layout and SHALL write the unqualified, `[orig]` and `exe` files only if both runs agree, otherwise report "test not deterministic" naming the program and the differing lines and write nothing for it; it SHALL keep every `[fixed #N]` file. The build target `corpus-expect-update` SHALL write from the port (configuration `clib`), SHALL create the files of a new program, SHALL rewrite `[fixed #N]` files, and SHALL refuse to change an unqualified file unless the program is named with its issue (`CORPUS_UPDATE_FIX=PASS:NAME#N`), which turns it into the pair. A test SHALL NOT write any file of the source tree.
+The build target `corpus-expect-record` (not part of ALL, needs the CD and Amiberry, filterable by `PASS` or `PASS:NAME` in `CORPUS_RECORD_FILTER`) SHALL run the `ref` configuration twice with a different memory layout and SHALL write the unqualified and `[orig]` files only if both runs agree, otherwise report "test not deterministic" naming the program and the differing lines and write nothing for it; it SHALL keep every `[fixed #N]` file. The build target `corpus-expect-update` SHALL write from the port (configuration `clib`), SHALL create the files of a new program, SHALL rewrite `[fixed #N]` files, and SHALL refuse to change an unqualified file unless the program is named with its issue (`CORPUS_UPDATE_FIX=PASS:NAME#N`), which turns it into the pair. Neither target SHALL write an executable's hash. A test SHALL NOT write any file of the source tree.
 
 #### Scenario: Record with agreeing runs
 - **WHEN** the two runs of `ref` give the same output
@@ -98,7 +106,7 @@ The build target `corpus-expect-record` (not part of ALL, needs the CD and Amibe
 - **THEN** `t124_bitmaperr.out` becomes `t124_bitmaperr.orig.out` with the old content and `t124_bitmaperr.fixed-6.out` has the port's output
 
 ### Requirement: The checks of the corpus model have tests with broken input
-Every check of this capability SHALL have a test with deliberately broken input that needs no emulator where possible: an unqualified and a qualified file of one observation, two `fixed` files, a qualifier that is neither `orig` nor `fixed-N`, a pair of equal values, a `[fixed #N]` file regressed in the port, an `[orig]` file changed, a missing file, an executable difference without `exe` files, a non-deterministic record refused with nothing written, an update without `FIX` refused.
+Every check of this capability SHALL have a test with deliberately broken input that needs no emulator where possible: an unqualified and a qualified file of one observation, two `fixed` files, a qualifier that is neither `orig` nor `fixed-N`, a pair of equal values, a `[fixed #N]` file regressed in the port, an `[orig]` file changed, a missing file, an executable file (`NAME.exe`, a pair of them), an executable difference of `port` that only is reported, a `port` without an executable, a non-deterministic record refused with nothing written, an update without `FIX` refused.
 
 #### Scenario: Broken input
 - **WHEN** a pass runs on an expect directory with two `fixed` files for one program
