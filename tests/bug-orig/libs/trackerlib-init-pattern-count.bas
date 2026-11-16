@@ -9,6 +9,7 @@
 ; mt_init; the program reads both markers back.
 ; Correct: the highest pattern is 1 - the samples begin at pattern 2, the
 ; long there is cleared, the marker at pattern 78 stays.
+; @fixed #289
 ; @configs clib
 ; @pass file=init.mod|@TESTDATA@/trackerlib-init-pattern-count.mod
 DEFTYPE .l

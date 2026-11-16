@@ -25,12 +25,15 @@
  * Assembler: only the two DBF busy loops of mt_setdma (timing, 301
  * iterations each) and the Blitz/Amiga prefixes.
  *
+ * Fixed (intended deviation, #289): mt_init reads all 128 positions with
+ * one DBF per byte and compares the pattern numbers unsigned.  The
+ * original decremented its counter once more for a new highest pattern
+ * number (SUBQ, skipping the DBF): positions 0-126 were checked, 127
+ * never, and a new maximum at position 126 turned the counter 0 into
+ * $FFFF - the search read ~64 KB more and mt_lop3 cleared longs behind
+ * the module.
+ *
  * BUG(orig), kept (as in the NoiseTracker player):
- *   - mt_init: every read position decrements the counter once (DBF, or
- *     SUBQ for a new highest pattern number, skipping the DBF), so
- *     positions 0-126 are checked, 127 never; a new maximum at position
- *     126 turns the counter 0 into $FFFF: the search reads ~64 KB more
- *     and mt_lop3 clears longs behind the module. (#289)
  *   - the sample's volume word includes the finetune byte (MOVE.w). (#290)
  *   - repeat start * 2 as a word (ASL.w): repeats beyond 64K wrap. (#291)
  *   - after a pattern break / position jump (D, B) the end of the song is
@@ -229,25 +232,19 @@ static void mt_init(void)
     struct modhead *info = (struct modhead *)mt_data;
     UBYTE *order = info->order, *sdata;
     WORD n = 0x7f;
-    BYTE pat = 0, maxpat;
+    ULONG maxpat = 0;
     int i;
 
-    /* highest pattern number (see BUG(orig) (#289)) */
+    /* highest pattern number: all 128 positions, one DBF per byte,
+       compared unsigned (Fixed (#289)) */
     do {
-        maxpat = pat;                           /* mt_loop */
-        n--;
-        for (;;) {                              /* mt_lop2 */
-            pat = *order++;
-            if (pat > maxpat)                   /* CMP.b d2,d1:BGT mt_loop */
-                break;
-            if (--n == -1)                      /* DBF d0,mt_lop2 */
-                goto found;
-        }
-    } while (1);
-found:
-    maxpat++;
+        UBYTE pat = *order++;
+
+        if (pat > maxpat)
+            maxpat = pat;
+    } while (--n != -1);
     sdata = (UBYTE *)info + offsetof(struct modhead, patterns)
-            + ((ULONG)(UBYTE)maxpat << 10);
+            + ((maxpat + 1) << 10);
     for (i = 0; i < 31; i++) {                  /* mt_lop3 */
         *(ULONG *)sdata = 0;
         mt_samplestarts[i] = sdata;
@@ -686,7 +683,7 @@ static void freemod2(struct module *m, int blitz)
  *
  * Errors (debugger, playchk): "Uninitialized Module".
  *
- * BUG(orig): the NoiseTracker player's bugs, see the file header (#289 -
+ * BUG(orig): the NoiseTracker player's bugs, see the file header (#290 -
  * #295).
  */
 static void BLITZ_ROUTINE doplaymod_a(void) { playmod2(0); }
