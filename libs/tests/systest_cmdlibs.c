@@ -5,7 +5,8 @@
  *   shapeslib, fontlib, windowslib and blitzkeyslib; the rectangle tests
  *   of collslib, Frac, Val, BlitzKey and Inkey$ (editlib), Print on a bitmap
  *   (printlib, fontlib), Str$ and UStr$ (printlib), Instr, Left$, UnLeft$,
- *   Right$, UnRight$, Mid$, Hex$, Bin$, Cvi, Cvl and Cvq (stringfunclib)
+ *   Right$, UnRight$, Mid$, Hex$, Bin$, Cvi, Cvl and Cvq (stringfunclib),
+ *   Sound and LoopSound (audiolib), the list commands (linklistlib)
  * (plus memlib and strcomplib, which they call) on the Amiga: one set (the
  * original from acidlibs or the C build, as LIBSET says), observed as
  * cases (sysload.h; the expected data
@@ -877,6 +878,122 @@ static void test_volume(void)
     CacheClearU();
 }
 
+/* Sound and LoopSound Sound#,Channelmask[,Vol1[,Vol2...]]: as for Volume,
+   every absolute address $DFF090-$DFF0DF (DMACON and the audio registers)
+   in the code of the routine is patched to a RAM copy, and restored
+   afterwards.  The code is the one from the entry up to its first RTS and
+   the routines it calls there with JSR d16(pc) or BSR (two levels): the
+   original's MOVE.l #$DFF0A0,a0 of dosnd and the DMACON write of
+   dochansoff, the C build's absolute registers.  The routines wait for the
+   real VHPOSR (24 lines a call).  Observed: DMACON (the last write: the
+   mask with bit 15, DMA on) and the audio registers after the call, the
+   location written as its offset from the sample (the sound's data and
+   its repeat part are in `samp`).  The start sets location, length,
+   period and volume (64 or the next given one), the repeat part then
+   location and length again: a zero word in chip memory, chzero, for
+   Sound (0 here: the library's init is not run), the sound's repeat part
+   for LoopSound.  Every mask with junk in the upper word (bits 4-15 are
+   refused by the error check), each form with volumes with 0, 1, 2 and
+   4 of them.  Not observed: a2 (as for Volume). */
+static UBYTE sndfake[0x50];
+static UBYTE *sndat[24];
+static unsigned nsndat;
+
+static void sndpatch(UBYTE *p, struct lib *l, int depth)
+{
+    unsigned i;
+
+    for (i = 0; p && i + 4 <= 1024 && W(p + i) != 0x4e75; i += 2) {
+        ULONG a = L(p + i);
+        UWORD w = W(p + i);
+        UBYTE *t = NULL;
+
+        if (a >= 0xdff090 && a < 0xdff0e0 && nsndat < 24) {
+            sndat[nsndat++] = p + i;
+            a = (ULONG)sndfake + a - 0xdff090;
+            p[i] = (UBYTE)(a >> 24);
+            p[i + 1] = (UBYTE)(a >> 16);
+            p[i + 2] = (UBYTE)(a >> 8);
+            p[i + 3] = (UBYTE)a;
+            i += 2;
+            continue;
+        }
+        if (w == 0x4eba || w == 0x6100)         /* JSR d16(pc), BSR.w */
+            t = p + i + 2 + (WORD)W(p + i + 2);
+        else if ((w & 0xff00) == 0x6100 && (w & 0xff) != 0xff)
+            t = p + i + 2 + (BYTE)(w & 0xff);   /* BSR.s */
+        if (t && depth > 0 && t >= l->code && t < l->code + l->size)
+            sndpatch(t, l, depth - 1);
+    }
+}
+
+static void test_sound(void)
+{
+    static UBYTE seen[0x40];
+    static UWORD vols[6] = { 0x1111, 0x2222, 0x3333, 0x4444, 0x5555, 0x6666 };
+    static UWORD samp[16];
+    static ULONG snd[4];
+    static const char *names[] = { "Sound", "LoopSound" };
+    static const ULONG nvols[] = { 0x5a5a0000, 0x5a5a0001, 0x5a5a0002, 0x5a5a0004 };
+    struct lib *l = getlib(&loaded, "audiolib");
+    unsigned c, form, i, k, v, nv;
+
+    snd[0] = (ULONG)samp;                       /* data */
+    snd[1] = 0x01240010;                        /* period, length in words */
+    snd[2] = (ULONG)&samp[4];                   /* repeat */
+    snd[3] = 0x00060000;                        /* repeat length, mark */
+    for (c = 0; c < 2; c++)
+        for (form = 0; form < 2; form++) {
+            UBYTE *p = N("audiolib", names[c], (int)form);
+
+            ROUT = names[c];
+            nsndat = 0;
+            sndpatch(p, l, 2);
+            if (!nsndat) {
+                strcpy(VEC, form ? "with volumes" : "mask only");
+                NOT_CAPTURED("audio register addresses", "none in the routine's code");
+                continue;
+            }
+            CacheClearU();
+            for (i = 0; i < 16; i++)
+                for (nv = 0; nv < (form ? 4u : 1u); nv++) {
+                    for (k = 0; k < sizeof sndfake; k++)
+                        sndfake[k] = (UBYTE)(0xa5 ^ k);
+                    if (form)
+                        sprintf(VEC, "mask $%lX, %lu volumes", 0x5a5a0000UL | i,
+                                nvols[nv] & 0xffff);
+                    else
+                        sprintf(VEC, "mask $%lX", 0x5a5a0000UL | i);
+                    DO1(p, R.d[1] = 0x5a5a0000UL | i; R.a[3] = (ULONG)snd;
+                        if (form) { R.d[7] = nvols[nv]; R.a[2] = (ULONG)&vols[6]; });
+                    OBS("DMACON", W(sndfake + 6));
+                    memcpy(seen, sndfake + 0x10, sizeof seen);
+                    for (k = 0; k < 4; k++) {          /* AUDxLC: offset */
+                        v = L(seen + 16 * k);
+                        if (v >= (ULONG)samp && v < (ULONG)samp + sizeof samp)
+                            v -= (ULONG)samp;
+                        else if (v)
+                            continue;           /* not written */
+                        seen[16 * k] = (UBYTE)(v >> 24);
+                        seen[16 * k + 1] = (UBYTE)(v >> 16);
+                        seen[16 * k + 2] = (UBYTE)(v >> 8);
+                        seen[16 * k + 3] = (UBYTE)v;
+                    }
+                    OBSBYTES("audio registers", seen, sizeof seen);
+                }
+            for (i = 0; i < nsndat; i++) {          /* restore the code */
+                UBYTE *q = sndat[i];
+                ULONG a = 0xdff090 + (L(q) - (ULONG)sndfake);
+
+                q[0] = 0;
+                q[1] = 0xdf;
+                q[2] = (UBYTE)(a >> 8);
+                q[3] = (UBYTE)a;
+            }
+            CacheClearU();
+        }
+}
+
 /* InitSound Sound#,Length: an empty sound in chip memory.  The Sound
    object comes in a3 (the compiler's !libs {#audiolib,$1380}); the memory
    is memlib's (freed by its finit).  It keeps a0 (#1058). */
@@ -899,6 +1016,165 @@ static void test_audiolib(void)
     strcpy(VEC, "audiolib");
     DO1(cmd_entry(getlib(&loaded, "memlib"), 8), (void)0);
     test_volume();
+    test_sound();
+}
+
+/* ------------------------------------------------------- linklistlib */
+
+/* A Dim List array of five items, built here as arrayslib's newlist
+   does: the 32 bytes of the header (current, the used and the free
+   MinList, "lIsT") in front of the array base, the items (a node and a
+   long) behind it.  Each command is called on every list state of used
+   items 0, 1 and 3 (in the order 0, 1, 2), no current item or each one
+   as current, and 2 or no free items (3, 4); the state afterwards is
+   written as text: the current item, then the next/prev link of every
+   node ("U"/"u" the head and tail node of the used list, "F"/"f" those of
+   the free list, a digit an item, "-" a null link, "?" a link that is
+   none of them: an unlinked item's), so no address is written.  Then a
+   traversal with NextItem and with PrevItem from no current item, and
+   KillItem of the current item until the list is empty. */
+struct listarr {
+    ULONG current;
+    ULONG uhead, utail, utailpred;
+    ULONG fhead, ftail, ftailpred;
+    ULONG id;
+    ULONG item[5][3];                   /* next, prev, the element */
+};
+static struct listarr larr;
+
+#define LBASE ((ULONG)&larr.item[0][0])
+
+static char lsym(ULONG p)
+{
+    int i;
+
+    if (!p)
+        return '-';
+    if (p == (ULONG)&larr.uhead)
+        return 'U';
+    if (p == (ULONG)&larr.utail)
+        return 'u';
+    if (p == (ULONG)&larr.fhead)
+        return 'F';
+    if (p == (ULONG)&larr.ftail)
+        return 'f';
+    for (i = 0; i < 5; i++)
+        if (p == (ULONG)&larr.item[i][0])
+            return (char)('0' + i);
+    return '?';
+}
+
+/* link the nodes `seq` (n of them; -1 = the head and tail nodes) into the
+   list whose head node is at `head` */
+static void llink(ULONG *head, const int *seq, int n)
+{
+    ULONG prev = (ULONG)head, node;
+    int i;
+
+    head[1] = 0;
+    for (i = 0; i < n; i++) {
+        node = (ULONG)&larr.item[seq[i]][0];
+        *(ULONG *)prev = node;
+        larr.item[seq[i]][1] = prev;
+        prev = node;
+    }
+    *(ULONG *)prev = (ULONG)&head[1];
+    head[2] = prev;
+}
+
+static void lset(int nused, int nfree, int cur)
+{
+    static const int used[] = { 0, 1, 2 }, fr[] = { 3, 4 };
+    int i;
+
+    memset(&larr, 0xee, sizeof larr);
+    for (i = 0; i < 5; i++)
+        larr.item[i][2] = 0x11111111UL * (ULONG)(i + 1);
+    llink(&larr.uhead, used, nused);
+    llink(&larr.fhead, fr, nfree);
+    larr.current = cur < 0 ? 0 : (ULONG)&larr.item[cur][0];
+    larr.id = 0x6c497354UL;                    /* "lIsT" */
+}
+
+static void lstate(void)
+{
+    char s[64], *p = s;
+    int i;
+
+    *p++ = lsym(larr.current);
+    *p++ = ' ';
+    *p++ = lsym(larr.uhead);
+    *p++ = lsym(larr.utail);
+    *p++ = lsym(larr.utailpred);
+    *p++ = ' ';
+    *p++ = lsym(larr.fhead);
+    *p++ = lsym(larr.ftail);
+    *p++ = lsym(larr.ftailpred);
+    for (i = 0; i < 5; i++) {
+        *p++ = ' ';
+        *p++ = lsym(larr.item[i][0]);
+        *p++ = lsym(larr.item[i][1]);
+    }
+    *p = 0;
+    OBSSTR("list", s);
+    OBS("id", larr.id);
+    for (i = 0; i < 5; i++)
+        if (larr.item[i][2] != 0x11111111UL * (ULONG)(i + 1))
+            OBS("element changed", i);
+}
+
+static void test_lists(void)
+{
+    static const struct { const char *name; int fn, needcur; } cmds[] = {
+        { "FirstItem", 1, 0 }, { "LastItem", 1, 0 }, { "NextItem", 1, 0 },
+        { "PrevItem", 1, 0 }, { "AddItem", 1, 0 }, { "AddFirst", 1, 0 },
+        { "AddLast", 1, 0 }, { "KillItem", 0, 1 }, { "ClearList", 0, 0 },
+        { "ResetList", 0, 0 } };
+    static const int nuseds[] = { 0, 1, 3 }, nfrees[] = { 2, 0 };
+    unsigned c, u, f;
+    int cur;
+
+    for (c = 0; c < sizeof cmds / sizeof cmds[0]; c++) {
+        UBYTE *p = N("linklistlib", cmds[c].name, 0);
+
+        ROUT = cmds[c].name;
+        for (u = 0; u < 3; u++)
+            for (f = 0; f < 2; f++)
+                for (cur = cmds[c].needcur ? 0 : -1; cur < nuseds[u]; cur++) {
+                    sprintf(VEC, "used %d free %d current %d", nuseds[u], nfrees[f], cur);
+                    lset(nuseds[u], nfrees[f], cur);
+                    DO1(p, R.d[0] = LBASE);
+                    if (cmds[c].fn)
+                        OBS("d0", R.d[0]);
+                    lstate();
+                }
+    }
+    /* a whole traversal with NextItem and with PrevItem from ResetList,
+       and KillItem of the current item until the list is empty */
+    {
+        static const char *walk[] = { "NextItem", "PrevItem" };
+        int i, k;
+
+        for (k = 0; k < 2; k++) {
+            UBYTE *p = N("linklistlib", walk[k], 0);
+
+            ROUT = walk[k];
+            lset(3, 2, -1);
+            for (i = 0; i < 5; i++) {
+                sprintf(VEC, "walk step %d", i);
+                DO1(p, R.d[0] = LBASE);
+                OBS("d0", R.d[0]);
+                lstate();
+            }
+        }
+        ROUT = "KillItem";
+        lset(3, 2, 2);
+        for (i = 0; i < 3; i++) {
+            sprintf(VEC, "kill until empty, step %d", i);
+            DO1(N("linklistlib", "KillItem", 0), R.d[0] = LBASE);
+            lstate();
+        }
+    }
 }
 
 /* ------------------------------------------------------- collisions */
@@ -1669,7 +1945,8 @@ static const char *names[] = {
     "memlib", "strcomplib", "memacclib", "sortlib", "mathtranslib", "utillib",
     "environlib", "maxslib", "inputoutputlib", "rawkeylib", "windowslib", "blitzkeyslib",
     "floatquicklib", "vallib", "iffiolib", "audiolib", "scrolllib", "gameiolib", "mouselib",
-    "collslib", "shapeslib", "fontlib", "editlib", "printlib", "stringfunclib", NULL
+    "collslib", "shapeslib", "fontlib", "editlib", "printlib", "stringfunclib", "linklistlib",
+    NULL
 };
 
 /* the tokens of the libraries the small entries call and this program
@@ -1747,6 +2024,19 @@ int main(int argc, char **argv)
     /* exception: ElmoreIncLib's IncSound reads (a0) after InitSound */
     KEEPS_STATEMENT("InitSound", a0);
     KEEPS_STATEMENT("Volume", none);
+    KEEPS_STATEMENT("Sound", none);
+    KEEPS_STATEMENT("LoopSound", none);
+    /* test_lists */
+    KEEPS_FUNCTION("FirstItem", none);
+    KEEPS_FUNCTION("LastItem", none);
+    KEEPS_FUNCTION("NextItem", none);
+    KEEPS_FUNCTION("PrevItem", none);
+    KEEPS_FUNCTION("AddItem", none);
+    KEEPS_FUNCTION("AddFirst", none);
+    KEEPS_FUNCTION("AddLast", none);
+    KEEPS_STATEMENT("KillItem", none);
+    KEEPS_STATEMENT("ClearList", none);
+    KEEPS_STATEMENT("ResetList", none);
     /* the small entries (test_smallentries); Plot's d4-d7/a2 are checked
        on the C build only (both change d2 and d3) */
     KEEPS_STATEMENT("Plot", none);
@@ -1844,6 +2134,7 @@ int main(int argc, char **argv)
     DO1(cmd_entry(getlib(&loaded, "memlib"), 8), (void)0);
     check("utillib: all memory back", rwe_mem_back());
     test_audiolib();
+    test_lists();
     test_hits();
     test_frac();
     test_val();
