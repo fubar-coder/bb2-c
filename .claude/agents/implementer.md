@@ -39,7 +39,7 @@ read them first):
   (GitHub closes the issue on the push). The report names the
   coordinator's steps: the website page of fixed original bugs, the
   row of the overview of fixed bugs (`site/data/fixoverview.yaml`; the
-  report proposes its severity 1-4 and its topic, `site/README.md`) and
+  report proposes its severity 1-5 and its topic, `site/README.md`) and
   the label `fixed-in-port`. A newly found
   original bug gets a `BUG(orig)` note and a bug-orig test that comes out
   REPRODUCED, and is reported (the coordinator files the issue).
