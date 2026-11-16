@@ -1861,6 +1861,14 @@ rows:
     text: "`Sgn` of a float returns -1, 0 or 1 by its value; the original always returned 1."
     page: libraries
     anchor: dates-and-numbers
+  - issue: 302
+    severity: 4
+    topic: "Numbers & dates"
+    library: "vallib"
+    command: "Val"
+    text: "`Val` of a hexadecimal, binary or negative number reads only the string; the original read one character behind it and took a digit there as part of the number."
+    page: libraries
+    anchor: dates-and-numbers
   - issue: 303
     severity: 4
     topic: "Numbers & dates"
@@ -3589,3 +3597,43 @@ rows:
     text: "`Frac` of a Quick gives the exact fraction, also for an integer part of 256 or more, and takes a value of any numeric type; the original lost the low bits of the fraction."
     page: libraries
     anchor: dates-and-numbers
+  - issue: 1065
+    severity: 4
+    topic: "Files"
+    library: "bitmaplib, screenslib, shapeslib"
+    command: "LoadBitMap, LoadScreen, LoadShape"
+    text: "`LoadBitMap`, `LoadScreen` and `LoadShape` close a file that ends inside its picture data before \"Can't Read File\"; the original left it open and locked until reboot."
+    page: libraries
+    anchor: iff-files
+  - issue: 1066
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "PlayMed"
+    text: "The MED pattern break 1Dxx goes to line xx of the next block; the original could take a byte of another track as part of the line and play the memory behind the block."
+    page: libraries
+    anchor: music-players
+  - issue: 1067
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "PlayMed"
+    text: "In a MED module with more than 8 tracks, tracks 8 to 11 are ignored like tracks 4 to 7; the original ran their commands, and 03 and FFD wrote into the player's data of other tracks."
+    page: libraries
+    anchor: music-players
+  - issue: 1069
+    severity: 3
+    topic: "System"
+    library: "rundebuglib, debuglib, errtraplib"
+    command: ""
+    text: "Two programs with runtime error checking or `SetErr` run side by side, each with its own error handling; in the original the one that ended first took away the other's."
+    page: libraries
+    anchor: debugger-fixes
+  - issue: 1071
+    severity: 4
+    topic: "System"
+    library: "memlib"
+    command: ""
+    text: "After a program caught \"Out of Memory!\" with `SetErr` and went on, later allocations work; in the original the next one overwrote the pointer to exec at address 4."
+    page: libraries
+    anchor: arrays-and-sorting

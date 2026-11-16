@@ -1541,6 +1541,12 @@ what an existing program sees:
   runtime error checking refused only an index of 65536 and more; it
   refuses 65535 too, with the error "Array Dimension out of Range"
   ([#1037](https://github.com/fubar-coder/bb2-c/issues/1037)).
+* A program that caught "Out of Memory!", for example of a `Dim`, with
+  `SetErr` and went on lost the list of its memory blocks, so its next
+  allocation overwrote the pointer to exec at address 4, which the whole
+  system uses; the error frees the memory but keeps the list, so later
+  allocations work
+  ([#1071](https://github.com/fubar-coder/bb2-c/issues/1071)).
 * `Sort` on a string array read the length of an element that was never
   given a value from address -4 and its characters from address 0, so
   such elements sorted to places that depended on that memory; they
@@ -1813,6 +1819,10 @@ user interface
   and from 32 places on dropped it, so `Val("1.5000…")` with 32 places
   gave 1; the first 9 places count and the others are skipped
   ([#304](https://github.com/fubar-coder/bb2-c/issues/304)).
+* `Val` of a hexadecimal, binary or negative number read one character
+  behind the string and took a digit there as part of the number; it
+  reads only the string
+  ([#302](https://github.com/fubar-coder/bb2-c/issues/302)).
 * A Quick 0 assigned to a float gave a negative zero instead of 0; it
   gives 0 ([#146](https://github.com/fubar-coder/bb2-c/issues/146)).
 * The Quick -32768 assigned to a float gave +32768; it keeps its minus
@@ -2307,6 +2317,10 @@ and the same colours.
   locked until the next reboot, also when the program went on with
   `SetErr`; the file is closed before the error
   ([#1053](https://github.com/fubar-coder/bb2-c/issues/1053)).
+* `LoadBitMap`, `LoadScreen` and `LoadShape` of a file that ends inside
+  its picture data stopped with "Can't Read File" and left the file open
+  and locked until the next reboot; the file is closed before the error
+  ([#1065](https://github.com/fubar-coder/bb2-c/issues/1065)).
 
 ### Sounds
 
@@ -2381,6 +2395,14 @@ Two more fixes of them change what an existing program does:
   same line as part of the position, and jumped to position 0 or read
   before the play sequence; it jumps to position xx
   ([#203](https://github.com/fubar-coder/bb2-c/issues/203)).
+* The MED pattern break 1Dxx could likewise take a byte of another track
+  as part of the line number, and then played the memory behind the
+  block; it goes to line xx of the next block
+  ([#1066](https://github.com/fubar-coder/bb2-c/issues/1066)).
+* In a MED module with more than 8 tracks, the player let the commands of
+  tracks 8 to 11 run, and the commands 03 and FFD there wrote into its
+  data of other tracks; tracks 8 to 11 are ignored like tracks 4 to 7
+  ([#1067](https://github.com/fubar-coder/bb2-c/issues/1067)).
 * The MED tremolo 7xy with a speed of 0 ran the vibrato code in the first
   step of its line; it stays a tremolo
   ([#204](https://github.com/fubar-coder/bb2-c/issues/204)).
@@ -2565,6 +2587,15 @@ change what an existing program does:
   closed `intuition.library` inside the interrupt; the handler gets the
   message, and `intuition.library` is closed only when the program ends
   ([#246](https://github.com/fubar-coder/bb2-c/issues/246)).
+* Runtime error checking, the debugger and `SetErr` put their handlers
+  into the trap vectors of the whole machine, so with two such programs
+  running at once, the one that ended first took away the other's error
+  handling; each program takes only its own traps, through the trap
+  handler of its task. One case changes with it: Blitz code with runtime
+  error checking that runs in supervisor mode outside a `SetInt`
+  routine, such as a routine called through exec's `Supervisor()`, hangs
+  at its first trap, as in AmiBlitz3; the original's handlers took that
+  trap ([#1069](https://github.com/fubar-coder/bb2-c/issues/1069)).
 
 ## Runtime errors in executables {#runtime-error-texts}
 
