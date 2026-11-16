@@ -43,8 +43,6 @@
  *     offset, so the following voices play the notes of the voice
  *     before (#568); effects (mt_CheckEfx) and the loop pointers of
  *     mt_SetDMA still go to all four voices (#567).
- *   - Tracker Off clears mt_Enable (mt_end); Tracker On only ANDs it, so
- *     the song stays stopped until TrackInit or TrackerPause 0 (#572).
  *   - TrackInit while Tracker Off does not initialise the song (mt_init
  *     returns) but enables playing; Tracker On then plays with the old
  *     song pointer (#573).
@@ -60,6 +58,10 @@
  *     wrote deftime / tempo, 0 (deftime is set only by the dead
  *     _ciaplayerinit), to ciatime and to the latch of CIA-B timer A
  *     ($BFD400/$BFD500), a timer the library never allocated (#571).
+ *   - Tracker Off silences the voices (mt_end) but keeps mt_Enable, so
+ *     Tracker On continues the module; the original's mt_end cleared it
+ *     and On only ANDed it: the song stayed stopped until TrackInit or
+ *     TrackerPause 0 (#572).
  *   - Fxx compares unsigned: F80-FFF are tempos; the original compared
  *     signed (CMP.B #32: BGE) and set the speed to $80-$FF (#569).
  * Fixed in the play routine (intended deviations):
@@ -1280,22 +1282,28 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * @brief Tracker on+off: switch the player on or off.
  *
  * Nothing happens if the status does not change.  0: mt_end (voices
- * silent, audio DMA off) and status off; else status on - mt_Enable is
- * only ANDed with the value, so the song stays stopped until TrackInit
- * or TrackerPause 0 (BUG(orig) (#572)).  While off, TrackInit does not
+ * silent, audio DMA off) and status off; else status on.  Off keeps
+ * mt_Enable, so On continues a module that was playing (Fixed (#572):
+ * the original cleared it with mt_end and On only ANDed it, so the song
+ * stayed stopped until TrackInit or TrackerPause 0); a module stopped
+ * or paused before Off stays stopped.  While off, TrackInit does not
  * initialise the song (#573).
  * @param on  d0.b: 0 off, else on (any nonzero byte)
  */
 static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
 {
+    UBYTE enable;
+
     if ((BYTE)on == pt.status)
         return;
-    pt.enable &= on;                    /* BUG(orig): On does not resume (#572) */
     pt.status = (BYTE)on;
-    if (on)
+    if (on) {
         ciaplayerinit();
-    else
-        ciaplayerfinit();
+        return;
+    }
+    enable = pt.enable;
+    ciaplayerfinit();
+    pt.enable = enable;                 /* Fixed (#572): for Tracker On */
 }
 
 /**

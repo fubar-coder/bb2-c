@@ -16,7 +16,8 @@ objects): no command names in common (checked by `rwe_numbers`/`blitzlib numbers
   the module address goes to `mt_olddata` (read by nothing).
 * `TrackDMA dmawait.w` – the `DBRA` count of the waits for Paula's DMA
   (default 4000).
-* `Tracker on+off` – 0: `mt_end`, status off; else status on.
+* `Tracker on+off` – 0: `mt_end` (`mt_Enable` kept), status off; else
+  status on.
 * `TrackerChannels mask` – the voices to play (bit 3 voice 1 … bit 0
   voice 4); the registers of a cleared voice are zeroed (pointer,
   length, period, volume; its DMA stays on).
@@ -119,9 +120,6 @@ RI's glue:
   offset, so the following voices play the notes of the voice before
   (#568); the effects (`mt_CheckEfx`) and the loop registers of
   `mt_SetDMA` still go to all four voices (#567).
-* `Tracker Off` clears `mt_Enable` (`mt_end`), `Tracker On` only ANDs
-  it: the song stays stopped until `TrackInit` or `TrackerPause 0`
-  (#572).
 * `TrackInit` while `Tracker Off`: `mt_init` returns at once, but playing
   is enabled; `Tracker On` then plays with the old song pointer and
   sample starts (#573).
@@ -142,6 +140,12 @@ kind F), in RI's code:
   the original compared signed (`CMP.B #32: BGE`) and set the speed to
   128–255 (#569; library test `rwe_ritrackerlib`, the second module's
   F81).
+* `Tracker Off` silences the voices (`mt_end`) but keeps `mt_Enable`, so
+  `Tracker On` continues the module; a module stopped or paused before
+  `Tracker Off` stays stopped. The original's `mt_end` cleared
+  `mt_Enable` and `Tracker On` only ANDed it with its value: the song
+  stayed stopped until `TrackInit` or `TrackerPause 0` (#572; library
+  test `rwe_ritrackerlib`, the ticks "Tracker On after Off").
 * A tempo command (F20–FFF, `SetTempo`) only stores `RealTempo`; the
   original also wrote `deftime` / tempo to `ciatime` and to the latch of
   CIA-B timer A (`$BFD400`/`$BFD500`), a timer the library never
