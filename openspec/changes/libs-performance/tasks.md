@@ -90,7 +90,7 @@ The four commands still 10 % or more slower than the original in `perf-analysis/
 - [x] 11.3 Instr (stringfunclib, the search loop; 1.17 times) - done (2026-11-16): C, inline in `BLITZ_ENTRYPOINT` entries, CaseSense tested once, the first character tested before the rest; 4119.2 -> 2281.7 (original 3513.0), design decision 27
 - [x] 11.4 Volume (audiolib, the mask loop of four passes; 1.37 times) - done (2026-11-16): the four channels unrolled in C, 382.1 -> 204.1 cycles (the original 278.7; design decision 26)
 - [x] 11.5 SColl (collslib): look again for extensions, absolute addressing, spills and the #110 fix's cost; the fix of #110 stays - done (2026-11-16): one path, the #110 fix as NEG/NEG/ADDX instead of ADDQ/ADD, 136.0 -> 124.0 cycles (the original 126.3; design decision 26)
-- [ ] 11.6 Measure, tighten the budgets, update final-table.md
+- [x] 11.6 Measure, tighten the budgets, update final-table.md - done (2026-11-16): three runs of `ctest --preset perf` on main 4375d842 (the originals of 10.6 stay valid, no bench program changed), table in `~/.local/share/bb2-c-work/perf-analysis/final-table.md` (10.6's as `final-table-10.6.md`): of 131 commands none is 10 % or more slower (the closest Inkey$ 1.10, 9.8 %), 17 are 2 to 10 % slower, 63 within 2 %, 51 faster; no budget reached or exceeded and none of group 11 stale, `budgets.txt` unchanged
 
 ## 9. Closing
 
