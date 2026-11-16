@@ -5,11 +5,13 @@
 ; addresses 14-39 (exception vectors), a window is opened for the
 ; garbage list and waits for a mouse button (the session ends in a
 ; timeout).  The program runs through inject with the first allocation
-; of 68 bytes failing (AllocVec(64): 64 + its size field).
+; of 68 bytes with MEMF_PUBLIC|MEMF_CLEAR failing (AllocVec(64): 64 + its
+; size field; the flags keep memlib's buckets of list headers, also 68
+; bytes, out).
 ; Correct: PopUpWindow fails without a window and returns, the program
 ; goes on.
 ; @rwe popupwinlib
-; @pass runwrap=@INJECT@|allocfail=68-68/1
+; @pass runwrap=@INJECT@|allocfail=68-68/f=10001/1
 ; @pass timeout=30
 DEFTYPE .l
 it=AllocMem_(64,$10001)
