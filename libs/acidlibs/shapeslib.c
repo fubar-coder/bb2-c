@@ -85,6 +85,11 @@
  *    the plane loop (DBF on depth - 1) wrote 65536 planes of every row
  *    behind it.  Here LoadShape refuses such a picture (file data:
  *    "Illegal Shape Depth", nothing loaded). (#1052)
+ *  - LoadShape took the width and height of the BMHD without a check: a
+ *    width or height of 0 made a data block of 0 bytes, and the byte
+ *    loop (DBF on bytes per row - 1) or the row loop (rows - 1) ran 65536
+ *    times behind it.  Here LoadShape refuses such a picture (file data:
+ *    "Illegal Shape Size", nothing loaded). (#1054)
  *  - LoadShape of an ANIM read the XOR bit (ANHD bits & 2) only from the
  *    first ANHD and applied every later frame with it; here each frame
  *    takes the bit of its own ANHD. (#266)
@@ -334,6 +339,9 @@ static const char mess3[] = "Can't Read/Write Shapes File";
 /* LoadShape of a picture with 0 planes (fixed, #1052; the text of the
    error check's mess11, here in the normal code) */
 static const char mess14[] = "Illegal Shape Depth";
+/* LoadShape of a picture with a width or height of 0 (fixed, #1054; the
+   text of the error check's mess13, here in the normal code) */
+static const char mess15[] = "Illegal Shape Size";
 static const char mess7[] = "ANIM format not supported";
 static const char mess8[] = "Illegal ANIM interleave value";
 
@@ -1008,6 +1016,15 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
         BLITZ_RUNERR(mess14);
     }
     bpr = (UWORD)(SW(st, 6) << 1);
+    if (!rows || !bpr) {
+        /* fixed #1054: a picture with a width or height of 0 is refused
+           (nothing loaded): the data block would have 0 bytes, and the
+           row loop (rows - 1) or the byte loop (DBF on bytes per row - 1)
+           would run 65536 times and write behind it */
+        first->width = 0;
+        IJSR(TOK_iffclose, 0, st);
+        BLITZ_RUNERR(mess15);
+    }
     first->ebwidth = bpr;
     first->bltsize = bltsize | (UWORD)((bpr >> 1) + 1);
     HANDLES(first) = 0;
@@ -1205,7 +1222,9 @@ skipanim:
  * interleave value" (<> 1), "Can't Read/Write Shapes File" (a plane of
  * 64K or more, fixed #263; more than 1023 rows or 62 words, fixed
  * #1046), "Illegal Shape Depth" (0 planes, fixed #1052: the original
- * wrote 65536 planes of every row behind a block of 0 bytes).
+ * wrote 65536 planes of every row behind a block of 0 bytes), "Illegal
+ * Shape Size" (a width or height of 0, fixed #1054: the original ran its
+ * row or byte loop 65536 times behind a block of 0 bytes).
  *
  * @param shape a0: the shape (a3 for the IFF calls)
  * @param name  d1: the file name
