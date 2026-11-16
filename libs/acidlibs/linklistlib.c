@@ -47,13 +47,13 @@
 
 /* entry points (defined below) */
 BB_BOOL BLITZ_ROUTINE dofirstitem(UBYTE *base BL_REG(d0));
-BB_BOOL BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0));
+void doadditem(void);                   /* BLITZ_ALIAS_EP of doadditem_c */
 void donextitem(void);                  /* BLITZ_ALIAS of donextitem_c */
 void BLITZ_ROUTINE doreslist(UBYTE *base BL_REG(d0));
-void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0));
-BB_BOOL BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0));
-void BLITZ_ROUTINE doclearlist(UBYTE *base BL_REG(d0));
-BB_BOOL BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0));
+void dokillitem(void);                  /* BLITZ_ALIAS_EP of dokillitem_c */
+void doaddfirst(void);                  /* BLITZ_ALIAS_EP of doaddfirst_c */
+void doclearlist(void);                 /* BLITZ_ALIAS_EP of doclearlist_c */
+void doaddlast(void);                   /* BLITZ_ALIAS_EP of doaddlast_c */
 void BLITZ_ROUTINE dopushcurrent(UBYTE *base BL_REG(d0));
 void BLITZ_ROUTINE dopopcurrent(UBYTE *base BL_REG(d0));
 void doprevitem(void);                  /* BLITZ_ALIAS of doprevitem_c */
@@ -184,7 +184,7 @@ static struct stackentry *currstack;
 static struct stackentry *currsp;
 
 /* unlinkitem - item (a1) to unlink */
-static void unlinkitem(struct bb_listitem *item)
+BL_ALWAYS_INLINE void unlinkitem(struct bb_listitem *item)
 {
     struct bb_listitem *prev = item->prev, *next = item->next;
 
@@ -193,7 +193,7 @@ static void unlinkitem(struct bb_listitem *item)
 }
 
 /* linkitem - link item (a1) after `after` (a2) */
-static void linkitem(struct bb_listitem *item, struct bb_listitem *after)
+BL_ALWAYS_INLINE void linkitem(struct bb_listitem *item, struct bb_listitem *after)
 {
     struct bb_listitem *next = after->next;
 
@@ -284,9 +284,10 @@ void BLITZ_ROUTINE dopopcurrent(UBYTE *base BL_REG(d0))
  *
  * @param base  d0: the list array
  */
-void BLITZ_ROUTINE doclearlist(UBYTE *base BL_REG(d0))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doclearlist_c(UBYTE *base BL_REG(d0))
 {
     struct bb_listitem *item;
+    BLITZ_EP_KEEP_A6();
 
     BL_INTS_OFF();
     while ((item = USED(base)->next)->next) {
@@ -295,7 +296,9 @@ void BLITZ_ROUTINE doclearlist(UBYTE *base BL_REG(d0))
     }
     CURRENT(base) = 0;
     BL_INTS_ON();
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_ALIAS_EP(doclearlist, doclearlist_c);
 
 /**
  * @brief ResetList Arrayname(): no current item (the next NextItem gives
@@ -378,9 +381,10 @@ BB_BOOL BLITZ_ROUTINE dolastitem(UBYTE *base BL_REG(d0))
  *
  * @param base  d0: the list array
  */
-void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dokillitem_c(UBYTE *base BL_REG(d0))
 {
     struct bb_listitem *item, *prev;
+    BLITZ_EP_KEEP_A6();
 
     BL_INTS_OFF();
     item = CURRENT(base);                       /* current item */
@@ -389,7 +393,9 @@ void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
     linkitem(item, FREE(base));                 /* add to free */
     CURRENT(base) = prev->prev ? prev : 0;      /* the head node: none */
     BL_INTS_ON();
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_ALIAS_EP(dokillitem, dokillitem_c);
 
 /**
  * @brief AddItem(Arrayname()): insert an item after the current one.
@@ -402,25 +408,29 @@ void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
  * @return d0: BB_TRUE if an item was added, BB_FALSE if there is no free
  *         item
  */
-BB_BOOL BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0))
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE doadditem_c(UBYTE *base BL_REG(d0))
 {
     struct bb_listitem *item, *after;
-    struct bb_listitem *link;                          /* d0, then -1 */
+    BLITZ_EP_KEEP_A6();
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of head node */
-    link = item->next;
-    if (link) {
+    if (item->next) {
         unlinkitem(item);
         after = CURRENT(base);
         if (!after)
             after = USED(base);
         linkitem(item, after);
         CURRENT(base) = item;                   /* now current */
+        BL_INTS_ON();
+        BLITZ_EP_KEEP_A6_END();
+        return BB_TRUE;
     }
-    BL_INTS_ON();
-    return link ? BB_TRUE : BB_FALSE;
+    BL_INTS_ON();                               /* none free */
+    BLITZ_EP_KEEP_A6_END();
+    return BB_FALSE;
 }
+BLITZ_ALIAS_EP(doadditem, doadditem_c);
 
 /**
  * @brief AddFirst(Arrayname()): add an item at the beginning of the list,
@@ -429,22 +439,26 @@ BB_BOOL BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0))
  * @param base  d0: the list array
  * @return d0: BB_TRUE if an item was added, BB_FALSE if none is free
  */
-BB_BOOL BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0))
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE doaddfirst_c(UBYTE *base BL_REG(d0))
 {
     struct bb_listitem *item;
-    struct bb_listitem *link;                          /* d0, then -1 */
+    BLITZ_EP_KEEP_A6();
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of head of free */
-    link = item->next;
-    if (link) {                                 /* else none free */
+    if (item->next) {                           /* else none free */
         CURRENT(base) = item;                   /* now current */
         unlinkitem(item);
         linkitem(item, USED(base));
+        BL_INTS_ON();
+        BLITZ_EP_KEEP_A6_END();
+        return BB_TRUE;
     }
     BL_INTS_ON();
-    return link ? BB_TRUE : BB_FALSE;
+    BLITZ_EP_KEEP_A6_END();
+    return BB_FALSE;
 }
+BLITZ_ALIAS_EP(doaddfirst, doaddfirst_c);
 
 /**
  * @brief AddLast(Arrayname()): add an item at the end of the list, as
@@ -453,22 +467,26 @@ BB_BOOL BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0))
  * @param base  d0: the list array
  * @return d0: BB_TRUE if an item was added, BB_FALSE if none is free
  */
-BB_BOOL BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE doaddlast_c(UBYTE *base BL_REG(d0))
 {
     struct bb_listitem *item;
-    struct bb_listitem *link;                          /* d0, then -1 */
+    BLITZ_EP_KEEP_A6();
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of free */
-    link = item->next;
-    if (link) {
+    if (item->next) {
         CURRENT(base) = item;
         unlinkitem(item);
         linkitem(item, TAILPRED(base));         /* prev of tail of used */
+        BL_INTS_ON();
+        BLITZ_EP_KEEP_A6_END();
+        return BB_TRUE;
     }
     BL_INTS_ON();
-    return link ? BB_TRUE : BB_FALSE;
+    BLITZ_EP_KEEP_A6_END();
+    return BB_FALSE;
 }
+BLITZ_ALIAS_EP(doaddlast, doaddlast_c);
 
 /**
  * @brief NextItem(Arrayname()): make the next item the current one.

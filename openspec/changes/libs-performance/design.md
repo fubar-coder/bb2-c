@@ -992,6 +992,21 @@ build.
       Middle item 160 -> 144 cycles (148), first call 244 -> 140 (160),
       the end 142 -> 140 (126). `bstr.nextitem51` 231.8 -> 213.9 (217.8),
       0.98 times the original.
+    - AddItem, KillItem, AddFirst, AddLast, ClearList (task 13.21):
+      `unlinkitem` was a function with a stack argument (70 cycles of
+      call overhead), and the entries saved a2/a6 (KillItem d2/a2/a6).
+      `unlinkitem`/`linkitem` are `BL_ALWAYS_INLINE`, and the five
+      entries are `BLITZ_ENTRYPOINT` with `BLITZ_EP_KEEP_A6()`: GCC works
+      in d0/d1/a0-a2 and saves nothing (it keeps the array base in d1 and
+      reloads an address register from it, `movea.l d1,a0`, 4 cycles each;
+      a2 changes as in the original, whose `unlinkitem`/`linkitem` change
+      a2 and save a3 only; no other library calls them, epcheck passes).
+      The path of the benchmark: AddItem 412 -> 308 cycles (380), KillItem
+      416 -> 286 (384). `bstr.addkill` 1025.7 -> 785.0 (961.0), 0.82 times
+      the original. The library cases of the list commands
+      (`systest_cmdlibs`, recorded from the original: every list state of
+      0, 1 and 3 used and 0 or 2 free items with each current item, two
+      traversals, KillItem until the list is empty) are unchanged.
 
 29. **The remaining slower string commands (group 13, tasks 13.1 to
     13.5, 2026-11-16).** Analysis `analyse-g13-strings.md`; C, measured in
