@@ -24,7 +24,11 @@
  *
  * Speed: the blit core is inline (BL_ALWAYS_INLINE), and the Blitz mode
  * code of QBlit and UnQueue saves no register (BLITZ_ENTRYPOINT, a6 kept
- * by BLITZ_EP_KEEP_A6; the register rule keeps a3-a7).
+ * by BLITZ_EP_KEEP_A6; the register rule keeps a3-a7).  As the
+ * original: QBlit writes the rest of the queue item with (An)+ and reads
+ * bcon0 PC-relative (one hunk), UnQueue reads an item with (An)+, and the
+ * plane loops of both are the original's loops (asm blocks; GCC wrote
+ * the item with offsets, bcon0 absolute and the loop without DBF).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -221,8 +225,9 @@ BL_ALWAYS_INLINE void qblit(struct queue *q, const struct bb_shape *shape,
                             WORD x, WORD y, struct blitstate *st)
 {
     struct qitem *item = q->pos;
-    ULONG mods, mods_swapped;
-    UWORD n;
+    ULONG mods, mods_swapped, tmp;
+    UWORD n, shift;
+    const ULONG *plane;
 
     x -= (UWORD)shape->handlex;
     y -= (UWORD)shape->handley;
@@ -232,42 +237,56 @@ BL_ALWAYS_INLINE void qblit(struct queue *q, const struct bb_shape *shape,
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x60) = mods_swapped;
     BL_CUSTOML(cb, 0x64) = mods;
-    {
-        UWORD shift = (UWORD)(x & 15);
-
-        /* AND #15:ROR #4 (GCC: MOVEQ #12:LSL, 12 cycles more) */
-        __asm__("ror.w #4,%0" : "+d"(shift) : : "cc");
-        st->shift = shift;
-    }
-    BL_CUSTOMW(cb, 0x42) = st->shift;
-    BL_CUSTOMW(cb, 0x40) = st->shift | bcon0;
+    shift = (UWORD)(x & 15);
+    /* AND #15:ROR #4 (GCC: MOVEQ #12:LSL, 12 cycles more) */
+    __asm__("ror.w #4,%0" : "+d"(shift) : : "cc");
+    st->shift = shift;
+    BL_CUSTOMW(cb, 0x42) = shift;
+    /* OR bcon0(pc),d0 (GCC: absolute, 8 cycles more; one hunk) */
+    __asm__("or.w _bcon0(pc),%0" : "+d"(shift) : "m"(bcon0) : "cc");
+    BL_CUSTOMW(cb, 0x40) = shift;
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
     BL_CUSTOML(cb, 0x4c) = (ULONG)shape->data;
     st->cookie = (ULONG)shape->cookie;
     st->off = bl_blitoff(&bm->bpr, x, y);
     n = shape->depth - 1;
     st->size = shape->bltsize;
-    item->size = st->size;
-    item->planes = bm->flagsdepth - 1;
-    item->bm = bm;
-    item->off = st->off;
-    q->pos = item + 1;
-    st->plane = (UBYTE **)bm->planes;
-    goto qblitlib_doblit;
-    do {
-        BL_BLITWAIT(cb);
-qblitlib_doblit:
-        BL_CUSTOML(cb, 0x50) = st->cookie;
-        {
-            ULONG d = (ULONG)*st->plane++ + st->off;
+    /* the rest of the item with (a4)+ as the original: +2 size, +4 planes
+       - 1, +6 the bitmap, +10 the offset; then the queue's write position */
+    {
+        UBYTE *p = (UBYTE *)&item->size;
 
-            BL_CUSTOML(cb, 0x48) = d;
-            BL_CUSTOML(cb, 0x54) = d;
-        }
-        BL_CUSTOMW(cb, 0x58) = st->size;
-    } while (n-- != 0);
+        __asm__ volatile(
+            "   move.w  %[size],(%[p])+\n"
+            "   move.w  %[pl],(%[p])+\n"
+            "   move.l  %[bm],(%[p])+\n"
+            "   move.l  %[off],(%[p])+"
+            : [p] "+a"(p)
+            : [size] "d"(st->size), [pl] "d"((UWORD)(bm->flagsdepth - 1)),
+              [bm] "r"(bm), [off] "d"(st->off)
+            : "memory");
+        q->pos = (struct qitem *)p;
+    }
+    plane = (const ULONG *)bm->planes;
+    /* 'doblit: per shape plane A = cookie, C = D = the plane + offset (the
+       original's loop) */
+    __asm__ volatile(
+        "   bra.s   1f\n"
+        "0: tst.b   2(%[cb])\n"                 /* blitwait */
+        "2: btst    #6,2(%[cb])\n"
+        "   bne.s   2b\n"
+        "1: move.l  %[ck],0x50(%[cb])\n"
+        "   move.l  (%[pl])+,%[t]\n"
+        "   add.l   %[off],%[t]\n"
+        "   move.l  %[t],0x48(%[cb])\n"
+        "   move.l  %[t],0x54(%[cb])\n"
+        "   move.w  %[size],0x58(%[cb])\n"
+        "   dbf     %[n],0b"
+        : [pl] "+a"(plane), [n] "+d"(n), [t] "=&d"(tmp)
+        : [cb] "a"(cb), [off] "d"(st->off), [size] "d"(st->size), [ck] "d"(st->cookie)
+        : "cc", "memory");
+    st->plane = (UBYTE **)plane;
 }
-
 BL_ALWAYS_INLINE void qblitex(struct queue *q, const struct bb_shape *shape,
                               const struct bb_bitmap *bm, UBYTE *cb,
                               WORD x, WORD y, UWORD bits)
@@ -295,39 +314,54 @@ BL_ALWAYS_INLINE void qblitex(struct queue *q, const struct bb_shape *shape,
 /* b_dounqueue - clear the queued areas (D only, minterm 0) */
 BL_ALWAYS_INLINE void unqueue(struct queue *q, UBYTE *cb)
 {
-    struct qitem *end = q->pos, *it = q->mem;
+    struct qitem *end = q->pos;
+    const struct qitem *it = q->mem;
 
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x40) = 0x01f00000;
     BL_CUSTOMW(cb, 0x74) = 0;
-    q->pos = it;
+    q->pos = (struct qitem *)it;
     if (it >= end)
         return;
     goto start;
     do {
         UWORD size, n;
-        UBYTE **plane;
-        ULONG off;
+        const ULONG *plane;
+        ULONG off, tmp;
 
         if (it >= end)
             return;
         BL_BLITWAIT(cb);
 start:
-        BL_CUSTOMW(cb, 0x66) = it->mod;
-        size = it->size;
-        n = it->planes;
-        plane = (UBYTE **)it->bm->planes;
-        off = it->off;
-        it++;
-        do {
-            BL_BLITWAIT(cb);
-            BL_CUSTOML(cb, 0x54) = (ULONG)*plane++ + off;
-            BL_CUSTOMW(cb, 0x58) = size;
-        } while (n-- != 0);
+        /* 'start: the item with (a2)+ as the original: the modulo into
+           BLTDMOD, size, planes - 1, the bitmap's Planes, the offset */
+        __asm__ volatile(
+            "   move.w  (%[it])+,0x66(%[cb])\n"
+            "   move.w  (%[it])+,%[size]\n"
+            "   move.w  (%[it])+,%[n]\n"
+            "   move.l  (%[it])+,%[pl]\n"
+            "   move.l  (%[it])+,%[off]\n"
+            "   addq.l  #8,%[pl]"
+            : [it] "+a"(it), [size] "=d"(size), [n] "=d"(n), [pl] "=a"(plane),
+              [off] "=d"(off)
+            : [cb] "a"(cb)
+            : "memory");
+        /* 'loop2: per plane the plane + offset into BLTDPT (the original's
+           loop, the wait first) */
+        __asm__ volatile(
+            "0: tst.b   2(%[cb])\n"             /* blitwait */
+            "2: btst    #6,2(%[cb])\n"
+            "   bne.s   2b\n"
+            "   move.l  (%[pl])+,%[t]\n"
+            "   add.l   %[off],%[t]\n"
+            "   move.l  %[t],0x54(%[cb])\n"
+            "   move.w  %[size],0x58(%[cb])\n"
+            "   dbf     %[n],0b"
+            : [pl] "+a"(plane), [n] "+d"(n), [t] "=&d"(tmp)
+            : [cb] "a"(cb), [off] "d"(off), [size] "d"(size)
+            : "cc", "memory");
     } while (1);
 }
-
-/* b_dounqueue2 - copy the queued areas from the bitmap a2 */
 BL_ALWAYS_INLINE void unqueue2(struct queue *q, UBYTE *cb, const struct bb_bitmap *src)
 {
     struct qitem *end = q->pos, *it = q->mem;

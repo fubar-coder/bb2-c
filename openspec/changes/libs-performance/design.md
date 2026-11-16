@@ -699,6 +699,24 @@ build.
       exponent and mantissa that it gives mathffp's bits.
       `q3=Frac(q1)` (with the compiler's fltoqu after it) 3710 -> 1314
       (3718.0).
+    - QBlit and UnQueue, a second look (after the rebase onto part B,
+      2026-11-16; the C of task 10.8 was 0.7 % behind with FlushQueue,
+      1 % with UnQueue). Compared with the original instruction by
+      instruction, three clear causes: GCC reads `bcon0` with an absolute
+      address (`OR.w bcon0,d0`, 8 cycles more than the original's
+      `OR bcon0(pc),d0`; the library is one hunk, so the asm `or.w
+      _bcon0(pc)` links), writes the rest of the queue item with offsets
+      instead of `(a4)+` (4 cycles a field, and a LEA for the write
+      position), and UnQueue reads an item with offsets (`MOVE.w
+      4(a0),d0` ...: 12 instead of 8, 16 instead of 12, 24 cycles an
+      item) where the original has `(a2)+`. Now QBlit's or, its item and
+      UnQueue's item read are asm statements with `(An)+`, and the plane
+      loops of both are the original's loops (asm blocks with `DBF`, as
+      BBlit's). Five runs: 4 QBlit + FlushQueue 9154 -> 9078 (9087.9), 8
+      QBlit + FlushQueue 18246 -> 18082 (18063.8), 4 QBlit + UnQueue 12906 ->
+      12744 (12785.9), 8 QBlit + UnQueue 25704 -> 25356 (25417.8); qblitlib
+      3200 -> 3052 bytes. UnQueue with a BitMap (unqueue2), which the
+      benchmark does not run, is unchanged.
 
 ## Risks / Trade-offs
 

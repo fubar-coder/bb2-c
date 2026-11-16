@@ -62,6 +62,9 @@
 # of task 10.8 (2026-11-16; they spread by at most 2.2 cycles), each with
 # the tolerance of its earlier measurement.
 # bmath.frac from two runs of the Frac of task 10.9 (2026-11-16).
+# The four bgfx.qblit lines then from five runs of the second look at
+# QBlit and UnQueue (2026-11-16, after the rebase onto part B), with
+# their tolerances.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -78,10 +81,10 @@ bgfx.clipblit16              2607     2516.3  ClipBlit 0,100,100
 bgfx.blitcoll                902~1      881.9  c=BlitColl(0,100,100)
 bgfx.bblit4u              18160~28    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
 bgfx.bblit8u              35892~12    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
-bgfx.qblit4u               12908~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
-bgfx.qblit8u              25706~28    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
-bgfx.qblit4f               9156~9     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
-bgfx.qblit8f               18250~4    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
+bgfx.qblit4u               12744~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
+bgfx.qblit8u              25356~28    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
+bgfx.qblit4f               9078~9     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
+bgfx.qblit8f               18082~4    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
 bgfx.showsprite               635      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
