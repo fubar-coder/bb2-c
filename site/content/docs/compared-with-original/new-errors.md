@@ -1348,6 +1348,37 @@ error checking nothing changes.
 
 Issue: [JumpMed without a playing module writes to address 44-47 (#210)](https://github.com/fubar-coder/bb2-c/issues/210).
 
+### `FreeTrackerModule` of the module that plays {#freetrackermodule-playing}
+
+**What happened.** `FreeTrackerModule` freed a module that the CIA
+Protracker library was still playing. The module did not stop: the
+library went on reading its notes and samples from the freed memory,
+which other parts of the program or the system could already be using,
+also with runtime error checking.
+
+```
+DEFTYPE .l
+r=LoadTrackerModule(0,"mod.tune")
+If r<>-1 Then End
+r=StartTracker(0)
+FreeTrackerModule 0
+NPrint "freed"
+End
+```
+
+The original printed `freed`, and the music went on from the freed
+memory.
+
+**With the port.** With runtime error checking, `FreeTrackerModule` of
+the module that plays is the runtime error "Tracker: Stop the module
+before freeing it.", before anything is freed. A module stopped with
+`StopTracker` can be freed. Without runtime error checking, the module
+is freed as before.
+
+**What to change.** Call `StopTracker` before `FreeTrackerModule`.
+
+Issue: [FreeTrackerModule frees a module that is still playing (#436)](https://github.com/fubar-coder/bb2-c/issues/436).
+
 ### `PopInput` and `PopOutput` with nothing to pop {#pop-without-push}
 
 **What happened.** With runtime error checking, the first `PopInput` or

@@ -2708,12 +2708,124 @@ rows:
     text: "Text added after `Replace$` with an empty search string comes out right; the original put a byte of its arguments in its place."
     page: libraries
     anchor: text-after-string-function
+  - issue: 430
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "CheckTrackerID"
+    text: "`CheckTrackerID` returns 0 (False) for a module without the mark \"M.K.\" or \"M!K!\" and for an empty slot; the original returned the contents of address 0."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 431
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "CheckTrackerEvent"
+    text: "`CheckTrackerEvent` returns 0 (False) when no new tracker event has come; the original returned the last event's value with undefined upper bytes, so `If CheckTrackerEvent` was almost always true."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 432
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "DecodeModule"
+    text: "`DecodeModule` copies a module at $80000000 or above into chip memory; the original took it for chip memory and left it where the sound hardware cannot play it."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 434
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "DecodeModule"
+    text: "`DecodeModule` copies the whole module into chip memory; the original copied a module whose size ends in $FFFD to $FFFF 64 KB short."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 435
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "GetTrackerEvent, CheckTrackerEvent, WaitTrackerEvent"
+    text: "The tracker event `8xx` comes on its row's first tick; with the original it came one tick later, and never at speed 1, where `WaitTrackerEvent` waited for ever."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 436
+    severity: 3
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "FreeTrackerModule"
+    text: "With runtime error checking, `FreeTrackerModule` of the module that plays is the runtime error \"Tracker: Stop the module before freeing it.\"; the original freed it and went on playing the freed memory."
+    page: libraries
+    anchor: rwe-other-fixes
   - issue: 437
     severity: 5
     topic: "Sound"
     library: "ciatrklib"
     command: "GetModuleName$"
     text: "Without runtime error checking, `GetModuleName$` of an empty slot returns the empty string; the original returned ten undefined characters per slot number."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 438
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "StartTracker"
+    text: "Samples without a loop end in silence, as in Protracker; with the original they ended in a buzz or a click, because `StartTracker` never cleared their first bytes."
+    page: libraries
+    anchor: tracker-sample-end
+  - issue: 439
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "PlayTracker (effect E8x)"
+    text: "The effect `E8x` on a voice without a loop does nothing; the original rewrote 64 KB of memory from the loop start, from address 0 on a voice that had not played a sample yet."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 442
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "LoadTrackerModule"
+    text: "`LoadTrackerModule` loads the whole file; the original loaded a file whose size ends in the byte $FD, $FE or $FF 253 bytes short."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 443
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "LoadTrackerModule"
+    text: "`LoadTrackerModule` calls AmigaDOS with its library base set up; the original called it through whatever the program happened to hold, which crashed."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 444
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "LoadTrackerModule"
+    text: "After a read error `LoadTrackerModule` releases the file's lock once; the original released it a second time."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 445
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "ModulePatterns"
+    text: "`ModulePatterns` returns the number of patterns of the module, as documented; the original returned the song length."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 447
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "ModulePositionJump"
+    text: "`ModulePositionJump n` goes on at song position n; the original went on at n+1."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 448
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "ChangeTrackerVBlank, StartTracker"
+    text: "Removing the tracker library's CIA interrupt removes the interrupt of its own timer; the original always removed timer A's, which left its own interrupt on timer B installed and took another program's away."
     page: libraries
     anchor: rwe-other-fixes
   - issue: 449
@@ -2724,12 +2836,36 @@ rows:
     text: "Removing the tracker library's CIA interrupt leaves the audio filter and power LED as they are; the original toggled them."
     page: libraries
     anchor: rwe-other-fixes
+  - issue: 450
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "StartTracker"
+    text: "In CIA mode, the default, a module plays on every Amiga; the original crashed on a 68000 at the program's start and stayed silent on an A1200 with Zorro III fast memory."
+    page: libraries
+    anchor: tracker-cia-mode
   - issue: 451
     severity: 5
     topic: "Sound"
     library: "ciatrklib"
     command: "StartTracker"
     text: "Without runtime error checking, `StartTracker` of an empty slot returns 0 (False); the original returned the slot number."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 452
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "TrackerVolume"
+    text: "`TrackerVolume 0` and `64` also change the notes that are playing; with the original a fade-out to 0 stayed audible."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 453
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "WaitTrackerEvent"
+    text: "`WaitTrackerEvent` calls the graphics library with its library base set up; the original called it through whatever the program happened to hold, which crashed."
     page: libraries
     anchor: rwe-other-fixes
   - issue: 461

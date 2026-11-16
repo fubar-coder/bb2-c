@@ -15,17 +15,13 @@ intro: |
   copies it into chip memory if it is elsewhere. `StartTracker` plays
   the module of a slot from the beginning.
 
-  The library can play in two ways. By default it sets up a CIA timer
-  interrupt when the program starts, which plays the module by itself at
-  the right tempo. That part is broken in the original and kept so
-  ([#450](https://github.com/fubar-coder/bb2-c/issues/450)): it passes
-  wrong values to the system when it sets the interrupt up, so on a 68000
-  the program crashes at its start, and on other machines whether the
-  music plays depends on the machine (in the emulator used for the tests
-  it stays silent). The other way does not depend on it: after
-  `ChangeTrackerVBlank` the program calls `PlayTracker` 50 times a second
-  itself, for example from a vertical blank interrupt handler. In that
-  mode tempo commands of a module have no effect.
+  The library can play in two ways. By default, in CIA mode, it sets up a
+  CIA timer interrupt when the program starts, which plays the module by
+  itself at the right tempo; `StartTracker` is all a program needs.
+  After `ChangeTrackerVBlank` the program plays the module itself
+  instead: it calls `PlayTracker` 50 times a second, for example from a
+  vertical blank interrupt handler. In that mode tempo commands of a
+  module have no effect.
 
   ```blitzbasic
   ChangeTrackerVBlank
