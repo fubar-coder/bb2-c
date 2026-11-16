@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+error at depth 10
+caught
+calls done
+inject: rc=0
+inject: track: 0 allocations left, 0 bytes
+rc=0

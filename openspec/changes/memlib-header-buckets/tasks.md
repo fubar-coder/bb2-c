@@ -12,7 +12,7 @@
 ## 3. Tests first
 
 - [ ] 3.1 Library cases in `libs/tests/systest.c` for newmem/freelast at the bucket transitions: the first entry, a full bucket, a new bucket, the spare kept, the spare freed, and depth back to 1. Check the results and the KEEPS cases. Record them from the original with libs-capture (the original has no buckets, so the cases observe results and registers, not the bucket state); libs_emulator_originals passes.
-- [ ] 3.2 A leak test (bug-orig or library test with inject's AllocMem/FreeMem counts): after the end of a program, all memory memlib took is freed, also after a runtime error at recursion depth 10 and after SetErr. It passes on main before the change.
+- [x] 3.2 A leak test (bug-orig or library test with inject's AllocMem/FreeMem counts): after the end of a program, all memory memlib took is freed, also after a runtime error at recursion depth 10 and after SetErr. It passes on main before the change.
 - [ ] 3.3 perf lines: `bproc` stays, plus a recursive procedure (depth 20, back to 0, repeated) with its original value from perf-original.
 
 ## 4. Implementation
