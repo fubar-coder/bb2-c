@@ -9,6 +9,7 @@
 ; and prints the length of a$.
 ; @fixed #336
 ; @pass jobline=macrobuf=16384
+; @hang-after 0
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

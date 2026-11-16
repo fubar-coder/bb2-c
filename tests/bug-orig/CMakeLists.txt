@@ -42,6 +42,12 @@
 #                                           tokenised with the tokens of
 #                                           blitz2-c, that variant and
 #                                           the libraries (bbsrc tokens)
+#                      ; @hang-after SEC   seconds of silence that end the session of the
+#                                           recorded original that hangs (the record
+#                                           passes only; default BUG_ORIG_HANG_AFTER,
+#                                           tests/README.md "Recorded originals"): a
+#                                           test that is silent for longer sets it, 0 for
+#                                           none (a hang that keeps writing)
 #                      ; @fixed #NNN        the bug is fixed in the port
 #                                           (issue NNN): a fixed test,
 #                                           see below
@@ -99,6 +105,7 @@
 add_subdirectory(amiga)
 
 set(BUG_ORIG_TIMEOUT 90 CACHE STRING "bug-orig: time limit of one emulator session (seconds)")
+set(BUG_ORIG_HANG_AFTER 6 CACHE STRING "bug-orig: seconds of silence after which the session of a recorded original that hangs ends (0: only the time limit)")
 set(CD ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1)
 set(CD_BLITZ2 ${CD}/BLITZ2)
 set(REF_BLITZ2 ${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2)
@@ -142,6 +149,7 @@ function(bug_orig_test bas name)
 	set(ref_fixtures "")
 	set(fixed "")
 	set(configs_given OFF)
+	set(hang_after_own "")
 	set(session_limit ${BUG_ORIG_TIMEOUT})
 	set(orig_by "the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries")
 	# the header lines begin with ';' - the list separator: replaced first.
@@ -161,6 +169,8 @@ function(bug_orig_test bas name)
 		elseif(h MATCHES "^<semicolon> @configs (.+)$")
 			separate_arguments(configs UNIX_COMMAND "${CMAKE_MATCH_1}")
 			set(configs_given ON)
+		elseif(h MATCHES "^<semicolon> @hang-after ([0-9]+)$")
+			set(hang_after_own ${CMAKE_MATCH_1})
 		elseif(h MATCHES "^<semicolon> @machine ([a-z0-9-]+)$")
 			string(APPEND extra "machine=${CMAKE_MATCH_1}\n")
 		elseif(h MATCHES "^<semicolon> @rwe (.+)$")
@@ -276,6 +286,25 @@ function(bug_orig_test bas name)
 	# it lacks (corpus.h orig=); only the compare test (record=check, ctest
 	# bug_orig_record_ID, label originals) and the recording runs of the
 	# target bug-orig-record (record=write) start it
+	# a recorded original that hangs (ID.orig: [session] timeout): its session in the
+	# compare test and the recording ends when the job has been silent for
+	# BUG_ORIG_HANG_AFTER seconds, not at the time limit (pass key hang_after=,
+	# tests/README.md "Recorded originals"); the port's and clib's sessions of the
+	# normal run keep the limit (the port's compile is silent for longer); the
+	# recording of a hanging original that is not recorded yet takes the whole limit
+	set(hang_line "")
+	set(hang_value ${BUG_ORIG_HANG_AFTER})
+	if(NOT hang_after_own STREQUAL "")
+		set(hang_value ${hang_after_own})
+	endif()
+	set(orig_file ${dir}/${id}.orig)
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${orig_file})
+	if(hang_value AND EXISTS ${orig_file})
+		file(READ ${orig_file} orig_text)
+		if(orig_text MATCHES "(^|\n)\\[session\\]\n(# [^\n]*\n)*timeout\n")
+			set(hang_line "hang_after=${hang_value}\n")
+		endif()
+	endif()
 	string(CONCAT ref_part "orig=${dir}/${id}.orig\norig_by=${orig_by}\n"
 		"defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
 		"config=ref|ref|${ref_blitz2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
@@ -311,7 +340,7 @@ function(bug_orig_test bas name)
 		set(text "${head}${ref_part}${cfg_part}${mount_part}${tail}")
 	endif()
 	# the passes with the reference (the compare test, the recording runs)
-	set(rtext "${head}${ref_part}${cfg_part}${mount_part}${tail}")
+	set(rtext "${head}${ref_part}${hang_line}${cfg_part}${mount_part}${tail}")
 	if(noref)
 		string(APPEND rtext "${ref_extra}")
 	endif()

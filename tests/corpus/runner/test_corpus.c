@@ -65,6 +65,17 @@ int main(void)
                 sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "config=prev|ref:port|/p|/q|/r\nsource=/s\n", err, sizeof err) == -1);
 
+    /* hang_after=: seconds, not given = 0; zero, a non-number or a negative one is refused */
+    CHECK(corpus_parse(BASE CONFIGS "hang_after=20\nsource=/s\n", &p, err, sizeof err) == 0
+          && p.hang_after == 20 && p.timeout == 300);
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0 && p.hang_after == 0);
+    corpus_free(&p);
+    CHECK(parse(BASE CONFIGS "hang_after=0\nsource=/s\n", err, sizeof err) == -1
+          && strstr(err, "hang_after needs a number > 0"));
+    CHECK(parse(BASE CONFIGS "hang_after=soon\nsource=/s\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "hang_after=\nsource=/s\n", err, sizeof err) == -1);
+
     /* broken */
     CHECK(parse(BASE CONFIGS, err, sizeof err) == -1);                      /* no source */
     CHECK(parse(BASE "config=ref|ref|/a|/b|/c\nsource=/s\n", err, sizeof err) == -1);

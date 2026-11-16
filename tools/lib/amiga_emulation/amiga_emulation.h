@@ -156,6 +156,17 @@ struct amiga_emulation_params {
     const char *work_dir;       /* NULL: new directory under $TMPDIR, removed by free */
     const char *amiberry;       /* NULL: "amiberry" from PATH */
     int cold;                   /* always boot, no snapshot (below) */
+    unsigned hang_after;        /* 0: off.  Seconds a started job may be silent (the
+                                   hang check): no change of any file in TEST: and
+                                   the writable mounts (created, removed, written,
+                                   touched), counted from the start of the job, only
+                                   in snapshot mode (a cold boot is silent);
+                                   then the session ends with the state timeout, as
+                                   at the limit (the screenshot and timeout.txt
+                                   too), amiga_emulation_stats says hung.  For
+                                   a job that is expected to hang (a bug of the
+                                   original): a hang that nothing but the time
+                                   limit ends would take the whole limit */
 };
 
 /*
@@ -285,6 +296,7 @@ struct amiga_emulation_stats {
                                    valid as long as the handle */
     enum amiga_emulation_snapshot_use snapshot;
     enum amiga_emulation_status status;     /* of the join; FAILED before it */
+    int hung;                   /* the hang check (params.hang_after) ended it */
 };
 void amiga_emulation_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s);
 /* "cold", "restored", "first-save", "fallback" */
@@ -299,6 +311,20 @@ void amiga_emulation_free(struct amiga_emulation *e);
 char *amiga_emulation_config(const struct amiga_emulation_params *p, const char *emulation_dir,
                              const char *test_dir, char *err, size_t errlen);
 char *amiga_emulation_script(const char *script);
+
+/* the hang check: the signature of the directory tree DIR (a hash over the
+   path, kind, size and modification time of every entry; -1 if DIR cannot
+   be read) and the tracker: the signature SIG at the time AT (seconds);
+   1 if it has not changed for AFTER seconds, else 0 (the first call, a
+   changed signature, AFTER 0) */
+int amiga_emulation_tree_signature(const char *dir, unsigned long long *sig);
+struct amiga_emulation_quiet {
+    unsigned long long sig;
+    double since;
+    int started;
+};
+int amiga_emulation_quiet_check(struct amiga_emulation_quiet *q, unsigned long long sig,
+                                double at, double after);
 
 /* "done", "timeout", "halt", "exited early", "failed" */
 const char *amiga_emulation_status_name(enum amiga_emulation_status s);

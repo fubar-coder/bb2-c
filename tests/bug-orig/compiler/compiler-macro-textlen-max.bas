@@ -11,6 +11,7 @@
 ; @pass wrap=@INJECT@|track
 ; @pass jobline=macrobuf=100000
 ; @pass timeout=30
+; @hang-after 0
 b.l=0
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

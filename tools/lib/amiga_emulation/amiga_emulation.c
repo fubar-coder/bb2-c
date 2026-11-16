@@ -128,6 +128,7 @@ struct shared {
     atomic_int finished;        /* the supervisor has ended the session */
     atomic_int status;          /* enum amiga_emulation_status */
     atomic_int snap_use;        /* enum amiga_emulation_snapshot_use */
+    atomic_int hung;            /* the end was the hang check's (hang_after) */
     atomic_int pgid;            /* the process group of the running Amiberry, 0: none */
     atomic_llong launched;      /* the last start of Amiberry, 0: none yet */
     atomic_llong end;           /* the end of the session */
@@ -174,10 +175,15 @@ struct amiga_emulation {
     char *real_test_dir;        /* the real paths of TEST: and the mounts */
     char **mount_dirs;
     size_t nmounts;
+    unsigned char *mount_rw;    /* mount I is writable */
     char *cold_cfg;             /* the configuration without snapshot */
     char *job;                  /* the test's script (run.script without snapshot) */
     double ready_at, restore_until;
     unsigned timeout;
+    unsigned hang_after;        /* params.hang_after */
+    struct amiga_emulation_quiet quiet;     /* the hang check */
+    double next_quiet;
+    int hung;                   /* the session ended by the hang check */
     const char *amiberry;
     int visible, log_on;
     int date_from_host;         /* the clock by DATE (Kickstart 1.3) */
@@ -598,6 +604,63 @@ int amiga_emulation_cpu_halted(const char *before, const char *after)
     return (strtoul((char[]){ sr[0], sr[1], sr[2], sr[3], 0 }, NULL, 16) >> 8 & 7) == 7;
 }
 
+/* the signature of a directory tree (the hang check): a sum over every
+   entry of a hash of its path, kind, size and modification time, so a
+   file that is created, removed, written to or touched changes it.  The
+   sum does not depend on the order the directory lists its entries in. */
+static unsigned long long tree_sum;
+static size_t tree_entries;
+
+static unsigned long long fnv_mix(unsigned long long h, const void *p, size_t n)
+{
+    const unsigned char *b = p;
+
+    while (n--) {
+        h ^= *b++;
+        h *= 1099511628211ULL;
+    }
+    return h;
+}
+
+static int tree_entry(const char *path, const struct stat *st, int flag, struct FTW *ftw)
+{
+    unsigned long long h = 1469598103934665603ULL;
+    long long v[4] = { (long long)(st->st_mode & S_IFMT), (long long)st->st_size,
+                       (long long)st->st_mtim.tv_sec, (long long)st->st_mtim.tv_nsec };
+
+    (void)flag; (void)ftw;
+    h = fnv_mix(h, path, strlen(path));
+    h = fnv_mix(h, v, sizeof v);
+    tree_sum += h;
+    tree_entries++;
+    return tree_entries >= 100000 ? 1 : 0;      /* a tree this large is not a test's */
+}
+
+int amiga_emulation_tree_signature(const char *dir, unsigned long long *sig)
+{
+    int r;
+
+    tree_sum = 0;
+    tree_entries = 0;
+    r = nftw(dir, tree_entry, 16, FTW_PHYS);
+    if (r < 0 || !tree_entries)
+        return -1;
+    *sig = tree_sum;
+    return 0;
+}
+
+int amiga_emulation_quiet_check(struct amiga_emulation_quiet *q, unsigned long long sig,
+                                double at, double after)
+{
+    if (!q->started || q->sig != sig) {
+        q->started = 1;
+        q->sig = sig;
+        q->since = at;
+        return 0;
+    }
+    return after > 0 && at - q->since >= after;
+}
+
 /* ----------------------------------------------------------------- run */
 
 /* the files the configuration needs: Kickstart ROM and hardfile */
@@ -895,6 +958,9 @@ static int launch(struct amiga_emulation *e, const char *statefile, char *err, s
     e->deadline = now() + e->timeout;
     e->cpu_regs[0] = 0;
     e->cpu_halted = 0;
+    memset(&e->quiet, 0, sizeof e->quiet);
+    e->hung = 0;
+    e->next_quiet = 0;
     e->next_cpu_poll = now() + CPU_POLL;
     e->pid = fork();
     if (e->pid < 0) {
@@ -1751,6 +1817,9 @@ static int snap_setup(struct amiga_emulation *e, const struct amiga_emulation_pa
     for (i = 0; e->mount_dirs && i < p->nmounts; i++)
         if (!(e->mount_dirs[i] = realpath(p->mounts[i].host_dir, NULL)))
             break;
+    e->mount_rw = calloc(p->nmounts + 1, 1);
+    for (size_t k = 0; e->mount_rw && k < i; k++)
+        e->mount_rw[k] = p->mounts[k].writable != 0;
     e->nmounts = i;
     if (!e->ctl_dir || !e->snap_path || !e->real_test_dir || !e->mount_dirs || i < p->nmounts) {
         snap_log(e, "cold: no slot paths (a mount directory missing?)");
@@ -1878,6 +1947,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     e->counted = 1;
     e->parent = getpid();
     e->timeout = p->timeout ? p->timeout : 60;
+    e->hang_after = p->hang_after;
     e->amiberry = p->amiberry ? p->amiberry : "amiberry";
     e->visible = p->visible || env_on("AMIGA_EMULATION_VISIBLE");
     e->log_on = p->log || env_on("AMIGA_EMULATION_LOG");
@@ -2211,6 +2281,8 @@ static void timeout_report(struct amiga_emulation *e, int shot_answered)
 
     sb_str(&b, e->status == AMIGA_EMULATION_HALT ? "end: halt\n" : "end: timeout\n");
     sb_str(&b, shot_answered ? "screenshot: answered\n" : "screenshot: no answer\n");
+    if (e->hung)
+        sb_str(&b, "hang: the job changed no file in TEST: and the writable mounts for the time of hang_after\n");
     report_cpu(e, &b);
 #ifdef __linux__
     report_threads(e, &b);
@@ -2253,6 +2325,29 @@ static void poll_cpu(struct amiga_emulation *e)
     }
     e->cpu_halted = amiga_emulation_cpu_halted(e->cpu_regs, reply) ? e->cpu_halted + 1 : 0;
     memcpy(e->cpu_regs, reply, sizeof reply);
+}
+
+/* the hang check (params.hang_after): the signature of the writable
+   directories (TEST: and the writable mounts), once a second while the job
+   runs; unchanged for hang_after seconds ends the session */
+static void poll_quiet(struct amiga_emulation *e)
+{
+    unsigned long long sig = 0, one;
+    size_t i;
+
+    e->next_quiet = now() + 1;
+    if (amiga_emulation_tree_signature(e->real_test_dir ? e->real_test_dir : e->test_dir, &one))
+        return;         /* no signature: the check does not count this second */
+    sig = one;
+    for (i = 0; i < e->nmounts; i++) {
+        if (!e->mount_rw || !e->mount_rw[i])
+            continue;
+        if (amiga_emulation_tree_signature(e->mount_dirs[i], &one))
+            return;
+        sig = sig * 31 + one;
+    }
+    if (amiga_emulation_quiet_check(&e->quiet, sig, now(), e->hang_after))
+        e->hung = 1;
 }
 
 /* the session in the supervisor, from Amiberry's first start to its end:
@@ -2383,12 +2478,23 @@ static void supervise(struct amiga_emulation *e)
         if (!quit_until && (e->snap == SNAP_OFF || e->snap == SNAP_RUNNING)
             && now() >= e->next_cpu_poll)
             poll_cpu(e);
-        if (!quit_until && (now() > e->deadline || e->cpu_halted + 1 >= AMIGA_EMULATION_HALT_SAMPLES)) {
+        /* the hang check, only for a job that started (snapshot mode: the cold boot is silent) */
+        if (!quit_until && e->hang_after && e->snap == SNAP_RUNNING && now() >= e->next_quiet)
+            poll_quiet(e);
+        if (!quit_until && (now() > e->deadline || e->cpu_halted + 1 >= AMIGA_EMULATION_HALT_SAMPLES || e->hung)) {
             char *png = str_printf("%s/timeout.png", e->work_dir);
             const char *shot[] = { "SCREENSHOT", png, NULL };
             char reply[256];
             int answered;
 
+            /* a hang: the machine stops where it is, so that the job's files stay as they
+               are while the screenshot and the report are made (a rebooted machine would
+               start the job again) */
+            if (e->hung) {
+                static const char *const pause[] = { "PAUSE", NULL };
+
+                command_wait(e, pause, reply, sizeof reply, 2);
+            }
             e->status = e->cpu_halted + 1 >= AMIGA_EMULATION_HALT_SAMPLES ? AMIGA_EMULATION_HALT
                                                                           : AMIGA_EMULATION_TIMEOUT;
             answered = png && !command_wait(e, shot, reply, sizeof reply, 2);
@@ -2473,6 +2579,7 @@ static void close_fds(int keep)
     atomic_store(&e->sh->pgid, 0);
     atomic_store(&e->sh->status, (int)e->status);
     atomic_store(&e->sh->snap_use, (int)e->snap_use);
+    atomic_store(&e->sh->hung, e->hung);
     atomic_store(&e->sh->end, to_us(now()));
     atomic_store(&e->sh->finished, 1);
     _exit(0);
@@ -2494,6 +2601,7 @@ static int start_supervisor(struct amiga_emulation *e, const char *statefile, ch
     atomic_init(&e->sh->finished, 0);
     atomic_init(&e->sh->status, (int)AMIGA_EMULATION_FAILED);
     atomic_init(&e->sh->snap_use, (int)e->snap_use);
+    atomic_init(&e->sh->hung, 0);
     atomic_init(&e->sh->pgid, 0);
     atomic_init(&e->sh->launched, 0);
     atomic_init(&e->sh->end, 0);
@@ -2619,6 +2727,7 @@ void amiga_emulation_stats(const struct amiga_emulation *e, struct amiga_emulati
     s->snapshot = e->sh ? (enum amiga_emulation_snapshot_use)atomic_load(&e->sh->snap_use)
                         : e->snap_use;
     s->status = e->joined ? e->status : AMIGA_EMULATION_FAILED;
+    s->hung = e->sh ? atomic_load(&e->sh->hung) != 0 : e->hung;
 }
 
 const char *amiga_emulation_snapshot_use_name(enum amiga_emulation_snapshot_use u)
@@ -2674,6 +2783,7 @@ void amiga_emulation_free(struct amiga_emulation *e)
     for (size_t i = 0; e->mount_dirs && i < e->nmounts; i++)
         free(e->mount_dirs[i]);
     free(e->mount_dirs);
+    free(e->mount_rw);
     free(e->runtime_dir);
     free(e->socket_path);
     if (e->sh)

@@ -6,6 +6,7 @@
 #define _XOPEN_SOURCE 700       /* mkdtemp */
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -654,6 +655,79 @@ static void cpu_halted(void)
     CHECK(!strcmp(amiga_emulation_status_name(AMIGA_EMULATION_TIMEOUT), "timeout"));
 }
 
+
+/* the hang check: the signature of a directory tree and the tracker that
+   says how long it has not changed */
+static void write_text(const char *dir, const char *name, const char *text)
+{
+    char path[512];
+    FILE *f;
+
+    snprintf(path, sizeof path, "%s/%s", dir, name);
+    f = fopen(path, "wb");
+    CHECK(f != NULL);
+    if (f) {
+        fputs(text, f);
+        fclose(f);
+    }
+}
+
+static void hang_check(void)
+{
+    char dir[] = "/tmp/amiga-emulation-hang-XXXXXX", sub[600];
+    unsigned long long s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0, s5 = 0;
+    struct amiga_emulation_quiet q = { 0 };
+    struct timespec t1 = { 0, 1000000 };    /* 1 ms: a touch changes the time */
+    struct timespec ts[2] = { { 1000000000, 0 }, { 1000000000, 0 } };
+    char path[700];
+
+    CHECK(mkdtemp(dir) != NULL);
+    snprintf(sub, sizeof sub, "%s/out", dir);
+    CHECK(mkdir(sub, 0700) == 0);
+    write_text(sub, "session.log", "one\n");
+    CHECK(amiga_emulation_tree_signature(dir, &s0) == 0);
+    CHECK(amiga_emulation_tree_signature(dir, &s1) == 0 && s1 == s0);   /* stable */
+    /* a file written to (its size), added, removed, touched: every one changes it */
+    write_text(sub, "session.log", "one\ntwo\n");
+    CHECK(amiga_emulation_tree_signature(dir, &s2) == 0 && s2 != s0);
+    write_text(sub, "x.run", "");
+    CHECK(amiga_emulation_tree_signature(dir, &s3) == 0 && s3 != s2);
+    snprintf(path, sizeof path, "%s/x.run", sub);
+    CHECK(remove(path) == 0);
+    CHECK(amiga_emulation_tree_signature(dir, &s4) == 0 && s4 != s3);
+    snprintf(path, sizeof path, "%s/session.log", sub);
+    nanosleep(&t1, NULL);
+    CHECK(utimensat(AT_FDCWD, path, ts, 0) == 0);                       /* same size, other time */
+    CHECK(amiga_emulation_tree_signature(dir, &s5) == 0 && s5 != s4);
+    /* broken on purpose: a directory that is not there, a file instead of a tree */
+    CHECK(amiga_emulation_tree_signature("/tmp/amiga-emulation-hang-none", &s0) < 0);
+    snprintf(path, sizeof path, "%s/out/none", dir);
+    CHECK(amiga_emulation_tree_signature(path, &s0) < 0);
+    snprintf(path, sizeof path, "%s/out/session.log", dir);
+    remove(path);
+    snprintf(path, sizeof path, "%s/out", dir);
+    remove(path);
+    remove(dir);
+
+    /* the tracker: the first call is the baseline, a change starts again */
+    CHECK(!amiga_emulation_quiet_check(&q, 7, 100.0, 20));
+    CHECK(!amiga_emulation_quiet_check(&q, 7, 119.9, 20));
+    CHECK(amiga_emulation_quiet_check(&q, 7, 120.0, 20));       /* quiet for 20 s */
+    CHECK(amiga_emulation_quiet_check(&q, 7, 500.0, 20));       /* and stays so */
+    CHECK(!amiga_emulation_quiet_check(&q, 8, 501.0, 20));      /* a change */
+    CHECK(!amiga_emulation_quiet_check(&q, 8, 520.9, 20));      /* 19.9 s since the change */
+    CHECK(amiga_emulation_quiet_check(&q, 8, 521.0, 20));
+    /* broken on purpose: a checker that never changes its answer would end a
+       job that keeps writing (no end while the signature moves) or never end a
+       silent one; 0 seconds is off */
+    memset(&q, 0, sizeof q);
+    CHECK(!amiga_emulation_quiet_check(&q, 1, 0.0, 5));
+    CHECK(!amiga_emulation_quiet_check(&q, 2, 4.0, 5));
+    CHECK(!amiga_emulation_quiet_check(&q, 3, 8.0, 5));
+    CHECK(!amiga_emulation_quiet_check(&q, 4, 12.0, 5));        /* writes every 4 s: never silent */
+    CHECK(!amiga_emulation_quiet_check(&q, 4, 1000.0, 0));      /* off */
+}
+
 int main(void)
 {
     struct amiga_emulation_option ch[] = {
@@ -1058,6 +1132,7 @@ int main(void)
     snapshot_prune();
     snapshot_purge();
     cpu_halted();
+    hang_check();
 
     /* the names of the @stat lines (tools/lib/teststats/statline.h) */
     CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_COLD), "cold"));

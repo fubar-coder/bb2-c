@@ -1310,6 +1310,28 @@ detects a changed original (another CD) and a recording that is not
 deterministic. `bug_orig_record_changed` and `bug_orig_ted_record_changed`
 check it with a recorded original whose line was changed.
 
+**A hanging original ends early.** A test whose `ID.orig` has
+`[session]` `timeout` (the original hangs, or crashes into an alert that
+reboots the machine, which then runs the job again and crashes again) would
+wait the whole session limit (`BUG_ORIG_TIMEOUT`, 30 to 120 s) in the
+compare test and in every recording run. The configure step therefore adds
+the pass key `hang_after=N` (`BUG_ORIG_HANG_AFTER`, default 6 s, 0 = off) to
+the passes of the compare test and the recording runs of such a test
+(`bug_orig_record_ID`, `bug-orig-record`): the session ends as a timeout
+when the job has changed no file of its volumes and of `TEST:` for N
+seconds (`tools/lib/amiga_emulation/README.md`, "Session states"). What it
+leaves is what a run to the limit leaves, because the hang is silent: the
+alert of a crash stays about 10 s before the reboot, and the observation is
+taken inside it. The sessions of the port and clib in the normal run keep
+the limit: the port's compile is silent for longer than N under load. A
+test whose hang the recording does not know yet (no `ID.orig`) waits the
+whole limit once. A test that computes silently for longer than N seconds
+before it hangs would be cut early (the compare test then fails with the
+differing section): such a test sets the key itself, `; @pass hang_after=N`
+for the normal run, and a larger `BUG_ORIG_HANG_AFTER` for the recording.
+The key is the pass file's (`corpus.h`, `hang_after=`).
+
+
 **Recording** is the build target `bug-orig-record` (not ALL, not a
 test; `tests/bug-orig/record.cmake`):
 

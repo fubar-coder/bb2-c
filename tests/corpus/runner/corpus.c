@@ -208,7 +208,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
             || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
-            || !strcmp(key, "stack") || !strcmp(key, "fixed")) {
+            || !strcmp(key, "stack") || !strcmp(key, "fixed") || !strcmp(key, "hang_after")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
@@ -231,6 +231,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 p->parallel = (unsigned)u;
             else if (!strcmp(key, "fixed"))
                 p->fixed = (unsigned)u;
+            else if (!strcmp(key, "hang_after"))
+                p->hang_after = (unsigned)u;
             else
                 p->stack = (unsigned)u;
             free(val);
@@ -1157,6 +1159,7 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
         ep.nmounts = p->nmounts + 1;
         ep.script = text;
         ep.timeout = p->timeout;
+        ep.hang_after = p->hang_after;
         ep.work_dir = emu;
         e = amiga_emulation_start(&ep, err, errlen);
     } else

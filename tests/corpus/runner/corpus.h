@@ -29,6 +29,11 @@
  *                     compiler's start options, with off without runtime
  *                     errors and debugger - tedstub runerr=off)
  *   timeout=SEC       per emulator session (boot, compiles, runs)
+ *   hang_after=SEC    a session whose job (the compile, the programs) has changed
+ *                     no file of the volumes for SEC seconds is ended as a
+ *                     timeout (amiga_emulation_params.hang_after: a program
+ *                     that is expected to hang, e.g. the original's bug, need not
+ *                     wait for the whole timeout; not set: only the timeout)
  *   parallel=N        emulator sessions at the same time (1 always works)
  *   stack=N           Stack for blitz2 and the programs
  *   ted=PATH          tedstub (blitz2:ted)
@@ -242,7 +247,7 @@ struct corpus_pass {
     int layout_stack;                   /* layout=stack */
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     int rtg;                            /* rtg=on: amiga_emulation_rtg */
-    unsigned timeout, parallel, stack;
+    unsigned timeout, parallel, stack, hang_after;   /* hang_after: 0 = not given */
     unsigned long long min_free;        /* min_free=: MiB, 0 = no check */
     unsigned fixed;                     /* fixed=NNN, 0 = not given */
     struct corpus_config *configs;

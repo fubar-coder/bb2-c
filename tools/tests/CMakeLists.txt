@@ -52,6 +52,16 @@ add_test(NAME amiga_emulation_halt COMMAND test_amiga_emulation_halt)
 math(EXPR limit "120 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_halt PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+# the hang check (params.hang_after): a program that loops for ever ends its
+# session as a timeout after hang_after seconds of silence; a job that
+# keeps writing, or a session without hang_after, does not
+add_executable(test_amiga_emulation_hang test_amiga_emulation_hang.c)
+target_link_libraries(test_amiga_emulation_hang PRIVATE lib_amiga_emulation lib_hunk)
+target_compile_options(test_amiga_emulation_hang PRIVATE -Wno-unused-function)
+add_test(NAME amiga_emulation_hang COMMAND test_amiga_emulation_hang)
+math(EXPR limit "300 + 3 * ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(amiga_emulation_hang PROPERTIES
+	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 # the A500 machines (Kickstart 1.3), one run after the other
 add_executable(test_amiga_emulation_a500 test_amiga_emulation_a500.c)
 target_link_libraries(test_amiga_emulation_a500 PRIVATE lib_amiga_emulation lib_hunk)

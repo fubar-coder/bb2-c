@@ -15,6 +15,7 @@
 ; @pass jobline=macrobuf=100000
 ; @pass jobline=resident=r|CORPUS:r.bb2|CORPUS:out/r.res|defaults
 ; @pass timeout=60
+; @hang-after 0
 b.l=0
 !big
 NPrint b

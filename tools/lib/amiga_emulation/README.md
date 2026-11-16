@@ -59,6 +59,25 @@ state (`timeout.uss`, `timeout.uae`); `AMIGA_EMULATION_LOG=1` (as
 `--log`) writes Amiberry's log into `amiberry.log` there. The test
 presets `emulator`, `all` and `bug-orig` set both.
 
+**The hang check** (`params.hang_after`, in seconds, 0 = off; the pass key
+`hang_after=` of the corpus runner): for a job that is expected to hang (the
+original's bug) the time limit would be the whole wait. In snapshot mode the
+supervisor takes a signature of `TEST:` and of the writable mounts once a
+second from the start of the job (a hash of path, kind, size and
+modification time of every entry), and a job whose signature has not
+changed for `hang_after` seconds ends the session like the time limit does:
+the machine is paused, then the state `timeout`, the screenshot,
+`timeout.txt` (with the line `hang:`) and `amiga_emulation_stats(...).hung`.
+A hang writes nothing: an endless loop, a wait that never ends, a
+dead-end alert (Software Failure) that stays about 10 s before the machine
+reboots and runs the job again, so the files are those a run to the limit
+leaves (the observation of the original's crashes agrees with the recorded
+one). A cold boot is silent, so there is no check without snapshot mode. A
+job that writes now and then is not a hang; one that computes for longer
+than `hang_after` without writing is: set the time above the longest silence
+of the job plus what a loaded host adds (`tests/README.md`, "Recorded
+originals", uses 6 s for the original's compile and crash).
+
 ## Slots: how runners wait
 
 The limit of simultaneous sessions, its file and variable are described
