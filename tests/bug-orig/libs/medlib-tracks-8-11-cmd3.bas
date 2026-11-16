@@ -11,6 +11,7 @@
 ; with the default mask; GetMedVolume(12) reads trk_prevvol of track 12.
 ; Correct: tracks 4-15 have no channel, their commands change no other
 ; track: the volume of track 12 stays 0.
+; @fixed #1067
 ; @configs clib
 ; @pass file=cmd3.med|@TESTDATA@/medlib-tracks-8-11-cmd3.med
 DEFTYPE .l

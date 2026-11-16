@@ -35,14 +35,6 @@
  * (libs-performance task 10.12); otherwise the hardware (Paula registers,
  * DMACON, filter LED, VHPOSR waits) is accessed through volatile pointers.
  *
- * BUG(orig), kept (selection):
- *   - the line routine tests a track against ChanMask with BTST on its
- *     low byte (the track number mod 8): tracks 8-11 pass like tracks 0-3,
- *     and 03 (portamento) and FFD (period), whose track check exists only
- *     with #CHECK = 1, write trk_porttrgper (+32), trk_prevportspd (+82)
- *     and trk_prevper (+20) of such a track into the 20-byte structures
- *     behind it, also with the default mask (test medlib-tracks-8-11-cmd3;
- *     #1067).
  * Fixed (#207): after a MIDI dump in the expansion data the relocation read
  * the next module pointer from (expansion address AND $FFFF0000) - relocmdd
  * overwrote the low word of d0 - and relocated whatever long was there as a
@@ -101,6 +93,15 @@
  * line was far behind the block and kept at the change of the block
  * (nxtnoclrln), so the notes were read from the memory behind it.  It
  * takes the byte xx (only on a 1Dxx line).
+ * Fixed (#1067): the line routine tested a track against ChanMask with
+ * BTST d7,ChanMask+1, a bit of the low byte (the track number mod 8):
+ * tracks 8-11 passed like tracks 0-3, also with the default mask, and
+ * their 03 (portamento) and FFD (period), whose track check exists only
+ * with #CHECK = 1, wrote trk_porttrgper (+32), trk_prevportspd (+82) and
+ * trk_prevper (+20) into the 20-byte structures behind them.  The test
+ * reads a byte per track (chanon, set with ChanMask; tracks 4-15 stay 0)
+ * with TST.b d8(a6,d7.w), 2 cycles less than the BTST: tracks 4-15 are
+ * masked out, none of their commands runs (as with tracks 4-7 before).
  * Fixed (#1061): GetMedVolume, GetMedNote and GetMedInstr loaded a3 from the
  * player's structure (MOVEA.l (a2),a3) and did not restore it; a function
  * keeps a3, the build pointer of a string expression ("V"+Str$(
@@ -294,8 +295,9 @@ struct synth {
 #define SAMPLE(p) ((struct sample *)(p))
 
 /* the track structure of the player: tracks 0-3 have all of it, tracks
-   4-15 only the first 20 bytes (the rest belongs to the next one; their
-   notes are not played, ChanMask has bits 0-3 only, #209) */
+   4-15 only the first 20 bytes (the rest belongs to the next one; they
+   are masked out in the line routine, #1067, and their notes are not
+   played, ChanMask has bits 0-3 only, #209) */
 struct track {
     UBYTE prevnote, previnstr, prevvol, pad3;
     UBYTE cmd, cmdqual, pad6;
@@ -358,6 +360,14 @@ static UWORD Music;
 static struct mmd *UseMod;
 static UWORD ChanMask;
 static BPTR hand;
+
+/* Fixed (#1067): the mask test of the line routine, one byte per track
+   (not 0: the track plays), set with ChanMask; tracks 4-15 stay 0.  The
+   line routine reads it as chanon-db(a6,d7.w): it must lie less than 128
+   bytes before db (the assembler refuses a larger distance), so it is
+   initialised data (not .bss) defined right before db.  The values are
+   those StartMedModule sets; the line routine runs only after it */
+static UBYTE chanon[16] = { 1, 2, 4, 8 };
 
 /* the data base "DB" of the player, in the order of the original */
 static struct BL_PACKED {
@@ -1337,7 +1347,9 @@ MED_OFFSETS(MED_SET)
 "plr_loop0:\n"
 "   moveq   #0,d5\n"
 "   movea.l (a2)+,a5\n"                 /* this track's structure */
-"   btst    d7,_ChanMask+1\n"
+/* Fixed (#1067): the byte of the track in chanon (14 cycles); the original
+   BTST d7,ChanMask+1 (16) tested bit d7 mod 8, so tracks 8-11 passed */
+"   tst.b   _chanon-_db(a6,d7.w)\n"
 "   beq     plr_masked\n"                /* Fixed (#334), see there */
 "   moveq   #0,d3\n"
 "   movea.l d6,a1\n"
@@ -1420,8 +1432,9 @@ MED_OFFSETS(MED_SET)
 "   bsr     _SoundOff\n"
 "   moveq   #0,d0\n"
 "   rts\n"
-/* BUG(orig) (#1067): FFD and 03 of tracks 8-11 (they pass the
-   mask test of plr_loop0) write behind their 20-byte structures */
+/* Fixed (#1067): FFD and 03 run for tracks 0-3 only (the mask test of
+   plr_loop0); the original's tracks 8-11 passed it and wrote behind their
+   20-byte structures */
 "notcmdfe:\n"
 "   cmp.b   #0xfd,d4\n"
 "   bne.s   isfxff\n"
@@ -1672,10 +1685,11 @@ MED_OFFSETS(MED_SET)
 "   blt     plr_loop0\n"
 "   moveq   #1,d0\n"
 "   rts\n"
-/* Fixed (#334): a track masked out by ChanMask skips its note (3 bytes,
-   MMD1: 4); the original skipped the track before the note was read, so
-   the note pointer stayed and the next track read this track's note.  An
-   unmasked track does not get here (the BEQ.w costs the same) */
+/* Fixed (#334): a track masked out (ChanMask; tracks 4-15 always, chanon,
+   #1067) skips its note (3 bytes, MMD1: 4); the original skipped the
+   track before the note was read, so the note pointer stayed and the next
+   track read this track's note.  An unmasked track does not get here (the
+   BEQ.w costs the same) */
 "plr_masked:\n"
 "   addq.l  #3,d6\n"
 "   cmp.b   #0x31,3(a3)\n"              /* "1": MMD1 */
@@ -2356,6 +2370,17 @@ static void BLITZ_ROUTINE _StopMed_c(void)
 BLITZ_ALIAS(_StopMed, _StopMed_c);
 BLITZ_THUNK(_finitmedlib, _StopMed_c, "d1/a0-a1");
 
+/* ChanMask = m & 15 (fixed, #209) and the bytes of the line routine's
+   mask test (chanon, fixed, #1067: tracks 4-15 stay 0) */
+static void setmask(UWORD m)
+{
+    UWORD i;
+
+    ChanMask = m & 15;
+    for (i = 0; i < 4; i++)
+        chanon[i] = m & (1 << i);
+}
+
 /* StartMedModule n - relocate, init and start (twice, see head) */
 static void BLITZ_ROUTINE _StartMedModule_c(void)
 {
@@ -2369,7 +2394,7 @@ static void BLITZ_ROUTINE _StartMedModule_c(void)
     UseMod = (struct mmd *)obj[2];
     RelocModule(UseMod);
     PlayModule(UseMod, 1);
-    ChanMask = 15;
+    setmask(15);
     RelocModule(UseMod);                        /* _startmusic */
     PlayModule(UseMod, 1);
     Music = 1;
@@ -2448,10 +2473,11 @@ BLITZ_ALIAS(_GetMedInstr, _GetMedInstr_c);
 
 /* SetMedMask m - the channels 0-3 to play.  Fixed (#209): only bits 0-3
    are kept; the original kept the word, and a note of tracks 4-15 then
-   passed _PlayNote's mask test and was played like one of tracks 0-3 */
+   passed _PlayNote's mask test and was played like one of tracks 0-3.
+   Fixed (#1067): the line routine's mask test (chanon) with it */
 static void BLITZ_ROUTINE _SetMedMask_c(UWORD m BL_REG(d0))
 {
-    ChanMask = m & 15;
+    setmask(m);
 }
 BLITZ_ALIAS(_SetMedMask, _SetMedMask_c);
 
