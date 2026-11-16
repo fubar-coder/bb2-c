@@ -134,6 +134,10 @@ kind F):
   module that plays is a programming error (the documentation of
   `LoadTrackerModule`: "The results are unpredictable") (#436; test
   `ciatrklib-free-while-playing`).
+* E8x (Karplus-Strong) on a voice without a loop (loop length 0) does
+  nothing; the original's `DBRA` counter was $FFFE and it rewrote 64 KB
+  from the loop start, from address 0 on a voice that played no sample
+  yet (#439; test `ciatrklib-karplus-loop0`).
 
 ## BUG(orig), kept
 
@@ -165,8 +169,7 @@ kind F):
   position (#482); `mt_SetPeriod` without a matching period takes entry
   37 (#481), the arpeggio reads up to 15 words behind the finetune's
   table (for finetune 15 into `mt_chan1temp`) (#474); a sample number
-  above 31 reads behind `mt_SampleStarts` (#480); E8x (Karplus-Strong)
-  with a loop length of 0 rewrites 64 KB (#439); the repeat offset is
+  above 31 reads behind `mt_SampleStarts` (#480); the repeat offset is
   repeat × 2 as a word (#479); `mt_SampleOffset` compares the offset
   with `n_length` signed (`CMP.W`, `BGE`): 9xx on a sample of $8000 words
   or more sets the length to 1 (#472); effect 8 is seen only on ticks

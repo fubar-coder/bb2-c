@@ -5,9 +5,10 @@
 ; there rewrites the memory from address 0 on - a crash (the session ends
 ; in a timeout).  The module (generated) has E81 in row 0 of channel 0,
 ; without a note.  The ticks are played by the program
-; (ChangeTrackerVBlank, PlayTracker: the CIA interrupt does not play in
-; the emulator).
+; (ChangeTrackerVBlank, PlayTracker: the CIA interrupt of the original
+; does not play in the emulator, #450).
 ; Correct: E8x does nothing without a loop; the program goes on.
+; @fixed #439
 ; @rwe ciatrklib
 ; @pass file=k.mod|@TESTDATA@/ciatrklib-karplus-loop0.mod
 ; @pass timeout=30

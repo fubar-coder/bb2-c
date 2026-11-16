@@ -53,8 +53,7 @@
  *     again) (#473); tremolo's ramp-down tests the VIBRATO position
  *     (#482); mt_SetPeriod without a matching period (#481), the arpeggio
  *     (#474) and a sample number > 31 (#480) read behind the tables
- *     (mt_chan1temp, mt_SongDataPtr ...); E8x (Karplus-Strong) with a
- *     loop length of 0 rewrites 64 KB (#439); the repeat offset is
+ *     (mt_chan1temp, mt_SongDataPtr ...); the repeat offset is
  *     repeat * 2 as a word (ASL.w) (#479); the sample offset compares
  *     signed with n_length (CMP.w, BGE): 9xx on a length of $8000 words
  *     or more sets the length to 1 (#472); F00 stops the module (as in
@@ -129,6 +128,10 @@
  * routine went on reading the freed memory, also with runtime error
  * checking.  Without the debugger it is still freed (a programming
  * error, as the documentation of LoadTrackerModule says).
+ * Fixed (intended deviation, #439): E8x (Karplus-Strong) on a voice
+ * without a loop (loop length 0) does nothing; the original's DBRA
+ * counter was $FFFE, it rewrote 64 KB from the loop start (address 0 on
+ * a voice that played no sample yet).
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1110,12 +1113,17 @@ static void jumploop(struct chan *ch)
     playdata.PBreakFlag = 0xff;
 }
 
-/* mt_KarplusStrong: BUG(orig) a loop length 0 is 65536 bytes (DBRA)
-   (#439) */
+/* mt_KarplusStrong: averages the bytes of the voice's loop in place;
+   without a loop (length 0: a voice that played no sample yet, loop
+   start 0) it does nothing (fixed, #439: the original's DBRA counter
+   was $FFFE, it rewrote 64 KB from the loop start, from address 0) */
 static void karplusstrong(struct chan *ch)
 {
     BYTE *pos = (BYTE *)ch->loopstart, *first = pos;
     UWORD n = (UWORD)(ch->replen + ch->replen - 2);
+
+    if (!ch->replen)                    /* Fixed (#439) */
+        return;
 
     do {
         *pos = (BYTE)((pos[0] + pos[1]) >> 1);
