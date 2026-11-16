@@ -2210,16 +2210,19 @@ static BOOL liba3(const UBYTE *sub)
 /* ================================================================ intrinsics
    No asm counterpart (change compiler-intrinsics; the requirements:
    openspec/specs/compiler/intrinsics, the list: docs/blitz2/extensions.md).
-   A library function whose argument is a Quick is compiled as inline
-   code instead of the call when its entry in intrinsics[] says so; the
-   value, the registers the compiler relies on and the error behaviour
-   equal the call, only the executable differs.  An entry is keyed by
-   its library token (library number << 7 + the function's number, the
-   identity findtoke resolves), and used only if the library's form is
-   the one the entry was written for (one parameter of unknown type: the
-   compiler pushes the type word, the routine reads it at -2(a2)), so a
-   library of another form (the original vallib's Frac takes a Float)
-   is called as before.
+   A library function whose argument is a Quick, or a plain string
+   variable, is compiled as inline code instead of the call when its
+   entry in intrinsics[] says so; the value, the registers the compiler
+   relies on and the error behaviour equal the call, only the executable
+   differs.  An entry is keyed by its library token (library number << 7
+   + the function's number + 1, the identity findtoke resolves), and used
+   only if the library's form is the one the entry was written for (one
+   parameter of unknown type: the compiler pushes the type word, the
+   routine reads it at -2(a2); or one string parameter), so a library of
+   another form (the original vallib's Frac takes a Float) is called as
+   before.  A string entry does not take the way below: libfunction asks
+   intrstrvar before dolibtoke, which compiles the argument and the call
+   as before unless it is a plain string variable.
 
    The way through the shared code: libfunction arms the entry before
    dolibtoke; dolibtoke compiles the argument as for
@@ -2238,6 +2241,11 @@ static BOOL liba3(const UBYTE *sub)
    direct mode (dirmode). */
 struct intrinsic {
     UWORD token;                    /* the library token, 0 = end */
+    UWORD argtype;                  /* the parameter of the library's first
+                                       form: 8 (BL_UNKNOWN, the type word
+                                       pushed: the argument a Quick) or
+                                       T_STRING (the argument a plain
+                                       string variable, intrstrvar) */
     UWORD restype;                  /* the type of the inline result */
     BOOL (*here)(UWORD oldtype);    /* used here? (before the argument;
                                        NULL = always) */
@@ -2245,9 +2253,12 @@ struct intrinsic {
                                        (after the argument, srcptr behind
                                        its closing parenthesis; NULL =
                                        always) */
-    void (*emit)(void);             /* the code: d0 the Quick argument, the
+    void (*emit)(void);             /* the code: d0 the Quick argument (a
+                                       string: the long of the variable,
+                                       its address of the characters or 0,
+                                       the flags set by its move), the
                                        result in d0; changes nothing else
-                                       but the flags */
+                                       but the flags (a string: and a0) */
 };
 
 /* Int(Quick) (vallib doint): the integer part truncated towards zero, as
@@ -2310,12 +2321,31 @@ static void fracquick(void)
     pokewd(0x4840);                 /* swap d0 */
 }                                   /* 2: */
 
+/* Len(a$) of a plain string variable (stringfunclib lenstring): the
+   length from the header in front of the characters (-4, struct
+   bb_strmem, libs/include/blitzobj.h), 0 for a variable without memory
+   (its long is 0) - the length the call gets, which the compiler pushes
+   from -4 too (stvarget2) before it copies the characters.  No string
+   is copied: the work area, a3 and sbasegot stay as they were.  The
+   library sets a3 to the copy, which begins where a3 was: the same a3
+   (design.md Decision 4).  a0 changes, as with the copy (copstring). */
+static void lenvar(void)
+{
+    pokewd(0x6706);                 /* beq.s 1f (no memory: 0) */
+    pokewd(0x2040);                 /* move.l d0,a0 */
+    pokewd(0x2028);                 /* move.l -4(a0),d0 */
+    pokewd(0xfffc);
+}                                   /* 1: */
+
 /* the library tokens: vallib (libs/variants/bb2-2.10/libnums.h LIB_vallib
-   120; the same in AB3 mode's list) */
+   120; the same in AB3 mode's list), stringfunclib (LIB_stringfunclib
+   185; in AB3 mode Len is in AmiBlitz3's library 6, which has no
+   entry: it stays a call there) */
 static const struct intrinsic intrinsics[] = {
-    { (120 << 7) + 2, T_LONG, NULL, NULL, intquick },       /* Int */
-    { (120 << 7) + 4, T_QUICK, frachere, fracend, fracquick }, /* Frac */
-    { 0, 0, NULL, NULL, NULL }
+    { (120 << 7) + 2, 8, T_LONG, NULL, NULL, intquick },       /* Int */
+    { (120 << 7) + 4, 8, T_QUICK, frachere, fracend, fracquick }, /* Frac */
+    { (185 << 7) + 15, T_STRING, T_LONG, NULL, NULL, lenvar },  /* Len */
+    { 0, 0, 0, NULL, NULL, NULL }
 };
 
 /* the state of the armed intrinsic (intrcur): INTR_ARMED until getap
@@ -2337,14 +2367,60 @@ static const struct intrinsic *intrfind(UWORD tok, const UBYTE *sub, UWORD np,
 
     if (cfetchmode || dirmode || np != 1)
         return NULL;
-    /* the first form: no repeats, one parameter, of unknown type (8,
-       blitzlib.h BL_UNKNOWN: handlep takes it to getap's evalu2) */
-    if (W_(form) != 1 || form[2] != 8)
+    /* the first form: no repeats, one parameter, of the entry's type (8,
+       blitzlib.h BL_UNKNOWN: handlep takes it to getap's evalu2; or a
+       string) */
+    if (W_(form) != 1)
         return NULL;
     for (in = intrinsics; in->token; in++)
         if (in->token == tok)
-            return !in->here || in->here(oldtype) ? in : NULL;
+            return form[2] == in->argtype && (!in->here || in->here(oldtype))
+                   ? in : NULL;
     return NULL;
+}
+
+/* the argument of a string intrinsic (Len): a plain string variable,
+   a name with '$' and nothing behind it but the closing parenthesis
+   (spaces aside).  Read from srcptr, behind the '(' (countpees), without
+   getchar_ as fracend.  If it is one, the variable is fetched as variable
+   does (getvname, fetchvar, calcvar: a name with '$' and no '(' is never
+   an array or a pointer, so calcvar emits nothing) and the entry's code
+   is emitted on its long; TRUE, *c the ')' (as dolibtoke's reget).
+   Else FALSE: nothing is read, the call is compiled as before. */
+static BOOL intrstrvar(const struct intrinsic *in, UWORD *c)
+{
+    const UBYTE *p = srcptr;
+    UWORD ch, namelen, vartype;
+    struct var *v;
+    struct type *t;
+    WORD off = 0;
+
+    while (*p == ' ')
+        p++;
+    if (*p != '_' && !tstalpha(*p))
+        return FALSE;
+    while (*p == '_' || tstalpha(*p) || tstnum2(*p))
+        p++;
+    if (*p++ != '$')
+        return FALSE;
+    while (*p == ' ')
+        p++;
+    if (*p != ')')
+        return FALSE;
+    ch = getvname(getchar3(), &namelen);
+    v = fetchvar(namelen, &t, &ch);
+    if ((v->flags & 3) || t->u.code != T_STRING)
+        syntaxerr();                /* never: fvarback matches a name with
+                                       '$' (flagmask 8) only with a plain
+                                       string variable */
+    vartype = calcvar(&v, &t, &ch, &off);
+    if (vartype != T_STRING || ch != ')')
+        syntaxerr();
+    pokewda5s(0x202d);              /* move.l off(a5),d0 (a local: a4) */
+    pokewd((UWORD)off);
+    in->emit();
+    *c = reget();
+    return TRUE;
 }
 
 /* see eval.h */
@@ -2438,7 +2514,14 @@ static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
     sstate = intrstate;
     intrcur = in;
     intrstate = in ? INTR_ARMED : INTR_IDLE;
-    c = dolibtoke(np, lib, sub);    /* .no2 */
+    if (in && in->argtype == T_STRING) {
+        intrstate = INTR_IDLE;      /* nothing for getap to arm */
+        if (intrstrvar(in, &c))
+            intrstate = INTR_DONE;
+        else
+            c = dolibtoke(np, lib, sub);
+    } else
+        c = dolibtoke(np, lib, sub);    /* .no2 */
     if (intrstate == INTR_DONE)
         rettype = in->restype;      /* compiled inline */
     intrcur = scur;
