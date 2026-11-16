@@ -231,7 +231,10 @@ BL_ALWAYS_INLINE void qblit(struct queue *q, const struct bb_shape *shape,
 
     x -= (UWORD)shape->handlex;
     y -= (UWORD)shape->handley;
-    mods = 0xfffe0000UL | (UWORD)(bm->bpr - shape->ebwidth - 2);
+    /* MOVEQ #-2:SWAP:MOVE (a2):SUB 6(a3):SUBQ #2 (GCC builds the pair
+       with a long constant) */
+    __asm__("moveq #-2,%0\n\tswap %0\n\tmove.w %1,%0\n\tsub.w %2,%0\n\tsubq.w #2,%0"
+            : "=&d"(mods) : "m"(bm->bpr), "m"(shape->ebwidth) : "cc");
     item->mod = (UWORD)mods;
     mods_swapped = mods << 16 | mods >> 16;
     BL_BLITWAIT(cb);

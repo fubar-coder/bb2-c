@@ -1156,6 +1156,22 @@ build.
       clipped at each edge and outside, ClipBlit excess), recorded from
       the original and confirmed with `libs_emulator_originals`; the
       block gives every case in both modes.
+    - QBlit with FlushQueue (task 13.12, `bgfx.qblit8f` 21 cycles over the
+      original): FlushQueue is the original's inline `MOVE.l 4(a3),(a3)`,
+      the plane loop and the queue item already the original's (decision
+      23); the difference was QBlit's modulo pair, which GCC built as
+      `MOVEQ #-2:SUB:ADD:MOVE.l #$FFFE0000:OR` (40 cycles, and a second
+      register) against the original's `MOVEQ #-2:SWAP:MOVE:SUB:SUBQ #2`
+      (32), and so qblitlib 3052 -> 3036 bytes. With the original's sequence as an asm statement, as in
+      blitlib: 4 QBlit + FlushQueue 9081.8 -> 9044.0 (9089.9), 8 QBlit +
+      FlushQueue 18083.7 -> 17999.8 (18059.9), 4 QBlit + UnQueue 12743.8 ->
+      12666.0 (12785.9), 8 QBlit + UnQueue 25359.8 -> 25209.8 (25417.9).
+      bblitlib needs nothing (4 and 8 BBlit + UnBuffer are below the
+      original, decision 23). stencillib's SBlit has the same C modulo
+      pair and the shift by `LSL`, but no benchmark line; it measured
+      below the original in decision 20 (2682.9 against 2702.2), so it
+      stays as it is. The library cases of `systest_blit` (QBlit, QBlit
+      excess, UnQueue in both modes) give the same values.
 
 ## Risks / Trade-offs
 
