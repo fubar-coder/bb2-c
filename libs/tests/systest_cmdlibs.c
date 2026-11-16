@@ -4,7 +4,8 @@
  *   entries of vallib, scrolllib, gameiolib, mouselib, collslib,
  *   shapeslib, fontlib, windowslib and blitzkeyslib; the rectangle tests
  *   of collslib, Frac, Val, BlitzKey and Inkey$ (editlib), Print on a bitmap
- *   (printlib, fontlib), Str$ and UStr$ (printlib), Instr (stringfunclib)
+ *   (printlib, fontlib), Str$ and UStr$ (printlib), Instr, Left$, UnLeft$,
+ *   Right$, UnRight$, Mid$, Hex$, Bin$, Cvi, Cvl and Cvq (stringfunclib)
  * (plus memlib and strcomplib, which they call) on the Amiga: one set (the
  * original from acidlibs or the C build, as LIBSET says), observed as
  * cases (sysload.h; the expected data
@@ -1467,6 +1468,201 @@ static void test_instr(void)
     }
 }
 
+/* ---------------------------------- Left$ Right$ Mid$ Hex$ Bin$ Cvi Cvl */
+
+/* The string functions that cut or move a string in place: d0 = String$
+   (in the string work area), d1 (and d2) the numbers, the length at
+   -4(a2), a3 one byte past the argument's 0 on entry; the result starts
+   at String$, d0 = its length, a3 = its end.  The string lies at an even
+   and at an odd address; its lengths are 0, 1, 5, 8, 21 and 70 (the long
+   copies of Mid$/Right$), the numbers the boundaries of each function.
+   Not here: Right$ with Len-Length >= 32768 (#285) and Mid$ with
+   start-1+length above $7FFFFFFF (#286), the fixed bugs with bug-orig
+   tests. */
+static ULONG strbuf[40];                /* 160 bytes, long aligned */
+static ULONG cutframe[1];
+
+static const char strtext[] =
+    "Hello, World of Blitz! 0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMN";
+
+/* a fresh string of `len` characters at strbuf + odd; returns it */
+static UBYTE *strset(ULONG len, int odd)
+{
+    UBYTE *b = (UBYTE *)strbuf, *s = b + odd;
+    ULONG i;
+
+    for (i = 0; i < sizeof strbuf; i++)
+        b[i] = (UBYTE)(0xA0 + i);
+    memcpy(s, strtext, len);
+    s[len] = 0;
+    cutframe[0] = len;
+    return s;
+}
+
+/* the result: d0, a3 and the bytes of the argument (with its 0 and one
+   byte behind it) */
+static void strobs(const UBYTE *s, ULONG len)
+{
+    OBS("d0", R.d[0]);
+    OBS("a3 - string", R.a[3] - (ULONG)s);
+    OBSBYTES("string", s, len + 2);
+}
+
+static void strcut_case(const char *name, int form, ULONG len, int odd, LONG n1, LONG n2)
+{
+    UBYTE *s = strset(len, odd);
+
+    ROUT = name;
+    if (form == 0 && !strcmp(name, "Mid$"))
+        sprintf(VEC, "len %lu %s %ld,%ld", len, odd ? "odd" : "even", n1, n2);
+    else
+        sprintf(VEC, "len %lu %s %ld", len, odd ? "odd" : "even", n1);
+    DO1(N("stringfunclib", name, form), R.d[0] = (ULONG)s; R.d[1] = (ULONG)n1;
+        if (form == 0 && !strcmp(name, "Mid$")) R.d[2] = (ULONG)n2;
+        R.a[2] = (ULONG)&cutframe[1]; R.a[3] = (ULONG)s + len + 1);
+    strobs(s, len);
+}
+
+/* add v to the list l of *n values unless it is there */
+static void addval(LONG *l, unsigned *n, LONG v)
+{
+    unsigned i;
+
+    for (i = 0; i < *n; i++)
+        if (l[i] == v)
+            return;
+    l[(*n)++] = v;
+}
+
+static void test_strcut(void)
+{
+    static const ULONG lens[] = { 0, 1, 5, 8, 21, 70 };
+    static const LONG fixed[] = { -1, 0, 1, 2, 7, 8, 9, 40 };
+    LONG counts[16], starts[16], mlens[16];
+    unsigned nc, ns, nm, i, j, k;
+    int odd;
+
+    for (odd = 0; odd < 2; odd++)
+        for (i = 0; i < sizeof lens / sizeof lens[0]; i++) {
+            LONG len = (LONG)lens[i];
+
+            /* Left$, Right$: the fixed counts, Len-1 to Len+1 and the
+               extremes; UnLeft$, UnRight$ (Len-n): no n that overflows */
+            nc = 0;
+            for (j = 0; j < sizeof fixed / sizeof fixed[0]; j++)
+                addval(counts, &nc, fixed[j]);
+            addval(counts, &nc, len - 1);
+            addval(counts, &nc, len);
+            addval(counts, &nc, len + 1);
+            for (j = 0; j < nc; j++) {
+                strcut_case("Left$", 0, lens[i], odd, counts[j], 0);
+                strcut_case("Right$", 0, lens[i], odd, counts[j], 0);
+                strcut_case("UnLeft$", 0, lens[i], odd, counts[j], 0);
+                strcut_case("UnRight$", 0, lens[i], odd, counts[j], 0);
+            }
+            strcut_case("Left$", 0, lens[i], odd, 0x7fffffffL, 0);
+            strcut_case("Left$", 0, lens[i], odd, (LONG)0x80000000UL, 0);
+            strcut_case("Right$", 0, lens[i], odd, 0x7fffffffL, 0);
+            strcut_case("Right$", 0, lens[i], odd, (LONG)0x80000000UL, 0);
+
+            /* Mid$: the start before, at, inside and behind the string;
+               Mid$(s,start) computes Len-start+1: no start that
+               overflows */
+            ns = 0;
+            addval(starts, &ns, -1);
+            addval(starts, &ns, 0);
+            addval(starts, &ns, 1);
+            addval(starts, &ns, 2);
+            addval(starts, &ns, 3);
+            addval(starts, &ns, len - 1);
+            addval(starts, &ns, len);
+            addval(starts, &ns, len + 1);
+            addval(starts, &ns, len + 2);
+            addval(starts, &ns, 0x7fffffffL);
+            for (j = 0; j < ns; j++) {
+                LONG st = starts[j], st0 = st > 0 ? st - 1 : 0;
+
+                strcut_case("Mid$", 1, lens[i], odd, st, 0);
+                /* the lengths: the fixed ones, the rest of the string
+                   and one more; not (#286) start-1+length above
+                   $7FFFFFFF with the start inside the string */
+                nm = 0;
+                for (k = 0; k < sizeof fixed / sizeof fixed[0]; k++)
+                    addval(mlens, &nm, fixed[k]);
+                addval(mlens, &nm, len - st0);
+                addval(mlens, &nm, len - st0 + 1);
+                if (st0 == 0 || st0 > len)
+                    addval(mlens, &nm, 0x7fffffffL);
+                for (k = 0; k < nm; k++)
+                    strcut_case("Mid$", 0, lens[i], odd, st, mlens[k]);
+            }
+            strcut_case("Mid$", 0, lens[i], odd, (LONG)0x80000000UL, 5);
+        }
+}
+
+/* Hex$(Expression), Bin$(Expression): d0 = the value, written at a3 (an
+   even and an odd address); d0 = 8 or 32, a3 behind the digits */
+static void test_hexbin(void)
+{
+    static const ULONG vals[] = { 0, 1, 9, 10, 15, 16, 0x0001e240UL, 0x12345678UL,
+                                  0x9abcdef0UL, 0xdeadbeefUL, 0x7fffffffUL, 0x80000000UL,
+                                  0xa5a5a5a5UL, 0x5a5a5a5aUL, 0x0f0f0f0fUL, 0xffffffffUL };
+    static const char *fn[] = { "Hex$", "Bin$" };
+    unsigned i, j, n;
+    int odd;
+    UBYTE *b = (UBYTE *)strbuf;
+
+    for (n = 0; n < 2; n++)
+        for (odd = 0; odd < 2; odd++)
+            for (i = 0; i < sizeof vals / sizeof vals[0] + 4; i++) {
+                ULONG v = i < sizeof vals / sizeof vals[0] ? vals[i] : rnd();
+                for (j = 0; j < 40; j++)
+                    b[j] = (UBYTE)(0xA0 + j);
+                ROUT = fn[n];
+                sprintf(VEC, "$%08lx %s", v, odd ? "odd" : "even");
+                DO1(N("stringfunclib", fn[n], 0), R.d[0] = v; R.a[3] = (ULONG)b + odd);
+                OBS("d0", R.d[0]);
+                OBS("a3 - start", R.a[3] - ((ULONG)b + odd));
+                OBSBYTES("digits", b, 36);
+            }
+}
+
+/* Cvi(String$), Cvl(String$), Cvq(String$): d0 = the string, its length
+   at -4(a2); the first 2 or 4 bytes big endian, a3 = String$.  Cvi keeps
+   the upper word of d0 (the string address's: observed as a flag).  The
+   strings shorter than the 2 or 4 bytes have zeros behind them, so the
+   original's read past the end (#288) gives the same as the fix. */
+static void test_cv(void)
+{
+    static const char *fn[] = { "Cvi", "Cvl", "Cvq" };
+    static const UBYTE bytes[] = { 0x81, 0x7f, 0x00, 0xff, 0x12, 0xfe, 0x01, 0x80 };
+    UBYTE *b = (UBYTE *)strbuf;
+    unsigned n, len, j;
+    int odd;
+
+    for (n = 0; n < 3; n++)
+        for (odd = 0; odd < 2; odd++)
+            for (len = 0; len <= 6; len++)
+                for (j = 0; j < 3; j++) {
+                    UBYTE *s = b + 2 + odd;
+                    unsigned k;
+                    memset(b, 0, 16);
+                    for (k = 0; k < len; k++)
+                        s[k] = bytes[(k + j * 3) & 7];
+                    cutframe[0] = len;
+                    ROUT = fn[n];
+                    sprintf(VEC, "len %u %s bytes %u", len, odd ? "odd" : "even", j);
+                    DO1(N("stringfunclib", fn[n], 0), R.d[0] = (ULONG)s;
+                        R.a[2] = (ULONG)&cutframe[1]; R.a[3] = (ULONG)s + len + 1);
+                    if (n == 0) {
+                        OBS("d0.w", R.d[0] & 0xffff);
+                        OBS("d0 upper word = the string's", (R.d[0] >> 16) == ((ULONG)s >> 16));
+                    } else
+                        OBS("d0", R.d[0]);
+                    OBS("a3 - string", R.a[3] - (ULONG)s);
+                }
+}
+
 /* ------------------------------------------------------------------ main */
 
 static const char *names[] = {
@@ -1610,6 +1806,18 @@ int main(int argc, char **argv)
     KEEPS_STATEMENT("Format", none);
     KEEPS_STATEMENT("CaseSense", none);
     KEEPS_STRFUNCTION("Instr", none);
+    /* test_strcut, test_hexbin, test_cv; Cvi, Cvl and Cvq leave a3 at the
+       string (MOVE.l d0,a3), the a3 case */
+    KEEPS_STRFUNCTION("Left$", none);
+    KEEPS_STRFUNCTION("UnLeft$", none);
+    KEEPS_STRFUNCTION("Right$", none);
+    KEEPS_STRFUNCTION("UnRight$", none);
+    KEEPS_STRFUNCTION("Mid$", none);
+    KEEPS_STRFUNCTION("Hex$", none);
+    KEEPS_STRFUNCTION("Bin$", none);
+    KEEPS_STRFUNCTION("Cvi", none);
+    KEEPS_STRFUNCTION("Cvl", none);
+    KEEPS_STRFUNCTION("Cvq", none);
     ffp = OpenLibrary((STRPTR)"mathffp.library", 0);
     ffpbase = (ULONG)ffp;
 
@@ -1643,6 +1851,9 @@ int main(int argc, char **argv)
     test_print();
     test_strstr();
     test_instr();
+    test_strcut();
+    test_hexbin();
+    test_cv();
 
     CloseLibrary(ffp);
     printf("%d checks, %d failures\n", checks, failures);
