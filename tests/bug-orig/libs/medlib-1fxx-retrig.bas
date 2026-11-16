@@ -13,6 +13,7 @@
 ; (PlayMed plays one tick).
 ; Correct: one strike in tick 3 - the counter is 20 - 4 + 3 = 19 (a
 ; second strike adds 3 more).
+; @fixed #205
 ; @configs clib
 ; @pass file=retrig.med|@TESTDATA@/medlib-1fxx-retrig.med
 DEFTYPE .l

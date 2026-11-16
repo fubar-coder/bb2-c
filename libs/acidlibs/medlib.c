@@ -28,8 +28,8 @@
  * the 16 period tables taken from the binary) has the layout of the
  * original.  Where a result depends on a register left over from other
  * code, that value is kept explicitly: the qualifier word of a line
- * (1Dxx takes the upper byte of d4 from a track before; Bxx did, #203)
- * and the d1 that _PlayNote leaves (1Fxx, #205) - struct left.
+ * (1Dxx takes the upper byte of d4 from a track before; Bxx did, #203;
+ * 1Fxx took the d1 _PlayNote left, #205).
  * Assembler: the line routine (plr_loop0 with _PlayNote inline,
  * medlib_newline) is an assembler block in the original's form, for speed
  * (libs-performance task 10.12); otherwise the hardware (Paula registers,
@@ -41,9 +41,6 @@
  *     far behind the block and kept at the change of the block
  *     (nxtnoclrln), so the notes are read from the memory behind it (test
  *     medlib-1dxx-word; issue to be filed).
- *   - Fxx 1Fxx: the retrigger nibble is taken from d1 after the delayed
- *     note was played (playfxnote/_PlayNote change d1; only the delay
- *     tick is affected). (#205)
  *   - the synth period clamp sets d1 instead of d5 (no clamp at 113). (#206)
  *   - pushnewvals: for a channel mask with gaps it still takes tracks
  *     0..k-1 with their own bits (no values of a wrong track), so the
@@ -83,6 +80,10 @@
  * into the vibrato code (BEQ nonvib) in the first tick of the line: the
  * period moved by the track's vibrato and the tremolo volume was not set.
  * It goes to the tremolo code (the branch target only).
+ * Fixed (#205): 1Fxy took the retrigger nibble y from d1 after the delayed
+ * note was played (playfxnote and _PlayNote change d1): in the delay tick
+ * a register remainder decided whether the note was struck twice.  It
+ * takes y from the qualifier (the replays no longer return d1).
  * Fixed (#203): Bxx (position jump) stored the word of d4, whose upper byte
  * is left from a track before in the same line (19xx, the soffset or 64
  * _PlayNote leaves): the jump went to position 0, or with a negative word
@@ -980,29 +981,24 @@ arpeggio:
 #define PS ((struct song *)blitz_locals)        /* a4: its song */
 #define PT ((struct track *)blitz_globals)      /* a5: the track */
 
-/* what _PlayNote leaves in d1 and d4: d4 (soffset, 64 after a synth note)
-   is the upper byte of a 1Dxx qualifier word of a later track (#203),
-   d1 the retrigger count of 1Fxx after the note delay (#205) */
-struct left {
-    ULONG d1, d4;
-};
-
 /* _PlayNote: note (0-based instrument instr, its song entry ins) on the
    track ch (its structure at a5, PT): sample, IFF octave sample, synth or
    hybrid.  For the replays of the ticks (playfxnote); the line routine
-   has its own copy inline (medlib_newline) */
-static struct left playnote(UWORD ch, ULONG note, UWORD instr, struct instr *ins)
+   has its own copy inline (medlib_newline).  What it leaves in d4 (the
+   soffset, 64 after a synth note) is the upper byte of a 1Dxx qualifier
+   word of a later track there (#203); the d1 it left was the retrigger
+   count of 1Fxx after the note delay (fixed, #205) */
+static void playnote(UWORD ch, ULONG note, UWORD instr, struct instr *ins)
 {
-    struct left r = { note, 0 };
-    ULONG mask, sp, start, end, rep, repend, len;
+    ULONG mask, sp, start, end, rep, repend, len, off;
     UBYTE n;
     UWORD per;
 
     if (!ins)
-        return r;
+        return;
     mask = 1UL << (ch & 31);                    /* the mask made once */
     if (!(ChanMask & mask))
-        return r;
+        return;
     sp = *(ULONG *)((UBYTE *)PM->smplarr + (WORD)(instr << 2));
     n = note + PS->playtransp + ins->strans;
     if ((BYTE)ch < 4) {
@@ -1062,26 +1058,26 @@ sample:
         repend += rep;
     } else
         repend = 0;
-    r.d4 = PT->soffset;                          /* gid_cont */
-    start += r.d4;
+    off = PT->soffset;                           /* gid_cont */
+    start += off;
     if (!(end > start))
-        start -= r.d4;
+        start -= off;
     AC_PTR(PT->audioaddr) = start;
     if (repend > start) {                       /* rRepeat */
         PT->sampleptr = rep;
-        r.d1 = len = (repend - start) >> 1;
+        len = (repend - start) >> 1;
         AC_LEN(PT->audioaddr) = len;
         PT->samplelen = (repend - rep) >> 1;
     } else {
         PT->sampleptr = (ULONG)db.chipzero;
         PT->samplelen = 1;
-        r.d1 = len = (end - start) >> 1;
+        len = (end - start) >> 1;
         AC_LEN(PT->audioaddr) = len;
     }
     PT->prevper = per;
     if (PT->synthtype)
         goto hsn2;
-    return r;
+    return;
 
 synthnote:
     PT->prevnote2 = n;
@@ -1094,7 +1090,6 @@ synthnote:
     PT->synthtype = 1;
     PT->periodtbl = periods_of(PT->finetune) - 24;
     per = PERIOD(PT->periodtbl, (UWORD)(n + n));
-    r.d1 = (r.d1 & 0xffff0000UL) | per;
     PT->prevper = per;
     PT->sampleptr = 0;
 hsn2:
@@ -1112,18 +1107,16 @@ hsn2:
     PT->volchgspd = 0;
     if (PT->cmd == 0xe)
         LO(PT->wfcmd) = PT->cmdqual;
-    r.d4 = 64;
-    return r;
 }
 
 /* playfxnote: the previous note again (the hold counter continued by the
-   tick counter); returns d1 (#205) */
-static ULONG playfxnote(struct track *t, UWORD ch, UBYTE counter)
+   tick counter) */
+static void playfxnote(struct track *t, UWORD ch, UBYTE counter)
 {
     BYTE c;
 
     if (!t->prevnote)
-        return 0;
+        return;
     c = t->noteoffcnt;
     if (c >= 0)
         c += counter;
@@ -1133,7 +1126,7 @@ static ULONG playfxnote(struct track *t, UWORD ch, UBYTE counter)
             c = -1;
     }
     t->noteoffcnt = c;
-    return playnote(ch, t->prevnote, t->previnstr, t->previnstra).d1;
+    playnote(ch, t->prevnote, t->previnstr, t->previnstra);
 }
 
 /* Fxx in the ticks: F1/F2 replay on tick 3, F3 on ticks 2, 4 and 6, F8/F9
@@ -1846,7 +1839,6 @@ BL_ALWAYS_INLINE void ticks(UBYTE counter)
     do {
         UBYTE cmd, q;
         UWORD per = 0;
-        ULONG d1;
         BYTE v;
 
         blitz_globals = (UBYTE *)*tdp++;
@@ -2040,16 +2032,17 @@ notreached:
             PT->prevvol = 0;
             break;
         case 0x1f:                              /* note delay / retrigger */
-            d1 = q;
             if (q >> 4) {
                 if ((BYTE)counter < (BYTE)(q >> 4))
                     break;
                 if (counter == q >> 4)
-                    d1 = playfxnote(PT, ch, counter);    /* BUG(orig) (#205) */
+                    playfxnote(PT, ch, counter);
             }
-            if (!(d1 & 0x0f))                   /* nonotedelay */
+            /* Fixed (#205): the retrigger nibble of q (the original took
+               it from the d1 the delayed note left) */
+            if (!(q & 0x0f))                    /* nonotedelay */
                 break;
-            if (!(bl_divu_w(counter, d1 & 0x0f) >> 16))
+            if (!(bl_divu_w(counter, q & 0x0f) >> 16))
                 playfxnote(PT, ch, counter);
             break;
         case 0x0f:
