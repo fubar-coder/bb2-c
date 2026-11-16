@@ -99,6 +99,9 @@
 # 1454.6, 1243.6 to 1243.7, 1424.1 to 1424.2.
 # bstr.hex from two runs of the rotate and digit table of task 13.2
 # (2026-11-16): 1065.5 to 1065.7.
+# bstr.bin, a new loop of task 13.3 (Bin$), from two runs of the rotate and
+# the table of four-digit groups (2026-11-16): 1695.0 to 1695.2 (before it
+# 2784.2); its target from perf-original.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -238,3 +241,4 @@ bstr.resetlist                 87       83.0  ResetList ll()
 bstr.sort201                78576    77694.0  Sort sa()
 bstr.pstr                   11680    11614.0  pstr{a$} (a Statement with a string parameter and a local string)
 bstr.fstr                   12379    12353.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
+bstr.bin                     1716     2119.0  r$=Bin$(a)

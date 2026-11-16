@@ -52,8 +52,8 @@
  *
  * Registers: the original changes d0-d7, a0, a1, a3 depending on the
  * routine; the entries are the C functions (BLITZ_ALIAS) and keep what
- * the register rule needs; UCase$, Hex$, Instr, Right$, UnRight$ and
- * Mid$(String$,Startchar) are BLITZ_ENTRYPOINT (they save nothing;
+ * the register rule needs; UCase$, Hex$, Bin$, Instr, Right$, UnRight$
+ * and Mid$(String$,Startchar) are BLITZ_ENTRYPOINT (they save nothing;
  * they may change a2 as well, as the original does, and no library
  * calls them).
  * CaseSense keeps all registers.  The CCR is no
@@ -782,22 +782,39 @@ BLITZ_INLINE(chrstring,
 /**
  * @brief Bin$(Expression) - the value as 32 binary digits.
  *
- * From bit 31 down, written at a3.
+ * From bit 31 down, written at a3.  The original writes a digit per bit
+ * (LSL.l #1,d0:ADDX d3,d1, 36 cycles); here a rotate by 4 brings four
+ * bits into the low nibble and a table of the 16 groups of four digits
+ * (PC relative) gives their characters, copied by bytes (a3 may be odd):
+ * the same text.
  *
  * @param v d0: the value
  * @return d0: 32, the length; a3 = the end of the result
  */
-static ULONG BLITZ_ROUTINE binstring_c(ULONG v BL_REG(d0))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE binstring_c(ULONG v BL_REG(d0))
 {
+    static const UBYTE groups[64] =
+        "0000" "0001" "0010" "0011" "0100" "0101" "0110" "0111"
+        "1000" "1001" "1010" "1011" "1100" "1101" "1110" "1111";
+    const UBYTE *t = groups, *p;
     UWORD i;
 
-    for (i = 0; i < 32; i++) {
-        *blitz_string++ = '0' + (UBYTE)(v >> 31);   /* LSL.l #1,d0:ADDX d3,d1 */
-        v <<= 1;
+    __asm__("" : "+a"(t));                      /* LEA groups(pc) once */
+    for (i = 0; i < 8; i++) {
+        v = v << 4 | v >> 28;                   /* ROL.l #4 */
+        p = t + ((UWORD)v & 15) * 4;
+        /* the empty asm: MOVE.b (a0)+,(a3)+ instead of d16(a0) */
+        *blitz_string++ = *p++;
+        __asm__("" : "+a"(p));
+        *blitz_string++ = *p++;
+        __asm__("" : "+a"(p));
+        *blitz_string++ = *p++;
+        __asm__("" : "+a"(p));
+        *blitz_string++ = *p;
     }
     return 32;
 }
-BLITZ_ALIAS(binstring, binstring_c);
+BLITZ_ALIAS_EP(binstring, binstring_c);
 
 /**
  * @brief Hex$(Expression) - the value as 8 hexadecimal digits.

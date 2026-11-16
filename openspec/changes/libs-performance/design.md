@@ -1001,6 +1001,15 @@ build.
       digit `rol.l/moveq/and.l/move.b 0(a0,d2.l),(a3)+/dbf`, 56 cycles
       (the original's LSL/ROXL pairs and the "9" test: 120). 16 bytes of
       data. `r$=Hex$(a)` 1684.7 -> 1065.7 (1570.0).
+    - Bin$ (task 13.3): `'0' + (v >> 31)` became `add/subx/neg/addi.b`,
+      60 cycles per digit and a save of d2 (the original: `moveq #48 :
+      lsl.l #1 : addx.w`, 36). The same treatment as Hex$ needs no addx:
+      a rotate by 4 and a table of the 16 groups of four digits (64
+      bytes, PC relative), copied by four `move.b (a0)+,(a3)+` (a3 may be
+      odd; an empty asm on the pointer keeps GCC from `d16(a0)`): 110
+      cycles per four digits, 27.5 per digit; `BLITZ_ENTRYPOINT` drops
+      the save. A new loop `bstr.bin` (`r$=Bin$(a)`): 2784.2 -> 1695.2
+      (2119.0, perf-original).
 
 ## Risks / Trade-offs
 
