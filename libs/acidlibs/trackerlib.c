@@ -34,10 +34,6 @@
  * $FFFF - the search read ~64 KB more and mt_lop3 cleared longs behind
  * the module.
  *
- * BUG(orig), kept (as in the NoiseTracker player):
- *   - after a pattern break / position jump (D, B) the end of the song is
- *     compared with the first byte of the pattern data instead of the
- *     song length, unless the row was the last of the pattern. (#292)
  * Fixed (intended deviation, #290): a note's sample sets the volume of
  * the voice to the volume byte of the sample; the original took the word
  * with the finetune byte (MOVE.w), so a volume slide (A) of a sample with
@@ -47,6 +43,13 @@
  * doubled as a long; the original doubled it as a word (ASL.w), so a
  * repeat from 64 KB on started too early.  12 cycles fewer per note
  * with a repeat (no AND.l #$FFFF).
+ * Fixed (intended deviation, #292): after a pattern break or a position
+ * jump (D, B) mt_nex compares the next position with the song length of
+ * the module and takes the restart position from it, as at the end of a
+ * pattern; the original compared with the byte a0 pointed to - after a
+ * break in another row than the last the first byte of the pattern data
+ * (and the restart position from the second), so the song ran on behind
+ * its end.
  * Fixed (intended deviation, #293): set volume (C) stores the volume as
  * a word in the voice and in AUDxVOL; the original wrote it only to
  * AUDxVOL, as a byte (both halves of the register), so a following
@@ -567,9 +570,6 @@ BL_ALWAYS_INLINE void mt_playvoice(struct voice *v, ULONG aud, const UBYTE *note
 static void mt_music(void)
 {
     const UBYTE *mod = mt_data;                 /* a0: the module */
-    /* a0 at mt_endr: the song length and restart bytes; after a break
-       still the patterns or the module (BUG(orig) (#292), see above) */
-    const UBYTE *songend = mod;
     WORD i;
 
     mt_counter++;
@@ -586,7 +586,6 @@ static void mt_music(void)
         sinfo = mod + 0xc;              /* = &samples[-1].info: 20 + 22 - 30 */
         order = mod + offsetof(struct modhead, order);
         patterns = mod + offsetof(struct modhead, patterns);
-        songend = patterns;
         pos = (ULONG)order[mt_songpos] << 10;
         BL_SETW(pos, pos + mt_pattpos);         /* ADD.w mt_pattpos,d1 */
         mt_dmacon = 0;
@@ -603,13 +602,16 @@ static void mt_music(void)
             RW(0xdff0a0 + 16 * i, 4) = v->looplen;
         }
         mt_pattpos += 0x10;
-        if (mt_pattpos == 0x400) {
-            songend = mt_data + offsetof(struct modhead, songlen);
+        if (mt_pattpos == 0x400)
             goto nex;
-        }
     }
     while (mt_break) {                          /* mt_endr */
 nex:
+        /* Fixed (#292): the song length and restart bytes of the module,
+           loaded here (once per pattern change); the original compared
+           with what a0 pointed to, after a break the pattern data */
+        const UBYTE *songend = mt_data + offsetof(struct modhead, songlen);
+
         mt_pattpos = 0;
         mt_break = 0;
         mt_songpos = (mt_songpos + 1) & 0x7f;
@@ -739,8 +741,6 @@ static void freemod2(struct module *m, int blitz)
  * mt_music every frame.  a3: the module object.
  *
  * Errors (debugger, playchk): "Uninitialized Module".
- *
- * BUG(orig): the NoiseTracker player's bug, see the file header (#292).
  */
 static void BLITZ_ROUTINE doplaymod_a(void) { playmod2(0); }
 /** @brief PlayModule Module# - the Blitz mode variant (BLibJsr). */
