@@ -20,18 +20,19 @@ runtime error checking unless the text says otherwise.
 
 ## Changes for existing programs
 
-Thirteen of the fixes change what an existing program does. Two of them
+Fifteen of the fixes change what an existing program does. Two of them
 concern programs that were written to make up for the bug, drawing on
 bitmaps; no known example program, demo or game uses these commands this
 way, but a program of your own might. Two concern the custom copper
 instructions of the display library and change every program that uses
-the commands with the values named. One makes `LoadShape` stop with a
+the commands with the values named. Two make `LoadShape` stop with a
 runtime error on pictures it loaded before, and one changes which ARexx
 replies carry a result string. Two give the flags of two serial port
-commands the meaning their help text names. The last five concern tapes
-of mouse and keyboard events and the keyboard in Blitz mode: the one a
-program meets most easily has a section of its own, the other four are
-listed after it.
+commands the meaning their help text names, and one turns round what
+`Filter On` and `Filter Off` do with the audio filter. The last five
+concern tapes of mouse and keyboard events and the keyboard in Blitz
+mode: the one a program meets most easily has a section of its own, the
+other four are listed after it.
 
 ### `RenderToBitmap` with a dither bitmap drew on the wrong bitmap {#rendertobitmap-dither}
 
@@ -161,7 +162,22 @@ such a picture as a shape only to read its size with `ShapeWidth` and
 or cut it into shapes of at most 1023 rows and 992 pixels
 ([`LoadShape` of a picture too large to blit]({{< relref "/docs/compared-with-original/new-errors#loadshape-blit-size" >}})).
 
-Issue: [The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046).
+**A plane just under 64 KB.** A shape also keeps the size of one plane
+with an extra word per row in 16 bits: `BBlit` saves that many bytes of
+the background per plane. The original kept only the lower 16 bits of it
+for a picture whose plane alone is just under 64 KB, so `BBlit` saved and
+restored the wrong amount. `LoadShape` refuses such a picture with the
+same runtime error, as `InitShape` and `GetaShape` refuse a shape of its
+size with runtime error checking. The size that counts is the width in
+bytes, rounded up to whole 16 pixel words and plus 2, times the height,
+and it must stay below 64 KB: a picture of 992 by 520 pixels loads, one
+of 992 by 528 is refused. Only pictures 512 to 992 pixels wide and 521
+to 1023 rows high can fall into this band; a program that loaded one and only
+blitted it with `Blit` stops here too
+([`LoadShape` of a picture with very large planes]({{< relref "/docs/compared-with-original/new-errors#loadshape-large-plane" >}})).
+
+Issues: [The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046),
+[LoadShape and the shape creation checks use different 64 KB plane limits (#1055)](https://github.com/fubar-coder/bb2-c/issues/1055).
 
 ### `ReplyRexxMsg` gave the result string to the wrong messages {#replyrexxmsg-result}
 
@@ -263,6 +279,47 @@ or leaves the flag out.
 
 Issues: [WriteSerialString took TrueString and DoIO both from the flag 2 (#254)](https://github.com/fubar-coder/bb2-c/issues/254),
 [ReadSerial waited with the flag 2, not 1 (#255)](https://github.com/fubar-coder/bb2-c/issues/255).
+
+### `Filter On` switched the audio filter off {#filter-on-off}
+
+The Amiga has a low-pass filter on its audio output that softens the
+sound, and `Filter On` and `Filter Off` are meant to switch it on and
+off. The filter is controlled by bit 1 of port A of the CIA-A chip, the
+same bit that sets the power light: a 0 switches the filter on and makes
+the light bright, a 1 switches the filter off and dims the light.
+
+**What happened.** The original had the two the wrong way round: `Filter
+On` set the bit and so switched the filter off, and `Filter Off` switched
+it on. This program reads the bit after each command:
+
+```
+Filter 1 : f1=Peek.b($BFE001) AND 2
+Filter 0 : f0=Peek.b($BFE001) AND 2
+NPrint "filter ",f1," ",f0
+```
+
+**With the original**
+
+```
+filter 2 0
+```
+
+**With the port**
+
+```
+filter 0 2
+```
+
+`Filter On` clears the bit, so the filter is on and the power light
+bright, as the manual says; `Filter Off` sets it.
+
+**What to change.** Every program that uses `Filter` now gets the other
+filter state. A program that was written for the sound of the original,
+with `Filter Off` for a soft sound or `Filter On` for a bright one, swaps
+the two. A program that followed the manual needs no change: it now gets
+the filter it asked for.
+
+Issue: [Filter On switches the audio low-pass filter off (and dims the power LED), Filter Off switches it on (#985)](https://github.com/fubar-coder/bb2-c/issues/985).
 
 ### A simulated event ended a running `Record` or `PlayBack` {#simulated-event-ends-tape}
 
@@ -1297,6 +1354,14 @@ file requester is the same code and has the same fixes, except for the
   error came only at the pop after it. It is reported at the first such
   pop
   ([#1032](https://github.com/fubar-coder/bb2-c/issues/1032)).
+* `Mouse On` took the start values of the two mouse counters from each
+  other's place, so the mouse jumped once, by the difference of the
+  counters, at the first reading; it starts where it is
+  ([#223](https://github.com/fubar-coder/bb2-c/issues/223)).
+* `Gameb(0)` left the control lines of the game pad as if it had read
+  port 1: it changed a line of port 1 and left that line of port 0 low.
+  It sets back the lines of port 0 only
+  ([#415](https://github.com/fubar-coder/bb2-c/issues/415)).
 
 ### Tapes and simulated input {#tapes}
 
@@ -1797,6 +1862,11 @@ existing program shows:
   resolution sprite with an x handle too far to the left; such sprites
   keep their place
   ([#949](https://github.com/fubar-coder/bb2-c/issues/949)).
+* `DisplaySprite` of a sprite on a channel of `CustomSprites` moved
+  completely above or below the display wrote the empty sprite over other
+  instructions of the copper list, and the sprite stayed visible; the
+  sprite is switched off on its own channel
+  ([#1051](https://github.com/fubar-coder/bb2-c/issues/1051)).
 * `DisplaySprite` of a sprite whose channels run from the last channels
   of the copper list into those of `CustomSprites` wrote over other
   instructions of the list; it is the runtime error "Not Enough Sprite
@@ -1939,6 +2009,12 @@ of them can stop an existing program:
   shape of 32 KB or more per plane they stepped backwards and wrote and
   read outside the buffer; they step forwards
   ([#1045](https://github.com/fubar-coder/bb2-c/issues/1045)).
+* `LoadShape` of a picture whose header gives a width or a height of 0
+  made a shape without memory and ran its loops 65536 times, writing the
+  picture data behind it; such a picture is the runtime error "Illegal
+  Shape Size", also without runtime error checking
+  ([#1054](https://github.com/fubar-coder/bb2-c/issues/1054);
+  [`LoadShape` of a picture of width or height 0]({{< relref "/docs/compared-with-original/new-errors#loadshape-size-zero" >}})).
 
 ### Drawing and polygons
 
@@ -2111,8 +2187,16 @@ and the same colours.
   fits the bitmap is stored, and every run ends with its row
   ([#190](https://github.com/fubar-coder/bb2-c/issues/190),
   [#191](https://github.com/fubar-coder/bb2-c/issues/191)).
+* `LoadBitMap` and `LoadScreen` of a file without picture data stopped
+  with "Can't Find IFF 'BODY'" and left the file open, so it stayed
+  locked until the next reboot, also when the program went on with
+  `SetErr`; the file is closed before the error
+  ([#1053](https://github.com/fubar-coder/bb2-c/issues/1053)).
 
 ### Sounds
+
+One more fix of them changes what an existing program does:
+[`Filter On` switched the audio filter off](#filter-on-off).
 
 * `DecodeSound` uses sound data that lies in chip memory where it is, and
   marks the sound so that this memory is not freed. The mark stayed when
@@ -2125,6 +2209,23 @@ and the same colours.
   `a$="V"+Str$(GetMedVolume(0))` gave a cut string or crashed the
   program; they leave the pointer alone
   ([#1061](https://github.com/fubar-coder/bb2-c/issues/1061)).
+* `DiskPlay` of a file whose sample length is a multiple of the
+  `DiskBuffer` length, or 0, never returned and played its last buffer
+  again and again; it returns after the sample, as for any other length
+  ([#69](https://github.com/fubar-coder/bb2-c/issues/69)).
+* `LoadSound` and `DiskPlay` left the file open when they stopped with
+  "Can't Find VHDR", "Error Reading File" or "Sound too long", so it
+  stayed locked until the next reboot; the file is closed before the
+  error ([#67](https://github.com/fubar-coder/bb2-c/issues/67)).
+* `DiskPlay` of a file that cannot be opened or read kept its buffer of
+  twice the `DiskBuffer` length in chip memory, so a program that caught
+  the error with `SetErr` lost that memory each time; the buffer is freed
+  ([#950](https://github.com/fubar-coder/bb2-c/issues/950)).
+* With runtime error checking, `SetPeriod` tested the period as a channel
+  mask, so every period above 15, which is every useful one, was the
+  error "Illegal Chanel Mask"; it tests only that the sound is set up
+  ([#66](https://github.com/fubar-coder/bb2-c/issues/66);
+  [The check of `SetPeriod`]({{< relref "/docs/compared-with-original/new-errors#setperiod-check" >}})).
 
 ### Tasks and message ports
 

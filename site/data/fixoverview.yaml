@@ -445,12 +445,36 @@ rows:
     text: "`ASLPathRequest$` without position and size shows no pattern gadget; the original showed the pattern of an earlier `ASLFileRequest$`."
     page: libraries
     anchor: file-requester-fixes
+  - issue: 66
+    severity: 4
+    topic: "Sound"
+    library: "audiolib"
+    command: "SetPeriod"
+    text: "With runtime error checking, `SetPeriod` tests only that the sound is set up; the original stopped every period above 15 with \"Illegal Chanel Mask\"."
+    page: libraries
+    anchor: sounds
+  - issue: 67
+    severity: 4
+    topic: "Files"
+    library: "audiolib"
+    command: "LoadSound, DiskPlay"
+    text: "`LoadSound` and `DiskPlay` close the file before \"Can't Find VHDR\", \"Error Reading File\" and \"Sound too long\"; the original left it open and locked until reboot."
+    page: libraries
+    anchor: sounds
   - issue: 68
     severity: 4
     topic: "Sound"
     library: "audiolib"
     command: "DecodeSound, LoadSound, InitSound"
     text: "A sound object reused after `DecodeSound` frees its next sample when reused or freed; the original kept the mark and never freed that sample."
+    page: libraries
+    anchor: sounds
+  - issue: 69
+    severity: 4
+    topic: "Sound"
+    library: "audiolib"
+    command: "DiskPlay"
+    text: "`DiskPlay` returns after a sample whose length is a multiple of the `DiskBuffer` length, or 0; the original played its last buffer for ever."
     page: libraries
     anchor: sounds
   - issue: 70
@@ -1221,6 +1245,14 @@ rows:
     text: "Replacing a subitem moves the subitems behind it by the change of its height; the original moved them by a wrong amount, covering it or leaving a gap."
     page: libraries
     anchor: menus
+  - issue: 223
+    severity: 4
+    topic: "Input"
+    library: "mouselib"
+    command: "Mouse"
+    text: "`Mouse On` starts at the mouse's position; the original swapped the two start counters, and the mouse jumped once."
+    page: libraries
+    anchor: input
   - issue: 224
     severity: 4
     topic: "Graphics"
@@ -2437,6 +2469,14 @@ rows:
     text: "`DisplaySprite` of a sprite running into the `CustomSprites` channels stops with \"Not Enough Sprite Channels\", also without runtime error checking; the original overwrote copper instructions."
     page: libraries
     anchor: blitz-mode-displays
+  - issue: 415
+    severity: 4
+    topic: "Input"
+    library: "gameiolib"
+    command: "Gameb"
+    text: "`Gameb(0)` sets back the control lines of port 0 only; the original left them as for port 1 and changed a line of port 1."
+    page: libraries
+    anchor: input
   - issue: 417
     severity: 3
     topic: "Graphics"
@@ -2701,6 +2741,14 @@ rows:
     text: "`CustomChunky` with a split position keeps the sprite resolution of the copper list; with the original, `DisplaySprite` then put high resolution sprites too far left."
     page: libraries
     anchor: blitz-mode-displays
+  - issue: 950
+    severity: 4
+    topic: "Sound"
+    library: "audiolib"
+    command: "DiskPlay"
+    text: "A `DiskPlay` that cannot open or read its file frees its chip memory buffer; the original lost it until the program ended."
+    page: libraries
+    anchor: sounds
   - issue: 951
     severity: 1
     topic: "Graphics"
@@ -2917,6 +2965,14 @@ rows:
     text: "A menu, item or subitem with an empty text has an empty text and an empty item is as wide as its gaps; the original read the text from address 0."
     page: libraries
     anchor: menus
+  - issue: 985
+    severity: 1
+    topic: "Sound"
+    library: "audiolib"
+    command: "Filter"
+    text: "`Filter On` switches the audio low-pass filter on and `Filter Off` switches it off, as the manual says; the original did the opposite."
+    page: libraries
+    anchor: filter-on-off
   - issue: 986
     severity: 4
     topic: "Graphics"
@@ -3277,6 +3333,14 @@ rows:
     text: "A constant operation such as `7 Mod 3` as the first use of a library keeps that library's relocations; the original dropped them, and a later `Mod` could crash."
     page: compiler
     anchor: the-executable
+  - issue: 1051
+    severity: 4
+    topic: "Graphics"
+    library: "displaylib"
+    command: "DisplaySprite"
+    text: "`DisplaySprite` switches off a sprite of a `CustomSprites` channel moved above or below the display; the original wrote over other copper instructions and left it visible."
+    page: libraries
+    anchor: blitz-mode-displays
   - issue: 1052
     severity: 4
     topic: "Graphics"
@@ -3285,6 +3349,30 @@ rows:
     text: "`LoadShape` of a picture with 0 bitplanes stops with \"Illegal Shape Depth\", also without runtime error checking; the original wrote the picture behind an empty shape."
     page: libraries
     anchor: shapes-and-sprites
+  - issue: 1053
+    severity: 4
+    topic: "Files"
+    library: "bitmaplib, screenslib"
+    command: "LoadBitMap, LoadScreen"
+    text: "`LoadBitMap` and `LoadScreen` close the file before \"Can't Find IFF 'BODY'\"; the original left it open and locked until reboot."
+    page: libraries
+    anchor: iff-files
+  - issue: 1054
+    severity: 4
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "LoadShape"
+    text: "`LoadShape` of a picture of width or height 0 stops with \"Illegal Shape Size\", also without runtime error checking; the original wrote the picture behind an empty shape."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 1055
+    severity: 1
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "LoadShape"
+    text: "`LoadShape` refuses a picture whose plane with one extra word per row is 64 KB or more, such as 992 by 528 pixels (\"Can't Read/Write Shapes File\"); the original loaded it, and `BBlit` saved the wrong amount of the background."
+    page: libraries
+    anchor: loadshape-blit-size
   - issue: 1060
     severity: 4
     topic: "System"

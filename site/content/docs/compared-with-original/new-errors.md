@@ -1037,20 +1037,27 @@ Issue: [RenderPoly after RenderToChunky read colours above 14 behind its table (
 ### `LoadShape` of a picture with very large planes {#loadshape-large-plane}
 
 **What happened.** A shape keeps the size of one of its planes in 16
-bits, in memory and in the files of `SaveShapes`. `LoadShape` of an IFF
-picture with a plane of 64 KB or more, such as 1024 by 520 pixels, took
-only the lower 16 bits of that size, made the shape far too small and
-wrote the whole picture into it, over the memory behind it.
+bits, in memory and in the files of `SaveShapes`, and also in 16 bits the
+size of a plane with an extra word per row, which `BBlit` saves of the
+background. `LoadShape` of an IFF picture with a plane of 64 KB or more,
+such as 1024 by 520 pixels, took only the lower 16 bits of that size,
+made the shape far too small and wrote the whole picture into it, over
+the memory behind it. A picture whose plane is just under 64 KB, such as
+992 by 528 pixels, loaded, but `BBlit` then saved and restored the wrong
+amount of the background.
 
 **With the port.** Such a picture is the runtime error "Can't Read/Write
 Shapes File", also without runtime error checking, as for a file that
-cannot be read. The shape stays empty.
+cannot be read. The shape stays empty. The limit is that of `InitShape`
+and `GetaShape` ([Shapes too large for their size fields](#shape-too-big)):
+the width in bytes, rounded up to whole 16 pixel words and plus 2, times
+the height must be less than 64 KB. A picture of 992 by 520 pixels loads.
 
 **What to change.** Load the picture as a bitmap, or cut it into shapes
-whose planes are smaller than 64 KB: a plane is the width in bytes,
-rounded up to whole 16 pixel words, times the height.
+within that limit.
 
-Issue: [Large shapes had their line and plane steps and sizes only as a word (#263)](https://github.com/fubar-coder/bb2-c/issues/263).
+Issues: [Large shapes had their line and plane steps and sizes only as a word (#263)](https://github.com/fubar-coder/bb2-c/issues/263),
+[LoadShape and the shape creation checks use different 64 KB plane limits (#1055)](https://github.com/fubar-coder/bb2-c/issues/1055).
 
 ### `LoadShape` of a picture too large to blit {#loadshape-blit-size}
 
@@ -1085,6 +1092,22 @@ Depth", also without runtime error checking, and the shape stays empty.
 bitplanes holds no image.
 
 Issue: [LoadShape of an ILBM with 0 planes writes the file behind an empty block (#1052)](https://github.com/fubar-coder/bb2-c/issues/1052).
+
+### `LoadShape` of a picture of width or height 0 {#loadshape-size-zero}
+
+**What happened.** `LoadShape` took the width and the height from the
+header of the picture without a check. A header that gives a width or a
+height of 0 made a shape without memory, and the loops over the bytes or
+the rows of the picture ran 65536 times, writing the picture data behind
+the shape until the file ended.
+
+**With the port.** Such a picture is the runtime error "Illegal Shape
+Size", also without runtime error checking, and the shape stays empty.
+
+**What to change.** Nothing for a correct picture; a picture of width or
+height 0 holds no image.
+
+Issue: [LoadShape of an ILBM with width 0 or height 0 runs its loops 65536 times (#1054)](https://github.com/fubar-coder/bb2-c/issues/1054).
 
 ### Shapes too large for their size fields {#shape-too-big}
 
@@ -1271,6 +1294,32 @@ errors now stops with the message that names its cause.
 Issues: [The checks of the fades tested only the upper word of the palette (#135)](https://github.com/fubar-coder/bb2-c/issues/135),
 [An uninitialised palette reported "Not enough colours in Slice" (#330)](https://github.com/fubar-coder/bb2-c/issues/330),
 [A too large colour range reported "Uninitialized Slice" (#331)](https://github.com/fubar-coder/bb2-c/issues/331).
+
+### The check of `SetPeriod` {#setperiod-check}
+
+**What happened.** With runtime error checking, `SetPeriod Sound#,Period`
+tested the period as if it were a mask of audio channels, which runs
+from 0 to 15. Every period above 15, and so every one a sound is played
+with, stopped the program with "Illegal Chanel Mask":
+
+```
+InitSound 0,32
+NPrint "before"
+SetPeriod 0,428
+NPrint "after"
+End
+```
+
+The original printed `before` and stopped with the error.
+
+**With the port.** The check tests only that the sound is set up, and a
+sound that is not is still "Uninitialized Sound". The program above
+prints `before` and `after`. Without runtime error checking nothing
+changes.
+
+**What to change.** Nothing.
+
+Issue: [SetPeriod: error check tests the period as a channel mask (#66)](https://github.com/fubar-coder/bb2-c/issues/66).
 
 ### `PopInput` and `PopOutput` with nothing to pop {#pop-without-push}
 
