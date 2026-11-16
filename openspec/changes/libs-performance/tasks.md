@@ -92,6 +92,13 @@ The four commands still 10 % or more slower than the original in `perf-analysis/
 - [x] 11.5 SColl (collslib): look again for extensions, absolute addressing, spills and the #110 fix's cost; the fix of #110 stays - done (2026-11-16): one path, the #110 fix as NEG/NEG/ADDX instead of ADDQ/ADD, 136.0 -> 124.0 cycles (the original 126.3; design decision 26)
 - [x] 11.6 Measure, tighten the budgets, update final-table.md - done (2026-11-16): three runs of `ctest --preset perf` on main 4375d842 (the originals of 10.6 stay valid, no bench program changed), table in `~/.local/share/bb2-c-work/perf-analysis/final-table.md` (10.6's as `final-table-10.6.md`): of 131 commands none is 10 % or more slower (the closest Inkey$ 1.10, 9.8 %), 17 are 2 to 10 % slower, 63 within 2 %, 51 faster; no budget reached or exceeded and none of group 11 stale, `budgets.txt` unchanged
 
+## 12. A light call form for system libraries and memlib (analysis: ~/.local/share/bb2-c-work/analyse-sysjsr.md)
+
+- [ ] 12.1 `BLITZ_SYSJSR`, `BLITZ_SYSJSR1`/`2` (and a d0/a1 form if needed) in blitzlib.h: only d0/d1/a0/a1 clobbered, a6 input only; vallib's FFPJSR1/2 move onto it; `BLITZ_BASEJSR1/2` and their texts go
+- [ ] 12.2 strings2lib and maxlenlib call memlib's table with it (tested contract, systest KEEPS); measure bstr.pstr/bstr.fstr and tighten their budgets
+- [ ] 12.3 The system-library calls (exec, graphics, diskfont, intuition, rexxsyslib, translator; BL_FREESIGNAL) use it; BLITZ_BASEJSR stays for the open-contract calls (fontlib previous handler), sortlib FFP_CC_, runerrlib spfix and gtlib addglist stay private, libs/userlibs/rwe unchanged
+- [ ] 12.4 Update final-table.md
+
 ## 9. Closing
 
 - [x] 9.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it - done (2026-11-16): the speed profile is six libraries (strings1lib/strings2lib are not in it); "C first, assembler where C stays behind" and "Slow commands are listed" in `libs/performance`; internal tokens keep contracts without thunks, `__entrypoint` with `no_icf` and its build check in `libs/register-contract`; the budgets in the `B~T` form, warp mode and parallel sessions in `testing/performance-budgets`; the `library-capture` delta covers the acidlibs only (the RWE userlib programs keep their sets); proposal and design decisions 2 and 6 name the later state; `openspec validate libs-performance --strict` passes
