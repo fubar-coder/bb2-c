@@ -185,6 +185,14 @@
 # (the library call: 188.7 and 198.7).  bmath.frac and bmath.fracn from
 # three runs of Frac of a Quick assigned to a Quick compiled inline (task
 # 3.3): 61.5 and 80.5 in each (the library call: 1316.2 and 1373.7).
+# bstr.len10, len100, len1000, asc10, asc100 and asc1000, new loops of
+# compiler-intrinsics task 4.4 (Len and Asc of strings of 10, 100 and 1000
+# characters, after the other loops), from two runs on main 7d833bbc
+# (2026-11-16): 607.0/607.1, 1273.0/1272.6, 8261.0/8261.1, 675.0/675.6,
+# 1336.0/1335.6, 8326.5/8327.1; the other bstr lines as before.  Their
+# targets from two runs of the pass perf_bstr.pass with the tag orig (the
+# compiler of main 7d833bbc): 547.1/547.1, 1884.2/1884.1, 15071.1/15071.1,
+# 611.1/611.1, 1951.2/1949.1, 15135.1/15136.6.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -339,3 +347,9 @@ bstr.sort201                78576    77694.0  Sort sa()
 bstr.bin                     1711     2119.0  r$=Bin$(a)
 bstr.midlong                 2409     3136.0  r$=Mid$(n$,3,40) (n$ 60 characters)
 bstr.rightlong               2371     3077.0  r$=Right$(n$,40)
+bstr.len10                    617      547.1  c=Len(s1$) (s1$ 10 characters)
+bstr.len100                  1289     1884.2  c=Len(s2$) (s2$ 100 characters)
+bstr.len1000                 8347    15071.1  c=Len(s3$) (s3$ 1000 characters)
+bstr.asc10                    686      611.1  c=Asc(s1$)
+bstr.asc100                  1353     1951.2  c=Asc(s2$)
+bstr.asc1000                 8414    15135.1  c=Asc(s3$)

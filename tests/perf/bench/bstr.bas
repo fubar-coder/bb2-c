@@ -1,6 +1,6 @@
 ; bstr - perf benchmark: strings, Read, lists, Sort
 DEFTYPE .l
-Dim t(25)
+Dim t(31)
 a=123456 : c=0
 a$="Hello, World of Blitz" : b$="Hello, World of Blitz" : n$="12345"
 r$=String$(" ",80)
@@ -144,6 +144,37 @@ For i=1 To 2000
 r$=Right$(n$,40)
 Next
 Gosub tod : t(24)=(tt-t0)&65535
+s1$=String$("a",10) : s2$=String$("a",100) : s3$=String$("a",1000)
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Len(s1$)
+Next
+Gosub tod : t(25)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Len(s2$)
+Next
+Gosub tod : t(26)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Len(s3$)
+Next
+Gosub tod : t(27)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Asc(s1$)
+Next
+Gosub tod : t(28)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Asc(s2$)
+Next
+Gosub tod : t(29)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=Asc(s3$)
+Next
+Gosub tod : t(30)=(tt-t0)&65535
 Goto skipdata
 dd:
 Data.l 1,2,3,4
@@ -175,6 +206,12 @@ NPrint "sort201 ",t(21)," 50 1"
 NPrint "bin ",t(22)," 2000 1"
 NPrint "midlong ",t(23)," 2000 1"
 NPrint "rightlong ",t(24)," 2000 1"
+NPrint "len10 ",t(25)," 2000 1"
+NPrint "len100 ",t(26)," 2000 1"
+NPrint "len1000 ",t(27)," 2000 1"
+NPrint "asc10 ",t(28)," 2000 1"
+NPrint "asc100 ",t(29)," 2000 1"
+NPrint "asc1000 ",t(30)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255
