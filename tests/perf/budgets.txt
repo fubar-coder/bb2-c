@@ -121,6 +121,10 @@
 # bgfx.clipblitex (new, libs-performance tasks 13.10 and 13.11) from five
 # runs on main 1a7cdf79 (2026-11-16; they spread by at most 0.6 cycles, so
 # plain budgets).
+# bgfx.blit16, bgfx.blit16s, bgfx.blit32, bgfx.blitcoll, bgfx.blit16p1,
+# bgfx.blit16p6 and bgfx.blitex from five runs of blitlib in C after the
+# analysis of group 13 (task 13.10, 2026-11-16); the "B~T" lines keep at
+# least their tolerance.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -129,15 +133,15 @@ bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
 bdisp.dispsprite             948~4      965.5  DisplaySprite 0,0,100,100,0
 bdisp.disppalette          1289~16     1292.0  DisplayPalette 0,0
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bgfx.blit16                 2118~2     2108.3  Blit 0,100,100
-bgfx.blit16s                 2142     2108.3  Blit 0,105,100
-bgfx.blit32                 4730~3     4723.4  Blit 1,100,100
+bgfx.blit16                 2051~2     2108.3  Blit 0,100,100
+bgfx.blit16s                 2075     2108.3  Blit 0,105,100
+bgfx.blit32                 4676~4     4723.4  Blit 1,100,100
 bgfx.block16                 1021     1009.9  Block 0,96,96
 bgfx.clipblit16              2607     2516.3  ClipBlit 0,100,100
-bgfx.blitcoll                902~1      881.9  c=BlitColl(0,100,100)
-bgfx.blit16p1                 941      933.9  Blit 3,100,100
-bgfx.blit16p6                3928     3873.9  Blit 4,100,20
-bgfx.blitex                  2089     1944.4  Blit 3,100,100,1
+bgfx.blitcoll                874~2      881.9  c=BlitColl(0,100,100)
+bgfx.blit16p1                 916      933.9  Blit 3,100,100
+bgfx.blit16p6                3810     3873.9  Blit 4,100,20
+bgfx.blitex                  1913     1944.4  Blit 3,100,100,1
 bgfx.clipblitc               9073     8643.9  ClipBlit 0,-5,100 : ClipBlit 0,310,100 : ClipBlit 0,100,-5 : ClipBlit 0,100,250
 bgfx.clipblitex              2542     2310.4  ClipBlit 3,100,100,1
 bgfx.bblit4u              18160~28    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0

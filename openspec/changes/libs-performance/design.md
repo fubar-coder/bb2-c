@@ -1093,6 +1093,44 @@ build.
       and as b, `$80000000 * $FFFFFFFF`, the truncation of the low
       product and products whose integer parts overflow; the six cases
       where #199 shows are pairs `[orig]` / `[fixed #199]`.
+31. **The blitter commands, group 13 (tasks 13.10 to 13.12,
+    2026-11-16).** After the analysis `analyse-g13-blit.md`; cycles per
+    call (`tests/perf`, five runs), before -> after (the original). The
+    loops that wait for the blitter count the CPU code before the first
+    BLTSIZE write and behind each wait; what lies between a BLTSIZE write
+    and the next wait is hidden by the blit.
+    - Blit and BlitColl (blitlib, task 13.10): C. The modulo pair is the
+      original's `MOVEQ #-2:SWAP:MOVE bpr:SUB ebwidth:SUBQ #2` (an asm
+      statement; GCC built it with a long constant), the shift a rotate
+      (`ROR.w #4:ANDI.w`, 22 cycles against `MOVEQ #12:LSL` 34), `bcon0`
+      PC-relative as in qblitlib, the next plane's address computed
+      before the wait, and BlitColl's -1/0 a `LONG` (no `EXT.l` in the
+      entry; the Amiga mode code keeps the word, its upper word 0, the
+      kind T deviation). The waits in the plane loops are
+      `BL_BLITWAIT_TST` (new in `blitzhelp.h`: the first read of DMACONR
+      as `TST.b 2(An)`, no data register), used only where
+      `BL_BLITWAIT`'s read into a register made GCC spill (decision of
+      the coordinator: not across all libraries). Blit with Excessonoff
+      was a normal function (it saved d2-d7/a6) whose excess loop read
+      the shape's depth again after the chip writes (a volatile UWORD
+      store may alias it), kept BLTSIZE and the plane pointer on the
+      stack and read DMACONR into a stack slot; now its Blitz mode code
+      is `BLITZ_ENTRYPOINT` (saves nothing, as Blit; a6 kept with
+      `BLITZ_EP_KEEP_A6`), the depths are read once and the excess
+      planes counted down, and the nullsub `b_doblitex` for other
+      libraries keeps its normal C function (the build check refuses a
+      call into an `__entrypoint` routine). Blit 2116.9 -> 2050.3
+      (2108.9), Blit 32 4729.4 -> 4675.9 (4722.9), Blit of a 1-plane
+      shape 928.4 -> 903.9 (933.9), of a 6-plane shape 3885.4 -> 3768.8
+      (3873.9), Blit with Excessonoff (two excess planes) 2064.8 ->
+      1890.9 (1944.4), BlitColl 901.4 -> 873.5 (881.4): below the
+      original, so no assembler block. Block is unchanged. The plane
+      loops end with `TST/BNE/SUBQ` and a `BRA` back instead of `DBF`
+      (GCC rotates the loop); the instructions in front of the wait are
+      hidden by the blit, so only the `BRA` counts. blitlib 2864 -> 3068
+      bytes (the second copy of the Excessonoff code). The library cases
+      of `systest_blit` (Blit, Blit excess, Block, BlitColl in both
+      modes) give the same values.
 
 ## Risks / Trade-offs
 

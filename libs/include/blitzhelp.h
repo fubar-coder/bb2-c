@@ -170,6 +170,14 @@ static inline LONG bl_muls_w(WORD a, WORD b)
 /* the usual blitter wait (libmacs `blitwait`): BTST once for the Agnus
    bug, then loop while busy */
 #define BL_BLITWAIT(cb)    do { (void)BL_BLITBUSY(cb); while (BL_BLITBUSY(cb)) ; } while (0)
+/* the same wait with the first read as TST.b 2(An), which needs no data
+   register; for a loop where BL_BLITWAIT's read into a register makes
+   GCC spill a value (a volatile asm: GCC keeps it in order with the
+   volatile chip accesses) */
+#define BL_BLITWAIT_TST(cb) do {                                            \
+        __asm__ volatile("tst.b 2(%0)" : : "a"(cb) : "cc");                 \
+        while (BL_BLITBUSY(cb)) ;                                           \
+    } while (0)
 /* bl_blitoff(&bm->bpr, x, y) - the byte offset of pixel x, y in a plane
    as the blit libraries compute it: MULS bpr,y : ASR.w #3,x : EXT.l x :
    ADD.l x,y (only the low words of x and y count).  Assembler because
