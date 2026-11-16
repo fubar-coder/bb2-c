@@ -68,11 +68,16 @@
 # bmod.vblmod and bmod.playmed from seven runs after each step of the
 # players of libs-performance task 10.10 on main f7960476 (2026-11-16),
 # the first after the snapshot was made anew; they keep their tolerances.
-# bmod.vblmod moves with the layout of the libraries in the program (the
-# empty loop it subtracts runs 150000 times, so 0.3 cycles per iteration
-# are 340 per frame): with trackerlib unchanged, the next step of medlib
-# gives 2224.9 to 2614.1 instead of 2115.5 and 2292.2, so its B is the
-# highest value of the runs of both layouts.
+# bmod.vblmod (task: the measurement independent of the code layout; main
+# 2d87a18d, 2026-11-16): the empty loop it subtracts is the same code (the
+# subroutine lp of bmod.bas) as the loop that runs while the module plays, and
+# PlayModule starts right after a VWait. With medlib padded by 0 to
+# 18002 bytes (11 layouts) it gave 2298.4 to 2328.1 (the old measurement:
+# 2255.8 to 2423.2 for the same layouts, 2224.9 to 2621.4 across builds);
+# the same build repeated: 2305.8 to 2320.7. A session whose snapshot was made
+# anew still gives 2305.7 to 2417.1 (eight runs, and once 2120.5; not the
+# layout, the boot state), so B is the highest of all runs and T 120, about
+# that spread.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -187,7 +192,7 @@ bmisc.fadepalette          3005~51     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                 111~17      100.4  c=NTSC
 bmisc.infront                129~4      134.9  InFront 4
-bmod.vblmod                 2615~220   2409.5  PlayModule playing: its interrupt, cycles per frame
+bmod.vblmod                 2418~120   2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed               10416~7     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1236     1367.5  r$=a$

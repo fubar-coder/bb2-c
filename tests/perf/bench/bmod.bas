@@ -1,4 +1,7 @@
 ; bmod - perf benchmark: the PlayModule interrupt per frame, PlayMed per call
+; (vblmod subtracts the loop lp, the same code, run before PlayModule; the
+; module starts right after a VWait: the difference does not depend on where
+; the libraries put the program)
 DEFTYPE .l
 Dim t(4)
 c=0
@@ -12,13 +15,11 @@ Poke.b $bfd600,$ff : Poke.b $bfd700,$ff
 Poke.b $bfdf00,$51 : Poke.b $bfde00,$11
 VWait 2
 Gosub tod : t0=tt
-For i=1 To 20000
-Next
+Gosub lp
 Gosub tod : t(0)=(tt-t0)&65535
-PlayModule 0
+VWait : PlayModule 0
 Gosub tod : t0=tt
-For i=1 To 150000
-Next
+Gosub lp
 Gosub tod : t(1)=(tt-t0)&65535
 StopModule
 StartMedModule 0
@@ -30,10 +31,14 @@ Gosub tod : t(2)=(tt-t0)&65535
 StopMed
 VWait 2
 AMIGA
-NPrint "empty ",t(0)," 20000 1"
+NPrint "empty ",t(0)," 150000 1"
 NPrint "vblmod ",t(1)," 150000 frame"
 NPrint "playmed ",t(2)," 2000 1"
 End
+lp:
+For i=1 To 150000
+Next
+Return
 tod:
 th=Peek.b($bfd700)&255
 tl=Peek.b($bfd600)&255

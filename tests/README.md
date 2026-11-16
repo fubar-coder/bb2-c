@@ -864,7 +864,13 @@ cycle values do not depend on the host's load or on what else runs
   generates, and for blits the wait for the blitter. `emptylong` (the
   empty loop again, 150000 iterations) must come out at 0. `bmod.vblmod`
   is the empty loop while PlayModule plays: its value is the cycles per
-  PAL frame (142102 cycles) the interrupt takes.
+  PAL frame (142102 cycles) the interrupt takes. In `bmod` the `empty` loop
+  is the very loop the module plays under (the subroutine `lp`, 150000
+  iterations, run before PlayModule and after a `VWait` while it plays), so
+  the value does not move with the code layout of the libraries (padding
+  medlib by 0 to 18002 bytes: 2298 to 2328; a loop at another address gave
+  2256 to 2423); a session whose snapshot was made anew still varies by
+  about 110.
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the
