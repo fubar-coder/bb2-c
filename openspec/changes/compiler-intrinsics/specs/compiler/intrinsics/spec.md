@@ -51,14 +51,11 @@ through the library.
 
 ### Requirement: Frac of a Quick assigned as a Quick is compiled inline
 When the argument of `Frac` has the static type Quick and the call is
-the whole right-hand side of an assignment to a Quick (the compiler is
-asked for a Quick and nothing follows the closing parenthesis in the
-expression), the compiler SHALL emit the fraction inline and SHALL NOT
-make a Float, call the library or convert back. The Quick result SHALL
-be the exact fraction of the argument with the sign of the argument: the
-low 16 bits of its magnitude, negated for a negative argument. This is
-the same value that `Frac` returns as a Float after #1064 and the
-assignment converts back to a Quick.
+the whole right-hand side of an assignment to a Quick, the compiler SHALL
+emit the fraction inline and SHALL NOT make a Float, call the library or
+convert back. The Quick result SHALL be the exact fraction with the sign
+of the argument (the low 16 bits of its magnitude, negated for a negative
+argument): the value of `Frac` as a Float (#1064) converted back.
 
 #### Scenario: Positive and negative Quick
 - **WHEN** a program has `q2=Frac(q1)` for q1 = 1.25, -1.25, 0.5, -0.5, 3.0, -3.0 and 30000.0001
@@ -92,14 +89,12 @@ values are those of the library.
 - **THEN** the compiled code calls the library
 
 ### Requirement: Len and Asc of a plain string variable read the header
-When the argument of `Len` or `Asc` is a plain string variable (a global
-or local variable, with no index, no field, no function and no operator),
-the compiler SHALL read the length, or the first character, from the
-variable's memory header and SHALL NOT copy the string into the string
-work area. `Len` returns the length (0 for a variable without memory).
-`Asc` returns the code of the first character (0 to 255) and -1 for an
-empty string, as the library does. a3 SHALL be the same after the call as
-before it.
+When the argument of `Len` or `Asc` is a plain string variable (global
+or local, no index, field, function or operator), the compiler SHALL read
+the length, or the first character, from the variable's memory and SHALL
+NOT copy the string into the work area. `Len` gives the length (0 without
+memory), `Asc` the first character (0 to 255) or -1 for an empty string,
+as the library. a3 SHALL be unchanged by the call.
 
 #### Scenario: Len of a variable
 - **WHEN** a program has `a$="hello"`, `c=Len(a$)`
@@ -127,10 +122,26 @@ array element, a literal and a field SHALL be compiled as before.
 
 ### Requirement: The intrinsics apply in both modes and change no result
 Every requirement above SHALL hold in the same way with runtime error
-checking on and off, and in the BB2 and the AB3 mode of the compiler. A
-program that uses an intrinsic SHALL print and write the same as with the
-library call; only the executable differs.
+checking on and off, and in the BB2 and the AB3 mode of the compiler,
+wherever the loaded library function has the intrinsic's form. A program
+that uses an intrinsic SHALL print and write the same as with the library
+call; only the executable differs.
 
 #### Scenario: Corpus
 - **WHEN** the corpus programs are compiled and run
 - **THEN** their outputs equal the recorded ones; the executables of programs that use an intrinsic differ from the `prev` build (named by `PREV_INTENDED`), all others are byte-identical
+
+### Requirement: A library of another form is called
+An intrinsic SHALL apply only where the loaded library function has the
+form it was written for (one parameter of unknown type, the type word
+pushed for the routine); otherwise the compiler SHALL call the library as
+before. In AB3 mode AmiBlitz3's vallib takes a Float for `Frac`, so `Frac`
+keeps the vallib call there.
+
+#### Scenario: Frac in AB3 mode
+- **WHEN** a program in AB3 mode, with AmiBlitz3's vallib, has `q2=Frac(q1)` with `q1` and `q2` Quick
+- **THEN** the compiled code calls `qutofl`, the vallib `Frac` and `fltoqu`, as AmiBlitz3's compiler does, with the same values
+
+#### Scenario: Int in AB3 mode
+- **WHEN** a program in AB3 mode has `c=Int(q1)` with `q1` a Quick
+- **THEN** the compiled code holds no call of `Int`, and the value is the one AmiBlitz3's library gives
