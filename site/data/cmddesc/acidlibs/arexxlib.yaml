@@ -6,15 +6,15 @@
   text: Fills the 16 argument slots of an ARexx message from a NewType of a word of flags and 16 longs, given by its address. A set flag bit makes its slot a number; for a clear bit, the long is the address of a string, which becomes an ArgString. Bit 15 belongs to the first slot, bit 14 to the second, and so on.
   notes: |
     It is needed for function calls (RXFUNC) and other advanced uses of
-    ARexx. Kept from the original: a value of 0 ends the list, also a
-    number 0 ([#50](https://github.com/fubar-coder/bb2-c/issues/50)).
+    ARexx. A string address of 0 ends the list; a number 0 is stored like
+    any other number. At most the 16 slots are filled.
 "ClearRexxMsg":
-  text: Deletes the ArgStrings in the argument slots of an ARexx message, from the first slot on. `RexxEvent` does this itself for a reply.
-  notes: |
-    Kept from the original: it goes on beyond the 16 slots until it finds
-    a 0 ([#49](https://github.com/fubar-coder/bb2-c/issues/49)).
+  text: Deletes the ArgStrings in the 16 argument slots of an ARexx message and clears the slots. `RexxEvent` does this itself for a reply.
 "CreateArgString":
   text: Makes an ArgString from a string and returns its address, which is that of the text.
+  notes: |
+    An ArgString holds at most 65535 characters; of a longer string it
+    holds the first 65535.
 "DeleteArgString":
   text: Frees an ArgString, whether the program or ARexx made it.
 "SendRexxCommand":
@@ -22,18 +22,25 @@
 "ReplyRexxMsg":
   text: Answers a command that came from an ARexx script, with the results `Result1` (0 for success) and `Result2`; if `Result1` is 0, `ResultString` can become the result string, as the note below says.
   notes: |
-    Kept from the original: the result string is made for the wrong kind
-    of message, for function calls instead of for messages that asked
-    for a result ([#48](https://github.com/fubar-coder/bb2-c/issues/48)).
+    `ResultString` becomes the result string only if the sender asked for
+    one (the flag RXFF_RESULT in the action) and `Result1` is 0; it then
+    takes the place of `Result2`. Otherwise the reply carries the number
+    `Result2`.
 "GetRexxResult":
   text: Result number `ResultNum` (1 or 2) of a message ARexx replied to; result 1 is 0 for success, else an error level.
+  notes: |
+    With runtime error checking, a `ResultNum` other than 1 or 2 is the
+    error "Illegal Result Number".
 "GetRexxCommand":
   text: The text of argument slot `ARGNum` of a message, from 1; slot 1 holds the command a script sent.
+  notes: |
+    With runtime error checking, an `ARGNum` outside 1 to 16 is the error
+    "Illegal Argument Number".
 "GetResultString":
   text: The result string of a message ARexx replied to; the ArgString is freed afterwards.
   notes: |
-    Kept from the original: the message still points to the freed result
-    ([#53](https://github.com/fubar-coder/bb2-c/issues/53)).
+    The message's result field is cleared with it, so a second call gives
+    the empty string.
 "RexxEvent":
   text: Takes the next message from the message port at `PortAddress` and returns its address, or 0 if none is waiting; a reply is cleared with `ClearRexxMsg` first.
 "IsRexxMsg":
