@@ -31,6 +31,10 @@
  *    follows) (#264).  Not a bug: only `depth`
  *    DLTA pointers are read (one per plane); the copied frame shares
  *    nothing (its cookie is cleared, made again with AutoCookie On).
+ *  - LoadShape: "ANIM format not supported" and "Illegal ANIM interleave
+ *    value" (the first ANHD) are raised without iffclose: the file stays
+ *    open, also after the program's end (iffiolib has no finit) (test
+ *    shapeslib-loadshape-anim-fileopen; issue to be filed).
  *  - Not a bug (by design): DecodeShapes stops silently at the first block
  *    that does not match (the end of the sequence); memory below 2 MB
  *    ($FFE00000 clear, chip RAM) is used in place ("cL"), above it is
@@ -1084,6 +1088,8 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     res = IJSRZ(TOK_ifffind, 0x414e4844, st, &z); /* "ANHD" */
     if (!z)
         goto skipanim;
+    /* BUG(orig) (issue to be filed): mess7 and mess8 without iffclose, the
+       file stays open (test shapeslib-loadshape-anim-fileopen) */
     res = IJSR(TOK_iffbyte, res, st);
     if ((UBYTE)res != 5)
         BLITZ_RUNERR(mess7);
