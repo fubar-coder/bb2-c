@@ -94,6 +94,10 @@ kind F):
   compiler loads GfxBase into a6; the original's `!libs` was commented
   out and WaitTOF went through whatever a6 held (#453; test
   `ciatrklib-waitevent-no-libs`).
+* `DecodeModule` compares the module's address with $200000 unsigned: a
+  module at $80000000 or above is copied to chip memory; the original's
+  `BLT` took such an address for chip memory (#432; test
+  `ciatrklib-decode-chip-signed`).
 
 ## BUG(orig), kept
 
@@ -111,9 +115,9 @@ kind F):
 * `LoadTrackerModule` does not check the chip memory (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
   The runtime errors after `Lock` leave the lock allocated, and the
   FileInfoBlock is freed only on success (#441).
-* `DecodeModule` of a module in chip memory (address < $200000, signed)
-  keeps the address (length 1, flag 0) (#432); from other memory it
-  copies to chip memory with the size + 3 as a **word** add (#434);
+* `DecodeModule` of a module in chip memory keeps the address (length
+  1, flag 0); from other memory it copies to chip memory with the size
+  + 3 as a **word** add (#434);
   without memory the slot keeps the old address with flag 2 and the new
   length (a later `FreeTrackerModule` frees memory that was never
   allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"). `FreeTrackerModule` does not stop a module that

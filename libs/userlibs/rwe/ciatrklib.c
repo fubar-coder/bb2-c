@@ -43,8 +43,7 @@
  *     (#448).
  *   - LoadTrackerModule: the chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the runtime errors after Lock (no FileInfoBlock, Examine
  *     failing) leave the lock allocated (#441).
- *   - DecodeModule into chip memory (an address < $200000, signed) keeps
- *     the address (#432); from other memory it copies the module to chip
+ *   - DecodeModule copies a module outside chip memory to chip
  *     memory with the size + 3 as a word add (ADD.w) (#434); when the
  *     memory is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
@@ -113,6 +112,9 @@
  * !libs {#graphicslib,#la6}, so the compiler loads GfxBase into a6; the
  * original's !libs was commented out and WaitTOF went through whatever
  * a6 held at the call.
+ * Fixed (intended deviation, #432): DecodeModule compares the module's
+ * address with $200000 unsigned; the original's BLT took every address
+ * from $80000000 up for chip memory and did not copy such a module.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1531,7 +1533,7 @@ static BB_BOOL modtochip(ULONG num)
     ULONG size, n;
     int i;
 
-    if ((LONG)src < 0x200000)
+    if ((ULONG)src < 0x200000)          /* Fixed (#432): unsigned, not BLT */
         return BB_FALSE;
     size = patternsize(src);
     for (i = 0, hdr = src; i < 31; i++, hdr += 30)
@@ -1554,8 +1556,10 @@ static BB_BOOL modtochip(ULONG num)
  * memory.
  *
  * The slot gets the address, length 1 (so CheckTrackerID works) and
- * flag 0.  A module in chip memory (an address below $200000, signed)
- * stays where it is (BUG(orig) (#432)); one from other memory is copied
+ * flag 0.  A module in chip memory (an address below $200000, compared
+ * unsigned: fixed, #432, the original's BLT took every address from
+ * $80000000 up for chip memory) stays where it is; one from other
+ * memory is copied
  * to chip memory, with the size + 3 as a word add (#434), flag 2; when
  * that memory is missing the slot keeps the old address with flag 2 and
  * the new length (#433; memlib's globalloc ends the program instead).
