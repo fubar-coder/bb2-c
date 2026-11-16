@@ -41,9 +41,6 @@
  *     far behind the block and kept at the change of the block
  *     (nxtnoclrln), so the notes are read from the memory behind it (test
  *     medlib-1dxx-word; issue to be filed).
- *   - pushnewvals: for a channel mask with gaps it still takes tracks
- *     0..k-1 with their own bits (no values of a wrong track), so the
- *     higher channels of the mask get no follow-up values. (#208)
  *   - the line routine tests a track against ChanMask with BTST on its
  *     low byte (the track number mod 8): tracks 8-11 pass like tracks 0-3,
  *     and 03 (portamento) and FFD (period), whose track check exists only
@@ -86,6 +83,11 @@
  * Fixed (#206): the synth period limit at 113 (synth_rts) set d1 instead
  * of the period d5, so synth and hybrid periods below 113 went to Paula;
  * the period is limited (on the synth path only).
+ * Fixed (#208): pushnewvals (the repeat part of the notes started in a
+ * pulse) was called only for the channels set in ChanMask, and each call
+ * took the next track and bit: with a mask with gaps (SetMedMask %0101)
+ * the higher channels got no repeat values.  It runs for the channels
+ * 0-3 and their DMA bits (masked with ChanMask already).
  * Fixed (#203): Bxx (position jump) stored the word of d4, whose upper byte
  * is left from a track before in the same line (19xx, the soffset or 64
  * _PlayNote leaves): the jump went to position 0, or with a negative word
@@ -2122,29 +2124,30 @@ fxtime:
     wait1lin(8);
     DMACON = dma;
     wait1lin(8);
-    /* pushnewvals: the repeat part.  BUG(orig) (#208): for a channel mask
-       with gaps the k-th channel of the mask takes track k and bit k.  The
-       mask and the DMA bits are shifted as they are used, the tracks taken
-       in turn (a DBF loop over bits 0-3) */
+    /* pushnewvals: the repeat part, for each of the channels 0-3 whose DMA
+       bit is set (dma is masked with ChanMask already).  Fixed (#208): the
+       original called it only for the channels of ChanMask and took the
+       next track and bit at each call, so with a mask with gaps the k-th
+       channel of the mask took track k and bit k.  The DMA bits are
+       shifted as they are used, the tracks taken in turn (a DBF loop) */
     {
         struct track **tp = db.trackdataptrs;
-        UWORD mask = ChanMask;
         WORD n = 3;
 
         do {
-            if (mask & 1) {
-                struct track *t = *tp++;
+            struct track *t = *tp++;
+
+            if (dma & 1) {
                 ULONG rep = t->sampleptr;
 
-                if ((dma & 1) && rep) {
+                if (rep) {
                     volatile UBYTE *a = t->audioaddr;
 
                     AC_PTR(a) = rep;
                     AC_LEN(a) = t->samplelen;
                 }
-                dma >>= 1;
             }
-            mask >>= 1;
+            dma >>= 1;
         } while (--n != -1);
     }
 }

@@ -13,6 +13,7 @@
 ; writes LC (+0), LEN (+4), PER and VOL.  PlayMed plays one tick.
 ; Correct: channel 2 gets the follow-up values - LEN 1 (the zero word),
 ; LC no longer the sample.
+; @fixed #208
 ; @configs clib
 ; @pass file=mask.med|@TESTDATA@/medlib-pushnewvals-mask.med
 DEFTYPE .l
