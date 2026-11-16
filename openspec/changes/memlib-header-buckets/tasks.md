@@ -23,4 +23,4 @@
 
 ## 5. Acceptance
 
-- [ ] 5.1 `ctest --preset all`, `bug-orig`, `originals` and `perf` (three runs) pass with the intended differences named. fix-scope reports only the added cases.
+- [x] 5.1 `ctest --preset all`, `bug-orig`, `originals` and `perf` (three runs) pass with the intended differences named. fix-scope reports only the added cases. - done (2026-11-16): on the combined main (buckets + originals-compare-outputs + compiler-intrinsics 1-3) `all` 759/759 and `originals` 774/774; perf three runs 9/9 and bug-orig (open bugs REPRODUCED; the four RWE DIFFERS are on main too) on the bucket branch; fix-scope only the added cases (memlib-header-buckets-report.md, compiler-intrinsics-report.md)
