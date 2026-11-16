@@ -58,6 +58,16 @@ carried over (for the comparison with AmiBlitz3).
   local string (`bproc.pstr`) measured 10104 cycles per call before, 9967
   after, the original 10038; one whose local string grows (`bproc.pgrow`,
   through locfree) 13747 before, 13454 after, the original 13323.
+* **strings2lib's lastring/astring** have the original's front end in
+  assembler (the empty and fit tests, the free and allocation through
+  memlib's table), and the copy stays the C `BL_STRCOPY` in a function
+  that saves no register: the C front end had two more call levels and
+  saved d2/d3/a6 on the allocation path, 174 cycles per allocation.
+  Every string assignment that fits measured 4.5 to 6.5 cycles faster
+  (`bstr.asg_s` 1219.7 to 1213.7); with memlib's entries `bproc.pstr`
+  9601 (original 10038), `bproc.fstr` 10290 (10784), `bproc.pgrow` 12915
+  (13323). Decision 15 of libs-performance ("C first") stays for the copy
+  loop.
 * **OS calls with a parameter in a3, a4 or a5** (e.g. workbench
   `AddAppIconA`: DiskObject in a3, tag list in a4; intuition
   `EasyRequestArgs`, `AutoRequest`, graphics `TextFit`,

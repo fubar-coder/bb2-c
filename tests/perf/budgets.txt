@@ -165,6 +165,12 @@
 # 10794.2 and 13747.2). Their targets are measured anew for the changed
 # program (the pass perf_bproc.pass with the tag orig, twice: 10038.5,
 # 10038.1; 10783.5, 10783.6; 13322.5, 13322.6).
+# The string assignment lines of bstr (asg_s, mid, left, right, str, chr,
+# ucase, hex, concat, string, bin, midlong, rightlong) and the three bproc
+# lines from two runs of strings2lib's lastring/astring with the original's
+# front end in assembler and the copy in C (2026-11-16): 4.5 to 6.5 cycles
+# per call less in bstr, bproc.pstr 9966.7 -> 9600.6, bproc.fstr
+# 10659.2 -> 10290.1, bproc.pgrow 13453.7 -> 12915.1 (both runs alike).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -288,30 +294,30 @@ bmisc.infront                129~4      134.9  InFront 4
 bmod.vblmod                 2418~120   2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed                9796~7     9950.0  PlayMed
 bproc.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
-bproc.pstr                   10070     10038.3  pstr{a$} (a Statement with a string parameter and a local string)
-bproc.fstr                   10769     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
-bproc.pgrow                  13592     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
+bproc.pstr                    9700     10038.3  pstr{a$} (a Statement with a string parameter and a local string)
+bproc.fstr                   10397     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
+bproc.pgrow                  13048     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bstr.asg_s                   1236     1367.5  r$=a$
-bstr.mid                     1470     1553.5  r$=Mid$(a$,3,5)
-bstr.left                    1260     1299.0  r$=Left$(a$,5)
-bstr.right                   1432     1495.5  r$=Right$(a$,5)
-bstr.str                     4211     4131.5  r$=Str$(a)
+bstr.asg_s                   1229     1367.5  r$=a$
+bstr.mid                     1464     1553.5  r$=Mid$(a$,3,5)
+bstr.left                    1255     1299.0  r$=Left$(a$,5)
+bstr.right                   1425     1495.5  r$=Right$(a$,5)
+bstr.str                     4205     4131.5  r$=Str$(a)
 bstr.val                     1690     1927.0  c=Val(n$)
 bstr.len                      687      731.0  c=Len(a$)
-bstr.chr                      408      411.0  r$=Chr$(65)
+bstr.chr                      401      411.0  r$=Chr$(65)
 bstr.asc                      756      797.0  c=Asc(a$)
 bstr.instr                   2308     3513.0  c=Instr(a$,"Blitz")
-bstr.ucase                   2774     3124.0  r$=UCase$(a$)
-bstr.hex                     1080     1570.0  r$=Hex$(a)
-bstr.concat                  2179     2318.5  r$=a$+b$
+bstr.ucase                   2769     3124.0  r$=UCase$(a$)
+bstr.hex                     1074     1570.0  r$=Hex$(a)
+bstr.concat                  2173     2318.5  r$=a$+b$
 bstr.strcmp                  2184     2943.5  If a$=b$ Then c=1
-bstr.string                  3440     4376.0  r$=String$("a",20)
+bstr.string                  3436     4376.0  r$=String$("a",20)
 bstr.read4                    261      254.0  Restore dd : Read c,c,c,c
 bstr.nextitem51               220      217.8  ResetList ll() : While NextItem(ll()) : Wend
 bstr.addkill                  796      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
 bstr.resetlist                 87       83.0  ResetList ll()
 bstr.sort201                78576    77694.0  Sort sa()
-bstr.bin                     1716     2119.0  r$=Bin$(a)
-bstr.midlong                 2417     3136.0  r$=Mid$(n$,3,40) (n$ 60 characters)
-bstr.rightlong               2376     3077.0  r$=Right$(n$,40)
+bstr.bin                     1711     2119.0  r$=Bin$(a)
+bstr.midlong                 2409     3136.0  r$=Mid$(n$,3,40) (n$ 60 characters)
+bstr.rightlong               2371     3077.0  r$=Right$(n$,40)
