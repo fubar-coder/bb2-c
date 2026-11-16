@@ -68,8 +68,6 @@
  *     on through the pattern data) (#477); the CLR.L of the first
  *     longword of every sample also clears 4 bytes behind the module for
  *     empty samples at its end (#570).
- *   - mt_LowMask starts at 0: the first 1xx/2xx before any E1x/E2x does
- *     not slide (#478).
  *   - The period lookups (mt_SetPeriod, mt_Arpeggio, mt_SetTonePorta,
  *     glissando) read behind the row of the finetune, and for finetune
  *     -1 behind the table into the voice data, when no entry fits (#481,
@@ -82,6 +80,10 @@
  *     offsets are shifted as words (repeat >= 32768 words wraps) (#479).
  *   - Sample numbers above 31 read behind mt_SampleStarts and the sample
  *     headers (#480).
+ * Fixed in the play routine (intended deviations):
+ *   - mt_LowMask starts as $FF, so the first 1xx/2xx slides by its whole
+ *     parameter; the original started it as 0, and the first 1xx/2xx
+ *     before any E1x/E2x did not slide (#478).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -292,7 +294,7 @@ static struct ptdata {
     { 0 },
     0,
     6, 0, 0, 0, 0, 0,
-    0,                                  /* mt_LowMask: BUG(orig), see above (#478) */
+    0xff,                               /* mt_LowMask: Fixed (#478), was 0 */
     0, 0, 0,
     { 0, 0 },
     0, 0, 0, 0,

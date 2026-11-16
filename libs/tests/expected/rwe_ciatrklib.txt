@@ -47,10 +47,12 @@ ChangeTrackerVBlank|RemICRVector bit||2 [fixed #448]	$00000001
 ChangeTrackerVBlank|RemICRVector interrupt||2	$00000044
 after the CIA phase|modtable||1	bytes 110 fnv B323D3FD
 after the CIA phase|CIA part||1	bytes 110 fnv B6319231
-after the CIA phase|mt_LowMask 0||1	$00000001
+after the CIA phase|mt_LowMask 0||1 [orig]	$00000001
+after the CIA phase|mt_LowMask 0||1 [fixed #478]	$00000000
 DecodeModule|kept|slot 0, chip|1	kept
 DecodeModule|popped|slot 0, chip|1	$00000000
-DecodeModule|play routine|slot 0, chip|1	bytes 1584 fnv 5AA0D2C7
+DecodeModule|play routine|slot 0, chip|1 [orig]	bytes 1584 fnv 5AA0D2C7
+DecodeModule|play routine|slot 0, chip|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 DecodeModule|modtable|slot 0, chip|1	bytes 110 fnv 3786BDCF
 DecodeModule|CIA part|slot 0, chip|1	bytes 110 fnv B6319231
 GetTrackerSize|kept|slot 0|1	kept
@@ -58,7 +60,8 @@ GetTrackerSize|popped|slot 0|1	$00000000
 GetTrackerSize|DMACONR|slot 0|1	$00000000
 GetTrackerSize|filter|slot 0|1 [orig]	$00000000
 GetTrackerSize|filter|slot 0|1 [fixed #449]	$00000002
-GetTrackerSize|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
+GetTrackerSize|play routine|slot 0|1 [orig]	bytes 1584 fnv 5AA0D2C7
+GetTrackerSize|play routine|slot 0|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 GetTrackerSize|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 GetTrackerSize|CIA part|slot 0|1	bytes 110 fnv B6319231
 GetTrackerSize|d0|slot 0|1	$00000001
@@ -67,7 +70,8 @@ GetTrackerLocation|popped|slot 0|1	$00000000
 GetTrackerLocation|DMACONR|slot 0|1	$00000000
 GetTrackerLocation|filter|slot 0|1 [orig]	$00000000
 GetTrackerLocation|filter|slot 0|1 [fixed #449]	$00000002
-GetTrackerLocation|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
+GetTrackerLocation|play routine|slot 0|1 [orig]	bytes 1584 fnv 5AA0D2C7
+GetTrackerLocation|play routine|slot 0|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 GetTrackerLocation|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 GetTrackerLocation|CIA part|slot 0|1	bytes 110 fnv B6319231
 GetTrackerLocation|d0|slot 0|1	$81000000
@@ -76,7 +80,8 @@ CheckTrackerID|popped|slot 0|1	$00000000
 CheckTrackerID|DMACONR|slot 0|1	$00000000
 CheckTrackerID|filter|slot 0|1 [orig]	$00000000
 CheckTrackerID|filter|slot 0|1 [fixed #449]	$00000002
-CheckTrackerID|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
+CheckTrackerID|play routine|slot 0|1 [orig]	bytes 1584 fnv 5AA0D2C7
+CheckTrackerID|play routine|slot 0|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 CheckTrackerID|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 CheckTrackerID|CIA part|slot 0|1	bytes 110 fnv B6319231
 CheckTrackerID|d0|slot 0|1	$FFFFFFFF
@@ -85,7 +90,8 @@ ModulePatterns|popped|slot 0|1	$00000000
 ModulePatterns|DMACONR|slot 0|1	$00000000
 ModulePatterns|filter|slot 0|1 [orig]	$00000000
 ModulePatterns|filter|slot 0|1 [fixed #449]	$00000002
-ModulePatterns|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
+ModulePatterns|play routine|slot 0|1 [orig]	bytes 1584 fnv 5AA0D2C7
+ModulePatterns|play routine|slot 0|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 ModulePatterns|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 ModulePatterns|CIA part|slot 0|1	bytes 110 fnv B6319231
 ModulePatterns|d0|slot 0|1 [orig]	$00000009
@@ -110,7 +116,8 @@ GetTrackerSize|popped|slot 3|1	$00000000
 GetTrackerSize|DMACONR|slot 3|1	$00000000
 GetTrackerSize|filter|slot 3|1 [orig]	$00000000
 GetTrackerSize|filter|slot 3|1 [fixed #449]	$00000002
-GetTrackerSize|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
+GetTrackerSize|play routine|slot 3|1 [orig]	bytes 1584 fnv 5AA0D2C7
+GetTrackerSize|play routine|slot 3|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 GetTrackerSize|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 GetTrackerSize|CIA part|slot 3|1	bytes 110 fnv B6319231
 GetTrackerSize|d0|slot 3|1	$00000000
@@ -119,7 +126,8 @@ GetTrackerLocation|popped|slot 3|1	$00000000
 GetTrackerLocation|DMACONR|slot 3|1	$00000000
 GetTrackerLocation|filter|slot 3|1 [orig]	$00000000
 GetTrackerLocation|filter|slot 3|1 [fixed #449]	$00000002
-GetTrackerLocation|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
+GetTrackerLocation|play routine|slot 3|1 [orig]	bytes 1584 fnv 5AA0D2C7
+GetTrackerLocation|play routine|slot 3|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 GetTrackerLocation|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 GetTrackerLocation|CIA part|slot 3|1	bytes 110 fnv B6319231
 GetTrackerLocation|d0|slot 3|1	$00000000
@@ -128,7 +136,8 @@ CheckTrackerID|popped|slot 3|1	$00000000
 CheckTrackerID|DMACONR|slot 3|1	$00000000
 CheckTrackerID|filter|slot 3|1 [orig]	$00000000
 CheckTrackerID|filter|slot 3|1 [fixed #449]	$00000002
-CheckTrackerID|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
+CheckTrackerID|play routine|slot 3|1 [orig]	bytes 1584 fnv 5AA0D2C7
+CheckTrackerID|play routine|slot 3|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 CheckTrackerID|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 CheckTrackerID|CIA part|slot 3|1	bytes 110 fnv B6319231
 CheckTrackerID|d0|slot 3|1	$00000000
@@ -137,7 +146,8 @@ ModulePatterns|popped|slot 3|1	$00000000
 ModulePatterns|DMACONR|slot 3|1	$00000000
 ModulePatterns|filter|slot 3|1 [orig]	$00000000
 ModulePatterns|filter|slot 3|1 [fixed #449]	$00000002
-ModulePatterns|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
+ModulePatterns|play routine|slot 3|1 [orig]	bytes 1584 fnv 5AA0D2C7
+ModulePatterns|play routine|slot 3|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 ModulePatterns|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 ModulePatterns|CIA part|slot 3|1	bytes 110 fnv B6319231
 ModulePatterns|d0|slot 3|1	$00000000
@@ -153,7 +163,8 @@ StartTracker|popped|slot 3|1	$00000000
 StartTracker|DMACONR|slot 3|1	$00000000
 StartTracker|filter|slot 3|1 [orig]	$00000000
 StartTracker|filter|slot 3|1 [fixed #449]	$00000002
-StartTracker|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
+StartTracker|play routine|slot 3|1 [orig]	bytes 1584 fnv 5AA0D2C7
+StartTracker|play routine|slot 3|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 StartTracker|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 StartTracker|CIA part|slot 3|1	bytes 110 fnv B6319231
 StartTracker|d0|slot 3|1 [orig]	$00000003
@@ -163,7 +174,8 @@ ModuleToChip|popped|$5|1	$00000000
 ModuleToChip|DMACONR|$5|1	$00000000
 ModuleToChip|filter|$5|1 [orig]	$00000000
 ModuleToChip|filter|$5|1 [fixed #449]	$00000002
-ModuleToChip|play routine|$5|1	bytes 1584 fnv 5AA0D2C7
+ModuleToChip|play routine|$5|1 [orig]	bytes 1584 fnv 5AA0D2C7
+ModuleToChip|play routine|$5|1 [fixed #478]	bytes 1584 fnv 5E517BB0
 ModuleToChip|modtable|$5|1	bytes 110 fnv 3786BDCF
 ModuleToChip|CIA part|$5|1	bytes 110 fnv B6319231
 ModuleToChip|d0|$5|1	$00000005
@@ -173,7 +185,8 @@ StartTracker|kept|slot 2, length $7FFFFFFF|1	kept
 StartTracker|popped|slot 2, length $7FFFFFFF|1	$00000000
 StartTracker|DMACONR|slot 2, length $7FFFFFFF|1	$00000000
 StartTracker|filter|slot 2, length $7FFFFFFF|1	$00000002
-StartTracker|play routine|slot 2, length $7FFFFFFF|1	bytes 1584 fnv D65883E2
+StartTracker|play routine|slot 2, length $7FFFFFFF|1 [orig]	bytes 1584 fnv D65883E2
+StartTracker|play routine|slot 2, length $7FFFFFFF|1 [fixed #478]	bytes 1584 fnv 16B3F9B1
 StartTracker|modtable|slot 2, length $7FFFFFFF|1	bytes 110 fnv 36544469
 StartTracker|CIA part|slot 2, length $7FFFFFFF|1	bytes 110 fnv E8F5B75B
 StartTracker|d0|slot 2, length $7FFFFFFF|1	$FFFFFFFF
@@ -183,21 +196,24 @@ StopTracker|kept|slot 2, length $7FFFFFFF|1	kept
 StopTracker|popped|slot 2, length $7FFFFFFF|1	$00000000
 StopTracker|DMACONR|slot 2, length $7FFFFFFF|1	$00000000
 StopTracker|filter|slot 2, length $7FFFFFFF|1	$00000002
-StopTracker|play routine|slot 2, length $7FFFFFFF|1	bytes 1584 fnv 835FC623
+StopTracker|play routine|slot 2, length $7FFFFFFF|1 [orig]	bytes 1584 fnv 835FC623
+StopTracker|play routine|slot 2, length $7FFFFFFF|1 [fixed #478]	bytes 1584 fnv D30CEC54
 StopTracker|modtable|slot 2, length $7FFFFFFF|1	bytes 110 fnv 36544469
 StopTracker|CIA part|slot 2, length $7FFFFFFF|1	bytes 110 fnv E8F5B75B
 FreeTrackerModule|kept|slot 2, length $7FFFFFFF|1	kept
 FreeTrackerModule|popped|slot 2, length $7FFFFFFF|1	$00000000
 FreeTrackerModule|DMACONR|slot 2, length $7FFFFFFF|1	$00000000
 FreeTrackerModule|filter|slot 2, length $7FFFFFFF|1	$00000002
-FreeTrackerModule|play routine|slot 2, length $7FFFFFFF|1	bytes 1584 fnv 835FC623
+FreeTrackerModule|play routine|slot 2, length $7FFFFFFF|1 [orig]	bytes 1584 fnv 835FC623
+FreeTrackerModule|play routine|slot 2, length $7FFFFFFF|1 [fixed #478]	bytes 1584 fnv D30CEC54
 FreeTrackerModule|modtable|slot 2, length $7FFFFFFF|1	bytes 110 fnv 3786BDCF
 FreeTrackerModule|CIA part|slot 2, length $7FFFFFFF|1	bytes 110 fnv E8F5B75B
 StartTracker|kept|slot 0|1	kept
 StartTracker|popped|slot 0|1	$00000000
 StartTracker|DMACONR|slot 0|1	$00000000
 StartTracker|filter|slot 0|1	$00000002
-StartTracker|play routine|slot 0|1	bytes 1584 fnv C8A108DA
+StartTracker|play routine|slot 0|1 [orig]	bytes 1584 fnv C8A108DA
+StartTracker|play routine|slot 0|1 [fixed #478]	bytes 1584 fnv 6462B8B9
 StartTracker|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 StartTracker|CIA part|slot 0|1	bytes 110 fnv E8C350A4
 StartTracker|d0|slot 0|1	$FFFFFFFF
@@ -209,77 +225,88 @@ PlayTracker|kept|tick 0|1	kept
 PlayTracker|popped|tick 0|1	$00000000
 PlayTracker|DMACONR|tick 0|1	$00000000
 PlayTracker|filter|tick 0|1	$00000002
-PlayTracker|play routine|tick 0|1	bytes 1584 fnv 7005E035
+PlayTracker|play routine|tick 0|1 [orig]	bytes 1584 fnv 7005E035
+PlayTracker|play routine|tick 0|1 [fixed #478]	bytes 1584 fnv DF12D15E
 PlayTracker|modtable|tick 0|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 0|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 1|1	kept
 PlayTracker|popped|tick 1|1	$00000000
 PlayTracker|DMACONR|tick 1|1	$00000000
 PlayTracker|filter|tick 1|1	$00000002
-PlayTracker|play routine|tick 1|1	bytes 1584 fnv 79D75A24
+PlayTracker|play routine|tick 1|1 [orig]	bytes 1584 fnv 79D75A24
+PlayTracker|play routine|tick 1|1 [fixed #478]	bytes 1584 fnv B4CB7F6F
 PlayTracker|modtable|tick 1|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 1|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 2|1	kept
 PlayTracker|popped|tick 2|1	$00000000
 PlayTracker|DMACONR|tick 2|1	$00000000
 PlayTracker|filter|tick 2|1	$00000002
-PlayTracker|play routine|tick 2|1	bytes 1584 fnv 213C317F
+PlayTracker|play routine|tick 2|1 [orig]	bytes 1584 fnv 213C317F
+PlayTracker|play routine|tick 2|1 [fixed #478]	bytes 1584 fnv DA358E14
 PlayTracker|modtable|tick 2|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 2|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 3|1	kept
 PlayTracker|popped|tick 3|1	$00000000
 PlayTracker|DMACONR|tick 3|1	$00000000
 PlayTracker|filter|tick 3|1	$00000002
-PlayTracker|play routine|tick 3|1	bytes 1584 fnv D5C7A16E
+PlayTracker|play routine|tick 3|1 [orig]	bytes 1584 fnv D5C7A16E
+PlayTracker|play routine|tick 3|1 [fixed #478]	bytes 1584 fnv BF6B4E25
 PlayTracker|modtable|tick 3|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 3|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 4|1	kept
 PlayTracker|popped|tick 4|1	$00000000
 PlayTracker|DMACONR|tick 4|1	$00000000
 PlayTracker|filter|tick 4|1	$00000002
-PlayTracker|play routine|tick 4|1	bytes 1584 fnv D27282C9
+PlayTracker|play routine|tick 4|1 [orig]	bytes 1584 fnv D27282C9
+PlayTracker|play routine|tick 4|1 [fixed #478]	bytes 1584 fnv 3A1B66CA
 PlayTracker|modtable|tick 4|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 4|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 5|1	kept
 PlayTracker|popped|tick 5|1	$00000000
 PlayTracker|DMACONR|tick 5|1	$0000000E
 PlayTracker|filter|tick 5|1	$00000002
-PlayTracker|play routine|tick 5|1	bytes 1584 fnv 164A3404
+PlayTracker|play routine|tick 5|1 [orig]	bytes 1584 fnv 164A3404
+PlayTracker|play routine|tick 5|1 [fixed #478]	bytes 1584 fnv DC5FF773
 PlayTracker|modtable|tick 5|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 5|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 6|1	kept
 PlayTracker|popped|tick 6|1	$00000000
 PlayTracker|DMACONR|tick 6|1	$0000000E
 PlayTracker|filter|tick 6|1	$00000002
-PlayTracker|play routine|tick 6|1	bytes 1584 fnv D120766D
+PlayTracker|play routine|tick 6|1 [orig]	bytes 1584 fnv D120766D
+PlayTracker|play routine|tick 6|1 [fixed #478]	bytes 1584 fnv C4507606
 PlayTracker|modtable|tick 6|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 6|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 7|1	kept
 PlayTracker|popped|tick 7|1	$00000000
 PlayTracker|DMACONR|tick 7|1	$0000000E
 PlayTracker|filter|tick 7|1	$00000002
-PlayTracker|play routine|tick 7|1	bytes 1584 fnv 55C99DFC
+PlayTracker|play routine|tick 7|1 [orig]	bytes 1584 fnv 55C99DFC
+PlayTracker|play routine|tick 7|1 [fixed #478]	bytes 1584 fnv 1059B441
 PlayTracker|modtable|tick 7|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 7|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 8|1	kept
 PlayTracker|popped|tick 8|1	$00000000
 PlayTracker|DMACONR|tick 8|1	$0000000E
 PlayTracker|filter|tick 8|1	$00000002
-PlayTracker|play routine|tick 8|1	bytes 1584 fnv CA362FC8
+PlayTracker|play routine|tick 8|1 [orig]	bytes 1584 fnv CA362FC8
+PlayTracker|play routine|tick 8|1 [fixed #478]	bytes 1584 fnv E2F183A1
 PlayTracker|modtable|tick 8|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 8|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 9|1	kept
 PlayTracker|popped|tick 9|1	$00000000
 PlayTracker|DMACONR|tick 9|1	$0000000E
 PlayTracker|filter|tick 9|1	$00000002
-PlayTracker|play routine|tick 9|1	bytes 1584 fnv D3FDCF34
+PlayTracker|play routine|tick 9|1 [orig]	bytes 1584 fnv D3FDCF34
+PlayTracker|play routine|tick 9|1 [fixed #478]	bytes 1584 fnv 7EA31425
 PlayTracker|modtable|tick 9|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 9|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 10|1	kept
 PlayTracker|popped|tick 10|1	$00000000
 PlayTracker|DMACONR|tick 10|1	$0000000E
 PlayTracker|filter|tick 10|1	$00000002
-PlayTracker|play routine|tick 10|1	bytes 1584 fnv 9D5BA52C
+PlayTracker|play routine|tick 10|1 [orig]	bytes 1584 fnv 9D5BA52C
+PlayTracker|play routine|tick 10|1 [fixed #478]	bytes 1584 fnv 8B94CBDD
 PlayTracker|modtable|tick 10|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 10|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 11|1	kept

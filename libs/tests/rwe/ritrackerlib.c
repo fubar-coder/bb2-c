@@ -34,7 +34,7 @@
  * second, small module for the speed/tempo corner cases (F80: a speed,
  * BUG(orig) #569; F00 on voice 1 stops, and voices 2-4 then read their notes
  * from the custom chip registers, BUG(orig) #475).  Rows by hand: the first
- * 1xx (mt_LowMask 0, BUG(orig), #478), volume above 64, tremolo's ramp-down
+ * 1xx (mt_LowMask 0 in the original, Fixed (#478)), volume above 64, tremolo's ramp-down
  * with a negative vibrato position (BUG(orig), #482), 9xx with a note
  * (twice, BUG(orig), #473), invert loop, retrig.  Covered besides playing: TrackDMA, Tracker Off
  * (mt_end) / On (stays stopped, BUG(orig), #572), TrackInit while Tracker Off
@@ -315,7 +315,7 @@ static void build_main(void)
     r = 0;
     note(pat + 16 * r + 0, 428, 1, 0xf, 3);             /* speed 3 */
     note(pat + 16 * r + 4, 381, 2, 0x0, 0x47);          /* arpeggio */
-    note(pat + 16 * r + 8, 320, 3, 0x1, 0x04);          /* first 1xx: LowMask 0 */
+    note(pat + 16 * r + 8, 320, 3, 0x1, 0x04);          /* first 1xx: LowMask 0 in the original (#478) */
     note(pat + 16 * r + 12, 254, 6, 0xa, 0x0f);         /* volume 0x50 slides */
     r = 1;
     note(pat + 16 * r + 0, 0, 0, 0x3, 0x10);

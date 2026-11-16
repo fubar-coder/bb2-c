@@ -1,26 +1,30 @@
 # capture rwe_ritrackerlib 1
 init|kept||1	kept
 init|popped||1	$00000000
-init|state||1	bytes 1538 fnv E9400F66
+init|state||1 [orig]	bytes 1538 fnv E9400F66
+init|state||1 [fixed #478]	bytes 1538 fnv FC48B5A5
 init|module||1	bytes 16 00000000000000000000000000000000
 init|custom||1	bytes 512 fnv 3366C1C5
 init|CIA-A PRA filter||1	$00000000
 init|CIA-B timer A||1	$00005AA5
 finit (no TrackInit)|kept|$0|1	kept
 finit (no TrackInit)|popped|$0|1	$00000000
-finit (no TrackInit)|state|$0|1	bytes 1538 fnv E9400F66
+finit (no TrackInit)|state|$0|1 [orig]	bytes 1538 fnv E9400F66
+finit (no TrackInit)|state|$0|1 [fixed #478]	bytes 1538 fnv FC48B5A5
 finit (no TrackInit)|module|$0|1	bytes 16 00000000000000000000000000000000
 finit (no TrackInit)|custom|$0|1	bytes 512 fnv 3366C1C5
 finit (no TrackInit)|CIA-A PRA filter|$0|1	$00000000
 finit (no TrackInit)|CIA-B timer A|$0|1	$00005AA5
 TrackInit|kept|$1|1	kept
 TrackInit|popped|$1|1	$00000000
-TrackInit|state|$1|1	bytes 1538 fnv F76B5456
+TrackInit|state|$1|1 [orig]	bytes 1538 fnv F76B5456
+TrackInit|state|$1|1 [fixed #478]	bytes 1538 fnv 674A2299
 TrackInit|module|$1|1	bytes 8858 fnv 46196170
 TrackInit|custom|$1|1	bytes 512 fnv CDF614B4
 TrackInit|CIA-A PRA filter|$1|1	$00000002
 TrackInit|CIA-B timer A|$1|1	$00005AA5
-TrackInit|state|$1|2	bytes 1538 fnv F76B5456
+TrackInit|state|$1|2 [orig]	bytes 1538 fnv F76B5456
+TrackInit|state|$1|2 [fixed #478]	bytes 1538 fnv 674A2299
 TrackInit|glue|$1|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackInit|module|$1|2	bytes 8858 fnv 46196170
 TrackInit|custom|$1|2	bytes 512 fnv CDF614B4
@@ -28,7 +32,8 @@ TrackInit|CIA-A PRA filter|$1|2	$00000002
 TrackInit|CIA-B timer A|$1|2	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 0|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 0|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 0|1	bytes 1538 fnv 033BA9E9
+TrackPlay|state|DMA_Wait 4000 tick 0|1 [orig]	bytes 1538 fnv 033BA9E9
+TrackPlay|state|DMA_Wait 4000 tick 0|1 [fixed #478]	bytes 1538 fnv 045CC7C6
 TrackPlay|glue|DMA_Wait 4000 tick 0|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 0|1	bytes 8858 fnv 46196170
 TrackPlay|custom|DMA_Wait 4000 tick 0|1	bytes 512 fnv D1689FC5
@@ -36,7 +41,8 @@ TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 0|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 0|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 1|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 1|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 1|1	bytes 1538 fnv A9EE6190
+TrackPlay|state|DMA_Wait 4000 tick 1|1 [orig]	bytes 1538 fnv A9EE6190
+TrackPlay|state|DMA_Wait 4000 tick 1|1 [fixed #478]	bytes 1538 fnv CFF22A1F
 TrackPlay|glue|DMA_Wait 4000 tick 1|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 1|1	bytes 8858 fnv 46196170
 TrackPlay|custom|DMA_Wait 4000 tick 1|1	bytes 512 fnv D1689FC5
@@ -44,7 +50,8 @@ TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 1|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 1|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 2|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 2|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 2|1	bytes 1538 fnv E1072C63
+TrackPlay|state|DMA_Wait 4000 tick 2|1 [orig]	bytes 1538 fnv E1072C63
+TrackPlay|state|DMA_Wait 4000 tick 2|1 [fixed #478]	bytes 1538 fnv 15F6806C
 TrackPlay|glue|DMA_Wait 4000 tick 2|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 2|1	bytes 8858 fnv 46196170
 TrackPlay|custom|DMA_Wait 4000 tick 2|1	bytes 512 fnv D1689FC5
@@ -52,7 +59,8 @@ TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 2|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 2|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 3|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 3|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 3|1	bytes 1538 fnv 486E0582
+TrackPlay|state|DMA_Wait 4000 tick 3|1 [orig]	bytes 1538 fnv 486E0582
+TrackPlay|state|DMA_Wait 4000 tick 3|1 [fixed #478]	bytes 1538 fnv 0FAE2ECD
 TrackPlay|glue|DMA_Wait 4000 tick 3|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 3|1	bytes 8858 fnv 46196170
 TrackPlay|custom|DMA_Wait 4000 tick 3|1	bytes 512 fnv D1689FC5
@@ -60,7 +68,8 @@ TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 3|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 3|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 4|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 4|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 4|1	bytes 1538 fnv A84E6915
+TrackPlay|state|DMA_Wait 4000 tick 4|1 [orig]	bytes 1538 fnv A84E6915
+TrackPlay|state|DMA_Wait 4000 tick 4|1 [fixed #478]	bytes 1538 fnv 5DB27EFA
 TrackPlay|glue|DMA_Wait 4000 tick 4|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 4|1	bytes 8858 fnv 46196170
 TrackPlay|custom|DMA_Wait 4000 tick 4|1	bytes 512 fnv D1689FC5
@@ -68,7 +77,8 @@ TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 4|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 4|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 5|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 5|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 5|1	bytes 1538 fnv 20E10EF9
+TrackPlay|state|DMA_Wait 4000 tick 5|1 [orig]	bytes 1538 fnv 20E10EF9
+TrackPlay|state|DMA_Wait 4000 tick 5|1 [fixed #478]	bytes 1538 fnv 8840FBA2
 TrackPlay|glue|DMA_Wait 4000 tick 5|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 5|1	bytes 8858 fnv 46196170
 TrackPlay|custom|DMA_Wait 4000 tick 5|1	bytes 512 fnv 3CACFA53
@@ -76,42 +86,52 @@ TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 5|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 5|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 6|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 6|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 6|1	bytes 1538 fnv 28766C7A
+TrackPlay|state|DMA_Wait 4000 tick 6|1 [orig]	bytes 1538 fnv 28766C7A
+TrackPlay|state|DMA_Wait 4000 tick 6|1 [fixed #478]	bytes 1538 fnv 9596DD4E
 TrackPlay|glue|DMA_Wait 4000 tick 6|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 6|1	bytes 8858 fnv 46196170
-TrackPlay|custom|DMA_Wait 4000 tick 6|1	bytes 512 fnv 12A56F88
+TrackPlay|custom|DMA_Wait 4000 tick 6|1 [orig]	bytes 512 fnv 12A56F88
+TrackPlay|custom|DMA_Wait 4000 tick 6|1 [fixed #478]	bytes 512 fnv ACD74B6C
 TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 6|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 6|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 7|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 7|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 7|1	bytes 1538 fnv 52F4648A
+TrackPlay|state|DMA_Wait 4000 tick 7|1 [orig]	bytes 1538 fnv 52F4648A
+TrackPlay|state|DMA_Wait 4000 tick 7|1 [fixed #478]	bytes 1538 fnv 9E2B9F6E
 TrackPlay|glue|DMA_Wait 4000 tick 7|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 7|1	bytes 8858 fnv 46196170
-TrackPlay|custom|DMA_Wait 4000 tick 7|1	bytes 512 fnv 5C124B78
+TrackPlay|custom|DMA_Wait 4000 tick 7|1 [orig]	bytes 512 fnv 5C124B78
+TrackPlay|custom|DMA_Wait 4000 tick 7|1 [fixed #478]	bytes 512 fnv F3971F64
 TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 7|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 7|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 8|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 8|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 8|1	bytes 1538 fnv A7FCE216
+TrackPlay|state|DMA_Wait 4000 tick 8|1 [orig]	bytes 1538 fnv A7FCE216
+TrackPlay|state|DMA_Wait 4000 tick 8|1 [fixed #478]	bytes 1538 fnv 62F120A2
 TrackPlay|glue|DMA_Wait 4000 tick 8|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 8|1	bytes 8858 fnv 46196170
-TrackPlay|custom|DMA_Wait 4000 tick 8|1	bytes 512 fnv B44A85C1
+TrackPlay|custom|DMA_Wait 4000 tick 8|1 [orig]	bytes 512 fnv B44A85C1
+TrackPlay|custom|DMA_Wait 4000 tick 8|1 [fixed #478]	bytes 512 fnv 5CF30305
 TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 8|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 8|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 9|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 9|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 9|1	bytes 1538 fnv E88FEBCB
+TrackPlay|state|DMA_Wait 4000 tick 9|1 [orig]	bytes 1538 fnv E88FEBCB
+TrackPlay|state|DMA_Wait 4000 tick 9|1 [fixed #478]	bytes 1538 fnv D4696FE7
 TrackPlay|glue|DMA_Wait 4000 tick 9|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 9|1	bytes 8858 fnv 46196170
-TrackPlay|custom|DMA_Wait 4000 tick 9|1	bytes 512 fnv 3F913751
+TrackPlay|custom|DMA_Wait 4000 tick 9|1 [orig]	bytes 512 fnv 3F913751
+TrackPlay|custom|DMA_Wait 4000 tick 9|1 [fixed #478]	bytes 512 fnv 2BD0BCC5
 TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 9|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 9|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 10|1	kept
 TrackPlay|popped|DMA_Wait 4000 tick 10|1	$00000000
-TrackPlay|state|DMA_Wait 4000 tick 10|1	bytes 1538 fnv A417C79A
+TrackPlay|state|DMA_Wait 4000 tick 10|1 [orig]	bytes 1538 fnv A417C79A
+TrackPlay|state|DMA_Wait 4000 tick 10|1 [fixed #478]	bytes 1538 fnv 8959C8B6
 TrackPlay|glue|DMA_Wait 4000 tick 10|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|DMA_Wait 4000 tick 10|1	bytes 8858 fnv 46196170
-TrackPlay|custom|DMA_Wait 4000 tick 10|1	bytes 512 fnv 6299B74B
+TrackPlay|custom|DMA_Wait 4000 tick 10|1 [orig]	bytes 512 fnv 6299B74B
+TrackPlay|custom|DMA_Wait 4000 tick 10|1 [fixed #478]	bytes 512 fnv 042ABDD7
 TrackPlay|CIA-A PRA filter|DMA_Wait 4000 tick 10|1	$00000002
 TrackPlay|CIA-B timer A|DMA_Wait 4000 tick 10|1	$00005AA5
 TrackPlay|kept|DMA_Wait 4000 tick 11|1	kept

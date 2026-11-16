@@ -350,7 +350,8 @@ static void buildmod(void)
     pat = ref + 1084;
     for (n = 0; n < NPAT * 64 * 4; n++)
         cell(pat + 4 * n);
-    /* row 0 of pattern 0: speed 3 and a 1xx before any E1x (mt_LowMask 0) */
+    /* row 0 of pattern 0: speed 3 and a 1xx before any E1x (mt_LowMask 0 in
+       the original, Fixed (#478)) */
     pat[2] = (pat[2] & 0xf0) | 0xf;
     pat[3] = 3;
     pat[4] = 0x01; pat[5] = 0xac; pat[6] = 0x51; pat[7] = 0x05;

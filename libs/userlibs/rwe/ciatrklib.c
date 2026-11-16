@@ -47,8 +47,7 @@
  *   - PauseModule toggles its own state, which StartTracker and
  *     StopTracker leave as it is: after a pause the next PauseModule
  *     only enables playing (test ciatrklib-pause-state-kept; #1076).
- *   - Play routine (Protracker 2.3A): mt_LowMask starts as 0, so the
- *     first 1xx/2xx before an E1x/E2x does not slide (#478); the sample
+ *   - Play routine (Protracker 2.3A): the sample
  *     offset (9xx with a note) is applied twice to n_start/n_length
  *     (mt_SetRegs calls mt_CheckMoreEfx before mt_SetPeriod, which runs it
  *     again) (#473); tremolo's ramp-down tests the VIBRATO position
@@ -67,6 +66,11 @@
  * returns its argument; the documentation of the library says so (the
  * copy is part of DecodeModule since 1.02a, the command only still
  * tokenises for old programs).
+ *
+ * Fixed in the play routine (intended deviations):
+ *   - mt_LowMask starts as $FF, so the first 1xx/2xx slides by its whole
+ *     parameter; the original started it as 0, and the first 1xx/2xx
+ *     before any E1x/E2x did not slide (#478).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -482,7 +486,7 @@ static struct {
     },
     { { .dmabit = 1 }, { .dmabit = 2 }, { .dmabit = 4 }, { .dmabit = 8 } },
     { 0 }, { 0 }, { 0 }, NULL,
-    6, 0, 0, 0, 0, 0, 0,                /* mt_speed 6 ... mt_LowMask 0 (BUG(orig), #478) */
+    6, 0, 0, 0, 0, 0, 0xff,             /* mt_speed 6 ... mt_LowMask $FF (Fixed (#478), was 0) */
     0, 0, 0, 0, 0, 0, 0,
 };
 _Static_assert(__builtin_offsetof(__typeof__(playdata), chan) == 48 + 1152, "mt_chan1temp");

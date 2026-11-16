@@ -152,8 +152,6 @@ pt23f changelog served as the checklist, no code was taken from it):
   pattern data (65536 more bytes) (#477). The `CLR.L` of every sample's
   first longword also clears 4 bytes behind the module for empty
   samples at its end (#570).
-* `mt_LowMask` starts at 0: the first 1xx/2xx before any E1x/E2x does
-  not slide (#478).
 * The period lookups (`mt_SetPeriod`, `mt_Arpeggio`, `mt_SetTonePorta`,
   glissando) go on behind the finetune's row when no entry fits (37
   entries; for finetune −1 into the first voice block) (#481, #474); a
@@ -167,6 +165,16 @@ pt23f changelog served as the checklist, no code was taken from it):
   (#479).
 * Sample numbers above 31 read behind `mt_SampleStarts` and the sample
   headers (#480).
+
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F), in the play routine:
+
+* `mt_LowMask` starts as `$FF`, so the first 1xx/2xx slides by its whole
+  parameter; the original started it as 0, and the first 1xx/2xx before
+  any E1x/E2x did not slide (#478; library test `rwe_ritrackerlib`, the
+  ticks of the row with the first 1xx).
 
 ## Test
 

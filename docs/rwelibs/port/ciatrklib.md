@@ -152,6 +152,11 @@ kind F):
   without a loop ended in a loop of its first two bytes (#438; test
   `ciatrklib-init-length-vs-address`, library test `rwe_ciatrklib`, the cases `...|module bytes|...` after
   `StartTracker` of slot 0).
+* Play routine: `mt_LowMask` starts as `$FF`, so the first 1xx/2xx
+  slides by its whole parameter; the original started it as 0, and the
+  first 1xx/2xx before any E1x/E2x did not slide (#478; library test
+  `rwe_ciatrklib`, the case `mt_LowMask 0` and the ticks of the first
+  1xx).
 
 ## BUG(orig), kept
 
@@ -177,8 +182,7 @@ kind F):
   next `PauseModule` only enables playing, so a module started again is
   not paused and a stopped one plays again (test
   `ciatrklib-pause-state-kept`, REPRODUCED; #1076).
-* Play routine (Protracker 2.3A): `mt_LowMask` starts as 0 – the first
-  1xx/2xx before any E1x/E2x does not slide (#478); 9xx with a note
+* Play routine (Protracker 2.3A): 9xx with a note
   applies the offset twice to `n_start`/`n_length` (`mt_SetRegs` calls
   `mt_CheckMoreEfx`, then `mt_SetPeriod` runs it again; the hardware got
   the first one) (#473); the tremolo's ramp-down tests the **vibrato**
