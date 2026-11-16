@@ -26,10 +26,10 @@
  * (DiskBuffer, default 1024 bytes each) and waits for the audio
  * interrupt bits in INTREQR (busy wait, as in the original).
  *
- * BUG(orig), kept:
- *   - the error check of SetPeriod (sndchk) goes on into dpchk and tests
- *     the PERIOD (d1) as channel mask: SetPeriod with a period > 15 is a
- *     runtime error "Illegal Chanel Mask" with the debugger. (#66)
+ * Fixed (#66): SetPeriod has an error check of its own (setpchk, the
+ * object test); the original's sndchk went on into dpchk and tested the
+ * PERIOD (d1) as channel mask: SetPeriod with a period > 15 was the
+ * runtime error "Illegal Chanel Mask" with the debugger.
  * Fixed (#985): Filter On clears bit 1 of CIAAPRA (the active-low /LED
  * output: filter on), Filter Off sets it; the original had them the other
  * way round, against its documentation.
@@ -73,7 +73,7 @@
 void dodplay2(void), dodplay(void), dodiskbuff(void), dofilter(void);
 void dovolume(void), dosdata(void), dopsound(void), audiolib_codeinit(void);
 void audiolib_codefinit(void), dofreesound(void), sndchk(void), dpchk(void);
-void vchk(void), ischk1(void), ischk2(void), sdatachk(void);
+void vchk(void), ischk1(void), ischk2(void), sdatachk(void), setpchk(void);
 void doisound2(void), doisound3(void), doisound(void);
 BLITZ_ENTRY_C(doloadsound); BLITZ_ENTRY_C(dosound2); BLITZ_ENTRY_C(dosound); BLITZ_ENTRY_C(dosoundl2); BLITZ_ENTRY_C(dosoundl);
 BLITZ_ENTRY_C(_cludgesound); BLITZ_ENTRY_C(_setperiod);
@@ -172,7 +172,7 @@ BLITZ_NAME("DecodeSound", "Sound#,MemoryLocation");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
-BLITZ_SUBS(e__setperiod, sndchk, 0);
+BLITZ_SUBS(e__setperiod, setpchk, 0);         /* Fixed (#66): own check */
 BLITZ_NAME("SetPeriod", "Sound#,Period");
 
 BLITZ_NULLSUB_AT(init, audiolib_codeinit, 0, 0);
@@ -482,9 +482,10 @@ err1:
  *
  * Without a sound: runtime error "Uninitialized Sound" (err5, in the
  * normal code; the original branches into the error check area, fixed:
- * #70).  BUG(orig) (#66): the error check (sndchk) goes on into
- * dpchk and tests the period as channel mask: a period > 15 is "Illegal
- * Chanel Mask" with the debugger.
+ * #70).  Fixed (#66): the error check (setpchk) tests the sound only;
+ * the original's sndchk went on into dpchk and tested the period as
+ * channel mask: a period > 15 was "Illegal Chanel Mask" with the
+ * debugger.
  * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
  * d0).
  *
@@ -903,12 +904,20 @@ static void BLITZ_ERRCHK dpchk_c(UWORD mask BL_REG(d1))
         BLITZ_RUNERR(mess6);
 }
 
-/* sndchk - TST.l (a3):BEQ err5, then dpchk (also for SetPeriod's period) */
-static void BLITZ_ERRCHK sndchk_c(UWORD value BL_REG(d1))
+/* sndchk - TST.l (a3):BEQ err5, then dpchk */
+static void BLITZ_ERRCHK sndchk_c(UWORD mask BL_REG(d1))
 {
     if (!((struct bb_sound *)blitz_string)->data)
         BLITZ_RUNERR(mess5);
-    dpchk_c(value);
+    dpchk_c(mask);
+}
+
+/* setpchk - SetPeriod: the object test of sndchk only.  Fixed (#66): the
+   original used sndchk, which went on into dpchk with the period */
+static void BLITZ_ERRCHK setpchk_c(void)
+{
+    if (!((struct bb_sound *)blitz_string)->data)
+        BLITZ_RUNERR(mess5);
 }
 
 static void BLITZ_ERRCHK vchk_c(UWORD mask BL_REG(d0))
@@ -953,6 +962,7 @@ BLITZ_ERRCHK_THUNK(vchk, vchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(ischk1, ischk1_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(ischk2, ischk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(sdatachk, sdatachk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(setpchk, setpchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_MESSAGE(mess6, "Illegal Chanel Mask");
 BLITZ_ERRCHK_MESSAGE(mess7, "Sound Length MUST be even");
 BLITZ_ERRCHK_MESSAGE(mess8, "Repeat MUST be less than Length");
