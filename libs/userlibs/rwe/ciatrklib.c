@@ -46,7 +46,6 @@
  *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
- *   - ModuleToChip does nothing and returns its argument (#446).
  *   - ModulePositionJump n: the song position becomes n + 1 at the next
  *     tick (mt_NextPosition increments it) (#447).
  *   - TrackerVolume 0 or 64 does not change the volumes of the notes that
@@ -77,7 +76,10 @@
  *   - FreeTrackerModule does not stop a module that plays from the slot
  *     (#436).
  * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
- * declared #byte).
+ * declared #byte).  By design (#446): ModuleToChip does nothing and
+ * returns its argument; the documentation of the library says so (the
+ * copy is part of DecodeModule since 1.02a, the command only still
+ * tokenises for old programs).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -1648,7 +1650,8 @@ static ULONG BLITZ_ROUTINE checkid_c(ULONG num BL_REG(d0))
 /**
  * @brief ModuleToChip(TrackerModule#): does nothing (RTS).
  *
- * BUG(orig) (#446): the module is not copied (DecodeModule does that).
+ * By design (#446): the module is not copied, DecodeModule does that;
+ * the documentation: "the command has no function".
  * @param arg  d0: the slot
  * @return d0: the argument
  */

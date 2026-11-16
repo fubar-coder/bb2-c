@@ -128,9 +128,11 @@ kind F):
   length (a later `FreeTrackerModule` frees memory that was never
   allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"). `FreeTrackerModule` does not stop a module that
   plays from the slot (#436).
-* `ModuleToChip` is an RTS: it returns its argument (#446).
 * `GetTrackerEvent` changes only d0's low byte; it is declared `#byte`,
-  so that is no defect.
+  so that is no defect. By design (#446): `ModuleToChip` is an RTS that
+  returns its argument; the library's documentation says "the command
+  has no function" (since 1.02a `DecodeModule` copies a module to chip
+  memory, and the command only still tokenises for old programs).
 * `ModulePositionJump n` jumps to position n + 1 (the next tick's
   `mt_NextPosition` increments it) (#447).
 * `TrackerVolume 0` and `64` do not change the volume of the notes that
