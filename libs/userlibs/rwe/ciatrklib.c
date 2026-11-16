@@ -60,8 +60,7 @@
  *     every Protracker), but mt_end loads a0 with $DFF000: after an F00
  *     on voice 1-3 the voices behind read their notes from the custom
  *     chip registers ($DFF000 + the pattern offset) instead of the
- *     pattern (#475); effect 8 (the event) is seen only on ticks other
- *     than 0 (#435).
+ *     pattern (#475).
  * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
  * declared #byte).  By design (#446): ModuleToChip does nothing and
  * returns its argument; the documentation of the library says so (the
@@ -132,6 +131,10 @@
  * without a loop (loop length 0) does nothing; the original's DBRA
  * counter was $FFFE, it rewrote 64 KB from the loop start (address 0 on
  * a voice that played no sample yet).
+ * Fixed (intended deviation, #435): the tracker event (effect 8xx) is
+ * seen on the row's own tick too (mt_CheckMoreEfx); the original saw it
+ * only in mt_CheckEfx, on the ticks between the rows: never at speed 1
+ * (WaitTrackerEvent waited forever), one tick late at other speeds.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1263,11 +1266,14 @@ static void checkefx(struct chan *ch, aud_t *aud)
         playdata.TrkEvt = ch->n.f.cmdlo;       /* nor_TrackEvent */
 }
 
-/* mt_CheckMoreEfx: the effects of the row's tick */
+/* mt_CheckMoreEfx: the effects of the row's tick; the event 8xx also
+   here (fixed, #435: the original saw it only in mt_CheckEfx, on the
+   ticks between the rows: never at speed 1, else a tick late) */
 static void checkmoreefx(struct chan *ch, aud_t *aud)
 {
     updatefunk(ch);
     switch (ch->n.f.cmd & 0x0f) {
+    case 0x8: playdata.TrkEvt = ch->n.f.cmdlo; break;  /* Fixed (#435): nor_TrackEvent */
     case 0x9: sampleoffset(ch); return;
     case 0xb: positionjump(ch); return;
     case 0xd: patternbreak(ch); return;
@@ -1764,8 +1770,8 @@ static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG num BL_REG(d0))
 /**
  * @brief GetTrackerEvent: the value of the last tracker event (effect 8).
  *
- * Effect 8 is seen only on ticks other than 0 (BUG(orig) (#435)).
- * Only the low byte of d0 changes (declared #byte, not a defect).
+ * Effect 8 is seen on the row's tick (fixed, #435: the original saw it
+ * only on the ticks between the rows).  Only the low byte of d0 changes (declared #byte, not a defect).
  * @param old  d0: the caller's d0
  * @return d0.b: the event value
  */

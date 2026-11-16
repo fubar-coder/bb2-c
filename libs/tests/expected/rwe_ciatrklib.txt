@@ -29,7 +29,8 @@ the interrupt server|RealTempo||1	$00000040
 the interrupt server|RealTempo 64||1	$00000001
 the interrupt server|event||1	$00000001
 the interrupt server|PatternPos||1	$00000010
-WaitTrackerEvent (CIA)|WaitTOF calls||1	$00000006
+WaitTrackerEvent (CIA)|WaitTOF calls||1 [orig]	$00000006
+WaitTrackerEvent (CIA)|WaitTOF calls||1 [fixed #435]	$00000005
 WaitTrackerEvent (CIA)|no event (gave up)||1	$00000000
 ChangeTrackerVBlank|CIAAbase||1	$00000000
 ChangeTrackerVBlank|filter toggled||1 [orig]	$00000001
@@ -304,7 +305,8 @@ PlayTracker|kept|tick 14|1	kept
 PlayTracker|popped|tick 14|1	$00000000
 PlayTracker|DMACONR|tick 14|1	$0000000F
 PlayTracker|filter|tick 14|1	$00000002
-PlayTracker|play routine|tick 14|1	bytes 1584 fnv 45561AB1
+PlayTracker|play routine|tick 14|1 [orig]	bytes 1584 fnv 45561AB1
+PlayTracker|play routine|tick 14|1 [fixed #435]	bytes 1584 fnv D34EAB76
 PlayTracker|modtable|tick 14|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 14|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 15|1	kept
@@ -453,7 +455,8 @@ PlayTracker|kept|tick 35|1	kept
 PlayTracker|popped|tick 35|1	$00000000
 PlayTracker|DMACONR|tick 35|1	$0000000F
 PlayTracker|filter|tick 35|1	$00000002
-PlayTracker|play routine|tick 35|1	bytes 1584 fnv EF97CF42
+PlayTracker|play routine|tick 35|1 [orig]	bytes 1584 fnv EF97CF42
+PlayTracker|play routine|tick 35|1 [fixed #435]	bytes 1584 fnv 91B311C5
 PlayTracker|modtable|tick 35|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 35|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 36|1	kept
@@ -545,7 +548,8 @@ PlayTracker|kept|tick 48|1	kept
 PlayTracker|popped|tick 48|1	$00000000
 PlayTracker|DMACONR|tick 48|1	$0000000F
 PlayTracker|filter|tick 48|1	$00000002
-PlayTracker|play routine|tick 48|1	bytes 1584 fnv 0CF905BD
+PlayTracker|play routine|tick 48|1 [orig]	bytes 1584 fnv 0CF905BD
+PlayTracker|play routine|tick 48|1 [fixed #435]	bytes 1584 fnv 630F536E
 PlayTracker|modtable|tick 48|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 48|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 49|1	kept
@@ -559,98 +563,112 @@ PlayTracker|kept|tick 50|1	kept
 PlayTracker|popped|tick 50|1	$00000000
 PlayTracker|DMACONR|tick 50|1	$0000000F
 PlayTracker|filter|tick 50|1	$00000002
-PlayTracker|play routine|tick 50|1	bytes 1584 fnv DD83C39D
+PlayTracker|play routine|tick 50|1 [orig]	bytes 1584 fnv DD83C39D
+PlayTracker|play routine|tick 50|1 [fixed #435]	bytes 1584 fnv 339A114E
 PlayTracker|modtable|tick 50|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 50|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 51|1	kept
 PlayTracker|popped|tick 51|1	$00000000
 PlayTracker|DMACONR|tick 51|1	$0000000F
 PlayTracker|filter|tick 51|1	$00000000
-PlayTracker|play routine|tick 51|1	bytes 1584 fnv CFD0078E
+PlayTracker|play routine|tick 51|1 [orig]	bytes 1584 fnv CFD0078E
+PlayTracker|play routine|tick 51|1 [fixed #435]	bytes 1584 fnv 79B9B9DD
 PlayTracker|modtable|tick 51|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 51|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 52|1	kept
 PlayTracker|popped|tick 52|1	$00000000
 PlayTracker|DMACONR|tick 52|1	$0000000F
 PlayTracker|filter|tick 52|1	$00000000
-PlayTracker|play routine|tick 52|1	bytes 1584 fnv E8C6186D
+PlayTracker|play routine|tick 52|1 [orig]	bytes 1584 fnv E8C6186D
+PlayTracker|play routine|tick 52|1 [fixed #435]	bytes 1584 fnv 3EDC661E
 PlayTracker|modtable|tick 52|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 52|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 53|1	kept
 PlayTracker|popped|tick 53|1	$00000000
 PlayTracker|DMACONR|tick 53|1	$0000000F
 PlayTracker|filter|tick 53|1	$00000000
-PlayTracker|play routine|tick 53|1	bytes 1584 fnv 453A5175
+PlayTracker|play routine|tick 53|1 [orig]	bytes 1584 fnv 453A5175
+PlayTracker|play routine|tick 53|1 [fixed #435]	bytes 1584 fnv 3B28F896
 PlayTracker|modtable|tick 53|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 53|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 54|1	kept
 PlayTracker|popped|tick 54|1	$00000000
 PlayTracker|DMACONR|tick 54|1	$0000000F
 PlayTracker|filter|tick 54|1	$00000000
-PlayTracker|play routine|tick 54|1	bytes 1584 fnv BADC3502
+PlayTracker|play routine|tick 54|1 [orig]	bytes 1584 fnv BADC3502
+PlayTracker|play routine|tick 54|1 [fixed #435]	bytes 1584 fnv 94D9BA99
 PlayTracker|modtable|tick 54|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 54|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 55|1	kept
 PlayTracker|popped|tick 55|1	$00000000
 PlayTracker|DMACONR|tick 55|1	$0000000F
 PlayTracker|filter|tick 55|1	$00000000
-PlayTracker|play routine|tick 55|1	bytes 1584 fnv 20A3595A
+PlayTracker|play routine|tick 55|1 [orig]	bytes 1584 fnv 20A3595A
+PlayTracker|play routine|tick 55|1 [fixed #435]	bytes 1584 fnv FAA0DEF1
 PlayTracker|modtable|tick 55|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 55|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 56|1	kept
 PlayTracker|popped|tick 56|1	$00000000
 PlayTracker|DMACONR|tick 56|1	$0000000F
 PlayTracker|filter|tick 56|1	$00000000
-PlayTracker|play routine|tick 56|1	bytes 1584 fnv EF10599D
+PlayTracker|play routine|tick 56|1 [orig]	bytes 1584 fnv EF10599D
+PlayTracker|play routine|tick 56|1 [fixed #435]	bytes 1584 fnv 1512D406
 PlayTracker|modtable|tick 56|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 56|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 57|1	kept
 PlayTracker|popped|tick 57|1	$00000000
 PlayTracker|DMACONR|tick 57|1	$0000000F
 PlayTracker|filter|tick 57|1	$00000000
-PlayTracker|play routine|tick 57|1	bytes 1584 fnv 970EFAAC
+PlayTracker|play routine|tick 57|1 [orig]	bytes 1584 fnv 970EFAAC
+PlayTracker|play routine|tick 57|1 [fixed #435]	bytes 1584 fnv 091669E7
 PlayTracker|modtable|tick 57|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 57|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 58|1	kept
 PlayTracker|popped|tick 58|1	$00000000
 PlayTracker|DMACONR|tick 58|1	$0000000F
 PlayTracker|filter|tick 58|1	$00000000
-PlayTracker|play routine|tick 58|1	bytes 1584 fnv 8DC99436
+PlayTracker|play routine|tick 58|1 [orig]	bytes 1584 fnv 8DC99436
+PlayTracker|play routine|tick 58|1 [fixed #435]	bytes 1584 fnv 67C719CD
 PlayTracker|modtable|tick 58|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 58|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 59|1	kept
 PlayTracker|popped|tick 59|1	$00000000
 PlayTracker|DMACONR|tick 59|1	$0000000F
 PlayTracker|filter|tick 59|1	$00000000
-PlayTracker|play routine|tick 59|1	bytes 1584 fnv ED1133AB
+PlayTracker|play routine|tick 59|1 [orig]	bytes 1584 fnv ED1133AB
+PlayTracker|play routine|tick 59|1 [fixed #435]	bytes 1584 fnv 7B09C470
 PlayTracker|modtable|tick 59|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 59|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 60|1	kept
 PlayTracker|popped|tick 60|1	$00000000
 PlayTracker|DMACONR|tick 60|1	$0000000F
 PlayTracker|filter|tick 60|1	$00000000
-PlayTracker|play routine|tick 60|1	bytes 1584 fnv DC9B53F7
+PlayTracker|play routine|tick 60|1 [orig]	bytes 1584 fnv DC9B53F7
+PlayTracker|play routine|tick 60|1 [fixed #435]	bytes 1584 fnv 6A93E4BC
 PlayTracker|modtable|tick 60|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 60|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 61|1	kept
 PlayTracker|popped|tick 61|1	$00000000
 PlayTracker|DMACONR|tick 61|1	$0000000F
 PlayTracker|filter|tick 61|1	$00000000
-PlayTracker|play routine|tick 61|1	bytes 1584 fnv 2953200B
+PlayTracker|play routine|tick 61|1 [orig]	bytes 1584 fnv 2953200B
+PlayTracker|play routine|tick 61|1 [fixed #435]	bytes 1584 fnv B74BB0D0
 PlayTracker|modtable|tick 61|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 61|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 62|1	kept
 PlayTracker|popped|tick 62|1	$00000000
 PlayTracker|DMACONR|tick 62|1	$0000000F
 PlayTracker|filter|tick 62|1	$00000000
-PlayTracker|play routine|tick 62|1	bytes 1584 fnv 6865C12E
+PlayTracker|play routine|tick 62|1 [orig]	bytes 1584 fnv 6865C12E
+PlayTracker|play routine|tick 62|1 [fixed #435]	bytes 1584 fnv 426346C5
 PlayTracker|modtable|tick 62|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 62|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 63|1	kept
 PlayTracker|popped|tick 63|1	$00000000
 PlayTracker|DMACONR|tick 63|1	$0000000F
 PlayTracker|filter|tick 63|1	$00000000
-PlayTracker|play routine|tick 63|1	bytes 1584 fnv 1DA6441F
+PlayTracker|play routine|tick 63|1 [orig]	bytes 1584 fnv 1DA6441F
+PlayTracker|play routine|tick 63|1 [fixed #435]	bytes 1584 fnv AB9ED4E4
 PlayTracker|modtable|tick 63|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 63|1	bytes 110 fnv E8C350A4
 PlayTracker|module bytes|tick 63|1	bytes 8768 fnv 799C6F68
@@ -658,98 +676,112 @@ PlayTracker|kept|tick 64|1	kept
 PlayTracker|popped|tick 64|1	$00000000
 PlayTracker|DMACONR|tick 64|1	$0000000F
 PlayTracker|filter|tick 64|1	$00000000
-PlayTracker|play routine|tick 64|1	bytes 1584 fnv 9A5C3FD7
+PlayTracker|play routine|tick 64|1 [orig]	bytes 1584 fnv 9A5C3FD7
+PlayTracker|play routine|tick 64|1 [fixed #435]	bytes 1584 fnv 2854D09C
 PlayTracker|modtable|tick 64|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 64|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 65|1	kept
 PlayTracker|popped|tick 65|1	$00000000
 PlayTracker|DMACONR|tick 65|1	$0000000F
 PlayTracker|filter|tick 65|1	$00000000
-PlayTracker|play routine|tick 65|1	bytes 1584 fnv B5003E57
+PlayTracker|play routine|tick 65|1 [orig]	bytes 1584 fnv B5003E57
+PlayTracker|play routine|tick 65|1 [fixed #435]	bytes 1584 fnv 42F8CF1C
 PlayTracker|modtable|tick 65|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 65|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 66|1	kept
 PlayTracker|popped|tick 66|1	$00000000
 PlayTracker|DMACONR|tick 66|1	$0000000F
 PlayTracker|filter|tick 66|1	$00000000
-PlayTracker|play routine|tick 66|1	bytes 1584 fnv DBB68063
+PlayTracker|play routine|tick 66|1 [orig]	bytes 1584 fnv DBB68063
+PlayTracker|play routine|tick 66|1 [fixed #435]	bytes 1584 fnv 69AF1128
 PlayTracker|modtable|tick 66|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 66|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 67|1	kept
 PlayTracker|popped|tick 67|1	$00000000
 PlayTracker|DMACONR|tick 67|1	$0000000F
 PlayTracker|filter|tick 67|1	$00000000
-PlayTracker|play routine|tick 67|1	bytes 1584 fnv 1F9F6FDE
+PlayTracker|play routine|tick 67|1 [orig]	bytes 1584 fnv 1F9F6FDE
+PlayTracker|play routine|tick 67|1 [fixed #435]	bytes 1584 fnv F99CF575
 PlayTracker|modtable|tick 67|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 67|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 68|1	kept
 PlayTracker|popped|tick 68|1	$00000000
 PlayTracker|DMACONR|tick 68|1	$0000000F
 PlayTracker|filter|tick 68|1	$00000000
-PlayTracker|play routine|tick 68|1	bytes 1584 fnv D1B44C52
+PlayTracker|play routine|tick 68|1 [orig]	bytes 1584 fnv D1B44C52
+PlayTracker|play routine|tick 68|1 [fixed #435]	bytes 1584 fnv ABB1D1E9
 PlayTracker|modtable|tick 68|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 68|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 69|1	kept
 PlayTracker|popped|tick 69|1	$00000000
 PlayTracker|DMACONR|tick 69|1	$0000000F
 PlayTracker|filter|tick 69|1	$00000000
-PlayTracker|play routine|tick 69|1	bytes 1584 fnv 88B0D2AE
+PlayTracker|play routine|tick 69|1 [orig]	bytes 1584 fnv 88B0D2AE
+PlayTracker|play routine|tick 69|1 [fixed #435]	bytes 1584 fnv 62AE5845
 PlayTracker|modtable|tick 69|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 69|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 70|1	kept
 PlayTracker|popped|tick 70|1	$00000000
 PlayTracker|DMACONR|tick 70|1	$0000000F
 PlayTracker|filter|tick 70|1	$00000000
-PlayTracker|play routine|tick 70|1	bytes 1584 fnv 0F76F892
+PlayTracker|play routine|tick 70|1 [orig]	bytes 1584 fnv 0F76F892
+PlayTracker|play routine|tick 70|1 [fixed #435]	bytes 1584 fnv E9747E29
 PlayTracker|modtable|tick 70|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 70|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 71|1	kept
 PlayTracker|popped|tick 71|1	$00000000
 PlayTracker|DMACONR|tick 71|1	$0000000F
 PlayTracker|filter|tick 71|1	$00000000
-PlayTracker|play routine|tick 71|1	bytes 1584 fnv CE0D0050
+PlayTracker|play routine|tick 71|1 [orig]	bytes 1584 fnv CE0D0050
+PlayTracker|play routine|tick 71|1 [fixed #435]	bytes 1584 fnv 40146F8B
 PlayTracker|modtable|tick 71|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 71|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 72|1	kept
 PlayTracker|popped|tick 72|1	$00000000
 PlayTracker|DMACONR|tick 72|1	$0000000F
 PlayTracker|filter|tick 72|1	$00000000
-PlayTracker|play routine|tick 72|1	bytes 1584 fnv B1FA5935
+PlayTracker|play routine|tick 72|1 [orig]	bytes 1584 fnv B1FA5935
+PlayTracker|play routine|tick 72|1 [fixed #435]	bytes 1584 fnv D7FCD39E
 PlayTracker|modtable|tick 72|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 72|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 73|1	kept
 PlayTracker|popped|tick 73|1	$00000000
 PlayTracker|DMACONR|tick 73|1	$0000000F
 PlayTracker|filter|tick 73|1	$00000000
-PlayTracker|play routine|tick 73|1	bytes 1584 fnv 2F793BA9
+PlayTracker|play routine|tick 73|1 [orig]	bytes 1584 fnv 2F793BA9
+PlayTracker|play routine|tick 73|1 [fixed #435]	bytes 1584 fnv 557BB612
 PlayTracker|modtable|tick 73|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 73|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 74|1	kept
 PlayTracker|popped|tick 74|1	$00000000
 PlayTracker|DMACONR|tick 74|1	$0000000F
 PlayTracker|filter|tick 74|1	$00000000
-PlayTracker|play routine|tick 74|1	bytes 1584 fnv 30739095
+PlayTracker|play routine|tick 74|1 [orig]	bytes 1584 fnv 30739095
+PlayTracker|play routine|tick 74|1 [fixed #435]	bytes 1584 fnv 56760AFE
 PlayTracker|modtable|tick 74|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 74|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 75|1	kept
 PlayTracker|popped|tick 75|1	$00000000
 PlayTracker|DMACONR|tick 75|1	$0000000F
 PlayTracker|filter|tick 75|1	$00000000
-PlayTracker|play routine|tick 75|1	bytes 1584 fnv 339F1259
+PlayTracker|play routine|tick 75|1 [orig]	bytes 1584 fnv 339F1259
+PlayTracker|play routine|tick 75|1 [fixed #435]	bytes 1584 fnv 59A18CC2
 PlayTracker|modtable|tick 75|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 75|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 76|1	kept
 PlayTracker|popped|tick 76|1	$00000000
 PlayTracker|DMACONR|tick 76|1	$0000000F
 PlayTracker|filter|tick 76|1	$00000000
-PlayTracker|play routine|tick 76|1	bytes 1584 fnv 5781527D
+PlayTracker|play routine|tick 76|1 [orig]	bytes 1584 fnv 5781527D
+PlayTracker|play routine|tick 76|1 [fixed #435]	bytes 1584 fnv 7D83CCE6
 PlayTracker|modtable|tick 76|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 76|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 77|1	kept
 PlayTracker|popped|tick 77|1	$00000000
 PlayTracker|DMACONR|tick 77|1	$0000000F
 PlayTracker|filter|tick 77|1	$00000000
-PlayTracker|play routine|tick 77|1	bytes 1584 fnv 20B7F211
+PlayTracker|play routine|tick 77|1 [orig]	bytes 1584 fnv 20B7F211
+PlayTracker|play routine|tick 77|1 [fixed #435]	bytes 1584 fnv DEC4561E
 PlayTracker|modtable|tick 77|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 77|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 78|1	kept
@@ -898,7 +930,8 @@ PlayTracker|kept|tick 98|1	kept
 PlayTracker|popped|tick 98|1	$00000000
 PlayTracker|DMACONR|tick 98|1	$0000000F
 PlayTracker|filter|tick 98|1	$00000000
-PlayTracker|play routine|tick 98|1	bytes 1584 fnv 606D2325
+PlayTracker|play routine|tick 98|1 [orig]	bytes 1584 fnv 606D2325
+PlayTracker|play routine|tick 98|1 [fixed #435]	bytes 1584 fnv C8633981
 PlayTracker|modtable|tick 98|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 98|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 99|1	kept
@@ -947,7 +980,8 @@ PlayTracker|kept|tick 105|1	kept
 PlayTracker|popped|tick 105|1	$00000000
 PlayTracker|DMACONR|tick 105|1	$0000000F
 PlayTracker|filter|tick 105|1	$00000000
-PlayTracker|play routine|tick 105|1	bytes 1584 fnv 7541A847
+PlayTracker|play routine|tick 105|1 [orig]	bytes 1584 fnv 7541A847
+PlayTracker|play routine|tick 105|1 [fixed #435]	bytes 1584 fnv 293CB375
 PlayTracker|modtable|tick 105|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 105|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 106|1	kept
@@ -1081,7 +1115,8 @@ PlayTracker|kept|tick 124|1	kept
 PlayTracker|popped|tick 124|1	$00000000
 PlayTracker|DMACONR|tick 124|1	$0000000F
 PlayTracker|filter|tick 124|1	$00000000
-PlayTracker|play routine|tick 124|1	bytes 1584 fnv E1040B3B
+PlayTracker|play routine|tick 124|1 [orig]	bytes 1584 fnv E1040B3B
+PlayTracker|play routine|tick 124|1 [fixed #435]	bytes 1584 fnv 2D09000D
 PlayTracker|modtable|tick 124|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 124|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 125|1	kept
@@ -1230,7 +1265,8 @@ PlayTracker|kept|tick 145|1	kept
 PlayTracker|popped|tick 145|1	$00000000
 PlayTracker|DMACONR|tick 145|1	$0000000F
 PlayTracker|filter|tick 145|1	$00000000
-PlayTracker|play routine|tick 145|1	bytes 1584 fnv C35C0039
+PlayTracker|play routine|tick 145|1 [orig]	bytes 1584 fnv C35C0039
+PlayTracker|play routine|tick 145|1 [fixed #435]	bytes 1584 fnv 5B65E9DD
 PlayTracker|modtable|tick 145|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 145|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 146|1	kept
@@ -1279,7 +1315,8 @@ PlayTracker|kept|tick 152|1	kept
 PlayTracker|popped|tick 152|1	$00000000
 PlayTracker|DMACONR|tick 152|1	$0000000F
 PlayTracker|filter|tick 152|1	$00000000
-PlayTracker|play routine|tick 152|1	bytes 1584 fnv F0283963
+PlayTracker|play routine|tick 152|1 [orig]	bytes 1584 fnv F0283963
+PlayTracker|play routine|tick 152|1 [fixed #435]	bytes 1584 fnv A4234491
 PlayTracker|modtable|tick 152|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 152|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 153|1	kept
@@ -1413,7 +1450,8 @@ PlayTracker|kept|tick 171|1	kept
 PlayTracker|popped|tick 171|1	$00000000
 PlayTracker|DMACONR|tick 171|1	$0000000F
 PlayTracker|filter|tick 171|1	$00000000
-PlayTracker|play routine|tick 171|1	bytes 1584 fnv FE4D1CA5
+PlayTracker|play routine|tick 171|1 [orig]	bytes 1584 fnv FE4D1CA5
+PlayTracker|play routine|tick 171|1 [fixed #435]	bytes 1584 fnv B24827D3
 PlayTracker|modtable|tick 171|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 171|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 172|1	kept
@@ -1562,7 +1600,8 @@ PlayTracker|kept|tick 192|1	kept
 PlayTracker|popped|tick 192|1	$00000000
 PlayTracker|DMACONR|tick 192|1	$0000000F
 PlayTracker|filter|tick 192|1	$00000000
-PlayTracker|play routine|tick 192|1	bytes 1584 fnv 969E5B2C
+PlayTracker|play routine|tick 192|1 [orig]	bytes 1584 fnv 969E5B2C
+PlayTracker|play routine|tick 192|1 [fixed #435]	bytes 1584 fnv FE947188
 PlayTracker|modtable|tick 192|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 192|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 193|1	kept
@@ -1611,7 +1650,8 @@ PlayTracker|kept|tick 199|1	kept
 PlayTracker|popped|tick 199|1	$00000000
 PlayTracker|DMACONR|tick 199|1	$0000000F
 PlayTracker|filter|tick 199|1	$00000000
-PlayTracker|play routine|tick 199|1	bytes 1584 fnv C3D3BCC4
+PlayTracker|play routine|tick 199|1 [orig]	bytes 1584 fnv C3D3BCC4
+PlayTracker|play routine|tick 199|1 [fixed #435]	bytes 1584 fnv 0FD8B196
 PlayTracker|modtable|tick 199|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 199|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 200|1	kept
@@ -1745,7 +1785,8 @@ PlayTracker|kept|tick 218|1	kept
 PlayTracker|popped|tick 218|1	$00000000
 PlayTracker|DMACONR|tick 218|1	$0000000F
 PlayTracker|filter|tick 218|1	$00000000
-PlayTracker|play routine|tick 218|1	bytes 1584 fnv 64728855
+PlayTracker|play routine|tick 218|1 [orig]	bytes 1584 fnv 64728855
+PlayTracker|play routine|tick 218|1 [fixed #435]	bytes 1584 fnv 186D9383
 PlayTracker|modtable|tick 218|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 218|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 219|1	kept
@@ -1893,7 +1934,8 @@ PlayTracker|kept|tick 239|1	kept
 PlayTracker|popped|tick 239|1	$00000000
 PlayTracker|DMACONR|tick 239|1	$0000000F
 PlayTracker|filter|tick 239|1	$00000000
-PlayTracker|play routine|tick 239|1	bytes 1584 fnv 4C08E7D3
+PlayTracker|play routine|tick 239|1 [orig]	bytes 1584 fnv 4C08E7D3
+PlayTracker|play routine|tick 239|1 [fixed #435]	bytes 1584 fnv E412D177
 PlayTracker|modtable|tick 239|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 239|1	bytes 110 fnv E8C350A4
 PlayTracker|module bytes|tick 239|1	bytes 8768 fnv D9422FDA
@@ -1943,7 +1985,8 @@ PlayTracker|kept|tick 246|1	kept
 PlayTracker|popped|tick 246|1	$00000000
 PlayTracker|DMACONR|tick 246|1	$0000000F
 PlayTracker|filter|tick 246|1	$00000000
-PlayTracker|play routine|tick 246|1	bytes 1584 fnv BC885E28
+PlayTracker|play routine|tick 246|1 [orig]	bytes 1584 fnv BC885E28
+PlayTracker|play routine|tick 246|1 [fixed #435]	bytes 1584 fnv 088D52FA
 PlayTracker|modtable|tick 246|1	bytes 110 fnv 3786BDCF
 PlayTracker|CIA part|tick 246|1	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 247|1	kept
@@ -2109,7 +2152,8 @@ PlayTracker|kept|tick 5|2	kept
 PlayTracker|popped|tick 5|2	$00000000
 PlayTracker|DMACONR|tick 5|2	$0000000F
 PlayTracker|filter|tick 5|2	$00000000
-PlayTracker|play routine|tick 5|2	bytes 1584 fnv D295D1D4
+PlayTracker|play routine|tick 5|2 [orig]	bytes 1584 fnv D295D1D4
+PlayTracker|play routine|tick 5|2 [fixed #435]	bytes 1584 fnv EE86F35E
 PlayTracker|modtable|tick 5|2	bytes 110 fnv 02334F00
 PlayTracker|CIA part|tick 5|2	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 6|2	kept
@@ -2257,7 +2301,8 @@ PlayTracker|kept|tick 26|2	kept
 PlayTracker|popped|tick 26|2	$00000000
 PlayTracker|DMACONR|tick 26|2	$0000000F
 PlayTracker|filter|tick 26|2	$00000000
-PlayTracker|play routine|tick 26|2	bytes 1584 fnv FC22C6B6
+PlayTracker|play routine|tick 26|2 [orig]	bytes 1584 fnv FC22C6B6
+PlayTracker|play routine|tick 26|2 [fixed #435]	bytes 1584 fnv 942CB05A
 PlayTracker|modtable|tick 26|2	bytes 110 fnv 02334F00
 PlayTracker|CIA part|tick 26|2	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 27|2	kept
@@ -2307,7 +2352,8 @@ PlayTracker|kept|tick 33|2	kept
 PlayTracker|popped|tick 33|2	$00000000
 PlayTracker|DMACONR|tick 33|2	$0000000F
 PlayTracker|filter|tick 33|2	$00000000
-PlayTracker|play routine|tick 33|2	bytes 1584 fnv ADBBA132
+PlayTracker|play routine|tick 33|2 [orig]	bytes 1584 fnv ADBBA132
+PlayTracker|play routine|tick 33|2 [fixed #435]	bytes 1584 fnv F9C09604
 PlayTracker|modtable|tick 33|2	bytes 110 fnv 02334F00
 PlayTracker|CIA part|tick 33|2	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 34|2	kept
@@ -2447,7 +2493,8 @@ PlayTracker|kept|tick 12|3	kept
 PlayTracker|popped|tick 12|3	$00000000
 PlayTracker|DMACONR|tick 12|3	$0000000F
 PlayTracker|filter|tick 12|3	$00000000
-PlayTracker|play routine|tick 12|3	bytes 1584 fnv 15054CC9
+PlayTracker|play routine|tick 12|3 [orig]	bytes 1584 fnv 15054CC9
+PlayTracker|play routine|tick 12|3 [fixed #435]	bytes 1584 fnv 30F66E53
 PlayTracker|modtable|tick 12|3	bytes 110 fnv 9B1A18D6
 PlayTracker|CIA part|tick 12|3	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 13|3	kept
@@ -2596,7 +2643,8 @@ PlayTracker|kept|tick 33|3	kept
 PlayTracker|popped|tick 33|3	$00000000
 PlayTracker|DMACONR|tick 33|3	$0000000F
 PlayTracker|filter|tick 33|3	$00000000
-PlayTracker|play routine|tick 33|3	bytes 1584 fnv 85E78115
+PlayTracker|play routine|tick 33|3 [orig]	bytes 1584 fnv 85E78115
+PlayTracker|play routine|tick 33|3 [fixed #435]	bytes 1584 fnv 1DF16AB9
 PlayTracker|modtable|tick 33|3	bytes 110 fnv 9B1A18D6
 PlayTracker|CIA part|tick 33|3	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 34|3	kept
@@ -2645,7 +2693,8 @@ PlayTracker|kept|tick 40|2	kept
 PlayTracker|popped|tick 40|2	$00000000
 PlayTracker|DMACONR|tick 40|2	$0000000F
 PlayTracker|filter|tick 40|2	$00000000
-PlayTracker|play routine|tick 40|2	bytes 1584 fnv 2ABE8746
+PlayTracker|play routine|tick 40|2 [orig]	bytes 1584 fnv 2ABE8746
+PlayTracker|play routine|tick 40|2 [fixed #435]	bytes 1584 fnv 76C37C18
 PlayTracker|modtable|tick 40|2	bytes 110 fnv 9B1A18D6
 PlayTracker|CIA part|tick 40|2	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 41|2	kept
@@ -2779,7 +2828,8 @@ PlayTracker|kept|tick 59|2	kept
 PlayTracker|popped|tick 59|2	$00000000
 PlayTracker|DMACONR|tick 59|2	$0000000F
 PlayTracker|filter|tick 59|2	$00000000
-PlayTracker|play routine|tick 59|2	bytes 1584 fnv 32349B34
+PlayTracker|play routine|tick 59|2 [orig]	bytes 1584 fnv 32349B34
+PlayTracker|play routine|tick 59|2 [fixed #435]	bytes 1584 fnv 4E25BCBE
 PlayTracker|modtable|tick 59|2	bytes 110 fnv 9B1A18D6
 PlayTracker|CIA part|tick 59|2	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 60|2	kept
@@ -2935,7 +2985,8 @@ PlayTracker|kept|tick 0|4	kept
 PlayTracker|popped|tick 0|4	$00000000
 PlayTracker|DMACONR|tick 0|4	$0000000F
 PlayTracker|filter|tick 0|4	$00000000
-PlayTracker|play routine|tick 0|4	bytes 1584 fnv 2CF6A315
+PlayTracker|play routine|tick 0|4 [orig]	bytes 1584 fnv 2CF6A315
+PlayTracker|play routine|tick 0|4 [fixed #435]	bytes 1584 fnv C5008CB9
 PlayTracker|modtable|tick 0|4	bytes 110 fnv 7DE3ACD7
 PlayTracker|CIA part|tick 0|4	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 1|4	kept
@@ -2984,7 +3035,8 @@ PlayTracker|kept|tick 7|4	kept
 PlayTracker|popped|tick 7|4	$00000000
 PlayTracker|DMACONR|tick 7|4	$0000000F
 PlayTracker|filter|tick 7|4	$00000000
-PlayTracker|play routine|tick 7|4	bytes 1584 fnv E54E3D4B
+PlayTracker|play routine|tick 7|4 [orig]	bytes 1584 fnv E54E3D4B
+PlayTracker|play routine|tick 7|4 [fixed #435]	bytes 1584 fnv 3153321D
 PlayTracker|modtable|tick 7|4	bytes 110 fnv 7DE3ACD7
 PlayTracker|CIA part|tick 7|4	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 8|4	kept
@@ -3118,7 +3170,8 @@ PlayTracker|kept|tick 26|4	kept
 PlayTracker|popped|tick 26|4	$00000000
 PlayTracker|DMACONR|tick 26|4	$0000000F
 PlayTracker|filter|tick 26|4	$00000000
-PlayTracker|play routine|tick 26|4	bytes 1584 fnv A7DC1BB8
+PlayTracker|play routine|tick 26|4 [orig]	bytes 1584 fnv A7DC1BB8
+PlayTracker|play routine|tick 26|4 [fixed #435]	bytes 1584 fnv F3E1108A
 PlayTracker|modtable|tick 26|4	bytes 110 fnv 7DE3ACD7
 PlayTracker|CIA part|tick 26|4	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 27|4	kept
@@ -3266,7 +3319,8 @@ PlayTracker|kept|tick 47|3	kept
 PlayTracker|popped|tick 47|3	$00000000
 PlayTracker|DMACONR|tick 47|3	$0000000F
 PlayTracker|filter|tick 47|3	$00000000
-PlayTracker|play routine|tick 47|3	bytes 1584 fnv A2709480
+PlayTracker|play routine|tick 47|3 [orig]	bytes 1584 fnv A2709480
+PlayTracker|play routine|tick 47|3 [fixed #435]	bytes 1584 fnv 3A7A7E24
 PlayTracker|modtable|tick 47|3	bytes 110 fnv 7DE3ACD7
 PlayTracker|CIA part|tick 47|3	bytes 110 fnv E8C350A4
 PlayTracker|module bytes|tick 47|3	bytes 8768 fnv F3C9260D
@@ -3316,7 +3370,8 @@ PlayTracker|kept|tick 54|3	kept
 PlayTracker|popped|tick 54|3	$00000000
 PlayTracker|DMACONR|tick 54|3	$0000000F
 PlayTracker|filter|tick 54|3	$00000000
-PlayTracker|play routine|tick 54|3	bytes 1584 fnv 00A2F9A8
+PlayTracker|play routine|tick 54|3 [orig]	bytes 1584 fnv 00A2F9A8
+PlayTracker|play routine|tick 54|3 [fixed #435]	bytes 1584 fnv B49E04D6
 PlayTracker|modtable|tick 54|3	bytes 110 fnv 7DE3ACD7
 PlayTracker|CIA part|tick 54|3	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 55|3	kept
@@ -3450,7 +3505,8 @@ PlayTracker|kept|tick 73|3	kept
 PlayTracker|popped|tick 73|3	$00000000
 PlayTracker|DMACONR|tick 73|3	$0000000F
 PlayTracker|filter|tick 73|3	$00000000
-PlayTracker|play routine|tick 73|3	bytes 1584 fnv B5D741F8
+PlayTracker|play routine|tick 73|3 [orig]	bytes 1584 fnv B5D741F8
+PlayTracker|play routine|tick 73|3 [fixed #435]	bytes 1584 fnv 01DC36CA
 PlayTracker|modtable|tick 73|3	bytes 110 fnv 7DE3ACD7
 PlayTracker|CIA part|tick 73|3	bytes 110 fnv E8C350A4
 PlayTracker|kept|tick 74|3	kept
@@ -3648,14 +3704,16 @@ PlayTracker|kept|tick 2|9	kept
 PlayTracker|popped|tick 2|9	$00000000
 PlayTracker|DMACONR|tick 2|9	$0000000F
 PlayTracker|filter|tick 2|9	$00000000
-PlayTracker|play routine|tick 2|9	bytes 1584 fnv 6DA67DA4
+PlayTracker|play routine|tick 2|9 [orig]	bytes 1584 fnv 6DA67DA4
+PlayTracker|play routine|tick 2|9 [fixed #435]	bytes 1584 fnv D59C9400
 PlayTracker|modtable|tick 2|9	bytes 110 fnv 43818747
 PlayTracker|CIA part|tick 2|9	bytes 110 fnv E8C350A4
 TrackerVolume|kept|$10040|1	kept
 TrackerVolume|popped|$10040|1	$00000000
 TrackerVolume|DMACONR|$10040|1	$0000000F
 TrackerVolume|filter|$10040|1	$00000000
-TrackerVolume|play routine|$10040|1	bytes 1584 fnv 6DA67DA4
+TrackerVolume|play routine|$10040|1 [orig]	bytes 1584 fnv 6DA67DA4
+TrackerVolume|play routine|$10040|1 [fixed #435]	bytes 1584 fnv D59C9400
 TrackerVolume|modtable|$10040|1 [orig]	bytes 110 fnv F67CC400
 TrackerVolume|modtable|$10040|1 [fixed #452]	bytes 110 fnv 6053A9A9
 TrackerVolume|CIA part|$10040|1	bytes 110 fnv E8C350A4
@@ -3926,7 +3984,7 @@ PlayTracker|DMACONR|tick 16|5 [orig]	$0000000D
 PlayTracker|DMACONR|tick 16|5 [fixed #447]	$0000000F
 PlayTracker|filter|tick 16|5	$00000000
 PlayTracker|play routine|tick 16|5 [orig]	bytes 1584 fnv 97650C93
-PlayTracker|play routine|tick 16|5 [fixed #447]	bytes 1584 fnv 5067B1F6
+PlayTracker|play routine|tick 16|5 [fixed #447]	bytes 1584 fnv E8719B9A
 PlayTracker|modtable|tick 16|5 [orig]	bytes 110 fnv F67CC400
 PlayTracker|modtable|tick 16|5 [fixed #452]	bytes 110 fnv 6053A9A9
 PlayTracker|CIA part|tick 16|5	bytes 110 fnv E8C350A4
@@ -4130,7 +4188,7 @@ PlayTracker|popped|tick 37|5	$00000000
 PlayTracker|DMACONR|tick 37|5	$0000000F
 PlayTracker|filter|tick 37|5	$00000000
 PlayTracker|play routine|tick 37|5 [orig]	bytes 1584 fnv DC225B2A
-PlayTracker|play routine|tick 37|5 [fixed #447]	bytes 1584 fnv 896BDF64
+PlayTracker|play routine|tick 37|5 [fixed #447]	bytes 1584 fnv F161F5C0
 PlayTracker|modtable|tick 37|5 [orig]	bytes 110 fnv F67CC400
 PlayTracker|modtable|tick 37|5 [fixed #452]	bytes 110 fnv 6053A9A9
 PlayTracker|CIA part|tick 37|5	bytes 110 fnv E8C350A4
@@ -4193,7 +4251,7 @@ PlayTracker|popped|tick 44|4	$00000000
 PlayTracker|DMACONR|tick 44|4	$0000000F
 PlayTracker|filter|tick 44|4	$00000000
 PlayTracker|play routine|tick 44|4 [orig]	bytes 1584 fnv 9642019B
-PlayTracker|play routine|tick 44|4 [fixed #447]	bytes 1584 fnv 82D76A39
+PlayTracker|play routine|tick 44|4 [fixed #447]	bytes 1584 fnv 36D27567
 PlayTracker|modtable|tick 44|4 [orig]	bytes 110 fnv F67CC400
 PlayTracker|modtable|tick 44|4 [fixed #452]	bytes 110 fnv 6053A9A9
 PlayTracker|CIA part|tick 44|4	bytes 110 fnv E8C350A4
@@ -4337,10 +4395,10 @@ PlayTracker|CIA part|tick 59|4	bytes 110 fnv E8C350A4
 WaitTrackerEvent|kept|0|1	kept
 WaitTrackerEvent|popped|0|1	$00000000
 WaitTrackerEvent|WaitTOF calls|0|1 [orig]	$0000000E
-WaitTrackerEvent|WaitTOF calls|0|1 [fixed #447]	$00000005
+WaitTrackerEvent|WaitTOF calls|0|1 [fixed #447]	$00000004
 WaitTrackerEvent|an event|0|1	$00000001
 WaitTrackerEvent|play routine|0|1 [orig]	bytes 1584 fnv AB7ACAB0
-WaitTrackerEvent|play routine|0|1 [fixed #447]	bytes 1584 fnv F8ED3FB1
+WaitTrackerEvent|play routine|0|1 [fixed #447]	bytes 1584 fnv 12E57E0B
 WaitTrackerEvent|modtable|0|1 [orig]	bytes 110 fnv F67CC400
 WaitTrackerEvent|modtable|0|1 [fixed #452]	bytes 110 fnv 6053A9A9
 WaitTrackerEvent|CIA part|0|1	bytes 110 fnv E8C350A4
@@ -4350,7 +4408,7 @@ WaitTrackerEvent|WaitTOF calls|1|1 [orig]	$0000002B
 WaitTrackerEvent|WaitTOF calls|1|1 [fixed #447]	$00000015
 WaitTrackerEvent|an event|1|1	$00000001
 WaitTrackerEvent|play routine|1|1 [orig]	bytes 1584 fnv 52A97BFB
-WaitTrackerEvent|play routine|1|1 [fixed #447]	bytes 1584 fnv 3B67166A
+WaitTrackerEvent|play routine|1|1 [fixed #447]	bytes 1584 fnv 3355B9D4
 WaitTrackerEvent|modtable|1|1 [orig]	bytes 110 fnv F67CC400
 WaitTrackerEvent|modtable|1|1 [fixed #452]	bytes 110 fnv 6053A9A9
 WaitTrackerEvent|CIA part|1|1	bytes 110 fnv E8C350A4
@@ -4360,7 +4418,7 @@ WaitTrackerEvent|WaitTOF calls|2|1 [orig]	$00000038
 WaitTrackerEvent|WaitTOF calls|2|1 [fixed #447]	$00000007
 WaitTrackerEvent|an event|2|1	$00000001
 WaitTrackerEvent|play routine|2|1 [orig]	bytes 1584 fnv 8DBAAC6A
-WaitTrackerEvent|play routine|2|1 [fixed #447]	bytes 1584 fnv 9D219445
+WaitTrackerEvent|play routine|2|1 [fixed #447]	bytes 1584 fnv C1D4B6B3
 WaitTrackerEvent|modtable|2|1 [orig]	bytes 110 fnv F67CC400
 WaitTrackerEvent|modtable|2|1 [fixed #452]	bytes 110 fnv 6053A9A9
 WaitTrackerEvent|CIA part|2|1	bytes 110 fnv E8C350A4
@@ -4370,7 +4428,7 @@ WaitTrackerEvent|WaitTOF calls|3|1 [orig]	$00000015
 WaitTrackerEvent|WaitTOF calls|3|1 [fixed #447]	$00000013
 WaitTrackerEvent|an event|3|1	$00000001
 WaitTrackerEvent|play routine|3|1 [orig]	bytes 1584 fnv 30B3C17E
-WaitTrackerEvent|play routine|3|1 [fixed #447]	bytes 1584 fnv 26CE9A5E
+WaitTrackerEvent|play routine|3|1 [fixed #447]	bytes 1584 fnv E7BBDEDA
 WaitTrackerEvent|modtable|3|1 [orig]	bytes 110 fnv F67CC400
 WaitTrackerEvent|modtable|3|1 [fixed #452]	bytes 110 fnv 6053A9A9
 WaitTrackerEvent|CIA part|3|1	bytes 110 fnv E8C350A4
@@ -4380,7 +4438,7 @@ StopTracker|DMACONR||1	$00000000
 StopTracker|filter||1 [orig]	$00000002
 StopTracker|filter||1 [fixed #447]	$00000000
 StopTracker|play routine||1 [orig]	bytes 1584 fnv 3C000587
-StopTracker|play routine||1 [fixed #447]	bytes 1584 fnv 83B42A53
+StopTracker|play routine||1 [fixed #447]	bytes 1584 fnv 0564E707
 StopTracker|modtable||1 [orig]	bytes 110 fnv F67CC400
 StopTracker|modtable||1 [fixed #452]	bytes 110 fnv 6053A9A9
 StopTracker|CIA part||1	bytes 110 fnv E8C350A4
@@ -4391,7 +4449,7 @@ FreeTrackerModule|DMACONR||1	$00000000
 FreeTrackerModule|filter||1 [orig]	$00000002
 FreeTrackerModule|filter||1 [fixed #447]	$00000000
 FreeTrackerModule|play routine||1 [orig]	bytes 1584 fnv 3C000587
-FreeTrackerModule|play routine||1 [fixed #447]	bytes 1584 fnv 83B42A53
+FreeTrackerModule|play routine||1 [fixed #447]	bytes 1584 fnv 0564E707
 FreeTrackerModule|modtable||1 [orig]	bytes 110 fnv 9A743ED2
 FreeTrackerModule|modtable||1 [fixed #452]	bytes 110 fnv DBF0BFD7
 FreeTrackerModule|CIA part||1	bytes 110 fnv E8C350A4
@@ -4400,7 +4458,7 @@ FreeTrackerModule|module bytes||1 [fixed #447]	bytes 8768 fnv 0FF7666F
 DecodeModule|kept|slot 6, F00 on voice 1|1	kept
 DecodeModule|popped|slot 6, F00 on voice 1|1	$00000000
 DecodeModule|play routine|slot 6, F00 on voice 1|1 [orig]	bytes 1584 fnv 3C000587
-DecodeModule|play routine|slot 6, F00 on voice 1|1 [fixed #447]	bytes 1584 fnv 83B42A53
+DecodeModule|play routine|slot 6, F00 on voice 1|1 [fixed #447]	bytes 1584 fnv 0564E707
 DecodeModule|modtable|slot 6, F00 on voice 1|1 [orig]	bytes 110 fnv 0AE2A39E
 DecodeModule|modtable|slot 6, F00 on voice 1|1 [fixed #452]	bytes 110 fnv 65944C87
 DecodeModule|CIA part|slot 6, F00 on voice 1|1	bytes 110 fnv E8C350A4
@@ -4409,7 +4467,7 @@ StartTracker|popped|slot 6, F00 on voice 1|1	$00000000
 StartTracker|DMACONR|slot 6, F00 on voice 1|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 StartTracker|filter|slot 6, F00 on voice 1|1	$00000002
 StartTracker|play routine|slot 6, F00 on voice 1|1 [orig]	bytes 1584 fnv D6F33034
-StartTracker|play routine|slot 6, F00 on voice 1|1 [fixed #447]	bytes 1584 fnv 879E58FF
+StartTracker|play routine|slot 6, F00 on voice 1|1 [fixed #447]	bytes 1584 fnv FF9EE3DC
 StartTracker|modtable|slot 6, F00 on voice 1|1 [orig]	bytes 110 fnv 0AE2A39E
 StartTracker|modtable|slot 6, F00 on voice 1|1 [fixed #452]	bytes 110 fnv 65944C87
 StartTracker|CIA part|slot 6, F00 on voice 1|1	bytes 110 fnv 3CD8E36E
@@ -4419,7 +4477,7 @@ PlayTracker|popped|F00 on voice 1, tick 0|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 0|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 0|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 0|1 [orig]	bytes 1584 fnv 8D1817BA
-PlayTracker|play routine|F00 on voice 1, tick 0|1 [fixed #447]	bytes 1584 fnv EAA82655
+PlayTracker|play routine|F00 on voice 1, tick 0|1 [fixed #447]	bytes 1584 fnv 018AFC84
 PlayTracker|modtable|F00 on voice 1, tick 0|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 0|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 0|1	bytes 110 fnv 3CD8E36E
@@ -4428,7 +4486,7 @@ PlayTracker|popped|F00 on voice 1, tick 1|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 1|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 1|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 1|1 [orig]	bytes 1584 fnv 8066BEAC
-PlayTracker|play routine|F00 on voice 1, tick 1|1 [fixed #447]	bytes 1584 fnv 6CFBEE76
+PlayTracker|play routine|F00 on voice 1, tick 1|1 [fixed #447]	bytes 1584 fnv 37B78204
 PlayTracker|modtable|F00 on voice 1, tick 1|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 1|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 1|1	bytes 110 fnv 3CD8E36E
@@ -4437,7 +4495,7 @@ PlayTracker|popped|F00 on voice 1, tick 2|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 2|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 2|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 2|1 [orig]	bytes 1584 fnv DAA6BB93
-PlayTracker|play routine|F00 on voice 1, tick 2|1 [fixed #447]	bytes 1584 fnv 3BCD78F4
+PlayTracker|play routine|F00 on voice 1, tick 2|1 [fixed #447]	bytes 1584 fnv 2E248861
 PlayTracker|modtable|F00 on voice 1, tick 2|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 2|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 2|1	bytes 110 fnv 3CD8E36E
@@ -4446,7 +4504,7 @@ PlayTracker|popped|F00 on voice 1, tick 3|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 3|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 3|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 3|1 [orig]	bytes 1584 fnv F4726F5C
-PlayTracker|play routine|F00 on voice 1, tick 3|1 [fixed #447]	bytes 1584 fnv D2B0E46A
+PlayTracker|play routine|F00 on voice 1, tick 3|1 [fixed #447]	bytes 1584 fnv 255ED509
 PlayTracker|modtable|F00 on voice 1, tick 3|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 3|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 3|1	bytes 110 fnv 3CD8E36E
@@ -4455,7 +4513,7 @@ PlayTracker|popped|F00 on voice 1, tick 4|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 4|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 4|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 4|1 [orig]	bytes 1584 fnv 241DC146
-PlayTracker|play routine|F00 on voice 1, tick 4|1 [fixed #447]	bytes 1584 fnv 68AF61C0
+PlayTracker|play routine|F00 on voice 1, tick 4|1 [fixed #447]	bytes 1584 fnv F89C9A55
 PlayTracker|modtable|F00 on voice 1, tick 4|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 4|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 4|1	bytes 110 fnv 3CD8E36E
@@ -4464,7 +4522,7 @@ PlayTracker|popped|F00 on voice 1, tick 5|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 5|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 5|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 5|1 [orig]	bytes 1584 fnv 991B4D01
-PlayTracker|play routine|F00 on voice 1, tick 5|1 [fixed #447]	bytes 1584 fnv C0449502
+PlayTracker|play routine|F00 on voice 1, tick 5|1 [fixed #447]	bytes 1584 fnv 81D4EC35
 PlayTracker|modtable|F00 on voice 1, tick 5|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 5|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 5|1	bytes 110 fnv 3CD8E36E
@@ -4473,7 +4531,7 @@ PlayTracker|popped|F00 on voice 1, tick 6|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 6|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 6|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 6|1 [orig]	bytes 1584 fnv 66599EE4
-PlayTracker|play routine|F00 on voice 1, tick 6|1 [fixed #447]	bytes 1584 fnv 02E695EA
+PlayTracker|play routine|F00 on voice 1, tick 6|1 [fixed #447]	bytes 1584 fnv 5A2B09CA
 PlayTracker|modtable|F00 on voice 1, tick 6|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 6|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 6|1	bytes 110 fnv 3CD8E36E
@@ -4482,7 +4540,7 @@ PlayTracker|popped|F00 on voice 1, tick 7|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 7|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 7|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 7|1 [orig]	bytes 1584 fnv 66599EE4
-PlayTracker|play routine|F00 on voice 1, tick 7|1 [fixed #447]	bytes 1584 fnv 02E695EA
+PlayTracker|play routine|F00 on voice 1, tick 7|1 [fixed #447]	bytes 1584 fnv 5A2B09CA
 PlayTracker|modtable|F00 on voice 1, tick 7|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 7|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 7|1	bytes 110 fnv 3CD8E36E
@@ -4491,7 +4549,7 @@ PlayTracker|popped|F00 on voice 1, tick 8|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 8|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 8|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 8|1 [orig]	bytes 1584 fnv 66599EE4
-PlayTracker|play routine|F00 on voice 1, tick 8|1 [fixed #447]	bytes 1584 fnv 02E695EA
+PlayTracker|play routine|F00 on voice 1, tick 8|1 [fixed #447]	bytes 1584 fnv 5A2B09CA
 PlayTracker|modtable|F00 on voice 1, tick 8|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 8|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 8|1	bytes 110 fnv 3CD8E36E
@@ -4500,7 +4558,7 @@ PlayTracker|popped|F00 on voice 1, tick 9|1	$00000000
 PlayTracker|DMACONR|F00 on voice 1, tick 9|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 1, tick 9|1	$00000002
 PlayTracker|play routine|F00 on voice 1, tick 9|1 [orig]	bytes 1584 fnv 66599EE4
-PlayTracker|play routine|F00 on voice 1, tick 9|1 [fixed #447]	bytes 1584 fnv 02E695EA
+PlayTracker|play routine|F00 on voice 1, tick 9|1 [fixed #447]	bytes 1584 fnv 5A2B09CA
 PlayTracker|modtable|F00 on voice 1, tick 9|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 1, tick 9|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 1, tick 9|1	bytes 110 fnv 3CD8E36E
@@ -4509,13 +4567,13 @@ PlayTracker|voice behind F00: note from $DFF000 + offset|F00 on voice 1, tick 9|
 PlayTracker|voice behind F00: note from $DFF000 + offset|F00 on voice 1, tick 9|2	$00000001
 PlayTracker|voice behind F00: note from $DFF000 + offset|F00 on voice 1, tick 9|3	$00000001
 PlayTracker|module bytes|F00 on voice 1, tick 9|1 [orig]	bytes 2156 fnv 4F5D9510
-PlayTracker|module bytes|F00 on voice 1, tick 9|1 [fixed #447]	bytes 2156 fnv B086DFF1
+PlayTracker|module bytes|F00 on voice 1, tick 9|1 [fixed #447]	bytes 2156 fnv 4F5D9510
 StopTracker|kept|F00 on voice 1|1	kept
 StopTracker|popped|F00 on voice 1|1	$00000000
 StopTracker|DMACONR|F00 on voice 1|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 StopTracker|filter|F00 on voice 1|1	$00000002
 StopTracker|play routine|F00 on voice 1|1 [orig]	bytes 1584 fnv 66599EE4
-StopTracker|play routine|F00 on voice 1|1 [fixed #447]	bytes 1584 fnv 02E695EA
+StopTracker|play routine|F00 on voice 1|1 [fixed #447]	bytes 1584 fnv 5A2B09CA
 StopTracker|modtable|F00 on voice 1|1 [orig]	bytes 110 fnv 0AE2A39E
 StopTracker|modtable|F00 on voice 1|1 [fixed #452]	bytes 110 fnv 65944C87
 StopTracker|CIA part|F00 on voice 1|1	bytes 110 fnv 3CD8E36E
@@ -4524,14 +4582,14 @@ FreeTrackerModule|popped|F00 on voice 1|1	$00000000
 FreeTrackerModule|DMACONR|F00 on voice 1|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 FreeTrackerModule|filter|F00 on voice 1|1	$00000002
 FreeTrackerModule|play routine|F00 on voice 1|1 [orig]	bytes 1584 fnv 66599EE4
-FreeTrackerModule|play routine|F00 on voice 1|1 [fixed #447]	bytes 1584 fnv 02E695EA
+FreeTrackerModule|play routine|F00 on voice 1|1 [fixed #447]	bytes 1584 fnv 5A2B09CA
 FreeTrackerModule|modtable|F00 on voice 1|1 [orig]	bytes 110 fnv 9A743ED2
 FreeTrackerModule|modtable|F00 on voice 1|1 [fixed #452]	bytes 110 fnv DBF0BFD7
 FreeTrackerModule|CIA part|F00 on voice 1|1	bytes 110 fnv 3CD8E36E
 DecodeModule|kept|slot 6, F00 on voice 2|1	kept
 DecodeModule|popped|slot 6, F00 on voice 2|1	$00000000
 DecodeModule|play routine|slot 6, F00 on voice 2|1 [orig]	bytes 1584 fnv 66599EE4
-DecodeModule|play routine|slot 6, F00 on voice 2|1 [fixed #447]	bytes 1584 fnv 02E695EA
+DecodeModule|play routine|slot 6, F00 on voice 2|1 [fixed #447]	bytes 1584 fnv 5A2B09CA
 DecodeModule|modtable|slot 6, F00 on voice 2|1 [orig]	bytes 110 fnv 0AE2A39E
 DecodeModule|modtable|slot 6, F00 on voice 2|1 [fixed #452]	bytes 110 fnv 65944C87
 DecodeModule|CIA part|slot 6, F00 on voice 2|1	bytes 110 fnv 3CD8E36E
@@ -4540,7 +4598,7 @@ StartTracker|popped|slot 6, F00 on voice 2|1	$00000000
 StartTracker|DMACONR|slot 6, F00 on voice 2|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 StartTracker|filter|slot 6, F00 on voice 2|1	$00000002
 StartTracker|play routine|slot 6, F00 on voice 2|1 [orig]	bytes 1584 fnv 3325EE06
-StartTracker|play routine|slot 6, F00 on voice 2|1 [fixed #447]	bytes 1584 fnv E90311FC
+StartTracker|play routine|slot 6, F00 on voice 2|1 [fixed #447]	bytes 1584 fnv 566FD8DC
 StartTracker|modtable|slot 6, F00 on voice 2|1 [orig]	bytes 110 fnv 0AE2A39E
 StartTracker|modtable|slot 6, F00 on voice 2|1 [fixed #452]	bytes 110 fnv 65944C87
 StartTracker|CIA part|slot 6, F00 on voice 2|1	bytes 110 fnv 3CD8E36E
@@ -4550,7 +4608,7 @@ PlayTracker|popped|F00 on voice 2, tick 0|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 0|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 0|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 0|1 [orig]	bytes 1584 fnv 8282279B
-PlayTracker|play routine|F00 on voice 2, tick 0|1 [fixed #447]	bytes 1584 fnv CA538DDC
+PlayTracker|play routine|F00 on voice 2, tick 0|1 [fixed #447]	bytes 1584 fnv 41B1CE97
 PlayTracker|modtable|F00 on voice 2, tick 0|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 0|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 0|1	bytes 110 fnv 3CD8E36E
@@ -4559,7 +4617,7 @@ PlayTracker|popped|F00 on voice 2, tick 1|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 1|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 1|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 1|1 [orig]	bytes 1584 fnv A1AF37D7
-PlayTracker|play routine|F00 on voice 2, tick 1|1 [fixed #447]	bytes 1584 fnv EAEFCC80
+PlayTracker|play routine|F00 on voice 2, tick 1|1 [fixed #447]	bytes 1584 fnv FA99884D
 PlayTracker|modtable|F00 on voice 2, tick 1|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 1|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 1|1	bytes 110 fnv 3CD8E36E
@@ -4568,7 +4626,7 @@ PlayTracker|popped|F00 on voice 2, tick 2|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 2|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 2|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 2|1 [orig]	bytes 1584 fnv E67CE32F
-PlayTracker|play routine|F00 on voice 2, tick 2|1 [fixed #447]	bytes 1584 fnv 2D662634
+PlayTracker|play routine|F00 on voice 2, tick 2|1 [fixed #447]	bytes 1584 fnv 7EB3C68B
 PlayTracker|modtable|F00 on voice 2, tick 2|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 2|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 2|1	bytes 110 fnv 3CD8E36E
@@ -4577,7 +4635,7 @@ PlayTracker|popped|F00 on voice 2, tick 3|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 3|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 3|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 3|1 [orig]	bytes 1584 fnv FB4C067F
-PlayTracker|play routine|F00 on voice 2, tick 3|1 [fixed #447]	bytes 1584 fnv 0EAE1A94
+PlayTracker|play routine|F00 on voice 2, tick 3|1 [fixed #447]	bytes 1584 fnv A3C9EA69
 PlayTracker|modtable|F00 on voice 2, tick 3|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 3|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 3|1	bytes 110 fnv 3CD8E36E
@@ -4586,7 +4644,7 @@ PlayTracker|popped|F00 on voice 2, tick 4|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 4|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 4|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 4|1 [orig]	bytes 1584 fnv 8C688923
-PlayTracker|play routine|F00 on voice 2, tick 4|1 [fixed #447]	bytes 1584 fnv 4EAA5244
+PlayTracker|play routine|F00 on voice 2, tick 4|1 [fixed #447]	bytes 1584 fnv 1216CD2F
 PlayTracker|modtable|F00 on voice 2, tick 4|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 4|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 4|1	bytes 110 fnv 3CD8E36E
@@ -4595,7 +4653,7 @@ PlayTracker|popped|F00 on voice 2, tick 5|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 5|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 5|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 5|1 [orig]	bytes 1584 fnv 339CAF31
-PlayTracker|play routine|F00 on voice 2, tick 5|1 [fixed #447]	bytes 1584 fnv 8A731723
+PlayTracker|play routine|F00 on voice 2, tick 5|1 [fixed #447]	bytes 1584 fnv 7333A3D2
 PlayTracker|modtable|F00 on voice 2, tick 5|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 5|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 5|1	bytes 110 fnv 3CD8E36E
@@ -4604,7 +4662,7 @@ PlayTracker|popped|F00 on voice 2, tick 6|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 6|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 6|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 6|1 [orig]	bytes 1584 fnv EBCECEA9
-PlayTracker|play routine|F00 on voice 2, tick 6|1 [fixed #447]	bytes 1584 fnv C1A931DF
+PlayTracker|play routine|F00 on voice 2, tick 6|1 [fixed #447]	bytes 1584 fnv E191D10C
 PlayTracker|modtable|F00 on voice 2, tick 6|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 6|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 6|1	bytes 110 fnv 3CD8E36E
@@ -4613,7 +4671,7 @@ PlayTracker|popped|F00 on voice 2, tick 7|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 7|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 7|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 7|1 [orig]	bytes 1584 fnv EBCECEA9
-PlayTracker|play routine|F00 on voice 2, tick 7|1 [fixed #447]	bytes 1584 fnv C1A931DF
+PlayTracker|play routine|F00 on voice 2, tick 7|1 [fixed #447]	bytes 1584 fnv E191D10C
 PlayTracker|modtable|F00 on voice 2, tick 7|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 7|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 7|1	bytes 110 fnv 3CD8E36E
@@ -4622,7 +4680,7 @@ PlayTracker|popped|F00 on voice 2, tick 8|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 8|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 8|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 8|1 [orig]	bytes 1584 fnv EBCECEA9
-PlayTracker|play routine|F00 on voice 2, tick 8|1 [fixed #447]	bytes 1584 fnv C1A931DF
+PlayTracker|play routine|F00 on voice 2, tick 8|1 [fixed #447]	bytes 1584 fnv E191D10C
 PlayTracker|modtable|F00 on voice 2, tick 8|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 8|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 8|1	bytes 110 fnv 3CD8E36E
@@ -4631,7 +4689,7 @@ PlayTracker|popped|F00 on voice 2, tick 9|1	$00000000
 PlayTracker|DMACONR|F00 on voice 2, tick 9|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 2, tick 9|1	$00000002
 PlayTracker|play routine|F00 on voice 2, tick 9|1 [orig]	bytes 1584 fnv EBCECEA9
-PlayTracker|play routine|F00 on voice 2, tick 9|1 [fixed #447]	bytes 1584 fnv C1A931DF
+PlayTracker|play routine|F00 on voice 2, tick 9|1 [fixed #447]	bytes 1584 fnv E191D10C
 PlayTracker|modtable|F00 on voice 2, tick 9|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 2, tick 9|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 2, tick 9|1	bytes 110 fnv 3CD8E36E
@@ -4639,13 +4697,13 @@ PlayTracker|stopped|F00 on voice 2, tick 9|1	$00000001
 PlayTracker|voice behind F00: note from $DFF000 + offset|F00 on voice 2, tick 9|1	$00000001
 PlayTracker|voice behind F00: note from $DFF000 + offset|F00 on voice 2, tick 9|2	$00000001
 PlayTracker|module bytes|F00 on voice 2, tick 9|1 [orig]	bytes 2156 fnv 3CFD5380
-PlayTracker|module bytes|F00 on voice 2, tick 9|1 [fixed #447]	bytes 2156 fnv 8F06BCAA
+PlayTracker|module bytes|F00 on voice 2, tick 9|1 [fixed #447]	bytes 2156 fnv 2030C581
 StopTracker|kept|F00 on voice 2|1	kept
 StopTracker|popped|F00 on voice 2|1	$00000000
 StopTracker|DMACONR|F00 on voice 2|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 StopTracker|filter|F00 on voice 2|1	$00000002
 StopTracker|play routine|F00 on voice 2|1 [orig]	bytes 1584 fnv EBCECEA9
-StopTracker|play routine|F00 on voice 2|1 [fixed #447]	bytes 1584 fnv C1A931DF
+StopTracker|play routine|F00 on voice 2|1 [fixed #447]	bytes 1584 fnv E191D10C
 StopTracker|modtable|F00 on voice 2|1 [orig]	bytes 110 fnv 0AE2A39E
 StopTracker|modtable|F00 on voice 2|1 [fixed #452]	bytes 110 fnv 65944C87
 StopTracker|CIA part|F00 on voice 2|1	bytes 110 fnv 3CD8E36E
@@ -4654,14 +4712,14 @@ FreeTrackerModule|popped|F00 on voice 2|1	$00000000
 FreeTrackerModule|DMACONR|F00 on voice 2|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 FreeTrackerModule|filter|F00 on voice 2|1	$00000002
 FreeTrackerModule|play routine|F00 on voice 2|1 [orig]	bytes 1584 fnv EBCECEA9
-FreeTrackerModule|play routine|F00 on voice 2|1 [fixed #447]	bytes 1584 fnv C1A931DF
+FreeTrackerModule|play routine|F00 on voice 2|1 [fixed #447]	bytes 1584 fnv E191D10C
 FreeTrackerModule|modtable|F00 on voice 2|1 [orig]	bytes 110 fnv 9A743ED2
 FreeTrackerModule|modtable|F00 on voice 2|1 [fixed #452]	bytes 110 fnv DBF0BFD7
 FreeTrackerModule|CIA part|F00 on voice 2|1	bytes 110 fnv 3CD8E36E
 DecodeModule|kept|slot 6, F00 on voice 3|1	kept
 DecodeModule|popped|slot 6, F00 on voice 3|1	$00000000
 DecodeModule|play routine|slot 6, F00 on voice 3|1 [orig]	bytes 1584 fnv EBCECEA9
-DecodeModule|play routine|slot 6, F00 on voice 3|1 [fixed #447]	bytes 1584 fnv C1A931DF
+DecodeModule|play routine|slot 6, F00 on voice 3|1 [fixed #447]	bytes 1584 fnv E191D10C
 DecodeModule|modtable|slot 6, F00 on voice 3|1 [orig]	bytes 110 fnv 0AE2A39E
 DecodeModule|modtable|slot 6, F00 on voice 3|1 [fixed #452]	bytes 110 fnv 65944C87
 DecodeModule|CIA part|slot 6, F00 on voice 3|1	bytes 110 fnv 3CD8E36E
@@ -4670,7 +4728,7 @@ StartTracker|popped|slot 6, F00 on voice 3|1	$00000000
 StartTracker|DMACONR|slot 6, F00 on voice 3|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 StartTracker|filter|slot 6, F00 on voice 3|1	$00000002
 StartTracker|play routine|slot 6, F00 on voice 3|1 [orig]	bytes 1584 fnv F444E32F
-StartTracker|play routine|slot 6, F00 on voice 3|1 [fixed #447]	bytes 1584 fnv 8A01EE25
+StartTracker|play routine|slot 6, F00 on voice 3|1 [fixed #447]	bytes 1584 fnv CB8D48E2
 StartTracker|modtable|slot 6, F00 on voice 3|1 [orig]	bytes 110 fnv 0AE2A39E
 StartTracker|modtable|slot 6, F00 on voice 3|1 [fixed #452]	bytes 110 fnv 65944C87
 StartTracker|CIA part|slot 6, F00 on voice 3|1	bytes 110 fnv 3CD8E36E
@@ -4680,7 +4738,7 @@ PlayTracker|popped|F00 on voice 3, tick 0|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 0|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 0|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 0|1 [orig]	bytes 1584 fnv 06A73F1D
-PlayTracker|play routine|F00 on voice 3, tick 0|1 [fixed #447]	bytes 1584 fnv 9317426B
+PlayTracker|play routine|F00 on voice 3, tick 0|1 [fixed #447]	bytes 1584 fnv 1F40037A
 PlayTracker|modtable|F00 on voice 3, tick 0|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 0|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 0|1	bytes 110 fnv 3CD8E36E
@@ -4689,7 +4747,7 @@ PlayTracker|popped|F00 on voice 3, tick 1|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 1|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 1|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 1|1 [orig]	bytes 1584 fnv 052D9A27
-PlayTracker|play routine|F00 on voice 3, tick 1|1 [fixed #447]	bytes 1584 fnv 91408FD5
+PlayTracker|play routine|F00 on voice 3, tick 1|1 [fixed #447]	bytes 1584 fnv 163C0D46
 PlayTracker|modtable|F00 on voice 3, tick 1|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 1|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 1|1	bytes 110 fnv 3CD8E36E
@@ -4698,7 +4756,7 @@ PlayTracker|popped|F00 on voice 3, tick 2|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 2|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 2|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 2|1 [orig]	bytes 1584 fnv 6BB1DDCD
-PlayTracker|play routine|F00 on voice 3, tick 2|1 [fixed #447]	bytes 1584 fnv 84A9D85E
+PlayTracker|play routine|F00 on voice 3, tick 2|1 [fixed #447]	bytes 1584 fnv 336F77AA
 PlayTracker|modtable|F00 on voice 3, tick 2|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 2|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 2|1	bytes 110 fnv 3CD8E36E
@@ -4707,7 +4765,7 @@ PlayTracker|popped|F00 on voice 3, tick 3|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 3|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 3|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 3|1 [orig]	bytes 1584 fnv 3C3864FA
-PlayTracker|play routine|F00 on voice 3, tick 3|1 [fixed #447]	bytes 1584 fnv 8FF882C0
+PlayTracker|play routine|F00 on voice 3, tick 3|1 [fixed #447]	bytes 1584 fnv 0C7B4D2F
 PlayTracker|modtable|F00 on voice 3, tick 3|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 3|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 3|1	bytes 110 fnv 3CD8E36E
@@ -4716,7 +4774,7 @@ PlayTracker|popped|F00 on voice 3, tick 4|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 4|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 4|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 4|1 [orig]	bytes 1584 fnv 754EC588
-PlayTracker|play routine|F00 on voice 3, tick 4|1 [fixed #447]	bytes 1584 fnv 62B7A886
+PlayTracker|play routine|F00 on voice 3, tick 4|1 [fixed #447]	bytes 1584 fnv 82F716A3
 PlayTracker|modtable|F00 on voice 3, tick 4|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 4|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 4|1	bytes 110 fnv 3CD8E36E
@@ -4725,7 +4783,7 @@ PlayTracker|popped|F00 on voice 3, tick 5|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 5|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 5|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 5|1 [orig]	bytes 1584 fnv 40F6DA9D
-PlayTracker|play routine|F00 on voice 3, tick 5|1 [fixed #447]	bytes 1584 fnv A2D92588
+PlayTracker|play routine|F00 on voice 3, tick 5|1 [fixed #447]	bytes 1584 fnv 6075324F
 PlayTracker|modtable|F00 on voice 3, tick 5|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 5|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 5|1	bytes 110 fnv 3CD8E36E
@@ -4734,7 +4792,7 @@ PlayTracker|popped|F00 on voice 3, tick 6|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 6|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 6|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 6|1 [orig]	bytes 1584 fnv 02C0868E
-PlayTracker|play routine|F00 on voice 3, tick 6|1 [fixed #447]	bytes 1584 fnv 310510AB
+PlayTracker|play routine|F00 on voice 3, tick 6|1 [fixed #447]	bytes 1584 fnv A6811D86
 PlayTracker|modtable|F00 on voice 3, tick 6|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 6|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 6|1	bytes 110 fnv 3CD8E36E
@@ -4743,7 +4801,7 @@ PlayTracker|popped|F00 on voice 3, tick 7|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 7|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 7|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 7|1 [orig]	bytes 1584 fnv 02C0868E
-PlayTracker|play routine|F00 on voice 3, tick 7|1 [fixed #447]	bytes 1584 fnv 310510AB
+PlayTracker|play routine|F00 on voice 3, tick 7|1 [fixed #447]	bytes 1584 fnv A6811D86
 PlayTracker|modtable|F00 on voice 3, tick 7|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 7|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 7|1	bytes 110 fnv 3CD8E36E
@@ -4752,7 +4810,7 @@ PlayTracker|popped|F00 on voice 3, tick 8|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 8|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 8|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 8|1 [orig]	bytes 1584 fnv 02C0868E
-PlayTracker|play routine|F00 on voice 3, tick 8|1 [fixed #447]	bytes 1584 fnv 310510AB
+PlayTracker|play routine|F00 on voice 3, tick 8|1 [fixed #447]	bytes 1584 fnv A6811D86
 PlayTracker|modtable|F00 on voice 3, tick 8|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 8|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 8|1	bytes 110 fnv 3CD8E36E
@@ -4761,20 +4819,20 @@ PlayTracker|popped|F00 on voice 3, tick 9|1	$00000000
 PlayTracker|DMACONR|F00 on voice 3, tick 9|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 PlayTracker|filter|F00 on voice 3, tick 9|1	$00000002
 PlayTracker|play routine|F00 on voice 3, tick 9|1 [orig]	bytes 1584 fnv 02C0868E
-PlayTracker|play routine|F00 on voice 3, tick 9|1 [fixed #447]	bytes 1584 fnv 310510AB
+PlayTracker|play routine|F00 on voice 3, tick 9|1 [fixed #447]	bytes 1584 fnv A6811D86
 PlayTracker|modtable|F00 on voice 3, tick 9|1 [orig]	bytes 110 fnv 0AE2A39E
 PlayTracker|modtable|F00 on voice 3, tick 9|1 [fixed #452]	bytes 110 fnv 65944C87
 PlayTracker|CIA part|F00 on voice 3, tick 9|1	bytes 110 fnv 3CD8E36E
 PlayTracker|stopped|F00 on voice 3, tick 9|1	$00000001
 PlayTracker|voice behind F00: note from $DFF000 + offset|F00 on voice 3, tick 9|1	$00000001
 PlayTracker|module bytes|F00 on voice 3, tick 9|1 [orig]	bytes 2156 fnv 0B2A220F
-PlayTracker|module bytes|F00 on voice 3, tick 9|1 [fixed #447]	bytes 2156 fnv 3C9A2A91
+PlayTracker|module bytes|F00 on voice 3, tick 9|1 [fixed #447]	bytes 2156 fnv 0B2A220F
 StopTracker|kept|F00 on voice 3|1	kept
 StopTracker|popped|F00 on voice 3|1	$00000000
 StopTracker|DMACONR|F00 on voice 3|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 StopTracker|filter|F00 on voice 3|1	$00000002
 StopTracker|play routine|F00 on voice 3|1 [orig]	bytes 1584 fnv 02C0868E
-StopTracker|play routine|F00 on voice 3|1 [fixed #447]	bytes 1584 fnv 310510AB
+StopTracker|play routine|F00 on voice 3|1 [fixed #447]	bytes 1584 fnv A6811D86
 StopTracker|modtable|F00 on voice 3|1 [orig]	bytes 110 fnv 0AE2A39E
 StopTracker|modtable|F00 on voice 3|1 [fixed #452]	bytes 110 fnv 65944C87
 StopTracker|CIA part|F00 on voice 3|1	bytes 110 fnv 3CD8E36E
@@ -4783,7 +4841,7 @@ FreeTrackerModule|popped|F00 on voice 3|1	$00000000
 FreeTrackerModule|DMACONR|F00 on voice 3|1	not captured: F00 phase: the original writes DMACON into the hardware, the C build into its RAM copy
 FreeTrackerModule|filter|F00 on voice 3|1	$00000002
 FreeTrackerModule|play routine|F00 on voice 3|1 [orig]	bytes 1584 fnv 02C0868E
-FreeTrackerModule|play routine|F00 on voice 3|1 [fixed #447]	bytes 1584 fnv 310510AB
+FreeTrackerModule|play routine|F00 on voice 3|1 [fixed #447]	bytes 1584 fnv A6811D86
 FreeTrackerModule|modtable|F00 on voice 3|1 [orig]	bytes 110 fnv 9A743ED2
 FreeTrackerModule|modtable|F00 on voice 3|1 [fixed #452]	bytes 110 fnv DBF0BFD7
 FreeTrackerModule|CIA part|F00 on voice 3|1	bytes 110 fnv 3CD8E36E
@@ -4801,7 +4859,7 @@ GetTrackerSize|popped|slot 1|1	$00000000
 GetTrackerSize|DMACONR|slot 1|1	$00000000
 GetTrackerSize|filter|slot 1|1	$00000002
 GetTrackerSize|play routine|slot 1|1 [orig]	bytes 1584 fnv 02C0868E
-GetTrackerSize|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv 310510AB
+GetTrackerSize|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv A6811D86
 GetTrackerSize|modtable|slot 1|1 [orig]	bytes 110 fnv AFC13282
 GetTrackerSize|modtable|slot 1|1 [fixed #452]	bytes 110 fnv 2ABBE723
 GetTrackerSize|CIA part|slot 1|1	bytes 110 fnv 3CD8E36E
@@ -4811,7 +4869,7 @@ GetTrackerLocation|popped|slot 1|1	$00000000
 GetTrackerLocation|DMACONR|slot 1|1	$00000000
 GetTrackerLocation|filter|slot 1|1	$00000002
 GetTrackerLocation|play routine|slot 1|1 [orig]	bytes 1584 fnv 02C0868E
-GetTrackerLocation|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv 310510AB
+GetTrackerLocation|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv A6811D86
 GetTrackerLocation|modtable|slot 1|1 [orig]	bytes 110 fnv AFC13282
 GetTrackerLocation|modtable|slot 1|1 [fixed #452]	bytes 110 fnv 2ABBE723
 GetTrackerLocation|CIA part|slot 1|1	bytes 110 fnv 3CD8E36E
@@ -4821,7 +4879,7 @@ CheckTrackerID|popped|slot 1|1	$00000000
 CheckTrackerID|DMACONR|slot 1|1	$00000000
 CheckTrackerID|filter|slot 1|1	$00000002
 CheckTrackerID|play routine|slot 1|1 [orig]	bytes 1584 fnv 02C0868E
-CheckTrackerID|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv 310510AB
+CheckTrackerID|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv A6811D86
 CheckTrackerID|modtable|slot 1|1 [orig]	bytes 110 fnv AFC13282
 CheckTrackerID|modtable|slot 1|1 [fixed #452]	bytes 110 fnv 2ABBE723
 CheckTrackerID|CIA part|slot 1|1	bytes 110 fnv 3CD8E36E
@@ -4831,7 +4889,7 @@ ModulePatterns|popped|slot 1|1	$00000000
 ModulePatterns|DMACONR|slot 1|1	$00000000
 ModulePatterns|filter|slot 1|1	$00000002
 ModulePatterns|play routine|slot 1|1 [orig]	bytes 1584 fnv 02C0868E
-ModulePatterns|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv 310510AB
+ModulePatterns|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv A6811D86
 ModulePatterns|modtable|slot 1|1 [orig]	bytes 110 fnv AFC13282
 ModulePatterns|modtable|slot 1|1 [fixed #452]	bytes 110 fnv 2ABBE723
 ModulePatterns|CIA part|slot 1|1	bytes 110 fnv 3CD8E36E
@@ -4847,7 +4905,7 @@ FreeTrackerModule|popped|slot 1|1	$00000000
 FreeTrackerModule|DMACONR|slot 1|1	$00000000
 FreeTrackerModule|filter|slot 1|1	$00000002
 FreeTrackerModule|play routine|slot 1|1 [orig]	bytes 1584 fnv 02C0868E
-FreeTrackerModule|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv 310510AB
+FreeTrackerModule|play routine|slot 1|1 [fixed #447]	bytes 1584 fnv A6811D86
 FreeTrackerModule|modtable|slot 1|1 [orig]	bytes 110 fnv 9A743ED2
 FreeTrackerModule|modtable|slot 1|1 [fixed #452]	bytes 110 fnv DBF0BFD7
 FreeTrackerModule|CIA part|slot 1|1	bytes 110 fnv 3CD8E36E
@@ -4866,7 +4924,7 @@ FreeTrackerModule|popped|slot 4|1	$00000000
 FreeTrackerModule|DMACONR|slot 4|1	$00000000
 FreeTrackerModule|filter|slot 4|1	$00000002
 FreeTrackerModule|play routine|slot 4|1 [orig]	bytes 1584 fnv 02C0868E
-FreeTrackerModule|play routine|slot 4|1 [fixed #447]	bytes 1584 fnv 310510AB
+FreeTrackerModule|play routine|slot 4|1 [fixed #447]	bytes 1584 fnv A6811D86
 FreeTrackerModule|modtable|slot 4|1 [orig]	bytes 110 fnv 9A743ED2
 FreeTrackerModule|modtable|slot 4|1 [fixed #452]	bytes 110 fnv DBF0BFD7
 FreeTrackerModule|CIA part|slot 4|1	bytes 110 fnv 3CD8E36E
@@ -4887,7 +4945,7 @@ FreeTrackerModule|popped|slot 5|1	$00000000
 FreeTrackerModule|DMACONR|slot 5|1	$00000000
 FreeTrackerModule|filter|slot 5|1	$00000002
 FreeTrackerModule|play routine|slot 5|1 [orig]	bytes 1584 fnv 02C0868E
-FreeTrackerModule|play routine|slot 5|1 [fixed #447]	bytes 1584 fnv 310510AB
+FreeTrackerModule|play routine|slot 5|1 [fixed #447]	bytes 1584 fnv A6811D86
 FreeTrackerModule|modtable|slot 5|1 [orig]	bytes 110 fnv 9A743ED2
 FreeTrackerModule|modtable|slot 5|1 [fixed #452]	bytes 110 fnv DBF0BFD7
 FreeTrackerModule|CIA part|slot 5|1	bytes 110 fnv 3CD8E36E
@@ -4896,7 +4954,7 @@ finit|popped||1	$00000000
 finit|DMACONR||1	$00000000
 finit|filter||1	$00000002
 finit|play routine||1 [orig]	bytes 1584 fnv 02C0868E
-finit|play routine||1 [fixed #447]	bytes 1584 fnv 310510AB
+finit|play routine||1 [fixed #447]	bytes 1584 fnv A6811D86
 finit|modtable||1 [orig]	bytes 110 fnv 9A743ED2
 finit|modtable||1 [fixed #452]	bytes 110 fnv DBF0BFD7
 finit|CIA part||1	bytes 110 fnv 3CD8E36E

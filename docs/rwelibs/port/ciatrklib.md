@@ -138,6 +138,11 @@ kind F):
   nothing; the original's `DBRA` counter was $FFFE and it rewrote 64 KB
   from the loop start, from address 0 on a voice that played no sample
   yet (#439; test `ciatrklib-karplus-loop0`).
+* The tracker event (8xx) is also seen on the row's own tick
+  (`mt_CheckMoreEfx`): at speed 1 it comes at all, at other speeds on
+  its row; the original saw it only in `mt_CheckEfx`, on the ticks
+  between the rows (#435; library test `rwe_ciatrklib`, the play
+  routine's state of the ticks with an event).
 
 ## BUG(orig), kept
 
@@ -172,8 +177,7 @@ kind F):
   above 31 reads behind `mt_SampleStarts` (#480); the repeat offset is
   repeat × 2 as a word (#479); `mt_SampleOffset` compares the offset
   with `n_length` signed (`CMP.W`, `BGE`): 9xx on a sample of $8000 words
-  or more sets the length to 1 (#472); effect 8 is seen only on ticks
-  other than 0 (never at speed 1) (#435).
+  or more sets the length to 1 (#472).
 * F00: that it stops the module (`mt_SetSpeed`: `BEQ mt_end`) is normal
   Protracker behaviour. The defect is that `mt_end` loads a0 with
   `$DFF000` (for its `CLR.W $A8(A0)` …), and in `mt_GetNewNote` a0 is
