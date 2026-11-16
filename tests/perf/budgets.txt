@@ -138,6 +138,9 @@
 # 11096.6/11098.1 and 11114.1/11117.6. A call is a whole number of scan
 # lines (454 cycles) plus a fraction: 24 lines now, 25 in the original, so
 # a few cycles more in the routine or its caller can move it by a line.
+# bgfx.qblit4u: B~T from nine runs on main 21203681 (2026-11-16, task 13.40):
+# 12665.8 to 12674.0 (two runs at 12673.9 and 12674.0, the old limit
+# 12666~8); the loop has two states 8 cycles apart, so T is twice the spread.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -159,7 +162,7 @@ bgfx.clipblitc               8127     8643.9  ClipBlit 0,-5,100 : ClipBlit 0,310
 bgfx.clipblitex              2258     2310.4  ClipBlit 3,100,100,1
 bgfx.bblit4u              18160~28    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
 bgfx.bblit8u              35892~12    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
-bgfx.qblit4u               12666~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
+bgfx.qblit4u              12674~17    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
 bgfx.qblit8u              25210~28    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
 bgfx.qblit4f               9044~9     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
 bgfx.qblit8f               18000~12   18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
