@@ -222,8 +222,11 @@ static_assert(sizeof fa == 0x9d4 - 0x872 + 2);
 /* ------------------------------------------------------------- output */
 
 /* ALibJsr #inputoutputlib LSL 7+8: string to the current output, d0 =
-   what the handler returns (the length for strprint) */
-static ULONG output(const UBYTE *s, ULONG len)
+   what the handler returns (the length for strprint).  Inline in the
+   entries (Print, Str$): the call may change d2-d7/a2/a6, so every C
+   function around one saves them; with the number conversion and the
+   formatting free of calls, the entries save them once. */
+BL_ALWAYS_INLINE ULONG output(const UBYTE *s, ULONG len)
 {
     struct bl_regs r = { .d0 = len, .a0 = (ULONG)s };
 
@@ -320,9 +323,11 @@ static const UBYTE *fmtround(UBYTE *buf, UWORD size, const UBYTE *num, UWORD *le
     return buf;
 }
 
-/* prtype1 - output the number a0 (d0 characters), formatted with the
-   Format string if there is one.  Word arithmetic as in the original. */
-static ULONG prtype1(const UBYTE *numtext, ULONG len)
+/* prtype1 - the number a0 (d0 characters) formatted with the Format
+   string (formlen != 0, prtype2 tests it) into chars; returns the length
+   of the formatted characters (SUB.l a0,a1:MOVE.l a1,d0), which prtype2
+   outputs.  Word arithmetic as in the original. */
+static __attribute__((noinline)) ULONG prtype1(const UBYTE *numtext, ULONG len)
 {
     struct ez z;
     UWORD nchars, point, trail, n;
@@ -337,9 +342,6 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
     UBYTE *first = 0;                           /* the first digit of the number */
     UBYTE *zero = 0;                            /* the first zero of a "0" place */
     const UBYTE *p;
-
-    if (!pl.formlen)                            /* MOVE formlen(pc),d1:BEQ 'done */
-        return output(numtext, len);
 
     nchars = len;
     point = 0xffff;                             /* pos of point */
@@ -480,11 +482,12 @@ askip:
     /* (the original rounds here, in the formatted characters: fmtround) */
 alldone:
     out = z.out;
-    return output(PL_CHARS, out - PL_CHARS);    /* SUB.l a0,a1:MOVE.l a1,d0 */
+    return out - PL_CHARS;                      /* SUB.l a0,a1:MOVE.l a1,d0 */
 }
 
-/* prtype2 - a0 = buffer, null terminated */
-static ULONG prtype2(const UBYTE *buf)
+/* prtype2 - a0 = buffer, null terminated: its length, formatted with the
+   Format string if there is one (prtype1), then output */
+BL_ALWAYS_INLINE ULONG prtype2(const UBYTE *buf)
 {
     const UBYTE *p = buf;
     ULONG n = (ULONG)-1;
@@ -492,7 +495,11 @@ static ULONG prtype2(const UBYTE *buf)
     do
         n++;
     while (*p++);
-    return prtype1(buf, n);
+    if (pl.formlen) {                           /* MOVE formlen(pc),d1:BEQ 'done */
+        n = prtype1(buf, n);
+        buf = PL_CHARS;
+    }
+    return output(buf, n);
 }
 
 /**
@@ -612,17 +619,17 @@ static UBYTE *makeval2(UBYTE *dst, ULONG value, UWORD n)
     return dst;
 }
 
-/* makeval - signed d0 with at most d1+1 digits, then output */
-static ULONG makeval(ULONG value, UWORD n)
+/* makeval - signed d0 with at most d1+1 digits; the text for prtype2 */
+static UBYTE *makeval(ULONG value, UWORD n)
 {
     UBYTE *dst = PL_NUMBUFFF;
 
     if ((LONG)value < 0) {
         dst = makeval2(dst, -value, n);
         *--dst = '-';
-        return prtype2(dst);
+        return dst;
     }
-    return prtype2(makeval2(dst, value, n));
+    return makeval2(dst, value, n);
 }
 
 static const ULONG divisors[10] = {
@@ -659,18 +666,20 @@ static void makelong(ULONG value)
     *dst = 0;
 }
 
-static ULONG plong2(ULONG value)
+/* plong2, pbyte2, pword2, pquick2, pfloat2 - the text of a value for
+   prtype2 */
+static UBYTE *plong2(ULONG value)
 {
     makelong(value);
-    return prtype2(PL_NUMBUFF);
+    return PL_NUMBUFF;
 }
 
-static ULONG pbyte2(ULONG value)
+static UBYTE *pbyte2(ULONG value)
 {
     return makeval((LONG)(BYTE)value, 2);       /* EXT d0:EXT.l d0 */
 }
 
-static ULONG pword2(ULONG value)
+static UBYTE *pword2(ULONG value)
 {
     return makeval((LONG)(WORD)value, 4);       /* EXT.l d0 */
 }
@@ -713,7 +722,7 @@ static UBYTE *quick3(ULONG value)
     return makeval2(dst, value >> 16, 4);       /* 'skip3 */
 }
 
-static ULONG pquick2(ULONG value)
+static UBYTE *pquick2(ULONG value)
 {
     ULONG quick = value;
     UBYTE *str;
@@ -725,7 +734,7 @@ static ULONG pquick2(ULONG value)
             *--str = '-';
     } else
         str = quick3(quick);
-    return prtype2(str);
+    return str;
 }
 
 /* ------------------------------------------------------- ffptoascii */
@@ -908,39 +917,53 @@ term:
 }
 
 /* pfloat2 - FloatMode, or always fixed point with a Format string */
-static ULONG pfloat2(ULONG value)
+static UBYTE *pfloat2(ULONG value)
 {
     UWORD mode = pl.floatmode;
 
     if (pl.formlen)
         mode = 0xffff;
-    return prtype2(ffptoascii(value, mode));
+    return ffptoascii(value, mode);
+}
+
+/* numtext - the text of a number of type `type` (wstr, ptype: 4 quick,
+   3/6 long, 2 word, 5 float, else byte) */
+BL_ALWAYS_INLINE UBYTE *numtext(UWORD type, ULONG value)
+{
+    switch (type) {
+    case 4:
+        return pquick2(value);
+    case 3:
+    case 6:
+        return plong2(value);
+    case 2:
+        return pword2(value);
+    case 5:
+        return pfloat2(value);
+    default:
+        return pbyte2(value);
+    }
 }
 
 /* ------------------------------------------------------- Print, NPrint */
 
-/* ptype - one argument of type t, value(s) from the a2 stack */
-static ULONG ptype(UWORD type, const UBYTE **sp)
+/* ptype - one argument of type t, value(s) from the a2 stack: a long
+   for quick, long and float (types 3-6), a word for word and byte */
+BL_ALWAYS_INLINE ULONG ptype(UWORD type, const UBYTE **sp)
 {
-    switch (type) {
-    case 4:
-        return pquick2(BL_POPL(*sp));
-    case 3:
-    case 6:
-        return plong2(BL_POPL(*sp));
-    case 7: {                                   /* 'pstring */
+    ULONG v;
+
+    if (type == 7) {                            /* 'pstring */
         ULONG len = BL_POPL(*sp);
         const UBYTE *s = (const UBYTE *)BL_POPL(*sp);
 
         return output(s, len);
     }
-    case 2:
-        return pword2(BL_POPW(*sp));
-    case 5:
-        return pfloat2(BL_POPL(*sp));
-    default:                                    /* 'pbyte */
-        return pbyte2(BL_POPW(*sp));
-    }
+    if (type >= 3 && type <= 6)
+        v = BL_POPL(*sp);
+    else
+        v = BL_POPW(*sp);                       /* 'pbyte, 'pword */
+    return prtype2(numtext(type, v));
 }
 
 /**
@@ -991,51 +1014,35 @@ void BLITZ_ROUTINE donprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
    stprint3), -4 (string a0, d0 = length, stprint2) and 0 (single
    character - in the original the same code as stprint2; not a bug, never
    used for single characters).
-   The characters go to a3, d0 = length. */
-static ULONG BLITZ_ROUTINE stprint2_c(ULONG len BL_REG(d0), const UBYTE *s BL_REG(a0))
-{
-    ULONG n = len;
-
-    while (n) {
-        *blitz_string++ = *s++;
-        n--;
-    }
-    return len;
-}
-
-static ULONG BLITZ_ROUTINE stprint3_c(const UBYTE *s BL_REG(a0))
-{
-    ULONG n = (ULONG)-1;
-
-    do
-        n++;
-    while ((*blitz_string++ = *s++));
-    blitz_string--;                             /* SUBQ #1,a3 */
-    return n;
-}
-
+   The characters go to a3, d0 = length.  The original's code: it changes
+   d1 and a0 (and d0 for -8), which its only callers, the output calls of
+   printlib between the two dosetout of Str$, take as changed. */
 void strprint(void);
 BLITZ_ASM_BLOCK(strprint,
-        "   bra.w   1f\n"                       /* -8: stprint3 */
+        "   bra.w   2f\n"                       /* -8: stprint3 */
         "   bra.w   _strprint\n"                /* -4: stprint2 */
         "   .globl  _strprint\n"
         "_strprint:\n"                          /*  0: = stprint2 */
-        "   movem.l d1/a0-a1,-(sp)\n"
-        "   jsr     _stprint2_c\n"
-        "   movem.l (sp)+,d1/a0-a1\n"
-        "   rts\n"
-        "1: movem.l d1/a0-a1,-(sp)\n"
-        "   jsr     _stprint3_c\n"
-        "   movem.l (sp)+,d1/a0-a1\n"
+        "   move.l  d0,d1\n"
+        "   beq.s   1f\n"
+        "0: move.b  (a0)+,(a3)+\n"
+        "   subq.l  #1,d1\n"
+        "   bne.s   0b\n"
+        "1: rts\n"
+        "2: moveq   #-1,d0\n"                   /* stprint3 */
+        "3: addq.l  #1,d0\n"
+        "   move.b  (a0)+,(a3)+\n"
+        "   bne.s   3b\n"
+        "   subq.l  #1,a3\n"
         "   rts\n");
 
 /* wstr - the value d2 of type (popped) as Print would output it */
-static ULONG wstr(ULONG value, const UBYTE *args)
+BL_ALWAYS_INLINE ULONG wstr(ULONG value, const UBYTE *args)
 {
     const UBYTE *sp = args;
+    UWORD type = BL_POPW(sp);
 
-    switch (BL_POPW(sp)) {
-    case 7: {
+    if (type == 7) {
         /* Fixed (#242): a string (its length popped after the type) is
            the result itself, in place, as a string function returns its
            first string argument: d0 = the length, a3 = its end (the
@@ -1046,18 +1053,7 @@ static ULONG wstr(ULONG value, const UBYTE *args)
         blitz_string = (UBYTE *)value + len;
         return len;
     }
-    case 4:
-        return pquick2(value);
-    case 3:
-    case 6:
-        return plong2(value);
-    case 2:
-        return pword2(value);
-    case 5:
-        return pfloat2(value);
-    default:
-        return pbyte2(value);
-    }
+    return prtype2(numtext(type, value));
 }
 
 /**
@@ -1081,12 +1077,13 @@ static ULONG wstr(ULONG value, const UBYTE *args)
 ULONG BLITZ_ROUTINE dostrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2))
 {
     struct bl_regs r = { .a0 = (ULONG)strprint };
+    struct bl_regs r2 = { 0 };                  /* (not r: no d1/a1 kept) */
     ULONG old, len;
 
     old = BLITZ_ALIBJSR(TOK_setout, r);
     len = wstr(v, args);
-    r.a0 = old;
-    BLITZ_ALIBJSR(TOK_setout, r);
+    r2.a0 = old;
+    BLITZ_ALIBJSR(TOK_setout, r2);
     return len;
 }
 

@@ -907,6 +907,28 @@ build.
       fraction digits) and `[orig]` / `[fixed #303]` (40000 characters);
       recorded from the original, the C build of main gives the same
       cases.
+    - Str$ (printlib, task 11.2): every output went through `prtype2`,
+      `prtype1` and `output`, three functions, and each saved
+      d2-d7/a2/a6 because the ALibJsr in `output` may change them; Str$
+      paid that three times on top of `dostrstr`'s own save. Now the
+      conversions (`plong2`, `pquick2`, `pfloat2`, `makeval`) return
+      their text, `prtype1` only formats into `chars` and returns the
+      length (called only with a Format string), and `prtype2`, `output`
+      and the type dispatch (`numtext`, `wstr`, `ptype`) are inline in
+      the two entries, Str$ and Print: one save per call (Print: per
+      statement instead of twice per argument). The handler `strprint`
+      is the original's assembler (it changes d1/a0 like the original;
+      its callers, printlib's output calls between the two dosetout,
+      take them as changed) instead of a thunk that saved d1/a0/a1
+      around two C functions. The second dosetout gets a fresh register
+      set, so d1/a1 of the first are not kept on the stack. Inlining
+      `makelong` as well was slower (4785.1: GCC then spilled around the
+      ALibJsr), so it stays a function. `r$=Str$(a)` 4964.7 -> 4164.6
+      (4131.5), 1.01 times the original; printlib 4484 bytes. New library
+      cases: Str$ and UStr$ of every type without and with four Format
+      strings (the pairs `[orig]` / `[fixed #233]`, `[fixed #234]` and
+      `[fixed #238]` where the values meet those fixed bugs), Print of
+      the byte, word, quick, float and type 6 values.
 
 ## Risks / Trade-offs
 

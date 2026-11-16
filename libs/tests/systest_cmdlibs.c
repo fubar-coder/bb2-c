@@ -4,7 +4,7 @@
  *   entries of vallib, scrolllib, gameiolib, mouselib, collslib,
  *   shapeslib, fontlib, windowslib and blitzkeyslib; the rectangle tests
  *   of collslib, Frac, Val, BlitzKey and Inkey$ (editlib), Print on a bitmap
- *   (printlib, fontlib)
+ *   (printlib, fontlib), Str$ and UStr$ (printlib)
  * (plus memlib and strcomplib, which they call) on the Amiga: one set (the
  * original from acidlibs or the C build, as LIBSET says), observed as
  * cases (sysload.h; the expected data
@@ -1305,6 +1305,34 @@ static void test_print(void)
         OBSBYTES("plane 2", pplanes[2], 100);
         OBSBYTES("cursor", b + 40, 4);
     }
+    /* the other types, each followed by the word 12: a byte and a word
+       (popped as words, the upper byte of the byte set), a quick, a float,
+       and type 6 (printed as a long) */
+    {
+        static const struct { UWORD type; ULONG v; } others[] = {
+            { 1, 0x5afd }, { 2, 0xfff6 }, { 4, 0x00018000 }, { 5, 0xa0000042 }, { 6, 77 } };
+        for (i = 0; i < sizeof others / sizeof others[0]; i++) {
+            memset(pplanes, 0x3c, sizeof pplanes);
+            ROUT = "Locate";
+            sprintf(VEC, "type %u value $%lX", others[i].type, others[i].v);
+            DO1(N("fontlib", "Locate", 0), R.d[0] = 0; R.d[1] = 0);
+            ROUT = "Print";
+            if (others[i].type <= 2) {
+                stk[0] = 0x5a5a;
+                stk[1] = (UWORD)others[i].v;
+            } else
+                STKL(0, others[i].v);
+            stk[2] = others[i].type;
+            stk[3] = 12;
+            stk[4] = 2;
+            DO1(N("printlib", "Print", 0), R.d[7] = 2; R.a[2] = (ULONG)&stk[5];
+                R.a[6] = ffpbase);
+            OBSBYTES("plane 0", pplanes[0], 100);
+            OBSBYTES("plane 1", pplanes[1], 100);
+            OBSBYTES("plane 2", pplanes[2], 100);
+            OBSBYTES("cursor", b + 40, 4);
+        }
+    }
     /* one character through the handler's entry 0 (dooutsingle) */
     memset(pplanes, 0x3c, sizeof pplanes);
     ROUT = "Locate";
@@ -1317,6 +1345,75 @@ static void test_print(void)
     OBSBYTES("cursor", b + 40, 4);
     CloseFont(font);
     CloseLibrary(gfxb);
+}
+
+/* --------------------------------------------------------- Str$, UStr$ */
+
+/* Str$(Expression) and UStr$: d0 = the value, its type at -2(a2); the
+   characters go to a3 (the buffer, filled with $5A first), d0 = their
+   number.  Every numeric type, without and with a Format string (the
+   formats and values avoid the Format bugs fixed in the port, #235-#238,
+   which have their bug-orig tests). */
+static UBYTE sbuf2[64];
+static UWORD strframe[1];
+static const char *strformat = "";             /* the Format string set */
+
+static void str_case(const char *rout, UWORD type, ULONG v)
+{
+    ROUT = rout;
+    sprintf(VEC, "Format \"%s\" type %u value $%08lX", strformat, type, v);
+    memset(sbuf2, 0x5a, sizeof sbuf2);
+    strframe[0] = type;
+    DO1(N("printlib", rout, 0), R.d[0] = v; R.a[2] = (ULONG)&strframe[1];
+        R.a[3] = (ULONG)sbuf2; R.a[6] = ffpbase);
+    OBS("d0", R.d[0]);
+    OBS("a3 - buffer", R.a[3] - (ULONG)sbuf2);
+    OBSBYTES("buffer", sbuf2, 24);
+}
+
+static void format_set(const char *f)
+{
+    static ULONG fframe[1];
+
+    ROUT = "Format";
+    sprintf(VEC, "\"%s\"", f);
+    fframe[0] = strlen(f);
+    DO1(N("printlib", "Format", 0), R.d[0] = (ULONG)f; R.a[2] = (ULONG)&fframe[1]);
+    strformat = f;
+}
+
+static void test_strstr(void)
+{
+    static const struct { UWORD type; ULONG v; } vals[] = {
+        { 1, 0 }, { 1, 0x5a5a007f }, { 1, 0x5a5a0080 }, { 1, 0x123456fd },
+        { 2, 0 }, { 2, 0x5a5a7fff }, { 2, 0x5a5a8000 }, { 2, 0x1234abcd }, { 2, 0x0000fff6 },
+        { 3, 0 }, { 3, 1 }, { 3, 9 }, { 3, 10 }, { 3, 123456 }, { 3, (ULONG)-7 },
+        { 3, 999999999 }, { 3, 1000000000 }, { 3, 0x7fffffff }, { 3, 0x80000000 },
+        { 3, 0x80000001 }, { 3, 4000000000UL }, { 6, 42 },
+        { 4, 0 }, { 4, 0x00018000 }, { 4, 0xffffc000 }, { 4, 0x00010001 }, { 4, 0xffff0000 },
+        { 4, 0x00000001 }, { 4, 0x7fffffff }, { 4, 0x80000000 }, { 4, 0x0003c000 },
+        { 4, 0x00004000 }, { 4, 0xfffe8000 },
+        { 5, 0 }, { 5, 0x80000041 }, { 5, 0xc00000c1 }, { 5, 0xa0000042 }, { 5, 0x98968058 },
+        { 5, 0x98968098 }, { 5, 0x83126e38 }, { 5, 0xc90fdb42 }, { 5, 0xf423f854 },
+        { 5, 0x8000001f }, { 5, 0xffffff7f } };
+    static const char *formats[] = { "####", "0000.00", "+###.#", "##,###" };
+    static const struct { UWORD type; ULONG v; } fvals[] = {
+        { 3, 12 }, { 3, 4321 }, { 2, 0x00000007 }, { 4, 0x000c8000 }, { 4, 0x00030000 },
+        { 5, 0xd0000043 }, { 5, 0xa0000042 } };
+    unsigned i, j;
+
+    for (i = 0; i < sizeof vals / sizeof vals[0]; i++)
+        str_case("Str$", vals[i].type, vals[i].v);
+    for (j = 0; j < sizeof formats / sizeof formats[0]; j++) {
+        format_set(formats[j]);
+        for (i = 0; i < sizeof fvals / sizeof fvals[0]; i++) {
+            str_case("Str$", fvals[i].type, fvals[i].v);
+            str_case("UStr$", fvals[i].type, fvals[i].v);
+        }
+    }
+    format_set("");
+    str_case("UStr$", 3, 123456);
+    str_case("UStr$", 5, 0xa0000042);
 }
 
 /* ------------------------------------------------------------------ main */
@@ -1456,6 +1553,10 @@ int main(int argc, char **argv)
     KEEPS("BlitzFont _use", d0-d7|a0-a3|a6);
     KEEPS_STATEMENT("Print", none);
     KEEPS("dooutsingle", d1-d7|a0-a3|a6);
+    /* test_strstr */
+    KEEPS_STRFUNCTION("Str$", none);
+    KEEPS_STRFUNCTION("UStr$", none);
+    KEEPS_STATEMENT("Format", none);
     ffp = OpenLibrary((STRPTR)"mathffp.library", 0);
     ffpbase = (ULONG)ffp;
 
@@ -1487,6 +1588,7 @@ int main(int argc, char **argv)
     test_val();
     test_keys();
     test_print();
+    test_strstr();
 
     CloseLibrary(ffp);
     printf("%d checks, %d failures\n", checks, failures);

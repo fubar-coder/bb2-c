@@ -86,6 +86,9 @@
 # 65066af5 (2026-11-16).
 # bstr.val from two runs of Val in C without memory state (libs-performance
 # task 11.1) on main 65066af5 (2026-11-16): 1670.2 both.
+# bstr.str, bgfx.print5 and bgfx.printnum from two runs of the printlib
+# output path of task 11.2 (2026-11-16): 4166.1, 11740.0 and 15610.0 in
+# both; the two Print lines keep their tolerance.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -127,8 +130,8 @@ bgfx.polyf3               46670~21    46969.8  Polyf 3,&pts(0),1
 bgfx.scroll32              7998~17     8075.9  Scroll 0,0,32,32,100,100
 bgfx.locate                   134      128.3  Locate 0,0
 bgfx.colour                    67       62.3  Colour 1
-bgfx.print5                12088~8    13097.9  Locate 0,0 : Print "SCORE"
-bgfx.printnum              16112~8    17797.8  Locate 0,0 : Print a
+bgfx.print5                11740~8    13097.9  Locate 0,0 : Print "SCORE"
+bgfx.printnum              15610~8    17797.8  Locate 0,0 : Print a
 bgfx.show                     595      589.4  Show 0
 bgfx.showxy                   615      595.9  Show 0,8,8
 bgfx.rgb                     181~3      178.8  RGB 1,15,0,0
@@ -207,7 +210,7 @@ bstr.asg_s                   1236     1367.5  r$=a$
 bstr.mid                     1662     1553.5  r$=Mid$(a$,3,5)
 bstr.left                    1383     1299.0  r$=Left$(a$,5)
 bstr.right                   1572     1495.5  r$=Right$(a$,5)
-bstr.str                     5023     4131.5  r$=Str$(a)
+bstr.str                     4211     4131.5  r$=Str$(a)
 bstr.val                     1690     1927.0  c=Val(n$)
 bstr.len                      687      731.0  c=Len(a$)
 bstr.chr                      408      411.0  r$=Chr$(65)

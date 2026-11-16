@@ -8768,6 +8768,46 @@ Print|plane 0|long $80000000|1	bytes 100 fnv F5873F69
 Print|plane 1|long $80000000|1	bytes 100 fnv C0DE8F25
 Print|plane 2|long $80000000|1	bytes 100 fnv F5873F69
 Print|cursor|long $80000000|1	bytes 4 00180010
+Locate|kept|type 1 value $5AFD|1	kept
+Locate|popped|type 1 value $5AFD|1	$00000000
+Print|kept|type 1 value $5AFD|1	kept
+Print|popped|type 1 value $5AFD|1	$00000000
+Print|plane 0|type 1 value $5AFD|1	bytes 100 fnv 52D74A01
+Print|plane 1|type 1 value $5AFD|1	bytes 100 fnv 8A7242F1
+Print|plane 2|type 1 value $5AFD|1	bytes 100 fnv 52D74A01
+Print|cursor|type 1 value $5AFD|1	bytes 4 00200000
+Locate|kept|type 2 value $FFF6|1	kept
+Locate|popped|type 2 value $FFF6|1	$00000000
+Print|kept|type 2 value $FFF6|1	kept
+Print|popped|type 2 value $FFF6|1	$00000000
+Print|plane 0|type 2 value $FFF6|1	bytes 100 fnv 8B9C0973
+Print|plane 1|type 2 value $FFF6|1	bytes 100 fnv BF6E041F
+Print|plane 2|type 2 value $FFF6|1	bytes 100 fnv 8B9C0973
+Print|cursor|type 2 value $FFF6|1	bytes 4 00280000
+Locate|kept|type 4 value $18000|1	kept
+Locate|popped|type 4 value $18000|1	$00000000
+Print|kept|type 4 value $18000|1	kept
+Print|popped|type 4 value $18000|1	$00000000
+Print|plane 0|type 4 value $18000|1	bytes 100 fnv F8AC9B03
+Print|plane 1|type 4 value $18000|1	bytes 100 fnv 7D93D92B
+Print|plane 2|type 4 value $18000|1	bytes 100 fnv F8AC9B03
+Print|cursor|type 4 value $18000|1	bytes 4 00280000
+Locate|kept|type 5 value $A0000042|1	kept
+Locate|popped|type 5 value $A0000042|1	$00000000
+Print|kept|type 5 value $A0000042|1	kept
+Print|popped|type 5 value $A0000042|1	$00000000
+Print|plane 0|type 5 value $A0000042|1	bytes 100 fnv B3DB3715
+Print|plane 1|type 5 value $A0000042|1	bytes 100 fnv E468914D
+Print|plane 2|type 5 value $A0000042|1	bytes 100 fnv B3DB3715
+Print|cursor|type 5 value $A0000042|1	bytes 4 00280000
+Locate|kept|type 6 value $4D|1	kept
+Locate|popped|type 6 value $4D|1	$00000000
+Print|kept|type 6 value $4D|1	kept
+Print|popped|type 6 value $4D|1	$00000000
+Print|plane 0|type 6 value $4D|1	bytes 100 fnv 2D56E4FB
+Print|plane 1|type 6 value $4D|1	bytes 100 fnv F5E156F3
+Print|plane 2|type 6 value $4D|1	bytes 100 fnv 2D56E4FB
+Print|cursor|type 6 value $4D|1	bytes 4 00200000
 Locate|kept|character Q|1	kept
 Locate|popped|character Q|1	$00000000
 dooutsingle|kept|character Q|1	kept
@@ -8775,3 +8815,531 @@ dooutsingle|popped|character Q|1	$00000000
 dooutsingle|plane 0|character Q|1	bytes 100 fnv 14254157
 dooutsingle|plane 2|character Q|1	bytes 100 fnv 14254157
 dooutsingle|cursor|character Q|1	bytes 4 00280008
+Str$|kept|Format "" type 1 value $00000000|1	kept
+Str$|popped|Format "" type 1 value $00000000|1	$00000000
+Str$|d0|Format "" type 1 value $00000000|1	$00000001
+Str$|a3 - buffer|Format "" type 1 value $00000000|1	$00000001
+Str$|buffer|Format "" type 1 value $00000000|1	bytes 24 305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 1 value $5A5A007F|1	kept
+Str$|popped|Format "" type 1 value $5A5A007F|1	$00000000
+Str$|d0|Format "" type 1 value $5A5A007F|1	$00000003
+Str$|a3 - buffer|Format "" type 1 value $5A5A007F|1	$00000003
+Str$|buffer|Format "" type 1 value $5A5A007F|1	bytes 24 3132375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 1 value $5A5A0080|1	kept
+Str$|popped|Format "" type 1 value $5A5A0080|1	$00000000
+Str$|d0|Format "" type 1 value $5A5A0080|1	$00000004
+Str$|a3 - buffer|Format "" type 1 value $5A5A0080|1	$00000004
+Str$|buffer|Format "" type 1 value $5A5A0080|1	bytes 24 2D3132385A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 1 value $123456FD|1	kept
+Str$|popped|Format "" type 1 value $123456FD|1	$00000000
+Str$|d0|Format "" type 1 value $123456FD|1	$00000002
+Str$|a3 - buffer|Format "" type 1 value $123456FD|1	$00000002
+Str$|buffer|Format "" type 1 value $123456FD|1	bytes 24 2D335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 2 value $00000000|1	kept
+Str$|popped|Format "" type 2 value $00000000|1	$00000000
+Str$|d0|Format "" type 2 value $00000000|1	$00000001
+Str$|a3 - buffer|Format "" type 2 value $00000000|1	$00000001
+Str$|buffer|Format "" type 2 value $00000000|1	bytes 24 305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 2 value $5A5A7FFF|1	kept
+Str$|popped|Format "" type 2 value $5A5A7FFF|1	$00000000
+Str$|d0|Format "" type 2 value $5A5A7FFF|1	$00000005
+Str$|a3 - buffer|Format "" type 2 value $5A5A7FFF|1	$00000005
+Str$|buffer|Format "" type 2 value $5A5A7FFF|1	bytes 24 33323736375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 2 value $5A5A8000|1	kept
+Str$|popped|Format "" type 2 value $5A5A8000|1	$00000000
+Str$|d0|Format "" type 2 value $5A5A8000|1	$00000006
+Str$|a3 - buffer|Format "" type 2 value $5A5A8000|1	$00000006
+Str$|buffer|Format "" type 2 value $5A5A8000|1	bytes 24 2D33323736385A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 2 value $1234ABCD|1	kept
+Str$|popped|Format "" type 2 value $1234ABCD|1	$00000000
+Str$|d0|Format "" type 2 value $1234ABCD|1	$00000006
+Str$|a3 - buffer|Format "" type 2 value $1234ABCD|1	$00000006
+Str$|buffer|Format "" type 2 value $1234ABCD|1	bytes 24 2D32313535355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 2 value $0000FFF6|1	kept
+Str$|popped|Format "" type 2 value $0000FFF6|1	$00000000
+Str$|d0|Format "" type 2 value $0000FFF6|1	$00000003
+Str$|a3 - buffer|Format "" type 2 value $0000FFF6|1	$00000003
+Str$|buffer|Format "" type 2 value $0000FFF6|1	bytes 24 2D31305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $00000000|1	kept
+Str$|popped|Format "" type 3 value $00000000|1	$00000000
+Str$|d0|Format "" type 3 value $00000000|1	$00000001
+Str$|a3 - buffer|Format "" type 3 value $00000000|1	$00000001
+Str$|buffer|Format "" type 3 value $00000000|1	bytes 24 305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $00000001|1	kept
+Str$|popped|Format "" type 3 value $00000001|1	$00000000
+Str$|d0|Format "" type 3 value $00000001|1	$00000001
+Str$|a3 - buffer|Format "" type 3 value $00000001|1	$00000001
+Str$|buffer|Format "" type 3 value $00000001|1	bytes 24 315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $00000009|1	kept
+Str$|popped|Format "" type 3 value $00000009|1	$00000000
+Str$|d0|Format "" type 3 value $00000009|1	$00000001
+Str$|a3 - buffer|Format "" type 3 value $00000009|1	$00000001
+Str$|buffer|Format "" type 3 value $00000009|1	bytes 24 395A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $0000000A|1	kept
+Str$|popped|Format "" type 3 value $0000000A|1	$00000000
+Str$|d0|Format "" type 3 value $0000000A|1	$00000002
+Str$|a3 - buffer|Format "" type 3 value $0000000A|1	$00000002
+Str$|buffer|Format "" type 3 value $0000000A|1	bytes 24 31305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $0001E240|1	kept
+Str$|popped|Format "" type 3 value $0001E240|1	$00000000
+Str$|d0|Format "" type 3 value $0001E240|1	$00000006
+Str$|a3 - buffer|Format "" type 3 value $0001E240|1	$00000006
+Str$|buffer|Format "" type 3 value $0001E240|1	bytes 24 3132333435365A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $FFFFFFF9|1	kept
+Str$|popped|Format "" type 3 value $FFFFFFF9|1	$00000000
+Str$|d0|Format "" type 3 value $FFFFFFF9|1	$00000002
+Str$|a3 - buffer|Format "" type 3 value $FFFFFFF9|1	$00000002
+Str$|buffer|Format "" type 3 value $FFFFFFF9|1	bytes 24 2D375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $3B9AC9FF|1	kept
+Str$|popped|Format "" type 3 value $3B9AC9FF|1	$00000000
+Str$|d0|Format "" type 3 value $3B9AC9FF|1	$00000009
+Str$|a3 - buffer|Format "" type 3 value $3B9AC9FF|1	$00000009
+Str$|buffer|Format "" type 3 value $3B9AC9FF|1	bytes 24 3939393939393939395A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $3B9ACA00|1	kept
+Str$|popped|Format "" type 3 value $3B9ACA00|1	$00000000
+Str$|d0|Format "" type 3 value $3B9ACA00|1	$0000000A
+Str$|a3 - buffer|Format "" type 3 value $3B9ACA00|1	$0000000A
+Str$|buffer|Format "" type 3 value $3B9ACA00|1	bytes 24 313030303030303030305A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $7FFFFFFF|1	kept
+Str$|popped|Format "" type 3 value $7FFFFFFF|1	$00000000
+Str$|d0|Format "" type 3 value $7FFFFFFF|1	$0000000A
+Str$|a3 - buffer|Format "" type 3 value $7FFFFFFF|1	$0000000A
+Str$|buffer|Format "" type 3 value $7FFFFFFF|1	bytes 24 323134373438333634375A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $80000000|1	kept
+Str$|popped|Format "" type 3 value $80000000|1	$00000000
+Str$|d0|Format "" type 3 value $80000000|1	$0000000B
+Str$|a3 - buffer|Format "" type 3 value $80000000|1	$0000000B
+Str$|buffer|Format "" type 3 value $80000000|1	bytes 24 2D323134373438333634385A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $80000001|1	kept
+Str$|popped|Format "" type 3 value $80000001|1	$00000000
+Str$|d0|Format "" type 3 value $80000001|1	$0000000B
+Str$|a3 - buffer|Format "" type 3 value $80000001|1	$0000000B
+Str$|buffer|Format "" type 3 value $80000001|1	bytes 24 2D323134373438333634375A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 3 value $EE6B2800|1	kept
+Str$|popped|Format "" type 3 value $EE6B2800|1	$00000000
+Str$|d0|Format "" type 3 value $EE6B2800|1	$0000000A
+Str$|a3 - buffer|Format "" type 3 value $EE6B2800|1	$0000000A
+Str$|buffer|Format "" type 3 value $EE6B2800|1	bytes 24 2D3239343936373239365A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 6 value $0000002A|1	kept
+Str$|popped|Format "" type 6 value $0000002A|1	$00000000
+Str$|d0|Format "" type 6 value $0000002A|1	$00000002
+Str$|a3 - buffer|Format "" type 6 value $0000002A|1	$00000002
+Str$|buffer|Format "" type 6 value $0000002A|1	bytes 24 34325A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $00000000|1	kept
+Str$|popped|Format "" type 4 value $00000000|1	$00000000
+Str$|d0|Format "" type 4 value $00000000|1	$00000001
+Str$|a3 - buffer|Format "" type 4 value $00000000|1	$00000001
+Str$|buffer|Format "" type 4 value $00000000|1	bytes 24 305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $00018000|1	kept
+Str$|popped|Format "" type 4 value $00018000|1	$00000000
+Str$|d0|Format "" type 4 value $00018000|1	$00000003
+Str$|a3 - buffer|Format "" type 4 value $00018000|1	$00000003
+Str$|buffer|Format "" type 4 value $00018000|1	bytes 24 312E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $FFFFC000|1	kept
+Str$|popped|Format "" type 4 value $FFFFC000|1	$00000000
+Str$|d0|Format "" type 4 value $FFFFC000|1	$00000004
+Str$|a3 - buffer|Format "" type 4 value $FFFFC000|1	$00000004
+Str$|buffer|Format "" type 4 value $FFFFC000|1	bytes 24 2D2E32355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $00010001|1	kept
+Str$|popped|Format "" type 4 value $00010001|1	$00000000
+Str$|d0|Format "" type 4 value $00010001|1 [orig]	$00000002
+Str$|d0|Format "" type 4 value $00010001|1 [fixed #234]	$00000001
+Str$|a3 - buffer|Format "" type 4 value $00010001|1 [orig]	$00000002
+Str$|a3 - buffer|Format "" type 4 value $00010001|1 [fixed #234]	$00000001
+Str$|buffer|Format "" type 4 value $00010001|1 [orig]	bytes 24 312E5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|buffer|Format "" type 4 value $00010001|1 [fixed #234]	bytes 24 315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $FFFF0000|1	kept
+Str$|popped|Format "" type 4 value $FFFF0000|1	$00000000
+Str$|d0|Format "" type 4 value $FFFF0000|1	$00000002
+Str$|a3 - buffer|Format "" type 4 value $FFFF0000|1	$00000002
+Str$|buffer|Format "" type 4 value $FFFF0000|1	bytes 24 2D315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $00000001|1	kept
+Str$|popped|Format "" type 4 value $00000001|1	$00000000
+Str$|d0|Format "" type 4 value $00000001|1	$00000001
+Str$|a3 - buffer|Format "" type 4 value $00000001|1	$00000001
+Str$|buffer|Format "" type 4 value $00000001|1 [orig]	bytes 24 2E5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|buffer|Format "" type 4 value $00000001|1 [fixed #234]	bytes 24 305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $7FFFFFFF|1	kept
+Str$|popped|Format "" type 4 value $7FFFFFFF|1	$00000000
+Str$|d0|Format "" type 4 value $7FFFFFFF|1 [orig]	$00000006
+Str$|d0|Format "" type 4 value $7FFFFFFF|1 [fixed #233]	$00000005
+Str$|a3 - buffer|Format "" type 4 value $7FFFFFFF|1 [orig]	$00000006
+Str$|a3 - buffer|Format "" type 4 value $7FFFFFFF|1 [fixed #233]	$00000005
+Str$|buffer|Format "" type 4 value $7FFFFFFF|1 [orig]	bytes 24 33323736372E5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|buffer|Format "" type 4 value $7FFFFFFF|1 [fixed #233]	bytes 24 33323736385A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $80000000|1	kept
+Str$|popped|Format "" type 4 value $80000000|1	$00000000
+Str$|d0|Format "" type 4 value $80000000|1	$00000006
+Str$|a3 - buffer|Format "" type 4 value $80000000|1	$00000006
+Str$|buffer|Format "" type 4 value $80000000|1	bytes 24 2D33323736385A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $0003C000|1	kept
+Str$|popped|Format "" type 4 value $0003C000|1	$00000000
+Str$|d0|Format "" type 4 value $0003C000|1	$00000004
+Str$|a3 - buffer|Format "" type 4 value $0003C000|1	$00000004
+Str$|buffer|Format "" type 4 value $0003C000|1	bytes 24 332E37355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $00004000|1	kept
+Str$|popped|Format "" type 4 value $00004000|1	$00000000
+Str$|d0|Format "" type 4 value $00004000|1	$00000003
+Str$|a3 - buffer|Format "" type 4 value $00004000|1	$00000003
+Str$|buffer|Format "" type 4 value $00004000|1	bytes 24 2E32355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 4 value $FFFE8000|1	kept
+Str$|popped|Format "" type 4 value $FFFE8000|1	$00000000
+Str$|d0|Format "" type 4 value $FFFE8000|1	$00000004
+Str$|a3 - buffer|Format "" type 4 value $FFFE8000|1	$00000004
+Str$|buffer|Format "" type 4 value $FFFE8000|1	bytes 24 2D312E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $00000000|1	kept
+Str$|popped|Format "" type 5 value $00000000|1	$00000000
+Str$|d0|Format "" type 5 value $00000000|1	$00000001
+Str$|a3 - buffer|Format "" type 5 value $00000000|1	$00000001
+Str$|buffer|Format "" type 5 value $00000000|1	bytes 24 305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $80000041|1	kept
+Str$|popped|Format "" type 5 value $80000041|1	$00000000
+Str$|d0|Format "" type 5 value $80000041|1	$00000001
+Str$|a3 - buffer|Format "" type 5 value $80000041|1	$00000001
+Str$|buffer|Format "" type 5 value $80000041|1	bytes 24 315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $C00000C1|1	kept
+Str$|popped|Format "" type 5 value $C00000C1|1	$00000000
+Str$|d0|Format "" type 5 value $C00000C1|1	$00000004
+Str$|a3 - buffer|Format "" type 5 value $C00000C1|1	$00000004
+Str$|buffer|Format "" type 5 value $C00000C1|1	bytes 24 2D312E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $A0000042|1	kept
+Str$|popped|Format "" type 5 value $A0000042|1	$00000000
+Str$|d0|Format "" type 5 value $A0000042|1	$00000003
+Str$|a3 - buffer|Format "" type 5 value $A0000042|1	$00000003
+Str$|buffer|Format "" type 5 value $A0000042|1	bytes 24 322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $98968058|1	kept
+Str$|popped|Format "" type 5 value $98968058|1	$00000000
+Str$|d0|Format "" type 5 value $98968058|1	$00000004
+Str$|a3 - buffer|Format "" type 5 value $98968058|1	$00000004
+Str$|buffer|Format "" type 5 value $98968058|1	bytes 24 31452B375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $98968098|1	kept
+Str$|popped|Format "" type 5 value $98968098|1	$00000000
+Str$|d0|Format "" type 5 value $98968098|1	$0000000D
+Str$|a3 - buffer|Format "" type 5 value $98968098|1	$0000000D
+Str$|buffer|Format "" type 5 value $98968098|1	bytes 24 2D352E343231303131452D31335A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $83126E38|1	kept
+Str$|popped|Format "" type 5 value $83126E38|1	$00000000
+Str$|d0|Format "" type 5 value $83126E38|1	$0000000A
+Str$|a3 - buffer|Format "" type 5 value $83126E38|1	$0000000A
+Str$|buffer|Format "" type 5 value $83126E38|1	bytes 24 2E3030313939393939395A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $C90FDB42|1	kept
+Str$|popped|Format "" type 5 value $C90FDB42|1	$00000000
+Str$|d0|Format "" type 5 value $C90FDB42|1	$00000008
+Str$|a3 - buffer|Format "" type 5 value $C90FDB42|1	$00000008
+Str$|buffer|Format "" type 5 value $C90FDB42|1	bytes 24 332E3134313539325A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $F423F854|1	kept
+Str$|popped|Format "" type 5 value $F423F854|1	$00000000
+Str$|d0|Format "" type 5 value $F423F854|1	$00000008
+Str$|a3 - buffer|Format "" type 5 value $F423F854|1	$00000008
+Str$|buffer|Format "" type 5 value $F423F854|1	bytes 24 3939393939392E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $8000001F|1	kept
+Str$|popped|Format "" type 5 value $8000001F|1	$00000000
+Str$|d0|Format "" type 5 value $8000001F|1	$0000000C
+Str$|a3 - buffer|Format "" type 5 value $8000001F|1	$0000000C
+Str$|buffer|Format "" type 5 value $8000001F|1	bytes 24 352E383230373636452D31315A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "" type 5 value $FFFFFF7F|1	kept
+Str$|popped|Format "" type 5 value $FFFFFF7F|1	$00000000
+Str$|d0|Format "" type 5 value $FFFFFF7F|1	$0000000C
+Str$|a3 - buffer|Format "" type 5 value $FFFFFF7F|1	$0000000C
+Str$|buffer|Format "" type 5 value $FFFFFF7F|1	bytes 24 392E323233333731452B31385A5A5A5A5A5A5A5A5A5A5A5A
+Format|kept|"####"|1	kept
+Format|popped|"####"|1	$00000000
+Str$|kept|Format "####" type 3 value $0000000C|1	kept
+Str$|popped|Format "####" type 3 value $0000000C|1	$00000000
+Str$|d0|Format "####" type 3 value $0000000C|1	$00000004
+Str$|a3 - buffer|Format "####" type 3 value $0000000C|1	$00000004
+Str$|buffer|Format "####" type 3 value $0000000C|1	bytes 24 202031325A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "####" type 3 value $0000000C|1	kept
+UStr$|popped|Format "####" type 3 value $0000000C|1	$00000000
+UStr$|d0|Format "####" type 3 value $0000000C|1	$00000002
+UStr$|a3 - buffer|Format "####" type 3 value $0000000C|1	$00000002
+UStr$|buffer|Format "####" type 3 value $0000000C|1	bytes 24 31325A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "####" type 3 value $000010E1|1	kept
+Str$|popped|Format "####" type 3 value $000010E1|1	$00000000
+Str$|d0|Format "####" type 3 value $000010E1|1	$00000004
+Str$|a3 - buffer|Format "####" type 3 value $000010E1|1	$00000004
+Str$|buffer|Format "####" type 3 value $000010E1|1	bytes 24 343332315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "####" type 3 value $000010E1|1	kept
+UStr$|popped|Format "####" type 3 value $000010E1|1	$00000000
+UStr$|d0|Format "####" type 3 value $000010E1|1	$00000004
+UStr$|a3 - buffer|Format "####" type 3 value $000010E1|1	$00000004
+UStr$|buffer|Format "####" type 3 value $000010E1|1	bytes 24 343332315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "####" type 2 value $00000007|1	kept
+Str$|popped|Format "####" type 2 value $00000007|1	$00000000
+Str$|d0|Format "####" type 2 value $00000007|1	$00000004
+Str$|a3 - buffer|Format "####" type 2 value $00000007|1	$00000004
+Str$|buffer|Format "####" type 2 value $00000007|1	bytes 24 202020375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "####" type 2 value $00000007|1	kept
+UStr$|popped|Format "####" type 2 value $00000007|1	$00000000
+UStr$|d0|Format "####" type 2 value $00000007|1	$00000001
+UStr$|a3 - buffer|Format "####" type 2 value $00000007|1	$00000001
+UStr$|buffer|Format "####" type 2 value $00000007|1	bytes 24 375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "####" type 4 value $000C8000|1	kept
+Str$|popped|Format "####" type 4 value $000C8000|1	$00000000
+Str$|d0|Format "####" type 4 value $000C8000|1	$00000004
+Str$|a3 - buffer|Format "####" type 4 value $000C8000|1	$00000004
+Str$|buffer|Format "####" type 4 value $000C8000|1	bytes 24 202031335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "####" type 4 value $000C8000|1	kept
+UStr$|popped|Format "####" type 4 value $000C8000|1	$00000000
+UStr$|d0|Format "####" type 4 value $000C8000|1	$00000004
+UStr$|a3 - buffer|Format "####" type 4 value $000C8000|1	$00000004
+UStr$|buffer|Format "####" type 4 value $000C8000|1	bytes 24 31322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "####" type 4 value $00030000|1	kept
+Str$|popped|Format "####" type 4 value $00030000|1	$00000000
+Str$|d0|Format "####" type 4 value $00030000|1	$00000004
+Str$|a3 - buffer|Format "####" type 4 value $00030000|1	$00000004
+Str$|buffer|Format "####" type 4 value $00030000|1	bytes 24 202020335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "####" type 4 value $00030000|1	kept
+UStr$|popped|Format "####" type 4 value $00030000|1	$00000000
+UStr$|d0|Format "####" type 4 value $00030000|1	$00000001
+UStr$|a3 - buffer|Format "####" type 4 value $00030000|1	$00000001
+UStr$|buffer|Format "####" type 4 value $00030000|1	bytes 24 335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "####" type 5 value $D0000043|1	kept
+Str$|popped|Format "####" type 5 value $D0000043|1	$00000000
+Str$|d0|Format "####" type 5 value $D0000043|1	$00000004
+Str$|a3 - buffer|Format "####" type 5 value $D0000043|1	$00000004
+Str$|buffer|Format "####" type 5 value $D0000043|1	bytes 24 202020375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "####" type 5 value $D0000043|1	kept
+UStr$|popped|Format "####" type 5 value $D0000043|1	$00000000
+UStr$|d0|Format "####" type 5 value $D0000043|1	$00000003
+UStr$|a3 - buffer|Format "####" type 5 value $D0000043|1	$00000003
+UStr$|buffer|Format "####" type 5 value $D0000043|1	bytes 24 362E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "####" type 5 value $A0000042|1	kept
+Str$|popped|Format "####" type 5 value $A0000042|1	$00000000
+Str$|d0|Format "####" type 5 value $A0000042|1	$00000004
+Str$|a3 - buffer|Format "####" type 5 value $A0000042|1	$00000004
+Str$|buffer|Format "####" type 5 value $A0000042|1	bytes 24 202020335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "####" type 5 value $A0000042|1	kept
+UStr$|popped|Format "####" type 5 value $A0000042|1	$00000000
+UStr$|d0|Format "####" type 5 value $A0000042|1	$00000003
+UStr$|a3 - buffer|Format "####" type 5 value $A0000042|1	$00000003
+UStr$|buffer|Format "####" type 5 value $A0000042|1	bytes 24 322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Format|kept|"0000.00"|1	kept
+Format|popped|"0000.00"|1	$00000000
+Str$|kept|Format "0000.00" type 3 value $0000000C|1	kept
+Str$|popped|Format "0000.00" type 3 value $0000000C|1	$00000000
+Str$|d0|Format "0000.00" type 3 value $0000000C|1	$00000007
+Str$|a3 - buffer|Format "0000.00" type 3 value $0000000C|1	$00000007
+Str$|buffer|Format "0000.00" type 3 value $0000000C|1	bytes 24 303031322E30305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "0000.00" type 3 value $0000000C|1	kept
+UStr$|popped|Format "0000.00" type 3 value $0000000C|1	$00000000
+UStr$|d0|Format "0000.00" type 3 value $0000000C|1	$00000002
+UStr$|a3 - buffer|Format "0000.00" type 3 value $0000000C|1	$00000002
+UStr$|buffer|Format "0000.00" type 3 value $0000000C|1	bytes 24 31325A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "0000.00" type 3 value $000010E1|1	kept
+Str$|popped|Format "0000.00" type 3 value $000010E1|1	$00000000
+Str$|d0|Format "0000.00" type 3 value $000010E1|1	$00000007
+Str$|a3 - buffer|Format "0000.00" type 3 value $000010E1|1	$00000007
+Str$|buffer|Format "0000.00" type 3 value $000010E1|1	bytes 24 343332312E30305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "0000.00" type 3 value $000010E1|1	kept
+UStr$|popped|Format "0000.00" type 3 value $000010E1|1	$00000000
+UStr$|d0|Format "0000.00" type 3 value $000010E1|1	$00000004
+UStr$|a3 - buffer|Format "0000.00" type 3 value $000010E1|1	$00000004
+UStr$|buffer|Format "0000.00" type 3 value $000010E1|1	bytes 24 343332315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "0000.00" type 2 value $00000007|1	kept
+Str$|popped|Format "0000.00" type 2 value $00000007|1	$00000000
+Str$|d0|Format "0000.00" type 2 value $00000007|1	$00000007
+Str$|a3 - buffer|Format "0000.00" type 2 value $00000007|1	$00000007
+Str$|buffer|Format "0000.00" type 2 value $00000007|1	bytes 24 303030372E30305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "0000.00" type 2 value $00000007|1	kept
+UStr$|popped|Format "0000.00" type 2 value $00000007|1	$00000000
+UStr$|d0|Format "0000.00" type 2 value $00000007|1	$00000001
+UStr$|a3 - buffer|Format "0000.00" type 2 value $00000007|1	$00000001
+UStr$|buffer|Format "0000.00" type 2 value $00000007|1	bytes 24 375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "0000.00" type 4 value $000C8000|1	kept
+Str$|popped|Format "0000.00" type 4 value $000C8000|1	$00000000
+Str$|d0|Format "0000.00" type 4 value $000C8000|1	$00000007
+Str$|a3 - buffer|Format "0000.00" type 4 value $000C8000|1	$00000007
+Str$|buffer|Format "0000.00" type 4 value $000C8000|1	bytes 24 303031322E35305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "0000.00" type 4 value $000C8000|1	kept
+UStr$|popped|Format "0000.00" type 4 value $000C8000|1	$00000000
+UStr$|d0|Format "0000.00" type 4 value $000C8000|1	$00000004
+UStr$|a3 - buffer|Format "0000.00" type 4 value $000C8000|1	$00000004
+UStr$|buffer|Format "0000.00" type 4 value $000C8000|1	bytes 24 31322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "0000.00" type 4 value $00030000|1	kept
+Str$|popped|Format "0000.00" type 4 value $00030000|1	$00000000
+Str$|d0|Format "0000.00" type 4 value $00030000|1	$00000007
+Str$|a3 - buffer|Format "0000.00" type 4 value $00030000|1	$00000007
+Str$|buffer|Format "0000.00" type 4 value $00030000|1	bytes 24 303030332E30305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "0000.00" type 4 value $00030000|1	kept
+UStr$|popped|Format "0000.00" type 4 value $00030000|1	$00000000
+UStr$|d0|Format "0000.00" type 4 value $00030000|1	$00000001
+UStr$|a3 - buffer|Format "0000.00" type 4 value $00030000|1	$00000001
+UStr$|buffer|Format "0000.00" type 4 value $00030000|1	bytes 24 335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "0000.00" type 5 value $D0000043|1	kept
+Str$|popped|Format "0000.00" type 5 value $D0000043|1	$00000000
+Str$|d0|Format "0000.00" type 5 value $D0000043|1	$00000007
+Str$|a3 - buffer|Format "0000.00" type 5 value $D0000043|1	$00000007
+Str$|buffer|Format "0000.00" type 5 value $D0000043|1	bytes 24 303030362E35305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "0000.00" type 5 value $D0000043|1	kept
+UStr$|popped|Format "0000.00" type 5 value $D0000043|1	$00000000
+UStr$|d0|Format "0000.00" type 5 value $D0000043|1	$00000003
+UStr$|a3 - buffer|Format "0000.00" type 5 value $D0000043|1	$00000003
+UStr$|buffer|Format "0000.00" type 5 value $D0000043|1	bytes 24 362E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "0000.00" type 5 value $A0000042|1	kept
+Str$|popped|Format "0000.00" type 5 value $A0000042|1	$00000000
+Str$|d0|Format "0000.00" type 5 value $A0000042|1	$00000007
+Str$|a3 - buffer|Format "0000.00" type 5 value $A0000042|1	$00000007
+Str$|buffer|Format "0000.00" type 5 value $A0000042|1	bytes 24 303030322E35305A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "0000.00" type 5 value $A0000042|1	kept
+UStr$|popped|Format "0000.00" type 5 value $A0000042|1	$00000000
+UStr$|d0|Format "0000.00" type 5 value $A0000042|1	$00000003
+UStr$|a3 - buffer|Format "0000.00" type 5 value $A0000042|1	$00000003
+UStr$|buffer|Format "0000.00" type 5 value $A0000042|1	bytes 24 322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Format|kept|"+###.#"|1	kept
+Format|popped|"+###.#"|1	$00000000
+Str$|kept|Format "+###.#" type 3 value $0000000C|1	kept
+Str$|popped|Format "+###.#" type 3 value $0000000C|1	$00000000
+Str$|d0|Format "+###.#" type 3 value $0000000C|1	$00000006
+Str$|a3 - buffer|Format "+###.#" type 3 value $0000000C|1	$00000006
+Str$|buffer|Format "+###.#" type 3 value $0000000C|1	bytes 24 2B2031322E205A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "+###.#" type 3 value $0000000C|1	kept
+UStr$|popped|Format "+###.#" type 3 value $0000000C|1	$00000000
+UStr$|d0|Format "+###.#" type 3 value $0000000C|1	$00000002
+UStr$|a3 - buffer|Format "+###.#" type 3 value $0000000C|1	$00000002
+UStr$|buffer|Format "+###.#" type 3 value $0000000C|1	bytes 24 31325A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "+###.#" type 3 value $000010E1|1	kept
+Str$|popped|Format "+###.#" type 3 value $000010E1|1	$00000000
+Str$|d0|Format "+###.#" type 3 value $000010E1|1	$00000007
+Str$|a3 - buffer|Format "+###.#" type 3 value $000010E1|1	$00000007
+Str$|buffer|Format "+###.#" type 3 value $000010E1|1 [orig]	bytes 24 3F2B2020202E205A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|buffer|Format "+###.#" type 3 value $000010E1|1 [fixed #238]	bytes 24 3F2B3332312E205A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "+###.#" type 3 value $000010E1|1	kept
+UStr$|popped|Format "+###.#" type 3 value $000010E1|1	$00000000
+UStr$|d0|Format "+###.#" type 3 value $000010E1|1	$00000004
+UStr$|a3 - buffer|Format "+###.#" type 3 value $000010E1|1	$00000004
+UStr$|buffer|Format "+###.#" type 3 value $000010E1|1	bytes 24 343332315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "+###.#" type 2 value $00000007|1	kept
+Str$|popped|Format "+###.#" type 2 value $00000007|1	$00000000
+Str$|d0|Format "+###.#" type 2 value $00000007|1	$00000006
+Str$|a3 - buffer|Format "+###.#" type 2 value $00000007|1	$00000006
+Str$|buffer|Format "+###.#" type 2 value $00000007|1	bytes 24 2B2020372E205A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "+###.#" type 2 value $00000007|1	kept
+UStr$|popped|Format "+###.#" type 2 value $00000007|1	$00000000
+UStr$|d0|Format "+###.#" type 2 value $00000007|1	$00000001
+UStr$|a3 - buffer|Format "+###.#" type 2 value $00000007|1	$00000001
+UStr$|buffer|Format "+###.#" type 2 value $00000007|1	bytes 24 375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "+###.#" type 4 value $000C8000|1	kept
+Str$|popped|Format "+###.#" type 4 value $000C8000|1	$00000000
+Str$|d0|Format "+###.#" type 4 value $000C8000|1	$00000006
+Str$|a3 - buffer|Format "+###.#" type 4 value $000C8000|1	$00000006
+Str$|buffer|Format "+###.#" type 4 value $000C8000|1	bytes 24 2B2031322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "+###.#" type 4 value $000C8000|1	kept
+UStr$|popped|Format "+###.#" type 4 value $000C8000|1	$00000000
+UStr$|d0|Format "+###.#" type 4 value $000C8000|1	$00000004
+UStr$|a3 - buffer|Format "+###.#" type 4 value $000C8000|1	$00000004
+UStr$|buffer|Format "+###.#" type 4 value $000C8000|1	bytes 24 31322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "+###.#" type 4 value $00030000|1	kept
+Str$|popped|Format "+###.#" type 4 value $00030000|1	$00000000
+Str$|d0|Format "+###.#" type 4 value $00030000|1	$00000006
+Str$|a3 - buffer|Format "+###.#" type 4 value $00030000|1	$00000006
+Str$|buffer|Format "+###.#" type 4 value $00030000|1	bytes 24 2B2020332E205A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "+###.#" type 4 value $00030000|1	kept
+UStr$|popped|Format "+###.#" type 4 value $00030000|1	$00000000
+UStr$|d0|Format "+###.#" type 4 value $00030000|1	$00000001
+UStr$|a3 - buffer|Format "+###.#" type 4 value $00030000|1	$00000001
+UStr$|buffer|Format "+###.#" type 4 value $00030000|1	bytes 24 335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "+###.#" type 5 value $D0000043|1	kept
+Str$|popped|Format "+###.#" type 5 value $D0000043|1	$00000000
+Str$|d0|Format "+###.#" type 5 value $D0000043|1	$00000006
+Str$|a3 - buffer|Format "+###.#" type 5 value $D0000043|1	$00000006
+Str$|buffer|Format "+###.#" type 5 value $D0000043|1	bytes 24 2B2020362E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "+###.#" type 5 value $D0000043|1	kept
+UStr$|popped|Format "+###.#" type 5 value $D0000043|1	$00000000
+UStr$|d0|Format "+###.#" type 5 value $D0000043|1	$00000003
+UStr$|a3 - buffer|Format "+###.#" type 5 value $D0000043|1	$00000003
+UStr$|buffer|Format "+###.#" type 5 value $D0000043|1	bytes 24 362E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "+###.#" type 5 value $A0000042|1	kept
+Str$|popped|Format "+###.#" type 5 value $A0000042|1	$00000000
+Str$|d0|Format "+###.#" type 5 value $A0000042|1	$00000006
+Str$|a3 - buffer|Format "+###.#" type 5 value $A0000042|1	$00000006
+Str$|buffer|Format "+###.#" type 5 value $A0000042|1	bytes 24 2B2020322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "+###.#" type 5 value $A0000042|1	kept
+UStr$|popped|Format "+###.#" type 5 value $A0000042|1	$00000000
+UStr$|d0|Format "+###.#" type 5 value $A0000042|1	$00000003
+UStr$|a3 - buffer|Format "+###.#" type 5 value $A0000042|1	$00000003
+UStr$|buffer|Format "+###.#" type 5 value $A0000042|1	bytes 24 322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Format|kept|"##,###"|1	kept
+Format|popped|"##,###"|1	$00000000
+Str$|kept|Format "##,###" type 3 value $0000000C|1	kept
+Str$|popped|Format "##,###" type 3 value $0000000C|1	$00000000
+Str$|d0|Format "##,###" type 3 value $0000000C|1	$00000006
+Str$|a3 - buffer|Format "##,###" type 3 value $0000000C|1	$00000006
+Str$|buffer|Format "##,###" type 3 value $0000000C|1	bytes 24 2020202031325A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "##,###" type 3 value $0000000C|1	kept
+UStr$|popped|Format "##,###" type 3 value $0000000C|1	$00000000
+UStr$|d0|Format "##,###" type 3 value $0000000C|1	$00000002
+UStr$|a3 - buffer|Format "##,###" type 3 value $0000000C|1	$00000002
+UStr$|buffer|Format "##,###" type 3 value $0000000C|1	bytes 24 31325A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "##,###" type 3 value $000010E1|1	kept
+Str$|popped|Format "##,###" type 3 value $000010E1|1	$00000000
+Str$|d0|Format "##,###" type 3 value $000010E1|1	$00000006
+Str$|a3 - buffer|Format "##,###" type 3 value $000010E1|1	$00000006
+Str$|buffer|Format "##,###" type 3 value $000010E1|1	bytes 24 20342C3332315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "##,###" type 3 value $000010E1|1	kept
+UStr$|popped|Format "##,###" type 3 value $000010E1|1	$00000000
+UStr$|d0|Format "##,###" type 3 value $000010E1|1	$00000004
+UStr$|a3 - buffer|Format "##,###" type 3 value $000010E1|1	$00000004
+UStr$|buffer|Format "##,###" type 3 value $000010E1|1	bytes 24 343332315A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "##,###" type 2 value $00000007|1	kept
+Str$|popped|Format "##,###" type 2 value $00000007|1	$00000000
+Str$|d0|Format "##,###" type 2 value $00000007|1	$00000006
+Str$|a3 - buffer|Format "##,###" type 2 value $00000007|1	$00000006
+Str$|buffer|Format "##,###" type 2 value $00000007|1	bytes 24 2020202020375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "##,###" type 2 value $00000007|1	kept
+UStr$|popped|Format "##,###" type 2 value $00000007|1	$00000000
+UStr$|d0|Format "##,###" type 2 value $00000007|1	$00000001
+UStr$|a3 - buffer|Format "##,###" type 2 value $00000007|1	$00000001
+UStr$|buffer|Format "##,###" type 2 value $00000007|1	bytes 24 375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "##,###" type 4 value $000C8000|1	kept
+Str$|popped|Format "##,###" type 4 value $000C8000|1	$00000000
+Str$|d0|Format "##,###" type 4 value $000C8000|1	$00000006
+Str$|a3 - buffer|Format "##,###" type 4 value $000C8000|1	$00000006
+Str$|buffer|Format "##,###" type 4 value $000C8000|1	bytes 24 2020202031335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "##,###" type 4 value $000C8000|1	kept
+UStr$|popped|Format "##,###" type 4 value $000C8000|1	$00000000
+UStr$|d0|Format "##,###" type 4 value $000C8000|1	$00000004
+UStr$|a3 - buffer|Format "##,###" type 4 value $000C8000|1	$00000004
+UStr$|buffer|Format "##,###" type 4 value $000C8000|1	bytes 24 31322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "##,###" type 4 value $00030000|1	kept
+Str$|popped|Format "##,###" type 4 value $00030000|1	$00000000
+Str$|d0|Format "##,###" type 4 value $00030000|1	$00000006
+Str$|a3 - buffer|Format "##,###" type 4 value $00030000|1	$00000006
+Str$|buffer|Format "##,###" type 4 value $00030000|1	bytes 24 2020202020335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "##,###" type 4 value $00030000|1	kept
+UStr$|popped|Format "##,###" type 4 value $00030000|1	$00000000
+UStr$|d0|Format "##,###" type 4 value $00030000|1	$00000001
+UStr$|a3 - buffer|Format "##,###" type 4 value $00030000|1	$00000001
+UStr$|buffer|Format "##,###" type 4 value $00030000|1	bytes 24 335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "##,###" type 5 value $D0000043|1	kept
+Str$|popped|Format "##,###" type 5 value $D0000043|1	$00000000
+Str$|d0|Format "##,###" type 5 value $D0000043|1	$00000006
+Str$|a3 - buffer|Format "##,###" type 5 value $D0000043|1	$00000006
+Str$|buffer|Format "##,###" type 5 value $D0000043|1	bytes 24 2020202020375A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "##,###" type 5 value $D0000043|1	kept
+UStr$|popped|Format "##,###" type 5 value $D0000043|1	$00000000
+UStr$|d0|Format "##,###" type 5 value $D0000043|1	$00000003
+UStr$|a3 - buffer|Format "##,###" type 5 value $D0000043|1	$00000003
+UStr$|buffer|Format "##,###" type 5 value $D0000043|1	bytes 24 362E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Str$|kept|Format "##,###" type 5 value $A0000042|1	kept
+Str$|popped|Format "##,###" type 5 value $A0000042|1	$00000000
+Str$|d0|Format "##,###" type 5 value $A0000042|1	$00000006
+Str$|a3 - buffer|Format "##,###" type 5 value $A0000042|1	$00000006
+Str$|buffer|Format "##,###" type 5 value $A0000042|1	bytes 24 2020202020335A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "##,###" type 5 value $A0000042|1	kept
+UStr$|popped|Format "##,###" type 5 value $A0000042|1	$00000000
+UStr$|d0|Format "##,###" type 5 value $A0000042|1	$00000003
+UStr$|a3 - buffer|Format "##,###" type 5 value $A0000042|1	$00000003
+UStr$|buffer|Format "##,###" type 5 value $A0000042|1	bytes 24 322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+Format|kept|""|1	kept
+Format|popped|""|1	$00000000
+UStr$|kept|Format "" type 3 value $0001E240|1	kept
+UStr$|popped|Format "" type 3 value $0001E240|1	$00000000
+UStr$|d0|Format "" type 3 value $0001E240|1	$00000006
+UStr$|a3 - buffer|Format "" type 3 value $0001E240|1	$00000006
+UStr$|buffer|Format "" type 3 value $0001E240|1	bytes 24 3132333435365A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+UStr$|kept|Format "" type 5 value $A0000042|1	kept
+UStr$|popped|Format "" type 5 value $A0000042|1	$00000000
+UStr$|d0|Format "" type 5 value $A0000042|1	$00000003
+UStr$|a3 - buffer|Format "" type 5 value $A0000042|1	$00000003
+UStr$|buffer|Format "" type 5 value $A0000042|1	bytes 24 322E355A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
