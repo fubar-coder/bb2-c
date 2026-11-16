@@ -1,6 +1,6 @@
 ; bstr - perf benchmark: strings, Read, lists, Sort, procedures with a string parameter
 DEFTYPE .l
-Dim t(25)
+Dim t(27)
 a=123456 : c=0
 a$="Hello, World of Blitz" : b$="Hello, World of Blitz" : n$="12345"
 r$=String$(" ",80)
@@ -150,6 +150,17 @@ For i=1 To 2000
 r$=Bin$(a)
 Next
 Gosub tod : t(24)=(tt-t0)&65535
+n$="The quick brown fox jumps over the lazy dog, then naps again"
+Gosub tod : t0=tt
+For i=1 To 2000
+r$=Mid$(n$,3,40)
+Next
+Gosub tod : t(25)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+r$=Right$(n$,40)
+Next
+Gosub tod : t(26)=(tt-t0)&65535
 Goto skipdata
 dd:
 Data.l 1,2,3,4
@@ -181,6 +192,8 @@ NPrint "sort201 ",t(21)," 50 1"
 NPrint "pstr ",t(22)," 2000 1"
 NPrint "fstr ",t(23)," 2000 1"
 NPrint "bin ",t(24)," 2000 1"
+NPrint "midlong ",t(25)," 2000 1"
+NPrint "rightlong ",t(26)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

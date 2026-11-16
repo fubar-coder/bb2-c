@@ -1010,6 +1010,31 @@ build.
       cycles per four digits, 27.5 per digit; `BLITZ_ENTRYPOINT` drops
       the save. A new loop `bstr.bin` (`r$=Bin$(a)`): 2784.2 -> 1695.2
       (2119.0, perf-original).
+    - The long copies of Mid$ and Right$ (task 13.4): `movestr` is a byte
+      loop, 22 cycles per byte; the original's movestring copies 8 bytes
+      per pass, about 14.25. Mid$, UnRight$, Right$ and both Mid$ forms
+      copy below 8 bytes with an inline byte DBF loop (without the outer
+      loop for 64K and more, which only the long path needs) and jump
+      from 8 bytes on to one out-of-line `movelong` (`BL_STRCOPY`: by
+      longs where the source and a3 have the same parity, 7.5 cycles per
+      byte, else 8 bytes per pass as the original). The copy goes
+      forward with a3 at or below the source, so the long and 8-byte
+      steps give the bytes of the byte loop. `movelong` keeps the start
+      of a3 in an address register (an empty asm), so it saves nothing;
+      the three-argument Mid$ now saved d2 and is `BLITZ_ENTRYPOINT` too.
+      The four inlined `BL_STRCOPY` of the analysis would have added 524
+      bytes; this adds 180 (text 2500 -> 2680). The short case stays
+      at or below the original (Right$ with 5 bytes 248 cycles against
+      262, Mid$ 270 against 306). New loops `bstr.midlong`
+      (`r$=Mid$(n$,3,40)`, n$ 60 characters) 2837.2 -> 2389.7 (3136.0)
+      and `bstr.rightlong` (`r$=Right$(n$,40)`) 2804.2 -> 2349.2
+      (3077.0); `bstr.mid` 1454.7 -> 1452.2, `bstr.right` 1424.2 ->
+      1414.2 (on main 60e0fb53). The two loops moved `bstr.pstr` and
+      `bstr.fstr` of the port (11560.6 -> 11331.6) and of the original
+      (11614.0 -> 11382.5) without a change of the libraries (a new
+      string variable instead of n$ moved them the other way): those
+      loops depend on the layout of the program; their targets follow
+      perf-original.
 
 ## Risks / Trade-offs
 

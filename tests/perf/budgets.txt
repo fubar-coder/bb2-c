@@ -102,6 +102,17 @@
 # bstr.bin, a new loop of task 13.3 (Bin$), from two runs of the rotate and
 # the table of four-digit groups (2026-11-16): 1695.0 to 1695.2 (before it
 # 2784.2); its target from perf-original.
+# bstr.midlong and bstr.rightlong, new loops of task 13.4 (Mid$ and
+# Right$ of 40 characters), and bstr.mid and bstr.right from two runs of
+# the out-of-line long copy on main 60e0fb53 (2026-11-16): 2387.5 to
+# 2389.7, 2349.0 to 2349.2, 1452.0 to 1452.2 and 1412.0 to 1414.2 (before
+# it 2837.2, 2804.2, 1454.7 and 1424.2); their targets from two runs of
+# perf-original. The two loops changed the targets of bstr.pstr and
+# bstr.fstr (perf-original: 11614.0 -> 11382.5, 12353.5 -> 12126.5) and
+# the port's values (11560.6 -> 11331.6, 12252.6 -> 12021.5) without a
+# change of the libraries: both loops depend on the program's layout (a
+# new string variable instead of n$ moved them the other way, the port
+# by +282 and the original by -460); their budgets stay.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -220,9 +231,9 @@ bmod.vblmod                 2418~120   2409.5  PlayModule playing: its interrupt
 bmod.playmed                9796~7     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1236     1367.5  r$=a$
-bstr.mid                     1473     1553.5  r$=Mid$(a$,3,5)
+bstr.mid                     1470     1553.5  r$=Mid$(a$,3,5)
 bstr.left                    1260     1299.0  r$=Left$(a$,5)
-bstr.right                   1442     1495.5  r$=Right$(a$,5)
+bstr.right                   1432     1495.5  r$=Right$(a$,5)
 bstr.str                     4211     4131.5  r$=Str$(a)
 bstr.val                     1690     1927.0  c=Val(n$)
 bstr.len                      687      731.0  c=Len(a$)
@@ -239,6 +250,8 @@ bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll
 bstr.addkill                 1039      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
 bstr.resetlist                 87       83.0  ResetList ll()
 bstr.sort201                78576    77694.0  Sort sa()
-bstr.pstr                   11680    11614.0  pstr{a$} (a Statement with a string parameter and a local string)
-bstr.fstr                   12379    12353.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
+bstr.pstr                   11680    11382.5  pstr{a$} (a Statement with a string parameter and a local string)
+bstr.fstr                   12379    12126.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
 bstr.bin                     1716     2119.0  r$=Bin$(a)
+bstr.midlong                 2417     3136.0  r$=Mid$(n$,3,40) (n$ 60 characters)
+bstr.rightlong               2376     3077.0  r$=Right$(n$,40)

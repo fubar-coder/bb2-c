@@ -53,7 +53,7 @@
  * Registers: the original changes d0-d7, a0, a1, a3 depending on the
  * routine; the entries are the C functions (BLITZ_ALIAS) and keep what
  * the register rule needs; UCase$, Hex$, Bin$, Instr, Right$, UnRight$
- * and Mid$(String$,Startchar) are BLITZ_ENTRYPOINT (they save nothing;
+ * and Mid$ are BLITZ_ENTRYPOINT (they save nothing;
  * they may change a2 as well, as the original does, and no library
  * calls them).
  * CaseSense keeps all registers.  The CCR is no
@@ -277,6 +277,42 @@ static inline ULONG movestr(const UBYTE **src, ULONG len)
     while (n--)
         *blitz_string++ = *s++;
     *src = s;
+    return len;
+}
+
+/* movelong - movestring of Mid$ and Right$ for 8 bytes and more: BL_STRCOPY
+   (by longs where src and a3 have the same parity, else 8 bytes per pass
+   as the original's movestring).  The result is the one of the byte loop:
+   a3 is at or below src, and every step reads its bytes before it writes
+   them, at addresses no earlier step writes.  Out of line, one copy for
+   the four entries; a3 advanced, result len (a3 - its start: the empty
+   asm keeps the start in an address register, so that nothing is
+   saved). */
+static ULONG __attribute__((noinline)) movelong(const UBYTE *src BL_REG(a0),
+                                                ULONG len BL_REG(d0))
+{
+    UBYTE *start = blitz_string;
+
+    __asm__("" : "+a"(start));
+    BL_STRCOPY(blitz_string, src, len);
+    __asm__("" : "+a"(start));
+    return blitz_string - start;
+}
+
+/* movecut - movestring for Mid$ and Right$ (a3 at or below src): below 8
+   bytes a byte DBF loop, from 8 on movelong */
+BL_ALWAYS_INLINE ULONG movecut(const UBYTE *src, ULONG len)
+{
+    UWORD n;
+
+    if (len >= 8)
+        return movelong(src, len);
+    if (len) {
+        n = (UWORD)(len - 1);
+        do
+            *blitz_string++ = *src++;
+        while ((WORD)--n != -1);
+    }
     return len;
 }
 
@@ -655,7 +691,7 @@ BL_ALWAYS_INLINE ULONG right(UBYTE *s, LONG n, const ULONG *sp)
         return len;
     }
     src = blitz_string + (len - n);             /* fixed (#285): long offset */
-    return movestr(&src, n);
+    return movecut(src, n);
 }
 
 /**
@@ -722,7 +758,7 @@ BL_ALWAYS_INLINE ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
     if (n > len - start)                        /* fixed (#286): no overflow */
         n = len - start;
     src = blitz_string + start;                 /* LEA 0(a3,d1.l),a0 */
-    return movestr(&src, n);
+    return movecut(src, n);
 }
 
 /**
@@ -742,12 +778,12 @@ BL_ALWAYS_INLINE ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
  * @param lens  a2: the length stack (the string's length)
  * @return d0: the length of the result; a3 = its end
  */
-static ULONG BLITZ_ROUTINE midstring_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d1),
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE midstring_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d1),
                                        LONG n BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
     return mid(s, start, n, lens);
 }
-BLITZ_ALIAS(midstring, midstring_c);
+BLITZ_ALIAS_EP(midstring, midstring_c);
 
 /**
  * @brief Mid$(String$,Startchar) - the rest of the string from Startchar.
