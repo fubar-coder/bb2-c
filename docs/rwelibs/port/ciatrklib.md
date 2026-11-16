@@ -201,6 +201,13 @@ kind F):
   for a new maximum, DBRA otherwise; a new maximum at 126 read ~64 KB
   more), and pattern numbers ≥ $80 never counted (BGT) (#477; bug-orig
   test `pt23a-init-pattern-scan-ciatrklib`).
+* `mt_init` sets the sample number of every note above 31 to 0 in the
+  patterns (once, instead of a test per note; the module is changed in
+  memory; the notes inside the module when the slot's length is known);
+  the original's `mt_PlayVoice` took the start of such a sample from
+  behind `mt_SampleStarts` (32: 0, 33: `mt_SongDataPtr`, …) and its
+  header from the position table and the patterns (#480; bug-orig test
+  `pt23a-samplenum-over-31-ciatrklib`).
 
 ## BUG(orig), kept
 
@@ -222,8 +229,6 @@ kind F):
   next `PauseModule` only enables playing, so a module started again is
   not paused and a stopped one plays again (test
   `ciatrklib-pause-state-kept`, REPRODUCED; #1076).
-* Play routine (Protracker 2.3A): a sample number above 31 reads behind
-  `mt_SampleStarts` (#480).
 
 ## DIFF and not reproducible
 

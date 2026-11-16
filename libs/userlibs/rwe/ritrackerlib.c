@@ -64,8 +64,6 @@
  *     empty samples at its end (#570).
  *   - A finetune byte above 15 from the sample header makes the period
  *     lookups read far behind the period table (#476).
- *   - Sample numbers above 31 read behind mt_SampleStarts and the sample
- *     headers (#480).
  * Fixed in the play routine (intended deviations):
  *   - mt_LowMask starts as $FF, so the first 1xx/2xx slides by its whole
  *     parameter; the original started it as 0, and the first 1xx/2xx
@@ -103,6 +101,11 @@
  *     maximum at 126 read 65535 bytes more and the sample starts lay far
  *     behind the module, where it cleared their first longs), and
  *     patterns >= $80 never counted (BGT) (#477).
+ *   - mt_init sets the sample number of every note above 31 to 0 in the
+ *     counted patterns (the module is changed in memory); the original's
+ *     mt_PlayVoice took the start of such a sample from behind
+ *     mt_SampleStarts (32: 0, 33: mt_SongDataPtr, ...) and its header
+ *     from the position table and the patterns (#480).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -461,7 +464,23 @@ static void mt_init(void)
         if (pattern > highest)
             highest = pattern;
     } while (--count != -1);
-    sample = (UBYTE *)(((highest + 1) << 10) + 1084 + (ULONG)mod);
+    /* Fixed (#480): the sample number of every note above 31 (byte 0 $20
+       and up: both high nibbles) becomes 0, once here instead of a test
+       per note in mt_PlayVoice; the notes of the counted patterns (TrackInit
+       has no module length) */
+    {
+        UBYTE *note = mod + 1084;
+        ULONG n = (highest + 1) << 8;
+
+        do {
+            if (*note >= 0x20) {
+                note[0] &= 0x0f;
+                note[2] &= 0x0f;
+            }
+            note += 4;
+        } while (--n);
+    }
+    sample =(UBYTE *)(((highest + 1) << 10) + 1084 + (ULONG)mod);
     for (i = 0; i < 31; i++) {
         *(ULONG *)sample = 0;           /* BUG(orig): also behind the module (#570) */
         pt.samplestarts[i] = sample;
@@ -1107,7 +1126,7 @@ static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *patpos, UBYTE *sample
     if (sample) {
         startoff = ((ULONG)sample - 1) << 2;
         infooff = (ULONG)sample * 30;
-        c->start = SAMPLESTART(startoff);   /* BUG(orig): sample > 31 (#480) */
+        c->start = SAMPLESTART(startoff);   /* 1-31: mt_init clears higher ones (#480) */
         c->length = W(sampleinfo + infooff);
         c->reallength = W(sampleinfo + infooff);
         c->finetune = sampleinfo[infooff + 2];

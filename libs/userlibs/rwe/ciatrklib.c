@@ -28,8 +28,7 @@
  * (pause_status ... modtable), the CIA part (RealTempo ... musintname)
  * and the play routine's (mt_FunkTable ... nor_LstEvt) - are structs with
  * the original's layout.  The play routine depends on it: it reads behind
- * mt_PeriodTable into mt_chan1temp and behind mt_SampleStarts (BUG(orig)
- * below, #476 #480), and the test finds the blocks in both builds.
+ * mt_PeriodTable into mt_chan1temp (BUG(orig) below, #476), and the test finds the blocks in both builds.
  *
  * Everything is C; the entries are thunks, the hardware registers
  * volatile accesses of the original's width.
@@ -43,8 +42,6 @@
  *   - PauseModule toggles its own state, which StartTracker and
  *     StopTracker leave as it is: after a pause the next PauseModule
  *     only enables playing (test ciatrklib-pause-state-kept; #1076).
- *   - Play routine (Protracker 2.3A): a sample number > 31 (#480) reads
- *     behind the tables (mt_SongDataPtr ...).
  * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
  * declared #byte).  By design (#446): ModuleToChip does nothing and
  * returns its argument; the documentation of the library says so (the
@@ -88,6 +85,11 @@
  *     byte and compares unsigned; the original read positions 0-126
  *     (SUBQ for a new maximum, DBRA otherwise; a new maximum at 126 read
  *     ~64 KB more), and patterns >= $80 never counted (BGT) (#477).
+ *   - mt_init sets the sample number of every note above 31 to 0 in the
+ *     patterns (the module is changed in memory); the original's
+ *     mt_PlayVoice took the start of such a sample from behind
+ *     mt_SampleStarts (32: 0, 33: mt_SongDataPtr, ...) and its header
+ *     from the position table and the patterns (#480).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -732,6 +734,25 @@ static void mt_end(void)
     cu->dmacon = 0xf;
 }
 
+/* Fixed (#480): the sample number of every note above 31 (byte 0 $20 and
+   up: both high nibbles) becomes 0, once at mt_init instead of a test
+   per note in mt_PlayVoice; the notes of the counted patterns, inside the
+   module when its length is known (more than the header: a loaded or
+   copied module; DecodeModule of a chip module gives 1) */
+static void clearsamplenums(UBYTE *mod, ULONG modlen)
+{
+    UBYTE *note = mod + 1084;
+    ULONG n = (maxpattern(mod) + 1) << 8;
+
+    if (modlen > 1084 && (modlen - 1084) >> 2 < n)
+        n = (modlen - 1084) >> 2;
+    for (; n; n--, note += 4)
+        if (*note >= 0x20) {
+            note[0] &= 0x0f;
+            note[2] &= 0x0f;
+        }
+}
+
 /* mt_init: a4 = the module length (4(a3) of the slot).  The first long
    of a sample is cleared if it lies inside the module (fixed, #438: the
    original compared the length with the sample's address); the end is
@@ -744,6 +765,7 @@ static void mt_init(ULONG modlen)
     int i;
 
     playdata.SongDataPtr = hdr;
+    clearsamplenums(hdr, modlen);
     sampdata = hdr + patternsize(hdr);
     end = (ULONG)hdr + modlen;
     if (modlen == 1)
@@ -1373,7 +1395,7 @@ static void playvoice(struct chan *ch, aud_t *aud, const UBYTE *samples, const U
 
         LAUNDER(starts);
         h = samples + bl_mulu_w(sample, 30);
-        ch->start = starts[sample - 1]; /* > 31: behind the table */
+        ch->start = starts[sample - 1]; /* 1-31: mt_init clears higher ones (#480) */
         ch->length = WORDAT(h);
         ch->reallength = WORDAT(h);
         ch->finetune = h[2];

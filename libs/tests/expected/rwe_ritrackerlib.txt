@@ -12116,7 +12116,7 @@ TrackInit (speed module)|state|$1|1 [orig]	bytes 1538 fnv 9527B044
 TrackInit (speed module)|state|$1|1 [fixed #477]	bytes 1538 fnv 26271230
 TrackInit (speed module)|glue|$1|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackInit (speed module)|module|$1|1 [orig]	bytes 2224 fnv E0856F6A
-TrackInit (speed module)|module|$1|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackInit (speed module)|module|$1|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackInit (speed module)|custom|$1|1	bytes 512 fnv CDF614B4
 TrackInit (speed module)|CIA-A PRA filter|$1|1	$00000002
 TrackInit (speed module)|CIA-B timer A|$1|1	$00005AA5
@@ -12126,7 +12126,7 @@ TrackPlay|state|F81 tick 0|1 [orig]	bytes 1538 fnv C65F5D83
 TrackPlay|state|F81 tick 0|1 [fixed #477]	bytes 1538 fnv E9C2F6AF
 TrackPlay|glue|F81 tick 0|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 0|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 0|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 0|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 0|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 0|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 0|1	$00005AA5
@@ -12136,7 +12136,7 @@ TrackPlay|state|F81 tick 1|1 [orig]	bytes 1538 fnv 803BA8F2
 TrackPlay|state|F81 tick 1|1 [fixed #477]	bytes 1538 fnv 223C01CE
 TrackPlay|glue|F81 tick 1|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 1|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 1|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 1|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 1|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 1|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 1|1	$00005AA5
@@ -12146,7 +12146,7 @@ TrackPlay|state|F81 tick 2|1 [orig]	bytes 1538 fnv F2701666
 TrackPlay|state|F81 tick 2|1 [fixed #477]	bytes 1538 fnv D8610E92
 TrackPlay|glue|F81 tick 2|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 2|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 2|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 2|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 2|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 2|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 2|1	$00005AA5
@@ -12156,7 +12156,7 @@ TrackPlay|state|F81 tick 3|1 [orig]	bytes 1538 fnv F2F63E8B
 TrackPlay|state|F81 tick 3|1 [fixed #477]	bytes 1538 fnv B4CA54DF
 TrackPlay|glue|F81 tick 3|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 3|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 3|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 3|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 3|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 3|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 3|1	$00005AA5
@@ -12166,7 +12166,7 @@ TrackPlay|state|F81 tick 4|1 [orig]	bytes 1538 fnv E9F4D4AC
 TrackPlay|state|F81 tick 4|1 [fixed #477]	bytes 1538 fnv F3C3CB40
 TrackPlay|glue|F81 tick 4|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 4|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 4|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 4|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 4|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 4|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 4|1	$00005AA5
@@ -12176,7 +12176,7 @@ TrackPlay|state|F81 tick 5|1 [orig]	bytes 1538 fnv 4B561B74
 TrackPlay|state|F81 tick 5|1 [fixed #477]	bytes 1538 fnv 18EDD0FC
 TrackPlay|glue|F81 tick 5|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 5|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 5|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 5|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 5|1 [orig]	bytes 512 fnv 136F7F2A
 TrackPlay|custom|F81 tick 5|1 [fixed #477]	bytes 512 fnv AB82F66E
 TrackPlay|CIA-A PRA filter|F81 tick 5|1	$00000002
@@ -12187,7 +12187,7 @@ TrackPlay|state|F81 tick 6|1 [orig]	bytes 1538 fnv 6B3776F3
 TrackPlay|state|F81 tick 6|1 [fixed #477]	bytes 1538 fnv 0E1441DB
 TrackPlay|glue|F81 tick 6|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 6|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 6|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 6|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 6|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 6|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 6|1	$00005AA5
@@ -12197,7 +12197,7 @@ TrackPlay|state|F81 tick 7|1 [orig]	bytes 1538 fnv B28C49A2
 TrackPlay|state|F81 tick 7|1 [fixed #477]	bytes 1538 fnv 289947CA
 TrackPlay|glue|F81 tick 7|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 7|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 7|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 7|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 7|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 7|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 7|1	$00005AA5
@@ -12207,7 +12207,7 @@ TrackPlay|state|F81 tick 8|1 [orig]	bytes 1538 fnv 491EC441
 TrackPlay|state|F81 tick 8|1 [fixed #477]	bytes 1538 fnv 7674A7C9
 TrackPlay|glue|F81 tick 8|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 8|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 8|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 8|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 8|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 8|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 8|1	$00005AA5
@@ -12217,7 +12217,7 @@ TrackPlay|state|F81 tick 9|1 [orig]	bytes 1538 fnv 1AE5E0D0
 TrackPlay|state|F81 tick 9|1 [fixed #477]	bytes 1538 fnv 5C0E6F78
 TrackPlay|glue|F81 tick 9|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 9|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 9|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 9|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 9|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 9|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 9|1	$00005AA5
@@ -12227,7 +12227,7 @@ TrackPlay|state|F81 tick 10|1 [orig]	bytes 1538 fnv 87F312FC
 TrackPlay|state|F81 tick 10|1 [fixed #477]	bytes 1538 fnv 0FDB82E4
 TrackPlay|glue|F81 tick 10|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 10|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 10|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 10|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 10|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 10|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 10|1	$00005AA5
@@ -12237,7 +12237,7 @@ TrackPlay|state|F81 tick 11|1 [orig]	bytes 1538 fnv 655450C9
 TrackPlay|state|F81 tick 11|1 [fixed #477]	bytes 1538 fnv 948AB031
 TrackPlay|glue|F81 tick 11|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 11|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 11|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 11|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 11|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 11|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 11|1	$00005AA5
@@ -12247,7 +12247,7 @@ TrackPlay|state|F81 tick 12|1 [orig]	bytes 1538 fnv CB13B80A
 TrackPlay|state|F81 tick 12|1 [fixed #477]	bytes 1538 fnv 81839C12
 TrackPlay|glue|F81 tick 12|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 12|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 12|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 12|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 12|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 12|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 12|1	$00005AA5
@@ -12257,7 +12257,7 @@ TrackPlay|state|F81 tick 13|1 [orig]	bytes 1538 fnv 52A02FFF
 TrackPlay|state|F81 tick 13|1 [fixed #477]	bytes 1538 fnv C562D937
 TrackPlay|glue|F81 tick 13|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 13|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 13|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 13|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 13|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 13|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 13|1	$00005AA5
@@ -12267,7 +12267,7 @@ TrackPlay|state|F81 tick 14|1 [orig]	bytes 1538 fnv B8B6BDE0
 TrackPlay|state|F81 tick 14|1 [fixed #477]	bytes 1538 fnv FE67DFD8
 TrackPlay|glue|F81 tick 14|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 14|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 14|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 14|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 14|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 14|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 14|1	$00005AA5
@@ -12277,7 +12277,7 @@ TrackPlay|state|F81 tick 15|1 [orig]	bytes 1538 fnv 4C4FC1BD
 TrackPlay|state|F81 tick 15|1 [fixed #477]	bytes 1538 fnv 6587BF55
 TrackPlay|glue|F81 tick 15|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 15|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 15|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 15|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 15|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 15|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 15|1	$00005AA5
@@ -12287,7 +12287,7 @@ TrackPlay|state|F81 tick 16|1 [orig]	bytes 1538 fnv 4DCA83FE
 TrackPlay|state|F81 tick 16|1 [fixed #477]	bytes 1538 fnv 913C1CD6
 TrackPlay|glue|F81 tick 16|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 16|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 16|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 16|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 16|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 16|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 16|1	$00005AA5
@@ -12297,7 +12297,7 @@ TrackPlay|state|F81 tick 17|1 [orig]	bytes 1538 fnv B1C38323
 TrackPlay|state|F81 tick 17|1 [fixed #477]	bytes 1538 fnv 7B6146DB
 TrackPlay|glue|F81 tick 17|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 17|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 17|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 17|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 17|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 17|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 17|1	$00005AA5
@@ -12307,7 +12307,7 @@ TrackPlay|state|F81 tick 18|1 [orig]	bytes 1538 fnv E7EBA2C7
 TrackPlay|state|F81 tick 18|1 [fixed #477]	bytes 1538 fnv 1FFC5CBF
 TrackPlay|glue|F81 tick 18|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 18|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 18|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 18|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 18|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 18|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 18|1	$00005AA5
@@ -12317,7 +12317,7 @@ TrackPlay|state|F81 tick 19|1 [orig]	bytes 1538 fnv A7F3BE66
 TrackPlay|state|F81 tick 19|1 [fixed #477]	bytes 1538 fnv 8C0704BE
 TrackPlay|glue|F81 tick 19|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 19|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 19|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 19|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 19|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 19|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 19|1	$00005AA5
@@ -12327,7 +12327,7 @@ TrackPlay|state|F81 tick 20|1 [orig]	bytes 1538 fnv 8075B425
 TrackPlay|state|F81 tick 20|1 [fixed #477]	bytes 1538 fnv 9A05CCBD
 TrackPlay|glue|F81 tick 20|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 20|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 20|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 20|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 20|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 20|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 20|1	$00005AA5
@@ -12337,7 +12337,7 @@ TrackPlay|state|F81 tick 21|1 [orig]	bytes 1538 fnv 4DE81804
 TrackPlay|state|F81 tick 21|1 [fixed #477]	bytes 1538 fnv 3CBBDD6C
 TrackPlay|glue|F81 tick 21|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 21|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 21|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 21|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 21|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 21|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 21|1	$00005AA5
@@ -12347,7 +12347,7 @@ TrackPlay|state|F81 tick 22|1 [orig]	bytes 1538 fnv 3B41EE23
 TrackPlay|state|F81 tick 22|1 [fixed #477]	bytes 1538 fnv 805977EB
 TrackPlay|glue|F81 tick 22|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 22|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 22|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 22|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 22|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 22|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 22|1	$00005AA5
@@ -12357,7 +12357,7 @@ TrackPlay|state|F81 tick 23|1 [orig]	bytes 1538 fnv E72D72F2
 TrackPlay|state|F81 tick 23|1 [fixed #477]	bytes 1538 fnv 88F0857A
 TrackPlay|glue|F81 tick 23|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 23|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 23|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 23|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 23|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 23|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 23|1	$00005AA5
@@ -12367,7 +12367,7 @@ TrackPlay|state|F81 tick 24|1 [orig]	bytes 1538 fnv 6CECD0B1
 TrackPlay|state|F81 tick 24|1 [fixed #477]	bytes 1538 fnv 0F238699
 TrackPlay|glue|F81 tick 24|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 24|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 24|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 24|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 24|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 24|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 24|1	$00005AA5
@@ -12377,7 +12377,7 @@ TrackPlay|state|F81 tick 25|1 [orig]	bytes 1538 fnv 03A81CE0
 TrackPlay|state|F81 tick 25|1 [fixed #477]	bytes 1538 fnv E9C93968
 TrackPlay|glue|F81 tick 25|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 25|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 25|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 25|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 25|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 25|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 25|1	$00005AA5
@@ -12387,7 +12387,7 @@ TrackPlay|state|F81 tick 26|1 [orig]	bytes 1538 fnv ABC11F6C
 TrackPlay|state|F81 tick 26|1 [fixed #477]	bytes 1538 fnv 9D964CD4
 TrackPlay|glue|F81 tick 26|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 26|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 26|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 26|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 26|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 26|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 26|1	$00005AA5
@@ -12397,7 +12397,7 @@ TrackPlay|state|F81 tick 27|1 [orig]	bytes 1538 fnv FE032F99
 TrackPlay|state|F81 tick 27|1 [fixed #477]	bytes 1538 fnv F68F65C1
 TrackPlay|glue|F81 tick 27|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 27|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 27|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 27|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 27|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 27|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 27|1	$00005AA5
@@ -12407,7 +12407,7 @@ TrackPlay|state|F81 tick 28|1 [orig]	bytes 1538 fnv FF2BE4BA
 TrackPlay|state|F81 tick 28|1 [fixed #477]	bytes 1538 fnv 4CE272C2
 TrackPlay|glue|F81 tick 28|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 28|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 28|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 28|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 28|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 28|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 28|1	$00005AA5
@@ -12417,7 +12417,7 @@ TrackPlay|state|F81 tick 29|1 [orig]	bytes 1538 fnv 2B21EB8F
 TrackPlay|state|F81 tick 29|1 [fixed #477]	bytes 1538 fnv DF38D987
 TrackPlay|glue|F81 tick 29|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 29|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 29|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 29|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 29|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 29|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 29|1	$00005AA5
@@ -12427,7 +12427,7 @@ TrackPlay|state|F81 tick 30|1 [orig]	bytes 1538 fnv CFF481D0
 TrackPlay|state|F81 tick 30|1 [fixed #477]	bytes 1538 fnv 8C22A9C8
 TrackPlay|glue|F81 tick 30|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 30|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 30|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 30|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 30|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 30|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 30|1	$00005AA5
@@ -12437,7 +12437,7 @@ TrackPlay|state|F81 tick 31|1 [orig]	bytes 1538 fnv AE54774D
 TrackPlay|state|F81 tick 31|1 [fixed #477]	bytes 1538 fnv 9A28E8A5
 TrackPlay|glue|F81 tick 31|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 31|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 31|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 31|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 31|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 31|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 31|1	$00005AA5
@@ -12447,7 +12447,7 @@ TrackPlay|state|F81 tick 32|1 [orig]	bytes 1538 fnv CB3B2DAE
 TrackPlay|state|F81 tick 32|1 [fixed #477]	bytes 1538 fnv C5544986
 TrackPlay|glue|F81 tick 32|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 32|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 32|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 32|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 32|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 32|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 32|1	$00005AA5
@@ -12457,7 +12457,7 @@ TrackPlay|state|F81 tick 33|1 [orig]	bytes 1538 fnv E1B90BF3
 TrackPlay|state|F81 tick 33|1 [fixed #477]	bytes 1538 fnv EDA67CEB
 TrackPlay|glue|F81 tick 33|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 33|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 33|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 33|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 33|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 33|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 33|1	$00005AA5
@@ -12467,7 +12467,7 @@ TrackPlay|state|F81 tick 34|1 [orig]	bytes 1538 fnv A586C977
 TrackPlay|state|F81 tick 34|1 [fixed #477]	bytes 1538 fnv FC2E504F
 TrackPlay|glue|F81 tick 34|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 34|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 34|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 34|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 34|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 34|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 34|1	$00005AA5
@@ -12477,7 +12477,7 @@ TrackPlay|state|F81 tick 35|1 [orig]	bytes 1538 fnv 73DB91B6
 TrackPlay|state|F81 tick 35|1 [fixed #477]	bytes 1538 fnv 5765DB6E
 TrackPlay|glue|F81 tick 35|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 35|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 35|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 35|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 35|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 35|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 35|1	$00005AA5
@@ -12487,7 +12487,7 @@ TrackPlay|state|F81 tick 36|1 [orig]	bytes 1538 fnv 4BD48AD5
 TrackPlay|state|F81 tick 36|1 [fixed #477]	bytes 1538 fnv FC0A824D
 TrackPlay|glue|F81 tick 36|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 36|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 36|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 36|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 36|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 36|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 36|1	$00005AA5
@@ -12497,7 +12497,7 @@ TrackPlay|state|F81 tick 37|1 [orig]	bytes 1538 fnv AFECCD94
 TrackPlay|state|F81 tick 37|1 [fixed #477]	bytes 1538 fnv 0357451C
 TrackPlay|glue|F81 tick 37|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 37|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 37|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 37|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 37|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 37|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 37|1	$00005AA5
@@ -12507,7 +12507,7 @@ TrackPlay|state|F81 tick 38|1 [orig]	bytes 1538 fnv 06A0C4D3
 TrackPlay|state|F81 tick 38|1 [fixed #477]	bytes 1538 fnv BF9D183B
 TrackPlay|glue|F81 tick 38|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 38|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 38|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 38|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 38|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 38|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 38|1	$00005AA5
@@ -12517,7 +12517,7 @@ TrackPlay|state|F81 tick 39|1 [orig]	bytes 1538 fnv 03B7A282
 TrackPlay|state|F81 tick 39|1 [fixed #477]	bytes 1538 fnv DA221E2A
 TrackPlay|glue|F81 tick 39|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 39|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 39|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 39|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 39|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 39|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 39|1	$00005AA5
@@ -12527,7 +12527,7 @@ TrackPlay|state|F81 tick 40|1 [orig]	bytes 1538 fnv 33883861
 TrackPlay|state|F81 tick 40|1 [fixed #477]	bytes 1538 fnv DB0B59E9
 TrackPlay|glue|F81 tick 40|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 40|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 40|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 40|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 40|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 40|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 40|1	$00005AA5
@@ -12537,7 +12537,7 @@ TrackPlay|state|F81 tick 41|1 [orig]	bytes 1538 fnv 65ACD270
 TrackPlay|state|F81 tick 41|1 [fixed #477]	bytes 1538 fnv 1A38D298
 TrackPlay|glue|F81 tick 41|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 41|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 41|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 41|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 41|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 41|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 41|1	$00005AA5
@@ -12547,7 +12547,7 @@ TrackPlay|state|F81 tick 42|1 [orig]	bytes 1538 fnv 725C871C
 TrackPlay|state|F81 tick 42|1 [fixed #477]	bytes 1538 fnv 3B919744
 TrackPlay|glue|F81 tick 42|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 42|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 42|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 42|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 42|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 42|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 42|1	$00005AA5
@@ -12557,7 +12557,7 @@ TrackPlay|state|F81 tick 43|1 [orig]	bytes 1538 fnv C9EB02E9
 TrackPlay|state|F81 tick 43|1 [fixed #477]	bytes 1538 fnv 7EF42451
 TrackPlay|glue|F81 tick 43|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 43|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 43|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 43|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 43|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 43|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 43|1	$00005AA5
@@ -12567,7 +12567,7 @@ TrackPlay|state|F81 tick 44|1 [orig]	bytes 1538 fnv F6C9CC6A
 TrackPlay|state|F81 tick 44|1 [fixed #477]	bytes 1538 fnv 3FADFF32
 TrackPlay|glue|F81 tick 44|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 44|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 44|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 44|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 44|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 44|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 44|1	$00005AA5
@@ -12577,7 +12577,7 @@ TrackPlay|state|F81 tick 45|1 [orig]	bytes 1538 fnv 1A488EDF
 TrackPlay|state|F81 tick 45|1 [fixed #477]	bytes 1538 fnv DAF96517
 TrackPlay|glue|F81 tick 45|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 45|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 45|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 45|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 45|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 45|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 45|1	$00005AA5
@@ -12587,7 +12587,7 @@ TrackPlay|state|F81 tick 46|1 [orig]	bytes 1538 fnv F10E5F00
 TrackPlay|state|F81 tick 46|1 [fixed #477]	bytes 1538 fnv 13FE6BB8
 TrackPlay|glue|F81 tick 46|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 46|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 46|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 46|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 46|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 46|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 46|1	$00005AA5
@@ -12597,7 +12597,7 @@ TrackPlay|state|F81 tick 47|1 [orig]	bytes 1538 fnv 0A7A24DD
 TrackPlay|state|F81 tick 47|1 [fixed #477]	bytes 1538 fnv 2A7BEEF5
 TrackPlay|glue|F81 tick 47|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 47|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 47|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 47|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 47|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 47|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 47|1	$00005AA5
@@ -12607,7 +12607,7 @@ TrackPlay|state|F81 tick 48|1 [orig]	bytes 1538 fnv 1572E2DE
 TrackPlay|state|F81 tick 48|1 [fixed #477]	bytes 1538 fnv 4F667FF6
 TrackPlay|glue|F81 tick 48|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 48|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 48|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 48|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 48|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 48|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 48|1	$00005AA5
@@ -12617,7 +12617,7 @@ TrackPlay|state|F81 tick 49|1 [orig]	bytes 1538 fnv DD799783
 TrackPlay|state|F81 tick 49|1 [fixed #477]	bytes 1538 fnv 2CEA1D3B
 TrackPlay|glue|F81 tick 49|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 49|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 49|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 49|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 49|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 49|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 49|1	$00005AA5
@@ -12627,7 +12627,7 @@ TrackPlay|state|F81 tick 50|1 [orig]	bytes 1538 fnv 870528A7
 TrackPlay|state|F81 tick 50|1 [fixed #477]	bytes 1538 fnv 3592E89F
 TrackPlay|glue|F81 tick 50|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 50|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 50|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 50|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 50|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 50|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 50|1	$00005AA5
@@ -12637,7 +12637,7 @@ TrackPlay|state|F81 tick 51|1 [orig]	bytes 1538 fnv E9C95B46
 TrackPlay|state|F81 tick 51|1 [fixed #477]	bytes 1538 fnv A19D909E
 TrackPlay|glue|F81 tick 51|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 51|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 51|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 51|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 51|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 51|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 51|1	$00005AA5
@@ -12647,7 +12647,7 @@ TrackPlay|state|F81 tick 52|1 [orig]	bytes 1538 fnv 54BF9FC5
 TrackPlay|state|F81 tick 52|1 [fixed #477]	bytes 1538 fnv 58302FDD
 TrackPlay|glue|F81 tick 52|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 52|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 52|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 52|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 52|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 52|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 52|1	$00005AA5
@@ -12657,7 +12657,7 @@ TrackPlay|state|F81 tick 53|1 [orig]	bytes 1538 fnv 223203A4
 TrackPlay|state|F81 tick 53|1 [fixed #477]	bytes 1538 fnv A1528F8C
 TrackPlay|glue|F81 tick 53|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 53|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 53|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 53|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 53|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 53|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 53|1	$00005AA5
@@ -12667,7 +12667,7 @@ TrackPlay|state|F81 tick 54|1 [orig]	bytes 1538 fnv 66F80283
 TrackPlay|state|F81 tick 54|1 [fixed #477]	bytes 1538 fnv AC0F8C4B
 TrackPlay|glue|F81 tick 54|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 54|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 54|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 54|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 54|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 54|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 54|1	$00005AA5
@@ -12677,7 +12677,7 @@ TrackPlay|state|F81 tick 55|1 [orig]	bytes 1538 fnv FCC3FED2
 TrackPlay|state|F81 tick 55|1 [fixed #477]	bytes 1538 fnv 2459D35A
 TrackPlay|glue|F81 tick 55|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 55|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 55|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 55|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 55|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 55|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 55|1	$00005AA5
@@ -12687,7 +12687,7 @@ TrackPlay|state|F81 tick 56|1 [orig]	bytes 1538 fnv D18382D1
 TrackPlay|state|F81 tick 56|1 [fixed #477]	bytes 1538 fnv E36D7239
 TrackPlay|glue|F81 tick 56|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 56|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 56|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 56|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 56|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 56|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 56|1	$00005AA5
@@ -12697,7 +12697,7 @@ TrackPlay|state|F81 tick 57|1 [orig]	bytes 1538 fnv 3BFFBE00
 TrackPlay|state|F81 tick 57|1 [fixed #477]	bytes 1538 fnv A7F39C88
 TrackPlay|glue|F81 tick 57|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 57|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 57|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 57|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 57|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 57|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 57|1	$00005AA5
@@ -12707,7 +12707,7 @@ TrackPlay|state|F81 tick 58|1 [orig]	bytes 1538 fnv 1057D18C
 TrackPlay|state|F81 tick 58|1 [fixed #477]	bytes 1538 fnv 68EEE3B4
 TrackPlay|glue|F81 tick 58|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 58|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 58|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 58|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 58|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 58|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 58|1	$00005AA5
@@ -12717,7 +12717,7 @@ TrackPlay|state|F81 tick 59|1 [orig]	bytes 1538 fnv D24D1B39
 TrackPlay|state|F81 tick 59|1 [fixed #477]	bytes 1538 fnv E0F8D9E1
 TrackPlay|glue|F81 tick 59|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 59|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 59|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 59|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 59|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 59|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 59|1	$00005AA5
@@ -12727,7 +12727,7 @@ TrackPlay|state|F81 tick 60|1 [orig]	bytes 1538 fnv C6D4439A
 TrackPlay|state|F81 tick 60|1 [fixed #477]	bytes 1538 fnv 374BE6E2
 TrackPlay|glue|F81 tick 60|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 60|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 60|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 60|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 60|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 60|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 60|1	$00005AA5
@@ -12737,7 +12737,7 @@ TrackPlay|state|F81 tick 61|1 [orig]	bytes 1538 fnv 7C4D446F
 TrackPlay|state|F81 tick 61|1 [fixed #477]	bytes 1538 fnv A6E13867
 TrackPlay|glue|F81 tick 61|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 61|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 61|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 61|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 61|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 61|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 61|1	$00005AA5
@@ -12747,7 +12747,7 @@ TrackPlay|state|F81 tick 62|1 [orig]	bytes 1538 fnv 1ABB7370
 TrackPlay|state|F81 tick 62|1 [fixed #477]	bytes 1538 fnv A1B935A8
 TrackPlay|glue|F81 tick 62|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 62|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 62|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 62|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 62|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 62|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 62|1	$00005AA5
@@ -12757,7 +12757,7 @@ TrackPlay|state|F81 tick 63|1 [orig]	bytes 1538 fnv 5D291E6D
 TrackPlay|state|F81 tick 63|1 [fixed #477]	bytes 1538 fnv 5F1D1845
 TrackPlay|glue|F81 tick 63|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 63|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 63|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 63|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 63|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 63|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 63|1	$00005AA5
@@ -12767,7 +12767,7 @@ TrackPlay|state|F81 tick 64|1 [orig]	bytes 1538 fnv E0D1B98E
 TrackPlay|state|F81 tick 64|1 [fixed #477]	bytes 1538 fnv AFBDBDA6
 TrackPlay|glue|F81 tick 64|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 64|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 64|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 64|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 64|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 64|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 64|1	$00005AA5
@@ -12777,7 +12777,7 @@ TrackPlay|state|F81 tick 65|1 [orig]	bytes 1538 fnv 7D2259D3
 TrackPlay|state|F81 tick 65|1 [fixed #477]	bytes 1538 fnv 195C914B
 TrackPlay|glue|F81 tick 65|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 65|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 65|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 65|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 65|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 65|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 65|1	$00005AA5
@@ -12787,7 +12787,7 @@ TrackPlay|state|F81 tick 66|1 [orig]	bytes 1538 fnv 6D2F2857
 TrackPlay|state|F81 tick 66|1 [fixed #477]	bytes 1538 fnv 97979E2F
 TrackPlay|glue|F81 tick 66|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 66|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 66|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 66|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 66|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 66|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 66|1	$00005AA5
@@ -12797,7 +12797,7 @@ TrackPlay|state|F81 tick 67|1 [orig]	bytes 1538 fnv 89721D96
 TrackPlay|state|F81 tick 67|1 [fixed #477]	bytes 1538 fnv 22BE724E
 TrackPlay|glue|F81 tick 67|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 67|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 67|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 67|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 67|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 67|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 67|1	$00005AA5
@@ -12807,7 +12807,7 @@ TrackPlay|state|F81 tick 68|1 [orig]	bytes 1538 fnv 201E7675
 TrackPlay|state|F81 tick 68|1 [fixed #477]	bytes 1538 fnv AADF296D
 TrackPlay|glue|F81 tick 68|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 68|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 68|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 68|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 68|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 68|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 68|1	$00005AA5
@@ -12817,7 +12817,7 @@ TrackPlay|state|F81 tick 69|1 [orig]	bytes 1538 fnv 4264C6B4
 TrackPlay|state|F81 tick 69|1 [fixed #477]	bytes 1538 fnv 0C4C443C
 TrackPlay|glue|F81 tick 69|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 69|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 69|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 69|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 69|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 69|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 69|1	$00005AA5
@@ -12827,7 +12827,7 @@ TrackPlay|state|F81 tick 70|1 [orig]	bytes 1538 fnv 3256D933
 TrackPlay|state|F81 tick 70|1 [fixed #477]	bytes 1538 fnv 46F4DF9B
 TrackPlay|glue|F81 tick 70|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 70|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 70|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 70|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 70|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 70|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 70|1	$00005AA5
@@ -12837,7 +12837,7 @@ TrackPlay|state|F81 tick 71|1 [orig]	bytes 1538 fnv 2F6DB6E2
 TrackPlay|state|F81 tick 71|1 [fixed #477]	bytes 1538 fnv E74CA78A
 TrackPlay|glue|F81 tick 71|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 71|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 71|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 71|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 71|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 71|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 71|1	$00005AA5
@@ -12847,7 +12847,7 @@ TrackPlay|state|F81 tick 72|1 [orig]	bytes 1538 fnv 07D22401
 TrackPlay|state|F81 tick 72|1 [fixed #477]	bytes 1538 fnv AF554589
 TrackPlay|glue|F81 tick 72|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 72|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 72|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 72|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 72|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 72|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 72|1	$00005AA5
@@ -12857,7 +12857,7 @@ TrackPlay|state|F81 tick 73|1 [orig]	bytes 1538 fnv 9E047390
 TrackPlay|state|F81 tick 73|1 [fixed #477]	bytes 1538 fnv 68AFFC38
 TrackPlay|glue|F81 tick 73|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 73|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 73|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 73|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 73|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 73|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 73|1	$00005AA5
@@ -12867,7 +12867,7 @@ TrackPlay|state|F81 tick 74|1 [orig]	bytes 1538 fnv 7B51863C
 TrackPlay|state|F81 tick 74|1 [fixed #477]	bytes 1538 fnv 48BC20A4
 TrackPlay|glue|F81 tick 74|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 74|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 74|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 74|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 74|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 74|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 74|1	$00005AA5
@@ -12877,7 +12877,7 @@ TrackPlay|state|F81 tick 75|1 [orig]	bytes 1538 fnv 9E34EE89
 TrackPlay|state|F81 tick 75|1 [fixed #477]	bytes 1538 fnv CD6B4DF1
 TrackPlay|glue|F81 tick 75|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 75|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 75|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 75|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 75|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 75|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 75|1	$00005AA5
@@ -12887,7 +12887,7 @@ TrackPlay|state|F81 tick 76|1 [orig]	bytes 1538 fnv 1BB6144A
 TrackPlay|state|F81 tick 76|1 [fixed #477]	bytes 1538 fnv 04A22ED2
 TrackPlay|glue|F81 tick 76|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 76|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 76|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 76|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 76|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 76|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 76|1	$00005AA5
@@ -12897,7 +12897,7 @@ TrackPlay|state|F81 tick 77|1 [orig]	bytes 1538 fnv 87D095BF
 TrackPlay|state|F81 tick 77|1 [fixed #477]	bytes 1538 fnv 90327377
 TrackPlay|glue|F81 tick 77|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 77|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 77|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 77|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 77|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 77|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 77|1	$00005AA5
@@ -12907,7 +12907,7 @@ TrackPlay|state|F81 tick 78|1 [orig]	bytes 1538 fnv C5584AA0
 TrackPlay|state|F81 tick 78|1 [fixed #477]	bytes 1538 fnv 3FB48018
 TrackPlay|glue|F81 tick 78|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 78|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 78|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 78|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 78|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 78|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 78|1	$00005AA5
@@ -12917,7 +12917,7 @@ TrackPlay|state|F81 tick 79|1 [orig]	bytes 1538 fnv 136F23FD
 TrackPlay|state|F81 tick 79|1 [fixed #477]	bytes 1538 fnv 58E63295
 TrackPlay|glue|F81 tick 79|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 79|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 79|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 79|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 79|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 79|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 79|1	$00005AA5
@@ -12927,7 +12927,7 @@ TrackPlay|state|F81 tick 80|1 [orig]	bytes 1538 fnv 82FAE9BE
 TrackPlay|state|F81 tick 80|1 [fixed #477]	bytes 1538 fnv E1DE7916
 TrackPlay|glue|F81 tick 80|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 80|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 80|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 80|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 80|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 80|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 80|1	$00005AA5
@@ -12937,7 +12937,7 @@ TrackPlay|state|F81 tick 81|1 [orig]	bytes 1538 fnv F3102363
 TrackPlay|state|F81 tick 81|1 [fixed #477]	bytes 1538 fnv B441E49B
 TrackPlay|glue|F81 tick 81|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 81|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 81|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 81|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 81|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 81|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 81|1	$00005AA5
@@ -12947,7 +12947,7 @@ TrackPlay|state|F81 tick 82|1 [orig]	bytes 1538 fnv F48D2F87
 TrackPlay|state|F81 tick 82|1 [fixed #477]	bytes 1538 fnv EACBF6FF
 TrackPlay|glue|F81 tick 82|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 82|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 82|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 82|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 82|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 82|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 82|1	$00005AA5
@@ -12957,7 +12957,7 @@ TrackPlay|state|F81 tick 83|1 [orig]	bytes 1538 fnv E0D45C26
 TrackPlay|state|F81 tick 83|1 [fixed #477]	bytes 1538 fnv 56D69EFE
 TrackPlay|glue|F81 tick 83|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 83|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 83|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 83|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 83|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 83|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 83|1	$00005AA5
@@ -12967,7 +12967,7 @@ TrackPlay|state|F81 tick 84|1 [orig]	bytes 1538 fnv 47951665
 TrackPlay|state|F81 tick 84|1 [fixed #477]	bytes 1538 fnv 61252EFD
 TrackPlay|glue|F81 tick 84|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 84|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 84|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 84|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 84|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 84|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 84|1	$00005AA5
@@ -12977,7 +12977,7 @@ TrackPlay|state|F81 tick 85|1 [orig]	bytes 1538 fnv 15077A44
 TrackPlay|state|F81 tick 85|1 [fixed #477]	bytes 1538 fnv AA478EAC
 TrackPlay|glue|F81 tick 85|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 85|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 85|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 85|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 85|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 85|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 85|1	$00005AA5
@@ -12987,7 +12987,7 @@ TrackPlay|state|F81 tick 86|1 [orig]	bytes 1538 fnv 7C8E8E63
 TrackPlay|state|F81 tick 86|1 [fixed #477]	bytes 1538 fnv B93A15AB
 TrackPlay|glue|F81 tick 86|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 86|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 86|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 86|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 86|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 86|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 86|1	$00005AA5
@@ -12997,7 +12997,7 @@ TrackPlay|state|F81 tick 87|1 [orig]	bytes 1538 fnv 37CFCF32
 TrackPlay|state|F81 tick 87|1 [fixed #477]	bytes 1538 fnv 1B64D43A
 TrackPlay|glue|F81 tick 87|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 87|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 87|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 87|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 87|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 87|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 87|1	$00005AA5
@@ -13007,7 +13007,7 @@ TrackPlay|state|F81 tick 88|1 [orig]	bytes 1538 fnv A5CD6E71
 TrackPlay|state|F81 tick 88|1 [fixed #477]	bytes 1538 fnv CDD6E659
 TrackPlay|glue|F81 tick 88|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 88|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 88|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 88|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 88|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 88|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 88|1	$00005AA5
@@ -13017,7 +13017,7 @@ TrackPlay|state|F81 tick 89|1 [orig]	bytes 1538 fnv 1049A9A0
 TrackPlay|state|F81 tick 89|1 [fixed #477]	bytes 1538 fnv 7C3D8828
 TrackPlay|glue|F81 tick 89|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 89|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 89|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 89|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 89|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 89|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 89|1	$00005AA5
@@ -13027,7 +13027,7 @@ TrackPlay|state|F81 tick 90|1 [orig]	bytes 1538 fnv 194CD0AC
 TrackPlay|state|F81 tick 90|1 [fixed #477]	bytes 1538 fnv D676EA94
 TrackPlay|glue|F81 tick 90|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 90|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 90|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 90|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 90|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 90|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 90|1	$00005AA5
@@ -13037,7 +13037,7 @@ TrackPlay|state|F81 tick 91|1 [orig]	bytes 1538 fnv BCB68F59
 TrackPlay|state|F81 tick 91|1 [fixed #477]	bytes 1538 fnv 2F700381
 TrackPlay|glue|F81 tick 91|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 91|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 91|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 91|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 91|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 91|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 91|1	$00005AA5
@@ -13047,7 +13047,7 @@ TrackPlay|state|F81 tick 92|1 [orig]	bytes 1538 fnv 7C0D51FA
 TrackPlay|state|F81 tick 92|1 [fixed #477]	bytes 1538 fnv 0B95D282
 TrackPlay|glue|F81 tick 92|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 92|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 92|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 92|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 92|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 92|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 92|1	$00005AA5
@@ -13057,7 +13057,7 @@ TrackPlay|state|F81 tick 93|1 [orig]	bytes 1538 fnv 6402894F
 TrackPlay|state|F81 tick 93|1 [fixed #477]	bytes 1538 fnv D2974CC7
 TrackPlay|glue|F81 tick 93|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 93|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 93|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 93|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 93|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 93|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 93|1	$00005AA5
@@ -13067,7 +13067,7 @@ TrackPlay|state|F81 tick 94|1 [orig]	bytes 1538 fnv 53131490
 TrackPlay|state|F81 tick 94|1 [fixed #477]	bytes 1538 fnv 53420C08
 TrackPlay|glue|F81 tick 94|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 94|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 94|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 94|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 94|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 94|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 94|1	$00005AA5
@@ -13077,7 +13077,7 @@ TrackPlay|state|F81 tick 95|1 [orig]	bytes 1538 fnv 7573D98D
 TrackPlay|state|F81 tick 95|1 [fixed #477]	bytes 1538 fnv DB7588E5
 TrackPlay|glue|F81 tick 95|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 95|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 95|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 95|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 95|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 95|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 95|1	$00005AA5
@@ -13087,7 +13087,7 @@ TrackPlay|state|F81 tick 96|1 [orig]	bytes 1538 fnv 4E59C06E
 TrackPlay|state|F81 tick 96|1 [fixed #477]	bytes 1538 fnv 4235B6C6
 TrackPlay|glue|F81 tick 96|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 96|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 96|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 96|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 96|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 96|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 96|1	$00005AA5
@@ -13097,7 +13097,7 @@ TrackPlay|state|F81 tick 97|1 [orig]	bytes 1538 fnv A8D86E33
 TrackPlay|state|F81 tick 97|1 [fixed #477]	bytes 1538 fnv 26871AAB
 TrackPlay|glue|F81 tick 97|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 97|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 97|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 97|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 97|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 97|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 97|1	$00005AA5
@@ -13107,7 +13107,7 @@ TrackPlay|state|F81 tick 98|1 [orig]	bytes 1538 fnv DAB72F37
 TrackPlay|state|F81 tick 98|1 [fixed #477]	bytes 1538 fnv C34DB28F
 TrackPlay|glue|F81 tick 98|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 98|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 98|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 98|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 98|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 98|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 98|1	$00005AA5
@@ -13117,7 +13117,7 @@ TrackPlay|state|F81 tick 99|1 [orig]	bytes 1538 fnv 807D1E76
 TrackPlay|state|F81 tick 99|1 [fixed #477]	bytes 1538 fnv D44748AE
 TrackPlay|glue|F81 tick 99|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 99|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 99|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 99|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 99|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 99|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 99|1	$00005AA5
@@ -13127,7 +13127,7 @@ TrackPlay|state|F81 tick 100|1 [orig]	bytes 1538 fnv 3F32FE15
 TrackPlay|state|F81 tick 100|1 [fixed #477]	bytes 1538 fnv C329E48D
 TrackPlay|glue|F81 tick 100|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 100|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 100|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 100|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 100|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 100|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 100|1	$00005AA5
@@ -13137,7 +13137,7 @@ TrackPlay|state|F81 tick 101|1 [orig]	bytes 1538 fnv 770C2FD4
 TrackPlay|state|F81 tick 101|1 [fixed #477]	bytes 1538 fnv CA76A75C
 TrackPlay|glue|F81 tick 101|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 101|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 101|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 101|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 101|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 101|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 101|1	$00005AA5
@@ -13147,7 +13147,7 @@ TrackPlay|state|F81 tick 102|1 [orig]	bytes 1538 fnv F9FF3813
 TrackPlay|state|F81 tick 102|1 [fixed #477]	bytes 1538 fnv F87DB5FB
 TrackPlay|glue|F81 tick 102|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 102|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 102|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 102|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 102|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 102|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 102|1	$00005AA5
@@ -13157,7 +13157,7 @@ TrackPlay|state|F81 tick 103|1 [orig]	bytes 1538 fnv 450442C2
 TrackPlay|state|F81 tick 103|1 [fixed #477]	bytes 1538 fnv 1302BBEA
 TrackPlay|glue|F81 tick 103|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 103|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 103|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 103|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 103|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 103|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 103|1	$00005AA5
@@ -13167,7 +13167,7 @@ TrackPlay|state|F81 tick 104|1 [orig]	bytes 1538 fnv 4029C521
 TrackPlay|state|F81 tick 104|1 [fixed #477]	bytes 1538 fnv E7ACE6A9
 TrackPlay|glue|F81 tick 104|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 104|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 104|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 104|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 104|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 104|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 104|1	$00005AA5
@@ -13177,7 +13177,7 @@ TrackPlay|state|F81 tick 105|1 [orig]	bytes 1538 fnv 724E5F30
 TrackPlay|state|F81 tick 105|1 [fixed #477]	bytes 1538 fnv 53197058
 TrackPlay|glue|F81 tick 105|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 105|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 105|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 105|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 105|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 105|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 105|1	$00005AA5
@@ -13187,7 +13187,7 @@ TrackPlay|state|F81 tick 106|1 [orig]	bytes 1538 fnv 397BE95C
 TrackPlay|state|F81 tick 106|1 [fixed #477]	bytes 1538 fnv 74723504
 TrackPlay|glue|F81 tick 106|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 106|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 106|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 106|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 106|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 106|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 106|1	$00005AA5
@@ -13197,7 +13197,7 @@ TrackPlay|state|F81 tick 107|1 [orig]	bytes 1538 fnv D68C8FA9
 TrackPlay|state|F81 tick 107|1 [fixed #477]	bytes 1538 fnv 8B95B111
 TrackPlay|glue|F81 tick 107|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 107|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 107|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 107|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 107|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 107|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 107|1	$00005AA5
@@ -13207,7 +13207,7 @@ TrackPlay|state|F81 tick 108|1 [orig]	bytes 1538 fnv 476C28AA
 TrackPlay|state|F81 tick 108|1 [fixed #477]	bytes 1538 fnv EF0BA2F2
 TrackPlay|glue|F81 tick 108|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 108|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 108|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 108|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 108|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 108|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 108|1	$00005AA5
@@ -13217,7 +13217,7 @@ TrackPlay|state|F81 tick 109|1 [orig]	bytes 1538 fnv 9D67219F
 TrackPlay|state|F81 tick 109|1 [fixed #477]	bytes 1538 fnv 57DAD257
 TrackPlay|glue|F81 tick 109|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 109|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 109|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 109|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 109|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 109|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 109|1	$00005AA5
@@ -13227,7 +13227,7 @@ TrackPlay|state|F81 tick 110|1 [orig]	bytes 1538 fnv AFC1BEC0
 TrackPlay|state|F81 tick 110|1 [fixed #477]	bytes 1538 fnv 075CDEF8
 TrackPlay|glue|F81 tick 110|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 110|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 110|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 110|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 110|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 110|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 110|1	$00005AA5
@@ -13237,7 +13237,7 @@ TrackPlay|state|F81 tick 111|1 [orig]	bytes 1538 fnv 7805D61D
 TrackPlay|state|F81 tick 111|1 [fixed #477]	bytes 1538 fnv A75D5C35
 TrackPlay|glue|F81 tick 111|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 111|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 111|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 111|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 111|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 111|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 111|1	$00005AA5
@@ -13247,7 +13247,7 @@ TrackPlay|state|F81 tick 112|1 [orig]	bytes 1538 fnv 9891759E
 TrackPlay|state|F81 tick 112|1 [fixed #477]	bytes 1538 fnv 46752B36
 TrackPlay|glue|F81 tick 112|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 112|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 112|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 112|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 112|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 112|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 112|1	$00005AA5
@@ -13257,7 +13257,7 @@ TrackPlay|state|F81 tick 113|1 [orig]	bytes 1538 fnv A498F9C3
 TrackPlay|state|F81 tick 113|1 [fixed #477]	bytes 1538 fnv 65CABAFB
 TrackPlay|glue|F81 tick 113|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 113|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 113|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 113|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 113|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 113|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 113|1	$00005AA5
@@ -13267,7 +13267,7 @@ TrackPlay|state|F81 tick 114|1 [orig]	bytes 1538 fnv BC358E67
 TrackPlay|state|F81 tick 114|1 [fixed #477]	bytes 1538 fnv B27455DF
 TrackPlay|glue|F81 tick 114|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 114|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 114|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 114|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 114|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 114|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 114|1	$00005AA5
@@ -13277,7 +13277,7 @@ TrackPlay|state|F81 tick 115|1 [orig]	bytes 1538 fnv 7C3DAA06
 TrackPlay|state|F81 tick 115|1 [fixed #477]	bytes 1538 fnv 1E7EFDDE
 TrackPlay|glue|F81 tick 115|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 115|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 115|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 115|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 115|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 115|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 115|1	$00005AA5
@@ -13287,7 +13287,7 @@ TrackPlay|state|F81 tick 116|1 [orig]	bytes 1538 fnv 1BDF0205
 TrackPlay|state|F81 tick 116|1 [fixed #477]	bytes 1538 fnv C5BBE11D
 TrackPlay|glue|F81 tick 116|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 116|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 116|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 116|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 116|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 116|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 116|1	$00005AA5
@@ -13297,7 +13297,7 @@ TrackPlay|state|F81 tick 117|1 [orig]	bytes 1538 fnv E95165E4
 TrackPlay|state|F81 tick 117|1 [fixed #477]	bytes 1538 fnv 6871F1CC
 TrackPlay|glue|F81 tick 117|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 117|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 117|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 117|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 117|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 117|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 117|1	$00005AA5
@@ -13307,7 +13307,7 @@ TrackPlay|state|F81 tick 118|1 [orig]	bytes 1538 fnv 2E1764C3
 TrackPlay|state|F81 tick 118|1 [fixed #477]	bytes 1538 fnv 6AC2EC0B
 TrackPlay|glue|F81 tick 118|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 118|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 118|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 118|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 118|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 118|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 118|1	$00005AA5
@@ -13317,7 +13317,7 @@ TrackPlay|state|F81 tick 119|1 [orig]	bytes 1538 fnv 79A56C12
 TrackPlay|state|F81 tick 119|1 [fixed #477]	bytes 1538 fnv 5D3A711A
 TrackPlay|glue|F81 tick 119|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 119|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 119|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 119|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 119|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 119|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 119|1	$00005AA5
@@ -13327,7 +13327,7 @@ TrackPlay|state|F81 tick 120|1 [orig]	bytes 1538 fnv 63F7D191
 TrackPlay|state|F81 tick 120|1 [fixed #477]	bytes 1538 fnv 1C4E0FF9
 TrackPlay|glue|F81 tick 120|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 120|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 120|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 120|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 120|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 120|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 120|1	$00005AA5
@@ -13337,7 +13337,7 @@ TrackPlay|state|F81 tick 121|1 [orig]	bytes 1538 fnv FAB31DC0
 TrackPlay|state|F81 tick 121|1 [fixed #477]	bytes 1538 fnv E0D43A48
 TrackPlay|glue|F81 tick 121|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 121|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 121|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 121|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 121|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 121|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 121|1	$00005AA5
@@ -13347,7 +13347,7 @@ TrackPlay|state|F81 tick 122|1 [orig]	bytes 1538 fnv D77733CC
 TrackPlay|state|F81 tick 122|1 [fixed #477]	bytes 1538 fnv 71E03874
 TrackPlay|glue|F81 tick 122|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 122|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 122|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 122|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 122|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 122|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 122|1	$00005AA5
@@ -13357,7 +13357,7 @@ TrackPlay|state|F81 tick 123|1 [orig]	bytes 1538 fnv 0B2DB8F9
 TrackPlay|state|F81 tick 123|1 [fixed #477]	bytes 1538 fnv 64176CA1
 TrackPlay|glue|F81 tick 123|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 123|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 123|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 123|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 123|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 123|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 123|1	$00005AA5
@@ -13367,7 +13367,7 @@ TrackPlay|state|F81 tick 124|1 [orig]	bytes 1538 fnv 91A3DDDA
 TrackPlay|state|F81 tick 124|1 [fixed #477]	bytes 1538 fnv BA6A79A2
 TrackPlay|glue|F81 tick 124|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 124|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 124|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 124|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 124|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 124|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 124|1	$00005AA5
@@ -13377,7 +13377,7 @@ TrackPlay|state|F81 tick 125|1 [orig]	bytes 1538 fnv FF6BD72F
 TrackPlay|state|F81 tick 125|1 [fixed #477]	bytes 1538 fnv 71B0D2A7
 TrackPlay|glue|F81 tick 125|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 125|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 125|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 125|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 125|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 125|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 125|1	$00005AA5
@@ -13387,7 +13387,7 @@ TrackPlay|state|F81 tick 126|1 [orig]	bytes 1538 fnv 275D0030
 TrackPlay|state|F81 tick 126|1 [fixed #477]	bytes 1538 fnv 1E9AA2E8
 TrackPlay|glue|F81 tick 126|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 126|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 126|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 126|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 126|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 126|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 126|1	$00005AA5
@@ -13397,7 +13397,7 @@ TrackPlay|state|F81 tick 127|1 [orig]	bytes 1538 fnv DA0A8BAD
 TrackPlay|state|F81 tick 127|1 [fixed #477]	bytes 1538 fnv AFBF7485
 TrackPlay|glue|F81 tick 127|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 127|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 127|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 127|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 127|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 127|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 127|1	$00005AA5
@@ -13407,7 +13407,7 @@ TrackPlay|state|F81 tick 128|1 [orig]	bytes 1538 fnv 19B2574E
 TrackPlay|state|F81 tick 128|1 [fixed #477]	bytes 1538 fnv 7A8D57E6
 TrackPlay|glue|F81 tick 128|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 128|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 128|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 128|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 128|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 128|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 128|1	$00005AA5
@@ -13417,7 +13417,7 @@ TrackPlay|state|F81 tick 129|1 [orig]	bytes 1538 fnv 7080CD13
 TrackPlay|state|F81 tick 129|1 [fixed #477]	bytes 1538 fnv D80FF10B
 TrackPlay|glue|F81 tick 129|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 129|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 129|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 129|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 129|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 129|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 129|1	$00005AA5
@@ -13427,7 +13427,7 @@ TrackPlay|state|F81 tick 130|1 [orig]	bytes 1538 fnv F04DBB17
 TrackPlay|state|F81 tick 130|1 [fixed #477]	bytes 1538 fnv 14790B6F
 TrackPlay|glue|F81 tick 130|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 130|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 130|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 130|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 130|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 130|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 130|1	$00005AA5
@@ -13437,7 +13437,7 @@ TrackPlay|state|F81 tick 131|1 [orig]	bytes 1538 fnv C252BB56
 TrackPlay|state|F81 tick 131|1 [fixed #477]	bytes 1538 fnv E9DDD48E
 TrackPlay|glue|F81 tick 131|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 131|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 131|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 131|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 131|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 131|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 131|1	$00005AA5
@@ -13447,7 +13447,7 @@ TrackPlay|state|F81 tick 132|1 [orig]	bytes 1538 fnv 137CE9B5
 TrackPlay|state|F81 tick 132|1 [fixed #477]	bytes 1538 fnv 27C096AD
 TrackPlay|glue|F81 tick 132|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 132|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 132|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 132|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 132|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 132|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 132|1	$00005AA5
@@ -13457,7 +13457,7 @@ TrackPlay|state|F81 tick 133|1 [orig]	bytes 1538 fnv 098428F4
 TrackPlay|state|F81 tick 133|1 [fixed #477]	bytes 1538 fnv 5CEEA07C
 TrackPlay|glue|F81 tick 133|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 133|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 133|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 133|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 133|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 133|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 133|1	$00005AA5
@@ -13467,7 +13467,7 @@ TrackPlay|state|F81 tick 134|1 [orig]	bytes 1538 fnv AD7A22CA
 TrackPlay|state|F81 tick 134|1 [fixed #477]	bytes 1538 fnv DC35582A
 TrackPlay|glue|F81 tick 134|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 134|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 134|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 134|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 134|1 [orig]	bytes 512 fnv 136F7F2A
 TrackPlay|custom|F81 tick 134|1 [fixed #477]	bytes 512 fnv AB82F66E
 TrackPlay|CIA-A PRA filter|F81 tick 134|1	$00000002
@@ -13478,7 +13478,7 @@ TrackPlay|state|F81 tick 135|1 [orig]	bytes 1538 fnv AA318A09
 TrackPlay|state|F81 tick 135|1 [fixed #477]	bytes 1538 fnv 37734289
 TrackPlay|glue|F81 tick 135|1	bytes 28 00000000000000000000000000000000000000000000005C40000000
 TrackPlay|module|F81 tick 135|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 135|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 135|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 135|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 135|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 135|1	$00005AA5
@@ -13488,7 +13488,7 @@ TrackPlay|state|F81 tick 136|1 [orig]	bytes 1538 fnv 38D43002
 TrackPlay|state|F81 tick 136|1 [fixed #477]	bytes 1538 fnv 4B779752
 TrackPlay|glue|F81 tick 136|1	bytes 28 00000000000000000000000000000000000000000000002040000000
 TrackPlay|module|F81 tick 136|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 136|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 136|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 136|1 [orig]	bytes 512 fnv 60394149
 TrackPlay|custom|F81 tick 136|1 [fixed #477]	bytes 512 fnv 54039B2D
 TrackPlay|CIA-A PRA filter|F81 tick 136|1	$00000002
@@ -13499,7 +13499,7 @@ TrackPlay|state|F81 tick 137|1 [orig]	bytes 1538 fnv A89A2CD1
 TrackPlay|state|F81 tick 137|1 [fixed #477]	bytes 1538 fnv 376A59E1
 TrackPlay|glue|F81 tick 137|1	bytes 28 00000000000000000000000000000000000000000000002040000000
 TrackPlay|module|F81 tick 137|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 137|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 137|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 137|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 137|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 137|1	$00005AA5
@@ -13509,7 +13509,7 @@ TrackPlay|state|F81 tick 138|1 [orig]	bytes 1538 fnv D93DA39A
 TrackPlay|state|F81 tick 138|1 [fixed #477]	bytes 1538 fnv 00BC5392
 TrackPlay|glue|F81 tick 138|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F81 tick 138|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 138|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 138|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 138|1 [orig]	bytes 512 fnv 60394149
 TrackPlay|custom|F81 tick 138|1 [fixed #477]	bytes 512 fnv 54039B2D
 TrackPlay|CIA-A PRA filter|F81 tick 138|1	$00000002
@@ -13520,7 +13520,7 @@ TrackPlay|state|F81 tick 139|1 [orig]	bytes 1538 fnv 09315269
 TrackPlay|state|F81 tick 139|1 [fixed #477]	bytes 1538 fnv C16FC241
 TrackPlay|glue|F81 tick 139|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F81 tick 139|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F81 tick 139|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F81 tick 139|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F81 tick 139|1	bytes 512 fnv 149995FD
 TrackPlay|CIA-A PRA filter|F81 tick 139|1	$00000002
 TrackPlay|CIA-B timer A|F81 tick 139|1	$00005AA5
@@ -13530,7 +13530,7 @@ TrackPlay|state|F02 ... F00 tick 0|1 [orig]	bytes 1538 fnv DA753D77
 TrackPlay|state|F02 ... F00 tick 0|1 [fixed #477]	bytes 1538 fnv BE8E1FAF
 TrackPlay|glue|F02 ... F00 tick 0|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 0|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 0|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 0|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 0|1 [orig]	bytes 512 fnv 60394149
 TrackPlay|custom|F02 ... F00 tick 0|1 [fixed #477]	bytes 512 fnv 54039B2D
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 0|1	$00000002
@@ -13541,7 +13541,7 @@ TrackPlay|state|F02 ... F00 tick 1|1 [orig]	bytes 1538 fnv 97AAD7C8
 TrackPlay|state|F02 ... F00 tick 1|1 [fixed #477]	bytes 1538 fnv 0852F000
 TrackPlay|glue|F02 ... F00 tick 1|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 1|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 1|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 1|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 1|1	bytes 512 fnv 328A2FE0
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 1|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 1|1	$00005AA5
@@ -13551,7 +13551,7 @@ TrackPlay|state|F02 ... F00 tick 2|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 2|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 2|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 2|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 2|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 2|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 2|1 [orig]	bytes 512 fnv FA04DBFA
 TrackPlay|custom|F02 ... F00 tick 2|1 [fixed #475]	bytes 512 fnv 8DB13805
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 2|1	$00000002
@@ -13562,7 +13562,7 @@ TrackPlay|state|F02 ... F00 tick 3|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 3|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 3|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 3|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 3|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 3|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 3|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 3|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 3|1	$00005AA5
@@ -13572,7 +13572,7 @@ TrackPlay|state|F02 ... F00 tick 4|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 4|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 4|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 4|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 4|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 4|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 4|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 4|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 4|1	$00005AA5
@@ -13582,7 +13582,7 @@ TrackPlay|state|F02 ... F00 tick 5|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 5|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 5|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 5|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 5|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 5|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 5|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 5|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 5|1	$00005AA5
@@ -13592,7 +13592,7 @@ TrackPlay|state|F02 ... F00 tick 6|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 6|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 6|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 6|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 6|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 6|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 6|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 6|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 6|1	$00005AA5
@@ -13602,7 +13602,7 @@ TrackPlay|state|F02 ... F00 tick 7|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 7|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 7|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 7|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 7|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 7|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 7|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 7|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 7|1	$00005AA5
@@ -13612,7 +13612,7 @@ TrackPlay|state|F02 ... F00 tick 8|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 8|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 8|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 8|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 8|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 8|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 8|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 8|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 8|1	$00005AA5
@@ -13622,7 +13622,7 @@ TrackPlay|state|F02 ... F00 tick 9|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 9|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 9|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 9|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 9|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 9|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 9|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 9|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 9|1	$00005AA5
@@ -13632,7 +13632,7 @@ TrackPlay|state|F02 ... F00 tick 10|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 10|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 10|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 10|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 10|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 10|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 10|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 10|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 10|1	$00005AA5
@@ -13642,7 +13642,7 @@ TrackPlay|state|F02 ... F00 tick 11|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 11|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 11|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 11|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 11|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 11|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 11|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 11|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 11|1	$00005AA5
@@ -13652,7 +13652,7 @@ TrackPlay|state|F02 ... F00 tick 12|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 12|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 12|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 12|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 12|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 12|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 12|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 12|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 12|1	$00005AA5
@@ -13662,7 +13662,7 @@ TrackPlay|state|F02 ... F00 tick 13|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 13|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 13|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 13|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 13|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 13|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 13|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 13|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 13|1	$00005AA5
@@ -13672,7 +13672,7 @@ TrackPlay|state|F02 ... F00 tick 14|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 14|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 14|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 14|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 14|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 14|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 14|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 14|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 14|1	$00005AA5
@@ -13682,7 +13682,7 @@ TrackPlay|state|F02 ... F00 tick 15|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 15|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 15|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 15|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 15|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 15|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 15|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 15|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 15|1	$00005AA5
@@ -13692,7 +13692,7 @@ TrackPlay|state|F02 ... F00 tick 16|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 16|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 16|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 16|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 16|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 16|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 16|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 16|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 16|1	$00005AA5
@@ -13702,7 +13702,7 @@ TrackPlay|state|F02 ... F00 tick 17|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 17|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 17|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 17|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 17|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 17|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 17|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 17|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 17|1	$00005AA5
@@ -13712,7 +13712,7 @@ TrackPlay|state|F02 ... F00 tick 18|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 18|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 18|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 18|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 18|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 18|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 18|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 18|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 18|1	$00005AA5
@@ -13722,7 +13722,7 @@ TrackPlay|state|F02 ... F00 tick 19|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 19|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 19|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 19|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 19|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 19|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 19|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 19|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 19|1	$00005AA5
@@ -13732,7 +13732,7 @@ TrackPlay|state|F02 ... F00 tick 20|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 20|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 20|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 20|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 20|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 20|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 20|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 20|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 20|1	$00005AA5
@@ -13742,7 +13742,7 @@ TrackPlay|state|F02 ... F00 tick 21|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 21|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 21|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 21|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 21|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 21|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 21|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 21|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 21|1	$00005AA5
@@ -13752,7 +13752,7 @@ TrackPlay|state|F02 ... F00 tick 22|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 22|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 22|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 22|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 22|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 22|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 22|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 22|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 22|1	$00005AA5
@@ -13762,7 +13762,7 @@ TrackPlay|state|F02 ... F00 tick 23|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 23|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 23|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 23|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 23|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 23|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 23|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 23|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 23|1	$00005AA5
@@ -13772,7 +13772,7 @@ TrackPlay|state|F02 ... F00 tick 24|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 24|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 24|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 24|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 24|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 24|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 24|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 24|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 24|1	$00005AA5
@@ -13782,7 +13782,7 @@ TrackPlay|state|F02 ... F00 tick 25|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 25|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 25|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 25|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 25|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 25|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 25|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 25|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 25|1	$00005AA5
@@ -13792,7 +13792,7 @@ TrackPlay|state|F02 ... F00 tick 26|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 26|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 26|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 26|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 26|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 26|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 26|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 26|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 26|1	$00005AA5
@@ -13802,7 +13802,7 @@ TrackPlay|state|F02 ... F00 tick 27|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 27|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 27|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 27|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 27|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 27|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 27|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 27|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 27|1	$00005AA5
@@ -13812,7 +13812,7 @@ TrackPlay|state|F02 ... F00 tick 28|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 28|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 28|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 28|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 28|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 28|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 28|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 28|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 28|1	$00005AA5
@@ -13822,7 +13822,7 @@ TrackPlay|state|F02 ... F00 tick 29|1 [orig]	bytes 1538 fnv 29B2BF2F
 TrackPlay|state|F02 ... F00 tick 29|1 [fixed #475]	bytes 1538 fnv A7E86500
 TrackPlay|glue|F02 ... F00 tick 29|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|F02 ... F00 tick 29|1 [orig]	bytes 2224 fnv E0856F6A
-TrackPlay|module|F02 ... F00 tick 29|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackPlay|module|F02 ... F00 tick 29|1 [fixed #477]	bytes 2224 fnv 59310912
 TrackPlay|custom|F02 ... F00 tick 29|1	bytes 512 fnv 3366C1C5
 TrackPlay|CIA-A PRA filter|F02 ... F00 tick 29|1	$00000002
 TrackPlay|CIA-B timer A|F02 ... F00 tick 29|1	$00005AA5
@@ -13832,7 +13832,7 @@ TrackStop|state|$0|2 [orig]	bytes 1538 fnv 29B2BF2F
 TrackStop|state|$0|2 [fixed #475]	bytes 1538 fnv A7E86500
 TrackStop|glue|$0|2	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackStop|module|$0|2 [orig]	bytes 2224 fnv E0856F6A
-TrackStop|module|$0|2 [fixed #477]	bytes 2224 fnv E2AF09D2
+TrackStop|module|$0|2 [fixed #477]	bytes 2224 fnv 59310912
 TrackStop|custom|$0|2	bytes 512 fnv CDF614B4
 TrackStop|CIA-A PRA filter|$0|2	$00000002
 TrackStop|CIA-B timer A|$0|2	$00005AA5
@@ -13842,7 +13842,7 @@ finit|state|$0|1 [orig]	bytes 1538 fnv 95F500B8
 finit|state|$0|1 [fixed #475]	bytes 1538 fnv 26AEA457
 finit|glue|$0|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 finit|module|$0|1 [orig]	bytes 2224 fnv E0856F6A
-finit|module|$0|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+finit|module|$0|1 [fixed #477]	bytes 2224 fnv 59310912
 finit|custom|$0|1	bytes 512 fnv CDF614B4
 finit|CIA-A PRA filter|$0|1	$00000002
 finit|CIA-B timer A|$0|1	$00005AA5
@@ -13852,7 +13852,7 @@ finit (again)|state|$0|1 [orig]	bytes 1538 fnv 95F500B8
 finit (again)|state|$0|1 [fixed #475]	bytes 1538 fnv 26AEA457
 finit (again)|glue|$0|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 finit (again)|module|$0|1 [orig]	bytes 2224 fnv E0856F6A
-finit (again)|module|$0|1 [fixed #477]	bytes 2224 fnv E2AF09D2
+finit (again)|module|$0|1 [fixed #477]	bytes 2224 fnv 59310912
 finit (again)|custom|$0|1	bytes 512 fnv 3366C1C5
 finit (again)|CIA-A PRA filter|$0|1	$00000002
 finit (again)|CIA-B timer A|$0|1	$00005AA5

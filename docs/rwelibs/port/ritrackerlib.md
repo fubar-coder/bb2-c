@@ -146,8 +146,6 @@ pt23f changelog served as the checklist, no code was taken from it):
   samples at its end (#570).
 * A finetune byte above 15 in a sample header makes the period lookups
   read far behind the table (#476).
-* Sample numbers above 31 read behind `mt_SampleStarts` and the sample
-  headers (#480).
 
 ## Fixed
 
@@ -200,6 +198,12 @@ kind F), in the play routine:
   `mt_init` cleared their first longs there; pattern numbers ≥ 128 never
   counted (#477; bug-orig test `pt23a-init-pattern-scan`, library test
   `rwe_ritrackerlib`, the second module's pattern at position 127).
+* `mt_init` sets the sample number of every note above 31 to 0 in the
+  counted patterns (once, instead of a test per note; the module is
+  changed in memory); the original's `mt_PlayVoice` took the start of
+  such a sample from behind `mt_SampleStarts` (32: 0, 33:
+  `mt_SongDataPtr`, …) and its header from the position table and the
+  patterns (#480; bug-orig test `pt23a-samplenum-over-31`).
 
 ## Test
 

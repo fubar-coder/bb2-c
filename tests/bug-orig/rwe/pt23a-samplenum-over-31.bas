@@ -12,6 +12,8 @@
 ; emulator).
 ; Correct: a sample number above 31 sets no new sample - the start stays
 ; the one of sample 1.
+; The same test for ciatrklib: pt23a-samplenum-over-31-ciatrklib.
+; @fixed #480
 ; @rwe ritrackerlib
 ; @pass file=pt.mod|@TESTDATA@/pt23a-samplenum-over-31.mod
 DEFTYPE .l
