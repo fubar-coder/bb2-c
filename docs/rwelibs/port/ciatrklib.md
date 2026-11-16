@@ -172,6 +172,11 @@ kind F):
   reads positions 0–126 (SUBQ for a new maximum, DBRA otherwise; a new
   maximum at 126 reads ~64 KB more); pattern numbers ≥ $80 never count
   (BGT) (#477).
+* `PauseModule` toggles its own state (`pause_status`), which
+  `StartTracker` and `StopTracker` leave as it is: after a pause, the
+  next `PauseModule` only enables playing, so a module started again is
+  not paused and a stopped one plays again (test
+  `ciatrklib-pause-state-kept`, REPRODUCED; issue to be filed).
 * Play routine (Protracker 2.3A): `mt_LowMask` starts as 0 – the first
   1xx/2xx before any E1x/E2x does not slide (#478); 9xx with a note
   applies the offset twice to `n_start`/`n_length` (`mt_SetRegs` calls

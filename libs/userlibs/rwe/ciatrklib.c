@@ -44,6 +44,9 @@
  *     reads positions 0-126 (SUBQ for a new maximum, DBRA otherwise; a
  *     new maximum at 126 reads ~64 KB more), patterns >= $80 never count
  *     (BGT, signed) (#477).
+ *   - PauseModule toggles its own state, which StartTracker and
+ *     StopTracker leave as it is: after a pause the next PauseModule
+ *     only enables playing (test ciatrklib-pause-state-kept).
  *   - Play routine (Protracker 2.3A): mt_LowMask starts as 0, so the
  *     first 1xx/2xx before an E1x/E2x does not slide (#478); the sample
  *     offset (9xx with a note) is applied twice to n_start/n_length
@@ -1861,7 +1864,10 @@ static ULONG BLITZ_ROUTINE getmoduleposition_c(ULONG old BL_REG(d0))
  * @brief PauseModule: pause or continue the playing module.
  *
  * Toggles: the first call stops (mt_end), the next enables playing
- * again.
+ * again.  BUG(orig): StartTracker and StopTracker leave the state as it
+ * is: after a pause the next PauseModule only enables playing (a module
+ * started again is not paused, a stopped one plays again) (test
+ * ciatrklib-pause-state-kept).
  */
 static void BLITZ_ROUTINE pausemodule_c(void)
 {

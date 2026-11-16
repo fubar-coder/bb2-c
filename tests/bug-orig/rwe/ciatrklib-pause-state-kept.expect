@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+loaded -1
+paused -1
+rc=0
