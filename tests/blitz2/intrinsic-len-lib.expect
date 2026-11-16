@@ -1,0 +1,22 @@
+[compile]
+ok
+[run]
+c=Len(a$+b$) 11 calls 2
+c=Len(Left$(a$,2)) 2 calls 2
+c=Len("literal") 7 calls 1
+c=Len(s$(3)) 5 calls 1
+c=Len(ls$()) 4 calls 1
+c=Len(t\name) 5 calls 1
+c=Len(\name) 5 calls 1
+c=Len(v) 3 calls 1
+c=Asc(a$+b$) 104 calls 3
+c=Asc(Mid$(b$,2)) 111 calls 3
+c=Asc("literal") 108 calls 2
+c=Asc(s$(3)) 116 calls 2
+c=Asc(ls$()) 105 calls 2
+c=Asc(t\name) 102 calls 2
+c=Asc(\name) 102 calls 2
+c=Asc(v) 100 calls 2
+empty element 0 -1
+unassigned element 0 -1
+rc=0
