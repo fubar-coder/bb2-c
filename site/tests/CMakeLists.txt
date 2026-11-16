@@ -8,7 +8,8 @@ set(_site_cache ${CMAKE_BINARY_DIR}/site-hugo-cache)
 set(_cases
 	"real|"
 	"missing-anchor|row #421 names the anchor \"no-such-section\", which is no heading"
-	"bad-severity|row #421 has the severity 5, not one of the levels"
+	"bad-levels|the levels are 1,2,3,4, not the five levels 1 to 5"
+	"bad-severity|row #421 has the severity 6, not one of the levels"
 	"unknown-topic|row #421 has the topic \"Cooking\", which is not in the topics list"
 	"duplicate|issue #421 has more than one row"
 	"no-row|issue #999 is linked on [^ ]+ but has no row")

@@ -19,15 +19,17 @@ without reading all the pages of fixed bugs.
 
 {{< fix-overview part="breaking" >}}
 
-## The four levels
+## The five levels
 
-Every fix has one of four levels. The level answers one question: can a
+Every fix has one of five levels. The level answers one question: can a
 program that ran correctly with Blitz Basic 2 behave differently with the
-port?
+port, and how hard is that to notice before it happens? A new runtime
+error ranks above a new compile error, since the compiler shows the one
+at once and the other only comes when the program runs into it.
 
 {{< fix-overview part="levels" >}}
 
-A fix of level 2 or 3 is also described, with an example and what to
+A fix of level 3 or 4 is also described, with an example and what to
 change in a source, on the page
 [Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors" >}}).
 

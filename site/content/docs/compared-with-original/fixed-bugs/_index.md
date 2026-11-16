@@ -27,15 +27,18 @@ way.
 
 ## Changes for existing programs
 
-Six fixes change what an existing program does. The first is in the
-compiler and changes every program that uses the comparison `=<`. The next
-two concern programs that were written to make up for the bug; no known example
-program, demo or game uses the commands this way. The two after them change
-every program that uses the commands with the values named, and the last
-one stops a program that loads a very large picture as a shape. Check
-your own programs (all fixes, sorted by what they can change in a
-program, are in one table on
-[Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})):
+A few fixes change what an existing program does. These are the ones an
+ordinary program meets most easily. The first is in the compiler and
+changes every program that uses the comparison `=<`. The next two concern
+programs that were written to make up for the bug; no known example
+program, demo or game uses the commands this way. The two after them
+change every program that uses the commands with the values named, and
+the last one stops a program that loads a very large picture as a shape.
+Check your own programs. All fixes that can change a program that ran
+correctly, with the ones that only change something you may notice, such
+as its sound, are in the warning box of
+[Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}}),
+and the table there sorts every fix by what it can change in a program:
 
 * [`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}):
   `If a=<b` was true whenever `a` and `b` differed. It is less-or-equal,

@@ -1,15 +1,16 @@
 # A broken data file for the test of the fix overview's check
-# (site/tests/CMakeLists.txt): #421 has the severity 5.
+# (site/tests/CMakeLists.txt): #421 has the severity 6.
 levels:
   - {level: 1, name: One, text: One.}
   - {level: 2, name: Two, text: Two.}
   - {level: 3, name: Three, text: Three.}
   - {level: 4, name: Four, text: Four.}
+  - {level: 5, name: Five, text: Five.}
 topics: [Graphics, Compiler]
 notRows: []
 rows:
   - issue: 421
-    severity: 5
+    severity: 6
     topic: Graphics
     library: polylib
     command: RenderToBitmap

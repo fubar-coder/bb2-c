@@ -20,25 +20,28 @@ runtime error checking unless the text says otherwise.
 
 ## Changes for existing programs
 
-Nineteen of the fixes change what an existing program does. Two of them
-concern programs that were written to make up for the bug, drawing on
-bitmaps; no known example program, demo or game uses these commands this
-way, but a program of your own might. Two concern the custom copper
-instructions of the display library and change every program that uses
-the commands with the values named. Two make `LoadShape` stop with a
-runtime error on pictures it loaded before, and one changes which ARexx
-replies carry a result string. Two give the flags of two serial port
-commands the meaning their help text names, and one turns round what
-`Filter On` and `Filter Off` do with the audio filter. Three concern
-music and speech: `GetMedVolume` no longer silences the channel it
-reads, a tracker module with a pattern break in its last song position
-starts again at its restart position, and `Translate$` returns its
-phonemes without an extra 0 byte. One concerns Blitz code with runtime error
-checking that runs in supervisor mode outside a `SetInt` routine: it
-hangs at its first trap. The last five
-concern tapes of mouse and keyboard events and the keyboard in Blitz
-mode: the one a program meets most easily has a section of its own, the
-other four are listed after it.
+The fixes in this part change the result of a program that ran correctly
+with the original: what it computes, draws or sends, or which way it
+takes. Check your sources for the commands they name.
+
+Two of them concern programs that were written to make up for the bug,
+drawing on bitmaps; no known example program, demo or game uses these
+commands this way, but a program of your own might. `CustomSprites` takes
+its offset in the unit it is documented with, which changes every program
+that gives it an offset other than 0. `LoadShape` stops with a runtime
+error on pictures too large to blit, which it loaded before. `ReplyRexxMsg`
+changes which ARexx replies carry a result string, and two serial port
+commands take the flags their help text names. `GetMedVolume` no longer
+silences the channel it reads, and so no longer gives 0 on the next read,
+and `Translate$` returns its phonemes without an extra 0 byte. Blitz code
+with runtime error checking that runs in supervisor mode outside a
+`SetInt` routine hangs at its first trap. The last one concerns tapes of
+mouse and keyboard events: a simulated event no longer ends a running
+recording or playback.
+
+The fixes that leave a program doing its job, but change something you
+may notice, such as its sound or the events on a tape, follow in
+[Changes you may notice](#noticeable-changes).
 
 ### `RenderToBitmap` with a dither bitmap drew on the wrong bitmap {#rendertobitmap-dither}
 
@@ -114,37 +117,6 @@ the offset in instructions, counted like those of `CustomColors` and
 offset by 16.
 
 Issue: [CustomSprites misused CCOffset as a sprite object number (#324)](https://github.com/fubar-coder/bb2-c/issues/324).
-
-### `CustomColors` with a `thru256flag` of 0 acted as 1 {#customcolors-thru256flag}
-
-A copper wait holds only the lower 8 bits of a line, so a custom
-command at line 256 of the display or below first adds a wait for the
-end of line 255. The last argument of
-`CustomColors CopList#,CCOffset,YPos,Palette,startcol,numcols,thru256flag`
-tells the display library that the colour change itself runs on past
-line 255, as a large AGA palette change can: the custom commands after it
-then add no second wait for line 255.
-
-**What happened.** The original did not read the value of the flag: a
-`thru256flag` of 0 acted as 1. After
-
-```
-InitCopList 0,44,256,3,8,8,20
-CustomColors 0,0,20,0,0,1,0
-CustomColors 0,4,220,0,0,1
-```
-
-the second colour change, at line 264 of the display, had no wait for
-line 255, and the copper made it about 256 lines too early.
-
-**With the port.** A `thru256flag` of 0 is the same as leaving the flag
-out; any other value sets it. The second colour change above gets its
-wait for line 255 and comes at its line.
-
-**What to change.** A program that gives a `thru256flag` of 0 and needs
-the flag set has to give 1.
-
-Issue: [CustomColors ignored the value of thru256flag (#951)](https://github.com/fubar-coder/bb2-c/issues/951).
 
 ### `LoadShape` refuses pictures too large to blit {#loadshape-blit-size}
 
@@ -286,47 +258,6 @@ or leaves the flag out.
 Issues: [WriteSerialString took TrueString and DoIO both from the flag 2 (#254)](https://github.com/fubar-coder/bb2-c/issues/254),
 [ReadSerial waited with the flag 2, not 1 (#255)](https://github.com/fubar-coder/bb2-c/issues/255).
 
-### `Filter On` switched the audio filter off {#filter-on-off}
-
-The Amiga has a low-pass filter on its audio output that softens the
-sound, and `Filter On` and `Filter Off` are meant to switch it on and
-off. The filter is controlled by bit 1 of port A of the CIA-A chip, the
-same bit that sets the power light: a 0 switches the filter on and makes
-the light bright, a 1 switches the filter off and dims the light.
-
-**What happened.** The original had the two the wrong way round: `Filter
-On` set the bit and so switched the filter off, and `Filter Off` switched
-it on. This program reads the bit after each command:
-
-```
-Filter 1 : f1=Peek.b($BFE001) AND 2
-Filter 0 : f0=Peek.b($BFE001) AND 2
-NPrint "filter ",f1," ",f0
-```
-
-**With the original**
-
-```
-filter 2 0
-```
-
-**With the port**
-
-```
-filter 0 2
-```
-
-`Filter On` clears the bit, so the filter is on and the power light
-bright, as the manual says; `Filter Off` sets it.
-
-**What to change.** Every program that uses `Filter` now gets the other
-filter state. A program that was written for the sound of the original,
-with `Filter Off` for a soft sound or `Filter On` for a bright one, swaps
-the two. A program that followed the manual needs no change: it now gets
-the filter it asked for.
-
-Issue: [Filter On switches the audio low-pass filter off (and dims the power LED), Filter Off switches it on (#985)](https://github.com/fubar-coder/bb2-c/issues/985).
-
 ### `GetMedVolume` silenced the channel it read {#getmedvolume-clears}
 
 `GetMedNote`, `GetMedInstr` and `GetMedVolume` tell what a channel of a
@@ -366,35 +297,6 @@ that a new note has started reads `GetMedNote` instead, which still gives
 needs no change.
 
 Issue: [GetMedVolume clears the volume, the channel goes silent (#212)](https://github.com/fubar-coder/bb2-c/issues/212).
-
-### A pattern break in the last song position played on behind the end {#tracker-break-song-end}
-
-A tracker module plays its patterns in the order of its song positions.
-The song length says how many positions the song uses, and after the last
-one the song starts again at its restart position. A pattern break
-(effect D) or a position jump (effect B) ends a pattern early and goes on
-at the next position.
-
-**What happened.** After a D or B in the last song position, the
-original's `PlayModule` compared the next position with a byte of the
-pattern data instead of the song length, and took the restart position
-from the byte after it. So it could miss the end of the song and play
-on into the unused positions behind it, with whatever patterns they
-name. A module with two song
-positions, patterns 0 and 1, a break `D00` in row 16 of pattern 1 and
-pattern 2 in the unused position 2 behind them, plays like this:
-
-| | Positions played |
-|---|---|
-| With the original | 0, 1 (to row 16), 2, and on behind the end |
-| With the port | 0, 1 (to row 16), 0, 1, … |
-
-**What to change.** Nothing for a module that is to loop as it does in
-the tracker: it now loops at its song length, as at the end of a pattern
-without a break. A module that relied on playing on behind its end needs
-a song length that covers all the positions it is to play.
-
-Issue: [After a pattern break or position jump the song end is compared with the wrong byte (#292)](https://github.com/fubar-coder/bb2-c/issues/292).
 
 ### `Translate$` added a 0 byte to its result {#translate-length}
 
@@ -506,6 +408,120 @@ recording or a playback ends it with `Record` or `PlayBack` without a
 tape number.
 
 Issue: [Appending to a tape clears the mode, Record and PlayBack stop (#96)](https://github.com/fubar-coder/bb2-c/issues/96).
+
+## Changes you may notice {#noticeable-changes}
+
+With the fixes in this part, a program that ran correctly with the
+original still does its job, but something differs that you may notice
+and may want to adapt. `CustomColors` with a `thru256flag` of 0 makes the
+next colour change below line 255 of the display at its own line.
+`Filter On` and `Filter Off` switch the audio filter the other way round.
+A tracker module with a pattern break in its last song position loops at
+its song length, and a MED module with more than 8 tracks no longer runs
+the commands of tracks 8 to 11, as a MED player does (in the list of
+[music players](#music-players)). Four smaller changes concern tapes of
+mouse and keyboard events and the keyboard in Blitz mode.
+
+### `CustomColors` with a `thru256flag` of 0 acted as 1 {#customcolors-thru256flag}
+
+A copper wait holds only the lower 8 bits of a line, so a custom
+command at line 256 of the display or below first adds a wait for the
+end of line 255. The last argument of
+`CustomColors CopList#,CCOffset,YPos,Palette,startcol,numcols,thru256flag`
+tells the display library that the colour change itself runs on past
+line 255, as a large AGA palette change can: the custom commands after it
+then add no second wait for line 255.
+
+**What happened.** The original did not read the value of the flag: a
+`thru256flag` of 0 acted as 1. After
+
+```
+InitCopList 0,44,256,3,8,8,20
+CustomColors 0,0,20,0,0,1,0
+CustomColors 0,4,220,0,0,1
+```
+
+the second colour change, at line 264 of the display, had no wait for
+line 255, and the copper made it about 256 lines too early.
+
+**With the port.** A `thru256flag` of 0 is the same as leaving the flag
+out; any other value sets it. The second colour change above gets its
+wait for line 255 and comes at its line.
+
+**What to change.** A program that gives a `thru256flag` of 0 and needs
+the flag set has to give 1.
+
+Issue: [CustomColors ignored the value of thru256flag (#951)](https://github.com/fubar-coder/bb2-c/issues/951).
+
+### `Filter On` switched the audio filter off {#filter-on-off}
+
+The Amiga has a low-pass filter on its audio output that softens the
+sound, and `Filter On` and `Filter Off` are meant to switch it on and
+off. The filter is controlled by bit 1 of port A of the CIA-A chip, the
+same bit that sets the power light: a 0 switches the filter on and makes
+the light bright, a 1 switches the filter off and dims the light.
+
+**What happened.** The original had the two the wrong way round: `Filter
+On` set the bit and so switched the filter off, and `Filter Off` switched
+it on. This program reads the bit after each command:
+
+```
+Filter 1 : f1=Peek.b($BFE001) AND 2
+Filter 0 : f0=Peek.b($BFE001) AND 2
+NPrint "filter ",f1," ",f0
+```
+
+**With the original**
+
+```
+filter 2 0
+```
+
+**With the port**
+
+```
+filter 0 2
+```
+
+`Filter On` clears the bit, so the filter is on and the power light
+bright, as the manual says; `Filter Off` sets it.
+
+**What to change.** Every program that uses `Filter` now gets the other
+filter state. A program that was written for the sound of the original,
+with `Filter Off` for a soft sound or `Filter On` for a bright one, swaps
+the two. A program that followed the manual needs no change: it now gets
+the filter it asked for.
+
+Issue: [Filter On switches the audio low-pass filter off (and dims the power LED), Filter Off switches it on (#985)](https://github.com/fubar-coder/bb2-c/issues/985).
+
+### A pattern break in the last song position played on behind the end {#tracker-break-song-end}
+
+A tracker module plays its patterns in the order of its song positions.
+The song length says how many positions the song uses, and after the last
+one the song starts again at its restart position. A pattern break
+(effect D) or a position jump (effect B) ends a pattern early and goes on
+at the next position.
+
+**What happened.** After a D or B in the last song position, the
+original's `PlayModule` compared the next position with a byte of the
+pattern data instead of the song length, and took the restart position
+from the byte after it. So it could miss the end of the song and play
+on into the unused positions behind it, with whatever patterns they
+name. A module with two song
+positions, patterns 0 and 1, a break `D00` in row 16 of pattern 1 and
+pattern 2 in the unused position 2 behind them, plays like this:
+
+| | Positions played |
+|---|---|
+| With the original | 0, 1 (to row 16), 2, and on behind the end |
+| With the port | 0, 1 (to row 16), 0, 1, … |
+
+**What to change.** Nothing for a module that is to loop as it does in
+the tracker: it now loops at its song length, as at the end of a pattern
+without a break. A module that relied on playing on behind its end needs
+a song length that covers all the positions it is to play.
+
+Issue: [After a pattern break or position jump the song end is compared with the wrong byte (#292)](https://github.com/fubar-coder/bb2-c/issues/292).
 
 ### More changes of tapes and the keyboard {#more-tape-and-keyboard-changes}
 

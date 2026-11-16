@@ -106,7 +106,7 @@ shortcode `fix-overview` (`layouts/_shortcodes/fix-overview.html`) renders
 them, and `assets/js/fix-overview.js` and `assets/css/fix-overview.css`
 add sorting and filters. The file has four parts:
 
-* `levels`: the four severity levels, each with `level` (1-4), `name` and
+* `levels`: the five severity levels, each with `level` (1-5), `name` and
   `text`, shown on the page and in the filter.
 * `topics`: the list of topics a row may have.
 * `notRows`: issues linked on a fixed-bugs page that are not a row of their
@@ -116,8 +116,9 @@ add sorting and filters. The file has four parts:
 
   ```
   - issue: 421
-    severity: 1          # 1 changes correct programs, 2 new compile error,
-                         # 3 new runtime error, 4 fix without side effects
+    severity: 1          # 1 changes results, 2 noticeable change,
+                         # 3 new runtime error, 4 new compile error,
+                         # 5 fix without side effects
     topic: "Graphics"    # one of topics
     library: "polylib"   # the library of the command reference, or
                          # "Compiler" or "TED"
@@ -129,12 +130,20 @@ add sorting and filters. The file has four parts:
   ```
 
   The level answers one question: can a program that ran correctly with
-  the original behave differently with the port? A level-3 sentence names
-  the runtime error in at most five words. Quote every text value.
+  the original behave differently with the port, and how hard is that to
+  notice beforehand? Level 1 is a different result that matters (computed
+  values, file contents, the way through the program, what it draws or
+  prints, or a stop); level 2 a difference a user may notice while the
+  program still does its job (sound, timing, display details, the order
+  or form of output). A new runtime error (3) ranks above a new compile
+  error (4) because it is harder to foresee. The page's warning box shows
+  the rows of levels 1 and 2. A level-3 sentence names the runtime error
+  in at most five words. Quote every text value.
 
 Every fix that gets an entry on a fixed-bugs page also gets its row here.
 The build checks the file (`layouts/_partials/fix-overview/check.html`)
-and fails when a row lacks a field, has an unknown level or topic, names an
+and fails when the levels are not the five levels 1 to 5, when a row lacks
+a field, has an unknown level or topic, names an
 anchor that is no heading of its page, or appears twice, and when an issue
 linked on a fixed-bugs page has no row and is not on `notRows`. A list
 entry under a `###` group heading uses that heading's id as its anchor;

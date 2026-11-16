@@ -75,10 +75,18 @@
   text-align: center;
   font-weight: 600;
 }
+/* The two levels that change correct programs stand out: level 1 in red,
+   level 2 in amber, as the warning box above the table. */
 .fix-overview-level-1 {
-  color: #b45309;
+  color: #b91c1c;
 }
 html.dark .fix-overview-level-1 {
+  color: #f87171;
+}
+.fix-overview-level-2 {
+  color: #b45309;
+}
+html.dark .fix-overview-level-2 {
   color: #fbbf24;
 }
 .fix-overview-library {

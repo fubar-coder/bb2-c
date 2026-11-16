@@ -3,8 +3,8 @@
   the data file the site parameter fixOverviewData names, as a dotted key
   under data/: the test of the check uses it).
 
-    {{< fix-overview part="levels" >}}    the four severity levels, as a list
-    {{< fix-overview part="breaking" >}}  the severity-1 rows in a warning box
+    {{< fix-overview part="levels" >}}    the five severity levels, as a list
+    {{< fix-overview part="breaking" >}}  the rows of levels 1 and 2 in a warning box
     {{< fix-overview part="table" >}}     the table; also runs the check
                                           (layouts/_partials/fix-overview/check.html)
 
@@ -31,12 +31,17 @@
 </ul>
 
 {{- else if eq $part "breaking" -}}
-{{- $items := slice -}}
-{{- range where $rows "severity" 1 -}}
-  {{- $href := relref $.Page (printf "%s/%s#%s" $base .page .anchor) -}}
-  {{- $items = $items | append (printf `<li><a href="%s">%s</a> (<a href="https://github.com/fubar-coder/bb2-c/issues/%v">#%v</a>)</li>` $href (.text | markdownify) .issue .issue) -}}
+{{- $lists := dict -}}
+{{- range slice 1 2 -}}
+  {{- $level := . -}}
+  {{- $items := slice -}}
+  {{- range where $rows "severity" $level -}}
+    {{- $href := relref $.Page (printf "%s/%s#%s" $base .page .anchor) -}}
+    {{- $items = $items | append (printf `<li><a href="%s">%s</a> (<a href="https://github.com/fubar-coder/bb2-c/issues/%v">#%v</a>)</li>` $href (.text | markdownify) .issue .issue) -}}
+  {{- end -}}
+  {{- $lists = merge $lists (dict (string $level) (delimit $items "")) -}}
 {{- end -}}
-{{- $content := printf `<p><strong>These fixes can change a program that ran correctly with Blitz Basic 2.</strong> Check your sources for the commands they name.</p><ul>%s</ul>` (delimit $items "") -}}
+{{- $content := printf `<p><strong>These fixes can change the results of a program that ran correctly with Blitz Basic 2</strong> (level 1). Check your sources for the commands they name.</p><ul>%s</ul><p><strong>With these fixes, such a program still does its job, but you may notice a difference</strong> (level 2).</p><ul>%s</ul>` (index $lists "1") (index $lists "2") -}}
 {{- partial "shortcodes/callout.html" (dict
   "content" ($content | safeHTML)
   "icon" "exclamation"

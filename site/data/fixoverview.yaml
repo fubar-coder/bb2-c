@@ -6,15 +6,18 @@
 
 levels:
   - level: 1
-    name: Changes correct programs
-    text: A program that ran correctly with the original can behave differently. Check your sources for the commands named.
+    name: Changes results
+    text: A program that ran correctly with the original can compute, print, draw or write something else, take another way through its code, or stop. Check your sources for the commands named.
   - level: 2
-    name: New compile error
-    text: The compiler refuses a source that the original accepted, mostly with a wrong or random result.
+    name: Noticeable change
+    text: A program that ran correctly with the original still does its job, but something you may notice differs, such as the sound, a detail of the display or the events on a tape. Check whether your program needs adapting.
   - level: 3
     name: New runtime error
     text: A program that went wrong with the original stops with a runtime error instead, in most cases only with runtime error checking.
   - level: 4
+    name: New compile error
+    text: The compiler refuses a source that the original accepted, mostly with a wrong or random result.
+  - level: 5
     name: Fix without side effects
     text: A crash, hang, leak or wrong result is fixed. A program that never met the bug behaves as before.
 
@@ -38,7 +41,7 @@ notRows: []
 
 rows:
   - issue: 1
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -46,7 +49,7 @@ rows:
     page: compiler
     anchor: inline-assembler
   - issue: 3
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -54,7 +57,7 @@ rows:
     page: running-blitz2
     anchor: loading-the-libraries
   - issue: 6
-    severity: 4
+    severity: 5
     topic: "System"
     library: "rundebuglib"
     command: ""
@@ -62,7 +65,7 @@ rows:
     page: libraries
     anchor: runtime-error-texts
   - issue: 7
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -70,7 +73,7 @@ rows:
     page: compiler
     anchor: names-labels-and-constants
   - issue: 8
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -86,7 +89,7 @@ rows:
     page: compiler
     anchor: less-or-equal
   - issue: 10
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -94,7 +97,7 @@ rows:
     page: compiler
     anchor: float-literals
   - issue: 11
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -102,7 +105,7 @@ rows:
     page: compiler
     anchor: float-literals
   - issue: 13
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -110,7 +113,7 @@ rows:
     page: compiler
     anchor: names-labels-and-constants
   - issue: 14
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Select"
@@ -118,7 +121,7 @@ rows:
     page: compiler
     anchor: the-compilers-memory
   - issue: 15
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Dim"
@@ -126,7 +129,7 @@ rows:
     page: compiler
     anchor: arrays-256
   - issue: 16
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "IncDir"
@@ -134,7 +137,7 @@ rows:
     page: compiler
     anchor: paths-and-include-files
   - issue: 17
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "IncDir, Include, XInclude, IncBin"
@@ -142,7 +145,7 @@ rows:
     page: compiler
     anchor: text-after-path
   - issue: 19
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -150,7 +153,7 @@ rows:
     page: running-blitz2
     anchor: starting-and-ending
   - issue: 20
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -158,7 +161,7 @@ rows:
     page: running-blitz2
     anchor: starting-and-ending
   - issue: 21
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -166,7 +169,7 @@ rows:
     page: running-blitz2
     anchor: starting-and-ending
   - issue: 22
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -174,7 +177,7 @@ rows:
     page: running-blitz2
     anchor: starting-and-ending
   - issue: 23
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "LOAD DEBUG MODULE"
@@ -182,7 +185,7 @@ rows:
     page: running-blitz2
     anchor: the-editors-compiler-menu
   - issue: 25
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "RUN, COMPILE AND RUN"
@@ -190,7 +193,7 @@ rows:
     page: running-blitz2
     anchor: the-editors-compiler-menu
   - issue: 26
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -198,7 +201,7 @@ rows:
     page: running-blitz2
     anchor: starting-and-ending
   - issue: 27
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -206,7 +209,7 @@ rows:
     page: running-blitz2
     anchor: loading-the-libraries
   - issue: 28
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -214,7 +217,7 @@ rows:
     page: running-blitz2
     anchor: loading-the-libraries
   - issue: 29
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "Macro"
@@ -222,7 +225,7 @@ rows:
     page: compiler
     anchor: names-labels-and-constants
   - issue: 30
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "Goto, Gosub, Restore"
@@ -230,7 +233,7 @@ rows:
     page: compiler
     anchor: names-labels-and-constants
   - issue: 31
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "UsePath"
@@ -238,7 +241,7 @@ rows:
     page: compiler
     anchor: paths-and-include-files
   - issue: 34
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -246,7 +249,7 @@ rows:
     page: compiler
     anchor: residents
   - issue: 35
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "NEWTYPE"
@@ -254,7 +257,7 @@ rows:
     page: compiler
     anchor: residents
   - issue: 36
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -262,7 +265,7 @@ rows:
     page: compiler
     anchor: residents
   - issue: 37
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "Dcb"
@@ -270,7 +273,7 @@ rows:
     page: compiler
     anchor: expressions-and-statements
   - issue: 38
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "IncBin"
@@ -278,7 +281,7 @@ rows:
     page: compiler
     anchor: paths-and-include-files
   - issue: 39
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "For"
@@ -286,7 +289,7 @@ rows:
     page: compiler
     anchor: expressions-and-statements
   - issue: 42
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -294,7 +297,7 @@ rows:
     page: compiler
     anchor: the-executable
   - issue: 44
-    severity: 4
+    severity: 5
     topic: "System"
     library: "deflibs"
     command: ""
@@ -302,7 +305,7 @@ rows:
     page: libraries
     anchor: missing-os-library
   - issue: 45
-    severity: 4
+    severity: 5
     topic: "System"
     library: "deflibs"
     command: ""
@@ -310,7 +313,7 @@ rows:
     page: libraries
     anchor: amigaos-other-fixes
   - issue: 46
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "PeekSound"
@@ -326,7 +329,7 @@ rows:
     page: libraries
     anchor: replyrexxmsg-result
   - issue: 49
-    severity: 4
+    severity: 5
     topic: "System"
     library: "arexxlib"
     command: "ClearRexxMsg, FillRexxMsg"
@@ -334,7 +337,7 @@ rows:
     page: libraries
     anchor: arexx
   - issue: 50
-    severity: 4
+    severity: 5
     topic: "System"
     library: "arexxlib"
     command: "FillRexxMsg, ClearRexxMsg"
@@ -350,7 +353,7 @@ rows:
     page: libraries
     anchor: arexx
   - issue: 52
-    severity: 4
+    severity: 5
     topic: "System"
     library: "arexxlib"
     command: "GetRexxCommand, GetResultString"
@@ -358,7 +361,7 @@ rows:
     page: libraries
     anchor: text-after-string-function
   - issue: 53
-    severity: 4
+    severity: 5
     topic: "System"
     library: "arexxlib"
     command: "GetResultString"
@@ -366,7 +369,7 @@ rows:
     page: libraries
     anchor: arexx
   - issue: 55
-    severity: 4
+    severity: 5
     topic: "System"
     library: "arexxlib"
     command: "SendRexxCommand"
@@ -374,7 +377,7 @@ rows:
     page: libraries
     anchor: arexx
   - issue: 56
-    severity: 4
+    severity: 5
     topic: "System"
     library: "arexxlib"
     command: ""
@@ -382,7 +385,7 @@ rows:
     page: libraries
     anchor: arexx
   - issue: 57
-    severity: 4
+    severity: 5
     topic: "System"
     library: "arexxlib"
     command: "CreateArgString"
@@ -398,7 +401,7 @@ rows:
     page: libraries
     anchor: arrays-and-sorting
   - issue: 59
-    severity: 4
+    severity: 5
     topic: "Data structures"
     library: "arrayslib"
     command: "Dim List"
@@ -406,7 +409,7 @@ rows:
     page: libraries
     anchor: lists
   - issue: 60
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "asllib"
     command: "ASLScreenRequest"
@@ -414,7 +417,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 61
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "asllib"
     command: "ASLPathRequest$"
@@ -422,7 +425,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 62
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "asllib"
     command: "ASLFileRequest$, ASLPathRequest$"
@@ -430,7 +433,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 63
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "asllib"
     command: "ASLFileRequest$, ASLPathRequest$"
@@ -438,7 +441,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 64
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "asllib"
     command: "ASLPathRequest$"
@@ -446,7 +449,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 66
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "audiolib"
     command: "SetPeriod"
@@ -454,7 +457,7 @@ rows:
     page: libraries
     anchor: sounds
   - issue: 67
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "audiolib"
     command: "LoadSound, DiskPlay"
@@ -462,7 +465,7 @@ rows:
     page: libraries
     anchor: sounds
   - issue: 68
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "audiolib"
     command: "DecodeSound, LoadSound, InitSound"
@@ -470,7 +473,7 @@ rows:
     page: libraries
     anchor: sounds
   - issue: 69
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "audiolib"
     command: "DiskPlay"
@@ -478,7 +481,7 @@ rows:
     page: libraries
     anchor: sounds
   - issue: 70
-    severity: 4
+    severity: 5
     topic: "System"
     library: "audiolib"
     command: "SetPeriod"
@@ -486,7 +489,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 72
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "banklib"
     command: "LoadBank"
@@ -502,7 +505,7 @@ rows:
     page: libraries
     anchor: bitmaps
   - issue: 76
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "bitmaplib"
     command: "BitMap"
@@ -518,7 +521,7 @@ rows:
     page: libraries
     anchor: bitmaps
   - issue: 79
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "bitmaplib"
     command: "ShapesBitMap"
@@ -526,7 +529,7 @@ rows:
     page: libraries
     anchor: bitmaps
   - issue: 80
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "bitmaplib"
     command: "BitMap"
@@ -534,7 +537,7 @@ rows:
     page: libraries
     anchor: bitmaps
   - issue: 81
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "BoxSelected"
@@ -558,7 +561,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 84
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "AddBox"
@@ -566,7 +569,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 85
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "BoxString"
@@ -574,7 +577,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 87
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "BoxPrint"
@@ -582,7 +585,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 89
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "AddBox"
@@ -590,7 +593,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 90
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "BlitzEvent"
@@ -598,7 +601,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 91
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "BlitzEvent"
@@ -606,7 +609,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 94
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "DeSelectBox, BoxSelected"
@@ -614,7 +617,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 95
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "brexxlib"
     command: "TapeTrap"
@@ -630,7 +633,7 @@ rows:
     page: libraries
     anchor: simulated-event-ends-tape
   - issue: 97
-    severity: 1
+    severity: 2
     topic: "Input"
     library: "brexxlib"
     command: "ClickButton"
@@ -638,7 +641,7 @@ rows:
     page: libraries
     anchor: tapes
   - issue: 98
-    severity: 1
+    severity: 2
     topic: "Input"
     library: "brexxlib"
     command: "RelMouse"
@@ -646,7 +649,7 @@ rows:
     page: libraries
     anchor: tapes
   - issue: 99
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "brexxlib"
     command: "PlayWait"
@@ -654,7 +657,7 @@ rows:
     page: libraries
     anchor: tapes
   - issue: 100
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "brexxlib"
     command: "PlayBack"
@@ -662,7 +665,7 @@ rows:
     page: libraries
     anchor: tapes
   - issue: 101
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "brexxlib"
     command: "LoadTape"
@@ -670,7 +673,7 @@ rows:
     page: libraries
     anchor: tapes
   - issue: 102
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "brexxlib"
     command: "Type"
@@ -678,7 +681,7 @@ rows:
     page: libraries
     anchor: tapes
   - issue: 103
-    severity: 1
+    severity: 2
     topic: "Input"
     library: "brexxlib"
     command: "XStatus"
@@ -686,7 +689,7 @@ rows:
     page: libraries
     anchor: tapes
   - issue: 104
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "brexxlib"
     command: "PlayWait"
@@ -702,7 +705,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 115
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "crunchlib"
     command: "CrMDecrunch"
@@ -710,7 +713,7 @@ rows:
     page: libraries
     anchor: decrunchers
   - issue: 117
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "crunchlib"
     command: "CrMDecrunch"
@@ -718,7 +721,7 @@ rows:
     page: libraries
     anchor: decrunchers
   - issue: 118
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "crunchlib"
     command: "PPDecrunch"
@@ -726,7 +729,7 @@ rows:
     page: libraries
     anchor: decrunchers
   - issue: 120
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "datelib"
     command: "Date$, Days, Months, Years"
@@ -734,7 +737,7 @@ rows:
     page: libraries
     anchor: date-after-leap-year
   - issue: 121
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "datelib"
     command: "WeekDay"
@@ -742,7 +745,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 122
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "datelib"
     command: "NumDays"
@@ -750,7 +753,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 123
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "datelib"
     command: "NumDays"
@@ -758,7 +761,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 124
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "datelib"
     command: "NumDays"
@@ -766,7 +769,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 125
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "datelib"
     command: "NumDays"
@@ -774,7 +777,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 126
-    severity: 4
+    severity: 5
     topic: "System"
     library: "debuglib"
     command: ""
@@ -782,7 +785,7 @@ rows:
     page: libraries
     anchor: debugger-fixes
   - issue: 127
-    severity: 4
+    severity: 5
     topic: "System"
     library: "debuglib"
     command: ""
@@ -790,7 +793,7 @@ rows:
     page: libraries
     anchor: debugger-fixes
   - issue: 128
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "editlib"
     command: "Inkey$"
@@ -798,7 +801,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 129
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "editlib"
     command: "Edit"
@@ -806,7 +809,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 132
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "editlib"
     command: "Edit$, Edit"
@@ -814,7 +817,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 134
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "fadelib"
     command: "FadeIn, FadeOut"
@@ -822,7 +825,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 135
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "fadelib"
     command: "FadeIn, FadeOut"
@@ -830,7 +833,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 138
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "fileiolib"
     command: "OpenFile, ReadFile, WriteFile, Fields"
@@ -838,7 +841,7 @@ rows:
     page: libraries
     anchor: files-and-banks
   - issue: 140
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "fileiolib"
     command: "CloseFile, Fields"
@@ -846,7 +849,7 @@ rows:
     page: libraries
     anchor: files-and-banks
   - issue: 144
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "fileiolib"
     command: "Eof, Loc, Lof"
@@ -854,7 +857,7 @@ rows:
     page: libraries
     anchor: loc-lof-after-eof
   - issue: 146
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "floatquicklib"
     command: ""
@@ -862,7 +865,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 147
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "floatquicklib"
     command: ""
@@ -870,7 +873,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 148
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "fontlib"
     command: "BitMapOutput, Print"
@@ -878,7 +881,7 @@ rows:
     page: libraries
     anchor: umlauts
   - issue: 150
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "fontlib"
     command: "LoadBlitzFont"
@@ -886,7 +889,7 @@ rows:
     page: libraries
     anchor: fonts
   - issue: 153
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -894,7 +897,7 @@ rows:
     page: libraries
     anchor: filerequest-lengths
   - issue: 154
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -902,7 +905,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 156
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -910,7 +913,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 157
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -918,7 +921,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 158
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -926,7 +929,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 159
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -934,7 +937,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 160
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -942,7 +945,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 161
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -950,7 +953,7 @@ rows:
     page: libraries
     anchor: text-after-string-function
   - issue: 163
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gadgetslib"
     command: "Free GadgetList"
@@ -958,7 +961,7 @@ rows:
     page: libraries
     anchor: gadgets
   - issue: 164
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gadgetslib"
     command: "StringGadget, Borders"
@@ -982,7 +985,7 @@ rows:
     page: libraries
     anchor: gadgets
   - issue: 168
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTPalette"
@@ -990,7 +993,7 @@ rows:
     page: libraries
     anchor: gadtools
   - issue: 169
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTCycle, GTMX, GTString, GTScroller, GTSlider, GTListView"
@@ -998,7 +1001,7 @@ rows:
     page: libraries
     anchor: gadtools-values
   - issue: 171
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTButton"
@@ -1006,7 +1009,7 @@ rows:
     page: libraries
     anchor: gadtools
   - issue: 172
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTShape"
@@ -1014,7 +1017,7 @@ rows:
     page: libraries
     anchor: gadtools
   - issue: 173
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTShape"
@@ -1022,7 +1025,7 @@ rows:
     page: libraries
     anchor: gadtools
   - issue: 174
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTCycle, GTMX"
@@ -1030,7 +1033,7 @@ rows:
     page: libraries
     anchor: gadtools
   - issue: 177
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "iffiolib"
     command: ""
@@ -1038,7 +1041,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 179
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "iffiolib"
     command: ""
@@ -1046,7 +1049,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 180
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "iffmakelib"
     command: "SaveBitmap"
@@ -1062,7 +1065,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 183
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "iffmakelib"
     command: "SaveBitmap, SaveScreen, SaveShape"
@@ -1070,7 +1073,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 184
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "iffmakelib"
     command: "SaveBitmap, SaveScreen, SaveShape, SavePalette"
@@ -1078,7 +1081,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 185
-    severity: 4
+    severity: 5
     topic: "System"
     library: "iffmakelib"
     command: "SaveBitmap, SaveScreen, SaveShape, SavePalette"
@@ -1086,7 +1089,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 186
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "ilbmifflib"
     command: "ILBMInfo"
@@ -1102,7 +1105,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 188
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "bitmaplib, screenslib"
     command: "LoadBitMap, LoadScreen"
@@ -1110,7 +1113,7 @@ rows:
     page: libraries
     anchor: bitmaps
   - issue: 189
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "ilbmifflib"
     command: "DecodeILBM"
@@ -1118,7 +1121,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 190
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "ilbmifflib"
     command: "DecodeILBM"
@@ -1126,7 +1129,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 191
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "ilbmifflib"
     command: "DecodeILBM"
@@ -1134,7 +1137,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 192
-    severity: 4
+    severity: 5
     topic: "System"
     library: "ilbmifflib"
     command: ""
@@ -1142,7 +1145,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 193
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "inputoutputlib"
     command: "Inkey$"
@@ -1150,7 +1153,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 197
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "intuifontlib"
     command: "LoadFont"
@@ -1158,7 +1161,7 @@ rows:
     page: libraries
     anchor: loadfont-style
   - issue: 198
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "intuifontlib"
     command: "LoadFont"
@@ -1166,7 +1169,7 @@ rows:
     page: libraries
     anchor: fonts
   - issue: 199
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "lmullib"
     command: ""
@@ -1182,7 +1185,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 201
-    severity: 4
+    severity: 5
     topic: "Data structures"
     library: "linklistlib"
     command: "SortList"
@@ -1190,7 +1193,7 @@ rows:
     page: libraries
     anchor: lists
   - issue: 202
-    severity: 4
+    severity: 5
     topic: "System"
     library: "mathtranslib"
     command: "Sin, Sqr"
@@ -1198,7 +1201,7 @@ rows:
     page: libraries
     anchor: amigaos-other-fixes
   - issue: 203
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
@@ -1206,7 +1209,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 204
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
@@ -1214,7 +1217,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 205
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
@@ -1222,7 +1225,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 206
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
@@ -1230,7 +1233,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 207
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "StartMedModule"
@@ -1238,7 +1241,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 208
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "SetMedMask, PlayMed"
@@ -1246,7 +1249,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 209
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "SetMedMask"
@@ -1262,7 +1265,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 211
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
@@ -1286,7 +1289,7 @@ rows:
     page: libraries
     anchor: other-strings
   - issue: 216
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "menuslib"
     command: "MenuState"
@@ -1294,7 +1297,7 @@ rows:
     page: libraries
     anchor: menus
   - issue: 217
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "menuslib"
     command: "MenuChecked"
@@ -1302,7 +1305,7 @@ rows:
     page: libraries
     anchor: menus
   - issue: 218
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "menuslib"
     command: "ShapeItem, ShapeSub"
@@ -1310,7 +1313,7 @@ rows:
     page: libraries
     anchor: menus
   - issue: 219
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "menuslib"
     command: "MenuItem, SubItem"
@@ -1318,7 +1321,7 @@ rows:
     page: libraries
     anchor: menus
   - issue: 220
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "menuslib"
     command: "SubItem"
@@ -1326,7 +1329,7 @@ rows:
     page: libraries
     anchor: menus
   - issue: 223
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "mouselib"
     command: "Mouse"
@@ -1334,7 +1337,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 224
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "palettelib"
     command: "DecodePalette, FadePalette"
@@ -1342,7 +1345,7 @@ rows:
     page: libraries
     anchor: palette-kickstart-13
   - issue: 225
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "palettelib"
     command: "DecodePalette"
@@ -1350,7 +1353,7 @@ rows:
     page: libraries
     anchor: palettes
   - issue: 226
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "palettelib"
     command: "DecodePalette"
@@ -1358,7 +1361,7 @@ rows:
     page: libraries
     anchor: palettes
   - issue: 227
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "palettelib"
     command: "PaletteRange"
@@ -1366,7 +1369,7 @@ rows:
     page: libraries
     anchor: palettes
   - issue: 228
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "palettelib"
     command: "StopCycle, Cycle"
@@ -1374,7 +1377,7 @@ rows:
     page: libraries
     anchor: palettes
   - issue: 229
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "palettelib"
     command: "InitPalette, PalRGB, AGAPalRGB, CyclePalette, Cycle"
@@ -1382,7 +1385,7 @@ rows:
     page: libraries
     anchor: palettes
   - issue: 233
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "printlib"
     command: "Print, NPrint, Str$"
@@ -1390,7 +1393,7 @@ rows:
     page: libraries
     anchor: quick-print
   - issue: 234
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "printlib"
     command: "Print, NPrint, Str$"
@@ -1398,7 +1401,7 @@ rows:
     page: libraries
     anchor: quick-print
   - issue: 235
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "printlib"
     command: "Format"
@@ -1406,7 +1409,7 @@ rows:
     page: libraries
     anchor: format
   - issue: 236
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "printlib"
     command: "Format"
@@ -1414,7 +1417,7 @@ rows:
     page: libraries
     anchor: format
   - issue: 237
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "printlib"
     command: "Format"
@@ -1422,7 +1425,7 @@ rows:
     page: libraries
     anchor: format
   - issue: 238
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "printlib"
     command: "Format"
@@ -1430,7 +1433,7 @@ rows:
     page: libraries
     anchor: format
   - issue: 241
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "printlib"
     command: "FloatMode, Format"
@@ -1438,7 +1441,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 242
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "printlib"
     command: "Str$, UStr$"
@@ -1454,7 +1457,7 @@ rows:
     page: libraries
     anchor: bitmaps
   - issue: 245
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "rawkeylib"
     command: "BlitzKey"
@@ -1462,7 +1465,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 246
-    severity: 4
+    severity: 5
     topic: "System"
     library: "rundebuglib"
     command: ""
@@ -1470,7 +1473,7 @@ rows:
     page: libraries
     anchor: debugger-fixes
   - issue: 247
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "screenslib"
     command: "Screen, ScreenTags, WbToScreen, FindScreen, ShowBitMap"
@@ -1478,7 +1481,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 248
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "screenslib"
     command: "FindScreen, WbToScreen, CloseScreen"
@@ -1486,7 +1489,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 249
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "screenslib"
     command: "ScreenTags"
@@ -1494,7 +1497,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 250
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "screenslib"
     command: "Screen, ScreenTags"
@@ -1502,7 +1505,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 251
-    severity: 4
+    severity: 5
     topic: "System"
     library: "screenslib"
     command: "Screen"
@@ -1510,7 +1513,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 252
-    severity: 4
+    severity: 5
     topic: "System"
     library: "seriallib"
     command: "CloseSerial, SetSerialBuffer, SetSerialLens, SetSerialParams, SerialEvent"
@@ -1518,7 +1521,7 @@ rows:
     page: libraries
     anchor: serial-port
   - issue: 253
-    severity: 4
+    severity: 5
     topic: "System"
     library: "seriallib"
     command: "ReadSerialMem"
@@ -1542,7 +1545,7 @@ rows:
     page: libraries
     anchor: serial-flags
   - issue: 256
-    severity: 4
+    severity: 5
     topic: "System"
     library: "seriallib"
     command: "ReadSerialString"
@@ -1550,7 +1553,7 @@ rows:
     page: libraries
     anchor: serial-port
   - issue: 258
-    severity: 4
+    severity: 5
     topic: "System"
     library: "seriallib"
     command: "CloseSerial"
@@ -1558,7 +1561,7 @@ rows:
     page: libraries
     anchor: serial-port
   - issue: 259
-    severity: 4
+    severity: 5
     topic: "System"
     library: "seriallib"
     command: "OpenSerial"
@@ -1566,7 +1569,7 @@ rows:
     page: libraries
     anchor: serial-port
   - issue: 260
-    severity: 4
+    severity: 5
     topic: "System"
     library: "seriallib"
     command: "OpenSerial"
@@ -1582,7 +1585,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 265
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapeslib"
     command: "LoadShape"
@@ -1590,7 +1593,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 266
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapeslib"
     command: "LoadShape"
@@ -1598,7 +1601,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 267
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapeslib"
     command: "LoadShapes, DecodeShapes, SaveShapes"
@@ -1606,7 +1609,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 268
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapeslib"
     command: "CopyShape"
@@ -1614,7 +1617,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 269
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapeslib"
     command: "DecodeShapes"
@@ -1622,7 +1625,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 270
-    severity: 4
+    severity: 5
     topic: "System"
     library: "shapeslib"
     command: "DecodeShapes"
@@ -1630,7 +1633,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 271
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapetrixlib"
     command: "XFlip"
@@ -1638,7 +1641,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 273
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapetrixlib"
     command: "Scale"
@@ -1646,7 +1649,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 274
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapetrixlib"
     command: "XFlip, YFlip, Rotate, Scale"
@@ -1654,7 +1657,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 275
-    severity: 4
+    severity: 5
     topic: "Data structures"
     library: "sortlib"
     command: "Sort"
@@ -1662,7 +1665,7 @@ rows:
     page: libraries
     anchor: arrays-and-sorting
   - issue: 276
-    severity: 4
+    severity: 5
     topic: "Data structures"
     library: "sortlib"
     command: "Sort, SortDown"
@@ -1678,7 +1681,7 @@ rows:
     page: libraries
     anchor: translate-length
   - issue: 278
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "speaklib"
     command: ""
@@ -1686,7 +1689,7 @@ rows:
     page: libraries
     anchor: sounds
   - issue: 279
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "speaklib"
     command: "SetVoice"
@@ -1694,7 +1697,7 @@ rows:
     page: libraries
     anchor: sounds
   - issue: 280
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "spriteslib"
     command: "SaveSprites, LoadSprites, SpriteMode"
@@ -1710,7 +1713,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 282
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "spriteslib"
     command: "GetaSprite"
@@ -1718,7 +1721,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 283
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "spriteslib"
     command: "ShowSprite"
@@ -1726,7 +1729,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 284
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "stencillib"
     command: "Stencil"
@@ -1734,7 +1737,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 285
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "stringfunclib"
     command: "Right$, UnRight$"
@@ -1742,7 +1745,7 @@ rows:
     page: libraries
     anchor: other-strings
   - issue: 286
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "stringfunclib"
     command: "Mid$"
@@ -1766,7 +1769,7 @@ rows:
     page: libraries
     anchor: other-strings
   - issue: 289
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "trackerlib"
     command: "PlayModule"
@@ -1774,7 +1777,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 290
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "trackerlib"
     command: "PlayModule"
@@ -1782,7 +1785,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 291
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "trackerlib"
     command: "PlayModule"
@@ -1790,7 +1793,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 292
-    severity: 1
+    severity: 2
     topic: "Sound"
     library: "trackerlib"
     command: "PlayModule"
@@ -1798,7 +1801,7 @@ rows:
     page: libraries
     anchor: tracker-break-song-end
   - issue: 293
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "trackerlib"
     command: "PlayModule"
@@ -1806,7 +1809,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 294
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "trackerlib"
     command: "PlayModule"
@@ -1814,7 +1817,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 295
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "trackerlib"
     command: "PlayModule"
@@ -1822,7 +1825,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 296
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "trackerlib"
     command: "LoadModule"
@@ -1830,7 +1833,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 297
-    severity: 4
+    severity: 5
     topic: "System"
     library: "utillib"
     command: "TaskName$"
@@ -1846,7 +1849,7 @@ rows:
     page: libraries
     anchor: tasks-and-message-ports
   - issue: 299
-    severity: 4
+    severity: 5
     topic: "System"
     library: "utillib"
     command: "DeleteMsgPort"
@@ -1854,7 +1857,7 @@ rows:
     page: libraries
     anchor: tasks-and-message-ports
   - issue: 301
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "vallib"
     command: "Sgn"
@@ -1862,7 +1865,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 302
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "vallib"
     command: "Val"
@@ -1870,7 +1873,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 303
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "vallib"
     command: "Val"
@@ -1878,7 +1881,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 304
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "vallib"
     command: "Val"
@@ -1886,7 +1889,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 305
-    severity: 4
+    severity: 5
     topic: "System"
     library: "wbstartuplib"
     command: ""
@@ -1894,7 +1897,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 306
-    severity: 4
+    severity: 5
     topic: "System"
     library: "wbstartuplib"
     command: ""
@@ -1902,7 +1905,7 @@ rows:
     page: libraries
     anchor: program-start
   - issue: 307
-    severity: 4
+    severity: 5
     topic: "System"
     library: "wbstartuplib"
     command: ""
@@ -1910,7 +1913,7 @@ rows:
     page: libraries
     anchor: program-start
   - issue: 308
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "wbstartuplib"
     command: ""
@@ -1918,7 +1921,7 @@ rows:
     page: libraries
     anchor: program-start
   - issue: 310
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "Menus, MenusOn, MenusOff"
@@ -1926,7 +1929,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 311
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "Event"
@@ -1934,7 +1937,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 312
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "EventQualifier"
@@ -1942,7 +1945,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 313
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "windowslib"
     command: "Qualifier"
@@ -1950,7 +1953,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 314
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "WCls"
@@ -1958,7 +1961,7 @@ rows:
     page: libraries
     anchor: wcls-top-line
   - issue: 315
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "WScroll, WPrintScroll"
@@ -1966,7 +1969,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 316
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "WindowTags"
@@ -1974,7 +1977,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 317
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "WindowTags"
@@ -1982,7 +1985,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 318
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "Window, WindowTags, WTitle"
@@ -1990,7 +1993,7 @@ rows:
     page: libraries
     anchor: window-titles
   - issue: 319
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "Window"
@@ -2006,7 +2009,7 @@ rows:
     page: libraries
     anchor: wsize-wmove
   - issue: 321
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "windowslib"
     command: "Edit$"
@@ -2014,7 +2017,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 322
-    severity: 4
+    severity: 5
     topic: "Windows & screens"
     library: "windowslib"
     command: "CloseWindow"
@@ -2030,7 +2033,7 @@ rows:
     page: libraries
     anchor: customsprites-ccoffset
   - issue: 325
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "Include, XInclude, IncBin, IncDir"
@@ -2046,7 +2049,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 327
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTShape"
@@ -2054,7 +2057,7 @@ rows:
     page: libraries
     anchor: gadtools
   - issue: 328
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTGetAttrs, GTSetAttrs"
@@ -2078,7 +2081,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 334
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "SetMedMask, PlayMed"
@@ -2086,7 +2089,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 335
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -2094,7 +2097,7 @@ rows:
     page: compiler
     anchor: os-commands-end
   - issue: 336
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "Macro"
@@ -2102,7 +2105,7 @@ rows:
     page: compiler
     anchor: macros
   - issue: 337
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -2110,7 +2113,7 @@ rows:
     page: running-blitz2
     anchor: starting-and-ending
   - issue: 340
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2118,7 +2121,7 @@ rows:
     page: editor
     anchor: starting-and-ending
   - issue: 341
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Include, IncDir"
@@ -2126,7 +2129,7 @@ rows:
     page: compiler
     anchor: include-with-device
   - issue: 342
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "IncDir"
@@ -2134,7 +2137,7 @@ rows:
     page: compiler
     anchor: incdir-next-compile
   - issue: 343
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -2142,7 +2145,7 @@ rows:
     page: compiler
     anchor: inline-assembler
   - issue: 344
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -2150,7 +2153,7 @@ rows:
     page: compiler
     anchor: amigaos-call-in-expression
   - issue: 345
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -2158,7 +2161,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 346
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "JOIN"
@@ -2166,7 +2169,7 @@ rows:
     page: editor
     anchor: other-joining-lines
   - issue: 347
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "BLOCK TAB"
@@ -2174,7 +2177,7 @@ rows:
     page: editor
     anchor: blocks
   - issue: 348
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "BLOCK UNTAB"
@@ -2182,7 +2185,7 @@ rows:
     page: editor
     anchor: block-untab
   - issue: 349
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2190,7 +2193,7 @@ rows:
     page: editor
     anchor: blocks
   - issue: 351
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2198,7 +2201,7 @@ rows:
     page: editor
     anchor: small-font-screen
   - issue: 352
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "DEFAULTS"
@@ -2206,7 +2209,7 @@ rows:
     page: editor
     anchor: options
   - issue: 353
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "DELETE LINE"
@@ -2214,7 +2217,7 @@ rows:
     page: editor
     anchor: blocks
   - issue: 354
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "BLOCK TO DISK"
@@ -2222,7 +2225,7 @@ rows:
     page: editor
     anchor: latin1-without-tokenise
   - issue: 355
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "KILL, BLOCK TO DISK, JOIN"
@@ -2230,7 +2233,7 @@ rows:
     page: editor
     anchor: long-lines-and-keywords
   - issue: 356
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "NEW, LOAD"
@@ -2238,7 +2241,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 357
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2246,7 +2249,7 @@ rows:
     page: editor
     anchor: starting-and-ending
   - issue: 358
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "LOAD"
@@ -2254,7 +2257,7 @@ rows:
     page: editor
     anchor: loading-and-saving
   - issue: 359
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2262,7 +2265,7 @@ rows:
     page: editor
     anchor: long-lines-and-keywords
   - issue: 361
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "KILL"
@@ -2270,7 +2273,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 362
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "BLOCK TO DISK, COPY"
@@ -2278,7 +2281,7 @@ rows:
     page: editor
     anchor: latin1-without-tokenise
   - issue: 364
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "JOIN"
@@ -2286,7 +2289,7 @@ rows:
     page: editor
     anchor: other-joining-lines
   - issue: 365
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "JOIN"
@@ -2294,7 +2297,7 @@ rows:
     page: editor
     anchor: other-joining-lines
   - issue: 366
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2302,7 +2305,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 367
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2310,7 +2313,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 368
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "CLI"
@@ -2318,7 +2321,7 @@ rows:
     page: editor
     anchor: starting-and-ending
   - issue: 370
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2326,7 +2329,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 371
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "PRINT"
@@ -2334,7 +2337,7 @@ rows:
     page: editor
     anchor: latin1-without-tokenise
   - issue: 372
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "PRINT"
@@ -2342,7 +2345,7 @@ rows:
     page: editor
     anchor: long-lines-and-keywords
   - issue: 373
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2350,7 +2353,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 374
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "LOAD"
@@ -2358,7 +2361,7 @@ rows:
     page: editor
     anchor: umlauts-in-text-source
   - issue: 375
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "LOAD, BLOCK LOAD"
@@ -2366,7 +2369,7 @@ rows:
     page: editor
     anchor: loading-and-saving
   - issue: 376
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "LOAD"
@@ -2374,7 +2377,7 @@ rows:
     page: editor
     anchor: last-line-not-tokenised
   - issue: 377
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "LOAD"
@@ -2382,7 +2385,7 @@ rows:
     page: editor
     anchor: loading-and-saving
   - issue: 378
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "LOAD"
@@ -2390,7 +2393,7 @@ rows:
     page: editor
     anchor: options
   - issue: 379
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "LOAD"
@@ -2398,7 +2401,7 @@ rows:
     page: editor
     anchor: loading-and-saving
   - issue: 380
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "SAVE"
@@ -2406,7 +2409,7 @@ rows:
     page: editor
     anchor: loading-and-saving
   - issue: 382
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2414,7 +2417,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 383
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "DEFAULTS"
@@ -2422,7 +2425,7 @@ rows:
     page: editor
     anchor: options
   - issue: 384
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "DEFAULTS"
@@ -2430,7 +2433,7 @@ rows:
     page: editor
     anchor: options
   - issue: 385
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "OPTIONS"
@@ -2438,7 +2441,7 @@ rows:
     page: editor
     anchor: tab-stop-zero
   - issue: 386
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2446,7 +2449,7 @@ rows:
     page: editor
     anchor: long-lines-and-keywords
   - issue: 387
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2454,7 +2457,7 @@ rows:
     page: editor
     anchor: starting-and-ending
   - issue: 388
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2462,7 +2465,7 @@ rows:
     page: editor
     anchor: starting-and-ending
   - issue: 389
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -2470,7 +2473,7 @@ rows:
     page: editor
     anchor: starting-and-ending
   - issue: 390
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "2dlib"
     command: "AllocFill"
@@ -2486,7 +2489,7 @@ rows:
     page: libraries
     anchor: box-origin
   - issue: 392
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "2dlib"
     command: "Circle, Circlef"
@@ -2518,7 +2521,7 @@ rows:
     page: libraries
     anchor: drawing-and-polygons
   - issue: 397
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "animlib"
     command: "InitAnim"
@@ -2526,7 +2529,7 @@ rows:
     page: libraries
     anchor: animations
   - issue: 398
-    severity: 4
+    severity: 5
     topic: "System"
     library: "animlib"
     command: "LoadAnim"
@@ -2534,7 +2537,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 399
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "animlib"
     command: "Free Anim"
@@ -2542,7 +2545,7 @@ rows:
     page: libraries
     anchor: animations
   - issue: 400
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "animlib"
     command: "LoadAnim, InitAnim"
@@ -2550,7 +2553,7 @@ rows:
     page: libraries
     anchor: animations
   - issue: 401
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "animlib"
     command: "NextFrame"
@@ -2558,7 +2561,7 @@ rows:
     page: libraries
     anchor: animations
   - issue: 402
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "animlib"
     command: "LoadAnim, InitAnim, NextFrame"
@@ -2566,7 +2569,7 @@ rows:
     page: libraries
     anchor: animations
   - issue: 403
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "asllib"
     command: "ASLFileRequest$, ASLPathRequest$"
@@ -2574,7 +2577,7 @@ rows:
     page: libraries
     anchor: file-requester-fixes
   - issue: 404
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "blitzcoplib"
     command: "CustomCop"
@@ -2582,7 +2585,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 405
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "blitzcoplib"
     command: "CustomCop"
@@ -2590,7 +2593,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 406
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "blitzcoplib"
     command: "CustomCop"
@@ -2598,7 +2601,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 407
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "blitzcoplib"
     command: "Show, ShowF, ShowB, Slice"
@@ -2606,7 +2609,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 408
-    severity: 1
+    severity: 2
     topic: "Input"
     library: "blitzkeyslib"
     command: "BlitzKeys"
@@ -2614,7 +2617,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 409
-    severity: 4
+    severity: 5
     topic: "System"
     library: "dhandlerlib"
     command: ""
@@ -2622,7 +2625,7 @@ rows:
     page: libraries
     anchor: debugger-fixes
   - issue: 411
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "displaylib"
     command: "DisplayBitMap, DisplayScroll"
@@ -2630,7 +2633,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 412
-    severity: 4
+    severity: 5
     topic: "System"
     library: "displaylib"
     command: ""
@@ -2638,7 +2641,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 413
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "displaylib"
     command: "InitCopList, CustomSprites"
@@ -2654,7 +2657,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 415
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "gameiolib"
     command: "Gameb"
@@ -2670,7 +2673,7 @@ rows:
     page: libraries
     anchor: drawing-and-polygons
   - issue: 420
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "polylib"
     command: "RenderPoly"
@@ -2694,7 +2697,7 @@ rows:
     page: libraries
     anchor: drawing-and-polygons
   - issue: 424
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "stringfunclib"
     command: "Replace$"
@@ -2702,7 +2705,7 @@ rows:
     page: libraries
     anchor: text-after-string-function
   - issue: 437
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "ciatrklib"
     command: "GetModuleName$"
@@ -2710,7 +2713,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 449
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "ciatrklib"
     command: "ChangeTrackerVBlank, StartTracker"
@@ -2718,7 +2721,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 451
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "ciatrklib"
     command: "StartTracker"
@@ -2726,7 +2729,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 461
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "neilsreqtoolslib"
     command: "RTEZLoadFile, RTFileRequest"
@@ -2734,7 +2737,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 465
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "neilsreqtoolslib"
     command: "RTEZSaveFile"
@@ -2742,7 +2745,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 468
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "popupwinlib"
     command: "PopUpWindow"
@@ -2750,7 +2753,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 513
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "rianimlib"
     command: "RIAnimInit, RIAnimDepth, RIAnimWidth, RIAnimHeight"
@@ -2758,7 +2761,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 516
-    severity: 4
+    severity: 5
     topic: "System"
     library: "riapplib"
     command: "AddAppIcon"
@@ -2766,7 +2769,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 519
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "riapplib"
     command: "NextAppFile, AppFile"
@@ -2774,7 +2777,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 618
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "ridoslib"
     command: "GetPathName, NextDevice"
@@ -2782,7 +2785,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 670
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "rifxlib"
     command: "ClearBitmap, FadeInBitmap, ZoomyZoom"
@@ -2790,7 +2793,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 743
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "rimisclib"
     command: "ProgPath$, ProgDir$, ProgName$, DefaultFontName"
@@ -2798,7 +2801,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 752
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "rimisclib"
     command: "InitArgParse"
@@ -2806,7 +2809,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 755
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "rimisclib"
     command: "NextArg$"
@@ -2814,7 +2817,7 @@ rows:
     page: libraries
     anchor: nextarg-doubled-quote
   - issue: 783
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "riregistrylib"
     command: "GetLibraryValue$, GetRegistryStringVariable, ParseItemName$, ParseItemValue$"
@@ -2822,7 +2825,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 784
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "rireqlib"
     command: "ReqFileRequest"
@@ -2830,7 +2833,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 795
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "riseriallib"
     command: "SerialReadString"
@@ -2838,7 +2841,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 807
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "rishapeslib"
     command: "LELoadShapes, LECludgeShapes"
@@ -2846,7 +2849,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 883
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "richunkylib"
     command: "ChunkyToPlanar"
@@ -2854,7 +2857,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 886
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "richunkylib"
     command: "ChunkyBitmap"
@@ -2862,7 +2865,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 925
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "risoundlib2"
     command: "CludgeSound"
@@ -2870,7 +2873,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 937
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Dim List"
@@ -2878,7 +2881,7 @@ rows:
     page: compiler
     anchor: list-array-index
   - issue: 939
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -2886,7 +2889,7 @@ rows:
     page: compiler
     anchor: object-numbers-above-32k
   - issue: 940
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "End Statement, End Function, Statement Return, Function Return"
@@ -2894,7 +2897,7 @@ rows:
     page: compiler
     anchor: end-of-procedure
   - issue: 942
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Macro"
@@ -2902,7 +2905,7 @@ rows:
     page: compiler
     anchor: macros
   - issue: 943
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -2910,7 +2913,7 @@ rows:
     page: compiler
     anchor: the-executable
   - issue: 945
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "risoundlib, risoundlib2"
     command: "CludgeSound"
@@ -2918,7 +2921,7 @@ rows:
     page: libraries
     anchor: rwe-other-fixes
   - issue: 949
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "displaylib"
     command: "CustomChunky, DisplaySprite"
@@ -2926,7 +2929,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 950
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "audiolib"
     command: "DiskPlay"
@@ -2934,7 +2937,7 @@ rows:
     page: libraries
     anchor: sounds
   - issue: 951
-    severity: 1
+    severity: 2
     topic: "Graphics"
     library: "displaylib"
     command: "CustomColors"
@@ -2942,7 +2945,7 @@ rows:
     page: libraries
     anchor: customcolors-thru256flag
   - issue: 952
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gadgetslib"
     command: "SelectMode"
@@ -2950,7 +2953,7 @@ rows:
     page: libraries
     anchor: gadgets
   - issue: 953
-    severity: 4
+    severity: 5
     topic: "System"
     library: "shapeslib"
     command: "LoadShapes, SaveShapes, LoadShape"
@@ -2958,7 +2961,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 954
-    severity: 4
+    severity: 5
     topic: "System"
     library: "spriteslib"
     command: "LoadSprites, SaveSprites"
@@ -2966,7 +2969,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 955
-    severity: 4
+    severity: 5
     topic: "System"
     library: "fontlib"
     command: "LoadBlitzFont, BitMapOutput"
@@ -2974,7 +2977,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 956
-    severity: 4
+    severity: 5
     topic: "System"
     library: "memlib"
     command: ""
@@ -2982,7 +2985,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 957
-    severity: 4
+    severity: 5
     topic: "System"
     library: "trackerlib"
     command: "LoadModule"
@@ -2990,7 +2993,7 @@ rows:
     page: libraries
     anchor: runtime-errors-without-the-debugger
   - issue: 958
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -2998,7 +3001,7 @@ rows:
     page: compiler
     anchor: the-executable
   - issue: 959
-    severity: 4
+    severity: 5
     topic: "System"
     library: "execlib"
     command: "CachePreDMA_, CachePostDMA_"
@@ -3006,7 +3009,7 @@ rows:
     page: libraries
     anchor: amigaos-other-fixes
   - issue: 960
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Supervisor_"
@@ -3022,7 +3025,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 962
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTFreeGadget"
@@ -3030,7 +3033,7 @@ rows:
     page: libraries
     anchor: gadtools
   - issue: 964
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "Macro"
@@ -3038,7 +3041,7 @@ rows:
     page: compiler
     anchor: macros
   - issue: 965
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Macro"
@@ -3046,7 +3049,7 @@ rows:
     page: compiler
     anchor: macros
   - issue: 966
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -3054,7 +3057,7 @@ rows:
     page: compiler
     anchor: expressions-and-statements
   - issue: 968
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Macro, End"
@@ -3062,7 +3065,7 @@ rows:
     page: compiler
     anchor: macros
   - issue: 969
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Even, Ds"
@@ -3070,7 +3073,7 @@ rows:
     page: compiler
     anchor: the-executable
   - issue: 970
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -3078,7 +3081,7 @@ rows:
     page: compiler
     anchor: residents
   - issue: 971
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "AddBox"
@@ -3086,7 +3089,7 @@ rows:
     page: compiler
     anchor: expressions-and-statements
   - issue: 972
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -3094,7 +3097,7 @@ rows:
     page: compiler
     anchor: names-labels-and-constants
   - issue: 973
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "NEWTYPE"
@@ -3102,7 +3105,7 @@ rows:
     page: compiler
     anchor: newtypes
   - issue: 974
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "NEWTYPE, SizeOf"
@@ -3110,7 +3113,7 @@ rows:
     page: compiler
     anchor: newtype-defined-later
   - issue: 977
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Goto, Gosub"
@@ -3118,7 +3121,7 @@ rows:
     page: compiler
     anchor: names-labels-and-constants
   - issue: 978
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -3126,7 +3129,7 @@ rows:
     page: compiler
     anchor: byte-compare
   - issue: 979
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "IncBin"
@@ -3134,7 +3137,7 @@ rows:
     page: compiler
     anchor: odd-end
   - issue: 980
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -3142,7 +3145,7 @@ rows:
     page: compiler
     anchor: the-progress-bar-while-compiling
   - issue: 981
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "menuslib"
     command: "MenuTitle, MenuItem, SubItem"
@@ -3150,7 +3153,7 @@ rows:
     page: libraries
     anchor: menus
   - issue: 985
-    severity: 1
+    severity: 2
     topic: "Sound"
     library: "audiolib"
     command: "Filter"
@@ -3158,7 +3161,7 @@ rows:
     page: libraries
     anchor: filter-on-off
   - issue: 986
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "2dlib"
     command: "FloodFill"
@@ -3166,7 +3169,7 @@ rows:
     page: libraries
     anchor: drawing-and-polygons
   - issue: 987
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "polylib"
     command: "ChunkyVlin"
@@ -3182,7 +3185,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 989
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "blitzoslib"
     command: "AddBox, SetBoxTitle, SetBox"
@@ -3190,7 +3193,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 990
-    severity: 4
+    severity: 5
     topic: "Gadgets & menus"
     library: "gtlib"
     command: "GTShape"
@@ -3198,7 +3201,7 @@ rows:
     page: libraries
     anchor: gadtools
   - issue: 993
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -3206,7 +3209,7 @@ rows:
     page: running-blitz2
     anchor: loading-the-libraries
   - issue: 994
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Select"
@@ -3214,7 +3217,7 @@ rows:
     page: compiler
     anchor: the-compilers-memory
   - issue: 995
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Macro"
@@ -3222,7 +3225,7 @@ rows:
     page: compiler
     anchor: residents
   - issue: 997
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -3230,7 +3233,7 @@ rows:
     page: compiler
     anchor: inline-assembler
   - issue: 998
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Used"
@@ -3238,7 +3241,7 @@ rows:
     page: compiler
     anchor: object-numbers-above-32k
   - issue: 999
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "LoadShapes, DecodeShapes, LoadSprites"
@@ -3246,7 +3249,7 @@ rows:
     page: compiler
     anchor: object-numbers-above-32k
   - issue: 1000
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "2dlib"
     command: "Polyf"
@@ -3254,7 +3257,7 @@ rows:
     page: libraries
     anchor: drawing-and-polygons
   - issue: 1001
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "datelib"
     command: "Date$, NumDays"
@@ -3262,7 +3265,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 1002
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "palettelib"
     command: "DecodePalette, LoadPalette"
@@ -3270,7 +3273,7 @@ rows:
     page: libraries
     anchor: palettes
   - issue: 1003
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "vallib"
     command: "QAngle"
@@ -3278,7 +3281,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 1004
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapetrixlib"
     command: "Rotate"
@@ -3286,7 +3289,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 1005
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "JOIN"
@@ -3294,7 +3297,7 @@ rows:
     page: editor
     anchor: join-long-lines
   - issue: 1006
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "DELETE LINE"
@@ -3302,7 +3305,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 1007
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -3310,7 +3313,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 1009
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "LOAD"
@@ -3318,7 +3321,7 @@ rows:
     page: editor
     anchor: low-memory
   - issue: 1010
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "BLOCK LOAD"
@@ -3326,7 +3329,7 @@ rows:
     page: editor
     anchor: blocks
   - issue: 1011
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: ""
@@ -3334,7 +3337,7 @@ rows:
     page: editor
     anchor: long-lines-and-keywords
   - issue: 1012
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "BLOCK LOAD"
@@ -3342,7 +3345,7 @@ rows:
     page: editor
     anchor: blocks
   - issue: 1017
-    severity: 4
+    severity: 5
     topic: "Editor"
     library: "TED"
     command: "PRINT"
@@ -3350,7 +3353,7 @@ rows:
     page: editor
     anchor: print-umlauts
   - issue: 1018
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: ""
@@ -3358,7 +3361,7 @@ rows:
     page: compiler
     anchor: expressions-and-statements
   - issue: 1026
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "fileiolib"
     command: "Exists"
@@ -3366,7 +3369,7 @@ rows:
     page: libraries
     anchor: files-and-banks
   - issue: 1027
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "rimisclib"
     command: "EZRequest, EZRequestArgs"
@@ -3374,7 +3377,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 1028
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "riwbspritelib"
     command: "ChangeWBSprite"
@@ -3382,7 +3385,7 @@ rows:
     page: libraries
     anchor: rwe-text-after-string-function
   - issue: 1029
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "datelib"
     command: "NumDays"
@@ -3390,7 +3393,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 1030
-    severity: 4
+    severity: 5
     topic: "Strings"
     library: "stringfunclib"
     command: "Instr"
@@ -3406,7 +3409,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 1032
-    severity: 4
+    severity: 5
     topic: "Input"
     library: "inputoutputlib"
     command: "PopInput, PopOutput"
@@ -3414,7 +3417,7 @@ rows:
     page: libraries
     anchor: input
   - issue: 1033
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "2dlib, polylib"
     command: "Polyf, BitMapPoly, ChunkyPoly, RenderPoly"
@@ -3422,7 +3425,7 @@ rows:
     page: libraries
     anchor: drawing-and-polygons
   - issue: 1035
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "polylib"
     command: "BitMapPoly, RenderPoly"
@@ -3446,7 +3449,7 @@ rows:
     page: libraries
     anchor: windows-and-screens
   - issue: 1040
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "bitmaplib"
     command: "BitMap"
@@ -3462,7 +3465,7 @@ rows:
     page: libraries
     anchor: tasks-and-message-ports
   - issue: 1042
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "freqlib"
     command: "FileRequest$"
@@ -3478,7 +3481,7 @@ rows:
     page: libraries
     anchor: blitz-mode-boxes
   - issue: 1044
-    severity: 2
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: "Mod"
@@ -3502,7 +3505,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 1048
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "TokeJsr, ALibJsr"
@@ -3510,7 +3513,7 @@ rows:
     page: compiler
     anchor: the-executable
   - issue: 1049
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Mod"
@@ -3518,7 +3521,7 @@ rows:
     page: compiler
     anchor: the-executable
   - issue: 1051
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "displaylib"
     command: "DisplaySprite"
@@ -3526,7 +3529,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 1052
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapeslib"
     command: "LoadShape"
@@ -3534,7 +3537,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 1053
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "bitmaplib, screenslib"
     command: "LoadBitMap, LoadScreen"
@@ -3542,7 +3545,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 1054
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "shapeslib"
     command: "LoadShape"
@@ -3558,7 +3561,7 @@ rows:
     page: libraries
     anchor: loadshape-blit-size
   - issue: 1060
-    severity: 4
+    severity: 5
     topic: "System"
     library: "utillib"
     command: "TaskName$, Wait"
@@ -3566,7 +3569,7 @@ rows:
     page: libraries
     anchor: tasks-and-message-ports
   - issue: 1061
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "GetMedVolume, GetMedNote, GetMedInstr"
@@ -3574,7 +3577,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 1063
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "staticslib"
     command: "Statement, Function"
@@ -3582,7 +3585,7 @@ rows:
     page: compiler
     anchor: newtypes
   - issue: 1045
-    severity: 4
+    severity: 5
     topic: "Graphics"
     library: "bblitlib"
     command: "BBlit, UnBuffer, ShowStencil"
@@ -3590,7 +3593,7 @@ rows:
     page: libraries
     anchor: shapes-and-sprites
   - issue: 1064
-    severity: 4
+    severity: 5
     topic: "Numbers & dates"
     library: "vallib"
     command: "Frac"
@@ -3598,7 +3601,7 @@ rows:
     page: libraries
     anchor: dates-and-numbers
   - issue: 1065
-    severity: 4
+    severity: 5
     topic: "Files"
     library: "bitmaplib, screenslib, shapeslib"
     command: "LoadBitMap, LoadScreen, LoadShape"
@@ -3606,7 +3609,7 @@ rows:
     page: libraries
     anchor: iff-files
   - issue: 1066
-    severity: 4
+    severity: 5
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
@@ -3614,7 +3617,7 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 1067
-    severity: 4
+    severity: 2
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
@@ -3630,7 +3633,7 @@ rows:
     page: libraries
     anchor: supervisor-mode-traps
   - issue: 1070
-    severity: 4
+    severity: 5
     topic: "Compiler"
     library: "Compiler"
     command: "Data"
@@ -3638,7 +3641,7 @@ rows:
     page: compiler
     anchor: expressions-and-statements
   - issue: 1071
-    severity: 4
+    severity: 5
     topic: "System"
     library: "memlib"
     command: ""
