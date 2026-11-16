@@ -881,6 +881,33 @@ build.
       and Volume for every mask (Paula's registers patched to a RAM copy
       as in `systest_tracker`), recorded from the original.
 
+27. **Val, Str$ and Instr (tasks 11.1 to 11.3, 2026-11-16).** C, no
+    assembler; measured in `tests/perf` (cycles per call, main 65066af5
+    -> after, the original in brackets), each step against the
+    disassembly of GCC's code and of the original.
+    - Val (vallib, task 11.1): `doval_c` passed a `struct valstate`
+      (pointer and count) by address to `doval2`, `notneg`, `getdec`,
+      `gethex` and `getbin`, so every character wrote the pointer and
+      the count back to memory, and each of the functions saved
+      d2-d7/a2/a6, because `BLITZ_BASEJSR1/2` declare d2-d7/a2 changed
+      (a call through a6 may be anything). The mathffp calls are
+      `FFPJSR1/2` in vallib: mathffp is a system library and changes
+      d0/d1/a0/a1 only (the original keeps its digits in d5-d7 across
+      SPFlt), so only those are declared. The helpers are
+      `BL_ALWAYS_INLINE` with the pointer and the count as locals, the
+      "-" path takes the one copy of `notneg` and negates after it, the
+      integer part skips the scale (the original computes 10^n there and
+      drops it), and `doval_c` is `BLITZ_ENTRYPOINT` (it saves nothing;
+      the original changes d0-d7 too; editlib, the one library caller,
+      takes a2 and the others as changed). 3138.2 -> 1670.2 (1927.0),
+      0.87 times the original. New library cases (`systest_cmdlibs`,
+      Val): every path of `doval2` with three bytes behind the string
+      (#302 reads it for hex, binary and "-"), the count ending inside a
+      number, and the pairs `[orig]` / `[fixed #304]` (10 and 13
+      fraction digits) and `[orig]` / `[fixed #303]` (40000 characters);
+      recorded from the original, the C build of main gives the same
+      cases.
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

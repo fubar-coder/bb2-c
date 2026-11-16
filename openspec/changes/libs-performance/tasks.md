@@ -85,7 +85,7 @@ The commands still 10 % or more slower than the original after groups 2 to 8 and
 
 The four commands still 10 % or more slower than the original in `perf-analysis/final-table.md`, and SColl again with what groups 2-10 showed (user decision 2026-11-16). Same method: find the cost in the disassembly against the original, C first, assembler only where C stays more than 1-2 % behind; results bit for bit.
 
-- [ ] 11.1 Val (vallib `getdec`: its state in memory, the loop in C; 1.63 times)
+- [x] 11.1 Val (vallib `getdec`: its state in memory, the loop in C; 1.63 times) - done (2026-11-16): C, the state in registers, the mathffp calls declare only d0/d1/a0/a1 changed, `BLITZ_ENTRYPOINT`; 3138.2 -> 1670.2 (original 1927.0), design decision 27
 - [ ] 11.2 Str$ (printlib; 1.20 times)
 - [ ] 11.3 Instr (stringfunclib, the search loop; 1.17 times)
 - [x] 11.4 Volume (audiolib, the mask loop of four passes; 1.37 times) - done (2026-11-16): the four channels unrolled in C, 382.1 -> 204.1 cycles (the original 278.7; design decision 26)

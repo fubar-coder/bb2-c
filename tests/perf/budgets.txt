@@ -84,6 +84,8 @@
 # bgfx.qblit8f: B~T from nine runs on main 1084e416 (18080.0 to 18085.8), 2026-11-16.
 # bgfx.scoll and binput.volume from two runs of tasks 11.5 and 11.4 on main
 # 65066af5 (2026-11-16).
+# bstr.val from two runs of Val in C without memory state (libs-performance
+# task 11.1) on main 65066af5 (2026-11-16): 1670.2 both.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -206,7 +208,7 @@ bstr.mid                     1662     1553.5  r$=Mid$(a$,3,5)
 bstr.left                    1383     1299.0  r$=Left$(a$,5)
 bstr.right                   1572     1495.5  r$=Right$(a$,5)
 bstr.str                     5023     4131.5  r$=Str$(a)
-bstr.val                     3174     1927.0  c=Val(n$)
+bstr.val                     1690     1927.0  c=Val(n$)
 bstr.len                      687      731.0  c=Len(a$)
 bstr.chr                      408      411.0  r$=Chr$(65)
 bstr.asc                      756      797.0  c=Asc(a$)

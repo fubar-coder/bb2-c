@@ -20,13 +20,17 @@
  * unchanged; the original returns with a2 decremented (by 2 resp. 4).
  * The compiler sets a2 before every library call (preplibst: LEA
  * N(a7),a2) and never reads it afterwards; library code relies on a2
- * being preserved (GCC: a2 is callee-saved).
+ * being preserved (GCC: a2 is callee-saved), except Val's caller
+ * editlib, whose ALibJsr takes a2 as changed: Val (BLITZ_ENTRYPOINT)
+ * uses a2 as a free register.
  *
  * Registers: the original changes d0-d7 (Val, Rnd(n)), a0/a1 through
  * mathffp; the entries are the C functions (BLITZ_ALIAS), which keep
  * what the register rule needs (docs/libs/deviations.md, "Register
- * preservation"); Rnd keeps a0/a1, which a caller needs.  The
- * CCR is no result.
+ * preservation"); Rnd keeps a0/a1, which a caller needs.  Val is
+ * BLITZ_ENTRYPOINT: it saves nothing and changes d0-d7/a0-a2 like the
+ * original (its mathffp calls keep d2-d7, see FFPJSR1).  The CCR is no
+ * result.
  *
  * Inline routines (`$a000,len` prefix, copied into the program): QFrac,
  * QWrap, QAbs, VPos, True, False - assembler text, as in the original.
@@ -738,34 +742,69 @@ GENRND
 
 /* ----------------------------------------------------------------- Val */
 
-/* parse state of doval2: a3 (characters), d2 (count, a long: Fixed (#303)), d3 */
-struct valstate {
-    const UBYTE *p;
-    LONG n;
-};
+/* FFPJSR1(ffp, lvo, x0) / FFPJSR2(ffp, lvo, x0, x1) - JSR lvo(a6) of
+   mathffp with d0 = x0 (and d1 = x1), result d0.  mathffp is a system
+   library: it changes d0, d1, a0 and a1 only (the AmigaOS calling
+   convention; the original keeps its digits and its integer part in
+   d5-d7 across the calls), so unlike BLITZ_BASEJSR1/2 only these are
+   declared changed and GCC keeps the parse state in the other
+   registers instead of saving d2-d7/a2/a6.  a6 is an input and stays. */
+#ifndef BL_CODE_MODEL
+#define FFPJSR2(ffp, lvo, x0, x1) ({                                        \
+    register ULONG _d0 __asm("d0") = (x0);                                  \
+    register ULONG _d1 __asm("d1") = (x1);                                  \
+    register const void *_a6 __asm("a6") = (ffp);                           \
+    __asm volatile("jsr %c3(a6)"                                            \
+        : "+d"(_d0), "+d"(_d1) : "a"(_a6), "i"(lvo) : "a0", "a1", "cc");    \
+    _d0; })
+#define FFPJSR1(ffp, lvo, x0) ({                                            \
+    register ULONG _d0 __asm("d0") = (x0);                                  \
+    register const void *_a6 __asm("a6") = (ffp);                           \
+    __asm volatile("jsr %c2(a6)"                                            \
+        : "+d"(_d0) : "a"(_a6), "i"(lvo) : "d1", "a0", "a1", "cc");         \
+    _d0; })
+#else
+#define FFPJSR1(ffp, lvo, x0) BLITZ_BASEJSR1(ffp, lvo, x0)
+#define FFPJSR2(ffp, lvo, x0, x1) BLITZ_BASEJSR2(ffp, lvo, x0, x1)
+#endif
+
+/* The parse state of doval2 is the original's registers as locals of the
+   inline helpers: p = a3 (characters), n = d2 (the count, a long:
+   Fixed (#303)).  doval_c saves nothing (BLITZ_ENTRYPOINT; the original
+   changes d0-d7 as well). */
 
 /* getdec - get a decimal number into d7, 10^ in d6 (both mod 2^32);
-   d3 = the character that ended it (or the last digit's value / 0 if the
-   count ran out).  Only the first `digits` digits count, the others are
-   read and skipped (the fraction: see notneg). */
-static UWORD getdec(struct valstate *s, ULONG *num, ULONG *scale, ULONG digits)
+   returns d3 = the character that ended it (or the last digit's value /
+   0 if the count ran out).  The integer part (frac = 0) does not compute
+   the scale, which only the fraction uses (the original computes it in
+   both and drops the first).  The fraction (frac = 1) counts only the
+   first 9 digits; the others are read and skipped (see notneg). */
+BL_ALWAYS_INLINE UWORD getdec(const UBYTE **pp, LONG *np, ULONG *num,
+                              ULONG *scale, int frac)
 {
-    UWORD ch = 0;
+    const UBYTE *p = *pp;
+    LONG n = *np;
+    UWORD ch = 0, digits = 9;
     ULONG a = 0, m = 1;
 
-    while (--s->n >= 0) {                       /* SUBQ #1,d2:BMI 'done */
-        ch = *s->p++;                           /* MOVE.b (a3)+,d3 */
+    while (--n >= 0) {                          /* SUBQ #1,d2:BMI 'done */
+        ch = *p++;                              /* MOVE.b (a3)+,d3 */
         if (ch < '0' || ch > '9')
             break;
         ch -= '0';
-        if (!digits)
-            continue;
-        digits--;
-        m = (m << 1) + (m << 3);                /* multiply d6 and d7 by ten */
-        a = (a << 1) + (a << 3) + ch;           /* add digit to d7 */
+        if (frac) {
+            if (!digits)
+                continue;
+            digits--;
+            m = (m << 1) + (m << 3);            /* multiply d6 by ten */
+        }
+        a = (a << 1) + (a << 3) + ch;           /* d7 * 10 + digit */
     }
+    *pp = p;
+    *np = n;
     *num = a;
-    *scale = m;
+    if (frac)
+        *scale = m;
     return ch;
 }
 
@@ -777,21 +816,21 @@ static UWORD getdec(struct valstate *s, ULONG *num, ULONG *scale, ULONG digits)
    original takes all of them modulo 2^32: from 10 decimal places on the
    fraction was wrong, from 32 on 10^n mod 2^32 = 0 and it was dropped
    (TST.l d6:BEQ). */
-static ULONG notneg(const void *ffp, struct valstate *s)
+BL_ALWAYS_INLINE ULONG notneg(const void *ffp, const UBYTE *p, LONG n)
 {
     ULONG scale, ipart, x;
     ULONG inum;                                 /* d7: the integer part */
     ULONG frac;                                 /* d7: the fraction digits */
     ULONG fracflt;                              /* d7: the fraction as float */
 
-    if (getdec(s, &inum, &scale, ~0UL) != '.')
-        return BLITZ_BASEJSR1(ffp, LVO_SPFlt, inum); /* that's it! */
-    ipart = BLITZ_BASEJSR1(ffp, LVO_SPFlt, inum);
-    getdec(s, &frac, &scale, 9);                /* (scale is never 0 now) */
-    x =BLITZ_BASEJSR1(ffp, LVO_SPFlt, scale);  /* divisor to float */
-    fracflt = BLITZ_BASEJSR1(ffp, LVO_SPFlt, frac); /* fraction to float */
-    x = BLITZ_BASEJSR2(ffp, LVO_SPDiv, fracflt, x);
-    return BLITZ_BASEJSR2(ffp, LVO_SPAdd, x, ipart);
+    if (getdec(&p, &n, &inum, &scale, 0) != '.')
+        return FFPJSR1(ffp, LVO_SPFlt, inum);   /* that's it! */
+    ipart = FFPJSR1(ffp, LVO_SPFlt, inum);
+    getdec(&p, &n, &frac, &scale, 1);           /* (scale is never 0 now) */
+    x = FFPJSR1(ffp, LVO_SPFlt, scale);         /* divisor to float */
+    fracflt = FFPJSR1(ffp, LVO_SPFlt, frac);    /* fraction to float */
+    x = FFPJSR2(ffp, LVO_SPDiv, fracflt, x);
+    return FFPJSR2(ffp, LVO_SPAdd, x, ipart);
 }
 
 /* gethex - "$" and hex digits (0-9, A-F, a-f), byte arithmetic as in the
@@ -799,14 +838,14 @@ static ULONG notneg(const void *ffp, struct valstate *s)
    one byte behind the string is read: BUG(orig) (#302).  In compiled programs
    that byte is the terminating 0 of the string argument (tested:
    Val(Left$("$123",2)) = 1), so it has no visible effect there. */
-static ULONG gethex(const void *ffp, struct valstate *s)
+BL_ALWAYS_INLINE ULONG gethex(const void *ffp, const UBYTE *p, LONG n)
 {
     ULONG v = 0;
     UBYTE c;
 
-    s->p++;
-    while (--s->n != -1) {                      /* inhx: DBRA d2,nxhx */
-        c = *s->p++ - 48;                       /* SUB.b #48,d1:BMI dunhx */
+    p++;
+    while (--n != -1) {                         /* inhx: DBRA d2,nxhx */
+        c = *p++ - 48;                          /* SUB.b #48,d1:BMI dunhx */
         if ((BYTE)c < 0)
             break;
         if (c >= 10) {                          /* CMP.b #10,d1:BCS gotdd */
@@ -822,67 +861,40 @@ static ULONG gethex(const void *ffp, struct valstate *s)
         }
         v = (v << 4) + c;                       /* gotdd: ASL.l #4,d0:ADD.b d1,d0 */
     }
-    return BLITZ_BASEJSR1(ffp, LVO_SPFlt, v);   /* dunhx */
+    return FFPJSR1(ffp, LVO_SPFlt, v);          /* dunhx */
 }
 
 /* getbin - "%" and binary digits; count as gethex (BUG(orig) (#302): one byte
    behind the string is read, normally the terminating 0).  ADD.b #255,d1 sets X for "1" and ends the
    number (BGT) for characters above "1". */
-static ULONG getbin(const void *ffp, struct valstate *s)
+BL_ALWAYS_INLINE ULONG getbin(const void *ffp, const UBYTE *p, LONG n)
 {
     ULONG v = 0;
     UBYTE c;
 
-    s->p++;
-    while (--s->n != -1) {                      /* inbin: DBRA d2,nxbin */
-        c = *s->p++ - '0';                      /* SUB.b d3,d1:BMI dunbin */
+    p++;
+    while (--n != -1) {                         /* inbin: DBRA d2,nxbin */
+        c = *p++ - '0';                         /* SUB.b d3,d1:BMI dunbin */
         if ((BYTE)c < 0 || c >= 2)              /* ADD.b #255,d1:BGT dunbin */
             break;
         v = v << 1 | c;                         /* ROXL.l #1,d0 */
     }
-    return BLITZ_BASEJSR1(ffp, LVO_SPFlt, v);
-}
-
-/* doval2 - calc val of string: leading spaces skipped, then "$" hex, "%"
-   binary, "-" negative (SPNeg), else decimal.  The count is the whole
-   length.  Fixed (#303): the original counts the low WORD of the length
-   (SUBQ #1,d2:BMI): lengths 32769..65536 gave 0, longer ones counted mod
-   65536.
-   BUG(orig) (#302): after "-" the count is not decremented, so one byte behind
-   the string is read (normally the terminating 0: Val(Left$("-12",2)) =
-   -1 in the tests). */
-static ULONG doval2(const void *ffp, struct valstate *s)
-{
-    for (;;) {                                  /* remove leading spaces... */
-        if (--s->n < 0)
-            return 0;
-        if (*s->p++ != ' ')
-            break;
-    }
-    s->n++;
-    s->p--;
-    if (*s->p == '$')
-        return gethex(ffp, s);
-    if (*s->p == '%')
-        return getbin(ffp, s);
-    if (*s->p == '-') {
-        s->p++;
-        return BLITZ_BASEJSR1(ffp, LVO_SPNeg, notneg(ffp, s));
-    }
-    return notneg(ffp, s);
+    return FFPJSR1(ffp, LVO_SPFlt, v);
 }
 
 /**
  * @brief Val(String$) - the numeric value of a string, as a float.
  *
- * Leading spaces skipped, then "$" hex, "%" binary, "-" negative, else
- * decimal with an optional fraction (doval2).  MOVE.l d0,a3: a3 = the
- * string afterwards (frees the work area).
+ * doval2: leading spaces skipped, then "$" hex, "%" binary, "-" negative
+ * (SPNeg), else decimal with an optional fraction.  MOVE.l d0,a3: a3 =
+ * the string afterwards (frees the work area).
  *
  * BUG(orig) (#302): hex, binary and negative numbers read one byte behind
- * the string (normally its terminating 0).  Fixed (#303): the length is
- * used as a long (the original used its low word: lengths 32769..65536
- * gave 0).  Fixed (#304): only the first 9 fraction digits count (the
+ * the string (normally its terminating 0; after "-" the count is not
+ * decremented: Val(Left$("-12",2)) = -1 in the tests).  Fixed (#303):
+ * the length is used as a long (the original counted its low word
+ * (SUBQ #1,d2:BMI): lengths 32769..65536 gave 0, longer ones counted mod
+ * 65536).  Fixed (#304): only the first 9 fraction digits count (the
  * original took them all modulo 2^32: wrong from 10 decimal places on,
  * dropped from 32 on).
  *
@@ -891,15 +903,33 @@ static ULONG doval2(const void *ffp, struct valstate *s)
  * @param args a2: the argument stack, -4 = the string length (long)
  * @return d0: the value (FFP), 0 for an empty string
  */
-static ULONG BLITZ_ROUTINE doval_c(UBYTE *str BL_REG(d0), const void *ffp BL_REG(a6),
-                                   const UBYTE *args BL_REG(a2))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE doval_c(UBYTE *str BL_REG(d0),
+                                                    const void *ffp BL_REG(a6),
+                                                    const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
-    struct valstate s;
+    const UBYTE *p = str;
+    LONG n = (LONG)BL_POPL(sp);                 /* MOVE.l -(a2),d2: a long (#303) */
+    ULONG v;
+    int neg;
 
-    s.p = str;
-    s.n = (LONG)BL_POPL(sp);                    /* MOVE.l -(a2),d2: a long (#303) */
     blitz_string = str;
-    return doval2(ffp, &s);
+    for (;;) {                                  /* remove leading spaces... */
+        if (--n < 0)
+            return 0;
+        if (*p++ != ' ')
+            break;
+    }
+    n++;
+    p--;
+    if (*p == '$')
+        return gethex(ffp, p, n);
+    if (*p == '%')
+        return getbin(ffp, p, n);
+    neg = *p == '-';                            /* (one copy of notneg) */
+    v = notneg(ffp, p + neg, n);
+    if (neg)
+        v = FFPJSR1(ffp, LVO_SPNeg, v);
+    return v;
 }
-BLITZ_ALIAS(doval, doval_c);
+BLITZ_ALIAS_EP(doval, doval_c);

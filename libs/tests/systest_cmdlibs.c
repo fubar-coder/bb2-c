@@ -3,7 +3,7 @@
  *   memacclib, sortlib, mathtranslib, utillib, environlib, and the small
  *   entries of vallib, scrolllib, gameiolib, mouselib, collslib,
  *   shapeslib, fontlib, windowslib and blitzkeyslib; the rectangle tests
- *   of collslib, Frac, BlitzKey and Inkey$ (editlib), Print on a bitmap
+ *   of collslib, Frac, Val, BlitzKey and Inkey$ (editlib), Print on a bitmap
  *   (printlib, fontlib)
  * (plus memlib and strcomplib, which they call) on the Amiga: one set (the
  * original from acidlibs or the C build, as LIBSET says), observed as
@@ -1059,6 +1059,70 @@ static void test_frac(void)
         frac_case(ints[i].type, ints[i].v);
 }
 
+/* ------------------------------------------------------------------ Val */
+
+/* Val(String$): d0 = the string, its length at -4(a2), a6 = mathffp.
+   Every path of doval2: leading spaces, decimal with and without a
+   fraction, "$" hex, "%" binary, "-", the end of the count in each loop,
+   characters that end a number, integer overflow (mod 2^32).  The byte
+   behind the string is set (`trail`): hex, binary and negative numbers
+   read it (#302, open), the others must not.  Two fixed bugs are pairs
+   [orig] / [fixed #N]: more than 9 fraction digits (#304) and a length
+   above 32768 (#303). */
+static ULONG valframe[1];
+static UBYTE valbuf[40002];
+
+static void val_case(const char *desc, const char *s, ULONG len, UBYTE trail)
+{
+    if (s)
+        memcpy(valbuf, s, len);
+    valbuf[len] = trail;
+    sprintf(VEC, "%s trail $%02X", desc, trail);
+    valframe[0] = len;
+    DO1(N("vallib", "Val", 0), R.d[0] = (ULONG)valbuf; R.a[2] = (ULONG)&valframe[1];
+        R.a[6] = ffpbase);
+    OBS("d0", R.d[0]);
+    OBS("a3 - string", R.a[3] - (ULONG)valbuf);
+}
+
+static void test_val(void)
+{
+    static const char *strs[] = {
+        "", " ", "   ", "0", "7", "12345", "  42", " 9 ", "4294967295", "4294967296",
+        "99999999999", "2147483648", "12a", "1e5", "+5", "1.5", "3.14159", ".5", "12.",
+        ".", "0.000001", "1.123456789", "123.456.7", "1. 5", "-12", "-.25", "- 3",
+        "--1", "-", "-0", "$1aF", "$FFFFFFFF", "$123456789", "$", "$g", "$G1", "$@",
+        "$/", "$fF0", "%1011", "%", "%2", "%10102", "%11111111111111111111111111111111",
+        "-$10", "-%1", " $A", " %1", "\t5", "5\t", "0123", "00.0100" };
+    static const UBYTE trails[] = { 0, '9', '.' };
+    unsigned i, j;
+    char d[64];
+
+    ROUT = "Val";
+    for (i = 0; i < sizeof strs / sizeof strs[0]; i++)
+        for (j = 0; j < sizeof trails / sizeof trails[0]; j++) {
+            sprintf(d, "\"%s\"", strs[i]);
+            val_case(d, strs[i], strlen(strs[i]), trails[j]);
+        }
+    /* the count ends inside a number: the first characters of a longer
+       string (the rest is the byte behind and must not count) */
+    val_case("\"12345\" length 3", "12345", 3, '4');
+    val_case("\"1.25\" length 3", "1.25", 3, '5');
+    val_case("\"$12\" length 2", "$12", 2, '2');
+    val_case("\"%11\" length 2", "%11", 2, '1');
+    val_case("\"-12\" length 2", "-12", 2, '2');
+    /* #304: 10 and 13 fraction digits */
+    val_case("\"0.1234567891\"", "0.1234567891", 12, 0);
+    val_case("\"2.0000000001234\"", "2.0000000001234", 15, 0);
+    /* #303: 40000 characters (the original counts the low word, $9C40,
+       which is negative: 0) */
+    memset(valbuf, '7', 40000);
+    val_case("40000 x \"7\"", NULL, 40000, 0);
+    memset(valbuf, ' ', 39999);
+    valbuf[39999] = '3';
+    val_case("39999 spaces and \"3\"", NULL, 40000, 0);
+}
+
 /* ------------------------------------------- BlitzKey, Inkey$ */
 
 /* keyboard.device as blitzkeyslib reads it, a copy in the test's memory:
@@ -1378,6 +1442,8 @@ int main(int argc, char **argv)
     KEEPS_FUNCTION("SpritesHit", none);
     KEEPS_FUNCTION("RectsHit", none);
     KEEPS_FUNCTION("Frac", none);
+    /* Val leaves a3 at the string (MOVE.l d0,a3), the a3 case */
+    KEEPS_STRFUNCTION("Val", none);
     KEEPS("rawkeylib init", none);
     KEEPS("rawkeylib finit", none);
     KEEPS("blitzkeyslib init", d2-d7|a2-a3|a6);
@@ -1418,6 +1484,7 @@ int main(int argc, char **argv)
     test_audiolib();
     test_hits();
     test_frac();
+    test_val();
     test_keys();
     test_print();
 

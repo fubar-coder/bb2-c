@@ -7440,6 +7440,670 @@ Frac|d0|type 3 value $7FFFFFFF|1	$00000000
 Frac|kept|type 3 value $80000000|1	kept
 Frac|popped|type 3 value $80000000|1	$00000000
 Frac|d0|type 3 value $80000000|1	$00000000
+Val|kept|"" trail $00|1	kept
+Val|popped|"" trail $00|1	$00000000
+Val|d0|"" trail $00|1	$00000000
+Val|a3 - string|"" trail $00|1	$00000000
+Val|kept|"" trail $39|1	kept
+Val|popped|"" trail $39|1	$00000000
+Val|d0|"" trail $39|1	$00000000
+Val|a3 - string|"" trail $39|1	$00000000
+Val|kept|"" trail $2E|1	kept
+Val|popped|"" trail $2E|1	$00000000
+Val|d0|"" trail $2E|1	$00000000
+Val|a3 - string|"" trail $2E|1	$00000000
+Val|kept|" " trail $00|1	kept
+Val|popped|" " trail $00|1	$00000000
+Val|d0|" " trail $00|1	$00000000
+Val|a3 - string|" " trail $00|1	$00000000
+Val|kept|" " trail $39|1	kept
+Val|popped|" " trail $39|1	$00000000
+Val|d0|" " trail $39|1	$00000000
+Val|a3 - string|" " trail $39|1	$00000000
+Val|kept|" " trail $2E|1	kept
+Val|popped|" " trail $2E|1	$00000000
+Val|d0|" " trail $2E|1	$00000000
+Val|a3 - string|" " trail $2E|1	$00000000
+Val|kept|"   " trail $00|1	kept
+Val|popped|"   " trail $00|1	$00000000
+Val|d0|"   " trail $00|1	$00000000
+Val|a3 - string|"   " trail $00|1	$00000000
+Val|kept|"   " trail $39|1	kept
+Val|popped|"   " trail $39|1	$00000000
+Val|d0|"   " trail $39|1	$00000000
+Val|a3 - string|"   " trail $39|1	$00000000
+Val|kept|"   " trail $2E|1	kept
+Val|popped|"   " trail $2E|1	$00000000
+Val|d0|"   " trail $2E|1	$00000000
+Val|a3 - string|"   " trail $2E|1	$00000000
+Val|kept|"0" trail $00|1	kept
+Val|popped|"0" trail $00|1	$00000000
+Val|d0|"0" trail $00|1	$00000000
+Val|a3 - string|"0" trail $00|1	$00000000
+Val|kept|"0" trail $39|1	kept
+Val|popped|"0" trail $39|1	$00000000
+Val|d0|"0" trail $39|1	$00000000
+Val|a3 - string|"0" trail $39|1	$00000000
+Val|kept|"0" trail $2E|1	kept
+Val|popped|"0" trail $2E|1	$00000000
+Val|d0|"0" trail $2E|1	$00000000
+Val|a3 - string|"0" trail $2E|1	$00000000
+Val|kept|"7" trail $00|1	kept
+Val|popped|"7" trail $00|1	$00000000
+Val|d0|"7" trail $00|1	$E0000043
+Val|a3 - string|"7" trail $00|1	$00000000
+Val|kept|"7" trail $39|1	kept
+Val|popped|"7" trail $39|1	$00000000
+Val|d0|"7" trail $39|1	$E0000043
+Val|a3 - string|"7" trail $39|1	$00000000
+Val|kept|"7" trail $2E|1	kept
+Val|popped|"7" trail $2E|1	$00000000
+Val|d0|"7" trail $2E|1	$E0000043
+Val|a3 - string|"7" trail $2E|1	$00000000
+Val|kept|"12345" trail $00|1	kept
+Val|popped|"12345" trail $00|1	$00000000
+Val|d0|"12345" trail $00|1	$C0E4004E
+Val|a3 - string|"12345" trail $00|1	$00000000
+Val|kept|"12345" trail $39|1	kept
+Val|popped|"12345" trail $39|1	$00000000
+Val|d0|"12345" trail $39|1	$C0E4004E
+Val|a3 - string|"12345" trail $39|1	$00000000
+Val|kept|"12345" trail $2E|1	kept
+Val|popped|"12345" trail $2E|1	$00000000
+Val|d0|"12345" trail $2E|1	$C0E4004E
+Val|a3 - string|"12345" trail $2E|1	$00000000
+Val|kept|"  42" trail $00|1	kept
+Val|popped|"  42" trail $00|1	$00000000
+Val|d0|"  42" trail $00|1	$A8000046
+Val|a3 - string|"  42" trail $00|1	$00000000
+Val|kept|"  42" trail $39|1	kept
+Val|popped|"  42" trail $39|1	$00000000
+Val|d0|"  42" trail $39|1	$A8000046
+Val|a3 - string|"  42" trail $39|1	$00000000
+Val|kept|"  42" trail $2E|1	kept
+Val|popped|"  42" trail $2E|1	$00000000
+Val|d0|"  42" trail $2E|1	$A8000046
+Val|a3 - string|"  42" trail $2E|1	$00000000
+Val|kept|" 9 " trail $00|1	kept
+Val|popped|" 9 " trail $00|1	$00000000
+Val|d0|" 9 " trail $00|1	$90000044
+Val|a3 - string|" 9 " trail $00|1	$00000000
+Val|kept|" 9 " trail $39|1	kept
+Val|popped|" 9 " trail $39|1	$00000000
+Val|d0|" 9 " trail $39|1	$90000044
+Val|a3 - string|" 9 " trail $39|1	$00000000
+Val|kept|" 9 " trail $2E|1	kept
+Val|popped|" 9 " trail $2E|1	$00000000
+Val|d0|" 9 " trail $2E|1	$90000044
+Val|a3 - string|" 9 " trail $2E|1	$00000000
+Val|kept|"4294967295" trail $00|1	kept
+Val|popped|"4294967295" trail $00|1	$00000000
+Val|d0|"4294967295" trail $00|1	$800000C1
+Val|a3 - string|"4294967295" trail $00|1	$00000000
+Val|kept|"4294967295" trail $39|1	kept
+Val|popped|"4294967295" trail $39|1	$00000000
+Val|d0|"4294967295" trail $39|1	$800000C1
+Val|a3 - string|"4294967295" trail $39|1	$00000000
+Val|kept|"4294967295" trail $2E|1	kept
+Val|popped|"4294967295" trail $2E|1	$00000000
+Val|d0|"4294967295" trail $2E|1	$800000C1
+Val|a3 - string|"4294967295" trail $2E|1	$00000000
+Val|kept|"4294967296" trail $00|1	kept
+Val|popped|"4294967296" trail $00|1	$00000000
+Val|d0|"4294967296" trail $00|1	$00000000
+Val|a3 - string|"4294967296" trail $00|1	$00000000
+Val|kept|"4294967296" trail $39|1	kept
+Val|popped|"4294967296" trail $39|1	$00000000
+Val|d0|"4294967296" trail $39|1	$00000000
+Val|a3 - string|"4294967296" trail $39|1	$00000000
+Val|kept|"4294967296" trail $2E|1	kept
+Val|popped|"4294967296" trail $2E|1	$00000000
+Val|d0|"4294967296" trail $2E|1	$00000000
+Val|a3 - string|"4294967296" trail $2E|1	$00000000
+Val|kept|"99999999999" trail $00|1	kept
+Val|popped|"99999999999" trail $00|1	$00000000
+Val|d0|"99999999999" trail $00|1	$90EDD05F
+Val|a3 - string|"99999999999" trail $00|1	$00000000
+Val|kept|"99999999999" trail $39|1	kept
+Val|popped|"99999999999" trail $39|1	$00000000
+Val|d0|"99999999999" trail $39|1	$90EDD05F
+Val|a3 - string|"99999999999" trail $39|1	$00000000
+Val|kept|"99999999999" trail $2E|1	kept
+Val|popped|"99999999999" trail $2E|1	$00000000
+Val|d0|"99999999999" trail $2E|1	$90EDD05F
+Val|a3 - string|"99999999999" trail $2E|1	$00000000
+Val|kept|"2147483648" trail $00|1	kept
+Val|popped|"2147483648" trail $00|1	$00000000
+Val|d0|"2147483648" trail $00|1	$800000E0
+Val|a3 - string|"2147483648" trail $00|1	$00000000
+Val|kept|"2147483648" trail $39|1	kept
+Val|popped|"2147483648" trail $39|1	$00000000
+Val|d0|"2147483648" trail $39|1	$800000E0
+Val|a3 - string|"2147483648" trail $39|1	$00000000
+Val|kept|"2147483648" trail $2E|1	kept
+Val|popped|"2147483648" trail $2E|1	$00000000
+Val|d0|"2147483648" trail $2E|1	$800000E0
+Val|a3 - string|"2147483648" trail $2E|1	$00000000
+Val|kept|"12a" trail $00|1	kept
+Val|popped|"12a" trail $00|1	$00000000
+Val|d0|"12a" trail $00|1	$C0000044
+Val|a3 - string|"12a" trail $00|1	$00000000
+Val|kept|"12a" trail $39|1	kept
+Val|popped|"12a" trail $39|1	$00000000
+Val|d0|"12a" trail $39|1	$C0000044
+Val|a3 - string|"12a" trail $39|1	$00000000
+Val|kept|"12a" trail $2E|1	kept
+Val|popped|"12a" trail $2E|1	$00000000
+Val|d0|"12a" trail $2E|1	$C0000044
+Val|a3 - string|"12a" trail $2E|1	$00000000
+Val|kept|"1e5" trail $00|1	kept
+Val|popped|"1e5" trail $00|1	$00000000
+Val|d0|"1e5" trail $00|1	$80000041
+Val|a3 - string|"1e5" trail $00|1	$00000000
+Val|kept|"1e5" trail $39|1	kept
+Val|popped|"1e5" trail $39|1	$00000000
+Val|d0|"1e5" trail $39|1	$80000041
+Val|a3 - string|"1e5" trail $39|1	$00000000
+Val|kept|"1e5" trail $2E|1	kept
+Val|popped|"1e5" trail $2E|1	$00000000
+Val|d0|"1e5" trail $2E|1	$80000041
+Val|a3 - string|"1e5" trail $2E|1	$00000000
+Val|kept|"+5" trail $00|1	kept
+Val|popped|"+5" trail $00|1	$00000000
+Val|d0|"+5" trail $00|1	$00000000
+Val|a3 - string|"+5" trail $00|1	$00000000
+Val|kept|"+5" trail $39|1	kept
+Val|popped|"+5" trail $39|1	$00000000
+Val|d0|"+5" trail $39|1	$00000000
+Val|a3 - string|"+5" trail $39|1	$00000000
+Val|kept|"+5" trail $2E|1	kept
+Val|popped|"+5" trail $2E|1	$00000000
+Val|d0|"+5" trail $2E|1	$00000000
+Val|a3 - string|"+5" trail $2E|1	$00000000
+Val|kept|"1.5" trail $00|1	kept
+Val|popped|"1.5" trail $00|1	$00000000
+Val|d0|"1.5" trail $00|1	$C0000041
+Val|a3 - string|"1.5" trail $00|1	$00000000
+Val|kept|"1.5" trail $39|1	kept
+Val|popped|"1.5" trail $39|1	$00000000
+Val|d0|"1.5" trail $39|1	$C0000041
+Val|a3 - string|"1.5" trail $39|1	$00000000
+Val|kept|"1.5" trail $2E|1	kept
+Val|popped|"1.5" trail $2E|1	$00000000
+Val|d0|"1.5" trail $2E|1	$C0000041
+Val|a3 - string|"1.5" trail $2E|1	$00000000
+Val|kept|"3.14159" trail $00|1	kept
+Val|popped|"3.14159" trail $00|1	$00000000
+Val|d0|"3.14159" trail $00|1	$C90FD042
+Val|a3 - string|"3.14159" trail $00|1	$00000000
+Val|kept|"3.14159" trail $39|1	kept
+Val|popped|"3.14159" trail $39|1	$00000000
+Val|d0|"3.14159" trail $39|1	$C90FD042
+Val|a3 - string|"3.14159" trail $39|1	$00000000
+Val|kept|"3.14159" trail $2E|1	kept
+Val|popped|"3.14159" trail $2E|1	$00000000
+Val|d0|"3.14159" trail $2E|1	$C90FD042
+Val|a3 - string|"3.14159" trail $2E|1	$00000000
+Val|kept|".5" trail $00|1	kept
+Val|popped|".5" trail $00|1	$00000000
+Val|d0|".5" trail $00|1	$80000040
+Val|a3 - string|".5" trail $00|1	$00000000
+Val|kept|".5" trail $39|1	kept
+Val|popped|".5" trail $39|1	$00000000
+Val|d0|".5" trail $39|1	$80000040
+Val|a3 - string|".5" trail $39|1	$00000000
+Val|kept|".5" trail $2E|1	kept
+Val|popped|".5" trail $2E|1	$00000000
+Val|d0|".5" trail $2E|1	$80000040
+Val|a3 - string|".5" trail $2E|1	$00000000
+Val|kept|"12." trail $00|1	kept
+Val|popped|"12." trail $00|1	$00000000
+Val|d0|"12." trail $00|1	$C0000044
+Val|a3 - string|"12." trail $00|1	$00000000
+Val|kept|"12." trail $39|1	kept
+Val|popped|"12." trail $39|1	$00000000
+Val|d0|"12." trail $39|1	$C0000044
+Val|a3 - string|"12." trail $39|1	$00000000
+Val|kept|"12." trail $2E|1	kept
+Val|popped|"12." trail $2E|1	$00000000
+Val|d0|"12." trail $2E|1	$C0000044
+Val|a3 - string|"12." trail $2E|1	$00000000
+Val|kept|"." trail $00|1	kept
+Val|popped|"." trail $00|1	$00000000
+Val|d0|"." trail $00|1	$00000000
+Val|a3 - string|"." trail $00|1	$00000000
+Val|kept|"." trail $39|1	kept
+Val|popped|"." trail $39|1	$00000000
+Val|d0|"." trail $39|1	$00000000
+Val|a3 - string|"." trail $39|1	$00000000
+Val|kept|"." trail $2E|1	kept
+Val|popped|"." trail $2E|1	$00000000
+Val|d0|"." trail $2E|1	$00000000
+Val|a3 - string|"." trail $2E|1	$00000000
+Val|kept|"0.000001" trail $00|1	kept
+Val|popped|"0.000001" trail $00|1	$00000000
+Val|d0|"0.000001" trail $00|1	$8637BD2D
+Val|a3 - string|"0.000001" trail $00|1	$00000000
+Val|kept|"0.000001" trail $39|1	kept
+Val|popped|"0.000001" trail $39|1	$00000000
+Val|d0|"0.000001" trail $39|1	$8637BD2D
+Val|a3 - string|"0.000001" trail $39|1	$00000000
+Val|kept|"0.000001" trail $2E|1	kept
+Val|popped|"0.000001" trail $2E|1	$00000000
+Val|d0|"0.000001" trail $2E|1	$8637BD2D
+Val|a3 - string|"0.000001" trail $2E|1	$00000000
+Val|kept|"1.123456789" trail $00|1	kept
+Val|popped|"1.123456789" trail $00|1	$00000000
+Val|d0|"1.123456789" trail $00|1	$8FCD6F41
+Val|a3 - string|"1.123456789" trail $00|1	$00000000
+Val|kept|"1.123456789" trail $39|1	kept
+Val|popped|"1.123456789" trail $39|1	$00000000
+Val|d0|"1.123456789" trail $39|1	$8FCD6F41
+Val|a3 - string|"1.123456789" trail $39|1	$00000000
+Val|kept|"1.123456789" trail $2E|1	kept
+Val|popped|"1.123456789" trail $2E|1	$00000000
+Val|d0|"1.123456789" trail $2E|1	$8FCD6F41
+Val|a3 - string|"1.123456789" trail $2E|1	$00000000
+Val|kept|"123.456.7" trail $00|1	kept
+Val|popped|"123.456.7" trail $00|1	$00000000
+Val|d0|"123.456.7" trail $00|1	$F6E97947
+Val|a3 - string|"123.456.7" trail $00|1	$00000000
+Val|kept|"123.456.7" trail $39|1	kept
+Val|popped|"123.456.7" trail $39|1	$00000000
+Val|d0|"123.456.7" trail $39|1	$F6E97947
+Val|a3 - string|"123.456.7" trail $39|1	$00000000
+Val|kept|"123.456.7" trail $2E|1	kept
+Val|popped|"123.456.7" trail $2E|1	$00000000
+Val|d0|"123.456.7" trail $2E|1	$F6E97947
+Val|a3 - string|"123.456.7" trail $2E|1	$00000000
+Val|kept|"1. 5" trail $00|1	kept
+Val|popped|"1. 5" trail $00|1	$00000000
+Val|d0|"1. 5" trail $00|1	$80000041
+Val|a3 - string|"1. 5" trail $00|1	$00000000
+Val|kept|"1. 5" trail $39|1	kept
+Val|popped|"1. 5" trail $39|1	$00000000
+Val|d0|"1. 5" trail $39|1	$80000041
+Val|a3 - string|"1. 5" trail $39|1	$00000000
+Val|kept|"1. 5" trail $2E|1	kept
+Val|popped|"1. 5" trail $2E|1	$00000000
+Val|d0|"1. 5" trail $2E|1	$80000041
+Val|a3 - string|"1. 5" trail $2E|1	$00000000
+Val|kept|"-12" trail $00|1	kept
+Val|popped|"-12" trail $00|1	$00000000
+Val|d0|"-12" trail $00|1	$C00000C4
+Val|a3 - string|"-12" trail $00|1	$00000000
+Val|kept|"-12" trail $39|1	kept
+Val|popped|"-12" trail $39|1	$00000000
+Val|d0|"-12" trail $39|1	$810000C8
+Val|a3 - string|"-12" trail $39|1	$00000000
+Val|kept|"-12" trail $2E|1	kept
+Val|popped|"-12" trail $2E|1	$00000000
+Val|d0|"-12" trail $2E|1	$C00000C4
+Val|a3 - string|"-12" trail $2E|1	$00000000
+Val|kept|"-.25" trail $00|1	kept
+Val|popped|"-.25" trail $00|1	$00000000
+Val|d0|"-.25" trail $00|1	$800000BF
+Val|a3 - string|"-.25" trail $00|1	$00000000
+Val|kept|"-.25" trail $39|1	kept
+Val|popped|"-.25" trail $39|1	$00000000
+Val|d0|"-.25" trail $39|1	$849BA6BF
+Val|a3 - string|"-.25" trail $39|1	$00000000
+Val|kept|"-.25" trail $2E|1	kept
+Val|popped|"-.25" trail $2E|1	$00000000
+Val|d0|"-.25" trail $2E|1	$800000BF
+Val|a3 - string|"-.25" trail $2E|1	$00000000
+Val|kept|"- 3" trail $00|1	kept
+Val|popped|"- 3" trail $00|1	$00000000
+Val|d0|"- 3" trail $00|1	$00000000
+Val|a3 - string|"- 3" trail $00|1	$00000000
+Val|kept|"- 3" trail $39|1	kept
+Val|popped|"- 3" trail $39|1	$00000000
+Val|d0|"- 3" trail $39|1	$00000000
+Val|a3 - string|"- 3" trail $39|1	$00000000
+Val|kept|"- 3" trail $2E|1	kept
+Val|popped|"- 3" trail $2E|1	$00000000
+Val|d0|"- 3" trail $2E|1	$00000000
+Val|a3 - string|"- 3" trail $2E|1	$00000000
+Val|kept|"--1" trail $00|1	kept
+Val|popped|"--1" trail $00|1	$00000000
+Val|d0|"--1" trail $00|1	$00000000
+Val|a3 - string|"--1" trail $00|1	$00000000
+Val|kept|"--1" trail $39|1	kept
+Val|popped|"--1" trail $39|1	$00000000
+Val|d0|"--1" trail $39|1	$00000000
+Val|a3 - string|"--1" trail $39|1	$00000000
+Val|kept|"--1" trail $2E|1	kept
+Val|popped|"--1" trail $2E|1	$00000000
+Val|d0|"--1" trail $2E|1	$00000000
+Val|a3 - string|"--1" trail $2E|1	$00000000
+Val|kept|"-" trail $00|1	kept
+Val|popped|"-" trail $00|1	$00000000
+Val|d0|"-" trail $00|1	$00000000
+Val|a3 - string|"-" trail $00|1	$00000000
+Val|kept|"-" trail $39|1	kept
+Val|popped|"-" trail $39|1	$00000000
+Val|d0|"-" trail $39|1	$900000C4
+Val|a3 - string|"-" trail $39|1	$00000000
+Val|kept|"-" trail $2E|1	kept
+Val|popped|"-" trail $2E|1	$00000000
+Val|d0|"-" trail $2E|1	$00000000
+Val|a3 - string|"-" trail $2E|1	$00000000
+Val|kept|"-0" trail $00|1	kept
+Val|popped|"-0" trail $00|1	$00000000
+Val|d0|"-0" trail $00|1	$00000000
+Val|a3 - string|"-0" trail $00|1	$00000000
+Val|kept|"-0" trail $39|1	kept
+Val|popped|"-0" trail $39|1	$00000000
+Val|d0|"-0" trail $39|1	$900000C4
+Val|a3 - string|"-0" trail $39|1	$00000000
+Val|kept|"-0" trail $2E|1	kept
+Val|popped|"-0" trail $2E|1	$00000000
+Val|d0|"-0" trail $2E|1	$00000000
+Val|a3 - string|"-0" trail $2E|1	$00000000
+Val|kept|"$1aF" trail $00|1	kept
+Val|popped|"$1aF" trail $00|1	$00000000
+Val|d0|"$1aF" trail $00|1	$D7800049
+Val|a3 - string|"$1aF" trail $00|1	$00000000
+Val|kept|"$1aF" trail $39|1	kept
+Val|popped|"$1aF" trail $39|1	$00000000
+Val|d0|"$1aF" trail $39|1	$D7C8004D
+Val|a3 - string|"$1aF" trail $39|1	$00000000
+Val|kept|"$1aF" trail $2E|1	kept
+Val|popped|"$1aF" trail $2E|1	$00000000
+Val|d0|"$1aF" trail $2E|1	$D7800049
+Val|a3 - string|"$1aF" trail $2E|1	$00000000
+Val|kept|"$FFFFFFFF" trail $00|1	kept
+Val|popped|"$FFFFFFFF" trail $00|1	$00000000
+Val|d0|"$FFFFFFFF" trail $00|1	$800000C1
+Val|a3 - string|"$FFFFFFFF" trail $00|1	$00000000
+Val|kept|"$FFFFFFFF" trail $39|1	kept
+Val|popped|"$FFFFFFFF" trail $39|1	$00000000
+Val|d0|"$FFFFFFFF" trail $39|1	$E00000C3
+Val|a3 - string|"$FFFFFFFF" trail $39|1	$00000000
+Val|kept|"$FFFFFFFF" trail $2E|1	kept
+Val|popped|"$FFFFFFFF" trail $2E|1	$00000000
+Val|d0|"$FFFFFFFF" trail $2E|1	$800000C1
+Val|a3 - string|"$FFFFFFFF" trail $2E|1	$00000000
+Val|kept|"$123456789" trail $00|1	kept
+Val|popped|"$123456789" trail $00|1	$00000000
+Val|d0|"$123456789" trail $00|1	$8D159E5E
+Val|a3 - string|"$123456789" trail $00|1	$00000000
+Val|kept|"$123456789" trail $39|1	kept
+Val|popped|"$123456789" trail $39|1	$00000000
+Val|d0|"$123456789" trail $39|1	$D159E25E
+Val|a3 - string|"$123456789" trail $39|1	$00000000
+Val|kept|"$123456789" trail $2E|1	kept
+Val|popped|"$123456789" trail $2E|1	$00000000
+Val|d0|"$123456789" trail $2E|1	$8D159E5E
+Val|a3 - string|"$123456789" trail $2E|1	$00000000
+Val|kept|"$" trail $00|1	kept
+Val|popped|"$" trail $00|1	$00000000
+Val|d0|"$" trail $00|1	$00000000
+Val|a3 - string|"$" trail $00|1	$00000000
+Val|kept|"$" trail $39|1	kept
+Val|popped|"$" trail $39|1	$00000000
+Val|d0|"$" trail $39|1	$90000044
+Val|a3 - string|"$" trail $39|1	$00000000
+Val|kept|"$" trail $2E|1	kept
+Val|popped|"$" trail $2E|1	$00000000
+Val|d0|"$" trail $2E|1	$00000000
+Val|a3 - string|"$" trail $2E|1	$00000000
+Val|kept|"$g" trail $00|1	kept
+Val|popped|"$g" trail $00|1	$00000000
+Val|d0|"$g" trail $00|1	$00000000
+Val|a3 - string|"$g" trail $00|1	$00000000
+Val|kept|"$g" trail $39|1	kept
+Val|popped|"$g" trail $39|1	$00000000
+Val|d0|"$g" trail $39|1	$00000000
+Val|a3 - string|"$g" trail $39|1	$00000000
+Val|kept|"$g" trail $2E|1	kept
+Val|popped|"$g" trail $2E|1	$00000000
+Val|d0|"$g" trail $2E|1	$00000000
+Val|a3 - string|"$g" trail $2E|1	$00000000
+Val|kept|"$G1" trail $00|1	kept
+Val|popped|"$G1" trail $00|1	$00000000
+Val|d0|"$G1" trail $00|1	$00000000
+Val|a3 - string|"$G1" trail $00|1	$00000000
+Val|kept|"$G1" trail $39|1	kept
+Val|popped|"$G1" trail $39|1	$00000000
+Val|d0|"$G1" trail $39|1	$00000000
+Val|a3 - string|"$G1" trail $39|1	$00000000
+Val|kept|"$G1" trail $2E|1	kept
+Val|popped|"$G1" trail $2E|1	$00000000
+Val|d0|"$G1" trail $2E|1	$00000000
+Val|a3 - string|"$G1" trail $2E|1	$00000000
+Val|kept|"$@" trail $00|1	kept
+Val|popped|"$@" trail $00|1	$00000000
+Val|d0|"$@" trail $00|1	$00000000
+Val|a3 - string|"$@" trail $00|1	$00000000
+Val|kept|"$@" trail $39|1	kept
+Val|popped|"$@" trail $39|1	$00000000
+Val|d0|"$@" trail $39|1	$00000000
+Val|a3 - string|"$@" trail $39|1	$00000000
+Val|kept|"$@" trail $2E|1	kept
+Val|popped|"$@" trail $2E|1	$00000000
+Val|d0|"$@" trail $2E|1	$00000000
+Val|a3 - string|"$@" trail $2E|1	$00000000
+Val|kept|"$/" trail $00|1	kept
+Val|popped|"$/" trail $00|1	$00000000
+Val|d0|"$/" trail $00|1	$00000000
+Val|a3 - string|"$/" trail $00|1	$00000000
+Val|kept|"$/" trail $39|1	kept
+Val|popped|"$/" trail $39|1	$00000000
+Val|d0|"$/" trail $39|1	$00000000
+Val|a3 - string|"$/" trail $39|1	$00000000
+Val|kept|"$/" trail $2E|1	kept
+Val|popped|"$/" trail $2E|1	$00000000
+Val|d0|"$/" trail $2E|1	$00000000
+Val|a3 - string|"$/" trail $2E|1	$00000000
+Val|kept|"$fF0" trail $00|1	kept
+Val|popped|"$fF0" trail $00|1	$00000000
+Val|d0|"$fF0" trail $00|1	$FF00004C
+Val|a3 - string|"$fF0" trail $00|1	$00000000
+Val|kept|"$fF0" trail $39|1	kept
+Val|popped|"$fF0" trail $39|1	$00000000
+Val|d0|"$fF0" trail $39|1	$FF090050
+Val|a3 - string|"$fF0" trail $39|1	$00000000
+Val|kept|"$fF0" trail $2E|1	kept
+Val|popped|"$fF0" trail $2E|1	$00000000
+Val|d0|"$fF0" trail $2E|1	$FF00004C
+Val|a3 - string|"$fF0" trail $2E|1	$00000000
+Val|kept|"%1011" trail $00|1	kept
+Val|popped|"%1011" trail $00|1	$00000000
+Val|d0|"%1011" trail $00|1	$B0000044
+Val|a3 - string|"%1011" trail $00|1	$00000000
+Val|kept|"%1011" trail $39|1	kept
+Val|popped|"%1011" trail $39|1	$00000000
+Val|d0|"%1011" trail $39|1	$B0000044
+Val|a3 - string|"%1011" trail $39|1	$00000000
+Val|kept|"%1011" trail $2E|1	kept
+Val|popped|"%1011" trail $2E|1	$00000000
+Val|d0|"%1011" trail $2E|1	$B0000044
+Val|a3 - string|"%1011" trail $2E|1	$00000000
+Val|kept|"%" trail $00|1	kept
+Val|popped|"%" trail $00|1	$00000000
+Val|d0|"%" trail $00|1	$00000000
+Val|a3 - string|"%" trail $00|1	$00000000
+Val|kept|"%" trail $39|1	kept
+Val|popped|"%" trail $39|1	$00000000
+Val|d0|"%" trail $39|1	$00000000
+Val|a3 - string|"%" trail $39|1	$00000000
+Val|kept|"%" trail $2E|1	kept
+Val|popped|"%" trail $2E|1	$00000000
+Val|d0|"%" trail $2E|1	$00000000
+Val|a3 - string|"%" trail $2E|1	$00000000
+Val|kept|"%2" trail $00|1	kept
+Val|popped|"%2" trail $00|1	$00000000
+Val|d0|"%2" trail $00|1	$00000000
+Val|a3 - string|"%2" trail $00|1	$00000000
+Val|kept|"%2" trail $39|1	kept
+Val|popped|"%2" trail $39|1	$00000000
+Val|d0|"%2" trail $39|1	$00000000
+Val|a3 - string|"%2" trail $39|1	$00000000
+Val|kept|"%2" trail $2E|1	kept
+Val|popped|"%2" trail $2E|1	$00000000
+Val|d0|"%2" trail $2E|1	$00000000
+Val|a3 - string|"%2" trail $2E|1	$00000000
+Val|kept|"%10102" trail $00|1	kept
+Val|popped|"%10102" trail $00|1	$00000000
+Val|d0|"%10102" trail $00|1	$A0000044
+Val|a3 - string|"%10102" trail $00|1	$00000000
+Val|kept|"%10102" trail $39|1	kept
+Val|popped|"%10102" trail $39|1	$00000000
+Val|d0|"%10102" trail $39|1	$A0000044
+Val|a3 - string|"%10102" trail $39|1	$00000000
+Val|kept|"%10102" trail $2E|1	kept
+Val|popped|"%10102" trail $2E|1	$00000000
+Val|d0|"%10102" trail $2E|1	$A0000044
+Val|a3 - string|"%10102" trail $2E|1	$00000000
+Val|kept|"%11111111111111111111111111111111" trail $00|1	kept
+Val|popped|"%11111111111111111111111111111111" trail $00|1	$00000000
+Val|d0|"%11111111111111111111111111111111" trail $00|1	$800000C1
+Val|a3 - string|"%11111111111111111111111111111111" trail $00|1	$00000000
+Val|kept|"%11111111111111111111111111111111" trail $39|1	kept
+Val|popped|"%11111111111111111111111111111111" trail $39|1	$00000000
+Val|d0|"%11111111111111111111111111111111" trail $39|1	$800000C1
+Val|a3 - string|"%11111111111111111111111111111111" trail $39|1	$00000000
+Val|kept|"%11111111111111111111111111111111" trail $2E|1	kept
+Val|popped|"%11111111111111111111111111111111" trail $2E|1	$00000000
+Val|d0|"%11111111111111111111111111111111" trail $2E|1	$800000C1
+Val|a3 - string|"%11111111111111111111111111111111" trail $2E|1	$00000000
+Val|kept|"-$10" trail $00|1	kept
+Val|popped|"-$10" trail $00|1	$00000000
+Val|d0|"-$10" trail $00|1	$00000000
+Val|a3 - string|"-$10" trail $00|1	$00000000
+Val|kept|"-$10" trail $39|1	kept
+Val|popped|"-$10" trail $39|1	$00000000
+Val|d0|"-$10" trail $39|1	$00000000
+Val|a3 - string|"-$10" trail $39|1	$00000000
+Val|kept|"-$10" trail $2E|1	kept
+Val|popped|"-$10" trail $2E|1	$00000000
+Val|d0|"-$10" trail $2E|1	$00000000
+Val|a3 - string|"-$10" trail $2E|1	$00000000
+Val|kept|"-%1" trail $00|1	kept
+Val|popped|"-%1" trail $00|1	$00000000
+Val|d0|"-%1" trail $00|1	$00000000
+Val|a3 - string|"-%1" trail $00|1	$00000000
+Val|kept|"-%1" trail $39|1	kept
+Val|popped|"-%1" trail $39|1	$00000000
+Val|d0|"-%1" trail $39|1	$00000000
+Val|a3 - string|"-%1" trail $39|1	$00000000
+Val|kept|"-%1" trail $2E|1	kept
+Val|popped|"-%1" trail $2E|1	$00000000
+Val|d0|"-%1" trail $2E|1	$00000000
+Val|a3 - string|"-%1" trail $2E|1	$00000000
+Val|kept|" $A" trail $00|1	kept
+Val|popped|" $A" trail $00|1	$00000000
+Val|d0|" $A" trail $00|1	$A0000044
+Val|a3 - string|" $A" trail $00|1	$00000000
+Val|kept|" $A" trail $39|1	kept
+Val|popped|" $A" trail $39|1	$00000000
+Val|d0|" $A" trail $39|1	$A9000048
+Val|a3 - string|" $A" trail $39|1	$00000000
+Val|kept|" $A" trail $2E|1	kept
+Val|popped|" $A" trail $2E|1	$00000000
+Val|d0|" $A" trail $2E|1	$A0000044
+Val|a3 - string|" $A" trail $2E|1	$00000000
+Val|kept|" %1" trail $00|1	kept
+Val|popped|" %1" trail $00|1	$00000000
+Val|d0|" %1" trail $00|1	$80000041
+Val|a3 - string|" %1" trail $00|1	$00000000
+Val|kept|" %1" trail $39|1	kept
+Val|popped|" %1" trail $39|1	$00000000
+Val|d0|" %1" trail $39|1	$80000041
+Val|a3 - string|" %1" trail $39|1	$00000000
+Val|kept|" %1" trail $2E|1	kept
+Val|popped|" %1" trail $2E|1	$00000000
+Val|d0|" %1" trail $2E|1	$80000041
+Val|a3 - string|" %1" trail $2E|1	$00000000
+Val|kept|"\t5" trail $00|1	kept
+Val|popped|"\t5" trail $00|1	$00000000
+Val|d0|"\t5" trail $00|1	$00000000
+Val|a3 - string|"\t5" trail $00|1	$00000000
+Val|kept|"\t5" trail $39|1	kept
+Val|popped|"\t5" trail $39|1	$00000000
+Val|d0|"\t5" trail $39|1	$00000000
+Val|a3 - string|"\t5" trail $39|1	$00000000
+Val|kept|"\t5" trail $2E|1	kept
+Val|popped|"\t5" trail $2E|1	$00000000
+Val|d0|"\t5" trail $2E|1	$00000000
+Val|a3 - string|"\t5" trail $2E|1	$00000000
+Val|kept|"5\t" trail $00|1	kept
+Val|popped|"5\t" trail $00|1	$00000000
+Val|d0|"5\t" trail $00|1	$A0000043
+Val|a3 - string|"5\t" trail $00|1	$00000000
+Val|kept|"5\t" trail $39|1	kept
+Val|popped|"5\t" trail $39|1	$00000000
+Val|d0|"5\t" trail $39|1	$A0000043
+Val|a3 - string|"5\t" trail $39|1	$00000000
+Val|kept|"5\t" trail $2E|1	kept
+Val|popped|"5\t" trail $2E|1	$00000000
+Val|d0|"5\t" trail $2E|1	$A0000043
+Val|a3 - string|"5\t" trail $2E|1	$00000000
+Val|kept|"0123" trail $00|1	kept
+Val|popped|"0123" trail $00|1	$00000000
+Val|d0|"0123" trail $00|1	$F6000047
+Val|a3 - string|"0123" trail $00|1	$00000000
+Val|kept|"0123" trail $39|1	kept
+Val|popped|"0123" trail $39|1	$00000000
+Val|d0|"0123" trail $39|1	$F6000047
+Val|a3 - string|"0123" trail $39|1	$00000000
+Val|kept|"0123" trail $2E|1	kept
+Val|popped|"0123" trail $2E|1	$00000000
+Val|d0|"0123" trail $2E|1	$F6000047
+Val|a3 - string|"0123" trail $2E|1	$00000000
+Val|kept|"00.0100" trail $00|1	kept
+Val|popped|"00.0100" trail $00|1	$00000000
+Val|d0|"00.0100" trail $00|1	$A3D70A3A
+Val|a3 - string|"00.0100" trail $00|1	$00000000
+Val|kept|"00.0100" trail $39|1	kept
+Val|popped|"00.0100" trail $39|1	$00000000
+Val|d0|"00.0100" trail $39|1	$A3D70A3A
+Val|a3 - string|"00.0100" trail $39|1	$00000000
+Val|kept|"00.0100" trail $2E|1	kept
+Val|popped|"00.0100" trail $2E|1	$00000000
+Val|d0|"00.0100" trail $2E|1	$A3D70A3A
+Val|a3 - string|"00.0100" trail $2E|1	$00000000
+Val|kept|"12345" length 3 trail $34|1	kept
+Val|popped|"12345" length 3 trail $34|1	$00000000
+Val|d0|"12345" length 3 trail $34|1	$F6000047
+Val|a3 - string|"12345" length 3 trail $34|1	$00000000
+Val|kept|"1.25" length 3 trail $35|1	kept
+Val|popped|"1.25" length 3 trail $35|1	$00000000
+Val|d0|"1.25" length 3 trail $35|1	$99999A41
+Val|a3 - string|"1.25" length 3 trail $35|1	$00000000
+Val|kept|"$12" length 2 trail $32|1	kept
+Val|popped|"$12" length 2 trail $32|1	$00000000
+Val|d0|"$12" length 2 trail $32|1	$90000045
+Val|a3 - string|"$12" length 2 trail $32|1	$00000000
+Val|kept|"%11" length 2 trail $31|1	kept
+Val|popped|"%11" length 2 trail $31|1	$00000000
+Val|d0|"%11" length 2 trail $31|1	$C0000042
+Val|a3 - string|"%11" length 2 trail $31|1	$00000000
+Val|kept|"-12" length 2 trail $32|1	kept
+Val|popped|"-12" length 2 trail $32|1	$00000000
+Val|d0|"-12" length 2 trail $32|1	$C00000C4
+Val|a3 - string|"-12" length 2 trail $32|1	$00000000
+Val|kept|"0.1234567891" trail $00|1	kept
+Val|popped|"0.1234567891" trail $00|1	$00000000
+Val|d0|"0.1234567891" trail $00|1 [orig]	$E0235B40
+Val|d0|"0.1234567891" trail $00|1 [fixed #304]	$FCD6EA3D
+Val|a3 - string|"0.1234567891" trail $00|1	$00000000
+Val|kept|"2.0000000001234" trail $00|1	kept
+Val|popped|"2.0000000001234" trail $00|1	$00000000
+Val|d0|"2.0000000001234" trail $00|1 [orig]	$80000442
+Val|d0|"2.0000000001234" trail $00|1 [fixed #304]	$80000042
+Val|a3 - string|"2.0000000001234" trail $00|1	$00000000
+Val|kept|40000 x "7" trail $00|1	kept
+Val|popped|40000 x "7" trail $00|1	$00000000
+Val|d0|40000 x "7" trail $00|1 [orig]	$00000000
+Val|d0|40000 x "7" trail $00|1 [fixed #303]	$E38E395F
+Val|a3 - string|40000 x "7" trail $00|1	$00000000
+Val|kept|39999 spaces and "3" trail $00|1	kept
+Val|popped|39999 spaces and "3" trail $00|1	$00000000
+Val|d0|39999 spaces and "3" trail $00|1 [orig]	$00000000
+Val|d0|39999 spaces and "3" trail $00|1 [fixed #303]	$C0000042
+Val|a3 - string|39999 spaces and "3" trail $00|1	$00000000
 rawkeylib init|kept||1	kept
 rawkeylib init|popped||1	$00000000
 blitzkeyslib init|kept|keyboard data|1	kept
