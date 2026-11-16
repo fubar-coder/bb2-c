@@ -221,7 +221,7 @@ static void translate(const UBYTE *s, ULONG len)
 {
     struct bl_regs r = { .d0 = len, .d1 = 1024, .a0 = (ULONG)s, .a1 = (ULONG)spkbuff };
 
-    BLITZ_BASEJSR(TransBase, LVO_Translate, r);
+    BLITZ_SYSJSR(TransBase, LVO_Translate, r);
 }
 
 /* send a buffer to the narrator (CMD_WRITE), after the previous one */

@@ -180,7 +180,7 @@ static void freefont(ULONG *obj, const void *gfx)
         return;
     r.a1 = *obj;
     *obj = 0;
-    BLITZ_BASEJSR(gfx, LVO_CloseFont, r);
+    BLITZ_SYSJSR(gfx, LVO_CloseFont, r);
 }
 
 /**
@@ -238,11 +238,11 @@ void BLITZ_ROUTINE doloadfont(const UBYTE *name BL_REG(d1), WORD used BL_REG(d5)
     freefont(obj, gfx);
     textattr.ta_Name = (STRPTR)name;
     r.a0 = (ULONG)&textattr;
-    f = (struct TextFont *)BLITZ_BASEJSR(diskfont, LVO_OpenDiskFont, r);
+    f = (struct TextFont *)BLITZ_SYSJSR(diskfont, LVO_OpenDiskFont, r);
     if (!f || f->tf_XSize != 8 || f->tf_YSize != 8 || (f->tf_Flags & 0x20)) {
         if (f) {                                /* fixed #150: close it */
             r.a1 = (ULONG)f;
-            BLITZ_BASEJSR(gfx, LVO_CloseFont, r);
+            BLITZ_SYSJSR(gfx, LVO_CloseFont, r);
         }
         BLITZ_RUNERR(mess1);                    /* err1 */
         return;
@@ -549,7 +549,8 @@ BLITZ_ALIAS(dobitmapoutput, dobitmapoutput_c);
 
 /* --------------------------------------------------------- BitMapInput */
 
-/* doinput1 - one character from the previous input handler */
+/* doinput1 - one character from the previous input handler (BLITZ_BASEJSR:
+   any library's or program's handler, so every register may change) */
 static ULONG getchar_old(void)
 {
     struct bl_regs r = { 0 };

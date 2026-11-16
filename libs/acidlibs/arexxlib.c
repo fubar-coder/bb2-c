@@ -886,7 +886,7 @@ static ULONG BLITZ_ROUTINE rexxerror_c(ULONG code BL_REG(d0))
 
     if (!RexxSysBase)
         return error_routine(ERR_REXXSYS);
-    BLITZ_BASEJSR(RexxSysBase, -96, r);
+    BLITZ_SYSJSR(RexxSysBase, -96, r);
     s = (const UBYTE *)((struct NexxStr *)r.a0)->ns_Buff;
     if (!r.d0)
         s = (const UBYTE *)RENoError;

@@ -84,7 +84,7 @@ static void BLITZ_ROUTINE codeinit_c(const void *intuition BL_REG(a6))
     execver_ = SysBase->LibNode.lib_Version;            /* MOVE 20(a0),execver_ */
     r = (struct bl_regs){ .d0 = SCDATA_SIZE, .d1 = 1 /* WBENCHSCREEN */,
                           .a0 = (ULONG)&scdata, .a1 = 0 };
-    BLITZ_BASEJSR(intuition, GetScreenData, r);
+    BLITZ_SYSJSR(intuition, GetScreenData, r);
     wbwidth_ = (wbwidth_ & 0xffff0000) | (UWORD)scdata.Width;      /* MOVE 12(a0),wbwidth_+2 */
     wbhite_ = (wbhite_ & 0xffff0000) | (UWORD)scdata.Height;       /* MOVE 14(a0),wbhite_+2 */
     wbdepth_ = (wbdepth_ & 0xff00) | scdata.RastPort.BitMap->Depth; /* MOVE.b 5(a1),wbdepth_+1 */

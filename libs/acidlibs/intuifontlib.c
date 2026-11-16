@@ -117,7 +117,7 @@ static void freeifont(struct bb_intuifont *f, const void *gfx)
         return;
     r.a1 = (ULONG)f->font;
     f->font = 0;
-    BLITZ_BASEJSR(gfx, LVO_CloseFont, r);
+    BLITZ_SYSJSR(gfx, LVO_CloseFont, r);
 }
 
 /**
@@ -170,7 +170,7 @@ static ULONG setifont(const UBYTE *name, UWORD ysize, UWORD style,
     f->ta.ta_Name = (STRPTR)BLITZ_ALIBJSR(TOK_allocst, r);
     r.d0 = r.d1 = r.a1 = 0;
     r.a0 = (ULONG)f;
-    f->font = (struct TextFont *)BLITZ_BASEJSR(diskfont, LVO_OpenDiskFont, r);
+    f->font = (struct TextFont *)BLITZ_SYSJSR(diskfont, LVO_OpenDiskFont, r);
     return (ULONG)f->font;                      /* MOVE.l d0,8(a3): Z for loadchk */
 }
 

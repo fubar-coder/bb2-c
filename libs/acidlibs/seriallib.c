@@ -236,8 +236,7 @@ static void noser(void)
    the NDK inline takes a BYTE and would pass $FF as -1) */
 static void freesig(struct serio *s)
 {
-    struct bl_regs r = { .d0 = s->port.mp_SigBit };
-    BLITZ_BASEJSR(SysBase, -336, r);
+    BL_FREESIGNAL(s->port.mp_SigBit);
 }
 
 /* set up request pointer, port and message of one half (FindTask and

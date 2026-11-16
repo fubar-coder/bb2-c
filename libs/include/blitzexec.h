@@ -15,10 +15,7 @@
    like the originals (MOVEQ #0,d0:MOVE.b sigbit,d0:JSR _FreeSignal(a6)).
    The NDK inline takes a BYTE and would pass a bit number $FF as -1.
    `sig` is passed as its (unsigned) value: a UBYTE mp_SigBit, or a UWORD
-   for MOVE.w (brexxlib mybit = $FFFF).  Needs blitzlib.h (BLITZ_BASEJSR). */
-#define BL_FREESIGNAL(sig) do {                                             \
-    struct bl_regs bl_fs_ = { .d0 = (sig) };                                \
-    BLITZ_BASEJSR(SysBase, -336, bl_fs_);                                   \
-} while (0)
+   for MOVE.w (brexxlib mybit = $FFFF).  Needs blitzlib.h (BLITZ_SYSJSR1). */
+#define BL_FREESIGNAL(sig) ((void)BLITZ_SYSJSR1(SysBase, -336, (sig)))
 
 #endif
