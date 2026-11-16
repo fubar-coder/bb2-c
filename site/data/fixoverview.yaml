@@ -677,6 +677,30 @@ rows:
     text: "`SColl` tests its two channels in either order, and with runtime error checking two channels of one pair stop with \"different pairs\"; the original tested other channels."
     page: libraries
     anchor: shapes-and-sprites
+  - issue: 115
+    severity: 4
+    topic: "Files"
+    library: "crunchlib"
+    command: "CrMDecrunch"
+    text: "`CrMDecrunch` of data with a packed length below 4 copies those bytes; the original overwrote the whole memory."
+    page: libraries
+    anchor: decrunchers
+  - issue: 117
+    severity: 4
+    topic: "Files"
+    library: "crunchlib"
+    command: "CrMDecrunch"
+    text: "`CrMDecrunch` stops at a corrupt table of CrM2 data; the original wrote behind its tables into the library."
+    page: libraries
+    anchor: decrunchers
+  - issue: 118
+    severity: 4
+    topic: "Files"
+    library: "crunchlib"
+    command: "PPDecrunch"
+    text: "`PPDecrunch` unpacks nothing when an efficiency value in the header is 0 or above 15; the original unpacked garbage around the destination."
+    page: libraries
+    anchor: decrunchers
   - issue: 120
     severity: 4
     topic: "Numbers & dates"
@@ -1349,6 +1373,70 @@ rows:
     text: "Without runtime error checking, a screen that cannot be opened stops with \"Can't open Screen\"; the original jumped behind the library and crashed."
     page: libraries
     anchor: runtime-errors-without-the-debugger
+  - issue: 252
+    severity: 4
+    topic: "System"
+    library: "seriallib"
+    command: "CloseSerial, SetSerialBuffer, SetSerialLens, SetSerialParams, SerialEvent"
+    text: "`CloseSerial`, `SetSerialBuffer`, `SetSerialLens`, `SetSerialParams` and `SerialEvent` find a unit other than 0 at its own place; the original reached the data of another unit."
+    page: libraries
+    anchor: serial-port
+  - issue: 253
+    severity: 4
+    topic: "System"
+    library: "seriallib"
+    command: "ReadSerialMem"
+    text: "`ReadSerialMem` reads through the unit's read request, so the read settings of `SetSerialParams` apply; the original read through the write request."
+    page: libraries
+    anchor: serial-port
+  - issue: 254
+    severity: 1
+    topic: "System"
+    library: "seriallib"
+    command: "WriteSerialString"
+    text: "`WriteSerialString` takes its flags as the help says, 1 waits and 2 sends the whole string; the original took both from the flag 2, so a program that passed 2 to wait passes 3."
+    page: libraries
+    anchor: serial-flags
+  - issue: 255
+    severity: 1
+    topic: "System"
+    library: "seriallib"
+    command: "ReadSerial"
+    text: "`ReadSerial` with the flag 1 waits for a byte, as the help says; the original waited only with the flag 2 and returned -1."
+    page: libraries
+    anchor: serial-flags
+  - issue: 256
+    severity: 4
+    topic: "System"
+    library: "seriallib"
+    command: "ReadSerialString"
+    text: "`ReadSerialString` reads at most what fits in its string buffer; the original wrote behind the buffer."
+    page: libraries
+    anchor: serial-port
+  - issue: 258
+    severity: 4
+    topic: "System"
+    library: "seriallib"
+    command: "CloseSerial"
+    text: "`CloseSerial` stops and collects a write still going on before it closes the device; the original left it pending."
+    page: libraries
+    anchor: serial-port
+  - issue: 259
+    severity: 4
+    topic: "System"
+    library: "seriallib"
+    command: "OpenSerial"
+    text: "`OpenSerial` closes the device again when it gets no signal for writing; the original left it open until a reboot."
+    page: libraries
+    anchor: serial-port
+  - issue: 260
+    severity: 4
+    topic: "System"
+    library: "seriallib"
+    command: "OpenSerial"
+    text: "A second `OpenSerial` of an open unit returns 0 and leaves the unit alone, also with shared access; the original set the unit up again and lost it when the open failed."
+    page: libraries
+    anchor: serial-port
   - issue: 263
     severity: 3
     topic: "Graphics"

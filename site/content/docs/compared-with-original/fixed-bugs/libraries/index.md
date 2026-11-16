@@ -20,17 +20,18 @@ runtime error checking unless the text says otherwise.
 
 ## Changes for existing programs
 
-Eleven of the fixes change what an existing program does. Two of them
+Thirteen of the fixes change what an existing program does. Two of them
 concern programs that were written to make up for the bug, drawing on
 bitmaps; no known example program, demo or game uses these commands this
 way, but a program of your own might. Two concern the custom copper
 instructions of the display library and change every program that uses
 the commands with the values named. One makes `LoadShape` stop with a
 runtime error on pictures it loaded before, and one changes which ARexx
-replies carry a result string. The last five concern tapes of mouse and
-keyboard events and the keyboard in Blitz mode: the one a program meets
-most easily has a section of its own, the other four are listed after
-it.
+replies carry a result string. Two give the flags of two serial port
+commands the meaning their help text names. The last five concern tapes
+of mouse and keyboard events and the keyboard in Blitz mode: the one a
+program meets most easily has a section of its own, the other four are
+listed after it.
 
 ### `RenderToBitmap` with a dither bitmap drew on the wrong bitmap {#rendertobitmap-dither}
 
@@ -222,6 +223,46 @@ the empty string; set RXFF_RESULT, or read the number with
 `GetRexxResult(msg,2)`.
 
 Issue: [ReplyRexxMsg made the result string for the wrong messages (#48)](https://github.com/fubar-coder/bb2-c/issues/48).
+
+### The flags of `WriteSerialString` and `ReadSerial` {#serial-flags}
+
+`WriteSerialString unit#,string,Flags` sends a string to a serial unit
+opened with `OpenSerial`. Its help text names two flags: 1 makes the
+command wait until the string is sent, and 2 sends the whole string,
+zero bytes included, where without it the string ends at its first zero
+byte. `ReadSerial(unit#,flags)` returns the next byte that came in, or
+-1 if none is waiting; its help text says that the flag 1 makes it wait
+for a byte instead.
+
+**What happened.** The original took both meanings of
+`WriteSerialString` from the flag 2 and never looked at the flag 1. A
+program that passed 2 got the whole string and a command that waited; a
+program that passed 1 got neither. `ReadSerial` waited only with the
+flag 2, and with the flag 1 returned -1 at once when nothing had come.
+
+**With the port.** Both commands take the flags of their help text:
+
+```
+WriteSerialString 0,a$,2   ; original: the whole string, waits until it is sent
+                           ; port:     the whole string, goes on at once
+WriteSerialString 0,a$,3   ; both:     the whole string, waits until it is sent
+WriteSerialString 0,a$,1   ; original: up to the first zero byte, goes on at once
+                           ; port:     up to the first zero byte, waits
+c.w=ReadSerial(0,1)        ; original: -1 if no byte is waiting
+                           ; port:     waits for the next byte
+c.w=ReadSerial(0,2)        ; both:     waits for the next byte
+```
+
+**What to change.** A program that passes 2 to `WriteSerialString` and
+counts on the command waiting passes 3; that works with the original and
+the port alike. A write that does not wait is still going on when the
+command returns: wait for it, with `Wait` and `SerialEvent`, before the
+next command that writes to the same unit. A program that calls
+`ReadSerial` with the flag 1 to look for a byte without waiting passes 0,
+or leaves the flag out.
+
+Issues: [WriteSerialString took TrueString and DoIO both from the flag 2 (#254)](https://github.com/fubar-coder/bb2-c/issues/254),
+[ReadSerial waited with the flag 2, not 1 (#255)](https://github.com/fubar-coder/bb2-c/issues/255).
 
 ### A simulated event ended a running `Record` or `PlayBack` {#simulated-event-ends-tape}
 
@@ -1084,6 +1125,25 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
 * `LoadBank` of a drawer could turn the bank into one of size -1 at
   another address; a drawer leaves the bank as it is, like a missing file
   ([#72](https://github.com/fubar-coder/bb2-c/issues/72)).
+
+### Decrunchers
+
+`CrMDecrunch` and `PPDecrunch` unpack data packed with Crunch-Mania and
+PowerPacker. They trust the data they are given; these fixes stop the
+cases in which a wrong value in the data made them run away.
+
+* `CrMDecrunch` in place, or with buffers that overlap, of data whose
+  header gave a packed length below 4 overwrote the whole memory; it
+  copies the few bytes there are
+  ([#115](https://github.com/fubar-coder/bb2-c/issues/115)).
+* `CrMDecrunch` of Crunch-Mania data with corrupt tables (CrM2) wrote
+  behind its tables, into the library; it stops unpacking at such a
+  table
+  ([#117](https://github.com/fubar-coder/bb2-c/issues/117)).
+* `PPDecrunch` of PowerPacker data with an efficiency value of 0 or
+  above 15 in the header unpacked garbage around the destination; it
+  unpacks nothing, as for data that are not PowerPacker data
+  ([#118](https://github.com/fubar-coder/bb2-c/issues/118)).
 
 ### File requesters {#file-requester-fixes}
 
@@ -2135,6 +2195,42 @@ One more fix of them changes what an existing program sees:
   characters; it holds the first 65535 characters, the most an ArgString
   can describe
   ([#57](https://github.com/fubar-coder/bb2-c/issues/57)).
+
+### Serial port
+
+These are the commands of the serial port library, which open units of
+`serial.device` and read and write through them. Two more fixes of them
+change what an existing program does:
+[the flags of `WriteSerialString` and `ReadSerial`](#serial-flags).
+
+* `CloseSerial`, `SetSerialBuffer`, `SetSerialLens`, `SetSerialParams`
+  and `SerialEvent` looked for a unit other than 0 at half its place,
+  in the data of another unit, so `CloseSerial 1` with unit 0 open closed
+  unit 0; every command finds each unit at its own place
+  ([#252](https://github.com/fubar-coder/bb2-c/issues/252)).
+* `ReadSerialMem` read through the request the unit uses for writing,
+  so the read settings of `SetSerialParams`, such as the end of file
+  mode, did not apply to it; it reads through the unit's read request
+  ([#253](https://github.com/fubar-coder/bb2-c/issues/253)).
+* `ReadSerialString` read every byte waiting, also more than its string
+  buffer holds, and overwrote the memory behind the buffer; it reads at
+  most what fits, and the rest stays waiting for the next read
+  ([#256](https://github.com/fubar-coder/bb2-c/issues/256)).
+* `CloseSerial` closed the device while a write that does not wait was
+  still going on, and left that write pending; it stops and collects the
+  write and the read before it closes the device
+  ([#258](https://github.com/fubar-coder/bb2-c/issues/258)).
+* When `OpenSerial` got no free signal for writing, it returned 0 but
+  left `serial.device` open, so the unit could not be opened again until
+  a reboot; it closes the device again
+  ([#259](https://github.com/fubar-coder/bb2-c/issues/259)).
+* A second `OpenSerial` of a unit that was open set the unit up again;
+  when the device then refused the second open, the unit counted as
+  closed and the device was never closed. A second `OpenSerial` of an
+  open unit returns 0 and leaves the unit as it is, also with shared
+  access (the flag 32), where the original opened the unit again over the
+  first one
+  ([#260](https://github.com/fubar-coder/bb2-c/issues/260)).
 
 ### Program start
 
