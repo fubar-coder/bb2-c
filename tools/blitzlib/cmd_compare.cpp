@@ -125,7 +125,7 @@ static void free_biglib(struct biglibfile *b)
     free(b->buf);
 }
 
-#define MAXINTENDED 100
+#define MAXINTENDED 1000
 
 /* the list of intended differences; the text stays allocated (the lines
    point into it) */
