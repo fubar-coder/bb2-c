@@ -3614,13 +3614,13 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 1067
-    severity: 1
+    severity: 4
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
-    text: "In a MED module with more than 8 tracks, the commands of tracks 8 to 11, such as tempo changes and pattern breaks, are ignored like those of tracks 4 to 7; the original ran them."
+    text: "In a MED module with more than 8 tracks, tracks 8 to 11 are ignored like the other tracks behind track 3; the original ran their commands, and 03 and FFD wrote into the player's data of other tracks."
     page: libraries
-    anchor: med-tracks-8-11
+    anchor: music-players
   - issue: 1069
     severity: 1
     topic: "System"

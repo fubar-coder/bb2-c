@@ -20,7 +20,7 @@ runtime error checking unless the text says otherwise.
 
 ## Changes for existing programs
 
-Twenty of the fixes change what an existing program does. Two of them
+Nineteen of the fixes change what an existing program does. Two of them
 concern programs that were written to make up for the bug, drawing on
 bitmaps; no known example program, demo or game uses these commands this
 way, but a program of your own might. Two concern the custom copper
@@ -29,12 +29,11 @@ the commands with the values named. Two make `LoadShape` stop with a
 runtime error on pictures it loaded before, and one changes which ARexx
 replies carry a result string. Two give the flags of two serial port
 commands the meaning their help text names, and one turns round what
-`Filter On` and `Filter Off` do with the audio filter. Four concern
+`Filter On` and `Filter Off` do with the audio filter. Three concern
 music and speech: `GetMedVolume` no longer silences the channel it
-reads, a MED module no longer runs the commands of tracks 8 to 11, a
-tracker module with a pattern break in its last song position starts
-again at its restart position, and `Translate$` returns its phonemes
-without an extra 0 byte. One concerns Blitz code with runtime error
+reads, a tracker module with a pattern break in its last song position
+starts again at its restart position, and `Translate$` returns its
+phonemes without an extra 0 byte. One concerns Blitz code with runtime error
 checking that runs in supervisor mode outside a `SetInt` routine: it
 hangs at its first trap. The last five
 concern tapes of mouse and keyboard events and the keyboard in Blitz
@@ -367,29 +366,6 @@ that a new note has started reads `GetMedNote` instead, which still gives
 needs no change.
 
 Issue: [GetMedVolume clears the volume, the channel goes silent (#212)](https://github.com/fubar-coder/bb2-c/issues/212).
-
-### A MED module ran the commands of tracks 8 to 11 {#med-tracks-8-11}
-
-A MED module can have more tracks than the Amiga has channels. The
-player plays tracks 0 to 3, one on each channel, and ignores the notes
-and commands of the other tracks.
-
-**What happened.** The original tested a track against the channel mask
-with the track number modulo 8. In a module with more than 8 tracks,
-tracks 8 to 11 therefore passed like tracks 0 to 3, and their commands
-ran: a tempo change, a position jump or a pattern break in track 8
-changed how the whole song played. The commands 03 (portamento) and FFD
-(set period) there also wrote into the player's data of other tracks.
-Tracks 4 to 7 and 12 to 15 were ignored, as they should be.
-
-**With the port**, tracks 8 to 11 are ignored like the other tracks
-behind track 3. A module with more than 8 tracks can sound different:
-its tempo, jumps and breaks come from tracks 0 to 3 only.
-
-**What to change.** A module that needs a command of tracks 8 to 11
-gets it in one of tracks 0 to 3, in the same line.
-
-Issue: [Tracks 8-11 pass the mask test; commands 03 and FFD write behind their structures (#1067)](https://github.com/fubar-coder/bb2-c/issues/1067).
 
 ### A pattern break in the last song position played on behind the end {#tracker-break-song-end}
 
@@ -2412,9 +2388,8 @@ Two more fixes of them change what an existing program does:
 
 ### Music players (MED and tracker modules) {#music-players}
 
-Three more fixes of them change what an existing program does:
-[`GetMedVolume` silenced the channel it read](#getmedvolume-clears),
-[A MED module ran the commands of tracks 8 to 11](#med-tracks-8-11) and
+Two more fixes of them change what an existing program does:
+[`GetMedVolume` silenced the channel it read](#getmedvolume-clears) and
 [A pattern break in the last song position played on behind the end](#tracker-break-song-end).
 
 * `StartMedModule` of a module with MIDI dumps read the address of a
@@ -2449,6 +2424,11 @@ Three more fixes of them change what an existing program does:
   as part of the line number, and then played the memory behind the
   block; it goes to line xx of the next block
   ([#1066](https://github.com/fubar-coder/bb2-c/issues/1066)).
+* In a MED module with more than 8 tracks, the player let the commands of
+  tracks 8 to 11 run, and the commands 03 and FFD there wrote into its
+  data of other tracks; tracks 8 to 11 are ignored like the other tracks
+  behind track 3, as a MED player does
+  ([#1067](https://github.com/fubar-coder/bb2-c/issues/1067)).
 * The MED tremolo 7xy with a speed of 0 ran the vibrato code in the first
   step of its line; it stays a tremolo
   ([#204](https://github.com/fubar-coder/bb2-c/issues/204)).
