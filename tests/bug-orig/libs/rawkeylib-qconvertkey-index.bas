@@ -11,6 +11,7 @@
 ; The original returns the shifted character of raw code 15 and a byte of
 ; its own code.
 ; Correct: no character for a raw code beyond the tables (0 and 0).
+; @fixed #245
 ; @configs clib
 DEFTYPE .l
 Function.l inject{c.l,q.l}

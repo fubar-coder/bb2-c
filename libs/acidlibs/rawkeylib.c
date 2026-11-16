@@ -27,11 +27,11 @@
  * (`AND #$FFDF:SUB #64`: [ \ ] ^ _ and the backquote stay), else CAPS LOCK (bit 2) makes
  * a-z upper case.
  *
- * BUG(orig) (#245), kept: qconvertkey indexes the table with the raw code & 255
- * - codes 105-255 (key-up codes $80+ included) read on behind the table:
- * the shifted table, then the library's own code (qconvertkey and
- * convertkey).  Those 151 code bytes of the original are appended to the
- * tables as data, so that the C library returns the same values.
+ * Fixed (#245): qconvertkey indexed the table with the raw code & 255
+ * without a limit - codes 105-255 (key-up codes $80+ included) read on
+ * behind the table: the shifted table, then the library's own code.  Here
+ * a code above 104 gives 0 (no character), as the codes without a
+ * character in the tables (bug-orig test rawkeylib-qconvertkey-index).
  * init's result (long, stored by the compiler, used by nobody) is d0 of
  * the last convertkey call (code 104, shifted).
  * unconvert looks through both tables in one run (normal, then shifted;
@@ -67,29 +67,11 @@ BLITZ_LIBFIN();
 
 /* ------------------------------------------------------------ variables */
 
-/* the two tables, followed by the original's code bytes $1CC-$262
-   (qconvertkey reads up to table + 360, see BUG(orig) (#245) above) */
+/* the two tables (unconvert looks through both in one run) */
 static struct BL_PACKED {
     UBYTE normmap[105];
     UBYTE shiftmap[105];
-    UBYTE code[151];
-} maps = {
-    .code = {
-        0x48, 0xe7, 0x20, 0x80, 0x41, 0xfa, 0xff, 0x28, 0x34, 0x01, 0xc4, 0x7c,
-        0x00, 0x03, 0x67, 0x00, 0x00, 0x06, 0x41, 0xfa, 0xff, 0x83, 0xc0, 0x7c,
-        0x00, 0xff, 0x10, 0x30, 0x00, 0x00, 0x67, 0x00, 0x00, 0x52, 0x08, 0x01,
-        0x00, 0x03, 0x67, 0x00, 0x00, 0x2e, 0x0c, 0x40, 0x00, 0x41, 0x65, 0x00,
-        0x00, 0x42, 0x0c, 0x40, 0x00, 0x7a, 0x62, 0x00, 0x00, 0x3a, 0x0c, 0x40,
-        0x00, 0x5a, 0x63, 0x00, 0x00, 0x0a, 0x0c, 0x40, 0x00, 0x61, 0x65, 0x00,
-        0x00, 0x2a, 0xc0, 0x7c, 0xff, 0xdf, 0x04, 0x40, 0x00, 0x40, 0x60, 0x00,
-        0x00, 0x1e, 0x0c, 0x00, 0x00, 0x61, 0x65, 0x00, 0x00, 0x16, 0x0c, 0x00,
-        0x00, 0x7a, 0x62, 0x00, 0x00, 0x0e, 0x08, 0x01, 0x00, 0x02, 0x67, 0x00,
-        0x00, 0x06, 0x04, 0x40, 0x00, 0x20, 0x4c, 0xdf, 0x01, 0x04, 0x4e, 0x75,
-        0x0c, 0x40, 0x00, 0x59, 0x62, 0x00, 0x00, 0x1e, 0x0c, 0x40, 0x00, 0x50,
-        0x65, 0x00, 0x00, 0x08, 0x06, 0x40, 0x00, 0x31, 0x4e, 0x75, 0x0c, 0x40,
-        0x00, 0x4c, 0x65, 0x00, 0x00, 0x16, 0x04,
-    },
-};
+} maps;
 
 /* IOStdReq and MsgPort in one block (init clears both, 82 bytes) */
 static struct BL_PACKED {
@@ -189,12 +171,9 @@ BLITZ_THUNK_POST(unconvert, unconvert_c, "a0-a1", "move.l  _rawkey_d1,d1");
  * The normal table (qualifier & 3 = 0) or the shifted one; with CTRL
  * (bit 3) A-Z/a-z -> 1-26 and the other characters 65-122 except 91-96
  * (`AND #$FFDF:SUB #64`: [ \ ] ^ _ and the backquote stay), else CAPS LOCK (bit 2) makes
- * a-z upper case.  Only the low word of d0 changes.
- *
- * BUG(orig) (#245): the table is indexed with the raw code & 255 - codes
- * 105-255 (key-up codes $80+ included) read on behind the table: the
- * shifted table, then the library's own code (the bytes of the original
- * are appended to the tables).
+ * a-z upper case.  Only the low word of d0 changes.  A raw code (& 255)
+ * above 104 gives 0 (Fixed (#245): the original read behind the table,
+ * the shifted table or the library's own code).
  *
  * @param key  d0: the raw key code (low word)
  * @param qual d1: the qualifier
@@ -206,6 +185,10 @@ static ULONG BLITZ_ROUTINE qconvertkey_c(ULONG key BL_REG(d0), ULONG qual BL_REG
     UWORD w;
 
     BL_SETW(key, key & 255);                    /* AND #255,d0 */
+    if ((UWORD)key > 104) {                     /* Fixed (#245) */
+        BL_SETW(key, 0);
+        return key;
+    }
     BL_SETB(key, map[(UWORD)key]);              /* MOVE.b 0(a0,d0),d0 */
     w = key;
     if (!(UBYTE)w)

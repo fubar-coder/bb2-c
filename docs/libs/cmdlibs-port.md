@@ -320,7 +320,7 @@ C, CD binary older than the source (token `Text` missing) – the state of the b
 
 ## 130 rawkeylib
 
-C, declarations identical. `libincs:rawcode` is missing on the CD; everything except unconvert is translated from the binary. Init opens console.device and fills two tables (105 entries); F1–F10 → 129–138, cursor keys → 28–31, Help → 139, otherwise RawKeyConvert. BUG(orig) (#245): qconvertkey indexes with code & 255 beyond the tables into the lib's own code (the 151 code bytes of the original are appended as data). No dedicated runtime test (a direct ALibJsr call from BASIC already hung with the original libs); checked indirectly via windowslib (keys, Edit$ in t72).
+C, declarations identical. `libincs:rawcode` is missing on the CD; everything except unconvert is translated from the binary. Init opens console.device and fills two tables (105 entries); F1–F10 → 129–138, cursor keys → 28–31, Help → 139, otherwise RawKeyConvert. Fixed (intended deviation, #245): qconvertkey indexed with code & 255 beyond the tables into the lib's own code; a code above 104 now gives 0 (bug-orig test `rawkeylib-qconvertkey-index`). No dedicated runtime test (a direct ALibJsr call from BASIC already hung with the original libs); checked indirectly via windowslib (keys, Edit$ in t72).
 
 ## 138 windowslib
 
