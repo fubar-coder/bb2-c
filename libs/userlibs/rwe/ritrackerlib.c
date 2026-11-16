@@ -39,12 +39,6 @@
  * locals.  No assembler besides the thunks (and DIVU through bl_divu_w).
  *
  * BUG(orig) of RI's code:
- *   - _ciaplayerinit is dead (RTS first): no interrupt plays the module,
- *     SetInt (intlib $C100) and the CIA-B timer setup behind it never
- *     run; the code is kept (ciaplayerinit_unreached) and links intlib
- *     like the original.  deftime stays 0, so a tempo command (Fxx >=
- *     $20) writes 0 to CIA-B timer A's latch ($BFD400/$BFD500) and to
- *     ciatime (#571).
  *   - TrackerChannels: a masked voice does not advance the pattern
  *     offset, so the following voices play the notes of the voice
  *     before (#568); effects (mt_CheckEfx) and the loop pointers of
@@ -54,15 +48,23 @@
  *   - TrackInit while Tracker Off does not initialise the song (mt_init
  *     returns) but enables playing; Tracker On then plays with the old
  *     song pointer (#573).
- * Not a defect: effect 8xx (RI's track event) stores its value in
- * nor_TrkEvt on the ticks after the first, which no command reads (an
- * unused variable).
+ * Not a defect: _ciaplayerinit is dead (RTS first), so no interrupt
+ * plays the module - SetInt (intlib $C100) and the CIA-B timer setup
+ * behind it never run; the code is kept (ciaplayerinit_unreached) and
+ * links intlib like the original.  The program plays the module with
+ * TrackPlay, so a tempo command cannot change the speed.  Effect 8xx
+ * (RI's track event) stores its value in nor_TrkEvt on the ticks after
+ * the first, which no command reads (an unused variable).
  * BUG(orig) of the play routine (the known PT2.3A bugs, cf. the changelog
  * of 8bitbubsy's pt23f replayer):
  *   - mt_init: the CLR.L of the first longword of every sample also
  *     clears 4 bytes behind the module for empty samples at its end
  *     (#570).
  * Fixed in RI's code (intended deviations):
+ *   - A tempo command (F20-FFF) only stores RealTempo; the original also
+ *     wrote deftime / tempo, 0 (deftime is set only by the dead
+ *     _ciaplayerinit), to ciatime and to the latch of CIA-B timer A
+ *     ($BFD400/$BFD500), a timer the library never allocated (#571).
  *   - Fxx compares unsigned: F80-FFF are tempos; the original compared
  *     signed (CMP.B #32: BGE) and set the speed to $80-$FF (#569).
  * Fixed in the play routine (intended deviations):
@@ -389,20 +391,16 @@ static UWORD cmdword(const struct chan *c)
 
 /* ---------------------------------------------------------------- glue */
 
-/* SetTempo: d0 = the tempo (>= 32 from mt_SetSpeed); the CIA value is
-   deftime / tempo - deftime is 0 (BUG(orig), #571) */
+/* SetTempo: d0 = the tempo (>= 32 from mt_SetSpeed), kept in RealTempo.
+   Fixed (#571): the original also wrote deftime / tempo to ciatime and
+   to the latch of CIA-B timer A ($BFD400/$BFD500), a timer the library
+   never allocated; deftime is set only by the dead _ciaplayerinit, so
+   that was always 0.  The tick rate is the program's (TrackPlay). */
 static void settempo(UWORD tempo)
 {
-    ULONG timer;
-
     if ((WORD)tempo <= 32)              /* CMP.w #32,d0: BGT */
         tempo = 32;
     glue.realtempo = tempo;
-    timer = glue.deftime;
-    timer = bl_divu_w(timer, tempo);
-    glue.ciatime = (UWORD)timer;
-    CIABTALO = (UBYTE)timer;
-    CIABTAHI = (UBYTE)((UWORD)timer >> 8);
 }
 
 /* l6_Int, the interrupt code of the dead _ciaplayerinit */
@@ -412,8 +410,9 @@ static void BLITZ_ROUTINE l6_int(void)
     mt_music_c();
 }
 
-/* the body of _ciaplayerinit behind its first RTS: never reached
-   (BUG(orig), #571); kept, with its SetInt call that links intlib */
+/* the body of _ciaplayerinit behind its first RTS: never reached (the
+   program plays the module with TrackPlay); kept, with its SetInt call
+   that links intlib */
 static void BLITZ_ROUTINE ciaplayerinit_unreached(void)
 {
     struct ExecBase *eb = *(struct ExecBase **)4;
@@ -1295,8 +1294,7 @@ static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
  * 0 (its sample clearing: BUG(orig) (#570); its pattern scan: Fixed (#477)).
  * Playing is enabled even while Tracker Off, where mt_init does nothing:
  * Tracker On then plays with the old song pointer (BUG(orig) (#573)).
- * The program calls TrackPlay itself (the CIA interrupt setup is dead,
- * #571).
+ * The program calls TrackPlay itself (the CIA interrupt setup is dead).
  * @param module  d0: the module (a Protracker file in memory, 31
  *                samples, "M.K."; not checked)
  */

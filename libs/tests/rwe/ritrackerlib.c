@@ -23,7 +23,8 @@
  * module as offsets; the module bytes and 16 bytes behind it (mt_init
  * clears the first longword of every sample, also behind the module, EFx
  * inverts sample bytes); the filter bit of CIA-A PRA; the counter of
- * CIA-B timer A (a tempo command writes the timer's latch; the test
+ * CIA-B timer A (the original's tempo command writes the timer's latch,
+ * Fixed (#571); the test
  * allocates the timer through ciab.resource and keeps it stopped, so
  * writing the high byte loads the counter); and the kept registers.
  *

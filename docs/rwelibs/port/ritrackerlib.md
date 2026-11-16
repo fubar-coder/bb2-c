@@ -115,11 +115,6 @@ original.
 
 RI's glue:
 
-* `_ciaplayerinit` returns at once (an `RTS` before its code): no
-  interrupt plays the module; `deftime` stays 0, so a tempo command
-  (`Fxx` with xx ≥ $20) writes 0 to CIA-B timer A's latch
-  (`$BFD400`/`$BFD500`) – a timer the library never allocated – and to
-  `ciatime` (#571).
 * `TrackerChannels`: a masked voice does not advance the pattern
   offset, so the following voices play the notes of the voice before
   (#568); the effects (`mt_CheckEfx`) and the loop registers of
@@ -131,7 +126,9 @@ RI's glue:
   is enabled; `Tracker On` then plays with the old song pointer and
   sample starts (#573).
 
-Not a defect: effect 8xx (RI's track event, `nor_TrackEvent`) stores its
+Not a defect: `_ciaplayerinit` returns at once (an `RTS` before its
+code), so no interrupt plays the module; the program plays it with
+`TrackPlay`, and a tempo command cannot change the speed. Effect 8xx (RI's track event, `nor_TrackEvent`) stores its
 value in `nor_TrkEvt` on the ticks after the first, which no command
 reads – an unused variable.
 
@@ -151,6 +148,15 @@ kind F), in RI's code:
   the original compared signed (`CMP.B #32: BGE`) and set the speed to
   128–255 (#569; library test `rwe_ritrackerlib`, the second module's
   F81).
+* A tempo command (F20–FFF, `SetTempo`) only stores `RealTempo`; the
+  original also wrote `deftime` / tempo to `ciatime` and to the latch of
+  CIA-B timer A (`$BFD400`/`$BFD500`), a timer the library never
+  allocated. `deftime` is set only by the dead `_ciaplayerinit`, so the
+  value was always 0; writing the high byte also loads the counter of a
+  stopped timer and, in one-shot mode, starts it (#571; library test
+  `rwe_ritrackerlib`, the counter of CIA-B timer A after the second
+  module's tempo commands). The tempo still does not change the speed:
+  that is the program's `TrackPlay` rate.
 
 In the play routine:
 
