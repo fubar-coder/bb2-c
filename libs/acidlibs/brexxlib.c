@@ -56,11 +56,12 @@
  * Fixed (#103): XStatus returned the mode word with bit 15 ($8001, $8002,
  * $8000 until the handler had run); here without it (bug-orig test
  * brexxlib-xstatus-bit15).
+ * Fixed (#97): ClickButton's second (button up) call got d0 as left by
+ * the first one's addtape: 0 (left) for an executed event, the QuietTrap
+ * value when the event went to a tape - ClickButton 0 under TapeTrap with
+ * QuietTrap On recorded "left down, RIGHT up".  Here both events are of
+ * the given button (bug-orig test brexxlib-clickbutton-d0, corpus t101).
  * BUG(orig), kept:
- *  - ClickButton: the second (button up) call gets d0 as left by the
- *    first one's addtape: 0 normally, but the QuietTrap value when the
- *    event went to a tape - ClickButton 0 under TapeTrap with QuietTrap
- *    On records "left down, RIGHT up". (#97)
  *  - AbsMouse and RelMouse both make POINTERPOS events (RelMouse with
  *    qualifier RELATIVEMOUSE). (#98)
  *  - PlayWait restarts the given tape (with signal) when the low byte of
@@ -335,27 +336,24 @@ static void inject(void)
 }
 
 /* addtape: append dumevent to tapeadd, or let the handler inject it.
-   Returns the d0 the original leaves (see ClickButton).  Fixed (#96): the
-   mode of a running Record or PlayBack stays (the original cleared it). */
-static ULONG addtape(void)
+   Fixed (#96): the mode of a running Record or PlayBack stays (the
+   original cleared it). */
+static void addtape(void)
 {
     struct InputEvent *n, **link;
 
-    if (!tapeadd) {
-        inject();
-        return 0;
+    if (tapeadd) {
+        n = globalloc(IESIZE);
+        copyw((UWORD *)n, (const UWORD *)&dumevent, IESIZE / 2);
+        link = &tapeadd->first;         /* find where in the tape */
+        while (*link)
+            link = &(*link)->ie_NextEvent;
+        *link = n;
+        n->ie_NextEvent = 0;
+        if (trap_mode)
+            return;
     }
-    n = globalloc(IESIZE);
-    copyw((UWORD *)n, (const UWORD *)&dumevent, IESIZE / 2);
-    link = &tapeadd->first;             /* find where in the tape */
-    while (*link)
-        link = &(*link)->ie_NextEvent;
-    *link = n;
-    n->ie_NextEvent = 0;
-    if (trap_mode)
-        return trap_mode;
     inject();
-    return 0;
 }
 
 /* ---------------------------------------------------- simple settings */
@@ -492,14 +490,14 @@ BLITZ_ALIAS(domacrokey, domacrokey_c);
 
 /* ------------------------------------------------------- simple events */
 
-static ULONG movemouse(ULONG x, ULONG y, UWORD qual)
+static void movemouse(ULONG x, ULONG y, UWORD qual)
 {
     clearie();
     dumevent.ie_Class = IECLASS_POINTERPOS;
     dumevent.ie_Qualifier = qual;
     dumevent.ie_X = (WORD)x;
     dumevent.ie_Y = (WORD)y;
-    return addtape();
+    addtape();
 }
 
 /**
@@ -532,7 +530,7 @@ static void BLITZ_ROUTINE dorelmouse_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1))
 BLITZ_ALIAS(dorelmouse, dorelmouse_c);
 
 /* mouse button d0 (0 = left), d1 = down (<> 0) / up */
-static ULONG mousebutton(ULONG b, ULONG on)
+static void mousebutton(ULONG b, ULONG on)
 {
     UWORD code;
 
@@ -543,7 +541,7 @@ static ULONG mousebutton(ULONG b, ULONG on)
     if (!(UWORD)on)
         code |= IECODE_UP_PREFIX;
     dumevent.ie_Code = code;
-    return addtape();
+    addtape();
 }
 
 /**
@@ -564,17 +562,18 @@ BLITZ_ALIAS(domousebutton, domousebutton_c);
 /**
  * @brief ClickButton Button: a mouse button press and release.
  *
- * Two MouseButton events: down, then up.
- * BUG(orig) (#97): the up event gets the d0 the first call left: 0
- * normally, but the QuietTrap value when the event went to a tape -
- * ClickButton 0 under TapeTrap with QuietTrap On records "left down,
- * RIGHT up".
+ * Two MouseButton events of the button: down, then up.
+ * Fixed (#97): in the original the up event got the d0 the first call
+ * left: 0 (the left button) for an executed event, the QuietTrap value
+ * when the event went to a tape - ClickButton 0 under TapeTrap with
+ * QuietTrap On recorded "left down, RIGHT up".
  *
  * @param b  d0.w: the button, 0 = left, otherwise right
  */
 static void BLITZ_ROUTINE doclickbutton_c(ULONG b BL_REG(d0))
 {
-    mousebutton(mousebutton(b, 1), 0);
+    mousebutton(b, 1);
+    mousebutton(b, 0);                          /* Fixed (#97) */
 }
 BLITZ_ALIAS(doclickbutton, doclickbutton_c);
 
