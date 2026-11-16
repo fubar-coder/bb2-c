@@ -20,7 +20,7 @@ runtime error checking unless the text says otherwise.
 
 ## Changes for existing programs
 
-Eighteen of the fixes change what an existing program does. Two of them
+Twenty of the fixes change what an existing program does. Two of them
 concern programs that were written to make up for the bug, drawing on
 bitmaps; no known example program, demo or game uses these commands this
 way, but a program of your own might. Two concern the custom copper
@@ -29,11 +29,14 @@ the commands with the values named. Two make `LoadShape` stop with a
 runtime error on pictures it loaded before, and one changes which ARexx
 replies carry a result string. Two give the flags of two serial port
 commands the meaning their help text names, and one turns round what
-`Filter On` and `Filter Off` do with the audio filter. Three concern
+`Filter On` and `Filter Off` do with the audio filter. Four concern
 music and speech: `GetMedVolume` no longer silences the channel it
-reads, a tracker module with a pattern break in its last song position
-starts again at its restart position, and `Translate$` returns its
-phonemes without an extra 0 byte. The last five
+reads, a MED module no longer runs the commands of tracks 8 to 11, a
+tracker module with a pattern break in its last song position starts
+again at its restart position, and `Translate$` returns its phonemes
+without an extra 0 byte. One concerns Blitz code with runtime error
+checking that runs in supervisor mode outside a `SetInt` routine: it
+hangs at its first trap. The last five
 concern tapes of mouse and keyboard events and the keyboard in Blitz
 mode: the one a program meets most easily has a section of its own, the
 other four are listed after it.
@@ -365,6 +368,29 @@ needs no change.
 
 Issue: [GetMedVolume clears the volume, the channel goes silent (#212)](https://github.com/fubar-coder/bb2-c/issues/212).
 
+### A MED module ran the commands of tracks 8 to 11 {#med-tracks-8-11}
+
+A MED module can have more tracks than the Amiga has channels. The
+player plays tracks 0 to 3, one on each channel, and ignores the notes
+and commands of the other tracks.
+
+**What happened.** The original tested a track against the channel mask
+with the track number modulo 8. In a module with more than 8 tracks,
+tracks 8 to 11 therefore passed like tracks 0 to 3, and their commands
+ran: a tempo change, a position jump or a pattern break in track 8
+changed how the whole song played. The commands 03 (portamento) and FFD
+(set period) there also wrote into the player's data of other tracks.
+Tracks 4 to 7 and 12 to 15 were ignored, as they should be.
+
+**With the port**, tracks 8 to 11 are ignored like the other tracks
+behind track 3. A module with more than 8 tracks can sound different:
+its tempo, jumps and breaks come from tracks 0 to 3 only.
+
+**What to change.** A module that needs a command of tracks 8 to 11
+gets it in one of tracks 0 to 3, in the same line.
+
+Issue: [Tracks 8-11 pass the mask test; commands 03 and FFD write behind their structures (#1067)](https://github.com/fubar-coder/bb2-c/issues/1067).
+
 ### A pattern break in the last song position played on behind the end {#tracker-break-song-end}
 
 A tracker module plays its patterns in the order of its song positions.
@@ -433,6 +459,29 @@ result itself, for example with `Left$(t$,Len(t$)-1)`, now removes a
 real one: drop that step.
 
 Issue: [Translate$ returns the length including the terminating 0 (#277)](https://github.com/fubar-coder/bb2-c/issues/277).
+
+### Runtime error checking in supervisor mode outside `SetInt` {#supervisor-mode-traps}
+
+A program compiled with runtime error checking, or one that uses
+`SetErr`, handles its own runtime errors. Each program takes only its
+own traps, through the trap handler of its task, so two such programs can
+run at the same time without taking away each other's error handling.
+The original put its handlers into the trap vectors of the whole
+machine, and the program that ended first removed those of the other.
+
+**What changes.** AmigaOS calls the trap handler of a task only while
+the task runs in user mode. A `SetInt` routine runs in supervisor mode,
+and its traps are handled as before. Other Blitz code compiled with
+runtime error checking that runs in supervisor mode, such as a routine
+called through exec's `Supervisor()` or an interrupt server installed by
+hand, hangs the machine at its first trap; the original's handlers took
+such a trap. AmiBlitz3 behaves like the port.
+
+**What to change.** Compile the code that runs in supervisor mode
+without runtime error checking, between `RunErrsOff` and `RunErrsOn`, or
+make it a `SetInt` routine.
+
+Issue: [Runtime error checking takes the global trap vectors: two programs break each other (#1069)](https://github.com/fubar-coder/bb2-c/issues/1069).
 
 ### A simulated event ended a running `Record` or `PlayBack` {#simulated-event-ends-tape}
 
@@ -2363,8 +2412,9 @@ Two more fixes of them change what an existing program does:
 
 ### Music players (MED and tracker modules) {#music-players}
 
-Two more fixes of them change what an existing program does:
-[`GetMedVolume` silenced the channel it read](#getmedvolume-clears) and
+Three more fixes of them change what an existing program does:
+[`GetMedVolume` silenced the channel it read](#getmedvolume-clears),
+[A MED module ran the commands of tracks 8 to 11](#med-tracks-8-11) and
 [A pattern break in the last song position played on behind the end](#tracker-break-song-end).
 
 * `StartMedModule` of a module with MIDI dumps read the address of a
@@ -2399,10 +2449,6 @@ Two more fixes of them change what an existing program does:
   as part of the line number, and then played the memory behind the
   block; it goes to line xx of the next block
   ([#1066](https://github.com/fubar-coder/bb2-c/issues/1066)).
-* In a MED module with more than 8 tracks, the player let the commands of
-  tracks 8 to 11 run, and the commands 03 and FFD there wrote into its
-  data of other tracks; tracks 8 to 11 are ignored like tracks 4 to 7
-  ([#1067](https://github.com/fubar-coder/bb2-c/issues/1067)).
 * The MED tremolo 7xy with a speed of 0 ran the vibrato code in the first
   step of its line; it stays a tremolo
   ([#204](https://github.com/fubar-coder/bb2-c/issues/204)).
@@ -2569,6 +2615,9 @@ change what an existing program does:
 
 ### Debugger and runtime error checking {#debugger-fixes}
 
+One more fix of this area changes what an existing program does:
+[Runtime error checking in supervisor mode outside `SetInt`](#supervisor-mode-traps).
+
 * When the debugger evaluated an expression such as a short string, it
   showed the memory behind the string up to 256 characters; it shows only
   the characters of the string
@@ -2587,15 +2636,6 @@ change what an existing program does:
   closed `intuition.library` inside the interrupt; the handler gets the
   message, and `intuition.library` is closed only when the program ends
   ([#246](https://github.com/fubar-coder/bb2-c/issues/246)).
-* Runtime error checking, the debugger and `SetErr` put their handlers
-  into the trap vectors of the whole machine, so with two such programs
-  running at once, the one that ended first took away the other's error
-  handling; each program takes only its own traps, through the trap
-  handler of its task. One case changes with it: Blitz code with runtime
-  error checking that runs in supervisor mode outside a `SetInt`
-  routine, such as a routine called through exec's `Supervisor()`, hangs
-  at its first trap, as in AmiBlitz3; the original's handlers took that
-  trap ([#1069](https://github.com/fubar-coder/bb2-c/issues/1069)).
 
 ## Runtime errors in executables {#runtime-error-texts}
 

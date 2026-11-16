@@ -3614,21 +3614,21 @@ rows:
     page: libraries
     anchor: music-players
   - issue: 1067
-    severity: 4
+    severity: 1
     topic: "Sound"
     library: "medlib"
     command: "PlayMed"
-    text: "In a MED module with more than 8 tracks, tracks 8 to 11 are ignored like tracks 4 to 7; the original ran their commands, and 03 and FFD wrote into the player's data of other tracks."
+    text: "In a MED module with more than 8 tracks, the commands of tracks 8 to 11, such as tempo changes and pattern breaks, are ignored like those of tracks 4 to 7; the original ran them."
     page: libraries
-    anchor: music-players
+    anchor: med-tracks-8-11
   - issue: 1069
-    severity: 3
+    severity: 1
     topic: "System"
     library: "rundebuglib, debuglib, errtraplib"
     command: ""
-    text: "Two programs with runtime error checking or `SetErr` run side by side, each with its own error handling; in the original the one that ended first took away the other's."
+    text: "Two programs with runtime error checking or `SetErr` run side by side; code with runtime error checking that runs in supervisor mode outside a `SetInt` routine hangs at its first trap, which the original took."
     page: libraries
-    anchor: debugger-fixes
+    anchor: supervisor-mode-traps
   - issue: 1070
     severity: 4
     topic: "Compiler"
