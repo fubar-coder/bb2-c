@@ -1297,6 +1297,7 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             svoff = lastoffset;
             et = vartype & 0xff;
             ext_assignstart();
+            intrinsic_let();        /* no asm counterpart (eval.h) */
             c = eval(&et);
             ext_assigncheck(vartype);
             lastoffset = svoff;

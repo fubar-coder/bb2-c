@@ -1,0 +1,27 @@
+; Frac of a Quick assigned to a Quick in AB3 mode (change
+; compiler-intrinsics, spec compiler/intrinsics): the fraction with the
+; sign of the value.  AB3 mode's vallib (AmiBlitz3's) takes a Float for
+; Frac, which is not the form of the intrinsic: the call stays ("calls 3":
+; qutofl, Frac, fltoqu), as in AmiBlitz3
+Function.l jsrs{a.l,b.l}
+  n.l = 0
+  While a < b
+    If Peek.w(a) = $4EB9
+      n = n + 1 : a = a + 4
+    EndIf
+    a = a + 2
+  Wend
+  Function Return n
+End Function
+q1.q = 0 : q2.q = 0
+q1 = 1.25 : q2 = Frac(q1) : NPrint q2
+q1 = -1.25 : q2 = Frac(q1) : NPrint q2
+q1 = 0.5 : q2 = Frac(q1) : NPrint q2
+q1 = -3 : q2 = Frac(q1) : NPrint q2
+q1 = 300.75 : q2 = Frac(q1) : NPrint q2
+q1 = -1.25
+.a1
+q2 = Frac(q1)
+.a2
+NPrint q2, " calls ", jsrs{?a1, ?a2}
+End

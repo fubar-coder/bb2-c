@@ -131,9 +131,45 @@ equality test of the spec (intrinsic against `f=Frac(q1) : q2=f`) fails for
 those values. Order: #1064 first. If this change must land first, the
 equality test keeps only integer parts below 256 until #1064 is in.
 
-Runtime error checking: `Frac` has no error check (`BLITZ_SUBS(doffrac, 0,
-0)`), so there is none to keep or drop; the checking-mode tests check that
-the result is the same and the code has no extra call.
+Runtime error checking: since #1064 `Frac` has the error check of `Int`
+(`BLITZ_SUBS(doffrac, intchk, 0)`, `libs/acidlibs/vallib.c:80-84`: a string
+is the runtime error "Illegal Type"); for a Quick it cannot fail, and the
+intrinsic, like `Int`'s, makes no `intchk` call. The checking-mode tests
+check that the result is the same and the code has no call.
+
+Implemented (task 3.1). The condition, from the probe of task 1.1 (below):
+the call is the first element of the right side of an assignment to a
+number (`dolet2` calls `intrinsic_let` before its `eval`, which records the
+`evaldepth` of that evaluation and the number of its first element;
+`getelement2` counts the elements it begins), the asked type is Quick
+(`old`), the argument's type is Quick, and the source behind the closing
+parenthesis is, after spaces, a 0, `:` or `;` (read from `srcptr`
+without `getchar_`, so that no CNIF, `~constant~` or UsePath marker is
+acted on; anything else, also `Else`, keeps the library). The code:
+`tst.l d0 : bpl.s 1f : neg.l d0 : swap d0 : clr.w d0 : swap d0 : neg.l d0
+: bra.s 2f : 1: swap d0 : clr.w d0 : swap d0 : 2:` (22 bytes; a positive
+value 26 cycles, a negative one 46). `intrinsic-frac` compares it with
+the library (`f=Frac(q1) : q3=f`) for 11 integer parts at 264 fraction
+words each, and with the definition for every fraction word of 0, -1,
+255 and -32768.
+
+The probe (task 1.1: `old`, `evaldepth`, the depth of the precedence stack
+`precsp - precstack` and `regat` at the entry of `libfunction`, printed
+by a temporary `Write` in `function`, runtime error checking on):
+
+| Source | old | evaldepth | prec | regat | intrinsic |
+|---|---|---|---|---|---|
+| `q2=Frac(q1)` | 4 | 1 | 1 | 0 | yes |
+| `q2=Frac(q1)*2` | 4 | 1 | 1 | 0 | no (`*` behind) |
+| `q2=1+Frac(q1)` | 4 | 1 | 2 | 1 | no (second element) |
+| `q2=(Frac(q1))` | 4 | 1 | 2 | 0 | no (second element) |
+| `Poke.q a,Frac(q1)` | 4 | 1 | 1 | 2 | no (not an assignment) |
+| `If Frac(q1)>0.5` | 0 (unknown -1) | 1 | 1 | 0 | no |
+| `NPrint Frac(q1)` | 0 (unknown -1) | 1 | 1 | 0 | no |
+| `f=Frac(q1)` | 5 | 1 | 1 | 0 | no (Float target) |
+| `q2=-Frac(q1)` | 4 | 1 | 1 | 0 | no (second element) |
+| `c=Int(q1)` | 3 | 1 | 1 | 0 | (Int: always) |
+| `c=c+Int(q1)` | 3 | 1 | 2 | 1 | (Int: always) |
 
 ### 4. Len and Asc of a plain string variable
 
@@ -247,6 +283,13 @@ change is the default; rollback is reverting the commit. Land after #1064
    also show Quick there? Answered by the first task of group 2 (a probe of the
    compiler with the nested cases). The answer decides the exact test of the
    condition, not the behaviour in the spec.
+   Answer (task 1.1, the table in Decision 3): no. `q2=Frac(q1)*2`,
+   `q2=-Frac(q1)` and `Poke.q a,Frac(q1)` show the same `old` (Quick) and
+   `evaldepth` (1) as `q2=Frac(q1)`, and the first two the same precedence
+   depth; a parenthesis and a left operand show only a deeper precedence
+   stack. The condition is therefore the position (the first element of
+   an assignment's right side, `intrinsic_let`) and the end of the
+   statement behind the call, not `old` and `evaldepth` alone.
 2. Does `Int` with an argument that holds a partial result in a register (the
    `regat` mechanism) need the value moved to d0 first? Same task group.
    Answer (task 2.1): no. libfunction saves the registers below `regat`

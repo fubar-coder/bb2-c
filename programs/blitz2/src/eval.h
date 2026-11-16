@@ -147,11 +147,14 @@ extern UWORD evaldepth;
    docs/blitz2/extensions.md): a library function compiled as inline code
    instead of a call, in eval.c's table intrinsics[].  libfunction arms
    one for its argument; these are its points in the shared code.
+   intrinsic_let (dolet2): the right side of an assignment to a number
+   begins (for Frac, whose Quick result is used only there).
    intrinsic_argpush (getap): the push flag for an argument of unknown
    type, 2 for the argument of an armed intrinsic (maineval2 then pushes
    no type word for a Quick the intrinsic accepts), else 1 (evalu2).
    intrinsic_code (dolibtoke, in place of userjsr): emits the inline code
    if the argument was accepted; FALSE = make the call. */
+void intrinsic_let(void);
 WORD intrinsic_argpush(void);
 BOOL intrinsic_code(void);
 

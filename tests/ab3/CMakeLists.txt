@@ -453,8 +453,11 @@ ab3_cli_case(chr_const chr_const.ab3 REF)
 # the intrinsics (change compiler-intrinsics, spec compiler/intrinsics):
 # Int of a Quick compiled inline in AB3 mode, with the values of the
 # library; AmiBlitz3 calls its library (REF_EXPECT: its count of calls,
-# docs/ab3/variant.md)
+# docs/ab3/variant.md).  Frac of a Quick stays the call in AB3 mode:
+# AmiBlitz3's vallib Frac takes a Float (not the form of the intrinsic;
+# qutofl, Frac and fltoqu, as in AmiBlitz3)
 ab3_cli_case(intrinsic_int intrinsic_int.ab3 REF REF_EXPECT intrinsic_int.ref.expect)
+ab3_cli_case(intrinsic_frac intrinsic_frac.ab3 REF)
 # the system date fixed by inject (ab3-mode-g3 task 1.2): the compiler and
 # the program run under inject datestamp=2026-10-25.  AmiBlitz3's
 # SystemDate (run time) and __DATE__ (compile time) go through DateStamp

@@ -129,6 +129,13 @@ UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
 /* Fixed (#978), no asm counterpart: pc after the code of the last byte
    value varcont fetched (with its conversion), for eval5 */
 static ULONG bytevalend = 0;
+/* the intrinsics (no asm counterpart, see intrinsics[]): the number of
+   elements getelement2 has begun, and where the right side of the last
+   assignment began (intrinsic_let: its evaldepth and the number of its
+   first element) */
+static ULONG elemcount = 0;
+static UWORD letdepth = 0;
+static ULONG letelem = 0;
 
 /* forward declarations of the internal routines */
 static void fdo2(WORD lvo);
@@ -1623,6 +1630,7 @@ static UWORD getelement2(UWORD *type)
     UWORD c = getchar3();
     struct forthent *f;
 
+    elemcount++;                    /* for the intrinsics */
     if (c & 0x8000)
         ext_evalvalue(0, 0);        /* a token: a value without a type */
     if (c == '(' || c == '{')
@@ -2259,10 +2267,54 @@ static void intquick(void)
     pokewd(0x48c0);                 /* ext.l d0 */
 }
 
+/* Frac(Quick) as a Quick (vallib doffrac): only where the Float result
+   would be converted to a Quick at once and unchanged - the call is the
+   whole right side of an assignment to a Quick (dolet2: the first element
+   of the right side's evaluation, asked for a Quick; see intrinsic_let)
+   and the statement ends behind its closing parenthesis (fracend).  The
+   library's Float is the exact fraction (#1064), which the assignment's
+   fltoqu converts back exactly, so the Quick here is the same: the low
+   word of the magnitude with the sign of the argument (0 when it is 0:
+   Frac(-3.0) = 0, Frac(-1.25) = -0.25 = $FFFFC000).  In every other
+   context Frac stays the library's Float. */
+static BOOL frachere(UWORD oldtype)
+{
+    return oldtype == T_QUICK && evaldepth == letdepth && elemcount == letelem;
+}
+
+/* the statement ends behind the closing parenthesis: a 0 (end of line),
+   ':' or a comment after spaces.  Read from srcptr without getchar_, so
+   that nothing of the source (a CNIF, a ~constant~, a UsePath end) is
+   acted on; another byte (also 1 and 2, those markers) does not end it */
+static BOOL fracend(void)
+{
+    const UBYTE *p = srcptr;
+
+    while (*p == ' ')
+        p++;
+    return *p == 0 || *p == ':' || *p == ';';
+}
+
+static void fracquick(void)
+{
+    pokewd(0x4a80);                 /* tst.l d0 */
+    pokewd(0x6a0c);                 /* bpl.s 1f */
+    pokewd(0x4480);                 /* neg.l d0 (the magnitude) */
+    pokewd(0x4840);                 /* swap d0 */
+    pokewd(0x4240);                 /* clr.w d0 */
+    pokewd(0x4840);                 /* swap d0 (its fraction word) */
+    pokewd(0x4480);                 /* neg.l d0 */
+    pokewd(0x6006);                 /* bra.s 2f */
+    pokewd(0x4840);                 /* 1: swap d0 */
+    pokewd(0x4240);                 /* clr.w d0 */
+    pokewd(0x4840);                 /* swap d0 */
+}                                   /* 2: */
+
 /* the library tokens: vallib (libs/variants/bb2-2.10/libnums.h LIB_vallib
    120; the same in AB3 mode's list) */
 static const struct intrinsic intrinsics[] = {
     { (120 << 7) + 2, T_LONG, NULL, NULL, intquick },       /* Int */
+    { (120 << 7) + 4, T_QUICK, frachere, fracend, fracquick }, /* Frac */
     { 0, 0, NULL, NULL, NULL }
 };
 
@@ -2293,6 +2345,13 @@ static const struct intrinsic *intrfind(UWORD tok, const UBYTE *sub, UWORD np,
         if (in->token == tok)
             return !in->here || in->here(oldtype) ? in : NULL;
     return NULL;
+}
+
+/* see eval.h */
+void intrinsic_let(void)
+{
+    letdepth = evaldepth + 1;
+    letelem = elemcount + 1;
 }
 
 /* see eval.h */
