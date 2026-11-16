@@ -1,0 +1,4 @@
+[run]
+class 2 qualifier 8000
+dx 8 dy 2
+rc=0

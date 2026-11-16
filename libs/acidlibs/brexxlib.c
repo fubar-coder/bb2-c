@@ -61,9 +61,10 @@
  * value when the event went to a tape - ClickButton 0 under TapeTrap with
  * QuietTrap On recorded "left down, RIGHT up".  Here both events are of
  * the given button (bug-orig test brexxlib-clickbutton-d0, corpus t101).
+ * Fixed (#98): AbsMouse and RelMouse both made POINTERPOS events (RelMouse
+ * with the qualifier RELATIVEMOUSE); RelMouse makes a RAWMOUSE event (bug-
+ * orig test brexxlib-relmouse-class, corpus t101).
  * BUG(orig), kept:
- *  - AbsMouse and RelMouse both make POINTERPOS events (RelMouse with
- *    qualifier RELATIVEMOUSE). (#98)
  *  - PlayWait restarts the given tape (with signal) when the low byte of
  *    mode is 2 and waits; otherwise it returns at once. (#99)
  *  - The playback time comparison takes the time of the FIRST event of
@@ -490,10 +491,11 @@ BLITZ_ALIAS(domacrokey, domacrokey_c);
 
 /* ------------------------------------------------------- simple events */
 
-static void movemouse(ULONG x, ULONG y, UWORD qual)
+/* the mouse event of AbsMouse (POINTERPOS) or RelMouse (RAWMOUSE) */
+static void movemouse(ULONG x, ULONG y, UBYTE class, UWORD qual)
 {
     clearie();
-    dumevent.ie_Class = IECLASS_POINTERPOS;
+    dumevent.ie_Class = class;                  /* Fixed (#98): MOVE.b d2 */
     dumevent.ie_Qualifier = qual;
     dumevent.ie_X = (WORD)x;
     dumevent.ie_Y = (WORD)y;
@@ -510,22 +512,24 @@ static void movemouse(ULONG x, ULONG y, UWORD qual)
  */
 static void BLITZ_ROUTINE doabsmouse_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1))
 {
-    movemouse(x, y, 0);
+    movemouse(x, y, IECLASS_POINTERPOS, 0);
 }
 BLITZ_ALIAS(doabsmouse, doabsmouse_c);
 
 /**
  * @brief RelMouse X Offset,Y Offset: a relative mouse move.
  *
- * As AbsMouse, with the qualifier RELATIVEMOUSE.
- * BUG(orig) (#98): a POINTERPOS event too (not RAWMOUSE).
+ * A RAWMOUSE event with the qualifier RELATIVEMOUSE and the offsets,
+ * executed or appended to the TapeTrap tape.
+ * Fixed (#98): the original made a POINTERPOS event like AbsMouse (the
+ * class 2 it passes in d2 was not used).
  *
  * @param x  d0.w: the x offset
  * @param y  d1.w: the y offset
  */
 static void BLITZ_ROUTINE dorelmouse_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1))
 {
-    movemouse(x, y, IEQUALIFIER_RELATIVEMOUSE);
+    movemouse(x, y, IECLASS_RAWMOUSE, IEQUALIFIER_RELATIVEMOUSE);
 }
 BLITZ_ALIAS(dorelmouse, dorelmouse_c);
 
