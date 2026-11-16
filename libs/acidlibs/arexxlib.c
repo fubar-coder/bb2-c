@@ -26,10 +26,6 @@
  * returns with d0 = the error code (0/4/8) - e.g. CreateRexxMsg returns 4.
  *
  * Kept from the original (BUG(orig)):
- *   - ReplyRexxMsg creates the result ArgString (rexxsyslib, freed by
- *     ARexx) when Result1 = 0 and `BTST #17,28(a0)` - a memory BTST tests
- *     bit 17 mod 8 = bit 1 of the HIGH byte of rm_Action, i.e. RXFUNC
- *     ($02000000), not RXFF_RESULT ($00020000). (#48)
  *   - Not a bug (the library's ArgString test): an integer in a slot of
  *     rm_Args[] is "deleted" by ClearRexxMsg if the memory before it
  *     looks like an ArgString.
@@ -73,6 +69,12 @@
  * 2 (GetRexxResult) or outside 1 to 16 (GetRexxCommand) is the runtime
  * error "Illegal Result Number" / "Illegal Argument Number"; release
  * code unchanged (an invalid argument).
+ * Fixed (intended deviation, #48): ReplyRexxMsg created the result
+ * ArgString (Result1 = 0) when `BTST #17,28(a0)` was set - a memory BTST
+ * tests bit 17 mod 8 = bit 1 of the HIGH byte of rm_Action, i.e. RXFUNC
+ * ($02000000), not RXFF_RESULT ($00020000): a command with RXFF_RESULT
+ * got no result string, a function call without it got one.  It tests
+ * RXFF_RESULT now.
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -635,8 +637,9 @@ BLITZ_ALIAS(_SendRexxCommand, sendrexxcommand_c);
  *        message from ARexx.
  *
  * Sets rm_Result1/rm_Result2 and ReplyMsg()s the message (not for one
- * that is already a reply).  BUG(orig) (#48): the result ArgString
- * (rexxsyslib, freed by ARexx) is made when Result1 = 0 and `BTST
+ * that is already a reply).  The result ArgString (rexxsyslib, freed by
+ * ARexx) is made when Result1 = 0 and the sender asked for a result
+ * (RXFF_RESULT in rm_Action).  Fixed (#48): the original tested `BTST
  * #17,28(a0)` - bit 1 of the HIGH byte of rm_Action, i.e. RXFUNC, not
  * RXFF_RESULT.  a3 = the result string afterwards (not a bug, intended).
  * DIFF: with something that is not a RexxMsg it returns; the original
@@ -668,8 +671,9 @@ static void BLITZ_ROUTINE replyrexxmsg_c(ULONG msg BL_REG(d0),
         return;
     m->rm_Result1 = res1;
     m->rm_Result2 = res2;
-    /* BUG(orig) (#48): BTST #17,28(a0) = bit 1 of the high byte (RXFUNC) */
-    if ((((const UBYTE *)&m->rm_Action)[0] & 2) && m->rm_Result1 == 0) {
+    /* fixed (#48): RXFF_RESULT, bit 17 of the long (the original's
+       BTST #17,28(a0) tested bit 1 of the high byte, RXFUNC) */
+    if ((m->rm_Action & RXFF_RESULT) && m->rm_Result1 == 0) {
         ULONG a = createargstring_rexx(str, lens[-1]);
         if (!a) {
             error_routine(ERR_NOMEM);           /* RRMError */
