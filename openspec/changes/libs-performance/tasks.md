@@ -99,6 +99,16 @@ The four commands still 10 % or more slower than the original in `perf-analysis/
 - [x] 12.3 The system-library calls (exec, graphics, diskfont, intuition, rexxsyslib, translator; BL_FREESIGNAL) use it; BLITZ_BASEJSR stays for the open-contract calls (fontlib previous handler), sortlib FFP_CC_, runerrlib spfix and gtlib addglist stay private, libs/userlibs/rwe unchanged - done (2026-11-16): fontlib (CloseFont twice, OpenDiskFont), intuifontlib (CloseFont, OpenDiskFont), environlib (GetScreenData), arexxlib (ErrorMsg, the general form for its a0), speaklib (Translate) take `BLITZ_SYSJSR`; `BL_FREESIGNAL` is `BLITZ_SYSJSR1` and seriallib uses it (utillib and brexxlib change with it); per function the save of d2-d7/a2/a6 becomes one of a6 (-124 cycles; environlib and fontlib `doloadfont` keep d2/a2/a6 for their own use, brexxlib a2/a6); fontlib's previous input handler keeps `BLITZ_BASEJSR`
 - [x] 12.4 Update final-table.md - done (2026-11-16): `perf-analysis/final-table.md` has the new `bstr.pstr`/`bstr.fstr` rows and counts (2 to 10 % slower 17 -> 15, within 2 % 63 -> 65); two runs of the whole perf preset within every budget; design decision 28
 
+## 13. The remaining slower commands
+
+Commands that are below the 10 % limit of group 11 but still slower than the original (the goal: not slower than the original). Same method: the cost in the disassembly against the original, C first; results bit for bit, the earlier fixes kept; library cases recorded from the original for the changed paths.
+
+- [ ] 13.1 Left$, Mid$ and Right$ (stringfunclib, analysis `~/.local/share/bb2-c-work/analyse-g13-strings.md`): the helpers `left`, `right` and `mid` `BL_ALWAYS_INLINE` (nested functions with stack arguments); `BLITZ_ENTRYPOINT` where it gains (a2 may change, as with Instr), with the KEEPS statements and the epcheck build check
+- [ ] 13.2 Hex$: a rotate instead of the variable shift by 28 and a 16-byte PC-relative digit table
+- [ ] 13.3 Bin$: the same treatment, at the original's 36 cycles per digit (`addx` if needed); a new benchmark line `bstr.bin` with the original's value from `perf-original`
+- [ ] 13.4 Long results of Mid$ and Right$: not slower than the original's 8-byte copy (movestring); one shared out-of-line copy if the short case stays at or below the original; a benchmark line with a long Mid$
+- [ ] 13.5 Cvi, Cvl and Cvq: `cvbytes` inline in the entries (the nested-function pattern)
+
 ## 9. Closing
 
 - [x] 9.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it - done (2026-11-16): the speed profile is six libraries (strings1lib/strings2lib are not in it); "C first, assembler where C stays behind" and "Slow commands are listed" in `libs/performance`; internal tokens keep contracts without thunks, `__entrypoint` with `no_icf` and its build check in `libs/register-contract`; the budgets in the `B~T` form, warp mode and parallel sessions in `testing/performance-budgets`; the `library-capture` delta covers the acidlibs only (the RWE userlib programs keep their sets); proposal and design decisions 2 and 6 name the later state; `openspec validate libs-performance --strict` passes
