@@ -1369,6 +1369,13 @@ user interface
   ([#1003](https://github.com/fubar-coder/bb2-c/issues/1003)).
 * `Sgn` of a float was always 1; it is -1, 0 or 1 by the value
   ([#301](https://github.com/fubar-coder/bb2-c/issues/301)).
+* `Frac` of a Quick with an integer part of 256 or more lost the low bits
+  of the fraction, because the Quick was turned into a float first, so
+  the Quick 30000 + 10/65536 gave 0; `Frac` takes a value of any numeric
+  type and gives the exact fraction of a Quick, 0 for an integer type,
+  and the same as before for a float
+  ([#1064](https://github.com/fubar-coder/bb2-c/issues/1064); see
+  [`Frac` of a string]({{< relref "/docs/compared-with-original/new-errors#frac-string" >}})).
 * `Val` of a string longer than 32768 characters gave 0 or read only a
   part of it; it reads the whole string
   ([#303](https://github.com/fubar-coder/bb2-c/issues/303)).

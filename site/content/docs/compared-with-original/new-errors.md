@@ -15,7 +15,9 @@ original did with it, what the port does, and what to change in a source
 that relies on the old behaviour. A few fixes of the libraries work the
 same way when the program runs: a command that the original carried out
 with a wrong argument stops with a runtime error
-([Runtime errors of the libraries](#runtime-errors)).
+([Runtime errors of the libraries](#runtime-errors)). One case goes the
+other way: `Frac` of a string, which the original refused when compiling,
+compiles and is a runtime error.
 
 The outputs shown were recorded in an emulator. The original is
 Blitz Basic 2 built from its published source, with the libraries of the
@@ -671,12 +673,37 @@ Issue: [copyconst copies an operand text into namebuff without a length check (#
 ## Runtime errors of the libraries {#runtime-errors}
 
 The cases above are found by the compiler. The ones in this section
-compile as before but stop when the program runs: where the original
-went on with a wrong argument and wrote over memory or hung, the port's
-library reports a runtime error. Most of them are error checks, so they
-come only in a program compiled with runtime error checking, like the
-other checks of Blitz Basic 2; without it, the program runs as with the
-original.
+compile as before (except `Frac` of a string) but stop when the program
+runs: where the original went on with a wrong argument and wrote over
+memory or hung, the port's library reports a runtime error. Most of them
+are error checks, so they come only in a program compiled with runtime
+error checking, like the other checks of Blitz Basic 2; without it, the
+program runs as with the original.
+
+### `Frac` of a string {#frac-string}
+
+**What happened.** `Frac` took only a float, so the original refused a
+string argument when compiling:
+
+```
+f.f=1.25 : NPrint "float ",Frac(f)
+a$="1.5"
+NPrint "string ",Frac(a$)
+End
+```
+
+The original stopped with "Can't Convert Types" in line 3.
+
+**With the port.** `Frac` takes a value of any numeric type, as `Int`
+does, and the program compiles. With runtime error checking, a string is
+the error "Illegal Type", as it is for `Int` in the original and the
+port: the program above prints `float .25` and stops at line 3. Without
+runtime error checking, `Frac` of a string gives 0.
+
+**What to change.** Turn the string into a number first, for example
+`Frac(Val(a$))`.
+
+Issue: [Frac of a Quick loses low fraction bits for integer parts of 256 and more (#1064)](https://github.com/fubar-coder/bb2-c/issues/1064).
 
 ### A Long or Quick division by 0 {#long-division-by-zero}
 

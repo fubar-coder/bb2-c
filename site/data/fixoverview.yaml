@@ -3037,3 +3037,11 @@ rows:
     text: "`BBlit`, `UnBuffer` and `ShowStencil` work on shapes of 32 KB or more per plane; the original stepped backwards between the planes and wrote outside the buffer."
     page: libraries
     anchor: shapes-and-sprites
+  - issue: 1064
+    severity: 4
+    topic: "Numbers & dates"
+    library: "vallib"
+    command: "Frac"
+    text: "`Frac` of a Quick gives the exact fraction, also for an integer part of 256 or more, and takes a value of any numeric type; the original lost the low bits of the fraction."
+    page: libraries
+    anchor: dates-and-numbers
