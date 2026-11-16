@@ -23,8 +23,6 @@
  *     without it the write is started with SendIO and not waited for.
  *     Bit 0 ("1=DoIO" in the help text) is never tested.  The two
  *     argument form takes a #long (an address), flags 0. (#254)
- *   - ReadSerial: the "wait" flag is bit 1 (value 2), not 1 as the help
- *     says; with it the query is skipped and the read waits for a byte. (#255)
  *   - ReadSerialString reads io_Actual bytes (unlimited) to a3; d0 =
  *     number of bytes, 0 if nothing is waiting. (#256)
  *   - A unit that is not open: runtime error "Serial Device Not Open"
@@ -46,6 +44,10 @@
  *     parameters (SetSerialParams: EOF mode, ...) did not apply and a
  *     pending asynchronous write shared the request; it reads through
  *     the read request now (#253).
+ *   - ReadSerial: the "wait" flag was bit 1 (value 2), not 1 as the help
+ *     says ("flags 1=wait on"); flag 1 did not wait.  Bit 0 and bit 1 both
+ *     wait now (#255): the help's flag works, programs that passed 2 for
+ *     the original's flag keep working.
  *   - CloseSerial aborted the read request without WaitIO and left the
  *     write half's request alone (a pending SendIO write stayed pending);
  *     it now aborts and waits for both before CloseDevice, and so does
@@ -538,15 +540,16 @@ void BLITZ_ROUTINE readmem(UWORD unit BL_REG(d0), ULONG addr BL_REG(d1),
  * Without the wait flag SDCMD_QUERY first: -1 if nothing is waiting;
  * then CMD_READ of one byte, DoIO.
  *
- * BUG(orig) (#255): the "wait" flag is bit 1 (value 2), not 1 as the help
- * says; with it the query is skipped and the read waits for a byte.
+ * With bit 0 or bit 1 of the flags the query is skipped and the read
+ * waits for a byte.  Fixed (#255): the original tested bit 1 (value 2)
+ * only, the help names flag 1, which did not wait.
  * DIFF: a3 is not changed (the original leaves it on its one byte buffer
  * rb1 inside the library).
  *
  * Errors: "Serial Device Not Open" (TRAP #0, #262; returns 0).
  *
  * @param unit  d0.w: the unit
- * @param flags d1.w: bit 1 = wait
+ * @param flags d1.w: 1 (the help) or 2 (the original's flag) = wait
  * @return d0: the byte, -1 if nothing is waiting
  */
 ULONG BLITZ_ROUTINE readbyte(UWORD unit BL_REG(d0), UWORD flags BL_REG(d1))
@@ -557,7 +560,7 @@ ULONG BLITZ_ROUTINE readbyte(UWORD unit BL_REG(d0), UWORD flags BL_REG(d1))
         noser();
         return 0;
     }
-    if (!(flags & 2)) {
+    if (!(flags & 3)) {                 /* Fixed (#255): 1 waits too */
         s->io.IOSer.io_Command = SDCMD_QUERY;
         DoIO((struct IORequest *)s->request);
         if ((LONG)s->io.IOSer.io_Actual <= 0)
