@@ -23,13 +23,13 @@
  *         8 green, 16 yellow, 32 red, 64 blue.
  *   err: Joyport must be 0 or 1 (word compare).
  *
- * Kept from the original (BUG(orig)):
- *   - Gameb on port 0: the DBF of its loop jumps into the loop of port 1
- *     (the code is the same, registers already set), so it also leaves
- *     through the port 1 exit: POTGO = $3000 instead of $0300 (the DDRA
- *     bit cleared is the right one, d3 = 6). (#415)
- *   - Not a bug (word function, the compiler uses the low word only): Joyr:
- *     the upper word of d0 is the one of Joyy's MOVEQ (-1 -> $FFFF).
+ * Fixed (#415): Gameb on port 0 leaves with POTGO = $0300 (pin 5 of port
+ * 0 driven high again); in the original the DBF of its loop jumped into
+ * the loop of port 1 (the code is the same, registers already set), so
+ * it left through the port 1 exit, POTGO = $3000 (the DDRA bit cleared
+ * was the right one, d3 = 6).
+ * Not a bug (word function, the compiler uses the low word only): Joyr:
+ * the upper word of d0 is the one of Joyy's MOVEQ (-1 -> $FFFF).
  * Registers: Joyx, Joyy, Joyr and Joyb are assembler entries that change
  * d0 and d1 only (Joyb only d0; the original's Joyy also changes d2,
  * Joyr d2-d3); Gameb is the C function (BLITZ_ALIAS), it keeps what the
@@ -219,8 +219,9 @@ BLITZ_ASM_ROUTINE(_joyb,
  * The fire line is switched to output (CIAA DDRA), POTGO set, then 7 bits
  * are clocked out with the fire line (each after 8 CIA reads as delay)
  * and read from POTGOR.
- * BUG(orig) (#415): POTGO = $3000 at the end also for port 0 (the DBF of
- * the port 0 loop jumps into the loop of port 1).
+ * At the end POTGO drives pin 5 of the port high again: $3000 for port 1,
+ * $0300 for port 0.  Fixed (#415): the original wrote $3000 also for port
+ * 0 (the DBF of the port 0 loop jumps into the loop of port 1).
  * Errors (debugger): Port must be 0 or 1.
  *
  * @param port  d0: the port (0 or anything else = 1)
@@ -231,6 +232,7 @@ ULONG BLITZ_ROUTINE _gameb(UWORD port BL_REG(d0))
 {
     volatile UBYTE *ciapra = CIAAPRA;           /* a0 */
     UWORD potmask;                              /* d4: the DATxY bit */
+    UWORD potexit;                              /* POTGO at the end */
     UBYTE bit;
     ULONG buttons = 0;                          /* d0 */
     WORD bitnum = 6;                            /* d1 */
@@ -239,12 +241,14 @@ ULONG BLITZ_ROUTINE _gameb(UWORD port BL_REG(d0))
     if (port) {
         bit = 1 << 7;
         potmask = 0x4000;
+        potexit = 0x3000;
         ciapra[0x200] |= bit;
         *ciapra &= ~bit;
         POTGO = 0x2000;
     } else {
         bit = 1 << 6;
         potmask = 0x0400;
+        potexit = 0x0300;                       /* Fixed (#415) */
         ciapra[0x200] |= bit;
         *ciapra &= ~bit;
         POTGO = 0x0200;
@@ -260,7 +264,7 @@ ULONG BLITZ_ROUTINE _gameb(UWORD port BL_REG(d0))
         if (!(pot & potmask))
             buttons |= 1UL << bitnum;
     } while (--bitnum >= 0);            /* DBF d1 */
-    POTGO = 0x3000;                     /* BUG(orig) (#415): also for port 0 */
+    POTGO = potexit;                    /* Fixed (#415): $0300 for port 0 */
     ciapra[0x200] &= ~bit;
     return buttons;
 }
