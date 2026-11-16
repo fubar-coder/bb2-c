@@ -50,6 +50,14 @@ carried over (for the comparison with AmiBlitz3).
   least what the original preserves.
   Checked by the `KEEPS` cases of the library tests (`tests/README.md`,
   "Kept registers").
+* **memlib's entries** (localloc, locfree, globalloc, globfree, newmem,
+  freelast) are assembler in the original's form, with the contracts of
+  their KEEPS cases (globalloc ends with `tst.l d0`, #1059; findglob is
+  inline): a thunk around a C function saved the registers a second time
+  behind a second call level, 66 cycles per localloc. A procedure with a
+  local string (`bproc.pstr`) measured 10104 cycles per call before, 9967
+  after, the original 10038; one whose local string grows (`bproc.pgrow`,
+  through locfree) 13747 before, 13454 after, the original 13323.
 * **OS calls with a parameter in a3, a4 or a5** (e.g. workbench
   `AddAppIconA`: DiskObject in a3, tag list in a4; intuition
   `EasyRequestArgs`, `AutoRequest`, graphics `TextFit`,

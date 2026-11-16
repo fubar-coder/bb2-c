@@ -21,8 +21,10 @@
  * them in the middle of generated code (newmem at procedure entry, with
  * the parameters in d0-d5; perf-analysis thunks.md 1.4), and third-party
  * libraries call globalloc and globfree with registers live
- * (analyse-internal-token-callers.md).  The thunks save what GCC may
- * change of those.
+ * (analyse-internal-token-callers.md).  The entries $C000-$C005 are
+ * assembler in the original's form (a thunk around a C function saved
+ * the registers a second time, behind a second call level); the thunks of
+ * init and finit (also $C006) save what GCC may change of those.
  *
  * Fixed (intended deviation, #956): "Out of Memory!" (err1) and "Unable
  * to Free Memory" (err2) trap in the normal code, but the original has
@@ -33,7 +35,7 @@
 #include "blitzlib.h"
 #include "blitzexec.h"
 
-/* entry points (thunks, newmem and freelast assembler; defined below) */
+/* entry points (the tokens in assembler, init/finit thunks; defined below) */
 void localloc(void), locfree(void), globalloc(void), globfree(void);
 void newmem(void), freelast(void), memlib_codeinit(void);
 void memlib_codefinit(void);
@@ -65,14 +67,16 @@ struct memlist {
     struct memblock *first;             /* 04.l first memblock */
 };
 
-static struct memlist *firstdata;
-static UWORD memerr;
+/* firstdata, memerr and mess2 are also read by the assembler entries
+   (used: GCC does not see those references) */
+static struct memlist *firstdata __attribute__((used));
+static UWORD memerr __attribute__((used));
 
 /* the messages of err1/err2 in the normal code (fixed, #956: in the
    original they lie after `errors`, in the error check area, although
    err1/err2 trap in the normal code) */
 static const char mess1[] = "Out of Memory!";
-static const char mess2[] = "Unable to Free Memory";
+static const char mess2[] __attribute__((used)) = "Unable to Free Memory";
 
 /**
  * @brief Library finit and token $C006 - free ALL memory allocated: every
@@ -161,19 +165,15 @@ BLITZ_ASM_BLOCK(membase,
 "   bra.w   _globfree\n"
 );
 
-/* findglob - the global list is the last one */
-static struct memlist *findglob(struct memlist *l)
-{
-    while (l->next)
-        l = l->next;
-    return l;
-}
-
 /**
  * @brief localloc ($C000) - allocate some memory in the local region!
  *
  * The block (8 bytes longer: next, length + 8) goes into the current
- * (first) list.  Keeps a0-a1/a6.
+ * (first) list.  Keeps d2-d7/a0-a3/a6 (exec keeps d2-d7/a2-a5).
+ *
+ * An assembler entry, the original's code: a thunk around a C function
+ * saved a0/a1 and the C function a6 and d2 again, behind a second call
+ * level.
  *
  * Errors: out of memory - err1: all memory is freed and the runtime error
  * "Out of Memory!" raised.  DIFF: the original never returns from err1
@@ -181,110 +181,123 @@ static struct memlist *findglob(struct memlist *l)
  *
  * @param size d0: the size in bytes.
  * @param flags d1: the AllocMem flags.
- * @return d0: the memory; the flags of `tst.l d0` (Z clear after a
- *         successful allocation, as in the original, whose failure does
- *         not return; the same as globalloc).
+ * @return d0: the memory; Z clear after a successful allocation (the
+ *         flags of the final ADDQ, as in the original, whose failure does
+ *         not return; the same as globalloc), Z set with 0.
  */
-static ULONG BLITZ_ROUTINE localloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG(d1))
-{
-    struct memblock *b;
-
-    size += 8;                          /* we need this extra */
-    b = AllocMem(size, flags);
-    if (!b) {
-        err1();
-        return 0;
-    }
-    b->next = firstdata->first;
-    firstdata->first = b;
-    b->len = size;
-    return (ULONG)(b + 1);
-}
-BLITZ_THUNK_Z(localloc, localloc_c, "a0-a1");
+BLITZ_ASM_ROUTINE(localloc,
+        "   movem.l a0-a1/a6,-(sp)\n"
+        "   addq.l  #8,d0\n"                /* we need this extra */
+        "   move.l  d0,-(sp)\n"
+        "   move.l  4.w,a6\n"
+        "   jsr     -198(a6)\n"             /* AllocMem */
+        "   tst.l   d0\n"
+        "   beq.s   1f\n"
+        "   move.l  d0,a0\n"
+        "   move.l  _firstdata,a1\n"
+        "   move.l  4(a1),(a0)\n"           /* next = the list's first */
+        "   move.l  a0,4(a1)\n"
+        "   move.l  (sp)+,4(a0)\n"          /* length + 8 */
+        "   addq.l  #8,d0\n"                /* the user memory: Z = 0 */
+        "   movem.l (sp)+,a0-a1/a6\n"       /* the CCR stays */
+        "   rts\n"
+        "1: addq.l  #4,sp\n"
+        "   jsr     _err1(pc)\n"
+        "   moveq   #0,d0\n"                /* Z = 1 */
+        "   movem.l (sp)+,a0-a1/a6\n"
+        "   rts");
 
 /**
  * @brief locfree ($C001) - free memory of the current local list.
  *
  * The block is looked up in the list and freed with its stored length.
- * Keeps a0/d1/a6.
+ * Keeps d1-d7/a0/a2-a3/a6.
+ *
+ * An assembler entry, the original's code (a thunk around a C function
+ * saved d1/a0 and the C function a6 again).
  *
  * Errors: a block that is not in the list - the runtime error "Unable to
  * Free Memory", reported only once (memerr).  DIFF (K): if the trap
- * returns, the original runs on into newmem; here locfree returns.
+ * returns, the original runs on into newmem with locfree's saved
+ * registers on the stack; here locfree returns.
  *
  * @param mem a1: the memory (d0 = length, ignored!).
  */
-static void BLITZ_ROUTINE locfree_c(APTR mem BL_REG(a1))
-{
-    struct memblock *b = (struct memblock *)mem - 1;      /* SUBQ #8,a1 */
-    struct memblock **link;
-
-    if (!firstdata)
-        return;
-    /* a0 = firstdata+4: the `first` field works as a node whose next is
-       at offset 0 */
-    for (link = &firstdata->first; *link; link = &(*link)->next) {
-        if (*link == b) {
-            *link = b->next;
-            FreeMem(b, b->len);
-            return;
-        }
-    }
-    if (memerr)                         /* report only once */
-        return;
-    memerr = ~memerr;                   /* NOT memerr */
-    BLITZ_RUNERR(mess2);                /* err2 */
-    /* DIFF (K): if the trap returns, the original runs on into newmem
-       with locfree's saved registers on the stack; here locfree returns */
-}
-BLITZ_THUNK(locfree, locfree_c, "d1/a0");
+BLITZ_ASM_ROUTINE(locfree,
+        "   movem.l d1/a0/a6,-(sp)\n"
+        "   move.l  _firstdata,d1\n"
+        "   beq.s   3f\n"
+        "   subq.l  #8,a1\n"                /* the block */
+        "   move.l  d1,a0\n"
+        "   addq.l  #4,a0\n"                /* first: a node whose next is at 0 */
+        "1: cmp.l   (a0),a1\n"
+        "   bne.s   2f\n"
+        "   move.l  (a1),(a0)\n"            /* unlink */
+        "   move.l  4(a1),d0\n"             /* its length + 8 */
+        "   move.l  4.w,a6\n"
+        "   jsr     -210(a6)\n"             /* FreeMem */
+        "3: movem.l (sp)+,d1/a0/a6\n"
+        "   rts\n"
+        "2: move.l  (a0),d1\n"
+        "   move.l  d1,a0\n"
+        "   bne.s   1b\n"
+        "   tst.w   _memerr\n"              /* report only once */
+        "   bne.s   3b\n"
+        "   not.w   _memerr\n"
+        "   move.l  #_mess2,d0\n"           /* err2 */
+        "   trap    #0\n"
+        "   bra.s   3b");
 
 /**
- * @brief globalloc ($C002) - like localloc, but in the global (last) list.
+ * @brief globalloc ($C002) - like localloc, but in the global (last)
+ * list; globfree ($C003) - like locfree, in the global list.
  *
- * Keeps a0-a1.  Errors as localloc.
+ * The original's frame: firstdata is saved, set to the global list (the
+ * last one, the original's findglob, here inline) and restored behind the
+ * call of localloc / locfree.  globalloc keeps d2-d7/a0-a3/a6, globfree
+ * d1-d7/a0/a2-a3/a6.  Errors as localloc / locfree.
  *
  * Third-party libraries (XBCiaTrackerLib, XBSoundSystemLib, RIARexxLib,
- * EFMUILib, and banklib AllocMem's callers) test the result with `beq`
- * right after the call, without a `tst`: the original leaves Z clear (its
- * last flag-setting instruction moves the list head, never 0, and a
- * failure does not return).  Fixed (#1059): the thunk ends with
- * `tst.l d0` (BLITZ_THUNK_Z), so the flags do not depend on the caller's
- * registers.
+ * EFMUILib, and banklib AllocMem's callers) test the result of globalloc
+ * with `beq` right after the call, without a `tst`: the original leaves Z
+ * clear (its last flag-setting instruction moves the list head, never 0,
+ * and a failure does not return).  Fixed (#1059): globalloc ends with
+ * `tst.l d0`, so the flags do not depend on the caller's registers.
+ * Third-party callers keep a0/a1 across globalloc and d1/a0 across
+ * globfree (analyse-internal-token-callers.md).
  *
- * @param size d0: the size in bytes.
- * @param flags d1: the AllocMem flags.
- * @return d0: the memory; the flags of `tst.l d0` (Z clear after a
- *         successful allocation).
+ * globalloc: @param size d0, @param flags d1; @return d0: the memory, the
+ * flags of `tst.l d0` (Z clear after a successful allocation).
+ * globfree: @param mem a1: the memory (d0 = length, ignored).
  */
-static ULONG BLITZ_ROUTINE globalloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG(d1))
-{
-    struct memlist *save = firstdata;
-    ULONG mem;
+BLITZ_ASM_ROUTINE(globalloc,
+        "   move.l  a0,-(sp)\n"
+        "   move.l  _firstdata,a0\n"
+        "   move.l  a0,-(sp)\n"
+        "1: tst.l   (a0)\n"                 /* findglob */
+        "   beq.s   2f\n"
+        "   move.l  (a0),a0\n"
+        "   bra.s   1b\n"
+        "2: move.l  a0,_firstdata\n"
+        "   bsr.w   _localloc\n"
+        "   move.l  (sp)+,_firstdata\n"
+        "   move.l  (sp)+,a0\n"
+        "   tst.l   d0\n"
+        "   rts");
 
-    firstdata = findglob(firstdata);
-    mem = localloc_c(size, flags);
-    firstdata = save;
-    return mem;
-}
-BLITZ_THUNK_Z(globalloc, globalloc_c, "a0-a1");
-
-/**
- * @brief globfree ($C003) - like locfree, in the global list.
- *
- * Keeps a0/d1.  Errors as locfree.
- *
- * @param mem a1: the memory (d0 = length, ignored).
- */
-static void BLITZ_ROUTINE globfree_c(APTR mem BL_REG(a1))
-{
-    struct memlist *save = firstdata;
-
-    firstdata = findglob(firstdata);
-    locfree_c(mem);
-    firstdata = save;
-}
-BLITZ_THUNK(globfree, globfree_c, "d1/a0");
+BLITZ_ASM_ROUTINE(globfree,
+        "   move.l  a0,-(sp)\n"
+        "   move.l  _firstdata,a0\n"
+        "   move.l  a0,-(sp)\n"
+        "1: tst.l   (a0)\n"                 /* findglob */
+        "   beq.s   2f\n"
+        "   move.l  (a0),a0\n"
+        "   bra.s   1b\n"
+        "2: move.l  a0,_firstdata\n"
+        "   bsr.w   _locfree\n"
+        "   move.l  (sp)+,_firstdata\n"
+        "   move.l  (sp)+,a0\n"
+        "   rts");
 
 /**
  * @brief freelast ($C005, at procedure exit) - free up most recent node

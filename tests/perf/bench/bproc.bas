@@ -4,8 +4,10 @@
 ; allocated before; in bstr, any loop added elsewhere moved these two by 2 % for the port and
 ; the original alike. Here nothing but this file moves them: keep the setup as it is, and
 ; re-record their targets (perf-original) with any change to it.)
+; pgrow: a local string that grows (u$="a" then u$=s$: the second assignment frees the block
+; with memlib's locfree and allocates a longer one)
 DEFTYPE .l
-Dim t(3)
+Dim t(4)
 c=0
 a$="Hello, World of Blitz"
 Statement pstr{s$}
@@ -15,6 +17,10 @@ Function.l fstr{s$}
 u$=s$
 Function Return Len(u$)
 End Function
+Statement pgrow{s$}
+u$="a"
+u$=s$
+End Statement
 VWait 5
 BLITZ
 Poke.b $bfde00,0 : Poke.b $bfdf00,0
@@ -40,12 +46,18 @@ For i=1 To 2000
 c=fstr{a$}
 Next
 Gosub tod : t(3)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+pgrow{a$}
+Next
+Gosub tod : t(4)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
 NPrint "emptylong ",t(1)," 150000 1"
 NPrint "pstr ",t(2)," 2000 1"
 NPrint "fstr ",t(3)," 2000 1"
+NPrint "pgrow ",t(4)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

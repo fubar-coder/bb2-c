@@ -158,6 +158,13 @@
 # bgfx.qblit4u: B~T from nine runs on main 21203681 (2026-11-16, task 13.40):
 # 12665.8 to 12674.0 (two runs at 12673.9 and 12674.0, the old limit
 # 12666~8); the loop has two states 8 cycles apart, so T is twice the spread.
+# bproc.pstr, bproc.fstr and the new bproc.pgrow (a local string that grows:
+# memlib locfree, then localloc) from two runs of memlib's localloc, locfree,
+# globalloc and globfree as assembler entries (2026-11-16): 9966.7, 10659.2
+# and 13453.7 both times (before, with pgrow added to bproc: 10104.2,
+# 10794.2 and 13747.2). Their targets are measured anew for the changed
+# program (the pass perf_bproc.pass with the tag orig, twice: 10038.5,
+# 10038.1; 10783.5, 10783.6; 13322.5, 13322.6).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -281,8 +288,9 @@ bmisc.infront                129~4      134.9  InFront 4
 bmod.vblmod                 2418~120   2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed                9796~7     9950.0  PlayMed
 bproc.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
-bproc.pstr                   10209     10038.4  pstr{a$} (a Statement with a string parameter and a local string)
-bproc.fstr                   10906     10782.1  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
+bproc.pstr                   10070     10038.3  pstr{a$} (a Statement with a string parameter and a local string)
+bproc.fstr                   10769     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
+bproc.pgrow                  13592     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1236     1367.5  r$=a$
 bstr.mid                     1470     1553.5  r$=Mid$(a$,3,5)

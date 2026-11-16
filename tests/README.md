@@ -871,8 +871,9 @@ cycle values do not depend on the host's load or on what else runs
   medlib by 0 to 18002 bytes: 2298 to 2328; a loop at another address gave
   2256 to 2423); a session whose snapshot was made anew still varies by
   about 110.
-  `bproc` has the two string procedure loops (a Statement and a Function with a
-  string parameter and a local string) in a program of their own: every call
+  `bproc` has the string procedure loops (a Statement and a Function with a
+  string parameter and a local string, and a Statement whose local string
+  grows: memlib's locfree) in a program of their own: every call
   allocates the local string with exec's AllocMem and frees it again, and
   AllocMem and FreeMem walk a free list whose shape is the history of the
   program's allocations, so in `bstr` they moved by up to 2 % whenever a loop
