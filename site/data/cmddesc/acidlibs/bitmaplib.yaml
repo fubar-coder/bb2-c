@@ -8,12 +8,9 @@
   notes: |
     A file that cannot be opened is the error "Can't Open File", or "Can't
     Open IFF" with `Palette#`; a file without a picture header "Can't
-    Find IFF 'BMHD'", one without picture data "Can't Find IFF 'BODY'";
-    the file is closed before these errors.
-    Kept from the original: a file that ends inside the picture data is
-    the error "Can't Read File", and the file stays open and locked,
-    also for a program that goes on after the error with `SetErr`
-    ([#1065](https://github.com/fubar-coder/bb2-c/issues/1065)).
+    Find IFF 'BMHD'", one without picture data "Can't Find IFF 'BODY'",
+    and one that ends inside the picture data "Can't Read File"; the file
+    is closed before these errors.
 "ScreensBitMap":
   text: Takes the bitmap of a screen as the bitmap object and makes it the used bitmap, so that the blitting and drawing commands draw on the screen. Every screen has a bitmap, also one opened without a bitmap object.
 "ShapesBitMap":

@@ -12,7 +12,11 @@
     or wider than 992 pixels. A picture whose header gives 0 bitplanes
     is the error "Illegal Shape Depth", one whose header gives a width or
     a height of 0 the error "Illegal Shape Size", both also without
-    runtime error checking.
+    runtime error checking. Kept from the original: after "ANIM format
+    not supported" and "Illegal ANIM interleave value" the file stays
+    open and locked, also for a program that goes on after the error
+    with `SetErr`
+    ([#1072](https://github.com/fubar-coder/bb2-c/issues/1072)).
 "InitShape":
   text: Makes an empty shape of the given width, height and depth. With runtime error checking, a depth of 0 is the error "Illegal Shape Depth".
   notes: |

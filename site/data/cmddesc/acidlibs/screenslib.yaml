@@ -41,10 +41,8 @@
     The errors are those of `LoadBitMap`: a file that cannot be opened is
     "Can't Open File", or "Can't Open IFF" with `Palette#`; a file
     without a picture header "Can't Find IFF 'BMHD'", one without picture
-    data "Can't Find IFF 'BODY'"; the file is closed before these
-    errors. Kept from the original: a file that ends inside the picture
-    data is the error "Can't Read File", and the file stays open and
-    locked ([#1065](https://github.com/fubar-coder/bb2-c/issues/1065)).
+    data "Can't Find IFF 'BODY'", and one that ends inside the picture
+    data "Can't Read File"; the file is closed before these errors.
 "ShowScreen":
   text: Brings the screen to the front.
 "HideScreen":
