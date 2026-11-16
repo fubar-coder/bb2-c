@@ -1238,6 +1238,23 @@ build.
       called from four plain entries (`au2.c` of the analysis) was not
       enough: A + D 432.
 
+33. **The combined state after group 13 (task 13.40, 2026-11-16).**
+    Groups 12 and 13 came from five parallel branches; the merged main
+    21203681 was measured as a whole: `ctest --preset perf` three times,
+    140 commands (nine new loops of group 13), none 10 % or more slower
+    than the original, 2 by 2 to 10 % (`binput.inkey` 1.10, the empty
+    string assignment of task 10.1; `bmisc.ntsc` 1.03, 3 cycles of a loop
+    that varies), 65 within 2 %, 73 more than 2 % faster (after group 12:
+    0, 15, 65, 51 of 131). The values of the branches' measurements
+    (decisions 28 to 32) moved by at most 2 cycles of a CPU loop with the
+    merge (`bstr.bin` 1695.0-1695.2 -> 1696.7-1697.2, `bstr.rightlong`
+    +0.5, `bmath.qmul` -0.5) and within their tolerance for the blitter
+    loops (the four QBlit loops -4 to +3). One budget was
+    touched: `bgfx.qblit4u` reached 12674.0 against 12666~8 in one run;
+    nine runs give 12665.8 to 12674.0 (two states about 8 cycles apart),
+    so its line is `12674~17`. The table is
+    `~/.local/share/bb2-c-work/perf-analysis/final-table.md`.
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:
