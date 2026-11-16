@@ -104,7 +104,7 @@ The four commands still 10 % or more slower than the original in `perf-analysis/
 Commands that are below the 10 % limit of group 11 but still slower than the original (the goal: not slower than the original). Same method: the cost in the disassembly against the original, C first; results bit for bit, the earlier fixes kept; library cases recorded from the original for the changed paths.
 
 - [x] 13.1 Left$, Mid$ and Right$ (stringfunclib, analysis `~/.local/share/bb2-c-work/analyse-g13-strings.md`): the helpers `left`, `right` and `mid` `BL_ALWAYS_INLINE` (nested functions with stack arguments); `BLITZ_ENTRYPOINT` where it gains (a2 may change, as with Instr), with the KEEPS statements and the epcheck build check
-- [ ] 13.2 Hex$: a rotate instead of the variable shift by 28 and a 16-byte PC-relative digit table
+- [x] 13.2 Hex$: a rotate instead of the variable shift by 28 and a 16-byte PC-relative digit table
 - [ ] 13.3 Bin$: the same treatment, at the original's 36 cycles per digit (`addx` if needed); a new benchmark line `bstr.bin` with the original's value from `perf-original`
 - [ ] 13.4 Long results of Mid$ and Right$: not slower than the original's 8-byte copy (movestring); one shared out-of-line copy if the short case stays at or below the original; a benchmark line with a long Mid$
 - [ ] 13.5 Cvi, Cvl and Cvq: `cvbytes` inline in the entries (the nested-function pattern)

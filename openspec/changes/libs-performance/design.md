@@ -995,6 +995,12 @@ build.
       original's 72 (GCC loads the length into a register before the
       compare, the original compares with `-(a2)`); the statement is
       faster through the port's string fetch and assignment.
+    - Hex$ (task 13.2): GCC compiled `v >> 28` as `moveq #28 : lsr.l`,
+      64 cycles per digit. A rotate (`v << 4 | v >> 28`, `rol.l #4`) and
+      a table of the 16 digits, read PC relative (no relocation), make a
+      digit `rol.l/moveq/and.l/move.b 0(a0,d2.l),(a3)+/dbf`, 56 cycles
+      (the original's LSL/ROXL pairs and the "9" test: 120). 16 bytes of
+      data. `r$=Hex$(a)` 1684.7 -> 1065.7 (1570.0).
 
 ## Risks / Trade-offs
 

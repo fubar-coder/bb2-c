@@ -802,21 +802,22 @@ BLITZ_ALIAS(binstring, binstring_c);
 /**
  * @brief Hex$(Expression) - the value as 8 hexadecimal digits.
  *
- * Upper case, written at a3.
+ * Upper case, written at a3.  The original takes each digit with four
+ * LSL.l/ROXL.w pairs and adds "0" (and 7 above "9"); here a rotate by 4
+ * brings it into the low nibble and a table of the 16 digits (PC
+ * relative) gives the character: the same text.
  *
  * @param v d0: the value
  * @return d0: 8, the length; a3 = the end of the result
  */
 static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE hexstring_c(ULONG v BL_REG(d0))
 {
-    UWORD i, c;
+    static const UBYTE digits[16] = "0123456789ABCDEF";
+    UWORD i;
 
     for (i = 0; i < 8; i++) {
-        c = (UWORD)(v >> 28) + 48;
-        v <<= 4;
-        if (c > '9')                            /* CMP #"9",d1:BLS 'skip */
-            c += 7;
-        *blitz_string++ = (UBYTE)c;
+        v = v << 4 | v >> 28;                   /* ROL.l #4 */
+        *blitz_string++ = digits[(UWORD)v & 15];
     }
     return 8;
 }

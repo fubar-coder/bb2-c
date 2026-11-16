@@ -97,6 +97,8 @@
 # bstr.mid, bstr.left and bstr.right from two runs of the inline Left$,
 # Mid$ and Right$ of libs-performance task 13.1 (2026-11-16): 1454.2 to
 # 1454.6, 1243.6 to 1243.7, 1424.1 to 1424.2.
+# bstr.hex from two runs of the rotate and digit table of task 13.2
+# (2026-11-16): 1065.5 to 1065.7.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -225,7 +227,7 @@ bstr.chr                      408      411.0  r$=Chr$(65)
 bstr.asc                      756      797.0  c=Asc(a$)
 bstr.instr                   2308     3513.0  c=Instr(a$,"Blitz")
 bstr.ucase                   2774     3124.0  r$=UCase$(a$)
-bstr.hex                     1705     1570.0  r$=Hex$(a)
+bstr.hex                     1080     1570.0  r$=Hex$(a)
 bstr.concat                  2179     2318.5  r$=a$+b$
 bstr.strcmp                  2184     2943.5  If a$=b$ Then c=1
 bstr.string                  3440     4376.0  r$=String$("a",20)
