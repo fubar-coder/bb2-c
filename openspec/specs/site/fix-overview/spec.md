@@ -60,9 +60,10 @@ section of its fix.
 The site build SHALL fail, with a message that names the row or issue,
 when the data file's levels are not the five levels 1 to 5 in order, each
 with a name and a text, when a row's anchor does not exist on its page,
-when a row has no valid severity or topic, when an issue appears twice,
-or when an issue linked in a fixed-bugs entry has no row and is not on an
-explicit exception list of the data file with a reason.
+when a row has no valid severity or topic, when a row's `highlight` is
+present and not a boolean, when an issue appears twice, or when an issue
+linked in a fixed-bugs entry has no row and is not on an explicit
+exception list of the data file with a reason.
 
 #### Scenario: Missing anchor
 - **WHEN** a row names the anchor `#no-such-section`
@@ -76,8 +77,12 @@ explicit exception list of the data file with a reason.
 - **WHEN** the data file lists only the levels 1 to 4
 - **THEN** the build fails and names the levels it found
 
+#### Scenario: Highlight not a boolean
+- **WHEN** a row has `highlight: "yes"`
+- **THEN** the build fails and names the row's issue and the value
+
 #### Scenario: Deliberately broken input
-- **WHEN** the check's test builds a site with a broken data file (missing anchor, wrong levels list, unknown severity, unknown topic, duplicate issue, entry without row)
+- **WHEN** the check's test builds a site with a broken data file (missing anchor, wrong levels list, unknown severity, unknown topic, highlight not a boolean, duplicate issue, entry without row)
 - **THEN** each case fails with its own message and the unbroken data build passes
 
 ### Requirement: Five severity levels
@@ -86,8 +91,8 @@ a program that ran correctly with the original can behave differently
 with the port, and how hard that is to notice beforehand: 1, changes
 results; 2, noticeable change; 3, new runtime error; 4, new compile-time
 error; 5, fix without side effects. The page SHALL explain the levels
-above the table and list the rows of levels 1 and 2 in a warning box. The
-initial order SHALL be by severity, then by issue number.
+above the table. The initial order SHALL be by severity, then by issue
+number.
 
 #### Scenario: Level 1
 - **WHEN** a correct program produces a different result that matters with the fix (computed values, file contents, control flow, what it draws or prints, or a stop)
@@ -106,5 +111,25 @@ initial order SHALL be by severity, then by issue number.
 - **THEN** the rows are in the initial order and nothing is hidden
 
 #### Scenario: The warning box
-- **WHEN** the data file has rows of levels 1 and 2
-- **THEN** the warning box lists the level-1 rows first and the level-2 rows in a second list, and no row of levels 3 to 5
+- **WHEN** the data file has rows of levels 1 and 2 without `highlight`
+- **THEN** the warning box does not list them, and its last sentence counts them with the other rows of levels 1 and 2
+
+### Requirement: The warning box shows the highlights
+A row MAY have the field `highlight`, a boolean. The page SHALL show a
+warning box above the levels that lists only the rows with
+`highlight: true`, of any level, each with its sentence linking to its
+detail section and the link to its issue, in the table's initial order.
+The box SHALL end with one sentence that points to the table for all
+fixes of levels 1 and 2 and gives their count.
+
+#### Scenario: The highlights
+- **WHEN** the data file has 21 rows of levels 1 and 2, six of them with `highlight: true`
+- **THEN** the warning box lists those six rows and no other, and its last sentence names 21 fixes and links to the table
+
+#### Scenario: A highlighted row of level 2
+- **WHEN** a row of level 2 has `highlight: true`
+- **THEN** it is in the warning box like a highlighted row of level 1
+
+#### Scenario: The same set as the fixed-bugs index
+- **WHEN** the fixed-bugs index page lists the fixes an ordinary program meets most easily under "Changes for existing programs"
+- **THEN** exactly those fixes have `highlight: true`
