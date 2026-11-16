@@ -972,70 +972,6 @@ build.
     per function, none in a benchmark. sortlib `FFP_CC_`, runerrlib
     `spfix` (a flag from the CCR in the same asm) and gtlib `addglist`
     (a2 argument) keep their private forms.
-29. **The list commands and Sound (tasks 13.20 to 13.22, 2026-11-16).**
-    C, no assembler, by the analysis `analyse-g13-sound-lists.md`
-    (cycles counted from the disassemblies, then measured in
-    `tests/perf`, two runs; the original in brackets).
-    - NextItem/PrevItem (task 13.20): `firstitem2`/`lastitem2` were
-      functions with a stack argument (`move.l d0,-(sp) : jsr : addq.l
-      #4,sp`) and computed `link ? item : 0` branchless (SNE/EXT/EXT/AND);
-      the current item was tested in an address register (`cmpa.w #0`,
-      10 cycles) and every exit went to one shared RTS by BRA.s. Now
-      both helpers are `BL_ALWAYS_INLINE` with an exit per result, the
-      current item is read into a data register (`__asm__("" :
-      "+d"(cur))`; GCC still adds a TST.l, 4 cycles, where MOVE set the
-      flags; `register ... __asm("d0")` did not help), and the middle item
-      is the likely path. GCC put the RTS of that path behind the rare
-      exits as long as the function itself stood in the `!subs` table
-      before its body (its address taken): the entries are `BLITZ_ALIAS`
-      of a static C function, which gives the middle item its own RTS.
-      Middle item 160 -> 144 cycles (148), first call 244 -> 140 (160),
-      the end 142 -> 140 (126). `bstr.nextitem51` 231.8 -> 213.9 (217.8),
-      0.98 times the original.
-    - AddItem, KillItem, AddFirst, AddLast, ClearList (task 13.21):
-      `unlinkitem` was a function with a stack argument (70 cycles of
-      call overhead), and the entries saved a2/a6 (KillItem d2/a2/a6).
-      `unlinkitem`/`linkitem` are `BL_ALWAYS_INLINE`, and the five
-      entries are `BLITZ_ENTRYPOINT` with `BLITZ_EP_KEEP_A6()`: GCC works
-      in d0/d1/a0-a2 and saves nothing (it keeps the array base in d1 and
-      reloads an address register from it, `movea.l d1,a0`, 4 cycles each;
-      a2 changes as in the original, whose `unlinkitem`/`linkitem` change
-      a2 and save a3 only; no other library calls them, epcheck passes).
-      The path of the benchmark: AddItem 412 -> 308 cycles (380), KillItem
-      416 -> 286 (384). `bstr.addkill` 1025.7 -> 785.0 (961.0), 0.82 times
-      the original. The library cases of the list commands
-      (`systest_cmdlibs`, recorded from the original: every list state of
-      0, 1 and 3 used and 0 or 2 free items with each current item, two
-      traversals, KillItem until the list is empty) are unchanged.
-    - Sound/LoopSound (task 13.22): an iteration of `Sound 0,1` is two
-      waits of 12 changes of VHPOSR's line byte (24 lines, 94 % of the
-      value) plus one line for each line boundary that the code between
-      the waits (C) or the code after the second wait, the caller's loop
-      and the code before the first (A + D) crosses. The port's C was
-      536 cycles (the original 394, a line 454) and A + D 728 (332): two
-      lines more. `wait12` and `playsound` are `BL_ALWAYS_INLINE` in the
-      four `BLITZ_ENTRYPOINT` entries (`BLITZ_EP_KEEP_A6()`), which pass
-      the number of volumes and the loop flag as constants where they
-      can; the four channels are unrolled with absolute Paula addresses
-      as Volume (decision 26). GCC's code: A 32, C 334, D 154 (LoopSound
-      158), so A + D plus the caller stays inside one line: 24 lines
-      instead of the original's 25. `binput.sound` 12527.8 -> 11096.6
-      (11552.2), `binput.loopsound` 12523.0 -> 11114.1 (11552.2), 0.96
-      times the original; the fraction of about 0.7 lines (interrupts
-      during the waits) is in both. Cost: audiolib 4192 -> 5420 bytes
-      (accepted, C first). The entries change d0-d6 (with volumes d7
-      too) and a2 (the original d0, d2-d4, d6, d7, a0; no library calls
-      Sound or LoopSound); they lower a2 by the volumes they pop but
-      that of channel 3 (`docs/libs/deviations.md`, kind B). The library
-      case recorded from the original before the change (`systest_cmdlibs`:
-      DMACON and the audio registers patched to a RAM copy in the code of
-      the routine and the routines it calls, every mask, both forms of
-      each command with 0, 1, 2 and 4 volumes) gives the same cases; it
-      first patched at most 24 register addresses, fewer than the 30 of
-      the unrolled code, and so failed for a correct routine (repaired in
-      its own commit). One shared `playsound` with register arguments
-      called from four plain entries (`au2.c` of the analysis) was not
-      enough: A + D 432.
 
 29. **The remaining slower string commands (group 13, tasks 13.1 to
     13.5, 2026-11-16).** Analysis `analyse-g13-strings.md`; C, measured in
@@ -1236,6 +1172,71 @@ build.
       below the original in decision 20 (2682.9 against 2702.2), so it
       stays as it is. The library cases of `systest_blit` (QBlit, QBlit
       excess, UnQueue in both modes) give the same values.
+
+31. **The list commands and Sound (tasks 13.20 to 13.22, 2026-11-16).**
+    C, no assembler, by the analysis `analyse-g13-sound-lists.md`
+    (cycles counted from the disassemblies, then measured in
+    `tests/perf`, two runs; the original in brackets).
+    - NextItem/PrevItem (task 13.20): `firstitem2`/`lastitem2` were
+      functions with a stack argument (`move.l d0,-(sp) : jsr : addq.l
+      #4,sp`) and computed `link ? item : 0` branchless (SNE/EXT/EXT/AND);
+      the current item was tested in an address register (`cmpa.w #0`,
+      10 cycles) and every exit went to one shared RTS by BRA.s. Now
+      both helpers are `BL_ALWAYS_INLINE` with an exit per result, the
+      current item is read into a data register (`__asm__("" :
+      "+d"(cur))`; GCC still adds a TST.l, 4 cycles, where MOVE set the
+      flags; `register ... __asm("d0")` did not help), and the middle item
+      is the likely path. GCC put the RTS of that path behind the rare
+      exits as long as the function itself stood in the `!subs` table
+      before its body (its address taken): the entries are `BLITZ_ALIAS`
+      of a static C function, which gives the middle item its own RTS.
+      Middle item 160 -> 144 cycles (148), first call 244 -> 140 (160),
+      the end 142 -> 140 (126). `bstr.nextitem51` 231.8 -> 213.9 (217.8),
+      0.98 times the original.
+    - AddItem, KillItem, AddFirst, AddLast, ClearList (task 13.21):
+      `unlinkitem` was a function with a stack argument (70 cycles of
+      call overhead), and the entries saved a2/a6 (KillItem d2/a2/a6).
+      `unlinkitem`/`linkitem` are `BL_ALWAYS_INLINE`, and the five
+      entries are `BLITZ_ENTRYPOINT` with `BLITZ_EP_KEEP_A6()`: GCC works
+      in d0/d1/a0-a2 and saves nothing (it keeps the array base in d1 and
+      reloads an address register from it, `movea.l d1,a0`, 4 cycles each;
+      a2 changes as in the original, whose `unlinkitem`/`linkitem` change
+      a2 and save a3 only; no other library calls them, epcheck passes).
+      The path of the benchmark: AddItem 412 -> 308 cycles (380), KillItem
+      416 -> 286 (384). `bstr.addkill` 1025.7 -> 785.0 (961.0), 0.82 times
+      the original. The library cases of the list commands
+      (`systest_cmdlibs`, recorded from the original: every list state of
+      0, 1 and 3 used and 0 or 2 free items with each current item, two
+      traversals, KillItem until the list is empty) are unchanged.
+    - Sound/LoopSound (task 13.22): an iteration of `Sound 0,1` is two
+      waits of 12 changes of VHPOSR's line byte (24 lines, 94 % of the
+      value) plus one line for each line boundary that the code between
+      the waits (C) or the code after the second wait, the caller's loop
+      and the code before the first (A + D) crosses. The port's C was
+      536 cycles (the original 394, a line 454) and A + D 728 (332): two
+      lines more. `wait12` and `playsound` are `BL_ALWAYS_INLINE` in the
+      four `BLITZ_ENTRYPOINT` entries (`BLITZ_EP_KEEP_A6()`), which pass
+      the number of volumes and the loop flag as constants where they
+      can; the four channels are unrolled with absolute Paula addresses
+      as Volume (decision 26). GCC's code: A 32, C 334, D 154 (LoopSound
+      158), so A + D plus the caller stays inside one line: 24 lines
+      instead of the original's 25. `binput.sound` 12527.8 -> 11096.6
+      (11552.2), `binput.loopsound` 12523.0 -> 11114.1 (11552.2), 0.96
+      times the original; the fraction of about 0.7 lines (interrupts
+      during the waits) is in both. Cost: audiolib 4192 -> 5420 bytes
+      (accepted, C first). The entries change d0-d6 (with volumes d7
+      too) and a2 (the original d0, d2-d4, d6, d7, a0; no library calls
+      Sound or LoopSound); they lower a2 by the volumes they pop but
+      that of channel 3 (`docs/libs/deviations.md`, kind B). The library
+      case recorded from the original before the change (`systest_cmdlibs`:
+      DMACON and the audio registers patched to a RAM copy in the code of
+      the routine and the routines it calls, every mask, both forms of
+      each command with 0, 1, 2 and 4 volumes) gives the same cases; it
+      first patched at most 24 register addresses, fewer than the 30 of
+      the unrolled code, and so failed for a correct routine (repaired in
+      its own commit). One shared `playsound` with register arguments
+      called from four plain entries (`au2.c` of the analysis) was not
+      enough: A + D 432.
 
 ## Risks / Trade-offs
 
