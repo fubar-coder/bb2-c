@@ -41,8 +41,6 @@
  *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
  *     memory in front of the buffer are overwritten (the BB2 docs only
  *     say "works like the Deplode command"). (#116)
- *   - CrM2: ReadTab with a count of 0 reads 65536 table entries (DBF);
- *     the tables are static data inside the library, as in the original. (#117)
  *   - PPDecrunch: ReadD1_SUB with an efficiency value 0 reads 65536 bits. (#118)
  *   - Implode crunches in place while it searches: a result of 0 (not
  *     crunchable) after at least 64 bytes leaves the buffer partly
@@ -53,6 +51,10 @@
  *     SUBQ/BNE: a crunched length below 4 copied 4 GB; such a length now
  *     copies the one long behind the loop only (#115).  The address
  *     comparison stays signed (BLE), as in the original.
+ *   - CrM2: ReadTab counted a count of 0 with DBF as 65536 table entries
+ *     and a sum of the counts without a limit, writing behind the tables
+ *     (static data inside the library, as in the original); a count of 0
+ *     or a sum of 0 or beyond the table ends the decrunch now (#117).
  * Kept from the original, not a bug: after $4012 literal bytes in a row
  * Implode stores the rest of the data uncrunched - a limit of the
  * Imploder format (imtab4); the result decrunches correctly (#113).
@@ -935,13 +937,20 @@ static_assert(sizeof tabbs == 2 * (1 + 32 + 32 + 527 + 32));
 #define OANZPERBITS (offsetof(typeof(tabbs), anzperbits) - 2)
 static_assert(OADDTAB == 64 && OREALTAB == 128 && OANZPERBITS == 1182);
 
-/* ReadTab - d2 = max. bits; a0 = AnzPerBits, a4 = RealTab part */
-static void readtab(struct crmbits *b, UWORD maxbits, UBYTE *counts, UBYTE *codes)
+/* ReadTab - d2 = max. bits; a0 = AnzPerBits, a4 = RealTab part with
+   room for `room` entries.  Fixed (#117): FALSE (the decrunch ends) for a
+   count of 0 or a sum of the counts of 0 or above the room; the original
+   counted 0 with DBF as 65536 entries and wrote behind the tables. */
+static BOOL readtab(struct crmbits *b, UWORD maxbits, UBYTE *counts, UBYTE *codes,
+                    UWORD room)
 {
     UWORD n, bitn = 0, nbits;
     UWORD total = 0;                    /* only the low word is used */
 
-    n = (UWORD)(crmgetbits(b, 4) - 1);
+    n = crmgetbits(b, 4);
+    if (n == 0)
+        return FALSE;
+    n--;
     do {                                /* RTlop */
         UWORD count;
         bitn++;
@@ -953,11 +962,14 @@ static void readtab(struct crmbits *b, UWORD maxbits, UBYTE *counts, UBYTE *code
         counts += 2;
         total += count;
     } while (n-- != 0);
+    if (total == 0 || total > room)
+        return FALSE;
     n = (UWORD)(total - 1);
     do {                                /* RTlp2 */
         RW(codes) = crmgetbits(b, maxbits);
         codes += 2;
     } while (n-- != 0);
+    return TRUE;
 }
 
 /* CalcCmpTab - a3 = AnzPerBits part, a4 = CmpTab part (-2) */
@@ -1011,8 +1023,12 @@ static void lzhdecruncher(UBYTE *dst, const UBYTE *src, ULONG dstlen, ULONG srcl
 
         for (i = 0; i < 32; i++)
             RW(tabs + OANZPERBITS + 2 * i) = 0;
-        readtab(&b, 9, tabs + OANZPERBITS + 32, tabs + OREALTAB + 30);
-        readtab(&b, 4, tabs + OANZPERBITS, tabs + OREALTAB);
+        /* Fixed (#117): corrupt tables end the decrunch; the room is what
+           is left of RealTab from the start of each part */
+        if (!readtab(&b, 9, tabs + OANZPERBITS + 32, tabs + OREALTAB + 30,
+                     527 - 15)
+            || !readtab(&b, 4, tabs + OANZPERBITS, tabs + OREALTAB, 527))
+            return;
         calccmptab(tabs + OANZPERBITS + 32, tabs + OCMPTAB - 2);
         calccmptab(tabs + OANZPERBITS, tabs + OCMPTAB + 30);
         n = crmgetbits(&b, 16);
@@ -1090,8 +1106,9 @@ static void overlapdecrunch(const UBYTE *src, UBYTE *dst)
  * "CrM!"/"CrM2" are left alone.  All registers kept.
  * BUG(orig) (#116): up to MinSecDist bytes of memory in front of the
  * buffer are overwritten.  Fixed (#115): the copy of (CrLen>>2) longs
- * ran 4 GB for a crunched length below 4.  BUG(orig) (#117): CrM2 tables
- * with a count of 0 read 65536 entries.  BUG(orig) (#119): no checks of
+ * ran 4 GB for a crunched length below 4.  Fixed (#117): CrM2 tables
+ * with a count of 0 read 65536 entries (now the decrunch ends).
+ * BUG(orig) (#119): no checks of
  * the data.
  *
  * @param src  d0: the crunched data (with header), also the destination
@@ -1111,7 +1128,7 @@ BLITZ_ALIAS(_crm, crm_c);
  * copied to MinSecDist bytes before the destination.  All registers
  * kept.
  * BUG(orig) (#116): that copy overwrites memory in front of the
- * destination.  Fixed (#115), BUG(orig) (#117), (#119): see the one
+ * destination.  Fixed (#115), (#117), BUG(orig) (#119): see the one
  * argument form.
  *
  * @param src  d0: the crunched data (with header)
