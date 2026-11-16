@@ -125,9 +125,10 @@ BLITZ_ALIAS(domodquick, domodquick_c);
  * magnitudes with the dividend's sign.  A divisor 0 (ldivide's
  * 'infinity; the result is a) or one from $10000 on takes the calls.
  *
- * @param a d0: the left operand.
- * @param b d1: the right operand.
- * @return d0: the remainder.
+ * @arg d0 a, the left operand.
+ * @arg d1 b, the right operand.
+ * @par Result
+ * d0: the remainder.
  */
 BLITZ_ASM_ROUTINE(domodlong,
         "   move.l  d1,-(sp)\n"             /* b */
@@ -187,10 +188,11 @@ BLITZ_ASM_ROUTINE(domodlong,
  * save d2-d7/a2/a6 (BLITZ_BASEJSR assumes the call may change them), 150
  * cycles of a routine of about 1300.
  *
- * @param a d0: the left operand (FFP).
- * @param b d1: the right operand (FFP).
- * @param ffp a6: the mathffp base (!libs #ffplib,#la6).
- * @return d0: the remainder (Long).
+ * @arg d0 a, the left operand (FFP).
+ * @arg d1 b, the right operand (FFP).
+ * @arg a6 ffp, the mathffp base (!libs #ffplib,#la6).
+ * @par Result
+ * d0: the remainder (Long).
  */
 BLITZ_ASM_ROUTINE(domodfloat,
         "   move.l  d1,-(sp)\n"

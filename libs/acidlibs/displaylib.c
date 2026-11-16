@@ -963,19 +963,6 @@ BL_ALWAYS_INLINE UWORD *setptr(UWORD *a2, ULONG v)
     return a2 + 4;
 }
 
-/**
- * @brief DisplayBitMap CopList#,bmap,x,y: shows a bitmap at a position.
- *
- * Sets the modulos, the BPLCON1 scroll value (bp1 table) and the bitplane
- * pointers (HAM8: planes 7 and 8 first) for the position, and remembers
- * x in x0/x1 for DisplayScroll.  a3 is left on the bp1 table (not a bug:
- * the compiler reloads it).
- * Errors (debugger only): uninitialised coplist.
- *
- * @param bm  a0: the bitmap (!libs {#bitmaplib,$1081})
- * @param x   d2: the x position (quick)
- * @param y   d3: the y position
- */
 /* The original's code (assembler: the C of DisplayBitMap stayed 19 %
    slower, GCC kept the plane pointer in a data register); offsets of
    struct bb_coplist: x0 62, x1 66, resshift 74, bplanes 20, numbp 38,
@@ -986,6 +973,20 @@ CMAT(fetchwid, 42); CMAT(xand, 44); CMAT(xshift, 46); CMAT(ypos, 48); CMAT(heigh
 CMAT(res, 52); CMAT(numsprites, 54); CMAT(numcols, 56); CMAT(x0, 62); CMAT(x1, 66);
 CMAT(bplcon3, 70); CMAT(aga, 72); CMAT(resshift, 74); CMAT(spif, 84); CMAT(sspwid, 88);
 CMAT(ham8, 90); CMAT(csprites, 92); CMAT(spri, 126);
+
+/**
+ * @brief DisplayBitMap CopList#,bmap,x,y: shows a bitmap at a position.
+ *
+ * Sets the modulos, the BPLCON1 scroll value (bp1 table) and the bitplane
+ * pointers (HAM8: planes 7 and 8 first) for the position, and remembers
+ * x in x0/x1 for DisplayScroll.  a3 is left on the bp1 table (not a bug:
+ * the compiler reloads it).
+ * Errors (debugger only): uninitialised coplist.
+ *
+ * @arg a0 bm, the bitmap (!libs {#bitmaplib,$1081})
+ * @arg d2 x, the x position (quick)
+ * @arg d3 y, the y position
+ */
 BLITZ_ASM_ROUTINE(_displaybmap2,
 "   move.l  d2,62(a3)\n"                /* x0, x1 */
 "   move.l  d2,66(a3)\n"
@@ -1048,7 +1049,7 @@ BLITZ_ASM_ROUTINE(_displaybmap2,
  * are 0 too; the original stored the caller's d2/d3 there.
  * Errors (debugger only): uninitialised coplist.
  *
- * @param bm       a0: the bitmap (!libs {#bitmaplib,$1081})
+ * @arg a0 bm, the bitmap (!libs {#bitmaplib,$1081})
  */
 /* the original's code (see _displaybmap2) with the fix of #411 */
 BLITZ_ASM_ROUTINE(_displaybmap,
@@ -1238,10 +1239,10 @@ BLITZ_ALIAS(_displaydbmap2, _displaydbmap2_c);
  * channels in the bank ("Not Enough Sprite Channels"); fixed: in the
  * normal code (#412).
  *
- * @param spr      a1: the sprite (!libs {#spriteslib,$1181})
- * @param x        d2: the x position (quick)
- * @param y        d3: the y position
- * @param channel  d4: the first sprite channel
+ * @arg a1 spr, the sprite (!libs {#spriteslib,$1181})
+ * @arg d2 x, the x position (quick)
+ * @arg d3 y, the y position
+ * @arg d4 channel, the first sprite channel
  */
 /* The original's code (assembler: the C stayed 1.56 times slower, it
    needs the carry of ASL/LSL/LSR for the control bits and the upper
@@ -1488,18 +1489,18 @@ static const UBYTE *paldata(const UBYTE *palobj)
  * Errors: an uninitialised palette ("Uninitialised Palette"), a list
  * overrun ("Not Enough Custom Cops"); fixed: in the normal code (#412).
  *
- * @param pal     a0: the palette (!libs {#palettelib,$1081})
- * @param palnum  d1: the palette number (not used)
+ * @arg a0 pal, the palette (!libs {#palettelib,$1081})
+ * @arg d1 palnum, the palette number (not used)
  */
 
 /**
  * @brief DisplayPalette CopList#,Palette#,coloroffset: as DisplayPalette,
  *        from the palette's colour coloroffset.
  *
- * @param pal     a0: the palette (!libs {#palettelib,$1081})
- * @param palnum  d1: the palette number (not used)
- * @param coloff  d2: the first colour taken from the palette (word
- *                offset of 12 bytes per entry: >= 2731 goes backwards)
+ * @arg a0 pal, the palette (!libs {#palettelib,$1081})
+ * @arg d1 palnum, the palette number (not used)
+ * @arg d2 coloff, the first colour taken from the palette (word
+ *     offset of 12 bytes per entry: >= 2731 goes backwards)
  */
 
 /**
@@ -1507,10 +1508,10 @@ static const UBYTE *paldata(const UBYTE *palobj)
  *        DisplayPalette, from colour coloroffset into colour bank
  *        bankoffset (AGA).
  *
- * @param pal      a0: the palette (!libs {#palettelib,$1081})
- * @param palnum   d1: the palette number (not used)
- * @param coloff   d2: the first colour taken from the palette
- * @param bankoff  d3: added to the bank bits of BPLCON3 (bits 13-15)
+ * @arg a0 pal, the palette (!libs {#palettelib,$1081})
+ * @arg d1 palnum, the palette number (not used)
+ * @arg d2 coloff, the first colour taken from the palette
+ * @arg d3 bankoff, added to the bank bits of BPLCON3 (bits 13-15)
  */
 /* The three forms of DisplayPalette: the original's code (assembler:
    the C of the colour loop stayed 1.8 times slower, its word and byte

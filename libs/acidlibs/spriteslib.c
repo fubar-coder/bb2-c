@@ -410,10 +410,10 @@ BLITZ_ALIAS(dogetsprite, dogetsprite_c);
  * Fixed (#283): the original's top clipping skips 4 bytes per line also
  * in the 32/64 pixel modes and adds the upper word of the y register.
  *
- * @param x     d1: x position
- * @param y     d2: y position
- * @param ch    d3: the first sprite channel
- * @param slice a2: the used slice; a3: the sprite object
+ * @arg d1 x, x position
+ * @arg d2 y, y position
+ * @arg d3 ch, the first sprite channel
+ * @arg a2 slice, the used slice; a3: the sprite object
  */
 /* The original's code (assembler: the C stayed 12 % slower, its word
    arithmetic needs the carry of LSL/LSR for the control bits), with the

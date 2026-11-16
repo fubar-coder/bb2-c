@@ -51,9 +51,10 @@ BLITZ_LIBFIN();
  * became +32768.0 (#147).  The test on d0 costs no more than the
  * original's (one TST.l instead of the NEG.l of a copy).
  *
- * @param q  d0: the Quick
- * @param ffpbase  a6: mathffp.library (ffplib)
- * @return d0: the Float; d1 changed, a0/a1 and d2-d7/a2-a6 kept
+ * @arg d0 q, the Quick
+ * @arg a6 ffpbase, mathffp.library (ffplib)
+ * @par Result
+ * d0: the Float; d1 changed, a0/a1 and d2-d7/a2-a6 kept
  */
 BLITZ_ASM_ROUTINE(quicktofloat,
         "   tst.l   d0\n"
@@ -86,10 +87,11 @@ BLITZ_ASM_ROUTINE(quicktofloat,
  * ('doit2): converts the magnitude (SPFix(x) << 16 | SPFix((x - int) *
  * 65536.0), by mathffp) and negates it if the sign bit was set.
  *
- * @param f  d0: the Float
- * @param ffpbase  a6: mathffp.library (ffplib)
- * @return d0: the Quick; d1 changed, a0/a1 (third party: RIMiscLib) and
- *         d2-d7/a2-a6 kept
+ * @arg d0 f, the Float
+ * @arg a6 ffpbase, mathffp.library (ffplib)
+ * @par Result
+ * d0: the Quick; d1 changed, a0/a1 (third party: RIMiscLib) and
+ * d2-d7/a2-a6 kept
  */
 BLITZ_ASM_ROUTINE(floattoquick,
         "   bchg    #7,d0\n"

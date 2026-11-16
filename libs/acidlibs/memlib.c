@@ -269,11 +269,12 @@ BLITZ_ASM_BLOCK(membase,
  * list stays) and the runtime error "Out of Memory!" raised.  DIFF: the original never returns from err1
  * (its saved registers stay on the stack); here the result is 0.
  *
- * @param size d0: the size in bytes.
- * @param flags d1: the AllocMem flags.
- * @return d0: the memory; Z clear after a successful allocation (the
- *         flags of the final ADDQ, as in the original, whose failure does
- *         not return; the same as globalloc), Z set with 0.
+ * @arg d0 size, the size in bytes.
+ * @arg d1 flags, the AllocMem flags.
+ * @par Result
+ * d0: the memory; Z clear after a successful allocation (the
+ * flags of the final ADDQ, as in the original, whose failure does
+ * not return; the same as globalloc), Z set with 0.
  */
 BLITZ_ASM_ROUTINE(localloc,
         "   movem.l a0-a1/a6,-(sp)\n"
@@ -311,7 +312,7 @@ BLITZ_ASM_ROUTINE(localloc,
  * returns, the original runs on into newmem with locfree's saved
  * registers on the stack; here locfree returns.
  *
- * @param mem a1: the memory (d0 = length, ignored!).
+ * @arg a1 mem, the memory (d0 = length, ignored!).
  */
 BLITZ_ASM_ROUTINE(locfree,
         "   movem.l d1/a0/a6,-(sp)\n"
@@ -356,9 +357,15 @@ BLITZ_ASM_ROUTINE(locfree,
  * Third-party callers keep a0/a1 across globalloc and d1/a0 across
  * globfree (analyse-internal-token-callers.md).
  *
- * globalloc: @param size d0, @param flags d1; @return d0: the memory, the
- * flags of `tst.l d0` (Z clear after a successful allocation).
- * globfree: @param mem a1: the memory (d0 = length, ignored).
+ * globalloc:
+ * @arg d0 size, the size in bytes.
+ * @arg d1 flags, the AllocMem flags.
+ * @par Result
+ * d0: the memory, the flags of `tst.l d0` (Z clear after a successful
+ * allocation).
+ *
+ * globfree:
+ * @arg a1 mem, the memory (d0 = length, ignored).
  */
 BLITZ_ASM_ROUTINE(globalloc,
         "   move.l  a0,-(sp)\n"
@@ -407,8 +414,9 @@ BLITZ_ASM_ROUTINE(globfree,
  * keep d0 nor return a flag, and the thunk around the C function saved
  * d0-d1/a0-a1.
  *
- * @return Z = 1 if there was none (the original's MOVEQ #-1,d0 / the
- *         BEQ on firstdata; internal, not a Blitz truth value).
+ * @par Result
+ * Z = 1 if there was none (the original's MOVEQ #-1,d0 / the
+ * BEQ on firstdata; internal, not a Blitz truth value).
  */
 BLITZ_ASM_ROUTINE(freelast,
         "   movem.l d0/a2/a6,-(sp)\n"

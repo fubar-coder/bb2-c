@@ -1229,27 +1229,32 @@ static_assert(offsetof(__typeof__(V), evmousey) == V_EVMOUSEY);
    every other register) whatever GCC makes of the rest of the library. */
 
 /** @brief GadgetHit - the gadget id of the last gadget event (-1 at init).
-    @return d0.w: the id; every other register kept */
+    @par Result
+    d0.w: the id; every other register kept */
 BLITZ_ASM_ROUTINE(dogadgethit,
 "   move.w  _V+" BL_STR(V_EVENTGNUM) "(pc),d0\n"
 "   rts");
 /** @brief MenuHit - the menu number of the last menu event, -1 for none.
-    @return d0.w: the number; every other register kept */
+    @par Result
+    d0.w: the number; every other register kept */
 BLITZ_ASM_ROUTINE(domenuhit,
 "   move.w  _V+" BL_STR(V_MENUNUM) "(pc),d0\n"
 "   rts");
 /** @brief ItemHit - the item number of the last menu event, -1 for none.
-    @return d0.w: the number; every other register kept */
+    @par Result
+    d0.w: the number; every other register kept */
 BLITZ_ASM_ROUTINE(doitemhit,
 "   move.w  _V+" BL_STR(V_ITEMNUM) "(pc),d0\n"
 "   rts");
 /** @brief SubHit - the subitem number of the last menu event, -1 for none.
-    @return d0.w: the number; every other register kept */
+    @par Result
+    d0.w: the number; every other register kept */
 BLITZ_ASM_ROUTINE(dosubhit,
 "   move.w  _V+" BL_STR(V_SUBNUM) "(pc),d0\n"
 "   rts");
 /** @brief EventQualifier - the qualifier of the last event.
-    @return d0.w: the qualifier; every other register kept */
+    @par Result
+    d0.w: the qualifier; every other register kept */
 BLITZ_ASM_ROUTINE(doeventqualifier,
 "   move.w  _V+" BL_STR(V_EVQUALIFIER) "(pc),d0\n"
 "   rts");
@@ -1265,8 +1270,9 @@ BLITZ_ASM_ROUTINE(doeventqualifier,
 
 /**
  * @brief EMouseX - the mouse x position of the last event.
- * @return d0.w: the position; every other register (and the upper word
- *         of d0) kept
+ * @par Result
+ * d0.w: the position; every other register (and the upper word
+ * of d0) kept
  */
 BLITZ_ASM_ROUTINE(doemousex,
 "   move.w  _V+" BL_STR(V_EVMOUSEX) "(pc),d0\n"
@@ -1274,8 +1280,9 @@ BLITZ_ASM_ROUTINE(doemousex,
 
 /**
  * @brief EMouseY - the mouse y position of the last event.
- * @return d0.w: the position; every other register (and the upper word
- *         of d0) kept
+ * @par Result
+ * d0.w: the position; every other register (and the upper word
+ * of d0) kept
  */
 BLITZ_ASM_ROUTINE(doemousey,
 "   move.w  _V+" BL_STR(V_EVMOUSEY) "(pc),d0\n"
@@ -1283,8 +1290,9 @@ BLITZ_ASM_ROUTINE(doemousey,
 
 /**
  * @brief EventCode - the IDCMP code of the last event.
- * @return d0.w: the code; every other register (and the upper word of
- *         d0) kept
+ * @par Result
+ * d0.w: the code; every other register (and the upper word of
+ * d0) kept
  */
 BLITZ_ASM_ROUTINE(doeventcode,
 "   move.w  _V+" BL_STR(V_EVCODE) "(pc),d0\n"

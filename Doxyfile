@@ -101,7 +101,8 @@ PREDEFINED             = "BL_REG(r)=" \
                          "BLITZ_ERRCHK_AB(e,b,a)=void e(void);" \
                          "BLITZ_ASM_ROUTINE(e,t)=void e(void);" \
                          "BLITZ_INLINE(e,t)=void e(void);" \
-                         "BLITZ_AB_ROUTINE(e,b,t)=void e(void);"
+                         "BLITZ_AB_ROUTINE(e,b,t)=void e(void);" \
+                         "BLITZ_ASM_BLOCK(n,t)=void n(void);"
 # parameter lists shared by several routines of a library (defined there)
 EXPAND_AS_DEFINED      = STDARGS SHAPEARGS FREQ_ARGS ITEMARGS SUBARGS \
                          SCROLL_REGS REG_ARGS BBLIT_REGS QBLIT_REGS SBLIT_REGS \

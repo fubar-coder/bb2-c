@@ -1488,9 +1488,9 @@ BLITZ_ALIAS(doaargb, doaargb_c);
  * fastest form on the 68000): MULU takes the low word of each source
  * long read from pdata + 2, the upper word of the component.
  *
- * @param br d2: the brightness (Quick, 1.0 = full brightness).
- * @param s a0: the source palette.
- * @param d a1: the destination palette.
+ * @arg d2 br, the brightness (Quick, 1.0 = full brightness).
+ * @arg a0 s, the source palette.
+ * @arg a1 d, the destination palette.
  */
 BLITZ_ASM_ROUTINE(_fadepalette,
 "   move.w  4(a0),d0\n"

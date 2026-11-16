@@ -53,9 +53,10 @@ BLITZ_LIBFIN();
  * a0-a6 kept (internal token: the compiler holds d2-d7 across an
  * operator; LotanConvert holds a0 across it); the CCR is no result.
  *
- * @param a  d0: the first factor
- * @param b  d1: the second factor
- * @return d0: the product
+ * @arg d0 a, the first factor
+ * @arg d1 b, the second factor
+ * @par Result
+ * d0: the product
  */
 BLITZ_ASM_ROUTINE(lmultiply,
         "   tst.l   d1\n"

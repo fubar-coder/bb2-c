@@ -83,9 +83,9 @@ static void BLITZ_ROUTINE strcopy_c(ULONG len BL_REG(d0), UBYTE *d BL_REG(a0))
  * alloc flags, BL_STRCOPY), memlib and strcopy_c keep the others.  The
  * length is removed from the stack (MOVE.l (a7)+,(a7):RTS).
  *
- * @param len 4(a7): the length, removed by the routine
- * @param var a2: the address of the string variable
- * @param mem a6: memlib's membase table
+ * @arg 4(a7) len, the length, removed by the routine
+ * @arg a2 var, the address of the string variable
+ * @arg a6 mem, memlib's membase table
  */
 BLITZ_ASM_BLOCK(stringass,
 "   .globl  _gstringass\n"

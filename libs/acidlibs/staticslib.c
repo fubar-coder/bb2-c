@@ -77,8 +77,8 @@ BLITZ_THUNK(allocst, allocst_c, "a0-a1");
  * thunks.md 1.4); a0 and a1 are free (the original keeps them), no
  * third-party library calls it.
  *
- * @param tab a2: the compiler's table (calcstatic, blitz2.s 6740)
- * @param n   d4: the number of entries - 1
+ * @arg a2 tab, the compiler's table (calcstatic, blitz2.s 6740)
+ * @arg d4 n, the number of entries - 1
  */
 BLITZ_ASM_ROUTINE(locallocst,
         "   movem.l d0-d1/d4,-(sp)\n"

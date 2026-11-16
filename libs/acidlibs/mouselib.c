@@ -146,14 +146,16 @@ BLITZ_ALIAS(doposmouse, doposmouse_c);
    only. */
 
 /** @brief MouseX - the mouse's x position (Blitz mode only).
-    @return d0: the position as a Quick (the value in the upper word). */
+    @par Result
+    d0: the position as a Quick (the value in the upper word). */
 BLITZ_ASM_ROUTINE(domousex,
 "   move.w  _mx(pc),d0\n"
 "   swap    d0\n"
 "   clr.w   d0\n"
 "   rts");
 /** @brief MouseY - the mouse's y position (Blitz mode only).
-    @return d0: the position as a Quick (the value in the upper word). */
+    @par Result
+    d0: the position as a Quick (the value in the upper word). */
 BLITZ_ASM_ROUTINE(domousey,
 "   move.w  _my(pc),d0\n"
 "   swap    d0\n"
@@ -161,7 +163,8 @@ BLITZ_ASM_ROUTINE(domousey,
 "   rts");
 /** @brief MouseXSpeed - the last horizontal movement, the counter
     difference of the last vertical blank (Blitz mode only).
-    @return d0: the speed as a Quick (the value in the upper word). */
+    @par Result
+    d0: the speed as a Quick (the value in the upper word). */
 BLITZ_ASM_ROUTINE(domousexs,
 "   move.w  _xs(pc),d0\n"
 "   swap    d0\n"
@@ -169,7 +172,8 @@ BLITZ_ASM_ROUTINE(domousexs,
 "   rts");
 /** @brief MouseYSpeed - the last vertical movement, the counter
     difference of the last vertical blank (Blitz mode only).
-    @return d0: the speed as a Quick (the value in the upper word). */
+    @par Result
+    d0: the speed as a Quick (the value in the upper word). */
 BLITZ_ASM_ROUTINE(domouseys,
 "   move.w  _ys(pc),d0\n"
 "   swap    d0\n"
