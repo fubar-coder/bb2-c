@@ -1,0 +1,4 @@
+[run]
+tape 0 events 1
+pointer moved -1
+rc=0

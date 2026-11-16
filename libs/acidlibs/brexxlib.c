@@ -35,10 +35,12 @@
  * File format (SaveTape/LoadTape): the 8 byte start time, then 18 bytes
  * per event (the event without its link).
  *
+ * Fixed (#95): TapeTrap without a tape number fell through (no RTS) into
+ * TapeTrap Tape#: tapeadd = the caller's a3 (Blitz string work pointer),
+ * so the redirection never ended and the events were chained into the
+ * memory at a3.  Here it clears tapeadd and returns (bug-orig test
+ * brexxlib-tapetrap-a3).
  * BUG(orig), kept:
- *  - TapeTrap without a tape number falls through into TapeTrap Tape#:
- *    tapeadd = the caller's a3 (Blitz string work pointer), so events are
- *    appended to whatever a3 points to (not tested). (#95)
  *  - Appending an event to a tape clears `mode` (a running Record or
  *    PlayBack stops working, without restoring the hijacked link). (#96)
  *  - ClickButton: the second (button up) call gets d0 as left by the
@@ -362,14 +364,24 @@ static void BLITZ_ROUTINE doqplay_c(ULONG v BL_REG(d0))
 BLITZ_ALIAS(doqplay, doqplay_c);
 
 /**
- * @brief TapeTrap [Tape#]: append the simple events to a tape.
+ * @brief TapeTrap: end the redirection of the simple events to a tape.
+ *
+ * Type, AbsMouse, RelMouse, MouseButton and ClickButton are executed
+ * again.  Fixed (#95): the original falls through into TapeTrap Tape#
+ * (no RTS behind CLR.l tapeadd), so tapeadd became the caller's a3.
+ */
+static void BLITZ_ROUTINE dotapeadd_c(void)
+{
+    tapeadd = 0;                                /* CLR.l tapeadd:RTS */
+}
+BLITZ_ALIAS(dotapeadd, dotapeadd_c);
+
+/**
+ * @brief TapeTrap Tape#: append the simple events to a tape.
  *
  * Type, AbsMouse, RelMouse, MouseButton and ClickButton then append their
  * events to this tape (with QuietTrap On only appended, otherwise also
  * executed).
- * BUG(orig) (#95): TapeTrap without a tape number (CLR.l tapeadd) falls
- * through into TapeTrap Tape#: tapeadd = the caller's a3 (Blitz string
- * work pointer); both forms are this routine.
  * BUG(orig) (#96): appending an event to a tape clears `mode`.
  *
  * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
@@ -378,7 +390,6 @@ static void BLITZ_ROUTINE dotapeadd2_c(void)
 {
     tapeadd = (struct tape *)blitz_string;
 }
-BLITZ_ALIAS(dotapeadd, dotapeadd2_c);
 BLITZ_ALIAS(dotapeadd2, dotapeadd2_c);
 
 /**
