@@ -30,14 +30,38 @@ Gosub qry
 If qn>0 Then NPrint "stale ",qn : s$=ReadSerialString(0)
 SetSerialBuffer 0,1024
 NPrint "buffer ",Peek.l(u+90)," err ",Peek.b(u+69)
-; session start (TrueString + DoIO)
-WriteSerialString 0,Chr$(1)+"t64_serialrx"+Chr$(2),2
+; session start (TrueString + DoIO: flags 3; the original takes both from
+; bit 1, BUG(orig) (#254))
+WriteSerialString 0,Chr$(1)+"t64_serialrx"+Chr$(2),3
 NPrint "start err ",Peek.b(u+128+69)," len ",Peek.l(u+128+74)," actual ",Peek.l(u+128+70)
 
-; nothing waiting: -1 / empty string; flag 1 does not wait (BUG(orig) (#255))
-NPrint "empty ",ReadSerial(0)," ",ReadSerial(0,0)," ",ReadSerial(0,1)
+; nothing waiting: -1 / empty string
+NPrint "empty ",ReadSerial(0)," ",ReadSerial(0,0)
 s$=ReadSerialString(0) : NPrint "emptystr [",s$,"] ",Len(s$)
 NPrint "event ",SerialEvent(0)
+
+; W1: reply after 0.1 s, ReadSerial with flag 1 (under the watchdog); the
+; original does not wait (BUG(orig) (#255)): -1, the reply is read later
+cd=87 : Gosub req : r=-2
+If herr=0 Then tg=rq : Gosub wdstart : r=ReadSerial(0,1) : Gosub wdstop
+If wdf Then NPrint "TIMEOUT W1"
+For i=1 To 25 : VWait : Next
+Gosub qry : q1=qn
+s$=ReadSerialString(0)
+NPrint "W1 ",r," then ",q1," [",s$,"]"
+
+; WriteSerialString with flag 1 and with flag 2 (the help: 1 = DoIO,
+; 2 = TrueString): is the request still queued at the write port
+; afterwards (SendIO, not collected) or done (DoIO)?  BUG(orig) (#254):
+; bit 1 selects TrueString and DoIO, bit 0 nothing
+Poke.b wq+8,5
+WriteSerialString 0,"x",1
+For i=1 To 10 : VWait : Next
+Gosub wqueued : NPrint "flag 1 ",qd$," len ",Peek.l(wq+36)
+Poke.b wq+8,5
+WriteSerialString 0,"y",2
+For i=1 To 10 : VWait : Next
+Gosub wqueued : NPrint "flag 2 ",qd$," len ",Peek.l(wq+36)
 
 ; A: one byte, ReadSerial without wait once it is there
 cd=65 : Gosub req : nd=1 : lb$="A" : Gosub waitq
@@ -75,7 +99,7 @@ For i=1 To 8 : Print " ",ReadSerial(0) : Next
 NPrint " ",ReadSerial(0)
 
 ; E: echo of WriteSerialString (TrueString) + WriteSerialMem
-WriteSerialString 0,"Hello, serial",2
+WriteSerialString 0,"Hello, serial",3
 Poke.l b+64,$5758595A
 WriteSerialMem 0,b+64,4
 NPrint "mem write err ",Peek.b(u+128+69)," len ",Peek.l(u+128+74)," actual ",Peek.l(u+128+70)
@@ -130,7 +154,7 @@ NPrint "E3 [",s$,"] ",Len(s$)
 ; SetSerialLens: 7 data bits
 SetSerialLens 0,7,7,1
 NPrint "lens ",Peek.b(u+114)," ",Peek.b(u+115)," ",Peek.b(u+116)," err ",Peek.b(u+69)
-WriteSerialString 0,"ab",2
+WriteSerialString 0,"ab",3
 cd=69 : Gosub req : nd=2 : lb$="E7" : Gosub waitq
 ; two ReadSerial in one statement differ: the original leaves a3 on its
 ; byte buffer, the next string part is built there (DIFF in seriallib.c)
@@ -241,17 +265,33 @@ mem10:
   If herr=0 Then tg=wq : Gosub wdstart : ReadSerialMem 0,b,10 : Gosub wdstop
   If wdf Then NPrint "TIMEOUT mem"
   s$="" : For i=0 To 9 : s$=s$+Chr$(Peek.b(b+i) AND 255) : Next
-  NPrint "mem [",s$,"] err ",Peek.b(u+128+69)," len ",Peek.l(u+128+74)," actual ",Peek.l(u+128+70)
+  Gosub memhalf
+  NPrint "mem [",s$,"] via ",hn$," err ",Peek.b(h+31)," len ",Peek.l(h+36)," actual ",Peek.l(h+32)
 Return
 
 ; ReadSerialMem of 16 bytes (EOF mode) under the watchdog; k = actual
 mem16:
   If herr=0 Then tg=wq : Gosub wdstart : ReadSerialMem 0,b,16 : Gosub wdstop
   If wdf Then NPrint "TIMEOUT eof"
-  k=Peek.l(u+128+70) : If k<0 OR k>16 Then k=0
+  Gosub memhalf
+  k=Peek.l(h+32) : If k<0 OR k>16 Then k=0
   s$="" : For i=0 To 15 : If Peek.b(b+i) Then s$=s$+Chr$(Peek.b(b+i) AND 255)
   Next
-  NPrint "eof [",s$,"] err ",Peek.b(u+128+69)," actual ",k
+  NPrint "eof [",s$,"] via ",hn$," err ",Peek.b(h+31)," actual ",k
+Return
+
+; the request ReadSerialMem read through (its io_Data is b) -> h, hn$;
+; BUG(orig) (#253): the original reads through the write request
+memhalf:
+  h=wq : hn$="write"
+  If Peek.l(rq+40)=b Then h=rq : hn$="read"
+Return
+
+; is the write request queued at the write port (lh_Head of its
+; mp_MsgList at u+152)? then collect it (WaitIO) -> qd$
+wqueued:
+  qd$="done"
+  If Peek.l(u+152)=wq Then qd$="queued" : ar=wq : Gosub waitio
 Return
 
 ; ---------------------------------------------------------------------

@@ -1,8 +1,9 @@
 ; t62_serial - seriallib with serial.device unit 0 of the emulator (no
 ; remote end, no loopback): open, parameters, buffer, query/read with
 ; nothing waiting, SerialEvent, failing opens, a few bytes written with
-; DoIO, close.  Offsets: u = read half (request, port +4, IOExtSer +38),
-; u+128 = write half.
+; DoIO (WriteSerialString with flags 3, TrueString + DoIO: the original
+; takes both from bit 1, BUG(orig) (#254)), close.  Offsets: u = read
+; half (request, port +4, IOExtSer +38), u+128 = write half.
 Dim m.l(15)
 b.l=&m(0)
 For i=0 To 15 : m(i)=$41424344 : Next
@@ -30,7 +31,7 @@ u2.l=OpenSerial("nosuch.device",2,9600,0)
 NPrint "no device ",u2
 WriteSerial 0,65
 NPrint "write err ",Peek.b(u+128+69)," actual ",Peek.l(u+128+70)
-WriteSerialString 0,"hello",2
+WriteSerialString 0,"hello",3
 NPrint "string err ",Peek.b(u+128+69)," len ",Peek.l(u+128+74)," actual ",Peek.l(u+128+70)
 WriteSerialMem 0,b,6
 NPrint "mem err ",Peek.b(u+128+69)," len ",Peek.l(u+128+74)," actual ",Peek.l(u+128+70)
