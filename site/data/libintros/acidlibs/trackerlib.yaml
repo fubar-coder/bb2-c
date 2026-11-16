@@ -14,8 +14,6 @@ intro: |
   StopModule
   ```
 
-  The player is the classic NoiseTracker replay routine, and its known
-  faults are kept, for example with some effect commands
-  ([#292](https://github.com/fubar-coder/bb2-c/issues/292),
-  [#293](https://github.com/fubar-coder/bb2-c/issues/293),
-  [#294](https://github.com/fubar-coder/bb2-c/issues/294)).
+  The player is the classic NoiseTracker replay routine. After the last
+  song position, also after a pattern break or position jump in it, the
+  song starts again at the module's restart position.

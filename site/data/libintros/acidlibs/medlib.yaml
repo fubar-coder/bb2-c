@@ -24,9 +24,13 @@ intro: |
   plays, for graphics that follow the music. `SetMedMask` keeps channels
   free for sound effects.
 
-  The player is the MED V3 player by Teijo Kinnunen, and its known faults
-  are kept, for example with some effect commands
-  ([#203](https://github.com/fubar-coder/bb2-c/issues/203),
-  [#204](https://github.com/fubar-coder/bb2-c/issues/204)).
+  The player is the MED V3 player by Teijo Kinnunen. Kept from the
+  original: the pattern break 1Dxx can take a byte of another track of
+  the same line as part of the line number and then play from memory
+  behind the block
+  ([#1066](https://github.com/fubar-coder/bb2-c/issues/1066)), and in a
+  module with more than 8 tracks, the commands 03 and FFD on tracks 8 to
+  11 write into the player's data of other tracks
+  ([#1067](https://github.com/fubar-coder/bb2-c/issues/1067)).
 
   *Based on the medlib guide by Acid Software.*

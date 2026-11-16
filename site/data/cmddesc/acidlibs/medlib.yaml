@@ -7,17 +7,16 @@
 "StopMed":
   text: Stops the module and silences the channels. `PlayMed` then does nothing until the next `StartMedModule`.
 "JumpMed":
-  text: Makes the song go on at the given entry of its play sequence, counted from 1, from its first line.
-  notes: |
-    Kept from the original: without a started module it writes to a low
-    memory address ([#210](https://github.com/fubar-coder/bb2-c/issues/210)).
+  text: Makes the song go on at the given entry of its play sequence, counted from 1, from its first line. With runtime error checking, a call without a playing module is the error "No Module Playing".
 "SetMedVolume":
   text: Sets the overall volume of the module for all its tracks, in place of the master volume stored in the song; lowering it step by step fades the music out.
 "GetMedVolume":
-  text: The volume of the last note on the channel, and 0 after it has been read once.
+  text: The volume the channel plays at, from its last note or volume command. Unlike `GetMedNote` and `GetMedInstr`, it does not become 0 when it has been read.
   notes: |
-    Kept from the original: reading the volume silences the channel until
-    its next note ([#212](https://github.com/fubar-coder/bb2-c/issues/212)).
+    Fixed in the port: the original set the volume to 0 when it was read,
+    which silenced the channel until its next note; a program that used
+    that 0 to see a new note uses `GetMedNote`
+    ([#212](https://github.com/fubar-coder/bb2-c/issues/212)).
 "GetMedNote":
   text: The last note played on the channel, and 0 after it has been read once, for example for graphics that follow the music.
 "GetMedInstr":
