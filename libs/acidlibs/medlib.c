@@ -9,8 +9,8 @@
  * PLAYMMD0=1 VBLANK=0 CIAB=0 EASY=1; binary of the CD's acidlibs
  * checked: same as the source.  No interrupt: the program calls PlayMed
  * for every timing pulse (_IntHandler), so the player state can be
- * followed with GetMedNote/GetMedInstr/GetMedVolume (each clears the
- * value it returns, "simon was here").
+ * followed with GetMedNote/GetMedInstr (each clears the value it returns,
+ * "simon was here") and GetMedVolume (which only reads, #212).
  *
  * Object (32 bytes, maximum 8): {MMD id, module length, module (chip
  * memory) / 0 when DecodeMedModule uses the module in place}.
@@ -48,8 +48,6 @@
  *     and trk_prevper (+20) of such a track into the 20-byte structures
  *     behind it, also with the default mask (test medlib-tracks-8-11-cmd3;
  *     issue to be filed).
- *   - GetMedVolume clears trk_prevvol: the channel is silent until the
- *     next note. (#212)
  * Fixed (#207): after a MIDI dump in the expansion data the relocation read
  * the next module pointer from (expansion address AND $FFFF0000) - relocmdd
  * overwrote the low word of d0 - and relocated whatever long was there as a
@@ -92,6 +90,12 @@
  * before its note was read, so the note pointer stayed: every track after
  * it played the note of the track before.  The masked branch skips the
  * note (an unmasked track costs the same).
+ * Fixed (#212): GetMedVolume read and cleared trk_prevvol, but that is the
+ * volume the player writes to Paula in every tick: the channel went silent
+ * until a note with an instrument or a volume command set it again.
+ * GetMedVolume only reads it (GetMedNote and GetMedInstr still read and
+ * clear; their values are not played).  A program that used the clear to
+ * see a new note uses GetMedNote.
  * Fixed (#203): Bxx (position jump) stored the word of d4, whose upper byte
  * is left from a track before in the same line (19xx, the soffset or 64
  * _PlayNote leaves): the jump went to position 0, or with a negative word
@@ -2402,7 +2406,9 @@ static void BLITZ_ROUTINE _SetMedVolume_c(UWORD v BL_REG(d0))
 }
 BLITZ_ALIAS(_SetMedVolume, _SetMedVolume_c);
 
-/* GetMedVolume/Note/Instr(channel) - read and clear */
+/* GetMedNote/Instr(channel) - read and clear; GetMedVolume(channel) - read
+   (fixed, #212: the original cleared trk_prevvol, the volume the player
+   writes to Paula in every tick, and the channel went silent) */
 static UBYTE *trackfield(UWORD ch, UBYTE *field)
 {
     struct track *t = *(struct track **)((UBYTE *)db.trackdataptrs + (WORD)(UWORD)(ch << 2));
@@ -2420,7 +2426,7 @@ static ULONG getclear(UBYTE *p)
 
 static ULONG BLITZ_ROUTINE _GetMedVolume_c(UWORD ch BL_REG(d0))
 {
-    return getclear(trackfield(ch, &db.t03d[0].prevvol));      /* #212 */
+    return *trackfield(ch, &db.t03d[0].prevvol);              /* #212 */
 }
 BLITZ_ALIAS(_GetMedVolume, _GetMedVolume_c);
 

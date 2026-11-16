@@ -10,6 +10,7 @@
 ; points track 0 to a buffer, where the player then writes LC, LEN, PER
 ; and VOL (+9, a byte).
 ; Correct: GetMedVolume only reads - the next tick writes volume 64 again.
+; @fixed #212
 ; @configs clib
 ; @pass file=vol.med|@TESTDATA@/medlib-getmedvolume-clears.med
 DEFTYPE .l
