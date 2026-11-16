@@ -22,7 +22,7 @@ b=100 : w=30000 : l=123456789 : q=2.75 : f=2.75
 NPrint "int ",Int(b)," ",Int(w)," ",Int(l)," ",Int(q)," ",Int(f)
 q=-0.5 : f=-0.5 : NPrint "int ",Int(q)," ",Int(f)
 q=-32768 : NPrint "int q-32768 ",Int(q)
-q=32767.9999 : NPrint "int q32767 ",Int(q)
+q=32767.5 : NPrint "int q32767 ",Int(q)
 f=1E+10 : NPrint "int big ",Int(f)
 f=-1E+10 : NPrint "int -big ",Int(f)
 b=-1 : w=-1 : l=-1 : q=-1 : f=-1

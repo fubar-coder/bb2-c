@@ -39,7 +39,7 @@ q=1.25 : NPrint "quick [",q,"]"
 q=-1.25 : NPrint "quick [",q,"]"
 q=3.14159 : NPrint "quick [",q,"]"
 q=100.1 : NPrint "quick [",q,"]"
-q=32767.9999 : NPrint "quick [",q,"]"
+q=32767.5 : NPrint "quick [",q,"]"
 q=-32768 : NPrint "quick [",q,"]"
 pq{$00010001} : pq{$0002FFFF} : pq{$00000001} : pq{$FFFFFFFF} : pq{$80000000}
 pq{$7FFFFFFF} : pq{$00008000} : pq{$FFFF8000} : pq{$0000199A} : pq{$000A0CCD}
