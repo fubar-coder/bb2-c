@@ -989,9 +989,13 @@ AmiBlitz3's header (`Residents = "all.res"`), `OPTIMIZE 4` and
   libraries: the `NTUI/obj.*.ab3` files need the constants of
   `ntui.include.ab3` ("Constant not found"), `keyread.include` and
   `NTUI/png.ab3` call `dos_Exist{}` and `error{}` of includes the
-  wrapper does not include ("Procedure not found"), and 10 need a
-  library that is in no BigLib (AmiBlitz3: "Library not found:
-  $0026"; blitz2-ab3 stops earlier, at `error.include.ab3` 226).
+  wrapper does not include ("Procedure not found"), and 10 call the
+  jpeg.library (AmiBlitz3: "Library not found: $0026"; blitz2-ab3 stops
+  earlier, at `error.include.ab3` 226). The jpeg declarations are in
+  `OsLibs`, but as library 194: since AmiBlitz3 commit dbc34db6 the
+  command entries of 14 OS libraries still name their old numbers (38
+  for jpeg), a fault of v3.14.0 reported upstream as
+  AmiBlitz/AmiBlitz3#131.
 * `ab3_cli`/`ab3_cli_ref` case `inc_datetime`: `datetime.include.ab3`
   (fetched, `cmake/fetch-originals.cmake`) in `Blitz3:Sourcecodes/
   Includes`, its month names joined with `\\0a`, its date functions under
