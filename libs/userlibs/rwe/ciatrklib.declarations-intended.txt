@@ -1,0 +1,29 @@
+# the intended differences of ciatrklib against the reference build of its
+# source (blitzlib compare, docs/development.md "Intended differences")
+# #443: LoadTrackerModule is declared with !libs {#doslib,#la6} (the
+# original's is commented out); its 4 bytes move the entries behind it
+lib 56: entry 0 LoadTrackerModule +$B: $00 != $FC
+lib 56: entry 1 StartTracker +$0: $03 != $6D
+lib 56: entry 2 StopTracker +$0: $00 != $65
+lib 56: entry 3 DecodeModule +$0: $00 != $72
+lib 56: entry 4 GetTrackerSize +$0: $03 != $65
+lib 56: entry 5 GetTrackerLocation +$0: $03 != $65
+lib 56: entry 6 FreeTrackerModule +$0: $00 != $65
+lib 56: entry 7 GetTrackerEvent +$0: $01 != $65
+lib 56: entry 8 CheckTrackerEvent +$0: $02 != $74
+lib 56: entry 9 WaitTrackerEvent +$0: $00 != $74
+lib 56: entry 10 CheckTrackerID +$0: $03 != $6E
+lib 56: entry 11 ModuleToChip +$0: $03 != $65
+lib 56: entry 12 GetModuleName$ +$0: $07 != $65
+lib 56: entry 13 ModulePositionJump +$0: $00 != $65
+lib 56: entry 14 GetModulePosition +$0: $01 != $23
+lib 56: entry 15 PauseModule +$0: $00 != $6E
+lib 56: entry 16 ChangeTrackerVBlank +$0: $00 != $65
+lib 56: entry 17 PlayTracker +$0: $00 != $6B
+lib 56: entry 18 TrackerVolume +$0: $00 != $72
+lib 56: entry 19 ChangeTrackerMask +$0: $00 != $34
+lib 56: entry 20 ModulePatterns +$0: $01 != $73
+lib 56: entry 21 (nullsub) +$0: $00 != $20
+lib 56: entry 22 (nullsub) +$0: $00 != $00
+lib 56: end of the table +$526: $FF != $00
+lib 56: declaration part $52C != $530 bytes

@@ -86,6 +86,10 @@ kind F):
   `OpenFromLock` took over (the `Close` has freed it); the original
   unlocked it a second time (#444; test
   `ciatrklib-load-readerror-unlock`).
+* `LoadTrackerModule` is declared with `!libs {#doslib,#la6}`: the
+  compiler loads DOSBase into a6; the original's `!libs` was commented
+  out and the dos calls went through whatever a6 held (#443; test
+  `ciatrklib-load-no-libs`).
 
 ## BUG(orig), kept
 
@@ -100,8 +104,7 @@ kind F):
   is overwritten) – in Amiberry the system's timer A vector of ciaa (a
   first version of the test that called the real resources made the
   later tests in the same session hang) (#450, #448).
-* `LoadTrackerModule` has no `!libs`: the dos calls go through whatever
-  a6 holds (#443). The chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+* `LoadTrackerModule` does not check the chip memory (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
   The runtime errors after `Lock` leave the lock allocated, and the
   FileInfoBlock is freed only on success (#441).
 * `DecodeModule` of a module in chip memory (address < $200000, signed)

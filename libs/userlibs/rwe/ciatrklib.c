@@ -41,9 +41,7 @@
  *     68000) (#450).  ResetCIAInt removes the vector with bit 0 (MOVEQ #1
  *     is overwritten; in Amiberry the system's timer A vector of ciaa)
  *     (#448).
- *   - LoadTrackerModule (no !libs): the dos calls go through whatever a6
- *     holds (#443); the chip memory is not
- *     checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the runtime errors after Lock (no FileInfoBlock, Examine
+ *   - LoadTrackerModule: the chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the runtime errors after Lock (no FileInfoBlock, Examine
  *     failing) leave the lock allocated (#441).
  *   - DecodeModule into chip memory (an address < $200000, signed) keeps
  *     the address (#432); from other memory it copies the module to chip
@@ -109,6 +107,10 @@
  * Fixed (intended deviation, #444): after a Read error LoadTrackerModule
  * does not unlock the lock that OpenFromLock took over (Close has freed
  * it); the original unlocked it a second time.
+ * Fixed (intended deviation, #443): LoadTrackerModule is declared with
+ * !libs {#doslib,#la6}, so the compiler loads DOSBase into a6; the
+ * original's !libs was commented out and the dos calls went through
+ * whatever a6 held at the call.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -149,7 +151,7 @@ BLITZ_LIBHEADER(LIB_ciatrklib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_STRING);
-BLITZ_LIBS0();
+BLITZ_LIBS(LIB_doslib, BL_LA6);         /* Fixed (#443): the original's !libs is empty */
 BLITZ_SUBS(_loadtrkmodule, _loadcheck, 0);
 BLITZ_NAME("LoadTrackerModule", "(TrackerModule#,Name)");
 
@@ -1462,8 +1464,9 @@ static void freetrackermodule_c(ULONG num BL_REG(d0))
  * The slot is freed first; Lock, Examine (FileInfoBlock of memlib),
  * memory of the file size + 3 (fixed, #442: the original added as a
  * byte and lost the carry) from memlib's globalloc (not checked, #440: memlib ends the
- * program when it fails), OpenFromLock, Read, Close; flag 1.  No !libs:
- * the dos calls go through whatever a6 holds (BUG(orig) (#443)).  A
+ * program when it fails), OpenFromLock, Read, Close; flag 1.  The
+ * compiler loads DOSBase into a6 (fixed, #443: the original's !libs was
+ * empty, the dos calls went through whatever a6 held).  A
  * failing Lock, FileInfoBlock or Examine is a runtime error ("Tracker:
  * File error! (Not found?)", "Tracker Library Error"), the last two
  * leave the lock allocated (#441).  A Read error frees the slot (fixed,
@@ -1472,7 +1475,7 @@ static void freetrackermodule_c(ULONG num BL_REG(d0))
  * (_loadcheck): slots 0-8, the slot must be empty.
  * @param num   d0: the slot
  * @param name  d1: the file name
- * @param dos   a6: the caller's a6 (dos.library, if it happens to be)
+ * @param dos   a6: dos.library (!libs {#doslib,#la6})
  * @return d0: -1 when the file was read, IoErr() after a Read error (so
  *         not BB_BOOL)
  */

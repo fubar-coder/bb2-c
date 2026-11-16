@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+before
+loaded -1
+size 2111
+rc=0
