@@ -77,6 +77,11 @@ kind F):
 * `CheckTrackerEvent` without a new event is False (0); the original
   loaded only the low byte of d0 with the last event's value (#431;
   library test `rwe_ciatrklib`, the case `CheckTrackerEvent|d0||2`).
+* `LoadTrackerModule` loads the whole file: the length is the file size
+  + 3; the original added the 3 as a byte, so a size with the low byte
+  $FD-$FF lost the carry ($10FE gave $1001, and only that much was read)
+  (#442; library test `rwe_ciatrklib`, the cases
+  `LoadTrackerModule|...|slot 5, 4350 bytes`).
 
 ## BUG(orig), kept
 
@@ -92,9 +97,7 @@ kind F):
   first version of the test that called the real resources made the
   later tests in the same session hang) (#450, #448).
 * `LoadTrackerModule` has no `!libs`: the dos calls go through whatever
-  a6 holds (#443). Length = file size + 3 as a **byte** add (a size with
-  the low byte ≥ $FD loses the carry: $10FE gives $1001, and only that
-  much is read) (#442); the chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); after a
+  a6 holds (#443). The chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); after a
   Read error it unlocks the lock that `OpenFromLock` took over (#444).
   The runtime errors after `Lock` leave the lock allocated, and the
   FileInfoBlock is freed only on success (#441).

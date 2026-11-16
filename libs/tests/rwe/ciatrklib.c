@@ -41,7 +41,8 @@
  *     65), ModulePositionJump (n + 1, BUG(orig), #447), GetModulePosition,
  *     PauseModule, Get/CheckTrackerEvent, WaitTrackerEvent (its WaitTOF
  *     plays one tick), StopTracker, LoadTrackerModule (a6 = DOSBase;
- *     a file size with the low byte $FE: the byte add, BUG(orig), #442),
+ *     a file size with the low byte $FE: the byte add of the original,
+ *     fixed #442),
  *     FreeTrackerModule (loaded, copied, linked), ModuleToChip, finit.
  *     F00 on voice 1, 2 and 3 of a small module (BUG(orig) #475: mt_end loads
  *     a0 with $DFF000, the voices behind read their notes from the
@@ -1020,9 +1021,10 @@ int main(int argc, char **argv)
         printf("ciatrklib: no fast memory, DecodeModule's copy not tested\n");
     }
 
-    /* LoadTrackerModule: the length is the file size + 3 (ADD.b) */
+    /* LoadTrackerModule: the length is the file size + 3 (the original
+       adds as a byte, fixed #442) */
     load(4, reflen);
-    load(5, 0x10fe);                    /* low byte $FE: $1001 */
+    load(5, 0x10fe);                    /* low byte $FE: $1101 ($1001 in the original) */
     DeleteFile((STRPTR)fname);
 
     ROUT = "finit";

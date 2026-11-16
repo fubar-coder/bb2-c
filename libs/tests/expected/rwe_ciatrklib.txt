@@ -4563,11 +4563,14 @@ FreeTrackerModule|CIA part|slot 4|1	bytes 110 fnv 3CD8E36E
 LoadTrackerModule|kept|slot 5, 4350 bytes|1	kept
 LoadTrackerModule|popped|slot 5, 4350 bytes|1	$00000000
 LoadTrackerModule|d0|slot 5, 4350 bytes|1	$FFFFFFFF
-LoadTrackerModule|length|slot 5, 4350 bytes|1	$00001001
+LoadTrackerModule|length|slot 5, 4350 bytes|1 [orig]	$00001001
+LoadTrackerModule|length|slot 5, 4350 bytes|1 [fixed #442]	$00001101
 LoadTrackerModule|flag|slot 5, 4350 bytes|1	$00000001
 LoadTrackerModule|in chip memory|slot 5, 4350 bytes|1	$00000001
-LoadTrackerModule|modtable|slot 5, 4350 bytes|1	bytes 110 fnv 566D889E
-LoadTrackerModule|the bytes read|slot 5, 4350 bytes|1	bytes 4097 fnv 2DDC40AC
+LoadTrackerModule|modtable|slot 5, 4350 bytes|1 [orig]	bytes 110 fnv 566D889E
+LoadTrackerModule|modtable|slot 5, 4350 bytes|1 [fixed #442]	bytes 110 fnv 17D40BDF
+LoadTrackerModule|the bytes read|slot 5, 4350 bytes|1 [orig]	bytes 4097 fnv 2DDC40AC
+LoadTrackerModule|the bytes read|slot 5, 4350 bytes|1 [fixed #442]	bytes 4350 fnv 9AE7723F
 LoadTrackerModule|the file|slot 5, 4350 bytes|1	$00000001
 FreeTrackerModule|kept|slot 5|1	kept
 FreeTrackerModule|popped|slot 5|1	$00000000

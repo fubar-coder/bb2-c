@@ -42,8 +42,7 @@
  *     is overwritten; in Amiberry the system's timer A vector of ciaa)
  *     (#448).
  *   - LoadTrackerModule (no !libs): the dos calls go through whatever a6
- *     holds (#443); the length is the file size + 3 as a byte add
- *     (ADD.b), so the carry is lost (#442); the chip memory is not
+ *     holds (#443); the chip memory is not
  *     checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); a Read error unlocks the lock OpenFromLock took over
  *     (#444); the runtime errors after Lock (no FileInfoBlock, Examine
  *     failing) leave the lock allocated (#441).
@@ -104,6 +103,10 @@
  * Fixed (intended deviation, #431): CheckTrackerEvent without a new event
  * is False (0); the original loaded the last event's value into the low
  * byte of d0 and left the rest of d0 as it was.
+ * Fixed (intended deviation, #442): LoadTrackerModule's length is the
+ * file size + 3; the original added the 3 as a byte (ADD.b), so a size
+ * with a low byte of $FD-$FF lost the carry and the module was loaded
+ * 253 bytes short.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1455,8 +1458,8 @@ static void freetrackermodule_c(ULONG num BL_REG(d0))
  * chip memory.
  *
  * The slot is freed first; Lock, Examine (FileInfoBlock of memlib),
- * memory of the file size + 3 (a byte add, the carry is lost: BUG(orig)
- * (#442)) from memlib's globalloc (not checked, #440: memlib ends the
+ * memory of the file size + 3 (fixed, #442: the original added as a
+ * byte and lost the carry) from memlib's globalloc (not checked, #440: memlib ends the
  * program when it fails), OpenFromLock, Read, Close; flag 1.  No !libs:
  * the dos calls go through whatever a6 holds (BUG(orig) (#443)).  A
  * failing Lock, FileInfoBlock or Examine is a runtime error ("Tracker:
@@ -1491,7 +1494,7 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG num BL_REG(d0), ULONG name BL_R
     if (!Examine(lock, (struct FileInfoBlock *)fib))
         BLITZ_RUNERR(mess);
     size = (ULONG)((struct FileInfoBlock *)fib)->fib_Size;
-    e->len = BL_SETB(size, size + 3);   /* ADD.b (BUG(orig), #442) */
+    e->len = size + 3;                  /* Fixed (#442): not ADD.b */
     globfree(fib, 512);
     e->addr = (UBYTE *)globalloc(e->len, MEMF_CHIP);
     hand = OpenFromLock(lock);
