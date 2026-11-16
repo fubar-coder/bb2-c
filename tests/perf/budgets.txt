@@ -171,6 +171,11 @@
 # front end in assembler and the copy in C (2026-11-16): 4.5 to 6.5 cycles
 # per call less in bstr, bproc.pstr 9966.7 -> 9600.6, bproc.fstr
 # 10659.2 -> 10290.1, bproc.pgrow 13453.7 -> 12915.1 (both runs alike).
+# brec.rec20 (a new program, OpenSpec change memlib-header-buckets task
+# 3.3, 2026-11-16): a recursion from depth 20 back to 0 in a program of its
+# own like bproc; from two runs on main 5dd3347a: 6230.7, 6230.2; its
+# target from two runs of the pass perf_brec.pass with the tag orig:
+# 6534.5, 6535.0.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -297,6 +302,8 @@ bproc.emptylong                 3          -  the empty loop again, 150000 itera
 bproc.pstr                    9700     10038.3  pstr{a$} (a Statement with a string parameter and a local string)
 bproc.fstr                   10397     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
 bproc.pgrow                  13048     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
+brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
+brec.rec20                   6297     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1229     1367.5  r$=a$
 bstr.mid                     1464     1553.5  r$=Mid$(a$,3,5)

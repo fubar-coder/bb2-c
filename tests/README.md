@@ -852,7 +852,7 @@ cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -880,7 +880,10 @@ cycle values do not depend on the host's load or on what else runs
   was added there (and differed by 375 cycles between a session of the program
   alone and the session of all programs). Its targets are measured the same
   way, in a session of its own (the pass `perf_bproc.pass`, tag `orig`), not
-  in `perf-original`'s one session; keep its setup as it is.
+  in `perf-original`'s one session; keep its setup as it is. `brec` is the
+  same for a recursion: a Statement with a string parameter that calls itself
+  from depth 20 down to 0, 21 calls per iteration, the value per call; its
+  target too comes from its own pass (`perf_brec.pass`, tag `orig`).
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the
