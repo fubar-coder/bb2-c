@@ -2052,7 +2052,8 @@ CheckTrackerEvent|filter||2	$00000000
 CheckTrackerEvent|play routine||2	bytes 1584 fnv 3EB3EF89
 CheckTrackerEvent|modtable||2	bytes 110 fnv 3786BDCF
 CheckTrackerEvent|CIA part||2	bytes 110 fnv E8C350A4
-CheckTrackerEvent|d0||2	$A5A5A501
+CheckTrackerEvent|d0||2 [orig]	$A5A5A501
+CheckTrackerEvent|d0||2 [fixed #431]	$00000000
 TrackerVolume|kept|32|1	kept
 TrackerVolume|popped|32|1	$00000000
 TrackerVolume|DMACONR|32|1	$0000000F

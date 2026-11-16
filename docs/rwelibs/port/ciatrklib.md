@@ -74,6 +74,9 @@ kind F):
 * `CheckTrackerID` of "no M.K./M!K!" and of an empty slot is False (0);
   the original returned the long at **address 0** (`MOVE.l 0,d0`)
   (#430; test `ciatrklib-checkid-address0`).
+* `CheckTrackerEvent` without a new event is False (0); the original
+  loaded only the low byte of d0 with the last event's value (#431;
+  library test `rwe_ciatrklib`, the case `CheckTrackerEvent|d0||2`).
 
 ## BUG(orig), kept
 
@@ -106,9 +109,8 @@ kind F):
   its argument (#446). `ModulePatterns` returns the song length (byte
   950) (#445).
 * `WaitTrackerEvent` calls WaitTOF (−270) through whatever a6 holds (no
-  `!libs`) (#453); `CheckTrackerEvent` changes d0's low byte (no event)
-  or word (−1) (#431). (`GetTrackerEvent` also changes only d0's low
-  byte; it is declared `#byte`, so that is no defect.)
+  `!libs`) (#453). (`GetTrackerEvent` changes only d0's low byte; it
+  is declared `#byte`, so that is no defect.)
 * `ModulePositionJump n` jumps to position n + 1 (the next tick's
   `mt_NextPosition` increments it) (#447).
 * `TrackerVolume 0` and `64` do not change the volume of the notes that

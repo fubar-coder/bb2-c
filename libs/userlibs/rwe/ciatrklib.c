@@ -56,8 +56,7 @@
  *   - ModuleToChip does nothing and returns its argument (#446).
  *     ModulePatterns returns the song length (byte 950) (#445).
  *   - WaitTrackerEvent calls WaitTOF through whatever a6 holds (no
- *     !libs) (#453); CheckTrackerEvent changes only the low byte of d0
- *     (#431).
+ *     !libs) (#453).
  *   - ModulePositionJump n: the song position becomes n + 1 at the next
  *     tick (mt_NextPosition increments it) (#447).
  *   - TrackerVolume 0 or 64 does not change the volumes of the notes that
@@ -102,6 +101,9 @@
  * Fixed (intended deviation, #430): CheckTrackerID of "not a module" and
  * of an empty slot is False (0); the original returned the long at
  * ADDRESS 0 (MOVE.l 0,d0).
+ * Fixed (intended deviation, #431): CheckTrackerEvent without a new event
+ * is False (0); the original loaded the last event's value into the low
+ * byte of d0 and left the rest of d0 as it was.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1739,15 +1741,15 @@ static ULONG BLITZ_ROUTINE gettrackerevent_c(ULONG old BL_REG(d0))
  * @brief CheckTrackerEvent: has a new tracker event come?
  *
  * A new event (one that differs from the last seen) is marked seen.
- * The "no" case changes only the low byte of d0 (BUG(orig) (#431)).
+ * No new event is False (fixed, #431: the original loaded only the low
+ * byte of d0 with the last event's value).
  * @param old  d0: the caller's d0
- * @return d0.w: -1 for a new event (a word, not BB_BOOL); else d0.b the
- *         last event's value, the rest of d0 as it was
+ * @return d0.w: -1 for a new event (a word, not BB_BOOL); else 0
  */
 static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG old BL_REG(d0))
 {
     if (playdata.LstEvt == playdata.TrkEvt)
-        return BL_SETB(old, playdata.LstEvt);
+        return 0;                       /* Fixed (#431): not MOVE.b nor_LstEvt,d0 */
     playdata.LstEvt = playdata.TrkEvt;
     return BL_SETW(old, 0xffff);
 }
