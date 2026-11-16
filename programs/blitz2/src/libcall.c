@@ -42,6 +42,10 @@ static WORD numfloat;   /* asm d6: 0 int, != 0 float */
    #x,Dn from constat to constend; 0: none), for isbyteconst */
 static ULONG constat, constend;
 
+/* Fixed (#1070): the literal consttype2 sizes next is negated (litneg in
+   libcall.h); consttype2 takes it and clears it */
+BOOL litneg;
+
 
 static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data);
 static ULONG consttype2(UWORD *type, ULONG val);
@@ -75,11 +79,13 @@ ULONG fetchdata(UWORD *type, ULONG *raw)
     /* (asm: dfetch = -1; C passes data = TRUE down the fetch routines) */
     c = getchar3();
     if (c != '-') {
+        litneg = FALSE;
         val = datado(c, type);
         *raw = numval;
         return val;
     }
     c = getchar3();
+    litneg = TRUE;                  /* Fixed (#1070) */
     val = datado(c, type);
     *raw = numval;
     if (*type < T_FLOAT)
@@ -353,6 +359,9 @@ static ULONG consttype2(UWORD *type, ULONG val)
     UWORD newtype = *type;
     UWORD whole;
     ULONG t, frac;
+    BOOL neg = litneg;
+
+    litneg = FALSE;
 
     if (newtype == 0) {
         /* Let's set type */
@@ -408,17 +417,26 @@ quick:
         goto numdofloat;
     if (numfloat == 0)
         goto qint;
-    /* BUG(orig) (#1070): a decimal literal is read as an FFP value
-       (fetchpoint2: 24 bits of mantissa), so a Quick literal close to
-       32768 is rounded to 32768.0 first: its integer part 32768 fails
-       the range check below, the literal stays the Float 32768.0, and
-       the conversion to the Quick of the assignment wraps it to -32768
-       ("q=32767.9999" gives -32768, not 32767.9999; test
-       compiler-quick-literal-wrap).
-       .quick2: val = int part (from makeint).  (a6 = maths assumed, as
+    /* .quick2: val = int part (from makeint).  (a6 = maths assumed, as
        the asm) */
     t = ffpcall(SPFlt, val, 0, NULL);                   /* back to ffp */
     frac = ffpcall(SPSub, numval, t, NULL);             /* d0=fraction! */
+    /* Fixed (#1070): a decimal literal is read as an FFP value
+       (fetchpoint2: 24 bits of mantissa), so a Quick literal close to
+       32768 is rounded to 32768.0 first.  The original found its integer
+       part 32768 out of range, kept the Float 32768.0, and the conversion
+       to the Quick of the assignment wrapped it to -32768
+       ("q=32767.9999" gave -32768).  The value 32768.0 is now the nearest
+       Quick that fits: 32767.99998 ($7FFFFFFF), or -32768 ($80000000,
+       which the negation keeps) for a negated literal ("q=-32768.00001"
+       stays -32768, "Data.q -32768.0" is no bad data any more).  No other
+       value changes: no literal below 32768 rounds above 32768.0.  In
+       brackets the literal is not negated itself: "-(32767.9999)" is the
+       negation of 32767.99998, -32767.99998 ($80000001). */
+    if (val == 32768 && frac == 0) {
+        val = neg ? 0x80000000 : 0x7fffffff;
+        goto done;
+    }
     /* Fixed (#13): the integer part is rounded down (floor), so that the
        fraction is 0..65535 for a negative value too, and the range check
        is made on it; a fraction of 0 is the Quick integer (.qint), and the

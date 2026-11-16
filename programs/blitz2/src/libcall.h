@@ -73,6 +73,13 @@ BOOL isbyteconst(ULONG from, ULONG to);
    sign-extended byte (128..255 -> -128..-1, of the same type). */
 void byteconstext(ULONG at);
 
+/* Fixed (#1070), no asm counterpart: TRUE if the decimal literal fetched
+   next is negated (a '-' in front of it in an expression, an odd number of
+   them, or a negative Data value); consttype2 takes it and clears it.  A
+   Quick literal that rounds to 32768.0 is then -32768 ($80000000, which
+   the negation keeps), else 32767.99998 ($7FFFFFFF). */
+extern BOOL litneg;
+
 /* blitz2.s:10906 constotype - evalconst, then size the constant to *type
    (consttype2).  Returns the value (asm d0); no callers in the asm. */
 ULONG constotype(UWORD *type);

@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+7FFFFFFF
+80000000
+80000000
+7FFF8000
+rc=0

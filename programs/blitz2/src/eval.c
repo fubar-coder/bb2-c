@@ -1559,6 +1559,10 @@ static UWORD getelement(UWORD *type)
     return c;
 }
 
+/* Fixed (#1070): the element getelement2 fetches next is negated (an odd
+   number of '-' in front of it); it hands a literal's sign on as litneg */
+static BOOL negnext;
+
 /* blitz2.s:9667 negate */
 static UWORD negate(UWORD *type)
 {
@@ -1629,14 +1633,18 @@ static UWORD getelement2(UWORD *type)
 {
     UWORD c = getchar3();
     struct forthent *f;
+    BOOL neg = negnext;             /* Fixed (#1070) */
 
+    negnext = FALSE;
     elemcount++;                    /* for the intrinsics */
     if (c & 0x8000)
         ext_evalvalue(0, 0);        /* a token: a value without a type */
     if (c == '(' || c == '{')
         return bracket(type);
-    if (c == '-')
+    if (c == '-') {
+        negnext = !neg;
         return negate(type);
+    }
     if (c == tok_opnot)
         return notit(type);
 
@@ -1653,10 +1661,12 @@ static UWORD getelement2(UWORD *type)
     forthsp = f + 1;
 
     /* First, we have stuff which won't fuck constgot */
+    litneg = neg;
     if (tstnum(c))
         return (UWORD)fetchnum(c, type, FALSE);
     if (c == '.')
         return (UWORD)fetchfrac(c, type, FALSE);
+    litneg = FALSE;
     if (c == '#')
         return fetchconst(type);
     if (c == '$')
