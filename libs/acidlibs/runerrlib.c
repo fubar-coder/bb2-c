@@ -15,12 +15,12 @@
  * 1K reserve) and the expected stack pointer at the end (ostack); installs
  * `trapper` as the task's trap handler (CPU exceptions become runtime
  * errors "GURU! - ..."); reads the CPU type and the VBR.  finit restores
- * the trap handler.
+ * the trap handler (also the end of those of debuglib, rundebuglib and
+ * errtraplib, which come in front of it, #1069).
  *
  * C: the value checks (overflow, array, data, current item), the FFP
  * checks (the V flag of SPFix is read by an inline assembler call),
- * gosuper/gouser, getvbr/getcpu, init (MOVEC VBR as the original's Dc)
- * and finit.
+ * getvbr/getcpu, init (MOVEC VBR as the original's Dc) and finit.
  * Assembler, copied from the original, because they work on the caller's
  * stack or flags, which C cannot see:
  *   finalscheck, stackchk  compare a7 itself
@@ -28,6 +28,8 @@
  *   nextchkw/l, casechkw/l look into the caller's stack frame
  *   bmodechk, amodechk     input is the N flag
  *   trapper                exception handler (RTE)
+ *   gosuper, gouser        the trap vectors of a SetInt routine on the
+ *                          stack (fixed, #1069)
  *   the error chain        `MOVE.l #msg,d0:TRAP #0` (arrerr/maxerr are
  *                          tokens themselves, the asm checks branch here)
  * Their data (cpu_ ... oldtrap, the messages) is in the assembler block,
@@ -35,6 +37,7 @@
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
+#include <stddef.h>
 
 /* entry points (thunks / asm, defined below) */
 void finalscheck(void), retchk(void), nextchkw(void), nextchkl(void);
@@ -93,17 +96,20 @@ extern ULONG vbr_;
 extern UBYTE *ostack;                   /* stack should meet up with this value at end of prog! */
 extern UBYTE *maxstack;
 extern APTR oldtrap;
+extern struct Task *ourtask;
 extern const char overmess[], sarraymess[], datamess[], currentmess[];
 extern char trapper[];
 
 BLITZ_ASM_BLOCK(data,
-"   .globl  _cpu_,_vbr_,_ostack,_supernest,_maxstack,_oldtrap\n"
+"   .globl  _cpu_,_vbr_,_ostack,_supernest,_maxstack,_oldtrap,_ourtask\n"
 "_cpu_:      .word   0\n"
 "_vbr_:      .long   0\n"
 "_ostack:    .long   0\n"
 "_supernest: .word   0\n"
 "_maxstack:  .long   0\n"
 "_oldtrap:   .long   0\n"
+"_ourtask:   .long   0\n"               /* fixed (#1069): the program's task */
+"curtc:      .long   0\n"               /* its tc_TrapCode, for the stubs */
 "trapmesss:  .long   trapn2,trapn3,trapn4,trapn5,trapn6,trapn7\n"
 "            .long   trapn8,trapn9,trapn10,trapn11,trapn12,trapn13\n"
 /* GURUS */
@@ -478,15 +484,90 @@ BLITZ_THUNK(currentchk, currentchk_c, "d0-d1/a0-a1");
 
 /* ---------------------------------------------------------------- misc */
 
+/* tc_TrapCode in struct Task: the offset the assembler below uses */
+static_assert(offsetof(struct Task, tc_TrapCode) == 50);
+
 /**
- * @brief gosuper ($C30B) - entering supervisor mode: no stack check
- * (supernest + 1).
+ * @brief gosuper ($C30B) - the start of a SetInt routine (the compiler
+ * calls it there, in front of the routine's TRAP #2, only with runtime
+ * error checking): no stack check (supernest + 1), and the CPU's TRAP
+ * #0-#5 vectors lead to the program's trap handler while the routine runs.
+ *
+ * Fixed (#1069): debuglib, rundebuglib and errtraplib take the traps of
+ * their program through its task's trap handler (tc_TrapCode), not the
+ * CPU's vector table, which belongs to the whole machine.  exec passes
+ * only a trap of user mode to tc_TrapCode; one in supervisor mode (an
+ * interrupt) is a dead end.  So gosuper saves the six vectors on the
+ * stack (24 bytes, the vector of TRAP #0 first, left there for gouser)
+ * and sets stubs that hand the trap to the program's handler as exec
+ * does for user mode (the trap number as a long on the stack, then the
+ * exception frame).  No other task runs while an interrupt routine runs,
+ * and nested interrupts restore in reverse order, so nothing else sees
+ * the stubs.  rundebuglib reads the saved vectors there (its more2).
+ * The original only counted supernest; the CPU's vectors were the
+ * libraries' all the time.  Keeps all registers.
  */
-static void BLITZ_ROUTINE gosuper_c(void) { supernest++; }
-BLITZ_THUNK(gosuper, gosuper_c, "d0-d1/a0-a1");
-/** @brief gouser ($C30C) - back to user mode (supernest - 1). */
-static void BLITZ_ROUTINE gouser_c(void) { supernest--; }
-BLITZ_THUNK(gouser, gouser_c, "d0-d1/a0-a1");
+BLITZ_ASM_ROUTINE(gosuper,
+"   lea     -24(sp),sp\n"               /* room for the six vectors */
+"   move.l  24(sp),(sp)\n"              /* the return address below it */
+"   movem.l a0-a1,-(sp)\n"
+"   addq.w  #1,_supernest\n"
+"   move.l  _ourtask(pc),a0\n"
+"   move.l  50(a0),curtc\n"             /* tc_TrapCode */
+"   move.l  _vbr_(pc),a0\n"
+"   lea     128(a0),a0\n"               /* TRAP #0 */
+"   lea     12(sp),a1\n"
+"   move.l  (a0),(a1)+\n"
+"   move.l  #tstub0,(a0)+\n"
+"   move.l  (a0),(a1)+\n"
+"   move.l  #tstub1,(a0)+\n"
+"   move.l  (a0),(a1)+\n"
+"   move.l  #tstub2,(a0)+\n"
+"   move.l  (a0),(a1)+\n"
+"   move.l  #tstub3,(a0)+\n"
+"   move.l  (a0),(a1)+\n"
+"   move.l  #tstub4,(a0)+\n"
+"   move.l  (a0),(a1)\n"
+"   move.l  #tstub5,(a0)\n"
+"   movem.l (sp)+,a0-a1\n"
+"   rts\n"
+/* the stubs: as exec for a trap of user mode */
+"tstub0: move.l  #32,-(sp)\n"
+"   bra.s   tstub\n"
+"tstub1: move.l  #33,-(sp)\n"
+"   bra.s   tstub\n"
+"tstub2: move.l  #34,-(sp)\n"
+"   bra.s   tstub\n"
+"tstub3: move.l  #35,-(sp)\n"
+"   bra.s   tstub\n"
+"tstub4: move.l  #36,-(sp)\n"
+"   bra.s   tstub\n"
+"tstub5: move.l  #37,-(sp)\n"
+"tstub:  move.l  curtc(pc),-(sp)\n"
+"   rts");
+
+/**
+ * @brief gouser ($C30C) - the end of a SetInt routine: supernest - 1, and
+ * the six vectors saved by gosuper back into the CPU's table (fixed
+ * (#1069), see gosuper).  The saved vectors are taken from the stack.
+ * Keeps all registers.
+ */
+BLITZ_ASM_ROUTINE(gouser,
+"   movem.l a0-a1,-(sp)\n"
+"   subq.w  #1,_supernest\n"
+"   move.l  _vbr_(pc),a0\n"
+"   lea     128(a0),a0\n"
+"   lea     12(sp),a1\n"
+"   move.l  (a1)+,(a0)+\n"
+"   move.l  (a1)+,(a0)+\n"
+"   move.l  (a1)+,(a0)+\n"
+"   move.l  (a1)+,(a0)+\n"
+"   move.l  (a1)+,(a0)+\n"
+"   move.l  (a1),(a0)\n"
+"   movem.l (sp)+,a0-a1\n"
+"   move.l  (sp),24(sp)\n"              /* the return address above them */
+"   lea     24(sp),sp\n"
+"   rts");
 
 /**
  * @brief getvbr ($C31D) - the vector base register as read by the init.
@@ -535,8 +616,9 @@ static void BLITZ_ROUTINE codeinit_c(UBYTE *sp BL_REG(a0), ULONG stack BL_REG(d2
 
     maxstack = sp - stack + 1024;
     ostack = sp + 4;
-    oldtrap = SysBase->ThisTask->tc_TrapCode;
-    SysBase->ThisTask->tc_TrapCode = trapper;
+    ourtask = SysBase->ThisTask;
+    oldtrap = ourtask->tc_TrapCode;
+    ourtask->tc_TrapCode = trapper;
     /* CPU: number of the highest AttnFlags bit of 68010..68040 */
     for (f = SysBase->AttnFlags & 15; f; f >>= 1)
         n++;
@@ -554,7 +636,14 @@ static void BLITZ_ROUTINE codeinit_c(UBYTE *sp BL_REG(a0), ULONG stack BL_REG(d2
 BLITZ_THUNK_PRE(runerrlib_codeinit, codeinit_c, "d0-d1/a0-a1",
                 "lea 16(sp),a0");
 
-/** @brief Library finit: restore the task's trap handler. */
+/**
+ * @brief Library finit: restore the task's trap handler.
+ *
+ * The handler the program started with: since #1069 also the end of the
+ * handlers of debuglib, rundebuglib and errtraplib, which init after
+ * runerrlib and put theirs in front (debuglib and rundebuglib leave theirs
+ * until here, for SetInt routines that run until intlib's finit).
+ */
 static void BLITZ_ROUTINE codefinit(void)
 {
     SysBase->ThisTask->tc_TrapCode = oldtrap;

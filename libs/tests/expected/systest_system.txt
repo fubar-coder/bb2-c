@@ -99,10 +99,10 @@ datachk|kept||1	kept
 datachk|kept||2	kept
 |datachk a3||2	"datachk a3+4"
 runerr 21|kept||1	kept
-gosuper|kept||1	kept
+gosuper stackchk gouser|kept||1	kept
+|gosuper vector||1 [orig]	"gosuper TRAP #0 vector changed 0, back 1"
+|gosuper vector||1 [fixed #1069]	"gosuper TRAP #0 vector changed 1, back 1"
 stackchk|kept||1	kept
-gouser|kept||1	kept
-stackchk|kept||2	kept
 |runerr checks passed||1	"runerr checks passed"
 |runerr asm entry|entry 0|1	"runerr asm entry 0: bffa"
 |runerr asm entry|entry 5|1	"runerr asm entry 5: 0c6f"
@@ -117,12 +117,20 @@ stackchk|kept||2	kept
 runerr finit|kept||1	kept
 |runerr trapcode restored||1	"runerr trapcode restored 1"
 debug init|kept||1	kept
-|trap handler|trap 0|1	"trap 0 handler 0c80"
-|trap handler|trap 1|1	"trap 1 handler 0817"
-|trap handler|trap 2|1	"trap 2 handler 206f"
-|trap handler|trap 3|1	"trap 3 handler 51b9"
-|trap handler|trap 4|1	"trap 4 handler 48e7"
-|trap handler|trap 5|1	"trap 5 handler 2f08"
+|trap handler|trap 0|1 [orig]	"trap 0 handler 0c80"
+|trap handler|trap 0|1 [fixed #1069]	"trap 0 handler 61e8"
+|trap handler|trap 1|1 [orig]	"trap 1 handler 0817"
+|trap handler|trap 1|1 [fixed #1069]	"trap 1 handler 61e6"
+|trap handler|trap 2|1 [orig]	"trap 2 handler 206f"
+|trap handler|trap 2|1 [fixed #1069]	"trap 2 handler 61e4"
+|trap handler|trap 3|1 [orig]	"trap 3 handler 51b9"
+|trap handler|trap 3|1 [fixed #1069]	"trap 3 handler 61e2"
+|trap handler|trap 4|1 [orig]	"trap 4 handler 48e7"
+|trap handler|trap 4|1 [fixed #1069]	"trap 4 handler 61e0"
+|trap handler|trap 5|1 [orig]	"trap 5 handler 2f08"
+|trap handler|trap 5|1 [fixed #1069]	"trap 5 handler 61de"
+|debug trapcode||1 [orig]	"debug trapcode set 0"
+|debug trapcode||1 [fixed #1069]	"debug trapcode set 1"
 dosethandler|kept||1	kept
 |sethandler||1	"sethandler old-state=1e tokens=vec1 1"
 |state||1	"state oldmode 0000 flags 20000000 usertext <Interrupted - program start>"
@@ -183,5 +191,5 @@ dofindoff|kept|14|1	kept
 debug finit|kept||1	kept
 |docall code||1	"docall code 227a 4e91 4e75"
 memlib finit|kept||1	kept
-|calls||1	"calls 92"
-|number of calls||1	$0000005C
+|calls||1	"calls 90"
+|number of calls||1	$0000005A

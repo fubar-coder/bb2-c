@@ -70,8 +70,12 @@ allocst 0|kept||1	kept
 freest 0|kept||1	kept
 |freest 0 d0||1	$00000000
 errtrap init|kept||1	kept
-|errtrap init: TRAP #0 in lib||1	$00000001
-|errtrap newtrap first word||1	$00000817
+|errtrap init: TRAP #0 in lib||1 [orig]	$00000001
+|errtrap init: TRAP #0 in lib||1 [fixed #1069]	$00000000
+|errtrap init: trap code in lib||1 [orig]	$00000000
+|errtrap init: trap code in lib||1 [fixed #1069]	$00000001
+|errtrap newtrap first word||1 [orig]	$00000817
+|errtrap newtrap first word||1 [fixed #1069]	$000061E8
 dofail (no error)|kept||1	kept
 |dofail d0||1	$00000000
 doreadern|kept||1	kept
@@ -92,17 +96,28 @@ doputsp|kept||1	kept
 |doputsp returned||1	$00000001
 errtrap finit|kept||1	kept
 |errtrap finit: TRAP #0 restored||1	$00000001
+|errtrap finit: trap code restored||1	$00000001
 rundebug init|kept||1	kept
 |rundebug init: intuition open count +||1	$00000000
-|rundebug init: TRAP #0-#5 in lib||1	$00000001
+|rundebug init: trap code in lib||1 [orig]	$00000000
+|rundebug init: trap code in lib||1 [fixed #1069]	$00000001
+|rundebug init: TRAP #0-#5 in lib||1 [orig]	$00000001
+|rundebug init: TRAP #0-#5 in lib||1 [fixed #1069]	$00000000
 |rundebug init: others kept||1	$00000001
-|rundebug handler first word||1	$00000817
-|rundebug handler first word||2	$00004A79
-|rundebug handler first word||3	$00005CAF
-|rundebug handler first word||4	$00004E73
-|rundebug handler first word||5	$000050AF
-|rundebug handler first word||6	$00004E73
-|TRAP #0 handler 2nd word||1	$00000005
+|rundebug handler first word||1 [orig]	$00000817
+|rundebug handler first word||1 [fixed #1069]	$000061E8
+|rundebug handler first word||2 [orig]	$00004A79
+|rundebug handler first word||2 [fixed #1069]	$000061E6
+|rundebug handler first word||3 [orig]	$00005CAF
+|rundebug handler first word||3 [fixed #1069]	$000061E4
+|rundebug handler first word||4 [orig]	$00004E73
+|rundebug handler first word||4 [fixed #1069]	$000061E2
+|rundebug handler first word||5 [orig]	$000050AF
+|rundebug handler first word||5 [fixed #1069]	$000061E0
+|rundebug handler first word||6 [orig]	$00004E73
+|rundebug handler first word||6 [fixed #1069]	$000061DE
+|TRAP #0 handler 2nd word||1 [orig]	$00000005
+|TRAP #0 handler 2nd word||1 [fixed #1069]	$000061E6
 |TRAP #1 (ctrlc 0: skip 8)||1	$00000004
 |TRAP #2 (skip 6)||1	$00000005
 |TRAP #3||1	$00000008
@@ -113,5 +128,5 @@ rundebug finit|kept||1	kept
 |rundebug finit: intuition open count +||1	$00000000
 memlib finit|kept||1	kept
 |all memory back||1	$00000001
-|number of values||1	$00000048
+|number of values||1	$0000004B
 |number of calls||1	$00000027

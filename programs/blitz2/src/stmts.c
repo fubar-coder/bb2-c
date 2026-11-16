@@ -581,13 +581,19 @@ void setint2(WORD strflag)
         L_(at) = pc;
     pokel(L_(intstart0));
     if (DEBUGGA) {
-        /* debugga stuff.. */
+        /* debugga stuff..  Fixed (#1069): gosup comes first.  The
+           libraries take the traps through the task's trap handler, which
+           exec does not call in supervisor mode; gosup (disable stack
+           checks) also makes the CPU's trap vectors lead to it until
+           gouse at the routine's end, so the TRAP #2 needs it before.
+           blitz2.s: TRAP #2, its parameter, then gosup (the skip of the
+           routine jumped past it to gouse) */
+        tokejsr(gosup);
         maketrap(2);
         addoff();
         intcleanat = pc;
         pokel(0x4e42);                  /* asm: d1 left from maketrap */
         pokewd(intlevel);
-        tokejsr(gosup);                 /* disable stack checks */
     }
     uselib(65235);
     tokejsr(newint);

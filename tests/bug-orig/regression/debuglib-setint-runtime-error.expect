@@ -1,0 +1,10 @@
+[run]
+executable
+rc=0
+[log]
+...
+OPENIO	r001
+CLOSEIO	r001
+OUTPUT	r001	start
+REQUESTERS	r001	0
+BATCH	end

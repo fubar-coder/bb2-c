@@ -252,13 +252,17 @@ static void run(struct set *s)
         V("freest 0 d0", r.d[0]);
     }
 
-    /* ---------------- errtraplib (real TRAP #0 vector) */
+    /* ---------------- errtraplib (real TRAP #0 vector; since #1069 the
+       task's trap handler) */
     l = getlib(s, "errtraplib");
     {
         ULONG *vbr = (ULONG *)realvbr, trap0 = vbr[32], sp;
+        struct Task *me = FindTask(NULL);
+        APTR tc = me->tc_TrapCode;
 
         CALL("errtrap init", entry_code(l, 6), (void)0);
         V("errtrap init: TRAP #0 in lib", inlib(l, vbr[32]));
+        V("errtrap init: trap code in lib", inlib(l, (ULONG)me->tc_TrapCode));
         V("errtrap newtrap first word", W((UBYTE *)vbr[32]));
         CALL("dofail (no error)", entry_code(l, 5), (void)0);
         V("dofail d0", r.d[0]);
@@ -283,20 +287,26 @@ static void run(struct set *s)
         V("doputsp returned", 1);
         CALL("errtrap finit", entry_code(l, 7), (void)0);
         V("errtrap finit: TRAP #0 restored", vbr[32] == trap0);
+        V("errtrap finit: trap code restored", me->tc_TrapCode == tc);
     }
 
-    /* ---------------- rundebuglib (real TRAP #0..#5 vectors) */
+    /* ---------------- rundebuglib (real TRAP #0..#5 vectors; since #1069
+       the task's trap handler, which stays until runerrlib's finit: put
+       back here) */
     l = getlib(s, "rundebuglib");
     {
         ULONG *vbr = (ULONG *)realvbr, old[8];
         struct Library *ib = OpenLibrary((STRPTR)"intuition.library", 0);
         UWORD cnt = ib->lib_OpenCnt;
         BOOL in = TRUE;
+        struct Task *me = FindTask(NULL);
+        APTR tc = me->tc_TrapCode;
 
         for (i = 0; i < 8; i++)
             old[i] = vbr[31 + i];
         CALL("rundebug init", entry_code(l, 0), (void)0);
         V("rundebug init: intuition open count +", (UWORD)(ib->lib_OpenCnt - cnt));
+        V("rundebug init: trap code in lib", inlib(l, (ULONG)me->tc_TrapCode));
         for (i = 0; i < 6; i++)
             in &= inlib(l, vbr[32 + i]);
         V("rundebug init: TRAP #0-#5 in lib", in);
@@ -315,6 +325,7 @@ static void run(struct set *s)
             in &= vbr[31 + i] == old[i];
         V("rundebug finit: vectors restored", in);
         V("rundebug finit: intuition open count +", (UWORD)(ib->lib_OpenCnt - cnt));
+        me->tc_TrapCode = tc;
         CloseLibrary(ib);
     }
 

@@ -895,6 +895,8 @@ void flushc(void)
 
 volatile BPTR tasklock;                 /* 1675 */
 struct Task * volatile panictask;       /* 1676 */
+/* the TRAP #15 vector before runtheprog set directtrap (fixed, #1069) */
+static ULONG olddirect;
 ULONG panicbit;                         /* 1677 */
 ULONG panicmask;                        /* 1678 */
 static char procname[] = "Blitz ][ Program Proc";   /* 1680 */
@@ -947,11 +949,13 @@ void menu10(void)
                 break;                  /* ended OK */
             if (!chkrealstop())
                 continue;
-            if (panictask)
+            if (panictask) {
                 RemTask(panictask);     /* BUG(orig) (#24): no cleanup at
                                            all; not fixed on purpose: a clean
                                            abort of a running program is not
                                            worth the complexity */
+                L_(vbr + 128 + 15 * 4) = olddirect;     /* fixed (#1069) */
+            }
             break;
         }
     }
@@ -979,8 +983,15 @@ static __saveds void runtheprog(void)
     if (!nocli)
         ed_openio();                    /* open hendrix */
     calcvbr();
-    L_(vbr + 132) = (ULONG)&tokens;     /* trap #1 vector as mailbox */
-    L_(vbr + 136) = (ULONG)firsttype;   /* trap #2 vector as mailbox */
+    /* Fixed (#1069): the token list for debuglib in the process's
+       tc_UserData.  blitz2.s puts it into the TRAP #1 vector and firsttype
+       into the TRAP #2 vector (read by nothing), for the whole machine;
+       debuglib then replaced them by its handlers.  It takes the traps
+       through the task's trap handler now, so the vectors must stay the
+       system's.  The TRAP #15 vector (direct mode) is put back when the
+       program ends */
+    panictask->tc_UserData = &tokens;
+    olddirect = L_(vbr + 128 + 15 * 4);
     L_(vbr + 128 + 15 * 4) = (ULONG)directtrap;
     dirmode = 0;
     firstglob = NULL;
@@ -995,6 +1006,7 @@ static __saveds void runtheprog(void)
     r.a[6] = (ULONG)SysBase;            /* asm: a6 = exec after calcvbr */
     /* runthing (1718): Run the thing! */
     callregs((APTR)pcat, &r);
+    L_(vbr + 128 + 15 * 4) = olddirect;         /* fixed (#1069) */
     if (!nocli)
         ed_closeio();                   /* close the Hendrix IO Window */
     stopit = 1;                         /* ended OK! */

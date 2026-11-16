@@ -1,8 +1,11 @@
 /*
  * debuglib - system library 64060 ($D500-$D509): the run time part of the
  * Blitz debugger.  Programs compiled with the debugger contain TRAP
- * instructions that come here (the vectors are set by init in the VBR
- * table, through runerrlib getvbr):
+ * instructions that come here through the task's trap handler (fixed
+ * (#1069): tc_TrapCode, set by init; in a SetInt routine through the
+ * CPU's vectors that runerrlib's gosuper sets while it runs.  The original
+ * set the vectors in the VBR table for the whole machine, through
+ * runerrlib getvbr):
  *   TRAP #0  runtime error (d0 = message, or 1/2/3 = the texts below)
  *   TRAP #1  new line (single step, breakpoints, Stop, Eval, Exec, Skip)
  *   TRAP #2  start of an interrupt routine, TRAP #3 its end
@@ -51,6 +54,7 @@
  * keeps.
  */
 #include "blitzlib.h"
+#include "blitzexec.h"
 
 /* entry points (thunks / asm, defined below) */
 void donewmode(void), dostop(void), dosethandler(void), dodetoke(void);
@@ -146,6 +150,46 @@ BLITZ_ASM_BLOCK(data,
 );
 
 /* ------------------------------------------------------- trap handlers */
+
+/* Fixed (#1069): the task's trap handler (tc_TrapCode, set by init): exec
+   hands it a trap of user mode with the trap number as a long on the
+   stack, in front of the exception frame; runerrlib's gosuper does the
+   same for a trap in a SetInt routine (supervisor mode).  TRAP #0-#5 go
+   to their handlers below (the number off the stack: the frame as if the
+   trap had come through its vector), every other number to the handler
+   found at init (runerrlib's trapper). */
+extern APTR oldtc;
+BLITZ_ASM_BLOCK(tasktrap,
+"   .globl  _tasktrap,_oldtc\n"
+"_oldtc: .long  0\n"
+"_tasktrap:\n"
+"   cmp.l   #33,(a7)\n"                 /* TRAP #1 first: every statement */
+"   beq.s   1f\n"
+"   cmp.l   #32,(a7)\n"
+"   beq.s   0f\n"
+"   cmp.l   #36,(a7)\n"
+"   beq.s   4f\n"
+"   cmp.l   #37,(a7)\n"
+"   beq.s   5f\n"
+"   cmp.l   #34,(a7)\n"
+"   beq.s   2f\n"
+"   cmp.l   #35,(a7)\n"
+"   beq.s   3f\n"
+"   move.l  _oldtc(pc),-(a7)\n"         /* not ours: the old handler */
+"   rts\n"
+"0: addq.l  #4,a7\n"
+"   bra.w   _mytrap0\n"
+"1: addq.l  #4,a7\n"
+"   bra.w   _mytrap1\n"
+"2: addq.l  #4,a7\n"
+"   bra.w   _mytrap2\n"
+"3: addq.l  #4,a7\n"
+"   bra.w   _mytrap3\n"
+"4: addq.l  #4,a7\n"
+"   bra.w   _mytrap4\n"
+"5: addq.l  #4,a7\n"
+"   bra.w   _mytrap5\n"
+);
 
 /* TRAP #4 - start of procedure processing: the return address (behind
    the trap and its 8 byte parameter) is the procedure's; a new entry on
@@ -583,25 +627,30 @@ void BLITZ_ROUTINE __attribute__((noreturn)) handleflags(void)
 /* ------------------------------------------------------- init / finit */
 
 static const char starttext[] = "Interrupted - program start";
+void tasktrap(void);
 
 /**
  * @brief Library init: resets the debugger state and installs the trap
- *        handlers.
+ *        handler.
  *
  * Clears the flags, direct mode and the output redirection, resets the
- * procedure and interrupt stacks and the default handlers, and sets the
- * trap vectors #0-#5 in the VBR table (runerrlib getvbr).  The old TRAP #1
- * vector is the editor's token list (tokens).  With d0.b = 0 the program
+ * procedure and interrupt stacks and the default handlers, and makes
+ * `tasktrap` the task's trap handler (tc_TrapCode; the old one is kept in
+ * oldtc).  The editor's token list (tokens) is the task's tc_UserData,
+ * which blitz2 sets for the program it runs.  With d0.b = 0 the program
  * stops at once ("Interrupted - program start"; the binary, not the
  * source).
+ *
+ * Fixed (#1069): the original set the vectors of TRAP #0-#5 in the VBR
+ * table (runerrlib getvbr) for the whole machine and took the token list
+ * from the old TRAP #1 vector, where blitz2 had put it.
  *
  * @param autorun  d0: low byte non zero for auto run, 0 = stop at the
  *                 first line
  */
 static void BLITZ_ROUTINE codeinit_c(ULONG autorun BL_REG(d0))
 {
-    struct bl_regs r = { 0 };
-    APTR *vbr;
+    struct Task *me = SysBase->ThisTask;
 
     dirmode = 0;
     oldouth = NULL;
@@ -619,20 +668,21 @@ static void BLITZ_ROUTINE codeinit_c(ULONG autorun BL_REG(d0))
     userhandler = userhandler_;
     waithandler = waithandler_;
     evalhandler = evalhandler_;
-    BLITZ_ALIBJSR(TOK_getvbr, r);
-    vbr = (APTR *)r.a0;
-    tokens = vbr[33];                   /* 132(a0) */
-    vbr[32] = mytrap0;                  /* TRAP #0 = 128(vbr) */
-    vbr[33] = mytrap1;
-    vbr[34] = mytrap2;
-    vbr[35] = mytrap3;
-    vbr[36] = mytrap4;
-    vbr[37] = mytrap5;
+    tokens = me->tc_UserData;
+    oldtc = me->tc_TrapCode;
+    me->tc_TrapCode = tasktrap;
 }
 BLITZ_THUNK(debuglib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /**
- * @brief Library finit: nothing (the trap vectors stay set).
+ * @brief Library finit: nothing.
+ *
+ * The trap handler stays the task's: a SetInt routine can still run until
+ * intlib's finit, which comes later (finits go from the low library
+ * numbers up), and runerrlib's gosuper hands its traps to the task's
+ * handler.  runerrlib's finit, the last of them, puts back the handler the
+ * program started with.  (The original left its handlers in the CPU's
+ * vector table for good, #1069.)
  */
 static void BLITZ_ROUTINE codefinit(void)
 {

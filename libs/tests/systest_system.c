@@ -52,6 +52,23 @@ __asm__(
 "_stubrts: rts\n"
 );
 
+/* runerrlib gosuper, stackchk and gouser in one call (a0, a1, a2): since
+   #1069 gosuper leaves the saved trap vectors on the stack for gouser.
+   insvec = the TRAP #0 vector (a3 = its address) between them */
+volatile ULONG insvec;
+extern char supercall[];
+__asm__(
+"   .text\n"
+"   .even\n"
+"   .globl  _supercall\n"
+"_supercall:\n"
+"   jsr     (a0)\n"
+"   move.l  (a3),_insvec\n"
+"   jsr     (a1)\n"
+"   jsr     (a2)\n"
+"   rts\n"
+);
+
 static const struct stub stubs[] = {
     { 0x5204, stubrts },                /* inputoutputlib (debuglib) */
     { 0x5d81, stubrts },                /* printlib (debuglib, unreferenced) */
@@ -324,9 +341,18 @@ static void runerrtest(struct set *s)
     SETUP(r.d[0] = 0x105; r.a[3] = (ULONG)data + 2); call("datachk", entry_code(l, 16));
     LOG("datachk a3", "datachk a3+%ld", r.a[3] - (ULONG)data);
     SETUP(r.a[2] = 1); call("runerr 21", entry_code(l, 21));
-    SETUP((void)0); call("gosuper", entry_code(l, 11));
-    SETUP((void)0); call("stackchk", entry_code(l, 8));    /* skipped */
-    SETUP((void)0); call("gouser", entry_code(l, 12));
+    {
+        ULONG *tv = (ULONG *)vbr + 32, before = *tv;
+
+        insvec = before;
+        SETUP(r.a[0] = (ULONG)entry_code(l, 11); r.a[1] = (ULONG)entry_code(l, 8);
+              r.a[2] = (ULONG)entry_code(l, 12); r.a[3] = (ULONG)tv);
+        Forbid();                       /* no other task meets the stubs */
+        call("gosuper stackchk gouser", supercall);  /* stackchk skipped */
+        Permit();
+        LOG("gosuper vector", "gosuper TRAP #0 vector changed %d, back %d",
+            insvec != before, *tv == before);
+    }
     SETUP((void)0); call("stackchk", entry_code(l, 8));    /* a7 ok */
     LOG("runerr checks passed", "runerr checks passed");
     /* assembler routines: first opcode words */
@@ -353,6 +379,8 @@ static UBYTE tok3[] = { 0, 0, 0, 0, 0x00, 0x07, 0 };            /* empty name */
 static void debugtest(struct set *s)
 {
     struct lib *l = getlib(s, "debuglib");
+    struct Task *me = FindTask(NULL);
+    APTR trap = me->tc_TrapCode, udata = me->tc_UserData, dtrap;
     APTR *vec = (APTR *)vbr;
     APTR save[6];
     APTR tab1[8], tab2[8];
@@ -364,15 +392,22 @@ static void debugtest(struct set *s)
                                  'D', 0x80, 0x07, 'E', 0 };
     UBYTE dst[80];
 
-    /* init sets TRAP #0-#5 in the VBR table: restore them at once (the
-       cases are written after Enable) */
+    /* init sets TRAP #0-#5 in the VBR table (the original; since #1069
+       the task's trap handler): restore them at once (the cases are
+       written after Enable).  The editor's token list: the old TRAP #1
+       vector (the original) or the task's tc_UserData (#1069), both the
+       same here */
     Disable();
     for (i = 0; i < 6; i++)
         save[i] = vec[32 + i];
+    me->tc_UserData = save[1];
     SETUP(r.d[0] = 0x100);              /* d0.b = 0: stop at once */
     {
         struct regs in = r;
         callregs(entry_code(l, 10), &r, 0, 0);
+        dtrap = me->tc_TrapCode;
+        me->tc_TrapCode = trap;
+        me->tc_UserData = udata;
         for (i = 0; i < 6; i++) {
             /* only the opcode: the next word is the upper half of an
                absolute address in the library copy (depends on the memory
@@ -392,6 +427,7 @@ static void debugtest(struct set *s)
         LOG("trap handler", "trap %d handler %04x", i, hw[i]);
     }
     VEC[0] = 0;
+    LOG("debug trapcode", "debug trapcode set %d", dtrap != trap);
 
     for (i = 0; i < 8; i++)
         tab1[i] = tab2[i] = nullhandler;
@@ -523,9 +559,8 @@ int main(int argc, char **argv)
     KEEPS("runerr 15", d0-d7|a0-a3|a6);
     KEEPS("datachk", d0|d2-d7|a0-a2|a6);
     KEEPS("runerr 21", d0-d7|a0-a3|a6);
-    KEEPS("gosuper", d0-d7|a0-a3|a6);
+    KEEPS("gosuper stackchk gouser", d0-d7|a0-a3|a6);
     KEEPS("stackchk", d0-d7|a0-a3|a6);
-    KEEPS("gouser", d0-d7|a0-a3|a6);
     KEEPS("runerr finit", d0-d7|a1-a3|a6);
     KEEPS("debug init", d0-d7|a1-a3|a6);
     KEEPS("dosethandler", d1-d7|a3|a6);

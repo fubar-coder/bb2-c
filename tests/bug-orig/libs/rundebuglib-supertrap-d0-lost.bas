@@ -2,15 +2,16 @@
 ; message) in supervisor mode: mytrap0 continues at more2, which calls
 ; codefinit (fixtraps, CloseLibrary) and then gives TRAP #0 to the old
 ; vector - with d0 changed by codefinit.
-; rundebuglib keeps the TRAP #0 vector it finds at start as the old one.
 ; Here the program sets its own TRAP #0 handler, runs itself a second
 ; time (own name from dos GetProgramName, dos Execute, output to the same
 ; file) and puts the vector back.  The child makes a runtime error
-; (ShapeWidth of an unused shape: "Uninitialized Shape") inside exec
-; Supervisor(); the handler of the parent keeps d0 and returns to the
-; child's Supervisor() call with the stack pointer the child noted (the
-; address of the parent's 2 longs comes as a decimal argument, parsed
-; digit by digit: Val is a float).  The original gives d0 = 0.
+; (ShapeWidth of an unused shape: "Uninitialized Shape") once, inside a
+; SetInt 5 routine (supervisor mode); the handler of the parent keeps d0
+; and returns.  The original gives d0 = 0, and more2 runs on behind its
+; trap.  (Since #1069 a SetInt routine is the only place where a runtime
+; error in supervisor mode reaches rundebuglib: the vector it gives the
+; trap to is the one the routine found, and the routine is left when that
+; handler returns.)
 ; Correct: the old vector gets the message ("Uninitialized Shape").
 ; @fixed #246
 ; @configs clib
@@ -21,7 +22,7 @@ If NumPars=0
   o=Peek.l(v+128)
   Poke.l ?ar,0
   nm$=String$(Chr$(0),256) : GetProgramName_ &nm$,255
-  c$=Peek$(&nm$)+" "+Str$(?ar)
+  c$=Peek$(&nm$)+" 1"
   Poke.l v+128,?th
   Execute_ &c$,0,Output_
   Poke.l v+128,o
@@ -33,22 +34,20 @@ If NumPars=0
   EndIf
   End
 EndIf
-a$=Par$(1) : p=0
-For i=1 To Len(a$) : p=p*10+Asc(Mid$(a$,i,1))-48 : Next
 NPrint "child"
-MOVE.l a5,a1 : LEA uf(pc),a5 : MOVE.l 4,a6 : JSR -30(a6)
+SetInt 5
+  If f=0
+    f=1
+    w=ShapeWidth(5)
+  EndIf
+End SetInt
+For i=1 To 10 : VWait : Next
 NPrint "child back"
 End
 
-uf:
-  MOVE.l a1,a5
-  GetReg d0,p : MOVE.l d0,a0 : MOVE.l a7,4(a0)
-  w=ShapeWidth(5)
-  RTE
-
 th:
-  LEA ar(pc),a0 : MOVE.l d0,(a0) : MOVE.l 4(a0),a7
+  LEA ar(pc),a0 : MOVE.l d0,(a0)
   RTE
 
 ar:
-  Dc.l 0,0
+  Dc.l 0

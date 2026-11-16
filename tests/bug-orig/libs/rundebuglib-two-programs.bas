@@ -17,6 +17,7 @@
 ; process of "b" - the parent never prints "parent done".
 ; Correct: "b" shows its runtime error requester and ends; then the
 ; parent ends.
+; @fixed #1069
 ; @pass runtime_errors=on
 DEFTYPE .l
 Dim a(5)

@@ -538,7 +538,7 @@ is RUN from the editor (not for executables: rundebuglib).
   the server chain goes on).
 * **Tests:** none in `libs/tests`: original against C build compares
   identical bytes (but the cache flush), and a functional test needs a
-  debugger program as seglist, debuglib with its trap vectors, intlib's
+  debugger program as seglist, debuglib with its trap handler, intlib's
   VBlank server and a running process - out of proportion for a binary
   that is the original's but one fix.
 

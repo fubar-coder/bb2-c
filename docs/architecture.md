@@ -319,12 +319,11 @@ menu10 (1605)
   STOP requester "EXECUTING"/"!PANIC!"
   CreateProc(procstart, stack=stackfuck) ──► runtheprog (1688, main.c runtheprog())
   Wait(panicmask)                              comdata+60 openio (console of TED)
-     │                                         write the VBR table:
-     │                                           trap #1 vector  = &tokens   (mailbox)
-     │                                           trap #2 vector  = firsttype (mailbox)
-     │                                           trap #15 vector = directtrap
+     │                                         tc_UserData     = &tokens   (for debuglib)
+     │                                         trap #15 vector = directtrap (VBR table)
      │                                         d2 = stack, d7 = 'bLtZ', a0 = CLI arg.
      │                                         jsr pcat   ← program in the object buffer
+     │                                         trap #15 vector back
      │                                         comdata+64 closeio
      │◄──────────── Signal(us, panicmask) ──── stopit = 1, end of the process
   stopit = -1 (PANIC)? → RemTask(child)
@@ -340,8 +339,14 @@ compiled** (the object buffer contains absolute addresses, 5.2).
 
 | Target | Libs | Function |
 |---|---|---|
-| RUN from the editor | `runerrlib` 65500, `debuglib` 64060, `dhandlerlib` 1 | full debugger runtime: `debuglib` takes over TRAP #0–#5 (reading the old trap #1 vector = token list in the process), `dhandlerlib` gets the address of `dseg` (loaded `defaultdbug`) in its init and connects the runtime with this UI |
-| CREATE EXECUTABLE | `runerrlib` 65500, `rundebuglib` 64050 | minimal: TRAP #0 → AutoRequest with error text and program end; TRAP #1/#2/#4 only skip their parameters |
+| RUN from the editor | `runerrlib` 65500, `debuglib` 64060, `dhandlerlib` 1 | full debugger runtime: `debuglib` takes TRAP #0–#5 as the task's trap handler (tc_TrapCode; the token list from the task's tc_UserData), `dhandlerlib` gets the address of `dseg` (loaded `defaultdbug`) in its init and connects the runtime with this UI |
+| CREATE EXECUTABLE | `runerrlib` 65500, `rundebuglib` 64050 | minimal: TRAP #0 → AutoRequest with error text and program end; TRAP #1/#2/#4 only skip their parameters (also through the task's trap handler) |
+
+The CPU's trap vectors stay the system's: exec hands a trap of user mode to
+the task's trap handler. A SetInt routine runs in supervisor mode, where
+exec does not: `runerrlib`'s gosuper at its start points the TRAP #0–#5
+vectors at stubs that do what exec does, gouser at its end puts them back
+(#1069, `docs/libs/deviations.md`).
 
 For this the compiler generates:
 

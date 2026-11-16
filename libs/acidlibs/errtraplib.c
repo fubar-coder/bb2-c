@@ -6,13 +6,14 @@
  *
  * Translation of bblibsrc/errtraplib (the binary matches the source).
  * Runtime errors are raised with `MOVE.l #message,d0:TRAP #0` (d1 is not
- * set, see newtrap).  codeinit replaces the TRAP #0 vector (VBR+128) by newtrap:
- * if SetErr installed a handler (dosettrap: d0 = handler code, the stack
- * pointer of the caller is remembered), a user mode trap continues at the
- * handler with that stack; otherwise the old vector takes the trap.
+ * set, see newtrap).  codeinit makes newtrap the task's trap handler
+ * (tc_TrapCode; fixed (#1069): the original replaced the CPU's TRAP #0
+ * vector, VBR+128, for the whole machine): if SetErr installed a handler
+ * (dosettrap: d0 = handler code, the stack pointer of the caller is
+ * remembered), a user mode trap continues at the handler with that stack;
+ * otherwise the old handler takes the trap.
  *
- * C: codeinit (VBR via SuperState/MOVEC/UserState), codefinit, dofail,
- * doreadern, doclrerr.
+ * C: codeinit, codefinit, dofail, doreadern, doclrerr.
  * Assembler: the data block (pc-relative from the trap code), newtrap /
  * ercont (exception frame, RTE, stack switch), dogetsp / doputsp /
  * dosettrap (they read or set the caller's stack pointer).
@@ -43,25 +44,23 @@ BLITZ_LIBFIN();
 
 /* data: in the code hunk, read pc-relative by the trap code */
 BLITZ_ASM_BLOCK(data,
-"_oldtrap: .long 0\n"                   /* old TRAP #0 vector */
+"_oldtrap: .long 0\n"                   /* the task's old trap handler */
 "_ernum:   .word 0\n"                   /* Ern: d1 at the last trap */
 "_ertext:  .long 0\n"                   /* last error message (d0) */
 "_ercode:  .long 0\n"                   /* SetErr handler, 0 = none */
 "_erstack: .long 0\n"                   /* stack pointer for the handler */
-"_vbr_:    .long 0\n"
-"   .globl  _oldtrap, _ernum, _ertext, _ercode, _erstack, _vbr_\n"
+"   .globl  _oldtrap, _ernum, _ertext, _ercode, _erstack\n"
 );
-extern ULONG oldtrap, ertext, ercode, erstack;
+extern APTR oldtrap;
+extern ULONG ertext, ercode, erstack;
 extern UWORD ernum;
-extern ULONG *vbr_;
-
-#define TRAP0 (128 / 4)                 /* vector 32 */
 
 /**
  * @brief ErrFail ($D205 errfail): report the trapped error after all.
  *
- * If an error happened (a message was stored by newtrap), the old TRAP #0
- * vector is put back and the error is given to it with TRAP #0 (the
+ * If an error happened (a message was stored by newtrap), the old trap
+ * handler is put back (fixed (#1069): the task's, the original put back
+ * the CPU's TRAP #0 vector) and the error is given to it with TRAP #0 (the
  * debugger / runtime error handler), which normally ends the program.
  * Keeps d1/a0-a1 (a0 only if there was no error).
  *
@@ -73,7 +72,7 @@ static ULONG BLITZ_ROUTINE dofail_c(ULONG num BL_REG(d1))
     ULONG text = ertext;
 
     if (text) {
-        vbr_[TRAP0] = oldtrap;
+        SysBase->ThisTask->tc_TrapCode = oldtrap;
         {
             register ULONG d0 __asm("d0") = text;
             register ULONG d1 __asm("d1") = num;
@@ -111,38 +110,24 @@ BLITZ_ASM_ROUTINE(doputsp,
 "   move.l  d0,sp\n"
 "   jmp     (a0)");
 
-/* codeinit - find the VBR (68010+), install newtrap */
+/* codeinit - install newtrap as the task's trap handler.  Fixed (#1069):
+   the original read the VBR (68020+; #42) and put newtrap into the CPU's
+   TRAP #0 vector */
 static void BLITZ_ROUTINE codeinit(void)
 {
-    UWORD f = SysBase->AttnFlags & 15;
-    UWORD n = 0;
-    ULONG vbr = 0;
+    struct Task *me = SysBase->ThisTask;
 
-    /* Fixed (intended deviation, #42): this counts the shifts until the
-       CPU flags are 0; the original reads the VBR only for 2 or more (68020+),
-       so a 68010, which has a VBR too, uses 0.  Here from 1 on. */
-    while (f) {
-        n++;
-        f >>= 1;
-    }
-    if (n >= 1) {
-        APTR ssp = SuperState();                /* supervisor state! */
-        register ULONG v __asm("d2");
-        __asm volatile(".short 0x4e7a,0x2801" : "=d"(v));  /* MOVEC vbr,d2 */
-        vbr = v;
-        UserState(ssp);
-    }
-    vbr_ = (ULONG *)vbr;
-    oldtrap = vbr_[TRAP0];
-    vbr_[TRAP0] = (ULONG)newtrap;
+    oldtrap = me->tc_TrapCode;
+    me->tc_TrapCode = newtrap;
     ernum = 0;
     ercode = 0;
 }
 
-/* codefinit - restore the old TRAP #0; changes only a0 in the original */
+/* codefinit - restore the old trap handler; changes only a0 in the
+   original */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
-    vbr_[TRAP0] = oldtrap;
+    SysBase->ThisTask->tc_TrapCode = oldtrap;
 }
 BLITZ_THUNK(errtraplib_codefinit, codefinit_c, "d0-d1/a0-a1");
 
@@ -187,17 +172,25 @@ static void BLITZ_ROUTINE doclrerr_c(void)
 }
 BLITZ_THUNK(doclrerr, doclrerr_c, "d0-d1/a0-a1");
 
-/* newtrap - new TRAP #0 routine: exception handler (frame, RTE) and a
-   stack switch, asm.  A user mode trap with a SetErr handler returns (RTE)
-   to ercont, which continues at the handler with the SetErr stack.
+/* newtrap - the task's trap handler (fixed (#1069), see codeinit): the
+   trap number as a long on the stack in front of the exception frame
+   (exec for a trap of user mode, runerrlib's gosuper in a SetInt
+   routine).  Every number but 32 (TRAP #0) goes to the old handler as it
+   came.  A user mode TRAP #0 with a SetErr handler returns (RTE) to
+   ercont, which continues at the handler with the SetErr stack; any other
+   goes to the old handler with its number.
    BUG(orig) (#133): d1 is stored in ernum (Ern) before ercode is checked, but no
    runtime error sets d1 (compiler moveq #n,d0:trap #0, libraries
    MOVE.l #mess,d0:TRAP #0), so Ern returns a random value.  The old
-   vector gets the trap with d1 = 0 and a0 changed; the old handlers
-   (debuglib/rundebuglib mytrap0) only read d0, so that has no effect. */
+   handler gets the trap with d1 = 0; the old handlers (debuglib/
+   rundebuglib mytrap0) only read d0, so that has no effect.  (The
+   original jumped to the old TRAP #0 vector with a0 changed.) */
 BLITZ_ASM_BLOCK(newtrap,
 "   .globl  _newtrap\n"
 "_newtrap:\n"
+"   cmp.l   #32,(sp)\n"
+"   bne.s   chain\n"
+"   addq.l  #4,sp\n"
 "   btst    #5,(sp)\n"                  /* can't trap errors on interupts */
 "   bne.s   insuper\n"
 "   move.w  d1,_ernum\n"
@@ -211,6 +204,8 @@ BLITZ_ASM_BLOCK(newtrap,
 "   move.l  _erstack(pc),sp\n"
 "   jmp     (a0)\n"
 "insuper:\n"                            /* we can't do anything, let's jump to */
-"   move.l  _oldtrap(pc),a0\n"          /* the old TRAP #0 routine..... */
-"   jmp     (a0)\n"
+"   move.l  #32,-(sp)\n"                /* the old TRAP #0 routine..... */
+"chain:\n"
+"   move.l  _oldtrap(pc),-(sp)\n"
+"   rts\n"
 );
