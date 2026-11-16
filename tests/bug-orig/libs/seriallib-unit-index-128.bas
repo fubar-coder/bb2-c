@@ -8,6 +8,7 @@
 ; Offsets: u = read half (request +0, IOExtSer +38, io_Device +58),
 ; u+128 = write half; lib_OpenCnt of the device at +32.
 ; Correct: CloseSerial 1 does nothing, unit 0 stays open.
+; @fixed #252
 ; @configs clib
 DEFTYPE .l
 u=OpenSerial("serial.device",0,9600,0)

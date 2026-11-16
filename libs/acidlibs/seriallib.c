@@ -18,15 +18,6 @@
  * bytes to the write half, which then gets its own port and signal.
  *
  * Kept from the original (BUG(orig)):
- *   - unit index: OpenSerial, WriteSerial, WriteSerialString,
- *     WriteSerialMem, ReadSerialMem, ReadSerial and ReadSerialString use
- *     unit*256 (ASL.w #8), but CloseSerial, SetSerialBuffer,
- *     SetSerialLens, SetSerialParams and SerialEvent use unit*128
- *     (ASL.w #7): only unit 0 works with all commands; for unit n > 0
- *     those reach the write half of unit (n-1)/2 for an odd n, the read
- *     half of unit n/2 for an even n (CloseSerial 1 closes the
- *     device through unit 0's write request and frees unit 1's read
- *     signal).  Index arithmetic is word sized (ADDA.w: sign extended). (#252)
  *   - ReadSerialMem reads through the WRITE request (+128). (#253)
  *   - WriteSerialString: flags bit 1 (value 2) selects both TrueString
  *     (length from the string instead of -1 = null terminated) and DoIO;
@@ -42,6 +33,16 @@
  *     the message text, the C version returns) (#262).  SerialEvent checks
  *     nothing (not a bug: it tests bit 0 of a cleared slot and returns 0).
  * Fixed (intended deviations, kind F):
+ *   - unit index: OpenSerial, WriteSerial, WriteSerialString,
+ *     WriteSerialMem, ReadSerialMem, ReadSerial and ReadSerialString use
+ *     unit*256 (ASL.w #8), but CloseSerial, SetSerialBuffer,
+ *     SetSerialLens, SetSerialParams and SerialEvent used unit*128
+ *     (ASL.w #7): only unit 0 worked with all commands; for unit n > 0
+ *     those reached the write half of unit (n-1)/2 for an odd n, the read
+ *     half of unit n/2 for an even n (CloseSerial 1 closed the device
+ *     through unit 0's write request).  All use unit*256 now (#252).
+ *     Index arithmetic is word sized (ADDA.w: sign extended), as in the
+ *     original.
  *   - CloseSerial aborted the read request without WaitIO and left the
  *     write half's request alone (a pending SendIO write stayed pending);
  *     it now aborts and waits for both before CloseDevice, and so does
@@ -253,7 +254,7 @@ static void initport(struct serio *s)
  * are cleared now.
  *
  * @param name d0: the device name
- * @param unit d1: the unit (the slot is unit*256, word arithmetic, #252)
+ * @param unit d1: the unit (the slot is unit*256, word arithmetic)
  * @param baud d2: the baud rate
  * @param flag d3: io_SerFlags
  * @return d0: the address of the unit's read half, 0 on failure or if the
@@ -321,9 +322,9 @@ fail:
  * read half's request, both signals freed.  Nothing happens for a unit
  * that is not open.
  *
- * BUG(orig) (#252): the slot is unit*128, see the head comment (CloseSerial
- * 1 closes the device through unit 0's write request and frees unit 1's
- * read signal).  Fixed (#258): the original called AbortIO without WaitIO
+ * Fixed (#252): the slot is unit*256 (the original computed unit*128:
+ * CloseSerial 1 closed the device through unit 0's write request and
+ * freed unit 1's read signal).  Fixed (#258): the original called AbortIO without WaitIO
  * for the read request and left the write request alone (a pending
  * SendIO write stayed pending after the close).
  *
@@ -331,7 +332,7 @@ fail:
  */
 void BLITZ_ROUTINE closeserial(UWORD unit BL_REG(d0))
 {
-    struct serio *s = slot(unit, 7, 0);
+    struct serio *s = slot(unit, 8, 0); /* Fixed (#252): unit*256 */
 
     if (!s->request)
         return;
@@ -615,10 +616,11 @@ ULONG BLITZ_ROUTINE readstring(UWORD unit BL_REG(d0))
     return n;
 }
 
-/* SDCMD_SETPARAMS through the half at unit*128 (BUG(orig) (#252), see above) */
+/* SDCMD_SETPARAMS through the read half (Fixed (#252): unit*256, the
+   original computed unit*128) */
 static struct serio *paramslot(UWORD unit)
 {
-    struct serio *s = slot(unit, 7, 0);
+    struct serio *s = slot(unit, 8, 0);
 
     if (!s->request) {
         noser();
@@ -636,7 +638,8 @@ static void setparams(struct serio *s)
 /**
  * @brief SetSerialBuffer unit#,bufferlength - set io_RBufLen (_serialbuffer).
  *
- * SDCMD_SETPARAMS, DoIO.  BUG(orig) (#252): the slot is unit*128.
+ * SDCMD_SETPARAMS, DoIO.  Fixed (#252): the slot is unit*256 (the
+ * original computed unit*128).
  *
  * Errors: "Serial Device Not Open" (TRAP #0, #262).
  *
@@ -657,7 +660,8 @@ void BLITZ_ROUTINE serialbuffer(UWORD unit BL_REG(d0), ULONG len BL_REG(d1))
  * @brief SetSerialLens unit#,readlen,writelen,stopbits - set the bit
  * lengths and stop bits (_seriallens).
  *
- * SDCMD_SETPARAMS, DoIO.  BUG(orig) (#252): the slot is unit*128.
+ * SDCMD_SETPARAMS, DoIO.  Fixed (#252): the slot is unit*256 (the
+ * original computed unit*128).
  *
  * Errors: "Serial Device Not Open" (TRAP #0, #262).
  *
@@ -683,7 +687,7 @@ void BLITZ_ROUTINE seriallens(UWORD unit BL_REG(d0), UBYTE rlen BL_REG(d1),
  * @brief SetSerialParams unit# - SDCMD_SETPARAMS with the request's
  * current values (_serialsetparams).
  *
- * BUG(orig) (#252): the slot is unit*128.
+ * Fixed (#252): the slot is unit*256 (the original computed unit*128).
  *
  * Errors: "Serial Device Not Open" (TRAP #0, #262).
  *
@@ -702,7 +706,7 @@ void BLITZ_ROUTINE serialsetparams(UWORD unit BL_REG(d0))
  *
  * No check whether the unit is open (not a bug: it tests bit 0 of a
  * cleared slot and returns 0).
- * BUG(orig) (#252): the slot is unit*128.
+ * Fixed (#252): the slot is unit*256 (the original computed unit*128).
  *
  * @param unit d0.w: the unit
  * @param sigs a0: utillib's `signals` (the result of its Wait)
@@ -713,7 +717,7 @@ static ULONG BLITZ_ROUTINE checkevent_c(UWORD unit BL_REG(d0),
                                         const ULONG *sigs BL_REG(a0))
 {
     ULONG signals = *sigs;
-    struct serio *s = slot(unit, 7, 0);
+    struct serio *s = slot(unit, 8, 0); /* Fixed (#252): unit*256 */
     ULONG r = 0;
 
     if (signals & (1UL << (s[1].port.mp_SigBit & 31))) /* port+15+128 */
