@@ -1,6 +1,6 @@
 ; bgfx - perf benchmark: blits, collisions, drawing, Print on a bitmap, Show, RGB
 DEFTYPE .l
-Dim t(45)
+Dim t(47)
 a=123456 : c=0
 BitMap 0,320,256,3
 BitMap 1,64,64,3
@@ -14,6 +14,15 @@ Use BitMap 2
 Boxf 0,0,15,15,3
 GetaShape 2,0,0,16,16
 GetaSprite 0,2
+BitMap 3,32,32,1
+Use BitMap 3
+Boxf 0,0,15,15,1 : Boxf 4,4,11,11,0
+GetaShape 3,0,0,16,16
+BitMap 4,32,32,6
+Use BitMap 4
+Boxf 0,0,15,15,45 : Boxf 4,4,11,11,18
+GetaShape 4,0,0,16,16
+BitMap 5,320,64,6
 Buffer 0,16384
 Queue 0,64
 Dim pts.w(8)
@@ -252,6 +261,33 @@ For i=1 To 2000
 Use Slice 0
 Next
 Gosub tod : t(42)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+Blit 3,100,100
+Next
+Gosub tod : t(43)=(tt-t0)&65535
+Use BitMap 5
+Gosub tod : t0=tt
+For i=1 To 2000
+Blit 4,100,20
+Next
+Gosub tod : t(44)=(tt-t0)&65535
+Use BitMap 0
+Gosub tod : t0=tt
+For i=1 To 1000
+ClipBlit 0,-5,100 : ClipBlit 0,310,100 : ClipBlit 0,100,-5 : ClipBlit 0,100,250
+Next
+Gosub tod : t(45)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+Blit 3,100,100,1
+Next
+Gosub tod : t(46)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+ClipBlit 3,100,100,1
+Next
+Gosub tod : t(47)=(tt-t0)&65535
 VWait 2
 AMIGA
 DefaultOutput
@@ -298,6 +334,11 @@ NPrint "rgb ",t(39)," 2000 1"
 NPrint "green ",t(40)," 2000 1"
 NPrint "usebitmap ",t(41)," 2000 1"
 NPrint "useslice ",t(42)," 2000 1"
+NPrint "blit16p1 ",t(43)," 2000 1"
+NPrint "blit16p6 ",t(44)," 2000 1"
+NPrint "clipblitc ",t(45)," 1000 1"
+NPrint "blitex ",t(46)," 2000 1"
+NPrint "clipblitex ",t(47)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

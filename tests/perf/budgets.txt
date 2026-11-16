@@ -117,6 +117,10 @@
 # (libs-performance task 13.30, 2026-11-16): 284.6 and 184.6 to 184.7.
 # bmath.qmul from two runs of quickmult in assembler (task 13.31, 2026-11-16):
 # 386.8 both.
+# bgfx.blit16p1, bgfx.blit16p6, bgfx.clipblitc, bgfx.blitex and
+# bgfx.clipblitex (new, libs-performance tasks 13.10 and 13.11) from five
+# runs on main 1a7cdf79 (2026-11-16; they spread by at most 0.6 cycles, so
+# plain budgets).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -131,6 +135,11 @@ bgfx.blit32                 4730~3     4723.4  Blit 1,100,100
 bgfx.block16                 1021     1009.9  Block 0,96,96
 bgfx.clipblit16              2607     2516.3  ClipBlit 0,100,100
 bgfx.blitcoll                902~1      881.9  c=BlitColl(0,100,100)
+bgfx.blit16p1                 941      933.9  Blit 3,100,100
+bgfx.blit16p6                3928     3873.9  Blit 4,100,20
+bgfx.blitex                  2089     1944.4  Blit 3,100,100,1
+bgfx.clipblitc               9073     8643.9  ClipBlit 0,-5,100 : ClipBlit 0,310,100 : ClipBlit 0,100,-5 : ClipBlit 0,100,250
+bgfx.clipblitex              2542     2310.4  ClipBlit 3,100,100,1
 bgfx.bblit4u              18160~28    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
 bgfx.bblit8u              35892~12    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
 bgfx.qblit4u               12744~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
