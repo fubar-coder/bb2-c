@@ -105,6 +105,10 @@ kind F):
   number of the song positions + 1, from `mt_init`'s scan), as its
   documentation says; the original returned the song length (byte 950)
   (#445; library test `rwe_ciatrklib`, the cases `ModulePatterns|d0|...`).
+* `ModulePositionJump n` continues at song position n: it stores n − 1,
+  as effect Bxx does; the original stored n, which the next tick's
+  `mt_NextPosition` incremented (#447; library test `rwe_ciatrklib`,
+  `GetModulePosition|d0||2` and the cases of the ticks after it).
 
 ## BUG(orig), kept
 
@@ -133,8 +137,6 @@ kind F):
   returns its argument; the library's documentation says "the command
   has no function" (since 1.02a `DecodeModule` copies a module to chip
   memory, and the command only still tokenises for old programs).
-* `ModulePositionJump n` jumps to position n + 1 (the next tick's
-  `mt_NextPosition` increments it) (#447).
 * `TrackerVolume 0` and `64` do not change the volume of the notes that
   play (only 0 < volume < 64 calls `Change_Volume_Levels`) (#452).
 * `mt_init` compares the module **length** with the sample addresses

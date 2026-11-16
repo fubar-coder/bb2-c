@@ -38,7 +38,8 @@
  *     above the sample addresses clears their first longs, BUG(orig), #438),
  *     then PlayTracker tick by tick with all channels on Paula, with the
  *     masks 5 and 0 (fake_channel), TrackerVolume (0, 1, 32, 63, 64,
- *     65), ModulePositionJump (n + 1, BUG(orig), #447), GetModulePosition,
+ *     65), ModulePositionJump (n, fixed #447: n + 1 in the original),
+ *     GetModulePosition,
  *     PauseModule, Get/CheckTrackerEvent, WaitTrackerEvent (its WaitTOF
  *     plays one tick), StopTracker, LoadTrackerModule (a6 = DOSBase;
  *     a file size with the low byte $FE: the byte add of the original,

@@ -46,8 +46,6 @@
  *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
- *   - ModulePositionJump n: the song position becomes n + 1 at the next
- *     tick (mt_NextPosition increments it) (#447).
  *   - TrackerVolume 0 or 64 does not change the volumes of the notes that
  *     play (only 0 < volume < 64 calls Change_Volume_Levels) (#452).
  *   - mt_init compares the module LENGTH with the sample addresses (CMP.l
@@ -120,6 +118,9 @@
  * Fixed (intended deviation, #445): ModulePatterns returns the number of
  * patterns (the highest pattern number of the song positions + 1, as the
  * documentation says); the original returned the song length (byte 950).
+ * Fixed (intended deviation, #447): ModulePositionJump n continues at
+ * song position n; the original stored n, which the next tick's
+ * mt_NextPosition incremented, so the song went on at n + 1.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1801,13 +1802,14 @@ static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
 /**
  * @brief ModulePositionJump (Position#): jump to a song position.
  *
- * At the next tick mt_NextPosition increments it: the song continues at
- * position n + 1 (BUG(orig) (#447)).
+ * Stores n - 1, as effect Bxx does: at the next tick mt_NextPosition
+ * increments it and the song continues at position n (fixed, #447: the
+ * original stored n, the song went on at n + 1).
  * @param pos  d0.b: the position
  */
 static void BLITZ_ROUTINE modulepositionjump_c(ULONG pos BL_REG(d0))
 {
-    playdata.SongPos = (UBYTE)pos;
+    playdata.SongPos = (UBYTE)(pos - 1);        /* Fixed (#447): SUBQ.B #1 as mt_PositionJump */
     playdata.PBreakPos = 0;
     playdata.PosJumpFlag = 0xff;
 }
