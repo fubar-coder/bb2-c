@@ -87,6 +87,11 @@ that are not the result.
   FreeIconObject does; the original forgot it, and its memory stayed
   allocated until a reset (#850; bug-orig test
   `ritooltypeslib-puticonobject-leaks-icon`, inject track).
+* IconToShape copies `(width + 15) >> 4` words per row, the words it
+  allocates for the shape's data. The original copied `(width >> 4) +
+  1`, one word per row and plane more when the width is a multiple of 16,
+  behind the data (#847; bug-orig test
+  `ritooltypeslib-icontoshape-extra-word`, inject guard).
 
 **BUG(orig)** (kept):
 
@@ -101,9 +106,7 @@ that are not the result.
   selected image and sets the gadget flags to 6, dropping the others
   (#854).
 * IconToShape fills the shape before allocating its data (no memory:
-  size without data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); copies `(width >> 4) + 1` words per row, one
-  more than the shape's data has when the width is a multiple of 16
-  (#847); calls MakeCookie with a3 = the shape only if it was in use
+  size without data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); calls MakeCookie with a3 = the shape only if it was in use
   before (freeashape), otherwise with the caller's a3 (a cookie for
   whatever a3 points to); with two shapes the second gets the cookie of
   the first if it is fresh (a3 still the first) (#849).

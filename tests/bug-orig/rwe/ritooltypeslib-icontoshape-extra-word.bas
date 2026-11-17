@@ -7,6 +7,7 @@
 ; runs through inject (runwrap=, inject guard: a pattern behind every
 ; allocation, checked when it is freed).
 ; Correct: nothing is written behind an allocation; shape 1 is 16 x 8.
+; @fixed #847
 ; @rwe ritooltypeslib
 ; @pass runwrap=@INJECT@|guard
 BitMap 0,32,16,1

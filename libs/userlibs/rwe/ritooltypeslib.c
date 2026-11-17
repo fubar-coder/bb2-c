@@ -44,10 +44,7 @@
  *     selected image with PlanePick/PlaneOnOff 0 and sets the gadget
  *     flags to 6 (GADGHIMAGE), dropping all others (#854).
  *   - IconToShape: the shape is filled before the data is allocated (no
- *     memory: the shape keeps its size and has no data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the copy
- *     takes (width >> 4) + 1 words per row, one word more than the
- *     shape's data has when the width is a multiple of 16 (writes behind
- *     it) (#847); MakeCookie is called with a3 = the shape only if the
+ *     memory: the shape keeps its size and has no data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); MakeCookie is called with a3 = the shape only if the
  *     shape was in use before (freeashape), otherwise with the caller's
  *     a3 - a cookie for whatever a3 points to; IconToShape shape,shape
  *     gives the second shape the cookie of the first (a3 is still the
@@ -92,6 +89,10 @@
  *   2026-11-17, w1-decisions.md).
  * Fixed (intended deviation, #850): PutIconObject forgot the written icon
  *   without FreeDiskObject (its memory was lost); it frees it now.
+ * Fixed (intended deviation, #847): IconToShape allocated (width + 15)
+ *   >> 4 words per row but copied (width >> 4) + 1: for a width that is
+ *   a multiple of 16 one word per row and plane behind the shape's data.
+ *   It copies the words it allocates.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -947,8 +948,9 @@ static void icontoshape_jump(ULONG shapearg, struct bb_shape *shape, UWORD rende
     shape->data = (APTR)mem;
     from = im->ImageData;
     to = (UWORD *)mem;
-    /* BUG(orig) #847: (width >> 4) + 1 words per row (MULU.w: low words) */
-    count = (UWORD)bl_mulu_w((UWORD)bl_mulu_w((UWORD)(((WORD)w >> 4) + 1), h), im->Depth);
+    /* the words of the allocation (MULU.w: low words); fixed #847: the
+       original copied (width >> 4) + 1 words per row */
+    count = (UWORD)bl_mulu_w((UWORD)bl_mulu_w(words, h), im->Depth);
     count--;
     do
         *to++ = *from++;
@@ -971,9 +973,10 @@ static void icontoshape_jump(ULONG shapearg, struct bb_shape *shape, UWORD rende
  * A shape in use is freed first; the data is allocated with memlib
  * globalloc (CHIP) and copied from the Image, the cookie made with
  * shapeslib's MakeCookie.  BUG(orig): the shape is filled before the data
- * is allocated (#848, not a bug in practice); the copy takes one word per
- * row too many for a width that is a multiple of 16 (#847); MakeCookie
- * gets the caller's a3 unless the shape was in use (#849).  DIFF: a3 kept.
+ * is allocated (#848, not a bug in practice); MakeCookie gets the
+ * caller's a3 unless the shape was in use (#849).  The copy takes the
+ * words of the allocation (fixed #847: the original took one word per
+ * row more for a width that is a multiple of 16).  DIFF: a3 kept.
  * @param shapearg  d0: the shape's offset (shape# << 5)
  * @param shape     a0: the shape object (#ia0|#pd0)
  * Returns nothing (nothing happens without an icon or image).
