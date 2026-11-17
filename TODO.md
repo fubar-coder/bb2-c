@@ -708,9 +708,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     (`libs/tests/rwe/ridatatypeslib.c:273`); the run took 159 s instead
     of about 77 s; passed in the two runs after it.
   * bug-orig `rigtmenulib-createmenustrip-unchecked` (2026-11-17, R9
-    acceptance, `bug-orig` with -j4): the port session ended by its
-    timeout at 11.5 s (DIFFERS) while clib came out REPRODUCED; alone
-    REPRODUCED in both.
+    acceptance, `bug-orig` with -j4): the port session was ended by the
+    hang check (`hang_after` 8 s, `BUG_ORIG_RUN_HANG_AFTER`) at 11.5 s
+    (DIFFERS) while clib came out REPRODUCED; alone REPRODUCED in both.
+    Again in a full `bug-orig` run on 2026-11-17, clib this time: the
+    program had printed all its output (`before`, `-1`), then the job
+    made no progress; at the end the CPU was running in ROM in supervisor
+    mode (PC $F81472). Not slowness under load (its sessions take
+    1.6-1.7 s): it hangs now and then after its output. Cause not
+    analysed.
   The ctest `TIMEOUT` of the tests already includes
   `EMULATION_QUEUE_WAIT` (7200 s, `cmake/emulation-queue.cmake`) per
   session; only the session limits (`timeout=` of the runners, `@pass
