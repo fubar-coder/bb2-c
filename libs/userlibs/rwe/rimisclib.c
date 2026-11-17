@@ -38,8 +38,6 @@
  * BUG(orig), kept:
  *   - EZRequestArgs without arguments reads one type word from a2 (the
  *     count 0 runs the DBRA loop 65536 times) (#746).
- *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare)
- *     (#753).
  *
  * Fixed (intended deviation, #748): EZRequest title$,body$,gadget$,var..
  * and EZRequestArgs store their arguments in 16 longs without a limit;
@@ -126,7 +124,10 @@
  * result (#846).  The call keeps a3 (the libraries' safe form of the NDK
  * macro, cmake/ndk-calls.cmake).
  *
- * Original behaviour that is no defect: NextArg$ ends a quoted word at
+ * Original behaviour that is no defect: LtoS replaces the bytes 0-31 and
+ * 128-255 by 128 (a signed compare), as its documentation says
+ * (RIMiscLib.guide, LtoS: "Non-ASCII characters are replaced with
+ * character 128"; #753).  NextArg$ ends a quoted word at
  * the closing quote even if no space follows ("ab"cd gives ab, then cd),
  * as ReadItem does.  NextArg$/NextArgChar$ write no 0 behind the result
  * (string results need none: d0 has the length, the compiler adds the 0
@@ -563,8 +564,9 @@ static BB_BOOL BLITZ_ROUTINE fromblitz_c(void)
 /**
  * @brief LtoS(longword): a long as a string of its 4 bytes.
  *
- * Highest byte first, written to a3 without a 0.  BUG(orig) (#753): the
- * bytes 0-31 and 128-255 become 128 (a signed CMPI.b #32).
+ * Highest byte first, written to a3 without a 0.  The bytes 0-31 and
+ * 128-255 become 128 (a signed CMPI.b #32), the documented "non-ASCII
+ * characters are replaced with character 128" (no defect, #753).
  * @param v  d0: the long
  * @return d0: 4, the length
  */

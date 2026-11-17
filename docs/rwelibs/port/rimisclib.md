@@ -180,10 +180,12 @@ kind F):
 
 * EZRequestArgs without an argument reads one type word from a2 (the
   count 0 runs the DBRA 65536 times) (#746).
-* LtoS replaces the bytes 0-31 and 128-255 by 128 (`CMPI.b #32` with a
-  signed branch) (#753).
 
 Original behaviour that is no defect:
+
+* LtoS replaces the bytes 0-31 and 128-255 by 128 (`CMPI.b #32` with a
+  signed branch), as RWE's manual says (RIMiscLib.guide, node LtoS:
+  "Non-ASCII characters are replaced with character 128") (#753).
 
 * NextArg$ ends a quoted word at the closing quote even without a space
   behind it (`"ab"cd` gives `ab`, then `cd`), as ReadItem does.
