@@ -58,8 +58,6 @@
  *     the window object (not of the Window) and keep its signal bit
  *     shifted by one (LSL.b #1) in a byte nobody reads; the handlers are
  *     called with no signals (sigs is never set) (#454).
- *     RTASyncPaletteRequest and RTEZPaletteRequest do not store
- *     RTReturnValue (#464).
  *   - init: when a requester cannot be allocated, the library and the
  *     requesters allocated so far stay (finit does nothing then); finit
  *     does not clear anything (a second finit frees again) (#460).  No
@@ -75,6 +73,9 @@
  * Fixed (intended deviation, #462): RTEZMultiLoadFile tested only the low
  * byte of the file list address (CMP.b #0,d0), so a list at an address
  * ending in $00 came back as its address instead of -1.
+ * Fixed (intended deviation, #464): RTEZPaletteRequest and
+ * RTASyncPaletteRequest did not store rtPaletteRequestA's result for
+ * RTReturnValue, which kept the previous call's.
  * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
  * have no 0 behind them (a string function returns its length, as
  * usual); FileName$ is copied with a length of 108, whatever its own
@@ -671,9 +672,9 @@ static BB_BOOL BLITZ_ROUTINE rtactive_c(void)
  * @brief RTReturnValue: the result of the last reqtools call that stores
  * it.
  *
- * Stored by the EZ, file, path, font, screen mode, number and string
- * requesters, RTRequest and RTASyncRequest; not by RTEZPaletteRequest and
- * RTASyncPaletteRequest (BUG(orig), #464), nor by the RTCheck.../RTEnd...
+ * Stored by the EZ, file, path, font, screen mode, palette, number and
+ * string requesters, RTRequest, RTASyncRequest and RTASyncPaletteRequest
+ * (the palette requesters: fixed, #464); not by the RTCheck.../RTEnd...
  * and window routines.
  * @return d0: the value
  */
@@ -1153,15 +1154,20 @@ static ULONG BLITZ_ROUTINE rtsmreqf_c(STRPTR title BL_REG(d0), ULONG flags BL_RE
 /**
  * @brief RTEZPaletteRequest(Title$,FirstColour): the palette requester.
  *
- * BUG(orig) (#464): the result is not stored for RTReturnValue.
+ * The result is stored for RTReturnValue (fixed, #464: the original did
+ * not store it).
  * @param title  d0: Title$
  * @param first  d1: FirstColour (RTPA_Color)
  * @return d0: rtPaletteRequestA's result
  */
 static ULONG BLITZ_ROUTINE rtpalreq_c(STRPTR title BL_REG(d0), ULONG first BL_REG(d1))
 {
+    ULONG r;
+
     palreqTagList.color.ti_Data = first;
-    return RTJSR(LVO_rtPaletteRequestA, 0, &palreqTagList, 0, title, 0);
+    r = RTJSR(LVO_rtPaletteRequestA, 0, &palreqTagList, 0, title, 0);
+    returnvalue = r;                                    /* fixed (#464) */
+    return r;
 }
 
 /* ------------------------------------------------------------ numbers */
@@ -1421,8 +1427,9 @@ static ULONG BLITZ_ROUTINE rtendasreq_c(void)
  * requester that runs alongside the program (RT_ReqHandler).
  *
  * RTCheckASyncPaletteRequest polls it, RTEndASyncPaletteRequest ends it.
- * BUG(orig): the signal bit as in RTASyncRequest (#454); the result is not
- * stored for RTReturnValue (#464).
+ * BUG(orig): the signal bit as in RTASyncRequest (#454).  The result is
+ * stored for RTReturnValue, unconverted, as RTASyncRequest does (fixed,
+ * #464: the original did not store it).
  * @param title  d0: Title$
  * @param first  d1: FirstColour (RTPA_Color)
  * @param obj    a1: the used window object
@@ -1436,6 +1443,7 @@ static ULONG BLITZ_ROUTINE rtasPrequest_c(STRPTR title BL_REG(d0), ULONG first B
     myPmask = portmask(obj);
     asPRequestTagList.color.ti_Data = first;
     r = RTJSR(LVO_rtPaletteRequestA, 0, &asPRequestTagList, 0, title, 0);
+    returnvalue = r;                                    /* fixed (#464) */
     if (r == CALL_HANDLER)
         return (ULONG)-1;
     return r;

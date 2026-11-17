@@ -911,7 +911,8 @@ RTReturnValue|d0|not up|6	$00000002
 RTReturnValue|d0|not up|7	$00000002
 RTReturnValue|d0|not up|8	$00000002
 RTReturnValue|d0|not up, after RTEZRequest|1	$00000009
-RTReturnValue|d0|not up, after RTEZRequest|2	$00000009
+RTReturnValue|d0|not up, after RTEZRequest|2 [orig]	$00000009
+RTReturnValue|d0|not up, after RTEZRequest|2 [fixed #464]	$00000002
 RTReturnValue|d0|ok|1	$00000001
 RTReturnValue|d0|pattern freed cancel|1	$00000000
 RTReturnValue|d0|pattern freed cancel|2	$00000000
@@ -933,8 +934,10 @@ RTReturnValue|d0|requester 3|1	$00000000
 RTReturnValue|d0|requester 3|2	$00000000
 RTReturnValue|d0|requester 4|1	$00000000
 RTReturnValue|d0|requester 4|2	$00000000
-RTReturnValue|d0|ret -1|1	$00000000
-RTReturnValue|d0|ret 5|1	$00000000
+RTReturnValue|d0|ret -1|1 [orig]	$00000000
+RTReturnValue|d0|ret -1|1 [fixed #464]	$FFFFFFFF
+RTReturnValue|d0|ret 5|1 [orig]	$00000000
+RTReturnValue|d0|ret 5|1 [fixed #464]	$00000005
 RTReturnValue|d0|tag list|1	$00000000
 RTReturnValue|d0|title ""|1	$00000004
 RTReturnValue|d0|title ""|2	$00000004

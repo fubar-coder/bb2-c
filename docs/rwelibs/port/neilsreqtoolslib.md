@@ -94,6 +94,10 @@ kind F):
   were chosen, 0 on cancel; the original tested it with `CMP.b #0,d0`
   and returned a list at an address ending in `$00` as its address
   instead of -1 (#462).
+* RTEZPaletteRequest and RTASyncPaletteRequest store rtPaletteRequestA's
+  result for RTReturnValue (RTASyncPaletteRequest unconverted, as
+  RTASyncRequest); the original did not, so RTReturnValue still gave
+  the previous call's result (#464).
 
 ## BUG(orig)
 
@@ -116,8 +120,6 @@ kind F):
   of the window object (not of the Window it points to) and keep its
   signal bit shifted by one (`LSL.b #1`) in a byte nobody reads; the
   handler is always called with no signals (`sigs` is never set) (#454).
-  RTEZPaletteRequest and RTASyncPaletteRequest do not set RTReturnValue
-  (#464).
 * init: when a requester cannot be allocated, the library and the
   requesters allocated so far stay (finit does nothing then). finit
   clears nothing: a second finit frees again (#460). Without
