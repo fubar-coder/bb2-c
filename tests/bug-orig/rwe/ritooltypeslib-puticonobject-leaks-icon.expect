@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+-1
+0
+inject: rc=0
+inject: track: 34 allocations left, 45012 bytes
+...

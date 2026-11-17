@@ -40,8 +40,6 @@
  *     it gives back the space of the string argument, which the compiler
  *     does not take back after a library function with a numeric result
  *     (#846, closed).
- *   - PutIconObject forgets the written icon without FreeDiskObject
- *     (lost) (#850).
  *   - ShapeToIcon shape,shape uses the library's own Image for the
  *     selected image with PlanePick/PlaneOnOff 0 and sets the gadget
  *     flags to 6 (GADGHIMAGE), dropping all others (#854).
@@ -92,6 +90,8 @@
  *   result, returned -1 and closed the icon also when writing failed; it
  *   returns 0 then and the icon stays open (the user's decision of
  *   2026-11-17, w1-decisions.md).
+ * Fixed (intended deviation, #850): PutIconObject forgot the written icon
+ *   without FreeDiskObject (its memory was lost); it frees it now.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -554,8 +554,9 @@ BB_BOOL BLITZ_ROUTINE c_Matchtoolvalue(CONST_STRPTR name BL_REG(d0),
  * A non-zero icontype (its low byte) becomes do_Type; PutDiskObject.  If
  * that fails, the icon stays open (it can be written again or freed with
  * FreeIconObject) and the result is 0 (fixed #851, the user's decision
- * of 2026-11-17: the original returned -1 and closed it).  BUG(orig): the
- * written icon is forgotten without FreeDiskObject (lost, #850).
+ * of 2026-11-17: the original returned -1 and closed it).  A written
+ * icon is freed as by FreeIconObject (fixed #850: the original forgot it
+ * without FreeDiskObject).
  * @param name  d0: the file name
  * @param type  d1: the icon type (0: unchanged)
  * @return d0: BB_TRUE written, BB_FALSE writing failed or no icon
@@ -568,9 +569,7 @@ BB_BOOL BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG
         diskobject->do_Type = (UBYTE)type;
     if (!PutDiskObject(name, diskobject))
         return BB_FALSE;
-    diskobject = NULL;                  /* BUG(orig): not freed (#850) */
-    freetooltypes();
-    return BB_TRUE;
+    return c_Close_icon();              /* fixed #850: the original forgot it */
 }
 
 /**
