@@ -44,9 +44,8 @@
  *     mode requester instead of rtScreenModeRequestA (-144) (#466).
  *   - RTEZGetLong returns the value also on cancel (TST.l without a
  *     branch); the value and the default stay for the next call (#457).
- *   - RTEZGetString on cancel does not free its buffer (memlib frees it
- *     at the end of the program) (#458); the default string is copied
- *     without a limit into the buffer of MaxChars bytes (#459).
+ *   - RTEZGetString copies the default string without a limit into the
+ *     buffer of MaxChars bytes (#459).
  *   - RTASyncRequest/RTASyncPaletteRequest read the "user port" at 86 of
  *     the window object (not of the Window) and keep its signal bit
  *     shifted by one (LSL.b #1) in a byte nobody reads; the handlers are
@@ -77,6 +76,8 @@
  * requester for 2 (the path requester's number) and did nothing for 3,
  * the multi-load's number in RTEZSetPattern and RTEZSetDefaultDirectory;
  * it now uses 3.
+ * Fixed (intended deviation, #458): RTEZGetString freed its buffer only
+ * after a choice; on cancel it stayed until the end of the program.
  * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
  * have no 0 behind them (a string function returns its length, as
  * usual); FileName$ is copied with a length of 108, whatever its own
@@ -1265,8 +1266,8 @@ static UBYTE *gsalloc(ULONG size)
 }
 
 /* gsCont: the requester on gsBuffer; the string from the title on (no 0,
-   a3 behind it), its length; 0 and a3 unchanged on cancel (the buffer
-   stays, BUG(orig), #458) */
+   a3 behind it), its length; 0 and a3 unchanged on cancel; the buffer
+   freed either way (fixed, #458: the original kept it on cancel) */
 static ULONG getstring(STRPTR title, STRPTR body, ULONG max)
 {
     ULONG r;
@@ -1277,14 +1278,15 @@ static ULONG getstring(STRPTR title, STRPTR body, ULONG max)
     r = RTJSR(LVO_rtGetStringA, max, &gsTagList, gsBuffer, title, 0);
     returnvalue = r;
     blitz_string = callerstring;
-    if (!r)
-        return 0;
-    blitz_string = swsPtr;
-    gsActual = copystring(gsBuffer, 0);
+    gsActual = 0;
+    if (r) {
+        blitz_string = swsPtr;
+        gsActual = copystring(gsBuffer, 0);
+    }
     {
         struct bl_regs f = { .d0 = gsTxtSize, .a1 = (ULONG)gsBuffer };
 
-        BLITZ_ALIBJSR(TOK_globfree, f);
+        BLITZ_ALIBJSR(TOK_globfree, f);         /* fixed (#458): also on cancel */
     }
     return gsActual;
 }
@@ -1293,10 +1295,10 @@ static ULONG getstring(STRPTR title, STRPTR body, ULONG max)
  * @brief RTEZGetString(Title$,BodyText$,MaxChars): asks for a string
  * (rtGetStringA).
  *
- * The buffer is MaxChars bytes of memlib (MEMF_CLEAR), freed after a
- * choice; the string goes from the start of the title on (no 0, a3
- * behind it).  On cancel a3 is back at the caller's and BUG(orig) (#458)
- * the buffer is not freed (memlib frees it at the end of the program).
+ * The buffer is MaxChars bytes of memlib (MEMF_CLEAR), freed after the
+ * requester (fixed, #458: the original freed it only after a choice);
+ * the string goes from the start of the title on (no 0, a3 behind it).
+ * On cancel a3 is back at the caller's.
  * rtGetStringA's result goes to RTReturnValue.
  * @param title  d0: Title$
  * @param body   d1: BodyText$

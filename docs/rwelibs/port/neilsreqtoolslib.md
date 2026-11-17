@@ -107,6 +107,9 @@ kind F):
   RTEZSetPattern 3 set it; 2 does nothing (the path requester has no
   pattern). The original reset the multi-load requester for 2 and did
   nothing for 3 (#456).
+* RTEZGetString frees its buffer also on cancel; the original freed it
+  only after a choice, so every cancel kept MaxChars bytes until the end
+  of the program (#458).
 
 ## BUG(orig)
 
@@ -115,9 +118,8 @@ kind F):
 * RTEZGetLong returns the value also on cancel (`TST.l d0` without a
   branch); the value (and so the default) stays for the next call
   (#457).
-* RTEZGetString does not free its buffer on cancel (memlib frees it at
-  the end of the program) (#458); the default string is copied into the
-  buffer of MaxChars bytes without a limit (#459).
+* RTEZGetString copies the default string into the buffer of MaxChars
+  bytes without a limit (#459).
 * RTASyncRequest/RTASyncPaletteRequest read the "user port" at offset 86
   of the window object (not of the Window it points to) and keep its
   signal bit shifted by one (`LSL.b #1`) in a byte nobody reads; the

@@ -234,10 +234,12 @@ RTEZGetString|kept|form 0 ok|1	kept
 RTEZGetString|kept|form 1 cancel|1	kept
 RTEZGetString|kept|form 1 empty|1	kept
 RTEZGetString|kept|form 1 ok|1	kept
-RTEZGetString|memory kept|form 0 cancel|1	$00000030
+RTEZGetString|memory kept|form 0 cancel|1 [orig]	$00000030
+RTEZGetString|memory kept|form 0 cancel|1 [fixed #458]	$00000000
 RTEZGetString|memory kept|form 0 empty|1	$00000000
 RTEZGetString|memory kept|form 0 ok|1	$00000000
-RTEZGetString|memory kept|form 1 cancel|1	$00000030
+RTEZGetString|memory kept|form 1 cancel|1 [orig]	$00000030
+RTEZGetString|memory kept|form 1 cancel|1 [fixed #458]	$00000000
 RTEZGetString|memory kept|form 1 empty|1	$00000000
 RTEZGetString|memory kept|form 1 ok|1	$00000000
 RTEZGetString|out|form 0 cancel|1	bytes 300 fnv BDE79A05
