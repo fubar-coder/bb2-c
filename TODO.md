@@ -701,6 +701,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     `tests/corpus/tests/t73_menus.bas`): failed occasionally, passed when
     rerun alone. The cause was not analysed; the limit in question
     (session, ctest `TIMEOUT` or the slot) is not recorded for these.
+  * `libs_emulator`, its `rwe_ridatatypeslib` (2026-11-17, with other
+    agents' sessions running): `DataTypeReady|layout done||2` expected
+    $00000001, got $00000000 (and `DataTypeReady|d0||5`) after the
+    program's own 60 s wait in `ready()` ran out
+    (`libs/tests/rwe/ridatatypeslib.c:273`); the run took 159 s instead
+    of about 77 s; passed in the two runs after it.
   The ctest `TIMEOUT` of the tests already includes
   `EMULATION_QUEUE_WAIT` (7200 s, `cmake/emulation-queue.cmake`) per
   session; only the session limits (`timeout=` of the runners, `@pass
