@@ -66,8 +66,8 @@ like the original's `MOVEM a3-a6`. maxslib (`allocst`/`freest`, the 108
 byte copy of FileName$) and memlib (`globalloc`/`globfree`, the buffer of
 RTEZGetString) through `BLITZ_ALIBJSR`. The tag lists are static arrays
 with the original's contents and are changed in place like the original's
-(`freqFlags+4` …); init stores a requester only when it was allocated
-(the variable keeps its old value otherwise), as the original. String
+(`freqFlags+4` …); init stores a requester only when it was allocated,
+as the original, and on a failure frees the ones it has (#460). String
 results are built from the title argument's address, like the original
 (`MOVE.l d0,a3`); a3 ends on the result's 0 (fixed, #461 #465).
 The thunks keep d1/a0/a1 (finit also d0), the C code d2-d7/a2-a6; the
@@ -110,6 +110,11 @@ kind F):
 * RTEZGetString frees its buffer also on cancel; the original freed it
   only after a choice, so every cancel kept MaxChars bytes until the end
   of the program (#458).
+* init: when a requester cannot be allocated, init frees the requesters
+  allocated so far and closes the library (IsReqToolsActive 0, d0 0);
+  finit clears what it freed. The original kept the library open and the
+  requesters allocated (finit did nothing then, as IsReqToolsActive was
+  0), and finit cleared nothing (#460).
 
 ## BUG(orig)
 
@@ -124,10 +129,7 @@ kind F):
   of the window object (not of the Window it points to) and keep its
   signal bit shifted by one (`LSL.b #1`) in a byte nobody reads; the
   handler is always called with no signals (`sigs` is never set) (#454).
-* init: when a requester cannot be allocated, the library and the
-  requesters allocated so far stay (finit does nothing then). finit
-  clears nothing: a second finit frees again (#460). Without
-  reqtools.library every requester calls through a6 = 0
+* Without reqtools.library every requester calls through a6 = 0
   (RTVersion/RTRevision read the addresses `$14`/`$16`) (#463).
 
 Original behaviour that is not a defect: RTEZGetString's result and
@@ -158,7 +160,8 @@ registers, the log of reqtools calls and RTReturnValue.
 
 Cases: the routines that need no library before init; init when
 OpenLibrary fails and when each of the seven rtAllocRequestA fails (the
-library stays open, finit does nothing), then ok; RTVersion/RTRevision
+fixed init frees the requesters it has and closes the library, the
+original keeps them; finit does nothing), then ok; RTVersion/RTRevision
 (d0's high word); RTEZRequest all forms with and without title (the
 defaults restored); RTEZFlagsRequest both forms with and without gadgets;
 RTRequest; RTEZLoadFile/RTEZSaveFile/RTFileRequest/RTEZPathRequest with

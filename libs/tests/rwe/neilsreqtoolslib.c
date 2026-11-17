@@ -17,7 +17,8 @@
  * TextAttr and screen mode fields, a multi-load a file list).
  * Covered: everything before init that does not call reqtools; init when
  * OpenLibrary fails and when each of the seven rtAllocRequestA fails (the
- * library stays open, BUG(orig), #460), then ok; IsReqToolsActive, RTVersion/
+ * original keeps the library open, the fix gives all back, #460), then
+ * ok; IsReqToolsActive, RTVersion/
  * RTRevision (d0's high word), RTReturnValue after every call; all three
  * forms of RTEZRequest with and without title (the tag list reset
  * afterwards); RTEZFlagsRequest both forms with and without gadgets (the
@@ -450,7 +451,7 @@ static void inits(void)
         char what[40];
         sprintf(what, "rtAllocRequestA %d fails", k);
         init_case(what, k);
-        /* BUG(orig) (#460): the library stays open, finit does nothing */
+        /* the original keeps the library open (#460), finit does nothing */
         ROUT = "finit (inactive)";
         DO1(ENT(LIB, E_FINIT, 0), logreset(); opens = 0);
         logcheck();

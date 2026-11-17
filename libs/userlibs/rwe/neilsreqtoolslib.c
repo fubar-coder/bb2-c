@@ -22,8 +22,8 @@
  * init opens reqtools.library V38 and allocates seven requesters (file
  * requesters for load, save, path, RTFileRequest and multi-load, a font
  * and a screen mode requester); IsReqToolsActive is -1 if all that
- * worked.  finit frees them, the file list of the last multi-load, and
- * closes the library.  The routines do not check IsReqToolsActive.
+ * worked (else nothing stays allocated or open).  finit frees them, the
+ * file list of the last multi-load, and closes the library.  The routines do not check IsReqToolsActive.
  *   file requesters   the result is directory + "/" (unless it ends in
  *                     ":") + file, built from the start of the title
  *                     string (the title argument's space); the file name
@@ -50,10 +50,7 @@
  *     the window object (not of the Window) and keep its signal bit
  *     shifted by one (LSL.b #1) in a byte nobody reads; the handlers are
  *     called with no signals (sigs is never set) (#454).
- *   - init: when a requester cannot be allocated, the library and the
- *     requesters allocated so far stay (finit does nothing then); finit
- *     does not clear anything (a second finit frees again) (#460).  No
- *     routine checks the library: without reqtools.library they call
+ *   - No routine checks the library: without reqtools.library they call
  *     through a6 = 0 (RTVersion/RTRevision read address $14/$16) (#463).
  * Fixed (intended deviation, #461): RTEZLoadFile/RTFileRequest wrote
  * the 0 behind their result with MOVE.b #0,(a3)+ and left a3 behind it,
@@ -78,6 +75,10 @@
  * it now uses 3.
  * Fixed (intended deviation, #458): RTEZGetString freed its buffer only
  * after a choice; on cancel it stayed until the end of the program.
+ * Fixed (intended deviation, #460): when init could not allocate a
+ * requester, the library and the requesters allocated so far stayed
+ * (finit did nothing then), and finit cleared nothing; now init gives
+ * them back and finit clears what it freed.
  * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
  * have no 0 behind them (a string function returns its length, as
  * usual); FileName$ is copied with a length of 108, whatever its own
@@ -597,8 +598,8 @@ static ULONG allocreq(ULONG type)
     return RTJSR0(LVO_rtAllocRequestA, type, 0, 0);
 }
 
-/* each result is stored only if it is not 0 (the variable keeps its old
-   value otherwise, as in the original) */
+/* a requester's variable: the result of rtAllocRequestA if it is not 0
+   (failed: init gives back what it has) */
 #define ALLOC(var, type) do {                                               \
         ULONG r_ = allocreq(type);                                          \
         if (!r_)                                                            \
@@ -606,22 +607,44 @@ static ULONG allocreq(ULONG type)
         var = (void *)r_;                                                   \
     } while (0)
 
+/* a requester freed and its variable cleared, if it is not 0 */
+#define FREEREQ(var) do {                                                   \
+        if (var) {                                                          \
+            RTJSR0(LVO_rtFreeRequest, 0, 0, var);                           \
+            var = NULL;                                                     \
+        }                                                                   \
+    } while (0)
+
+/* the seven requesters, in the original finit's order */
+static void freereqs(void)
+{
+    FREEREQ(filereq);
+    FREEREQ(fontreq);
+    FREEREQ(smreq);
+    FREEREQ(Sfilereq);
+    FREEREQ(Tfilereq);
+    FREEREQ(Mfilereq);
+    FREEREQ(preq);
+}
+
 /**
  * @brief init: opens reqtools.library V38 and allocates the seven
  * requesters.
  *
  * File requesters for load, save, path, RTFileRequest and multi-load, a
  * font and a screen mode requester; IsReqToolsActive becomes -1 if all
- * that worked, else 0.  BUG(orig) (#460): on a failure the library and
- * the requesters allocated so far stay (finit does nothing then).
+ * that worked, else 0.  On a failure the requesters allocated so far are
+ * freed and the library closed (fixed, #460: the original kept them, and
+ * finit did nothing then); out of memory gives 0 (D-018).
  * @return d0: the multi-load requester, 0 on a failure
  */
 static ULONG BLITZ_ROUTINE initreqlib_c(void)
 {
     struct Library *l = OpenLibrary((CONST_STRPTR)rtName, 38);
 
+    ReqToolsActive = BB_FALSE;
     if (!l)
-        goto failed;
+        return 0;
     rtbase = l;
     ALLOC(filereq, RT_FILEREQ);
     ALLOC(fontreq, RT_FONTREQ);
@@ -632,8 +655,10 @@ static ULONG BLITZ_ROUTINE initreqlib_c(void)
     ALLOC(Mfilereq, RT_FILEREQ);
     ReqToolsActive = BB_TRUE;
     return (ULONG)Mfilereq;
-failed:                                 /* BUG(orig): nothing given back (#460) */
-    ReqToolsActive = BB_FALSE;
+failed:                                 /* fixed (#460): all given back */
+    freereqs();
+    CloseLibrary(rtbase);
+    rtbase = NULL;
     return 0;
 }
 
@@ -641,22 +666,20 @@ failed:                                 /* BUG(orig): nothing given back (#460) 
  * @brief finit: frees the seven requesters and the file list of the last
  * multi-load, closes reqtools.library.
  *
- * Only if init succeeded (IsReqToolsActive).  BUG(orig) (#460): nothing
- * is cleared - a second finit frees again.
+ * Only if init succeeded (IsReqToolsActive).  Afterwards everything is
+ * cleared, IsReqToolsActive 0 (fixed, #460: the original cleared
+ * nothing).
  */
 static void BLITZ_ROUTINE cleanupreqlib_c(void)
 {
     if (!ReqToolsActive)
         return;
-    RTJSR0(LVO_rtFreeRequest, 0, 0, filereq);
-    RTJSR0(LVO_rtFreeRequest, 0, 0, fontreq);
-    RTJSR0(LVO_rtFreeRequest, 0, 0, smreq);
-    RTJSR0(LVO_rtFreeRequest, 0, 0, Sfilereq);
-    RTJSR0(LVO_rtFreeRequest, 0, 0, Tfilereq);
-    RTJSR0(LVO_rtFreeRequest, 0, 0, Mfilereq);
-    RTJSR0(LVO_rtFreeRequest, 0, 0, preq);
+    freereqs();
     RTJSR0(LVO_rtFreeFileList, 0, Mfilelist, 0);
+    Mfilelist = CurEntry = NULL;
     CloseLibrary(rtbase);
+    rtbase = NULL;
+    ReqToolsActive = BB_FALSE;
 }
 
 /**

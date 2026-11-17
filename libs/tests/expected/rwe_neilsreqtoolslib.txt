@@ -1222,7 +1222,8 @@ finit|call 4||1	bytes 256 fnv 02B4CC49
 finit|call 5||1	bytes 256 fnv 2A8D38A8
 finit|call 6||1	bytes 256 fnv 655245BE
 finit|call 7||1	bytes 256 fnv 72E3B230
-finit|fake open count||1	$00000007
+finit|fake open count||1 [orig]	$00000007
+finit|fake open count||1 [fixed #460]	$00000000
 finit|kept||1	kept
 finit|library closed||1	$00000000
 finit|popped||1	$00000000
@@ -1274,26 +1275,47 @@ init|call 1|rtAllocRequestA 3 fails|1	bytes 256 fnv 42DE087C
 init|call 1|rtAllocRequestA 4 fails|1	bytes 256 fnv 42DE087C
 init|call 1|rtAllocRequestA 5 fails|1	bytes 256 fnv 42DE087C
 init|call 1|rtAllocRequestA 6 fails|1	bytes 256 fnv 42DE087C
+init|call 10|rtAllocRequestA 5 fails|1 [fixed #460]	bytes 256 fnv 655245BE
+init|call 10|rtAllocRequestA 6 fails|1 [fixed #460]	bytes 256 fnv 3D79D95F
+init|call 11|rtAllocRequestA 6 fails|1 [fixed #460]	bytes 256 fnv 02B4CC49
+init|call 12|rtAllocRequestA 6 fails|1 [fixed #460]	bytes 256 fnv 655245BE
 init|call 2|ok|1	bytes 256 fnv E7AA02AF
+init|call 2|rtAllocRequestA 1 fails|1 [fixed #460]	bytes 256 fnv DADC5FEA
 init|call 2|rtAllocRequestA 2 fails|1	bytes 256 fnv E7AA02AF
 init|call 2|rtAllocRequestA 3 fails|1	bytes 256 fnv E7AA02AF
 init|call 2|rtAllocRequestA 4 fails|1	bytes 256 fnv E7AA02AF
 init|call 2|rtAllocRequestA 5 fails|1	bytes 256 fnv E7AA02AF
 init|call 2|rtAllocRequestA 6 fails|1	bytes 256 fnv E7AA02AF
 init|call 3|ok|1	bytes 256 fnv 8C75FCE2
+init|call 3|rtAllocRequestA 2 fails|1 [fixed #460]	bytes 256 fnv DADC5FEA
 init|call 3|rtAllocRequestA 3 fails|1	bytes 256 fnv 8C75FCE2
 init|call 3|rtAllocRequestA 4 fails|1	bytes 256 fnv 8C75FCE2
 init|call 3|rtAllocRequestA 5 fails|1	bytes 256 fnv 8C75FCE2
 init|call 3|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
 init|call 4|ok|1	bytes 256 fnv 8C75FCE2
+init|call 4|rtAllocRequestA 2 fails|1 [fixed #460]	bytes 256 fnv 783EE675
+init|call 4|rtAllocRequestA 3 fails|1 [fixed #460]	bytes 256 fnv DADC5FEA
 init|call 4|rtAllocRequestA 4 fails|1	bytes 256 fnv 8C75FCE2
 init|call 4|rtAllocRequestA 5 fails|1	bytes 256 fnv 8C75FCE2
 init|call 4|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
 init|call 5|ok|1	bytes 256 fnv 8C75FCE2
+init|call 5|rtAllocRequestA 3 fails|1 [fixed #460]	bytes 256 fnv 783EE675
+init|call 5|rtAllocRequestA 4 fails|1 [fixed #460]	bytes 256 fnv DADC5FEA
 init|call 5|rtAllocRequestA 5 fails|1	bytes 256 fnv 8C75FCE2
 init|call 5|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
 init|call 6|ok|1	bytes 256 fnv 8C75FCE2
+init|call 6|rtAllocRequestA 3 fails|1 [fixed #460]	bytes 256 fnv A01752D4
+init|call 6|rtAllocRequestA 4 fails|1 [fixed #460]	bytes 256 fnv 783EE675
+init|call 6|rtAllocRequestA 5 fails|1 [fixed #460]	bytes 256 fnv DADC5FEA
 init|call 6|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
+init|call 7|rtAllocRequestA 4 fails|1 [fixed #460]	bytes 256 fnv A01752D4
+init|call 7|rtAllocRequestA 5 fails|1 [fixed #460]	bytes 256 fnv 783EE675
+init|call 7|rtAllocRequestA 6 fails|1 [fixed #460]	bytes 256 fnv DADC5FEA
+init|call 8|rtAllocRequestA 4 fails|1 [fixed #460]	bytes 256 fnv 3D79D95F
+init|call 8|rtAllocRequestA 5 fails|1 [fixed #460]	bytes 256 fnv A01752D4
+init|call 8|rtAllocRequestA 6 fails|1 [fixed #460]	bytes 256 fnv 783EE675
+init|call 9|rtAllocRequestA 5 fails|1 [fixed #460]	bytes 256 fnv 3D79D95F
+init|call 9|rtAllocRequestA 6 fails|1 [fixed #460]	bytes 256 fnv A01752D4
 init|d0|OpenLibrary fails|1	$00000000
 init|kept|OpenLibrary fails|1	kept
 init|kept|ok|1	kept
@@ -1305,13 +1327,20 @@ init|kept|rtAllocRequestA 4 fails|1	kept
 init|kept|rtAllocRequestA 5 fails|1	kept
 init|kept|rtAllocRequestA 6 fails|1	kept
 init|library opened|ok|1	$00000001
-init|library opened|rtAllocRequestA 0 fails|1	$00000001
-init|library opened|rtAllocRequestA 1 fails|1	$00000001
-init|library opened|rtAllocRequestA 2 fails|1	$00000001
-init|library opened|rtAllocRequestA 3 fails|1	$00000001
-init|library opened|rtAllocRequestA 4 fails|1	$00000001
-init|library opened|rtAllocRequestA 5 fails|1	$00000001
-init|library opened|rtAllocRequestA 6 fails|1	$00000001
+init|library opened|rtAllocRequestA 0 fails|1 [orig]	$00000001
+init|library opened|rtAllocRequestA 0 fails|1 [fixed #460]	$00000000
+init|library opened|rtAllocRequestA 1 fails|1 [orig]	$00000001
+init|library opened|rtAllocRequestA 1 fails|1 [fixed #460]	$00000000
+init|library opened|rtAllocRequestA 2 fails|1 [orig]	$00000001
+init|library opened|rtAllocRequestA 2 fails|1 [fixed #460]	$00000000
+init|library opened|rtAllocRequestA 3 fails|1 [orig]	$00000001
+init|library opened|rtAllocRequestA 3 fails|1 [fixed #460]	$00000000
+init|library opened|rtAllocRequestA 4 fails|1 [orig]	$00000001
+init|library opened|rtAllocRequestA 4 fails|1 [fixed #460]	$00000000
+init|library opened|rtAllocRequestA 5 fails|1 [orig]	$00000001
+init|library opened|rtAllocRequestA 5 fails|1 [fixed #460]	$00000000
+init|library opened|rtAllocRequestA 6 fails|1 [orig]	$00000001
+init|library opened|rtAllocRequestA 6 fails|1 [fixed #460]	$00000000
 init|popped|OpenLibrary fails|1	$00000000
 init|popped|ok|1	$00000000
 init|popped|rtAllocRequestA 0 fails|1	$00000000
@@ -1324,9 +1353,15 @@ init|popped|rtAllocRequestA 6 fails|1	$00000000
 init|reqtools calls|OpenLibrary fails|1	$00000000
 init|reqtools calls|ok|1	$00000007
 init|reqtools calls|rtAllocRequestA 0 fails|1	$00000001
-init|reqtools calls|rtAllocRequestA 1 fails|1	$00000002
-init|reqtools calls|rtAllocRequestA 2 fails|1	$00000003
-init|reqtools calls|rtAllocRequestA 3 fails|1	$00000004
-init|reqtools calls|rtAllocRequestA 4 fails|1	$00000005
-init|reqtools calls|rtAllocRequestA 5 fails|1	$00000006
-init|reqtools calls|rtAllocRequestA 6 fails|1	$00000007
+init|reqtools calls|rtAllocRequestA 1 fails|1 [orig]	$00000002
+init|reqtools calls|rtAllocRequestA 1 fails|1 [fixed #460]	$00000003
+init|reqtools calls|rtAllocRequestA 2 fails|1 [orig]	$00000003
+init|reqtools calls|rtAllocRequestA 2 fails|1 [fixed #460]	$00000005
+init|reqtools calls|rtAllocRequestA 3 fails|1 [orig]	$00000004
+init|reqtools calls|rtAllocRequestA 3 fails|1 [fixed #460]	$00000007
+init|reqtools calls|rtAllocRequestA 4 fails|1 [orig]	$00000005
+init|reqtools calls|rtAllocRequestA 4 fails|1 [fixed #460]	$00000009
+init|reqtools calls|rtAllocRequestA 5 fails|1 [orig]	$00000006
+init|reqtools calls|rtAllocRequestA 5 fails|1 [fixed #460]	$0000000B
+init|reqtools calls|rtAllocRequestA 6 fails|1 [orig]	$00000007
+init|reqtools calls|rtAllocRequestA 6 fails|1 [fixed #460]	$0000000D
