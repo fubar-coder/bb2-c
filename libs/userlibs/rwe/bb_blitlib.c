@@ -39,7 +39,8 @@
  *
  * The register writes are the original's, in its order: the blitter
  * pointers that are not reloaded per plane go on where the last blit
- * left them.  init and finit are RTS.  No assembler besides the thunks.
+ * left them.  init and finit are RTS.  No assembler besides the thunks
+ * of the error checks; the entries are the C functions (BLITZ_ALIAS).
  *
  * Fixed (intended deviations):
  *   - BlockToShape blits the shape's real width; the original copied one
@@ -74,7 +75,7 @@
 #include "blitzlib.h"
 #include "blitzobj.h"
 
-/* entry points (thunks, below) */
+/* entry points (aliases of the C functions, below) */
 void _specialblock(void), _specialblock2(void), _specialblockbitmap(void);
 void _specialblockbitmap2(void), _tblock(void), _predatorblit(void), _bpredatorblit(void);
 void _MapInfo(void), _createshape(void), _specialblocktoshape(void), _blocktoshape(void);
@@ -843,8 +844,7 @@ first:
  * word per line (`ADDQ.w #1`), so of a shape wider than 16 pixels only
  * the first 2/ebwidth of the data.  The width field is 6 bits (0 = 64
  * words), the height field 10 bits (0 = 1024 lines); larger shapes are
- * refused by errblocktoshape_c.  The entry is this function (BLITZ_ALIAS):
- * it changes d0 and d1, as the original does.
+ * refused by errblocktoshape_c.
  * @param shape  a1: the source shape object
  * @param dest   a2: the destination shape object
  */
@@ -864,24 +864,26 @@ static void BLITZ_ROUTINE blocktoshape_c(struct bb_shape *shape BL_REG(a1),
                  | ((shape->ebwidth >> 1) & 63);
 }
 
-/* Registers: the original changes d0-d7/a0-a3 (the routines differ) and
-   keeps a4/a5; the thunks keep d0/d1/a0/a1 (PredatorBlit: d1/a0/a1), the
-   C code d2-d7/a2-a6.  BlockToShape has no thunk: its C code changes only
-   d0/d1, as the original. */
-BLITZ_THUNK(_specialblock, specialblock_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_specialblock2, specialblock2_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_specialblockbitmap, specialblockbitmap_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_specialblockbitmap2, specialblockbitmap2_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_tblock, tblock_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_predatorblit, predatorblit_c, "d1/a0-a1");
-BLITZ_THUNK(_bpredatorblit, bpredatorblit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_MapInfo, mapinfo_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_createshape, createshape_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_specialblocktoshape, specialblocktoshape_c, "d0-d1/a0-a1");
+/* Registers: every entry is a user-level statement (PredatorBlit a
+   function) and is its C function itself (BLITZ_ALIAS, the register rule:
+   docs/libs/deviations.md, "Register preservation"): it keeps a4-a7
+   (PredatorBlit also a3) and, by GCC's convention, d2-d7/a2; it changes
+   d0/d1/a0/a1.  The original changes d0-d7/a0-a3 (the routines differ)
+   and keeps a4/a5/a6. */
+BLITZ_ALIAS(_specialblock, specialblock_c);
+BLITZ_ALIAS(_specialblock2, specialblock2_c);
+BLITZ_ALIAS(_specialblockbitmap, specialblockbitmap_c);
+BLITZ_ALIAS(_specialblockbitmap2, specialblockbitmap2_c);
+BLITZ_ALIAS(_tblock, tblock_c);
+BLITZ_ALIAS(_predatorblit, predatorblit_c);
+BLITZ_ALIAS(_bpredatorblit, bpredatorblit_c);
+BLITZ_ALIAS(_MapInfo, mapinfo_c);
+BLITZ_ALIAS(_createshape, createshape_c);
+BLITZ_ALIAS(_specialblocktoshape, specialblocktoshape_c);
 BLITZ_ALIAS(_blocktoshape, blocktoshape_c);
-BLITZ_THUNK(docolblit, docolblit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_tblockimage, tblockimage_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_btblockimage, btblockimage_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(docolblit, docolblit_c);
+BLITZ_ALIAS(_tblockimage, tblockimage_c);
+BLITZ_ALIAS(_btblockimage, btblockimage_c);
 
 /* --------------------------------------------- error checks (errors) */
 

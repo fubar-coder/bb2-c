@@ -47,10 +47,14 @@ init and finit are `RTS`.
 
 ## C and assembler
 
-All C behind `BLITZ_THUNK`s that keep d0/d1/a0/a1 (`PredatorBlit`:
-d1/a0/a1), but for `BlockToShape`, whose entry is its C function
-(`BLITZ_ALIAS`): it changes d0/d1, as the original does; the original
-changes up to d0–d7/a0–a3. The blitter is
+All C; every entry is its C function (`BLITZ_ALIAS`, no thunk), as the
+register rule allows (`docs/libs/deviations.md`, "Register
+preservation"): a statement keeps a4–a7, `PredatorBlit` (a function)
+also a3, and GCC's code keeps d2–d7/a2 besides; d0/d1/a0/a1 are changed.
+The original changes up to d0–d7/a0–a3 (the routines differ) and keeps
+a4–a6, so a caller can rely on nothing more than the rule names; a
+thunk that kept d0/d1/a0/a1 cost 118 cycles per call (`PredatorBlit`:
+102). The blitter is
 programmed with volatile register writes (`BL_CUSTOMW`/`BL_CUSTOML`,
 `BL_BLITWAIT`), the same registers in the same order, absolute or
 through the chip base in a1 where the original uses either. Pointers
@@ -116,9 +120,8 @@ kind F):
   error check also refuses a shape one blit cannot hold, more than 1024
   lines (height × depth) or wider than 64 words, with "Shape too large
   for BlockToShape!"; the original blitted the size word's low bits
-  (bug-orig test `bb_blitlib-blocktoshape-too-large`). The entry has no
-  thunk (it changes d0/d1, as the original): about 344 cycles of a
-  68000 per call against the original's 340 and the thunked port's 434.
+  (bug-orig test `bb_blitlib-blocktoshape-too-large`). About 344 cycles
+  of a 68000 per call (no thunk) against the original's 340.
 
 ## Original behaviour that is not a defect
 
@@ -143,7 +146,8 @@ with the blitter owned (`OwnBlitter`) and waited for (`WaitBlit`), then
 the bitmaps, shape data and images are observed byte for byte, the
 buffer records (pointers relative to the block, the saved data
 the blit wrote), the shape objects `CreateShape` made, d0 of
-`PredatorBlit`, the kept registers. All 12 routines, both forms of
+`PredatorBlit`, the registers the rule keeps (`KEEPS_STATEMENT`, `PredatorBlit`
+`KEEPS_FUNCTION`). All 12 routines, both forms of
 `SpecialBlock`/`SpecialBlockBitmap`, all shifts, `SetupMapTwo` 48 and back
 to 40, colours with bits above the depth and above bit 7, `CreateShape`
 with the like shape among the created ones, the original's two error

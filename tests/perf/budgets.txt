@@ -216,14 +216,17 @@
 # 1683.8 to 1684.4, bpredator4u 22043.9 to 22047.9.  Their targets from two
 # runs of the pass perf_bbblit.pass with the tag orig (the reference build
 # of the source, ctest -R rwe_refbuild first): 1557.2, 1450.2, 1545.2,
-# 18207.8 both times.
+# 18207.8 both times.  Then from six runs of the entries without thunks
+# (BLITZ_ALIAS, 2026-11-17): specialblock 1676.7 to 1677.3, specialblocko
+# 1462.3 to 1463.8, tblock 1571.8 to 1572.7, bpredator4u 21551.7 to
+# 21551.8 (before: 1743.9, 1668.4, 1684.4, 22047.9).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bbblit.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
-bbblit.specialblock          1765     1557.2  SpecialBlock 0,1,96,96 (16x16, 3 planes, 320-pixel bitmap)
-bbblit.specialblocko         1689     1450.2  SpecialBlock 0,1,3852 (the offset form)
-bbblit.tblock                1705     1545.2  TBlock 0,96,96
-bbblit.bpredator4u          22272    18207.8  BPredatorBlit 0,0,20,20 : BPredatorBlit 0,0,60,20 : BPredatorBlit 0,0,100,20 : BPredatorBlit 0,0,140,20 : UnBuffer 0
+bbblit.specialblock          1698     1557.2  SpecialBlock 0,1,96,96 (16x16, 3 planes, 320-pixel bitmap)
+bbblit.specialblocko         1482     1450.2  SpecialBlock 0,1,3852 (the offset form)
+bbblit.tblock                1592     1545.2  TBlock 0,96,96
+bbblit.bpredator4u          21771    18207.8  BPredatorBlit 0,0,20,20 : BPredatorBlit 0,0,60,20 : BPredatorBlit 0,0,100,20 : BPredatorBlit 0,0,140,20 : UnBuffer 0
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8

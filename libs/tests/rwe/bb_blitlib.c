@@ -348,20 +348,22 @@ int main(int argc, char **argv)
     }
     if (!load_set(argv[1], names))
         return 20;
-    KEEPS("SpecialBlock x,y", d4-d7|a1-a3|a6);
-    KEEPS("SpecialBlock offset", d4-d7|a1-a3|a6);
-    KEEPS("SpecialBlockBitmap x,y", d4|d5|a1|a3|a6);
-    KEEPS("SpecialBlockBitmap offset", d4|d5|a1|a3|a6);
-    KEEPS("TBlock", d4-d7|a1-a3|a6);
-    KEEPS("PredatorBlit", d4|d5|a1-a3|a6);
-    KEEPS("TBlockImage", d4-d6|a2|a3|a6);
-    KEEPS("BPredatorBlit", a1-a3|a6);
-    KEEPS("BColourBlit", a1-a3|a6);
-    KEEPS("BTBlockImage", a1|a2|a6);
-    KEEPS("SetupMapTwo", d1-d7|a0-a3|a6);
-    KEEPS("SpecialBlockToShape", d2-d7|a0-a3|a6);
-    KEEPS("BlockToShape", d2-d7|a0-a3|a6);
-    KEEPS("CreateShape", d3-d7|a0|a1|a3|a6);
+    /* the register rule (docs/libs/deviations.md, "Register
+       preservation"): the entries are the C functions (BLITZ_ALIAS) */
+    KEEPS_STATEMENT("SpecialBlock x,y", none);
+    KEEPS_STATEMENT("SpecialBlock offset", none);
+    KEEPS_STATEMENT("SpecialBlockBitmap x,y", none);
+    KEEPS_STATEMENT("SpecialBlockBitmap offset", none);
+    KEEPS_STATEMENT("TBlock", none);
+    KEEPS_FUNCTION("PredatorBlit", none);
+    KEEPS_STATEMENT("TBlockImage", none);
+    KEEPS_STATEMENT("BPredatorBlit", none);
+    KEEPS_STATEMENT("BColourBlit", none);
+    KEEPS_STATEMENT("BTBlockImage", none);
+    KEEPS_STATEMENT("SetupMapTwo", none);
+    KEEPS_STATEMENT("SpecialBlockToShape", none);
+    KEEPS_STATEMENT("BlockToShape", none);
+    KEEPS_STATEMENT("CreateShape", none);
     gfx = OpenLibrary((CONST_STRPTR)"graphics.library", 0);
     chip = AllocMem(CHIPSZ, MEMF_CHIP);
     if (!gfx || !chip) {
