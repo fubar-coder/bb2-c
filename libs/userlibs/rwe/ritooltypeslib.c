@@ -42,11 +42,8 @@
  *     name up to the next 0 (#841).
  *   - SetToolValue/NewToolType/IconDefTool: a failing AddFreeList frees
  *     address 0, the block is lost (#840).
- *   - FindToolType tt$,1 sets the bracket check flag, which only a
- *     bracket search clears: after a hit without brackets, a name with
- *     "(", a FindToolType before GetIconObject, the next FindToolType
- *     tt$ also searches "(tt$)" (#843).  A name over 253 characters
- *     overflows the 256 byte buffer (#842).
+ *   - FindToolType: a name over 253 characters overflows the 256 byte
+ *     buffer of the bracket search (#842).
  *   - FindToolValue stops at ")" (the end of "(name=value)") but also at
  *     a ")" inside the value (#844).
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
@@ -70,6 +67,11 @@
  *     first shape) (#849).
  * Fixed (intended deviation, #852): SetIconType without an icon returned
  *   its argument (non-zero: success for a program that tests it); now 0.
+ * Fixed (intended deviation, #843): FindToolType tt$,1 set a flag for the
+ *   bracket search that only the end of that search cleared; after a hit
+ *   without brackets, a name with "(", a call without an icon or no
+ *   memory, the next FindToolType tt$ also searched "(tt$)".  The bracket
+ *   check is now a parameter of the call.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -251,7 +253,6 @@ static BB_BOOL status_tool;           /* BB_FALSE: "(name=value)", switched off 
 static STRPTR *array_address;
 static const char *tooltype_address;
 static const char *string_address;
-static UWORD bracket_check;
 static UWORD shapenumber;
 /* SelectRender: the Image of ShapeToIcon shape,shape */
 static struct Image SelectRender;
@@ -395,20 +396,10 @@ ULONG BLITZ_ROUTINE c_gettoolnumber(ULONG n BL_REG(d0))
     return len;
 }
 
-/**
- * @brief FindToolType(tooltype$): whether the icon has the tool type.
- *
- * icon.library FindToolType; with the bracket check set (FindToolType
- * tt$,1) also the switched-off form "(tt$)", in a 256 byte AllocMem
- * buffer; the bracket search clears the flag.  BUG(orig): the flag stays
- * set after a hit without brackets, a name with "(", or a call before
- * GetIconObject (#843); a name over 253 characters overflows the buffer
- * (#842).
- * @param name  d0: the tool type's name
- * @return d0: -1 found, 1 found as "(tt$)" (no defect: it tells the two
- *         apart), 0 not found or no icon
- */
-ULONG BLITZ_ROUTINE c_istooltype(CONST_STRPTR name BL_REG(d0))
+/* _istooltype: icon.library FindToolType; with `bracket` also the
+   switched-off form "(tt$)", in a 256 byte AllocMem buffer.  BUG(orig): a
+   name over 253 characters overflows the buffer (#842). */
+static ULONG findtooltype(CONST_STRPTR name, BOOL bracket)
 {
     UBYTE *bracketed;
     const char *src;
@@ -420,7 +411,7 @@ ULONG BLITZ_ROUTINE c_istooltype(CONST_STRPTR name BL_REG(d0))
     string_address = (const char *)name;
     if (FindToolType((CONST_STRPTR *)tooltype, name))
         return (ULONG)-1;
-    if (!bracket_check)
+    if (!bracket)
         return 0;
     if (*string_address == '(')
         return 0;
@@ -436,21 +427,36 @@ ULONG BLITZ_ROUTINE c_istooltype(CONST_STRPTR name BL_REG(d0))
     *dst = 0;
     r = FindToolType((CONST_STRPTR *)tooltype, (CONST_STRPTR)bracketed) ? 1 : 0;
     FreeMem(bracketed, 256);
-    bracket_check = 0;
     return r;
+}
+
+/**
+ * @brief FindToolType(tooltype$): whether the icon has the tool type.
+ *
+ * icon.library FindToolType, without the bracket search.  Fixed (#843):
+ * the original kept the bracket check in a flag that FindToolType tt$,1
+ * set and only the end of the bracket search cleared, so after such a
+ * call that returned earlier this form also searched "(tt$)".
+ * @param name  d0: the tool type's name
+ * @return d0: -1 found, 0 not found or no icon
+ */
+ULONG BLITZ_ROUTINE c_istooltype(CONST_STRPTR name BL_REG(d0))
+{
+    return findtooltype(name, FALSE);
 }
 
 /**
  * @brief FindToolType(tooltype$,bracket_check): as FindToolType(tt$), with the bracket check.
  *
- * Sets the bracket check flag (any bracket_check value), BUG(orig) #843.
+ * Also looks for the switched-off form "(tt$)" (for any bracket_check
+ * value, as in the original), unless tt$ begins with "(".
  * @param name  d0: the tool type's name
- * @return d0: -1 found, 1 found as "(tt$)", 0 not found
+ * @return d0: -1 found, 1 found as "(tt$)" (no defect: it tells the two
+ *         apart), 0 not found or no icon
  */
 ULONG BLITZ_ROUTINE c_istooltype2(CONST_STRPTR name BL_REG(d0))
 {
-    bracket_check = 0xffff;
-    return c_istooltype(name);
+    return findtooltype(name, TRUE);
 }
 
 /**

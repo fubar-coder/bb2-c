@@ -37,6 +37,13 @@ that are not the result.
   argument, so `SetIconType 3` gave 3, success for a program that tests
   the result (#852; bug-orig test
   `ritooltypeslib-seticontype-noicon-returns-arg`).
+* FindToolType tt$ (one argument) never searches `(tt$)`; the bracket
+  check is a parameter of the call. The original kept it in a flag that
+  FindToolType tt$,1 set and only the end of the bracket search cleared:
+  after such a call that returned earlier (a hit without brackets, a name
+  beginning with `(`, no icon, no memory) the next FindToolType tt$ also
+  found the switched-off `(tt$)` and returned 1 (#843; bug-orig test
+  `ritooltypeslib-findtooltype-stale-bracket-flag`).
 
 **BUG(orig)** (kept):
 
@@ -49,11 +56,8 @@ that are not the result.
 * SetToolValue/NewToolType/IconDefTool: if AddFreeList fails, `MOVE.l
   d0,a1` frees address 0 (d0 is AddFreeList's 0), the block is lost
   (#840).
-* FindToolType tt$,1 sets the bracket check flag, which only a bracket
-  search clears: after a hit without brackets, a name beginning with `(`
-  or a call before GetIconObject the next FindToolType tt$ also looks for
-  `(tt$)` (#843). A name over 253 characters overflows the 256-byte
-  buffer (#842).
+* FindToolType tt$,1: a name over 253 characters overflows the 256-byte
+  buffer of the bracket search (#842).
 * FindToolValue stops at a `)` also inside the value (#844).
 * IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
   there. This is no defect (#846, closed): it gives back the space of the
@@ -98,7 +102,7 @@ shapes of IconToShape (fields, data, cookie) and the written icons (read
 back). Cases: every command and form without an icon; GetIconObject
 (twice, a missing file); FindToolValue for every entry, a `)` in the
 value and missing names; FindToolNumber over the array and beyond;
-MatchToolValue; FindToolType with the stale bracket flag, with/without
+MatchToolValue; FindToolType after a bracket check that returned early, with/without
 bracket check, a name with `(`; SetToolValue (replace, prefix match, the
 skipped `(`, status 0, empty value, not found); NewToolType (with/without
 value and status); ClearToolTypes; SetIconHit; IconRender; SetIconType

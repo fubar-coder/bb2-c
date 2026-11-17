@@ -808,11 +808,13 @@ FindToolType|a3|"OFF"|1	$00000044
 FindToolType|a3|"brack",1|1	$00000046
 FindToolType|a3|"nothere"|1	$00000048
 FindToolType|d0|"(BRACK",1|1	$00000000
-FindToolType|d0|"BRACK"|1	$00000001
+FindToolType|d0|"BRACK"|1 [orig]	$00000001
+FindToolType|d0|"BRACK"|1 [fixed #843]	$00000000
 FindToolType|d0|"BRACK"|2	$00000000
 FindToolType|d0|"FLAG"|1	$FFFFFFFF
 FindToolType|d0|"FOO",0|1	$FFFFFFFF
-FindToolType|d0|"OFF"|1	$00000001
+FindToolType|d0|"OFF"|1 [orig]	$00000001
+FindToolType|d0|"OFF"|1 [fixed #843]	$00000000
 FindToolType|d0|"brack",1|1	$00000001
 FindToolType|d0|"nothere"|1	$00000000
 FindToolType|icon: default tool|"(BRACK",1|1	$00000000

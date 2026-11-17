@@ -23,8 +23,8 @@
  * SetIconType returns 0, the original its argument), GetIconObject (twice: the second
  * gives 0; a missing file), FindToolValue (value up to ")", missing
  * name), FindToolNumber (all entries, beyond the end), MatchToolValue,
- * FindToolType with and without bracket check (BUG(orig) #843: the flag
- * stays set), SetToolValue (replace, prefix match "FL" -> "FLAG", the
+ * FindToolType with and without bracket check (fixed #843: the original
+ * left the flag set), SetToolValue (replace, prefix match "FL" -> "FLAG", the
  * entry's "(" skipped, status 0 = "(name=value)", not found), NewToolType
  * (with and without value and status), ClearToolTypes, SetIconHit,
  * IconRender, SetIconType 0-6, IconDefTool (a3 rewound on purpose, no defect #846; empty
@@ -493,7 +493,8 @@ int main(int argc, char **argv)
     scall(MATCHTOOLVALUE, 0, "MatchToolValue", "mixed", "CASE", 0, 0);
     scall(MATCHTOOLVALUE, 0, "MatchToolValue", "MIXED", "three", 0, 0);
     scall(MATCHTOOLVALUE, 0, "MatchToolValue", "nothere", "x", 0, 0);
-    /* the bracket check flag of the call without icon is still set */
+    /* the bracket check flag of the call without icon is still set in the
+       original; fixed #843: the next one-argument calls search no "(tt$)" */
     scall(FINDTOOLTYPE, 0, "FindToolType", "FLAG", NULL, 0, 0);
     scall(FINDTOOLTYPE, 0, "FindToolType", "BRACK", NULL, 0, 0);
     scall(FINDTOOLTYPE, 0, "FindToolType", "BRACK", NULL, 0, 0);
