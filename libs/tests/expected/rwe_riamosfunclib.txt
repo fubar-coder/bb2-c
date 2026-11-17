@@ -601,7 +601,8 @@ Min|popped|1,2|1	$00000000
 Min|popped|100,100|1	$00000000
 Min|popped|2,1|1	$00000000
 Min|popped|2147483647,-2147483648|1	$00000000
-NextBank|d0|form 0 5|1	$00000005
+NextBank|d0|form 0 5|1 [orig]	$00000005
+NextBank|d0|form 0 5|1 [fixed #497]	$00000000
 NextBank|d0|form 1 -1|1	$FFFFFFFF
 NextBank|d0|form 1 0|1	$00000000
 NextBank|d0|form 1 0|2	$00000001

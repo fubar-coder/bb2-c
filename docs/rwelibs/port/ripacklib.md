@@ -55,8 +55,10 @@ odd address).
   `TOK_globfree`; MEMF_PUBLIC|MEMF_CLEAR).
 * `LoadIFF`: **RIAmosFuncLib** (75), tokens `(LIB_riamosfunclib << 7) +
   index+1` with the index in the token list of the CD's
-  `BSS2 RIAMOSFUNCLIB.OBJ`: `NextBank` form 0 (`$A596`, d0 = 51 → bank or
-  -1), `BLoad` form 1 (`$A58F`, d0 = name, d1 = bank → d0; called with
+  `BSS2 RIAMOSFUNCLIB.OBJ`: `NextBank` (`$A596`, d0 = 51 → bank or
+  -1; the original calls form 0, which in the original RIAmosFuncLib
+  starts at d0; the C version calls form 1, the form with the start bank,
+  since form 0 of the C RIAmosFuncLib searches from bank 0, #497), `BLoad` form 1 (`$A58F`, d0 = name, d1 = bank → d0; called with
   `BL_JSR_D4_`/`BL_TOKVAL(…, 1)`), `Start` (`$A591`, d0 = bank → address),
   `Erase` (`$A593`, d0 = bank). The original also loads d2 = 0 and
   d4 = -1 for BLoad, which form 1 does not read; the C version passes

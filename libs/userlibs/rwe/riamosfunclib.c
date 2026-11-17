@@ -46,7 +46,6 @@
  *     maxbanks writes behind the start table (#484).
  *   - A bank in use is erased before the new allocation, also when that
  *     fails (#499).
- *   - NextBank without an argument starts at whatever d0 holds (#497).
  *   - BLoad(name$) returns the bank also when reading fails (the bank
  *     stays reserved), -1 for an empty or missing file and 0 when no
  *     bank is free (#486); the other forms leave a bank they reserved
@@ -96,6 +95,9 @@
  *   - Reserve(length) returns -1 for a negative length, as for its other
  *     failures; the original returned 0, the number of the first bank
  *     (#500).
+ *   - NextBank without an argument searches from bank 0 (the manual:
+ *     "the first available bank"); the original shared the routine of
+ *     the form with an argument and started at whatever d0 held (#497).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -120,7 +122,7 @@ void _copyword(void), _copylong(void), _filesize(void), _bload4(void);
 void _bload1(void), _bload0(void), _bload(void), _bload2(void), _bsave2(void);
 void _bsave(void), _start(void), _length(void), _erase(void), _eraseall(void);
 void _allocmem2(void), _allocmem1(void), riamosfunclib_allocmem(void);
-void _findfreebank(void), _fillmemzeros(void), _fillmem(void), _keycode(void);
+void _findfreebank(void), _nextbank0(void), _fillmemzeros(void), _fillmem(void), _keycode(void);
 void _blitdone(void), _blitwait(void), riamosfunclib_finddev(void);
 void _swapbank(void), _getdevname(void), _cd(void), _banklimit(void);
 void _getbanklimit(void), _saveexec(void), riamosfunclib_libinit(void);
@@ -286,7 +288,7 @@ BLITZ_NAME("Reserve", "(length)|(bank,length[,requirements])");
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
-BLITZ_SUBS(_findfreebank, 0, 0);
+BLITZ_SUBS(_nextbank0, 0, 0);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
 BLITZ_SUBS(_findfreebank, 0, 0);
@@ -512,8 +514,7 @@ static BB_BOOL BLITZ_ROUTINE allocmem1_c(LONG bank BL_REG(d0), ULONG len BL_REG(
 /**
  * @brief NextBank [startbank]: the first free bank from startbank on.
  *
- * BUG(orig): without an argument it starts at whatever d0 holds (#497);
- * a negative start counts as a bank (#484).
+ * BUG(orig): a negative start counts as a bank (#484).
  * @param bank  d0: startbank
  * @return d0: the bank, -1 if none is free
  */
@@ -523,6 +524,18 @@ static ULONG BLITZ_ROUTINE findfreebank_c(LONG bank BL_REG(d0))
         if (!start_c(bank))
             return (ULONG)bank;
     return (ULONG)-1;
+}
+
+/**
+ * @brief NextBank: the first free bank (from bank 0).
+ *
+ * Fixed (#497): the original used findfreebank for this form too and
+ * started at whatever d0 held.
+ * @return d0: the bank, -1 if none is free
+ */
+static ULONG BLITZ_ROUTINE nextbank0_c(void)
+{
+    return findfreebank_c(0);
 }
 
 /**
@@ -1352,6 +1365,7 @@ BLITZ_THUNK(_allocmem2, allocmem2_c, "d1/a0-a1");
 BLITZ_THUNK(_allocmem1, allocmem1_c, "d1/a0-a1");
 BLITZ_THUNK(riamosfunclib_allocmem, allocmem_c, "d1/a0-a1");
 BLITZ_THUNK(_findfreebank, findfreebank_c, "d1/a0-a1");
+BLITZ_THUNK(_nextbank0, nextbank0_c, "d1/a0-a1");
 BLITZ_THUNK(_fillmemzeros, fillmemzeros_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_fillmem, fillmem_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_keycode, keycode_c, "d1/a0-a1");

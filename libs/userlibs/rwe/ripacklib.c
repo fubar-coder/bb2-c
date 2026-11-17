@@ -767,7 +767,7 @@ static BB_BOOL BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm
     struct bl_regs r = { .d0 = 51 };
     ULONG bank, start;
 
-    bank = BLITZ_ALIBJSR(TOK_nextbank, r);
+    bank = BLITZ_ALIBJSR_FORM(TOK_nextbank, 1, r);
     if ((LONG)bank < 0)
         return BB_FALSE;
     if (!BL_JSR_D4_(BL_TOKVAL(TOK_bload, 1), name, bank, 0, 0)) {

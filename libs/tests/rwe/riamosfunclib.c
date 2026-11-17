@@ -314,7 +314,7 @@ static void banks(void)
     start(100000);
     OBS("d0", R.d[0]);
     nextbank(1, 0);
-    nextbank(0, 5);                                     /* d0 as it is */
+    nextbank(0, 5);                                     /* d0 = 5: from 0 (#497) */
     reserve(0, 100, 0, 0);                              /* bank 0 */
     samebank2("Reserve", 0, 0);
     reserve(1, 3, 256, 0);

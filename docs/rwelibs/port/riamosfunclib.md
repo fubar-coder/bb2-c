@@ -116,6 +116,11 @@ kind F):
   failures (the manual: "the number of the bank ... or -1 for
   failure"); the original returned 0, the number of the first bank
   (#500).
+* `NextBank` without an argument searches from bank 0 (the manual:
+  "the first available bank"); the original used the routine of the form
+  with an argument for both forms and started at whatever d0 held
+  (#497). ripacklib's `LoadIFF`, which relied on that (form 0 with
+  d0 = 51), calls the form with an argument.
 
 ## BUG(orig), kept
 
@@ -127,8 +132,6 @@ kind F):
   behind the start table (#484).
 * A bank in use is erased before the new allocation, also when that
   fails (#499).
-* `NextBank` without an argument starts at whatever d0 holds (both forms
-  share the routine) (#497).
 * `BLoad(name$)` returns the bank also when reading fails (the bank stays
   reserved), -1 for an empty or missing file and 0 when no bank is free
   (#486); the other forms leave a bank they reserved for a file that
