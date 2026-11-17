@@ -19,8 +19,8 @@
  * gadget size and flags, images), the shapes made by IconToShape (fields,
  * data, cookie) and the icons written by PutIconObject (read back with
  * GetDiskObject).
- * Covered: every command and form without an icon (nothing, BUG(orig) #852:
- * SetIconType returns its argument), GetIconObject (twice: the second
+ * Covered: every command and form without an icon (nothing; fixed #852:
+ * SetIconType returns 0, the original its argument), GetIconObject (twice: the second
  * gives 0; a missing file), FindToolValue (value up to ")", missing
  * name), FindToolNumber (all entries, beyond the end), MatchToolValue,
  * FindToolType with and without bracket check (BUG(orig) #843: the flag
@@ -405,7 +405,7 @@ int main(int argc, char **argv)
     KEEPS("FindToolNumber (no icon)", d0-d7|a0-a3|a6);
     KEEPS("FreeIconObject (no icon)", d0-d7|a0-a3);
     KEEPS("PutIconObject (no icon)", d2-d6|a0-a3);
-    KEEPS("SetIconType (no icon)", d0-d7|a0-a3|a6);
+    KEEPS("SetIconType (no icon)", d1-d7|a0-a3|a6);   /* d0: the result (0, fixed #852) */
     KEEPS("IconDefTool (no icon)", d1-d7|a0-a3|a6);
     KEEPS("FindToolType (no icon)", d2-d7|a0-a3|a6);
     KEEPS("MatchToolValue (no icon)", d2-d7|a0-a3|a6);

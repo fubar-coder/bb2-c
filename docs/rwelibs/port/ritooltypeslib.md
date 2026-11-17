@@ -30,6 +30,14 @@ code sets a3 for that call to what the original has there and restores
 it afterwards. Every entry is a thunk that keeps those of d0/d1/a0/a1
 that are not the result.
 
+**Fixed** (intended deviations from the original, kind F in
+`docs/libs/deviations.md`):
+
+* SetIconType without an open icon returns 0; the original returned its
+  argument, so `SetIconType 3` gave 3, success for a program that tests
+  the result (#852; bug-orig test
+  `ritooltypeslib-seticontype-noicon-returns-arg`).
+
 **BUG(orig)** (kept):
 
 * GetIconObject copies the icon's tool types without a limit into the
@@ -52,7 +60,6 @@ that are not the result.
   string argument, which the compiler does not take back after a library
   function with a numeric result. Without it
   `"ab"+Str$(IconDefTool("tool"))+"cd"` gives `abtool` instead of `ab-1cd`.
-* SetIconType without an icon returns its argument (#852).
 * PutIconObject ignores PutDiskObject's result (#851) and forgets the
   icon without FreeDiskObject (lost) (#850).
 * ShapeToIcon shape,shape uses the library's own Image (PlanePick 0) as

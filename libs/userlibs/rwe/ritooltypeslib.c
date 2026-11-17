@@ -54,7 +54,6 @@
  *     it gives back the space of the string argument, which the compiler
  *     does not take back after a library function with a numeric result
  *     (#846, closed).
- *   - SetIconType without an icon returns its argument (#852).
  *   - PutIconObject writes the icon (PutDiskObject's result ignored)
  *     (#851), then forgets it without FreeDiskObject (lost) (#850).
  *   - ShapeToIcon shape,shape uses the library's own Image for the
@@ -69,6 +68,8 @@
  *     a3 - a cookie for whatever a3 points to; IconToShape shape,shape
  *     gives the second shape the cookie of the first (a3 is still the
  *     first shape) (#849).
+ * Fixed (intended deviation, #852): SetIconType without an icon returned
+ *   its argument (non-zero: success for a program that tests it); now 0.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -747,14 +748,14 @@ void BLITZ_ROUTINE c_shapetoicon2(const struct bb_shape *shape BL_REG(a0),
 /**
  * @brief SetIconType object_type: the icon's type (do_Type, 1-5).
  *
- * BUG(orig) (#852): without an icon the result is the argument.
+ * Fixed (#852): without an icon the original returned the argument.
  * @param type  d0: the type
- * @return d0: -1 done, 0 for a type outside 1-5; without an icon the type
+ * @return d0: -1 done, 0 for a type outside 1-5 or without an icon
  */
 ULONG BLITZ_ROUTINE c_icontype(ULONG type BL_REG(d0))
 {
     if (!diskobject)
-        return type;
+        return 0;
     if (!type || type > 5)
         return 0;
     diskobject->do_Type = (UBYTE)type;

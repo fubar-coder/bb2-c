@@ -2279,7 +2279,8 @@ SetIconType|string area|$4,$0|1	bytes 512 fnv 9D9373C5
 SetIconType|string area|$5,$0|1	bytes 512 fnv 9D9373C5
 SetIconType|string area|$6,$0|1	bytes 512 fnv 9D9373C5
 SetIconType (no icon)|a3|$3,$0|1	$00000040
-SetIconType (no icon)|d0|$3,$0|1	$00000003
+SetIconType (no icon)|d0|$3,$0|1 [orig]	$00000003
+SetIconType (no icon)|d0|$3,$0|1 [fixed #852]	$00000000
 SetIconType (no icon)|icon: open|$3,$0|1	$00000000
 SetIconType (no icon)|kept|$3,$0|1	kept
 SetIconType (no icon)|string area|$3,$0|1	bytes 512 fnv 9D9373C5
