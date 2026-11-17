@@ -2,6 +2,5 @@
 ok
 [run]
 before
-no blits
-after
+REQUESTER: AutoRequest body "Uninitialized Shape" *
 rc=0

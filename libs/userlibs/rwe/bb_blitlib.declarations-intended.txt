@@ -1,6 +1,17 @@
 # the intended differences of bb_blitlib against the reference build of its
 # source (blitzlib compare, docs/development.md "Intended differences")
 # #428: CreateShape has an error check (_errCreateShape: count 0); the
-# original's entry has none, one relocation more
+# original's entry has none
 lib 19: entry 6 CreateShape +$16: code offset set in only one of them
-lib 19: relocations in the declaration part 21 != 22
+# #429: the eight forms of SpecialBlock, SpecialBlockBitmap, TBlock,
+# PredatorBlit, BPredatorBlit and BColourBlit have an error check
+# (_errShapeA1, _errShapeA3: a shape of depth 0); the original's have none
+# (one message per command)
+lib 19: entry 0 SpecialBlock +$1A: code offset set in only one of them
+lib 19: entry 1 SpecialBlockBitmap +$1A: code offset set in only one of them
+lib 19: entry 2 TBlock +$16: code offset set in only one of them
+lib 19: entry 3 PredatorBlit +$16: code offset set in only one of them
+lib 19: entry 4 BPredatorBlit +$22: code offset set in only one of them
+lib 19: entry 9 BColourBlit +$24: code offset set in only one of them
+# #428, #429: one relocation per new check entry (1 + 8)
+lib 19: relocations in the declaration part 21 != 30

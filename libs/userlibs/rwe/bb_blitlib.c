@@ -42,9 +42,15 @@
  * left them.  init and finit are RTS.  No assembler besides the thunks.
  *
  * BUG(orig), kept:
- *   - A shape or bitmap of depth 0 loops 65536 times (DBRA) (#429);
- *     BlockToShape copies one word per line (#425).
+ *   - BlockToShape copies one word per line (#425).
  * Fixed (intended deviations):
+ *   - The blits that take a shape and had no error check (SpecialBlock,
+ *     SpecialBlockBitmap, TBlock, PredatorBlit, BPredatorBlit,
+ *     BColourBlit) and SpecialBlockToShape's check refuse a shape of
+ *     depth 0 (never defined) with "Uninitialized Shape"; their plane
+ *     loops (DBRA on depth-1) run 65536 times for it, in the release
+ *     code as in the original (#429).  A bitmap of depth 0 cannot be
+ *     made with runtime error checking (bitmaplib's checks).
  *   - CreateShape has an error check: count 0, which makes the release
  *     code create 65536 shapes, is the runtime error "CreateShape count
  *     must be at least 1!"; the original had no check (#428).
@@ -70,6 +76,7 @@ void _specialblockbitmap2(void), _tblock(void), _predatorblit(void), _bpredatorb
 void _MapInfo(void), _createshape(void), _specialblocktoshape(void), _blocktoshape(void);
 void docolblit(void), _tblockimage(void), _btblockimage(void);
 void _errSBlockToShape(void), _errBlockToShape(void), _errCreateShape(void);
+void _errShapeA1(void), _errShapeA3(void);
 static void _libinit(void);
 static void _libfinit(void);
 
@@ -86,37 +93,37 @@ BLITZ_LIBHEADER(LIB_bb_blitlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1);
-BLITZ_SUBS(_specialblock, 0, 0);
+BLITZ_SUBS(_specialblock, _errShapeA1, 0);  /* Fixed (#429): the original has no check */
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1);
-BLITZ_SUBS(_specialblock2, 0, 0);
+BLITZ_SUBS(_specialblock2, _errShapeA1, 0);  /* Fixed (#429): the original has no check */
 BLITZ_NAME("SpecialBlock", "topshape,bottomshape,(x,y)|offset");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0, LIB_bitmaplib, BL_IA2|BL_PD1);
-BLITZ_SUBS(_specialblockbitmap, 0, 0);
+BLITZ_SUBS(_specialblockbitmap, _errShapeA1, 0);  /* Fixed (#429): the original has no check */
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0, LIB_bitmaplib, BL_IA2|BL_PD1);
-BLITZ_SUBS(_specialblockbitmap2, 0, 0);
+BLITZ_SUBS(_specialblockbitmap2, _errShapeA1, 0);  /* Fixed (#429): the original has no check */
 BLITZ_NAME("SpecialBlockBitmap", "topshape,bitmap,(x,y)|offset");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0);
-BLITZ_SUBS(_tblock, 0, 0);
+BLITZ_SUBS(_tblock, _errShapeA1, 0);  /* Fixed (#429): the original has no check */
 BLITZ_NAME("TBlock", "shape,x,y");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0);
-BLITZ_SUBS(_predatorblit, 0, 0);
+BLITZ_SUBS(_predatorblit, _errShapeA1, 0);  /* Fixed (#429): the original has no check */
 BLITZ_NAME("PredatorBlit", "shape,x,y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD1, BUFLIBS);
-BLITZ_SUBS(_bpredatorblit, 0, 0);
+BLITZ_SUBS(_bpredatorblit, _errShapeA3, 0);  /* Fixed (#429): the original has no check */
 BLITZ_NAME("BPredatorBlit", "buffer,shape,x,y");
 
 BLITZ_ASTATEMENT();
@@ -128,7 +135,7 @@ BLITZ_NAME("SetupMapTwo", "ebwidth");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD3);
-BLITZ_SUBS(_createshape, _errCreateShape, 0);          /* Fixed (#428): the original has no check */
+BLITZ_SUBS(_createshape, _errCreateShape, 0);  /* Fixed (#428): the original has no check */
 BLITZ_NAME("CreateShape", "start_shape,count,chipmemblock,like_shape");
 
 BLITZ_ASTATEMENT();
@@ -146,7 +153,7 @@ BLITZ_NAME("BlockToShape", "shape,destshape");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD1, BUFLIBS);
-BLITZ_SUBS(docolblit, 0, 0);
+BLITZ_SUBS(docolblit, _errShapeA3, 0);  /* Fixed (#429): the original has no check */
 BLITZ_NAME("BColourBlit", "buffer,shape,x,y,colour");
 
 BLITZ_ASTATEMENT();
@@ -255,7 +262,8 @@ static UWORD xyoff(UWORD x, UWORD y, UWORD width)
  * The top shape (B) over the bottom shape (C) through top's cookie (A)
  * into each plane of the used bitmap at off (D = A ? B : C); B and C go
  * on from plane to plane.  Assumes 16x16 shapes and bitmaps of
- * SetupMapTwo's width.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * SetupMapTwo's width.
+ * Depth 0 loops 65536 times: Fixed (#429), errshapea1_c refuses it.
  * @param off  d2: the byte offset in the bitmap
  * @param bm   a0: the used bitmap object
  * @param top  a1: the top shape object (parameter 0)
@@ -316,7 +324,8 @@ static void BLITZ_ROUTINE specialblock_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
  *
  * The shape (B, any size) over the same area of the source bitmap (C)
  * through its cookie (A) into the used bitmap, both at off; B goes on
- * from plane to plane.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * from plane to plane.  Depth 0 loops 65536 times: Fixed (#429),
+ * errshapea1_c refuses it.
  * @param off    d2: the byte offset in both bitmaps
  * @param bm     a0: the used bitmap object
  * @param shape  a1: the shape object (parameter 0)
@@ -377,8 +386,8 @@ static void BLITZ_ROUTINE specialblockbitmap_c(UWORD x BL_REG(d2), UWORD y BL_RE
  * bitmap.
  *
  * B = the shape, A = its cookie, C = D = the bitmap at y * SetupMapTwo's
- * width + x/8; B goes on from plane to plane.  BUG(orig) (#429): depth 0
- * loops 65536 times.
+ * width + x/8; B goes on from plane to plane.  Depth 0
+ * loops 65536 times: Fixed (#429), errshapea1_c refuses it.
  * @param x      d1: x (ASR 3)
  * @param y      d2: y
  * @param bm     a0: the used bitmap object
@@ -424,7 +433,8 @@ first:
  * B = the bitmap one line (SetupMapTwo's width) further, shifted by x
  * and one pixel more, C = D = the bitmap, 2 words wide at the even word,
  * through the cookie (A, shifted, last word masked).  Assumes 16x16
- * shapes.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * shapes.  Depth 0 loops 65536 times: Fixed (#429), errshapea1_c
+ * refuses it.
  * @param x      d1: x
  * @param y      d2: y
  * @param bm     a0: the used bitmap object
@@ -534,7 +544,8 @@ first:
  * (deliberate: ";!!! BB Cludge!"), then PredatorBlit's blit through the
  * shifted cookie (B: the line below, one pixel more).  Fixed (#426): B
  * reads the line the bitmap's bytes per row below; the original added
- * SetupMapTwo's width.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * SetupMapTwo's width.  Depth 0 loops 65536 times: Fixed (#429),
+ * errshapea3_c refuses it.
  * @param x      d2: x
  * @param y      d3: y
  * @param buf    a0: the buffer object (bblitlib)
@@ -590,7 +601,8 @@ first:
  * The area is saved as BBlit does, then the shifted cookie is blitted in
  * `colour`: per plane D = A | C (bit set) or ~A & C.  Sets the B modulos
  * it does not use and shifts the colour as a byte (at most 8 planes):
- * original behaviour.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * original behaviour.  Depth 0 loops 65536 times: Fixed (#429),
+ * errshapea3_c refuses it.
  * @param x       d2: x
  * @param y       d3: y
  * @param colour  d4: the colour
@@ -783,8 +795,8 @@ static void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG
  * into a shape.
  *
  * The 16x16 block (top over bottom through top's cookie) into the data
- * of dest.  Error check: errsblocktoshape_c.  BUG(orig) (#429): depth 0
- * loops 65536 times.
+ * of dest.  Error check: errsblocktoshape_c.  Depth 0 loops 65536
+ * times: Fixed (#429), errsblocktoshape_c refuses it.
  * @param dest  a0: the destination shape object
  * @param top   a1: the top shape object
  * @param bot   a2: the bottom shape object
@@ -878,9 +890,15 @@ static void BLITZ_ERRCHK errblocktoshape_c(struct bb_shape *shape BL_REG(a1),
         BLITZ_RUNERR(diffsizes);
 }
 
+BLITZ_ERRCHK_MESSAGE(noinit, "Uninitialized Shape");
+
 /**
  * @brief SpecialBlockToShape's error check: the same for dest and the top
- * shape.
+ * shape, then the top shape's depth.
+ *
+ * Fixed (#429): a top shape of depth 0 (a shape never defined, whose size
+ * is that of dest) is the runtime error "Uninitialized Shape"; the
+ * original does not test it, and the blit loop runs 65536 times.
  * @param dest  a0: the destination shape object
  * @param top   a1: the top shape object
  */
@@ -891,6 +909,38 @@ static void BLITZ_ERRCHK errsblocktoshape_c(struct bb_shape *dest BL_REG(a0),
         BLITZ_RUNERR(noshape);
     if (top->size != dest->size)
         BLITZ_RUNERR(diffsizes);
+    else if (!top->depth)
+        BLITZ_RUNERR(noinit);
+}
+
+/**
+ * @brief The error check of SpecialBlock, SpecialBlockBitmap, TBlock and
+ * PredatorBlit (not in the original): the shape in a1 has planes.
+ *
+ * Fixed (#429): a shape of depth 0 (a shape never defined) makes the
+ * blit loop (DBRA on depth-1) run 65536 times over the "plane pointers"
+ * behind the bitmap object; runtime error "Uninitialized Shape".  The
+ * release code is unchanged (an invalid argument).
+ * @param shape  a1: the shape object
+ */
+static void BLITZ_ERRCHK errshapea1_c(struct bb_shape *shape BL_REG(a1))
+{
+    if (!shape->depth)
+        BLITZ_RUNERR(noinit);
+}
+
+/**
+ * @brief The error check of BPredatorBlit and BColourBlit (not in the
+ * original): the shape in a3 has planes.
+ *
+ * Fixed (#429): as errshapea1_c (the save of the background loops over
+ * the bitmap's planes, the blit over the shape's).
+ * @param shape  a3: the shape object
+ */
+static void BLITZ_ERRCHK errshapea3_c(struct bb_shape *shape BL_REG(a3))
+{
+    if (!shape->depth)
+        BLITZ_RUNERR(noinit);
 }
 
 BLITZ_ERRCHK_MESSAGE(nocount, "CreateShape count must be at least 1!");
@@ -915,3 +965,5 @@ static void BLITZ_ERRCHK errcreateshape_c(UWORD count BL_REG(d1))
 BLITZ_ERRCHK_THUNK(_errBlockToShape, errblocktoshape_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_errSBlockToShape, errsblocktoshape_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_errCreateShape, errcreateshape_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_errShapeA1, errshapea1_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_errShapeA3, errshapea3_c, "d0-d1/a0-a1");

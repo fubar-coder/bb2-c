@@ -5,13 +5,18 @@
 ; also has its data and cookie at address 0: the blits write the bits of
 ; the exception vectors to whatever addresses lie behind the bitmap
 ; object, different in every session (sometimes a hang, sometimes not).
+; The original has no error check for these commands, not even with
+; runtime error checking.
 ; Here shape 5 stays of depth 0, but its data and cookie are a zeroed
 ; block of chip memory: with the cookie 0 every blit writes back what it
 ; reads (D = C), the 65536 blits change nothing and only take their
 ; time (more than a second; measured in frames with CIA-A's TOD).
-; Correct: a shape of depth 0 draws nothing (no time), the program goes
-; on.
+; Here with runtime error checking.
+; Correct: the error check refuses the shape of depth 0: "Uninitialized
+; Shape", nothing is blitted.
+; @fixed #429
 ; @rwe bb_blitlib
+; @pass runtime_errors=on
 DEFTYPE .l
 Function tod{}
   h=Peek.b($BFEA01)&255

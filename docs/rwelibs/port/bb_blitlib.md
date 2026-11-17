@@ -58,8 +58,9 @@ the CPU like the original's (the save blit writes into it). The address
 arithmetic is the original's (`MULU.w`/`MULS.w`, `ASR.w`, word sums).
 `ADD.l ebwidth-2(pc)` adds the long `pad:ebwidth`, i.e. `ebwidth` (pad
 is 0). The error checks are C in the error check area; they keep d0,
-which the original changes (low word: +26 of a shape). The check of
-`CreateShape` is the port's (#428).
+which the original changes (low word: +26 of a shape). The checks of
+`CreateShape` (#428) and of the blits that take a shape (#429) are the
+port's.
 
 ## Fixed
 
@@ -85,10 +86,19 @@ kind F):
   over the memory behind the shape table (#428; bug-orig test
   `bb_blitlib-createshape-count0`). The release code is unchanged: the
   count is an argument the programmer controls.
+* `SpecialBlock`, `SpecialBlockBitmap`, `TBlock`, `PredatorBlit`,
+  `BPredatorBlit` and `BColourBlit` have an error check, and
+  `SpecialBlockToShape`'s check tests the top shape's depth: with
+  runtime error checking a shape of depth 0 (one never defined) is the
+  error "Uninitialized Shape". The original has no such check, and the
+  plane loops (`DBRA` on depth − 1) run 65536 times over the "plane
+  pointers" behind the bitmap object (#429; bug-orig test
+  `bb_blitlib-depth0-dbra`). The release code is unchanged, so no work
+  is added per call or plane; a bitmap of depth 0 cannot be made with
+  runtime error checking (bitmaplib's checks).
 
 ## BUG(orig), kept
 
-* Shapes or bitmaps of depth 0 loop 65536 times (DBRA) (#429).
 * `BlockToShape` copies one word per line (height × depth words) (#425).
 
 Original behaviour that is not a defect:
@@ -117,6 +127,9 @@ the blit wrote), the shape objects `CreateShape` made, d0 of
 `PredatorBlit`, the kept registers. All 12 routines, both forms of
 `SpecialBlock`/`SpecialBlockBitmap`, all shifts, `SetupMapTwo` 48 and back
 to 40, colours with bits above the depth and above bit 7, `CreateShape`
-with the like shape among the created ones, the error checks with good
-shapes. Not covered: the runtime errors of the checks, depth/count 0,
+with the like shape among the created ones, the original's two error
+checks with good shapes. Not covered: the runtime errors of the checks,
+the port's checks (#428, #429; the original has no entries to compare
+them with: the bug-orig tests `bb_blitlib-createshape-count0` and
+`bb_blitlib-depth0-dbra` show their runtime errors), depth/count 0,
 blits outside the bitmaps.
