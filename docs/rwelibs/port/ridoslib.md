@@ -147,7 +147,7 @@ scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_ridoslib.txt` recorded from the original.
 Every routine before init (0 or d0 unchanged); init and NotifyPort;
 GetFileName and GetPathName with 19 paths (separators first, last,
-doubled, none, empty) and a length with the high word set – d0, a3 and
+doubled, none, empty) and an argument of $10006 characters – d0, a3 and
 the result buffer; notifications on a file in RAM: (ids 5, 9, 40):
 CheckNotify until empty after each write (at least one message),
 WaitNotify, RemNotify twice and with id -1, a failing StartNotify on a

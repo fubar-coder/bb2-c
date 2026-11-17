@@ -9,8 +9,8 @@
  *
  * Covered: every routine before init (no port, no dos base: 0 / d0
  * unchanged), init, NotifyPort; GetFileName/GetPathName with many paths
- * (separators first/last/doubled, none, empty, a length whose high word
- * is set) - d0, a3 and the result; notifications on a file in RAM: (ids
+ * (separators first/last/doubled, none, empty, an argument of $10006
+ * characters) - d0, a3 and the result; notifications on a file in RAM: (ids
  * 5, 9 and 40: CheckNotify until empty after
  * every write, WaitNotify, RemNotify twice and with id -1, a failing
  * StartNotify on a missing device, one request left for finit);
@@ -51,6 +51,27 @@ static struct DosLibrary *dos;
         OBSBYTES("out", out, sizeof out);                                   \
     } while (0)
 
+/* the argument of $10006 characters at big+20, a3 behind it: "abc/de",
+   then "a" with a "/" every 100 characters (no part reaches the
+   original's 256 byte buffer), then "/xyz" */
+#define LONGLEN 0x10006
+static UBYTE big[20 + LONGLEN + 1 + 20];
+
+static void longarg(void)
+{
+    ULONG i;
+
+    memset(big, 0xee, sizeof big);
+    memcpy(big + 20, "abc/de", 6);
+    for (i = 6; i < LONGLEN - 4; i++)
+        big[20 + i] = i % 100 == 99 ? '/' : 'a';
+    memcpy(big + 20 + LONGLEN - 4, "/xyz", 5);
+    R.d[0] = (ULONG)big + 20;
+    frame[0] = LONGLEN;
+    R.a[2] = (ULONG)&frame[1];
+    R.a[3] = (ULONG)big + 20 + LONGLEN + 1;
+}
+
 static void paths(void)
 {
     static const char *p[] = {
@@ -67,9 +88,13 @@ static void paths(void)
             DO1(ENT(LIB, f ? E_PATH : E_FILE, 0), STRARG(p[i], strlen(p[i])));
             STRRES();
         }
+        /* a real argument of $10006 characters (longarg; the low word of
+           its length is 6): file part "xyz", path part all but "xyz" */
         strcpy(VEC, "\"abc/de\" length $10006");
-        DO1(ENT(LIB, f ? E_PATH : E_FILE, 0), STRARG("abc/de", 0x10006));
-        STRRES();
+        DO1(ENT(LIB, f ? E_PATH : E_FILE, 0), longarg());
+        OBS("d0", R.d[0]);
+        OBS("a3", R.a[3] - (ULONG)big);
+        OBSBYTES("out", big, sizeof big);
     }
 }
 
