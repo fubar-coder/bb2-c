@@ -309,12 +309,16 @@ GetFileName|popped|"name with spaces/and more"|1	$00000000
 GetFileName|popped|"ram:t/"|1	$00000000
 GetFileName|popped|"x:y:z"|1	$00000000
 GetPathName|a3|""|1	$00000014
-GetPathName|a3|"/"|1	$00000014
+GetPathName|a3|"/"|1 [orig]	$00000014
+GetPathName|a3|"/"|1 [fixed #624]	$00000015
 GetPathName|a3|"//"|1 [orig]	$00000017
 GetPathName|a3|"//"|1 [fixed #618]	$00000016
-GetPathName|a3|"/abc"|1	$00000014
-GetPathName|a3|":"|1	$00000014
-GetPathName|a3|":x"|1	$00000014
+GetPathName|a3|"/abc"|1 [orig]	$00000014
+GetPathName|a3|"/abc"|1 [fixed #624]	$00000015
+GetPathName|a3|":"|1 [orig]	$00000014
+GetPathName|a3|":"|1 [fixed #624]	$00000015
+GetPathName|a3|":x"|1 [orig]	$00000014
+GetPathName|a3|":x"|1 [fixed #624]	$00000015
 GetPathName|a3|"DH0:dir/file.txt"|1 [orig]	$0000001D
 GetPathName|a3|"DH0:dir/file.txt"|1 [fixed #618]	$0000001C
 GetPathName|a3|"Work:a/b/c/d.info"|1 [orig]	$00000020
@@ -342,11 +346,15 @@ GetPathName|a3|"ram:t/"|1 [fixed #618]	$0000001A
 GetPathName|a3|"x:y:z"|1 [orig]	$00000019
 GetPathName|a3|"x:y:z"|1 [fixed #618]	$00000018
 GetPathName|d0|""|1	$00000000
-GetPathName|d0|"/"|1	$00000000
+GetPathName|d0|"/"|1 [orig]	$00000000
+GetPathName|d0|"/"|1 [fixed #624]	$00000001
 GetPathName|d0|"//"|1	$00000002
-GetPathName|d0|"/abc"|1	$00000000
-GetPathName|d0|":"|1	$00000000
-GetPathName|d0|":x"|1	$00000000
+GetPathName|d0|"/abc"|1 [orig]	$00000000
+GetPathName|d0|"/abc"|1 [fixed #624]	$00000001
+GetPathName|d0|":"|1 [orig]	$00000000
+GetPathName|d0|":"|1 [fixed #624]	$00000001
+GetPathName|d0|":x"|1 [orig]	$00000000
+GetPathName|d0|":x"|1 [fixed #624]	$00000001
 GetPathName|d0|"DH0:dir/file.txt"|1	$00000008
 GetPathName|d0|"Work:a/b/c/d.info"|1	$0000000B
 GetPathName|d0|"a"|1	$00000000
@@ -385,9 +393,11 @@ GetPathName|kept|"x:y:z"|1	kept
 GetPathName|out|""|1	bytes 300 fnv E53D8C5B
 GetPathName|out|"/"|1	bytes 300 fnv 88AE16BE
 GetPathName|out|"//"|1	bytes 300 fnv 00B9F1B5
-GetPathName|out|"/abc"|1	bytes 300 fnv C8E777FC
+GetPathName|out|"/abc"|1 [orig]	bytes 300 fnv C8E777FC
+GetPathName|out|"/abc"|1 [fixed #624]	bytes 300 fnv 044F027F
 GetPathName|out|":"|1	bytes 300 fnv 672262CF
-GetPathName|out|":x"|1	bytes 300 fnv 70E0A7C9
+GetPathName|out|":x"|1 [orig]	bytes 300 fnv 70E0A7C9
+GetPathName|out|":x"|1 [fixed #624]	bytes 300 fnv 227F1D21
 GetPathName|out|"DH0:dir/file.txt"|1	bytes 300 fnv 2028C997
 GetPathName|out|"Work:a/b/c/d.info"|1	bytes 300 fnv 1791D727
 GetPathName|out|"a"|1	bytes 300 fnv B1F987B8

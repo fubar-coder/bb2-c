@@ -127,11 +127,15 @@ kind F):
   searched only the first (length AND $FFFF) characters (#628; test
   `ridoslib-path-length-word`, `libs_emulator` cases `[fixed #628]` of
   `rwe_ridoslib`).
+* GetPathName looks at the first character too: `/abc` and `:x` give
+  `/` and `:`. The original tested its counter before each read and
+  never reached the first character: such a path gave "", like a name
+  without separator (#624; test `ridoslib-getpathname-first-char`,
+  `libs_emulator` cases `[fixed #624]` of `rwe_ridoslib`).
 
 ## BUG(orig)
 
-* GetPathName never looks at the first character: `/abc` and `:x` give
-  "", like a name without separator (#624).
+None known.
 
 Like the original, and no defects: RemNotify leaves `filelens[id]` set
 (the next AddNotify of the id sets it again) and sets d4 to `$12345678`

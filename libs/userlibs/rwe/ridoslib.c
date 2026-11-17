@@ -32,9 +32,6 @@
  *
  * No assembler besides the thunks.
  *
- * BUG(orig):
- *   - GetPathName never looks at the first character: "/abc" and ":x"
- *     give "", like a name without separator (#624).
  * Fixed (intended deviation, #618): NextDevice and GetPathName copied
  * their result with its 0 and left a3 behind the 0, so a string
  * expression went on one byte too far; a3 now ends on the 0.
@@ -87,6 +84,9 @@
  * long): for 65536 characters or more they gave the wrong amount of
  * string space back and GetPathName searched only the first (length AND
  * $FFFF) characters.  They read the long now.
+ * Fixed (intended deviation, #624): GetPathName never looked at the first
+ * character (the counter was tested before each read): "/abc" and ":x"
+ * gave "" like a name without separator; they give "/" and ":" now.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -261,9 +261,9 @@ static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const ULONG 
  * the result copied to its start with its 0 (a forward copy: the result
  * is the argument's beginning); a3 ends on the 0 (fixed, #618: the
  * original left it behind the 0).  Fixed (#627): the original built the
- * result in a 256 byte buffer first, without a limit.  BUG(orig): the
- * first character is never looked at ("/abc" and ":x" give "", like a
- * name without separator, #624).  Fixed (#628): the original took the
+ * result in a 256 byte buffer first, without a limit.  Fixed (#624): the
+ * original never looked at the first character ("/abc" and ":x" gave "",
+ * like a name without separator).  Fixed (#628): the original took the
  * length as a word.
  * @param s     d0: the path
  * @param lens  a2: the argument stack, the length (a long) at -4(a2)
@@ -278,7 +278,7 @@ static ULONG BLITZ_ROUTINE getpathname_c(const UBYTE *s BL_REG(d0), const ULONG 
     blitz_string -= n;
     p = s + n;
     do {
-        if (--n == 0)
+        if (n-- == 0)                   /* fixed (#624): s[0] is looked at */
             return 0;                                   /* 'oops */
         c = *--p;
     } while (c != '/' && c != ':');
