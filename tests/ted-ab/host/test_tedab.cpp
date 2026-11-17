@@ -1073,9 +1073,10 @@ TEST_CASE("recorded original", "[bugorig]")
 
 TEST_CASE("session script without the gates", "[script]")
 {
-    // the gates checked once for the whole run (gates_from=): no tedprobe,
-    // no teddrive against teddrivetest, the runs follow the guard directly,
-    // the script stays balanced
+    // the gates checked once for the whole run (gates_from=): no gate D (no
+    // teddrive against teddrivetest, no GATE0/GATED line), the runs follow the
+    // guard directly, the script stays balanced; tedprobe still runs once,
+    // unchecked (no If WARN): the tests' memory layout depends on it (#340)
     Test a("; @source T t01_int\n; @roundtrip\n", "01a-rt-t01");
     tedab_run runs[2] = { { &a.t, TEDAB_R5 }, { &a.t, TEDAB_C5 } };
     char *with = tedab_session_script(runs, 2, 40000, 1);
@@ -1084,13 +1085,16 @@ TEST_CASE("session script without the gates", "[script]")
     REQUIRE(with != nullptr);
     REQUIRE(without != nullptr);
     std::string sc(without), full(with);
-    CHECK(sc.find("tedprobe") == std::string::npos);
+    CHECK(sc.find("tedprobe") != std::string::npos);
+    CHECK(sc.find("If WARN") == std::string::npos);
+    CHECK(sc.find("GATE0") == std::string::npos);
     CHECK(sc.find("teddrivetest") == std::string::npos);
     CHECK(sc.find("GATES checked before") != std::string::npos);
     CHECK(sc.find("TEDAB:runs/01a-rt-t01/R5/out/ok") != std::string::npos);
     CHECK(sc.find("skipped (01a-rt-t01 R5 not OK)") != std::string::npos);
     // the broken input of this check: the script with the gates has them
-    CHECK(full.find("tedprobe") != std::string::npos);
+    CHECK(full.find("If WARN") != std::string::npos);
+    CHECK(full.find("teddrivetest") != std::string::npos);
     CHECK(full.find("GATED OK") != std::string::npos);
     CHECK(full.find("GATES checked before") == std::string::npos);
 

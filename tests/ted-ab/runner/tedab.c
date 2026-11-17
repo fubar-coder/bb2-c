@@ -1133,8 +1133,12 @@ char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stac
                      "      Else\n"
                      "        Echo \"GATED OK\" %s\n", log, log);
     } else
-        /* the gates were checked once for the whole run (the pass key gates_from=) */
-        text_add(&s, "  Echo \"GATES checked before\" %s\n", log);
+        /* the gates were checked once for the whole run (the pass key gates_from=).
+           tedprobe still runs, unchecked: it leaves the memory in the state the
+           tests were recorded in (without it the layout hits #340, TED's a0toname
+           splitting a file name, in the tests that fail allocations) */
+        text_add(&s, "  " TEDAB_VOL ":tools/tedprobe " TEDAB_VOL ":gate/out/gate0.txt " TEDAB_KEYMAP " >NIL:\n"
+                     "  Echo \"GATES checked before\" %s\n", log);
     for (i = 0; i < n; i++) {
         const struct tedab_run *r = &runs[i], *first = &runs[tedab_session_waits_for(runs, i)];
 

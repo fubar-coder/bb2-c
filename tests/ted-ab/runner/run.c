@@ -93,8 +93,10 @@
  *                      (work, report, the tools), the rest is not read
  *   gates_from=NAME    the gates were checked by the pass gates_only=1 that
  *                      published NAME (rundir.h): when RUN/NAME/gates-ok is
- *                      there the sessions of this pass leave out gate 0 and
- *                      gate D (about 8 s of each session); without it
+ *                      there the sessions of this pass leave out gate D and
+ *                      the evaluation of gate 0 (about 8 s of each session;
+ *                      tedprobe still runs: the memory layout of the tests
+ *                      depends on it, #340); without it
  *                      (the runner started by hand) they run the gates as
  *                      always.  With gates_only=1 it is the name to publish
  *   inject=, wbrun=PATH  optional: tools/inject, tools/wbrun for @command
