@@ -980,7 +980,8 @@ FindToolValue|a3|"LOWER"|1	$00000041
 FindToolValue|a3|"MIXED"|1	$00000048
 FindToolValue|a3|"OFF"|1	$00000044
 FindToolValue|a3|"OFFT"|1	$00000045
-FindToolValue|a3|"PAREN"|1	$00000041
+FindToolValue|a3|"PAREN"|1 [orig]	$00000041
+FindToolValue|a3|"PAREN"|1 [fixed #844]	$00000043
 FindToolValue|a3|"nothere"|1	$00000048
 FindToolValue|d0|""|1	$00000000
 FindToolValue|d0|"BRACK"|1	$00000000
@@ -991,7 +992,8 @@ FindToolValue|d0|"LOWER"|1	$00000001
 FindToolValue|d0|"MIXED"|1	$00000008
 FindToolValue|d0|"OFF"|1	$00000000
 FindToolValue|d0|"OFFT"|1	$00000000
-FindToolValue|d0|"PAREN"|1	$00000001
+FindToolValue|d0|"PAREN"|1 [orig]	$00000001
+FindToolValue|d0|"PAREN"|1 [fixed #844]	$00000003
 FindToolValue|d0|"nothere"|1	$00000000
 FindToolValue|icon: default tool|""|1	$00000000
 FindToolValue|icon: default tool|"BRACK"|1	$00000000
@@ -1195,7 +1197,8 @@ FindToolValue|string area|"LOWER"|1	bytes 512 fnv 27EC52A1
 FindToolValue|string area|"MIXED"|1	bytes 512 fnv BBEC42AF
 FindToolValue|string area|"OFF"|1	bytes 512 fnv A6E8B7CE
 FindToolValue|string area|"OFFT"|1	bytes 512 fnv CEFE926E
-FindToolValue|string area|"PAREN"|1	bytes 512 fnv 6EEBCA3F
+FindToolValue|string area|"PAREN"|1 [orig]	bytes 512 fnv 6EEBCA3F
+FindToolValue|string area|"PAREN"|1 [fixed #844]	bytes 512 fnv 945C8A47
 FindToolValue|string area|"nothere"|1	bytes 512 fnv B8B709E4
 FindToolValue (no icon)|a3|"FOO"|1	$00000044
 FindToolValue (no icon)|d0|"FOO"|1	$00000000

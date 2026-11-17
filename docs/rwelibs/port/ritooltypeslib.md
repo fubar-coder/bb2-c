@@ -44,6 +44,11 @@ that are not the result.
   beginning with `(`, no icon, no memory) the next FindToolType tt$ also
   found the switched-off `(tt$)` and returned 1 (#843; bug-orig test
   `ritooltypeslib-findtooltype-stale-bracket-flag`).
+* FindToolValue copies the whole value; a `)` at its end is dropped only
+  for a name given with `(` (the only name icon.library finds a
+  switched-off `(name=value)` with). The original stopped at the first
+  `)`, also inside a value: `PAREN=a)b` gave `a` (#844; bug-orig test
+  `ritooltypeslib-findtoolvalue-stops-at-paren`).
 
 **BUG(orig)** (kept):
 
@@ -58,7 +63,6 @@ that are not the result.
   (#840).
 * FindToolType tt$,1: a name over 253 characters overflows the 256-byte
   buffer of the bracket search (#842).
-* FindToolValue stops at a `)` also inside the value (#844).
 * IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
   there. This is no defect (#846, closed): it gives back the space of the
   string argument, which the compiler does not take back after a library

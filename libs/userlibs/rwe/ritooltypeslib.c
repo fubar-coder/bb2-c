@@ -44,8 +44,6 @@
  *     address 0, the block is lost (#840).
  *   - FindToolType: a name over 253 characters overflows the 256 byte
  *     buffer of the bracket search (#842).
- *   - FindToolValue stops at ")" (the end of "(name=value)") but also at
- *     a ")" inside the value (#844).
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
  *     FindToolValue does for its result) and leaves it there. No defect:
  *     it gives back the space of the string argument, which the compiler
@@ -72,6 +70,11 @@
  *   without brackets, a name with "(", a call without an icon or no
  *   memory, the next FindToolType tt$ also searched "(tt$)".  The bracket
  *   check is now a parameter of the call.
+ * Fixed (intended deviation, #844): FindToolValue stopped at the first
+ *   ")" (meant for the end of "(name=value)"), also inside a value
+ *   ("a)b" gave "a").  Now only a ")" at the end of the value is dropped,
+ *   and only for a name given with "(" (the only name icon.library finds
+ *   "(name=value)" with).
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -462,9 +465,10 @@ ULONG BLITZ_ROUTINE c_istooltype2(CONST_STRPTR name BL_REG(d0))
 /**
  * @brief FindToolValue(tooltype$): the value of a tool type.
  *
- * The value after "=" (icon.library FindToolType) up to ")" or the end,
- * written over the argument at a3 (a3 - length - 1), without a 0.
- * BUG(orig) (#844): it also stops at a ")" inside the value.
+ * The value after "=" (icon.library FindToolType), written over the
+ * argument at a3 (a3 - length - 1), without a 0; for a name beginning
+ * with "(" (a switched-off entry "(name=value)") without its last ")".
+ * Fixed (#844): the original stopped at every ")", also inside the value.
  * @param name  d0: the tool type's name
  * @param lens  a2: the argument stack (lens[-1] = the length of name)
  * @return d0: the length of the value, 0 if not found or no icon
@@ -473,6 +477,7 @@ ULONG BLITZ_ROUTINE c_gettooltype(CONST_STRPTR name BL_REG(d0), const ULONG *len
 {
     STRPTR v;
     UWORD len = 0;
+    BOOL off;
 
     if (!tooltype)
         return 0;
@@ -480,8 +485,11 @@ ULONG BLITZ_ROUTINE c_gettooltype(CONST_STRPTR name BL_REG(d0), const ULONG *len
     if (!v)
         return 0;
     blitz_string -= lens[-1] + 1;       /* "Blitz is wierd..." */
-    while (*v != ')' && *v)
+    off = *name == '(';                 /* before the copy: it overwrites the name */
+    while (*v)
         *blitz_string++ = *v++, len++;
+    if (off && len && v[-1] == ')')
+        blitz_string--, len--;          /* the end of "(name=value)" */
     return len;
 }
 

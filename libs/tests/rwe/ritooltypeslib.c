@@ -21,7 +21,7 @@
  * GetDiskObject).
  * Covered: every command and form without an icon (nothing; fixed #852:
  * SetIconType returns 0, the original its argument), GetIconObject (twice: the second
- * gives 0; a missing file), FindToolValue (value up to ")", missing
+ * gives 0; a missing file), FindToolValue (a ")" in the value: fixed #844, missing
  * name), FindToolNumber (all entries, beyond the end), MatchToolValue,
  * FindToolType with and without bracket check (fixed #843: the original
  * left the flag set), SetToolValue (replace, prefix match "FL" -> "FLAG", the
