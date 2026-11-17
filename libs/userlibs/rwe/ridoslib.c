@@ -34,8 +34,7 @@
  *
  * BUG(orig):
  *   - AddNotify: no range check of the id (64 entries; the offset is
- *     id*4 as a word), an id used twice loses the first request (#626,
- *     #620).
+ *     id*4 as a word) (#626).
  *   - RemNotify: no range check either (#626).
  *   - GetPathName never looks at the first character: "/abc" and ":x"
  *     give "", like a name without separator (#624).  GetFileName and GetPathName take the length
@@ -68,6 +67,10 @@
  * counter was 0, could stop before it: request and name copy stayed
  * allocated after the end.  AddNotify now takes it out and frees both;
  * finit looks at all 64 entries.
+ * Fixed (intended deviation, #620): AddNotify with an id in use
+ * overwrote the entry: the old request stayed active (its messages kept
+ * coming) but could no longer be ended.  It is now ended and freed first,
+ * as RemNotify does, once the new request has its memory.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -364,8 +367,10 @@ static ULONG BLITZ_ROUTINE remnotify_c(LONG id BL_REG(d0))
  * Without memory for the name copy or the request it returns 0 and
  * leaves the table alone (fixed, #619: the original used AllocMem's
  * results unchecked).  BUG(orig): no range check of the id (64 entries,
- * the offset id*4 as a word, #626); an id used twice loses the first
- * request (#620).  A request whose StartNotify fails is taken out of the
+ * the offset id*4 as a word, #626).  A request already in the entry of
+ * the id is ended and freed first, as RemNotify does (fixed, #620: the
+ * original overwrote the entry, the old request stayed active and could
+ * no longer be ended).  A request whose StartNotify fails is taken out of the
  * table and freed with its name copy (fixed, #621: the original left it
  * there, uncounted).
  * @param id    d0: the id
@@ -378,6 +383,7 @@ static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG
                                          const ULONG *lens BL_REG(a2))
 {
     struct DosLibrary *dos = dosbase_;
+    struct NotifyRequest *old;
     const UBYTE *s;
     UBYTE *d;
     WORD off;
@@ -400,6 +406,13 @@ static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG
         return BB_FALSE;
     }
     off = (WORD)(notifynum << 2);                       /* ASL.w #2 */
+    old = (struct NotifyRequest *)AT(notifys, off);
+    if (old) {                                  /* fixed (#620): as RemNotify */
+        EndNotify(old);
+        FreeMem(old->nr_Name, AT(filelens, off));
+        FreeMem(old, NOTIFYSIZE);
+        notifycnt--;
+    }
     AT(filelens, off) = filelen;
     AT(notifys, off) = (ULONG)notify;
     notify->nr_Name = filecop;

@@ -88,11 +88,17 @@ kind F):
   the counter was 0, so it could stop before it: request and name copy
   stayed allocated after the end (#621; test
   `ridoslib-failed-startnotify-kept`).
+* AddNotify with an id in use first ends and frees the request there, as
+  RemNotify does, then enters the new one (once its memory is there).
+  The original overwrote the entry: the old request stayed active, its
+  messages kept coming, and it could no longer be ended (#620; test
+  `ridoslib-addnotify-id-reused`). The manual's note "NO CHECKING is made
+  to ensure slots are free" describes the original's behaviour.
 
 ## BUG(orig)
 
 * AddNotify: no range check of the id (64 entries; the offset is id*4 as
-  a word), an id used twice loses the first request (#626, #620).
+  a word) (#626).
 * RemNotify: no range check either (#626).
 * GetPathName never looks at the first character: `/abc` and `:x` give
   "", like a name without separator (#624). GetFileName and GetPathName take the length as a word

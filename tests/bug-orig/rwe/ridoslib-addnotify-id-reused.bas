@@ -5,6 +5,7 @@
 ; second.  Then RAM:bug-orig-620-a is written: the lost request still
 ; sends its message (id 1).
 ; Correct: after RemNotify 1 no request is left, no message arrives (0).
+; @fixed #620
 ; @rwe ridoslib
 DEFTYPE .l
 r=AddNotify(1,"RAM:bug-orig-620-a")
