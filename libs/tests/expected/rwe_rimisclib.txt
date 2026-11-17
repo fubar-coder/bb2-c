@@ -3188,18 +3188,34 @@ RawASC|popped|index 99|2	$00000000
 TimerReset|TOD reset||1	$00000001
 TimerReset|kept||1	kept
 TimerReset|popped||1	$00000000
+WorkbenchHere|d0|1 screens, first "A Window on Workbench"|1 [fixed #760]	$FFFFFFFF
 WorkbenchHere|d0|1 screens, first "Workbench Screen"|1	$FFFFFFFF
+WorkbenchHere|d0|2 screens, first "<null>"|1 [fixed #761]	$FFFFFFFF
+WorkbenchHere|d0|2 screens, first "My Work"|1 [fixed #762]	$FFFFFFFF
 WorkbenchHere|d0|2 screens, first "Other"|1	$FFFFFFFF
+WorkbenchHere|d0|2 screens, first "Others"|1 [fixed #761]	$00000000
 WorkbenchHere|d0|3 screens, first "WWorkbench"|1	$FFFFFFFF
 WorkbenchHere|d0|4 screens, first ""|1	$FFFFFFFF
+WorkbenchHere|d0|d0 another IntuitionBase with "Workbench", screens "Other"|1 [orig]	$FFFFFFFF
+WorkbenchHere|d0|d0 another IntuitionBase with "Workbench", screens "Other"|1 [fixed #759]	$00000000
+WorkbenchHere|kept|1 screens, first "A Window on Workbench"|1 [fixed #760]	kept
 WorkbenchHere|kept|1 screens, first "Workbench Screen"|1	kept
+WorkbenchHere|kept|2 screens, first "<null>"|1 [fixed #761]	kept
+WorkbenchHere|kept|2 screens, first "My Work"|1 [fixed #762]	kept
 WorkbenchHere|kept|2 screens, first "Other"|1	kept
+WorkbenchHere|kept|2 screens, first "Others"|1 [fixed #761]	kept
 WorkbenchHere|kept|3 screens, first "WWorkbench"|1	kept
 WorkbenchHere|kept|4 screens, first ""|1	kept
+WorkbenchHere|kept|d0 another IntuitionBase with "Workbench", screens "Other"|1	kept
+WorkbenchHere|popped|1 screens, first "A Window on Workbench"|1 [fixed #760]	$00000000
 WorkbenchHere|popped|1 screens, first "Workbench Screen"|1	$00000000
+WorkbenchHere|popped|2 screens, first "<null>"|1 [fixed #761]	$00000000
+WorkbenchHere|popped|2 screens, first "My Work"|1 [fixed #762]	$00000000
 WorkbenchHere|popped|2 screens, first "Other"|1	$00000000
+WorkbenchHere|popped|2 screens, first "Others"|1 [fixed #761]	$00000000
 WorkbenchHere|popped|3 screens, first "WWorkbench"|1	$00000000
 WorkbenchHere|popped|4 screens, first ""|1	$00000000
+WorkbenchHere|popped|d0 another IntuitionBase with "Workbench", screens "Other"|1	$00000000
 finit|kept|font prefs open|1	kept
 finit|popped|font prefs open|1	$00000000
 init|d0 = IntuitionBase||1	$00000001

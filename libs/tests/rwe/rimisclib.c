@@ -14,8 +14,12 @@
  * own for that part (envprivate) - the system's IPrefs watches the real
  * one and keeps a broken file in use (Workbench 3.1).
  * Covered: init; TimerReset (the TOD after it); PortSigBit; WorkbenchHere
- * on a fake IntuitionBase with fake screens (found in the first/a later
- * screen, after a partial match, an empty title); EZOutput both forms;
+ * on fake screens, passed in d0 as a fake IntuitionBase and set as the
+ * system's FirstScreen for the call (found in the first/a later screen,
+ * after a partial match, an empty title; d0 another IntuitionBase, #759;
+ * in the C build only, where the original does not return: no match,
+ * a title ending in a partial match, a mismatch before the match, a
+ * screen without a title); EZOutput both forms;
  * EZRequest all four forms (with '|' in the body, the arguments of every
  * type: string, long, word, byte, quick also negative, float through
  * fltoqu with a6 = mathffp, the stack written back); EZRequestArgs with
@@ -32,7 +36,7 @@
  * and one not found, d0's high word, CloseFontPrefs twice); BInstr; finit
  * (the buffer freed).
  * Not covered: ClickWait (needs the mouse button); WorkbenchHere's
- * endless cases; ASCRaw/RawASC outside the table (they read the code
+ * endless cases in the original; ASCRaw/RawASC outside the table (they read the code
  * behind it, DIFF); EZRequestArgs without arguments; strings longer than
  * the buffers; OpenFontPrefs when AllocMem fails.
  */
@@ -121,10 +125,38 @@ static void sigbit(void)
     OBS("d0", R.d[0]);
 }
 
-static struct IntuitionBase fakeib;
-static struct Screen fakescr[4];
+static struct IntuitionBase fakeib, otherib;
+static struct Screen fakescr[4], otherscr;
 
-static void wbhere(const char *const *titles, int n)
+/* WorkbenchHere on the fake screens of fakeib: d0 = d0ib (the original
+   takes its IntuitionBase from d0, #759), and for the call the system's
+   FirstScreen is the fake list too, under Forbid (the C build reads the
+   library's IntuitionBase, fixed #759).  DO1 with the call in Forbid */
+static void wbcall(const struct IntuitionBase *d0ib)
+{
+    struct IntuitionBase *ib = (struct IntuitionBase *)IntuitionBase;
+    struct Screen *first;
+    APTR fn_ = ENT(LIB, E_WB, 0);
+
+    markregs(&R);
+    NARGS = 0;
+    R.d[0] = (ULONG)d0ib;
+    IN = R;
+    if (!fn_) {
+        check("entry missing", FALSE);
+        return;
+    }
+    Forbid();
+    first = ib->FirstScreen;
+    ib->FirstScreen = fakeib.FirstScreen;
+    CCR = callstk(fn_, &R, ARGS, NARGS, &POP);
+    ib->FirstScreen = first;
+    Permit();
+    preserve();
+    OBS("d0", R.d[0]);
+}
+
+static void wblist(const char *const *titles, int n)
 {
     int i;
     for (i = 0; i < n; i++) {
@@ -132,9 +164,13 @@ static void wbhere(const char *const *titles, int n)
         fakescr[i].NextScreen = i + 1 < n ? &fakescr[i + 1] : NULL;
     }
     fakeib.FirstScreen = &fakescr[0];
-    sprintf(VEC, "%d screens, first \"%s\"", n, titles[0]);
-    DO1(ENT(LIB, E_WB, 0), R.d[0] = (ULONG)&fakeib);
-    OBS("d0", R.d[0]);
+}
+
+static void wbhere(const char *const *titles, int n)
+{
+    wblist(titles, n);
+    sprintf(VEC, "%d screens, first \"%s\"", n, titles[0] ? titles[0] : "<null>");
+    wbcall(&fakeib);
 }
 
 static void workbenchhere(void)
@@ -142,14 +178,35 @@ static void workbenchhere(void)
     static const char *const a[] = { "Workbench Screen" };
     static const char *const b[] = { "Other", "My Workbench" };
     static const char *const c[] = { "WWorkbench", "Work bench", "xWorkbench" };
-    /* a title ending in "W" or "Wo" would restart its screen for ever
-       (BUG(orig), #762): the partial matches here end with a mismatch */
+    /* the partial matches end with a mismatch: the original restarts a
+       title that ends in "W" or "Wo" for ever (#762) */
     static const char *const d[] = { "", "Wx", "Wox", "a Workbench b" };
+    /* the original does not return (it never ends the list, #761) */
+    static const char *const e[] = { "Others", "Work bench x" };
+    static const char *const f[] = { "My Work", "Workbench" };          /* #762 */
+    static const char *const g[] = { "A Window on Workbench" };         /* #760 */
+    static const char *const h[] = { NULL, "Workbench" };               /* no title */
+    static const char *const other[] = { "Other" };
+
     ROUT = "WorkbenchHere";
     wbhere(a, 1);
     wbhere(b, 2);
     wbhere(c, 3);
     wbhere(d, 4);
+    /* d0 another IntuitionBase, whose screen is "Workbench": the original
+       finds it, the C build searches the system's screens (#759) */
+    otherscr.Title = (UBYTE *)"Workbench";
+    otherscr.NextScreen = NULL;
+    otherib.FirstScreen = &otherscr;
+    wblist(other, 1);
+    strcpy(VEC, "d0 another IntuitionBase with \"Workbench\", screens \"Other\"");
+    wbcall(&otherib);
+    if (!strcmp(bl_libset, "obj")) {    /* fixed #761, #762, #760 */
+        wbhere(e, 2);
+        wbhere(f, 2);
+        wbhere(g, 1);
+        wbhere(h, 2);
+    }
 }
 
 /* --------------------------------------------------------- EasyRequest */

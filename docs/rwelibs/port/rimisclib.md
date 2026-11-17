@@ -120,12 +120,13 @@ kind F):
   original went on with the next screen at the first mismatch after a
   "W" (`CMP.b (a1)+,d0 : BEQ 'innerloop`, then `'nextscreen`), so
   "A Window on Workbench" or "WWorkbench" was not found (#760).
+* WorkbenchHere searches the screens of the library's IntuitionBase; the
+  original took it from d0 (`MOVE.l intuibase,a0` overwritten by
+  `MOVE.l d0,a0`), and the function has no arguments: it searched the
+  "screen list" of whatever the program left in d0 (#759).
 
 ## BUG(orig)
 
-* WorkbenchHere takes IntuitionBase from d0 (`MOVE.l intuibase,a0` is
-  overwritten by `MOVE.l d0,a0`) and has no arguments: d0 is whatever
-  the program left there (#759).
 * Flip$ of a string of 0 or 1 characters: the count `len/2 - 1` is -1,
   the DBRA swaps 65536 byte pairs around the string (#751).
 * NextArgChar$ does not check the parse pointer: before InitArgParse and
@@ -185,9 +186,13 @@ for ProgPath$'s fallbacks; the font prefs are files the test writes to
 file and reads every version of it (Workbench 3.1's keeps the one with
 the bad PRHD in use, every later write fails). Observed:
 init (d0 = IntuitionBase); TimerReset (the TOD
-right after it); PortSigBit; WorkbenchHere on a fake IntuitionBase with
-1-4 fake screens (found first, later, after partial matches, empty
-title); EZOutput both forms; EZRequest all four forms – the body buffer
+right after it); PortSigBit; WorkbenchHere on 1-4 fake screens, passed
+in d0 as a fake IntuitionBase (the original's) and set as the system's
+FirstScreen for the call under Forbid (the C build's) (found first,
+later, after partial matches, empty title; d0 another IntuitionBase,
+#759; in the C build only, where the original does not return: no
+match, a title that ends in a partial match, a mismatch before the
+match, a screen without a title); EZOutput both forms; EZRequest all four forms – the body buffer
 after the `|` change, the argument stack (Floats written back), all
 argument types (string, long, word, byte, Quick also negative, Float
 through fltoqu with a6 = mathffp), 16 longs; EZRequestArgs with the same,
@@ -206,6 +211,6 @@ Besides these: the argument array and body text of one call,
 the font of type 1/2, FromBlitz -1. Kept registers on every call.
 
 Not covered: ClickWait (needs the mouse button); WorkbenchHere's endless
-cases; ASCRaw/RawASC outside the table (DIFF); EZRequestArgs without
+cases in the original; ASCRaw/RawASC outside the table (DIFF); EZRequestArgs without
 arguments; strings longer than the buffers; OpenFontPrefs when AllocMem
 fails.

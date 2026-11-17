@@ -36,9 +36,6 @@
  * inlines, floatquicklib's fltoqu through BLITZ_ALIBJSR_A6.
  *
  * BUG(orig), kept:
- *   - WorkbenchHere takes IntuitionBase from d0 (MOVE.l intuibase,a0 is
- *     overwritten by MOVE.l d0,a0), and the function has no arguments: d0
- *     is whatever the program left there (#759).
  *   - Flip$ of a string with 0 or 1 characters swaps 65536 byte pairs
  *     around the string (DBRA with -1) (#751).
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
@@ -69,6 +66,10 @@
  *     until its end, through the uncleared memory behind the file, and
  *     read the last chunk up to 26 bytes behind the buffer (#745).
  *
+ * Fixed (intended deviation, #759): WorkbenchHere searches the screens
+ * of the library's own IntuitionBase; the original took it from d0
+ * (MOVE.l intuibase,a0 overwritten by MOVE.l d0,a0), and the function
+ * has no arguments: d0 was whatever the program left there.
  * Fixed (intended deviation, #761): WorkbenchHere ends at the end of the
  * screen list and returns 0 there, and skips a screen without a title;
  * the original never ended the list (no 0 check: it read the "screen"
@@ -481,10 +482,11 @@ static ULONG BLITZ_ROUTINE getsigbit_c(const struct MsgPort *port BL_REG(d0))
 /**
  * @brief WorkbenchHere: whether a screen's title contains "Workbench".
  *
- * Searches the screen titles from IntuitionBase->FirstScreen up to the
- * end of the list, each title from every character on; a screen without
- * a title is skipped.
- * BUG(orig): IntuitionBase is taken from d0, which is no argument (#759).
+ * Searches the screen titles from the library's IntuitionBase
+ * (FirstScreen) up to the end of the list, each title from every
+ * character on; a screen without a title is skipped.
+ * Fixed (#759): the original took IntuitionBase from d0, which is no
+ * argument (MOVE.l intuibase,a0 overwritten by MOVE.l d0,a0).
  * Fixed (#761): the original never ends the screen list (no 0 check: it
  * reads the "screen" at address 0 and goes on), so it returned BB_TRUE
  * or hung, never BB_FALSE.  Fixed (#762): the original restarted the
@@ -492,12 +494,11 @@ static ULONG BLITZ_ROUTINE getsigbit_c(const struct MsgPort *port BL_REG(d0))
  * that ends with the start of "Workbench".  Fixed (#760): the original
  * went on with the next screen at the first mismatch after a "W"
  * ("A Window on Workbench" was not found).
- * @param ib  d0: whatever the program left there, used as IntuitionBase
  * @return d0: BB_TRUE when found, BB_FALSE at the end of the list
  */
-static BB_BOOL BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE iswbhere_c(void)
 {
-    const struct Screen *scr = ib->FirstScreen;
+    const struct Screen *scr = intuibase->FirstScreen;  /* fixed (#759): not d0 */
     const UBYTE *t, *s, *p;
 
     thisscreen = (const UBYTE *)scr;
