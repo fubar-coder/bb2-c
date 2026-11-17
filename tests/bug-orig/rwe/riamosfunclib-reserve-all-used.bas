@@ -9,6 +9,7 @@
 ; address of a chip block of the program's own whose size is that header
 ; long, so the FreeMem frees that block; the header is restored.
 ; Correct: Reserve(length) finds no free bank and leaves bank 1 alone.
+; @fixed #498
 ; @rwe riamosfunclib
 DEFTYPE .l
 s=BankLimit(2)

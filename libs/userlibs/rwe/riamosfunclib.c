@@ -43,11 +43,7 @@
  *   - No range checks: a negative bank number counts as a bank and
  *     indexes before the tables (Start, Length, Erase, Reserve, BLoad,
  *     FillMem, SwapBank, NextBank); Reserve(bank,...) with bank >=
- *     maxbanks writes behind the start table (#484).  Reserve(length)
- *     checks the sign of the length, not NextBank's result: with every
- *     bank in use it reserves "bank -1" (the entry before the start
- *     table is the last length, the one before the length table memlib's
- *     header) (#498).
+ *     maxbanks writes behind the start table (#484).
  *   - Reserve(length) returns 0 for a negative length - also a bank
  *     number (#500); -1 if AllocMem fails.  A bank in use is erased
  *     before the new allocation, also when that fails (#499).
@@ -94,6 +90,10 @@
  *     count of 0 (FillMem also for a negative one, as the copies); the
  *     original tested the count only after the first unit (SUBQ.l/BNE):
  *     2^32 units (#492).
+ *   - Reserve(length) returns -1 when every bank is in use; the original
+ *     tested the sign of the length, not NextBank's -1, and reserved
+ *     "bank -1" (the entry before the start table is the last length,
+ *     the one before the length table memlib's header) (#498).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -527,12 +527,12 @@ static ULONG BLITZ_ROUTINE findfreebank_c(LONG bank BL_REG(d0))
  * @brief Reserve(length): allocates the next free bank (NextBank from 0,
  * MEMF_PUBLIC).
  *
- * BUG(orig): the sign of the length is tested, not NextBank's -1 - with
- * every bank in use it reserves "bank -1" (#498); 0 for a negative length
- * is also a bank number (#500).
+ * Fixed (#498): -1 when every bank is in use; the original tested only
+ * the sign of the length and reserved "bank -1".  BUG(orig): 0 for a
+ * negative length is also a bank number (#500).
  * @param len  d0: the length
- * @return d0: the bank number, -1 if AllocMem fails, 0 for a negative
- *         length
+ * @return d0: the bank number, -1 if no bank is free or AllocMem fails,
+ *         0 for a negative length
  */
 static ULONG BLITZ_ROUTINE allocmem2_c(LONG len BL_REG(d0))
 {
@@ -540,6 +540,8 @@ static ULONG BLITZ_ROUTINE allocmem2_c(LONG len BL_REG(d0))
 
     if (len < 0)
         return 0;
+    if ((LONG)bank < 0)
+        return (ULONG)-1;                       /* fixed (#498) */
     if (!allocmem1_c((LONG)bank, (ULONG)len))
         return (ULONG)-1;
     return bank;

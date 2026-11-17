@@ -108,6 +108,10 @@ kind F):
   for a count of 0 (`FillMem` also for a negative length, as the copies
   do for a negative count); the original tested the count only after
   the first unit and copied or filled 2^32 units (#492).
+* `Reserve(length)` returns -1 when every bank is in use; the original
+  tested the sign of the length, not NextBank's result, and reserved
+  "bank -1" (the entry before the start table is the last length, the
+  one before the length table memlib's block header) (#498).
 
 ## BUG(orig), kept
 
@@ -116,10 +120,7 @@ kind F):
 * No range checks: a negative bank number counts as a bank and indexes
   before the tables (Start, Length, Erase, Reserve, BLoad, FillMem,
   SwapBank, NextBank); `Reserve(bank,…)` with bank ≥ maxbanks writes
-  behind the start table (#484). `Reserve(length)` tests the sign of the
-  length, not NextBank's result: with every bank in use it reserves
-  "bank -1" (the entry before the start table is the last length, the
-  one before the length table memlib's block header) (#498).
+  behind the start table (#484).
 * `Reserve(length)` returns 0 for a negative length – also a bank
   number (#500) – and -1 if AllocMem fails. A bank in use is erased
   before the new allocation, also when that fails (#499).
