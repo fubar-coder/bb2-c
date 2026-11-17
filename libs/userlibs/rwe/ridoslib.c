@@ -34,13 +34,9 @@
  *
  * BUG(orig):
  *   - AddNotify: no range check of the id (64 entries; the offset is
- *     id*4 as a word), an id used twice loses the first request; a
- *     request whose StartNotify failed stays in the table (RemNotify /
- *     finit would EndNotify it) and is not counted, so finit may stop
- *     before it (#626, #620, #621).
+ *     id*4 as a word), an id used twice loses the first request (#626,
+ *     #620).
  *   - RemNotify: no range check either (#626).
- *   - finit removes the requests from id 63 down only while the counter
- *     is not 0 (#621).
  *   - GetPathName never looks at the first character: "/abc" and ":x"
  *     give "", like a name without separator (#624).  GetFileName and GetPathName take the length
  *     as a word (MOVE.w -(a2): the low word of the long) (#628), and
@@ -67,6 +63,11 @@
  * it wrote the name or the request to address 0 on.  It now returns 0,
  * frees the name copy if only the request failed and leaves the table
  * alone.
+ * Fixed (intended deviation, #621): a request whose StartNotify failed
+ * stayed in the table, uncounted, and finit, which stopped when the
+ * counter was 0, could stop before it: request and name copy stayed
+ * allocated after the end.  AddNotify now takes it out and frees both;
+ * finit looks at all 64 entries.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -364,8 +365,9 @@ static ULONG BLITZ_ROUTINE remnotify_c(LONG id BL_REG(d0))
  * leaves the table alone (fixed, #619: the original used AllocMem's
  * results unchecked).  BUG(orig): no range check of the id (64 entries,
  * the offset id*4 as a word, #626); an id used twice loses the first
- * request (#620); a request whose StartNotify failed stays in the table
- * and is not counted (#621).
+ * request (#620).  A request whose StartNotify fails is taken out of the
+ * table and freed with its name copy (fixed, #621: the original left it
+ * there, uncounted).
  * @param id    d0: the id
  * @param file  d1: the file name
  * @param lens  a2: the argument stack, the name's length at -4(a2)
@@ -405,8 +407,12 @@ static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG
     notify->nr_UserData = notifynum;
     notify->nr_Flags = NRF_SEND_MESSAGE;
     notify->nr_stuff.nr_Msg.nr_Port = msgport;
-    if (!StartNotify(notify))
+    if (!StartNotify(notify)) {                         /* fixed (#621) */
+        AT(notifys, off) = 0;
+        FreeMem(filecop, filelen);
+        FreeMem(notify, NOTIFYSIZE);
         return BB_FALSE;
+    }
     notifycnt++;
     return BB_TRUE;
 }
@@ -430,19 +436,17 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
  * @brief finit: ends the notifications still active, closes dos.library
  * and deletes the port.
  *
- * BUG(orig) (#621): the requests are removed from id 63 down only while
- * the counter is not 0.  The port is deleted only if dos.library was
- * open (always, where CreateMsgPort exists: no defect).
+ * All 64 entries are looked at, from id 63 down (fixed, #621: the
+ * original stopped when the counter was 0).  The port is deleted only if
+ * dos.library was open (always, where CreateMsgPort exists: no defect).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (msgport) {
         LONG id = 63;
-        do {
-            if (!notifycnt)
-                break;
+        do
             remnotify_c(id);
-        } while (--id >= 0);                            /* DBRA */
+        while (--id >= 0);                              /* DBRA */
     }
     if (!dosbase_)
         return;

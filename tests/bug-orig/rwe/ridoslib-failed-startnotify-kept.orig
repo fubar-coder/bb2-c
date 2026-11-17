@@ -1,0 +1,25 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+done
+[compile]
+ok
+[run]
+results 0 -1
+inject: rc=0
+inject: track: 2 allocations left, 66 bytes
+inject:   18 bytes, flags $10000
+inject:   48 bytes, flags $10000
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/ridoslib-failed-startnotify-kept.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/ridoslib-failed-startnotify-kept
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

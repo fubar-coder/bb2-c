@@ -82,18 +82,18 @@ kind F):
   name or the request to address 0 on (#619; tests
   `ridoslib-addnotify-allocmem-unchecked`,
   `ridoslib-addnotify-allocmem-request`).
+* A request whose StartNotify fails is taken out of the table and freed
+  with its name copy at once; finit looks at all 64 entries. The original
+  left such a request in the table, uncounted, and finit stopped when
+  the counter was 0, so it could stop before it: request and name copy
+  stayed allocated after the end (#621; test
+  `ridoslib-failed-startnotify-kept`).
 
 ## BUG(orig)
 
 * AddNotify: no range check of the id (64 entries; the offset is id*4 as
-  a word), an id used twice loses the first request. A request whose
-  StartNotify failed stays in the table (RemNotify or finit would
-  EndNotify it) and is not counted, so finit, which stops when the
-  counter is 0, may never reach it: it stays allocated (#626, #620,
-  #621).
+  a word), an id used twice loses the first request (#626, #620).
 * RemNotify: no range check either (#626).
-* finit removes the requests from id 63 down only while the counter is
-  not 0 (#621).
 * GetPathName never looks at the first character: `/abc` and `:x` give
   "", like a name without separator (#624). GetFileName and GetPathName take the length as a word
   (`MOVE.w -(a2)`: the low word of the long) (#628), and nothing limits
