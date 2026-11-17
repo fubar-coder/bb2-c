@@ -3,61 +3,84 @@ PopUpInit|kept|a button without an item|1	kept
 PopUpInit|popped|a button without an item|1	$00000000
 PopUpWindow|a new port|starting with a separator, a new port|1 [orig]	$00000001
 PopUpWindow|a new port|starting with a separator, a new port|1 [fixed #470]	$00000000
+PopUpWindow|d0 0 (BUG(orig) #471)|a button queued behind the move that closes a sub menu|1	$00000001
 PopUpWindow|d0 0 (BUG(orig) #471)|a button without an item|1	$00000001
 PopUpWindow|d0 0 (BUG(orig) #471)|starting with a separator, a new port|1	$00000001
 PopUpWindow|d0 0 (BUG(orig) #471)|three levels|1	$00000001
+PopUpWindow|kept|a button queued behind the move that closes a sub menu|1	kept
 PopUpWindow|kept|a button without an item|1	kept
 PopUpWindow|kept|starting with a separator, a new port|1	kept
 PopUpWindow|kept|three levels|1	kept
+PopUpWindow|no popup window left|a button queued behind the move that closes a sub menu|1	$00000001
 PopUpWindow|no popup window left|a button without an item|1	$00000001
 PopUpWindow|no popup window left|starting with a separator, a new port|1	$00000001
 PopUpWindow|no popup window left|three levels|1	$00000001
+PopUpWindow|popped|a button queued behind the move that closes a sub menu|1	$00000000
 PopUpWindow|popped|a button without an item|1	$00000000
 PopUpWindow|popped|starting with a separator, a new port|1	$00000000
 PopUpWindow|popped|three levels|1	$00000000
+PopUpWindow|the menu levels opened|a button queued behind the move that closes a sub menu|1	$00000001
 PopUpWindow|the menu levels opened|a button without an item|1	$00000001
 PopUpWindow|the menu levels opened|starting with a separator, a new port|1	$00000001
 PopUpWindow|the menu levels opened|three levels|1	$00000001
+PopUpWindow|the whole script|a button queued behind the move that closes a sub menu|1	$00000001
 PopUpWindow|the whole script|a button without an item|1	$00000001
 PopUpWindow|the whole script|starting with a separator, a new port|1	$00000001
 PopUpWindow|the whole script|three levels|1	$00000001
+PopUpWindow|wait 0 CIA-A PRA bit 1|a button queued behind the move that closes a sub menu|1 [orig]	$00000002
+PopUpWindow|wait 0 CIA-A PRA bit 1|a button queued behind the move that closes a sub menu|1 [fixed #468]	$00000000
 PopUpWindow|wait 0 CIA-A PRA bit 1|a button without an item|1 [orig]	$00000002
 PopUpWindow|wait 0 CIA-A PRA bit 1|a button without an item|1 [fixed #468]	$00000000
 PopUpWindow|wait 0 CIA-A PRA bit 1|starting with a separator, a new port|1	$00000000
 PopUpWindow|wait 0 CIA-A PRA bit 1|three levels|1 [orig]	$00000002
 PopUpWindow|wait 0 CIA-A PRA bit 1|three levels|1 [fixed #468]	$00000000
+PopUpWindow|wait 0 window 0 IDCMP|a button queued behind the move that closes a sub menu|1	$00080218
 PopUpWindow|wait 0 window 0 IDCMP|a button without an item|1	$00080218
 PopUpWindow|wait 0 window 0 IDCMP|starting with a separator, a new port|1	$00080218
 PopUpWindow|wait 0 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 0 window 0 contents|a button queued behind the move that closes a sub menu|1	$C1BBBDD0
 PopUpWindow|wait 0 window 0 contents|a button without an item|1	$C1BBBDD0
 PopUpWindow|wait 0 window 0 contents|starting with a separator, a new port|1	$4C127B42
 PopUpWindow|wait 0 window 0 contents|three levels|1	$C1BBBDD0
+PopUpWindow|wait 0 window 0 position|a button queued behind the move that closes a sub menu|1	$00000000
 PopUpWindow|wait 0 window 0 position|a button without an item|1	$00000000
 PopUpWindow|wait 0 window 0 position|starting with a separator, a new port|1	$00000000
 PopUpWindow|wait 0 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 0 window 0 size|a button queued behind the move that closes a sub menu|1	$002C0040
 PopUpWindow|wait 0 window 0 size|a button without an item|1	$002C0040
 PopUpWindow|wait 0 window 0 size|starting with a separator, a new port|1	$001C0024
 PopUpWindow|wait 0 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 0 windows|a button queued behind the move that closes a sub menu|1	$00000001
 PopUpWindow|wait 0 windows|a button without an item|1	$00000001
 PopUpWindow|wait 0 windows|starting with a separator, a new port|1	$00000001
 PopUpWindow|wait 0 windows|three levels|1	$00000001
+PopUpWindow|wait 1 CIA-A PRA bit 1|a button queued behind the move that closes a sub menu|1	$00000000
 PopUpWindow|wait 1 CIA-A PRA bit 1|a button without an item|1 [orig]	$00000002
 PopUpWindow|wait 1 CIA-A PRA bit 1|a button without an item|1 [fixed #468]	$00000000
 PopUpWindow|wait 1 CIA-A PRA bit 1|starting with a separator, a new port|1	$00000000
 PopUpWindow|wait 1 CIA-A PRA bit 1|three levels|1 [orig]	$00000002
 PopUpWindow|wait 1 CIA-A PRA bit 1|three levels|1 [fixed #468]	$00000000
+PopUpWindow|wait 1 window 0 IDCMP|a button queued behind the move that closes a sub menu|1	$00080218
 PopUpWindow|wait 1 window 0 IDCMP|a button without an item|1	$00080218
 PopUpWindow|wait 1 window 0 IDCMP|starting with a separator, a new port|1	$00080218
 PopUpWindow|wait 1 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 1 window 0 contents|a button queued behind the move that closes a sub menu|1	$153270F0
 PopUpWindow|wait 1 window 0 contents|a button without an item|1	$096E15AC
 PopUpWindow|wait 1 window 0 contents|starting with a separator, a new port|1	$773F8816
 PopUpWindow|wait 1 window 0 contents|three levels|1	$096E15AC
+PopUpWindow|wait 1 window 0 position|a button queued behind the move that closes a sub menu|1	$00000000
 PopUpWindow|wait 1 window 0 position|a button without an item|1	$00000000
 PopUpWindow|wait 1 window 0 position|starting with a separator, a new port|1	$00000000
 PopUpWindow|wait 1 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 1 window 0 size|a button queued behind the move that closes a sub menu|1	$002C0040
 PopUpWindow|wait 1 window 0 size|a button without an item|1	$002C0040
 PopUpWindow|wait 1 window 0 size|starting with a separator, a new port|1	$001C0024
 PopUpWindow|wait 1 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 1 window 1 IDCMP|a button queued behind the move that closes a sub menu|1	$00080218
+PopUpWindow|wait 1 window 1 contents|a button queued behind the move that closes a sub menu|1	$AB9B8074
+PopUpWindow|wait 1 window 1 position|a button queued behind the move that closes a sub menu|1	$002C0020
+PopUpWindow|wait 1 window 1 size|a button queued behind the move that closes a sub menu|1	$00340020
+PopUpWindow|wait 1 windows|a button queued behind the move that closes a sub menu|1	$00000002
 PopUpWindow|wait 1 windows|a button without an item|1	$00000001
 PopUpWindow|wait 1 windows|starting with a separator, a new port|1	$00000001
 PopUpWindow|wait 1 windows|three levels|1	$00000001
@@ -152,18 +175,24 @@ PopUpWindow|wait 17 window 1 contents|three levels|1	$4D02F8E4
 PopUpWindow|wait 17 window 1 position|three levels|1	$002C0020
 PopUpWindow|wait 17 window 1 size|three levels|1	$00340020
 PopUpWindow|wait 17 windows|three levels|1	$00000002
+PopUpWindow|wait 2 CIA-A PRA bit 1|a button queued behind the move that closes a sub menu|1	$00000000
 PopUpWindow|wait 2 CIA-A PRA bit 1|a button without an item|1 [orig]	$00000002
 PopUpWindow|wait 2 CIA-A PRA bit 1|a button without an item|1 [fixed #468]	$00000000
 PopUpWindow|wait 2 CIA-A PRA bit 1|three levels|1 [orig]	$00000002
 PopUpWindow|wait 2 CIA-A PRA bit 1|three levels|1 [fixed #468]	$00000000
+PopUpWindow|wait 2 window 0 IDCMP|a button queued behind the move that closes a sub menu|1	$00080218
 PopUpWindow|wait 2 window 0 IDCMP|a button without an item|1	$00080218
 PopUpWindow|wait 2 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 2 window 0 contents|a button queued behind the move that closes a sub menu|1	$C1BBBDD0
 PopUpWindow|wait 2 window 0 contents|a button without an item|1	$C1BBBDD0
 PopUpWindow|wait 2 window 0 contents|three levels|1	$C1DC2C1E
+PopUpWindow|wait 2 window 0 position|a button queued behind the move that closes a sub menu|1	$00000000
 PopUpWindow|wait 2 window 0 position|a button without an item|1	$00000000
 PopUpWindow|wait 2 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 2 window 0 size|a button queued behind the move that closes a sub menu|1	$002C0040
 PopUpWindow|wait 2 window 0 size|a button without an item|1	$002C0040
 PopUpWindow|wait 2 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 2 windows|a button queued behind the move that closes a sub menu|1	$00000001
 PopUpWindow|wait 2 windows|a button without an item|1	$00000001
 PopUpWindow|wait 2 windows|three levels|1	$00000001
 PopUpWindow|wait 3 CIA-A PRA bit 1|three levels|1 [orig]	$00000002
@@ -221,6 +250,7 @@ PopUpWindow|wait 9 window 1 contents|three levels|1	$4D02F8E4
 PopUpWindow|wait 9 window 1 position|three levels|1	$002C0020
 PopUpWindow|wait 9 window 1 size|three levels|1	$00340020
 PopUpWindow|wait 9 windows|three levels|1	$00000002
+PopUpWindow|waits|a button queued behind the move that closes a sub menu|1	$00000003
 PopUpWindow|waits|a button without an item|1	$00000003
 PopUpWindow|waits|starting with a separator, a new port|1	$00000002
 PopUpWindow|waits|three levels|1	$00000012

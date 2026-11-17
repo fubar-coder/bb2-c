@@ -93,7 +93,9 @@ on its port, the patch:
 * takes a snapshot of the popup windows;
 * sets their MouseX/MouseY to the next position of a script;
 * puts the script's IntuiMessage (MOUSEMOVE, MOUSEBUTTONS,
-  INACTIVEWINDOW) into the port.
+  INACTIVEWINDOW) into the port, for the window of the level of its
+  position (the newest window for an absolute position), and the
+  entries marked to come with it: several messages queued at one wait.
 
 The windows open on the Workbench screen at 0,0 (the screen object is
 the Workbench screen); the library closes them all before PopUpWindow
@@ -119,6 +121,8 @@ Covered:
   closes), onto the parent's active item (the sub menu stays), the third
   level left for the first (two levels closed), a mouse button with an
   active item;
+* a mouse button for the parent queued behind the move that closes a
+  sub menu (the original replies it when it closes the sub menu, #469);
 * a mouse button without an active item;
 * a menu without sub menus that starts with a separator;
 * PopUpInit (the original makes a new port and leaves the old one, which

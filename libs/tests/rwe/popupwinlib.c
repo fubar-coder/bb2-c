@@ -13,7 +13,10 @@
  * windows, sets their MouseX/MouseY to the next position of a script
  * (the library takes the position from there, not from the messages)
  * and puts the script's IntuiMessage (MOUSEMOVE, MOUSEBUTTONS,
- * INACTIVEWINDOW) into the port.  The windows open on the Workbench
+ * INACTIVEWINDOW) into the port, with the entries marked to come with it
+ * (several messages queued at one wait); a message is for the window of
+ * the level of its position (IDCMPWindow; an absolute position: the
+ * newest window, the active one).  The windows open on the Workbench
  * screen at 0,0 (the screen object is the Workbench screen)
  * and are all closed by the library before PopUpWindow returns.
  * Observed per snapshot: the popup windows (position, size, IDCMP) and
@@ -28,7 +31,9 @@
  * a sub menu opened by moving onto its item, back to the parent (closes
  * the sub menu), onto the parent's active item (the sub menu stays), a
  * third level left for the first (two levels closed), a mouse button
- * with and without an active item; a menu without sub menus that starts
+ * with and without an active item; a mouse button for the parent queued
+ * behind the move that closes a sub menu (BUG(orig) #469: closing the
+ * sub menu replies it, one more wait); a menu without sub menus that starts
  * with a separator; PopUpInit (the original makes a new port and leaves
  * the old one, #470 - the test deletes it; the C build keeps the port);
  * finit.
@@ -64,12 +69,14 @@ static int script_on;
 static UBYTE items[16][24];
 
 /* the script: a message class and the mouse position, relative to the
-   window of menu level `level` (-1: absolute, on the screen) */
-struct ev { ULONG cls; int level; WORD x, y; };
+   window of menu level `level` (-1: absolute, on the screen); `with`:
+   put into the port at the same wait as the entry before (its position
+   is not used: the windows have that of the first entry of the wait) */
+struct ev { ULONG cls; int level; WORD x, y; int with; };
 #define MAXEV 24
 static struct ev script[MAXEV];
-static int nscript, nev;
-static struct IntuiMessage msgs[MAXEV];
+static int nscript, nev, nsent;         /* nsent: the script entries put */
+static struct IntuiMessage msgs[MAXEV + 1];     /* per entry; + the end */
 static struct MsgPort *port;            /* the library's port */
 
 /* the snapshots */
@@ -134,14 +141,31 @@ static struct Message *callold(struct MsgPort *p)
     return (struct Message *)d0;
 }
 
+/* a message of the script for the window of `level` (the newest window
+   for an absolute position), the mouse at sx,sy on the screen */
+static void putev(struct MsgPort *p, struct IntuiMessage *m, const struct ev *e,
+                  struct Window **w, int n, int sx, int sy)
+{
+    memset(m, 0, sizeof *m);
+    m->ExecMessage.mn_ReplyPort = replyport;
+    m->ExecMessage.mn_Length = sizeof *m;
+    m->Class = e->cls;
+    m->Code = e->cls == IDCMP_MOUSEBUTTONS ? SELECTDOWN : 0;
+    m->MouseX = sx;
+    m->MouseY = sy;
+    if (n > 0)
+        m->IDCMPWindow = w[e->level >= 0 && e->level < n ? e->level : n - 1];
+    PutMsg(p, &m->ExecMessage);
+}
+
 /* exec WaitPort while a popup runs: snapshot, the next mouse position
-   and message of the script */
+   and message of the script (and the entries that come with it) */
 static struct Message *hook_waitport(struct MsgPort *p __asm("a0"))
 {
     if (script_on && FindTask(NULL) == me) {
         struct Window *w[MAXWIN];
-        struct IntuiMessage *m;
-        struct ev e = { IDCMP_MOUSEBUTTONS, -1, 600, 250 };     /* the end */
+        struct ev e = { IDCMP_MOUSEBUTTONS, -1, 600, 250, 0 };  /* the end */
+        struct IntuiMessage *m = &msgs[MAXEV];
         int n, k = nev++, i, sx, sy;
 
         while (GetMsg(replyport))
@@ -161,8 +185,10 @@ static struct Message *hook_waitport(struct MsgPort *p __asm("a0"))
                 s->hash = winhash(w[i]);
             }
         }
-        if (k < nscript)
-            e = script[k];
+        if (nsent < nscript) {
+            m = &msgs[nsent];
+            e = script[nsent++];
+        }
         sx = e.x;
         sy = e.y;
         if (e.level >= 0 && e.level < n) {
@@ -173,15 +199,11 @@ static struct Message *hook_waitport(struct MsgPort *p __asm("a0"))
             w[i]->MouseX = sx - w[i]->LeftEdge;
             w[i]->MouseY = sy - w[i]->TopEdge;
         }
-        m = &msgs[k < MAXEV ? k : MAXEV - 1];
-        memset(m, 0, sizeof *m);
-        m->ExecMessage.mn_ReplyPort = replyport;
-        m->ExecMessage.mn_Length = sizeof *m;
-        m->Class = e.cls;
-        m->Code = e.cls == IDCMP_MOUSEBUTTONS ? SELECTDOWN : 0;
-        m->MouseX = sx;
-        m->MouseY = sy;
-        PutMsg(p, &m->ExecMessage);
+        putev(p, m, &e, w, n, sx, sy);
+        while (nsent < nscript && script[nsent].with) {
+            putev(p, &msgs[nsent], &script[nsent], w, n, sx, sy);
+            nsent++;
+        }
     }
     return callold(p);
 }
@@ -199,7 +221,14 @@ static void item(int i, int next, const char *text, int subs)
 static void ev(ULONG cls, int level, int x, int y)
 {
     if (nscript < MAXEV)
-        script[nscript++] = (struct ev){ cls, level, x, y };
+        script[nscript++] = (struct ev){ cls, level, x, y, 0 };
+}
+
+/* a message put into the port at the same wait as the entry before */
+static void evwith(ULONG cls, int level)
+{
+    if (nscript < MAXEV)
+        script[nscript++] = (struct ev){ cls, level, 0, 0, 1 };
 }
 
 static void popup(const char *what, int first, int levels)
@@ -210,14 +239,14 @@ static void popup(const char *what, int first, int levels)
     strcpy(VEC, what);
     script_on = 1;
     DO1(ENT(LIB, E_POPUP, 0),
-        nev = 0; cia0 = CIAAPRA & 2;
+        nev = nsent = 0; cia0 = CIAAPRA & 2;
         R.d[0] = MARK(0); R.d[1] = (ULONG)items[first];
         R.a[0] = (ULONG)scrobj);
     script_on = 0;
     while (GetMsg(replyport))
         ;
     BOTH("d0 0 (BUG(orig) #471)", R.d[0] == 0);
-    BOTH("the whole script", nev == nscript);
+    BOTH("the whole script", nsent == nscript);
     OBS("waits", nev);
     for (k = 0; k < nev && k < MAXEV; k++) {
         char w[160];
@@ -339,6 +368,16 @@ int main(int argc, char **argv)
     avail = AvailMem(MEMF_ANY);
     rwe_memothers = TRUE;
     rwe_mem_start();
+
+    /* a button for the parent queued behind the move that closes the
+       sub menu: BUG(orig) (#469): closing the sub menu replies it too,
+       the parent needs another button */
+    nscript = 0;
+    ev(IDCMP_MOUSEMOVE, 0, 10, yC);     /* More: the sub menu opens */
+    ev(IDCMP_MOUSEMOVE, 0, 10, yB);     /* back to Save: the sub menu closes */
+    evwith(IDCMP_MOUSEBUTTONS, 0);      /* and a button on Save */
+    ev(IDCMP_MOUSEBUTTONS, 0, 10, yB);  /* the button again */
+    popup("a button queued behind the move that closes a sub menu", 0, 2);
 
     nscript = 0;
     ev(IDCMP_MOUSEMOVE, 0, 10, yA);     /* Open */
