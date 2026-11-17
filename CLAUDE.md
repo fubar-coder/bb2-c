@@ -77,8 +77,8 @@ and presets".
 5. **Testing an agent's work:** agents run the tests their brief names,
    the tests of what they touched and `ctest --preset host`, in the
    foreground; the coordinator runs `all`, `bug-orig` and `originals` once
-   after merging (D-010). Why: full presets in parallel overload the
-   machine and every agent would wait for them.
+   after merging (D-010). Why: a full run takes up to 20 minutes; once
+   per round is enough to catch what the targeted tests miss.
 6. **Only C/C++ and CMake** in the project infrastructure (build, tests,
    tools): what compiler and linker can do themselves without a tool
    (`#embed` + `static_assert`, `strip`); text and control in CMake;
