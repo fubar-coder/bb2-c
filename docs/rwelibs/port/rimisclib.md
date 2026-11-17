@@ -124,11 +124,12 @@ kind F):
   original took it from d0 (`MOVE.l intuibase,a0` overwritten by
   `MOVE.l d0,a0`), and the function has no arguments: it searched the
   "screen list" of whatever the program left in d0 (#759).
+* Flip$ of a string of 0 or 1 characters returns it unchanged; in the
+  original the count `len/2 - 1` is -1, the DBRA swapped 65536 byte
+  pairs around the string (#751).
 
 ## BUG(orig)
 
-* Flip$ of a string of 0 or 1 characters: the count `len/2 - 1` is -1,
-  the DBRA swaps 65536 byte pairs around the string (#751).
 * NextArgChar$ does not check the parse pointer: before InitArgParse and
   after NextArg$ came to the end it reads from address 0 (#754).
 * EZRequestArgs writes no 0 behind its format text (160 byte buffer): a

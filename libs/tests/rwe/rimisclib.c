@@ -24,7 +24,7 @@
  * type: string, long, word, byte, quick also negative, float through
  * fltoqu with a6 = mathffp, the stack written back); EZRequestArgs with
  * the same types, EZSeparator, the stale end of a longer format text
- * (BUG(orig), #747); Flip$ with 2..250 characters and with 0 and 1 (BUG(orig) #751:
+ * (BUG(orig), #747); Flip$ with 2..250 characters and with 0 and 1 (the original:
  * 65536 swaps, in a big buffer); InitArgParse/NextArg$/NextArgChar$ on
  * many lines (spaces, quotes, "", unterminated quotes, separators), both
  * before InitArgParse and after the end (address 0); ProgPath$/ProgDir$/
@@ -475,7 +475,8 @@ static void flip(void)
     DO1(ENT(LIB, E_FLIP, 0), STRARG(longstr));
     STRRES();
 
-    /* 0 and 1 character: 65536 swaps around the string (BUG(orig), #751) */
+    /* 0 and 1 character: the original swaps 65536 byte pairs around the
+       string (fixed #751: nothing changes), in a big buffer */
     big = AllocMem(BIGSZ, MEMF_ANY);
     if (big) {
         for (k = 0; k < 2; k++) {

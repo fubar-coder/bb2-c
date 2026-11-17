@@ -1,0 +1,23 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+# varies: the crash ends the session as a timeout or a halt of the CPU, depending on the memory layout (#751)
+*
+[compile]
+ok
+[run]
+before
+# varies: the crash shows the Software Failure requester or not, depending on the memory layout (#751)
+...
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/rimisclib-flip-short-string.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/rimisclib-flip-short-string
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

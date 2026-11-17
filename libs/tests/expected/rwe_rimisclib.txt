@@ -1621,8 +1621,10 @@ Flip$|kept|"abc"|1	kept
 Flip$|kept|0 characters (65536 swaps)|1	kept
 Flip$|kept|1 characters (65536 swaps)|1	kept
 Flip$|kept|250 characters|1	kept
-Flip$|memory|0 characters (65536 swaps)|1	bytes 140000 fnv E872AFE2
-Flip$|memory|1 characters (65536 swaps)|1	bytes 140000 fnv 5D13FCCD
+Flip$|memory|0 characters (65536 swaps)|1 [orig]	bytes 140000 fnv E872AFE2
+Flip$|memory|0 characters (65536 swaps)|1 [fixed #751]	bytes 140000 fnv 4724F5A4
+Flip$|memory|1 characters (65536 swaps)|1 [orig]	bytes 140000 fnv 5D13FCCD
+Flip$|memory|1 characters (65536 swaps)|1 [fixed #751]	bytes 140000 fnv 4A26337D
 Flip$|out|"0123456789abcdef!"|1	bytes 400 fnv F1077BB4
 Flip$|out|"Hello World"|1	bytes 400 fnv FA3BE035
 Flip$|out|"ab"|1	bytes 400 fnv BC7CB83E

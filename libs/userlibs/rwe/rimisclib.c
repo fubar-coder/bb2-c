@@ -36,8 +36,6 @@
  * inlines, floatquicklib's fltoqu through BLITZ_ALIBJSR_A6.
  *
  * BUG(orig), kept:
- *   - Flip$ of a string with 0 or 1 characters swaps 65536 byte pairs
- *     around the string (DBRA with -1) (#751).
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
  *     and after NextArg$ came to the end it reads from address 0 (#754).
  *   - EZRequestArgs writes no 0 behind the format text it builds (160
@@ -66,6 +64,9 @@
  *     until its end, through the uncleared memory behind the file, and
  *     read the last chunk up to 26 bytes behind the buffer (#745).
  *
+ * Fixed (intended deviation, #751): Flip$ of a string with 0 or 1
+ * characters returns it unchanged; the original swapped 65536 byte
+ * pairs around the string (the count len/2 - 1 = -1 in a DBRA).
  * Fixed (intended deviation, #759): WorkbenchHere searches the screens
  * of the library's own IntuitionBase; the original took it from d0
  * (MOVE.l intuibase,a0 overwritten by MOVE.l d0,a0), and the function
@@ -597,8 +598,8 @@ static ULONG BLITZ_ROUTINE rawasc_c(const UBYTE *s BL_REG(d0))
  * @brief Flip$(String$): the string reversed.
  *
  * Reversed in place: the argument is the string below a3, a3 stays.
- * BUG(orig) (#751): a string of 0 or 1 characters swaps 65536 byte pairs
- * (DBRA with -1).
+ * A string of 0 or 1 characters stays as it is.  Fixed (#751): the
+ * original swapped 65536 byte pairs around it (DBRA with -1).
  * @param lens  a2: the argument stack, -4(a2) the length of the string
  * @return d0: the length
  */
@@ -606,8 +607,10 @@ static ULONG BLITZ_ROUTINE doflip_c(const ULONG *lens BL_REG(a2))
 {
     ULONG len = lens[-1];
     UBYTE *front = blitz_string - len - 1, *e = blitz_string - 2;
-    UWORD n = (UWORD)((len >> 1) - 1);                  /* BUG(orig): len < 2 (#751) */
+    UWORD n = (UWORD)((len >> 1) - 1);
 
+    if (len < 2)
+        return len;                                     /* fixed (#751) */
     do {
         UBYTE c = *front;
 
