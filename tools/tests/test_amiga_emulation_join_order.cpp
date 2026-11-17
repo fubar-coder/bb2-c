@@ -1,5 +1,5 @@
 /*
- * test_amiga_emulation_join_order.c - with the emulator (A1200): two
+ * test_amiga_emulation_join_order - with the emulator (A1200): two
  * sessions of one process, joined in start order as the runners do.  The
  * first hangs until its time limit; the second is a first-save session (a
  * slot directory of its own, so no snapshot exists yet).  While the
@@ -8,13 +8,17 @@
  * own limit has run out.  It holds two of the shared slots meanwhile.
  * Exit 77 (skipped) without Amiberry or the emulation data.
  */
-#define _XOPEN_SOURCE 700       /* mkdtemp, setenv */
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <ftw.h>
+#include <snitch/snitch.hpp>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
-#include "testutil.h"
+extern "C" {
 #include "amiga_emulation.h"
+}
 
 #define LIMIT 25                /* seconds: a cold boot (14 s) and the save fit */
 
@@ -36,7 +40,7 @@ static char *read_text(const char *dir, const char *name)
     snprintf(path, sizeof path, "%s/%s", dir, name);
     if (!(f = fopen(path, "r")))
         return NULL;
-    s = calloc(1, 65536);
+    s = static_cast<char *>(calloc(1, 65536));
     n = s ? fread(s, 1, 65535, f) : 0;
     if (s)
         s[n] = 0;
@@ -80,12 +84,12 @@ static void show(const char *name, struct amiga_emulation *e)
     free(log);
 }
 
-int main(void)
+TEST_CASE("amiga_emulation_join_order: sessions joined in start order", "[amiga_emulation_join_order]")
 {
     static char base[] = "/tmp/amiga-emulation-jointest-XXXXXX";
     const char *xdg = getenv("XDG_RUNTIME_DIR");
     char shared[256], runtime[200], err[512], *log, *v;
-    struct amiga_emulation_params pa = { 0 }, pb = { 0 };
+    struct amiga_emulation_params pa = {}, pb = {};
     struct amiga_emulation *a, *b;
     struct amiga_emulation_stats st;
     double t0, joined_a;
@@ -93,7 +97,7 @@ int main(void)
 
     if (!have_amiberry()) {
         fprintf(stderr, "skipped: no amiberry in PATH\n");
-        return 77;
+        std::exit(77);          // skipped (the exit status of ctest SKIP_RETURN_CODE)
     }
     /* two of the shared slots for the whole test, then a slot directory
        of its own with two slots (no snapshots in it: first-save sessions) */
@@ -118,14 +122,14 @@ int main(void)
     t0 = now();
     if (!(a = amiga_emulation_start(&pa, err, sizeof err))) {
         fprintf(stderr, "skipped: %s\n", err);
-        return 77;
+        std::exit(77);          // skipped (the exit status of ctest SKIP_RETURN_CODE)
     }
     b = amiga_emulation_start(&pb, err, sizeof err);
     CHECK(b != NULL);
     if (!b) {
         fprintf(stderr, "test_amiga_emulation_join_order: %s\n", err);
         amiga_emulation_free(a);
-        return 1;
+        return;
     }
 
     /* the first: its job hangs, the limit ends it */
@@ -149,19 +153,17 @@ int main(void)
     free(v);
     fprintf(stderr, "test_amiga_emulation_join_order: first joined after %.1f s, the second's "
             "session %.1f s\n", joined_a, st.session);
-    if (failures) {
+    if (snitch::impl::get_current_test().failures) {
         show("first", a);
         show("second", b);
     }
     amiga_emulation_free(a);
     amiga_emulation_free(b);
 
-    if (!failures)
+    if (!snitch::impl::get_current_test().failures)
         nftw(base, rm_entry, 16, FTW_DEPTH | FTW_PHYS);
     close(held[0]);
     close(held[1]);
-    if (failures)
-        fprintf(stderr, "test_amiga_emulation_join_order: %d failures (files in %s)\n", failures,
-                base);
-    return failures != 0;
+    if (snitch::impl::get_current_test().failures)
+        fprintf(stderr, "test_amiga_emulation_join_order: files in %s\n", base);
 }

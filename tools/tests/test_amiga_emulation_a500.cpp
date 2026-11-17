@@ -1,5 +1,5 @@
 /*
- * test_amiga_emulation_a500.c - the 68000 machines a500, a500-68010 and
+ * test_amiga_emulation_a500 - the 68000 machines a500, a500-68010 and
  * a600 with the emulator, one after the other: the Kickstart (1.3, 3.1 on
  * the a600) boots from the hardfile, its startup runs TEST:run.script
  * (AmigaDOS 1.3: the redirection right behind the command name), the run
@@ -7,14 +7,19 @@
  * without Amiberry or the A500 data; the a600 is skipped alone without
  * its ROM (AMIGA-EMULATION-SETUP.md, "A500 machine", "A600 machine").
  */
-#include "testutil.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "amiga_emulation.h"
+}
 
 static char *read_text(const char *dir, const char *name)
 {
     char path[4096];
     FILE *f;
-    char *s = calloc(1, 65536);
+    char *s = static_cast<char *>(calloc(1, 65536));
 
     snprintf(path, sizeof path, "%s/%s", dir, name);
     if (s && (f = fopen(path, "r")) != NULL) {
@@ -29,7 +34,7 @@ static char *read_text(const char *dir, const char *name)
 /* 1 = passed, 0 = failed, -1 = cannot start (skipped) */
 static int run(const char *machine, const char *kickstart, const char *cpu)
 {
-    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation_params p = {};
     struct amiga_emulation *e;
     char err[300], *version, *log;
     int ok;
@@ -56,12 +61,12 @@ static int run(const char *machine, const char *kickstart, const char *cpu)
     return ok;
 }
 
-int main(void)
+TEST_CASE("amiga_emulation_a500: the A500 and A600 machines boot", "[amiga_emulation_a500]")
 {
     int r = run("a500", "Kickstart version 34.5", "CPU=68000,");
 
     if (r < 0)
-        return 77;
+        std::exit(77);          // skipped (the exit status of ctest SKIP_RETURN_CODE)
     CHECK(r == 1);
     CHECK(run("a500-68010", "Kickstart version 34.5", "CPU=68010,") == 1);
     r = run("a600", "Kickstart 40.63", "CPU=68000,");
@@ -69,7 +74,4 @@ int main(void)
         fprintf(stderr, "test_amiga_emulation_a500: a600 skipped (no ROM)\n");
     else
         CHECK(r == 1);
-    if (failures)
-        fprintf(stderr, "test_amiga_emulation_a500: %d failures\n", failures);
-    return failures != 0;
 }

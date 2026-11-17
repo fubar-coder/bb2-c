@@ -1,17 +1,10 @@
 # tests of lib/, with inputs built in memory (testutil.h; testutil.hpp in the
 # snitch programs)
-foreach(t amiga_emulation)
-	add_executable(test_${t} test_${t}.c)
-	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
-	target_compile_options(test_${t} PRIVATE -Wno-unused-function)
-	add_test(NAME ${t} COMMAND test_${t})
-endforeach()
-
 # the same for the tests converted to snitch programs (C++20), one per file
 foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata bblines
 		bbdetok statline outmatch oracletable prevcmp previntended epcheck
 		blitzlib blitztokens checkdata bb22 blitzres tedfont cmdref cdtable bugorigcmp
-		teststats covmap covsel hdf corpusexpect perfbudget)
+		teststats covmap covsel hdf corpusexpect perfbudget amiga_emulation)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
@@ -31,9 +24,10 @@ foreach(t libscmp libscmp_bin libscmp_sort)
 endforeach()
 
 # the sessions' supervisors (no emulator: the test is its own fake Amiberry)
-add_executable(test_amiga_emulation_supervisor test_amiga_emulation_supervisor.c)
-target_link_libraries(test_amiga_emulation_supervisor PRIVATE lib_amiga_emulation lib_hunk)
-target_compile_options(test_amiga_emulation_supervisor PRIVATE -Wno-unused-function)
+add_executable(test_amiga_emulation_supervisor test_amiga_emulation_supervisor.cpp)
+target_link_libraries(test_amiga_emulation_supervisor PRIVATE lib_amiga_emulation lib_hunk snitch::snitch)
+target_compile_options(test_amiga_emulation_supervisor PRIVATE -Wall -Wextra)
+set_target_properties(test_amiga_emulation_supervisor PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME amiga_emulation_supervisor COMMAND test_amiga_emulation_supervisor)
 # the label emulator keeps it out of the host preset: it needs 40 s (its limits
 # are real seconds), more than the rest of the host tests together; it runs
@@ -41,10 +35,11 @@ add_test(NAME amiga_emulation_supervisor COMMAND test_amiga_emulation_supervisor
 set_tests_properties(amiga_emulation_supervisor PROPERTIES LABELS emulator)
 
 # collecting the coverage files of a session (no emulator)
-add_executable(test_amiga_emulation_cov test_amiga_emulation_cov.c)
-target_link_libraries(test_amiga_emulation_cov PRIVATE lib_amiga_emulation lib_hunk)
+add_executable(test_amiga_emulation_cov test_amiga_emulation_cov.cpp)
+target_link_libraries(test_amiga_emulation_cov PRIVATE lib_amiga_emulation lib_hunk snitch::snitch)
 target_include_directories(test_amiga_emulation_cov PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../shared/cov)
-target_compile_options(test_amiga_emulation_cov PRIVATE -Wno-unused-function)
+target_compile_options(test_amiga_emulation_cov PRIVATE -Wall -Wextra)
+set_target_properties(test_amiga_emulation_cov PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME amiga_emulation_cov COMMAND test_amiga_emulation_cov)
 
 add_executable(test_blitzlib_compare test_blitzlib_compare.cpp)
@@ -57,18 +52,20 @@ add_test(NAME blitzlib_compare COMMAND test_blitzlib_compare)
 # emulation data in amiga-emulation/): four runs, in parallel as far as
 # emulator slots are free, else one after the other - four sessions and
 # the one of the orphan check, each maybe waiting for a slot
-add_executable(test_amiga_emulation_run test_amiga_emulation_run.c)
-target_link_libraries(test_amiga_emulation_run PRIVATE lib_amiga_emulation lib_hunk)
-target_compile_options(test_amiga_emulation_run PRIVATE -Wno-unused-function)
+add_executable(test_amiga_emulation_run test_amiga_emulation_run.cpp)
+target_link_libraries(test_amiga_emulation_run PRIVATE lib_amiga_emulation lib_hunk snitch::snitch)
+target_compile_options(test_amiga_emulation_run PRIVATE -Wall -Wextra)
+set_target_properties(test_amiga_emulation_run PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME amiga_emulation_run COMMAND test_amiga_emulation_run)
 math(EXPR limit "300 + 5 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_run PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 # a program that halts the emulated CPU: the session ends as halt, long
 # before its limit
-add_executable(test_amiga_emulation_halt test_amiga_emulation_halt.c)
-target_link_libraries(test_amiga_emulation_halt PRIVATE lib_amiga_emulation lib_hunk)
-target_compile_options(test_amiga_emulation_halt PRIVATE -Wno-unused-function)
+add_executable(test_amiga_emulation_halt test_amiga_emulation_halt.cpp)
+target_link_libraries(test_amiga_emulation_halt PRIVATE lib_amiga_emulation lib_hunk snitch::snitch)
+target_compile_options(test_amiga_emulation_halt PRIVATE -Wall -Wextra)
+set_target_properties(test_amiga_emulation_halt PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME amiga_emulation_halt COMMAND test_amiga_emulation_halt)
 math(EXPR limit "120 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_halt PROPERTIES
@@ -76,17 +73,19 @@ set_tests_properties(amiga_emulation_halt PROPERTIES
 # the hang check (params.hang_after): a program that loops for ever ends its
 # session as a timeout after hang_after seconds of silence; a job that
 # keeps writing, or a session without hang_after, does not
-add_executable(test_amiga_emulation_hang test_amiga_emulation_hang.c)
-target_link_libraries(test_amiga_emulation_hang PRIVATE lib_amiga_emulation lib_hunk)
-target_compile_options(test_amiga_emulation_hang PRIVATE -Wno-unused-function)
+add_executable(test_amiga_emulation_hang test_amiga_emulation_hang.cpp)
+target_link_libraries(test_amiga_emulation_hang PRIVATE lib_amiga_emulation lib_hunk snitch::snitch)
+target_compile_options(test_amiga_emulation_hang PRIVATE -Wall -Wextra)
+set_target_properties(test_amiga_emulation_hang PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME amiga_emulation_hang COMMAND test_amiga_emulation_hang)
 math(EXPR limit "300 + 3 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_hang PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 # the A500 machines (Kickstart 1.3), one run after the other
-add_executable(test_amiga_emulation_a500 test_amiga_emulation_a500.c)
-target_link_libraries(test_amiga_emulation_a500 PRIVATE lib_amiga_emulation lib_hunk)
-target_compile_options(test_amiga_emulation_a500 PRIVATE -Wno-unused-function)
+add_executable(test_amiga_emulation_a500 test_amiga_emulation_a500.cpp)
+target_link_libraries(test_amiga_emulation_a500 PRIVATE lib_amiga_emulation lib_hunk snitch::snitch)
+target_compile_options(test_amiga_emulation_a500 PRIVATE -Wall -Wextra)
+set_target_properties(test_amiga_emulation_a500 PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME amiga_emulation_a500 COMMAND test_amiga_emulation_a500)
 math(EXPR limit "200 + 2 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_a500 PROPERTIES
@@ -94,9 +93,10 @@ set_tests_properties(amiga_emulation_a500 PROPERTIES
 # the snapshot mode (save, restore in a new process, a changed hardfile, a
 # corrupted state, cold), in a slot directory of its own while it holds
 # one of the shared slots
-add_executable(test_amiga_emulation_snapshot test_amiga_emulation_snapshot.c)
-target_link_libraries(test_amiga_emulation_snapshot PRIVATE lib_amiga_emulation lib_hunk)
-target_compile_options(test_amiga_emulation_snapshot PRIVATE -Wno-unused-function)
+add_executable(test_amiga_emulation_snapshot test_amiga_emulation_snapshot.cpp)
+target_link_libraries(test_amiga_emulation_snapshot PRIVATE lib_amiga_emulation lib_hunk snitch::snitch)
+target_compile_options(test_amiga_emulation_snapshot PRIVATE -Wall -Wextra)
+set_target_properties(test_amiga_emulation_snapshot PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 get_filename_component(emulation_dir ${AMIGA_EMULATION_DIR} ABSOLUTE)
 target_compile_definitions(test_amiga_emulation_snapshot PRIVATE
 	TEST_EMULATION_DIR="${emulation_dir}")
@@ -106,9 +106,10 @@ set_tests_properties(amiga_emulation_snapshot PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 # two sessions joined in start order: the first hangs until its limit, the
 # second (first-save) runs its job meanwhile; it holds two shared slots
-add_executable(test_amiga_emulation_join_order test_amiga_emulation_join_order.c)
-target_link_libraries(test_amiga_emulation_join_order PRIVATE lib_amiga_emulation lib_hunk)
-target_compile_options(test_amiga_emulation_join_order PRIVATE -Wno-unused-function)
+add_executable(test_amiga_emulation_join_order test_amiga_emulation_join_order.cpp)
+target_link_libraries(test_amiga_emulation_join_order PRIVATE lib_amiga_emulation lib_hunk snitch::snitch)
+target_compile_options(test_amiga_emulation_join_order PRIVATE -Wall -Wextra)
+set_target_properties(test_amiga_emulation_join_order PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME amiga_emulation_join_order COMMAND test_amiga_emulation_join_order)
 math(EXPR limit "120 + 2 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_join_order PROPERTIES

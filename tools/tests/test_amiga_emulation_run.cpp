@@ -1,26 +1,31 @@
 /*
- * test_amiga_emulation_run.c - amiga_emulation with the emulator: four
+ * test_amiga_emulation_run - amiga_emulation with the emulator: four
  * runs, in parallel as far as emulator slots are free - a script to its
  * end with control commands, the RTG variant, a second plain run, a
  * script that does not end (time limit, screenshots every 2 seconds);
  * then an emulator whose starting process dies (Linux: it dies too).
  * Exit 77 (skipped) without Amiberry or the emulation data.
  */
-#define _XOPEN_SOURCE 700       /* mkdtemp, nftw, readlink, nanosleep */
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <dirent.h>
-#include <errno.h>
 #include <ftw.h>
+#include <snitch/snitch.hpp>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
-#include "testutil.h"
+extern "C" {
 #include "amiga_emulation.h"
+}
 
 static char *read_text(const char *dir, const char *name)
 {
     char path[4096];
     FILE *f;
-    char *s = calloc(1, 4096);
+    char *s = static_cast<char *>(calloc(1, 4096));
 
     snprintf(path, sizeof path, "%s/%s", dir, name);
     if (s && (f = fopen(path, "r")) != NULL) {
@@ -81,11 +86,12 @@ static int runs_in(const char *dir)
    the emulator must not outlive it */
 static void orphan(void)
 {
-    struct amiga_emulation_params p = { 0 };
-    const char *status[] = { "GET_STATUS", NULL };
+    struct amiga_emulation_params p = {};
+    const char *status[] = { "GET_STATUS", nullptr };
     char dir[] = "/tmp/amiga-emulation-orphan-XXXXXX", err[300], reply[256];
     pid_t helper;
     int i, alive;
+    const struct timespec tick = { 0, 200000000 };
 
     if (!mkdtemp(dir)) {
         CHECK(!"mkdtemp");
@@ -102,7 +108,7 @@ static void orphan(void)
         for (i = 0; e && i < 100; i++) {
             if (amiga_emulation_command(e, status, reply, sizeof reply) == 0)
                 _exit(0);
-            nanosleep(&(struct timespec){ 0, 200000000 }, NULL);
+            nanosleep(&tick, nullptr);
         }
         _exit(1);
     }
@@ -112,7 +118,7 @@ static void orphan(void)
     waitpid(helper, &i, 0);
     CHECK(WIFEXITED(i) && WEXITSTATUS(i) == 0);
     for (i = 0; (alive = runs_in(dir)) && i < 50; i++)
-        nanosleep(&(struct timespec){ 0, 200000000 }, NULL);
+        nanosleep(&tick, nullptr);
     CHECK(!alive);
     nftw(dir, remove_entry, 16, FTW_DEPTH | FTW_PHYS);
 }
@@ -168,13 +174,13 @@ static void finish(int i, struct amiga_emulation *e)
     amiga_emulation_free(e);
 }
 
-int main(void)
+TEST_CASE("amiga_emulation_run: four runs and the orphan check", "[amiga_emulation_run]")
 {
-    struct amiga_emulation_params plain = { 0 }, rtg = { 0 }, hang = { 0 };
+    struct amiga_emulation_params plain = {}, rtg = {}, hang = {};
     const struct amiga_emulation_params *p[NRUNS] = { &plain, &rtg, &plain, &hang };
-    struct amiga_emulation *e[NRUNS] = { NULL };
+    struct amiga_emulation *e[NRUNS] = {};
     char err[300], reply[256];
-    const char *status[] = { "GET_STATUS", NULL };
+    const char *status[] = { "GET_STATUS", nullptr };
     int i, together = 0;
 
     plain.script = "Version >TEST:version.txt\nEcho \"hallo\" >TEST:hallo.txt\n";
@@ -211,12 +217,12 @@ int main(void)
         unsetenv("AMIGA_EMULATION_TIMEOUT_STATE");
         if (!e[i] && i == 0) {
             fprintf(stderr, "skipped: %s\n", err);
-            return 77;
+            std::exit(77);      // skipped (the exit status of ctest SKIP_RETURN_CODE)
         }
         CHECK(e[i] != NULL);
         if (!e[i]) {
             fprintf(stderr, "test_amiga_emulation_run: %s\n", err);
-            return 1;
+            return;
         }
         for (int k = 0; k <= i; k++)
             running += e[k] != NULL;
@@ -234,7 +240,4 @@ int main(void)
 #ifdef __linux__
     orphan();
 #endif
-    if (failures)
-        fprintf(stderr, "test_amiga_emulation_run: %d failures\n", failures);
-    return failures != 0;
 }

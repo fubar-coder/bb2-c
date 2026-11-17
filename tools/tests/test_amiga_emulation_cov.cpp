@@ -1,13 +1,18 @@
 /*
- * test_amiga_emulation_cov.c - collecting the coverage files of a session
+ * test_amiga_emulation_cov - collecting the coverage files of a session
  * (amiga_emulation.h, "Coverage"): the merge of two files, broken files,
  * and the move from TEST:cov into the test's directory (no emulator).
  */
-#define _XOPEN_SOURCE 700       /* mkdtemp */
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "testutil.h"
+extern "C" {
 #include "amiga_emulation.h"
+}
 #include "covfmt.h"
 
 /* a coverage file for a code hunk of `size` bytes, bits from `bits` (one
@@ -51,7 +56,7 @@ static long read_bytes(const char *path, unsigned char *p, size_t cap)
     return (long)n;
 }
 
-static void test_merge(void)
+TEST_CASE("amiga_emulation_cov: merge of two coverage files", "[amiga_emulation_cov]")
 {
     unsigned char a[64], b[64], c[64];
     size_t na = make_cov(a, 64, 0x01), nb = make_cov(b, 64, 0x80), nc;
@@ -86,7 +91,7 @@ static void test_merge(void)
     CHECK(amiga_emulation_cov_merge(a, na, NULL, 0) == -1);
 }
 
-static void test_collect(void)
+TEST_CASE("amiga_emulation_cov: collecting from TEST:cov", "[amiga_emulation_cov]")
 {
     char base[] = "/tmp/test_amiga_emulation_cov-XXXXXX";
     char test[96], cov[128], dest[128], path[192];
@@ -161,11 +166,3 @@ static void test_collect(void)
     CHECK(system(path) == 0);
 }
 
-int main(void)
-{
-    test_merge();
-    test_collect();
-    if (failures)
-        fprintf(stderr, "%d failure(s)\n", failures);
-    return failures != 0;
-}

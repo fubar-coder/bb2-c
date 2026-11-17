@@ -1,5 +1,5 @@
 /*
- * test_amiga_emulation_supervisor.c - a session runs without the caller:
+ * test_amiga_emulation_supervisor - a session runs without the caller:
  * the supervisor of every session drives it (snapshot save, restore,
  * fallback, time limit, end), whenever the caller joins it.  No emulator:
  * this program is its own fake Amiberry (FAKE_AMIBERRY in the
@@ -14,23 +14,28 @@
  * writes TEST:run.done unless it contains HANG.  A script with SLOWTERM
  * writes run.done, and on SIGTERM takes 2.5 s to end, writing TEST:late as
  * its last act (Amiberry closing down: the session must wait for it).
+ * The fake is a constructor that runs before main (snitch would reject
+ * the arguments of Amiberry) and ends the process.
  */
-#define _XOPEN_SOURCE 700       /* mkdtemp, setenv */
-#define _DEFAULT_SOURCE         /* readlink */
+#include <cerrno>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <dirent.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <ftw.h>
 #include <poll.h>
-#include <signal.h>
+#include <snitch/snitch.hpp>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
-#include "testutil.h"
+extern "C" {
 #include "amiga_emulation.h"
+}
 
 #define FAKE_STATE "ASF fake state\n"  /* begins as a savestate */
 
@@ -46,7 +51,7 @@ static void nap(double s)
 {
     struct timespec ts = { (time_t)s, (long)((s - (time_t)s) * 1e9) };
 
-    nanosleep(&ts, NULL);
+    nanosleep(&ts, nullptr);
 }
 
 static char *read_text(const char *path)
@@ -56,8 +61,8 @@ static char *read_text(const char *path)
     size_t n;
 
     if (!f)
-        return NULL;
-    s = calloc(1, 65536);
+        return nullptr;
+    s = static_cast<char *>(calloc(1, 65536));
     n = s ? fread(s, 1, 65535, f) : 0;
     if (s)
         s[n] = 0;
@@ -117,7 +122,8 @@ static int volume_dir(const char *cfg, const char *vol, char *dir, size_t len)
    SR with interrupt mask 7 in supervisor mode, as Amiberry's cpu_halt
    leaves a double fault); one with MASK7 runs at interrupt mask 7, its
    registers change (not halted) */
-static enum { FAKE_CPU_NONE, FAKE_CPU_HALTED, FAKE_CPU_MASK7 } fake_cpu;
+enum fake_cpu_mode { FAKE_CPU_NONE, FAKE_CPU_HALTED, FAKE_CPU_MASK7 };
+static fake_cpu_mode fake_cpu;
 static unsigned fake_ticks;
 
 static const char *fake_regs(void)
@@ -169,7 +175,7 @@ static int fake_command(int fd)
 static int fake_amiberry(int argc, char **argv)
 {
     char *cfg = read_text("amiberry.uae"), test[4096], snap[4096], path[4200];
-    const char *statefile = NULL, *rt = getenv("XDG_RUNTIME_DIR");
+    const char *statefile = nullptr, *rt = getenv("XDG_RUNTIME_DIR");
     struct sockaddr_un sa;
     double start = now(), boot = start + 0.3;
     int srv, i, ran = 0, readied = 0;
@@ -202,7 +208,7 @@ static int fake_amiberry(int argc, char **argv)
         struct pollfd pfd = { srv, POLLIN, 0 };
 
         if (poll(&pfd, 1, 20) > 0) {
-            int c = accept(srv, NULL, NULL);
+            int c = accept(srv, nullptr, nullptr);
 
             if (c >= 0 && fake_command(c)) {
                 if (late_path[0])
@@ -261,6 +267,18 @@ static int fake_amiberry(int argc, char **argv)
     return 0;
 }
 
+/* the fake runs instead of the tests when the library starts this program
+   as Amiberry (FAKE_AMIBERRY, set by the test case for its sessions) */
+__attribute__((constructor)) static void fake_amiberry_hook(int argc, char **argv, char **)
+{
+    if (getenv("FAKE_AMIBERRY")) {
+        int rc = fake_amiberry(argc, argv);
+
+        fflush(nullptr);
+        _exit(rc);
+    }
+}
+
 /* ------------------------------------------------------------------ tests */
 
 static char self[4096];
@@ -269,12 +287,13 @@ static char slots[256];
 
 static struct amiga_emulation *start(const char *script, unsigned timeout)
 {
-    struct amiga_emulation_params p = { 0 };
+    static const struct amiga_emulation_option changes[] = { { "kickstart_rom_file", nullptr },
+                                                             { "hardfile2", nullptr } };
+    struct amiga_emulation_params p = {};
     struct amiga_emulation *e;
     char err[512];
 
-    p.changes = (const struct amiga_emulation_option[]){ { "kickstart_rom_file", NULL },
-                                                         { "hardfile2", NULL } };
+    p.changes = changes;
     p.nchanges = 2;
     p.amiberry = self;
     p.script = script;
@@ -316,7 +335,7 @@ static int slot_clean(int k)
     snprintf(dir, sizeof dir, "%s/slot-%d", slots, k);
     if (!(d = opendir(dir)))
         return 1;
-    while ((de = readdir(d)) != NULL)
+    while ((de = readdir(d)) != nullptr)
         if (strcmp(de->d_name, ".") && strcmp(de->d_name, "..") && strncmp(de->d_name, "snap-", 5)) {
             fprintf(stderr, "test_amiga_emulation_supervisor: left in slot-%d: %s\n", k, de->d_name);
             clean = 0;
@@ -339,7 +358,7 @@ static void slow_close(void)
         if (cold)
             setenv("AMIGA_EMULATION_SNAPSHOT", "0", 1);
         a = start("SLOWTERM", 30);
-        CHECK(a != NULL);
+        CHECK(a != nullptr);
         if (!a)
             continue;
         t0 = now();
@@ -380,7 +399,7 @@ static void join_order(void)
     log = snap_log(b);
     CHECK(log && strstr(log, " saved ") && strstr(log, "job started") && strstr(log, "done"));
     free(log);
-    if (failures) {
+    if (snitch::impl::get_current_test().failures) {
         show("a", a);
         show("b", b);
     }
@@ -401,8 +420,8 @@ static void break_snapshots(const char *text)
         char dir[300];
 
         snprintf(dir, sizeof dir, "%s/slot-%d", slots, k);
-        if ((d = opendir(dir)) != NULL) {
-            while ((de = readdir(d)) != NULL)
+        if ((d = opendir(dir)) != nullptr) {
+            while ((de = readdir(d)) != nullptr)
                 if (!strncmp(de->d_name, "snap-", 5)) {
                     snprintf(path, sizeof path, "%s/%s", dir, de->d_name);
                     write_text(path, text);
@@ -484,7 +503,7 @@ static void free_running(void)
    (joins in start order); a third start of the same process gets it */
 static void slot_free_at_end(void)
 {
-    struct amiga_emulation *a = start("HANG", 30), *b = start("Echo ok", 30), *c = NULL;
+    struct amiga_emulation *a = start("HANG", 30), *b = start("Echo ok", 30), *c = nullptr;
     double until = now() + 15;
     char done[4200];
     int x = -1;
@@ -503,7 +522,7 @@ static void slot_free_at_end(void)
     c = start("Echo ok", 30);
     CHECK(c &&amiga_emulation_join(c) == AMIGA_EMULATION_DONE);
     CHECK(amiga_emulation_join(b) == AMIGA_EMULATION_DONE);
-    if (failures) {
+    if (snitch::impl::get_current_test().failures) {
         show("a", a);
         show("b", b);
     }
@@ -521,13 +540,14 @@ out:
 static struct amiga_emulation *start_retry(const char *script, unsigned timeout,
                                            struct amiga_emulation **own, size_t n, int *collected)
 {
-    struct amiga_emulation_params p = { 0 };
+    static const struct amiga_emulation_option changes[] = { { "kickstart_rom_file", nullptr },
+                                                             { "hardfile2", nullptr } };
+    struct amiga_emulation_params p = {};
     struct amiga_emulation *e;
     char err[512];
     int ended;
 
-    p.changes = (const struct amiga_emulation_option[]){ { "kickstart_rom_file", NULL },
-                                                         { "hardfile2", NULL } };
+    p.changes = changes;
     p.nchanges = 2;
     p.amiberry = self;
     p.script = script;
@@ -538,7 +558,7 @@ static struct amiga_emulation *start_retry(const char *script, unsigned timeout,
             CHECK(amiga_emulation_finished(own[ended]));
             amiga_emulation_join(own[ended]);
             amiga_emulation_free(own[ended]);
-            own[ended] = NULL;
+            own[ended] = nullptr;
             (*collected)++;
         }
     }
@@ -552,16 +572,16 @@ static struct amiga_emulation *start_retry(const char *script, unsigned timeout,
    does not wait for a. */
 static void retry_own_ended(void)
 {
-    struct amiga_emulation *none[2] = { NULL, NULL };
+    struct amiga_emulation *none[2] = { nullptr, nullptr };
     double t0 = now(), t;
     int collected = 0;
 
     /* no sessions: nothing ends, the wait takes its time */
-    CHECK(amiga_emulation_finished(NULL));
-    CHECK(amiga_emulation_wait_any(NULL, 0, 0) == -1);
+    CHECK(amiga_emulation_finished(nullptr));
+    CHECK(amiga_emulation_wait_any(nullptr, 0, 0) == -1);
     CHECK(amiga_emulation_wait_any(none, 2, 200) == -1 && now() - t0 >= 0.19);
 
-    struct amiga_emulation *own[2] = { start("HANG", 30), start("HANG", 2) }, *c = NULL;
+    struct amiga_emulation *own[2] = { start("HANG", 30), start("HANG", 2) }, *c = nullptr;
 
     t0 = now();
 
@@ -575,12 +595,12 @@ static void retry_own_ended(void)
     CHECK(now() - t >= 0.29 && now() - t < 2);
     c = start_retry("Echo ok", 30, own, 2, &collected);
     t = now() - t0;
-    CHECK(c != NULL);
+    CHECK(c != nullptr);
     CHECK(collected == 1 && own[0] && !own[1]);
     CHECK(t > 1.5 && t < 8);
     CHECK(own[0] && !amiga_emulation_finished(own[0]));
     CHECK(c && amiga_emulation_join(c) == AMIGA_EMULATION_DONE);
-    if (failures)
+    if (snitch::impl::get_current_test().failures)
         fprintf(stderr, "test_amiga_emulation_supervisor: retry_own_ended: c after %.2f s\n", t);
 out:
     amiga_emulation_free(c);
@@ -594,7 +614,7 @@ out:
    takes it within a retry or two */
 static void retry_foreign_freed(void)
 {
-    struct amiga_emulation *own[1] = { NULL }, *c = NULL;
+    struct amiga_emulation *own[1] = { nullptr }, *c = nullptr;
     int fds[2], collected = 0;
     char got = 0;
     double t;
@@ -614,17 +634,17 @@ static void retry_foreign_freed(void)
     CHECK(read(fds[0], &got, 1) == 1 && got == 'y');
     close(fds[0]);
     own[0] = start("HANG", 30);
-    CHECK(own[0] != NULL);
+    CHECK(own[0] != nullptr);
     t = now();
     c = start_retry("Echo ok", 30, own, 1, &collected);
     t = now() - t;
-    CHECK(c != NULL && collected == 0 && own[0] && !amiga_emulation_finished(own[0]));
+    CHECK(c != nullptr && collected == 0 && own[0] && !amiga_emulation_finished(own[0]));
     CHECK(t > 0.5 && t < 4);
     CHECK(c && amiga_emulation_join(c) == AMIGA_EMULATION_DONE);
-    if (failures)
+    if (snitch::impl::get_current_test().failures)
         fprintf(stderr, "test_amiga_emulation_supervisor: retry_foreign_freed: c after %.2f s\n", t);
     if (pid > 0)
-        waitpid(pid, NULL, 0);
+        waitpid(pid, nullptr, 0);
     amiga_emulation_free(c);
     amiga_emulation_free(own[0]);
     CHECK(slot_clean(0) && slot_clean(1));
@@ -635,8 +655,9 @@ static void retry_foreign_freed(void)
    ever (every session ends at its limit of 2 s) */
 static int run_four(void)
 {
-    struct amiga_emulation *own[2] = { NULL, NULL };
-    int collected = 0, started = 0, bad = failures;
+    struct amiga_emulation *own[2] = { nullptr, nullptr };
+    int collected = 0, started = 0;
+    size_t bad = snitch::impl::get_current_test().failures;
 
     while (started < 4) {
         size_t k = own[0] ? 1 : 0;
@@ -648,12 +669,12 @@ static int run_four(void)
             if (ended >= 0) {
                 CHECK(amiga_emulation_join(own[ended]) == AMIGA_EMULATION_TIMEOUT);
                 amiga_emulation_free(own[ended]);
-                own[ended] = NULL;
+                own[ended] = nullptr;
             }
             continue;
         }
         own[k] = start_retry("HANG", 2, own, 2, &collected);
-        CHECK(own[k] != NULL);
+        CHECK(own[k] != nullptr);
         if (!own[k])
             break;
         started++;
@@ -663,7 +684,7 @@ static int run_four(void)
             CHECK(amiga_emulation_join(own[k]) == AMIGA_EMULATION_TIMEOUT);
         amiga_emulation_free(own[k]);
     }
-    return failures != bad;
+    return snitch::impl::get_current_test().failures != bad;
 }
 
 static void retry_two_runners(void)
@@ -681,7 +702,7 @@ static void retry_two_runners(void)
     t = now() - t;
     /* 8 sessions of about 2 s on 2 slots: 4 rounds */
     CHECK(t < 30);
-    if (failures)
+    if (snitch::impl::get_current_test().failures)
         fprintf(stderr, "test_amiga_emulation_supervisor: retry_two_runners: %.2f s\n", t);
     CHECK(slot_clean(0) && slot_clean(1));
 }
@@ -746,7 +767,7 @@ static void halt(void)
     CHECK(s && !strncmp(s, "end: timeout\n", 13) && strstr(s, " SR=2708 ")
           && strstr(s, "cpu state: running"));
     free(s);
-    if (failures) {
+    if (snitch::impl::get_current_test().failures) {
         show("a", a);
         show("b", b);
     }
@@ -772,21 +793,17 @@ static int rm_entry(const char *path, const struct stat *st, int flag, struct FT
     return 0;
 }
 
-int main(int argc, char **argv)
+TEST_CASE("amiga_emulation_supervisor: sessions without the caller (fake Amiberry)",
+          "[amiga_emulation_supervisor]")
 {
     char runtime[200];
     ssize_t n;
 
-    if (getenv("FAKE_AMIBERRY"))
-        return fake_amiberry(argc, argv);
     n = readlink("/proc/self/exe", self, sizeof self - 1);
-    if (n <= 0) {
-        if (!realpath(argv[0], self))
-            return 1;
-    } else {
-        self[n] = 0;
-    }
-    CHECK(mkdtemp(base) != NULL);
+    if (n <= 0)
+        FAIL("readlink /proc/self/exe failed");
+    self[n] = 0;
+    CHECK(mkdtemp(base) != nullptr);
     snprintf(runtime, sizeof runtime, "%s/run", base);
     snprintf(slots, sizeof slots, "%s/amiga-emulation-slots", runtime);
     CHECK(mkdir(runtime, 0700) == 0);
@@ -810,10 +827,8 @@ int main(int argc, char **argv)
     halt();
     slow_close();
 
-    if (!failures)
+    if (!snitch::impl::get_current_test().failures)
         nftw(base, rm_entry, 16, FTW_DEPTH | FTW_PHYS);
-    if (failures)
-        fprintf(stderr, "test_amiga_emulation_supervisor: %d failures (files in %s)\n", failures,
-                base);
-    return failures != 0;
+    if (snitch::impl::get_current_test().failures)
+        fprintf(stderr, "test_amiga_emulation_supervisor: files in %s\n", base);
 }

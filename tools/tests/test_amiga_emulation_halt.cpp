@@ -1,18 +1,22 @@
 /*
- * test_amiga_emulation_halt.c - a program that halts the emulated CPU (a
+ * test_amiga_emulation_halt - a program that halts the emulated CPU (a
  * jump to an address without memory: Amiberry's cpu_halt, "CPU halted:
  * reason = 3" in its log) ends its session with AMIGA_EMULATION_HALT
  * within seconds, long before the time limit.  The program is a hunk file
  * from memory, put into TEST: before the start.  Exit 77 (skipped) without
  * Amiberry or the emulation data.
  */
-#define _XOPEN_SOURCE 700       /* mkdtemp, nftw */
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <ftw.h>
-#include <stdint.h>
+#include <snitch/snitch.hpp>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "testutil.h"
+extern "C" {
 #include "amiga_emulation.h"
+}
 
 /* one code hunk: jmp $FFFFFFAC.l; nop */
 static const uint32_t halt_prog[] = {
@@ -52,7 +56,7 @@ static char *read_text(const char *dir, const char *name)
 {
     char path[4096];
     FILE *f;
-    char *s = calloc(1, 1 << 20);
+    char *s = static_cast<char *>(calloc(1, 1 << 20));
 
     snprintf(path, sizeof path, "%s/%s", dir, name);
     if (s && (f = fopen(path, "r")) != NULL) {
@@ -71,9 +75,9 @@ static int rm_entry(const char *path, const struct stat *st, int flag, struct FT
     return 0;
 }
 
-int main(void)
+TEST_CASE("amiga_emulation_halt: a halted CPU ends the session", "[amiga_emulation_halt]")
 {
-    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation_params p = {};
     struct amiga_emulation_stats st;
     struct amiga_emulation *e;
     const char *tmp = getenv("TMPDIR");
@@ -81,8 +85,7 @@ int main(void)
 
     snprintf(work, sizeof work, "%s/amiga-emulation-halt-XXXXXX", tmp && *tmp ? tmp : "/tmp");
     if (!mkdtemp(work)) {
-        perror("mkdtemp");
-        return 1;
+        FAIL("mkdtemp failed");
     }
     snprintf(path, sizeof path, "%s/test", work);
     CHECK(mkdir(path, 0700) == 0);
@@ -97,7 +100,7 @@ int main(void)
     if (!e) {
         fprintf(stderr, "skipped: %s\n", err);
         nftw(work, rm_entry, 16, FTW_DEPTH | FTW_PHYS);
-        return 77;
+        std::exit(77);          // skipped (the exit status of ctest SKIP_RETURN_CODE)
     }
     CHECK(amiga_emulation_join(e) == AMIGA_EMULATION_HALT);
     amiga_emulation_stats(e, &st);
@@ -112,14 +115,13 @@ int main(void)
     txt = read_text(amiga_emulation_work_dir(e), "timeout.txt");
     CHECK(txt && !strncmp(txt, "end: halt\n", 10) && strstr(txt, "PC=FFFFFFAC")
           && strstr(txt, "cpu state: halted"));
-    if (failures)
+    if (snitch::impl::get_current_test().failures)
         fprintf(stderr, "test_amiga_emulation_halt: %s after %.2f s (limit %u), files in %s\n%s",
                 amiga_emulation_status_name(st.status), st.timed, st.timeout, work,
                 txt ? txt : "");
     free(log);
     free(txt);
     amiga_emulation_free(e);
-    if (!failures)
+    if (!snitch::impl::get_current_test().failures)
         nftw(work, rm_entry, 16, FTW_DEPTH | FTW_PHYS);
-    return failures != 0;
 }

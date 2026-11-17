@@ -1,19 +1,22 @@
 /*
- * test_amiga_emulation.c - configuration and script of amiga_emulation
+ * test_amiga_emulation - configuration and script of amiga_emulation
  * (no emulator), the slots that limit the runs, the snapshot mode's
  * configuration, key, pruning and the purge of one owner's snapshots.
  */
-#define _XOPEN_SOURCE 700       /* mkdtemp */
-#include <errno.h>
+#include <cerrno>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
-#include <sys/stat.h>
-#include <signal.h>
+#include <snitch/snitch.hpp>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
-#include "testutil.h"
+extern "C" {
 #include "amiga_emulation.h"
+}
 
 /* writes text to dir/max ("" = removes it) */
 static void put_max(const char *dir, const char *text)
@@ -26,7 +29,7 @@ static void put_max(const char *dir, const char *text)
     if (!*text)
         return;
     f = fopen(path, "wb");
-    CHECK(f != NULL);
+    CHECK(f != nullptr);
     if (f) {
         fputs(text, f);
         fclose(f);
@@ -53,7 +56,7 @@ static int lines_equal(const char *cfg, const char *line)
 
         if (len == n && !strncmp(p, line, n))
             count++;
-        p += len + (e != NULL);
+        p += len + (e != nullptr);
     }
     return count;
 }
@@ -70,7 +73,7 @@ static int key_lines(const char *cfg, const char *key)
 
         if (len > n && !strncmp(p, key, n) && p[n] == '=')
             count++;
-        p += len + (e != NULL);
+        p += len + (e != nullptr);
     }
     return count;
 }
@@ -80,7 +83,7 @@ static void put_file(const char *path, size_t n)
 {
     FILE *f = fopen(path, "wb");
 
-    CHECK(f != NULL);
+    CHECK(f != nullptr);
     if (!f)
         return;
     while (n--)
@@ -94,13 +97,13 @@ static void snapshot_config(void)
 {
     struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
     struct amiga_emulation_mount snap[] = { { "snap", "/data/s", 1 } };
-    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation_params p = {};
     char err[200], *cfg, *again;
 
     p.mounts = mounts;
     p.nmounts = 2;
     cfg = amiga_emulation_snapshot_config(&p, "/emu", "/slots/slot-3", err, sizeof err);
-    CHECK(cfg != NULL);
+    CHECK(cfg != nullptr);
     CHECK(cfg && lines_equal(cfg, "filesystem2=rw,DH1:TEST:/slots/slot-3/test,0") == 1);
     CHECK(cfg && lines_equal(cfg, "filesystem2=ro,DH2:CD:/slots/slot-3/mnt-0,0") == 1);
     CHECK(cfg && lines_equal(cfg, "uaehf3=dir,rw,DH3:W:/slots/slot-3/mnt-1,0") == 1);
@@ -121,11 +124,11 @@ static void snapshot_config(void)
     p.nmounts = 1;
     err[0] = 0;
     cfg = amiga_emulation_snapshot_config(&p, "/emu", "/slots/slot-3", err, sizeof err);
-    CHECK(cfg == NULL && strstr(err, "SNAP"));
+    CHECK(cfg == nullptr && strstr(err, "SNAP"));
     free(cfg);
     p.nmounts = 0;
     cfg = amiga_emulation_snapshot_config(&p, "/emu", "/slots,x/slot-3", err, sizeof err);
-    CHECK(cfg == NULL);
+    CHECK(cfg == nullptr);
     free(cfg);
 
     /* the ROM and the hardfile by their real paths: two emulation
@@ -137,7 +140,7 @@ static void snapshot_config(void)
         size_t i;
         int k;
 
-        CHECK(mkdtemp(dir) != NULL);
+        CHECK(mkdtemp(dir) != nullptr);
         for (k = 0; k < 3; k++) {
             snprintf(path, sizeof path, "%s/%c", dir, "rab"[k]);
             CHECK(mkdir(path, 0700) == 0);
@@ -187,7 +190,7 @@ static unsigned long long key_of(const struct amiga_emulation_params *p, const c
     char err[200], *cfg = amiga_emulation_snapshot_config(p, emu, slot_dir, err, sizeof err);
     unsigned long long k;
 
-    CHECK(cfg != NULL);
+    CHECK(cfg != nullptr);
     if (!cfg)
         return 0;
     k = amiga_emulation_snapshot_key(cfg, slot_dir, p->machine, prog);
@@ -207,13 +210,13 @@ static void snapshot_key(void)
     char dir[] = "/tmp/amiga-emulation-snapkey-XXXXXX", path[5][96], tmp[110], err[200], *cfg;
     struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
     struct amiga_emulation_option ch[2];
-    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation_params p = {};
     struct timespec old[2] = { { 1000000000, 0 }, { 1000000000, 0 } };
     unsigned long long k0, k;
     const char *prog = path[3];
     size_t i;
 
-    CHECK(mkdtemp(dir) != NULL);
+    CHECK(mkdtemp(dir) != nullptr);
     for (i = 0; i < 5; i++) {
         snprintf(path[i], sizeof path[i], "%s/%s", dir, files[i]);
         if (i < 4)
@@ -266,12 +269,12 @@ static void snapshot_key(void)
     /* the machine: the same configuration text under another name */
     cfg = amiga_emulation_snapshot_config(&p, dir, "/slots/slot-3", err, sizeof err);
     CHECK(cfg && amiga_emulation_snapshot_key(cfg, "/slots/slot-3", "a1200", prog) == k0);
-    CHECK(cfg && amiga_emulation_snapshot_key(cfg, "/slots/slot-3", NULL, prog) == k0);
+    CHECK(cfg && amiga_emulation_snapshot_key(cfg, "/slots/slot-3", nullptr, prog) == k0);
     CHECK(cfg && amiga_emulation_snapshot_key(cfg, "/slots/slot-3", "a500", prog) != k0);
     free(cfg);
     p.machine = "a500";
     CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k0);
-    p.machine = NULL;
+    p.machine = nullptr;
 
     /* each file's identity: the ROM's size, the hardfile's time, its
        size, rom.key, the program; another file at the same path */
@@ -310,8 +313,8 @@ static void snapshot_key(void)
     remove(path[0]);
     remove(path[1]);
     CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k);
-    CHECK(amiga_emulation_snapshot_key("cpu_type=68020\n", NULL, NULL, prog)
-          != amiga_emulation_snapshot_key("cpu_type=68030\n", NULL, NULL, prog));
+    CHECK(amiga_emulation_snapshot_key("cpu_type=68020\n", nullptr, nullptr, prog)
+          != amiga_emulation_snapshot_key("cpu_type=68030\n", nullptr, nullptr, prog));
     remove(path[4]);
     rmdir(dir);
 }
@@ -322,7 +325,7 @@ static void snapshot_key(void)
 static void env_changes(void)
 {
     struct amiga_emulation_option ch[] = { { "sound_output", "normal" }, { "cpu_type", "68030" } };
-    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation_params p = {};
     unsigned long long id0;
     char err[200], *cfg;
 
@@ -351,8 +354,8 @@ static void env_changes(void)
 static void snapshot_config_id(void)
 {
     struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
-    struct amiga_emulation_option ch[] = { { "cpu_type", "68030" }, { "chipmem_size", NULL } };
-    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation_option ch[] = { { "cpu_type", "68030" }, { "chipmem_size", nullptr } };
+    struct amiga_emulation_params p = {};
     unsigned long long id0;
 
     p.mounts = mounts;
@@ -366,7 +369,7 @@ static void snapshot_config_id(void)
     /* broken: everything else is another configuration */
     p.machine = "a500";
     CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
-    p.machine = NULL;
+    p.machine = nullptr;
     mounts[1].writable = 0;
     CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
     mounts[1].writable = 1;
@@ -403,11 +406,11 @@ static void snapshot_drop_stale(void)
         { "/build/one", 1, 0x12, 1 },
         { "/build/one", 2, 0x11, 0 },   /* another configuration */
         { "/build/two", 1, 0x11, 0 },   /* another owner */
-        { NULL, 1, 0x11, 0 },           /* no owner */
+        { nullptr, 1, 0x11, 0 },           /* no owner */
     };
     size_t i;
 
-    CHECK(mkdtemp(dir) != NULL);
+    CHECK(mkdtemp(dir) != nullptr);
     for (i = 0; i < sizeof snaps / sizeof snaps[0]; i++) {
         n = amiga_emulation_snapshot_name(snaps[i].owner, snaps[i].id, snaps[i].key);
         CHECK(n && strlen(n) == strlen("snap---.uss") + 48);
@@ -459,7 +462,7 @@ static void snapshot_prune(void)
     char dir[] = "/tmp/amiga-emulation-snapprune-XXXXXX", path[128];
     size_t i;
 
-    CHECK(mkdtemp(dir) != NULL);
+    CHECK(mkdtemp(dir) != nullptr);
     for (i = 0; i < 4; i++) {
         /* names[i] used at time 1000 + i, names[3] last */
         struct timespec t[2] = { { 1000 + (time_t)i, 0 }, { 1000 + (time_t)i, 0 } };
@@ -496,7 +499,7 @@ static void snapshot_prune(void)
 static char *str_cat3(const char *a, const char *b, const char *c)
 {
     size_t n = strlen(a) + strlen(b) + strlen(c) + 1;
-    char *s = malloc(n);
+    char *s = static_cast<char *>(malloc(n));
 
     if (!s)
         abort();
@@ -509,18 +512,18 @@ static char *str_cat3(const char *a, const char *b, const char *c)
 static void snapshot_purge(void)
 {
     char rt[] = "/tmp/amiga-emulation-purge-XXXXXX", path[256], *a, *b, *n;
-    char *oxdg = getenv("XDG_RUNTIME_DIR") ? strdup(getenv("XDG_RUNTIME_DIR")) : NULL;
+    char *oxdg = getenv("XDG_RUNTIME_DIR") ? strdup(getenv("XDG_RUNTIME_DIR")) : nullptr;
     const char *own = "/build/one", *other = "/build/two";
     char *keep[16], *gone[16];
     size_t nk = 0, ng = 0, i;
     int s;
 
     /* the owner hash: 0 only without owner, stable, a link is the same */
-    CHECK(amiga_emulation_snapshot_owner(NULL) == 0 && amiga_emulation_snapshot_owner("") == 0);
+    CHECK(amiga_emulation_snapshot_owner(nullptr) == 0 && amiga_emulation_snapshot_owner("") == 0);
     CHECK(amiga_emulation_snapshot_owner(own) != 0);
     CHECK(amiga_emulation_snapshot_owner(own) == amiga_emulation_snapshot_owner(own));
     CHECK(amiga_emulation_snapshot_owner(own) != amiga_emulation_snapshot_owner(other));
-    n = amiga_emulation_snapshot_name(NULL, 0x56, 0x1234);
+    n = amiga_emulation_snapshot_name(nullptr, 0x56, 0x1234);
     CHECK(n && !strcmp(n, "snap-0000000000000000-0000000000000056-0000000000001234.uss"));
     free(n);
     a = amiga_emulation_snapshot_name(own, 1, 1);
@@ -529,7 +532,7 @@ static void snapshot_purge(void)
     free(a);
     free(b);
 
-    CHECK(mkdtemp(rt) != NULL);
+    CHECK(mkdtemp(rt) != nullptr);
     setenv("XDG_RUNTIME_DIR", rt, 1);
     /* broken: no slot directory yet */
     CHECK(amiga_emulation_snapshot_purge(own) == -1);
@@ -540,7 +543,7 @@ static void snapshot_purge(void)
         /* a link to the real directory is the same owner */
         char real[] = "/tmp/amiga-emulation-owner-XXXXXX", link[64];
 
-        CHECK(mkdtemp(real) != NULL);
+        CHECK(mkdtemp(real) != nullptr);
         snprintf(link, sizeof link, "%s-link", real);
         CHECK(symlink(real, link) == 0);
         CHECK(amiga_emulation_snapshot_owner(link) == amiga_emulation_snapshot_owner(real));
@@ -553,14 +556,14 @@ static void snapshot_purge(void)
         for (i = 0; i < 2; i++) {
             char *mine = amiga_emulation_snapshot_name(own, 7, 0x10 + i);
             char *theirs = amiga_emulation_snapshot_name(other, 7, 0x10 + i);
-            char *none = amiga_emulation_snapshot_name(NULL, 7, 0x10 + i);
+            char *none = amiga_emulation_snapshot_name(nullptr, 7, 0x10 + i);
 
-            gone[ng] = mine ? str_cat3(path, "/", mine) : NULL;
+            gone[ng] = mine ? str_cat3(path, "/", mine) : nullptr;
             put_file(gone[ng++], 4);
-            keep[nk] = theirs ? str_cat3(path, "/", theirs) : NULL;
+            keep[nk] = theirs ? str_cat3(path, "/", theirs) : nullptr;
             put_file(keep[nk++], 4);
             if (!i) {
-                keep[nk] = none ? str_cat3(path, "/", none) : NULL;
+                keep[nk] = none ? str_cat3(path, "/", none) : nullptr;
                 put_file(keep[nk++], 4);
             }
             free(mine);
@@ -584,7 +587,7 @@ static void snapshot_purge(void)
     snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-x", rt);
     CHECK(mkdir(path, 0700) == 0);
     n = amiga_emulation_snapshot_name(own, 7, 0x10);
-    keep[nk] = n ? str_cat3(path, "/", n) : NULL;
+    keep[nk] = n ? str_cat3(path, "/", n) : nullptr;
     put_file(keep[nk++], 4);
     free(n);
 
@@ -597,7 +600,7 @@ static void snapshot_purge(void)
     CHECK(amiga_emulation_snapshot_purge(own) == 0);
     /* the other owner's: 2 per slot */
     CHECK(amiga_emulation_snapshot_purge(other) == 4);
-    CHECK(amiga_emulation_snapshot_purge(NULL) == 2);
+    CHECK(amiga_emulation_snapshot_purge(nullptr) == 2);
     for (i = 0; i < ng; i++)
         free(gone[i]);
     for (i = 0; i < nk; i++) {
@@ -639,8 +642,8 @@ static void cpu_halted(void)
     CHECK(!amiga_emulation_cpu_halted(REGS("00F81234", "2700"), REGS("00F81236", "2700")));
     CHECK(!amiga_emulation_cpu_halted(REGS("00F81234", "2000"), REGS("00F81234", "2700")));
     /* broken on purpose: no answer, no OK, no SR or not four hex digits */
-    CHECK(!amiga_emulation_cpu_halted(NULL, REGS("FFFFFFAC", "0700")));
-    CHECK(!amiga_emulation_cpu_halted(REGS("FFFFFFAC", "0700"), NULL));
+    CHECK(!amiga_emulation_cpu_halted(nullptr, REGS("FFFFFFAC", "0700")));
+    CHECK(!amiga_emulation_cpu_halted(REGS("FFFFFFAC", "0700"), nullptr));
     CHECK(!amiga_emulation_cpu_halted("", ""));
     CHECK(!amiga_emulation_cpu_halted("OK", "OK"));
     CHECK(!amiga_emulation_cpu_halted("ERR\tSR=2700", "ERR\tSR=2700"));
@@ -665,7 +668,7 @@ static void write_text(const char *dir, const char *name, const char *text)
 
     snprintf(path, sizeof path, "%s/%s", dir, name);
     f = fopen(path, "wb");
-    CHECK(f != NULL);
+    CHECK(f != nullptr);
     if (f) {
         fputs(text, f);
         fclose(f);
@@ -676,12 +679,12 @@ static void hang_check(void)
 {
     char dir[] = "/tmp/amiga-emulation-hang-XXXXXX", sub[600];
     unsigned long long s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0, s5 = 0;
-    struct amiga_emulation_quiet q = { 0 };
+    struct amiga_emulation_quiet q = {};
     struct timespec t1 = { 0, 1000000 };    /* 1 ms: a touch changes the time */
     struct timespec ts[2] = { { 1000000000, 0 }, { 1000000000, 0 } };
     char path[700];
 
-    CHECK(mkdtemp(dir) != NULL);
+    CHECK(mkdtemp(dir) != nullptr);
     snprintf(sub, sizeof sub, "%s/out", dir);
     CHECK(mkdir(sub, 0700) == 0);
     write_text(sub, "session.log", "one\n");
@@ -696,7 +699,7 @@ static void hang_check(void)
     CHECK(remove(path) == 0);
     CHECK(amiga_emulation_tree_signature(dir, &s4) == 0 && s4 != s3);
     snprintf(path, sizeof path, "%s/session.log", sub);
-    nanosleep(&t1, NULL);
+    nanosleep(&t1, nullptr);
     CHECK(utimensat(AT_FDCWD, path, ts, 0) == 0);                       /* same size, other time */
     CHECK(amiga_emulation_tree_signature(dir, &s5) == 0 && s5 != s4);
     /* broken on purpose: a directory that is not there, a file instead of a tree */
@@ -728,16 +731,17 @@ static void hang_check(void)
     CHECK(!amiga_emulation_quiet_check(&q, 4, 1000.0, 0));      /* off */
 }
 
-int main(void)
+TEST_CASE("amiga_emulation: configuration, script, slots and snapshot helpers", "[amiga_emulation]")
 {
     struct amiga_emulation_option ch[] = {
         { "sound_output", "normal" },           /* replaced */
-        { "chipmem_size", NULL },               /* removed */
+        { "chipmem_size", nullptr },               /* removed */
         { "serial_port", "TCP://127.0.0.1:1234" },  /* new */
     };
     struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
-    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation_params p = {};
     char err[200], *cfg, *s;
+    const struct timespec settle = { 0, 600000000 };
 
     /* the configuration as the test asks for it, not as the caller's
        environment changes it */
@@ -745,7 +749,7 @@ int main(void)
 
     /* default: placeholders replaced, TEST: as DH1 */
     cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
-    CHECK(cfg != NULL);
+    CHECK(cfg != nullptr);
     CHECK(cfg && !strstr(cfg, "@EMULATION_DIR@"));
     CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/amiga-os-310-a1200.rom") == 1);
     CHECK(cfg && lines_equal(cfg, "hardfile2=ro,DH0:/emu/workbench-311.hdf,32,1,2,512,0,,uae0") == 1);
@@ -817,30 +821,30 @@ int main(void)
         p.nchanges = 0;
     }
     /* refused: an unknown machine */
-    CHECK(amiga_emulation_machine_known(NULL) && amiga_emulation_machine_known("a500-68010"));
+    CHECK(amiga_emulation_machine_known(nullptr) && amiga_emulation_machine_known("a500-68010"));
     CHECK(!amiga_emulation_machine_known("a3000") && !amiga_emulation_machine_known(""));
-    CHECK(amiga_emulation_machine_kickstart(NULL) == 40
+    CHECK(amiga_emulation_machine_kickstart(nullptr) == 40
           && amiga_emulation_machine_kickstart("a1200") == 40);
     CHECK(amiga_emulation_machine_kickstart("a500") == 34
           && amiga_emulation_machine_kickstart("a500-68010") == 34);
     CHECK(amiga_emulation_machine_kickstart("a3000") == 0);
     p.machine = "a3000";
-    CHECK(amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err) == NULL
+    CHECK(amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err) == nullptr
           && strstr(err, "unknown machine"));
-    p.machine = NULL;
+    p.machine = nullptr;
 
     /* refused: commas in paths, TEST as extra volume */
     p.nchanges = 0;
-    CHECK(amiga_emulation_config(&p, "/emu", "/run,test", err, sizeof err) == NULL);
+    CHECK(amiga_emulation_config(&p, "/emu", "/run,test", err, sizeof err) == nullptr);
     mounts[0].volume = "TEST";
     p.nmounts = 1;
-    CHECK(amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err) == NULL && strstr(err, "bad mount"));
+    CHECK(amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err) == nullptr && strstr(err, "bad mount"));
 
     /* the script: FailAt, the text, the end mark */
     s = amiga_emulation_script("Echo hi");
     CHECK(s && strstr(s, "FailAt 1000\nEcho hi\nEcho >TEST:run.done \"done\"\n"));
     free(s);
-    s = amiga_emulation_script(NULL);
+    s = amiga_emulation_script(nullptr);
     CHECK(s && strstr(s, "FailAt 1000\nEcho >TEST:run.done \"done\"\n"));
     free(s);
 
@@ -850,7 +854,7 @@ int main(void)
         char dir[] = "/tmp/amiga-emulation-slottest-XXXXXX";
         int a, b, c;
 
-        CHECK(mkdtemp(dir) != NULL);
+        CHECK(mkdtemp(dir) != nullptr);
         a = amiga_emulation_slot(dir, 2, 0);
         b = amiga_emulation_slot(dir, 2, 0);
         c = amiga_emulation_slot(dir, 2, 0);
@@ -870,7 +874,7 @@ int main(void)
            numbers, a number with garbage behind it, too long) */
         {
             char *old = getenv("AMIGA_EMULATION_MAX");
-            char *saved = old ? strdup(old) : NULL;
+            char *saved = old ? strdup(old) : nullptr;
             char big[200];
             /* the default without a limit file: 60 % of the processors
                online, rounded, at least 1, at most the limit of the file;
@@ -930,7 +934,7 @@ int main(void)
                 _exit(c >= 0 ? 0 : 1);
             }
             CHECK(pid > 0);
-            nanosleep(&(struct timespec){ 0, 600000000 }, NULL);
+            nanosleep(&settle, nullptr);
             CHECK(pid > 0 && waitpid(pid, &st, WNOHANG) == 0);
             put_max(dir, "3");
             CHECK(pid > 0 && waitpid(pid, &st, 0) == pid && WIFEXITED(st)
@@ -958,20 +962,20 @@ int main(void)
        but "no slot now"; one without waits for a slot */
     {
         static const struct amiga_emulation_option bare[] = {
-            { "kickstart_rom_file", NULL }, { "hardfile2", NULL },
+            { "kickstart_rom_file", nullptr }, { "hardfile2", nullptr },
         };
         static const struct amiga_emulation_option nohdf[] = {
             { "hardfile2", "ro,DH0:/nonexistent/x.hdf,32,1,2,512,0,,uae0" },
         };
         char xdg[] = "/tmp/amiga-emulation-xdgtest-XXXXXX", slots[96], lock[128];
         char *oxdg = getenv("XDG_RUNTIME_DIR"), *omax = getenv("AMIGA_EMULATION_MAX");
-        char *sxdg = oxdg ? strdup(oxdg) : NULL, *smax = omax ? strdup(omax) : NULL;
-        struct amiga_emulation_params q = { 0 };
+        char *sxdg = oxdg ? strdup(oxdg) : nullptr, *smax = omax ? strdup(omax) : nullptr;
+        struct amiga_emulation_params q = {};
         struct amiga_emulation *a, *b, *c;
         pid_t pid;
         int x, y, st;
 
-        CHECK(mkdtemp(xdg) != NULL);
+        CHECK(mkdtemp(xdg) != nullptr);
         snprintf(slots, sizeof slots, "%s/amiga-emulation-slots", xdg);
         setenv("XDG_RUNTIME_DIR", xdg, 1);
         setenv("AMIGA_EMULATION_MAX", "2", 1);
@@ -981,26 +985,26 @@ int main(void)
         q.timeout = 10;
 
         a = amiga_emulation_start(&q, err, sizeof err);
-        CHECK(a != NULL && !amiga_emulation_no_slot());
+        CHECK(a != nullptr && !amiga_emulation_no_slot());
         b = amiga_emulation_start(&q, err, sizeof err);
-        CHECK(b != NULL && !amiga_emulation_no_slot());
+        CHECK(b != nullptr && !amiga_emulation_no_slot());
         /* both slots taken: the third fails at once, with EAGAIN */
         errno = 0;
         c = amiga_emulation_start(&q, err, sizeof err);
-        CHECK(c == NULL && errno == EAGAIN && amiga_emulation_no_slot());
-        CHECK(c == NULL && strstr(err, "no free emulator slot"));
+        CHECK(c == nullptr && errno == EAGAIN && amiga_emulation_no_slot());
+        CHECK(c == nullptr && strstr(err, "no free emulator slot"));
         CHECK(amiga_emulation_slot(slots, 2, 0) < 0);
         amiga_emulation_free(c);
         /* another error stays one (not "no slot") */
         q.changes = nohdf;
         q.nchanges = 1;
-        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL && !amiga_emulation_no_slot());
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == nullptr && !amiga_emulation_no_slot());
         q.changes = bare;
         q.nchanges = 2;
         /* a freed run's slot is taken again */
         amiga_emulation_free(a);
         c = amiga_emulation_start(&q, err, sizeof err);
-        CHECK(c != NULL && !amiga_emulation_no_slot());
+        CHECK(c != nullptr && !amiga_emulation_no_slot());
         amiga_emulation_free(b);
         amiga_emulation_free(c);
 
@@ -1016,12 +1020,12 @@ int main(void)
             close(y);
             alarm(10);
             a = amiga_emulation_start(&q, err, sizeof err);
-            st = a != NULL;
+            st = a != nullptr;
             amiga_emulation_free(a);
             _exit(st ? 0 : 1);
         }
         CHECK(pid > 0);
-        nanosleep(&(struct timespec){ 0, 600000000 }, NULL);
+        nanosleep(&settle, nullptr);
         CHECK(pid > 0 && waitpid(pid, &st, WNOHANG) == 0);
         close(x);
         CHECK(pid > 0 && waitpid(pid, &st, 0) == pid && WIFEXITED(st)
@@ -1052,38 +1056,38 @@ int main(void)
        start gets past this check (and fails for another reason). */
     {
         static const struct amiga_emulation_option nohdf[] = {
-            { "kickstart_rom_file", NULL },
+            { "kickstart_rom_file", nullptr },
             { "hardfile2", "ro,DH0:/nonexistent/x.hdf,32,1,2,512,0,,uae0" },
         };
         char dir[] = "/tmp/amiga-emulation-pathtest-XXXXXX", work[96], exe[96];
-        char *opath = getenv("PATH"), *spath = opath ? strdup(opath) : NULL;
-        struct amiga_emulation_params q = { 0 };
+        char *opath = getenv("PATH"), *spath = opath ? strdup(opath) : nullptr;
+        struct amiga_emulation_params q = {};
         FILE *f;
 
-        CHECK(mkdtemp(dir) != NULL);
+        CHECK(mkdtemp(dir) != nullptr);
         snprintf(work, sizeof work, "%s/work", dir);
         snprintf(exe, sizeof exe, "%s/amiberry", dir);
         setenv("PATH", dir, 1);
         q.work_dir = work;
         q.changes = nohdf;
         q.nchanges = 2;
-        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == nullptr
               && strstr(err, "amiberry not found in PATH") && !amiga_emulation_no_slot()
               && access(work, F_OK) != 0);
         q.amiberry = "no-such-amiberry";
-        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == nullptr
               && strstr(err, "no-such-amiberry not found in PATH") && access(work, F_OK) != 0);
-        q.amiberry = NULL;
+        q.amiberry = nullptr;
         /* a file that is not executable does not count; an executable one does
            (the start then fails for another reason) */
         f = fopen(exe, "w");
-        CHECK(f != NULL);
+        CHECK(f != nullptr);
         if (f)
             fclose(f);
-        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == nullptr
               && strstr(err, "amiberry not found in PATH"));
         CHECK(chmod(exe, 0755) == 0);
-        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == nullptr
               && err[0] && !strstr(err, "not found in PATH"));
         if (spath)
             setenv("PATH", spath, 1);
@@ -1106,25 +1110,25 @@ int main(void)
         char plain[96], enc[96], key[96], sub[96], link[96];
         FILE *f;
 
-        CHECK(mkdtemp(dir) != NULL);
+        CHECK(mkdtemp(dir) != nullptr);
         snprintf(plain, sizeof plain, "%s/plain.rom", dir);
         snprintf(enc, sizeof enc, "%s/enc.rom", dir);
         snprintf(key, sizeof key, "%s/rom.key", dir);
         snprintf(sub, sizeof sub, "%s/sub", dir);
         snprintf(link, sizeof link, "%s/sub/enc.rom", dir);
         CHECK(amiga_emulation_check_rom(plain, err, sizeof err) == -1 && strstr(err, "missing"));
-        if ((f = fopen(plain, "wb")) != NULL) {
+        if ((f = fopen(plain, "wb")) != nullptr) {
             fputs("\x11\x11\x4e\xf9 a plain ROM", f);
             fclose(f);
         }
-        if ((f = fopen(enc, "wb")) != NULL) {
+        if ((f = fopen(enc, "wb")) != nullptr) {
             fputs("AMIROMTYPE1 encrypted", f);
             fclose(f);
         }
         CHECK(amiga_emulation_check_rom(plain, err, sizeof err) == 0);
         CHECK(amiga_emulation_check_rom(enc, err, sizeof err) == -1 && strstr(err, "rom.key"));
         CHECK(mkdir(sub, 0700) == 0 && symlink(enc, link) == 0);
-        if ((f = fopen(key, "wb")) != NULL)
+        if ((f = fopen(key, "wb")) != nullptr)
             fclose(f);
         CHECK(amiga_emulation_check_rom(enc, err, sizeof err) == 0);
         CHECK(amiga_emulation_check_rom(link, err, sizeof err) == 0);
@@ -1154,7 +1158,4 @@ int main(void)
                   "first-save"));
     CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_FALLBACK), "fallback"));
 
-    if (failures)
-        fprintf(stderr, "test_amiga_emulation: %d failures\n", failures);
-    return failures != 0;
 }

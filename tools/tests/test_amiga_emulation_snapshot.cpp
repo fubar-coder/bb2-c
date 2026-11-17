@@ -1,5 +1,5 @@
 /*
- * test_amiga_emulation_snapshot.c - the snapshot mode with the emulator
+ * test_amiga_emulation_snapshot - the snapshot mode with the emulator
  * (A1200), in a slot directory of its own while it holds one of the
  * shared slots: the first session boots cold and saves the state, the
  * second, in a new process, restores it (TEST:, a writable and a
@@ -10,18 +10,27 @@
  * no savestate is removed and the session saves anew, `cold` boots
  * without snapshot.  After every session
  * the slot has no links or SNAP: left.  Exit 77 (skipped) without
- * Amiberry or the data.
+ * Amiberry or the data.  The second session runs this program again with
+ * the hidden test case "restored session" (the directory in
+ * $AMIGA_EMULATION_SNAPTEST_BASE).
  */
-#define _XOPEN_SOURCE 700       /* mkdtemp, setenv */
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
 #include <ftw.h>
+#include <snitch/snitch.hpp>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
-#include "testutil.h"
+extern "C" {
 #include "amiga_emulation.h"
+}
+
+#define BASE_ENV "AMIGA_EMULATION_SNAPTEST_BASE"
+#define RESTORED_CASE "amiga_emulation_snapshot: restored session"
 
 static char base[] = "/tmp/amiga-emulation-snaptest-XXXXXX";
 static char slot[256];          /* base/run/amiga-emulation-slots/slot-0 */
@@ -30,7 +39,7 @@ static char *read_text(const char *dir, const char *name)
 {
     char path[4096];
     FILE *f;
-    char *s = calloc(1, 65536);
+    char *s = static_cast<char *>(calloc(1, 65536));
 
     snprintf(path, sizeof path, "%s/%s", dir, name);
     if (s && (f = fopen(path, "r")) != NULL) {
@@ -120,7 +129,7 @@ static int session(const char *name, const char *emu, int cold, enum amiga_emula
         "Version >TEST:version.txt\n";
     char work[256], test[300], w[256], r[256], err[300], *s, *expect;
     struct amiga_emulation_mount mounts[2];
-    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation_params p = {};
     struct amiga_emulation *e;
     struct amiga_emulation_stats st;
     int ok;
@@ -133,8 +142,8 @@ static int session(const char *name, const char *emu, int cold, enum amiga_emula
           && mkdir(r, 0700) == 0);
     write_text(test, "in.txt", name);
     write_text(r, "r.txt", "read-only");
-    mounts[0] = (struct amiga_emulation_mount){ "W", w, 1 };
-    mounts[1] = (struct amiga_emulation_mount){ "R", r, 0 };
+    mounts[0] = amiga_emulation_mount{ "W", w, 1 };
+    mounts[1] = amiga_emulation_mount{ "R", r, 0 };
     p.mounts = mounts;
     p.nmounts = 2;
     p.script = script;
@@ -196,28 +205,34 @@ static void only_snapshot(char *name, size_t len)
 }
 
 /* the second session, restored: run in a new process (this program again
-   with --restored BASE), as the first session of a later ctest run */
-static int restored_child(void)
+   with the hidden test case, BASE in the environment), as the first session
+   of a later ctest run */
+TEST_CASE(RESTORED_CASE, "[.restored_child]")
 {
-    char *log = NULL;
+    const char *dir = getenv(BASE_ENV);
+    char *log = nullptr;
     double secs;
 
+    if (!dir || strlen(dir) != strlen(base))
+        FAIL("hidden test case, run by amiga_emulation_snapshot: " BASE_ENV " missing");
+    memcpy(base, dir, sizeof base);
+    snprintf(slot, sizeof slot, "%s/run/amiga-emulation-slots/slot-0", base);
     CHECK(session("second", NULL, 0, AMIGA_EMULATION_SNAP_RESTORED, &log, &secs) == 1);
     CHECK(log && strstr(log, "restore ") && strstr(log, "job started") && !strstr(log, "cold")
           && !strstr(log, "failed"));
     CHECK(secs < 10);
     free(log);
     fprintf(stderr, "test_amiga_emulation_snapshot: restored session (new process) %.1f s\n", secs);
-    return failures != 0;
 }
 
-static int run_restored_child(const char *self)
+static int run_restored_child(void)
 {
     pid_t pid = fork();
     int st;
 
     if (pid == 0) {
-        execl(self, self, "--restored", base, (char *)NULL);
+        setenv(BASE_ENV, base, 1);
+        execl("/proc/self/exe", "/proc/self/exe", RESTORED_CASE, (char *)nullptr);
         _exit(127);
     }
     return pid > 0 && waitpid(pid, &st, 0) == pid && WIFEXITED(st) ? WEXITSTATUS(st) : -1;
@@ -265,20 +280,14 @@ static int changed_emulation_dir(char *emu, size_t len)
     return copy_file(from, to);
 }
 
-int main(int argc, char **argv)
+TEST_CASE("amiga_emulation_snapshot: save, restore, stale and broken states", "[amiga_emulation_snapshot]")
 {
     const char *xdg = getenv("XDG_RUNTIME_DIR");
-    char shared[256], runtime[200], path[600], emu[300], name[128], before[128], *log = NULL;
+    char shared[256], runtime[200], path[600], emu[300], name[128], before[128], *log = nullptr;
     struct timespec old[2] = { { 1000000000, 0 }, { 1000000000, 0 } };
     double secs;
     int held, r;
     FILE *f;
-
-    if (argc == 3 && !strcmp(argv[1], "--restored") && strlen(argv[2]) == strlen(base)) {
-        memcpy(base, argv[2], sizeof base);
-        snprintf(slot, sizeof slot, "%s/run/amiga-emulation-slots/slot-0", base);
-        return restored_child();
-    }
 
     /* one of the shared slots for the whole test, then a slot directory
        of its own with one slot */
@@ -299,7 +308,7 @@ int main(int argc, char **argv)
     /* the first session: boots cold, saves, restores */
     r = session("first", NULL, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs);
     if (r < 0)
-        return 77;
+        std::exit(77);          // skipped (the exit status of ctest SKIP_RETURN_CODE)
     CHECK(r == 1);
     CHECK(log && strstr(log, "boot cold, save") && strstr(log, " saved ")
           && strstr(log, "job started") && !strstr(log, "failed") && !strstr(log, "stale"));
@@ -310,7 +319,7 @@ int main(int argc, char **argv)
 
     /* the second, in a new process: restored, the snapshot stays */
     only_snapshot(before, sizeof before);
-    CHECK(run_restored_child(argv[0]) == 0);
+    CHECK(run_restored_child() == 0);
     only_snapshot(name, sizeof name);
     CHECK(*name && !strcmp(name, before));
     CHECK(slot_clean());
@@ -374,10 +383,9 @@ int main(int argc, char **argv)
     CHECK(snapshots(path, sizeof path) == 1);       /* the one of "corrupted", untouched */
     free(log);
 
-    if (!failures)
+    if (!snitch::impl::get_current_test().failures)
         nftw(base, rm_entry, 16, FTW_DEPTH | FTW_PHYS);
     close(held);
-    if (failures)
-        fprintf(stderr, "test_amiga_emulation_snapshot: %d failures (files in %s)\n", failures, base);
-    return failures != 0;
+    if (snitch::impl::get_current_test().failures)
+        fprintf(stderr, "test_amiga_emulation_snapshot: files in %s\n", base);
 }
