@@ -106,6 +106,12 @@ add_subdirectory(amiga)
 
 set(BUG_ORIG_TIMEOUT 90 CACHE STRING "bug-orig: time limit of one emulator session (seconds)")
 set(BUG_ORIG_HANG_AFTER 6 CACHE STRING "bug-orig: seconds of silence after which the session of a recorded original that hangs ends (0: only the time limit)")
+# the hang check of the normal run (port and clib sessions): the silence counts from the
+# first program run (pass key hang_from=run), so the compile, which is silent for long
+# on a loaded host, never counts; the program that hangs or crashes into the alert
+# ends its session after this many seconds of silence, not at BUG_ORIG_TIMEOUT
+# (0: only the time limit)
+set(BUG_ORIG_RUN_HANG_AFTER 8 CACHE STRING "bug-orig: seconds of silence of a program run after which the session of the port or clib ends (0: only the time limit)")
 set(CD ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1)
 set(CD_BLITZ2 ${CD}/BLITZ2)
 set(REF_BLITZ2 ${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2)
@@ -338,6 +344,14 @@ function(bug_orig_test bas name)
 		set(text "${head}regression=on\n${cfg_part}${tail}")
 	else()
 		set(text "${head}${ref_part}${cfg_part}${mount_part}${tail}")
+	endif()
+	# no program run to count from: a compile-only pass (@pass run=off)
+	set(run_hang_off FALSE)
+	if(extra MATCHES "(^|\n)run=off\n")
+		set(run_hang_off TRUE)
+	endif()
+	if(BUG_ORIG_RUN_HANG_AFTER AND NOT run_hang_off)
+		string(APPEND text "hang_after=${BUG_ORIG_RUN_HANG_AFTER}\nhang_from=run\n")
 	endif()
 	# the passes with the reference (the compare test, the recording runs)
 	set(rtext "${head}${ref_part}${hang_line}${cfg_part}${mount_part}${tail}")

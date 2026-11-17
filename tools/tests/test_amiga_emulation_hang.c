@@ -9,7 +9,9 @@
  * to the time limit.  The program is a hunk file from memory, put into
  * TEST: before the start.  The check needs the snapshot mode (a cold boot
  * is silent): exit 77 (skipped) without Amiberry or the emulation data, or
- * where the session has no slot (AMIGA_EMULATION_MAX=0).
+ * where the session has no slot (AMIGA_EMULATION_MAX=0).  hang_arm: the check
+ * counts from the second a file is there (a compile that is silent for long is
+ * no hang).
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp, nftw */
 #include <ftw.h>
@@ -89,7 +91,8 @@ static int rm_entry(const char *path, const struct stat *st, int flag, struct FT
 }
 
 /* one session in its own work directory; 77: it cannot run */
-static int run(const char *script, unsigned hang_after, unsigned timeout, const struct prog *pr,
+static int run(const char *script, unsigned hang_after, const char *arm, unsigned timeout,
+               const struct prog *pr,
                enum amiga_emulation_status want, int want_hung, double max_timed, double min_timed,
                const char *what)
 {
@@ -97,7 +100,7 @@ static int run(const char *script, unsigned hang_after, unsigned timeout, const 
     struct amiga_emulation_stats st;
     struct amiga_emulation *e;
     const char *tmp = getenv("TMPDIR");
-    char work[4096], path[4200], err[300], *txt;
+    char work[4096], path[4200], armpath[4200], err[300], *txt;
     int before = failures;
 
     snprintf(work, sizeof work, "%s/amiga-emulation-hang-XXXXXX", tmp && *tmp ? tmp : "/tmp");
@@ -113,6 +116,8 @@ static int run(const char *script, unsigned hang_after, unsigned timeout, const 
     p.script = script;
     p.timeout = timeout;
     p.hang_after = hang_after;
+    snprintf(armpath, sizeof armpath, "%s/test/%s", work, arm ? arm : "");
+    p.hang_arm = arm ? armpath : NULL;
     p.work_dir = work;
     setenv("AMIGA_EMULATION_TIMEOUT_STATE", "1", 1);
     e = amiga_emulation_start(&p, err, sizeof err);
@@ -159,18 +164,28 @@ int main(void)
         "Echo \"1\" >TEST:tick.txt\nWait 4\nEcho \"2\" >>TEST:tick.txt\nWait 4\n"
         "Echo \"3\" >>TEST:tick.txt\nWait 4\nEcho \"4\" >>TEST:tick.txt\nWait 4\n"
         "Echo \"5\" >>TEST:tick.txt\nWait 4\nEcho \"6\" >>TEST:tick.txt\n";
+    /* silent for 15 s, then arm.txt, then the loop */
+    static const char arm_script[] = "Wait 15\nEcho \"armed\" >TEST:arm.txt\nTEST:hang\n";
     int rc;
 
     /* silent for 6 s: ended at once as a timeout, hung, far before the limit of 90 s */
-    rc = run(hang_script, 6, 90, &loop, AMIGA_EMULATION_TIMEOUT, 1, 45, 0, "hang_after 6");
+    rc = run(hang_script, 6, NULL, 90, &loop, AMIGA_EMULATION_TIMEOUT, 1, 45, 0, "hang_after 6");
     if (rc == 77)
         return 77;
     /* the same loop without hang_after: the whole limit (not hung) */
-    run(hang_script, 0, 14, &loop, AMIGA_EMULATION_TIMEOUT, 0, 40, 13, "no hang_after");
+    run(hang_script, 0, NULL, 14, &loop, AMIGA_EMULATION_TIMEOUT, 0, 40, 13, "no hang_after");
     /* a dead-end alert: silent in the alert, before the reboot */
-    run(hang_script, 6, 90, &alert, AMIGA_EMULATION_TIMEOUT, 1, 45, 0, "dead-end alert");
+    run(hang_script, 6, NULL, 90, &alert, AMIGA_EMULATION_TIMEOUT, 1, 45, 0, "dead-end alert");
     /* broken on purpose: a job that is silent less than hang_after at a time
        is no hang, though it runs longer than hang_after */
-    run(tick_script, 12, 120, NULL, AMIGA_EMULATION_DONE, 0, 90, 0, "writing job");
+    run(tick_script, 12, NULL, 120, NULL, AMIGA_EMULATION_DONE, 0, 90, 0, "writing job");
+    /* hang_arm: the silence counts from the second the file is there.  A job
+       silent for 15 s (a compile on a loaded host) and then a loop: without
+       hang_arm the 15 s count (hung within 15 s), with it the check starts at
+       arm.txt (hung 6 s after it, not before 20 s); a file that never appears
+       gives no hang check at all (the limit) */
+    run(arm_script, 6, NULL, 90, &loop, AMIGA_EMULATION_TIMEOUT, 1, 15, 0, "silent start, no arm");
+    run(arm_script, 6, "arm.txt", 90, &loop, AMIGA_EMULATION_TIMEOUT, 1, 60, 20, "armed");
+    run(hang_script, 6, "never.txt", 14, &loop, AMIGA_EMULATION_TIMEOUT, 0, 40, 13, "never armed");
     return failures != 0;
 }

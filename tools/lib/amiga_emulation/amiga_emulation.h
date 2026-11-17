@@ -167,6 +167,15 @@ struct amiga_emulation_params {
                                    a job that is expected to hang (a bug of the
                                    original): a hang that nothing but the time
                                    limit ends would take the whole limit */
+    const char *hang_arm;       /* NULL: the silence counts from the start of the
+                                   job.  A host path (a file in a writable mount): the
+                                   check starts once that file exists and counts from
+                                   the second it appeared, so that a phase before it
+                                   that is silent for long and healthy (a compile on
+                                   a loaded host) does not count; the runners name
+                                   the file the first program run creates.  A file
+                                   that never appears: no hang check, only the time
+                                   limit */
 };
 
 /*

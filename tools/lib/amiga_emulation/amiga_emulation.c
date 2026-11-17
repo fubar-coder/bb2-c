@@ -181,6 +181,7 @@ struct amiga_emulation {
     double ready_at, restore_until;
     unsigned timeout;
     unsigned hang_after;        /* params.hang_after */
+    char *hang_arm;             /* params.hang_arm (own copy), NULL = counts from the start */
     struct amiga_emulation_quiet quiet;     /* the hang check */
     double next_quiet;
     int hung;                   /* the session ended by the hang check */
@@ -1969,6 +1970,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     e->parent = getpid();
     e->timeout = p->timeout ? p->timeout : 60;
     e->hang_after = p->hang_after;
+    e->hang_arm = p->hang_arm ? strdup(p->hang_arm) : NULL;
     e->amiberry = p->amiberry ? p->amiberry : "amiberry";
     e->visible = p->visible || env_on("AMIGA_EMULATION_VISIBLE");
     e->log_on = p->log || env_on("AMIGA_EMULATION_LOG");
@@ -2357,6 +2359,9 @@ static void poll_quiet(struct amiga_emulation *e)
     size_t i;
 
     e->next_quiet = now() + 1;
+    /* armed by a file (params.hang_arm): the silence counts from the second the file is there */
+    if (e->hang_arm && access(e->hang_arm, F_OK))
+        return;
     if (amiga_emulation_tree_signature(e->real_test_dir ? e->real_test_dir : e->test_dir, &one))
         return;         /* no signature: the check does not count this second */
     sig = one;
@@ -2792,6 +2797,7 @@ void amiga_emulation_free(struct amiga_emulation *e)
     if (e->own_work_dir)
         rm_tree(e->work_dir);
     free(e->work_dir);
+    free(e->hang_arm);
     free(e->test_dir);
     free(e->slot_dir);
     free(e->slot_lock);

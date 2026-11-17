@@ -34,6 +34,13 @@
  *                     timeout (amiga_emulation_params.hang_after: a program
  *                     that is expected to hang, e.g. the original's bug, need not
  *                     wait for the whole timeout; not set: only the timeout)
+ *   hang_from=run     with hang_after=: the silence counts only from the first
+ *                     program run (the file the gate or the first program
+ *                     creates, amiga_emulation_params.hang_arm), not from the
+ *                     start of the job: the compile is silent for long on a loaded
+ *                     host and is no hang.  A program that hangs or crashes ends
+ *                     its session after hang_after seconds; a compile that does
+ *                     not end still takes the whole timeout
  *   parallel=N        emulator sessions at the same time (1 always works)
  *   stack=N           Stack for blitz2 and the programs
  *   ted=PATH          tedstub (blitz2:ted)
@@ -248,6 +255,7 @@ struct corpus_pass {
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     int rtg;                            /* rtg=on: amiga_emulation_rtg */
     unsigned timeout, parallel, stack, hang_after;   /* hang_after: 0 = not given */
+    int hang_from_run;                  /* hang_from=run: the silence counts from the first run */
     unsigned long long min_free;        /* min_free=: MiB, 0 = no check */
     unsigned fixed;                     /* fixed=NNN, 0 = not given */
     struct corpus_config *configs;

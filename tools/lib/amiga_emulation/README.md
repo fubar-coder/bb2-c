@@ -78,6 +78,12 @@ than `hang_after` without writing is: set the time above the longest silence
 of the job plus what a loaded host adds (`tests/README.md`, "Recorded
 originals", uses 6 s for the original's compile and crash).
 
+`params.hang_arm` (the pass key `hang_from=run`) starts the check only when
+a file exists (a host path in a writable mount) and counts the silence from the
+second it appeared: the runners name the file the first program run
+creates, so a compile that is silent for long on a loaded host is never a hang.
+A file that never appears: no hang check, the time limit.
+
 ## Slots: how runners wait
 
 The limit of simultaneous sessions, its file and variable are described

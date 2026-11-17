@@ -84,6 +84,22 @@ int main(void)
     CHECK(parse(BASE CONFIGS "hang_after=soon\nsource=/s\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "hang_after=\nsource=/s\n", err, sizeof err) == -1);
 
+    /* hang_from=run: the silence counts from the first program run; only with hang_after= and
+       runs, only the value run */
+    CHECK(corpus_parse(BASE CONFIGS "hang_after=8\nhang_from=run\nsource=/s\n", &p, err,
+                       sizeof err) == 0 && p.hang_from_run == 1 && p.hang_after == 8);
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "hang_after=8\nsource=/s\n", &p, err, sizeof err) == 0
+          && p.hang_from_run == 0);
+    corpus_free(&p);
+    CHECK(parse(BASE CONFIGS "hang_from=run\nsource=/s\n", err, sizeof err) == -1
+          && strstr(err, "hang_from=run needs hang_after="));
+    CHECK(parse(BASE CONFIGS "hang_after=8\nhang_from=start\nsource=/s\n", err, sizeof err) == -1
+          && strstr(err, "hang_from=run"));
+    CHECK(parse("work=/w\nreport=/r\nted=/t\ndefaultdbug=/d\nrun=off\n" CONFIGS
+                "hang_after=8\nhang_from=run\nsource=/s\n", err, sizeof err) == -1
+          && strstr(err, "hang_from=run needs hang_after="));
+
     /* broken */
     CHECK(parse(BASE CONFIGS, err, sizeof err) == -1);                      /* no source */
     CHECK(parse(BASE "config=ref|ref|/a|/b|/c\nsource=/s\n", err, sizeof err) == -1);

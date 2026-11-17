@@ -250,6 +250,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             p->min_free = u;
             continue;
         }
+        if (!strcmp(key, "hang_from")) {
+            if (strcmp(val, "run")) {
+                free(val);
+                return fail(p, err, errlen, "line %u: hang_from=run", no);
+            }
+            p->hang_from_run = 1;
+            free(val);
+            continue;
+        }
         if (!strcmp(key, "record")) {
             if (strcmp(val, "check") && strcmp(val, "write")) {
                 free(val);
@@ -443,6 +452,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     }
     if (!p->work || !p->report || !p->ted || (p->run && !p->launcher))
         return fail(p, err, errlen, "work, report, ted and launcher are needed");
+    if (p->hang_from_run && (!p->hang_after || !p->run))
+        return fail(p, err, errlen, "hang_from=run needs hang_after= and runs (not run=off)");
     /* compile only: nothing that belongs to the runs */
     if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->expect))
         return fail(p, err, errlen, "run=off: no launcher, gate, serial, runwrap, runargs, "
@@ -1105,6 +1116,7 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
     char **keys = calloc(p->nuae + 1, sizeof *keys);
     struct amiga_emulation_params ep = { 0 };
     struct amiga_emulation *e = NULL;
+    char *arm = NULL;
     size_t i;
 
     if (vol && emu && m && tcp && ch && keys) {
@@ -1135,10 +1147,24 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
         ep.script = text;
         ep.timeout = p->timeout;
         ep.hang_after = p->hang_after;
+        /* from the first program run: the file it creates first (the gate's, else
+           the first program's), so that a compile silent for long does not count */
+        if (p->hang_from_run) {
+            char *n = p->gate ? NULL : p->nsources ? corpus_name(p->sources[0]) : NULL;
+
+            arm = p->gate ? str_printf("%s/out/gate.run", vol)
+                  : n ? str_printf("%s/out/%s.run", vol, n) : NULL;
+            free(n);
+            ep.hang_arm = arm;
+            /* nothing to arm by: no hang check */
+            if (!arm)
+                ep.hang_after = 0;
+        }
         ep.work_dir = emu;
         e = amiga_emulation_start(&ep, err, errlen);
     } else
         snprintf(err, errlen, "out of memory");
+    free(arm);
     free(m);
     for (i = 0; keys && i < p->nuae; i++)
         free(keys[i]);
