@@ -38,7 +38,8 @@ AMOS-like helpers by RI for Ott of The Farm:
   (`$80080000` + tag, inline).
 
 init opens dos.library (version 0) and allocates the tables; finit
-unlocks ChangeDir's lock, frees every bank and the tables and closes
+makes the directory the first ChangeDir replaced current again, unlocks
+ChangeDir's lock, frees every bank and the tables and closes
 dos.library.
 
 ## From RWE's source to the reference
@@ -136,6 +137,16 @@ kind F):
   remembered and the result is -1. The original returned 0 when the
   previous directory was 0, with the new lock already current but not
   remembered (never unlocked) (#490).
+* `ChangeDir` keeps the current directory its first call replaces (the
+  program's own, also 0); finit makes it current again, unless the
+  program changed the directory itself since, then unlocks the last
+  ChangeDir lock and clears it; `BankLimit` does not touch the
+  directory (as #157 of freqlib: the start directory is restored at the
+  end). The original kept no copy: finit and BankLimit unlocked the last
+  ChangeDir lock while it was still the current directory, without
+  clearing it (a second finit or BankLimit, or the next ChangeDir,
+  unlocked it again); the Shell the program was started from was left
+  with a freed lock (#491).
 
 ## BUG(orig), kept
 
@@ -156,10 +167,6 @@ kind F):
   dos.library of OS 3.2 (the emulator's) has the lock in d1 too: the test
   sees the directory unlocked; other versions may leak it or unlock
   garbage (#496).
-* `ChangeDir` keeps no copy of the program's own current directory:
-  finit and BankLimit unlock the last ChangeDir lock while it is still the
-  current directory, and do not clear it (a second finit or BankLimit, or
-  the next ChangeDir, unlocks it again) (#491).
 * `BankLimit n` returns the address of the new start table (init's d0)
   (#483).
 * `DeviceName$` takes the name from the string space (a3), not from d0;
@@ -220,8 +227,7 @@ the bug-orig test `riamosfunclib-count-zero`) and bank numbers outside
 the tables (the original writes outside the test's memory; the bug-orig
 test `riamosfunclib-bank-range`); BankLimit 0 or above 65536 (the
 bug-orig test `riamosfunclib-eraseall-dbra`); a
-ChangeDir lock that is current at finit/BankLimit (the test restores the
-directory first); CurrentDir returning 0 (the bug-orig test
+BankLimit after a ChangeDir; CurrentDir returning 0 (the bug-orig test
 `riamosfunclib-changedir-currentdir-0`).
 
 **Loader pitfall:** sysload resolves an ALibJsr placeholder to the table

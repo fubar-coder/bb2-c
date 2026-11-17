@@ -29,7 +29,8 @@
  * globalloc block (MEMF_CLEAR): lenptr[bank] the length, startptr[bank]
  * the address (exec AllocMem).  A number from 0 to maxbanks-1 is a
  * bank, anything else an address (FillMem, BLoad, BSave).  init opens
- * dos.library and allocates the tables; finit unlocks ChangeDir's lock,
+ * dos.library and allocates the tables; finit makes the directory the
+ * first ChangeDir replaced current again, unlocks ChangeDir's lock,
  * frees every bank and the tables, closes dos.library.
  *
  * The routines are C behind thunks that keep d1/a0/a1 (statements also
@@ -54,11 +55,6 @@
  *   - MakeDir unlocks whatever CreateDir leaves in d1, not the lock it
  *     returned in d0 (see makedir_c; with the dos.library of OS 3.2 d1
  *     holds the lock as well, the test sees it given back) (#496).
- *   - ChangeDir keeps no copy of the program's own current directory:
- *     finit (and BankLimit) unlock the last ChangeDir lock while it is
- *     still the current directory, without clearing oldlock (a second
- *     finit or BankLimit, or the next ChangeDir, unlocks it again)
- *     (#491).
  *   - BankLimit returns the address of the new start table (init's d0)
  *     (#483).
  *   - DeviceName$ takes the name from the string space (a3), not from
@@ -98,6 +94,14 @@
  *     directory, which may be 0): the new lock is remembered and the
  *     result is -1; the original returned 0 for a previous directory 0
  *     with the new lock already current and not remembered (#490).
+ *   - ChangeDir keeps the current directory it replaces first (the
+ *     program's own, also 0); finit makes it current again before it
+ *     unlocks the last ChangeDir lock (if the program did not change the
+ *     directory itself since), and clears oldlock; BankLimit does not
+ *     touch the directory.  The original kept no copy: finit and
+ *     BankLimit unlocked the last ChangeDir lock while it was still the
+ *     current directory, without clearing oldlock (a second finit or
+ *     BankLimit, or the next ChangeDir, unlocked it again) (#491).
  *   - Reserve(length) returns -1 for a negative length, as for its other
  *     failures; the original returned 0, the number of the first bank
  *     (#500).
@@ -392,6 +396,8 @@ BLITZ_LIBFIN();
 static ULONG *lenptr, *startptr;        /* the bank tables */
 static LONG maxbanks = 50;
 static BPTR oldlock;                    /* ChangeDir's current directory */
+static BPTR startdir;                   /* the one the first ChangeDir replaced */
+static BOOL startkept;                  /* startdir is set (it may be 0) */
 static struct DosLibrary *dosbase_;     /* _dosbase */
 static const char dosname[] = "dos.library";
 static BPTR fh;                         /* SaveExec's file */
@@ -665,20 +671,12 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
     return (ULONG)startptr;
 }
 
-/**
- * @brief finit: unlocks ChangeDir's lock, frees every bank and the
- * tables, closes dos.library.
- *
- * BUG(orig) (#491): the lock is unlocked while it is still the current
- * directory, and oldlock is not cleared (a second finit unlocks again).
- */
-static void BLITZ_ROUTINE libfinit_c(void)
+/* the banks part of finit (also BankLimit): every bank and the tables
+   freed, dos.library closed */
+static void finitbanks(void)
 {
-    struct DosLibrary *dos = dosbase_;
     struct bl_regs r = { 0 };
 
-    if (oldlock)
-        UnLock(oldlock);                        /* BUG(orig): still current, kept (#491) */
     eraseall_c();
     r.a1 = (ULONG)lenptr;
     r.d0 = (ULONG)maxbanks << 3;
@@ -687,17 +685,45 @@ static void BLITZ_ROUTINE libfinit_c(void)
 }
 
 /**
+ * @brief finit: makes the directory the first ChangeDir replaced current
+ * again, unlocks ChangeDir's lock, frees every bank and the tables, closes
+ * dos.library.
+ *
+ * If the current directory is not ChangeDir's lock (the program changed
+ * it itself), it stays.  Fixed (#491): the original unlocked the lock
+ * while it was still the current directory and did not clear oldlock.
+ */
+static void BLITZ_ROUTINE libfinit_c(void)
+{
+    struct DosLibrary *dos = dosbase_;
+    BPTR cur;
+
+    if (startkept) {
+        cur = CurrentDir(startdir);
+        if (cur != oldlock)
+            CurrentDir(cur);                    /* the program's own choice */
+        startkept = FALSE;
+    }
+    if (oldlock) {
+        UnLock(oldlock);
+        oldlock = 0;
+    }
+    finitbanks();
+}
+
+/**
  * @brief BankLimit numbanks: a new number of banks - finit (every bank
  * freed), the new number, init.
  *
  * BUG(orig): returns the address of the new start table (init's d0)
- * (#483); unlocks ChangeDir's lock as finit does (#491).
+ * (#483).  Fixed (#491): the current directory and ChangeDir's lock stay;
+ * the original unlocked the lock as finit does, while it was current.
  * @param n  d0: numbanks
  * @return d0: the new start table
  */
 static ULONG BLITZ_ROUTINE banklimit_c(LONG n BL_REG(d0))
 {
-    libfinit_c();
+    finitbanks();
     maxbanks = n;
     return libinit_c();
 }
@@ -948,8 +974,8 @@ static ULONG BLITZ_ROUTINE rename_c(CONST_STRPTR from BL_REG(d0), CONST_STRPTR t
  *
  * The previous ChangeDir lock is unlocked (AmiBlitz3: MOVE.L oldlock -
  * func-library7 and BSS2 tested and unlocked the word MOVE oldlock,d1
- * left in d1).  BUG(orig): the program's own current directory is not
- * kept (#491).  Fixed (#490): CurrentDir's result is not tested (0 is a
+ * left in d1).  The directory the first call replaces (the program's own)
+ * is kept for finit (fixed, #491: the original dropped it).  Fixed (#490): CurrentDir's result is not tested (0 is a
  * valid current directory); the original returned 0 for it, with the
  * new lock current but not remembered.
  * @param name  d0: dir$
@@ -958,11 +984,15 @@ static ULONG BLITZ_ROUTINE rename_c(CONST_STRPTR from BL_REG(d0), CONST_STRPTR t
 static BB_BOOL BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
-    BPTR lock = Lock(name, ACCESS_READ);
+    BPTR lock = Lock(name, ACCESS_READ), cur;
 
     if (!lock)
         return BB_FALSE;
-    CurrentDir(lock);                           /* fixed (#490): not tested */
+    cur = CurrentDir(lock);                     /* fixed (#490): not tested */
+    if (!startkept) {
+        startdir = cur;                         /* fixed (#491) */
+        startkept = TRUE;
+    }
     if (oldlock)
         UnLock(oldlock);
     oldlock = lock;

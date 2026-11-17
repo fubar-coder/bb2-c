@@ -810,5 +810,7 @@ WaitBlitter|kept||1	kept
 WaitBlitter|popped||1	$00000000
 finit|kept||1	kept
 finit|popped||1	$00000000
+finit|the start directory current||1 [orig]	$00000000
+finit|the start directory current||1 [fixed #491]	$00000001
 init|kept||1	kept
 init|popped||1	$00000000

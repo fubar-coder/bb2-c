@@ -34,7 +34,7 @@
  * offset, chip memory; empty and missing files, BUG(orig) (#487): the bank of a
  * failed open stays), its error check (an RTS), Rename (done, missing),
  * ChangeDir (absolute, relative, missing; the current directory after
- * it), FindVolume, DeviceName$ (with and without ":", volume and device
+ * it and after finit, #491), FindVolume, DeviceName$ (with and without ":", volume and device
  * names, unknown, empty, d0 pointing elsewhere), SaveExec (a list with
  * two code hunks - relocations, memory flags, a length not a multiple
  * of 4 - and a symbol hunk; no list; a file that cannot be made; an
@@ -43,9 +43,7 @@
  * and bank numbers outside the tables (#484: negative, Reserve above
  * the limit; Reserve with every bank in use, #498) - the original
  * writes outside the test's memory; BankLimit 0 or above 65536; a
- * ChangeDir before BankLimit/finit while
- * its lock is current (BUG(orig) #491: unlocked while in use - the test
- * restores the directory first); CurrentDir returning 0 (the bug-orig
+ * BankLimit after a ChangeDir; CurrentDir returning 0 (the bug-orig
  * test riamosfunclib-changedir-currentdir-0, #490).
  */
 #include "rwecmp.h"
@@ -739,8 +737,10 @@ int main(int argc, char **argv)
     volumes();
     saveexecs();
 
-    /* ChangeDir last: its lock stays current until the test restores the
-       directory (finit unlocks it, BUG(orig), #491) */
+    /* ChangeDir last: its lock stays current until finit, which makes
+       the directory the first ChangeDir replaced current again (#491; the
+       original unlocks the lock while it is current - the test restores
+       the directory right after finit) */
     home = me->pr_CurrentDir;
     mybase = Lock((STRPTR)P(""), ACCESS_READ);
     mysub = Lock((STRPTR)P("sub"), ACCESS_READ);
@@ -749,7 +749,6 @@ int main(int argc, char **argv)
     changedir("missing", 0);
     changedir("sub", 1);
     changedir("", 0);
-    CurrentDir(home);
 
     ROUT = "EraseAll";
     VEC[0] = 0;
@@ -759,6 +758,9 @@ int main(int argc, char **argv)
     ROUT = "finit";
     VEC[0] = 0;
     DO1(ENT(LIB, E_FINIT, 0), (void)0);
+    b = me->pr_CurrentDir == home;
+    CurrentDir(home);
+    OBS("the start directory current", b);
     ROUT = "memlib finit";
     markregs(&R);
     callregs(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, 0, 0);

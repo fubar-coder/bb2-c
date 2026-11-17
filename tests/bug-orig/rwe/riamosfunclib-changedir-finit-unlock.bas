@@ -6,6 +6,7 @@
 ; directory (cd): at the end the current directory is the unlocked RAM:
 ; lock, not the start lock.
 ; Correct: the program ends in the directory it was started with.
+; @fixed #491
 ; @rwe riamosfunclib
 ; @pass runwrap=@INJECT@|cd
 DEFTYPE .l
