@@ -1,7 +1,7 @@
 /*
  * popupwinlib - RWE userlib 16 (Reflective Images, 1994): popup menus in
  * borderless windows.
- *   PopUpInit                 a new message port for the windows
+ *   PopUpInit                 the message port for the windows, if none
  *   PopUpWindow(screen#,*items)  the menu `items` at 0,0 of the screen;
  *                             waits until a mouse button is pressed
  *
@@ -37,8 +37,6 @@
  *   - PopUpWindow always returns 0: the item chosen is returned by the
  *     menu levels, but the result is `selecteditem`, which is only
  *     cleared (#471).
- *   - PopUpInit creates a new message port without deleting the old one
- *     (#470).
  *   - Closing a menu window replies every message in the shared port,
  *     also those for the other levels (#469).
  * Fixed (intended deviations):
@@ -48,6 +46,9 @@
  *   - A level whose structure cannot be allocated (AllocVec) returns 0,
  *     which closes all levels; the original went on with the structure
  *     at address 0 (#467).  (A failed OpenWindow returns 0 as well.)
+ *   - PopUpInit creates the message port only when there is none; the
+ *     original created a new one each time without deleting the old one
+ *     (a port and a signal bit per call) (#470).
  * Not a defect: the item number count at +8 of the structure is the
  * number of items - 1, but nothing uses that field.
  */
@@ -562,14 +563,17 @@ static void BLITZ_ROUTINE libfinit_c(void)
 }
 
 /**
- * @brief PopUpInit: a new message port for the menu windows.
+ * @brief PopUpInit: the message port for the menu windows, if there is
+ * none (init has made it; PopUpInit makes it after a failed
+ * CreateMsgPort).
  *
- * BUG(orig) (#470): the old port is not deleted.  (The word argument is
- * not used.)
+ * Fixed (#470): the original created a new port each time and left the
+ * old one with its signal bit.  (The word argument is not used.)
  */
 static void BLITZ_ROUTINE popupinit_c(void)
 {
-    windowinit();
+    if (!msgport)
+        windowinit();
 }
 
 /**

@@ -29,8 +29,9 @@
  * the sub menu), onto the parent's active item (the sub menu stays), a
  * third level left for the first (two levels closed), a mouse button
  * with and without an active item; a menu without sub menus that starts
- * with a separator; PopUpInit (a new port, BUG(orig) #470: the old one is
- * not deleted - the test deletes it); finit.
+ * with a separator; PopUpInit (the original makes a new port and leaves
+ * the old one, #470 - the test deletes it; the C build keeps the port);
+ * finit.
  * Not covered: a failed AllocVec (the bug-orig test
  * popupwinlib-allocvec-unchecked, #467) or OpenWindow, real mouse input.
  */
@@ -345,7 +346,8 @@ int main(int argc, char **argv)
     ev(IDCMP_MOUSEBUTTONS, -1, 600, 250);       /* nothing active */
     popup("a button without an item", 0, 1);
 
-    /* PopUpInit: a new port; the old one stays */
+    /* PopUpInit: the original makes a new port and leaves the old one
+       (#470); the C build keeps the port of init */
     oldport = port;
     ROUT = "PopUpInit";
     DO1(ENT(LIB, E_INIT, 0), R.d[0] = MARK(0));
@@ -361,7 +363,8 @@ int main(int argc, char **argv)
     ROUT = "finit";
     strcpy(VEC, "");
     DO1(nullsub(28), (void)0);
-    DeleteMsgPort(oldport);             /* BUG(orig) (#470): left by PopUpInit */
+    if (port != oldport)
+        DeleteMsgPort(oldport);         /* the original: left by PopUpInit (#470) */
 
     Forbid();
     SetFunction((struct Library *)SysBase, LVO_WaitPort, old_waitport);

@@ -2,7 +2,8 @@
 
 Reflective Images, 1994. Two commands:
 
-* `PopUpInit`: a new message port for the windows.
+* `PopUpInit`: the message port for the windows, if there is none (init
+  makes it).
 * `PopUpWindow screen#,*items`: the menu `items` at 0,0 of the screen of
   screenslib's object; returns when a mouse button is pressed.
 
@@ -63,13 +64,15 @@ kind F):
 * A menu level whose structure cannot be allocated (AllocVec) returns 0
   at once, which closes all levels, as a failed OpenWindow does; the
   original went on with the structure at address 0 (#467).
+* PopUpInit creates the port only when there is none (init makes it);
+  the original created a new one each time without deleting the old
+  one, a port and a signal bit per call (#470).
 
 ## BUG(orig), kept
 
 * **PopUpWindow always returns 0.** The menu levels return the chosen
   item, but the result is `selecteditem`, which is only cleared. (It is
   a statement anyway.) (#471)
-* **PopUpInit creates a new port** without deleting the old one (#470).
 * **Closing a menu window replies every message in the shared port**,
   also those for the other levels (#469).
 
@@ -118,7 +121,8 @@ Covered:
   active item;
 * a mouse button without an active item;
 * a menu without sub menus that starts with a separator;
-* PopUpInit (a new port; the old one is left, the test deletes it).
+* PopUpInit (the original makes a new port and leaves the old one, which
+  the test deletes; the C build keeps the port of init).
 
 A failed AllocVec: the bug-orig test `popupwinlib-allocvec-unchecked`
 (through inject). Not covered: a failed OpenWindow; real mouse input.

@@ -1,7 +1,8 @@
 # capture rwe_popupwinlib 1
 PopUpInit|kept|a button without an item|1	kept
 PopUpInit|popped|a button without an item|1	$00000000
-PopUpWindow|a new port|starting with a separator, a new port|1	$00000001
+PopUpWindow|a new port|starting with a separator, a new port|1 [orig]	$00000001
+PopUpWindow|a new port|starting with a separator, a new port|1 [fixed #470]	$00000000
 PopUpWindow|d0 0 (BUG(orig) #471)|a button without an item|1	$00000001
 PopUpWindow|d0 0 (BUG(orig) #471)|starting with a separator, a new port|1	$00000001
 PopUpWindow|d0 0 (BUG(orig) #471)|three levels|1	$00000001
