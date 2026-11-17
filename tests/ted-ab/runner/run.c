@@ -81,6 +81,22 @@
  *   parallel=N         emulator sessions at the same time
  *   stack=N            Stack for teddrive (default 40000)
  *   gates=DIR          gate-d.drv and gate-d-rescue.drv (default: scripts)
+ *   gates_only=1       only the gates, in one session without a test: gate 0
+ *                      and gate D (the environment of the emulator and the
+ *                      tools, the same for every test); a pass of the
+ *                      fixture the bug-orig tests of TED require.  At the
+ *                      end the run is published (RUN/gates_from=NAME, with
+ *                      the file gates-ok) when both gates are OK, exit
+ *                      status 0, else 1 and nothing is published (a
+ *                      published run of an earlier pass is removed at the
+ *                      start).  The pass needs the keys of any other
+ *                      (work, report, the tools), the rest is not read
+ *   gates_from=NAME    the gates were checked by the pass gates_only=1 that
+ *                      published NAME (rundir.h): when RUN/NAME/gates-ok is
+ *                      there the sessions of this pass leave out gate 0 and
+ *                      gate D (about 8 s of each session); without it
+ *                      (the runner started by hand) they run the gates as
+ *                      always.  With gates_only=1 it is the name to publish
  *   inject=, wbrun=PATH  optional: tools/inject, tools/wbrun for @command
  *                      (tests/bug-orig/amiga)
  *   bugorig=1          the bug-orig mode (tests/bug-orig/ted): every run in
@@ -172,11 +188,11 @@ struct pass {
     char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
     char *libs, *libs_prev;             /* the libraries instead of the CD's */
     char *userlib;                      /* a file for blitz2:userlibs */
-    char *inject, *wbrun, *gates;
+    char *inject, *wbrun, *gates, *gates_from;
     char *orig, *orig_by, *record;      /* record=: check or write */
     char *record_to;                    /* record_to= (record=write) */
     struct prevint intended;            /* intended=: PREV_INTENDED (previntended.h) */
-    unsigned timeout, budget, parallel, stack, bugorig, fixed, exe_info;
+    unsigned timeout, budget, parallel, stack, bugorig, fixed, exe_info, gates_only;
     unsigned long long min_free;        /* min_free=: MiB, 0 = no check (runwork.h) */
 };
 
@@ -224,6 +240,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "ted_prev", &P.ted_prev }, { "blitz2_prev", &P.blitz2_prev },
         { "libs", &P.libs }, { "libs_prev", &P.libs_prev }, { "userlib", &P.userlib },
         { "inject", &P.inject }, { "wbrun", &P.wbrun }, { "gates", &P.gates },
+        { "gates_from", &P.gates_from },
         { "orig", &P.orig }, { "orig_by", &P.orig_by }, { "record", &P.record },
         { "record_to", &P.record_to },
     };
@@ -233,7 +250,7 @@ static int parse(const char *text, char *err, size_t errlen)
     } nums[] = {
         { "timeout", &P.timeout }, { "budget", &P.budget }, { "parallel", &P.parallel },
         { "stack", &P.stack }, { "bugorig", &P.bugorig }, { "fixed", &P.fixed },
-        { "exe_info", &P.exe_info },
+        { "exe_info", &P.exe_info }, { "gates_only", &P.gates_only },
     };
     const char *line = text;
     unsigned no = 0;
@@ -334,6 +351,14 @@ static int parse(const char *text, char *err, size_t errlen)
                                       "expect_dir, cd, oracle, fonts and the tools are needed");
                 return -1;
             }
+    }
+    /* the gates alone need no tests, combinations or recorded original */
+    if (P.gates_only) {
+        if (!P.gates_from) {
+            snprintf(err, errlen, "gates_only=1 needs gates_from=NAME, the fixture to publish");
+            return -1;
+        }
+        return 0;
     }
     /* the combinations */
     {
@@ -1123,6 +1148,140 @@ static void clean_fixed_layout(const char *work)
         closedir(d);
 }
 
+/* the file in the published run of the gates pass (gates_only=1) that says
+   both gates were OK */
+#define GATES_OK_FILE "gates-ok"
+
+/* the gates of this pass were checked before for the whole run: the pass
+   key gates_from=NAME and RUN/NAME/gates-ok (rundir.h) there; the run that
+   made it removes it again at its start, so a failed gates pass leaves none */
+static int gates_checked(void)
+{
+    char *dir = P.gates_from ? rundir_path(P.run_dir) : NULL;
+    char *path = dir ? str_printf("%s/%s/" GATES_OK_FILE, dir, P.gates_from) : NULL;
+    int ok = path && !access(path, R_OK);
+
+    free(path);
+    free(dir);
+    return ok;
+}
+
+/* gates_only=1: the gates alone, in one session without a test.  Exit
+   status 0 both gates OK (the run is published as gates_from=), 1 not, 2
+   error, 77 no emulator */
+static int run_gates(FILE *log)
+{
+    const char *files[] = { P.teddrive, P.teddrivetest, P.tedprobe, P.reqtrap };
+    struct runwork rw = { NULL, NULL, -1 };
+    char *base = P.work, werr[400], *dir, *path, *script, *sp, *gd;
+    struct amiga_emulation *e = NULL;
+    struct amiga_emulation_mount mnt;
+    struct amiga_emulation_params ep = { 0 };
+    struct text gate = { 0 };
+    struct statline stat;
+    enum amiga_emulation_status st;
+    int rc = 2, ok, started = 0;
+    size_t i;
+
+    for (i = 0; i < sizeof files / sizeof files[0]; i++)
+        if (access(files[i], R_OK)) {
+            fprintf(log, "%s: no %s - skipped\n", me, files[i]);
+            return 77;
+        }
+    /* an earlier run's mark goes first: a failed run leaves none */
+    dir = rundir_path(P.run_dir);
+    path = dir ? str_printf("%s/%s/" GATES_OK_FILE, dir, P.gates_from) : NULL;
+    if (path)
+        unlink(path);
+    free(path);
+    free(dir);
+    if (runwork_open(&rw, P.work, werr, sizeof werr)) {
+        fprintf(log, "%s: %s\n", me, werr);
+        return 2;
+    }
+    base = P.work;
+    P.work = rw.dir;
+    if (runwork_space(base, P.min_free, werr, sizeof werr)) {
+        fprintf(log, "%s: %s\n", me, werr);
+        goto out;
+    }
+    if (stage_session(1, NULL, 0, log))
+        goto out;
+    if (!(script = tedab_session_script(NULL, 0, P.stack, 1)) || tedab_check_script(script, log)) {
+        free(script);
+        goto out;
+    }
+    sp = session_dir(1, "vol/session.script");
+    if (sp)
+        write_file(sp, script, strlen(script));
+    free(sp);
+    {
+        char *vol = session_dir(1, "vol"), *emu = session_dir(1, "emu"), err[300] = "";
+
+        if (!vol || !emu || mkdir_p(emu)) {
+            free(vol);
+            free(emu);
+            free(script);
+            goto out;
+        }
+        mnt = (struct amiga_emulation_mount){ TEDAB_VOL, vol, 1 };
+        ep.mounts = &mnt;
+        ep.nmounts = 1;
+        ep.script = script;
+        ep.timeout = P.timeout;
+        ep.work_dir = emu;
+        e = amiga_emulation_start(&ep, err, sizeof err);
+        free(vol);
+        free(emu);
+        if (!e) {
+            fprintf(log, "%s: %s - skipped\n", me, err);
+            free(script);
+            rc = 77;
+            goto out;
+        }
+    }
+    free(script);
+    started = 1;
+    st = amiga_emulation_join(e);
+    statline_session(&stat, base, "gates", e);
+    stat.runs = 0;
+    amiga_emulation_free(e);
+    gd = session_dir(1, "vol/gate/out");
+    ok = gd ? tedab_eval_gate(gd, &gate) : 0;
+    free(gd);
+    statline_set(stat.verdict, sizeof stat.verdict, ok ? "ok" : "fail");
+    {
+        struct text rep = { 0 };
+
+        text_add(&rep, "== gates: session %s\n%s== gates %s\n", amiga_emulation_status_name(st),
+                 gate.p ? gate.p : "", ok ? "OK" : "FAILED");
+        if (rep.bad || write_file(P.report, rep.p, rep.n)) {
+            fprintf(log, "%s: cannot write %s\n", me, P.report);
+            free(rep.p);
+            goto out;
+        }
+        fwrite(rep.p, 1, rep.n, log);
+        free(rep.p);
+    }
+    statline_write(log, &stat);
+    rc = ok ? 0 : 1;
+    if (ok) {
+        char *mark = str_printf("%s/" GATES_OK_FILE, P.work);
+
+        /* the run itself is the fixture: the mark says it is complete */
+        if (!mark || write_file(mark, "gates OK\n", 9))
+            rc = 2;
+        free(mark);
+    }
+out:
+    free(gate.p);
+    if (rw.fd >= 0) {
+        rc = runwork_finish(&rw, started, rc, rc == 0 ? P.gates_from : NULL, P.run_dir, log, me);
+        P.work = base;
+    }
+    return rc;
+}
+
 static int run(FILE *log)
 {
     /* the original TED only runs for the compare test of the recorded original */
@@ -1152,6 +1311,7 @@ static int run(FILE *log)
     int started = 0;                    /* a session has started */
     char fixtures[2][64];               /* the fixtures of corpus_out=run:... read */
     size_t nfix = 0;
+    int gates_before = gates_checked();   /* gate 0 and D were checked for the whole run */
 
     /* the recorded original against the expectations, before any session:
        the test shows no bug (BROKEN), or the recording is missing */
@@ -1282,7 +1442,7 @@ static int run(FILE *log)
                 free(rs);
                 goto out;
             }
-            script = tedab_session_script(rs, m, P.stack);
+            script = tedab_session_script(rs, m, P.stack, !gates_before);
             free(rs);
             if (!script || tedab_check_script(script, log)) {
                 free(script);
@@ -1385,7 +1545,11 @@ static int run(FILE *log)
                 rs[k] = runs[s->ids[k]].r;
             if (rs && state)
                 tedab_session_log(text, rs, s->n, state, &s->events);
-            s->gates_ok = gd ? tedab_eval_gate(gd, &s->gate) : 0;
+            if (gates_before) {
+                text_add(&s->gate, "gates: checked before for the whole run (gates_from=%s)\n", P.gates_from);
+                s->gates_ok = 1;
+            } else
+                s->gates_ok = gd ? tedab_eval_gate(gd, &s->gate) : 0;
             for (k = 0; !bad && k < s->n; k++) {
                 struct run *r = &runs[s->ids[k]];
                 size_t f, d;
@@ -1673,6 +1837,8 @@ int tedab_start(const char *prog, const char *passfile, int lint)
         return 2;
     }
     free(text);
+    if (P.gates_only && !lint)
+        return run_gates(stdout);
     bad = load_tests(stdout);
     /* the selected tests of a bug-orig pass are all fixed (fixed=1) or all
        open (orig=); the lint of the directory and the compare of the

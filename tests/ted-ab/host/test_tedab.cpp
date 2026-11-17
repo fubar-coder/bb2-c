@@ -386,7 +386,7 @@ TEST_CASE("session script", "[script]")
     REQUIRE(a.rc == 0);
     REQUIRE(b.rc == 0);
     tedab_run runs[3] = { { &a.t, TEDAB_R5 }, { &a.t, TEDAB_C5 }, { &b.t, TEDAB_R5 } };
-    char *s = tedab_session_script(runs, 3, 40000);
+    char *s = tedab_session_script(runs, 3, 40000, 1);
 
     REQUIRE(s != nullptr);
     std::string sc(s);
@@ -430,7 +430,7 @@ TEST_CASE("session waits for", "[script]")
     CHECK(tedab_session_waits_for(runs, 4) == 3);   // its reference
 
     // the script says the same
-    char *s = tedab_session_script(runs, 5, 40000);
+    char *s = tedab_session_script(runs, 5, 40000, 1);
     REQUIRE(s != nullptr);
     std::string sc(s);
     CHECK(sc.find("RUN 29-cmp-t02_float R5 skipped (28-long R5 not OK)") != std::string::npos);
@@ -710,7 +710,7 @@ TEST_CASE("bug-orig: @command in the session script", "[bugorig]")
            "; @nofiles\n", "ted-x");
     REQUIRE(a.rc == 0);
     tedab_run runs[1] = { { &a.t, TEDAB_R5 } };
-    char *s = tedab_session_script(runs, 1, 40000);
+    char *s = tedab_session_script(runs, 1, 40000, 1);
 
     REQUIRE(s != nullptr);
     CHECK(std::string(s).find("TEDAB:tests/ted-x.drv TEDRUN:out/ blitz2:ted TEDRUN:work/bo.bas "
@@ -1069,4 +1069,37 @@ TEST_CASE("recorded original", "[bugorig]")
     CHECK(tedab_orig_parse("[state]\nOK\n", &state, &problems, err, sizeof err) == -1);
     CHECK(tedab_orig_parse("[state]\n\n[problems]\n", &state, &problems, err, sizeof err) == -1);
     CHECK(tedab_orig_parse("# only a note\n", &state, &problems, err, sizeof err) == -1);
+}
+
+TEST_CASE("session script without the gates", "[script]")
+{
+    // the gates checked once for the whole run (gates_from=): no tedprobe,
+    // no teddrive against teddrivetest, the runs follow the guard directly,
+    // the script stays balanced
+    Test a("; @source T t01_int\n; @roundtrip\n", "01a-rt-t01");
+    tedab_run runs[2] = { { &a.t, TEDAB_R5 }, { &a.t, TEDAB_C5 } };
+    char *with = tedab_session_script(runs, 2, 40000, 1);
+    char *without = tedab_session_script(runs, 2, 40000, 0);
+
+    REQUIRE(with != nullptr);
+    REQUIRE(without != nullptr);
+    std::string sc(without), full(with);
+    CHECK(sc.find("tedprobe") == std::string::npos);
+    CHECK(sc.find("teddrivetest") == std::string::npos);
+    CHECK(sc.find("GATES checked before") != std::string::npos);
+    CHECK(sc.find("TEDAB:runs/01a-rt-t01/R5/out/ok") != std::string::npos);
+    CHECK(sc.find("skipped (01a-rt-t01 R5 not OK)") != std::string::npos);
+    // the broken input of this check: the script with the gates has them
+    CHECK(full.find("tedprobe") != std::string::npos);
+    CHECK(full.find("GATED OK") != std::string::npos);
+    CHECK(full.find("GATES checked before") == std::string::npos);
+
+    char *buf = nullptr;
+    size_t len = 0;
+    FILE *m = open_memstream(&buf, &len);
+    CHECK(tedab_check_script(without, m) == 0);
+    fclose(m);
+    free(buf);
+    free(with);
+    free(without);
 }

@@ -1,0 +1,8 @@
+; Gate D broken on purpose (self test of the gates fixture, tests/bug-orig/CMakeLists.txt):
+; a wait that never succeeds, so teddrivetest's main script fails and the gates pass
+; of the TED bug-orig tests must end with exit status 1 and publish nothing.
+timeout 2
+wait screen
+wait req "Nope"
+menu 0 9
+wait exit

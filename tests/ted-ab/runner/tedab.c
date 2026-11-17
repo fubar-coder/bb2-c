@@ -1101,10 +1101,12 @@ size_t tedab_session_waits_for(const struct tedab_run *runs, size_t i)
     return k < i ? k : 0;
 }
 
-char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stack)
+char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stack, int gates)
 {
     struct text s = { 0 };
     const char *log = ">>" TEDAB_VOL ":session.log";
+    /* the runs: after the gates, in the innermost If; without them directly in the guard */
+    const char *i1 = gates ? "        " : "  ", *i2 = gates ? "          " : "    ";
     size_t i;
 
     /* reboot guard: a crash that reboots the emulator would run the script
@@ -1114,21 +1116,25 @@ char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stac
                  "Else\n"
                  "  Echo \"boot\" >" TEDAB_VOL ":booted\n"
                  "  Echo \"SESSION start\" %s\n"
-                 "  Stack %u\n"
-                 "  " TEDAB_VOL ":tools/tedprobe " TEDAB_VOL ":gate/out/gate0.txt " TEDAB_KEYMAP " >NIL:\n"
-                 "  If WARN\n"
-                 "    Echo \"GATE0 FAIL\" %s\n"
-                 "  Else\n"
-                 "    Echo \"GATE0 OK\" %s\n", log, log, stack, log, log);
-    gate_script(&s, "    ", "gd", "gate-d.drv", "main");
-    text_add(&s, "    If VAL $tdg GT 0\n"
-                 "      Echo \"GATED FAIL main\" %s\n"
-                 "    Else\n", log);
-    gate_script(&s, "      ", "gr", "gate-d-rescue.drv", "rescue");
-    text_add(&s, "      If VAL $tdg GT 0\n"
-                 "        Echo \"GATED FAIL rescue\" %s\n"
-                 "      Else\n"
-                 "        Echo \"GATED OK\" %s\n", log, log);
+                 "  Stack %u\n", log, log, stack);
+    if (gates) {
+        text_add(&s, "  " TEDAB_VOL ":tools/tedprobe " TEDAB_VOL ":gate/out/gate0.txt " TEDAB_KEYMAP " >NIL:\n"
+                     "  If WARN\n"
+                     "    Echo \"GATE0 FAIL\" %s\n"
+                     "  Else\n"
+                     "    Echo \"GATE0 OK\" %s\n", log, log);
+        gate_script(&s, "    ", "gd", "gate-d.drv", "main");
+        text_add(&s, "    If VAL $tdg GT 0\n"
+                     "      Echo \"GATED FAIL main\" %s\n"
+                     "    Else\n", log);
+        gate_script(&s, "      ", "gr", "gate-d-rescue.drv", "rescue");
+        text_add(&s, "      If VAL $tdg GT 0\n"
+                     "        Echo \"GATED FAIL rescue\" %s\n"
+                     "      Else\n"
+                     "        Echo \"GATED OK\" %s\n", log, log);
+    } else
+        /* the gates were checked once for the whole run (the pass key gates_from=) */
+        text_add(&s, "  Echo \"GATES checked before\" %s\n", log);
     for (i = 0; i < n; i++) {
         const struct tedab_run *r = &runs[i], *first = &runs[tedab_session_waits_for(runs, i)];
 
@@ -1136,24 +1142,25 @@ char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stac
             /* the first run of the session: everything else needs it OK (a
                tool problem would otherwise hit every test until the
                time limit) */
-            run_script(&s, "        ", r);
+            run_script(&s, i1, r);
             continue;
         }
         /* a new test: if the session's first run is OK; another
            combination: if the test's first one (the reference) is OK - a
            tool problem with TED stops the test here */
-        text_add(&s, "        If EXISTS " TEDAB_VOL ":runs/%s/%s/out/ok\n", first->test->name,
+        text_add(&s, "%sIf EXISTS " TEDAB_VOL ":runs/%s/%s/out/ok\n", i1, first->test->name,
                  tedab_combo_names[first->combo]);
-        run_script(&s, "          ", r);
-        text_add(&s, "        Else\n"
-                     "          Echo \"RUN %s %s skipped (%s %s not OK)\" %s\n"
-                     "        EndIf\n", r->test->name, tedab_combo_names[r->combo],
-                 first->test->name, tedab_combo_names[first->combo], log);
+        run_script(&s, i2, r);
+        text_add(&s, "%sElse\n"
+                     "%sEcho \"RUN %s %s skipped (%s %s not OK)\" %s\n"
+                     "%sEndIf\n", i1, i2, r->test->name, tedab_combo_names[r->combo],
+                 first->test->name, tedab_combo_names[first->combo], log, i1);
     }
-    text_add(&s, "      EndIf\n"
-                 "    EndIf\n"
-                 "  EndIf\n"
-                 "  UnSet tdg\n"
+    if (gates)
+        text_add(&s, "      EndIf\n"
+                     "    EndIf\n"
+                     "  EndIf\n");
+    text_add(&s, "  UnSet tdg\n"
                  "  UnSet tdr\n"
                  "  Echo \"SESSION end\" %s\n"
                  "EndIf\n", log);

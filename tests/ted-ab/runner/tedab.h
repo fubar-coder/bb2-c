@@ -197,8 +197,10 @@ struct tedab_run {
    teddrivetest, a normal script and one that fails on purpose and proves
    the rescue), then the runs - the first one always, the next test only if
    the session's first run is OK, the other combinations of a test only if
-   its first one is OK */
-char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stack);
+   its first one is OK.  gates 0: without the two gates (they were checked
+   once for the whole run, pass key gates_from=; the session log says "GATES
+   checked before") */
+char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stack, int gates);
 /* the run whose out/ok run i of a session waits for in the script: the
    test's first run, for that one the session's first (0, also for i = 0) */
 size_t tedab_session_waits_for(const struct tedab_run *runs, size_t i);

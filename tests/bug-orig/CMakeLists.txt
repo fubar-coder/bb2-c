@@ -653,7 +653,7 @@ function(bug_orig_ted_pass scripts id name work combos extra)
 		"inject=${INJECT}\nwbrun=${WBRUN}\n"
 		"ted_ref=${CMAKE_BINARY_DIR}/programs/ted/ref/ted\nted_c=$<TARGET_FILE:ted>\n"
 		"blitz2_ref=${CD_BLITZ2}/BLITZ2\nblitz2_c=$<TARGET_FILE:blitz2>\n"
-		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${ted_parallel}\n"
+		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${ted_parallel}\nrun_dir=${TEST_RUN_DIR}\n"
 		${extra})
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 endfunction()
@@ -664,20 +664,22 @@ function(bug_orig_ted_test scripts id name)
 	file(READ ${scripts}/${id}.drv drv_text)
 	string(REPLACE ";" "<semicolon>" drv_text "${drv_text}")
 	set(orig_keys "orig=${scripts}/${id}.orig\norig_by=TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)\n")
+	# the gates were checked once for the whole ctest run (the fixture ted_gates)
+	set(gates_key "gates_from=ted_gates\n")
 	if(drv_text MATCHES "(^|\n)<semicolon> @fixed #[1-9][0-9]*[ \t\r]*(\n|$)")
 		set(fixed_test TRUE)
 		# Cc with the build's libraries (all), C5 with the CD's (originals)
 		bug_orig_ted_pass(${scripts} ${id} ${name} ${work} Cc
-			"fixed=1\norig=${scripts}/${id}.orig\nlibs=${BLITZ2_DIR}\n")
+			"fixed=1\norig=${scripts}/${id}.orig\nlibs=${BLITZ2_DIR}\n${gates_key}")
 		bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_originals C5
-			"fixed=1\norig=${scripts}/${id}.orig\n")
+			"fixed=1\norig=${scripts}/${id}.orig\n${gates_key}")
 	else()
 		set(fixed_test FALSE)
-		bug_orig_ted_pass(${scripts} ${id} ${name} ${work} R5,C5 "${orig_keys}")
+		bug_orig_ted_pass(${scripts} ${id} ${name} ${work} R5,C5 "${orig_keys}${gates_key}")
 		# the compare test of the recorded original (record=check): only
 		# the reference run (R5), compared with ID.orig, writes no file of
 		# the source tree
-		bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_record R5,C5 "${orig_keys}record=check\n")
+		bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_record R5,C5 "${orig_keys}record=check\n${gates_key}")
 	endif()
 	# the recording runs of the target bug-orig-record (record=write, the
 	# observation of R5 into the build directory), open or fixed, not for a
@@ -738,8 +740,17 @@ function(bug_orig_ted_test scripts id name)
 			TIMEOUT ${limit} COST ${cost})
 	else()
 		bug_orig_add_test(${name} COST ${cost} COMMAND ${TEDAB} run ${work}.pass
-			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
+			FIXTURES_REQUIRED ted_gates)
 	endif()
+	# the gates of the sessions are checked once per ctest run (the fixture
+	# ted_gates below, the pass key gates_from=): the tests of the originals
+	# and the fixed ones require it here, the open ones above
+	foreach(t ${name} ${name}_originals ${rec_name})
+		if(TEST ${t})
+			set_property(TEST ${t} APPEND PROPERTY FIXTURES_REQUIRED ted_gates)
+		endif()
+	endforeach()
 endfunction()
 
 file(GLOB drvs CONFIGURE_DEPENDS ${ted_scripts}/*.drv)
@@ -759,6 +770,35 @@ if(drvs)
 		"blitz2_ref=-\nblitz2_c=-\nbugorig=1\n")
 	file(GENERATE OUTPUT ${lint} CONTENT "${text}")
 	add_test(NAME bug_orig_ted_lint COMMAND ${TEDAB} lint ${lint})
+
+	# the gates of the TED sessions (gate 0 and gate D: the emulator's
+	# environment and the tools, the same for every test) once per ctest run
+	# instead of in every session (about 8 s of 10): the fixture ted_gates,
+	# a pass with gates_only=1 that publishes its run (gates_from=) when both
+	# gates are OK; the passes of the tests name it (gates_from=) and leave the
+	# gates out of their sessions when it is there.  A failed gate fails the
+	# setup test and ctest does not run the tests that require it (Not Run,
+	# failed).  Label emulator: the presets all and emulator; the others find
+	# it through the tests that require it.
+	set(gates_limit "")
+	math(EXPR gates_limit "${BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+	bug_orig_ted_pass(${ted_scripts} gates ted_gates ${CMAKE_CURRENT_BINARY_DIR}/ted_gates Cc
+		"gates_only=1\ngates_from=ted_gates\n")
+	add_test(NAME ted_gates COMMAND ${TEDAB} run ${CMAKE_CURRENT_BINARY_DIR}/ted_gates.pass)
+	set_tests_properties(ted_gates PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT ${gates_limit} FIXTURES_SETUP ted_gates)
+	add_test(NAME ted_gates_cleanup COMMAND ${CORPUSRUN} drop --run-dir ${TEST_RUN_DIR} ted_gates)
+	set_tests_properties(ted_gates_cleanup PROPERTIES LABELS emulator FIXTURES_CLEANUP ted_gates)
+	# the same with a gate D that fails on purpose (selftest/gates-broken):
+	# exit status 1, and the fixture of the real gates is not touched (own name)
+	bug_orig_ted_pass(${ted_scripts} gates ted_gates_broken
+		${CMAKE_CURRENT_BINARY_DIR}/ted_gates_broken Cc
+		"gates_only=1\ngates_from=ted_gates_broken\ngates=${CMAKE_CURRENT_SOURCE_DIR}/selftest/gates-broken\n")
+	add_test(NAME ted_gates_broken COMMAND ${CMAKE_COMMAND} -DRUNNER=${TEDAB} -DSUB=run
+		-DPASS=${CMAKE_CURRENT_BINARY_DIR}/ted_gates_broken.pass -DWANT=1
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
+	set_tests_properties(ted_gates_broken PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT ${gates_limit})
 endif()
 
 # the self test of the TED variant: an expectation equal to what the

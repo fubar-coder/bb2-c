@@ -1,0 +1,10 @@
+; Gate D (rescue): the script fails on purpose in step 6 (timeout); the
+; rescue of teddrive must end teddrivetest (mode rescue): gadget 1 of the
+; open requester, then menu QUIT 0 9 in the main window.
+; Result must be "FAIL step 6 timeout", the log "rescue: program ended".
+timeout 10
+wait screen
+menu 0 1
+wait req "OK" "Cancel"
+timeout 2
+wait req "Nope"
