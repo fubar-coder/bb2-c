@@ -952,6 +952,19 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   (C++20) as `CLAUDE.md` requires for host tests, in one round; the
   headers of `tools/lib/` without `extern "C"` (19 libraries) get it.
   Each file keeps its checks (counted before and after).
+- [ ] **A smaller compiler stack** (user decision 2026-11-17, after
+  #1080): `main` (`programs/blitz2/src/main.c`, `COMPILERSTACK`) gives
+  blitz2 and blitz2-ab3 a 48 KB stack of their own for the whole session
+  when they start on a smaller one, so the deepest expressions the
+  original's tables allow (31 nested calls with 32 parentheses inside,
+  22 KB measured; the coverage build about 30 % more) compile. On an A500
+  that is close to a tenth of the memory. Ways to lower it: switch to the
+  own stack only around the compile, not while the editor or a compiled
+  program runs; a stack check in the evaluator (`eval4`: the stack pointer
+  against the lower bound) that ends a too deep expression with a compile
+  error instead of a crash, so the stack can be about 16 KB (a deviation
+  from the original's limits for the extreme cases only); smaller frames
+  (`getelement2`, 136 bytes per level).
 
 ## 3 Only once §1 is done
 
