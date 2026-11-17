@@ -2524,7 +2524,8 @@ ProgDir$|kept|first (calls ProgPath$)|1	kept
 ProgDir$|kept|no program dir|1	kept
 ProgDir$|out|again|1	bytes 400 fnv 0D29BF4F
 ProgDir$|out|first (calls ProgPath$)|1	bytes 400 fnv 2D3FCB51
-ProgDir$|out|no program dir|1	bytes 400 fnv C27E4ECF
+ProgDir$|out|no program dir|1 [orig]	bytes 400 fnv C27E4ECF
+ProgDir$|out|no program dir|1 [fixed #758]	bytes 400 fnv 92A2F405
 ProgDir$|popped|again|1	$00000000
 ProgDir$|popped|first (calls ProgPath$)|1	$00000000
 ProgDir$|popped|no program dir|1	$00000000
@@ -2543,13 +2544,14 @@ ProgName$|popped|no program name|1	$00000000
 ProgPath$|a3||1 [orig]	$00000014
 ProgPath$|a3||1 [fixed #743]	$00000013
 ProgPath$|a3|no program dir: the current dir|1 [orig]	$00000010
-ProgPath$|a3|no program dir: the current dir|1 [fixed #743]	$0000000F
+ProgPath$|a3|no program dir: the current dir|1 [fixed #743]	$0000000E
 ProgPath$|a3|no program name: the task name|1 [orig]	$00000015
 ProgPath$|a3|no program name: the task name|1 [fixed #743]	$00000014
 ProgPath$|a3|normal again|1 [orig]	$00000014
 ProgPath$|a3|normal again|1 [fixed #743]	$00000013
 ProgPath$|d0||1	$0000000F
-ProgPath$|d0|no program dir: the current dir|1	$0000000B
+ProgPath$|d0|no program dir: the current dir|1 [orig]	$0000000B
+ProgPath$|d0|no program dir: the current dir|1 [fixed #758]	$0000000A
 ProgPath$|d0|no program name: the task name|1	$00000010
 ProgPath$|d0|normal again|1	$0000000F
 ProgPath$|kept||1	kept
@@ -2557,7 +2559,8 @@ ProgPath$|kept|no program dir: the current dir|1	kept
 ProgPath$|kept|no program name: the task name|1	kept
 ProgPath$|kept|normal again|1	kept
 ProgPath$|out||1	bytes 400 fnv 2326EE3D
-ProgPath$|out|no program dir: the current dir|1	bytes 400 fnv C4D0C0B8
+ProgPath$|out|no program dir: the current dir|1 [orig]	bytes 400 fnv C4D0C0B8
+ProgPath$|out|no program dir: the current dir|1 [fixed #758]	bytes 400 fnv E4F409D1
 ProgPath$|out|no program name: the task name|1	bytes 400 fnv F9C3A92F
 ProgPath$|out|normal again|1	bytes 400 fnv 2326EE3D
 ProgPath$|popped||1	$00000000

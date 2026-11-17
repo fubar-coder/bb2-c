@@ -6,6 +6,7 @@
 ; program directory (SetProgramDir) for the call; the result follows
 ; "x" in the expression, so the byte before it is "x".
 ; Correct: an empty directory gives the program name alone ("x" + name).
+; @fixed #758
 ; @rwe rimisclib
 DEFTYPE .l
 d$="RAM:"

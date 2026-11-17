@@ -42,8 +42,6 @@
  *     (#748).
  *   - EZRequestArgs without arguments reads one type word from a2 (the
  *     count 0 runs the DBRA loop 65536 times) (#746).
- *   - ProgPath$ reads the byte before the result when the directory
- *     name is empty (#758).
  *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare)
  *     (#753).
  *   - ASCRaw/RawASC do not check the range: a raw key beyond the 114
@@ -61,6 +59,10 @@
  * it builds with a 0; the original wrote none, so a shorter text than
  * the one before kept the end of the old one (more formats than
  * arguments).
+ * Fixed (intended deviation, #758): ProgPath$ without a directory name
+ * is the program name alone; the original decided on the "/" by the byte
+ * before its result (CMPI.b #":",-1(a3)), so it gave "/name" or, behind
+ * a ":", "name".
  * Fixed (intended deviation, #750, #749): a Quick or Float argument of
  * EZRequest/EZRequestArgs is passed as its integer part truncated
  * towards 0, a long (-3.5 gives -3), the Float converted in C.  The
@@ -1044,8 +1046,10 @@ static void BLITZ_ROUTINE doeasysep_c(const UBYTE *s BL_REG(d0))
  * GetProgramDir (without one: the current directory) and
  * GetProgramName (empty: the task name); fills the buffers of ProgDir$
  * and ProgName$.  a3 ends on the 0 of the result (fixed, #743: the
- * original left it behind the 0).  BUG(orig) (#758): with an empty
- * directory name it reads the byte before the result.
+ * original left it behind the 0).  Without a directory name the result
+ * is the name alone; fixed (#758): the original decided on the "/" by
+ * the byte before the result.  "/" is added unless the directory ends
+ * in ":".
  * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE doprogpath_c(void)
@@ -1081,7 +1085,7 @@ static ULONG BLITZ_ROUTINE doprogpath_c(void)
     }
     n = copyout(pd.progdir);
     n--;
-    if (blitz_string[-1] != ':') {
+    if (pd.progdir[0] && blitz_string[-1] != ':') {     /* fixed (#758) */
         n++;
         *blitz_string++ = '/';
     }

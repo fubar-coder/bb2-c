@@ -138,6 +138,11 @@ kind F):
   a Float with floatquicklib's fltoqu with the caller's a6: the commands
   load no library base, fltoqu needs mathffp's there; the converted
   value was written back onto the argument stack (#749).
+* ProgPath$ without a directory name (NameFromLock or GetCurrentDirName
+  failed, e.g. for a path longer than 255 bytes) is the program name
+  alone; the original decided on the "/" by the byte before its result
+  (`CMPI.b #":",-1(a3)`), so it gave "/name", or "name" behind a ":"
+  (#758).
 
 ## BUG(orig)
 
@@ -147,8 +152,6 @@ kind F):
   arguments (16 longs, the original overwrites code behind them) (#748),
   and EZRequestArgs without an argument reads one type word from a2 (the
   count 0 runs the DBRA 65536 times) (#746).
-* ProgPath$ reads the byte before the result when the directory name is
-  empty (#758).
 * LtoS replaces the bytes 0-31 and 128-255 by 128 (`CMPI.b #32` with a
   signed branch) (#753).
 * ASCRaw/RawASC do not check the range (see DIFF); RawASC searches until
