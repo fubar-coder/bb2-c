@@ -36,8 +36,7 @@
  *     100 entries (#855) (and reads from address 0 if the icon has none)
  *     (#845); NewToolType appends without a limit either; nothing checks
  *     for the last entry (a full array runs into memory behind it) (#855).
- *   - SetToolValue matches a name that is a prefix of the entry ("FL"
- *     replaces "FLAG") (#853).  The new string is built with do-while
+ *   - SetToolValue/NewToolType build the new string with do-while
  *     loops: an empty name copies its 0 and then whatever follows the
  *     name up to the next 0 (#841).
  *   - SetToolValue/NewToolType/IconDefTool: a failing AddFreeList frees
@@ -75,6 +74,9 @@
  *   ("a)b" gave "a").  Now only a ")" at the end of the value is dropped,
  *   and only for a name given with "(" (the only name icon.library finds
  *   "(name=value)" with).
+ * Fixed (intended deviation, #853): SetToolValue replaced the first entry
+ *   that only began with the name ("FL" replaced "FLAG"); after the name
+ *   the entry must now end or go on with "=" or ")".
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -547,8 +549,10 @@ BB_BOOL BLITZ_ROUTINE c_Put_icon2(CONST_STRPTR name BL_REG(d0))
     return c_Put_icon(name, 0);
 }
 
-/* _stringcompare: -1 if name (a0) is a prefix of the entry (a1, its own
-   "(" skipped), case insensitive for a-z */
+/* _stringcompare: -1 if the entry (a1, its own "(" skipped) is the tool
+   type of that name (a0): the name, case insensitive for a-z, then the
+   end, "=" or ")".  Fixed (#853): the original took every entry that
+   began with the name. */
 static int stringcompare(const UBYTE *name, const UBYTE *entry)
 {
     UBYTE c, e;
@@ -564,6 +568,8 @@ static int stringcompare(const UBYTE *name, const UBYTE *entry)
         if (c != e)
             return 0;
     }
+    if (*entry && *entry != '=' && *entry != ')')
+        return 0;
     return -1;
 }
 
@@ -617,12 +623,13 @@ static void toolargs(const char *name, const char *value, BB_BOOL status, const 
 /**
  * @brief SetToolValue(tooltype$,value$,status): replaces a tool type.
  *
- * The first entry that starts with tt$ (case insensitive for a-z, its own
- * "(" skipped: "OFF" also replaces "(OFF)=1", no defect) becomes
- * "tt$=value$" (no "=" for an empty value), "(tt$=value$)" with status 0;
- * the string is allocated (length of both + 8) and hung on the icon's
- * FreeList.  BUG(orig): a name that is a prefix matches ("FL" replaces
- * "FLAG", #853); an empty name copies what follows it (#841); a failing
+ * The first entry of tt$ (tt$ case insensitive for a-z, then the end,
+ * "=" or ")"; its own "(" skipped: "OFF" also replaces "(OFF)=1", no
+ * defect) becomes "tt$=value$" (no "=" for an empty value),
+ * "(tt$=value$)" with status 0; the string is allocated (length of both
+ * + 8) and hung on the icon's FreeList.  Fixed (#853): the original took
+ * the first entry that only began with tt$ ("FL" replaced "FLAG").
+ * BUG(orig): an empty name copies what follows it (#841); a failing
  * AddFreeList frees address 0 (#840).
  * @param name    d0: the tool type's name
  * @param value   d1: the value

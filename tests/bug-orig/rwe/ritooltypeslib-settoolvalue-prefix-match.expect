@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+-1
+FLAG
+FL=x
+rc=0

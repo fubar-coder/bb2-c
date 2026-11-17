@@ -49,15 +49,20 @@ that are not the result.
   switched-off `(name=value)` with). The original stopped at the first
   `)`, also inside a value: `PAREN=a)b` gave `a` (#844; bug-orig test
   `ritooltypeslib-findtoolvalue-stops-at-paren`).
+* SetToolValue replaces the entry of the name: after the name (its own
+  `(` skipped, as before) the entry must end or go on with `=` or `)`.
+  The original took the first entry that only began with the name (`FL`
+  replaced `FLAG`); a program that used an abbreviation of a name on
+  purpose now gets 0 instead of a replaced entry (#853; bug-orig test
+  `ritooltypeslib-settoolvalue-prefix-match`).
 
 **BUG(orig)** (kept):
 
 * GetIconObject copies the icon's tool types without a limit into the
   100 entries (#855) (and reads from address 0 if the icon has none)
   (#845); NewToolType appends without a limit (#855).
-* SetToolValue matches a name that is a prefix of the entry (`FL`
-  replaces `FLAG`) (#853); the new string is built with do-while loops
-  (an empty name copies its 0 and then whatever follows) (#841).
+* SetToolValue/NewToolType build the new string with do-while loops (an
+  empty name copies its 0 and then whatever follows) (#841).
 * SetToolValue/NewToolType/IconDefTool: if AddFreeList fails, `MOVE.l
   d0,a1` frees address 0 (d0 is AddFreeList's 0), the block is lost
   (#840).
@@ -107,7 +112,7 @@ back). Cases: every command and form without an icon; GetIconObject
 (twice, a missing file); FindToolValue for every entry, a `)` in the
 value and missing names; FindToolNumber over the array and beyond;
 MatchToolValue; FindToolType after a bracket check that returned early, with/without
-bracket check, a name with `(`; SetToolValue (replace, prefix match, the
+bracket check, a name with `(`; SetToolValue (replace, "FL" and the entry `FLAG` (fixed #853: not found), the
 skipped `(`, status 0, empty value, not found); NewToolType (with/without
 value and status); ClearToolTypes; SetIconHit; IconRender; SetIconType
 0-6 and $103; IconDefTool (a3 rewound, empty string); ShapeToIcon both

@@ -24,7 +24,8 @@
  * gives 0; a missing file), FindToolValue (a ")" in the value: fixed #844, missing
  * name), FindToolNumber (all entries, beyond the end), MatchToolValue,
  * FindToolType with and without bracket check (fixed #843: the original
- * left the flag set), SetToolValue (replace, prefix match "FL" -> "FLAG", the
+ * left the flag set), SetToolValue (replace, "FL" and the entry "FLAG": fixed
+ * #853, not found, the original replaced "FLAG"; the
  * entry's "(" skipped, status 0 = "(name=value)", not found), NewToolType
  * (with and without value and status), ClearToolTypes, SetIconHit,
  * IconRender, SetIconType 0-6, IconDefTool (a3 rewound on purpose, no defect #846; empty
