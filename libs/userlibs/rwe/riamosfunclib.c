@@ -45,9 +45,8 @@
  *     fails (#499).
  *   - BLoad(name$) returns the bank also when reading fails (the bank
  *     stays reserved), -1 for an empty or missing file and 0 when no
- *     bank is free (#486); the other forms leave a bank they reserved
- *     for a file that cannot be opened (#487), and treat Read's -1 as
- *     success (#488).  A bank given to BLoad is erased and reserved anew
+ *     bank is free (#486); the other forms treat Read's -1 as success
+ *     (#488).  A bank given to BLoad is erased and reserved anew
  *     with the file's length (or the given one) (#499).  The error check
  *     (bloadchk) starts with an RTS: it never checks (#485).
  *   - BSave(name$,bank,length) writes that many bytes from the bank's
@@ -109,6 +108,10 @@
  *   - NextBank without an argument searches from bank 0 (the manual:
  *     "the first available bank"); the original shared the routine of
  *     the form with an argument and started at whatever d0 held (#497).
+ *   - BLoad opens the file before it touches a bank: a file that cannot
+ *     be opened leaves the bank as it was; the original erased the bank
+ *     and reserved it anew first, and left it so (a bank in use lost its
+ *     contents and got the new length, a free bank stayed reserved) (#487).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -775,9 +778,10 @@ static ULONG BLITZ_ROUTINE filesize_c(CONST_STRPTR name BL_REG(d0))
  * Length 0 = the file's size (0 for an empty or missing file).  A number
  * from 0 to maxbanks-1 is a bank: erased and reserved anew with that
  * length and memtype (#499); anything else is an address (fixed, #484: the
- * original compared signed).  BUG(orig): a bank reserved for a file that cannot be
- * opened stays (#487); Read's -1 counts as success (#488); the error
- * check never checks (#485).
+ * original compared signed).  The file is opened first: one that cannot
+ * be opened leaves the bank as it was (fixed, #487: the original erased
+ * and reserved the bank first and left it so).  BUG(orig): Read's -1
+ * counts as success (#488); the error check never checks (#485).
  * @param name     d0: filename$
  * @param adr      d1: the address or bank
  * @param len      d2: the number of bytes
@@ -798,19 +802,19 @@ static BB_BOOL BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL
         if (!len)
             return BB_FALSE;
     }
+    file = Open(name, MODE_OLDFILE);            /* fixed (#487): before the bank */
+    if (!file)
+        return BB_FALSE;
     if (ISBANK(adr)) {
         LONG bank = (LONG)adr;
         if (length_c(bank))
             eraseit(bank);
-        if (!newbank(bank, len, memtype))
+        if (!newbank(bank, len, memtype)) {
+            Close(file);
             return BB_FALSE;
+        }
         adr = start_c(bank);
-        if (!adr)
-            return BB_FALSE;
     }
-    file = Open(name, MODE_OLDFILE);
-    if (!file)
-        return BB_FALSE;                        /* BUG(orig): the bank stays (#487) */
     if (offset)
         Seek(file, offset, OFFSET_BEGINNING);
     got = Read(file, (APTR)adr, (LONG)len);     /* BUG(orig): -1 counts as read (#488) */

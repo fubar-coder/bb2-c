@@ -66,7 +66,8 @@ BLoad|popped|form 4 p.bin -1,16,1,$2|1	$00000000
 BLoad|popped|form 4 p.bin 10,0,2,$10002|1	$00000000
 BLoad|used|bank 10|1	$00000001
 BLoad|used|bank 11|1	$00000000
-BLoad|used|bank 11|2	$00000001
+BLoad|used|bank 11|2 [orig]	$00000001
+BLoad|used|bank 11|2 [fixed #487]	$00000000
 BLoad|used|bank 2|1	$00000001
 BLoad|used|bank 8|1	$00000001
 BLoad|used|bank 8|2	$00000001
@@ -410,8 +411,10 @@ Length|d0|1|2	$00000000
 Length|d0|10|1	$0000012C
 Length|d0|10|2	$00000000
 Length|d0|11|1	$00000000
-Length|d0|11|2	$00000010
-Length|d0|11|3	$00000010
+Length|d0|11|2 [orig]	$00000010
+Length|d0|11|2 [fixed #487]	$00000000
+Length|d0|11|3 [orig]	$00000010
+Length|d0|11|3 [fixed #487]	$00000000
 Length|d0|11|4	$00000000
 Length|d0|2|1	$0000012C
 Length|d0|2|2	$00000000
@@ -710,7 +713,8 @@ Start|0 or an address|10|1	$00000000
 Start|0 or an address|10|2	$00000000
 Start|0 or an address|100000|1	$00000001
 Start|0 or an address|11|1	$00000001
-Start|0 or an address|11|2	$00000000
+Start|0 or an address|11|2 [orig]	$00000000
+Start|0 or an address|11|2 [fixed #487]	$00000001
 Start|0 or an address|2|1	$00000000
 Start|0 or an address|3|1	$00000000
 Start|0 or an address|3|2	$00000000

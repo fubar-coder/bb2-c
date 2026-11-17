@@ -31,8 +31,8 @@
  * was given back), FileSize (file, directory, missing), BSave (bank,
  * address with and without a length, a free bank, a bad path), BLoad in
  * all five forms (into a new bank, an address, a used bank, a length, an
- * offset, chip memory; empty and missing files, BUG(orig) (#487): the bank of a
- * failed open stays), its error check (an RTS), Rename (done, missing),
+ * offset, chip memory; empty and missing files, #487: the original
+ * leaves the bank of a failed open reserved), its error check (an RTS), Rename (done, missing),
  * ChangeDir (absolute, relative, missing; the current directory after
  * it and after finit, #491), FindVolume, DeviceName$ (with and without ":", volume and device
  * names, unknown, empty, d0 pointing elsewhere), SaveExec (a list with
@@ -512,7 +512,7 @@ static void files(void)
     BOTH("chip", TypeOfMem((APTR)bankstart) & MEMF_CHIP);
     bload(4, "p.bin", -1, 16, 1, MEMF_CHIP);            /* an address: no memtype */
     bload(1, "missing.bin", 11, 0, 0, 0);               /* no length: 0 */
-    bload(2, "missing.bin", 11, 16, 0, 0);              /* BUG(orig) (#487): bank 11 stays */
+    bload(2, "missing.bin", 11, 16, 0, 0);              /* the original: bank 11 stays (#487) */
     length(11);
     bload(1, "empty.bin", -1, 0, 0, 0);
     for (f = 0; f < 5; f++) {
