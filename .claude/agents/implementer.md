@@ -10,39 +10,25 @@ there; the coordinator merges. Start with `git merge --ff-only main`.
 Project rules (CLAUDE.md and README.md of the repository are binding –
 read them first):
 
-* The shell is fish: wrap loops, `$(...)` lists and heredocs in
-  `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
+* The Bash tool runs zsh (the login shell is fish): put loops, word
+  splitting and heredocs in `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
   scripts in your scratchpad), never in the build or the repository.
-* No polling: no `until`/`while` + `sleep`. Wait for commands with a
-  timeout; run long ctest runs in the background and wait for them.
-* Only C/C++ and CMake in the build; checks in the build step of the
-  result, each with a test on deliberately broken input.
-* Acceptance (CLAUDE.md, rule of 2026-11-01): the results – executables
-  the compilers write, TED's output, all library files – stay
-  byte-identical to the previous commit unless a change is intended and
-  named. Check that with the `prev` build: configure with
-  `-DBLITZ2_PREV=ON`, then `ctest --preset all` compares the results with
-  it. Name intended changes with `-DPREV_INTENDED` (see `tests/README.md`,
-  "The prev build"). The programs may change with a rework, checked with
-  `ctest --preset all` and `ctest --preset bug-orig`. Clean build
-  without warnings (also none of `blitzlib check`), `ctest --preset host`
-  for every commit.
-* AB3 mode: new behaviour only in `programs/blitz2/src/ab3*.c` behind an
-  extension point of `ext.h`; no `BLITZ2_AB3` anywhere.
-* Original bugs (CLAUDE.md "Original bugs are fixed deliberately"): the
-  fix commit holds the code change, the test of the expected behaviour
-  (the bug-orig test gets the header `; @fixed #N`, or the equivalent of
-  its suite, and comes out FIXED in `ctest --preset all`), the
-  `BUG(orig)` comment changed to "Fixed (#N)", the entry in
-  `docs/*/deviations.md` as an intended deviation of kind F, and the
-  changed results named in the message, which also has a line `Fixes #N`
-  (GitHub closes the issue on the push). The report names the
-  coordinator's steps: the website page of fixed original bugs, the
-  row of the overview of fixed bugs (`site/data/fixoverview.yaml`; the
-  report proposes its severity 1-5 and its topic, `site/README.md`) and
-  the label `fixed-in-port`. A newly found
-  original bug gets a `BUG(orig)` note and a bug-orig test that comes out
-  REPRODUCED, and is reported (the coordinator files the issue).
+* No polling (`until`/`while` + `sleep`). Run commands in the
+  foreground with a timeout (up to 10 min; run again or split longer
+  work). Do not end your turn while anything you started still runs:
+  background jobs of a finished agent are orphaned and hold emulator
+  slots.
+* Results, acceptance and original-bug fixes: CLAUDE.md rules 3-5 and
+  `docs/development.md`, "Fixing an original bug". Clean build without
+  warnings and `ctest --preset host` for every commit; the other tests
+  as the brief names them. A newly found original bug gets a
+  `BUG(orig)` note and a bug-orig test that comes out REPRODUCED, and
+  is reported (the coordinator files the issue).
+* AB3 mode: new behaviour only in `programs/blitz2/src/ab3*.c` behind
+  an extension point of `ext.h`.
+* If the brief, this file, CLAUDE.md or a decision contradict each
+  other, follow CLAUDE.md and the decision and name the conflict in
+  the report.
 * Git: one topic per commit, stage only its files, English texts,
   trailer `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`; no
   push, no force; do not close or edit GitHub issues.

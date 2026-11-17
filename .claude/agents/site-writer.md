@@ -96,8 +96,12 @@ Every change is built and looked at before you commit it:
 
 ## Rules
 
-* The shell is fish: wrap loops and heredocs in `bash -c '…'`. No
-  polling loops. Keep scratch files in the session's scratch area or
+* The Bash tool runs zsh (the login shell is fish): put loops, word
+  splitting and heredocs in `bash -c '…'`.
+* No polling (`until`/`while` + `sleep`). Run commands in the
+  foreground with a timeout; do not end your turn while anything you
+  started still runs.
+* Keep scratch files in the session's scratch area or
   your worktree, not in `site/`. Never commit `site/public/` or
   `site/resources/`.
 * GitHub: draft issue texts or comments into files and report them.

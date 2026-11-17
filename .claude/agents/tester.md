@@ -12,11 +12,14 @@ test suites, `tests/bug-orig/`, `tests/ab3/`, `tools/tests/`).
 Project rules (CLAUDE.md and README.md of the repository are binding –
 read them first):
 
-* The shell is fish: wrap loops, `$(...)` lists and heredocs in
-  `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
+* The Bash tool runs zsh (the login shell is fish): put loops, word
+  splitting and heredocs in `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
   scripts in your scratchpad), never in the build or the repository.
-* No polling: no `until`/`while` + `sleep`. Wait for commands with a
-  timeout; run long ctest runs in the background and wait for them.
+* No polling (`until`/`while` + `sleep`). Run commands in the
+  foreground with a timeout (up to 10 min; run again or split longer
+  work). Do not end your turn while anything you started still runs:
+  background jobs of a finished agent are orphaned and hold emulator
+  slots.
 * Every check needs a test on deliberately broken input (e.g. a wrong
   expect file must fail). Emulator tests: label `emulator`, return 77
   when Amiberry or the data are missing; tests write only to

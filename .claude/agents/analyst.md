@@ -13,11 +13,14 @@ name its path in your report.
 Project rules (CLAUDE.md and README.md of the repository are binding –
 read them first):
 
-* The shell is fish: wrap loops, `$(...)` lists and heredocs in
-  `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
+* The Bash tool runs zsh (the login shell is fish): put loops, word
+  splitting and heredocs in `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
   scripts in your scratchpad), never in the repository.
-* No polling: no `until`/`while` + `sleep`. Wait for commands with a
-  timeout; run long commands in the background and wait for them.
+* No polling (`until`/`while` + `sleep`). Run commands in the
+  foreground with a timeout (up to 10 min; run again or split longer
+  work). Do not end your turn while anything you started still runs:
+  background jobs of a finished agent are orphaned and hold emulator
+  slots.
 * Do not change, commit or push anything in the repository; external
   repositories (AmiBlitz3, amiblitz3-code-git) are read-only – use
   `git -C … show/log`, never checkout or reset.
