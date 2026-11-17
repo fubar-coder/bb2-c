@@ -24,5 +24,5 @@ string(REPLACE "@USERLIBS@" "${userlibs}" text "${text}")
 file(REMOVE_RECURSE ${WORK})
 file(WRITE ${WORK}/test/captures/prog.txt "${text}")
 # a raw block file without blocks (its records need 0 bytes, which CMake
-# cannot write; they are tested from memory, tools/tests/test_libscmp_bin.c)
+# cannot write; they are tested from memory, tools/tests/test_libscmp_bin.cpp)
 file(WRITE ${WORK}/test/captures/prog.bin "# capture-bin prog 1\n")

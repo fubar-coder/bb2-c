@@ -169,7 +169,7 @@ math(EXPR selflimit "${LIBS_SELFTEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 # with the expected data, naming the key.  The qualified cases of a fix
 # (KEY [orig] / KEY [fixed #N]: a regressed port fails on the [fixed #N]
 # case, a changed original on the [orig] case) are the judge's, tested on
-# the host (tools/tests: test_libscmp.c, libs_compare_wrong_fixed and
+# the host (tools/tests: test_libscmp.cpp, libs_compare_wrong_fixed and
 # libs_compare_wrong_orig)
 add_test(NAME libs_emulator_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>

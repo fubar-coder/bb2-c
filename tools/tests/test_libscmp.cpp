@@ -1,23 +1,39 @@
 /*
- * test_libscmp.c - the judge of the library tests (tools/lib/libscmp) with
+ * test_libscmp.cpp - the judge of the library tests (tools/lib/libscmp) with
  * files built in memory: equal files, a changed value, a case less and
  * more, a changed block and long buffer, the qualifiers per set, not
  * captured, the escaping, malformed, duplicate and ambiguous files, the
  * limit of the findings shown, the directory compare with --only, and two
- * files of 3 million cases.
+ * files of 3 million cases; libs-accept, libs-update and fix-scope, on
+ * files and on directories.
  */
-#define _DEFAULT_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
-#include "testutil.h"
+#include <snitch/snitch.hpp>
+
+extern "C" {
 #include "libscmp.h"
+}
 
 #define HDR "# capture prog 1\n"
 
 static char *report;            /* the last compare's report */
 static size_t reportlen;
 static char err[700];           /* the last parse error */
+static char *result;            /* the file libs-accept or libs-update wrote, NULL = refused */
+
+/* the last report and result, freed at the end of the program */
+static struct at_exit {
+    ~at_exit()
+    {
+        free(report);
+        free(result);
+    }
+} at_exit_cleanup;
 
 /* parse text as kind into f; the result of libscmp_parse */
 static int parse(struct libscmp_file *f, const char *text, enum libscmp_kind kind)
@@ -63,7 +79,7 @@ static int cmp(const char *run, const char *exp, enum libscmp_set set, struct li
     "|buf|big|1\tbytes 100 fnv 1A2B3C4D\n" \
     "BLOCK:17\t4096 0BADF00D first=ldiv d0|$00000001\n"
 
-static void test_equal(void)
+TEST_CASE("equal", "[libscmp]")
 {
     struct libscmp_stats st;
 
@@ -76,7 +92,7 @@ static void test_equal(void)
     CHECK(cmp(HDR, "# capture prog 1", LIBSCMP_OBJ, &st) == 0 && st.cases == 0);
 }
 
-static void test_changed(void)
+TEST_CASE("changed", "[libscmp]")
 {
     struct libscmp_stats st;
 
@@ -96,7 +112,7 @@ static void test_changed(void)
     CHECK(strstr(report, "prog: |buf|big|1: expected bytes 100 fnv 1A2B3C4D, got bytes 100 fnv 1A2B3C4E\n"));
 }
 
-static void test_missing_added(void)
+TEST_CASE("missing_added", "[libscmp]")
 {
     struct libscmp_stats st;
 
@@ -106,7 +122,7 @@ static void test_missing_added(void)
     CHECK(st.added == 1 && strstr(report, "prog: a|b|c|2: added (got $1)\n"));
 }
 
-static void test_block(void)
+TEST_CASE("block", "[libscmp]")
 {
     /* the block and its observations 16*4096+1 .. */
     CHECK(cmp(HDR "BLOCK:17\t4096 0BADF00E first=ldiv d0|$00000001\n",
@@ -128,7 +144,7 @@ static void test_block(void)
 /* the qualifiers: KEY [orig] for the original, KEY [fixed #7] for the port */
 #define PAIR HDR "r|find d0||1\t$0\nr|find d0||2 [orig]\t$00000001\nr|find d0||2 [fixed #7]\t$00000000\n"
 
-static void test_qualifiers(void)
+TEST_CASE("qualifiers", "[libscmp]")
 {
     struct libscmp_stats st;
 
@@ -178,7 +194,7 @@ static void test_qualifiers(void)
                          "got 4096 2 first=x\n"));
 }
 
-static void test_not_captured(void)
+TEST_CASE("not_captured", "[libscmp]")
 {
     struct libscmp_stats st;
 
@@ -200,7 +216,7 @@ static void test_not_captured(void)
     CHECK(cmp(HDR "e|w||1\tnot captured:x\n", HDR "e|w||1\tnot captured:y\n", LIBSCMP_OBJ, NULL) == 1);
 }
 
-static void test_escaping(void)
+TEST_CASE("escaping", "[libscmp]")
 {
     struct libscmp_file f;
 
@@ -248,7 +264,7 @@ static void test_escaping(void)
     CHECK(strstr(bad(HDR "r|c\tx|v|1\t$0\n", LIBSCMP_RUN), "f.txt:2: the key needs ROUTINE|CHECK|VECTOR|OCC"));
 }
 
-static void test_malformed(void)
+TEST_CASE("malformed", "[libscmp]")
 {
     struct libscmp_file f;
     char big[200];
@@ -307,7 +323,7 @@ static void test_malformed(void)
 }
 
 /* more than LIBSCMP_DETAILS findings: the first ones, then the count */
-static void test_details(void)
+TEST_CASE("details", "[libscmp]")
 {
     char run[2000] = HDR, exp[2000] = HDR;
     struct libscmp_stats st;
@@ -354,7 +370,7 @@ static int cmp_dirs(const char *only1, const char *only2, char **errtext)
 
 /* directories: the programs of both, --only, files in one directory only,
    a header naming another program (in the build directory of the test) */
-static void test_dirs(void)
+TEST_CASE("dirs", "[libscmp]")
 {
     static const char *const files[] = { "run/a", "run/b", "run/d", "exp/a", "exp/b", "exp/c", "exp/d" };
     char *e = NULL, path[100];
@@ -420,11 +436,11 @@ static void test_dirs(void)
 
 /* two files of 3 million cases each, one value changed: one pass, a few
    seconds */
-static void test_large(void)
+TEST_CASE("large", "[libscmp]")
 {
     enum { N = 3000000 };
     size_t cap = (size_t)N * 56 + 64, n;
-    char *a = malloc(cap), *b = malloc(cap);
+    char *a = (char *)malloc(cap), *b = (char *)malloc(cap);
     struct libscmp_file r, e;
     struct libscmp_stats st;
     struct timespec t0, t1;
@@ -463,8 +479,6 @@ static void test_large(void)
 
 /* --- libs-accept and libs-update --------------------------------------- */
 
-static char *result;            /* the file written, NULL = refused */
-
 /* accept two runs (old: the expected data so far, NULL = none) */
 static int accept2(const char *run1, const char *run2, const char *old)
 {
@@ -490,7 +504,7 @@ static int accept2(const char *run1, const char *run2, const char *old)
     return s;
 }
 
-static void test_accept(void)
+TEST_CASE("accept", "[libscmp]")
 {
     static const char run[] = HDR "r|a||1\t$0\nr|find||1\t$1\nr|c||1\tkept\n";
     static const char sorted[] = HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1\t$1\n";
@@ -571,7 +585,7 @@ static int update(const char *run, const char *exp, const char *const *fix)
     return s;
 }
 
-static void test_update(void)
+TEST_CASE("update", "[libscmp]")
 {
     static const char exp[] = HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
                               "r|find||1 [fixed #7]\t$0\nr|old||1 [orig]\t$4\n";
@@ -656,7 +670,7 @@ static int holds(const char *dir, const char *name, const char *text)
     snprintf(path, sizeof path, "%s/%s.txt", dir, name);
     if (!(f = fopen(path, "rb")))
         return 0;
-    s = malloc(strlen(text) + 2);
+    s = (char *)malloc(strlen(text) + 2);
     len = fread(s, 1, strlen(text) + 1, f);
     fclose(f);
     r = len == strlen(text) && !memcmp(s, text, len);
@@ -665,7 +679,7 @@ static int holds(const char *dir, const char *name, const char *text)
 }
 
 /* accept and update on directories: all or nothing, the filter */
-static void test_accept_dirs(void)
+TEST_CASE("accept_dirs", "[libscmp]")
 {
     static const char *const files[] = { "r1/a", "r1/b", "r2/a", "r2/b", "exp/a", "exp/b", "exp/c" };
     static const char a_exp[] = "# capture a 1\nr|c||1 [orig]\t$1\nr|c||1 [fixed #7]\t$0\n";
@@ -807,7 +821,7 @@ static void test_accept_dirs(void)
 static size_t scope(const char *base, const char *branch, const char *log, size_t *nchanged)
 {
     struct libscmp_file b, r;
-    struct libscmp_issues is = { 0 };
+    struct libscmp_issues is = {};
     size_t n;
     FILE *m;
 
@@ -829,12 +843,12 @@ static size_t scope(const char *base, const char *branch, const char *log, size_
     return n;
 }
 
-static void test_fix_scope(void)
+TEST_CASE("fix_scope", "[libscmp]")
 {
     static const char base[] = HDR "r|a||1\t$0\nr|b||1\t$1\nr|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n";
     static const char own[] = HDR "r|a||1 [orig]\t$0\nr|a||1 [fixed #7]\t$5\nr|b||1\t$1\n"
                               "r|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n";
-    struct libscmp_issues is = { 0 };
+    struct libscmp_issues is = {};
     size_t nch;
 
     /* the commit messages: lines "Fixes #N" only */
@@ -888,9 +902,9 @@ static void test_fix_scope(void)
 }
 
 /* fix-scope on directories, a malformed file */
-static void test_fix_scope_dirs(void)
+TEST_CASE("fix_scope_dirs", "[libscmp]")
 {
-    struct libscmp_issues is = { 0 };
+    struct libscmp_issues is = {};
     char *e = NULL;
     size_t elen;
     FILE *m, *x;
@@ -926,29 +940,4 @@ static void test_fix_scope_dirs(void)
     free(e);
 #undef SCOPE
     libscmp_issues_free(&is);
-}
-
-int main(void)
-{
-    test_fix_scope();
-    test_fix_scope_dirs();
-    test_equal();
-    test_changed();
-    test_missing_added();
-    test_block();
-    test_qualifiers();
-    test_not_captured();
-    test_escaping();
-    test_malformed();
-    test_details();
-    test_dirs();
-    test_accept();
-    test_update();
-    test_accept_dirs();
-    free(result);
-    test_large();
-    free(report);
-    if (failures)
-        fprintf(stderr, "test_libscmp: %d failures\n", failures);
-    return failures != 0;
 }

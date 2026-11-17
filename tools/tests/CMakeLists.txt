@@ -1,6 +1,6 @@
 # tests of lib/, with inputs built in memory (testutil.h)
 foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats tedfont
-		outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusexpect libscmp bugorigcmp perfbudget
+		outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusexpect bugorigcmp perfbudget
 		epcheck)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
@@ -8,18 +8,16 @@ foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
-# the raw block observations of the library tests (lib/libscmp, NAME.bin)
-add_executable(test_libscmp_bin test_libscmp_bin.c)
-target_link_libraries(test_libscmp_bin PRIVATE lib_libscmp lib_hunk)
-target_compile_options(test_libscmp_bin PRIVATE -Wno-unused-function)
-add_test(NAME libscmp_bin COMMAND test_libscmp_bin)
-
-# the order of the expected data's writers (lib/libscmp, libscmp_sorted)
-add_executable(test_libscmp_sort test_libscmp_sort.cpp)
-target_link_libraries(test_libscmp_sort PRIVATE lib_libscmp snitch::snitch)
-target_compile_options(test_libscmp_sort PRIVATE -Wall -Wextra)
-set_target_properties(test_libscmp_sort PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
-add_test(NAME libscmp_sort COMMAND test_libscmp_sort)
+# the judge of the library tests (lib/libscmp; libscmp), the raw block
+# observations (NAME.bin; libscmp_bin) and the order of the expected data's
+# writers (libscmp_sorted; libscmp_sort): snitch programs
+foreach(t libscmp libscmp_bin libscmp_sort)
+	add_executable(test_${t} test_${t}.cpp)
+	target_link_libraries(test_${t} PRIVATE lib_libscmp snitch::snitch)
+	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
+	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+	add_test(NAME ${t} COMMAND test_${t})
+endforeach()
 
 # the sessions' supervisors (no emulator: the test is its own fake Amiberry)
 add_executable(test_amiga_emulation_supervisor test_amiga_emulation_supervisor.c)
@@ -212,7 +210,7 @@ set_tests_properties(prevcmp_malformed_entry_names PROPERTIES
 # results libs-compare (the judge of the library tests, lib/libscmp) on
 # fake runs and expected data made here: the right run passes, each broken
 # run or expected file fails with its message (the logic in detail:
-# test_libscmp.c)
+# test_libscmp.cpp)
 set(lc ${CMAKE_CURRENT_BINARY_DIR}/libscmp)
 set(lc_head "# capture prog 1\n")
 set(lc_exp "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1 [orig]\t$00000001\n"
@@ -274,7 +272,7 @@ libs_compare_wrong(ambiguous run-right exp-ambiguous obj
 	"exp-ambiguous/prog.txt:6: r\\|find\\|\\|1 is unqualified and qualified")
 libs_compare_wrong(qualifier run-right exp-qualifier obj "exp-qualifier/prog.txt:6: unknown qualifier")
 # a block place without the run's NAME.bin (the raw block file: its
-# records are tested from memory in test_libscmp_bin.c); libs-dump of a
+# records are tested from memory in test_libscmp_bin.cpp); libs-dump of a
 # block no NAME.bin has
 file(WRITE ${lc}/run-nobin/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1\t$00000000\n"
 	"BLOCK:2\t4096 in prog.bin\n")

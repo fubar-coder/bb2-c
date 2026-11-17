@@ -1,5 +1,5 @@
 /*
- * test_libscmp_bin.c - the raw block observations of the library tests
+ * test_libscmp_bin.cpp - the raw block observations of the library tests
  * (NAME.bin, tools/lib/libscmp, openspec change libs-capture-host-blocks)
  * with files built in memory: every record type formatted as
  * libs/tests/capture.c writes plain cases, the block cases merged into
@@ -9,13 +9,47 @@
  * differing observation of two runs, lost inside a block refused by
  * accept, and the directory commands (block listing, libs-dump).
  */
-#define _DEFAULT_SOURCE
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "testutil.h"
+#include <vector>
+#include <snitch/snitch.hpp>
+
+extern "C" {
 #include "libscmp.h"
+}
 
 static char err[700];
+
+/* a NAME.bin being built: bytes appended big-endian */
+using buf = std::vector<uint8_t>;
+
+static void put8(buf *b, uint8_t v)
+{
+    b->push_back(v);
+}
+
+static void put16(buf *b, uint16_t v)
+{
+    put8(b, (uint8_t)(v >> 8));
+    put8(b, (uint8_t)(v & 0xFF));
+}
+
+static void put32(buf *b, uint32_t v)
+{
+    put16(b, (uint16_t)(v >> 16));
+    put16(b, (uint16_t)(v & 0xFFFF));
+}
+
+static void putbytes(buf *b, const void *p, size_t n)
+{
+    const uint8_t *s = (const uint8_t *)p;
+
+    b->insert(b->end(), s, s + n);
+}
 
 static uint32_t fnv(uint32_t h, const char *s, size_t n)
 {
@@ -24,12 +58,12 @@ static uint32_t fnv(uint32_t h, const char *s, size_t n)
     return h;
 }
 
-static void bstr(struct buf *b, const char *s)
+static void bstr(buf *b, const char *s)
 {
     putbytes(b, s, strlen(s) + 1);
 }
 
-static void head(struct buf *b, const char *name)
+static void head(buf *b, const char *name)
 {
     char h[100];
 
@@ -37,14 +71,14 @@ static void head(struct buf *b, const char *name)
     putbytes(b, h, strlen(h));
 }
 
-static void obs(struct buf *b, uint8_t type, const char *check, const char *vec)
+static void obs(buf *b, uint8_t type, const char *check, const char *vec)
 {
     put8(b, type);
     bstr(b, check);
     bstr(b, vec);
 }
 
-static void num(struct buf *b, const char *check, const char *vec, uint32_t v)
+static void num(buf *b, const char *check, const char *vec, uint32_t v)
 {
     obs(b, 0x10, check, vec);
     put32(b, v);
@@ -52,16 +86,16 @@ static void num(struct buf *b, const char *check, const char *vec, uint32_t v)
 
 /* text with its block places merged from b (NULL: no file); the result
    of libscmp_bin_merge, the text in *out */
-static int merge(const char *text, const struct buf *b, char **out)
+static int merge(const char *text, const buf *b, char **out)
 {
     size_t len;
 
-    return libscmp_bin_merge(text, strlen(text), "prog.txt", b ? b->p : NULL, b ? b->n : 0,
+    return libscmp_bin_merge(text, strlen(text), "prog.txt", b ? b->data() : NULL, b ? b->size() : 0,
                              "prog.bin", out, &len, err, sizeof err);
 }
 
 /* the merge error of text and b, "" if it merges */
-static const char *broken(const char *text, const struct buf *b)
+static const char *broken(const char *text, const buf *b)
 {
     char *out;
     int r = merge(text, b, &out);
@@ -83,9 +117,9 @@ static char *hex8(uint32_t v)
     return s[k];
 }
 
-static void test_formats(void)
+TEST_CASE("formats", "[libscmp][bin]")
 {
-    struct buf b = { 0 };
+    buf b;
     unsigned char b64[64], b65[65];
     char lines[4000], want[5000], *out;
     int i;
@@ -170,23 +204,22 @@ static void test_formats(void)
         size_t dl;
         FILE *m = open_memstream(&d, &dl);
 
-        CHECK(libscmp_bin_dump(b.p, b.n, "prog.bin", "BLOCK:1", m, err, sizeof err) == 14);
+        CHECK(libscmp_bin_dump(b.data(), b.size(), "prog.bin", "BLOCK:1", m, err, sizeof err) == 14);
         fclose(m);
         CHECK(d && !strcmp(d, lines));
         free(d);
         m = open_memstream(&d, &dl);
-        CHECK(libscmp_bin_dump(b.p, b.n, "prog.bin", "BLOCK:2", m, err, sizeof err) == 0);
+        CHECK(libscmp_bin_dump(b.data(), b.size(), "prog.bin", "BLOCK:2", m, err, sizeof err) == 0);
         fclose(m);
         free(d);
     }
-    free(b.p);
 }
 
 /* 4096 + 3 observations, a plain case between: two block cases */
-static void test_blocks(void)
+TEST_CASE("blocks", "[libscmp][bin]")
 {
-    struct buf b = { 0 };
-    char *lines1 = malloc(200000), *lines2 = malloc(1000), want[1000], *out, l[100];
+    buf b;
+    char *lines1 = (char *)malloc(200000), *lines2 = (char *)malloc(1000), want[1000], *out, l[100];
     size_t n1 = 0, n2 = 0;
     uint32_t i;
 
@@ -225,18 +258,17 @@ static void test_blocks(void)
                  "prog.txt:4: BLOCK:3, but prog.bin has only 2 blocks"));
     CHECK(strstr(broken("# capture other 1\n", &b), "prog.bin: the header names blk, the output other"));
     /* the end inside a block: the program stopped */
-    b.n--;
+    b.pop_back();
     CHECK(strstr(broken("# capture blk 1\nBLOCK:1\t4096 in blk.bin\nBLOCK:2\t3 in blk.bin\n", &b),
                  "the file ends inside block 2"));
-    free(b.p);
     free(lines1);
     free(lines2);
 }
 
-static void test_broken(void)
+TEST_CASE("broken", "[libscmp][bin]")
 {
     static const char text[] = "# capture prog 1\nBLOCK:1\t1 in prog.bin\n";
-    struct buf b = { 0 };
+    buf b;
     size_t at;
     char key[1100];
 
@@ -247,65 +279,62 @@ static void test_broken(void)
     /* no header */
     put8(&b, 0x10);
     CHECK(strstr(broken(text, &b), "prog.bin: offset 0: no header"));
-    free(b.p);
-    memset(&b, 0, sizeof b);
+    b.clear();
     putbytes(&b, "# capture-bin prog 2\n", 21);
     CHECK(strstr(broken(text, &b), "(version 1)"));
-    free(b.p);
     /* a truncated record */
-    memset(&b, 0, sizeof b);
+    b.clear();
     head(&b, "prog");
-    at = b.n;
+    at = b.size();
     num(&b, "c", "", 7);
-    b.n -= 2;
+    b.resize(b.size() - 2);
     CHECK(strstr(broken(text, &b), "prog.bin: offset 21: the record of type $10 is cut off"));
     CHECK(at == 21);
-    b.n = at;
+    b.resize(at);
     obs(&b, 0x10, "c", "");
-    b.n--;                      /* the vector's 0 byte */
+    b.pop_back();               /* the vector's 0 byte */
     CHECK(strstr(broken(text, &b), "offset 21: the record of type $10 is cut off"));
     /* an unknown type */
-    b.n = at;
+    b.resize(at);
     obs(&b, 0x12, "c", "");
     CHECK(strstr(broken(text, &b), "offset 21: unknown record type $12"));
-    b.n = at;
+    b.resize(at);
     put8(&b, 0x77);
     CHECK(strstr(broken(text, &b), "offset 21: unknown record type $77"));
     /* a bad length */
-    b.n = at;
+    b.resize(at);
     obs(&b, 0x11, "c", "");
     put32(&b, 1000);
     putbytes(&b, "abc", 3);
     CHECK(strstr(broken(text, &b), "offset 21: bytes of length 1000, beyond the end of the file"));
     /* a bad kind, flag */
-    b.n = at;
+    b.resize(at);
     obs(&b, 0x14, "c", "");
     put8(&b, 4);
     CHECK(strstr(broken(text, &b), "offset 21: address kind 4 (0-3)"));
-    b.n = at;
+    b.resize(at);
     obs(&b, 0x13, "c", "");
     put8(&b, 2);
     CHECK(strstr(broken(text, &b), "offset 21: text flag 2 (0 or 1)"));
     /* a key longer than the writer's */
-    b.n = at;
+    b.resize(at);
     memset(key, 'k', 1020);
     key[1020] = 0;
     num(&b, key, "", 1);
     put8(&b, 0x02);
     CHECK(strstr(broken(text, &b), "offset 21: a key longer than 1023 bytes"));
     /* 1023 bytes are the limit: |k...k||1 */
-    b.n = at;
+    b.resize(at);
     key[1019] = 0;
     num(&b, key, "", 1);
     put8(&b, 0x02);
     CHECK(!strcmp(broken(text, &b), ""));
-    free(b.p);
 }
 
 /* the dump of a bytes observation of a block */
-static void test_dump_key(void)
+TEST_CASE("dump_key", "[libscmp][bin]")
 {
-    struct buf b = { 0 };
+    buf b;
     unsigned char v[70];
     char *d = NULL, row[] = "A0A1A2A3A4A5A6A7A8A9AAABACADAEAF", want[400];
     size_t dl;
@@ -324,21 +353,20 @@ static void test_dump_key(void)
     }
     put8(&b, 0x02);
     m = open_memstream(&d, &dl);
-    CHECK(libscmp_bin_dump(b.p, b.n, "dmp.bin", "r|buf|v|2", m, err, sizeof err) == 3);
+    CHECK(libscmp_bin_dump(b.data(), b.size(), "dmp.bin", "r|buf|v|2", m, err, sizeof err) == 3);
     fclose(m);
     snprintf(want, sizeof want, "r|buf|v|2\tat $0000 %s%s\nr|buf|v|2\tat $0020 %s%s\n"
              "r|buf|v|2\tat $0040 A0A1A2A3A4A5\n", row, row, row, row);
     CHECK(d && !strcmp(d, want));
     free(d);
-    free(b.p);
 }
 
 /* two runs: one value differs in block 2 */
-static void make_run(struct buf *b, uint32_t odd, uint16_t lost)
+static void make_run(buf *b, uint32_t odd, uint16_t lost)
 {
     uint32_t i;
 
-    memset(b, 0, sizeof *b);
+    b->clear();
     head(b, "prog");
     put8(b, 0x01);
     bstr(b, "r");
@@ -352,15 +380,15 @@ static void make_run(struct buf *b, uint32_t odd, uint16_t lost)
 static const char run_text[] = "# capture prog 1\nr|plain||1\t$1\nBLOCK:1\t4096 in prog.bin\n"
                                "BLOCK:2\t11 in prog.bin\n";
 
-static int run_file(struct libscmp_file *f, const struct buf *b)
+static int run_file(struct libscmp_file *f, const buf *b)
 {
-    return libscmp_parse_run(f, run_text, strlen(run_text), "prog.txt", b->p, b->n, "prog.bin",
+    return libscmp_parse_run(f, run_text, strlen(run_text), "prog.txt", b->data(), b->size(), "prog.bin",
                              err, sizeof err);
 }
 
-static void test_two_runs(void)
+TEST_CASE("two_runs", "[libscmp][bin]")
 {
-    struct buf a, b, l;
+    buf a, b, l;
     struct libscmp_file fa, fb, fl;
     char *rep = NULL, *out;
     size_t rl;
@@ -372,7 +400,7 @@ static void test_two_runs(void)
     CHECK(run_file(&fa, &a) == 0);
     CHECK(run_file(&fb, &b) == 0);
     CHECK(run_file(&fl, &l) == 0);
-    CHECK(fa.bin && fa.binlen == a.n && !strcmp(fa.binpath, "prog.bin"));
+    CHECK(fa.bin && fa.binlen == a.size() && !strcmp(fa.binpath, "prog.bin"));
     m = open_memstream(&rep, &rl);
     CHECK(libscmp_bin_first_diff(&fa, &fb, 2, "run 1", "run 2", m, err, sizeof err) == 1);
     CHECK(libscmp_bin_first_diff(&fa, &fb, 1, "run 1", "run 2", m, err, sizeof err) == 0);
@@ -408,9 +436,6 @@ static void test_two_runs(void)
     libscmp_free(&fa);
     libscmp_free(&fb);
     libscmp_free(&fl);
-    free(a.p);
-    free(b.p);
-    free(l.p);
 }
 
 static void put(const char *dir, const char *file, const void *p, size_t n)
@@ -428,7 +453,7 @@ static void put(const char *dir, const char *file, const void *p, size_t n)
 static char *slurp(const char *path)
 {
     FILE *f = fopen(path, "rb");
-    char *s = calloc(1, 1 << 20);
+    char *s = (char *)calloc(1, 1 << 20);
 
     if (f) {
         CHECK(fread(s, 1, (1 << 20) - 1, f) > 0);
@@ -437,9 +462,9 @@ static char *slurp(const char *path)
     return s;
 }
 
-static void test_dirs(void)
+TEST_CASE("dirs", "[libscmp][bin]")
 {
-    struct buf a, b;
+    buf a, b;
     struct libscmp_file fa;
     char *rep = NULL, *e = NULL, *t, exp[400];
     size_t rl, el;
@@ -459,8 +484,8 @@ static void test_dirs(void)
     put("libscmp-bin/exp", "prog.txt", exp, strlen(exp));
     libscmp_free(&fa);
     put("libscmp-bin/run", "prog.txt", run_text, strlen(run_text));
-    put("libscmp-bin/run", "prog.bin", b.p, b.n);
-    put("libscmp-bin/other", "prog.bin", a.p, a.n);
+    put("libscmp-bin/run", "prog.bin", b.data(), b.size());
+    put("libscmp-bin/other", "prog.bin", a.data(), a.size());
     m = open_memstream(&rep, &rl);
     x = open_memstream(&e, &el);
     s = libscmp_compare_dirs_other("libscmp-bin/run", "libscmp-bin/exp", "libscmp-bin/other",
@@ -491,7 +516,7 @@ static void test_dirs(void)
     free(rep);
     free(e);
     /* a broken NAME.bin: malformed (2) */
-    put("libscmp-bin/run", "prog.bin", b.p, b.n - 3);
+    put("libscmp-bin/run", "prog.bin", b.data(), b.size() - 3);
     m = open_memstream(&rep, &rl);
     x = open_memstream(&e, &el);
     s = libscmp_compare_dirs("libscmp-bin/run", "libscmp-bin/exp", LIBSCMP_OBJ, NULL, 0, m, x);
@@ -501,7 +526,7 @@ static void test_dirs(void)
     free(rep);
     free(e);
     /* libs-dump: appended to NAME.dump */
-    put("libscmp-bin/run", "prog.bin", b.p, b.n);
+    put("libscmp-bin/run", "prog.bin", b.data(), b.size());
     unlink("libscmp-bin/run/prog.dump");
     m = open_memstream(&rep, &rl);
     x = open_memstream(&e, &el);
@@ -522,19 +547,4 @@ static void test_dirs(void)
     CHECK(s == 1 && rep && strstr(rep, "libs-dump r|no||1: in no NAME.bin of libscmp-bin/run"));
     free(rep);
     free(e);
-    free(a.p);
-    free(b.p);
-}
-
-int main(void)
-{
-    test_formats();
-    test_blocks();
-    test_broken();
-    test_dump_key();
-    test_two_runs();
-    test_dirs();
-    if (failures)
-        fprintf(stderr, "test_libscmp_bin: %d failures\n", failures);
-    return failures != 0;
 }
