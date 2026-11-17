@@ -22,7 +22,9 @@
  * screen without a title); EZOutput both forms;
  * EZRequest all four forms (with '|' in the body, the arguments of every
  * type: string, long, word, byte, quick also negative, float through
- * fltoqu with a6 = mathffp, the stack written back); EZRequestArgs with
+ * fltoqu with a6 = mathffp, the stack written back, the floats also with
+ * a6 another library, #749; fixed #750, #749: the integer parts
+ * truncated towards 0, no fltoqu); EZRequestArgs with
  * the same types, EZSeparator, the stale end of a longer format text
  * (the original, fixed #747); Flip$ with 2..250 characters and with 0 and 1 (the original:
  * 65536 swaps, in a big buffer); InitArgParse/NextArg$/NextArgChar$ on
@@ -267,6 +269,24 @@ static void ezcheck(void)
    argument its type word and its value (a string: length, address) */
 static UBYTE stk[256];
 static UBYTE *sp_;
+static ULONG ez_a6;                     /* a6 of the calls: mathffp */
+
+/* a6 of another "library" whose functions all return 0 (a jump table of
+   20 entries to rwe_fail0): the original's fltoqu calls mathffp's
+   SPFix, SPFlt, SPSub and SPMul through the caller's a6 (#749) */
+static UWORD notffp[20 * 3];
+
+static ULONG notffp_base(void)
+{
+    int i;
+    for (i = 0; i < 20; i++) {
+        notffp[i * 3] = 0x4ef9;                         /* JMP abs.l */
+        notffp[i * 3 + 1] = (UWORD)((ULONG)rwe_fail0 >> 16);
+        notffp[i * 3 + 2] = (UWORD)(ULONG)rwe_fail0;
+    }
+    CacheClearU();
+    return (ULONG)&notffp[20 * 3];
+}
 struct arg { UWORD type; ULONG v; const char *s; };
 
 static void pushl(ULONG v) { sp_ -= 4; *(ULONG *)sp_ = v; }
@@ -314,7 +334,7 @@ static void ezreq_args(const char *vec, const char *b, const struct arg *a, int 
     lens[2] = strlen(t_gad);
     DO1(ENT(LIB, E_EZ, 3), ezsetup(); R.d[0] = (ULONG)t_title; R.d[1] = BODY(b);
         R.d[2] = (ULONG)t_gad; buildstk(lens, 3, a, n);
-        R.d[7] = 0xabcd0000UL | n; R.a[6] = (ULONG)mathffp);
+        R.d[7] = 0xabcd0000UL | n; R.a[6] = ez_a6);
     ezcheck();
     OBSPTRBYTES("stack", stk, sizeof stk);
     OBSBYTES("body buffer", body, sizeof body);
@@ -324,7 +344,7 @@ static void ezargs(const char *vec, const struct arg *a, int n)
 {
     strcpy(VEC, vec);
     DO1(ENT(LIB, E_EZARGS, 0), ezsetup(); buildstk(NULL, 0, a, n);
-        R.d[7] = 0x12340000UL | n; R.a[6] = (ULONG)mathffp);
+        R.d[7] = 0x12340000UL | n; R.a[6] = ez_a6);
     ezcheck();
     OBSPTRBYTES("stack", stk, sizeof stk);
 }
@@ -397,10 +417,11 @@ static void easyrequest(void)
     ez_ret = 5;
     ezreq_args("title$,body$,gadget$,var.. all types", "%s|%ld|%d|%d|%ld|%ld|%ld|%ld|%s",
                all, sizeof all / sizeof all[0]);
-    /* the arguments as RawDoFmt reads them: string, long, word, word
-       (the byte), the quicks' integer parts zero extended (BUG(orig), #750),
-       the floats through fltoqu (3.5 -> 3, -2.25 -> Quick -3 + .75:
-       65533), string */
+    /* the arguments as RawDoFmt reads them in the original: string, long,
+       word, word (the byte), the quicks' integer parts zero extended, the
+       floats through fltoqu (3.5 -> 3, -2.25 -> Quick -3 + .75: 65533),
+       string; the C build passes the integer parts truncated towards 0
+       (-3, 3, -2: fixed #750), so the case is a pair */
     BOTH("arguments of all types",
          rec.args[0] == (ULONG)t_s1 && rec.args[1] == 0x12345678
          && rec.args[2] == 0xfffe0041UL && rec.args[3] == 5
@@ -415,6 +436,12 @@ static void easyrequest(void)
         sprintf(v, "type %u alone", all[i].type);
         ezreq_args(v, "x", &all[i], 1);
     }
+    /* the Floats 3.5 and -2.25 with a6 not mathffp (#749) */
+    ez_a6 = notffp_base();
+    ezreq_args("floats, a6 not mathffp", "%ld %ld", &all[6], 2);
+    ROUT = "EZRequestArgs";
+    ezargs("floats, a6 not mathffp", &all[6], 2);
+    ez_a6 = (ULONG)mathffp;
 
     ROUT = "EZRequestArgs";
     ez_ret = 7;
@@ -899,6 +926,7 @@ int main(int argc, char **argv)
         check("rimisclib: mathffp.library", FALSE);
         return 20;
     }
+    ez_a6 = (ULONG)mathffp;
     strcpy(VEC, "");
 
     ROUT = "init";

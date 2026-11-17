@@ -33,18 +33,13 @@
  *   WorkbenchHere, TimerReset (CIA-A TOD), ClickWait (left mouse button)
  *
  * Everything is C behind the thunks; dos and intuition through the NDK
- * inlines, floatquicklib's fltoqu through BLITZ_ALIBJSR_A6.
+ * inlines.
  *
  * BUG(orig), kept:
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
  *     and after NextArg$ came to the end it reads from address 0 (#754).
  *   - Neither EZRequest form with arguments limits them (16 longs)
  *     (#748).
- *   - A Quick argument is passed as its integer part zero extended
- *     (SWAP:ANDI.l #$ffff): negative values become 65536 - n (#750); a
- *     Float is converted with floatquicklib's fltoqu with the caller's a6
- *     (not the ffp base) and the result written back onto the argument
- *     stack (#749).
  *   - EZRequestArgs without arguments reads one type word from a2 (the
  *     count 0 runs the DBRA loop 65536 times) (#746).
  *   - ProgPath$ reads the byte before the result when the directory
@@ -66,6 +61,14 @@
  * it builds with a 0; the original wrote none, so a shorter text than
  * the one before kept the end of the old one (more formats than
  * arguments).
+ * Fixed (intended deviation, #750, #749): a Quick or Float argument of
+ * EZRequest/EZRequestArgs is passed as its integer part truncated
+ * towards 0, a long (-3.5 gives -3), the Float converted in C.  The
+ * original passed the integer part zero extended (SWAP:ANDI.l #$ffff:
+ * -3.5 gave 65532) (#750), and converted a Float with floatquicklib's
+ * fltoqu, whose mathffp calls went through the caller's a6 (the
+ * commands load no library base), writing the Quick back onto the
+ * argument stack (#749).
  * Fixed (intended deviation, #751): Flip$ of a string with 0 or 1
  * characters returns it unchanged; the original swapped 65536 byte
  * pairs around the string (the count len/2 - 1 = -1 in a DBRA).
@@ -784,14 +787,46 @@ static ULONG doeasybegin(void)
     return (ULONG)EasyRequestArgs(win, &ez.es, NULL, ez.args);
 }
 
+/* the integer part of a Quick (16.16), truncated towards 0 as Int does
+   (fixed #750: the original passed the high word zero extended, -3.5
+   gave 65532) */
+static LONG quicktrunc(ULONG q)
+{
+    LONG i = (LONG)q >> 16;
+
+    if ((LONG)q < 0 && (q & 0xffff))
+        i++;
+    return i;
+}
+
+/* the integer part of a Float (FFP: mantissa in bits 8-31 with its top
+   bit set, sign bit 7, exponent bits 0-6 excess 64), truncated towards 0
+   (fixed #750, #749: the original converted it with floatquicklib's
+   fltoqu, whose mathffp calls went through the caller's a6, and passed
+   the Quick's high word zero extended); from 2^31 on the low 32 bits */
+static LONG ffptrunc(ULONG f)
+{
+    WORD e = (WORD)(f & 0x7f) - 64;
+    ULONG m = f >> 8, i;
+
+    if (e <= 0)
+        return 0;
+    if (e <= 24)
+        i = m >> (24 - e);
+    else
+        i = e - 24 < 32 ? m << (e - 24) : 0;
+    return f & 0x80 ? -(LONG)i : (LONG)i;
+}
+
 /* the argument array (and with fmt the format text) from the repeated
    #unknown|#push arguments below sp: per argument the type word, below
    it the value (a string: its length, below that the address); `cnt`
    arguments (DBRA: 0 = 65536); the format text ends with a 0 (fixed
-   #747: the original wrote none).  a6 is passed to fltoqu.  `ezfirst`: the
-   lowest address of a string argument, the first one the compiler put at
-   a3 (NULL without one, #1027). */
-static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6)
+   #747: the original wrote none).  A Quick or Float is passed as its
+   integer part, a long (%ld).  `ezfirst`: the lowest address of a string
+   argument, the first one the compiler put at a3 (NULL without one,
+   #1027). */
+static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt)
 {
     UBYTE *out = (UBYTE *)ez.args2;
     UWORD n = (UWORD)(cnt - 1);
@@ -837,14 +872,9 @@ static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6
                 *fmt++ = 'd';
             }
         } else {
-            if (type != BL_QUICK) {
-                /* MOVE.l -(a2),d0:ALibJsr $d301:MOVE.l d0,(a2)+ */
-                v = BL_POPL(sp);
-                *(ULONG *)(UBYTE *)sp = BLITZ_ALIBJSR_A6(TOK_fltoqu, caller_a6, v);
-                sp += 4;
-            }
             v = BL_POPL(sp);
-            *(ULONG *)out = v >> 16;                    /* SWAP:ANDI.l #$ffff */
+            /* fixed (#750, #749): the integer part truncated towards 0 */
+            *(LONG *)out = type == BL_QUICK ? quicktrunc(v) : ffptrunc(v);
             out += 4;
             if (fmt) {
                 *fmt++ = '%';
@@ -917,8 +947,9 @@ static ULONG BLITZ_ROUTINE doeasy3_c(STRPTR body BL_REG(d0))
  * @brief EZRequest title$,body$,gadget$,var..: an EasyRequest with the
  * arguments as the format arguments.
  *
- * See doargs; BUG(orig): no limit of the 16 argument longs (#748), Quick
- * and Float arguments as in #749/#750.  Fixed (#1027): a3 = title$
+ * See doargs; BUG(orig): no limit of the 16 argument longs (#748).  Quick
+ * and Float arguments: their integer part (fixed #750, #749).  Fixed
+ * (#1027): a3 = title$
  * afterwards (the original: the argument array).
  * @param title      d0: the title
  * @param body       d1: the body (format) text
@@ -926,12 +957,11 @@ static ULONG BLITZ_ROUTINE doeasy3_c(STRPTR body BL_REG(d0))
  * @param args       a2: the argument stack: the three lengths, below
  *                   them the repeated arguments
  * @param reps       d7.w: the number of arguments
- * @param caller_a6  a6: the caller's a6, passed to fltoqu (#749)
  * @return d0: what EasyRequestArgs returns
  */
 static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                      STRPTR gadget BL_REG(d2), UBYTE *args BL_REG(a2),
-                                     UWORD reps BL_REG(d7), const void *caller_a6 BL_REG(a6))
+                                     UWORD reps BL_REG(d7))
 {
     ULONG r;
 
@@ -939,7 +969,7 @@ static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG
     ez.es.es_TextFormat = body;
     ez.es.es_GadgetFormat = gadget;
     ez.args = ez.args2;
-    doargs(args - 12, reps, NULL, caller_a6);
+    doargs(args - 12, reps, NULL);
     r = doeasybegin();
     blitz_string = (UBYTE *)title;      /* fixed (#1027) */
     return r;
@@ -954,23 +984,22 @@ static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG
  * ends with a 0 (the original wrote none, a shorter text kept the end of
  * the one before).  BUG(orig): no limit of the arguments (#748);
  * without arguments a type word is read from a2 and the count 0 runs the
- * loop 65536 times (#746); Quick/Float as in #749/#750.  Fixed (#1027):
+ * loop 65536 times (#746).  Quick/Float: their integer part (fixed #750,
+ * #749).  Fixed (#1027):
  * a3 = the first string argument afterwards, unchanged without one (the
  * original: the argument array).
  * @param args       a2: the argument stack, the repeated arguments
  * @param reps       d7.w: the number of arguments
- * @param caller_a6  a6: the caller's a6, passed to fltoqu (#749)
  * @return d0: what EasyRequestArgs returns
  */
-static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d7),
-                                     const void *caller_a6 BL_REG(a6))
+static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d7))
 {
     ULONG r;
 
     numargs = reps & 0xffff;
     ez.es.es_TextFormat = ezargsbuf;
     ez.args = ez.args2;
-    doargs(args, (UWORD)reps, ezargsbuf, caller_a6);
+    doargs(args, (UWORD)reps, ezargsbuf);
     ez.es.es_GadgetFormat = (STRPTR)okgad;
     ez.es.es_Title = NULL;
     r = doeasybegin();

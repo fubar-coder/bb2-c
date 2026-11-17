@@ -46,9 +46,9 @@ both and frees the font prefs buffer.
 ## C and assembler
 
 All routines are C behind `BLITZ_THUNK`; dos and intuition through the
-NDK inlines, floatquicklib's `fltoqu` ($D301, a Float argument of
-EZRequest/EZRequestArgs) through `BLITZ_ALIBJSR_A6` with the a6 the
-routine got. The repeated arguments are read below a2 (type word, value;
+NDK inlines; a Quick or Float argument of EZRequest/EZRequestArgs is
+converted to its integer part in C (the original called floatquicklib's
+`fltoqu`, $D301). The repeated arguments are read below a2 (type word, value;
 a string: length, address), the count from d7.w (the compiler's
 `movenumrep`). The data keeps the original's order where it matters: the
 0 in front of `tempprogname` ends ProgPath$'s backward search, the raw key
@@ -130,6 +130,14 @@ kind F):
 * EZRequestArgs ends the format text it builds (160 byte buffer) with a
   0; the original wrote none, so a shorter text than the one before kept
   the end of the old one, and so more formats than arguments (#747).
+* A Quick or Float argument of EZRequest/EZRequestArgs is passed as its
+  integer part truncated towards 0, a long for `%ld` (-3.5 gives -3, as
+  `Int` does); the Float is converted in C. The original passed the
+  integer part zero extended (`SWAP: ANDI.l #$ffff`: -3.5 gave 65532)
+  (#750), and converted
+  a Float with floatquicklib's fltoqu with the caller's a6: the commands
+  load no library base, fltoqu needs mathffp's there; the converted
+  value was written back onto the argument stack (#749).
 
 ## BUG(orig)
 
@@ -139,11 +147,6 @@ kind F):
   arguments (16 longs, the original overwrites code behind them) (#748),
   and EZRequestArgs without an argument reads one type word from a2 (the
   count 0 runs the DBRA 65536 times) (#746).
-* A Quick argument is passed as its integer part zero extended (`SWAP:
-  ANDI.l #$ffff`): -3.5 gives 65532 (#750). A Float is converted with
-  floatquicklib's fltoqu with the caller's a6 (fltoqu needs the ffp base
-  there), and the converted value is written back onto the argument
-  stack (#749).
 * ProgPath$ reads the byte before the result when the directory name is
   empty (#758).
 * LtoS replaces the bytes 0-31 and 128-255 by 128 (`CMPI.b #32` with a
@@ -195,9 +198,10 @@ later, after partial matches, empty title; d0 another IntuitionBase,
 #759; in the C build only, where the original does not return: no
 match, a title that ends in a partial match, a mismatch before the
 match, a screen without a title); EZOutput both forms; EZRequest all four forms – the body buffer
-after the `|` change, the argument stack (Floats written back), all
-argument types (string, long, word, byte, Quick also negative, Float
-through fltoqu with a6 = mathffp), 16 longs; EZRequestArgs with the same,
+after the `|` change, the argument stack (the original writes the
+Floats back), all argument types (string, long, word, byte, Quick also
+negative, Float with a6 = mathffp and with a6 another library), 16
+longs; EZRequestArgs with the same,
 EZSeparator `,`, `""` and `|`, the stale end of the format text;
 Flip$ with 2..250 characters and with 0 and 1 (a 140 KB buffer each);
 InitArgParse/NextArg$/NextArgChar$ on 21 lines (spaces, quotes, `""`,
