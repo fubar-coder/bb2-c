@@ -106,14 +106,18 @@ kind F):
   not take back after a function with a numeric result (#846); the call
   itself uses the libraries' safe form of the NDK macro, which keeps a3
   (`cmake/ndk-calls.cmake`).
+* WorkbenchHere ends at the end of the screen list and returns 0 when no
+  title contains "Workbench"; a screen without a title is skipped. The
+  original never tested for the end of the list (`'nextscreen: MOVE.l
+  (a0),a0 : BRA 'loop`, its `'oops` unused): after the last screen it
+  read the "screen" at address 0 and went on, so it hung or returned -1
+  (#761).
 
 ## BUG(orig)
 
 * WorkbenchHere takes IntuitionBase from d0 (`MOVE.l intuibase,a0` is
   overwritten by `MOVE.l d0,a0`) and has no arguments: d0 is whatever
-  the program left there (#759). The search never ends the screen list
-  (no 0 check: it reads the "screen" at 0 and goes on), so it returns -1
-  or hangs (#761); a title that ends with the start of "Workbench"
+  the program left there (#759). A title that ends with the start of "Workbench"
   ("…Work") restarts the same screen for ever (#762); after a partial
   match it goes on with the next screen (a title "WWorkbench" does not
   count) (#760).

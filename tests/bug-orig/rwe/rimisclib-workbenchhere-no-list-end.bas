@@ -9,6 +9,7 @@
 ; WorkbenchHere takes IntuitionBase from d0 (#759): the program loads it
 ; with GetReg.
 ; Correct: no screen title contains "Workbench", WorkbenchHere returns 0.
+; @fixed #761
 ; @rwe rimisclib
 ; @pass timeout=30
 DEFTYPE .l

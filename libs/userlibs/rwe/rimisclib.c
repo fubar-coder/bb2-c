@@ -38,13 +38,11 @@
  * BUG(orig), kept:
  *   - WorkbenchHere takes IntuitionBase from d0 (MOVE.l intuibase,a0 is
  *     overwritten by MOVE.l d0,a0), and the function has no arguments: d0
- *     is whatever the program left there (#759).  The search for
- *     "Workbench" in the screen titles never ends the list (no 0 check:
- *     it reads the "screen" at 0 and goes on), so it returns -1 or hangs
- *     (#761); a title that ends with the start of "Workbench" ("...Work")
- *     restarts the same screen for ever (#762); after a partial match it
- *     goes on with the next screen ("WWorkbench" is not found in its own
- *     title) (#760).
+ *     is whatever the program left there (#759).  In the search for
+ *     "Workbench" in the screen titles a title that ends with the start
+ *     of "Workbench" ("...Work") restarts the same screen for ever
+ *     (#762); after a partial match it goes on with the next screen
+ *     ("WWorkbench" is not found in its own title) (#760).
  *   - Flip$ of a string with 0 or 1 characters swaps 65536 byte pairs
  *     around the string (DBRA with -1) (#751).
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
@@ -75,6 +73,10 @@
  *     until its end, through the uncleared memory behind the file, and
  *     read the last chunk up to 26 bytes behind the buffer (#745).
  *
+ * Fixed (intended deviation, #761): WorkbenchHere ends at the end of the
+ * screen list and returns 0 there, and skips a screen without a title;
+ * the original never ended the list (no 0 check: it read the "screen"
+ * at address 0 and went on), so it returned -1 or hung.
  * Fixed (intended deviation, #755): NextArg$ takes "" inside quotes as
  * one quote and ends the word at the quote that closes it (the original
  * miscounted the quotes after "" and copied the character behind the
@@ -475,14 +477,16 @@ static ULONG BLITZ_ROUTINE getsigbit_c(const struct MsgPort *port BL_REG(d0))
 /**
  * @brief WorkbenchHere: whether a screen's title contains "Workbench".
  *
- * Searches the screen titles from IntuitionBase->FirstScreen.
+ * Searches the screen titles from IntuitionBase->FirstScreen up to the
+ * end of the list; a screen without a title is skipped.
  * BUG(orig): IntuitionBase is taken from d0, which is no argument (#759);
- * the screen list is never ended (no 0 check), so it returns BB_TRUE or
- * hangs (#761); a title that ends with the start of "Workbench" restarts
- * the same screen for ever (#762); after a partial match it goes on with
- * the next screen (#760).
+ * a title that ends with the start of "Workbench" restarts the same
+ * screen for ever (#762); after a partial match it goes on with the next
+ * screen (#760).  Fixed (#761): the original never ends the screen list
+ * (no 0 check: it reads the "screen" at address 0 and goes on), so it
+ * returned BB_TRUE or hung, never BB_FALSE.
  * @param ib  d0: whatever the program left there, used as IntuitionBase
- * @return d0: BB_TRUE when found (it never returns BB_FALSE)
+ * @return d0: BB_TRUE when found, BB_FALSE at the end of the list
  */
 static BB_BOOL BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
 {
@@ -491,10 +495,12 @@ static BB_BOOL BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0
     UBYTE c;
 
     thisscreen = (const UBYTE *)scr;
-    for (;;) {
+    for (; scr; scr = scr->NextScreen) {                /* fixed (#761): the end */
     restart:                                            /* 'loop */
         t = (const UBYTE *)titlestring;
         s = scr->Title;
+        if (!s)
+            continue;                                   /* fixed (#761): no title */
         for (;;) {                                      /* 'findloop */
             c = *s++;
             if (!c)
@@ -509,12 +515,12 @@ static BB_BOOL BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0
                     goto restart;                       /* BUG(orig): same screen (#762) */
                 c = *t++;
                 if (c != *s++)
-                    goto next;
+                    goto next;                          /* BUG(orig): next screen (#760) */
             }
         }
-    next:
-        scr = scr->NextScreen;                          /* BUG(orig): no 0 check (#761) */
+    next:;                                              /* 'nextscreen */
     }
+    return BB_FALSE;                                    /* 'oops */
 }
 
 /**
