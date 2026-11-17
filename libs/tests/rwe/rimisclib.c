@@ -777,7 +777,8 @@ static void writefp(int bad, int prhd, LONG size)
         strcpy((char *)p + 8 + 28, names[i]);           /* fp_Name */
         p += 164;
     }
-    /* a "chunk" of type 7 in the padding, where the search steps */
+    /* a "chunk" of type 7 in the padding, where the original's search
+       steps (fixed #745: no chunk, not found) */
     put16(p + 164 * 20 + 8 + 14, 7);
     put16(p + 164 * 20 + 8 + 24, 0x77);
     strcpy((char *)p + 164 * 20 + 8 + 28, "padding.font");

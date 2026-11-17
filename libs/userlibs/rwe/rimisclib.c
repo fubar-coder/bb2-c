@@ -49,11 +49,14 @@
  *     RawASC of a character not in the table searches until it finds the
  *     byte somewhere (DIFF: what is behind the table differs, see the
  *     notes) (#744).
- *   - DefaultFontHeight/Name step through the buffer by 164 bytes (the
- *     size of a FONT chunk) until its end, through the uncleared memory
- *     behind the file, and read the last chunk up to 26 bytes behind the
- *     buffer (#745).
  *
+ * Fixed (intended deviation, #745): DefaultFontHeight/Name go through the
+ * chunks by their sizes as far as the bytes read, and take only FONT
+ * chunks; OpenFontPrefs checks the PRHD size against them and fails on
+ * a read error.  The original stepped by 164 bytes (the size of a FONT
+ * chunk) to the end of the 16 KB buffer, through the uncleared memory
+ * behind the file (a type not in the file was "found" there), reading
+ * the last step up to 26 bytes behind the buffer.
  * Fixed (intended deviation, #757): OpenFontPrefs frees the buffer of an
  * OpenFontPrefs before; the original lost it (16 KB of AllocMem until
  * the next reboot).
@@ -346,6 +349,7 @@ static const char intuiname[] = "intuition.library";
 
 /* font prefs: the buffer (fontloc) and the first FONT chunk's data */
 static UBYTE *fontpos, *fontloc;
+static ULONG fontlen;                   /* the bytes read */
 static BPTR fontfh;
 static const char fontname[] = "ENV:SYS/Font.Prefs";
 
@@ -1163,7 +1167,9 @@ static ULONG BLITZ_ROUTINE closefontprefs_c(void)
  * Without memory for the buffer it returns BB_FALSE; fixed (#756): the
  * original did not check AllocMem and read the file to address 0.
  * The buffer of an OpenFontPrefs before is freed first; fixed (#757):
- * the original lost it.
+ * the original lost it.  Fixed (#745): the chunks are read within the
+ * bytes read (the original ignored Read's result and took the PRHD size
+ * unchecked; a read error is a failed open now).
  * @return d0: BB_TRUE if it is a FORM PREF with PRHD and a FONT chunk
  *         behind it; else BB_FALSE, the buffer freed (the tail call of
  *         CloseFontPrefs, which returns 0)
@@ -1171,6 +1177,8 @@ static ULONG BLITZ_ROUTINE closefontprefs_c(void)
 static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
 {
     const ULONG *p;
+    LONG n;
+    ULONG at;
 
     closefontprefs_c();                                 /* fixed (#757) */
     fontloc = AllocMem(FONTBUF, 0);
@@ -1179,8 +1187,11 @@ static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
     fontfh = Open((CONST_STRPTR)fontname, MODE_OLDFILE);
     if (!fontfh)
         return closefontprefs_c(), BB_FALSE;
-    Read(fontfh, fontloc, FONTBUF);
+    n = Read(fontfh, fontloc, FONTBUF);
     Close(fontfh);
+    if (n < 28)                                         /* fixed (#745) */
+        return closefontprefs_c(), BB_FALSE;
+    fontlen = (ULONG)n;
     p = (const ULONG *)fontloc;
     if (*p++ != BL_ID4('F', 'O', 'R', 'M'))
         return closefontprefs_c(), BB_FALSE;
@@ -1189,8 +1200,13 @@ static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
         return closefontprefs_c(), BB_FALSE;
     if (*p++ != BL_ID4('P', 'R', 'H', 'D'))
         return closefontprefs_c(), BB_FALSE;
-    p = (const ULONG *)((const UBYTE *)p + *p);         /* ADD.l (a0),a0 */
-    p++;
+    at = *p;                                            /* ADD.l (a0),a0 */
+    if (at > fontlen - 28)                              /* fixed (#745) */
+        return closefontprefs_c(), BB_FALSE;
+    at += 20 + (at & 1);                                /* the next chunk */
+    if (at > fontlen - 8)
+        return closefontprefs_c(), BB_FALSE;
+    p = (const ULONG *)(fontloc + at);
     if (*p++ != BL_ID4('F', 'O', 'N', 'T'))
         return closefontprefs_c(), BB_FALSE;
     p++;
@@ -1198,20 +1214,28 @@ static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
     return BB_TRUE;
 }
 
-/* the FONT chunk with fp_Type = type, stepping by 164 bytes to the end of
-   the buffer; NULL if none.  BUG(orig) (#745): through the uncleared
-   memory behind the file, and the last chunk up to 26 bytes behind the
-   buffer */
+/* the FONT chunk with fp_Type = type: the chunks from the first FONT
+   chunk on, each by its size (padded to even), as far as they lie in the
+   bytes read; only FONT chunks of a FontPrefs' size count; NULL if none.
+   Fixed (#745): the original stepped by 164 bytes to the end of the
+   buffer, through the uncleared memory behind the file and up to 26
+   bytes behind the buffer, and took every step for a FONT chunk */
 static const struct FontPrefs *findfont(UWORD type)
 {
-    const UBYTE *end, *p;
+    ULONG at, size;
+    const ULONG *c;
 
     if (!fontpos)
         return NULL;
-    end = fontloc + FONTBUF;
-    for (p = fontpos; (LONG)end >= (LONG)p; p += FONTCHUNK)
-        if (((const struct FontPrefs *)p)->fp_Type == type)
-            return (const struct FontPrefs *)p;
+    for (at = (ULONG)(fontpos - fontloc) - 8; at <= fontlen - 8; at += 8 + size + (size & 1)) {
+        c = (const ULONG *)(fontloc + at);
+        size = c[1];
+        if (size > fontlen - 8 - at)
+            break;
+        if (c[0] == BL_ID4('F', 'O', 'N', 'T') && size >= sizeof(struct FontPrefs)
+            && ((const struct FontPrefs *)(c + 2))->fp_Type == type)
+            return (const struct FontPrefs *)(c + 2);
+    }
     return NULL;
 }
 

@@ -623,7 +623,8 @@ DefaultFontHeight|d0|PRHD of 10 bytes, type $1|1	$0000000B
 DefaultFontHeight|d0|PRHD of 10 bytes, type $12340001|1	$1234000B
 DefaultFontHeight|d0|PRHD of 10 bytes, type $2|1	$0000000D
 DefaultFontHeight|d0|PRHD of 10 bytes, type $3|1	$00000000
-DefaultFontHeight|d0|PRHD of 10 bytes, type $7|1	$00000077
+DefaultFontHeight|d0|PRHD of 10 bytes, type $7|1 [orig]	$00000077
+DefaultFontHeight|d0|PRHD of 10 bytes, type $7|1 [fixed #745]	$00000000
 DefaultFontHeight|d0|PRHD of 10 bytes, type $FFFF0002|1	$FFFF000D
 DefaultFontHeight|d0|bad FONT, type $0|1	$00000000
 DefaultFontHeight|d0|bad FONT, type $1|1	$00000000
@@ -679,7 +680,8 @@ DefaultFontHeight|d0|ok, type $1|1	$0000000B
 DefaultFontHeight|d0|ok, type $12340001|1	$1234000B
 DefaultFontHeight|d0|ok, type $2|1	$0000000D
 DefaultFontHeight|d0|ok, type $3|1	$00000000
-DefaultFontHeight|d0|ok, type $7|1	$00000077
+DefaultFontHeight|d0|ok, type $7|1 [orig]	$00000077
+DefaultFontHeight|d0|ok, type $7|1 [fixed #745]	$00000000
 DefaultFontHeight|d0|ok, type $FFFF0002|1	$FFFF000D
 DefaultFontHeight|kept|PRHD of 10 bytes, type $0|1	kept
 DefaultFontHeight|kept|PRHD of 10 bytes, type $1|1	kept
@@ -819,7 +821,7 @@ DefaultFontName|a3|PRHD of 10 bytes, type $2|1 [orig]	$0000000D
 DefaultFontName|a3|PRHD of 10 bytes, type $2|1 [fixed #743]	$0000000C
 DefaultFontName|a3|PRHD of 10 bytes, type $3|1	$00000004
 DefaultFontName|a3|PRHD of 10 bytes, type $7|1 [orig]	$00000011
-DefaultFontName|a3|PRHD of 10 bytes, type $7|1 [fixed #743]	$00000010
+DefaultFontName|a3|PRHD of 10 bytes, type $7|1 [fixed #743]	$00000004
 DefaultFontName|a3|PRHD of 10 bytes, type $FFFF0002|1 [orig]	$0000000D
 DefaultFontName|a3|PRHD of 10 bytes, type $FFFF0002|1 [fixed #743]	$0000000C
 DefaultFontName|a3|bad FONT, type $0|1	$00000004
@@ -881,7 +883,7 @@ DefaultFontName|a3|ok, type $2|1 [orig]	$0000000D
 DefaultFontName|a3|ok, type $2|1 [fixed #743]	$0000000C
 DefaultFontName|a3|ok, type $3|1	$00000004
 DefaultFontName|a3|ok, type $7|1 [orig]	$00000011
-DefaultFontName|a3|ok, type $7|1 [fixed #743]	$00000010
+DefaultFontName|a3|ok, type $7|1 [fixed #743]	$00000004
 DefaultFontName|a3|ok, type $FFFF0002|1 [orig]	$0000000D
 DefaultFontName|a3|ok, type $FFFF0002|1 [fixed #743]	$0000000C
 DefaultFontName|d0|PRHD of 10 bytes, type $0|1	$0000000A
@@ -889,7 +891,8 @@ DefaultFontName|d0|PRHD of 10 bytes, type $1|1	$0000000E
 DefaultFontName|d0|PRHD of 10 bytes, type $12340001|1	$0000000E
 DefaultFontName|d0|PRHD of 10 bytes, type $2|1	$00000008
 DefaultFontName|d0|PRHD of 10 bytes, type $3|1	$00000000
-DefaultFontName|d0|PRHD of 10 bytes, type $7|1	$0000000C
+DefaultFontName|d0|PRHD of 10 bytes, type $7|1 [orig]	$0000000C
+DefaultFontName|d0|PRHD of 10 bytes, type $7|1 [fixed #745]	$00000000
 DefaultFontName|d0|PRHD of 10 bytes, type $FFFF0002|1	$00000008
 DefaultFontName|d0|bad FONT, type $0|1	$00000000
 DefaultFontName|d0|bad FONT, type $1|1	$00000000
@@ -945,7 +948,8 @@ DefaultFontName|d0|ok, type $1|1	$0000000E
 DefaultFontName|d0|ok, type $12340001|1	$0000000E
 DefaultFontName|d0|ok, type $2|1	$00000008
 DefaultFontName|d0|ok, type $3|1	$00000000
-DefaultFontName|d0|ok, type $7|1	$0000000C
+DefaultFontName|d0|ok, type $7|1 [orig]	$0000000C
+DefaultFontName|d0|ok, type $7|1 [fixed #745]	$00000000
 DefaultFontName|d0|ok, type $FFFF0002|1	$00000008
 DefaultFontName|helvetica.font|type 1|1	$00000001
 DefaultFontName|kept|PRHD of 10 bytes, type $0|1	kept
@@ -1017,7 +1021,8 @@ DefaultFontName|out|PRHD of 10 bytes, type $1|1	bytes 400 fnv F41C1C85
 DefaultFontName|out|PRHD of 10 bytes, type $12340001|1	bytes 400 fnv F41C1C85
 DefaultFontName|out|PRHD of 10 bytes, type $2|1	bytes 400 fnv 01D84DBD
 DefaultFontName|out|PRHD of 10 bytes, type $3|1	bytes 400 fnv FC2BB505
-DefaultFontName|out|PRHD of 10 bytes, type $7|1	bytes 400 fnv DA2E1E6B
+DefaultFontName|out|PRHD of 10 bytes, type $7|1 [orig]	bytes 400 fnv DA2E1E6B
+DefaultFontName|out|PRHD of 10 bytes, type $7|1 [fixed #745]	bytes 400 fnv FC2BB505
 DefaultFontName|out|PRHD of 10 bytes, type $FFFF0002|1	bytes 400 fnv 01D84DBD
 DefaultFontName|out|bad FONT, type $0|1	bytes 400 fnv FC2BB505
 DefaultFontName|out|bad FONT, type $1|1	bytes 400 fnv FC2BB505
@@ -1073,7 +1078,8 @@ DefaultFontName|out|ok, type $1|1	bytes 400 fnv F41C1C85
 DefaultFontName|out|ok, type $12340001|1	bytes 400 fnv F41C1C85
 DefaultFontName|out|ok, type $2|1	bytes 400 fnv 01D84DBD
 DefaultFontName|out|ok, type $3|1	bytes 400 fnv FC2BB505
-DefaultFontName|out|ok, type $7|1	bytes 400 fnv DA2E1E6B
+DefaultFontName|out|ok, type $7|1 [orig]	bytes 400 fnv DA2E1E6B
+DefaultFontName|out|ok, type $7|1 [fixed #745]	bytes 400 fnv FC2BB505
 DefaultFontName|out|ok, type $FFFF0002|1	bytes 400 fnv 01D84DBD
 DefaultFontName|popped|PRHD of 10 bytes, type $0|1	$00000000
 DefaultFontName|popped|PRHD of 10 bytes, type $1|1	$00000000

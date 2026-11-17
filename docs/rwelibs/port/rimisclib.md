@@ -148,6 +148,14 @@ kind F):
   0, over the exception vectors and the ExecBase pointer (#756).
 * OpenFontPrefs frees the buffer of an OpenFontPrefs before; the original
   lost it, 16 KB of AllocMem until the next reboot (#757).
+* DefaultFontHeight/Name go through the chunks from the first FONT chunk
+  by their sizes (padded to even) as far as the bytes OpenFontPrefs read,
+  and take only FONT chunks; OpenFontPrefs checks the PRHD size against
+  the bytes read and fails on a read error. The original stepped through
+  the whole 16 KB buffer by 164 bytes (the size of a FONT chunk), also
+  through the uncleared memory behind the file, where a type not in the
+  file was "found", and read the last step up to 26 bytes behind the
+  buffer (#745).
 
 ## BUG(orig)
 
@@ -161,10 +169,6 @@ kind F):
   signed branch) (#753).
 * ASCRaw/RawASC do not check the range (see DIFF); RawASC searches until
   it finds the character somewhere (#744).
-* DefaultFontHeight/Name step through the
-  whole buffer by 164 bytes (the size of a FONT chunk), also through the
-  uncleared memory behind the file, and read the last step up to 26
-  bytes behind the buffer (#745).
 
 Original behaviour that is no defect:
 
@@ -217,8 +221,8 @@ after the end (address 0); ProgPath$/ProgDir$/ProgName$ (normal, no
 program name: the task name, no program dir: the current directory);
 FromBlitz with 9 task names; LtoS; ASCRaw over the whole table; RawASC
 for every character of the table; the font prefs (not open, no file, bad
-FORM/PREF/PRHD/FONT, a PRHD of 10 bytes, types 0-3 and 7 – one found in
-the padding behind the chunks –, d0's high word, CloseFontPrefs twice);
+FORM/PREF/PRHD/FONT, a PRHD of 10 bytes, types 0-3 and 7 – one the original
+finds in the padding behind the chunks, #745 –, d0's high word, CloseFontPrefs twice);
 BInstr (12 pairs); finit with the font prefs open (both buffers freed).
 Besides these: the argument array and body text of one call,
 the font of type 1/2, FromBlitz -1. Kept registers on every call.
