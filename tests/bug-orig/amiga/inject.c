@@ -123,6 +123,13 @@
  *   inuse=PATH             after COMMAND: is PATH still in use (an
  *                          exclusive Lock fails with ERROR_OBJECT_IN_USE,
  *                          e.g. a lock left over); up to 4 times
+ *   doslist                after COMMAND: can the DOS list (devices,
+ *                          volumes, assigns) be locked for writing
+ *                          (AttemptLockDosList)?  If not, a read lock that
+ *                          COMMAND left is released (UnLockDosList, up to
+ *                          8 times, the Forbid nest count back to -1), so
+ *                          that the session goes on instead of the next
+ *                          writer (Assign, a disk change) waiting for ever
  *   freesignal             FreeSignal of the process on a signal it has not
  *                          allocated (its bit clear in tc_SigAlloc, a
  *                          number above 31) or on one of the system's
@@ -189,6 +196,7 @@
  *   current dir at end: start | other
  *   current dir: the start lock was unlocked   (only if so)
  *   in use: PATH | not in use: PATH | missing: PATH
+ *   doslist: free | doslist: locked (N read locks released)
  *   click TITLE/TEXT: answered | answered after the DOS list was unlocked
  *                | not answered | no gadget | no window | not sent
  *   click TITLE/TEXT: UndoBuffer of the string gadgets kept | changed
@@ -252,6 +260,7 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
 static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill, o_datestamp;
+static int o_doslist;
 static int o_guardseg, o_freefill;
 static UBYTE fill_byte, freefill_byte;
 static ULONG ds_days, ds_done;
@@ -1492,6 +1501,8 @@ static int option(const char *a)
         strcpy(nn_name, slash + 1);
         return 1;
     }
+    if (!strcmp(a, "doslist"))
+        return o_doslist = 1;
     if (!strcmp(a, "handles"))
         return o_handles = 1;
     if (!strncmp(a, "opendevfail=", 12)) {
@@ -1674,6 +1685,44 @@ static void patchmem(int on)
     Permit();
 }
 
+/* doslist: can the DOS list be locked for writing after COMMAND?  If not,
+   the read locks COMMAND left are released (each UnLockDosList also
+   Permits; LockDosList Forbids too: the nest count ends at -1, not
+   forbidden, as inject runs), so the session goes on */
+#define LDF_DOSLIST (LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS)
+
+static int doslist_free(void)
+{
+    struct DosList *dl = AttemptLockDosList(LDF_DOSLIST | LDF_WRITE);
+
+    /* before V40 a failed attempt could return 1 instead of NULL */
+    if ((ULONG)dl <= 1)
+        return 0;
+    UnLockDosList(LDF_DOSLIST | LDF_WRITE);
+    return 1;
+}
+
+static void report_doslist(void)
+{
+    static char line[100];
+    int n = 0;
+
+    if (doslist_free()) {
+        put("inject: doslist: free\n");
+        return;
+    }
+    while (n < 8 && !doslist_free()) {
+        UnLockDosList(LDF_DOSLIST | LDF_READ);
+        n++;
+    }
+    while (SysBase->TDNestCnt < -1)
+        Forbid();
+    while (SysBase->TDNestCnt > -1)
+        Permit();
+    sprintf(line, "inject: doslist: locked (%d read locks released)\n", n);
+    put(line);
+}
+
 /* what is left with track, sorted by size and flags */
 static void report_track(void)
 {
@@ -1716,7 +1765,7 @@ static const char usage[] =
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
     "    track pad guard guardseg fill=XX freefill=XX datestamp=YYYY-MM-DD\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
-    "    undobuf cacheflush=NAME freesignal closedevice\n"
+    "    undobuf cacheflush=NAME freesignal closedevice doslist\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
 
 int main(int argc, char **argv)
@@ -1753,7 +1802,7 @@ int main(int argc, char **argv)
             "              [freefill=XX]\n"
             "              [datestamp=YYYY-MM-DD]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
-            "              [freesignal] [closedevice]\n"
+            "              [freesignal] [closedevice] [doslist]\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
         return 20;
@@ -1991,6 +2040,8 @@ int main(int argc, char **argv)
                     : "inject: missing: %.100s\n", inuse[k]);
         put(line);
     }
+    if (o_doslist)
+        report_doslist();
     for (k = 0; k < nclick; k++) {
         sprintf(line, "inject: click %.39s/%.39s: %s\n", click[k].title, click[k].text,
                 cl_text[click[k].result]);
