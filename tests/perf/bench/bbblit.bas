@@ -1,0 +1,68 @@
+; bbblit - perf benchmark: the per-frame blits of the RWE userlib bb_blitlib (SpecialBlock, TBlock, BPredatorBlit)
+; @rwe bb_blitlib
+DEFTYPE .l
+Dim t(8)
+a=123456 : c=0
+BitMap 0,320,256,3
+BitMap 1,64,64,3
+Use BitMap 1
+Boxf 0,0,15,15,5 : Boxf 4,4,11,11,2
+GetaShape 0,0,0,16,16
+Boxf 16,0,31,15,3 : Boxf 20,4,27,11,6
+GetaShape 1,16,0,16,16
+Buffer 0,16384
+VWait 5
+BLITZ
+Poke.b $bfde00,0 : Poke.b $bfdf00,0
+Poke.b $bfd400,99 : Poke.b $bfd500,0
+Poke.b $bfd600,$ff : Poke.b $bfd700,$ff
+Poke.b $bfdf00,$51 : Poke.b $bfde00,$11
+Slice 0,44,320,256,$fff8,3,8,8,320,320
+Use BitMap 0
+Show 0
+VWait 2
+Gosub tod : t0=tt
+For i=1 To 20000
+Next
+Gosub tod : t(0)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 150000
+Next
+Gosub tod : t(1)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+SpecialBlock 0,1,96,96
+Next
+Gosub tod : t(2)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+SpecialBlock 0,1,3852
+Next
+Gosub tod : t(3)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+TBlock 0,96,96
+Next
+Gosub tod : t(4)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 500
+BPredatorBlit 0,0,20,20 : BPredatorBlit 0,0,60,20 : BPredatorBlit 0,0,100,20 : BPredatorBlit 0,0,140,20
+UnBuffer 0
+Next
+Gosub tod : t(5)=(tt-t0)&65535
+VWait 2
+AMIGA
+NPrint "empty ",t(0)," 20000 1"
+NPrint "emptylong ",t(1)," 150000 1"
+NPrint "specialblock ",t(2)," 2000 1"
+NPrint "specialblocko ",t(3)," 2000 1"
+NPrint "tblock ",t(4)," 2000 1"
+NPrint "bpredator4u ",t(5)," 500 1"
+End
+tod:
+th=Peek.b($bfd700)&255
+tl=Peek.b($bfd600)&255
+t2=Peek.b($bfd700)&255
+If t2<>th Then tl=Peek.b($bfd600)&255 : th=t2
+tt=65535-((th LSL 8)+tl)
+Return

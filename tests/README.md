@@ -906,7 +906,7 @@ cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -938,6 +938,15 @@ cycle values do not depend on the host's load or on what else runs
   same for a recursion: a Statement with a string parameter that calls itself
   from depth 20 down to 0, 21 calls per iteration, the value per call; its
   target too comes from its own pass (`perf_brec.pass`, tag `orig`).
+  `bbblit` measures the per-frame blits of an RWE userlib (`bb_blitlib`:
+  SpecialBlock, TBlock, BPredatorBlit). Its header line `; @rwe NAME...`
+  names the libraries, as in a bug-orig test ("A bug of an RWE userlib"):
+  the program is tokenised with a token list of blitz2-c, the libraries'
+  variant and the named libraries; `clib` gets the variant's acidlibs and
+  deflibs and the C build in `blitz2:userlibs/rwe/`, `orig` the CD's
+  libraries and the library's reference. Such a program is not in
+  `perf.pass`; its targets come from its own pass (`perf_bbblit.pass`,
+  tag `orig`) after the reference build (`ctest -R rwe_refbuild`).
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the

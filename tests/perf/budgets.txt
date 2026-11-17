@@ -209,8 +209,21 @@
 # perf_bstr.pass and perf_bmath.pass with the tag orig: 770.5/770.7,
 # 838.5/838.7, 746.5/747.2, 812.5/812.7, 3571.1/3571.2, 469.1/469.2,
 # 206.6/207.0, 3618.6/3618.5, 124.6/124.5.
+# bbblit (a new program: the per-frame blits of the RWE userlib
+# bb_blitlib, header "; @rwe bb_blitlib"; the variant rwe-1999's libraries)
+# from six runs on 4e0f2628 (2026-11-17, the entries behind thunks):
+# specialblock 1743.3 to 1743.9, specialblocko 1667.3 to 1668.4, tblock
+# 1683.8 to 1684.4, bpredator4u 22043.9 to 22047.9.  Their targets from two
+# runs of the pass perf_bbblit.pass with the tag orig (the reference build
+# of the source, ctest -R rwe_refbuild first): 1557.2, 1450.2, 1545.2,
+# 18207.8 both times.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
+bbblit.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
+bbblit.specialblock          1765     1557.2  SpecialBlock 0,1,96,96 (16x16, 3 planes, 320-pixel bitmap)
+bbblit.specialblocko         1689     1450.2  SpecialBlock 0,1,3852 (the offset form)
+bbblit.tblock                1705     1545.2  TBlock 0,96,96
+bbblit.bpredator4u          22272    18207.8  BPredatorBlit 0,0,20,20 : BPredatorBlit 0,0,60,20 : BPredatorBlit 0,0,100,20 : BPredatorBlit 0,0,140,20 : UnBuffer 0
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
