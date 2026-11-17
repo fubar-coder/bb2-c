@@ -68,11 +68,6 @@ original changes d0-d3, d6/d7, a0-a3 and a6 in places.
   on a 68000. FromBlitz compares bytes where the original compares longs
   (`CMPM.l`, an address error on a 68000 for a task name at an odd
   address).
-* ASCRaw/RawASC outside the table: the original reads the code behind its
-  table (`_ltos`, `_fromblitz` …, partly relocated addresses), the C
-  build whatever is behind its table – a raw key above 113 (e.g. a key up
-  code) or a negative one, and RawASC of a character that is not in the
-  table, give other results.
 
 ## Fixed
 
@@ -156,6 +151,14 @@ kind F):
   through the uncleared memory behind the file, where a type not in the
   file was "found", and read the last step up to 26 bytes behind the
   buffer (#745).
+* ASCRaw of a raw key outside 0..113 (a key up code 128-255, a negative
+  value) gives the character 0, as the table's keys without a character
+  do; RawASC of a character that is not in the table (every upper case
+  letter, `!`, ...) and of "" gives -1 (as `Asc("")` does). The original
+  checked neither: ASCRaw read the code behind (or before) its table
+  (`_ltos`, `_fromblitz` ..., partly relocated addresses), RawASC
+  searched on behind it until it found the byte somewhere, or for ever,
+  and found "" (its 0) at 14 (#744).
 
 ## BUG(orig)
 
@@ -167,8 +170,6 @@ kind F):
   count 0 runs the DBRA 65536 times) (#746).
 * LtoS replaces the bytes 0-31 and 128-255 by 128 (`CMPI.b #32` with a
   signed branch) (#753).
-* ASCRaw/RawASC do not check the range (see DIFF); RawASC searches until
-  it finds the character somewhere (#744).
 
 Original behaviour that is no defect:
 
@@ -220,7 +221,9 @@ unterminated quotes, separators, mixed), also before InitArgParse and
 after the end (address 0); ProgPath$/ProgDir$/ProgName$ (normal, no
 program name: the task name, no program dir: the current directory);
 FromBlitz with 9 task names; LtoS; ASCRaw over the whole table; RawASC
-for every character of the table; the font prefs (not open, no file, bad
+for every character of the table (its 0 is "": -1 in the C build); in
+the C build only ASCRaw of 8 keys outside the table and RawASC of 4
+characters not in it; the font prefs (not open, no file, bad
 FORM/PREF/PRHD/FONT, a PRHD of 10 bytes, types 0-3 and 7 – one the original
 finds in the padding behind the chunks, #745 –, d0's high word, CloseFontPrefs twice);
 BInstr (12 pairs); finit with the font prefs open (both buffers freed).
@@ -228,6 +231,7 @@ Besides these: the argument array and body text of one call,
 the font of type 1/2, FromBlitz -1. Kept registers on every call.
 
 Not covered: ClickWait (needs the mouse button); WorkbenchHere's endless
-cases in the original; ASCRaw/RawASC outside the table (DIFF); EZRequestArgs without
+cases in the original; ASCRaw/RawASC outside the table in the original
+(they read the code behind it, which differs from the C build's); EZRequestArgs without
 arguments; strings longer than the buffers; OpenFontPrefs when AllocMem
 fails.

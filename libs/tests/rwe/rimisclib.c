@@ -32,14 +32,17 @@
  * before InitArgParse and after the end (address 0); ProgPath$/ProgDir$/
  * ProgName$ (normal, no program name: the task name, no program dir: the
  * current dir); FromBlitz with several task names; LtoS; ASCRaw for the
- * whole table; RawASC for every character of the table; the font prefs
+ * whole table; RawASC for every character of the table (its 0, i.e. "":
+ * -1 in the C build, fixed #744); in the C build only ASCRaw and RawASC
+ * outside the table (fixed #744); the font prefs
  * (not open, the file missing, bad FORM/PREF/PRHD/FONT, a PRHD of another
  * size, all three types, a type found in the padding behind the chunks
  * and one not found, d0's high word, CloseFontPrefs twice); BInstr; finit
  * (the buffer freed).
  * Not covered: ClickWait (needs the mouse button); WorkbenchHere's
- * endless cases in the original; ASCRaw/RawASC outside the table (they read the code
- * behind it, DIFF); EZRequestArgs without arguments; strings longer than
+ * endless cases in the original; ASCRaw/RawASC outside the table in
+ * the original (they read the code behind it, DIFF); EZRequestArgs
+ * without arguments; strings longer than
  * the buffers; OpenFontPrefs when AllocMem fails.
  */
 #include "rwecmp.h"
@@ -680,7 +683,8 @@ static void conversions(void)
         DO1(ENT(LIB, E_ASCRAW, 0), RESSETUP(); R.d[0] = 0x77770000UL | k);
         STRRES();
     }
-    /* RawASC: every character of the table (found at its first index) */
+    /* RawASC: every character of the table (found at its first index;
+       the 0 of the keys without a character is "": -1, fixed #744) */
     ROUT = "RawASC";
     for (k = 0; k < 114; k++) {
         /* the character from ASCRaw (a result: not in the vector) */
@@ -692,6 +696,27 @@ static void conversions(void)
         DO1(ENT(LIB, E_RAWASC, 0), R.d[0] = (ULONG)ch);
         OBS("d0", R.d[0]);
         BOTH("<= index", R.d[0] <= (ULONG)k);
+    }
+    /* outside the table, in the C build only: the original reads the code
+       behind (or before) its table, which differs from the C build's, and
+       its RawASC may not end; fixed #744: a raw key outside 0..113 gives
+       the character 0, a character not in the table and "" give -1 */
+    if (!strcmp(bl_libset, "obj")) {
+        static const UWORD keys[] = { 114, 127, 128, 160, 255, 0x7fff, 0x8000, 0xffff };
+        static const char *const chars[] = { "A", "!", "\x80", "" };
+
+        ROUT = "ASCRaw";
+        for (i = 0; i < sizeof keys / sizeof keys[0]; i++) {
+            sprintf(VEC, "outside: $%04X", keys[i]);
+            DO1(ENT(LIB, E_ASCRAW, 0), RESSETUP(); R.d[0] = 0x77770000UL | keys[i]);
+            STRRES();
+        }
+        ROUT = "RawASC";
+        for (i = 0; i < sizeof chars / sizeof chars[0]; i++) {
+            sprintf(VEC, "not in the table: $%02X", (UBYTE)chars[i][0]);
+            DO1(ENT(LIB, E_RAWASC, 0), R.d[0] = (ULONG)chars[i]);
+            OBS("d0", R.d[0]);
+        }
     }
 }
 

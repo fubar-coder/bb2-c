@@ -113,6 +113,14 @@ ASCRaw|a3|96|1	$00000005
 ASCRaw|a3|97|1	$00000005
 ASCRaw|a3|98|1	$00000005
 ASCRaw|a3|99|1	$00000005
+ASCRaw|a3|outside: $0072|1 [fixed #744]	$00000005
+ASCRaw|a3|outside: $007F|1 [fixed #744]	$00000005
+ASCRaw|a3|outside: $0080|1 [fixed #744]	$00000005
+ASCRaw|a3|outside: $00A0|1 [fixed #744]	$00000005
+ASCRaw|a3|outside: $00FF|1 [fixed #744]	$00000005
+ASCRaw|a3|outside: $7FFF|1 [fixed #744]	$00000005
+ASCRaw|a3|outside: $8000|1 [fixed #744]	$00000005
+ASCRaw|a3|outside: $FFFF|1 [fixed #744]	$00000005
 ASCRaw|d0|0|1	$00000001
 ASCRaw|d0|1|1	$00000001
 ASCRaw|d0|10|1	$00000001
@@ -227,6 +235,14 @@ ASCRaw|d0|96|1	$00000001
 ASCRaw|d0|97|1	$00000001
 ASCRaw|d0|98|1	$00000001
 ASCRaw|d0|99|1	$00000001
+ASCRaw|d0|outside: $0072|1 [fixed #744]	$00000001
+ASCRaw|d0|outside: $007F|1 [fixed #744]	$00000001
+ASCRaw|d0|outside: $0080|1 [fixed #744]	$00000001
+ASCRaw|d0|outside: $00A0|1 [fixed #744]	$00000001
+ASCRaw|d0|outside: $00FF|1 [fixed #744]	$00000001
+ASCRaw|d0|outside: $7FFF|1 [fixed #744]	$00000001
+ASCRaw|d0|outside: $8000|1 [fixed #744]	$00000001
+ASCRaw|d0|outside: $FFFF|1 [fixed #744]	$00000001
 ASCRaw|kept|0|1	kept
 ASCRaw|kept|1|1	kept
 ASCRaw|kept|10|1	kept
@@ -341,6 +357,14 @@ ASCRaw|kept|96|1	kept
 ASCRaw|kept|97|1	kept
 ASCRaw|kept|98|1	kept
 ASCRaw|kept|99|1	kept
+ASCRaw|kept|outside: $0072|1 [fixed #744]	kept
+ASCRaw|kept|outside: $007F|1 [fixed #744]	kept
+ASCRaw|kept|outside: $0080|1 [fixed #744]	kept
+ASCRaw|kept|outside: $00A0|1 [fixed #744]	kept
+ASCRaw|kept|outside: $00FF|1 [fixed #744]	kept
+ASCRaw|kept|outside: $7FFF|1 [fixed #744]	kept
+ASCRaw|kept|outside: $8000|1 [fixed #744]	kept
+ASCRaw|kept|outside: $FFFF|1 [fixed #744]	kept
 ASCRaw|out|0|1	bytes 400 fnv FEC894AE
 ASCRaw|out|1|1	bytes 400 fnv 324B4B80
 ASCRaw|out|10|1	bytes 400 fnv 6A6F4355
@@ -455,6 +479,14 @@ ASCRaw|out|96|1	bytes 400 fnv CAEBC4C5
 ASCRaw|out|97|1	bytes 400 fnv CAEBC4C5
 ASCRaw|out|98|1	bytes 400 fnv CAEBC4C5
 ASCRaw|out|99|1	bytes 400 fnv CAEBC4C5
+ASCRaw|out|outside: $0072|1 [fixed #744]	bytes 400 fnv CAEBC4C5
+ASCRaw|out|outside: $007F|1 [fixed #744]	bytes 400 fnv CAEBC4C5
+ASCRaw|out|outside: $0080|1 [fixed #744]	bytes 400 fnv CAEBC4C5
+ASCRaw|out|outside: $00A0|1 [fixed #744]	bytes 400 fnv CAEBC4C5
+ASCRaw|out|outside: $00FF|1 [fixed #744]	bytes 400 fnv CAEBC4C5
+ASCRaw|out|outside: $7FFF|1 [fixed #744]	bytes 400 fnv CAEBC4C5
+ASCRaw|out|outside: $8000|1 [fixed #744]	bytes 400 fnv CAEBC4C5
+ASCRaw|out|outside: $FFFF|1 [fixed #744]	bytes 400 fnv CAEBC4C5
 ASCRaw|popped|0|1	$00000000
 ASCRaw|popped|1|1	$00000000
 ASCRaw|popped|10|1	$00000000
@@ -569,6 +601,14 @@ ASCRaw|popped|96|1	$00000000
 ASCRaw|popped|97|1	$00000000
 ASCRaw|popped|98|1	$00000000
 ASCRaw|popped|99|1	$00000000
+ASCRaw|popped|outside: $0072|1 [fixed #744]	$00000000
+ASCRaw|popped|outside: $007F|1 [fixed #744]	$00000000
+ASCRaw|popped|outside: $0080|1 [fixed #744]	$00000000
+ASCRaw|popped|outside: $00A0|1 [fixed #744]	$00000000
+ASCRaw|popped|outside: $00FF|1 [fixed #744]	$00000000
+ASCRaw|popped|outside: $7FFF|1 [fixed #744]	$00000000
+ASCRaw|popped|outside: $8000|1 [fixed #744]	$00000000
+ASCRaw|popped|outside: $FFFF|1 [fixed #744]	$00000000
 BInstr|d0|"",""|1	$00000000
 BInstr|d0|"","a"|1	$00000000
 BInstr|d0|"a needle in a haystack","needle"|1	$00000003
@@ -2576,24 +2616,39 @@ ProgPath$|popped|normal again|1	$00000000
 RawASC|<= index|index 0|1	$00000001
 RawASC|<= index|index 1|1	$00000001
 RawASC|<= index|index 10|1	$00000001
-RawASC|<= index|index 100|1	$00000001
-RawASC|<= index|index 101|1	$00000001
-RawASC|<= index|index 102|1	$00000001
-RawASC|<= index|index 103|1	$00000001
-RawASC|<= index|index 104|1	$00000001
-RawASC|<= index|index 105|1	$00000001
-RawASC|<= index|index 106|1	$00000001
-RawASC|<= index|index 107|1	$00000001
-RawASC|<= index|index 108|1	$00000001
-RawASC|<= index|index 109|1	$00000001
+RawASC|<= index|index 100|1 [orig]	$00000001
+RawASC|<= index|index 100|1 [fixed #744]	$00000000
+RawASC|<= index|index 101|1 [orig]	$00000001
+RawASC|<= index|index 101|1 [fixed #744]	$00000000
+RawASC|<= index|index 102|1 [orig]	$00000001
+RawASC|<= index|index 102|1 [fixed #744]	$00000000
+RawASC|<= index|index 103|1 [orig]	$00000001
+RawASC|<= index|index 103|1 [fixed #744]	$00000000
+RawASC|<= index|index 104|1 [orig]	$00000001
+RawASC|<= index|index 104|1 [fixed #744]	$00000000
+RawASC|<= index|index 105|1 [orig]	$00000001
+RawASC|<= index|index 105|1 [fixed #744]	$00000000
+RawASC|<= index|index 106|1 [orig]	$00000001
+RawASC|<= index|index 106|1 [fixed #744]	$00000000
+RawASC|<= index|index 107|1 [orig]	$00000001
+RawASC|<= index|index 107|1 [fixed #744]	$00000000
+RawASC|<= index|index 108|1 [orig]	$00000001
+RawASC|<= index|index 108|1 [fixed #744]	$00000000
+RawASC|<= index|index 109|1 [orig]	$00000001
+RawASC|<= index|index 109|1 [fixed #744]	$00000000
 RawASC|<= index|index 11|1	$00000001
-RawASC|<= index|index 110|1	$00000001
-RawASC|<= index|index 111|1	$00000001
-RawASC|<= index|index 112|1	$00000001
-RawASC|<= index|index 113|1	$00000001
+RawASC|<= index|index 110|1 [orig]	$00000001
+RawASC|<= index|index 110|1 [fixed #744]	$00000000
+RawASC|<= index|index 111|1 [orig]	$00000001
+RawASC|<= index|index 111|1 [fixed #744]	$00000000
+RawASC|<= index|index 112|1 [orig]	$00000001
+RawASC|<= index|index 112|1 [fixed #744]	$00000000
+RawASC|<= index|index 113|1 [orig]	$00000001
+RawASC|<= index|index 113|1 [fixed #744]	$00000000
 RawASC|<= index|index 12|1	$00000001
 RawASC|<= index|index 13|1	$00000001
-RawASC|<= index|index 14|1	$00000001
+RawASC|<= index|index 14|1 [orig]	$00000001
+RawASC|<= index|index 14|1 [fixed #744]	$00000000
 RawASC|<= index|index 15|1	$00000001
 RawASC|<= index|index 16|1	$00000001
 RawASC|<= index|index 17|1	$00000001
@@ -2608,7 +2663,8 @@ RawASC|<= index|index 24|1	$00000001
 RawASC|<= index|index 25|1	$00000001
 RawASC|<= index|index 26|1	$00000001
 RawASC|<= index|index 27|1	$00000001
-RawASC|<= index|index 28|1	$00000001
+RawASC|<= index|index 28|1 [orig]	$00000001
+RawASC|<= index|index 28|1 [fixed #744]	$00000000
 RawASC|<= index|index 29|1	$00000001
 RawASC|<= index|index 3|1	$00000001
 RawASC|<= index|index 30|1	$00000001
@@ -2625,12 +2681,15 @@ RawASC|<= index|index 4|1	$00000001
 RawASC|<= index|index 40|1	$00000001
 RawASC|<= index|index 41|1	$00000001
 RawASC|<= index|index 42|1	$00000001
-RawASC|<= index|index 43|1	$00000001
-RawASC|<= index|index 44|1	$00000001
+RawASC|<= index|index 43|1 [orig]	$00000001
+RawASC|<= index|index 43|1 [fixed #744]	$00000000
+RawASC|<= index|index 44|1 [orig]	$00000001
+RawASC|<= index|index 44|1 [fixed #744]	$00000000
 RawASC|<= index|index 45|1	$00000001
 RawASC|<= index|index 46|1	$00000001
 RawASC|<= index|index 47|1	$00000001
-RawASC|<= index|index 48|1	$00000001
+RawASC|<= index|index 48|1 [orig]	$00000001
+RawASC|<= index|index 48|1 [fixed #744]	$00000000
 RawASC|<= index|index 49|1	$00000001
 RawASC|<= index|index 5|1	$00000001
 RawASC|<= index|index 50|1	$00000001
@@ -2642,25 +2701,32 @@ RawASC|<= index|index 55|1	$00000001
 RawASC|<= index|index 56|1	$00000001
 RawASC|<= index|index 57|1	$00000001
 RawASC|<= index|index 58|1	$00000001
-RawASC|<= index|index 59|1	$00000001
+RawASC|<= index|index 59|1 [orig]	$00000001
+RawASC|<= index|index 59|1 [fixed #744]	$00000000
 RawASC|<= index|index 6|1	$00000001
 RawASC|<= index|index 60|1	$00000001
 RawASC|<= index|index 61|1	$00000001
 RawASC|<= index|index 62|1	$00000001
 RawASC|<= index|index 63|1	$00000001
 RawASC|<= index|index 64|1	$00000001
-RawASC|<= index|index 65|1	$00000001
+RawASC|<= index|index 65|1 [orig]	$00000001
+RawASC|<= index|index 65|1 [fixed #744]	$00000000
 RawASC|<= index|index 66|1	$00000001
 RawASC|<= index|index 67|1	$00000001
-RawASC|<= index|index 68|1	$00000001
+RawASC|<= index|index 68|1 [orig]	$00000001
+RawASC|<= index|index 68|1 [fixed #744]	$00000000
 RawASC|<= index|index 69|1	$00000001
 RawASC|<= index|index 7|1	$00000001
 RawASC|<= index|index 70|1	$00000001
-RawASC|<= index|index 71|1	$00000001
-RawASC|<= index|index 72|1	$00000001
-RawASC|<= index|index 73|1	$00000001
+RawASC|<= index|index 71|1 [orig]	$00000001
+RawASC|<= index|index 71|1 [fixed #744]	$00000000
+RawASC|<= index|index 72|1 [orig]	$00000001
+RawASC|<= index|index 72|1 [fixed #744]	$00000000
+RawASC|<= index|index 73|1 [orig]	$00000001
+RawASC|<= index|index 73|1 [fixed #744]	$00000000
 RawASC|<= index|index 74|1	$00000001
-RawASC|<= index|index 75|1	$00000001
+RawASC|<= index|index 75|1 [orig]	$00000001
+RawASC|<= index|index 75|1 [fixed #744]	$00000000
 RawASC|<= index|index 76|1	$00000001
 RawASC|<= index|index 77|1	$00000001
 RawASC|<= index|index 78|1	$00000001
@@ -2683,31 +2749,50 @@ RawASC|<= index|index 92|1	$00000001
 RawASC|<= index|index 93|1	$00000001
 RawASC|<= index|index 94|1	$00000001
 RawASC|<= index|index 95|1	$00000001
-RawASC|<= index|index 96|1	$00000001
-RawASC|<= index|index 97|1	$00000001
-RawASC|<= index|index 98|1	$00000001
-RawASC|<= index|index 99|1	$00000001
+RawASC|<= index|index 96|1 [orig]	$00000001
+RawASC|<= index|index 96|1 [fixed #744]	$00000000
+RawASC|<= index|index 97|1 [orig]	$00000001
+RawASC|<= index|index 97|1 [fixed #744]	$00000000
+RawASC|<= index|index 98|1 [orig]	$00000001
+RawASC|<= index|index 98|1 [fixed #744]	$00000000
+RawASC|<= index|index 99|1 [orig]	$00000001
+RawASC|<= index|index 99|1 [fixed #744]	$00000000
 RawASC|d0|index 0|1	$00000000
 RawASC|d0|index 1|1	$00000001
 RawASC|d0|index 10|1	$0000000A
-RawASC|d0|index 100|1	$0000000E
-RawASC|d0|index 101|1	$0000000E
-RawASC|d0|index 102|1	$0000000E
-RawASC|d0|index 103|1	$0000000E
-RawASC|d0|index 104|1	$0000000E
-RawASC|d0|index 105|1	$0000000E
-RawASC|d0|index 106|1	$0000000E
-RawASC|d0|index 107|1	$0000000E
-RawASC|d0|index 108|1	$0000000E
-RawASC|d0|index 109|1	$0000000E
+RawASC|d0|index 100|1 [orig]	$0000000E
+RawASC|d0|index 100|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 101|1 [orig]	$0000000E
+RawASC|d0|index 101|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 102|1 [orig]	$0000000E
+RawASC|d0|index 102|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 103|1 [orig]	$0000000E
+RawASC|d0|index 103|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 104|1 [orig]	$0000000E
+RawASC|d0|index 104|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 105|1 [orig]	$0000000E
+RawASC|d0|index 105|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 106|1 [orig]	$0000000E
+RawASC|d0|index 106|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 107|1 [orig]	$0000000E
+RawASC|d0|index 107|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 108|1 [orig]	$0000000E
+RawASC|d0|index 108|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 109|1 [orig]	$0000000E
+RawASC|d0|index 109|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 11|1	$0000000B
-RawASC|d0|index 110|1	$0000000E
-RawASC|d0|index 111|1	$0000000E
-RawASC|d0|index 112|1	$0000000E
-RawASC|d0|index 113|1	$0000000E
+RawASC|d0|index 110|1 [orig]	$0000000E
+RawASC|d0|index 110|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 111|1 [orig]	$0000000E
+RawASC|d0|index 111|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 112|1 [orig]	$0000000E
+RawASC|d0|index 112|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 113|1 [orig]	$0000000E
+RawASC|d0|index 113|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 12|1	$0000000C
 RawASC|d0|index 13|1	$0000000D
-RawASC|d0|index 14|1	$0000000E
+RawASC|d0|index 14|1 [orig]	$0000000E
+RawASC|d0|index 14|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 15|1	$0000000A
 RawASC|d0|index 16|1	$00000010
 RawASC|d0|index 17|1	$00000011
@@ -2722,7 +2807,8 @@ RawASC|d0|index 24|1	$00000018
 RawASC|d0|index 25|1	$00000019
 RawASC|d0|index 26|1	$0000001A
 RawASC|d0|index 27|1	$0000001B
-RawASC|d0|index 28|1	$0000000E
+RawASC|d0|index 28|1 [orig]	$0000000E
+RawASC|d0|index 28|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 29|1	$00000001
 RawASC|d0|index 3|1	$00000003
 RawASC|d0|index 30|1	$00000002
@@ -2739,12 +2825,15 @@ RawASC|d0|index 4|1	$00000004
 RawASC|d0|index 40|1	$00000028
 RawASC|d0|index 41|1	$00000029
 RawASC|d0|index 42|1	$0000002A
-RawASC|d0|index 43|1	$0000000E
-RawASC|d0|index 44|1	$0000000E
+RawASC|d0|index 43|1 [orig]	$0000000E
+RawASC|d0|index 43|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 44|1 [orig]	$0000000E
+RawASC|d0|index 44|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 45|1	$00000004
 RawASC|d0|index 46|1	$00000005
 RawASC|d0|index 47|1	$00000006
-RawASC|d0|index 48|1	$0000000E
+RawASC|d0|index 48|1 [orig]	$0000000E
+RawASC|d0|index 48|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 49|1	$00000031
 RawASC|d0|index 5|1	$00000005
 RawASC|d0|index 50|1	$00000032
@@ -2756,25 +2845,32 @@ RawASC|d0|index 55|1	$00000037
 RawASC|d0|index 56|1	$00000038
 RawASC|d0|index 57|1	$00000039
 RawASC|d0|index 58|1	$0000003A
-RawASC|d0|index 59|1	$0000000E
+RawASC|d0|index 59|1 [orig]	$0000000E
+RawASC|d0|index 59|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 6|1	$00000006
 RawASC|d0|index 60|1	$00000039
 RawASC|d0|index 61|1	$00000007
 RawASC|d0|index 62|1	$00000008
 RawASC|d0|index 63|1	$00000009
 RawASC|d0|index 64|1	$00000040
-RawASC|d0|index 65|1	$0000000E
+RawASC|d0|index 65|1 [orig]	$0000000E
+RawASC|d0|index 65|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 66|1	$00000042
 RawASC|d0|index 67|1	$00000043
-RawASC|d0|index 68|1	$0000000E
+RawASC|d0|index 68|1 [orig]	$0000000E
+RawASC|d0|index 68|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 69|1	$00000045
 RawASC|d0|index 7|1	$00000007
 RawASC|d0|index 70|1	$00000046
-RawASC|d0|index 71|1	$0000000E
-RawASC|d0|index 72|1	$0000000E
-RawASC|d0|index 73|1	$0000000E
+RawASC|d0|index 71|1 [orig]	$0000000E
+RawASC|d0|index 71|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 72|1 [orig]	$0000000E
+RawASC|d0|index 72|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 73|1 [orig]	$0000000E
+RawASC|d0|index 73|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 74|1	$0000000B
-RawASC|d0|index 75|1	$0000000E
+RawASC|d0|index 75|1 [orig]	$0000000E
+RawASC|d0|index 75|1 [fixed #744]	$FFFFFFFF
 RawASC|d0|index 76|1	$0000004C
 RawASC|d0|index 77|1	$0000004D
 RawASC|d0|index 78|1	$0000004E
@@ -2797,10 +2893,18 @@ RawASC|d0|index 92|1	$0000003A
 RawASC|d0|index 93|1	$0000005D
 RawASC|d0|index 94|1	$0000005E
 RawASC|d0|index 95|1	$0000005F
-RawASC|d0|index 96|1	$0000000E
-RawASC|d0|index 97|1	$0000000E
-RawASC|d0|index 98|1	$0000000E
-RawASC|d0|index 99|1	$0000000E
+RawASC|d0|index 96|1 [orig]	$0000000E
+RawASC|d0|index 96|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 97|1 [orig]	$0000000E
+RawASC|d0|index 97|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 98|1 [orig]	$0000000E
+RawASC|d0|index 98|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|index 99|1 [orig]	$0000000E
+RawASC|d0|index 99|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|not in the table: $00|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|not in the table: $21|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|not in the table: $41|1 [fixed #744]	$FFFFFFFF
+RawASC|d0|not in the table: $80|1 [fixed #744]	$FFFFFFFF
 RawASC|kept|113|1	kept
 RawASC|kept|index 0|1	kept
 RawASC|kept|index 0|2	kept
@@ -3029,6 +3133,10 @@ RawASC|kept|index 98|1	kept
 RawASC|kept|index 98|2	kept
 RawASC|kept|index 99|1	kept
 RawASC|kept|index 99|2	kept
+RawASC|kept|not in the table: $00|1 [fixed #744]	kept
+RawASC|kept|not in the table: $21|1 [fixed #744]	kept
+RawASC|kept|not in the table: $41|1 [fixed #744]	kept
+RawASC|kept|not in the table: $80|1 [fixed #744]	kept
 RawASC|popped|113|1	$00000000
 RawASC|popped|index 0|1	$00000000
 RawASC|popped|index 0|2	$00000000
@@ -3257,6 +3365,10 @@ RawASC|popped|index 98|1	$00000000
 RawASC|popped|index 98|2	$00000000
 RawASC|popped|index 99|1	$00000000
 RawASC|popped|index 99|2	$00000000
+RawASC|popped|not in the table: $00|1 [fixed #744]	$00000000
+RawASC|popped|not in the table: $21|1 [fixed #744]	$00000000
+RawASC|popped|not in the table: $41|1 [fixed #744]	$00000000
+RawASC|popped|not in the table: $80|1 [fixed #744]	$00000000
 TimerReset|TOD reset||1	$00000001
 TimerReset|kept||1	kept
 TimerReset|popped||1	$00000000

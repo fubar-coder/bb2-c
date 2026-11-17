@@ -44,12 +44,13 @@
  *     count 0 runs the DBRA loop 65536 times) (#746).
  *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare)
  *     (#753).
- *   - ASCRaw/RawASC do not check the range: a raw key beyond the 114
- *     entries of the table (e.g. a key up code) reads the code behind it,
- *     RawASC of a character not in the table searches until it finds the
- *     byte somewhere (DIFF: what is behind the table differs, see the
- *     notes) (#744).
  *
+ * Fixed (intended deviation, #744): ASCRaw of a raw key outside 0..113
+ * (a key up code, a negative value) gives the character 0, RawASC of a
+ * character not in the table and of "" gives -1.  The original did not
+ * check the range: ASCRaw read the code behind (or before) its table,
+ * RawASC searched on behind it until it found the byte somewhere (or for
+ * ever) and found "" (the 0) at 14.
  * Fixed (intended deviation, #745): DefaultFontHeight/Name go through the
  * chunks by their sizes as far as the bytes read, and take only FONT
  * chunks; OpenFontPrefs checks the PRHD size against them and fails on
@@ -580,14 +581,16 @@ static ULONG BLITZ_ROUTINE ltos_c(ULONG v BL_REG(d0))
 /**
  * @brief ASCRaw(rawkey): the character of a raw key code.
  *
- * From the original's table of 114 entries; BUG(orig) (#744): the code
- * is not checked, a key beyond the table reads behind it.
- * @param key  d0.w: the raw key code (signed)
+ * From the original's table of 114 entries; a key outside 0..113 (a key
+ * up code, a negative value) gives the character 0, as the table's keys
+ * without a character do.  Fixed (#744): the original did not check the
+ * code and read behind (or before) the table.
+ * @param key  d0.w: the raw key code
  * @return d0: 1, the length of the string at a3
  */
 static ULONG BLITZ_ROUTINE ascraw_c(UWORD key BL_REG(d0))
 {
-    *blitz_string++ = rawtable[(WORD)key];
+    *blitz_string++ = key < sizeof rawtable ? rawtable[key] : 0;  /* fixed (#744) */
     *blitz_string = 0;
     return 1;
 }
@@ -595,20 +598,23 @@ static ULONG BLITZ_ROUTINE ascraw_c(UWORD key BL_REG(d0))
 /**
  * @brief RawASC(char): the raw key code of a character.
  *
- * The first index of the string's first character in the table.
- * BUG(orig) (#744): a character not in the table is searched for behind
- * it until the byte is found somewhere.
+ * The first index of the string's first character in the table; -1 for
+ * a character not in the table and for "" (as Asc gives -1 for "").
+ * Fixed (#744): the original searched on behind the table until it
+ * found the byte somewhere (or for ever), and found "" (its 0) at 14.
  * @param s  d0: the string
- * @return d0.w: the raw key code
+ * @return d0.w: the raw key code, -1 if there is none
  */
 static ULONG BLITZ_ROUTINE rawasc_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE c = *s;
-    UWORD i = 0;
+    UWORD i;
 
-    while (rawtable[(WORD)i] != c)
-        i++;                                            /* ADDQ.w #1,d0 */
-    return i;
+    if (c)
+        for (i = 0; i < sizeof rawtable; i++)           /* fixed (#744) */
+            if (rawtable[i] == c)
+                return i;
+    return (ULONG)-1;
 }
 
 /**
