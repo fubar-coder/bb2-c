@@ -22,7 +22,7 @@ Every library test program SHALL load exactly one set of library files, selected
 - **THEN** it executes the same scenario and writes output in the same format
 
 ### Requirement: Cases are readable lines with a unique key
-The output of a test program SHALL be one case per line, `KEY<TAB>VALUE`, under a header naming the program. The key SHALL be the routine, the check name, the vector (the input of the case) and an occurrence number (counted per routine, check and vector, from 1), joined by `|`; the occurrence number makes the key unique where the same check with the same vector occurs repeatedly. A TAB, a `|` and a `\` in a key part SHALL be escaped as `\t`, `\|` and `\\`, and a non-printable byte as `\xHH`. Values that depend on addresses SHALL be written relative to a stated base (the test program, a library base, a buffer), not as absolute addresses. A byte buffer of up to 64 bytes SHALL be written as hex in the line; a larger one as its length and an FNV hash, and a run with `LIBS_CAP_DUMP` SHALL write the bytes of a named case so that the differing byte can be found; for an observation inside a block the dump SHALL be made on the host from the run's raw block file. The expected data of a program SHALL be one text file, `libs/tests/expected/NAME.txt`, in the same format, in which a key may carry a qualifier (`[orig]`, `[fixed #N]`).
+The output of a test program SHALL be one case per line, `KEY<TAB>VALUE`, under a header naming the program. The key SHALL be the routine, the check name, the vector (the input of the case) and an occurrence number (counted per routine, check and vector, from 1), joined by `|`; the occurrence number makes the key unique where the same check with the same vector occurs repeatedly. A TAB, a `|` and a `\` in a key part SHALL be escaped as `\t`, `\|` and `\\`, and a non-printable byte as `\xHH`. Values that depend on addresses SHALL be written relative to a stated base (the test program, a library base, a buffer), not as absolute addresses. A byte buffer of up to 64 bytes SHALL be written as hex in the line; a larger one as its length and an FNV hash, and a run with `LIBS_CAP_DUMP` SHALL write the bytes of a named case so that the differing byte can be found; for an observation inside a block the dump SHALL be made on the host from the run's raw block file. The expected data of a program SHALL be one text file, `libs/tests/expected/NAME.txt`, in the same format, in which a key may carry a qualifier (`[orig]`, `[orig #N]`, `[fixed #N]`).
 
 #### Scenario: A value differs
 - **WHEN** a run's output has a case whose value differs from the expected data
@@ -49,7 +49,7 @@ The output of a test program SHALL be one case per line, `KEY<TAB>VALUE`, under 
 - **THEN** the dump file holds the block's observation lines or the bytes, made on the host from the raw block file
 
 ### Requirement: Qualified cases select the library set
-The judge SHALL apply to a run with `LIBSET=orig` the cases without a qualifier and the `[orig]` cases, and to a run with `LIBSET=obj` the cases without a qualifier and the `[fixed #N]` cases; the other qualified cases SHALL NOT be run against that set. An unqualified key together with a qualified one of the same key, or a qualifier other than `[orig]` and `[fixed #N]`, SHALL be a malformed file reported with its line.
+The judge SHALL apply to a run with `LIBSET=orig` the cases without a qualifier and the `[orig]` and `[orig #N]` cases, and to a run with `LIBSET=obj` the cases without a qualifier and the `[fixed #N]` cases; the other qualified cases SHALL NOT be run against that set. `KEY [orig #N]` is a case of the original that the port no longer reaches because of the fix of issue N (no `[fixed #N]` counterpart is possible); the judge SHALL treat it as `[orig]`. An unqualified key together with a qualified one of the same key, `[orig]` together with `[orig #N]` or `[orig #N]` together with `[fixed #N]` of the same key, two qualifiers on one case, an issue number that is missing or not decimal from 1, or a qualifier other than `[orig]`, `[orig #N]` and `[fixed #N]`, SHALL be a malformed file reported with its line.
 
 #### Scenario: Port run
 - **WHEN** `libs_emulator` judges a run and the expected data has `KEY [orig]` and `KEY [fixed #7]`
@@ -59,8 +59,12 @@ The judge SHALL apply to a run with `LIBSET=orig` the cases without a qualifier 
 - **WHEN** `libs_emulator_originals` judges a run with the same expected data
 - **THEN** the run's `KEY` is compared with the `[orig]` value and the `[fixed #7]` case is ignored
 
+#### Scenario: A case of the original only
+- **WHEN** the expected data has `KEY [orig #469]`
+- **THEN** a run with `LIBSET=orig` is compared with its value and a run with `LIBSET=obj` must not have `KEY`
+
 #### Scenario: Malformed file
-- **WHEN** a file holds `KEY` and `KEY [orig]`
+- **WHEN** a file holds `KEY` and `KEY [orig]`, or `KEY [orig]` and `KEY [orig #7]`, or `KEY [orig #0]`
 - **THEN** the judge fails naming the line
 
 ### Requirement: Block hashes only for the very large programs and libtest
@@ -121,7 +125,7 @@ The build target `libs-capture` SHALL run every test program with `LIBSET=orig` 
 - **THEN** the expected data of the other programs is neither read as missing nor changed
 
 ### Requirement: Update from the port
-The build target `libs-update` SHALL run the programs with `LIBSET=obj` and rewrite the value of every `[fixed #N]` case from the port's output; naming a key and an issue (`FIX=KEY#N`) SHALL turn that unqualified case into the pair `KEY [orig]` (the old value) and `KEY [fixed #N]` (the port's value). It SHALL NOT need the CD and SHALL NOT change any other case. A hand-written `[fixed #N]` value SHALL use the same format.
+The build target `libs-update` SHALL run the programs with `LIBSET=obj` and rewrite the value of every `[fixed #N]` case from the port's output; naming a key and an issue (`FIX=KEY#N`) SHALL turn that unqualified case into the pair `KEY [orig]` (the old value) and `KEY [fixed #N]` (the port's value), or into `KEY [orig #N]` alone (the old value) where the port's output lacks `KEY`; a `KEY [orig]` alone that the port's output lacks SHALL become `KEY [orig #N]` the same way. `libs-capture` SHALL keep an `[orig]` or `[orig #N]` qualifier of a key it records again. It SHALL NOT need the CD and SHALL NOT change any other case. A hand-written `[fixed #N]` value SHALL use the same format.
 
 #### Scenario: A fix changes a case
 - **WHEN** `libs-update` runs with `FIX=KEY#7` and the port's value of `KEY` differs from the expected one

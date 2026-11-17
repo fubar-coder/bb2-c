@@ -79,7 +79,9 @@ static const struct libscmp_entry *other_entry(const struct libscmp_file *g,
     return g ? libscmp_find_h(g, f->text + c->key, c->keylen, f->entries[c->entry].hash) : NULL;
 }
 
-/* the case of entry e with the qualifier (and issue) of c, or NULL */
+/* the case of entry e with the qualifier of c (and the issue of a
+   [fixed #N] case), or NULL; [orig] and [orig #N] are the same case of the
+   original (a new qualifier with the value kept changes no outcome) */
 static const struct libscmp_case *same_case(const struct libscmp_file *g,
                                             const struct libscmp_entry *e,
                                             const struct libscmp_case *c)
@@ -110,8 +112,11 @@ static int own(const struct libscmp_file *f, const struct libscmp_case *c,
     const struct libscmp_entry *eb = f == branch ? &branch->entries[c->entry]
                                                  : other_entry(branch, f, c);
 
-    if (c->qual == LIBSCMP_QFIXED)
-        return named(is, c->issue);
+    if (c->qual == LIBSCMP_QFIXED || (c->qual == LIBSCMP_QORIG && c->issue))
+        return named(is, c->issue);     /* [fixed #N], [orig #N] */
+    if (f == base && c->qual == LIBSCMP_PLAIN && eb && eb->orig >= 0
+        && branch->cases[eb->orig].issue && named(is, branch->cases[eb->orig].issue))
+        return 1;                       /* became [orig #N] */
     if (fixed_named(branch, eb, is))     /* [orig] of the pair, or the case that became it */
         return c->qual == LIBSCMP_QORIG || f == base;
     if (c->qual == LIBSCMP_QORIG && f == base)
@@ -119,16 +124,7 @@ static int own(const struct libscmp_file *f, const struct libscmp_case *c,
     return 0;
 }
 
-static const char *qual(const struct libscmp_case *c, char *buf, size_t len)
-{
-    if (c->qual == LIBSCMP_QORIG)
-        return " [orig]";
-    if (c->qual == LIBSCMP_QFIXED) {
-        snprintf(buf, len, " [fixed #%lu]", (unsigned long)c->issue);
-        return buf;
-    }
-    return "";
-}
+#define qual libscmp_qual_text
 
 size_t libscmp_fix_scope(const struct libscmp_file *base, const struct libscmp_file *branch,
                          const struct libscmp_issues *is, FILE *report, size_t *nchanged)

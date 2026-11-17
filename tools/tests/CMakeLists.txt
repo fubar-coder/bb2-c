@@ -344,6 +344,27 @@ add_test(NAME fix_scope_reordered COMMAND results fix-scope --log ${lc}/scope/no
 	${lc}/scope/base ${lc}/scope/reordered)
 set_tests_properties(fix_scope_reordered PROPERTIES PASS_REGULAR_EXPRESSION
 	"fix-scope: 0 cases changed in 0 programs, 0 not of the issues")
+# a case of the original only ([orig #N], the fix of #469 in
+# rwe_popupwinlib): the fix's own case with "Fixes #469"; an [orig] case
+# that becomes [orig #469] with its value changes no case, also without a
+# "Fixes #N" line
+file(WRITE ${lc}/scope/orig-n/base/prog.txt "${lc_head}r|b||1\t$1\nr|w||1\t$2\n")
+file(WRITE ${lc}/scope/orig-n/fix/prog.txt "${lc_head}r|b||1 [orig]\t$1\nr|b||1 [fixed #469]\t$3\n"
+	"r|w||1 [orig #469]\t$2\n")
+file(WRITE ${lc}/scope/orig-n/was/prog.txt "${lc_head}r|b||1 [orig]\t$1\nr|b||1 [fixed #469]\t$3\n"
+	"r|w||1 [orig]\t$2\n")
+add_test(NAME fix_scope_orig_n COMMAND results fix-scope --fixes 469 ${lc}/scope/orig-n/base
+	${lc}/scope/orig-n/fix)
+set_tests_properties(fix_scope_orig_n PROPERTIES PASS_REGULAR_EXPRESSION
+	"fix-scope: 5 cases changed in 1 programs, 0 not of the issues #469\n")
+add_test(NAME fix_scope_orig_n_other COMMAND results fix-scope --fixes 7 ${lc}/scope/orig-n/base
+	${lc}/scope/orig-n/fix)
+set_tests_properties(fix_scope_orig_n_other PROPERTIES PASS_REGULAR_EXPRESSION
+	"prog: r\\|w\\|\\|1 \\[orig #469\\]: added \\(\\$2\\)\n")
+add_test(NAME fix_scope_orig_n_requalified COMMAND results fix-scope --log ${lc}/scope/nolog.txt
+	${lc}/scope/orig-n/was ${lc}/scope/orig-n/fix)
+set_tests_properties(fix_scope_orig_n_requalified PROPERTIES PASS_REGULAR_EXPRESSION
+	"fix-scope: 0 cases changed in 0 programs, 0 not of the issues")
 foreach(t
 		"unqualified;--fixes;7;other;prog: r\\|d\\|\\|1: changed \\(\\$1 -> \\$2\\)"
 		"other_issue;--fixes;7;other;prog: r\\|p\\|\\|1 \\[fixed #8\\]: changed \\(\\$4 -> \\$6\\)"

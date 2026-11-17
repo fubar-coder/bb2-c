@@ -69,8 +69,9 @@ void cmd_fix_scope(CLI::App &app, int &status)
     sub->add_flag("--corpus", o->corpus, "BASE_DIR and BRANCH_DIR are the expected data of the corpus "
                   "(tests/corpus/expect), each file a case PASS|NAME|OBS|1");
     sub->footer("Every case (a key with its qualifier) added, changed or removed is reported unless "
-                "it is a \"[fixed #N]\" case of a named issue, the \"[orig]\" case paired with one, "
-                "or an unqualified case that became such a pair. A bug-orig test's cases: one per "
+                "it is a \"[fixed #N]\" or \"[orig #N]\" case of a named issue, the \"[orig]\" case "
+                "paired with one, or an unqualified case that became one of them (\"[orig]\" and "
+                "\"[orig #N]\" with the same value are the same case). A bug-orig test's cases: one per "
                 "section of ID.expect and ID.orig, \"[fixed #N]\" with its header \"; @fixed #N\". "
                 "A corpus file's case: NAME.OBS unqualified, NAME.orig.OBS [orig], "
                 "NAME.fixed-N.OBS [fixed #N]. "

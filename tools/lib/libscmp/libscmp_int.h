@@ -20,6 +20,9 @@ const struct libscmp_entry *libscmp_find_h(const struct libscmp_file *f, const c
 void libscmp_key_text(const struct libscmp_file *f, const struct libscmp_case *c,
                       const struct libscmp_file *other, const struct libscmp_case *oc, char *buf,
                       size_t len);
+/* the qualifier of case c as written after its key: "", " [orig]",
+   " [orig #N]" or " [fixed #N]" (in buf if it has a number) */
+const char *libscmp_qual_text(const struct libscmp_case *c, char *buf, size_t len);
 char *libscmp_read_file(const char *path, size_t *len);
 
 int libscmp_valid_name(const char *s);

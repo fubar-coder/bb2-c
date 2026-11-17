@@ -242,11 +242,12 @@ OPTIONS:
                               observation of a differing block in which the two runs differ
 
 A case is KEY<TAB>VALUE; for --set obj the unqualified and the "KEY [fixed #N]"
-cases apply, for orig the unqualified and the "KEY [orig]" ones. Every
-differing, missing and added case is a finding (the first 11 per program on
-stdout). The block cases of a run come from its NAME.bin; the observations of
-the first 3 differing blocks go to RUN_DIR/NAME.block-N.obs. Exit status 0
-equal, 1 a finding, 2 usage error or a malformed or unreadable file.
+cases apply, for orig the unqualified, the "KEY [orig]" and the "KEY [orig #N]"
+ones. Every differing, missing and added case is a finding (the first 11 per
+program on stdout). The block cases of a run come from its NAME.bin; the
+observations of the first 3 differing blocks go to RUN_DIR/NAME.block-N.obs.
+Exit status 0 equal, 1 a finding, 2 usage error or a malformed or unreadable
+file.
 ```
 
 Compares the output of a library test run, `RUN_DIR/NAME.txt` per
@@ -255,10 +256,13 @@ program, with the expected data `EXPECTED_DIR/NAME.txt`
 change `libs-tests-capture`). A file starts with the header
 `# capture NAME 1`; each further line is a case `KEY<TAB>VALUE`, the key
 `ROUTINE|CHECK|VECTOR|OCC` or `BLOCK:N`. In the expected data a key may
-carry a qualifier, `KEY [orig]` or `KEY [fixed #N]`: for `--set obj` (the
-run of the C build) the unqualified and the `[fixed #N]` cases apply, for
-`--set orig` (the run of the original) the unqualified and the `[orig]`
-ones. The run must have exactly the keys that apply, with the same
+carry a qualifier, `KEY [orig]`, `KEY [orig #N]` or `KEY [fixed #N]`:
+for `--set obj` (the run of the C build) the unqualified and the
+`[fixed #N]` cases apply, for `--set orig` (the run of the original) the
+unqualified, the `[orig]` and the `[orig #N]` ones. `[orig #N]` is a case
+of the original that the port no longer reaches because of the fix of
+issue N (no `[fixed #N]` counterpart is possible); for the judge it is an
+`[orig]` case, for `fix-scope` a case of issue N. The run must have exactly the keys that apply, with the same
 values; two values `not captured: REASON` pass. Each differing case is a
 line `NAME: KEY: expected VALUE, got VALUE` (a qualified key with its
 qualifier, a block with its observation range), a case the run lacks
@@ -269,8 +273,9 @@ qualifier, a block with its observation range), a case the run lacks
 either directory, or the ones `--only` names (the others are not looked
 at); a program with a file in only one directory fails. A malformed file
 (a line not of the format, a duplicate key, a key both unqualified and
-qualified, a qualifier in a run's output, a header naming another
-program) is reported as `FILE:LINE: message`.
+qualified, a key with `[orig]` and `[orig #N]` or with `[orig #N]` and
+`[fixed #N]`, two qualifiers, an issue number missing or not decimal from
+1, a qualifier in a run's output, a header naming another program) is reported as `FILE:LINE: message`.
 
 A program in block mode (OpenSpec change `libs-capture-host-blocks`)
 writes its block observations raw to `RUN_DIR/NAME.bin` and in `NAME.txt`
@@ -307,9 +312,10 @@ OPTIONS:
 
 The two runs of a program must be identical (else "test not deterministic: NAME"
 and the differing cases) and hold no "lost" case. The file gets the run's cases;
-a key with a "[fixed #N]" case keeps it and gets the run's value as "[orig]".
-Nothing is written unless every program is accepted. Exit status 0 written, 1
-refused, 2 usage error or a malformed, unreadable or unwritable file.
+a key with a "[fixed #N]" case keeps it and gets the run's value as "[orig]", a
+key with only an "[orig]" or "[orig #N]" case keeps that qualifier. Nothing is
+written unless every program is accepted. Exit status 0 written, 1 refused, 2
+usage error or a malformed, unreadable or unwritable file.
 ```
 
 Writes the expected data `EXPECTED_DIR/NAME.txt` from two recording runs
@@ -323,9 +329,10 @@ register the original does not keep), also an observation `lost ...`
 inside a block (`NAME: KEY (BLOCK:N): VALUE: ...`), is refused. The file gets
 the run's cases, unqualified, except: a key with a
 `[fixed #N]` case keeps that case and gets the run's value as `[orig]`; a
-key with only an `[orig]` case stays `[orig]`; a `[fixed #N]` case whose
-key the run lacks is kept (a case of the port only) and reported; an
-`[orig]` case whose key the run lacks is removed and reported. The cases
+key with only an `[orig]` or `[orig #N]` case keeps that qualifier; a
+`[fixed #N]` case whose key the run lacks is kept (a case of the port
+only) and reported; an `[orig]` or `[orig #N]` case whose key the run
+lacks is removed and reported. The cases
 are written in the order of `libs-sort`. The
 programs are those of the two run directories and of `EXPECTED_DIR`, or
 the ones `--only` names (the other files stay as they are); expected data
@@ -347,7 +354,8 @@ OPTIONS:
   -h,     --help              Print this help message and exit
           --only NAME         only this program (the other files stay as they are)
           --fix KEY#N         make the unqualified case KEY the pair "KEY [orig]" (the old
-                              value) and "KEY [fixed #N]" (the port's)
+                              value) and "KEY [fixed #N]" (the port's), or "KEY [orig #N]" if
+                              the port lacks KEY (also from "KEY [orig]" alone)
 
 Every "[fixed #N]" case gets the port's value; nothing else changes (an
 unqualified case the port gives another value is reported). A --fix must apply
@@ -360,9 +368,10 @@ port's run `RUN_DIR` (a `[fixed #N]` case the run lacks is refused);
 nothing else changes, and an unqualified case the port gives another
 value is reported. `--fix KEY#N` (KEY as it is written in the file, N the
 issue) makes the unqualified case `KEY` the pair `KEY [orig]` (the old
-value) and `KEY [fixed #N]` (the port's value), or `KEY [orig]` alone if
-the port lacks the case; a KEY only the port's run has becomes
-`KEY [fixed #N]` alone. The cases are written in the order of
+value) and `KEY [fixed #N]` (the port's value), or `KEY [orig #N]` alone
+if the port lacks the case (a case of the original only, of issue N); an
+`[orig]` case alone whose key the port lacks becomes `KEY [orig #N]` the
+same way; a KEY only the port's run has becomes `KEY [fixed #N]` alone. The cases are written in the order of
 `libs-sort`. A `--fix`
 must apply in exactly one program (else `--only` names the program); one
 whose port value is the expected one, or whose key is qualified already,
@@ -417,9 +426,10 @@ OPTIONS:
 
 Rewrites every NAME.txt in the order libs-accept and libs-update write: the
 header, the keyed cases by ROUTINE, CHECK and VECTOR as text and OCC as a
-number, "KEY [orig]" directly before "KEY [fixed #N]", then the BLOCK:N cases by
-N. Only the order changes; a file in that order is not rewritten. Exit status 0
-done, 2 usage error or a malformed, unreadable or unwritable file.
+number, "KEY [orig]" directly before "KEY [fixed #N]" ("KEY [orig #N]" alone),
+then the BLOCK:N cases by N. Only the order changes; a file in that order is not
+rewritten. Exit status 0 done, 2 usage error or a malformed, unreadable or
+unwritable file.
 ```
 
 Puts the expected data `EXPECTED_DIR/NAME.txt` in the order in which
@@ -428,7 +438,8 @@ Puts the expected data `EXPECTED_DIR/NAME.txt` in the order in which
 header, then the keyed cases ordered by `ROUTINE`, `CHECK` and `VECTOR`,
 each compared as text (bytewise on the escaped spelling, a part that is
 a prefix of the other first), then by `OCC` as a number, `KEY [orig]`
-directly before `KEY [fixed #N]`; then the `BLOCK:N` cases by `N`. No
+directly before `KEY [fixed #N]` (`KEY [orig #N]` has no partner and
+stands alone at the place of its key); then the `BLOCK:N` cases by `N`. No
 case is added, removed or changed, and every line ends with a newline.
 Each rewritten file is named on stdout; a file in that order already is
 not rewritten. A malformed file is an error and stays as it is; the
@@ -457,8 +468,9 @@ OPTIONS:
                               (tests/corpus/expect), each file a case PASS|NAME|OBS|1
 
 Every case (a key with its qualifier) added, changed or removed is reported
-unless it is a "[fixed #N]" case of a named issue, the "[orig]" case paired with
-one, or an unqualified case that became such a pair. A bug-orig test's cases:
+unless it is a "[fixed #N]" or "[orig #N]" case of a named issue, the "[orig]"
+case paired with one, or an unqualified case that became one of them ("[orig]"
+and "[orig #N]" with the same value are the same case). A bug-orig test's cases:
 one per section of ID.expect and ID.orig, "[fixed #N]" with its header "; @fixed
 #N". A corpus file's case: NAME.OBS unqualified, NAME.orig.OBS [orig],
 NAME.fixed-N.OBS [fixed #N]. Exit status 0 nothing reported, 1 a case reported,
@@ -473,9 +485,12 @@ lines `Fixes #N` of the commit messages in `--log FILE` (nothing else on
 the line but blanks). Every case, a key with its qualifier, that is
 added, changed or removed is reported, `NAME: KEY [QUAL]: added (VALUE)`,
 `changed (BASE -> BRANCH)` or `removed (VALUE)`, unless it is a
-`[fixed #N]` case of a named issue, the `[orig]` case of such a pair, or
-the unqualified case that became such a pair. A case the fix removes (an
-`[orig]` case alone) names no issue and is reported; without any issue
+`[fixed #N]` or `[orig #N]` case of a named issue, the `[orig]` case of
+such a pair, or the unqualified case that became such a pair or such an
+`[orig #N]` case. An `[orig]` case that becomes `[orig #N]` (or back)
+with its value is the same case and no change. A case the fix removes
+written as an `[orig]` case alone names no issue and is reported; written
+`[orig #N]` (by `libs-update --fix KEY#N`) it is a case of issue N; without any issue
 every change is. A reported case is no error by itself: it is reviewed
 and named in the commit with its reason, or gets its own issue. The last
 line counts the changed and the reported cases. The target `fix-scope`

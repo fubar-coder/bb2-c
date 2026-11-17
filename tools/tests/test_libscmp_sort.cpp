@@ -1,8 +1,8 @@
 // test_libscmp_sort - the order in which the writers of the library tests'
 // expected data put the cases (tools/lib/libscmp, libscmp_sorted): the
 // header first, the keyed cases by ROUTINE, CHECK and VECTOR as text and
-// OCC as a number, KEY [orig] directly before KEY [fixed #N], the BLOCK:N
-// cases last by N; a sorted file sorts to itself, every order of the same
+// OCC as a number, KEY [orig] directly before KEY [fixed #N], KEY [orig #N]
+// alone where [orig] would be, the BLOCK:N cases last by N; a sorted file sorts to itself, every order of the same
 // cases gives the same file, no case changes; libs-accept and libs-update
 // write in that order; libs-sort on a directory.
 #include <stdio.h>
@@ -77,6 +77,7 @@ const std::vector<std::string> want = {
     "a|d|v|1 [fixed #12]\t$8",
     "a|d|v|2 [fixed #3]\t$9",
     "a|d|v|3 [orig]\t$A",
+    "a|d|v|4 [orig #469]\t$D",  // a case of the original only, alone
     "ab|c|v|1\t$B",
     "b|\\x01|v|1\t$C",
     "b|\\x01|w|1\tnull",
@@ -117,6 +118,22 @@ TEST_CASE("[orig] directly before [fixed #N] of its key", "[libscmp][sort]")
     CHECK(r.text == hdr + "r|c|v|1 [orig]\t$0\nr|c|v|1 [fixed #900]\t$1\n"
                           "r|c|v|2 [orig]\t$0\nr|c|v|2 [fixed #5]\t$2\n"
                           "BLOCK:3 [orig]\ta\nBLOCK:3 [fixed #7]\tb\n");
+}
+
+TEST_CASE("[orig #N] stands alone at its key's place", "[libscmp][sort]")
+{
+    sorted_result r = sort(hdr + "r|c|v|3\t$3\nr|c|v|2 [orig #469]\t$2\nr|c|v|1 [orig #7]\t$1\n"
+                                 "BLOCK:2 [orig #12]\tb\nBLOCK:1\ta\n");
+    REQUIRE(r.status == 0);
+    CHECK(r.text == hdr + "r|c|v|1 [orig #7]\t$1\nr|c|v|2 [orig #469]\t$2\nr|c|v|3\t$3\n"
+                          "BLOCK:1\ta\nBLOCK:2 [orig #12]\tb\n");
+    // a key with [orig] and [orig #N], or [orig #N] and [fixed #N]: malformed
+    r = sort(hdr + "r|c|v|1 [orig]\t$0\nr|c|v|1 [orig #7]\t$1\n");
+    CHECK(r.status == -2);
+    CHECK(r.err.find("f.txt:3: r|c|v|1 has [orig] and [orig #N]") != std::string::npos);
+    r = sort(hdr + "r|c|v|1 [orig #7]\t$0\nr|c|v|1 [fixed #7]\t$1\n");
+    CHECK(r.status == -2);
+    CHECK(r.err.find("f.txt:3: r|c|v|1 has [orig #N] and [fixed #N]") != std::string::npos);
 }
 
 TEST_CASE("parts compare one by one, as escaped text", "[libscmp][sort]")

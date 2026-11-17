@@ -78,8 +78,9 @@ static int cmp_sortkey(const void *x, const void *y)
             return r;
     if (a->num != b->num)
         return a->num < b->num ? -1 : 1;
-    /* one key: plain, or [orig] before [fixed #N] (two [fixed] cases of a
-       key make a file malformed; the issue keeps the order total) */
+    /* one key: plain, [orig] before [fixed #N], or [orig #N] alone (two
+       [fixed] cases, [orig] with [orig #N] and [orig #N] with [fixed #N]
+       make a file malformed; the issue keeps the order total) */
     if (a->qual != b->qual)
         return a->qual < b->qual ? -1 : 1;
     if (a->issue != b->issue)
@@ -108,11 +109,10 @@ int libscmp_sorted(const struct libscmp_file *f, char **out)
     for (i = 0; i < f->ncases; i++) {
         const struct libscmp_case *c = &f->cases[k[i].idx];
 
+        char q[32];
+
         fwrite(f->text + c->key, 1, c->keylen, o);
-        if (c->qual == LIBSCMP_QORIG)
-            fputs(" [orig]", o);
-        else if (c->qual == LIBSCMP_QFIXED)
-            fprintf(o, " [fixed #%lu]", (unsigned long)c->issue);
+        fputs(libscmp_qual_text(c, q, sizeof q), o);
         fputc('\t', o);
         fwrite(f->text + c->val, 1, c->vallen, o);
         fputc('\n', o);

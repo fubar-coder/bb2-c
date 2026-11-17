@@ -10,6 +10,7 @@
  *   # capture NAME 1
  *   KEY<TAB>VALUE
  *   KEY [orig]<TAB>VALUE              expected data only
+ *   KEY [orig #N]<TAB>VALUE           expected data only
  *   KEY [fixed #N]<TAB>VALUE          expected data only
  *
  * NAME is the program ([A-Za-z0-9_.-], the file is NAME.txt), 1 the
@@ -26,15 +27,19 @@
  * (a stated register lost: refused by an accept) and the "COUNT ..." of a
  * block (its observation range in the messages).  No other byte (a TAB in
  * a value, CR, a byte from 0x80) may occur; an empty line, a missing or
- * second header, a malformed key or qualifier, a duplicate key, a key both
- * unqualified and qualified and two [fixed] cases of one key make a file
- * malformed (reported with its line).  A qualifier is an error in a run's
- * output.  The last line may lack its newline.
+ * second header, a malformed key or qualifier (two qualifiers, an issue
+ * number N missing or not decimal from 1), a duplicate key, a key both
+ * unqualified and qualified, two [fixed] cases of one key, [orig] and
+ * [orig #N] of one key and [orig #N] with [fixed #N] make a file malformed
+ * (reported with its line).  A qualifier is an error in a run's output.  The last line may lack its newline.
  *
  * For a set (obj: the C build, orig: the original) the cases of the
  * expected data that apply are the unqualified ones and the [fixed #N]
- * (obj) or [orig] (orig) ones; the run must have exactly their keys, with
- * the same values.  Order does not count for the judge; the writers of
+ * (obj) or [orig] and [orig #N] (orig) ones; the run must have exactly their keys, with
+ * the same values.  KEY [orig #N] is a case of the original that the port
+ * no longer reaches because of the fix of issue N (no [fixed #N]
+ * counterpart is possible): the judge treats it as [orig], fix-scope
+ * counts it to issue N.  Order does not count for the judge; the writers of
  * expected data put the cases in one order (libscmp_sorted).
  *
  * A program in block mode writes its block observations raw to NAME.bin
@@ -67,9 +72,9 @@ struct libscmp_case {
     uint32_t key, keylen;               /* the key without its qualifier */
     uint32_t val, vallen;
     uint32_t line;                      /* from 1 */
-    uint32_t issue;                     /* [fixed #N]: N */
+    uint32_t issue;                     /* [fixed #N], [orig #N]: N; [orig]: 0 */
     uint32_t entry;                     /* index of its key in entries */
-    uint8_t qual;                       /* enum libscmp_qual */
+    uint8_t qual;                       /* enum libscmp_qual ([orig #N]: QORIG) */
 };
 
 /* one key: its cases (index into cases, -1 = none) */
@@ -158,10 +163,10 @@ int libscmp_compare_dirs(const char *run_dir, const char *exp_dir, enum libscmp_
  * (a stated register the original does not keep).  The new file has the
  * run's cases, unqualified, except: a key with a [fixed #N] case in old
  * gets the run's value as KEY [orig] and keeps the [fixed #N] case; a key
- * that has only an [orig] case in old stays [orig].  A [fixed #N] case of
- * old whose key the run lacks is kept (a case of the port only) and
- * reported; an [orig] case of old whose key the run lacks is dropped and
- * reported.  The cases are in the order of libscmp_sorted.
+ * that has only an [orig] or [orig #N] case in old keeps that qualifier.
+ * A [fixed #N] case of old whose key the run lacks is kept (a case of the
+ * port only) and reported; an [orig] or [orig #N] case of old whose key
+ * the run lacks is dropped and reported.  The cases are in the order of libscmp_sorted.
  * @param old   the committed expected data, or NULL
  * @param out   the new file (malloc'd), NULL when refused
  * @param report  the messages
@@ -202,8 +207,10 @@ void libscmp_fix_free(struct libscmp_fix *fix);
  * @brief libs-update for one program: the expected data exp with the value
  * of every [fixed #N] case taken from the port's run.  A fix whose KEY is
  * an unqualified case of exp makes it the pair KEY [orig] (the old value)
- * and KEY [fixed #N] (the run's value), or KEY [orig] alone if the run
- * lacks the key; a fix whose KEY only the run has adds KEY [fixed #N].
+ * and KEY [fixed #N] (the run's value), or KEY [orig #N] alone if the run
+ * lacks the key; a fix whose KEY is an [orig] case alone the run lacks
+ * makes it KEY [orig #N]; a fix whose KEY only the run has adds
+ * KEY [fixed #N].
  * Nothing else changes but the order (libscmp_sorted); an unqualified case
  * the port gives another value is reported.
  * @return 0 = *out written (malloc'd), 1 = refused (a [fixed #N] case the
@@ -231,7 +238,8 @@ int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *co
  * BLOCK:N cases.  Keyed cases are ordered by ROUTINE, CHECK and VECTOR,
  * each compared as text (bytewise on the escaped spelling, a shorter part
  * that is a prefix first), then by OCC as a number; block cases by N as a
- * number.  Of one key KEY [orig] comes directly before KEY [fixed #N].
+ * number.  Of one key KEY [orig] comes directly before KEY [fixed #N];
+ * KEY [orig #N] has no partner and stands at the place of its key.
  * Every line ends with a newline.  Sorting a sorted file gives it again.
  * @param out   the text (malloc'd, 0-terminated)
  * @return 0 = ok, -1 = out of memory
@@ -410,10 +418,12 @@ void libscmp_issues_free(struct libscmp_issues *is);
 /**
  * @brief The cases a branch changes in a program's expected data that are
  * not its own: every case (a key with its qualifier) added, changed or
- * removed from base to branch is reported unless it is a [fixed #N] case
- * of a named issue, the [orig] case paired with one (the same key has a
- * [fixed #N] case of a named issue in the branch, or for a removed [orig]
- * case in base), or an unqualified case that became such a pair.  A line
+ * removed from base to branch is reported unless it is a [fixed #N] or
+ * [orig #N] case of a named issue, the [orig] case paired with one (the
+ * same key has a [fixed #N] case of a named issue in the branch, or for a
+ * removed [orig] case in base), or an unqualified case that became such a
+ * pair or such an [orig #N] case.  [orig] and [orig #N] are one case: a
+ * new qualifier with the value kept is no change.  A line
  * per reported case: "NAME: KEY [QUAL]: added (VALUE)", "...: changed
  * (BASE -> BRANCH)", "...: removed (VALUE)".
  * @param base    the program's expected data before, or NULL (a new file)

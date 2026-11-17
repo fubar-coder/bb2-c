@@ -337,21 +337,26 @@ looking. The summary line `NAME: N checks` counts every `OBS` and every
 **Expected data**, `libs/tests/expected/NAME.txt` (one file per program,
 two for `libtest`; `/libs/tests/expected/** -text diff` in
 `.gitattributes`), has the same format. A key may carry a qualifier after
-the occurrence number: `KEY [orig]` or `KEY [fixed #N]`. An unqualified
-case is run against both sets, `[orig]` only against the original,
-`[fixed #N]` only against the C build. The order of the lines does not
+the occurrence number: `KEY [orig]`, `KEY [orig #N]` or `KEY [fixed #N]`.
+An unqualified case is run against both sets, `[orig]` and `[orig #N]`
+only against the original, `[fixed #N]` only against the C build. The order of the lines does not
 matter to the judge, but the writers (`libs-accept`, `libs-update`) put
 them in one order, so that a new recording or a fix changes only the
 lines of its cases: the header, then the keyed cases ordered by
 `ROUTINE`, `CHECK` and `VECTOR`, each compared as text (bytewise on the
 escaped spelling; a part that is a prefix of the other comes first),
 then by `OCC` as a number (`|2` before `|10`), with `KEY [orig]`
-directly before `KEY [fixed #N]`; then the block cases `BLOCK:N` by `N`
-as a number. A file edited by hand is put in that order with
+directly before `KEY [fixed #N]` (`KEY [orig #N]` stands alone at the
+place of its key); then the block cases `BLOCK:N` by `N` as a number. A file edited by hand is put in that order with
 `build/amiga/host/tools/results/results libs-sort libs/tests/expected`;
 no check in the build enforces the order, the next writer restores it.
 A fixed original bug is such a pair; a case that exists on one
-side only is `KEY [orig]` or `KEY [fixed #N]` alone. The judge is
+side only is `KEY [orig]` or `KEY [fixed #N]` alone. A case of the
+original that the port no longer reaches because of the fix of issue N
+(a state the fix removes, so no `[fixed #N]` counterpart is possible) is
+`KEY [orig #N]`: judged as `[orig]`, and `fix-scope` counts it to issue
+N. A key has at most one of `[orig]` and `[orig #N]`, and `[orig #N]`
+never with a `[fixed #N]` case; the issue number is decimal from 1. The judge is
 `tools/results libs-compare` (`tools/results/README.md`): per program the
 first differing case with both values (`NAME: KEY: expected VALUE, got
 VALUE`) and up to ten more, then the cases missing from the run and the
@@ -399,7 +404,9 @@ identical. Otherwise nothing is written and the report says
 `build/amiga/libs/tests/libs-capture/run1` and `run2`. It also refuses a
 program whose original loses a stated register (a `lost` case). A key
 that has a `[fixed #N]` case keeps that case, and the original's value
-becomes its `[orig]` case. The file is written in the order of
+becomes its `[orig]` case; a key with only an `[orig]` or `[orig #N]`
+case keeps that qualifier. Such a case whose key the run lacks is
+removed and reported. The file is written in the order of
 "Expected data". The cache variable `LIBS_CAPTURE_FILTER`
 limits the run to a snitch filter (`cmake --preset amiga
 "-DLIBS_CAPTURE_FILTER=rwe riarrayslib"`, set it empty again
@@ -419,9 +426,11 @@ value of every `[fixed #N]` case. To turn an unqualified case into a pair
 after a fix, name it: `cmake --preset amiga "-DLIBS_UPDATE_FIX=KEY#N"`
 (several separated by `;`), then the target; KEY is the key as written
 in the file, N the issue. The case becomes `KEY [orig]` (the old value)
-and `KEY [fixed #N]` (the port's value), and nothing else changes but
-the order of "Expected data"; a fix whose port value equals the expected
-value is refused. The run's output
+and `KEY [fixed #N]` (the port's value), or `KEY [orig #N]` alone if
+the port's run lacks the key; a `KEY [orig]` alone that the port's run
+lacks becomes `KEY [orig #N]` the same way. Nothing else changes but the
+order of "Expected data"; a fix whose port value equals the expected
+value, or whose key is qualified otherwise, is refused. The run's output
 stays in `build/amiga/libs/tests/libs-update/run/test/captures/`.
 
 **A fixed original bug** is therefore two cases in the expected data,
@@ -435,8 +444,10 @@ section of `ID.expect` and `ID.orig`, `[fixed #N]` with the header
 `; @fixed #N`; `tools/lib/bugorigcmp`) of the checkout with its merge
 base with `main` (`-DFIX_SCOPE_BASE=BRANCH` for another base) and
 reports, with the key, every case added, changed or removed that is not
-a `[fixed #N]` case of an issue named in a `Fixes #N` line of the
-branch's commits, or its paired `[orig]` case (a bug-orig fix: the
+a `[fixed #N]` or `[orig #N]` case of an issue named in a `Fixes #N`
+line of the branch's commits, or its paired `[orig]` case (an `[orig]`
+case that becomes `[orig #N]` with its value is no change; a bug-orig
+fix: the
 header added and `ID.expect` changed; tests of new open bugs are
 reported as added cases and reviewed). A
 reported case is no error by itself: it is reviewed and named in the

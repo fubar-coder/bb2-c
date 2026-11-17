@@ -120,12 +120,13 @@ endif()
 # build of the RWE sources, ctest --preset originals -R rwe_refbuild);
 # libs-update takes the [fixed #N] cases from the port (one run with
 # LIBSET=obj, no CD), and LIBS_UPDATE_FIX (KEY#N;...) makes an
-# unqualified case such a pair.  LIBS_CAPTURE_FILTER (a snitch filter of
+# unqualified case such a pair, or KEY [orig #N] (a case of the original
+# only) where the port lacks KEY.  LIBS_CAPTURE_FILTER (a snitch filter of
 # libs_tests, e.g. "libtest ldivlib") limits both to the programs it runs.
 set(LIBS_CAPTURE_FILTER "" CACHE STRING
 	"libs-capture, libs-update: only the libs_tests test cases of this snitch filter (empty: all)")
 set(LIBS_UPDATE_FIX "" CACHE STRING
-	"libs-update: KEY#N;... - the unqualified case KEY becomes the pair KEY [orig] / KEY [fixed #N]")
+	"libs-update: KEY#N;... - the unqualified case KEY becomes the pair KEY [orig] / KEY [fixed #N] (KEY [orig #N] if the port lacks KEY)")
 foreach(mode capture update)
 	set(fix "")
 	set(what "the original (two runs) -> ${expected}")

@@ -20,15 +20,23 @@ static const struct libscmp_entry *find_case(const struct libscmp_file *f,
     return libscmp_find_h(f, g->text + c->key, c->keylen, g->entries[c->entry].hash);
 }
 
-static void put_case(FILE *o, const char *key, size_t keylen, const char *qual, uint32_t issue,
+/* KEY QUAL<TAB>VALUE; qual an enum libscmp_qual, issue its N ([orig #N]:
+   N from 1, [orig]: 0) */
+static void put_case(FILE *o, const char *key, size_t keylen, int qual, uint32_t issue,
                      const char *val, size_t vallen)
 {
-    if (qual && !strcmp(qual, "fixed"))
-        fprintf(o, "%.*s [fixed #%lu]\t%.*s\n", (int)keylen, key, (unsigned long)issue, (int)vallen,
-                val);
-    else
-        fprintf(o, "%.*s%s\t%.*s\n", (int)keylen, key, qual ? " [orig]" : "", (int)vallen, val);
+    struct libscmp_case c = { 0 };
+    char q[32];
+
+    c.qual = (uint8_t)qual;
+    c.issue = issue;
+    fprintf(o, "%.*s%s\t%.*s\n", (int)keylen, key, libscmp_qual_text(&c, q, sizeof q),
+            (int)vallen, val);
 }
+
+#define PLAIN LIBSCMP_PLAIN
+#define ORIG LIBSCMP_QORIG
+#define FIXED LIBSCMP_QFIXED
 
 static int is_lost(const char *v, uint32_t n)
 {
@@ -182,11 +190,14 @@ int libscmp_accept(const struct libscmp_file *run1, const struct libscmp_file *r
         if (e && e->fixed >= 0) {
             const struct libscmp_case *f = &old->cases[e->fixed];
 
-            put_case(o, key, c->keylen, "orig", 0, val, c->vallen);
-            put_case(o, key, c->keylen, "fixed", f->issue, old->text + f->val, f->vallen);
+            put_case(o, key, c->keylen, ORIG, 0, val, c->vallen);
+            put_case(o, key, c->keylen, FIXED, f->issue, old->text + f->val, f->vallen);
             nfixed++;
-        } else
-            put_case(o, key, c->keylen, e && e->orig >= 0 ? "orig" : NULL, 0, val, c->vallen);
+        }
+        else if (e && e->orig >= 0)    /* [orig] or [orig #N] alone: kept */
+            put_case(o, key, c->keylen, ORIG, old->cases[e->orig].issue, val, c->vallen);
+        else
+            put_case(o, key, c->keylen, PLAIN, 0, val, c->vallen);
     }
     /* the cases of old whose key the run lacks */
     for (i = 0; old && i < old->ncases; i++) {
@@ -195,15 +206,18 @@ int libscmp_accept(const struct libscmp_file *run1, const struct libscmp_file *r
         if (find_case(run1, old, c))
             continue;
         if (c->qual == LIBSCMP_QFIXED) {
-            put_case(o, old->text + c->key, c->keylen, "fixed", c->issue, old->text + c->val,
+            put_case(o, old->text + c->key, c->keylen, FIXED, c->issue, old->text + c->val,
                      c->vallen);
             nfixed++;
             fprintf(report, "%s: %.*s [fixed #%lu]: not in the original's run, kept as a case "
                     "of the port only (did the scenario change?)\n", run1->name, KEY(old, c),
                     (unsigned long)c->issue);
-        } else
+        } else {
+            char q[32];
+
             fprintf(report, "%s: %.*s%s: not in the original's run any more, removed\n",
-                    run1->name, KEY(old, c), c->qual == LIBSCMP_QORIG ? " [orig]" : "");
+                    run1->name, KEY(old, c), libscmp_qual_text(c, q, sizeof q));
+        }
     }
     if ((r = close_sorted(o, &text, &len, out, report)))
         return r;
@@ -304,7 +318,7 @@ int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *ex
                 nbad++;
                 continue;
             }
-            put_case(o, key, c->keylen, "fixed", c->issue, run->text + rc->val, rc->vallen);
+            put_case(o, key, c->keylen, FIXED, c->issue, run->text + rc->val, rc->vallen);
             if (!same) {
                 fprintf(report, "%s: %.*s [fixed #%lu]: %.*s, was %.*s\n", exp->name, KEY(exp, c),
                         (unsigned long)c->issue, VAL(run, rc), VAL(exp, c));
@@ -315,21 +329,29 @@ int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *ex
             continue;
         }
         if (c->qual == LIBSCMP_QORIG) {
-            put_case(o, key, c->keylen, "orig", 0, exp->text + c->val, c->vallen);
+            if (fx && !c->issue && exp->entries[c->entry].fixed < 0 && !rc) {
+                /* [orig] alone, the port lacks the key: the fix's case */
+                put_case(o, key, c->keylen, ORIG, fx->issue, exp->text + c->val, c->vallen);
+                fprintf(report, "%s: %.*s [orig #%lu]: was [orig], a case of the original "
+                        "only\n", exp->name, KEY(exp, c), (unsigned long)fx->issue);
+                fx->applied++;
+                nchanged++;
+                continue;
+            }
+            put_case(o, key, c->keylen, ORIG, c->issue, exp->text + c->val, c->vallen);
             if (fx && exp->entries[c->entry].fixed < 0)
                 fx->qualified++;
             continue;
         }
         if (fx && !same) {
-            put_case(o, key, c->keylen, "orig", 0, exp->text + c->val, c->vallen);
+            put_case(o, key, c->keylen, ORIG, rc ? 0 : fx->issue, exp->text + c->val, c->vallen);
             if (rc) {
-                put_case(o, key, c->keylen, "fixed", fx->issue, run->text + rc->val, rc->vallen);
+                put_case(o, key, c->keylen, FIXED, fx->issue, run->text + rc->val, rc->vallen);
                 fprintf(report, "%s: %.*s: the pair [orig] %.*s, [fixed #%lu] %.*s\n", exp->name,
                         KEY(exp, c), VAL(exp, c), (unsigned long)fx->issue, VAL(run, rc));
             } else
-                fprintf(report, "%s: %.*s [orig]: not in the port's run, a case of the "
-                        "original only (#%lu)\n", exp->name, KEY(exp, c),
-                        (unsigned long)fx->issue);
+                fprintf(report, "%s: %.*s [orig #%lu]: not in the port's run, a case of the "
+                        "original only\n", exp->name, KEY(exp, c), (unsigned long)fx->issue);
             fx->applied++;
             nchanged++;
             continue;
@@ -345,7 +367,7 @@ int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *ex
                 fprintf(report, "%s: %.*s: not in the port's run (not touched)\n", exp->name,
                         KEY(exp, c));
         }
-        put_case(o, key, c->keylen, NULL, 0, exp->text + c->val, c->vallen);
+        put_case(o, key, c->keylen, PLAIN, 0, exp->text + c->val, c->vallen);
     }
     /* the fixes whose key only the run has */
     for (j = 0; j < nfixes; j++) {
@@ -355,7 +377,7 @@ int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *ex
         if (!re || libscmp_find(exp, fixes[j].key, fixes[j].keylen))
             continue;
         c = &run->cases[re->plain];
-        put_case(o, run->text + c->key, c->keylen, "fixed", fixes[j].issue, run->text + c->val,
+        put_case(o, run->text + c->key, c->keylen, FIXED, fixes[j].issue, run->text + c->val,
                  c->vallen);
         fprintf(report, "%s: %.*s [fixed #%lu]: added (%.*s), a case of the port only\n",
                 exp->name, KEY(run, c), (unsigned long)fixes[j].issue, VAL(run, c));

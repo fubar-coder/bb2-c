@@ -83,7 +83,8 @@ void cmd_libs_compare(CLI::App &app, int &status)
                     "first observation of a differing block in which the two runs differ")
         ->type_name("DIR");
     sub->footer("A case is KEY<TAB>VALUE; for --set obj the unqualified and the \"KEY [fixed #N]\" "
-                "cases apply, for orig the unqualified and the \"KEY [orig]\" ones. Every differing, "
+                "cases apply, for orig the unqualified, the \"KEY [orig]\" and the \"KEY [orig #N]\" "
+                "ones. Every differing, "
                 "missing and added case is a finding (the first 11 per program on stdout). The "
                 "block cases of a run come from its NAME.bin; the observations of the first 3 "
                 "differing blocks go to RUN_DIR/NAME.block-N.obs. Exit status 0 equal, 1 a "
@@ -147,7 +148,8 @@ void cmd_libs_accept(CLI::App &app, int &status)
         ->type_name("NAME");
     sub->footer("The two runs of a program must be identical (else \"test not deterministic: NAME\" "
                 "and the differing cases) and hold no \"lost\" case. The file gets the run's cases; "
-                "a key with a \"[fixed #N]\" case keeps it and gets the run's value as \"[orig]\". "
+                "a key with a \"[fixed #N]\" case keeps it and gets the run's value as \"[orig]\", "
+                "a key with only an \"[orig]\" or \"[orig #N]\" case keeps that qualifier. "
                 "Nothing is written unless every program is accepted. Exit status 0 written, 1 "
                 "refused, 2 usage error or a malformed, unreadable or unwritable file.");
     sub->callback([sub, o, &status] {
@@ -174,7 +176,8 @@ void cmd_libs_update(CLI::App &app, int &status)
         ->type_name("NAME");
     cli::add_repeated(*sub, "--fix", o->fix, 1,
                       "make the unqualified case KEY the pair \"KEY [orig]\" (the old value) and "
-                      "\"KEY [fixed #N]\" (the port's)")
+                      "\"KEY [fixed #N]\" (the port's), or \"KEY [orig #N]\" if the port lacks "
+                      "KEY (also from \"KEY [orig]\" alone)")
         ->type_name("KEY#N");
     sub->footer("Every \"[fixed #N]\" case gets the port's value; nothing else changes (an "
                 "unqualified case the port gives another value is reported). A --fix must apply "
@@ -216,7 +219,8 @@ void cmd_libs_sort(CLI::App &app, int &status)
         ->type_name("NAME");
     sub->footer("Rewrites every NAME.txt in the order libs-accept and libs-update write: the "
                 "header, the keyed cases by ROUTINE, CHECK and VECTOR as text and OCC as a "
-                "number, \"KEY [orig]\" directly before \"KEY [fixed #N]\", then the BLOCK:N cases "
+                "number, \"KEY [orig]\" directly before \"KEY [fixed #N]\" (\"KEY [orig #N]\" alone), "
+                "then the BLOCK:N cases "
                 "by N. Only the order changes; a file in that order is not rewritten. Exit status "
                 "0 done, 2 usage error or a malformed, unreadable or unwritable file.");
     sub->callback([sub, o, &status] {

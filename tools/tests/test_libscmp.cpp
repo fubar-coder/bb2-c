@@ -183,6 +183,23 @@ TEST_CASE("qualifiers", "[libscmp]")
         CHECK(cmp(HDR "a|b||1\t$0\na|old||1\t$5\n", exp, LIBSCMP_OBJ, NULL) == 1
               && strstr(report, "prog: a|old||1: added (got $5)\n"));
     }
+    /* a case of the original only, its fix named: [orig #N] alone, judged as [orig] */
+    {
+        static const char exp[] = HDR "a|b||1\t$0\na|old||1 [orig #469]\t$5\n";
+        struct libscmp_file f;
+
+        CHECK(parse(&f, exp, LIBSCMP_EXPECTED) == 0 && f.ncases == 2 && f.cases[1].qual == LIBSCMP_QORIG
+              && f.cases[1].issue == 469);
+        libscmp_free(&f);
+        CHECK(cmp(HDR "a|b||1\t$0\na|old||1\t$5\n", exp, LIBSCMP_ORIG, &st) == 0 && st.equal == 2);
+        CHECK(cmp(HDR "a|b||1\t$0\na|old||1\t$6\n", exp, LIBSCMP_ORIG, NULL) == 1
+              && strstr(report, "prog: a|old||1 [orig #469]: expected $5, got $6\n"));
+        CHECK(cmp(HDR "a|b||1\t$0\n", exp, LIBSCMP_ORIG, NULL) == 1
+              && strstr(report, "prog: a|old||1 [orig #469]: missing (expected $5)\n"));
+        CHECK(cmp(HDR "a|b||1\t$0\n", exp, LIBSCMP_OBJ, &st) == 0 && st.equal == 1);
+        CHECK(cmp(HDR "a|b||1\t$0\na|old||1\t$5\n", exp, LIBSCMP_OBJ, NULL) == 1
+              && strstr(report, "prog: a|old||1: added (got $5)\n"));
+    }
     /* qualified blocks */
     CHECK(cmp(HDR "BLOCK:3\t4096 2 first=x\n",
               HDR "BLOCK:3 [orig]\t4096 1 first=x\nBLOCK:3 [fixed #9]\t4096 2 first=x\n",
@@ -307,6 +324,30 @@ TEST_CASE("malformed", "[libscmp]")
     CHECK(strstr(bad(HDR "a|b|c|1 [fixed #7] \t$0\n", LIBSCMP_EXPECTED), "f.txt:2: no TAB after the key"));
     CHECK(strstr(bad(HDR "a|b|c|1  [orig]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: unknown qualifier"));
     CHECK(!*bad(HDR "a|b|c|1 [orig]\t$0\na|b|c|1 [fixed #12345]\t$1\n", LIBSCMP_EXPECTED));
+    /* ... [orig #N]: a number from 1, one qualifier, alone at its key */
+    CHECK(!*bad(HDR "a|b|c|1 [orig #469]\t$0\nBLOCK:2 [orig #1]\tx\n", LIBSCMP_EXPECTED));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #469]\t$0\n", LIBSCMP_RUN), "f.txt:2: a qualifier in a run's output"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: [orig #N] needs an issue number"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #0]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: [orig #N] needs an issue number"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #07]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: [orig #N] needs an issue number"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #7\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: [orig #N] needs an issue number"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #x]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: [orig #N] needs an issue number"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig 7]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: unknown qualifier"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig] [fixed #7]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: two qualifiers"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #7] [orig]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: two qualifiers"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [fixed #7] [orig #7]\t$0\n", LIBSCMP_EXPECTED), "f.txt:2: two qualifiers"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig]\t$0\na|b|c|1 [orig #7]\t$1\n", LIBSCMP_EXPECTED),
+                 "f.txt:3: a|b|c|1 has [orig] and [orig #N] (the other at line 2)"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #7]\t$0\na|b|c|1 [orig]\t$1\n", LIBSCMP_EXPECTED),
+                 "f.txt:3: a|b|c|1 has [orig] and [orig #N] (the other at line 2)"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #7]\t$0\na|b|c|1 [orig #8]\t$1\n", LIBSCMP_EXPECTED),
+                 "f.txt:3: duplicate key a|b|c|1 [orig #7] (first at line 2)"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [orig #7]\t$0\na|b|c|1 [fixed #7]\t$1\n", LIBSCMP_EXPECTED),
+                 "f.txt:3: a|b|c|1 has [orig #N] and [fixed #N]"));
+    CHECK(strstr(bad(HDR "a|b|c|1 [fixed #7]\t$0\na|b|c|1 [orig #8]\t$1\n", LIBSCMP_EXPECTED),
+                 "f.txt:3: a|b|c|1 has [orig #N] and [fixed #N]"));
+    CHECK(strstr(bad(HDR "a|b|c|1\t$0\na|b|c|1 [orig #7]\t$1\n", LIBSCMP_EXPECTED),
+                 "f.txt:3: a|b|c|1 is unqualified and qualified (the other at line 2)"));
     /* duplicate keys */
     CHECK(strstr(bad(HDR "a|b|c|1\t$0\nx|y|z|1\t$0\na|b|c|1\t$1\n", LIBSCMP_RUN),
                  "f.txt:4: duplicate key a|b|c|1 (first at line 2)"));
@@ -540,6 +581,18 @@ TEST_CASE("accept", "[libscmp]")
         CHECK(strstr(report, "prog: r|old||1 [orig]: not in the original's run any more, removed\n"));
         CHECK(strstr(report, "2 [fixed #N] cases kept"));
     }
+    /* [orig #N] alone stays [orig #N] with the run's value, or goes (reported)
+       when the run lacks it */
+    {
+        static const char old[] = HDR "r|a||1\t$0\nr|find||1 [orig #469]\t$9\nr|gone||1 [orig #470]\t$4\n"
+                                  "r|c||1\tkept\n";
+        static const char want[] = HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1 [orig #469]\t$1\n";
+
+        CHECK(accept2(run, run, old) == 0 && !strcmp(result, want));
+        CHECK(strstr(report, "prog: r|gone||1 [orig #470]: not in the original's run any more, removed\n"));
+        CHECK(strstr(report, "0 [fixed #N] cases kept"));
+        CHECK(accept2(run, run, want) == 0 && !strcmp(result, want));
+    }
     /* the runs differ: nothing, and the differing cases */
     CHECK(accept2(run, HDR "r|a||1\t$0\nr|find||1\t$2\nr|c||1\tkept\n", NULL) == 1 && !result);
     CHECK(strstr(report, "test not deterministic: prog\n")
@@ -610,11 +663,32 @@ TEST_CASE("update", "[libscmp]")
         /* ... the port gives the expected value: nothing to fix */
         CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0 && !strcmp(result, exp));
         CHECK(fixes[0].applied == 0 && fixes[0].same == 1);
-        /* ... the port lacks the case: [orig] alone */
+        /* ... the port lacks the case: [orig #12] alone */
         CHECK(update(HDR "r|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0);
-        CHECK(!strcmp(result, HDR "r|a||1 [orig]\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
+        CHECK(!strcmp(result, HDR "r|a||1 [orig #12]\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
                               "r|find||1 [fixed #7]\t$0\nr|old||1 [orig]\t$4\n"));
-        CHECK(fixes[0].applied == 1 && strstr(report, "r|a||1 [orig]: not in the port's run, a case of the original only (#12)"));
+        CHECK(fixes[0].applied == 1 && strstr(report, "prog: r|a||1 [orig #12]: not in the port's run, a case of "
+                                                      "the original only\n"));
+    }
+    /* --fix of an [orig] case alone the port lacks: it becomes [orig #N];
+       an [orig #N] case is kept as it is */
+    {
+        static const char *const fix[] = { "r|old||1#469", NULL };
+        static const char want[] = HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
+                                   "r|find||1 [fixed #7]\t$0\nr|old||1 [orig #469]\t$4\n";
+
+        CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0);
+        CHECK(!strcmp(result, want));
+        CHECK(fixes[0].applied == 1 && strstr(report, "prog: r|old||1 [orig #469]: was [orig], a case of the "
+                                                      "original only\n"));
+        CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|c||1\tkept\n", want, NULL) == 0
+              && !strcmp(result, want) && strstr(report, "0 cases changed"));
+        /* ... again: qualified already */
+        CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|c||1\tkept\n", want, fix) == 0);
+        CHECK(fixes[0].applied == 0 && fixes[0].qualified == 1);
+        /* ... the port has the key: an [orig] case alone stays */
+        CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|old||1\t$4\nr|c||1\tkept\n", exp, fix) == 0);
+        CHECK(!strcmp(result, exp) && fixes[0].applied == 0 && fixes[0].qualified == 1);
     }
     /* --fix of a case only the port has: [fixed #N], in the order of the keys */
     {
@@ -627,11 +701,11 @@ TEST_CASE("update", "[libscmp]")
         CHECK(fixes[0].applied == 1 && fixes[1].applied == 1);
         CHECK(strstr(report, "prog: r|new||1 [fixed #9]: added ($5), a case of the port only\n"));
     }
-    /* --fix of a qualified key */
+    /* --fix of a qualified key ([orig] alone: the port has the key) */
     {
         static const char *const fix[] = { "r|find||1#9", "r|old||1#9", NULL };
 
-        CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0);
+        CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|old||1\t$4\nr|c||1\tkept\n", exp, fix) == 0);
         CHECK(fixes[0].qualified == 1 && fixes[0].applied == 0 && fixes[1].qualified == 1);
     }
     /* a [fixed #N] case the port's run lacks: refused */
@@ -899,6 +973,39 @@ TEST_CASE("fix_scope", "[libscmp]")
     CHECK(scope(NULL, own, "Fixes #7\nFixes #8", &nch) == 1 && nch == 5);
     CHECK(strstr(report, "prog: r|a||1 [orig]: added") == NULL && strstr(report, "prog: r|b||1: added ($1)\n"));
     CHECK(scope(base, NULL, "", &nch) == 4 && nch == 4);
+
+    /* [orig #N]: a case of the original only, of issue N */
+    {
+        static const char obase[] = HDR "r|a||1\t$0\nr|b||1\t$1\nr|w||1\t$2\n";
+        static const char ofix[] = HDR "r|a||1\t$0\nr|b||1 [orig]\t$1\nr|b||1 [fixed #469]\t$3\n"
+                                   "r|w||1 [orig #469]\t$2\n";
+
+        /* the fix: an unqualified case became [orig #469], another a pair */
+        CHECK(scope(obase, ofix, "Fixes #469\n", &nch) == 0 && nch == 5);
+        CHECK(!*report);
+        /* ... named by another issue only: [orig #469] and its old case reported */
+        CHECK(scope(obase, ofix, "Fixes #7\n", &nch) == 5 && nch == 5);
+        CHECK(strstr(report, "prog: r|w||1: removed ($2)\n")
+              && strstr(report, "prog: r|w||1 [orig #469]: added ($2)\n"));
+        /* ... added, changed and removed: of issue 469 */
+        CHECK(scope(obase, HDR "r|a||1\t$0\nr|b||1\t$1\nr|n||1 [orig #469]\t$2\nr|w||1\t$2\n",
+                    "Fixes #469\n", &nch) == 0 && nch == 1);
+        CHECK(scope(ofix, HDR "r|a||1\t$0\nr|b||1 [orig]\t$1\nr|b||1 [fixed #469]\t$3\n"
+                          "r|w||1 [orig #469]\t$9\n", "Fixes #469\n", &nch) == 0 && nch == 1);
+        CHECK(scope(ofix, HDR "r|a||1\t$0\nr|b||1 [orig]\t$1\nr|b||1 [fixed #469]\t$3\n"
+                          "r|w||1 [orig #469]\t$9\n", "Fixes #8\n", &nch) == 1 && nch == 1);
+        CHECK(!strcmp(report, "prog: r|w||1 [orig #469]: changed ($2 -> $9)\n"));
+        CHECK(scope(ofix, HDR "r|a||1\t$0\nr|b||1 [orig]\t$1\nr|b||1 [fixed #469]\t$3\n",
+                    "Fixes #469\n", &nch) == 0 && nch == 1);
+        CHECK(scope(ofix, HDR "r|a||1\t$0\nr|b||1 [orig]\t$1\nr|b||1 [fixed #469]\t$3\n",
+                    "", &nch) == 1 && !strcmp(report, "prog: r|w||1 [orig #469]: removed ($2)\n"));
+        /* [orig] that became [orig #469] with its value: no case changed */
+        CHECK(scope(HDR "r|w||1 [orig]\t$2\n", HDR "r|w||1 [orig #469]\t$2\n", "", &nch) == 0 && nch == 0);
+        CHECK(scope(HDR "r|w||1 [orig]\t$2\n", HDR "r|w||1 [orig #469]\t$3\n", "Fixes #469", &nch) == 0
+              && nch == 1);
+        CHECK(scope(HDR "r|w||1 [orig]\t$2\n", HDR "r|w||1 [orig #469]\t$3\n", "", &nch) == 1
+              && !strcmp(report, "prog: r|w||1 [orig]: changed ($2 -> $3)\n"));
+    }
 }
 
 /* fix-scope on directories, a malformed file */

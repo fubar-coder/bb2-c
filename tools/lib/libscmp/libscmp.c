@@ -203,16 +203,18 @@ static int add_case(struct libscmp_file *f, const struct libscmp_case *c)
     return 0;
 }
 
-static const char *qual_text(const struct libscmp_case *c, char *buf, size_t len)
+const char *libscmp_qual_text(const struct libscmp_case *c, char *buf, size_t len)
 {
-    if (c->qual == LIBSCMP_QORIG)
+    if (c->qual == LIBSCMP_QORIG && !c->issue)
         return " [orig]";
-    if (c->qual == LIBSCMP_QFIXED) {
-        snprintf(buf, len, " [fixed #%lu]", (unsigned long)c->issue);
-        return buf;
-    }
-    return "";
+    if (c->qual == LIBSCMP_PLAIN)
+        return "";
+    snprintf(buf, len, c->qual == LIBSCMP_QORIG ? " [orig #%lu]" : " [fixed #%lu]",
+             (unsigned long)c->issue);
+    return buf;
 }
+
+#define qual_text libscmp_qual_text
 
 /* the case c into the index; 0 = ok, -1 = out of memory, -2 = duplicate
    or ambiguous (err) */
@@ -250,6 +252,9 @@ static int index_case(struct libscmp_file *f, struct libscmp_case *c, const char
     }
     c->entry = (uint32_t)(e - f->entries);
     slot = c->qual == LIBSCMP_PLAIN ? &e->plain : c->qual == LIBSCMP_QORIG ? &e->orig : &e->fixed;
+    if (*slot >= 0 && c->qual == LIBSCMP_QORIG && !f->cases[*slot].issue != !c->issue)
+        return fail(err, errlen, path, c->line, "%.*s has [orig] and [orig #N] (the other at "
+                    "line %lu)", (int)c->keylen, k, (unsigned long)f->cases[*slot].line);
     if (*slot >= 0)
         return fail(err, errlen, path, c->line, "duplicate key %.*s%s (first at line %lu)",
                     (int)c->keylen, k, qual_text(&f->cases[*slot], q, sizeof q),
@@ -259,6 +264,13 @@ static int index_case(struct libscmp_file *f, struct libscmp_case *c, const char
         return fail(err, errlen, path, c->line,
                     "%.*s is unqualified and qualified (the other at line %lu)", (int)c->keylen,
                     k, (unsigned long)f->cases[other].line);
+    /* [orig #N]: a case of the original only, the port has no counterpart */
+    other = c->qual == LIBSCMP_QFIXED ? e->orig : c->qual == LIBSCMP_QORIG ? e->fixed : -1;
+    if (other >= 0 && (c->qual == LIBSCMP_QORIG ? c : &f->cases[other])->issue)
+        return fail(err, errlen, path, c->line,
+                    "%.*s has [orig #N] and [fixed #N] ([orig #N] is a case of the original "
+                    "only; a pair is [orig] and [fixed #N]; the other at line %lu)",
+                    (int)c->keylen, k, (unsigned long)f->cases[other].line);
     *slot = (int32_t)f->ncases;
     return add_case(f, c);
 }
@@ -324,18 +336,32 @@ static int case_line(struct libscmp_file *f, const char *p, const char *end, uin
         if (end - q >= 6 && !memcmp(q, "[orig]", 6)) {
             c.qual = LIBSCMP_QORIG;
             q += 6;
+        } else if (end - q >= 7 && !memcmp(q, "[orig #", 7)) {
+            long n;
+
+            q += 7;
+            if ((n = decimal(&q, end, 0)) < 0 || q == end || *q != ']')
+                return fail(err, errlen, path, line, "[orig #N] needs an issue number N "
+                            "(decimal from 1, no leading zero)");
+            c.qual = LIBSCMP_QORIG;
+            c.issue = (uint32_t)n;
+            q++;
         } else if (end - q >= 8 && !memcmp(q, "[fixed #", 8)) {
             long n;
 
             q += 8;
             if ((n = decimal(&q, end, 0)) < 0 || q == end || *q != ']')
-                return fail(err, errlen, path, line, "[fixed #N] needs an issue number N");
+                return fail(err, errlen, path, line, "[fixed #N] needs an issue number N "
+                            "(decimal from 1, no leading zero)");
             c.qual = LIBSCMP_QFIXED;
             c.issue = (uint32_t)n;
             q++;
         } else
             return fail(err, errlen, path, line,
-                        "unknown qualifier (the qualifiers are [orig] and [fixed #N])");
+                        "unknown qualifier (the qualifiers are [orig], [orig #N] and "
+                        "[fixed #N])");
+        if (end - q >= 2 && q[0] == ' ' && q[1] == '[')
+            return fail(err, errlen, path, line, "two qualifiers (a case has at most one)");
     }
     if (q == end || *q != '\t')
         return fail(err, errlen, path, line, "no TAB after the key");
