@@ -116,13 +116,16 @@ kind F):
   partial match of "Workbench"; the original restarted the same title
   (`TST.b (a1) : BEQ 'loop`, a0 unchanged), so a title that ends with
   the start of "Workbench" ("My Work") hung it (#762).
+* WorkbenchHere searches each title from every character on; the
+  original went on with the next screen at the first mismatch after a
+  "W" (`CMP.b (a1)+,d0 : BEQ 'innerloop`, then `'nextscreen`), so
+  "A Window on Workbench" or "WWorkbench" was not found (#760).
 
 ## BUG(orig)
 
 * WorkbenchHere takes IntuitionBase from d0 (`MOVE.l intuibase,a0` is
   overwritten by `MOVE.l d0,a0`) and has no arguments: d0 is whatever
-  the program left there (#759). After a partial match it goes on with
-  the next screen (a title "WWorkbench" does not count) (#760).
+  the program left there (#759).
 * Flip$ of a string of 0 or 1 characters: the count `len/2 - 1` is -1,
   the DBRA swaps 65536 byte pairs around the string (#751).
 * NextArgChar$ does not check the parse pointer: before InitArgParse and

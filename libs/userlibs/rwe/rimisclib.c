@@ -38,10 +38,7 @@
  * BUG(orig), kept:
  *   - WorkbenchHere takes IntuitionBase from d0 (MOVE.l intuibase,a0 is
  *     overwritten by MOVE.l d0,a0), and the function has no arguments: d0
- *     is whatever the program left there (#759).  In the search for
- *     "Workbench" in the screen titles, after a partial match it goes on
- *     with the next screen ("WWorkbench" is not found in its own title)
- *     (#760).
+ *     is whatever the program left there (#759).
  *   - Flip$ of a string with 0 or 1 characters swaps 65536 byte pairs
  *     around the string (DBRA with -1) (#751).
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
@@ -80,6 +77,10 @@
  * screen when a title ends during a partial match; the original
  * restarted the same title ('loop with the same screen), so a title that
  * ends with the start of "Workbench" ("...Work") hung it.
+ * Fixed (intended deviation, #760): WorkbenchHere searches the whole
+ * title, from every character on; the original went on with the next
+ * screen at the first mismatch after a "W", so "A Window on Workbench"
+ * or "WWorkbench" was not found.
  * Fixed (intended deviation, #755): NextArg$ takes "" inside quotes as
  * one quote and ends the word at the quote that closes it (the original
  * miscounted the quotes after "" and copied the character behind the
@@ -481,48 +482,35 @@ static ULONG BLITZ_ROUTINE getsigbit_c(const struct MsgPort *port BL_REG(d0))
  * @brief WorkbenchHere: whether a screen's title contains "Workbench".
  *
  * Searches the screen titles from IntuitionBase->FirstScreen up to the
- * end of the list; a screen without a title is skipped.
- * BUG(orig): IntuitionBase is taken from d0, which is no argument (#759);
- * after a partial match it goes on with the next screen (#760).
+ * end of the list, each title from every character on; a screen without
+ * a title is skipped.
+ * BUG(orig): IntuitionBase is taken from d0, which is no argument (#759).
  * Fixed (#761): the original never ends the screen list (no 0 check: it
  * reads the "screen" at address 0 and goes on), so it returned BB_TRUE
- * or hung, never BB_FALSE.  Fixed (#762): a title that ends during a
- * partial match goes on with the next screen; the original restarted
- * the same title, for ever for a title that ends with the start of
- * "Workbench".
+ * or hung, never BB_FALSE.  Fixed (#762): the original restarted the
+ * same title when it ended during a partial match, for ever for a title
+ * that ends with the start of "Workbench".  Fixed (#760): the original
+ * went on with the next screen at the first mismatch after a "W"
+ * ("A Window on Workbench" was not found).
  * @param ib  d0: whatever the program left there, used as IntuitionBase
  * @return d0: BB_TRUE when found, BB_FALSE at the end of the list
  */
 static BB_BOOL BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
 {
     const struct Screen *scr = ib->FirstScreen;
-    const UBYTE *t, *s;
-    UBYTE c;
+    const UBYTE *t, *s, *p;
 
     thisscreen = (const UBYTE *)scr;
     for (; scr; scr = scr->NextScreen) {                /* fixed (#761): the end */
-        t = (const UBYTE *)titlestring;                 /* 'loop */
         s = scr->Title;
         if (!s)
             continue;                                   /* fixed (#761): no title */
-        for (;;) {                                      /* 'findloop */
-            c = *s++;
-            if (!c)
-                break;
-            if (c != *t)
-                continue;
-            t++;
-            for (;;) {                                  /* 'innerloop */
-                if (!*t)
-                    return BB_TRUE;
-                if (!*s)
-                    goto next;                          /* fixed (#762): not 'loop */
-                c = *t++;
-                if (c != *s++)
-                    goto next;                          /* BUG(orig): next screen (#760) */
-            }
+        for (; *s; s++) {                               /* fixed (#760): every start */
+            for (p = s, t = (const UBYTE *)titlestring; *t && *p == *t; p++, t++)
+                ;                                       /* fixed (#762): ends at a 0 */
+            if (!*t)
+                return BB_TRUE;
         }
-    next:;                                              /* 'nextscreen */
     }
     return BB_FALSE;                                    /* 'oops */
 }
