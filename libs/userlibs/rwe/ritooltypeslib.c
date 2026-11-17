@@ -36,8 +36,6 @@
  *     100 entries (#855) (and reads from address 0 if the icon has none)
  *     (#845); NewToolType appends without a limit either; nothing checks
  *     for the last entry (a full array runs into memory behind it) (#855).
- *   - SetToolValue/NewToolType/IconDefTool: a failing AddFreeList frees
- *     address 0, the block is lost (#840).
  *   - FindToolType: a name over 253 characters overflows the 256 byte
  *     buffer of the bracket search (#842).
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
@@ -78,6 +76,10 @@
  *   name with a do-while loop: an empty name copied its 0 and whatever
  *   followed it, the entry began with 0 (read back as "").  An empty name
  *   now gives the entry "=value".
+ * Fixed (intended deviation, #840): when AddFreeList failed,
+ *   SetToolValue/NewToolType/IconDefTool freed address 0 (d0, its result)
+ *   instead of the new block, which was lost; they free the block now and
+ *   return 0 as before.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -279,16 +281,6 @@ static void globfree(ULONG mem, ULONG size)
     struct bl_regs r = { .d0 = size, .a1 = mem };
 
     BLITZ_ALIBJSR(TOK_globfree, r);
-}
-
-/* the address FreeMem gets after a failed AddFreeList: 0 (through an asm,
-   GCC would warn about FreeMem(NULL)) */
-static APTR nofree(void)
-{
-    APTR p;
-
-    __asm__("" : "=a"(p) : "0"(0));
-    return p;
 }
 
 /**
@@ -587,9 +579,7 @@ static BB_BOOL gotit(STRPTR *entry)
         return BB_FALSE;
     if (!AddFreeList(DO_FREELIST(diskobject), mem,
                      toolbuffersize)) {
-        /* BUG(orig) #840: MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
-           address 0, the block is lost */
-        FreeMem(nofree(), toolbuffersize);
+        FreeMem(mem, toolbuffersize);   /* fixed #840: the original freed address 0 */
         return BB_FALSE;
     }
     *array_address = (STRPTR)mem;
@@ -629,8 +619,8 @@ static void toolargs(const char *name, const char *value, BB_BOOL status, const 
  * "(tt$=value$)" with status 0; the string is allocated (length of both
  * + 8) and hung on the icon's FreeList.  Fixed (#853): the original took
  * the first entry that only began with tt$ ("FL" replaced "FLAG").
- * An empty name gives "=value$" (fixed #841).  BUG(orig): a failing
- * AddFreeList frees address 0 (#840).
+ * An empty name gives "=value$" (fixed #841).  A failing AddFreeList
+ * frees the block (fixed #840: the original freed address 0).
  * @param name    d0: the tool type's name
  * @param value   d1: the value
  * @param status  d2: BB_FALSE for the switched-off form
@@ -668,7 +658,7 @@ BB_BOOL BLITZ_ROUTINE c_PutTool2(const char *name BL_REG(d0), const char *value 
  * @brief NewToolType(tooltype$,value$,status): appends a tool type.
  *
  * A new entry at the end, built as by SetToolValue.  BUG(orig): no limit
- * for the 100 entries (#855); the AddFreeList bug of SetToolValue (#840).
+ * for the 100 entries (#855).
  * @param name    d0: the tool type's name
  * @param value   d1: the value
  * @param status  d2: BB_FALSE for the switched-off form "(tt$=value$)"
@@ -801,8 +791,8 @@ void BLITZ_ROUTINE c_selectrender(UWORD flags BL_REG(d0))
  * defect, it gives back the space of the string argument, which the
  * compiler does not take back after a library function with a numeric
  * result (#846, closed; without it "ab"+Str$(IconDefTool("tool"))+"cd"
- * gives "abtool" instead of "ab-1cd").  BUG(orig): a failing AddFreeList
- * frees address 0 (#840).
+ * gives "abtool" instead of "ab-1cd").  A failing AddFreeList frees the
+ * block (fixed #840: the original freed address 0).
  * @param tool  d0: the default tool
  * @param lens  a2: the argument stack (lens[-1] = the length of tool$)
  * @return d0: BB_TRUE done, BB_FALSE for an empty string, no memory or no icon
@@ -826,9 +816,7 @@ BB_BOOL BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *le
         return BB_FALSE;
     if (!AddFreeList(DO_FREELIST(diskobject), mem,
                      toolbuffersize)) {
-        /* BUG(orig) #840: MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
-           address 0, the block is lost */
-        FreeMem(nofree(), toolbuffersize);
+        FreeMem(mem, toolbuffersize);   /* fixed #840: the original freed address 0 */
         return BB_FALSE;
     }
     d = mem;

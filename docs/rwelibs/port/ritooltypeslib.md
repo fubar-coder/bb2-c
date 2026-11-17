@@ -60,15 +60,16 @@ that are not the result.
   name with a do-while loop: its 0 first, then whatever followed it up
   to the next 0, so the entry began with 0 and read back as an empty
   string (#841; bug-orig test `ritooltypeslib-empty-name-copies-on`).
+* SetToolValue/NewToolType/IconDefTool free their new block when
+  AddFreeList fails and return 0. The original's `MOVE.l d0,a1` freed
+  address 0 (d0 is AddFreeList's 0) and lost the block (#840; bug-orig
+  test `ritooltypeslib-addfreelist-fail-frees-0`, through inject).
 
 **BUG(orig)** (kept):
 
 * GetIconObject copies the icon's tool types without a limit into the
   100 entries (#855) (and reads from address 0 if the icon has none)
   (#845); NewToolType appends without a limit (#855).
-* SetToolValue/NewToolType/IconDefTool: if AddFreeList fails, `MOVE.l
-  d0,a1` frees address 0 (d0 is AddFreeList's 0), the block is lost
-  (#840).
 * FindToolType tt$,1: a name over 253 characters overflows the 256-byte
   buffer of the bracket search (#842).
 * IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
