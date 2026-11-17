@@ -21,32 +21,33 @@
   text: Like `PredatorBlit`, but saves the background into the buffer `buffer` first, so that `UnBuffer` restores it, and places the shape by its handle.
   notes: |
     The saved background and the effect cover one line less than the
-    shape's height. Kept from the original: the next line is found
-    with the line width of `SetupMapTwo`, not with that of the bitmap
-    ([#426](https://github.com/fubar-coder/bb2-c/issues/426)).
+    shape's height. The next line is found with the line width of the
+    current bitmap, not with that of `SetupMapTwo`.
 "SetupMapTwo":
   text: Sets the line width in bytes, 40 at the start, that `SpecialBlock`, `TBlock` and the predator commands assume for the current bitmap.
 "CreateShape":
   text: Makes `count` shapes from `start_shape` on with the size of `like_shape`, whose data lie one after another in the chip memory at `chipmemblock`.
   notes: |
     The shapes get no cookie, and their data is marked as not their own,
-    so freeing them does not free the memory. Kept from the original: a
-    `count` of 0 makes 65536 shapes
-    ([#428](https://github.com/fubar-coder/bb2-c/issues/428)).
+    so freeing them does not free the memory. With runtime error
+    checking, a `count` of 0 is the error "CreateShape count must be at
+    least 1!", and shapes beyond the shape maximum of the compiler
+    options the error "CreateShape start+count above Maximum Shapes!".
 "SpecialBlockToShape":
   text: Like `SpecialBlock`, but draws the block into the data of the shape `destshape` instead of a bitmap.
   notes: |
     With runtime error checking, a destination shape without data is the
-    error "Destination shape MUST be pre-reserved!", and one of another
-    size than the top shape "Shapes must be the same size!".
+    error "Destination shape MUST be pre-reserved!", one of another size
+    than the top shape "Shapes must be the same size!", and a top shape
+    that was never defined "Uninitialized Shape".
 "BlockToShape":
-  text: Copies the data of a 16 by 16 shape into the shape `destshape`.
+  text: Copies the data of a shape into the shape `destshape` of the same size.
   notes: |
-    With runtime error checking, a destination shape without data is the
-    error "Destination shape MUST be pre-reserved!", and one of another
-    size "Shapes must be the same size!". Kept from the original: only
-    one word of every line is copied, so shapes wider than 16 pixels are
-    copied in part ([#425](https://github.com/fubar-coder/bb2-c/issues/425)).
+    The copy is one blit, so the shape's height times its depth may be
+    at most 1024 and its width at most 1024 pixels. With runtime error
+    checking, a destination shape without data is the error "Destination
+    shape MUST be pre-reserved!", one of another size "Shapes must be the
+    same size!", and a larger shape "Shape too large for BlockToShape!".
 "BColourBlit":
   text: Draws the area of a shape's cookie in one colour, `colour`, into the current bitmap at `x`,`y`, placed by the shape's handle, after saving the background into the buffer `buffer` for `UnBuffer`.
 "TBlockImage":
@@ -56,7 +57,3 @@
     bytes each. `x` is used in steps of 8 pixels.
 "BTBlockImage":
   text: Like `TBlockImage`, but at any x position, after saving the background into the buffer `buffer` for `UnBuffer`.
-  notes: |
-    Kept from the original: from image 147 on, the image is taken from
-    memory before `image_addr`
-    ([#427](https://github.com/fubar-coder/bb2-c/issues/427)).

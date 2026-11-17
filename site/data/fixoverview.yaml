@@ -3012,6 +3012,54 @@ rows:
     text: "`TrackInit` while the player is switched off prepares the module, so `Tracker On` plays it; the original played the module of before, or memory from address 0."
     page: libraries
     anchor: ritrackerlib-fixes
+  - issue: 425
+    severity: 1
+    topic: "Graphics"
+    library: "bb_blitlib"
+    command: "BlockToShape"
+    text: "`BlockToShape` copies the whole shape, and with runtime error checking refuses one too large for one blit; the original copied one word per line, so of a shape wider than 16 pixels only part."
+    page: libraries
+    anchor: blocktoshape-width
+  - issue: 426
+    severity: 2
+    topic: "Graphics"
+    library: "bb_blitlib"
+    command: "BPredatorBlit"
+    text: "`BPredatorBlit` finds the line below with the width of the bitmap it draws on; the original used the width of `SetupMapTwo` and showed another part of the background on a bitmap of another width."
+    page: libraries
+    anchor: bb-blitlib-fixes
+  - issue: 427
+    severity: 5
+    topic: "Graphics"
+    library: "bb_blitlib"
+    command: "BTBlockImage"
+    text: "`BTBlockImage` takes image 147 and the ones after it from their place; the original read them from memory before `image_addr` or inside the first images."
+    page: libraries
+    anchor: bb-blitlib-fixes
+  - issue: 428
+    severity: 3
+    topic: "Graphics"
+    library: "bb_blitlib"
+    command: "CreateShape"
+    text: "With runtime error checking, `CreateShape` with a count of 0 stops with \"CreateShape count must be at least 1!\"; the original made 65536 shapes over the memory behind the shape table."
+    page: libraries
+    anchor: bb-blitlib-fixes
+  - issue: 429
+    severity: 3
+    topic: "Graphics"
+    library: "bb_blitlib"
+    command: "SpecialBlock, SpecialBlockBitmap, TBlock, PredatorBlit, BPredatorBlit, BColourBlit, SpecialBlockToShape"
+    text: "With runtime error checking, the blits of bb_blitlib stop with \"Uninitialized Shape\" for a shape never defined; the original blitted 65536 planes over memory all over the system."
+    page: libraries
+    anchor: bb-blitlib-fixes
+  - issue: 1077
+    severity: 3
+    topic: "Graphics"
+    library: "bb_blitlib"
+    command: "CreateShape"
+    text: "With runtime error checking, `CreateShape` stops with \"CreateShape start+count above Maximum Shapes!\" when its shapes would run past the shape table; the original wrote them over the memory behind it."
+    page: libraries
+    anchor: bb-blitlib-fixes
   - issue: 461
     severity: 5
     topic: "Strings"

@@ -128,6 +128,8 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
 * [Voices left out by `TrackerChannels` played the wrong notes]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#trackerchannels-voices" >}}):
   each voice after a left-out one played the notes of the voice before
   it.
+* [`BlockToShape` copied only part of a wide shape]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#blocktoshape-width" >}}):
+  of a shape 32 pixels wide, only the first half of its planes.
 
 In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})):
 

@@ -5,7 +5,10 @@ intro: |
   memory into the current bitmap. They program the blitter registers
   directly, without asking the system for the blitter, so they are meant
   for Blitz mode. They check almost nothing: shapes and bitmaps must
-  exist and be of the sizes a command expects.
+  exist and be of the sizes a command expects. With runtime error
+  checking, the commands that blit a shape refuse one that was never
+  defined with the error "Uninitialized Shape"; without it, such a shape
+  makes them blit 65536 planes over memory.
 
   Several commands are written for the 16 by 16 blocks of a map and
   assume that the bitmap has the line width set with `SetupMapTwo`, 40
@@ -17,6 +20,5 @@ intro: |
   a buffer of the buffered blit commands (`Buffer`, `BBlit`), so that
   `UnBuffer` restores it, and shift the shape to any x position.
 
-  Kept from the original: a shape or bitmap of depth 0 makes a command
-  loop 65536 times over memory
-  ([#429](https://github.com/fubar-coder/bb2-c/issues/429)).
+  The fixed bugs of the library are listed in
+  [Fixes in bb_blitlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#bb-blitlib-fixes" >}}).
