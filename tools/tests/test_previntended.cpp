@@ -1,10 +1,13 @@
-/*
- * test_previntended.c - the PREV_INTENDED entries for the corpus and ted_ab
- * (lib/previntended): listed and different, listed and the same (stale),
- * not listed and different, ON, a pair, partial runs and malformed entries.
- */
-#include "testutil.h"
+// test_previntended - the PREV_INTENDED entries for the corpus and ted_ab
+// (lib/previntended): listed and different, listed and the same (stale),
+// not listed and different, ON, a pair, partial runs and malformed entries.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "previntended.h"
+}
 
 static int add(struct prevint *pi, const char *e)
 {
@@ -15,7 +18,7 @@ static int add(struct prevint *pi, const char *e)
 
 static int add_err(const char *e, const char *msg)
 {
-    struct prevint pi = { 0 };
+    struct prevint pi = {};
     char err[300] = "";
     int r = prevint_add(&pi, e, err, sizeof err);
 
@@ -23,9 +26,9 @@ static int add_err(const char *e, const char *msg)
     return r == -1 && strstr(err, msg) && strstr(err, e);
 }
 
-static void test_judge(void)
+TEST_CASE("previntended: judge", "[previntended]")
 {
-    struct prevint pi = { 0 };
+    struct prevint pi = {};
     size_t c = 0;
 
     CHECK(add(&pi, "corpus:alpha") == 0);
@@ -51,9 +54,9 @@ static void test_judge(void)
     prevint_free(&pi);
 }
 
-static void test_on(void)
+TEST_CASE("previntended: on", "[previntended]")
 {
-    struct prevint pi = { 0 };
+    struct prevint pi = {};
     size_t c = 0;
 
     CHECK(add(&pi, "ON") == 0);
@@ -64,9 +67,9 @@ static void test_on(void)
     prevint_free(&pi);
 }
 
-static void test_pair(void)
+TEST_CASE("previntended: pair", "[previntended]")
 {
-    struct prevint pi = { 0 };
+    struct prevint pi = {};
     size_t c = 0;
 
     CHECK(add(&pi, "ted_ab:open") == 0);
@@ -82,9 +85,9 @@ static void test_pair(void)
     prevint_free(&pi);
 }
 
-static void test_malformed(void)
+TEST_CASE("previntended: malformed", "[previntended]")
 {
-    struct prevint pi = { 0 };
+    struct prevint pi = {};
 
     /* a library path is not an entry of this kind */
     CHECK(add(&pi, "libs/acidlibs/2dlib.obj") == 1 && pi.n == 0);
@@ -103,11 +106,3 @@ static void test_malformed(void)
     prevint_free(&pi);
 }
 
-int main(void)
-{
-    test_judge();
-    test_on();
-    test_pair();
-    test_malformed();
-    return failures ? 1 : 0;
-}

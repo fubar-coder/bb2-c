@@ -9,9 +9,9 @@ writes the command table as JSON for the website (`cmdref`) and checks
 the `__entrypoint` routines of a library's objects (`entrypoints`). The
 logic is in `tools/lib/biglib` (BigLib files), `tools/lib/blitzlib`
 (header, token table, checks, the comparison), `tools/lib/cmdref` and
-`tools/lib/epcheck`, tested by `tools/tests/test_biglib.c`,
+`tools/lib/epcheck`, tested by `tools/tests/test_biglib.cpp`,
 `test_blitzlib.c`, `test_blitzlib_compare.c`, `test_cmdref.c` and
-`test_epcheck.c`.
+`test_epcheck.cpp`.
 
 ## Usage
 

@@ -21,8 +21,8 @@ data of a corpus pass written from two runs of the original
 `tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`),
 `tools/lib/cdtable`, `tools/lib/oracletable`, `tools/lib/libscmp`,
 `tools/lib/bugorigcmp`, `tools/lib/corpusexpect` and `tools/lib/perfbudget`, tested by
-`tools/tests/test_outmatch.c`, `test_prevcmp.c`, `test_previntended.c`,
-`test_cdtable.c`, `test_oracletable.c`, `test_libscmp.cpp`,
+`tools/tests/test_outmatch.cpp`, `test_prevcmp.cpp`, `test_previntended.cpp`,
+`test_cdtable.c`, `test_oracletable.cpp`, `test_libscmp.cpp`,
 `test_libscmp_bin.cpp`, `test_libscmp_sort.cpp`, `test_bugorigcmp.c`,
 `test_corpusexpect.c` and `test_perfbudget.c`.
 

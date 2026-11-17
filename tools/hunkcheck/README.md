@@ -4,7 +4,7 @@ Checks the hunks of an AmigaDOS load file that the build or a test made:
 the bytes at offsets of the first hunk (`start`), the layout of the hunks
 (`layout`), and that every CODE/DATA hunk is stored whole (`stored`). The
 logic is `tools/lib/hunkcheck` (`hunkcheck.h`, on `tools/lib/hunk`),
-tested by `tools/tests/test_hunkcheck.c`.
+tested by `tools/tests/test_hunkcheck.cpp`.
 
 ## Usage
 

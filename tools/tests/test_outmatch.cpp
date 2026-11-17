@@ -1,11 +1,14 @@
-/*
- * test_outmatch.c - outputs against expect files built in memory: literal
- * lines, '~' and '+' patterns, escapes, sections, line ends, and outputs
- * that must not match (a changed, missing or extra line) and broken
- * expect files.
- */
-#include "testutil.h"
+// test_outmatch - outputs against expect files built in memory: literal
+// lines, '~' and '+' patterns, escapes, sections, line ends, and outputs
+// that must not match (a changed, missing or extra line) and broken
+// expect files.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "outmatch.h"
+}
 
 static char msg[512];
 
@@ -21,7 +24,7 @@ static int ms(const char *expect, const char *output, const char *section)
 
 #define L(p, s) outmatch_line(p, s, strlen(s))
 
-static void test_patterns(void)
+TEST_CASE("outmatch: patterns", "[outmatch]")
 {
     CHECK(L("abc", "abc") && !L("abc", "abcd") && !L("abc", "ab"));
     CHECK(L("a*c", "ac") && L("a*c", "abbbc") && !L("a*c", "abcd"));
@@ -34,7 +37,7 @@ static void test_patterns(void)
     CHECK(!L("a\\", "a"));
 }
 
-static void test_match(void)
+TEST_CASE("outmatch: match", "[outmatch]")
 {
     /* literal lines; CR LF; a missing last LF */
     CHECK(m("a\nb\n", "a\nb\n") == 0 && msg[0] == 0);
@@ -53,7 +56,7 @@ static void test_match(void)
     CHECK(m("\\~x\n", "~xx\n") == 1);
 }
 
-static void test_mismatch(void)
+TEST_CASE("outmatch: mismatch", "[outmatch]")
 {
     /* a changed line: both line numbers in the message */
     CHECK(m("a\nb\nc\n", "a\nB\nc\n") == 1);
@@ -68,7 +71,7 @@ static void test_mismatch(void)
     CHECK(m("a\n", "\x1b[1m\n") == 1 && strstr(msg, "\"?[1m\""));
 }
 
-static void test_sections(void)
+TEST_CASE("outmatch: sections", "[outmatch]")
 {
     static const char expect[] = "[compile]\nrc=0\n[run]\n10\n~rc=#\n";
 
@@ -87,20 +90,9 @@ static void test_sections(void)
     CHECK(ms("[run]\n[a b]\n", "[run]\n[a b]\n", "run") == 0);
 }
 
-static void test_broken(void)
+TEST_CASE("outmatch: broken", "[outmatch]")
 {
     CHECK(m("~\n", "x\n") == -1 && strstr(msg, "without a pattern"));
     CHECK(m("a\n+\n", "a\nb\n") == -1 && strstr(msg, "expect line 2"));
 }
 
-int main(void)
-{
-    test_patterns();
-    test_match();
-    test_mismatch();
-    test_sections();
-    test_broken();
-    if (failures)
-        fprintf(stderr, "%d check(s) failed\n", failures);
-    return failures != 0;
-}

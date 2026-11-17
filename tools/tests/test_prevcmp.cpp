@@ -1,14 +1,16 @@
-/*
- * test_prevcmp.c - the library files of two build directories made in a
- * temporary directory: the same (passes), one file changed, missing or
- * new, intended differences (all, a list), a stale and an unknown entry,
- * files that are not compared, and a directory without library files.
- */
-#define _XOPEN_SOURCE 700
+// test_prevcmp - the library files of two build directories made in a
+// temporary directory: the same (passes), one file changed, missing or
+// new, intended differences (all, a list), a stale and an unknown entry,
+// files that are not compared, and a directory without library files.
 #include <sys/stat.h>
 #include <unistd.h>
-#include "testutil.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "prevcmp.h"
+}
 
 static char base[512];
 
@@ -72,7 +74,7 @@ static int run(const struct prevcmp_options *o, char *report, size_t n)
 
 static void test_same(void)
 {
-    struct prevcmp_options o = { 0 };
+    struct prevcmp_options o = {};
     char rep[2000];
 
     /* the objects in CMakeFiles/, a .linked file and the compilers are not
@@ -83,7 +85,7 @@ static void test_same(void)
 
 static void test_changed(void)
 {
-    struct prevcmp_options o = { 0 };
+    struct prevcmp_options o = {};
     const char *list[] = { "libs/acidlibs/2dlib.obj" }, *two[] = { "libs/acidlibs/2dlib.obj",
                                                                    "blitz2/acidlibs" };
     char rep[2000];
@@ -121,7 +123,7 @@ static void test_changed(void)
 
 static void test_missing_new(void)
 {
-    struct prevcmp_options o = { 0 };
+    struct prevcmp_options o = {};
     char rep[2000], path[1024];
 
     /* a new library file is counted, not judged */
@@ -144,7 +146,7 @@ static void test_missing_new(void)
 
 static void test_no_library_files(void)
 {
-    struct prevcmp_options o = { 0 };
+    struct prevcmp_options o = {};
     char rep[2000], dir[600];
 
     snprintf(dir, sizeof dir, "%s/prev", base);
@@ -164,26 +166,26 @@ static void test_no_library_files(void)
     (void)rep;
 }
 
-int main(void)
+TEST_CASE("prevcmp: build directories in a temporary directory", "[prevcmp]")
 {
     const char *tmp = getenv("TMPDIR");
 
     snprintf(base, sizeof base, "%s/test_prevcmp-XXXXXX", tmp && *tmp ? tmp : "/tmp");
     if (!mkdtemp(base)) {
         perror("mkdtemp");
-        return 1;
+        FAIL("cannot create the temporary directory");
     }
     make();
     test_same();
     test_changed();
     test_missing_new();
     test_no_library_files();
-    if (!failures) {
+    // the directory is kept when a check failed (for the diagnosis)
+    if (!snitch::impl::get_current_test().failures) {
         char cmd[700];
 
         snprintf(cmd, sizeof cmd, "rm -rf '%s'", base);
         if (system(cmd))
             fprintf(stderr, "cannot remove %s\n", base);
     }
-    return failures ? 1 : 0;
 }

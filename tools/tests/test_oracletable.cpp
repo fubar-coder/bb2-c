@@ -1,12 +1,15 @@
-/*
- * test_oracletable.c - the oracle data of the TED tests written from a
- * fresh run of the original TED, with files built in memory: no notes
- * (the fresh run as it is), a kept note row, the parts of a note, and the
- * broken inputs (stale note, note row missing from the run, a note
- * without the original's hash or naming the row's own, malformed rows).
- */
-#include "testutil.h"
+// test_oracletable - the oracle data of the TED tests written from a
+// fresh run of the original TED, with files built in memory: no notes
+// (the fresh run as it is), a kept note row, the parts of a note, and the
+// broken inputs (stale note, note row missing from the run, a note
+// without the original's hash or naming the row's own, malformed rows).
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "oracletable.h"
+}
 
 #define H_ORIG "3dcc3460e058bbf12447e463f2d24d8738c3cc35353625c0d265d37733e016d6"
 #define H_PORT "1c18c4b7421e3a8c99497ead7fa8f8ca2638f45dd985e18ba4c47aa80a2032aa"
@@ -27,7 +30,7 @@ static int run(const char *fresh, const char *old)
     return oracletable_merge(fresh, old, &out, &rep);
 }
 
-static void test_note_hash(void)
+TEST_CASE("oracletable: note_hash", "[oracletable]")
 {
     char h[65];
 
@@ -45,10 +48,8 @@ static void test_note_hash(void)
     CHECK(oracletable_note_hash("#12: (2.10: " H_A ")", h) == -1);
 }
 
-int main(void)
+TEST_CASE("oracletable: merge", "[oracletable]")
 {
-    test_note_hash();
-
     /* no notes: the fresh run as it is (a regenerated file equals the
        committed one) */
     CHECK(run(FRESH, FRESH) == 0 && !strcmp(out, FRESH) && strstr(rep, "0 note rows kept"));
@@ -96,5 +97,4 @@ int main(void)
 
     free(out);
     free(rep);
-    return failures != 0;
 }
