@@ -147,6 +147,10 @@ kind F):
   clearing it (a second finit or BankLimit, or the next ChangeDir,
   unlocked it again); the Shell the program was started from was left
   with a freed lock (#491).
+* `BankLimit n` returns the new number of banks, as `BankLimit` without
+  an argument does (the manual's syntax:
+  `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
+  of the new start table, init's d0 (#483).
 
 ## BUG(orig), kept
 
@@ -167,8 +171,6 @@ kind F):
   dos.library of OS 3.2 (the emulator's) has the lock in d1 too: the test
   sees the directory unlocked; other versions may leak it or unlock
   garbage (#496).
-* `BankLimit n` returns the address of the new start table (init's d0)
-  (#483).
 * `DeviceName$` takes the name from the string space (a3), not from d0;
   a ":" in front of an empty argument (the byte before it) is cleared
   (#493). The task is read through `dol_Task` without a check (a device

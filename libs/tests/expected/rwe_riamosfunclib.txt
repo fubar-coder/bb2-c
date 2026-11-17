@@ -118,7 +118,10 @@ BSave|popped|form 1 nodir/x.bin 0 10|1	$00000000
 BankLimit|d0||1	$00000032
 BankLimit|d0|50|1	$00000032
 BankLimit|d0|60|1	$0000003C
-BankLimit|d0 = the start table|60|1	$00000001
+BankLimit|d0 is the new limit|50|1 [orig]	$00000000
+BankLimit|d0 is the new limit|50|1 [fixed #483]	$00000001
+BankLimit|d0 is the new limit|60|1 [orig]	$00000000
+BankLimit|d0 is the new limit|60|1 [fixed #483]	$00000001
 BankLimit|kept||1	kept
 BankLimit|kept|50|1	kept
 BankLimit|kept|50|2	kept

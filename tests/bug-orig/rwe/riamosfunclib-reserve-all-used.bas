@@ -4,28 +4,28 @@
 ; of the last bank (the start table follows the length table), its
 ; "length" memlib's header long of the tables' block: the bank is
 ; "erased" (FreeMem(last length, header)) and the new block's address
-; stored over the last bank's length.  Made safe: BankLimit 2 returns
-; the start table (#483); bank 1 is reserved with a length equal to the
-; address of a chip block of the program's own whose size is that header
-; long, so the FreeMem frees that block; the header is restored.
+; stored over the last bank's length.  Made safe: the original's
+; BankLimit 2 returns the start table (#483: the port returns 2, an
+; address only in the original); bank 1 is reserved with a length equal
+; to the address of a chip block of the program's own whose size is that
+; header long, so the FreeMem frees that block; the header is restored.
 ; Correct: Reserve(length) finds no free bank and leaves bank 1 alone.
 ; @fixed #498
 ; @rwe riamosfunclib
 DEFTYPE .l
 s=BankLimit(2)
-h=Peek.l(s-12)
+If s>65535 Then h=Peek.l(s-12) Else h=16
 a=AllocMem_(h,2)
 If a=0 Then NPrint "no memory" : End
 r=Reserve(0,100)
 r=Reserve(1,a)
 c=Reserve(100)
-v=Peek.l(s-4)
-Poke.l s-12,h
+If s>65535 Then v=Peek.l(s-4) : Poke.l s-12,h Else v=Length(1)
 If v=a
   FreeMem_ a,h
   NPrint "bank 1 kept"
 Else
-  Poke.l s-4,a
+  If s>65535 Then Poke.l s-4,a
   NPrint "bank 1 changed"
 EndIf
 End

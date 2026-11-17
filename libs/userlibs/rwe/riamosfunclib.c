@@ -55,8 +55,6 @@
  *   - MakeDir unlocks whatever CreateDir leaves in d1, not the lock it
  *     returned in d0 (see makedir_c; with the dos.library of OS 3.2 d1
  *     holds the lock as well, the test sees it given back) (#496).
- *   - BankLimit returns the address of the new start table (init's d0)
- *     (#483).
  *   - DeviceName$ takes the name from the string space (a3), not from
  *     d0 (#493); the task is read through dol_Task without a check (a
  *     device without a handler task reads near address 0) (#494).
@@ -102,6 +100,9 @@
  *     BankLimit unlocked the last ChangeDir lock while it was still the
  *     current directory, without clearing oldlock (a second finit or
  *     BankLimit, or the next ChangeDir, unlocked it again) (#491).
+ *   - BankLimit n returns the new number of banks, as BankLimit without
+ *     an argument; the original returned the address of the new start
+ *     table (init's d0) (#483).
  *   - Reserve(length) returns -1 for a negative length, as for its other
  *     failures; the original returned 0, the number of the first bank
  *     (#500).
@@ -715,17 +716,18 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * @brief BankLimit numbanks: a new number of banks - finit (every bank
  * freed), the new number, init.
  *
- * BUG(orig): returns the address of the new start table (init's d0)
- * (#483).  Fixed (#491): the current directory and ChangeDir's lock stay;
+ * Fixed (#483): returns the new number of banks; the original returned
+ * the address of the new start table (init's d0).  Fixed (#491): the current directory and ChangeDir's lock stay;
  * the original unlocked the lock as finit does, while it was current.
  * @param n  d0: numbanks
- * @return d0: the new start table
+ * @return d0: numbanks
  */
 static ULONG BLITZ_ROUTINE banklimit_c(LONG n BL_REG(d0))
 {
     finitbanks();
     maxbanks = n;
-    return libinit_c();
+    libinit_c();
+    return (ULONG)maxbanks;                     /* fixed (#483) */
 }
 
 /**

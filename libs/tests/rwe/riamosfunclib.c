@@ -370,7 +370,7 @@ static void banks(void)
     ROUT = "BankLimit";
     strcpy(VEC, "60");
     call4(E_BANKLIMIT, 0, 60, 0, 0, 0);
-    BOTH("d0 = the start table", R.d[0] != 0 && R.d[0] != 60);
+    OBS("d0 is the new limit", R.d[0] == 60);           /* the original: the start table (#483) */
     DO1(ENT(LIB, E_BANKLIMIT, 1), (void)0);
     OBS("d0", R.d[0]);
     length(0);
@@ -382,6 +382,7 @@ static void banks(void)
     ROUT = "BankLimit";
     strcpy(VEC, "50");
     call4(E_BANKLIMIT, 0, 50, 0, 0, 0);
+    OBS("d0 is the new limit", R.d[0] == 50);
     DO1(ENT(LIB, E_BANKLIMIT, 1), (void)0);
     OBS("d0", R.d[0]);
     length(55);                                         /* above the limit: 0 */

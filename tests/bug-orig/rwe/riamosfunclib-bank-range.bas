@@ -5,7 +5,8 @@
 ; the default 50), here 100.  Reserve(bank,length) does not test the bank
 ; at all: Reserve(50,16) stores the new block's address behind the start
 ; table and the length over the start of bank 0, and returns -1.
-; Made safe: BankLimit 50 returns the start table (#483), the long behind
+; Made safe: the original's BankLimit 50 returns the start table (#483:
+; the port returns 50, the guard s>65535), the long behind
 ; it is read before the Reserve and written back right after it under
 ; Forbid, the start of bank 0 is cleared again and the block freed.
 ; Correct: bank -1 is no bank, Start(-1) returns 0; Reserve(50,16) is
