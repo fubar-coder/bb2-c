@@ -1,10 +1,18 @@
-# tests of lib/, with inputs built in memory (testutil.h)
-foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats tedfont
-		outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusexpect bugorigcmp perfbudget
-		epcheck)
+# tests of lib/, with inputs built in memory (testutil.h; testutil.hpp in the
+# snitch programs)
+foreach(t blitzlib blitztokens amiga_emulation checkdata bb22 blitzres teststats tedfont outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusexpect bugorigcmp perfbudget epcheck asmcmp checklabels mktestdata vasmlisting bblines bbdetok statline)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
 	target_compile_options(test_${t} PRIVATE -Wno-unused-function)
+	add_test(NAME ${t} COMMAND test_${t})
+endforeach()
+
+# the same for the tests converted to snitch programs (C++20), one per file
+foreach(t hunk biglib hunkcheck sha256)
+	add_executable(test_${t} test_${t}.cpp)
+	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk snitch::snitch)
+	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
+	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 

@@ -1,11 +1,14 @@
-/*
- * test_sha256.c - sha256 against the FIPS 180-4 examples and pieces of
- * every size (block boundaries, padding into a second block).
- */
-#include "testutil.h"
+// test_sha256 - sha256 against the FIPS 180-4 examples and pieces of
+// every size (block boundaries, padding into a second block).
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "sha256.h"
+}
 
-static int is(const char *data, size_t len, const char *want)
+namespace {
+
+bool is(const char *data, size_t len, const char *want)
 {
     char hex[65];
 
@@ -13,7 +16,9 @@ static int is(const char *data, size_t len, const char *want)
     return !strcmp(hex, want);
 }
 
-int main(void)
+} // namespace
+
+TEST_CASE("sha256: FIPS 180-4 examples and pieces of every size", "[sha256]")
 {
     static char a[1000000];
     char hex[65], whole[65];
@@ -27,7 +32,7 @@ int main(void)
     memset(a, 'a', sizeof a);
     CHECK(is(a, sizeof a, "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0"));
 
-    /* the same text in pieces of 1..130 bytes */
+    // the same text in pieces of 1..130 bytes
     sha256_hex_of(a, 1000, whole);
     for (step = 1; step <= 130; step++) {
         sha256_init(&s);
@@ -36,5 +41,4 @@ int main(void)
         sha256_hex(&s, hex);
         CHECK(!strcmp(hex, whole));
     }
-    return failures != 0;
 }
