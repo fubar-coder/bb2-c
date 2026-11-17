@@ -19,7 +19,8 @@ through one message port, the DOS device list and two string functions:
   `_dosbase` (the C build through a6, the program's dos base of `!libs
   #doslib,#la6`: the same pointer); `NextDevice` – the name of
   the next entry (`NextDosEntry`), "" at the end; `DeviceEntryType` –
-  `dol_Type` of the current entry, -1 if none; `FreeDeviceList` –
+  `dol_Type` of the current entry (noted while the list is locked), -1
+  if none; `FreeDeviceList` –
   `UnLockDosList`.
 * `GetFileName(p$)` – the part behind the last `/` or `:`;
   `GetPathName(p$)` – the part up to and including it. Both give the
@@ -69,6 +70,12 @@ kind F):
   held, its characters whatever the string buffer held (#625; test
   `ridoslib-nextdevice-no-list-length`, `libs_emulator` cases
   `[fixed #625]` of `rwe_ridoslib`).
+* DeviceEntryType returns the type that GetDeviceList and NextDevice
+  noted while the list was locked; it reads no entry, so its result does
+  not change after FreeDeviceList (no allocation). The original read
+  `dol_Type` of the current entry also after the unlock, when the entry
+  may have been removed and freed (#622; test
+  `ridoslib-devicetype-after-free`).
 
 ## BUG(orig)
 
@@ -81,8 +88,6 @@ kind F):
 * RemNotify: no range check either (#626).
 * finit removes the requests from id 63 down only while the counter is
   not 0 (#621).
-* FreeDeviceList leaves the current entry: DeviceEntryType then reads an
-  entry of the unlocked list (#622).
 * GetPathName never looks at the first character: `/abc` and `:x` give
   "", like a name without separator (#624). GetFileName and GetPathName take the length as a word
   (`MOVE.w -(a2)`: the low word of the long) (#628), and nothing limits

@@ -16,7 +16,7 @@
  * StartNotify on a missing device, one request left for finit);
  * GetDeviceList (devices, volumes, assigns) and NextDevice to the end
  * with DeviceEntryType after each, NextDevice/DeviceEntryType after
- * FreeDeviceList (stale entry, BUG(orig) (#622)); finit (ends the requests left;
+ * FreeDeviceList (the type of the last entry, #622); finit (ends the requests left;
  * the failed request stays allocated, BUG(orig) (#621)).
  * Not covered: ids outside 0..63 (they write outside the tables), names
  * longer than tbuf.

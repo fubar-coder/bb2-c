@@ -22,7 +22,8 @@
  *                        program, !libs #doslib,#la6); -1 / 0
  *   NextDevice           the name of the next entry (NextDosEntry), ""
  *                        at the end
- *   DeviceEntryType      dol_Type of the current entry, -1 if none
+ *   DeviceEntryType      dol_Type of the current entry, -1 if none (noted
+ *                        while the list is locked)
  *   FreeDeviceList       UnLockDosList
  *   GetFileName(p$)      the part behind the last / or :
  *   GetPathName(p$)      the part up to and including the last / or :
@@ -40,8 +41,6 @@
  *   - RemNotify: no range check either (#626).
  *   - finit removes the requests from id 63 down only while the counter
  *     is not 0 (#621).
- *   - FreeDeviceList leaves the current entry: DeviceEntryType then
- *     reads the entry of the unlocked list (#622).
  *   - GetPathName never looks at the first character: "/abc" and ":x"
  *     give "", like a name without separator (#624).  GetFileName and GetPathName take the length
  *     as a word (MOVE.w -(a2): the low word of the long) (#628), and
@@ -58,6 +57,11 @@
  * Fixed (intended deviation, #625): NextDevice without a locked list
  * returned with d0 unchanged, so the result string's length was whatever
  * d0 held; it is "" now.
+ * Fixed (intended deviation, #622): DeviceEntryType read dol_Type of the
+ * current entry, also after FreeDeviceList, when the entry may have been
+ * removed and freed; GetDeviceList and NextDevice now note the type while
+ * the list is locked and DeviceEntryType returns that (the same value
+ * while the entry exists; no allocation).
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -170,6 +174,9 @@ static UBYTE tbuf[256];                                 /* Dcb.b 256,0 */
 static UWORD notifycnt;
 static struct DosList *mydosentry, *mydoslist;
 static UWORD doslistflags;
+/* dol_Type of the current entry, -1 without one (fixed, #622: noted while
+   the list is locked, DeviceEntryType reads no entry) */
+static ULONG entrytype = (ULONG)-1;
 static struct DosLibrary *dosbase_;                     /* _dosbase */
 static const char dosname[] = "dos.library";
 static STRPTR fileptr;
@@ -438,7 +445,8 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * @brief GetDeviceList(flags): locks the DOS device list
  * (LockDosList(flags | LDF_READ)).
  *
- * The current entry is the list itself until NextDevice.
+ * The current entry is the list itself until NextDevice; its dol_Type is
+ * noted for DeviceEntryType (#622).
  * @param flags  d0.w: the LDF_ flags
  * @param dos    a6: the program's dos base (!libs #doslib,#la6)
  * @return d0: BB_TRUE, BB_FALSE if LockDosList fails
@@ -451,6 +459,7 @@ static BB_BOOL BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
     if (!mydoslist)
         return BB_FALSE;
     mydosentry = mydoslist;
+    entrytype = (ULONG)mydosentry->dol_Type;            /* fixed (#622) */
     return BB_TRUE;
 }
 
@@ -474,8 +483,11 @@ static ULONG BLITZ_ROUTINE nextlistitem_c(struct DosLibrary *dos BL_REG(a6))
     if (!mydoslist)
         return 0;                                       /* fixed (#625) */
     mydosentry = NextDosEntry(mydosentry, doslistflags);
-    if (!mydosentry)
+    if (!mydosentry) {
+        entrytype = (ULONG)-1;                          /* fixed (#622) */
         return 0;
+    }
+    entrytype = (ULONG)mydosentry->dol_Type;            /* fixed (#622) */
     name = (const UBYTE *)BADDR(mydosentry->dol_Name);
     result = *name++;
     while ((*blitz_string++ = *name++) != 0)
@@ -488,15 +500,15 @@ static ULONG BLITZ_ROUTINE nextlistitem_c(struct DosLibrary *dos BL_REG(a6))
  * @brief DeviceEntryType: dol_Type of the current entry (dev 0, dir 1,
  * vol 2, late 3, nonbind 4).
  *
- * BUG(orig) (#622): after FreeDeviceList it reads the entry of the
- * unlocked list.
+ * The type noted by GetDeviceList and NextDevice while the list was
+ * locked; no entry is read, so the result stays the same after
+ * FreeDeviceList (fixed, #622: the original read dol_Type of the current
+ * entry also after the unlock, when it may have been freed).
  * @return d0: the type, -1 if there is no entry
  */
 static ULONG BLITZ_ROUTINE dosentrytype_c(void)
 {
-    if (!mydosentry)
-        return (ULONG)-1;
-    return (ULONG)mydosentry->dol_Type;
+    return entrytype;
 }
 
 /**
@@ -504,8 +516,8 @@ static ULONG BLITZ_ROUTINE dosentrytype_c(void)
  *
  * Only a list that GetDeviceList locked is unlocked (fixed, #623: the
  * original did not check it, and UnLockDosList released the semaphore
- * once too often and called Permit once too often).  BUG(orig) (#622):
- * the current entry stays.
+ * once too often and called Permit once too often).  The current entry
+ * stays; DeviceEntryType does not read it (#622).
  * @param incoming  d0: the caller's d0
  * @param dos       a6: the program's dos base (the original goes through
  *                  init's _dosbase: the same pointer)
