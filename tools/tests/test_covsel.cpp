@@ -1,12 +1,15 @@
-/*
- * test_covsel.c - lib/covsel: the selection of tests for a change, one
- * case per rule of D8 (changed functions, a line outside them, a file
- * without line ranges, a header, the build, an unknown file, labels,
- * names, documentation, new tests, a new file, a stale map), the patterns,
- * the rules of tools/testinfo/rules.txt, and broken inputs of each kind.
- */
-#include "testutil.h"
+// test_covsel - lib/covsel: the selection of tests for a change, one
+// case per rule of D8 (changed functions, a line outside them, a file
+// without line ranges, a header, the build, an unknown file, labels,
+// names, documentation, new tests, a new file, a stale map), the patterns,
+// the rules of tools/testinfo/rules.txt, and broken inputs of each kind.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "covsel.h"
+}
 
 #define ROOT "/src/bb2"
 
@@ -174,7 +177,7 @@ static char *diff1(const char *path, const char *hunk, const char *body)
 /* every emulator test and the host tests */
 #define EMU "ab3_cli bug_orig_x corpus corpus_req corpus_serial host host_emulator newtest"
 
-static void test_select(void)
+TEST_CASE("covsel: select", "[covsel]")
 {
     char *r;
 
@@ -277,7 +280,7 @@ static void test_select(void)
     CHECK(!strcmp(select_for(rules, "", NULL, 1), ALL));
 }
 
-static void test_match(void)
+TEST_CASE("covsel: match", "[covsel]")
 {
     CHECK(covsel_match("docs/**", "docs/a/b.md"));
     CHECK(!covsel_match("docs/**", "docsx/a"));
@@ -298,7 +301,7 @@ static const char real_rules[] = {
     , 0
 };
 
-static void test_real_rules(void)
+TEST_CASE("covsel: real rules", "[covsel]")
 {
     char *r;
 
@@ -360,7 +363,7 @@ static void test_real_rules(void)
 /* the oracle tests run when tests/ab3 changes: its sources, expect files,
    case lists and cli.cmake (the label oracle takes them out of the presets
    emulator and all; the selection still names them) */
-static void test_oracle(void)
+TEST_CASE("covsel: oracle", "[covsel]")
 {
     char *r;
 
@@ -379,7 +382,7 @@ static void test_oracle(void)
     cur_tests = tests;
 }
 
-static void test_broken(void)
+TEST_CASE("covsel: broken", "[covsel]")
 {
     struct covsel *s = covsel_new(ROOT);
     static const char *const bad_commits[] = { "", "\n", "abc 123\n", "HEAD\n", "abc123\nx\n" };
@@ -447,7 +450,7 @@ static void test_broken(void)
 
 /* two tests whose names have the same lcov form (TN:x_a): the name comes
    from the tracefile's path, so a change selects only the test that ran it */
-static void test_same_tn(void)
+TEST_CASE("covsel: same tn", "[covsel]")
 {
     static const char two[] =
         "{\"kind\": \"ctestInfo\", \"tests\": [" TEST("x-a", "") "," TEST("x_a", "") "]}";
@@ -467,7 +470,7 @@ static void test_same_tn(void)
 
 /* two tests whose names have the same lcov form (TN:x_a): their tracefiles'
    paths keep them apart, a change selects the one that ran the function */
-static void test_tn_collision(void)
+TEST_CASE("covsel: tn collision", "[covsel]")
 {
     static const char ctest[] = "{\"kind\": \"ctestInfo\", \"tests\": ["
                                 TEST("x-a", "") "," TEST("x_a", "") "]}";
@@ -495,18 +498,4 @@ static void test_tn_collision(void)
     CHECK(s && !covsel_run(s, NULL));
     CHECK(s && covsel_count(s) == 1 && !strcmp(covsel_name(s, 0), "x-a"));
     covsel_free(s);
-}
-
-int main(void)
-{
-    test_match();
-    test_select();
-    test_real_rules();
-    test_oracle();
-    test_broken();
-    test_tn_collision();
-    test_same_tn();
-    if (failures)
-        fprintf(stderr, "%d failure(s)\n", failures);
-    return failures != 0;
 }

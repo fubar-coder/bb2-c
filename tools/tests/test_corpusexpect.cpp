@@ -1,17 +1,19 @@
-/*
- * test_corpusexpect.c - the expected data of the corpus as cases
- * (lib/corpusexpect, tests/corpus/expect): the file names and the malformed
- * forms, which file applies to which configuration (design D2 of the
- * OpenSpec change corpus-test-model), executable files refused (OpenSpec
- * change originals-compare-outputs), the record from two runs, the update
- * from the port with and without FIX, the projection for fix-scope and a
- * plan applied to a directory.  The sets are built in memory.
- */
-#define _DEFAULT_SOURCE
+// test_corpusexpect - the expected data of the corpus as cases
+// (lib/corpusexpect, tests/corpus/expect): the file names and the malformed
+// forms, which file applies to which configuration (design D2 of the
+// OpenSpec change corpus-test-model), executable files refused (OpenSpec
+// change originals-compare-outputs), the record from two runs, the update
+// from the port with and without FIX, the projection for fix-scope and a
+// plan applied to a directory.  The sets are built in memory.
 #include <dirent.h>
 #include <unistd.h>
-#include "testutil.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "corpusexpect.h"
+}
 
 #define H1 "1111111111111111111111111111111111111111111111111111111111111111\n"
 #define H2 "2222222222222222222222222222222222222222222222222222222222222222\n"
@@ -72,7 +74,7 @@ static int check_refused(const char *n1, const char *d1, const char *n2, const c
     return 1;
 }
 
-static void test_names(void)
+TEST_CASE("corpusexpect: names", "[corpusexpect]")
 {
     struct cexp_set s;
     const struct cexp_prog *p;
@@ -147,7 +149,7 @@ static void test_names(void)
 }
 
 /* design D2: which file applies to which configuration */
-static void test_sides(void)
+TEST_CASE("corpusexpect: sides", "[corpusexpect]")
 {
     struct cexp_set s;
     const struct cexp_prog *plain, *pair;
@@ -194,7 +196,7 @@ static void test_sides(void)
     cexp_free(&s);
 }
 
-static void test_hash_diff(void)
+TEST_CASE("corpusexpect: hash and diff", "[corpusexpect]")
 {
     char h[CEXP_HASHLEN + 1], what[700];
 
@@ -244,10 +246,10 @@ static char *rep_text(struct rep *r)
     return r->p;
 }
 
-static void test_accept(void)
+TEST_CASE("corpusexpect: accept", "[corpusexpect]")
 {
     struct cexp_set r1, r2, old;
-    struct cexp_plan pl = { 0 };
+    struct cexp_plan pl = {};
     struct rep rep;
     char *t;
     const char *only[] = { "c" };
@@ -339,10 +341,10 @@ static void test_accept(void)
     cexp_free(&old);
 }
 
-static void test_update(void)
+TEST_CASE("corpusexpect: update", "[corpusexpect]")
 {
     struct cexp_set run, old;
-    struct cexp_plan pl = { 0 };
+    struct cexp_plan pl = {};
     struct cexp_fix fix[2];
     struct rep rep;
     char err[300], *t;
@@ -427,7 +429,7 @@ static void test_update(void)
     cexp_free(&old);
 }
 
-static void test_project(void)
+TEST_CASE("corpusexpect: project", "[corpusexpect]")
 {
     struct cexp_set s;
     struct rep rep;
@@ -450,18 +452,18 @@ static void test_project(void)
 }
 
 /* a plan applied to a directory and the directory loaded back */
-static void test_apply(void)
+TEST_CASE("corpusexpect: apply", "[corpusexpect]")
 {
     char tmpl[] = "/tmp/cexp-XXXXXX", dir[64], err[400];
     struct cexp_set s, back;
-    struct cexp_plan pl = { 0 };
+    struct cexp_plan pl = {};
     struct rep rep;
     char *t;
     struct dirent *e;
     DIR *d;
 
     if (!mkdtemp(tmpl)) {
-        CHECK(!"mkdtemp");
+        FAIL("mkdtemp");
         return;
     }
     snprintf(dir, sizeof dir, "%s/corpus", tmpl);
@@ -538,16 +540,4 @@ static void test_apply(void)
     }
     rmdir(dir);
     rmdir(tmpl);
-}
-
-int main(void)
-{
-    test_names();
-    test_sides();
-    test_hash_diff();
-    test_accept();
-    test_update();
-    test_project();
-    test_apply();
-    return failures ? 1 : 0;
 }

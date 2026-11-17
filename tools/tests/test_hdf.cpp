@@ -1,11 +1,14 @@
-/*
- * test_hdf.c - AmigaDOS hardfiles (tools/lib/hdf): images formatted in
- * memory (raw and inside a Rigid Disk Block), files written, replaced,
- * copied and read back in all four DOS types, the checks, and broken or
- * unsupported images that must be refused.
- */
-#include "testutil.h"
+// test_hdf - AmigaDOS hardfiles (tools/lib/hdf): images formatted in
+// memory (raw and inside a Rigid Disk Block), files written, replaced,
+// copied and read back in all four DOS types, the checks, and broken or
+// unsupported images that must be refused.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "hdf.h"
+}
 
 #define DOS(n) (0x444F5300u | (n))
 
@@ -36,7 +39,7 @@ static void sum(uint8_t *b, size_t nlongs, size_t off)
 
 static uint8_t *formatted(size_t blocks, uint32_t dostype)
 {
-    uint8_t *img = malloc(blocks * HDF_BLOCK);
+    uint8_t *img = static_cast<uint8_t *>(malloc(blocks * HDF_BLOCK));
     char err[200];
 
     CHECK(img && hdf_format(img, blocks * HDF_BLOCK, dostype, "Test", 17000, err, sizeof err) == 0);
@@ -45,7 +48,7 @@ static uint8_t *formatted(size_t blocks, uint32_t dostype)
 
 static uint8_t *pattern(size_t n, unsigned seed)
 {
-    uint8_t *p = malloc(n ? n : 1);
+    uint8_t *p = static_cast<uint8_t *>(malloc(n ? n : 1));
     size_t i;
 
     for (i = 0; i < n; i++)
@@ -89,10 +92,8 @@ static void files(uint32_t dostype)
         CHECK(hdf_write(&h, "Data", data, sizes[i], err, sizeof err) == 0);
         CHECK(reads(&h, "data", data, sizes[i]));
         CHECK(reads(&h, "/DATA", data, sizes[i]));
-        if (hdf_check(&h, err, sizeof err)) {
-            fprintf(stderr, "DOS\\%u, %zu bytes: %s\n", dostype & 0xFF, sizes[i], err);
-            failures++;
-        }
+        INFO("DOS\\", dostype & 0xFF, ", ", sizes[i], " bytes: ", static_cast<const char *>(err));
+        CHECK(hdf_check(&h, err, sizeof err) == 0);
         free(data);
     }
     /* 10 bytes left: one header and one data block */
@@ -133,7 +134,7 @@ static void files(uint32_t dostype)
 }
 
 /* names: case-insensitive; the international DOS types also for Latin-1 */
-static void names(void)
+TEST_CASE("hdf: names", "[hdf]")
 {
     uint8_t *img;
     struct hdf h;
@@ -160,7 +161,7 @@ static void names(void)
 
 /* a copy keeps the date and the protection bits; a new file has its
    directory's date; the same changes give the same bytes */
-static void dates(void)
+TEST_CASE("hdf: dates", "[hdf]")
 {
     uint8_t *a = formatted(100, DOS(1)), *b = formatted(100, DOS(1)), *hb;
     struct hdf h;
@@ -202,7 +203,7 @@ static void dates(void)
 static uint8_t *rdb_image(size_t *size, uint32_t dostype)
 {
     size_t cyls = 40, blocks = cyls * 4;
-    uint8_t *img = calloc(blocks, HDF_BLOCK), *r = img, *p = img + HDF_BLOCK, *env = p + 128;
+    uint8_t *img = static_cast<uint8_t *>(calloc(blocks, HDF_BLOCK)), *r = img, *p = img + HDF_BLOCK, *env = p + 128;
     char err[200];
 
     memcpy(r, "RDSK", 4);
@@ -233,7 +234,7 @@ static uint8_t *rdb_image(size_t *size, uint32_t dostype)
     return img;
 }
 
-static void rdb(void)
+TEST_CASE("hdf: rdb", "[hdf]")
 {
     size_t size;
     uint8_t *img = rdb_image(&size, DOS(1)), *got = NULL;
@@ -273,7 +274,7 @@ static void rdb(void)
 }
 
 /* images that are refused or found damaged */
-static void broken(void)
+TEST_CASE("hdf: broken", "[hdf]")
 {
     uint8_t *img = formatted(100, DOS(1)), *got;
     struct hdf h;
@@ -340,11 +341,11 @@ static void broken(void)
     free(img);
 }
 
-static void hexfiles(void)
+TEST_CASE("hdf: hexfiles", "[hdf]")
 {
     struct hdf h;
     char err[200];
-    uint8_t *img = calloc(64, HDF_BLOCK), *back;
+    uint8_t *img = static_cast<uint8_t *>(calloc(64, HDF_BLOCK)), *back;
     size_t len;
 
     CHECK(img != NULL);
@@ -366,11 +367,11 @@ static void hexfiles(void)
     free(img);
 }
 
-static void listing(void)
+TEST_CASE("hdf: listing", "[hdf]")
 {
     uint8_t *img = formatted(100, DOS(3));
     struct hdf h;
-    char err[200], out[200] = { 0 };
+    char err[200], out[200] = {};
     FILE *f = tmpfile();
 
     CHECK(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
@@ -384,23 +385,17 @@ static void listing(void)
     free(img);
 }
 
-int main(void)
+TEST_CASE("hdf: files", "[hdf]")
 {
-    uint32_t t;
+    for (uint32_t t = 0; t < 4; t++)
+        files(DOS(t));
+}
+
+TEST_CASE("hdf: format refused", "[hdf]")
+{
     char err[200];
     uint8_t img[8 * HDF_BLOCK];
 
-    for (t = 0; t < 4; t++)
-        files(DOS(t));
-    names();
-    dates();
-    rdb();
-    broken();
-    listing();
-    hexfiles();
     CHECK(hdf_format(img, sizeof img, DOS(4), "x", 0, err, sizeof err) == -1);
     CHECK(hdf_format(img, sizeof img, DOS(1), "", 0, err, sizeof err) == -1);
-    if (failures)
-        fprintf(stderr, "test_hdf: %d failures\n", failures);
-    return failures != 0;
 }

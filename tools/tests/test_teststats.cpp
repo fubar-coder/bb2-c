@@ -1,13 +1,15 @@
-/*
- * test_teststats.c - the JUnit reader (lib/teststats/junit.h) and the
- * statistics (teststats.h) with JUnit files and @stat lines in memory,
- * also malformed files, testcases without name or time and broken @stat
- * lines (reported, not counted).
- */
-#define _POSIX_C_SOURCE 200809L /* open_memstream */
-#include "testutil.h"
+// test_teststats - the JUnit reader (lib/teststats/junit.h) and the
+// statistics (teststats.h) with JUnit files and @stat lines in memory,
+// also malformed files, testcases without name or time and broken @stat
+// lines (reported, not counted).
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "junit.h"
 #include "teststats.h"
+}
 
 #define HEAD "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" \
              "<testsuite name=\"(empty)\" tests=\"4\" timestamp=\"2026-10-31T10:00:00\">\n"
@@ -116,7 +118,7 @@ static int has_line(const char *text, const char *start, const char *has)
     while (l && *l) {
         const char *e = strchr(l, '\n');
         size_t n = e ? (size_t)(e - l) : strlen(l), i, k = 0;
-        char *line = malloc(n + 1);
+        char *line = static_cast<char *>(malloc(n + 1));
         int ok;
 
         for (i = 0; line && i < n; i++)
@@ -133,7 +135,7 @@ static int has_line(const char *text, const char *start, const char *has)
     return 0;
 }
 
-static void junit_reader(void)
+TEST_CASE("teststats: junit reader", "[teststats]")
 {
     struct junit_file f;
     char err[200];
@@ -188,11 +190,8 @@ static void junit_reader(void)
         err[0] = 0;
         int r = junit_parse(bad[i].text, strlen(bad[i].text), &f, err, sizeof err);
 
-        if (r != -1 || !strstr(err, bad[i].msg)) {
-            fprintf(stderr, "test_teststats: malformed %zu (%s): %d, %s\n", i, bad[i].text, r,
-                    err);
-            failures++;
-        }
+        INFO("malformed ", i, " (", bad[i].text, "): ", r, ", ", static_cast<const char *>(err));
+        CHECK(r == -1 && strstr(err, bad[i].msg));
         CHECK(f.ncases == 0 && f.cases == NULL);
     }
     /* too deep */
@@ -216,12 +215,10 @@ static void junit_reader(void)
     }
 }
 
-int main(void)
+TEST_CASE("teststats: report", "[teststats]")
 {
     struct teststats *t = teststats_new();
     char *diag, *text;
-
-    junit_reader();
 
     CHECK(t != NULL);
     CHECK(add(t, "run1.xml", run1, &diag) == 0 && diag && !*diag);
@@ -242,39 +239,41 @@ int main(void)
     text = report(t, 4, 10, 0);
     CHECK(text != NULL);
     if (!text)
-        return 1;
-    /* tests: runs, results, durations */
-    CHECK(has_line(text, "bug_a ", " 3 2 1 0 20.5 / 22.5 / 130.0"));
-    CHECK(has_line(text, "unit ", " 2 1 1 0 0.5 / 0.6 / 0.7"));
-    CHECK(has_line(text, "skip ", " 1 0 0 1 -"));
-    /* sessions; a line of another pass (run 2): every config of the test
-       with its pass */
-    CHECK(has_line(text, "bug_a ", " bug_a:port 3 restored x2, fallback 120.0 120.0 1.5 1 120 "
-                   "REPRODUCED, FIXED"));
-    CHECK(has_line(text, "bug_a ", " bug_a:ref 3 first-save, restored x2 6.0 6.0 1.5 0 120 "
-                   "reference x3"));
-    CHECK(has_line(text, "bug_a ", " other:x 1 cold 2.0 2.0 0.0 0 60 -"));
-    CHECK(has_line(text, "hang ", " ref 2 cold, restored 121.0 120.3 0.0 2 120 reference x2"));
-    /* flaky */
-    CHECK(has_line(text, "bug_a ", " bug_a:port verdict REPRODUCED, FIXED"));
-    CHECK(has_line(text, "bug_a ", " bug_a:port end timeout in some of 3 runs"));
-    CHECK(has_line(text, "bug_a ", " ctest result passed 2, failed 1"));
-    CHECK(has_line(text, "unit ", " ctest result passed 1, failed 1"));
-    CHECK(!has_line(text, "hang ", "verdict"));
-    /* limits: max timed of the sessions that ended normally x 4, >= 10 */
-    CHECK(has_line(text, "bug_a ", " bug_a:ref 6.0 120 24"));
-    CHECK(has_line(text, "bug_a ", " bug_a:port 10.0 120 40 1 of 3 sessions ended by timeout"));
-    CHECK(has_line(text, "bug_a ", " other:x 2.0 60 10"));
-    CHECK(has_line(text, "bug_a ", " (test) 120 40 the largest of its configs"));
-    CHECK(has_line(text, "hang ", " ref - 120 - hangs: every session ended by the time limit "
-                   "(sessions 2, runs 2); no data on the last output - no suggestion"));
-    CHECK(has_line(text, "hang ", " (test) 120 - every config hangs"));
-    /* COST: the median, rounded up */
-    CHECK(has_line(text, "bug_a ", " 3 22.5 23"));
-    CHECK(has_line(text, "hang ", " 2 255.0 255"));
-    CHECK(has_line(text, "unit ", " 2 0.6 1"));
-    if (failures)
-        fprintf(stderr, "%s", text);
+        return;
+    {
+        // the report is shown when one of its checks fails
+        INFO(static_cast<const char *>(text));
+        /* tests: runs, results, durations */
+        CHECK(has_line(text, "bug_a ", " 3 2 1 0 20.5 / 22.5 / 130.0"));
+        CHECK(has_line(text, "unit ", " 2 1 1 0 0.5 / 0.6 / 0.7"));
+        CHECK(has_line(text, "skip ", " 1 0 0 1 -"));
+        /* sessions; a line of another pass (run 2): every config of the test
+           with its pass */
+        CHECK(has_line(text, "bug_a ", " bug_a:port 3 restored x2, fallback 120.0 120.0 1.5 1 120 "
+                       "REPRODUCED, FIXED"));
+        CHECK(has_line(text, "bug_a ", " bug_a:ref 3 first-save, restored x2 6.0 6.0 1.5 0 120 "
+                       "reference x3"));
+        CHECK(has_line(text, "bug_a ", " other:x 1 cold 2.0 2.0 0.0 0 60 -"));
+        CHECK(has_line(text, "hang ", " ref 2 cold, restored 121.0 120.3 0.0 2 120 reference x2"));
+        /* flaky */
+        CHECK(has_line(text, "bug_a ", " bug_a:port verdict REPRODUCED, FIXED"));
+        CHECK(has_line(text, "bug_a ", " bug_a:port end timeout in some of 3 runs"));
+        CHECK(has_line(text, "bug_a ", " ctest result passed 2, failed 1"));
+        CHECK(has_line(text, "unit ", " ctest result passed 1, failed 1"));
+        CHECK(!has_line(text, "hang ", "verdict"));
+        /* limits: max timed of the sessions that ended normally x 4, >= 10 */
+        CHECK(has_line(text, "bug_a ", " bug_a:ref 6.0 120 24"));
+        CHECK(has_line(text, "bug_a ", " bug_a:port 10.0 120 40 1 of 3 sessions ended by timeout"));
+        CHECK(has_line(text, "bug_a ", " other:x 2.0 60 10"));
+        CHECK(has_line(text, "bug_a ", " (test) 120 40 the largest of its configs"));
+        CHECK(has_line(text, "hang ", " ref - 120 - hangs: every session ended by the time limit "
+                       "(sessions 2, runs 2); no data on the last output - no suggestion"));
+        CHECK(has_line(text, "hang ", " (test) 120 - every config hangs"));
+        /* COST: the median, rounded up */
+        CHECK(has_line(text, "bug_a ", " 3 22.5 23"));
+        CHECK(has_line(text, "hang ", " 2 255.0 255"));
+        CHECK(has_line(text, "unit ", " 2 0.6 1"));
+    }
     free(text);
 
     /* the floor */
@@ -298,8 +297,4 @@ int main(void)
     CHECK(text && strstr(text, "0 runs (JUnit files), 0 tests") && strstr(text, "(none)"));
     free(text);
     teststats_free(t);
-
-    if (failures)
-        fprintf(stderr, "test_teststats: %d failures\n", failures);
-    return failures != 0;
 }

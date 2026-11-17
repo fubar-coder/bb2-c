@@ -4,7 +4,7 @@ Reads and adapts AmigaDOS hardfiles: an RDB hardfile with one partition or
 a raw partition image, OFS or FFS (`DOS\0` to `DOS\3`). It sets up the
 Workbench hardfiles of the emulator tests from Amiga Forever
 (`cmake/setup-amiga-forever.cmake`, `AMIGA-EMULATION-SETUP.md`). The logic
-is `tools/lib/hdf` (`hdf.h`), tested by `tools/tests/test_hdf.c`.
+is `tools/lib/hdf` (`hdf.h`), tested by `tools/tests/test_hdf.cpp`.
 
 ## Usage
 
@@ -181,7 +181,7 @@ Messages go to stderr as `hdftool: [FILE: ]message`.
   `edit` with `--write`, `--write-hex`, `--replace`, `--copy` and
   `--partition`.
 * Tests: `help_hdftool`, `readme_hdftool` (`tools/hdftool/CMakeLists.txt`);
-  the library: `hdf` (`tools/tests/test_hdf.c`).
+  the library: `hdf` (`tools/tests/test_hdf.cpp`).
 
 ## Example
 

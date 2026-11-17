@@ -1052,7 +1052,7 @@ cycle values do not depend on the host's load or on what else runs
   filter of one program on two programs' budgets (`selftest/budgets-two.txt`):
   bmath passes, bstr has a budget without a measurement, bdisp has no
   line. The host test `perfbudget`
-  (`tools/tests/test_perfbudget.c`) covers the arithmetic, the judge and
+  (`tools/tests/test_perfbudget.cpp`) covers the arithmetic, the judge and
   the malformed observations and budget files.
 
 ## The prev build

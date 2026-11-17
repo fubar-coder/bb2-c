@@ -72,7 +72,7 @@ the cache directory and its size stay the user's:
   builds of all worktrees share their cache.
 
 `#embed` (TED's `res.c`, two RWE userlibs, `tools/lib/amiga_emulation`,
-`tools/tests/test_covsel.c`) is why 4.14 is needed: its NEWS ("Added
+`tools/tests/test_covsel.cpp`) is why 4.14 is needed: its NEWS ("Added
 detection of C23 `#embed` directives in direct and depend mode ...,
 preventing false cache hits") - an older ccache could return the object
 of an old embedded file in the direct mode. A source with `#embed` is not

@@ -1,13 +1,16 @@
-/*
- * test_covmap.c - lib/covmap: the JSON reader, paths, ninja's dependency
- * lists, and the lcov tracefiles from host gcov JSON and from Amiga
- * coverage files with link map, nm and objdump line tables, checked
- * against the tracefile format of lcov; broken inputs of each kind.
- */
-#include "testutil.h"
+// test_covmap - lib/covmap: the JSON reader, paths, ninja's dependency
+// lists, and the lcov tracefiles from host gcov JSON and from Amiga
+// coverage files with link map, nm and objdump line tables, checked
+// against the tracefile format of lcov; broken inputs of each kind.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "covfmt.h"
 #include "covmap.h"
 #include "json.h"
+}
 
 #define ROOT "/src/bb2"
 
@@ -138,7 +141,7 @@ static const char *lcov_check(const char *text)
 }
 
 /* the checker itself: broken tracefiles */
-static void test_lcov_check(void)
+TEST_CASE("covmap: lcov check", "[covmap]")
 {
     static const char *const bad[][2] = {
         { "TN:a,b\n", "bad TN:" },
@@ -166,8 +169,10 @@ static void test_lcov_check(void)
     CHECK(!lcov_check("TN:t_1\nSF:/a.c\nFN:1,2,f\nFN:3,g\nFNDA:2,f\nFNDA:0,g\nFNF:2\nFNH:1\n"
                       "BRDA:1,0,0,-\nBRDA:1,0,1,3\nBRF:2\nBRH:1\nDA:1,2\nDA:2,0\nLF:2\nLH:1\n"
                       "end_of_record\nTN:\nSF:/b.c\nend_of_record\n"));
-    for (i = 0; i < sizeof bad / sizeof *bad; i++)
-        CHECK((why = lcov_check(bad[i][0])) && strstr(why, bad[i][1]));
+    for (i = 0; i < sizeof bad / sizeof *bad; i++) {
+        why = lcov_check(bad[i][0]);
+        CHECK(why && strstr(why, bad[i][1]));
+    }
 }
 
 static int contains(const char *text, const char *line)
@@ -183,7 +188,7 @@ static int contains(const char *text, const char *line)
     return 0;
 }
 
-static void test_json(void)
+TEST_CASE("covmap: json", "[covmap]")
 {
     static const char doc[] = " {\"a\": [1, -2.5e1, true, false, null], \"s\": \"x\\n\\u00e9\\ud83d\\ude00\\\"\","
                               " \"o\": {}} {\"b\": 2}";
@@ -223,31 +228,37 @@ static void test_json(void)
     CHECK(!json_parse(deep, strlen(deep), &pos, err, sizeof err) && strstr(err, "deeply"));
 }
 
-static void test_paths(void)
+TEST_CASE("covmap: paths", "[covmap]")
 {
     char *s;
 
-    CHECK((s = cov_relpath(ROOT "/programs/blitz2/src/eval.c", ROOT)) && !strcmp(s, "programs/blitz2/src/eval.c"));
+    s = cov_relpath(ROOT "/programs/blitz2/src/eval.c", ROOT);
+    CHECK(s && !strcmp(s, "programs/blitz2/src/eval.c"));
     free(s);
-    CHECK((s = cov_relpath(ROOT "//programs/./ted/../blitz2/x.c", ROOT "/")) && !strcmp(s, "programs/blitz2/x.c"));
+    s = cov_relpath(ROOT "//programs/./ted/../blitz2/x.c", ROOT "/");
+    CHECK(s && !strcmp(s, "programs/blitz2/x.c"));
     free(s);
     CHECK(!cov_relpath("/opt/m68k/include/stdio.h", ROOT));
     CHECK(!cov_relpath(ROOT "2/x.c", ROOT));
     CHECK(!cov_relpath("../x.c", ROOT));
-    CHECK((s = cov_relpath("programs/blitz2/../../shared/xtra/xtra.c", ROOT)) && !strcmp(s, "shared/xtra/xtra.c"));
+    s = cov_relpath("programs/blitz2/../../shared/xtra/xtra.c", ROOT);
+    CHECK(s && !strcmp(s, "shared/xtra/xtra.c"));
     free(s);
-    CHECK((s = cov_join("/b/host", "x/y.c")) && !strcmp(s, "/b/host/x/y.c"));
+    s = cov_join("/b/host", "x/y.c");
+    CHECK(s && !strcmp(s, "/b/host/x/y.c"));
     free(s);
-    CHECK((s = cov_join("/b/host", "/abs.c")) && !strcmp(s, "/abs.c"));
+    s = cov_join("/b/host", "/abs.c");
+    CHECK(s && !strcmp(s, "/abs.c"));
     free(s);
 
-    CHECK((s = cov_object_source("programs/blitz2/CMakeFiles/blitz2-ab3.dir/__/__/shared/xtra/xtra.c.obj"))
-          && !strcmp(s, "programs/blitz2/../../shared/xtra/xtra.c"));
+    s = cov_object_source("programs/blitz2/CMakeFiles/blitz2-ab3.dir/__/__/shared/xtra/xtra.c.obj");
+    CHECK(s && !strcmp(s, "programs/blitz2/../../shared/xtra/xtra.c"));
     free(s);
-    CHECK((s = cov_object_source("programs/blitz2/CMakeFiles/blitz2_core.dir/src/eval.c.obj"))
-          && !strcmp(s, "programs/blitz2/src/eval.c"));
+    s = cov_object_source("programs/blitz2/CMakeFiles/blitz2_core.dir/src/eval.c.obj");
+    CHECK(s && !strcmp(s, "programs/blitz2/src/eval.c"));
     free(s);
-    CHECK((s = cov_object_source("CMakeFiles/top.dir/a.c.o")) && !strcmp(s, "a.c"));
+    s = cov_object_source("CMakeFiles/top.dir/a.c.o");
+    CHECK(s && !strcmp(s, "a.c"));
     free(s);
     CHECK(!cov_object_source("/opt/libnix/lib/nbcrt0.o"));
     CHECK(!cov_object_source("programs/blitz2/CMakeFiles/x/eval.c.obj"));
@@ -264,14 +275,14 @@ static const char deps_text[] =
     "    " ROOT "/programs/blitz2/src/main.c\n"
     "\n";
 
-static void test_deps(void)
+TEST_CASE("covmap: deps", "[covmap]")
 {
-    struct cov_deps d = { 0 };
+    struct cov_deps d = {};
     const struct cov_dep *e;
 
     CHECK(!cov_deps_parse(&d, deps_text, err, sizeof err) && d.n == 2);
-    CHECK((e = cov_deps_find(&d, "programs/blitz2/CMakeFiles/blitz2_core.dir/src/main.c.obj"))
-          && e->ndeps == 2 && !strcmp(cov_dep_source(e), ROOT "/programs/blitz2/src/main.c"));
+    e = cov_deps_find(&d, "programs/blitz2/CMakeFiles/blitz2_core.dir/src/main.c.obj");
+    CHECK(e && e->ndeps == 2 && !strcmp(cov_dep_source(e), ROOT "/programs/blitz2/src/main.c"));
     CHECK(!cov_deps_find(&d, "x.o"));
     cov_deps_free(&d);
     CHECK(cov_deps_parse(&d, "    /a/b.h\n", err, sizeof err) && strstr(err, "without an object"));
@@ -325,7 +336,7 @@ static const char gcov_fork[] =
     "   {\"line_number\": 16, \"count\": 5}, {\"line_number\": 23, \"count\": 0},"
     "   {\"line_number\": 30, \"count\": 7}]}]}";
 
-static void test_gcov_fork(void)
+TEST_CASE("covmap: gcov fork", "[covmap]")
 {
     struct covmap m;
     char *t;
@@ -344,7 +355,7 @@ static void test_gcov_fork(void)
     covmap_free(&m);
 }
 
-static void test_gcov(void)
+TEST_CASE("covmap: gcov", "[covmap]")
 {
     struct covmap m;
     char *t;
@@ -481,7 +492,7 @@ static const char lines[] =
 static unsigned char *cov_file(uint32_t code, uint32_t bytes, const uint32_t *offsets, size_t n,
                                size_t *len)
 {
-    unsigned char *b = calloc(1, COVFMT_HEADER_SIZE + bytes);
+    unsigned char *b = static_cast<unsigned char *>(calloc(1, COVFMT_HEADER_SIZE + bytes));
     uint32_t v[4] = { COVFMT_MAGIC, COVFMT_VERSION, code, bytes };
 
     for (int i = 0; i < 4; i++) {
@@ -496,7 +507,7 @@ static unsigned char *cov_file(uint32_t code, uint32_t bytes, const uint32_t *of
     return b;
 }
 
-static void test_amiga(void)
+TEST_CASE("covmap: amiga", "[covmap]")
 {
     struct covmap m;
     const uint32_t run1[] = { 0x0, 0x40, 0xc0 }, run2[] = { 0x80, 0x120 };
@@ -621,7 +632,7 @@ static void test_amiga(void)
    out-of-line copy of a header's function (its rows are of the header
    only) and a switch table (no rows), both in an object with rows; the
    object without rows (main.c) keeps its functions without lines */
-static void test_amiga_nonfunctions(void)
+TEST_CASE("covmap: amiga nonfunctions", "[covmap]")
 {
     static const char syms[] =
         "programs/blitz2/CMakeFiles/blitz2_core.dir/src/eval.c.obj:00000000 T _eval\n"
@@ -661,19 +672,4 @@ static void test_amiga_nonfunctions(void)
     CHECK(!lcov_check(t));
     free(t);
     covmap_free(&m);
-}
-
-int main(void)
-{
-    test_json();
-    test_paths();
-    test_deps();
-    test_lcov_check();
-    test_gcov();
-    test_gcov_fork();
-    test_amiga();
-    test_amiga_nonfunctions();
-    if (failures)
-        fprintf(stderr, "%d failure(s)\n", failures);
-    return failures != 0;
 }
