@@ -669,6 +669,8 @@ int libscmp_load_named(struct libscmp_file *f, const char *dir, const char *name
     char msg[700];
     int r;
 
+    /* the callers free f after every error, also after this one */
+    memset(f, 0, sizeof *f);
     if (!path || !bp) {
         free(path);
         free(bp);
@@ -680,7 +682,6 @@ int libscmp_load_named(struct libscmp_file *f, const char *dir, const char *name
         size_t len, blen = 0;
         char *text = libscmp_read_file(path, &len), *bin = NULL;
 
-        memset(f, 0, sizeof *f);
         if (!text) {
             snprintf(msg, sizeof msg, "%s: cannot read it", path);
             r = -3;

@@ -45,7 +45,7 @@ int libscmp_list_blocks(const struct libscmp_file *run, const struct libscmp_fil
 char *libscmp_path_ext(const char *dir, const char *name, const char *ext);
 int libscmp_exists(const char *path);
 /* DIR/NAME.txt parsed, its header naming NAME; 0 = ok, else the message
-   on err */
+   on err; f can be given to libscmp_free after every return */
 int libscmp_load_named(struct libscmp_file *f, const char *dir, const char *name,
                        enum libscmp_kind kind, FILE *err);
 
