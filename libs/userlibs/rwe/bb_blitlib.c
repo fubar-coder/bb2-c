@@ -40,7 +40,8 @@
  * The register writes are the original's, in its order: the blitter
  * pointers that are not reloaded per plane go on where the last blit
  * left them.  init and finit are RTS.  No assembler besides the thunks
- * of the error checks; the entries are the C functions (BLITZ_ALIAS).
+ * of the error checks; the entries are the C functions (BLITZ_ALIAS,
+ * BLITZ_ALIAS_EP).
  *
  * Fixed (intended deviations):
  *   - BlockToShape blits the shape's real width; the original copied one
@@ -205,8 +206,9 @@ struct buffer {
     UBYTE *last;                /* +4 last record (0: none) */
 };
 
-/* CreateShape copies two words of a shape as one long */
-#define LONGS(d, s, m) (*(ULONG *)&(d)->m = *(const ULONG *)&(s)->m)
+/* a pointer in an address register, out of GCC's sight (no offsets
+   folded into it) */
+#define HIDE_A(p) __asm__("" : "+a"(p))
 
 /* the blitter registers: absolute ($DFF0xx) or through the chip base the
    buffered routines get in a1 (#chipbaselib) */
@@ -234,9 +236,12 @@ enum {
 #define SHAPE_ONEBPMEMX ((SHAPE_EBWIDTH + 2) * 16)
 #define SHAPE_BYTESIZE (SHAPE_PLANEBYTESIZE * (SHAPE_DEPTH + 1))
 
-/* pad: Dc.w 0 in front of ebwidth - ADD.l ebwidth-2(pc) adds the long
-   pad:ebwidth, i.e. ebwidth */
-static UWORD ebwidth = 40, modwidth = 38, modwidth2 = 36;
+/* SetupMapTwo's values, one after another as in the original (there a
+   pad word in front: ADD.l ebwidth-2(pc) adds the long pad:ebwidth, i.e.
+   ebwidth) */
+static struct {
+    UWORD ebwidth, modwidth, modwidth2;
+} map = { 40, 38, 36 };
 static UWORD coltoblit;
 
 /**
@@ -244,18 +249,27 @@ static UWORD coltoblit;
  *
  * SpecialBlock, TBlock and the predator blits assume bitmaps of this
  * width (default 40); also sets the modulos ebwidth-2 and ebwidth-4.
+ * The three words through an address register (MOVE.w (a0)+, 8 cycles
+ * against the original's 16 for an absolute address).
  * @param w  d0: the bytes per line
  */
-static void BLITZ_ROUTINE mapinfo_c(UWORD w BL_REG(d0))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE mapinfo_c(UWORD w BL_REG(d0))
 {
-    ebwidth = w;
-    modwidth = w - 2;
-    modwidth2 = w - 4;
+    UWORD *p = &map.ebwidth;
+
+#define PUT(v) do { *p++ = (v); HIDE_A(p); } while (0)
+    HIDE_A(p);
+    PUT(w);
+    w -= 2;
+    PUT(w);
+    w -= 2;
+    PUT(w);
+#undef PUT
 }
 
 /* (x,y) to an offset in the bitmap: MULU.w by the width, x ASR 3, a word
    sum */
-static UWORD xyoff(UWORD x, UWORD y, UWORD width)
+BL_ALWAYS_INLINE UWORD xyoff(UWORD x, UWORD y, UWORD width)
 {
     return (UWORD)((ULONG)y * width) + (UWORD)((WORD)x >> 3);
 }
@@ -289,7 +303,7 @@ static void BLITZ_ROUTINE specialblock2_c(UWORD off BL_REG(d2), struct bb_bitmap
     W(BLTAMOD) = 0;
     W(BLTBMOD) = 0;
     W(BLTCMOD) = 0;
-    W(BLTDMOD) = modwidth;
+    W(BLTDMOD) = map.modwidth;
     L(BLTAFWM) = 0xffffffff;
     L(BLTBPT) = (ULONG)top->data;
     L(BLTCPT) = (ULONG)bot->data;
@@ -320,7 +334,7 @@ static void BLITZ_ROUTINE specialblock_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                          struct bb_bitmap *bm BL_REG(a0), struct bb_shape *top BL_REG(a1),
                                          struct bb_shape *bot BL_REG(a2))
 {
-    specialblock2_c(xyoff(x, y, ebwidth), bm, top, bot);
+    specialblock2_c(xyoff(x, y, map.ebwidth), bm, top, bot);
 }
 
 /* ------------------------------------------------- SpecialBlockBitmap */
@@ -403,7 +417,7 @@ static void BLITZ_ROUTINE specialblockbitmap_c(UWORD x BL_REG(d2), UWORD y BL_RE
 static void BLITZ_ROUTINE tblock_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
                                    struct bb_bitmap *bm BL_REG(a0), struct bb_shape *shape BL_REG(a1))
 {
-    ULONG off = xyoff(x, y, ebwidth);
+    ULONG off = xyoff(x, y, map.ebwidth);
     UWORD n = shape->depth - 1;
     UBYTE **plane = bm->planes;
     ULONG cookie;
@@ -412,8 +426,8 @@ static void BLITZ_ROUTINE tblock_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
     L(BLTCON0) = 0x0fca0000;
     W(BLTAMOD) = 0;
     W(BLTBMOD) = 0;
-    W(BLTCMOD) = modwidth;
-    W(BLTDMOD) = modwidth;
+    W(BLTCMOD) = map.modwidth;
+    W(BLTDMOD) = map.modwidth;
     L(BLTAFWM) = 0xffffffff;
     L(BLTBPT) = (ULONG)shape->data;
     cookie = (ULONG)shape->cookie;
@@ -453,7 +467,7 @@ static ULONG BLITZ_ROUTINE predatorblit_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2)
                                           struct bb_shape *shape BL_REG(a1))
 {
     ULONG con = 0x0fca1000UL | (ULONG)(x & 15) << 28;
-    ULONG off = (UWORD)((UWORD)((ULONG)y * ebwidth) + (UWORD)(((WORD)x >> 3) & 0xfffe));
+    ULONG off = (UWORD)((UWORD)((ULONG)y * map.ebwidth) + (UWORD)(((WORD)x >> 3) & 0xfffe));
     UWORD n = shape->depth - 1;
     UBYTE **plane = bm->planes;
     ULONG cookie;
@@ -461,9 +475,9 @@ static ULONG BLITZ_ROUTINE predatorblit_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2)
     BLITWAIT();
     L(BLTCON0) = con;
     W(BLTAMOD) = (UWORD)-2;
-    W(BLTBMOD) = modwidth2;
-    W(BLTCMOD) = modwidth2;
-    W(BLTDMOD) = modwidth2;
+    W(BLTBMOD) = map.modwidth2;
+    W(BLTCMOD) = map.modwidth2;
+    W(BLTDMOD) = map.modwidth2;
     L(BLTAFWM) = 0xffff0000;
     cookie = (ULONG)shape->cookie;
     goto first;
@@ -475,7 +489,7 @@ first:
             L(BLTCPT) = d;
             L(BLTDPT) = d;
             L(BLTAPT) = cookie;
-            L(BLTBPT) = d + ebwidth;
+            L(BLTBPT) = d + map.ebwidth;
             W(BLTSIZE) = MYBLITSIZESCROLL;
         }
     } while (n-- != 0);
@@ -776,26 +790,35 @@ first:
  * @param shape  a2: the first shape object
  * @param like   a3: the shape to copy the sizes from
  */
-static void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG(d2),
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG(d2),
                                         struct bb_shape *shape BL_REG(a2),
                                         struct bb_shape *like BL_REG(a3))
 {
     UWORD n = count - 1;
     ULONG all = like->size;
+    UBYTE *d = (UBYTE *)shape;
+    ULONG zero = 0;
+    UWORD cludge = BB_CLUDGE;
 
+    /* the fields one after another with MOVE (a2)+ (in C with offsets
+       from the object, GCC's moves took 4 cycles more each), 0 and "cL"
+       from registers (CLR.l (a2)+ takes 20 cycles, MOVE.l d,(a2)+ 12);
+       the like shape is read anew for every shape, it may be one of them */
+#define PUT(type, v) do { *(type *)d = (v); d += sizeof(type); HIDE_A(d); } while (0)
+    __asm__("" : "+d"(zero), "+d"(cludge));
     do {
-        LONGS(shape, like, width);         /* MOVE.l: width, height */
-        LONGS(shape, like, depth);         /* depth, ebwidth */
-        LONGS(shape, like, bltsize);       /* bltsize, handlex */
-        shape->handley = like->handley;
-        shape->data = (UBYTE *)mem;
-        shape->cookie = 0;
-        LONGS(shape, like, planesize);     /* planesize, xplanesize */
-        LONGS(shape, like, size);          /* size, xsize */
-        shape->cludge = BB_CLUDGE;          /* "cL" */
-        shape++;
+        PUT(ULONG, *(const ULONG *)&like->width);       /* width, height */
+        PUT(ULONG, *(const ULONG *)&like->depth);       /* depth, ebwidth */
+        PUT(ULONG, *(const ULONG *)&like->bltsize);     /* bltsize, handlex */
+        PUT(UWORD, like->handley);
+        PUT(ULONG, mem);                                /* data */
+        PUT(ULONG, zero);                               /* cookie */
+        PUT(ULONG, *(const ULONG *)&like->planesize);   /* planesize, xplanesize */
+        PUT(ULONG, *(const ULONG *)&like->size);        /* size, xsize */
+        PUT(UWORD, cludge);                             /* "cL" */
         mem += all;
     } while (n-- != 0);
+#undef PUT
 }
 
 /**
@@ -868,8 +891,10 @@ static void BLITZ_ROUTINE blocktoshape_c(struct bb_shape *shape BL_REG(a1),
    function) and is its C function itself (BLITZ_ALIAS, the register rule:
    docs/libs/deviations.md, "Register preservation"): it keeps a4-a7
    (PredatorBlit also a3) and, by GCC's convention, d2-d7/a2; it changes
-   d0/d1/a0/a1.  The original changes d0-d7/a0-a3 (the routines differ)
-   and keeps a4/a5/a6. */
+   d0/d1/a0/a1.  SetupMapTwo and CreateShape save no register
+   (BLITZ_ENTRYPOINT, BLITZ_ALIAS_EP) and change d0-d7/a0-a2.  The
+   original changes d0-d7/a0-a3 (the routines differ) and keeps
+   a4/a5/a6. */
 BLITZ_ALIAS(_specialblock, specialblock_c);
 BLITZ_ALIAS(_specialblock2, specialblock2_c);
 BLITZ_ALIAS(_specialblockbitmap, specialblockbitmap_c);
@@ -877,8 +902,8 @@ BLITZ_ALIAS(_specialblockbitmap2, specialblockbitmap2_c);
 BLITZ_ALIAS(_tblock, tblock_c);
 BLITZ_ALIAS(_predatorblit, predatorblit_c);
 BLITZ_ALIAS(_bpredatorblit, bpredatorblit_c);
-BLITZ_ALIAS(_MapInfo, mapinfo_c);
-BLITZ_ALIAS(_createshape, createshape_c);
+BLITZ_ALIAS_EP(_MapInfo, mapinfo_c);
+BLITZ_ALIAS_EP(_createshape, createshape_c);
 BLITZ_ALIAS(_specialblocktoshape, specialblocktoshape_c);
 BLITZ_ALIAS(_blocktoshape, blocktoshape_c);
 BLITZ_ALIAS(docolblit, docolblit_c);
