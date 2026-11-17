@@ -47,17 +47,24 @@ init and finit are `RTS`.
 
 ## C and assembler
 
-All C; every entry is its C function (`BLITZ_ALIAS`, no thunk), as the
-register rule allows (`docs/libs/deviations.md`, "Register
-preservation"): a statement keeps a4–a7, `PredatorBlit` (a function)
-also a3, and GCC's code keeps d2–d7/a2 besides; d0/d1/a0/a1 are changed.
-The original changes up to d0–d7/a0–a3 (the routines differ) and keeps
-a4–a6, so a caller can rely on nothing more than the rule names; a
-thunk that kept d0/d1/a0/a1 cost 118 cycles per call (`PredatorBlit`:
-102). The blitter is
+Every entry is its C function, without a thunk, as the register rule
+allows (`docs/libs/deviations.md`, "Register preservation"): a
+statement keeps a4–a7, `PredatorBlit` (a function) also a3. The
+entries but the buffered blits save no register (`BLITZ_ENTRYPOINT`,
+a6 kept by `BLITZ_EP_KEEP_A6`) and change d0–d7/a0–a2; their plane
+loops are the original's loops as asm blocks (in C, GCC tested the
+counter and branched twice per plane instead of one `DBF`), and they
+write the blitter registers through `$DFF000` in an address register,
+4 cycles less per write than the original's absolute addresses: so
+they are faster than the original (perf program `bbblit`,
+`tests/perf/budgets.txt`). `SetupMapTwo` writes its three words through
+an address register, `CreateShape` its objects with `MOVE (a2)+` and 0
+and "cL" from registers. The buffered blits (`BLITZ_ALIAS`) keep
+d2–d7/a2 by GCC's convention and change d0/d1/a0/a1. The original
+changes up to d0–d7/a0–a3 (the routines differ) and keeps a4–a6, so a
+caller can rely on nothing more than the rule names. The blitter is
 programmed with volatile register writes (`BL_CUSTOMW`/`BL_CUSTOML`,
-`BL_BLITWAIT`), the same registers in the same order, absolute or
-through the chip base in a1 where the original uses either. Pointers
+`BL_BLITWAIT`), the same registers in the same order. Pointers
 that the original does not reload per plane (B and C of `SpecialBlock`,
 B of `SpecialBlockBitmap`, `BTBlockImage`) go on where the blitter left
 them, as in the original. The record of the buffered blits is written by
@@ -120,8 +127,9 @@ kind F):
   error check also refuses a shape one blit cannot hold, more than 1024
   lines (height × depth) or wider than 64 words, with "Shape too large
   for BlockToShape!"; the original blitted the size word's low bits
-  (bug-orig test `bb_blitlib-blocktoshape-too-large`). About 344 cycles
-  of a 68000 per call (no thunk) against the original's 340.
+  (bug-orig test `bb_blitlib-blocktoshape-too-large`). The size is
+  computed before the blitter wait; the call is faster than the
+  original's (perf `bbblit.blocktoshape`).
 
 ## Original behaviour that is not a defect
 

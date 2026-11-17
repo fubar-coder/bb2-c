@@ -229,22 +229,29 @@
 # bbblit.setupmaptwo and bbblit.createshape10 from two runs of SetupMapTwo
 # through an address register and CreateShape with MOVE (a2)+ (2026-11-17):
 # 96.3/96.3 and 2112.8/2112.8 (before: 106.8 and 2688.8).
+# The nine lines of the unbuffered blits (specialblock, specialblocko,
+# tblock, sblockbm, sblockbmo, predator, sblocktoshape, blocktoshape,
+# tblockimage) from two runs of the entries without saves, the chip base
+# in an address register and the plane loops in assembler (2026-11-17):
+# 1466.9, 1381.9, 1429.9, 1668.4, 1531.9, 2156.9, 1291.4, 668.4, 2517.9
+# both times (before: 1677.3, 1462.8, 1562.3, 1823.3, 1684.3, 2363.3,
+# 1376.3, 686.4, 2778.3).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bbblit.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
-bbblit.specialblock          1698     1557.8  SpecialBlock 0,1,96,96 (16x16, 3 planes, 320-pixel bitmap)
-bbblit.specialblocko         1482     1450.3  SpecialBlock 0,1,3852 (the offset form)
-bbblit.tblock                1592     1544.3  TBlock 0,96,96
+bbblit.specialblock          1485     1557.8  SpecialBlock 0,1,96,96 (16x16, 3 planes, 320-pixel bitmap)
+bbblit.specialblocko         1399     1450.3  SpecialBlock 0,1,3852 (the offset form)
+bbblit.tblock                1448     1544.3  TBlock 0,96,96
 bbblit.bpredator4u          21771    18211.8  BPredatorBlit 0,0,20,20 : BPredatorBlit 0,0,60,20 : BPredatorBlit 0,0,100,20 : BPredatorBlit 0,0,140,20 : UnBuffer 0
-bbblit.sblockbm              1847     1679.8  SpecialBlockBitmap 0,2,96,96 (16x16 shape, 3 planes, 320-pixel bitmaps)
-bbblit.sblockbmo             1704     1661.8  SpecialBlockBitmap 0,2,3852 (the offset form)
-bbblit.predator              2413     2267.3  c=PredatorBlit(0,100,96)
+bbblit.sblockbm              1689     1679.8  SpecialBlockBitmap 0,2,96,96 (16x16 shape, 3 planes, 320-pixel bitmaps)
+bbblit.sblockbmo             1551     1661.8  SpecialBlockBitmap 0,2,3852 (the offset form)
+bbblit.predator              2182     2267.3  c=PredatorBlit(0,100,96)
 bbblit.bcolour4u            20957    17617.8  BColourBlit 0,0,20,20,5 : BColourBlit 0,0,60,20,2 : BColourBlit 0,0,100,20,7 : BColourBlit 0,0,140,20,1 : UnBuffer 0
 bbblit.setupmaptwo            101      102.3  SetupMapTwo 40
 bbblit.createshape10         2137     2200.3  CreateShape 20,10,mem,0 (ten shapes like a 16x16 shape of 3 planes)
-bbblit.sblocktoshape         1393     1355.8  SpecialBlockToShape 0,1,12
-bbblit.blocktoshape           696      684.9  BlockToShape 0,12 (16x16, 3 planes)
-bbblit.tblockimage           2811     2696.3  TBlockImage img,0,96,32 (6 planes of a 320-pixel bitmap)
+bbblit.sblocktoshape         1308     1355.8  SpecialBlockToShape 0,1,12
+bbblit.blocktoshape           679      684.9  BlockToShape 0,12 (16x16, 3 planes)
+bbblit.tblockimage           2547     2696.3  TBlockImage img,0,96,32 (6 planes of a 320-pixel bitmap)
 bbblit.btblockimage4u       36628    33089.8  BTBlockImage 1,img,20,20,0 : BTBlockImage 1,img,60,20,0 : BTBlockImage 1,img,100,20,0 : BTBlockImage 1,img,140,20,0 : UnBuffer 1
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
