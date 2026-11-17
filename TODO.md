@@ -952,12 +952,11 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   reworks of gtlib (#328, KEEP_A3 gone), rundebuglib, rilvcallhooklib,
   riwbspritelib (#1028, deviation entry). To archive the change after
   the merge.
-- [ ] **The tool tests as snitch programs** (user decision 2026-11-17,
-  after the userlib round): the 41 plain-C tests in `tools/tests/` on
-  `testutil.h` (about 10,800 lines, 2,000 checks) become snitch programs
-  (C++20) as `CLAUDE.md` requires for host tests, in one round; the
-  headers of `tools/lib/` without `extern "C"` (19 libraries) get it.
-  Each file keeps its checks (counted before and after).
+- [x] **The tool tests as snitch programs** done (2026-11-17): the 41
+  plain-C tests in `tools/tests/` are snitch programs (C++20) on
+  `testutil.hpp`; the 26 headers of `tools/lib/` without `extern "C"` got
+  it. Each file runs the checks it ran before (counted per file; hdf and
+  teststats now count their former `failures++` paths as checks).
 - [ ] **A smaller compiler stack** (user decision 2026-11-17, after
   #1080): `main` (`programs/blitz2/src/main.c`, `COMPILERSTACK`) gives
   blitz2 and blitz2-ab3 a 48 KB stack of their own for the whole session

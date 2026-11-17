@@ -1,6 +1,5 @@
-# tests of lib/, with inputs built in memory (testutil.h; testutil.hpp in the
-# snitch programs)
-# the same for the tests converted to snitch programs (C++20), one per file
+# tests of lib/, with inputs built in memory (testutil.hpp): snitch programs
+# (C++20), one per file
 foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata bblines
 		bbdetok statline outmatch oracletable prevcmp previntended epcheck
 		blitzlib blitztokens checkdata bb22 blitzres tedfont cmdref cdtable bugorigcmp

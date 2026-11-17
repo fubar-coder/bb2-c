@@ -1,5 +1,5 @@
 // testutil.hpp - byte buffer and load file builder for the snitch tests of
-// the host tools (the C++ form of the helpers of testutil.h).
+// the host tools.
 #ifndef TESTUTIL_HPP
 #define TESTUTIL_HPP
 
