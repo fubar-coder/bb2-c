@@ -5,7 +5,7 @@
 # by the number of entries of USERLIBS, and an empty raw block file
 # prog.bin beside it. A PROGRAM named skip ends the run
 # with 77 (skipped), one named fail with 1.
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 get_filename_component(n ${PROGRAM} NAME)
 if(n STREQUAL "skip")

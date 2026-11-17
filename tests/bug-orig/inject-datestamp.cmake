@@ -10,7 +10,7 @@
 # The output (TEST:out.txt) is compared with EXPECT by results match, and the
 # date before and after the patch must be the same day (the system's).
 # Exit status 0 if it matches; 77 (skipped) without the emulator.
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 foreach(v AMIGA_RUN RESULTS INJECT DSDAYS EXPECT WORK)
 	if(NOT ${v})

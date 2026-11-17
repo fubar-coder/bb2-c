@@ -8,7 +8,7 @@
 # NO_RUN: OUT is there already (the test with broken input).  Exit status
 # 0 the same (written), 1 not, 77 skipped: no ORIGINAL (the CD, AmiBlitz3's
 # SVN or the RWE reference build).
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 foreach(v DATA)
 	if(NOT ${v})

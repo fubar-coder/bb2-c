@@ -43,7 +43,7 @@
 # does not end, the message names amiga_run's status and the running case.
 # Exit status 0 if every case matches; 77 (skipped) without the emulator
 # or the fetched AmiBlitz3 files.
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 foreach(v AMIGA_RUN RESULTS REQTRAP INJECT CONFIG CASES BLITZ2_DIR AB3 WORK)
 	if(NOT ${v})

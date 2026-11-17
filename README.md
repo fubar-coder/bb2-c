@@ -29,7 +29,8 @@ compiler and libraries.
 
 ## Requirements
 
-* CMake ≥ 4.2.3 and Ninja
+* CMake ≥ 4.3 and Ninja (Ubuntu 26.04 LTS ships 4.2.3: install a newer CMake there,
+  from Kitware's packages or the official binary, cmake.org/download)
 * m68k-amigaos-gcc (bebbo/AmigaDev) in `PATH`, otherwise
   `-DAMIGA_TOOLCHAIN_PREFIX=…` or the environment variable of the same
   name; configure checks that it is recent enough

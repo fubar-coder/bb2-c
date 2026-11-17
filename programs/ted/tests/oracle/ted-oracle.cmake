@@ -18,7 +18,7 @@
 # LIMIT: only the first N sources, DATA is not written (trial run).
 # The libraries are the CD's (BLITZ2/DEFLIBS, ACIDLIBS, DEFAULTDBUG); the
 # CD has no user libraries.
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 foreach(v AMIGA_RUN RESULTS BLITZ2 TED ORACLE CD WORK DATA)
 	if(NOT ${v})

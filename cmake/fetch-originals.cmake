@@ -44,7 +44,7 @@
 # Already unpacked and checked material is not touched again.
 # At the end: the sources and changelogs in git (archive/sources/,
 # archive/releases/) must equal the files of the downloaded archives.
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 get_filename_component(root ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
 if(NOT DOWNLOAD_DIR)

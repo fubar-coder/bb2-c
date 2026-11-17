@@ -9,7 +9,7 @@
 #         -DOUT=FILE [-DNO_RUN=ON] -P cd-reference-check.cmake
 # NO_RUN: FRESH is given, no emulator run (the test with broken input).
 # Exit status 0 the same, 1 not, 77 skipped (no CD or no Amiberry).
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 foreach(v RESULTS FRESH TABLE OUT)
 	if(NOT ${v})

@@ -21,7 +21,7 @@
 # environment variable LIBS_KEEP_BIN is set, and kept when it is not
 # written. EMULATOR is the script of the runs; the test of this script
 # gives a fake one.
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 foreach(v MODE EMULATOR RESULTS EXPECTED WORK AMIGA_RUN PROGRAM LIBS)
 	if(NOT ${v})

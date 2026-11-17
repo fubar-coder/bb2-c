@@ -9,7 +9,7 @@
 # NO_RUN: CHECKDIR holds the files already, no emulator run (the test with
 # broken input).  Exit status 0 the same, 1 not, 77 skipped (no CD or no
 # Amiberry).
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 foreach(v DATA CHECKDIR)
 	if(NOT ${v})

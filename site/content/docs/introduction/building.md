@@ -18,7 +18,7 @@ or an emulator.
 
 * A Linux machine on x86-64. This is the platform the port is built and
   tested on.
-* CMake 4.2.3 or newer, Ninja, Git, and a C and C++ compiler for your
+* CMake 4.3 or newer, Ninja, Git, and a C and C++ compiler for your
   machine.
 * The cross compiler m68k-amigaos-gcc, version 16.2-rc21 or newer, with
   its assembler vasm.
@@ -35,8 +35,8 @@ distribution. On Debian and Ubuntu:
 sudo apt install cmake ninja-build git gcc g++
 ```
 
-The port needs CMake 4.2.3 or newer; Ubuntu 26.04 has it. On an older
-distribution, such as Ubuntu 24.04, install a newer CMake from Kitware's
+The port needs CMake 4.3 or newer. Ubuntu 26.04 LTS ships 4.2.3, so there and on
+older distributions install a newer CMake from Kitware's
 binaries at [cmake.org](https://cmake.org/download/), with `pip install
 cmake`, or with `snap install cmake --classic`.
 

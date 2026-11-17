@@ -3,7 +3,7 @@
 # the build checks (blitz_library CMDREF GROUP/NAME): no file without a
 # library, no library without a file.
 #   cmake -DDIR=site/data/libraries "-DLIBRARIES=GROUP/NAME;..." -P cmdref-complete.cmake
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 file(GLOB_RECURSE files RELATIVE ${DIR} ${DIR}/*)
 set(bad)
 foreach(f IN LISTS files)

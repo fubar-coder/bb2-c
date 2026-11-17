@@ -7,7 +7,7 @@
 #         [-DNO_RUN=ON] -P checkdata-reference.cmake
 # NO_RUN: OUT is there already, no refcheck run (the test with broken
 # input).  Exit status 0 the same, 1 not.
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3)
 
 foreach(v OUT DATA)
 	if(NOT ${v})
