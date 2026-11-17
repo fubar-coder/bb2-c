@@ -408,8 +408,10 @@ Limits of G1, found on the way:
 
 Tests (`tests/ab3/CMakeLists.txt`, label `emulator`, skipped without
 Amiberry or the fetched AmiBlitz3 files): `ab3_cli` compiles the cases
-of `tests/ab3/cli/` with `blitz2-ab3 -s … -e …` in one session
-(`tests/ab3/cli.cmake`: `blitz2:`, three `Blitz3:` trees - the full
+of `tests/ab3/cli/` with `blitz2-ab3 -s … -e …` in sessions of at most
+`AB3_CLI_BLOCK` cases, the tests `ab3_cli_1` … `ab3_cli_N` (blocks:
+`tests/README.md`, "Original material and presets"; `tests/ab3/cli.cmake`:
+`blitz2:`, three `Blitz3:` trees - the full
 one, one without `csLibs`, one with a userlib of number 152 replacing
 `baseLibs`' freqlib), runs each program through `reqtrap` and compares
 the compiler's console output, its return code, the program's output and

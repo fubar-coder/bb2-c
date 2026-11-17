@@ -87,7 +87,8 @@ set_tests_properties(ab3_tokens_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"at[ \n]+line[ \n]+20:[ \n]+\"8014[ \n]+Jimi\",[ \n]+AmiBlitz3[ \n]+\"8014[ \n]+SYNTAX\"")
 
 # The command line of blitz2-ab3 (spec ab3-compat/*, cli.cmake): programs
-# compiled with blitz2-ab3 -s SOURCE -e EXE in one emulator session, run,
+# compiled with blitz2-ab3 -s SOURCE -e EXE in emulator sessions of at most
+# AB3_CLI_BLOCK cases each (ab3_cli_1 ... ab3_cli_N, below), run,
 # and their output (the compiler's console output and return code, the
 # program's output and return code) compared with cli/NAME.expect
 # (results match: literal lines, '~'/'+' patterns for memory sizes and timing).
@@ -644,8 +645,104 @@ function(ab3_cli name config cases)
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 endfunction()
-ab3_cli(ab3_cli exe "${cli_exe_cases}" SAME ${cli_exe_same} HUNKS "${cli_exe_hunks}")
-ab3_cli(ab3_cli_ref ref "${cli_ref_cases}" SAME ${cli_ref_same} HUNKS "${cli_ref_hunks}")
+# ab3_cli_blocks(NAME CONFIG CASES OUT [SAME LIST] [HUNKS |NAME=LAYOUT...]): the
+# cases of CASES split into blocks of at most AB3_CLI_BLOCK cases, spread
+# evenly, in their order: the ctests NAME_1 ... NAME_N, one session each.
+# A SAME pair compares the executables of two cases of one session, so a
+# block does not end between its two cases (it grows beyond the size
+# instead); every block gets the SAME pairs and the HUNKS layouts of its
+# own cases.  The tests of the blocks are returned in OUT.
+set(AB3_CLI_BLOCK_DEFAULT 70)
+if(BLITZ2_COVERAGE)
+	# the coverage compilers take about 5 s per case
+	set(AB3_CLI_BLOCK_DEFAULT 20)
+endif()
+set(AB3_CLI_BLOCK ${AB3_CLI_BLOCK_DEFAULT} CACHE STRING
+	"ab3 command line tests: the most cases of one emulator session (ab3_cli_N, ab3_cli_ref_N; default 70, 20 with BLITZ2_COVERAGE)")
+if(NOT AB3_CLI_BLOCK MATCHES "^[1-9][0-9]*$")
+	message(FATAL_ERROR "AB3_CLI_BLOCK=${AB3_CLI_BLOCK} is not a number of cases")
+endif()
+function(ab3_cli_blocks name config cases out)
+	cmake_parse_arguments(a "" "HUNKS" "SAME" ${ARGN})
+	string(REGEX REPLACE "\n$" "" lines "${cases}")
+	string(REPLACE "\n" ";" lines "${lines}")
+	set(names)
+	foreach(l IN LISTS lines)
+		string(REGEX REPLACE "\\|.*" "" n "${l}")
+		list(APPEND names ${n})
+	endforeach()
+	list(LENGTH names count)
+	# every case of a SAME pair is in the list
+	foreach(p IN LISTS a_SAME)
+		string(REPLACE "=" ";" ab "${p}")
+		foreach(n IN LISTS ab)
+			list(FIND names ${n} i)
+			if(i LESS 0)
+				message(FATAL_ERROR "${name}: SAME ${p}: no case ${n}")
+			endif()
+		endforeach()
+	endforeach()
+	string(REGEX REPLACE "^\\|" "" hunks "${a_HUNKS}")
+	string(REPLACE "|" ";" hunks "${hunks}")
+	math(EXPR blocks "(${count} + ${AB3_CLI_BLOCK} - 1) / ${AB3_CLI_BLOCK}")
+	math(EXPR size "(${count} + ${blocks} - 1) / ${blocks}")
+	set(tests)
+	set(k 0)
+	set(first 0)
+	while(first LESS count)
+		# the end of the block: SIZE cases, more while a SAME pair has one
+		# case inside and one behind
+		math(EXPR last "${first} + ${size} - 1")
+		set(grown TRUE)
+		while(grown AND last LESS count)
+			set(grown FALSE)
+			foreach(p IN LISTS a_SAME)
+				string(REPLACE "=" ";" ab "${p}")
+				list(GET ab 0 pa)
+				list(GET ab 1 pb)
+				list(FIND names ${pa} ia)
+				list(FIND names ${pb} ib)
+				if((ia LESS_EQUAL last AND ib GREATER last) OR (ib LESS_EQUAL last AND ia GREATER last))
+					math(EXPR last "${last} + 1")
+					set(grown TRUE)
+				endif()
+			endforeach()
+		endwhile()
+		if(last GREATER_EQUAL count)
+			math(EXPR last "${count} - 1")
+		endif()
+		set(text "")
+		set(bnames)
+		foreach(i RANGE ${first} ${last})
+			list(GET lines ${i} l)
+			string(APPEND text "${l}\n")
+			list(GET names ${i} n)
+			list(APPEND bnames ${n})
+		endforeach()
+		set(bsame)
+		foreach(p IN LISTS a_SAME)
+			string(REPLACE "=" ";" ab "${p}")
+			list(GET ab 0 pa)
+			if(pa IN_LIST bnames)
+				list(APPEND bsame ${p})
+			endif()
+		endforeach()
+		set(bhunks "")
+		foreach(h IN LISTS hunks)
+			string(REGEX REPLACE "=.*" "" n "${h}")
+			if(n IN_LIST bnames)
+				string(APPEND bhunks "|${h}")
+			endif()
+		endforeach()
+		math(EXPR k "${k} + 1")
+		ab3_cli(${name}_${k} ${config} "${text}" SAME ${bsame} HUNKS "${bhunks}")
+		list(APPEND tests ${name}_${k})
+		math(EXPR first "${last} + 1")
+	endwhile()
+	set(${out} ${tests} PARENT_SCOPE)
+endfunction()
+ab3_cli_blocks(ab3_cli exe "${cli_exe_cases}" cli_exe_tests SAME ${cli_exe_same} HUNKS "${cli_exe_hunks}")
+ab3_cli_blocks(ab3_cli_ref ref "${cli_ref_cases}" cli_ref_tests SAME ${cli_ref_same} HUNKS "${cli_ref_hunks}")
 # the check itself: a wrong expect file must fail, in both configurations
 # (broken.expect: atoi's output with one digit changed)
 set(broken "atoi|Blitz3|atoi.ab3||${cli_dir}/broken.expect\n")
@@ -668,7 +765,7 @@ endforeach()
 # compiler, which never changes; they matter only when cases or expectations
 # change.  Label oracle instead of emulator: the presets emulator and all
 # leave them out, the preset oracle runs them (tests/README.md).
-set_tests_properties(ab3_cli_ref ab3_cli_ref_broken ab3_cli_ref_broken_date PROPERTIES LABELS oracle)
+set_tests_properties(${cli_ref_tests} ab3_cli_ref_broken ab3_cli_ref_broken_date PROPERTIES LABELS oracle)
 
 # AB3 mode's tokens against AmiBlitz3's (spec ab3-compat/tokenizer,
 # tokenise.cmake): AmiBlitz3 v3.14.0 loads every source in CLI mode and

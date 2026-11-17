@@ -88,13 +88,14 @@ the header); `blitz2-ab3` loads it as `PROGDIR:ab3cli` instead of
 `blitz2:ted`. It needs Kickstart 2.0 (`PROGDIR:`), the editor session
 does not.
 
-The emulator test `ab3_cli` (`tests/ab3/cli.cmake`) compiles AmiBlitz3's
-test programs and the cases of `tests/ab3/cli/` this way, runs them and
-compares the console output, the programs' output and the return codes
+The emulator tests `ab3_cli_1` … `ab3_cli_N` (`tests/ab3/cli.cmake`, in
+blocks of cases) compile AmiBlitz3's
+test programs and the cases of `tests/ab3/cli/` this way, run them and
+compare the console output, the programs' output and the return codes
 with expect files (`results match`, `tools/results`; docs/ab3/variant.md, "The command
-line"); `ab3_cli_ref` compiles the AmiBlitz3 cases with AmiBlitz3
-v3.14.0's own compiler in CLI mode and compares the programs' output
-with the same files (its differences: docs/ab3/variant.md).
+line"); `ab3_cli_ref_1` … compile the AmiBlitz3 cases with AmiBlitz3
+v3.14.0's own compiler in CLI mode and compare the programs' output
+with the same files (their differences: docs/ab3/variant.md).
 `ab3_tokenise` (`tests/ab3/tokenise.cmake`) compares the tokens of AB3
 mode with AmiBlitz3's: AmiBlitz3 writes the lines it loaded (`-save
 NAME.bb2`), `bbsrc ab3-cmp` tokenises the same sources with

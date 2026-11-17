@@ -9,7 +9,7 @@ labels select within them.
 | `host` | tools with broken inputs, host tests, declaration comparisons (against committed data), token lists (seconds) | native compiler |
 | `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the fixed bug-orig tests (`; @fixed #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
 | `all` | `host` and `emulator`, the acceptance run: it starts no session of an original; without the CD it skips only `corpus_cd` and `corpus_cd_ab3` | Amiberry, native compiler; the CD for the skipped ones |
-| `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
+| `oracle` | `ab3_cli_ref_1` … `ab3_cli_ref_N` and their broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
 | `originals` | everything that compares with the original (label `originals`, in no other preset): the compare tests of the recorded originals (`bug_orig_record_ID`: the original's observation of every bug-orig test, open or fixed, against its `tests/bug-orig/*/ID.orig`; they write nothing, the target `bug-orig-record` records), the corpus runs of the original compiler with the original and with the C libraries (configurations `ref` and `orig-clib`) and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus"), `libs_emulator_originals` (the library tests' scenarios with the original libraries against the same expected data), the recording and update targets are not tests (`libs-capture`, `libs-update`: "Libraries"), `ted_ab_originals` ("TED A/B"), the fixed TED bug-orig tests with the original compiler (`bug_orig_ID_originals`), the RWE reference build (`rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`), `asmcmp_*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, and the committed data against a fresh run of the original: `declarations_GROUP_data`, `blitz2_cd_reference` (the CD result table), `ted_oracle_reference` (the oracle data of the TED tests), `ted_checkdata_reference` | Amiberry; the CD (and the reference build for the RWE tests) |
 | `coverage` | `all` and the original bugs with the coverage compilers (`coverage/` per test) | as `all` |
@@ -80,11 +80,25 @@ ctest --preset perf       # the benchmark of the libraries: cycles per command a
 ```
 
 The preset `oracle` (label `oracle`) holds the tests that run the original
-tool to validate our expectations: `ab3_cli_ref` compiles the cases of
-`tests/ab3` marked REF with AmiBlitz3 v3.14.0's own compiler (Amiberry
-without the JIT: the compiler crashes in its exit path under the JIT when
-the host is loaded, #976) and compares the program output with the same
-expect files; `ab3_cli_ref_broken` and `ab3_cli_ref_broken_date` check it with a wrong expect file.
+tool to validate our expectations: `ab3_cli_ref_1` … `ab3_cli_ref_N`
+compile the cases of `tests/ab3` marked REF with AmiBlitz3 v3.14.0's own
+compiler (Amiberry without the JIT: the compiler crashes in its exit path
+under the JIT when the host is loaded, #976) and compare the program
+output with the same expect files; `ab3_cli_ref_broken` and
+`ab3_cli_ref_broken_date` check it with a wrong expect file.
+
+The cases of `ab3_cli` and `ab3_cli_ref` run in blocks, one emulator
+session and one test each: `ab3_cli_1` … `ab3_cli_N`, `ab3_cli_ref_1` …
+`ab3_cli_ref_N` (`tests/ab3/CMakeLists.txt`, `ab3_cli_blocks`). A block
+holds at most `AB3_CLI_BLOCK` cases (cache variable; default 70, in a
+build with `BLITZ2_COVERAGE`, preset `amiga-cov`, 20: the coverage
+compilers need about 5 s per case and a session ends after
+`AB3_CLI_TIMEOUT`, 600 s); the cases are spread evenly over the blocks
+in their order of the list. The two cases of a `SAME` pair (their
+executables must be byte-identical) stay in one block, which may grow
+past the size for them; each block checks the `SAME` pairs and `HUNKS`
+layouts of its own cases. A new case can move cases into the next block
+and change the number of blocks; select the tests by `-R '^ab3_cli'`.
 The compiler never changes, so the result changes only with the cases and
 expectations: run `ctest --preset oracle` before merging a change of
 `tests/ab3` (cases, `cli/`, expect files, `cli.cmake`); `testinfo select`
@@ -1717,7 +1731,7 @@ fail), `lsclear_ted_a1200` (control: `ted` passes on Kickstart 3.2).
 A defect of AB3 mode is a one-case `ab3_cli` session of its own (label
 `bug-port`), its expectation checked by a one-case `ab3_cli_ref` session
 (label `oracle`) against AmiBlitz3's compiler; the fix moves the case into
-the lists of `ab3_cli`/`ab3_cli_ref` and removes both sessions (#1068, the
+the lists of the `ab3_cli`/`ab3_cli_ref` blocks and removes both sessions (#1068, the
 size suffix `.s`: case `asm_short_s`).
 
 

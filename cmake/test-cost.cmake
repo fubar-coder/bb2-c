@@ -14,7 +14,6 @@ function(long_test_costs)
 		ab3_bb2_equivalence 85
 		corpus_cd 60
 		corpus_cd_ab3 50
-		ab3_cli_ref 45
 		corpus_req 40
 		ab3_tokenise_broken 30
 		corpus_serial_runerr 30
