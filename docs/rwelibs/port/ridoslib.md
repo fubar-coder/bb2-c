@@ -120,13 +120,18 @@ kind F):
   part of 256 characters or more overwrote the code behind the buffer
   (`NotifyPort`, `CheckNotify` …), the C build other data (#627; test
   `ridoslib-path-buffer-overflow`).
+* GetFileName and GetPathName read the length of their argument as a
+  long. The original read its low word (`MOVE.w -(a2)`): for 65536
+  characters or more it gave the wrong amount of string space back (the
+  program then found the wrong characters as the result) and GetPathName
+  searched only the first (length AND $FFFF) characters (#628; test
+  `ridoslib-path-length-word`, `libs_emulator` cases `[fixed #628]` of
+  `rwe_ridoslib`).
 
 ## BUG(orig)
 
 * GetPathName never looks at the first character: `/abc` and `:x` give
-  "", like a name without separator (#624). GetFileName and GetPathName
-  take the length as a word (`MOVE.w -(a2)`: the low word of the long)
-  (#628).
+  "", like a name without separator (#624).
 
 Like the original, and no defects: RemNotify leaves `filelens[id]` set
 (the next AddNotify of the id sets it again) and sets d4 to `$12345678`

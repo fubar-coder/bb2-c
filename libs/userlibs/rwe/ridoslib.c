@@ -34,9 +34,7 @@
  *
  * BUG(orig):
  *   - GetPathName never looks at the first character: "/abc" and ":x"
- *     give "", like a name without separator (#624).  GetFileName and
- *     GetPathName take the length as a word (MOVE.w -(a2): the low word
- *     of the long) (#628).
+ *     give "", like a name without separator (#624).
  * Fixed (intended deviation, #618): NextDevice and GetPathName copied
  * their result with its 0 and left a3 behind the 0, so a string
  * expression went on one byte too far; a3 now ends on the 0.
@@ -84,6 +82,11 @@
  * or path part overwrote the code behind it (the C build other data).
  * The buffer is gone: the result is copied straight into the argument's
  * space, which it never outgrows.
+ * Fixed (intended deviation, #628): GetFileName and GetPathName read the
+ * length of their argument as a word (MOVE.w -(a2): the low word of the
+ * long): for 65536 characters or more they gave the wrong amount of
+ * string space back and GetPathName searched only the first (length AND
+ * $FFFF) characters.  They read the long now.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -227,19 +230,19 @@ static struct MsgPort *msgport;
  * separator on (the result is never longer than the argument and lies
  * behind its start: a forward copy); no 0 written, a3 on the end of the
  * characters (the compiler adds it).  Fixed (#627): the original built
- * the result in a 256 byte buffer first, without a limit.  BUG(orig): the
- * length is taken as a word (#628).
+ * the result in a 256 byte buffer first, without a limit.  Fixed (#628):
+ * the original took the length as a word.
  * @param s     d0: the path
- * @param lens  a2: the argument stack, the length's low word at -2(a2)
+ * @param lens  a2: the argument stack, the length (a long) at -4(a2)
  * @return d0: the length of the result
  */
-static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD *lens BL_REG(a2))
+static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const UBYTE *f = s;
     UBYTE c;
     ULONG n = 0;
 
-    blitz_string -= (ULONG)lens[-1] + 1;                /* the argument's space */
+    blitz_string -= lens[-1] + 1;               /* the argument's space (fixed, #628: a long) */
     while ((c = *s++) != 0)
         if (c == '/' || c == ':')
             f = s;
@@ -260,14 +263,15 @@ static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD 
  * original left it behind the 0).  Fixed (#627): the original built the
  * result in a 256 byte buffer first, without a limit.  BUG(orig): the
  * first character is never looked at ("/abc" and ":x" give "", like a
- * name without separator, #624); the length is taken as a word (#628).
+ * name without separator, #624).  Fixed (#628): the original took the
+ * length as a word.
  * @param s     d0: the path
- * @param lens  a2: the argument stack, the length's low word at -2(a2)
+ * @param lens  a2: the argument stack, the length (a long) at -4(a2)
  * @return d0: the length of the result, 0 without separator
  */
-static ULONG BLITZ_ROUTINE getpathname_c(const UBYTE *s BL_REG(d0), const UWORD *lens BL_REG(a2))
+static ULONG BLITZ_ROUTINE getpathname_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
-    ULONG n = (ULONG)lens[-1] + 1, i;
+    ULONG n = lens[-1] + 1, i;                  /* fixed (#628): a long */
     const UBYTE *p;
     UBYTE c;
 

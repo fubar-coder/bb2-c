@@ -220,7 +220,8 @@ GetFileName|a3|"a//b"|1	$00000015
 GetFileName|a3|"a/b"|1	$00000015
 GetFileName|a3|"a:"|1	$00000014
 GetFileName|a3|"abc"|1	$00000017
-GetFileName|a3|"abc/de" length $10006|1	$00010017
+GetFileName|a3|"abc/de" length $10006|1 [orig]	$00010017
+GetFileName|a3|"abc/de" length $10006|1 [fixed #628]	$00000017
 GetFileName|a3|"dh0:"|1	$00000014
 GetFileName|a3|"dh0:x"|1	$00000015
 GetFileName|a3|"name with spaces/and more"|1	$0000001C
@@ -280,7 +281,8 @@ GetFileName|out|"a//b"|1	bytes 300 fnv 668B78FD
 GetFileName|out|"a/b"|1	bytes 300 fnv 4EE0A584
 GetFileName|out|"a:"|1	bytes 300 fnv 34F3DAC0
 GetFileName|out|"abc"|1	bytes 300 fnv 935CAD91
-GetFileName|out|"abc/de" length $10006|1	bytes 65583 fnv C52940CF
+GetFileName|out|"abc/de" length $10006|1 [orig]	bytes 65583 fnv C52940CF
+GetFileName|out|"abc/de" length $10006|1 [fixed #628]	bytes 65583 fnv 3FAAC968
 GetFileName|out|"dh0:"|1	bytes 300 fnv C511A715
 GetFileName|out|"dh0:x"|1	bytes 300 fnv C28257AF
 GetFileName|out|"name with spaces/and more"|1	bytes 300 fnv A491057D
@@ -328,7 +330,7 @@ GetPathName|a3|"a:"|1 [orig]	$00000017
 GetPathName|a3|"a:"|1 [fixed #618]	$00000016
 GetPathName|a3|"abc"|1	$00000014
 GetPathName|a3|"abc/de" length $10006|1 [orig]	$00010019
-GetPathName|a3|"abc/de" length $10006|1 [fixed #618]	$00010018
+GetPathName|a3|"abc/de" length $10006|1 [fixed #618]	$00010017
 GetPathName|a3|"dh0:"|1 [orig]	$00000019
 GetPathName|a3|"dh0:"|1 [fixed #618]	$00000018
 GetPathName|a3|"dh0:x"|1 [orig]	$00000019
@@ -353,7 +355,8 @@ GetPathName|d0|"a//b"|1	$00000003
 GetPathName|d0|"a/b"|1	$00000002
 GetPathName|d0|"a:"|1	$00000002
 GetPathName|d0|"abc"|1	$00000000
-GetPathName|d0|"abc/de" length $10006|1	$00000004
+GetPathName|d0|"abc/de" length $10006|1 [orig]	$00000004
+GetPathName|d0|"abc/de" length $10006|1 [fixed #628]	$00010003
 GetPathName|d0|"dh0:"|1	$00000004
 GetPathName|d0|"dh0:x"|1	$00000004
 GetPathName|d0|"name with spaces/and more"|1	$00000011
@@ -393,7 +396,8 @@ GetPathName|out|"a//b"|1	bytes 300 fnv B09F3510
 GetPathName|out|"a/b"|1	bytes 300 fnv BD471DE1
 GetPathName|out|"a:"|1	bytes 300 fnv 34F3DAC0
 GetPathName|out|"abc"|1	bytes 300 fnv 935CAD91
-GetPathName|out|"abc/de" length $10006|1	bytes 65583 fnv 7C0BB4CC
+GetPathName|out|"abc/de" length $10006|1 [orig]	bytes 65583 fnv 7C0BB4CC
+GetPathName|out|"abc/de" length $10006|1 [fixed #628]	bytes 65583 fnv 16ED7CC7
 GetPathName|out|"dh0:"|1	bytes 300 fnv C511A715
 GetPathName|out|"dh0:x"|1	bytes 300 fnv CBBFC41B
 GetPathName|out|"name with spaces/and more"|1	bytes 300 fnv 0F46C003
