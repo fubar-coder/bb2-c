@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+REQUESTER: EasyRequest title "" text "%ld
+%ld
+%ld" gadgets "Ok" -> answered 0
+REQUESTER: EasyRequest title "" text "%ld" gadgets "Ok" -> answered 0
+done
+rc=0

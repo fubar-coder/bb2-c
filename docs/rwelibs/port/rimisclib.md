@@ -127,14 +127,15 @@ kind F):
 * Flip$ of a string of 0 or 1 characters returns it unchanged; in the
   original the count `len/2 - 1` is -1, the DBRA swapped 65536 byte
   pairs around the string (#751).
+* EZRequestArgs ends the format text it builds (160 byte buffer) with a
+  0; the original wrote none, so a shorter text than the one before kept
+  the end of the old one, and so more formats than arguments (#747).
 
 ## BUG(orig)
 
 * NextArgChar$ does not check the parse pointer: before InitArgParse and
   after NextArg$ came to the end it reads from address 0 (#754).
-* EZRequestArgs writes no 0 behind its format text (160 byte buffer): a
-  shorter text than the one before keeps the end of the old one (and so
-  more formats than arguments) (#747). Neither form limits the number of
+* Neither EZRequest form with arguments limits the number of
   arguments (16 longs, the original overwrites code behind them) (#748),
   and EZRequestArgs without an argument reads one type word from a2 (the
   count 0 runs the DBRA 65536 times) (#746).

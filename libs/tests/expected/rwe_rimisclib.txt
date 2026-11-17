@@ -1426,19 +1426,30 @@ EZRequestArgs|arguments|type 7 alone|1	bytes 64 50524F47000000020000000300000004
 EZRequestArgs|arguments|type 7 alone|2	bytes 64 50524F4700000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
 EZRequestArgs|body|all types|1	bytes 200 fnv 06B992CC
 EZRequestArgs|body|all types|2	$00000001
-EZRequestArgs|body|one (stale end, BUG(orig) #747)|1	bytes 200 fnv F6A0FECB
-EZRequestArgs|body|separator ,|1	bytes 200 fnv 23546D4A
+EZRequestArgs|body|one (stale end, BUG(orig) #747)|1 [orig]	bytes 200 fnv F6A0FECB
+EZRequestArgs|body|one (stale end, BUG(orig) #747)|1 [fixed #747]	bytes 200 fnv 74645440
+EZRequestArgs|body|separator ,|1 [orig]	bytes 200 fnv 23546D4A
+EZRequestArgs|body|separator ,|1 [fixed #747]	bytes 200 fnv 5AC22460
 EZRequestArgs|body|separator 0|1	bytes 200 fnv EF28DAE1
 EZRequestArgs|body|separator \| again|1	bytes 200 fnv 08BCF0B7
-EZRequestArgs|body|type 1 alone|1	bytes 200 fnv B6F582DF
-EZRequestArgs|body|type 2 alone|1	bytes 200 fnv B6F582DF
-EZRequestArgs|body|type 3 alone|1	bytes 200 fnv 08BCF0B7
-EZRequestArgs|body|type 4 alone|1	bytes 200 fnv 08BCF0B7
-EZRequestArgs|body|type 4 alone|2	bytes 200 fnv 08BCF0B7
-EZRequestArgs|body|type 5 alone|1	bytes 200 fnv 08BCF0B7
-EZRequestArgs|body|type 5 alone|2	bytes 200 fnv 08BCF0B7
-EZRequestArgs|body|type 7 alone|1	bytes 200 fnv 8733DEDE
-EZRequestArgs|body|type 7 alone|2	bytes 200 fnv 8733DEDE
+EZRequestArgs|body|type 1 alone|1 [orig]	bytes 200 fnv B6F582DF
+EZRequestArgs|body|type 1 alone|1 [fixed #747]	bytes 200 fnv 2010B12C
+EZRequestArgs|body|type 2 alone|1 [orig]	bytes 200 fnv B6F582DF
+EZRequestArgs|body|type 2 alone|1 [fixed #747]	bytes 200 fnv 2010B12C
+EZRequestArgs|body|type 3 alone|1 [orig]	bytes 200 fnv 08BCF0B7
+EZRequestArgs|body|type 3 alone|1 [fixed #747]	bytes 200 fnv 74645440
+EZRequestArgs|body|type 4 alone|1 [orig]	bytes 200 fnv 08BCF0B7
+EZRequestArgs|body|type 4 alone|1 [fixed #747]	bytes 200 fnv 74645440
+EZRequestArgs|body|type 4 alone|2 [orig]	bytes 200 fnv 08BCF0B7
+EZRequestArgs|body|type 4 alone|2 [fixed #747]	bytes 200 fnv 74645440
+EZRequestArgs|body|type 5 alone|1 [orig]	bytes 200 fnv 08BCF0B7
+EZRequestArgs|body|type 5 alone|1 [fixed #747]	bytes 200 fnv 74645440
+EZRequestArgs|body|type 5 alone|2 [orig]	bytes 200 fnv 08BCF0B7
+EZRequestArgs|body|type 5 alone|2 [fixed #747]	bytes 200 fnv 74645440
+EZRequestArgs|body|type 7 alone|1 [orig]	bytes 200 fnv 8733DEDE
+EZRequestArgs|body|type 7 alone|1 [fixed #747]	bytes 200 fnv EF28DAE1
+EZRequestArgs|body|type 7 alone|2 [orig]	bytes 200 fnv 8733DEDE
+EZRequestArgs|body|type 7 alone|2 [fixed #747]	bytes 200 fnv EF28DAE1
 EZRequestArgs|called once|all types|1	$00000001
 EZRequestArgs|called once|one (stale end, BUG(orig) #747)|1	$00000001
 EZRequestArgs|called once|separator ,|1	$00000001

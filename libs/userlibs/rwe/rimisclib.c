@@ -38,9 +38,7 @@
  * BUG(orig), kept:
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
  *     and after NextArg$ came to the end it reads from address 0 (#754).
- *   - EZRequestArgs writes no 0 behind the format text it builds (160
- *     byte buffer): a shorter text than the one before keeps the end of
- *     the old one (#747).  Neither form limits the arguments (16 longs)
+ *   - Neither EZRequest form with arguments limits them (16 longs)
  *     (#748).
  *   - A Quick argument is passed as its integer part zero extended
  *     (SWAP:ANDI.l #$ffff): negative values become 65536 - n (#750); a
@@ -64,6 +62,10 @@
  *     until its end, through the uncleared memory behind the file, and
  *     read the last chunk up to 26 bytes behind the buffer (#745).
  *
+ * Fixed (intended deviation, #747): EZRequestArgs ends the format text
+ * it builds with a 0; the original wrote none, so a shorter text than
+ * the one before kept the end of the old one (more formats than
+ * arguments).
  * Fixed (intended deviation, #751): Flip$ of a string with 0 or 1
  * characters returns it unchanged; the original swapped 65536 byte
  * pairs around the string (the count len/2 - 1 = -1 in a DBRA).
@@ -785,7 +787,8 @@ static ULONG doeasybegin(void)
 /* the argument array (and with fmt the format text) from the repeated
    #unknown|#push arguments below sp: per argument the type word, below
    it the value (a string: its length, below that the address); `cnt`
-   arguments (DBRA: 0 = 65536).  a6 is passed to fltoqu.  `ezfirst`: the
+   arguments (DBRA: 0 = 65536); the format text ends with a 0 (fixed
+   #747: the original wrote none).  a6 is passed to fltoqu.  `ezfirst`: the
    lowest address of a string argument, the first one the compiler put at
    a3 (NULL without one, #1027). */
 static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6)
@@ -850,6 +853,8 @@ static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6
             }
         }
     } while (n-- != 0);
+    if (fmt)
+        *fmt = 0;                                       /* fixed (#747) */
 }
 
 /**
@@ -945,8 +950,9 @@ static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG
  * arguments.
  *
  * %s / %ld / %d per type, separated by the EZSeparator character ('|': a
- * line feed), gadget "Ok", no title.  BUG(orig): no 0 behind the format
- * text (160 byte buffer, #747); no limit of the arguments (#748);
+ * line feed), gadget "Ok", no title.  Fixed (#747): the format text
+ * ends with a 0 (the original wrote none, a shorter text kept the end of
+ * the one before).  BUG(orig): no limit of the arguments (#748);
  * without arguments a type word is read from a2 and the count 0 runs the
  * loop 65536 times (#746); Quick/Float as in #749/#750.  Fixed (#1027):
  * a3 = the first string argument afterwards, unchanged without one (the
@@ -964,7 +970,7 @@ static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d
     numargs = reps & 0xffff;
     ez.es.es_TextFormat = ezargsbuf;
     ez.args = ez.args2;
-    doargs(args, (UWORD)reps, ezargsbuf, caller_a6);    /* BUG(orig): no 0 (#747) */
+    doargs(args, (UWORD)reps, ezargsbuf, caller_a6);
     ez.es.es_GadgetFormat = (STRPTR)okgad;
     ez.es.es_Title = NULL;
     r = doeasybegin();
