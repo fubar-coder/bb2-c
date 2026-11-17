@@ -90,6 +90,10 @@ kind F):
   a3-a6`), so the next part of a string expression was written at the
   old a3, behind the two arguments (over the end of a longer result, or
   behind the bytes of a shorter one) (#465).
+* RTEZMultiLoadFile tests the whole file list address: -1 when files
+  were chosen, 0 on cancel; the original tested it with `CMP.b #0,d0`
+  and returned a list at an address ending in `$00` as its address
+  instead of -1 (#462).
 
 ## BUG(orig)
 
@@ -102,9 +106,6 @@ kind F):
 * RTEZFreePattern 2 resets the multi-load requester's flags; the
   multi-load is 3 in RTEZSetPattern and RTEZSetDefaultDirectory (2 is the
   path requester there, RTEZSetPattern 2 does nothing) (#456).
-* RTEZMultiLoadFile tests the file list with `CMP.b #0,d0`: a list at an
-  address ending in `$00` is returned as its address instead of -1
-  (#462).
 * RTEZGetLong returns the value also on cancel (`TST.l d0` without a
   branch); the value (and so the default) stays for the next call
   (#457).

@@ -26,7 +26,8 @@
  * directory empty, ending in ':' or not; RTEZSetDefaultDirectory and
  * RTEZSetPattern 0-4, RTEZFreePattern 0-3 (their flags seen by the next
  * requester); RTEZMultiLoadFile (a list, cancel, a list at an address
- * ending in $00, BUG(orig), #462) and RTNextPathEntry to the end;
+ * ending in $00: the original returns its address, the fix -1, #462)
+ * and RTNextPathEntry to the end;
  * RTEZFontRequest, RTEZScreenModeRequest both forms (through
  * rtFontRequestA, BUG(orig), #466), RTEZPaletteRequest; RTEZGetLong both forms
  * (cancel returns the value, BUG(orig), #457), RTEZGetLongRange both forms;
@@ -601,6 +602,8 @@ static void multiload(void)
         fk_list = n == 0 ? list[0] : n == 1 ? aligned : NULL;
         fk_dir = n == 0 ? "Work:dir" : "RAM:";
         DOREQ(E_MULTI, 0, strargs("Multi", NULL, NULL));
+        /* the original returns the address (#462), the fixed library -1: its
+           case is 0 */
         if (n == 1)
             BOTH("the list, not -1 (BUG(orig) #462)", RES.d[0] == (ULONG)aligned);
         fk_list = NULL;

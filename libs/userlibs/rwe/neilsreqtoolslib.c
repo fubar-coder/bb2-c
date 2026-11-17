@@ -49,9 +49,6 @@
  *   - RTEZFreePattern 2 resets the multi-load requester's flags (the
  *     multi-load is 3 in RTEZSetPattern and RTEZSetDefaultDirectory)
  *     (#456).
- *   - RTEZMultiLoadFile tests only the low byte of the file list address
- *     (CMP.b #0,d0): a list at an address ending in $00 is returned as
- *     the address instead of -1 (#462).
  *   - RTEZGetLong returns the value also on cancel (TST.l without a
  *     branch); the value and the default stay for the next call (#457).
  *   - RTEZGetString on cancel does not free its buffer (memlib frees it
@@ -75,6 +72,9 @@
  * title like RTEZLoadFile but restored a3 (MOVEM a3-a6), so a string
  * expression went on at the old a3, behind the two arguments; a3 now
  * ends on the result's 0 (on cancel at the title).
+ * Fixed (intended deviation, #462): RTEZMultiLoadFile tested only the low
+ * byte of the file list address (CMP.b #0,d0), so a list at an address
+ * ending in $00 came back as its address instead of -1.
  * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
  * have no 0 behind them (a string function returns its length, as
  * usual); FileName$ is copied with a length of 108, whatever its own
@@ -1038,11 +1038,11 @@ static ULONG BLITZ_ROUTINE rtfreepat_c(ULONG n BL_REG(d0))
  * @brief RTEZMultiLoadFile(Title$): the multi-select file requester; the
  * names then come from RTNextPathEntry.
  *
- * The file list of the previous call is freed first.  BUG(orig) (#462):
- * only the low byte of the list address is tested (CMP.b #0,d0).
+ * The file list of the previous call is freed first.  The whole list
+ * address is tested (fixed, #462: the original tested its low byte with
+ * CMP.b #0,d0 and returned a list at an address ending in $00 as such).
  * @param title  d0: Title$
- * @return d0: -1 if files were chosen; 0 on cancel - and the list address
- *         itself if it ends in $00 (#462)
+ * @return d0: -1 if files were chosen, 0 on cancel
  */
 static ULONG BLITZ_ROUTINE rtMfreq_c(STRPTR title BL_REG(d0))
 {
@@ -1053,8 +1053,8 @@ static ULONG BLITZ_ROUTINE rtMfreq_c(STRPTR title BL_REG(d0))
     returnvalue = r;
     Mfilelist = (struct rtFileList *)r;
     CurEntry = (struct rtFileList *)r;
-    if ((UBYTE)r == 0)                                  /* CMP.b #0,d0 */
-        return r;
+    if (r == 0)                         /* fixed (#462): the original CMP.b #0,d0 */
+        return 0;
     return (ULONG)-1;
 }
 

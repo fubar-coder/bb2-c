@@ -360,7 +360,8 @@ RTEZMultiLoadFile|call 1|cancel|1	bytes 256 fnv EB8A4017
 RTEZMultiLoadFile|call 1|list at $xx00|1	bytes 256 fnv EB8A4017
 RTEZMultiLoadFile|call 1|list of 3|1	bytes 256 fnv F64C79C9
 RTEZMultiLoadFile|d0|cancel|1	$00000000
-RTEZMultiLoadFile|d0|list at $xx00|1	$4E000000
+RTEZMultiLoadFile|d0|list at $xx00|1 [orig]	$4E000000
+RTEZMultiLoadFile|d0|list at $xx00|1 [fixed #462]	$FFFFFFFF
 RTEZMultiLoadFile|d0|list of 3|1	$FFFFFFFF
 RTEZMultiLoadFile|kept|cancel|1	kept
 RTEZMultiLoadFile|kept|list at $xx00|1	kept
@@ -371,7 +372,8 @@ RTEZMultiLoadFile|popped|list of 3|1	$00000000
 RTEZMultiLoadFile|reqtools calls|cancel|1	$00000002
 RTEZMultiLoadFile|reqtools calls|list at $xx00|1	$00000002
 RTEZMultiLoadFile|reqtools calls|list of 3|1	$00000002
-RTEZMultiLoadFile|the list, not -1 (BUG(orig) #462)|list at $xx00|1	$00000001
+RTEZMultiLoadFile|the list, not -1 (BUG(orig) #462)|list at $xx00|1 [orig]	$00000001
+RTEZMultiLoadFile|the list, not -1 (BUG(orig) #462)|list at $xx00|1 [fixed #462]	$00000000
 RTEZPaletteRequest|call 0|ret -1|1	bytes 256 fnv 7C00AC04
 RTEZPaletteRequest|call 0|ret 5|1	bytes 256 fnv 94868A09
 RTEZPaletteRequest|d0|ret -1|1	$FFFFFFFF
