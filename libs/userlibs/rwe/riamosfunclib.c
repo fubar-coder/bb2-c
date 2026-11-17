@@ -41,8 +41,6 @@
  * compiler).
  *
  * BUG(orig), kept:
- *   - SaveExec: the header gets one size slot (last hunk = 0) and there
- *     is one HUNK_END behind all hunks (#503).
  *   - FindVolume returns the DosList entry FindDosEntry found, taken
  *     after UnLockDosList, where the manual documents -1 (0 if the
  *     volume is not present) (test riamosfunclib-findvolume-result;
@@ -125,6 +123,12 @@
  *     size and the hunk number of each RELOC32 block (the hunk's own
  *     index among them); the original counted every item, also the
  *     skipped symbol and other ones (#502).
+ *   - SaveExec writes a loadable executable for any number of code
+ *     hunks: the header with last hunk = n-1 and one size per hunk, a
+ *     HUNK_END behind every hunk; a list without code items writes no
+ *     file (0).  The original wrote one size slot (the sum, last hunk 0)
+ *     and one HUNK_END behind all hunks: with two or more code hunks
+ *     LoadSeg refused the file (#503).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written (an empty list, whose head is the tail, is
@@ -1113,37 +1117,54 @@ struct hunkitem {
    bb_listhead (blitzobj.h) - the current item, the lists of the used and
    the free items, "lIsT" */
 
-/* execinit: the file and a HUNK_HEADER of 6 longs; -1 / 0 */
-static ULONG execinit(CONST_STRPTR name)
+/* the size of a code item in longs (its length rounded up) */
+static ULONG hunklongs(const struct hunkitem *h)
+{
+    ULONG bytes = h->hunklen;
+
+    if (bytes & 3)
+        bytes = (bytes & ~3UL) + 4;
+    return (ULONG)((LONG)bytes >> 2);
+}
+
+/* execinit: the file and its HUNK_HEADER - no resident libraries, the
+   table size n, first hunk 0, last n-1, one size per code item of the
+   list from h on (fixed, #503: the original wrote one size slot, the
+   sum, and last 0); -1 / 0 */
+static ULONG execinit(CONST_STRPTR name, const struct hunkitem *h, ULONG n)
 {
     struct DosLibrary *dos = dosbase_;
     BPTR file = Open(name, MODE_NEWFILE);
-    int i;
 
     if (!file)
         return 0;
     fh = file;
     hunkbuff[0] = HUNK_HEADER;
-    for (i = 1; i < 6; i++)
-        hunkbuff[i] = 0;
-    Write(fh, hunkbuff, 24);
+    hunkbuff[1] = 0;
+    hunkbuff[2] = n;
+    hunkbuff[3] = 0;
+    hunkbuff[4] = n - 1;
+    Write(fh, hunkbuff, 20);
+    for (; h->next; h = h->next)
+        if (h->hunktype == HUNK_CODE) {
+            hunkbuff[0] = hunklongs(h);
+            Write(fh, hunkbuff, 4);
+        }
     return (ULONG)-1;
 }
 
 /* docode: HUNK_CODE (with the memory flags), longs, the data rounded up
-   to longs, RELOC32 if there are relocations; the size in longs */
-static ULONG docode(const struct hunkitem *h, ULONG num)
+   to longs, RELOC32 if there are relocations, HUNK_END (fixed, #503: the
+   original wrote one HUNK_END behind all hunks) */
+static void docode(const struct hunkitem *h, ULONG num)
 {
     struct DosLibrary *dos = dosbase_;
-    ULONG bytes = h->hunklen, longs, n;
+    ULONG longs = hunklongs(h), n;
 
-    if (bytes & 3)
-        bytes = (bytes & ~3UL) + 4;
-    longs = (ULONG)((LONG)bytes >> 2);
     hunkbuff[0] = HUNK_CODE | h->flags;
     hunkbuff[1] = longs;
     Write(fh, hunkbuff, 8);
-    Write(fh, (APTR)h->hunkloc, (LONG)bytes);
+    Write(fh, (APTR)h->hunkloc, (LONG)(longs << 2));
     if (h->reloc) {
         n = (ULONG)((LONG)h->reloclen >> 2);
         hunkbuff[0] = HUNK_RELOC32;
@@ -1154,24 +1175,8 @@ static ULONG docode(const struct hunkitem *h, ULONG num)
         hunkbuff[0] = 0;
         Write(fh, hunkbuff, 4);
     }
-    return longs;
-}
-
-/* execfinit: HUNK_END, the header's table size, first/last 0 and one
-   size, close */
-static void execfinit(ULONG nhunks, ULONG size)
-{
-    struct DosLibrary *dos = dosbase_;
-
     hunkbuff[0] = HUNK_END;
     Write(fh, hunkbuff, 4);
-    Seek(fh, 8, OFFSET_BEGINNING);
-    hunkbuff[0] = nhunks;
-    hunkbuff[1] = 0;
-    hunkbuff[2] = 0;
-    hunkbuff[3] = size;
-    Write(fh, hunkbuff, 16);
-    Close(fh);
 }
 
 /**
@@ -1183,32 +1188,38 @@ static void execfinit(ULONG nhunks, ULONG size)
  * address, wrote an empty list's tail node as a hunk and left the file
  * open for a first pointer 0.  Fixed (#502): only the code hunks written
  * are counted (table size, RELOC32 hunk numbers); the original counted the
- * skipped items too.  BUG(orig): the header gets one size slot and there
- * is one HUNK_END behind all hunks (#503).
+ * skipped items too.  Fixed (#503): the header has last = n-1 and one
+ * size per hunk, every hunk its HUNK_END; a list without code items
+ * writes no file.  The original wrote one size slot (the sum, last 0) and
+ * one HUNK_END behind all hunks.
  * @param name  d0: filename$
  * @param list  d1: the list array (its header in front of it)
- * @return d0: -1; 0 if list() is no list or empty, or the file cannot be
- *         made
+ * @return d0: -1; 0 if list() is no list, empty or without code items, or
+ *         the file cannot be made
  */
 static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE *list BL_REG(d1))
 {
     const struct bb_listhead *lh = (const struct bb_listhead *)(list - sizeof(struct bb_listhead));
-    const struct hunkitem *h;
-    ULONG num = 0, size = 0;
+    struct DosLibrary *dos = dosbase_;
+    const struct hunkitem *h, *p;
+    ULONG num = 0, n = 0;
 
     if (lh->id != BB_LISTID)
         return 0;
     h = (const struct hunkitem *)lh->used.mlh_Head;
     if (!h || !h->next)
         return 0;                               /* fixed (#501): empty */
-    if (!execinit(name))
+    for (p = h; p->next; p = p->next)           /* fixed (#503): counted first */
+        if (p->hunktype == HUNK_CODE)
+            n++;
+    if (!n)
+        return 0;                               /* no code hunk: no file */
+    if (!execinit(name, h, n))
         return 0;                               /* fixed (#501) */
-    do {
+    for (; h->next; h = h->next)
         if (h->hunktype == HUNK_CODE)
-            size += docode(h, num++);           /* fixed (#502): code hunks only */
-        h = h->next;
-    } while (h->next);
-    execfinit(num, size);
+            docode(h, num++);                   /* fixed (#502): code hunks only */
+    Close(fh);
     return (ULONG)-1;
 }
 
