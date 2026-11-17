@@ -44,6 +44,7 @@ static int check(const buf &code, uint32_t table_size, uint32_t type,
     FILE *out = tmpfile();
     int r;
 
+    REQUIRE(out != NULL);
     if (load_parse(f.data(), f.size(), &lf, err, sizeof err))
         abort();
     r = blitzlib_check(&lf, "lib", out);
@@ -203,9 +204,10 @@ TEST_CASE("blitzlib: read and check", "[blitzlib]")
         struct blitzlib lib;
         char err[200];
 
-        CHECK(blitzlib_read(&h, &lib, err, sizeof err) == 0);
+        REQUIRE(blitzlib_read(&h, &lib, err, sizeof err) == 0);
         CHECK(lib.libnum == 100 && lib.error == 0 && lib.libfin == 0);
-        CHECK(lib.nentries == 1 && lib.entries[0].offset == 0x30 && lib.entries[0].kind == 1);
+        REQUIRE(lib.nentries == 1);
+        CHECK(lib.entries[0].offset == 0x30 && lib.entries[0].kind == 1);
         CHECK(lib.entries[0].name && !strcmp(lib.entries[0].name, "Test"));
         CHECK(lib.entries[0].help && !strcmp(lib.entries[0].help, "X"));
         CHECK(lib.codestart == ok.size() - 2);
@@ -251,19 +253,19 @@ TEST_CASE("blitzlib: read and check", "[blitzlib]")
         h.data = t.data();
         h.size = (uint32_t)t.size();
 
-        CHECK(blitzlib_read(&h, &lib, err, sizeof err) == 0);
-        CHECK(lib.nentries == 3 && lib.nforms == 2);
+        REQUIRE(blitzlib_read(&h, &lib, err, sizeof err) == 0);
+        REQUIRE(lib.nentries == 3 && lib.nforms == 2);
         e = &lib.entries[0];
-        CHECK(e->kind == 0x0302 && !strcmp(e->name, "Fn") && !strcmp(e->help, "(a,b)"));
+        CHECK(e->kind == 0x0302 && e->name && e->help && !strcmp(e->name, "Fn") && !strcmp(e->help, "(a,b)"));
         CHECK(e->form == 0 && e->nforms == 2);
         CHECK(lib.forms[0].head == 2 && lib.forms[0].types[0] == 2 && lib.forms[0].types[1] == 7);
         CHECK(lib.forms[1].head == 0x1103 && lib.forms[1].types[2] == 0x83);
         e = &lib.entries[1];
-        CHECK(e->kind == 6 && !strcmp(e->name, "Open_") && e->nforms == 0);
+        CHECK(e->kind == 6 && e->name && !strcmp(e->name, "Open_") && e->nforms == 0);
         CHECK(e->oslib == 252 && e->lvo == -30 && e->nregs == 2);
         CHECK(e->regs[0] == 0x01 && e->regs[1] == 0x10);
         e = &lib.entries[2];
-        CHECK(e->kind == 8 && !strcmp(e->name, "Obj") && !strcmp(e->help, "x"));
+        CHECK(e->kind == 8 && e->name && e->help && !strcmp(e->name, "Obj") && !strcmp(e->help, "x"));
         CHECK(lib.object && !strcmp(lib.object, "Obj") && lib.defmax == 20);
         CHECK(lib.codestart == t.size() - 2);
         blitzlib_free(&lib);

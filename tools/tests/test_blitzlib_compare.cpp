@@ -74,12 +74,14 @@ static int cmp(const struct variant *v, uint32_t extra_reloc, char *msg, size_t 
     struct blitzlib_decls d = { 0, NULL };
     int r;
 
+    REQUIRE(out != NULL);
     if (via_decls) {
         /* the original as declaration data, written and read back */
         FILE *t = tmpfile();
         char text[2000], err[200];
         size_t n;
 
+        REQUIRE(t != NULL);
         CHECK(blitzlib_decls_write(&ha, t, err, sizeof err) == 0);
         rewind(t);
         n = fread(text, 1, sizeof text - 1, t);
@@ -145,6 +147,7 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
         struct hunk ha = { HUNK_CODE, a.data(), (uint32_t)a.size(), 0, NULL, NULL, 0, NULL, 0, 0 };
         struct hunk hb = { HUNK_CODE, shorty, 8, 0, NULL, NULL, 0, NULL, 0, 0 };
         FILE *out = tmpfile();
+        REQUIRE(out != NULL);
 
         CHECK(blitzlib_compare(&ha, &hb, "lib", out) == -1);
         fclose(out);
@@ -166,6 +169,7 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
             "lib: header +$05: $64 != $65", "lib: entry 0 Test +$1F: $65 != $61" };
         unsigned char seen[2] = { 0 };
         FILE *out = tmpfile();
+        REQUIRE(out != NULL);
 
         v = base;
         v.libnum = 101;
@@ -181,12 +185,14 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
         CHECK(cmp(&v, 0, msg, sizeof msg) == 2);
         seen[0] = seen[1] = 0;
         out = tmpfile();
+        REQUIRE(out != NULL);
         CHECK(blitzlib_intended(msg, intended + 1, 1, seen, out) == 1);
         CHECK(seen[0] == 1);
         fclose(out);
         /* a line must match as a whole, not as a prefix */
         seen[0] = 0;
         out = tmpfile();
+        REQUIRE(out != NULL);
         CHECK(blitzlib_intended("lib: header +$05: $64 != $650\n", intended, 1, seen, out) == 1);
         CHECK(seen[0] == 0);
         fclose(out);
@@ -215,6 +221,7 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
         CHECK(n == 2);
         memset(seen, 0, sizeof seen);
         out = tmpfile();
+        REQUIRE(out != NULL);
         CHECK(blitzlib_intended(msg, lines, (size_t)n, seen, out) == 0);
         CHECK(blitzlib_intended_stale(lines, (size_t)n, seen, out) == 0);
         fclose(out);
@@ -223,6 +230,7 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
         CHECK(n == 3);
         memset(seen, 0, sizeof seen);
         out = tmpfile();
+        REQUIRE(out != NULL);
         CHECK(blitzlib_intended(msg, lines, (size_t)n, seen, out) == 0);
         CHECK(blitzlib_intended_stale(lines, (size_t)n, seen, out) == 1);
         rewind(out);
@@ -236,6 +244,7 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
         CHECK(n == 1);
         memset(seen, 0, sizeof seen);
         out = tmpfile();
+        REQUIRE(out != NULL);
         CHECK(blitzlib_intended(msg, lines, (size_t)n, seen, out) == 1);
         CHECK(blitzlib_intended_stale(lines, (size_t)n, seen, out) == 0);
         fclose(out);
@@ -277,6 +286,7 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
         FILE *t = tmpfile();
         char text[2000], err[200];
 
+        REQUIRE(t != NULL);
         CHECK(blitzlib_decls_write(&ha, t, err, sizeof err) == 0);
         rewind(t);
         text[fread(text, 1, sizeof text - 1, t)] = 0;
@@ -311,9 +321,11 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
         CHECK(blitzlib_decls_parse(text, n, &d, err, sizeof err) == 0 && d.n == 1);
         if (d.n == 1) {
             out = tmpfile();
+            REQUIRE(out != NULL);
             CHECK(blitzlib_compare(&d.hunks[0], &ha, "lib", out) == 0);
             fclose(out);
             t = tmpfile();
+            REQUIRE(t != NULL);
             CHECK(blitzlib_decls_write(&d.hunks[0], t, err, sizeof err) == 0);
             rewind(t);
             again[fread(again, 1, sizeof again - 1, t)] = 0;

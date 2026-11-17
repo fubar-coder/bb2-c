@@ -158,6 +158,7 @@ static void test_no_library_files(void)
         FILE *f = tmpfile();
         int r;
 
+        REQUIRE(f != NULL);
         snprintf(cur, sizeof cur, "%s/cur", base);
         r = prevcmp(cur, dir, &o, f, err, sizeof err);
         CHECK(r == 2 && strstr(err, "no library files"));

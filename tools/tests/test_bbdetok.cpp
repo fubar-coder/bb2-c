@@ -37,8 +37,8 @@ TEST_CASE("bbdetok", "[bbdetok]")
     char list[] = "8001 NEWTYPE\n8021 NPrint\n8021 Other\nB201 Print\n8100 Zero\n";
     char err[200], *t;
 
-    CHECK(blitztokens_read(list, sizeof list - 1, &l, err, sizeof err) == 0);
-    CHECK(bbdetok_init(&d, &l) == 0);
+    REQUIRE(blitztokens_read(list, sizeof list - 1, &l, err, sizeof err) == 0);
+    REQUIRE(bbdetok_init(&d, &l) == 0);
 
     /* names (the first entry of a number), plain bytes, TAB, an empty line */
     t = TEXT(BBDETOK_AB, "\x80\x21 \"a\"\0\0\tx=1:\xB2\x01 x\0", err);
@@ -84,8 +84,8 @@ TEST_CASE("bbdetok", "[bbdetok]")
         char *out;
         size_t n;
 
-        CHECK(blitztokens_read(list2, sizeof list2 - 1, &l2, err, sizeof err) == 0);
-        CHECK(bbdetok_init(&d2, &l2) == 0);
+        REQUIRE(blitztokens_read(list2, sizeof list2 - 1, &l2, err, sizeof err) == 0);
+        REQUIRE(bbdetok_init(&d2, &l2) == 0);
         CHECK(bbdetok_text(&d2, BBDETOK_TED, (const uint8_t *)"\x90\xE9\0", 3, &out, &n, &r,
                            err, sizeof err) == 0);
         CHECK(n == 2 && !memcmp(out, "\xE9\n", 2));

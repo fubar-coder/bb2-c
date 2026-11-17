@@ -19,6 +19,7 @@ TEST_CASE("biglib: write, read, numbers, find, clash", "[biglib]")
     char err[200];
     FILE *f = tmpfile();
 
+    REQUIRE(f != NULL);
     // write: length, data, ..., long 0
     CHECK(biglib_write(f, in, 2) == 0);
     rewind(f);
@@ -27,7 +28,7 @@ TEST_CASE("biglib: write, read, numbers, find, clash", "[biglib]")
     CHECK(size == sizeof expect && !memcmp(bytes, expect, sizeof expect));
 
     // read it back
-    CHECK(biglib_read(bytes, size, &out, &n, err, sizeof err) == 0);
+    REQUIRE(biglib_read(bytes, size, &out, &n, err, sizeof err) == 0);
     CHECK(n == 2 && out[0].size == 4 && out[1].size == 8 && !memcmp(out[1].data, b, 8));
     free(out);
 

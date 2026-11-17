@@ -81,8 +81,10 @@ static int key_lines(const char *cfg, const char *key)
 /* a file of n bytes */
 static void put_file(const char *path, size_t n)
 {
-    FILE *f = fopen(path, "wb");
+    FILE *f;
 
+    REQUIRE(path != nullptr);
+    f = fopen(path, "wb");
     CHECK(f != nullptr);
     if (!f)
         return;

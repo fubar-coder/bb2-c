@@ -166,7 +166,8 @@ TEST_CASE("blitztokens: checks", "[blitztokens]")
         char text[200];
         size_t n;
 
-        CHECK(f && blitztokens_write(f, &l) == 0);
+        REQUIRE(f != NULL);
+        CHECK(blitztokens_write(f, &l) == 0);
         rewind(f);
         n = fread(text, 1, sizeof text - 1, f);
         text[n] = 0;
@@ -231,7 +232,7 @@ TEST_CASE("blitztokens: checks", "[blitztokens]")
         char text[] = "8001 NEWTYPE\r\n\nB201 Print Two\nFF9A x";
         char bad1[] = "8001 NEWTYPE\n8002\n", bad2[] = "80G1 End\n", bad3[] = "0001 End\n";
 
-        CHECK(blitztokens_read(text, sizeof text - 1, &l, err, sizeof err) == 0);
+        REQUIRE(blitztokens_read(text, sizeof text - 1, &l, err, sizeof err) == 0);
         CHECK(l.n == 3 && has(&l, 0, 0x8001, "NEWTYPE") && has(&l, 1, 0xB201, "Print Two")
               && has(&l, 2, 0xFF9A, "x"));
         blitztokens_free(&l);

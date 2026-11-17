@@ -32,6 +32,7 @@ static void set_init(struct cexp_set *s, const char *pass)
 {
     memset(s, 0, sizeof *s);
     s->pass = strdup(pass);
+    REQUIRE(s->pass != NULL);
 }
 
 /* the file name is refused by cexp_add with msg in the message */
@@ -88,7 +89,8 @@ TEST_CASE("corpusexpect: names", "[corpusexpect]")
     CHECK(cexp_check(&s, 1, err, sizeof err) == 0);
     CHECK(s.n == 3 && !strcmp(s.p[0].name, "t01_int") && !strcmp(s.p[2].name, "t130_blit"));
     p = cexp_find(&s, "t124_bitmaperr");
-    CHECK(p && p->issue[CEXP_OUT] == 6 && p->f[CEXP_OUT][CEXP_ORIG].len == 5);
+    REQUIRE(p != NULL);
+    CHECK(p->issue[CEXP_OUT] == 6 && p->f[CEXP_OUT][CEXP_ORIG].len == 5);
     cexp_file_name(p, CEXP_OUT, CEXP_FIXED, fn, sizeof fn);
     CHECK(!strcmp(fn, "t124_bitmaperr.fixed-6.out"));
     cexp_file_name(p, CEXP_OUT, CEXP_ORIG, fn, sizeof fn);
@@ -166,6 +168,7 @@ TEST_CASE("corpusexpect: sides", "[corpusexpect]")
     CHECK(add(&s, "b.fixed-6.out", "fixed\n") == 0);
     plain = cexp_find(&s, "a");
     pair = cexp_find(&s, "b");
+    REQUIRE(plain != NULL && pair != NULL);
     /* unqualified: every configuration */
     CHECK(cexp_applies(plain, CEXP_OUT, CEXP_SIDE_PORT, q) == 1 && q[0] == CEXP_PLAIN);
     CHECK(cexp_applies(plain, CEXP_OUT, CEXP_SIDE_ORIG, q) == 1 && q[0] == CEXP_PLAIN);
@@ -237,7 +240,9 @@ struct rep {
 static FILE *rep_open(struct rep *r)
 {
     memset(r, 0, sizeof *r);
-    return r->f = open_memstream(&r->p, &r->n);
+    r->f = open_memstream(&r->p, &r->n);
+    REQUIRE(r->f != NULL);
+    return r->f;
 }
 
 static char *rep_text(struct rep *r)
@@ -298,8 +303,10 @@ TEST_CASE("corpusexpect: accept", "[corpusexpect]")
     {
         struct cexp_prog *pa = (struct cexp_prog *)cexp_find(&r2, "a");
 
+        REQUIRE(pa != NULL);
         free(pa->f[CEXP_OUT][CEXP_PLAIN].data);
         pa->f[CEXP_OUT][CEXP_PLAIN].data = (uint8_t *)strdup("neu\n");
+        REQUIRE(pa->f[CEXP_OUT][CEXP_PLAIN].data != NULL);
         pa->f[CEXP_OUT][CEXP_PLAIN].len = 4;
     }
     rep_open(&rep);
@@ -315,10 +322,13 @@ TEST_CASE("corpusexpect: accept", "[corpusexpect]")
         struct cexp_prog *pb = (struct cexp_prog *)cexp_find(&r1, "b");
         struct cexp_prog *pb2 = (struct cexp_prog *)cexp_find(&r2, "b");
 
+        REQUIRE(pb != NULL && pb2 != NULL);
         free(pb->f[CEXP_OUT][CEXP_PLAIN].data);
         free(pb2->f[CEXP_OUT][CEXP_PLAIN].data);
         pb->f[CEXP_OUT][CEXP_PLAIN].data = (uint8_t *)strdup("fixed\n");
+        REQUIRE(pb->f[CEXP_OUT][CEXP_PLAIN].data != NULL);
         pb2->f[CEXP_OUT][CEXP_PLAIN].data = (uint8_t *)strdup("fixed\n");
+        REQUIRE(pb2->f[CEXP_OUT][CEXP_PLAIN].data != NULL);
         pb->f[CEXP_OUT][CEXP_PLAIN].len = pb2->f[CEXP_OUT][CEXP_PLAIN].len = 6;
     }
     rep_open(&rep);
@@ -398,8 +408,10 @@ TEST_CASE("corpusexpect: update", "[corpusexpect]")
     {
         struct cexp_prog *pp = (struct cexp_prog *)cexp_find(&run, "p");
 
+        REQUIRE(pp != NULL);
         free(pp->f[CEXP_OUT][CEXP_PLAIN].data);
         pp->f[CEXP_OUT][CEXP_PLAIN].data = (uint8_t *)strdup("orig\n");
+        REQUIRE(pp->f[CEXP_OUT][CEXP_PLAIN].data != NULL);
         pp->f[CEXP_OUT][CEXP_PLAIN].len = 5;
     }
     rep_open(&rep);
@@ -501,7 +513,8 @@ TEST_CASE("corpusexpect: apply", "[corpusexpect]")
         const struct cexp_prog *p = cexp_find(&back, "a");
         enum cexp_qual m;
 
-        CHECK(p && cexp_judge(p, CEXP_OUT, CEXP_SIDE_PORT, (const uint8_t *)"a2\n", 3, &m) == 0
+        REQUIRE(p != NULL);
+        CHECK(cexp_judge(p, CEXP_OUT, CEXP_SIDE_PORT, (const uint8_t *)"a2\n", 3, &m) == 0
               && cexp_judge(p, CEXP_OUT, CEXP_SIDE_ORIG, (const uint8_t *)"a\n", 2, &m) == 0);
     }
     cexp_free(&back);
@@ -512,7 +525,8 @@ TEST_CASE("corpusexpect: apply", "[corpusexpect]")
 
         snprintf(path, sizeof path, "%s/a.out", dir);
         f = fopen(path, "wb");
-        CHECK(f && fputs("a\n", f) >= 0 && !fclose(f));
+        REQUIRE(f != NULL);
+        CHECK(fputs("a\n", f) >= 0 && !fclose(f));
         CHECK(cexp_load(&back, dir, CEXP_STRICT, err, sizeof err) == -2
               && strstr(err, "/corpus/a.out and a.orig.out: an unqualified and a qualified"));
         cexp_free(&back);

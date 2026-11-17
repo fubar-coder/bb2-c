@@ -25,22 +25,26 @@ TEST_CASE("bugorigcmp: parse", "[bugorigcmp]")
 {
     struct bugorigcmp_obs o;
 
-    CHECK(parse("# the original\n[session]\ndone\n[run]\nrc=0\n", BUGORIGCMP_ORIG, &o) == 0);
+    REQUIRE(parse("# the original\n[session]\ndone\n[run]\nrc=0\n", BUGORIGCMP_ORIG, &o) == 0);
     CHECK(o.n == 2 && o.note && !strcmp(o.note, "the original"));
+    REQUIRE(bugorigcmp_get(&o, "run") != NULL);
     CHECK(!strcmp(bugorigcmp_get(&o, "run")->text, "rc=0\n") && !bugorigcmp_get(&o, "run")->wild);
     bugorigcmp_free(&o);
     /* a last line without LF, an empty section */
-    CHECK(parse("[run]\n[log]\nx", BUGORIGCMP_RUN, &o) == 0);
+    REQUIRE(parse("[run]\n[log]\nx", BUGORIGCMP_RUN, &o) == 0);
+    REQUIRE(bugorigcmp_get(&o, "run") != NULL && bugorigcmp_get(&o, "log") != NULL);
     CHECK(!strcmp(bugorigcmp_get(&o, "run")->text, "") && !strcmp(bugorigcmp_get(&o, "log")->text, "x\n"));
     bugorigcmp_free(&o);
     /* a wildcard line with its reason: the reason is no part of the text */
-    CHECK(parse("[run]\na\n# varies: the address of a buffer\nptr=$*\nb\n", BUGORIGCMP_ORIG, &o) == 0);
+    REQUIRE(parse("[run]\na\n# varies: the address of a buffer\nptr=$*\nb\n", BUGORIGCMP_ORIG, &o) == 0);
+    REQUIRE(bugorigcmp_get(&o, "run") != NULL);
     CHECK(!strcmp(bugorigcmp_get(&o, "run")->text, "a\nptr=$*\nb\n"));
     CHECK(!strcmp(bugorigcmp_get(&o, "run")->raw, "a\n# varies: the address of a buffer\nptr=$*\nb\n"));
     CHECK(bugorigcmp_get(&o, "run")->wild);
     bugorigcmp_free(&o);
     /* in a run or an expectation the lines are literal */
-    CHECK(parse("[run]\n# varies: x\nptr=$*\n", BUGORIGCMP_RUN, &o) == 0);
+    REQUIRE(parse("[run]\n# varies: x\nptr=$*\n", BUGORIGCMP_RUN, &o) == 0);
+    REQUIRE(bugorigcmp_get(&o, "run") != NULL);
     CHECK(!strcmp(bugorigcmp_get(&o, "run")->text, "# varies: x\nptr=$*\n"));
     bugorigcmp_free(&o);
     /* broken: a wildcard line without a reason (also ...), a reason
@@ -117,6 +121,7 @@ static char *project(const char *id, const char *src, int ted, const char *expec
     char *text = NULL;
     size_t len = 0;
     FILE *f = open_memstream(&text, &len);
+    REQUIRE(f != NULL);
 
     *r = bugorigcmp_project_test(f, id, src, ted, expect, orig, "area/x", err, sizeof err);
     fclose(f);
@@ -203,10 +208,12 @@ static size_t scope(const char *base_src, const char *base_exp, const char *base
     memset(&b, 0, sizeof b);
     memset(&r, 0, sizeof r);
     f = open_memstream(&tb, &lb);
+    REQUIRE(f != NULL);
     fprintf(f, "# capture bug-orig 1\n");
     CHECK(bugorigcmp_project_test(f, "x", base_src, 0, base_exp, base_orig, "a/x", err, sizeof err) == 0);
     fclose(f);
     f = open_memstream(&tr, &lr);
+    REQUIRE(f != NULL);
     fprintf(f, "# capture bug-orig 1\n");
     CHECK(bugorigcmp_project_test(f, "x", br_src, 0, br_exp, br_orig, "a/x", err, sizeof err) == 0);
     fclose(f);
@@ -217,6 +224,7 @@ static size_t scope(const char *base_src, const char *base_exp, const char *base
     if (issue)
         libscmp_issues_add(&is, issue);
     f = open_memstream(&rep, &lrep);
+    REQUIRE(f != NULL);
     if (!x)
         nrep = libscmp_fix_scope(&b, &r, &is, f, &nch);
     fclose(f);
@@ -260,6 +268,7 @@ static int accept(const char *a, const char *b, const char *old, char **out, cha
 {
     size_t len;
     FILE *f = open_memstream(rep, &len);
+    REQUIRE(f != NULL);
     int r = bugorigcmp_accept("t-id", a, "run1", b, "run2", old, "t-id.orig", out, f, err,
                               sizeof err);
 

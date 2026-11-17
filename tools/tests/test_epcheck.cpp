@@ -19,6 +19,7 @@ static long run(const char *symtab, const char *disasm, long *n)
     FILE *f = fmemopen(rep, sizeof rep, "w");
     long r;
 
+    REQUIRE(f != NULL);
     memset(rep, 0, sizeof rep);
     r = epcheck_text(symtab, disasm, f, n);
     fclose(f);

@@ -248,7 +248,7 @@ TEST_CASE("blitzres: fd", "[blitzres]")
     struct blitzres_list l = {};
 
     CHECK(blitzres_fd(fd, strlen(fd), 0, &l, err, sizeof err) == 0);
-    CHECK(l.n == 4);
+    REQUIRE(l.n == 4);
     CHECK(!strcmp(l.c[0].name, "_ObtainDataTypeA") && l.c[0].value == -36);
     CHECK(!strcmp(l.c[1].name, "_SetDTAttrsA") && l.c[1].value == -42);
     CHECK(l.c[3].value == -54);
@@ -256,7 +256,8 @@ TEST_CASE("blitzres: fd", "[blitzres]")
     /* varargs: every NAMEA without NAME in the file, behind them:
        _ObtainDataType, _SetDTAttrs, not _GetDTAttrs again */
     CHECK(blitzres_fd(fd, strlen(fd), 1, &l, err, sizeof err) == 0);
-    CHECK(l.n == 6 && !strcmp(l.c[4].name, "_ObtainDataType") && l.c[4].value == -36);
+    REQUIRE(l.n == 6);
+    CHECK(!strcmp(l.c[4].name, "_ObtainDataType") && l.c[4].value == -36);
     CHECK(!strcmp(l.c[5].name, "_SetDTAttrs") && l.c[5].value == -42);
     /* a second file with the same name and offset: counted once */
     CHECK(blitzres_fd(fd, strlen(fd), 0, &l, err, sizeof err) == 0 && l.n == 6);
@@ -305,7 +306,7 @@ TEST_CASE("blitzres: equ", "[blitzres]")
 
     CHECK(blitzres_add(&syms, "TAG_USER", INT32_MIN, err, sizeof err) == 0);
     CHECK(blitzres_equ(inc, strlen(inc), &syms, &l, err, sizeof err) == 0);
-    CHECK(l.n == 10);
+    REQUIRE(l.n == 10);
     CHECK(!strcmp(l.c[0].name, "bltddat") && l.c[0].value == 0);
     CHECK(!strcmp(l.c[1].name, "dmaconr") && l.c[1].value == 2);
     CHECK(blitzres_find(&l, "DTA_Dummy", &v) == 0 && v == INT32_MIN + 0x1000);
@@ -346,7 +347,7 @@ TEST_CASE("blitzres: lvo", "[blitzres]")
     struct blitzres_list l = {};
 
     CHECK(blitzres_lvo(inc, strlen(inc), &l, err, sizeof err) == 0);
-    CHECK(l.n == 3);
+    REQUIRE(l.n == 3);
     CHECK(!strcmp(l.c[0].name, "AHI_AllocAudioA") && l.c[0].value == -42);
     CHECK(!strcmp(l.c[1].name, "AHI_FreeAudio") && l.c[1].value == -48);
     CHECK(!strcmp(l.c[2].name, "AHI_AudioRequestA") && l.c[2].value == -126);

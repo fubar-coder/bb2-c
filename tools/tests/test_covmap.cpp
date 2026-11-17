@@ -22,8 +22,9 @@ static char *trace_text(struct covmap *m, long i)
     char *s = NULL;
     size_t n = 0;
     FILE *f = open_memstream(&s, &n);
+    REQUIRE(f != NULL);
 
-    CHECK(f && !(i < 0 ? covmap_write_all(m, f) : covmap_write_test(m, (size_t)i, f)));
+    CHECK(!(i < 0 ? covmap_write_all(m, f) : covmap_write_test(m, (size_t)i, f)));
     fclose(f);
     return s;
 }
@@ -196,12 +197,14 @@ TEST_CASE("covmap: json", "[covmap]")
     struct json *j = json_parse(doc, strlen(doc), &pos, err, sizeof err);
     const struct json *a;
 
-    CHECK(j && j->type == JSON_OBJECT && j->n == 3);
+    REQUIRE(j != NULL);
+    CHECK(j->type == JSON_OBJECT && j->n == 3);
     a = json_get(j, "a");
     CHECK(a && a->type == JSON_ARRAY && a->n == 5);
     CHECK(a && a->items[0].number == 1 && a->items[1].number == -25);
     CHECK(a && a->items[2].type == JSON_TRUE && a->items[3].type == JSON_FALSE
           && a->items[4].type == JSON_NULL);
+    REQUIRE(json_get_string(j, "s") != NULL);
     CHECK(!strcmp(json_get_string(j, "s"), "x\n\xc3\xa9\xf0\x9f\x98\x80\""));
     CHECK(json_get(j, "o") && json_get(j, "o")->type == JSON_OBJECT && !json_get(j, "o")->n);
     CHECK(!json_get(j, "missing") && json_get_number(j, "s", 7) == 7);
@@ -495,6 +498,7 @@ static unsigned char *cov_file(uint32_t code, uint32_t bytes, const uint32_t *of
     unsigned char *b = static_cast<unsigned char *>(calloc(1, COVFMT_HEADER_SIZE + bytes));
     uint32_t v[4] = { COVFMT_MAGIC, COVFMT_VERSION, code, bytes };
 
+    REQUIRE(b != NULL);
     for (int i = 0; i < 4; i++) {
         b[4 * i] = (unsigned char)(v[i] >> 24);
         b[4 * i + 1] = (unsigned char)(v[i] >> 16);

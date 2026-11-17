@@ -157,8 +157,9 @@ static void good(int h)
     unsigned c, r;
     int same = 1;
 
+    REQUIRE(font != NULL);
     CHECK(tedfont_size(h) == (size_t)(h == 8 ? 2048 : 1536));
-    CHECK(tedfont_parse(t.p, t.n, "glyphs.txt", &src, err, sizeof err) == 0);
+    REQUIRE(tedfont_parse(t.p, t.n, "glyphs.txt", &src, err, sizeof err) == 0);
     CHECK(src.height == h);
     CHECK(tedfont_build(&src, a, (size_t)128 * h, font, err, sizeof err) == 0);
     for (c = 0; c < 256; c++)

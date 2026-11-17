@@ -208,6 +208,7 @@ written accept(const std::string &run, const std::string *old)
         REQUIRE(libscmp_parse(&o, old->data(), old->size(), "old", LIBSCMP_EXPECTED, err,
                               sizeof err) == 0);
     FILE *m = open_memstream(&rep, &replen);
+    REQUIRE(m != NULL);
     w.status = libscmp_accept(&a, &a, old ? &o : nullptr, &out, m);
     fclose(m);
     w.text = out ? out : "";
@@ -251,7 +252,10 @@ TEST_CASE("libs-update writes in the writers' order", "[libscmp][sort]")
     REQUIRE(libscmp_parse_fix("r|c|v|2#5", &fx[0], err, sizeof err) == 0);
     REQUIRE(libscmp_parse_fix("r|new||1#6", &fx[1], err, sizeof err) == 0);
     FILE *m = open_memstream(&rep, &replen);
-    int s = libscmp_update(&r, &e, fx, 2, &out, m);
+    int s;
+
+    REQUIRE(m != NULL);
+    s = libscmp_update(&r, &e, fx, 2, &out, m);
     fclose(m);
     REQUIRE(s == 0);
     CHECK(std::string(out) == hdr + "r|b||1\t$1\nr|c|v|2 [orig]\t$2\nr|c|v|2 [fixed #5]\t$4\n"
@@ -290,6 +294,7 @@ dir_result sort_dir(const std::string &dir, std::vector<const char *> only = {})
     char *o = nullptr, *e = nullptr;
     size_t ol = 0, el = 0;
     FILE *out = open_memstream(&o, &ol), *err = open_memstream(&e, &el);
+    REQUIRE(out != NULL && err != NULL);
     dir_result r;
 
     r.status = libscmp_sort_dirs(dir.c_str(), only.data(), only.size(), out, err);

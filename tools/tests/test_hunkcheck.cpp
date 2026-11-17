@@ -19,6 +19,7 @@ static int check(uint32_t type, int n, char **specs, char *msg, size_t len)
     FILE *out = tmpfile();
     int r;
 
+    REQUIRE(out != NULL);
     put32(code, 0x61000010);           /* bsr.w */
     put32(code, 0x48E7FFFE);           /* movem.l d0-d7/a0-a6,-(sp) */
     f = loadfile1(1, type, code, nullptr, 0, 0);
@@ -41,6 +42,7 @@ static int layout(const char *want, char *msg, size_t len)
     FILE *out = tmpfile();
     int r;
 
+    REQUIRE(out != NULL);
     put32(f, HUNK_HEADER);
     put32(f, 0);
     put32(f, 3);
@@ -81,6 +83,7 @@ static int stored(uint32_t code_size, uint32_t data_size, char *msg, size_t len)
     FILE *out = tmpfile();
     int r;
 
+    REQUIRE(out != NULL);
     put32(f, HUNK_HEADER);
     put32(f, 0);
     put32(f, 3);

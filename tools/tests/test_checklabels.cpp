@@ -34,6 +34,7 @@ static long check(const char *const *texts, size_t n, char *msg, size_t len)
     long r;
     size_t i;
 
+    REQUIRE(out != NULL);
     if (code_labels_parse(asm_text, sizeof asm_text - 1, &l))
         abort();
     for (i = 0; i < n; i++) {
@@ -57,8 +58,8 @@ TEST_CASE("checklabels", "[checklabels]")
     char msg[2000];
     size_t i;
 
-    CHECK(code_labels_parse(asm_text, sizeof asm_text - 1, &l) == 0);
-    CHECK(l.n == 5);
+    REQUIRE(code_labels_parse(asm_text, sizeof asm_text - 1, &l) == 0);
+    REQUIRE(l.n == 5);
     for (i = 0; i < l.n && i < 5; i++) {
         CHECK(!strcmp(l.v[i].name, want[i]));
         CHECK(l.v[i].line == lines[i]);

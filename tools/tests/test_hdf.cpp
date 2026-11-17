@@ -42,7 +42,8 @@ static uint8_t *formatted(size_t blocks, uint32_t dostype)
     uint8_t *img = static_cast<uint8_t *>(malloc(blocks * HDF_BLOCK));
     char err[200];
 
-    CHECK(img && hdf_format(img, blocks * HDF_BLOCK, dostype, "Test", 17000, err, sizeof err) == 0);
+    REQUIRE(img != NULL);
+    CHECK(hdf_format(img, blocks * HDF_BLOCK, dostype, "Test", 17000, err, sizeof err) == 0);
     return img;
 }
 
@@ -51,6 +52,7 @@ static uint8_t *pattern(size_t n, unsigned seed)
     uint8_t *p = static_cast<uint8_t *>(malloc(n ? n : 1));
     size_t i;
 
+    REQUIRE(p != NULL);
     for (i = 0; i < n; i++)
         p[i] = (uint8_t)(i * 7 + seed + i / 251);
     return p;
@@ -82,7 +84,7 @@ static void files(uint32_t dostype)
     uint32_t free0;
     size_t i;
 
-    CHECK(hdf_open(&h, img, blocks * HDF_BLOCK, err, sizeof err) == 0);
+    REQUIRE(hdf_open(&h, img, blocks * HDF_BLOCK, err, sizeof err) == 0);
     CHECK(!h.rdb && h.reserved == 2 && h.nblocks == blocks && h.root == 200);
     CHECK(hdf_check(&h, err, sizeof err) == 0);
     free0 = hdf_free_blocks(&h);
@@ -145,14 +147,14 @@ TEST_CASE("hdf: names", "[hdf]")
 
     for (international = 0; international < 2; international++) {
         img = formatted(100, DOS(international ? 3 : 1));
-        CHECK(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
+        REQUIRE(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
         hdf_volume_name(&h, vol);
         CHECK(!strcmp(vol, "Test"));
         CHECK(hdf_write(&h, "caf\xe9", "x", 1, err, sizeof err) == 0);
-        CHECK(hdf_read(&h, "CAF\xc9", &got, &len, err, sizeof err) == (international ? 0 : -1));
+        REQUIRE(hdf_read(&h, "CAF\xc9", &got, &len, err, sizeof err) == (international ? 0 : -1));
         if (international)
             free(got);
-        CHECK(hdf_read(&h, "CAF\xe9", &got, &len, err, sizeof err) == 0);
+        REQUIRE(hdf_read(&h, "CAF\xe9", &got, &len, err, sizeof err) == 0);
         free(got);
         hdf_close(&h);
         free(img);
@@ -170,7 +172,7 @@ TEST_CASE("hdf: dates", "[hdf]")
     int k;
 
     for (k = 0; k < 2; k++) {
-        CHECK(hdf_open(&h, k ? b : a, 100 * HDF_BLOCK, err, sizeof err) == 0);
+        REQUIRE(hdf_open(&h, k ? b : a, 100 * HDF_BLOCK, err, sizeof err) == 0);
         CHECK(hdf_write(&h, "S", "first", 5, err, sizeof err) == 0);
         CHECK(hdf_copy(&h, "S", "T", err, sizeof err) == 0);
         CHECK(hdf_write(&h, "S", "second", 6, err, sizeof err) == 0);
@@ -188,7 +190,7 @@ TEST_CASE("hdf: dates", "[hdf]")
     wr(hb + 420, 12345);
     wr(hb + 320, 0x0F);
     sum(hb, 128, 20);
-    CHECK(hdf_open(&h, a, 100 * HDF_BLOCK, err, sizeof err) == 0);
+    REQUIRE(hdf_open(&h, a, 100 * HDF_BLOCK, err, sizeof err) == 0);
     CHECK(hdf_copy(&h, "S", "U", err, sizeof err) == 0);
     CHECK(hdf_check(&h, err, sizeof err) == 0);
     hdf_close(&h);
@@ -206,6 +208,7 @@ static uint8_t *rdb_image(size_t *size, uint32_t dostype)
     uint8_t *img = static_cast<uint8_t *>(calloc(blocks, HDF_BLOCK)), *r = img, *p = img + HDF_BLOCK, *env = p + 128;
     char err[200];
 
+    REQUIRE(img != NULL);
     memcpy(r, "RDSK", 4);
     wr(r + 4, 64);
     wr(r + 16, 512);
@@ -242,14 +245,14 @@ TEST_CASE("hdf: rdb", "[hdf]")
     char err[200];
     size_t len;
 
-    CHECK(hdf_open(&h, img, size, err, sizeof err) == 0);
+    REQUIRE(hdf_open(&h, img, size, err, sizeof err) == 0);
     CHECK(h.rdb && !strcmp(h.partname, "DH0") && h.offset == 8 * HDF_BLOCK
           && h.nblocks == 152 && h.root == 76);
     CHECK(hdf_write(&h, "File", "contents", 8, err, sizeof err) == 0);
     CHECK(hdf_check(&h, err, sizeof err) == 0);
     hdf_close(&h);
     /* the partition alone is a raw image with the same file */
-    CHECK(hdf_open(&h, img + 8 * HDF_BLOCK, 152 * HDF_BLOCK, err, sizeof err) == 0);
+    REQUIRE(hdf_open(&h, img + 8 * HDF_BLOCK, 152 * HDF_BLOCK, err, sizeof err) == 0);
     CHECK(!h.rdb && hdf_read(&h, "file", &got, &len, err, sizeof err) == 0 && len == 8
           && !memcmp(got, "contents", 8));
     free(got);
@@ -303,7 +306,7 @@ TEST_CASE("hdf: broken", "[hdf]")
     CHECK(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == -1 && strstr(err, "bitmap"));
     img[51 * HDF_BLOCK + 100] ^= 1;
     /* the check: a used block marked free, an allocated block unused */
-    CHECK(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
+    REQUIRE(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
     CHECK(hdf_write(&h, "F", "x", 1, err, sizeof err) == 0);
     hdr = 52;
     data = rd(img + hdr * HDF_BLOCK + 16);
@@ -331,7 +334,7 @@ TEST_CASE("hdf: broken", "[hdf]")
     free(img);
     /* OFS: a damaged data block */
     img = formatted(100, DOS(0));
-    CHECK(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
+    REQUIRE(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
     CHECK(hdf_write(&h, "F", "abc", 3, err, sizeof err) == 0);
     CHECK(reads(&h, "F", (const uint8_t *)"abc", 3));
     img[53 * HDF_BLOCK + 25] ^= 1;
@@ -350,9 +353,9 @@ TEST_CASE("hdf: hexfiles", "[hdf]")
 
     REQUIRE(img != NULL);
     CHECK(hdf_format(img, 64 * HDF_BLOCK, DOS(3), "Hex", 0, err, sizeof err) == 0);
-    CHECK(hdf_open(&h, img, 64 * HDF_BLOCK, err, sizeof err) == 0);
+    REQUIRE(hdf_open(&h, img, 64 * HDF_BLOCK, err, sizeof err) == 0);
     CHECK(hdf_write_hex(&h, "Bin", "00ff7F80aBcD", err, sizeof err) == 0);
-    CHECK(hdf_read(&h, "Bin", &back, &len, err, sizeof err) == 0);
+    REQUIRE(hdf_read(&h, "Bin", &back, &len, err, sizeof err) == 0);
     CHECK(len == 6 && !memcmp(back, "\x00\xff\x7f\x80\xab\xcd", 6));
     free(back);
     CHECK(hdf_write_hex(&h, "Empty", "", err, sizeof err) == 0);
@@ -373,8 +376,9 @@ TEST_CASE("hdf: listing", "[hdf]")
     struct hdf h;
     char err[200], out[200] = {};
     FILE *f = tmpfile();
+    REQUIRE(f != NULL);
 
-    CHECK(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
+    REQUIRE(hdf_open(&h, img, 100 * HDF_BLOCK, err, sizeof err) == 0);
     CHECK(hdf_write(&h, "Readme", "hello", 5, err, sizeof err) == 0);
     CHECK(hdf_list(&h, "", f, err, sizeof err) == 0);
     CHECK(f && fseek(f, 0, SEEK_SET) == 0 && fread(out, 1, sizeof out - 1, f) == 9);

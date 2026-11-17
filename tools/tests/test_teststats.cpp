@@ -103,6 +103,7 @@ static int add(struct teststats *t, const char *name, const char *text, char **d
 
     *diag = NULL;
     f = open_memstream(diag, &n);
+    REQUIRE(f != NULL);
     r = teststats_add(t, name, text, strlen(text), f);
     fclose(f);
     return r;
@@ -140,17 +141,17 @@ TEST_CASE("teststats: junit reader", "[teststats]")
     struct junit_file f;
     char err[200];
 
-    CHECK(junit_parse(run1, strlen(run1), &f, err, sizeof err) == 0);
+    REQUIRE(junit_parse(run1, strlen(run1), &f, err, sizeof err) == 0);
     CHECK(f.ncases == 4 && f.nproblems == 0 && !strcmp(f.timestamp, "2026-10-31T10:00:00"));
     if (f.ncases == 4) {
         CHECK(!strcmp(f.cases[0].name, "bug_a") && f.cases[0].time == 20.5
               && f.cases[0].status == JUNIT_PASSED);
-        CHECK(strstr(f.cases[0].out, "a <tag> & AB\n"));
-        CHECK(strstr(f.cases[1].out, "end=timeout verdict=REPRODUCED"));
-        CHECK(f.cases[3].status == JUNIT_SKIPPED && !strcmp(f.cases[3].out, "skipped"));
+        CHECK(f.cases[0].out && strstr(f.cases[0].out, "a <tag> & AB\n"));
+        CHECK(f.cases[1].out && strstr(f.cases[1].out, "end=timeout verdict=REPRODUCED"));
+        CHECK(f.cases[3].status == JUNIT_SKIPPED && f.cases[3].out && !strcmp(f.cases[3].out, "skipped"));
     }
     junit_free(&f);
-    CHECK(junit_parse(run3, strlen(run3), &f, err, sizeof err) == 0);
+    REQUIRE(junit_parse(run3, strlen(run3), &f, err, sizeof err) == 0);
     CHECK(f.ncases == 1 && f.nproblems == 3 && f.cases[0].status == JUNIT_FAILED);
     CHECK(f.nproblems == 3 && strstr(f.problems[0], "line 3: a testcase without name")
           && strstr(f.problems[1], "notime: no time")
@@ -210,7 +211,7 @@ TEST_CASE("teststats: junit reader", "[teststats]")
 
         CHECK(junit_parse(ok, strlen(ok), &f, err, sizeof err) == 0 && f.ncases == 1
               && f.cases[0].time == 10 && f.cases[0].status == JUNIT_PASSED
-              && !strcmp(f.cases[0].out, ""));
+              && f.cases[0].out && !strcmp(f.cases[0].out, ""));
         junit_free(&f);
     }
 }
@@ -293,6 +294,7 @@ TEST_CASE("teststats: report", "[teststats]")
 
     /* nothing added: empty tables */
     t = teststats_new();
+    REQUIRE(t != NULL);
     text = report(t, 3, 30, 0);
     CHECK(text && strstr(text, "0 runs (JUnit files), 0 tests") && strstr(text, "(none)"));
     free(text);

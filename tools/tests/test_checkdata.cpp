@@ -53,6 +53,7 @@ static int run_intended(const char *table, const char *intended, const uint8_t *
     FILE *out = tmpfile();
     int r;
 
+    REQUIRE(out != NULL);
     if (checkdata_table_parse(table, strlen(table), &t, err, sizeof err)) {
         snprintf(msg, len, "parse: %s", err);
         fclose(out);
@@ -73,6 +74,7 @@ static int run_intended(const char *table, const char *intended, const uint8_t *
         FILE *w = open_memstream(&text, &textlen);
         long missing = checkdata_ref_make(&t, &l, &ref, &rd, out);
 
+        REQUIRE(w != NULL);
         checkdata_ref_write(&rd, "a header\nof two lines", w);
         fclose(w);
         if (missing < 0 || checkdata_ref_parse(text, textlen, &rd2, err, sizeof err)) {
@@ -195,6 +197,7 @@ TEST_CASE("checkdata: checks", "[checkdata]")
         char *text = NULL, err[200];
         size_t textlen = 0;
         FILE *w = open_memstream(&text, &textlen);
+        REQUIRE(w != NULL);
 
         CHECK(!checkdata_table_parse(tt, strlen(tt), &t, err, sizeof err));
         CHECK(checkdata_ref_make(&t, &l, &ref, &r, NULL) == 0);
@@ -231,6 +234,7 @@ TEST_CASE("checkdata: checks", "[checkdata]")
         struct loadfile c = { NULL, 0, NULL, 1, 1, &h };
         char err[200], msg[400];
         FILE *out = tmpfile();
+        REQUIRE(out != NULL);
 
         CHECK(!checkdata_table_parse(tt, strlen(tt), &t, err, sizeof err));
         CHECK(!checkdata_ref_parse("abcd\t5\t4142434400\n", 18, &r, err, sizeof err));

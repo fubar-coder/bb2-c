@@ -63,9 +63,10 @@ static int cmp(const char *run, const char *exp, enum libscmp_set set, struct li
 
     free(report);
     report = NULL;
-    CHECK(parse(&r, run, LIBSCMP_RUN) == 0);
-    CHECK(parse(&e, exp, LIBSCMP_EXPECTED) == 0);
+    REQUIRE(parse(&r, run, LIBSCMP_RUN) == 0);
+    REQUIRE(parse(&e, exp, LIBSCMP_EXPECTED) == 0);
     m = open_memstream(&report, &reportlen);
+    REQUIRE(m != NULL);
     s = libscmp_compare(&r, &e, set, m, st);
     fclose(m);
     libscmp_free(&r);
@@ -387,7 +388,8 @@ static void put_file(const char *dir, const char *name, const char *text)
 
     snprintf(path, sizeof path, "%s/%s.txt", dir, name);
     f = fopen(path, "wb");
-    CHECK(f && fwrite(text, 1, strlen(text), f) == strlen(text));
+    REQUIRE(f != NULL);
+    CHECK(fwrite(text, 1, strlen(text), f) == strlen(text));
     if (f)
         fclose(f);
 }
@@ -402,7 +404,9 @@ static int cmp_dirs(const char *only1, const char *only2, char **errtext)
     free(report);
     report = NULL;
     m = open_memstream(&report, &reportlen);
+    REQUIRE(m != NULL);
     e = open_memstream(errtext, &errlen);
+    REQUIRE(e != NULL);
     s = libscmp_compare_dirs("libscmp-dirs/run", "libscmp-dirs/exp", LIBSCMP_OBJ, only, nonly, m, e);
     fclose(m);
     fclose(e);
@@ -465,7 +469,9 @@ TEST_CASE("dirs", "[libscmp]")
 
         free(report);
         m = open_memstream(&report, &reportlen);
+        REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
+        REQUIRE(x != NULL);
 
         CHECK(libscmp_compare_dirs("libscmp-dirs/none", "libscmp-dirs/exp", LIBSCMP_OBJ, NULL, 0, m, x) == 2);
         fclose(m);
@@ -499,13 +505,14 @@ TEST_CASE("large", "[libscmp]")
     memcpy(b, a, n + 1);
     b[n - 2] = b[n - 2] == '0' ? '1' : '0';     /* the last value */
     clock_gettime(CLOCK_MONOTONIC, &t0);
-    CHECK(libscmp_parse(&r, b, n, "run", LIBSCMP_RUN, err, sizeof err) == 0);
+    REQUIRE(libscmp_parse(&r, b, n, "run", LIBSCMP_RUN, err, sizeof err) == 0);
     free(b);
-    CHECK(libscmp_parse(&e, a, n, "exp", LIBSCMP_EXPECTED, err, sizeof err) == 0);
+    REQUIRE(libscmp_parse(&e, a, n, "exp", LIBSCMP_EXPECTED, err, sizeof err) == 0);
     free(a);
     free(report);
     report = NULL;
     m = open_memstream(&report, &reportlen);
+    REQUIRE(m != NULL);
     CHECK(libscmp_compare(&r, &e, LIBSCMP_OBJ, m, &st) == 1);
     fclose(m);
     clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -530,11 +537,12 @@ static int accept2(const char *run1, const char *run2, const char *old)
     free(report);
     free(result);
     report = result = NULL;
-    CHECK(parse(&a, run1, LIBSCMP_RUN) == 0);
-    CHECK(parse(&b, run2, LIBSCMP_RUN) == 0);
+    REQUIRE(parse(&a, run1, LIBSCMP_RUN) == 0);
+    REQUIRE(parse(&b, run2, LIBSCMP_RUN) == 0);
     if (old)
-        CHECK(parse(&o, old, LIBSCMP_EXPECTED) == 0);
+        REQUIRE(parse(&o, old, LIBSCMP_EXPECTED) == 0);
     m = open_memstream(&report, &reportlen);
+    REQUIRE(m != NULL);
     s = libscmp_accept(&a, &b, old ? &o : NULL, &result, m);
     fclose(m);
     CHECK((s == 0) == (result != NULL));
@@ -628,9 +636,10 @@ static int update(const char *run, const char *exp, const char *const *fix)
         libscmp_fix_free(&fixes[n]);
     for (n = 0; fix && fix[n]; n++)
         CHECK(libscmp_parse_fix(fix[n], &fixes[n], err, sizeof err) == 0);
-    CHECK(parse(&r, run, LIBSCMP_RUN) == 0);
-    CHECK(parse(&e, exp, LIBSCMP_EXPECTED) == 0);
+    REQUIRE(parse(&r, run, LIBSCMP_RUN) == 0);
+    REQUIRE(parse(&e, exp, LIBSCMP_EXPECTED) == 0);
     m = open_memstream(&report, &reportlen);
+    REQUIRE(m != NULL);
     s = libscmp_update(&r, &e, fixes, n, &result, m);
     fclose(m);
     libscmp_free(&r);
@@ -745,6 +754,7 @@ static int holds(const char *dir, const char *name, const char *text)
     if (!(f = fopen(path, "rb")))
         return 0;
     s = (char *)malloc(strlen(text) + 2);
+    REQUIRE(s != NULL);
     len = fread(s, 1, strlen(text) + 1, f);
     fclose(f);
     r = len == strlen(text) && !memcmp(s, text, len);
@@ -781,6 +791,7 @@ TEST_CASE("accept_dirs", "[libscmp]")
         free(report); \
         m = open_memstream(&report, &reportlen); \
         x = open_memstream(&e, &elen); \
+        REQUIRE(m != NULL && x != NULL); \
         status = libscmp_accept_dirs("libscmp-acc/r1", "libscmp-acc/r2", "libscmp-acc/exp", only, n, m, x); \
         fclose(m); \
         fclose(x); \
@@ -842,7 +853,9 @@ TEST_CASE("accept_dirs", "[libscmp]")
         CHECK(libscmp_parse_fix("r|x||1#4", &fx[0], err, sizeof err) == 0);
         free(report);
         m = open_memstream(&report, &reportlen);
+        REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
+        REQUIRE(x != NULL);
         status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
         fclose(m);
         fclose(x);
@@ -853,7 +866,9 @@ TEST_CASE("accept_dirs", "[libscmp]")
         CHECK(libscmp_parse_fix("r|c||1#4", &fx[0], err, sizeof err) == 0);
         free(report);
         m = open_memstream(&report, &reportlen);
+        REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
+        REQUIRE(x != NULL);
         status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
         fclose(m);
         fclose(x);
@@ -868,7 +883,9 @@ TEST_CASE("accept_dirs", "[libscmp]")
         CHECK(libscmp_parse_fix("r|c||1#4", &fx[0], err, sizeof err) == 0);
         free(report);
         m = open_memstream(&report, &reportlen);
+        REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
+        REQUIRE(x != NULL);
         status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
         fclose(m);
         fclose(x);
@@ -877,7 +894,9 @@ TEST_CASE("accept_dirs", "[libscmp]")
         fx[0].applied = 0;
         free(report);
         m = open_memstream(&report, &reportlen);
+        REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
+        REQUIRE(x != NULL);
         status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", only_b, 1, fx, 1, m, x);
         fclose(m);
         fclose(x);
@@ -903,10 +922,11 @@ static size_t scope(const char *base, const char *branch, const char *log, size_
     report = NULL;
     CHECK(libscmp_issues_from_log(&is, log) == 0);
     if (base)
-        CHECK(parse(&b, base, LIBSCMP_EXPECTED) == 0);
+        REQUIRE(parse(&b, base, LIBSCMP_EXPECTED) == 0);
     if (branch)
-        CHECK(parse(&r, branch, LIBSCMP_EXPECTED) == 0);
+        REQUIRE(parse(&r, branch, LIBSCMP_EXPECTED) == 0);
     m = open_memstream(&report, &reportlen);
+    REQUIRE(m != NULL);
     n = libscmp_fix_scope(base ? &b : NULL, branch ? &r : NULL, &is, m, nchanged);
     fclose(m);
     if (base)
@@ -1029,6 +1049,7 @@ TEST_CASE("fix_scope_dirs", "[libscmp]")
         free(report); \
         m = open_memstream(&report, &reportlen); \
         x = open_memstream(&e, &elen); \
+        REQUIRE(m != NULL && x != NULL); \
         s = libscmp_fix_scope_dirs("libscmp-scope/base", "libscmp-scope/branch", &is, m, x); \
         fclose(m); \
         fclose(x); \

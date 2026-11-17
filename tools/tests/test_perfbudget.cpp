@@ -132,7 +132,7 @@ TEST_CASE("perfbudget: budgets", "[perfbudget]")
           && b.b[1].target == 111.0 && !b.b[2].has_target);
     CHECK(judge(&r, &b, out, sizeof out) == 0 && !out[0]);
     /* the table: the budget, the target and the factor, the text */
-    CHECK((f = fmemopen(table, sizeof table, "w")) != NULL);
+    REQUIRE((f = fmemopen(table, sizeof table, "w")) != NULL);
     perf_table(&r, &b, f);
     fclose(f);
     CHECK(strstr(table, "bmath.peekb") && strstr(table, "217.0") && strstr(table, "223")
@@ -178,7 +178,7 @@ TEST_CASE("perfbudget: tolerance", "[perfbudget]")
                             sizeof err) == 0);
     CHECK(b.n == 2 && b.b[0].budget == 200 && b.b[0].tolerance == 18 && b.b[1].tolerance == 0);
     CHECK(judge(&r, &b, out, sizeof out) == 0 && !out[0]);
-    CHECK((f = fmemopen(table, sizeof table, "w")) != NULL);
+    REQUIRE((f = fmemopen(table, sizeof table, "w")) != NULL);
     perf_table(&r, &b, f);
     fclose(f);
     CHECK(strstr(table, " 218 ") && strstr(table, "(varies, tolerance 18)"));
@@ -199,7 +199,7 @@ static int budgets_refused(const char *text, const char *msg)
     char err[300] = "";
     int ok;
 
-    CHECK(perf_read_budgets(&b, "x.y 1 - kept\n", err, sizeof err) == 0);
+    REQUIRE(perf_read_budgets(&b, "x.y 1 - kept\n", err, sizeof err) == 0);
     ok = perf_read_budgets(&b, text, err, sizeof err) == -1 && strstr(err, msg)
         && b.n == 1 && !strcmp(b.b[0].name, "x.y");
     if (!ok)

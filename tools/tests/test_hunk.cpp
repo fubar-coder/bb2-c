@@ -16,7 +16,8 @@ TEST_CASE("load_parse: structure, relocations, errors", "[hunk]")
 
     // one code hunk, two relocations
     f = loadfile1(1, HUNK_CODE, code, relocs, 2, 0);
-    CHECK(load_parse(f.data(), f.size(), &lf, err, sizeof err) == 0);
+    REQUIRE(load_parse(f.data(), f.size(), &lf, err, sizeof err) == 0);
+    REQUIRE(lf.nhunks == 1);
     CHECK(lf.table_size == 1 && lf.nhunks == 1);
     CHECK(lf.hunks[0].type == HUNK_CODE && lf.hunks[0].size == 12);
     CHECK(lf.hunks[0].nrelocs == 2 && lf.hunks[0].reloc_offset[1] == 4);
@@ -47,8 +48,9 @@ TEST_CASE("load_parse: structure, relocations, errors", "[hunk]")
     put32(g, 2); putbytes(g, "longname", 8); put32(g, 6);       // no 0 byte
     put32(g, 0);
     put32(g, HUNK_END);
-    CHECK(load_parse(g.data(), g.size(), &lf, err, sizeof err) == 0);
-    CHECK(lf.nhunks == 1 && lf.hunks[0].nrelocs == 2 && lf.hunks[0].reloc_offset[1] == 4);
+    REQUIRE(load_parse(g.data(), g.size(), &lf, err, sizeof err) == 0);
+    REQUIRE(lf.nhunks == 1);
+    CHECK(lf.hunks[0].nrelocs == 2 && lf.hunks[0].reloc_offset[1] == 4);
     CHECK(lf.hunks[0].nsyms == 2 && lf.hunks[0].syms[1].len == 8);
     {
         uint32_t hunk = 9, value = 9;

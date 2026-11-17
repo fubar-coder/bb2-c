@@ -26,7 +26,10 @@ static int spec(const char *s, const char *want)
     struct hunk h = { HUNK_CODE, (const uint8_t *)"\x4e\x75", 2, 0, NULL, NULL, 0, NULL, 0, 0 };
     char msg[300];
     FILE *out = tmpfile();
-    int r = asmcmp_routine("false", &h, &c, s, out);
+    int r;
+
+    REQUIRE(out != NULL);
+    r = asmcmp_routine("false", &h, &c, s, out);
 
     rewind(out);
     msg[fread(msg, 1, sizeof msg - 1, out)] = 0;

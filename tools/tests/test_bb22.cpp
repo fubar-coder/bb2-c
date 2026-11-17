@@ -82,6 +82,7 @@ static int ted(const buf &f, const void *want, size_t len)
     if (bb22_ted_size(&b) != len)
         return 0;
     out = static_cast<uint8_t *>(malloc(len + 1));
+    REQUIRE(out != NULL);
     bb22_to_ted(&b, f.data(), out);
     ok = !memcmp(out, want, len);
     free(out);
@@ -94,7 +95,8 @@ static int ted_file(const buf &f, const void *want, size_t len)
     uint8_t got[64];
     size_t n;
 
-    if (!t || bb22_write_ted(&b, f.data(), t))
+    REQUIRE(t != NULL);
+    if (bb22_write_ted(&b, f.data(), t))
         return 0;
     rewind(t);
     n = fread(got, 1, sizeof got, t);
@@ -117,7 +119,8 @@ TEST_CASE("bb22: checks", "[bb22]")
     CHECK(b.version == 10 && b.header_size == 16 && b.prefix_size == 2);
     CHECK(b.column == 13 && b.row == 25 && b.top == 441);
     CHECK(b.nlines == 3 && b.max_len == 5);
-    CHECK(b.lines && b.lines[0].offset == 18 && b.lines[0].len == 5);
+    REQUIRE(b.lines != NULL && b.nlines >= 3);
+    CHECK(b.lines[0].offset == 18 && b.lines[0].len == 5);
     CHECK(b.lines[1].len == 0 && b.lines[2].offset == 29 && b.lines[2].len == 4);
     CHECK(ted(f, want, sizeof want - 1));
     CHECK(ted_file(f, want, sizeof want - 1));
@@ -131,6 +134,7 @@ TEST_CASE("bb22: checks", "[bb22]")
     CHECK(!parse(f));
     CHECK(b.version == 8 && b.header_size == 14 && b.prefix_size == 1);
     CHECK(b.column == 19 && b.row == 1 && b.top == 96);
+    REQUIRE(b.lines != NULL);
     CHECK(b.nlines == 3 && b.max_len == 5 && b.lines[0].offset == 15);
     CHECK(ted(f, want, sizeof want - 1));
 
@@ -140,6 +144,7 @@ TEST_CASE("bb22: checks", "[bb22]")
     header(f, 10, 0, 0, 0, 0, 2);
     line(f, 2, "\x80\x80\xff\xff", 4);
     CHECK(!parse(f));
+    REQUIRE(b.lines != NULL);
     CHECK(b.nlines == 1 && b.lines[0].len == 4);
     CHECK(ted(f, "\x80\x80\xff\xff", 5));
 

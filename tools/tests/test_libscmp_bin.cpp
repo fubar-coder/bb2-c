@@ -203,12 +203,14 @@ TEST_CASE("formats", "[libscmp][bin]")
         char *d = NULL;
         size_t dl;
         FILE *m = open_memstream(&d, &dl);
+        REQUIRE(m != NULL);
 
         CHECK(libscmp_bin_dump(b.data(), b.size(), "prog.bin", "BLOCK:1", m, err, sizeof err) == 14);
         fclose(m);
         CHECK(d && !strcmp(d, lines));
         free(d);
         m = open_memstream(&d, &dl);
+        REQUIRE(m != NULL);
         CHECK(libscmp_bin_dump(b.data(), b.size(), "prog.bin", "BLOCK:2", m, err, sizeof err) == 0);
         fclose(m);
         free(d);
@@ -223,6 +225,7 @@ TEST_CASE("blocks", "[libscmp][bin]")
     size_t n1 = 0, n2 = 0;
     uint32_t i;
 
+    REQUIRE(lines1 != NULL && lines2 != NULL);
     head(&b, "blk");
     put8(&b, 0x01);
     bstr(&b, "med");
@@ -353,6 +356,7 @@ TEST_CASE("dump_key", "[libscmp][bin]")
     }
     put8(&b, 0x02);
     m = open_memstream(&d, &dl);
+    REQUIRE(m != NULL);
     CHECK(libscmp_bin_dump(b.data(), b.size(), "dmp.bin", "r|buf|v|2", m, err, sizeof err) == 3);
     fclose(m);
     snprintf(want, sizeof want, "r|buf|v|2\tat $0000 %s%s\nr|buf|v|2\tat $0020 %s%s\n"
@@ -402,6 +406,7 @@ TEST_CASE("two_runs", "[libscmp][bin]")
     CHECK(run_file(&fl, &l) == 0);
     CHECK(fa.bin && fa.binlen == a.size() && !strcmp(fa.binpath, "prog.bin"));
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     CHECK(libscmp_bin_first_diff(&fa, &fb, 2, "run 1", "run 2", m, err, sizeof err) == 1);
     CHECK(libscmp_bin_first_diff(&fa, &fb, 1, "run 1", "run 2", m, err, sizeof err) == 0);
     fclose(m);
@@ -411,6 +416,7 @@ TEST_CASE("two_runs", "[libscmp][bin]")
     free(rep);
     /* accept: not deterministic, with the observation */
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     CHECK(libscmp_accept(&fa, &fb, NULL, &out, m) == 1);
     fclose(m);
     CHECK(!out);
@@ -420,6 +426,7 @@ TEST_CASE("two_runs", "[libscmp][bin]")
     free(rep);
     /* accept: lost inside a block refused */
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     CHECK(libscmp_accept(&fl, &fl, NULL, &out, m) == 1);
     fclose(m);
     CHECK(!out);
@@ -428,6 +435,7 @@ TEST_CASE("two_runs", "[libscmp][bin]")
     free(rep);
     /* accept of two equal runs */
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     CHECK(libscmp_accept(&fa, &fa, NULL, &out, m) == 0);
     fclose(m);
     CHECK(out && strstr(out, "BLOCK:2\t11 "));
@@ -445,7 +453,8 @@ static void put(const char *dir, const char *file, const void *p, size_t n)
 
     snprintf(path, sizeof path, "%s/%s", dir, file);
     f = fopen(path, "wb");
-    CHECK(f && fwrite(p, 1, n, f) == n);
+    REQUIRE(f != NULL);
+    CHECK(fwrite(p, 1, n, f) == n);
     if (f)
         fclose(f);
 }
@@ -455,6 +464,7 @@ static char *slurp(const char *path)
     FILE *f = fopen(path, "rb");
     char *s = (char *)calloc(1, 1 << 20);
 
+    REQUIRE(s != NULL);
     if (f) {
         CHECK(fread(s, 1, (1 << 20) - 1, f) > 0);
         fclose(f);
@@ -487,7 +497,9 @@ TEST_CASE("dirs", "[libscmp][bin]")
     put("libscmp-bin/run", "prog.bin", b.data(), b.size());
     put("libscmp-bin/other", "prog.bin", a.data(), a.size());
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     x = open_memstream(&e, &el);
+    REQUIRE(x != NULL);
     s = libscmp_compare_dirs_other("libscmp-bin/run", "libscmp-bin/exp", "libscmp-bin/other",
                                    LIBSCMP_OBJ, NULL, 0, m, x);
     fclose(m);
@@ -507,7 +519,9 @@ TEST_CASE("dirs", "[libscmp][bin]")
     free(t);
     /* without the other run's file */
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     x = open_memstream(&e, &el);
+    REQUIRE(x != NULL);
     s = libscmp_compare_dirs_other("libscmp-bin/run", "libscmp-bin/exp", "libscmp-bin/exp",
                                    LIBSCMP_OBJ, NULL, 0, m, x);
     fclose(m);
@@ -518,7 +532,9 @@ TEST_CASE("dirs", "[libscmp][bin]")
     /* a broken NAME.bin: malformed (2) */
     put("libscmp-bin/run", "prog.bin", b.data(), b.size() - 3);
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     x = open_memstream(&e, &el);
+    REQUIRE(x != NULL);
     s = libscmp_compare_dirs("libscmp-bin/run", "libscmp-bin/exp", LIBSCMP_OBJ, NULL, 0, m, x);
     fclose(m);
     fclose(x);
@@ -529,7 +545,9 @@ TEST_CASE("dirs", "[libscmp][bin]")
     put("libscmp-bin/run", "prog.bin", b.data(), b.size());
     unlink("libscmp-bin/run/prog.dump");
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     x = open_memstream(&e, &el);
+    REQUIRE(x != NULL);
     s = libscmp_dump_dirs("libscmp-bin/run", "BLOCK:2", NULL, 0, m, x);
     fclose(m);
     fclose(x);
@@ -540,7 +558,9 @@ TEST_CASE("dirs", "[libscmp][bin]")
     CHECK(!strncmp(t, "r|n||4097\t$00001001\n", 20));
     free(t);
     m = open_memstream(&rep, &rl);
+    REQUIRE(m != NULL);
     x = open_memstream(&e, &el);
+    REQUIRE(x != NULL);
     s = libscmp_dump_dirs("libscmp-bin/run", "r|no||1", only, 1, m, x);
     fclose(m);
     fclose(x);

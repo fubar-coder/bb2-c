@@ -87,26 +87,26 @@ TEST_CASE("cdtable: update", "[cdtable]")
     CHECK(strstr(rep, "Q.BB2: note kept") && !strstr(rep, "changed without"));
 
     /* the fresh row of the note row carries no note: the old note stays */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
-                  QERR "\n"
-                  "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
+                     QERR "\n"
+                     "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
     CHECK(!strcmp(out, old));
 
     /* a kept note, the port's value changed again (another line) */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
-                  "Q.BB2\terror\t90\tIllegal End Procedure\t\t\town\t\n"
-                  "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
+                     "Q.BB2\terror\t90\tIllegal End Procedure\t\t\town\t\n"
+                     "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
     CHECK(strstr(out, "Q.BB2\terror\t90\tIllegal End Procedure\t\t\town\t" NOTE "\n"));
     CHECK(strstr(rep, "Q.BB2: note kept"));
 
     /* a hash note where the port compiles the source to another executable
        than the CD's (an optimization): ok on both sides, the note is obsolete */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
-                  "Q.BB2\tok\t\t\t219120\t" H_NEW "\town\t\n"
-                  "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", legacy) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
+                     "Q.BB2\tok\t\t\t219120\t" H_NEW "\town\t\n"
+                     "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", legacy) == 0);
     CHECK(strstr(out, "Q.BB2\tok\t\t\t219120\t" H_NEW "\town\t\n") && !strstr(out, "#969"));
     CHECK(strstr(rep, "Q.BB2: note dropped") && strstr(rep, "blitz2-cd-reference restores"));
     /* the same with the CD's hash: dropped, nothing to restore */
@@ -119,10 +119,10 @@ TEST_CASE("cdtable: update", "[cdtable]")
 
     /* a dropped note: the port compiles the source the CD compiled (its
        hash is the CD's again) */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
-                  "Q.BB2\tok\t\t\t219124\t" H_CD "\town\t\n"
-                  "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
+                     "Q.BB2\tok\t\t\t219124\t" H_CD "\town\t\n"
+                     "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
     CHECK(strstr(out, "Q.BB2\tok\t\t\t219124\t" H_CD "\town\t\n"));
     CHECK(!strstr(out, "#969") && strstr(rep, "Q.BB2: note dropped"));
     /* and the next run keeps it dropped */
@@ -136,39 +136,39 @@ TEST_CASE("cdtable: update", "[cdtable]")
 
     /* another executable of the same compile result: no note, the row keeps
      * the CD's size and hash, the report counts it */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t101\t" H_NEW "\town\t\n"
-                  QERR "\n"
-                  "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t101\t" H_NEW "\town\t\n"
+                     QERR "\n"
+                     "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
     CHECK(!strcmp(out, old));
     CHECK(!strstr(rep, "changed without") && strstr(rep, "1 rows: the port's executable differs"));
     /* the same with the xtra note of the fresh run changed: the fresh note is the row's */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t101\t" H_NEW "\town\txtra error: y\n"
-                  QERR "\n"
-                  "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t101\t" H_NEW "\town\txtra error: y\n"
+                     QERR "\n"
+                     "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
     CHECK(strstr(out, "A.BB2\tok\t\t\t100\t" H_B "\town\txtra error: y\n"));
     /* a changed compile result is written and reported with the hash the
      * note must name; error -> ok and ok -> error both */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\terror\t12\tSyntax Error\t\t\town\t\n"
-                  QERR "\n"
-                  "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\terror\t12\tSyntax Error\t\t\town\t\n"
+                     QERR "\n"
+                     "X.BB2\tok\t\t\t7\t" H_B "\town\txtra error: x\n", old) == 0);
     CHECK(strstr(out, "A.BB2\terror\t12\tSyntax Error\t\t\town\t\n"));
     CHECK(strstr(rep, "A.BB2: changed without a note") && strstr(rep, "(2.10: " H_B ")"));
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
-                  QERR "\n"
-                  "X.BB2\terror\t1\tx\t\t\town\t\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
+                     QERR "\n"
+                     "X.BB2\terror\t1\tx\t\t\town\t\n", old) == 0);
     CHECK(strstr(rep, "X.BB2: changed without a note"));
     /* another error line is a changed result too */
-    CHECK(run(CDTABLE_UPDATE, HDR PORT_ERR "\n", HDR CD_ERR "\n") == 0);
+    REQUIRE(run(CDTABLE_UPDATE, HDR PORT_ERR "\n", HDR CD_ERR "\n") == 0);
     CHECK(strstr(rep, "B.BB2: changed without a note"));
 
     /* a row that is new, a row that is gone */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "B.BB2\tok\t\t\t1\t" H_B "\town\t\n"
-                  QERR "\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "B.BB2\tok\t\t\t1\t" H_B "\town\t\n"
+                     QERR "\n", old) == 0);
     CHECK(strstr(rep, "B.BB2: new row") && strstr(rep, "A.BB2: row removed"));
     CHECK(!strstr(out, "A.BB2") && strstr(out, "B.BB2"));
 }
@@ -183,15 +183,15 @@ TEST_CASE("cdtable: reference", "[cdtable]")
         "A.BB2\tok\t\t\t102\t" H_NEW "\town\t\n"
         "Q.BB2\tok\t\t\t219000\t" H_CD "\town\t\n";
 
-    CHECK(run(CDTABLE_REFERENCE, fresh, old) == 0);
+    REQUIRE(run(CDTABLE_REFERENCE, fresh, old) == 0);
     CHECK(!strcmp(out, HDR "A.BB2\tok\t\t\t102\t" H_NEW "\town\t\n"
                            "Q.BB2\tok\t\t\t219116\t" H_PORT "\town\t" NOTE "\n"));
     CHECK(strstr(rep, "Q.BB2: note kept"));
 
     /* the original's run of the unchanged CD gives the table back */
-    CHECK(run(CDTABLE_REFERENCE,
-              HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
-                  "Q.BB2\tok\t\t\t219000\t" H_CD "\town\t\n", old) == 0);
+    REQUIRE(run(CDTABLE_REFERENCE,
+                 HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
+                     "Q.BB2\tok\t\t\t219000\t" H_CD "\town\t\n", old) == 0);
     CHECK(!strcmp(out, old));
 
     /* a stale note: the original's hash is not the one the note names */
@@ -217,14 +217,14 @@ TEST_CASE("cdtable: error note", "[cdtable]")
     CHECK(strstr(rep, "B.BB2: note kept"));
 
     /* the port refuses it at a third line: the note stays */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
-                  "B.BB2\terror\t17\tSyntax Error | x\t\t\town\t\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
+                     "B.BB2\terror\t17\tSyntax Error | x\t\t\town\t\n", old) == 0);
     CHECK(strstr(out, "B.BB2\terror\t17\tSyntax Error | x\t\t\town\t" ENOTE "\n"));
     /* the port compiles it: the note stays */
-    CHECK(run(CDTABLE_UPDATE,
-              HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
-                  "B.BB2\tok\t\t\t5000\t" H_NEW "\town\t\n", old) == 0);
+    REQUIRE(run(CDTABLE_UPDATE,
+                 HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
+                     "B.BB2\tok\t\t\t5000\t" H_NEW "\town\t\n", old) == 0);
     CHECK(strstr(out, "B.BB2\tok\t\t\t5000\t" H_NEW "\town\t" ENOTE "\n"));
 
     /* the port refuses it at the CD's line again: the note is dropped */

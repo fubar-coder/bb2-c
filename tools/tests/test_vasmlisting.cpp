@@ -33,6 +33,7 @@ static char *view(const struct listing *l, int which, const struct hunk *h, size
     FILE *f = tmpfile();
     size_t n;
 
+    REQUIRE(f != NULL);
     if (which == 0)
         listing_print_map(l, f);
     else if (which == 1)
@@ -57,13 +58,14 @@ TEST_CASE("vasmlisting", "[vasmlisting]")
     size_t bad = 99;
     const char *s;
 
+    REQUIRE(f != NULL);
     fputs(listing_text, f);
     rewind(f);
-    CHECK(listing_read_stream(f, &l, err, sizeof err) == 0);
+    REQUIRE(listing_read_stream(f, &l, err, sizeof err) == 0);
     fclose(f);
 
     /* rows with an address, the file, the symbols in listing order */
-    CHECK(l.nrows == 4);
+    REQUIRE(l.nrows == 4);
     CHECK(l.nsyms == 3 && !strcmp(l.syms[0].name, "data") && l.syms[0].value == 8);
     CHECK(l.rows[1].addr == 2 && l.rows[1].nbytes == 6 && l.rows[1].bytes[1] == 0xF9);
     CHECK(!strcmp(l.rows[1].file, "t.s") && l.rows[1].line == 3);
