@@ -56,10 +56,8 @@ if(USERLIBS)
 	list(APPEND common "-DUSERLIBS=${userlibs}")
 endif()
 
-# one run of libs_tests: its cases in WORK/NAME/test/captures
-function(run name pad)
-	execute_process(COMMAND ${CMAKE_COMMAND} ${common} ${set_args} -DLIBS_PAD=${pad}
-		-DWORK=${WORK}/${name} -P ${EMULATOR} RESULT_VARIABLE rc)
+# the failure message of a finished run (rc: its exit status)
+function(check_run name rc)
 	if(rc EQUAL 77)
 		message(FATAL_ERROR "${target}: the run was skipped: it needs Amiberry"
 			" and, with the original, the CD (cmake -P cmake/fetch-originals.cmake) and the"
@@ -69,11 +67,32 @@ function(run name pad)
 	endif()
 endfunction()
 
+# one run of libs_tests: its cases in WORK/NAME/test/captures
+function(run name pad)
+	execute_process(COMMAND ${CMAKE_COMMAND} ${common} ${set_args} -DLIBS_PAD=${pad}
+		-DWORK=${WORK}/${name} -P ${EMULATOR} RESULT_VARIABLE rc)
+	check_run(${name} ${rc})
+endfunction()
+
 file(REMOVE_RECURSE ${WORK})
 if(MODE STREQUAL "capture")
-	# run 2: a padding that is no multiple of a page or a slot
-	run(run1 0)
-	run(run2 4104)
+	# run 2: a padding that is no multiple of a page or a slot.  The two runs
+	# are independent (own work directories, own sessions): at the same
+	# time, as the commands of one execute_process (the output of the
+	# first, which a run hardly has, goes to the second's input)
+	execute_process(
+		COMMAND ${CMAKE_COMMAND} ${common} ${set_args} -DLIBS_PAD=0
+			-DWORK=${WORK}/run1 -P ${EMULATOR}
+		COMMAND ${CMAKE_COMMAND} ${common} ${set_args} -DLIBS_PAD=4104
+			-DWORK=${WORK}/run2 -P ${EMULATOR}
+		RESULTS_VARIABLE rcs ERROR_VARIABLE err OUTPUT_VARIABLE out)
+	if(err)
+		message("${err}")
+	endif()
+	list(GET rcs 0 rc1)
+	list(GET rcs 1 rc2)
+	check_run(run1 ${rc1})
+	check_run(run2 ${rc2})
 	set(dir ${WORK}/run1/test/captures)
 else()
 	run(run 0)
