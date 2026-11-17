@@ -94,8 +94,10 @@ static UBYTE out[300];
 static ULONG tagbuf[8];
 /* the path lists of RTEZMultiLoadFile (multiload): here, so that norm
    makes their addresses comparable (they move with the program's layout;
-   the list at $xx00 is at the first 256 byte boundary of mspace) */
-static ULONG mlist[3][3];
+   the list at $xx00 is at the first 256 byte boundary of mspace; the list
+   of 3 is 16 bytes behind it, so its low byte is never $00 whatever the
+   layout: the original tests only the low byte, #462) */
+static ULONG (*mlist)[3];
 static UBYTE mspace[600];
 
 /* a pointer made comparable: into the library, a requester of the set,
@@ -113,7 +115,7 @@ static ULONG norm(ULONG p)
         return 0x4f000000 | (p - (ULONG)out);
     if (p >= (ULONG)tagbuf && p < (ULONG)tagbuf + sizeof tagbuf)
         return 0x54000000 | (p - (ULONG)tagbuf);
-    if (p >= (ULONG)mlist && p < (ULONG)mlist + sizeof mlist)
+    if (mlist && p >= (ULONG)mlist && p < (ULONG)mlist + 9 * sizeof(ULONG))
         return 0x4d000000 | (p - (ULONG)mlist);
     if (p >= (ULONG)mspace && p < (ULONG)mspace + sizeof mspace)
         return 0x4e000000 | (p & 255);
@@ -690,11 +692,16 @@ static void filereqs(void)
 
 static void multiload(void)
 {
-    ULONG (*list)[3] = mlist;
+    ULONG (*list)[3];
     static ULONG *aligned;
     UBYTE *space = mspace;
     int k, n;
 
+    aligned = (ULONG *)(((ULONG)space + 255) & ~255UL);
+    aligned[0] = 0;
+    aligned[1] = 4;
+    aligned[2] = (ULONG)"only";
+    list = mlist = (ULONG (*)[3])((UBYTE *)aligned + 16);
     list[0][0] = (ULONG)list[1];
     list[0][1] = 5;
     list[0][2] = (ULONG)"a.txt";
@@ -704,10 +711,6 @@ static void multiload(void)
     list[2][0] = 0;
     list[2][1] = 0;
     list[2][2] = (ULONG)"";
-    aligned = (ULONG *)(((ULONG)space + 255) & ~255UL);
-    aligned[0] = 0;
-    aligned[1] = 4;
-    aligned[2] = (ULONG)"only";
 
     ROUT = "RTEZSetPattern";
     strcpy(VEC, "multi-load");
