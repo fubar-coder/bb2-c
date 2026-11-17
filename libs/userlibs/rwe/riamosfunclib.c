@@ -43,10 +43,8 @@
  * BUG(orig), kept:
  *   - A bank in use is erased before the new allocation, also when that
  *     fails (#499).
- *   - BLoad(name$) returns the bank also when reading fails (the bank
- *     stays reserved), -1 for an empty or missing file and 0 when no
- *     bank is free (#486).  A bank given to BLoad is erased and reserved anew
- *     with the file's length (or the given one) (#499).  The error check
+ *   - A bank given to BLoad is erased and reserved anew with the file's
+ *     length (or the given one) (#499).  The error check
  *     (bloadchk) starts with an RTS: it never checks (#485).
  *   - BSave(name$,bank,length) writes that many bytes from the bank's
  *     start, whatever the bank's size (#489).
@@ -113,6 +111,11 @@
  *     contents and got the new length, a free bank stayed reserved) (#487).
  *   - BLoad reports a failed read (Read's -1) with 0; the original tested
  *     Read's result for 0 only (#488).
+ *   - BLoad(name$) returns -1 for every failure: no bank (Reserve fails)
+ *     and a failed load (the bank is erased again), as for an empty or
+ *     missing file.  The original returned 0 (the number of the first
+ *     bank) when Reserve failed and the bank, left reserved with undefined
+ *     contents, when the load failed (#486).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -868,11 +871,12 @@ static BB_BOOL BLITZ_ROUTINE bload1_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL
 /**
  * @brief BLoad(filename$): loads a file into a new bank (Reserve(length)).
  *
- * BUG(orig) (#486): the bank is returned also when reading fails (it
- * stays reserved).
+ * Fixed (#486): -1 when Reserve fails, and when the load fails (the bank
+ * is erased); the original returned 0 for the first and the bank, still
+ * reserved, for the second.
  * @param name  d0: filename$
- * @return d0: the bank, -1 for an empty or missing file, 0 if Reserve
- *         gives a negative number (no bank free)
+ * @return d0: the bank, -1 for failure (an empty or missing file, no bank
+ *         free or no memory, the load failed)
  */
 static ULONG BLITZ_ROUTINE bload4_c(CONST_STRPTR name BL_REG(d0))
 {
@@ -882,8 +886,11 @@ static ULONG BLITZ_ROUTINE bload4_c(CONST_STRPTR name BL_REG(d0))
         return (ULONG)-1;
     bank = allocmem2_c((LONG)size);
     if ((LONG)bank < 0)
-        return 0;
-    bload1_c(name, start_c((LONG)bank));        /* BUG(orig): result ignored (#486) */
+        return (ULONG)-1;                       /* fixed (#486) */
+    if (!bload1_c(name, start_c((LONG)bank))) {
+        erase_c((LONG)bank);                    /* fixed (#486) */
+        return (ULONG)-1;
+    }
     return bank;
 }
 
