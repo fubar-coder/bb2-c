@@ -6,6 +6,7 @@
 ; shape 1 is drawn with Block on a cleared bitmap.
 ; Correct: shape 1 is a copy of shape 0, its pixels have colour 15 (the
 ; bug gives 3).
+; @fixed #425
 ; @rwe bb_blitlib
 BitMap 0,320,64,4
 Boxf 0,0,31,15,15

@@ -41,9 +41,10 @@
  * pointers that are not reloaded per plane go on where the last blit
  * left them.  init and finit are RTS.  No assembler besides the thunks.
  *
- * BUG(orig), kept:
- *   - BlockToShape copies one word per line (#425).
  * Fixed (intended deviations):
+ *   - BlockToShape blits the shape's real width; the original copied one
+ *     word per line (#425).  Its error check refuses a shape larger than
+ *     one blit.
  *   - The blits that take a shape and had no error check (SpecialBlock,
  *     SpecialBlockBitmap, TBlock, PredatorBlit, BPredatorBlit,
  *     BColourBlit) and SpecialBlockToShape's check refuse a shape of
@@ -831,8 +832,13 @@ first:
 /**
  * @brief BlockToShape shape,destshape: copies a shape's data into another.
  *
- * height*depth words of the shape's data to dest's: BUG(orig) (#425),
- * one word per line.  Error check: errblocktoshape_c.
+ * One blit of height*depth lines of ebwidth/2 words, modulos 0: the
+ * whole data, straight through.  Fixed (#425): the original blitted one
+ * word per line (`ADDQ.w #1`), so of a shape wider than 16 pixels only
+ * the first 2/ebwidth of the data.  The width field is 6 bits (0 = 64
+ * words), the height field 10 bits (0 = 1024 lines); larger shapes are
+ * refused by errblocktoshape_c.  The entry is this function (BLITZ_ALIAS):
+ * it changes d0 and d1, as the original does.
  * @param shape  a1: the source shape object
  * @param dest   a2: the destination shape object
  */
@@ -846,12 +852,16 @@ static void BLITZ_ROUTINE blocktoshape_c(struct bb_shape *shape BL_REG(a1),
     L(BLTAFWM) = 0xffffffff;
     L(BLTAPT) = (ULONG)shape->data;
     L(BLTDPT) = (ULONG)dest->data;
-    W(BLTSIZE) = (UWORD)((UWORD)(shape->height * shape->depth) << 6) + 1;
+    /* ebwidth is always even (words * 2); & 63 encodes 64 words as 0,
+       which BLTSIZE reads as 64 (errblocktoshape_c refuses ebwidth > 128) */
+    W(BLTSIZE) = (UWORD)((UWORD)(shape->height * shape->depth) << 6)
+                 | ((shape->ebwidth >> 1) & 63);
 }
 
 /* Registers: the original changes d0-d7/a0-a3 (the routines differ) and
    keeps a4/a5; the thunks keep d0/d1/a0/a1 (PredatorBlit: d1/a0/a1), the
-   C code d2-d7/a2-a6. */
+   C code d2-d7/a2-a6.  BlockToShape has no thunk: its C code changes only
+   d0/d1, as the original. */
 BLITZ_THUNK(_specialblock, specialblock_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_specialblock2, specialblock2_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_specialblockbitmap, specialblockbitmap_c, "d0-d1/a0-a1");
@@ -862,7 +872,7 @@ BLITZ_THUNK(_bpredatorblit, bpredatorblit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_MapInfo, mapinfo_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_createshape, createshape_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_specialblocktoshape, specialblocktoshape_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_blocktoshape, blocktoshape_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_blocktoshape, blocktoshape_c);
 BLITZ_THUNK(docolblit, docolblit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_tblockimage, tblockimage_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_btblockimage, btblockimage_c, "d0-d1/a0-a1");
@@ -871,13 +881,16 @@ BLITZ_THUNK(_btblockimage, btblockimage_c, "d0-d1/a0-a1");
 
 BLITZ_ERRCHK_MESSAGE(diffsizes, "Shapes must be the same size!");
 BLITZ_ERRCHK_MESSAGE(noshape, "Destination shape MUST be pre-reserved!");
+BLITZ_ERRCHK_MESSAGE(toobig, "Shape too large for BlockToShape!");
 
 /**
  * @brief BlockToShape's error check: dest has data, both shapes the same
- * size (size, +26).
+ * size (size, +26), and the shape fits one blit.
  *
- * Runtime errors "Destination shape MUST be pre-reserved!" and "Shapes
- * must be the same size!".
+ * Runtime errors "Destination shape MUST be pre-reserved!", "Shapes must
+ * be the same size!" and, Fixed (#425), "Shape too large for
+ * BlockToShape!" for more than 1024 lines (height*depth) or a width above
+ * 64 words (1024 pixels): the blitter's limits for the one blit.
  * @param shape  a1: the source shape object
  * @param dest   a2: the destination shape object
  */
@@ -888,6 +901,8 @@ static void BLITZ_ERRCHK errblocktoshape_c(struct bb_shape *shape BL_REG(a1),
         BLITZ_RUNERR(noshape);
     if (shape->size != dest->size)
         BLITZ_RUNERR(diffsizes);
+    if ((ULONG)shape->height * shape->depth > 1024 || shape->ebwidth > 128)
+        BLITZ_RUNERR(toobig);
 }
 
 BLITZ_ERRCHK_MESSAGE(noinit, "Uninitialized Shape");

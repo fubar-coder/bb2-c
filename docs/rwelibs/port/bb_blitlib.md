@@ -23,7 +23,8 @@ memory:
   `like`, their data one after another at `chipmem`, no cookie, `"cL"`.
 * `SpecialBlockToShape top,bottom,dest`, `BlockToShape shape,dest` – the
   block into a shape / a shape's data copied (error checks: the
-  destination has data and the same size).
+  destination has data and the same size; `BlockToShape`: the shape fits
+  one blit).
 * `BColourBlit buffer,shape,x,y,colour` – buffered: the shifted cookie in
   one colour (per plane `D = A | C` or `~A & C`).
 * `TBlockImage image_addr,image,x,y` / `BTBlockImage
@@ -47,7 +48,9 @@ init and finit are `RTS`.
 ## C and assembler
 
 All C behind `BLITZ_THUNK`s that keep d0/d1/a0/a1 (`PredatorBlit`:
-d1/a0/a1); the original changes up to d0–d7/a0–a3. The blitter is
+d1/a0/a1), but for `BlockToShape`, whose entry is its C function
+(`BLITZ_ALIAS`): it changes d0/d1, as the original does; the original
+changes up to d0–d7/a0–a3. The blitter is
 programmed with volatile register writes (`BL_CUSTOMW`/`BL_CUSTOML`,
 `BL_BLITWAIT`), the same registers in the same order, absolute or
 through the chip base in a1 where the original uses either. Pointers
@@ -96,12 +99,19 @@ kind F):
   `bb_blitlib-depth0-dbra`). The release code is unchanged, so no work
   is added per call or plane; a bitmap of depth 0 cannot be made with
   runtime error checking (bitmaplib's checks).
+* `BlockToShape` copies the whole data: one blit of height × depth
+  lines of `ebwidth`/2 words. The original blitted one word per line
+  (`ADDQ.w #1`), so of a shape wider than 16 pixels only the first
+  2/`ebwidth` of the data, the rest of the destination kept its old
+  content (#425; bug-orig test `bb_blitlib-blocktoshape-one-word`). Its
+  error check also refuses a shape one blit cannot hold, more than 1024
+  lines (height × depth) or wider than 64 words, with "Shape too large
+  for BlockToShape!"; the original blitted the size word's low bits
+  (bug-orig test `bb_blitlib-blocktoshape-too-large`). The entry has no
+  thunk (it changes d0/d1, as the original): about 344 cycles of a
+  68000 per call against the original's 340 and the thunked port's 434.
 
-## BUG(orig), kept
-
-* `BlockToShape` copies one word per line (height × depth words) (#425).
-
-Original behaviour that is not a defect:
+## Original behaviour that is not a defect
 
 * `SpecialBlock`, `TBlock`, `PredatorBlit` assume 16×16 shapes and
   bitmaps of `SetupMapTwo`'s width: the map format they are written for.
