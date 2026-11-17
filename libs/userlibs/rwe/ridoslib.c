@@ -33,9 +33,6 @@
  * No assembler besides the thunks.
  *
  * BUG(orig):
- *   - AddNotify: no range check of the id (64 entries; the offset is
- *     id*4 as a word) (#626).
- *   - RemNotify: no range check either (#626).
  *   - GetPathName never looks at the first character: "/abc" and ":x"
  *     give "", like a name without separator (#624).  GetFileName and GetPathName take the length
  *     as a word (MOVE.w -(a2): the low word of the long) (#628), and
@@ -71,6 +68,12 @@
  * overwrote the entry: the old request stayed active (its messages kept
  * coming) but could no longer be ended.  It is now ended and freed first,
  * as RemNotify does, once the new request has its memory.
+ * Fixed (intended deviation, #626): AddNotify and RemNotify used the id
+ * as the index of the two tables of 64 entries without a check.  The
+ * original has no error check area; here the library has one: with
+ * runtime error checking an id outside 0..63 is the runtime error
+ * "Notify number must be 0 to 63" (notifyidchk); release code unchanged
+ * (an invalid argument).
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -97,23 +100,25 @@ void _addnotify(void), _remnotify(void), _checknotify(void), _waitnotify(void);
 void _lockdoslist(void), ridoslib_nextlistitem(void), _unlockdoslist(void);
 void _notifyport(void), _getfilename(void), _getpathname(void);
 void _dosentrytype(void), ridoslib_libinit(void), ridoslib_libfinit(void);
+void notifyidchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {#ridoslib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_ridoslib, init, BL_NORET, finit, 0);
+/* !libheader {#ridoslib,init,0,finit,0}; error field: the error check area
+   of notifyidchk (fixed, #626) */
+BLITZ_LIBHEADER(LIB_ridoslib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(_addnotify, 0, 0);
+BLITZ_SUBS(_addnotify, notifyidchk, 0);    /* check: fixed #626 */
 BLITZ_NAME("AddNotify", "idno,filespec$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_remnotify, 0, 0);
+BLITZ_SUBS(_remnotify, notifyidchk, 0);    /* check: fixed #626 */
 BLITZ_NAME("RemNotify", "notify#");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -331,8 +336,9 @@ static ULONG BLITZ_ROUTINE waitnotify_c(void)
  * the name copy.
  *
  * filelens[id] stays set and the original sets d4 to $12345678 (a
- * debugging leftover, no result): no defects.  BUG(orig) (#626): no range
- * check of the id (offset id*4).
+ * debugging leftover, no result): no defects.  An id outside 0..63 reads
+ * outside the table (offset id*4): an invalid argument, refused by
+ * notifyidchk with runtime error checking (#626).
  * @param id  d0: the id
  * @return d0: unchanged (id) without dos.library or port, id*4 if the
  *         entry is empty, else the address of the freed name (a
@@ -366,8 +372,9 @@ static ULONG BLITZ_ROUTINE remnotify_c(LONG id BL_REG(d0))
  * UserData = id, NRF_SEND_MESSAGE to the port; kept in notifys[id].
  * Without memory for the name copy or the request it returns 0 and
  * leaves the table alone (fixed, #619: the original used AllocMem's
- * results unchecked).  BUG(orig): no range check of the id (64 entries,
- * the offset id*4 as a word, #626).  A request already in the entry of
+ * results unchecked).  An id outside 0..63 writes outside the tables (64
+ * entries, the offset id*4 as a word): an invalid argument, refused by
+ * notifyidchk with runtime error checking (#626).  A request already in the entry of
  * the id is ended and freed first, as RemNotify does (fixed, #620: the
  * original overwrote the entry, the old request stayed active and could
  * no longer be ended).  A request whose StartNotify fails is taken out of the
@@ -582,3 +589,28 @@ BLITZ_THUNK(_lockdoslist, lockdoslist_c, "d1/a0-a1");
 BLITZ_THUNK(ridoslib_nextlistitem, nextlistitem_c, "d1/a0-a1");
 BLITZ_THUNK(_dosentrytype, dosentrytype_c, "d1/a0-a1");
 BLITZ_THUNK(_unlockdoslist, unlockdoslist_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badid, "Notify number must be 0 to 63");  /* fixed, #626 */
+
+/**
+ * @brief The error check of AddNotify and RemNotify (debugger only).
+ *
+ * Fixed (#626), not in the original (ridoslib had no error check area):
+ * the id indexes the two tables of 64 entries without a check, so an id
+ * outside 0..63 made AddNotify write and RemNotify read, EndNotify and
+ * free the library's data around the tables.  The release code is
+ * unchanged (an invalid argument).
+ *
+ * Errors: "Notify number must be 0 to 63".
+ * @param id  d0: the id
+ */
+static void BLITZ_ERRCHK notifyidchk_c(ULONG id BL_REG(d0))
+{
+    if (id >= NNOTIFY)
+        BLITZ_RUNERR(badid);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(notifyidchk, notifyidchk_c, "d0-d1/a0-a1");

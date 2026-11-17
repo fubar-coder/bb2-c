@@ -31,7 +31,7 @@ still active, closes dos.library and deletes the port.
 
 * **Source:** `rwelibsrc/DOSLib/ridoslib2.bb` (as TED shows it:
   `build/amiga/rwelibsrc/DOSLib/ridoslib2.bb`).
-* **Reference:** BSS2 `RIDOSLIB.OBJ`; declarations equal (ctest
+* **Reference:** BSS2 `RIDOSLIB.OBJ`; declarations equal but for the error checks of #626 (ctest
   `rwe_declarations_ridoslib`).
 * **C file:** `libs/userlibs/rwe/ridoslib.c`; test
   `libs/tests/rwe/ridoslib.c` (snitch case "rwe ridoslib").
@@ -94,12 +94,18 @@ kind F):
   messages kept coming, and it could no longer be ended (#620; test
   `ridoslib-addnotify-id-reused`). The manual's note "NO CHECKING is made
   to ensure slots are free" describes the original's behaviour.
+* AddNotify and RemNotify use the id as the index of the two tables of
+  64 entries (AddNotify's offset id*4 as a word, RemNotify's as a long);
+  an id outside 0..63 writes or reads, ends and frees the library's data
+  around them. The original has no error check area; the library now has
+  one: with runtime error checking such an id is the runtime error
+  "Notify number must be 0 to 63" (`notifyidchk`); the release code is
+  unchanged, an invalid argument (#626; tests `ridoslib-notify-id-range`,
+  `ridoslib-remnotify-id-range`; the declarations differ from the
+  reference as `ridoslib.declarations-intended.txt` lists).
 
 ## BUG(orig)
 
-* AddNotify: no range check of the id (64 entries; the offset is id*4 as
-  a word) (#626).
-* RemNotify: no range check either (#626).
 * GetPathName never looks at the first character: `/abc` and `:x` give
   "", like a name without separator (#624). GetFileName and GetPathName take the length as a word
   (`MOVE.w -(a2)`: the low word of the long) (#628), and nothing limits

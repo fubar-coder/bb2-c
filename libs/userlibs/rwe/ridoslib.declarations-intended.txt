@@ -1,0 +1,9 @@
+# the intended differences of ridoslib against the reference build of its
+# source (blitzlib compare, docs/development.md "Intended differences")
+# #626: AddNotify and RemNotify get an error check (notifyidchk, "Notify
+# number must be 0 to 63"); ridoslib gets an error check area for it (the
+# original has none)
+lib 33: header +$2C: code offset set in only one of them
+lib 33: entry 0 AddNotify +$C: code offset set in only one of them
+lib 33: entry 1 RemNotify +$C: code offset set in only one of them
+lib 33: relocations in the declaration part 15 != 18
