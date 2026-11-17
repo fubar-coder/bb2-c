@@ -103,14 +103,15 @@ kind F):
   original stored it in RTEZRequest's list (where the title tag is off
   and the next RTEZRequest resets it), so its requester always had the
   default title (#455).
+* RTEZFreePattern 3 frees the multi-load requester's pattern, as
+  RTEZSetPattern 3 set it; 2 does nothing (the path requester has no
+  pattern). The original reset the multi-load requester for 2 and did
+  nothing for 3 (#456).
 
 ## BUG(orig)
 
 * RTEZScreenModeRequest calls `rtFontRequestA` (-96) with the screen mode
   requester instead of `rtScreenModeRequestA` (-144) (#466).
-* RTEZFreePattern 2 resets the multi-load requester's flags; the
-  multi-load is 3 in RTEZSetPattern and RTEZSetDefaultDirectory (2 is the
-  path requester there, RTEZSetPattern 2 does nothing) (#456).
 * RTEZGetLong returns the value also on cancel (`TST.l d0` without a
   branch); the value (and so the default) stays for the next call
   (#457).

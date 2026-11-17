@@ -386,8 +386,10 @@ RTEZMultiLoadFile|call 0|after RTEZFreePattern 3|1	bytes 256 fnv 72E3B230
 RTEZMultiLoadFile|call 0|cancel|1	bytes 256 fnv 3DF266BE
 RTEZMultiLoadFile|call 0|list at $xx00|1	bytes 256 fnv 41E85DDD
 RTEZMultiLoadFile|call 0|list of 3|1	bytes 256 fnv 72E3B230
-RTEZMultiLoadFile|call 1|after RTEZFreePattern 2|1	bytes 256 fnv 4A70C6C7
-RTEZMultiLoadFile|call 1|after RTEZFreePattern 3|1	bytes 256 fnv EB8A4017
+RTEZMultiLoadFile|call 1|after RTEZFreePattern 2|1 [orig]	bytes 256 fnv 4A70C6C7
+RTEZMultiLoadFile|call 1|after RTEZFreePattern 2|1 [fixed #456]	bytes 256 fnv EB8A4017
+RTEZMultiLoadFile|call 1|after RTEZFreePattern 3|1 [orig]	bytes 256 fnv EB8A4017
+RTEZMultiLoadFile|call 1|after RTEZFreePattern 3|1 [fixed #456]	bytes 256 fnv 4A70C6C7
 RTEZMultiLoadFile|call 1|cancel|1	bytes 256 fnv EB8A4017
 RTEZMultiLoadFile|call 1|list at $xx00|1	bytes 256 fnv EB8A4017
 RTEZMultiLoadFile|call 1|list of 3|1	bytes 256 fnv F64C79C9

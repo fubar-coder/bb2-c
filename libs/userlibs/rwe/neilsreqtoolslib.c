@@ -42,9 +42,6 @@
  * BUG(orig), kept:
  *   - RTEZScreenModeRequest calls rtFontRequestA (-96) with the screen
  *     mode requester instead of rtScreenModeRequestA (-144) (#466).
- *   - RTEZFreePattern 2 resets the multi-load requester's flags (the
- *     multi-load is 3 in RTEZSetPattern and RTEZSetDefaultDirectory)
- *     (#456).
  *   - RTEZGetLong returns the value also on cancel (TST.l without a
  *     branch); the value and the default stay for the next call (#457).
  *   - RTEZGetString on cancel does not free its buffer (memlib frees it
@@ -76,6 +73,10 @@
  * RTEZRequest's tag list, so its requester always had reqtools' default
  * title; the title now goes to its own list (an empty one keeps the
  * default).
+ * Fixed (intended deviation, #456): RTEZFreePattern reset the multi-load
+ * requester for 2 (the path requester's number) and did nothing for 3,
+ * the multi-load's number in RTEZSetPattern and RTEZSetDefaultDirectory;
+ * it now uses 3.
  * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
  * have no 0 behind them (a string function returns its length, as
  * usual); FileName$ is copied with a length of 108, whatever its own
@@ -1021,9 +1022,11 @@ static ULONG BLITZ_ROUTINE rtsetpat_c(ULONG n BL_REG(d0), STRPTR pat BL_REG(d1))
  * @brief RTEZFreePattern Requester#: switches the pattern gadget of a file
  * requester off again (its flags back to the default).
  *
- * BUG(orig) (#456): 2 resets the multi-load requester, which is 3 in
- * RTEZSetPattern and RTEZSetDefaultDirectory.
- * @param n  d0: Requester#: 0 load, 1 save, 2 multi-load
+ * The numbers of RTEZSetPattern (fixed, #456: the original reset the
+ * multi-load requester for 2, the path requester's number, and did
+ * nothing for 3).
+ * @param n  d0: Requester#: 0 load, 1 save, 3 multi-load (others:
+ *           nothing)
  * @return d0: 0
  */
 static ULONG BLITZ_ROUTINE rtfreepat_c(ULONG n BL_REG(d0))
@@ -1032,7 +1035,7 @@ static ULONG BLITZ_ROUTINE rtfreepat_c(ULONG n BL_REG(d0))
         freqTagList.flags.ti_Data = 0;
     else if (n == 1)
         SfreqTagList.flags.ti_Data = FREQF_SAVE;
-    else if (n == 2)
+    else if (n == 3)                                    /* fixed (#456): 2 */
         MfreqTagList.flags.ti_Data = FREQF_MULTISELECT;
     return 0;
 }
