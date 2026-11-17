@@ -966,8 +966,8 @@ cycle values do not depend on the host's load or on what else runs
   same for a recursion: a Statement with a string parameter that calls itself
   from depth 20 down to 0, 21 calls per iteration, the value per call; its
   target too comes from its own pass (`perf_brec.pass`, tag `orig`).
-  `bbblit` measures the per-frame blits of an RWE userlib (`bb_blitlib`:
-  SpecialBlock, TBlock, BPredatorBlit). Its header line `; @rwe NAME...`
+  `bbblit` measures every command of an RWE userlib (`bb_blitlib`: the
+  per-frame blits and the set-up commands). Its header line `; @rwe NAME...`
   names the libraries, as in a bug-orig test ("A bug of an RWE userlib"):
   the program is tokenised with a token list of blitz2-c, the libraries'
   variant and the named libraries; `clib` gets the variant's acidlibs and
