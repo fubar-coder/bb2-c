@@ -7,6 +7,7 @@
 ; d0 (#759): the program loads it with GetReg.
 ; Correct: WorkbenchHere goes on with the next screen, finds "Workbench"
 ; and returns -1.
+; @fixed #762
 ; @rwe rimisclib
 ; @pass timeout=30
 DEFTYPE .l
