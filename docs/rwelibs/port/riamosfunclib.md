@@ -149,7 +149,7 @@ ported.
   after UnLockDosList (an entry of a list the program no longer holds);
   the manual documents -1 for a volume that is present and 0 otherwise.
   As a truth value it works; a comparison with -1 never finds the
-  volume (test `riamosfunclib-findvolume-result`; issue to be filed).
+  volume (test `riamosfunclib-findvolume-result`, #1082).
 
 Original behaviour that is not a defect:
 

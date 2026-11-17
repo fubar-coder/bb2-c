@@ -1,4 +1,4 @@
-; riamosfunclib-findvolume-result (issue to be filed) - FindVolume is
+; riamosfunclib-findvolume-result (#1082) - FindVolume is
 ; documented (RIAmosFuncLib guide) to return 0 if the volume is not
 ; present and -1 if it is.  It returns what FindDosEntry gave instead:
 ; the address of the DosList entry, taken after UnLockDosList (an entry
