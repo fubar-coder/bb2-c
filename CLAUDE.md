@@ -1,188 +1,122 @@
 # blitzbasic2-c – notes for Claude
 
-C translation of Blitz Basic 2: compiler `blitz2` (v2.10: `blitz2.s` 1.95
-with the changes of the CD's compiler, `docs/v2.10/`),
-editor `ted` (TED 1.1, `ted.s`) and the libraries `acidlibs`/`deflibs`,
-built for AmigaOS (68000) with m68k-amigaos-gcc. Overview and
-building: `README.md`; structure: `docs/structure.md`; the checks in the
-build: `docs/development.md`; the tests: `docs/testing.md` (how they work,
-for people) and `tests/README.md` (reference). Open items:
-`TODO.md`, as task lists: `- [ ] **Title** …` open, `- [x] **Title** done (date): …` done or
-decided (also for numbered steps, `1. [x] …`); no strikethrough.
+C port of Blitz Basic 2 (compiler `blitz2` v2.10, editor `ted` 1.1,
+libraries `acidlibs`/`deflibs`) for AmigaOS (68000), built with
+m68k-amigaos-gcc. This repository is the reference for the code; the
+original sources are in `archive/`, the notes on the translation (reasons
+for `BUG(orig)`, `DIFF`, `ted.s:NNN`, `blitz2.s:NNN`) in `docs/`.
+Start here: `README.md` (building), `docs/structure.md`,
+`docs/development.md` (conventions, the checks in the build, fixing an
+original bug), `tests/README.md` (tests and presets). Open items:
+`TODO.md` (`- [ ] **Title** …` open, `- [x] **Title** done (date): …`;
+no strikethrough). The user's decisions:
+`~/.local/share/bb2-c-work/decisions.md`.
 
-**This repository is the reference** for the code (decision of
-2026-10-27, takeover from bb2 `7b5df74`); bb2 no longer builds the
-authoritative state. Here are the build, the reference builds (`ted_ref`,
-`blitz2_ref`), the original sources (`archive/`), all tests (host tests,
-TED oracle, corpus, TED A/B, library tests in the emulator, tests of
-reproduced original bugs) and the notes on the translation in `docs/`
-(from bb2 `ee6174b`, translated to English) – that is also where the
-reasons for code comments like `BUG(orig)`, `DIFF`, `ted.s:NNN` or
-`blitz2.s:NNN` are. Only bb2's analysis tools (Python) were not taken
-over. State of the takeover: `TODO.md`.
-
-## Building and checking
+## Building and testing
 
 ```
 cmake --preset amiga && cmake --build --preset amiga   # result: build/amiga/blitz2/
-ctest --preset host                                    # tests without emulator (seconds)
-ctest --preset emulator                                # tests in Amiberry
-ctest --preset all                                     # host and emulator: the acceptance run, needs no CD for
-                                                       # most tests (without it skips only corpus_cd,
-                                                       # corpus_cd_ab3); libs_emulator compares the C
-                                                       # libraries with libs/tests/expected
-ctest --preset bug-orig                                # open original bugs and port bugs: fail on purpose
-ctest --preset originals                               # label originals: comparisons with the originals (writes
-                                                       # nothing; tests/bug-orig/*/*.orig are recorded by the
-                                                       # target bug-orig-record), libs_emulator_originals
-                                                       # (the originals against libs/tests/expected),
-                                                       # the corpus configuration orig-clib; needs the CD
-ctest --preset oracle                                  # AmiBlitz3's compiler checks tests/ab3's expectations;
-                                                       # run it before merging changes of tests/ab3
-ctest --preset perf                                    # benchmark of the libraries on the cycle-exact A500 in
-                                                       # warp mode, one session per bench program (about 13 s;
-                                                       # cycles per command against tests/perf/budgets.txt, the
-                                                       # originals' values as target; not in all)
+ctest --preset host       # without emulator (seconds)
+ctest --preset all        # host and emulator: the acceptance run
+ctest --preset bug-orig   # open original bugs: fail on purpose
+ctest --preset originals  # comparisons with the originals; needs the CD
+ctest --preset oracle     # AmiBlitz3's compiler checks tests/ab3 (before merging tests/ab3)
+ctest --preset perf       # library benchmark against tests/perf/budgets.txt
 ```
 
-* Toolchain via `PATH` (`m68k-amigaos-gcc`, gcc ≥ 15 because of
-  `#embed`, ≥ 16.2-rc21 because of `__saveds`, checked by configure),
-  otherwise `AMIGA_TOOLCHAIN_PREFIX`. Ninja.
-* The shell is **fish**: wrap loops, `$(...)`, heredocs in `bash -c '…'`
-  or `bash <<'EOF'`.
-* A clean rebuild has **no warnings**. A reference from normal code into
-  the error check area is a `blitzlib check` error (the ones the
-  originals have are fixed, 2026-10-31, TODO.md).
-* CMake generates `.clangd` on the first configure (not in git).
-* Emulator: the Kickstart ROM and hardfiles are local in
-  `amiga-emulation/` (not in git, see `AMIGA-EMULATION-SETUP.md`); default
-  configuration `tools/lib/amiga_emulation/default.uae`. Hardfiles are
-  read-only: tests write only to `TEST:` or `RAM:` (system programs like
-  `ShowConfig` also write to `SYS:` and then hang).
-* **Host side** (`host/`, ExternalProject, native compiler): tools and
-  host tests. Host tests live with their component
-  (`programs/ted/tests/host/`), are snitch programs (C++20, C headers in
-  `extern "C"`), **one program per test file** (the TED core has global
-  state). For checking, also build with `-DHOST_SANITIZE=ON`.
-* Emulator runs only via `tools/lib/amiga_emulation` or `amiga_run`
-  (isolated, can run in parallel); control socket: arguments separated by
-  tabs. Tests with the emulator get the ctest label `emulator` and the
-  return value 77 (skipped) if Amiberry or the data are missing.
+What each preset runs and needs: `tests/README.md`, "Original material
+and presets".
 
-## Rules
+* The Bash tool runs zsh (the login shell is fish): put loops, word
+  splitting and heredocs in `bash -c '…'`.
+* Emulator only via `tools/lib/amiga_emulation` or `amiga_run`; the
+  hardfiles are read-only, tests write only to `TEST:` or `RAM:` (a write
+  to `SYS:` hangs the run).
 
-* **Acceptance for every rework** (rule of 2026-11-01): the *results*
-  stay byte-identical to the state before (the `prev` build, the build of
-  the previous commit of this repository: `cmake --preset amiga
-  -DBLITZ2_PREV=ON`, `tests/README.md` "The prev build") unless a change
-  of them is intended: the executables the compilers generate, the files
-  TED writes, and `acidlibs`, `deflibs` and all library files.
-  `ctest --preset all` compares them with the `prev` build
-  (`prev_results`, the corpus configuration `prev`, the `ted_ab`
-  combinations `P5`/`Pc`; without a prev build only `prev_results` is
-  skipped and the others run without that part), and an intended change
-  is named by `-DPREV_INTENDED`. The programs themselves
-  (`blitz2`, `blitz2-ab3`, `ted`, the tools) may change with a code
-  rework; then check functionally with the tests here
-  (`ctest --preset all` and `ctest --preset bug-orig`, needs Amiberry
-  and the originals) and name the rework in the commit. A rework that
-  is meant to change no code is still best checked by comparing the
-  programs byte by byte. An intended change of a result (e.g. a fixed
-  original bug) is named in the commit, with tests.
-* **`archive/`** contains unchanged originals (sources like
-  `sources/ted-1.1/`, reference data) – never edit; a new state is a new
-  directory with a version number, the origin is in `archive/README.md`.
-  Anything derived from it is created in the build directory or as
-  generated test data under `tests/data/`. Material without a clear
-  license (CD) is not checked in but loaded with
-  `cmake/fetch-originals.cmake` (`archive/cd/`, `archive/aminet/`,
-  `archive/bernd/`, ignored); tests that need it are skipped without it.
-* **Original bugs are fixed deliberately** (bug-fix phase: the port is
-  complete; user decisions of 2026-10-30, 2026-11-07 and 2026-11-16). The
-  goal is functional BB2 compatibility with the bugs fixed, in the default
-  variant: a program behaves as with the original, without visible side
-  effects except the fixes; identical executables are not a goal, so
-  optimizations of the compiler and the libraries that no program can
-  observe are on by default in both modes. There is no bug-preserving
-  variant (whoever needs the original behaviour uses the original
-  compiler and libraries). Tests check the expected behaviour,
-  not equality with the original; the comparison with the previous commit
-  of this repository stays (Acceptance). A bug not fixed yet is
-  documented: `BUG(orig) (#N)` in the code, a bug-orig test that comes out
-  REPRODUCED (`tests/README.md`, "bug-orig tests"); `DIFF` only where
-  technically necessary. A case where the original checks invalid input
-  only in its error check area (runtime error checking) on purpose is
-  closed with the label `as-designed`; its code note reads
-  `By design (#N)` instead of `BUG(orig)`, and its bug-orig test may stay
-  and come out REPRODUCED. **A fix** (spec `testing/bug-fix-workflow`):
-  1. one issue per bug;
-  2. in the fix commit: the code change; the test of the expected
-     behaviour - the bug-orig test gets the header `; @fixed #N` (or the
-     equivalent of its suite) and must come out FIXED in
-     `ctest --preset all`; the comment `BUG(orig)` becomes `Fixed (#N)`;
-     the entry in `docs/*/deviations.md` as an intended deviation (kind
-     F); the changed results named in the commit message, and a line
-     `Fixes #N` in it (GitHub closes the issue on the push). Where the
-     suite keeps expected data in the shared test model (the library
-     tests: the pair `KEY [orig]` / `KEY [fixed #N]` in
-     `libs/tests/expected`, written by the target `libs-update` with
-     `LIBS_UPDATE_FIX`; the bug-orig tests: `ID.orig` / `ID.expect`, the
-     test keeps `ID.orig` with the fix), the fix-scope check
-     (`cmake --build --preset amiga --target fix-scope`) reports every
-     other case the branch changes: the agent runs it and names its
-     result in its report, the coordinator runs it again before the
-     merge, and a reported case is named in the commit with its reason or
-     gets its own issue (`tests/README.md`, "Libraries");
-  3. the entry on the website page of fixed original bugs
-     (the area page in `site/content/docs/compared-with-original/fixed-bugs/`:
-     a one-sentence entry, or a section with an example of the original's
-     and the port's output for a bug ordinary programs meet; a source the
-     port refuses or compiles differently also goes into `new-errors.md`)
-     and one row for the issue in the overview of fixed bugs,
-     `site/data/fixoverview.yaml` (severity 1-5: 1 changes correct programs, 2 changes behaviour
-     noticeably, 3 new runtime error, 4 new compile error, 5 no side
-     effects; topic, library or command, one sentence, page and anchor;
-     `site/README.md`) - the site
-     build fails for an issue linked on a fixed-bugs page without a row;
-     the agent's report proposes the severity and the topic;
-  4. the label `fixed-in-port` on the issue (every fix);
-  5. after the user's push: check that the issue was closed (close it
-     with a comment naming the commit if not).
-  Steps 3-5 are the coordinator's; an agent names them in its report.
-* **Only C/C++ and CMake.** No Python, no shell scripts in the build.
-  Whatever compiler and linker can do themselves, without a tool
-  (`#embed` + `static_assert`, `strip`); text and control as CMake;
-  binary formats and logic as a C tool in `tools/` (logic in
-  `tools/lib/`, tool = `main.c`, tests in `tools/tests/` with inputs from
-  memory).
-* **Checks in the build:** in the same build step as the result (another
-  `COMMAND` of the custom command or `POST_BUILD` on the target). If the
-  check fails, the result counts as not built, and nothing that depends on
-  it is built. No temporary files, no stamp files. Every check needs a
-  test with deliberately broken input.
-* **Two compilation worlds:** libraries with the Blitz conventions
-  (`cmake/BlitzLibrary.cmake`: `-ffixed-a3/a4/a5`, freestanding,
-  `-fno-toplevel-reorder`, one hunk via `libs/blitzlib.ld`); blitz2 and
-  TED as programs with `-fbaserel` (a4 = base of the globals). Code for
-  both sides (`shared/`) is compiled by each side itself, with its own
-  environment header (`filereq_env.h`).
-* `libs/acidlibs` is joined in the order of the original file
-  (`ACIDLIBS_ORDER`); every library is a C file (no prebuilt originals
-  any more; the originals for comparison come from the CD).
+## Rules, in order of weight
+
+1. **The user's statements.** An answer to a concrete question with the
+   options shown is a decision; record it in `decisions.md` with the quote,
+   date and scope. A rule you derive from a side remark, a counter-question
+   or a guess ("vermutlich") is *proposed*: apply it only to the case it
+   was said for and ask before using it elsewhere; collect proposals and
+   show them together. Do not write such a rule into CLAUDE.md, an agent
+   definition or memory without the user's OK to the wording. Quote
+   decisions by ID instead of rewording them. Why: rewordings dropped the
+   user's qualifications and turned single-case remarks into general rules
+   (decisions.md, D-001).
+2. **Conflicts are reported.** If two rules contradict each other, or a
+   rule does not fit the case, say so (agents: in the report) instead of
+   resolving it silently or adding a workaround next to it. Why: a
+   workaround leaves the contradiction in place for the next reader.
+3. **Results stay byte-identical** to the previous commit unless a change
+   is intended and named: the executables the compilers write, the files
+   TED writes, `acidlibs`, `deflibs` and all library files. `ctest
+   --preset all` compares them with the `prev` build (`cmake --preset
+   amiga -DBLITZ2_PREV=ON`; `tests/README.md`, "The prev build"); an
+   intended change is named with `-DPREV_INTENDED` and in the commit
+   message. The programs themselves (`blitz2`, `ted`, host tools) and
+   toolchain updates may change; check them with the tests and name the
+   rework. Why: the byte comparison is the only check that catches an
+   unintended change in hundreds of results.
+4. **Original bugs are fixed deliberately**; the goal is functional BB2
+   compatibility with the bugs fixed (D-003), not identical executables.
+   Every fix follows `docs/development.md`, "Fixing an original bug" (spec
+   `testing/bug-fix-workflow`): one issue per bug; one fix commit with the
+   code change, the test of the expected behaviour (`; @fixed #N`, FIXED),
+   `Fixed (#N)`, the kind-F entry in `docs/*/deviations.md`, the changed
+   results named and a line `Fixes #N`; fix-scope run by the agent and
+   again by the coordinator before the merge. Agents propose the severity
+   (by the level texts in `site/data/fixoverview.yaml`) and the topic; the
+   website entry, the overview row, the label `fixed-in-port` and the
+   check after the push are the coordinator's. A bug not fixed yet:
+   `BUG(orig) (#N)` and a bug-orig test that comes out REPRODUCED; checked
+   only in the error check area on purpose: `By design (#N)`, label
+   `as-designed`. Which bugs get fixed and how: decisions.md (D-005 to
+   D-007).
+5. **Testing an agent's work:** agents run the tests their brief names,
+   the tests of what they touched and `ctest --preset host`, in the
+   foreground; the coordinator runs `all`, `bug-orig` and `originals` once
+   after merging (D-010). Why: full presets in parallel overload the
+   machine and every agent would wait for them.
+6. **Only C/C++ and CMake** in the project infrastructure (build, tests,
+   tools): what compiler and linker can do themselves without a tool
+   (`#embed` + `static_assert`, `strip`); text and control in CMake;
+   binary formats and logic as a C tool in `tools/` (logic in
+   `tools/lib/`, tests in `tools/tests/`). Claude Code hooks are not
+   infrastructure; they live in `.claude/hooks/` as CMake scripts and
+   nothing in the build calls them. Why: a script written once tends to
+   become infrastructure without anyone deciding it (D-002).
+7. **`archive/`** holds unchanged originals: never edit; a new state is a
+   new directory with a version number, its origin in `archive/README.md`.
+   Derived data goes to the build directory or `tests/data/`. Material
+   without a clear license (the CD) is loaded by
+   `cmake/fetch-originals.cmake`, not checked in.
+
+## Code conventions
+
+* A clean rebuild has no warnings, also none of `blitzlib check`.
+* Checks in the build run in the build step of their result (another
+  `COMMAND` or `POST_BUILD`); a failed check means the result is not
+  built. No temporary or stamp files. Every check has a test with
+  deliberately broken input.
+* Two compilation worlds: libraries with the Blitz conventions
+  (`cmake/BlitzLibrary.cmake`), blitz2 and TED as programs with
+  `-fbaserel`; code in `shared/` is compiled by each side with its own
+  environment header.
+* Host tests live with their component, are snitch programs (C++20),
+  one program per test file; also check with `-DHOST_SANITIZE=ON`.
 
 ## License
 
-GPL-3.0-or-later with `RUNTIME-LIBRARY-EXCEPTION` (README, section
-"License"); license situation of the originals in `archive/README.md`.
-New code is under the same license; do not take over code with an unclear
-or GPL-incompatible license.
+GPL-3.0-or-later with `RUNTIME-LIBRARY-EXCEPTION` (README, "License");
+the originals' license situation in `archive/README.md`. New code under
+the same license; no code with an unclear or GPL-incompatible license.
 
 ## Git
 
-* One topic per commit; never combine separable work.
-  All texts in the repository (documentation, comments, commit messages,
-  messages of tools) and GitHub issues are English.
-* Before a commit, check `git status`: stage only the files of the topic
-  (otherwise staged `git mv` slip in).
-* Remote `origin` (GitHub `fubar-coder/bb2-c`): no force push, do not
-  rewrite pushed history.
+* One topic per commit; never combine separable work. Check `git status`
+  first and stage only the topic's files.
+* All texts in the repository and on GitHub are English.
+* `origin` (GitHub `fubar-coder/bb2-c`): the user pushes; no force push,
+  no rewriting of pushed history.
