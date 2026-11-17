@@ -8,6 +8,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* interned strings: each distinct string has one id (0, 1, ...) */
 struct strtab {
     char **str;         /* by id */
@@ -69,5 +73,10 @@ const char *cov_next_line(const char *text, size_t len, size_t *pos, size_t *lin
 /* the TN: of a test in an lcov tracefile: its name with each character but
    [A-Za-z0-9_] as '_' (lcov's test names); allocated */
 char *cov_lcov_test_name(const char *test);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

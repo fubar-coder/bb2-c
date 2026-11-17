@@ -25,6 +25,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief The longest constant name: the node length is a byte (19 + name
     + 0). */
 #define BLITZRES_MAXNAME 235
@@ -188,5 +192,10 @@ int blitzres_equ(const char *text, size_t len, struct blitzres_list *syms,
  */
 int blitzres_lvo(const char *text, size_t len, struct blitzres_list *l, char *err,
                  size_t errlen);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

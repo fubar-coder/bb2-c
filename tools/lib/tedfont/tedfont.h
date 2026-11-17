@@ -19,6 +19,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief The glyph TED-C may redraw: 26 (TED's a with diaeresis) at h = 6. */
 #define TEDFONT_REDRAWN 26
 
@@ -88,5 +92,10 @@ int tedfont_build(const struct tedfont_src *src, const uint8_t *archive, size_t 
  */
 int tedfont_check(const struct tedfont_src *src, const uint8_t *archive, size_t archlen,
                   const uint8_t *font, size_t fontlen, char *err, size_t errlen);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

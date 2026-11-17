@@ -15,6 +15,10 @@
 #include <stdio.h>
 #include "hunk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief A row of the listing. */
 struct listing_row {
     uint32_t addr;
@@ -92,5 +96,10 @@ int listing_print_labels(const struct listing *l, FILE *out);
  * @return the number of differing rows
  */
 size_t listing_verify(const struct listing *l, const struct hunk *h, FILE *out);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

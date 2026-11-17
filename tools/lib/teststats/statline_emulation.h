@@ -11,6 +11,10 @@
 #include "amiga_emulation.h"
 #include "statline.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Fill the @stat line of an emulator session.
  *
@@ -45,5 +49,10 @@ static inline void statline_session(struct statline *s, const char *work, const 
     s->timed = st.timed;
     s->limit = st.timeout;
 }
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

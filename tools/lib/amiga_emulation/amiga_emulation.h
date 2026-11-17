@@ -126,6 +126,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct amiga_emulation_option {
     const char *key;
     const char *value;          /* NULL: remove the key */
@@ -467,5 +471,10 @@ unsigned amiga_emulation_slots_for_cpus(long cpus);
    AMIGA_EMULATION_SLOTS_LIMIT), else (missing, not a number, 0, too
    large) amiga_emulation_slots_for_cpus() of the processors online */
 unsigned amiga_emulation_slot_max(const char *dir);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

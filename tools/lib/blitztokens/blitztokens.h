@@ -20,6 +20,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief One token. */
 struct blitztoken {
     uint16_t num;               /* as in a tokenised source: bit 15 set */
@@ -102,5 +106,10 @@ int blitztokens_read(char *buf, size_t size, struct blitztokens *out, char *err,
 
 /** @brief Free the list (not the names: they point into the files). */
 void blitztokens_free(struct blitztokens *list);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

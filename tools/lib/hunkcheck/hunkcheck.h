@@ -11,6 +11,10 @@
 #include <stdio.h>
 #include "hunk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Check that the first hunk is code and has the given bytes at the
  *        given offsets.
@@ -50,5 +54,10 @@ int hunk_layout(const struct loadfile *lf, const char *layout, const char *name,
  * @return 0 = ok, 1 = a hunk with an unstored tail
  */
 int hunk_stored(const struct loadfile *lf, const char *name, FILE *out);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

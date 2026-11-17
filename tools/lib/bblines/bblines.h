@@ -13,6 +13,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Turn every line whose first statement is a given token into an
  *        empty comment.
@@ -35,5 +39,10 @@
  */
 int bblines_comment(const uint8_t *src, size_t len, uint16_t token, uint8_t **out,
                     size_t *outlen, size_t *count, char *err, size_t errlen);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

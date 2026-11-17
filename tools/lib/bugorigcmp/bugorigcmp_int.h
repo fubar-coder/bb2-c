@@ -8,6 +8,10 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* a growing string, always 0-terminated once something was added */
 struct bstr {
     char *p;
@@ -26,5 +30,10 @@ void bugorigcmp_show(const char *p, size_t n, char *buf, size_t len, int end);
 
 /* the case value of a section's text (bugorigcmp.h, "the cases") */
 void bugorigcmp_put_value(FILE *out, const char *s);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

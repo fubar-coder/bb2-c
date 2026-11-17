@@ -33,6 +33,10 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief The collected runs (opaque; teststats_new, teststats_free). */
 struct teststats;
 
@@ -79,5 +83,10 @@ size_t teststats_runs(const struct teststats *t);
  * @return 0 = ok, -1 if memory ran out
  */
 int teststats_report(const struct teststats *t, const struct teststats_options *o, FILE *out);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

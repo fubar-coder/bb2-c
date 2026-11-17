@@ -16,6 +16,10 @@
 #include <stdio.h>
 #include "hunk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief The normalised text of an instruction (see the top).
  * @param text  objdump's text of the instruction
@@ -59,5 +63,10 @@ void asmcmp_free_list(char **ins, unsigned count);
  */
 int asmcmp_routine(const char *objdump, const struct hunk *orig, const struct loadfile *c,
                    const char *spec, FILE *out);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -34,6 +34,10 @@
 #include <stdio.h>
 #include "blitzlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief The name of the AmigaOS library or resource an AmigaOS call
  *        library opens (its init's `libname[]`).
@@ -62,5 +66,10 @@ int cmdref_opens(const struct blitzlib *lib, const char **name, char *err, size_
  */
 int cmdref_write(FILE *out, const struct blitzlib *lib, const char *group, const char *name,
                  const char *opens);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

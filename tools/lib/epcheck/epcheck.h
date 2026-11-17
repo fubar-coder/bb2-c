@@ -25,6 +25,10 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* the prefix of the marker symbol of an __entrypoint routine */
 #define EPCHECK_MARKER "___blitz_entrypoint_"
 
@@ -37,5 +41,10 @@
  * @return the number of findings; -1 = out of memory
  */
 long epcheck_text(const char *symtab, const char *disasm, FILE *report, long *nroutines);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

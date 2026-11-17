@@ -7,6 +7,10 @@
 
 #include "libscmp.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* a sorted list of program names */
 struct libscmp_names {
     char **v;
@@ -51,5 +55,10 @@ int libscmp_exists(const char *path);
    on err; f can be given to libscmp_free after every return */
 int libscmp_load_named(struct libscmp_file *f, const char *dir, const char *name,
                        enum libscmp_kind kind, FILE *err);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

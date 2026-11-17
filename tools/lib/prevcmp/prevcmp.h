@@ -22,6 +22,10 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct prevcmp_options {
     int all;                            /* every difference is intended */
     const char *const *intended;        /* the paths allowed to differ */
@@ -42,5 +46,10 @@ struct prevcmp_options {
  */
 int prevcmp(const char *cur, const char *prev, const struct prevcmp_options *o, FILE *out,
             char *err, size_t errlen);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

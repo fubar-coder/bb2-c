@@ -59,6 +59,10 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define STATLINE_TAG     "@stat"
 #define STATLINE_VERSION 1
 
@@ -109,5 +113,10 @@ void statline_write(FILE *f, const struct statline *s);
  *         "@stat "), -1 = a broken one
  */
 int statline_parse(const char *line, size_t len, struct statline *s, char *err, size_t errlen);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

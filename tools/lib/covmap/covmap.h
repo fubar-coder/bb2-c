@@ -62,6 +62,10 @@
 #include <stdio.h>
 #include "covutil.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct cov_func {
     int file, name;             /* ids in covmap.strs */
     int first, last;            /* line range, 0 if not known */
@@ -169,5 +173,10 @@ const char *covmap_test(const struct covmap *m, size_t i);
    memory or a write failed */
 int covmap_write_test(struct covmap *m, size_t i, FILE *out);
 int covmap_write_all(struct covmap *m, FILE *out);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

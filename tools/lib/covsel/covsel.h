@@ -49,6 +49,10 @@
 #include <stdio.h>
 #include "covutil.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct covsel;
 
 struct covsel *covsel_new(const char *root);
@@ -78,5 +82,10 @@ const char *covsel_name(const struct covsel *s, size_t i);
 
 /* the pattern of the rules against a path (exposed for the tests) */
 int covsel_match(const char *pattern, const char *path);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

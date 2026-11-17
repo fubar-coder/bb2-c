@@ -16,6 +16,10 @@
 #include "hunk.h"
 #include "vasmlisting.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief One check: a C symbol against a range of the reference. */
 struct checkdata_entry {
     char *csym;                 /* C symbol, e.g. "_sleep_" */
@@ -168,5 +172,10 @@ void checkdata_ref_free(struct checkdata_ref *r);
 long checkdata_run(const struct checkdata_table *t, const struct checkdata_ref *r,
                    const struct loadfile *c, const struct checkdata_intended *in, int verbose,
                    FILE *out);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

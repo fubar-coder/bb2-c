@@ -24,6 +24,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief The result of a testcase. */
 enum junit_status { JUNIT_PASSED, JUNIT_FAILED, JUNIT_SKIPPED };
 
@@ -59,5 +63,10 @@ int junit_parse(const char *text, size_t len, struct junit_file *f, char *err, s
 
 /** @brief Free what junit_parse filled in. */
 void junit_free(struct junit_file *f);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

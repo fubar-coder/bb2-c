@@ -13,6 +13,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define HUNK_NAME          0x3E8
 #define HUNK_CODE          0x3E9
 #define HUNK_DATA          0x3EA
@@ -97,5 +101,10 @@ int load_symbol(const struct loadfile *lf, const char *name, uint32_t *hunk, uin
 
 /** @brief Free what load_parse/load_read filled in. */
 void load_free(struct loadfile *lf);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

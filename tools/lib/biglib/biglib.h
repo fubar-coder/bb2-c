@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief One library of a BigLib file. */
 struct biglib_entry {
     const uint8_t *data;        /* the library file */
@@ -69,5 +73,10 @@ long biglib_find(const struct biglib_entry *entries, size_t n, unsigned libnum);
  * @return its index, -1 = all numbers differ
  */
 long biglib_clash(const struct biglib_entry *entries, size_t n, size_t *earlier);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

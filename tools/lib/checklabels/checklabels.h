@@ -17,6 +17,10 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief A code label of the assembler source: its line and name. */
 struct code_label {
     unsigned line;
@@ -66,5 +70,10 @@ struct label_source {
  */
 long labels_check(const struct code_labels *l, const char *prefix,
                   const struct label_source *src, size_t nsrc, int verbose, FILE *out);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

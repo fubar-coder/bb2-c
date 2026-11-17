@@ -7,6 +7,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum json_type { JSON_NULL, JSON_FALSE, JSON_TRUE, JSON_NUMBER, JSON_STRING, JSON_ARRAY, JSON_OBJECT };
 
 struct json {
@@ -32,5 +36,10 @@ const struct json *json_get(const struct json *j, const char *key);
 const char *json_get_string(const struct json *j, const char *key);
 /* the number of key, def if missing or not a number */
 double json_get_number(const struct json *j, const char *key, double def);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

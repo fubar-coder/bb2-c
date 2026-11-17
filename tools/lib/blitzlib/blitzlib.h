@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include "hunk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief A form of a statement, function or command (`!args`,
     `!repargs`): the arguments it takes. */
 struct blitzlib_form {
@@ -257,5 +261,10 @@ int blitzlib_intended(const char *msgs, const char *const *intended, size_t n,
  */
 int blitzlib_intended_stale(const char *const *intended, size_t n, const unsigned char *seen,
                             FILE *out);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
