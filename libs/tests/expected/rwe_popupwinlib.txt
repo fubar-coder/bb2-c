@@ -23,7 +23,8 @@ PopUpWindow|the menu levels opened|a button queued behind the move that closes a
 PopUpWindow|the menu levels opened|a button without an item|1	$00000001
 PopUpWindow|the menu levels opened|starting with a separator, a new port|1	$00000001
 PopUpWindow|the menu levels opened|three levels|1	$00000001
-PopUpWindow|the whole script|a button queued behind the move that closes a sub menu|1	$00000001
+PopUpWindow|the whole script|a button queued behind the move that closes a sub menu|1 [orig]	$00000001
+PopUpWindow|the whole script|a button queued behind the move that closes a sub menu|1 [fixed #469]	$00000000
 PopUpWindow|the whole script|a button without an item|1	$00000001
 PopUpWindow|the whole script|starting with a separator, a new port|1	$00000001
 PopUpWindow|the whole script|three levels|1	$00000001
@@ -175,24 +176,24 @@ PopUpWindow|wait 17 window 1 contents|three levels|1	$4D02F8E4
 PopUpWindow|wait 17 window 1 position|three levels|1	$002C0020
 PopUpWindow|wait 17 window 1 size|three levels|1	$00340020
 PopUpWindow|wait 17 windows|three levels|1	$00000002
-PopUpWindow|wait 2 CIA-A PRA bit 1|a button queued behind the move that closes a sub menu|1	$00000000
+PopUpWindow|wait 2 CIA-A PRA bit 1|a button queued behind the move that closes a sub menu|1 [orig]	$00000000
 PopUpWindow|wait 2 CIA-A PRA bit 1|a button without an item|1 [orig]	$00000002
 PopUpWindow|wait 2 CIA-A PRA bit 1|a button without an item|1 [fixed #468]	$00000000
 PopUpWindow|wait 2 CIA-A PRA bit 1|three levels|1 [orig]	$00000002
 PopUpWindow|wait 2 CIA-A PRA bit 1|three levels|1 [fixed #468]	$00000000
-PopUpWindow|wait 2 window 0 IDCMP|a button queued behind the move that closes a sub menu|1	$00080218
+PopUpWindow|wait 2 window 0 IDCMP|a button queued behind the move that closes a sub menu|1 [orig]	$00080218
 PopUpWindow|wait 2 window 0 IDCMP|a button without an item|1	$00080218
 PopUpWindow|wait 2 window 0 IDCMP|three levels|1	$00080218
-PopUpWindow|wait 2 window 0 contents|a button queued behind the move that closes a sub menu|1	$C1BBBDD0
+PopUpWindow|wait 2 window 0 contents|a button queued behind the move that closes a sub menu|1 [orig]	$C1BBBDD0
 PopUpWindow|wait 2 window 0 contents|a button without an item|1	$C1BBBDD0
 PopUpWindow|wait 2 window 0 contents|three levels|1	$C1DC2C1E
-PopUpWindow|wait 2 window 0 position|a button queued behind the move that closes a sub menu|1	$00000000
+PopUpWindow|wait 2 window 0 position|a button queued behind the move that closes a sub menu|1 [orig]	$00000000
 PopUpWindow|wait 2 window 0 position|a button without an item|1	$00000000
 PopUpWindow|wait 2 window 0 position|three levels|1	$00000000
-PopUpWindow|wait 2 window 0 size|a button queued behind the move that closes a sub menu|1	$002C0040
+PopUpWindow|wait 2 window 0 size|a button queued behind the move that closes a sub menu|1 [orig]	$002C0040
 PopUpWindow|wait 2 window 0 size|a button without an item|1	$002C0040
 PopUpWindow|wait 2 window 0 size|three levels|1	$002C0040
-PopUpWindow|wait 2 windows|a button queued behind the move that closes a sub menu|1	$00000001
+PopUpWindow|wait 2 windows|a button queued behind the move that closes a sub menu|1 [orig]	$00000001
 PopUpWindow|wait 2 windows|a button without an item|1	$00000001
 PopUpWindow|wait 2 windows|three levels|1	$00000001
 PopUpWindow|wait 3 CIA-A PRA bit 1|three levels|1 [orig]	$00000002
@@ -250,7 +251,8 @@ PopUpWindow|wait 9 window 1 contents|three levels|1	$4D02F8E4
 PopUpWindow|wait 9 window 1 position|three levels|1	$002C0020
 PopUpWindow|wait 9 window 1 size|three levels|1	$00340020
 PopUpWindow|wait 9 windows|three levels|1	$00000002
-PopUpWindow|waits|a button queued behind the move that closes a sub menu|1	$00000003
+PopUpWindow|waits|a button queued behind the move that closes a sub menu|1 [orig]	$00000003
+PopUpWindow|waits|a button queued behind the move that closes a sub menu|1 [fixed #469]	$00000002
 PopUpWindow|waits|a button without an item|1	$00000003
 PopUpWindow|waits|starting with a separator, a new port|1	$00000002
 PopUpWindow|waits|three levels|1	$00000012

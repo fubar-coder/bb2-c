@@ -67,14 +67,16 @@ kind F):
 * PopUpInit creates the port only when there is none (init makes it);
   the original created a new one each time without deleting the old
   one, a port and a signal bit per call (#470).
+* Closing a menu window removes and replies only the messages of that
+  window from the shared port; the original replied every message, also
+  those already queued for the other levels: a mouse button pressed
+  while a sub menu closed was lost (#469).
 
 ## BUG(orig), kept
 
 * **PopUpWindow always returns 0.** The menu levels return the chosen
   item, but the result is `selecteditem`, which is only cleared. (It is
   a statement anyway.) (#471)
-* **Closing a menu window replies every message in the shared port**,
-  also those for the other levels (#469).
 
 Not a defect: the item count at +8 of the structure is the number of
 items − 1, but nothing uses the field.
@@ -122,7 +124,8 @@ Covered:
   level left for the first (two levels closed), a mouse button with an
   active item;
 * a mouse button for the parent queued behind the move that closes a
-  sub menu (the original replies it when it closes the sub menu, #469);
+  sub menu (the original replies it when it closes the sub menu and
+  waits once more, #469);
 * a mouse button without an active item;
 * a menu without sub menus that starts with a separator;
 * PopUpInit (the original makes a new port and leaves the old one, which

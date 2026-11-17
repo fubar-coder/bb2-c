@@ -32,9 +32,9 @@
  * the sub menu), onto the parent's active item (the sub menu stays), a
  * third level left for the first (two levels closed), a mouse button
  * with and without an active item; a mouse button for the parent queued
- * behind the move that closes a sub menu (BUG(orig) #469: closing the
- * sub menu replies it, one more wait); a menu without sub menus that starts
- * with a separator; PopUpInit (the original makes a new port and leaves
+ * behind the move that closes a sub menu (#469: the original replies it
+ * when it closes the sub menu, one more wait; fixed in the C build); a
+ * menu without sub menus that starts with a separator; PopUpInit (the original makes a new port and leaves
  * the old one, #470 - the test deletes it; the C build keeps the port);
  * finit.
  * Not covered: a failed AllocVec (the bug-orig test
@@ -370,8 +370,8 @@ int main(int argc, char **argv)
     rwe_mem_start();
 
     /* a button for the parent queued behind the move that closes the
-       sub menu: BUG(orig) (#469): closing the sub menu replies it too,
-       the parent needs another button */
+       sub menu (#469): the original replies it when it closes the sub menu,
+       the parent needs another button; the C build keeps it queued */
     nscript = 0;
     ev(IDCMP_MOUSEMOVE, 0, 10, yC);     /* More: the sub menu opens */
     ev(IDCMP_MOUSEMOVE, 0, 10, yB);     /* back to Save: the sub menu closes */

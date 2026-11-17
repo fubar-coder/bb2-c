@@ -37,8 +37,6 @@
  *   - PopUpWindow always returns 0: the item chosen is returned by the
  *     menu levels, but the result is `selecteditem`, which is only
  *     cleared (#471).
- *   - Closing a menu window replies every message in the shared port,
- *     also those for the other levels (#469).
  * Fixed (intended deviations):
  *   - Sizing a menu with sub menus leaves bit 1 of CIA-A PRA ($BFE001:
  *     the power LED / audio filter) as it is; the original toggled it
@@ -49,6 +47,10 @@
  *   - PopUpInit creates the message port only when there is none; the
  *     original created a new one each time without deleting the old one
  *     (a port and a signal bit per call) (#470).
+ *   - Closing a menu window removes and replies only the messages of
+ *     that window from the shared port; the original replied every
+ *     message, also those already queued for the other levels (a mouse
+ *     button pressed while a sub menu closes was lost) (#469).
  * Not a defect: the item number count at +8 of the structure is the
  * number of items - 1, but nothing uses that field.
  */
@@ -166,7 +168,7 @@ static void windowinit(void)
 }
 
 /* FlushWinEvents: reply every message in the port (those without a
-   reply port are only taken) */
+   reply port are only taken); finit */
 static void flushwinevents(void)
 {
     struct Message *m;
@@ -238,13 +240,24 @@ static ULONG waitwinevent(void)
     return e_msg[0];
 }
 
-/* CloseWin: BUG(orig): replies every message of the shared port (#469) */
+/* CloseWin: removes and replies the messages of this window from the
+   shared port (those without a reply port are only removed), then closes
+   it.  Fixed (#469): the original replied every message of the port, also
+   those for the other levels. */
 static void closewin(struct Window *win)
 {
+    struct Node *n, *next;
+
     if (!win)
         return;
     Forbid();
-    flushwinevents();
+    if (msgport)
+        for (n = msgport->mp_MsgList.lh_Head; (next = n->ln_Succ) != NULL; n = next)
+            if (((struct IntuiMessage *)n)->IDCMPWindow == win) {
+                Remove(n);
+                if (((struct Message *)n)->mn_ReplyPort)
+                    ReplyMsg((struct Message *)n);
+            }
     win->UserPort = NULL;
     CloseWindow(win);
     Permit();
@@ -584,8 +597,8 @@ static void BLITZ_ROUTINE popupinit_c(void)
  * an item highlights it, an item with a sub menu opens it to the right.
  * BUG(orig) (#471): the result is selecteditem, which is only cleared:
  * always 0.  Fixed (#467): a level without memory for its structure
- * closes all levels.  BUG(orig) (#469): closing a level replies every message of the
- * shared port.
+ * closes all levels.  Fixed (#469): closing a level replies only the
+ * messages of its window, those for the other levels stay queued.
  * @param scr    a0: the screen object (screenslib; first long = the
  *               Screen)
  * @param items  d1: the first item of the menu
