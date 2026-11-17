@@ -28,7 +28,8 @@
  * (used and free), Erase (used, free), BankLimit (get, set: the banks
  * freed, a bank above the old limit, back to 50); the files on RAM:
  * MakeDir (new, existing, missing parent; whether the directory's lock
- * was given back), FileSize (file, directory, missing), BSave (bank,
+ * was given back, also with a CreateDir that leaves 0 in d1: the
+ * original unlocks d1, #496), FileSize (file, directory, missing), BSave (bank,
  * a length beyond the bank (#489), address with and without a length,
  * a free bank, a bad path), BLoad in
  * all five forms (into a new bank, an address, a used bank, a length, an
@@ -446,6 +447,49 @@ static void makedir(const char *name)
     OBS("lock free", frame[0]);
 }
 
+/* MakeDir with dos.library's CreateDir (-120) wrapped: the real call,
+   its lock kept in cdlock, then d1 = 0 (other dos.library versions leave
+   a scratch value there; the original unlocks d1, #496):
+   movea.l #old,a0 : jsr (a0) : move.l d0,cdlock : moveq #0,d1 : rts */
+static ULONG cdlock;
+static UWORD cdstub[12];
+static void makedir_d1zero(const char *name)
+{
+    struct Library *dosbase = (struct Library *)DOSBase;
+    APTR old;
+    BPTR l;
+
+    Forbid();
+    old = SetFunction(dosbase, -120, (APTR)cdstub);
+    cdstub[0] = 0x207c;
+    cdstub[1] = (UWORD)((ULONG)old >> 16);
+    cdstub[2] = (UWORD)(ULONG)old;
+    cdstub[3] = 0x4e90;
+    cdstub[4] = 0x23c0;
+    cdstub[5] = (UWORD)((ULONG)&cdlock >> 16);
+    cdstub[6] = (UWORD)(ULONG)&cdlock;
+    cdstub[7] = 0x7200;
+    cdstub[8] = 0x4e75;
+    CacheClearU();
+    Permit();
+    cdlock = 0;
+    ROUT = "MakeDir";
+    sprintf(VEC, "%s (d1 0 after CreateDir)", name);
+    DO1(ENT(LIB, E_MAKEDIR, 0), NAMEARG(name));
+    Forbid();
+    SetFunction(dosbase, -120, old);
+    CacheClearU();
+    Permit();
+    OBS("d0", R.d[0]);
+    l = Lock((STRPTR)P(name), EXCLUSIVE_LOCK);
+    frame[0] = l != 0;
+    if (l)
+        UnLock(l);
+    else if (cdlock)
+        UnLock((BPTR)cdlock);                           /* the original's leak */
+    OBS("lock free", frame[0]);
+}
+
 static void bsave(int form, const char *name, LONG bank, ULONG len)
 {
     ROUT = "BSave";
@@ -482,6 +526,7 @@ static void files(void)
     makedir("");                                        /* exists: 0 */
     makedir("nodir/sub");                               /* no parent: 0 */
     makedir("sub");
+    makedir_d1zero("sub2");
 
     getstart(0);                                        /* the 100 bytes of FillMem */
     bsave(0, "a.bin", 0, 0);
@@ -664,7 +709,7 @@ static void saveexecs(void)
 static void cleanup(void)
 {
     static const char *f[] = { "a.bin", "b.bin", "c.bin", "d.bin", "p.bin", "empty.bin",
-                               "x.exe", "y.exe", "f.bin", "sub", "" };
+                               "x.exe", "y.exe", "f.bin", "sub", "sub2", "" };
     unsigned i;
     for (i = 0; i < sizeof f / sizeof f[0]; i++)
         DeleteFile((STRPTR)P(f[i]));

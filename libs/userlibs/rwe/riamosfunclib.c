@@ -38,12 +38,9 @@
  * routines through ALibJsr (BLoad: FileSize, Reserve, Start, BLoad;
  * Reserve: NextBank, Reserve); here they are plain C calls.  Assembler:
  * the thunks, the two inline forms of GTTagValue (copied by the
- * compiler), and the CreateDir call of MakeDir (see makedir_c).
+ * compiler).
  *
  * BUG(orig), kept:
- *   - MakeDir unlocks whatever CreateDir leaves in d1, not the lock it
- *     returned in d0 (see makedir_c; with the dos.library of OS 3.2 d1
- *     holds the lock as well, the test sees it given back) (#496).
  *   - DeviceName$ takes the name from the string space (a3), not from
  *     d0 (#493); the task is read through dol_Task without a check (a
  *     device without a handler task reads near address 0) (#494).
@@ -113,6 +110,10 @@
  *     manual: "If length > bank length, then the length of the bank is
  *     saved instead"); the original wrote that many bytes from the bank's
  *     start, whatever the bank's size (#489).
+ *   - MakeDir unlocks the lock CreateDir returns; the original unlocked
+ *     whatever CreateDir left in d1 (the dos.library of OS 3.2 leaves the
+ *     lock there too, other versions a scratch value: the lock leaked or
+ *     garbage was unlocked) (#496).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -952,30 +953,23 @@ static BB_BOOL BLITZ_ROUTINE bsave2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL
 }
 
 /**
- * @brief MakeDir(dirname$): creates a directory (dos CreateDir).
+ * @brief MakeDir(dirname$): creates a directory (dos CreateDir) and gives
+ * its lock back.
  *
- * The original unlocks with whatever CreateDir leaves in d1 (JSR
- * _CreateDir:TST.l d0:BEQ oops:JSR _UnLock - BUG(orig): not the lock in
- * d0, #496; OS 3.2 leaves the lock in d1 as well).  The NDK inline of
- * CreateDir gives no access to d1 after the call, so the call is inline
- * assembler.
+ * Fixed (#496): the lock CreateDir returns is unlocked; the original
+ * unlocked whatever CreateDir left in d1 (JSR _CreateDir : TST.l d0 :
+ * BEQ oops : JSR _UnLock; OS 3.2 leaves the lock in d1 as well).
  * @param name  d0: dirname$
  * @return d0: -1 if created, 0 if not
  */
 static BB_BOOL BLITZ_ROUTINE makedir_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
-    register ULONG d0 __asm("d0");
-    register ULONG d1 __asm("d1") = (ULONG)name;
-    register struct DosLibrary *a6 __asm("a6") = dos;
+    BPTR lock = CreateDir(name);
 
-    __asm volatile("jsr -120(a6)"
-                   : "=d"(d0), "+d"(d1)
-                   : "a"(a6)
-                   : "a0", "a1", "cc", "memory");
-    if (!d0)
+    if (!lock)
         return BB_FALSE;
-    UnLock((BPTR)d1);
+    UnLock(lock);                               /* fixed (#496) */
     return BB_TRUE;
 }
 

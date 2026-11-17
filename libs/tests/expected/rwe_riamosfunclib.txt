@@ -545,18 +545,23 @@ MakeDir|d0||1	$FFFFFFFF
 MakeDir|d0||2	$00000000
 MakeDir|d0|nodir/sub|1	$00000000
 MakeDir|d0|sub|1	$FFFFFFFF
+MakeDir|d0|sub2 (d1 0 after CreateDir)|1	$FFFFFFFF
 MakeDir|kept||1	kept
 MakeDir|kept||2	kept
 MakeDir|kept|nodir/sub|1	kept
 MakeDir|kept|sub|1	kept
+MakeDir|kept|sub2 (d1 0 after CreateDir)|1	kept
 MakeDir|lock free||1	$00000001
 MakeDir|lock free||2	$00000001
 MakeDir|lock free|nodir/sub|1	$00000000
 MakeDir|lock free|sub|1	$00000001
+MakeDir|lock free|sub2 (d1 0 after CreateDir)|1 [orig]	$00000000
+MakeDir|lock free|sub2 (d1 0 after CreateDir)|1 [fixed #496]	$00000001
 MakeDir|popped||1	$00000000
 MakeDir|popped||2	$00000000
 MakeDir|popped|nodir/sub|1	$00000000
 MakeDir|popped|sub|1	$00000000
+MakeDir|popped|sub2 (d1 0 after CreateDir)|1	$00000000
 Max|d0|-1,1|1	$00000001
 Max|d0|-2147483648,2147483647|1	$7FFFFFFF
 Max|d0|-5,-7|1	$FFFFFFFB

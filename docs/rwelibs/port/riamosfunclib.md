@@ -81,14 +81,9 @@ a2 without changing it (DIFF as in all C ports,
 `docs/libs/cmdlibs-port.md` "General"). The unused `_xorlong` of the
 source (no table entry) is not ported.
 
-Assembler remains in:
-
-* the two inline forms of `GTTagValue` (`BLITZ_INLINE`, copied by the
-  compiler: `MOVE.l #$80080000,d0` / `ADDI.l #$80080000,d0`);
-* the CreateDir call of `MakeDir`: the original unlocks whatever
-  dos.library leaves in **d1**, not the lock in d0 (BUG(orig) below,
-  #496); the
-  NDK inline gives no access to d1 after the call.
+Assembler remains only in the two inline forms of `GTTagValue`
+(`BLITZ_INLINE`, copied by the compiler: `MOVE.l #$80080000,d0` /
+`ADDI.l #$80080000,d0`).
 
 The error check of BLoad (`bloadchk`) is a C function that does nothing:
 the original starts with an RTS; the Lock test behind it and its runtime
@@ -167,6 +162,11 @@ kind F):
   manual says ("If length > bank length, then the length of the bank is
   saved instead"); the original wrote `length` bytes from the bank's
   start, whatever the bank's size (#489).
+* `MakeDir` unlocks the lock CreateDir returns. The original unlocked
+  whatever CreateDir left in d1: the dos.library of OS 3.2 (the
+  emulator's) has the lock there too, other versions a scratch value -
+  the directory's exclusive lock leaked (it could not be deleted or
+  renamed) or garbage was unlocked (#496).
 * `BankLimit n` returns the new number of banks, as `BankLimit` without
   an argument does (the manual's syntax:
   `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
@@ -176,10 +176,6 @@ kind F):
 
 (All in the AB3 binary; in the C file's head too.)
 
-* `MakeDir` unlocks d1 after CreateDir, not the returned lock. The
-  dos.library of OS 3.2 (the emulator's) has the lock in d1 too: the test
-  sees the directory unlocked; other versions may leak it or unlock
-  garbage (#496).
 * `DeviceName$` takes the name from the string space (a3), not from d0;
   a ":" in front of an empty argument (the byte before it) is cleared
   (#493). The task is read through `dol_Task` without a check (a device
@@ -232,7 +228,7 @@ allocation – AllocMem replaced by a failing stub, also for a bank in use –,
 a negative length, NextBank from used/free/limit/-1, FillMem
 on banks, addresses and a free bank, SwapBank used/free, Erase used/free,
 BankLimit get/60/50); MakeDir (new, existing, missing parent, the lock
-given back), FileSize (file, directory, missing), BSave (bank, address
+given back, also with a CreateDir that leaves 0 in d1 - #496), FileSize (file, directory, missing), BSave (bank, address
 with/without length, free bank, bad path), BLoad in all five forms (new
 bank, address, bank, bank in use, length, offset, chip memory; empty and
 missing files, the bank left by a failed open), its error check, Rename,
