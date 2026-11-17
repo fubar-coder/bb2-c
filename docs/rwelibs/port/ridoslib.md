@@ -58,6 +58,12 @@ kind F):
   string expression the next part was written one byte too far
   (`GetPathName("DH0:dir/file")+"x"` held the 0 and lost the `x`)
   (#618).
+* FreeDeviceList does nothing (d0 = 0) without a locked list. The
+  original did not check it: a second call, or one without
+  GetDeviceList, made UnLockDosList release a semaphore once too often
+  (exec's AN_SemCorrupt alert, the semaphore re-initialised) and call
+  Permit once too often, so later Forbid calls of the task had no effect
+  (#623; test `ridoslib-freedevicelist-unchecked-unlock`).
 
 ## BUG(orig)
 
@@ -70,14 +76,8 @@ kind F):
 * RemNotify: no range check either (#626).
 * finit removes the requests from id 63 down only while the counter is
   not 0 (#621).
-* FreeDeviceList does not check that the list is locked (#623): a second
-  call makes UnLockDosList release a semaphore once too often (exec's
-  AN_SemCorrupt alert, the semaphore re-initialised) and call Permit once
-  too often, so later Forbid calls of the task have no effect (also
-  without any GetDeviceList; test `bug_orig_ridoslib_freedevicelist_unchecked_unlock`).
-  It also
-  leaves the current entry: DeviceEntryType then reads an entry of the
-  unlocked list (#622).
+* FreeDeviceList leaves the current entry: DeviceEntryType then reads an
+  entry of the unlocked list (#622).
 * NextDevice without GetDeviceList returns with d0 unchanged (the result
   string's length is whatever d0 was) (#625).
 * GetPathName never looks at the first character: `/abc` and `:x` give

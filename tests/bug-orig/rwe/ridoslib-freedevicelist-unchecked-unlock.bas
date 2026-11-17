@@ -11,6 +11,7 @@
 ; compares TDNestCnt and puts it back, so the system goes on.
 ; Correct: the second FreeDeviceList does nothing: no alert, the Forbid
 ; nest count as before.
+; @fixed #623
 ; @rwe ridoslib
 ; @pass runwrap=@INJECT@|alertlog
 DEFTYPE .l

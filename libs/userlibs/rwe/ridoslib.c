@@ -40,12 +40,8 @@
  *   - RemNotify: no range check either (#626).
  *   - finit removes the requests from id 63 down only while the counter
  *     is not 0 (#621).
- *   - FreeDeviceList does not check that the list is locked (#623):
- *     UnLockDosList releases a semaphore once too often (exec's
- *     AN_SemCorrupt alert) and always calls Permit, so the task's Forbid
- *     count goes negative (also without GetDeviceList); and it
- *     leaves the current entry: DeviceEntryType then reads the entry of
- *     the unlocked list (#622).
+ *   - FreeDeviceList leaves the current entry: DeviceEntryType then
+ *     reads the entry of the unlocked list (#622).
  *   - NextDevice without GetDeviceList returns with d0 unchanged (the
  *     result string's length is whatever d0 was) (#625).
  *   - GetPathName never looks at the first character: "/abc" and ":x"
@@ -56,6 +52,11 @@
  * Fixed (intended deviation, #618): NextDevice and GetPathName copied
  * their result with its 0 and left a3 behind the 0, so a string
  * expression went on one byte too far; a3 now ends on the 0.
+ * Fixed (intended deviation, #623): FreeDeviceList did not check that
+ * the list is locked: a second call, or one without GetDeviceList, made
+ * UnLockDosList release a semaphore once too often (exec's AN_SemCorrupt
+ * alert) and call Permit once too often, so the task's Forbid count went
+ * negative.  Without a locked list it now does nothing (d0 = 0).
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -501,19 +502,23 @@ static ULONG BLITZ_ROUTINE dosentrytype_c(void)
 /**
  * @brief FreeDeviceList: unlocks the DOS device list (UnLockDosList).
  *
- * BUG(orig) (#623): it does not check that the list is locked
- * (UnLockDosList releases the semaphore once too often and always calls
- * Permit); the current entry stays (#622).
+ * Only a list that GetDeviceList locked is unlocked (fixed, #623: the
+ * original did not check it, and UnLockDosList released the semaphore
+ * once too often and called Permit once too often).  BUG(orig) (#622):
+ * the current entry stays.
  * @param incoming  d0: the caller's d0
  * @param dos       a6: the program's dos base (the original goes through
  *                  init's _dosbase: the same pointer)
- * @return d0: -1, the caller's d0 without _dosbase
+ * @return d0: -1, 0 without a locked list, the caller's d0 without
+ *         _dosbase
  */
 static ULONG BLITZ_ROUTINE unlockdoslist_c(ULONG incoming BL_REG(d0),
                                            struct DosLibrary *dos BL_REG(a6))
 {
     if (!dosbase_)
         return incoming;
+    if (!mydoslist)
+        return 0;                                       /* fixed (#623) */
     UnLockDosList(doslistflags);
     mydoslist = NULL;
     return (ULONG)-1;
