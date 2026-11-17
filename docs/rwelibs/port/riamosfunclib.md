@@ -172,6 +172,10 @@ kind F):
   argument's 0 also for an empty argument: that byte belongs to the part
   of the string expression in front, and a ":" there was cleared
   (`"X:"+DeviceName$("")` gave "X" and a 0) (#493).
+* `DeviceName$` returns "" for a DosList entry without a handler
+  (`dol_Task` 0, or no task or task name behind it); the original read
+  through `dol_Task` without a check: the long at address 16 as the task,
+  and whatever string its name pointer led to (#494).
 * `BankLimit n` returns the new number of banks, as `BankLimit` without
   an argument does (the manual's syntax:
   `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
@@ -181,8 +185,6 @@ kind F):
 
 (All in the AB3 binary; in the C file's head too.)
 
-* `DeviceName$` reads the task through `dol_Task` without a check (a
-  device without a handler task reads near address 0) (#494).
 * `SaveExec`: a file it cannot create returns the file name's address; an
   empty list (first pointer 0) leaves the file open with only the header
   (#501); the header gets one size slot (first = last = 0), there is one

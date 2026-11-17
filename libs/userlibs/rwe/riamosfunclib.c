@@ -41,8 +41,6 @@
  * compiler).
  *
  * BUG(orig), kept:
- *   - DeviceName$ reads the task through dol_Task without a check (a
- *     device without a handler task reads near address 0) (#494).
  *   - SaveExec: a file it cannot create returns the file name's address;
  *     an empty list (first pointer 0) leaves the file open with only the
  *     header in it (#501); the header gets one size slot (last hunk = 0),
@@ -118,6 +116,10 @@
  *     argument's 0 also for an empty one and cleared a ":" of the part
  *     of the string expression in front ("X:"+DeviceName$("") gave "X"
  *     and a 0) (#493).
+ *   - DeviceName$ returns "" for an entry without a handler (dol_Task,
+ *     its task or the task's name 0); the original read through
+ *     dol_Task without a check (the long at address 16 as the task, and
+ *     the string that leads to) (#494).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -1056,8 +1058,9 @@ static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0))
  * The name is taken from the string space (a3), not from d0 (the same
  * string in compiled code).  Fixed (#493): the ":" test only for an
  * argument that is not empty; the original tested -2(a3) also for an
- * empty one, a byte of the expression in front.  BUG(orig): the task is
- * read through dol_Task without a check (#494).
+ * empty one, a byte of the expression in front.  Fixed (#494): "" for
+ * an entry without a handler task (or name); the original read through
+ * dol_Task without a check.
  * @param lens  a2: the argument stack, the argument's length at -4(a2)
  * @return d0: the length of the name, 0 ("") if not found
  */
@@ -1078,9 +1081,11 @@ static ULONG BLITZ_ROUTINE getdevname_c(const ULONG *lens BL_REG(a2))
         return 0;
     dl = FindDosEntry(dl, blitz_string, LDF_DEVICES | LDF_VOLUMES);
     UnLockDosList(LDF_READ | LDF_DEVICES | LDF_VOLUMES);
-    if (!dl)
-        return 0;
+    if (!dl || !dl->dol_Task || !dl->dol_Task->mp_SigTask)
+        return 0;                               /* fixed (#494): no handler */
     s = (const UBYTE *)((struct Task *)dl->dol_Task->mp_SigTask)->tc_Node.ln_Name;
+    if (!s)
+        return 0;
     do
         n++;
     while ((*blitz_string++ = *s++) != 0);
