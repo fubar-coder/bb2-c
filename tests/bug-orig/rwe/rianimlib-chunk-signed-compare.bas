@@ -11,6 +11,9 @@
 ; addresses, so it is only reported as wrong).
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
+; The walk is silent for about 6 s alone and up to 10 s under load (more
+; than BUG_ORIG_RUN_HANG_AFTER):
+; @pass hang_after=30
 ; @pass file=anim|@TESTDATA@/rianimlib-chunk-signed-compare.anim
 DEFTYPE .l
 a=AllocMem_(4096,$10005)
