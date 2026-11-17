@@ -4,6 +4,7 @@
 ; remembered.  The program makes 0 its current directory first (dos
 ; CurrentDir) and restores its own at the end.
 ; Correct: ChangeDir succeeds (-1), RAM: is the current directory.
+; @fixed #490
 ; @rwe riamosfunclib
 DEFTYPE .l
 o=CurrentDir_(0)

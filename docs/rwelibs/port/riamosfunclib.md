@@ -131,6 +131,11 @@ kind F):
   bank's length, `Erase -1` freed it with memlib's header long as the
   size), and `Reserve(bank,…)` did not compare at all: a bank ≥ maxbanks
   wrote behind the start table and over another bank's start (#484).
+* `ChangeDir` does not test CurrentDir's result, the previous current
+  directory, which may be 0 (the boot volume's root): the new lock is
+  remembered and the result is -1. The original returned 0 when the
+  previous directory was 0, with the new lock already current but not
+  remembered (never unlocked) (#490).
 
 ## BUG(orig), kept
 
@@ -154,8 +159,7 @@ kind F):
 * `ChangeDir` keeps no copy of the program's own current directory:
   finit and BankLimit unlock the last ChangeDir lock while it is still the
   current directory, and do not clear it (a second finit or BankLimit, or
-  the next ChangeDir, unlocks it again) (#491). If CurrentDir returns 0,
-  the new lock is current but not remembered and the result is 0 (#490).
+  the next ChangeDir, unlocks it again) (#491).
 * `BankLimit n` returns the address of the new start table (init's d0)
   (#483).
 * `DeviceName$` takes the name from the string space (a3), not from d0;
@@ -217,7 +221,8 @@ the tables (the original writes outside the test's memory; the bug-orig
 test `riamosfunclib-bank-range`); BankLimit 0 or above 65536 (the
 bug-orig test `riamosfunclib-eraseall-dbra`); a
 ChangeDir lock that is current at finit/BankLimit (the test restores the
-directory first); CurrentDir returning 0.
+directory first); CurrentDir returning 0 (the bug-orig test
+`riamosfunclib-changedir-currentdir-0`).
 
 **Loader pitfall:** sysload resolves an ALibJsr placeholder to the table
 address with bit 0 (Amiga mode only) set; the compiler instead makes a

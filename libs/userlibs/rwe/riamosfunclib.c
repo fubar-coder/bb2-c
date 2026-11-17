@@ -58,8 +58,7 @@
  *     finit (and BankLimit) unlock the last ChangeDir lock while it is
  *     still the current directory, without clearing oldlock (a second
  *     finit or BankLimit, or the next ChangeDir, unlocks it again)
- *     (#491).  If CurrentDir returns 0, the new lock is current but not
- *     remembered and the result is 0 (#490).
+ *     (#491).
  *   - BankLimit returns the address of the new start table (init's d0)
  *     (#483).
  *   - DeviceName$ takes the name from the string space (a3), not from
@@ -95,6 +94,10 @@
  *     address.  The original compared signed (a negative bank indexed
  *     before the tables) and Reserve(bank,...) not at all (a bank >=
  *     maxbanks wrote behind the start table) (#484).
+ *   - ChangeDir does not test CurrentDir's result (the previous current
+ *     directory, which may be 0): the new lock is remembered and the
+ *     result is -1; the original returned 0 for a previous directory 0
+ *     with the new lock already current and not remembered (#490).
  *   - Reserve(length) returns -1 for a negative length, as for its other
  *     failures; the original returned 0, the number of the first bank
  *     (#500).
@@ -946,8 +949,9 @@ static ULONG BLITZ_ROUTINE rename_c(CONST_STRPTR from BL_REG(d0), CONST_STRPTR t
  * The previous ChangeDir lock is unlocked (AmiBlitz3: MOVE.L oldlock -
  * func-library7 and BSS2 tested and unlocked the word MOVE oldlock,d1
  * left in d1).  BUG(orig): the program's own current directory is not
- * kept (#491); if CurrentDir returns 0 the new lock is current but not
- * remembered, the result 0 (#490).
+ * kept (#491).  Fixed (#490): CurrentDir's result is not tested (0 is a
+ * valid current directory); the original returned 0 for it, with the
+ * new lock current but not remembered.
  * @param name  d0: dir$
  * @return d0: -1 if changed, 0 if not
  */
@@ -958,8 +962,7 @@ static BB_BOOL BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
 
     if (!lock)
         return BB_FALSE;
-    if (!CurrentDir(lock))
-        return BB_FALSE;                        /* BUG(orig), see the head (#490) */
+    CurrentDir(lock);                           /* fixed (#490): not tested */
     if (oldlock)
         UnLock(oldlock);
     oldlock = lock;

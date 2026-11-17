@@ -45,7 +45,8 @@
  * writes outside the test's memory; BankLimit 0 or above 65536; a
  * ChangeDir before BankLimit/finit while
  * its lock is current (BUG(orig) #491: unlocked while in use - the test
- * restores the directory first); CurrentDir returning 0.
+ * restores the directory first); CurrentDir returning 0 (the bug-orig
+ * test riamosfunclib-changedir-currentdir-0, #490).
  */
 #include "rwecmp.h"
 #include "amosfunc.h"
