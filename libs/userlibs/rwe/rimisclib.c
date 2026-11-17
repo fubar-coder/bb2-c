@@ -36,8 +36,6 @@
  * inlines.
  *
  * BUG(orig), kept:
- *   - NextArgChar$ does not check the parse pointer: before InitArgParse
- *     and after NextArg$ came to the end it reads from address 0 (#754).
  *   - Neither EZRequest form with arguments limits them (16 longs)
  *     (#748).
  *   - EZRequestArgs without arguments reads one type word from a2 (the
@@ -45,6 +43,9 @@
  *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare)
  *     (#753).
  *
+ * Fixed (intended deviation, #754): NextArgChar$ before InitArgParse and
+ * after NextArg$ came to the end gives "", as NextArg$ does; the original
+ * did not check the parse pointer and read from address 0.
  * Fixed (intended deviation, #744): ASCRaw of a raw key outside 0..113
  * (a key up code, a negative value) gives the character 0, RawASC of a
  * character not in the table and of "" gives -1.  The original did not
@@ -765,9 +766,9 @@ endthis:
  * @brief NextArgChar$ char: the InitArgParse string up to a character.
  *
  * Everything up to char (or the end) to a3, without a 0; the parse
- * position goes behind char.  BUG(orig) (#754): the parse pointer is not
- * checked: before InitArgParse and after NextArg$ came to the end it
- * reads from address 0.
+ * position goes behind char.  Before InitArgParse and after NextArg$
+ * came to the end the result is "", as NextArg$'s.  Fixed (#754): the
+ * original did not check the parse pointer and read from address 0.
  * @param ch  d0.b: the character
  * @return d0: the length
  */
@@ -776,6 +777,8 @@ static ULONG BLITZ_ROUTINE nextparseuntilchar_c(UBYTE ch BL_REG(d0))
     UBYTE *pos = curadr, c;
     ULONG n = 0;
 
+    if (!pos)
+        return 0;                                       /* fixed (#754) */
     for (;;) {
         c = *pos++;
         if (!c) {

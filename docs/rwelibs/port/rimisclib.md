@@ -159,11 +159,13 @@ kind F):
   (`_ltos`, `_fromblitz` ..., partly relocated addresses), RawASC
   searched on behind it until it found the byte somewhere, or for ever,
   and found "" (its 0) at 14 (#744).
+* NextArgChar$ before InitArgParse and after NextArg$ came to the end
+  gives "", as NextArg$ does; the original did not check the parse
+  pointer and read from address 0 on (an empty result only while the
+  long at 0 is 0) (#754).
 
 ## BUG(orig)
 
-* NextArgChar$ does not check the parse pointer: before InitArgParse and
-  after NextArg$ came to the end it reads from address 0 (#754).
 * Neither EZRequest form with arguments limits the number of
   arguments (16 longs, the original overwrites code behind them) (#748),
   and EZRequestArgs without an argument reads one type word from a2 (the
@@ -218,7 +220,8 @@ EZSeparator `,`, `""` and `|`, the stale end of the format text;
 Flip$ with 2..250 characters and with 0 and 1 (a 140 KB buffer each);
 InitArgParse/NextArg$/NextArgChar$ on 21 lines (spaces, quotes, `""`,
 unterminated quotes, separators, mixed), also before InitArgParse and
-after the end (address 0); ProgPath$/ProgDir$/ProgName$ (normal, no
+after the end (address 0; once with "xy" at address 0 for the call,
+under Disable); ProgPath$/ProgDir$/ProgName$ (normal, no
 program name: the task name, no program dir: the current directory);
 FromBlitz with 9 task names; LtoS; ASCRaw over the whole table; RawASC
 for every character of the table (its 0 is "": -1 in the C build); in

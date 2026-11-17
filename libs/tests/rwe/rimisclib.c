@@ -29,7 +29,8 @@
  * (the original, fixed #747); Flip$ with 2..250 characters and with 0 and 1 (the original:
  * 65536 swaps, in a big buffer); InitArgParse/NextArg$/NextArgChar$ on
  * many lines (spaces, quotes, "", unterminated quotes, separators), both
- * before InitArgParse and after the end (address 0); ProgPath$/ProgDir$/
+ * before InitArgParse and after the end (address 0; once with "xy" there,
+ * #754); ProgPath$/ProgDir$/
  * ProgName$ (normal, no program name: the task name, no program dir: the
  * current dir); FromBlitz with several task names; LtoS; ASCRaw for the
  * whole table; RawASC for every character of the table (its 0, i.e. "":
@@ -554,6 +555,41 @@ static void nextchar(UWORD c, int n)
     }
 }
 
+/* NextArgChar$ with the bytes "xy",0 at address 0 for the call (the
+   address through a volatile: no null pointer the compiler can see) */
+static volatile ULONG address0;
+
+static void nextchar0(UWORD c)
+{
+    volatile UBYTE *zero = (volatile UBYTE *)address0;
+    APTR fn_ = ENT(LIB, E_NEXTCHAR, 0);
+    UBYTE save[3];
+    int k;
+
+    ROUT = "NextArgChar$";
+    markregs(&R);
+    NARGS = 0;
+    RESSETUP();
+    R.d[0] = 0x55550000UL | c;
+    IN = R;
+    if (!fn_) {
+        check("entry missing", FALSE);
+        return;
+    }
+    Disable();
+    for (k = 0; k < 3; k++)
+        save[k] = zero[k];
+    zero[0] = 'x';
+    zero[1] = 'y';
+    zero[2] = 0;
+    CCR = callstk(fn_, &R, ARGS, NARGS, &POP);
+    for (k = 0; k < 3; k++)
+        zero[k] = save[k];
+    Enable();
+    preserve();
+    STRRES();
+}
+
 static void parseinit(const char *s)
 {
     ROUT = "InitArgParse";
@@ -589,6 +625,15 @@ static void parsing(void)
     nextchar('=', 1);
     nextchar(';', 1);
     nextchar(0x113d, 2);                /* the low byte '=' counts */
+    /* after the end with "xy" at address 0 (#754): the original copies it
+       and goes on parsing from address 2; the call under Disable, the
+       bytes at 0 restored (a DO1 of its own) */
+    parseinit("a");
+    nextarg(2);
+    strcpy(VEC, "after the end, \"xy\" at address 0");
+    nextchar0(',');
+    nextchar(',', 1);
+    nextarg(1);
 }
 
 /* ----------------------------------------------- ProgPath$, FromBlitz */

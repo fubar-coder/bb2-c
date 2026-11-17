@@ -1789,6 +1789,7 @@ InitArgParse|kept|''|1	kept
 InitArgParse|kept|'LOAD "Blitz2:" TEST'|1	kept
 InitArgParse|kept|'a b,c d'|1	kept
 InitArgParse|kept|'a"b c"d e'|1	kept
+InitArgParse|kept|'a'|1	kept
 InitArgParse|kept|'one two  three '|1	kept
 InitArgParse|kept|'one'|1	kept
 InitArgParse|kept|'one,two,,three'|1	kept
@@ -1810,6 +1811,7 @@ InitArgParse|popped|''|1	$00000000
 InitArgParse|popped|'LOAD "Blitz2:" TEST'|1	$00000000
 InitArgParse|popped|'a b,c d'|1	$00000000
 InitArgParse|popped|'a"b c"d e'|1	$00000000
+InitArgParse|popped|'a'|1	$00000000
 InitArgParse|popped|'one two  three '|1	$00000000
 InitArgParse|popped|'one'|1	$00000000
 InitArgParse|popped|'one,two,,three'|1	$00000000
@@ -1982,6 +1984,8 @@ NextArg$|a3|'a"b c"d e'|3	$00000005
 NextArg$|a3|'a"b c"d e'|4	$00000004
 NextArg$|a3|'a"b c"d e'|5	$00000004
 NextArg$|a3|'a"b c"d e'|6	$00000004
+NextArg$|a3|'a'|1	$00000005
+NextArg$|a3|'a'|2	$00000004
 NextArg$|a3|'one two  three '|1	$00000007
 NextArg$|a3|'one two  three '|2	$00000007
 NextArg$|a3|'one two  three '|3	$00000009
@@ -2000,6 +2004,7 @@ NextArg$|a3|'tab\there x'|3	$00000004
 NextArg$|a3|'tab\there x'|4	$00000004
 NextArg$|a3|'tab\there x'|5	$00000004
 NextArg$|a3|'tab\there x'|6	$00000004
+NextArg$|a3|after the end, "xy" at address 0|1	$00000004
 NextArg$|a3|before InitArgParse|1	$00000004
 NextArg$|d0|'   lead'|1	$00000004
 NextArg$|d0|'   lead'|2	$00000000
@@ -2098,6 +2103,8 @@ NextArg$|d0|'a"b c"d e'|3	$00000001
 NextArg$|d0|'a"b c"d e'|4	$00000000
 NextArg$|d0|'a"b c"d e'|5	$00000000
 NextArg$|d0|'a"b c"d e'|6	$00000000
+NextArg$|d0|'a'|1	$00000001
+NextArg$|d0|'a'|2	$00000000
 NextArg$|d0|'one two  three '|1	$00000003
 NextArg$|d0|'one two  three '|2	$00000003
 NextArg$|d0|'one two  three '|3	$00000005
@@ -2116,6 +2123,7 @@ NextArg$|d0|'tab\there x'|3	$00000000
 NextArg$|d0|'tab\there x'|4	$00000000
 NextArg$|d0|'tab\there x'|5	$00000000
 NextArg$|d0|'tab\there x'|6	$00000000
+NextArg$|d0|after the end, "xy" at address 0|1	$00000000
 NextArg$|d0|before InitArgParse|1	$00000000
 NextArg$|kept|'   lead'|1	kept
 NextArg$|kept|'   lead'|2	kept
@@ -2211,6 +2219,8 @@ NextArg$|kept|'a"b c"d e'|3	kept
 NextArg$|kept|'a"b c"d e'|4	kept
 NextArg$|kept|'a"b c"d e'|5	kept
 NextArg$|kept|'a"b c"d e'|6	kept
+NextArg$|kept|'a'|1	kept
+NextArg$|kept|'a'|2	kept
 NextArg$|kept|'one two  three '|1	kept
 NextArg$|kept|'one two  three '|2	kept
 NextArg$|kept|'one two  three '|3	kept
@@ -2229,6 +2239,7 @@ NextArg$|kept|'tab\there x'|3	kept
 NextArg$|kept|'tab\there x'|4	kept
 NextArg$|kept|'tab\there x'|5	kept
 NextArg$|kept|'tab\there x'|6	kept
+NextArg$|kept|after the end, "xy" at address 0|1	kept
 NextArg$|kept|before InitArgParse|1	kept
 NextArg$|out|'   lead'|1	bytes 400 fnv 2440879F
 NextArg$|out|'   lead'|2	bytes 400 fnv FC2BB505
@@ -2327,6 +2338,8 @@ NextArg$|out|'a"b c"d e'|3	bytes 400 fnv 0D63FBC6
 NextArg$|out|'a"b c"d e'|4	bytes 400 fnv FC2BB505
 NextArg$|out|'a"b c"d e'|5	bytes 400 fnv FC2BB505
 NextArg$|out|'a"b c"d e'|6	bytes 400 fnv FC2BB505
+NextArg$|out|'a'|1	bytes 400 fnv 34B9DD22
+NextArg$|out|'a'|2	bytes 400 fnv FC2BB505
 NextArg$|out|'one two  three '|1	bytes 400 fnv 2355CFC3
 NextArg$|out|'one two  three '|2	bytes 400 fnv 6DFCBA35
 NextArg$|out|'one two  three '|3	bytes 400 fnv 06BC1BAF
@@ -2345,6 +2358,7 @@ NextArg$|out|'tab\there x'|3	bytes 400 fnv FC2BB505
 NextArg$|out|'tab\there x'|4	bytes 400 fnv FC2BB505
 NextArg$|out|'tab\there x'|5	bytes 400 fnv FC2BB505
 NextArg$|out|'tab\there x'|6	bytes 400 fnv FC2BB505
+NextArg$|out|after the end, "xy" at address 0|1	bytes 400 fnv FC2BB505
 NextArg$|out|before InitArgParse|1	bytes 400 fnv FC2BB505
 NextArg$|popped|'   lead'|1	$00000000
 NextArg$|popped|'   lead'|2	$00000000
@@ -2440,6 +2454,8 @@ NextArg$|popped|'a"b c"d e'|3	$00000000
 NextArg$|popped|'a"b c"d e'|4	$00000000
 NextArg$|popped|'a"b c"d e'|5	$00000000
 NextArg$|popped|'a"b c"d e'|6	$00000000
+NextArg$|popped|'a'|1	$00000000
+NextArg$|popped|'a'|2	$00000000
 NextArg$|popped|'one two  three '|1	$00000000
 NextArg$|popped|'one two  three '|2	$00000000
 NextArg$|popped|'one two  three '|3	$00000000
@@ -2458,6 +2474,7 @@ NextArg$|popped|'tab\there x'|3	$00000000
 NextArg$|popped|'tab\there x'|4	$00000000
 NextArg$|popped|'tab\there x'|5	$00000000
 NextArg$|popped|'tab\there x'|6	$00000000
+NextArg$|popped|after the end, "xy" at address 0|1	$00000000
 NextArg$|popped|before InitArgParse|1	$00000000
 NextArgChar$|a3|'a b,c d'|1	$00000005
 NextArgChar$|a3|'a b,c d'|2	$00000004
@@ -2471,6 +2488,9 @@ NextArgChar$|a3|'x=1;y=2'|1	$00000005
 NextArgChar$|a3|'x=1;y=2'|2	$00000005
 NextArgChar$|a3|'x=1;y=2'|3	$00000005
 NextArgChar$|a3|'x=1;y=2'|4	$00000005
+NextArgChar$|a3|after the end, "xy" at address 0|1 [orig]	$00000006
+NextArgChar$|a3|after the end, "xy" at address 0|1 [fixed #754]	$00000004
+NextArgChar$|a3|after the end, "xy" at address 0|2	$00000004
 NextArgChar$|a3|before InitArgParse|1	$00000004
 NextArgChar$|d0|'a b,c d'|1	$00000001
 NextArgChar$|d0|'a b,c d'|2	$00000000
@@ -2484,6 +2504,9 @@ NextArgChar$|d0|'x=1;y=2'|1	$00000001
 NextArgChar$|d0|'x=1;y=2'|2	$00000001
 NextArgChar$|d0|'x=1;y=2'|3	$00000001
 NextArgChar$|d0|'x=1;y=2'|4	$00000001
+NextArgChar$|d0|after the end, "xy" at address 0|1 [orig]	$00000002
+NextArgChar$|d0|after the end, "xy" at address 0|1 [fixed #754]	$00000000
+NextArgChar$|d0|after the end, "xy" at address 0|2	$00000000
 NextArgChar$|d0|before InitArgParse|1	$00000000
 NextArgChar$|kept|'a b,c d'|1	kept
 NextArgChar$|kept|'a b,c d'|2	kept
@@ -2497,6 +2520,8 @@ NextArgChar$|kept|'x=1;y=2'|1	kept
 NextArgChar$|kept|'x=1;y=2'|2	kept
 NextArgChar$|kept|'x=1;y=2'|3	kept
 NextArgChar$|kept|'x=1;y=2'|4	kept
+NextArgChar$|kept|after the end, "xy" at address 0|1	kept
+NextArgChar$|kept|after the end, "xy" at address 0|2	kept
 NextArgChar$|kept|before InitArgParse|1	kept
 NextArgChar$|out|'a b,c d'|1	bytes 400 fnv C872B429
 NextArgChar$|out|'a b,c d'|2	bytes 400 fnv FC2BB505
@@ -2510,6 +2535,9 @@ NextArgChar$|out|'x=1;y=2'|1	bytes 400 fnv D4AAFE93
 NextArgChar$|out|'x=1;y=2'|2	bytes 400 fnv 77A97452
 NextArgChar$|out|'x=1;y=2'|3	bytes 400 fnv 6D760B6A
 NextArgChar$|out|'x=1;y=2'|4	bytes 400 fnv B781E499
+NextArgChar$|out|after the end, "xy" at address 0|1 [orig]	bytes 400 fnv F1F93356
+NextArgChar$|out|after the end, "xy" at address 0|1 [fixed #754]	bytes 400 fnv FC2BB505
+NextArgChar$|out|after the end, "xy" at address 0|2	bytes 400 fnv FC2BB505
 NextArgChar$|out|before InitArgParse|1	bytes 400 fnv FC2BB505
 NextArgChar$|popped|'a b,c d'|1	$00000000
 NextArgChar$|popped|'a b,c d'|2	$00000000
@@ -2523,6 +2551,8 @@ NextArgChar$|popped|'x=1;y=2'|1	$00000000
 NextArgChar$|popped|'x=1;y=2'|2	$00000000
 NextArgChar$|popped|'x=1;y=2'|3	$00000000
 NextArgChar$|popped|'x=1;y=2'|4	$00000000
+NextArgChar$|popped|after the end, "xy" at address 0|1	$00000000
+NextArgChar$|popped|after the end, "xy" at address 0|2	$00000000
 NextArgChar$|popped|before InitArgParse|1	$00000000
 OpenFontPrefs|d0|PRHD of 10 bytes, longer file|1	$FFFFFFFF
 OpenFontPrefs|d0|bad FONT|1	$00000000
