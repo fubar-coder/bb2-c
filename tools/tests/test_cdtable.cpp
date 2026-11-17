@@ -1,14 +1,17 @@
-/*
- * test_cdtable.c - the CD result table written from a fresh run with
- * tables built in memory: a kept note, a dropped note (the port's result is
- * the CD's again), another executable of the same compile result (kept as the
- * CD's, counted: OpenSpec change originals-compare-outputs), a changed
- * compile result without a note, the reference mode keeping the port's row,
- * notes naming an error of the CD's compiler, and the broken inputs (stale note, note row missing, note without the CD's result, a
- * malformed error part, malformed tables).
- */
-#include "testutil.h"
+// test_cdtable - the CD result table written from a fresh run with
+// tables built in memory: a kept note, a dropped note (the port's result is
+// the CD's again), another executable of the same compile result (kept as the
+// CD's, counted: OpenSpec change originals-compare-outputs), a changed
+// compile result without a note, the reference mode keeping the port's row,
+// notes naming an error of the CD's compiler, and the broken inputs (stale note, note row missing, note without the CD's result, a
+// malformed error part, malformed tables).
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "cdtable.h"
+}
 
 #define HDR "path\tresult\tline\tmessage\tsize\tsha256_masked\txtra\tnote\n"
 #define H_CD   "3dcc3460e058bbf12447e463f2d24d8738c3cc35353625c0d265d37733e016d6"
@@ -33,7 +36,7 @@ static int run(enum cdtable_mode mode, const char *fresh, const char *old)
     return rc;
 }
 
-static void test_note_ref(void)
+TEST_CASE("cdtable: note ref", "[cdtable]")
 {
     char h[CDTABLE_REF_MAX];
 
@@ -67,7 +70,7 @@ static void test_note_ref(void)
     CHECK(cdtable_note_ref("#969: (2.10: 12)", h) == -1);
 }
 
-static void test_update(void)
+TEST_CASE("cdtable: update", "[cdtable]")
 {
     const char *old = HDR
         "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
@@ -170,7 +173,7 @@ static void test_update(void)
     CHECK(!strstr(out, "A.BB2") && strstr(out, "B.BB2"));
 }
 
-static void test_reference(void)
+TEST_CASE("cdtable: reference", "[cdtable]")
 {
     const char *old = HDR
         "A.BB2\tok\t\t\t100\t" H_B "\town\t\n"
@@ -200,7 +203,7 @@ static void test_reference(void)
 
 /* a source the CD's compiler refuses and the port refuses at another line
  * (#940: BALLBLITZ.BB2), and a source the CD compiles and the port refuses */
-static void test_error_note(void)
+TEST_CASE("cdtable: error note", "[cdtable]")
 {
     const char *old = HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n" PORT_ERR ENOTE "\n";
     const char *cdtab = HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n" CD_ERR "\n";
@@ -259,7 +262,7 @@ static void test_error_note(void)
           && strstr(rep, "Q.BB2: note dropped"));
 }
 
-static void test_broken(void)
+TEST_CASE("cdtable: broken", "[cdtable]")
 {
     const char *old = HDR "Q.BB2\tok\t\t\t219116\t" H_PORT "\town\t" NOTE "\n";
     const char *plain = HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\n";
@@ -294,16 +297,7 @@ static void test_broken(void)
               HDR "A.BB2\tok\t\t\t100\t" H_B "\town\t\nA.BB2\tok\t\t\t100\t" H_B "\town\t\n") == 1);
     CHECK(strstr(rep, "A.BB2: twice"));
     CHECK(run(CDTABLE_UPDATE, "", plain) == 1 && strstr(rep, "empty"));
-}
-
-int main(void)
-{
-    test_note_ref();
-    test_update();
-    test_reference();
-    test_error_note();
-    test_broken();
     free(out);
     free(rep);
-    return failures != 0;
+    out = rep = nullptr;
 }

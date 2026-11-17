@@ -8,7 +8,7 @@ listing of a reference build (`listing-map`, `listing-labels`,
 `listing-verify`). The logic is in `tools/lib/asmcmp`,
 `tools/lib/checklabels`, `tools/lib/checkdata` and `tools/lib/vasmlisting`,
 tested by `tools/tests/test_asmcmp.cpp`, `test_checklabels.cpp`,
-`test_checkdata.c` and `test_vasmlisting.cpp`. The checks in the build are
+`test_checkdata.cpp` and `test_vasmlisting.cpp`. The checks in the build are
 listed in `docs/development.md`, "Checks in the build"; the intended
 differences of `data` and the rule of `asm` in "Intended differences".
 

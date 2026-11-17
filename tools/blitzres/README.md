@@ -6,7 +6,7 @@ prints the contents of any resident (`dump`), and writes the constants of
 a resident as Blitz source (`source`), from which *Create Resident* makes
 the same resident. It makes the residents of the RWE reference build from
 the toolchain's NDK (`docs/rwelibs/README.md`). The logic is
-`tools/lib/blitzres` (`blitzres.h`), tested by `tools/tests/test_blitzres.c`;
+`tools/lib/blitzres` (`blitzres.h`), tested by `tools/tests/test_blitzres.cpp`;
 the format: `docs/formats.md` §2.
 
 ## Usage

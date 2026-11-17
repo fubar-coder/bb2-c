@@ -205,7 +205,7 @@ add_test(NAME biglib_check_clash COMMAND ${BLITZLIB} numbers ${BLITZ2_DIR}/acidl
 	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj)
 set_tests_properties(biglib_check_clash PROPERTIES WILL_FAIL TRUE)
 # the reservation of libraries 32 and 33 (#1018; blitzlib_reserved,
-# tools/tests/test_blitzlib.c with libraries in memory): literallib once
+# tools/tests/test_blitzlib.cpp with libraries in memory): literallib once
 # passes (the build step), twice is a clash; RIDosLib (33, rwe-1999) is
 # refused without --allow-33 by check and numbers, and passes with it
 add_test(NAME blitzlib_literallib_twice COMMAND ${BLITZLIB} numbers ${BLITZ2_DIR}/acidlibs

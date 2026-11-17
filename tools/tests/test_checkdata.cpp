@@ -1,14 +1,16 @@
-/*
- * test_checkdata.c - checkdata: the table, equal and differing bytes,
- * relocated longs of the reference skipped, zeros behind the initialised
- * part and in BSS, missing symbols and labels; the list of intended
- * differences (programs/ted/checkdata-intended.txt): correct, stale, an
- * unlisted difference, broken lists; the reference data
- * (tests/data/ted-checkdata.txt): written and read again, broken data.
- */
-#define _XOPEN_SOURCE 700       /* open_memstream */
-#include "testutil.h"
+// test_checkdata - checkdata: the table, equal and differing bytes,
+// relocated longs of the reference skipped, zeros behind the initialised
+// part and in BSS, missing symbols and labels; the list of intended
+// differences (programs/ted/checkdata-intended.txt): correct, stale, an
+// unlisted difference, broken lists; the reference data
+// (tests/data/ted-checkdata.txt): written and read again, broken data.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "checkdata.h"
+}
 
 /* parse reference data; 0 = ok, -1 = error (message in err) */
 static int ref_parse(const char *text, char *err, size_t len)
@@ -26,8 +28,9 @@ static int ref_parse(const char *text, char *err, size_t len)
 static const uint8_t refcode[12] = { 'A', 'B', 'C', 'D', 'E', 'F', 0, 0, 1, 2, 3, 4 };
 static uint32_t refreloc = 8, reftarget = 0;
 
+static char n_abcd[] = "abcd", n_ef[] = "ef", n_efend[] = "efend", n_ptr[] = "ptr";
 static struct listing_symbol labels[] = {
-    { "abcd", 0 }, { "ef", 4 }, { "efend", 8 }, { "ptr", 8 },
+    { n_abcd, 0 }, { n_ef, 4 }, { n_efend, 8 }, { n_ptr, 8 },
 };
 
 /* the checks of table, with the intended differences of intended (NULL:
@@ -100,7 +103,7 @@ static int run(const char *table, const uint8_t *cdata, uint32_t csize, char *ms
     return run_intended(table, NULL, cdata, csize, msg, len);
 }
 
-int main(void)
+TEST_CASE("checkdata: checks", "[checkdata]")
 {
     /* C data: ABCD, EF (only 6 bytes initialised: zeros behind), then the
        pointer at 6 with other bytes than the reference */
@@ -240,5 +243,4 @@ int main(void)
         checkdata_ref_free(&r);
         checkdata_table_free(&t);
     }
-    return failures != 0;
 }

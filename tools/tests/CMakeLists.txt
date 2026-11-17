@@ -1,7 +1,6 @@
 # tests of lib/, with inputs built in memory (testutil.h; testutil.hpp in the
 # snitch programs)
-foreach(t blitzlib blitztokens amiga_emulation checkdata bb22 blitzres teststats tedfont
-		covmap covsel hdf cmdref cdtable corpusexpect bugorigcmp perfbudget)
+foreach(t amiga_emulation teststats covmap covsel hdf corpusexpect perfbudget)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
 	target_compile_options(test_${t} PRIVATE -Wno-unused-function)
@@ -10,7 +9,8 @@ endforeach()
 
 # the same for the tests converted to snitch programs (C++20), one per file
 foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata bblines
-		bbdetok statline outmatch oracletable prevcmp previntended epcheck)
+		bbdetok statline outmatch oracletable prevcmp previntended epcheck
+		blitzlib blitztokens checkdata bb22 blitzres tedfont cmdref cdtable bugorigcmp)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
@@ -46,9 +46,10 @@ target_include_directories(test_amiga_emulation_cov PRIVATE ${CMAKE_CURRENT_SOUR
 target_compile_options(test_amiga_emulation_cov PRIVATE -Wno-unused-function)
 add_test(NAME amiga_emulation_cov COMMAND test_amiga_emulation_cov)
 
-add_executable(test_blitzlib_compare test_blitzlib_compare.c)
-target_link_libraries(test_blitzlib_compare PRIVATE lib_blitzlib lib_hunk)
-target_compile_options(test_blitzlib_compare PRIVATE -Wno-unused-function)
+add_executable(test_blitzlib_compare test_blitzlib_compare.cpp)
+target_link_libraries(test_blitzlib_compare PRIVATE lib_blitzlib lib_hunk snitch::snitch)
+target_compile_options(test_blitzlib_compare PRIVATE -Wall -Wextra)
+set_target_properties(test_blitzlib_compare PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME blitzlib_compare COMMAND test_blitzlib_compare)
 
 # with the emulator (label emulator; skipped without Amiberry or the
@@ -493,7 +494,7 @@ add_test(NAME fix_scope_target COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:
 	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/fix_scope_target.cmake -P ${WITH_WORKDIR})
 
 # results bug-orig-accept (the recorded original of a bug-orig test from
-# two recording runs, lib/bugorigcmp; its logic: test_bugorigcmp.c) on
+# two recording runs, lib/bugorigcmp; its logic: test_bugorigcmp.cpp) on
 # files: written, unchanged, refused (not deterministic, a wildcard that a
 # run does not match) and malformed, the committed file unchanged then
 add_test(NAME bug_orig_accept COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:results>

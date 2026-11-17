@@ -932,7 +932,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   style; `$81`-`$9F` a hollow box, `$A0` blank; the 6 px glyph 26
   redrawn); a literal map beside `chmap` gives every redraw the
   character. Host tests `test_fontlit.cpp`, `test_literal_redraw.cpp`,
-  `test_tedfont.c`; TED A/B `33-literal-glyphs`, `34-literal-glyphs6`,
+  `test_tedfont.cpp`; TED A/B `33-literal-glyphs`, `34-literal-glyphs6`,
   `35-literal-typed`. The user's review of the screenshots (task 5.2) is
   the gate of the merge; to archive the change after it.
 - [ ] **Buffer access annotations** (planned 2026-11-12, implementation

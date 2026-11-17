@@ -1,22 +1,26 @@
-/*
- * test_blitzlib.c - blitzlib_read and blitzlib_check on a minimal library
- * and on broken variants.
- */
-#include "testutil.h"
+// test_blitzlib - blitzlib_read and blitzlib_check on a minimal library
+// and on broken variants.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+#include "testutil.hpp"
+extern "C" {
 #include "blitzlib.h"
+}
 
 /* header ($30 bytes): MOVEQ #0,d0:RTS, libnum, ..., error at $2C */
-static void header(struct buf *b, uint32_t error)
+static void header(buf &b, uint32_t error)
 {
     put32(b, 0x70004E75);
     put16(b, 100);                      /* libnum */
-    while (b->n < 0x2C)
+    while (b.size() < 0x2C)
         put8(b, 0);
     put32(b, error);
 }
 
 /* one statement entry: kind 1, one form without arguments, name block */
-static void statement(struct buf *b, int lead)
+static void statement(buf &b, int lead)
 {
     put16(b, 1);
     put32(b, 0);
@@ -31,33 +35,32 @@ static void statement(struct buf *b, int lead)
 }
 
 /* the library; returns blitzlib_check's result, messages into msg */
-static int check(const struct buf *code, uint32_t table_size, uint32_t type,
+static int check(const buf &code, uint32_t table_size, uint32_t type,
                  const uint32_t *relocs, uint32_t nrelocs, uint32_t target, char *msg, size_t len)
 {
-    struct buf f = loadfile1(table_size, type, code, relocs, nrelocs, target);
+    buf f = loadfile1(table_size, type, code, relocs, nrelocs, target);
     struct loadfile lf;
     char err[200];
     FILE *out = tmpfile();
     int r;
 
-    if (load_parse(f.p, f.n, &lf, err, sizeof err))
+    if (load_parse(f.data(), f.size(), &lf, err, sizeof err))
         abort();
     r = blitzlib_check(&lf, "lib", out);
     rewind(out);
     msg[fread(msg, 1, len - 1, out)] = 0;
     fclose(out);
     load_free(&lf);
-    free(f.p);
     return r;
 }
 
 /* the reservation of libraries 32 and 33 (#1018): libraries built in
    memory as blitzlib_read leaves them */
-static void test_reserved(void)
+TEST_CASE("blitzlib: reserved", "[blitzlib]")
 {
     static struct blitzlib_entry e[127];
     static char names[127][2];
-    struct blitzlib lib = { 0 };
+    struct blitzlib lib = {};
     unsigned i;
 
     for (i = 0; i < 127; i++) {
@@ -96,7 +99,7 @@ static void test_reserved(void)
 
 /* one statement whose !subs has the error checks err1, err2 (code $5C),
    then the end of the table; the code starts at $5C */
-static void statement_chk(struct buf *b, uint32_t err1, uint32_t err2)
+static void statement_chk(buf &b, uint32_t err1, uint32_t err2)
 {
     put16(b, 1);
     put32(b, 0);
@@ -120,36 +123,35 @@ static void statement_chk(struct buf *b, uint32_t err1, uint32_t err2)
 static int errchk_lib(uint32_t err1, uint32_t err2, uint16_t jsr_op, uint32_t jsr,
                       uint32_t amiga, char *msg, size_t len)
 {
-    struct buf b = { 0 };
+    buf b;
     int r;
 
-    header(&b, 0x60);
-    statement_chk(&b, err1, err2);
-    if (b.n != 0x5C)
+    header(b, 0x60);
+    statement_chk(b, err1, err2);
+    if (b.size() != 0x5C)
         abort();
-    put16(&b, 0x4E75);                  /* $5C: the check function */
-    put16(&b, 0);
-    put32(&b, 0x48E7C0C0);              /* $60: the thunk */
-    put16(&b, jsr_op);
+    put16(b, 0x4E75);                  /* $5C: the check function */
+    put16(b, 0);
+    put32(b, 0x48E7C0C0);              /* $60: the thunk */
+    put16(b, jsr_op);
     if (jsr_op == 0x4EBA) {             /* (d16,pc), NOP */
-        put16(&b, (uint16_t)(jsr - 0x66));
-        put16(&b, 0x4E71);
+        put16(b, (uint16_t)(jsr - 0x66));
+        put16(b, 0x4E71);
     } else {
-        put32(&b, jsr);
+        put32(b, jsr);
     }
-    put32(&b, 0x4CDF0303);
-    put16(&b, 0x4E75);
-    put16(&b, 0x4E75);                  /* $70 */
-    put16(&b, 0xA001);                  /* $72: the pair */
-    put32(&b, 0x70);
-    put16(&b, 0x4EF9);
-    put32(&b, amiga);
-    r = check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, len);
-    free(b.p);
+    put32(b, 0x4CDF0303);
+    put16(b, 0x4E75);
+    put16(b, 0x4E75);                  /* $70 */
+    put16(b, 0xA001);                  /* $72: the pair */
+    put32(b, 0x70);
+    put16(b, 0x4EF9);
+    put32(b, amiga);
+    r = check(b, 1, HUNK_CODE, NULL, 0, 0, msg, len);
     return r;
 }
 
-static void test_errchk(void)
+TEST_CASE("blitzlib: errchk", "[blitzlib]")
 {
     char msg[1000];
 
@@ -181,23 +183,23 @@ static void test_errchk(void)
           && strstr(msg, "calls $100"));
 }
 
-int main(void)
+TEST_CASE("blitzlib: read and check", "[blitzlib]")
 {
-    struct buf ok = { 0 }, b;
+    buf ok, b;
     char msg[1000];
     uint32_t reloc[1];
 
-    header(&ok, 0);
-    statement(&ok, 1);
-    put16(&ok, 0xFFFF);                 /* end of the entries */
-    put32(&ok, 0);                      /* no !libfin */
-    put16(&ok, 0x4E75);                 /* code */
+    header(ok, 0);
+    statement(ok, 1);
+    put16(ok, 0xFFFF);                 /* end of the entries */
+    put32(ok, 0);                      /* no !libfin */
+    put16(ok, 0x4E75);                 /* code */
 
-    CHECK(check(&ok, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 0 && !*msg);
+    CHECK(check(ok, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 0 && !*msg);
 
     /* the reader: header, one entry with its names, end of the table */
     {
-        struct hunk h = { HUNK_CODE, ok.p, (uint32_t)ok.n, 0, NULL, NULL, 0, NULL, 0, 0 };
+        struct hunk h = { HUNK_CODE, ok.data(), (uint32_t)ok.size(), 0, NULL, NULL, 0, NULL, 0, 0 };
         struct blitzlib lib;
         char err[200];
 
@@ -206,7 +208,7 @@ int main(void)
         CHECK(lib.nentries == 1 && lib.entries[0].offset == 0x30 && lib.entries[0].kind == 1);
         CHECK(lib.entries[0].name && !strcmp(lib.entries[0].name, "Test"));
         CHECK(lib.entries[0].help && !strcmp(lib.entries[0].help, "X"));
-        CHECK(lib.codestart == ok.n - 2);
+        CHECK(lib.codestart == ok.size() - 2);
         blitzlib_free(&lib);
         h.size = 0x20;
         CHECK(blitzlib_read(&h, &lib, err, sizeof err) == -1 && strstr(err, "shorter"));
@@ -215,39 +217,39 @@ int main(void)
     /* the table data: a function with two forms (the second with a
        repetition group), an AmigaOS call, an object name and !libfin */
     {
-        struct buf t = { 0 };
+        buf t;
         struct hunk h = { HUNK_CODE, NULL, 0, 0, NULL, NULL, 0, NULL, 0, 0 };
         struct blitzlib lib;
         const struct blitzlib_entry *e;
         char err[200];
         uint32_t objname;
 
-        header(&t, 0);
-        put16(&t, 0x0302); put32(&t, 0);   /* function, result long */
-        put16(&t, 0x0002); put8(&t, 2); put8(&t, 7);    /* .w, $ */
-        put16(&t, 0);
-        put32(&t, 0x80); put32(&t, 0); put32(&t, 0);
-        put16(&t, 0x1103); put8(&t, 3); put8(&t, 8); put8(&t, 0x83); put8(&t, 0);
-        put16(&t, 0);
-        put32(&t, 0x80); put32(&t, 0); put32(&t, 0);
-        put16(&t, 0xFFFF); put32(&t, 0); put16(&t, 0);
-        putbytes(&t, "Fn\0(a,b)\0", 9); put8(&t, 0);
-        put16(&t, 6); put32(&t, 0);         /* AmigaOS call */
-        put16(&t, 252); put16(&t, (uint16_t)-30);
-        put8(&t, 0x01); put8(&t, 0x10); put8(&t, 0xFF); put8(&t, 0);
-        put32(&t, 0); put16(&t, 0);
-        putbytes(&t, "Open_\0(n)\0", 10);
-        put16(&t, 8); put32(&t, 0);         /* dumtoke */
-        put32(&t, 0); put16(&t, 0);
-        objname = (uint32_t)t.n;
-        putbytes(&t, "Obj\0x\0", 6);
-        put16(&t, 0xFFFF);
-        put32(&t, objname);                 /* !libfin: toke ... */
-        put32(&t, 0); put32(&t, 0); put32(&t, 0); put32(&t, 0);
-        put16(&t, 0); put16(&t, 20); put16(&t, 3);
-        put16(&t, 0x4E75);
-        h.data = t.p;
-        h.size = (uint32_t)t.n;
+        header(t, 0);
+        put16(t, 0x0302); put32(t, 0);   /* function, result long */
+        put16(t, 0x0002); put8(t, 2); put8(t, 7);    /* .w, $ */
+        put16(t, 0);
+        put32(t, 0x80); put32(t, 0); put32(t, 0);
+        put16(t, 0x1103); put8(t, 3); put8(t, 8); put8(t, 0x83); put8(t, 0);
+        put16(t, 0);
+        put32(t, 0x80); put32(t, 0); put32(t, 0);
+        put16(t, 0xFFFF); put32(t, 0); put16(t, 0);
+        putbytes(t, "Fn\0(a,b)\0", 9); put8(t, 0);
+        put16(t, 6); put32(t, 0);         /* AmigaOS call */
+        put16(t, 252); put16(t, (uint16_t)-30);
+        put8(t, 0x01); put8(t, 0x10); put8(t, 0xFF); put8(t, 0);
+        put32(t, 0); put16(t, 0);
+        putbytes(t, "Open_\0(n)\0", 10);
+        put16(t, 8); put32(t, 0);         /* dumtoke */
+        put32(t, 0); put16(t, 0);
+        objname = (uint32_t)t.size();
+        putbytes(t, "Obj\0x\0", 6);
+        put16(t, 0xFFFF);
+        put32(t, objname);                 /* !libfin: toke ... */
+        put32(t, 0); put32(t, 0); put32(t, 0); put32(t, 0);
+        put16(t, 0); put16(t, 20); put16(t, 3);
+        put16(t, 0x4E75);
+        h.data = t.data();
+        h.size = (uint32_t)t.size();
 
         CHECK(blitzlib_read(&h, &lib, err, sizeof err) == 0);
         CHECK(lib.nentries == 3 && lib.nforms == 2);
@@ -263,74 +265,68 @@ int main(void)
         e = &lib.entries[2];
         CHECK(e->kind == 8 && !strcmp(e->name, "Obj") && !strcmp(e->help, "x"));
         CHECK(lib.object && !strcmp(lib.object, "Obj") && lib.defmax == 20);
-        CHECK(lib.codestart == t.n - 2);
+        CHECK(lib.codestart == t.size() - 2);
         blitzlib_free(&lib);
 
         /* a toke that is no string: no object */
         {
-            uint32_t at = (uint32_t)t.n - 2 - 26;       /* the toke long */
+            uint32_t at = (uint32_t)t.size() - 2 - 26;       /* the toke long */
 
-            t.p[at] = 0xFF;
+            t[at] = 0xFF;
             CHECK(blitzlib_read(&h, &lib, err, sizeof err) == 0 && !lib.object);
             blitzlib_free(&lib);
         }
-        free(t.p);
     }
 
     /* deflibs: 4 zero bytes instead of MOVEQ #0,d0:RTS */
-    b = (struct buf){ 0 };
-    putbytes(&b, ok.p, ok.n);
-    memset(b.p, 0, 4);
-    CHECK(check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 0);
-    free(b.p);
+    b.clear();
+    putbytes(b, ok.data(), ok.size());
+    memset(b.data(), 0, 4);
+    CHECK(check(b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 0);
 
     /* two hunks in the header */
-    CHECK(check(&ok, 2, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "exactly one"));
+    CHECK(check(ok, 2, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "exactly one"));
 
     /* data instead of code */
-    CHECK(check(&ok, 1, HUNK_DATA, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "not code"));
+    CHECK(check(ok, 1, HUNK_DATA, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "not code"));
 
     /* relocation into another hunk */
     reloc[0] = 0x16;
-    CHECK(check(&ok, 1, HUNK_CODE, reloc, 1, 1, msg, sizeof msg) == 1 && strstr(msg, "into hunk 1"));
+    CHECK(check(ok, 1, HUNK_CODE, reloc, 1, 1, msg, sizeof msg) == 1 && strstr(msg, "into hunk 1"));
 
     /* wrong start */
-    b = (struct buf){ 0 };
-    putbytes(&b, ok.p, ok.n);
-    b.p[0] = 0x4E;
-    CHECK(check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "library header"));
-    free(b.p);
+    b.clear();
+    putbytes(b, ok.data(), ok.size());
+    b[0] = 0x4E;
+    CHECK(check(b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "library header"));
 
     /* token table without its end: runs past the code */
-    b = (struct buf){ 0 };
-    header(&b, 0);
-    statement(&b, 1);
-    CHECK(check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "past the end"));
-    free(b.p);
+    b.clear();
+    header(b, 0);
+    statement(b, 1);
+    CHECK(check(b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "past the end"));
 
     /* name block without its $FFFF: the next word is read as a form head
        (0), its libs and subs, then the name block ends the code */
-    b = (struct buf){ 0 };
-    header(&b, 0);
-    statement(&b, 0);
-    put16(&b, 0xFFFF);
-    put32(&b, 0);
-    CHECK(check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "does not parse"));
-    free(b.p);
+    b.clear();
+    header(b, 0);
+    statement(b, 0);
+    put16(b, 0xFFFF);
+    put32(b, 0);
+    CHECK(check(b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "does not parse"));
 
     /* reference from the code into the error check area */
-    b = (struct buf){ 0 };
-    header(&b, 0x50);
-    put16(&b, 0xFFFF);
-    put32(&b, 0);                       /* token table ends at $36 */
-    put16(&b, 0x41F9);                  /* $36: lea abs.l,a0 */
-    put32(&b, 0x52);                    /* $38: -> $52, error area from $50 */
-    while (b.n < 0x54)
-        put8(&b, 0);
+    b.clear();
+    header(b, 0x50);
+    put16(b, 0xFFFF);
+    put32(b, 0);                       /* token table ends at $36 */
+    put16(b, 0x41F9);                  /* $36: lea abs.l,a0 */
+    put32(b, 0x52);                    /* $38: -> $52, error area from $50 */
+    while (b.size() < 0x54)
+        put8(b, 0);
     reloc[0] = 0x38;
-    CHECK(check(&b, 1, HUNK_CODE, reloc, 1, 0, msg, sizeof msg) == 1
+    CHECK(check(b, 1, HUNK_CODE, reloc, 1, 0, msg, sizeof msg) == 1
           && strstr(msg, "$38 refers to $52"));
-    free(b.p);
 
     /* the 127 numbers of a user library (#960): 127 statements and two
        nullsubs behind them pass, a statement or a dumtoke as entry 128 or
@@ -350,26 +346,26 @@ int main(void)
         int i;
 
         for (k = 0; k < sizeof c / sizeof c[0]; k++) {
-            b = (struct buf){ 0 };
-            header(&b, 0);
-            b.p[4] = (uint8_t)(c[k].libnum >> 8);
-            b.p[5] = (uint8_t)c[k].libnum;
+            b.clear();
+            header(b, 0);
+            b[4] = (uint8_t)(c[k].libnum >> 8);
+            b[5] = (uint8_t)c[k].libnum;
             for (i = 0; i < c[k].statements; i++)
-                statement(&b, 1);
+                statement(b, 1);
             for (i = 0; i < c[k].nullsubs; i++) {
-                put16(&b, 0); put32(&b, 0);     /* nullsub */
-                put16(&b, 0);                   /* no libs */
-                put32(&b, 0x80); put32(&b, 0); put32(&b, 0);
+                put16(b, 0); put32(b, 0);     /* nullsub */
+                put16(b, 0);                   /* no libs */
+                put32(b, 0x80); put32(b, 0); put32(b, 0);
             }
             if (c[k].dumtoke) {
-                put16(&b, 8); put32(&b, 0);
-                put32(&b, 0); put16(&b, 0);
-                putbytes(&b, "Obj\0x\0", 6);
+                put16(b, 8); put32(b, 0);
+                put32(b, 0); put16(b, 0);
+                putbytes(b, "Obj\0x\0", 6);
             }
-            put16(&b, 0xFFFF);
-            put32(&b, 0);
-            put16(&b, 0x4E75);
-            CHECK(check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == c[k].bad);
+            put16(b, 0xFFFF);
+            put32(b, 0);
+            put16(b, 0x4E75);
+            CHECK(check(b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == c[k].bad);
             if (c[k].bad && c[k].dumtoke)
                 CHECK(strstr(msg, "lib: library 252: entry 129 \"Obj\" gets the token $FE81, "
                                   "behind the 127 of the library ($FE01-$FE7F)") != NULL);
@@ -378,14 +374,7 @@ int main(void)
                       != NULL);
             else
                 CHECK(!*msg);
-            free(b.p);
         }
     }
 
-    free(ok.p);
-    test_reserved();
-    test_errchk();
-    if (failures)
-        fprintf(stderr, "test_blitzlib: %d failures\n", failures);
-    return failures != 0;
 }

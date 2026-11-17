@@ -1,10 +1,14 @@
-/*
- * test_blitzlib_compare.c - blitzlib_compare: what must be equal
- * (header, names, structure, set code offsets, relocations of the
- * declarations), what may differ (code offsets, run time fields, code).
- */
-#include "testutil.h"
+// test_blitzlib_compare - blitzlib_compare: what must be equal
+// (header, names, structure, set code offsets, relocations of the
+// declarations), what may differ (code offsets, run time fields, code).
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+#include "testutil.hpp"
+extern "C" {
 #include "blitzlib.h"
+}
 
 struct variant {
     uint16_t libnum;
@@ -31,30 +35,30 @@ static int decls_parse(const char *text, char *err, size_t len)
     return r;
 }
 
-static struct buf build(const struct variant *v)
+static buf build(const struct variant *v)
 {
-    struct buf b = { 0 };
+    buf b;
     int i;
 
-    put32(&b, 0x70004E75);
-    put16(&b, v->libnum);
-    while (b.n < 0x30)
-        put8(&b, 0);
+    put32(b, 0x70004E75);
+    put16(b, v->libnum);
+    while (b.size() < 0x30)
+        put8(b, 0);
     for (i = 0; i < v->entries; i++) {
-        put16(&b, 1);                   /* statement */
-        put32(&b, 0);
-        put16(&b, 0x0000);              /* form: 0 arguments */
-        put16(&b, 0);                   /* no libs */
-        put32(&b, v->sub); put32(&b, 0); put32(&b, 0);
-        put16(&b, 0xFFFF);
-        put32(&b, v->next);
-        put16(&b, 0);                   /* nummer */
-        putbytes(&b, v->name, 4);
-        putbytes(&b, "\0X\0", 4);       /* help, even */
+        put16(b, 1);                   /* statement */
+        put32(b, 0);
+        put16(b, 0x0000);              /* form: 0 arguments */
+        put16(b, 0);                   /* no libs */
+        put32(b, v->sub); put32(b, 0); put32(b, 0);
+        put16(b, 0xFFFF);
+        put32(b, v->next);
+        put16(b, 0);                   /* nummer */
+        putbytes(b, v->name, 4);
+        putbytes(b, "\0X\0", 4);       /* help, even */
     }
-    put16(&b, 0xFFFF);
-    put32(&b, 0);                       /* no !libfin */
-    put16(&b, v->code);
+    put16(b, 0xFFFF);
+    put32(b, 0);                       /* no !libfin */
+    put16(b, v->code);
     return b;
 }
 
@@ -62,10 +66,10 @@ static struct buf build(const struct variant *v)
    extra ones; messages into msg */
 static int cmp(const struct variant *v, uint32_t extra_reloc, char *msg, size_t len)
 {
-    struct buf a = build(&base), b = build(v);
+    buf a = build(&base), b = build(v);
     uint32_t ra[1] = { 0x30 + 10 }, rb[2] = { 0x30 + 10, extra_reloc };
-    struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 1, ra, NULL, 0, NULL, 0, 0 };
-    struct hunk hb = { HUNK_CODE, b.p, (uint32_t)b.n, extra_reloc ? 2 : (v->sub ? 1 : 0), rb, NULL, 0, NULL, 0, 0 };
+    struct hunk ha = { HUNK_CODE, a.data(), (uint32_t)a.size(), 1, ra, NULL, 0, NULL, 0, 0 };
+    struct hunk hb = { HUNK_CODE, b.data(), (uint32_t)b.size(), extra_reloc ? 2u : (v->sub ? 1u : 0u), rb, NULL, 0, NULL, 0, 0 };
     FILE *out = tmpfile();
     struct blitzlib_decls d = { 0, NULL };
     int r;
@@ -90,12 +94,10 @@ static int cmp(const struct variant *v, uint32_t extra_reloc, char *msg, size_t 
     rewind(out);
     msg[fread(msg, 1, len - 1, out)] = 0;
     fclose(out);
-    free(a.p);
-    free(b.p);
     return r;
 }
 
-int main(void)
+TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
 {
     struct variant v;
     char msg[1000];
@@ -138,15 +140,14 @@ int main(void)
     CHECK(cmp(&base, 0x30 + 0x2C, msg, sizeof msg) == 0);
     /* a library that does not read */
     {
-        struct buf a = build(&base);
+        buf a = build(&base);
         uint8_t shorty[8] = { 0 };
-        struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 0, NULL, NULL, 0, NULL, 0, 0 };
+        struct hunk ha = { HUNK_CODE, a.data(), (uint32_t)a.size(), 0, NULL, NULL, 0, NULL, 0, 0 };
         struct hunk hb = { HUNK_CODE, shorty, 8, 0, NULL, NULL, 0, NULL, 0, 0 };
         FILE *out = tmpfile();
 
         CHECK(blitzlib_compare(&ha, &hb, "lib", out) == -1);
         fclose(out);
-        free(a.p);
     }
 
     /* the list of intended differences: comments and empty lines skipped */
@@ -270,9 +271,9 @@ int main(void)
     via_decls = 0;
     /* the text: no code (the code behind the table, the offsets) */
     {
-        struct buf a = build(&base);
+        buf a = build(&base);
         uint32_t ra[1] = { 0x30 + 10 };
-        struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 1, ra, NULL, 0, NULL, 0, 0 };
+        struct hunk ha = { HUNK_CODE, a.data(), (uint32_t)a.size(), 1, ra, NULL, 0, NULL, 0, 0 };
         FILE *t = tmpfile();
         char text[2000], err[200];
 
@@ -285,13 +286,12 @@ int main(void)
                            "----------------ffff............\t..\n") != NULL);
         CHECK(strstr(text, "\nend\tffff00000000\n") != NULL);
         CHECK(strstr(text, "4e75\n") == NULL);
-        free(a.p);
     }
     /* texts with bytes that are not printable ASCII: escaped, and read
        back to the same bytes (the text written again is the same) */
     {
         struct variant v = base;
-        struct buf a;
+        buf a;
         uint32_t ra[1] = { 0x30 + 10 };
         struct hunk ha;
         struct blitzlib_decls d;
@@ -301,7 +301,7 @@ int main(void)
 
         v.name = "\\\xe4\x01" "A";
         a = build(&v);
-        ha = (struct hunk){ HUNK_CODE, a.p, (uint32_t)a.n, 1, ra, NULL, 0, NULL, 0, 0 };
+        ha = (struct hunk){ HUNK_CODE, a.data(), (uint32_t)a.size(), 1, ra, NULL, 0, NULL, 0, 0 };
         CHECK(blitzlib_decls_write(&ha, t, err, sizeof err) == 0);
         rewind(t);
         n = fread(text, 1, sizeof text - 1, t);
@@ -321,7 +321,6 @@ int main(void)
             CHECK(!strcmp(text, again));
         }
         blitzlib_decls_free(&d);
-        free(a.p);
     }
     /* broken declaration data */
 #define ENTRY0 "library\t100\t0\nheader\t70004e7500640000000000000000000000000000" \
@@ -354,5 +353,4 @@ int main(void)
     CHECK(decls_parse("library\t100\t0\nheader\t0000\n", msg, sizeof msg) == -1);
     CHECK(strstr(msg, "library of line 1: no library header") != NULL);
     CHECK(decls_parse("# nothing\n\n", msg, sizeof msg) == 0);
-    return failures != 0;
 }

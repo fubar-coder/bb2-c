@@ -1,16 +1,18 @@
-/*
- * test_bugorigcmp.c - the bug-orig tests in the terms of the shared test
- * model (tools/lib/bugorigcmp) with files from memory: the observation
- * files and their wildcard lines with a reason (broken ones too), the
- * matcher, the comparison with the recorded original, the projection of a
- * test onto cases (open, fixed, a long section, TED, no ID.orig, broken
- * headers), fix-scope on the projections and the acceptance of two
- * recording runs (equal, a section differing, a wildcard kept, a wildcard
- * that a run does not match, a line that reads as a wildcard).
- */
-#define _DEFAULT_SOURCE
-#include "testutil.h"
+// test_bugorigcmp - the bug-orig tests in the terms of the shared test
+// model (tools/lib/bugorigcmp) with files from memory: the observation
+// files and their wildcard lines with a reason (broken ones too), the
+// matcher, the comparison with the recorded original, the projection of a
+// test onto cases (open, fixed, a long section, TED, no ID.orig, broken
+// headers), fix-scope on the projections and the acceptance of two
+// recording runs (equal, a section differing, a wildcard kept, a wildcard
+// that a run does not match, a line that reads as a wildcard).
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "bugorigcmp.h"
+}
 
 static char err[700];
 
@@ -19,7 +21,7 @@ static int parse(const char *text, enum bugorigcmp_kind kind, struct bugorigcmp_
     return bugorigcmp_parse(text, "t.orig", kind, o, err, sizeof err);
 }
 
-static void test_parse(void)
+TEST_CASE("bugorigcmp: parse", "[bugorigcmp]")
 {
     struct bugorigcmp_obs o;
 
@@ -57,7 +59,7 @@ static void test_parse(void)
     CHECK(o.n == 0 && !o.sec);
 }
 
-static void test_varies(void)
+TEST_CASE("bugorigcmp: varies", "[bugorigcmp]")
 {
     char t[] = "# note\n# varies: no section yet\n[run]\na\n# varies: why\nb*\n[log]\nc\n";
 
@@ -69,7 +71,7 @@ static void test_varies(void)
     CHECK(!strcmp(t, "# note\n# varies: no section yet\n[run]\na\nb*\n[log]\nc\n"));
 }
 
-static void test_match(void)
+TEST_CASE("bugorigcmp: match", "[bugorigcmp]")
 {
     char w[120], g[120];
 
@@ -85,7 +87,7 @@ static void test_match(void)
     CHECK(bugorigcmp_first_diff("a\n", "a\nb\n", w, sizeof w, g, sizeof g) == 2 && !strcmp(w, "(the end)"));
 }
 
-static void test_compare(void)
+TEST_CASE("bugorigcmp: compare", "[bugorigcmp]")
 {
     struct bugorigcmp_obs o, r;
     char msg[300];
@@ -126,7 +128,7 @@ static const char fixed_src[] = "; a test\n; @fixed #7\nPrint 1\n";
 static const char expect_txt[] = "[run]\n1\nrc=0\n";
 static const char orig_txt[] = "# the original\n[session]\ndone\n[run]\n0\nrc=0\n";
 
-static void test_project(void)
+TEST_CASE("bugorigcmp: project", "[bugorigcmp]")
 {
     char *t, big[400];
     int r;
@@ -192,7 +194,7 @@ static size_t scope(const char *base_src, const char *base_exp, const char *base
                     char **report)
 {
     struct libscmp_file b, r;
-    struct libscmp_issues is = { 0 };
+    struct libscmp_issues is = {};
     char *tb, *tr, *rep = NULL;
     size_t lb, lr, nrep = 99, nch, lrep;
     FILE *f;
@@ -227,7 +229,7 @@ static size_t scope(const char *base_src, const char *base_exp, const char *base
     return nrep;
 }
 
-static void test_scope(void)
+TEST_CASE("bugorigcmp: scope", "[bugorigcmp]")
 {
     static const char exp2[] = "[run]\n1\nrc=5\n";
     char *rep;
@@ -265,7 +267,7 @@ static int accept(const char *a, const char *b, const char *old, char **out, cha
     return r;
 }
 
-static void test_accept(void)
+TEST_CASE("bugorigcmp: accept", "[bugorigcmp]")
 {
     static const char r1[] = "# the original\n[session]\ndone\n[run]\nptr=$1000\nrc=0\n";
     static const char r2[] = "# the original\n[session]\ndone\n[run]\nptr=$2000\nrc=0\n";
@@ -312,18 +314,4 @@ static void test_accept(void)
     free(rep);
     CHECK(accept(r1, r1, "[run]\nx*\n", &out, &rep) == -2 && strstr(err, "t-id.orig:2: a wildcard"));
     free(rep);
-}
-
-int main(void)
-{
-    test_parse();
-    test_varies();
-    test_match();
-    test_compare();
-    test_project();
-    test_scope();
-    test_accept();
-    if (failures)
-        fprintf(stderr, "%d failures\n", failures);
-    return failures != 0;
 }

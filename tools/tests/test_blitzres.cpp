@@ -1,17 +1,21 @@
-/*
- * test_blitzres.c - resident files built in memory: the bytes blitzres
- * writes (header, nodes, relocations as blitz2's menu5), reading them
- * back, the dump of a resident with a type, a macro and constants, the
- * constants of FD files and EQU includes, the Blitz source of constants,
- * and broken inputs.
- */
-#include "testutil.h"
+// test_blitzres - resident files built in memory: the bytes blitzres
+// writes (header, nodes, relocations as blitz2's menu5), reading them
+// back, the dump of a resident with a type, a macro and constants, the
+// constants of FD files and EQU includes, the Blitz source of constants,
+// and broken inputs.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+#include "testutil.hpp"
+extern "C" {
 #include "blitzres.h"
+}
 
 static char err[300];
 
-/* the dump of buf as a string (malloc'd) */
-static char *dump(const uint8_t *buf, size_t len, int *rc)
+/* the dump of bytes as a string (malloc'd) */
+static char *dump(const uint8_t *bytes, size_t len, int *rc)
 {
     FILE *f = tmpfile();
     char *s;
@@ -19,10 +23,10 @@ static char *dump(const uint8_t *buf, size_t len, int *rc)
 
     if (!f)
         abort();
-    *rc = blitzres_dump(buf, len, f, err, sizeof err);
+    *rc = blitzres_dump(bytes, len, f, err, sizeof err);
     n = ftell(f);
     rewind(f);
-    s = calloc(1, (size_t)n + 1);
+    s = static_cast<char *>(calloc(1, (size_t)n + 1));
     if (!s || fread(s, 1, (size_t)n, f) != (size_t)n)
         abort();
     fclose(f);
@@ -30,7 +34,7 @@ static char *dump(const uint8_t *buf, size_t len, int *rc)
 }
 
 /* a constant node as blitz2 writes it, with junk in data/procnum/padding */
-static void cnode(struct buf *b, uint32_t next, int32_t value, const char *name, uint8_t junk)
+static void cnode(buf &b, uint32_t next, int32_t value, const char *name, uint8_t junk)
 {
     size_t len = 19 + strlen(name) + 1;
 
@@ -45,10 +49,10 @@ static void cnode(struct buf *b, uint32_t next, int32_t value, const char *name,
         put8(b, junk);
 }
 
-static void test_write(void)
+TEST_CASE("blitzres: write", "[blitzres]")
 {
-    struct blitzres_list l = { 0 }, back = { 0 };
-    struct buf body = { 0 }, want;
+    struct blitzres_list l = {}, back = {};
+    buf body = {}, want;
     uint8_t *res;
     size_t len;
     uint32_t relocs[2];
@@ -60,17 +64,17 @@ static void test_write(void)
     CHECK(blitzres_add(&l, "custom", (int32_t)0xdff000, err, sizeof err) == 0);
     CHECK(blitzres_add(&l, "x", -6, err, sizeof err) == 0);
     CHECK(blitzres_write(&l, &res, &len, err, sizeof err) == 0);
-    put16(&body, 0);
-    put16(&body, 0);
-    put16(&body, 3);
-    cnode(&body, 28, 1, "ab", 0);
-    cnode(&body, 54, (int32_t)0xdff000, "custom", 0);
-    cnode(&body, 0, -6, "x", 0);
+    put16(body, 0);
+    put16(body, 0);
+    put16(body, 3);
+    cnode(body, 28, 1, "ab", 0);
+    cnode(body, 54, (int32_t)0xdff000, "custom", 0);
+    cnode(body, 0, -6, "x", 0);
     /* the offsets in the order blitz2 writes them: the last one first */
     relocs[0] = 28;
     relocs[1] = 6;
-    want = loadfile1(1, HUNK_CODE, &body, relocs, 2, 0);
-    CHECK(len == want.n && !memcmp(res, want.p, len));
+    want = loadfile1(1, HUNK_CODE, body, relocs, 2, 0);
+    CHECK(len == want.size() && !memcmp(res, want.data(), len));
     /* read back (strict), dumped */
     CHECK(blitzres_read_consts(res, len, 1, &back, err, sizeof err) == 0);
     CHECK(back.n == 3 && !strcmp(back.c[1].name, "custom") && back.c[1].value == 0xdff000
@@ -92,32 +96,28 @@ static void test_write(void)
     CHECK(rc == -1);
     free(d);
     free(res);
-    free(want.p);
-    free(body.p);
     blitzres_free(&back);
     blitzres_free(&l);
 
     /* one constant: no relocations; none: an empty resident */
     CHECK(blitzres_add(&l, "one", 1, err, sizeof err) == 0);
     CHECK(blitzres_write(&l, &res, &len, err, sizeof err) == 0);
-    body = (struct buf){ 0 };
-    put16(&body, 0);
-    put16(&body, 0);
-    put16(&body, 1);
-    cnode(&body, 0, 1, "one", 0);
-    want = loadfile1(1, HUNK_CODE, &body, NULL, 0, 0);
-    CHECK(len == want.n && !memcmp(res, want.p, len));
+    body.clear();
+    put16(body, 0);
+    put16(body, 0);
+    put16(body, 1);
+    cnode(body, 0, 1, "one", 0);
+    want = loadfile1(1, HUNK_CODE, body, NULL, 0, 0);
+    CHECK(len == want.size() && !memcmp(res, want.data(), len));
     CHECK(blitzres_read_consts(res, len, 1, &back, err, sizeof err) == 0 && back.n == 1);
     free(res);
-    free(want.p);
-    free(body.p);
     blitzres_free(&back);
     blitzres_free(&l);
 }
 
-static void test_list(void)
+TEST_CASE("blitzres: list", "[blitzres]")
 {
-    struct blitzres_list l = { 0 };
+    struct blitzres_list l = {};
     uint8_t *res;
     size_t len, i;
     int32_t v;
@@ -136,7 +136,7 @@ static void test_list(void)
     CHECK(blitzres_find(&l, "b", &v) == -1);
     blitzres_free(&l);
     /* broken: more constants than the count word holds */
-    l.c = calloc(65536, sizeof *l.c);
+    l.c = static_cast<struct blitzres_const *>(calloc(65536, sizeof *l.c));
     if (!l.c)
         abort();
     for (i = 0; i < 65536; i++) {
@@ -153,59 +153,58 @@ static void test_list(void)
 
 /* a resident with a NewType (two fields, one an array), a macro and a
    constant, as blitz2 writes it (the pointers are offsets) */
-static void test_dump(void)
+TEST_CASE("blitzres: dump", "[blitzres]")
 {
-    struct buf body = { 0 }, f;
-    struct blitzres_list l = { 0 };
+    buf body = {}, f;
+    struct blitzres_list l = {};
     uint32_t relocs[3];
     char *d;
     int rc;
 
-    put16(&body, 1);                    /* one type */
+    INFO(err);
+    put16(body, 1);                    /* one type */
     /* fields: next.l offset.w flags.w ndims.w type.l len.b name (15)
        field "_a" at 2: next -> 20, offset 0, flags 0, ndims junk, type 2 */
-    put32(&body, 20);
-    put16(&body, 0);
-    put16(&body, 0);
-    put16(&body, 0x70F);
-    put16(&body, 2);                    /* type: the index in the high word */
-    put16(&body, 0x1234);
-    put8(&body, 18);
-    putbytes(&body, "_a", 3);           /* 15+3 = 18 */
+    put32(body, 20);
+    put16(body, 0);
+    put16(body, 0);
+    put16(body, 0x70F);
+    put16(body, 2);                    /* type: the index in the high word */
+    put16(body, 0x1234);
+    put8(body, 18);
+    putbytes(body, "_a", 3);           /* 15+3 = 18 */
     /* field "_b" at 20: last, offset 2, array of 4 bytes, type 1 */
-    put32(&body, 0);
-    put16(&body, 2);
-    put16(&body, 2);
-    put16(&body, 4);
-    put16(&body, 1);
-    put16(&body, 0);
-    put8(&body, 18);
-    putbytes(&body, "_b", 3);
+    put32(body, 0);
+    put16(body, 2);
+    put16(body, 2);
+    put16(body, 4);
+    put16(body, 1);
+    put16(body, 0);
+    put8(body, 18);
+    putbytes(body, "_b", 3);
     /* type "pt" at 38: fields -> 2, size 6 */
-    put32(&body, 0);
-    put32(&body, 2);
-    put16(&body, 6);
-    put8(&body, 14);
-    putbytes(&body, "pt", 3);           /* 11+3 = 14 */
-    put16(&body, 1);                    /* one macro, at 54 */
-    put32(&body, 0);
-    put32(&body, 72);                   /* text */
-    put16(&body, 3);
-    put16(&body, 0);
-    put8(&body, 17);
-    putbytes(&body, "mac", 4);          /* 13+4 = 17, padded */
-    put8(&body, 0);
-    putbytes(&body, "a\"\x80", 3);      /* text, padded */
-    put8(&body, 0);
-    put16(&body, 1);                    /* one constant */
-    cnode(&body, 0, 7, "seven", 1);
+    put32(body, 0);
+    put32(body, 2);
+    put16(body, 6);
+    put8(body, 14);
+    putbytes(body, "pt", 3);           /* 11+3 = 14 */
+    put16(body, 1);                    /* one macro, at 54 */
+    put32(body, 0);
+    put32(body, 72);                   /* text */
+    put16(body, 3);
+    put16(body, 0);
+    put8(body, 17);
+    putbytes(body, "mac", 4);          /* 13+4 = 17, padded */
+    put8(body, 0);
+    putbytes(body, "a\"\x80", 3);      /* text, padded */
+    put8(body, 0);
+    put16(body, 1);                    /* one constant */
+    cnode(body, 0, 7, "seven", 1);
     relocs[0] = 2;
     relocs[1] = 42;
     relocs[2] = 58;
-    f = loadfile1(1, HUNK_CODE, &body, relocs, 3, 0);
-    d = dump(f.p, f.n, &rc);
-    if (rc)
-        fprintf(stderr, "dump: %s\n", err);
+    f = loadfile1(1, HUNK_CODE, body, relocs, 3, 0);
+    d = dump(f.data(), f.size(), &rc);
     CHECK(rc == 0);
     CHECK(!strcmp(d, "type pt size=6\n"
                      "  field _a offset=0 flags=0 type=2\n"
@@ -214,16 +213,13 @@ static void test_dump(void)
                      "const seven=7\n"));
     free(d);
     /* only constants: a resident with types is an error */
-    CHECK(blitzres_read_consts(f.p, f.n, 0, &l, err, sizeof err) == -1);
-    free(f.p);
+    CHECK(blitzres_read_consts(f.data(), f.size(), 0, &l, err, sizeof err) == -1);
     /* broken: the field list points back */
-    body.p[2 + 3] = 2;
-    f = loadfile1(1, HUNK_CODE, &body, relocs, 3, 0);
-    d = dump(f.p, f.n, &rc);
+    body[2 + 3] = 2;
+    f = loadfile1(1, HUNK_CODE, body, relocs, 3, 0);
+    d = dump(f.data(), f.size(), &rc);
     CHECK(rc == -1 && strstr(err, "goes back"));
     free(d);
-    free(f.p);
-    free(body.p);
     /* broken: not a load file, two hunks */
     {
         uint8_t junk[8] = { 1, 2, 3, 4 };
@@ -235,7 +231,7 @@ static void test_dump(void)
     blitzres_free(&l);
 }
 
-static void test_fd(void)
+TEST_CASE("blitzres: fd", "[blitzres]")
 {
     static const char fd[] =
         "* \"datatypes.library\"\n"
@@ -249,7 +245,7 @@ static void test_fd(void)
         "GetDTAttrsA(o,attrs)(a0/a2)\n"
         "GetDTAttrs(o,attrs)(a0/a2)\n"
         "##end\n";
-    struct blitzres_list l = { 0 };
+    struct blitzres_list l = {};
 
     CHECK(blitzres_fd(fd, strlen(fd), 0, &l, err, sizeof err) == 0);
     CHECK(l.n == 4);
@@ -282,7 +278,7 @@ static void test_fd(void)
     }
 }
 
-static void test_equ(void)
+TEST_CASE("blitzres: equ", "[blitzres]")
 {
     static const char inc[] =
         "    IFND HARDWARE_CUSTOM_I\n"
@@ -304,7 +300,7 @@ static void test_equ(void)
         "  indented EQU 5\n"
         "AGAIN\tSET 1\n"
         "AGAIN\tSET 1\n";
-    struct blitzres_list syms = { 0 }, l = { 0 };
+    struct blitzres_list syms = {}, l = {};
     int32_t v;
 
     CHECK(blitzres_add(&syms, "TAG_USER", INT32_MIN, err, sizeof err) == 0);
@@ -335,7 +331,7 @@ static void test_equ(void)
     blitzres_free(&syms);
 }
 
-static void test_lvo(void)
+TEST_CASE("blitzres: lvo", "[blitzres]")
 {
     static const char inc[] =
         "* Automatically generated header (sfdc 1.13)! Do not edit!\n"
@@ -347,7 +343,7 @@ static void test_lvo(void)
         "OTHER\tEQU\t5\n"
         "_LVOAHI_AudioRequestA     EQU   -126\n"
         "     ENDC  * LVO_AHI_LIB_I\n";
-    struct blitzres_list l = { 0 };
+    struct blitzres_list l = {};
 
     CHECK(blitzres_lvo(inc, strlen(inc), &l, err, sizeof err) == 0);
     CHECK(l.n == 3);
@@ -373,11 +369,11 @@ static void test_lvo(void)
 
 /* the Blitz source of constants: one #NAME=VALUE line each, in order,
    -2147483648 in hex; a write error */
-static void test_source(void)
+TEST_CASE("blitzres: source", "[blitzres]")
 {
-    struct blitzres_list l = { 0 };
+    struct blitzres_list l = {};
     FILE *f = tmpfile();
-    char s[200] = { 0 };
+    char s[200] = {};
 
     if (!f)
         abort();
@@ -396,18 +392,4 @@ static void test_source(void)
     CHECK(blitzres_source(&l, f) == -1);
     fclose(f);
     blitzres_free(&l);
-}
-
-int main(void)
-{
-    test_write();
-    test_list();
-    test_dump();
-    test_fd();
-    test_equ();
-    test_lvo();
-    test_source();
-    if (failures)
-        fprintf(stderr, "%d check(s) failed\n", failures);
-    return failures != 0;
 }

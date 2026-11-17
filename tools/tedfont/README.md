@@ -6,7 +6,7 @@ the glyphs 0-127 of TED 1.1's font files (`archive/sources/ted-1.1/chars8.b`,
 (`programs/ted/fonts/glyphs8.txt`, `glyphs6.txt`), which at 6 px also
 redraws glyph 26 (spec `tooling/ted-font`). `build` writes the font,
 `check` is the check of the same build step. The logic is
-`tools/lib/tedfont` (`tedfont.h`), tested by `tools/tests/test_tedfont.c`.
+`tools/lib/tedfont` (`tedfont.h`), tested by `tools/tests/test_tedfont.cpp`.
 
 ## Usage
 

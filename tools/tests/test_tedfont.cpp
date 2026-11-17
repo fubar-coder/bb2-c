@@ -1,16 +1,19 @@
-/*
- * test_tedfont.c - tedfont_parse, tedfont_build, tedfont_check with
- * sources and archive fonts built in memory: a good source at both
- * heights (strips 0-7 the archive's, $80-$FF and the 6 px glyph 26 the
- * source's); broken sources (no height, a missing glyph, a duplicate, a
- * row of 7 or 9 columns or with another character, too few and too many
- * rows, a code outside $80-$FF, a glyph 27, a glyph 26 at 8 px); an
- * archive font of the wrong size; fonts that fail the check (size, an
- * original glyph, a new glyph).  A failed build leaves the output as it
- * was.
- */
-#include "testutil.h"
+// test_tedfont - tedfont_parse, tedfont_build, tedfont_check with
+// sources and archive fonts built in memory: a good source at both
+// heights (strips 0-7 the archive's, $80-$FF and the 6 px glyph 26 the
+// source's); broken sources (no height, a missing glyph, a duplicate, a
+// row of 7 or 9 columns or with another character, too few and too many
+// rows, a code outside $80-$FF, a glyph 27, a glyph 26 at 8 px); an
+// archive font of the wrong size; fonts that fail the check (size, an
+// original glyph, a new glyph).  A failed build leaves the output as it
+// was.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "tedfont.h"
+}
 
 /* a growing text */
 struct text {
@@ -24,7 +27,7 @@ static void add(struct text *t, const char *s)
 
     if (t->n + l + 1 > t->cap) {
         t->cap = (t->n + l + 1) * 2;
-        t->p = realloc(t->p, t->cap);
+        t->p = static_cast<char *>(realloc(t->p, t->cap));
         if (!t->p)
             abort();
     }
@@ -59,7 +62,7 @@ enum broken {
 /* a source of height h: $80-$FF with pattern(); at h = 6 also @1A */
 static struct text source(int h, enum broken how)
 {
-    struct text t = { 0 };
+    struct text t = {};
     unsigned c;
     int r;
     char line[40];
@@ -120,7 +123,7 @@ static struct text source(int h, enum broken how)
 /* an archive font of height h: 128 glyphs, byte i = i * 3 + 5 */
 static uint8_t *archive(int h)
 {
-    uint8_t *a = malloc((size_t)128 * h);
+    uint8_t *a = static_cast<uint8_t *>(malloc((size_t)128 * h));
     size_t i;
 
     if (!a)
@@ -139,8 +142,8 @@ static void bad_source(int h, enum broken how, const char *want)
 
     CHECK(tedfont_parse(t.p, t.n, "glyphs.txt", &src, err, sizeof err) == -1);
     if (!strstr(err, want)) {
-        fprintf(stderr, "message \"%s\" lacks \"%s\"\n", err, want);
-        failures++;
+        INFO(want, " not in ", err);
+        FAIL_CHECK("message lacks the expected text");
     }
     free(t.p);
 }
@@ -149,7 +152,7 @@ static void good(int h)
 {
     struct text t = source(h, GOOD);
     struct tedfont_src src;
-    uint8_t *a = archive(h), *font = malloc(tedfont_size(h));
+    uint8_t *a = archive(h), *font = static_cast<uint8_t *>(malloc(tedfont_size(h)));
     char err[300] = "";
     unsigned c, r;
     int same = 1;
@@ -211,7 +214,7 @@ static void good(int h)
     free(t.p);
 }
 
-int main(void)
+TEST_CASE("tedfont: checks", "[tedfont]")
 {
     good(8);
     good(6);
@@ -238,5 +241,4 @@ int main(void)
         snprintf(want, sizeof want, "glyphs.txt:%d:", 3 + (0xA5 - 0x80) * 10 + 2 + 1 + 2);
         bad_source(8, ROW7, want);
     }
-    return failures != 0;
 }
