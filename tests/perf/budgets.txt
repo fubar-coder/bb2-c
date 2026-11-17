@@ -236,23 +236,28 @@
 # 1466.9, 1381.9, 1429.9, 1668.4, 1531.9, 2156.9, 1291.4, 668.4, 2517.9
 # both times (before: 1677.3, 1462.8, 1562.3, 1823.3, 1684.3, 2363.3,
 # 1376.3, 686.4, 2778.3).
+# bbblit.bpredator4u, bcolour4u and btblockimage4u from six runs of the
+# buffered blits as assembler routines (2026-11-17): 17351.8 to 17353.8,
+# 16991.8 to 16995.8, 32725.8 to 32729.8 (before: 21547.9, 20745.9,
+# 36265.9); the other lines of bbblit in those runs within 1.1 cycles of
+# their measurements above.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bbblit.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
 bbblit.specialblock          1485     1557.8  SpecialBlock 0,1,96,96 (16x16, 3 planes, 320-pixel bitmap)
 bbblit.specialblocko         1399     1450.3  SpecialBlock 0,1,3852 (the offset form)
 bbblit.tblock                1448     1544.3  TBlock 0,96,96
-bbblit.bpredator4u          21771    18211.8  BPredatorBlit 0,0,20,20 : BPredatorBlit 0,0,60,20 : BPredatorBlit 0,0,100,20 : BPredatorBlit 0,0,140,20 : UnBuffer 0
+bbblit.bpredator4u          17531    18211.8  BPredatorBlit 0,0,20,20 : BPredatorBlit 0,0,60,20 : BPredatorBlit 0,0,100,20 : BPredatorBlit 0,0,140,20 : UnBuffer 0
 bbblit.sblockbm              1689     1679.8  SpecialBlockBitmap 0,2,96,96 (16x16 shape, 3 planes, 320-pixel bitmaps)
 bbblit.sblockbmo             1551     1661.8  SpecialBlockBitmap 0,2,3852 (the offset form)
 bbblit.predator              2182     2267.3  c=PredatorBlit(0,100,96)
-bbblit.bcolour4u            20957    17617.8  BColourBlit 0,0,20,20,5 : BColourBlit 0,0,60,20,2 : BColourBlit 0,0,100,20,7 : BColourBlit 0,0,140,20,1 : UnBuffer 0
+bbblit.bcolour4u            17169    17617.8  BColourBlit 0,0,20,20,5 : BColourBlit 0,0,60,20,2 : BColourBlit 0,0,100,20,7 : BColourBlit 0,0,140,20,1 : UnBuffer 0
 bbblit.setupmaptwo            101      102.3  SetupMapTwo 40
 bbblit.createshape10         2137     2200.3  CreateShape 20,10,mem,0 (ten shapes like a 16x16 shape of 3 planes)
 bbblit.sblocktoshape         1308     1355.8  SpecialBlockToShape 0,1,12
 bbblit.blocktoshape           679      684.9  BlockToShape 0,12 (16x16, 3 planes)
 bbblit.tblockimage           2547     2696.3  TBlockImage img,0,96,32 (6 planes of a 320-pixel bitmap)
-bbblit.btblockimage4u       36628    33089.8  BTBlockImage 1,img,20,20,0 : BTBlockImage 1,img,60,20,0 : BTBlockImage 1,img,100,20,0 : BTBlockImage 1,img,140,20,0 : UnBuffer 1
+bbblit.btblockimage4u       33061    33089.8  BTBlockImage 1,img,20,20,0 : BTBlockImage 1,img,60,20,0 : BTBlockImage 1,img,100,20,0 : BTBlockImage 1,img,140,20,0 : UnBuffer 1
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8

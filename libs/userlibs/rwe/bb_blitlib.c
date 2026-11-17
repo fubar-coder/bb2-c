@@ -42,10 +42,11 @@
  * left them.  init and finit are RTS.
  *
  * Speed (at or below the original's cycles per call, perf bbblit): the
- * entries but the buffered blits save no register (BLITZ_ENTRYPOINT, a6
- * kept by BLITZ_EP_KEEP_A6), write the blitter registers through the
- * chip base in an address register, and their plane loops are the
- * original's assembler loops (asm blocks).
+ * entries save no register (BLITZ_ENTRYPOINT, a6 kept by
+ * BLITZ_EP_KEEP_A6), write the blitter registers through the chip base
+ * in an address register, and their plane loops are the original's
+ * assembler loops (asm blocks); the buffered blits (BPredatorBlit,
+ * BColourBlit, BTBlockImage) are assembler routines.
  *
  * Fixed (intended deviations):
  *   - BlockToShape blits the shape's real width; the original copied one
@@ -202,23 +203,16 @@ static void BLITZ_ROUTINE _libfinit(void)
 /* the shape (shapeslib) and the bitmap (bitmaplib) objects: struct bb_shape,
    struct bb_bitmap (blitzobj.h); the original reads the bitmap's flags and
    depth (+4, +5) as one word (flagsdepth); the shape's data and cookie
-   addresses are taken as the longs the blitter registers get */
-
-/* a buffer object of bblitlib, as far as the buffered blits use it */
-struct buffer {
-    UBYTE *pos;                 /* +0 write position */
-    UBYTE *last;                /* +4 last record (0: none) */
-};
+   addresses are taken as the longs the blitter registers get.  A buffer
+   object of bblitlib (the buffered blits, assembler): +0 the write
+   position, +4 the last record (0: none). */
 
 /* the blitter registers through the chip base: the buffered routines get
-   it in a1 (#chipbaselib) and write some registers absolute ($DFF0xx,
-   W/L) where the original does; the others load $DFF000 into an address
+   it in a1 (#chipbaselib), the others load $DFF000 into an address
    register (HIDE_A: GCC would fold it into absolute addresses again); a
    register write as d16(An) takes 4 cycles less than the original's
    absolute address */
 #define CUSTOM ((UBYTE *)0xdff000)
-#define W(o) BL_CUSTOMW(CUSTOM, o)
-#define L(o) BL_CUSTOML(CUSTOM, o)
 #define CW(o) BL_CUSTOMW(cb, o)
 #define CL(o) BL_CUSTOML(cb, o)
 #define HIDE_A(p) __asm__("" : "+a"(p))
@@ -258,7 +252,7 @@ enum {
 static struct {
     UWORD ebwidth, modwidth, modwidth2;
 } map = { 40, 38, 36 };
-static UWORD coltoblit;
+static UWORD coltoblit __attribute__((used));   /* BColourBlit (asm) */
 
 /**
  * @brief SetupMapTwo ebwidth: the bytes per line of the bitmaps.
@@ -557,64 +551,89 @@ static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE predatorblit_c(UWORD x BL_REG(d1), U
 
 /* ---------------------------------------------------- buffered blits */
 
-/* the save of the background into a record of the buffer (bblitlib's
-   BBlit): +0 previous record, +4.w modulo, +6.w blit size, +8.w bitmap
-   planes-1, +10.w bytes per plane, +12 offset, per plane {address,
-   data}.  The values the blit goes on with. */
-struct bsave {
-    ULONG cbmod, admod;                         /* d4-d5: the modulos, MOVEM.l d4-d5 */
-    ULONG off;
-    UWORD size;
-};
+/* The buffered blits are assembler routines (for speed: in C, GCC had
+   too few address registers for the record, the planes, the bitmap, the
+   shape and the chip base and kept values on the stack, also without
+   saves: 6 to 8 % slower than the original).  They follow the original's code, with the fixes, and
+   use the chip base in a1 for every register write (the original wrote
+   the blit's registers as absolute addresses); a3 is free in a statement
+   (the register rule), a4/a5 stay untouched (the original saved them).
 
-static void bsave(struct bsave *s, struct buffer *buf, struct bb_bitmap *bm, UBYTE *cb, WORD x, WORD y,
-                  UWORD mod, UWORD size, UWORD save)
-{
-    UBYTE *rec = buf->pos;
-    UWORD n;
-    UBYTE **plane;
-
-    *(UBYTE **)rec = buf->last;                /* link the record */
-    buf->last = rec;
-    rec += 4;
-    s->admod = 0xfffe0000UL | mod;
-    *(UWORD *)rec = mod;
-    rec += 2;
-    s->cbmod = s->admod << 16 | s->admod >> 16;
-    s->off = (ULONG)bl_muls_w(y, bm->bpr) + (LONG)(WORD)(x >> 3);
-    s->size = size;
-    *(UWORD *)rec = size;
-    rec += 2;
-    n = bm->flagsdepth - 1;
-    *(UWORD *)rec = n;
-    rec += 2;
-    *(UWORD *)rec = save;
-    rec += 2;
-    *(ULONG *)rec = s->off;
-    rec += 4;
-    BL_BLITWAIT(cb);
-    CW(BLTAMOD) = mod;
-    CW(BLTDMOD) = 0;
-    CL(BLTCON0) = 0x09f00000;                   /* A -> D */
-    CL(BLTAFWM) = 0xffffffff;
-    plane = bm->planes;
-    goto first;
-    do {
-        BL_BLITWAIT(cb);
-first:
-        {
-            ULONG a = (ULONG)*plane++ + s->off;
-            CL(BLTAPT) = a;
-            *(ULONG *)rec = a;
-            rec += 4;
-            CL(BLTDPT) = (ULONG)rec;
-            CW(BLTSIZE) = size;
-            rec += (WORD)save;
-            __asm__("" : "+a"(rec));            /* no IV multiplication */
-        }
-    } while (n-- != 0);
-    buf->pos = rec;
-}
+   BSAVE(ebw, size, save): the save of the background into a record of
+   the buffer, as bblitlib's BBlit: +0 previous record, +4.w modulo, +6.w
+   blit size, +8.w bitmap planes-1, +10.w bytes per plane, +12 offset,
+   per plane {address, data}.  In: d2 x, d3 y, a0 the buffer, a1 the
+   chip base, a2 the bitmap, a3 kept (in d4 meanwhile); `ebw` the width
+   (bytes) of the blit, `size` the code that loads the blit size into d6,
+   `save` the bytes per plane in the record (a word, added signed as the
+   original's ADD.w).  Out: d2 the shift << 12, d3 the offset, d5
+   $FFFE:modulo, d6 the blit size, d0/d1/d4/d7/a0 changed, a2/a3 as
+   given; the record linked, the buffer's write position behind it. */
+#define BSAVE(ebw, size, save)                                              \
+    "   move.l  (a0)+,d1\n"             /* the record: the write position */ \
+    "   move.l  (a0),d0\n"              /* the last record */                \
+    "   move.l  d1,(a0)\n"              /* the last record: this one */      \
+    "   move.l  a0,-(sp)\n"                                                 \
+    "   move.l  d1,a0\n"                                                    \
+    "   move.l  d0,(a0)+\n"             /* +0 the previous record */         \
+    "   moveq   #-2,d5\n"                                                   \
+    "   swap    d5\n"                                                       \
+    "   move.w  (a2),d5\n"                                                  \
+    "   sub.w   " ebw ",d5\n"                                               \
+    "   subq.w  #2,d5\n"                                                    \
+    "   move.w  d5,(a0)+\n"             /* +4 the modulo */                  \
+    "   move.w  d2,d0\n"                                                    \
+    "   asr.w   #3,d0\n"                                                    \
+    "   ext.l   d0\n"                                                       \
+    "   muls.w  (a2),d3\n"                                                  \
+    "   add.l   d0,d3\n"                /* the offset */                     \
+    "   and.w   #15,d2\n"                                                   \
+    "   ror.w   #4,d2\n"                /* the shift << 12 */                \
+    size                                                                    \
+    "   move.w  d6,(a0)+\n"             /* +6 the blit size */               \
+    "   move.w  4(a2),d7\n"                                                 \
+    "   subq.w  #1,d7\n"                                                    \
+    "   move.w  d7,(a0)+\n"             /* +8 the bitmap's planes-1 */       \
+    "   move.w  " save ",d1\n"                                              \
+    "   move.w  d1,(a0)+\n"             /* +10 the bytes per plane */        \
+    "   move.l  d3,(a0)+\n"             /* +12 the offset */                 \
+    "   move.l  a3,d4\n"                                                    \
+    "   lea     8(a2),a3\n"             /* the bitmap's planes */            \
+    "   tst.b   2(a1)\n"                                                    \
+    "0: btst    #6,2(a1)\n"                                                 \
+    "   bne.s   0b\n"                                                       \
+    "   move.w  d5,0x64(a1)\n"          /* BLTAMOD */                        \
+    "   move.w  #0,0x66(a1)\n"          /* BLTDMOD */                        \
+    "   move.l  #0x09f00000,0x40(a1)\n" /* BLTCON0/1: A -> D */              \
+    "   moveq   #-1,d0\n"                                                   \
+    "   move.l  d0,0x44(a1)\n"          /* BLTAFWM/BLTALWM */                \
+    "   bra.s   1f\n"                                                       \
+    "0: tst.b   2(a1)\n"                                                    \
+    "2: btst    #6,2(a1)\n"                                                 \
+    "   bne.s   2b\n"                                                       \
+    "1: move.l  (a3)+,d0\n"                                                 \
+    "   add.l   d3,d0\n"                                                    \
+    "   move.l  d0,0x50(a1)\n"          /* BLTAPT: the plane */              \
+    "   move.l  d0,(a0)+\n"             /* its address */                    \
+    "   move.l  a0,0x54(a1)\n"          /* BLTDPT: the record */             \
+    "   move.w  d6,0x58(a1)\n"          /* BLTSIZE */                        \
+    "   add.w   d1,a0\n"                                                    \
+    "   dbf     d7,0b\n"                                                    \
+    "   move.l  (sp)+,a3\n"                                                 \
+    "   move.l  a0,-(a3)\n"             /* the write position */             \
+    "   move.l  d4,a3\n"
+/* the blitter wait of a blit's set-up (BTST once for the Agnus bug) */
+#define BWAIT                                                               \
+    "   tst.b   2(a1)\n"                                                    \
+    "0: btst    #6,2(a1)\n"                                                 \
+    "   bne.s   0b\n"
+/* the modulos of the blit: BLTCMOD and BLTDMOD the modulo, BLTBMOD and
+   BLTAMOD -2 (the original's MOVEM.l d4-d5 with d4 = d5 swapped) */
+#define BMODS                                                               \
+    "   swap    d5\n"                                                       \
+    "   move.l  d5,0x60(a1)\n"          /* BLTCMOD, BLTBMOD */               \
+    "   swap    d5\n"                                                       \
+    "   move.l  d5,0x64(a1)\n"          /* BLTAMOD, BLTDMOD */
 
 /**
  * @brief BPredatorBlit buffer,shape,x,y: PredatorBlit, buffered.
@@ -626,53 +645,40 @@ first:
  * reads the line the bitmap's bytes per row below; the original added
  * SetupMapTwo's width.  Depth 0 loops 65536 times: Fixed (#429),
  * errshapea3_c refuses it.
- * @param x      d2: x
- * @param y      d3: y
- * @param buf    a0: the buffer object (bblitlib)
- * @param cb     a1: the chip base (chipbaselib)
- * @param bm     a2: the used bitmap object
- * @param shape  a3: the shape object
+ * In: d2 x, d3 y, a0 the buffer object (bblitlib), a1 the chip base
+ * (chipbaselib), a2 the used bitmap object, a3 the shape object.
  */
-static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                          struct buffer *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
-                                          struct bb_bitmap *bm BL_REG(a2),
-                                          struct bb_shape *shape BL_REG(a3))
-{
-    struct bsave s;
-    UWORD shift, n;
-    UBYTE **plane;
-    ULONG cookie, bpr;
-
-    x -= shape->handlex;
-    y -= shape->handley;
-    bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - shape->ebwidth - 2),
-          (UWORD)(shape->bltsize - 64), shape->xplanesize);
-    shift = (UWORD)((x & 15) << 12);
-    n = shape->depth - 1;
-    plane = bm->planes;
-    bpr = bm->bpr;                              /* kept in a register over the planes */
-    BL_BLITWAIT(cb);
-    L(BLTCMOD) = s.cbmod;                       /* MOVEM.l d4-d5,BLTCMOD */
-    L(BLTAMOD) = s.admod;
-    W(BLTBMOD) = (UWORD)s.admod;
-    W(BLTCON1) = 0x1000;
-    W(BLTCON0) = shift | 0xfca;
-    CW(BLTALWM) = 0;
-    cookie = (ULONG)shape->cookie;
-    goto first;
-    do {
-        BL_BLITWAIT(cb);
-first:
-        {
-            ULONG d = (ULONG)*plane++ + s.off;
-            L(BLTAPT) = cookie;
-            L(BLTCPT) = d;
-            L(BLTDPT) = d;
-            L(BLTBPT) = d + bpr;                /* Fixed (#426): was + ebwidth */
-            W(BLTSIZE) = s.size;
-        }
-    } while (n-- != 0);
-}
+BLITZ_ASM_ROUTINE(_bpredatorblit,
+"   sub.w   10(a3),d2\n"                /* the handle */
+"   sub.w   12(a3),d3\n"
+BSAVE("6(a3)", "   move.w  8(a3),d6\n   sub.w   #64,d6\n", "24(a3)")
+"   move.w  4(a3),d7\n"
+"   subq.w  #1,d7\n"
+"   moveq   #0,d4\n"
+"   move.w  (a2),d4\n"                  /* Fixed (#426): was SetupMapTwo's width */
+"   addq.l  #8,a2\n"
+"   move.l  18(a3),d0\n"                /* the cookie */
+BWAIT
+BMODS
+"   move.w  d5,0x62(a1)\n"              /* BLTBMOD: the modulo */
+"   move.w  #0x1000,0x42(a1)\n"         /* BLTCON1: B one pixel more */
+"   or.w    #0xfca,d2\n"
+"   move.w  d2,0x40(a1)\n"              /* BLTCON0 */
+"   move.w  #0,0x46(a1)\n"              /* BLTALWM */
+"   bra.s   1f\n"
+"0: tst.b   2(a1)\n"
+"2: btst    #6,2(a1)\n"
+"   bne.s   2b\n"
+"1: move.l  d0,0x50(a1)\n"              /* BLTAPT: the cookie */
+"   move.l  (a2)+,d1\n"
+"   add.l   d3,d1\n"
+"   move.l  d1,0x48(a1)\n"              /* BLTCPT */
+"   move.l  d1,0x54(a1)\n"              /* BLTDPT */
+"   add.l   d4,d1\n"
+"   move.l  d1,0x4c(a1)\n"              /* BLTBPT: the line below */
+"   move.w  d6,0x58(a1)\n"              /* BLTSIZE */
+"   dbf     d7,0b\n"
+"   rts");
 
 /**
  * @brief BColourBlit buffer,shape,x,y,colour: a shape's cookie in one
@@ -682,57 +688,46 @@ first:
  * `colour`: per plane D = A | C (bit set) or ~A & C.  Sets the B modulos
  * it does not use and shifts the colour as a byte (at most 8 planes):
  * original behaviour.  Depth 0 loops 65536 times: Fixed (#429),
- * errshapea3_c refuses it.
- * @param x       d2: x
- * @param y       d3: y
- * @param colour  d4: the colour
- * @param buf     a0: the buffer object
- * @param cb      a1: the chip base
- * @param bm      a2: the used bitmap object
- * @param shape   a3: the shape object
+ * errshapea3_c refuses it.  The colour waits in coltoblit while the save
+ * uses every data register, as in the original.
+ * In: d2 x, d3 y, d4 the colour, a0 the buffer object, a1 the chip base,
+ * a2 the used bitmap object, a3 the shape object.
  */
-static void BLITZ_ROUTINE docolblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                      UWORD colour BL_REG(d4), struct buffer *buf BL_REG(a0),
-                                      UBYTE *cb BL_REG(a1), struct bb_bitmap *bm BL_REG(a2),
-                                      struct bb_shape *shape BL_REG(a3))
-{
-    struct bsave s;
-    UWORD con, n;
-    UBYTE bits;
-    UBYTE **plane;
-    ULONG cookie;
-
-    coltoblit = colour;
-    x -= shape->handlex;
-    y -= shape->handley;
-    bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - shape->ebwidth - 2), shape->bltsize,
-          shape->xplanesize);
-    con = (UWORD)((x & 15) << 12) | 0xb00;      /* A, C, D */
-    n = shape->depth - 1;
-    plane = bm->planes;
-    BL_BLITWAIT(cb);
-    L(BLTCMOD) = s.cbmod;
-    L(BLTAMOD) = s.admod;
-    W(BLTCON1) = 0;
-    CW(BLTALWM) = 0;
-    cookie = (ULONG)shape->cookie;
-    bits = (UBYTE)coltoblit;
-    goto first;
-    do {
-        BL_BLITWAIT(cb);
-first:
-        {
-            ULONG d;
-            W(BLTCON0) = con | ((bits & 1) ? 0xfa : 0x0a);
-            bits >>= 1;
-            L(BLTAPT) = cookie;
-            d = (ULONG)*plane++ + s.off;
-            L(BLTDPT) = d;
-            L(BLTCPT) = d;
-            W(BLTSIZE) = s.size;
-        }
-    } while (n-- != 0);
-}
+BLITZ_ASM_ROUTINE(docolblit,
+"   move.w  d4,_coltoblit\n"
+"   sub.w   10(a3),d2\n"                /* the handle */
+"   sub.w   12(a3),d3\n"
+BSAVE("6(a3)", "   move.w  8(a3),d6\n", "24(a3)")
+"   move.w  4(a3),d7\n"
+"   subq.w  #1,d7\n"
+"   addq.l  #8,a2\n"
+"   move.l  18(a3),d0\n"                /* the cookie */
+"   or.w    #0xb00,d2\n"                /* A, C, D */
+"   move.w  _coltoblit(pc),d4\n"
+BWAIT
+BMODS
+"   move.w  #0,0x42(a1)\n"              /* BLTCON1 */
+"   move.w  #0,0x46(a1)\n"              /* BLTALWM */
+"   move.w  d2,d5\n"
+"   or.w    #0xfa,d5\n"                 /* the bit set: D = A | C */
+"   or.w    #0x0a,d2\n"                 /* clear: D = ~A & C */
+"   bra.s   1f\n"
+"0: tst.b   2(a1)\n"
+"2: btst    #6,2(a1)\n"
+"   bne.s   2b\n"
+"1: lsr.b   #1,d4\n"
+"   bcc.s   3f\n"
+"   move.w  d5,0x40(a1)\n"              /* BLTCON0 */
+"   bra.s   4f\n"
+"3: move.w  d2,0x40(a1)\n"
+"4: move.l  d0,0x50(a1)\n"              /* BLTAPT: the cookie */
+"   move.l  (a2)+,d1\n"
+"   add.l   d3,d1\n"
+"   move.l  d1,0x54(a1)\n"              /* BLTDPT */
+"   move.l  d1,0x48(a1)\n"              /* BLTCPT */
+"   move.w  d6,0x58(a1)\n"              /* BLTSIZE */
+"   dbf     d7,0b\n"
+"   rts");
 
 /* ------------------------------------------------------------ images */
 
@@ -791,51 +786,40 @@ static BLITZ_ENTRYPOINT void BLITZ_ROUTINE tblockimage_c(ULONG addr BL_REG(d0), 
  *
  * The area is saved as BBlit does, then the image shifted through its
  * mask.  Fixed (#427): image*224 is added as a long; the original added
- * it as a word (ADD.w: from image 147 on before image_addr).
- * @param addr   d1: image_addr
- * @param x      d2: x
- * @param y      d3: y
- * @param image  d4: the image number
- * @param buf    a0: the buffer object
- * @param cb     a1: the chip base
- * @param bm     a2: the used bitmap object
+ * it as a word (ADD.w: from image 147 on before image_addr).  Assembler
+ * like the other buffered blits.
+ * In: d1 image_addr, d2 x, d3 y, d4 the image number, a0 the buffer
+ * object, a1 the chip base, a2 the used bitmap object.
  */
-static void BLITZ_ROUTINE btblockimage_c(ULONG addr BL_REG(d1), UWORD x BL_REG(d2),
-                                         UWORD y BL_REG(d3), UWORD image BL_REG(d4),
-                                         struct buffer *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
-                                         struct bb_bitmap *bm BL_REG(a2))
-{
-    struct bsave s;
-    UWORD shift, n = SHAPE_DEPTH - 1;
-    UBYTE **plane;
-    ULONG mask;
-
-    addr += (ULONG)image * SHAPE_BYTESIZE;     /* Fixed (#427): ADD.l, was ADD.w */
-    bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - SHAPE_EBWIDTH - 2), SHAPE_BLITSIZE,
-          SHAPE_ONEBPMEMX);
-    shift = (UWORD)((x & 15) << 12);
-    plane = bm->planes;
-    BL_BLITWAIT(cb);
-    CL(BLTCMOD) = s.cbmod;
-    CL(BLTAMOD) = s.admod;
-    CW(BLTCON1) = shift;
-    CW(BLTCON0) = shift | 0xfca;
-    CW(BLTALWM) = 0;
-    mask = addr;
-    CL(BLTBPT) = addr + SHAPE_PLANEBYTESIZE;
-    goto first;
-    do {
-        BL_BLITWAIT(cb);
-first:
-        {
-            ULONG d = (ULONG)*plane++ + s.off;
-            CL(BLTAPT) = mask;
-            CL(BLTCPT) = d;
-            CL(BLTDPT) = d;
-            CW(BLTSIZE) = SHAPE_BLITSIZE;
-        }
-    } while (n-- != 0);
-}
+BLITZ_ASM_ROUTINE(_btblockimage,
+"   mulu.w  #" BL_STR(SHAPE_BYTESIZE) ",d4\n"
+"   move.l  d1,a3\n"
+"   add.l   d4,a3\n"                    /* Fixed (#427): ADD.l, was ADD.w */
+BSAVE("#" BL_STR(SHAPE_EBWIDTH), "   move.w  #" BL_STR(SHAPE_BLITSIZE) ",d6\n",
+      "#" BL_STR(SHAPE_ONEBPMEMX))
+"   moveq   #" BL_STR(SHAPE_DEPTH) "-1,d7\n"
+"   addq.l  #8,a2\n"
+BWAIT
+BMODS
+"   move.w  d2,0x42(a1)\n"              /* BLTCON1: B shifted too */
+"   or.w    #0xfca,d2\n"
+"   move.w  d2,0x40(a1)\n"              /* BLTCON0 */
+"   move.w  #0,0x46(a1)\n"              /* BLTALWM */
+"   move.l  a3,d0\n"                    /* the mask */
+"   lea     " BL_STR(SHAPE_PLANEBYTESIZE) "(a3),a3\n"
+"   move.l  a3,0x4c(a1)\n"              /* BLTBPT: the planes */
+"   bra.s   1f\n"
+"0: tst.b   2(a1)\n"
+"2: btst    #6,2(a1)\n"
+"   bne.s   2b\n"
+"1: move.l  d0,0x50(a1)\n"              /* BLTAPT: the mask */
+"   move.l  (a2)+,d1\n"
+"   add.l   d3,d1\n"
+"   move.l  d1,0x48(a1)\n"              /* BLTCPT */
+"   move.l  d1,0x54(a1)\n"              /* BLTDPT */
+"   move.w  d6,0x58(a1)\n"              /* BLTSIZE */
+"   dbf     d7,0b\n"
+"   rts");
 
 /* ------------------------------------------------------------ shapes */
 
@@ -966,14 +950,11 @@ static BLITZ_ENTRYPOINT void BLITZ_ROUTINE blocktoshape_c(struct bb_shape *shape
 /* Registers: every entry is a user-level statement (PredatorBlit a
    function), so the register rule (docs/libs/deviations.md, "Register
    preservation") asks it to keep a4-a7 and PredatorBlit also a3: the
-   entries are their C functions, without saves (BLITZ_ENTRYPOINT,
-   BLITZ_ALIAS_EP; they change d0-d7/a0-a2) but for the buffered blits
-   (BLITZ_ALIAS: they keep d2-d7/a2 by GCC's convention and change
-   d0/d1/a0/a1).  The original changes d0-d7/a0-a3 (the routines differ)
-   and keeps a4/a5/a6. */
-BLITZ_ALIAS(_bpredatorblit, bpredatorblit_c);
-BLITZ_ALIAS(docolblit, docolblit_c);
-BLITZ_ALIAS(_btblockimage, btblockimage_c);
+   C entries are their C functions without saves (BLITZ_ENTRYPOINT,
+   BLITZ_ALIAS_EP), the buffered blits assembler routines (above); they
+   change d0-d7/a0-a2 and the assembler routines also a3, as the
+   original, which changes d0-d7/a0-a3 (the routines differ) and keeps
+   a4/a5/a6. */
 BLITZ_ALIAS_EP(_specialblock, specialblock_c);
 BLITZ_ALIAS_EP(_specialblock2, specialblock2_c);
 BLITZ_ALIAS_EP(_specialblockbitmap, specialblockbitmap_c);

@@ -47,24 +47,29 @@ init and finit are `RTS`.
 
 ## C and assembler
 
-Every entry is its C function, without a thunk, as the register rule
-allows (`docs/libs/deviations.md`, "Register preservation"): a
-statement keeps a4–a7, `PredatorBlit` (a function) also a3. The
-entries but the buffered blits save no register (`BLITZ_ENTRYPOINT`,
-a6 kept by `BLITZ_EP_KEEP_A6`) and change d0–d7/a0–a2; their plane
-loops are the original's loops as asm blocks (in C, GCC tested the
-counter and branched twice per plane instead of one `DBF`), and they
-write the blitter registers through `$DFF000` in an address register,
-4 cycles less per write than the original's absolute addresses: so
-they are faster than the original (perf program `bbblit`,
-`tests/perf/budgets.txt`). `SetupMapTwo` writes its three words through
-an address register, `CreateShape` its objects with `MOVE (a2)+` and 0
-and "cL" from registers. The buffered blits (`BLITZ_ALIAS`) keep
-d2–d7/a2 by GCC's convention and change d0/d1/a0/a1. The original
-changes up to d0–d7/a0–a3 (the routines differ) and keeps a4–a6, so a
-caller can rely on nothing more than the rule names. The blitter is
-programmed with volatile register writes (`BL_CUSTOMW`/`BL_CUSTOML`,
-`BL_BLITWAIT`), the same registers in the same order. Pointers
+No entry has a thunk, as the register rule allows
+(`docs/libs/deviations.md`, "Register preservation"): a statement keeps
+a4–a7, `PredatorBlit` (a function) also a3. Every command is faster
+than the original (perf program `bbblit`, `tests/perf/budgets.txt`).
+The C entries save no register (`BLITZ_ENTRYPOINT`, a6 kept by
+`BLITZ_EP_KEEP_A6`) and change d0–d7/a0–a2; their plane loops are the
+original's loops as asm blocks (in C, GCC tested the counter and
+branched twice per plane instead of one `DBF`), and they write the
+blitter registers through `$DFF000` in an address register, 4 cycles
+less per write than the original's absolute addresses. `SetupMapTwo`
+writes its three words through an address register, `CreateShape` its
+objects with `MOVE (a2)+` and 0 and "cL" from registers. The buffered
+blits (`BPredatorBlit`, `BColourBlit`, `BTBlockImage`) are assembler
+routines that follow the original's code with the fixes: in C, GCC had
+too few address registers for the record, the planes, the bitmap, the
+shape and the chip base and kept values on the stack. They write every
+register through the chip base in a1 and use a3 (free in a statement)
+instead of the original's saved a4/a5; they change d0–d7/a0–a3. The
+original changes up to d0–d7/a0–a3 (the routines differ) and keeps
+a4–a6, so a caller can rely on nothing more than the rule names. The
+blitter gets the same registers in the same order as in the original
+(volatile writes, `BL_CUSTOMW`/`BL_CUSTOML`, or the assembler's moves).
+Pointers
 that the original does not reload per plane (B and C of `SpecialBlock`,
 B of `SpecialBlockBitmap`, `BTBlockImage`) go on where the blitter left
 them, as in the original. The record of the buffered blits is written by
