@@ -8,6 +8,8 @@
 ; Correct: after the failed NewZoneTable table 1 does not exist,
 ; UseZoneTable 1 returns 0.
 ; @rwe rizonejoylib
+; The program is silent for about 11 s (more than BUG_ORIG_RUN_HANG_AFTER):
+; @pass hang_after=30
 ; @pass runwrap=@INJECT@|allocfail=164-164/1
 r=NewZoneTable(1,10)
 NPrint "new 10 zones ",r

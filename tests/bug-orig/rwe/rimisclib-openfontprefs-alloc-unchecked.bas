@@ -6,6 +6,8 @@
 ; inject makes the first AllocMem of that size fail (allocfail=).
 ; Correct: without its buffer OpenFontPrefs reads nothing and returns 0.
 ; @rwe rimisclib
+; The program is silent for about 11 s (more than BUG_ORIG_RUN_HANG_AFTER):
+; @pass hang_after=30
 ; @pass runwrap=@INJECT@|allocfail=16384-16384/1
 ; @pass timeout=60
 NPrint "before"
