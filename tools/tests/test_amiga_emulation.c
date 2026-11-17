@@ -865,35 +865,48 @@ int main(void)
         close(a);
         CHECK(amiga_emulation_slot("/nonexistent/dir/slots", 2, 0) < 0);
 
-        /* the limit: the environment, else the file max, else 4 - also
+        /* the limit: the environment, else the file max, else the default - also
            for broken files (garbage, 0, too large, negative, two
            numbers, a number with garbage behind it, too long) */
         {
             char *old = getenv("AMIGA_EMULATION_MAX");
             char *saved = old ? strdup(old) : NULL;
             char big[200];
+            /* the default without a limit file: 60 % of the processors
+               online, rounded, at least 1, at most the limit of the file;
+               the count is a parameter (the table), the machine's own for
+               the defaults below */
+            struct { long cpus; unsigned slots; } table[] = {
+                { 16, 10 }, { 8, 5 }, { 4, 2 }, { 3, 2 }, { 2, 1 }, { 1, 1 },
+                { 10, 6 }, { 12, 7 }, { 64, 38 }, { 107, 64 }, { 1000, 64 },
+                { 0, 1 }, { -4, 1 }, { 1L << 40, 64 }
+            };
+            unsigned dflt = amiga_emulation_slots_for_cpus(sysconf(_SC_NPROCESSORS_ONLN));
             pid_t pid;
             int st;
 
             unsetenv("AMIGA_EMULATION_MAX");
-            CHECK(max_of(dir, "") == 4);
+            for (size_t i = 0; i < sizeof table / sizeof *table; i++)
+                CHECK(amiga_emulation_slots_for_cpus(table[i].cpus) == table[i].slots);
+            CHECK(dflt >= 1 && dflt <= AMIGA_EMULATION_SLOTS_LIMIT);
+            CHECK(max_of(dir, "") == dflt);
             CHECK(max_of(dir, "6\n") == 6);
             CHECK(max_of(dir, " 2 ") == 2);
             CHECK(max_of(dir, "1") == 1);
             CHECK(max_of(dir, "64") == 64);
-            CHECK(max_of(dir, "garbage\n") == 4);
-            CHECK(max_of(dir, "0\n") == 4);
-            CHECK(max_of(dir, "65") == 4);
-            CHECK(max_of(dir, "99999999999999999999999") == 4);
-            CHECK(max_of(dir, "-3") == 4);
-            CHECK(max_of(dir, "3 4") == 4);
-            CHECK(max_of(dir, "3x") == 4);
-            CHECK(max_of(dir, "\n") == 4);
+            CHECK(max_of(dir, "garbage\n") == dflt);
+            CHECK(max_of(dir, "0\n") == dflt);
+            CHECK(max_of(dir, "65") == dflt);
+            CHECK(max_of(dir, "99999999999999999999999") == dflt);
+            CHECK(max_of(dir, "-3") == dflt);
+            CHECK(max_of(dir, "3 4") == dflt);
+            CHECK(max_of(dir, "3x") == dflt);
+            CHECK(max_of(dir, "\n") == dflt);
             memset(big, ' ', sizeof big - 2);
             big[sizeof big - 2] = '5';
             big[sizeof big - 1] = 0;
-            CHECK(max_of(dir, big) == 4);
-            CHECK(amiga_emulation_slot_max("/nonexistent/dir/slots") == 4);
+            CHECK(max_of(dir, big) == dflt);
+            CHECK(amiga_emulation_slot_max("/nonexistent/dir/slots") == dflt);
             /* the environment wins, also 0 (no limit) */
             put_max(dir, "6");
             setenv("AMIGA_EMULATION_MAX", "3", 1);

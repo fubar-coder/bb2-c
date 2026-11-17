@@ -127,7 +127,9 @@ set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/Testing/runs/default)
 # runs a test script in a work directory of its own (cmake/with-workdir.cmake)
 set(WITH_WORKDIR ${PROJECT_SOURCE_DIR}/cmake/with-workdir.cmake)
 add_test(NAME host COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
-	--output-on-failure -LE emulator)
+	--output-on-failure -LE emulator -j)
+# (-j: as many at a time as the machine has CPUs; the host tests work in
+# directories of their own)
 # the emulator tests of the host side three at a time (each holds its own
 # emulator slots and waits for free ones)
 add_test(NAME host_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}

@@ -799,6 +799,27 @@ static void child(const char *work_dir, const char *runtime_dir, const char *ami
     _exit(127);
 }
 
+unsigned amiga_emulation_slots_for_cpus(long cpus)
+{
+    long n;
+
+    if (cpus < 1)
+        return 1;
+    if (cpus > 1000000)
+        cpus = 1000000;
+    n = (6 * cpus + 5) / 10;
+    if (n < 1)
+        n = 1;
+    if (n > (long)AMIGA_EMULATION_SLOTS_LIMIT)
+        n = (long)AMIGA_EMULATION_SLOTS_LIMIT;
+    return (unsigned)n;
+}
+
+static unsigned slots_default(void)
+{
+    return amiga_emulation_slots_for_cpus(sysconf(_SC_NPROCESSORS_ONLN));
+}
+
 unsigned amiga_emulation_slot_max(const char *dir)
 {
     const char *env = getenv("AMIGA_EMULATION_MAX");
@@ -823,13 +844,13 @@ unsigned amiga_emulation_slot_max(const char *dir)
     for (p = buf; *p == ' ' || *p == '\t' || *p == '\n' || *p == '\r'; p++)
         ;
     if (*p < '0' || *p > '9')
-        return AMIGA_EMULATION_SLOTS_DEFAULT;
+        return slots_default();
     errno = 0;
     n = strtoul(p, &e, 10);
     while (*e == ' ' || *e == '\t' || *e == '\n' || *e == '\r')
         e++;
     if (errno || *e || !n || n > AMIGA_EMULATION_SLOTS_LIMIT)
-        return AMIGA_EMULATION_SLOTS_DEFAULT;
+        return slots_default();
     return (unsigned)n;
 }
 

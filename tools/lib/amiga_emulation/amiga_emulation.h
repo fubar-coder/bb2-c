@@ -445,14 +445,18 @@ int amiga_emulation_machine_kickstart(const char *name);
    AMIGA_EMULATION_SLOTS_AUTO: amiga_emulation_slot_max(dir), read again
    on every try. */
 #define AMIGA_EMULATION_SLOTS_AUTO    (~0u)
-#define AMIGA_EMULATION_SLOTS_DEFAULT 4u
 #define AMIGA_EMULATION_SLOTS_LIMIT   64u
 int amiga_emulation_slot(const char *dir, unsigned max, int wait);
+
+/* the default limit for a machine with cpus processors online: 60 % of
+   them, rounded, at least 1, at most AMIGA_EMULATION_SLOTS_LIMIT (16
+   processors: 10; cpus below 1: 1) */
+unsigned amiga_emulation_slots_for_cpus(long cpus);
 
 /* the limit: $AMIGA_EMULATION_MAX if set (0 = no limit), else the number
    in dir/max (decimal, blanks and newlines around it; 1 to
    AMIGA_EMULATION_SLOTS_LIMIT), else (missing, not a number, 0, too
-   large) AMIGA_EMULATION_SLOTS_DEFAULT */
+   large) amiga_emulation_slots_for_cpus() of the processors online */
 unsigned amiga_emulation_slot_max(const char *dir);
 
 #endif

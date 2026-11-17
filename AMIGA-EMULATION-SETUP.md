@@ -162,7 +162,8 @@ with RTG, 40.63/40.42 on the a600).
 
 ## How many emulators at once (slots)
 
-At most 4 Amiberry instances run at the same time on the machine, over
+By default 60 % of the online CPUs (rounded, at least 1, at most 64: 10
+on 16 CPUs) Amiberry instances run at the same time on the machine, over
 all runners, build directories and worktrees (the slots of
 `tools/lib/amiga_emulation`, lock files in
 `$XDG_RUNTIME_DIR/amiga-emulation-slots/`, without `XDG_RUNTIME_DIR` in
@@ -177,11 +178,12 @@ A session that waits for a slot reads it again on every try, so the new
 limit also counts for the sessions that already wait (a lower limit does
 not stop running sessions; the next ones wait). Only a number from 1 to
 64 counts; a missing file or anything else (text, 0, a larger number)
-means 4. `AMIGA_EMULATION_MAX` in the environment of a runner overrides
+means the default of 60 % of the CPUs. `AMIGA_EMULATION_MAX` in the environment of a runner overrides
 the file for that runner (0 = no limit).
 
-With 16 cores, 8 to 10 slots are sensible, depending on the temperature
-of the machine. If something is odd (a session that fails to restore, a
+The test presets run as many ctest jobs as the machine has CPUs; the
+slots, not the jobs, bound the sessions. With 16 cores, 8 to 10 slots are
+sensible, depending on the temperature of the machine. If something is odd (a session that fails to restore, a
 changed ROM or hardfile that is not noticed), `amiga_run
 --purge-snapshots [BUILDDIR]` clears the snapshots of a build directory;
 `tools/lib/amiga_emulation/README.md` explains the snapshot mode.
