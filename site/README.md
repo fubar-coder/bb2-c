@@ -116,9 +116,7 @@ add sorting and filters. The file has four parts:
 
   ```
   - issue: 421
-    severity: 1          # 1 changes results, 2 noticeable change,
-                         # 3 new runtime error, 4 new compile error,
-                         # 5 fix without side effects
+    severity: 1          # 1-5, the levels at the top of this file
     topic: "Graphics"    # one of topics
     library: "polylib"   # the library of the command reference, or
                          # "Compiler" or "TED"
