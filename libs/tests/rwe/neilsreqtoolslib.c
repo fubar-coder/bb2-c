@@ -238,7 +238,8 @@ static ULONG fk_getlong(ULONG *v __asm("a1"), ULONG title __asm("a2"), ULONG ri 
 {
     struct rec *r = logcall(-78, 0, tags, (ULONG)v, title, ri, 0);
     r->x = *v;
-    *v = fk_long;
+    if (fk_ret)                         /* as reqtools: the value only on ok */
+        *v = fk_long;
     return fk_ret;
 }
 
@@ -684,7 +685,9 @@ static void others(void)
         fk_ret = !(k & 2);
         fk_long = 1000 + k;
         DOREQ(E_GETLONG, k & 1, strargs("Number", "Enter it", NULL); R.d[2] = 77 + k);
-        BOTH("the value, also on cancel (BUG(orig) #457)", RES.d[0] == 1000 + (ULONG)k);
+        /* on cancel reqtools leaves the value: the one it was shown */
+        BOTH("the value, also on cancel (BUG(orig) #457)",
+             RES.d[0] == (k & 2 ? log_[0].x : 1000 + (ULONG)k));
     }
     ROUT = "RTEZGetLongRange";
     for (k = 0; k < 4; k++) {

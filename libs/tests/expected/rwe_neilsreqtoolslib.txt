@@ -164,9 +164,9 @@ RTEZGetLong|call 0|form 0 cancel|1	bytes 256 fnv 2600DEBF
 RTEZGetLong|call 0|form 0 ok|1	bytes 256 fnv 21D9FE83
 RTEZGetLong|call 0|form 1 cancel|1	bytes 256 fnv 8C651113
 RTEZGetLong|call 0|form 1 ok|1	bytes 256 fnv 41413DC9
-RTEZGetLong|d0|form 0 cancel|1	$000003EA
+RTEZGetLong|d0|form 0 cancel|1	$000003E9
 RTEZGetLong|d0|form 0 ok|1	$000003E8
-RTEZGetLong|d0|form 1 cancel|1	$000003EB
+RTEZGetLong|d0|form 1 cancel|1	$00000050
 RTEZGetLong|d0|form 1 ok|1	$000003E9
 RTEZGetLong|kept|form 0 cancel|1	kept
 RTEZGetLong|kept|form 0 ok|1	kept
