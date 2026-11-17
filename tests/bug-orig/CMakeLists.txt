@@ -953,6 +953,8 @@ if(BUG_ORIG_RECORD_FILTER)
 	string(APPEND what " (filter ${BUG_ORIG_RECORD_FILTER})")
 endif()
 add_custom_target(bug-orig-record
+	COMMAND ${CMAKE_COMMAND} -DNAME=BUG_ORIG_RECORD_FILTER "-DVALUE=${BUG_ORIG_RECORD_FILTER}"
+		-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
 	COMMAND ${CMAKE_COMMAND} -E env AMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
 		${CMAKE_COMMAND} -DLIST=${CMAKE_CURRENT_BINARY_DIR}/bug-orig-record.list
 		-DRESULTS=${RESULTS} -DCORPUSRUN=${CORPUSRUN} -DTEDAB=${TEDAB}
@@ -962,6 +964,13 @@ add_custom_target(bug-orig-record
 	COMMENT "The recorded originals of the bug-orig tests from ${what}"
 	VERBATIM)
 add_dependencies(bug-orig-record bug_orig_sources blitz2_ref ted_ref host_tools)
+# the refusal of an environment variable BUG_ORIG_RECORD_FILTER with the
+# cache variable empty (cmake/check-cache-variable.cmake)
+add_test(NAME cache_variable_env_BUG_ORIG_RECORD_FILTER COMMAND ${CMAKE_COMMAND}
+	-DNAME=BUG_ORIG_RECORD_FILTER -DSCRIPT=${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
+	-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable-test.cmake)
+set_tests_properties(cache_variable_env_BUG_ORIG_RECORD_FILTER PROPERTIES
+	PASS_REGULAR_EXPRESSION "check-cache-variable-test: all checks as expected")
 # the orchestration with fake runs (no emulator): a deterministic test is
 # written, a non-deterministic one refused with its ID.orig unchanged, a
 # test the filter leaves out untouched, a failed run fails the target

@@ -410,7 +410,8 @@ removed and reported. The file is written in the order of
 "Expected data". The cache variable `LIBS_CAPTURE_FILTER`
 limits the run to a snitch filter (`cmake --preset amiga
 "-DLIBS_CAPTURE_FILTER=rwe riarrayslib"`, set it empty again
-afterwards); the other programs' files stay as they are. Use a tag
+afterwards; an environment variable of that name has no effect and is
+refused by the target, whose comment shows the active filter); the other programs' files stay as they are. Use a tag
 filter (`[blit]`) or the full name of a test case, no `*`: the filter is
 a quoted argument of the AmigaDOS script, where `*` is the escape
 character (`"systest_blit*"` matches nothing, and nothing is written).
@@ -424,7 +425,9 @@ is the detector.
 **Update** (`libs-update`, no CD) runs the C build once and rewrites the
 value of every `[fixed #N]` case. To turn an unqualified case into a pair
 after a fix, name it: `cmake --preset amiga "-DLIBS_UPDATE_FIX=KEY#N"`
-(several separated by `;`), then the target; KEY is the key as written
+(several separated by `;`; a cache variable, an environment variable
+`LIBS_UPDATE_FIX` has no effect and is refused; the target's comment shows
+the active filter), then the target; KEY is the key as written
 in the file, N the issue. The case becomes `KEY [orig]` (the old value)
 and `KEY [fixed #N]` (the port's value), or `KEY [orig #N]` alone if
 the port's run lacks the key; a `KEY [orig]` alone that the port's run
@@ -1442,6 +1445,10 @@ cmake --preset amiga -DBUG_ORIG_RECORD_FILTER=ID1,ID2   # IDs or globs; empty: a
 cmake --build --preset amiga --target bug-orig-record
 git diff tests/bug-orig                                 # review
 ```
+
+`BUG_ORIG_RECORD_FILTER` is a cache variable: an environment variable of
+that name has no effect and is refused by the target; the target's comment
+shows the active filter.
 
 It runs the original twice per test (`corpusrun pass` / `tedab run` with
 the pass key `record=write`, the observation into the build directory);

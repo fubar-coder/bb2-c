@@ -137,7 +137,12 @@ foreach(mode capture update)
 	if(LIBS_CAPTURE_FILTER)
 		string(APPEND what " (filter ${LIBS_CAPTURE_FILTER})")
 	endif()
+	# the environment variables of the cache variables have no effect: refused
 	add_custom_target(libs-${mode}
+		COMMAND ${CMAKE_COMMAND} -DNAME=LIBS_CAPTURE_FILTER "-DVALUE=${LIBS_CAPTURE_FILTER}"
+			-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
+		COMMAND ${CMAKE_COMMAND} -DNAME=LIBS_UPDATE_FIX "-DVALUE=${LIBS_UPDATE_FIX}"
+			-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
 		COMMAND ${CMAKE_COMMAND} -DMODE=${mode} -DEMULATOR=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake
 			-DRESULTS=${RESULTS} -DEXPECTED=${expected} -DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs-${mode}
 			-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB} -DPROGRAM=$<TARGET_FILE:libs_tests>
@@ -150,6 +155,15 @@ foreach(mode capture update)
 		COMMENT "The library tests' cases from ${what}"
 		VERBATIM)
 	add_dependencies(libs-${mode} libs_tests acidlibs host_tools)
+endforeach()
+# the refusal of an environment variable of LIBS_CAPTURE_FILTER or
+# LIBS_UPDATE_FIX with the cache variable empty (cmake/check-cache-variable.cmake)
+foreach(v LIBS_CAPTURE_FILTER LIBS_UPDATE_FIX)
+	add_test(NAME cache_variable_env_${v} COMMAND ${CMAKE_COMMAND} -DNAME=${v}
+		-DSCRIPT=${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
+		-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable-test.cmake)
+	set_tests_properties(cache_variable_env_${v} PROPERTIES
+		PASS_REGULAR_EXPRESSION "check-cache-variable-test: all checks as expected")
 endforeach()
 # the orchestration of both with a fake run (no emulator): a deterministic
 # record is written, a non-deterministic one refused with the expected
