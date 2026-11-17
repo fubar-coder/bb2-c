@@ -966,9 +966,9 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
 #define BLITZ_ERRCHK_ASM(name, text)                                        \
     BL_ASM_FUNC_(static BLITZ_ERRCHK, bl_errchk_asm_##name, text "\n")
 
-/* A routine that is assembler by nature (stack pointer manipulation,
-   exception frames, hardware): BLITZ_ASM_ROUTINE(entry, "text").  Keep the
-   original instructions and say in a comment why C cannot do it. */
+/* A routine in assembler, BLITZ_ASM_ROUTINE(entry, "text"): by nature (stack
+   pointer, exception frames, hardware) or for speed on a hot path measured
+   with the perf preset; say in a comment which. */
 #define BLITZ_ASM_ROUTINE(entry, text) BL_ASM_FUNC_(, entry, text "\n")
 
 /* BLITZ_ASM_BLOCK(name, "text") - assembler in the normal code that is not
