@@ -160,6 +160,10 @@ kind F):
   (the bank is erased again). The original returned 0, the number of the
   first bank, when Reserve failed, and the bank, left reserved with
   undefined contents, when the load failed (#486).
+* `BSave(name$,bank,length)` writes at most the bank's length, as the
+  manual says ("If length > bank length, then the length of the bank is
+  saved instead"); the original wrote `length` bytes from the bank's
+  start, whatever the bank's size (#489).
 * `BankLimit n` returns the new number of banks, as `BankLimit` without
   an argument does (the manual's syntax:
   `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
@@ -175,8 +179,6 @@ kind F):
   given to BLoad is erased and reserved anew with the file's length (or
   the given one) (#499). The error check never checks (RTS first)
   (#485).
-* `BSave(name$,bank,length)` writes `length` bytes from the bank's start,
-  whatever the bank's size (#489).
 * `MakeDir` unlocks d1 after CreateDir, not the returned lock. The
   dos.library of OS 3.2 (the emulator's) has the lock in d1 too: the test
   sees the directory unlocked; other versions may leak it or unlock

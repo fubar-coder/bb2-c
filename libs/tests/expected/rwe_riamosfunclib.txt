@@ -100,12 +100,14 @@ BSave|d0|form 0 c.bin -1 0|1	$00000000
 BSave|d0|form 0 c.bin 5 0|1	$00000000
 BSave|d0|form 1 b.bin -1 37|1	$FFFFFFFF
 BSave|d0|form 1 c.bin 0 10|1	$FFFFFFFF
+BSave|d0|form 1 f.bin 0 200 (beyond the bank)|1	$FFFFFFFF
 BSave|d0|form 1 nodir/x.bin 0 10|1	$00000000
 BSave|kept|form 0 a.bin 0 0|1	kept
 BSave|kept|form 0 c.bin -1 0|1	kept
 BSave|kept|form 0 c.bin 5 0|1	kept
 BSave|kept|form 1 b.bin -1 37|1	kept
 BSave|kept|form 1 c.bin 0 10|1	kept
+BSave|kept|form 1 f.bin 0 200 (beyond the bank)|1	kept
 BSave|kept|form 1 nodir/x.bin 0 10|1	kept
 BSave|length|file a.bin|1	$00000028
 BSave|length|file b.bin|1	$00000025
@@ -115,6 +117,7 @@ BSave|popped|form 0 c.bin -1 0|1	$00000000
 BSave|popped|form 0 c.bin 5 0|1	$00000000
 BSave|popped|form 1 b.bin -1 37|1	$00000000
 BSave|popped|form 1 c.bin 0 10|1	$00000000
+BSave|popped|form 1 f.bin 0 200 (beyond the bank)|1	$00000000
 BSave|popped|form 1 nodir/x.bin 0 10|1	$00000000
 BankLimit|d0||1	$00000032
 BankLimit|d0|50|1	$00000032
@@ -318,18 +321,22 @@ FileSize|d0|a.bin|1	$00000028
 FileSize|d0|b.bin|1	$00000025
 FileSize|d0|c.bin|1	$00000000
 FileSize|d0|d.bin|1	$0000000A
+FileSize|d0|f.bin|1 [orig]	$000000C8
+FileSize|d0|f.bin|1 [fixed #489]	$00000028
 FileSize|d0|missing.bin|1	$00000000
 FileSize|kept||1	kept
 FileSize|kept|a.bin|1	kept
 FileSize|kept|b.bin|1	kept
 FileSize|kept|c.bin|1	kept
 FileSize|kept|d.bin|1	kept
+FileSize|kept|f.bin|1	kept
 FileSize|kept|missing.bin|1	kept
 FileSize|popped||1	$00000000
 FileSize|popped|a.bin|1	$00000000
 FileSize|popped|b.bin|1	$00000000
 FileSize|popped|c.bin|1	$00000000
 FileSize|popped|d.bin|1	$00000000
+FileSize|popped|f.bin|1	$00000000
 FileSize|popped|missing.bin|1	$00000000
 FillMem|contents|bank 0|1	bytes 100 fnv FB5ED1A5
 FillMem|contents|bank 0|2	bytes 40 11111111111111111111111111111111111111111111111111111111111111111111111111111111

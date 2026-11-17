@@ -46,8 +46,6 @@
  *   - A bank given to BLoad is erased and reserved anew with the file's
  *     length (or the given one) (#499).  The error check
  *     (bloadchk) starts with an RTS: it never checks (#485).
- *   - BSave(name$,bank,length) writes that many bytes from the bank's
- *     start, whatever the bank's size (#489).
  *   - MakeDir unlocks whatever CreateDir leaves in d1, not the lock it
  *     returned in d0 (see makedir_c; with the dos.library of OS 3.2 d1
  *     holds the lock as well, the test sees it given back) (#496).
@@ -116,6 +114,10 @@
  *     missing file.  The original returned 0 (the number of the first
  *     bank) when Reserve failed and the bank, left reserved with undefined
  *     contents, when the load failed (#486).
+ *   - BSave(name$,bank,length) writes at most the bank's length (the
+ *     manual: "If length > bank length, then the length of the bank is
+ *     saved instead"); the original wrote that many bytes from the bank's
+ *     start, whatever the bank's size (#489).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -900,8 +902,9 @@ static ULONG BLITZ_ROUTINE bload4_c(CONST_STRPTR name BL_REG(d0))
  *
  * A number from 0 to maxbanks-1 is a bank, anything else an address
  * (fixed, #484: the original compared signed).  Length 0 = the bank's
- * length (an address without a length: 0).  BUG(orig) (#489): a length with a bank writes that many bytes from the
- * bank's start, whatever the bank's size.
+ * length (an address without a length: 0); a length beyond the bank's is
+ * the bank's (fixed, #489: the original wrote that many bytes from the
+ * bank's start, whatever the bank's size).
  * @param name  d0: filename$
  * @param adr   d1: the address or bank
  * @param len   d2: the number of bytes
@@ -920,6 +923,8 @@ static BB_BOOL BLITZ_ROUTINE bsave_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_
         len = length_c((LONG)adr);
     }
     if (ISBANK(adr)) {
+        if (len > length_c((LONG)adr))
+            len = length_c((LONG)adr);          /* fixed (#489) */
         adr = start_c((LONG)adr);
         if (!adr)
             return BB_FALSE;

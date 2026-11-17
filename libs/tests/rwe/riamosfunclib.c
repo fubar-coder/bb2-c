@@ -29,7 +29,8 @@
  * freed, a bank above the old limit, back to 50); the files on RAM:
  * MakeDir (new, existing, missing parent; whether the directory's lock
  * was given back), FileSize (file, directory, missing), BSave (bank,
- * address with and without a length, a free bank, a bad path), BLoad in
+ * a length beyond the bank (#489), address with and without a length,
+ * a free bank, a bad path), BLoad in
  * all five forms (into a new bank, an address, a used bank, a length, an
  * offset, chip memory; empty and missing files, #487: the original
  * leaves the bank of a failed open reserved), its error check (an RTS), Rename (done, missing),
@@ -490,6 +491,12 @@ static void files(void)
     bsave(0, "c.bin", -1, 0);                           /* address, no length: 0 */
     bsave(0, "c.bin", 5, 0);                            /* free bank: 0 */
     bsave(1, "c.bin", 0, 10);
+    ROUT = "BSave";                                     /* beyond the bank (#489) */
+    strcpy(VEC, "form 1 f.bin 0 200 (beyond the bank)");
+    DeleteFile((STRPTR)P("f.bin"));
+    DO1(ENT(LIB, E_BSAVE, 1), NAMEARG("f.bin"); R.d[1] = 0; R.d[2] = 200);
+    OBS("d0", R.d[0]);
+    filesize("f.bin");
     bsave(1, "nodir/x.bin", 0, 10);                     /* cannot open: 0 */
     filesize("");                                       /* the directory */
     filesize("missing.bin");
@@ -657,7 +664,7 @@ static void saveexecs(void)
 static void cleanup(void)
 {
     static const char *f[] = { "a.bin", "b.bin", "c.bin", "d.bin", "p.bin", "empty.bin",
-                               "x.exe", "y.exe", "sub", "" };
+                               "x.exe", "y.exe", "f.bin", "sub", "" };
     unsigned i;
     for (i = 0; i < sizeof f / sizeof f[0]; i++)
         DeleteFile((STRPTR)P(f[i]));
