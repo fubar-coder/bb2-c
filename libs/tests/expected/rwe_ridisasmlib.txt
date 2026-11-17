@@ -1,9 +1,27 @@
 # capture rwe_ridisasmlib 1
-init|kept||1	kept
-init|popped||1	$00000000
+DisAssemble$|a3 moved|odd a3|1	$00000023
+DisAssemble$|a3 moved|odd address|1	$00000005
+DisAssemble$|d0|odd a3|1	$00000022
+DisAssemble$|d0|odd address|1	$00000005
+DisAssemble$|kept|odd a3|1	kept
+DisAssemble$|kept|odd address|1	kept
+DisAssemble$|popped|odd a3|1	$00000000
+DisAssemble$|popped|odd address|1	$00000000
+DisAssemble$|string|odd a3|1	bytes 40 AA6D6F76652E6C20202033382861302C61302E6C2A32292C6430202020202020202020AAAAAAAAAA
+DisAssemble$|string|odd address|1	bytes 40 3F3F3F3F3FAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+InstrSize|d0|odd a3|1	$00000004
+InstrSize|d0|odd address|1	$00000002
+InstrSize|kept|odd a3|1	kept
+InstrSize|kept|odd address|1	kept
+InstrSize|popped|odd a3|1	$00000000
+InstrSize|popped|odd address|1	$00000000
+InstrSize (before DisAssemble$)|d0||1	$00000000
 InstrSize (before DisAssemble$)|kept||1	kept
 InstrSize (before DisAssemble$)|popped||1	$00000000
-InstrSize (before DisAssemble$)|d0||1	$00000000
+finit|kept||1	kept
+finit|popped||1	$00000000
+init|kept||1	kept
+init|popped||1	$00000000
 BLOCK:1	4096 21EAE263 first=DisAssemble$|kept|0000 8A26 7FF3 9ABC |1
 BLOCK:2	4096 369DFEA9 first=DisAssemble$|kept|0200 8A26 7FF3 9ABC |4097
 BLOCK:3	4096 63AA7C77 first=DisAssemble$|kept|0400 8A26 7FF3 9ABC |8193
@@ -751,21 +769,3 @@ BLOCK:744	4096 B4C2BC34 first=DisAssemble$|kept|4E7A E9FA |3043329
 BLOCK:745	4096 A5469733 first=DisAssemble$|kept|4E7A EFFA |3047425
 BLOCK:746	4096 97BC251D first=DisAssemble$|kept|4E7A F5FA |3051521
 BLOCK:747	2752 F7C3AA82 first=DisAssemble$|kept|4E7A FBFA |3055617
-DisAssemble$|kept|odd address|1	kept
-DisAssemble$|popped|odd address|1	$00000000
-DisAssemble$|d0|odd address|1	$00000005
-DisAssemble$|a3 moved|odd address|1	$00000005
-DisAssemble$|string|odd address|1	bytes 40 3F3F3F3F3FAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-InstrSize|kept|odd address|1	kept
-InstrSize|popped|odd address|1	$00000000
-InstrSize|d0|odd address|1	$00000002
-DisAssemble$|kept|odd a3|1	kept
-DisAssemble$|popped|odd a3|1	$00000000
-DisAssemble$|d0|odd a3|1	$00000022
-DisAssemble$|a3 moved|odd a3|1	$00000023
-DisAssemble$|string|odd a3|1	bytes 40 AA6D6F76652E6C20202033382861302C61302E6C2A32292C6430202020202020202020AAAAAAAAAA
-InstrSize|kept|odd a3|1	kept
-InstrSize|popped|odd a3|1	$00000000
-InstrSize|d0|odd a3|1	$00000004
-finit|kept||1	kept
-finit|popped||1	$00000000
