@@ -1,17 +1,29 @@
 # the intended differences of bb_blitlib against the reference build of its
 # source (blitzlib compare, docs/development.md "Intended differences")
-# #428: CreateShape has an error check (_errCreateShape: count 0); the
-# original's entry has none
-lib 19: entry 6 CreateShape +$16: code offset set in only one of them
 # #429: the eight forms of SpecialBlock, SpecialBlockBitmap, TBlock,
 # PredatorBlit, BPredatorBlit and BColourBlit have an error check
 # (_errShapeA1, _errShapeA3: a shape of depth 0); the original's have none
-# (one message per command)
+# (one message per command; BColourBlit's: with the #1077 lines below)
 lib 19: entry 0 SpecialBlock +$1A: code offset set in only one of them
 lib 19: entry 1 SpecialBlockBitmap +$1A: code offset set in only one of them
 lib 19: entry 2 TBlock +$16: code offset set in only one of them
 lib 19: entry 3 PredatorBlit +$16: code offset set in only one of them
 lib 19: entry 4 BPredatorBlit +$22: code offset set in only one of them
-lib 19: entry 9 BColourBlit +$24: code offset set in only one of them
+# #428, #1077: CreateShape has an error check (_errCreateShape: count 0;
+# start_shape + count above Maximum Shapes), the original's entry has none
+# (its difference at +$16 is covered by the line of +$15); for #1077 its
+# !libs list also loads the shape table (a0) and Maximum Shapes (d4): the
+# longer list moves every entry behind it (the first difference of each
+# entry; BColourBlit's check offset at +$24 with it)
+lib 19: entry 6 CreateShape +$15: $00 != $9A
+lib 19: entry 7 SpecialBlockToShape +$0: $00 != $65
+lib 19: entry 8 BlockToShape +$0: $00 != $74
+lib 19: entry 9 BColourBlit +$0: $00 != $74
+lib 19: entry 10 TBlockImage +$0: $00 != $2C
+lib 19: entry 11 BTBlockImage +$0: $00 != $67
+lib 19: entry 12 (nullsub) +$0: $00 != $2C
+lib 19: entry 13 (nullsub) +$0: $00 != $00
+lib 19: end of the table +$466: $FF != $00
+lib 19: declaration part $46C != $474 bytes
 # #428, #429: one relocation per new check entry (1 + 8)
 lib 19: relocations in the declaration part 21 != 30

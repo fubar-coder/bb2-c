@@ -62,8 +62,8 @@ arithmetic is the original's (`MULU.w`/`MULS.w`, `ASR.w`, word sums).
 `ADD.l ebwidth-2(pc)` adds the long `pad:ebwidth`, i.e. `ebwidth` (pad
 is 0). The error checks are C in the error check area; they keep d0,
 which the original changes (low word: +26 of a shape). The checks of
-`CreateShape` (#428) and of the blits that take a shape (#429) are the
-port's.
+`CreateShape` (#428, #1077) and of the blits that take a shape (#429)
+are the port's.
 
 ## Fixed
 
@@ -89,6 +89,15 @@ kind F):
   over the memory behind the shape table (#428; bug-orig test
   `bb_blitlib-createshape-count0`). The release code is unchanged: the
   count is an argument the programmer controls.
+* `CreateShape`'s error check also refuses a count that runs past the
+  shape table: `start_shape + count` above Maximum Shapes is the error
+  "CreateShape start+count above Maximum Shapes!". The original writes
+  the objects from Maximum Shapes on, 32 bytes each, over the memory
+  behind the table (#1077; bug-orig test
+  `bb_blitlib-createshape-past-max`); the compiler checks only
+  `start_shape`. The check gets the table (`#ba0`) and the maximum
+  (`#md4`) from the declaration, so each call loads a0 and d4 also
+  without runtime error checking (24 cycles; a set-up command).
 * `SpecialBlock`, `SpecialBlockBitmap`, `TBlock`, `PredatorBlit`,
   `BPredatorBlit` and `BColourBlit` have an error check, and
   `SpecialBlockToShape`'s check tests the top shape's depth: with
@@ -139,7 +148,8 @@ the blit wrote), the shape objects `CreateShape` made, d0 of
 to 40, colours with bits above the depth and above bit 7, `CreateShape`
 with the like shape among the created ones, the original's two error
 checks with good shapes. Not covered: the runtime errors of the checks,
-the port's checks (#428, #429; the original has no entries to compare
+the port's checks (#428, #429, #1077; the original has no entries to compare
 them with: the bug-orig tests `bb_blitlib-createshape-count0` and
-`bb_blitlib-depth0-dbra` show their runtime errors), depth/count 0,
+`bb_blitlib-depth0-dbra`, `bb_blitlib-createshape-past-max` show their
+runtime errors), depth/count 0,
 blits outside the bitmaps.

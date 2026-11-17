@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "CreateShape start+count above Maximum Shapes!" *
+rc=0

@@ -54,7 +54,10 @@
  *     made with runtime error checking (bitmaplib's checks).
  *   - CreateShape has an error check: count 0, which makes the release
  *     code create 65536 shapes, is the runtime error "CreateShape count
- *     must be at least 1!"; the original had no check (#428).
+ *     must be at least 1!"; the original had no check (#428).  So is a
+ *     count that runs past the shape table (start_shape + count above
+ *     Maximum Shapes): "CreateShape start+count above Maximum Shapes!"
+ *     (#1077).  The check gets the table and the maximum in a0 and d4.
  *   - BTBlockImage adds image*224 as a long, as TBlockImage does; the
  *     original added it as a word (ADD.w), images from 147 on were read
  *     before image_addr (#427).
@@ -135,8 +138,10 @@ BLITZ_NAME("SetupMapTwo", "ebwidth");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD3);
-BLITZ_SUBS(_createshape, _errCreateShape, 0);  /* Fixed (#428): the original has no check */
+/* Fixed (#1077): + a0 = the shape table, d4 = Maximum Shapes, for the check */
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD3, LIB_shapeslib, BL_BA0,
+           LIB_shapeslib, BL_MD4);
+BLITZ_SUBS(_createshape, _errCreateShape, 0);  /* Fixed (#428, #1077): the original has no check */
 BLITZ_NAME("CreateShape", "start_shape,count,chipmemblock,like_shape");
 
 BLITZ_ASTATEMENT();
@@ -762,8 +767,9 @@ first:
  * count shape objects from start_shape on like like_shape, their data at
  * chipmemblock one after another (size, +26, of the like shape
  * each), no cookie, "cL" (the data is not the shapes').
- * count 0 creates 65536 shapes (DBRA); Fixed (#428): the error check
- * errcreateshape_c refuses it.
+ * count 0 creates 65536 shapes (DBRA), a count past Maximum Shapes
+ * writes behind the shape table; Fixed (#428, #1077): the error check
+ * errcreateshape_c refuses both.
  * @param count  d1: the number of shapes
  * @param mem    d2: the chip memory block
  * @param shape  a2: the first shape object
@@ -959,21 +965,34 @@ static void BLITZ_ERRCHK errshapea3_c(struct bb_shape *shape BL_REG(a3))
 }
 
 BLITZ_ERRCHK_MESSAGE(nocount, "CreateShape count must be at least 1!");
+BLITZ_ERRCHK_MESSAGE(pastmax, "CreateShape start+count above Maximum Shapes!");
 
 /**
  * @brief CreateShape's error check (not in the original): a count of at
- * least 1.
+ * least 1 that stays inside the shape table.
  *
  * Fixed (#428): count 0 makes the routine's DBRA loop create 65536
  * shapes over the memory behind the shape table; runtime error
- * "CreateShape count must be at least 1!".  The release code is
- * unchanged (an invalid argument).
+ * "CreateShape count must be at least 1!".  Fixed (#1077): start_shape +
+ * count above Maximum Shapes writes the shapes from Maximum Shapes on
+ * behind the table; runtime error "CreateShape start+count above Maximum
+ * Shapes!".  start_shape itself is checked by the compiler's item check
+ * ("Value out of Maximum Range"), so shape - table is below the maximum.
+ * The release code is unchanged (an invalid argument); the declaration
+ * loads a0 and d4 for this check.
  * @param count  d1: the number of shapes
+ * @param max    d4: Maximum Shapes (BL_MD4)
+ * @param table  a0: the shape table, shape 0 (BL_BA0)
+ * @param shape  a2: the first shape object
  */
-static void BLITZ_ERRCHK errcreateshape_c(UWORD count BL_REG(d1))
+static void BLITZ_ERRCHK errcreateshape_c(UWORD count BL_REG(d1), UWORD max BL_REG(d4),
+                                          struct bb_shape *table BL_REG(a0),
+                                          struct bb_shape *shape BL_REG(a2))
 {
     if (!count)
         BLITZ_RUNERR(nocount);
+    else if ((ULONG)(shape - table) + count > max)
+        BLITZ_RUNERR(pastmax);
 }
 
 /* the original changes d0 (the low word: +26 of the shape); kept here */
