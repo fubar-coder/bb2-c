@@ -61,7 +61,7 @@ static int run(const struct prevcmp_options *o, char *report, size_t n)
     snprintf(prev, sizeof prev, "%s/prev", base);
     snprintf(tmp, sizeof tmp, "%s/report", base);
     f = fopen(tmp, "w+");
-    CHECK(f != NULL);
+    REQUIRE(f != NULL);
     r = prevcmp(cur, prev, o, f, err, sizeof err);
     rewind(f);
     got = fread(report, 1, n - 1, f);

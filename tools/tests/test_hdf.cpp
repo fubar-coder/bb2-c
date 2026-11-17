@@ -348,7 +348,7 @@ TEST_CASE("hdf: hexfiles", "[hdf]")
     uint8_t *img = static_cast<uint8_t *>(calloc(64, HDF_BLOCK)), *back;
     size_t len;
 
-    CHECK(img != NULL);
+    REQUIRE(img != NULL);
     CHECK(hdf_format(img, 64 * HDF_BLOCK, DOS(3), "Hex", 0, err, sizeof err) == 0);
     CHECK(hdf_open(&h, img, 64 * HDF_BLOCK, err, sizeof err) == 0);
     CHECK(hdf_write_hex(&h, "Bin", "00ff7F80aBcD", err, sizeof err) == 0);

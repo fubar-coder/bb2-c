@@ -220,7 +220,7 @@ TEST_CASE("teststats: report", "[teststats]")
     struct teststats *t = teststats_new();
     char *diag, *text;
 
-    CHECK(t != NULL);
+    REQUIRE(t != NULL);
     CHECK(add(t, "run1.xml", run1, &diag) == 0 && diag && !*diag);
     free(diag);
     CHECK(add(t, "run2.xml", run2, &diag) == 1);

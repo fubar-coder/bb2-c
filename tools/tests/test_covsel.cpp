@@ -422,7 +422,7 @@ TEST_CASE("covsel: broken", "[covsel]")
     };
     size_t i;
 
-    CHECK(s);
+    REQUIRE(s);
     for (i = 0; i < sizeof bad_commits / sizeof *bad_commits; i++)
         CHECK(covsel_set_commit(s, bad_commits[i], err, sizeof err) && strstr(err, "no commit"));
     for (i = 0; i < sizeof bad_traces / sizeof *bad_traces; i++)
