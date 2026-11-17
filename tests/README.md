@@ -180,9 +180,14 @@ Run in Amiberry; without Amiberry or without the data in `amiga-emulation/`
 
 ### Running them
 
-* **Parallelism:** the presets `emulator`, `all` and `bug-orig` run 4
-  tests at once (`execution.jobs`; ctest starts the tests that took
-  longest in the last run first, from `Testing/Temporary/CTestCostData.txt`).
+* **Parallelism:** the test presets run as many tests at once as the
+  machine has CPUs (`"execution": { "jobs": "" }`, CMake presets version 11,
+  so CMake 4.3; `perf` keeps 8); the number of emulator sessions is bound
+  by the slots alone (below), a test that waits for one sits in a spare job.
+  ctest starts the tests that took longest in the last run first, from
+  `Testing/Temporary/CTestCostData.txt`. The tests of the emulation library
+  that wait for real time (`amiga_emulation_supervisor`, 40 s) have the
+  label `emulator` and run in `host_emulator`, not in the preset `host`.
   Each test uses up to `CORPUS_PARALLEL` emulators (default 3 under
   Linux, otherwise 1), as far as there are free slots (a runner that
   holds a slot does not wait for more, it runs its sessions one after
@@ -253,7 +258,8 @@ Run in Amiberry; without Amiberry or without the data in `amiga-emulation/`
 * **Slots:** over everything (all runners, build directories and
   worktrees of the machine) at most `AMIGA_EMULATION_MAX` Amiberry
   sessions run at once (environment, 0 = no limit; without it the number
-  in the file `max` of the slot directory, default 4; how to change it
+  in the file `max` of the slot directory, default 60 % of the online CPUs,
+  rounded, at least 1, at most 64: 10 on 16 CPUs; how to change it
   while tests run: `AMIGA-EMULATION-SETUP.md`). A further session waits
   for a free slot (`tools/lib/amiga_emulation/README.md`, "Slots: how runners wait"); the
   wait does not count into the session's timeout, and every emulator test
@@ -372,7 +378,8 @@ variable for a whole run of the libs tests. The program dumps a plain
 case itself; a block, and an observation inside a block, are dumped
 after the run from the program's `NAME.bin` (`results libs-dump`, below).
 
-**Record** (`libs-capture`) runs `libs_tests` twice with `LIBSET=orig`,
+**Record** (`libs-capture`) runs `libs_tests` twice at the same time (own work
+directories and sessions; it needs two free slots to run side by side) with `LIBSET=orig`,
 the second time with `LIBS_PAD=4104` (the program allocates that many
 bytes first, which shifts the heap and the slots), and
 `results libs-accept` writes the expected data only if both runs are
@@ -1370,14 +1377,29 @@ when the job has changed no file of its volumes and of `TEST:` for N
 seconds (`tools/lib/amiga_emulation/README.md`, "Session states"). What it
 leaves is what a run to the limit leaves, because the hang is silent: the
 alert of a crash stays about 10 s before the reboot, and the observation is
-taken inside it. The sessions of the port and clib in the normal run keep
-the limit: the port's compile is silent for longer than N under load. A
+taken inside it. The sessions of the port and clib in the normal run have
+a check of their own, below. A
 test whose hang the recording does not know yet (no `ID.orig`) waits the
 whole limit once. A test that computes silently for longer than N seconds
 before it hangs would be cut early (the compare test then fails with the
 differing section): such a test sets the key itself, `; @pass hang_after=N`
 for the normal run, and a larger `BUG_ORIG_HANG_AFTER` for the recording.
 The key is the pass file's (`corpus.h`, `hang_after=`).
+
+**A hanging program ends early in the normal run.** The port's and clib's
+sessions of the normal run (open, fixed and regression tests) get
+`hang_after=N` with `hang_from=run` (`BUG_ORIG_RUN_HANG_AFTER`, default 8 s,
+0 = off; not for a `run=off` test). The silence counts from the first program
+run, from the file the gate or the first program creates
+(`amiga_emulation_params.hang_arm`), never from the start of the job: the
+compile is silent for long on a loaded host (23 s seen), and a session is
+never ended in it. A program that hangs, or crashes into the alert that
+reboots the machine, ends as a timeout after N seconds, the observation of a
+run to the limit. A compile that hangs keeps the whole limit: no sign separates
+it from a slow compile. A program that computes silently for longer than N
+seconds sets `; @pass hang_after=N`, `; @pass hang_from=run` stays. The
+verdict of every test is the same as with the limit alone (checked against all
+tests of the preset `bug-orig`).
 
 
 **Recording** is the build target `bug-orig-record` (not ALL, not a
@@ -1547,6 +1569,33 @@ the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
 out BROKEN on a recorded file. Adding a test: `ted/ID.drv`, found by a
 glob, and `ted/ID.orig` from the target `bug-orig-record`
 (`-DBUG_ORIG_RECORD_FILTER=ID`).
+
+**The gates, once per ctest run.** Every TED session starts with gate 0
+(`tedprobe`: the screen the emulator gives) and gate D (`teddrive` against
+`teddrivetest`, twice, one script failing on purpose): about 8 s of a
+10 s test, and the same for every test, because they check the emulator's
+environment and the tools, not the TED under test. The fixture `ted_gates`
+runs them once: its setup test (`ted_gates`, label `emulator`, pass key
+`gates_only=1`) is one session without a test; when both gates are OK it
+publishes its run directory as `ted_gates` in the run directory
+(`rundir.h`) with the file `gates-ok`, and `ted_gates_cleanup` removes it
+after the last reader. Every TED bug-orig test (open, fixed, `_originals`,
+`bug_orig_record_ID`, the self tests) requires the fixture, stays one ctest
+entry and has `gates_from=ted_gates` in its pass file: with `gates-ok`
+its sessions run no gate D and do not evaluate gate 0 (the session log
+says `GATES checked before`, the report `gates: checked before ...`);
+`tedprobe` still runs in every session, unchecked: the tests that fail
+allocations depend on the memory layout it leaves (#340: TED's `a0toname`
+splits a file name by the low byte of an address), and without it seven of
+them fail in every session. Started by hand without the fixture the
+sessions run the gates as before. A failing gate fails `ted_gates`
+(exit status 1, nothing published, an older mark removed first) and ctest
+does not run the tests that require it ("Not Run"), so the run fails
+visibly. `ted_gates_broken` (label `emulator`) runs the same pass with a
+gate D that fails on purpose (`selftest/gates-broken/`) and needs exit status
+1; the session script without the gates is checked on the host
+(`test_tedab`, "session script without the gates"). `ted_ab` keeps the gates
+in its sessions.
 
 **A fixed TED bug-orig test** (`; @fixed #N` in the header of
 `ted/ID.drv`, N the issue, **no pair**; pass key `fixed=1`): the commit

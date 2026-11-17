@@ -171,13 +171,24 @@ forms.
 
 | Preset | In short | Needs |
 |---|---|---|
-| `host` | tools and host tests; seconds | a compiler |
+| `host` | tools and host tests; about 20 seconds | a compiler |
 | `emulator` | tests in the Amiga emulator | Amiberry |
 | `all` | `host` and `emulator`: the acceptance run. It starts no session of the original | Amiberry; the CD only for a few tests that read its sources (skipped without it) |
 | `originals` | everything that compares with the original, and recordings | Amiberry and the CD (some also the reference build of the RWE sources) |
 | `bug-orig` | open original bugs (and cases closed as `as-designed`, which keep their test: it documents the behaviour without runtime error checking); they fail on purpose | Amiberry |
 | `oracle` | the compiler checks of the AmiBlitz3 tests | Amiberry and the fetched AmiBlitz3 files |
 | `perf` | the benchmark of the libraries: the cycles each command costs, against a budget per command; eight sessions side by side, about 15 s | Amiberry |
+
+The presets run as many ctest jobs as the machine has CPUs; how many
+emulator sessions run at once is set by the slots (60 % of the CPUs by
+default, `AMIGA-EMULATION-SETUP.md`), so tests that wait for a slot cost
+no job of their own. A test that waits for time on its own (the library's
+supervisor test, 40 s) is not in `host`; it runs with the emulator tests.
+Two things keep `bug-orig` and the TED tests short: a program that hangs or
+crashes into the alert ends its session after 8 seconds of silence from the start of its
+first program run, not at the session limit (a compile that hangs still takes the whole
+limit), and the checks of the TED harness (gates) run once per ctest run, in
+the test `ted_gates`, not in every TED session.
 
 So: **`all` is what you run for every change and needs no CD.** The CD
 (`cmake -P cmake/fetch-originals.cmake`) is needed to check the expected
