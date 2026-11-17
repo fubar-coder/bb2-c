@@ -80,6 +80,10 @@
  * next call, so a call without a default showed the previous call's
  * number and returned it on cancel; the value is 0 again after each call
  * (with a default, cancel returns the default, as before).
+ * Fixed (intended deviation, #1078): RTEZGetLongRange kept its value in
+ * the same way, so a call without a default showed the previous call's
+ * number (cancel returned 0 already); the value is 0 again after each
+ * call.
  * Fixed (intended deviation, #454): RTASyncRequest/RTASyncPaletteRequest
  * read a "user port" at 86 of the window object (not of the Window) and
  * kept its signal bit, shifted by one, in a byte nobody read; their
@@ -1276,8 +1280,12 @@ static ULONG BLITZ_ROUTINE rtgetlongDef_c(STRPTR title BL_REG(d0), STRPTR body B
  * @brief RTEZGetLongRange(Title$,BodyText$,Min,Max): asks for a number in
  * a range (rtGetLongA with RTGL_Min/RTGL_Max).
  *
- * The value stays as the default of the next call.  rtGetLongA's result
- * goes to RTReturnValue.
+ * The requester starts at 0, also when 0 is outside Min..Max (reqtools
+ * shows the start value as it is and checks the range only on OK).
+ * rtGetLongA's result goes to RTReturnValue.  Afterwards the value is 0
+ * again, so it does not become the default of the next call (fixed,
+ * #1078: the original kept it, so a call without a default showed the
+ * previous call's number).
  * @param title  d0: Title$
  * @param body   d1: BodyText$
  * @param min    d2: Min
@@ -1287,15 +1295,17 @@ static ULONG BLITZ_ROUTINE rtgetlongDef_c(STRPTR title BL_REG(d0), STRPTR body B
 static ULONG BLITZ_ROUTINE rtgetlongrng_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                           ULONG min BL_REG(d2), ULONG max BL_REG(d3))
 {
-    ULONG r;
+    ULONG r, v;
 
     glrTagList.textfmt.ti_Data = (ULONG)body;
     glrTagList.min.ti_Data = min;
     glrTagList.max.ti_Data = max;
     r = RTCALL(0, RTJSR(LVO_rtGetLongA, 0, &glrTagList, &glrValue, title, 0));
     returnvalue = r;
+    v = glrValue;
+    glrValue = 0;                       /* fixed (#1078): not the next default */
     if (r)
-        r = glrValue;
+        r = v;
     return r;
 }
 

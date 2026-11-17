@@ -34,7 +34,7 @@
  * RTEZFontRequest, RTEZScreenModeRequest both forms (through
  * rtFontRequestA in the original, #466), RTEZPaletteRequest; RTEZGetLong
  * both forms (cancel: the value; in the original the previous call's,
- * #457), RTEZGetLongRange both forms;
+ * #457), RTEZGetLongRange both forms (the value shown: #1078);
  * RTEZGetString both forms, ok and cancel, with the memory each call
  * keeps (#458); RTLockWindow/RTUnlockWindow;
  * the asynchronous requesters (up, not up, check, end; the palette one

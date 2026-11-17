@@ -138,7 +138,15 @@ kind F):
   returns the default (as before; RTReturnValue tells cancel from OK).
   The original kept the value (`glValue`) for the next call, so a call
   without a default showed the previous call's number and returned it on
-  cancel (#457). RTEZGetLongRange keeps its value as before.
+  cancel (#457).
+* RTEZGetLongRange sets its value to 0 after each call in the same way:
+  without a default the requester starts at 0, with a default at the
+  default; cancel returns 0 (as before). reqtools shows the start value
+  as it is, also when 0 is outside Min..Max, and checks the range only
+  on OK (a value outside flashes a message in the title, the requester
+  stays open).
+  The original kept the value (`glrValue`), so a call without a default
+  showed the previous call's number (#1078).
 * RTASyncRequest/RTASyncPaletteRequest no longer read the window object;
   RTCheckASync… and RTEndASync… pass the handler's WaitMask (the long at
   +4 of reqtools' handler info; 0 before any asynchronous requester) as

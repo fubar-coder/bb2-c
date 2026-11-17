@@ -236,7 +236,8 @@ RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 0 cancel|1	$00000001
 RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 0 ok|1	$00000001
 RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 1 cancel|1	$00000001
 RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 1 ok|1	$00000001
-RTEZGetLongRange|call 0|form 0 cancel|1	bytes 256 fnv A5D40517
+RTEZGetLongRange|call 0|form 0 cancel|1 [orig]	bytes 256 fnv A5D40517
+RTEZGetLongRange|call 0|form 0 cancel|1 [fixed #1078]	bytes 256 fnv 6A8D0C47
 RTEZGetLongRange|call 0|form 0 ok|1	bytes 256 fnv F31E9BED
 RTEZGetLongRange|call 0|form 1 cancel|1	bytes 256 fnv DB3F51AD
 RTEZGetLongRange|call 0|form 1 ok|1	bytes 256 fnv 52ADC207
