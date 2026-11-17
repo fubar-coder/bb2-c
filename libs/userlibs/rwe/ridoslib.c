@@ -42,8 +42,6 @@
  *     is not 0 (#621).
  *   - FreeDeviceList leaves the current entry: DeviceEntryType then
  *     reads the entry of the unlocked list (#622).
- *   - NextDevice without GetDeviceList returns with d0 unchanged (the
- *     result string's length is whatever d0 was) (#625).
  *   - GetPathName never looks at the first character: "/abc" and ":x"
  *     give "", like a name without separator (#624).  GetFileName and GetPathName take the length
  *     as a word (MOVE.w -(a2): the low word of the long) (#628), and
@@ -57,6 +55,9 @@
  * UnLockDosList release a semaphore once too often (exec's AN_SemCorrupt
  * alert) and call Permit once too often, so the task's Forbid count went
  * negative.  Without a locked list it now does nothing (d0 = 0).
+ * Fixed (intended deviation, #625): NextDevice without a locked list
+ * returned with d0 unchanged, so the result string's length was whatever
+ * d0 held; it is "" now.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -458,21 +459,20 @@ static BB_BOOL BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
  * (NextDosEntry), "" at the end.
  *
  * The name is copied to a3 up to its 0 (DOS BSTRs have one); a3 ends on
- * the 0 (fixed, #618: the original left it behind the 0).  BUG(orig):
- * without GetDeviceList d0 comes back unchanged as the string's length
- * (#625).
- * @param result  d0: the caller's d0
+ * the 0 (fixed, #618: the original left it behind the 0).  Without a
+ * locked list the result is "" (fixed, #625: the original returned with
+ * d0 unchanged, the string's length whatever d0 was).
  * @param dos     a6: the program's dos base
- * @return d0: the length byte of the name, 0 at the end, the caller's d0
- *         without a list
+ * @return d0: the length byte of the name, 0 at the end or without a
+ *         list
  */
-static ULONG BLITZ_ROUTINE nextlistitem_c(ULONG result BL_REG(d0),
-                                          struct DosLibrary *dos BL_REG(a6))
+static ULONG BLITZ_ROUTINE nextlistitem_c(struct DosLibrary *dos BL_REG(a6))
 {
     const UBYTE *name;
+    ULONG result;
 
     if (!mydoslist)
-        return result;
+        return 0;                                       /* fixed (#625) */
     mydosentry = NextDosEntry(mydosentry, doslistflags);
     if (!mydosentry)
         return 0;

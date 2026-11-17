@@ -42,8 +42,8 @@ NDK inlines; no other assembler. The tables `notifys`/`filelens` have the
 original's zero long in front (an id of -1 reads it, as in the original);
 AddNotify computes the table offset as a word (`ASL.w`/`ADD.w`), RemNotify
 as a long, like the original. Routines that return with d0 unchanged in
-the original (RemNotify, NextDevice, FreeDeviceList on their early exits)
-do so in C too. The string lengths are read below a2 without changing it
+the original (RemNotify, FreeDeviceList without dos.library) do so in C
+too. The string lengths are read below a2 without changing it
 (DIFF as in all C ports, `docs/libs/cmdlibs-port.md` "General"). The
 thunks keep d1/a0/a1, the C code d2-d7/a2-a6; the original changes
 d0-d2, d4/d5, a0/a1 and a6 in places.
@@ -64,6 +64,11 @@ kind F):
   (exec's AN_SemCorrupt alert, the semaphore re-initialised) and call
   Permit once too often, so later Forbid calls of the task had no effect
   (#623; test `ridoslib-freedevicelist-unchecked-unlock`).
+* NextDevice without a locked list returns "" (d0 = 0). The original
+  returned with d0 unchanged: the result string's length was whatever d0
+  held, its characters whatever the string buffer held (#625; test
+  `ridoslib-nextdevice-no-list-length`, `libs_emulator` cases
+  `[fixed #625]` of `rwe_ridoslib`).
 
 ## BUG(orig)
 
@@ -78,8 +83,6 @@ kind F):
   not 0 (#621).
 * FreeDeviceList leaves the current entry: DeviceEntryType then reads an
   entry of the unlocked list (#622).
-* NextDevice without GetDeviceList returns with d0 unchanged (the result
-  string's length is whatever d0 was) (#625).
 * GetPathName never looks at the first character: `/abc` and `:x` give
   "", like a name without separator (#624). GetFileName and GetPathName take the length as a word
   (`MOVE.w -(a2)`: the low word of the long) (#628), and nothing limits

@@ -213,7 +213,7 @@ int main(int argc, char **argv)
     KEEPS("init", d2-d7|a2|a3);
     KEEPS("GetDeviceList", d2-d7|a2|a3|a6);
     KEEPS("DeviceEntryType (unlocked)", d1-d7|a1-a3|a6);
-    KEEPS("NextDevice (unlocked)", d0-d7|a0-a3|a6);
+    KEEPS("NextDevice (unlocked)", d1-d7|a0-a3|a6);   /* d0: the length (fixed #625: 0) */
     KEEPS("finit", d2|d3|d5-d7|a2|a3);
     dos = (struct DosLibrary *)OpenLibrary((STRPTR)"dos.library", 36);
     DeleteFile((STRPTR)TESTFILE);

@@ -500,7 +500,8 @@ NextDevice|a3|flags $8 entry 2|1 [fixed #618]	$00000008
 NextDevice|a3|flags $8 entry 3|1 [orig]	$00000011
 NextDevice|a3|flags $8 entry 3|1 [fixed #618]	$00000010
 NextDevice|a3|flags $8 entry 4|1	$00000004
-NextDevice|d0|before init|1	$5A001234
+NextDevice|d0|before init|1 [orig]	$5A001234
+NextDevice|d0|before init|1 [fixed #625]	$00000000
 NextDevice|d0|flags $1C entry 0|1	$00000004
 NextDevice|d0|flags $1C entry 1|1	$00000005
 NextDevice|d0|flags $1C entry 10|1	$00000008
@@ -670,9 +671,12 @@ NextDevice|popped|flags $8 entry 4|1	$00000000
 NextDevice (unlocked)|a3|flags $1C entry 33|1	$00000004
 NextDevice (unlocked)|a3|flags $4 entry 1|1	$00000004
 NextDevice (unlocked)|a3|flags $8 entry 4|1	$00000004
-NextDevice (unlocked)|d0 unchanged|flags $1C entry 33|1	$00000001
-NextDevice (unlocked)|d0 unchanged|flags $4 entry 1|1	$00000001
-NextDevice (unlocked)|d0 unchanged|flags $8 entry 4|1	$00000001
+NextDevice (unlocked)|d0 unchanged|flags $1C entry 33|1 [orig]	$00000001
+NextDevice (unlocked)|d0 unchanged|flags $1C entry 33|1 [fixed #625]	$00000000
+NextDevice (unlocked)|d0 unchanged|flags $4 entry 1|1 [orig]	$00000001
+NextDevice (unlocked)|d0 unchanged|flags $4 entry 1|1 [fixed #625]	$00000000
+NextDevice (unlocked)|d0 unchanged|flags $8 entry 4|1 [orig]	$00000001
+NextDevice (unlocked)|d0 unchanged|flags $8 entry 4|1 [fixed #625]	$00000000
 NextDevice (unlocked)|kept|flags $1C entry 33|1	kept
 NextDevice (unlocked)|kept|flags $4 entry 1|1	kept
 NextDevice (unlocked)|kept|flags $8 entry 4|1	kept
