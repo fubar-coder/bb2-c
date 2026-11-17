@@ -55,14 +55,17 @@ that are not the result.
   replaced `FLAG`); a program that used an abbreviation of a name on
   purpose now gets 0 instead of a replaced entry (#853; bug-orig test
   `ritooltypeslib-settoolvalue-prefix-match`).
+* SetToolValue/NewToolType with an empty name make the entry `=value`
+  (`=` and the value; with status 0 `(=value)`). The original copied the
+  name with a do-while loop: its 0 first, then whatever followed it up
+  to the next 0, so the entry began with 0 and read back as an empty
+  string (#841; bug-orig test `ritooltypeslib-empty-name-copies-on`).
 
 **BUG(orig)** (kept):
 
 * GetIconObject copies the icon's tool types without a limit into the
   100 entries (#855) (and reads from address 0 if the icon has none)
   (#845); NewToolType appends without a limit (#855).
-* SetToolValue/NewToolType build the new string with do-while loops (an
-  empty name copies its 0 and then whatever follows) (#841).
 * SetToolValue/NewToolType/IconDefTool: if AddFreeList fails, `MOVE.l
   d0,a1` frees address 0 (d0 is AddFreeList's 0), the block is lost
   (#840).

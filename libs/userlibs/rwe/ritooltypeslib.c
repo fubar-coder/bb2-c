@@ -36,9 +36,6 @@
  *     100 entries (#855) (and reads from address 0 if the icon has none)
  *     (#845); NewToolType appends without a limit either; nothing checks
  *     for the last entry (a full array runs into memory behind it) (#855).
- *   - SetToolValue/NewToolType build the new string with do-while
- *     loops: an empty name copies its 0 and then whatever follows the
- *     name up to the next 0 (#841).
  *   - SetToolValue/NewToolType/IconDefTool: a failing AddFreeList frees
  *     address 0, the block is lost (#840).
  *   - FindToolType: a name over 253 characters overflows the 256 byte
@@ -77,6 +74,10 @@
  * Fixed (intended deviation, #853): SetToolValue replaced the first entry
  *   that only began with the name ("FL" replaced "FLAG"); after the name
  *   the entry must now end or go on with "=" or ")".
+ * Fixed (intended deviation, #841): SetToolValue/NewToolType copied the
+ *   name with a do-while loop: an empty name copied its 0 and whatever
+ *   followed it, the entry began with 0 (read back as "").  An empty name
+ *   now gives the entry "=value".
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -596,9 +597,8 @@ static BB_BOOL gotit(STRPTR *entry)
     s = tooltype_address;
     if (!status_tool)
         *d++ = '(';
-    do                                  /* BUG(orig): do-while (see above, #841) */
+    while (*s)                          /* fixed #841: the original's do-while */
         *d++ = *s++;
-    while (*s);
     s = string_address;
     if (*s) {
         *d++ = '=';
@@ -629,7 +629,7 @@ static void toolargs(const char *name, const char *value, BB_BOOL status, const 
  * "(tt$=value$)" with status 0; the string is allocated (length of both
  * + 8) and hung on the icon's FreeList.  Fixed (#853): the original took
  * the first entry that only began with tt$ ("FL" replaced "FLAG").
- * BUG(orig): an empty name copies what follows it (#841); a failing
+ * An empty name gives "=value$" (fixed #841).  BUG(orig): a failing
  * AddFreeList frees address 0 (#840).
  * @param name    d0: the tool type's name
  * @param value   d1: the value
@@ -668,8 +668,7 @@ BB_BOOL BLITZ_ROUTINE c_PutTool2(const char *name BL_REG(d0), const char *value 
  * @brief NewToolType(tooltype$,value$,status): appends a tool type.
  *
  * A new entry at the end, built as by SetToolValue.  BUG(orig): no limit
- * for the 100 entries (#855); the string bugs of SetToolValue (#841,
- * #840).
+ * for the 100 entries (#855); the AddFreeList bug of SetToolValue (#840).
  * @param name    d0: the tool type's name
  * @param value   d1: the value
  * @param status  d2: BB_FALSE for the switched-off form "(tt$=value$)"

@@ -5,6 +5,7 @@
 ; tool type reads back as "".  The icon is the one of SYS:Prefs, its tool
 ; types cleared first.
 ; Correct: the entry is the name (nothing) and "=" and the value: "=abc".
+; @fixed #841
 ; @rwe ritooltypeslib
 If GetIconObject("SYS:Prefs")
   ClearToolTypes
