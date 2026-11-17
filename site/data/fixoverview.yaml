@@ -3171,7 +3171,39 @@ rows:
     command: "PopUpWindow"
     text: "`PopUpWindow` leaves the audio filter and power LED as they are; the original toggled them for every menu with sub menus."
     page: libraries
-    anchor: rwe-other-fixes
+    anchor: popupwinlib-fixes
+  - issue: 467
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "popupwinlib"
+    command: "PopUpWindow"
+    text: "`PopUpWindow` closes the menu and returns when there is no memory for a menu level; the original went on with the level's data at address 0 and could crash."
+    page: libraries
+    anchor: popupwinlib-fixes
+  - issue: 469
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "popupwinlib"
+    command: "PopUpWindow"
+    text: "A mouse button pressed while a sub menu of `PopUpWindow` closes is no longer lost; the original threw away the waiting messages of all menu levels."
+    page: libraries
+    anchor: popupwinlib-fixes
+  - issue: 470
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "popupwinlib"
+    command: "PopUpInit"
+    text: "`PopUpInit` keeps the message port the library already has; the original made a new one each time and lost a port and a signal per call, until `PopUpWindow` hung."
+    page: libraries
+    anchor: popupwinlib-fixes
+  - issue: 471
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "popupwinlib"
+    command: "PopUpWindow"
+    text: "`PopUpWindow` can be used as a function and returns the address of the item chosen (0 for none); the original was a statement only and never told the item."
+    page: libraries
+    anchor: popupwinlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

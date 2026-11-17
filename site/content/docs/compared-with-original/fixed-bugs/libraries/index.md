@@ -3285,6 +3285,35 @@ the requesters of reqtools.library; the fix of `RTEZGetLong` and
   not use these signals, so with it nothing visible changes
   ([#454](https://github.com/fubar-coder/bb2-c/issues/454)).
 
+### Fixes in popupwinlib {#popupwinlib-fixes}
+
+These fixes concern
+[popupwinlib]({{< relref "/docs/libraries/userlibs/popupwinlib" >}}),
+the popup menus of Reflective Images.
+
+* `PopUpWindow` can be used as a function, `r=PopUpWindow(Screen#,*items)`,
+  and returns the address of the item chosen, or 0 if no item was
+  highlighted when the mouse button was pressed; the original was a
+  statement only and never told the program which item was chosen. As a
+  statement it is the same as before
+  ([#471](https://github.com/fubar-coder/bb2-c/issues/471)).
+* A mouse button pressed while a sub menu of `PopUpWindow` closes is no
+  longer lost; the original threw away the waiting messages of all menu
+  levels when it closed one, and the menu stayed open until the next
+  click ([#469](https://github.com/fubar-coder/bb2-c/issues/469)).
+* When there is no memory for a menu level, `PopUpWindow` closes the menu
+  and returns; the original went on with the level's data at address 0,
+  wrote over the start of memory and could crash
+  ([#467](https://github.com/fubar-coder/bb2-c/issues/467)).
+* `PopUpInit` keeps the message port the library already has; the
+  original made a new one at each call and lost the old one with its
+  signal, and once the program's signals were used up, the next
+  `PopUpWindow` hung with the menu open
+  ([#470](https://github.com/fubar-coder/bb2-c/issues/470)).
+* `PopUpWindow` switched the audio filter and the power LED over for
+  every menu with sub menus it showed; both stay as they are
+  ([#468](https://github.com/fubar-coder/bb2-c/issues/468)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a
@@ -3383,9 +3412,6 @@ the requesters of reqtools.library; the fix of `RTEZGetLong` and
   it."; the original freed it and went on playing the freed memory
   ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#freetrackermodule-playing" >}}),
   [#436](https://github.com/fubar-coder/bb2-c/issues/436)).
-* `PopUpWindow` switched the audio filter and the power LED over for
-  every menu with sub menus it showed; both stay as they are
-  ([#468](https://github.com/fubar-coder/bb2-c/issues/468)).
 * Freeing a chunky bitmap, when `ChunkyBitmap` makes it again or at the
   end of the program, switched the audio filter and the power LED over;
   both stay as they are

@@ -13,6 +13,9 @@ intro: |
   not use, and a long that points to the first item of its sub menu (0
   for none).
 
-  Kept from the original, and the reason the library is of little use:
-  `PopUpWindow` does not tell the program which item was chosen
-  ([#471](https://github.com/fubar-coder/bb2-c/issues/471)).
+  Used as a function, `PopUpWindow` returns the address of the item
+  chosen, or 0 if none was, so the program tells the items by their
+  addresses.
+
+  The fixed bugs of the library are listed in
+  [Fixes in popupwinlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#popupwinlib-fixes" >}}).
