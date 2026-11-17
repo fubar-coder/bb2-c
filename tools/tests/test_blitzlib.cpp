@@ -45,8 +45,7 @@ static int check(const buf &code, uint32_t table_size, uint32_t type,
     int r;
 
     REQUIRE(out != NULL);
-    if (load_parse(f.data(), f.size(), &lf, err, sizeof err))
-        abort();
+    REQUIRE(load_parse(f.data(), f.size(), &lf, err, sizeof err) == 0);
     r = blitzlib_check(&lf, "lib", out);
     rewind(out);
     msg[fread(msg, 1, len - 1, out)] = 0;
@@ -129,8 +128,7 @@ static int errchk_lib(uint32_t err1, uint32_t err2, uint16_t jsr_op, uint32_t js
 
     header(b, 0x60);
     statement_chk(b, err1, err2);
-    if (b.size() != 0x5C)
-        abort();
+    REQUIRE(b.size() == 0x5C);
     put16(b, 0x4E75);                  /* $5C: the check function */
     put16(b, 0);
     put32(b, 0x48E7C0C0);              /* $60: the thunk */

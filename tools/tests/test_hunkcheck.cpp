@@ -23,8 +23,7 @@ static int check(uint32_t type, int n, char **specs, char *msg, size_t len)
     put32(code, 0x61000010);           /* bsr.w */
     put32(code, 0x48E7FFFE);           /* movem.l d0-d7/a0-a6,-(sp) */
     f = loadfile1(1, type, code, nullptr, 0, 0);
-    if (load_parse(f.data(), f.size(), &lf, err, sizeof err))
-        abort();
+    REQUIRE(load_parse(f.data(), f.size(), &lf, err, sizeof err) == 0);
     r = hunk_check(&lf, n, specs, "ted", out);
     rewind(out);
     msg[fread(msg, 1, len - 1, out)] = 0;
@@ -62,8 +61,7 @@ static int layout(const char *want, char *msg, size_t len)
     put32(f, 1);
     put32(f, 0x00010000);
     put32(f, HUNK_END);
-    if (load_parse(f.data(), f.size(), &lf, err, sizeof err))
-        abort();
+    REQUIRE(load_parse(f.data(), f.size(), &lf, err, sizeof err) == 0);
     r = hunk_layout(&lf, want, "exe", out);
     rewind(out);
     msg[fread(msg, 1, len - 1, out)] = 0;
@@ -103,8 +101,7 @@ static int stored(uint32_t code_size, uint32_t data_size, char *msg, size_t len)
     put32(f, HUNK_BSS);
     put32(f, 4);
     put32(f, HUNK_END);
-    if (load_parse(f.data(), f.size(), &lf, err, sizeof err))
-        abort();
+    REQUIRE(load_parse(f.data(), f.size(), &lf, err, sizeof err) == 0);
     r = hunk_stored(&lf, "ted", out);
     rewind(out);
     msg[fread(msg, 1, len - 1, out)] = 0;

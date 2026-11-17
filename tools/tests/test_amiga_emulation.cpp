@@ -497,14 +497,13 @@ static void snapshot_prune(void)
     CHECK(amiga_emulation_snapshot_prune(dir, 2) == -1);
 }
 
-/* a/b/c, malloc'd (aborts without memory) */
+/* a/b/c, malloc'd (the test case fails without memory) */
 static char *str_cat3(const char *a, const char *b, const char *c)
 {
     size_t n = strlen(a) + strlen(b) + strlen(c) + 1;
     char *s = static_cast<char *>(malloc(n));
 
-    if (!s)
-        abort();
+    REQUIRE(s != nullptr);
     snprintf(s, n, "%s%s%s", a, b, c);
     return s;
 }

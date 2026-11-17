@@ -56,13 +56,13 @@ static char *json(const buf &t, const char *group, const char *nm, char *err, si
         return NULL;
     }
     f = tmpfile();
-    if (!f || cmdref_write(f, &lib, group, nm, opens))
-        abort();
+    REQUIRE(f != nullptr);
+    REQUIRE(cmdref_write(f, &lib, group, nm, opens) == 0);
     n = ftell(f);
     rewind(f);
     s = static_cast<char *>(malloc((size_t)n + 1));
-    if (!s || fread(s, 1, (size_t)n, f) != (size_t)n)
-        abort();
+    REQUIRE(s != nullptr);
+    REQUIRE(fread(s, 1, (size_t)n, f) == (size_t)n);
     s[n] = 0;
     fclose(f);
     blitzlib_free(&lib);

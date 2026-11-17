@@ -28,8 +28,7 @@ static void add(struct text *t, const char *s)
     if (t->n + l + 1 > t->cap) {
         t->cap = (t->n + l + 1) * 2;
         t->p = static_cast<char *>(realloc(t->p, t->cap));
-        if (!t->p)
-            abort();
+        REQUIRE(t->p != nullptr);
     }
     memcpy(t->p + t->n, s, l + 1);
     t->n += l;
@@ -126,8 +125,7 @@ static uint8_t *archive(int h)
     uint8_t *a = static_cast<uint8_t *>(malloc((size_t)128 * h));
     size_t i;
 
-    if (!a)
-        abort();
+    REQUIRE(a != nullptr);
     for (i = 0; i < (size_t)128 * h; i++)
         a[i] = (uint8_t)(i * 3 + 5);
     return a;

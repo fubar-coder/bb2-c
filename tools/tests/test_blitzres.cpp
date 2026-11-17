@@ -21,14 +21,13 @@ static char *dump(const uint8_t *bytes, size_t len, int *rc)
     char *s;
     long n;
 
-    if (!f)
-        abort();
+    REQUIRE(f != nullptr);
     *rc = blitzres_dump(bytes, len, f, err, sizeof err);
     n = ftell(f);
     rewind(f);
     s = static_cast<char *>(calloc(1, (size_t)n + 1));
-    if (!s || fread(s, 1, (size_t)n, f) != (size_t)n)
-        abort();
+    REQUIRE(s != nullptr);
+    REQUIRE(fread(s, 1, (size_t)n, f) == (size_t)n);
     fclose(f);
     return s;
 }
@@ -137,15 +136,15 @@ TEST_CASE("blitzres: list", "[blitzres]")
     blitzres_free(&l);
     /* broken: more constants than the count word holds */
     l.c = static_cast<struct blitzres_const *>(calloc(65536, sizeof *l.c));
-    if (!l.c)
-        abort();
+    REQUIRE(l.c != nullptr);
     for (i = 0; i < 65536; i++) {
         char n[16];
 
         snprintf(n, sizeof n, "c%zu", i);
         if (!(l.c[i].name = strdup(n)))
-            abort();
+            break;
     }
+    REQUIRE(i == 65536);           /* every name allocated */
     l.n = l.cap = 65536;
     CHECK(blitzres_write(&l, &res, &len, err, sizeof err) == -1 && strstr(err, "65535"));
     blitzres_free(&l);
@@ -376,8 +375,7 @@ TEST_CASE("blitzres: source", "[blitzres]")
     FILE *f = tmpfile();
     char s[200] = {};
 
-    if (!f)
-        abort();
+    REQUIRE(f != nullptr);
     CHECK(blitzres_add(&l, "custom", (int32_t)0xdff000, err, sizeof err) == 0);
     CHECK(blitzres_add(&l, "_Forbid", -132, err, sizeof err) == 0);
     CHECK(blitzres_add(&l, "TAG_USER", INT32_MIN, err, sizeof err) == 0);
@@ -387,8 +385,8 @@ TEST_CASE("blitzres: source", "[blitzres]")
     CHECK(!strcmp(s, "#custom=14675968\n#_Forbid=-132\n#TAG_USER=$80000000\n"));
     fclose(f);
     /* broken: a stream with room for 4 bytes only */
-    if (!(f = fmemopen(s, 4, "w")))
-        abort();
+    f = fmemopen(s, 4, "w");
+    REQUIRE(f != nullptr);
     setvbuf(f, NULL, _IONBF, 0);
     CHECK(blitzres_source(&l, f) == -1);
     fclose(f);

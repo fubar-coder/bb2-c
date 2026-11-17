@@ -100,8 +100,7 @@ static int judge(const struct perf_run *r, const struct perf_budgets *b, char *b
     FILE *f = fmemopen(buf, n, "w");
     int k;
 
-    if (!f)
-        abort();
+    REQUIRE(f != nullptr);
     buf[0] = 0;
     k = perf_judge(r, b, f);
     fclose(f);

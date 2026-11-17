@@ -21,8 +21,7 @@ static char *text(int rules, const char *src, size_t len, char *err)
 
     if (bbdetok_text(&d, rules, (const uint8_t *)src, len, &out, &n, &r, err, 200))
         return NULL;
-    if (n >= sizeof buf)
-        abort();
+    REQUIRE(n < sizeof buf);
     memcpy(buf, out, n);
     buf[n] = 0;
     free(out);

@@ -35,8 +35,7 @@ static long check(const char *const *texts, size_t n, char *msg, size_t len)
     size_t i;
 
     REQUIRE(out != NULL);
-    if (code_labels_parse(asm_text, sizeof asm_text - 1, &l))
-        abort();
+    REQUIRE(code_labels_parse(asm_text, sizeof asm_text - 1, &l) == 0);
     for (i = 0; i < n; i++) {
         src[i].name = i ? "b.c" : "a.c";
         src[i].text = texts[i];
