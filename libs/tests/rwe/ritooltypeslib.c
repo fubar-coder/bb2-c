@@ -35,7 +35,8 @@
  * argument form gets no cookie), PutIconObject (both forms), FreeIconObject,
  * finit with an icon open, init.
  * Not covered: icon.library missing, AllocMem/AddFreeList failing (fixed
- * #840: the bug-orig test), more than 100 tool types, IconToShape with a
+ * #840: the bug-orig test), more than 100 tool types (fixed #855: the
+ * bug-orig tests), IconToShape with a
  * width that is a multiple of 16 (writes behind the shape's data,
  * BUG(orig), #847) or into a shape when the icon has no image.
  */

@@ -3,7 +3,7 @@
 **What it does:** the icon of a file and its tool types through
 icon.library. `GetIconObject file$` opens one icon at a time
 (GetDiskObjectNew) and points its `do_ToolTypes` to the library's own
-array of 100 entries; `FindToolValue`, `FindToolNumber`, `FindToolType
+array (allocated, grown by NewToolType); `FindToolValue`, `FindToolNumber`, `FindToolType
 [,bracket_check]` (also looks for `(name)`), `MatchToolValue` read it,
 `SetToolValue`/`NewToolType [,status]` replace/append entries (status 0
 = `(name=value)`, switched off), `ClearToolTypes` empties it;
@@ -68,12 +68,21 @@ that are not the result.
   the name's length + 3 bytes. The original's buffer had 256 bytes; a
   name over 253 characters wrote behind it (#842; bug-orig test
   `ritooltypeslib-findtooltype-name-overflow`, inject guard).
+* The tool type array has no fixed size: GetIconObject allocates it for
+  the icon's tool types and the terminator, NewToolType replaces a full
+  one by one of twice the size (+ 2); FreeIconObject, PutIconObject (when
+  it closes the icon) and finit free it. Without memory GetIconObject
+  and NewToolType return 0 and change nothing. The original had a static
+  array of 100 entries and counted nowhere: an icon with more than 100
+  tool types, or a 100th NewToolType, wrote behind it (#855, data from
+  outside, the user's decision of 2026-11-17; bug-orig tests
+  `ritooltypeslib-tooltype-array-unbounded` with an icon of 101 tool
+  types, and `ritooltypeslib-tooltype-array-nomem`).
 
 **BUG(orig)** (kept):
 
-* GetIconObject copies the icon's tool types without a limit into the
-  100 entries (#855) (and reads from address 0 if the icon has none)
-  (#845); NewToolType appends without a limit (#855).
+* GetIconObject reads the icon's tool types from address 0 if the icon
+  has none (#845).
 * IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
   there. This is no defect (#846, closed): it gives back the space of the
   string argument, which the compiler does not take back after a library

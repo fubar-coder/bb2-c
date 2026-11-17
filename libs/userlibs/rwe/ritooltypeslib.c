@@ -16,8 +16,9 @@
  *   finit: FreeIconObject if an icon is open, CloseLibrary
  *
  * One icon at a time: GetIconObject keeps the DiskObject (diskobject)
- * and points its do_ToolTypes to the library's own array of 100 entries
- * (tooltype), copied from the icon's.  SetToolValue/NewToolType/
+ * and points its do_ToolTypes to the library's own array (tooltype,
+ * AllocMem, ttcap entries with the terminator), copied from the icon's;
+ * NewToolType makes it larger when it is full.  SetToolValue/NewToolType/
  * IconDefTool allocate the new strings (AllocMem) and hang them on the
  * icon's FreeList (AddFreeList at DiskObject+78, freed with the icon).
  * ShapeToIcon/IconToShape exchange images with shapeslib's shape objects
@@ -32,10 +33,8 @@
  * ports, docs/libs/cmdlibs-port.md).
  *
  * BUG(orig):
- *   - GetIconObject copies the icon's tool types without a limit into the
- *     100 entries (#855) (and reads from address 0 if the icon has none)
- *     (#845); NewToolType appends without a limit either; nothing checks
- *     for the last entry (a full array runs into memory behind it) (#855).
+ *   - GetIconObject reads the icon's tool types from address 0 if the
+ *     icon has none (#845).
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
  *     FindToolValue does for its result) and leaves it there. No defect:
  *     it gives back the space of the string argument, which the compiler
@@ -81,6 +80,14 @@
  * Fixed (intended deviation, #842): the bracket search of FindToolType
  *   tt$,1 built "(tt$)" in 256 bytes; a name over 253 characters wrote
  *   behind them.  The buffer now has the name's length + 3 bytes.
+ * Fixed (intended deviation, #855): the tool types lived in a static
+ *   array of 100 entries; GetIconObject copied an icon's tool types into
+ *   it and NewToolType appended to it without a count, so the 101st entry
+ *   and the terminator went into the memory behind it.  The array is now
+ *   allocated for the icon's count and the terminator and NewToolType
+ *   makes it larger when it is full (the user's decision of 2026-11-17,
+ *   w1-decisions.md); without memory GetIconObject/NewToolType return 0
+ *   and change nothing.  It is freed with the icon.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -252,11 +259,10 @@ struct diskobjfree {
 };
 static_assert(offsetof(struct diskobjfree, freelist) == 78);
 #define DO_FREELIST(dob) (&((struct diskobjfree *)(dob))->freelist)
-#define NTOOLTYPES 100
-
 static struct Library *iconlibbase;
 static struct DiskObject *diskobject;
-static STRPTR *tooltype;                /* = tooltypearray when an icon is open */
+static STRPTR *tooltype;                /* the tool type array when an icon is open */
+static ULONG ttcap;                     /* its entries, the terminator included */
 static ULONG toolbuffersize;
 static BB_BOOL status_tool;           /* BB_FALSE: "(name=value)", switched off */
 static STRPTR *array_address;
@@ -265,7 +271,6 @@ static const char *string_address;
 static UWORD shapenumber;
 /* SelectRender: the Image of ShapeToIcon shape,shape */
 static struct Image SelectRender;
-static STRPTR tooltypearray[NTOOLTYPES];
 
 /* a shape object (shapeslib, 32 bytes): struct bb_shape (blitzobj.h);
    BB_CLUDGE = the data is not ours */
@@ -293,10 +298,27 @@ static void BLITZ_ROUTINE c_libinit(void)
 {
     iconlibbase = OpenLibrary((CONST_STRPTR)"icon.library", 0);
     tooltype = NULL;
+    ttcap = 0;
+}
+
+/* a tool type array of n entries (the terminator included), cleared;
+   NULL without memory */
+static STRPTR *newtooltypes(ULONG n)
+{
+    return AllocMem(n * sizeof(STRPTR), MEMF_CLEAR | MEMF_PUBLIC);
+}
+
+/* frees the tool type array of the icon (fixed #855) */
+static void freetooltypes(void)
+{
+    if (tooltype)
+        FreeMem(tooltype, ttcap * sizeof(STRPTR));
+    tooltype = NULL;
+    ttcap = 0;
 }
 
 /**
- * @brief FreeIconObject: frees the open icon (FreeDiskObject).
+ * @brief FreeIconObject: frees the open icon (FreeDiskObject) and its tool type array.
  * @return d0: BB_TRUE if an icon was open, BB_FALSE otherwise or without icon.library
  */
 BB_BOOL BLITZ_ROUTINE c_Close_icon(void)
@@ -305,7 +327,7 @@ BB_BOOL BLITZ_ROUTINE c_Close_icon(void)
         return BB_FALSE;
     FreeDiskObject(diskobject);
     diskobject = NULL;
-    tooltype = NULL;
+    freetooltypes();
     return BB_TRUE;
 }
 
@@ -325,18 +347,18 @@ static void BLITZ_ROUTINE c_libfinit(void)
  * @brief GetIconObject(filename$): opens the icon of a file.
  *
  * GetDiskObjectNew; the icon's tool types are copied into the library's
- * array of 100 entries, which becomes the icon's do_ToolTypes.
- * BUG(orig): no limit for the copy (#855), and an icon without tool types
+ * array (allocated for their count and the terminator), which becomes the
+ * icon's do_ToolTypes.  Fixed (#855): the original's array had 100
+ * entries and the copy no limit.  BUG(orig): an icon without tool types
  * is read from address 0 (#845).
  * @param name  d0: the file name (without .info)
- * @return d0: the DiskObject, 0 if an icon is open already, there is none
- *         or no icon.library
+ * @return d0: the DiskObject, 0 if an icon is open already, there is none,
+ *         no memory for the array or no icon.library
  */
 ULONG BLITZ_ROUTINE c_getstructure(CONST_STRPTR name BL_REG(d0))
 {
-    STRPTR *from;
-    STRPTR *to = tooltypearray;
-    int i;
+    STRPTR *from, *to;
+    ULONG n;
 
     if (tooltype || !iconlibbase)
         return 0;
@@ -344,11 +366,18 @@ ULONG BLITZ_ROUTINE c_getstructure(CONST_STRPTR name BL_REG(d0))
     if (!diskobject)
         return 0;
     from = diskobject->do_ToolTypes;
-    tooltype = tooltypearray;
-    diskobject->do_ToolTypes = tooltypearray;
-    for (i = 0; i < NTOOLTYPES; i++)
-        tooltypearray[i] = NULL;
-    while (*from)                       /* BUG(orig): no limit, no NULL check (#855, #845) */
+    for (n = 0; from[n]; n++)           /* BUG(orig): no NULL check (#845) */
+        ;
+    to = newtooltypes(n + 1);
+    if (!to) {
+        FreeDiskObject(diskobject);
+        diskobject = NULL;
+        return 0;
+    }
+    tooltype = to;
+    ttcap = n + 1;
+    diskobject->do_ToolTypes = to;
+    while (*from)
         *to++ = *from++;
     return (ULONG)diskobject;
 }
@@ -533,7 +562,7 @@ BB_BOOL BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG
         diskobject->do_Type = (UBYTE)type;
     PutDiskObject(name, diskobject);    /* BUG(orig): result ignored (#851) */
     diskobject = NULL;                  /* BUG(orig): not freed (#850) */
-    tooltype = NULL;
+    freetooltypes();
     return BB_TRUE;
 }
 
@@ -662,26 +691,39 @@ BB_BOOL BLITZ_ROUTINE c_PutTool2(const char *name BL_REG(d0), const char *value 
 /**
  * @brief NewToolType(tooltype$,value$,status): appends a tool type.
  *
- * A new entry at the end, built as by SetToolValue.  BUG(orig): no limit
- * for the 100 entries (#855).
+ * A new entry at the end, built as by SetToolValue.  A full array is
+ * replaced by one of twice the size (fixed #855: the original's array had
+ * 100 entries and NewToolType no limit).
  * @param name    d0: the tool type's name
  * @param value   d1: the value
  * @param status  d2: BB_FALSE for the switched-off form "(tt$=value$)"
  * @param lens    a2: the argument stack (the lengths of name and value)
- * @return d0: BB_TRUE done, BB_FALSE no memory or no icon
+ * @return d0: BB_TRUE done, BB_FALSE no memory (nothing changed) or no icon
  */
 BB_BOOL BLITZ_ROUTINE c_NewTool(const char *name BL_REG(d0), const char *value BL_REG(d1),
                                 BB_BOOL status BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
-    STRPTR *p;
+    STRPTR *p, *larger;
+    ULONG n, i;
 
     toolargs(name, value, status, lens);
     if (!(p = tooltype))
         return BB_FALSE;
-    while (*p)                          /* BUG(orig): no limit (#855) */
-        p++;
-    p[1] = NULL;
-    return gotit(p);
+    for (n = 0; p[n]; n++)
+        ;
+    if (n + 2 > ttcap) {                /* the new entry and the terminator */
+        larger = newtooltypes(ttcap * 2 + 2);
+        if (!larger)
+            return BB_FALSE;
+        for (i = 0; i < n; i++)
+            larger[i] = p[i];
+        FreeMem(p, ttcap * sizeof(STRPTR));
+        tooltype = p = larger;
+        ttcap = ttcap * 2 + 2;
+        diskobject->do_ToolTypes = larger;
+    }
+    p[n + 1] = NULL;
+    return gotit(&p[n]);
 }
 
 /**
