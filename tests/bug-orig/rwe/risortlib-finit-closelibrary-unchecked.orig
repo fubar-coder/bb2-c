@@ -5,7 +5,6 @@ timeout
 ok
 [run]
 done
- "  " " "
 [blitz2]
 rc=0
 [log]
