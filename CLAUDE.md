@@ -37,13 +37,15 @@ and presets".
 
 1. **The user's statements.** An answer to a concrete question with the
    options shown is a decision; record every such answer with the quote,
-   date and scope: a general one in `decisions.md`, one for a single bug
-   or task in the round's decisions file. A rule you derive from a side
-   remark, a counter-question or a guess ("vermutlich") is *proposed*:
-   apply it only to the case it was said for and ask before using it
-   elsewhere; collect proposals and show them together. Do not write such a rule into CLAUDE.md, an agent
-   definition or memory without the user's OK to the wording. Quote
-   decisions by ID instead of rewording them. Why: rewordings dropped the
+   date and scope. It goes to `decisions.md` only if it is to serve as
+   precedent for other, future tasks; otherwise to the round's decisions
+   file, or outside a round to `task-decisions.md` (both in
+   `~/.local/share/bb2-c-work/`). A rule you derive from a side remark,
+   a counter-question or a guess ("vermutlich") is *proposed*: apply it
+   only to the case it was said for and ask before using it elsewhere;
+   collect proposals and show them together. Do not write such a rule
+   into CLAUDE.md, an agent definition or memory without the user's OK
+   to the wording. Quote decisions by ID instead of rewording them. Why: rewordings dropped the
    user's qualifications and turned single-case remarks into general rules
    (decisions.md, D-001).
 2. **Conflicts are reported.** If two rules contradict each other, or a
