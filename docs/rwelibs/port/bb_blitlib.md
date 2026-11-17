@@ -38,7 +38,8 @@ init and finit are `RTS`.
 * **Reference:** the reference build of the source by blitz2 2.10
   (`refbuild`, `build/amiga/libs/userlibs/rwe/ref/bb_blitlib.obj`); no
   binary exists (`docs/rwelibs/README.md` §3.3). Declarations equal
-  (ctest `rwe_declarations_bb_blitlib`). Number 19 (the literal of the
+  (ctest `rwe_declarations_bb_blitlib`) but for the error checks the
+  fixes add (`bb_blitlib.declarations-intended.txt`). Number 19 (the literal of the
   source, = `#bb_blitlib`).
 * **C file:** `libs/userlibs/rwe/bb_blitlib.c`; test
   `libs/tests/rwe/bb_blitlib.c` (snitch case "rwe bb_blitlib").
@@ -57,7 +58,8 @@ the CPU like the original's (the save blit writes into it). The address
 arithmetic is the original's (`MULU.w`/`MULS.w`, `ASR.w`, word sums).
 `ADD.l ebwidth-2(pc)` adds the long `pad:ebwidth`, i.e. `ebwidth` (pad
 is 0). The error checks are C in the error check area; they keep d0,
-which the original changes (low word: +26 of a shape).
+which the original changes (low word: +26 of a shape). The check of
+`CreateShape` is the port's (#428).
 
 ## Fixed
 
@@ -77,13 +79,17 @@ kind F):
   (#426; bug-orig test `bb_blitlib-bpredatorblit-b-ebwidth`). The width
   is loaded once per call and kept in a register: cheaper per plane
   than the load of `ebwidth` before.
+* `CreateShape` has an error check: with runtime error checking a count
+  of 0 is the error "CreateShape count must be at least 1!"; the
+  original has no check, and its `DBRA` loop creates 65536 shapes, 2 MB
+  over the memory behind the shape table (#428; bug-orig test
+  `bb_blitlib-createshape-count0`). The release code is unchanged: the
+  count is an argument the programmer controls.
 
 ## BUG(orig), kept
 
-* Nothing is checked but the two error checks; shapes or bitmaps of
-  depth 0 loop 65536 times (DBRA) (#429).
+* Shapes or bitmaps of depth 0 loop 65536 times (DBRA) (#429).
 * `BlockToShape` copies one word per line (height × depth words) (#425).
-* `CreateShape` with count 0 creates 65536 shapes (#428).
 
 Original behaviour that is not a defect:
 

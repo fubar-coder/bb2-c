@@ -1,14 +1,18 @@
 ; bb_blitlib-createshape-count0 (#428) - CreateShape counts its shape
 ; objects with SUBQ.w #1 / DBRA: a count of 0 makes 65536 objects of 32
 ; bytes, 2 MB written from shape 1 on, far past the shape table.  Shape 2
-; then is a copy of shape 0 (width 16).  With 2 MB of foreign memory
-; overwritten the program cannot end safely (sometimes the system
-; crashes, sometimes not): in that case it waits for the session's
+; then is a copy of shape 0 (width 16).  The original has no error check
+; for CreateShape, not even with runtime error checking.  With 2 MB of
+; foreign memory overwritten the program cannot end safely (sometimes the
+; system crashes, sometimes not): in that case it waits for the session's
 ; timeout.
-; Correct: a count of 0 creates nothing, shape 2 stays undefined (width
-; 0) and the program ends.
+; Here with runtime error checking.
+; Correct: the error check refuses the count 0: "CreateShape count must
+; be at least 1!", nothing is written.
+; @fixed #428
 ; @rwe bb_blitlib
 ; @pass timeout=30
+; @pass runtime_errors=on
 DEFTYPE .l
 BitMap 0,320,64,1
 Boxf 0,0,15,15,1

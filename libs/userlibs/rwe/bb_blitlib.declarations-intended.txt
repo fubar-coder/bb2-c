@@ -1,0 +1,6 @@
+# the intended differences of bb_blitlib against the reference build of its
+# source (blitzlib compare, docs/development.md "Intended differences")
+# #428: CreateShape has an error check (_errCreateShape: count 0); the
+# original's entry has none, one relocation more
+lib 19: entry 6 CreateShape +$16: code offset set in only one of them
+lib 19: relocations in the declaration part 21 != 22

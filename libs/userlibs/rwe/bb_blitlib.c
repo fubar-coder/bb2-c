@@ -42,11 +42,12 @@
  * left them.  init and finit are RTS.  No assembler besides the thunks.
  *
  * BUG(orig), kept:
- *   - Nothing is checked but the two error checks; a shape or bitmap of
- *     depth 0 loops 65536 times (DBRA) (#429); BlockToShape copies one
- *     word per line (#425).
- *   - CreateShape with count 0 creates 65536 shapes (#428).
+ *   - A shape or bitmap of depth 0 loops 65536 times (DBRA) (#429);
+ *     BlockToShape copies one word per line (#425).
  * Fixed (intended deviations):
+ *   - CreateShape has an error check: count 0, which makes the release
+ *     code create 65536 shapes, is the runtime error "CreateShape count
+ *     must be at least 1!"; the original had no check (#428).
  *   - BTBlockImage adds image*224 as a long, as TBlockImage does; the
  *     original added it as a word (ADD.w), images from 147 on were read
  *     before image_addr (#427).
@@ -68,7 +69,7 @@ void _specialblock(void), _specialblock2(void), _specialblockbitmap(void);
 void _specialblockbitmap2(void), _tblock(void), _predatorblit(void), _bpredatorblit(void);
 void _MapInfo(void), _createshape(void), _specialblocktoshape(void), _blocktoshape(void);
 void docolblit(void), _tblockimage(void), _btblockimage(void);
-void _errSBlockToShape(void), _errBlockToShape(void);
+void _errSBlockToShape(void), _errBlockToShape(void), _errCreateShape(void);
 static void _libinit(void);
 static void _libfinit(void);
 
@@ -127,7 +128,7 @@ BLITZ_NAME("SetupMapTwo", "ebwidth");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD3);
-BLITZ_SUBS(_createshape, 0, 0);
+BLITZ_SUBS(_createshape, _errCreateShape, 0);          /* Fixed (#428): the original has no check */
 BLITZ_NAME("CreateShape", "start_shape,count,chipmemblock,like_shape");
 
 BLITZ_ASTATEMENT();
@@ -748,7 +749,8 @@ first:
  * count shape objects from start_shape on like like_shape, their data at
  * chipmemblock one after another (size, +26, of the like shape
  * each), no cookie, "cL" (the data is not the shapes').
- * BUG(orig) (#428): count 0 creates 65536 shapes.
+ * count 0 creates 65536 shapes (DBRA); Fixed (#428): the error check
+ * errcreateshape_c refuses it.
  * @param count  d1: the number of shapes
  * @param mem    d2: the chip memory block
  * @param shape  a2: the first shape object
@@ -891,6 +893,25 @@ static void BLITZ_ERRCHK errsblocktoshape_c(struct bb_shape *dest BL_REG(a0),
         BLITZ_RUNERR(diffsizes);
 }
 
+BLITZ_ERRCHK_MESSAGE(nocount, "CreateShape count must be at least 1!");
+
+/**
+ * @brief CreateShape's error check (not in the original): a count of at
+ * least 1.
+ *
+ * Fixed (#428): count 0 makes the routine's DBRA loop create 65536
+ * shapes over the memory behind the shape table; runtime error
+ * "CreateShape count must be at least 1!".  The release code is
+ * unchanged (an invalid argument).
+ * @param count  d1: the number of shapes
+ */
+static void BLITZ_ERRCHK errcreateshape_c(UWORD count BL_REG(d1))
+{
+    if (!count)
+        BLITZ_RUNERR(nocount);
+}
+
 /* the original changes d0 (the low word: +26 of the shape); kept here */
 BLITZ_ERRCHK_THUNK(_errBlockToShape, errblocktoshape_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_errSBlockToShape, errsblocktoshape_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_errCreateShape, errcreateshape_c, "d0-d1/a0-a1");

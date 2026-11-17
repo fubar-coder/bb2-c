@@ -2,5 +2,5 @@
 ok
 [run]
 before
-shape 2 width 0
+REQUESTER: AutoRequest body "CreateShape count must be at least 1!" *
 rc=0
