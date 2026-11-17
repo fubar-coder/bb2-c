@@ -85,6 +85,8 @@ and presets".
    binary formats and logic as a C tool in `tools/` (logic in
    `tools/lib/`, tests in `tools/tests/`). Why: a script written once
    tends to become infrastructure without anyone deciding it (D-002).
+   Claude Code hooks are exempt (any language), but nothing in the
+   project may depend on them.
 7. **`archive/`** holds unchanged originals: never edit; a new state is a
    new directory with a version number, its origin in `archive/README.md`.
    Derived data goes to the build directory or `tests/data/`. Material
