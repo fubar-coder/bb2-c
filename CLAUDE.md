@@ -83,10 +83,8 @@ and presets".
    tools): what compiler and linker can do themselves without a tool
    (`#embed` + `static_assert`, `strip`); text and control in CMake;
    binary formats and logic as a C tool in `tools/` (logic in
-   `tools/lib/`, tests in `tools/tests/`). Claude Code hooks are not
-   infrastructure; they live in `.claude/hooks/` as CMake scripts and
-   nothing in the build calls them. Why: a script written once tends to
-   become infrastructure without anyone deciding it (D-002).
+   `tools/lib/`, tests in `tools/tests/`). Why: a script written once
+   tends to become infrastructure without anyone deciding it (D-002).
 7. **`archive/`** holds unchanged originals: never edit; a new state is a
    new directory with a version number, its origin in `archive/README.md`.
    Derived data goes to the build directory or `tests/data/`. Material
