@@ -45,13 +45,14 @@
  *   - Nothing is checked but the two error checks; a shape or bitmap of
  *     depth 0 loops 65536 times (DBRA) (#429); BlockToShape copies one
  *     word per line (#425).
- *   - BPredatorBlit's B channel reads the line SetupMapTwo's width below,
- *     not the bitmap's (#426).
  *   - CreateShape with count 0 creates 65536 shapes (#428).
  * Fixed (intended deviations):
  *   - BTBlockImage adds image*224 as a long, as TBlockImage does; the
  *     original added it as a word (ADD.w), images from 147 on were read
  *     before image_addr (#427).
+ *   - BPredatorBlit's B channel reads the line below with the bitmap's
+ *     bytes per row, as the rest of the routine; the original added
+ *     SetupMapTwo's width (#426).
  * Original behaviour, not defects: SpecialBlock, TBlock and PredatorBlit
  * assume 16x16 shapes and bitmaps of SetupMapTwo's width (the map format
  * they are written for); BPredatorBlit stores a blit size one line less
@@ -530,9 +531,9 @@ first:
  * The shape's area (at x,y minus the handle) is saved into a record of
  * the buffer as bblitlib's BBlit does, with a blit size one line less
  * (deliberate: ";!!! BB Cludge!"), then PredatorBlit's blit through the
- * shifted cookie (B: the line ebwidth below, one pixel more).
- * BUG(orig) (#426): B reads the line SetupMapTwo's width below, not the
- * bitmap's.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * shifted cookie (B: the line below, one pixel more).  Fixed (#426): B
+ * reads the line the bitmap's bytes per row below; the original added
+ * SetupMapTwo's width.  BUG(orig) (#429): depth 0 loops 65536 times.
  * @param x      d2: x
  * @param y      d3: y
  * @param buf    a0: the buffer object (bblitlib)
@@ -548,7 +549,7 @@ static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
     struct bsave s;
     UWORD shift, n;
     UBYTE **plane;
-    ULONG cookie;
+    ULONG cookie, bpr;
 
     x -= shape->handlex;
     y -= shape->handley;
@@ -557,6 +558,7 @@ static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
     shift = (UWORD)((x & 15) << 12);
     n = shape->depth - 1;
     plane = bm->planes;
+    bpr = bm->bpr;                              /* kept in a register over the planes */
     BL_BLITWAIT(cb);
     L(BLTCMOD) = s.cbmod;                       /* MOVEM.l d4-d5,BLTCMOD */
     L(BLTAMOD) = s.admod;
@@ -574,7 +576,7 @@ first:
             L(BLTAPT) = cookie;
             L(BLTCPT) = d;
             L(BLTDPT) = d;
-            L(BLTBPT) = d + ebwidth;
+            L(BLTBPT) = d + bpr;                /* Fixed (#426): was + ebwidth */
             W(BLTSIZE) = s.size;
         }
     } while (n-- != 0);

@@ -7,6 +7,7 @@
 ; shape is a solid 16x16 block blitted at 96,10.
 ; Correct: pixel 100,10 gets the line below's colour (1); the bug gives
 ; the colour 320 pixels to the right (0).
+; @fixed #426
 ; @rwe bb_blitlib
 BitMap 0,640,32,1
 Boxf 0,0,15,15,1

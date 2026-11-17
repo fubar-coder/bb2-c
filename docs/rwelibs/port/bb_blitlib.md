@@ -70,14 +70,19 @@ kind F):
   `image_addr` (#427; bug-orig test
   `bb_blitlib-btblockimage-word-offset`). No added work: `ADD.l`
   instead of `ADD.w`, once per call.
+* `BPredatorBlit`'s B channel reads the line below with the bitmap's
+  bytes per row, as the offset and the modulos of the routine do; the
+  original added `SetupMapTwo`'s width (`ADD.l ebwidth-2(pc)`), so on a
+  bitmap of another width B read the wrong part of the background
+  (#426; bug-orig test `bb_blitlib-bpredatorblit-b-ebwidth`). The width
+  is loaded once per call and kept in a register: cheaper per plane
+  than the load of `ebwidth` before.
 
 ## BUG(orig), kept
 
 * Nothing is checked but the two error checks; shapes or bitmaps of
   depth 0 loop 65536 times (DBRA) (#429).
 * `BlockToShape` copies one word per line (height × depth words) (#425).
-* `BPredatorBlit`'s B channel reads the line `SetupMapTwo`'s width
-  further, not the bitmap's (#426).
 * `CreateShape` with count 0 creates 65536 shapes (#428).
 
 Original behaviour that is not a defect:
