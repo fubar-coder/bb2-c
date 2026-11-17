@@ -76,15 +76,21 @@ kind F):
   `dol_Type` of the current entry also after the unlock, when the entry
   may have been removed and freed (#622; test
   `ridoslib-devicetype-after-free`).
+* AddNotify without memory for the name copy or the request returns 0,
+  frees the name copy if only the request failed and leaves the table
+  alone. The original used both AllocMem results unchecked and wrote the
+  name or the request to address 0 on (#619; tests
+  `ridoslib-addnotify-allocmem-unchecked`,
+  `ridoslib-addnotify-allocmem-request`).
 
 ## BUG(orig)
 
 * AddNotify: no range check of the id (64 entries; the offset is id*4 as
-  a word), AllocMem's results are not checked, an id used twice loses the
-  first request. A request whose StartNotify failed stays in the table
-  (RemNotify or finit would EndNotify it) and is not counted, so finit,
-  which stops when the counter is 0, may never reach it: it stays
-  allocated (#626, #619, #620, #621).
+  a word), an id used twice loses the first request. A request whose
+  StartNotify failed stays in the table (RemNotify or finit would
+  EndNotify it) and is not counted, so finit, which stops when the
+  counter is 0, may never reach it: it stays allocated (#626, #620,
+  #621).
 * RemNotify: no range check either (#626).
 * finit removes the requests from id 63 down only while the counter is
   not 0 (#621).

@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+result 0
+low memory kept
+inject: allocfail: 1 allocations failed
+inject: rc=0
+inject: track: 0 allocations left, 0 bytes
+rc=0

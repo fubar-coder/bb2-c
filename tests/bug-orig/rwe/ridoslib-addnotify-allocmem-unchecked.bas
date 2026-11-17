@@ -7,6 +7,7 @@
 ; (put back at once); "a/b" does not exist, so StartNotify fails and
 ; nothing is left to free at the end.
 ; Correct: AddNotify fails (0) without writing to address 0.
+; @fixed #619
 ; @rwe ridoslib
 ; @pass runwrap=@INJECT@|allocfail=4-4/1
 DEFTYPE .l

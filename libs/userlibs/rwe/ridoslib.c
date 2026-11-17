@@ -34,10 +34,10 @@
  *
  * BUG(orig):
  *   - AddNotify: no range check of the id (64 entries; the offset is
- *     id*4 as a word), AllocMem's results are not checked, an id used
- *     twice loses the first request; a request whose StartNotify failed
- *     stays in the table (RemNotify / finit would EndNotify it) and is
- *     not counted, so finit may stop before it (#626, #619, #620, #621).
+ *     id*4 as a word), an id used twice loses the first request; a
+ *     request whose StartNotify failed stays in the table (RemNotify /
+ *     finit would EndNotify it) and is not counted, so finit may stop
+ *     before it (#626, #620, #621).
  *   - RemNotify: no range check either (#626).
  *   - finit removes the requests from id 63 down only while the counter
  *     is not 0 (#621).
@@ -62,6 +62,11 @@
  * removed and freed; GetDeviceList and NextDevice now note the type while
  * the list is locked and DeviceEntryType returns that (the same value
  * while the entry exists; no allocation).
+ * Fixed (intended deviation, #619): AddNotify used the results of its two
+ * AllocMem calls (the name copy, the request) unchecked: without memory
+ * it wrote the name or the request to address 0 on.  It now returns 0,
+ * frees the name copy if only the request failed and leaves the table
+ * alone.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -355,15 +360,17 @@ static ULONG BLITZ_ROUTINE remnotify_c(LONG id BL_REG(d0))
  *
  * A NotifyRequest (48 bytes, MEMF_CLEAR) with a copy of the name,
  * UserData = id, NRF_SEND_MESSAGE to the port; kept in notifys[id].
- * BUG(orig): no range check of the id (64 entries, the offset id*4 as a
- * word, #626); AllocMem's results are not checked (#619); an id used
- * twice loses the first request (#620); a request whose StartNotify
- * failed stays in the table and is not counted (#621).
+ * Without memory for the name copy or the request it returns 0 and
+ * leaves the table alone (fixed, #619: the original used AllocMem's
+ * results unchecked).  BUG(orig): no range check of the id (64 entries,
+ * the offset id*4 as a word, #626); an id used twice loses the first
+ * request (#620); a request whose StartNotify failed stays in the table
+ * and is not counted (#621).
  * @param id    d0: the id
  * @param file  d1: the file name
  * @param lens  a2: the argument stack, the name's length at -4(a2)
- * @return d0: BB_TRUE if StartNotify worked, BB_FALSE otherwise or
- *         without dos.library or port
+ * @return d0: BB_TRUE if StartNotify worked, BB_FALSE otherwise, without
+ *         memory or without dos.library or port
  */
 static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG(d1),
                                          const ULONG *lens BL_REG(a2))
@@ -378,12 +385,18 @@ static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG
     if (!dosbase_ || !msgport)
         return BB_FALSE;                                /* whoops */
     filelen = lens[-1] + 1;
-    filecop = AllocMem(filelen, MEMF_CLEAR);            /* BUG(orig) (#619): unchecked */
+    filecop = AllocMem(filelen, MEMF_CLEAR);
+    if (!filecop)
+        return BB_FALSE;                                /* fixed (#619) */
     s = fileptr;
     d = filecop;
     while ((*d++ = *s++) != 0)
         ;
-    notify = AllocMem(NOTIFYSIZE, MEMF_CLEAR);          /* BUG(orig) (#619): unchecked */
+    notify = AllocMem(NOTIFYSIZE, MEMF_CLEAR);
+    if (!notify) {                                      /* fixed (#619) */
+        FreeMem(filecop, filelen);
+        return BB_FALSE;
+    }
     off = (WORD)(notifynum << 2);                       /* ASL.w #2 */
     AT(filelens, off) = filelen;
     AT(notifys, off) = (ULONG)notify;
