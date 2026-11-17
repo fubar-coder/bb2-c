@@ -130,6 +130,8 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
   it.
 * [`BlockToShape` copied only part of a wide shape]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#blocktoshape-width" >}}):
   of a shape 32 pixels wide, only the first half of its planes.
+* [`RTEZGetLong` offered the number of the call before]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rtezgetlong-previous" >}}),
+  and returned it when the user cancelled.
 
 In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})):
 

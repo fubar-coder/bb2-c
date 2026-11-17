@@ -5,9 +5,8 @@ intro: |
   reqtools.library version 38 or later in `LIBS:`. When the program
   starts, the library opens it and prepares its requesters;
   `IsReqToolsActive` tells whether that worked. Check it before using
-  any other command: they do not check it themselves, and without
-  reqtools.library they crash the machine
-  ([#463](https://github.com/fubar-coder/bb2-c/issues/463)).
+  any other command: without reqtools.library they open no requester
+  and return what they return when the user cancels.
 
   There are two kinds of commands. The ones with `EZ` in their name come
   with a sensible set of options and need only a title and a few
@@ -43,5 +42,8 @@ intro: |
     EndIf
   EndIf
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in neilsreqtoolslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#neilsreqtoolslib-fixes" >}}).
 
   *Based on the documentation of ReqToolsLib by Neil O'Rourke.*

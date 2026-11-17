@@ -3076,6 +3076,94 @@ rows:
     text: "Text appended to `RTEZSaveFile` follows the chosen path; the original wrote it over the end of the path or behind its arguments."
     page: libraries
     anchor: rwe-text-after-string-function
+  - issue: 454
+    severity: 5
+    topic: "Windows & screens"
+    library: "neilsreqtoolslib"
+    command: "RTASyncRequest, RTCheckASyncRequest, RTEndASyncRequest, RTASyncPaletteRequest, RTCheckASyncPaletteRequest, RTEndASyncPaletteRequest"
+    text: "The asynchronous requesters no longer read an unused value through the window object and give reqtools the requester's signals; with reqtools.library 38 nothing visible changes."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 455
+    severity: 2
+    topic: "Windows & screens"
+    library: "neilsreqtoolslib"
+    command: "RTEZFlagsRequest"
+    text: "`RTEZFlagsRequest` shows the title it is given; the original always showed reqtools' default title."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 456
+    severity: 2
+    topic: "Files"
+    library: "neilsreqtoolslib"
+    command: "RTEZFreePattern"
+    text: "`RTEZFreePattern 3` removes the pattern gadget that `RTEZSetPattern 3` added to the multi-load requester; the original did this for 2 and nothing for 3."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 457
+    severity: 1
+    topic: "Windows & screens"
+    library: "neilsreqtoolslib"
+    command: "RTEZGetLong"
+    text: "`RTEZGetLong` without a default starts at 0 and returns 0 on cancel; the original started at, and on cancel returned, the number of the call before."
+    page: libraries
+    anchor: rtezgetlong-previous
+  - issue: 458
+    severity: 5
+    topic: "Windows & screens"
+    library: "neilsreqtoolslib"
+    command: "RTEZGetString"
+    text: "A cancelled `RTEZGetString` frees the memory of its input; the original kept `MaxChars` bytes per cancelled call until the program ended."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 460
+    severity: 5
+    topic: "System"
+    library: "neilsreqtoolslib"
+    command: "IsReqToolsActive"
+    text: "When the requesters cannot be prepared at the start, the library closes reqtools.library and frees what it had; the original kept both after the program ended."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 462
+    severity: 5
+    topic: "Files"
+    library: "neilsreqtoolslib"
+    command: "RTEZMultiLoadFile"
+    text: "`RTEZMultiLoadFile` returns -1 whenever files were chosen; the original returned the address of the file list instead when it ended in $00."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 463
+    severity: 5
+    topic: "System"
+    library: "neilsreqtoolslib"
+    command: ""
+    text: "Without reqtools.library the requester commands return their cancel value (0, an empty string, `RTVersion` 0); the original crashed the machine."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 464
+    severity: 5
+    topic: "Windows & screens"
+    library: "neilsreqtoolslib"
+    command: "RTEZPaletteRequest, RTASyncPaletteRequest, RTReturnValue"
+    text: "`RTReturnValue` gives the result of `RTEZPaletteRequest` and `RTASyncPaletteRequest` too; the original kept that of the requester before."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 466
+    severity: 5
+    topic: "Windows & screens"
+    library: "neilsreqtoolslib"
+    command: "RTEZScreenModeRequest"
+    text: "`RTEZScreenModeRequest` calls reqtools' screen mode function; the original called the font requester's, which with reqtools.library 38 opens the screen mode requester all the same, so nothing visible changes."
+    page: libraries
+    anchor: neilsreqtoolslib-fixes
+  - issue: 1078
+    severity: 2
+    topic: "Windows & screens"
+    library: "neilsreqtoolslib"
+    command: "RTEZGetLongRange"
+    text: "`RTEZGetLongRange` without a default starts at 0; the original started at the number of the call before."
+    page: libraries
+    anchor: rtezgetlong-previous
   - issue: 468
     severity: 5
     topic: "Gadgets & menus"
