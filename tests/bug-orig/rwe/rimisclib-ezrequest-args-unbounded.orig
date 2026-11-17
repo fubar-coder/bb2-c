@@ -1,14 +1,13 @@
 # the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
 [session]
-timeout
+done
 [compile]
 ok
 [run]
 REQUESTER: EasyRequest title "BO" text "x" gadgets "OK" -> answered 0
 before
-REQUESTER: EasyRequest title "Software Failure" text "%s
-%s%lx).
-%s" gadgets "Suspend|Reboot" -> answered 0
+REQUESTER: AutoRequest body "GURU! - ILLEGAL Instruction" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0
 [blitz2]
 rc=0
 [log]

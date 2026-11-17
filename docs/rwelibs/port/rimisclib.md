@@ -55,7 +55,11 @@ a string: length, address), the count from d7.w (the compiler's
 table has the original's 114 bytes, the EasyStruct is followed by the
 argument pointer and the 16 longs of arguments. The thunks keep d1/a0/a1
 (the statements that keep d0 also d0), the C code d2-d7/a2-a6; the
-original changes d0-d3, d6/d7, a0-a3 and a6 in places.
+original changes d0-d3, d6/d7, a0-a3 and a6 in places. The original
+has no error check area; the port has one (the header's error field)
+with the two checks of #748 (`ezargschk`, `ezreqargschk`, C behind
+`BLITZ_ERRCHK_THUNK`, they keep d0-d1/a0-a1); the declarations differ
+from the reference there (`rimisclib.declarations-intended.txt`).
 
 **DIFF:**
 
@@ -163,12 +167,18 @@ kind F):
   gives "", as NextArg$ does; the original did not check the parse
   pointer and read from address 0 on (an empty result only while the
   long at 0 is 0) (#754).
+* EZRequest title$,body$,gadget$,var.. and EZRequestArgs store their
+  arguments in 16 longs (a string, long, Quick or Float a long, a word
+  or byte a word) without a limit; the original overwrites the code
+  behind them (WorkbenchHere's). An invalid argument (the number of
+  arguments is in the source): the commands are unchanged, and with
+  runtime error checking more than 64 bytes of arguments is the error
+  "Too Many EZRequest Arguments" (#748). Within 64 bytes the format text
+  of EZRequestArgs (160 bytes) cannot overflow.
 
 ## BUG(orig)
 
-* Neither EZRequest form with arguments limits the number of
-  arguments (16 longs, the original overwrites code behind them) (#748),
-  and EZRequestArgs without an argument reads one type word from a2 (the
+* EZRequestArgs without an argument reads one type word from a2 (the
   count 0 runs the DBRA 65536 times) (#746).
 * LtoS replaces the bytes 0-31 and 128-255 by 128 (`CMPI.b #32` with a
   signed branch) (#753).

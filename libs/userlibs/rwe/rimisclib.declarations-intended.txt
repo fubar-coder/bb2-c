@@ -1,0 +1,9 @@
+# the intended differences of rimisclib against the reference build of its
+# source (blitzlib compare, docs/development.md "Intended differences")
+# #748: the library gets an error check area (the header's error field)
+# and the error checks ezargschk and ezreqargschk of EZRequest with
+# arguments and EZRequestArgs; the original has none
+lib 47: header +$2C: code offset set in only one of them
+lib 47: entry 6 EZRequest +$46: code offset set in only one of them
+lib 47: entry 11 EZRequestArgs +$C: code offset set in only one of them
+lib 47: relocations in the declaration part 32 != 35

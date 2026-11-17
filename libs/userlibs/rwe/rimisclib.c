@@ -36,13 +36,17 @@
  * inlines.
  *
  * BUG(orig), kept:
- *   - Neither EZRequest form with arguments limits them (16 longs)
- *     (#748).
  *   - EZRequestArgs without arguments reads one type word from a2 (the
  *     count 0 runs the DBRA loop 65536 times) (#746).
  *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare)
  *     (#753).
  *
+ * Fixed (intended deviation, #748): EZRequest title$,body$,gadget$,var..
+ * and EZRequestArgs store their arguments in 16 longs without a limit;
+ * an invalid argument (the number is in the source): the commands are
+ * unchanged, the library has an error check area (the original has
+ * none) whose checks ezargschk and ezreqargschk stop more than 64 bytes
+ * of arguments with "Too Many EZRequest Arguments" (debugger only).
  * Fixed (intended deviation, #754): NextArgChar$ before InitArgParse and
  * after NextArg$ came to the end gives "", as NextArg$ does; the original
  * did not check the parse pointer and read from address 0.
@@ -164,13 +168,14 @@ void _doprogpath(void), _doprogdir(void), _doprogname(void), _fromblitz(void);
 void _ltos(void), _ascraw(void), _rawasc(void), _openfontprefs(void);
 void _closefontprefs(void), _defaultfontheight(void), _defaultfontname(void);
 void _nextparseuntilchar(void), _binstr(void), rimisclib_libinit(void);
-void rimisclib_libfinit(void);
+void rimisclib_libfinit(void), ezargschk(void), ezreqargschk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {#rimisclib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_rimisclib, init, BL_NORET, finit, 0);
+/* !libheader {#rimisclib,init,0,finit,0}; error field: the error check area
+   of ezargschk and ezreqargschk (fixed, #748) */
+BLITZ_LIBHEADER(LIB_rimisclib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_NULLSUB(0, 0, 0);
 BLITZ_NULLSUB(0, 0, 0);
@@ -206,7 +211,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy3), 0, 0);
 BLITZ_REPARGS(3, 1, BL_STRING, BL_STRING, BL_STRING, BL_UNKNOWN | BL_PUSH);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy4), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy4), ezargschk, 0);      /* check: fixed #748 */
 BLITZ_NAME("EZRequest", "[title$,]body$[,gadget$] | title$,body$,gadget$[,var..]");
 
 BLITZ_AFUNCTION(BL_STRING);
@@ -239,7 +244,7 @@ BLITZ_NAME("EZOutput", "[win#]");
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_REPARGS(0, 1, BL_UNKNOWN | BL_PUSH);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy6), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy6), ezreqargschk, 0);   /* check: fixed #748 */
 BLITZ_NAME("EZRequestArgs", "args..");
 
 BLITZ_ASTATEMENT();
@@ -968,7 +973,8 @@ static ULONG BLITZ_ROUTINE doeasy3_c(STRPTR body BL_REG(d0))
  * @brief EZRequest title$,body$,gadget$,var..: an EasyRequest with the
  * arguments as the format arguments.
  *
- * See doargs; BUG(orig): no limit of the 16 argument longs (#748).  Quick
+ * See doargs; no limit of the 16 argument longs (an invalid argument:
+ * ezargschk, fixed #748).  Quick
  * and Float arguments: their integer part (fixed #750, #749).  Fixed
  * (#1027): a3 = title$
  * afterwards (the original: the argument array).
@@ -1003,7 +1009,8 @@ static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG
  * %s / %ld / %d per type, separated by the EZSeparator character ('|': a
  * line feed), gadget "Ok", no title.  Fixed (#747): the format text
  * ends with a 0 (the original wrote none, a shorter text kept the end of
- * the one before).  BUG(orig): no limit of the arguments (#748);
+ * the one before).  No limit of the arguments (an invalid argument:
+ * ezreqargschk, fixed #748); BUG(orig):
  * without arguments a type word is read from a2 and the count 0 runs the
  * loop 65536 times (#746).  Quick/Float: their integer part (fixed #750,
  * #749).  Fixed (#1027):
@@ -1313,3 +1320,72 @@ BLITZ_THUNK(_openfontprefs, openfontprefs_c, "d1/a0-a1");
 BLITZ_THUNK(_closefontprefs, closefontprefs_c, "d1/a0-a1");
 BLITZ_THUNK(_defaultfontheight, defaultfontheight_c, "d1/a0-a1");
 BLITZ_THUNK(_defaultfontname, defaultfontname_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(toomanyargs, "Too Many EZRequest Arguments");  /* fixed, #748 */
+
+/* the bytes the repeated arguments below sp take in the argument array
+   (a string, long, Quick or Float 4, a word or byte 2), as doargs stores
+   them; `cnt` arguments, counted only until there are more than 64 */
+static ULONG argbytes(const UBYTE *sp, UWORD cnt)
+{
+    ULONG n = 0;
+
+    while (cnt-- && n <= sizeof ez.args2) {
+        UWORD type = BL_POPW(sp);
+
+        if (type == BL_STRING) {
+            sp -= 8;
+            n += 4;
+        } else if (type == BL_WORD || type == BL_BYTE) {
+            sp -= 2;
+            n += 2;
+        } else {
+            sp -= 4;
+            n += 4;
+        }
+    }
+    return n;
+}
+
+/**
+ * @brief The error check of EZRequest title$,body$,gadget$,var..
+ * (debugger only).
+ *
+ * Fixed (#748), not in the original (neither form limits its arguments;
+ * the library had no error check area): arguments that take more than
+ * the 64 bytes of the argument array (16 longs), which doargs would write
+ * behind it.  The release code is unchanged (the number of arguments is
+ * in the program's source).
+ *
+ * Errors: "Too Many EZRequest Arguments".
+ * @param args  a2: the argument stack: the three lengths, below them the
+ *              repeated arguments
+ * @param reps  d7.w: the number of arguments
+ */
+static void BLITZ_ERRCHK ezargschk_c(const UBYTE *args BL_REG(a2), UWORD reps BL_REG(d7))
+{
+    if (argbytes(args - 12, reps) > sizeof ez.args2)
+        BLITZ_RUNERR(toomanyargs);
+}
+
+/**
+ * @brief The error check of EZRequestArgs args.. (debugger only).
+ *
+ * As ezargschk (fixed #748): more than 64 bytes of arguments.  Within 64
+ * bytes the format text cannot overflow its 160 bytes (at most 32 words,
+ * 3 bytes each with the separator: 96).
+ *
+ * Errors: "Too Many EZRequest Arguments".
+ * @param args  a2: the argument stack, the repeated arguments
+ * @param reps  d7.w: the number of arguments
+ */
+static void BLITZ_ERRCHK ezreqargschk_c(const UBYTE *args BL_REG(a2), UWORD reps BL_REG(d7))
+{
+    if (argbytes(args, reps) > sizeof ez.args2)
+        BLITZ_RUNERR(toomanyargs);
+}
+
+BLITZ_ERRCHK_THUNK(ezargschk, ezargschk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(ezreqargschk, ezreqargschk_c, "d0-d1/a0-a1");
