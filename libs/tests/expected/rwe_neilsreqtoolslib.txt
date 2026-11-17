@@ -194,15 +194,17 @@ RTEZFreePattern|popped|requester 0|1	$00000000
 RTEZFreePattern|popped|requester 1|1	$00000000
 RTEZFreePattern|popped|requester 2|1	$00000000
 RTEZFreePattern|popped|requester 3|1	$00000000
-RTEZGetLong|call 0|form 0 cancel|1	bytes 256 fnv 2600DEBF
+RTEZGetLong|call 0|form 0 cancel|1 [orig]	bytes 256 fnv 2600DEBF
+RTEZGetLong|call 0|form 0 cancel|1 [fixed #457]	bytes 256 fnv 21D9FE83
 RTEZGetLong|call 0|form 0 ok|1	bytes 256 fnv 21D9FE83
 RTEZGetLong|call 0|form 1 cancel|1	bytes 256 fnv 8C651113
 RTEZGetLong|call 0|form 1 ok|1	bytes 256 fnv 41413DC9
-RTEZGetLong|d0|form 0 cancel|1	$000003E9
+RTEZGetLong|d0|form 0 cancel|1 [orig]	$000003E9
+RTEZGetLong|d0|form 0 cancel|1 [fixed #457]	$00000000
 RTEZGetLong|d0|form 0 ok|1	$000003E8
 RTEZGetLong|d0|form 1 cancel|1	$00000050
 RTEZGetLong|d0|form 1 ok|1	$000003E9
-RTEZGetLong|d0|without reqtools.library, form 0|1 [fixed #463]	$00000050
+RTEZGetLong|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZGetLong|d0|without reqtools.library, form 1|1 [fixed #463]	$0000000F
 RTEZGetLong|kept|form 0 cancel|1	kept
 RTEZGetLong|kept|form 0 ok|1	kept

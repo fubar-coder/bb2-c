@@ -133,12 +133,15 @@ kind F):
   kind of requester from the long in front of the requester
   (`RT_SCREENMODEREQ`, set by rtAllocRequestA in init); the documented
   call does not depend on that (#466).
+* RTEZGetLong sets its value to 0 after each call: without a default the
+  requester starts at 0 and cancel returns 0, with a default cancel
+  returns the default (as before; RTReturnValue tells cancel from OK).
+  The original kept the value (`glValue`) for the next call, so a call
+  without a default showed the previous call's number and returned it on
+  cancel (#457). RTEZGetLongRange keeps its value as before.
 
 ## BUG(orig)
 
-* RTEZGetLong returns the value also on cancel (`TST.l d0` without a
-  branch); the value (and so the default) stays for the next call
-  (#457).
 * RTEZGetString copies the default string into the buffer of MaxChars
   bytes without a limit (#459).
 * RTASyncRequest/RTASyncPaletteRequest read the "user port" at offset 86

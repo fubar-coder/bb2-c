@@ -32,8 +32,9 @@
  * and RTNextPathEntry to the end, then after RTEZFreePattern 3 and 2
  * (#456);
  * RTEZFontRequest, RTEZScreenModeRequest both forms (through
- * rtFontRequestA in the original, #466), RTEZPaletteRequest; RTEZGetLong both forms
- * (cancel returns the value, BUG(orig), #457), RTEZGetLongRange both forms;
+ * rtFontRequestA in the original, #466), RTEZPaletteRequest; RTEZGetLong
+ * both forms (cancel: the value; in the original the previous call's,
+ * #457), RTEZGetLongRange both forms;
  * RTEZGetString both forms, ok and cancel, with the memory each call
  * keeps (#458); RTLockWindow/RTUnlockWindow;
  * the asynchronous requesters (up, not up, check, end; the palette one

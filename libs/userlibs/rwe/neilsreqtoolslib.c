@@ -42,8 +42,6 @@
  * original's MOVEM does), maxslib and memlib through BLITZ_ALIBJSR.
  *
  * BUG(orig), kept:
- *   - RTEZGetLong returns the value also on cancel (TST.l without a
- *     branch); the value and the default stay for the next call (#457).
  *   - RTEZGetString copies the default string without a limit into the
  *     buffer of MaxChars bytes (#459).
  *   - RTASyncRequest/RTASyncPaletteRequest read the "user port" at 86 of
@@ -82,6 +80,10 @@
  * rtScreenModeRequestA (-144); reqtools 38 opens the screen mode
  * requester either way (one routine, the kind from the requester), the
  * documented call does not depend on that.
+ * Fixed (intended deviation, #457): RTEZGetLong kept the value for the
+ * next call, so a call without a default showed the previous call's
+ * number and returned it on cancel; the value is 0 again after each call
+ * (with a default, cancel returns the default, as before).
  * Fixed (intended deviation, #463): no routine checked the library;
  * without reqtools.library (or after a failed init) they called through
  * a6 = 0 and RTVersion/RTRevision read the addresses $14/$16.  Now they
@@ -1228,18 +1230,25 @@ static ULONG BLITZ_ROUTINE rtpalreq_c(STRPTR title BL_REG(d0), ULONG first BL_RE
 /**
  * @brief RTEZGetLong(Title$,BodyText$): asks for a number (rtGetLongA).
  *
- * BUG(orig) (#457): the value is returned also on cancel, and it stays as
- * the default of the next call.  rtGetLongA's result goes to
- * RTReturnValue.
+ * The requester starts at 0; the value is returned also on cancel (then
+ * 0; RTReturnValue tells cancel from OK: rtGetLongA's result goes
+ * there).  Afterwards the value is 0 again, so it does not become the
+ * default of the next call (fixed, #457: the original kept it, so a call
+ * without a default showed and on cancel returned the previous call's
+ * number).
  * @param title  d0: Title$
  * @param body   d1: BodyText$ (RTGL_TextFmt)
- * @return d0: the value
+ * @return d0: the value, 0 on cancel
  */
 static ULONG BLITZ_ROUTINE rtgetlong_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1))
 {
+    ULONG v;
+
     glTagList.textfmt.ti_Data = (ULONG)body;
     returnvalue = RTCALL(0, RTJSR(LVO_rtGetLongA, 0, &glTagList, &glValue, title, 0));
-    return glValue;
+    v = glValue;
+    glValue = 0;                        /* fixed (#457): not the next default */
+    return v;
 }
 
 /**
@@ -1248,7 +1257,7 @@ static ULONG BLITZ_ROUTINE rtgetlong_c(STRPTR title BL_REG(d0), STRPTR body BL_R
  * @param title  d0: Title$
  * @param body   d1: BodyText$
  * @param def    d2: DefaultValue
- * @return d0: the value, also on cancel (#457)
+ * @return d0: the value, DefaultValue on cancel
  */
 static ULONG BLITZ_ROUTINE rtgetlongDef_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                           ULONG def BL_REG(d2))
