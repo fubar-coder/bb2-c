@@ -6,6 +6,7 @@
 ; allocation, checked when it is freed); the name is not a tool type of
 ; the icon (SYS:Prefs), so the bracket search runs.
 ; Correct: nothing is written behind an allocation.
+; @fixed #842
 ; @rwe ritooltypeslib
 ; @pass runwrap=@INJECT@|guard
 If GetIconObject("SYS:Prefs")

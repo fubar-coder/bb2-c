@@ -64,14 +64,16 @@ that are not the result.
   AddFreeList fails and return 0. The original's `MOVE.l d0,a1` freed
   address 0 (d0 is AddFreeList's 0) and lost the block (#840; bug-orig
   test `ritooltypeslib-addfreelist-fail-frees-0`, through inject).
+* The bracket search of FindToolType tt$,1 builds `(tt$)` in a buffer of
+  the name's length + 3 bytes. The original's buffer had 256 bytes; a
+  name over 253 characters wrote behind it (#842; bug-orig test
+  `ritooltypeslib-findtooltype-name-overflow`, inject guard).
 
 **BUG(orig)** (kept):
 
 * GetIconObject copies the icon's tool types without a limit into the
   100 entries (#855) (and reads from address 0 if the icon has none)
   (#845); NewToolType appends without a limit (#855).
-* FindToolType tt$,1: a name over 253 characters overflows the 256-byte
-  buffer of the bracket search (#842).
 * IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
   there. This is no defect (#846, closed): it gives back the space of the
   string argument, which the compiler does not take back after a library

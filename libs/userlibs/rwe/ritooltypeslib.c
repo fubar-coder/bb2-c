@@ -36,8 +36,6 @@
  *     100 entries (#855) (and reads from address 0 if the icon has none)
  *     (#845); NewToolType appends without a limit either; nothing checks
  *     for the last entry (a full array runs into memory behind it) (#855).
- *   - FindToolType: a name over 253 characters overflows the 256 byte
- *     buffer of the bracket search (#842).
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
  *     FindToolValue does for its result) and leaves it there. No defect:
  *     it gives back the space of the string argument, which the compiler
@@ -80,6 +78,9 @@
  *   SetToolValue/NewToolType/IconDefTool freed address 0 (d0, its result)
  *   instead of the new block, which was lost; they free the block now and
  *   return 0 as before.
+ * Fixed (intended deviation, #842): the bracket search of FindToolType
+ *   tt$,1 built "(tt$)" in 256 bytes; a name over 253 characters wrote
+ *   behind them.  The buffer now has the name's length + 3 bytes.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -395,11 +396,13 @@ ULONG BLITZ_ROUTINE c_gettoolnumber(ULONG n BL_REG(d0))
 }
 
 /* _istooltype: icon.library FindToolType; with `bracket` also the
-   switched-off form "(tt$)", in a 256 byte AllocMem buffer.  BUG(orig): a
-   name over 253 characters overflows the buffer (#842). */
+   switched-off form "(tt$)", in an AllocMem buffer of the name's length
+   + 3 ("(", ")", 0).  Fixed (#842): the original's buffer had 256 bytes,
+   a name over 253 characters overflowed it. */
 static ULONG findtooltype(CONST_STRPTR name, BOOL bracket)
 {
     UBYTE *bracketed;
+    ULONG size;
     const char *src;
     char *dst;
     ULONG r;
@@ -413,7 +416,9 @@ static ULONG findtooltype(CONST_STRPTR name, BOOL bracket)
         return 0;
     if (*string_address == '(')
         return 0;
-    bracketed = AllocMem(256, MEMF_PUBLIC);
+    for (size = 3; string_address[size - 3]; size++)
+        ;
+    bracketed = AllocMem(size, MEMF_PUBLIC);
     if (!bracketed)
         return 0;
     src = string_address;
@@ -424,7 +429,7 @@ static ULONG findtooltype(CONST_STRPTR name, BOOL bracket)
     dst[-1] = ')';
     *dst = 0;
     r = FindToolType((CONST_STRPTR *)tooltype, (CONST_STRPTR)bracketed) ? 1 : 0;
-    FreeMem(bracketed, 256);
+    FreeMem(bracketed, size);
     return r;
 }
 
