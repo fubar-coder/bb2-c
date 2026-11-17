@@ -152,13 +152,17 @@ int perf_read_out(struct perf_run *r, const char *program, const char *text, cha
     for (i = 0; i < nl; i++) {
         double it = l[i].t * 1000.0 / l[i].n;
         struct perf_meas *p = &r->m[r->n];
+        size_t pl = strlen(program), tl = strlen(l[i].test);
 
         memset(p, 0, sizeof *p);
-        if (!(p->name = malloc(strlen(program) + strlen(l[i].test) + 2))) {
+        if (!(p->name = malloc(pl + 1 + tl + 1))) {
             perf_run_free(r);
             FAIL("out of memory");
         }
-        sprintf(p->name, "%s.%s", program, l[i].test);
+        /* PROGRAM.TEST */
+        memcpy(p->name, program, pl);
+        p->name[pl] = '.';
+        memcpy(p->name + pl + 1, l[i].test, tl + 1);
         p->empty = !strcmp(l[i].test, "empty");
         p->frame = !l[i].per;
         if (p->empty)
