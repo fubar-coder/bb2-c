@@ -182,6 +182,11 @@ kind F):
   list's tail node) it wrote the tail node as a hunk (a header for one
   hunk), for a first pointer of 0 it left the file open with only the
   header (#501).
+* `SaveExec` counts only the code hunks it writes: the header's table
+  size and the hunk number of each RELOC32 block (the hunk's own index
+  among the code hunks). The original counted every item, also the
+  symbol and other items it skips: a code hunk behind a symbol item named
+  hunk 1 in its RELOC32 block, and LoadSeg refused the file (#502).
 * `BankLimit n` returns the new number of banks, as `BankLimit` without
   an argument does (the manual's syntax:
   `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
@@ -191,9 +196,8 @@ kind F):
 
 (All in the AB3 binary; in the C file's head too.)
 
-* `SaveExec`: the header gets one size slot (first = last = 0), there is
-  one HUNK_END behind all hunks, each RELOC32 block names its own hunk's
-  index (#503); symbol and other hunks are skipped but counted (#502).
+* `SaveExec`: the header gets one size slot (first = last = 0), and there
+  is one HUNK_END behind all hunks (#503).
 * `FindVolume` returns the DosList entry that FindDosEntry found, taken
   after UnLockDosList (an entry of a list the program no longer holds);
   the manual documents -1 for a volume that is present and 0 otherwise.

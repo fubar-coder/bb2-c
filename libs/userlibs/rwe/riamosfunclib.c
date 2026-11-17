@@ -41,10 +41,8 @@
  * compiler).
  *
  * BUG(orig), kept:
- *   - SaveExec: the header gets one size slot (last hunk = 0), one
- *     HUNK_END behind all hunks, and each RELOC32 block names the index
- *     of its own hunk (#503); symbol hunks and other types are skipped
- *     but counted (#502).
+ *   - SaveExec: the header gets one size slot (last hunk = 0) and there
+ *     is one HUNK_END behind all hunks (#503).
  *   - FindVolume returns the DosList entry FindDosEntry found, taken
  *     after UnLockDosList, where the manual documents -1 (0 if the
  *     volume is not present) (test riamosfunclib-findvolume-result;
@@ -123,6 +121,10 @@
  *     name's address for both, wrote the empty list's tail node as a
  *     hunk, and left the file open for a list whose first pointer is 0
  *     (#501).
+ *   - SaveExec counts only the code hunks it writes: the header's table
+ *     size and the hunk number of each RELOC32 block (the hunk's own
+ *     index among them); the original counted every item, also the
+ *     skipped symbol and other ones (#502).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written (an empty list, whose head is the tail, is
@@ -1146,7 +1148,7 @@ static ULONG docode(const struct hunkitem *h, ULONG num)
         n = (ULONG)((LONG)h->reloclen >> 2);
         hunkbuff[0] = HUNK_RELOC32;
         hunkbuff[1] = n;
-        hunkbuff[2] = num;                      /* BUG(orig): its own index (#502 #503) */
+        hunkbuff[2] = num;                      /* its own index among the code hunks */
         Write(fh, hunkbuff, 12);
         Write(fh, (APTR)h->reloc, (LONG)(n << 2));
         hunkbuff[0] = 0;
@@ -1179,9 +1181,10 @@ static void execfinit(ULONG nhunks, ULONG size)
  * Fixed (#501): 0 for a file that cannot be made, and for an empty list
  * (tested before the file is created); the original returned the name's
  * address, wrote an empty list's tail node as a hunk and left the file
- * open for a first pointer 0.  BUG(orig): the header gets one size slot,
- * one HUNK_END behind all hunks, and each RELOC32 block names its own
- * hunk (#503); other hunk types are skipped but counted (#502).
+ * open for a first pointer 0.  Fixed (#502): only the code hunks written
+ * are counted (table size, RELOC32 hunk numbers); the original counted the
+ * skipped items too.  BUG(orig): the header gets one size slot and there
+ * is one HUNK_END behind all hunks (#503).
  * @param name  d0: filename$
  * @param list  d1: the list array (its header in front of it)
  * @return d0: -1; 0 if list() is no list or empty, or the file cannot be
@@ -1202,8 +1205,7 @@ static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE 
         return 0;                               /* fixed (#501) */
     do {
         if (h->hunktype == HUNK_CODE)
-            size += docode(h, num);
-        num++;                                  /* HUNK_SYMBOL, others: skipped */
+            size += docode(h, num++);           /* fixed (#502): code hunks only */
         h = h->next;
     } while (h->next);
     execfinit(num, size);
