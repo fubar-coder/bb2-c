@@ -9,7 +9,7 @@ TED's format (`bb22`, `bb22-info`); a source tokenised as AmiBlitz3
 v3.14.0 loads it (`ab3`, `ab3-cmp`). The logic is in `tools/lib/blitztokens`,
 `tools/lib/bbdetok`, `tools/lib/bblines`, `tools/lib/bb22` and
 `shared/tokenizer`, tested by `tools/tests/test_blitztokens.c`,
-`test_bbdetok.c`, `test_bblines.c`, `test_bb22.c` and `test_tokenizer.cpp`.
+`test_bbdetok.cpp`, `test_bblines.cpp`, `test_bb22.c` and `test_tokenizer.cpp`.
 A source as TED loads, saves and shows it is
 [`tedsrc`](../../programs/ted/tools/tedsrc/README.md) (on the C core of
 TED); `detok --ted` is the nearest to `tedsrc detok`.

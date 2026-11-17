@@ -5,7 +5,7 @@ files (`stats`), the coverage of each test as lcov tracefiles (`map`) and
 the tests a change can affect, from that coverage (`select`). The logic is
 in `tools/lib/teststats` (with `statline.h`, the `@stat` line of the
 runners' emulator sessions), `tools/lib/covmap` and `tools/lib/covsel`,
-tested by `tools/tests/test_teststats.c`, `test_statline.c`,
+tested by `tools/tests/test_teststats.c`, `test_statline.cpp`,
 `test_covmap.c` and `test_covsel.c`. How the coverage is measured and
 used: `tests/README.md`, "Coverage"; the test statistics: `tests/README.md`,
 "Test statistics".

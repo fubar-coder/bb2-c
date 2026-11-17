@@ -5,7 +5,7 @@ files, anything with a fixed layout) from a small text description,
 deterministically, so that the data of a test is a reviewable text file
 in the repository and the binary is made in the build. The logic is
 `tools/lib/mktestdata` (`mktestdata.h`: the description format), tested
-by `tools/tests/test_mktestdata.c`.
+by `tools/tests/test_mktestdata.cpp`.
 
 ## Usage
 

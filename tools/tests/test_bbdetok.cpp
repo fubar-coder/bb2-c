@@ -1,10 +1,13 @@
-/*
- * test_bbdetok.c - tokenised sources built in memory as text: names,
- * unknown tokens, AmiBlitz's strings and comments against TED's rules,
- * the line ends, and broken input.
- */
-#include "testutil.h"
+// test_bbdetok - tokenised sources built in memory as text: names,
+// unknown tokens, AmiBlitz's strings and comments against TED's rules,
+// the line ends, and broken input.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "bbdetok.h"
+}
 
 static struct bbdetok d;
 static struct bbdetok_result r;
@@ -28,9 +31,9 @@ static char *text(int rules, const char *src, size_t len, char *err)
 
 #define TEXT(rules, lit, err) text(rules, lit, sizeof lit - 1, err)
 
-int main(void)
+TEST_CASE("bbdetok", "[bbdetok]")
 {
-    struct blitztokens l = { 0 };
+    struct blitztokens l = {};
     char list[] = "8001 NEWTYPE\n8021 NPrint\n8021 Other\nB201 Print\n8100 Zero\n";
     char err[200], *t;
 
@@ -75,7 +78,7 @@ int main(void)
     t = TEXT(BBDETOK_AB, "\x90\xE9 \x90\x01\0", err);
     CHECK(t && !strcmp(t, "\xE9 {32:1}\n") && r.literals == 1 && r.unknown == 1);
     {
-        struct blitztokens l2 = { 0 };
+        struct blitztokens l2 = {};
         struct bbdetok d2;
         char list2[] = "90E9 named\n";
         char *out;
@@ -111,5 +114,4 @@ int main(void)
 
     bbdetok_free(&d);
     blitztokens_free(&l);
-    return failures != 0;
 }

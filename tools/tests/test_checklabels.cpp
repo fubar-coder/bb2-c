@@ -1,9 +1,12 @@
-/*
- * test_checklabels.c - code_labels_parse (which labels are code) and
- * labels_check (missing, twice, ok, markers of other labels or files).
- */
-#include "testutil.h"
+// test_checklabels - code_labels_parse (which labels are code) and
+// labels_check (missing, twice, ok, markers of other labels or files).
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "checklabels.h"
+}
 
 static const char asm_text[] =
     "start\tmoveq\t#0,d0\n"             /* 1  code */
@@ -46,7 +49,7 @@ static long check(const char *const *texts, size_t n, char *msg, size_t len)
     return r;
 }
 
-int main(void)
+TEST_CASE("checklabels", "[checklabels]")
 {
     static const char *const want[] = { "start", "alone", "alias", "colon", "last" };
     static const unsigned lines[] = { 1, 3, 4, 13, 16 };
@@ -89,5 +92,4 @@ int main(void)
         CHECK(check(t, 1, msg, sizeof msg) == 1);
         CHECK(strstr(msg, "TWICE   ted.s:16 last: a.c, a.c\n") != NULL);
     }
-    return failures != 0;
 }

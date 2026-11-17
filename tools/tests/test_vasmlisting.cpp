@@ -1,9 +1,12 @@
-/*
- * test_vasmlisting.c - reading a vasm listing and its views, on a small
- * listing written here.
- */
-#include "testutil.h"
+// test_vasmlisting - reading a vasm listing and its views, on a small
+// listing written here.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "vasmlisting.h"
+}
 
 static const char listing_text[] =
     "Sections:\n"
@@ -43,7 +46,7 @@ static char *view(const struct listing *l, int which, const struct hunk *h, size
     return buf;
 }
 
-int main(void)
+TEST_CASE("vasmlisting", "[vasmlisting]")
 {
     struct listing l;
     char err[200];
@@ -91,7 +94,4 @@ int main(void)
 
     listing_free(&l);
     CHECK(listing_read("/nonexistent/x.lst", &l, err, sizeof err) == -1);
-    if (failures)
-        fprintf(stderr, "test_vasmlisting: %d failures\n", failures);
-    return failures != 0;
 }

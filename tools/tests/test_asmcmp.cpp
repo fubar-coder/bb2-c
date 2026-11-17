@@ -1,10 +1,13 @@
-/*
- * test_asmcmp.c - the operand normalisation of asmcmp and broken routine
- * specs (the disassembly itself is exercised by the asmcmp_* ctests of
- * the m68k build, which know objdump).
- */
-#include "testutil.h"
+// test_asmcmp - the operand normalisation of asmcmp and broken routine
+// specs (the disassembly itself is exercised by the asmcmp_* ctests of
+// the m68k build, which know objdump).
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "asmcmp.h"
+}
 
 static int is(const char *text, int rel, const char *want)
 {
@@ -19,7 +22,7 @@ static int is(const char *text, int rel, const char *want)
 
 static int spec(const char *s, const char *want)
 {
-    struct loadfile c = { 0 };
+    struct loadfile c = {};
     struct hunk h = { HUNK_CODE, (const uint8_t *)"\x4e\x75", 2, 0, NULL, NULL, 0, NULL, 0, 0 };
     char msg[300];
     FILE *out = tmpfile();
@@ -31,7 +34,7 @@ static int spec(const char *s, const char *want)
     return r == -1 && strstr(msg, want) != NULL;
 }
 
-int main(void)
+TEST_CASE("asmcmp", "[asmcmp]")
 {
     /* PC relative */
     CHECK(is("lea %pc@(0x1a),a0", 0, "lea %pc@(REL),a0"));
@@ -60,5 +63,4 @@ int main(void)
     CHECK(spec("x:604:0:0", "expected NAME:ORIGADDR"));
     CHECK(spec("x:604:0+:3", "expected NAME:ORIGADDR"));
     CHECK(spec("x:604:nosuchsym:3", "no symbol nosuchsym"));
-    return failures != 0;
 }

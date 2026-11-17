@@ -1,10 +1,13 @@
-/*
- * test_mktestdata.c - mktestdata with descriptions from memory: values,
- * labels (also forward), IFF lengths and pad bytes, declared lengths, and
- * broken descriptions (each must fail with the line in the message).
- */
-#include "testutil.h"
+// test_mktestdata - mktestdata with descriptions from memory: values,
+// labels (also forward), IFF lengths and pad bytes, declared lengths, and
+// broken descriptions (each must fail with the line in the message).
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "mktestdata.h"
+}
 
 static uint8_t *out;
 static size_t outlen;
@@ -30,7 +33,7 @@ static int broken(const char *spec, const char *line)
     return build(spec) == -1 && !strncmp(err, line, strlen(line));
 }
 
-int main(void)
+TEST_CASE("mktestdata", "[mktestdata]")
 {
     /* values: sizes, big-endian, number forms, characters, expressions */
     CHECK(same("b 1 $ff 0x10 -1\n", "\x01\xff\x10\xff", 4));
@@ -77,5 +80,4 @@ int main(void)
     CHECK(broken("end 3\n", "line 1: text behind end"));
 
     free(out);
-    return failures != 0;
 }

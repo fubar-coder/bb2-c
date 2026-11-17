@@ -1,16 +1,19 @@
-/*
- * test_statline.c - the @stat line (lib/teststats/statline.h): written,
- * read back, and broken lines refused.
- */
-#include "testutil.h"
+// test_statline - the @stat line (lib/teststats/statline.h): written,
+// read back, and broken lines refused.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "statline.h"
+}
 
 static int parse(const char *line, struct statline *s, char *err, size_t errlen)
 {
     return statline_parse(line, strlen(line), s, err, errlen);
 }
 
-int main(void)
+TEST_CASE("statline", "[statline]")
 {
     struct statline s, r;
     char buf[512], err[200];
@@ -94,8 +97,4 @@ int main(void)
         snprintf(longline, sizeof longline, "@stat v=1" REST " verdict=%040d", 0);
         BAD(longline, "verdict: value too long");
     }
-
-    if (failures)
-        fprintf(stderr, "test_statline: %d failures\n", failures);
-    return failures != 0;
 }

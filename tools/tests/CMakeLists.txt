@@ -1,6 +1,6 @@
 # tests of lib/, with inputs built in memory (testutil.h; testutil.hpp in the
 # snitch programs)
-foreach(t blitzlib blitztokens amiga_emulation checkdata bb22 blitzres teststats tedfont outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusexpect bugorigcmp perfbudget epcheck asmcmp checklabels mktestdata vasmlisting bblines bbdetok statline)
+foreach(t blitzlib blitztokens amiga_emulation checkdata bb22 blitzres teststats tedfont outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusexpect bugorigcmp perfbudget epcheck)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
 	target_compile_options(test_${t} PRIVATE -Wno-unused-function)
@@ -8,7 +8,7 @@ foreach(t blitzlib blitztokens amiga_emulation checkdata bb22 blitzres teststats
 endforeach()
 
 # the same for the tests converted to snitch programs (C++20), one per file
-foreach(t hunk biglib hunkcheck sha256)
+foreach(t hunk biglib hunkcheck sha256 asmcmp checklabels mktestdata vasmlisting bblines bbdetok statline)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)

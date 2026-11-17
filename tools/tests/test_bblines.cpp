@@ -1,10 +1,13 @@
-/*
- * test_bblines.c - line edits of tokenised sources built in memory: the
- * INCDIR lines of a source commented out, the other lines unchanged
- * (also tokens whose second byte is 0 or ':'), and broken inputs.
- */
-#include "testutil.h"
+// test_bblines - line edits of tokenised sources built in memory: the
+// INCDIR lines of a source commented out, the other lines unchanged
+// (also tokens whose second byte is 0 or ':'), and broken inputs.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <snitch/snitch.hpp>
+extern "C" {
 #include "bblines.h"
+}
 
 static char err[300];
 
@@ -12,7 +15,7 @@ static char err[300];
 /* a string literal as bytes and length (without the literal's own 0) */
 #define S(x) (const uint8_t *)(x), sizeof(x) - 1
 
-static void test_comment(void)
+TEST_CASE("bblines: comment", "[bblines]")
 {
     /* INCDIR "BlitzLibs:" / XINCLUDE "libmacs.bb" / "  INCDIR "" ; c" /
        a token with 0 and ':' as second byte / INCDIR in the middle */
@@ -63,7 +66,7 @@ static void test_comment(void)
     free(out);
 }
 
-static void test_broken(void)
+TEST_CASE("bblines: broken", "[bblines]")
 {
     uint8_t *out;
     size_t n, count;
@@ -87,11 +90,3 @@ static void test_broken(void)
                           sizeof err) == -1);
 }
 
-int main(void)
-{
-    test_comment();
-    test_broken();
-    if (failures)
-        fprintf(stderr, "%d check(s) failed\n", failures);
-    return failures != 0;
-}
