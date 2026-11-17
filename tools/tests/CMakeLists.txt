@@ -19,6 +19,10 @@ add_executable(test_amiga_emulation_supervisor test_amiga_emulation_supervisor.c
 target_link_libraries(test_amiga_emulation_supervisor PRIVATE lib_amiga_emulation lib_hunk)
 target_compile_options(test_amiga_emulation_supervisor PRIVATE -Wno-unused-function)
 add_test(NAME amiga_emulation_supervisor COMMAND test_amiga_emulation_supervisor)
+# the label emulator keeps it out of the host preset: it needs 40 s (its limits
+# are real seconds), more than the rest of the host tests together; it runs
+# in host_emulator, so in all, emulator and coverage, and needs no Amiberry
+set_tests_properties(amiga_emulation_supervisor PROPERTIES LABELS emulator)
 
 # collecting the coverage files of a session (no emulator)
 add_executable(test_amiga_emulation_cov test_amiga_emulation_cov.c)
