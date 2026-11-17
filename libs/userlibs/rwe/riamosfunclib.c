@@ -41,8 +41,7 @@
  * compiler).
  *
  * BUG(orig), kept:
- *   - DeviceName$ takes the name from the string space (a3), not from
- *     d0 (#493); the task is read through dol_Task without a check (a
+ *   - DeviceName$ reads the task through dol_Task without a check (a
  *     device without a handler task reads near address 0) (#494).
  *   - SaveExec: a file it cannot create returns the file name's address;
  *     an empty list (first pointer 0) leaves the file open with only the
@@ -114,10 +113,17 @@
  *     whatever CreateDir left in d1 (the dos.library of OS 3.2 leaves the
  *     lock there too, other versions a scratch value: the lock leaked or
  *     garbage was unlocked) (#496).
+ *   - DeviceName$ cuts a ":" at the end of its argument only when the
+ *     argument is not empty; the original tested the byte before the
+ *     argument's 0 also for an empty one and cleared a ":" of the part
+ *     of the string expression in front ("X:"+DeviceName$("") gave "X"
+ *     and a 0) (#493).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
- * result, but memlib raises "Out of Memory" itself.  Documented
+ * result, but memlib raises "Out of Memory" itself; DeviceName$ takes the
+ * name from the string space (a3), not from d0, but in compiled code d0
+ * always is the argument at a3 (#493).  Documented
  * behaviour, not a defect: Reserve(bank,...) and BLoad into a bank erase
  * a bank in use before the new allocation, also when that fails (the
  * manual: "If the bank does exist, Blitz will erase the bank from memory,
@@ -1047,8 +1053,11 @@ static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0))
  *
  * A ":" at the end of the argument is cut; the result is written over the
  * argument (a3 = its start, the length below a2), with a terminating 0.
- * BUG(orig): the name is taken from the string space (a3), not from d0
- * (#493); the task is read through dol_Task without a check (#494).
+ * The name is taken from the string space (a3), not from d0 (the same
+ * string in compiled code).  Fixed (#493): the ":" test only for an
+ * argument that is not empty; the original tested -2(a3) also for an
+ * empty one, a byte of the expression in front.  BUG(orig): the task is
+ * read through dol_Task without a check (#494).
  * @param lens  a2: the argument stack, the argument's length at -4(a2)
  * @return d0: the length of the name, 0 ("") if not found
  */
@@ -1060,8 +1069,9 @@ static ULONG BLITZ_ROUTINE getdevname_c(const ULONG *lens BL_REG(a2))
     UBYTE *end = blitz_string - 2;      /* a3 */
     ULONG n = 0;
 
-    if (*end++ == ':')
-        end[-1] = 0;
+    if (lens[-1] && *end == ':')                /* fixed (#493): not for "" */
+        *end = 0;
+    end++;
     blitz_string = end - lens[-1];
     dl = LockDosList(LDF_READ | LDF_DEVICES | LDF_VOLUMES);
     if (!dl)

@@ -37,7 +37,8 @@
  * leaves the bank of a failed open reserved), its error check (an RTS), Rename (done, missing),
  * ChangeDir (absolute, relative, missing; the current directory after
  * it and after finit, #491), FindVolume, DeviceName$ (with and without ":", volume and device
- * names, unknown, empty, d0 pointing elsewhere), SaveExec (a list with
+ * names, unknown, empty, empty behind a ":" (#493), d0 pointing
+ * elsewhere), SaveExec (a list with
  * two code hunks - relocations, memory flags, a length not a multiple
  * of 4 - and a symbol hunk; no list; a file that cannot be made; an
  * empty list, BUG(orig) (#501): the file stays open); EraseAll, finit.
@@ -659,6 +660,11 @@ static void volumes(void)
         if (i == 0)
             printf("riamosfunclib: DeviceName$(\"RAM\") = \"%s\"\n", (char *)str + 20);
     }
+    strcpy(VEC, "\"\" behind \":\"");                    /* #493 */
+    DO1(ENT(LIB, E_DEVNAME, 0), STRARG(""); str[19] = ':');
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)str);
+    OBSBYTES("string area", str, sizeof str);
     strcpy(VEC, "\"RAM\", d0 elsewhere");
     DO1(ENT(LIB, E_DEVNAME, 0), STRARG("RAM"); R.d[0] = (ULONG)"nosuchvolume");
     OBS("d0", R.d[0]);

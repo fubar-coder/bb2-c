@@ -256,6 +256,7 @@ CopyWord|popped|100|1	$00000000
 CopyWord|popped|2|1	$00000000
 CopyWord|popped|7|1	$00000000
 DeviceName$|a3|""|1	$00000014
+DeviceName$|a3|"" behind ":"|1	$00000014
 DeviceName$|a3|":"|1	$00000014
 DeviceName$|a3|"RAM"|1	$00000018
 DeviceName$|a3|"RAM", d0 elsewhere|1	$00000018
@@ -267,6 +268,7 @@ DeviceName$|a3|"TEST:"|1	$00000018
 DeviceName$|a3|"nosuch:"|1	$00000014
 DeviceName$|a3|"nosuchvolume"|1	$00000014
 DeviceName$|d0|""|1	$00000000
+DeviceName$|d0|"" behind ":"|1	$00000000
 DeviceName$|d0|":"|1	$00000000
 DeviceName$|d0|"RAM"|1	$00000004
 DeviceName$|d0|"RAM", d0 elsewhere|1	$00000004
@@ -278,6 +280,7 @@ DeviceName$|d0|"TEST:"|1	$00000004
 DeviceName$|d0|"nosuch:"|1	$00000000
 DeviceName$|d0|"nosuchvolume"|1	$00000000
 DeviceName$|kept|""|1	kept
+DeviceName$|kept|"" behind ":"|1	kept
 DeviceName$|kept|":"|1	kept
 DeviceName$|kept|"RAM"|1	kept
 DeviceName$|kept|"RAM", d0 elsewhere|1	kept
@@ -289,6 +292,7 @@ DeviceName$|kept|"TEST:"|1	kept
 DeviceName$|kept|"nosuch:"|1	kept
 DeviceName$|kept|"nosuchvolume"|1	kept
 DeviceName$|popped|""|1	$00000000
+DeviceName$|popped|"" behind ":"|1	$00000000
 DeviceName$|popped|":"|1	$00000000
 DeviceName$|popped|"RAM"|1	$00000000
 DeviceName$|popped|"RAM", d0 elsewhere|1	$00000000
@@ -300,6 +304,8 @@ DeviceName$|popped|"TEST:"|1	$00000000
 DeviceName$|popped|"nosuch:"|1	$00000000
 DeviceName$|popped|"nosuchvolume"|1	$00000000
 DeviceName$|string area|""|1	bytes 300 fnv E53D8C5B
+DeviceName$|string area|"" behind ":"|1 [orig]	bytes 300 fnv 523DE595
+DeviceName$|string area|"" behind ":"|1 [fixed #493]	bytes 300 fnv 94B09297
 DeviceName$|string area|":"|1	bytes 300 fnv F838F675
 DeviceName$|string area|"RAM"|1	bytes 300 fnv 220D8235
 DeviceName$|string area|"RAM", d0 elsewhere|1	bytes 300 fnv 220D8235

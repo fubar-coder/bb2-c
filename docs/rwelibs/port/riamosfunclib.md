@@ -167,6 +167,11 @@ kind F):
   emulator's) has the lock there too, other versions a scratch value -
   the directory's exclusive lock leaked (it could not be deleted or
   renamed) or garbage was unlocked (#496).
+* `DeviceName$` cuts a ":" at the end of its argument only when the
+  argument is not empty. The original tested the byte before the
+  argument's 0 also for an empty argument: that byte belongs to the part
+  of the string expression in front, and a ":" there was cleared
+  (`"X:"+DeviceName$("")` gave "X" and a 0) (#493).
 * `BankLimit n` returns the new number of banks, as `BankLimit` without
   an argument does (the manual's syntax:
   `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
@@ -176,10 +181,8 @@ kind F):
 
 (All in the AB3 binary; in the C file's head too.)
 
-* `DeviceName$` takes the name from the string space (a3), not from d0;
-  a ":" in front of an empty argument (the byte before it) is cleared
-  (#493). The task is read through `dol_Task` without a check (a device
-  without a handler task reads near address 0) (#494).
+* `DeviceName$` reads the task through `dol_Task` without a check (a
+  device without a handler task reads near address 0) (#494).
 * `SaveExec`: a file it cannot create returns the file name's address; an
   empty list (first pointer 0) leaves the file open with only the header
   (#501); the header gets one size slot (first = last = 0), there is one
@@ -198,6 +201,9 @@ Original behaviour that is not a defect:
   item is written.
 * init and BankLimit do not check globalloc's result: memlib raises
   "Out of Memory" itself.
+* `DeviceName$` takes the name from the string space (a3), not from d0:
+  the compiler builds every string argument at a3, so in compiled code d0
+  always is that string (#493).
 * `Reserve(bank,…)` and `BLoad` into a bank erase a bank in use before
   the new allocation, also when that fails: documented ("If the bank
   does exist, Blitz will erase the bank from memory, and allocate a new
