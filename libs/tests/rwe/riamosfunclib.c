@@ -39,7 +39,7 @@
  * two code hunks - relocations, memory flags, a length not a multiple
  * of 4 - and a symbol hunk; no list; a file that cannot be made; an
  * empty list, BUG(orig) (#501): the file stays open); EraseAll, finit.
- * Not covered: Reboot; counts of 0 (2^32 units) and bank numbers that
+ * Not covered: Reboot; counts of 0 (the original: 2^32 units, #492) and bank numbers that
  * index outside the tables (negative, Reserve above the limit, Reserve
  * with every bank in use) - they write outside the test's memory;
  * BankLimit 0 or above 65536; a ChangeDir before BankLimit/finit while

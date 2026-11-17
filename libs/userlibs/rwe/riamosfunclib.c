@@ -52,8 +52,6 @@
  *     number (#500); -1 if AllocMem fails.  A bank in use is erased
  *     before the new allocation, also when that fails (#499).
  *   - NextBank without an argument starts at whatever d0 holds (#497).
- *   - CopyByte/CopyWord/CopyLong and FillMem with a count of 0 copy or
- *     fill 2^32 units (SUBQ.l/BNE after the first) (#492).
  *   - BLoad(name$) returns the bank also when reading fails (the bank
  *     stays reserved), -1 for an empty or missing file and 0 when no
  *     bank is free (#486); the other forms leave a bank they reserved
@@ -92,6 +90,10 @@
  *     original counted with DBRA on the low word: with more than 65536
  *     banks only those down to the next multiple of 65536 were freed,
  *     BankLimit 0 ran through 65536 negative banks (#495).
+ *   - CopyByte/CopyWord/CopyLong and FillMem copy or fill nothing for a
+ *     count of 0 (FillMem also for a negative one, as the copies); the
+ *     original tested the count only after the first unit (SUBQ.l/BNE):
+ *     2^32 units (#492).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -573,7 +575,8 @@ static BB_BOOL BLITZ_ROUTINE swapbank_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
  * byte.
  *
  * A number below maxbanks (signed) is a bank: nothing for a free bank.
- * BUG(orig) (#492): length 0 fills 2^32 bytes.
+ * Fixed (#492): nothing for a length of 0 or below; the original filled
+ * 2^32 bytes for 0 (it tested the length only after the first byte).
  * @param adr  d0: the address or bank
  * @param len  d1: the number of bytes
  * @param v    d2.b: the value
@@ -589,8 +592,10 @@ static void BLITZ_ROUTINE fillmem_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1),
         if (!adr)
             return;
     }
+    if ((LONG)len <= 0)
+        return;                                 /* fixed (#492) */
     p = (UBYTE *)adr;
-    do                                          /* BUG(orig): 0 = 2^32 (#492) */
+    do
         *p++ = v;
     while (--len);
 }
@@ -1220,25 +1225,27 @@ static LONG BLITZ_ROUTINE min_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
     return b > a ? a : b;
 }
 
-/* CopyByte/CopyWord/CopyLong src,dest,n: nothing for n < 0 (d0 = 0
-   then, the source otherwise, like the original); n = 0 is 2^32 units
-   (BUG(orig), #492) */
+/* CopyByte/CopyWord/CopyLong src,dest,n: nothing for n <= 0 (d0 = 0
+   then, the source otherwise, like the original).  Fixed (#492): the
+   original copied 2^32 units for n = 0 (the count tested after the first
+   unit; TST.l d2 : BMI) */
 
 /**
  * @brief CopyByte sourceaddr,destaddr,bytes: copies bytes, ascending.
  *
- * Nothing for a negative count.  BUG(orig) (#492): 0 copies 2^32 bytes.
+ * Nothing for a count of 0 or below (fixed, #492: the original copied
+ * 2^32 bytes for 0).
  * @param src  d0: sourceaddr
  * @param d    d1: destaddr
  * @param n    d2: the number of bytes
- * @return d0: 0 for n < 0, else the source (as the original leaves it)
+ * @return d0: 0 for n <= 0, else the source (as the original leaves it)
  */
 static ULONG BLITZ_ROUTINE copybyte_c(const UBYTE *src BL_REG(d0), UBYTE *d BL_REG(d1),
                                       LONG n BL_REG(d2))
 {
     const UBYTE *s = src;
 
-    if (n < 0)
+    if (n <= 0)
         return 0;
     do
         *d++ = *s++;
@@ -1249,18 +1256,19 @@ static ULONG BLITZ_ROUTINE copybyte_c(const UBYTE *src BL_REG(d0), UBYTE *d BL_R
 /**
  * @brief CopyWord sourceaddr,destaddr,words: copies words, ascending.
  *
- * Nothing for a negative count.  BUG(orig) (#492): 0 copies 2^32 words.
+ * Nothing for a count of 0 or below (fixed, #492: the original copied
+ * 2^32 words for 0).
  * @param src  d0: sourceaddr
  * @param d    d1: destaddr
  * @param n    d2: the number of words
- * @return d0: 0 for n < 0, else the source
+ * @return d0: 0 for n <= 0, else the source
  */
 static ULONG BLITZ_ROUTINE copyword_c(const UWORD *src BL_REG(d0), UWORD *d BL_REG(d1),
                                       LONG n BL_REG(d2))
 {
     const UWORD *s = src;
 
-    if (n < 0)
+    if (n <= 0)
         return 0;
     do
         *d++ = *s++;
@@ -1271,18 +1279,19 @@ static ULONG BLITZ_ROUTINE copyword_c(const UWORD *src BL_REG(d0), UWORD *d BL_R
 /**
  * @brief CopyLong sourceaddr,destaddr,longs: copies longs, ascending.
  *
- * Nothing for a negative count.  BUG(orig) (#492): 0 copies 2^32 longs.
+ * Nothing for a count of 0 or below (fixed, #492: the original copied
+ * 2^32 longs for 0).
  * @param src  d0: sourceaddr
  * @param d    d1: destaddr
  * @param n    d2: the number of longs
- * @return d0: 0 for n < 0, else the source
+ * @return d0: 0 for n <= 0, else the source
  */
 static ULONG BLITZ_ROUTINE copylong_c(const ULONG *src BL_REG(d0), ULONG *d BL_REG(d1),
                                       LONG n BL_REG(d2))
 {
     const ULONG *s = src;
 
-    if (n < 0)
+    if (n <= 0)
         return 0;
     do
         *d++ = *s++;

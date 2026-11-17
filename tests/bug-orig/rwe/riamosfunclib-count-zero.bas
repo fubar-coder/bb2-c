@@ -11,7 +11,10 @@
 ; the copy runs under Disable: nothing else runs on the overwritten
 ; memory, and the end of the address space is not reached in the time
 ; limit.
-; Correct: a count of 0 copies nothing, the program goes on.
+; Correct: a count of 0 copies or fills nothing, the program goes on
+; (CopyWord, CopyLong and FillMem behind CopyByte: the original never
+; gets there).
+; @fixed #492
 ; @rwe riamosfunclib
 ; @pass uae=cpu_speed=real
 ; @pass uae=cachesize=0
@@ -22,7 +25,12 @@ b=AllocMem_(16,$50001)
 NPrint "before"
 Disable_
 CopyByte a,b,0
+CopyWord a,b,0
+CopyLong a,b,0
+FillMem b,0,1
+FillMem b,0
 Enable_
 NPrint "after"
+If Peek.l(b)=0 Then NPrint "b unchanged" Else NPrint "b written"
 FreeMem_ a,16 : FreeMem_ b,16
 End

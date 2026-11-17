@@ -72,7 +72,7 @@ against the disassembly of both binaries (`tail -c +33 FILE`,
 All routines are C behind `BLITZ_THUNK`s that keep d1/a0/a1 – the
 original changes most registers (d0–d7, a0–a2, a6 in places), the C build
 keeps d1–d7/a0–a6 (statements d0 too, except the copy functions, whose d0
-is the original's: the source, or 0 for a negative count). The
+is the original's: the source, or 0 for a count of 0 or below). The
 original's ALibJsr calls into its own routines (BLoad form 0: FileSize,
 Reserve form 0, Start, BLoad form 1; Reserve form 0: NextBank, Reserve
 form 1) are plain C calls. The string length of DeviceName$ is read below
@@ -104,6 +104,10 @@ kind F):
   while the bank number is the whole long: with more than 65536 banks it
   freed only those down to the next multiple of 65536, and `BankLimit 0`
   ran through 65536 negative banks (#495).
+* `CopyByte`/`CopyWord`/`CopyLong` and `FillMem` copy or fill nothing
+  for a count of 0 (`FillMem` also for a negative length, as the copies
+  do for a negative count); the original tested the count only after
+  the first unit and copied or filled 2^32 units (#492).
 
 ## BUG(orig), kept
 
@@ -121,8 +125,6 @@ kind F):
   before the new allocation, also when that fails (#499).
 * `NextBank` without an argument starts at whatever d0 holds (both forms
   share the routine) (#497).
-* `CopyByte`/`CopyWord`/`CopyLong` and `FillMem` with a count of 0 copy
-  or fill 2^32 units (#492).
 * `BLoad(name$)` returns the bank also when reading fails (the bank stays
   reserved), -1 for an empty or missing file and 0 when no bank is free
   (#486); the other forms leave a bank they reserved for a file that
@@ -196,8 +198,9 @@ without ":", volumes, devices, unknown, empty, d0 elsewhere), SaveExec (two
 code hunks – relocations, memory flags, a length not a multiple of 4 –
 and a symbol hunk; no list; no file; an empty list), EraseAll, finit.
 
-Not covered: Reboot; counts of 0 and bank numbers outside the tables
-(they write outside the test's memory); BankLimit 0 or above 65536 (the
+Not covered: Reboot; counts of 0 (the original writes over all memory;
+the bug-orig test `riamosfunclib-count-zero`) and bank numbers outside
+the tables (they write outside the test's memory); BankLimit 0 or above 65536 (the
 bug-orig test `riamosfunclib-eraseall-dbra`); a
 ChangeDir lock that is current at finit/BankLimit (the test restores the
 directory first); CurrentDir returning 0.
