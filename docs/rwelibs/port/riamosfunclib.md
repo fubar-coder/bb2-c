@@ -91,9 +91,12 @@ Assembler remains in:
   NDK inline gives no access to d1 after the call.
 
 The error check of BLoad (`bloadchk`) is a C function that does nothing:
-the original starts with an RTS (BUG(orig), #485); the Lock test behind it and
-its runtime error "Unable to load file!" are never reached and not
-ported.
+the original starts with an RTS; the Lock test behind it and its runtime
+error "Unable to load file!" are never reached and not ported. Not a
+defect (#485): the check is switched off on purpose, BLoad reports a
+missing file with its result (the manual: "-1 for success, or 0 for
+failure (not enough RAM, file does not exist)"); with the check a program
+that tests the result would stop under the debugger.
 
 ## Fixed
 
@@ -173,12 +176,6 @@ kind F):
 
 (All in the AB3 binary; in the C file's head too.)
 
-* A bank in use is erased before the new allocation, also when that
-  fails (#499).
-* A bank
-  given to BLoad is erased and reserved anew with the file's length (or
-  the given one) (#499). The error check never checks (RTS first)
-  (#485).
 * `MakeDir` unlocks d1 after CreateDir, not the returned lock. The
   dos.library of OS 3.2 (the emulator's) has the lock in d1 too: the test
   sees the directory unlocked; other versions may leak it or unlock
@@ -205,6 +202,14 @@ Original behaviour that is not a defect:
   item is written.
 * init and BankLimit do not check globalloc's result: memlib raises
   "Out of Memory" itself.
+* `Reserve(bank,…)` and `BLoad` into a bank erase a bank in use before
+  the new allocation, also when that fails: documented ("If the bank
+  does exist, Blitz will erase the bank from memory, and allocate a new
+  one", node BLoad of the manual); the other order would need the memory
+  of both banks at once, and a re-reservation that works now could fail
+  when memory is short (#499). BLoad opens the file before it touches the
+  bank (#487, fixed).
+* BLoad's error check is switched off (#485, above).
 
 ## Test
 

@@ -41,11 +41,6 @@
  * compiler), and the CreateDir call of MakeDir (see makedir_c).
  *
  * BUG(orig), kept:
- *   - A bank in use is erased before the new allocation, also when that
- *     fails (#499).
- *   - A bank given to BLoad is erased and reserved anew with the file's
- *     length (or the given one) (#499).  The error check
- *     (bloadchk) starts with an RTS: it never checks (#485).
  *   - MakeDir unlocks whatever CreateDir leaves in d1, not the lock it
  *     returned in d0 (see makedir_c; with the dos.library of OS 3.2 d1
  *     holds the lock as well, the test sees it given back) (#496).
@@ -121,7 +116,15 @@
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
- * result, but memlib raises "Out of Memory" itself.
+ * result, but memlib raises "Out of Memory" itself.  Documented
+ * behaviour, not a defect: Reserve(bank,...) and BLoad into a bank erase
+ * a bank in use before the new allocation, also when that fails (the
+ * manual: "If the bank does exist, Blitz will erase the bank from memory,
+ * and allocate a new one"; the other order would need the memory of
+ * both banks at once) (#499); BLoad's error check (bloadchk) starts with
+ * an RTS, switched off on purpose: BLoad reports a missing file with the
+ * result 0, as the manual says, instead of stopping a program that tests
+ * it with "Unable to load file!" (#485).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -788,8 +791,8 @@ static ULONG BLITZ_ROUTINE filesize_c(CONST_STRPTR name BL_REG(d0))
  * be opened leaves the bank as it was (fixed, #487: the original erased
  * and reserved the bank first and left it so).  A failed read (Read's
  * -1) is 0 (fixed, #488: the original tested for 0 only; a short read
- * stays success: a length beyond the file is a valid call).  BUG(orig):
- * the error check never checks (#485).
+ * stays success: a length beyond the file is a valid call).  The error
+ * check is switched off (#485, not a defect: see bloadchk).
  * @param name     d0: filename$
  * @param adr      d1: the address or bank
  * @param len      d2: the number of bytes
@@ -1397,9 +1400,12 @@ static ULONG BLITZ_ROUTINE copylong_c(const ULONG *src BL_REG(d0), ULONG *d BL_R
 BLITZ_INLINE(riamosfunclib_gttags, "addi.l #0x80080000,d0");
 BLITZ_INLINE(_gttags2, "move.l #0x80080000,d0");
 
-/* the error check of BLoad: BUG(orig) (#485) the original starts with an RTS -
-   its Lock test of the file name and the runtime error "Unable to load
-   file!" behind it are never reached (not ported) */
+/* the error check of BLoad: the original starts with an RTS - its Lock
+   test of the file name and the runtime error "Unable to load file!"
+   behind it are never reached (not ported).  Not a defect (#485): the
+   check is switched off on purpose, BLoad reports a missing file with
+   the result 0 (the manual: "-1 for success, or 0 for failure (not
+   enough RAM, file does not exist)") */
 static void BLITZ_ERRCHK bloadchk(void)
 {
 }
