@@ -52,10 +52,6 @@
  *     number (#500); -1 if AllocMem fails.  A bank in use is erased
  *     before the new allocation, also when that fails (#499).
  *   - NextBank without an argument starts at whatever d0 holds (#497).
- *   - EraseAll counts with DBRA on the low word, the bank number is the
- *     whole long: with more than 65536 banks only those from maxbanks-1
- *     down to the next multiple of 65536 are freed (the banks below it
- *     never), BankLimit 0 runs through 65536 negative banks (#495).
  *   - CopyByte/CopyWord/CopyLong and FillMem with a count of 0 copy or
  *     fill 2^32 units (SUBQ.l/BNE after the first) (#492).
  *   - BLoad(name$) returns the bank also when reading fails (the bank
@@ -91,6 +87,11 @@
  *     after UnLockDosList, where the manual documents -1 (0 if the
  *     volume is not present) (test riamosfunclib-findvolume-result;
  *     #1082).
+ * Fixed (intended deviations):
+ *   - EraseAll counts the whole long from maxbanks-1 down to 0; the
+ *     original counted with DBRA on the low word: with more than 65536
+ *     banks only those down to the next multiple of 65536 were freed,
+ *     BankLimit 0 ran through 65536 negative banks (#495).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -456,22 +457,21 @@ static void BLITZ_ROUTINE erase_c(LONG bank BL_REG(d0))
 }
 
 /**
- * @brief EraseAll: frees every bank in use, from maxbanks-1 down.
+ * @brief EraseAll: frees every bank in use, from maxbanks-1 down to 0.
  *
- * BUG(orig) (#495): DBRA on the low word, the bank number is the whole
- * long - with more than 65536 banks only those down to the next multiple
- * of 65536 are freed, BankLimit 0 runs through 65536 negative banks.
+ * Fixed (#495): the count is the whole long; the original counted with
+ * DBRA on the low word - with more than 65536 banks only those down to
+ * the next multiple of 65536 were freed, BankLimit 0 ran through 65536
+ * negative banks.
  * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE eraseall_c(void)
 {
-    ULONG n = (ULONG)maxbanks - 1;
+    LONG n;
 
-    do {
-        if (start_c((LONG)n))
-            eraseit((LONG)n);
-        BL_SETW(n, (UWORD)n - 1);
-    } while ((UWORD)n != 0xffff);
+    for (n = maxbanks - 1; n >= 0; n--)
+        if (start_c(n))
+            eraseit(n);
 }
 
 /**

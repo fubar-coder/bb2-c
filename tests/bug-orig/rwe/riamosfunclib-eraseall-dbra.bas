@@ -4,6 +4,7 @@
 ; when the low word wraps; bank 0 stays allocated.  (BankLimit 0 runs the
 ; loop over 65536 negative banks before the tables - a crash.)
 ; Correct: EraseAll frees every bank, Start(0) is 0 afterwards.
+; @fixed #495
 ; @rwe riamosfunclib
 DEFTYPE .l
 s=BankLimit(65537)

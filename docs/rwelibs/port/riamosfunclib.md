@@ -94,9 +94,20 @@ the original starts with an RTS (BUG(orig), #485); the Lock test behind it and
 its runtime error "Unable to load file!" are never reached and not
 ported.
 
-## BUG(orig)
+## Fixed
 
-(All still in the AB3 binary; in the C file's head too.)
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* `EraseAll` (also finit and `BankLimit`) counts the whole long from
+  maxbanks − 1 down to 0; the original counted with DBRA on the low word
+  while the bank number is the whole long: with more than 65536 banks it
+  freed only those down to the next multiple of 65536, and `BankLimit 0`
+  ran through 65536 negative banks (#495).
+
+## BUG(orig), kept
+
+(All in the AB3 binary; in the C file's head too.)
 
 * No range checks: a negative bank number counts as a bank and indexes
   before the tables (Start, Length, Erase, Reserve, BLoad, FillMem,
@@ -110,10 +121,6 @@ ported.
   before the new allocation, also when that fails (#499).
 * `NextBank` without an argument starts at whatever d0 holds (both forms
   share the routine) (#497).
-* `EraseAll` counts with DBRA on the low word while the bank number is
-  the whole long: with more than 65536 banks it frees only those from
-  maxbanks − 1 down to the next multiple of 65536, the banks below stay
-  allocated; `BankLimit 0` runs through 65536 negative banks (#495).
 * `CopyByte`/`CopyWord`/`CopyLong` and `FillMem` with a count of 0 copy
   or fill 2^32 units (#492).
 * `BLoad(name$)` returns the bank also when reading fails (the bank stays
@@ -190,7 +197,8 @@ code hunks – relocations, memory flags, a length not a multiple of 4 –
 and a symbol hunk; no list; no file; an empty list), EraseAll, finit.
 
 Not covered: Reboot; counts of 0 and bank numbers outside the tables
-(they write outside the test's memory); BankLimit 0 or above 65536; a
+(they write outside the test's memory); BankLimit 0 or above 65536 (the
+bug-orig test `riamosfunclib-eraseall-dbra`); a
 ChangeDir lock that is current at finit/BankLimit (the test restores the
 directory first); CurrentDir returning 0.
 
