@@ -145,6 +145,11 @@ ported.
   (#501); the header gets one size slot (first = last = 0), there is one
   HUNK_END behind all hunks, each RELOC32 block names its own hunk's
   index (#503); symbol and other hunks are skipped but counted (#502).
+* `FindVolume` returns the DosList entry that FindDosEntry found, taken
+  after UnLockDosList (an entry of a list the program no longer holds);
+  the manual documents -1 for a volume that is present and 0 otherwise.
+  As a truth value it works; a comparison with -1 never finds the
+  volume (test `riamosfunclib-findvolume-result`; issue to be filed).
 
 Original behaviour that is not a defect:
 

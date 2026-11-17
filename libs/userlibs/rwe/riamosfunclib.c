@@ -87,6 +87,10 @@
  *     one HUNK_END behind all hunks, and each RELOC32 block names the
  *     index of its own hunk (#503); symbol hunks and other types are
  *     skipped but counted (#502).
+ *   - FindVolume returns the DosList entry FindDosEntry found, taken
+ *     after UnLockDosList, where the manual documents -1 (0 if the
+ *     volume is not present) (test riamosfunclib-findvolume-result;
+ *     issue to be filed).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -929,6 +933,10 @@ static BB_BOOL BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
 /**
  * @brief FindVolume(volumename): the DosList entry of a device, volume or
  * assign (FindDosEntry).
+ *
+ * BUG(orig) (issue to be filed): the manual documents -1 for a volume
+ * that is present; the result is the entry's address, an entry of the
+ * list after UnLockDosList.
  * @param name  d0: the name (without ":")
  * @return d0: the struct DosList, 0 if not found
  */
