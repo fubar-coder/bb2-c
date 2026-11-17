@@ -37,25 +37,33 @@ RTASyncPaletteRequest|call 0|up|1	bytes 256 fnv 023FC3C2
 RTASyncPaletteRequest|d0|not up|1	$00000002
 RTASyncPaletteRequest|d0|not up, after RTEZRequest|1	$00000002
 RTASyncPaletteRequest|d0|up|1	$FFFFFFFF
+RTASyncPaletteRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTASyncPaletteRequest|kept|not up|1	kept
 RTASyncPaletteRequest|kept|not up, after RTEZRequest|1	kept
 RTASyncPaletteRequest|kept|up|1	kept
+RTASyncPaletteRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTASyncPaletteRequest|popped|not up|1	$00000000
 RTASyncPaletteRequest|popped|not up, after RTEZRequest|1	$00000000
 RTASyncPaletteRequest|popped|up|1	$00000000
+RTASyncPaletteRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTASyncPaletteRequest|reqtools calls|not up|1	$00000001
 RTASyncPaletteRequest|reqtools calls|not up, after RTEZRequest|1	$00000001
 RTASyncPaletteRequest|reqtools calls|up|1	$00000001
+RTASyncPaletteRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTASyncRequest|call 0|not up|1	bytes 256 fnv 6AEC4326
 RTASyncRequest|call 0|up|1	bytes 256 fnv 6AEC4326
 RTASyncRequest|d0|not up|1	$00000002
 RTASyncRequest|d0|up|1	$FFFFFFFF
+RTASyncRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTASyncRequest|kept|not up|1	kept
 RTASyncRequest|kept|up|1	kept
+RTASyncRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTASyncRequest|popped|not up|1	$00000000
 RTASyncRequest|popped|up|1	$00000000
+RTASyncRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTASyncRequest|reqtools calls|not up|1	$00000001
 RTASyncRequest|reqtools calls|up|1	$00000001
+RTASyncRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTCheckASyncPaletteRequest|call 0|not up|1	bytes 256 fnv 7FA6D708
 RTCheckASyncPaletteRequest|call 0|not up|2	bytes 256 fnv 7FA6D708
 RTCheckASyncPaletteRequest|call 0|up|1	bytes 256 fnv 7FA6D708
@@ -64,18 +72,22 @@ RTCheckASyncPaletteRequest|d0|not up|1	$FFFFFFFF
 RTCheckASyncPaletteRequest|d0|not up|2	$00000000
 RTCheckASyncPaletteRequest|d0|up|1	$FFFFFFFF
 RTCheckASyncPaletteRequest|d0|up|2	$00000000
+RTCheckASyncPaletteRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTCheckASyncPaletteRequest|kept|not up|1	kept
 RTCheckASyncPaletteRequest|kept|not up|2	kept
 RTCheckASyncPaletteRequest|kept|up|1	kept
 RTCheckASyncPaletteRequest|kept|up|2	kept
+RTCheckASyncPaletteRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTCheckASyncPaletteRequest|popped|not up|1	$00000000
 RTCheckASyncPaletteRequest|popped|not up|2	$00000000
 RTCheckASyncPaletteRequest|popped|up|1	$00000000
 RTCheckASyncPaletteRequest|popped|up|2	$00000000
+RTCheckASyncPaletteRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTCheckASyncPaletteRequest|reqtools calls|not up|1	$00000001
 RTCheckASyncPaletteRequest|reqtools calls|not up|2	$00000001
 RTCheckASyncPaletteRequest|reqtools calls|up|1	$00000001
 RTCheckASyncPaletteRequest|reqtools calls|up|2	$00000001
+RTCheckASyncPaletteRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTCheckASyncRequest|call 0|not up|1	bytes 256 fnv 7FA6D708
 RTCheckASyncRequest|call 0|not up|2	bytes 256 fnv 7FA6D708
 RTCheckASyncRequest|call 0|up|1	bytes 256 fnv 7FA6D708
@@ -84,18 +96,22 @@ RTCheckASyncRequest|d0|not up|1	$00000002
 RTCheckASyncRequest|d0|not up|2	$00000000
 RTCheckASyncRequest|d0|up|1	$FFFFFFFF
 RTCheckASyncRequest|d0|up|2	$00000000
+RTCheckASyncRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTCheckASyncRequest|kept|not up|1	kept
 RTCheckASyncRequest|kept|not up|2	kept
 RTCheckASyncRequest|kept|up|1	kept
 RTCheckASyncRequest|kept|up|2	kept
+RTCheckASyncRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTCheckASyncRequest|popped|not up|1	$00000000
 RTCheckASyncRequest|popped|not up|2	$00000000
 RTCheckASyncRequest|popped|up|1	$00000000
 RTCheckASyncRequest|popped|up|2	$00000000
+RTCheckASyncRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTCheckASyncRequest|reqtools calls|not up|1	$00000001
 RTCheckASyncRequest|reqtools calls|not up|2	$00000001
 RTCheckASyncRequest|reqtools calls|up|1	$00000001
 RTCheckASyncRequest|reqtools calls|up|2	$00000001
+RTCheckASyncRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZFlagsRequest|call 0|gadgets "Ok"|1 [orig]	bytes 256 fnv 832AD6B1
 RTEZFlagsRequest|call 0|gadgets "Ok"|1 [fixed #455]	bytes 256 fnv 89AA02CE
 RTEZFlagsRequest|call 0|gadgets "Ok"|2 [orig]	bytes 256 fnv 189C2C6E
@@ -110,11 +126,15 @@ RTEZFlagsRequest|d0|gadgets "Ok"|2	$00000007
 RTEZFlagsRequest|d0|gadgets none|1	$00000007
 RTEZFlagsRequest|d0|gadgets none|2	$00000007
 RTEZFlagsRequest|d0|title ""|1	$00000007
+RTEZFlagsRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZFlagsRequest|d0|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZFlagsRequest|kept|gadgets "Ok"|1	kept
 RTEZFlagsRequest|kept|gadgets "Ok"|2	kept
 RTEZFlagsRequest|kept|gadgets none|1	kept
 RTEZFlagsRequest|kept|gadgets none|2	kept
 RTEZFlagsRequest|kept|title ""|1	kept
+RTEZFlagsRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
+RTEZFlagsRequest|kept|without reqtools.library, form 1|1 [fixed #463]	kept
 RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets "Ok"|1 [orig]	$00000001
 RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets "Ok"|1 [fixed #455]	$00000000
 RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets none|1 [orig]	$00000001
@@ -124,21 +144,29 @@ RTEZFlagsRequest|popped|gadgets "Ok"|2	$00000000
 RTEZFlagsRequest|popped|gadgets none|1	$00000000
 RTEZFlagsRequest|popped|gadgets none|2	$00000000
 RTEZFlagsRequest|popped|title ""|1	$00000000
+RTEZFlagsRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZFlagsRequest|popped|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZFlagsRequest|reqtools calls|gadgets "Ok"|1	$00000001
 RTEZFlagsRequest|reqtools calls|gadgets "Ok"|2	$00000001
 RTEZFlagsRequest|reqtools calls|gadgets none|1	$00000001
 RTEZFlagsRequest|reqtools calls|gadgets none|2	$00000001
 RTEZFlagsRequest|reqtools calls|title ""|1	$00000001
+RTEZFlagsRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZFlagsRequest|reqtools calls|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZFontRequest|call 0|cancel|1	bytes 256 fnv 14184900
 RTEZFontRequest|call 0|ok|1	bytes 256 fnv 14184900
 RTEZFontRequest|d0|cancel|1	$00000000
 RTEZFontRequest|d0|ok|1	$4C000000
+RTEZFontRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZFontRequest|kept|cancel|1	kept
 RTEZFontRequest|kept|ok|1	kept
+RTEZFontRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEZFontRequest|popped|cancel|1	$00000000
 RTEZFontRequest|popped|ok|1	$00000000
+RTEZFontRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZFontRequest|reqtools calls|cancel|1	$00000001
 RTEZFontRequest|reqtools calls|ok|1	$00000001
+RTEZFontRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZFontRequest|the TextAttr|ok|1	bytes 8 50524F47BDC0C3C6
 RTEZFreePattern|d0|multi-load, requester 2|1	$00000000
 RTEZFreePattern|d0|multi-load, requester 3|1	$00000000
@@ -174,18 +202,26 @@ RTEZGetLong|d0|form 0 cancel|1	$000003E9
 RTEZGetLong|d0|form 0 ok|1	$000003E8
 RTEZGetLong|d0|form 1 cancel|1	$00000050
 RTEZGetLong|d0|form 1 ok|1	$000003E9
+RTEZGetLong|d0|without reqtools.library, form 0|1 [fixed #463]	$00000050
+RTEZGetLong|d0|without reqtools.library, form 1|1 [fixed #463]	$0000000F
 RTEZGetLong|kept|form 0 cancel|1	kept
 RTEZGetLong|kept|form 0 ok|1	kept
 RTEZGetLong|kept|form 1 cancel|1	kept
 RTEZGetLong|kept|form 1 ok|1	kept
+RTEZGetLong|kept|without reqtools.library, form 0|1 [fixed #463]	kept
+RTEZGetLong|kept|without reqtools.library, form 1|1 [fixed #463]	kept
 RTEZGetLong|popped|form 0 cancel|1	$00000000
 RTEZGetLong|popped|form 0 ok|1	$00000000
 RTEZGetLong|popped|form 1 cancel|1	$00000000
 RTEZGetLong|popped|form 1 ok|1	$00000000
+RTEZGetLong|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZGetLong|popped|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZGetLong|reqtools calls|form 0 cancel|1	$00000001
 RTEZGetLong|reqtools calls|form 0 ok|1	$00000001
 RTEZGetLong|reqtools calls|form 1 cancel|1	$00000001
 RTEZGetLong|reqtools calls|form 1 ok|1	$00000001
+RTEZGetLong|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZGetLong|reqtools calls|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 0 cancel|1	$00000001
 RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 0 ok|1	$00000001
 RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 1 cancel|1	$00000001
@@ -198,24 +234,34 @@ RTEZGetLongRange|d0|form 0 cancel|1	$00000000
 RTEZGetLongRange|d0|form 0 ok|1	$000007D0
 RTEZGetLongRange|d0|form 1 cancel|1	$00000000
 RTEZGetLongRange|d0|form 1 ok|1	$000007D1
+RTEZGetLongRange|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZGetLongRange|d0|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZGetLongRange|kept|form 0 cancel|1	kept
 RTEZGetLongRange|kept|form 0 ok|1	kept
 RTEZGetLongRange|kept|form 1 cancel|1	kept
 RTEZGetLongRange|kept|form 1 ok|1	kept
+RTEZGetLongRange|kept|without reqtools.library, form 0|1 [fixed #463]	kept
+RTEZGetLongRange|kept|without reqtools.library, form 1|1 [fixed #463]	kept
 RTEZGetLongRange|popped|form 0 cancel|1	$00000000
 RTEZGetLongRange|popped|form 0 ok|1	$00000000
 RTEZGetLongRange|popped|form 1 cancel|1	$00000000
 RTEZGetLongRange|popped|form 1 ok|1	$00000000
+RTEZGetLongRange|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZGetLongRange|popped|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZGetLongRange|reqtools calls|form 0 cancel|1	$00000001
 RTEZGetLongRange|reqtools calls|form 0 ok|1	$00000001
 RTEZGetLongRange|reqtools calls|form 1 cancel|1	$00000001
 RTEZGetLongRange|reqtools calls|form 1 ok|1	$00000001
+RTEZGetLongRange|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZGetLongRange|reqtools calls|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZGetString|a3|form 0 cancel|1	$00000024
 RTEZGetString|a3|form 0 empty|1	$00000014
 RTEZGetString|a3|form 0 ok|1	$0000001E
 RTEZGetString|a3|form 1 cancel|1	$00000024
 RTEZGetString|a3|form 1 empty|1	$00000014
 RTEZGetString|a3|form 1 ok|1	$0000001E
+RTEZGetString|a3|without reqtools.library, form 0|1 [fixed #463]	$00000025
+RTEZGetString|a3|without reqtools.library, form 1|1 [fixed #463]	$00000025
 RTEZGetString|call 0|form 0 cancel|1	bytes 256 fnv B715ED82
 RTEZGetString|call 0|form 0 empty|1	bytes 256 fnv B715ED82
 RTEZGetString|call 0|form 0 ok|1	bytes 256 fnv B715ED82
@@ -228,12 +274,16 @@ RTEZGetString|d0|form 0 ok|1	$0000000A
 RTEZGetString|d0|form 1 cancel|1	$00000000
 RTEZGetString|d0|form 1 empty|1	$00000000
 RTEZGetString|d0|form 1 ok|1	$0000000A
+RTEZGetString|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZGetString|d0|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZGetString|kept|form 0 cancel|1	kept
 RTEZGetString|kept|form 0 empty|1	kept
 RTEZGetString|kept|form 0 ok|1	kept
 RTEZGetString|kept|form 1 cancel|1	kept
 RTEZGetString|kept|form 1 empty|1	kept
 RTEZGetString|kept|form 1 ok|1	kept
+RTEZGetString|kept|without reqtools.library, form 0|1 [fixed #463]	kept
+RTEZGetString|kept|without reqtools.library, form 1|1 [fixed #463]	kept
 RTEZGetString|memory kept|form 0 cancel|1 [orig]	$00000030
 RTEZGetString|memory kept|form 0 cancel|1 [fixed #458]	$00000000
 RTEZGetString|memory kept|form 0 empty|1	$00000000
@@ -248,18 +298,24 @@ RTEZGetString|out|form 0 ok|1	bytes 300 fnv 94EF74B6
 RTEZGetString|out|form 1 cancel|1	bytes 300 fnv BDE79A05
 RTEZGetString|out|form 1 empty|1	bytes 300 fnv BDE79A05
 RTEZGetString|out|form 1 ok|1	bytes 300 fnv 94EF74B6
+RTEZGetString|out|without reqtools.library, form 0|1 [fixed #463]	bytes 300 fnv 44A0A1D3
+RTEZGetString|out|without reqtools.library, form 1|1 [fixed #463]	bytes 300 fnv 44A0A1D3
 RTEZGetString|popped|form 0 cancel|1	$00000000
 RTEZGetString|popped|form 0 empty|1	$00000000
 RTEZGetString|popped|form 0 ok|1	$00000000
 RTEZGetString|popped|form 1 cancel|1	$00000000
 RTEZGetString|popped|form 1 empty|1	$00000000
 RTEZGetString|popped|form 1 ok|1	$00000000
+RTEZGetString|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZGetString|popped|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZGetString|reqtools calls|form 0 cancel|1	$00000001
 RTEZGetString|reqtools calls|form 0 empty|1	$00000001
 RTEZGetString|reqtools calls|form 0 ok|1	$00000001
 RTEZGetString|reqtools calls|form 1 cancel|1	$00000001
 RTEZGetString|reqtools calls|form 1 empty|1	$00000001
 RTEZGetString|reqtools calls|form 1 ok|1	$00000001
+RTEZGetString|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZGetString|reqtools calls|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZLoadFile|Work:a/b/chosen.file at the title| dir "Work:a/b"|1 [orig]	$00000001
 RTEZLoadFile|Work:a/b/chosen.file at the title| dir "Work:a/b"|1 [fixed #461]	$00000000
 RTEZLoadFile|Work:a/b/chosen.file at the title|pattern freed dir "Work:a/b"|1 [orig]	$00000001
@@ -293,6 +349,7 @@ RTEZLoadFile|a3|with pattern dir "RAM:t"|1 [orig]	$0000001B
 RTEZLoadFile|a3|with pattern dir "RAM:t"|1 [fixed #461]	$0000001A
 RTEZLoadFile|a3|with pattern dir "Work:a/b"|1 [orig]	$00000029
 RTEZLoadFile|a3|with pattern dir "Work:a/b"|1 [fixed #461]	$00000028
+RTEZLoadFile|a3|without reqtools.library, form 0|1 [fixed #463]	$00000014
 RTEZLoadFile|call 0| cancel|1	bytes 256 fnv B6630C82
 RTEZLoadFile|call 0| dir ""|1	bytes 256 fnv B6630C82
 RTEZLoadFile|call 0| dir "RAM:"|1	bytes 256 fnv B6630C82
@@ -323,6 +380,7 @@ RTEZLoadFile|d0|with pattern dir ""|1	$0000000B
 RTEZLoadFile|d0|with pattern dir "RAM:"|1	$0000000F
 RTEZLoadFile|d0|with pattern dir "RAM:t"|1	$00000006
 RTEZLoadFile|d0|with pattern dir "Work:a/b"|1	$00000014
+RTEZLoadFile|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZLoadFile|kept| cancel|1	kept
 RTEZLoadFile|kept| dir ""|1	kept
 RTEZLoadFile|kept| dir "RAM:"|1	kept
@@ -338,6 +396,7 @@ RTEZLoadFile|kept|with pattern dir ""|1	kept
 RTEZLoadFile|kept|with pattern dir "RAM:"|1	kept
 RTEZLoadFile|kept|with pattern dir "RAM:t"|1	kept
 RTEZLoadFile|kept|with pattern dir "Work:a/b"|1	kept
+RTEZLoadFile|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEZLoadFile|out| cancel|1	bytes 300 fnv EFE49DCA
 RTEZLoadFile|out| dir ""|1	bytes 300 fnv 61706191
 RTEZLoadFile|out| dir "RAM:"|1	bytes 300 fnv 16140D64
@@ -353,6 +412,7 @@ RTEZLoadFile|out|with pattern dir ""|1	bytes 300 fnv 61706191
 RTEZLoadFile|out|with pattern dir "RAM:"|1	bytes 300 fnv 16140D64
 RTEZLoadFile|out|with pattern dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTEZLoadFile|out|with pattern dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTEZLoadFile|out|without reqtools.library, form 0|1 [fixed #463]	bytes 300 fnv 44A0A1D3
 RTEZLoadFile|popped| cancel|1	$00000000
 RTEZLoadFile|popped| dir ""|1	$00000000
 RTEZLoadFile|popped| dir "RAM:"|1	$00000000
@@ -368,6 +428,7 @@ RTEZLoadFile|popped|with pattern dir ""|1	$00000000
 RTEZLoadFile|popped|with pattern dir "RAM:"|1	$00000000
 RTEZLoadFile|popped|with pattern dir "RAM:t"|1	$00000000
 RTEZLoadFile|popped|with pattern dir "Work:a/b"|1	$00000000
+RTEZLoadFile|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZLoadFile|reqtools calls| cancel|1	$00000001
 RTEZLoadFile|reqtools calls| dir ""|1	$00000001
 RTEZLoadFile|reqtools calls| dir "RAM:"|1	$00000001
@@ -383,6 +444,7 @@ RTEZLoadFile|reqtools calls|with pattern dir ""|1	$00000001
 RTEZLoadFile|reqtools calls|with pattern dir "RAM:"|1	$00000001
 RTEZLoadFile|reqtools calls|with pattern dir "RAM:t"|1	$00000001
 RTEZLoadFile|reqtools calls|with pattern dir "Work:a/b"|1	$00000001
+RTEZLoadFile|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZMultiLoadFile|call 0|after RTEZFreePattern 2|1	bytes 256 fnv 72E3B230
 RTEZMultiLoadFile|call 0|after RTEZFreePattern 3|1	bytes 256 fnv 72E3B230
 RTEZMultiLoadFile|call 0|cancel|1	bytes 256 fnv 3DF266BE
@@ -401,38 +463,47 @@ RTEZMultiLoadFile|d0|cancel|1	$00000000
 RTEZMultiLoadFile|d0|list at $xx00|1 [orig]	$4E000000
 RTEZMultiLoadFile|d0|list at $xx00|1 [fixed #462]	$FFFFFFFF
 RTEZMultiLoadFile|d0|list of 3|1	$FFFFFFFF
+RTEZMultiLoadFile|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZMultiLoadFile|kept|after RTEZFreePattern 2|1	kept
 RTEZMultiLoadFile|kept|after RTEZFreePattern 3|1	kept
 RTEZMultiLoadFile|kept|cancel|1	kept
 RTEZMultiLoadFile|kept|list at $xx00|1	kept
 RTEZMultiLoadFile|kept|list of 3|1	kept
+RTEZMultiLoadFile|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEZMultiLoadFile|popped|after RTEZFreePattern 2|1	$00000000
 RTEZMultiLoadFile|popped|after RTEZFreePattern 3|1	$00000000
 RTEZMultiLoadFile|popped|cancel|1	$00000000
 RTEZMultiLoadFile|popped|list at $xx00|1	$00000000
 RTEZMultiLoadFile|popped|list of 3|1	$00000000
+RTEZMultiLoadFile|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZMultiLoadFile|reqtools calls|after RTEZFreePattern 2|1	$00000002
 RTEZMultiLoadFile|reqtools calls|after RTEZFreePattern 3|1	$00000002
 RTEZMultiLoadFile|reqtools calls|cancel|1	$00000002
 RTEZMultiLoadFile|reqtools calls|list at $xx00|1	$00000002
 RTEZMultiLoadFile|reqtools calls|list of 3|1	$00000002
+RTEZMultiLoadFile|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZMultiLoadFile|the list, not -1 (BUG(orig) #462)|list at $xx00|1 [orig]	$00000001
 RTEZMultiLoadFile|the list, not -1 (BUG(orig) #462)|list at $xx00|1 [fixed #462]	$00000000
 RTEZPaletteRequest|call 0|ret -1|1	bytes 256 fnv 7C00AC04
 RTEZPaletteRequest|call 0|ret 5|1	bytes 256 fnv 94868A09
 RTEZPaletteRequest|d0|ret -1|1	$FFFFFFFF
 RTEZPaletteRequest|d0|ret 5|1	$00000005
+RTEZPaletteRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$FFFFFFFF
 RTEZPaletteRequest|kept|ret -1|1	kept
 RTEZPaletteRequest|kept|ret 5|1	kept
+RTEZPaletteRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEZPaletteRequest|popped|ret -1|1	$00000000
 RTEZPaletteRequest|popped|ret 5|1	$00000000
+RTEZPaletteRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZPaletteRequest|reqtools calls|ret -1|1	$00000001
 RTEZPaletteRequest|reqtools calls|ret 5|1	$00000001
+RTEZPaletteRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZPathRequest|a3| cancel|1	$00000014
 RTEZPathRequest|a3| dir ""|1	$00000014
 RTEZPathRequest|a3| dir "RAM:"|1	$00000018
 RTEZPathRequest|a3| dir "RAM:t"|1	$0000001A
 RTEZPathRequest|a3| dir "Work:a/b"|1	$0000001D
+RTEZPathRequest|a3|without reqtools.library, form 0|1 [fixed #463]	$00000014
 RTEZPathRequest|call 0| cancel|1	bytes 256 fnv 5B56BD0A
 RTEZPathRequest|call 0| dir ""|1	bytes 256 fnv 5B56BD0A
 RTEZPathRequest|call 0| dir "RAM:"|1	bytes 256 fnv 5B56BD0A
@@ -443,26 +514,31 @@ RTEZPathRequest|d0| dir ""|1	$00000000
 RTEZPathRequest|d0| dir "RAM:"|1	$00000004
 RTEZPathRequest|d0| dir "RAM:t"|1	$00000006
 RTEZPathRequest|d0| dir "Work:a/b"|1	$00000009
+RTEZPathRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZPathRequest|kept| cancel|1	kept
 RTEZPathRequest|kept| dir ""|1	kept
 RTEZPathRequest|kept| dir "RAM:"|1	kept
 RTEZPathRequest|kept| dir "RAM:t"|1	kept
 RTEZPathRequest|kept| dir "Work:a/b"|1	kept
+RTEZPathRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEZPathRequest|out| cancel|1	bytes 300 fnv EFE49DCA
 RTEZPathRequest|out| dir ""|1	bytes 300 fnv EFE49DCA
 RTEZPathRequest|out| dir "RAM:"|1	bytes 300 fnv E732116A
 RTEZPathRequest|out| dir "RAM:t"|1	bytes 300 fnv 8A15FB5B
 RTEZPathRequest|out| dir "Work:a/b"|1	bytes 300 fnv 06051BFF
+RTEZPathRequest|out|without reqtools.library, form 0|1 [fixed #463]	bytes 300 fnv 44A0A1D3
 RTEZPathRequest|popped| cancel|1	$00000000
 RTEZPathRequest|popped| dir ""|1	$00000000
 RTEZPathRequest|popped| dir "RAM:"|1	$00000000
 RTEZPathRequest|popped| dir "RAM:t"|1	$00000000
 RTEZPathRequest|popped| dir "Work:a/b"|1	$00000000
+RTEZPathRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZPathRequest|reqtools calls| cancel|1	$00000001
 RTEZPathRequest|reqtools calls| dir ""|1	$00000001
 RTEZPathRequest|reqtools calls| dir "RAM:"|1	$00000001
 RTEZPathRequest|reqtools calls| dir "RAM:t"|1	$00000001
 RTEZPathRequest|reqtools calls| dir "Work:a/b"|1	$00000001
+RTEZPathRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZRequest|call 0|after RTEZFlagsRequest, no title|1	bytes 256 fnv F6CAE0E0
 RTEZRequest|call 0|defaults again|1	bytes 256 fnv F6CAE0E0
 RTEZRequest|call 0|not up, after RTEZRequest|1	bytes 256 fnv F3B538DE
@@ -481,6 +557,9 @@ RTEZRequest|d0|title ""|3	$00000004
 RTEZRequest|d0|title "Title"|1	$00000003
 RTEZRequest|d0|title "Title"|2	$00000003
 RTEZRequest|d0|title "Title"|3	$00000003
+RTEZRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZRequest|d0|without reqtools.library, form 1|1 [fixed #463]	$00000000
+RTEZRequest|d0|without reqtools.library, form 2|1 [fixed #463]	$00000000
 RTEZRequest|kept|after RTEZFlagsRequest, no title|1	kept
 RTEZRequest|kept|defaults again|1	kept
 RTEZRequest|kept|not up, after RTEZRequest|1	kept
@@ -490,6 +569,9 @@ RTEZRequest|kept|title ""|3	kept
 RTEZRequest|kept|title "Title"|1	kept
 RTEZRequest|kept|title "Title"|2	kept
 RTEZRequest|kept|title "Title"|3	kept
+RTEZRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
+RTEZRequest|kept|without reqtools.library, form 1|1 [fixed #463]	kept
+RTEZRequest|kept|without reqtools.library, form 2|1 [fixed #463]	kept
 RTEZRequest|popped|after RTEZFlagsRequest, no title|1	$00000000
 RTEZRequest|popped|defaults again|1	$00000000
 RTEZRequest|popped|not up, after RTEZRequest|1	$00000000
@@ -499,6 +581,9 @@ RTEZRequest|popped|title ""|3	$00000000
 RTEZRequest|popped|title "Title"|1	$00000000
 RTEZRequest|popped|title "Title"|2	$00000000
 RTEZRequest|popped|title "Title"|3	$00000000
+RTEZRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZRequest|popped|without reqtools.library, form 1|1 [fixed #463]	$00000000
+RTEZRequest|popped|without reqtools.library, form 2|1 [fixed #463]	$00000000
 RTEZRequest|reqtools calls|after RTEZFlagsRequest, no title|1	$00000001
 RTEZRequest|reqtools calls|defaults again|1	$00000001
 RTEZRequest|reqtools calls|not up, after RTEZRequest|1	$00000001
@@ -508,6 +593,9 @@ RTEZRequest|reqtools calls|title ""|3	$00000001
 RTEZRequest|reqtools calls|title "Title"|1	$00000001
 RTEZRequest|reqtools calls|title "Title"|2	$00000001
 RTEZRequest|reqtools calls|title "Title"|3	$00000001
+RTEZRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZRequest|reqtools calls|without reqtools.library, form 1|1 [fixed #463]	$00000000
+RTEZRequest|reqtools calls|without reqtools.library, form 2|1 [fixed #463]	$00000000
 RTEZSaveFile|a3| cancel|1 [orig]	$00000029
 RTEZSaveFile|a3| cancel|1 [fixed #465]	$00000014
 RTEZSaveFile|a3| dir ""|1 [orig]	$00000029
@@ -538,6 +626,7 @@ RTEZSaveFile|a3|with pattern dir "RAM:t"|1 [orig]	$00000029
 RTEZSaveFile|a3|with pattern dir "RAM:t"|1 [fixed #465]	$0000001A
 RTEZSaveFile|a3|with pattern dir "Work:a/b"|1 [orig]	$00000029
 RTEZSaveFile|a3|with pattern dir "Work:a/b"|1 [fixed #465]	$00000028
+RTEZSaveFile|a3|without reqtools.library, form 0|1 [fixed #463]	$00000014
 RTEZSaveFile|call 0| cancel|1	bytes 256 fnv BD7D8C2A
 RTEZSaveFile|call 0| dir ""|1	bytes 256 fnv BD7D8C2A
 RTEZSaveFile|call 0| dir "RAM:"|1	bytes 256 fnv BD7D8C2A
@@ -568,6 +657,7 @@ RTEZSaveFile|d0|with pattern dir ""|1	$0000000B
 RTEZSaveFile|d0|with pattern dir "RAM:"|1	$0000000F
 RTEZSaveFile|d0|with pattern dir "RAM:t"|1	$00000006
 RTEZSaveFile|d0|with pattern dir "Work:a/b"|1	$00000014
+RTEZSaveFile|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZSaveFile|kept| cancel|1	kept
 RTEZSaveFile|kept| dir ""|1	kept
 RTEZSaveFile|kept| dir "RAM:"|1	kept
@@ -583,6 +673,7 @@ RTEZSaveFile|kept|with pattern dir ""|1	kept
 RTEZSaveFile|kept|with pattern dir "RAM:"|1	kept
 RTEZSaveFile|kept|with pattern dir "RAM:t"|1	kept
 RTEZSaveFile|kept|with pattern dir "Work:a/b"|1	kept
+RTEZSaveFile|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEZSaveFile|out| cancel|1	bytes 300 fnv EFE49DCA
 RTEZSaveFile|out| dir ""|1	bytes 300 fnv 61706191
 RTEZSaveFile|out| dir "RAM:"|1	bytes 300 fnv 16140D64
@@ -598,6 +689,7 @@ RTEZSaveFile|out|with pattern dir ""|1	bytes 300 fnv 61706191
 RTEZSaveFile|out|with pattern dir "RAM:"|1	bytes 300 fnv 16140D64
 RTEZSaveFile|out|with pattern dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTEZSaveFile|out|with pattern dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTEZSaveFile|out|without reqtools.library, form 0|1 [fixed #463]	bytes 300 fnv 44A0A1D3
 RTEZSaveFile|popped| cancel|1	$00000000
 RTEZSaveFile|popped| dir ""|1	$00000000
 RTEZSaveFile|popped| dir "RAM:"|1	$00000000
@@ -613,6 +705,7 @@ RTEZSaveFile|popped|with pattern dir ""|1	$00000000
 RTEZSaveFile|popped|with pattern dir "RAM:"|1	$00000000
 RTEZSaveFile|popped|with pattern dir "RAM:t"|1	$00000000
 RTEZSaveFile|popped|with pattern dir "Work:a/b"|1	$00000000
+RTEZSaveFile|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZSaveFile|reqtools calls| cancel|1	$00000001
 RTEZSaveFile|reqtools calls| dir ""|1	$00000001
 RTEZSaveFile|reqtools calls| dir "RAM:"|1	$00000001
@@ -628,6 +721,7 @@ RTEZSaveFile|reqtools calls|with pattern dir ""|1	$00000001
 RTEZSaveFile|reqtools calls|with pattern dir "RAM:"|1	$00000001
 RTEZSaveFile|reqtools calls|with pattern dir "RAM:t"|1	$00000001
 RTEZSaveFile|reqtools calls|with pattern dir "Work:a/b"|1	$00000001
+RTEZSaveFile|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZScreenModeRequest|call 0|form 0 cancel|1	bytes 256 fnv E2D83B38
 RTEZScreenModeRequest|call 0|form 0 ok|1	bytes 256 fnv E2D83B38
 RTEZScreenModeRequest|call 0|form 1 cancel|1	bytes 256 fnv 4B860B67
@@ -636,18 +730,26 @@ RTEZScreenModeRequest|d0|form 0 cancel|1	$00000000
 RTEZScreenModeRequest|d0|form 0 ok|1	$4C000000
 RTEZScreenModeRequest|d0|form 1 cancel|1	$00000000
 RTEZScreenModeRequest|d0|form 1 ok|1	$4C000000
+RTEZScreenModeRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZScreenModeRequest|d0|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZScreenModeRequest|kept|form 0 cancel|1	kept
 RTEZScreenModeRequest|kept|form 0 ok|1	kept
 RTEZScreenModeRequest|kept|form 1 cancel|1	kept
 RTEZScreenModeRequest|kept|form 1 ok|1	kept
+RTEZScreenModeRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
+RTEZScreenModeRequest|kept|without reqtools.library, form 1|1 [fixed #463]	kept
 RTEZScreenModeRequest|popped|form 0 cancel|1	$00000000
 RTEZScreenModeRequest|popped|form 0 ok|1	$00000000
 RTEZScreenModeRequest|popped|form 1 cancel|1	$00000000
 RTEZScreenModeRequest|popped|form 1 ok|1	$00000000
+RTEZScreenModeRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZScreenModeRequest|popped|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZScreenModeRequest|reqtools calls|form 0 cancel|1	$00000001
 RTEZScreenModeRequest|reqtools calls|form 0 ok|1	$00000001
 RTEZScreenModeRequest|reqtools calls|form 1 cancel|1	$00000001
 RTEZScreenModeRequest|reqtools calls|form 1 ok|1	$00000001
+RTEZScreenModeRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTEZScreenModeRequest|reqtools calls|without reqtools.library, form 1|1 [fixed #463]	$00000000
 RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 cancel|1	$00000001
 RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 ok|1	$00000001
 RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 cancel|1	$00000001
@@ -663,21 +765,25 @@ RTEZSetDefaultDirectory|d0|requester 1|1	$00000000
 RTEZSetDefaultDirectory|d0|requester 2|1	$00000000
 RTEZSetDefaultDirectory|d0|requester 3|1	$00000000
 RTEZSetDefaultDirectory|d0|requester 4|1	$00000000
+RTEZSetDefaultDirectory|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZSetDefaultDirectory|kept|requester 0|1	kept
 RTEZSetDefaultDirectory|kept|requester 1|1	kept
 RTEZSetDefaultDirectory|kept|requester 2|1	kept
 RTEZSetDefaultDirectory|kept|requester 3|1	kept
 RTEZSetDefaultDirectory|kept|requester 4|1	kept
+RTEZSetDefaultDirectory|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEZSetDefaultDirectory|popped|requester 0|1	$00000000
 RTEZSetDefaultDirectory|popped|requester 1|1	$00000000
 RTEZSetDefaultDirectory|popped|requester 2|1	$00000000
 RTEZSetDefaultDirectory|popped|requester 3|1	$00000000
 RTEZSetDefaultDirectory|popped|requester 4|1	$00000000
+RTEZSetDefaultDirectory|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZSetDefaultDirectory|reqtools calls|requester 0|1	$00000001
 RTEZSetDefaultDirectory|reqtools calls|requester 1|1	$00000001
 RTEZSetDefaultDirectory|reqtools calls|requester 2|1	$00000001
 RTEZSetDefaultDirectory|reqtools calls|requester 3|1	$00000001
 RTEZSetDefaultDirectory|reqtools calls|requester 4|1	$00000000
+RTEZSetDefaultDirectory|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZSetPattern|call 0|multi-load|1	bytes 256 fnv 7D9ECEE1
 RTEZSetPattern|call 0|multi-load again|1	bytes 256 fnv 7D9ECEE1
 RTEZSetPattern|call 0|requester 0|1	bytes 256 fnv B8637413
@@ -690,6 +796,7 @@ RTEZSetPattern|d0|requester 1|1	$00000000
 RTEZSetPattern|d0|requester 2|1	$00000000
 RTEZSetPattern|d0|requester 3|1	$00000000
 RTEZSetPattern|d0|requester 4|1	$00000000
+RTEZSetPattern|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZSetPattern|kept|multi-load|1	kept
 RTEZSetPattern|kept|multi-load again|1	kept
 RTEZSetPattern|kept|requester 0|1	kept
@@ -697,6 +804,7 @@ RTEZSetPattern|kept|requester 1|1	kept
 RTEZSetPattern|kept|requester 2|1	kept
 RTEZSetPattern|kept|requester 3|1	kept
 RTEZSetPattern|kept|requester 4|1	kept
+RTEZSetPattern|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEZSetPattern|popped|multi-load|1	$00000000
 RTEZSetPattern|popped|multi-load again|1	$00000000
 RTEZSetPattern|popped|requester 0|1	$00000000
@@ -704,6 +812,7 @@ RTEZSetPattern|popped|requester 1|1	$00000000
 RTEZSetPattern|popped|requester 2|1	$00000000
 RTEZSetPattern|popped|requester 3|1	$00000000
 RTEZSetPattern|popped|requester 4|1	$00000000
+RTEZSetPattern|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZSetPattern|reqtools calls|multi-load|1	$00000001
 RTEZSetPattern|reqtools calls|multi-load again|1	$00000001
 RTEZSetPattern|reqtools calls|requester 0|1	$00000001
@@ -711,26 +820,35 @@ RTEZSetPattern|reqtools calls|requester 1|1	$00000001
 RTEZSetPattern|reqtools calls|requester 2|1	$00000000
 RTEZSetPattern|reqtools calls|requester 3|1	$00000001
 RTEZSetPattern|reqtools calls|requester 4|1	$00000000
+RTEZSetPattern|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEndASyncPaletteRequest|call 0|not up|1	bytes 256 fnv 05E053F0
 RTEndASyncPaletteRequest|call 0|up|1	bytes 256 fnv 05E053F0
 RTEndASyncPaletteRequest|d0|not up|1	$00000001
 RTEndASyncPaletteRequest|d0|up|1	$00000001
+RTEndASyncPaletteRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEndASyncPaletteRequest|kept|not up|1	kept
 RTEndASyncPaletteRequest|kept|up|1	kept
+RTEndASyncPaletteRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEndASyncPaletteRequest|popped|not up|1	$00000000
 RTEndASyncPaletteRequest|popped|up|1	$00000000
+RTEndASyncPaletteRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEndASyncPaletteRequest|reqtools calls|not up|1	$00000001
 RTEndASyncPaletteRequest|reqtools calls|up|1	$00000001
+RTEndASyncPaletteRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEndASyncRequest|call 0|not up|1	bytes 256 fnv 05E053F0
 RTEndASyncRequest|call 0|up|1	bytes 256 fnv 05E053F0
 RTEndASyncRequest|d0|not up|1	$00000001
 RTEndASyncRequest|d0|up|1	$00000001
+RTEndASyncRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEndASyncRequest|kept|not up|1	kept
 RTEndASyncRequest|kept|up|1	kept
+RTEndASyncRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTEndASyncRequest|popped|not up|1	$00000000
 RTEndASyncRequest|popped|up|1	$00000000
+RTEndASyncRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEndASyncRequest|reqtools calls|not up|1	$00000001
 RTEndASyncRequest|reqtools calls|up|1	$00000001
+RTEndASyncRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTFileRequest|a3| cancel|1	$00000014
 RTFileRequest|a3| dir ""|1 [orig]	$00000020
 RTFileRequest|a3| dir ""|1 [fixed #461]	$0000001F
@@ -740,6 +858,7 @@ RTFileRequest|a3| dir "RAM:t"|1 [orig]	$0000001B
 RTFileRequest|a3| dir "RAM:t"|1 [fixed #461]	$0000001A
 RTFileRequest|a3| dir "Work:a/b"|1 [orig]	$00000029
 RTFileRequest|a3| dir "Work:a/b"|1 [fixed #461]	$00000028
+RTFileRequest|a3|without reqtools.library, form 0|1 [fixed #463]	$00000014
 RTFileRequest|call 0| cancel|1	bytes 256 fnv 260483EE
 RTFileRequest|call 0| dir ""|1	bytes 256 fnv 260483EE
 RTFileRequest|call 0| dir "RAM:"|1	bytes 256 fnv 260483EE
@@ -750,31 +869,40 @@ RTFileRequest|d0| dir ""|1	$0000000B
 RTFileRequest|d0| dir "RAM:"|1	$0000000F
 RTFileRequest|d0| dir "RAM:t"|1	$00000006
 RTFileRequest|d0| dir "Work:a/b"|1	$00000014
+RTFileRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTFileRequest|kept| cancel|1	kept
 RTFileRequest|kept| dir ""|1	kept
 RTFileRequest|kept| dir "RAM:"|1	kept
 RTFileRequest|kept| dir "RAM:t"|1	kept
 RTFileRequest|kept| dir "Work:a/b"|1	kept
+RTFileRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTFileRequest|out| cancel|1	bytes 300 fnv EFE49DCA
 RTFileRequest|out| dir ""|1	bytes 300 fnv 61706191
 RTFileRequest|out| dir "RAM:"|1	bytes 300 fnv 16140D64
 RTFileRequest|out| dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTFileRequest|out| dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTFileRequest|out|without reqtools.library, form 0|1 [fixed #463]	bytes 300 fnv 44A0A1D3
 RTFileRequest|popped| cancel|1	$00000000
 RTFileRequest|popped| dir ""|1	$00000000
 RTFileRequest|popped| dir "RAM:"|1	$00000000
 RTFileRequest|popped| dir "RAM:t"|1	$00000000
 RTFileRequest|popped| dir "Work:a/b"|1	$00000000
+RTFileRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTFileRequest|reqtools calls| cancel|1	$00000001
 RTFileRequest|reqtools calls| dir ""|1	$00000001
 RTFileRequest|reqtools calls| dir "RAM:"|1	$00000001
 RTFileRequest|reqtools calls| dir "RAM:t"|1	$00000001
 RTFileRequest|reqtools calls| dir "Work:a/b"|1	$00000001
+RTFileRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTLockWindow|call 0||1	bytes 256 fnv B615B836
 RTLockWindow|d0||1	$CC0A0042
+RTLockWindow|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTLockWindow|kept||1	kept
+RTLockWindow|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTLockWindow|popped||1	$00000000
+RTLockWindow|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTLockWindow|reqtools calls||1	$00000001
+RTLockWindow|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTNextPathEntry|a3|before init|1	$00000004
 RTNextPathEntry|a3|list 0 entry 0|1	$00000013
 RTNextPathEntry|a3|list 0 entry 1|1	$00000013
@@ -854,9 +982,13 @@ RTNextPathEntry|reqtools calls|list 2 entry 2|1	$00000000
 RTNextPathEntry|reqtools calls|list 2 entry 3|1	$00000000
 RTRequest|call 0|tag list|1	bytes 256 fnv DC972398
 RTRequest|d0|tag list|1	$00000000
+RTRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTRequest|kept|tag list|1	kept
+RTRequest|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTRequest|popped|tag list|1	$00000000
+RTRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTRequest|reqtools calls|tag list|1	$00000001
+RTRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTReturnValue|d0||1	$00000001
 RTReturnValue|d0||2	$00000001
 RTReturnValue|d0| cancel|1	$00000000
@@ -974,6 +1106,39 @@ RTReturnValue|d0|with pattern dir "RAM:t"|1	$00000001
 RTReturnValue|d0|with pattern dir "RAM:t"|2	$00000001
 RTReturnValue|d0|with pattern dir "Work:a/b"|1	$00000001
 RTReturnValue|d0|with pattern dir "Work:a/b"|2	$00000001
+RTReturnValue|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|2 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|3 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|4 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|5 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|6 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|7 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|8 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|9 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|10 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|11 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|12 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|13 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|14 [fixed #463]	$FFFFFFFF
+RTReturnValue|d0|without reqtools.library, form 0|15 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|16 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|17 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|18 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|19 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|20 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|21 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|22 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|23 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|24 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|25 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 0|26 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 1|1 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 1|2 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 1|3 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 1|4 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 1|5 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 1|6 [fixed #463]	$00000000
+RTReturnValue|d0|without reqtools.library, form 2|1 [fixed #463]	$00000000
 RTReturnValue|kept||1	kept
 RTReturnValue|kept||2	kept
 RTReturnValue|kept| cancel|1	kept
@@ -1088,6 +1253,39 @@ RTReturnValue|kept|with pattern dir "RAM:t"|1	kept
 RTReturnValue|kept|with pattern dir "RAM:t"|2	kept
 RTReturnValue|kept|with pattern dir "Work:a/b"|1	kept
 RTReturnValue|kept|with pattern dir "Work:a/b"|2	kept
+RTReturnValue|kept|without reqtools.library, form 0|1 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|2 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|3 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|4 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|5 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|6 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|7 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|8 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|9 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|10 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|11 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|12 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|13 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|14 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|15 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|16 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|17 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|18 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|19 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|20 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|21 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|22 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|23 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|24 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|25 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 0|26 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 1|1 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 1|2 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 1|3 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 1|4 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 1|5 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 1|6 [fixed #463]	kept
+RTReturnValue|kept|without reqtools.library, form 2|1 [fixed #463]	kept
 RTReturnValue|popped||1	$00000000
 RTReturnValue|popped||2	$00000000
 RTReturnValue|popped| cancel|1	$00000000
@@ -1202,18 +1400,63 @@ RTReturnValue|popped|with pattern dir "RAM:t"|1	$00000000
 RTReturnValue|popped|with pattern dir "RAM:t"|2	$00000000
 RTReturnValue|popped|with pattern dir "Work:a/b"|1	$00000000
 RTReturnValue|popped|with pattern dir "Work:a/b"|2	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|2 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|3 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|4 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|5 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|6 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|7 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|8 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|9 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|10 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|11 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|12 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|13 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|14 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|15 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|16 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|17 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|18 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|19 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|20 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|21 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|22 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|23 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|24 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|25 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 0|26 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 1|1 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 1|2 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 1|3 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 1|4 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 1|5 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 1|6 [fixed #463]	$00000000
+RTReturnValue|popped|without reqtools.library, form 2|1 [fixed #463]	$00000000
 RTRevision|d0||1	$5A001234
+RTRevision|d0|without reqtools.library, form 0|1 [fixed #463]	$5A5A0000
 RTRevision|kept||1	kept
+RTRevision|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTRevision|popped||1	$00000000
+RTRevision|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTRevision|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTUnlockWindow|call 0||1	bytes 256 fnv 6B49422B
 RTUnlockWindow|d0||1	$00000000
+RTUnlockWindow|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTUnlockWindow|kept||1	kept
+RTUnlockWindow|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTUnlockWindow|popped||1	$00000000
+RTUnlockWindow|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTUnlockWindow|reqtools calls||1	$00000001
+RTUnlockWindow|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTVersion|99||1	$00000001
 RTVersion|d0||1	$5A000063
+RTVersion|d0|without reqtools.library, form 0|1 [fixed #463]	$5A5A0000
 RTVersion|kept||1	kept
+RTVersion|kept|without reqtools.library, form 0|1 [fixed #463]	kept
 RTVersion|popped||1	$00000000
+RTVersion|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
+RTVersion|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 finit|call 0||1	bytes 256 fnv DADC5FEA
 finit|call 1||1	bytes 256 fnv 783EE675
 finit|call 2||1	bytes 256 fnv A01752D4

@@ -3,6 +3,9 @@ ok
 [run]
 0
 0
+<>
+7
+0
 inject: openlibfail: *
 inject: rc=0
 rc=0

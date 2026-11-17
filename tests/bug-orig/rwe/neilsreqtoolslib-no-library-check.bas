@@ -5,11 +5,19 @@
 ; failing (runwrap=, inject openlibfail=reqtools.library): the jump to a
 ; negative offset from 0 crashes the system (the session ends in a
 ; timeout).
-; Correct: RTEZRequest returns 0 without reqtools, the program goes on.
+; Correct: without reqtools every command returns what it returns on
+; cancel and the program goes on: RTEZRequest 0, RTEZLoadFile an empty
+; string (in a string expression too), RTEZGetLong with a default the
+; default, RTEZSetPattern nothing, RTVersion 0.
+; @fixed #463
 ; @rwe neilsreqtoolslib
 ; @pass runwrap=@INJECT@|openlibfail=reqtools.library
 ; @pass timeout=30
 NPrint IsReqToolsActive
 r.l=RTEZRequest("BugOrig","Hello","Ok")
 NPrint r
+NPrint "<"+RTEZLoadFile("Load","file")+">"
+NPrint RTEZGetLong("Number","Enter it",7)
+RTEZSetPattern 0,"#?.bb2"
+NPrint RTVersion
 End

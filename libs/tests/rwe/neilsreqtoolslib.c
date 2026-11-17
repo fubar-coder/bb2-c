@@ -44,9 +44,11 @@
  * no user: init, IsReqToolsActive, RTVersion/RTRevision,
  * RTEZSetDefaultDirectory/RTEZSetPattern 0-4, finit - only where there is
  * one: the emulator's hardfiles have none, the run says so and skips it.
+ * Last, in the C build only, every command after finit, with the library
+ * closed: its cancel value, no call (#463).
  * Not covered: the real requesters (they need a user); the routines
- * without reqtools.library (they call through a6 = 0); a second finit
- * (frees again).
+ * without reqtools.library in the original (they call through a6 = 0); a
+ * second finit.
  */
 #include "rwecmp.h"
 
@@ -421,6 +423,96 @@ static void init_case(const char *what, int failat)
     ROUT = "IsReqToolsActive";
     DO1(ENT(LIB, E_ACTIVE, 0), (void)0);
     OBS("d0", R.d[0]);
+}
+
+/* every command after finit, with the library closed (the state of a
+   failed init: IsReqToolsActive 0, no base): each gives its cancel value
+   and calls nothing, not even the fake still in the system (#463).  At
+   the end of the scenario, as a cancelled call changes the library's
+   state (flags, values).  Only in the C build: the original calls through
+   a6 = 0 there (a crash), so these cases are [fixed #463] alone */
+struct nolib { const char *rout; int e, form; };
+static const struct nolib nolib_str[] = {
+    { "RTEZLoadFile", E_LOAD, 0 }, { "RTEZSaveFile", E_SAVE, 0 },
+    { "RTFileRequest", E_FILEREQ, 0 }, { "RTEZPathRequest", E_PATH, 0 },
+    { "RTEZGetString", E_GETSTR, 0 }, { "RTEZGetString", E_GETSTR, 1 },
+};
+static const struct nolib nolib_num[] = {
+    { "RTEZRequest", E_EZREQ, 0 }, { "RTEZRequest", E_EZREQ, 1 },
+    { "RTEZRequest", E_EZREQ, 2 }, { "RTEZFlagsRequest", E_FLAGS, 0 },
+    { "RTEZFlagsRequest", E_FLAGS, 1 }, { "RTRequest", E_REQ, 0 },
+    { "RTEZSetDefaultDirectory", E_SETDIR, 0 }, { "RTEZSetPattern", E_SETPAT, 0 },
+    { "RTEZMultiLoadFile", E_MULTI, 0 }, { "RTEZFontRequest", E_FONT, 0 },
+    { "RTEZScreenModeRequest", E_SM, 0 }, { "RTEZScreenModeRequest", E_SM, 1 },
+    { "RTEZPaletteRequest", E_PAL, 0 }, { "RTEZGetLong", E_GETLONG, 0 },
+    { "RTEZGetLong", E_GETLONG, 1 }, { "RTEZGetLongRange", E_GETLONGRNG, 0 },
+    { "RTEZGetLongRange", E_GETLONGRNG, 1 }, { "RTLockWindow", E_LOCK, 0 },
+    { "RTUnlockWindow", E_UNLOCK, 0 }, { "RTASyncRequest", E_ASYNC, 0 },
+    { "RTCheckASyncRequest", E_CHECKAS, 0 }, { "RTEndASyncRequest", E_ENDAS, 0 },
+    { "RTASyncPaletteRequest", E_ASYNCP, 0 },
+    { "RTCheckASyncPaletteRequest", E_CHECKASP, 0 },
+    { "RTEndASyncPaletteRequest", E_ENDASP, 0 }, { "RTVersion", E_VER, 0 },
+    { "RTRevision", E_REV, 0 },
+};
+
+static void no_library(void)
+{
+    static const ULONG notags[2] = { 0, 0 };
+    static ULONG winobj[2];
+    static struct MsgPort port;
+    static UBYTE obj[100];
+    unsigned i;
+
+    port.mp_SigBit = 5;
+    *(ULONG *)(obj + 86) = (ULONG)&port;
+    winobj[0] = 0xcafe0042UL;
+    /* the string results: d0 and a3 as on cancel (a3 at the title) */
+    for (i = 0; i < sizeof nolib_str / sizeof nolib_str[0]; i++) {
+        const struct nolib *c = &nolib_str[i];
+        ROUT = c->rout;
+        sprintf(VEC, "without reqtools.library, form %d", c->form);
+        DOREQ(c->e, c->form, strargs("A title", "Enter it", NULL);
+              R.d[1] = (ULONG)(c->e == E_GETSTR ? "Enter it" : "default.name");
+              R.d[2] = c->e == E_GETSTR ? 40 : tagsat(notags, sizeof notags);
+              R.d[3] = (ULONG)"default");
+        STRRES();
+    }
+    /* the others: d0 as on cancel */
+    for (i = 0; i < sizeof nolib_num / sizeof nolib_num[0]; i++) {
+        const struct nolib *c = &nolib_num[i];
+        ROUT = c->rout;
+        sprintf(VEC, "without reqtools.library, form %d", c->form);
+        DOREQ(c->e, c->form, strargs("Title", "Body", "Ok");
+              if (c->e == E_SETDIR || c->e == E_SETPAT) {
+                  R.d[0] = 0;
+                  R.d[1] = (ULONG)"RAM:";
+              } else if (c->e == E_REQ) {
+                  R.d[0] = (ULONG)"Body";
+                  R.d[1] = (ULONG)"Gad";
+                  R.d[2] = tagsat(notags, sizeof notags);
+              } else if (c->e == E_PAL || c->e == E_SM || c->e == E_ASYNCP)
+                  R.d[1] = 3;
+              else if (c->e == E_GETLONG)
+                  R.d[2] = 15;
+              else if (c->e == E_GETLONGRNG) {
+                  R.d[2] = 10;
+                  R.d[3] = 20;
+                  R.d[4] = 15;
+              } else if (c->e == E_FLAGS) {
+                  R.d[3] = 0x208;
+                  R.d[4] = 1;
+              } else if (c->e == E_VER || c->e == E_REV) {
+                  R.d[0] = 0x5a5a1234;              /* the high word stays */
+                  DONTCARE = 1;                     /* d0: the result */
+              } else if (c->e == E_EZREQ) {
+                  R.d[3] = 0;
+                  R.d[4] = 1;
+                  R.d[5] = 0;
+              }
+              R.a[1] = (ULONG)(c->e == E_LOCK || c->e == E_UNLOCK ? (APTR)winobj
+                                                                   : (APTR)obj));
+        DONTCARE = 0;
+    }
 }
 
 static void inits(void)
@@ -894,6 +986,8 @@ int main(int argc, char **argv)
     BOTH("seven requesters and the file list freed", nlog == 8);
     /* the opens left: those of the failed inits that did not close it */
     OBS("fake open count", fake->lib_OpenCnt);
+    if (!strcmp(bl_libset, "obj"))
+        no_library();
 
     markregs(&R);
     callregs(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, 0, 0);

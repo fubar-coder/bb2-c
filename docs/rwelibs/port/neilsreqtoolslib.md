@@ -34,7 +34,8 @@ copied. 30 commands on reqtools.library V38:
 init opens reqtools.library V38 and allocates seven requesters (five file
 requesters, a font and a screen mode requester); IsReqToolsActive is -1
 when that worked. finit frees them and the file list of the last
-multi-load and closes the library. No routine checks IsReqToolsActive.
+multi-load and closes the library. Without IsReqToolsActive every
+command returns what it returns on cancel and calls nothing (#463).
 
 * **Source:** `rwelibsrc/RTLib.bb` (1997-01-30; as TED shows it:
   `build/amiga/rwelibsrc/RTLib.bb`). The CD's `NEILSREQTOOLSLIB.OBJ`
@@ -115,6 +116,16 @@ kind F):
   finit clears what it freed. The original kept the library open and the
   requesters allocated (finit did nothing then, as IsReqToolsActive was
   0), and finit cleared nothing (#460).
+* Without IsReqToolsActive (no reqtools.library V38, or a failed init)
+  every command calls nothing and returns what it returns on cancel:
+  RTEZRequest, RTRequest, RTEZFlagsRequest, the font and screen mode
+  requesters, RTEZMultiLoadFile 0; the file and path requesters and
+  RTEZGetString an empty string (a3 as on cancel); RTEZPaletteRequest
+  -1; RTEZGetLong what it gives on cancel, RTEZGetLongRange 0; RTASyncRequest and RTASyncPaletteRequest 0 (not
+  opened), their check and end 0; RTLockWindow 0; RTVersion and
+  RTRevision 0 (d0's high word as before); RTEZSetDefaultDirectory and
+  RTEZSetPattern change no requester. The original called through a6 = 0
+  (a crash; RTVersion/RTRevision read the addresses `$14`/`$16`) (#463).
 
 ## BUG(orig)
 
@@ -129,8 +140,6 @@ kind F):
   of the window object (not of the Window it points to) and keep its
   signal bit shifted by one (`LSL.b #1`) in a byte nobody reads; the
   handler is always called with no signals (`sigs` is never set) (#454).
-* Without reqtools.library every requester calls through a6 = 0
-  (RTVersion/RTRevision read the addresses `$14`/`$16`) (#463).
 
 Original behaviour that is not a defect: RTEZGetString's result and
 RTEZPathRequest's path have no 0 behind them (the usual convention of a
@@ -183,5 +192,11 @@ requester call of RTEZScreenModeRequest, the missing title of
 RTEZFlagsRequest, RTEZGetLong's value on cancel, the multi-load's
 address result.
 
+Last, in the C build only, every command after finit with the library
+closed: its cancel value and no reqtools call (#463; cases `[fixed #463]`
+alone). The bug-orig test `neilsreqtoolslib-no-library-check` runs a
+program with the open of reqtools.library failing (inject).
+
 Not covered: the real requesters (they need a user); the routines
-without reqtools.library (they call through a6 = 0); a second finit.
+without reqtools.library in the original (they call through a6 = 0); a
+second finit.
