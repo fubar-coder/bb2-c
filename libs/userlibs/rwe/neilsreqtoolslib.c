@@ -32,8 +32,8 @@
  *                     buffer is a 108 byte copy of FileName$ (maxslib)
  *   RTEZGetString     a buffer of MaxChars bytes (memlib), the result at
  *                     the title too
- *   async requesters  RT_ReqHandler: RTCheck... calls rtReqHandlerA (no
- *                     signals), RTEnd... ends it (RTRH_EndRequest)
+ *   async requesters  RT_ReqHandler: RTCheck... calls rtReqHandlerA (the
+ *                     WaitMask), RTEnd... ends it (RTRH_EndRequest)
  *   RTReturnValue     the result of the last reqtools call that stores it
  *
  * Everything is C; reqtools through BLITZ_BASEJSR or, where it takes a2-
@@ -44,10 +44,6 @@
  * BUG(orig), kept:
  *   - RTEZGetString copies the default string without a limit into the
  *     buffer of MaxChars bytes (#459).
- *   - RTASyncRequest/RTASyncPaletteRequest read the "user port" at 86 of
- *     the window object (not of the Window) and keep its signal bit
- *     shifted by one (LSL.b #1) in a byte nobody reads; the handlers are
- *     called with no signals (sigs is never set) (#454).
  * Fixed (intended deviation, #461): RTEZLoadFile/RTFileRequest wrote
  * the 0 behind their result with MOVE.b #0,(a3)+ and left a3 behind it,
  * so a string expression went on one byte too far; a3 now ends on the 0.
@@ -84,6 +80,12 @@
  * next call, so a call without a default showed the previous call's
  * number and returned it on cancel; the value is 0 again after each call
  * (with a default, cancel returns the default, as before).
+ * Fixed (intended deviation, #454): RTASyncRequest/RTASyncPaletteRequest
+ * read a "user port" at 86 of the window object (not of the Window) and
+ * kept its signal bit, shifted by one, in a byte nobody read; their
+ * handlers were called with no signals.  The read is gone; RTCheck... and
+ * RTEnd... pass the handler's WaitMask (the requester's signals, which a
+ * poller has to assume arrived).
  * Fixed (intended deviation, #463): no routine checked the library;
  * without reqtools.library (or after a failed init) they called through
  * a6 = 0 and RTVersion/RTRevision read the addresses $14/$16.  Now they
@@ -550,10 +552,14 @@ static struct lockflagstags MfreqTagList = {
     TAG_LOCKWINDOW, { RTFI_Flags, FREQF_MULTISELECT }, { TAG_END, 0 }
 };
 
-/* the asynchronous requesters */
-static UBYTE mymask, myPmask;
+/* the asynchronous requesters: the handler info reqtools stores through
+   RT_ReqHandler (rtHandlerInfo: a private long, then WaitMask) */
 static APTR myhandler, myPhandler;
-static ULONG sigs, Psigs;
+struct rthandlerinfo {
+    ULONG private1;
+    ULONG WaitMask;
+};
+static_assert(offsetof(struct rthandlerinfo, WaitMask) == 4);
 static struct {
     struct TagItem pos, lockwin, title, handler, end;
 } asRequestTagList = {
@@ -1421,27 +1427,24 @@ static ULONG BLITZ_ROUTINE rtunlockwin_c(ULONG lock BL_REG(d1), APTR *win BL_REG
 
 /* ---------------------------------------------------- async requesters */
 
-/* the signal bit of the "user port" at 86 of the window object (the
-   object, not the Window: BUG(orig), #454), shifted by one */
-static UBYTE portmask(const UBYTE *obj)
+/* the signals for rtReqHandlerA: the handler's WaitMask, 0 without a
+   handler (fixed, #454: the original passed 0 always) */
+static ULONG waitmask(const APTR handler)
 {
-    const struct MsgPort *port = *(const struct MsgPort *const *)(obj + 86);
-
-    return (UBYTE)(port->mp_SigBit << 1);
+    return handler ? ((const struct rthandlerinfo *)handler)->WaitMask : 0;
 }
 
 /**
  * @brief RTASyncRequest(Title$,BodyText$,GadgetText$): opens an EZ
  * requester that runs alongside the program (RT_ReqHandler).
  *
- * RTCheckASyncRequest polls it, RTEndASyncRequest ends it.  BUG(orig)
- * (#454): the signal bit is read from the "user port" at 86 of the window
- * object (not of the Window) and kept shifted by one in a byte nobody
- * reads.
+ * RTCheckASyncRequest polls it, RTEndASyncRequest ends it.  The window
+ * object is not read (fixed, #454: the original read a "user port" at 86
+ * of it, not of the Window, for a mask nobody used).
  * @param title   d0: Title$
  * @param body    d1: BodyText$
  * @param gadget  d2: GadgetText$
- * @param obj     a1: the used window object
+ * @param obj     a1: the used window object (not used)
  * @return d0: -1 if the requester is up (CALL_HANDLER), else rtEZRequestA's
  *         result (also for RTReturnValue, unconverted); 0 (not opened)
  *         without IsReqToolsActive (#463)
@@ -1451,7 +1454,7 @@ static ULONG BLITZ_ROUTINE rtasrequest_c(STRPTR title BL_REG(d0), STRPTR body BL
 {
     ULONG r;
 
-    mymask = portmask(obj);
+    (void)obj;
     asRequestTagList.title.ti_Data = (ULONG)title;
     r = RTCALL(0, RTJSR4(LVO_rtEZRequestA, 0, &asRequestTagList, body, gadget, 0, 0));
     returnvalue = r;
@@ -1464,12 +1467,13 @@ static ULONG BLITZ_ROUTINE rtasrequest_c(STRPTR title BL_REG(d0), STRPTR body BL
  * @brief RTCheckASyncRequest: polls the requester of RTASyncRequest
  * (rtReqHandlerA).
  *
- * BUG(orig) (#454): called with no signals (sigs is never set).
+ * With the handler's WaitMask as the signals (fixed, #454: the original
+ * passed 0).
  * @return d0: -1 while it is up, else the requester's result
  */
 static ULONG BLITZ_ROUTINE rtcheckasreq_c(void)
 {
-    ULONG r = RTCALL(0, RTJSR0(LVO_rtReqHandlerA, sigs, 0, myhandler));
+    ULONG r = RTCALL(0, RTJSR0(LVO_rtReqHandlerA, waitmask(myhandler), 0, myhandler));
 
     if (r == CALL_HANDLER)
         return (ULONG)-1;
@@ -1478,12 +1482,13 @@ static ULONG BLITZ_ROUTINE rtcheckasreq_c(void)
 
 /**
  * @brief RTEndASyncRequest: ends the requester of RTASyncRequest
- * (rtReqHandlerA with RTRH_EndRequest).
+ * (rtReqHandlerA with RTRH_EndRequest, the handler's WaitMask as the
+ * signals, fixed #454).
  * @return d0: rtReqHandlerA's result
  */
 static ULONG BLITZ_ROUTINE rtendasreq_c(void)
 {
-    return RTCALL(0, RTJSR0(LVO_rtReqHandlerA, sigs, &endreqTL, myhandler));
+    return RTCALL(0, RTJSR0(LVO_rtReqHandlerA, waitmask(myhandler), &endreqTL, myhandler));
 }
 
 /**
@@ -1491,12 +1496,12 @@ static ULONG BLITZ_ROUTINE rtendasreq_c(void)
  * requester that runs alongside the program (RT_ReqHandler).
  *
  * RTCheckASyncPaletteRequest polls it, RTEndASyncPaletteRequest ends it.
- * BUG(orig): the signal bit as in RTASyncRequest (#454).  The result is
+ * The window object is not read, as in RTASyncRequest (fixed, #454).  The result is
  * stored for RTReturnValue, unconverted, as RTASyncRequest does (fixed,
  * #464: the original did not store it).
  * @param title  d0: Title$
  * @param first  d1: FirstColour (RTPA_Color)
- * @param obj    a1: the used window object
+ * @param obj    a1: the used window object (not used)
  * @return d0: -1 if the requester is up, else rtPaletteRequestA's result;
  *         0 (not opened) without IsReqToolsActive (#463)
  */
@@ -1505,7 +1510,7 @@ static ULONG BLITZ_ROUTINE rtasPrequest_c(STRPTR title BL_REG(d0), ULONG first B
 {
     ULONG r;
 
-    myPmask = portmask(obj);
+    (void)obj;
     asPRequestTagList.color.ti_Data = first;
     r = RTCALL(0, RTJSR(LVO_rtPaletteRequestA, 0, &asPRequestTagList, 0, title, 0));
     returnvalue = r;                                    /* fixed (#464) */
@@ -1518,24 +1523,26 @@ static ULONG BLITZ_ROUTINE rtasPrequest_c(STRPTR title BL_REG(d0), ULONG first B
  * @brief RTCheckASyncPaletteRequest: polls the requester of
  * RTASyncPaletteRequest (rtReqHandlerA).
  *
- * BUG(orig) (#454): called with no signals (Psigs is never set).
+ * With the handler's WaitMask as the signals (fixed, #454: the original
+ * passed 0).
  * @return d0: -1 while it is up, else 0 (the colour is not returned)
  */
 static BB_BOOL BLITZ_ROUTINE rtcheckasPreq_c(void)
 {
-    ULONG r = RTCALL(0, RTJSR0(LVO_rtReqHandlerA, Psigs, 0, myPhandler));
+    ULONG r = RTCALL(0, RTJSR0(LVO_rtReqHandlerA, waitmask(myPhandler), 0, myPhandler));
 
     return r == CALL_HANDLER ? BB_TRUE : BB_FALSE;
 }
 
 /**
  * @brief RTEndASyncPaletteRequest: ends the requester of
- * RTASyncPaletteRequest (rtReqHandlerA with RTRH_EndRequest).
+ * RTASyncPaletteRequest (rtReqHandlerA with RTRH_EndRequest, the
+ * handler's WaitMask as the signals, fixed #454).
  * @return d0: rtReqHandlerA's result
  */
 static ULONG BLITZ_ROUTINE rtendasPreq_c(void)
 {
-    return RTCALL(0, RTJSR0(LVO_rtReqHandlerA, Psigs, &endPreqTL, myPhandler));
+    return RTCALL(0, RTJSR0(LVO_rtReqHandlerA, waitmask(myPhandler), &endPreqTL, myPhandler));
 }
 
 /* Registers: the original keeps a3-a6 with MOVEM in most routines (a4-a6

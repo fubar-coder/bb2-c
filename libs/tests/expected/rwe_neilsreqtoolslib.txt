@@ -64,10 +64,14 @@ RTASyncRequest|popped|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTASyncRequest|reqtools calls|not up|1	$00000001
 RTASyncRequest|reqtools calls|up|1	$00000001
 RTASyncRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
-RTCheckASyncPaletteRequest|call 0|not up|1	bytes 256 fnv 7FA6D708
-RTCheckASyncPaletteRequest|call 0|not up|2	bytes 256 fnv 7FA6D708
-RTCheckASyncPaletteRequest|call 0|up|1	bytes 256 fnv 7FA6D708
-RTCheckASyncPaletteRequest|call 0|up|2	bytes 256 fnv 7FA6D708
+RTCheckASyncPaletteRequest|call 0|not up|1 [orig]	bytes 256 fnv 7FA6D708
+RTCheckASyncPaletteRequest|call 0|not up|1 [fixed #454]	bytes 256 fnv B465A5B8
+RTCheckASyncPaletteRequest|call 0|not up|2 [orig]	bytes 256 fnv 7FA6D708
+RTCheckASyncPaletteRequest|call 0|not up|2 [fixed #454]	bytes 256 fnv B465A5B8
+RTCheckASyncPaletteRequest|call 0|up|1 [orig]	bytes 256 fnv 7FA6D708
+RTCheckASyncPaletteRequest|call 0|up|1 [fixed #454]	bytes 256 fnv B465A5B8
+RTCheckASyncPaletteRequest|call 0|up|2 [orig]	bytes 256 fnv 7FA6D708
+RTCheckASyncPaletteRequest|call 0|up|2 [fixed #454]	bytes 256 fnv B465A5B8
 RTCheckASyncPaletteRequest|d0|not up|1	$FFFFFFFF
 RTCheckASyncPaletteRequest|d0|not up|2	$00000000
 RTCheckASyncPaletteRequest|d0|up|1	$FFFFFFFF
@@ -88,10 +92,14 @@ RTCheckASyncPaletteRequest|reqtools calls|not up|2	$00000001
 RTCheckASyncPaletteRequest|reqtools calls|up|1	$00000001
 RTCheckASyncPaletteRequest|reqtools calls|up|2	$00000001
 RTCheckASyncPaletteRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
-RTCheckASyncRequest|call 0|not up|1	bytes 256 fnv 7FA6D708
-RTCheckASyncRequest|call 0|not up|2	bytes 256 fnv 7FA6D708
-RTCheckASyncRequest|call 0|up|1	bytes 256 fnv 7FA6D708
-RTCheckASyncRequest|call 0|up|2	bytes 256 fnv 7FA6D708
+RTCheckASyncRequest|call 0|not up|1 [orig]	bytes 256 fnv 7FA6D708
+RTCheckASyncRequest|call 0|not up|1 [fixed #454]	bytes 256 fnv B465A5B8
+RTCheckASyncRequest|call 0|not up|2 [orig]	bytes 256 fnv 7FA6D708
+RTCheckASyncRequest|call 0|not up|2 [fixed #454]	bytes 256 fnv B465A5B8
+RTCheckASyncRequest|call 0|up|1 [orig]	bytes 256 fnv 7FA6D708
+RTCheckASyncRequest|call 0|up|1 [fixed #454]	bytes 256 fnv B465A5B8
+RTCheckASyncRequest|call 0|up|2 [orig]	bytes 256 fnv 7FA6D708
+RTCheckASyncRequest|call 0|up|2 [fixed #454]	bytes 256 fnv B465A5B8
 RTCheckASyncRequest|d0|not up|1	$00000002
 RTCheckASyncRequest|d0|not up|2	$00000000
 RTCheckASyncRequest|d0|up|1	$FFFFFFFF
@@ -831,8 +839,10 @@ RTEZSetPattern|reqtools calls|requester 2|1	$00000000
 RTEZSetPattern|reqtools calls|requester 3|1	$00000001
 RTEZSetPattern|reqtools calls|requester 4|1	$00000000
 RTEZSetPattern|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
-RTEndASyncPaletteRequest|call 0|not up|1	bytes 256 fnv 05E053F0
-RTEndASyncPaletteRequest|call 0|up|1	bytes 256 fnv 05E053F0
+RTEndASyncPaletteRequest|call 0|not up|1 [orig]	bytes 256 fnv 05E053F0
+RTEndASyncPaletteRequest|call 0|not up|1 [fixed #454]	bytes 256 fnv 77100540
+RTEndASyncPaletteRequest|call 0|up|1 [orig]	bytes 256 fnv 05E053F0
+RTEndASyncPaletteRequest|call 0|up|1 [fixed #454]	bytes 256 fnv 77100540
 RTEndASyncPaletteRequest|d0|not up|1	$00000001
 RTEndASyncPaletteRequest|d0|up|1	$00000001
 RTEndASyncPaletteRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000
@@ -845,8 +855,10 @@ RTEndASyncPaletteRequest|popped|without reqtools.library, form 0|1 [fixed #463]	
 RTEndASyncPaletteRequest|reqtools calls|not up|1	$00000001
 RTEndASyncPaletteRequest|reqtools calls|up|1	$00000001
 RTEndASyncPaletteRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
-RTEndASyncRequest|call 0|not up|1	bytes 256 fnv 05E053F0
-RTEndASyncRequest|call 0|up|1	bytes 256 fnv 05E053F0
+RTEndASyncRequest|call 0|not up|1 [orig]	bytes 256 fnv 05E053F0
+RTEndASyncRequest|call 0|not up|1 [fixed #454]	bytes 256 fnv 77100540
+RTEndASyncRequest|call 0|up|1 [orig]	bytes 256 fnv 05E053F0
+RTEndASyncRequest|call 0|up|1 [fixed #454]	bytes 256 fnv 77100540
 RTEndASyncRequest|d0|not up|1	$00000001
 RTEndASyncRequest|d0|up|1	$00000001
 RTEndASyncRequest|d0|without reqtools.library, form 0|1 [fixed #463]	$00000000

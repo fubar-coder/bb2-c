@@ -841,6 +841,9 @@ static void async(void)
     static UBYTE obj[100];
     int k;
 
+    /* the handler info's WaitMask (at +4): the signals RTCheck.../RTEnd...
+       pass (the original 0, #454) */
+    *(ULONG *)(hinfo + 4) = 0x00100000;
     port.mp_SigBit = 5;
     *(ULONG *)(obj + 86) = (ULONG)&port;
     for (k = 0; k < 2; k++) {

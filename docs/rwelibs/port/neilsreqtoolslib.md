@@ -139,15 +139,20 @@ kind F):
   The original kept the value (`glValue`) for the next call, so a call
   without a default showed the previous call's number and returned it on
   cancel (#457). RTEZGetLongRange keeps its value as before.
+* RTASyncRequest/RTASyncPaletteRequest no longer read the window object;
+  RTCheckASync… and RTEndASync… pass the handler's WaitMask (the long at
+  +4 of reqtools' handler info; 0 before any asynchronous requester) as
+  the signals, those of the requester's window, which a program that
+  polls has to assume arrived. The original read a "user port" at offset
+  86 of the window object (not of the Window it points to), kept its
+  signal bit shifted by one (`LSL.b #1`) in a byte nobody read, and
+  called the handler with no signals. reqtools' EZ and palette handlers
+  ignore the signals, so with reqtools 38 nothing visible changes (#454).
 
 ## BUG(orig)
 
 * RTEZGetString copies the default string into the buffer of MaxChars
   bytes without a limit (#459).
-* RTASyncRequest/RTASyncPaletteRequest read the "user port" at offset 86
-  of the window object (not of the Window it points to) and keep its
-  signal bit shifted by one (`LSL.b #1`) in a byte nobody reads; the
-  handler is always called with no signals (`sigs` is never set) (#454).
 
 Original behaviour that is not a defect: RTEZGetString's result and
 RTEZPathRequest's path have no 0 behind them (the usual convention of a
