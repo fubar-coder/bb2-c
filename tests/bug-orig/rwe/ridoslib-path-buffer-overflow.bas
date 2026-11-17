@@ -6,6 +6,7 @@
 ; holds.  (The C build overwrites other data of the library instead.)
 ; Correct: tbuf is not overrun, NotifyPort returns the same port as
 ; before.
+; @fixed #627
 ; @rwe ridoslib
 ; @pass timeout=30
 DEFTYPE .l

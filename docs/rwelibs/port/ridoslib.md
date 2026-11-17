@@ -24,7 +24,8 @@ through one message port, the DOS device list and two string functions:
   `UnLockDosList`.
 * `GetFileName(p$)` – the part behind the last `/` or `:`;
   `GetPathName(p$)` – the part up to and including it. Both give the
-  argument's string space back and build the result in a 256 byte buffer.
+  argument's string space back and copy the result to its start (the
+  original through a 256 byte buffer, #627).
 
 init opens dos.library V36 and creates the port; finit ends the requests
 still active, closes dos.library and deletes the port.
@@ -113,14 +114,19 @@ kind F):
   change, mounting) waited for ever (#1081; tests
   `ridoslib-doslist-locked-at-end`, `ridoslib-getdevicelist-twice`,
   through inject's `doslist`).
+* GetFileName and GetPathName copy their result straight into the
+  argument's space (it is never longer than the argument). The original
+  built it in a 256 byte buffer first, without a limit: a file or path
+  part of 256 characters or more overwrote the code behind the buffer
+  (`NotifyPort`, `CheckNotify` …), the C build other data (#627; test
+  `ridoslib-path-buffer-overflow`).
 
 ## BUG(orig)
 
 * GetPathName never looks at the first character: `/abc` and `:x` give
-  "", like a name without separator (#624). GetFileName and GetPathName take the length as a word
-  (`MOVE.w -(a2)`: the low word of the long) (#628), and nothing limits
-  the 256 byte buffer (the original overwrites the code behind it, the C
-  build other data) (#627).
+  "", like a name without separator (#624). GetFileName and GetPathName
+  take the length as a word (`MOVE.w -(a2)`: the low word of the long)
+  (#628).
 
 Like the original, and no defects: RemNotify leaves `filelens[id]` set
 (the next AddNotify of the id sets it again) and sets d4 to `$12345678`
@@ -149,5 +155,6 @@ missing device (requesters off), finit with one request left;
 GetDeviceList with devices+volumes+assigns, volumes, devices (stopped
 after two), NextDevice to the end with DeviceEntryType after each entry,
 then DeviceEntryType and NextDevice after FreeDeviceList. Kept registers
-on every call. Not covered: ids outside 0..63 and names longer than the
-buffer (they write outside the data).
+on every call. Not covered: ids outside 0..63 (they write outside the
+tables) and parts longer than 255 characters (the original writes over
+its code; `ridoslib-path-buffer-overflow`).

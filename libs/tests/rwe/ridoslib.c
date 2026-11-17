@@ -18,8 +18,8 @@
  * with DeviceEntryType after each, NextDevice/DeviceEntryType after
  * FreeDeviceList (the type of the last entry, #622); finit (ends the requests left;
  * the failed request was freed by AddNotify, #621).
- * Not covered: ids outside 0..63 (they write outside the tables), names
- * longer than tbuf.
+ * Not covered: ids outside 0..63 (they write outside the tables), file or path
+ * parts longer than 255 characters (the original writes over its code, #627).
  */
 #include "rwecmp.h"
 #include <proto/dos.h>

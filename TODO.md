@@ -851,8 +851,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   the observation, expectation `[session] timeout`):
   - [ ] `compiler-incdir-overflow` (#16): the port has other data behind
     `incdir` (BSS followed by `comdata`), so the compiler itself crashes;
-  - [ ] `ridoslib-path-buffer-overflow` (#627): original done, port halts
-    (the 300-character argument becomes a pointer the library uses at End);
+  - [x] `ridoslib-path-buffer-overflow` (#627) done (2026-11-17): the
+    buffer is gone (fixed), the test comes out FIXED;
   - [ ] `ripacklib-unpackiff-zero-planes` (#777): original timeout, port
     halts (256 plane pointers over other data);
   - [ ] `rilesdebuglib-addprocessptr-no-limit` (#700): original done, port

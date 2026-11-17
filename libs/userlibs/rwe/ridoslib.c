@@ -28,16 +28,15 @@
  *   GetFileName(p$)      the part behind the last / or :
  *   GetPathName(p$)      the part up to and including the last / or :
  * The two string functions give the argument's string space back (a3 -
- * length - 1) and build the result in the 256 byte buffer tbuf first.
+ * length - 1) and copy the result to its start.
  *
  * No assembler besides the thunks.
  *
  * BUG(orig):
  *   - GetPathName never looks at the first character: "/abc" and ":x"
- *     give "", like a name without separator (#624).  GetFileName and GetPathName take the length
- *     as a word (MOVE.w -(a2): the low word of the long) (#628), and
- *     nothing limits tbuf to 256 characters (the original overwrites the
- *     code behind it, the C build other data) (#627).
+ *     give "", like a name without separator (#624).  GetFileName and
+ *     GetPathName take the length as a word (MOVE.w -(a2): the low word
+ *     of the long) (#628).
  * Fixed (intended deviation, #618): NextDevice and GetPathName copied
  * their result with its 0 and left a3 behind the 0, so a string
  * expression went on one byte too far; a3 now ends on the 0.
@@ -80,6 +79,11 @@
  * FreeDeviceList released one of two locks): every later writer of the
  * list (Assign, a disk change) waited for ever.  finit now unlocks a list
  * still locked, and GetDeviceList unlocks it before it locks again.
+ * Fixed (intended deviation, #627): GetFileName and GetPathName built
+ * their result in a 256 byte buffer (tbuf) without a limit: a longer file
+ * or path part overwrote the code behind it (the C build other data).
+ * The buffer is gone: the result is copied straight into the argument's
+ * space, which it never outgrows.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -190,7 +194,6 @@ BLITZ_LIBFIN();
 static_assert(sizeof(struct NotifyRequest) == NOTIFYSIZE);
 #define NNOTIFY 64
 
-static UBYTE tbuf[256];                                 /* Dcb.b 256,0 */
 static UWORD notifycnt;
 static struct DosList *mydosentry, *mydoslist;
 static UWORD doslistflags;
@@ -219,29 +222,31 @@ static struct MsgPort *msgport;
 /**
  * @brief GetFileName(filepath$): the part behind the last / or :.
  *
- * The argument's string space is given back (a3 - length - 1), the
- * result built in tbuf and then copied to a3 (no 0 written, a3 on the end
- * of the characters: the compiler adds it).  BUG(orig): the length is
- * taken as a word (#628); nothing limits tbuf to 256 characters (#627).
+ * The argument's string space is given back (a3 - length - 1) and the
+ * result copied to its start, from the character behind the last
+ * separator on (the result is never longer than the argument and lies
+ * behind its start: a forward copy); no 0 written, a3 on the end of the
+ * characters (the compiler adds it).  Fixed (#627): the original built
+ * the result in a 256 byte buffer first, without a limit.  BUG(orig): the
+ * length is taken as a word (#628).
  * @param s     d0: the path
  * @param lens  a2: the argument stack, the length's low word at -2(a2)
  * @return d0: the length of the result
  */
 static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD *lens BL_REG(a2))
 {
-    UBYTE *t = tbuf, c;
+    const UBYTE *f = s;
+    UBYTE c;
     ULONG n = 0;
 
     blitz_string -= (ULONG)lens[-1] + 1;                /* the argument's space */
-    while ((c = *s++) != 0) {
+    while ((c = *s++) != 0)
         if (c == '/' || c == ':')
-            t = tbuf;
-        else
-            *t++ = c;                                   /* BUG(orig) (#627): no limit */
-    }
-    *t = 0;
-    for (t = tbuf; (c = *t++) != 0; n++)                /* no 0 at a3 */
+            f = s;
+    while ((c = *f++) != 0) {                           /* no 0 at a3 */
         *blitz_string++ = c;
+        n++;
+    }
     return n;
 }
 
@@ -250,11 +255,12 @@ static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD 
  * or :.
  *
  * Searched from the end; the argument's string space is given back and
- * the result built in tbuf, then copied to a3 with its 0; a3 ends on the
- * 0 (fixed, #618: the original left it behind the 0).  BUG(orig): the
+ * the result copied to its start with its 0 (a forward copy: the result
+ * is the argument's beginning); a3 ends on the 0 (fixed, #618: the
+ * original left it behind the 0).  Fixed (#627): the original built the
+ * result in a 256 byte buffer first, without a limit.  BUG(orig): the
  * first character is never looked at ("/abc" and ":x" give "", like a
- * name without separator, #624); the length is taken as a word (#628);
- * tbuf is not limited (#627).
+ * name without separator, #624); the length is taken as a word (#628).
  * @param s     d0: the path
  * @param lens  a2: the argument stack, the length's low word at -2(a2)
  * @return d0: the length of the result, 0 without separator
@@ -273,16 +279,10 @@ static ULONG BLITZ_ROUTINE getpathname_c(const UBYTE *s BL_REG(d0), const UWORD 
         c = *--p;
     } while (c != '/' && c != ':');
     n++;                                    /* the characters up to the separator */
-    tbuf[n] = 0;
-    for (i = n; i-- > 0;)
-        tbuf[i] = s[i];
-    i = (ULONG)-1;
-    p = tbuf;
-    do                                          /* with the 0 */
-        i++;
-    while ((*blitz_string++ = *p++) != 0);
-    blitz_string--;                             /* fixed (#618): a3 on the 0 */
-    return i;
+    for (i = 0; i < n; i++)
+        *blitz_string++ = s[i];
+    *blitz_string = 0;                          /* fixed (#618): a3 on the 0 */
+    return n;
 }
 
 /* ------------------------------------------------------ notifications */
