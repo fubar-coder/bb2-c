@@ -78,19 +78,26 @@ file(REMOVE_RECURSE ${WORK})
 if(MODE STREQUAL "capture")
 	# run 2: a padding that is no multiple of a page or a slot.  The two runs
 	# are independent (own work directories, own sessions): at the same
-	# time, as the commands of one execute_process (the output of the
-	# first, which a run hardly has, goes to the second's input)
+	# time, as the commands of one execute_process: the standard output of the
+	# first (a run's progress lines, nothing the result depends on) goes into
+	# the pipe, and cmake -E cat in the middle reads it, so that the first run is
+	# never cut off by a broken pipe when the second ends first; the output of
+	# the second is OUT; the runs' messages come on the standard error
 	execute_process(
 		COMMAND ${CMAKE_COMMAND} ${common} ${set_args} -DLIBS_PAD=0
 			-DWORK=${WORK}/run1 -P ${EMULATOR}
+		COMMAND ${CMAKE_COMMAND} -E cat
 		COMMAND ${CMAKE_COMMAND} ${common} ${set_args} -DLIBS_PAD=4104
 			-DWORK=${WORK}/run2 -P ${EMULATOR}
 		RESULTS_VARIABLE rcs ERROR_VARIABLE err OUTPUT_VARIABLE out)
 	if(err)
 		message("${err}")
 	endif()
+	if(out)
+		message("${out}")
+	endif()
 	list(GET rcs 0 rc1)
-	list(GET rcs 1 rc2)
+	list(GET rcs 2 rc2)
 	check_run(run1 ${rc1})
 	check_run(run2 ${rc2})
 	set(dir ${WORK}/run1/test/captures)
