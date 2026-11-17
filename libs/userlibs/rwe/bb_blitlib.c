@@ -47,9 +47,11 @@
  *     word per line (#425).
  *   - BPredatorBlit's B channel reads the line SetupMapTwo's width below,
  *     not the bitmap's (#426).
- *   - BTBlockImage adds image*224 as a word (images from 147 on are
- *     before image_addr) (#427).
  *   - CreateShape with count 0 creates 65536 shapes (#428).
+ * Fixed (intended deviations):
+ *   - BTBlockImage adds image*224 as a long, as TBlockImage does; the
+ *     original added it as a word (ADD.w), images from 147 on were read
+ *     before image_addr (#427).
  * Original behaviour, not defects: SpecialBlock, TBlock and PredatorBlit
  * assume 16x16 shapes and bitmaps of SetupMapTwo's width (the map format
  * they are written for); BPredatorBlit stores a blit size one line less
@@ -688,8 +690,8 @@ first:
  * and shifted.
  *
  * The area is saved as BBlit does, then the image shifted through its
- * mask.  BUG(orig) (#427): image*224 is added as a word (from image 147
- * on before image_addr).
+ * mask.  Fixed (#427): image*224 is added as a long; the original added
+ * it as a word (ADD.w: from image 147 on before image_addr).
  * @param addr   d1: image_addr
  * @param x      d2: x
  * @param y      d3: y
@@ -708,7 +710,7 @@ static void BLITZ_ROUTINE btblockimage_c(ULONG addr BL_REG(d1), UWORD x BL_REG(d
     UBYTE **plane;
     ULONG mask;
 
-    addr += (WORD)(UWORD)((ULONG)image * SHAPE_BYTESIZE);     /* ADD.w */
+    addr += (ULONG)image * SHAPE_BYTESIZE;     /* Fixed (#427): ADD.l, was ADD.w */
     bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - SHAPE_EBWIDTH - 2), SHAPE_BLITSIZE,
           SHAPE_ONEBPMEMX);
     shift = (UWORD)((x & 15) << 12);

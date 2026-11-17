@@ -6,6 +6,7 @@
 ; the zeros 31936 bytes before image_addr.
 ; Correct: image 150 is drawn, pixel 40,40 has colour 1 (the bug draws
 ; the zeros: 0).
+; @fixed #427
 ; @rwe bb_blitlib
 DEFTYPE .l
 m=AllocMem_(80000,$10002)

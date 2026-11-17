@@ -59,6 +59,18 @@ arithmetic is the original's (`MULU.w`/`MULS.w`, `ASR.w`, word sums).
 is 0). The error checks are C in the error check area; they keep d0,
 which the original changes (low word: +26 of a shape).
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* `BTBlockImage` adds image × 224 to `image_addr` as a long, as
+  `TBlockImage` does; the original added it as a word (`ADD.w` to an
+  address register), so images from 147 on were read before
+  `image_addr` (#427; bug-orig test
+  `bb_blitlib-btblockimage-word-offset`). No added work: `ADD.l`
+  instead of `ADD.w`, once per call.
+
 ## BUG(orig), kept
 
 * Nothing is checked but the two error checks; shapes or bitmaps of
@@ -66,8 +78,6 @@ which the original changes (low word: +26 of a shape).
 * `BlockToShape` copies one word per line (height × depth words) (#425).
 * `BPredatorBlit`'s B channel reads the line `SetupMapTwo`'s width
   further, not the bitmap's (#426).
-* `BTBlockImage` adds image × 224 as a word (from image 147 on before
-  `image_addr`) (#427).
 * `CreateShape` with count 0 creates 65536 shapes (#428).
 
 Original behaviour that is not a defect:
