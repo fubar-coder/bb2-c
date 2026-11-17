@@ -13,6 +13,9 @@
 #include <proto/dos.h>
 #include <proto/intuition.h>
 #include <exec/execbase.h>
+#include <exec/memory.h>
+#include <exec/tasks.h>
+#include <stabs.h>
 #include <dos/dosextens.h>
 #include <workbench/startup.h>
 #include "blitz2.h"
@@ -544,7 +547,7 @@ fail0:                                  /* 1477 */
 /* wbheader:4 wb_header / fromcli / wb_exit + blitz2.s 253-261 mainbit:
    to be included to allow things to be run from WBENCH.  Gets the stack
    size (into asm d2 -> stackfuck) and the file to edit (progfile). */
-int main(int argc, char **argv)
+static int blitz2main(int argc, char **argv)
 {
     ULONG stack;
     BPTR fh;
@@ -618,6 +621,91 @@ int main(int argc, char **argv)
        (wb_exit overwrites d0: 0 from the CLI, from the Workbench whatever
        ReplyMsg/Permit leave) */
     return result;
+}
+
+/* Fixed (#1080, a port defect): the compiler gets a stack of its own when
+   the one it is started with is smaller than COMPILERSTACK.  The C
+   expression evaluator recurses with about 270 bytes per parenthesis and
+   490 per function call (blitz2.s about 40-50).  The depth the
+   original's tables allow (precstack: 63 entries, "Precedence Stack
+   Overflow"; forthstack: 31 nested elements, "Expression too Complex")
+   needs up to about 25 KB (measured: 31 nested calls with 32 parentheses
+   inside), the coverage build (amiga-cov) about 30 % more; the shell's
+   default stack is 4000 bytes.  The editor (TED, ab3cli) is called in
+   this process and runs on the same stack.  The stack size handed to the
+   compiled programs (stackfuck) stays the one of the start. */
+#define COMPILERSTACK 49152
+static struct StackSwapStruct mystack;  /* while blitz2main runs: the
+                                           task's own stack */
+static APTR mystackmem;
+
+struct mainargs {
+    int argc;
+    char **argv;
+};
+
+static ULONG mainon(APTR a)
+{
+    struct mainargs *m = a;
+
+    return (ULONG)(LONG)blitz2main(m->argc, m->argv);
+}
+
+/* exit() (err without errjmp: parse.h) returns to the startup code's
+   stack without passing mainon: give the task its stack back and free
+   the compiler's.  In libnix's exit list (run on the startup code's
+   stack, also when main returns), so not static. */
+void mystackexit(void);
+void mystackexit(void)
+{
+    struct Task *t;
+
+    if (!mystackmem)
+        return;
+    t = FindTask(NULL);
+    t->tc_SPLower = mystack.stk_Lower;
+    t->tc_SPUpper = (APTR)mystack.stk_Upper;
+    FreeMem(mystackmem, COMPILERSTACK);
+    mystackmem = NULL;
+}
+ADD2EXIT(mystackexit, 0);
+
+int main(int argc, char **argv)
+{
+    struct Task *t = FindTask(NULL);
+    struct CommandLineInterface *cli = NULL;
+    struct mainargs m;
+    ULONG size;
+    int rc;
+
+    /* the stack of the start: from the CLI the command's stack (Kickstart
+       1.x runs a command on a stack of the CLI's; tc_SPLower/tc_SPUpper
+       are the CLI process's), from the Workbench the process's */
+    if (argc)
+        cli = BADDR(((struct Process *)t)->pr_CLI);
+    size = cli ? (ULONG)cli->cli_DefaultStack * 4
+               : (ULONG)t->tc_SPUpper - (ULONG)t->tc_SPLower;
+    if (size >= COMPILERSTACK)
+        return blitz2main(argc, argv);
+    mystackmem = AllocMem(COMPILERSTACK, MEMF_ANY);
+    if (!mystackmem) {
+        /* a notice on the console; from the Workbench there is none */
+        static const char msg[] = "Not enough memory for the compiler's stack\n";
+        BPTR out = argc ? Output() : 0;
+
+        if (out)
+            Write(out, (APTR)msg, sizeof(msg) - 1);
+        return RETURN_FAIL;
+    }
+    mystack.stk_Lower = mystackmem;
+    mystack.stk_Upper = (ULONG)mystackmem + COMPILERSTACK;
+    mystack.stk_Pointer = (APTR)mystack.stk_Upper;
+    m.argc = argc;
+    m.argv = argv;
+    rc = (int)(LONG)stackcall(mainon, &m, &mystack);
+    FreeMem(mystackmem, COMPILERSTACK);
+    mystackmem = NULL;
+    return rc;
 }
 
 /* ================================================== editor interface */

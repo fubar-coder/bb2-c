@@ -164,7 +164,10 @@
    stack of this process (asm: 4(a7) at entry; C: pr_CLI->cli_DefaultStack*4),
    from WB do_StackSize of <tool>.info (read 0x4e bytes), 4000 on failure;
    result -> stackfuck (data.h).  progfile = first CLI arg (up to ' '/LF) or
-   2nd WBArg name (CurrentDir to its lock). */
+   2nd WBArg name (CurrentDir to its lock).  Fixed (#1080): when the stack
+   of the start is smaller than the compiler's C recursion needs, main runs
+   all this on a stack of its own (main.c, COMPILERSTACK; glue.h
+   stackcall). */
 extern struct Task *us;               /* wb:108 our task (Signal target) */
 extern struct WBStartup *wbmess;      /* wb:109 WB message or NULL */
 extern char progfile[192];            /* wb:110 file to edit (also .info buffer) */

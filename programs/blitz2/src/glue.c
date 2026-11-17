@@ -104,3 +104,45 @@ ULONG getvbr(void)
 {
     return Supervisor((ULONG (*)())vbr_super);
 }
+
+/* ULONG stackcall(ULONG (*fn)(APTR), APTR arg, struct StackSwapStruct *s)
+ *
+ * SWAPSTACK exchanges tc_SPLower/tc_SPUpper of the task (a0) with
+ * stk_Lower/stk_Upper of *s (a3) and sp with stk_Pointer, as exec's
+ * StackSwap does; called under Disable.  Done twice, the second time
+ * restores the task's stack and leaves *s as it was given. */
+#define SWAPSTACK                                       \
+"   move.l  276(a6),a0\n"           /* ThisTask */      \
+"   move.l  58(a0),d0\n"            /* tc_SPLower */    \
+"   move.l  (a3),58(a0)\n"                              \
+"   move.l  d0,(a3)\n"                                  \
+"   move.l  62(a0),d0\n"            /* tc_SPUpper */    \
+"   move.l  4(a3),62(a0)\n"                             \
+"   move.l  d0,4(a3)\n"                                 \
+"   move.l  8(a3),d0\n"             /* stk_Pointer */   \
+"   move.l  sp,8(a3)\n"                                 \
+"   move.l  d0,sp\n"
+__asm__(
+"   .text\n"
+"   .even\n"
+"   .globl  _stackcall\n"
+"_stackcall:\n"
+"   movem.l d2/a2-a3/a6,-(sp)\n"    /* 16 bytes; fn at 20(sp), arg 24, s 28 */
+"   move.l  20(sp),a2\n"
+"   move.l  24(sp),d2\n"
+"   move.l  28(sp),a3\n"
+"   move.l  4.w,a6\n"
+"   jsr     -120(a6)\n"             /* Disable */
+SWAPSTACK
+"   jsr     -126(a6)\n"             /* Enable */
+"   move.l  d2,-(sp)\n"
+"   jsr     (a2)\n"                 /* fn(arg); d2/a2-a6 survive the call */
+"   addq.l  #4,sp\n"
+"   move.l  d0,d2\n"
+"   jsr     -120(a6)\n"             /* Disable */
+SWAPSTACK
+"   jsr     -126(a6)\n"             /* Enable */
+"   move.l  d2,d0\n"
+"   movem.l (sp)+,d2/a2-a3/a6\n"
+"   rts\n"
+);

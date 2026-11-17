@@ -1,0 +1,5 @@
+[compile]
+expr_depth_prec.ab3:4: Precedence Stack Overflow
+rc=10
+[run]
+no executable

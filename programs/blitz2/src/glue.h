@@ -68,6 +68,18 @@ void loadxtra_c(struct m68kregs *r);
 void savextra_c(struct m68kregs *r);
 void stopcode_c(struct m68kregs *r);
 
+/* ----------------------------------------------------------- stack */
+
+/* Run fn(arg) on the stack stk_Lower..stk_Upper of *s (stk_Pointer = the
+   first stack pointer, normally stk_Upper) and return its result.  Like
+   exec's StackSwap (V37, which Kickstart 1.x lacks): under Disable the
+   task's tc_SPLower/tc_SPUpper and the stack pointer are exchanged with
+   *s, and exchanged back when fn returns.  While fn runs, *s holds the
+   task's own stack (for a cleanup after exit(), which returns to the
+   startup code's stack). */
+struct StackSwapStruct;
+ULONG stackcall(ULONG (*fn)(APTR), APTR arg, struct StackSwapStruct *s);
+
 /* ------------------------------------------------------------- CPU */
 
 /* VBR via movec in supervisor mode. 68010+ only - the caller (calcvbr)

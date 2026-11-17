@@ -1,0 +1,5 @@
+[compile]
+expr_depth_complex.ab3:4: Expression too Complex
+rc=10
+[run]
+no executable

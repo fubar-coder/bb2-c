@@ -610,6 +610,15 @@ ab3_cli_case(asm_short_s_bb2 asm_short_s_bb2.bb)
 ab3_cli_case(asm_short_range_bb2 asm_short_range_bb2.bb)
 ab3_cli_case(asm_short_zero_bb2 asm_short_zero_bb2.bb)
 ab3_cli_case(asm_bra_l_bb2 asm_bra_l_bb2.bb)
+# expressions at the limits of the compiler's tables compile on the
+# shell's default stack (#1080: the compiler runs on a stack of its own),
+# one level more is the compile error.  Without REF: the limits are
+# blitz2's; AmiBlitz3 v3.14.0 compiles 64 parentheses, and its session
+# did not end after expr_depth's compile and after its "Expression too
+# complex!" (both measured once)
+ab3_cli_case(expr_depth expr_depth.ab3)
+ab3_cli_case(expr_depth_prec expr_depth_prec.ab3)
+ab3_cli_case(expr_depth_complex expr_depth_complex.ab3)
 
 # optimizer_regression.ab3 of AmiBlitz3's develop branch (not in v3.14.0): OPTIMIZE 5
 # (4: new syntax), four functions with a constant on one side of

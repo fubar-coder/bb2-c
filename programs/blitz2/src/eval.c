@@ -800,6 +800,70 @@ static UWORD eval4(UWORD *type)
     return c;
 }
 
+/* blitz2.s:9017 the constant fold of eval5: the code of the last two
+   operands (both constants: forthsp[-2], forthsp[-1]) and their operator
+   is run and replaced by a move of the result (of type `type`) into
+   regat.  Not inlined: eval5 recurses once per nesting level, and the
+   register frame of the call would be part of every level's stack frame
+   (#1080). */
+static __attribute__((noinline)) void constfold(UWORD type)
+{
+    struct forthent *fs = forthsp;
+    struct m68kregs r;
+    struct offnode *node, *keep, **link;
+    ULONG value, foldend;
+    UWORD opcode;
+
+    /* Set up MOVE.l regat,d0 */
+    pokewd(0x2000 | regat);
+    pokewd(0x4e75);                         /* rts */
+    foldend = pc;                           /* end of the folded code */
+    /* Fixed (#343): only the word lasta6 is restored.  The original's long
+       move (blitz2.s:9025) also restored quoteflag as getelement2 saved it
+       - after getchar3 had read the left operand's first char: for a
+       character constant ("x"*8, only in asmfixer: constmode) the opening
+       quote, so quoteflag stayed set after the expression and the operands
+       evaluated next (earlier lines, insasm prepends) lost their spaces
+       inside quotes: #" " gave 0. */
+    lasta6 = fs[-2].lasta6w;
+    pc = fs[-2].pc;
+    /* DIFF: asm saved d2/a5 and did jsr (a0) with the compiler's
+       registers; C runs the code through callregs with a6 = maths and a5
+       such that ffplib's var slot is `maths` */
+    memset(&r, 0, sizeof(r));
+    r.a[6] = (ULONG)MathBase;
+    r.a[5] = (ULONG)&MathBase - (LONG)ffplib->varoff;
+    flushc();
+    callregs((APTR)pc, &r);
+    value = r.d[0];                         /* d0 has got constant! */
+    opcode = (regat << 9) | 0x203c;         /* move.l #x,dn */
+    if (type < 3) {
+        pokewd(opcode | 0x1000);
+        pokewd((UWORD)value);
+    } else {
+        pokewd(opcode);
+        pokel(value);
+    }
+    /* .mode - clean up offset stack.  Fixed (#1049): only the offsets
+       inside the folded code (fs[-2].pc up to foldend) are freed.  The
+       original freed every offset added since the fold began, also the
+       relocations of a library that uselib3 linked in meanwhile (its code
+       lies in the library area, not in the program code): a constant Mod
+       as the first use of modlib left modlib's calls of ldivlib and
+       lmullib at their compile-time addresses in the executable. */
+    keep = fs[-2].firstoff;
+    link = &firstoff;
+    while ((node = *link) != keep) {
+        if (node->offset >= fs[-2].pc - pcat
+            && node->offset < foldend - pcat) {
+            *link = node->next;
+            numoffs--;
+            FreeMem(node, 8);
+        } else
+            link = &node->next;
+    }
+}
+
 /* blitz2.s:8983 eval5 - precedence climbing.  Returns the precedence of
    the pending operator (asm d1, 0 = none), *op = that operator (a0),
    *c = current char (d0). */
@@ -850,61 +914,8 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         fs = forthsp;
         fs[-2].constgot |= fs[-1].constgot;
         if (!fs[-2].constgot && !nomemleft) {
-            /* YES! We can do it!  Set up MOVE.l regat,d0 */
-            struct m68kregs r;
-            struct offnode *node, *keep, **link;
-            ULONG value, foldend;
-            UWORD opcode;
-
-            pokewd(0x2000 | regat);
-            pokewd(0x4e75);                         /* rts */
-            foldend = pc;                           /* end of the folded code */
-            /* Fixed (#343): only the word lasta6 is restored.  The
-               original's long move (blitz2.s:9025) also restored
-               quoteflag as getelement2 saved it - after getchar3 had read
-               the left operand's first char: for a character constant
-               ("x"*8, only in asmfixer: constmode) the opening quote, so
-               quoteflag stayed set after the expression and the operands
-               evaluated next (earlier lines, insasm prepends) lost their
-               spaces inside quotes: #" " gave 0. */
-            lasta6 = fs[-2].lasta6w;
-            pc = fs[-2].pc;
-            /* DIFF: asm saved d2/a5 and did jsr (a0) with the compiler's
-               registers; C runs the code through callregs with
-               a6 = maths and a5 such that ffplib's var slot is `maths` */
-            memset(&r, 0, sizeof(r));
-            r.a[6] = (ULONG)MathBase;
-            r.a[5] = (ULONG)&MathBase - (LONG)ffplib->varoff;
-            flushc();
-            callregs((APTR)pc, &r);
-            value = r.d[0];                         /* d0 has got constant! */
-            opcode = (regat << 9) | 0x203c;         /* move.l #x,dn */
-            if (*type < 3) {
-                pokewd(opcode | 0x1000);
-                pokewd((UWORD)value);
-            } else {
-                pokewd(opcode);
-                pokel(value);
-            }
-            /* .mode - clean up offset stack.  Fixed (#1049): only the
-               offsets inside the folded code (fs[-2].pc up to foldend) are
-               freed.  The original freed every offset added since the
-               fold began, also the relocations of a library that uselib3
-               linked in meanwhile (its code lies in the library area, not
-               in the program code): a constant Mod as the first use of
-               modlib left modlib's calls of ldivlib and lmullib at their
-               compile-time addresses in the executable. */
-            keep = fs[-2].firstoff;
-            link = &firstoff;
-            while ((node = *link) != keep) {
-                if (node->offset >= fs[-2].pc - pcat
-                    && node->offset < foldend - pcat) {
-                    *link = node->next;
-                    numoffs--;
-                    FreeMem(node, 8);
-                } else
-                    link = &node->next;
-            }
+            /* YES! We can do it! */
+            constfold(*type);
             fs = forthsp;
         }
         forthsp = fs - 1;                           /* .no */
@@ -997,8 +1008,11 @@ static UWORD doop(struct opentry *op, UWORD type)
    divisor 0 is "Division by Zero": the low word for Byte and Word (what
    DIVS.W divides by), the long for Long and Quick, a mantissa 0 for Float
    (FFP zero).  The two instructions poked for the run are overwritten by
-   doop: pc, bigpc and nomemleft are restored, no code changes. */
-static void divzerochk(const struct opentry *op, UWORD type)
+   doop: pc, bigpc and nomemleft are restored, no code changes.  Not
+   inlined: its register frame would be part of eval5's frame on every
+   level of the recursion (#1080). */
+static __attribute__((noinline))
+void divzerochk(const struct opentry *op, UWORD type)
 {
     struct forthent *fs = forthsp;
     struct m68kregs r;

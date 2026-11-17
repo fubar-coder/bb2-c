@@ -1,0 +1,6 @@
+; one parenthesis more than the precedence stack takes (64): a compile
+; error, also with the shell's default stack (#1080)
+b.l = 3
+b = ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((b))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+NPrint b
+End

@@ -106,7 +106,8 @@ blitz2  wbheader/mainbit (blitz2.s:253)          main.c main()
 
 | Step | blitz2.s | C port | Contents |
 |---|---|---|---|
-| 1 | `wbheader` (include), `mainbit` 253 | `main.c main()` | CLI: stack size from `4(a7)`, file name from the argument line; WB: WBStartup message, stack size from `.info`, file name from argument 2 → `progfile`, `stackfuck` |
+| 0 | – | `main.c main()` | port only (#1080): if the stack of the start (CLI: `cli_DefaultStack`, WB: the process's) is smaller than `COMPILERSTACK` (48 KB; the C evaluator's recursion needs up to about 25 KB at the limits of the original's tables), allocate one and run the rest on it (`glue.c stackcall`, StackSwap done by hand: Kickstart 1.x has none); the editor runs on it too |
+| 1 | `wbheader` (include), `mainbit` 253 | `main.c blitz2main()` | CLI: stack size from `4(a7)`, file name from the argument line; WB: WBStartup message, stack size from `.info`, file name from argument 2 → `progfile`, `stackfuck` (the stack of the start, not the compiler's) |
 | 2 | `begin` 1357 | `main.c begin()` | walk the token list, remember `lasttoken` (this is where the libs append their tokens), `makeasmtab` (table of the 119 assembler mnemonics), open `mathffp.library` |
 | 3 | 1376–1390 | | buffers for constant evaluation (`constpcat`, 1024 bytes) and macro buffer (`macrolen`, default 8192) |
 | 4 | 1392 | | `LoadSeg("blitz2:ted")`, init call (2.1) |
