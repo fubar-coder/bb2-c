@@ -42,8 +42,6 @@
  * original's MOVEM does), maxslib and memlib through BLITZ_ALIBJSR.
  *
  * BUG(orig), kept:
- *   - RTEZScreenModeRequest calls rtFontRequestA (-96) with the screen
- *     mode requester instead of rtScreenModeRequestA (-144) (#466).
  *   - RTEZGetLong returns the value also on cancel (TST.l without a
  *     branch); the value and the default stay for the next call (#457).
  *   - RTEZGetString copies the default string without a limit into the
@@ -79,6 +77,11 @@
  * requester, the library and the requesters allocated so far stayed
  * (finit did nothing then), and finit cleared nothing; now init gives
  * them back and finit clears what it freed.
+ * Fixed (intended deviation, #466): RTEZScreenModeRequest called
+ * rtFontRequestA (-96) with the screen mode requester instead of
+ * rtScreenModeRequestA (-144); reqtools 38 opens the screen mode
+ * requester either way (one routine, the kind from the requester), the
+ * documented call does not depend on that.
  * Fixed (intended deviation, #463): no routine checked the library;
  * without reqtools.library (or after a failed init) they called through
  * a6 = 0 and RTVersion/RTRevision read the addresses $14/$16.  Now they
@@ -340,6 +343,7 @@ static const char version[] __attribute__((used)) =
 #define LVO_rtFontRequestA       (-96)
 #define LVO_rtPaletteRequestA    (-102)
 #define LVO_rtReqHandlerA        (-108)
+#define LVO_rtScreenModeRequestA (-144)
 #define LVO_rtLockWindow         (-156)
 #define LVO_rtUnlockWindow       (-162)
 
@@ -1162,15 +1166,16 @@ static ULONG BLITZ_ROUTINE rtfontreq_c(STRPTR title BL_REG(d0))
  * The result is a block of the library's own: DisplayID.l,
  * DisplayWidth.w, DisplayHeight.w, DisplayDepth.w, OverscanType.w,
  * AutoScroll.l, copied from the requester.  After a choice the flags are
- * back at size and depth gadgets.  BUG(orig) (#466): calls rtFontRequestA
- * (-96) with the screen mode requester instead of rtScreenModeRequestA
- * (-144).
+ * back at size and depth gadgets.  Through rtScreenModeRequestA (-144)
+ * (fixed, #466: the original called rtFontRequestA, -96, which works
+ * only because reqtools has one routine behind -54, -96 and -144 and
+ * takes the kind from the requester).
  * @param title  d0: Title$
  * @return d0: the block, 0 on cancel (also for RTReturnValue)
  */
 static ULONG BLITZ_ROUTINE rtsmreq_c(STRPTR title BL_REG(d0))
 {
-    ULONG r = RTCALL(0, RTJSR(LVO_rtFontRequestA, 0, &smTagList, smreq, 0, title));
+    ULONG r = RTCALL(0, RTJSR(LVO_rtScreenModeRequestA, 0, &smTagList, smreq, 0, title));
 
     returnvalue = r;
     if (!r)

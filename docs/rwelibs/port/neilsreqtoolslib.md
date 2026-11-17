@@ -58,8 +58,8 @@ command returns what it returns on cancel and calls nothing (#463).
 
 All routines are C behind `BLITZ_THUNK`. reqtools calls with arguments in
 d0/a0/a1 only go through `BLITZ_BASEJSR`; the ones that take a2-a4
-(rtEZRequestA: a3 = rtReqInfo, a4 = the argument array; rtFileRequestA
-and rtFontRequestA: a3 = the title; rtGetStringA, rtGetLongA,
+(rtEZRequestA: a3 = rtReqInfo, a4 = the argument array; rtFileRequestA,
+rtFontRequestA and rtScreenModeRequestA: a3 = the title; rtGetStringA, rtGetLongA,
 rtPaletteRequestA: a3 = 0) through the macro `RTJSR`: a3 and a4 are the
 fixed registers of the Blitz program (`-ffixed-a3/a4`), so a few lines of
 inline assembler save them, load them for the call and restore them,
@@ -126,11 +126,16 @@ kind F):
   RTRevision 0 (d0's high word as before); RTEZSetDefaultDirectory and
   RTEZSetPattern change no requester. The original called through a6 = 0
   (a crash; RTVersion/RTRevision read the addresses `$14`/`$16`) (#463).
+* RTEZScreenModeRequest calls `rtScreenModeRequestA` (-144); the original
+  called `rtFontRequestA` (-96) with the screen mode requester. The
+  screen mode requester appeared all the same: in reqtools.library 38
+  the vectors -54, -96 and -144 lead to one routine, which takes the
+  kind of requester from the long in front of the requester
+  (`RT_SCREENMODEREQ`, set by rtAllocRequestA in init); the documented
+  call does not depend on that (#466).
 
 ## BUG(orig)
 
-* RTEZScreenModeRequest calls `rtFontRequestA` (-96) with the screen mode
-  requester instead of `rtScreenModeRequestA` (-144) (#466).
 * RTEZGetLong returns the value also on cancel (`TST.l d0` without a
   branch); the value (and so the default) stays for the next call
   (#457).
@@ -162,8 +167,8 @@ pointers into the library, into the test's requesters and into the
 string area made independent of the layout – and answers with a
 chosen result: the file requester writes the chosen directory into the
 requester and the chosen name into the buffer, rtGetStringA/rtGetLongA
-the chosen value, rtFontRequestA the fields of the font and screen mode
-requester, the multi-load a file list, an RT_ReqHandler tag gets a
+the chosen value, rtFontRequestA/rtScreenModeRequestA the fields of the
+font and screen mode requester, the multi-load a file list, an RT_ReqHandler tag gets a
 handler. Observed after every call: d0, a3, the string area, the kept
 registers, the log of reqtools calls and RTReturnValue.
 
@@ -187,8 +192,8 @@ CloseLibrary). Then, only on a system with a real reqtools.library V38
 (not the emulator's: there the run prints `no reqtools.library V38 - the
 real one not tested`): init, IsReqToolsActive, RTVersion/RTRevision,
 RTEZSetDefaultDirectory/RTEZSetPattern 0-4, finit.
-Besides these: the result string of one file requester, the font
-requester call of RTEZScreenModeRequest, the missing title of
+Besides these: the result string of one file requester, the reqtools
+function RTEZScreenModeRequest calls, the missing title of
 RTEZFlagsRequest, RTEZGetLong's value on cancel, the multi-load's
 address result.
 

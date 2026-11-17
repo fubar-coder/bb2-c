@@ -32,7 +32,7 @@
  * and RTNextPathEntry to the end, then after RTEZFreePattern 3 and 2
  * (#456);
  * RTEZFontRequest, RTEZScreenModeRequest both forms (through
- * rtFontRequestA, BUG(orig), #466), RTEZPaletteRequest; RTEZGetLong both forms
+ * rtFontRequestA in the original, #466), RTEZPaletteRequest; RTEZGetLong both forms
  * (cancel returns the value, BUG(orig), #457), RTEZGetLongRange both forms;
  * RTEZGetString both forms, ok and cancel, with the memory each call
  * keeps (#458); RTLockWindow/RTUnlockWindow;
@@ -246,9 +246,11 @@ static ULONG fk_getlong(ULONG *v __asm("a1"), ULONG title __asm("a2"), ULONG ri 
     return fk_ret;
 }
 
-static ULONG fk_font(UBYTE *req __asm("a1"), UBYTE *title __asm("a3"), ULONG tags __asm("a0"))
+/* rtFontRequestA and rtScreenModeRequestA: one routine in reqtools
+   (the requester's type says which kind it is), logged with its LVO */
+static ULONG fontreq(LONG lvo, UBYTE *req, UBYTE *title, ULONG tags)
 {
-    struct rec *r = logcall(-96, 0, tags, (ULONG)req, 0, (ULONG)title, 0);
+    struct rec *r = logcall(lvo, 0, tags, (ULONG)req, 0, (ULONG)title, 0);
     int i;
     copys(r->s[0], title);
     if (fk_ret) {
@@ -260,6 +262,17 @@ static ULONG fk_font(UBYTE *req __asm("a1"), UBYTE *title __asm("a3"), ULONG tag
         *(const char **)(req + 16) = "fake.font";
     }
     return fk_ret;
+}
+
+static ULONG fk_font(UBYTE *req __asm("a1"), UBYTE *title __asm("a3"), ULONG tags __asm("a0"))
+{
+    return fontreq(-96, req, title, tags);
+}
+
+static ULONG fk_screenmode(UBYTE *req __asm("a1"), UBYTE *title __asm("a3"),
+                           ULONG tags __asm("a0"))
+{
+    return fontreq(-144, req, title, tags);
 }
 
 static ULONG fk_palette(ULONG title __asm("a2"), ULONG ri __asm("a3"), ULONG tags __asm("a0"))
@@ -302,6 +315,7 @@ static void fake_add(void)
     vec[15] = (APTR)fk_font;            /* -96 */
     vec[16] = (APTR)fk_palette;         /* -102 */
     vec[17] = (APTR)fk_handler;         /* -108 */
+    vec[23] = (APTR)fk_screenmode;      /* -144 */
     vec[25] = (APTR)fk_lock;            /* -156 */
     vec[26] = (APTR)fk_unlock;          /* -162 */
     fake = fake_library("reqtools.library", 10, vec, NVEC);
@@ -759,6 +773,8 @@ static void others(void)
         sprintf(VEC, "form %d %s", k & 1, k & 2 ? "cancel" : "ok");
         fk_ret = !(k & 2);
         DOREQ(E_SM, k & 1, strargs("Screen", NULL, NULL); R.d[1] = 0x12345);
+        /* the original calls rtFontRequestA (-96), the fixed library
+           rtScreenModeRequestA (-144): its case is 0 (#466) */
         BOTH("rtFontRequestA (BUG(orig) #466)", nlog == 1 && log_[0].lvo == -96);
         if (!(k & 2)) {
             memcpy(res, (UBYTE *)RES.d[0], 16);

@@ -722,10 +722,14 @@ RTEZSaveFile|reqtools calls|with pattern dir "RAM:"|1	$00000001
 RTEZSaveFile|reqtools calls|with pattern dir "RAM:t"|1	$00000001
 RTEZSaveFile|reqtools calls|with pattern dir "Work:a/b"|1	$00000001
 RTEZSaveFile|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
-RTEZScreenModeRequest|call 0|form 0 cancel|1	bytes 256 fnv E2D83B38
-RTEZScreenModeRequest|call 0|form 0 ok|1	bytes 256 fnv E2D83B38
-RTEZScreenModeRequest|call 0|form 1 cancel|1	bytes 256 fnv 4B860B67
-RTEZScreenModeRequest|call 0|form 1 ok|1	bytes 256 fnv 4B860B67
+RTEZScreenModeRequest|call 0|form 0 cancel|1 [orig]	bytes 256 fnv E2D83B38
+RTEZScreenModeRequest|call 0|form 0 cancel|1 [fixed #466]	bytes 256 fnv 737C6588
+RTEZScreenModeRequest|call 0|form 0 ok|1 [orig]	bytes 256 fnv E2D83B38
+RTEZScreenModeRequest|call 0|form 0 ok|1 [fixed #466]	bytes 256 fnv 737C6588
+RTEZScreenModeRequest|call 0|form 1 cancel|1 [orig]	bytes 256 fnv 4B860B67
+RTEZScreenModeRequest|call 0|form 1 cancel|1 [fixed #466]	bytes 256 fnv DFE98EB7
+RTEZScreenModeRequest|call 0|form 1 ok|1 [orig]	bytes 256 fnv 4B860B67
+RTEZScreenModeRequest|call 0|form 1 ok|1 [fixed #466]	bytes 256 fnv DFE98EB7
 RTEZScreenModeRequest|d0|form 0 cancel|1	$00000000
 RTEZScreenModeRequest|d0|form 0 ok|1	$4C000000
 RTEZScreenModeRequest|d0|form 1 cancel|1	$00000000
@@ -750,10 +754,14 @@ RTEZScreenModeRequest|reqtools calls|form 1 cancel|1	$00000001
 RTEZScreenModeRequest|reqtools calls|form 1 ok|1	$00000001
 RTEZScreenModeRequest|reqtools calls|without reqtools.library, form 0|1 [fixed #463]	$00000000
 RTEZScreenModeRequest|reqtools calls|without reqtools.library, form 1|1 [fixed #463]	$00000000
-RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 cancel|1	$00000001
-RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 ok|1	$00000001
-RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 cancel|1	$00000001
-RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 ok|1	$00000001
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 cancel|1 [orig]	$00000001
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 cancel|1 [fixed #466]	$00000000
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 ok|1 [orig]	$00000001
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 ok|1 [fixed #466]	$00000000
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 cancel|1 [orig]	$00000001
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 cancel|1 [fixed #466]	$00000000
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 ok|1 [orig]	$00000001
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 ok|1 [fixed #466]	$00000000
 RTEZScreenModeRequest|the screen mode|form 0 ok|1	bytes 16 50524F47BDC0C3C69DA0A3A6A9ACAFB2
 RTEZScreenModeRequest|the screen mode|form 1 ok|1	bytes 16 50524F47BDC0C3C69DA0A3A6A9ACAFB2
 RTEZSetDefaultDirectory|call 0|requester 0|1	bytes 256 fnv 6C7EEA70
