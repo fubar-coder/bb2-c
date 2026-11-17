@@ -60,6 +60,9 @@ kind F):
 * Sizing a menu with sub menus leaves bit 1 of CIA-A PRA (the power LED
   / audio filter) as it is; the original toggled it with a
   `BCHG #1,$bfe001` left in (#468).
+* A menu level whose structure cannot be allocated (AllocVec) returns 0
+  at once, which closes all levels, as a failed OpenWindow does; the
+  original went on with the structure at address 0 (#467).
 
 ## BUG(orig), kept
 
@@ -67,9 +70,6 @@ kind F):
   item, but the result is `selecteditem`, which is only cleared. (It is
   a statement anyway.) (#471)
 * **PopUpInit creates a new port** without deleting the old one (#470).
-* **A failed AllocVec is not checked:** the menu structure is then at
-  address 0. A failed OpenWindow returns 0 and closes nothing else
-  (#467).
 * **Closing a menu window replies every message in the shared port**,
   also those for the other levels (#469).
 
@@ -120,4 +120,5 @@ Covered:
 * a menu without sub menus that starts with a separator;
 * PopUpInit (a new port; the old one is left, the test deletes it).
 
-Not covered: a failed AllocVec or OpenWindow; real mouse input.
+A failed AllocVec: the bug-orig test `popupwinlib-allocvec-unchecked`
+(through inject). Not covered: a failed OpenWindow; real mouse input.

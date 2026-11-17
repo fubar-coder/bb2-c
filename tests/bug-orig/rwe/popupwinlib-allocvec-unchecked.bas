@@ -15,6 +15,7 @@
 ; the test did not hit the allocation.
 ; Correct: PopUpWindow fails without a window and returns, the program
 ; goes on.
+; @fixed #467
 ; @rwe popupwinlib
 ; @pass runwrap=@INJECT@|allocfail=68-68/f=10001/1+2
 ; @pass timeout=30

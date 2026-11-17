@@ -31,8 +31,8 @@
  * with and without an active item; a menu without sub menus that starts
  * with a separator; PopUpInit (a new port, BUG(orig) #470: the old one is
  * not deleted - the test deletes it); finit.
- * Not covered: a failed AllocVec or OpenWindow (BUG(orig) #467: not
- * checked), real mouse input.
+ * Not covered: a failed AllocVec (the bug-orig test
+ * popupwinlib-allocvec-unchecked, #467) or OpenWindow, real mouse input.
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

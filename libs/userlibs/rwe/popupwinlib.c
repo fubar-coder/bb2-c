@@ -39,13 +39,15 @@
  *     cleared (#471).
  *   - PopUpInit creates a new message port without deleting the old one
  *     (#470).
- *   - A failed AllocVec is not checked: the menu structure is at address
- *     0; a failed OpenWindow returns 0 and closes nothing else (#467).
  *   - Closing a menu window replies every message in the shared port,
  *     also those for the other levels (#469).
- * Fixed (intended deviation, #468): sizing a menu with sub menus leaves
- * bit 1 of CIA-A PRA ($BFE001: the power LED / audio filter) as it is;
- * the original toggled it (BCHG #1,$bfe001, a debug leftover).
+ * Fixed (intended deviations):
+ *   - Sizing a menu with sub menus leaves bit 1 of CIA-A PRA ($BFE001:
+ *     the power LED / audio filter) as it is; the original toggled it
+ *     (BCHG #1,$bfe001, a debug leftover) (#468).
+ *   - A level whose structure cannot be allocated (AllocVec) returns 0,
+ *     which closes all levels; the original went on with the structure
+ *     at address 0 (#467).  (A failed OpenWindow returns 0 as well.)
  * Not a defect: the item number count at +8 of the structure is the
  * number of items - 1, but nothing uses that field.
  */
@@ -398,7 +400,7 @@ static void mousemove(struct popup *p)
 
 /* ------------------------------------------------------------ a level */
 
-/* AllocStruct - BUG(orig): not checked (#467) */
+/* AllocStruct: the structure of a level (0: no memory) */
 static struct popup *allocstruct(struct pitem *items, struct popup *parent)
 {
     struct popup *p = AllocVec(STRUCT_SIZEOF, MEMF_PUBLIC | MEMF_CLEAR);
@@ -477,6 +479,8 @@ static ULONG dopop(struct pitem *items, struct popup *parent, UWORD x, UWORD y)
     ULONG event;                        /* d0: an event class or a sub level's result */
     ULONG result;                       /* d0 */
 
+    if (!p)
+        return 0;       /* Fixed (#467): the original goes on with the structure at 0 */
     w = calcwinsize(p, &h);
     p->winx = x;
     p->winy = y;
@@ -575,8 +579,8 @@ static void BLITZ_ROUTINE popupinit_c(void)
  * Each level is a borderless window with the screen's font; moving over
  * an item highlights it, an item with a sub menu opens it to the right.
  * BUG(orig) (#471): the result is selecteditem, which is only cleared:
- * always 0.  BUG(orig) (#467): a failed AllocVec is not checked;
- * BUG(orig) (#469): closing a level replies every message of the
+ * always 0.  Fixed (#467): a level without memory for its structure
+ * closes all levels.  BUG(orig) (#469): closing a level replies every message of the
  * shared port.
  * @param scr    a0: the screen object (screenslib; first long = the
  *               Screen)
