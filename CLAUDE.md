@@ -36,11 +36,12 @@ and presets".
 ## Rules, in order of weight
 
 1. **The user's statements.** An answer to a concrete question with the
-   options shown is a decision; record it in `decisions.md` with the quote,
-   date and scope. A rule you derive from a side remark, a counter-question
-   or a guess ("vermutlich") is *proposed*: apply it only to the case it
-   was said for and ask before using it elsewhere; collect proposals and
-   show them together. Do not write such a rule into CLAUDE.md, an agent
+   options shown is a decision; record every such answer with the quote,
+   date and scope: a general one in `decisions.md`, one for a single bug
+   or task in the round's decisions file. A rule you derive from a side
+   remark, a counter-question or a guess ("vermutlich") is *proposed*:
+   apply it only to the case it was said for and ask before using it
+   elsewhere; collect proposals and show them together. Do not write such a rule into CLAUDE.md, an agent
    definition or memory without the user's OK to the wording. Quote
    decisions by ID instead of rewording them. Why: rewordings dropped the
    user's qualifications and turned single-case remarks into general rules
