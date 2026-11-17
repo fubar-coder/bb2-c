@@ -40,9 +40,10 @@
  * of 4 - and a symbol hunk; no list; a file that cannot be made; an
  * empty list, BUG(orig) (#501): the file stays open); EraseAll, finit.
  * Not covered: Reboot; counts of 0 (the original: 2^32 units, #492)
- * and bank numbers that index outside the tables (negative, Reserve
- * above the limit, Reserve with every bank in use, #498) - the original
- * writes outside the test's memory; BankLimit 0 or above 65536; a ChangeDir before BankLimit/finit while
+ * and bank numbers outside the tables (#484: negative, Reserve above
+ * the limit; Reserve with every bank in use, #498) - the original
+ * writes outside the test's memory; BankLimit 0 or above 65536; a
+ * ChangeDir before BankLimit/finit while
  * its lock is current (BUG(orig) #491: unlocked while in use - the test
  * restores the directory first); CurrentDir returning 0.
  */
@@ -337,7 +338,7 @@ static void banks(void)
     nextbank(1, 7);
     nextbank(1, 49);
     nextbank(1, 50);
-    nextbank(1, -1);                                    /* reads the length of 49 */
+    nextbank(1, -1);    /* -1; the original reads the length of 49 (0: "bank -1", also -1, #484) */
     fillmem(1, 0, 100, 0x5a);
     fillmem(0, 3, 32, 0);
     fillmem(1, 3, 7, 0x1ff);

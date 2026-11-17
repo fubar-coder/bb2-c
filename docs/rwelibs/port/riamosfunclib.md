@@ -20,8 +20,8 @@ AMOS-like helpers by RI for Ott of The Farm:
   (-1 / 0; a bank in use is erased first), `Start(bank)`, `Length(bank)`,
   `Erase bank`, `EraseAll`, `NextBank [startbank]` (-1 if none),
   `SwapBank(a,b)`, `BankLimit [numbanks]` (finit + init with the new
-  number). A number below `maxbanks` is a bank, anything else an address
-  (FillMem, BLoad, BSave).
+  number). A number from 0 to `maxbanks` − 1 is a bank, anything else
+  an address (FillMem, BLoad, BSave).
 * **Files:** `FileSize(name$)` (Examine with an AllocMem'd
   FileInfoBlock, for OS 1.3), `BLoad(name$[,address/bank[,length[,offset[,memtype]]]])`
   (form 0: into a new bank, its number), `BSave(name$,address/bank[,length])`,
@@ -121,15 +121,21 @@ kind F):
   with an argument for both forms and started at whatever d0 held
   (#497). ripacklib's `LoadIFF`, which relied on that (form 0 with
   d0 = 51), calls the form with an argument.
+* A bank number is 0 to maxbanks − 1, compared unsigned: `Start`,
+  `Length`, `Erase` and `SwapBank` treat a negative number as a free
+  bank, `Reserve(bank,…)` returns 0 for a bank outside (one compare
+  before AllocMem), `NextBank` returns -1 for a start outside, and
+  `FillMem`, `BLoad` and `BSave` take a negative number as an address
+  (the manual's "bank/address"). The original compared signed, so a
+  negative number indexed before the tables (`Start(-1)` gave the last
+  bank's length, `Erase -1` freed it with memlib's header long as the
+  size), and `Reserve(bank,…)` did not compare at all: a bank ≥ maxbanks
+  wrote behind the start table and over another bank's start (#484).
 
 ## BUG(orig), kept
 
 (All in the AB3 binary; in the C file's head too.)
 
-* No range checks: a negative bank number counts as a bank and indexes
-  before the tables (Start, Length, Erase, Reserve, BLoad, FillMem,
-  SwapBank, NextBank); `Reserve(bank,…)` with bank ≥ maxbanks writes
-  behind the start table (#484).
 * A bank in use is erased before the new allocation, also when that
   fails (#499).
 * `BLoad(name$)` returns the bank also when reading fails (the bank stays
@@ -207,7 +213,8 @@ and a symbol hunk; no list; no file; an empty list), EraseAll, finit.
 
 Not covered: Reboot; counts of 0 (the original writes over all memory;
 the bug-orig test `riamosfunclib-count-zero`) and bank numbers outside
-the tables (they write outside the test's memory); BankLimit 0 or above 65536 (the
+the tables (the original writes outside the test's memory; the bug-orig
+test `riamosfunclib-bank-range`); BankLimit 0 or above 65536 (the
 bug-orig test `riamosfunclib-eraseall-dbra`); a
 ChangeDir lock that is current at finit/BankLimit (the test restores the
 directory first); CurrentDir returning 0.

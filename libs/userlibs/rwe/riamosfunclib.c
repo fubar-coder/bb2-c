@@ -27,7 +27,7 @@
  *
  * Banks: two tables of maxbanks longs (default 50) in one memlib
  * globalloc block (MEMF_CLEAR): lenptr[bank] the length, startptr[bank]
- * the address (exec AllocMem).  A number below maxbanks (signed) is a
+ * the address (exec AllocMem).  A number from 0 to maxbanks-1 is a
  * bank, anything else an address (FillMem, BLoad, BSave).  init opens
  * dos.library and allocates the tables; finit unlocks ChangeDir's lock,
  * frees every bank and the tables, closes dos.library.
@@ -40,10 +40,6 @@
  * compiler), and the CreateDir call of MakeDir (see makedir_c).
  *
  * BUG(orig), kept:
- *   - No range checks: a negative bank number counts as a bank and
- *     indexes before the tables (Start, Length, Erase, Reserve, BLoad,
- *     FillMem, SwapBank, NextBank); Reserve(bank,...) with bank >=
- *     maxbanks writes behind the start table (#484).
  *   - A bank in use is erased before the new allocation, also when that
  *     fails (#499).
  *   - BLoad(name$) returns the bank also when reading fails (the bank
@@ -92,6 +88,13 @@
  *     tested the sign of the length, not NextBank's -1, and reserved
  *     "bank -1" (the entry before the start table is the last length,
  *     the one before the length table memlib's header) (#498).
+ *   - A bank number is 0 to maxbanks-1 (unsigned compares): Start,
+ *     Length, SwapBank and Erase treat a negative one as a free bank,
+ *     Reserve(bank,...) returns 0 for a bank outside, NextBank -1 for a
+ *     start outside, FillMem/BLoad/BSave take a negative number as an
+ *     address.  The original compared signed (a negative bank indexed
+ *     before the tables) and Reserve(bank,...) not at all (a bank >=
+ *     maxbanks wrote behind the start table) (#484).
  *   - Reserve(length) returns -1 for a negative length, as for its other
  *     failures; the original returned 0, the number of the first bank
  *     (#500).
@@ -394,19 +397,23 @@ static ULONG hunkbuff[8];
 /* the table entry of bank n: offset n*4 (ASL.l #2, a long addition) */
 #define ENTRY(tab, n) (*(ULONG *)((ULONG)(tab) + ((ULONG)(n) << 2)))
 
+/* n is a bank: 0 to maxbanks-1.  Fixed (#484): the original compared
+   signed, a negative number was a bank before the tables */
+#define ISBANK(n) ((ULONG)(n) < (ULONG)maxbanks)
+
 /* ------------------------------------------------------------- banks */
 
 /**
  * @brief Start(bank): the address of a bank.
  *
- * BUG(orig) (#484): a negative bank counts as a bank and reads before
+ * Fixed (#484): 0 for a negative number too; the original read before
  * the table.
- * @param bank  d0: the bank (signed)
- * @return d0: its address, 0 if free or bank >= maxbanks
+ * @param bank  d0: the bank
+ * @return d0: its address, 0 if free or no bank (outside 0..maxbanks-1)
  */
 static ULONG BLITZ_ROUTINE start_c(LONG bank BL_REG(d0))
 {
-    if (bank >= maxbanks)
+    if (!ISBANK(bank))
         return 0;
     return ENTRY(startptr, bank);
 }
@@ -414,13 +421,14 @@ static ULONG BLITZ_ROUTINE start_c(LONG bank BL_REG(d0))
 /**
  * @brief Length(bank): the length of a bank.
  *
- * BUG(orig) (#484): a negative bank reads before the table.
- * @param bank  d0: the bank (signed)
- * @return d0: its length, 0 if free or bank >= maxbanks
+ * Fixed (#484): 0 for a negative number too; the original read before
+ * the table.
+ * @param bank  d0: the bank
+ * @return d0: its length, 0 if free or no bank (outside 0..maxbanks-1)
  */
 static ULONG BLITZ_ROUTINE length_c(LONG bank BL_REG(d0))
 {
-    if (bank >= maxbanks)
+    if (!ISBANK(bank))
         return 0;
     return ENTRY(lenptr, bank);
 }
@@ -452,7 +460,8 @@ static BB_BOOL newbank(LONG bank, ULONG len, ULONG flags)
 /**
  * @brief Erase bank: frees a bank (FreeMem) if it is in use.
  *
- * BUG(orig) (#484): no range check for negative banks.
+ * Nothing for a number that is no bank (Start gives 0; fixed, #484: the
+ * original freed an "entry" before the tables for a negative one).
  * @param bank  d0: the bank
  * Returns nothing (all registers kept).
  */
@@ -485,8 +494,9 @@ static void BLITZ_ROUTINE eraseall_c(void)
  * AllocMem).
  *
  * A bank in use is erased first, also when the new allocation fails
- * (#499).  BUG(orig) (#484): no range check - bank >= maxbanks writes
- * behind the start table, a negative bank before the tables.
+ * (#499).  Fixed (#484): 0 for a bank outside 0..maxbanks-1; the
+ * original did not check - bank >= maxbanks wrote behind the start
+ * table, a negative bank before the tables.
  * @param bank   d0: the bank
  * @param len    d1: the length
  * @param flags  d2: the memory requirements (MEMF_...)
@@ -495,6 +505,8 @@ static void BLITZ_ROUTINE eraseall_c(void)
 static BB_BOOL BLITZ_ROUTINE allocmem_c(LONG bank BL_REG(d0), ULONG len BL_REG(d1),
                                         ULONG flags BL_REG(d2))
 {
+    if (!ISBANK(bank))
+        return BB_FALSE;                        /* fixed (#484) */
     if (start_c(bank))
         eraseit(bank);
     return newbank(bank, len, flags);
@@ -514,13 +526,14 @@ static BB_BOOL BLITZ_ROUTINE allocmem1_c(LONG bank BL_REG(d0), ULONG len BL_REG(
 /**
  * @brief NextBank [startbank]: the first free bank from startbank on.
  *
- * BUG(orig): a negative start counts as a bank (#484).
+ * Fixed (#484): -1 for a start outside 0..maxbanks-1; the original
+ * compared signed and searched from a negative start before the tables.
  * @param bank  d0: startbank
  * @return d0: the bank, -1 if none is free
  */
 static ULONG BLITZ_ROUTINE findfreebank_c(LONG bank BL_REG(d0))
 {
-    for (; bank < maxbanks; bank++)
+    for (; ISBANK(bank); bank++)
         if (!start_c(bank))
             return (ULONG)bank;
     return (ULONG)-1;
@@ -566,8 +579,8 @@ static ULONG BLITZ_ROUTINE allocmem2_c(LONG len BL_REG(d0))
  * @brief SwapBank(sourcebank,destbank): exchanges two banks (address and
  * length).
  *
- * Both must have a length.  BUG(orig) (#484): negative banks index before
- * the tables.
+ * Both must have a length (a number that is no bank has none; fixed,
+ * #484: the original indexed before the tables for a negative one).
  * @param a  d0: sourcebank
  * @param b  d1: destbank
  * @return d0: -1 if swapped, 0 if not
@@ -591,8 +604,9 @@ static BB_BOOL BLITZ_ROUTINE swapbank_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
  * @brief FillMem address,length,value: fills memory (or a bank) with a
  * byte.
  *
- * A number below maxbanks (signed) is a bank: nothing for a free bank.
- * Fixed (#492): nothing for a length of 0 or below; the original filled
+ * A number from 0 to maxbanks-1 is a bank: nothing for a free bank;
+ * anything else is an address (fixed, #484: the original compared signed,
+ * a negative number was a bank before the tables).  Fixed (#492): nothing for a length of 0 or below; the original filled
  * 2^32 bytes for 0 (it tested the length only after the first byte).
  * @param adr  d0: the address or bank
  * @param len  d1: the number of bytes
@@ -604,7 +618,7 @@ static void BLITZ_ROUTINE fillmem_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1),
 {
     UBYTE *p;
 
-    if ((LONG)adr < maxbanks) {
+    if (ISBANK(adr)) {
         adr = start_c((LONG)adr);
         if (!adr)
             return;
@@ -728,8 +742,9 @@ static ULONG BLITZ_ROUTINE filesize_c(CONST_STRPTR name BL_REG(d0))
  * a part of it) to an address or into a bank.
  *
  * Length 0 = the file's size (0 for an empty or missing file).  A number
- * below maxbanks is a bank: erased and reserved anew with that length and
- * memtype (#499).  BUG(orig): a bank reserved for a file that cannot be
+ * from 0 to maxbanks-1 is a bank: erased and reserved anew with that
+ * length and memtype (#499); anything else is an address (fixed, #484: the
+ * original compared signed).  BUG(orig): a bank reserved for a file that cannot be
  * opened stays (#487); Read's -1 counts as success (#488); the error
  * check never checks (#485).
  * @param name     d0: filename$
@@ -752,7 +767,7 @@ static BB_BOOL BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL
         if (!len)
             return BB_FALSE;
     }
-    if ((LONG)adr < maxbanks) {
+    if (ISBANK(adr)) {
         LONG bank = (LONG)adr;
         if (length_c(bank))
             eraseit(bank);
@@ -838,8 +853,9 @@ static ULONG BLITZ_ROUTINE bload4_c(CONST_STRPTR name BL_REG(d0))
  * @brief BSave(filename$,address/bank,length): writes memory (or a bank)
  * to a file.
  *
- * Length 0 = the bank's length (an address without a length: 0).
- * BUG(orig) (#489): a length with a bank writes that many bytes from the
+ * A number from 0 to maxbanks-1 is a bank, anything else an address
+ * (fixed, #484: the original compared signed).  Length 0 = the bank's
+ * length (an address without a length: 0).  BUG(orig) (#489): a length with a bank writes that many bytes from the
  * bank's start, whatever the bank's size.
  * @param name  d0: filename$
  * @param adr   d1: the address or bank
@@ -854,11 +870,11 @@ static BB_BOOL BLITZ_ROUTINE bsave_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_
     LONG put;
 
     if (!len) {
-        if ((LONG)adr >= maxbanks)
+        if (!ISBANK(adr))
             return BB_FALSE;
         len = length_c((LONG)adr);
     }
-    if ((LONG)adr < maxbanks) {
+    if (ISBANK(adr)) {
         adr = start_c((LONG)adr);
         if (!adr)
             return BB_FALSE;

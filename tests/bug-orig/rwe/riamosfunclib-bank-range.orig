@@ -5,6 +5,7 @@ done
 ok
 [run]
 100
+-1
 rc=0
 [blitz2]
 rc=0
