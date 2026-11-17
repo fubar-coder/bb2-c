@@ -98,8 +98,12 @@ Every change is built and looked at before you commit it:
 
 * The Bash tool runs zsh (the login shell is fish): put loops, word
   splitting and heredocs in `bash -c '…'`.
-* No polling (`until`/`while` + `sleep`). Run commands in the
-  foreground with a timeout; do not end your turn while anything you
+* No wait loops of your own (`until`/`while` + `sleep`, `pgrep` loops:
+  `pgrep -f NAME` also finds the shell that runs it, so such a loop never
+  ends). Run commands in the foreground with a timeout. For longer work,
+  start the command with `run_in_background` and wait for its completion
+  notification, or watch its output with the Monitor tool (load it with
+  ToolSearch `select:Monitor`). Do not end your turn while anything you
   started still runs.
 * Keep scratch files in the session's scratch area or
   your worktree, not in `site/`. Never commit `site/public/` or

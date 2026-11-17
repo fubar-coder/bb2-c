@@ -15,11 +15,14 @@ read them first):
 * The Bash tool runs zsh (the login shell is fish): put loops, word
   splitting and heredocs in `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
   scripts in your scratchpad), never in the build or the repository.
-* No polling (`until`/`while` + `sleep`). Run commands in the
-  foreground with a timeout (up to 10 min; run again or split longer
-  work). Do not end your turn while anything you started still runs:
-  background jobs of a finished agent are orphaned and hold emulator
-  slots.
+* No wait loops of your own (`until`/`while` + `sleep`, `pgrep` loops:
+  `pgrep -f NAME` also finds the shell that runs it, so such a loop never
+  ends). Run commands in the foreground with a timeout (up to 10 min).
+  For longer work, start the command with `run_in_background` and wait
+  for its completion notification, or watch its output with the Monitor
+  tool (load it with ToolSearch `select:Monitor`). Do not end your turn
+  while anything you started still runs: background jobs of a finished
+  agent are orphaned and hold emulator slots.
 * Every check needs a test on deliberately broken input (e.g. a wrong
   expect file must fail). Emulator tests: label `emulator`, return 77
   when Amiberry or the data are missing; tests write only to
