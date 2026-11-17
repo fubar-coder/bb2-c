@@ -638,7 +638,8 @@ Rename|kept|missing|1	kept
 Rename|popped|c.bin d.bin|1	$00000000
 Rename|popped|missing|1	$00000000
 Reserve|contents|bank 7|1	bytes 64 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-Reserve|d0|form 0 -5,0,$0|1	$00000000
+Reserve|d0|form 0 -5,0,$0|1 [orig]	$00000000
+Reserve|d0|form 0 -5,0,$0|1 [fixed #500]	$FFFFFFFF
 Reserve|d0|form 0 100,0,$0|1	$00000000
 Reserve|d0|form 0 24,0,$0|1	$00000001
 Reserve|d0|form 0 40,0,$0|1	$00000000

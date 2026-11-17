@@ -326,7 +326,7 @@ static void banks(void)
     reserve(1, 3, 32, 0);                               /* in use: erased first */
     length(3);
     fillmem(1, 3, 32, 0x99);
-    reserve(0, (ULONG)-5, 0, 0);                        /* negative length */
+    reserve(0, (ULONG)-5, 0, 0);                        /* negative length: -1 (#500) */
     reserve_nomem(0, 64, 0, 0);                         /* AllocMem fails: -1 */
     reserve_nomem(1, 4, 64, 0);                         /* 0 */
     reserve_nomem(2, 7, 16, MEMF_CHIP);                 /* in use: erased, then 0 */

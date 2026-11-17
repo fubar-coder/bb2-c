@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+-1
+bank 0 free
+rc=0

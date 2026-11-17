@@ -112,6 +112,10 @@ kind F):
   tested the sign of the length, not NextBank's result, and reserved
   "bank -1" (the entry before the start table is the last length, the
   one before the length table memlib's block header) (#498).
+* `Reserve(length)` returns -1 for a negative length, as for its other
+  failures (the manual: "the number of the bank ... or -1 for
+  failure"); the original returned 0, the number of the first bank
+  (#500).
 
 ## BUG(orig), kept
 
@@ -121,9 +125,8 @@ kind F):
   before the tables (Start, Length, Erase, Reserve, BLoad, FillMem,
   SwapBank, NextBank); `Reserve(bank,…)` with bank ≥ maxbanks writes
   behind the start table (#484).
-* `Reserve(length)` returns 0 for a negative length – also a bank
-  number (#500) – and -1 if AllocMem fails. A bank in use is erased
-  before the new allocation, also when that fails (#499).
+* A bank in use is erased before the new allocation, also when that
+  fails (#499).
 * `NextBank` without an argument starts at whatever d0 holds (both forms
   share the routine) (#497).
 * `BLoad(name$)` returns the bank also when reading fails (the bank stays
