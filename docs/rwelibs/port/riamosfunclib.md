@@ -151,6 +151,9 @@ kind F):
   opened leaves the bank as it was. The original erased the bank and
   reserved it anew first, and left it so (a bank in use lost its
   contents and got the new length, a free bank stayed reserved) (#487).
+* `BLoad` reports a failed read (Read's -1) with 0; the original tested
+  Read's result for 0 only and returned -1 (success). A short read stays
+  a success: a length beyond the file's end is a valid call (#488).
 * `BankLimit n` returns the new number of banks, as `BankLimit` without
   an argument does (the manual's syntax:
   `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
@@ -164,7 +167,7 @@ kind F):
   fails (#499).
 * `BLoad(name$)` returns the bank also when reading fails (the bank stays
   reserved), -1 for an empty or missing file and 0 when no bank is free
-  (#486); the other forms treat Read's -1 as success (#488). A bank
+  (#486). A bank
   given to BLoad is erased and reserved anew with the file's length (or
   the given one) (#499). The error check never checks (RTS first)
   (#485).

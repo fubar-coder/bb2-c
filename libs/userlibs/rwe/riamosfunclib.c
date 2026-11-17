@@ -45,8 +45,7 @@
  *     fails (#499).
  *   - BLoad(name$) returns the bank also when reading fails (the bank
  *     stays reserved), -1 for an empty or missing file and 0 when no
- *     bank is free (#486); the other forms treat Read's -1 as success
- *     (#488).  A bank given to BLoad is erased and reserved anew
+ *     bank is free (#486).  A bank given to BLoad is erased and reserved anew
  *     with the file's length (or the given one) (#499).  The error check
  *     (bloadchk) starts with an RTS: it never checks (#485).
  *   - BSave(name$,bank,length) writes that many bytes from the bank's
@@ -112,6 +111,8 @@
  *     be opened leaves the bank as it was; the original erased the bank
  *     and reserved it anew first, and left it so (a bank in use lost its
  *     contents and got the new length, a free bank stayed reserved) (#487).
+ *   - BLoad reports a failed read (Read's -1) with 0; the original tested
+ *     Read's result for 0 only (#488).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written; init and BankLimit do not check globalloc's
@@ -780,8 +781,10 @@ static ULONG BLITZ_ROUTINE filesize_c(CONST_STRPTR name BL_REG(d0))
  * length and memtype (#499); anything else is an address (fixed, #484: the
  * original compared signed).  The file is opened first: one that cannot
  * be opened leaves the bank as it was (fixed, #487: the original erased
- * and reserved the bank first and left it so).  BUG(orig): Read's -1
- * counts as success (#488); the error check never checks (#485).
+ * and reserved the bank first and left it so).  A failed read (Read's
+ * -1) is 0 (fixed, #488: the original tested for 0 only; a short read
+ * stays success: a length beyond the file is a valid call).  BUG(orig):
+ * the error check never checks (#485).
  * @param name     d0: filename$
  * @param adr      d1: the address or bank
  * @param len      d2: the number of bytes
@@ -817,9 +820,9 @@ static BB_BOOL BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL
     }
     if (offset)
         Seek(file, offset, OFFSET_BEGINNING);
-    got = Read(file, (APTR)adr, (LONG)len);     /* BUG(orig): -1 counts as read (#488) */
+    got = Read(file, (APTR)adr, (LONG)len);
     Close(file);
-    return got ? BB_TRUE : BB_FALSE;
+    return got > 0 ? BB_TRUE : BB_FALSE;        /* fixed (#488): -1 failed */
 }
 
 /**

@@ -3,6 +3,7 @@
 ; The program saves 100 bytes with BSave and loads them again; inject
 ; makes the first Read of the file fail (readfail=).
 ; Correct: BLoad reports the failed read with 0.
+; @fixed #488
 ; @rwe riamosfunclib
 ; @pass runwrap=@INJECT@|readfail=bug-orig-bload/1
 DEFTYPE .l
