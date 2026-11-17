@@ -40,8 +40,8 @@
  *     it gives back the space of the string argument, which the compiler
  *     does not take back after a library function with a numeric result
  *     (#846, closed).
- *   - PutIconObject writes the icon (PutDiskObject's result ignored)
- *     (#851), then forgets it without FreeDiskObject (lost) (#850).
+ *   - PutIconObject forgets the written icon without FreeDiskObject
+ *     (lost) (#850).
  *   - ShapeToIcon shape,shape uses the library's own Image for the
  *     selected image with PlanePick/PlaneOnOff 0 and sets the gadget
  *     flags to 6 (GADGHIMAGE), dropping all others (#854).
@@ -88,6 +88,10 @@
  *   makes it larger when it is full (the user's decision of 2026-11-17,
  *   w1-decisions.md); without memory GetIconObject/NewToolType return 0
  *   and change nothing.  It is freed with the icon.
+ * Fixed (intended deviation, #851): PutIconObject ignored PutDiskObject's
+ *   result, returned -1 and closed the icon also when writing failed; it
+ *   returns 0 then and the icon stays open (the user's decision of
+ *   2026-11-17, w1-decisions.md).
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -547,12 +551,14 @@ BB_BOOL BLITZ_ROUTINE c_Matchtoolvalue(CONST_STRPTR name BL_REG(d0),
 /**
  * @brief PutIconObject(filename$,icontype): writes the open icon and closes it.
  *
- * A non-zero icontype (its low byte) becomes do_Type; PutDiskObject.
- * BUG(orig): PutDiskObject's result is ignored (#851), and the icon is
- * forgotten without FreeDiskObject (lost, #850).
+ * A non-zero icontype (its low byte) becomes do_Type; PutDiskObject.  If
+ * that fails, the icon stays open (it can be written again or freed with
+ * FreeIconObject) and the result is 0 (fixed #851, the user's decision
+ * of 2026-11-17: the original returned -1 and closed it).  BUG(orig): the
+ * written icon is forgotten without FreeDiskObject (lost, #850).
  * @param name  d0: the file name
  * @param type  d1: the icon type (0: unchanged)
- * @return d0: BB_TRUE (also if writing failed), BB_FALSE without an icon
+ * @return d0: BB_TRUE written, BB_FALSE writing failed or no icon
  */
 BB_BOOL BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG(d1))
 {
@@ -560,7 +566,8 @@ BB_BOOL BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG
         return BB_FALSE;
     if ((UBYTE)type)
         diskobject->do_Type = (UBYTE)type;
-    PutDiskObject(name, diskobject);    /* BUG(orig): result ignored (#851) */
+    if (!PutDiskObject(name, diskobject))
+        return BB_FALSE;
     diskobject = NULL;                  /* BUG(orig): not freed (#850) */
     freetooltypes();
     return BB_TRUE;
@@ -569,7 +576,7 @@ BB_BOOL BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG
 /**
  * @brief PutIconObject(filename$): as PutIconObject with the icon type unchanged.
  * @param name  d0: the file name
- * @return d0: BB_TRUE, BB_FALSE without an icon
+ * @return d0: BB_TRUE written, BB_FALSE writing failed or no icon
  */
 BB_BOOL BLITZ_ROUTINE c_Put_icon2(CONST_STRPTR name BL_REG(d0))
 {

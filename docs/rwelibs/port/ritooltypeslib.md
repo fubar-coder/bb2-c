@@ -78,6 +78,11 @@ that are not the result.
   outside, the user's decision of 2026-11-17; bug-orig tests
   `ritooltypeslib-tooltype-array-unbounded` with an icon of 101 tool
   types, and `ritooltypeslib-tooltype-array-nomem`).
+* PutIconObject returns 0 when PutDiskObject fails, and the icon stays
+  open: the program can write it again or free it with FreeIconObject.
+  The original ignored the result, returned -1 and closed the icon also
+  then (#851, the user's decision of 2026-11-17; bug-orig test
+  `ritooltypeslib-puticonobject-result-ignored`).
 
 **BUG(orig)** (kept):
 
@@ -88,8 +93,8 @@ that are not the result.
   string argument, which the compiler does not take back after a library
   function with a numeric result. Without it
   `"ab"+Str$(IconDefTool("tool"))+"cd"` gives `abtool` instead of `ab-1cd`.
-* PutIconObject ignores PutDiskObject's result (#851) and forgets the
-  icon without FreeDiskObject (lost) (#850).
+* PutIconObject forgets the written icon without FreeDiskObject (lost)
+  (#850).
 * ShapeToIcon shape,shape uses the library's own Image (PlanePick 0) as
   selected image and sets the gadget flags to 6, dropping the others
   (#854).
