@@ -49,16 +49,19 @@
  *     RawASC of a character not in the table searches until it finds the
  *     byte somewhere (DIFF: what is behind the table differs, see the
  *     notes) (#744).
- *   - OpenFontPrefs does not check AllocMem (#756), and a second
- *     OpenFontPrefs loses the first buffer (#757).  DefaultFontHeight/Name
- *     step through the buffer by 164 bytes (the size of a FONT chunk)
- *     until its end, through the uncleared memory behind the file, and
+ *   - A second OpenFontPrefs loses the first buffer (#757).
+ *     DefaultFontHeight/Name step through the buffer by 164 bytes (the
+ *     size of a FONT chunk) until its end, through the uncleared memory behind the file, and
  *     read the last chunk up to 26 bytes behind the buffer (#745).
  *
  * Fixed (intended deviation, #747): EZRequestArgs ends the format text
  * it builds with a 0; the original wrote none, so a shorter text than
  * the one before kept the end of the old one (more formats than
  * arguments).
+ * Fixed (intended deviation, #756): OpenFontPrefs returns 0 when the
+ * AllocMem of its 16 KB buffer fails; the original did not check it and
+ * read ENV:SYS/Font.Prefs to address 0 (over the exception vectors and
+ * the ExecBase pointer).
  * Fixed (intended deviation, #758): ProgPath$ without a directory name
  * is the program name alone; the original decided on the "/" by the byte
  * before its result (CMPI.b #":",-1(a3)), so it gave "/name" or, behind
@@ -1154,8 +1157,9 @@ static ULONG BLITZ_ROUTINE closefontprefs_c(void)
 /**
  * @brief OpenFontPrefs: read ENV:SYS/Font.Prefs into a 16K buffer.
  *
- * BUG(orig): AllocMem is not checked (#756); a second OpenFontPrefs
- * loses the first buffer (#757).
+ * Without memory for the buffer it returns BB_FALSE; fixed (#756): the
+ * original did not check AllocMem and read the file to address 0.
+ * BUG(orig): a second OpenFontPrefs loses the first buffer (#757).
  * @return d0: BB_TRUE if it is a FORM PREF with PRHD and a FONT chunk
  *         behind it; else BB_FALSE, the buffer freed (the tail call of
  *         CloseFontPrefs, which returns 0)
@@ -1164,7 +1168,11 @@ static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
 {
     const ULONG *p;
 
-    fontloc = AllocMem(FONTBUF, 0);                     /* BUG(orig): unchecked (#756) */
+    fontloc = AllocMem(FONTBUF, 0);
+    if (!fontloc) {
+        fontpos = NULL;
+        return BB_FALSE;                                /* fixed (#756) */
+    }
     fontfh = Open((CONST_STRPTR)fontname, MODE_OLDFILE);
     if (!fontfh)
         return closefontprefs_c(), BB_FALSE;
