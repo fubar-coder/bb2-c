@@ -41,12 +41,10 @@
  * compiler).
  *
  * BUG(orig), kept:
- *   - SaveExec: a file it cannot create returns the file name's address;
- *     an empty list (first pointer 0) leaves the file open with only the
- *     header in it (#501); the header gets one size slot (last hunk = 0),
- *     one HUNK_END behind all hunks, and each RELOC32 block names the
- *     index of its own hunk (#503); symbol hunks and other types are
- *     skipped but counted (#502).
+ *   - SaveExec: the header gets one size slot (last hunk = 0), one
+ *     HUNK_END behind all hunks, and each RELOC32 block names the index
+ *     of its own hunk (#503); symbol hunks and other types are skipped
+ *     but counted (#502).
  *   - FindVolume returns the DosList entry FindDosEntry found, taken
  *     after UnLockDosList, where the manual documents -1 (0 if the
  *     volume is not present) (test riamosfunclib-findvolume-result;
@@ -120,9 +118,15 @@
  *     its task or the task's name 0); the original read through
  *     dol_Task without a check (the long at address 16 as the task, and
  *     the string that leads to) (#494).
+ *   - SaveExec returns 0 when the file cannot be created, and 0 without
+ *     creating a file for an empty list; the original returned the file
+ *     name's address for both, wrote the empty list's tail node as a
+ *     hunk, and left the file open for a list whose first pointer is 0
+ *     (#501).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
- * every item is written; init and BankLimit do not check globalloc's
+ * every item is written (an empty list, whose head is the tail, is
+ * tested first, #501); init and BankLimit do not check globalloc's
  * result, but memlib raises "Out of Memory" itself; DeviceName$ takes the
  * name from the string space (a3), not from d0, but in compiled code d0
  * always is the argument at a3 (#493).  Documented
@@ -1172,15 +1176,16 @@ static void execfinit(ULONG nhunks, ULONG size)
  * @brief SaveExec filename$,list(): writes an executable from a Blitz list
  * of NEWTYPE .hunk (code hunks with RELOC32).
  *
- * BUG(orig): a file it cannot create returns the name's address; an empty
- * list leaves the file open with only the header (#501); the header gets
- * one size slot, one HUNK_END behind all hunks, and each RELOC32 block
- * names its own hunk (#503); other hunk types are skipped but counted
- * (#502).
+ * Fixed (#501): 0 for a file that cannot be made, and for an empty list
+ * (tested before the file is created); the original returned the name's
+ * address, wrote an empty list's tail node as a hunk and left the file
+ * open for a first pointer 0.  BUG(orig): the header gets one size slot,
+ * one HUNK_END behind all hunks, and each RELOC32 block names its own
+ * hunk (#503); other hunk types are skipped but counted (#502).
  * @param name  d0: filename$
  * @param list  d1: the list array (its header in front of it)
- * @return d0: -1; 0 if list() is no list; the name's address if the file
- *         cannot be made or the list is empty
+ * @return d0: -1; 0 if list() is no list or empty, or the file cannot be
+ *         made
  */
 static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE *list BL_REG(d1))
 {
@@ -1190,11 +1195,11 @@ static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE 
 
     if (lh->id != BB_LISTID)
         return 0;
-    if (!execinit(name))
-        return (ULONG)name;
     h = (const struct hunkitem *)lh->used.mlh_Head;
-    if (!h)
-        return (ULONG)name;
+    if (!h || !h->next)
+        return 0;                               /* fixed (#501): empty */
+    if (!execinit(name))
+        return 0;                               /* fixed (#501) */
     do {
         if (h->hunktype == HUNK_CODE)
             size += docode(h, num);

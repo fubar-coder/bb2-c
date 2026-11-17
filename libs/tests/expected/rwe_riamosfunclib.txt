@@ -703,10 +703,12 @@ Reserve|used|bank 55|1	$00000001
 Reserve|used|bank 7|1	$00000001
 SaveExec|contents|file x.exe|1	bytes 2048 fnv 6BEAC355
 SaveExec|contents|file y.exe|1	bytes 2048 fnv 86E7752C
-SaveExec|d0 (1: the name)|empty (the file stays open)|1	$00000001
+SaveExec|d0 (1: the name)|empty (the file stays open)|1 [orig]	$00000001
+SaveExec|d0 (1: the name)|empty (the file stays open)|1 [fixed #501]	$00000000
 SaveExec|d0 (1: the name)|list|1	$FFFFFFFF
 SaveExec|d0 (1: the name)|list 2|1	$FFFFFFFF
-SaveExec|d0 (1: the name)|no file|1	$00000001
+SaveExec|d0 (1: the name)|no file|1 [orig]	$00000001
+SaveExec|d0 (1: the name)|no file|1 [fixed #501]	$00000000
 SaveExec|d0 (1: the name)|no list|1	$00000000
 SaveExec|kept|empty (the file stays open)|1	kept
 SaveExec|kept|list|1	kept

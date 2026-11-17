@@ -41,7 +41,7 @@
  * elsewhere), SaveExec (a list with
  * two code hunks - relocations, memory flags, a length not a multiple
  * of 4 - and a symbol hunk; no list; a file that cannot be made; an
- * empty list, BUG(orig) (#501): the file stays open); EraseAll, finit.
+ * empty list - the original leaves the file open, #501); EraseAll, finit.
  * Not covered: Reboot; counts of 0 (the original: 2^32 units, #492)
  * and bank numbers outside the tables (#484: negative, Reserve above
  * the limit; Reserve with every bank in use, #498) - the original
@@ -709,7 +709,7 @@ static void saveexecs(void)
     samefile("SaveExec", "y.exe");
     saveexec("no list", "z.exe", 0x6c497355, &nodes[0]);
     saveexec("no file", "nodir/z.exe", 0x6c497354, &nodes[0]);
-    saveexec("empty (the file stays open)", "open.exe", 0x6c497354, NULL);
+    saveexec("empty (the file stays open)", "open.exe", 0x6c497354, NULL);  /* the original (#501) */
 }
 
 static void cleanup(void)

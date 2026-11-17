@@ -176,6 +176,12 @@ kind F):
   (`dol_Task` 0, or no task or task name behind it); the original read
   through `dol_Task` without a check: the long at address 16 as the task,
   and whatever string its name pointer led to (#494).
+* `SaveExec` returns 0 when the file cannot be created, and 0 without
+  creating a file for an empty list. The original returned the file
+  name's address for both; for a real empty `Dim List` (its head is the
+  list's tail node) it wrote the tail node as a hunk (a header for one
+  hunk), for a first pointer of 0 it left the file open with only the
+  header (#501).
 * `BankLimit n` returns the new number of banks, as `BankLimit` without
   an argument does (the manual's syntax:
   `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
@@ -185,10 +191,8 @@ kind F):
 
 (All in the AB3 binary; in the C file's head too.)
 
-* `SaveExec`: a file it cannot create returns the file name's address; an
-  empty list (first pointer 0) leaves the file open with only the header
-  (#501); the header gets one size slot (first = last = 0), there is one
-  HUNK_END behind all hunks, each RELOC32 block names its own hunk's
+* `SaveExec`: the header gets one size slot (first = last = 0), there is
+  one HUNK_END behind all hunks, each RELOC32 block names its own hunk's
   index (#503); symbol and other hunks are skipped but counted (#502).
 * `FindVolume` returns the DosList entry that FindDosEntry found, taken
   after UnLockDosList (an entry of a list the program no longer holds);
@@ -200,7 +204,8 @@ Original behaviour that is not a defect:
 
 * `SaveExec` stops at the node whose next is 0. The list is Exec-style:
   that node is the list header's tail (`lh_Tail`), not an item, so every
-  item is written.
+  item is written (an empty list, whose head is the tail, is tested
+  first, #501).
 * init and BankLimit do not check globalloc's result: memlib raises
   "Out of Memory" itself.
 * `DeviceName$` takes the name from the string space (a3), not from d0:
