@@ -1,5 +1,5 @@
 # results: a result against its expectation or the previous result (README.md)
-set(RESULTS_SUBCOMMANDS match prev cd-update cd-reference ted-oracle libs-compare libs-accept libs-update libs-dump fix-scope bug-orig-accept corpus-accept perf)
+set(RESULTS_SUBCOMMANDS match prev cd-update cd-reference ted-oracle libs-compare libs-accept libs-update libs-dump libs-sort fix-scope bug-orig-accept corpus-accept perf)
 add_executable(results main.cpp cmd_match.cpp cmd_prev.cpp cmd_cd.cpp cmd_ted_oracle.cpp cmd_libs.cpp cmd_fix_scope.cpp cmd_bugorig.cpp cmd_corpus.cpp cmd_perf.cpp)
 target_link_libraries(results PRIVATE lib_cli lib_outmatch lib_prevcmp lib_previntended lib_cdtable
 	lib_oracletable lib_libscmp lib_bugorigcmp lib_corpusexpect lib_perfbudget)

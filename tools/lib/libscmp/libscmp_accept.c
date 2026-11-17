@@ -114,58 +114,35 @@ static long lost_in_blocks(const struct libscmp_file *run, size_t shown, FILE *r
     return n;
 }
 
-/* a case of old kept or dropped where the run lacks its key: the index of
-   the run case it follows (-1: none) and the case */
-struct pending {
-    long anchor;
-    size_t old;
-};
-
-static int cmp_pending(const void *x, const void *y)
+/* the text written to o (a memstream on *text) in the order of
+   libscmp_sorted, into *out; 0 = ok, 1 = refused (the text is malformed:
+   reported), -1 = out of memory */
+static int close_sorted(FILE *o, char **text, size_t *len, char **out, FILE *report)
 {
-    const struct pending *a = x, *b = y;
+    char msg[700];
+    int r;
 
-    if (a->anchor != b->anchor)
-        return a->anchor < b->anchor ? -1 : 1;
-    return a->old < b->old ? -1 : a->old > b->old;
-}
-
-/* the cases of old whose key run lacks, each with the run case it
-   follows in old (want: the qualifier to collect, -1 = every); *n */
-static struct pending *orphans(const struct libscmp_file *run, const struct libscmp_file *old,
-                               int want, size_t *n)
-{
-    struct pending *p = malloc((old->ncases + 1) * sizeof *p);
-    long anchor = -1;
-    size_t i;
-
-    *n = 0;
-    if (!p)
-        return NULL;
-    for (i = 0; i < old->ncases; i++) {
-        const struct libscmp_case *c = &old->cases[i];
-        const struct libscmp_entry *e = find_case(run, old, c);
-
-        if (e)
-            anchor = e->plain >= 0 ? e->plain : -1;
-        else if (want < 0 || c->qual == want) {
-            p[*n].anchor = anchor;
-            p[*n].old = i;
-            ++*n;
-        }
+    if (fclose(o)) {
+        free(*text);
+        return -1;
     }
-    qsort(p, *n, sizeof *p, cmp_pending);
-    return p;
+    r = libscmp_sort_text(*text, *len, "the new expected data", out, msg, sizeof msg);
+    free(*text);
+    if (r == -2) {
+        fprintf(report, "%s\n", msg);
+        return 1;
+    }
+    return r;
 }
 
 int libscmp_accept(const struct libscmp_file *run1, const struct libscmp_file *run2,
                    const struct libscmp_file *old, char **out, FILE *report)
 {
-    struct pending *kept = NULL;
-    size_t i, nkept = 0, k = 0, nlost = 0, nfixed = 0;
+    size_t i, nlost = 0, nfixed = 0;
     char *text = NULL;
     size_t len;
     FILE *o;
+    int r;
 
     *out = NULL;
     if (run1->len != run2->len || memcmp(run1->text, run2->text, run1->len)) {
@@ -194,54 +171,44 @@ int libscmp_accept(const struct libscmp_file *run1, const struct libscmp_file *r
         fprintf(report, "%s: refused: %zu cases lost\n", run1->name, nlost);
         return 1;
     }
-    if (old && !(kept = orphans(run1, old, -1, &nkept)))
+    if (!(o = open_memstream(&text, &len)))
         return -1;
-    if (!(o = open_memstream(&text, &len))) {
-        free(kept);
-        return -1;
-    }
     fprintf(o, "# capture %s 1\n", run1->name);
-    for (i = 0;; i++) {
-        /* the cases of old that followed run case i-1 */
-        for (; k < nkept && kept[k].anchor == (long)i - 1; k++) {
-            const struct libscmp_case *c = &old->cases[kept[k].old];
+    for (i = 0; i < run1->ncases; i++) {
+        const struct libscmp_case *c = &run1->cases[i];
+        const struct libscmp_entry *e = old ? find_case(old, run1, c) : NULL;
+        const char *key = run1->text + c->key, *val = run1->text + c->val;
 
-            if (c->qual == LIBSCMP_QFIXED) {
-                put_case(o, old->text + c->key, c->keylen, "fixed", c->issue, old->text + c->val,
-                         c->vallen);
-                nfixed++;
-                fprintf(report, "%s: %.*s [fixed #%lu]: not in the original's run, kept as a case "
-                        "of the port only (did the scenario change?)\n", run1->name, KEY(old, c),
-                        (unsigned long)c->issue);
-            } else
-                fprintf(report, "%s: %.*s%s: not in the original's run any more, removed\n",
-                        run1->name, KEY(old, c), c->qual == LIBSCMP_QORIG ? " [orig]" : "");
-        }
-        if (i == run1->ncases)
-            break;
-        {
-            const struct libscmp_case *c = &run1->cases[i];
-            const struct libscmp_entry *e = old ? find_case(old, run1, c) : NULL;
-            const char *key = run1->text + c->key, *val = run1->text + c->val;
+        if (e && e->fixed >= 0) {
+            const struct libscmp_case *f = &old->cases[e->fixed];
 
-            if (e && e->fixed >= 0) {
-                const struct libscmp_case *f = &old->cases[e->fixed];
-
-                put_case(o, key, c->keylen, "orig", 0, val, c->vallen);
-                put_case(o, key, c->keylen, "fixed", f->issue, old->text + f->val, f->vallen);
-                nfixed++;
-            } else
-                put_case(o, key, c->keylen, e && e->orig >= 0 ? "orig" : NULL, 0, val, c->vallen);
-        }
+            put_case(o, key, c->keylen, "orig", 0, val, c->vallen);
+            put_case(o, key, c->keylen, "fixed", f->issue, old->text + f->val, f->vallen);
+            nfixed++;
+        } else
+            put_case(o, key, c->keylen, e && e->orig >= 0 ? "orig" : NULL, 0, val, c->vallen);
     }
-    free(kept);
-    if (fclose(o)) {
-        free(text);
-        return -1;
+    /* the cases of old whose key the run lacks */
+    for (i = 0; old && i < old->ncases; i++) {
+        const struct libscmp_case *c = &old->cases[i];
+
+        if (find_case(run1, old, c))
+            continue;
+        if (c->qual == LIBSCMP_QFIXED) {
+            put_case(o, old->text + c->key, c->keylen, "fixed", c->issue, old->text + c->val,
+                     c->vallen);
+            nfixed++;
+            fprintf(report, "%s: %.*s [fixed #%lu]: not in the original's run, kept as a case "
+                    "of the port only (did the scenario change?)\n", run1->name, KEY(old, c),
+                    (unsigned long)c->issue);
+        } else
+            fprintf(report, "%s: %.*s%s: not in the original's run any more, removed\n",
+                    run1->name, KEY(old, c), c->qual == LIBSCMP_QORIG ? " [orig]" : "");
     }
+    if ((r = close_sorted(o, &text, &len, out, report)))
+        return r;
     fprintf(report, "%s: %zu cases of the original, %zu [fixed #N] cases kept\n", run1->name,
             run1->ncases, nfixed);
-    *out = text;
     return 0;
 }
 
@@ -311,129 +278,99 @@ static struct libscmp_fix *fix_of(struct libscmp_fix *fixes, size_t n, const cha
 int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *exp,
                    struct libscmp_fix *fixes, size_t nfixes, char **out, FILE *report)
 {
-    struct pending *added = NULL;
-    size_t i, j, nadd = 0, k = 0, nchanged = 0, nbad = 0;
+    size_t i, j, nchanged = 0, nbad = 0;
     char *text = NULL;
     size_t len;
     FILE *o;
+    int r;
 
     *out = NULL;
-    /* the fixes whose key only the run has: after the run case before
-       them that exp has (its last line), or at the start */
-    if (!(added = malloc((nfixes + 1) * sizeof *added)))
+    if (!(o = open_memstream(&text, &len)))
         return -1;
+    fprintf(o, "# capture %s 1\n", exp->name);
+    for (i = 0; i < exp->ncases; i++) {
+        const struct libscmp_case *c = &exp->cases[i];
+        const char *key = exp->text + c->key;
+        const struct libscmp_entry *re = find_case(run, exp, c);
+        const struct libscmp_case *rc = re ? &run->cases[re->plain] : NULL;
+        struct libscmp_fix *fx = fix_of(fixes, nfixes, key, c->keylen);
+        int same = rc && rc->vallen == c->vallen
+                   && !memcmp(run->text + rc->val, exp->text + c->val, c->vallen);
+
+        if (c->qual == LIBSCMP_QFIXED) {
+            if (!rc) {
+                fprintf(report, "%s: %.*s [fixed #%lu]: not in the port's run\n", exp->name,
+                        KEY(exp, c), (unsigned long)c->issue);
+                nbad++;
+                continue;
+            }
+            put_case(o, key, c->keylen, "fixed", c->issue, run->text + rc->val, rc->vallen);
+            if (!same) {
+                fprintf(report, "%s: %.*s [fixed #%lu]: %.*s, was %.*s\n", exp->name, KEY(exp, c),
+                        (unsigned long)c->issue, VAL(run, rc), VAL(exp, c));
+                nchanged++;
+            }
+            if (fx)
+                fx->qualified++;
+            continue;
+        }
+        if (c->qual == LIBSCMP_QORIG) {
+            put_case(o, key, c->keylen, "orig", 0, exp->text + c->val, c->vallen);
+            if (fx && exp->entries[c->entry].fixed < 0)
+                fx->qualified++;
+            continue;
+        }
+        if (fx && !same) {
+            put_case(o, key, c->keylen, "orig", 0, exp->text + c->val, c->vallen);
+            if (rc) {
+                put_case(o, key, c->keylen, "fixed", fx->issue, run->text + rc->val, rc->vallen);
+                fprintf(report, "%s: %.*s: the pair [orig] %.*s, [fixed #%lu] %.*s\n", exp->name,
+                        KEY(exp, c), VAL(exp, c), (unsigned long)fx->issue, VAL(run, rc));
+            } else
+                fprintf(report, "%s: %.*s [orig]: not in the port's run, a case of the "
+                        "original only (#%lu)\n", exp->name, KEY(exp, c),
+                        (unsigned long)fx->issue);
+            fx->applied++;
+            nchanged++;
+            continue;
+        }
+        if (fx)
+            fx->same++;
+        else if (!same) {
+            if (rc)
+                fprintf(report, "%s: %.*s: the port gives %.*s, expected %.*s (not touched; "
+                        "--fix KEY#N makes the pair)\n", exp->name, KEY(exp, c), VAL(run, rc),
+                        VAL(exp, c));
+            else
+                fprintf(report, "%s: %.*s: not in the port's run (not touched)\n", exp->name,
+                        KEY(exp, c));
+        }
+        put_case(o, key, c->keylen, NULL, 0, exp->text + c->val, c->vallen);
+    }
+    /* the fixes whose key only the run has */
     for (j = 0; j < nfixes; j++) {
         const struct libscmp_entry *re = libscmp_find(run, fixes[j].key, fixes[j].keylen);
-        long anchor = -1, r;
+        const struct libscmp_case *c;
 
         if (!re || libscmp_find(exp, fixes[j].key, fixes[j].keylen))
             continue;
-        for (r = re->plain - 1; r >= 0; r--) {
-            const struct libscmp_entry *e = find_case(exp, run, &run->cases[r]);
-
-            if (e) {
-                anchor = e->plain > e->orig ? e->plain : e->orig;
-                if (e->fixed > anchor)
-                    anchor = e->fixed;
-                break;
-            }
-        }
-        added[nadd].anchor = anchor;
-        added[nadd].old = (size_t)re->plain;
-        nadd++;
+        c = &run->cases[re->plain];
+        put_case(o, run->text + c->key, c->keylen, "fixed", fixes[j].issue, run->text + c->val,
+                 c->vallen);
+        fprintf(report, "%s: %.*s [fixed #%lu]: added (%.*s), a case of the port only\n",
+                exp->name, KEY(run, c), (unsigned long)fixes[j].issue, VAL(run, c));
         fixes[j].applied++;
-    }
-    qsort(added, nadd, sizeof *added, cmp_pending);
-    if (!(o = open_memstream(&text, &len))) {
-        free(added);
-        return -1;
-    }
-    fprintf(o, "# capture %s 1\n", exp->name);
-    for (i = 0;; i++) {
-        for (; k < nadd && added[k].anchor == (long)i - 1; k++) {
-            const struct libscmp_case *c = &run->cases[added[k].old];
-            struct libscmp_fix *fx = fix_of(fixes, nfixes, run->text + c->key, c->keylen);
-
-            put_case(o, run->text + c->key, c->keylen, "fixed", fx->issue, run->text + c->val,
-                     c->vallen);
-            fprintf(report, "%s: %.*s [fixed #%lu]: added (%.*s), a case of the port only\n",
-                    exp->name, KEY(run, c), (unsigned long)fx->issue, VAL(run, c));
-            nchanged++;
-        }
-        if (i == exp->ncases)
-            break;
-        {
-            const struct libscmp_case *c = &exp->cases[i];
-            const char *key = exp->text + c->key;
-            const struct libscmp_entry *re = find_case(run, exp, c);
-            const struct libscmp_case *rc = re ? &run->cases[re->plain] : NULL;
-            struct libscmp_fix *fx = fix_of(fixes, nfixes, key, c->keylen);
-            int same = rc && rc->vallen == c->vallen
-                       && !memcmp(run->text + rc->val, exp->text + c->val, c->vallen);
-
-            if (c->qual == LIBSCMP_QFIXED) {
-                if (!rc) {
-                    fprintf(report, "%s: %.*s [fixed #%lu]: not in the port's run\n", exp->name,
-                            KEY(exp, c), (unsigned long)c->issue);
-                    nbad++;
-                    continue;
-                }
-                put_case(o, key, c->keylen, "fixed", c->issue, run->text + rc->val, rc->vallen);
-                if (!same) {
-                    fprintf(report, "%s: %.*s [fixed #%lu]: %.*s, was %.*s\n", exp->name, KEY(exp, c),
-                            (unsigned long)c->issue, VAL(run, rc), VAL(exp, c));
-                    nchanged++;
-                }
-                if (fx)
-                    fx->qualified++;
-                continue;
-            }
-            if (c->qual == LIBSCMP_QORIG) {
-                put_case(o, key, c->keylen, "orig", 0, exp->text + c->val, c->vallen);
-                if (fx && exp->entries[c->entry].fixed < 0)
-                    fx->qualified++;
-                continue;
-            }
-            if (fx && !same) {
-                put_case(o, key, c->keylen, "orig", 0, exp->text + c->val, c->vallen);
-                if (rc) {
-                    put_case(o, key, c->keylen, "fixed", fx->issue, run->text + rc->val, rc->vallen);
-                    fprintf(report, "%s: %.*s: the pair [orig] %.*s, [fixed #%lu] %.*s\n", exp->name,
-                            KEY(exp, c), VAL(exp, c), (unsigned long)fx->issue, VAL(run, rc));
-                } else
-                    fprintf(report, "%s: %.*s [orig]: not in the port's run, a case of the "
-                            "original only (#%lu)\n", exp->name, KEY(exp, c),
-                            (unsigned long)fx->issue);
-                fx->applied++;
-                nchanged++;
-                continue;
-            }
-            if (fx)
-                fx->same++;
-            else if (!same) {
-                if (rc)
-                    fprintf(report, "%s: %.*s: the port gives %.*s, expected %.*s (not touched; "
-                            "--fix KEY#N makes the pair)\n", exp->name, KEY(exp, c), VAL(run, rc),
-                            VAL(exp, c));
-                else
-                    fprintf(report, "%s: %.*s: not in the port's run (not touched)\n", exp->name,
-                            KEY(exp, c));
-            }
-            put_case(o, key, c->keylen, NULL, 0, exp->text + c->val, c->vallen);
-        }
-    }
-    free(added);
-    if (fclose(o)) {
-        free(text);
-        return -1;
+        nchanged++;
     }
     if (nbad) {
+        fclose(o);
         free(text);
         fprintf(report, "%s: refused: %zu [fixed #N] cases not in the port's run\n", exp->name, nbad);
         return 1;
     }
+    if ((r = close_sorted(o, &text, &len, out, report)))
+        return r;
     fprintf(report, "%s: %zu cases changed\n", exp->name, nchanged);
-    *out = text;
     return 0;
 }
 

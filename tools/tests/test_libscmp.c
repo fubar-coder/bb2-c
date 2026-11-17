@@ -493,31 +493,32 @@ static int accept2(const char *run1, const char *run2, const char *old)
 static void test_accept(void)
 {
     static const char run[] = HDR "r|a||1\t$0\nr|find||1\t$1\nr|c||1\tkept\n";
+    static const char sorted[] = HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1\t$1\n";
 
-    /* equal runs: the run's cases, unqualified */
-    CHECK(accept2(run, run, NULL) == 0 && !strcmp(result, run));
+    /* equal runs: the run's cases, unqualified, sorted (libscmp_sorted) */
+    CHECK(accept2(run, run, NULL) == 0 && !strcmp(result, sorted));
     CHECK(strstr(report, "prog: 3 cases of the original, 0 [fixed #N] cases kept\n"));
-    CHECK(accept2(run, run, HDR "r|a||1\t$5\nr|gone||1\t$5\n") == 0 && !strcmp(result, run));
+    CHECK(accept2(run, run, HDR "r|a||1\t$5\nr|gone||1\t$5\n") == 0 && !strcmp(result, sorted));
     CHECK(strstr(report, "prog: r|gone||1: not in the original's run any more, removed\n"));
     /* a [fixed #N] case is kept, the original's value becomes [orig] */
     {
         static const char old[] = HDR "r|a||1\t$0\nr|find||1 [orig]\t$9\nr|find||1 [fixed #7]\t$0\n"
                                   "r|c||1\tkept\n";
-        static const char want[] = HDR "r|a||1\t$0\nr|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$0\n"
-                                   "r|c||1\tkept\n";
+        static const char want[] = HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
+                                   "r|find||1 [fixed #7]\t$0\n";
 
         CHECK(accept2(run, run, old) == 0 && !strcmp(result, want));
         CHECK(strstr(report, "1 [fixed #N] cases kept"));
         /* again on its own output: nothing changes */
         CHECK(accept2(run, run, want) == 0 && !strcmp(result, want));
     }
-    /* a case of the port only stays after the case it followed; an [orig]
+    /* a case of the port only stays, in the order of the keys; an [orig]
        case alone stays [orig] or goes when the run lacks it */
     {
         static const char old[] = HDR "r|new0||1 [fixed #3]\t$3\nr|a||1\t$0\nr|new||1 [fixed #8]\t$5\n"
                                   "r|find||1 [orig]\t$1\nr|old||1 [orig]\t$4\nr|c||1\tkept\n";
-        static const char want[] = HDR "r|new0||1 [fixed #3]\t$3\nr|a||1\t$0\nr|new||1 [fixed #8]\t$5\n"
-                                   "r|find||1 [orig]\t$1\nr|c||1\tkept\n";
+        static const char want[] = HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
+                                   "r|new||1 [fixed #8]\t$5\nr|new0||1 [fixed #3]\t$3\n";
 
         CHECK(accept2(run, run, old) == 0 && !strcmp(result, want));
         CHECK(strstr(report, "prog: r|new||1 [fixed #8]: not in the original's run, kept as a case "
@@ -572,43 +573,43 @@ static int update(const char *run, const char *exp, const char *const *fix)
 
 static void test_update(void)
 {
-    static const char exp[] = HDR "r|a||1\t$0\nr|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$0\n"
-                              "r|old||1 [orig]\t$4\nr|c||1\tkept\n";
+    static const char exp[] = HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
+                              "r|find||1 [fixed #7]\t$0\nr|old||1 [orig]\t$4\n";
 
     /* the [fixed #N] values from the port, nothing else */
     CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$2\nr|c||1\tkept\n", exp, NULL) == 0);
-    CHECK(!strcmp(result, HDR "r|a||1\t$0\nr|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$2\n"
-                          "r|old||1 [orig]\t$4\nr|c||1\tkept\n"));
+    CHECK(!strcmp(result, HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
+                          "r|find||1 [fixed #7]\t$2\nr|old||1 [orig]\t$4\n"));
     CHECK(strstr(report, "prog: r|find||1 [fixed #7]: $2, was $0\n") && strstr(report, "1 cases changed"));
     /* an unqualified case the port gives otherwise: reported, not touched */
     CHECK(update(HDR "r|a||1\t$3\nr|find||1\t$0\nr|c||1\tkept\n", exp, NULL) == 0 && !strcmp(result, exp));
     CHECK(strstr(report, "prog: r|a||1: the port gives $3, expected $0 (not touched"));
     CHECK(strstr(report, "0 cases changed"));
-    /* --fix: the pair, at the place of the case */
+    /* --fix: the pair, [orig] first */
     {
         static const char *const fix[] = { "r|a||1#12", NULL };
 
         CHECK(update(HDR "r|a||1\t$3\nr|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0);
-        CHECK(!strcmp(result, HDR "r|a||1 [orig]\t$0\nr|a||1 [fixed #12]\t$3\nr|find||1 [orig]\t$1\n"
-                              "r|find||1 [fixed #7]\t$0\nr|old||1 [orig]\t$4\nr|c||1\tkept\n"));
+        CHECK(!strcmp(result, HDR "r|a||1 [orig]\t$0\nr|a||1 [fixed #12]\t$3\nr|c||1\tkept\n"
+                              "r|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$0\nr|old||1 [orig]\t$4\n"));
         CHECK(fixes[0].applied == 1 && strstr(report, "prog: r|a||1: the pair [orig] $0, [fixed #12] $3\n"));
         /* ... the port gives the expected value: nothing to fix */
         CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0 && !strcmp(result, exp));
         CHECK(fixes[0].applied == 0 && fixes[0].same == 1);
         /* ... the port lacks the case: [orig] alone */
         CHECK(update(HDR "r|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0);
-        CHECK(!strcmp(result, HDR "r|a||1 [orig]\t$0\nr|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$0\n"
-                              "r|old||1 [orig]\t$4\nr|c||1\tkept\n"));
+        CHECK(!strcmp(result, HDR "r|a||1 [orig]\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
+                              "r|find||1 [fixed #7]\t$0\nr|old||1 [orig]\t$4\n"));
         CHECK(fixes[0].applied == 1 && strstr(report, "r|a||1 [orig]: not in the port's run, a case of the original only (#12)"));
     }
-    /* --fix of a case only the port has: [fixed #N] after the case before it */
+    /* --fix of a case only the port has: [fixed #N], in the order of the keys */
     {
         static const char *const fix[] = { "r|new||1#9", "r|new0||1#9", NULL };
 
         CHECK(update(HDR "r|new0||1\t$8\nr|a||1\t$0\nr|find||1\t$0\nr|new||1\t$5\nr|c||1\tkept\n", exp, fix) == 0);
-        CHECK(!strcmp(result, HDR "r|new0||1 [fixed #9]\t$8\nr|a||1\t$0\nr|find||1 [orig]\t$1\n"
-                              "r|find||1 [fixed #7]\t$0\nr|new||1 [fixed #9]\t$5\nr|old||1 [orig]\t$4\n"
-                              "r|c||1\tkept\n"));
+        CHECK(!strcmp(result, HDR "r|a||1\t$0\nr|c||1\tkept\nr|find||1 [orig]\t$1\n"
+                              "r|find||1 [fixed #7]\t$0\nr|new||1 [fixed #9]\t$5\n"
+                              "r|new0||1 [fixed #9]\t$8\nr|old||1 [orig]\t$4\n"));
         CHECK(fixes[0].applied == 1 && fixes[1].applied == 1);
         CHECK(strstr(report, "prog: r|new||1 [fixed #9]: added ($5), a case of the port only\n"));
     }

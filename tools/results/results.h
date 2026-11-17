@@ -26,6 +26,7 @@ void cmd_libs_compare(CLI::App &app, int &status);
 void cmd_libs_accept(CLI::App &app, int &status);
 void cmd_libs_update(CLI::App &app, int &status);
 void cmd_libs_dump(CLI::App &app, int &status);
+void cmd_libs_sort(CLI::App &app, int &status);
 void cmd_fix_scope(CLI::App &app, int &status);
 void cmd_bug_orig_accept(CLI::App &app, int &status);
 void cmd_corpus_accept(CLI::App &app, int &status);

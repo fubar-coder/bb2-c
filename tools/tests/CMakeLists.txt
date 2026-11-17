@@ -14,6 +14,13 @@ target_link_libraries(test_libscmp_bin PRIVATE lib_libscmp lib_hunk)
 target_compile_options(test_libscmp_bin PRIVATE -Wno-unused-function)
 add_test(NAME libscmp_bin COMMAND test_libscmp_bin)
 
+# the order of the expected data's writers (lib/libscmp, libscmp_sorted)
+add_executable(test_libscmp_sort test_libscmp_sort.cpp)
+target_link_libraries(test_libscmp_sort PRIVATE lib_libscmp snitch::snitch)
+target_compile_options(test_libscmp_sort PRIVATE -Wall -Wextra)
+set_target_properties(test_libscmp_sort PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME libscmp_sort COMMAND test_libscmp_sort)
+
 # the sessions' supervisors (no emulator: the test is its own fake Amiberry)
 add_executable(test_amiga_emulation_supervisor test_amiga_emulation_supervisor.c)
 target_link_libraries(test_amiga_emulation_supervisor PRIVATE lib_amiga_emulation lib_hunk)
@@ -301,6 +308,15 @@ add_test(NAME libs_accept_lost_names COMMAND results libs-accept ${lc}/accept/lo
 set_tests_properties(libs_accept_lost_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "prog: r\\|ldiv\\|\\|1: lost d3: the original does not keep a stated register")
 
+# results libs-sort (the writers' order, in detail: test_libscmp_sort.cpp)
+# on a malformed file: refused with its line, nothing written
+file(WRITE ${lc}/sort/prog.txt "${lc_head}r|c||1\t$0\nr|c||1 [fixed #7]\t$5\n")
+add_test(NAME libs_sort_malformed COMMAND results libs-sort ${lc}/sort)
+set_tests_properties(libs_sort_malformed PROPERTIES WILL_FAIL ON)
+add_test(NAME libs_sort_malformed_names COMMAND results libs-sort ${lc}/sort)
+set_tests_properties(libs_sort_malformed_names PROPERTIES PASS_REGULAR_EXPRESSION
+	"sort/prog.txt:3: r\\|c\\|\\|1 is unqualified and qualified[^\n]*\n0 files written, 0 unchanged")
+
 # results fix-scope (design D12): the fix's own pair passes; a changed
 # unqualified case, a changed case of another issue and a change without a
 # "Fixes #N" line are named; a malformed file fails.  fix_scope_target: the
@@ -322,6 +338,14 @@ add_test(NAME fix_scope_two_fixes COMMAND results fix-scope --fixes 9 --fixes 7 
 	${lc}/scope/own)
 set_tests_properties(fix_scope_two_fixes PROPERTIES PASS_REGULAR_EXPRESSION
 	"cases changed in 1 programs, 0 not of the issues #9, #7\n")
+# the same cases in another order (a re-sort with libs-sort): no case
+# changed, also without a "Fixes #N" line
+file(WRITE ${lc}/scope/reordered/prog.txt "${lc_head}r|p||1 [fixed #8]\t$4\nr|d||1\t$1\n"
+	"r|p||1 [orig]\t$3\nr|c||1\t$0\n")
+add_test(NAME fix_scope_reordered COMMAND results fix-scope --log ${lc}/scope/nolog.txt
+	${lc}/scope/base ${lc}/scope/reordered)
+set_tests_properties(fix_scope_reordered PROPERTIES PASS_REGULAR_EXPRESSION
+	"fix-scope: 0 cases changed in 0 programs, 0 not of the issues")
 foreach(t
 		"unqualified;--fixes;7;other;prog: r\\|d\\|\\|1: changed \\(\\$1 -> \\$2\\)"
 		"other_issue;--fixes;7;other;prog: r\\|p\\|\\|1 \\[fixed #8\\]: changed \\(\\$4 -> \\$6\\)"

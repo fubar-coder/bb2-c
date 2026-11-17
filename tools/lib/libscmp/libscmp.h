@@ -34,7 +34,8 @@
  * For a set (obj: the C build, orig: the original) the cases of the
  * expected data that apply are the unqualified ones and the [fixed #N]
  * (obj) or [orig] (orig) ones; the run must have exactly their keys, with
- * the same values.  Order does not count.
+ * the same values.  Order does not count for the judge; the writers of
+ * expected data put the cases in one order (libscmp_sorted).
  *
  * A program in block mode writes its block observations raw to NAME.bin
  * beside NAME.txt, and in NAME.txt the place of each block case as
@@ -155,12 +156,12 @@ int libscmp_compare_dirs(const char *run_dir, const char *exp_dir, enum libscmp_
  * runs of the original.  The runs must be identical (else "test not
  * deterministic: NAME" and the differing cases) and hold no case "lost"
  * (a stated register the original does not keep).  The new file has the
- * run's cases in its order, unqualified, except: a key with a [fixed #N]
- * case in old gets the run's value as KEY [orig] and keeps the [fixed #N]
- * case behind it; a key that has only an [orig] case in old stays [orig].
- * A [fixed #N] case of old whose key the run lacks is kept (a case of the
- * port only) after the case it followed and reported; an [orig] case of
- * old whose key the run lacks is dropped and reported.
+ * run's cases, unqualified, except: a key with a [fixed #N] case in old
+ * gets the run's value as KEY [orig] and keeps the [fixed #N] case; a key
+ * that has only an [orig] case in old stays [orig].  A [fixed #N] case of
+ * old whose key the run lacks is kept (a case of the port only) and
+ * reported; an [orig] case of old whose key the run lacks is dropped and
+ * reported.  The cases are in the order of libscmp_sorted.
  * @param old   the committed expected data, or NULL
  * @param out   the new file (malloc'd), NULL when refused
  * @param report  the messages
@@ -202,9 +203,9 @@ void libscmp_fix_free(struct libscmp_fix *fix);
  * of every [fixed #N] case taken from the port's run.  A fix whose KEY is
  * an unqualified case of exp makes it the pair KEY [orig] (the old value)
  * and KEY [fixed #N] (the run's value), or KEY [orig] alone if the run
- * lacks the key; a fix whose KEY only the run has adds KEY [fixed #N]
- * after the case the run has before it.  Nothing else changes; an
- * unqualified case the port gives another value is reported.
+ * lacks the key; a fix whose KEY only the run has adds KEY [fixed #N].
+ * Nothing else changes but the order (libscmp_sorted); an unqualified case
+ * the port gives another value is reported.
  * @return 0 = *out written (malloc'd), 1 = refused (a [fixed #N] case the
  *         run lacks; *out NULL), -1 = out of memory
  */
@@ -221,6 +222,36 @@ int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *ex
 int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *const *only,
                         size_t nonly, struct libscmp_fix *fixes, size_t nfixes, FILE *out,
                         FILE *err);
+
+/* --- the order of the expected data ----------------------------------- */
+
+/**
+ * @brief The file f as the writers of expected data write it (libs-accept,
+ * libs-update, libs-sort): the header, then the keyed cases, then the
+ * BLOCK:N cases.  Keyed cases are ordered by ROUTINE, CHECK and VECTOR,
+ * each compared as text (bytewise on the escaped spelling, a shorter part
+ * that is a prefix first), then by OCC as a number; block cases by N as a
+ * number.  Of one key KEY [orig] comes directly before KEY [fixed #N].
+ * Every line ends with a newline.  Sorting a sorted file gives it again.
+ * @param out   the text (malloc'd, 0-terminated)
+ * @return 0 = ok, -1 = out of memory
+ */
+int libscmp_sorted(const struct libscmp_file *f, char **out);
+
+/** @brief libscmp_sorted of text parsed as expected data; 0 = ok, -1 = out
+ * of memory, -2 = malformed (err says where, as libscmp_parse). */
+int libscmp_sort_text(const char *text, size_t len, const char *path, char **out, char *err,
+                      size_t errlen);
+
+/**
+ * @brief libs-sort: every EXPECTED_DIR/NAME.txt (or the ones only names)
+ * rewritten in the order of libscmp_sorted; a file in that order already
+ * is not rewritten.  Only the order changes, never a case.
+ * @return 0 = done, 2 = error (a malformed, unreadable or unwritable file;
+ *         the other files are still sorted)
+ */
+int libscmp_sort_dirs(const char *exp_dir, const char *const *only, size_t nonly, FILE *out,
+                      FILE *err);
 
 /* --- the raw block observations NAME.bin -------------------------------
  *

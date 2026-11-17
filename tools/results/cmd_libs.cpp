@@ -1,14 +1,15 @@
 /*
- * results libs-compare, libs-accept, libs-update, libs-dump - the cases of
- * the library tests against the expected data, the expected data written
- * from two recording runs of the original or from a run of the port, and
- * the dump of a block from a run's raw block observations
- * (lib/libscmp/libscmp.h).
+ * results libs-compare, libs-accept, libs-update, libs-dump, libs-sort -
+ * the cases of the library tests against the expected data, the expected
+ * data written from two recording runs of the original or from a run of
+ * the port, the dump of a block from a run's raw block observations, and
+ * the expected data put in the writers' order (lib/libscmp/libscmp.h).
  *
  *   results libs-compare RUN_DIR EXPECTED_DIR --set obj|orig [--only NAME]... [--other DIR]
  *   results libs-accept RUN1_DIR RUN2_DIR EXPECTED_DIR [--only NAME]...
  *   results libs-update RUN_DIR EXPECTED_DIR [--only NAME]... [--fix KEY#N]...
  *   results libs-dump RUN_DIR BLOCK:N|KEY [--only NAME]...
+ *   results libs-sort EXPECTED_DIR [--only NAME]...
  *
  * Exit status 0 = equal or written, 1 = a case differs, is missing or
  * added, a program lacks a file, or the runs are refused (nothing
@@ -199,5 +200,30 @@ void cmd_libs_update(CLI::App &app, int &status)
         });
         for (libscmp_fix &f : fixes)
             libscmp_fix_free(&f);
+    });
+}
+
+void cmd_libs_sort(CLI::App &app, int &status)
+{
+    struct options {
+        std::string expected;
+        std::vector<std::string> only;
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand("libs-sort", "the expected data of the library tests in the order its writers use");
+    sub->add_option("EXPECTED_DIR", o->expected, "the expected data (libs/tests/expected)")->required();
+    cli::add_repeated(*sub, "--only", o->only, 1, "only this program (the other files stay as they are)")
+        ->type_name("NAME");
+    sub->footer("Rewrites every NAME.txt in the order libs-accept and libs-update write: the "
+                "header, the keyed cases by ROUTINE, CHECK and VECTOR as text and OCC as a "
+                "number, \"KEY [orig]\" directly before \"KEY [fixed #N]\", then the BLOCK:N cases "
+                "by N. Only the order changes; a file in that order is not rewritten. Exit status "
+                "0 done, 2 usage error or a malformed, unreadable or unwritable file.");
+    sub->callback([sub, o, &status] {
+        std::vector<const char *> only = c_strings(o->only);
+
+        status = prefixed(cli::name(*sub), [&](FILE *err) {
+            return libscmp_sort_dirs(o->expected.c_str(), only.data(), only.size(), stdout, err);
+        });
     });
 }

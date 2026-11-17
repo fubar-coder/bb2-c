@@ -10,7 +10,8 @@ original TED (`ted-oracle`), the cases of a library test run against
 the expected data `libs/tests/expected` (`libs-compare`), and that
 expected data written from two recording runs of the original
 (`libs-accept`) or from a run of the port (`libs-update`), the dump of a
-block of a library test run (`libs-dump`), and the cases
+block of a library test run (`libs-dump`), that expected data put in the
+order its writers use (`libs-sort`), and the cases
 of the expected data a branch changes beyond the issues it fixes
 (`fix-scope`), the recorded original of a bug-orig test written from
 two recording runs of the original (`bug-orig-accept`), the expected
@@ -22,8 +23,8 @@ data of a corpus pass written from two runs of the original
 `tools/lib/bugorigcmp`, `tools/lib/corpusexpect` and `tools/lib/perfbudget`, tested by
 `tools/tests/test_outmatch.c`, `test_prevcmp.c`, `test_previntended.c`,
 `test_cdtable.c`, `test_oracletable.c`, `test_libscmp.c`,
-`test_libscmp_bin.c`, `test_bugorigcmp.c`, `test_corpusexpect.c` and
-`test_perfbudget.c`.
+`test_libscmp_bin.c`, `test_libscmp_sort.cpp`, `test_bugorigcmp.c`,
+`test_corpusexpect.c` and `test_perfbudget.c`.
 
 ## Usage
 
@@ -49,6 +50,8 @@ SUBCOMMANDS:
   libs-update                 the [fixed #N] cases of the library tests from a run of the port
   libs-dump                   a block or a bytes case of the library tests' block observations,
                               from the run's NAME.bin
+  libs-sort                   the expected data of the library tests in the order its writers
+                              use
   fix-scope                   the cases of the expected data a branch changes beyond its issues
   bug-orig-accept             the recorded original of a bug-orig test from two recording runs
                               of the original
@@ -318,11 +321,12 @@ differing block also its first differing observation from the runs'
 `NAME.bin` (as `libs-compare --other`); a case `lost ...` (a stated
 register the original does not keep), also an observation `lost ...`
 inside a block (`NAME: KEY (BLOCK:N): VALUE: ...`), is refused. The file gets
-the run's cases in their order, unqualified, except: a key with a
+the run's cases, unqualified, except: a key with a
 `[fixed #N]` case keeps that case and gets the run's value as `[orig]`; a
 key with only an `[orig]` case stays `[orig]`; a `[fixed #N]` case whose
 key the run lacks is kept (a case of the port only) and reported; an
-`[orig]` case whose key the run lacks is removed and reported. The
+`[orig]` case whose key the run lacks is removed and reported. The cases
+are written in the order of `libs-sort`. The
 programs are those of the two run directories and of `EXPECTED_DIR`, or
 the ones `--only` names (the other files stay as they are); expected data
 without runs is refused. Nothing is written unless every program is
@@ -358,7 +362,8 @@ value is reported. `--fix KEY#N` (KEY as it is written in the file, N the
 issue) makes the unqualified case `KEY` the pair `KEY [orig]` (the old
 value) and `KEY [fixed #N]` (the port's value), or `KEY [orig]` alone if
 the port lacks the case; a KEY only the port's run has becomes
-`KEY [fixed #N]` alone, after the case the run has before it. A `--fix`
+`KEY [fixed #N]` alone. The cases are written in the order of
+`libs-sort`. A `--fix`
 must apply in exactly one program (else `--only` names the program); one
 whose port value is the expected one, or whose key is qualified already,
 is refused. The programs are those of `EXPECTED_DIR` or the ones `--only`
@@ -395,6 +400,41 @@ the test program writes for a plain bytes case. The lines are appended
 to `RUN_DIR/NAME.dump` (beside a dump the program wrote) and each written
 file is named on stdout. The programs are those with a `NAME.bin`, or the
 ones `--only` names.
+
+### libs-sort
+
+```
+Usage: results libs-sort [OPTIONS] EXPECTED_DIR
+
+the expected data of the library tests in the order its writers use
+
+POSITIONALS:
+  EXPECTED_DIR TEXT REQUIRED  the expected data (libs/tests/expected)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --only NAME         only this program (the other files stay as they are)
+
+Rewrites every NAME.txt in the order libs-accept and libs-update write: the
+header, the keyed cases by ROUTINE, CHECK and VECTOR as text and OCC as a
+number, "KEY [orig]" directly before "KEY [fixed #N]", then the BLOCK:N cases by
+N. Only the order changes; a file in that order is not rewritten. Exit status 0
+done, 2 usage error or a malformed, unreadable or unwritable file.
+```
+
+Puts the expected data `EXPECTED_DIR/NAME.txt` in the order in which
+`libs-accept` and `libs-update` write it (`libscmp_sorted` in
+`tools/lib/libscmp/libscmp.h`; `tests/README.md`, "Expected data"): the
+header, then the keyed cases ordered by `ROUTINE`, `CHECK` and `VECTOR`,
+each compared as text (bytewise on the escaped spelling, a part that is
+a prefix of the other first), then by `OCC` as a number, `KEY [orig]`
+directly before `KEY [fixed #N]`; then the `BLOCK:N` cases by `N`. No
+case is added, removed or changed, and every line ends with a newline.
+Each rewritten file is named on stdout; a file in that order already is
+not rewritten. A malformed file is an error and stays as it is; the
+other files are still sorted. The programs are those of `EXPECTED_DIR`,
+or the ones `--only` names. The judge (`libs-compare`) and `fix-scope`
+ignore the order, so a sort changes no result.
 
 ### fix-scope
 
@@ -600,7 +640,7 @@ build directories and writes its report to stdout; `cd-update` and
 lists of hashes and writes the third; `libs-compare` reads two
 directories and writes its report to stdout, `libs-accept` and
 `libs-update` read the run directories and rewrite files of the expected
-data, `libs-compare` also writes `NAME.block-N.obs` into the run
+data, `libs-sort` rewrites files of the expected data, `libs-compare` also writes `NAME.block-N.obs` into the run
 directory, `libs-dump` appends to `NAME.dump` there, `fix-scope` reads
 two directories (and a log) and writes its report to stdout,
 `bug-orig-accept` reads two runs and rewrites `OUT`, `corpus-accept`
@@ -628,8 +668,9 @@ stdout.
   written, a malformed `--intended` entry or another error (`prev`); a
   malformed run or expected file, or a program `--only` names without
   files (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
-  `fix-scope`, `bug-orig-accept`, `corpus-accept`), a file that cannot be
-  written (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
+  `libs-sort`, `fix-scope`, `bug-orig-accept`, `corpus-accept`), a file
+  that cannot be written (`libs-compare`, `libs-accept`, `libs-update`,
+  `libs-sort`, `libs-dump`,
   `bug-orig-accept`, `corpus-accept`); a malformed observation or budget
   file (`perf`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
@@ -654,6 +695,9 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
   emulator tests (`libs/tests/emulator.cmake`) and the targets
   `libs-capture` and `libs-update` (`libs/tests/expected.cmake`); the tests
   `libs_compare_*`, `libs_accept_*` and `libs_dump_*`
+  (`tools/tests/CMakeLists.txt`).
+* `libs-sort`: by hand, after a hand edit of the expected data (the
+  writers sort themselves); the tests `libs_sort_*`
   (`tools/tests/CMakeLists.txt`).
 * `bug-orig-accept`: the target `bug-orig-record`
   (`tests/bug-orig/record.cmake`); the tests `bug_orig_accept`
