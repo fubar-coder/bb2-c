@@ -146,6 +146,8 @@ kind F):
 * OpenFontPrefs returns 0 when the AllocMem of its 16 KB buffer fails;
   the original did not check it and read `ENV:SYS/Font.Prefs` to address
   0, over the exception vectors and the ExecBase pointer (#756).
+* OpenFontPrefs frees the buffer of an OpenFontPrefs before; the original
+  lost it, 16 KB of AllocMem until the next reboot (#757).
 
 ## BUG(orig)
 
@@ -159,8 +161,7 @@ kind F):
   signed branch) (#753).
 * ASCRaw/RawASC do not check the range (see DIFF); RawASC searches until
   it finds the character somewhere (#744).
-* A second OpenFontPrefs loses the first buffer (#757).
-  DefaultFontHeight/Name step through the
+* DefaultFontHeight/Name step through the
   whole buffer by 164 bytes (the size of a FONT chunk), also through the
   uncleared memory behind the file, and read the last step up to 26
   bytes behind the buffer (#745).

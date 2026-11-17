@@ -49,11 +49,14 @@
  *     RawASC of a character not in the table searches until it finds the
  *     byte somewhere (DIFF: what is behind the table differs, see the
  *     notes) (#744).
- *   - A second OpenFontPrefs loses the first buffer (#757).
- *     DefaultFontHeight/Name step through the buffer by 164 bytes (the
- *     size of a FONT chunk) until its end, through the uncleared memory behind the file, and
- *     read the last chunk up to 26 bytes behind the buffer (#745).
+ *   - DefaultFontHeight/Name step through the buffer by 164 bytes (the
+ *     size of a FONT chunk) until its end, through the uncleared memory
+ *     behind the file, and read the last chunk up to 26 bytes behind the
+ *     buffer (#745).
  *
+ * Fixed (intended deviation, #757): OpenFontPrefs frees the buffer of an
+ * OpenFontPrefs before; the original lost it (16 KB of AllocMem until
+ * the next reboot).
  * Fixed (intended deviation, #747): EZRequestArgs ends the format text
  * it builds with a 0; the original wrote none, so a shorter text than
  * the one before kept the end of the old one (more formats than
@@ -1159,7 +1162,8 @@ static ULONG BLITZ_ROUTINE closefontprefs_c(void)
  *
  * Without memory for the buffer it returns BB_FALSE; fixed (#756): the
  * original did not check AllocMem and read the file to address 0.
- * BUG(orig): a second OpenFontPrefs loses the first buffer (#757).
+ * The buffer of an OpenFontPrefs before is freed first; fixed (#757):
+ * the original lost it.
  * @return d0: BB_TRUE if it is a FORM PREF with PRHD and a FONT chunk
  *         behind it; else BB_FALSE, the buffer freed (the tail call of
  *         CloseFontPrefs, which returns 0)
@@ -1168,11 +1172,10 @@ static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
 {
     const ULONG *p;
 
+    closefontprefs_c();                                 /* fixed (#757) */
     fontloc = AllocMem(FONTBUF, 0);
-    if (!fontloc) {
-        fontpos = NULL;
+    if (!fontloc)
         return BB_FALSE;                                /* fixed (#756) */
-    }
     fontfh = Open((CONST_STRPTR)fontname, MODE_OLDFILE);
     if (!fontfh)
         return closefontprefs_c(), BB_FALSE;
