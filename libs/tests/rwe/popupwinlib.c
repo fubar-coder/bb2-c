@@ -23,8 +23,8 @@
  * their contents (copied with ClipBlit, hashed), bit 1 of CIA-A PRA
  * relative to the start (#468: the original toggles it for a menu with sub
  * menus, fixed in the C build);
- * the number of waits and menu levels, d0 (BUG(orig) #471: always 0), the
- * kept registers; checked: no memory lost after the first popup (the
+ * the number of waits and menu levels, d0 (the item chosen; the
+ * original: always 0, #471), the kept registers; checked: no memory lost after the first popup (the
  * first windows leave memory in the system's caches).
  * Covered: init; PopUpWindow with three levels: highlighting items, a
  * separator, the mouse outside all windows, an INACTIVEWINDOW message,
@@ -231,6 +231,19 @@ static void evwith(ULONG cls, int level)
         script[nscript++] = (struct ev){ cls, level, 0, 0, 1 };
 }
 
+/* PopUpWindow's d0: the number of the item + 1, 0 for none, $FFFFFFFF
+   for anything else */
+static ULONG itemno(ULONG d0)
+{
+    ULONG o = d0 - (ULONG)items[0];
+
+    if (!d0)
+        return 0;
+    if (d0 < (ULONG)items[0] || o >= sizeof items || o % sizeof items[0])
+        return 0xffffffffUL;
+    return o / sizeof items[0] + 1;
+}
+
 static void popup(const char *what, int first, int levels)
 {
     int k, i, most = 0;
@@ -245,7 +258,9 @@ static void popup(const char *what, int first, int levels)
     script_on = 0;
     while (GetMsg(replyport))
         ;
+    /* the key keeps the original's text; the C build returns the item */
     BOTH("d0 0 (BUG(orig) #471)", R.d[0] == 0);
+    OBS("d0: the item chosen (its number + 1, 0: none)", itemno(R.d[0]));
     BOTH("the whole script", nsent == nscript);
     OBS("waits", nev);
     for (k = 0; k < nev && k < MAXEV; k++) {

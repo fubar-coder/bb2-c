@@ -4,8 +4,9 @@ Reflective Images, 1994. Two commands:
 
 * `PopUpInit`: the message port for the windows, if there is none (init
   makes it).
-* `PopUpWindow screen#,*items`: the menu `items` at 0,0 of the screen of
-  screenslib's object; returns when a mouse button is pressed.
+* `PopUpWindow screen#,*items` (a statement and a function): the menu
+  `items` at 0,0 of the screen of screenslib's object; returns when a
+  mouse button is pressed, with the address of the item chosen (0: none).
 
 The number: none is known; ours is 16 (RWE's `RESERVEDLIB_10`;
 AmiBlitz3's port took 24, RWE's `#richunkylib`).
@@ -14,8 +15,10 @@ AmiBlitz3's port took 24, RWE's `#richunkylib`).
   `build/amiga/rwelibsrc/popuplib/popupwinlib.bb`), with `#GADTOOLS = 0`
   as the source builds. Its `.bak` is the same with a debug `ILLEGAL`.
 * **Reference:** the reference build of the source (`REFERENCE
-  refbuild`, stage D: no binary exists). The declarations equal it
-  (ctest `rwe_declarations_popupwinlib`).
+  refbuild`, stage D: no binary exists). The declarations equal it but
+  for PopUpWindow's kind (#471,
+  `popupwinlib.declarations-intended.txt`; ctest
+  `rwe_declarations_popupwinlib`).
 * **C file:** `libs/userlibs/rwe/popupwinlib.c`; test
   `libs/tests/rwe/popupwinlib.c` (snitch case "rwe popupwinlib").
 
@@ -71,12 +74,10 @@ kind F):
   window from the shared port; the original replied every message, also
   those already queued for the other levels: a mouse button pressed
   while a sub menu closed was lost (#469).
-
-## BUG(orig), kept
-
-* **PopUpWindow always returns 0.** The menu levels return the chosen
-  item, but the result is `selecteditem`, which is only cleared. (It is
-  a statement anyway.) (#471)
+* PopUpWindow is a statement and a function: it returns the address of
+  the item chosen (the item highlighted when a mouse button was
+  pressed), 0 for none. The original was a statement only, and its d0
+  was `selecteditem`, which nothing but a clear wrote: always 0 (#471).
 
 Not a defect: the item count at +8 of the structure is the number of
 items − 1, but nothing uses the field.
@@ -108,8 +109,8 @@ Observed:
 * per snapshot: the popup windows (position, size, IDCMP), their
   contents (copied with ClipBlit, hashed), bit 1 of CIA-A PRA relative
   to the start;
-* the number of waits and of menu levels opened, d0, the kept
-  registers;
+* the number of waits and of menu levels opened, d0 (the number of the
+  item chosen; 0 in the original, #471), the kept registers;
 * no memory lost after the first popup (a check of the program's own,
   not a case). The first windows leave memory in the system's caches
   (layers' ClipRects …), so the memory is counted from there.
@@ -131,5 +132,7 @@ Covered:
 * PopUpInit (the original makes a new port and leaves the old one, which
   the test deletes; the C build keeps the port of init).
 
-A failed AllocVec: the bug-orig test `popupwinlib-allocvec-unchecked`
+PopUpWindow as a function (driven by a vertical blank interrupt of the
+program): the bug-orig test `popupwinlib-result-lost`. A failed
+AllocVec: the bug-orig test `popupwinlib-allocvec-unchecked`
 (through inject). Not covered: a failed OpenWindow; real mouse input.

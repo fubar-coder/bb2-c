@@ -1,0 +1,5 @@
+# the intended differences of popupwinlib against the reference build of its
+# source (blitzlib compare, docs/development.md "Intended differences")
+# #471: PopUpWindow is declared !acommand{#long} (a statement and a function
+# returning the item chosen); the original's is !astatement
+lib 16: entry 1 PopUpWindow +$0: $00 != $03

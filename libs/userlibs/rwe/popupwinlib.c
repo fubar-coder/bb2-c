@@ -3,7 +3,8 @@
  * borderless windows.
  *   PopUpInit                 the message port for the windows, if none
  *   PopUpWindow(screen#,*items)  the menu `items` at 0,0 of the screen;
- *                             waits until a mouse button is pressed
+ *                             waits until a mouse button is pressed;
+ *                             the item chosen or 0
  *
  * C translation of rwelibsrc/popuplib/popupwinlib.bb (with #GADTOOLS = 0,
  * as the source builds); reference: the reference build of the source
@@ -33,10 +34,6 @@
  * WinInnerCls, BitMaptoWin, WSizeLimits, WinGadgetHit) and the GadTools
  * variant of WaitWinEvent (#GADTOOLS = 0).
  *
- * BUG(orig), kept:
- *   - PopUpWindow always returns 0: the item chosen is returned by the
- *     menu levels, but the result is `selecteditem`, which is only
- *     cleared (#471).
  * Fixed (intended deviations):
  *   - Sizing a menu with sub menus leaves bit 1 of CIA-A PRA ($BFE001:
  *     the power LED / audio filter) as it is; the original toggled it
@@ -51,6 +48,11 @@
  *     that window from the shared port; the original replied every
  *     message, also those already queued for the other levels (a mouse
  *     button pressed while a sub menu closes was lost) (#469).
+ *   - PopUpWindow is a statement and a function (BLITZ_ACOMMAND): it
+ *     returns the address of the item a mouse button chose, 0 for none
+ *     (no active item, a menu level without memory or window); the
+ *     original was a statement only, and its d0 was `selecteditem`,
+ *     which nothing but a clear wrote: always 0 (#471).
  * Not a defect: the item number count at +8 of the structure is the
  * number of items - 1, but nothing uses that field.
  */
@@ -83,7 +85,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_popupinit, 0, 0);
 BLITZ_NAME("PopUpInit", "-- initialise the popup window system");
 
-BLITZ_ASTATEMENT();
+BLITZ_ACOMMAND(BL_LONG);        /* Fixed (#471): the original's is !astatement */
 BLITZ_ARGS(BL_WORD, BL_LONG);
 BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_dopopup, 0, 0);
@@ -131,7 +133,6 @@ static struct Screen *myscreen;
 static struct RastPort myrast;
 static struct TextFont *myfont;
 static UWORD fontheight, baseline;
-static ULONG selecteditem;
 static UBYTE hassubs[2];        /* Dc.b 0,0: SF/ST the first, TST.w both */
 
 /* the event of WaitWinEvent: the IntuiMessage from Class on, 8 longs */
@@ -591,26 +592,29 @@ static void BLITZ_ROUTINE popupinit_c(void)
 
 /**
  * @brief PopUpWindow Screen#,*items: shows the menu `items` at 0,0 of the
- * screen and waits until a mouse button is pressed.
+ * screen, waits until a mouse button is pressed and returns the item
+ * chosen; a statement and a function.
  *
  * Each level is a borderless window with the screen's font; moving over
  * an item highlights it, an item with a sub menu opens it to the right.
- * BUG(orig) (#471): the result is selecteditem, which is only cleared:
- * always 0.  Fixed (#467): a level without memory for its structure
- * closes all levels.  Fixed (#469): closing a level replies only the
- * messages of its window, those for the other levels stay queued.
+ * Fixed (#471): the result is the item DoPop returns; the original
+ * returned selecteditem, which is only cleared (always 0), and was a
+ * statement only.  Fixed (#467): a level without memory for its
+ * structure closes all levels.  Fixed (#469): closing a level replies
+ * only the messages of its window, those for the other levels stay
+ * queued.
  * @param scr    a0: the screen object (screenslib; first long = the
  *               Screen)
  * @param items  d1: the first item of the menu
- * @return d0: 0
+ * @return d0: the address of the item highlighted when the mouse button
+ *         was pressed, 0 for none (no item highlighted, a level without
+ *         memory or without its window)
  */
 static ULONG BLITZ_ROUTINE dopopup_c(struct Screen **scr BL_REG(a0), struct pitem *items BL_REG(d1))
 {
     myscreen = *scr;
     inittemprast();
-    selecteditem = 0;
-    dopop(items, NULL, 0, 0);
-    return selecteditem;
+    return dopop(items, NULL, 0, 0);
 }
 
 /* Registers: the original keeps a3-a6 in PopUpWindow and changes d0-d7/

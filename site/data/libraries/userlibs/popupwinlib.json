@@ -13,8 +13,9 @@
     },
     {
       "name": "PopUpWindow",
-      "kind": "statement",
+      "kind": "command",
       "help": "Screen#,*items",
+      "result": "long",
       "forms": [
         {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
       ]
