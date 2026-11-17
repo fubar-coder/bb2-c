@@ -21,19 +21,24 @@
  * RTRevision (d0's high word), RTReturnValue after every call; all three
  * forms of RTEZRequest with and without title (the tag list reset
  * afterwards); RTEZFlagsRequest both forms with and without gadgets (the
- * title in the wrong list, BUG(orig), #455); RTRequest; RTEZLoadFile,
+ * title in the wrong list, BUG(orig), #455) and with an empty title after
+ * them; RTRequest; RTEZLoadFile,
  * RTEZSaveFile, RTFileRequest, RTEZPathRequest with ok/cancel and the
  * directory empty, ending in ':' or not; RTEZSetDefaultDirectory and
  * RTEZSetPattern 0-4, RTEZFreePattern 0-3 (their flags seen by the next
  * requester); RTEZMultiLoadFile (a list, cancel, a list at an address
  * ending in $00: the original returns its address, the fix -1, #462)
- * and RTNextPathEntry to the end;
+ * and RTNextPathEntry to the end, then after RTEZFreePattern 3 and 2
+ * (#456);
  * RTEZFontRequest, RTEZScreenModeRequest both forms (through
  * rtFontRequestA, BUG(orig), #466), RTEZPaletteRequest; RTEZGetLong both forms
  * (cancel returns the value, BUG(orig), #457), RTEZGetLongRange both forms;
- * RTEZGetString both forms, ok and cancel; RTLockWindow/RTUnlockWindow;
- * the asynchronous requesters (up, not up, check, end); finit (seven
- * rtFreeRequest, rtFreeFileList, the library closed).  Then, with the
+ * RTEZGetString both forms, ok and cancel, with the memory each call
+ * keeps (#458); RTLockWindow/RTUnlockWindow;
+ * the asynchronous requesters (up, not up, check, end; the palette one
+ * also after RTEZRequest, for RTReturnValue); finit (seven
+ * rtFreeRequest, rtFreeFileList, the library closed) and the fake's open
+ * count left by the failed inits.  Then, with the
  * fake removed, a real reqtools.library V38 of the system for what needs
  * no user: init, IsReqToolsActive, RTVersion/RTRevision,
  * RTEZSetDefaultDirectory/RTEZSetPattern 0-4, finit - only where there is
@@ -495,6 +500,9 @@ static void ezrequests(void)
         DOREQ(E_FLAGS, 1, strargs("Flags title", "Body", t ? "" : "Ok");
               R.d[3] = 0x10; R.d[4] = 1);
     }
+    /* an empty title after the ones above: the title tag's value */
+    strcpy(VEC, "title \"\"");
+    DOREQ(E_FLAGS, 0, strargs("", "Body", "Ok"); R.d[3] = 0x00000208);
     ROUT = "RTEZRequest";
     strcpy(VEC, "after RTEZFlagsRequest, no title");
     DOREQ(E_EZREQ, 0, strargs("", "x", "y"));
@@ -617,6 +625,24 @@ static void multiload(void)
             logcheck();
         }
     }
+
+    /* RTEZFreePattern 3, then 2 after a new pattern: the flags the next
+       multi-load gets (its tag list in the log) */
+    fk_ret = 0;
+    for (n = 3; n >= 2; n--) {
+        if (n == 2) {
+            ROUT = "RTEZSetPattern";
+            strcpy(VEC, "multi-load again");
+            DOREQ(E_SETPAT, 0, R.d[0] = 3; R.d[1] = (ULONG)"#?");
+        }
+        ROUT = "RTEZFreePattern";
+        sprintf(VEC, "multi-load, requester %d", n);
+        DO1(ENT(LIB, E_FREEPAT, 0), R.d[0] = n);
+        OBS("d0", R.d[0]);
+        ROUT = "RTEZMultiLoadFile";
+        sprintf(VEC, "after RTEZFreePattern %d", n);
+        DOREQ(E_MULTI, 0, strargs("Multi", NULL, NULL));
+    }
 }
 
 static void others(void)
@@ -670,14 +696,20 @@ static void others(void)
     }
 
     ROUT = "RTEZGetString";
+    /* the memory the call keeps (memlib's buffer of MaxChars bytes): this
+       task's balance from the call on, after its observations */
+    rwe_mem_start();
     for (k = 0; k < 6; k++) {
+        struct rwe_memmark mm;
         sprintf(VEC, "form %d %s", k & 1, k >= 4 ? "empty" : k & 2 ? "cancel" : "ok");
         fk_ret = !(k & 2);
         fk_str = k >= 4 ? "" : "typed text";
         DOREQ(E_GETSTR, k & 1, strargs("String", "Enter it", NULL); R.d[2] = 40;
-              R.d[3] = (ULONG)"default");
+              R.d[3] = (ULONG)"default"; mm = rwe_mem_mark());
         STRRES();
+        OBS("memory kept", rwe_membal - mm.bal);
     }
+    rwe_mem_stop();
 
     ROUT = "RTLockWindow";
     {
@@ -724,6 +756,16 @@ static void async(void)
         fk_ret = 1;
         DOREQ(E_ENDASP, 0, (void)0);
     }
+    /* RTReturnValue after a palette requester that follows another
+       result (above it follows RTASyncRequest's, the same value) */
+    strcpy(VEC, "not up, after RTEZRequest");
+    ROUT = "RTEZRequest";
+    fk_ret = 9;
+    DOREQ(E_EZREQ, 0, strargs("Title", "Body", "Ok"));
+    ROUT = "RTASyncPaletteRequest";
+    fk_ret = 2;
+    DOREQ(E_ASYNCP, 0, strargs("Async palette", NULL, NULL); R.d[1] = 7;
+          R.a[1] = (ULONG)obj);
 }
 
 /* with the real reqtools.library, what needs no user: init (seven real
@@ -846,8 +888,8 @@ int main(int argc, char **argv)
     logcheck();
     OBS("library closed", opens);
     BOTH("seven requesters and the file list freed", nlog == 8);
-    check("neilsreqtoolslib: fake closed (only the failed inits' opens left)",
-          fake->lib_OpenCnt == 7);
+    /* the opens left: those of the failed inits that did not close it */
+    OBS("fake open count", fake->lib_OpenCnt);
 
     markregs(&R);
     callregs(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, 0, 0);
