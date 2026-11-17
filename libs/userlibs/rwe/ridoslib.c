@@ -74,6 +74,12 @@
  * runtime error checking an id outside 0..63 is the runtime error
  * "Notify number must be 0 to 63" (notifyidchk); release code unchanged
  * (an invalid argument).
+ * Fixed (intended deviation, #1081): the DOS list stayed locked after the
+ * program when it ended without FreeDeviceList (the original's finit has
+ * the call commented out) or after a second GetDeviceList (one
+ * FreeDeviceList released one of two locks): every later writer of the
+ * list (Assign, a disk change) waited for ever.  finit now unlocks a list
+ * still locked, and GetDeviceList unlocks it before it locks again.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -459,6 +465,9 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
  * All 64 entries are looked at, from id 63 down (fixed, #621: the
  * original stopped when the counter was 0).  The port is deleted only if
  * dos.library was open (always, where CreateMsgPort exists: no defect).
+ * A DOS list GetDeviceList still holds is unlocked before dos.library is
+ * closed (fixed, #1081: the original had the call commented out, the list
+ * stayed locked after the program).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -470,6 +479,11 @@ static void BLITZ_ROUTINE libfinit_c(void)
     }
     if (!dosbase_)
         return;
+    if (mydoslist) {                                    /* fixed (#1081) */
+        struct DosLibrary *dos = dosbase_;
+        UnLockDosList(doslistflags);
+        mydoslist = NULL;
+    }
     CloseLibrary(&dosbase_->dl_lib);
     dosbase_ = NULL;
     if (msgport)
@@ -483,7 +497,9 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * (LockDosList(flags | LDF_READ)).
  *
  * The current entry is the list itself until NextDevice; its dol_Type is
- * noted for DeviceEntryType (#622).
+ * noted for DeviceEntryType (#622).  A list still locked by an earlier
+ * GetDeviceList is unlocked first (fixed, #1081: the original locked it a
+ * second time, and one FreeDeviceList released only one of the locks).
  * @param flags  d0.w: the LDF_ flags
  * @param dos    a6: the program's dos base (!libs #doslib,#la6)
  * @return d0: BB_TRUE, BB_FALSE if LockDosList fails
@@ -491,6 +507,8 @@ static void BLITZ_ROUTINE libfinit_c(void)
 static BB_BOOL BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
                                            struct DosLibrary *dos BL_REG(a6))
 {
+    if (mydoslist)                                      /* fixed (#1081) */
+        UnLockDosList(doslistflags);
     doslistflags = flags | LDF_READ;                    /* BSET #0 */
     mydoslist = LockDosList(doslistflags);
     if (!mydoslist)

@@ -103,6 +103,16 @@ kind F):
   unchanged, an invalid argument (#626; tests `ridoslib-notify-id-range`,
   `ridoslib-remnotify-id-range`; the declarations differ from the
   reference as `ridoslib.declarations-intended.txt` lists).
+* finit unlocks a DOS list that GetDeviceList still holds (before it
+  closes dos.library), and GetDeviceList unlocks a list it still holds
+  before it locks again. The original's finit has the call commented out
+  (`;  BSR _unlockdoslist`), and its GetDeviceList locked a second time
+  and overwrote the first lock: after a program that ended without
+  FreeDeviceList, or with two GetDeviceList and one FreeDeviceList, the
+  list stayed locked for reading and every later writer (Assign, a disk
+  change, mounting) waited for ever (#1081; tests
+  `ridoslib-doslist-locked-at-end`, `ridoslib-getdevicelist-twice`,
+  through inject's `doslist`).
 
 ## BUG(orig)
 

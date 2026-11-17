@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+locked
+inject: rc=0
+inject: doslist: free
+rc=0

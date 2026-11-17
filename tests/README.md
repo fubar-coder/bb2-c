@@ -1264,6 +1264,9 @@ e.g. the AN_SemCorrupt that exec raises for one ReleaseSemaphore too
 many and would otherwise show later, at a random moment; a dead-end
 alert stops the process, the session ends by its time limit),
 recorded allocations and FreeMem of another size than allocated;
+with `doslist` whether the DOS list can be locked for writing after the
+program (a read lock left behind is reported and released, so the
+session goes on: `ridoslib-doslist-locked-at-end`);
 with `freefill=XX` every block of the process is set to XX at its
 FreeMem, as a memory checker does (a read after the FreeMem finds XX,
 `animlib-freeanim-after-free`);
