@@ -135,9 +135,10 @@ scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_neilsreqtoolslib.txt` recorded from the
 original.
 
-reqtools.library 39.3 is in the emulator's system, but its requesters
-need a user. So the test puts a fake reqtools.library before it in the
-library list (priority 10). Each fake function logs its registers, the
+The requesters need a user, and the emulator's system has no
+reqtools.library (none of the three hardfiles has it in `Libs`). So the
+test puts a fake reqtools.library in the library list (priority 10:
+before a real one, if there is one). Each fake function logs its registers, the
 tag list (pairs up to TAG_DONE) and the strings and buffers it gets –
 pointers into the library, into the test's requesters and into the
 string area made independent of the layout – and answers with a
@@ -163,8 +164,10 @@ end; RTEZFontRequest, RTEZScreenModeRequest both forms, ok and cancel
 RTEZGetLongRange, RTEZGetString in all forms, ok and cancel;
 RTLockWindow/RTUnlockWindow; both asynchronous requesters up and not up
 with their check and end; finit (seven rtFreeRequest, rtFreeFileList,
-CloseLibrary). Then with the real reqtools.library: init, IsReqToolsActive,
-RTVersion/RTRevision, RTEZSetDefaultDirectory/RTEZSetPattern 0-4, finit.
+CloseLibrary). Then, only on a system with a real reqtools.library V38
+(not the emulator's: there the run prints `no reqtools.library V38 - the
+real one not tested`): init, IsReqToolsActive, RTVersion/RTRevision,
+RTEZSetDefaultDirectory/RTEZSetPattern 0-4, finit.
 Besides these: the result string of one file requester, the font
 requester call of RTEZScreenModeRequest, the missing title of
 RTEZFlagsRequest, RTEZGetLong's value on cancel, the multi-load's

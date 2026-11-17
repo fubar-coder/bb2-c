@@ -33,10 +33,10 @@
  * RTEZGetString both forms, ok and cancel; RTLockWindow/RTUnlockWindow;
  * the asynchronous requesters (up, not up, check, end); finit (seven
  * rtFreeRequest, rtFreeFileList, the library closed).  Then, with the
- * fake removed, the real reqtools.library of the system (39.3 on the
- * emulator's Workbench) for what needs no user: init, IsReqToolsActive,
- * RTVersion/RTRevision, RTEZSetDefaultDirectory/RTEZSetPattern 0-4,
- * finit.
+ * fake removed, a real reqtools.library V38 of the system for what needs
+ * no user: init, IsReqToolsActive, RTVersion/RTRevision,
+ * RTEZSetDefaultDirectory/RTEZSetPattern 0-4, finit - only where there is
+ * one: the emulator's hardfiles have none, the run says so and skips it.
  * Not covered: the real requesters (they need a user); the routines
  * without reqtools.library (they call through a6 = 0); a second finit
  * (frees again).
