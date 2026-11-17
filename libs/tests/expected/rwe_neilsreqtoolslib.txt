@@ -96,10 +96,14 @@ RTCheckASyncRequest|reqtools calls|not up|1	$00000001
 RTCheckASyncRequest|reqtools calls|not up|2	$00000001
 RTCheckASyncRequest|reqtools calls|up|1	$00000001
 RTCheckASyncRequest|reqtools calls|up|2	$00000001
-RTEZFlagsRequest|call 0|gadgets "Ok"|1	bytes 256 fnv 832AD6B1
-RTEZFlagsRequest|call 0|gadgets "Ok"|2	bytes 256 fnv 189C2C6E
-RTEZFlagsRequest|call 0|gadgets none|1	bytes 256 fnv 5F215D6D
-RTEZFlagsRequest|call 0|gadgets none|2	bytes 256 fnv 44B4ADCA
+RTEZFlagsRequest|call 0|gadgets "Ok"|1 [orig]	bytes 256 fnv 832AD6B1
+RTEZFlagsRequest|call 0|gadgets "Ok"|1 [fixed #455]	bytes 256 fnv 89AA02CE
+RTEZFlagsRequest|call 0|gadgets "Ok"|2 [orig]	bytes 256 fnv 189C2C6E
+RTEZFlagsRequest|call 0|gadgets "Ok"|2 [fixed #455]	bytes 256 fnv 34349E8D
+RTEZFlagsRequest|call 0|gadgets none|1 [orig]	bytes 256 fnv 5F215D6D
+RTEZFlagsRequest|call 0|gadgets none|1 [fixed #455]	bytes 256 fnv 4AE4931A
+RTEZFlagsRequest|call 0|gadgets none|2 [orig]	bytes 256 fnv 44B4ADCA
+RTEZFlagsRequest|call 0|gadgets none|2 [fixed #455]	bytes 256 fnv BDD7EE79
 RTEZFlagsRequest|call 0|title ""|1	bytes 256 fnv ACED452B
 RTEZFlagsRequest|d0|gadgets "Ok"|1	$00000007
 RTEZFlagsRequest|d0|gadgets "Ok"|2	$00000007
@@ -111,8 +115,10 @@ RTEZFlagsRequest|kept|gadgets "Ok"|2	kept
 RTEZFlagsRequest|kept|gadgets none|1	kept
 RTEZFlagsRequest|kept|gadgets none|2	kept
 RTEZFlagsRequest|kept|title ""|1	kept
-RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets "Ok"|1	$00000001
-RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets none|1	$00000001
+RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets "Ok"|1 [orig]	$00000001
+RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets "Ok"|1 [fixed #455]	$00000000
+RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets none|1 [orig]	$00000001
+RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets none|1 [fixed #455]	$00000000
 RTEZFlagsRequest|popped|gadgets "Ok"|1	$00000000
 RTEZFlagsRequest|popped|gadgets "Ok"|2	$00000000
 RTEZFlagsRequest|popped|gadgets none|1	$00000000

@@ -21,7 +21,7 @@
  * RTRevision (d0's high word), RTReturnValue after every call; all three
  * forms of RTEZRequest with and without title (the tag list reset
  * afterwards); RTEZFlagsRequest both forms with and without gadgets (the
- * title in the wrong list, BUG(orig), #455) and with an empty title after
+ * title in the wrong list in the original, #455) and with an empty title after
  * them; RTRequest; RTEZLoadFile,
  * RTEZSaveFile, RTFileRequest, RTEZPathRequest with ok/cancel and the
  * directory empty, ending in ':' or not; RTEZSetDefaultDirectory and

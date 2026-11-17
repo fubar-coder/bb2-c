@@ -42,10 +42,6 @@
  * BUG(orig), kept:
  *   - RTEZScreenModeRequest calls rtFontRequestA (-96) with the screen
  *     mode requester instead of rtScreenModeRequestA (-144) (#466).
- *   - RTEZFlagsRequest stores the title in RTEZRequest's tag list, not in
- *     its own: its requester always has reqtools' default title (there
- *     the title tag is off until RTEZRequest with a title sets it, and
- *     RTEZRequest resets the title after every call) (#455).
  *   - RTEZFreePattern 2 resets the multi-load requester's flags (the
  *     multi-load is 3 in RTEZSetPattern and RTEZSetDefaultDirectory)
  *     (#456).
@@ -76,6 +72,10 @@
  * Fixed (intended deviation, #464): RTEZPaletteRequest and
  * RTASyncPaletteRequest did not store rtPaletteRequestA's result for
  * RTReturnValue, which kept the previous call's.
+ * Fixed (intended deviation, #455): RTEZFlagsRequest stored its title in
+ * RTEZRequest's tag list, so its requester always had reqtools' default
+ * title; the title now goes to its own list (an empty one keeps the
+ * default).
  * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
  * have no 0 behind them (a string function returns its length, as
  * usual); FileName$ is copied with a length of 108, whatever its own
@@ -506,7 +506,8 @@ static struct {
 } preqTagList = { { RTFI_Flags, FREQF_NOFILES }, TAG_LOCKWINDOW, { TAG_END, 0 } };
 static_assert(sizeof preqTagList == 6 * 4);
 
-/* RTEZFlagsRequest: its title is never set (BUG(orig), #455) */
+/* RTEZFlagsRequest: the title of each call, 0 for an empty one (fixed,
+   #455: the original never set it) */
 static struct {
     struct TagItem title, pos, lockwin, underscore, idcmp, end;
 } RequestFTagList = {
@@ -806,13 +807,15 @@ static ULONG BLITZ_ROUTINE rtTagrequest_c(STRPTR body BL_REG(d0), STRPTR gadget 
  * requester that also ends on the given IDCMP events.
  *
  * An empty GadgetText$ means no gadgets.  Afterwards the position is
- * centred again.  BUG(orig) (#455): the title goes to RTEZRequest's tag
- * list, so this requester has reqtools' default title.
+ * centred again.  The title goes to this requester's tag list, an empty
+ * one as 0 (reqtools' default title) (fixed, #455: the original wrote it
+ * to RTEZRequest's list, so this requester always had the default title).
  * @param title   d0: Title$
  * @param body    d1: BodyText$
  * @param gadget  d2: GadgetText$
  * @param idcmp   d3: IDCMPFlags (RT_IDCMPFlags)
- * @param lens    a2: the argument stack, the gadget text's length at -12(a2)
+ * @param lens    a2: the argument stack, the title's length at -4(a2), the
+ *                gadget text's at -12(a2)
  * @return d0: rtEZRequestA's result (also for RTReturnValue)
  */
 static ULONG BLITZ_ROUTINE rtflagsrequest_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
@@ -824,8 +827,7 @@ static ULONG BLITZ_ROUTINE rtflagsrequest_c(STRPTR title BL_REG(d0), STRPTR body
     if (!lens[-3])
         gadget = NULL;
     RequestFTagList.idcmp.ti_Data = idcmp;
-    /* BUG(orig) (#455): RTEZRequest's title, not RequestFTagList.title */
-    RequestTagList.title.ti_Data = (ULONG)title;
+    RequestFTagList.title.ti_Data = lens[-1] ? (ULONG)title : 0;   /* fixed (#455) */
     r = RTJSR4(LVO_rtEZRequestA, 0, &RequestFTagList, body, gadget, 0, 0);
     returnvalue = r;
     RequestFTagList.pos.ti_Data = REQPOS_CENTERSCR;
