@@ -175,9 +175,9 @@ pointers into the library, into the test's requesters and into the
 string area made independent of the layout – and answers with a
 chosen result: the file requester writes the chosen directory into the
 requester and the chosen name into the buffer, rtGetStringA/rtGetLongA
-the chosen value, rtFontRequestA/rtScreenModeRequestA the fields of the
+the chosen value (only on OK, as reqtools), rtFontRequestA/rtScreenModeRequestA the fields of the
 font and screen mode requester, the multi-load a file list, an RT_ReqHandler tag gets a
-handler. Observed after every call: d0, a3, the string area, the kept
+handler info (with a WaitMask). Observed after every call: d0, a3, the string area, the kept
 registers, the log of reqtools calls and RTReturnValue.
 
 Cases: the routines that need no library before init; init when
@@ -185,18 +185,21 @@ OpenLibrary fails and when each of the seven rtAllocRequestA fails (the
 fixed init frees the requesters it has and closes the library, the
 original keeps them; finit does nothing), then ok; RTVersion/RTRevision
 (d0's high word); RTEZRequest all forms with and without title (the
-defaults restored); RTEZFlagsRequest both forms with and without gadgets;
+defaults restored); RTEZFlagsRequest both forms with and without gadgets
+and with an empty title after them;
 RTRequest; RTEZLoadFile/RTEZSaveFile/RTFileRequest/RTEZPathRequest with
 four directories (empty, `RAM:`, `RAM:t`, `Work:a/b`) and cancel;
 RTEZSetDefaultDirectory and RTEZSetPattern 0-4, RTEZFreePattern 0-3 and
 the flags the next requesters get; RTEZMultiLoadFile (a list of three, a
 list at an address ending in `$00`, cancel) with RTNextPathEntry to the
-end; RTEZFontRequest, RTEZScreenModeRequest both forms, ok and cancel
+end, then after RTEZFreePattern 3 and, with a new pattern, 2; RTEZFontRequest, RTEZScreenModeRequest both forms, ok and cancel
 (the TextAttr / screen mode block); RTEZPaletteRequest; RTEZGetLong,
-RTEZGetLongRange, RTEZGetString in all forms, ok and cancel;
+RTEZGetLongRange, RTEZGetString in all forms, ok and cancel (and the
+memory each RTEZGetString keeps);
 RTLockWindow/RTUnlockWindow; both asynchronous requesters up and not up
-with their check and end; finit (seven rtFreeRequest, rtFreeFileList,
-CloseLibrary). Then, only on a system with a real reqtools.library V38
+with their check and end, the palette one also after RTEZRequest (for
+RTReturnValue); finit (seven rtFreeRequest, rtFreeFileList,
+CloseLibrary) and the fake's open count left by the failed inits. Then, only on a system with a real reqtools.library V38
 (not the emulator's: there the run prints `no reqtools.library V38 - the
 real one not tested`): init, IsReqToolsActive, RTVersion/RTRevision,
 RTEZSetDefaultDirectory/RTEZSetPattern 0-4, finit.
@@ -205,7 +208,7 @@ function RTEZScreenModeRequest calls, the missing title of
 RTEZFlagsRequest, RTEZGetLong's value on cancel, the multi-load's
 address result.
 
-Last, in the C build only, every command after finit with the library
+After finit, in the C build only, every command with the library
 closed: its cancel value and no reqtools call (#463; cases `[fixed #463]`
 alone). The bug-orig test `neilsreqtoolslib-no-library-check` runs a
 program with the open of reqtools.library failing (inject).
