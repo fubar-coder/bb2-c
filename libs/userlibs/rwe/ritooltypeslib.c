@@ -40,9 +40,6 @@
  *     it gives back the space of the string argument, which the compiler
  *     does not take back after a library function with a numeric result
  *     (#846, closed).
- *   - ShapeToIcon shape,shape uses the library's own Image for the
- *     selected image with PlanePick/PlaneOnOff 0 and sets the gadget
- *     flags to 6 (GADGHIMAGE), dropping all others (#854).
  *   - IconToShape: the shape is filled before the data is allocated (no
  *     memory: the shape keeps its size and has no data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); MakeCookie is called with a3 = the shape only if the
  *     shape was in use before (freeashape), otherwise with the caller's
@@ -93,6 +90,11 @@
  *   >> 4 words per row but copied (width >> 4) + 1: for a width that is
  *   a multiple of 16 one word per row and plane behind the shape's data.
  *   It copies the words it allocates.
+ * Fixed (intended deviation, #854): ShapeToIcon shape,shape put the
+ *   second shape into the library's own Image with PlanePick and
+ *   PlaneOnOff 0 (no plane picked); PlanePick is now (1 << depth) - 1.
+ *   The gadget flags 6 (GADGHIMAGE, the others dropped) are documented
+ *   (RIToolTypesLib.guide, IconRender) and stay.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -788,9 +790,11 @@ void BLITZ_ROUTINE c_shapetoicon(const struct bb_shape *shape BL_REG(a0))
  * @brief ShapeToIcon shape,shape: the icon's image and selected image from two shapes.
  *
  * The second shape goes into the library's own Image (SelectRender),
- * then as ShapeToIcon shape.  BUG(orig) (#854): that Image has PlanePick/
- * PlaneOnOff 0, and the gadget flags become 6 (GADGHIMAGE), all others
- * dropped.  DIFF: a3 unchanged.
+ * then as ShapeToIcon shape.  That Image picks the shape's planes
+ * (PlanePick (1 << depth) - 1, PlaneOnOff 0; fixed #854: the original
+ * left both 0).  The gadget flags become 6 (GADGHIMAGE), all others
+ * dropped: documented (RIToolTypesLib.guide, IconRender), no defect.
+ * DIFF: a3 unchanged.
  * @param shape   a0: the shape for the image (#ia0|#pd0)
  * @param shape2  a1: the shape for the selected image (#ia1|#pd1)
  * Returns nothing (nothing happens without an icon).
@@ -804,6 +808,8 @@ void BLITZ_ROUTINE c_shapetoicon2(const struct bb_shape *shape BL_REG(a0),
     SelectRender.Height = shape2->height;
     SelectRender.Depth = shape2->depth;
     SelectRender.ImageData = (UWORD *)shape2->data;
+    SelectRender.PlanePick = (UBYTE)((1 << shape2->depth) - 1);
+    SelectRender.PlaneOnOff = 0;
     diskobject->do_Gadget.SelectRender = &SelectRender;
     diskobject->do_Gadget.Flags = 6;    /* GFLG_GADGHIMAGE | GFLG_GADGIMAGE */
     c_shapetoicon(shape);

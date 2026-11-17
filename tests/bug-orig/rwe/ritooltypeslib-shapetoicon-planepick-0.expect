@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+pick 3 onoff 0 depth 2
+flags 6
+rc=0

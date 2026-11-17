@@ -92,6 +92,12 @@ that are not the result.
   1`, one word per row and plane more when the width is a multiple of 16,
   behind the data (#847; bug-orig test
   `ritooltypeslib-icontoshape-extra-word`, inject guard).
+* ShapeToIcon shape,shape gives the library's own Image for the selected
+  image PlanePick `(1 << depth) - 1` (all planes of the shape) and
+  PlaneOnOff 0; the original left PlanePick 0, no plane picked (#854;
+  bug-orig test `ritooltypeslib-shapetoicon-planepick-0`). The gadget
+  flags 6 (GADGHIMAGE, the others dropped) stay: RIToolTypesLib.guide,
+  node IconRender, documents them.
 
 **BUG(orig)** (kept):
 
@@ -102,9 +108,6 @@ that are not the result.
   string argument, which the compiler does not take back after a library
   function with a numeric result. Without it
   `"ab"+Str$(IconDefTool("tool"))+"cd"` gives `abtool` instead of `ab-1cd`.
-* ShapeToIcon shape,shape uses the library's own Image (PlanePick 0) as
-  selected image and sets the gadget flags to 6, dropping the others
-  (#854).
 * IconToShape fills the shape before allocating its data (no memory:
   size without data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); calls MakeCookie with a3 = the shape only if it was in use
   before (freeashape), otherwise with the caller's a3 (a cookie for
