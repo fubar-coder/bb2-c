@@ -45,6 +45,10 @@ are one packed struct in the order of the original's data block, so that
   leaves without a broker, and called `ActivateCxObj(0,…)` and returned
   -1 (#562). Values other than -1/0 do nothing and return 0, as in the
   original.
+* the `Exchange…` functions return -1 only for a `CXM_COMMAND` message
+  with that code; the original compared the id of the last message
+  whatever its type, so a hotkey with id 15 counted as `ExchangeDisable`
+  (#555).
 
 **BUG(orig)** (kept, commented in the code):
 
@@ -68,8 +72,6 @@ are one packed struct in the order of the original's data block, so that
   previous one (which stays active, with the same port: finit deletes
   only the last one, so the first keeps the deleted port – a crash as
   soon as commodities sends it something, e.g. `CXCMD_LIST_CHG`) (#560);
-* the `Exchange…` functions look at the id of the last message whatever
-  its type (a hotkey with id 15 counts as `ExchangeDisable`) (#555).
 
 No `DIFF`.
 

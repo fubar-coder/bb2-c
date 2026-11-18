@@ -30,7 +30,9 @@
  * broker; the original tested the message port, which a MakeCommodity
  * that fails at CxBroker leaves, and called ActivateCxObj(0) (#562).
  * SetCxStatus with a value other than -1 and 0 does nothing and returns
- * 0, as in the original.
+ * 0, as in the original.  The Exchange* functions count only a
+ * CXM_COMMAND message; the original compared the id whatever the type, so
+ * a hotkey with id 15 counted as ExchangeDisable (#555).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
@@ -59,9 +61,7 @@
  *   - MakeCommodity makes a new broker on every call without deleting the
  *     previous one (on failure the old one stays in use; on success the
  *     old one stays active with the same port, which finit deletes)
- *     (#560);
- *   - the Exchange* functions look at the id of the last message whatever
- *     its type (a hotkey id 15 counts as ExchangeDisable) (#555).
+ *     (#560).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -344,10 +344,10 @@ BLITZ_INLINE(cxkill, "move.l #23,d0");
 BLITZ_INLINE(cxlist, "move.l #27,d0");
 BLITZ_INLINE(cxunique, "move.l #25,d0");
 
-/* Exchange...: -1 if the id of the last message is the command */
+/* Exchange...: -1 if the last message is the command */
 static BB_BOOL is_cmd(ULONG cmd)
 {
-    if (!st.cxmsgid || st.cxmsgid != cmd)
+    if (st.cxmsgtype != CXM_COMMAND || st.cxmsgid != cmd)
         return BB_FALSE;
     return BB_TRUE;
 }
@@ -356,9 +356,11 @@ static BB_BOOL is_cmd(ULONG cmd)
  * ExchangeDisAppear, ExchangeKill, ExchangeListChange, ExchangeUnique:
  * whether the last message was that Exchange command.
  *
- * Amiga mode only.  BUG(orig) (#555): the id of the last message is
- * compared whatever its type (a hotkey id 15 counts as ExchangeDisable).
- * @return d0: BB_TRUE if the last id is the CXCMD_ code, else BB_FALSE
+ * Amiga mode only.  Fixed (#555): only a CXM_COMMAND message counts; the
+ * original compared the id whatever the type (a hotkey id 15 counted as
+ * ExchangeDisable).
+ * @return d0: BB_TRUE if the last message is a CXM_COMMAND with the
+ *         CXCMD_ code, else BB_FALSE
  */
 static BB_BOOL BLITZ_ROUTINE disabled_c(void) { return is_cmd(CMD_DISABLE); }
 static BB_BOOL BLITZ_ROUTINE enable_c(void) { return is_cmd(CMD_ENABLE); }
