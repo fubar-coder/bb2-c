@@ -23,6 +23,10 @@ RXDeletePort|popped|2 queued|1	$00000000
 RXDeletePort|popped|no port|1	$00000000
 RXDeletePort|port gone|2 queued|1	$00000001
 RXDeletePort|replies|2 queued|1	$00000001
+RXDeletePort|reply Result1|2 queued|1	$00000005
+RXDeletePort|reply Result1|2 queued|2	$00000005
+RXDeletePort|reply Result2|2 queued|1	$00000000
+RXDeletePort|reply Result2|2 queued|2	$00000000
 RXExecuteScript|RXCOMM\|RXFF_STRING||1	$00000001
 RXExecuteScript|RXExecuteScript: message||1	$00000007
 RXExecuteScript|action||1	$01040000
@@ -1957,6 +1961,9 @@ RXReplyMsg|popped|to the test 0 answer|1	$00000000
 RXReplyMsg|popped|untokenised 3 -|1	$00000000
 RXReplyMsg|replies|sender gone 0 lost|1	$00000001
 RXReplyMsg|replies|to the test 0 answer|1	$00000001
+RXReplyMsg|reply Result1|to the test 0 answer|1	$00000000
+RXReplyMsg|reply Result2|to the test 0 answer|1	$00000001
+RXReplyMsg|reply Result2 string|to the test 0 answer|1	"answer"
 RXReturnCode|d0|after a closing quote|1	$00000000
 RXReturnCode|d0|arrived while waiting|1	$00000000
 RXReturnCode|d0|arrived while waiting|2	$00000000

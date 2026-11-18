@@ -341,12 +341,12 @@ static void testmsg(int n, const char *from, const char *a1, const char *a2)
     PutMsg(FindPort((STRPTR)own), &m->rm_Node);
 }
 
-/* the replies at the test's port; free the messages */
-static void testreplies(int n, LONG rc, const char *res)
+/* the replies at the test's port (`n` expected): Result1, whether there
+   is a Result2 and its string; free the messages */
+static void testreplies(int n)
 {
     struct RexxMsg *m;
     int got = 0, i;
-    char w[60];
 
     while ((m = (struct RexxMsg *)GetMsg(testport)) != NULL) {
         int ours = 0;
@@ -356,14 +356,12 @@ static void testreplies(int n, LONG rc, const char *res)
         if (!ours)
             continue;
         got++;
-        snprintf(w, sizeof w, "reply Result1 %ld", m->rm_Result1);
-        check(w, m->rm_Result1 == rc);
-        if (res) {
-            check("reply Result2", m->rm_Result2 && !strcmp((char *)m->rm_Result2, res));
-            if (m->rm_Result2)
-                DeleteArgstring((UBYTE *)m->rm_Result2);
-        } else
-            check("reply without Result2", !m->rm_Result2);
+        OBS("reply Result1", m->rm_Result1);
+        OBS("reply Result2", m->rm_Result2 != 0);
+        if (m->rm_Result2) {
+            OBSSTR("reply Result2 string", (const char *)m->rm_Result2);
+            DeleteArgstring((UBYTE *)m->rm_Result2);
+        }
         for (i = 0; i < 2; i++)
             if (m->rm_Args[i])
                 DeleteArgstring(m->rm_Args[i]);
@@ -573,11 +571,11 @@ int main(int argc, char **argv)
     readport(READPORT, 1, "test message");
     current("test message");
     reply(1, 0, "answer", "to the test");
-    testreplies(1, 0, "answer");
+    testreplies(1);
     testmsg(1, "RWEGONE", "gone", NULL);
     readport(READPORT, 1, "sender gone");
     reply(1, 0, "lost", "sender gone");
-    testreplies(0, 0, NULL);
+    testreplies(0);
     FreeVec(tmsg[1]);                   /* not replied: ours again */
     tmsg[1] = NULL;
     testmsg(2, "RWETEST", "one", NULL);
@@ -585,7 +583,7 @@ int main(int argc, char **argv)
     ROUT = "RXDeletePort";
     strcpy(VEC, "2 queued");
     call(DELETEPORT, 0, 0, 0, 0, 0, 0);
-    testreplies(2, 5, NULL);
+    testreplies(2);
     BOTH("port gone", FindPort((STRPTR)own) == NULL);
     ROUT = "RXDeletePort";
     strcpy(VEC, "no port");
