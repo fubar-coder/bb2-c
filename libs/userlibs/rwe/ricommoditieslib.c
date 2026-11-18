@@ -58,14 +58,14 @@
  * deleted, the result 0) and no longer tests the d0 that the void
  * AttachCxObj leaves; the original did both the other way round (its
  * 'oops2 tail with CxObjError is unreachable, not translated) (#565).
+ * MakeCommodity returns 0 while the library has a broker, which stays in
+ * use; the original made a new broker on every call without deleting the
+ * previous one, which stayed active with the port that finit deletes
+ * (#560).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
- *     (#558);
- *   - MakeCommodity makes a new broker on every call without deleting the
- *     previous one (on failure the old one stays in use; on success the
- *     old one stays active with the same port, which finit deletes)
- *     (#560).
+ *     (#558).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -502,20 +502,23 @@ BLITZ_THUNK(status, status_c, "d1/a0-a1");
  * Amiga mode only.  The message port is created on the first call.
  * Fixed (#559): without commodities.library (init's OpenLibrary failed)
  * it returns 0 before it makes the port; the original called CxBroker
- * through a base of 0.  BUG(orig): a new broker on every call, the previous one is not deleted
- * (#560); the help text lacks the closing parenthesis (#558).
+ * through a base of 0.  Fixed (#560): while the library has a broker it
+ * returns 0 and the broker stays in use (user decision W4 Q4); the
+ * original made a new broker on every call and left the previous one
+ * active with the same port.  BUG(orig): the help text lacks the
+ * closing parenthesis (#558).
  * @param name   d0: the name
  * @param title  d1: the title
  * @param descr  d2: the description
- * @return d0: BB_TRUE, BB_FALSE without the library or if the port or
- *         the broker fails
+ * @return d0: BB_TRUE, BB_FALSE without the library, with a broker
+ *         already made or if the port or the broker fails
  */
 static BB_BOOL BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR title BL_REG(d1),
                                              STRPTR descr BL_REG(d2))
 {
     CxObj *co;
 
-    if (!st_cbase)
+    if (!st_cbase || st.cobject)
         return BB_FALSE;
     if (!st.msgport) {
         struct MsgPort *p = CreateMsgPort();    /* makemsgport */

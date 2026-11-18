@@ -90,14 +90,18 @@ are one packed struct in the order of the original's data block, so that
   `'oops2` tail is unreachable, not translated), so a misspelt hotkey
   returned -1 and never triggered, and it tested `AttachCxObj`'s d0
   (not 0 with Workbench 3.1's commodities.library) (#565).
+* `MakeCommodity` returns 0 while the library has a broker, without
+  calling `CxBroker`; the first broker stays in use (user decision W4
+  Q4). The original made a new broker on every call without deleting
+  the previous one, which stayed active with the same port: finit
+  deleted only the last one, so the first kept the deleted port – a
+  crash as soon as commodities sends it something, e.g.
+  `CXCMD_LIST_CHG` (#560). A second call with the same name therefore no
+  longer makes commodities send the first broker `CXCMD_UNIQUE`.
 
 **BUG(orig)** (kept, commented in the code):
 
-* the help text of `MakeCommodity` lacks the closing parenthesis (#558);
-* `MakeCommodity` makes a new broker on every call without deleting the
-  previous one (which stays active, with the same port: finit deletes
-  only the last one, so the first keeps the deleted port – a crash as
-  soon as commodities sends it something, e.g. `CXCMD_LIST_CHG`) (#560);
+* the help text of `MakeCommodity` lacks the closing parenthesis (#558).
 
 No `DIFF`.
 
@@ -115,8 +119,10 @@ observed (results, "port != 0", message counts):
 * `MakeCommodity` while a broker of the test has the name (fails at
   `CxBroker`, the port is made) and `SetCxStatus -1`/`0` with that port
   and no broker;
-* `MakeCommodity`; a second one with the same name (fails,
-  `CXCMD_UNIQUE` to the first broker through `NBU_NOTIFY`);
+* `MakeCommodity`; a second one with the same name (the original: fails at
+  `CxBroker`, `CXCMD_UNIQUE` to the first broker through `NBU_NOTIFY`, the
+  cases of that message under the vector "unique message"; the port: 0
+  without `CxBroker`, no message, #560);
 * `CXCMD_ENABLE`, `DISABLE`, `APPEAR`, `DISAPPEAR`, `KILL`, `LIST_CHG`
   through commodities' private `BrokerCommand` (LVO -198, as Exchange),
   each fetched with `CommodityEvent` and evaluated with `HotKeyHit`,
@@ -149,7 +155,7 @@ characters (commodities keeps 23 and compares them with the full name).
 hotkey forever), real key hotkeys (the keys would reach the console),
 `SetHotKey` with a number outside 0–15 (bug-orig test
 `ricommoditieslib-sethotkey-range`, with runtime error checking), two
-successful `MakeCommodity`
-(leaves a broker with a deleted port, see above), a missing
+successful `MakeCommodity` (the original; bug-orig test
+`ricommoditieslib-makecommodity-twice`), a missing
 commodities.library (bug-orig test `ricommoditieslib-init-unchecked`,
 inject `openlibfail=`).
