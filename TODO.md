@@ -717,6 +717,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     mode (PC $F81472). Not slowness under load (its sessions take
     1.6-1.7 s): it hangs now and then after its output. Cause not
     analysed.
+  * originals `bug_orig_record_palettelib_stopcycle_cycon` (2026-11-18,
+    W1 acceptance): the original's session ended by its limit at 121.8 s
+    of 120 (DIFFERS "(the end)"); alone it passed in 41 s.
   The ctest `TIMEOUT` of the tests already includes
   `EMULATION_QUEUE_WAIT` (7200 s, `cmake/emulation-queue.cmake`) per
   session; only the session limits (`timeout=` of the runners, `@pass
