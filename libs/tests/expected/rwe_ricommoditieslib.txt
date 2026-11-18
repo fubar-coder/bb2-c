@@ -19,19 +19,30 @@
 |CommodityEvent||12	$FFFFFFFF
 |CommodityEvent||13	$FFFFFFFF
 |CommodityEvent||14	$FFFFFFFF
-|CommodityEvent (nothing queued) replied the message taken before||1	$00000000
+|CommodityEvent (nothing queued) replied the message taken before||1 [orig]	$00000000
+|CommodityEvent (nothing queued) replied the message taken before||1 [fixed #561]	$00000001
 |CommodityEvent replied the message taken before||1	$00000000
-|CommodityEvent replied the message taken before||2	$00000000
-|CommodityEvent replied the message taken before||3	$00000000
-|CommodityEvent replied the message taken before||4	$00000000
-|CommodityEvent replied the message taken before||5	$00000000
-|CommodityEvent replied the message taken before||6	$00000000
-|CommodityEvent replied the message taken before||7	$00000000
-|CommodityEvent replied the message taken before||8	$00000000
+|CommodityEvent replied the message taken before||2 [orig]	$00000000
+|CommodityEvent replied the message taken before||2 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before||3 [orig]	$00000000
+|CommodityEvent replied the message taken before||3 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before||4 [orig]	$00000000
+|CommodityEvent replied the message taken before||4 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before||5 [orig]	$00000000
+|CommodityEvent replied the message taken before||5 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before||6 [orig]	$00000000
+|CommodityEvent replied the message taken before||6 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before||7 [orig]	$00000000
+|CommodityEvent replied the message taken before||7 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before||8 [orig]	$00000000
+|CommodityEvent replied the message taken before||8 [fixed #561]	$00000001
 |CommodityEvent replied the message taken before||9	$00000000
-|CommodityEvent replied the message taken before||10	$00000000
-|CommodityEvent replied the message taken before||11	$00000000
-|CommodityEvent replied the message taken before||12	$00000000
+|CommodityEvent replied the message taken before||10 [orig]	$00000000
+|CommodityEvent replied the message taken before||10 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before||11 [orig]	$00000000
+|CommodityEvent replied the message taken before||11 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before||12 [orig]	$00000000
+|CommodityEvent replied the message taken before||12 [fixed #561]	$00000001
 |CommodityMsgPort||1	$00000000
 |CommodityMsgPort != 0||1	$00000001
 |CommodityMsgPort != 0 (name taken)||1	$00000001
@@ -219,7 +230,8 @@
 |SetHotKey 6 (no sender): RemoveCxObj||1	$00000000
 |WaitCommodity||1	$00000000
 |WaitCommodity||2	$FFFFFFFF
-|WaitCommodity replied the message taken before||1	$00000000
+|WaitCommodity replied the message taken before||1 [orig]	$00000000
+|WaitCommodity replied the message taken before||1 [fixed #561]	$00000001
 |WaitCommodity took the head||1	$00000001
 |broker gone||1	$00000001
 |broker there||1	$00000001
@@ -242,8 +254,10 @@
 |event took the head||10	$00000001
 |event took the head||11	$00000001
 |event took the head||12	$00000001
-|finit replied a queued message||1	$00000000
-|finit replied the message taken last||1	$00000000
+|finit replied a queued message||1 [orig]	$00000000
+|finit replied a queued message||1 [fixed #561]	$00000001
+|finit replied the message taken last||1 [orig]	$00000000
+|finit replied the message taken last||1 [fixed #561]	$00000001
 |finit: CloseLibrary||1	$00000001
 |finit: DeleteCxObj||1	$00000001
 |finit: DeleteCxObjAll||1	$00000000

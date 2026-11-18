@@ -53,16 +53,21 @@ are one packed struct in the order of the original's data block, so that
   took its result, the head, which stays queued; with messages queued
   the one `GetMsg` removed was lost and a following `CommodityEvent`
   returned the same message again (#566).
+* messages are replied: `CommodityEvent` and `WaitCommodity` reply the
+  message fetched before (`HotKeyHit` and the others read the current
+  one until the next fetch), finit replies the last one and, after the
+  broker is deleted, those still queued, before it deletes the port. The
+  original never replied a message (`replymessage` starts with `RTS` and
+  is never called; not translated) and deleted the port with what was
+  queued, so commodities could never free them: about 100 bytes per
+  message (#561).
 
 **BUG(orig)** (kept, commented in the code):
 
 * the help text of `MakeCommodity` lacks the closing parenthesis (#558);
 * finit closes commodities.library first and then calls `DeleteCxObj`
   through the closed base (#556); `DeleteCxObj` (not `DeleteCxObjAll`)
-  leaves the filters and senders allocated (#557); the port is deleted
-  with whatever is still queued (#561);
-* messages are never replied (`replymessage` starts with `RTS` and is
-  never called; not translated) (#561);
+  leaves the filters and senders allocated (#557);
 * `SetHotKey` does not check the number (#564); a replaced filter/sender
   is removed but not deleted; the sender is only removed if the filter
   existed; objects made before a failure stay (#563); `CxObjError` is not

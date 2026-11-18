@@ -35,18 +35,18 @@
  * for one (WaitPort) and takes it; the original branched on the
  * condition codes GetMsg leaves, inverted: with messages queued the first
  * was lost and the second returned but left queued (a following
- * CommodityEvent returned it again) (#566).
+ * CommodityEvent returned it again) (#566).  Messages are replied:
+ * CommodityEvent and WaitCommodity reply the message fetched before, finit
+ * the last one and those still queued; the original never replied one
+ * (its replymessage starts with RTS and is never called: not translated),
+ * so commodities could never free them (#561).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
  *     (#558);
  *   - finit closes commodities.library first and then calls DeleteCxObj
  *     through the closed base (#556); DeleteCxObj (not DeleteCxObjAll)
- *     leaves the filters and senders of the broker allocated (#557); the
- *     message port is deleted with whatever messages are still queued
- *     (#561);
- *   - messages are never replied (replymessage starts with RTS and is
- *     not called; kept as the dead code it is: not translated) (#561);
+ *     leaves the filters and senders of the broker allocated (#557);
  *   - SetHotKey does not check the number: the slots are cxfilter[n] /
  *     cxsends[n] in the variables' original layout (st below), so n >= 16
  *     or < 0 hits the variables around them (#564); a replaced
@@ -201,16 +201,30 @@ static void delmsgport(struct MsgPort *p)
         DeleteMsgPort(p);
 }
 
+/* replymsg: replies the message the program fetched last (Fixed (#561):
+   commodities frees a message when it comes back) */
+static void replymsg(void)
+{
+    if (st.msg) {
+        ReplyMsg((struct Message *)st.msg);
+        st.msg = 0;
+    }
+}
+
 /**
- * @brief finit: closes commodities.library, deletes the broker and the
- * message port.
+ * @brief finit: closes commodities.library, deletes the broker, replies
+ * the messages and deletes the message port.
  *
- * BUG(orig): CloseLibrary first, then DeleteCxObj through the closed base
- * (#556); only the broker is deleted, not its filters and senders
- * (#557); the port is deleted with the messages still queued (#561).
+ * Fixed (#561): the message fetched last and those still queued are
+ * replied (after the broker is deleted, so no more come) before the port
+ * is deleted; the original deleted the port with them.  BUG(orig):
+ * CloseLibrary first, then DeleteCxObj through the closed base (#556);
+ * only the broker is deleted, not its filters and senders (#557).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
+    struct Message *m;
+
     if (!st_cbase)
         return;
     CloseLibrary(st_cbase);
@@ -218,6 +232,9 @@ static void BLITZ_ROUTINE libfinit_c(void)
         return;
     DeleteCxObj(st.cobject);
     st.cobject = 0;
+    replymsg();
+    while ((m = GetMsg(st.msgport)))
+        ReplyMsg(m);
     delmsgport(st.msgport);
     st.msgport = 0;
 }
@@ -230,7 +247,8 @@ BLITZ_THUNK(ricommoditieslib_libfinit, libfinit_c, "d1/a0-a1");
  * Amiga mode only.  Fixed (#566): GetMsg, and on an empty port WaitPort
  * and GetMsg again; the original branched on the condition codes GetMsg
  * leaves, inverted ("ne", what exec leaves: WaitPort, msg = the head,
- * left queued; a message GetMsg had removed was lost).
+ * left queued; a message GetMsg had removed was lost).  Fixed (#561):
+ * the message fetched before is replied first.
  * @return d0: BB_TRUE, BB_FALSE without a broker
  */
 static BB_BOOL BLITZ_ROUTINE waitevent_c(void)
@@ -239,6 +257,7 @@ static BB_BOOL BLITZ_ROUTINE waitevent_c(void)
 
     if (!st.cobject)
         return BB_FALSE;
+    replymsg();
     while (!(m = GetMsg(st.msgport)))
         WaitPort(st.msgport);
     st.msg = (CxMsg *)m;
@@ -249,7 +268,9 @@ BLITZ_THUNK(waitevent, waitevent_c, "d1/a0-a1");
 /**
  * @brief CommodityEvent: fetches the next message (GetMsg) into msg.
  *
- * Amiga mode only.  BUG(orig) (#561): messages are never replied.
+ * Amiga mode only.  Fixed (#561): the message fetched before is replied
+ * first (HotKeyHit and the others read the current one until the next
+ * fetch); the original never replied a message.
  * @return d0: BB_TRUE if there was one, BB_FALSE if not or without a
  *         broker
  */
@@ -257,6 +278,7 @@ static BB_BOOL BLITZ_ROUTINE event_c(void)
 {
     if (!st.cobject)
         return BB_FALSE;
+    replymsg();
     st.msg = (CxMsg *)GetMsg(st.msgport);
     return st.msg ? BB_TRUE : BB_FALSE;
 }
@@ -274,7 +296,8 @@ static void getmessage(void)
  * @brief HotKeyHit: the hotkey id of the fetched message.
  *
  * Amiga mode only.  Reads id, type and data of msg (they stay for the
- * Exchange* functions).  BUG(orig) (#561): no ReplyMsg.
+ * Exchange* functions); the message is replied by the next fetch or by
+ * finit (#561).
  * @return d0: the id of a CXM_IEVENT message, else -1 (also without a
  *         broker or message)
  */
@@ -285,7 +308,7 @@ static LONG BLITZ_ROUTINE hotkeyhit_c(void)
     getmessage();
     if (st.cxmsgtype != CXM_IEVENT)
         return -1;
-    return st.cxmsgid;                  /* BUG(orig): no ReplyMsg (#561) */
+    return st.cxmsgid;
 }
 BLITZ_THUNK(hotkeyhit, hotkeyhit_c, "d1/a0-a1");
 
