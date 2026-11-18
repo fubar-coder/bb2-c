@@ -187,13 +187,18 @@ kind F):
   number or register (error 4). The original ended the operand at a
   character that is no digit, a-f, register, `$ % . { }` and dropped it:
   `1,2` became `1 2 `, `12x+3` `12 3 + ` (15) (#632).
+* PFEvaluate's `^` is the integer power: `x^0` = 1, `0^n` = 0 for n > 0,
+  the low 32 bits of the power over all 32 bits of the exponent (square
+  and multiply); a negative exponent gives the truncated value (0; 1 for
+  the base 1; 1 or -1 for the base -1, by the exponent's parity), and
+  `0^-n` is error 3 "Divide by 0 error!". The original returned 1 for
+  the base 0, the base for the exponents 1, 0 and every negative one,
+  and counted with `DBRA` on the low word of exponent-2 (`3 65538 ^` was
+  9) (#641).
 
 ## BUG(orig), kept
 
-In the C file's head:
-
-* PFEvaluate: `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as
-  the loop count (#641).
+None left.
 
 No defects, like the original: ConvToPostFix leaves a3 pointing to the
 string (a statement: nothing uses a3 after it); PFErrorType leaves the

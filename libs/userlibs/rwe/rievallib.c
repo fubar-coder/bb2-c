@@ -23,9 +23,6 @@
  *
  * Assembler: the thunks; everything else is C.
  *
- * BUG(orig), kept:
- *   - PFEvaluate `^`: x^0 and x^1 are x, 0^n is 1; the loop counts with
- *     DBRA on the low word of exponent-2 (#641).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - PFEvaluate counts its values in a long: the original's byte,
  *     compared signed, made every operator fail with "Need 2 arguments"
@@ -86,6 +83,14 @@
  *     operand at a character that is no digit, a-f, register,
  *     `$ % . { }` and dropped it: `1,2` became `1 2 `, `12x+3`
  *     `12 3 + ` (15) (#632).
+ *   - PFEvaluate's `^` is the integer power: x^0 = 1, 0^n = 0 for n > 0,
+ *     the low 32 bits of the power by square and multiply over all 32
+ *     bits of the exponent; a negative exponent gives the truncated value
+ *     (0; 1 for the base 1; 1 or -1 for the base -1, by the exponent's
+ *     parity), 0^-n is error 3 "Divide by 0 error!".  The original
+ *     returned 1 for the base 0, the base for the exponents 1, 0 and
+ *     every negative one, and counted with DBRA on the low word of
+ *     exponent-2 (`3 65538 ^` = 9) (#641).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -544,7 +549,7 @@ static ULONG ev_loop(struct state *s)
     UBYTE ch;                           /* d0.b: the character */
     UWORD regoff;                       /* d0.w: the register's offset in regs */
     int op;
-    UWORD cnt;                          /* d2: the exponent loop count */
+    ULONG base;                         /* ^: the base, squared */
 
 evloop:
     if (*s->pos == 0) {                         /* ev_eol */
@@ -605,18 +610,29 @@ gotop:
             return ev_error(err_divide0, 3);
         s->acc = ldivide(*st_top(s), &s->aux);
         break;
-    default:                                    /* ^ */
-        rhs = st_pop(s);                        /* d2 */
-        s->acc = *st_top(s);
-        if (s->acc == 0)
-            s->acc = 1;
-        else if ((LONG)(rhs - 2) >= 0) {
-            ULONG base = s->acc;
-            cnt = (UWORD)(rhs - 2);
-            do {                                /* DBRA d2 */
+    default:                                    /* ^, fixed (#641) */
+        rhs = st_pop(s);                        /* the exponent */
+        base = *st_top(s);
+        if ((LONG)rhs < 0) {                    /* the truncated value */
+            if (base == 0)
+                return ev_error(err_divide0, 3);
+            if (base == 1 || base == (ULONG)-1)
+                s->acc = (rhs & 1) ? base : 1;
+            else
+                s->acc = 0;
+            break;
+        }
+        s->acc = 1;                             /* x^0 = 1 */
+        while (rhs) {                           /* square and multiply */
+            if (rhs & 1) {
                 s->aux = base;
                 s->acc = lmult(s->acc, &s->aux);
-            } while (cnt-- != 0);
+            }
+            rhs >>= 1;
+            if (rhs) {
+                s->aux = base;
+                base = lmult(base, &s->aux);
+            }
         }
         break;
     }
@@ -746,7 +762,8 @@ evalbin:
  * #634); so is a register other than `a0`-`a7`, `d0`-`d7`, `pc`, or one
  * not followed by a space, the end or its `}` (fixed, #642).
  * More than one value left at the end is error 4 (fixed, #635).
- * BUG(orig): `^` (#641).
+ * `^` is the integer power, a negative exponent the truncated value,
+ * 0^-n error 3 (fixed, #641).
  * @param str  d0: the postfix string
  * @return d0: the value, 0 on an error
  */

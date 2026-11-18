@@ -1459,7 +1459,8 @@ PFEvaluate|d0|"-{1000}"|1 [orig]	$FFF48A68
 PFEvaluate|d0|"-{1000}"|1 [fixed #634]	$00000000
 PFEvaluate|d0|"0 0 /"|1	$00000000
 PFEvaluate|d0|"0 5 /"|1	$00000000
-PFEvaluate|d0|"0 5 ^"|1	$00000001
+PFEvaluate|d0|"0 5 ^"|1 [orig]	$00000001
+PFEvaluate|d0|"0 5 ^"|1 [fixed #641]	$00000000
 PFEvaluate|d0|"1 +"|1	$00000000
 PFEvaluate|d0|"1 -1 <"|1 [orig]	$FFFFFFFF
 PFEvaluate|d0|"1 -1 <"|1 [fixed #638]	$00000000
@@ -1495,7 +1496,8 @@ PFEvaluate|d0|"12 3 \|"|1	$0000000F
 PFEvaluate|d0|"123456 789 *"|1	$05CE4F40
 PFEvaluate|d0|"12x"|1 [orig]	$000000C0
 PFEvaluate|d0|"12x"|1 [fixed #634]	$00000000
-PFEvaluate|d0|"2 -1 ^"|1	$00000002
+PFEvaluate|d0|"2 -1 ^"|1 [orig]	$00000002
+PFEvaluate|d0|"2 -1 ^"|1 [fixed #641]	$00000000
 PFEvaluate|d0|"2 1 <"|1	$00000000
 PFEvaluate|d0|"2 1 >"|1	$FFFFFFFF
 PFEvaluate|d0|"2 10 ^"|1	$00000400
@@ -1509,10 +1511,12 @@ PFEvaluate|d0|"2 31 ^"|1	$80000000
 PFEvaluate|d0|"2 6 +"|1	$00000008
 PFEvaluate|d0|"2147483647 1 /"|1	$7FFFFFFF
 PFEvaluate|d0|"3 -"|1	$00000000
-PFEvaluate|d0|"3 0 ^"|1	$00000003
+PFEvaluate|d0|"3 0 ^"|1 [orig]	$00000003
+PFEvaluate|d0|"3 0 ^"|1 [fixed #641]	$00000001
 PFEvaluate|d0|"3 1 ^"|1	$00000003
 PFEvaluate|d0|"3 10 -"|1	$FFFFFFF9
-PFEvaluate|d0|"3 65538 ^"|1	$00000009
+PFEvaluate|d0|"3 65538 ^"|1 [orig]	$00000009
+PFEvaluate|d0|"3 65538 ^"|1 [fixed #641]	$30940009
 PFEvaluate|d0|"4294967295"|1	$FFFFFFFF
 PFEvaluate|d0|"5 0 /"|1	$00000000
 PFEvaluate|d0|"5 5 ="|1	$FFFFFFFF
