@@ -34,7 +34,7 @@ The commands have the error check `portchk` ("No message port opened!").
 
 ## How it works
 
-* **init** opens rexxsyslib.library V34. It sets the quote character to
+* **init** opens rexxsyslib.library V34 (finit closes it). It sets the quote character to
   `"`, sets tokenising on and the default port name to "REXX", and clears
   the port pointer.
 * **RXCreatePort** copies the name (maxslib AllocSt) and creates and adds
@@ -203,6 +203,9 @@ kind F):
   loaded, and neither waited (#544). A script that sends a command to
   the program's own port and waits for its reply cannot be run with
   RXExecuteScript, which waits too: RXRunScript is for it.
+* **finit** closes rexxsyslib.library after it has deleted the port. The
+  original never closed it: one open count of the library was lost per
+  program run, so it could never be expunged (#1093).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

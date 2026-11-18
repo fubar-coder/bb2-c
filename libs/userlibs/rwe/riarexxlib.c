@@ -16,7 +16,7 @@
  * RIAREXXLIB.OBJ is the older generation newrexxlib7 (docs/rwelibs/
  * README.md 3.2).  Notes: docs/rwelibs/port/riarexxlib.md.
  *
- * init opens rexxsyslib.library V34.  RXCreatePort makes a public port
+ * init opens rexxsyslib.library V34, finit closes it.  RXCreatePort makes a public port
  * and one block of 256 bytes: the list of received messages (32 longs)
  * and the list of messages sent without waiting (32 longs).  Messages
  * are 128 byte RexxMsgs (AllocVec): ln_Name = our port's name, rm_Args =
@@ -119,6 +119,8 @@
  *     original's _rxruncommand overwrote their message types: both sent
  *     RXCOMM|RXFF_STRING, the script name as a tokenised string program,
  *     and neither waited (#544).
+ *   - finit closes rexxsyslib.library; the original never closed it (one
+ *     open count lost per program run) (#1093).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -422,13 +424,19 @@ static void deleteport(BB_BOOL freename);
 /**
  * @brief finit: RXTokenise on again, delete the port if there is one (as
  * RXDeletePort; the name is left to maxslib, which frees its strings at
- * the end of the program).
+ * the end of the program), close rexxsyslib.library.
+ *
+ * Fixed (#1093): the original never closed rexxsyslib.library.
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     tokenise = (UWORD)BB_TRUE;
     if (msgport)
         deleteport(BB_FALSE);
+    if (v.rexxbase) {                   /* fixed (#1093) */
+        CloseLibrary(v.rexxbase);
+        v.rexxbase = NULL;
+    }
 }
 BLITZ_THUNK(riarexxlib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
