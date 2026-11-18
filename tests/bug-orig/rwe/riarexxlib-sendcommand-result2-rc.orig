@@ -4,7 +4,9 @@ done
 [compile]
 ok
 [run]
-empty -1
+rexx -1
++++ Error 6 in line 1: Unterminated comment
+empty 0
 rc=0
 [blitz2]
 rc=0

@@ -7,8 +7,21 @@
 ; program text is one quoted word (the tokenizer splits at spaces).
 ; Correct: the memory comes back - less than 100000 bytes missing (the
 ; leak is about 400000 bytes).
+; RexxMast is not started in the sessions: the program starts it
+; (SYS:System/RexxMast, which writes nothing) and waits for its port.
 ; @rwe riarexxlib
 DEFTYPE .l
+r$="REXX"
+If FindPort_(&r$)=0
+  c$="SYS:System/RexxMast >NIL:"
+  Execute_ &c$,0,0
+EndIf
+w=0
+While FindPort_(&r$)=0 AND w<100
+  Delay_ 5 : w+1
+Wend
+x=FindPort_(&r$)
+NPrint "rexx ",x<>0
 p=RXCreatePort("BUGORIG")
 RXTokenise On
 q$=Chr$(34)

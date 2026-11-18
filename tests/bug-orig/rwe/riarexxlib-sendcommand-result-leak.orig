@@ -4,8 +4,9 @@ done
 [compile]
 ok
 [run]
-0
-leaked 0
+rexx -1
+4000
+leaked -1
 rc=0
 [blitz2]
 rc=0
