@@ -36,7 +36,7 @@
  * and sizes give 0), finit with an attached object (detached, closed, the
  * file unlocked), init again.
  * Not covered: a library missing at init (finit closes only up to it),
- * ObtainDataType failing (BUG(orig) (#605): reads the header from 0),
+ * ObtainDataType failing,
  * AttachDataType window,id without DataTypeBitmap,
  * DataTypeClose of an attached object, DataTypesPalette with more colours
  * than the picture or 0 (65536), SetDataTypeAttr with 0 or more than 127

@@ -47,9 +47,7 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 **BUG(orig)** (kept):
 
 * DataTypeOpen copies the name into its 384 byte buffer without a limit
-  and reads the DataTypeHeader from ObtainDataType's result without
-  checking it for 0 (#604, #605).
-* DataTypeClose unlocks the file only if there is a DataType (#605).
+  (#604).
 * DataTypeCreate without a tag list does not check for an open file
   (the name is the last one DataTypeOpen copied, at first ""); a second
   DataTypeCreate loses the object before it (#601, #600).
@@ -87,6 +85,13 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   memory), and the library still held the window, so the next
   AttachDataType returned 0 and DetachDataType removed the object 0
   (#599).
+* DataTypeOpen unlocks the file again and returns 0 when ObtainDataType
+  fails (on Kickstart 3.1 for an empty file), and
+  DataTypeClose unlocks the file whenever it is locked. The original
+  read the DataTypeHeader through address 28 (DataTypeName and
+  DataTypeGroup then copied from there) and kept the lock, which
+  DataTypeClose released only with a DataType: the file stayed locked
+  and DataTypeOpen refused every further file of the run (#605).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h

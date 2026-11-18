@@ -37,9 +37,7 @@
  *
  * BUG(orig):
  *   - DataTypeOpen copies the name into its 384 byte buffer without a
- *     limit and reads the DataTypeHeader from the result of
- *     ObtainDataType without checking it for 0 (#604, #605).
- *   - DataTypeClose unlocks the file only if there is a DataType (#605).
+ *     limit (#604).
  *   - DataTypeCreate without a tag list does not need an open file (the
  *     name is the last one DataTypeOpen copied, at first ""); a second
  *     DataTypeCreate loses the object before (#601, #600).
@@ -71,6 +69,11 @@
  *     does.  The original disposed of it while still attached: the
  *     window kept the freed gadget, and `attached` stayed set, so the
  *     next AttachDataType returned 0 (#599).
+ *   - DataTypeOpen unlocks the file again and returns 0 if
+ *     ObtainDataType fails; DataTypeClose unlocks the file whenever it
+ *     is locked.  The original read the DataTypeHeader through the
+ *     address 28 and kept the lock, which DataTypeClose released only
+ *     with a DataType: DataTypeOpen refused every further file (#605).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -320,9 +323,10 @@ void BLITZ_ROUTINE c_detachdatatype(void)
  * DataType and unlocks the file.
  *
  * Detached first (fixed, #599: the original disposed of an attached
- * object, the window kept the freed gadget).  BUG(orig) (#605): the file
- * is unlocked only if there is a DataType.  Nothing without
- * datatypes.library.
+ * object, the window kept the freed gadget).  The file is unlocked
+ * whenever it is locked (fixed, #605: the original unlocked it, and
+ * cleared the BitMapHeader, only if there was a DataType).  Nothing
+ * without datatypes.library.
  */
 void BLITZ_ROUTINE c_datatypeclose(void)
 {
@@ -333,13 +337,15 @@ void BLITZ_ROUTINE c_datatypeclose(void)
         DisposeDTObject(object);
         object = NULL;
     }
-    if (!dtype)
-        return;
-    ReleaseDataType(dtype);
-    dtype = NULL;
-    UnLock(lock);
     bitmapheader = NULL;
-    lock = 0;
+    if (dtype) {
+        ReleaseDataType(dtype);
+        dtype = NULL;
+    }
+    if (lock) {                         /* fixed (#605): also without a DataType */
+        UnLock(lock);
+        lock = 0;
+    }
     dtypehead = NULL;
 }
 
@@ -397,12 +403,13 @@ static ULONG putid(const UBYTE *s)
  * @brief DataTypeOpen filename$: locks a file and obtains its DataType.
  *
  * The name is copied to the buffer DataTypeCreate uses.
- * BUG(orig) (#604): the copy into the 384 byte buffer has no limit;
- * BUG(orig) (#605): the DataTypeHeader is read from ObtainDataType's
- * result without checking it for 0.
+ * BUG(orig) (#604): the copy into the 384 byte buffer has no limit.
+ * Without a DataType the file is unlocked again (fixed, #605: the
+ * original read the DataTypeHeader through address 28 and kept the
+ * lock).
  * @param name  d0: the file name
  * @return d0: the DataType, 0 without datatypes.library, if a file is
- *         already open or the file does not lock
+ *         already open, the file does not lock or has no DataType
  */
 ULONG BLITZ_ROUTINE c_datatypeopen(CONST_STRPTR name BL_REG(d0))
 {
@@ -417,7 +424,12 @@ ULONG BLITZ_ROUTINE c_datatypeopen(CONST_STRPTR name BL_REG(d0))
     if (!lock)
         return 0;
     dtype = ObtainDataTypeA(DTST_FILE, (APTR)lock, NULL);
-    dtypehead = dtype->dtn_Header;      /* BUG(orig) (#605): 0 not checked */
+    if (!dtype) {                       /* fixed (#605) */
+        UnLock(lock);
+        lock = 0;
+        return 0;
+    }
+    dtypehead = dtype->dtn_Header;
     return (ULONG)dtype;
 }
 

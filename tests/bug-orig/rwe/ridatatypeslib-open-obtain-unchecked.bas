@@ -6,6 +6,7 @@
 ; ObtainDataType may fail, closing after each, then the picture
 ; (generated).
 ; Correct: the picture opens whatever happened before.
+; @fixed #605
 ; @rwe ridatatypeslib
 ; @pass file=e.dat|@TESTDATA@/ridatatypeslib-open-obtain-unchecked.dat
 ; @pass file=p.ilbm|@TESTDATA@/ridatatypeslib-open-obtain-unchecked.ilbm
