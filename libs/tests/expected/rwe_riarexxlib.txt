@@ -1,12 +1,15 @@
 # capture rwe_riarexxlib 1
 RXCreatePort|kept||1	kept
 RXCreatePort|kept||2	kept
+RXCreatePort|kept|after init|1	kept
 RXCreatePort|kept|for finit|1	kept
 RXCreatePort|popped||1	$00000000
 RXCreatePort|popped||2	$00000000
+RXCreatePort|popped|after init|1	$00000000
 RXCreatePort|popped|for finit|1	$00000000
 RXCreatePort|second port: 0||1	$00000000
 RXCreatePort|the port||1	$00000001
+RXCreatePort|the port|after init|1	$00000001
 RXCreatePort|the port|for finit|1	$00000001
 RXDefaultPort|kept|"RWERESP"|1	kept
 RXDefaultPort|kept|"RWERX_X"|1	kept
@@ -1903,7 +1906,6 @@ RXReturnCode|popped|still tokenised|1	$00000000
 RXReturnCode|popped|test message|1	$00000000
 RXReturnCode|popped|tokenised|1	$00000000
 RXReturnCode|popped|untokenised|1	$00000000
-RXRunCommand|REXXE missing: 0|default "to REXXE"|1	$00000000
 RXRunCommand|RXRunCommand: message|RWERESP "cmd a b"|1	$00000001
 RXRunCommand|action|RWERESP "cmd a b"|1	$01040000
 RXRunCommand|args|RWERESP "cmd a b"|1	$00000003
@@ -1984,6 +1986,7 @@ RXRunCommand|sent|own "pending"|1	$00000001
 RXRunCommand|sent|own "say "hi""|1	$00000001
 RXRunCommand|sent|own "x y  "z""|1	$00000001
 RXRunCommand|sent|own "x y  "z""|2	$00000001
+RXRunCommand|sent to the default port|default "to REXXE"|1	$00000000
 RXRunCommand|type|RWERESP "cmd a b"|1	$00000005
 RXRunScript|RXRunScript: message||1	$00000008
 RXRunScript|action||1	$01040000

@@ -601,8 +601,24 @@ int main(int argc, char **argv)
     ROUT = "init";
     strcpy(VEC, "again");
     DO1(ENT(LIB, INIT, 0), (void)0);
+    /* with a port, so that a message to the default port can be sent and
+       its reply received */
+    ROUT = "RXCreatePort";
+    strcpy(VEC, "after init");
+    DO1(ENT(LIB, CREATEPORT, 0), R.d[0] = (ULONG)own;
+        stk[1] = strlen(own); R.a[2] = (ULONG)&stk[2]);
+    BOTH("the port", R.d[0] != 0);
     run(0, NULL, "to REXXE");
-    OBS("REXXE missing: 0", R.d[0]);
+    /* d0 does not say whether it was sent (#543): the responder does,
+       which serves the port REXX here (a REXX port of RexxMast is not
+       there in the sessions) */
+    Delay(25);
+    OBS("sent to the default port", resp_done > n);
+    if (resp_done > n) {
+        waitresp(n += 1);
+        samelog("default port after init", 1);
+        readport(WAITPORT, 0, "the default port's reply");
+    }
     ROUT = "finit";
     strcpy(VEC, "");
     DO1(ENT(LIB, FINIT, 0), (void)0);
