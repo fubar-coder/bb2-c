@@ -32,8 +32,7 @@ rwe-1999 libnums.
 
 **C:** everything (`libs/userlibs/rwe/ridatatypeslib.c`): the
 libraries through the NDK inlines on the original's base table
-(`libbases`, in the order of the original, so finit's loop stops at the
-same entry), memlib globalloc/globfree through `BLITZ_ALIBJSR`. The
+(`libbases`, in the order of the original), memlib globalloc/globfree through `BLITZ_ALIBJSR`. The
 string functions write at a3 (`blitz_string`) like the original:
 DataTypeName/BaseName/Super copy the 0 too (a3 behind it, d0 the
 length), ID/Group up to four characters without a 0. Word results are
@@ -58,8 +57,6 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   overflow the buffer (#608).
 * DataTypeModeID taglist writes its own tags into the caller's list
   (#603).
-* finit closes the libraries only up to the first one that did not
-  open (#602).
 
 **Fixed** (intended deviations, `docs/libs/deviations.md` 3a, kind F):
 
@@ -104,6 +101,11 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   buffer `fname` without a limit, before Lock: a longer name, even of a
   file that does not exist, wrote over the BitMapHeader pointer behind
   it and then the library names and bases (#604).
+* finit closes each of the four libraries that opened. The original
+  walked its table up to the first entry 0, meant as the end marker
+  behind the four bases: without datatypes.library (the first entry; on
+  Kickstart 2.0 or without the file) dos, intuition and graphics
+  stayed open, one open count each per run (#602).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h

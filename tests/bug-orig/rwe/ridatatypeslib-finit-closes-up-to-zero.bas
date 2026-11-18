@@ -6,6 +6,7 @@
 ; inject openlibfail; opencount: how often the process opened minus
 ; closed the other three; the names given by their endings).
 ; Correct: every library that was opened is closed again (+0).
+; @fixed #602
 ; @rwe ridatatypeslib
 ; @pass runwrap=@INJECT@|openlibfail=types.library opencount=dos.library opencount=tion.library opencount=hics.library
 NPrint "open ",DataTypeOpen("CORPUS:nothing")

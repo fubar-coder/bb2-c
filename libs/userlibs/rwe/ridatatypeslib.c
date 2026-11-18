@@ -47,8 +47,6 @@
  *   - SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
  *     overflow the 1024 byte buffer (#608).
  *   - DataTypeModeID with a tag list writes its own tags into it (#603).
- *   - finit closes the libraries only up to the first one that did not
- *     open (#602).
  *
  * Fixed (intended deviations):
  *   - DataTypeBitmap clears the buffer before GetAttr: an object that has
@@ -83,6 +81,10 @@
  *     or finit), out of memory: 0.  The original copied it into a 384
  *     byte buffer without a limit, over the BitMapHeader pointer and the
  *     library's tables behind it (#604).
+ *   - finit closes each of the four libraries that opened.  The original
+ *     stopped at the first entry 0 of its table: without
+ *     datatypes.library (the first) dos, intuition and graphics stayed
+ *     open (#602).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -268,7 +270,8 @@ BLITZ_LIBFIN();
 
 /* ---------------------------------------------------------------- data */
 
-/* libbases: datatypes, dos, intuition, graphics, 0 (finit's end) */
+/* libbases: datatypes, dos, intuition, graphics, 0 (the original's end
+   marker) */
 static struct Library *libbases[5];
 #define database  libbases[0]
 #define dosbase   libbases[1]
@@ -370,8 +373,8 @@ void BLITZ_ROUTINE c_datatypeclose(void)
  * @brief finit: DetachDataType, DataTypeClose, closes the libraries and
  * frees the buffer.
  *
- * BUG(orig) (#602): closes the libraries only up to the first one that
- * did not open.
+ * Each of the four that opened is closed (fixed, #602: the original
+ * stopped at the first one that had not opened).
  */
 static void BLITZ_ROUTINE c_libfinit(void)
 {
@@ -380,11 +383,12 @@ static void BLITZ_ROUTINE c_libfinit(void)
 
     c_detachdatatype();
     c_datatypeclose();
-    for (p = libbases; *p; p++) {       /* BUG(orig) (#602): up to the first 0 */
+    for (p = libbases; p < libbases + 4; p++) {         /* fixed (#602) */
         struct Library *l = *p;
 
         *p = NULL;
-        CloseLibrary(l);
+        if (l)
+            CloseLibrary(l);
     }
     r = (struct bl_regs){ .d0 = 1024, .a1 = (ULONG)storage };
     BLITZ_ALIBJSR(TOK_globfree, r);

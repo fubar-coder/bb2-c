@@ -35,7 +35,7 @@
  * DataTypeReady, DetachDataType (twice), DataTypeClose (then the strings
  * and sizes give 0), finit with an attached object (detached, closed, the
  * file unlocked), init again.
- * Not covered: a library missing at init (finit closes only up to it),
+ * Not covered: a library missing at init (the bug-orig test of #602),
  * ObtainDataType failing,
  * AttachDataType window,id without DataTypeBitmap,
  * DataTypeClose of an attached object, DataTypesPalette with more colours
