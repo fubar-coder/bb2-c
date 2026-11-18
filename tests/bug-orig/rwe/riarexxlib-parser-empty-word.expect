@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+3: <a> <> <c>
+rc=0

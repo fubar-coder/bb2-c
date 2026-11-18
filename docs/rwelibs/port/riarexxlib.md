@@ -113,6 +113,10 @@ kind F):
   `d`. The original counted the quotes, so after a doubled quote the
   next quote did not close the word and the character behind it was
   taken in: one word `e"f c d` (#535).
+* **The tokenizer:** an empty quoted word (`""`, `''`) is an empty
+  argument string: `a "" c` gives `a`, ``, `c`. The original took the
+  word's length 0 for the end of the command and dropped it and every
+  word behind it (#536).
 
 ## BUG(orig), kept
 
@@ -148,7 +152,6 @@ kind F):
   * the command (256 bytes) and every word (256 bytes) are copied without
     a limit; the original then overwrites its own code (C: the data
     behind the buffers) (#537);
-  * an empty word (`""`, `''`) ends the arguments (#536);
   * the 16 rm_Args slots are not checked (#527).
 
 Original behaviour that is not a defect: an empty result of

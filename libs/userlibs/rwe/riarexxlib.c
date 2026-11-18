@@ -58,6 +58,9 @@
  *     quote closes the word; the original counted the quotes, so after a
  *     doubled quote the next quote did not close and the character behind
  *     it was taken into the word (#535).
+ *   - An empty quoted word ("") is an empty argument string; the original
+ *     took its length 0 for the end and dropped it and every word behind
+ *     it (#536).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -84,8 +87,7 @@
  *     name (#530).
  *   - The parser copies the command into 256 bytes and every word into
  *     256 bytes, both without a limit (in the original over its own
- *     code) (#537); an empty word ("") ends the arguments (#536); there
- *     is no limit of 16 arguments (rm_Args) (#527).
+ *     code) (#537); there is no limit of 16 arguments (rm_Args) (#527).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -525,18 +527,22 @@ static void parseinit(const UBYTE *s)
     curadr = tempstorage;
 }
 
-/* _nextparsearg: the next word to `out`, its length (0: none) */
+/* nextparsearg's result when there is no word left */
+#define NOWORD ((ULONG)-1)
+
+/* _nextparsearg: the next word to `out`, its length (0: an empty word
+   ""; NOWORD: none left - fixed (#536): the original's 0 for both) */
 static ULONG nextparsearg(UBYTE *out)
 {
     UBYTE *p, *dst = out, c;
 
     if (!curadr)
-        return 0;
+        return NOWORD;
     p = curadr;
     for (;;) {
         if (!*p) {                      /* 'lastarg */
             curadr = NULL;
-            return 0;
+            return NOWORD;
         }
         if (*p != ' ')
             break;
@@ -611,7 +617,7 @@ static void makemsgargs(void)
         return;
     }
     parseinit(s);
-    while ((n = nextparsearg(stringbuffer)) != 0) {
+    while ((n = nextparsearg(stringbuffer)) != NOWORD) {   /* fixed (#536) */
         if (!(argstr = createargstring(stringbuffer, n)))
             break;
         *arg++ = argstr;                /* BUG(orig): no limit of 16 (#527) */

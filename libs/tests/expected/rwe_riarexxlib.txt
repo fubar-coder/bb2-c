@@ -199,7 +199,8 @@ RXGetArg|a3|empty word arg 15|1	$00000010
 RXGetArg|a3|empty word arg 16|1	$00000010
 RXGetArg|a3|empty word arg 17|1	$00000010
 RXGetArg|a3|empty word arg 2|1	$00000010
-RXGetArg|a3|empty word arg 3|1	$00000010
+RXGetArg|a3|empty word arg 3|1 [orig]	$00000010
+RXGetArg|a3|empty word arg 3|1 [fixed #536]	$00000011
 RXGetArg|a3|empty word arg 4|1	$00000010
 RXGetArg|a3|empty word arg 5|1	$00000010
 RXGetArg|a3|empty word arg 6|1	$00000010
@@ -485,7 +486,8 @@ RXGetArg|d0|empty word arg 15|1	$00000000
 RXGetArg|d0|empty word arg 16|1	$00000000
 RXGetArg|d0|empty word arg 17|1	$00000000
 RXGetArg|d0|empty word arg 2|1	$00000000
-RXGetArg|d0|empty word arg 3|1	$00000000
+RXGetArg|d0|empty word arg 3|1 [orig]	$00000000
+RXGetArg|d0|empty word arg 3|1 [fixed #536]	$00000001
 RXGetArg|d0|empty word arg 4|1	$00000000
 RXGetArg|d0|empty word arg 5|1	$00000000
 RXGetArg|d0|empty word arg 6|1	$00000000
@@ -1311,8 +1313,10 @@ RXGetArg|string area|empty word arg 14|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty word arg 15|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty word arg 16|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty word arg 17|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|empty word arg 2|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|empty word arg 3|1	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|empty word arg 2|1 [orig]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|empty word arg 2|1 [fixed #536]	bytes 1024 fnv D5EF7D1F
+RXGetArg|string area|empty word arg 3|1 [orig]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|empty word arg 3|1 [fixed #536]	bytes 1024 fnv D129B262
 RXGetArg|string area|empty word arg 4|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty word arg 5|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty word arg 6|1	bytes 1024 fnv 472C7DC5
@@ -1368,7 +1372,8 @@ RXGetArg|string area|quote ' arg 17|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|quote ' arg 2|1	bytes 1024 fnv EF23D284
 RXGetArg|string area|quote ' arg 3|1	bytes 1024 fnv E3FEF489
 RXGetArg|string area|quote ' arg 4|1	bytes 1024 fnv 0041CDC0
-RXGetArg|string area|quote ' arg 5|1	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|quote ' arg 5|1 [orig]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|quote ' arg 5|1 [fixed #536]	bytes 1024 fnv D5EF7D1F
 RXGetArg|string area|quote ' arg 6|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|quote ' arg 7|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|quote ' arg 8|1	bytes 1024 fnv 472C7DC5
@@ -1737,7 +1742,8 @@ RXNextArg|string area|empty quotes in a word next 2|1 [orig]	bytes 1024 fnv 472C
 RXNextArg|string area|empty quotes in a word next 2|1 [fixed #538]	bytes 1024 fnv CAC5A464
 RXNextArg|string area|empty quotes in a word next 3|1 [fixed #538]	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|empty word next 0|1	bytes 1024 fnv EDEA1348
-RXNextArg|string area|empty word next 1|1	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|empty word next 1|1 [orig]	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|empty word next 1|1 [fixed #536]	bytes 1024 fnv D5EF7D1F
 RXNextArg|string area|long command next 0|1	bytes 1024 fnv CD69BE9D
 RXNextArg|string area|long command next 1|1	bytes 1024 fnv 5FF7A3EB
 RXNextArg|string area|long command next 2|1	bytes 1024 fnv EE078D79
@@ -1750,7 +1756,8 @@ RXNextArg|string area|quote ' next 0|1	bytes 1024 fnv EDEA1348
 RXNextArg|string area|quote ' next 1|1	bytes 1024 fnv EF23D284
 RXNextArg|string area|quote ' next 2|1	bytes 1024 fnv E3FEF489
 RXNextArg|string area|quote ' next 3|1	bytes 1024 fnv 0041CDC0
-RXNextArg|string area|quote ' next 4|1	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|quote ' next 4|1 [orig]	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|quote ' next 4|1 [fixed #536]	bytes 1024 fnv D5EF7D1F
 RXNextArg|string area|still tokenised next 0|1 [orig]	bytes 1024 fnv 635C0595
 RXNextArg|string area|still tokenised next 0|1 [fixed #547]	bytes 1024 fnv F74C8274
 RXNextArg|string area|still tokenised next 1|1 [orig]	bytes 1024 fnv 6D30CFA0
@@ -1781,10 +1788,12 @@ RXNumArgs|d0|doubled quote|1 [fixed #535]	$00000003
 RXNumArgs|d0|empty|1	$00000000
 RXNumArgs|d0|empty quotes in a word|1 [orig]	$00000002
 RXNumArgs|d0|empty quotes in a word|1 [fixed #538]	$00000003
-RXNumArgs|d0|empty word|1	$00000001
+RXNumArgs|d0|empty word|1 [orig]	$00000001
+RXNumArgs|d0|empty word|1 [fixed #536]	$00000003
 RXNumArgs|d0|long command|1	$00000006
 RXNumArgs|d0|no port|1	$00000000
-RXNumArgs|d0|quote '|1	$00000004
+RXNumArgs|d0|quote '|1 [orig]	$00000004
+RXNumArgs|d0|quote '|1 [fixed #536]	$00000005
 RXNumArgs|d0|still tokenised|1 [orig]	$00000007
 RXNumArgs|d0|still tokenised|1 [fixed #547]	$00000001
 RXNumArgs|d0|test message|1	$00000002
