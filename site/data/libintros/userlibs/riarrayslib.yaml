@@ -12,3 +12,6 @@ intro: |
   FillArray a(),-1
   FillArray a()
   ```
+
+  The fixed bug of the library is described in
+  [Fixes in riarrayslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riarrayslib-fixes" >}}).

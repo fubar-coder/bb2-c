@@ -1,10 +1,6 @@
 "FillArray":
   text: Sets every element of a byte, word or long array to `value`, or to 0 without a value. The array is given with empty brackets, as `a()`.
   notes: |
-    Arrays of other types are left unchanged. For a byte or word array,
-    only the low byte or word of the value is stored.
-
-    Kept from the original: the loop stores first and then compares
-    with the end of the array, so on an array that holds no data the
-    value is written on through memory
-    ([#882](https://github.com/fubar-coder/bb2-c/issues/882)).
+    Arrays of other types are left unchanged, and so is an array without
+    elements. For a byte or word array, only the low byte or word of the
+    value is stored.

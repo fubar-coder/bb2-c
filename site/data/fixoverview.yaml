@@ -3948,6 +3948,14 @@ rows:
     text: "`Encrypt` and `Decrypt` with a length of 0 change nothing; the original changed one byte, `Decrypt` the one in front of the block."
     page: libraries
     anchor: riencryptlib-fixes
+  - issue: 882
+    severity: 5
+    topic: "Data structures"
+    library: "riarrayslib"
+    command: "FillArray"
+    text: "`FillArray` on an array without elements writes nothing; the original wrote on through all memory."
+    page: libraries
+    anchor: riarrayslib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

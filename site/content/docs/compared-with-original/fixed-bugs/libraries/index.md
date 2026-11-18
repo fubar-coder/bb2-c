@@ -3993,6 +3993,19 @@ the three-wheel cipher by Reflective Images.
   `Decrypt` the one in front of it
   ([#630](https://github.com/fubar-coder/bb2-c/issues/630)).
 
+### Fixes in riarrayslib {#riarrayslib-fixes}
+
+This fix concerns
+[riarrayslib]({{< relref "/docs/libraries/userlibs/riarrayslib" >}}),
+the command `FillArray` by Reflective Images.
+
+* `FillArray` on an array without elements, whose size is 0, writes
+  nothing. The original stored a value first and compared with the end
+  of the array only afterwards, so it missed the end and wrote on
+  through all memory. The command, which is copied into the program at
+  each place it is used, is 4 bytes longer
+  ([#882](https://github.com/fubar-coder/bb2-c/issues/882)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a
