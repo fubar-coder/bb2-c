@@ -2206,8 +2206,10 @@ RXSendersName|sender|tokenised|1	$00000001
 RXSendersName|sender|untokenised|1	$00000001
 RXTokenise|kept|0|1	kept
 RXTokenise|kept|0 with an upper word|1	kept
+RXTokenise|kept|1|1	kept
 RXTokenise|popped|0|1	$00000000
 RXTokenise|popped|0 with an upper word|1	$00000000
+RXTokenise|popped|1|1	$00000000
 RXWaitPort|kept|RXWaitPort|1	kept
 RXWaitPort|kept|RXWaitPort: the reply|1	kept
 RXWaitPort|kept|the default port's reply|1 [fixed #532]	kept

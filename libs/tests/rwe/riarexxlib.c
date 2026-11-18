@@ -488,6 +488,10 @@ int main(int argc, char **argv)
     run(1, NULL, "x y  \"z\"");
     readport(READPORT, 1, "still tokenised");
     current("still tokenised");
+    /* on again for the rest of the scenario, whatever the call before did */
+    ROUT = "RXTokenise";
+    strcpy(VEC, "1");
+    call(TOKENISE, 0, 1, 0, 0, 0, 0);
     strarg(QUOTECHAR, "RXQuoteChar", "'");
     run(1, NULL, "a 'b c' \"d e\" ''");
     readport(READPORT, 1, "quote '");
