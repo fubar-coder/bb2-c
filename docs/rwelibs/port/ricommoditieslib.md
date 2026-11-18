@@ -27,10 +27,7 @@ are one packed struct in the order of the original's data block, so that
 **Assembler, and why:**
 
 * the inline constants `CxDisable` … `CxUnique` (`BLITZ_INLINE`): the
-  compiler copies their bytes into the program;
-* `getmsg_cc`: the `GetMsg` of `WaitCommodity` with an `SNE` right after
-  it – the original branches on the condition codes exec leaves, which C
-  cannot see.
+  compiler copies their bytes into the program.
 
 **Fixed** (intended deviations from the original,
 `docs/libs/deviations.md` 3a, kind F):
@@ -49,6 +46,13 @@ are one packed struct in the order of the original's data block, so that
   with that code; the original compared the id of the last message
   whatever its type, so a hotkey with id 15 counted as `ExchangeDisable`
   (#555).
+* `WaitCommodity` takes the first message (`GetMsg`) and on an empty port
+  waits for one (`WaitPort`, `GetMsg`). The original branched on the
+  condition codes `GetMsg` leaves, inverted: exec (Kickstart 3.1, as
+  measured by the scenario) leaves "ne", so it went to `WaitPort` and
+  took its result, the head, which stays queued; with messages queued
+  the one `GetMsg` removed was lost and a following `CommodityEvent`
+  returned the same message again (#566).
 
 **BUG(orig)** (kept, commented in the code):
 
@@ -57,11 +61,6 @@ are one packed struct in the order of the original's data block, so that
   through the closed base (#556); `DeleteCxObj` (not `DeleteCxObjAll`)
   leaves the filters and senders allocated (#557); the port is deleted
   with whatever is still queued (#561);
-* `WaitCommodity` tests the CCR after `GetMsg` and is inverted: "ne" →
-  `WaitPort` (waits for the *next* message and leaves it queued; the one
-  `GetMsg` removed is lost), "eq" → `msg` = the result of `GetMsg`. Exec
-  (3.2) leaves "ne", so it waits when the port is empty and skips one
-  message when it is not (#566);
 * messages are never replied (`replymessage` starts with `RTS` and is
   never called; not translated) (#561);
 * `SetHotKey` does not check the number (#564); a replaced filter/sender
@@ -101,8 +100,8 @@ observed (results, "port != 0", message counts):
   (ids in the order of the broker's list), slot 0 replaced (now behind
   3), slot 5 with a description ParseIX does not understand, slot 6 whose
   sender cannot be made (`CreateCxObj(CX_SEND)` made to fail);
-* `WaitCommodity` with two messages queued (takes the first, returns the
-  second);
+* `WaitCommodity` with two messages queued (takes and returns the first;
+  the original took the first and returned the second, #566);
 * `SetCxStatus` 0 (no messages any more), 5 (nothing), -1 (messages
   again);
 * finit with a message of the test queued (does it come back to the

@@ -20,9 +20,7 @@
  *
  * Every routine is C behind a thunk that keeps d1/a0/a1 (the original
  * keeps at least those in some of its paths; GCC keeps d2-d7/a2-a6).
- * Assembler: the inline constants (BLITZ_INLINE, copied by the compiler)
- * and the GetMsg of WaitCommodity, whose result the original takes from
- * the condition codes GetMsg leaves (C cannot see them, getmsg_cc).
+ * Assembler: the inline constants (BLITZ_INLINE, copied by the compiler).
  *
  * Fixed: MakeCommodity returns 0 without commodities.library V37
  * (init's OpenLibrary failed), before it makes the port; the original
@@ -32,7 +30,12 @@
  * SetCxStatus with a value other than -1 and 0 does nothing and returns
  * 0, as in the original.  The Exchange* functions count only a
  * CXM_COMMAND message; the original compared the id whatever the type, so
- * a hotkey with id 15 counted as ExchangeDisable (#555).
+ * a hotkey with id 15 counted as ExchangeDisable (#555).  WaitCommodity
+ * takes the first message with GetMsg and, if the port is empty, waits
+ * for one (WaitPort) and takes it; the original branched on the
+ * condition codes GetMsg leaves, inverted: with messages queued the first
+ * was lost and the second returned but left queued (a following
+ * CommodityEvent returned it again) (#566).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
@@ -42,12 +45,6 @@
  *     leaves the filters and senders of the broker allocated (#557); the
  *     message port is deleted with whatever messages are still queued
  *     (#561);
- *   - WaitCommodity branches on the CCR after GetMsg (not on its result)
- *     and the logic is inverted: "ne" -> WaitPort (waits for and returns
- *     the NEXT message, which stays queued; the one GetMsg removed is
- *     lost), "eq" -> msg = GetMsg's result; -1 either way.  Since exec's
- *     GetMsg leaves "ne" in practice, WaitCommodity waits when the port
- *     is empty and skips a message when it is not (#566);
  *   - messages are never replied (replymessage starts with RTS and is
  *     not called; kept as the dead code it is: not translated) (#561);
  *   - SetHotKey does not check the number: the slots are cxfilter[n] /
@@ -226,43 +223,24 @@ static void BLITZ_ROUTINE libfinit_c(void)
 }
 BLITZ_THUNK(ricommoditieslib_libfinit, libfinit_c, "d1/a0-a1");
 
-/* GetMsg(port) and its condition codes: *ne = 0xff if exec returns with
-   Z clear.  Assembler because the original branches on these flags (BNE
-   right after JSR _LVOGetMsg), which C cannot see; exec keeps a6. */
-static struct Message *getmsg_cc(struct MsgPort *port, UBYTE *ne)
-{
-    register struct MsgPort *a0 __asm("a0") = port;
-    register struct ExecBase *a6 __asm("a6") = SysBase;
-    register struct Message *d0 __asm("d0");
-    UBYTE cc;
-
-    __asm volatile("jsr -372(a6)\n\tsne %2"
-                   : "=d"(d0), "+a"(a0), "=dm"(cc)
-                   : "a"(a6)
-                   : "d1", "a1", "cc", "memory");
-    *ne = cc;
-    return d0;
-}
-
 /**
- * @brief WaitCommodity: fetches a message into msg, waiting for one.
+ * @brief WaitCommodity: fetches the next message into msg, waiting for
+ * one.
  *
- * Amiga mode only.  BUG(orig) (#566): the CCR of GetMsg decides, and
- * inverted: "ne" (in practice: the port was empty) -> WaitPort, msg =
- * the next message, which stays queued; "eq" -> msg = GetMsg's result (a
- * message removed by GetMsg with "ne" is lost).
- * @return d0: BB_TRUE either way, BB_FALSE without a broker
+ * Amiga mode only.  Fixed (#566): GetMsg, and on an empty port WaitPort
+ * and GetMsg again; the original branched on the condition codes GetMsg
+ * leaves, inverted ("ne", what exec leaves: WaitPort, msg = the head,
+ * left queued; a message GetMsg had removed was lost).
+ * @return d0: BB_TRUE, BB_FALSE without a broker
  */
 static BB_BOOL BLITZ_ROUTINE waitevent_c(void)
 {
     struct Message *m;
-    UBYTE ne;
 
     if (!st.cobject)
         return BB_FALSE;
-    m = getmsg_cc(st.msgport, &ne);
-    if (ne)
-        m = WaitPort(st.msgport);
+    while (!(m = GetMsg(st.msgport)))
+        WaitPort(st.msgport);
     st.msg = (CxMsg *)m;
     return BB_TRUE;
 }

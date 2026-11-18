@@ -176,7 +176,8 @@
 |HotKeyHit||12	$00000003
 |HotKeyHit||13	$00000003
 |HotKeyHit||14	$00000000
-|HotKeyHit||15	$00000000
+|HotKeyHit||15 [orig]	$00000000
+|HotKeyHit||15 [fixed #566]	$00000003
 |MakeCommodity||1	$FFFFFFFF
 |MakeCommodity (name taken)||1	$00000000
 |MakeCommodity again||1	$00000000
