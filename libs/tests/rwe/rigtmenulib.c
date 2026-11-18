@@ -27,11 +27,14 @@
  * missing entries, the error checks with existing entries, the object's
  * free routine, init/finit (the original's finit leaves gadtools open,
  * the port's closes it, #690: not observed here, test
- * rigtmenulib-finit-never-closes).
+ * rigtmenulib-finit-never-closes), CreateMenuStrip with CreateMenusA,
+ * GetVisualInfoA or LayoutMenusA failing (gadtools patched; the
+ * original returns -1 and passes the 0 on, #689).
  * Not covered: the error checks of missing entries (runtime errors,
  * TRAP #0), a shortcut$ at an address with low word 0, CreateMenuStrip
- * without titles (reads address 0), the walks beyond the lists (write
- * near address 0).
+ * without titles (the original reads address 0; bug-orig test
+ * rigtmenulib-createmenustrip-unchecked), the walks beyond the lists
+ * (write near address 0).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
@@ -50,6 +53,79 @@ static ULONG scrobj[2];                 /* screenslib objects: the screen */
 static struct Window *win;
 static ULONG winobj[2];                 /* windowslib objects */
 static ULONG stk[8];                    /* the compiler's a2 stack */
+
+/* gadtools.library patched (SetFunction) for the failures of
+   CreateMenuStrip, for the test task only (every other task gets the
+   system's routine): gt_mode 1 CreateMenusA returns 0, 2 GetVisualInfoA
+   returns 0, 3 LayoutMenusA returns FALSE.  In modes 1-3 LayoutMenusA
+   only counts its calls (with a strip or a visual info of 0: the
+   original passes them on) and returns FALSE, and FreeVisualInfo of 0
+   is counted and skipped */
+struct Task *gt_task;
+UWORD gt_mode;
+APTR gt_old_cma, gt_old_gvi, gt_old_lay, gt_old_fvi;
+ULONG gt_lay_calls, gt_lay_nomenu, gt_lay_novi, gt_fvi_null;
+void gt_cma(void), gt_gvi(void), gt_lay(void), gt_fvi(void);
+__asm__(
+"   .text\n"
+"   .even\n"
+"gt_test:\n"                           /* Z set: the test task (a0 kept) */
+"   move.l  a0,-(sp)\n"
+"   move.l  4.w,a0\n"
+"   move.l  276(a0),a0\n"               /* ThisTask */
+"   cmp.l   _gt_task,a0\n"
+"   move.l  (sp)+,a0\n"                 /* movea: the flags stay */
+"   rts\n"
+"   .globl  _gt_cma\n"
+"_gt_cma:\n"
+"   bsr.s   gt_test\n"
+"   bne.s   1f\n"
+"   cmp.w   #1,_gt_mode\n"
+"   bne.s   1f\n"
+"   moveq   #0,d0\n"
+"   rts\n"
+"1: move.l  _gt_old_cma,-(sp)\n"
+"   rts\n"
+"   .globl  _gt_gvi\n"
+"_gt_gvi:\n"
+"   bsr.s   gt_test\n"
+"   bne.s   1f\n"
+"   cmp.w   #2,_gt_mode\n"
+"   bne.s   1f\n"
+"   moveq   #0,d0\n"
+"   rts\n"
+"1: move.l  _gt_old_gvi,-(sp)\n"
+"   rts\n"
+"   .globl  _gt_lay\n"
+"_gt_lay:\n"
+"   bsr.s   gt_test\n"
+"   bne.s   1f\n"
+"   tst.w   _gt_mode\n"
+"   beq.s   1f\n"
+"   addq.l  #1,_gt_lay_calls\n"
+"   move.l  a0,d0\n"
+"   bne.s   2f\n"
+"   addq.l  #1,_gt_lay_nomenu\n"
+"2: move.l  a1,d0\n"
+"   bne.s   3f\n"
+"   addq.l  #1,_gt_lay_novi\n"
+"3: moveq   #0,d0\n"
+"   rts\n"
+"1: move.l  _gt_old_lay,-(sp)\n"
+"   rts\n"
+"   .globl  _gt_fvi\n"
+"_gt_fvi:\n"
+"   bsr.s   gt_test\n"
+"   bne.s   1f\n"
+"   tst.w   _gt_mode\n"
+"   beq.s   1f\n"
+"   move.l  a0,d0\n"
+"   bne.s   1f\n"
+"   addq.l  #1,_gt_fvi_null\n"
+"   rts\n"
+"1: move.l  _gt_old_fvi,-(sp)\n"
+"   rts\n"
+);
 
 #define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
 #define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
@@ -275,6 +351,26 @@ static void freemenu(int n, int form, ULONG m, ULONG i, ULONG s)
     obslist(n);
 }
 
+/* CreateMenuStrip of object n with one gadtools call failing (gt_mode
+   = mode): d0, whether the object has a strip, the calls of
+   LayoutMenusA and FreeVisualInfo */
+static void createfail(int n, UWORD mode, const char *what)
+{
+    gt_mode = mode;
+    gt_lay_calls = gt_lay_nomenu = gt_lay_novi = gt_fvi_null = 0;
+    ROUT = "CreateMenuStrip";
+    sprintf(VEC, "%d %s", n, what);
+    DO1(ENT(LIB, CREATE, 0), R.d[0] = WA(n); R.a[0] = (ULONG)scrobj;
+        R.a[3] = (ULONG)obj[n]);
+    gt_mode = 0;
+    OBS("d0", R.d[0]);
+    OBS("strip made", P(obj[n], 0) != 0);
+    OBS("LayoutMenusA calls", gt_lay_calls);
+    OBS("LayoutMenusA without a strip", gt_lay_nomenu);
+    OBS("LayoutMenusA without a visual info", gt_lay_novi);
+    OBS("FreeVisualInfo of 0", gt_fvi_null);
+}
+
 static void memlib(int idx)
 {
     markregs(&R);
@@ -407,6 +503,26 @@ int main(int argc, char **argv)
     freemenu(0, 0, 8, 0, 0);
     freemenu(0, 1, 2, 0, 0);
     create(0);
+
+    /* CreateMenuStrip with a failing gadtools call (#689) */
+    gt_task = FindTask(NULL);
+    Forbid();
+    gt_old_cma = SetFunction(gt, -48, (APTR)gt_cma);
+    gt_old_lay = SetFunction(gt, -66, (APTR)gt_lay);
+    gt_old_gvi = SetFunction(gt, -126, (APTR)gt_gvi);
+    gt_old_fvi = SetFunction(gt, -132, (APTR)gt_fvi);
+    CacheClearU();
+    Permit();
+    createfail(0, 1, "CreateMenusA fails");
+    createfail(0, 2, "GetVisualInfoA fails");
+    createfail(0, 3, "LayoutMenusA fails");
+    Forbid();
+    SetFunction(gt, -48, gt_old_cma);
+    SetFunction(gt, -66, gt_old_lay);
+    SetFunction(gt, -126, gt_old_gvi);
+    SetFunction(gt, -132, gt_old_fvi);
+    CacheClearU();
+    Permit();
 
     /* the objects' free routine, finit */
     for (s = 0; s < 2; s++) {

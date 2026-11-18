@@ -33,9 +33,6 @@
  * BUG(orig), kept:
  *   - The shortcut$ is tested by its low word (TST.w d5/d6): a string at
  *     an address with low word 0 counts as none (#694).
- *   - CreateMenuStrip with no title reads the list at address 0; a failed
- *     allocation writes it to address 0.  CreateMenuStrip does not check
- *     CreateMenusA/GetVisualInfoA (#689).
  *   - GTMenuState/GTSetMenuChecked change the flags of the menu strip
  *     directly, also while it is attached to a window (#693).
  * Fixed (intended deviations):
@@ -53,6 +50,11 @@
  *     base the wrong way round (TST.l:BNE 'ok) and never closes it (#690).
  *     The objects are freed before finit (FreeMenus with the base), so
  *     the free routine needs no test of the base.
+ *   - CreateMenuStrip on a list without titles returns 0 and builds
+ *     nothing (the original reads the "title" at address 0; its error
+ *     check reports it); when CreateMenusA, GetVisualInfoA or
+ *     LayoutMenusA fails it frees what it made and returns 0 (the
+ *     original checks none of them and returns -1) (#689).
  * Like the original, no defects: GTMenuTitle allocates the title
  * uncleared (MEMF_PUBLIC; all three fields are written); +8 counts every
  * entry added and is never decreased (the array of CreateMenuStrip,
@@ -350,7 +352,9 @@ BLITZ_THUNK(rigtmenulib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------- the menu strip */
 
-/* makearray: the NewMenu array of the lists of the object */
+/* makearray: the NewMenu array of the lists of the object (at least one
+   title); 0 if it cannot be allocated (only if memlib's "Out of Memory!"
+   returns: the original writes the array from address 0 on then, #689) */
 static struct NewMenu *makearray(struct gtmenulist *obj)
 {
     struct gtentry *title = obj->titles, *it, *sub;
@@ -358,6 +362,8 @@ static struct NewMenu *makearray(struct gtmenulist *obj)
 
     marraysize = bl_mulu_w((UWORD)(obj->count + 1), sizeof(struct NewMenu));
     marray = entry = (struct NewMenu *)galloc(marraysize, MEMF_PUBLIC | MEMF_CLEAR);
+    if (!entry)
+        return NULL;
     for (;;) {
         entry->nm_Type = NM_TITLE;
         entry->nm_Label = (STRPTR)title->text;
@@ -392,7 +398,9 @@ static BB_BOOL createmenustrip(struct gtmenulist *obj, struct Screen **scr)
 {
     struct NewMenu *arr;
 
-    if (!gtbase)
+    BB_BOOL ok = BB_FALSE;
+
+    if (!gtbase || !obj->titles)        /* Fixed (#689): no titles */
         return BB_FALSE;
     if (obj->strip) {
         FreeMenus(obj->strip);
@@ -400,12 +408,20 @@ static BB_BOOL createmenustrip(struct gtmenulist *obj, struct Screen **scr)
     }
     if (!(arr = makearray(obj)))
         return BB_FALSE;
-    obj->strip = CreateMenusA(arr, (struct TagItem *)taglist);
-    vi = GetVisualInfoA(*scr, NULL);
-    LayoutMenusA(obj->strip, vi, (struct TagItem *)tl_layout);
-    FreeVisualInfo(vi);
+    /* Fixed (#689): the results of CreateMenusA, GetVisualInfoA and
+       LayoutMenusA are checked; on a failure nothing is left */
+    if ((obj->strip = CreateMenusA(arr, (struct TagItem *)taglist))) {
+        if ((vi = GetVisualInfoA(*scr, NULL))) {
+            ok = LayoutMenusA(obj->strip, vi, (struct TagItem *)tl_layout) ? BB_TRUE : BB_FALSE;
+            FreeVisualInfo(vi);
+        }
+        if (!ok) {
+            FreeMenus(obj->strip);
+            obj->strip = NULL;
+        }
+    }
     gfree(marray, marraysize);
-    return BB_TRUE;
+    return ok;
 }
 
 /**
@@ -413,15 +429,18 @@ static BB_BOOL createmenustrip(struct gtmenulist *obj, struct Screen **scr)
  * lists (gadtools CreateMenusA, LayoutMenusA with new look menus).
  *
  * An old strip is freed first.  The NewMenu array ((count + 1) * 20
- * bytes, memlib) is freed again afterwards.  BUG(orig) (#689): no title
- * reads the list at address 0, a failed allocation writes it to address
- * 0; CreateMenusA and GetVisualInfoA are not checked.  Error check
- * (createchk): "GTMenu has no data to build GTMenuList from!".
+ * bytes, memlib) is freed again afterwards.  Fixed (#689): a list
+ * without titles gives 0 and changes nothing (the original reads the
+ * list at address 0); when CreateMenusA, GetVisualInfoA or LayoutMenusA
+ * fails, the strip is freed and the result is 0 (the original checks
+ * none of them and returns -1).  Error check (createchk): "GTMenu has no
+ * data to build GTMenuList from!".
  * @param scr  a0: the used screen object (screenslib), its first long the
  *             Screen
  * @param obj  a3: the GTMenuList object (#ia3|#pd0 of list#)
- * @return d0: BB_TRUE; BB_FALSE without gadtools.library or if the
- *         array could not be allocated
+ * @return d0: BB_TRUE; BB_FALSE without gadtools.library, without
+ *         titles, if the array could not be allocated or a gadtools call
+ *         failed (then the object has no strip)
  */
 static BB_BOOL BLITZ_ROUTINE createmenustrip_c(struct Screen **scr BL_REG(a0),
                                                struct gtmenulist *obj BL_REG(a3))

@@ -1,10 +1,36 @@
 # capture rwe_rigtmenulib 1
+CreateMenuStrip|FreeVisualInfo of 0|0 CreateMenusA fails|1	$00000000
+CreateMenuStrip|FreeVisualInfo of 0|0 GetVisualInfoA fails|1 [orig]	$00000001
+CreateMenuStrip|FreeVisualInfo of 0|0 GetVisualInfoA fails|1 [fixed #689]	$00000000
+CreateMenuStrip|FreeVisualInfo of 0|0 LayoutMenusA fails|1	$00000000
+CreateMenuStrip|LayoutMenusA calls|0 CreateMenusA fails|1 [orig]	$00000001
+CreateMenuStrip|LayoutMenusA calls|0 CreateMenusA fails|1 [fixed #689]	$00000000
+CreateMenuStrip|LayoutMenusA calls|0 GetVisualInfoA fails|1 [orig]	$00000001
+CreateMenuStrip|LayoutMenusA calls|0 GetVisualInfoA fails|1 [fixed #689]	$00000000
+CreateMenuStrip|LayoutMenusA calls|0 LayoutMenusA fails|1	$00000001
+CreateMenuStrip|LayoutMenusA without a strip|0 CreateMenusA fails|1 [orig]	$00000001
+CreateMenuStrip|LayoutMenusA without a strip|0 CreateMenusA fails|1 [fixed #689]	$00000000
+CreateMenuStrip|LayoutMenusA without a strip|0 GetVisualInfoA fails|1	$00000000
+CreateMenuStrip|LayoutMenusA without a strip|0 LayoutMenusA fails|1	$00000000
+CreateMenuStrip|LayoutMenusA without a visual info|0 CreateMenusA fails|1	$00000000
+CreateMenuStrip|LayoutMenusA without a visual info|0 GetVisualInfoA fails|1 [orig]	$00000001
+CreateMenuStrip|LayoutMenusA without a visual info|0 GetVisualInfoA fails|1 [fixed #689]	$00000000
+CreateMenuStrip|LayoutMenusA without a visual info|0 LayoutMenusA fails|1	$00000000
 CreateMenuStrip|d0|0|1	$FFFFFFFF
 CreateMenuStrip|d0|0|2	$FFFFFFFF
 CreateMenuStrip|d0|0|3	$FFFFFFFF
+CreateMenuStrip|d0|0 CreateMenusA fails|1 [orig]	$FFFFFFFF
+CreateMenuStrip|d0|0 CreateMenusA fails|1 [fixed #689]	$00000000
+CreateMenuStrip|d0|0 GetVisualInfoA fails|1 [orig]	$FFFFFFFF
+CreateMenuStrip|d0|0 GetVisualInfoA fails|1 [fixed #689]	$00000000
+CreateMenuStrip|d0|0 LayoutMenusA fails|1 [orig]	$FFFFFFFF
+CreateMenuStrip|d0|0 LayoutMenusA fails|1 [fixed #689]	$00000000
 CreateMenuStrip|kept|0|1	kept
 CreateMenuStrip|kept|0|2	kept
 CreateMenuStrip|kept|0|3	kept
+CreateMenuStrip|kept|0 CreateMenusA fails|1	kept
+CreateMenuStrip|kept|0 GetVisualInfoA fails|1	kept
+CreateMenuStrip|kept|0 LayoutMenusA fails|1	kept
 CreateMenuStrip|menu 0|0|1	$00000001
 CreateMenuStrip|menu 0|0|2	$00000001
 CreateMenuStrip|menu 0|0|3	$00000001
@@ -100,12 +126,20 @@ CreateMenuStrip|menu 4 fields|0|2	"L 242 W 40 H 0 flags $0001 \"Last\""
 CreateMenuStrip|popped|0|1	$00000000
 CreateMenuStrip|popped|0|2	$00000000
 CreateMenuStrip|popped|0|3	$00000000
+CreateMenuStrip|popped|0 CreateMenusA fails|1	$00000000
+CreateMenuStrip|popped|0 GetVisualInfoA fails|1	$00000000
+CreateMenuStrip|popped|0 LayoutMenusA fails|1	$00000000
 CreateMenuStrip|strip made|0|1	$00000001
 CreateMenuStrip|strip made|0|2	$00000001
 CreateMenuStrip|strip made|0|3	$00000001
 CreateMenuStrip|strip made|0|4	$00000001
 CreateMenuStrip|strip made|0|5	$00000001
 CreateMenuStrip|strip made|0|6	$00000001
+CreateMenuStrip|strip made|0 CreateMenusA fails|1	$00000000
+CreateMenuStrip|strip made|0 GetVisualInfoA fails|1 [orig]	$00000001
+CreateMenuStrip|strip made|0 GetVisualInfoA fails|1 [fixed #689]	$00000000
+CreateMenuStrip|strip made|0 LayoutMenusA fails|1 [orig]	$00000001
+CreateMenuStrip|strip made|0 LayoutMenusA fails|1 [fixed #689]	$00000000
 GTFreeMenu|count|0 form 0 3/0/0|1	$00000011
 GTFreeMenu|count|0 form 0 8/0/0|1	$00000011
 GTFreeMenu|count|0 form 1 1/0/0|1	$00000011

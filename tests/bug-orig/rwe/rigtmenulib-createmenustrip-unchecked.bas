@@ -7,6 +7,7 @@
 ; debugger (whose check would report the empty list).
 ; Correct: CreateMenuStrip on a list without titles does nothing and
 ; returns 0.
+; @fixed #689
 ; @rwe rigtmenulib
 WbToScreen 0
 NPrint "before"

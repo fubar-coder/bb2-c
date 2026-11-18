@@ -101,15 +101,24 @@ Intended deviations from the original:
   closes). The objects are freed before finit (the compiler's free
   loop of a library comes before its finit, `makefinits`), so the free
   routine's FreeMenus needs no test of the base.
+* **CreateMenuStrip checks what it builds from.** On a list without
+  titles it returns 0 and changes nothing; the original reads the
+  "title" at address 0 and walks what it finds there (its error check
+  `createchk` reports the empty list). When CreateMenusA, GetVisualInfoA
+  (the screen cannot be locked) or LayoutMenusA fails, it frees the strip
+  and returns 0; the original checks none of them, passes a strip or a
+  visual info of 0 on to LayoutMenusA and FreeVisualInfo and returns -1
+  (#689; test `rigtmenulib-createmenustrip-unchecked`, `libs_emulator`
+  cases `[fixed #689]` of `rwe_rigtmenulib`: gadtools patched). A failed
+  allocation of the NewMenu array does not return in the original
+  (memlib raises "Out of Memory!", `libs/acidlibs/memlib.c`); if the
+  runtime error returns in the port, makearray gives 0 before writing.
 
 ## BUG(orig), kept
 
 * **The shortcut$ is tested by the low word of its address** (`TST.w
   d5`/`d6`): a string at an address with low word 0 counts as no shortcut
   (#694).
-* **CreateMenuStrip:** with no title, the lists are read at address 0; a
-  failed allocation writes the array to address 0; CreateMenusA and
-  GetVisualInfoA are not checked (#689).
 * **GTMenuState and GTSetMenuChecked** change the flags of the strip
   directly, also while it is attached to a window; a strip made again
   loses them (#693).
@@ -149,7 +158,9 @@ Covered:
   exclude, #692; the arguments from the 7th on as the compiler passes
   them: pushed, d6 the last one) and
   GTSubItem forms 0–4, with missing titles, items and sub items;
-* CreateMenuStrip twice (the old strip freed);
+* CreateMenuStrip twice (the old strip freed), and with CreateMenusA,
+  GetVisualInfoA or LayoutMenusA failing (gadtools patched for the test
+  task);
 * GTSetMenu with and without a strip, and on a window that has one;
   GTUnSetMenu with and without a strip;
 * GTMenuState in all forms;
@@ -163,5 +174,6 @@ Not covered:
 
 * the error checks with missing entries (runtime errors, TRAP #0);
 * a shortcut$ at an address with low word 0;
-* CreateMenuStrip without titles;
+* CreateMenuStrip without titles (the original reads address 0; the
+  bug-orig test `rigtmenulib-createmenustrip-unchecked`);
 * walks past the end of the strip (they write near address 0).
