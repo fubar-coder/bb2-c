@@ -129,9 +129,15 @@ cursor positions, frq_Memory, frq_Memory2; not frq_Lock at 208, where
 both builds of the 162-byte structure have the library base), then
 ReqFileLoc and the colour structure show whether the library's data is
 intact, and the test writes the old bytes back; finit (library closed,
-memory back); a second run as from the editor (init again after finit,
-no ReqOutput: the window the file requester and the colour requester
-get, then finit). Not covered: the real req.library (not installed in the
-emulator, and its requesters need a user); ReqFileRequest/ReqColour
+memory back, the PurgeFiles calls with `FrStruct` while the library is
+open: the fake's PurgeFiles, -114, counts them); a second run as from
+the editor (init again after finit, no ReqOutput: the window the file
+requester and the colour requester get, then finit). The real
+req.library 2.8 is not in the emulator's system; the tests against it
+stage it and answer its requesters through inject (the bug-orig tests
+`rireqlib-title-kept`, `rireqlib-colour-default-word`,
+`rireqlib-colour-window` and the regression tests
+`rireqlib-real-cancel`, `rireqlib-real-needs-libs`). Not covered by the
+fake library: ReqFileRequest/ReqColour
 without the library (the original calls through a6 = 0: the bug-orig
 test `rireqlib-no-base-check`).

@@ -21,7 +21,8 @@
  * requester's own fields behind offset 162 (the fake writes them once,
  * then ReqFileLoc and ReqColour show whether the library's data is
  * intact; the test writes the old bytes back before the next call),
- * finit (library closed, memory back), a second run (init after finit,
+ * finit (library closed, memory back, PurgeFiles called for the
+ * structure before the library is closed), a second run (init after finit,
  * as from the editor: the window of ReqFileRequest and ReqColour without
  * ReqOutput).  Not covered: the real
  * req.library (not in the system, and its requesters need a user);
@@ -56,11 +57,17 @@ static const char *fk_title;            /* the title pointer it got */
 static int fk_overrun;
 static UBYTE *ov_at, ov_saved[OV_TO - OV_FROM];
 
+/* the structure FileRequester got; the PurgeFiles calls with it while
+   the library is open */
+static UBYTE *fk_fr_at;
+static ULONG fk_purges;
+
 static ULONG fk_filereq(UBYTE *fr __asm("a0"))
 {
     char *path;
     int i;
 
+    fk_fr_at = fr;
     memcpy(rec_fr, fr, sizeof rec_fr);
     fk_title = *(const char **)(fr + 2);
     memset(rec_title, 0, sizeof rec_title);
@@ -99,10 +106,18 @@ static ULONG fk_colorreq(const UBYTE *cr __asm("a0"))
     return fk_colret;
 }
 
+static ULONG fk_purgefiles(UBYTE *fr __asm("a0"))
+{
+    if (fr == fk_fr_at && fake->lib_OpenCnt > 0)
+        fk_purges++;
+    return 0;
+}
+
 static void fake_add(void)
 {
     static APTR vec[NVEC + 1];
     vec[13] = (APTR)fk_filereq;         /* -$54 */
+    vec[18] = (APTR)fk_purgefiles;      /* -$72 */
     vec[31] = (APTR)fk_colorreq;        /* -$c0 */
     fake = fake_library("req.library", 0, vec, NVEC);
 }
@@ -273,8 +288,9 @@ int main(int argc, char **argv)
 
     ROUT = "finit";
     strcpy(VEC, "");
-    DO1(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), fk_purges = 0);
     OBS("library closed", fake->lib_OpenCnt);
+    OBS("PurgeFiles(FrStruct) while open", fk_purges);
     check("rireqlib: library closed", fake->lib_OpenCnt == 0);
 
     /* a second run of the program with the library still loaded (from
@@ -299,8 +315,9 @@ int main(int argc, char **argv)
     OBS("called", fk_calls);
     OBS("WinPtr", *(ULONG *)(rec_cr + 4));
     ROUT = "finit";
-    DO1(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), fk_purges = 0);
     OBS("library closed", fake->lib_OpenCnt);
+    OBS("PurgeFiles(FrStruct) while open", fk_purges);
     rwe_mem_check(LIB, avail, TRUE);
     ROUT = "finit (again)";
     strcpy(VEC, "");
