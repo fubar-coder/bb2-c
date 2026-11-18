@@ -25,7 +25,9 @@
  * forms, GTMenuChecked/GTSetMenuChecked both forms (the upper word of
  * d0), GTGetUserData both forms (sub item -1), GTFreeMenu all forms and
  * missing entries, the error checks with existing entries, the object's
- * free routine, init/finit (BUG(orig) (#690): gadtools stays open).
+ * free routine, init/finit (the original's finit leaves gadtools open,
+ * the port's closes it, #690: not observed here, test
+ * rigtmenulib-finit-never-closes).
  * Not covered: the error checks of missing entries (runtime errors,
  * TRAP #0), a shortcut$ at an address with low word 0, CreateMenuStrip
  * without titles (reads address 0), the walks beyond the lists (write

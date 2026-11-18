@@ -94,11 +94,16 @@ Intended deviations from the original:
   freed only the 12-byte node: each removed title kept its string until
   the end of the program (#695; test
   `rigtmenulib-title-strings-not-freed`).
+* **finit closes gadtools.library** if it is open. The original tests
+  the base the wrong way round (`TST.l gtbase:BNE 'ok`) and never closes
+  it: every run left gadtools.library open once more (#690; test
+  `rigtmenulib-finit-never-closes`, through inject: the opens minus the
+  closes). The objects are freed before finit (the compiler's free
+  loop of a library comes before its finit, `makefinits`), so the free
+  routine's FreeMenus needs no test of the base.
 
 ## BUG(orig), kept
 
-* **finit** closes gadtools.library only if it is NOT open (`TST.l
-  gtbase:BNE 'ok`), so it never closes it (#690).
 * **The shortcut$ is tested by the low word of its address** (`TST.w
   d5`/`d6`): a string at an address with low word 0 counts as no shortcut
   (#694).

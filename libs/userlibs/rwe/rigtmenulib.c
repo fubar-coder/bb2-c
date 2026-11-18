@@ -31,8 +31,6 @@
  * "General").  No assembler.
  *
  * BUG(orig), kept:
- *   - finit closes gadtools.library only if it is NOT open (TST.l:BNE
- *     'ok): never (#690).
  *   - The shortcut$ is tested by its low word (TST.w d5/d6): a string at
  *     an address with low word 0 counts as none (#694).
  *   - CreateMenuStrip with no title reads the list at address 0; a failed
@@ -51,6 +49,10 @@
  *   - The free routines (the object's free, GTFreeMenu of a title) free
  *     the title's string; the original frees only the node, the string
  *     stayed until the end of the program (#695).
+ *   - finit closes gadtools.library if it is open; the original tests the
+ *     base the wrong way round (TST.l:BNE 'ok) and never closes it (#690).
+ *     The objects are freed before finit (FreeMenus with the base), so
+ *     the free routine needs no test of the base.
  * Like the original, no defects: GTMenuTitle allocates the title
  * uncleared (MEMF_PUBLIC; all three fields are written); +8 counts every
  * entry added and is never decreased (the array of CreateMenuStrip,
@@ -334,12 +336,12 @@ BLITZ_THUNK(rigtmenulib_libinit, libinit_c, "d0-d1/a0-a1");
 /**
  * @brief finit: close gadtools.library.
  *
- * BUG(orig) (#690): it closes only if the library is NOT open (TST.l:BNE
- * 'ok), so never.
+ * Fixed (#690): it closes the library if it is open; the original tests
+ * the base the wrong way round (TST.l:BNE 'ok) and so never closes it.
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
-    if (!gtbase) {
+    if (gtbase) {
         CloseLibrary(gtbase);
         gtbase = NULL;
     }
