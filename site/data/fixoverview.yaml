@@ -3956,6 +3956,38 @@ rows:
     text: "`FillArray` on an array without elements writes nothing; the original wrote on through all memory."
     page: libraries
     anchor: riarrayslib-fixes
+  - issue: 837
+    severity: 5
+    topic: "System"
+    library: "rithreadlib"
+    command: ""
+    text: "At its end, a program waits until no thread runs any more; the original could end while threads started after an earlier \"all ended\" still ran in its freed code."
+    page: libraries
+    anchor: rithreadlib-fixes
+  - issue: 838
+    severity: 5
+    topic: "System"
+    library: "rithreadlib"
+    command: "CreateThread"
+    text: "Two `CreateThread` in a row start each thread with its own code, registers and memory; the original could run the second one's code twice."
+    page: libraries
+    anchor: rithreadlib-fixes
+  - issue: 839
+    severity: 5
+    topic: "System"
+    library: "rithreadlib"
+    command: "CreateThread"
+    text: "The end of a program frees the library's signal; with the original, `CreateThread` did nothing after 15 runs from the editor or the same shell."
+    page: libraries
+    anchor: rithreadlib-fixes
+  - issue: 1086
+    severity: 5
+    topic: "System"
+    library: "rithreadlib"
+    command: "CreateThread, ActiveThreads"
+    text: "`CreateThread` does not count a thread that could not be started, so `ActiveThreads` stays right; with the original, the program could hang at its end."
+    page: libraries
+    anchor: rithreadlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

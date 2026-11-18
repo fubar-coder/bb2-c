@@ -5,7 +5,7 @@ intro: |
   starts the code at a label, given with `?label`; the code ends with
   `RTS`, and the thread ends with it. `ActiveThreads` tells how many
   threads are still running. When the program ends, it waits for its
-  threads to end first (with one exception, see `ActiveThreads`).
+  threads to end first.
 
   A thread shares the program's global variables, so the main program and
   its threads can talk through them; it gets 10 KB of cleared working
@@ -26,6 +26,5 @@ intro: |
   RTS
   ```
 
-  Start one thread at a time: a second `CreateThread` before the first
-  thread has begun to run starts both threads with the second one's code
-  ([#838](https://github.com/fubar-coder/bb2-c/issues/838)).
+  The fixed bugs of the library are listed in
+  [Fixes in rithreadlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rithreadlib-fixes" >}}).
