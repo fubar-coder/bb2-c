@@ -109,10 +109,17 @@ that are not the result.
   function with a numeric result. Without it
   `"ab"+Str$(IconDefTool("tool"))+"cd"` gives `abtool` instead of `ab-1cd`.
 * IconToShape fills the shape before allocating its data (no memory:
-  size without data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); calls MakeCookie with a3 = the shape only if it was in use
-  before (freeashape), otherwise with the caller's a3 (a cookie for
-  whatever a3 points to); with two shapes the second gets the cookie of
-  the first if it is fresh (a3 still the first) (#849).
+  size without data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+
+Not a defect in compiled programs: IconToShape calls MakeCookie with a3 =
+the shape only if it was in use before (freeashape), otherwise with the
+caller's a3; with two shapes the second call has a3 still on the first
+shape. The compiler links each ALibJsr call through a stub that loads the
+callee's registers from its declaration first (as for editlib, #130,
+`docs/libs/cmdlibs-port.md`): MakeCookie's a3 is `Shape(d0)`, the shape
+number IconToShape passes, so every shape gets its own cookie (#849). The
+library test calls MakeCookie without that stub, so its case "IconToShape
+(fresh, a3 = decoy)" shows the cookie on the decoy.
 
 Original behaviour that is no defect: SetToolValue skips the entry's own
 `(` (`OFF` replaces `(OFF)=1`, the switched-off form of the same entry);

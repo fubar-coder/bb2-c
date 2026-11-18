@@ -41,11 +41,15 @@
  *     does not take back after a library function with a numeric result
  *     (#846, closed).
  *   - IconToShape: the shape is filled before the data is allocated (no
- *     memory: the shape keeps its size and has no data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); MakeCookie is called with a3 = the shape only if the
- *     shape was in use before (freeashape), otherwise with the caller's
- *     a3 - a cookie for whatever a3 points to; IconToShape shape,shape
- *     gives the second shape the cookie of the first (a3 is still the
- *     first shape) (#849).
+ *     memory: the shape keeps its size and has no data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+ * Not a defect in compiled programs: IconToShape calls MakeCookie with
+ *   a3 = the shape only if the shape was in use before (freeashape),
+ *   otherwise with the caller's a3, and IconToShape shape,shape with a3
+ *   still on the first shape.  The compiler links each ALibJsr call
+ *   through a stub that loads the callee's registers from its
+ *   declaration first (as for editlib, #130, docs/libs/cmdlibs-port.md):
+ *   MakeCookie's a3 is Shape(d0), the shape number IconToShape passes,
+ *   so every shape gets its own cookie (#849).
  * Fixed (intended deviation, #852): SetIconType without an icon returned
  *   its argument (non-zero: success for a program that tests it); now 0.
  * Fixed (intended deviation, #843): FindToolType tt$,1 set a flag for the
@@ -979,8 +983,9 @@ static void icontoshape_jump(ULONG shapearg, struct bb_shape *shape, UWORD rende
  * A shape in use is freed first; the data is allocated with memlib
  * globalloc (CHIP) and copied from the Image, the cookie made with
  * shapeslib's MakeCookie.  BUG(orig): the shape is filled before the data
- * is allocated (#848, not a bug in practice); MakeCookie gets the
- * caller's a3 unless the shape was in use (#849).  The copy takes the
+ * is allocated (#848, not a bug in practice).  MakeCookie gets the
+ * caller's a3 unless the shape was in use; not a defect in compiled
+ * programs, the ALibJsr stub sets a3 = Shape(d0) (#849).  The copy takes the
  * words of the allocation (fixed #847: the original took one word per
  * row more for a width that is a multiple of 16).  DIFF: a3 kept.
  * @param shapearg  d0: the shape's offset (shape# << 5)
@@ -999,8 +1004,9 @@ void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct bb_shape *sha
 /**
  * @brief IconToShape shape,shape: the image and the selected image as two shapes.
  *
- * As IconToShape shape for each; BUG(orig) (#849): the second shape gets
- * the cookie of the first (a3 is still the first shape).
+ * As IconToShape shape for each; MakeCookie for the second shape gets a3
+ * still on the first: not a defect in compiled programs, the ALibJsr stub
+ * sets a3 = Shape(d0) (#849).
  * @param shapearg   d0: the first shape's offset (shape# << 5)
  * @param shapearg2  d1: the second shape's offset
  * @param shape      a0: the shape for the image (#ia0|#pd0)

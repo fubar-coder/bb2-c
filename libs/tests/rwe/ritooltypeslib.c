@@ -30,9 +30,11 @@
  * (with and without value and status), ClearToolTypes, SetIconHit,
  * IconRender, SetIconType 0-6, IconDefTool (a3 rewound on purpose, no defect #846; empty
  * string), ShapeToIcon (both forms), IconToShape (both forms, shapes in
- * use and fresh, BUG(orig) #849: MakeCookie on the caller's a3 for a fresh
- * shape - here a3 points to a decoy shape; the second shape of the two
- * argument form gets no cookie), PutIconObject (both forms), FreeIconObject,
+ * use and fresh: MakeCookie on the caller's a3 for a fresh shape - here a3
+ * points to a decoy shape; the second shape of the two argument form gets
+ * no cookie. Not a defect in compiled programs (#849): their ALibJsr stub
+ * loads MakeCookie's a3 = Shape(d0), this test calls MakeCookie without
+ * it), PutIconObject (both forms), FreeIconObject,
  * finit with an icon open, init.
  * Not covered: icon.library missing, AllocMem/AddFreeList failing (fixed
  * #840: the bug-orig test), more than 100 tool types (fixed #855: the
