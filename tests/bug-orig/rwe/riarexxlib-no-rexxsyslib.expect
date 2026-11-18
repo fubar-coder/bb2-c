@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+created -1
+run 0
+send <>
+inject: openlibfail: 1 opens failed
+inject: rc=0
+rc=0

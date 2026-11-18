@@ -121,6 +121,10 @@
  *     and neither waited (#544).
  *   - finit closes rexxsyslib.library; the original never closed it (one
  *     open count lost per program run) (#1093).
+ *   - Without rexxsyslib.library nothing is sent (RXRunCommand,
+ *     RXExecuteScript, RXRunScript 0, RXSendCommand "") and RXReplyMsg
+ *     replies without a result string; the original called through a
+ *     base of 0 (#1094).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -348,8 +352,7 @@ struct msglists {
 };
 static_assert(sizeof(struct msglists) == 256);
 
-/* rexxsyslib CreateArgString(a0 = string, d0 = length) / DeleteArgString */
-static ULONG createargstring(const UBYTE *s, ULONG len)
+static ULONG createargstring_lib(const UBYTE *s, ULONG len)
 {
     register ULONG d0 __asm("d0") = len;
     register const UBYTE *a0 __asm("a0") = s;
@@ -360,11 +363,23 @@ static ULONG createargstring(const UBYTE *s, ULONG len)
     return d0;
 }
 
+/* rexxsyslib CreateArgString(a0 = string, d0 = length) / DeleteArgString;
+   fixed (#1094): nothing without the library (the original called
+   through a base of 0) */
+static ULONG createargstring(const UBYTE *s, ULONG len)
+{
+    if (!v.rexxbase)
+        return 0;
+    return createargstring_lib(s, len);
+}
+
 static void deleteargstring(ULONG s)
 {
     register ULONG a0 __asm("a0") = s;
     register struct Library *a6 __asm("a6") = v.rexxbase;
 
+    if (!v.rexxbase)
+        return;
     __asm volatile("jsr -132(a6)" : "+a"(a0), "+a"(a6)
                    : : "d0", "d1", "a1", "cc", "memory");
 }
@@ -778,6 +793,8 @@ static ULONG sendto(const UBYTE *port, ULONG cmd, ULONG type, UWORD wait, UWORD 
     v.replyreq = wait;
     wholearg = whole;
     noresult = nores;
+    if (!v.rexxbase)                    /* fixed (#1094): no message without rexxsyslib */
+        return 0;
     if (!(p = FindPort((CONST_STRPTR)port)))
         return 0;
     v.destport = p;

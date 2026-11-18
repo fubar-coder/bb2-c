@@ -206,6 +206,11 @@ kind F):
 * **finit** closes rexxsyslib.library after it has deleted the port. The
   original never closed it: one open count of the library was lost per
   program run, so it could never be expunged (#1093).
+* **Without rexxsyslib.library** (init could not open it) nothing is
+  sent: RXRunCommand, RXExecuteScript and RXRunScript return 0,
+  RXSendCommand ""; RXReplyMsg replies without a result string. The
+  original never checked the base and called CreateArgString through a
+  base of 0 at the first message (a crash) (#1094).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
