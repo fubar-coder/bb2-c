@@ -4,7 +4,7 @@ timeout
 [compile]
 ok
 [run]
-icon added
+menu added
 REQUESTER: EasyRequest title "Software Failure" text "%s
 %s%lx).
 %s" gadgets "Suspend|Reboot" -> answered 0
