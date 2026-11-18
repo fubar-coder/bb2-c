@@ -41,12 +41,24 @@ reentrant, as the original).
 All C behind `BLITZ_THUNK`s. The hook's thunk keeps d1/a0/a1, the C
 code d2–d7/a2–a6 (the original keeps a2–a6/d2–d7; `TextFit` takes its
 constraining extent in a3, which the libraries' safe form of the NDK
-macro keeps, `cmake/ndk-calls.cmake`). The
-hook takes the caller's d7 as a parameter: its upper word decides on the
-tree lines (second bug below). The graphics calls get the registers the
-original passes where their upper words can matter (`TextFit`'s width
-with `$FFFF` above, its length as a long). The original's unused load of
-`lvdm_DrawInfo->dri_Pens` is left out.
+macro keeps, `cmake/ndk-calls.cmake`). The graphics calls get the
+registers the original passes where their upper words can matter
+(`TextFit`'s width with `$FFFF` above, its length as a long). The
+original's unused load of `lvdm_DrawInfo->dri_Pens` is left out.
+
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* The number of tree lines, indent / 16 − 1, is a word. The original
+  computed it as a long with the upper word of the caller's d7
+  (`MOVE.w indent,d7:ASR.w #4:SUBQ.l #1:BMI`): with a negative d7 no
+  tree lines were drawn and the RastPort's line pattern stayed `$AAAA`;
+  with an indent below 16 and an upper word of 1..`$8000` 65536 lines
+  were drawn (`DBRA` on the low word) (#737; test
+  `rilvcallhooklib-d7-upper-word`, `libs_emulator` cases `[fixed #737]`
+  of `rwe_rilvcallhooklib`).
 
 ## BUG(orig), kept
 
@@ -54,11 +66,6 @@ with `$FFFF` above, its length as a long). The original's unused load of
   next node's indent at the offset of the first field entry's *width*
   (`dispaddress` is already past the first entry), not at the indent
   offset; an odd width is an address error on a 68000 (#739).
-* The number of tree lines, indent / 16 − 1, is computed as a long with
-  the upper word of the caller's d7 (`MOVE.w indent,d7:ASR.w #4:SUBQ.l
-  #1:BMI`): with a negative d7 no tree lines are drawn and the RastPort's
-  line pattern stays `$AAAA`; with an indent below 16 and an upper word
-  of 1..`$8000` 65536 lines are drawn (`DBRA` on the low word) (#737).
 * `TextFit` gets the constraining width with `$FFFF` in the upper word
   (`MOVEQ #-3,d2` and word arithmetic) (#741).
 * A right-aligned BitMap is drawn `ob_MinX` too far right: the alignment
@@ -91,5 +98,9 @@ A message other than `LV_DRAW` (nothing drawn), init/finit. Layouts that
 would give graphics.library an empty rectangle (a RastPort without a
 layer is not clipped) are skipped: items of 10 lines and more, BitMaps
 lower than the item, no text or BitMap ending exactly at the field's
-edge. Checked to fail when the width-offset bug or the d7 bug is "fixed".
-Not covered: the 65536 tree lines, a text pointer 0, negative indents.
+edge. Checked to fail when the width-offset bug is "fixed"; the fixed
+d7 bug (#737) gives the cases `[orig]` / `[fixed #737]` of the items
+with an indent of 16 or more and the upper word `$FFFF` or `$8000`.
+Not covered: the original's 65536 tree lines (indent below 16 with an
+upper word of 1..`$8000`: the scenario gives the original only upper
+words without them), a text pointer 0, negative indents.

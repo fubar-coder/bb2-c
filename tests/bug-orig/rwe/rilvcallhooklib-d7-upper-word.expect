@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+tree pixels 12
+rc=0

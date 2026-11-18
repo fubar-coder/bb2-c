@@ -36,11 +36,6 @@
  *     indent of the next node at the offset of the first field entry's
  *     width (dispaddress is already past the first entry), not at the
  *     indent offset (an odd width: an address error on a 68000) (#739).
- *   - The number of tree lines, indent / 16 - 1, is taken as a long with
- *     the upper word of the caller's d7 (MOVE.w indent,d7:ASR.w #4:SUBQ.l
- *     #1): a negative d7 draws no lines and leaves the RastPort's line
- *     pattern at $AAAA; an indent below 16 with an upper word other than
- *     0 and $8001..$FFFF draws 65536 lines (DBRA on the low word) (#737).
  *   - TextFit gets the width with $FFFF in the upper word (MOVEQ #-3,d2
  *     with ADD.w/SUB.w) (#741).
  *   - A right aligned BitMap is drawn ob_MinX too far right (the
@@ -50,6 +45,14 @@
  *     and count SetDrPt sets (#738).
  *   - A text pointer 0 in a text field is read as a string at address 0
  *     (#742).
+ *
+ * Fixed (kind F, docs/libs/deviations.md 3a):
+ *   - The number of tree lines, indent / 16 - 1, is a word.  The original
+ *     took it as a long with the upper word of the caller's d7 (MOVE.w
+ *     indent,d7:ASR.w #4:SUBQ.l #1): a negative d7 drew no lines and left
+ *     the RastPort's line pattern at $AAAA; an indent below 16 with an
+ *     upper word of 1..$8000 drew 65536 lines (DBRA on the low word)
+ *     (#737).
  *
  * RetrieveCallHook must be called before the hook is used (the graphics
  * base is 0 before): documented usage, not a defect.
@@ -253,12 +256,12 @@ static void displayfield(struct Library *gfx)
     filloldextent(gfx, rp, &ob, &extent.te_Extent);
 }
 
-/* ClearIndent: the indent in pen 0, the tree lines in pen 1; levels (d7)
-   = the caller's d7 with the level count in the low word (its upper
-   word, BUG(orig) #737) */
-static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *node, ULONG levels)
+/* ClearIndent: the indent in pen 0, the tree lines in pen 1 (one per
+   16 pixels of indent but the first; their count a word: Fixed (#737),
+   the original took the upper word of the caller's d7) */
+static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *node)
 {
-    WORD x, y;
+    WORD x, y, levels;
     UWORD k;
 
     SetAPen(rp, 0);
@@ -266,9 +269,8 @@ static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *n
     SetAPen(rp, 1);
     rp->LinePtrn = 0xaaaa;              /* BUG(orig): not SetDrPt (#738) */
     x = (WORD)(ob.MinX + 8);
-    levels = (levels & 0xffff0000UL) | (UWORD)(indent >> 4);
-    levels--;                           /* SUBQ.l #1,d7:BMI */
-    if ((LONG)levels < 0)
+    levels = (WORD)((indent >> 4) - 1);
+    if (levels < 0)
         return;
     k = (UWORD)levels;
     for (;;) {
@@ -313,19 +315,18 @@ static void drawdisabled(struct Library *gfx, const struct Rectangle *b, struct 
  * fields drawn left to right (the last one cut at the right edge), a
  * disabled item ghosted in apen.  Not reentrant (static state, as the
  * original's).  BUG(orig): the last tree line tests the next node at the
- * first field's width, not the indent offset (#739); the line count
- * takes the caller's d7 upper word (#737); TextFit's width has $FFFF in
- * the upper word (#741); a right aligned BitMap is ob_MinX too far right
- * (#740); the line pattern without SetDrPt (#738); a text pointer 0 is
- * read as a string (#742).
+ * first field's width, not the indent offset (#739); TextFit's width has
+ * $FFFF in the upper word (#741); a right aligned BitMap is ob_MinX too
+ * far right (#740); the line pattern without SetDrPt (#738); a text
+ * pointer 0 is read as a string (#742).  Fixed: the tree line count is
+ * a word (#737).
  * @param hook      a0: the Hook, h_Data = the field table
  * @param msg       a1: the LVDrawMsg
  * @param node      a2: the node
- * @param callerd7  d7: the caller's d7 (the tree line count's upper word)
  * @return d0: LVCB_OK after drawing, LVCB_UNKNOWN for other messages
  */
 static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDrawMsg *msg BL_REG(a1),
-                                      const UBYTE *node BL_REG(a2), ULONG callerd7 BL_REG(d7))
+                                      const UBYTE *node BL_REG(a2))
 {
     struct Library *gfx;
     const struct fieldtable *tab = hook->h_Data;
@@ -362,7 +363,7 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
     maxXboundary = msg->lvdm_Bounds.MaxX;
     ob = msg->lvdm_Bounds;
     if (indent)
-        clearindent(gfx, msgrastport, node, callerd7);
+        clearindent(gfx, msgrastport, node);
     ob.MinX += indent;
 
     entry = dispaddress;
