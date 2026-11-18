@@ -30,7 +30,13 @@ LSL 7+4`) with the handler ipprint:
 
 The text is printed by PrintIText with the library's IntuiText:
 FrontPen and BackPen are the low bytes of the pens of the last IPColour
-(1 and 0 at first), DrawMode 0 (JAM1), always at 0,0.
+(1 and 0 at first), DrawMode 0 (JAM1), with the Rast's pen position
+(IPLocate; 0,0 after IPBitMap) as the top left corner of the text.
+Then the position moves right by the text's width (TextLength in the
+Rast's font, the font PrintIText takes); its y stays. PrintIText itself
+leaves the pen at the end of the text on the baseline (the original's
+observed pen position after every output: the text's width, 6), so the
+handler sets the position after it.
 
 The table ends twice, as in the source: `!libfin{...}` after the object
 entries, then the init/finit nullsubs and a plain `!libfin`.
@@ -55,6 +61,12 @@ Intended deviations (`docs/libs/deviations.md`, section 3a, kind F):
   stack) as the RastPort, which it set to the Rast only together with
   SetAPen: the Rast kept its background pen and SetBPen wrote into the
   memory at a2 (#696).
+* **IPOutput prints at the pen position** and moves it on. The original
+  printed every text at 0,0 (+ the baseline): IPLocate had no effect on
+  the output, and each text was drawn over the previous one. The
+  library's first version (`riintuilib.bb`: IPPrint's x,y and IPLocate
+  in the IntuiText's LeftEdge/TopEdge) took the position as the top left
+  corner of the text, as the fix does (user decision W3 Q3 (a), #697).
 
 ## BUG(orig), kept
 
@@ -63,8 +75,6 @@ Intended deviations (`docs/libs/deviations.md`, section 3a, kind F):
   not d0 itself (#699).
 * **The a0/d0 handler** copies without a limit into the 1024 byte
   buffer; the pens follow it (#698).
-* **PrintIText always prints at 0,0** (+ the baseline): IPLocate has no
-  effect on the output of IPOutput (#697).
 
 ## Test
 
@@ -72,12 +82,13 @@ Each run loads one library set (the C build or the original); the
 scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_riintuilib.txt` recorded from the
 original. The set has its inputoutputlib, a Rast object and a BitMap
-(320 × 16, 2 planes).
+(320 × 32, 2 planes).
 
 Observed:
 
 * the Rast (every field but the BitMap pointer, which must be the set's
-  BitMap);
+  BitMap, and the pen position);
+* the pen position on its own (where the next output starts);
 * both planes after every output (and whether anything was drawn);
 * 128 bytes around the caller's a2 (the original's IPColour calls
   SetBPen there, #696);
@@ -93,7 +104,7 @@ Covered:
   dooutsingle/dooutstring1/dooutstring2: a character (from the address
   d0: a string's address and the low memory address 65), a0/d0 strings
   (also length 0), null terminated strings (also empty), with the pens
-  of IPColour, after IPLocate;
+  of IPColour, after IPLocate and after the previous output (#697);
 * finit.
 
 Not covered: a0/d0 strings over 1024 characters (they overwrite the

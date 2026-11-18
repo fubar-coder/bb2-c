@@ -19,16 +19,22 @@
  * (inputoutputlib dosetout): -8 a null terminated string, -4 a0/d0, 0
  * one character.  The text is printed by PrintIText with an IntuiText of
  * the library: FrontPen/BackPen = the low bytes of the last IPColour
- * pens (1 and 0 at first), DrawMode 0 (JAM1), at 0,0; single characters
- * and a0/d0 strings are copied to a 1024 byte buffer first.
+ * pens (1 and 0 at first), DrawMode 0 (JAM1), with the Rast's pen
+ * position (IPLocate) as its top left corner; then the position moves
+ * right by the text's width.  Single characters and a0/d0 strings are
+ * copied to a 1024 byte buffer first.
  *
  * The table ends twice like the source: !libfin{...} after the object
  * entries, then the init/finit nullsubs and a plain !libfin.
  *
- * Fixed (#696): IPColour fgpen,bgpen with a negative fgpen called
- * SetBPen with the caller's a2 (the compiler's argument stack) as the
- * RastPort (a2 was set to the Rast only with SetAPen); SetBPen gets the
- * Rast now.
+ * Fixed:
+ *   - IPColour fgpen,bgpen with a negative fgpen called SetBPen with the
+ *     caller's a2 (the compiler's argument stack) as the RastPort (a2 was
+ *     set to the Rast only with SetAPen); SetBPen gets the Rast now
+ *     (#696).
+ *   - The original printed every text at 0,0 of the Rast (+ the
+ *     baseline): the pen position of IPLocate had no effect on IPOutput
+ *     and each text was drawn over the previous one (#697).
  *
  * BUG(orig), kept:
  *   - The single character handler reads the character from the address
@@ -36,8 +42,6 @@
  *     (#699).
  *   - The a0/d0 handler copies d0 (a word) bytes without a limit into the
  *     1024 byte buffer (the pens follow it) (#698).
- *   - PrintIText always prints at 0,0 of the Rast (+ the baseline): the
- *     pen position of IPLocate has no effect on IPOutput (#697).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -161,8 +165,9 @@ static void BLITZ_ROUTINE ipbitmap_c(struct RastPort *rp BL_REG(a0),
 /**
  * @brief IPLocate x,y: moves the pen of the used Rast.
  *
- * Move with the low words of x and y.  BUG(orig) (#697): IPOutput always
- * prints at 0,0, so this has no effect on its output.
+ * Move with the low words of x and y: the top left corner of the next
+ * output of IPOutput to this Rast (fixed #697: the original's IPOutput
+ * printed at 0,0).
  * @param x   d0: x (a word)
  * @param y   d1: y (a word)
  * @param rp  a0: the used Rast (#ua0)
@@ -220,10 +225,23 @@ static void setpens(void)
     pr.it.BackPen = (UBYTE)pr.bpen;
 }
 
-/* the output handler: the IntuiText at 0,0 */
+/* the output handler: the IntuiText with the Rast's pen position as its
+   top left corner, then the position moves right by the text's width
+   (TextLength in the Rast's font, the font PrintIText takes for an
+   IntuiText without one).  PrintIText leaves the pen on the baseline, so
+   the position is set here.  Fixed (#697): the original printed at 0,0
+   and kept no position. */
 static void doipprint(void)
 {
-    PrintIText(usedrast, &pr.it, 0, 0);
+    struct RastPort *rp = usedrast;
+    WORD x = rp->cp_x, y = rp->cp_y;
+    const UBYTE *s = pr.it.IText;
+    ULONG n = 0;
+
+    while (s[n])
+        n++;
+    PrintIText(rp, &pr.it, x, y);
+    Move(rp, x + TextLength(rp, (CONST_STRPTR)s, n), y);
 }
 
 /**
@@ -283,8 +301,9 @@ static void BLITZ_ROUTINE ipprint1_c(UWORD n BL_REG(d0), const UBYTE *s BL_REG(a
  * @brief IPOutput rast: makes the Rast the output channel (Print draws on it).
  *
  * Keeps the Rast and installs the handler ipprint with inputoutputlib's
- * dosetout (TOK_setout).  The text is printed by PrintIText at 0,0 of
- * the Rast (BUG(orig) #697), JAM1, with the pens of the last IPColour.
+ * dosetout (TOK_setout).  The text is printed by PrintIText at the
+ * Rast's pen position (fixed #697), JAM1, with the pens of the last
+ * IPColour.
  * @param rp  a0: the Rast object (#ia0|#pd0)
  */
 static void BLITZ_ROUTINE ipoutput_c(struct RastPort *rp BL_REG(a0))

@@ -8,9 +8,10 @@
  *   riintuilib DIR     (DIR with riintuilib, inputoutputlib .obj or .orig)
  *
  * The set has its inputoutputlib, a Rast object (128 bytes) and a
- * BitMap (320 x 16, 2 planes).  Observed: the Rast (every field but the
- * BitMap pointer, which must be the BitMap), both planes after
- * every output, the 128 bytes around the caller's a2 (the original's
+ * BitMap (320 x 32, 2 planes).  Observed: the Rast (every field but the
+ * BitMap pointer, which must be the BitMap, and the pen position, which
+ * is observed on its own: where the next output starts), both planes
+ * after every output, the 128 bytes around the caller's a2 (the original's
  * IPColour calls SetBPen there, fixed #696: the port leaves them), the
  * kept registers; the memory back at the end.
  * Covered: init, IPBitMap, IPLocate (also with upper words and a
@@ -21,7 +22,9 @@
  * dooutsingle/dooutstring1/dooutstring2: a character (BUG(orig) (#699): read
  * from the address d0 - a string's address and the low memory address
  * 65), a0/d0 strings (also length 0), a null terminated string, with
- * the pens of IPColour; finit.
+ * the pens of IPColour, at the position of IPLocate and after the
+ * previous output (fixed #697: the original prints every text at 0,0);
+ * finit.
  * Not covered: a0/d0 strings over 1024 characters (BUG(orig) (#698): they
  * overwrite the pens; the text would be drawn far beyond the BitMap,
  * which a RastPort without a layer does not clip).
@@ -31,6 +34,7 @@
 #include <proto/dos.h>
 #include <graphics/gfx.h>
 #include <graphics/rastport.h>
+#include <stddef.h>
 static struct Library *ipgfx;
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME ipgfx
@@ -42,7 +46,7 @@ static struct Library *ipgfx;
 enum { E_BITMAP, E_LOCATE, E_COLOUR, E_OUTPUT };
 enum { IO_OUTSINGLE = 6, IO_OUTSTRING1 = 7, IO_OUTSTRING2 = 8 };
 #define BMW 320
-#define BMH 16
+#define BMH 32
 
 static UBYTE rast[128];
 static struct BitMap *bm;
@@ -61,15 +65,20 @@ static APTR nullsub(const char *name, int off)
     return (APTR)L(p + 2 + 4);
 }
 
-/* the Rast (without the BitMap pointer), the planes, the a2 area */
+/* the Rast (without the BitMap pointer and the pen position, which are
+   observed on their own), the planes, the a2 area */
 static void same(void)
 {
+    struct RastPort *rp = (struct RastPort *)rast;
     UBYTE r[128];
     int p;
 
     memcpy(r, rast, 128);
     memset(r + 4, 0, 4);
+    memset(r + offsetof(struct RastPort, cp_x), 0, 4);
     OBSBYTES("Rast", r, 128);
+    OBS("pen x", (UWORD)rp->cp_x);
+    OBS("pen y", (UWORD)rp->cp_y);
     BOTH("Rast's BitMap", ((struct RastPort *)rast)->BitMap == bm);
     for (p = 0; p < 2; p++)
         OBSBYTES("plane", bm->Planes[p], BMW / 8 * BMH);
@@ -201,8 +210,9 @@ int main(int argc, char **argv)
     out(IO_OUTSTRING2, "pens 1/2", MARK(0), NULL, "Pens", 1);
     colour(0, WA(3), 0);
     out(IO_OUTSTRING1, "pen 3", WA(4), NULL, "Pen 3!", 1);
-    locate(WA(100), WA(10));            /* no effect on the output (#697) */
+    locate(WA(100), WA(10));            /* fixed #697: the top left corner */
     out(IO_OUTSTRING2, "after IPLocate", MARK(0), NULL, "0,0", 1);
+    out(IO_OUTSTRING1, "next", WA(4), NULL, "next", 1);  /* fixed #697: after it */
 
     ROUT = "finit";
     strcpy(VEC, "");

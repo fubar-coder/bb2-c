@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+AB -1
+C -1
+corner 0
+rc=0
