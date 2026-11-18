@@ -4428,6 +4428,14 @@ rows:
     text: "`RXCreatePort` returns 0 when a public port of that name exists; the original added a second port of the same name."
     page: libraries
     anchor: riarexxlib-fixes
+  - issue: 1101
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXDeletePort"
+    text: "`RXDeletePort` and the end of the program also reply the current message; the original left its sender waiting for ever."
+    page: libraries
+    anchor: riarexxlib-fixes
   - issue: 600
     severity: 1
     topic: "Graphics"

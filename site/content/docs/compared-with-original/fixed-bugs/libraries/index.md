@@ -4532,6 +4532,11 @@ The port and the library:
   and the copy of the port's name; the original lost that memory at
   every `RXCreatePort` and `RXDeletePort`
   ([#530](https://github.com/fubar-coder/bb2-c/issues/530)).
+* `RXDeletePort`, and the end of the program, also reply the message
+  that is current, with the return code 5 as the others. The original
+  replied only the messages still waiting, so the sender of the current
+  one waited for ever
+  ([#1101](https://github.com/fubar-coder/bb2-c/issues/1101)).
 * A program that uses the library closes rexxsyslib.library at its end;
   the original left it open, once more with every run, so the system
   could never remove it from memory

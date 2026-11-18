@@ -1,7 +1,7 @@
 "RXCreatePort":
   text: Makes the program's public message port with the name `name$`. Returns the port's address, or 0 if the program has a port already, a public port of that name exists, or the port cannot be made.
 "RXDeletePort":
-  text: Removes the program's message port. Messages that are still waiting are replied with the return code 5 first.
+  text: Removes the program's message port. The current message and the messages that are still waiting are replied with the return code 5 first.
   notes: |
     Kept from the original: the command does not wait for the replies to
     commands sent with `RXRunCommand` or `RXRunScript` that are still
