@@ -49,6 +49,12 @@
  *     shell's process) took one more signal; it now frees it, also when
  *     dos.library did not open, and clears the base (#839).
  *
+ * BUG(orig): CreateThread counts the thread before CreateNewProc and does
+ * not test its result: a process that cannot be created (too little
+ * memory) leaves ActiveThreads one too high, and finit waits for it
+ * forever (the original returns only on a signal left from an earlier
+ * count of 0).
+ *
  * No defects: the memory is not checked, but memlib's globalloc never
  * returns 0 (it raises "Out of Memory!"); the name is the string
  * argument as it is (CreateNewProc copies it); ActiveThreads (#word)
@@ -239,6 +245,7 @@ void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
         struct Process *p = (struct Process *)
             BLITZ_BASEJSR(th.dbase, LVO_CreateNewProc, cr);
 
+        /* BUG(orig): without a process the count stays one too high */
         if (p)
             p->pr_Task.tc_UserData = st;
     }

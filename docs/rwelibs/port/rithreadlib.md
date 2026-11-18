@@ -73,6 +73,14 @@ kind F):
   `rithreadlib-shared-start-state`). The scheduling is unchanged: the
   new process still runs when the scheduler picks it.
 
+## BUG(orig), kept
+
+* `CreateThread` counts the thread before `CreateNewProc` and does not
+  test its result: when the process cannot be created (too little
+  memory), `ActiveThreads` stays one too high and finit waits for a
+  thread that never ends (the original returns only if a signal from an
+  earlier count of 0 is still pending).
+
 ## Original behaviour that is not a defect
 
 The memory is not checked; that is no defect: memlib's `globalloc`
