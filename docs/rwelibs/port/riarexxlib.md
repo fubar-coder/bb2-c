@@ -108,6 +108,11 @@ kind F):
   in its buffer, so the rest of an earlier, longer command became further
   arguments (`say "hi"` after `one two three four five six`: `say`, `hi`,
   `hree`, `four`, `five`, `six`) (#538).
+* **The tokenizer:** in a quoted word two quotes are one quote character
+  and any other quote closes the word: `"e""f" c d` gives `e"f`, `c`,
+  `d`. The original counted the quotes, so after a doubled quote the
+  next quote did not close the word and the character behind it was
+  taken in: one word `e"f c d` (#535).
 
 ## BUG(orig), kept
 
@@ -143,9 +148,6 @@ kind F):
   * the command (256 bytes) and every word (256 bytes) are copied without
     a limit; the original then overwrites its own code (C: the data
     behind the buffers) (#537);
-  * in a quoted word every second quote counts as the closing one, and a
-    quote right after it is a quote character: `"e""f" c d` gives one
-    word `e"f c d` (#535);
   * an empty word (`""`, `''`) ends the arguments (#536);
   * the 16 rm_Args slots are not checked (#527).
 

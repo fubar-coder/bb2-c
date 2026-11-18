@@ -54,6 +54,10 @@
  *     original skipped it: `"g"h` gave g alone, and after a quoted last
  *     word it skipped the 0 and read the rest of an earlier, longer
  *     command as further arguments (#538, user decision W4 Q2 (a)).
+ *   - In a quoted word two quotes are one quote character and any other
+ *     quote closes the word; the original counted the quotes, so after a
+ *     doubled quote the next quote did not close and the character behind
+ *     it was taken into the word (#535).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -80,10 +84,8 @@
  *     name (#530).
  *   - The parser copies the command into 256 bytes and every word into
  *     256 bytes, both without a limit (in the original over its own
- *     code) (#537); in a quoted word every second quote counts as the
- *     closing one, and a quote right after it is a quote character
- *     (#535); an empty word ("") ends the arguments (#536); there is no
- *     limit of 16 arguments (rm_Args) (#527).
+ *     code) (#537); an empty word ("") ends the arguments (#536); there
+ *     is no limit of 16 arguments (rm_Args) (#527).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -527,7 +529,6 @@ static void parseinit(const UBYTE *s)
 static ULONG nextparsearg(UBYTE *out)
 {
     UBYTE *p, *dst = out, c;
-    ULONG quotes = 0;
 
     if (!curadr)
         return 0;
@@ -551,7 +552,6 @@ static ULONG nextparsearg(UBYTE *out)
             goto endthis;
         *dst++ = c;
     }
-    quotes++;                           /* 'insidequotedloop */
     for (;;) {                          /* 'quoteloop */
         c = *p++;
         if (!c)
@@ -560,11 +560,12 @@ static ULONG nextparsearg(UBYTE *out)
             *dst++ = c;
             continue;
         }
-        quotes++;                       /* 'gotquote */
-        if (!(quotes & 1) && *p != quote)
-            goto endthis;               /* fixed (#538): the original skipped *p */
-        if ((*dst++ = *p++) == 0)       /* 'cantquityet */
-            goto endthisfirst;
+        /* fixed (#535): two quotes are one quote, any other quote closes
+           the word (the original counted the quotes); fixed (#538): the
+           character behind the closing quote is not skipped */
+        if (*p != quote)
+            goto endthis;
+        *dst++ = *p++;
     }
 endthisfirst:
     p--;

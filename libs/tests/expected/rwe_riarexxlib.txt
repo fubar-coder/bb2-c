@@ -131,7 +131,8 @@ RXGetArg|a3|default arg 7|1	$00000010
 RXGetArg|a3|default arg 8|1	$00000010
 RXGetArg|a3|default arg 9|1	$00000010
 RXGetArg|a3|doubled quote arg 0|1	$00000010
-RXGetArg|a3|doubled quote arg 1|1	$00000017
+RXGetArg|a3|doubled quote arg 1|1 [orig]	$00000017
+RXGetArg|a3|doubled quote arg 1|1 [fixed #535]	$00000013
 RXGetArg|a3|doubled quote arg 10|1	$00000010
 RXGetArg|a3|doubled quote arg 11|1	$00000010
 RXGetArg|a3|doubled quote arg 12|1	$00000010
@@ -140,8 +141,10 @@ RXGetArg|a3|doubled quote arg 14|1	$00000010
 RXGetArg|a3|doubled quote arg 15|1	$00000010
 RXGetArg|a3|doubled quote arg 16|1	$00000010
 RXGetArg|a3|doubled quote arg 17|1	$00000010
-RXGetArg|a3|doubled quote arg 2|1	$00000010
-RXGetArg|a3|doubled quote arg 3|1	$00000010
+RXGetArg|a3|doubled quote arg 2|1 [orig]	$00000010
+RXGetArg|a3|doubled quote arg 2|1 [fixed #535]	$00000011
+RXGetArg|a3|doubled quote arg 3|1 [orig]	$00000010
+RXGetArg|a3|doubled quote arg 3|1 [fixed #535]	$00000011
 RXGetArg|a3|doubled quote arg 4|1	$00000010
 RXGetArg|a3|doubled quote arg 5|1	$00000010
 RXGetArg|a3|doubled quote arg 6|1	$00000010
@@ -414,7 +417,8 @@ RXGetArg|d0|default arg 7|1	$00000000
 RXGetArg|d0|default arg 8|1	$00000000
 RXGetArg|d0|default arg 9|1	$00000000
 RXGetArg|d0|doubled quote arg 0|1	$00000000
-RXGetArg|d0|doubled quote arg 1|1	$00000007
+RXGetArg|d0|doubled quote arg 1|1 [orig]	$00000007
+RXGetArg|d0|doubled quote arg 1|1 [fixed #535]	$00000003
 RXGetArg|d0|doubled quote arg 10|1	$00000000
 RXGetArg|d0|doubled quote arg 11|1	$00000000
 RXGetArg|d0|doubled quote arg 12|1	$00000000
@@ -423,8 +427,10 @@ RXGetArg|d0|doubled quote arg 14|1	$00000000
 RXGetArg|d0|doubled quote arg 15|1	$00000000
 RXGetArg|d0|doubled quote arg 16|1	$00000000
 RXGetArg|d0|doubled quote arg 17|1	$00000000
-RXGetArg|d0|doubled quote arg 2|1	$00000000
-RXGetArg|d0|doubled quote arg 3|1	$00000000
+RXGetArg|d0|doubled quote arg 2|1 [orig]	$00000000
+RXGetArg|d0|doubled quote arg 2|1 [fixed #535]	$00000001
+RXGetArg|d0|doubled quote arg 3|1 [orig]	$00000000
+RXGetArg|d0|doubled quote arg 3|1 [fixed #535]	$00000001
 RXGetArg|d0|doubled quote arg 4|1	$00000000
 RXGetArg|d0|doubled quote arg 5|1	$00000000
 RXGetArg|d0|doubled quote arg 6|1	$00000000
@@ -1237,7 +1243,8 @@ RXGetArg|string area|default arg 7|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|default arg 8|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|default arg 9|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|doubled quote arg 0|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|doubled quote arg 1|1	bytes 1024 fnv 01BB4AD7
+RXGetArg|string area|doubled quote arg 1|1 [orig]	bytes 1024 fnv 01BB4AD7
+RXGetArg|string area|doubled quote arg 1|1 [fixed #535]	bytes 1024 fnv A20491A8
 RXGetArg|string area|doubled quote arg 10|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|doubled quote arg 11|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|doubled quote arg 12|1	bytes 1024 fnv 472C7DC5
@@ -1246,8 +1253,10 @@ RXGetArg|string area|doubled quote arg 14|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|doubled quote arg 15|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|doubled quote arg 16|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|doubled quote arg 17|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|doubled quote arg 2|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|doubled quote arg 3|1	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|doubled quote arg 2|1 [orig]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|doubled quote arg 2|1 [fixed #535]	bytes 1024 fnv D129B262
+RXGetArg|string area|doubled quote arg 3|1 [orig]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|doubled quote arg 3|1 [fixed #535]	bytes 1024 fnv FE0D2409
 RXGetArg|string area|doubled quote arg 4|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|doubled quote arg 5|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|doubled quote arg 6|1	bytes 1024 fnv 472C7DC5
@@ -1468,8 +1477,12 @@ RXNextArg|a3|closing quote at the end next 6|1 [orig #538]	$00000010
 RXNextArg|a3|default next 0|1	$00000015
 RXNextArg|a3|default next 1|1	$00000017
 RXNextArg|a3|default next 2|1	$00000010
-RXNextArg|a3|doubled quote next 0|1	$00000017
-RXNextArg|a3|doubled quote next 1|1	$00000010
+RXNextArg|a3|doubled quote next 0|1 [orig]	$00000017
+RXNextArg|a3|doubled quote next 0|1 [fixed #535]	$00000013
+RXNextArg|a3|doubled quote next 1|1 [orig]	$00000010
+RXNextArg|a3|doubled quote next 1|1 [fixed #535]	$00000011
+RXNextArg|a3|doubled quote next 2|1 [fixed #535]	$00000011
+RXNextArg|a3|doubled quote next 3|1 [fixed #535]	$00000010
 RXNextArg|a3|empty next 0|1	$00000010
 RXNextArg|a3|empty quotes in a word next 0|1	$00000011
 RXNextArg|a3|empty quotes in a word next 1|1	$00000011
@@ -1529,8 +1542,12 @@ RXNextArg|d0|closing quote at the end next 6|1 [orig #538]	$00000000
 RXNextArg|d0|default next 0|1	$00000005
 RXNextArg|d0|default next 1|1	$00000007
 RXNextArg|d0|default next 2|1	$00000000
-RXNextArg|d0|doubled quote next 0|1	$00000007
-RXNextArg|d0|doubled quote next 1|1	$00000000
+RXNextArg|d0|doubled quote next 0|1 [orig]	$00000007
+RXNextArg|d0|doubled quote next 0|1 [fixed #535]	$00000003
+RXNextArg|d0|doubled quote next 1|1 [orig]	$00000000
+RXNextArg|d0|doubled quote next 1|1 [fixed #535]	$00000001
+RXNextArg|d0|doubled quote next 2|1 [fixed #535]	$00000001
+RXNextArg|d0|doubled quote next 3|1 [fixed #535]	$00000000
 RXNextArg|d0|empty next 0|1	$00000000
 RXNextArg|d0|empty quotes in a word next 0|1	$00000001
 RXNextArg|d0|empty quotes in a word next 1|1	$00000001
@@ -1590,6 +1607,8 @@ RXNextArg|kept|default next 1|1	kept
 RXNextArg|kept|default next 2|1	kept
 RXNextArg|kept|doubled quote next 0|1	kept
 RXNextArg|kept|doubled quote next 1|1	kept
+RXNextArg|kept|doubled quote next 2|1 [fixed #535]	kept
+RXNextArg|kept|doubled quote next 3|1 [fixed #535]	kept
 RXNextArg|kept|empty next 0|1	kept
 RXNextArg|kept|empty quotes in a word next 0|1	kept
 RXNextArg|kept|empty quotes in a word next 1|1	kept
@@ -1646,6 +1665,8 @@ RXNextArg|popped|default next 1|1	$00000000
 RXNextArg|popped|default next 2|1	$00000000
 RXNextArg|popped|doubled quote next 0|1	$00000000
 RXNextArg|popped|doubled quote next 1|1	$00000000
+RXNextArg|popped|doubled quote next 2|1 [fixed #535]	$00000000
+RXNextArg|popped|doubled quote next 3|1 [fixed #535]	$00000000
 RXNextArg|popped|empty next 0|1	$00000000
 RXNextArg|popped|empty quotes in a word next 0|1	$00000000
 RXNextArg|popped|empty quotes in a word next 1|1	$00000000
@@ -1702,8 +1723,12 @@ RXNextArg|string area|closing quote at the end next 6|1 [orig #538]	bytes 1024 f
 RXNextArg|string area|default next 0|1	bytes 1024 fnv DBF9B231
 RXNextArg|string area|default next 1|1	bytes 1024 fnv 2D9E43AA
 RXNextArg|string area|default next 2|1	bytes 1024 fnv 472C7DC5
-RXNextArg|string area|doubled quote next 0|1	bytes 1024 fnv 01BB4AD7
-RXNextArg|string area|doubled quote next 1|1	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|doubled quote next 0|1 [orig]	bytes 1024 fnv 01BB4AD7
+RXNextArg|string area|doubled quote next 0|1 [fixed #535]	bytes 1024 fnv A20491A8
+RXNextArg|string area|doubled quote next 1|1 [orig]	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|doubled quote next 1|1 [fixed #535]	bytes 1024 fnv D129B262
+RXNextArg|string area|doubled quote next 2|1 [fixed #535]	bytes 1024 fnv FE0D2409
+RXNextArg|string area|doubled quote next 3|1 [fixed #535]	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|empty next 0|1	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|empty quotes in a word next 0|1	bytes 1024 fnv D129B262
 RXNextArg|string area|empty quotes in a word next 1|1 [orig]	bytes 1024 fnv CAC5A464
@@ -1751,7 +1776,8 @@ RXNumArgs|d0|arrived while waiting|1	$00000003
 RXNumArgs|d0|closing quote at the end|1 [orig]	$00000006
 RXNumArgs|d0|closing quote at the end|1 [fixed #538]	$00000002
 RXNumArgs|d0|default|1	$00000002
-RXNumArgs|d0|doubled quote|1	$00000001
+RXNumArgs|d0|doubled quote|1 [orig]	$00000001
+RXNumArgs|d0|doubled quote|1 [fixed #535]	$00000003
 RXNumArgs|d0|empty|1	$00000000
 RXNumArgs|d0|empty quotes in a word|1 [orig]	$00000002
 RXNumArgs|d0|empty quotes in a word|1 [fixed #538]	$00000003
