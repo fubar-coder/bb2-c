@@ -34,18 +34,22 @@ The commands have the error check `portchk` ("No message port opened!").
 
 ## How it works
 
-* **init** opens rexxsyslib.library V34 (finit closes it). It sets the quote character to
-  `"`, sets tokenising on and the default port name to "REXX", and clears
-  the port pointer.
-* **RXCreatePort** copies the name (maxslib AllocSt) and creates and adds
-  the port. It allocates one block of 256 bytes: the list of received
-  messages (32 longs) and the list of messages sent without waiting.
+* **init** opens rexxsyslib.library V34 (finit closes it). It sets the
+  quote character to `"`, sets tokenising on and the default port name
+  to "REXX", and clears the port pointer.
+* **RXCreatePort** allocates one block of 256 bytes, the list of
+  received messages (32 longs) and the list of messages sent without
+  waiting (31 and the end), copies the name (maxslib AllocSt), creates
+  the port and adds it, unless a public port of the name exists.
 * **Sending.** A message is a 128-byte RexxMsg (AllocVec):
   * ln_Name = our port's name, ln_Pri 1, the reply port = ours;
   * rm_Action = RXCOMM|RXFF_STRING, plus RXFF_RESULT for RXSendCommand;
-  * rm_Args = the command as one argument string, or with RXTokenise on
-    (the default) split into words. Spaces separate words; text between
-    quote characters is one word, and a doubled quote is a quote.
+    RXCOMM|RXFF_RESULT for RXExecuteScript, RXCOMM for RXRunScript;
+  * rm_Args = the command as one argument string (also the script name
+    of RXExecuteScript/RXRunScript), or with RXTokenise on (the default)
+    split into at most 16 words. Spaces separate words; text between
+    quote characters is part of a word, a doubled quote in it is a
+    quote, and the character after a closing quote starts a new word.
 * **RXReadPort** takes everything from the port:
   * replies to our messages are freed;
   * messages are appended to the list;
@@ -55,10 +59,11 @@ The commands have the error check `portchk` ("No message port opened!").
   result.
 * **RXWaitPort** waits first, unless the list has a message.
 * **RXSendCommand** puts its message and loops over WaitPort/readport
-  until its reply arrives. Messages that arrive in the meantime stay in
-  the list (`oktodelete`). The result string of the reply (copied with
-  AllocSt) is written at a3, over the two arguments in the two-argument
-  form (a3 back by both lengths + 2: "FUCKING SHITE STRING CLUDGE").
+  until its reply arrives (RXExecuteScript too). Messages that arrive in
+  the meantime stay in the list (`oktodelete`). The result string of the
+  reply is written at a3, over the two arguments in the two-argument
+  form (a3 back by both lengths + 2: "FUCKING SHITE STRING CLUDGE"), and
+  the reply's string deleted.
 
 ## C and assembler
 
@@ -236,8 +241,9 @@ Each run loads one library set (the C build or the original); the
 scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_riarexxlib.txt` recorded from the original.
 
-No RexxMast is needed (if one runs, as in the emulator's OS 3.2, the
-scripts go to it). Messages go to:
+No RexxMast is needed; the sessions (Kickstart/Workbench 3.1) do not
+start it (if one runs, the scripts go to it; the bug-orig tests that
+need it start it themselves). Messages go to:
 
 * the library's own port (RWERX_P);
 * the test's port RWETEST: messages the test sends, and their replies;
@@ -248,7 +254,7 @@ scripts go to it). Messages go to:
 Observed: d0, a3 and the string area of the string functions; the
 messages the responder got (type, priority, length, action, arguments,
 ln_Name and the reply port); the replies the test gets (Result1,
-the Result2 string); the kept registers.
+whether there is a Result2 and its string); the kept registers.
 
 Covered:
 
@@ -267,8 +273,8 @@ Covered:
 * RXSendCommand in both forms: with result code 10, an empty result, a
   missing port, and a message arriving during the wait;
 * RXReturnCode with and without a current message;
-* RXExecuteScript/RXRunScript (to RexxMast with the string program
-  "exit", or to the responder: RXCOMM|RXFF_STRING);
+* RXExecuteScript/RXRunScript (to the responder, or to RexxMast if one
+  runs): the message's action;
 * RXDeletePort with two queued messages (replied with 5), and without a
   port;
 * finit with a port; init after RXDefaultPort (the original: "REXXE",
@@ -277,5 +283,7 @@ Covered:
 Not covered:
 
 * portchk without a port (TRAP #0);
-* the overflows (more than 16 arguments or 32 messages, long names);
+* more than 16 arguments, more than 31 messages sent, long names, out
+  of memory, no rexxsyslib.library (the bug-orig tests of #527, #531,
+  #529, #537, #528, #533, #1094);
 * messages of other types.

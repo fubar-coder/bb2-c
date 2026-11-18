@@ -16,17 +16,17 @@
  * RIAREXXLIB.OBJ is the older generation newrexxlib7 (docs/rwelibs/
  * README.md 3.2).  Notes: docs/rwelibs/port/riarexxlib.md.
  *
- * init opens rexxsyslib.library V34, finit closes it.  RXCreatePort makes a public port
- * and one block of 256 bytes: the list of received messages (32 longs)
- * and the list of messages sent without waiting (32 longs).  Messages
- * are 128 byte RexxMsgs (AllocVec): ln_Name = our port's name, rm_Args =
- * the command, as one argument string or (RXTokenise on, the default)
- * split into words with RXQuoteChar quotes.  RXReadPort takes everything
- * from the port: replies to our messages are freed, messages go to the
- * list; the first of the list becomes the current message (RXGetArg,
- * RXReplyMsg ...).  Strings are copied with maxslib's AllocSt (ALibJsr
- * $CF01).  The commands have the error check portchk ("No message port
- * opened!").
+ * init opens rexxsyslib.library V34, finit closes it.  RXCreatePort makes
+ * a public port and one block of 256 bytes: the list of received messages
+ * (32 longs) and the list of messages sent without waiting (31 and the
+ * end).  Messages are 128 byte RexxMsgs (AllocVec): ln_Name = our port's
+ * name, rm_Args = the command, as one argument string or (RXTokenise on,
+ * the default) split into at most 16 words with RXQuoteChar quotes.
+ * RXReadPort takes everything from the port: replies to our messages are
+ * freed, messages go to the list; the first of the list becomes the
+ * current message (RXGetArg, RXReplyMsg ...).  The port name and the
+ * default port name are copied with maxslib's AllocSt (ALibJsr $CF01).
+ * The commands have the error check portchk ("No message port opened!").
  *
  * C behind thunks; the string results are written at a3 (the C build
  * moves the fixed register blitz_string itself), a2 stays unchanged
