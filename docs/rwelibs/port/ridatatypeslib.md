@@ -48,9 +48,7 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 
 * DataTypeOpen copies the name into its 384 byte buffer without a limit
   (#604).
-* DataTypeCreate without a tag list does not check for an open file
-  (the name is the last one DataTypeOpen copied, at first ""); a second
-  DataTypeCreate loses the object before it (#601, #600).
+* A second DataTypeCreate loses the object before it (#600).
 * AttachDataType window,id,x,y,w,h puts its word arguments into the tag list as longs, with whatever
   upper words the registers have; window,id,&taglist passes the id as
   the tag list of its second SetAttrsA and ignores the tag list (#597,
@@ -92,6 +90,11 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   DataTypeGroup then copied from there) and kept the lock, which
   DataTypeClose released only with a DataType: the file stayed locked
   and DataTypeOpen refused every further file of the run (#605).
+* DataTypeCreate without a tag list needs an open file, as the form with
+  one; without, the result is 0. The original made an object of the name
+  the last DataTypeOpen had copied: at first "" (NewDTObject fails for
+  it on Kickstart 3.1), later the name of a file closed since, an object
+  of a file the library does not count as open (#601).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h

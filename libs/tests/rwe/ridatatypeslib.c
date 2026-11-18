@@ -22,7 +22,7 @@
  * observed call by call).
  *
  * Covered: every command and form before DataTypeOpen (nothing, 0);
- * DataTypeCreate without a file (BUG(orig) (#601): no check, name ""); a
+ * DataTypeCreate without a file (0: NewDTObject("") fails too); a
  * missing file; the text file (name, base name, ID, group, a second
  * DataTypeOpen: 0); the picture: the strings, DataTypeCreate both forms,
  * DataTypeSuper, DataTypeBitmap, Width/Height/Depth, DataTypeModeID both

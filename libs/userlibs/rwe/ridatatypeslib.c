@@ -38,9 +38,7 @@
  * BUG(orig):
  *   - DataTypeOpen copies the name into its 384 byte buffer without a
  *     limit (#604).
- *   - DataTypeCreate without a tag list does not need an open file (the
- *     name is the last one DataTypeOpen copied, at first ""); a second
- *     DataTypeCreate loses the object before (#601, #600).
+ *   - A second DataTypeCreate loses the object before (#600).
  *   - AttachDataType window,id,x,y,w,h puts the word arguments into the
  *     tag list as longs (with the upper words the registers have);
  *     AttachDataType window,id,&taglist passes the id as the tag list to
@@ -74,6 +72,10 @@
  *     is locked.  The original read the DataTypeHeader through the
  *     address 28 and kept the lock, which DataTypeClose released only
  *     with a DataType: DataTypeOpen refused every further file (#605).
+ *   - DataTypeCreate without a tag list needs an open file, as the form
+ *     with one.  The original made an object of the name the last
+ *     DataTypeOpen had copied (at first "", later the name of a file
+ *     closed since) (#601).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -494,14 +496,15 @@ static ULONG create(struct TagItem *tags)
 /**
  * @brief DataTypeCreate: NewDTObject of the file's name without tags.
  *
- * BUG(orig) (#601): needs no open file (the name is the last one
- * DataTypeOpen copied, at first ""); BUG(orig) (#600): an object before
- * is lost.
- * @return d0: the object, 0 without datatypes.library or on failure
+ * Needs an open file, as the form with a tag list (fixed, #601: the
+ * original made an object of the name the last DataTypeOpen had copied,
+ * at first "").  BUG(orig) (#600): an object before is lost.
+ * @return d0: the object, 0 without datatypes.library or open file, or
+ *         on failure
  */
 ULONG BLITZ_ROUTINE c_datatypecreate2(void)
 {
-    if (!database)
+    if (!database || !lock)             /* fixed (#601) */
         return 0;
     storage->tags[0].ti_Tag = TAG_DONE;
     return create(storage->tags);
