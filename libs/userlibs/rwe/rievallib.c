@@ -29,8 +29,6 @@
  *   - PFEvaluate:
  *     - `^`: x^0 and x^1 are x, 0^n is 1; the loop counts with DBRA on
  *       the low word of exponent-2 (#641).
- *     - Only the last value is the result; more values are no error
- *       (#635).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - PFEvaluate counts its values in a long: the original's byte,
  *     compared signed, made every operator fail with "Need 2 arguments"
@@ -81,6 +79,10 @@
  *     into the register block (`d9`, `dx`; behind a final `d` the
  *     string's 0, and it went on behind the string) and read a digit
  *     behind a register as a number of its own (`d01` = d0, 1) (#642).
+ *   - PFEvaluate: more than one value left at the end of the string is
+ *     error 4 "No result value!" with the result 0.  The original
+ *     returned the top value without an error (`1 2` = 2, `1 2 + 3` = 3)
+ *     (#635).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -546,6 +548,8 @@ evloop:
     if (*s->pos == 0) {                         /* ev_eol */
         if (st_empty(s))                        /* fixed (#644): 0, not (a7)+ */
             return ev_error(err_noresult, 4);
+        if (argc > 1)                           /* fixed (#635): values left */
+            return ev_error(err_noresult, 4);
         return st_pop(s);
     }
     if (*s->pos++ == ' ')
@@ -739,7 +743,8 @@ evalbin:
  * A character that is no digit of the number's base is error 4 (fixed,
  * #634); so is a register other than `a0`-`a7`, `d0`-`d7`, `pc`, or one
  * not followed by a space, the end or its `}` (fixed, #642).
- * BUG(orig): `^` (#641); only the last value counts (#635).
+ * More than one value left at the end is error 4 (fixed, #635).
+ * BUG(orig): `^` (#641).
  * @param str  d0: the postfix string
  * @return d0: the value, 0 on an error
  */

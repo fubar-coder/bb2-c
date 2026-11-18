@@ -179,6 +179,9 @@ kind F):
   final `d` the string's 0, and it went on behind the string) and read a
   character behind a register as the next operand (`d01` was d0 and 1)
   (#642).
+* PFEvaluate: more than one value left at the end of the string is
+  error 4 "No result value!" with the result 0; the original returned
+  the top value without an error (`1 2` was 2, `1 2 + 3` 3) (#635).
 
 ## BUG(orig), kept
 
@@ -187,7 +190,6 @@ In the C file's head:
 * ConvToPostFix: dropped characters (#632).
 * PFEvaluate: `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as
   the loop count (#641).
-* PFEvaluate: extra values are no error (#635).
 
 No defects, like the original: ConvToPostFix leaves a3 pointing to the
 string (a statement: nothing uses a3 after it); PFErrorType leaves the
