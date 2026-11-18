@@ -29,9 +29,10 @@
  * SetListItem (the old copy not freed, the size field unchanged);
  * GetListItem (with and without data, a variable larger than the copy);
  * NextListItem/PrevListItem over the list and past its ends;
- * AddLastListItem; AddFirstListItem (BUG(orig) #724: the old first's
- * next; the garbage in the new node, cleared in the C build: fixed #726;
- * the result, list# * 4 in the original, -1 in the C build: fixed #725);
+ * AddLastListItem; AddFirstListItem (the new node in the old first's
+ * next in the original, in its prev in the C build: fixed #724; the
+ * garbage in the new node, cleared in the C build: fixed #726; the
+ * result, list# * 4 in the original, -1 in the C build: fixed #725);
  * DelListItem in the
  * middle, at the end, at the start (BUG(orig) #728: the new first's next
  * cleared), the only node (0), with and without data (BUG(orig) #729: the
@@ -381,7 +382,7 @@ int main(int argc, char **argv)
     ADDR(2);
     call("NextListItem", NEXTLISTITEM, 2, -1, 0);
     ADDR(2);
-    call("NextListItem", NEXTLISTITEM, 2, -1, 0);       /* BUG(orig) (#724): the loop */
+    call("NextListItem", NEXTLISTITEM, 2, -1, 0);       /* the loop in the original (fixed #724) */
     ADDR(2);
     call("LastListItem", LASTLISTITEM, 2, -1, 0);
     ADDR(2);

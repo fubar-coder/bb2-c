@@ -46,6 +46,12 @@ changes d1, d2, a0, a1, InitList also a2).
   test `rilinkedlistlib-addfirst-uncleared`, `libs_emulator` cases
   `[fixed #726]` of `rwe_rilinkedlistlib`: the memlib stubs fill each
   block with a pattern).
+* AddFirstListItem makes the new node the prev of the old first node.
+  The original wrote it into that node's *next* (offset 0, where v0.9
+  had prev): the old first node lost its link to the second one, and it
+  and the new node pointed to each other, so NextListItem from the first
+  node looped between the two (#724; test `rilinkedlistlib-addfirst-next`,
+  `libs_emulator` cases `[fixed #724]` of `rwe_rilinkedlistlib`).
 
 **BUG(orig)** (kept):
 
@@ -64,8 +70,6 @@ changes d1, d2, a0, a1, InitList also a2).
 * SetListItem does not free the old copy and does not set the size
   field (#734, #735); GetListItem copies as many bytes as the variable
   has, not as the copy has (#730).
-* AddFirstListItem writes the new node into the old first node's *next*
-  (not prev: the list becomes a loop) (#724).
 * DelListItem still reads the v0.9 node (without pad): its data is the
   long at offset 8 (the pad word and the upper word of the data
   pointer), its size the long at 14. So it frees a wrong address (with

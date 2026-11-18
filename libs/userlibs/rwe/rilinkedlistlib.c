@@ -42,8 +42,6 @@
  *   - SetListItem gives the node a new copy without freeing the old one
  *     and without setting its size field (#734, #735); GetListItem copies
  *     as many bytes as the variable has, not as the node's data has (#730).
- *   - AddFirstListItem writes the new node into the old first node's
- *     next (not prev; the list becomes a loop) (#724).
  *   - DelListItem still reads the nodes of v0.9 (no pad): data is the
  *     long at offset 8 (the pad word and the upper word of the data
  *     pointer), size the long at 14; so it frees a wrong address (memlib:
@@ -58,6 +56,10 @@
  *   - AddFirstListItem clears prev, pad, data and size of the new node
  *     (the original wrote only its next: the rest stayed as the
  *     allocation, flags 0, left it) (#726).
+ *   - AddFirstListItem makes the new node the prev of the old first node
+ *     (the original wrote it into that node's next, the place of prev in
+ *     v0.9: the two nodes pointed to each other, the list became a loop)
+ *     (#724).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -480,12 +482,13 @@ BB_BOOL BLITZ_ROUTINE c_addlastitem(ULONG list BL_REG(d0))
 /**
  * @brief AddFirstListItem list#: a new node in front of the first one, then the current one.
  *
- * BUG(orig): the new node goes into the old first node's next, not prev:
- * the list becomes a loop (#724); an empty list writes to address 0 on
- * (#733).  Fixed (#725): the result is -1, as the manual says (the
- * original returned list# * 4, 0 for list 0).  Fixed (#726): prev, pad,
- * data and size of the new node are cleared (the original left them as
- * the allocation, flags 0, left them).
+ * BUG(orig): an empty list writes to address 0 on (#733).  Fixed (#724):
+ * the new node becomes the prev of the old first node (the original
+ * wrote it into that node's next: the list became a loop).  Fixed
+ * (#725): the result is -1, as the manual says (the original returned
+ * list# * 4, 0 for list 0).  Fixed (#726): prev, pad, data and size of
+ * the new node are cleared (the original left them as the allocation,
+ * flags 0, left them).
  * @param list  d0: list# (0-4)
  * @return d0: BB_TRUE, BB_FALSE if there is no memory
  */
@@ -501,7 +504,7 @@ BB_BOOL BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
     listnum = list << 2;
     _next = TAB(first);
     TAB(first) = nodeptr;
-    NODE(_next)->next = nodeptr;        /* BUG(orig): next, not prev (#724) */
+    NODE(_next)->prev = nodeptr;        /* fixed (#724): was its next */
     TAB(current) = nodeptr;
     NODE(nodeptr)->next = _next;
     NODE(nodeptr)->prev = 0;            /* fixed (#726): not cleared */
