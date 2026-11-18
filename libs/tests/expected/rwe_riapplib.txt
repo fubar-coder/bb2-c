@@ -342,6 +342,7 @@ AppEvent|d0|message 1|1	$00800000
 AppEvent|d0|message 2|1	$00800000
 AppEvent|d0|message 3|1	$00800000
 AppEvent|d0|no message|1	$00000000
+AppEvent|d0|third run|1	$00000000
 AppEvent|kept|current message|1	kept
 AppEvent|kept|last|1	kept
 AppEvent|kept|message 0|1	kept
@@ -349,6 +350,7 @@ AppEvent|kept|message 1|1	kept
 AppEvent|kept|message 2|1	kept
 AppEvent|kept|message 3|1	kept
 AppEvent|kept|no message|1	kept
+AppEvent|kept|third run|1	kept
 AppEvent|popped|current message|1	$00000000
 AppEvent|popped|last|1	$00000000
 AppEvent|popped|message 0|1	$00000000
@@ -356,24 +358,29 @@ AppEvent|popped|message 1|1	$00000000
 AppEvent|popped|message 2|1	$00000000
 AppEvent|popped|message 3|1	$00000000
 AppEvent|popped|no message|1	$00000000
+AppEvent|popped|third run|1	$00000000
 AppEvent|replies|current message|1	$00000000
 AppEvent|replies|last|1	$00000001
 AppEvent|replies|message 0|1	$00000000
 AppEvent|replies|message 1|1	$00000001
 AppEvent|replies|message 2|1	$00000001
 AppEvent|replies|message 3|1	$00000001
+AppEvent|replies|third run|1	$00000001
 AppEventID|d0|message 0|1	$00000100
 AppEventID|d0|message 1|1	$00000101
 AppEventID|d0|message 2|1	$00000102
 AppEventID|d0|message 3|1	$00000103
+AppEventID|d0|third run|1	$00000007
 AppEventID|kept|message 0|1	kept
 AppEventID|kept|message 1|1	kept
 AppEventID|kept|message 2|1	kept
 AppEventID|kept|message 3|1	kept
+AppEventID|kept|third run|1	kept
 AppEventID|popped|message 0|1	$00000000
 AppEventID|popped|message 1|1	$00000000
 AppEventID|popped|message 2|1	$00000000
 AppEventID|popped|message 3|1	$00000000
+AppEventID|popped|third run|1	$00000000
 AppEventIDCMP|$a000,len|inline|1	$A0000006
 AppEventIDCMP|code|inline|1	$203C0080
 AppEventIDCMP|code+4|inline|1	$00000000
@@ -383,18 +390,21 @@ AppEventType|d0|message 1|1	$00000002
 AppEventType|d0|message 2|1	$00000003
 AppEventType|d0|message 3|1	$00000000
 AppEventType|d0|no message|1	$00000000
+AppEventType|d0|third run|1	$00000001
 AppEventType|kept|last|1	kept
 AppEventType|kept|message 0|1	kept
 AppEventType|kept|message 1|1	kept
 AppEventType|kept|message 2|1	kept
 AppEventType|kept|message 3|1	kept
 AppEventType|kept|no message|1	kept
+AppEventType|kept|third run|1	kept
 AppEventType|popped|last|1	$00000000
 AppEventType|popped|message 0|1	$00000000
 AppEventType|popped|message 1|1	$00000000
 AppEventType|popped|message 2|1	$00000000
 AppEventType|popped|message 3|1	$00000000
 AppEventType|popped|no message|1	$00000000
+AppEventType|popped|third run|1	$00000000
 AppFile|a3|1|1 [orig]	$00000013
 AppFile|a3|1|1 [fixed #519]	$00000012
 AppFile|a3|100|1	$00000004
@@ -453,18 +463,21 @@ AppMessage|d0 = message|message 0|1	$00000001
 AppMessage|d0 = message|message 1|1	$00000001
 AppMessage|d0 = message|message 2|1	$00000001
 AppMessage|d0 = message|message 3|1	$00000001
+AppMessage|d0 = message of the run before|third run|1	$00000001
 AppMessage|kept|last|1	kept
 AppMessage|kept|message 0|1	kept
 AppMessage|kept|message 1|1	kept
 AppMessage|kept|message 2|1	kept
 AppMessage|kept|message 3|1	kept
 AppMessage|kept|no message|1	kept
+AppMessage|kept|third run|1	kept
 AppMessage|popped|last|1	$00000000
 AppMessage|popped|message 0|1	$00000000
 AppMessage|popped|message 1|1	$00000000
 AppMessage|popped|message 2|1	$00000000
 AppMessage|popped|message 3|1	$00000000
 AppMessage|popped|no message|1	$00000000
+AppMessage|popped|third run|1	$00000000
 AppMsgPort|kept||1	kept
 AppMsgPort|kept|again|1	kept
 AppMsgPort|kept|icon.library fails|1	kept

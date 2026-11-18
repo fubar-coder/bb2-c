@@ -20,6 +20,9 @@
  * App messages are locks on RAM:.  The App messages are put to
  * AppMsgPort by the test.  icon.library's FreeDiskObject is patched to
  * count its calls, exec's OpenLibrary for one init to fail icon.library.
+ * The third run starts as a second run from the editor with the library
+ * still loaded: the message routines and the first AppEvent before any
+ * new message, after the run before ended with a current message.
  */
 #include "sysload.h"
 #include <exec/ports.h>
@@ -451,6 +454,19 @@ static void test_icon_fails(void)
     strcpy(VEC, "third run");
     DO1(ent(INIT, 0), (void)0);
     getport();
+    /* the second run's finit replied to its current message am[4]; this
+       run starts as from the editor with the library still loaded: what
+       the message routines see before the first AppEvent, and whether
+       that AppEvent replies to am[4] again */
+    ROUT = "AppMessage";
+    DO1(ent(APPMESSAGE, 0), (void)0);
+    OBS("d0 = message of the run before", R.d[0] == (ULONG)&am[4]);
+    call_noargs("AppEventType", APPEVENTTYPE);
+    call_noargs("AppEventID", APPEVENTID);
+    ROUT = "AppEvent";
+    DO1(ent(APPEVENT, 0), (void)0);
+    OBS("d0", R.d[0]);
+    OBS("replies", replies());
     addicon_freed(1, 0);
     addicon_freed(1, 1);
     n = ap_nfree;

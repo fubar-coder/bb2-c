@@ -143,7 +143,10 @@ workbench call, a missing icon file, both forms of AddAppIcon, App
 messages of all four types put to `AppMsgPort` (replies counted),
 `NextAppFile`/`AppFile` on a root and a non-root lock (the unlock),
 past the end, the inline routine's bytes, finit with and without a
-current message (with menus, windows and icons left); a third run in
+current message (with menus, windows and icons left); a third run, as
+from the editor with the library still loaded after the second run's
+finit with a current message (`AppMessage`, `AppEventType`, `AppEventID`
+and the first `AppEvent`'s replies before any new message), in
 which `AddAppIconA` fails for a used id and for a free one (icon.library's
 `FreeDiskObject` patched to count its calls, then `DelAppIcon` and
 finit), and an init in which icon.library does not open (exec's
