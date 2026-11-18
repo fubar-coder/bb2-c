@@ -36,8 +36,9 @@
  * #544: RXCOMM|RXFF_RESULT, waiting, and RXCOMM, the name one argument);
  * RXDeletePort with messages queued (replied with
  * 5), with a reply outstanding (#1095) and with 33 messages received
- * (#1100); finit with a port; init after RXDefaultPort (the original: the
- * byte at +4 stays, "REXXE"; fixed #532: "REXX", the responder gets it).
+ * (#1100; one of them current: #1101); finit with a port; init after
+ * RXDefaultPort (the original: the byte at +4 stays, "REXXE"; fixed
+ * #532: "REXX", the responder gets it).
  * Not covered: the error check without a port (a runtime error, TRAP
  * #0), a failing AllocVec (the bug-orig tests of #528 and #533 with
  * inject), more than 33 messages, more than 16 arguments, messages of
@@ -661,9 +662,10 @@ int main(int argc, char **argv)
        one behind it (the sent list's first) hold a message, and how many
        longs of the block are not 0.  RXDeletePort replies everything to
        the test's port, where the replies are counted and the messages
-       freed (32: the message RXReadPort made current is not replied by
-       RXDeletePort, whose loop makes the next one current first).  A fix that keeps all 33 differently changes these values
-       (a pair). */
+       freed (the original: 32, the message RXReadPort made current is
+       not replied by RXDeletePort, whose loop makes the next one current
+       first; fixed #1101: 33).  A fix that keeps all 33 differently
+       changes these values (a pair). */
     ROUT = "RXCreatePort";
     strcpy(VEC, "for 33 messages");
     DO1(ENT(LIB, CREATEPORT, 0), R.d[0] = (ULONG)own;

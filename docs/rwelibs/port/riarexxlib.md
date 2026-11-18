@@ -221,6 +221,14 @@ kind F):
   existing with the same name"). The original added a second port of the
   name, so messages for it reached whichever port FindPort found first
   and the program could not tell that its name was taken (#1096).
+* **RXDeletePort** (and finit) reply the current message first, with
+  code 5 as the other waiting messages. The original's loop called
+  RXReadPort first, which made the next message of the list current
+  without replying the one that was current: a message taken with
+  RXReadPort/RXWaitPort and not yet replied when the port was deleted
+  never got its reply, and its sender waited for ever (#1101). The
+  library test's case `RXDeletePort|replies at the test's port|33
+  messages` has a current message: the original replies 32 of the 33.
 
 ## BUG(orig), kept
 
@@ -293,8 +301,8 @@ Covered:
 * RXReturnCode with and without a current message;
 * RXExecuteScript/RXRunScript (to the responder, or to RexxMast if one
   runs): the message's action;
-* RXDeletePort with two queued messages (replied with 5), and without a
-  port;
+* RXDeletePort with two queued messages (replied with 5), with 33
+  messages and one of them current (#1100, #1101), and without a port;
 * finit with a port; init after RXDefaultPort (the original: "REXXE",
   nothing sent; fixed: "REXX", #532).
 

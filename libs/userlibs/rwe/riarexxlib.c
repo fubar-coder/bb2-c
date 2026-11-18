@@ -127,6 +127,10 @@
  *     base of 0 (#1094).
  *   - RXCreatePort returns 0 when a public port of the name exists (as the
  *     manual says); the original added a second port of the name (#1096).
+ *   - RXDeletePort (and finit) reply the current message first (code 5,
+ *     as the others); the original's loop made the next message of the
+ *     list current without replying it: its sender waited for ever
+ *     (#1101).
  *
  * BUG(orig), kept:
  *   - RXDeletePort and finit do not wait for the replies to messages sent
@@ -1193,14 +1197,19 @@ BLITZ_THUNK(_rxnumargs, rxnumargs_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ the port */
 
-/* RXDeletePort, finit: reply what is waiting, delete the port, free the
-   lists and (freename) the name.  BUG(orig) (#1095): the messages of the
-   sent list are not waited for; their replies go to the deleted port */
+/* RXDeletePort, finit: reply what is waiting (the current message first),
+   delete the port, free the lists and (freename) the name.  BUG(orig)
+   (#1095): the messages of the sent list are not waited for; their
+   replies go to the deleted port */
 static void deleteport(BB_BOOL freename)
 {
     ULONG *l;
     struct Message *m;
 
+    /* fixed (#1101): the current message is replied first; the original's
+       loop made the next one current at once, this one was never replied */
+    if (v.currentmessage)
+        replymsg(5, NULL, NULL);
     for (;;) {
         readport_c();
         if (!v.currentmessage)
@@ -1226,10 +1235,12 @@ static void deleteport(BB_BOOL freename)
 /**
  * @brief RXDeletePort: delete the port.
  *
- * Messages still waiting are replied (RXReplyMsg 5 for each current
- * message, then ReplyMsg for the rest of the message list), then
- * RemPort, DeleteMsgPort; the block of the lists and the name are freed
- * (fixed #530: the original freed neither).  Error check portchk.
+ * Messages still waiting are replied (RXReplyMsg 5 for the current
+ * message, then for each one RXReadPort makes current, then ReplyMsg for
+ * the rest of the message list), then RemPort, DeleteMsgPort; the block
+ * of the lists and the name are freed (fixed #530: the original freed
+ * neither).  Fixed (#1101): the original never replied the message
+ * current when it was called.  Error check portchk.
  */
 static void BLITZ_ROUTINE rxdeleteport_c(void)
 {

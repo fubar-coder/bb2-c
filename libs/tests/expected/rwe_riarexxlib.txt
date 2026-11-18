@@ -35,7 +35,8 @@ RXDeletePort|port gone|2 queued|1	$00000001
 RXDeletePort|port gone|reply outstanding|1	$00000001
 RXDeletePort|replied before it returned|reply outstanding|1	$00000000
 RXDeletePort|replies|2 queued|1	$00000001
-RXDeletePort|replies at the test's port|33 messages|1	$00000020
+RXDeletePort|replies at the test's port|33 messages|1 [orig]	$00000020
+RXDeletePort|replies at the test's port|33 messages|1 [fixed #1101]	$00000021
 RXDeletePort|reply Result1|2 queued|1	$00000005
 RXDeletePort|reply Result1|2 queued|2	$00000005
 RXDeletePort|reply Result2|2 queued|1	$00000000
