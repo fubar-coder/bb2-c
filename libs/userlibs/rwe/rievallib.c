@@ -24,10 +24,8 @@
  * Assembler: the thunks; everything else is C.
  *
  * BUG(orig), kept:
- *   - ConvToPostFix: a `.` copies the next character unchecked - at the
- *     end of the string its 0, and the scan goes on behind it (#631).  An
- *     operand character that is no digit, a-f, register, `$ % . { }`
- *     ends the operand and is dropped (#632).
+ *   - ConvToPostFix: an operand character that is no digit, a-f,
+ *     register, `$ % . { }` ends the operand and is dropped (#632).
  *   - PFEvaluate:
  *     - `*` (lmult) adds the high words of the partial products into the
  *       low word (SWAP:ADD) - wrong only when the product overflows
@@ -67,6 +65,9 @@
  *     binary minus behind an operand ("3 -4" is 3-4).  The original
  *     looked at the character right before it only, so a space made it a
  *     binary minus without an operand (#633).
+ *   - ConvToPostFix copies a `.` with the character behind it, but not
+ *     the string's 0: a `.` at the end ends the operand.  The original
+ *     copied the 0 too and went on behind the string (#631).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -328,6 +329,8 @@ notoperator:                                    /* a number or register */
             break;
         if (c == '.') {                         /* and the next one, unchecked */
             *s->out++ = c;
+            if (*s->pos == 0)                   /* fixed (#631): but not the 0 */
+                break;
             c = *s->pos++;
             BL_SETB(s->acc, c);
         } else if (c != 'a' && c != 'd' && c != 'p' && c != 'c' && c != '$'
@@ -377,10 +380,10 @@ endthis:
  * operators separated by spaces to the buffer (0 terminated), with an
  * operator stack; "(" ... ")" group.  A `-` is a sign at the start or
  * after an operator or `(`, spaces between skipped (fixed, #633).
- * BUG(orig): a `.` copies the next character unchecked (#631); an operand
- * character that is no digit, a-f, register, `$ % . { }` ends the operand
- * and is dropped (#632).  a3 is left at the string (a statement: nothing
- * uses it after it).
+ * A `.` copies the character behind it, not the string's 0 (fixed, #631).
+ * BUG(orig): an operand character that is no digit, a-f, register,
+ * `$ % . { }` ends the operand and is dropped (#632).  a3 is left at the
+ * string (a statement: nothing uses it after it).
  * @param str  d0: the expression (changed: lower case)
  * @param buf  d1: the output buffer
  */

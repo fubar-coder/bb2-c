@@ -16,7 +16,7 @@
  * init/finit; ConvToPostFix with every operator and precedence, brackets
  * (too many either way), signs (start, after an operator or "(", after a
  * space), hex/binary/registers/indirection operands, upper case, dropped
- * characters, "." at the end with the scan behind it (BUG(orig) (#631)), 200
+ * characters, "." at the end (the original scans on behind it, #631), 200
  * nested brackets and 150 nested operators (stack chunks); PFEvaluate
  * with every operator (signed/unsigned compares, overflowing products,
  * the division's signs, division by 0, powers 0, 1, 0^n, a 65538
@@ -162,7 +162,7 @@ static void convtopostfix(void)
 
     for (i = 0; i < sizeof v / sizeof v[0]; i++)
         ctp(v[i]);
-    /* "." at the end: the 0 is copied, the scan goes on behind it */
+    /* "." at the end: the original copies the 0 and scans on behind it (#631) */
     ctp_n("1.\0(((2\0", 9);
     ctp_n("x+a.\0-5*(3\0", 12);
     /* nested: 200 brackets, 150 operators deep (stack chunks) */

@@ -145,13 +145,14 @@ kind F):
   minus behind an operand (`3 -4` is 3-4); the original looked at the
   character right before it only, a space made it a binary minus
   without an operand (#633).
+* ConvToPostFix copies a `.` with the character behind it, but not the
+  string's 0: a `.` at the end ends the operand. The original copied the
+  0 too and went on converting the bytes behind the string (#631).
 
 ## BUG(orig), kept
 
 In the C file's head:
 
-* ConvToPostFix: the `.` at the end of a string (it reads on behind the
-  0, #631).
 * ConvToPostFix: dropped characters (#632).
 * PFEvaluate: the product's high words added into the low word on
   overflow (#639).

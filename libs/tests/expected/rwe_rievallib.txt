@@ -55,7 +55,8 @@ ConvToPostFix|buffer|"   "|1	bytes 2816 fnv 32C3B12B
 ConvToPostFix|buffer|"  12x+3"|1	bytes 2816 fnv 8042EF9A
 ConvToPostFix|buffer|""|1	bytes 2816 fnv 32C3B12B
 ConvToPostFix|buffer|"$FF&%1010\|7"|1	bytes 2816 fnv 6903477F
-ConvToPostFix|buffer|"%101."|1	bytes 2816 fnv E77A4FF6
+ConvToPostFix|buffer|"%101."|1 [orig]	bytes 2816 fnv E77A4FF6
+ConvToPostFix|buffer|"%101."|1 [fixed #631]	bytes 2816 fnv 405FDAF4
 ConvToPostFix|buffer|"("|1	bytes 2816 fnv 32C3B12B
 ConvToPostFix|buffer|"(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("|1	bytes 2816 fnv 55B17D1E
 ConvToPostFix|buffer|"((1+2)"|1	bytes 2816 fnv B0551923
@@ -77,7 +78,8 @@ ConvToPostFix|buffer|"1+2)*3"|1	bytes 2816 fnv 1487B236
 ConvToPostFix|buffer|"1+2*3"|1	bytes 2816 fnv E345A2CE
 ConvToPostFix|buffer|"1,2;3"|1	bytes 2816 fnv 67C2A67B
 ConvToPostFix|buffer|"1-2-3"|1	bytes 2816 fnv F898C023
-ConvToPostFix|buffer|"1."|1	bytes 2816 fnv 11784026
+ConvToPostFix|buffer|"1."|1 [orig]	bytes 2816 fnv 11784026
+ConvToPostFix|buffer|"1."|1 [fixed #631]	bytes 2816 fnv 1071CCAE
 ConvToPostFix|buffer|"10/3-1"|1	bytes 2816 fnv E31199CC
 ConvToPostFix|buffer|"1<2+3*4^5"|1	bytes 2816 fnv D2DB3EA1
 ConvToPostFix|buffer|"1<2>3"|1	bytes 2816 fnv 5C2F4161
@@ -101,7 +103,8 @@ ConvToPostFix|buffer|"Zz+yY"|1	bytes 2816 fnv DA82697C
 ConvToPostFix|buffer|"a7-d0"|1	bytes 2816 fnv 293AC37E
 ConvToPostFix|buffer|"abcdef+1"|1	bytes 2816 fnv 1FE7F6FC
 ConvToPostFix|buffer|"c+p+$"|1	bytes 2816 fnv 33A83440
-ConvToPostFix|buffer|"x+a."|1	bytes 2816 fnv 6730D55A
+ConvToPostFix|buffer|"x+a."|1 [orig]	bytes 2816 fnv 6730D55A
+ConvToPostFix|buffer|"x+a."|1 [fixed #631]	bytes 2816 fnv 13161381
 ConvToPostFix|buffer|"{1000}.w+2"|1	bytes 2816 fnv 38B68A4A
 ConvToPostFix|buffer|"{a0}.b*{$10}.l"|1	bytes 2816 fnv 4CA37DFF
 ConvToPostFix|kept|"   "|1	kept
