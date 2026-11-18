@@ -10,6 +10,8 @@
 ; Correct (user decision W4 Q1 (b)): RXExecuteScript waits for the end of
 ; the script and returns -1, RXReturnCode its code (0, then 10);
 ; RXRunScript returns -1 and the script's "hello" arrives.
+; (A second after each call, so that RexxMast's error messages, which it
+; prints to the program's output, come before the program's next line.)
 ; @fixed #544
 ; @rwe riarexxlib
 DEFTYPE .l
@@ -33,10 +35,13 @@ DefaultOutput
 p=RXCreatePort("BUGORIG")
 RXTokenise On
 r=RXExecuteScript("RAM:bugorig-ok.rexx")
+Delay_ 50
 NPrint "ok: ",r=-1," rc ",RXReturnCode
 r=RXExecuteScript("RAM:bugorig-bad.rexx")
+Delay_ 50
 NPrint "bad: ",r=-1," rc ",RXReturnCode
 r=RXRunScript("RAM:bugorig-run.rexx")
+Delay_ 50
 NPrint "run: ",r=-1
 m=0 : w=0
 While m=0 AND w<50

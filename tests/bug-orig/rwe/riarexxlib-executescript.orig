@@ -5,12 +5,12 @@ done
 ok
 [run]
 rexx -1
-ok: 0 rc 0
-bad: +++ Error 47 in line 1: Arithmetic conversion error
-0 rc 0
-run: +++ Error 47 in line 1: Arithmetic conversion error
-0
 +++ Error 47 in line 1: Arithmetic conversion error
+ok: 0 rc 0
++++ Error 47 in line 1: Arithmetic conversion error
+bad: 0 rc 0
++++ Error 47 in line 1: Arithmetic conversion error
+run: 0
 nothing arrived
 rc=0
 [blitz2]
