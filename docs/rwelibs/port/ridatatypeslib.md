@@ -51,8 +51,6 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   (#606, #607).
 * SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
   overflow the buffer (#608).
-* DataTypeModeID taglist writes its own tags into the caller's list
-  (#603).
 
 **Fixed** (intended deviations, `docs/libs/deviations.md` 3a, kind F):
 
@@ -113,6 +111,14 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   (in a compiled program addresses: a top of 3 went to SetAttrs as
   1073938435; a negative value without an upper word became
   32768-65535) (#597).
+* DataTypeModeID taglist builds its three tags (BIDTAG_NominalWidth,
+  NominalHeight, Depth) in the library's buffer and chains the program's
+  list behind them with TAG_MORE: the program's tags are used and its
+  list stays unchanged. A tag in both is the library's: BestModeID takes
+  the first, and the program's list can only follow (it ends with its
+  own TAG_DONE). The original wrote its tags and a TAG_DONE over the
+  first seven longs of the program's list (behind a shorter list over
+  other memory) and so ignored the program's tags (#603).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h

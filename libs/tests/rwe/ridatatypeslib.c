@@ -26,7 +26,7 @@
  * missing file; the text file (name, base name, ID, group, a second
  * DataTypeOpen: 0); the picture: the strings, DataTypeCreate both forms,
  * DataTypeSuper, DataTypeBitmap, Width/Height/Depth, DataTypeModeID both
- * forms (BUG(orig) (#603): the tags written to the caller's list),
+ * forms (a list 1-9: the original writes its tags over it),
  * GetDataTypeAttr (known and unknown attributes), SetDataTypeAttr with a
  * tag list and with 1 and 2 pairs (the upper word of d7 a marker),
  * DataTypesPalette with 4 and 2 colours, AttachDataType in all three

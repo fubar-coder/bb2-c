@@ -42,7 +42,6 @@
  *     (#606, #607).
  *   - SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
  *     overflow the 1024 byte buffer (#608).
- *   - DataTypeModeID with a tag list writes its own tags into it (#603).
  *
  * Fixed (intended deviations):
  *   - DataTypeBitmap clears the buffer before GetAttr: an object that has
@@ -87,6 +86,11 @@
  *   - AttachDataType window,id,x,y,width,height sign-extends its four
  *     word arguments into the tag list.  The original wrote the
  *     registers as longs, with whatever upper words they had (#597).
+ *   - DataTypeModeID taglist builds its three tags in the library's
+ *     buffer and chains the program's list behind them (TAG_MORE): the
+ *     list is used and stays unchanged; a tag in both is the library's
+ *     (BestModeID takes the first).  The original wrote its tags and a
+ *     TAG_DONE over the first seven longs of the program's list (#603).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -867,10 +871,13 @@ ULONG BLITZ_ROUTINE c_getdatatypeattr(ULONG attr BL_REG(d0))
     return (ULONG)storage;
 }
 
-/* DataTypeModeID [taglist]: BestModeID for the picture's size and depth
-   (the tags are written to the tag list, BUG(orig) (#603)) */
-static ULONG domodeid(struct TagItem *t)
+/* DataTypeModeID [taglist]: BestModeID for the picture's size and depth,
+   the tags in the buffer, the program's list (more) behind them (fixed,
+   #603: the original wrote the tags over the program's list) */
+static ULONG domodeid(struct TagItem *more)
 {
+    struct TagItem *t = storage->tags;
+
     if (!bitmapheader)
         return 0;
     t[0].ti_Tag = BIDTAG_NominalWidth;
@@ -879,7 +886,12 @@ static ULONG domodeid(struct TagItem *t)
     t[1].ti_Data = bitmapheader->bmh_Height;
     t[2].ti_Tag = BIDTAG_Depth;
     t[2].ti_Data = bitmapheader->bmh_Depth;
-    t[3].ti_Tag = TAG_DONE;
+    if (more) {
+        t[3].ti_Tag = TAG_MORE;
+        t[3].ti_Data = (ULONG)more;
+    } else {
+        t[3].ti_Tag = TAG_DONE;
+    }
     return BestModeIDA(t);
 }
 
@@ -890,13 +902,14 @@ static ULONG domodeid(struct TagItem *t)
  */
 ULONG BLITZ_ROUTINE c_getmodeid(void)
 {
-    return domodeid(storage->tags);
+    return domodeid(NULL);
 }
 
 /**
- * @brief DataTypeModeID taglist: as DataTypeModeID, the tags written to
- * the program's tag list (BUG(orig) (#603)).
- * @param tags  d0: the tag list
+ * @brief DataTypeModeID taglist: as DataTypeModeID, with the program's
+ * tag list behind the library's tags (TAG_MORE; the library's come
+ * first).  Fixed (#603): the original wrote its tags over the list.
+ * @param tags  d0: the tag list (0: none)
  * @return d0: the mode id, 0 without DataTypeBitmap
  */
 ULONG BLITZ_ROUTINE c_getmodeid2(struct TagItem *tags BL_REG(d0))
