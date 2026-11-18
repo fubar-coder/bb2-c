@@ -74,6 +74,10 @@ kind F):
   chosen without icons); the original read the first WBArg without
   looking at `am_NumArgs` and returned whatever `am_ArgList` pointed at
   (#522).
+* `AppFile(n)` with n ≤ 0 is out of range and returns an empty string;
+  the original checked only the upper bound and read the WBArg before
+  the list (its lock passed to `NameFromLock`, perhaps unlocked and
+  cleared) (#520).
 
 ## BUG(orig), kept
 
@@ -92,8 +96,7 @@ kind F):
   lock (`ChangeMode` + `UnLock`, "Let us Unlock() it!") – and clear it in
   the message, unless the path ends with `:`. A second `AppFile` of the
   same argument then has lock 0. The `:` test reads the byte before the
-  string if the path is empty (#521). `AppFile(n)` with n ≤ 0 reads the
-  WBArg before the list (#520).
+  string if the path is empty (#521).
 * finit replies to the messages still queued at the port only if a
   message is current (the last `AppEvent`); the flag `msgportflag` for the
   other case is never set. Otherwise they stay unreplied when the port is

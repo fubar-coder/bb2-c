@@ -43,8 +43,7 @@
  *   - NextAppFile/AppFile unlock the lock of the WBArg (ChangeMode +
  *     UnLock - Workbench's own lock) and clear it in the message, unless
  *     the path ends with ':'.  The ':' test reads the byte before the
- *     string if NameFromLock gives an empty path (#521).  AppFile(n)
- *     with n <= 0 reads the WBArg before the list (#520).
+ *     string if NameFromLock gives an empty path (#521).
  *   - finit replies to the messages queued at the port only if a message
  *     is current (the last AppEvent) - the flag `msgportflag` for the
  *     other case is never set; otherwise they stay unreplied when the
@@ -56,6 +55,9 @@
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
+ * Fixed (intended deviation, #520): AppFile(n) with n <= 0 read the WBArg
+ * before the list (the index was checked against its upper bound only);
+ * it returns an empty string now.
  * Fixed (intended deviation, #522): AppLock read the first WBArg without
  * looking at am_NumArgs; a message without arguments now has lock 0.
  * Fixed (intended deviation, #519): NextAppFile/AppFile copied the file
@@ -468,7 +470,7 @@ static ULONG BLITZ_ROUTINE appfile_c(void)
 
     if (!libflag || !msg)
         return 0;
-    if (argnum >= numargs)
+    if (argnum < 0 || argnum >= numargs)        /* fixed (#520): argnum < 0 */
         return 0;
     arg = msg->am_ArgList + argnum++;
     lock = arg->wa_Lock;
@@ -498,7 +500,8 @@ BLITZ_THUNK(appfile, appfile_c, "d1/a0-a1");
  * @brief AppFile(num): the full path of argument num (1 = the first), as
  * NextAppFile; NextAppFile's position stays.
  *
- * BUG(orig) (#520): num <= 0 reads the WBArg before the list.
+ * Fixed (#520): num <= 0 is out of range, an empty string (the original
+ * read the WBArg before the list).
  * @param num  d0: the argument number
  * @return d0: the length, as NextAppFile
  */

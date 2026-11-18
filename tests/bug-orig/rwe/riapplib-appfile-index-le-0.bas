@@ -5,6 +5,7 @@
 ; lies a WBArg {lock on RAM:, "before"} (a root lock: AppFile does not
 ; unlock it).
 ; Correct: AppFile(0) is out of range and returns an empty string.
+; @fixed #520
 ; @rwe riapplib
 DEFTYPE .l
 m=AllocMem_(128,$10001)
