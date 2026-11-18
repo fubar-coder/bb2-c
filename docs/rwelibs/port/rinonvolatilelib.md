@@ -48,15 +48,17 @@ kind F):
   test `rinonvolatilelib-storenvdata-result`, `libs_emulator` cases
   `[fixed #1085]` of `rwe_rinonvolatilelib`, fake nonvolatile.library).
 
-## BUG(orig)
+## No defects
 
-* `StoreNVData` deletes the item unconditionally before storing it (an
-  item that cannot be stored again is lost); DeleteNV's result is ignored
-  (#763).
-
-No defect: `StoreNVData` returns 0 when the library is not open (the
-common `ReturnFalse`); with the documented TRUE/FALSE that is FALSE,
-nothing stored (#765).
+* `StoreNVData` returns 0 when the library is not open (the common
+  `ReturnFalse`); with the documented TRUE/FALSE that is FALSE, nothing
+  stored (#765).
+* `StoreNVData` deletes the item before storing it, always, and ignores
+  DeleteNV's result. That is intended: in a small NVRAM (the CD32's is
+  1 KB) StoreNV alone would need room for the old and the new version at
+  once, so deleting first makes room. The price is that an item that
+  cannot be stored again is lost (#763; user decision of 2026-11-18,
+  kept as it is).
 
 finit closes the library but leaves `libbase` set; that is no defect (it
 is the last call).

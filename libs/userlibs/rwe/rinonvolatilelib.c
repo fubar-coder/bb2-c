@@ -17,10 +17,6 @@
  *
  * No assembler besides the thunks.
  *
- * BUG(orig):
- *   - StoreNVData: the DeleteNV before StoreNV is unconditional (an item
- *     that cannot be stored again is lost), and its result is ignored
- *     (#763).
  * Fixed (intended deviations):
  *   - StoreNVData's DIVU.w #10 overflowed for lengths of 655360 bytes and
  *     more (the quotient does not fit into a word: d3 stays unchanged),
@@ -30,8 +26,13 @@
  *   - StoreNVData returned StoreNV's result (!acommand #word): 0 when
  *     stored, otherwise an NVERR_... code, the reverse of the documented
  *     TRUE/FALSE; it now returns -1 when stored, 0 when not (#1085).
- * No defect: StoreNVData returns 0 when the library is not open (the
- * common ReturnFalse), which is FALSE, not stored, as documented (#765).
+ * No defects:
+ *   - StoreNVData returns 0 when the library is not open (the common
+ *     ReturnFalse), which is FALSE, not stored, as documented (#765).
+ *   - StoreNVData deletes the item before StoreNV, always, and ignores
+ *     DeleteNV's result: intended, it makes room for the new version in
+ *     a small NVRAM (StoreNV alone would need room for both); an item
+ *     that cannot be stored again is lost then (#763).
  *
  * finit closes the library but leaves libbase set: no defect, it is the
  * last call.
@@ -131,8 +132,8 @@ static ULONG BLITZ_ROUTINE isnonvolatile_c(void)
  * nonvolatile memory (Amiga mode only).
  *
  * Deletes the item first (DeleteNV with killRequesters 0, always, its
- * result ignored: an item that cannot be stored again is lost, BUG(orig)
- * (#763)), then StoreNV with the length in tens of bytes, rounded up,
+ * result ignored: room for the new version in a small NVRAM, no defect;
+ * an item that cannot be stored again is lost, #763), then StoreNV with the length in tens of bytes, rounded up,
  * and killRequesters -1.  The length is divided as a long (fixed, #764:
  * the original's DIVU.w #10 overflows for 655360 bytes and more, StoreNV
  * then gets the low word of the length, +1 if the high word is not 0).
