@@ -89,6 +89,12 @@ kind F):
   LockRegistry went with the structure finit had unlocked, and
   UnlockRegistry unlocked it a second time (#779; `libs_emulator` cases
   `[fixed #779]` of `rwe_riregistrylib`).
+* GetLibraryValue$ and GetRegistryStringVariable return "" without a
+  structure, as ParseItemValue$ does. The original read the type and the
+  value at 18/24 of address 0 (CallLibrary's 0 did not stop them) - and
+  without registry.library every call takes that path: when the word at
+  18 was 1, the string at the address in the long at 24 was copied
+  (#780; test `riregistrylib-getstring-address0`).
 
 ## BUG(orig), kept
 
@@ -97,9 +103,6 @@ kind F):
   goes below the stack, into the end of the token table: first the
   libfin's `Dc.l 0` (no structure), then `$0000FFFF`, which the next
   UnlockRegistry "unlocks" (a0 = $FFFF) and overwrites with 0 (#781).
-* **GetLibraryValue$ and GetRegistryStringVariable without a structure**
-  read the type and the value at 18/24 of address 0 (CallLibrary's 0
-  does not stop them) (#780).
 * **SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable**
   pass the caller's d2 as the size (#782).
 
@@ -141,7 +144,7 @@ Observed:
 Covered:
 
 * Without the library: init, IsRegistryOpen, LockRegistry and every
-  command (nothing called, 0; the reads at address 0), finit.
+  command (nothing called, 0; the string functions ""), finit.
 * With the mock:
   * init, IsRegistryOpen;
   * every command and form before a lock (nothing called) and with a

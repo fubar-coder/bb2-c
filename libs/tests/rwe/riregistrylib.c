@@ -20,7 +20,9 @@
  * finit.
  * Covered: without the library: init, IsRegistryOpen, LockRegistry and
  * every command (nothing called, 0; GetLibraryValue$ and
- * GetRegistryStringVariable read 18/24 of address 0, BUG(orig), #780), finit.
+ * GetRegistryStringVariable: the original reads 18/24 of address 0, fixed
+ * #780, the bug-orig test riregistrylib-getstring-address0; here both
+ * give ""), finit.
  * With the mock: init, IsRegistryOpen, every command and form before a
  * lock (nothing called) and with a structure, the string functions with
  * a string value, another type, no value, no name; GetRegistryInt/

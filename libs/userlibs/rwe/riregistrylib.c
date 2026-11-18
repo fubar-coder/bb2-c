@@ -50,9 +50,6 @@
  *     without a lock goes below it - into the end of the token table
  *     (the libfin's Dc.l 0, then $0000FFFF: unlocked again, that is
  *     "unlocked" with a0 = $FFFF and written over with 0) (#781).
- *   - GetLibraryValue$/GetRegistryStringVariable without a structure read
- *     the type and value at 18/24 of address 0 (CallLibrary's 0 does not
- *     stop them) (#780).
  *   - SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable
  *     pass the caller's d2 as the size (#782).
  * Fixed (intended deviations):
@@ -63,6 +60,9 @@
  *     call before the first LockRegistry went with the structure finit
  *     had unlocked, and UnlockRegistry unlocked it again; finit now
  *     clears both, also without the library (#779).
+ *   - GetLibraryValue$/GetRegistryStringVariable without a structure read
+ *     the type and value at 18/24 of address 0 (CallLibrary's 0 did not
+ *     stop them); they now return "" as ParseItemValue$ does (#780).
  * LockRegistry stores the result also when it is 0 (the following calls
  * then do nothing, but UnlockRegistry still pops it): no defect, it keeps
  * LockRegistry and UnlockRegistry balanced.
@@ -467,13 +467,16 @@ static ULONG retstring(const UBYTE *s)
     return n;
 }
 
-/* returnstring: the value of the structure if it is a string -
-   BUG(orig): without a structure 18/24 of address 0 (#780) */
+/* returnstring: the value of the structure if it is a string; "" without
+   a structure (fixed, #780: the original read 18/24 of address 0) */
 static ULONG returnstring(void)
 {
     const struct regstructure *rs = (const struct regstructure *)st.regstruct;
-    const UBYTE *v = (const UBYTE *)rs->data;
+    const UBYTE *v;
 
+    if (!rs)
+        return 0;
+    v = (const UBYTE *)rs->data;
     if (!v || rs->type != VAR_STRING)
         return 0;
     return retstring(v);
@@ -613,8 +616,9 @@ static ULONG getstring(WORD off, ULONG name, const ULONG *lens)
  *
  * GetLibraryValue (-54); the result is the structure's value at +24 if its
  * type (+18) is 1 (a string), else "".  The result goes where the
- * argument was (a3 back by its length + 1).  BUG(orig): without a
- * structure the type and value are read at 18/24 of address 0 (#780).
+ * argument was (a3 back by its length + 1).  Without a structure ""
+ * (fixed, #780: the original reads the type and value at 18/24 of
+ * address 0).
  * a3 ends on the string's 0 (fixed, #783).
  * @param name  d0: the library name
  * @param lens  a2: the argument stack (lens[-1] = the length of name)
@@ -630,8 +634,8 @@ static ULONG BLITZ_ROUTINE getlibraryvalue_c(ULONG name BL_REG(d0),
  * @brief GetRegistryStringVariable(VariableName): a string variable's value.
  *
  * GetRegistryVariable (-60), then as GetLibraryValue$: the structure's
- * value if it is a string, else "" (BUG(orig) #780; a3 on the 0, fixed
- * #783).
+ * value if it is a string, else "" (also without a structure, fixed
+ * #780; a3 on the 0, fixed #783).
  * @param name  d0: the variable name
  * @param lens  a2: the argument stack (lens[-1] = the length of name)
  * @return d0: the length of the string at a3
