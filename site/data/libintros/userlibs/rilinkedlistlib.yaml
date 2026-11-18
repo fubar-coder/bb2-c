@@ -12,25 +12,16 @@ intro: |
   "Out of Memory!".
 
   The library copies with a command of the RI Amos Func library, which
-  must be present as well. The library frees nothing itself; the memory
-  of the lists is freed with the program's other memory when it ends.
+  must be present as well. `DelListItem` frees an item with its copy,
+  `SetListItem` the copy it replaces, and `InitList` a list that is
+  already there; the memory still in use is freed with the program's
+  other memory when it ends.
 
-  Kept from the original are these errors a program can run into:
-
-  - No command checks the list number: a list number of 5 or more
-    overwrites the other lists or memory
-    ([#732](https://github.com/fubar-coder/bb2-c/issues/732)).
-  - Only `DelListItem` checks that the list has a current item; the
-    other commands that work on the current item, used on a list that
-    was never started with `InitList`, read and write memory from
-    address 0 on
-    ([#733](https://github.com/fubar-coder/bb2-c/issues/733)).
-  - `DelListItem` frees the wrong memory for an item that holds a copy,
-    and the program stops with the error "Unable to Free Memory"
-    ([#729](https://github.com/fubar-coder/bb2-c/issues/729)).
-  - The links of a list are wrong after `AddListItem` in the
-    middle of a list, `AddFirstListItem` or `DelListItem` of the first
-    item, so moving through such a list goes astray (see the commands).
+  On a list that was never started with `InitList`, the commands do
+  nothing and return 0. Only the list numbers 0 to 4 are allowed: with
+  runtime error checking, any other number is the error "List number
+  must be 0 to 4"; without it, such a number overwrites the other lists
+  or memory.
 
   A list of three items, walked from the first one:
 
@@ -48,5 +39,8 @@ intro: |
     NPrint v\a
   Until NextListItem(0)=0
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in rilinkedlistlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rilinkedlistlib-fixes" >}}).
 
   *Based on the RI LinkList Library guide by Steven Matty.*

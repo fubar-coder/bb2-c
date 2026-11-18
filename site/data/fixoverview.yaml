@@ -3804,6 +3804,102 @@ rows:
     text: "A program run a second time from the editor starts without the first run's register block and error number; the original kept both and read the registers from freed memory."
     page: libraries
     anchor: rievallib-fixes
+  - issue: 724
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "AddFirstListItem"
+    text: "`AddFirstListItem` links the old first item back to the new one; the original cut the list behind it and made the two items point to each other."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 725
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "AddFirstListItem"
+    text: "`AddFirstListItem` returns -1 on success; the original returned four times the list number, so 0, the failure result, on list 0."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 726
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "AddFirstListItem"
+    text: "`AddFirstListItem` clears the new item; the original left whatever the memory held in its links, copy and size."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 727
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "AddListItem"
+    text: "`AddListItem` in the middle of a list links the item behind back to the new one; in the original, `PrevListItem` from there skipped it."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 728
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "DelListItem"
+    text: "`DelListItem` of the first item keeps the rest of the list; the original ended the list at the new first item."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 729
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "DelListItem"
+    text: "`DelListItem` frees the item with its copy; the original freed a wrong address and stopped with \"Unable to Free Memory\"."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 730
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "GetListItem"
+    text: "`GetListItem` copies no more bytes than the item's copy has into a larger variable; the original added the bytes behind the copy."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 731
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "InitList"
+    text: "`InitList` on a list in use frees the old list first; the original lost it until the program ended."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 732
+    severity: 3
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: ""
+    text: "With runtime error checking, the list commands stop with a runtime error for a list number out of range; the original wrote into the other lists."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 733
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: ""
+    text: "On a list never started with `InitList`, the commands do nothing and return 0; the original read and wrote memory from address 0 on."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 734
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "SetListItem"
+    text: "`SetListItem` frees the copy the item held before; the original lost it until the program ended."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
+  - issue: 735
+    severity: 5
+    topic: "Data structures"
+    library: "rilinkedlistlib"
+    command: "AddListItem, SetListItem"
+    text: "The size an item keeps of its copy is right after `AddListItem` and `SetListItem`; the original stored the size of another variable or kept the old one."
+    page: libraries
+    anchor: rilinkedlistlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
