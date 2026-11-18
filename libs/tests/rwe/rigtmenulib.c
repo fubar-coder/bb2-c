@@ -29,10 +29,11 @@
  * the port's closes it, #690: not observed here, test
  * rigtmenulib-finit-never-closes), CreateMenuStrip with CreateMenusA,
  * GetVisualInfoA or LayoutMenusA failing (gadtools patched; the
- * original returns -1 and passes the 0 on, #689).
+ * original returns -1 and passes the 0 on, #689), GTMenuItem and
+ * GTSubItem with a shortcut$ at an address with low word 0 (the
+ * original takes it as none, #694).
  * Not covered: the error checks of missing entries (runtime errors,
- * TRAP #0), a shortcut$ at an address with low word 0, CreateMenuStrip
- * without titles (the original reads address 0; bug-orig test
+ * TRAP #0), CreateMenuStrip without titles (the original reads address 0; bug-orig test
  * rigtmenulib-createmenustrip-unchecked), the walks beyond the lists
  * (write near address 0).
  */
@@ -382,6 +383,7 @@ int main(int argc, char **argv)
     static const char *names[] = { LIB, "memlib", "maxslib", NULL };
     struct Library *gt;
     ULONG avail;
+    APTR lowblk;
     int s;
 
     if (argc < 2) {
@@ -523,6 +525,20 @@ int main(int argc, char **argv)
     SetFunction(gt, -132, gt_old_fvi);
     CacheClearU();
     Permit();
+
+    /* a shortcut$ at an address with low word 0 (#694): the original
+       tests the address with TST.w and takes it as no shortcut */
+    lowblk = AllocMem(0x10010, MEMF_ANY);
+    if (lowblk) {
+        char *low = (char *)(((ULONG)lowblk + 0xffff) & ~0xffffUL);
+
+        low[0] = 'K';
+        low[1] = 0;
+        item(1, 2, 0, 0, 1, -1, "Low", low, 0, 0);
+        item(1, 2, 0, 0, 1, 0, "Low sub", low, 0, 0);
+        FreeMem(lowblk, 0x10010);       /* the lists have copies */
+    }
+    check("rigtmenulib: 64 KB for the low word 0 shortcut", lowblk != NULL);
 
     /* the objects' free routine, finit */
     for (s = 0; s < 2; s++) {

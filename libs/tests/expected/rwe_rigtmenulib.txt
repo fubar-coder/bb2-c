@@ -583,6 +583,7 @@ GTMenuItem|count|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$0000000C
 GTMenuItem|count|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000009
 GTMenuItem|count|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$0000000A
 GTMenuItem|count|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	$00000002
+GTMenuItem|count|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	$00000003
 GTMenuItem|kept|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	kept
 GTMenuItem|kept|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	kept
 GTMenuItem|kept|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	kept
@@ -593,6 +594,7 @@ GTMenuItem|kept|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	kept
 GTMenuItem|kept|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	kept
 GTMenuItem|kept|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	kept
 GTMenuItem|kept|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	kept
+GTMenuItem|kept|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	kept
 GTMenuItem|popped|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000000
 GTMenuItem|popped|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000000
 GTMenuItem|popped|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000000
@@ -603,6 +605,7 @@ GTMenuItem|popped|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000000
 GTMenuItem|popped|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000000
 GTMenuItem|popped|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000000
 GTMenuItem|popped|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	$00000000
+GTMenuItem|popped|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	$00000000
 GTMenuItem|title 0|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
 GTMenuItem|title 0|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
 GTMenuItem|title 0|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000001
@@ -613,10 +616,20 @@ GTMenuItem|title 0|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
 GTMenuItem|title 0|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
 GTMenuItem|title 0|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
 GTMenuItem|title 0|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	$00000001
 GTMenuItem|title 0 item 0|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 item 0|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	$00000001
 GTMenuItem|title 0 item 0 flags/mx/ud|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 0 item 0 flags/mx/ud|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
 GTMenuItem|title 0 item 0 shortcut|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	"1"
+GTMenuItem|title 0 item 0 shortcut|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	"1"
 GTMenuItem|title 0 item 0 text|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	"One"
+GTMenuItem|title 0 item 0 text|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	"One"
+GTMenuItem|title 0 item 1|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 item 1 flags/mx/ud|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 0 item 1 shortcut|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1 [orig]	null
+GTMenuItem|title 0 item 1 shortcut|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1 [fixed #694]	"K"
+GTMenuItem|title 0 item 1 text|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	"Low"
 GTMenuItem|title 0 text|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"First"
 GTMenuItem|title 0 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"First"
 GTMenuItem|title 0 text|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"First"
@@ -627,6 +640,7 @@ GTMenuItem|title 0 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"First"
 GTMenuItem|title 0 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"First"
 GTMenuItem|title 0 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"First"
 GTMenuItem|title 0 text|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	"Other"
+GTMenuItem|title 0 text|1 form 2 0/1/-1 "Low" "K" mx 0 ud 0|1	"Other"
 GTMenuItem|title 1|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
 GTMenuItem|title 1|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
 GTMenuItem|title 1|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000001
@@ -1122,6 +1136,7 @@ GTSubItem|count|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000011
 GTSubItem|count|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000011
 GTSubItem|count|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000010
 GTSubItem|count|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000011
+GTSubItem|count|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	$00000004
 GTSubItem|kept|0 form 0 1/1/1 "" "" mx 0 ud 0|1	kept
 GTSubItem|kept|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	kept
 GTSubItem|kept|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	kept
@@ -1129,6 +1144,7 @@ GTSubItem|kept|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	kept
 GTSubItem|kept|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	kept
 GTSubItem|kept|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	kept
 GTSubItem|kept|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	kept
+GTSubItem|kept|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	kept
 GTSubItem|popped|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000000
 GTSubItem|popped|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000000
 GTSubItem|popped|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000000
@@ -1136,6 +1152,7 @@ GTSubItem|popped|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000000
 GTSubItem|popped|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000000
 GTSubItem|popped|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000000
 GTSubItem|popped|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000000
+GTSubItem|popped|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	$00000000
 GTSubItem|title 0|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
 GTSubItem|title 0|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
 GTSubItem|title 0|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
@@ -1143,6 +1160,21 @@ GTSubItem|title 0|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
 GTSubItem|title 0|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
 GTSubItem|title 0|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
 GTSubItem|title 0|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 0|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 item 0|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 item 0 flags/mx/ud|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 0 item 0 shortcut|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	"1"
+GTSubItem|title 0 item 0 text|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	"One"
+GTSubItem|title 0 item 1|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 item 1 flags/mx/ud|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 0 item 1 shortcut|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1 [orig]	null
+GTSubItem|title 0 item 1 shortcut|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1 [fixed #694]	"K"
+GTSubItem|title 0 item 1 sub 0|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 item 1 sub 0 flags/mx/ud|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 0 item 1 sub 0 shortcut|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1 [orig]	null
+GTSubItem|title 0 item 1 sub 0 shortcut|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1 [fixed #694]	"K"
+GTSubItem|title 0 item 1 sub 0 text|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	"Low sub"
+GTSubItem|title 0 item 1 text|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	"Low"
 GTSubItem|title 0 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"First"
 GTSubItem|title 0 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"First"
 GTSubItem|title 0 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"First"
@@ -1150,6 +1182,7 @@ GTSubItem|title 0 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"First"
 GTSubItem|title 0 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"First"
 GTSubItem|title 0 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"First"
 GTSubItem|title 0 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"First"
+GTSubItem|title 0 text|1 form 2 0/1/0 "Low sub" "K" mx 0 ud 0|1	"Other"
 GTSubItem|title 1|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
 GTSubItem|title 1|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
 GTSubItem|title 1|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001

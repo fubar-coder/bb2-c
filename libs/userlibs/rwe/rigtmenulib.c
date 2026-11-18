@@ -31,8 +31,6 @@
  * "General").  No assembler.
  *
  * BUG(orig), kept:
- *   - The shortcut$ is tested by its low word (TST.w d5/d6): a string at
- *     an address with low word 0 counts as none (#694).
  *   - GTMenuState/GTSetMenuChecked change the flags of the menu strip
  *     directly, also while it is attached to a window (#693).
  * Fixed (intended deviations):
@@ -55,6 +53,9 @@
  *     check reports it); when CreateMenusA, GetVisualInfoA or
  *     LayoutMenusA fails it frees what it made and returns 0 (the
  *     original checks none of them and returns -1) (#689).
+ *   - GTMenuItem/GTSubItem test the whole address of shortcut$; the
+ *     original tests its low word (TST.w d5/d6): a string at an address
+ *     with low word 0 counted as no shortcut (#694).
  * Like the original, no defects: GTMenuTitle allocates the title
  * uncleared (MEMF_PUBLIC; all three fields are written); +8 counts every
  * entry added and is never decreased (the array of CreateMenuStrip,
@@ -563,7 +564,7 @@ static void additem(struct gtmenulist *obj, struct gtentry *link, UWORD n, int s
         it->text = allocst(text, BL_POPL(sp));
     it->items = NULL;
     it->flags = flags;
-    if ((UWORD)sc) {                    /* BUG(orig) (#694): TST.w */
+    if (sc) {                           /* Fixed (#694): the original TST.w */
         if (sub) {
             /* MOVE.l -(a2),d1:MOVE.l -(a2),d0: length and the pushed
                address from the stack */
@@ -646,8 +647,9 @@ BLITZ_THUNK(_gtmenuitem3, gtmenuitem3_c, "d0-d1/a0-a1");
  * @brief GTMenuItem GTMenuList#,flags,menu,item,itemtext$,shortcut$:
  * insert an item with a shortcut.
  *
- * BUG(orig) (#694): shortcut$ is tested by its low word, a string at an
- * address with low word 0 counts as none.
+ * Fixed (#694): shortcut$ is tested by its whole address; the original
+ * tests its low word, a string at an address with low word 0 counted as
+ * none.
  * @param itemflags  d1.w: the NewMenu flags
  * @param menu       d2.w: the title
  * @param itemno     d3.w: the item's number
@@ -788,14 +790,14 @@ BLITZ_THUNK(_gtsubitem3, gtsubitem3_c, "d0-d1/a0-a1");
  * shortcut.
  *
  * shortcut$ is a #push argument: its address and length are taken from
- * the a2 stack (the d6 value only decides whether there is one, by its
- * low word, BUG(orig) #694).
+ * the a2 stack (the d6 value only decides whether there is one; fixed
+ * #694: the whole address, the original tests its low word).
  * @param itemflags  d1.w: the NewMenu flags
  * @param menu       d2.w: the title
  * @param itemno     d3.w: the item
  * @param subno      d4.w: the sub item's number
  * @param text       d5: itemtext$
- * @param shortcut   d6: tested for 0 (TST.w)
+ * @param shortcut   d6: tested for 0
  * @param stack      a2: the argument stack (the string lengths, the
  *                   pushed shortcut$)
  * @param obj        a3: the GTMenuList object

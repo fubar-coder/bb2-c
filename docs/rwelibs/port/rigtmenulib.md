@@ -113,12 +113,14 @@ Intended deviations from the original:
   allocation of the NewMenu array does not return in the original
   (memlib raises "Out of Memory!", `libs/acidlibs/memlib.c`); if the
   runtime error returns in the port, makearray gives 0 before writing.
+* **GTMenuItem and GTSubItem test the whole address of shortcut$.** The
+  original tests its low word (`TST.w d5`/`d6`): a string at an address
+  with low word 0 counted as no shortcut, the item lost its key (#694;
+  `libs_emulator` cases `[fixed #694]` of `rwe_rigtmenulib`: a string at
+  such an address).
 
 ## BUG(orig), kept
 
-* **The shortcut$ is tested by the low word of its address** (`TST.w
-  d5`/`d6`): a string at an address with low word 0 counts as no shortcut
-  (#694).
 * **GTMenuState and GTSetMenuChecked** change the flags of the strip
   directly, also while it is attached to a window; a strip made again
   loses them (#693).
@@ -161,6 +163,8 @@ Covered:
 * CreateMenuStrip twice (the old strip freed), and with CreateMenusA,
   GetVisualInfoA or LayoutMenusA failing (gadtools patched for the test
   task);
+* GTMenuItem and GTSubItem with a shortcut$ at an address with low
+  word 0;
 * GTSetMenu with and without a strip, and on a window that has one;
   GTUnSetMenu with and without a strip;
 * GTMenuState in all forms;
@@ -173,7 +177,6 @@ Covered:
 Not covered:
 
 * the error checks with missing entries (runtime errors, TRAP #0);
-* a shortcut$ at an address with low word 0;
 * CreateMenuStrip without titles (the original reads address 0; the
   bug-orig test `rigtmenulib-createmenustrip-unchecked`);
 * walks past the end of the strip (they write near address 0).
