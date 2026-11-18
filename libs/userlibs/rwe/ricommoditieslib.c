@@ -49,14 +49,16 @@
  * variables around them; the original has no error check area, here the
  * library has one: with runtime error checking a number outside 0..15 is
  * the runtime error "Hotkey number must be 0 to 15" (hotkeynumchk);
- * release code unchanged (an invalid argument) (#564).
+ * release code unchanged (an invalid argument) (#564).  SetHotKey
+ * deletes a replaced hotkey's filter with its sender (DeleteCxObjAll),
+ * and on a failure the objects it made, and clears the slots; the
+ * original only removed the replaced objects (RemoveCxObj) and left what
+ * it had made before a failure (#563).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
  *     (#558);
- *   - SetHotKey: a replaced filter/sender is removed but not deleted; the sender is only
- *     removed if the filter existed; objects made before a failure stay
- *     (#563); AttachCxObj (void) is tested through the d0 it leaves;
+ *   - SetHotKey: AttachCxObj (void) is tested through the d0 it leaves;
  *     CxObjError is not looked at (the unreachable 'oops2 tail is not
  *     translated) (#565);
  *   - MakeCommodity makes a new broker on every call without deleting the
@@ -398,6 +400,20 @@ static LONG attach(CxObj *head, CxObj *co)
     return BLITZ_BASEJSR(st_cbase, -84, r);
 }
 
+/* delhotkey: deletes the filter of slot n with the sender attached to it
+   (DeleteCxObjAll detaches it from the broker first) and clears both
+   slots (Fixed (#563)) */
+static void delhotkey(LONG n)
+{
+    ULONG *f = SLOT(st.cxfilter, n);
+    ULONG o = *f;
+
+    *f = 0;
+    *SLOT(st.cxsends, n) = 0;
+    if (o)
+        DeleteCxObjAll((CxObj *)o);
+}
+
 /**
  * @brief SetHotKey(hotkeynum,hotkey$): a hotkey filter with a sender (id
  * hotkeynum) attached to the broker.
@@ -405,9 +421,12 @@ static LONG attach(CxObj *head, CxObj *co)
  * Amiga mode only; the broker is activated afterwards.  A number outside
  * 0..15 hits the variables around cxfilter/cxsends: an invalid argument,
  * refused by hotkeynumchk with runtime error checking (#564).
- * BUG(orig): a replaced filter/sender is removed but not
- * deleted, the sender only if the filter existed, and objects made
- * before a failure stay (#563); AttachCxObj (void) is tested through the
+ * Fixed (#563): a replaced hotkey's filter is deleted with its sender
+ * (DeleteCxObjAll, which also detaches it), and when a step fails the
+ * new filter (with a sender attached to it) is deleted and the slots are
+ * cleared; the original only removed the replaced objects (RemoveCxObj,
+ * the sender only if the filter existed) and left what it had made
+ * before a failure.  BUG(orig): AttachCxObj (void) is tested through the
  * d0 it leaves, CxObjError is not looked at (#565).
  * @param n     d0: the hotkey number
  * @param desc  d1: the hotkey description (CX_FILTER)
@@ -415,38 +434,32 @@ static LONG attach(CxObj *head, CxObj *co)
  */
 static BB_BOOL BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d1))
 {
-    ULONG *slot, o;
     CxObj *obj;
 
     if (!st.cobject)
         return BB_FALSE;
     st.hotkey = n;
     st.hotkeystring = desc;
-    slot = SLOT(st.cxfilter, st.hotkey);
-    if (*slot) {
-        o = *slot;
-        *slot = 0;
-        RemoveCxObj((CxObj *)o);
-        slot = SLOT(st.cxsends, st.hotkey);
-        if (*slot) {
-            o = *slot;
-            *slot = 0;
-            RemoveCxObj((CxObj *)o);
-        }
-    }
+    delhotkey(st.hotkey);
     obj = CreateCxObj(CX_FILTER, (LONG)st.hotkeystring, 0);
     if (!obj)
         return BB_FALSE;
     st.currentfilter = obj;
     *SLOT(st.cxfilter, st.hotkey) = (ULONG)obj;
-    if (!attach(st.cobject, st.currentfilter))
+    if (!attach(st.cobject, st.currentfilter)) {
+        delhotkey(st.hotkey);
         return BB_FALSE;
+    }
     obj = CreateCxObj(CX_SEND, (LONG)st.msgport, st.hotkey);
-    if (!obj)
+    if (!obj) {
+        delhotkey(st.hotkey);
         return BB_FALSE;
+    }
     *SLOT(st.cxsends, st.hotkey) = (ULONG)obj;
-    if (!attach(st.currentfilter, obj))
+    if (!attach(st.currentfilter, obj)) {
+        delhotkey(st.hotkey);           /* the sender is attached: deleted too */
         return BB_FALSE;
+    }
     ActivateCxObj(st.cobject, 1);
     return BB_TRUE;
 }

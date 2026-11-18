@@ -78,14 +78,19 @@ are one packed struct in the order of the original's data block, so that
   unchanged: an invalid argument (#564). The library header's error
   field and `SetHotKey`'s check differ from the reference's declarations
   (`ricommoditieslib.declarations-intended.txt`).
+* `SetHotKey` deletes the filter of a replaced hotkey with its sender
+  (`DeleteCxObjAll`, which detaches it too), and when a step fails it
+  deletes the filter it made (with a sender attached to it) and clears
+  the slots. The original only removed the replaced filter and sender
+  (`RemoveCxObj`, the sender only if the filter existed), so every
+  replacement lost two objects, and after a failure the half-made
+  hotkey stayed in its slot and in the broker (#563).
 
 **BUG(orig)** (kept, commented in the code):
 
 * the help text of `MakeCommodity` lacks the closing parenthesis (#558);
-* `SetHotKey`: a replaced filter/sender
-  is removed but not deleted; the sender is only removed if the filter
-  existed; objects made before a failure stay (#563); `CxObjError` is not
-  looked at (the `'oops2` tail is unreachable, not translated) (#565);
+* `SetHotKey`: `CxObjError` is not looked at (the `'oops2` tail is
+  unreachable, not translated) (#565);
 * `MakeCommodity` makes a new broker on every call without deleting the
   previous one (which stays active, with the same port: finit deletes
   only the last one, so the first keeps the deleted port – a crash as

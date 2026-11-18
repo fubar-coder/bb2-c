@@ -207,8 +207,10 @@
 |SetHotKey 0 again||1	$FFFFFFFF
 |SetHotKey 0 again: CreateCxObj||1	$00000002
 |SetHotKey 0 again: DeleteCxObj||1	$00000000
-|SetHotKey 0 again: DeleteCxObjAll||1	$00000000
-|SetHotKey 0 again: RemoveCxObj||1	$00000002
+|SetHotKey 0 again: DeleteCxObjAll||1 [orig]	$00000000
+|SetHotKey 0 again: DeleteCxObjAll||1 [fixed #563]	$00000001
+|SetHotKey 0 again: RemoveCxObj||1 [orig]	$00000002
+|SetHotKey 0 again: RemoveCxObj||1 [fixed #563]	$00000000
 |SetHotKey 0: CreateCxObj||1	$00000002
 |SetHotKey 0: DeleteCxObj||1	$00000000
 |SetHotKey 0: DeleteCxObjAll||1	$00000000
@@ -226,7 +228,8 @@
 |SetHotKey 6 (no sender)||1	$00000000
 |SetHotKey 6 (no sender): CreateCxObj||1	$00000002
 |SetHotKey 6 (no sender): DeleteCxObj||1	$00000000
-|SetHotKey 6 (no sender): DeleteCxObjAll||1	$00000000
+|SetHotKey 6 (no sender): DeleteCxObjAll||1 [orig]	$00000000
+|SetHotKey 6 (no sender): DeleteCxObjAll||1 [fixed #563]	$00000001
 |SetHotKey 6 (no sender): RemoveCxObj||1	$00000000
 |WaitCommodity||1	$00000000
 |WaitCommodity||2	$FFFFFFFF
