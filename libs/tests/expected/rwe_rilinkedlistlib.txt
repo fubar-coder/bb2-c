@@ -1,6 +1,8 @@
 # capture rwe_rilinkedlistlib 1
-AddFirstListItem|d0|list 2 var -1 fail 0|1	$00000008
-AddFirstListItem|d0|list 2 var -1 fail 0|2	$00000008
+AddFirstListItem|d0|list 2 var -1 fail 0|1 [orig]	$00000008
+AddFirstListItem|d0|list 2 var -1 fail 0|1 [fixed #725]	$FFFFFFFF
+AddFirstListItem|d0|list 2 var -1 fail 0|2 [orig]	$00000008
+AddFirstListItem|d0|list 2 var -1 fail 0|2 [fixed #725]	$FFFFFFFF
 AddFirstListItem|d0|list 2 var -1 fail 1|1	$00000000
 AddFirstListItem|kept|list 2 var -1 fail 0|1	kept
 AddFirstListItem|kept|list 2 var -1 fail 0|2	kept

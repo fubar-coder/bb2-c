@@ -29,8 +29,9 @@
  * SetListItem (the old copy not freed, the size field unchanged);
  * GetListItem (with and without data, a variable larger than the copy);
  * NextListItem/PrevListItem over the list and past its ends;
- * AddLastListItem; AddFirstListItem (BUG(orig) #724 #726 #725: the old first's next, the
- * garbage in the new node, the result list# * 4); DelListItem in the
+ * AddLastListItem; AddFirstListItem (BUG(orig) #724 #726: the old first's next, the
+ * garbage in the new node; the result, list# * 4 in the original, -1 in
+ * the C build: fixed #725); DelListItem in the
  * middle, at the end, at the start (BUG(orig) #728: the new first's next
  * cleared), the only node (0), with and without data (BUG(orig) #729: the
  * wrong free); every allocation failing (InitList node and data,

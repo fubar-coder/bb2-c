@@ -31,6 +31,15 @@ kept in statics; `_size` matters: AddListItem uses the size the last
 command left. Every entry is a thunk that keeps d1/a0/a1 (the original
 changes d1, d2, a0, a1, InitList also a2).
 
+**Fixed:** intended deviations from the original
+(`docs/libs/deviations.md`, kind F):
+
+* AddFirstListItem returns -1, as the manual says. The original ended
+  without setting its result: d0 was still the table offset list# * 4,
+  so a successful call on list 0 returned 0, the failure result (#725;
+  test `rilinkedlistlib-addfirst-result`, `libs_emulator` cases
+  `[fixed #725]` of `rwe_rilinkedlistlib`).
+
 **BUG(orig)** (kept):
 
 * No command checks list# or (except DelListItem) whether the list has a
@@ -51,7 +60,7 @@ changes d1, d2, a0, a1, InitList also a2).
 * AddFirstListItem writes the new node into the old first node's *next*
   (not prev: the list becomes a loop) (#724), leaves prev, pad, data and
   size of the new node as the allocation left them (not cleared) (#726),
-  does not touch the last node and returns list# * 4 (#725).
+  and does not touch the last node.
 * DelListItem still reads the v0.9 node (without pad): its data is the
   long at offset 8 (the pad word and the upper word of the data
   pointer), its size the long at 14. So it frees a wrong address (with
