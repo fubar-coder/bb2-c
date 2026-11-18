@@ -76,6 +76,11 @@ kind F):
   BitMap as wide as the field (cut to it) starts one pixel left of the
   field, the mirror of the left alignment's 2 pixels past the right edge
   (both as in the original's placement of texts).
+* A text pointer 0 in a text field is an empty text (the field is
+  filled in bpen), as a BitMap pointer 0 draws no BitMap. The original
+  read the string at address 0 (#742; test `rilvcallhooklib-text-null`;
+  the `libs_emulator` scenario has no text pointer 0, it would read
+  address 0 in the original's run).
 
 ## BUG(orig), kept
 
@@ -83,8 +88,6 @@ kind F):
   (`MOVEQ #-3,d2` and word arithmetic) (#741).
 * The tree line pattern is written to `rp_LinePtrn` without the flags and
   count `SetDrPt` sets (#738).
-* A text pointer 0 in a text field is read as a string at address 0
-  (#742).
 
 The hook needs `RetrieveCallHook` to have been called (the graphics base
 is 0 before); that is the documented usage, not a defect.

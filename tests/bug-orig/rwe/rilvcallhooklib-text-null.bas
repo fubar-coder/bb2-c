@@ -8,6 +8,7 @@
 ; the read visible it puts "AB",0 at address 0 (unused on the Amiga; the
 ; old long is restored at once) and counts the set pixels afterwards.
 ; Correct: a text pointer 0 draws no text (0 pixels).
+; @fixed #742
 ; @rwe rilvcallhooklib
 DEFTYPE .l
 m=AllocMem_(1024,$10001)

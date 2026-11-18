@@ -36,8 +36,6 @@
  *     with ADD.w/SUB.w) (#741).
  *   - The tree line pattern is written to rp_LinePtrn without the flags
  *     and count SetDrPt sets (#738).
- *   - A text pointer 0 in a text field is read as a string at address 0
- *     (#742).
  *
  * Fixed (kind F, docs/libs/deviations.md 3a):
  *   - The number of tree lines, indent / 16 - 1, is a word.  The original
@@ -58,6 +56,9 @@
  *     extent already starts at ob_MinX; the field was filled in bpen
  *     instead, and with a BitMap pointer 0 the fill in bpen ran ob_MinX - 1
  *     pixels past the field (#740).
+ *   - A text pointer 0 in a text field is an empty text (the field is
+ *     filled in bpen), as a BitMap pointer 0 draws no BitMap.  The
+ *     original read the string at address 0 (#742).
  *
  * RetrieveCallHook must be called before the hook is used (the graphics
  * base is 0 before): documented usage, not a defect.
@@ -211,7 +212,9 @@ static void displayfield(struct Library *gfx)
     WORD x, y;
 
     if (!isbitmap) {
-        const char *s = (const char *)text;     /* BUG(orig): 0 not checked (#742) */
+        /* a pointer 0 is an empty text: Fixed (#742), the original read
+           the string at address 0 */
+        const char *s = text ? (const char *)text : "";
         ULONG n = 0, w, h;
 
         /* the constraining width: MOVEQ #-3,d2 + word arithmetic */
@@ -327,10 +330,10 @@ static void drawdisabled(struct Library *gfx, const struct Rectangle *b, struct 
  * fields drawn left to right (the last one cut at the right edge), a
  * disabled item ghosted in apen.  Not reentrant (static state, as the
  * original's).  BUG(orig): TextFit's width has $FFFF in the upper word
- * (#741); the line pattern without SetDrPt (#738); a text pointer 0 is
- * read as a string (#742).  Fixed: the tree line count is a word (#737);
- * the last tree line tests the next node's indent at the indent offset
- * (#739); a right aligned BitMap is placed in its field (#740).
+ * (#741); the line pattern without SetDrPt (#738).  Fixed: the tree line
+ * count is a word (#737); the last tree line tests the next node's
+ * indent at the indent offset (#739); a right aligned BitMap is placed
+ * in its field (#740); a text pointer 0 is an empty text (#742).
  * @param hook      a0: the Hook, h_Data = the field table
  * @param msg       a1: the LVDrawMsg
  * @param node      a2: the node

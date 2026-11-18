@@ -31,7 +31,7 @@
  * 10 lines and more, BitMaps lower than the item, no text and no BitMap
  * that ends exactly at the field's edge.  Not covered: d7 with an indent
  * below 16 and an upper word that makes the original draw 65536 tree
- * lines (#737), a text pointer 0 (BUG(orig) #742: reads address 0),
+ * lines (#737), a text pointer 0 (the original reads address 0, #742),
  * negative indents.
  */
 #include "rwecmp.h"
