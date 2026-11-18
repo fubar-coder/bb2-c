@@ -27,7 +27,7 @@
  * "}", too few arguments, 130 values (the original's byte count,
  * #645), 300 values with operators and pushes across the chunks, an
  * empty string, spaces only
- * (the return address as result, BUG(orig) (#644)), two results.
+ * (the original returns the return address, #644), two results.
  * Not covered: an indirection at an odd address (address error).
  */
 #include "rwecmp.h"
@@ -100,7 +100,7 @@ static void ev_one(const char *name, const char *src, ULONG n, int plain)
     snprintf(VEC, sizeof VEC, "\"%.80s\"%s", name, D1 ? " d1 '}'" : "");
     DO1(ENT(LIB, E_EVAL, 0), setin(src, n);
         R.d[0] = (ULONG)in; if (D1) R.d[1] = D1);
-    /* the result; spaces only give the return address (BUG(orig) #644) */
+    /* the result; the original gives spaces only the return address (#644) */
     OBSPTR("d0", addr(R.d[0]), NULL, 0);
     if (plain)
         OBSBYTES("string", in, BIG);

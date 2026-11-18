@@ -21,8 +21,7 @@
  * bytes, d1 = the last character an operand read, d7 = the precedence
  * of the last operator) are fields of the state, at register level.
  *
- * Assembler: the thunks (PFEvaluate's passes the caller's return
- * address, see "No result value" below); everything else is C.
+ * Assembler: the thunks; everything else is C.
  *
  * BUG(orig), kept:
  *   - ConvToPostFix: a `.` copies the next character unchecked - at the
@@ -40,9 +39,6 @@
  *       the low word of exponent-2 (#641).
  *     - Only the last value is the result; more values are no error
  *       (#635).
- *     - A string of spaces only: "No result value!" (error 4), and the
- *       result is the long above the empty stack, the caller's return
- *       address (MOVE.l (a7)+,d0) (#644).
  *     - A register operand (`d0`, `a7`, `pc`) takes the next character
  *       unchecked (`a` + 0 skips the string's end), `a`/`d` with any
  *       character index the register block (index byte * 4) (#642).  In
@@ -62,6 +58,9 @@
  *   - PFEvaluate counts its values in a long: the original's byte,
  *     compared signed, made every operator fail with "Need 2 arguments"
  *     from 128 values on (#645).
+ *   - PFEvaluate of a string of spaces only returns 0 with error 4 "No
+ *     result value!"; the original returned the long above its empty
+ *     stack, the caller's return address (MOVE.l (a7)+,d0) (#644).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -169,7 +168,6 @@ struct state {
     ULONG (*loop)(struct state *);
     UBYTE *pos, *out, *start;   /* a0, a1, a3: string, output, its start */
     ULONG acc, aux, prec;       /* d0, d1, d7: registers carrying state */
-    ULONG ret;                  /* the caller's return address */
 };
 
 static void st_init(struct state *s, struct chunk *k)
@@ -392,7 +390,6 @@ static void BLITZ_ROUTINE convtopostfix_c(UBYTE *str BL_REG(d0), UBYTE *buf BL_R
     s.acc = (ULONG)str;
     s.aux = (ULONG)buf;
     s.prec = 0;                                 /* set by every operator first */
-    s.ret = 0;
     blitz_string = str;                         /* MOVE.l d0,a3, not restored */
     ctp_loop(&s);
 }
@@ -513,10 +510,8 @@ static ULONG ev_loop(struct state *s)
 
 evloop:
     if (*s->pos == 0) {                         /* ev_eol */
-        if (st_empty(s)) {
-            ev_error(err_noresult, 4);
-            return s->ret;                      /* BUG(orig) (#644): MOVE.l (a7)+,d0 */
-        }
+        if (st_empty(s))                        /* fixed (#644): 0, not (a7)+ */
+            return ev_error(err_noresult, 4);
         return st_pop(s);
     }
     if (*s->pos++ == ' ')
@@ -692,20 +687,18 @@ evalbin:
  * Errors set PFErrorType/PFErrorText and return 0: 1 "Need 2 arguments",
  * 2 "Register structure not found", 3 "Divide by 0", 4 "No result
  * value", 5 "No close bracket on indirect", 6 "Invalid size for
- * indirection".  An empty string returns 0, error 0.
+ * indirection".  An empty string returns 0, error 0; a string of spaces
+ * only 0, error 4 (fixed, #644).
  * BUG(orig): `<` is unsigned "less or same", `>` signed (#638); `*`
- * overflows wrongly (#639); `^` (#641); only
- * the last value counts (#635); a string of spaces returns the caller's
- * return address with error 4 (#644); register operands (#642), the `}`
- * check after a register (#637), `-$`/`-%` (#643), unchecked digits
- * (#634), indirection at any address (#636).
+ * overflows wrongly (#639); `^` (#641); only the last value counts
+ * (#635); register operands (#642), the `}` check after a register
+ * (#637), `-$`/`-%` (#643), unchecked digits (#634), indirection at any
+ * address (#636).
  * @param str        d0: the postfix string
  * @param caller_d1  d1: the caller's d1 (the stale d1 of a register in {})
- * @param ret        a1: the caller's return address (the thunk passes it)
  * @return d0: the value, 0 on an error
  */
-static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_REG(d1),
-                                      ULONG ret BL_REG(a1))
+static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_REG(d1))
 {
     struct state s;
     struct chunk k;
@@ -720,7 +713,6 @@ static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_
     s.acc = (ULONG)str;
     s.aux = caller_d1;
     s.prec = 0;
-    s.ret = ret;
     return ev_loop(&s);
 }
 
@@ -799,10 +791,9 @@ static void BLITZ_ROUTINE _libfinit(void)
 {
 }
 
-/* the thunks keep d1/a0/a1 (and d0 where the original does); PFEvaluate
-   passes the caller's return address in a1 (above the 12 saved bytes) */
+/* the thunks keep d1/a0/a1 (and d0 where the original does) */
 BLITZ_THUNK(_ConvToPostFix, convtopostfix_c, "d0-d1/a0-a1");
-BLITZ_THUNK_PRE(_evaluate, evaluate_c, "d1/a0-a1", "move.l  12(sp),a1");
+BLITZ_THUNK(_evaluate, evaluate_c, "d1/a0-a1");
 BLITZ_THUNK(_registers, registers_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_PFErrorType, errortype_c, "d1/a0-a1");
 BLITZ_THUNK(_PFErrorText, errortext_c, "d1/a0-a1");

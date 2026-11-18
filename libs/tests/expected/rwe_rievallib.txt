@@ -1231,7 +1231,8 @@ PFErrorType|popped|"{d0}" d1 '}'|1	$00000000
 PFErrorType|popped|"{d0}.w"|1	$00000000
 PFErrorType|popped|"{d0}.w" d1 '}'|1	$00000000
 PFErrorType|popped|start|1	$00000000
-PFEvaluate|d0|"   "|1	prog
+PFEvaluate|d0|"   "|1 [orig]	prog
+PFEvaluate|d0|"   "|1 [fixed #644]	$00000000
 PFEvaluate|d0|"  42  "|1	$0000002A
 PFEvaluate|d0|""|1	$00000000
 PFEvaluate|d0|"$123456789"|1	$23456789

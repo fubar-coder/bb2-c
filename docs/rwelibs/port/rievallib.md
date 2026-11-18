@@ -98,10 +98,8 @@ The binary is EvalLib4 plus insertions (`.cache` analysis,
 ## C and assembler
 
 All C behind `BLITZ_THUNK`s (they keep d1/a0/a1, ConvToPostFix and
-PFRegisters also d0; the original changes more). PFEvaluate's thunk
-passes the caller's return address in a1 (`BLITZ_THUNK_PRE`, `12(sp)`):
-for a string of spaces the original returns the long above its empty
-stack, which is that address. init/finit are empty C functions.
+PFRegisters also d0; the original changes more). init/finit are empty
+C functions.
 
 The original keeps its stacks on a7 (ConvToPostFix the operators,
 PFEvaluate the values; `stack` holds a7 at the start, errors restore it).
@@ -130,24 +128,33 @@ kind F):
 * PFEvaluate counts its values in a long; the original's byte, compared
   signed, made every operator fail with "Need 2 arguments" from 128
   values on (#645).
+* PFEvaluate of a string of spaces only returns 0 with error 4 "No
+  result value!"; the original returned the long above its empty stack,
+  the caller's return address (#644).
 
 ## BUG(orig), kept
 
 In the C file's head:
 
 * ConvToPostFix: the `.` at the end of a string (it reads on behind the
-  0, #631); dropped characters (#632); signs after a space (#633).
-* PFEvaluate: `<` is unsigned "less or same", `>` signed (#638); the
-  product's high words added into the low word on overflow (#639);
-  `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as the loop
-  count (#641); extra values are no error (#635); a string of spaces
-  returns the caller's return address with error 4 (#644); a register
-  operand reads its index character unchecked (also the string's 0,
-  then it parses behind the string) and any index (#642); `{register}`
-  checks a stale d1, and the `}` behind it is then a value 0 (#637);
-  `-$10`/`-%1` read `$`/`%` as a digit (#643); digits are not checked
-  (#634); the indirection reads any address (an odd one is an address
-  error, #636).
+  0, #631).
+* ConvToPostFix: dropped characters (#632).
+* ConvToPostFix: signs after a space (#633).
+* PFEvaluate: `<` is unsigned "less or same", `>` signed (#638).
+* PFEvaluate: the product's high words added into the low word on
+  overflow (#639).
+* PFEvaluate: `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as
+  the loop count (#641).
+* PFEvaluate: extra values are no error (#635).
+* PFEvaluate: a register operand reads its index character unchecked
+  (also the string's 0, then it parses behind the string) and any index
+  (#642).
+* PFEvaluate: `{register}` checks a stale d1, and the `}` behind it is
+  then a value 0 (#637).
+* PFEvaluate: `-$10`/`-%1` read `$`/`%` as a digit (#643).
+* PFEvaluate: digits are not checked (#634).
+* PFEvaluate: the indirection reads any address (an odd one is an
+  address error, #636).
 * PFErrorText without an error returns the caller's upper word of d0 as
   the length (#640).
 
