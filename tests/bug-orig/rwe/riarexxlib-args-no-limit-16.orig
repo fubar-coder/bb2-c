@@ -6,6 +6,7 @@ ok
 [run]
 18 args
 passport set -1
+16: <16>
 rc=0
 [blitz2]
 rc=0

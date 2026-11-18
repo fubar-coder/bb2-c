@@ -3,7 +3,9 @@
 ; 17th and 18th word go into rm_PassPort and rm_CommAddr.  The program
 ; sends a command of 18 words to its own port and receives it;
 ; RXNumArgs counts the slots up to the first 0.
-; Correct: at most 16 arguments, rm_PassPort stays 0.
+; Correct: at most 16 arguments, the 16th the rest of the command from
+; its 16th word on (user decision W4 Q3 (b)), rm_PassPort stays 0.
+; @fixed #527
 ; @rwe riarexxlib
 DEFTYPE .l
 p=RXCreatePort("BUGORIG")
@@ -13,6 +15,7 @@ m=RXReadPort
 If m
   NPrint RXNumArgs," args"
   NPrint "passport set ",Peek.l(m+$68)<>0
+  NPrint "16: <",RXGetArg(16),">"
 Else
   NPrint "no message"
 EndIf

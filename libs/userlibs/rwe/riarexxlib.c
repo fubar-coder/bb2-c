@@ -66,6 +66,10 @@
  *     memory: nothing sent, 0); the original copied the command and every
  *     word into buffers of 256 bytes without a limit (in the original over
  *     its own code) (#537).
+ *   - A command makes at most 16 arguments (rm_Args); with more words the
+ *     16th holds the rest of the command from its 16th word on, as it is
+ *     (user decision W4 Q3 (b)); the original had no limit and wrote the
+ *     17th and further words over rm_PassPort, rm_CommAddr ... (#527).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -90,7 +94,6 @@
  *     allocated, it deletes the port without RemPort (it stays in the
  *     public list) (#528).  RXDeletePort frees neither the lists nor the
  *     name (#530).
- *   - There is no limit of 16 arguments (rm_Args) (#527).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -610,8 +613,9 @@ static struct RexxMsg *makemsg(void)
 static void makemsgargs(UBYTE *word)
 {
     ULONG *arg = (ULONG *)v.thismsg->rm_Args;
-    const UBYTE *s = (const UBYTE *)msgstring;
+    const UBYTE *s = (const UBYTE *)msgstring, *start, *rest;
     ULONG n, argstr;
+    int k;
 
     if (!tokenise) {
         for (n = 0; s[n]; n++)
@@ -620,10 +624,29 @@ static void makemsgargs(UBYTE *word)
         return;
     }
     parseinit(s);
-    while ((n = nextparsearg(word)) != NOWORD) {   /* fixed (#536) */
+    for (k = 0; k < 16; k++) {          /* fixed (#527): the original had no limit */
+        while (curadr && *curadr == ' ')
+            curadr++;
+        start = curadr;
+        if ((n = nextparsearg(word)) == NOWORD)     /* fixed (#536) */
+            break;
+        if (k == 15 && curadr) {
+            /* more words behind the 16th: the 16th argument is the rest of
+               the command from the 16th word on, as it is (W4 Q3 (b)) */
+            for (rest = curadr; *rest == ' '; rest++)
+                ;
+            if (*rest) {
+                for (n = 0; start[n]; n++)
+                    ;
+                argstr = createargstring(start, n);
+                if (argstr)
+                    *arg = argstr;
+                break;
+            }
+        }
         if (!(argstr = createargstring(word, n)))
             break;
-        *arg++ = argstr;                /* BUG(orig): no limit of 16 (#527) */
+        *arg++ = argstr;
     }
 }
 

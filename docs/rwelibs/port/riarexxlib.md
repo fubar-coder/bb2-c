@@ -124,6 +124,11 @@ kind F):
   copied the command into `tempstorage` and every word into
   `stringbuffer`, 256 bytes each, without a limit: a longer command
   overwrote what follows, in the original its own code (#537).
+* **The tokenizer** makes at most 16 arguments, the slots of a RexxMsg.
+  With more words the 16th argument holds the rest of the command from
+  its 16th word on, as it is, for the receiver to split (user decision W4
+  Q3 (b)). The original had no limit: the 17th and further words went
+  over rm_PassPort, rm_CommAddr and the fields behind them (#527).
 
 ## BUG(orig), kept
 
@@ -155,8 +160,6 @@ kind F):
   the public list (#528).
 * **RXDeletePort** replies the queued messages with 5 but frees neither
   the lists nor the name (#530).
-* **The tokenizer:**
-  * the 16 rm_Args slots are not checked (#527).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
