@@ -862,7 +862,7 @@ void typemode(UWORD c)
             fpconerr();
         getchar3();
         f->ndims = count;
-        /* BUG(orig) (issue to be filed): the count as a word (MULU): a
+        /* BUG(orig) (#1084): the count as a word (MULU): a
            count of 65536 or more is taken modulo 65536 and passes the
            "Type too Big" check below (test
            compiler-newtype-field-count-word) */

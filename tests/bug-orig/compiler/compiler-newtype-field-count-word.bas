@@ -1,4 +1,4 @@
-; compiler-newtype-field-count-word - the element count of an array field
+; compiler-newtype-field-count-word (#1084) - the element count of an array field
 ; of a NewType (a.b[n]) is multiplied with the element size as a word
 ; (typemode, blitz2.s:13820, MULU d1,d3): a count of 65536 or more is
 ; taken modulo 65536 without an error.  a.b[65540] is a field of 4 bytes,
