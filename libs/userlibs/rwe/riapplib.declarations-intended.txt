@@ -1,0 +1,14 @@
+# the intended differences of riapplib against the reference
+# (blitzlib compare, docs/development.md "Intended differences")
+# #1097: AddAppWindow, DelAppWindow, AddAppMenu, DelAppMenu, AddAppIcon and
+# DelAppIcon get an error check (winchk, delwinchk, idchk: "App window
+# number must be 0 to 15", "App id must be 0 to 15"); riapplib gets an
+# error check area for them (the original has none)
+lib 61: header +$2C: code offset set in only one of them
+lib 61: entry 0 AddAppWindow +$10: code offset set in only one of them
+lib 61: entry 1 DelAppWindow +$C: code offset set in only one of them
+lib 61: entry 2 AddAppMenu +$C: code offset set in only one of them
+lib 61: entry 3 DelAppMenu +$C: code offset set in only one of them
+lib 61: entry 4 AddAppIcon +$E: code offset set in only one of them
+lib 61: entry 5 DelAppIcon +$C: code offset set in only one of them
+lib 61: relocations in the declaration part 21 != 29

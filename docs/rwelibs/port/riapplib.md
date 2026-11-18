@@ -27,7 +27,9 @@ its own, opened by init:
 
 init allocates one block of 768 bytes (MEMF_CLEAR): 16 longs each for
 menus (+0), windows (+64) and icons (+128), a 512 byte path buffer (+192)
-and the DiskObjects (+704). The ids index these tables unchecked. All
+and the DiskObjects (+704). The ids index these tables unchecked in the
+release code; with runtime error checking an id or window number outside
+0-15 is a runtime error (below, #1097). All
 entries except `AppEventIDCMP` are Amiga mode only (odd code addresses).
 
 ## C and assembler
@@ -111,6 +113,18 @@ kind F):
   original left them open (finit, which tests the flag of a successful
   init, did not close them either) and returned the deleted port, also
   when the block could not be allocated (#526).
+* riapplib has an error check area: with runtime error checking an id of
+  `AddAppMenu`, `DelAppMenu`, `AddAppIcon` or `DelAppIcon` outside 0-15 is
+  the runtime error "App id must be 0 to 15" (`idchk`), a window number of
+  `AddAppWindow` or `DelAppWindow` outside 0-15 "App window number must be
+  0 to 15" (`winchk`, which reads the pushed number at -4(a2), and
+  `delwinchk`). The original has none: its tables of 16 entries lie one
+  behind the other, so window 16 (a valid Blitz window with a larger
+  Maximum) landed in the AppIcon table and other numbers outside the
+  block; the manual names the limit. The release code is unchanged (an
+  invalid argument, D-005). The declarations differ from the reference by
+  the header's error field and the six checks
+  (`riapplib.declarations-intended.txt`) (#1097).
 
 ## Test
 

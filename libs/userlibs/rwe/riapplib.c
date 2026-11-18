@@ -18,7 +18,10 @@
  * workbench, dos and icon.library V37.  The block: 16 longs each for the
  * AppMenuItems (+0), AppWindows (+64) and AppIcons (+128), the path buffer
  * of NextAppFile (+192, 512 bytes) and the DiskObjects of the App icons
- * (+704).  The ids index these tables unchecked (long index).
+ * (+704).  The ids index these tables unchecked in the release code
+ * (long index); with runtime error checking an id or window number outside
+ * 0-15 is a runtime error (idchk, winchk, delwinchk: an error check area the
+ * original has not, #1097).
  *
  * All routines are C; every entry keeps d1/a0/a1 (thunks), init and finit
  * all registers, as the original (MOVEM) - more than the original keeps
@@ -29,6 +32,14 @@
  * of the Blitz program): the libraries' safe form of the NDK macro keeps
  * them (cmake/ndk-calls.cmake).
  *
+ * Fixed (intended deviation, #1097): with runtime error checking an id
+ * (AddAppMenu, DelAppMenu, AddAppIcon, DelAppIcon) or window number
+ * (AddAppWindow, DelAppWindow) outside 0-15 is the runtime error "App id
+ * must be 0 to 15" / "App window number must be 0 to 15" (idchk, winchk,
+ * delwinchk); the original has no error check area, and its 16-entry
+ * tables lie one behind the other: window 16 landed in the AppIcon table,
+ * other numbers outside the block.  The release code is unchanged (an invalid argument,
+ * D-005).
  * Fixed (intended deviation, #526): when a library did not open, init
  * deleted the port and freed the block but left the libraries already
  * opened open, and AppMsgPort still returned the deleted port (also when
@@ -97,51 +108,53 @@ void addicon(void), addicon3(void), delicon(void), appevent(void);
 void appeventcode(void), appeventid(void), appfile(void), appfilemine(void);
 void appfiles(void), applock(void), appmessage(void), appmsgport(void);
 void appeventidcmp(void), riapplib_libinit(void), riapplib_libfinit(void);
+void idchk(void), winchk(void), delwinchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {#riapplib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_riapplib, init, BL_NORET, finit, 0);
+/* !libheader {#riapplib,init,0,finit,0}; error field: the error check
+   area of idchk, winchk and delwinchk (fixed, #1097) */
+BLITZ_LIBHEADER(LIB_riapplib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 /* all code addresses odd (`label+1`): Amiga mode only */
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_PUSH | BL_LONG);
 BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD0);
-BLITZ_SUBS(BLITZ_AMIGAONLY(addwindow), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(addwindow), winchk, 0);     /* check: fixed #1097 */
 BLITZ_NAME("AddAppWindow", "(windownumber)");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(delwindow), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(delwindow), delwinchk, 0);        /* check: fixed #1097 */
 BLITZ_NAME("DelAppWindow", "(windownumber)");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(addmenu), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(addmenu), idchk, 0);        /* check: fixed #1097 */
 BLITZ_NAME("AddAppMenu", "(id,text$)");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(delmenu), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(delmenu), idchk, 0);        /* check: fixed #1097 */
 BLITZ_NAME("DelAppMenu", "(id)");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_STRING, BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(addicon), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(addicon), idchk, 0);        /* check: fixed #1097 */
 BLITZ_ARGS(BL_LONG, BL_STRING, BL_STRING, BL_LONG, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(addicon3), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(addicon3), idchk, 0);       /* check: fixed #1097 */
 BLITZ_NAME("AddAppIcon", "(id,text$,filename$[,x,y])");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(delicon), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(delicon), idchk, 0);        /* check: fixed #1097 */
 BLITZ_NAME("DelAppIcon", "(id)");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -749,3 +762,66 @@ static BB_BOOL BLITZ_ROUTINE delwindow_c(LONG n BL_REG(d0))
     return BB_TRUE;
 }
 BLITZ_THUNK(delwindow, delwindow_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badid, "App id must be 0 to 15");                 /* fixed, #1097 */
+BLITZ_ERRCHK_MESSAGE(badwin, "App window number must be 0 to 15");     /* fixed, #1097 */
+
+/**
+ * @brief The error check of the commands with an id (debugger only):
+ * AddAppMenu, DelAppMenu, AddAppIcon (both forms) and DelAppIcon.
+ *
+ * Fixed (#1097), not in the original (riapplib had no error check area):
+ * the id indexes the tables of 16 entries without a check.  The release
+ * code is unchanged (an invalid argument).
+ *
+ * Errors: "App id must be 0 to 15".
+ * @param id  d0: the id
+ */
+static void BLITZ_ERRCHK idchk_c(ULONG id BL_REG(d0))
+{
+    if (id > 15)
+        BLITZ_RUNERR(badid);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(idchk, idchk_c, "d0-d1/a0-a1");
+
+/**
+ * @brief The error check of AddAppWindow (debugger only): its window
+ * number is on the argument stack (#push), -4(a2).
+ *
+ * Fixed (#1097), not in the original: a window number of 16 or higher (a
+ * valid Blitz window with a larger Maximum) indexed past the AppWindow
+ * table into the AppIcon table.  The release code is unchanged.
+ *
+ * Errors: "App window number must be 0 to 15".
+ * @param args  a2: the argument stack, -4(a2) = the window number
+ */
+static void BLITZ_ERRCHK winchk_c(const ULONG *args BL_REG(a2))
+{
+    if (args[-1] > 15)
+        BLITZ_RUNERR(badwin);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(winchk, winchk_c, "d0-d1/a0-a1");
+
+/**
+ * @brief The error check of DelAppWindow (debugger only).
+ *
+ * Fixed (#1097), not in the original: as winchk.  The release code is
+ * unchanged.
+ *
+ * Errors: "App window number must be 0 to 15".
+ * @param n  d0: the window number
+ */
+static void BLITZ_ERRCHK delwinchk_c(ULONG n BL_REG(d0))
+{
+    if (n > 15)
+        BLITZ_RUNERR(badwin);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(delwinchk, delwinchk_c, "d0-d1/a0-a1");
