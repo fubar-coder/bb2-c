@@ -28,6 +28,13 @@
  *     of the title string), as before (#784).
  *   - ReqColour passes its argument as DefColour; the original ignored
  *     it, so the requester always started on colour 0 (#786).
+ *   - The colour requester structure is req.library's
+ *     ExtendedColorRequester (REQBASE.BB2): DefColour a long at 0, the
+ *     window at 4, 5 longs RFU.  The original's had DefColour as a word
+ *     at 0 and the window at 2, so the requester read the colour shifted
+ *     into the high word (with the window's high word below it) and a
+ *     window pointer made of the window's low word and 0; #786 takes
+ *     effect only with this (#1091).
  *   - The default flags are caching, info gadget and cache purge ($94,
  *     the masks RIReqLib.guide lists); the original ORed the bit numbers
  *     (#FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB = 2|4|7 = 7: bits
@@ -153,12 +160,18 @@ static UBYTE *frq_Title, *frq_Dir, *frq_File, *frq_PathName;
 
 static APTR routput;                                    /* the window */
 
-/* the colour requester structure: DefColour, WinPtr, 6 longs RFU */
+/* the colour requester structure of req.library (REQBASE.BB2
+   ExtendedColorRequester, 28 bytes): DefColour a long at 0, the window
+   at 4, 5 longs RFU.  Fixed (#1091): the original's had DefColour as a
+   word and the window at 2 (and 6 longs RFU), so the requester read the
+   colour and the window pointer's high word as DefColour and a mangled
+   window pointer. */
 static struct BL_PACKED {
-    UWORD defcolour;
-    APTR winptr;
-    ULONG rfu[6];
+    ULONG defcolour;                                    /* 0 */
+    APTR winptr;                                        /* 4 */
+    ULONG rfu[5];                                       /* 8 */
 } ecr;
+_Static_assert(sizeof ecr == 28, "ExtendedColorRequester");
 
 static struct Library *reqbase;
 static const char reqname[] = "req.library";
@@ -328,7 +341,10 @@ static ULONG BLITZ_ROUTINE requestfiletitleflags_c(STRPTR title BL_REG(d0),
  * ReqOutput window.
  *
  * Fixed (#786): the argument is the default colour (DefColour); the
- * original ignored it.  Fixed (#788): without req.library it returns
+ * original ignored it.  Fixed (#1091): DefColour is a long at 0 and the
+ * window at 4, as req.library reads them; the original's word at 0 and
+ * window at 2 gave the requester another colour and a mangled window
+ * (so #786 alone had no effect with the real library).  Fixed (#788): without req.library it returns
  * the colour it is given; the original called through a6 = 0.
  * @param colour  d0: the colour the requester starts on
  * @return d0: what ColorRequester returns; without req.library colour
@@ -339,7 +355,7 @@ static ULONG BLITZ_ROUTINE colourreq_c(ULONG colour BL_REG(d0))
 
     if (!reqbase)                                       /* fixed (#788) */
         return colour;
-    ecr.defcolour = (UWORD)colour;
+    ecr.defcolour = colour;                             /* fixed (#786, #1091) */
     ecr.winptr = routput;
     return BLITZ_BASEJSR(reqbase, LVO_ColorRequester, r);
 }

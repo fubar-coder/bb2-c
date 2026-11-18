@@ -44,7 +44,16 @@ kind F):
   as before (#784).
 * ReqColour passes its argument to the colour requester as DefColour;
   the original ignored it, so the requester always started on colour 0
-  (#786).
+  (#786). With the real req.library this takes effect only together with
+  #1091 (the next point).
+* The colour requester structure is req.library's
+  `ExtendedColorRequester` (the CD's `REQBASE.BB2`): DefColour a long at
+  0, the window at 4, 5 longs RFU, 28 bytes. The original's (`ecr`) had
+  DefColour as a word at 0 and the window at 2 (6 longs RFU): the
+  requester read the colour in the high word, with the window pointer's
+  high word below it, as DefColour, and a window pointer made of the
+  window's low word and 0. Measured with req.library 2.8: ReqColour(3)
+  answered with OK returned 0 (#1091).
 * The default flags are caching, info gadget and cache purge ($94, the
   masks RIReqLib.guide lists). The original's
   `#frq_Flags = #FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB` ORed bit
