@@ -18,16 +18,17 @@
  * No assembler besides the thunks.
  *
  * BUG(orig):
- *   - StoreNVData: DIVU.w #10 overflows for lengths of 655360 bytes and
- *     more (the quotient does not fit into a word: d3 stays unchanged),
- *     StoreNV then gets the low word of the length (+1 if the high word
- *     is not 0) as the number of tens of bytes (#764).
  *   - StoreNVData: the DeleteNV before StoreNV is unconditional (an item
  *     that cannot be stored again is lost), and its result is ignored
  *     (#763).
  *   - StoreNVData returns StoreNV's result (!acommand #word): 0 means
  *     stored, otherwise an NVERR_... code - and the "library not open"
  *     case returns 0 as well, "stored" (#765).
+ * Fixed (intended deviation, #764): StoreNVData's DIVU.w #10 overflowed
+ * for lengths of 655360 bytes and more (the quotient does not fit into a
+ * word: d3 stays unchanged), StoreNV then got the low word of the length
+ * (+1 if the high word is not 0) as the number of tens of bytes; the
+ * length is now divided as a long.
  *
  * finit closes the library but leaves libbase set: no defect, it is the
  * last call.
@@ -129,9 +130,9 @@ static ULONG BLITZ_ROUTINE isnonvolatile_c(void)
  * Deletes the item first (DeleteNV with killRequesters 0, always, its
  * result ignored: an item that cannot be stored again is lost, BUG(orig)
  * (#763)), then StoreNV with the length in tens of bytes, rounded up,
- * and killRequesters -1.  DIVU.w #10 overflows for 655360 bytes and more:
- * StoreNV then gets the low word of the length (+1 if the high word is
- * not 0) (BUG(orig) (#764)).
+ * and killRequesters -1.  The length is divided as a long (fixed, #764:
+ * the original's DIVU.w #10 overflows for 655360 bytes and more, StoreNV
+ * then gets the low word of the length, +1 if the high word is not 0).
  * @param app   d0: the application name
  * @param item  d1: the item name
  * @param data  d2: the data
@@ -144,14 +145,18 @@ static ULONG BLITZ_ROUTINE storenvdata_c(CONST_STRPTR app BL_REG(d0),
                                          CONST_APTR data BL_REG(d2),
                                          ULONG len BL_REG(d3))
 {
-    ULONG q, tens;
+    ULONG hi, lo, tens;
 
     if (!libbase)
         return 0;                                       /* ReturnFalse */
     DeleteNV(app, item, 0);
-    q = bl_divu_w(len, 10);                     /* DIVU.w #10,d3, BUG(orig) #764 */
-    tens = (UWORD)q;
-    if (q >> 16)                                        /* remainder */
+    /* len / 10 as a long with two DIVU.w (fixed, #764): the high word's
+       remainder (< 10) goes in front of the low word, so the second
+       quotient fits into a word */
+    hi = bl_divu_w(len >> 16, 10);
+    lo = bl_divu_w((hi & 0xffff0000) | (len & 0xffff), 10);
+    tens = (hi << 16) | (UWORD)lo;
+    if (lo >> 16)                                       /* remainder */
         tens++;
     return StoreNV(app, item, data, tens, -1);
 }

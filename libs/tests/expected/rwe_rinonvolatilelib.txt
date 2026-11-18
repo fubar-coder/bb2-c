@@ -337,9 +337,12 @@ StoreNVData|call 1 d0|fake Item1 length 10 ret $3|1	$00000001
 StoreNVData|call 1 d0|fake Item1 length 65535 ret $0|1	$0000199A
 StoreNVData|call 1 d0|fake Item1 length 65535 ret $12340001|1	$0000199A
 StoreNVData|call 1 d0|fake Item1 length 65535 ret $3|1	$0000199A
-StoreNVData|call 1 d0|fake Item1 length 655365 ret $0|1	$00000006
-StoreNVData|call 1 d0|fake Item1 length 655365 ret $12340001|1	$00000006
-StoreNVData|call 1 d0|fake Item1 length 655365 ret $3|1	$00000006
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $0|1 [orig]	$00000006
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $0|1 [fixed #764]	$00010001
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $12340001|1 [orig]	$00000006
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $12340001|1 [fixed #764]	$00010001
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $3|1 [orig]	$00000006
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $3|1 [fixed #764]	$00010001
 StoreNVData|call 1 d0|fake Item2 length 1 ret $0|1	$00000001
 StoreNVData|call 1 d0|fake Item2 length 1 ret $12340001|1	$00000001
 StoreNVData|call 1 d0|fake Item2 length 1 ret $3|1	$00000001

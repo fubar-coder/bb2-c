@@ -20,19 +20,29 @@ it; every routine returns 0 when it is not open. killRequesters is -1
 
 All routines are C behind `BLITZ_THUNK`, the system calls through the
 NDK inlines (`proto/nonvolatile.h` with the base `libbase`); no other
-assembler. `DIVU.w #10` is `bl_divu_w` (keeps the overflow behaviour).
+assembler. The length is divided by 10 as a long with two `bl_divu_w`
+(`DIVU.w`), the high word first (fixed #764).
 The thunks keep d1/a0/a1, the C code a2/a6, which the original changes
 through the system calls (StoreNVData also a2 = data). `IsNonvolatile`
 keeps the upper word of d0 (`EXT.w`) like the original. StoreNVData
 returns StoreNV's `UWORD` result zero-extended; the original passes on
 the whole d0 of the library – only the low word is the command's result.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* `StoreNVData` gives StoreNV the length in tens computed as a long. The
+  original's `DIVU.w #10` overflowed for 655360 bytes and more (the
+  quotient does not fit into a word, d3 stays unchanged): StoreNV got
+  the low word of the length (+1 if the high word is not 0) as the number
+  of tens – 655365 bytes became 6 tens, 60 bytes, stored without an
+  error (#764; `libs_emulator` cases `[fixed #764]` of
+  `rwe_rinonvolatilelib`, fake nonvolatile.library: 65537 tens).
+
 ## BUG(orig)
 
-* `StoreNVData`: `DIVU.w #10` overflows for 655360 bytes and more (the
-  quotient does not fit into a word, d3 stays unchanged): StoreNV gets
-  the low word of the length (+1 if the high word is not 0) as the number
-  of tens – 655365 bytes become 60 (#764).
 * `StoreNVData` deletes the item unconditionally before storing it (an
   item that cannot be stored again is lost); DeleteNV's result is ignored
   (#763).
