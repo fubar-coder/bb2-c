@@ -52,8 +52,6 @@
  *       'x'-'0') (#634).
  *     - The indirection reads a long at any address (an odd one is an
  *       address error on the 68000) (#636).
- *   - PFErrorText with no error returns no string length: d0's upper word
- *     is the caller's (MOVE.w) (#640).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - PFEvaluate counts its values in a long: the original's byte,
  *     compared signed, made every operator fail with "Need 2 arguments"
@@ -61,6 +59,8 @@
  *   - PFEvaluate of a string of spaces only returns 0 with error 4 "No
  *     result value!"; the original returned the long above its empty
  *     stack, the caller's return address (MOVE.l (a7)+,d0) (#644).
+ *   - PFErrorText without an error returns the length 0; the original set
+ *     only d0.w (MOVE.w), the upper word was the caller's (#640).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -746,19 +746,19 @@ static ULONG BLITZ_ROUTINE errortype_c(ULONG result BL_REG(d0))
 /**
  * @brief PFErrorText: the text of the last PFEvaluate error.
  *
- * The text at a3 (a3 ends at its 0), d0 = its length.  BUG(orig) (#640):
- * with no error d0.w = 0 and nothing is written, the upper word of d0 is
- * the caller's - no valid string length.
- * @param result  d0: the caller's d0
- * @return d0: the length of the text
+ * The text at a3 (a3 ends at its 0), d0 = its length.  With no error
+ * nothing is written and the length is 0.  Fixed (#640): the original
+ * set only d0.w (MOVE.w errortype,d0), the upper word of the length was
+ * the caller's.
+ * @return d0: the length of the text, 0 without an error
  */
-static ULONG BLITZ_ROUTINE errortext_c(ULONG result BL_REG(d0))
+static ULONG BLITZ_ROUTINE errortext_c(void)
 {
     const char *p;
+    ULONG result;
 
-    BL_SETW(result, errortype);
     if (!errortype)
-        return result;
+        return 0;                               /* fixed (#640) */
     p = errortext;
     result = (ULONG)-1;
     do

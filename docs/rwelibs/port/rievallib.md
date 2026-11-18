@@ -131,6 +131,9 @@ kind F):
 * PFEvaluate of a string of spaces only returns 0 with error 4 "No
   result value!"; the original returned the long above its empty stack,
   the caller's return address (#644).
+* PFErrorText without an error returns the length 0; the original set
+  only the low word of d0, the upper word of the length was the
+  caller's (#640).
 
 ## BUG(orig), kept
 
@@ -155,8 +158,6 @@ In the C file's head:
 * PFEvaluate: digits are not checked (#634).
 * PFEvaluate: the indirection reads any address (an odd one is an
   address error, #636).
-* PFErrorText without an error returns the caller's upper word of d0 as
-  the length (#640).
 
 No defects, like the original: ConvToPostFix leaves a3 pointing to the
 string (a statement: nothing uses a3 after it); PFErrorType leaves the
