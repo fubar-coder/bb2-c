@@ -29,11 +29,11 @@
  * of the Blitz program): the libraries' safe form of the NDK macro keeps
  * them (cmake/ndk-calls.cmake).
  *
- * BUG(orig), kept:
- *   - init: if a library does not open, the port is deleted and the block
- *     freed, but the libraries already opened stay open; AppMsgPort then
- *     still returns the deleted port (#526).
- *
+ * Fixed (intended deviation, #526): when a library did not open, init
+ * deleted the port and freed the block but left the libraries already
+ * opened open, and AppMsgPort still returned the deleted port (also when
+ * the block could not be allocated); init now closes them and clears the
+ * port.
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
@@ -254,8 +254,9 @@ BLITZ_INLINE(appeventidcmp, "move.l #0x800000,d0");
  * workbench, dos and icon.library V37.
  *
  * Sets libflag -1 when all is there, 0 otherwise (the commands then do
- * nothing).  BUG(orig) (#526): the libraries opened before a failing one
- * stay open, and AppMsgPort still returns the deleted port.
+ * nothing).  Fixed (#526): on a failure the libraries opened before are
+ * closed and msgport is cleared (the original left them open and kept the
+ * deleted port for AppMsgPort).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -269,6 +270,7 @@ static void BLITZ_ROUTINE libinit_c(void)
     block = AllocMem(BLOCKSIZE, MEMF_CLEAR);
     if (!block) {
         DeleteMsgPort(msgport);
+        msgport = NULL;                 /* fixed (#526) */
         libflag = 0;
         return;
     }
@@ -277,11 +279,19 @@ static void BLITZ_ROUTINE libinit_c(void)
     appicons = block->icons;
     arglist = block->path;
     disklist = block->disks;
-    /* BUG(orig): the libraries opened before a failing one stay open (#526) */
-    if (!(wbbase = OpenLibrary((STRPTR)"workbench.library", 37))
-        || !(dosbase = (struct DosLibrary *)OpenLibrary((STRPTR)"dos.library", 37))
-        || !(iconbase = OpenLibrary((STRPTR)"icon.library", 37))) {
+    wbbase = OpenLibrary((STRPTR)"workbench.library", 37);
+    dosbase = wbbase ? (struct DosLibrary *)OpenLibrary((STRPTR)"dos.library", 37) : NULL;
+    iconbase = dosbase ? OpenLibrary((STRPTR)"icon.library", 37) : NULL;
+    if (!iconbase) {
+        /* fixed (#526): close what was opened, no deleted port left */
+        if (dosbase)
+            CloseLibrary((struct Library *)dosbase);
+        if (wbbase)
+            CloseLibrary(wbbase);
+        wbbase = NULL;
+        dosbase = NULL;
         DeleteMsgPort(msgport);
+        msgport = NULL;
         libflag = 0;
         FreeMem(appmenus, BLOCKSIZE);
         return;
@@ -347,7 +357,8 @@ BLITZ_THUNK(riapplib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief AppMsgPort: the library's message port.
- * @return d0: the MsgPort (also after a failed init, BUG(orig) (#526))
+ * @return d0: the MsgPort, 0 after a failed init (fixed, #526: the
+ *         original returned the deleted port)
  */
 static ULONG BLITZ_ROUTINE appmsgport_c(void)
 {

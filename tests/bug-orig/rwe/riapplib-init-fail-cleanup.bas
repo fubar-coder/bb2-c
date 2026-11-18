@@ -8,6 +8,7 @@
 ; workbench and dos.library: +0 in the original too, the leak of the
 ; open counts is not seen this way.
 ; Correct: AppMsgPort is 0 (the deleted port is not returned).
+; @fixed #526
 ; @rwe riapplib
 ; The program is silent for about 11 s (more than BUG_ORIG_RUN_HANG_AFTER):
 ; @pass hang_after=30

@@ -475,7 +475,8 @@ AppMsgPort|popped|icon.library fails|1	$00000000
 AppMsgPort|popped|third run|1	$00000000
 AppMsgPort|port||1	$00000001
 AppMsgPort|port|again|1	$00000001
-AppMsgPort|port|icon.library fails|1	$00000001
+AppMsgPort|port|icon.library fails|1 [orig]	$00000001
+AppMsgPort|port|icon.library fails|1 [fixed #526]	$00000000
 AppMsgPort|port|third run|1	$00000001
 AppNumFiles|d0|message 0|1	$00000002
 AppNumFiles|d0|message 1|1	$00000001
@@ -694,7 +695,8 @@ finit|wb fn|no current message|3	$00000002
 finit|wb fn|no current message|4	$00000004
 finit|wb fn|no current message|5	$00000004
 init|OpenLibrary failed|icon.library fails|1	$00000001
-init|dos.library opens left|icon.library fails|1	$00000001
+init|dos.library opens left|icon.library fails|1 [orig]	$00000001
+init|dos.library opens left|icon.library fails|1 [fixed #526]	$00000000
 init|kept||1	kept
 init|kept|again|1	kept
 init|kept|icon.library fails|1	kept
@@ -703,7 +705,8 @@ init|popped||1	$00000000
 init|popped|again|1	$00000000
 init|popped|icon.library fails|1	$00000000
 init|popped|third run|1	$00000000
-init|workbench.library opens left|icon.library fails|1	$00000001
+init|workbench.library opens left|icon.library fails|1 [orig]	$00000001
+init|workbench.library opens left|icon.library fails|1 [fixed #526]	$00000000
 no init|d0|before init|1	$00000000
 no init|d0|before init|2	$00000000
 no init|d0|before init|3	$00000000

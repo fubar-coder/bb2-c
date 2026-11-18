@@ -106,12 +106,11 @@ kind F):
   later `DelAppIcon` or finit called `RemoveAppIcon` on it a second
   time) and the new DiskObject in its slot until `DelAppIcon` or finit
   (#517).
-
-## BUG(orig), kept
-
-* init: if a library does not open, the port is deleted and the memory
-  freed, but the libraries already opened stay open; `AppMsgPort` still
-  returns the deleted port (#526).
+* init closes the libraries it opened when a later one does not open,
+  and clears its port when it fails: `AppMsgPort` returns 0. The
+  original left them open (finit, which tests the flag of a successful
+  init, did not close them either) and returned the deleted port, also
+  when the block could not be allocated (#526).
 
 ## Test
 
