@@ -211,6 +211,11 @@ kind F):
   RXSendCommand ""; RXReplyMsg replies without a result string. The
   original never checked the base and called CreateArgString through a
   base of 0 at the first message (a crash) (#1094).
+* **RXCreatePort** returns 0 when a public port of the name exists, as
+  the manual says ("Failure is usually due to a public message port
+  existing with the same name"). The original added a second port of the
+  name, so messages for it reached whichever port FindPort found first
+  and the program could not tell that its name was taken (#1096).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

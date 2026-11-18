@@ -125,6 +125,8 @@
  *     RXExecuteScript, RXRunScript 0, RXSendCommand "") and RXReplyMsg
  *     replies without a result string; the original called through a
  *     base of 0 (#1094).
+ *   - RXCreatePort returns 0 when a public port of the name exists (as the
+ *     manual says); the original added a second port of the name (#1096).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -1235,7 +1237,8 @@ BLITZ_THUNK(_rxdeleteport, rxdeleteport_c, "d0-d1/a0-a1");
  * without RemPort, so it stayed in the public list.
  * @param name  d0: name$
  * @param args  a2: the argument stack, -4(a2) the length of name$
- * @return d0: the MsgPort; 0 if there is one already or on failure
+ * @return d0: the MsgPort; 0 if there is one already, if a public port of
+ *         the name exists (fixed #1096) or on failure
  */
 static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *args BL_REG(a2))
 {
@@ -1257,9 +1260,22 @@ static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *ar
         return 0;
     }
     msgport->mp_Node.ln_Name = (char *)msgportname;
+    /* fixed (#1096): 0 if a public port of the name exists; the original
+       added a second one */
+    Forbid();
+    if (FindPort((CONST_STRPTR)name)) {
+        Permit();
+        DeleteMsgPort(msgport);
+        msgport = NULL;
+        FreeVec(lists);
+        freest((ULONG)msgportname);
+        msgportname = NULL;
+        return 0;
+    }
+    AddPort(msgport);
+    Permit();
     v.messagelist = lists->messages;
     v.sentlist = lists->sent;
-    AddPort(msgport);
     return (ULONG)msgport;
 }
 BLITZ_THUNK(_rxcreateport, rxcreateport_c, "d1/a0-a1");
