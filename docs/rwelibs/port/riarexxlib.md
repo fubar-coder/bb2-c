@@ -117,6 +117,13 @@ kind F):
   argument string: `a "" c` gives `a`, ``, `c`. The original took the
   word's length 0 for the end of the command and dropped it and every
   word behind it (#536).
+* **The tokenizer** reads the command where it is and builds each word
+  in a buffer of the command's length, allocated for the message (out of
+  memory: nothing is sent, the result is 0, D-018). A command or a word
+  of any length is split whole (a long string is a value). The original
+  copied the command into `tempstorage` and every word into
+  `stringbuffer`, 256 bytes each, without a limit: a longer command
+  overwrote what follows, in the original its own code (#537).
 
 ## BUG(orig), kept
 
@@ -149,9 +156,6 @@ kind F):
 * **RXDeletePort** replies the queued messages with 5 but frees neither
   the lists nor the name (#530).
 * **The tokenizer:**
-  * the command (256 bytes) and every word (256 bytes) are copied without
-    a limit; the original then overwrites its own code (C: the data
-    behind the buffers) (#537);
   * the 16 rm_Args slots are not checked (#527).
 
 Original behaviour that is not a defect: an empty result of

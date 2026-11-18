@@ -7,8 +7,10 @@
 ; (the message has 0 arguments instead of 1 - nothing else breaks, so
 ; the program goes on).  The C build has stringbuffer behind tempstorage:
 ; the four bytes become its first characters, and the word "aaa" parsed
-; into it is read once more from there (2 arguments).
-; Correct: the message arrives with the one argument "aaa".
+; into it is read once more from there.
+; Correct: the message arrives with the two words of the command, "aaa"
+; and the four bytes.
+; @fixed #537
 ; @rwe riarexxlib
 ; @pass timeout=30
 DEFTYPE .l
@@ -18,7 +20,7 @@ RXRunCommand "BUGORIG","aaa"+String$(" ",253)+Chr$(66)+Chr$(128)+"Nu"
 m=RXReadPort
 NPrint "received ",m<>0
 If m
-  NPrint "one argument ",RXNumArgs=1
+  NPrint "args ",RXNumArgs," <",RXGetArg(1),"> ",Len(RXGetArg(2))
   RXReplyMsg 0
 EndIf
 End

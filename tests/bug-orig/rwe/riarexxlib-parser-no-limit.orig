@@ -5,7 +5,7 @@ done
 ok
 [run]
 received -1
-one argument 0
+args 0 <> 0
 rc=0
 [blitz2]
 rc=0

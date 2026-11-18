@@ -61,6 +61,11 @@
  *   - An empty quoted word ("") is an empty argument string; the original
  *     took its length 0 for the end and dropped it and every word behind
  *     it (#536).
+ *   - The tokenizer reads the command where it is and builds each word in
+ *     a buffer of the command's length (allocated per message; out of
+ *     memory: nothing sent, 0); the original copied the command and every
+ *     word into buffers of 256 bytes without a limit (in the original over
+ *     its own code) (#537).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -85,9 +90,7 @@
  *     allocated, it deletes the port without RemPort (it stays in the
  *     public list) (#528).  RXDeletePort frees neither the lists nor the
  *     name (#530).
- *   - The parser copies the command into 256 bytes and every word into
- *     256 bytes, both without a limit (in the original over its own
- *     code) (#537); there is no limit of 16 arguments (rm_Args) (#527).
+ *   - There is no limit of 16 arguments (rm_Args) (#527).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -277,8 +280,7 @@ static UBYTE *msgportname;
 static UBYTE quote;
 static UWORD tokenise;                  /* RXTokenise: the word (fixed #547) */
 static UWORD oktodelete;
-static UBYTE *curadr;                   /* the parser (parseadr unused) */
-static UBYTE tempstorage[256], stringbuffer[256];
+static const UBYTE *curadr;             /* the parser (parseadr unused) */
 static const char rexxname[] = "rexxsyslib.library";
 static const char realrexxportname[] = "REXX";
 
@@ -518,13 +520,11 @@ static void deleteitem(ULONG *item)
 
 /* ------------------------------------------------------------ the parser */
 
+/* fixed (#537): the command is read where it is; the original copied it
+   into tempstorage (256 bytes) without a limit */
 static void parseinit(const UBYTE *s)
 {
-    UBYTE *d = tempstorage;
-
-    while ((*d++ = *s++) != 0)
-        ;
-    curadr = tempstorage;
+    curadr = s;
 }
 
 /* nextparsearg's result when there is no word left */
@@ -534,7 +534,8 @@ static void parseinit(const UBYTE *s)
    ""; NOWORD: none left - fixed (#536): the original's 0 for both) */
 static ULONG nextparsearg(UBYTE *out)
 {
-    UBYTE *p, *dst = out, c;
+    const UBYTE *p;
+    UBYTE *dst = out, c;
 
     if (!curadr)
         return NOWORD;
@@ -604,7 +605,9 @@ static struct RexxMsg *makemsg(void)
     return m;
 }
 
-static void makemsgargs(void)
+/* the arguments of thismsg; `word`: a buffer of the command's length + 1
+   for the words (RXTokenise on) */
+static void makemsgargs(UBYTE *word)
 {
     ULONG *arg = (ULONG *)v.thismsg->rm_Args;
     const UBYTE *s = (const UBYTE *)msgstring;
@@ -617,8 +620,8 @@ static void makemsgargs(void)
         return;
     }
     parseinit(s);
-    while ((n = nextparsearg(stringbuffer)) != NOWORD) {   /* fixed (#536) */
-        if (!(argstr = createargstring(stringbuffer, n)))
+    while ((n = nextparsearg(word)) != NOWORD) {   /* fixed (#536) */
+        if (!(argstr = createargstring(word, n)))
             break;
         *arg++ = argstr;                /* BUG(orig): no limit of 16 (#527) */
     }
@@ -651,8 +654,21 @@ static ULONG sendmsg(void)
 
 static ULONG sendmessage(void)
 {
+    UBYTE *word = NULL;
+    ULONG n;
+
+    if (tokenise) {
+        /* fixed (#537): a word buffer of the command's length; the
+           original's stringbuffer had 256 bytes and no limit.  Out of
+           memory: nothing sent, 0 (D-018) */
+        for (n = 0; ((const UBYTE *)msgstring)[n]; n++)
+            ;
+        if (!(word = AllocVec(n + 1, MEMF_ANY)))
+            return 0;
+    }
     makemsg();
-    makemsgargs();
+    makemsgargs(word);
+    FreeVec(word);
     return sendmsg();
 }
 
