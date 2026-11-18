@@ -13,12 +13,12 @@
 |CommodityEvent||6	$FFFFFFFF
 |CommodityEvent||7	$FFFFFFFF
 |CommodityEvent||8	$FFFFFFFF
-|CommodityEvent||9	$FFFFFFFF
-|CommodityEvent||10	$00000000
+|CommodityEvent||9	$00000000
+|CommodityEvent||10	$FFFFFFFF
 |CommodityEvent||11	$FFFFFFFF
 |CommodityEvent||12	$FFFFFFFF
 |CommodityEvent||13	$FFFFFFFF
-|CommodityEvent||14	$FFFFFFFF
+|CommodityEvent|unique message|1	$FFFFFFFF
 |CommodityEvent (nothing queued) replied the message taken before||1 [orig]	$00000000
 |CommodityEvent (nothing queued) replied the message taken before||1 [fixed #561]	$00000001
 |CommodityEvent replied the message taken before||1	$00000000
@@ -34,15 +34,15 @@
 |CommodityEvent replied the message taken before||6 [fixed #561]	$00000001
 |CommodityEvent replied the message taken before||7 [orig]	$00000000
 |CommodityEvent replied the message taken before||7 [fixed #561]	$00000001
-|CommodityEvent replied the message taken before||8 [orig]	$00000000
-|CommodityEvent replied the message taken before||8 [fixed #561]	$00000001
-|CommodityEvent replied the message taken before||9	$00000000
+|CommodityEvent replied the message taken before||8	$00000000
+|CommodityEvent replied the message taken before||9 [orig]	$00000000
+|CommodityEvent replied the message taken before||9 [fixed #561]	$00000001
 |CommodityEvent replied the message taken before||10 [orig]	$00000000
 |CommodityEvent replied the message taken before||10 [fixed #561]	$00000001
 |CommodityEvent replied the message taken before||11 [orig]	$00000000
 |CommodityEvent replied the message taken before||11 [fixed #561]	$00000001
-|CommodityEvent replied the message taken before||12 [orig]	$00000000
-|CommodityEvent replied the message taken before||12 [fixed #561]	$00000001
+|CommodityEvent replied the message taken before|unique message|1 [orig]	$00000000
+|CommodityEvent replied the message taken before|unique message|1 [fixed #561]	$00000001
 |CommodityMsgPort||1	$00000000
 |CommodityMsgPort != 0||1	$00000001
 |CommodityMsgPort != 0 (name taken)||1	$00000001
@@ -57,8 +57,8 @@
 |ExchangeAppear||2	$00000000
 |ExchangeAppear||3	$00000000
 |ExchangeAppear||4	$00000000
-|ExchangeAppear||5	$00000000
-|ExchangeAppear||6	$FFFFFFFF
+|ExchangeAppear||5	$FFFFFFFF
+|ExchangeAppear||6	$00000000
 |ExchangeAppear||7	$00000000
 |ExchangeAppear||8	$00000000
 |ExchangeAppear||9	$00000000
@@ -67,14 +67,14 @@
 |ExchangeAppear||12	$00000000
 |ExchangeAppear||13	$00000000
 |ExchangeAppear||14	$00000000
-|ExchangeAppear||15	$00000000
+|ExchangeAppear|unique message|1	$00000000
 |ExchangeDisAppear||1	$00000000
 |ExchangeDisAppear||2	$00000000
 |ExchangeDisAppear||3	$00000000
 |ExchangeDisAppear||4	$00000000
 |ExchangeDisAppear||5	$00000000
-|ExchangeDisAppear||6	$00000000
-|ExchangeDisAppear||7	$FFFFFFFF
+|ExchangeDisAppear||6	$FFFFFFFF
+|ExchangeDisAppear||7	$00000000
 |ExchangeDisAppear||8	$00000000
 |ExchangeDisAppear||9	$00000000
 |ExchangeDisAppear||10	$00000000
@@ -82,11 +82,11 @@
 |ExchangeDisAppear||12	$00000000
 |ExchangeDisAppear||13	$00000000
 |ExchangeDisAppear||14	$00000000
-|ExchangeDisAppear||15	$00000000
+|ExchangeDisAppear|unique message|1	$00000000
 |ExchangeDisable||1	$00000000
 |ExchangeDisable||2	$00000000
-|ExchangeDisable||3	$00000000
-|ExchangeDisable||4	$FFFFFFFF
+|ExchangeDisable||3	$FFFFFFFF
+|ExchangeDisable||4	$00000000
 |ExchangeDisable||5	$00000000
 |ExchangeDisable||6	$00000000
 |ExchangeDisable||7	$00000000
@@ -97,12 +97,12 @@
 |ExchangeDisable||12	$00000000
 |ExchangeDisable||13	$00000000
 |ExchangeDisable||14	$00000000
-|ExchangeDisable||15	$00000000
+|ExchangeDisable|unique message|1	$00000000
 |ExchangeEnable||1	$00000000
 |ExchangeEnable||2	$FFFFFFFF
 |ExchangeEnable||3	$00000000
-|ExchangeEnable||4	$00000000
-|ExchangeEnable||5	$FFFFFFFF
+|ExchangeEnable||4	$FFFFFFFF
+|ExchangeEnable||5	$00000000
 |ExchangeEnable||6	$00000000
 |ExchangeEnable||7	$00000000
 |ExchangeEnable||8	$00000000
@@ -112,22 +112,22 @@
 |ExchangeEnable||12	$00000000
 |ExchangeEnable||13	$00000000
 |ExchangeEnable||14	$00000000
-|ExchangeEnable||15	$00000000
+|ExchangeEnable|unique message|1	$00000000
 |ExchangeKill||1	$00000000
 |ExchangeKill||2	$00000000
 |ExchangeKill||3	$00000000
 |ExchangeKill||4	$00000000
 |ExchangeKill||5	$00000000
 |ExchangeKill||6	$00000000
-|ExchangeKill||7	$00000000
-|ExchangeKill||8	$FFFFFFFF
+|ExchangeKill||7	$FFFFFFFF
+|ExchangeKill||8	$00000000
 |ExchangeKill||9	$00000000
 |ExchangeKill||10	$00000000
 |ExchangeKill||11	$00000000
 |ExchangeKill||12	$00000000
 |ExchangeKill||13	$00000000
 |ExchangeKill||14	$00000000
-|ExchangeKill||15	$00000000
+|ExchangeKill|unique message|1	$00000000
 |ExchangeListChange||1	$00000000
 |ExchangeListChange||2	$00000000
 |ExchangeListChange||3	$00000000
@@ -135,32 +135,32 @@
 |ExchangeListChange||5	$00000000
 |ExchangeListChange||6	$00000000
 |ExchangeListChange||7	$00000000
-|ExchangeListChange||8	$00000000
+|ExchangeListChange||8	$FFFFFFFF
 |ExchangeListChange||9	$FFFFFFFF
-|ExchangeListChange||10	$FFFFFFFF
+|ExchangeListChange||10	$00000000
 |ExchangeListChange||11	$00000000
 |ExchangeListChange||12	$00000000
 |ExchangeListChange||13	$00000000
 |ExchangeListChange||14	$00000000
-|ExchangeListChange||15	$00000000
+|ExchangeListChange|unique message|1	$00000000
 |ExchangeMessage||1	$00000000
 |ExchangeMessage||2	$00000011
-|ExchangeMessage||3	$00000019
-|ExchangeMessage||4	$0000000F
-|ExchangeMessage||5	$00000011
-|ExchangeMessage||6	$00000013
-|ExchangeMessage||7	$00000015
-|ExchangeMessage||8	$00000017
-|ExchangeMessage||9	$0000001B
+|ExchangeMessage||3	$0000000F
+|ExchangeMessage||4	$00000011
+|ExchangeMessage||5	$00000013
+|ExchangeMessage||6	$00000015
+|ExchangeMessage||7	$00000017
+|ExchangeMessage||8	$0000001B
+|ExchangeMessage||9	$00000000
 |ExchangeMessage||10	$00000000
 |ExchangeMessage||11	$00000000
 |ExchangeMessage||12	$00000000
 |ExchangeMessage||13	$00000000
 |ExchangeMessage||14	$00000000
-|ExchangeMessage||15	$00000000
+|ExchangeMessage|unique message|1	$00000019
 |ExchangeUnique||1	$00000000
 |ExchangeUnique||2	$00000000
-|ExchangeUnique||3	$FFFFFFFF
+|ExchangeUnique||3	$00000000
 |ExchangeUnique||4	$00000000
 |ExchangeUnique||5	$00000000
 |ExchangeUnique||6	$00000000
@@ -172,7 +172,7 @@
 |ExchangeUnique||12	$00000000
 |ExchangeUnique||13	$00000000
 |ExchangeUnique||14	$00000000
-|ExchangeUnique||15	$00000000
+|ExchangeUnique|unique message|1	$FFFFFFFF
 |HotKeyHit||1	$FFFFFFFF
 |HotKeyHit||2	$FFFFFFFF
 |HotKeyHit||3	$FFFFFFFF
@@ -182,13 +182,13 @@
 |HotKeyHit||7	$FFFFFFFF
 |HotKeyHit||8	$FFFFFFFF
 |HotKeyHit||9	$FFFFFFFF
-|HotKeyHit||10	$FFFFFFFF
-|HotKeyHit||11	$00000000
+|HotKeyHit||10	$00000000
+|HotKeyHit||11	$00000003
 |HotKeyHit||12	$00000003
-|HotKeyHit||13	$00000003
-|HotKeyHit||14	$00000000
-|HotKeyHit||15 [orig]	$00000000
-|HotKeyHit||15 [fixed #566]	$00000003
+|HotKeyHit||13	$00000000
+|HotKeyHit||14 [orig]	$00000000
+|HotKeyHit||14 [fixed #566]	$00000003
+|HotKeyHit|unique message|1	$FFFFFFFF
 |MakeCommodity||1	$FFFFFFFF
 |MakeCommodity (name taken)||1	$00000000
 |MakeCommodity again||1	$00000000
@@ -259,7 +259,7 @@
 |event took the head||9	$00000001
 |event took the head||10	$00000001
 |event took the head||11	$00000001
-|event took the head||12	$00000001
+|event took the head|unique message|1	$00000001
 |finit replied a queued message||1 [orig]	$00000000
 |finit replied a queued message||1 [fixed #561]	$00000001
 |finit replied the message taken last||1 [orig]	$00000000
@@ -288,13 +288,13 @@
 |queued||5	$00000001
 |queued||6	$00000001
 |queued||7	$00000001
-|queued||8	$00000001
+|queued|unique message|1	$00000001
 |results||1	$0000010C
 |still off||1	$00000000
 |timer message||1	$00000001
 |two timer messages||1	$00000001
 |two timer messages again||1	$00000001
-|unique message||1	$00000001
+|unique message|unique message|1	$00000001
 CommodityEvent|kept||1	kept
 CommodityEvent|kept||2	kept
 CommodityEvent|kept||3	kept
@@ -308,7 +308,7 @@ CommodityEvent|kept||10	kept
 CommodityEvent|kept||11	kept
 CommodityEvent|kept||12	kept
 CommodityEvent|kept||13	kept
-CommodityEvent|kept||14	kept
+CommodityEvent|kept|unique message|1	kept
 CommodityMsgPort|kept||1	kept
 CommodityMsgPort|kept||2	kept
 CommodityMsgPort|kept||3	kept
@@ -333,7 +333,7 @@ ExchangeAppear|kept||11	kept
 ExchangeAppear|kept||12	kept
 ExchangeAppear|kept||13	kept
 ExchangeAppear|kept||14	kept
-ExchangeAppear|kept||15	kept
+ExchangeAppear|kept|unique message|1	kept
 ExchangeDisAppear|kept||1	kept
 ExchangeDisAppear|kept||2	kept
 ExchangeDisAppear|kept||3	kept
@@ -348,7 +348,7 @@ ExchangeDisAppear|kept||11	kept
 ExchangeDisAppear|kept||12	kept
 ExchangeDisAppear|kept||13	kept
 ExchangeDisAppear|kept||14	kept
-ExchangeDisAppear|kept||15	kept
+ExchangeDisAppear|kept|unique message|1	kept
 ExchangeDisable|kept||1	kept
 ExchangeDisable|kept||2	kept
 ExchangeDisable|kept||3	kept
@@ -363,7 +363,7 @@ ExchangeDisable|kept||11	kept
 ExchangeDisable|kept||12	kept
 ExchangeDisable|kept||13	kept
 ExchangeDisable|kept||14	kept
-ExchangeDisable|kept||15	kept
+ExchangeDisable|kept|unique message|1	kept
 ExchangeEnable|kept||1	kept
 ExchangeEnable|kept||2	kept
 ExchangeEnable|kept||3	kept
@@ -378,7 +378,7 @@ ExchangeEnable|kept||11	kept
 ExchangeEnable|kept||12	kept
 ExchangeEnable|kept||13	kept
 ExchangeEnable|kept||14	kept
-ExchangeEnable|kept||15	kept
+ExchangeEnable|kept|unique message|1	kept
 ExchangeKill|kept||1	kept
 ExchangeKill|kept||2	kept
 ExchangeKill|kept||3	kept
@@ -393,7 +393,7 @@ ExchangeKill|kept||11	kept
 ExchangeKill|kept||12	kept
 ExchangeKill|kept||13	kept
 ExchangeKill|kept||14	kept
-ExchangeKill|kept||15	kept
+ExchangeKill|kept|unique message|1	kept
 ExchangeListChange|kept||1	kept
 ExchangeListChange|kept||2	kept
 ExchangeListChange|kept||3	kept
@@ -408,7 +408,7 @@ ExchangeListChange|kept||11	kept
 ExchangeListChange|kept||12	kept
 ExchangeListChange|kept||13	kept
 ExchangeListChange|kept||14	kept
-ExchangeListChange|kept||15	kept
+ExchangeListChange|kept|unique message|1	kept
 ExchangeMessage|kept||1	kept
 ExchangeMessage|kept||2	kept
 ExchangeMessage|kept||3	kept
@@ -423,7 +423,7 @@ ExchangeMessage|kept||11	kept
 ExchangeMessage|kept||12	kept
 ExchangeMessage|kept||13	kept
 ExchangeMessage|kept||14	kept
-ExchangeMessage|kept||15	kept
+ExchangeMessage|kept|unique message|1	kept
 ExchangeUnique|kept||1	kept
 ExchangeUnique|kept||2	kept
 ExchangeUnique|kept||3	kept
@@ -438,7 +438,7 @@ ExchangeUnique|kept||11	kept
 ExchangeUnique|kept||12	kept
 ExchangeUnique|kept||13	kept
 ExchangeUnique|kept||14	kept
-ExchangeUnique|kept||15	kept
+ExchangeUnique|kept|unique message|1	kept
 HotKeyHit|kept||1	kept
 HotKeyHit|kept||2	kept
 HotKeyHit|kept||3	kept
@@ -453,7 +453,7 @@ HotKeyHit|kept||11	kept
 HotKeyHit|kept||12	kept
 HotKeyHit|kept||13	kept
 HotKeyHit|kept||14	kept
-HotKeyHit|kept||15	kept
+HotKeyHit|kept|unique message|1	kept
 MakeCommodity|kept||1	kept
 MakeCommodity|kept||2	kept
 MakeCommodity|kept||3	kept

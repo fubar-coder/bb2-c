@@ -449,8 +449,12 @@ static void scenario(void)
     all_events();
     /* the same name again: fails, the first broker gets CXCMD_UNIQUE */
     rec("MakeCommodity again", cx(E_MAKE, 3, (ULONG)bname, (ULONG)"t2", (ULONG)"d2"));
+    /* the cases of this message have their own vector, so the occurrence
+       numbers of the later rounds do not depend on it */
+    strcpy(VEC, "unique message");
     rec("unique message", waitmsgs(port, 1));
     all_events();
+    strcpy(VEC, "");
     for (i = 0; i < sizeof cmds / sizeof cmds[0]; i++) {
         rec("BrokerCommand", brokercommand(bname, cmds[i]));
         rec("command message", waitmsgs(port, 1));
