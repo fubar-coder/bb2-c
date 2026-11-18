@@ -10,7 +10,8 @@
 "ReqOutput":
   text: Makes the requesters of the library appear on the window with the number given.
   notes: |
-    Without it, the requesters are given no window.
+    Without it, the requesters are given no window. Each run of the
+    program starts without a window, also a second run from the editor.
 "ReqFlags":
   text: Sets the flags of the file requester for all later calls of `ReqFileRequest`.
   notes: |
@@ -27,6 +28,6 @@
     that hides `.info` files, and the purge of the cache when a directory
     changes.
 "ReqColour":
-  text: Opens the colour requester of req.library on the window of `ReqOutput`, starting on the colour `colour`, and returns its result.
+  text: Opens the colour requester of req.library on the window of `ReqOutput`, starting on the colour `colour`, and returns the colour the user chose, or 65535 if the user cancels.
   notes: |
-    Without req.library it returns `colour`.
+    Without req.library it returns 65535, as on cancel.

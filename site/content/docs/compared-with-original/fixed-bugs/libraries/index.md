@@ -4254,13 +4254,34 @@ above.
   flags of `ReqFileRequest(title$,flags)` stay set for later calls, as
   the guide documents
   ([#789](https://github.com/fubar-coder/bb2-c/issues/789)).
-* Without req.library, `ReqFileRequest` returns an empty string, as when
-  the user cancels, and `ReqColour` returns the colour it is given; the
-  original crashed the system
+* Without req.library, `ReqFileRequest` returns an empty string and
+  `ReqColour` 65535, the same as when the user cancels; the original
+  crashed the system
   ([#788](https://github.com/fubar-coder/bb2-c/issues/788)).
-* `ReqColour` opens the colour requester on the colour it is given; the
-  original ignored it and always started on colour 0
+* `ReqColour` opens the colour requester on the colour it is given,
+  together with the fix of the next point; the original ignored it and
+  started on colour 0
   ([#786](https://github.com/fubar-coder/bb2-c/issues/786)).
+* `ReqColour` hands req.library the colour and the window of `ReqOutput`
+  at the places where req.library reads them. The original's colour
+  requester structure had another layout, so with req.library the
+  requester started on the wrong colour and, after `ReqOutput`, did not
+  open at all and returned 16387 at once
+  ([#1091](https://github.com/fubar-coder/bb2-c/issues/1091)).
+* A program run a second time from the editor gives the file requester
+  no window until it calls `ReqOutput` again, the same as the colour
+  requester. The original passed the window of the first run, which was
+  closed when that run ended
+  ([#1090](https://github.com/fubar-coder/bb2-c/issues/1090)).
+* When a program ends, the library has req.library free the directory
+  that the file requester keeps cached between calls. The original left
+  that memory allocated after every run, as much as the last directory
+  shown needed (with req.library 2.8, for example, 1560 bytes for
+  `SYS:C`). About 40 KB that req.library itself allocates for its first
+  file requester stay allocated until the system restarts; that is
+  req.library's own behaviour, with any program that uses its file
+  requester
+  ([#1092](https://github.com/fubar-coder/bb2-c/issues/1092)).
 
 ### Fixes in riintuilib {#riintuilib-fixes}
 

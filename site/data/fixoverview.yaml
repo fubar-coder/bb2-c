@@ -4145,7 +4145,7 @@ rows:
     topic: "Windows & screens"
     library: "rireqlib"
     command: "ReqColour"
-    text: "`ReqColour` opens the colour requester on the colour it is given; the original always started on colour 0."
+    text: "`ReqColour` opens the colour requester on the colour it is given (together with the fix of #1091); the original always started on colour 0."
     page: libraries
     anchor: rireqlib-fixes
   - issue: 787
@@ -4161,7 +4161,7 @@ rows:
     topic: "Files"
     library: "rireqlib"
     command: "ReqFileRequest, ReqColour"
-    text: "Without req.library, `ReqFileRequest` returns an empty string and `ReqColour` the colour given; the original crashed."
+    text: "Without req.library, `ReqFileRequest` returns an empty string and `ReqColour` 65535, the same as when the user cancels; the original crashed."
     page: libraries
     anchor: rireqlib-fixes
   - issue: 789
@@ -4178,6 +4178,30 @@ rows:
     library: "rireqlib"
     command: "ReqFileRequest"
     text: "The file requester structure has req.library's full size; the original's was too short, so the requester wrote over the library's data behind it."
+    page: libraries
+    anchor: rireqlib-fixes
+  - issue: 1090
+    severity: 5
+    topic: "Files"
+    library: "rireqlib"
+    command: "ReqOutput, ReqFileRequest"
+    text: "A program run a second time from the editor gives the file requester no window until its own `ReqOutput`; the original passed the first run's window, already closed."
+    page: libraries
+    anchor: rireqlib-fixes
+  - issue: 1091
+    severity: 5
+    topic: "Windows & screens"
+    library: "rireqlib"
+    command: "ReqColour"
+    text: "`ReqColour` hands req.library the colour and the `ReqOutput` window where the library reads them; with the original the requester started on the wrong colour and, after `ReqOutput`, did not open at all (it returned 16387)."
+    page: libraries
+    anchor: rireqlib-fixes
+  - issue: 1092
+    severity: 5
+    topic: "Files"
+    library: "rireqlib"
+    command: "ReqFileRequest"
+    text: "A program that uses `ReqFileRequest` no longer leaves req.library's cached directory allocated when it ends."
     page: libraries
     anchor: rireqlib-fixes
   - issue: 696

@@ -2,14 +2,19 @@ description: The file and colour requesters of req.library for Blitz Basic 2, by
 intro: |
   This library opens the file and colour requesters of `req.library`, a
   third-party requester library that is not part
-  of AmigaOS. The library opens `req.library` when the program starts.
-  Without it, no requester opens: `ReqFileRequest` returns an empty
-  string, `ReqColour` the colour it is given, and `ReqFileLoc` 0.
+  of AmigaOS; the port is tested with
+  [req.library 2.8 from Aminet](https://aminet.net/util/libs/ReqLib28.lha).
+  The library opens `req.library` when the program starts and has it
+  free the file requester's cached directory when the program ends.
+  Without `req.library`, no requester opens, and the commands return what they
+  return when the user cancels: `ReqFileRequest` an empty string,
+  `ReqColour` 65535. `ReqFileLoc` is 0 then.
 
   `ReqOutput` chooses the window that both requesters appear on,
   `ReqFlags` the flags of the file requester. The file requester can
   only be used in Amiga mode. `ReqFileRequest` returns the path of the
-  file the user chose, and `ReqColour` starts on the colour it is given.
+  file the user chose, and `ReqColour` starts on the colour it is given
+  and returns the colour the user chose.
 
   The fixed bugs of the library are listed in
   [Fixes in rireqlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rireqlib-fixes" >}}).
