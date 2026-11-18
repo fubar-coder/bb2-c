@@ -34,8 +34,8 @@
  * RXExecuteScript/RXRunScript (BUG(orig) #544: both RXCOMM|RXFF_STRING; to
  * the responder if there is no REXX port, else to RexxMast with the
  * string program "exit", its reply awaited with RXWaitPort); RXDeletePort with messages queued (replied with
- * 5); finit with a port; init after RXDefaultPort (BUG(orig) #532: the byte
- * at +4 stays: "REXXE").
+ * 5); finit with a port; init after RXDefaultPort (the original: the
+ * byte at +4 stays, "REXXE"; fixed #532: "REXX", the responder gets it).
  * Not covered: the error check without a port (a runtime error, TRAP
  * #0), a failing AllocVec or AddPort (the exec flags/d0 the original
  * tests), more than 16 or 32 messages/arguments (overflows), messages of

@@ -1908,7 +1908,9 @@ RXReturnCode|popped|tokenised|1	$00000000
 RXReturnCode|popped|untokenised|1	$00000000
 RXRunCommand|RXRunCommand: message|RWERESP "cmd a b"|1	$00000001
 RXRunCommand|action|RWERESP "cmd a b"|1	$01040000
+RXRunCommand|action|default "to REXXE"|1 [fixed #532]	$01040000
 RXRunCommand|args|RWERESP "cmd a b"|1	$00000003
+RXRunCommand|args|default "to REXXE"|1 [fixed #532]	$00000002
 RXRunCommand|argument|RWERESP "cmd a b"|1	bytes 48 636D64000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 RXRunCommand|argument|RWERESP "cmd a b"|2	bytes 48 610000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 RXRunCommand|argument|RWERESP "cmd a b"|3	bytes 48 620000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -1925,6 +1927,23 @@ RXRunCommand|argument|RWERESP "cmd a b"|13	bytes 48 0000000000000000000000000000
 RXRunCommand|argument|RWERESP "cmd a b"|14	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 RXRunCommand|argument|RWERESP "cmd a b"|15	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 RXRunCommand|argument|RWERESP "cmd a b"|16	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|1 [fixed #532]	bytes 48 746F00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|2 [fixed #532]	bytes 48 524558584500000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|3 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|4 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|5 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|6 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|7 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|8 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|9 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|10 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|11 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|12 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|13 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|14 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|15 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|default "to REXXE"|16 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|default port after init: message|default "to REXXE"|1 [fixed #532]	$00000009
 RXRunCommand|kept|RWENOWHERE "cmd"|1	kept
 RXRunCommand|kept|RWERESP "cmd a b"|1	kept
 RXRunCommand|kept|default "hello default"|1	kept
@@ -1944,7 +1963,9 @@ RXRunCommand|kept|own "say "hi""|1	kept
 RXRunCommand|kept|own "x y  "z""|1	kept
 RXRunCommand|kept|own "x y  "z""|2	kept
 RXRunCommand|length|RWERESP "cmd a b"|1	$00000080
+RXRunCommand|length|default "to REXXE"|1 [fixed #532]	$00000080
 RXRunCommand|ln_Name|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|ln_Name|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|popped|RWENOWHERE "cmd"|1	$00000000
 RXRunCommand|popped|RWERESP "cmd a b"|1	$00000000
 RXRunCommand|popped|default "hello default"|1	$00000000
@@ -1964,10 +1985,15 @@ RXRunCommand|popped|own "say "hi""|1	$00000000
 RXRunCommand|popped|own "x y  "z""|1	$00000000
 RXRunCommand|popped|own "x y  "z""|2	$00000000
 RXRunCommand|port|RWERESP "cmd a b"|1	$00000000
+RXRunCommand|port|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|port served|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|port served|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|pri|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|pri|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|reply port|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|reply port|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|responder got it|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|responder got it|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|sent|RWENOWHERE "cmd"|1	$00000000
 RXRunCommand|sent|RWERESP "cmd a b"|1	$00000001
 RXRunCommand|sent|default "hello default"|1	$00000001
@@ -1986,8 +2012,10 @@ RXRunCommand|sent|own "pending"|1	$00000001
 RXRunCommand|sent|own "say "hi""|1	$00000001
 RXRunCommand|sent|own "x y  "z""|1	$00000001
 RXRunCommand|sent|own "x y  "z""|2	$00000001
-RXRunCommand|sent to the default port|default "to REXXE"|1	$00000000
+RXRunCommand|sent to the default port|default "to REXXE"|1 [orig]	$00000000
+RXRunCommand|sent to the default port|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|type|RWERESP "cmd a b"|1	$00000005
+RXRunCommand|type|default "to REXXE"|1 [fixed #532]	$00000005
 RXRunScript|RXRunScript: message||1	$00000008
 RXRunScript|action||1	$01040000
 RXRunScript|args||1	$00000001
@@ -2182,12 +2210,16 @@ RXTokenise|popped|0|1	$00000000
 RXTokenise|popped|0 with an upper word|1	$00000000
 RXWaitPort|kept|RXWaitPort|1	kept
 RXWaitPort|kept|RXWaitPort: the reply|1	kept
+RXWaitPort|kept|the default port's reply|1 [fixed #532]	kept
 RXWaitPort|message|RXWaitPort|1	$00000001
 RXWaitPort|message|RXWaitPort: the reply|1	$00000000
+RXWaitPort|message|the default port's reply|1 [fixed #532]	$00000000
 RXWaitPort|message as expected|RXWaitPort|1	$00000001
 RXWaitPort|message as expected|RXWaitPort: the reply|1	$00000001
+RXWaitPort|message as expected|the default port's reply|1 [fixed #532]	$00000001
 RXWaitPort|popped|RXWaitPort|1	$00000000
 RXWaitPort|popped|RXWaitPort: the reply|1	$00000000
+RXWaitPort|popped|the default port's reply|1 [fixed #532]	$00000000
 finit|kept||1	kept
 finit|kept|with a port|1	kept
 finit|popped||1	$00000000

@@ -82,11 +82,19 @@ the original uses:
 
 maxslib AllocSt is called with `BLITZ_ALIBJSR(TOK_allocst)`.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* **init** writes "REXX" and its 0 at +4 into the default port name. The
+  original wrote the 0 at +5, so the byte at +4 of an earlier
+  RXDefaultPort stayed: after RXDefaultPort "RWERESP" and a second run
+  of the program with the library still loaded (from the editor) the
+  default port was "REXXE" (#532).
+
 ## BUG(orig), kept
 
-* **init** writes "REXX" and a 0 at +5: the byte at +4 of an earlier
-  RXDefaultPort stays (after RXDefaultPort "RWERESP" and init: "REXXE")
-  (#532).
 * **RXExecuteScript/RXRunScript** set their own message type, which
   `_rxruncommand` overwrites. Both send RXCOMM|RXFF_STRING without
   RXFF_RESULT: the script name is run as a string program, tokenised
@@ -175,7 +183,8 @@ Covered:
   "exit", or to the responder: RXCOMM|RXFF_STRING);
 * RXDeletePort with two queued messages (replied with 5), and without a
   port;
-* finit with a port; init after RXDefaultPort ("REXXE").
+* finit with a port; init after RXDefaultPort (the original: "REXXE",
+  nothing sent; fixed: "REXX", #532).
 
 Not covered:
 

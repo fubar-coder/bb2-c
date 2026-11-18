@@ -38,9 +38,12 @@
  * limit into the 65 bytes of rexxportname and overwrites them (BUG(orig),
  * #529).
  *
+ * Fixed (docs/libs/deviations.md, kind F):
+ *   - init writes "REXX" and its 0 at +4 into the default port name (the
+ *     original wrote the 0 at +5: the byte at +4 of an earlier
+ *     RXDefaultPort stayed) (#532).
+ *
  * BUG(orig), kept:
- *   - init writes "REXX" and a 0 at +5 into the default port name: the
- *     byte at +4 of an earlier RXDefaultPort stays (#532).
  *   - RXExecuteScript/RXRunScript set their message type, but
  *     _rxruncommand overwrites it: both send RXCOMM|RXFF_STRING (the
  *     script name as a string program), without a result (#544).
@@ -389,8 +392,8 @@ static ULONG tostring(const UBYTE *s)
  * @brief init: open rexxsyslib.library V34; the defaults (quote '"',
  * RXTokenise on, the default port "REXX").
  *
- * BUG(orig) (#532): "REXX" and a 0 at +5 are written into the default
- * port name: the byte at +4 of an earlier RXDefaultPort stays.
+ * Fixed (#532): the 0 behind "REXX" is written at +4; the original wrote
+ * it at +5, so the byte at +4 of an earlier RXDefaultPort stayed.
  * @return d0: 0
  */
 static ULONG BLITZ_ROUTINE libinit_c(void)
@@ -401,7 +404,7 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
     v.rexxportname[1] = 'E';
     v.rexxportname[2] = 'X';
     v.rexxportname[3] = 'X';
-    v.rexxportname[5] = 0;              /* BUG(orig): +4 stays (#532) */
+    v.rexxportname[4] = 0;              /* fixed (#532): the original's +5 */
     msgport = NULL;
     v.rexxbase = NULL;
     v.rexxbase = OpenLibrary((CONST_STRPTR)rexxname, 34);
