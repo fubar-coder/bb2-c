@@ -8,6 +8,7 @@
 ; exist (Lock fails).
 ; Correct: the name does not change the library's state - DataTypeWidth
 ; has no BitMapHeader and returns 0.
+; @fixed #604
 ; @rwe ridatatypeslib
 DEFTYPE .l
 b=AllocMem_($30000,$10004)

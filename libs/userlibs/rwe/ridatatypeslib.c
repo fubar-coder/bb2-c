@@ -22,7 +22,7 @@
  *   finit: DetachDataType, DataTypeClose, CloseLibrary, globfree
  *
  * State: the Lock of the file (DataTypeOpen; its name is copied to fname,
- * the name of NewDTObject), the DataType (ObtainDataType) and its
+ * a block of its own length, the name of NewDTObject), the DataType (ObtainDataType) and its
  * DataTypeHeader, the object (DataTypeCreate), its BitMapHeader
  * (DataTypeBitmap) and the window it is attached to (AttachDataType: the
  * window object of windowslib in a0 while attaching, the Window pointer
@@ -36,8 +36,6 @@
  * (init/finit, AttachDataType) and d7/a2 (SetDataTypeAttr with pairs).
  *
  * BUG(orig):
- *   - DataTypeOpen copies the name into its 384 byte buffer without a
- *     limit (#604).
  *   - AttachDataType window,id,x,y,w,h puts the word arguments into the
  *     tag list as longs (with the upper words the registers have);
  *     AttachDataType window,id,&taglist passes the id as the tag list to
@@ -80,6 +78,11 @@
  *     second file or window (user decision W4 Q4).  The original stored
  *     the new object over the old one, which was never disposed of
  *     (#600).
+ *   - DataTypeOpen copies the name into a block of its own length
+ *     (AllocVec; freed when the file is unlocked again, by DataTypeClose
+ *     or finit), out of memory: 0.  The original copied it into a 384
+ *     byte buffer without a limit, over the BitMapHeader pointer and the
+ *     library's tables behind it (#604).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -286,7 +289,7 @@ static BPTR lock;
 static struct DataType *dtype;
 static struct DataTypeHeader *dtypehead;
 static Object *object;
-static UBYTE fname[384];
+static UBYTE *fname;                    /* the open file's name (AllocVec) */
 static struct BitMapHeader *bitmapheader;
 static ULONG attached;                  /* window object, then the Window */
 static UWORD attachtobitmap;
@@ -324,6 +327,13 @@ void BLITZ_ROUTINE c_detachdatatype(void)
     attached = 0;
 }
 
+/* the name of the file DataTypeOpen copied (fixed, #604) */
+static void freename(void)
+{
+    FreeVec(fname);
+    fname = NULL;
+}
+
 /**
  * @brief DataTypeClose: detaches the object, disposes of it, releases the
  * DataType and unlocks the file.
@@ -351,6 +361,7 @@ void BLITZ_ROUTINE c_datatypeclose(void)
     if (lock) {                         /* fixed (#605): also without a DataType */
         UnLock(lock);
         lock = 0;
+        freename();
     }
     dtypehead = NULL;
 }
@@ -408,31 +419,42 @@ static ULONG putid(const UBYTE *s)
 /**
  * @brief DataTypeOpen filename$: locks a file and obtains its DataType.
  *
- * The name is copied to the buffer DataTypeCreate uses.
- * BUG(orig) (#604): the copy into the 384 byte buffer has no limit.
- * Without a DataType the file is unlocked again (fixed, #605: the
+ * The name is copied for DataTypeCreate into a block of its own length
+ * (fixed, #604: the original copied it into a 384 byte buffer without a
+ * limit); out of memory: 0.  Without a DataType the file is unlocked again (fixed, #605: the
  * original read the DataTypeHeader through address 28 and kept the
  * lock).
  * @param name  d0: the file name
  * @return d0: the DataType, 0 without datatypes.library, if a file is
- *         already open, the file does not lock or has no DataType
+ *         already open, out of memory, the file does not lock or has no
+ *         DataType
  */
 ULONG BLITZ_ROUTINE c_datatypeopen(CONST_STRPTR name BL_REG(d0))
 {
     const UBYTE *s = (const UBYTE *)name;
-    UBYTE *d = fname;
+    UBYTE *d;
+    ULONG n = 1;
 
     if (!database || lock)
         return 0;
-    while ((*d++ = *s++) != 0)          /* BUG(orig) (#604): no limit */
+    while (s[n - 1])
+        n++;
+    fname = AllocVec(n, MEMF_ANY);      /* fixed (#604): its own length */
+    if (!fname)
+        return 0;
+    d = fname;
+    while ((*d++ = *s++) != 0)
         ;
     lock = Lock(name, SHARED_LOCK);
-    if (!lock)
+    if (!lock) {
+        freename();
         return 0;
+    }
     dtype = ObtainDataTypeA(DTST_FILE, (APTR)lock, NULL);
     if (!dtype) {                       /* fixed (#605) */
         UnLock(lock);
         lock = 0;
+        freename();
         return 0;
     }
     dtypehead = dtype->dtn_Header;

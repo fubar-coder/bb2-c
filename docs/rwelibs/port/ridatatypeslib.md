@@ -46,10 +46,8 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 
 **BUG(orig)** (kept):
 
-* DataTypeOpen copies the name into its 384 byte buffer without a limit
-  (#604).
-* AttachDataType window,id,x,y,w,h puts its word arguments into the tag list as longs, with whatever
-  upper words the registers have; window,id,&taglist passes the id as
+* AttachDataType window,id,x,y,w,h puts its word arguments into the tag
+  list as longs, with whatever upper words the registers have; window,id,&taglist passes the id as
   the tag list of its second SetAttrsA and ignores the tag list (#597,
   #596).
 * DataTypesPalette copies as many colours as the palette object has
@@ -99,6 +97,13 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   file or window (user decision W4 Q4). The original stored the new
   object over the old one, which nothing disposed of any more: its memory
   (the picture's bitmap) was lost until the system was reset (#600).
+* DataTypeOpen copies the name into a block of its own length (AllocVec,
+  freed when the file is unlocked again: by DataTypeClose, finit or a
+  failed DataTypeOpen); out of memory the result is 0 (D-018). A name
+  is a value of any length. The original copied it into its 384 byte
+  buffer `fname` without a limit, before Lock: a longer name, even of a
+  file that does not exist, wrote over the BitMapHeader pointer behind
+  it and then the library names and bases (#604).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h
