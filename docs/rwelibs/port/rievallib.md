@@ -211,6 +211,13 @@ No defects, like the original: ConvToPostFix leaves a3 pointing to the
 string (a statement: nothing uses a3 after it); PFErrorType leaves the
 caller's upper word of d0 (a word result).
 
+Known, kept as in the original, no issue (user decision W2 Q16): a number
+without digits is 0 without an error. PFEvaluate takes `$` and `%` alone
+as the number 0, and `{}` (also `{$}`, `{%}`) as an indirection at the
+address 0, which reads the memory there. The digit check of #634 tests
+each character there is; an operand with none has no character to
+reject.
+
 ## Test
 
 `libs/tests/rwe/rievallib.c` (snitch case "rwe rievallib"): each run

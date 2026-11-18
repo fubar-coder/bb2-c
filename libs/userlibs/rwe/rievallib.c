@@ -101,6 +101,9 @@
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
  * result).
+ * Known, kept as in the original (no issue): a number without digits is
+ * 0 without an error - `$` and `%` alone are 0, `{}` reads at the
+ * address 0.
  */
 #include "blitzlib.h"
 
