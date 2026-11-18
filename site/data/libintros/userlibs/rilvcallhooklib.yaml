@@ -30,6 +30,11 @@ intro: |
 
   With an indent word, the item starts that many pixels to the right,
   and the indent is drawn with dotted tree lines, one every 16 pixels.
+  The last line is short when the next item ends the list or has a
+  smaller indent.
 
   The hook keeps its state in the library, so it must not be used by
   two listviews that are drawn at the same time by different tasks.
+
+  The fixed bugs of the library are listed in
+  [Fixes in rilvcallhooklib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rilvcallhooklib-fixes" >}}).

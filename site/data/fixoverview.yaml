@@ -4092,6 +4092,46 @@ rows:
     text: "With runtime error checking, `GTFreeMenu` with a negative item number stops with \"Illegal Menu Item number\"; the original freed the title as an item and damaged memory."
     page: libraries
     anchor: rigtmenulib-fixes
+  - issue: 737
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "rilvcallhooklib"
+    command: "RetrieveCallHook"
+    text: "The tree lines of an indented listview item depend on its indent alone; the original drew none, or 65536 lines, depending on a register."
+    page: libraries
+    anchor: rilvcallhooklib-fixes
+  - issue: 738
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "rilvcallhooklib"
+    command: "RetrieveCallHook"
+    text: "After an indented item the listview hook puts the RastPort's line pattern back; the original left it solid, or dotted after an item without tree lines."
+    page: libraries
+    anchor: rilvcallhooklib-fixes
+  - issue: 739
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "rilvcallhooklib"
+    command: "RetrieveCallHook"
+    text: "The last tree line of an item is short when the next item has a smaller indent; the original read an unrelated word of the next node and could crash a 68000."
+    page: libraries
+    anchor: rilvcallhooklib-fixes
+  - issue: 740
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "rilvcallhooklib"
+    command: "RetrieveCallHook"
+    text: "A right-aligned bitmap in a listview item is drawn at the right edge of its field; the original drew it too far to the right."
+    page: libraries
+    anchor: rilvcallhooklib-fixes
+  - issue: 742
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "rilvcallhooklib"
+    command: "RetrieveCallHook"
+    text: "A listview text field whose pointer is 0 stays empty; the original showed the bytes at address 0."
+    page: libraries
+    anchor: rilvcallhooklib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
