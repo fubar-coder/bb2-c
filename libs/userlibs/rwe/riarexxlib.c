@@ -32,8 +32,7 @@
  * moves the fixed register blitz_string itself), a2 stays unchanged
  * (DIFF: the original pops the string lengths it reads with -(a2), see
  * docs/libs/cmdlibs-port.md "General").  Assembler: exec calls whose
- * leftovers the original uses (the flags of AllocVec, d0 of AddPort, a0
- * of FindPort).  The variables from rexxportname on are one
+ * leftovers the original uses (d0 of AddPort, a0 of FindPort).  The variables from rexxportname on are one
  * packed struct in the original's order: RXDefaultPort copies without a
  * limit into the 65 bytes of rexxportname and overwrites them (BUG(orig),
  * #529).
@@ -70,13 +69,14 @@
  *     16th holds the rest of the command from its 16th word on, as it is
  *     (user decision W4 Q3 (b)); the original had no limit and wrote the
  *     17th and further words over rm_PassPort, rm_CommAddr ... (#527).
+ *   - _makemsg tests the result of AllocVec: without memory nothing is
+ *     sent (0); the original tested the flags AllocVec leaves (MOVE.l
+ *     d0,a1 is a MOVEA) and went on with the message before (#533).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
  *     _rxruncommand overwrites it: both send RXCOMM|RXFF_STRING (the
  *     script name as a string program), without a result (#544).
- *   - _makemsg tests the flags AllocVec leaves (MOVE.l d0,a1 is a MOVEA):
- *     if they say 0, the message stays the one before (or 0) (#533).
  *   - Replies to messages sent without waiting are found in the sent
  *     list by _finditem, which always returns 0: they are freed with
  *     FreeVec only (their argument strings stay allocated) and stay in
@@ -344,16 +344,6 @@ static ULONG allocst(ULONG s, ULONG len)
 }
 
 /* exec calls with what they leave */
-static APTR allocvec_z(ULONG size, ULONG flags, UBYTE *z)
-{
-    register ULONG d0 __asm("d0") = size;
-    register ULONG d1 __asm("d1") = flags;
-    register struct ExecBase *a6 __asm("a6") = SysBase;
-
-    __asm volatile("jsr -684(a6)\n\tseq %2" : "+d"(d0), "+d"(d1), "=m"(*z), "+a"(a6)
-                   : : "a0", "a1", "cc", "memory");
-    return (APTR)d0;
-}
 
 static ULONG addport_d0(struct MsgPort *port)
 {
@@ -589,11 +579,12 @@ endthis:
 static struct RexxMsg *makemsg(void)
 {
     struct RexxMsg *m;
-    UBYTE z;
 
-    m = allocvec_z(128, MEMF_CLEAR, &z);
-    if (z)                              /* BUG(orig): AllocVec's flags (#533) */
-        return v.thismsg;
+    m = AllocVec(128, MEMF_CLEAR);
+    if (!m) {                           /* fixed (#533): the original tested the flags */
+        v.thismsg = NULL;
+        return NULL;
+    }
     m->rm_Node.mn_Node.ln_Type = NT_MESSAGE;
     m->rm_Node.mn_Node.ln_Pri = 1;
     m->rm_Node.mn_Node.ln_Name = (char *)msgportname;
@@ -689,7 +680,10 @@ static ULONG sendmessage(void)
         if (!(word = AllocVec(n + 1, MEMF_ANY)))
             return 0;
     }
-    makemsg();
+    if (!makemsg()) {                   /* fixed (#533): out of memory, 0 (D-018) */
+        FreeVec(word);
+        return 0;
+    }
     makemsgargs(word);
     FreeVec(word);
     return sendmsg();
@@ -715,7 +709,7 @@ static ULONG runcommand(const UBYTE *port, ULONG cmd)
  *
  * The message (RXCOMM|RXFF_STRING) goes into the sent list.  BUG(orig):
  * the replies are freed without their arguments and stay in the sent
- * list (#531); a failed AllocVec sends the message before (#533).
+ * list (#531).
  * @param port  d0: portname$
  * @param cmd   d1: command$
  * @return d0: 0 if the port is not found or there is no message; else

@@ -7,6 +7,7 @@
 ; current message), then sends "two": the failure reuses "one", writes
 ; the new argument into it and puts it to the port again.
 ; Correct: the failed RXRunCommand sends nothing - no message arrives.
+; @fixed #533
 ; @rwe riarexxlib
 ; @pass runwrap=@INJECT@|allocfail=132-132/1+1
 DEFTYPE .l

@@ -75,7 +75,6 @@ overwrites rexxbase, destport, … (BUG(orig), #529).
 Small inline assembler for the exec and rexxsyslib calls whose leftovers
 the original uses:
 
-* the Z flag of AllocVec (`MOVE.l d0,a1:BEQ` is a MOVEA);
 * d0 of AddPort (`TST.l d0` after it);
 * a0 of FindPort (RXReplyMsg's `'shit` path).
 
@@ -129,6 +128,12 @@ kind F):
   its 16th word on, as it is, for the receiver to split (user decision W4
   Q3 (b)). The original had no limit: the 17th and further words went
   over rm_PassPort, rm_CommAddr and the fields behind them (#527).
+* **`_makemsg`** tests the result of AllocVec: without memory for the
+  message nothing is sent, RXRunCommand returns 0 and RXSendCommand ""
+  (D-018). The original tested the flags AllocVec leaves (`MOVE.l
+  d0,a1:BEQ` is a MOVEA, which sets none): when they said 0 it went on
+  with the message made or received before, wrote the new arguments into
+  it and put it to the port again (#533).
 
 ## BUG(orig), kept
 
@@ -136,8 +141,6 @@ kind F):
   `_rxruncommand` overwrites. Both send RXCOMM|RXFF_STRING without
   RXFF_RESULT: the script name is run as a string program, tokenised
   (#544).
-* **`_makemsg`** decides on AllocVec's flags (above): if they say 0, the
-  previous message (or 0) is sent again (#533).
 * **Replies to messages sent without waiting.** `_finditem` falls from
   the found case into `'notfound` and always returns 0. So these replies
   are only FreeVec'd: their argument strings stay allocated, and the
@@ -213,7 +216,6 @@ Covered:
 Not covered:
 
 * portchk without a port (TRAP #0);
-* the exec leftovers in their failing cases (AllocVec's flags, AddPort's
-  d0);
+* the exec leftover in its failing case (AddPort's d0);
 * the overflows (more than 16 arguments or 32 messages, long names);
 * messages of other types.
