@@ -46,9 +46,7 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 **BUG(orig)** (kept):
 
 * AttachDataType window,id,x,y,w,h puts its word arguments into the tag
-  list as longs, with whatever upper words the registers have; window,id,&taglist passes the id as
-  the tag list of its second SetAttrsA and ignores the tag list (#597,
-  #596).
+  list as longs, with whatever upper words the registers have (#597).
 * DataTypesPalette copies as many colours as the palette object has
   (reads behind the picture's colours; 0 colours are 65536); without
   colours it returns GetAttr's result, otherwise the buffer's address
@@ -106,6 +104,11 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   behind the four bases: without datatypes.library (the first entry; on
   Kickstart 2.0 or without the file) dos, intuition and graphics
   stayed open, one open count each per run (#602).
+* AttachDataType window,id,&taglist applies the program's tag list (d2)
+  with its second SetAttrsA. The original loaded the id (d1) instead:
+  the tag list had no effect, and the id was read as the address of a
+  tag list (id 0 an empty one; any other id low memory read as tags, an
+  odd one an address error on a 68000) (#596).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h

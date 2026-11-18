@@ -37,9 +37,7 @@
  *
  * BUG(orig):
  *   - AttachDataType window,id,x,y,w,h puts the word arguments into the
- *     tag list as longs (with the upper words the registers have);
- *     AttachDataType window,id,&taglist passes the id as the tag list to
- *     SetAttrsA and ignores the tag list (#597, #596).
+ *     tag list as longs (with the upper words the registers have) (#597).
  *   - DataTypesPalette copies as many colours as the palette has (read
  *     behind the datatype's colours; 0 colours: 65536); without colours
  *     it returns GetAttr's result, otherwise the address of its buffer
@@ -85,6 +83,9 @@
  *     stopped at the first entry 0 of its table: without
  *     datatypes.library (the first) dos, intuition and graphics stayed
  *     open (#602).
+ *   - AttachDataType window,id,&taglist passes the program's tag list
+ *     (d2) to its second SetAttrsA.  The original passed the id (d1) as
+ *     the address of a tag list and ignored the program's (#596).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -656,14 +657,17 @@ BB_BOOL BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
  * @brief AttachDataType window,id,&taglist: attaches the object to a
  * window with a tag list of the program's.
  *
- * BUG(orig) (#596): the id is passed as the tag list of the second
- * SetAttrsA, the program's tag list (d2) is ignored.
+ * SetAttrs (GA_ID, ICA_TARGET ICTARGET_IDCMP, PDTA_Remap 0), SetAttrs
+ * with the program's tag list (fixed, #596: the original passed the id as
+ * the tag list and ignored the program's), then AddDTObject.
  * @param id      d1: the gadget id
+ * @param tags    d2: the program's tag list
  * @param winobj  a0: the window object
  * @return d0: BB_TRUE, BB_FALSE without an open file or if attached
  *         already
  */
-BB_BOOL BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
+BB_BOOL BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), struct TagItem *tags BL_REG(d2),
+                                        ULONG *winobj BL_REG(a0))
 {
     struct TagItem *t = storage->tags;
 
@@ -673,7 +677,7 @@ BB_BOOL BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_RE
     TAG(t, GA_ID, id);
     tailtags(t);
     SetAttrsA(object, storage->tags);
-    SetAttrsA(object, (struct TagItem *)id);
+    SetAttrsA(object, tags);                            /* fixed (#596) */
     return doattach((const ULONG *)attached);
 }
 

@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+object -1
+attached -1
+left 5 top 3
+rc=0
