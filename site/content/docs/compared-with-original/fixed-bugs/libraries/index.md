@@ -44,10 +44,10 @@ before, `BankLimit n` and `FindVolume` return the numbers their manual
 gives instead of an address, `PutIconObject` reports an icon it could
 not write and keeps it open, `SetToolValue` no longer replaces a
 tool type whose name only begins with the name given, `StoreNVData`
-returns True for a stored item instead of 0, `RXRunCommand` returns -1
-for a command it sent instead of a value the system left, and a second
-`DataTypeCreate` or `MakeCommodity` is refused while the first object or
-commodity exists.
+returns True for a stored item instead of 0, `RXRunCommand` and
+`AddAppMenu` return -1 for success instead of a value the system left or
+an address, and a second `DataTypeCreate` or `MakeCommodity` is refused
+while the first object or commodity exists.
 
 The fixes that leave a program doing its job, but change something you
 may notice, such as its sound or the events on a tape, follow in
@@ -925,6 +925,37 @@ command to remove a commodity before the program ends, but `SetCxStatus
 Off` deactivates it.
 
 Issue: [MakeCommodity makes a new broker on every call; the previous one keeps the port that finit deletes (#560)](https://github.com/fubar-coder/bb2-c/issues/560).
+
+### `AddAppMenu` returned an address {#addappmenu-result}
+
+[riapplib]({{< relref "/docs/libraries/userlibs/riapplib" >}}) makes a
+program part of Workbench with App windows, App icons and App menu
+items. `AddAppMenu id,text$` adds an item to the Tools menu of
+Workbench. Like `AddAppWindow` and `AddAppIcon`, it returns -1 when the
+item was added and 0 when not.
+
+**What happened.** The original returned the address of the menu item
+in the system instead of -1. A program that tested the result as a
+truth value worked, but one that compared it with -1, as with the other
+two commands, took every added item for a failure:
+
+```
+If AddAppMenu(0,"My tool")=-1
+  NPrint "added"
+Else
+  NPrint "not added"
+EndIf
+```
+
+With the original this printed `not added` although the item was in
+the Tools menu; with the port it prints `added`.
+
+**What to change.** A program that tested the result with `<>0` or as a
+truth value works as before. One that kept the address to pass it to
+workbench.library itself gets -1 now; the library removes the item with
+`DelAppMenu` and at the end of the program.
+
+Issue: [AddAppMenu returns the AppMenuItem address instead of -1 (#518)](https://github.com/fubar-coder/bb2-c/issues/518).
 
 ## Changes you may notice {#noticeable-changes}
 
@@ -4726,6 +4757,64 @@ of [a second `MakeCommodity`](#makecommodity-second) is described above.
   removed the commodity through it afterwards, which worked only while
   the library stayed in memory
   ([#556](https://github.com/fubar-coder/bb2-c/issues/556)).
+
+### Fixes in riapplib {#riapplib-fixes}
+
+These fixes concern
+[riapplib]({{< relref "/docs/libraries/userlibs/riapplib" >}}), the App
+windows, App icons and App menu items of Workbench by Reflective
+Images. Each of them sends the program a message when the user drops
+files on it or chooses it; `AppEvent` fetches the message, and
+`NextAppFile`, `AppFile` and `AppLock` tell which files it holds. The
+fixes of [the result of `AddAppMenu`](#addappmenu-result), of
+[the text that follows `NextAppFile` and `AppFile`](#rwe-text-after-string-function)
+and of [the local variables after `AddAppIcon`](#rwe-other-fixes) are
+described elsewhere on this page.
+
+* `NextAppFile` and `AppFile` leave Workbench's lock of the file's
+  drawer in the message. The original gave the lock back to the system,
+  so reading the same file again with `AppFile` gave a wrong path, and
+  `AppLock` returned 0
+  ([#521](https://github.com/fubar-coder/bb2-c/issues/521)).
+* `AppFile` with a number of 0 or less returns an empty string. The
+  original made a path of whatever lay in memory in front of the list of
+  files ([#520](https://github.com/fubar-coder/bb2-c/issues/520)).
+* `AppLock` returns 0 for a message without files, such as the one of
+  an App menu item chosen without icons selected. The original returned
+  a value from memory that was no lock
+  ([#522](https://github.com/fubar-coder/bb2-c/issues/522)).
+* `DelAppWindow` of a window that is no App window returns 0, as
+  `DelAppMenu` and `DelAppIcon` do for an id without an object. The
+  original returned -1 and passed an empty App window to the system
+  ([#523](https://github.com/fubar-coder/bb2-c/issues/523)).
+* An `AddAppIcon` that fails on an id in use, after it has removed the
+  old icon, frees the image it loaded for the new one, and nothing of
+  the old icon is left. The original kept both, and `DelAppIcon` or the
+  end of the program removed the old icon a second time
+  ([#517](https://github.com/fubar-coder/bb2-c/issues/517)).
+* At the end of the program the library answers the current message and
+  every message still waiting, so Workbench gets them back. The original
+  answered the waiting ones only if `AppEvent` had fetched a message
+  last ([#525](https://github.com/fubar-coder/bb2-c/issues/525)).
+* An App window, icon or menu item with an odd id that is still there
+  at the end of the program is removed normally. On a 68000 the original
+  crashed the machine there
+  ([#524](https://github.com/fubar-coder/bb2-c/issues/524)).
+* When workbench.library, dos.library or icon.library cannot be opened,
+  the library closes the others again, and `AppMsgPort` returns 0. The
+  original left them open and returned the address of a port it had
+  deleted ([#526](https://github.com/fubar-coder/bb2-c/issues/526)).
+* A program run a second time from the editor starts without an App
+  message. The original started with the last message of the run
+  before: `AppMessage`, `AppEventType` and the other functions read it,
+  and the first `AppEvent` answered it a second time
+  ([#1099](https://github.com/fubar-coder/bb2-c/issues/1099)).
+* With runtime error checking, an id of `AddAppMenu`, `DelAppMenu`,
+  `AddAppIcon` or `DelAppIcon` outside 0 to 15 stops with the runtime
+  error "App id must be 0 to 15", and a window number of `AddAppWindow`
+  or `DelAppWindow` outside 0 to 15 with "App window number must be 0
+  to 15". Without it, such a number overwrites memory, as in the
+  original ([#1097](https://github.com/fubar-coder/bb2-c/issues/1097)).
 
 ### Other fixes {#rwe-other-fixes}
 

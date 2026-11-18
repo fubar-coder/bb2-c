@@ -10,23 +10,22 @@ intro: |
 
   The library needs workbench.library, dos.library and icon.library of
   version 37 or later, so Kickstart 2.04 or later. Without them the
-  commands do nothing and return 0 or an empty string (`AppMsgPort` and
-  `AppEventIDCMP` excepted). All commands but `AppEventIDCMP`
+  commands do nothing and return 0 or an empty string
+  (`AppEventIDCMP` excepted). All commands but `AppEventIDCMP`
   work in Amiga mode only.
 
   Every App object has an id from 0 to 15, one set of 16 for each kind;
-  for an App window the id is the number of its window. The ids are not
-  checked: a larger one overwrites memory. Adding an object with an id
-  that is in use removes the old one first.
+  for an App window the id is the number of its window. With runtime
+  error checking, an id outside 0 to 15 stops the program with the
+  runtime error "App id must be 0 to 15", a window number outside it
+  with "App window number must be 0 to 15"; without it, such a number
+  overwrites memory. Adding an object with an id that is in use removes
+  the old one first.
 
   `AppEvent` fetches the next message; `AppEventType`, `AppEventID`,
   `AppNumFiles`, `NextAppFile` and `AppFile` then tell what happened.
-  The library removes the objects that are left when the program ends.
-
-  Kept from the original: on a 68000, an App window, icon or menu item
-  with an odd id that is still there when the program ends crashes the
-  machine; remove them with the `Del` commands before the end
-  ([#524](https://github.com/fubar-coder/bb2-c/issues/524)).
+  The library removes the objects that are left when the program ends,
+  and answers the messages that are still waiting.
 
   An App icon that prints the files dropped on it:
 
@@ -42,5 +41,8 @@ intro: |
   Until Joyb(0)
   DelAppIcon 0
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in riapplib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riapplib-fixes" >}}).
 
   *Based on the RI App Library guide by Reflective Images (Red When Excited).*

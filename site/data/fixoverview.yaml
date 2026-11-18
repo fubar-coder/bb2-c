@@ -4628,6 +4628,94 @@ rows:
     text: "`WaitCommodity` takes the next message from the port; the original lost one waiting message and left the one it returned waiting, so it came again."
     page: libraries
     anchor: ricommoditieslib-fixes
+  - issue: 518
+    severity: 1
+    topic: "System"
+    library: "riapplib"
+    command: "AddAppMenu"
+    text: "`AddAppMenu` returns -1 on success, as `AddAppWindow` and `AddAppIcon` do; the original returned the address of the menu item, so a test for -1 failed."
+    page: libraries
+    anchor: addappmenu-result
+  - issue: 517
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "AddAppIcon, DelAppIcon"
+    text: "An `AddAppIcon` that fails on an id in use leaves no trace of the old icon and frees the new icon's image; the original removed the old icon a second time later."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 520
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "AppFile"
+    text: "`AppFile` with a number of 0 or less returns an empty string; the original read the memory in front of the list of files."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 521
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "NextAppFile, AppFile, AppLock"
+    text: "`NextAppFile` and `AppFile` leave Workbench's lock of the file's drawer alone; the original gave it back, so the same file read again had a wrong path."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 522
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "AppLock"
+    text: "`AppLock` returns 0 for a message without files; the original returned a value from memory that was no lock."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 523
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "DelAppWindow"
+    text: "`DelAppWindow` of a window that is no App window returns 0; the original returned -1 and passed an empty App window to the system."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 524
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: ""
+    text: "An App object with an odd id left at the end of the program is removed normally on a 68000; the original crashed the machine."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 525
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "AppEvent"
+    text: "At the end of the program all App messages still waiting are answered; the original answered them only if `AppEvent` had fetched a message last."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 526
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "AppMsgPort"
+    text: "When a library it needs is missing, the App library closes the others again and `AppMsgPort` returns 0; the original left them open and returned a deleted port."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 1097
+    severity: 3
+    topic: "System"
+    library: "riapplib"
+    command: "AddAppWindow, DelAppWindow, AddAppMenu, DelAppMenu, AddAppIcon, DelAppIcon"
+    text: "With runtime error checking, an App id or window number outside 0 to 15 stops with \"App id must be 0 to 15\" or \"App window number must be 0 to 15\"; the original overwrote memory."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 1099
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "AppEvent, AppMessage, AppEventType, AppEventID"
+    text: "A program run again from the editor starts without an App message; the original started with the last message of the run before and answered it a second time."
+    page: libraries
+    anchor: riapplib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
