@@ -25,9 +25,11 @@
  * words below 8: almost 4 GB); AddrListItem, FirstListItem, LastListItem,
  * DelListItem on empty lists; InitList (also again on a list that has
  * one: the old one is not freed); AddListItem at the end and in the
- * middle (BUG(orig) #735: the stale size; the prev of the node behind,
- * not set in the original, set in the C build: fixed #727);
- * SetListItem (the old copy not freed, the size field unchanged);
+ * middle (the prev of the node behind, not set in the original, set in
+ * the C build: fixed #727; the size field, the last size in the
+ * original, 0 in the C build: fixed #735); SetListItem (the old copy not
+ * freed; the size field, unchanged in the original, the copy's in the C
+ * build: fixed #735);
  * GetListItem (with and without data, a variable larger than the copy);
  * NextListItem/PrevListItem over the list and past its ends;
  * AddLastListItem; AddFirstListItem (the new node in the old first's
@@ -343,7 +345,7 @@ int main(int argc, char **argv)
     call("NextListItem", NEXTLISTITEM, 0, -1, 0);
     call("DelListItem", DELLISTITEM, 0, -1, 0);
     ADDR(0);
-    call("AddListItem", ADDLISTITEM, 0, -1, 0);         /* the size of the last */
+    call("AddListItem", ADDLISTITEM, 0, -1, 0);         /* the last size in the original (fixed #735) */
     call("DelListItem", DELLISTITEM, 0, -1, 0);         /* no data */
     /* A -> C now (B deleted, D reachable from nothing); X behind C, then
        A deleted at the start (the original: C's next cleared, X lost; fixed

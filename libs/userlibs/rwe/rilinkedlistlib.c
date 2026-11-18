@@ -34,17 +34,13 @@
  *   - The size: a word of less than 8 in front of the variable gives a
  *     size of almost 4 GB (the allocation fails), exactly 8 a size of 0,
  *     which CopyByte takes as 2^32 bytes (#736).
- *   - AddListItem's new node gets as its size field the size of the last
- *     variable any command looked at (or of the last node DelListItem
- *     deleted), its data 0 (#735).
  *   - SetListItem gives the node a new copy without freeing the old one
- *     and without setting its size field (#734, #735); GetListItem copies
- *     as many bytes as the variable has, not as the node's data has (#730).
+ *     (#734); GetListItem copies as many bytes as the variable has, not
+ *     as the node's data has (#730).
  *   - DelListItem still reads the nodes of v0.9 (no pad): data is the
  *     long at offset 8 (the pad word and the upper word of the data
  *     pointer), size the long at 14; so it frees a wrong address (memlib:
- *     "Unable to Free Memory") and the data is lost (#729).  It sets the
- *     size of the last variable to that of the node (#735).
+ *     "Unable to Free Memory") and the data is lost (#729).
  *
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
@@ -62,6 +58,11 @@
  *   - DelListItem of the first node clears the prev of the node behind it,
  *     the new first node (the original cleared its next, the place of
  *     prev in v0.9: the list ended there) (#728).
+ *   - A node's size field is the size of its data: 0 for the new node of
+ *     AddListItem (the original stored the size of the last variable any
+ *     command looked at, or of the node DelListItem last read), the size
+ *     of the new copy after SetListItem (the original left the field as
+ *     it was) (#735).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -328,10 +329,11 @@ BB_BOOL BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
  * @brief AddListItem list#: a new empty node behind the current one, then the current one.
  *
  * BUG(orig): the current node is not checked (an empty list reads and
- * writes from address 0 on) (#733), list# neither (#732); the new node's
- * size field is the last size any command looked at, its data 0 (#735).
- * Fixed (#727): the prev of the node behind the new one is the new node
- * (the original left it pointing to the current one).
+ * writes from address 0 on) (#733), list# neither (#732).  Fixed (#727):
+ * the prev of the node behind the new one is the new node (the original
+ * left it pointing to the current one).  Fixed (#735): the new node's
+ * data and size are 0 (the original's size field was the last size any
+ * command looked at).
  * @param list  d0: list# (0-4)
  * @return d0: BB_TRUE, BB_FALSE if there is no memory
  */
@@ -360,15 +362,16 @@ BB_BOOL BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
     NODE(node)->prev = cur;
     NODE(node)->pad = 0;
     NODE(node)->data = 0;
-    NODE(node)->size = _size;           /* BUG(orig): the last size (#735) */
+    NODE(node)->size = 0;               /* fixed (#735): was the last size */
     return BB_TRUE;
 }
 
 /**
  * @brief SetListItem list#,var: a new copy of var for the current node.
  *
- * BUG(orig): the old copy is not freed (#734), the size field not set
- * (#735); the current node is not checked (#733).
+ * BUG(orig): the old copy is not freed (#734); the current node is not
+ * checked (#733).  Fixed (#735): the size field is the new copy's size
+ * (the original left it as it was).
  * @param list  d0: list# (0-4)
  * @param var   d1: the variable (BL_VARPTR)
  * @return d0: BB_TRUE, BB_FALSE if there is no memory
@@ -381,8 +384,9 @@ BB_BOOL BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     mem = globalloc(getvarsize(var));
     if (!mem)
         return BB_FALSE;
-    /* BUG(orig): the old copy is not freed, the size not set (#734, #735) */
+    /* BUG(orig): the old copy is not freed (#734) */
     NODE(TAB(current))->data = mem;
+    NODE(TAB(current))->size = _size;   /* fixed (#735): was not set */
     copybyte(myvar, mem, _size);
     return BB_TRUE;
 }
@@ -522,8 +526,9 @@ BB_BOOL BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
  *
  * BUG(orig) (#729): reads the node of v0.9 (struct node09): data is the
  * long at +8, size the long at +14, so it frees a wrong address (memlib:
- * "Unable to Free Memory") and the data is lost; it sets the last size
- * to that of the node (#735).  Fixed (#728): deleting the first node
+ * "Unable to Free Memory") and the data is lost.  It sets the last size
+ * to that of the node, which no node takes over since #735 (AddListItem
+ * stores 0).  Fixed (#728): deleting the first node
  * clears the prev of the node behind it (the original cleared its next:
  * the list ended there).  The only node is not deleted: 0 (no defect).
  * @param list  d0: list# (0-4)

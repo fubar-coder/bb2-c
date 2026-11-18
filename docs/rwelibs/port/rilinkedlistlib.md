@@ -27,8 +27,8 @@ destination, d2 bytes: `BLITZ_ALIBJSR_D4`) through ALibJsr. The four
 tables of five longs (first, last, an unused `_sizes`, current) are one
 array in the original order, indexed by list# * 4 as in the original.
 The state the original keeps in its code (`_size`, `listnum`, ...) is
-kept in statics; `_size` matters: AddListItem uses the size the last
-command left. Every entry is a thunk that keeps d1/a0/a1 (the original
+kept in statics (no node takes over the size the last command left in
+`_size`, #735). Every entry is a thunk that keeps d1/a0/a1 (the original
 changes d1, d2, a0, a1, InitList also a2).
 
 **Fixed:** intended deviations from the original
@@ -63,6 +63,14 @@ changes d1, d2, a0, a1, InitList also a2).
   v0.9 had prev): the list ended at the new first node, whose prev still
   pointed to the freed node (#728; test `rilinkedlistlib-dellistitem-first`,
   `libs_emulator` cases `[fixed #728]` of `rwe_rilinkedlistlib`).
+* A node's size field (offset 14) is the size of its data: 0 for the
+  new node of AddListItem and AddLastListItem, the size of the new copy
+  after SetListItem. The original stored in AddListItem's node the size
+  of the last variable any command looked at (InitList, SetListItem,
+  GetListItem, SizeOfListItem) or of the node DelListItem last read, and
+  SetListItem left the field as it was (#735; test
+  `rilinkedlistlib-size-field`, `libs_emulator` cases `[fixed #735]` of
+  `rwe_rilinkedlistlib`).
 
 **BUG(orig)** (kept):
 
@@ -74,12 +82,8 @@ changes d1, d2, a0, a1, InitList also a2).
 * A size word below 8 in front of the variable gives a size of almost
   4 GB (the allocation fails); exactly 8 gives 0, which CopyByte takes
   as 2^32 bytes (#736).
-* AddListItem's new node gets as its size field the size of the last
-  variable a command looked at (or of the last node DelListItem read)
-  (#735).
-* SetListItem does not free the old copy and does not set the size
-  field (#734, #735); GetListItem copies as many bytes as the variable
-  has, not as the copy has (#730).
+* SetListItem does not free the old copy (#734); GetListItem copies as
+  many bytes as the variable has, not as the copy has (#730).
 * DelListItem still reads the v0.9 node (without pad): its data is the
   long at offset 8 (the pad word and the upper word of the data
   pointer), its size the long at 14. So it frees a wrong address (with
