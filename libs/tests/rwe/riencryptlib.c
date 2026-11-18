@@ -11,7 +11,8 @@
  * lengths 0 (#630, fixed: the original processes one byte), 1, 7, 300 and
  * 700 with wheel values
  * that carry into wheel 2 and 3, Decrypt mode 1 with a length whose byte
- * addition overflows (BUG(orig) (#629)); buffer with guards, wheels, registers.
+ * addition overflows (#629, fixed: the original leaves the data wrong);
+ * buffer with guards, wheels, registers.
  * Encrypt without wheels takes them from vallib's Rnd, which is hardware
  * noise without a seed (libs/acidlibs/vallib.c, genrnd).  So vallib is not
  * loaded: its Rnd token is a stub (sysload_stubs) that answers a fixed

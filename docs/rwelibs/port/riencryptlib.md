@@ -37,14 +37,13 @@ kind F):
   memadr-1, in front of the block), and so did a length of 2^31 and
   above. Such a length now does nothing; the wheels GetWheel returns stay
   as they were (#630).
-
-## BUG(orig)
-
-* Decrypt mode 1 adds the length's bytes 0..2 to the wheels separately,
+* Decrypt mode 1 added the length's bytes 0..2 to the wheels separately,
   without the carries between them: whenever wheel 1 + the low byte of the
-  length overflows (or wheel 2 + the next byte), the end state is one step
-  off and the data is not decrypted correctly. The help text documents
-  `mode` without saying what it does (#629).
+  length overflowed (or wheel 2 + the next byte), the end state was one
+  step off and the data was not decrypted. The length is added to the
+  wheels as the 24-bit number wheel3:wheel2:wheel1, the odometer Encrypt
+  counts (#629). The help text documents Decrypt with five arguments;
+  `mode` is only in the declaration.
 
 Not a defect (kept): `ALibJsr Rnd` calls the first form of `Rnd`
 (without a range, Quick 0..1): the ranges 256, 65535 and -1 that Encrypt
@@ -59,7 +58,7 @@ data `libs/tests/expected/rwe_riencryptlib.txt` recorded from the
 original. Every form: Encrypt with wheels, Decrypt with five and six
 arguments (mode 0, 1, $101, 2), GetWheel 0..4, $101 and a long with upper
 bits; lengths 0 (`[orig]`/`[fixed #630]` pairs), 1, 5, 7, 300, 700
-with wheels that carry into wheel 2 and 3 and a mode 1 case that overflows; buffer with guards, d0, wheels,
+with wheels that carry into wheel 2 and 3 and mode 1 cases that overflow (`[orig]`/`[fixed #629]` pairs); buffer with guards, d0, wheels,
 kept registers. Encrypt without wheels takes its wheels from vallib's
 `Rnd`, which is hardware noise without a seed; vallib is not loaded and
 its `Rnd` is a stub (`sysload_stubs`) that answers a fixed sequence, so

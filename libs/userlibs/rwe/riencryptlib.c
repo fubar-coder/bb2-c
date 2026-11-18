@@ -12,15 +12,17 @@
  * w2 + 1, on that carry w3 + 1); Decrypt goes backwards from the end and
  * steps the wheels back after each byte.  The last wheel state is kept
  * for GetWheel.  Encrypt without wheels takes random start values (Rnd of
- * vallib).  Decrypt with mode = 1 first adds the bytes 0..2 of the length
- * to the wheels, to get from the start state to the state Encrypt left.
+ * vallib).  Decrypt with mode = 1 first adds the length to the wheels (as
+ * the 24-bit number w3:w2:w1), to get from the start state to the state
+ * Encrypt left.
  *
  * No assembler besides the thunks.
  *
- * BUG(orig): Decrypt mode 1 adds the length's bytes to the wheels without
- * the carries between them: if w1 + (length & $FF) overflows (or w2 + the
- * next byte), the state is one step off in w2 (w3) and the data is not
- * decrypted correctly (#629).
+ * Fixed (#629): Decrypt mode 1 added the length's bytes to the wheels
+ * without the carries between them: if w1 + (length & $FF) overflowed (or
+ * w2 + the next byte), the state was one step off in w2 (w3) and the data
+ * was not decrypted correctly; the length is added to the wheels as one
+ * 24-bit number.
  * Fixed (#630): the loops counted with SUBQ.l #1 before a BPL loop whose
  * first pass is unconditional, so a length of 0 (or one above 2^31)
  * processed one byte, Decrypt the one at memadr-1; such a length now
@@ -191,9 +193,11 @@ static ULONG BLITZ_ROUTINE decrypt_c(UBYTE *base BL_REG(d0), ULONG len BL_REG(d1
  * @brief Decrypt memadr,length,wheel1,wheel2,wheel3,mode: as above; mode 1
  * starts from the wheels Encrypt started with.
  *
- * Mode 1 (the low byte, CMPI.b) adds the length's bytes 0..2 to the
- * wheels first.  BUG(orig) (#629): each without the carry into the next
- * wheel, so the state can be one step off.
+ * Mode 1 (the low byte, CMPI.b) adds the length to the wheels first, as
+ * the 24-bit number w3:w2:w1 the odometer of Encrypt counts (Fixed
+ * (#629): the original added the length's bytes 0..2 to the wheels each
+ * without the carry into the next one, so the state could be one step
+ * off).
  * @param p       d0: memadr
  * @param len     d1: length
  * @param wheel1  d2: wheel 1
@@ -207,10 +211,12 @@ static ULONG BLITZ_ROUTINE decrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
                                      UWORD wheel2 BL_REG(d3),
                                      UWORD wheel3 BL_REG(d4), UWORD mode BL_REG(d5))
 {
-    if ((UBYTE)mode == 1) {
-        wheel1 += len & 0xff;
-        wheel2 += (len >> 8) & 0xff;
-        wheel3 += (len >> 16) & 0xff;
+    if ((UBYTE)mode == 1) {                         /* Fixed (#629): with the carries */
+        ULONG w = ((ULONG)(UBYTE)wheel3 << 16 | (ULONG)(UBYTE)wheel2 << 8 | (UBYTE)wheel1) + len;
+
+        wheel1 = (UBYTE)w;
+        wheel2 = (UBYTE)(w >> 8);
+        wheel3 = (UBYTE)(w >> 16);
     }
     return decrypt_c(p, len, wheel1, wheel2, wheel3);
 }
