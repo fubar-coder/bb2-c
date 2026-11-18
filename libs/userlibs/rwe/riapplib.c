@@ -44,8 +44,7 @@
  *     UnLock - Workbench's own lock) and clear it in the message, unless
  *     the path ends with ':'.  The ':' test reads the byte before the
  *     string if NameFromLock gives an empty path (#521).  AppFile(n)
- *     with n <= 0 reads the WBArg before the list (#520); AppLock reads
- *     the first WBArg without looking at am_NumArgs (#522).
+ *     with n <= 0 reads the WBArg before the list (#520).
  *   - finit replies to the messages queued at the port only if a message
  *     is current (the last AppEvent) - the flag `msgportflag` for the
  *     other case is never set; otherwise they stay unreplied when the
@@ -57,6 +56,8 @@
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
+ * Fixed (intended deviation, #522): AppLock read the first WBArg without
+ * looking at am_NumArgs; a message without arguments now has lock 0.
  * Fixed (intended deviation, #519): NextAppFile/AppFile copied the file
  * name with its 0 and left a3 behind the 0, so a string expression went
  * on one byte too far; a3 now ends on the 0.
@@ -365,12 +366,13 @@ BLITZ_THUNK(appmessage, appmessage_c, "d1/a0-a1");
 /**
  * @brief AppLock: the lock of the current message's first argument.
  *
- * BUG(orig) (#522): reads the first WBArg without looking at am_NumArgs.
- * @return d0: the lock, 0 if there is no message
+ * Fixed (#522): a message without arguments has no lock (the original
+ * read the first WBArg without looking at am_NumArgs).
+ * @return d0: the lock, 0 if there is no message or it has no arguments
  */
 static ULONG BLITZ_ROUTINE applock_c(void)
 {
-    if (!libflag || !msg)
+    if (!libflag || !msg || numargs <= 0)       /* fixed (#522) */
         return 0;
     return (ULONG)msg->am_ArgList->wa_Lock;
 }

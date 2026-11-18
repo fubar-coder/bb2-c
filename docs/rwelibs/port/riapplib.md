@@ -70,6 +70,10 @@ kind F):
   `AddAppIcon`; the original returned the AppMenuItem address (the
   `MOVEQ #-1,d0` behind the `RTS` was never reached), so a test with
   `=-1` failed although the item was added (#518).
+* `AppLock` returns 0 for a message without arguments (an App menu item
+  chosen without icons); the original read the first WBArg without
+  looking at `am_NumArgs` and returned whatever `am_ArgList` pointed at
+  (#522).
 
 ## BUG(orig), kept
 
@@ -90,7 +94,6 @@ kind F):
   same argument then has lock 0. The `:` test reads the byte before the
   string if the path is empty (#521). `AppFile(n)` with n ≤ 0 reads the
   WBArg before the list (#520).
-* `AppLock` reads the first WBArg without looking at `am_NumArgs` (#522).
 * finit replies to the messages still queued at the port only if a
   message is current (the last `AppEvent`); the flag `msgportflag` for the
   other case is never set. Otherwise they stay unreplied when the port is

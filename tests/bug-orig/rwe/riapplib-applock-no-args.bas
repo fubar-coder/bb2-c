@@ -4,6 +4,7 @@
 ; without icons) into the library's AppMsgPort; am_ArgList points to a
 ; long with a marker.
 ; Correct: a message without arguments has no lock, AppLock returns 0.
+; @fixed #522
 ; @rwe riapplib
 DEFTYPE .l
 m=AllocMem_(128,$10001)
