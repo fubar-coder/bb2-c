@@ -76,16 +76,17 @@
  *     (maxslib FreeSt; at finit the name is left to maxslib, which frees
  *     its strings at the end of the program); the original freed neither
  *     (#530).
+ *   - A reply to a message sent without waiting is looked up in the sent
+ *     list and freed with its argument strings and its entry; the list
+ *     holds 31 messages, RXRunCommand returns 0 when it is full.  The
+ *     original's _finditem always returned 0: such replies were freed
+ *     with FreeVec only and stayed in the list, which overflowed the
+ *     block after 32 messages (#531).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
  *     _rxruncommand overwrites it: both send RXCOMM|RXFF_STRING (the
  *     script name as a string program), without a result (#544).
- *   - Replies to messages sent without waiting are found in the sent
- *     list by _finditem, which always returns 0: they are freed with
- *     FreeVec only (their argument strings stay allocated) and stay in
- *     the sent list, which grows by one per message and overflows the
- *     block after 32 (#531).
  *   - The result string of a reply is copied (AllocSt, never freed); the
  *     reply's own string is never deleted (#546); Result2 is taken as a
  *     string also when Result1 is not 0 (#545).
@@ -509,6 +510,37 @@ static void addtolist(ULONG *l, ULONG item)
     l[-1] = item;
 }
 
+/* the sent list: d0 into its first 0 long, the last one stays the end;
+   BB_FALSE if it is full or there is none - fixed (#531): the original
+   added without a limit (_addtolist) */
+static BB_BOOL addsent(ULONG item)
+{
+    int n;
+
+    if (!v.sentlist)
+        return BB_FALSE;
+    for (n = 0; n < 31; n++)
+        if (!v.sentlist[n]) {
+            v.sentlist[n] = item;
+            return BB_TRUE;
+        }
+    return BB_FALSE;
+}
+
+/* _finditem: the slot of `item` in the sent list, or NULL - fixed
+   (#531): the original fell from the found case into 'notfound */
+static ULONG *findsent(ULONG item)
+{
+    ULONG *l;
+
+    if (!v.sentlist)
+        return NULL;
+    for (l = v.sentlist; *l; l++)
+        if (*l == item)
+            return l;
+    return NULL;
+}
+
 /* _deleteitem: remove the long at a0, the rest moves up */
 static void deleteitem(ULONG *item)
 {
@@ -605,8 +637,11 @@ static struct RexxMsg *makemsg(void)
     m->rm_Action = msgtype;
     if (v.replyreq)
         v.waitreply = (ULONG)v.thismsg;
-    else
-        addtolist(v.sentlist, (ULONG)m);
+    else if (!addsent((ULONG)m)) {      /* fixed (#531): the list is full */
+        FreeVec(m);
+        v.thismsg = NULL;
+        return NULL;
+    }
     return m;
 }
 
@@ -718,9 +753,9 @@ static ULONG runcommand(const UBYTE *port, ULONG cmd)
  * @brief RXRunCommand portname$,command$: send a command to a port, no
  * reply awaited.
  *
- * The message (RXCOMM|RXFF_STRING) goes into the sent list.  BUG(orig):
- * the replies are freed without their arguments and stay in the sent
- * list (#531).
+ * The message (RXCOMM|RXFF_STRING) goes into the sent list (31 at most:
+ * when it is full nothing is sent, 0); its reply is freed with its
+ * arguments and its entry (fixed #531).
  * @param port  d0: portname$
  * @param cmd   d1: command$
  * @return d0: 0 if the port is not found or there is no message; else
@@ -857,15 +892,21 @@ static void handlereply(void)
 {
     struct RexxMsg *m = v.thismsg;
 
-    /* _finditem in the sent list: BUG(orig) its result is always 0 (the
-       found case falls into 'notfound), so nothing follows from it (#531) */
+    ULONG *item;
+
+    /* fixed (#531): a reply found in the sent list is freed with its
+       arguments and its entry; the original's _finditem always returned 0 */
+    if ((item = findsent((ULONG)m)) != NULL) {
+        freemsg(item);
+        return;
+    }
     if (v.waitreply && v.waitreply == (ULONG)m) {
         v.waitreply = 0;
         storeresult(m);
         freemsg(NULL);
         return;
     }
-    FreeVec(m);                         /* 'skip: the arguments stay */
+    FreeVec(m);                         /* 'skip: in neither (as the original) */
 }
 
 /* donereadport: the first message of the list becomes current */

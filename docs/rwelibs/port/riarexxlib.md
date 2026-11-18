@@ -141,6 +141,14 @@ kind F):
   neither: the block (exec memory, not Blitz's) was lost for good at
   every RXCreatePort/RXDeletePort pair and at the end of the program,
   the name until the end of the program (#530).
+* **Replies to messages sent without waiting** (RXRunCommand,
+  RXExecuteScript, RXRunScript) are looked up in the sent list and freed
+  with their argument strings and their entry. The list holds 31
+  messages; when it is full nothing is sent and the result is 0. The
+  original's `_finditem` fell from the found case into `'notfound` and
+  always returned 0, so these replies were only FreeVec'd: their argument
+  strings stayed allocated, and the message stayed in the sent list,
+  which grew with every message and overflowed the block after 32 (#531).
 
 ## BUG(orig), kept
 
@@ -148,11 +156,6 @@ kind F):
   `_rxruncommand` overwrites. Both send RXCOMM|RXFF_STRING without
   RXFF_RESULT: the script name is run as a string program, tokenised
   (#544).
-* **Replies to messages sent without waiting.** `_finditem` falls from
-  the found case into `'notfound` and always returns 0. So these replies
-  are only FreeVec'd: their argument strings stay allocated, and the
-  message stays in the sent list, which grows with every RXRunCommand
-  and overflows the block after 32 (#531).
 * **The reply of RXSendCommand:**
   * its Result2 is copied with AllocSt and never freed (#546);
   * the reply's own argument string is never deleted (#546);
