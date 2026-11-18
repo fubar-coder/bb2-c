@@ -182,6 +182,10 @@ kind F):
   error code and the result is "". The original read it as the address
   of a string also then: after a failing ARexx program (error 6,
   "unterminated comment") it returned the bytes from address 6 on (#545).
+* **RXSendCommand** copies the reply's result string to a3 and deletes
+  it (rexxsyslib DeleteArgString, the sender's duty). The original copied
+  it with AllocSt, never freed the copy and never deleted the reply's
+  string: two strings lost per call (#546).
 
 ## BUG(orig), kept
 
@@ -189,9 +193,6 @@ kind F):
   `_rxruncommand` overwrites. Both send RXCOMM|RXFF_STRING without
   RXFF_RESULT: the script name is run as a string program, tokenised
   (#544).
-* **The reply of RXSendCommand:**
-  * its Result2 is copied with AllocSt and never freed (#546);
-  * the reply's own argument string is never deleted (#546).
 * **RXReturnCode** returns 0 while no message is current, e.g. right
   after an RXSendCommand that found the list empty (#542).
 

@@ -9,6 +9,7 @@
 ; leak is about 400000 bytes).
 ; RexxMast is not started in the sessions: the program starts it
 ; (SYS:System/RexxMast, which writes nothing) and waits for its port.
+; @fixed #546
 ; @rwe riarexxlib
 DEFTYPE .l
 r$="REXX"

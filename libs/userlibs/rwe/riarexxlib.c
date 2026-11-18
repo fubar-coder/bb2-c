@@ -106,13 +106,14 @@
  *   - The reply of RXSendCommand has a result string only with Result1
  *     0; with an error Result2 is a secondary code, the result "" (the
  *     original read it as the address of a string) (#545).
+ *   - RXSendCommand copies the reply's result string to a3 and deletes
+ *     it (DeleteArgString); the original copied it with AllocSt, never
+ *     freed the copy and never deleted the reply's string (#546).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
  *     _rxruncommand overwrites it: both send RXCOMM|RXFF_STRING (the
  *     script name as a string program), without a result (#544).
- *   - The result string of a reply is copied (AllocSt, never freed); the
- *     reply's own string is never deleted (#546).
  *   - RXReturnCode is 0 while no message is current (#542).
  */
 #include "blitzlib.h"
@@ -712,7 +713,11 @@ static ULONG sendmsg(void)
     oktodelete = 0;
     if (!v.returnstring)
         return 0;
-    return tostring(v.returnstring);
+    /* an empty string as none, as the original's AllocSt of length 0 */
+    result = *v.returnstring ? tostring(v.returnstring) : 0;
+    deleteargstring((ULONG)v.returnstring);     /* fixed (#546) */
+    v.returnstring = NULL;
+    return result;
 }
 
 static ULONG sendmessage(void)
@@ -848,8 +853,9 @@ BLITZ_THUNK(_rxsendcommand2, rxsendcommand2_c, "d1/a0-a1");
  * waits, received messages go to the message list.  The reply's Result1
  * is RXReturnCode; its Result2 is the result string only with Result1 0
  * (fixed #545: the original read it as a string also with an error).
- * BUG(orig): the result string is copied (AllocSt, never freed), the
- * reply's own string never deleted (#546).
+ * The result string is copied to a3 and the reply's string deleted
+ * (fixed #546: the original copied it with AllocSt, never freed the copy
+ * and never deleted the string).
  * @param port  d0: portname$
  * @param cmd   d1: command$
  * @param args  a2: the argument stack, -4/-8(a2) the two lengths
@@ -880,17 +886,15 @@ static void freemsg(ULONG *item)
 
 static void storeresult(struct RexxMsg *m)
 {
-    ULONG s, n;
+    ULONG s;
 
     v.returncode = m->rm_Result1;
     /* fixed (#545): with Result1 not 0, Result2 is a secondary error
        code, not a string; the original read it as one */
     s = m->rm_Result1 ? 0 : m->rm_Result2;
-    if (s) {
-        for (n = 0; ((UBYTE *)s)[n]; n++)
-            ;
-        s = allocst(s, n);
-    }
+    /* fixed (#546): the reply's string itself, copied to a3 and deleted
+       by sendmsg; the original copied it with AllocSt, never freed the
+       copy and never deleted the string */
     v.returnstring = (UBYTE *)s;
 }
 
