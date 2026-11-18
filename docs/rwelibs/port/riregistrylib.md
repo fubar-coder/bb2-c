@@ -95,14 +95,20 @@ kind F):
   without registry.library every call takes that path: when the word at
   18 was 1, the string at the address in the long at 24 was copied
   (#780; test `riregistrylib-getstring-address0`).
+* UnlockRegistry does nothing without a pushed lock. The original went
+  below the stack, into the end of its token table: first the libfin's
+  `Dc.l 0` (no structure), then `$0000FFFF`, which the next
+  UnlockRegistry "unlocked" (a0 = $FFFF) and overwrote with 0. Without
+  registry.library, which exists nowhere, LockRegistry pushes nothing,
+  so every LockRegistry/UnlockRegistry pair went one entry lower, and
+  the call went through a base of 0: a crash after a few pairs (#781,
+  the lower limit; test `riregistrylib-unlock-below-stack`,
+  `libs_emulator` cases `[fixed #781]` of `rwe_riregistrylib`).
 
 ## BUG(orig), kept
 
-* **The structure stack has no limits.** LockRegistry beyond 15 levels
-  writes over curstruct and regstruct. UnlockRegistry without a lock
-  goes below the stack, into the end of the token table: first the
-  libfin's `Dc.l 0` (no structure), then `$0000FFFF`, which the next
-  UnlockRegistry "unlocks" (a0 = $FFFF) and overwrites with 0 (#781).
+* **The structure stack has no upper limit.** LockRegistry beyond 15
+  levels writes over curstruct and regstruct (#781).
 * **SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable**
   pass the caller's d2 as the size (#782).
 
@@ -115,8 +121,6 @@ LockRegistry and UnlockRegistry balanced.
 * **NewRegistryLibrary and InsertNewRegistryLibrary restore a3/a4**
   after the call. The original leaves the file name in a3 and the
   "insert before" name in a4: the program's string pointer and locals.
-* **Further below the stack** (a third UnlockRegistry without a lock and
-  more) the C build reads other memory than the original's token table.
 * **a2 stays unchanged** in the string functions (the original takes
   the argument's length from it), as in all C ports.
 
@@ -156,13 +160,13 @@ Covered:
     structure below;
   * finit with three locks (unlocked from the top);
   * after finit and a new init: no stale structure (the original's,
-    fixed #779), UnlockRegistry below the stack (the libfin's 0, then
-    `$0000FFFF` unlocked).
+    fixed #779), three UnlockRegistry without a lock (nothing; the
+    original goes below the stack to the libfin's 0, then unlocks
+    `$0000FFFF`, fixed #781).
 
 Not covered:
 
 * more than 15 locks (curstruct and regstruct get the high word of a
   structure's address);
-* a fourth UnlockRegistry below the stack (DIFF);
 * a structure while registry.library is missing (the call goes to the
   address of the LVO).

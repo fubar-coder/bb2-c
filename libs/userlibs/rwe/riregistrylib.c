@@ -45,11 +45,8 @@
  * that keeps to the interface above does not see a difference).
  *
  * BUG(orig), kept:
- *   - The structure stack has no limits: LockRegistry beyond 15 levels
- *     writes over curstruct and regstruct behind it; UnlockRegistry
- *     without a lock goes below it - into the end of the token table
- *     (the libfin's Dc.l 0, then $0000FFFF: unlocked again, that is
- *     "unlocked" with a0 = $FFFF and written over with 0) (#781).
+ *   - The structure stack has no upper limit: LockRegistry beyond 15
+ *     levels writes over curstruct and regstruct behind it (#781).
  *   - SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable
  *     pass the caller's d2 as the size (#782).
  * Fixed (intended deviations):
@@ -63,6 +60,13 @@
  *   - GetLibraryValue$/GetRegistryStringVariable without a structure read
  *     the type and value at 18/24 of address 0 (CallLibrary's 0 did not
  *     stop them); they now return "" as ParseItemValue$ does (#780).
+ *   - UnlockRegistry without a pushed lock went below the stack, into
+ *     the end of the token table (the libfin's Dc.l 0, then $0000FFFF:
+ *     "unlocked" with a0 = $FFFF through a base of 0 without the
+ *     library, a crash); and without registry.library every
+ *     LockRegistry/UnlockRegistry pair did so, as LockRegistry pushes
+ *     nothing then.  It now does nothing without a pushed lock (#781,
+ *     the lower limit).
  * LockRegistry stores the result also when it is 0 (the following calls
  * then do nothing, but UnlockRegistry still pops it): no defect, it keeps
  * LockRegistry and UnlockRegistry balanced.
@@ -71,9 +75,6 @@
  *     after the call (the original leaves the file name in a3 and the
  *     "insert before" name in a4 - the program's string pointer and
  *     locals).
- *   - Below the stack, the C build has the two longs of the original
- *     ($0000FFFF, 0); further below (a third UnlockRegistry without a
- *     lock and more) it reads other memory than the original's table.
  *   - a2 stays unchanged by the string functions (the original takes
  *     the argument's length from it), as in all C ports.
  */
@@ -386,17 +387,13 @@ static_assert(offsetof(struct regstructure, data) == 24);
 #define VAR_INTEGER 4
 
 /* structs, curstruct, regstruct, regbase in the original's order (a
-   stack overflow runs into curstruct and regstruct), with the two longs
-   in front of structs that the original has there (the end of its token
-   table: !libfin's $FFFF and Dc.l 0, behind the long 0 of the last
-   entry), for UnlockRegistry without a lock */
+   stack overflow runs into curstruct and regstruct) */
 static struct BL_PACKED {
-    ULONG table[2];
     ULONG structs[16];
     UWORD curstruct;
     ULONG regstruct;
     struct Library *regbase;
-} st = { .table = { 0x0000ffff, 0 } };
+} st;
 
 /* structs(pc) + curstruct (a word index) */
 #define SLOT() (*(ULONG *)((UBYTE *)st.structs + (WORD)st.curstruct))
@@ -570,11 +567,13 @@ static ULONG BLITZ_ROUTINE lockregistry_c(ULONG mode BL_REG(d0))
  *
  * UnlockRegistry (-36) on the current structure (nothing without one),
  * then the stack slot is cleared and the structure below becomes current.
- * BUG(orig) (#781): also without a lock - it goes below the stack (the end
- * of the token table, DIFF further below).
+ * Nothing without a pushed lock (fixed, #781: the original goes below the
+ * stack, into the end of its token table).
  */
 static void BLITZ_ROUTINE unlockregistry_c(void)
 {
+    if ((WORD)st.curstruct <= 0)
+        return;
     CALL(LVO_UnlockRegistry, 0, 0, 0, 0, 0);
     st.regstruct = 0;
     SLOT() = st.regstruct;

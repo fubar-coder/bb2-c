@@ -32,12 +32,10 @@
  * with three locks (unlocked from the top); after finit the structure
  * the original leaves current (fixed #779) and UnlockRegistry below the
  * stack: the libfin's
- * 0, then $0000FFFF unlocked (BUG(orig), #781).
+ * 0, then $0000FFFF unlocked (the original; fixed #781: nothing).
  * Not covered: more than 15 locks (BUG(orig) #781: writes over curstruct and
- * regstruct with the high word of a structure address) and a fourth
- * UnlockRegistry below the stack (the original reads its token table
- * there, DIFF); a structure while registry.library is missing (the call
- * goes to address LVO).
+ * regstruct with the high word of a structure address); a structure
+ * while registry.library is missing (the call goes to address LVO).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
