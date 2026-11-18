@@ -98,6 +98,9 @@ kind F):
   code) returns -1 when the message was sent, 0 when not, as the manual
   says of the older generation's RXSendMsg. The original returned
   whatever d0 PutMsg leaves (#543).
+* **RXNextArg** advances past every argument it returns, an empty one
+  too (the argument slot is not 0). The original tested the length, so
+  at an empty argument it returned "" for ever (#534).
 
 ## BUG(orig), kept
 
@@ -137,8 +140,6 @@ kind F):
     character there is skipped (`"g"h` gives `g`) (#538, #535);
   * an empty word (`""`, `''`) ends the arguments (#536);
   * the 16 rm_Args slots are not checked (#527).
-* **RXNextArg** does not advance after an empty argument (it returns ""
-  again) (#534).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

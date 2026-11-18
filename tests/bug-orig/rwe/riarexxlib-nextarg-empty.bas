@@ -6,6 +6,7 @@
 ; tokenizer cannot make an empty argument), then calls RXNextArg three
 ; times.
 ; Correct: a, "", c.
+; @fixed #534
 ; @rwe riarexxlib
 DEFTYPE .l
 p=RXCreatePort("BUGORIG")

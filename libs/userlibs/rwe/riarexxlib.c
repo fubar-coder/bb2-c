@@ -48,6 +48,8 @@
  *   - RXTokenise stores and tests the word of its argument (the original
  *     stored the whole register: "off" with a set upper word stayed on)
  *     (#547).
+ *   - RXNextArg advances past every argument it returns, an empty one too
+ *     (the original tested the length and returned "" for ever) (#534).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -78,7 +80,6 @@
  *     character, any other character there is skipped (#538, #535); an
  *     empty word ("") ends the arguments (#536); there is no limit of 16
  *     arguments (rm_Args) (#527).
- *   - RXNextArg does not advance after an empty argument (#534).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -984,7 +985,8 @@ BLITZ_THUNK(_rxgetarg, rxgetarg_c, "d1/a0-a1");
  * @brief RXNextArg: the next argument of the current message (from 1 on,
  * as RXGetArg).
  *
- * BUG(orig) (#534): it does not advance after an empty argument.
+ * Fixed (#534): it advances when the argument slot is not 0; the
+ * original tested the length, so at an empty argument it stayed.
  * @param argnum  d0: no argument; MOVE.w currentarg,d0 keeps its upper
  *                word
  * @return d0: the length of the argument (at a3); 0 at the end
@@ -995,8 +997,9 @@ static ULONG BLITZ_ROUTINE rxnextarg_c(ULONG argnum BL_REG(d0))
 
     BL_SETW(argnum, v.currentarg);
     arg = getarg(argnum);
-    if (arg)
-        v.currentarg++;
+    if (v.currentmessage && v.currentarg >= 1 && v.currentarg <= 16
+        && v.currentmessage->rm_Args[v.currentarg - 1])
+        v.currentarg++;                 /* fixed (#534): the slot, not the length */
     return arg;
 }
 BLITZ_THUNK(_rxnextarg, rxnextarg_c, "d1/a0-a1");
