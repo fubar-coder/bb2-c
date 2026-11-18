@@ -9,15 +9,21 @@
 ; through the rows of the plane) stays inside its planes.  Spaces draw
 ; nothing (JAM1); the "xxx" (characters 1023-1025) lands in bytes 23-25
 ; of the plane rows 25-32, x 184-207.  The program prints the highest
-; pen it finds there.
-; Correct: the string is cut to the buffer (1023 characters, all
-; spaces): nothing is drawn, pen 0.
+; pen it finds there ("long"), then prints "xxx" at 0,0 and prints the
+; highest pen of x 0-23, y 0-9 ("next").
+; Correct: the long string is printed whole, in pieces, from its start
+; at 0,0: its "xxx" in pen 1 at the same place; the pens stay, the next
+; text is drawn in pen 1 too.
+; @fixed #698
 ; @rwe riintuilib
 BitMap 0,320,256,8
 Cls 0
 IPBitMap 0,0
+Use Rast 0
 IPOutput 0
 Print String$(" ",1023)+"xxx"
+IPLocate 0,0
+Print "xxx"
 DefaultOutput
 p=0
 For y=22 To 36
@@ -25,5 +31,12 @@ For y=22 To 36
     If Point(x,y)>p Then p=Point(x,y)
   Next
 Next
-NPrint "pen ",p
+NPrint "long ",p
+p=0
+For y=0 To 9
+  For x=0 To 23
+    If Point(x,y)>p Then p=Point(x,y)
+  Next
+Next
+NPrint "next ",p
 End

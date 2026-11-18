@@ -25,9 +25,11 @@
  * the pens of IPColour, at the position of IPLocate and after the
  * previous output (fixed #697: the original prints every text at 0,0);
  * finit.
- * Not covered: a0/d0 strings over 1024 characters (BUG(orig) (#698): they
- * overwrite the pens; the text would be drawn far beyond the BitMap,
- * which a RastPort without a layer does not clip).
+ * Not covered: a0/d0 strings over 1024 characters (fixed #698: printed
+ * in pieces, the original's overwrite the pens; such a text is drawn far
+ * beyond this BitMap, which a RastPort without a layer does not clip:
+ * the bug-orig test riintuilib-output-buffer-overflow has a bitmap for
+ * it).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

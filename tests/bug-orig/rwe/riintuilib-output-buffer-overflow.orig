@@ -4,7 +4,8 @@ done
 [compile]
 ok
 [run]
-pen 1
+long 1
+next 120
 rc=0
 [blitz2]
 rc=0

@@ -40,10 +40,9 @@
  *     NPrint's line feed drew the byte at address 10.  A line feed now
  *     moves to the start of the next line, any other character is
  *     printed as itself (#699).
- *
- * BUG(orig), kept:
- *   - The a0/d0 handler copies d0 (a word) bytes without a limit into the
- *     1024 byte buffer (the pens follow it) (#698).
+ *   - The a0/d0 handler copied d0 (a word) bytes without a limit into the
+ *     1024 byte buffer (the pens follow it); it prints the string whole
+ *     now, in pieces of at most 1023 characters (#698).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -118,8 +117,8 @@ BLITZ_LIBFIN();
 static struct Library *intuibase, *gfxbase;
 static struct RastPort *usedrast;
 
-/* myintuitext, cbuf, apen, bpen in the original's order: an a0/d0 string
-   over 1024 bytes runs into the pens */
+/* myintuitext, cbuf, apen, bpen in the original's order (the original's
+   overlong a0/d0 string ran into the pens, #698) */
 static struct BL_PACKED {
     struct IntuiText it;                /* ia, ib, ijam.w, ix, iy, ifnt, itxt, 0 */
     UBYTE cbuf[1024];
@@ -219,8 +218,7 @@ static void BLITZ_ROUTINE ipcolour_c(ULONG fg BL_REG(d0), struct RastPort *rp BL
 }
 
 /* the pens of IPColour into the IntuiText: every handler takes them first,
-   before it copies a string (so #698's overflow changes only the pens of
-   the next text) */
+   before it copies a string, as the original */
 static void setpens(void)
 {
     pr.it.FrontPen = (UBYTE)pr.apen;
@@ -288,24 +286,37 @@ static void BLITZ_ROUTINE ipprint0_c(UBYTE *s BL_REG(a0))
 /**
  * @brief The output handler, entry -4: d0 characters at a0.
  *
- * Copied to cbuf with a 0, then printed.  BUG(orig) (#698): no limit -
- * more than 1024 characters run into the pens behind the buffer (they
- * change the pens of the next text only).
+ * Copied to cbuf with a 0, then printed, in pieces of at most 1023
+ * characters (each piece after the previous one).  As PrintIText, the
+ * text ends at a 0 among the characters.  Fixed (#698): the original
+ * copied all d0 characters into the 1024 byte buffer without a limit -
+ * from 1024 characters on they ran into the pens behind it (the pens of
+ * the next text) and on into the library.
  * @param n  d0: the number of characters (a word)
  * @param s  a0: the characters
  */
 static void BLITZ_ROUTINE ipprint1_c(UWORD n BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
-    UBYTE *d = pr.cbuf;
-
     setpens();
-    pr.it.IText = d;
-    while (n) {
-        *d++ = *s++;
-        n--;
-    }
-    *d = 0;
-    doipprint();
+    pr.it.IText = pr.cbuf;
+    do {
+        UBYTE *d = pr.cbuf;
+        UWORD k = n < sizeof pr.cbuf - 1 ? n : sizeof pr.cbuf - 1;
+        UBYTE end = 0;
+
+        n -= k;
+        while (k) {
+            if (!(*d++ = *s++)) {
+                end = 1;
+                break;
+            }
+            k--;
+        }
+        *d = 0;
+        doipprint();
+        if (end)
+            break;
+    } while (n);
 }
 
 /**

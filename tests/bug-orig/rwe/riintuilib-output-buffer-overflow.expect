@@ -1,5 +1,6 @@
 [compile]
 ok
 [run]
-pen 0
+long 1
+next 1
 rc=0

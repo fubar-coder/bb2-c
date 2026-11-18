@@ -17,8 +17,8 @@
     background, with its top left corner at the drawing position of the
     Rast (`IPLocate`); the position then moves on to the end of the text.
     The line feed of `NPrint` moves it to the start of the next line.
-    Kept from the original: a text longer than 1024 characters
-    overwrites the pens, which then change for the next text
-    ([#698](https://github.com/fubar-coder/bb2-c/issues/698)).
+    A text of any length is drawn whole. The Rast does not clip: a text
+    that runs past the right edge of the bitmap goes on in the following
+    rows and, past the last one, into the memory behind the bitmap.
 "Rast":
   text: The object of this library, a RastPort that draws on a bitmap, set up with `IPBitMap`; `Use Rast` makes one the Rast in use.

@@ -25,7 +25,9 @@ LSL 7+4`) with the handler ipprint:
 
 * −8: a null terminated string at a0 (printed directly);
 * −4: d0 (a word) characters at a0, copied to a 1024 byte buffer with
-  a 0;
+  a 0, in pieces of at most 1023 characters, each printed after the
+  previous one (a 0 among the characters ends the text, as PrintIText
+  does);
 * 0: one character (the low byte of d0), copied to the buffer; a line
   feed (10, the only single character printlib sends: NPrint's) is not
   printed but moves the position to the start of the next line (x 0,
@@ -48,12 +50,11 @@ entries, then the init/finit nullsubs and a plain `!libfin`.
 
 All C behind thunks that keep d0/d1/a0/a1. The handler's two `BRA.w`
 in front of its entry are a short assembler block (as in fontlib).
-IntuiText, buffer and pens lie one after the other as in the original,
-so that an overlong string runs into the pens the same way. Every
-handler puts the pens into the IntuiText first, before it copies a
-string, as the original: the overlong string itself is still drawn with
-the old pens, only the next text with the overwritten ones (#935, the
-bug-orig test of #698).
+IntuiText, buffer and pens lie one after the other as in the original.
+Every handler puts the pens into the IntuiText first, before it copies
+a string, as the original (in the original an overlong string itself is
+still drawn with the old pens, only the next text with the ones it
+overwrote: #935, #698).
 
 ## Fixed original bugs
 
@@ -75,11 +76,11 @@ Intended deviations (`docs/libs/deviations.md`, section 3a, kind F):
   address d0 (`MOVE.l d0,a0:MOVE.b (a0)+,(a1)`), i.e. from low memory:
   every NPrint drew the byte at address 10 (user decision W3 Q3 (a),
   #699).
-
-## BUG(orig), kept
-
-* **The a0/d0 handler** copies without a limit into the 1024 byte
-  buffer; the pens follow it (#698).
+* **The a0/d0 handler** prints a string of 1024 characters and more
+  whole, in pieces of 1023. The original copied it without a limit into
+  the 1024 byte buffer: it overwrote the pens behind it (the pens of the
+  next text) and, from 1028 characters on, the library behind them (user
+  decision W3 Q3 (a), #698).
 
 ## Test
 
@@ -113,6 +114,7 @@ Covered:
   of IPColour, after IPLocate and after the previous output (#697);
 * finit.
 
-Not covered: a0/d0 strings over 1024 characters (they overwrite the
-pens, and the text would be drawn far beyond the BitMap, which a
-RastPort without a layer does not clip).
+Not covered: a0/d0 strings over 1024 characters (such a text is drawn
+far beyond this BitMap, which a RastPort without a layer does not clip;
+the bug-orig test `riintuilib-output-buffer-overflow` prints one on a
+bitmap large enough, #698).
