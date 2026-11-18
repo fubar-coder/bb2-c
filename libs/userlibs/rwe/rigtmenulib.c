@@ -30,9 +30,6 @@
  * moving a2 (DIFF: the original pops them, docs/libs/cmdlibs-port.md
  * "General").  No assembler.
  *
- * BUG(orig), kept:
- *   - GTMenuState/GTSetMenuChecked change the flags of the menu strip
- *     directly, also while it is attached to a window (#693).
  * Fixed (intended deviations):
  *   - GTMenuItem with UserData (form 4) takes its mutual exclude (from
  *     -12(a2), the pushed 7th argument); the original jumps past MOVE.l
@@ -62,7 +59,14 @@
  * (count + 1) * 20 bytes, is only larger than needed); freemenu calls
  * FreeMenus with the gadtools base unchecked (a menu strip exists only
  * if it was open); GTMenuChecked returns -1/0 in the low word, the upper
- * word of d0 stays (a word result).
+ * word of d0 stays (a word result).  GTMenuState and GTSetMenuChecked
+ * change the flags of the menu strip (BSET/BCLR), also while it is
+ * attached to a window, and not in the lists, so a strip made again by
+ * CreateMenuStrip has the lists' flags: documented so (RIGTMenuLib.guide:
+ * the state commands need CreateMenuStrip or GTSetMenu first, a change of
+ * the lists shows only after CreateMenuStrip again; the library follows
+ * the Acid library, whose menuslib changes its strip the same way); not
+ * a defect (#693, user decision W3 Q2).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -1056,8 +1060,8 @@ static void changestate(struct Menu *m, UWORD on, UBYTE bit)
  * @brief GTMenuState GTMenuList#,On|Off: enable or disable every menu of
  * the strip (MENUENABLED).
  *
- * BUG(orig) (#693): the flags are changed directly, also while the strip
- * is attached to a window.
+ * The flags are changed directly, also while the strip is attached to a
+ * window, as documented (no defect, #693).
  * @param on   d1.w: 0 off, else on
  * @param obj  a3: the GTMenuList object (0x1380: #ia3)
  */
@@ -1077,7 +1081,7 @@ BLITZ_THUNK(rigtmenulib_domenustate, domenustate_c, "d0-d1/a0-a1");
  * (MENUENABLED).
  *
  * The menu is not checked (a missing one reads address 0; error check
- * statechk2: "Illegal Menu number").  BUG(orig) (#693) as above.
+ * statechk2: "Illegal Menu number").  Directly, as above (#693).
  * @param menu  d1.w: the menu
  * @param on    d2.w: 0 off, else on
  * @param obj   a3: the GTMenuList object
@@ -1093,7 +1097,7 @@ BLITZ_THUNK(rigtmenulib_domenustate2, domenustate2_c, "d0-d1/a0-a1");
  * @brief GTMenuState GTMenuList#,menu,item,On|Off: enable or disable an
  * item (ITEMENABLED, bit 4 of the low byte of Flags).
  *
- * Not checked (error check statechk3); BUG(orig) (#693) as above.
+ * Not checked (error check statechk3); directly, as above (#693).
  * @param menu    d1.w: the menu
  * @param itemno  d2.w: the item
  * @param on      d3.w: 0 off, else on
@@ -1110,7 +1114,7 @@ BLITZ_THUNK(rigtmenulib_domenustate3, domenustate3_c, "d0-d1/a0-a1");
  * @brief GTMenuState GTMenuList#,menu,item,subitem,On|Off: enable or
  * disable a sub item (ITEMENABLED).
  *
- * Not checked (error check statechk4); BUG(orig) (#693) as above.
+ * Not checked (error check statechk4); directly, as above (#693).
  * @param menu    d1.w: the menu
  * @param itemno  d2.w: the item
  * @param subno   d3.w: the sub item
@@ -1181,7 +1185,7 @@ static void setchecked(struct MenuItem *mi, UWORD on)
  * @brief GTSetMenuChecked GTMenuList#,Menu,Item,Off|On: check or uncheck
  * an item of the strip (CHECKED).
  *
- * Not checked (error check chkchk3).  BUG(orig) (#693): directly, also
+ * Not checked (error check chkchk3).  Directly (no defect, #693), also
  * while the strip is attached to a window.
  * @param menu    d1.w: the menu
  * @param itemno  d2.w: the item
@@ -1199,7 +1203,7 @@ BLITZ_THUNK(setmenuchecked, setmenuchecked_c, "d0-d1/a0-a1");
  * @brief GTSetMenuChecked GTMenuList#,Menu,Item,Subitem,Off|On: check or
  * uncheck a sub item.
  *
- * Not checked (error check chkchk4).  BUG(orig) (#693) as above.
+ * Not checked (error check chkchk4).  Directly, as above (#693).
  * @param menu    d1.w: the menu
  * @param itemno  d2.w: the item
  * @param subno   d3.w: the sub item

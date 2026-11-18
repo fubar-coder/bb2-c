@@ -119,11 +119,23 @@ Intended deviations from the original:
   `libs_emulator` cases `[fixed #694]` of `rwe_rigtmenulib`: a string at
   such an address).
 
-## BUG(orig), kept
+## No defects
 
 * **GTMenuState and GTSetMenuChecked** change the flags of the strip
-  directly, also while it is attached to a window; a strip made again
-  loses them (#693).
+  (`BSET`/`BCLR` on MENUENABLED, ITEMENABLED, CHECKED), also while it is
+  attached to a window, and not in the lists: a strip made again by
+  CreateMenuStrip has the flags of the lists. That is how the library is
+  documented (RIGTMenuLib.guide in
+  `archive/aminet/ab2.42-distri/Amiblitz2/REDHelp/REDBlitzLibs`:
+  GTMenuChecked "you must have called either CreateMenuStrip or
+  GTSetMenu before you use this command", GTSetMenuChecked "The same
+  rules apply"; GTFreeMenu "This change will not be reflected in the
+  actual menulist created by CreateMenuStrip until you recall
+  CreateMenuStrip"), and it follows the Acid library
+  ("designed so that the only major differences between them are the
+  slight command name changes"), whose menuslib changes the flags of its
+  strip the same way (`libs/acidlibs/menuslib.c`). Kept as it is (#693;
+  user decision W3 Q2).
 
 Like the original, and no defects: GTMenuTitle allocates the title
 uncleared (MEMF_PUBLIC; all its fields are written); the count at +8
