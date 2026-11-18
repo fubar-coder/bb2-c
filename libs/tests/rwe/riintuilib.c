@@ -19,9 +19,9 @@
  * (fixed #696: SetBPen on the Rast, the original's on the caller's a2)
  * and negative bgpen, IPOutput
  * and all three entries of its handler through inputoutputlib's
- * dooutsingle/dooutstring1/dooutstring2: a character (BUG(orig) (#699): read
- * from the address d0 - a string's address and the low memory address
- * 65), a0/d0 strings (also length 0), a null terminated string, with
+ * dooutsingle/dooutstring1/dooutstring2: a character ("Q", 65, and the
+ * line feed 10 of NPrint, then a text in the next line; fixed #699: the
+ * original reads the byte at the address d0), a0/d0 strings (also length 0), a null terminated string, with
  * the pens of IPColour, at the position of IPLocate and after the
  * previous output (fixed #697: the original prints every text at 0,0);
  * finit.
@@ -142,7 +142,6 @@ static void out(int idx, const char *what, ULONG d0, const char *d0txt, const ch
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, IO, NULL };
-    static const char q[] = "Q";
     ULONG avail;
 
     if (argc < 2) {
@@ -204,7 +203,7 @@ int main(int argc, char **argv)
     out(IO_OUTSTRING2, "empty string", MARK(0), NULL, "", 0);
     out(IO_OUTSTRING1, "a0/d0", WA(5), NULL, "Blitz Basic", 1);
     out(IO_OUTSTRING1, "a0/d0 0", WA(0), NULL, "nothing", 0);
-    out(IO_OUTSINGLE, "character", (ULONG)q, "&\"Q\"", NULL, 1);  /* BUG(orig) (#699): (d0) */
+    out(IO_OUTSINGLE, "character", 'Q', NULL, NULL, 1);    /* fixed #699: d0 itself */
     out(IO_OUTSINGLE, "character 65", 65, NULL, NULL, -1);
     colour(1, WA(1), WA(2));
     out(IO_OUTSTRING2, "pens 1/2", MARK(0), NULL, "Pens", 1);
@@ -213,6 +212,8 @@ int main(int argc, char **argv)
     locate(WA(100), WA(10));            /* fixed #697: the top left corner */
     out(IO_OUTSTRING2, "after IPLocate", MARK(0), NULL, "0,0", 1);
     out(IO_OUTSTRING1, "next", WA(4), NULL, "next", 1);  /* fixed #697: after it */
+    out(IO_OUTSINGLE, "line feed", 10, NULL, NULL, -1);  /* NPrint's; fixed #699 */
+    out(IO_OUTSTRING1, "line 2", WA(6), NULL, "line 2", 1);
 
     ROUT = "finit";
     strcpy(VEC, "");

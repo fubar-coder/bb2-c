@@ -76,7 +76,7 @@ IPColour|plane|form 0 $5A000003,$5A011234|2	bytes 1280 fnv 09D6A1C5
 IPColour|plane|form 0 $5A00FFFF,$5A011234|1	bytes 1280 fnv 09D6A1C5
 IPColour|plane|form 0 $5A00FFFF,$5A011234|2	bytes 1280 fnv 09D6A1C5
 IPColour|plane|form 1 $5A000001,$5A000002|1 [orig]	bytes 1280 fnv EF171639
-IPColour|plane|form 1 $5A000001,$5A000002|1 [fixed #697]	bytes 1280 fnv B65C7909
+IPColour|plane|form 1 $5A000001,$5A000002|1 [fixed #697]	bytes 1280 fnv 91471381
 IPColour|plane|form 1 $5A000001,$5A000002|2	bytes 1280 fnv 09D6A1C5
 IPColour|plane|form 1 $5A000001,$5A00FFFF|1	bytes 1280 fnv 09D6A1C5
 IPColour|plane|form 1 $5A000001,$5A00FFFF|2	bytes 1280 fnv 09D6A1C5
@@ -166,10 +166,12 @@ output|Rast|a0/d0 d0 $5A000005 "Blitz Basic"|1 [fixed #696]	bytes 128 fnv CB4650
 output|Rast|after IPLocate d0 $5A001234 "0,0"|1	bytes 128 fnv D60F2E16
 output|Rast|character 65 d0 $00000041 ""|1 [orig]	bytes 128 fnv 3C35566B
 output|Rast|character 65 d0 $00000041 ""|1 [fixed #696]	bytes 128 fnv CB465089
-output|Rast|character d0 &"Q" ""|1 [orig]	bytes 128 fnv 3C35566B
-output|Rast|character d0 &"Q" ""|1 [fixed #696]	bytes 128 fnv CB465089
+output|Rast|character d0 $00000051 ""|1 [orig]	bytes 128 fnv 3C35566B
+output|Rast|character d0 $00000051 ""|1 [fixed #696]	bytes 128 fnv CB465089
 output|Rast|empty string d0 $5A001234 ""|1 [orig]	bytes 128 fnv 3C35566B
 output|Rast|empty string d0 $5A001234 ""|1 [fixed #696]	bytes 128 fnv CB465089
+output|Rast|line 2 d0 $5A000006 "line 2"|1	bytes 128 fnv D60F2E16
+output|Rast|line feed d0 $0000000A ""|1	bytes 128 fnv D60F2E16
 output|Rast|next d0 $5A000004 "next"|1	bytes 128 fnv D60F2E16
 output|Rast|pen 3 d0 $5A000004 "Pen 3!"|1	bytes 128 fnv D60F2E16
 output|Rast|pens 1/2 d0 $5A001234 "Pens"|1	bytes 128 fnv 495E7354
@@ -179,8 +181,10 @@ output|Rast's BitMap|a0/d0 0 d0 $5A000000 "nothing"|1	$00000001
 output|Rast's BitMap|a0/d0 d0 $5A000005 "Blitz Basic"|1	$00000001
 output|Rast's BitMap|after IPLocate d0 $5A001234 "0,0"|1	$00000001
 output|Rast's BitMap|character 65 d0 $00000041 ""|1	$00000001
-output|Rast's BitMap|character d0 &"Q" ""|1	$00000001
+output|Rast's BitMap|character d0 $00000051 ""|1	$00000001
 output|Rast's BitMap|empty string d0 $5A001234 ""|1	$00000001
+output|Rast's BitMap|line 2 d0 $5A000006 "line 2"|1	$00000001
+output|Rast's BitMap|line feed d0 $0000000A ""|1	$00000001
 output|Rast's BitMap|next d0 $5A000004 "next"|1	$00000001
 output|Rast's BitMap|pen 3 d0 $5A000004 "Pen 3!"|1	$00000001
 output|Rast's BitMap|pens 1/2 d0 $5A001234 "Pens"|1	$00000001
@@ -193,10 +197,14 @@ output|a2 area|after IPLocate d0 $5A001234 "0,0"|1 [orig]	bytes 128 fnv 239FEE1E
 output|a2 area|after IPLocate d0 $5A001234 "0,0"|1 [fixed #696]	bytes 128 fnv A7B537C5
 output|a2 area|character 65 d0 $00000041 ""|1 [orig]	bytes 128 fnv 239FEE1E
 output|a2 area|character 65 d0 $00000041 ""|1 [fixed #696]	bytes 128 fnv A7B537C5
-output|a2 area|character d0 &"Q" ""|1 [orig]	bytes 128 fnv 239FEE1E
-output|a2 area|character d0 &"Q" ""|1 [fixed #696]	bytes 128 fnv A7B537C5
+output|a2 area|character d0 $00000051 ""|1 [orig]	bytes 128 fnv 239FEE1E
+output|a2 area|character d0 $00000051 ""|1 [fixed #696]	bytes 128 fnv A7B537C5
 output|a2 area|empty string d0 $5A001234 ""|1 [orig]	bytes 128 fnv 239FEE1E
 output|a2 area|empty string d0 $5A001234 ""|1 [fixed #696]	bytes 128 fnv A7B537C5
+output|a2 area|line 2 d0 $5A000006 "line 2"|1 [orig]	bytes 128 fnv 239FEE1E
+output|a2 area|line 2 d0 $5A000006 "line 2"|1 [fixed #696]	bytes 128 fnv A7B537C5
+output|a2 area|line feed d0 $0000000A ""|1 [orig]	bytes 128 fnv 239FEE1E
+output|a2 area|line feed d0 $0000000A ""|1 [fixed #696]	bytes 128 fnv A7B537C5
 output|a2 area|next d0 $5A000004 "next"|1 [orig]	bytes 128 fnv 239FEE1E
 output|a2 area|next d0 $5A000004 "next"|1 [fixed #696]	bytes 128 fnv A7B537C5
 output|a2 area|pen 3 d0 $5A000004 "Pen 3!"|1 [orig]	bytes 128 fnv 239FEE1E
@@ -209,8 +217,10 @@ output|kept|a0/d0 0 d0 $5A000000 "nothing"|1	kept
 output|kept|a0/d0 d0 $5A000005 "Blitz Basic"|1	kept
 output|kept|after IPLocate d0 $5A001234 "0,0"|1	kept
 output|kept|character 65 d0 $00000041 ""|1	kept
-output|kept|character d0 &"Q" ""|1	kept
+output|kept|character d0 $00000051 ""|1	kept
 output|kept|empty string d0 $5A001234 ""|1	kept
+output|kept|line 2 d0 $5A000006 "line 2"|1	kept
+output|kept|line feed d0 $0000000A ""|1	kept
 output|kept|next d0 $5A000004 "next"|1	kept
 output|kept|pen 3 d0 $5A000004 "Pen 3!"|1	kept
 output|kept|pens 1/2 d0 $5A001234 "Pens"|1	kept
@@ -225,10 +235,13 @@ output|pen x|after IPLocate d0 $5A001234 "0,0"|1 [orig]	$00000018
 output|pen x|after IPLocate d0 $5A001234 "0,0"|1 [fixed #697]	$0000007C
 output|pen x|character 65 d0 $00000041 ""|1 [orig]	$00000008
 output|pen x|character 65 d0 $00000041 ""|1 [fixed #697]	$00000098
-output|pen x|character d0 &"Q" ""|1 [orig]	$00000008
-output|pen x|character d0 &"Q" ""|1 [fixed #697]	$00000090
+output|pen x|character d0 $00000051 ""|1 [orig]	$00000008
+output|pen x|character d0 $00000051 ""|1 [fixed #699]	$00000090
 output|pen x|empty string d0 $5A001234 ""|1 [orig]	$00000000
 output|pen x|empty string d0 $5A001234 ""|1 [fixed #697]	$00000060
+output|pen x|line 2 d0 $5A000006 "line 2"|1	$00000030
+output|pen x|line feed d0 $0000000A ""|1 [orig]	$00000008
+output|pen x|line feed d0 $0000000A ""|1 [fixed #699]	$00000000
 output|pen x|next d0 $5A000004 "next"|1 [orig]	$00000020
 output|pen x|next d0 $5A000004 "next"|1 [fixed #697]	$0000009C
 output|pen x|pen 3 d0 $5A000004 "Pen 3!"|1 [orig]	$00000020
@@ -244,10 +257,14 @@ output|pen y|after IPLocate d0 $5A001234 "0,0"|1 [orig]	$00000006
 output|pen y|after IPLocate d0 $5A001234 "0,0"|1 [fixed #697]	$0000000A
 output|pen y|character 65 d0 $00000041 ""|1 [orig]	$00000006
 output|pen y|character 65 d0 $00000041 ""|1 [fixed #697]	$00000000
-output|pen y|character d0 &"Q" ""|1 [orig]	$00000006
-output|pen y|character d0 &"Q" ""|1 [fixed #697]	$00000000
+output|pen y|character d0 $00000051 ""|1 [orig]	$00000006
+output|pen y|character d0 $00000051 ""|1 [fixed #699]	$00000000
 output|pen y|empty string d0 $5A001234 ""|1 [orig]	$00000006
 output|pen y|empty string d0 $5A001234 ""|1 [fixed #697]	$00000000
+output|pen y|line 2 d0 $5A000006 "line 2"|1 [orig]	$00000006
+output|pen y|line 2 d0 $5A000006 "line 2"|1 [fixed #699]	$00000012
+output|pen y|line feed d0 $0000000A ""|1 [orig]	$00000006
+output|pen y|line feed d0 $0000000A ""|1 [fixed #699]	$00000012
 output|pen y|next d0 $5A000004 "next"|1 [orig]	$00000006
 output|pen y|next d0 $5A000004 "next"|1 [fixed #697]	$0000000A
 output|pen y|pen 3 d0 $5A000004 "Pen 3!"|1 [orig]	$00000006
@@ -266,13 +283,21 @@ output|plane|after IPLocate d0 $5A001234 "0,0"|1 [fixed #697]	bytes 1280 fnv D3F
 output|plane|after IPLocate d0 $5A001234 "0,0"|2 [orig]	bytes 1280 fnv FBED9375
 output|plane|after IPLocate d0 $5A001234 "0,0"|2 [fixed #697]	bytes 1280 fnv D3FFD440
 output|plane|character 65 d0 $00000041 ""|1 [orig]	bytes 1280 fnv EF171639
-output|plane|character 65 d0 $00000041 ""|1 [fixed #697]	bytes 1280 fnv B65C7909
+output|plane|character 65 d0 $00000041 ""|1 [fixed #697]	bytes 1280 fnv 91471381
 output|plane|character 65 d0 $00000041 ""|2	bytes 1280 fnv 09D6A1C5
-output|plane|character d0 &"Q" ""|1 [orig]	bytes 1280 fnv CC10081F
-output|plane|character d0 &"Q" ""|1 [fixed #697]	bytes 1280 fnv 0EB46EC7
-output|plane|character d0 &"Q" ""|2	bytes 1280 fnv 09D6A1C5
+output|plane|character d0 $00000051 ""|1 [orig]	bytes 1280 fnv EF171639
+output|plane|character d0 $00000051 ""|1 [fixed #699]	bytes 1280 fnv 0EB46EC7
+output|plane|character d0 $00000051 ""|2	bytes 1280 fnv 09D6A1C5
 output|plane|empty string d0 $5A001234 ""|1	bytes 1280 fnv 09D6A1C5
 output|plane|empty string d0 $5A001234 ""|2	bytes 1280 fnv 09D6A1C5
+output|plane|line 2 d0 $5A000006 "line 2"|1 [orig]	bytes 1280 fnv 3F169DE7
+output|plane|line 2 d0 $5A000006 "line 2"|1 [fixed #699]	bytes 1280 fnv 86F70E67
+output|plane|line 2 d0 $5A000006 "line 2"|2 [orig]	bytes 1280 fnv 3F169DE7
+output|plane|line 2 d0 $5A000006 "line 2"|2 [fixed #699]	bytes 1280 fnv 86F70E67
+output|plane|line feed d0 $0000000A ""|1 [orig]	bytes 1280 fnv 91B4F9C5
+output|plane|line feed d0 $0000000A ""|1 [fixed #699]	bytes 1280 fnv 09D6A1C5
+output|plane|line feed d0 $0000000A ""|2 [orig]	bytes 1280 fnv 91B4F9C5
+output|plane|line feed d0 $0000000A ""|2 [fixed #699]	bytes 1280 fnv 09D6A1C5
 output|plane|next d0 $5A000004 "next"|1 [orig]	bytes 1280 fnv FB6EE949
 output|plane|next d0 $5A000004 "next"|1 [fixed #697]	bytes 1280 fnv FF56AE03
 output|plane|next d0 $5A000004 "next"|2 [orig]	bytes 1280 fnv FB6EE949
@@ -290,15 +315,18 @@ output|popped|a0/d0 0 d0 $5A000000 "nothing"|1	$00000000
 output|popped|a0/d0 d0 $5A000005 "Blitz Basic"|1	$00000000
 output|popped|after IPLocate d0 $5A001234 "0,0"|1	$00000000
 output|popped|character 65 d0 $00000041 ""|1	$00000000
-output|popped|character d0 &"Q" ""|1	$00000000
+output|popped|character d0 $00000051 ""|1	$00000000
 output|popped|empty string d0 $5A001234 ""|1	$00000000
+output|popped|line 2 d0 $5A000006 "line 2"|1	$00000000
+output|popped|line feed d0 $0000000A ""|1	$00000000
 output|popped|next d0 $5A000004 "next"|1	$00000000
 output|popped|pen 3 d0 $5A000004 "Pen 3!"|1	$00000000
 output|popped|pens 1/2 d0 $5A001234 "Pens"|1	$00000000
 output|popped|string d0 $5A001234 "Hello, World"|1	$00000000
 output|text drawn|a0/d0 d0 $5A000005 "Blitz Basic"|1	$00000001
 output|text drawn|after IPLocate d0 $5A001234 "0,0"|1	$00000001
-output|text drawn|character d0 &"Q" ""|1	$00000001
+output|text drawn|character d0 $00000051 ""|1	$00000001
+output|text drawn|line 2 d0 $5A000006 "line 2"|1	$00000001
 output|text drawn|next d0 $5A000004 "next"|1	$00000001
 output|text drawn|pen 3 d0 $5A000004 "Pen 3!"|1	$00000001
 output|text drawn|pens 1/2 d0 $5A001234 "Pens"|1	$00000001

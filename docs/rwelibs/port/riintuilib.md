@@ -26,7 +26,10 @@ LSL 7+4`) with the handler ipprint:
 * −8: a null terminated string at a0 (printed directly);
 * −4: d0 (a word) characters at a0, copied to a 1024 byte buffer with
   a 0;
-* 0: one character, copied to the buffer.
+* 0: one character (the low byte of d0), copied to the buffer; a line
+  feed (10, the only single character printlib sends: NPrint's) is not
+  printed but moves the position to the start of the next line (x 0,
+  y + the Rast's text height).
 
 The text is printed by PrintIText with the library's IntuiText:
 FrontPen and BackPen are the low bytes of the pens of the last IPColour
@@ -67,12 +70,14 @@ Intended deviations (`docs/libs/deviations.md`, section 3a, kind F):
   library's first version (`riintuilib.bb`: IPPrint's x,y and IPLocate
   in the IntuiText's LeftEdge/TopEdge) took the position as the top left
   corner of the text, as the fix does (user decision W3 Q3 (a), #697).
+* **The single character handler** takes the character in d0; a line
+  feed starts a new line. The original read the character from the
+  address d0 (`MOVE.l d0,a0:MOVE.b (a0)+,(a1)`), i.e. from low memory:
+  every NPrint drew the byte at address 10 (user decision W3 Q3 (a),
+  #699).
 
 ## BUG(orig), kept
 
-* **The single character handler** reads the character from the
-  address d0 (`MOVE.l d0,a0:MOVE.b (a0)+,(a1)`), i.e. from low memory,
-  not d0 itself (#699).
 * **The a0/d0 handler** copies without a limit into the 1024 byte
   buffer; the pens follow it (#698).
 
@@ -101,8 +106,9 @@ Covered:
   SetBPen on a2, the port's on the Rast: #696), a
   negative bgpen;
 * IPOutput and all three handler entries through inputoutputlib's
-  dooutsingle/dooutstring1/dooutstring2: a character (from the address
-  d0: a string's address and the low memory address 65), a0/d0 strings
+  dooutsingle/dooutstring1/dooutstring2: a character ("Q", 65, and the
+  line feed 10, then a text in the next line; the original reads them
+  from the low memory addresses: #699), a0/d0 strings
   (also length 0), null terminated strings (also empty), with the pens
   of IPColour, after IPLocate and after the previous output (#697);
 * finit.

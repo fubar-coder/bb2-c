@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+line 2 -1
+rc=0

@@ -35,11 +35,13 @@
  *   - The original printed every text at 0,0 of the Rast (+ the
  *     baseline): the pen position of IPLocate had no effect on IPOutput
  *     and each text was drawn over the previous one (#697).
+ *   - The single character handler read the character from the address
+ *     d0 (MOVE.l d0,a0:MOVE.b (a0)+,...), i.e. low memory, not d0 itself:
+ *     NPrint's line feed drew the byte at address 10.  A line feed now
+ *     moves to the start of the next line, any other character is
+ *     printed as itself (#699).
  *
  * BUG(orig), kept:
- *   - The single character handler reads the character from the address
- *     d0 (MOVE.l d0,a0:MOVE.b (a0)+,...), i.e. low memory, not d0 itself
- *     (#699).
  *   - The a0/d0 handler copies d0 (a word) bytes without a limit into the
  *     1024 byte buffer (the pens follow it) (#698).
  */
@@ -247,15 +249,24 @@ static void doipprint(void)
 /**
  * @brief The output handler, entry 0: one character.
  *
- * Copied to the buffer with a 0, then printed.  BUG(orig) (#699): the
- * character is read from the address d0 (MOVE.l d0,a0:MOVE.b (a0)+,...),
- * i.e. low memory, not d0 itself.
- * @param chaddr  d0: the character (used as an address)
+ * A line feed (10, the only single character printlib sends: NPrint's)
+ * moves the position to the start of the next line (x 0, y + the Rast's
+ * text height); any other character is copied to the buffer with a 0,
+ * then printed.  Fixed (#699): the original read the character from the
+ * address d0 (MOVE.l d0,a0:MOVE.b (a0)+,...), i.e. from low memory, and
+ * printed that byte.
+ * @param ch  d0: the character (its low byte)
  */
-static void BLITZ_ROUTINE ipprint_c(ULONG chaddr BL_REG(d0))
+static void BLITZ_ROUTINE ipprint_c(ULONG ch BL_REG(d0))
 {
+    struct RastPort *rp = usedrast;
+
     setpens();
-    pr.cbuf[0] = *(const UBYTE *)chaddr;
+    if ((UBYTE)ch == 10) {
+        Move(rp, 0, rp->cp_y + rp->TxHeight);
+        return;
+    }
+    pr.cbuf[0] = (UBYTE)ch;
     pr.cbuf[1] = 0;
     pr.it.IText = pr.cbuf;
     doipprint();
