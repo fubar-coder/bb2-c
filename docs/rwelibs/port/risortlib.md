@@ -66,10 +66,10 @@ kind F):
   not taken over): with `SortPriorityOffset` the list was not sorted.
   Both are taken over now; a string pointer 0 in the swapped-in item
   stops the sort with 0, as in a string comparison (#826).
-
-## BUG(orig), kept
-
-* `size` 0 swaps 65536 bytes (`DBRA` with size − 1 = `$FFFF`) (#827).
+* A `size` of 0 swapped 65536 bytes per swap (`DBRA` with size − 1 =
+  `$FFFF`), over the items behind the two swapped ones and the memory
+  behind the list. Such a sort returns 0 before anything is swapped
+  (one test per call) (#827).
 
 ## Test
 
@@ -89,5 +89,7 @@ or 8, priorities from small ranges with negative ones, priorities
 disabled by other negative offsets) including the stale compare string
 (the caller's a1 set to a string); the priority sorts are checked to
 leave the priorities in order (the original's do not in 29 of 43: the
-`[orig]`/`[fixed #826]` pairs). Not covered: size 0; the 68000 address error (#825) is
-the bug-orig test `risortlib-priority-odd-read` on the A600.
+`[orig]`/`[fixed #826]` pairs). Not covered here: size 0 (fixed #827,
+the bug-orig test `risortlib-size0-swaps-65536`); the 68000 address
+error (#825) is the bug-orig test `risortlib-priority-odd-read` on the
+A600.

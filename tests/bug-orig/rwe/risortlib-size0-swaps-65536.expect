@@ -2,4 +2,5 @@
 ok
 [run]
 marker kept
+result 0
 rc=0

@@ -5,6 +5,7 @@ done
 ok
 [run]
 marker overwritten
+result 0
 rc=0
 [blitz2]
 rc=0

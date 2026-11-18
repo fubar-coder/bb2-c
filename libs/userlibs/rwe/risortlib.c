@@ -19,8 +19,9 @@
  *       selection sort: each item is compared with all following ones
  *       (utility.library Stricmp, case-insensitive) and the data (size
  *       bytes) swapped where the order is wrong.  -1 when done, 0 if
- *       utility.library is missing, it is no list, the start item is 0
- *       or a string pointer is 0 (then stopped where it was).
+ *       utility.library is missing, size is 0 (nothing swapped), it is
+ *       no list, the start item is 0 or a string pointer is 0 (then
+ *       stopped where it was).
  *   ListBase(list)                     the list's address (d0 unchanged)
  *   StringSortDir dir                  0 ascending, else descending
  *   SortPriorityOffset offset          offset of a long in the data that
@@ -31,9 +32,6 @@
  * init opens utility.library (any version), finit closes it if it was
  * opened.  No
  * assembler besides the thunks.
- *
- * BUG(orig): size 0 swaps 65536 bytes (DBRA with size - 1 = $FFFF)
- * (#827).
  *
  * Fixed (#824): finit closed utility.library without checking it was
  * opened (CloseLibrary(0), a crash on Kickstart 1.x); it tests the base.
@@ -46,6 +44,9 @@
  * a1 of the caller if none was made yet) and the swapped-in item's
  * priority was not taken over, so the list was not sorted; both are
  * taken over now.
+ * Fixed (#827): a size of 0 swapped 65536 bytes per swap (DBRA with
+ * size - 1 = $FFFF); such a sort now returns 0 before anything is
+ * swapped (one test per call).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -191,15 +192,16 @@ static ULONG BLITZ_ROUTINE listbase_c(ULONG list BL_REG(d0))
  * case-insensitive, in the StringSortDir order) and the data (size bytes)
  * swapped where the order is wrong; after a swap the item in front is
  * compared with its new string and priority (Fixed (#826)).  The priority
- * is read only when it is enabled (Fixed (#825)).  BUG(orig): size 0
- * swaps 65536 bytes (#827).
+ * is read only when it is enabled (Fixed (#825)).  A size of 0 returns
+ * BB_FALSE before anything is swapped (Fixed (#827): the original swapped
+ * 65536 bytes).
  * @param list    d0: the list ("lIsT" at -4)
  * @param size    d1: sizeof.type, the bytes swapped
  * @param off     d5: the offset of the string field (a string pointer)
  * @param hdr     d6: the list header field of the start item (-28 the
  *                first, -32 the current item)
- * @return BB_TRUE when done; BB_FALSE without utility.library, if it is
- *         no list, the start item is 0 or a string pointer is 0 (then
+ * @return BB_TRUE when done; BB_FALSE without utility.library, for a
+ *         size of 0, if it is no list, the start item is 0 or a string pointer is 0 (then
  *         stopped where it was)
  */
 static BB_BOOL dosort(UBYTE *list, UWORD size, WORD off, WORD hdr)
@@ -212,6 +214,8 @@ static BB_BOOL dosort(UBYTE *list, UWORD size, WORD off, WORD hdr)
     WORD prioff;                        /* d4: priorityoffset */
 
     if (!util)
+        return BB_FALSE;
+    if (!size)                          /* Fixed (#827): not 65536 bytes */
         return BB_FALSE;
     if (((struct bb_listhead *)list - 1)->id != BB_LISTID)
         return BB_FALSE;
@@ -258,7 +262,7 @@ doswap:
             curstr = cmpstr;
             p = lpntr->data;
             q = item->data;
-            n = (ULONG)dbsize + 1;      /* BUG(orig): size 0 = 65536 (#827) */
+            n = (ULONG)dbsize + 1;      /* 1..65535 (size 0 returned above) */
             do {
                 UBYTE b = *p;
                 *p++ = *q;

@@ -25,8 +25,8 @@
  * in the original is stale (a1 of the caller, set to a string here, #826);
  * ListBase; finit.  For
  * lists of lower case strings without the priority the result is also
- * checked to be sorted.  Not covered: size 0 (BUG(orig) #827: swaps 65536
- * bytes), the 68000 address error of the priority read (fixed, #825: the
+ * checked to be sorted.  Not covered: size 0 (fixed, #827: the original
+ * swaps 65536 bytes; the bug-orig test risortlib-size0-swaps-65536), the 68000 address error of the priority read (fixed, #825: the
  * bug-orig test risortlib-priority-odd-read on the A600).
  */
 #include "rwecmp.h"
