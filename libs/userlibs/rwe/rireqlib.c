@@ -124,6 +124,7 @@ BLITZ_LIBFIN();
 
 /* req.library */
 #define LVO_FileRequester  (-0x54)
+#define LVO_PurgeFiles     (-0x72)
 #define LVO_ColorRequester (-0xc0)
 
 #define BUFSIZE (320 + 320 + 150 + 150)
@@ -224,12 +225,19 @@ static ULONG BLITZ_ROUTINE libinit_c(ULONG incoming BL_REG(d0))
 /**
  * @brief finit: close req.library and free the buffers (if it was open).
  *
- * FrStruct's buffer fields are cleared again (#785).
+ * PurgeFiles(FrStruct) first frees what req.library keeps in the
+ * structure from one FileRequester call to the next (the cached
+ * directory, its buffers); fixed (#1092): the original only closed the
+ * library, so that memory stayed allocated.  FrStruct's buffer fields
+ * are cleared again (#785).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
+    struct bl_regs r = { .a0 = (ULONG)&FrStruct };
+
     if (!reqbase)
         return;
+    BLITZ_BASEJSR(reqbase, LVO_PurgeFiles, r);          /* fixed (#1092) */
     CloseLibrary(reqbase);
     reqbase = NULL;
     FreeMem(frq_Title, BUFSIZE);

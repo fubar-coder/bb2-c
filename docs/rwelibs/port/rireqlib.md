@@ -96,6 +96,18 @@ kind F):
   of the program with the library still loaded (from the editor) gave the
   file requester the first run's window, closed at its end, until its
   own ReqOutput, while the colour requester got none (#1090).
+* finit calls PurgeFiles (req.library -114) for `FrStruct` before it
+  closes the library, only when the library is open. The original only
+  closed it, so the memory the requester keeps in the structure between
+  calls (the cached directory and its buffers) stayed allocated after
+  the program: as much as the last directory shown needs (measured with
+  req.library 2.8 and AvailMem: 320 bytes for RAM:, 1560 for SYS:C; the
+  requester reuses the memory, so it does not grow with the number of
+  calls, and PurgeFiles frees all of it) (#1092). What stays is
+  req.library's own: about 40 KB (a 40960-byte chip block among them)
+  allocated by its first FileRequester after the library is loaded,
+  not freed when it is expunged; not rireqlib's to fix (user decision of
+  2026-11-18).
 
 ## Kept
 

@@ -300,8 +300,10 @@ ReqFlags|kept|$12345678|1	kept
 ReqFlags|popped|$12345678|1	$00000000
 ReqOutput|kept||1	kept
 ReqOutput|popped||1	$00000000
-finit|PurgeFiles(FrStruct) while open||1	$00000000
-finit|PurgeFiles(FrStruct) while open|second run|1	$00000000
+finit|PurgeFiles(FrStruct) while open||1 [orig]	$00000000
+finit|PurgeFiles(FrStruct) while open||1 [fixed #1092]	$00000001
+finit|PurgeFiles(FrStruct) while open|second run|1 [orig]	$00000000
+finit|PurgeFiles(FrStruct) while open|second run|1 [fixed #1092]	$00000001
 finit|kept||1	kept
 finit|kept|second run|1	kept
 finit|library closed||1	$00000000
