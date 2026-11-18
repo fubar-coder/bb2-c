@@ -20,11 +20,6 @@
  * No assembler besides the thunks.
  *
  * BUG(orig):
- *   - init stores the buffer addresses in its own four longs (frq_Title
- *     ... frq_PathName), never in FrStruct's Directory/File/PathName
- *     fields: the requester gets 0 for them, and ReqFileRequest copies
- *     the cleared path buffer, which nothing but the program (through
- *     ReqFileLoc) writes (#785).
  *   - ReqFileRequest(title$,flags) changes the flags for good (like
  *     ReqFlags), and a title stays for later calls without one (#789).
  *
@@ -43,6 +38,12 @@
  *     which closes it again) ReqFileRequest returns "" as on cancel and
  *     ReqColour the colour it is given; the original checked no base and
  *     called through a6 = 0 (#788).  ReqFileLoc returns 0, as before.
+ *   - init puts the four buffers into FrStruct's title, directory, file
+ *     and path fields (finit clears them), as the first version ReqLib.bb
+ *     had them: the original stored them only in its own four longs
+ *     (frq_Title ... frq_PathName), so the requester got 0 for them and
+ *     ReqFileRequest returned the path buffer that only the program
+ *     (through ReqFileLoc) wrote, never the user's choice (#785).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -145,8 +146,10 @@ static const char reqname[] = "req.library";
  *
  * One block of 940 bytes (MEMF_PUBLIC|MEMF_CLEAR): title (320),
  * directory (150), file (150) and path (320); their addresses go to
- * frq_Title ... frq_PathName, never into FrStruct (BUG(orig) #785).  If
- * the AllocMem fails, the library is closed again (_oops2).
+ * frq_Title ... frq_PathName and into FrStruct's title, directory, file
+ * and path fields (fixed, #785: the original never set the fields; its
+ * first version, ReqLib.bb, had them).  If the AllocMem fails, the
+ * library is closed again (_oops2).
  * @param incoming  d0: returned unchanged if the library is already open
  * @return d0: the path buffer; 0 if the library or the memory is missing
  */
@@ -169,12 +172,18 @@ static ULONG BLITZ_ROUTINE libinit_c(ULONG incoming BL_REG(d0))
     frq_Dir = mem + 320;
     frq_File = mem + 320 + 150;
     frq_PathName = mem + 320 + 150 + 150;
+    FrStruct.title = frq_Title;                         /* fixed (#785) */
+    FrStruct.dir = frq_Dir;
+    FrStruct.file = frq_File;
+    FrStruct.pathname = frq_PathName;
     routput = NULL;
     return (ULONG)frq_PathName;
 }
 
 /**
  * @brief finit: close req.library and free the buffers (if it was open).
+ *
+ * FrStruct's buffer fields are cleared again (#785).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -184,6 +193,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     reqbase = NULL;
     FreeMem(frq_Title, BUFSIZE);
     frq_Title = NULL;
+    FrStruct.title = FrStruct.dir = FrStruct.file = FrStruct.pathname = NULL;
 }
 
 /**
@@ -201,8 +211,9 @@ static void BLITZ_ROUTINE reqflags_c(ULONG flags BL_REG(d0))
 /**
  * @brief ReqFileLoc: the address of the path buffer.
  *
- * The program may write the path there (it is what ReqFileRequest
- * returns, BUG(orig) #785).  0 without the buffers (#788).
+ * The requester writes the chosen path there, which ReqFileRequest
+ * returns; a program may write a default path there before the call.
+ * 0 without the buffers (#788).
  * @return d0 (and a0, the thunk): the path buffer
  */
 static ULONG BLITZ_ROUTINE file_c(void)
@@ -216,8 +227,9 @@ static ULONG BLITZ_ROUTINE file_c(void)
  *
  * FileRequester(FrStruct); the path buffer is copied to a3, a3 ends on
  * the terminating 0 (fixed, #784: the original left it behind the 0).
- * BUG(orig): FrStruct has no buffers, so the path is what the program
- * wrote with ReqFileLoc (#785).  Fixed (#788): without req.library it
+ * FrStruct holds the buffers (fixed, #785: the original's had none, so
+ * the path was what the program wrote with ReqFileLoc, not the
+ * requester's).  Fixed (#788): without req.library it
  * returns "" as on cancel; the original called through a6 = 0.
  * @return d0: the length of the path; 0 on cancel (a3 unchanged)
  */

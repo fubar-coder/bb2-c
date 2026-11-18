@@ -53,15 +53,18 @@ kind F):
   a3 back at its start) and ReqColour the colour it is given; the
   original checked no base and called through a6 = 0, a crash (#788).
   ReqFileLoc returns 0 then, as before.
+* init puts the four buffers into `FrStruct`'s title, directory, file and
+  path fields, and finit clears them, as the first version `ReqLib.bb`
+  had them (its fields pointed to its static buffers; AmiBlitz3's
+  `riReqLib.ab3` is that version). The original stored the addresses
+  only in its own longs `frq_Title`…`frq_PathName` behind the structure:
+  the requester got 0 for them, and ReqFileRequest returned the path
+  buffer that only the program (through ReqFileLoc) wrote, never the
+  user's choice (#785). Before the first call with a title, the title
+  field points to the library's title buffer, which is empty.
 
 ## BUG(orig)
 
-* init stores the four buffer addresses in `frq_Title`…`frq_PathName`
-  behind the structure, never in `FrStruct`'s Directory/File/PathName
-  fields: the requester gets 0 for them, and ReqFileRequest copies the
-  cleared path buffer of init, which only the program (through
-  ReqFileLoc) writes. Unless req.library copes with the 0 pointers itself,
-  the result is always empty (#785).
 * ReqFileRequest(title$,flags) changes the flags for good (like
   ReqFlags), and a title stays for later calls without one (#789).
 

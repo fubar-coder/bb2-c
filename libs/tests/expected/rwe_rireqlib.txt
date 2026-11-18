@@ -39,23 +39,23 @@ ReqFileLoc (no init)|kept||2	kept
 ReqFileLoc (no init)|popped||1	$00000000
 ReqFileLoc (no init)|popped||2	$00000000
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000015
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path ""|1 [fixed #784]	$00000014
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path ""|1 [fixed #784]	$00000017
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$0000001A
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #784]	$00000019
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #784]	$0000001C
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000022
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #784]	$00000021
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #784]	$00000024
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	$00000015
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #784]	$00000014
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	$00000029
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #784]	$00000028
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #784]	$0000002B
 ReqFileRequest|a3|form 1 title  flags $0 ret 5 path "x"|1 [orig]	$00000016
-ReqFileRequest|a3|form 1 title  flags $0 ret 5 path "x"|1 [fixed #784]	$00000015
+ReqFileRequest|a3|form 1 title  flags $0 ret 5 path "x"|1 [fixed #784]	$00000018
 ReqFileRequest|a3|form 1 title Cancel flags $0 ret 0 path "never"|1	$00000014
 ReqFileRequest|a3|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [orig]	$00000023
-ReqFileRequest|a3|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #784]	$00000022
+ReqFileRequest|a3|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #784]	$00000025
 ReqFileRequest|a3|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000014
 ReqFileRequest|a3|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	$00000027
-ReqFileRequest|a3|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #784]	$00000026
+ReqFileRequest|a3|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #784]	$00000029
 ReqFileRequest|called|form 0 title - flags $0 ret 1 path ""|1	$00000001
 ReqFileRequest|called|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000001
 ReqFileRequest|called|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000001
@@ -66,36 +66,63 @@ ReqFileRequest|called|form 1 title Cancel flags $0 ret 0 path "never"|1	$0000000
 ReqFileRequest|called|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000001
 ReqFileRequest|called|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000001
 ReqFileRequest|called|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000001
-ReqFileRequest|d0|form 0 title - flags $0 ret 1 path ""|1	$00000000
-ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000005
-ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$0000000D
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000000
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	$00000003
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$00000005
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	$00000008
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$0000000D
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	$00000010
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "overrun"|1	$00000000
-ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000014
-ReqFileRequest|d0|form 1 title  flags $0 ret 5 path "x"|1	$00000001
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	$00000014
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	$00000017
+ReqFileRequest|d0|form 1 title  flags $0 ret 5 path "x"|1 [orig]	$00000001
+ReqFileRequest|d0|form 1 title  flags $0 ret 5 path "x"|1 [fixed #785]	$00000004
 ReqFileRequest|d0|form 1 title Cancel flags $0 ret 0 path "never"|1	$00000000
-ReqFileRequest|d0|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$0000000E
+ReqFileRequest|d0|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [orig]	$0000000E
+ReqFileRequest|d0|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #785]	$00000011
 ReqFileRequest|d0|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000000
-ReqFileRequest|d0|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000012
-ReqFileRequest|dir|form 0 title - flags $0 ret 1 path ""|1	$00000000
-ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000000
-ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000000
-ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "overrun"|1	$00000000
-ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000000
-ReqFileRequest|dir|form 1 title  flags $0 ret 5 path "x"|1	$00000000
-ReqFileRequest|dir|form 1 title Cancel flags $0 ret 0 path "never"|1	$00000000
-ReqFileRequest|dir|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000000
-ReqFileRequest|dir|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000000
-ReqFileRequest|dir|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000000
-ReqFileRequest|file|form 0 title - flags $0 ret 1 path ""|1	$00000000
-ReqFileRequest|file|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000000
-ReqFileRequest|file|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000000
-ReqFileRequest|file|form 0 title - flags $0 ret 1 path "overrun"|1	$00000000
-ReqFileRequest|file|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000000
-ReqFileRequest|file|form 1 title  flags $0 ret 5 path "x"|1	$00000000
-ReqFileRequest|file|form 1 title Cancel flags $0 ret 0 path "never"|1	$00000000
-ReqFileRequest|file|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000000
-ReqFileRequest|file|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000000
-ReqFileRequest|file|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000000
+ReqFileRequest|d0|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	$00000012
+ReqFileRequest|d0|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #785]	$00000015
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000000
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$00000000
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000000
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	$00000000
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	$00000000
+ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 1 title  flags $0 ret 5 path "x"|1 [orig]	$00000000
+ReqFileRequest|dir|form 1 title  flags $0 ret 5 path "x"|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 1 title Cancel flags $0 ret 0 path "never"|1 [orig]	$00000000
+ReqFileRequest|dir|form 1 title Cancel flags $0 ret 0 path "never"|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [orig]	$00000000
+ReqFileRequest|dir|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 2 title Cancel again flags $41 ret 0 path "never"|1 [orig]	$00000000
+ReqFileRequest|dir|form 2 title Cancel again flags $41 ret 0 path "never"|1 [fixed #785]	path-$12C
+ReqFileRequest|dir|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	$00000000
+ReqFileRequest|dir|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #785]	path-$12C
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000000
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$00000000
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000000
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	$00000000
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	$00000000
+ReqFileRequest|file|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 1 title  flags $0 ret 5 path "x"|1 [orig]	$00000000
+ReqFileRequest|file|form 1 title  flags $0 ret 5 path "x"|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 1 title Cancel flags $0 ret 0 path "never"|1 [orig]	$00000000
+ReqFileRequest|file|form 1 title Cancel flags $0 ret 0 path "never"|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [orig]	$00000000
+ReqFileRequest|file|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 2 title Cancel again flags $41 ret 0 path "never"|1 [orig]	$00000000
+ReqFileRequest|file|form 2 title Cancel again flags $41 ret 0 path "never"|1 [fixed #785]	path-$96
+ReqFileRequest|file|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	$00000000
+ReqFileRequest|file|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #785]	path-$96
 ReqFileRequest|flags|form 0 title - flags $0 ret 1 path ""|1	$12345678
 ReqFileRequest|flags|form 0 title - flags $0 ret 1 path "RAM:x"|1	$12345678
 ReqFileRequest|flags|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000007
@@ -127,26 +154,43 @@ ReqFileRequest|maxextsel lines columns|form 1 title Cancel flags $0 ret 0 path "
 ReqFileRequest|maxextsel lines columns|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	bytes 8 00000014001C000C
 ReqFileRequest|maxextsel lines columns|form 2 title Cancel again flags $41 ret 0 path "never"|1	bytes 8 00000014001C000C
 ReqFileRequest|maxextsel lines columns|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	bytes 8 00000014001C000C
-ReqFileRequest|out|form 0 title - flags $0 ret 1 path ""|1	bytes 200 fnv 2EF980AB
-ReqFileRequest|out|form 0 title - flags $0 ret 1 path "RAM:x"|1	bytes 200 fnv AC7C2AB3
-ReqFileRequest|out|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	bytes 200 fnv 1F515EBC
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path ""|1 [orig]	bytes 200 fnv 2EF980AB
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	bytes 200 fnv 8F53CA13
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	bytes 200 fnv AC7C2AB3
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	bytes 200 fnv EE00CB8B
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	bytes 200 fnv 1F515EBC
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	bytes 200 fnv 3ADA3842
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "overrun"|1	bytes 200 fnv 2EF980AB
-ReqFileRequest|out|form 0 title - flags $0 ret 1 path "title and flags stay"|1	bytes 200 fnv FA67EB9E
-ReqFileRequest|out|form 1 title  flags $0 ret 5 path "x"|1	bytes 200 fnv 8A1FA97D
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	bytes 200 fnv FA67EB9E
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	bytes 200 fnv 5400654C
+ReqFileRequest|out|form 1 title  flags $0 ret 5 path "x"|1 [orig]	bytes 200 fnv 8A1FA97D
+ReqFileRequest|out|form 1 title  flags $0 ret 5 path "x"|1 [fixed #785]	bytes 200 fnv ABCF3995
 ReqFileRequest|out|form 1 title Cancel flags $0 ret 0 path "never"|1	bytes 200 fnv A4E83D5D
-ReqFileRequest|out|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	bytes 200 fnv AD4398DF
+ReqFileRequest|out|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [orig]	bytes 200 fnv AD4398DF
+ReqFileRequest|out|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #785]	bytes 200 fnv EAB6725F
 ReqFileRequest|out|form 2 title Cancel again flags $41 ret 0 path "never"|1	bytes 200 fnv F27527FD
-ReqFileRequest|out|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	bytes 200 fnv B6DA19B7
-ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path ""|1	$00000000
-ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000000
-ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000000
-ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "overrun"|1	$00000000
-ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000000
-ReqFileRequest|pathname|form 1 title  flags $0 ret 5 path "x"|1	$00000000
-ReqFileRequest|pathname|form 1 title Cancel flags $0 ret 0 path "never"|1	$00000000
-ReqFileRequest|pathname|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000000
-ReqFileRequest|pathname|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000000
-ReqFileRequest|pathname|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000000
+ReqFileRequest|out|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	bytes 200 fnv B6DA19B7
+ReqFileRequest|out|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #785]	bytes 200 fnv 11E99337
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000000
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 1 title  flags $0 ret 5 path "x"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 1 title  flags $0 ret 5 path "x"|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 1 title Cancel flags $0 ret 0 path "never"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 1 title Cancel flags $0 ret 0 path "never"|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 2 title Cancel again flags $41 ret 0 path "never"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 2 title Cancel again flags $41 ret 0 path "never"|1 [fixed #785]	path+$0
+ReqFileRequest|pathname|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	$00000000
+ReqFileRequest|pathname|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #785]	path+$0
 ReqFileRequest|popped|form 0 title - flags $0 ret 1 path ""|1	$00000000
 ReqFileRequest|popped|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000000
 ReqFileRequest|popped|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000000
@@ -167,19 +211,29 @@ ReqFileRequest|rest|form 1 title Cancel flags $0 ret 0 path "never"|1	bytes 128 
 ReqFileRequest|rest|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	bytes 128 fnv A7B537C5
 ReqFileRequest|rest|form 2 title Cancel again flags $41 ret 0 path "never"|1	bytes 128 fnv A7B537C5
 ReqFileRequest|rest|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	bytes 128 fnv A7B537C5
-ReqFileRequest|result|form 0 title - flags $0 ret 1 path ""|1	""
-ReqFileRequest|result|form 0 title - flags $0 ret 1 path "RAM:x"|1	"RAM:x"
-ReqFileRequest|result|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	"Work:dir/file"
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path ""|1 [orig]	""
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	"FR:"
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	"RAM:x"
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	"FR:RAM:x"
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	"Work:dir/file"
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	"FR:Work:dir/file"
 ReqFileRequest|result|form 0 title - flags $0 ret 1 path "overrun"|1	""
-ReqFileRequest|result|form 0 title - flags $0 ret 1 path "title and flags stay"|1	"title and flags stay"
-ReqFileRequest|result|form 1 title  flags $0 ret 5 path "x"|1	"x"
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	"title and flags stay"
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	"FR:title and flags stay"
+ReqFileRequest|result|form 1 title  flags $0 ret 5 path "x"|1 [orig]	"x"
+ReqFileRequest|result|form 1 title  flags $0 ret 5 path "x"|1 [fixed #785]	"FR:x"
 ReqFileRequest|result|form 1 title Cancel flags $0 ret 0 path "never"|1	""
-ReqFileRequest|result|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	"DH0:a/b/c.info"
+ReqFileRequest|result|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [orig]	"DH0:a/b/c.info"
+ReqFileRequest|result|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #785]	"FR:DH0:a/b/c.info"
 ReqFileRequest|result|form 2 title Cancel again flags $41 ret 0 path "never"|1	""
-ReqFileRequest|result|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	"S:Startup-Sequence"
-ReqFileRequest|title|form 0 title - flags $0 ret 1 path ""|1	$00000000
-ReqFileRequest|title|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000000
-ReqFileRequest|title|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000000
+ReqFileRequest|result|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	"S:Startup-Sequence"
+ReqFileRequest|result|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #785]	"FR:S:Startup-Sequence"
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000000
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	path-$26C
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$00000000
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	path-$26C
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000000
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	path-$26C
 ReqFileRequest|title|form 0 title - flags $0 ret 1 path "overrun"|1	prog
 ReqFileRequest|title|form 0 title - flags $0 ret 1 path "title and flags stay"|1	prog
 ReqFileRequest|title|form 1 title  flags $0 ret 5 path "x"|1	prog
@@ -187,9 +241,12 @@ ReqFileRequest|title|form 1 title Cancel flags $0 ret 0 path "never"|1	prog
 ReqFileRequest|title|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	prog
 ReqFileRequest|title|form 2 title Cancel again flags $41 ret 0 path "never"|1	prog
 ReqFileRequest|title|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	prog
-ReqFileRequest|title text|form 0 title - flags $0 ret 1 path ""|1	null
-ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "RAM:x"|1	null
-ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	null
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path ""|1 [orig]	null
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	""
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	null
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	""
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	null
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	""
 ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "overrun"|1	"Cancel again"
 ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "title and flags stay"|1	"Cancel again"
 ReqFileRequest|title text|form 1 title  flags $0 ret 5 path "x"|1	""
