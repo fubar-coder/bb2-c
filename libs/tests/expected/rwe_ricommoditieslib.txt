@@ -259,8 +259,10 @@
 |finit replied the message taken last||1 [orig]	$00000000
 |finit replied the message taken last||1 [fixed #561]	$00000001
 |finit: CloseLibrary||1	$00000001
-|finit: DeleteCxObj||1	$00000001
-|finit: DeleteCxObjAll||1	$00000000
+|finit: DeleteCxObj||1 [orig]	$00000001
+|finit: DeleteCxObj||1 [fixed #557]	$00000000
+|finit: DeleteCxObjAll||1 [orig]	$00000000
+|finit: DeleteCxObjAll||1 [fixed #557]	$00000001
 |finit: closed before the delete||1 [orig]	$00000001
 |finit: closed before the delete||1 [fixed #556]	$00000000
 |inline $A000||1	$00000001

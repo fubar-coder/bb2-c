@@ -41,13 +41,13 @@
  * (its replymessage starts with RTS and is never called: not translated),
  * so commodities could never free them (#561).  finit closes
  * commodities.library last; the original closed it first and then called
- * DeleteCxObj through the closed base (#556).
+ * DeleteCxObj through the closed base (#556).  finit deletes the broker
+ * with DeleteCxObjAll, its hotkey filters and senders with it, and
+ * clears the slots; the original's DeleteCxObj left them allocated (#557).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
  *     (#558);
- *   - finit deletes the broker with DeleteCxObj (not DeleteCxObjAll), which
- *     leaves the filters and senders of the broker allocated (#557);
  *   - SetHotKey does not check the number: the slots are cxfilter[n] /
  *     cxsends[n] in the variables' original layout (st below), so n >= 16
  *     or < 0 hits the variables around them (#564); a replaced
@@ -220,18 +220,23 @@ static void replymsg(void)
  * replied (after the broker is deleted, so no more come) before the port
  * is deleted; the original deleted the port with them.  Fixed (#556):
  * commodities.library is closed last; the original closed it first and
- * then called DeleteCxObj through the closed base.  BUG(orig): only the
- * broker is deleted, not its filters and senders (#557).
+ * then called DeleteCxObj through the closed base.  Fixed (#557): the
+ * broker is deleted with DeleteCxObjAll, its hotkey filters and senders
+ * with it, and the slots are cleared; the original's DeleteCxObj left
+ * them allocated.
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     struct Message *m;
+    int i;
 
     if (!st_cbase)
         return;
     if (st.msgport) {
-        DeleteCxObj(st.cobject);
+        DeleteCxObjAll(st.cobject);
         st.cobject = 0;
+        for (i = 0; i < 16; i++)
+            st.cxfilter[i] = st.cxsends[i] = 0;
         replymsg();
         while ((m = GetMsg(st.msgport)))
             ReplyMsg(m);
