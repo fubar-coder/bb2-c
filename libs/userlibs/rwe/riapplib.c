@@ -30,9 +30,6 @@
  * them (cmake/ndk-calls.cmake).
  *
  * BUG(orig), kept:
- *   - finit clears the table slot at byte offset index*4/4 instead of
- *     index*4 (ASR.l #2 before the store): a long store at an odd address
- *     for the slots 1, 3 ... (an address error on a 68000) (#524).
  *   - AddAppIcon on a used id removes the old AppIcon and frees its
  *     DiskObject but leaves the old AppIcon in the slot if AddAppIconA
  *     fails (a later DelAppIcon removes it again); the new DiskObject is
@@ -44,6 +41,10 @@
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
+ * Fixed (intended deviation, #524): finit cleared the table slot at byte
+ * offset index*4/4 instead of index*4 (ASR.l #2 before the store): a long
+ * store at an odd address for the slots 1, 3 ... (an address error on a
+ * 68000); it clears the slot itself now.
  * Fixed (intended deviation, #525): finit replied to the messages queued
  * at the port only if a message was current (the last AppEvent) - the
  * flag for the other case was never set - so they stayed unreplied when
@@ -287,15 +288,15 @@ static void BLITZ_ROUTINE libinit_c(void)
 }
 BLITZ_THUNK(riapplib_libinit, libinit_c, "d0-d1/a0-a1");
 
-/* delapp: remove every object of a table of 16; BUG(orig) (#524): the slot that
-   is cleared is the long at byte offset index*4/4 (an odd address for
-   odd indexes: GCC writes it with one MOVE.l, as the original) */
+/* delapp: remove every object of a table of 16 and clear its slot;
+   fixed (#524): the original cleared the long at byte offset index*4/4
+   (an odd address for odd indexes) */
 static void delapp(ULONG *table, int kind)
 {
-    ULONG off;
+    int i;
 
-    for (off = 0;; off += 4) {
-        ULONG obj = *(ULONG *)((UBYTE *)table + off);
+    for (i = 0; i < 16; i++) {
+        ULONG obj = table[i];
         if (obj) {
             switch (kind) {
             case 0: RemoveAppMenuItem((struct AppMenuItem *)obj); break;
@@ -303,10 +304,8 @@ static void delapp(ULONG *table, int kind)
             case 2: RemoveAppIcon((struct AppIcon *)obj); break;
             default: FreeDiskObject((struct DiskObject *)obj); break;
             }
-            *(volatile ULONG *)((UBYTE *)table + (off >> 2)) = 0;
+            table[i] = 0;               /* fixed (#524): the slot */
         }
-        if (off == 60)
-            break;
     }
 }
 
@@ -316,8 +315,8 @@ static void delapp(ULONG *table, int kind)
  *
  * Fixed (#525): the current message and then the whole queue are
  * replied (the original replied to the queue only if a message was
- * current).  BUG(orig) (#524): the table slot cleared is the long at byte offset
- * index*4/4.
+ * current).  Fixed (#524): the slot of each object is cleared (the
+ * original cleared the long at byte offset index*4/4).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {

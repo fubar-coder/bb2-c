@@ -10,6 +10,7 @@
 ; clears the slot; the vectors stay patched (finit runs after the
 ; program's last line), the code is not freed.
 ; Correct: the program ends normally.
+; @fixed #524
 ; @rwe riapplib
 ; @machine a600
 ; @pass timeout=30

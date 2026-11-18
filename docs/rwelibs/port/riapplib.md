@@ -94,13 +94,15 @@ kind F):
   was never set: after a loop `Repeat … Until AppEvent=0` the messages
   that came later stayed unreplied when the port was deleted, and
   Workbench never got them and their locks back (#525).
+* finit (`delapp`) clears the slot of each object it removes. The
+  original cleared the long at byte offset `index*4/4` instead of
+  `index*4` (`ASR.l #2,d7` before the store): a long store at an odd
+  address for odd indexes, an address error at program end on a 68000
+  with an App object left in slot 1, 3, ... (harmless on a 68020, the
+  block is freed right after) (#524).
 
 ## BUG(orig), kept
 
-* finit (`delapp`) clears the slot at byte offset `index*4/4` instead of
-  `index*4` (`ASR.l #2,d7` before the store) – a long store at an odd
-  address for odd indexes (an address error on a 68000), harmless at
-  program end on a 68020 (#524).
 * `AddAppIcon` on a used id removes the old AppIcon and frees its
   DiskObject first; if `AddAppIconA` then fails, the removed AppIcon stays
   in the slot (a later `DelAppIcon` removes it again) and the new
