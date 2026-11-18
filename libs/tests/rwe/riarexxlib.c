@@ -35,11 +35,12 @@
  * else to RexxMast; the original sends both as RXCOMM|RXFF_STRING, fixed
  * #544: RXCOMM|RXFF_RESULT, waiting, and RXCOMM, the name one argument);
  * RXDeletePort with messages queued (replied with
- * 5); finit with a port; init after RXDefaultPort (the original: the
+ * 5), with a reply outstanding (#1095) and with 33 messages received
+ * (#1100); finit with a port; init after RXDefaultPort (the original: the
  * byte at +4 stays, "REXXE"; fixed #532: "REXX", the responder gets it).
  * Not covered: the error check without a port (a runtime error, TRAP
  * #0), a failing AllocVec (the bug-orig tests of #528 and #533 with
- * inject), more than 16 or 32 messages/arguments, messages of
+ * inject), more than 33 messages, more than 16 arguments, messages of
  * other types (replied at once).
  */
 #include "rwecmp.h"
@@ -648,6 +649,60 @@ int main(int argc, char **argv)
                 DeleteArgstring(held->rm_Args[i]);
             FreeVec(held);
         }
+    }
+
+    /* 33 messages received before one is taken (#1100): the message list
+       has 32 longs, the original adds without a limit: the 32nd message
+       overwrites the list's end mark, the 33rd runs into the sent list.
+       33 stay inside the block (64 and more are not tried: what lies
+       behind the block is not the test's).  After RXReadPort (the first
+       message becomes current, the list moves down by one) the
+       observations say whether the long at the list's 32nd place and the
+       one behind it (the sent list's first) hold a message, and how many
+       longs of the block are not 0.  RXDeletePort replies everything to
+       the test's port, where the replies are counted and the messages
+       freed (32: the message RXReadPort made current is not replied by
+       RXDeletePort, whose loop makes the next one current first).  A fix that keeps all 33 differently changes these values
+       (a pair). */
+    ROUT = "RXCreatePort";
+    strcpy(VEC, "for 33 messages");
+    DO1(ENT(LIB, CREATEPORT, 0), R.d[0] = (ULONG)own;
+        stk[1] = strlen(own); R.a[2] = (ULONG)&stk[2]);
+    BOTH("the port", R.d[0] != 0);
+    {
+        struct RexxMsg *many[33];
+        ULONG *list;
+        int nz, replies = 0, k;
+
+        for (k = 0; k < 33; k++) {
+            many[k] = AllocVec(128, MEMF_PUBLIC | MEMF_CLEAR);
+            many[k]->rm_Node.mn_Node.ln_Name = (char *)"RWETEST";
+            many[k]->rm_Node.mn_Length = 128;
+            many[k]->rm_Node.mn_ReplyPort = testport;
+            many[k]->rm_Action = RXCOMM;
+            PutMsg(FindPort((STRPTR)own), &many[k]->rm_Node);
+        }
+        ROUT = "RXMessageList";
+        strcpy(VEC, "33 messages");
+        call(MESSAGELIST, 0, 0, 0, 0, 0, 0);
+        list = (ULONG *)R.d[0];
+        readport(READPORT, 1, "33 messages");
+        for (nz = 0, k = 0; k < 64; k++)
+            if (list[k])
+                nz++;
+        ROUT = "RXMessageList";
+        strcpy(VEC, "33 messages");
+        OBS("long 31 of the list", list[31] != 0);
+        OBS("long 32, the sent list's first", list[32] != 0);
+        OBS("longs of the block not 0", nz);
+        ROUT = "RXDeletePort";
+        strcpy(VEC, "33 messages");
+        call(DELETEPORT, 0, 0, 0, 0, 0, 0);
+        while (GetMsg(testport))
+            replies++;
+        OBS("replies at the test's port", replies);
+        for (k = 0; k < 33; k++)
+            FreeVec(many[k]);
     }
 
     /* finit with a port */

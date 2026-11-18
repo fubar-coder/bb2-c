@@ -2,16 +2,19 @@
 RXCreatePort|kept||1	kept
 RXCreatePort|kept||2	kept
 RXCreatePort|kept|after init|1	kept
+RXCreatePort|kept|for 33 messages|1	kept
 RXCreatePort|kept|for finit|1	kept
 RXCreatePort|kept|for the outstanding reply|1	kept
 RXCreatePort|popped||1	$00000000
 RXCreatePort|popped||2	$00000000
 RXCreatePort|popped|after init|1	$00000000
+RXCreatePort|popped|for 33 messages|1	$00000000
 RXCreatePort|popped|for finit|1	$00000000
 RXCreatePort|popped|for the outstanding reply|1	$00000000
 RXCreatePort|second port: 0||1	$00000000
 RXCreatePort|the port||1	$00000001
 RXCreatePort|the port|after init|1	$00000001
+RXCreatePort|the port|for 33 messages|1	$00000001
 RXCreatePort|the port|for finit|1	$00000001
 RXCreatePort|the port|for the outstanding reply|1	$00000001
 RXDefaultPort|kept|"RWERESP"|1	kept
@@ -21,15 +24,18 @@ RXDefaultPort|popped|"RWERESP"|1	$00000000
 RXDefaultPort|popped|"RWERX_X"|1	$00000000
 RXDefaultPort|popped|own|1	$00000000
 RXDeletePort|kept|2 queued|1	kept
+RXDeletePort|kept|33 messages|1	kept
 RXDeletePort|kept|no port|1	kept
 RXDeletePort|kept|reply outstanding|1	kept
 RXDeletePort|popped|2 queued|1	$00000000
+RXDeletePort|popped|33 messages|1	$00000000
 RXDeletePort|popped|no port|1	$00000000
 RXDeletePort|popped|reply outstanding|1	$00000000
 RXDeletePort|port gone|2 queued|1	$00000001
 RXDeletePort|port gone|reply outstanding|1	$00000001
 RXDeletePort|replied before it returned|reply outstanding|1	$00000000
 RXDeletePort|replies|2 queued|1	$00000001
+RXDeletePort|replies at the test's port|33 messages|1	$00000020
 RXDeletePort|reply Result1|2 queued|1	$00000005
 RXDeletePort|reply Result1|2 queued|2	$00000005
 RXDeletePort|reply Result2|2 queued|1	$00000000
@@ -1471,9 +1477,14 @@ RXGetArg|string area|untokenised arg 7|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|untokenised arg 8|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|untokenised arg 9|1	bytes 1024 fnv 472C7DC5
 RXMessageList|d0|no port|1	$00000000
+RXMessageList|kept|33 messages|1	kept
 RXMessageList|kept|no port|1	kept
 RXMessageList|kept|with a port|1	kept
 RXMessageList|list|with a port|1	$00000001
+RXMessageList|long 31 of the list|33 messages|1	$00000001
+RXMessageList|long 32, the sent list's first|33 messages|1	$00000000
+RXMessageList|longs of the block not 0|33 messages|1	$00000020
+RXMessageList|popped|33 messages|1	$00000000
 RXMessageList|popped|no port|1	$00000000
 RXMessageList|popped|with a port|1	$00000000
 RXNextArg|a3|after a closing quote next 0|1	$00000011
@@ -1846,6 +1857,7 @@ RXQuoteChar|kept|"""|1	kept
 RXQuoteChar|kept|"'"|1	kept
 RXQuoteChar|popped|"""|1	$00000000
 RXQuoteChar|popped|"'"|1	$00000000
+RXReadPort|kept|33 messages|1	kept
 RXReadPort|kept|after a closing quote|1	kept
 RXReadPort|kept|arrived while waiting|1	kept
 RXReadPort|kept|closing quote at the end|1	kept
@@ -1871,6 +1883,7 @@ RXReadPort|kept|the reply|7	kept
 RXReadPort|kept|the reply|8	kept
 RXReadPort|kept|the script replies|1	kept
 RXReadPort|kept|untokenised|1	kept
+RXReadPort|message|33 messages|1	$00000001
 RXReadPort|message|after a closing quote|1	$00000001
 RXReadPort|message|arrived while waiting|1	$00000001
 RXReadPort|message|closing quote at the end|1	$00000001
@@ -1896,6 +1909,7 @@ RXReadPort|message|the reply|7	$00000000
 RXReadPort|message|the reply|8	$00000000
 RXReadPort|message|the script replies|1	$00000000
 RXReadPort|message|untokenised|1	$00000001
+RXReadPort|message as expected|33 messages|1	$00000001
 RXReadPort|message as expected|after a closing quote|1	$00000001
 RXReadPort|message as expected|arrived while waiting|1	$00000001
 RXReadPort|message as expected|closing quote at the end|1	$00000001
@@ -1921,6 +1935,7 @@ RXReadPort|message as expected|the reply|7	$00000001
 RXReadPort|message as expected|the reply|8	$00000001
 RXReadPort|message as expected|the script replies|1	$00000001
 RXReadPort|message as expected|untokenised|1	$00000001
+RXReadPort|popped|33 messages|1	$00000000
 RXReadPort|popped|after a closing quote|1	$00000000
 RXReadPort|popped|arrived while waiting|1	$00000000
 RXReadPort|popped|closing quote at the end|1	$00000000

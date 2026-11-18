@@ -132,6 +132,10 @@
  *   - RXDeletePort and finit do not wait for the replies to messages sent
  *     without waiting (RXRunCommand, RXRunScript): a reply that arrives
  *     later goes to the deleted port (#1095).
+ *   - RXReadPort/RXWaitPort (readport_c) append every received message to
+ *     the 32-long message list without a limit (addtolist): the 32nd
+ *     message overwrites the end mark, later ones run into the sent
+ *     list and past the block (#1100).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -543,7 +547,9 @@ BLITZ_THUNK(_rxdefportname, rxdefportname_c, "d0-d1/a0-a1");
 
 /* --------------------------------------------------------- the lists */
 
-/* _addtolist: d0 into the first 0 long of the list */
+/* _addtolist: d0 into the first 0 long of the list.  BUG(orig) (#1100):
+   without a limit; the message list has 32 longs (struct msglists), more
+   than 31 received messages run into the sent list and past the block */
 static void addtolist(ULONG *l, ULONG item)
 {
     while (*l++)

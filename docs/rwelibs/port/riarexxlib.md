@@ -232,6 +232,21 @@ kind F):
   returned|reply outstanding` of the library test holds a message at the
   responder while RXDeletePort runs: the original returns with the reply
   outstanding (0).
+* **RXReadPort**, **RXWaitPort** (and finit, RXDeletePort through the
+  same routine) append every message they take from the port to the
+  message list with `addtolist`, which has no limit. The list has 32
+  longs (the first half of the 256-byte block, the sent list is the
+  second): the 32nd message overwrites the list's end mark, the 33rd to
+  the 64th run into the sent list and later ones past the block. The
+  library test puts 33 messages to the port and observes the list's
+  32nd long, the one behind it and the number of longs of the block
+  that are not 0 (`RXMessageList|long 31 of the list|33 messages` and
+  its two neighbours; the 33 stay inside the block, the test does not
+  corrupt memory) (#1100). There is no bug-orig test (D-019): a Blitz
+  program that shows the overflow needs more than 64 messages, writes
+  behind the block and then hangs or not depending on what lies there
+  (RXDeletePort replies up to the first 0 long), so the outcome differs
+  between the configurations.
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
