@@ -27,7 +27,8 @@
  * DelListItem on empty lists (FirstListItem and LastListItem: -1 in the
  * original, 0 in the C build, fixed #733); in the C build only also the
  * other commands on an empty list (0, fixed #733); InitList (also again on a list that has
- * one: the old one is not freed); AddListItem at the end and in the
+ * one: the old one lost in the original, freed in the C build, fixed
+ * #731); AddListItem at the end and in the
  * middle (the prev of the node behind, not set in the original, set in
  * the C build: fixed #727; the size field, the last size in the
  * original, 0 in the C build: fixed #735); SetListItem (the old copy,
@@ -378,7 +379,8 @@ int main(int argc, char **argv)
     ADDR(4);
     call("DelListItem", DELLISTITEM, 4, -1, 0);
     ADDR(4);
-    /* InitList over list 1 (the old one is not freed) */
+    /* InitList over list 1 (the old one lost in the original, freed in the
+       C build: fixed #731) */
     call("InitList", INITLIST, 1, 3, 0);
     ADDR(1);
 

@@ -107,11 +107,16 @@ changes d1, d2, a0, a1, InitList also a2).
   loaded would otherwise find the freed nodes of the run before (#733;
   test `rilinkedlistlib-no-current-check`, `libs_emulator` cases
   `[fixed #733]` of `rwe_rilinkedlistlib`).
+* InitList on a list that is already there frees its nodes and their
+  copies first, from the first node on. The original overwrote the
+  table entries: the old list was lost until the end of the program
+  (memlib frees it there) (#731; test `rilinkedlistlib-initlist-no-free`,
+  `libs_emulator` cases `[fixed #731]` of `rwe_rilinkedlistlib`: the
+  memlib stubs log the frees).
 
 **BUG(orig)** (kept):
 
 * No command checks list# (#732).
-* InitList does not free a list that is already there (#731).
 * A size word below 8 in front of the variable gives a size of almost
   4 GB (the allocation fails) (#736). No NEWTYPE variable has one: the
   compiler refuses a NEWTYPE of 32768 bytes or more ("Type too Big"),

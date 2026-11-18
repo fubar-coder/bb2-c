@@ -27,7 +27,6 @@
  *
  * BUG(orig), kept:
  *   - No command checks the list number (#732).
- *   - InitList does not free a list that is already there (#731).
  *   - The size: a word of less than 8 in front of the variable gives a
  *     size of almost 4 GB (the allocation fails) (#736).  No NEWTYPE
  *     variable has one (memlib's length of a NEWTYPE of at most 32767
@@ -79,6 +78,9 @@
  *     clears the tables, so that a second run of a program with the
  *     library still loaded starts without the nodes of the run before
  *     (#733).
+ *   - InitList on a list that is already there frees its nodes and their
+ *     copies first (the original overwrote the entries: the old list was
+ *     lost until the end) (#731).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -296,13 +298,32 @@ ULONG BLITZ_ROUTINE c_addrlistitem(ULONG list BL_REG(d0))
     return TAB(current);
 }
 
+/* free every node of the list listnum and its copy, from the first node
+   on, and clear the list's entries (fixed (#731): InitList did not) */
+static void freelist(void)
+{
+    ULONG node = TAB(first), next;
+
+    while (node) {
+        next = NODE(node)->next;
+        if (NODE(node)->data)
+            globfree(NODE(node)->data, NODE(node)->size);
+        globfree(node, NODESIZE);
+        node = next;
+    }
+    TAB(first) = 0;
+    TAB(last) = 0;
+    TAB(current) = 0;
+}
+
 /**
  * @brief InitList list#,var: start a list with one node holding a copy of var.
  *
  * The node and the copy are memlib globalloc'ed (flags 0), the copy is
- * made by RIAmosFuncLib's CopyByte.  BUG(orig): a list that is already
- * there is not freed (#731); list# is not checked (#732); the size as
- * in SizeOfListItem (#736).
+ * made by RIAmosFuncLib's CopyByte.  BUG(orig): list# is not checked
+ * (#732); the size as in SizeOfListItem (#736).  Fixed (#731): a list
+ * that is already there is freed first, its nodes and their copies (the
+ * original overwrote the entries: they were lost until the end).
  * @param list  d0: list# (0-4)
  * @param var   d1: the variable (BL_VARPTR)
  * @return d0: BB_TRUE, BB_FALSE if there is no memory (the node is freed
@@ -313,6 +334,7 @@ BB_BOOL BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     ULONG node;
 
     listnum = list << 2;
+    freelist();                         /* fixed (#731): was not freed */
     getvarsize(var);
     node = globalloc(NODESIZE);
     if (!node)
