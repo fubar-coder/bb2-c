@@ -78,6 +78,12 @@ kind F):
   (user decision W3 Q4). The original kept the pointer to the title
   string, which it gives up to the string work area, so a later call
   without a title showed whatever had been built there since (#789).
+* init clears `FrStruct`'s window together with the colour requester's
+  (`routput`). The original cleared only `routput`; `FrStruct` is
+  library data (`#frq_Window=0` only its initial value), so a second run
+  of the program with the library still loaded (from the editor) gave the
+  file requester the first run's window, closed at its end, until its
+  own ReqOutput, while the colour requester got none (#1090).
 
 ## Kept
 

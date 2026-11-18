@@ -53,6 +53,11 @@
  *     a later call without a title has the empty title buffer again.
  *     The original kept the pointer to the title string, which it gives
  *     up to the string work area, for later calls without one (#789).
+ *   - init clears FrStruct's window together with the colour requester's
+ *     (routput).  The original cleared only routput: FrStruct is library
+ *     data, so a second run of the program with the library still loaded
+ *     (from the editor) gave the file requester the first run's window,
+ *     closed at its end, until its own ReqOutput (#1090).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -165,8 +170,12 @@ static const char reqname[] = "req.library";
  * directory (150), file (150) and path (320); their addresses go to
  * frq_Title ... frq_PathName and into FrStruct's title, directory, file
  * and path fields (fixed, #785: the original never set the fields; its
- * first version, ReqLib.bb, had them).  If the AllocMem fails, the
- * library is closed again (_oops2).
+ * first version, ReqLib.bb, had them).  No output window: FrStruct's
+ * window and the colour requester's are cleared (fixed, #1090: the
+ * original cleared only the colour requester's, so a second run from the
+ * editor gave the file requester the first run's closed window until its
+ * own ReqOutput).  If the AllocMem fails, the library is closed again
+ * (_oops2).
  * @param incoming  d0: returned unchanged if the library is already open
  * @return d0: the path buffer; 0 if the library or the memory is missing
  */
@@ -193,6 +202,7 @@ static ULONG BLITZ_ROUTINE libinit_c(ULONG incoming BL_REG(d0))
     FrStruct.dir = frq_Dir;
     FrStruct.file = frq_File;
     FrStruct.pathname = frq_PathName;
+    FrStruct.window = NULL;                             /* fixed (#1090) */
     routput = NULL;
     return (ULONG)frq_PathName;
 }

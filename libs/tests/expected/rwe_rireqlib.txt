@@ -292,7 +292,8 @@ ReqFileRequest|window|form 1 title Cancel flags $0 ret 0 path "never"|1	$CAFE004
 ReqFileRequest|window|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$CAFE0042
 ReqFileRequest|window|form 2 title Cancel again flags $41 ret 0 path "never"|1	$CAFE0042
 ReqFileRequest|window|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$CAFE0042
-ReqFileRequest|window|second run|1	$CAFE0042
+ReqFileRequest|window|second run|1 [orig]	$CAFE0042
+ReqFileRequest|window|second run|1 [fixed #1090]	$00000000
 ReqFlags|kept|$12345678|1	kept
 ReqFlags|popped|$12345678|1	$00000000
 ReqOutput|kept||1	kept
