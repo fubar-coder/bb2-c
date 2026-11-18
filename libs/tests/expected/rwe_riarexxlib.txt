@@ -252,7 +252,8 @@ RXGetArg|a3|quote ' arg 7|1	$00000010
 RXGetArg|a3|quote ' arg 8|1	$00000010
 RXGetArg|a3|quote ' arg 9|1	$00000010
 RXGetArg|a3|still tokenised arg 0|1	$00000010
-RXGetArg|a3|still tokenised arg 1|1	$00000011
+RXGetArg|a3|still tokenised arg 1|1 [orig]	$00000011
+RXGetArg|a3|still tokenised arg 1|1 [fixed #547]	$00000018
 RXGetArg|a3|still tokenised arg 10|1	$00000010
 RXGetArg|a3|still tokenised arg 11|1	$00000010
 RXGetArg|a3|still tokenised arg 12|1	$00000010
@@ -261,12 +262,18 @@ RXGetArg|a3|still tokenised arg 14|1	$00000010
 RXGetArg|a3|still tokenised arg 15|1	$00000010
 RXGetArg|a3|still tokenised arg 16|1	$00000010
 RXGetArg|a3|still tokenised arg 17|1	$00000010
-RXGetArg|a3|still tokenised arg 2|1	$00000011
-RXGetArg|a3|still tokenised arg 3|1	$00000011
-RXGetArg|a3|still tokenised arg 4|1	$00000014
-RXGetArg|a3|still tokenised arg 5|1	$00000014
-RXGetArg|a3|still tokenised arg 6|1	$00000014
-RXGetArg|a3|still tokenised arg 7|1	$00000013
+RXGetArg|a3|still tokenised arg 2|1 [orig]	$00000011
+RXGetArg|a3|still tokenised arg 2|1 [fixed #547]	$00000010
+RXGetArg|a3|still tokenised arg 3|1 [orig]	$00000011
+RXGetArg|a3|still tokenised arg 3|1 [fixed #547]	$00000010
+RXGetArg|a3|still tokenised arg 4|1 [orig]	$00000014
+RXGetArg|a3|still tokenised arg 4|1 [fixed #547]	$00000010
+RXGetArg|a3|still tokenised arg 5|1 [orig]	$00000014
+RXGetArg|a3|still tokenised arg 5|1 [fixed #547]	$00000010
+RXGetArg|a3|still tokenised arg 6|1 [orig]	$00000014
+RXGetArg|a3|still tokenised arg 6|1 [fixed #547]	$00000010
+RXGetArg|a3|still tokenised arg 7|1 [orig]	$00000013
+RXGetArg|a3|still tokenised arg 7|1 [fixed #547]	$00000010
 RXGetArg|a3|still tokenised arg 8|1	$00000010
 RXGetArg|a3|still tokenised arg 9|1	$00000010
 RXGetArg|a3|test message arg 0|1	$00000010
@@ -522,7 +529,8 @@ RXGetArg|d0|quote ' arg 7|1	$00000000
 RXGetArg|d0|quote ' arg 8|1	$00000000
 RXGetArg|d0|quote ' arg 9|1	$00000000
 RXGetArg|d0|still tokenised arg 0|1	$00000000
-RXGetArg|d0|still tokenised arg 1|1	$00000001
+RXGetArg|d0|still tokenised arg 1|1 [orig]	$00000001
+RXGetArg|d0|still tokenised arg 1|1 [fixed #547]	$00000008
 RXGetArg|d0|still tokenised arg 10|1	$00000000
 RXGetArg|d0|still tokenised arg 11|1	$00000000
 RXGetArg|d0|still tokenised arg 12|1	$00000000
@@ -531,12 +539,18 @@ RXGetArg|d0|still tokenised arg 14|1	$00000000
 RXGetArg|d0|still tokenised arg 15|1	$00000000
 RXGetArg|d0|still tokenised arg 16|1	$00000000
 RXGetArg|d0|still tokenised arg 17|1	$00000000
-RXGetArg|d0|still tokenised arg 2|1	$00000001
-RXGetArg|d0|still tokenised arg 3|1	$00000001
-RXGetArg|d0|still tokenised arg 4|1	$00000004
-RXGetArg|d0|still tokenised arg 5|1	$00000004
-RXGetArg|d0|still tokenised arg 6|1	$00000004
-RXGetArg|d0|still tokenised arg 7|1	$00000003
+RXGetArg|d0|still tokenised arg 2|1 [orig]	$00000001
+RXGetArg|d0|still tokenised arg 2|1 [fixed #547]	$00000000
+RXGetArg|d0|still tokenised arg 3|1 [orig]	$00000001
+RXGetArg|d0|still tokenised arg 3|1 [fixed #547]	$00000000
+RXGetArg|d0|still tokenised arg 4|1 [orig]	$00000004
+RXGetArg|d0|still tokenised arg 4|1 [fixed #547]	$00000000
+RXGetArg|d0|still tokenised arg 5|1 [orig]	$00000004
+RXGetArg|d0|still tokenised arg 5|1 [fixed #547]	$00000000
+RXGetArg|d0|still tokenised arg 6|1 [orig]	$00000004
+RXGetArg|d0|still tokenised arg 6|1 [fixed #547]	$00000000
+RXGetArg|d0|still tokenised arg 7|1 [orig]	$00000003
+RXGetArg|d0|still tokenised arg 7|1 [fixed #547]	$00000000
 RXGetArg|d0|still tokenised arg 8|1	$00000000
 RXGetArg|d0|still tokenised arg 9|1	$00000000
 RXGetArg|d0|test message arg 0|1	$00000000
@@ -1332,7 +1346,8 @@ RXGetArg|string area|quote ' arg 7|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|quote ' arg 8|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|quote ' arg 9|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|still tokenised arg 0|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|still tokenised arg 1|1	bytes 1024 fnv 635C0595
+RXGetArg|string area|still tokenised arg 1|1 [orig]	bytes 1024 fnv 635C0595
+RXGetArg|string area|still tokenised arg 1|1 [fixed #547]	bytes 1024 fnv F74C8274
 RXGetArg|string area|still tokenised arg 10|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|still tokenised arg 11|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|still tokenised arg 12|1	bytes 1024 fnv 472C7DC5
@@ -1341,12 +1356,18 @@ RXGetArg|string area|still tokenised arg 14|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|still tokenised arg 15|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|still tokenised arg 16|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|still tokenised arg 17|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|still tokenised arg 2|1	bytes 1024 fnv 6D30CFA0
-RXGetArg|string area|still tokenised arg 3|1	bytes 1024 fnv DF501E57
-RXGetArg|string area|still tokenised arg 4|1	bytes 1024 fnv DC90342B
-RXGetArg|string area|still tokenised arg 5|1	bytes 1024 fnv 4C8A9C7F
-RXGetArg|string area|still tokenised arg 6|1	bytes 1024 fnv 286B324F
-RXGetArg|string area|still tokenised arg 7|1	bytes 1024 fnv C67FE2B1
+RXGetArg|string area|still tokenised arg 2|1 [orig]	bytes 1024 fnv 6D30CFA0
+RXGetArg|string area|still tokenised arg 2|1 [fixed #547]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|still tokenised arg 3|1 [orig]	bytes 1024 fnv DF501E57
+RXGetArg|string area|still tokenised arg 3|1 [fixed #547]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|still tokenised arg 4|1 [orig]	bytes 1024 fnv DC90342B
+RXGetArg|string area|still tokenised arg 4|1 [fixed #547]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|still tokenised arg 5|1 [orig]	bytes 1024 fnv 4C8A9C7F
+RXGetArg|string area|still tokenised arg 5|1 [fixed #547]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|still tokenised arg 6|1 [orig]	bytes 1024 fnv 286B324F
+RXGetArg|string area|still tokenised arg 6|1 [fixed #547]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|still tokenised arg 7|1 [orig]	bytes 1024 fnv C67FE2B1
+RXGetArg|string area|still tokenised arg 7|1 [fixed #547]	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|still tokenised arg 8|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|still tokenised arg 9|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|test message arg 0|1	bytes 1024 fnv 472C7DC5
@@ -1446,14 +1467,16 @@ RXNextArg|a3|quote ' next 1|1	$00000013
 RXNextArg|a3|quote ' next 2|1	$00000012
 RXNextArg|a3|quote ' next 3|1	$00000012
 RXNextArg|a3|quote ' next 4|1	$00000010
-RXNextArg|a3|still tokenised next 0|1	$00000011
-RXNextArg|a3|still tokenised next 1|1	$00000011
-RXNextArg|a3|still tokenised next 2|1	$00000011
-RXNextArg|a3|still tokenised next 3|1	$00000014
-RXNextArg|a3|still tokenised next 4|1	$00000014
-RXNextArg|a3|still tokenised next 5|1	$00000014
-RXNextArg|a3|still tokenised next 6|1	$00000013
-RXNextArg|a3|still tokenised next 7|1	$00000010
+RXNextArg|a3|still tokenised next 0|1 [orig]	$00000011
+RXNextArg|a3|still tokenised next 0|1 [fixed #547]	$00000018
+RXNextArg|a3|still tokenised next 1|1 [orig]	$00000011
+RXNextArg|a3|still tokenised next 1|1 [fixed #547]	$00000010
+RXNextArg|a3|still tokenised next 2|1 [orig #547]	$00000011
+RXNextArg|a3|still tokenised next 3|1 [orig #547]	$00000014
+RXNextArg|a3|still tokenised next 4|1 [orig #547]	$00000014
+RXNextArg|a3|still tokenised next 5|1 [orig #547]	$00000014
+RXNextArg|a3|still tokenised next 6|1 [orig #547]	$00000013
+RXNextArg|a3|still tokenised next 7|1 [orig #547]	$00000010
 RXNextArg|a3|test message next 0|1	$00000014
 RXNextArg|a3|test message next 1|1	$00000018
 RXNextArg|a3|test message next 2|1	$00000010
@@ -1500,14 +1523,16 @@ RXNextArg|d0|quote ' next 1|1	$00000003
 RXNextArg|d0|quote ' next 2|1	$00000002
 RXNextArg|d0|quote ' next 3|1	$00000002
 RXNextArg|d0|quote ' next 4|1	$00000000
-RXNextArg|d0|still tokenised next 0|1	$00000001
-RXNextArg|d0|still tokenised next 1|1	$00000001
-RXNextArg|d0|still tokenised next 2|1	$00000001
-RXNextArg|d0|still tokenised next 3|1	$00000004
-RXNextArg|d0|still tokenised next 4|1	$00000004
-RXNextArg|d0|still tokenised next 5|1	$00000004
-RXNextArg|d0|still tokenised next 6|1	$00000003
-RXNextArg|d0|still tokenised next 7|1	$00000000
+RXNextArg|d0|still tokenised next 0|1 [orig]	$00000001
+RXNextArg|d0|still tokenised next 0|1 [fixed #547]	$00000008
+RXNextArg|d0|still tokenised next 1|1 [orig]	$00000001
+RXNextArg|d0|still tokenised next 1|1 [fixed #547]	$00000000
+RXNextArg|d0|still tokenised next 2|1 [orig #547]	$00000001
+RXNextArg|d0|still tokenised next 3|1 [orig #547]	$00000004
+RXNextArg|d0|still tokenised next 4|1 [orig #547]	$00000004
+RXNextArg|d0|still tokenised next 5|1 [orig #547]	$00000004
+RXNextArg|d0|still tokenised next 6|1 [orig #547]	$00000003
+RXNextArg|d0|still tokenised next 7|1 [orig #547]	$00000000
 RXNextArg|d0|test message next 0|1	$00000004
 RXNextArg|d0|test message next 1|1	$00000008
 RXNextArg|d0|test message next 2|1	$00000000
@@ -1556,12 +1581,12 @@ RXNextArg|kept|quote ' next 3|1	kept
 RXNextArg|kept|quote ' next 4|1	kept
 RXNextArg|kept|still tokenised next 0|1	kept
 RXNextArg|kept|still tokenised next 1|1	kept
-RXNextArg|kept|still tokenised next 2|1	kept
-RXNextArg|kept|still tokenised next 3|1	kept
-RXNextArg|kept|still tokenised next 4|1	kept
-RXNextArg|kept|still tokenised next 5|1	kept
-RXNextArg|kept|still tokenised next 6|1	kept
-RXNextArg|kept|still tokenised next 7|1	kept
+RXNextArg|kept|still tokenised next 2|1 [orig #547]	kept
+RXNextArg|kept|still tokenised next 3|1 [orig #547]	kept
+RXNextArg|kept|still tokenised next 4|1 [orig #547]	kept
+RXNextArg|kept|still tokenised next 5|1 [orig #547]	kept
+RXNextArg|kept|still tokenised next 6|1 [orig #547]	kept
+RXNextArg|kept|still tokenised next 7|1 [orig #547]	kept
 RXNextArg|kept|test message next 0|1	kept
 RXNextArg|kept|test message next 1|1	kept
 RXNextArg|kept|test message next 2|1	kept
@@ -1610,12 +1635,12 @@ RXNextArg|popped|quote ' next 3|1	$00000000
 RXNextArg|popped|quote ' next 4|1	$00000000
 RXNextArg|popped|still tokenised next 0|1	$00000000
 RXNextArg|popped|still tokenised next 1|1	$00000000
-RXNextArg|popped|still tokenised next 2|1	$00000000
-RXNextArg|popped|still tokenised next 3|1	$00000000
-RXNextArg|popped|still tokenised next 4|1	$00000000
-RXNextArg|popped|still tokenised next 5|1	$00000000
-RXNextArg|popped|still tokenised next 6|1	$00000000
-RXNextArg|popped|still tokenised next 7|1	$00000000
+RXNextArg|popped|still tokenised next 2|1 [orig #547]	$00000000
+RXNextArg|popped|still tokenised next 3|1 [orig #547]	$00000000
+RXNextArg|popped|still tokenised next 4|1 [orig #547]	$00000000
+RXNextArg|popped|still tokenised next 5|1 [orig #547]	$00000000
+RXNextArg|popped|still tokenised next 6|1 [orig #547]	$00000000
+RXNextArg|popped|still tokenised next 7|1 [orig #547]	$00000000
 RXNextArg|popped|test message next 0|1	$00000000
 RXNextArg|popped|test message next 1|1	$00000000
 RXNextArg|popped|test message next 2|1	$00000000
@@ -1662,14 +1687,16 @@ RXNextArg|string area|quote ' next 1|1	bytes 1024 fnv EF23D284
 RXNextArg|string area|quote ' next 2|1	bytes 1024 fnv E3FEF489
 RXNextArg|string area|quote ' next 3|1	bytes 1024 fnv 0041CDC0
 RXNextArg|string area|quote ' next 4|1	bytes 1024 fnv 472C7DC5
-RXNextArg|string area|still tokenised next 0|1	bytes 1024 fnv 635C0595
-RXNextArg|string area|still tokenised next 1|1	bytes 1024 fnv 6D30CFA0
-RXNextArg|string area|still tokenised next 2|1	bytes 1024 fnv DF501E57
-RXNextArg|string area|still tokenised next 3|1	bytes 1024 fnv DC90342B
-RXNextArg|string area|still tokenised next 4|1	bytes 1024 fnv 4C8A9C7F
-RXNextArg|string area|still tokenised next 5|1	bytes 1024 fnv 286B324F
-RXNextArg|string area|still tokenised next 6|1	bytes 1024 fnv C67FE2B1
-RXNextArg|string area|still tokenised next 7|1	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|still tokenised next 0|1 [orig]	bytes 1024 fnv 635C0595
+RXNextArg|string area|still tokenised next 0|1 [fixed #547]	bytes 1024 fnv F74C8274
+RXNextArg|string area|still tokenised next 1|1 [orig]	bytes 1024 fnv 6D30CFA0
+RXNextArg|string area|still tokenised next 1|1 [fixed #547]	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|still tokenised next 2|1 [orig #547]	bytes 1024 fnv DF501E57
+RXNextArg|string area|still tokenised next 3|1 [orig #547]	bytes 1024 fnv DC90342B
+RXNextArg|string area|still tokenised next 4|1 [orig #547]	bytes 1024 fnv 4C8A9C7F
+RXNextArg|string area|still tokenised next 5|1 [orig #547]	bytes 1024 fnv 286B324F
+RXNextArg|string area|still tokenised next 6|1 [orig #547]	bytes 1024 fnv C67FE2B1
+RXNextArg|string area|still tokenised next 7|1 [orig #547]	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|test message next 0|1	bytes 1024 fnv B62D8FAF
 RXNextArg|string area|test message next 1|1	bytes 1024 fnv 43BD8CDA
 RXNextArg|string area|test message next 2|1	bytes 1024 fnv 472C7DC5
@@ -1690,7 +1717,8 @@ RXNumArgs|d0|empty word|1	$00000001
 RXNumArgs|d0|long command|1	$00000006
 RXNumArgs|d0|no port|1	$00000000
 RXNumArgs|d0|quote '|1	$00000004
-RXNumArgs|d0|still tokenised|1	$00000007
+RXNumArgs|d0|still tokenised|1 [orig]	$00000007
+RXNumArgs|d0|still tokenised|1 [fixed #547]	$00000001
 RXNumArgs|d0|test message|1	$00000002
 RXNumArgs|d0|tokenised|1	$00000003
 RXNumArgs|d0|untokenised|1	$00000001

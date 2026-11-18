@@ -23,7 +23,7 @@
  * word, a doubled quote: BUG(orig) #535, the character after a closing
  * quote: #538, an empty word: #536, a closing quote at the end of a
  * command after a longer one: #538, RXQuoteChar), RXTokenise off and
- * BUG(orig) #547 "off" with a word whose upper word is set; RXGetArg 0..17,
+ * "off" with a word whose upper word is set (#547, fixed); RXGetArg 0..17,
  * RXNextArg to the end, RXNumArgs, RXSendersName, RXReplyMsg both forms
  * to our own port, to the test (the Result2 string) and to a sender
  * whose port is gone (BUG(orig) #540: no reply); replies to our messages

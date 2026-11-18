@@ -92,6 +92,9 @@ kind F):
   RXDefaultPort stayed: after RXDefaultPort "RWERESP" and a second run
   of the program with the library still loaded (from the editor) the
   default port was "REXXE" (#532).
+* **RXTokenise** stores and tests the word of its argument. The original
+  stored the whole register (`MOVE.l d0`), so "off" with a set upper
+  word stayed on (#547).
 
 ## BUG(orig), kept
 
@@ -134,8 +137,6 @@ kind F):
   * the 16 rm_Args slots are not checked (#527).
 * **RXNextArg** does not advance after an empty argument (it returns ""
   again) (#534).
-* **RXTokenise** stores the whole register of its word argument, so
-  "off" with a set upper word stays on (#547).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

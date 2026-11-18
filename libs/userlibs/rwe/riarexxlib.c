@@ -42,6 +42,9 @@
  *   - init writes "REXX" and its 0 at +4 into the default port name (the
  *     original wrote the 0 at +5: the byte at +4 of an earlier
  *     RXDefaultPort stayed) (#532).
+ *   - RXTokenise stores and tests the word of its argument (the original
+ *     stored the whole register: "off" with a set upper word stayed on)
+ *     (#547).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -75,7 +78,6 @@
  *     empty word ("") ends the arguments (#536); there is no limit of 16
  *     arguments (rm_Args) (#527).
  *   - RXNextArg does not advance after an empty argument (#534).
- *   - RXTokenise stores the whole register of its word argument (#547).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -263,7 +265,7 @@ BLITZ_ERRCHK_THUNK(portchk, portchk_c, "d0-d1/a0-a1");
 static ULONG msgstring, msgtype;
 static UBYTE *msgportname;
 static UBYTE quote;
-static ULONG tokenise;                  /* RXTokenise: the whole register (#547) */
+static UWORD tokenise;                  /* RXTokenise: the word (fixed #547) */
 static UWORD oktodelete;
 static UBYTE *curadr;                   /* the parser (parseadr unused) */
 static UBYTE tempstorage[256], stringbuffer[256];
@@ -399,7 +401,7 @@ static ULONG tostring(const UBYTE *s)
 static ULONG BLITZ_ROUTINE libinit_c(void)
 {
     quote = 34;
-    tokenise = BB_TRUE;
+    tokenise = (UWORD)BB_TRUE;
     v.rexxportname[0] = 'R';            /* MOVE.l #"REXX" */
     v.rexxportname[1] = 'E';
     v.rexxportname[2] = 'X';
@@ -420,7 +422,7 @@ static void deleteport(void);
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
-    tokenise = BB_TRUE;
+    tokenise = (UWORD)BB_TRUE;
     if (msgport)
         deleteport();
 }
@@ -453,13 +455,14 @@ BLITZ_THUNK(_rxmessagelist, rxmessagelist_c, "d1/a0-a1");
  * @brief RXTokenise on|off: whether commands are split into words (with
  * RXQuoteChar quotes) or sent as one argument string.
  *
- * BUG(orig) (#547): MOVE.l d0 stores the upper word of the word argument
- * too.
- * @param on  d0.w: 0 off, else on (the whole register is stored)
+ * Fixed (#547): only the word is stored; the original's MOVE.l d0 stored
+ * the upper word of the register too, so "off" with a set upper word
+ * stayed on.
+ * @param on  d0.w: 0 off, else on (the upper word is not part of it)
  */
 static void BLITZ_ROUTINE rxtokenise_c(ULONG on BL_REG(d0))
 {
-    tokenise = on;
+    tokenise = (UWORD)on;
 }
 BLITZ_THUNK(_rxtokenise, rxtokenise_c, "d0-d1/a0-a1");
 
