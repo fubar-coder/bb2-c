@@ -44,14 +44,17 @@
  * DeleteCxObj through the closed base (#556).  finit deletes the broker
  * with DeleteCxObjAll, its hotkey filters and senders with it, and
  * clears the slots; the original's DeleteCxObj left them allocated (#557).
+ * SetHotKey's number indexes cxfilter[n] / cxsends[n] (in the variables'
+ * original layout, st below) without a check, so n >= 16 or < 0 hits the
+ * variables around them; the original has no error check area, here the
+ * library has one: with runtime error checking a number outside 0..15 is
+ * the runtime error "Hotkey number must be 0 to 15" (hotkeynumchk);
+ * release code unchanged (an invalid argument) (#564).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
  *     (#558);
- *   - SetHotKey does not check the number: the slots are cxfilter[n] /
- *     cxsends[n] in the variables' original layout (st below), so n >= 16
- *     or < 0 hits the variables around them (#564); a replaced
- *     filter/sender is removed but not deleted; the sender is only
+ *   - SetHotKey: a replaced filter/sender is removed but not deleted; the sender is only
  *     removed if the filter existed; objects made before a failure stay
  *     (#563); AttachCxObj (void) is tested through the d0 it leaves;
  *     CxObjError is not looked at (the unreachable 'oops2 tail is not
@@ -85,6 +88,7 @@ void appear(void), disappear(void), kill(void), list(void), unqiue(void);
 void cxdisable(void), cxenable(void), cxappear(void), cxdisappear(void);
 void cxkill(void), cxlist(void), cxunique(void), status(void), port(void);
 void ricommoditieslib_libinit(void), ricommoditieslib_libfinit(void);
+void hotkeynumchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -94,8 +98,9 @@ BLITZ_ENTRY_DECL(finit);
     BLITZ_AFUNCTION(BL_LONG); BLITZ_ARGS0(); BLITZ_LIBS0();             \
     BLITZ_SUBS(BLITZ_AMIGAONLY(code), 0, 0); BLITZ_NAME(name, help)
 
-/* !libheader {#ricommoditieslib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_ricommoditieslib, init, BL_NORET, finit, 0);
+/* !libheader {#ricommoditieslib,init,0,finit,0}; error field: the error
+   check area of hotkeynumchk (fixed, #564) */
+BLITZ_LIBHEADER(LIB_ricommoditieslib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_STRING, BL_STRING, BL_STRING);
@@ -107,7 +112,7 @@ BLITZ_NAME("MakeCommodity", "(name$,title$,description$");
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(addhotkey), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(addhotkey), hotkeynumchk, 0);    /* check: fixed #564 */
 BLITZ_NAME("SetHotKey", "(hotkeynum,hotkey$)");
 
 RI_FUNC(hotkeyhit, "HotKeyHit", "");
@@ -397,9 +402,10 @@ static LONG attach(CxObj *head, CxObj *co)
  * @brief SetHotKey(hotkeynum,hotkey$): a hotkey filter with a sender (id
  * hotkeynum) attached to the broker.
  *
- * Amiga mode only; the broker is activated afterwards.  BUG(orig): the
- * number is not checked, slots outside 0-15 hit the variables around
- * cxfilter/cxsends (#564); a replaced filter/sender is removed but not
+ * Amiga mode only; the broker is activated afterwards.  A number outside
+ * 0..15 hits the variables around cxfilter/cxsends: an invalid argument,
+ * refused by hotkeynumchk with runtime error checking (#564).
+ * BUG(orig): a replaced filter/sender is removed but not
  * deleted, the sender only if the filter existed, and objects made
  * before a failure stay (#563); AttachCxObj (void) is tested through the
  * d0 it leaves, CxObjError is not looked at (#565).
@@ -525,3 +531,28 @@ static BB_BOOL BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR titl
     return BB_TRUE;
 }
 BLITZ_THUNK(makecommodity, makecommodity_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badhotkey, "Hotkey number must be 0 to 15");  /* fixed, #564 */
+
+/**
+ * @brief The error check of SetHotKey (debugger only).
+ *
+ * Fixed (#564), not in the original (ricommoditieslib had no error check
+ * area): the number indexes the tables of 16 filters and senders without
+ * a check, so a number outside 0..15 made SetHotKey remove and overwrite
+ * the variables around them (with -1 the broker).  The release code is
+ * unchanged (an invalid argument).
+ *
+ * Errors: "Hotkey number must be 0 to 15".
+ * @param n  d0: the hotkey number
+ */
+static void BLITZ_ERRCHK hotkeynumchk_c(ULONG n BL_REG(d0))
+{
+    if (n >= 16)
+        BLITZ_RUNERR(badhotkey);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(hotkeynumchk, hotkeynumchk_c, "d0-d1/a0-a1");

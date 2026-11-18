@@ -69,11 +69,20 @@ are one packed struct in the order of the original's data block, so that
   senders attached to it with it, and clears the 16 slots; the
   original's `DeleteCxObj` deleted only the broker and left them
   allocated (and in the slots, for a second run from the editor) (#557).
+* the library has an error check area (the original has none): with
+  runtime error checking `SetHotKey` with a number outside 0–15 is the
+  runtime error "Hotkey number must be 0 to 15" (`hotkeynumchk`). The
+  number indexes the tables of 16 filters and senders, which lie in the
+  variables' original layout; outside 0–15 it removes and overwrites
+  the variables around them (with -1 the broker). Release code
+  unchanged: an invalid argument (#564). The library header's error
+  field and `SetHotKey`'s check differ from the reference's declarations
+  (`ricommoditieslib.declarations-intended.txt`).
 
 **BUG(orig)** (kept, commented in the code):
 
 * the help text of `MakeCommodity` lacks the closing parenthesis (#558);
-* `SetHotKey` does not check the number (#564); a replaced filter/sender
+* `SetHotKey`: a replaced filter/sender
   is removed but not deleted; the sender is only removed if the filter
   existed; objects made before a failure stay (#563); `CxObjError` is not
   looked at (the `'oops2` tail is unreachable, not translated) (#565);
@@ -130,7 +139,9 @@ characters (commodities keeps 23 and compares them with the full name).
 
 **Not covered:** `WaitCommodity` on an empty port (waits, without a
 hotkey forever), real key hotkeys (the keys would reach the console),
-`SetHotKey` with a number outside 0–15, two successful `MakeCommodity`
+`SetHotKey` with a number outside 0–15 (bug-orig test
+`ricommoditieslib-sethotkey-range`, with runtime error checking), two
+successful `MakeCommodity`
 (leaves a broker with a deleted port, see above), a missing
 commodities.library (bug-orig test `ricommoditieslib-init-unchecked`,
 inject `openlibfail=`).

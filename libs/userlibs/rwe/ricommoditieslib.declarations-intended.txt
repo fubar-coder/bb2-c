@@ -1,0 +1,9 @@
+# the intended differences of ricommoditieslib against the reference build
+# of its source (blitzlib compare, docs/development.md "Intended
+# differences")
+# #564: SetHotKey gets an error check (hotkeynumchk, "Hotkey number must be
+# 0 to 15"); ricommoditieslib gets an error check area for it (the
+# original has none)
+lib 89: header +$2C: code offset set in only one of them
+lib 89: entry 1 SetHotKey +$C: code offset set in only one of them
+lib 89: relocations in the declaration part 26 != 28

@@ -1,6 +1,6 @@
 [compile]
 ok
 [run]
-0
-0
+before
+REQUESTER: AutoRequest body "Hotkey number must be 0 to 15" *
 rc=0
