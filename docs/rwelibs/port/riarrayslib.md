@@ -22,15 +22,22 @@ the type: 1 byte, 2 word, 3 long; any other type (quick, float, string
 
 Both forms are inline routines (`Dc $a000,len`: the compiler copies the
 code to the call), so they stay assembler (`BLITZ_INLINE`), with the
-original instructions; the C build's code equals the reference build's
-byte for byte. init and finit are empty C functions.
+original instructions and one compare more (#882, below); otherwise the
+C build's code equals the reference build's byte for byte. init and
+finit are empty C functions.
 
-## BUG(orig), kept
+## Fixed
 
-* The loops store first and compare after (`CMP.l a0,a1:BNE`): an end
-  that is not reached exactly – an array size that is not a multiple of
-  the element size, or no element at all – runs on through memory
-  (#882).
+Original bugs fixed in the port (`docs/libs/deviations.md`, 3a,
+kind F):
+
+* The loops store first and compare after (`CMP.l a0,a1:BNE`): an array
+  without elements (the end at the start) ran on through memory. One
+  `CMP.l a0,a1:BLS` before the type dispatch does nothing for an end at
+  or below the start: 4 bytes and one compare per call, nothing per
+  element (the loops are unchanged). An array size that is not a
+  multiple of the element size cannot occur (only byte, word and long
+  arrays are filled) and is not tested (#882).
 
 ## Test
 
@@ -45,4 +52,6 @@ registers. Covered: byte, word and long arrays of 1–37 elements, odd
 start addresses for bytes, values with garbage above the element size,
 both forms, a type word with garbage in its upper byte, the types that
 do nothing (0, 4, 5, 7, 8, byte/word/long only in the upper byte), init,
-finit. Not covered: an end that is not reached exactly (the bug).
+finit; the inline lengths are `[orig]`/`[fixed #882]` pairs. Not
+covered: an array without elements (the original runs through memory;
+the bug-orig test `riarrayslib-end-not-reached` shows it).

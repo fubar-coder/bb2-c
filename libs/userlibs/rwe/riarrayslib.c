@@ -17,9 +17,12 @@
  * (2) and long (3) - quick, float, string ... - do nothing.  init and
  * finit do nothing.
  *
- * BUG(orig): the loops store first and compare after (CMP.l a0,a1:BNE):
- * an end that is not reached exactly (a size that is no multiple of the
- * element size; an array of 0 elements) runs through memory (#882).
+ * Fixed (#882): the loops store first and compare after (CMP.l a0,a1:BNE),
+ * so an array without elements (the end at the start) ran on through
+ * memory.  One compare before the type dispatch (CMP.l a0,a1:BLS) does
+ * nothing for an end at or below the start; the loops are unchanged.  A
+ * size that is no multiple of the element size cannot occur (byte, word
+ * and long arrays only).
  */
 #include "blitzlib.h"
 
@@ -59,11 +62,14 @@ static void _libfinit(void)
 }
 
 /* the loop of both forms (in the order of the source: _fillarray2
-   first): src = d1 or #0 (the value), the type in d2 */
+   first): src = d1 or #0 (the value), the type in d2; nothing for an
+   end at or below the start (Fixed (#882)) */
 #define FILL(src)                                                           \
     "move.l  d0,a0\n"                   /* the first element */             \
     "   move.l  -(a2),a1\n"             /* the end of the array */          \
     "   move.w  -(a2),d2\n"             /* the type */                      \
+    "   cmp.l   a0,a1\n"                /* no element: nothing */           \
+    "   bls.s   13f\n"                                                      \
     "   cmp.b   #1,d2\n"                /* #byte */                         \
     "   beq.s   12f\n"                                                      \
     "   cmp.b   #2,d2\n"                /* #word */                         \
@@ -87,9 +93,9 @@ static void _libfinit(void)
  * @brief FillArray array(): every element of a byte, word or long array 0.
  *
  * Inline (Dc $a000).  MOVE.l/.w/.b #0 (not CLR, which reads first on the
- * 68000).  Other types do nothing.  BUG(orig) (#882): the loop stores
- * first and compares after; an end not reached exactly (a size that is
- * no multiple of the element size, 0 elements) runs through memory.
+ * 68000).  Other types do nothing, and so does an array without
+ * elements (Fixed (#882): the original's loop stored first and compared
+ * after, so it ran on through memory).
  * Parameters: d0 = the first element; on the a2 stack the type word and,
  * on top, the address behind the last element (both popped).
  * Result: nothing.
@@ -101,7 +107,8 @@ BLITZ_INLINE(_fillarray2, FILL("#0"));
  * array set to value.
  *
  * Inline as FillArray array(), with the value from d1 (its low byte or
- * word for byte and word arrays); the same BUG(orig) (#882).
+ * word for byte and word arrays); nothing for an array without elements
+ * (Fixed (#882)).
  * Parameters: d0 = the first element, d1 = the value; the a2 stack as
  * above.  Result: nothing.
  */

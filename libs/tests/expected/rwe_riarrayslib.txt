@@ -316,8 +316,10 @@ FillArray|d2|form 0 type $AB02 size 2 off 6 n 9 value $12345678|1	$5A02AB02
 FillArray|d2|form 0 type $FF00 size 4 off 8 n 5 value $5A5A5A5A|1	$5A02FF00
 FillArray|inline|form 0 inline|1	$00000001
 FillArray|inline|form 1 inline|1	$00000001
-FillArray|inline length|form 0 inline|1	$0000002E
-FillArray|inline length|form 1 inline|1	$00000036
+FillArray|inline length|form 0 inline|1 [orig]	$0000002E
+FillArray|inline length|form 0 inline|1 [fixed #882]	$00000032
+FillArray|inline length|form 1 inline|1 [orig]	$00000036
+FillArray|inline length|form 1 inline|1 [fixed #882]	$0000003A
 FillArray|kept|form 0 type $0000 size 4 off 8 n 5 value $5A5A5A5A|1	kept
 FillArray|kept|form 0 type $0001 size 1 off 4 n 2 value $50BFB56B|1	kept
 FillArray|kept|form 0 type $0001 size 1 off 4 n 21 value $E59B0742|1	kept

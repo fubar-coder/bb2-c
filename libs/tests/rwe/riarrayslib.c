@@ -15,9 +15,10 @@
  * word and long arrays of 1..37 elements at even and odd offsets
  * (bytes), values with garbage above the element size, both forms; the
  * types that do nothing (0, quick, float, string, 8, and a type word
- * with byte/word/long only in its upper byte); init and finit.  Not
- * covered: an end that is not reached exactly (BUG(orig) #882: runs through
- * memory).
+ * with byte/word/long only in its upper byte); init and finit.  The
+ * inline lengths are pairs: the port's code has one compare more (#882,
+ * fixed).  Not covered: an array without elements (the original runs
+ * through memory; the bug-orig test riarrayslib-end-not-reached).
  */
 #include "rwecmp.h"
 
