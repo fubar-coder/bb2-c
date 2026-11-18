@@ -101,6 +101,13 @@ kind F):
 * **RXNextArg** advances past every argument it returns, an empty one
   too (the argument slot is not 0). The original tested the length, so
   at an empty argument it returned "" for ever (#534).
+* **The tokenizer:** the character after a closing quote starts the next
+  word (user decision W4 Q2 (a)): `"g"h` gives `g` and `h`. The original
+  skipped it, meant for the space behind the word: `"g"h` gave `g` alone,
+  and after a quoted last word it skipped the terminating 0 and read on
+  in its buffer, so the rest of an earlier, longer command became further
+  arguments (`say "hi"` after `one two three four five six`: `say`, `hi`,
+  `hree`, `four`, `five`, `six`) (#538).
 
 ## BUG(orig), kept
 
@@ -136,8 +143,9 @@ kind F):
   * the command (256 bytes) and every word (256 bytes) are copied without
     a limit; the original then overwrites its own code (C: the data
     behind the buffers) (#537);
-  * a quote right after a closing quote is a quote, and any other
-    character there is skipped (`"g"h` gives `g`) (#538, #535);
+  * in a quoted word every second quote counts as the closing one, and a
+    quote right after it is a quote character: `"e""f" c d` gives one
+    word `e"f c d` (#535);
   * an empty word (`""`, `''`) ends the arguments (#536);
   * the 16 rm_Args slots are not checked (#527).
 

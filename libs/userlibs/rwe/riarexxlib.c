@@ -50,6 +50,10 @@
  *     (#547).
  *   - RXNextArg advances past every argument it returns, an empty one too
  *     (the original tested the length and returned "" for ever) (#534).
+ *   - The character after a closing quote starts the next word; the
+ *     original skipped it: `"g"h` gave g alone, and after a quoted last
+ *     word it skipped the 0 and read the rest of an earlier, longer
+ *     command as further arguments (#538, user decision W4 Q2 (a)).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -76,10 +80,10 @@
  *     name (#530).
  *   - The parser copies the command into 256 bytes and every word into
  *     256 bytes, both without a limit (in the original over its own
- *     code) (#537); a quote right after a closing quote is a quote
- *     character, any other character there is skipped (#538, #535); an
- *     empty word ("") ends the arguments (#536); there is no limit of 16
- *     arguments (rm_Args) (#527).
+ *     code) (#537); in a quoted word every second quote counts as the
+ *     closing one, and a quote right after it is a quote character
+ *     (#535); an empty word ("") ends the arguments (#536); there is no
+ *     limit of 16 arguments (rm_Args) (#527).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -557,10 +561,8 @@ static ULONG nextparsearg(UBYTE *out)
             continue;
         }
         quotes++;                       /* 'gotquote */
-        if (!(quotes & 1) && *p != quote) {
-            p++;                        /* BUG(orig): skips any character (#538 #535) */
-            goto endthis;
-        }
+        if (!(quotes & 1) && *p != quote)
+            goto endthis;               /* fixed (#538): the original skipped *p */
         if ((*dst++ = *p++) == 0)       /* 'cantquityet */
             goto endthisfirst;
     }

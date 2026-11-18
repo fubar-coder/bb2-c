@@ -63,7 +63,8 @@ RXGetArg|a3|after a closing quote arg 14|1	$00000010
 RXGetArg|a3|after a closing quote arg 15|1	$00000010
 RXGetArg|a3|after a closing quote arg 16|1	$00000010
 RXGetArg|a3|after a closing quote arg 17|1	$00000010
-RXGetArg|a3|after a closing quote arg 2|1	$00000010
+RXGetArg|a3|after a closing quote arg 2|1 [orig]	$00000010
+RXGetArg|a3|after a closing quote arg 2|1 [fixed #538]	$00000011
 RXGetArg|a3|after a closing quote arg 3|1	$00000010
 RXGetArg|a3|after a closing quote arg 4|1	$00000010
 RXGetArg|a3|after a closing quote arg 5|1	$00000010
@@ -100,10 +101,14 @@ RXGetArg|a3|closing quote at the end arg 15|1	$00000010
 RXGetArg|a3|closing quote at the end arg 16|1	$00000010
 RXGetArg|a3|closing quote at the end arg 17|1	$00000010
 RXGetArg|a3|closing quote at the end arg 2|1	$00000012
-RXGetArg|a3|closing quote at the end arg 3|1	$00000014
-RXGetArg|a3|closing quote at the end arg 4|1	$00000014
-RXGetArg|a3|closing quote at the end arg 5|1	$00000014
-RXGetArg|a3|closing quote at the end arg 6|1	$00000013
+RXGetArg|a3|closing quote at the end arg 3|1 [orig]	$00000014
+RXGetArg|a3|closing quote at the end arg 3|1 [fixed #538]	$00000010
+RXGetArg|a3|closing quote at the end arg 4|1 [orig]	$00000014
+RXGetArg|a3|closing quote at the end arg 4|1 [fixed #538]	$00000010
+RXGetArg|a3|closing quote at the end arg 5|1 [orig]	$00000014
+RXGetArg|a3|closing quote at the end arg 5|1 [fixed #538]	$00000010
+RXGetArg|a3|closing quote at the end arg 6|1 [orig]	$00000013
+RXGetArg|a3|closing quote at the end arg 6|1 [fixed #538]	$00000010
 RXGetArg|a3|closing quote at the end arg 7|1	$00000010
 RXGetArg|a3|closing quote at the end arg 8|1	$00000010
 RXGetArg|a3|closing quote at the end arg 9|1	$00000010
@@ -172,7 +177,8 @@ RXGetArg|a3|empty quotes in a word arg 15|1	$00000010
 RXGetArg|a3|empty quotes in a word arg 16|1	$00000010
 RXGetArg|a3|empty quotes in a word arg 17|1	$00000010
 RXGetArg|a3|empty quotes in a word arg 2|1	$00000011
-RXGetArg|a3|empty quotes in a word arg 3|1	$00000010
+RXGetArg|a3|empty quotes in a word arg 3|1 [orig]	$00000010
+RXGetArg|a3|empty quotes in a word arg 3|1 [fixed #538]	$00000011
 RXGetArg|a3|empty quotes in a word arg 4|1	$00000010
 RXGetArg|a3|empty quotes in a word arg 5|1	$00000010
 RXGetArg|a3|empty quotes in a word arg 6|1	$00000010
@@ -340,7 +346,8 @@ RXGetArg|d0|after a closing quote arg 14|1	$00000000
 RXGetArg|d0|after a closing quote arg 15|1	$00000000
 RXGetArg|d0|after a closing quote arg 16|1	$00000000
 RXGetArg|d0|after a closing quote arg 17|1	$00000000
-RXGetArg|d0|after a closing quote arg 2|1	$00000000
+RXGetArg|d0|after a closing quote arg 2|1 [orig]	$00000000
+RXGetArg|d0|after a closing quote arg 2|1 [fixed #538]	$00000001
 RXGetArg|d0|after a closing quote arg 3|1	$00000000
 RXGetArg|d0|after a closing quote arg 4|1	$00000000
 RXGetArg|d0|after a closing quote arg 5|1	$00000000
@@ -377,10 +384,14 @@ RXGetArg|d0|closing quote at the end arg 15|1	$00000000
 RXGetArg|d0|closing quote at the end arg 16|1	$00000000
 RXGetArg|d0|closing quote at the end arg 17|1	$00000000
 RXGetArg|d0|closing quote at the end arg 2|1	$00000002
-RXGetArg|d0|closing quote at the end arg 3|1	$00000004
-RXGetArg|d0|closing quote at the end arg 4|1	$00000004
-RXGetArg|d0|closing quote at the end arg 5|1	$00000004
-RXGetArg|d0|closing quote at the end arg 6|1	$00000003
+RXGetArg|d0|closing quote at the end arg 3|1 [orig]	$00000004
+RXGetArg|d0|closing quote at the end arg 3|1 [fixed #538]	$00000000
+RXGetArg|d0|closing quote at the end arg 4|1 [orig]	$00000004
+RXGetArg|d0|closing quote at the end arg 4|1 [fixed #538]	$00000000
+RXGetArg|d0|closing quote at the end arg 5|1 [orig]	$00000004
+RXGetArg|d0|closing quote at the end arg 5|1 [fixed #538]	$00000000
+RXGetArg|d0|closing quote at the end arg 6|1 [orig]	$00000003
+RXGetArg|d0|closing quote at the end arg 6|1 [fixed #538]	$00000000
 RXGetArg|d0|closing quote at the end arg 7|1	$00000000
 RXGetArg|d0|closing quote at the end arg 8|1	$00000000
 RXGetArg|d0|closing quote at the end arg 9|1	$00000000
@@ -449,7 +460,8 @@ RXGetArg|d0|empty quotes in a word arg 15|1	$00000000
 RXGetArg|d0|empty quotes in a word arg 16|1	$00000000
 RXGetArg|d0|empty quotes in a word arg 17|1	$00000000
 RXGetArg|d0|empty quotes in a word arg 2|1	$00000001
-RXGetArg|d0|empty quotes in a word arg 3|1	$00000000
+RXGetArg|d0|empty quotes in a word arg 3|1 [orig]	$00000000
+RXGetArg|d0|empty quotes in a word arg 3|1 [fixed #538]	$00000001
 RXGetArg|d0|empty quotes in a word arg 4|1	$00000000
 RXGetArg|d0|empty quotes in a word arg 5|1	$00000000
 RXGetArg|d0|empty quotes in a word arg 6|1	$00000000
@@ -1157,7 +1169,8 @@ RXGetArg|string area|after a closing quote arg 14|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|after a closing quote arg 15|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|after a closing quote arg 16|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|after a closing quote arg 17|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|after a closing quote arg 2|1	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|after a closing quote arg 2|1 [orig]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|after a closing quote arg 2|1 [fixed #538]	bytes 1024 fnv F53E3885
 RXGetArg|string area|after a closing quote arg 3|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|after a closing quote arg 4|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|after a closing quote arg 5|1	bytes 1024 fnv 472C7DC5
@@ -1194,10 +1207,14 @@ RXGetArg|string area|closing quote at the end arg 15|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|closing quote at the end arg 16|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|closing quote at the end arg 17|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|closing quote at the end arg 2|1	bytes 1024 fnv D2B10084
-RXGetArg|string area|closing quote at the end arg 3|1	bytes 1024 fnv DC90342B
-RXGetArg|string area|closing quote at the end arg 4|1	bytes 1024 fnv 4C8A9C7F
-RXGetArg|string area|closing quote at the end arg 5|1	bytes 1024 fnv 286B324F
-RXGetArg|string area|closing quote at the end arg 6|1	bytes 1024 fnv C67FE2B1
+RXGetArg|string area|closing quote at the end arg 3|1 [orig]	bytes 1024 fnv DC90342B
+RXGetArg|string area|closing quote at the end arg 3|1 [fixed #538]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|closing quote at the end arg 4|1 [orig]	bytes 1024 fnv 4C8A9C7F
+RXGetArg|string area|closing quote at the end arg 4|1 [fixed #538]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|closing quote at the end arg 5|1 [orig]	bytes 1024 fnv 286B324F
+RXGetArg|string area|closing quote at the end arg 5|1 [fixed #538]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|closing quote at the end arg 6|1 [orig]	bytes 1024 fnv C67FE2B1
+RXGetArg|string area|closing quote at the end arg 6|1 [fixed #538]	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|closing quote at the end arg 7|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|closing quote at the end arg 8|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|closing quote at the end arg 9|1	bytes 1024 fnv 472C7DC5
@@ -1265,8 +1282,10 @@ RXGetArg|string area|empty quotes in a word arg 14|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty quotes in a word arg 15|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty quotes in a word arg 16|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty quotes in a word arg 17|1	bytes 1024 fnv 472C7DC5
-RXGetArg|string area|empty quotes in a word arg 2|1	bytes 1024 fnv CAC5A464
-RXGetArg|string area|empty quotes in a word arg 3|1	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|empty quotes in a word arg 2|1 [orig]	bytes 1024 fnv CAC5A464
+RXGetArg|string area|empty quotes in a word arg 2|1 [fixed #538]	bytes 1024 fnv FE0D2409
+RXGetArg|string area|empty quotes in a word arg 3|1 [orig]	bytes 1024 fnv 472C7DC5
+RXGetArg|string area|empty quotes in a word arg 3|1 [fixed #538]	bytes 1024 fnv CAC5A464
 RXGetArg|string area|empty quotes in a word arg 4|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty quotes in a word arg 5|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|empty quotes in a word arg 6|1	bytes 1024 fnv 472C7DC5
@@ -1431,18 +1450,21 @@ RXMessageList|list|with a port|1	$00000001
 RXMessageList|popped|no port|1	$00000000
 RXMessageList|popped|with a port|1	$00000000
 RXNextArg|a3|after a closing quote next 0|1	$00000011
-RXNextArg|a3|after a closing quote next 1|1	$00000010
+RXNextArg|a3|after a closing quote next 1|1 [orig]	$00000010
+RXNextArg|a3|after a closing quote next 1|1 [fixed #538]	$00000011
+RXNextArg|a3|after a closing quote next 2|1 [fixed #538]	$00000010
 RXNextArg|a3|arrived while waiting next 0|1	$00000017
 RXNextArg|a3|arrived while waiting next 1|1	$00000015
 RXNextArg|a3|arrived while waiting next 2|1	$00000017
 RXNextArg|a3|arrived while waiting next 3|1	$00000010
 RXNextArg|a3|closing quote at the end next 0|1	$00000013
 RXNextArg|a3|closing quote at the end next 1|1	$00000012
-RXNextArg|a3|closing quote at the end next 2|1	$00000014
-RXNextArg|a3|closing quote at the end next 3|1	$00000014
-RXNextArg|a3|closing quote at the end next 4|1	$00000014
-RXNextArg|a3|closing quote at the end next 5|1	$00000013
-RXNextArg|a3|closing quote at the end next 6|1	$00000010
+RXNextArg|a3|closing quote at the end next 2|1 [orig]	$00000014
+RXNextArg|a3|closing quote at the end next 2|1 [fixed #538]	$00000010
+RXNextArg|a3|closing quote at the end next 3|1 [orig #538]	$00000014
+RXNextArg|a3|closing quote at the end next 4|1 [orig #538]	$00000014
+RXNextArg|a3|closing quote at the end next 5|1 [orig #538]	$00000013
+RXNextArg|a3|closing quote at the end next 6|1 [orig #538]	$00000010
 RXNextArg|a3|default next 0|1	$00000015
 RXNextArg|a3|default next 1|1	$00000017
 RXNextArg|a3|default next 2|1	$00000010
@@ -1451,7 +1473,9 @@ RXNextArg|a3|doubled quote next 1|1	$00000010
 RXNextArg|a3|empty next 0|1	$00000010
 RXNextArg|a3|empty quotes in a word next 0|1	$00000011
 RXNextArg|a3|empty quotes in a word next 1|1	$00000011
-RXNextArg|a3|empty quotes in a word next 2|1	$00000010
+RXNextArg|a3|empty quotes in a word next 2|1 [orig]	$00000010
+RXNextArg|a3|empty quotes in a word next 2|1 [fixed #538]	$00000011
+RXNextArg|a3|empty quotes in a word next 3|1 [fixed #538]	$00000010
 RXNextArg|a3|empty word next 0|1	$00000011
 RXNextArg|a3|empty word next 1|1	$00000010
 RXNextArg|a3|long command next 0|1	$00000013
@@ -1487,18 +1511,21 @@ RXNextArg|a3|tokenised next 3|1	$00000010
 RXNextArg|a3|untokenised next 0|1	$00000018
 RXNextArg|a3|untokenised next 1|1	$00000010
 RXNextArg|d0|after a closing quote next 0|1	$00000001
-RXNextArg|d0|after a closing quote next 1|1	$00000000
+RXNextArg|d0|after a closing quote next 1|1 [orig]	$00000000
+RXNextArg|d0|after a closing quote next 1|1 [fixed #538]	$00000001
+RXNextArg|d0|after a closing quote next 2|1 [fixed #538]	$00000000
 RXNextArg|d0|arrived while waiting next 0|1	$00000007
 RXNextArg|d0|arrived while waiting next 1|1	$00000005
 RXNextArg|d0|arrived while waiting next 2|1	$00000007
 RXNextArg|d0|arrived while waiting next 3|1	$00000000
 RXNextArg|d0|closing quote at the end next 0|1	$00000003
 RXNextArg|d0|closing quote at the end next 1|1	$00000002
-RXNextArg|d0|closing quote at the end next 2|1	$00000004
-RXNextArg|d0|closing quote at the end next 3|1	$00000004
-RXNextArg|d0|closing quote at the end next 4|1	$00000004
-RXNextArg|d0|closing quote at the end next 5|1	$00000003
-RXNextArg|d0|closing quote at the end next 6|1	$00000000
+RXNextArg|d0|closing quote at the end next 2|1 [orig]	$00000004
+RXNextArg|d0|closing quote at the end next 2|1 [fixed #538]	$00000000
+RXNextArg|d0|closing quote at the end next 3|1 [orig #538]	$00000004
+RXNextArg|d0|closing quote at the end next 4|1 [orig #538]	$00000004
+RXNextArg|d0|closing quote at the end next 5|1 [orig #538]	$00000003
+RXNextArg|d0|closing quote at the end next 6|1 [orig #538]	$00000000
 RXNextArg|d0|default next 0|1	$00000005
 RXNextArg|d0|default next 1|1	$00000007
 RXNextArg|d0|default next 2|1	$00000000
@@ -1507,7 +1534,9 @@ RXNextArg|d0|doubled quote next 1|1	$00000000
 RXNextArg|d0|empty next 0|1	$00000000
 RXNextArg|d0|empty quotes in a word next 0|1	$00000001
 RXNextArg|d0|empty quotes in a word next 1|1	$00000001
-RXNextArg|d0|empty quotes in a word next 2|1	$00000000
+RXNextArg|d0|empty quotes in a word next 2|1 [orig]	$00000000
+RXNextArg|d0|empty quotes in a word next 2|1 [fixed #538]	$00000001
+RXNextArg|d0|empty quotes in a word next 3|1 [fixed #538]	$00000000
 RXNextArg|d0|empty word next 0|1	$00000001
 RXNextArg|d0|empty word next 1|1	$00000000
 RXNextArg|d0|long command next 0|1	$00000003
@@ -1544,6 +1573,7 @@ RXNextArg|d0|untokenised next 0|1	$00000008
 RXNextArg|d0|untokenised next 1|1	$00000000
 RXNextArg|kept|after a closing quote next 0|1	kept
 RXNextArg|kept|after a closing quote next 1|1	kept
+RXNextArg|kept|after a closing quote next 2|1 [fixed #538]	kept
 RXNextArg|kept|arrived while waiting next 0|1	kept
 RXNextArg|kept|arrived while waiting next 1|1	kept
 RXNextArg|kept|arrived while waiting next 2|1	kept
@@ -1551,10 +1581,10 @@ RXNextArg|kept|arrived while waiting next 3|1	kept
 RXNextArg|kept|closing quote at the end next 0|1	kept
 RXNextArg|kept|closing quote at the end next 1|1	kept
 RXNextArg|kept|closing quote at the end next 2|1	kept
-RXNextArg|kept|closing quote at the end next 3|1	kept
-RXNextArg|kept|closing quote at the end next 4|1	kept
-RXNextArg|kept|closing quote at the end next 5|1	kept
-RXNextArg|kept|closing quote at the end next 6|1	kept
+RXNextArg|kept|closing quote at the end next 3|1 [orig #538]	kept
+RXNextArg|kept|closing quote at the end next 4|1 [orig #538]	kept
+RXNextArg|kept|closing quote at the end next 5|1 [orig #538]	kept
+RXNextArg|kept|closing quote at the end next 6|1 [orig #538]	kept
 RXNextArg|kept|default next 0|1	kept
 RXNextArg|kept|default next 1|1	kept
 RXNextArg|kept|default next 2|1	kept
@@ -1564,6 +1594,7 @@ RXNextArg|kept|empty next 0|1	kept
 RXNextArg|kept|empty quotes in a word next 0|1	kept
 RXNextArg|kept|empty quotes in a word next 1|1	kept
 RXNextArg|kept|empty quotes in a word next 2|1	kept
+RXNextArg|kept|empty quotes in a word next 3|1 [fixed #538]	kept
 RXNextArg|kept|empty word next 0|1	kept
 RXNextArg|kept|empty word next 1|1	kept
 RXNextArg|kept|long command next 0|1	kept
@@ -1598,6 +1629,7 @@ RXNextArg|kept|untokenised next 0|1	kept
 RXNextArg|kept|untokenised next 1|1	kept
 RXNextArg|popped|after a closing quote next 0|1	$00000000
 RXNextArg|popped|after a closing quote next 1|1	$00000000
+RXNextArg|popped|after a closing quote next 2|1 [fixed #538]	$00000000
 RXNextArg|popped|arrived while waiting next 0|1	$00000000
 RXNextArg|popped|arrived while waiting next 1|1	$00000000
 RXNextArg|popped|arrived while waiting next 2|1	$00000000
@@ -1605,10 +1637,10 @@ RXNextArg|popped|arrived while waiting next 3|1	$00000000
 RXNextArg|popped|closing quote at the end next 0|1	$00000000
 RXNextArg|popped|closing quote at the end next 1|1	$00000000
 RXNextArg|popped|closing quote at the end next 2|1	$00000000
-RXNextArg|popped|closing quote at the end next 3|1	$00000000
-RXNextArg|popped|closing quote at the end next 4|1	$00000000
-RXNextArg|popped|closing quote at the end next 5|1	$00000000
-RXNextArg|popped|closing quote at the end next 6|1	$00000000
+RXNextArg|popped|closing quote at the end next 3|1 [orig #538]	$00000000
+RXNextArg|popped|closing quote at the end next 4|1 [orig #538]	$00000000
+RXNextArg|popped|closing quote at the end next 5|1 [orig #538]	$00000000
+RXNextArg|popped|closing quote at the end next 6|1 [orig #538]	$00000000
 RXNextArg|popped|default next 0|1	$00000000
 RXNextArg|popped|default next 1|1	$00000000
 RXNextArg|popped|default next 2|1	$00000000
@@ -1618,6 +1650,7 @@ RXNextArg|popped|empty next 0|1	$00000000
 RXNextArg|popped|empty quotes in a word next 0|1	$00000000
 RXNextArg|popped|empty quotes in a word next 1|1	$00000000
 RXNextArg|popped|empty quotes in a word next 2|1	$00000000
+RXNextArg|popped|empty quotes in a word next 3|1 [fixed #538]	$00000000
 RXNextArg|popped|empty word next 0|1	$00000000
 RXNextArg|popped|empty word next 1|1	$00000000
 RXNextArg|popped|long command next 0|1	$00000000
@@ -1651,18 +1684,21 @@ RXNextArg|popped|tokenised next 3|1	$00000000
 RXNextArg|popped|untokenised next 0|1	$00000000
 RXNextArg|popped|untokenised next 1|1	$00000000
 RXNextArg|string area|after a closing quote next 0|1	bytes 1024 fnv 75FDD0CE
-RXNextArg|string area|after a closing quote next 1|1	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|after a closing quote next 1|1 [orig]	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|after a closing quote next 1|1 [fixed #538]	bytes 1024 fnv F53E3885
+RXNextArg|string area|after a closing quote next 2|1 [fixed #538]	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|arrived while waiting next 0|1	bytes 1024 fnv B7D400B5
 RXNextArg|string area|arrived while waiting next 1|1	bytes 1024 fnv C3D4D88E
 RXNextArg|string area|arrived while waiting next 2|1	bytes 1024 fnv 676A7E68
 RXNextArg|string area|arrived while waiting next 3|1	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|closing quote at the end next 0|1	bytes 1024 fnv 81511048
 RXNextArg|string area|closing quote at the end next 1|1	bytes 1024 fnv D2B10084
-RXNextArg|string area|closing quote at the end next 2|1	bytes 1024 fnv DC90342B
-RXNextArg|string area|closing quote at the end next 3|1	bytes 1024 fnv 4C8A9C7F
-RXNextArg|string area|closing quote at the end next 4|1	bytes 1024 fnv 286B324F
-RXNextArg|string area|closing quote at the end next 5|1	bytes 1024 fnv C67FE2B1
-RXNextArg|string area|closing quote at the end next 6|1	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|closing quote at the end next 2|1 [orig]	bytes 1024 fnv DC90342B
+RXNextArg|string area|closing quote at the end next 2|1 [fixed #538]	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|closing quote at the end next 3|1 [orig #538]	bytes 1024 fnv 4C8A9C7F
+RXNextArg|string area|closing quote at the end next 4|1 [orig #538]	bytes 1024 fnv 286B324F
+RXNextArg|string area|closing quote at the end next 5|1 [orig #538]	bytes 1024 fnv C67FE2B1
+RXNextArg|string area|closing quote at the end next 6|1 [orig #538]	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|default next 0|1	bytes 1024 fnv DBF9B231
 RXNextArg|string area|default next 1|1	bytes 1024 fnv 2D9E43AA
 RXNextArg|string area|default next 2|1	bytes 1024 fnv 472C7DC5
@@ -1670,8 +1706,11 @@ RXNextArg|string area|doubled quote next 0|1	bytes 1024 fnv 01BB4AD7
 RXNextArg|string area|doubled quote next 1|1	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|empty next 0|1	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|empty quotes in a word next 0|1	bytes 1024 fnv D129B262
-RXNextArg|string area|empty quotes in a word next 1|1	bytes 1024 fnv CAC5A464
-RXNextArg|string area|empty quotes in a word next 2|1	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|empty quotes in a word next 1|1 [orig]	bytes 1024 fnv CAC5A464
+RXNextArg|string area|empty quotes in a word next 1|1 [fixed #538]	bytes 1024 fnv FE0D2409
+RXNextArg|string area|empty quotes in a word next 2|1 [orig]	bytes 1024 fnv 472C7DC5
+RXNextArg|string area|empty quotes in a word next 2|1 [fixed #538]	bytes 1024 fnv CAC5A464
+RXNextArg|string area|empty quotes in a word next 3|1 [fixed #538]	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|empty word next 0|1	bytes 1024 fnv EDEA1348
 RXNextArg|string area|empty word next 1|1	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|long command next 0|1	bytes 1024 fnv CD69BE9D
@@ -1706,13 +1745,16 @@ RXNextArg|string area|tokenised next 2|1	bytes 1024 fnv 81C4E310
 RXNextArg|string area|tokenised next 3|1	bytes 1024 fnv 472C7DC5
 RXNextArg|string area|untokenised next 0|1	bytes 1024 fnv F74C8274
 RXNextArg|string area|untokenised next 1|1	bytes 1024 fnv 472C7DC5
-RXNumArgs|d0|after a closing quote|1	$00000001
+RXNumArgs|d0|after a closing quote|1 [orig]	$00000001
+RXNumArgs|d0|after a closing quote|1 [fixed #538]	$00000002
 RXNumArgs|d0|arrived while waiting|1	$00000003
-RXNumArgs|d0|closing quote at the end|1	$00000006
+RXNumArgs|d0|closing quote at the end|1 [orig]	$00000006
+RXNumArgs|d0|closing quote at the end|1 [fixed #538]	$00000002
 RXNumArgs|d0|default|1	$00000002
 RXNumArgs|d0|doubled quote|1	$00000001
 RXNumArgs|d0|empty|1	$00000000
-RXNumArgs|d0|empty quotes in a word|1	$00000002
+RXNumArgs|d0|empty quotes in a word|1 [orig]	$00000002
+RXNumArgs|d0|empty quotes in a word|1 [fixed #538]	$00000003
 RXNumArgs|d0|empty word|1	$00000001
 RXNumArgs|d0|long command|1	$00000006
 RXNumArgs|d0|no port|1	$00000000
