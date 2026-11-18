@@ -160,6 +160,12 @@ kind F):
   `rexxportname`, over rexxbase, destport and the other variables behind
   it: with a name of more than 65 characters the next message jumped
   through the overwritten rexxsyslib base (#529).
+* **RXReplyMsg errcode,result$** gives a result string only to a message
+  that asked for one (RXFF_RESULT in rm_Action) and only with the code 0;
+  otherwise rm_Result2 stays 0 (with a code it is a secondary error
+  code). The original always put an argument string of result$ into
+  rm_Result2: a sender that asked for no result never deletes it, and one
+  that reads rm_Result2 as a code gets an address (#539).
 
 ## BUG(orig), kept
 
@@ -174,7 +180,6 @@ kind F):
 * **RXReturnCode** returns 0 while no message is current, e.g. right
   after an RXSendCommand that found the list empty (#542).
 * **RXReplyMsg:**
-  * it does not check whether a result was asked for (#539);
   * the replied message stays the current one (#541);
   * if no port of the message's ln_Name exists, the message is not
     replied, and its Result2 is deleted, as decided by the Result2 at the

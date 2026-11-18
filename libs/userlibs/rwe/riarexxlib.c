@@ -90,6 +90,9 @@
  *     AllocSt; the one before freed); the original copied it without a
  *     limit into the 65 bytes of rexxportname, over rexxbase and the
  *     variables behind it (#529).
+ *   - RXReplyMsg code,result$ gives a result string only to a message
+ *     that asked for one (RXFF_RESULT) and only with the code 0; the
+ *     original always put one into rm_Result2 (#539).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -99,8 +102,8 @@
  *     reply's own string is never deleted (#546); Result2 is taken as a
  *     string also when Result1 is not 0 (#545).
  *   - RXReturnCode is 0 while no message is current (#542).
- *   - RXReplyMsg does not check that a result was asked for (#539); the
- *     current message stays current after the reply (#541).  If the port
+ *   - RXReplyMsg: the current message stays current after the reply
+ *     (#541).  If the port
  *     of the message's ln_Name no longer exists, it is not replied, but
  *     its Result2 (tested at the a0 FindPort leaves) is deleted (#540).
  */
@@ -994,7 +997,10 @@ static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
     if (!m)
         return BB_FALSE;
     m->rm_Result1 = code;
-    if (!res)
+    /* fixed (#539): a result string only if one was asked for and only
+       with the code 0 (else rm_Result2 is a secondary code); the
+       original always made one */
+    if (!res || !(m->rm_Action & RXFF_RESULT) || code)
         m->rm_Result2 = 0;
     else
         m->rm_Result2 = createargstring(res, args[-1]);
@@ -1014,9 +1020,8 @@ static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
  * @brief RXReplyMsg errcode: reply the current message.
  *
  * Nothing without a current message.  BUG(orig): the current message
- * stays current after the reply (#541); it does not check that a result
- * was asked for (#539); if the port of the message's ln_Name no longer
- * exists, it is not replied (#540).
+ * stays current after the reply (#541); if the port of the message's
+ * ln_Name no longer exists, it is not replied (#540).
  * @param code  d0: Result1
  */
 static void BLITZ_ROUTINE replymsg_c(ULONG code BL_REG(d0))
@@ -1029,7 +1034,9 @@ BLITZ_THUNK(_replymsg, replymsg_c, "d0-d1/a0-a1");
  * @brief RXReplyMsg errcode,result$: reply the current message with a
  * result string (CreateArgString).
  *
- * As the form without; BUG(orig) (#540): if the sender's port is gone,
+ * The string only if the message asked for a result (RXFF_RESULT) and
+ * errcode is 0 (fixed #539: the original made it always).  As the form
+ * without; BUG(orig) (#540): if the sender's port is gone,
  * the Result2 tested is the one at the a0 FindPort leaves.
  * @param code  d0: Result1
  * @param res   d1: result$, Result2

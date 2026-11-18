@@ -5,6 +5,7 @@
 ; replies it with a result string; the reply waits in its port, so the
 ; message can still be read.
 ; Correct: no result was asked for, rm_Result2 stays 0.
+; @fixed #539
 ; @rwe riarexxlib
 DEFTYPE .l
 p=RXCreatePort("BUGORIG")

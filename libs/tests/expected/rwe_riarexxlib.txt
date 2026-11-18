@@ -1962,8 +1962,9 @@ RXReplyMsg|popped|untokenised 3 -|1	$00000000
 RXReplyMsg|replies|sender gone 0 lost|1	$00000001
 RXReplyMsg|replies|to the test 0 answer|1	$00000001
 RXReplyMsg|reply Result1|to the test 0 answer|1	$00000000
-RXReplyMsg|reply Result2|to the test 0 answer|1	$00000001
-RXReplyMsg|reply Result2 string|to the test 0 answer|1	"answer"
+RXReplyMsg|reply Result2|to the test 0 answer|1 [orig]	$00000001
+RXReplyMsg|reply Result2|to the test 0 answer|1 [fixed #539]	$00000000
+RXReplyMsg|reply Result2 string|to the test 0 answer|1 [orig #539]	"answer"
 RXReturnCode|d0|after a closing quote|1	$00000000
 RXReturnCode|d0|arrived while waiting|1	$00000000
 RXReturnCode|d0|arrived while waiting|2	$00000000
