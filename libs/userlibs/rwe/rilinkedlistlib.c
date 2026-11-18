@@ -34,11 +34,9 @@
  *   - The size: a word of less than 8 in front of the variable gives a
  *     size of almost 4 GB (the allocation fails), exactly 8 a size of 0,
  *     which CopyByte takes as 2^32 bytes (#736).
- *   - AddListItem inserts behind the current node without setting the
- *     prev of the node behind it (it keeps pointing to the current one)
- *     (#727); its size field is the size of the last variable any command
- *     looked at (or of the last node DelListItem deleted), its data 0
- *     (#735).
+ *   - AddListItem's new node gets as its size field the size of the last
+ *     variable any command looked at (or of the last node DelListItem
+ *     deleted), its data 0 (#735).
  *   - SetListItem gives the node a new copy without freeing the old one
  *     and without setting its size field (#734, #735); GetListItem copies
  *     as many bytes as the variable has, not as the node's data has (#730).
@@ -60,6 +58,9 @@
  *     (the original wrote it into that node's next, the place of prev in
  *     v0.9: the two nodes pointed to each other, the list became a loop)
  *     (#724).
+ *   - AddListItem in the middle sets the prev of the node behind the new
+ *     one (the original left it pointing to the old current node: going
+ *     back from there skipped the new node) (#727).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -326,10 +327,10 @@ BB_BOOL BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
  * @brief AddListItem list#: a new empty node behind the current one, then the current one.
  *
  * BUG(orig): the current node is not checked (an empty list reads and
- * writes from address 0 on) (#733), list# neither (#732); the prev of
- * the node behind is not set (it keeps pointing to the current one)
- * (#727); the new node's size field is the last size any command looked
- * at, its data 0 (#735).
+ * writes from address 0 on) (#733), list# neither (#732); the new node's
+ * size field is the last size any command looked at, its data 0 (#735).
+ * Fixed (#727): the prev of the node behind the new one is the new node
+ * (the original left it pointing to the current one).
  * @param list  d0: list# (0-4)
  * @return d0: BB_TRUE, BB_FALSE if there is no memory
  */
@@ -351,7 +352,8 @@ BB_BOOL BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
     TAB(current) = nodeptr;
     _oldnext = NODE(cur)->next;
     NODE(cur)->next = nodeptr;
-    /* BUG(orig): the prev of the node behind (_oldnext) is not set (#727) */
+    if (_oldnext)                       /* fixed (#727): was not set */
+        NODE(_oldnext)->prev = nodeptr;
     node = nodeptr;
     NODE(node)->next = _oldnext;
     NODE(node)->prev = cur;

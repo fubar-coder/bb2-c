@@ -52,6 +52,12 @@ changes d1, d2, a0, a1, InitList also a2).
   and the new node pointed to each other, so NextListItem from the first
   node looped between the two (#724; test `rilinkedlistlib-addfirst-next`,
   `libs_emulator` cases `[fixed #724]` of `rwe_rilinkedlistlib`).
+* AddListItem in the middle of a list sets the prev of the node behind
+  the new one to the new node. The original left it pointing to the old
+  current node: going back from there skipped the new node, and
+  DelListItem of that node unlinked the new one from the forward chain
+  (#727; test `rilinkedlistlib-addlistitem-prev`, `libs_emulator` cases
+  `[fixed #727]` of `rwe_rilinkedlistlib`).
 
 **BUG(orig)** (kept):
 
@@ -63,10 +69,9 @@ changes d1, d2, a0, a1, InitList also a2).
 * A size word below 8 in front of the variable gives a size of almost
   4 GB (the allocation fails); exactly 8 gives 0, which CopyByte takes
   as 2^32 bytes (#736).
-* AddListItem does not set the prev of the node behind the new one (it
-  still points to the current one) (#727); the new node's size field is
-  the size of the last variable a command looked at (or of the last node
-  DelListItem read) (#735).
+* AddListItem's new node gets as its size field the size of the last
+  variable a command looked at (or of the last node DelListItem read)
+  (#735).
 * SetListItem does not free the old copy and does not set the size
   field (#734, #735); GetListItem copies as many bytes as the variable
   has, not as the copy has (#730).
