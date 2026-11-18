@@ -14,7 +14,7 @@
  *
  *   init:  a signal of the calling task (the highest free of 31..17),
  *          the task, dos.library V36 (none without a free signal)
- *   finit: waits for that signal if threads are running (the last
+ *   finit: waits for that signal until no thread runs (the last
  *          thread to end sends it), closes dos.library
  *
  * CreateThread takes 10240 bytes (MEMF_CLEAR) through memlib's
@@ -36,10 +36,11 @@
  *     a second CreateThread before the first thread has started
  *     (CreateNewProc returns before the process runs) gives both
  *     threads the second call's registers, memory and code (#838).
- *   - finit waits only once: a signal left from an earlier time the
- *     count was 0 lets it go on while threads run (and their code, the
- *     exit code in this library, may be gone) (#837); the signal is never
- *     freed, dos.library's base not cleared (#839).
+ *   - The signal is never freed, dos.library's base not cleared (#839).
+ * Fixed (intended deviation, #837): finit waited only once, so a signal
+ * left from an earlier time the count was 0 let it go on while threads
+ * ran (their exit code is in this library); it now waits until the count
+ * is 0.
  *
  * No defects: the memory is not checked, but memlib's globalloc never
  * returns 0 (it raises "Out of Memory!"); the name is the string
@@ -241,16 +242,17 @@ static void BLITZ_ROUTINE c_libinit(void)
 /**
  * @brief finit: wait for the last thread, close dos.library.
  *
- * Waits for the signal if threads are running (the last one to end sends
- * it).  BUG(orig) (#837): it waits only once, so a signal left from an
- * earlier time the count was 0 lets it go on while threads run; the
- * signal is never freed, dos.library's base not cleared (#839).
+ * Waits for the signal until no thread runs (the last one to end sends
+ * it).  Fixed (#837): the original waits only once, so a signal left from
+ * an earlier time the count was 0 lets it go on while threads run.
+ * BUG(orig) (#839): the signal is never freed, dos.library's base not
+ * cleared.
  */
 static void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!th.dbase)
         return;
-    if (th.threadcount)
+    while (th.threadcount)
         Wait(1UL << th.thesignal);
     CloseLibrary(th.dbase);
 }

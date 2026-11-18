@@ -7,7 +7,8 @@ ActiveThreads|count|#2|1	$00000002
 ActiveThreads|count|#3|1	$00000001
 ActiveThreads|count|#4|1	$00000000
 ActiveThreads|count|#5|1	$00000000
-ActiveThreads|count|#6|1	$00000001
+ActiveThreads|count|#6|1 [orig]	$00000001
+ActiveThreads|count|#6|1 [fixed #837]	$00000000
 ActiveThreads|count|#7|1	$00000000
 ActiveThreads|expected count|#0|1	$00000001
 ActiveThreads|expected count|#1|1	$00000001
@@ -15,7 +16,8 @@ ActiveThreads|expected count|#2|1	$00000001
 ActiveThreads|expected count|#3|1	$00000001
 ActiveThreads|expected count|#4|1	$00000001
 ActiveThreads|expected count|#5|1	$00000001
-ActiveThreads|expected count|#6|1	$00000001
+ActiveThreads|expected count|#6|1 [orig]	$00000001
+ActiveThreads|expected count|#6|1 [fixed #837]	$00000000
 ActiveThreads|expected count|#7|1	$00000001
 ActiveThreads|kept|#11|1	kept
 ActiveThreads|kept|#14|1	kept
@@ -57,12 +59,14 @@ init|popped|#12|1	$00000000
 init|popped|#4|1	$00000000
 signals|A ended: no signal|pending 3|1	$00000001
 signals|C ended: signal pending|pending 3|1	$00000001
-signals|D ended: signal|pending 3|1	$00000001
+signals|D ended: signal|pending 3|1 [orig]	$00000001
+signals|D ended: signal|pending 3|1 [fixed #837]	$00000000
 signals|finit took B's signal|pending 3|1	$00000001
 signals|library signal|pending 0|1	$00000000
 signals|library signal|pending 1|1	$00000000
 signals|library signal|pending 2|1	$00000001
-signals|library signal|pending 3|1	$00000001
+signals|library signal|pending 3|1 [orig]	$00000001
+signals|library signal|pending 3|1 [fixed #837]	$00000000
 signals|phase 0: none||1	$00000001
 signals|phase 1: one||1	$00000001
 signals|phase 2: one||1	$00000001

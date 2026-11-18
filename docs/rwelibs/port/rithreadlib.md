@@ -15,7 +15,7 @@ Reflective Images 1995. Blitz code as a separate DOS process:
 * `ActiveThreads` – the number of threads not yet ended.
 * init: the highest free signal of 31..17 of the calling task, the task,
   dos.library V36 (none if no signal is free: then `CreateThread` does
-  nothing). finit: waits for the signal if threads are running, closes
+  nothing). finit: waits for the signal until no thread runs, closes
   dos.library.
 
 * **Source:** `rwelibsrc/threadlib.bb` (as TED shows it:
@@ -44,16 +44,24 @@ d0/d1/a0/a1/a6). Assembler where C cannot do it:
 The variables keep the source's order in one structure (`th`), which
 the start code reads by name.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* finit waits until the count is 0. The original waited only once: a
+  signal left from an earlier time the count was 0 let it return while
+  threads still ran, in the program's code and with their exit code in
+  this library, both freed when the program ended (#837; `libs_emulator`
+  cases `[fixed #837]` of `rwe_rithreadlib`).
+
 ## BUG(orig), kept
 
 * The registers, the memory and the address are single variables: a
   second `CreateThread` before the first thread has started
   (`CreateNewProc` returns before the process runs) gives both threads
   the second call's registers, memory and code (#838).
-* finit waits only once: a signal left from an earlier time the count
-  was 0 lets it return while threads still run (whose exit code is in
-  this library) (#837); the signal is never freed and dos.library's base
-  not cleared (#839).
+* The signal is never freed and dos.library's base not cleared (#839).
 
 The memory is not checked; that is no defect: memlib's `globalloc`
 never returns 0 (it raises "Out of Memory!").
@@ -69,7 +77,9 @@ expected data `libs/tests/expected/rwe_rithreadlib.txt` recorded from the
 original. The thread code
 is the test's: it records the registers it starts with, its process
 name and whether its memory is cleared, signals the test task, waits for
-CTRL-F and returns. Every thread is started and ended before the next
+CTRL-F and returns; thread D also returns by itself after 2 seconds (a
+finit that waits for it would otherwise wait for the test task it
+blocks). Every thread is started and ended before the next
 step, and the test waits until the process is gone (finit returns on
 the last thread's signal, the process ends right after) – nothing runs
 when the test ends.
@@ -79,8 +89,9 @@ when the test ends.
 * phase 1: init, threads A and B (`ActiveThreads` 1, 2), A ends (1, no
   signal), B released, finit waits for its signal (0);
 * phase 2: init again, thread C ends (0, the signal stays pending),
-  thread D, finit returns at once while D runs (`ActiveThreads` 1,
-  BUG(orig) #837), D ends.
+  thread D, finit waits until D has ended (`ActiveThreads` 0; the
+  original returns at once while D runs, `ActiveThreads` 1: fixed #837),
+  D ends.
 
 Observed: the registers of every call (the kept ones stated per
 routine, `KEEPS`),

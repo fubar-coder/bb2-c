@@ -9,7 +9,9 @@
  * The threads are real processes; their code is thread_entry here: it
  * records the registers it starts with, its process name and the first
  * bytes of its memory, signals the test task and waits for CTRL-F, then
- * returns (the library's exit code counts down).  Every thread is
+ * returns (the library's exit code counts down); thread D also returns
+ * by itself after 2 seconds (a finit that waits for it, #837, would
+ * otherwise wait for the test task it blocks).  Every thread is
  * started and ended before the next step, and the test waits until every
  * process is gone before it goes on (finit waits for the last thread's
  * signal, the process ends right after).  Then the records are observed
@@ -23,8 +25,9 @@
  *   1  init (the highest free signal), thread A, thread B (ActiveThreads
  *      1, 2), A ends (1, no signal), B released, finit waits for it (0).
  *   2  init again, thread C ends (0: the signal is sent and stays
- *      pending), thread D, finit: returns at once while D runs
- *      (BUG(orig) #837, ActiveThreads still 1), D ends.
+ *      pending), thread D, finit: waits until D has ended (0; the
+ *      original returns at once while D runs, ActiveThreads still 1,
+ *      fixed #837), D ends.
  * The signals init allocates are never freed (BUG(orig), #839); the test frees
  * them.  Not covered: two CreateThread before the first thread runs (the
  * shared registers, BUG(orig) #838: depends on the scheduling).
@@ -54,6 +57,7 @@ struct seen {
     char name[24];
     ULONG cleared;                      /* its memory all 0 */
     struct Task *task;
+    int selfend;                        /* returns by itself after 2 s */
 };
 static struct seen seen[4];
 static volatile int slot;               /* the record of the next thread */
@@ -63,6 +67,7 @@ static ULONG libsig[3];                 /* the signal init took, per phase */
 static ULONG active[NREC];
 static int nactive;
 static ULONG pending[4];
+static char names[4][24];
 
 /* the thread's code: all registers to thread_c */
 void thread_entry(void);
@@ -96,7 +101,14 @@ void thread_c(const ULONG *r)
                 t->cleared = 0;
     t->task = me;
     Signal(testtask, startsig);
-    Wait(SIGBREAKF_CTRL_F);
+    if (t->selfend) {
+        for (i = 0; i < 100; i++) {
+            if (SetSignal(0, SIGBREAKF_CTRL_F) & SIGBREAKF_CTRL_F)
+                break;
+            Delay(1);
+        }
+    } else
+        Wait(SIGBREAKF_CTRL_F);
 }
 
 /* wait for `sig` (at most 5 seconds) */
@@ -163,14 +175,14 @@ static void create(int k, const char *name)
     check("rithreadlib: the thread started", waitsig(startsig));
 }
 
-/* release thread k, wait for its end */
+/* release thread k if it still runs */
 static void release(int k)
 {
-    if (seen[k].task)
+    Forbid();
+    if (seen[k].task && FindTask((STRPTR)names[k]) == seen[k].task)
         Signal(seen[k].task, SIGBREAKF_CTRL_F);
+    Permit();
 }
-
-static char names[4][24];
 
 static void phase0(void)
 {
@@ -217,6 +229,7 @@ static void phase2(void)
     check("rithreadlib: thread C ended", waitgone(names[2]));
     activecount();
     pending[2] = SetSignal(0, 0) & libsig[2];
+    seen[3].selfend = 1;
     create(3, names[3]);
     call(FINIT, "finit (signal pending, D runs)", 0, 0);
     activecount();
