@@ -15,7 +15,9 @@
  * a second init does nothing), ReqFileLoc, ReqFlags, ReqOutput (a0 = a
  * window object), all three forms of ReqFileRequest (ok and cancel; the
  * copied path, d0, a3, the fields of the FrStruct the requester gets and
- * the title text it sees), ReqColour (the structure, d0), the
+ * the title text it sees), ReqColour (the structure as req.library reads it -
+ * REQBASE.BB2 ExtendedColorRequester: a long DefColour at 0, the window
+ * at 4 - and d0), the
  * requester's own fields behind offset 162 (the fake writes them once,
  * then ReqFileLoc and ReqColour show whether the library's data is
  * intact; the test writes the old bytes back before the next call),
@@ -37,7 +39,10 @@ enum { E_FILEREQ, E_FILELOC, E_OUTPUT, E_FLAGS, E_COLOUR, E_FINIT, E_INIT };
 static struct Library *fake;
 static ULONG fk_ret, fk_colret, fk_calls;
 static UBYTE rec_fr[162] __attribute__((aligned(4)));
-static UBYTE rec_cr[30] __attribute__((aligned(4)));
+/* the colour requester structure as req.library reads it (REQBASE.BB2
+   ExtendedColorRequester, 28 bytes): defcolor.l at 0, the window at 4,
+   5 longs RFU */
+static UBYTE rec_cr[28] __attribute__((aligned(4)));
 static char fk_path[60], rec_title[41];
 static const char *fk_title;            /* the title pointer it got */
 
@@ -251,7 +256,7 @@ int main(int argc, char **argv)
     DO1(ENT(LIB, E_COLOUR, 0), R.d[0] = 2; fk_calls = 0);
     OBS("d0", R.d[0]);
     OBS("called", fk_calls);
-    OBS("RFU 0", ({ int z = 1, i; for (i = 6; i < 30; i++) z &= rec_cr[i] == 0; z; }));
+    OBS("RFU 0", ({ int z = 1, i; for (i = 8; i < 28; i++) z &= rec_cr[i] == 0; z; }));
     fk_restore();
 
     ROUT = "ReqColour";
@@ -262,8 +267,8 @@ int main(int argc, char **argv)
         OBS("d0", R.d[0]);
         OBS("called", fk_calls);
         OBSBYTES("ecr", rec_cr, sizeof rec_cr);
-        OBS("DefColour", *(UWORD *)rec_cr);
-        OBS("WinPtr", *(ULONG *)(rec_cr + 2));
+        OBS("DefColour", *(ULONG *)rec_cr);
+        OBS("WinPtr", *(ULONG *)(rec_cr + 4));
     }
 
     ROUT = "finit";
@@ -292,7 +297,7 @@ int main(int argc, char **argv)
     DO1(ENT(LIB, E_COLOUR, 0), R.d[0] = 1; fk_calls = 0);
     OBS("d0", R.d[0]);
     OBS("called", fk_calls);
-    OBS("WinPtr", *(ULONG *)(rec_cr + 2));
+    OBS("WinPtr", *(ULONG *)(rec_cr + 4));
     ROUT = "finit";
     DO1(ENT(LIB, E_FINIT, 0), (void)0);
     OBS("library closed", fake->lib_OpenCnt);

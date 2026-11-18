@@ -99,7 +99,9 @@ data `libs/tests/expected/rwe_rireqlib.txt` recorded from the original.
 
 The requesters need a user, so the test adds a fake `req.library` to the
 library list; its FileRequester and ColorRequester record the structure
-they are given (162 / 30 bytes) and return a chosen value; a confirmed
+they are given (162 bytes; of the colour requester's the 28 bytes
+req.library reads, `ExtendedColorRequester` of the CD's `REQBASE.BB2`:
+DefColour a long at 0, the window at 4) and return a chosen value; a confirmed
 FileRequester writes `FR:` and the path into the structure's path buffer
 when it has one, as req.library does. Observed:
 init when OpenLibrary fails, when AllocMem fails (the

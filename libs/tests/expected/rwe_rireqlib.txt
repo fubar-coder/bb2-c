@@ -1,12 +1,12 @@
 # capture rwe_rireqlib 1
-ReqColour|DefColour|colour 3|1 [orig]	$00000000
-ReqColour|DefColour|colour 3|1 [fixed #786]	$00000003
-ReqColour|DefColour|colour 4|1 [orig]	$00000000
-ReqColour|DefColour|colour 4|1 [fixed #786]	$00000004
+ReqColour|DefColour|colour 3|1 [orig]	$0000CAFE
+ReqColour|DefColour|colour 3|1 [fixed #786]	$0003CAFE
+ReqColour|DefColour|colour 4|1 [orig]	$0000CAFE
+ReqColour|DefColour|colour 4|1 [fixed #786]	$0004CAFE
 ReqColour|RFU 0|after overrun|1 [orig]	$00000000
 ReqColour|RFU 0|after overrun|1 [fixed #1088]	$00000001
-ReqColour|WinPtr|colour 3|1	$CAFE0042
-ReqColour|WinPtr|colour 4|1	$CAFE0042
+ReqColour|WinPtr|colour 3|1	$00420000
+ReqColour|WinPtr|colour 4|1	$00420000
 ReqColour|WinPtr|second run|1	$00000000
 ReqColour|called|after overrun|1	$00000001
 ReqColour|called|colour 3|1	$00000001
@@ -16,10 +16,10 @@ ReqColour|d0|after overrun|1	$00000009
 ReqColour|d0|colour 3|1	$00000007
 ReqColour|d0|colour 4|1	$00000008
 ReqColour|d0|second run|1	$00000006
-ReqColour|ecr|colour 3|1 [orig]	bytes 30 0000CAFE0042000000000000000000000000000000000000000000000000
-ReqColour|ecr|colour 3|1 [fixed #786]	bytes 30 0003CAFE0042000000000000000000000000000000000000000000000000
-ReqColour|ecr|colour 4|1 [orig]	bytes 30 0000CAFE0042000000000000000000000000000000000000000000000000
-ReqColour|ecr|colour 4|1 [fixed #786]	bytes 30 0004CAFE0042000000000000000000000000000000000000000000000000
+ReqColour|ecr|colour 3|1 [orig]	bytes 28 0000CAFE004200000000000000000000000000000000000000000000
+ReqColour|ecr|colour 3|1 [fixed #786]	bytes 28 0003CAFE004200000000000000000000000000000000000000000000
+ReqColour|ecr|colour 4|1 [orig]	bytes 28 0000CAFE004200000000000000000000000000000000000000000000
+ReqColour|ecr|colour 4|1 [fixed #786]	bytes 28 0004CAFE004200000000000000000000000000000000000000000000
 ReqColour|kept|after overrun|1	kept
 ReqColour|kept|colour 3|1	kept
 ReqColour|kept|colour 4|1	kept
