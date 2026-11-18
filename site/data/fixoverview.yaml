@@ -4540,6 +4540,94 @@ rows:
     text: "`AttachDataType` with a position or a tag list returns 0 when there is no object; the original passed the object 0 to the system and returned -1."
     page: libraries
     anchor: ridatatypeslib-fixes
+  - issue: 560
+    severity: 1
+    topic: "System"
+    library: "ricommoditieslib"
+    command: "MakeCommodity"
+    text: "A second `MakeCommodity` returns 0 while the program has a commodity, which stays in use; the original made a second commodity, which outlived the program with a deleted port."
+    page: libraries
+    anchor: makecommodity-second
+  - issue: 555
+    severity: 5
+    topic: "Input"
+    library: "ricommoditieslib"
+    command: "ExchangeDisable, ExchangeEnable, ExchangeAppear, ExchangeDisAppear, ExchangeKill, ExchangeListChange, ExchangeUnique"
+    text: "The `Exchange` functions report only commands of Exchange; in the original, a press of hotkey 15 counted as `ExchangeDisable`."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 556
+    severity: 5
+    topic: "System"
+    library: "ricommoditieslib"
+    command: ""
+    text: "At the end of the program, the commodity is removed before commodities.library is closed; the original removed it through the closed library."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 557
+    severity: 5
+    topic: "System"
+    library: "ricommoditieslib"
+    command: "SetHotKey"
+    text: "At the end of the program, the hotkeys are freed with the commodity; the original left their memory allocated."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 559
+    severity: 5
+    topic: "System"
+    library: "ricommoditieslib"
+    command: "MakeCommodity"
+    text: "Without commodities.library, `MakeCommodity` returns 0; the original called the library through an address of 0 and crashed."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 561
+    severity: 5
+    topic: "System"
+    library: "ricommoditieslib"
+    command: "CommodityEvent, WaitCommodity"
+    text: "The library answers the messages of the commodity; the original never did, so the system lost memory with every hotkey and every command of Exchange."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 562
+    severity: 5
+    topic: "System"
+    library: "ricommoditieslib"
+    command: "SetCxStatus"
+    text: "`SetCxStatus` does nothing when `MakeCommodity` failed; the original called commodities.library without a commodity and returned -1."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 563
+    severity: 5
+    topic: "System"
+    library: "ricommoditieslib"
+    command: "SetHotKey"
+    text: "`SetHotKey` frees a hotkey it replaces, and a `SetHotKey` that fails leaves no half-made hotkey; the original lost memory and left the half-made hotkey in place."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 564
+    severity: 3
+    topic: "Input"
+    library: "ricommoditieslib"
+    command: "SetHotKey"
+    text: "With runtime error checking, `SetHotKey` with a number outside 0 to 15 stops with \"Hotkey number must be 0 to 15\"; the original overwrote the library's data."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 565
+    severity: 5
+    topic: "Input"
+    library: "ricommoditieslib"
+    command: "SetHotKey"
+    text: "`SetHotKey` returns 0 for a hotkey description that commodities.library cannot understand; the original returned -1 for a hotkey that never worked."
+    page: libraries
+    anchor: ricommoditieslib-fixes
+  - issue: 566
+    severity: 5
+    topic: "Input"
+    library: "ricommoditieslib"
+    command: "WaitCommodity, CommodityEvent"
+    text: "`WaitCommodity` takes the next message from the port; the original lost one waiting message and left the one it returned waiting, so it came again."
+    page: libraries
+    anchor: ricommoditieslib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

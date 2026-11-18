@@ -5,80 +5,49 @@
     command fails and the other commodity gets the message `CxUnique`.
     Exchange's show and hide buttons are available for the commodity.
 
-    Kept from the original: without commodities.library the command
-    calls the library through a base of 0
-    ([#559](https://github.com/fubar-coder/bb2-c/issues/559)); a second
-    call makes a second commodity without removing the first, which
-    stays registered after the program has ended, with the deleted
-    message port of the program
-    ([#560](https://github.com/fubar-coder/bb2-c/issues/560)).
+    A program has one commodity: while it has one, the command returns
+    0 and the first stays in use. Without commodities.library the
+    command returns 0.
 "SetHotKey":
   text: Adds the hotkey `hotkey$`, a commodities input description such as `"lalt lshift a"`, with the number `hotkeynum` from 0 to 15, which `HotKeyHit` returns. Returns -1 on success, 0 on failure.
   notes: |
     A number that is in use replaces the old hotkey. The commodity must
-    have been made with `MakeCommodity`.
+    have been made with `MakeCommodity`. A description that
+    commodities.library does not understand is a failure.
 
-    Kept from the original: a number outside 0 to 15 is not refused and
-    overwrites other data of the library; -1 removes the commodity from
-    the system ([#564](https://github.com/fubar-coder/bb2-c/issues/564)).
-    A replaced hotkey is not freed, and a hotkey that failed halfway
-    stays partly set up
-    ([#563](https://github.com/fubar-coder/bb2-c/issues/563)); a
-    description that commodities.library does not understand is not
-    reported as a failure
-    ([#565](https://github.com/fubar-coder/bb2-c/issues/565)).
+    With runtime error checking, a number outside 0 to 15 stops with the
+    runtime error "Hotkey number must be 0 to 15". Without it, such a
+    number overwrites other data of the library; -1 removes the
+    commodity.
 "HotKeyHit":
   text: The number of the hotkey of the message fetched last, or -1 if that message was no hotkey or there is none.
 "WaitCommodity":
   text: Waits for a message of the commodity and makes it the current one. Returns -1, or 0 before `MakeCommodity`.
   notes: |
-    Kept from the original: if a message is already waiting, it is
-    skipped; the message the command returns stays waiting, so the next
-    `CommodityEvent` returns it once more
-    ([#566](https://github.com/fubar-coder/bb2-c/issues/566)).
+    If a message is waiting already, the command takes it at once. The
+    message fetched before is answered, as with `CommodityEvent`.
 "CommodityEvent":
   text: Fetches the next message of the commodity without waiting. Returns -1 if there was one, else 0.
   notes: |
-    Kept from the original: the message is never answered
-    ([#561](https://github.com/fubar-coder/bb2-c/issues/561)).
+    The message stays the current one for `HotKeyHit`, `ExchangeMessage`
+    and the `Exchange` functions until the next `CommodityEvent` or
+    `WaitCommodity`, which answers it.
 "ExchangeMessage":
   text: The command that Exchange sent with the message fetched last, one of the values of the `Cx` functions, or 0 if that message was no command or there is none.
 "ExchangeDisable":
   text: -1 if the message evaluated last by `ExchangeMessage` or `HotKeyHit` was the command to disable the commodity (`CxDisable`), else 0.
-  notes: |
-    Kept from the original: the number of a hotkey counts too, so
-    hotkey 15 looks like this command
-    ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
 "ExchangeEnable":
   text: -1 if the message evaluated last by `ExchangeMessage` or `HotKeyHit` was the command to enable the commodity (`CxEnable`), else 0.
-  notes: |
-    Kept from the original: the number of a hotkey counts too
-    ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
 "ExchangeAppear":
   text: -1 if the message evaluated last by `ExchangeMessage` or `HotKeyHit` was the command to show the interface (`CxAppear`), else 0.
-  notes: |
-    Kept from the original: the number of a hotkey counts too
-    ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
 "ExchangeDisAppear":
   text: -1 if the message evaluated last by `ExchangeMessage` or `HotKeyHit` was the command to hide the interface (`CxDisAppear`), else 0.
-  notes: |
-    Kept from the original: the number of a hotkey counts too
-    ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
 "ExchangeKill":
   text: -1 if the message evaluated last by `ExchangeMessage` or `HotKeyHit` was the command to quit (`CxKill`), else 0.
-  notes: |
-    Kept from the original: the number of a hotkey counts too
-    ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
 "ExchangeListChange":
   text: -1 if the message evaluated last by `ExchangeMessage` or `HotKeyHit` said that the list of commodities has changed (`CxListChange`), else 0.
-  notes: |
-    Kept from the original: the number of a hotkey counts too
-    ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
 "ExchangeUnique":
   text: -1 if the message evaluated last by `ExchangeMessage` or `HotKeyHit` said that another program tried to make a commodity of the same name (`CxUnique`), else 0.
-  notes: |
-    Kept from the original: the number of a hotkey counts too
-    ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
 "CxDisable":
   text: The value 15 of the Exchange command to disable the commodity, to compare with `ExchangeMessage`.
 "CxEnable":
@@ -96,7 +65,7 @@
 "SetCxStatus":
   text: Activates (`On`, -1) or deactivates (`Off`, 0) the commodity; an inactive commodity gets no hotkeys. Exchange shows the status.
   notes: |
-    Kept from the original: any value other than -1 and 0 does nothing
-    ([#562](https://github.com/fubar-coder/bb2-c/issues/562)).
+    Any value other than -1 and 0 does nothing, and so does the command
+    before a successful `MakeCommodity`.
 "CommodityMsgPort":
   text: The address of the message port of the commodity, 0 before `MakeCommodity`. Works in Blitz mode too.

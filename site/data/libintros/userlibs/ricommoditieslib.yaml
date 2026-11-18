@@ -14,21 +14,12 @@ intro: |
   the `Cx` functions are the values of those commands, and the
   `Exchange` functions compare the last message with one of them.
 
-  Kept from the original, and to keep in mind for every program:
-
-  * the library does not check that commodities.library could be
-    opened; without it, `MakeCommodity` calls the library through a
-    base of 0 ([#559](https://github.com/fubar-coder/bb2-c/issues/559));
-  * the messages are never replied to, and the port is deleted at the
-    end with the messages still waiting in it ([#561](https://github.com/fubar-coder/bb2-c/issues/561));
-  * `MakeCommodity` should be called only once: a second commodity of
-    the program stays registered when the program ends, with the
-    program's message port, which is deleted
-    ([#560](https://github.com/fubar-coder/bb2-c/issues/560));
-  * at the end of the program, the hotkeys are not freed
-    ([#557](https://github.com/fubar-coder/bb2-c/issues/557)), and the
-    commodity is removed only after commodities.library has been closed
-    ([#556](https://github.com/fubar-coder/bb2-c/issues/556)).
+  The library answers every message for the program: a message stays
+  the current one until the next `CommodityEvent` or `WaitCommodity`,
+  which answers it. A program has one commodity; a second
+  `MakeCommodity` returns 0 while the first exists. When the program
+  ends, the library removes the commodity with its hotkeys. Without
+  commodities.library, `MakeCommodity` returns 0.
 
   A commodity with one hotkey that ends when Exchange tells it to:
 
@@ -43,5 +34,8 @@ intro: |
     EndIf
   Until em=CxKill
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in ricommoditieslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#ricommoditieslib-fixes" >}}).
 
   *Based on the RI Commodities Library guide by Reflective Images (Red When Excited).*
