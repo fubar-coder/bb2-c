@@ -6,6 +6,7 @@
 ; sender, the program itself, has not freed it yet: it gets the reply at
 ; its next RXReadPort).
 ; Correct: after the reply there is no current message: 0 arguments, "".
+; @fixed #541
 ; @rwe riarexxlib
 DEFTYPE .l
 p=RXCreatePort("BUGORIG")

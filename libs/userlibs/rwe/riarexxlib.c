@@ -99,6 +99,10 @@
  *     decided on the Result2 at the a0 FindPort leaves whether to delete
  *     it: a string lost, or DeleteArgString(0) in the form without one
  *     (#540).
+ *   - RXReplyMsg leaves no current message, also when the sender's port
+ *     is gone; the original kept the replied message current, so the
+ *     argument functions read a message that belonged to its sender
+ *     again (#541).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -108,8 +112,6 @@
  *     reply's own string is never deleted (#546); Result2 is taken as a
  *     string also when Result1 is not 0 (#545).
  *   - RXReturnCode is 0 while no message is current (#542).
- *   - RXReplyMsg: the current message stays current after the reply
- *     (#541).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -989,8 +991,10 @@ static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
     /* fixed (#540): the sender's port first, the result string only when
        the message is replied; the original made the string first and,
        with the port gone, tested the Result2 at the a0 FindPort leaves */
-    if (!FindPort((CONST_STRPTR)m->rm_Node.mn_Node.ln_Name))
+    if (!FindPort((CONST_STRPTR)m->rm_Node.mn_Node.ln_Name)) {
+        v.currentmessage = NULL;        /* fixed (#541) */
         return BB_FALSE;
+    }
     /* fixed (#539): a result string only if one was asked for and only
        with the code 0 (else rm_Result2 is a secondary code); the
        original always made one */
@@ -998,15 +1002,16 @@ static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
         m->rm_Result2 = createargstring(res, args[-1]);
     m->rm_Node.mn_Node.ln_Type = NT_REPLYMSG;
     ReplyMsg(&m->rm_Node);
+    v.currentmessage = NULL;            /* fixed (#541): the original kept it */
     return BB_TRUE;
 }
 
 /**
  * @brief RXReplyMsg errcode: reply the current message.
  *
- * Nothing without a current message.  BUG(orig): the current message
- * stays current after the reply (#541).  If the port of the message's
- * ln_Name no longer exists, it is not replied.
+ * Nothing without a current message.  If the port of the message's
+ * ln_Name no longer exists, it is not replied.  Afterwards there is no
+ * current message (fixed #541: the original kept the replied one).
  * @param code  d0: Result1
  */
 static void BLITZ_ROUTINE replymsg_c(ULONG code BL_REG(d0))

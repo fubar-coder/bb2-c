@@ -170,6 +170,13 @@ kind F):
   gone, decided whether to delete it again by the long 36 bytes behind
   the a0 that FindPort leaves: the string was lost, or the form without a
   result string called DeleteArgString with 0 (#540).
+* **RXReplyMsg** leaves no current message, also when the sender's port
+  is gone: RXGetArg, RXNextArg, RXNumArgs, RXSendersName give 0 or ""
+  until the next RXReadPort/RXWaitPort. The original kept the replied
+  message current, so these read a message that belonged to its sender
+  again and could already be freed (#541). The manual asks for the
+  information to be taken before the reply, so a program that follows it
+  sees no change.
 
 ## BUG(orig), kept
 
@@ -183,7 +190,6 @@ kind F):
   * Result2 is read as a string even when Result1 is not 0 (#545).
 * **RXReturnCode** returns 0 while no message is current, e.g. right
   after an RXSendCommand that found the list empty (#542).
-* **RXReplyMsg:** the replied message stays the current one (#541).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
