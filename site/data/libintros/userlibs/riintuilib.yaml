@@ -10,11 +10,11 @@ intro: |
   `IPOutput`: pen 1 on pen 0 at first, drawn without a background
   (only the pixels of the characters are set).
 
-  Kept from the original: the text of `IPOutput` is always drawn at the
-  top left corner of the Rast, whatever `IPLocate` set
-  ([#697](https://github.com/fubar-coder/bb2-c/issues/697)), and every
-  `Print` draws over the text before it. The Rast has no layer, and the
-  library does not clip the text to the bitmap.
+  The text of `IPOutput` is drawn with its top left corner at the drawing
+  position of the Rast, which `IPLocate` sets, and the position then
+  moves on to the end of the text, so the next `Print` follows it. The
+  line feed of `NPrint` moves it to the start of the next line. The Rast
+  has no layer, and the library does not clip the text to the bitmap.
 
   ```blitzbasic
   BitMap 0,320,64,2
@@ -25,3 +25,6 @@ intro: |
   Print "Hello"
   DefaultOutput
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in riintuilib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riintuilib-fixes" >}}).

@@ -4180,6 +4180,38 @@ rows:
     text: "The file requester structure has req.library's full size; the original's was too short, so the requester wrote over the library's data behind it."
     page: libraries
     anchor: rireqlib-fixes
+  - issue: 696
+    severity: 5
+    topic: "Graphics"
+    library: "riintuilib"
+    command: "IPColour"
+    text: "`IPColour -1,bgpen` sets the background pen of the Rast in use; the original wrote it into the program's memory instead."
+    page: libraries
+    anchor: riintuilib-fixes
+  - issue: 697
+    severity: 5
+    topic: "Graphics"
+    library: "riintuilib"
+    command: "IPOutput, IPLocate"
+    text: "Text printed through `IPOutput` starts at the position of `IPLocate` and goes on after the text before; the original drew every text over the last one in the top left corner."
+    page: libraries
+    anchor: riintuilib-fixes
+  - issue: 698
+    severity: 5
+    topic: "Graphics"
+    library: "riintuilib"
+    command: "IPOutput"
+    text: "A text of 1024 characters or more printed through `IPOutput` is drawn whole; the original overwrote the pens of the next text and the library's memory."
+    page: libraries
+    anchor: riintuilib-fixes
+  - issue: 699
+    severity: 5
+    topic: "Graphics"
+    library: "riintuilib"
+    command: "IPOutput, NPrint"
+    text: "`NPrint` through `IPOutput` starts a new line; the original drew a byte from low memory instead."
+    page: libraries
+    anchor: riintuilib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
