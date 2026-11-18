@@ -3,4 +3,8 @@ ok
 [run]
 before
 0
+-1
+0
+no strip
+no menu
 rc=0

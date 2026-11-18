@@ -6,6 +6,10 @@ ok
 [run]
 before
 -1
+-1
+-1
+a strip
+a menu
 rc=0
 [blitz2]
 rc=0

@@ -102,9 +102,12 @@ Intended deviations from the original:
   loop of a library comes before its finit, `makefinits`), so the free
   routine's FreeMenus needs no test of the base.
 * **CreateMenuStrip checks what it builds from.** On a list without
-  titles it returns 0 and changes nothing; the original reads the
-  "title" at address 0 and walks what it finds there (its error check
-  `createchk` reports the empty list). When CreateMenusA, GetVisualInfoA
+  titles it frees the old strip, as the original does first, and returns
+  0: the object has no strip, and a later GTSetMenu attaches nothing
+  (user decision W3 A finding 3). The original reads the "title" at
+  address 0, walks what it finds there and makes a strip of it, which
+  GTSetMenu attaches (its error check `createchk` reports the empty
+  list). When CreateMenusA, GetVisualInfoA
   (the screen cannot be locked) or LayoutMenusA fails, it frees the strip
   and returns 0; the original checks none of them, passes a strip or a
   visual info of 0 on to LayoutMenusA and FreeVisualInfo and returns -1

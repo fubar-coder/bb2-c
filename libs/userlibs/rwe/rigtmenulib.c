@@ -45,9 +45,10 @@
  *     base the wrong way round (TST.l:BNE 'ok) and never closes it (#690).
  *     The objects are freed before finit (FreeMenus with the base), so
  *     the free routine needs no test of the base.
- *   - CreateMenuStrip on a list without titles returns 0 and builds
- *     nothing (the original reads the "title" at address 0; its error
- *     check reports it); when CreateMenusA, GetVisualInfoA or
+ *   - CreateMenuStrip on a list without titles frees the old strip and
+ *     returns 0, the object has no strip (the original frees it too and
+ *     reads the "title" at address 0; its error check reports the empty
+ *     list); when CreateMenusA, GetVisualInfoA or
  *     LayoutMenusA fails it frees what it made and returns 0 (the
  *     original checks none of them and returns -1) (#689).
  *   - GTMenuItem/GTSubItem test the whole address of shortcut$; the
@@ -405,12 +406,14 @@ static BB_BOOL createmenustrip(struct gtmenulist *obj, struct Screen **scr)
 
     BB_BOOL ok = BB_FALSE;
 
-    if (!gtbase || !obj->titles)        /* Fixed (#689): no titles */
+    if (!gtbase)
         return BB_FALSE;
     if (obj->strip) {
         FreeMenus(obj->strip);
         obj->strip = NULL;
     }
+    if (!obj->titles)                   /* Fixed (#689): no titles */
+        return BB_FALSE;
     if (!(arr = makearray(obj)))
         return BB_FALSE;
     /* Fixed (#689): the results of CreateMenusA, GetVisualInfoA and
@@ -435,8 +438,9 @@ static BB_BOOL createmenustrip(struct gtmenulist *obj, struct Screen **scr)
  *
  * An old strip is freed first.  The NewMenu array ((count + 1) * 20
  * bytes, memlib) is freed again afterwards.  Fixed (#689): a list
- * without titles gives 0 and changes nothing (the original reads the
- * list at address 0); when CreateMenusA, GetVisualInfoA or LayoutMenusA
+ * without titles gives 0 and builds nothing: the old strip is freed, the
+ * object has none, a later GTSetMenu attaches nothing (the original
+ * frees the old strip too and reads the list at address 0); when CreateMenusA, GetVisualInfoA or LayoutMenusA
  * fails, the strip is freed and the result is 0 (the original checks
  * none of them and returns -1).  Error check (createchk): "GTMenu has no
  * data to build GTMenuList from!".
