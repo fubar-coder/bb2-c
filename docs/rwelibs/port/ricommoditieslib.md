@@ -32,11 +32,18 @@ are one packed struct in the order of the original's data block, so that
   it – the original branches on the condition codes exec leaves, which C
   cannot see.
 
+**Fixed** (intended deviations from the original,
+`docs/libs/deviations.md` 3a, kind F):
+
+* without commodities.library V37 (init's `OpenLibrary` failed)
+  `MakeCommodity` returns 0 before it makes the port; the original did
+  not check the base and called `CxBroker` through a base of 0, a crash
+  (#559). The other commands need the broker or the port of a
+  successful `MakeCommodity`.
+
 **BUG(orig)** (kept, commented in the code):
 
 * the help text of `MakeCommodity` lacks the closing parenthesis (#558);
-* init does not check `OpenLibrary`; without commodities.library V37
-  every command calls through a base of 0 (#559);
 * finit closes commodities.library first and then calls `DeleteCxObj`
   through the closed base (#556); `DeleteCxObj` (not `DeleteCxObjAll`)
   leaves the filters and senders allocated (#557); the port is deleted
@@ -98,4 +105,5 @@ characters (commodities keeps 23 and compares them with the full name).
 hotkey forever), real key hotkeys (the keys would reach the console),
 `SetHotKey` with a number outside 0–15, two successful `MakeCommodity`
 (leaves a broker with a deleted port, see above), a missing
-commodities.library.
+commodities.library (bug-orig test `ricommoditieslib-init-unchecked`,
+inject `openlibfail=`).

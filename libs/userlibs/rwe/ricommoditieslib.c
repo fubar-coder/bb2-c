@@ -24,11 +24,13 @@
  * and the GetMsg of WaitCommodity, whose result the original takes from
  * the condition codes GetMsg leaves (C cannot see them, getmsg_cc).
  *
+ * Fixed: MakeCommodity returns 0 without commodities.library V37
+ * (init's OpenLibrary failed), before it makes the port; the original
+ * called CxBroker through a base of 0 (#559).
+ *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
  *     (#558);
- *   - init does not check OpenLibrary: without commodities.library V37
- *     every command calls through a base of 0 (#559);
  *   - finit closes commodities.library first and then calls DeleteCxObj
  *     through the closed base (#556); DeleteCxObj (not DeleteCxObjAll)
  *     leaves the filters and senders of the broker allocated (#557); the
@@ -184,8 +186,8 @@ static const char cname[] = "commodities.library";
 /**
  * @brief init: OpenLibrary("commodities.library",37).
  *
- * BUG(orig) (#559): not checked - without the library every command
- * calls through a base of 0.
+ * Without the library the base stays 0; MakeCommodity checks it (Fixed
+ * (#559)), every other command needs MakeCommodity's broker or port.
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -471,18 +473,23 @@ BLITZ_THUNK(status, status_c, "d1/a0-a1");
  * (NBU_UNIQUE|NBU_NOTIFY, COF_SHOW_HIDE), activated.
  *
  * Amiga mode only.  The message port is created on the first call.
- * BUG(orig): a new broker on every call, the previous one is not deleted
+ * Fixed (#559): without commodities.library (init's OpenLibrary failed)
+ * it returns 0 before it makes the port; the original called CxBroker
+ * through a base of 0.  BUG(orig): a new broker on every call, the previous one is not deleted
  * (#560); the help text lacks the closing parenthesis (#558).
  * @param name   d0: the name
  * @param title  d1: the title
  * @param descr  d2: the description
- * @return d0: BB_TRUE, BB_FALSE if the port or the broker fails
+ * @return d0: BB_TRUE, BB_FALSE without the library or if the port or
+ *         the broker fails
  */
 static BB_BOOL BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR title BL_REG(d1),
                                              STRPTR descr BL_REG(d2))
 {
     CxObj *co;
 
+    if (!st_cbase)
+        return BB_FALSE;
     if (!st.msgport) {
         struct MsgPort *p = CreateMsgPort();    /* makemsgport */
         if (!p)

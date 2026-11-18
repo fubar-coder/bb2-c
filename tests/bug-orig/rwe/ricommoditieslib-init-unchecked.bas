@@ -5,6 +5,7 @@
 ; openlibfail=commodities.library): the base is 0, CxBroker jumps to
 ; address -36 and the system crashes (the session ends in a timeout).
 ; Correct: MakeCommodity fails (0), the program goes on.
+; @fixed #559
 ; @rwe ricommoditieslib
 ; @pass runwrap=@INJECT@|openlibfail=commodities.library
 ; @pass timeout=30
