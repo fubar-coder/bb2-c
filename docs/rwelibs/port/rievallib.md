@@ -99,7 +99,8 @@ The binary is EvalLib4 plus insertions (`.cache` analysis,
 
 All C behind `BLITZ_THUNK`s (they keep d1/a0/a1, ConvToPostFix and
 PFRegisters also d0; the original changes more). init clears the register
-block and the error number (#1087); finit is an empty C function.
+block, the error number and the indirect address (#1087); finit is an
+empty C function.
 
 The original keeps its stacks on a7 (ConvToPostFix the operators,
 PFEvaluate the values; `stack` holds a7 at the start, errors restore it).
@@ -195,11 +196,12 @@ kind F):
   the base 0, the base for the exponents 1, 0 and every negative one,
   and counted with `DBRA` on the low word of exponent-2 (`3 65538 ^` was
   9) (#641).
-* init clears the PFRegisters block and the error number. The original's
-  init and finit are `RTS`: a second run of the program with the library
-  still loaded (from the editor) read registers from the first run's
-  block, freed at its end, until its own PFRegisters, and PFErrorType
-  gave the first run's last error (#1087).
+* init clears the PFRegisters block, the error number and the indirect
+  address. The original's init and finit are `RTS`: a second run of the
+  program with the library still loaded (from the editor) read registers
+  from the first run's block, freed at its end, until its own
+  PFRegisters, PFErrorType gave the first run's last error and
+  PFIndirectAddr the address of its last indirection (#1087).
 
 ## BUG(orig), kept
 
@@ -213,7 +215,7 @@ caller's upper word of d0 (a word result).
 
 `libs/tests/rwe/rievallib.c` (snitch case "rwe rievallib"): each run
 loads one library set (the C build or the original); every routine is
-observed as cases (2103 checks of the original), compared with the expected data
+observed as cases (2106 checks of the original), compared with the expected data
 `libs/tests/expected/rwe_rievallib.txt` recorded from the original –
 ConvToPostFix on 52 strings
 (all operators and precedences, brackets in excess, signs, operands of
@@ -227,6 +229,6 @@ over and in a complete expression), 300
 values with operators and pushes across chunk borders, empty, spaces
 only, two results), after each PFErrorType, PFErrorText,
 PFIndirectAddr; init/finit and the start state, and a second run
-(PFRegisters and an error, then finit and init: PFErrorType and a
-register after them). A run with `CHUNK` 4
+(PFRegisters and an error, then finit and init: PFErrorType,
+PFIndirectAddr and a register after them). A run with `CHUNK` 4
 passes too; mutations of the `.` copy and of `<` are caught.

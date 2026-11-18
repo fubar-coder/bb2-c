@@ -3918,9 +3918,9 @@ Registers and memory:
   crashed a 68000 at an odd address
   ([#636](https://github.com/fubar-coder/bb2-c/issues/636)).
 * A program run a second time from the editor starts without the
-  register block and the error number of the first run. The original
-  kept both, so the registers were read from memory freed at the end
-  of the first run
+  register block, the error number and the indirect address of the
+  first run. The original kept all three, so the registers were read
+  from memory freed at the end of the first run
   ([#1087](https://github.com/fubar-coder/bb2-c/issues/1087)).
 
 Results and errors:

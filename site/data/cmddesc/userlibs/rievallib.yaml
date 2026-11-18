@@ -52,4 +52,4 @@
   notes: |
     After a `PFEvaluate` without an error it returns "".
 "PFIndirectAddr":
-  text: The address read by the last `{address}` in an expression that `PFEvaluate` evaluated.
+  text: The address read by the last `{address}` in an expression that `PFEvaluate` evaluated, or 0 if the program has evaluated none yet.

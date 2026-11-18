@@ -261,9 +261,10 @@ static void evaluate(void)
     DO1(ENT(LIB, E_REGS, 0), R.d[0] = 0);
     ev("d0");
 
-    /* a second run of the program with the library still loaded: a block
-       and an error of the first, then finit and init; the original keeps
-       both (its init and finit are RTS) */
+    /* a second run of the program with the library still loaded: a block,
+       an error and the indirect address (of the last {...} above) of the
+       first, then finit and init; the original keeps all three (its init
+       and finit are RTS) */
     ROUT = "PFRegisters";
     strcpy(VEC, "block");
     DO1(ENT(LIB, E_REGS, 0), R.d[0] = (ULONG)block);
@@ -276,6 +277,9 @@ static void evaluate(void)
     ROUT = "PFErrorType";
     DO1(ENT(LIB, E_ETYPE, 0), (void)0);
     OBS("d0", R.d[0]);
+    ROUT = "PFIndirectAddr";
+    DO1(ENT(LIB, E_IADDR, 0), (void)0);
+    OBS("d0", addr(R.d[0]));
     ev("d2 1 +");
 }
 

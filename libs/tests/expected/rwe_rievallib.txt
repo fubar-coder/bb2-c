@@ -2084,7 +2084,7 @@ PFIndirectAddr|d0|"d0"|3 [fixed #637]	$40000000
 PFIndirectAddr|d0|"d1 -a2 *"|1	$00000000
 PFIndirectAddr|d0|"d1 d2 +"|1	$00000000
 PFIndirectAddr|d0|"d2 1 +"|1 [orig]	$40000002
-PFIndirectAddr|d0|"d2 1 +"|1 [fixed #637]	$40000000
+PFIndirectAddr|d0|"d2 1 +"|1 [fixed #637]	$00000000
 PFIndirectAddr|d0|"d7"|1	$00000000
 PFIndirectAddr|d0|"d9"|1	$00000000
 PFIndirectAddr|d0|"p"|1	$00000000
@@ -2109,6 +2109,8 @@ PFIndirectAddr|d0|"{d0}"|1	$40000000
 PFIndirectAddr|d0|"{d0}" d1 '}'|1	$40000000
 PFIndirectAddr|d0|"{d0}.w"|1	$40000000
 PFIndirectAddr|d0|"{d0}.w" d1 '}'|1	$40000000
+PFIndirectAddr|d0|second run|1 [orig]	$40000002
+PFIndirectAddr|d0|second run|1 [fixed #1087]	$00000000
 PFIndirectAddr|d0|start|1	$00000000
 PFIndirectAddr|kept|"   "|1	kept
 PFIndirectAddr|kept|"  42  "|1	kept
@@ -2232,6 +2234,7 @@ PFIndirectAddr|kept|"{d0}"|1	kept
 PFIndirectAddr|kept|"{d0}" d1 '}'|1	kept
 PFIndirectAddr|kept|"{d0}.w"|1	kept
 PFIndirectAddr|kept|"{d0}.w" d1 '}'|1	kept
+PFIndirectAddr|kept|second run|1	kept
 PFIndirectAddr|kept|start|1	kept
 PFIndirectAddr|popped|"   "|1	$00000000
 PFIndirectAddr|popped|"  42  "|1	$00000000
@@ -2355,6 +2358,7 @@ PFIndirectAddr|popped|"{d0}"|1	$00000000
 PFIndirectAddr|popped|"{d0}" d1 '}'|1	$00000000
 PFIndirectAddr|popped|"{d0}.w"|1	$00000000
 PFIndirectAddr|popped|"{d0}.w" d1 '}'|1	$00000000
+PFIndirectAddr|popped|second run|1	$00000000
 PFIndirectAddr|popped|start|1	$00000000
 PFRegisters|kept|0|1	kept
 PFRegisters|kept|block|1	kept

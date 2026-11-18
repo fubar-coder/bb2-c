@@ -91,10 +91,11 @@
  *     returned 1 for the base 0, the base for the exponents 1, 0 and
  *     every negative one, and counted with DBRA on the low word of
  *     exponent-2 (`3 65538 ^` = 9) (#641).
- *   - init clears the PFRegisters block and the error number.  The
- *     original's init and finit are RTS: a second run of the program with
- *     the library still loaded (from the editor) read registers from the
- *     first run's freed block and PFErrorType gave its last error
+ *   - init clears the PFRegisters block, the error number and the
+ *     indirect address.  The original's init and finit are RTS: a second
+ *     run of the program with the library still loaded (from the editor)
+ *     read registers from the first run's freed block, PFErrorType gave
+ *     its last error and PFIndirectAddr the address of its last `{...}`
  *     (#1087).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
@@ -852,16 +853,18 @@ static ULONG BLITZ_ROUTINE indirectaddr_c(void)
 }
 
 /**
- * @brief init: no register block and no error yet.
+ * @brief init: no register block, no error and no indirect address yet.
  *
  * Fixed (#1087): the original's init is RTS, so a second run of the
  * program with the library still loaded (from the editor) started with
- * the first run's block (freed at its end) and its last error number.
+ * the first run's block (freed at its end), its last error number and the
+ * address of its last indirection.
  */
 static void BLITZ_ROUTINE _libinit(void)
 {
     regs = 0;
     errortype = 0;
+    lastaddr = 0;
 }
 
 /**

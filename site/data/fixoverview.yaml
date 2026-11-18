@@ -3800,8 +3800,8 @@ rows:
     severity: 5
     topic: "Numbers & dates"
     library: "rievallib"
-    command: "PFRegisters, PFErrorType"
-    text: "A program run a second time from the editor starts without the first run's register block and error number; the original kept both and read the registers from freed memory."
+    command: "PFRegisters, PFErrorType, PFIndirectAddr"
+    text: "A program run a second time from the editor starts without the first run's register block, error number and indirect address; the original kept all three and read the registers from freed memory."
     page: libraries
     anchor: rievallib-fixes
   - issue: 724
