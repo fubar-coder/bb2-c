@@ -973,6 +973,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   error instead of a crash, so the stack can be about 16 KB (a deviation
   from the original's limits for the extreme cases only); smaller frames
   (`getelement2`, 136 bytes per level).
+- [ ] **`LIBS_UPDATE_FIX` cannot name a key that contains `;`** (found
+  2026-11-18 in round W2): the cache variable is a CMake list (`KEY#N`
+  separated by `;`, `libs/tests/CMakeLists.txt`), so a `;` in a key splits
+  it, and `\;` does not help: the `results` tool still gets the key in
+  two parts. #632's key `ConvToPostFix|buffer|"1,2;3"|1` needed it; the
+  pair was written by calling the target's own step
+  `results libs-update RUN_DIR EXPECTED_DIR --fix KEY#N` by hand on the run the
+  target had just made. A fix: an escape for `;` in the variable, or a
+  file of keys; with a test of a key with `;` in `libs_capture_target`.
 
 ## 3 Only once §1 is done
 
