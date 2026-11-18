@@ -144,12 +144,22 @@ intact, and the test writes the old bytes back; finit (library closed,
 memory back, the PurgeFiles calls with `FrStruct` while the library is
 open: the fake's PurgeFiles, -114, counts them); a second run as from
 the editor (init again after finit, no ReqOutput: the window the file
-requester and the colour requester get, then finit). The real
-req.library 2.8 is not in the emulator's system; the tests against it
-stage it and answer its requesters through inject (the bug-orig tests
-`rireqlib-title-kept`, `rireqlib-colour-default-word`,
-`rireqlib-colour-window` and the regression tests
-`rireqlib-real-cancel`, `rireqlib-real-needs-libs`). Not covered by the
+requester and the colour requester get, then finit). The Workbench
+system of the emulator has no req.library; the real req.library 2.8
+(Aminet ReqLib28.lha) is staged by the tests that use it, put into
+LIBS: through inject `libs=`, and its requesters are answered through
+inject `click=` (the bug-orig tests `rireqlib-title-kept`,
+`rireqlib-colour-default-word`, `rireqlib-colour-window` and the
+regression tests `rireqlib-real-cancel`, `rireqlib-real-needs-libs`;
+skipped when the file is missing). Against the real library are checked:
+the title of a second call (#789), the colour passed to the colour
+requester and the window it gets (#786, #1091), what a cancelled
+requester returns (#788), and the layout of the structures behind
+offset 162 and the cached directory's size (measured by a C program,
+not kept as a test: #1088, #1092). A confirmed file requester, the
+buffers in the structure (#785), the writes behind offset 162 (#1088),
+the second run from the editor (#1090) and the PurgeFiles call in finit
+(#1092) are only checked with the fake library. Not covered by the
 fake library: ReqFileRequest/ReqColour
 without the library (the original calls through a6 = 0: the bug-orig
 test `rireqlib-no-base-check`).
