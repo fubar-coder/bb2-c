@@ -3952,6 +3952,30 @@ The copies of the items:
   the last variable any command had looked at, or kept the old size
   ([#735](https://github.com/fubar-coder/bb2-c/issues/735)).
 
+### Fixes in risortlib {#risortlib-fixes}
+
+These fixes concern
+[risortlib]({{< relref "/docs/libraries/userlibs/risortlib" >}}), the
+sorting of linked lists by a string field of their items by Reflective
+Images.
+
+* `StringSort` and `StringSortItem` with `SortPriorityOffset` sort the
+  list by priority. After the original had exchanged two items because
+  of their priority, it compared the following items with the wrong
+  string and the old priority, so the list came out unsorted
+  ([#826](https://github.com/fubar-coder/bb2-c/issues/826)).
+* `StringSort` and `StringSortItem` with a `sizeof.type` of 0 exchange
+  nothing and return 0; the original exchanged 65536 bytes per exchange
+  and overwrote the items behind and the memory behind the list
+  ([#827](https://github.com/fubar-coder/bb2-c/issues/827)).
+* Without `SortPriorityOffset`, the sorts no longer read a priority
+  from an odd address, which stopped a plain 68000 with an address
+  error ([#825](https://github.com/fubar-coder/bb2-c/issues/825)).
+* A program with risortlib no longer crashes at its end on Kickstart
+  1.x, which has no utility.library; the original closed the library
+  without checking that it had opened it
+  ([#824](https://github.com/fubar-coder/bb2-c/issues/824)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a

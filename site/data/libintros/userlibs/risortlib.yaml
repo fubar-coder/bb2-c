@@ -13,11 +13,6 @@ intro: |
   a simple method that compares every item with every following one:
   fast enough for most lists, but slow for long ones.
 
-  Kept from the original: with the priority switched off, as it is by
-  default, the sort reads a long from an odd address, which crashes a
-  plain 68000 with an address error; processors from the 68020 on are not
-  affected ([#825](https://github.com/fubar-coder/bb2-c/issues/825)).
-
   A list whose items hold a word and then a string, sorted by the string
   at offset 2:
 
@@ -38,5 +33,8 @@ intro: |
     NPrint myitems()\text
   Wend
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in risortlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#risortlib-fixes" >}}).
 
   *Based on the RI Sort Lib guide by Reflective Images.*

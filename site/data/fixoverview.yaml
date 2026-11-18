@@ -3900,6 +3900,38 @@ rows:
     text: "The size an item keeps of its copy is right after `AddListItem` and `SetListItem`; the original stored the size of another variable or kept the old one."
     page: libraries
     anchor: rilinkedlistlib-fixes
+  - issue: 824
+    severity: 5
+    topic: "Data structures"
+    library: "risortlib"
+    command: ""
+    text: "A program with risortlib no longer crashes at its end on Kickstart 1.x, where utility.library does not exist."
+    page: libraries
+    anchor: risortlib-fixes
+  - issue: 825
+    severity: 5
+    topic: "Data structures"
+    library: "risortlib"
+    command: "StringSort, StringSortItem"
+    text: "`StringSort` and `StringSortItem` without `SortPriorityOffset` no longer stop a 68000 with an address error."
+    page: libraries
+    anchor: risortlib-fixes
+  - issue: 826
+    severity: 5
+    topic: "Data structures"
+    library: "risortlib"
+    command: "StringSort, StringSortItem, SortPriorityOffset"
+    text: "`StringSort` and `StringSortItem` with `SortPriorityOffset` sort the list by priority; the original left it unsorted."
+    page: libraries
+    anchor: risortlib-fixes
+  - issue: 827
+    severity: 5
+    topic: "Data structures"
+    library: "risortlib"
+    command: "StringSort, StringSortItem"
+    text: "`StringSort` and `StringSortItem` with a size of 0 exchange nothing and return 0; the original exchanged 65536 bytes each time and overwrote the memory behind the items."
+    page: libraries
+    anchor: risortlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
