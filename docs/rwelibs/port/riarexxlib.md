@@ -67,10 +67,9 @@ a3 ends at their 0 as in the original. The original reads the string
 lengths with `-(a2)`; the C build reads them without moving a2 (DIFF, as
 in all ports: `docs/libs/cmdlibs-port.md` "General").
 
-The variables from `rexxportname` on are one packed struct in the
-original's order (`_Static_assert` on the offsets of the reference
-build). RXDefaultPort copies without a limit into its 65 bytes and then
-overwrites rexxbase, destport, … (BUG(orig), #529).
+The variables from `rexxbase` on are one packed struct in the
+original's order (`_Static_assert` on the offset of the reference
+build).
 
 Small inline assembler for the exec call whose leftover the original
 uses, and for rexxsyslib:
@@ -84,8 +83,8 @@ maxslib AllocSt is called with `BLITZ_ALIBJSR(TOK_allocst)`.
 Intended deviations from the original (`docs/libs/deviations.md`,
 kind F):
 
-* **init** writes "REXX" and its 0 at +4 into the default port name. The
-  original wrote the 0 at +5, so the byte at +4 of an earlier
+* **init** makes the default port "REXX" again. The original wrote
+  "REXX" and a 0 at +5 over the name, so the byte at +4 of an earlier
   RXDefaultPort stayed: after RXDefaultPort "RWERESP" and a second run
   of the program with the library still loaded (from the editor) the
   default port was "REXXE" (#532).
@@ -155,6 +154,12 @@ kind F):
   leaves; on 0, or if the lists could not be allocated, it deleted the
   port without RemPort, so the freed port stayed in exec's list of
   public ports (#528).
+* **RXDefaultPort** keeps the name as a copy of its own length (maxslib
+  AllocSt) and frees the copy before; a long name is a value, not cut.
+  The original copied it without a limit into the 65 bytes of
+  `rexxportname`, over rexxbase, destport and the other variables behind
+  it: with a name of more than 65 characters the next message jumped
+  through the overwritten rexxsyslib base (#529).
 
 ## BUG(orig), kept
 

@@ -5,6 +5,7 @@
 ; the program's own port) jumps through it - a crash (the session ends
 ; in a timeout).
 ; Correct: the name is refused or cut, the message is sent and arrives.
+; @fixed #529
 ; @rwe riarexxlib
 ; @pass timeout=30
 DEFTYPE .l

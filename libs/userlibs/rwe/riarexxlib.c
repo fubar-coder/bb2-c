@@ -33,13 +33,11 @@
  * (DIFF: the original pops the string lengths it reads with -(a2), see
  * docs/libs/cmdlibs-port.md "General").  Assembler: an exec call whose
  * leftover the original uses (a0 of FindPort).  The variables from
- * rexxportname on are one packed struct in the original's order: RXDefaultPort copies without a
- * limit into the 65 bytes of rexxportname and overwrites them (BUG(orig),
- * #529).
+ * rexxbase on are one packed struct in the original's order.
  *
  * Fixed (docs/libs/deviations.md, kind F):
- *   - init writes "REXX" and its 0 at +4 into the default port name (the
- *     original wrote the 0 at +5: the byte at +4 of an earlier
+ *   - init makes the default port "REXX" again (the original wrote "REXX"
+ *     and a 0 at +5 over the name: the byte at +4 of an earlier
  *     RXDefaultPort stayed) (#532).
  *   - RXRunCommand (and RXExecuteScript, RXRunScript) return -1 when the
  *     message was sent (the original returned the d0 PutMsg leaves)
@@ -88,6 +86,10 @@
  *     tested the d0 AddPort leaves and on 0, or if the lists could not be
  *     allocated, deleted the port without RemPort: it stayed in exec's
  *     list of public ports (#528).
+ *   - RXDefaultPort keeps a copy of the name of its own length (maxslib
+ *     AllocSt; the one before freed); the original copied it without a
+ *     limit into the 65 bytes of rexxportname, over rexxbase and the
+ *     variables behind it (#529).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -293,10 +295,15 @@ static UWORD oktodelete;
 static const UBYTE *curadr;             /* the parser (parseadr unused) */
 static const char rexxname[] = "rexxsyslib.library";
 static const char realrexxportname[] = "REXX";
+static const char emptyname[] = "";
 
-/* rexxportname ... currentarg, as in the original */
+/* the default port of RXRunCommand/RXSendCommand without a port name:
+   NULL "REXX", else RXDefaultPort's copy (AllocSt) - fixed (#529): the
+   original's 65 bytes of rexxportname, filled without a limit */
+static UBYTE *defportname;
+
+/* rexxbase ... currentarg, as in the original (behind rexxportname) */
 static struct BL_PACKED {
-    UBYTE rexxportname[66];             /* "REXX",0 + 60, Even */
     struct Library *rexxbase;
     struct MsgPort *destport;
     UBYTE *returnstring;
@@ -308,10 +315,9 @@ static struct BL_PACKED {
     struct RexxMsg *thismsg;
     struct RexxMsg *currentmessage;
     UWORD currentarg;
-} v = { .rexxportname = "REXX" };
+} v;
 
-_Static_assert(__builtin_offsetof(__typeof__(v), rexxbase) == 66, "layout");
-_Static_assert(__builtin_offsetof(__typeof__(v), currentarg) == 0xeca - 0xe62, "layout");
+_Static_assert(__builtin_offsetof(__typeof__(v), currentarg) == 0xeca - 0xe62 - 66, "layout");
 
 /* RXCreatePort's block: the received messages not yet current
    (messagelist) and the messages sent without waiting (sentlist), each
@@ -390,19 +396,17 @@ static ULONG tostring(const UBYTE *s)
  * @brief init: open rexxsyslib.library V34; the defaults (quote '"',
  * RXTokenise on, the default port "REXX").
  *
- * Fixed (#532): the 0 behind "REXX" is written at +4; the original wrote
- * it at +5, so the byte at +4 of an earlier RXDefaultPort stayed.
+ * Fixed (#532): the default port is "REXX" again; the original wrote
+ * "REXX" and a 0 at +5 over the name, so the byte at +4 of an earlier
+ * RXDefaultPort stayed.  A copy of an earlier run is maxslib's, freed at
+ * that run's end (#529).
  * @return d0: 0
  */
 static ULONG BLITZ_ROUTINE libinit_c(void)
 {
     quote = 34;
     tokenise = (UWORD)BB_TRUE;
-    v.rexxportname[0] = 'R';            /* MOVE.l #"REXX" */
-    v.rexxportname[1] = 'E';
-    v.rexxportname[2] = 'X';
-    v.rexxportname[3] = 'X';
-    v.rexxportname[4] = 0;              /* fixed (#532): the original's +5 */
+    defportname = NULL;                 /* "REXX": fixed (#532), (#529) */
     msgport = NULL;
     v.rexxbase = NULL;
     v.rexxbase = OpenLibrary((CONST_STRPTR)rexxname, 34);
@@ -479,16 +483,27 @@ BLITZ_THUNK(_rxreturncode, rxreturncode_c, "d1/a0-a1");
  * @brief RXDefaultPort portname$: the port of the forms of RXRunCommand
  * and RXSendCommand without a port name.
  *
- * BUG(orig) (#529): copied without a limit into the 66 bytes of
- * rexxportname, over the variables behind it.
+ * Fixed (#529): the name is kept as a copy of its own length (maxslib
+ * AllocSt), the copy before freed; the original copied it without a
+ * limit into the 65 bytes of rexxportname, over rexxbase and the
+ * variables behind it.
  * @param s  d0: portname$
  */
 static void BLITZ_ROUTINE rxdefportname_c(const UBYTE *s BL_REG(d0))
 {
-    UBYTE *d = v.rexxportname;
+    ULONG n;
 
-    while ((*d++ = *s++) != 0)
+    for (n = 0; s[n]; n++)
         ;
+    if (defportname != (UBYTE *)emptyname)
+        freest((ULONG)defportname);
+    defportname = n ? (UBYTE *)allocst((ULONG)s, n) : (UBYTE *)emptyname;
+}
+
+/* the default port's name */
+static const UBYTE *defport(void)
+{
+    return defportname ? defportname : (const UBYTE *)realrexxportname;
 }
 BLITZ_THUNK(_rxdefportname, rxdefportname_c, "d0-d1/a0-a1");
 
@@ -766,7 +781,7 @@ BLITZ_THUNK(_rxruncommand, rxruncommand_c, "d1/a0-a1");
  */
 static ULONG BLITZ_ROUTINE rxruncommand2_c(ULONG cmd BL_REG(d0))
 {
-    return runcommand(v.rexxportname, cmd);
+    return runcommand(defport(), cmd);
 }
 BLITZ_THUNK(_rxruncommand2, rxruncommand2_c, "d1/a0-a1");
 
@@ -824,7 +839,7 @@ static ULONG sendcommand(const UBYTE *port, ULONG cmd)
  */
 static ULONG BLITZ_ROUTINE rxsendcommand2_c(ULONG cmd BL_REG(d0))
 {
-    return sendcommand(v.rexxportname, cmd);
+    return sendcommand(defport(), cmd);
 }
 BLITZ_THUNK(_rxsendcommand2, rxsendcommand2_c, "d1/a0-a1");
 
