@@ -24,7 +24,9 @@
  *
  * Covered: every command and the init/finit; SizeOfListItem (sizes 12, 0
  * words below 8: almost 4 GB); AddrListItem, FirstListItem, LastListItem,
- * DelListItem on empty lists; InitList (also again on a list that has
+ * DelListItem on empty lists (FirstListItem and LastListItem: -1 in the
+ * original, 0 in the C build, fixed #733); in the C build only also the
+ * other commands on an empty list (0, fixed #733); InitList (also again on a list that has
  * one: the old one is not freed); AddListItem at the end and in the
  * middle (the prev of the node behind, not set in the original, set in
  * the C build: fixed #727; the size field, the last size in the
@@ -45,9 +47,9 @@
  * the copy freed in the C build: fixed #729); every allocation failing (InitList node and data,
  * AddListItem, SetListItem, AddFirstListItem, AddLastListItem); lists 0
  * to 4.
- * Not covered: the commands on an empty list that read and write at
- * address 0 (AddListItem, SetListItem, NextListItem, PrevListItem,
- * AddFirstListItem, GetListItem), list numbers outside 0..4 (the original
+ * Not covered: the original's commands on an empty list that read and
+ * write at address 0 (AddListItem, SetListItem, NextListItem,
+ * PrevListItem, AddFirstListItem, GetListItem), list numbers outside 0..4 (the original
  * indexes on into its code, the C build into other data), a size of 0
  * (the C build's CopyByte copies nothing then, #492; the original's
  * copied 2^32 bytes).
@@ -398,6 +400,19 @@ int main(int argc, char **argv)
 
     for (l = 0; l < 5; l++)
         ADDR(l);
+    /* the C build only (fixed #733): the commands that read and write from
+       address 0 on in the original, on list 3, which has no node (every
+       InitList of it failed): 0, nothing allocated or changed */
+    if (!strcmp(bl_libset, "obj")) {
+        call("AddListItem", ADDLISTITEM, 3, -1, 0);
+        call("AddLastListItem", ADDLASTLISTITEM, 3, -1, 0);
+        call("AddFirstListItem", ADDFIRSTLISTITEM, 3, -1, 0);
+        call("SetListItem", SETLISTITEM, 3, 0, 0);
+        call("GetListItem", GETLISTITEM, 3, 0, 0);
+        call("NextListItem", NEXTLISTITEM, 3, -1, 0);
+        call("PrevListItem", PREVLISTITEM, 3, -1, 0);
+        ADDR(3);
+    }
     ROUT = "finit";
     strcpy(VEC, "");
     DO1(ENT(LIB, FINIT, 0), (void)0);

@@ -94,13 +94,23 @@ changes d1, d2, a0, a1, InitList also a2).
   what lay behind the copy's allocation (#730; test
   `rilinkedlistlib-getlistitem-size`, `libs_emulator` cases
   `[fixed #730]` of `rwe_rilinkedlistlib`).
+* A list without nodes: AddListItem, AddLastListItem, SetListItem,
+  GetListItem, NextListItem, PrevListItem, FirstListItem, LastListItem
+  and AddFirstListItem return 0 and change nothing (nothing is
+  allocated), as the manual says ("0 indicates failure (no list ...)");
+  AddFirstListItem does not start a list. The original took the current
+  (or first) node, 0, without a check (only DelListItem tested it): the
+  commands read and wrote from address 0 on (SetListItem wrote its
+  copy's address to address 10, PrevListItem made ExecBase at address 4
+  the current node), and FirstListItem and LastListItem returned -1.
+  init clears the tables: a program run again with the library still
+  loaded would otherwise find the freed nodes of the run before (#733;
+  test `rilinkedlistlib-no-current-check`, `libs_emulator` cases
+  `[fixed #733]` of `rwe_rilinkedlistlib`).
 
 **BUG(orig)** (kept):
 
-* No command checks list# or (except DelListItem) whether the list has a
-  current node: on an empty list AddListItem, SetListItem, GetListItem,
-  NextListItem, PrevListItem and AddFirstListItem read and write from
-  address 0 on (#732, #733).
+* No command checks list# (#732).
 * InitList does not free a list that is already there (#731).
 * A size word below 8 in front of the variable gives a size of almost
   4 GB (the allocation fails) (#736). No NEWTYPE variable has one: the
@@ -131,12 +141,14 @@ real one of the set's RIAmosFuncLib. The variables lie in the region.
 Observed after every call: d0 (region addresses
 relative), the memlib log, the used region word by word, the variables,
 and the kept registers. Cases: init/finit; SizeOfListItem (also size
-words 3 and 7); every command that is safe on empty lists 0–4;
+words 3 and 7); every command that is safe on empty lists 0–4 in the
+original, and in the C build only the others on empty list 3;
 InitList with each allocation failing and with too large sizes, again
 on a list in use; AddListItem at the end and in the middle;
 SetListItem (twice, failing, too large); GetListItem (no data, a larger
 variable); Next/Prev over the list and past its ends; AddLastListItem
 (also failing); AddFirstListItem (failing, twice, the loop);
 DelListItem in the middle, at the end, at the start, the only node,
-with and without data. Not covered: the commands that read and write at
-address 0 on an empty list, list# outside 0..4, a size of 0.
+with and without data. Not covered: the original's commands that read
+and write at address 0 on an empty list, list# outside 0..4, a size of
+0.

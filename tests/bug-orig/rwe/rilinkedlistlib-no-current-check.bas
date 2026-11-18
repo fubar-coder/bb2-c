@@ -7,6 +7,7 @@
 ; and restored at once.
 ; Correct: SetListItem without a current node returns 0 and writes
 ; nothing.
+; @fixed #733
 ; @rwe rilinkedlistlib riamosfunclib
 NEWTYPE .t
   a.l

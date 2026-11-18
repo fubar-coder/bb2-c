@@ -4,9 +4,11 @@ AddFirstListItem|d0|list 2 var -1 fail 0|1 [fixed #725]	$FFFFFFFF
 AddFirstListItem|d0|list 2 var -1 fail 0|2 [orig]	$00000008
 AddFirstListItem|d0|list 2 var -1 fail 0|2 [fixed #725]	$FFFFFFFF
 AddFirstListItem|d0|list 2 var -1 fail 1|1	$00000000
+AddFirstListItem|d0|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 AddFirstListItem|kept|list 2 var -1 fail 0|1	kept
 AddFirstListItem|kept|list 2 var -1 fail 0|2	kept
 AddFirstListItem|kept|list 2 var -1 fail 1|1	kept
+AddFirstListItem|kept|list 3 var -1 fail 0|1 [fixed #733]	kept
 AddFirstListItem|memlib call 42|list 2 var -1 fail 1|1 [fixed #734]	$10000012
 AddFirstListItem|memlib call 42 d1|list 2 var -1 fail 1|1 [fixed #734]	$00000000
 AddFirstListItem|memlib call 43|list 2 var -1 fail 0|1 [fixed #729]	$10000012
@@ -23,31 +25,38 @@ AddFirstListItem|memlib calls|list 2 var -1 fail 0|2 [orig]	$0000002E
 AddFirstListItem|memlib calls|list 2 var -1 fail 0|2 [fixed #729]	$0000002D
 AddFirstListItem|memlib calls|list 2 var -1 fail 1|1 [orig]	$0000002C
 AddFirstListItem|memlib calls|list 2 var -1 fail 1|1 [fixed #729]	$0000002B
+AddFirstListItem|memlib calls|list 3 var -1 fail 0|1 [fixed #733]	$0000002D
 AddFirstListItem|pool|list 2 var -1 fail 0|1 [orig]	bytes 728 fnv 0B39BFD9
 AddFirstListItem|pool|list 2 var -1 fail 0|1 [fixed #726]	bytes 728 fnv 45D3395A
 AddFirstListItem|pool|list 2 var -1 fail 0|2 [orig]	bytes 760 fnv 8AE573D9
 AddFirstListItem|pool|list 2 var -1 fail 0|2 [fixed #726]	bytes 760 fnv 55AA0F28
 AddFirstListItem|pool|list 2 var -1 fail 1|1 [orig]	bytes 696 fnv ECC515F0
 AddFirstListItem|pool|list 2 var -1 fail 1|1 [fixed #727]	bytes 696 fnv 95E924F8
+AddFirstListItem|pool|list 3 var -1 fail 0|1 [fixed #733]	bytes 760 fnv 55AA0F28
 AddFirstListItem|pool used|list 2 var -1 fail 0|1	$000002D8
 AddFirstListItem|pool used|list 2 var -1 fail 0|2	$000002F8
 AddFirstListItem|pool used|list 2 var -1 fail 1|1	$000002B8
+AddFirstListItem|pool used|list 3 var -1 fail 0|1 [fixed #733]	$000002F8
 AddFirstListItem|popped|list 2 var -1 fail 0|1	$00000000
 AddFirstListItem|popped|list 2 var -1 fail 0|2	$00000000
 AddFirstListItem|popped|list 2 var -1 fail 1|1	$00000000
+AddFirstListItem|popped|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 AddFirstListItem|variables|list 2 var -1 fail 0|1 [orig]	bytes 1024 fnv 076C24F3
 AddFirstListItem|variables|list 2 var -1 fail 0|1 [fixed #730]	bytes 1024 fnv 9B921577
 AddFirstListItem|variables|list 2 var -1 fail 0|2 [orig]	bytes 1024 fnv 076C24F3
 AddFirstListItem|variables|list 2 var -1 fail 0|2 [fixed #730]	bytes 1024 fnv 9B921577
 AddFirstListItem|variables|list 2 var -1 fail 1|1 [orig]	bytes 1024 fnv 076C24F3
 AddFirstListItem|variables|list 2 var -1 fail 1|1 [fixed #730]	bytes 1024 fnv 9B921577
+AddFirstListItem|variables|list 3 var -1 fail 0|1 [fixed #733]	bytes 1024 fnv 9B921577
 AddLastListItem|d0|list 0 var -1 fail 0|1	$FFFFFFFF
 AddLastListItem|d0|list 0 var -1 fail 0|2	$FFFFFFFF
 AddLastListItem|d0|list 0 var -1 fail 1|1	$00000000
+AddLastListItem|d0|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 AddLastListItem|d0|list 4 var -1 fail 0|1	$FFFFFFFF
 AddLastListItem|kept|list 0 var -1 fail 0|1	kept
 AddLastListItem|kept|list 0 var -1 fail 0|2	kept
 AddLastListItem|kept|list 0 var -1 fail 1|1	kept
+AddLastListItem|kept|list 3 var -1 fail 0|1 [fixed #733]	kept
 AddLastListItem|kept|list 4 var -1 fail 0|1	kept
 AddLastListItem|memlib call 17|list 0 var -1 fail 1|1 [orig #734]	$10000012
 AddLastListItem|memlib call 17 d1|list 0 var -1 fail 1|1 [orig #734]	$00000000
@@ -69,6 +78,7 @@ AddLastListItem|memlib calls|list 0 var -1 fail 0|2 [orig]	$0000001C
 AddLastListItem|memlib calls|list 0 var -1 fail 0|2 [fixed #734]	$0000001D
 AddLastListItem|memlib calls|list 0 var -1 fail 1|1 [orig]	$00000012
 AddLastListItem|memlib calls|list 0 var -1 fail 1|1 [fixed #734]	$00000013
+AddLastListItem|memlib calls|list 3 var -1 fail 0|1 [fixed #733]	$0000002D
 AddLastListItem|memlib calls|list 4 var -1 fail 0|1 [orig]	$00000025
 AddLastListItem|memlib calls|list 4 var -1 fail 0|1 [fixed #729]	$00000025
 AddLastListItem|pool|list 0 var -1 fail 0|1 [orig]	bytes 264 fnv A6838DE4
@@ -77,15 +87,18 @@ AddLastListItem|pool|list 0 var -1 fail 0|2 [orig]	bytes 424 fnv 10F2C954
 AddLastListItem|pool|list 0 var -1 fail 0|2 [fixed #727]	bytes 424 fnv 81C6351F
 AddLastListItem|pool|list 0 var -1 fail 1|1 [orig]	bytes 232 fnv 205059AC
 AddLastListItem|pool|list 0 var -1 fail 1|1 [fixed #735]	bytes 232 fnv B73D8B06
+AddLastListItem|pool|list 3 var -1 fail 0|1 [fixed #733]	bytes 760 fnv 55AA0F28
 AddLastListItem|pool|list 4 var -1 fail 0|1 [orig]	bytes 568 fnv 0898F2F0
 AddLastListItem|pool|list 4 var -1 fail 0|1 [fixed #727]	bytes 568 fnv FB5F11D9
 AddLastListItem|pool used|list 0 var -1 fail 0|1	$00000108
 AddLastListItem|pool used|list 0 var -1 fail 0|2	$000001A8
 AddLastListItem|pool used|list 0 var -1 fail 1|1	$000000E8
+AddLastListItem|pool used|list 3 var -1 fail 0|1 [fixed #733]	$000002F8
 AddLastListItem|pool used|list 4 var -1 fail 0|1	$00000238
 AddLastListItem|popped|list 0 var -1 fail 0|1	$00000000
 AddLastListItem|popped|list 0 var -1 fail 0|2	$00000000
 AddLastListItem|popped|list 0 var -1 fail 1|1	$00000000
+AddLastListItem|popped|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 AddLastListItem|popped|list 4 var -1 fail 0|1	$00000000
 AddLastListItem|variables|list 0 var -1 fail 0|1 [orig]	bytes 1024 fnv 461347F3
 AddLastListItem|variables|list 0 var -1 fail 0|1 [fixed #730]	bytes 1024 fnv DA393877
@@ -93,16 +106,19 @@ AddLastListItem|variables|list 0 var -1 fail 0|2 [orig]	bytes 1024 fnv 076C24F3
 AddLastListItem|variables|list 0 var -1 fail 0|2 [fixed #730]	bytes 1024 fnv 9B921577
 AddLastListItem|variables|list 0 var -1 fail 1|1 [orig]	bytes 1024 fnv 461347F3
 AddLastListItem|variables|list 0 var -1 fail 1|1 [fixed #730]	bytes 1024 fnv DA393877
+AddLastListItem|variables|list 3 var -1 fail 0|1 [fixed #733]	bytes 1024 fnv 9B921577
 AddLastListItem|variables|list 4 var -1 fail 0|1 [orig]	bytes 1024 fnv 076C24F3
 AddLastListItem|variables|list 4 var -1 fail 0|1 [fixed #730]	bytes 1024 fnv 9B921577
 AddListItem|d0|list 0 var -1 fail 0|1	$FFFFFFFF
 AddListItem|d0|list 0 var -1 fail 0|2	$FFFFFFFF
 AddListItem|d0|list 0 var -1 fail 0|3	$FFFFFFFF
 AddListItem|d0|list 0 var -1 fail 1|1	$00000000
+AddListItem|d0|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 AddListItem|kept|list 0 var -1 fail 0|1	kept
 AddListItem|kept|list 0 var -1 fail 0|2	kept
 AddListItem|kept|list 0 var -1 fail 0|3	kept
 AddListItem|kept|list 0 var -1 fail 1|1	kept
+AddListItem|kept|list 3 var -1 fail 0|1 [fixed #733]	kept
 AddListItem|memlib call 12|list 0 var -1 fail 1|1	$10000012
 AddListItem|memlib call 12 d1|list 0 var -1 fail 1|1	$00000000
 AddListItem|memlib call 13|list 0 var -1 fail 0|1	$10000012
@@ -121,6 +137,7 @@ AddListItem|memlib calls|list 0 var -1 fail 0|2 [fixed #734]	$00000017
 AddListItem|memlib calls|list 0 var -1 fail 0|3 [orig]	$0000001A
 AddListItem|memlib calls|list 0 var -1 fail 0|3 [fixed #734]	$0000001B
 AddListItem|memlib calls|list 0 var -1 fail 1|1	$0000000D
+AddListItem|memlib calls|list 3 var -1 fail 0|1 [fixed #733]	$0000002D
 AddListItem|pool|list 0 var -1 fail 0|1 [orig]	bytes 184 fnv E083199E
 AddListItem|pool|list 0 var -1 fail 0|1 [fixed #735]	bytes 184 fnv 55D77A3E
 AddListItem|pool|list 0 var -1 fail 0|2 [orig]	bytes 336 fnv C8FBB981
@@ -128,14 +145,17 @@ AddListItem|pool|list 0 var -1 fail 0|2 [fixed #727]	bytes 336 fnv 77E2BD48
 AddListItem|pool|list 0 var -1 fail 0|3 [orig]	bytes 392 fnv 2C32A96C
 AddListItem|pool|list 0 var -1 fail 0|3 [fixed #727]	bytes 392 fnv B85E6037
 AddListItem|pool|list 0 var -1 fail 1|1	bytes 152 fnv 33BCACD8
+AddListItem|pool|list 3 var -1 fail 0|1 [fixed #733]	bytes 760 fnv 55AA0F28
 AddListItem|pool used|list 0 var -1 fail 0|1	$000000B8
 AddListItem|pool used|list 0 var -1 fail 0|2	$00000150
 AddListItem|pool used|list 0 var -1 fail 0|3	$00000188
 AddListItem|pool used|list 0 var -1 fail 1|1	$00000098
+AddListItem|pool used|list 3 var -1 fail 0|1 [fixed #733]	$000002F8
 AddListItem|popped|list 0 var -1 fail 0|1	$00000000
 AddListItem|popped|list 0 var -1 fail 0|2	$00000000
 AddListItem|popped|list 0 var -1 fail 0|3	$00000000
 AddListItem|popped|list 0 var -1 fail 1|1	$00000000
+AddListItem|popped|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 AddListItem|variables|list 0 var -1 fail 0|1 [orig]	bytes 1024 fnv 461347F3
 AddListItem|variables|list 0 var -1 fail 0|1 [fixed #730]	bytes 1024 fnv DA393877
 AddListItem|variables|list 0 var -1 fail 0|2 [orig]	bytes 1024 fnv 076C24F3
@@ -144,6 +164,7 @@ AddListItem|variables|list 0 var -1 fail 0|3 [orig]	bytes 1024 fnv 076C24F3
 AddListItem|variables|list 0 var -1 fail 0|3 [fixed #730]	bytes 1024 fnv 9B921577
 AddListItem|variables|list 0 var -1 fail 1|1 [orig]	bytes 1024 fnv 461347F3
 AddListItem|variables|list 0 var -1 fail 1|1 [fixed #730]	bytes 1024 fnv DA393877
+AddListItem|variables|list 3 var -1 fail 0|1 [fixed #733]	bytes 1024 fnv 9B921577
 AddrListItem|d0|list 0 var -1 fail 0|1	$00000000
 AddrListItem|d0|list 0 var -1 fail 0|2	$40000068
 AddrListItem|d0|list 0 var -1 fail 0|3	$400000A0
@@ -182,6 +203,7 @@ AddrListItem|d0|list 3 var -1 fail 0|2	$00000000
 AddrListItem|d0|list 3 var -1 fail 0|3	$00000000
 AddrListItem|d0|list 3 var -1 fail 0|4	$00000000
 AddrListItem|d0|list 3 var -1 fail 0|5	$00000000
+AddrListItem|d0|list 3 var -1 fail 0|6 [fixed #733]	$00000000
 AddrListItem|d0|list 4 var -1 fail 0|1	$00000000
 AddrListItem|d0|list 4 var -1 fail 0|2	$400001E0
 AddrListItem|d0|list 4 var -1 fail 0|3	$400001E0
@@ -221,6 +243,7 @@ AddrListItem|kept|list 3 var -1 fail 0|2	kept
 AddrListItem|kept|list 3 var -1 fail 0|3	kept
 AddrListItem|kept|list 3 var -1 fail 0|4	kept
 AddrListItem|kept|list 3 var -1 fail 0|5	kept
+AddrListItem|kept|list 3 var -1 fail 0|6 [fixed #733]	kept
 AddrListItem|kept|list 4 var -1 fail 0|1	kept
 AddrListItem|kept|list 4 var -1 fail 0|2	kept
 AddrListItem|kept|list 4 var -1 fail 0|3	kept
@@ -286,6 +309,7 @@ AddrListItem|memlib calls|list 3 var -1 fail 0|3	$00000004
 AddrListItem|memlib calls|list 3 var -1 fail 0|4	$00000007
 AddrListItem|memlib calls|list 3 var -1 fail 0|5 [orig]	$0000002E
 AddrListItem|memlib calls|list 3 var -1 fail 0|5 [fixed #729]	$0000002D
+AddrListItem|memlib calls|list 3 var -1 fail 0|6 [fixed #733]	$0000002D
 AddrListItem|memlib calls|list 4 var -1 fail 0|1	$00000000
 AddrListItem|memlib calls|list 4 var -1 fail 0|2 [orig]	$00000026
 AddrListItem|memlib calls|list 4 var -1 fail 0|2 [fixed #729]	$00000026
@@ -355,6 +379,7 @@ AddrListItem|pool|list 3 var -1 fail 0|3	bytes 32 00000012B4C1CEDBDDDDDDDDDDDDDD
 AddrListItem|pool|list 3 var -1 fail 0|4	bytes 64 00000012B4C1CEDBDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD00000000000000000012D4E1EEFBDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD000000000000
 AddrListItem|pool|list 3 var -1 fail 0|5 [orig]	bytes 760 fnv 8AE573D9
 AddrListItem|pool|list 3 var -1 fail 0|5 [fixed #726]	bytes 760 fnv 55AA0F28
+AddrListItem|pool|list 3 var -1 fail 0|6 [fixed #733]	bytes 760 fnv 55AA0F28
 AddrListItem|pool|list 4 var -1 fail 0|1	bytes 0
 AddrListItem|pool|list 4 var -1 fail 0|2 [orig]	bytes 568 fnv 911FB5D5
 AddrListItem|pool|list 4 var -1 fail 0|2 [fixed #727]	bytes 568 fnv A1469584
@@ -397,6 +422,7 @@ AddrListItem|pool used|list 3 var -1 fail 0|2	$00000000
 AddrListItem|pool used|list 3 var -1 fail 0|3	$00000020
 AddrListItem|pool used|list 3 var -1 fail 0|4	$00000040
 AddrListItem|pool used|list 3 var -1 fail 0|5	$000002F8
+AddrListItem|pool used|list 3 var -1 fail 0|6 [fixed #733]	$000002F8
 AddrListItem|pool used|list 4 var -1 fail 0|1	$00000000
 AddrListItem|pool used|list 4 var -1 fail 0|2	$00000238
 AddrListItem|pool used|list 4 var -1 fail 0|3	$00000238
@@ -436,6 +462,7 @@ AddrListItem|popped|list 3 var -1 fail 0|2	$00000000
 AddrListItem|popped|list 3 var -1 fail 0|3	$00000000
 AddrListItem|popped|list 3 var -1 fail 0|4	$00000000
 AddrListItem|popped|list 3 var -1 fail 0|5	$00000000
+AddrListItem|popped|list 3 var -1 fail 0|6 [fixed #733]	$00000000
 AddrListItem|popped|list 4 var -1 fail 0|1	$00000000
 AddrListItem|popped|list 4 var -1 fail 0|2	$00000000
 AddrListItem|popped|list 4 var -1 fail 0|3	$00000000
@@ -502,6 +529,7 @@ AddrListItem|variables|list 3 var -1 fail 0|3	bytes 1024 fnv C901AC23
 AddrListItem|variables|list 3 var -1 fail 0|4	bytes 1024 fnv C901AC23
 AddrListItem|variables|list 3 var -1 fail 0|5 [orig]	bytes 1024 fnv 076C24F3
 AddrListItem|variables|list 3 var -1 fail 0|5 [fixed #730]	bytes 1024 fnv 9B921577
+AddrListItem|variables|list 3 var -1 fail 0|6 [fixed #733]	bytes 1024 fnv 9B921577
 AddrListItem|variables|list 4 var -1 fail 0|1	bytes 1024 fnv C901AC23
 AddrListItem|variables|list 4 var -1 fail 0|2 [orig]	bytes 1024 fnv 076C24F3
 AddrListItem|variables|list 4 var -1 fail 0|2 [fixed #730]	bytes 1024 fnv 9B921577
@@ -643,15 +671,20 @@ DelListItem|variables|list 4 var -1 fail 0|2 [orig]	bytes 1024 fnv 076C24F3
 DelListItem|variables|list 4 var -1 fail 0|2 [fixed #730]	bytes 1024 fnv 9B921577
 DelListItem|variables|list 4 var -1 fail 0|3 [orig]	bytes 1024 fnv 076C24F3
 DelListItem|variables|list 4 var -1 fail 0|3 [fixed #730]	bytes 1024 fnv 9B921577
-FirstListItem|d0|list 0 var -1 fail 0|1	$FFFFFFFF
+FirstListItem|d0|list 0 var -1 fail 0|1 [orig]	$FFFFFFFF
+FirstListItem|d0|list 0 var -1 fail 0|1 [fixed #733]	$00000000
 FirstListItem|d0|list 0 var -1 fail 0|2	$FFFFFFFF
 FirstListItem|d0|list 0 var -1 fail 0|3	$FFFFFFFF
 FirstListItem|d0|list 0 var -1 fail 0|4	$FFFFFFFF
-FirstListItem|d0|list 1 var -1 fail 0|1	$FFFFFFFF
-FirstListItem|d0|list 2 var -1 fail 0|1	$FFFFFFFF
+FirstListItem|d0|list 1 var -1 fail 0|1 [orig]	$FFFFFFFF
+FirstListItem|d0|list 1 var -1 fail 0|1 [fixed #733]	$00000000
+FirstListItem|d0|list 2 var -1 fail 0|1 [orig]	$FFFFFFFF
+FirstListItem|d0|list 2 var -1 fail 0|1 [fixed #733]	$00000000
 FirstListItem|d0|list 2 var -1 fail 0|2	$FFFFFFFF
-FirstListItem|d0|list 3 var -1 fail 0|1	$FFFFFFFF
-FirstListItem|d0|list 4 var -1 fail 0|1	$FFFFFFFF
+FirstListItem|d0|list 3 var -1 fail 0|1 [orig]	$FFFFFFFF
+FirstListItem|d0|list 3 var -1 fail 0|1 [fixed #733]	$00000000
+FirstListItem|d0|list 4 var -1 fail 0|1 [orig]	$FFFFFFFF
+FirstListItem|d0|list 4 var -1 fail 0|1 [fixed #733]	$00000000
 FirstListItem|kept|list 0 var -1 fail 0|1	kept
 FirstListItem|kept|list 0 var -1 fail 0|2	kept
 FirstListItem|kept|list 0 var -1 fail 0|3	kept
@@ -725,6 +758,7 @@ GetListItem|d0|list 0 var 6 fail 0|3	$FFFFFFFF
 GetListItem|d0|list 0 var 6 fail 0|4	$FFFFFFFF
 GetListItem|d0|list 0 var 6 fail 0|5	$FFFFFFFF
 GetListItem|d0|list 0 var 7 fail 0|1	$FFFFFFFF
+GetListItem|d0|list 3 var 0 fail 0|1 [fixed #733]	$00000000
 GetListItem|kept|list 0 var 3 fail 0|1	kept
 GetListItem|kept|list 0 var 6 fail 0|1	kept
 GetListItem|kept|list 0 var 6 fail 0|2	kept
@@ -732,6 +766,7 @@ GetListItem|kept|list 0 var 6 fail 0|3	kept
 GetListItem|kept|list 0 var 6 fail 0|4	kept
 GetListItem|kept|list 0 var 6 fail 0|5	kept
 GetListItem|kept|list 0 var 7 fail 0|1	kept
+GetListItem|kept|list 3 var 0 fail 0|1 [fixed #733]	kept
 GetListItem|memlib calls|list 0 var 3 fail 0|1 [orig]	$0000001F
 GetListItem|memlib calls|list 0 var 3 fail 0|1 [fixed #734]	$00000020
 GetListItem|memlib calls|list 0 var 6 fail 0|1	$0000000E
@@ -744,6 +779,7 @@ GetListItem|memlib calls|list 0 var 6 fail 0|4 [fixed #734]	$00000016
 GetListItem|memlib calls|list 0 var 6 fail 0|5 [orig]	$00000015
 GetListItem|memlib calls|list 0 var 6 fail 0|5 [fixed #734]	$00000016
 GetListItem|memlib calls|list 0 var 7 fail 0|1	$0000000C
+GetListItem|memlib calls|list 3 var 0 fail 0|1 [fixed #733]	$0000002D
 GetListItem|pool|list 0 var 3 fail 0|1 [orig]	bytes 424 fnv A049C0C5
 GetListItem|pool|list 0 var 3 fail 0|1 [fixed #727]	bytes 424 fnv 54B7D7A0
 GetListItem|pool|list 0 var 6 fail 0|1 [orig]	bytes 184 fnv E083199E
@@ -757,6 +793,7 @@ GetListItem|pool|list 0 var 6 fail 0|4 [fixed #735]	bytes 304 fnv 24FC6A7A
 GetListItem|pool|list 0 var 6 fail 0|5 [orig]	bytes 304 fnv 076EEC72
 GetListItem|pool|list 0 var 6 fail 0|5 [fixed #735]	bytes 304 fnv 24FC6A7A
 GetListItem|pool|list 0 var 7 fail 0|1	bytes 152 fnv 33BCACD8
+GetListItem|pool|list 3 var 0 fail 0|1 [fixed #733]	bytes 760 fnv 55AA0F28
 GetListItem|pool used|list 0 var 3 fail 0|1	$000001A8
 GetListItem|pool used|list 0 var 6 fail 0|1	$000000B8
 GetListItem|pool used|list 0 var 6 fail 0|2	$00000130
@@ -764,6 +801,7 @@ GetListItem|pool used|list 0 var 6 fail 0|3	$00000130
 GetListItem|pool used|list 0 var 6 fail 0|4	$00000130
 GetListItem|pool used|list 0 var 6 fail 0|5	$00000130
 GetListItem|pool used|list 0 var 7 fail 0|1	$00000098
+GetListItem|pool used|list 3 var 0 fail 0|1 [fixed #733]	$000002F8
 GetListItem|popped|list 0 var 3 fail 0|1	$00000000
 GetListItem|popped|list 0 var 6 fail 0|1	$00000000
 GetListItem|popped|list 0 var 6 fail 0|2	$00000000
@@ -771,6 +809,7 @@ GetListItem|popped|list 0 var 6 fail 0|3	$00000000
 GetListItem|popped|list 0 var 6 fail 0|4	$00000000
 GetListItem|popped|list 0 var 6 fail 0|5	$00000000
 GetListItem|popped|list 0 var 7 fail 0|1	$00000000
+GetListItem|popped|list 3 var 0 fail 0|1 [fixed #733]	$00000000
 GetListItem|variables|list 0 var 3 fail 0|1 [orig]	bytes 1024 fnv 076C24F3
 GetListItem|variables|list 0 var 3 fail 0|1 [fixed #730]	bytes 1024 fnv 9B921577
 GetListItem|variables|list 0 var 6 fail 0|1 [orig]	bytes 1024 fnv 461347F3
@@ -785,6 +824,7 @@ GetListItem|variables|list 0 var 6 fail 0|5 [orig]	bytes 1024 fnv 076C24F3
 GetListItem|variables|list 0 var 6 fail 0|5 [fixed #730]	bytes 1024 fnv 9B921577
 GetListItem|variables|list 0 var 7 fail 0|1 [orig]	bytes 1024 fnv 461347F3
 GetListItem|variables|list 0 var 7 fail 0|1 [fixed #730]	bytes 1024 fnv DA393877
+GetListItem|variables|list 3 var 0 fail 0|1 [fixed #733]	bytes 1024 fnv 9B921577
 InitList|d0|list 0 var 0 fail 0|1	$FFFFFFFF
 InitList|d0|list 1 var 2 fail 0|1	$FFFFFFFF
 InitList|d0|list 1 var 3 fail 0|1	$FFFFFFFF
@@ -910,14 +950,19 @@ InitList|variables|list 3 var 4 fail 0|1	bytes 1024 fnv C901AC23
 InitList|variables|list 3 var 5 fail 0|1	bytes 1024 fnv C901AC23
 InitList|variables|list 4 var 1 fail 0|1 [orig]	bytes 1024 fnv 076C24F3
 InitList|variables|list 4 var 1 fail 0|1 [fixed #730]	bytes 1024 fnv 9B921577
-LastListItem|d0|list 0 var -1 fail 0|1	$FFFFFFFF
+LastListItem|d0|list 0 var -1 fail 0|1 [orig]	$FFFFFFFF
+LastListItem|d0|list 0 var -1 fail 0|1 [fixed #733]	$00000000
 LastListItem|d0|list 0 var -1 fail 0|2	$FFFFFFFF
 LastListItem|d0|list 0 var -1 fail 0|3	$FFFFFFFF
-LastListItem|d0|list 1 var -1 fail 0|1	$FFFFFFFF
-LastListItem|d0|list 2 var -1 fail 0|1	$FFFFFFFF
+LastListItem|d0|list 1 var -1 fail 0|1 [orig]	$FFFFFFFF
+LastListItem|d0|list 1 var -1 fail 0|1 [fixed #733]	$00000000
+LastListItem|d0|list 2 var -1 fail 0|1 [orig]	$FFFFFFFF
+LastListItem|d0|list 2 var -1 fail 0|1 [fixed #733]	$00000000
 LastListItem|d0|list 2 var -1 fail 0|2	$FFFFFFFF
-LastListItem|d0|list 3 var -1 fail 0|1	$FFFFFFFF
-LastListItem|d0|list 4 var -1 fail 0|1	$FFFFFFFF
+LastListItem|d0|list 3 var -1 fail 0|1 [orig]	$FFFFFFFF
+LastListItem|d0|list 3 var -1 fail 0|1 [fixed #733]	$00000000
+LastListItem|d0|list 4 var -1 fail 0|1 [orig]	$FFFFFFFF
+LastListItem|d0|list 4 var -1 fail 0|1 [fixed #733]	$00000000
 LastListItem|kept|list 0 var -1 fail 0|1	kept
 LastListItem|kept|list 0 var -1 fail 0|2	kept
 LastListItem|kept|list 0 var -1 fail 0|3	kept
@@ -986,6 +1031,7 @@ NextListItem|d0|list 0 var -1 fail 0|8 [orig]	$00000000
 NextListItem|d0|list 0 var -1 fail 0|8 [fixed #728]	$FFFFFFFF
 NextListItem|d0|list 2 var -1 fail 0|1	$FFFFFFFF
 NextListItem|d0|list 2 var -1 fail 0|2	$FFFFFFFF
+NextListItem|d0|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 NextListItem|kept|list 0 var -1 fail 0|1	kept
 NextListItem|kept|list 0 var -1 fail 0|2	kept
 NextListItem|kept|list 0 var -1 fail 0|3	kept
@@ -996,6 +1042,7 @@ NextListItem|kept|list 0 var -1 fail 0|7	kept
 NextListItem|kept|list 0 var -1 fail 0|8	kept
 NextListItem|kept|list 2 var -1 fail 0|1	kept
 NextListItem|kept|list 2 var -1 fail 0|2	kept
+NextListItem|kept|list 3 var -1 fail 0|1 [fixed #733]	kept
 NextListItem|memlib calls|list 0 var -1 fail 0|1 [orig]	$00000015
 NextListItem|memlib calls|list 0 var -1 fail 0|1 [fixed #734]	$00000016
 NextListItem|memlib calls|list 0 var -1 fail 0|2 [orig]	$00000015
@@ -1016,6 +1063,7 @@ NextListItem|memlib calls|list 2 var -1 fail 0|1 [orig]	$0000002E
 NextListItem|memlib calls|list 2 var -1 fail 0|1 [fixed #729]	$0000002D
 NextListItem|memlib calls|list 2 var -1 fail 0|2 [orig]	$0000002E
 NextListItem|memlib calls|list 2 var -1 fail 0|2 [fixed #729]	$0000002D
+NextListItem|memlib calls|list 3 var -1 fail 0|1 [fixed #733]	$0000002D
 NextListItem|pool|list 0 var -1 fail 0|1 [orig]	bytes 304 fnv 076EEC72
 NextListItem|pool|list 0 var -1 fail 0|1 [fixed #735]	bytes 304 fnv 24FC6A7A
 NextListItem|pool|list 0 var -1 fail 0|2 [orig]	bytes 304 fnv 076EEC72
@@ -1036,6 +1084,7 @@ NextListItem|pool|list 2 var -1 fail 0|1 [orig]	bytes 760 fnv 8AE573D9
 NextListItem|pool|list 2 var -1 fail 0|1 [fixed #726]	bytes 760 fnv 55AA0F28
 NextListItem|pool|list 2 var -1 fail 0|2 [orig]	bytes 760 fnv 8AE573D9
 NextListItem|pool|list 2 var -1 fail 0|2 [fixed #726]	bytes 760 fnv 55AA0F28
+NextListItem|pool|list 3 var -1 fail 0|1 [fixed #733]	bytes 760 fnv 55AA0F28
 NextListItem|pool used|list 0 var -1 fail 0|1	$00000130
 NextListItem|pool used|list 0 var -1 fail 0|2	$00000130
 NextListItem|pool used|list 0 var -1 fail 0|3	$00000130
@@ -1046,6 +1095,7 @@ NextListItem|pool used|list 0 var -1 fail 0|7	$00000168
 NextListItem|pool used|list 0 var -1 fail 0|8	$000001A8
 NextListItem|pool used|list 2 var -1 fail 0|1	$000002F8
 NextListItem|pool used|list 2 var -1 fail 0|2	$000002F8
+NextListItem|pool used|list 3 var -1 fail 0|1 [fixed #733]	$000002F8
 NextListItem|popped|list 0 var -1 fail 0|1	$00000000
 NextListItem|popped|list 0 var -1 fail 0|2	$00000000
 NextListItem|popped|list 0 var -1 fail 0|3	$00000000
@@ -1056,6 +1106,7 @@ NextListItem|popped|list 0 var -1 fail 0|7	$00000000
 NextListItem|popped|list 0 var -1 fail 0|8	$00000000
 NextListItem|popped|list 2 var -1 fail 0|1	$00000000
 NextListItem|popped|list 2 var -1 fail 0|2	$00000000
+NextListItem|popped|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 NextListItem|variables|list 0 var -1 fail 0|1 [orig]	bytes 1024 fnv F32422CF
 NextListItem|variables|list 0 var -1 fail 0|1 [fixed #730]	bytes 1024 fnv 0D303CB3
 NextListItem|variables|list 0 var -1 fail 0|2 [orig]	bytes 1024 fnv AED0B67E
@@ -1076,6 +1127,7 @@ NextListItem|variables|list 2 var -1 fail 0|1 [orig]	bytes 1024 fnv 076C24F3
 NextListItem|variables|list 2 var -1 fail 0|1 [fixed #730]	bytes 1024 fnv 9B921577
 NextListItem|variables|list 2 var -1 fail 0|2 [orig]	bytes 1024 fnv 076C24F3
 NextListItem|variables|list 2 var -1 fail 0|2 [fixed #730]	bytes 1024 fnv 9B921577
+NextListItem|variables|list 3 var -1 fail 0|1 [fixed #733]	bytes 1024 fnv 9B921577
 PrevListItem|d0|list 0 var -1 fail 0|1	$FFFFFFFF
 PrevListItem|d0|list 0 var -1 fail 0|2	$FFFFFFFF
 PrevListItem|d0|list 0 var -1 fail 0|3	$00000000
@@ -1087,6 +1139,7 @@ PrevListItem|d0|list 0 var -1 fail 0|8 [orig]	$00000000
 PrevListItem|d0|list 0 var -1 fail 0|8 [fixed #727]	$FFFFFFFF
 PrevListItem|d0|list 0 var -1 fail 0|9	$00000000
 PrevListItem|d0|list 0 var -1 fail 0|10	$00000000
+PrevListItem|d0|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 PrevListItem|kept|list 0 var -1 fail 0|1	kept
 PrevListItem|kept|list 0 var -1 fail 0|2	kept
 PrevListItem|kept|list 0 var -1 fail 0|3	kept
@@ -1097,6 +1150,7 @@ PrevListItem|kept|list 0 var -1 fail 0|7	kept
 PrevListItem|kept|list 0 var -1 fail 0|8	kept
 PrevListItem|kept|list 0 var -1 fail 0|9	kept
 PrevListItem|kept|list 0 var -1 fail 0|10	kept
+PrevListItem|kept|list 3 var -1 fail 0|1 [fixed #733]	kept
 PrevListItem|memlib calls|list 0 var -1 fail 0|1 [orig]	$00000015
 PrevListItem|memlib calls|list 0 var -1 fail 0|1 [fixed #734]	$00000016
 PrevListItem|memlib calls|list 0 var -1 fail 0|2 [orig]	$00000015
@@ -1117,6 +1171,7 @@ PrevListItem|memlib calls|list 0 var -1 fail 0|9 [orig]	$00000017
 PrevListItem|memlib calls|list 0 var -1 fail 0|9 [fixed #734]	$00000018
 PrevListItem|memlib calls|list 0 var -1 fail 0|10 [orig]	$00000017
 PrevListItem|memlib calls|list 0 var -1 fail 0|10 [fixed #734]	$00000018
+PrevListItem|memlib calls|list 3 var -1 fail 0|1 [fixed #733]	$0000002D
 PrevListItem|pool|list 0 var -1 fail 0|1 [orig]	bytes 304 fnv 076EEC72
 PrevListItem|pool|list 0 var -1 fail 0|1 [fixed #735]	bytes 304 fnv 24FC6A7A
 PrevListItem|pool|list 0 var -1 fail 0|2 [orig]	bytes 304 fnv 076EEC72
@@ -1137,6 +1192,7 @@ PrevListItem|pool|list 0 var -1 fail 0|9 [orig]	bytes 360 fnv 1BF9370F
 PrevListItem|pool|list 0 var -1 fail 0|9 [fixed #727]	bytes 360 fnv 9E060B7A
 PrevListItem|pool|list 0 var -1 fail 0|10 [orig]	bytes 360 fnv 1BF9370F
 PrevListItem|pool|list 0 var -1 fail 0|10 [fixed #727]	bytes 360 fnv 9E060B7A
+PrevListItem|pool|list 3 var -1 fail 0|1 [fixed #733]	bytes 760 fnv 55AA0F28
 PrevListItem|pool used|list 0 var -1 fail 0|1	$00000130
 PrevListItem|pool used|list 0 var -1 fail 0|2	$00000130
 PrevListItem|pool used|list 0 var -1 fail 0|3	$00000130
@@ -1147,6 +1203,7 @@ PrevListItem|pool used|list 0 var -1 fail 0|7	$00000168
 PrevListItem|pool used|list 0 var -1 fail 0|8	$00000168
 PrevListItem|pool used|list 0 var -1 fail 0|9	$00000168
 PrevListItem|pool used|list 0 var -1 fail 0|10	$00000168
+PrevListItem|pool used|list 3 var -1 fail 0|1 [fixed #733]	$000002F8
 PrevListItem|popped|list 0 var -1 fail 0|1	$00000000
 PrevListItem|popped|list 0 var -1 fail 0|2	$00000000
 PrevListItem|popped|list 0 var -1 fail 0|3	$00000000
@@ -1157,6 +1214,7 @@ PrevListItem|popped|list 0 var -1 fail 0|7	$00000000
 PrevListItem|popped|list 0 var -1 fail 0|8	$00000000
 PrevListItem|popped|list 0 var -1 fail 0|9	$00000000
 PrevListItem|popped|list 0 var -1 fail 0|10	$00000000
+PrevListItem|popped|list 3 var -1 fail 0|1 [fixed #733]	$00000000
 PrevListItem|variables|list 0 var -1 fail 0|1 [orig]	bytes 1024 fnv 076C24F3
 PrevListItem|variables|list 0 var -1 fail 0|1 [fixed #730]	bytes 1024 fnv 9B921577
 PrevListItem|variables|list 0 var -1 fail 0|2 [orig]	bytes 1024 fnv 076C24F3
@@ -1177,18 +1235,21 @@ PrevListItem|variables|list 0 var -1 fail 0|9 [orig]	bytes 1024 fnv 076C24F3
 PrevListItem|variables|list 0 var -1 fail 0|9 [fixed #730]	bytes 1024 fnv 9B921577
 PrevListItem|variables|list 0 var -1 fail 0|10 [orig]	bytes 1024 fnv 076C24F3
 PrevListItem|variables|list 0 var -1 fail 0|10 [fixed #730]	bytes 1024 fnv 9B921577
+PrevListItem|variables|list 3 var -1 fail 0|1 [fixed #733]	bytes 1024 fnv 9B921577
 SetListItem|d0|list 0 var 1 fail 0|1	$FFFFFFFF
 SetListItem|d0|list 0 var 1 fail 1|1	$00000000
 SetListItem|d0|list 0 var 2 fail 0|1	$FFFFFFFF
 SetListItem|d0|list 0 var 3 fail 0|1	$FFFFFFFF
 SetListItem|d0|list 0 var 4 fail 0|1	$00000000
 SetListItem|d0|list 0 var 6 fail 0|1	$FFFFFFFF
+SetListItem|d0|list 3 var 0 fail 0|1 [fixed #733]	$00000000
 SetListItem|kept|list 0 var 1 fail 0|1	kept
 SetListItem|kept|list 0 var 1 fail 1|1	kept
 SetListItem|kept|list 0 var 2 fail 0|1	kept
 SetListItem|kept|list 0 var 3 fail 0|1	kept
 SetListItem|kept|list 0 var 4 fail 0|1	kept
 SetListItem|kept|list 0 var 6 fail 0|1	kept
+SetListItem|kept|list 3 var 0 fail 0|1 [fixed #733]	kept
 SetListItem|memlib call 14|list 0 var 1 fail 1|1	$10000014
 SetListItem|memlib call 14 d1|list 0 var 1 fail 1|1	$00000000
 SetListItem|memlib call 15|list 0 var 1 fail 0|1	$10000014
@@ -1219,6 +1280,7 @@ SetListItem|memlib calls|list 0 var 4 fail 0|1 [orig]	$00000015
 SetListItem|memlib calls|list 0 var 4 fail 0|1 [fixed #734]	$00000016
 SetListItem|memlib calls|list 0 var 6 fail 0|1 [orig]	$00000017
 SetListItem|memlib calls|list 0 var 6 fail 0|1 [fixed #734]	$00000018
+SetListItem|memlib calls|list 3 var 0 fail 0|1 [fixed #733]	$0000002D
 SetListItem|pool|list 0 var 1 fail 0|1 [orig]	bytes 216 fnv 8A6422C1
 SetListItem|pool|list 0 var 1 fail 0|1 [fixed #735]	bytes 216 fnv CBE99A95
 SetListItem|pool|list 0 var 1 fail 1|1 [orig]	bytes 184 fnv E083199E
@@ -1231,18 +1293,21 @@ SetListItem|pool|list 0 var 4 fail 0|1 [orig]	bytes 304 fnv 076EEC72
 SetListItem|pool|list 0 var 4 fail 0|1 [fixed #735]	bytes 304 fnv 24FC6A7A
 SetListItem|pool|list 0 var 6 fail 0|1 [orig]	bytes 360 fnv 1BF9370F
 SetListItem|pool|list 0 var 6 fail 0|1 [fixed #727]	bytes 360 fnv 9E060B7A
+SetListItem|pool|list 3 var 0 fail 0|1 [fixed #733]	bytes 760 fnv 55AA0F28
 SetListItem|pool used|list 0 var 1 fail 0|1	$000000D8
 SetListItem|pool used|list 0 var 1 fail 1|1	$000000B8
 SetListItem|pool used|list 0 var 2 fail 0|1	$000000E8
 SetListItem|pool used|list 0 var 3 fail 0|1	$00000130
 SetListItem|pool used|list 0 var 4 fail 0|1	$00000130
 SetListItem|pool used|list 0 var 6 fail 0|1	$00000168
+SetListItem|pool used|list 3 var 0 fail 0|1 [fixed #733]	$000002F8
 SetListItem|popped|list 0 var 1 fail 0|1	$00000000
 SetListItem|popped|list 0 var 1 fail 1|1	$00000000
 SetListItem|popped|list 0 var 2 fail 0|1	$00000000
 SetListItem|popped|list 0 var 3 fail 0|1	$00000000
 SetListItem|popped|list 0 var 4 fail 0|1	$00000000
 SetListItem|popped|list 0 var 6 fail 0|1	$00000000
+SetListItem|popped|list 3 var 0 fail 0|1 [fixed #733]	$00000000
 SetListItem|variables|list 0 var 1 fail 0|1 [orig]	bytes 1024 fnv 461347F3
 SetListItem|variables|list 0 var 1 fail 0|1 [fixed #730]	bytes 1024 fnv DA393877
 SetListItem|variables|list 0 var 1 fail 1|1 [orig]	bytes 1024 fnv 461347F3
@@ -1255,6 +1320,7 @@ SetListItem|variables|list 0 var 4 fail 0|1 [orig]	bytes 1024 fnv 461347F3
 SetListItem|variables|list 0 var 4 fail 0|1 [fixed #730]	bytes 1024 fnv DA393877
 SetListItem|variables|list 0 var 6 fail 0|1 [orig]	bytes 1024 fnv 076C24F3
 SetListItem|variables|list 0 var 6 fail 0|1 [fixed #730]	bytes 1024 fnv 9B921577
+SetListItem|variables|list 3 var 0 fail 0|1 [fixed #733]	bytes 1024 fnv 9B921577
 SizeOfListItem|d0|var 0|1	$0000000C
 SizeOfListItem|d0|var 1|1	$00000014
 SizeOfListItem|d0|var 2|1	$00000006
