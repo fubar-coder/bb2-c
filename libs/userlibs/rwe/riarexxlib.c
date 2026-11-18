@@ -72,6 +72,10 @@
  *   - _makemsg tests the result of AllocVec: without memory nothing is
  *     sent (0); the original tested the flags AllocVec leaves (MOVE.l
  *     d0,a1 is a MOVEA) and went on with the message before (#533).
+ *   - RXDeletePort frees the block of the lists (FreeVec) and the name
+ *     (maxslib FreeSt; at finit the name is left to maxslib, which frees
+ *     its strings at the end of the program); the original freed neither
+ *     (#530).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -92,8 +96,7 @@
  *     its Result2 (tested at the a0 FindPort leaves) is deleted (#540).
  *   - RXCreatePort tests d0 of AddPort; on 0, or if the lists cannot be
  *     allocated, it deletes the port without RemPort (it stays in the
- *     public list) (#528).  RXDeletePort frees neither the lists nor the
- *     name (#530).
+ *     public list) (#528).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -343,6 +346,13 @@ static ULONG allocst(ULONG s, ULONG len)
     return BLITZ_ALIBJSR(TOK_allocst, r);
 }
 
+/* maxslib FreeSt: d0 = a copy of AllocSt (or 0) */
+static void freest(ULONG s)
+{
+    struct bl_regs r = { .d0 = s };
+    BLITZ_ALIBJSR(TOK_freest, r);
+}
+
 /* exec calls with what they leave */
 
 static ULONG addport_d0(struct MsgPort *port)
@@ -407,17 +417,18 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
 }
 BLITZ_THUNK(riarexxlib_libinit, libinit_c, "d1/a0-a1");
 
-static void deleteport(void);
+static void deleteport(BB_BOOL freename);
 
 /**
  * @brief finit: RXTokenise on again, delete the port if there is one (as
- * RXDeletePort).
+ * RXDeletePort; the name is left to maxslib, which frees its strings at
+ * the end of the program).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     tokenise = (UWORD)BB_TRUE;
     if (msgport)
-        deleteport();
+        deleteport(BB_FALSE);
 }
 BLITZ_THUNK(riarexxlib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
@@ -1067,7 +1078,9 @@ BLITZ_THUNK(_rxnumargs, rxnumargs_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ the port */
 
-static void deleteport(void)
+/* RXDeletePort, finit: reply what is waiting, delete the port, free the
+   lists and (freename) the name */
+static void deleteport(BB_BOOL freename)
 {
     ULONG *l;
     struct Message *m;
@@ -1086,6 +1099,12 @@ static void deleteport(void)
     RemPort(msgport);
     DeleteMsgPort(msgport);
     msgport = NULL;
+    /* fixed (#530): the original freed neither the lists nor the name */
+    FreeVec(v.messagelist);             /* the block: struct msglists */
+    v.messagelist = v.sentlist = NULL;
+    if (freename)
+        freest((ULONG)msgportname);
+    msgportname = NULL;
 }
 
 /**
@@ -1093,13 +1112,13 @@ static void deleteport(void)
  *
  * Messages still waiting are replied (RXReplyMsg 5 for each current
  * message, then ReplyMsg for the rest of the message list), then
- * RemPort, DeleteMsgPort.  BUG(orig) (#530): neither the
- * lists nor the name are freed.  Error check portchk.
+ * RemPort, DeleteMsgPort; the block of the lists and the name are freed
+ * (fixed #530: the original freed neither).  Error check portchk.
  */
 static void BLITZ_ROUTINE rxdeleteport_c(void)
 {
     if (msgport)
-        deleteport();
+        deleteport(BB_TRUE);
 }
 BLITZ_THUNK(_rxdeleteport, rxdeleteport_c, "d0-d1/a0-a1");
 

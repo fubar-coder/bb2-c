@@ -4,6 +4,7 @@
 ; either).  The program runs through inject (runwrap=, inject track: what
 ; the process leaves allocated); it creates and deletes its port.
 ; Correct: nothing is left allocated.
+; @fixed #530
 ; @rwe riarexxlib
 ; @pass runwrap=@INJECT@|track
 DEFTYPE .l

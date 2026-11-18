@@ -134,6 +134,13 @@ kind F):
   d0,a1:BEQ` is a MOVEA, which sets none): when they said 0 it went on
   with the message made or received before, wrote the new arguments into
   it and put it to the port again (#533).
+* **RXDeletePort** frees the 256-byte block of the message lists
+  (FreeVec) and the copy of the port name (maxslib FreeSt) after it has
+  deleted the port; finit frees the block and leaves the name to maxslib,
+  which frees its strings at the end of the program. The original freed
+  neither: the block (exec memory, not Blitz's) was lost for good at
+  every RXCreatePort/RXDeletePort pair and at the end of the program,
+  the name until the end of the program (#530).
 
 ## BUG(orig), kept
 
@@ -161,8 +168,6 @@ kind F):
 * **RXCreatePort** tests d0 of AddPort. On 0, or if the lists cannot be
   allocated, it deletes the port without RemPort, so the port stays in
   the public list (#528).
-* **RXDeletePort** replies the queued messages with 5 but frees neither
-  the lists nor the name (#530).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
