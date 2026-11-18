@@ -116,6 +116,16 @@ Intended deviations from the original:
   allocation of the NewMenu array does not return in the original
   (memlib raises "Out of Memory!", `libs/acidlibs/memlib.c`); if the
   runtime error returns in the port, makearray gives 0 before writing.
+* **GTFreeMenu has an error check.** With the debugger a negative item
+  number is "Illegal Menu Item number". The original has no check, and
+  `finditem` takes a negative number as "not given": GTFreeMenu
+  list#,menu,-1 frees the title as an item (30 bytes for its 12-byte
+  node, with the "shortcut" and the "sub items" read behind it) (#1089,
+  D-005; test `rigtmenulib-freemenu-negative-item`). A negative sub item
+  number stays allowed, as GTGetUserData's sub item -1: GTFreeMenu
+  list#,menu,item,-1 removes the whole item, as in the original (user
+  decision W3 "Sub-Item -1 erlauben"; port regression test
+  `rigtmenulib-freemenu-subitem-minus-one`). Release code is unchanged.
 * **GTMenuItem and GTSubItem test the whole address of shortcut$.** The
   original tests its low word (`TST.w d5`/`d6`): a string at an address
   with low word 0 counted as no shortcut, the item lost its key (#694;
@@ -186,12 +196,15 @@ Covered:
 * GTMenuChecked and GTSetMenuChecked in both forms;
 * GTGetUserData in both forms (sub item −1);
 * GTFreeMenu in all forms, with missing entries;
-* every error check, with existing entries;
+* every error check of the original, with existing entries;
 * the object's free routine, init and finit.
 
 Not covered:
 
 * the error checks with missing entries (runtime errors, TRAP #0);
+* GTFreeMenu's error check (the original has none; the bug-orig test
+  `rigtmenulib-freemenu-negative-item`, the port regression test
+  `rigtmenulib-freemenu-subitem-minus-one`);
 * CreateMenuStrip without titles (the original reads address 0; the
   bug-orig test `rigtmenulib-createmenustrip-unchecked`);
 * walks past the end of the strip (they write near address 0).

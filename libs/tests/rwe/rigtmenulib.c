@@ -33,7 +33,9 @@
  * GTSubItem with a shortcut$ at an address with low word 0 (the
  * original takes it as none, #694).
  * Not covered: the error checks of missing entries (runtime errors,
- * TRAP #0), CreateMenuStrip without titles (the original reads address 0; bug-orig test
+ * TRAP #0), GTFreeMenu's error check (the original has none; bug-orig
+ * test rigtmenulib-freemenu-negative-item, port regression test
+ * rigtmenulib-freemenu-subitem-minus-one), CreateMenuStrip without titles (the original reads address 0; bug-orig test
  * rigtmenulib-createmenustrip-unchecked), the walks beyond the lists
  * (write near address 0).
  */

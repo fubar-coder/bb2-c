@@ -1,0 +1,8 @@
+# the intended differences of rigtmenulib against the reference build of its
+# source (blitzlib compare, docs/development.md "Intended differences")
+# #1089: GTFreeMenu's forms with an item and with a sub item have an error
+# check (rigtmenulib_freechk: a negative item number); the original's have
+# none (the first difference of the entry, its item form)
+lib 37: entry 10 GTFreeMenu +$28: code offset set in only one of them
+# #1089: one relocation per new check entry (2)
+lib 37: relocations in the declaration part 49 != 51

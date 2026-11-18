@@ -51,6 +51,10 @@
  *     list); when CreateMenusA, GetVisualInfoA or
  *     LayoutMenusA fails it frees what it made and returns 0 (the
  *     original checks none of them and returns -1) (#689).
+ *   - GTFreeMenu's error check refuses a negative item number
+ *     ("Illegal Menu Item number"); the original has none, and it
+ *     freed the title as an item (#1089).  A negative sub item number
+ *     stays allowed (the whole item, as in the original).
  *   - GTMenuItem/GTSubItem test the whole address of shortcut$; the
  *     original tests its low word (TST.w d5/d6): a string at an address
  *     with low word 0 counted as no shortcut (#694).
@@ -96,6 +100,7 @@ void rigtmenulib_libinit(void), rigtmenulib_libfinit(void), freemenu(void);
 void createchk(void), setchk(void), rigtmenulib_statechk2(void);
 void rigtmenulib_statechk3(void), rigtmenulib_statechk4(void);
 void rigtmenulib_chkchk3(void), rigtmenulib_chkchk4(void), chkchk5(void);
+void rigtmenulib_freechk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -215,10 +220,10 @@ BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_freetitle, 0, 0);
 BLITZ_ARGS(W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
-BLITZ_SUBS(_freeitem, 0, 0);
+BLITZ_SUBS(_freeitem, rigtmenulib_freechk, 0);
 BLITZ_ARGS(W, W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
-BLITZ_SUBS(_freesubitem, 0, 0);
+BLITZ_SUBS(_freesubitem, rigtmenulib_freechk, 0);
 BLITZ_NAME("GTFreeMenu", "GTMenuList#,Menu[,Item[,Subitem]]");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -999,7 +1004,9 @@ BLITZ_THUNK(_freetitle, freetitle_c, "d0-d1/a0-a1");
  *
  * Fixed (#691): the item number is tested as a word; the original tests
  * it as a long (TST.l), so the upper word of the word argument decided
- * whether it is given.
+ * whether it is given.  A negative item number frees the title (as an
+ * item); Fixed (#1089): the error check (freechk) refuses it, "Illegal
+ * Menu Item number" (the original has no check).
  * @param menu    d1.w: the title
  * @param itemno  d2.w: the item
  * @param obj     a3: the GTMenuList object
@@ -1021,7 +1028,10 @@ BLITZ_THUNK(_freeitem, freeitem_c, "d0-d1/a0-a1");
  * its strings from the list.
  *
  * Fixed (#691): the numbers are tested as words (the original: as longs,
- * TST.l).
+ * TST.l).  Fixed (#1089): the error check (freechk) refuses a negative
+ * item number, "Illegal Menu Item number" (the original has no check; a
+ * negative item frees the title as an item).  A negative sub item number
+ * frees the whole item, as in the original, also with the debugger.
  * @param menu    d1.w: the title
  * @param itemno  d2.w: the item
  * @param subno   d3.w: the sub item
@@ -1358,6 +1368,20 @@ static void BLITZ_ERRCHK chkchk5_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
     statechk(obj, (UWORD)subno == 0xffff ? 3 : 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 
+/* freechk: GTFreeMenu's item number d2 is not negative (the forms with
+   an item and with a sub item).  Fixed (#1089): the original has no
+   check; finditem takes a negative number as "not given", so an item -1
+   freed the title as an item (30 bytes, its "shortcut" and "sub items"
+   read behind the 12-byte node).  A negative sub item number stays
+   allowed: it frees the whole item, as in the original (as
+   GTGetUserData's sub item -1, user decision W3 "Sub-Item -1
+   erlauben") */
+static void BLITZ_ERRCHK freechk_c(ULONG itemno BL_REG(d2))
+{
+    if ((WORD)itemno < 0)
+        BLITZ_RUNERR(mess2);
+}
+
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(createchk, listchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(setchk, listchk_c, "d0-d1/a0-a1");
@@ -1367,3 +1391,4 @@ BLITZ_ERRCHK_THUNK(rigtmenulib_statechk4, statechk4_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(rigtmenulib_chkchk3, chkchk3_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(rigtmenulib_chkchk4, chkchk4_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(chkchk5, chkchk5_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(rigtmenulib_freechk, freechk_c, "d0-d1/a0-a1");

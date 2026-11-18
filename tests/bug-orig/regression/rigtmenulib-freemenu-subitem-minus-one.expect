@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+before
+ A subs 0
+after
+rc=0

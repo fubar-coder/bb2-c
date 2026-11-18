@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "Illegal Menu Item number" *
+rc=0
