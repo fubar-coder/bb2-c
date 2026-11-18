@@ -5,7 +5,10 @@
 ; bitmap).  After one open/create/close round (it loads the classes) the
 ; program compares the free memory before and after a round with two
 ; DataTypeCreate.
-; Correct: the memory comes back - less than 16000 bytes missing.
+; Correct: the second DataTypeCreate is refused (0) while the first
+; object exists (user decision W4 Q4, as DataTypeOpen and AttachDataType
+; refuse), and the memory comes back - less than 16000 bytes missing.
+; @fixed #600
 ; @rwe ridatatypeslib
 ; @pass file=p.ilbm|@TESTDATA@/ridatatypeslib-create-object-lost.ilbm
 DEFTYPE .l

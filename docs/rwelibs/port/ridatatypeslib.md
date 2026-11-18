@@ -48,7 +48,6 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 
 * DataTypeOpen copies the name into its 384 byte buffer without a limit
   (#604).
-* A second DataTypeCreate loses the object before it (#600).
 * AttachDataType window,id,x,y,w,h puts its word arguments into the tag list as longs, with whatever
   upper words the registers have; window,id,&taglist passes the id as
   the tag list of its second SetAttrsA and ignores the tag list (#597,
@@ -95,6 +94,11 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   the last DataTypeOpen had copied: at first "" (NewDTObject fails for
   it on Kickstart 3.1), later the name of a file closed since, an object
   of a file the library does not count as open (#601).
+* DataTypeCreate (both forms) returns 0 while an object exists; the
+  object stays in use, as DataTypeOpen and AttachDataType refuse a second
+  file or window (user decision W4 Q4). The original stored the new
+  object over the old one, which nothing disposed of any more: its memory
+  (the picture's bitmap) was lost until the system was reset (#600).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h

@@ -38,7 +38,6 @@
  * BUG(orig):
  *   - DataTypeOpen copies the name into its 384 byte buffer without a
  *     limit (#604).
- *   - A second DataTypeCreate loses the object before (#600).
  *   - AttachDataType window,id,x,y,w,h puts the word arguments into the
  *     tag list as longs (with the upper words the registers have);
  *     AttachDataType window,id,&taglist passes the id as the tag list to
@@ -76,6 +75,11 @@
  *     with one.  The original made an object of the name the last
  *     DataTypeOpen had copied (at first "", later the name of a file
  *     closed since) (#601).
+ *   - DataTypeCreate (both forms) returns 0 while an object exists; the
+ *     object stays in use, as DataTypeOpen and AttachDataType refuse a
+ *     second file or window (user decision W4 Q4).  The original stored
+ *     the new object over the old one, which was never disposed of
+ *     (#600).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -489,7 +493,7 @@ ULONG BLITZ_ROUTINE c_datatypegroup(void)
 /* DataTypeCreate [&taglist]: NewDTObject of the file's name */
 static ULONG create(struct TagItem *tags)
 {
-    object = NewDTObjectA(fname, tags); /* BUG(orig) (#600): the old one lost */
+    object = NewDTObjectA(fname, tags);
     return (ULONG)object;
 }
 
@@ -498,13 +502,14 @@ static ULONG create(struct TagItem *tags)
  *
  * Needs an open file, as the form with a tag list (fixed, #601: the
  * original made an object of the name the last DataTypeOpen had copied,
- * at first "").  BUG(orig) (#600): an object before is lost.
- * @return d0: the object, 0 without datatypes.library or open file, or
- *         on failure
+ * at first "").  While an object exists: 0, the object stays (fixed,
+ * #600: the original lost it).
+ * @return d0: the object, 0 without datatypes.library or open file, while
+ *         an object exists, or on failure
  */
 ULONG BLITZ_ROUTINE c_datatypecreate2(void)
 {
-    if (!database || !lock)             /* fixed (#601) */
+    if (!database || !lock || object)   /* fixed (#601, #600) */
         return 0;
     storage->tags[0].ti_Tag = TAG_DONE;
     return create(storage->tags);
@@ -514,14 +519,15 @@ ULONG BLITZ_ROUTINE c_datatypecreate2(void)
  * @brief DataTypeCreate &taglist: NewDTObject of the file's name with a
  * tag list.
  *
- * BUG(orig) (#600): an object before is lost.
+ * While an object exists: 0, the object stays (fixed, #600: the
+ * original lost it).
  * @param tags  d0: the tag list
- * @return d0: the object, 0 without datatypes.library or open file, or
- *         on failure
+ * @return d0: the object, 0 without datatypes.library or open file, while
+ *         an object exists, or on failure
  */
 ULONG BLITZ_ROUTINE c_datatypecreate(struct TagItem *tags BL_REG(d0))
 {
-    if (!database || !lock)
+    if (!database || !lock || object)   /* fixed (#600) */
         return 0;
     return create(tags);
 }
