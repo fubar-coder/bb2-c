@@ -112,11 +112,13 @@
  *   - RXReturnCode returns the code of the last reply to RXSendCommand
  *     also while no message is current (the original returned 0 then)
  *     (#542).
- *
- * BUG(orig), kept:
- *   - RXExecuteScript/RXRunScript set their message type, but
- *     _rxruncommand overwrites it: both send RXCOMM|RXFF_STRING (the
- *     script name as a string program), without a result (#544).
+ *   - RXExecuteScript sends the script name as one argument with
+ *     RXCOMM|RXFF_RESULT and waits for the end of the script (its code:
+ *     RXReturnCode; a result string is deleted), RXRunScript with RXCOMM
+ *     without waiting; both -1 when sent (user decision W4 Q1 (b)).  The
+ *     original's _rxruncommand overwrote their message types: both sent
+ *     RXCOMM|RXFF_STRING, the script name as a tokenised string program,
+ *     and neither waited (#544).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -306,6 +308,8 @@ static UBYTE *msgportname;
 static UBYTE quote;
 static UWORD tokenise;                  /* RXTokenise: the word (fixed #547) */
 static UWORD oktodelete;
+static UWORD wholearg;                  /* the string as one argument (RXExecuteScript, RXRunScript) */
+static UWORD noresult;                  /* waiting without a result string (RXExecuteScript) */
 static const UBYTE *curadr;             /* the parser (parseadr unused) */
 static const char rexxname[] = "rexxsyslib.library";
 static const char realrexxportname[] = "REXX";
@@ -661,7 +665,7 @@ static void makemsgargs(UBYTE *word)
     ULONG n, argstr;
     int k;
 
-    if (!tokenise) {
+    if (!tokenise || wholearg) {
         for (n = 0; s[n]; n++)
             ;
         *arg = createargstring(s, n);
@@ -714,6 +718,14 @@ static ULONG sendmsg(void)
         result = waitport_c(result);
     } while (v.waitreply);
     oktodelete = 0;
+    if (noresult) {
+        /* RXExecuteScript: sent and done; no command reads the result
+           string (fixed #544) */
+        if (v.returnstring)
+            deleteargstring((ULONG)v.returnstring);
+        v.returnstring = NULL;
+        return BB_TRUE;
+    }
     if (!v.returnstring)
         return 0;
     /* an empty string as none, as the original's AllocSt of length 0 */
@@ -728,7 +740,7 @@ static ULONG sendmessage(void)
     UBYTE *word = NULL;
     ULONG n;
 
-    if (tokenise) {
+    if (tokenise && !wholearg) {
         /* fixed (#537): a word buffer of the command's length; the
            original's stringbuffer had 256 bytes and no limit.  Out of
            memory: nothing sent, 0 (D-018) */
@@ -746,18 +758,29 @@ static ULONG sendmessage(void)
     return sendmsg();
 }
 
-/* _rxruncommand: d0 = the port name, d1 = the command */
-static ULONG runcommand(const UBYTE *port, ULONG cmd)
+/* send `cmd` to `port` with the message type `type`; `wait`: wait for
+   the reply (replyreq), `whole`: the string as one argument, `nores`:
+   waiting without a result string */
+static ULONG sendto(const UBYTE *port, ULONG cmd, ULONG type, UWORD wait, UWORD whole,
+                    UWORD nores)
 {
     struct MsgPort *p;
 
-    msgtype = RXCOMM | RXFF_STRING;
-    v.replyreq = 0;
+    msgtype = type;
+    v.replyreq = wait;
+    wholearg = whole;
+    noresult = nores;
     if (!(p = FindPort((CONST_STRPTR)port)))
         return 0;
     v.destport = p;
     msgstring = cmd;
     return sendmessage();
+}
+
+/* _rxruncommand: d0 = the port name, d1 = the command */
+static ULONG runcommand(const UBYTE *port, ULONG cmd)
+{
+    return sendto(port, cmd, RXCOMM | RXFF_STRING, 0, 0, 0);
 }
 
 /**
@@ -791,48 +814,44 @@ BLITZ_THUNK(_rxruncommand2, rxruncommand2_c, "d1/a0-a1");
 
 /**
  * @brief RXExecuteScript scriptname$: run an ARexx script through the port
- * "REXX".
+ * "REXX" and wait for its end.
  *
- * BUG(orig) (#544): its message type (RXCOMM|RXFF_RESULT) is overwritten
- * by _rxruncommand: it sends RXCOMM|RXFF_STRING (the script name as a
- * string program), without a result.
+ * RXCOMM|RXFF_RESULT, the name as one argument; while it waits, received
+ * messages go to the message list (as RXSendCommand).  The script's code
+ * is RXReturnCode, a result string is deleted.  Fixed (#544, user
+ * decision W4 Q1 (b)): the original's _rxruncommand overwrote the type,
+ * so it sent RXCOMM|RXFF_STRING (the name as a tokenised string program)
+ * and did not wait.
  * @param name  d0: scriptname$
- * @return d0: as RXRunCommand
+ * @return d0: -1 when sent and replied; 0 if there is no REXX port or no
+ *         message
  */
 static ULONG BLITZ_ROUTINE rxexecutescript_c(ULONG name BL_REG(d0))
 {
-    msgtype = RXCOMM | RXFF_RESULT;
-    return runcommand((const UBYTE *)realrexxportname, name);
+    return sendto((const UBYTE *)realrexxportname, name, RXCOMM | RXFF_RESULT, 0xffff, 1, 1);
 }
 BLITZ_THUNK(_rxexecutescript, rxexecutescript_c, "d1/a0-a1");
 
 /**
  * @brief RXRunScript scriptname$: run an ARexx script through the port
- * "REXX".
+ * "REXX", no reply awaited.
  *
- * BUG(orig) (#544): its type RXCOMM is overwritten as in RXExecuteScript.
+ * RXCOMM, the name as one argument, into the sent list as RXRunCommand.
+ * Fixed (#544): the original's _rxruncommand overwrote the type (it sent
+ * RXCOMM|RXFF_STRING, the name as a tokenised string program).
  * @param name  d0: scriptname$
  * @return d0: as RXRunCommand
  */
 static ULONG BLITZ_ROUTINE rxrunscript_c(ULONG name BL_REG(d0))
 {
-    msgtype = RXCOMM;
-    return runcommand((const UBYTE *)realrexxportname, name);
+    return sendto((const UBYTE *)realrexxportname, name, RXCOMM, 0, 1, 0);
 }
 BLITZ_THUNK(_rxrunscript, rxrunscript_c, "d1/a0-a1");
 
 /* dorxsendcommand: d0 = the port name, d5 = the command */
 static ULONG sendcommand(const UBYTE *port, ULONG cmd)
 {
-    struct MsgPort *p;
-
-    msgtype = RXCOMM | RXFF_STRING | RXFF_RESULT;
-    v.replyreq = 0xffff;
-    if (!(p = FindPort((CONST_STRPTR)port)))
-        return 0;
-    v.destport = p;
-    msgstring = cmd;
-    return sendmessage();
+    return sendto(port, cmd, RXCOMM | RXFF_STRING | RXFF_RESULT, 0xffff, 0, 0);
 }
 
 /**

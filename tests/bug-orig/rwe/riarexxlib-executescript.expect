@@ -1,0 +1,10 @@
+[compile]
+ok
+[run]
+rexx -1
+ok: -1 rc 0
+...
+bad: -1 rc 10
+run: -1
+got <hello>
+rc=0

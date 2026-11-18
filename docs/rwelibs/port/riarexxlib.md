@@ -190,13 +190,19 @@ kind F):
   RXSendCommand also while no message is current. The original returned
   0 then, e.g. right after an RXSendCommand that found no message of its
   own waiting, so the code of a failed command was lost (#542).
-
-## BUG(orig), kept
-
-* **RXExecuteScript/RXRunScript** set their own message type, which
-  `_rxruncommand` overwrites. Both send RXCOMM|RXFF_STRING without
-  RXFF_RESULT: the script name is run as a string program, tokenised
-  (#544).
+* **RXExecuteScript** sends the script name as one argument with
+  RXCOMM|RXFF_RESULT to the port REXX and waits for the end of the
+  script, as RXSendCommand waits (messages that arrive meanwhile go to
+  the message list); the script's code is RXReturnCode, a result string
+  is deleted (no command reads it), the result is -1 when sent, 0 when
+  there is no REXX port. **RXRunScript** sends the name as one argument
+  with RXCOMM and does not wait, as RXRunCommand (user decision W4 Q1
+  (b); the declarations are unchanged). The original set these types
+  but `_rxruncommand` overwrote them: both sent RXCOMM|RXFF_STRING, the
+  script name as a tokenised string program, so no script was ever
+  loaded, and neither waited (#544). A script that sends a command to
+  the program's own port and waits for its reply cannot be run with
+  RXExecuteScript, which waits too: RXRunScript is for it.
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

@@ -31,9 +31,10 @@
  * both forms (the result over the arguments), with result code 10 and no
  * string, to a missing port, with a message arriving while it waits;
  * RXReturnCode (also without a current message: #542, fixed); RXDefaultPort;
- * RXExecuteScript/RXRunScript (BUG(orig) #544: both RXCOMM|RXFF_STRING; to
- * the responder if there is no REXX port, else to RexxMast with the
- * string program "exit", its reply awaited with RXWaitPort); RXDeletePort with messages queued (replied with
+ * RXExecuteScript/RXRunScript (to the responder if there is no REXX port,
+ * else to RexxMast; the original sends both as RXCOMM|RXFF_STRING, fixed
+ * #544: RXCOMM|RXFF_RESULT, waiting, and RXCOMM, the name one argument);
+ * RXDeletePort with messages queued (replied with
  * 5); finit with a port; init after RXDefaultPort (the original: the
  * byte at +4 stays, "REXXE"; fixed #532: "REXX", the responder gets it).
  * Not covered: the error check without a port (a runtime error, TRAP
@@ -555,15 +556,20 @@ int main(int argc, char **argv)
         samelog("RXRunScript", 1);
         readport(READPORT, 0, "the script replies");
     } else {
-        /* the real RexxMast: the "script name" is run as a string
-           program (BUG(orig), #544); tokenised, its first word "exit" */
+        /* the real RexxMast: the original runs the "script name" as a
+           string program (#544), tokenised, its first word "exit"; fixed,
+           RXExecuteScript waits for the reply itself and RexxMast finds
+           no script of that name.  A second later the reply is read (the
+           original's) or there is none (RXExecuteScript's, fixed) */
         ROUT = "RXExecuteScript";
         strcpy(VEC, "RexxMast");
         call(EXECUTESCRIPT, 0, (ULONG)"exit 0", 0, 0, 0, 0);
-        readport(WAITPORT, 0, "RexxMast's reply");
+        Delay(50);
+        readport(READPORT, 0, "RexxMast's reply");
         ROUT = "RXRunScript";
         call(RUNSCRIPT, 0, (ULONG)"exit 0", 0, 0, 0, 0);
-        readport(WAITPORT, 0, "RexxMast's reply");
+        Delay(50);
+        readport(READPORT, 0, "RexxMast's reply");
     }
 
     /* messages of the test */
