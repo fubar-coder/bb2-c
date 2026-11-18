@@ -82,6 +82,12 @@ kind F):
   no App window, as `DelAppMenu` and `DelAppIcon`; the original called
   `RemoveAppWindow(NULL)` and returned -1. `DelAppIcon` calls
   `FreeDiskObject` only for a DiskObject (#523).
+* `NextAppFile`/`AppFile` leave the lock of the WBArg in the message. The
+  original unlocked it – Workbench's own lock (`ChangeMode` + `UnLock`,
+  "Let us Unlock() it!") – and cleared it unless the path ended with
+  `:`, so a second `AppFile` of the same argument had lock 0 and
+  `AppLock` returned 0; its `:` test read the byte before the string for
+  an empty path, which now gets no `/` (#521).
 
 ## BUG(orig), kept
 
@@ -93,11 +99,6 @@ kind F):
   DiskObject first; if `AddAppIconA` then fails, the removed AppIcon stays
   in the slot (a later `DelAppIcon` removes it again) and the new
   DiskObject stays in its slot (freed only by finit) (#517).
-* `NextAppFile`/`AppFile` unlock the lock of the WBArg – Workbench's own
-  lock (`ChangeMode` + `UnLock`, "Let us Unlock() it!") – and clear it in
-  the message, unless the path ends with `:`. A second `AppFile` of the
-  same argument then has lock 0. The `:` test reads the byte before the
-  string if the path is empty (#521).
 * finit replies to the messages still queued at the port only if a
   message is current (the last `AppEvent`); the flag `msgportflag` for the
   other case is never set. Otherwise they stay unreplied when the port is

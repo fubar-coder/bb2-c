@@ -37,10 +37,6 @@
  *     DiskObject but leaves the old AppIcon in the slot if AddAppIconA
  *     fails (a later DelAppIcon removes it again); the new DiskObject is
  *     stored before AddAppIconA and stays on failure (#517).
- *   - NextAppFile/AppFile unlock the lock of the WBArg (ChangeMode +
- *     UnLock - Workbench's own lock) and clear it in the message, unless
- *     the path ends with ':'.  The ':' test reads the byte before the
- *     string if NameFromLock gives an empty path (#521).
  *   - finit replies to the messages queued at the port only if a message
  *     is current (the last AppEvent) - the flag `msgportflag` for the
  *     other case is never set; otherwise they stay unreplied when the
@@ -52,6 +48,12 @@
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
+ * Fixed (intended deviation, #521): NextAppFile/AppFile unlocked the lock
+ * of the WBArg (ChangeMode + UnLock - Workbench's own lock) and cleared it
+ * in the message unless the path ended with ':', and the ':' test read
+ * the byte before the string for an empty path; the lock stays now, and
+ * '/' is appended only behind a path that is not empty and does not end
+ * with ':'.
  * Fixed (intended deviation, #523): DelAppWindow called RemoveAppWindow
  * also for an empty slot (NULL) and returned -1; it returns 0 now without
  * a call, as DelAppMenu and DelAppIcon.  DelAppIcon calls FreeDiskObject
@@ -456,10 +458,11 @@ BLITZ_THUNK(appeventcode, appeventcode_c, "d1/a0-a1");
  * argument, at a3.
  *
  * NameFromLock of the argument's lock, '/' unless the path ends with
- * ':', then the name.  BUG(orig) (#521): the lock (Workbench's) is
- * unlocked and cleared in the message unless the path ends with ':', and
- * that test reads the byte before the string for an empty path.  a3 ends
- * on the 0 (fixed, #519: the original left it behind the 0).
+ * ':', then the name.  Fixed (#521): the lock (Workbench's) stays in the
+ * message (the original unlocked and cleared it unless the path ended
+ * with ':'), and an empty path gets no '/' (the original's test read the
+ * byte before the string).  a3 ends on the 0 (fixed, #519: the original
+ * left it behind the 0).
  * @return d0: the length, 0 if there is no message, no argument left or
  *         NameFromLock fails
  */
@@ -467,28 +470,22 @@ static ULONG BLITZ_ROUTINE appfile_c(void)
 {
     struct WBArg *arg;
     UBYTE *start, *s;
-    BPTR lock;
 
     if (!libflag || !msg)
         return 0;
     if (argnum < 0 || argnum >= numargs)        /* fixed (#520): argnum < 0 */
         return 0;
     arg = msg->am_ArgList + argnum++;
-    lock = arg->wa_Lock;
-    if (!NameFromLock(lock, (STRPTR)arglist, 255))
+    if (!NameFromLock(arg->wa_Lock, (STRPTR)arglist, 255))
         return 0;
     start = blitz_string;
     s = arglist;
     while ((*blitz_string++ = *s++) != 0)
         ;
     blitz_string--;
-    /* the byte before the 0: before the string if the path is empty */
-    if (blitz_string[-1] != ':') {
-        ChangeMode(CHANGE_LOCK, lock, SHARED_LOCK);     /* "Let us Unlock() it!" */
-        arg->wa_Lock = 0;
-        UnLock(lock);
+    /* fixed (#521): the lock stays; no '/' behind an empty path */
+    if (blitz_string != start && blitz_string[-1] != ':')
         *blitz_string++ = '/';
-    }
     s = (UBYTE *)arg->wa_Name;
     while ((*blitz_string++ = *s++) != 0)
         ;
