@@ -36,10 +36,8 @@
  * (init/finit, AttachDataType) and d7/a2 (SetDataTypeAttr with pairs).
  *
  * BUG(orig):
- *   - DataTypesPalette copies as many colours as the palette has (read
- *     behind the datatype's colours; 0 colours: 65536); without colours
- *     it returns GetAttr's result, otherwise the address of its buffer
- *     (#606, #607).
+ *   - DataTypesPalette without colours returns GetAttr's result,
+ *     otherwise the address of its buffer (#607).
  *   - SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
  *     overflow the 1024 byte buffer (#608).
  *
@@ -91,6 +89,12 @@
  *     list is used and stays unchanged; a tag in both is the library's
  *     (BestModeID takes the first).  The original wrote its tags and a
  *     TAG_DONE over the first seven longs of the program's list (#603).
+ *   - DataTypesPalette copies the picture's colours (PDTA_NumColors), at
+ *     most as many as the palette has; none for a palette of 0 colours.
+ *     The original copied as many as the palette has: behind the
+ *     picture's colour table for a larger palette, 65536 for 0 (DBRA)
+ *     (#606).  A palette smaller than the picture gets its first colours,
+ *     as before (RIDataTypesLib.guide asks for 2^depth colours).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -757,9 +761,10 @@ struct pdata {
  * (PDTA_ColorRegisters) into a palette object.
  *
  * Into the palette's colour block (count.w, first.w, then a long per
- * component; the top bytes set).  BUG(orig) (#606): as many colours as
- * the palette has (read behind the datatype's colours; 0 colours:
- * 65536).  Does not test datatypes.library.
+ * component; the top bytes set).  The smaller of the picture's
+ * (PDTA_NumColors) and the palette's number of colours (fixed, #606: the
+ * original copied the palette's number, behind the picture's table for a
+ * larger palette, 65536 for 0).  Does not test datatypes.library.
  * @param palobj  a0: the palette object (palettelib, parameter 0)
  * @return d0: the address of the buffer; BUG(orig) (#607): without
  *         colours GetAttr's result; 0 without object
@@ -768,7 +773,7 @@ ULONG BLITZ_ROUTINE c_datatypespalette(struct bb_palette *palobj BL_REG(a0))
 {
     const UBYTE *cr;
     struct pcolour *p;
-    UWORD n;
+    ULONG n, nc = 0;
     ULONG r;
 
     if (!object)
@@ -777,15 +782,17 @@ ULONG BLITZ_ROUTINE c_datatypespalette(struct bb_palette *palobj BL_REG(a0))
     cr = (const UBYTE *)storage->value;
     if (!cr)
         return r;                       /* BUG(orig) (#607): GetAttr's result */
+    GetAttr(PDTA_NumColors, object, &nc);
     n = PALDATA(palobj)->count;
+    if (nc < n)                         /* fixed (#606) */
+        n = nc;
     p = PALDATA(palobj)->colour;
-    n--;
-    do {                                /* BUG(orig) (#606): DBRA, 0 = 65536 */
+    for (; n; n--) {
         p->red = *cr++;
         p->green = *cr++;
         p->blue = *cr++;
         p++;
-    } while (n-- != 0);
+    }
     return (ULONG)storage;
 }
 

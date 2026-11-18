@@ -29,7 +29,8 @@
  * forms (a list 1-9: the original writes its tags over it),
  * GetDataTypeAttr (known and unknown attributes), SetDataTypeAttr with a
  * tag list and with 1 and 2 pairs (the upper word of d7 a marker),
- * DataTypesPalette with 4 and 2 colours, AttachDataType in all three
+ * DataTypesPalette with 4 and 2 colours (and 0, the C build only: the
+ * original copies 65536), AttachDataType in all three
  * forms (the second with upper words 1 and 2 in x and y, the original
  * writes them into the tags; the third with the id 0 and GA_Left 2), a second AttachDataType (0),
  * DataTypeReady, DetachDataType (twice), DataTypeClose (then the strings
@@ -39,7 +40,7 @@
  * ObtainDataType failing,
  * AttachDataType window,id without DataTypeBitmap,
  * DataTypeClose of an attached object, DataTypesPalette with more colours
- * than the picture or 0 (65536), SetDataTypeAttr with 0 or more than 127
+ * than the picture, SetDataTypeAttr with 0 or more than 127
  * pairs, names over 383 characters.
  */
 #include "rwecmp.h"
@@ -477,6 +478,11 @@ int main(int argc, char **argv)
     OBSBYTES("tag list", tags, 9 * 4);
     palette(4);
     palette(2);
+    if (!strcmp(bl_libset, "obj")) {
+        /* a palette of 0 colours gets none (fixed #606); the original
+           copies 65536 colours (DBRA), over memory behind paldata */
+        palette(0);
+    }
     getattr(DTA_NominalHoriz);
 
     /* SetDataTypeAttr: a tag list, pairs */

@@ -45,10 +45,8 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 
 **BUG(orig)** (kept):
 
-* DataTypesPalette copies as many colours as the palette object has
-  (reads behind the picture's colours; 0 colours are 65536); without
-  colours it returns GetAttr's result, otherwise the buffer's address
-  (#606, #607).
+* DataTypesPalette without colours returns GetAttr's result, otherwise
+  the buffer's address (#607).
 * SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
   overflow the buffer (#608).
 
@@ -119,6 +117,15 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   own TAG_DONE). The original wrote its tags and a TAG_DONE over the
   first seven longs of the program's list (behind a shorter list over
   other memory) and so ignored the program's tags (#603).
+* DataTypesPalette copies the picture's colours (PDTA_NumColors), at most
+  as many as the palette object has; a palette of 0 colours gets none.
+  The original copied as many as the palette has: for a palette larger
+  than the picture the bytes behind the picture's colour table became
+  its further colours, and a count of 0 copied 65536 (DBRA: 196608 bytes
+  read, 786432 written behind the palette's data). A palette smaller
+  than the picture gets its first colours, as before: RIDataTypesLib.guide
+  asks the program for a palette of 2^DataTypeDepth colours (no check
+  added) (#606).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h
