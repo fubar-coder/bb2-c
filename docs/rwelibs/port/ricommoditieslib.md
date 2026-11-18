@@ -61,13 +61,16 @@ are one packed struct in the order of the original's data block, so that
   is never called; not translated) and deleted the port with what was
   queued, so commodities could never free them: about 100 bytes per
   message (#561).
+* finit closes commodities.library last, after the broker and the port;
+  the original closed it first and then called `DeleteCxObj` through the
+  closed base, which works only while the library stays in memory (it is
+  expunged only if the program was its last user) (#556).
 
 **BUG(orig)** (kept, commented in the code):
 
 * the help text of `MakeCommodity` lacks the closing parenthesis (#558);
-* finit closes commodities.library first and then calls `DeleteCxObj`
-  through the closed base (#556); `DeleteCxObj` (not `DeleteCxObjAll`)
-  leaves the filters and senders allocated (#557);
+* finit deletes the broker with `DeleteCxObj` (not `DeleteCxObjAll`),
+  which leaves the filters and senders allocated (#557);
 * `SetHotKey` does not check the number (#564); a replaced filter/sender
   is removed but not deleted; the sender is only removed if the filter
   existed; objects made before a failure stay (#563); `CxObjError` is not

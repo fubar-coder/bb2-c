@@ -39,13 +39,14 @@
  * CommodityEvent and WaitCommodity reply the message fetched before, finit
  * the last one and those still queued; the original never replied one
  * (its replymessage starts with RTS and is never called: not translated),
- * so commodities could never free them (#561).
+ * so commodities could never free them (#561).  finit closes
+ * commodities.library last; the original closed it first and then called
+ * DeleteCxObj through the closed base (#556).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
  *     (#558);
- *   - finit closes commodities.library first and then calls DeleteCxObj
- *     through the closed base (#556); DeleteCxObj (not DeleteCxObjAll)
+ *   - finit deletes the broker with DeleteCxObj (not DeleteCxObjAll), which
  *     leaves the filters and senders of the broker allocated (#557);
  *   - SetHotKey does not check the number: the slots are cxfilter[n] /
  *     cxsends[n] in the variables' original layout (st below), so n >= 16
@@ -212,14 +213,15 @@ static void replymsg(void)
 }
 
 /**
- * @brief finit: closes commodities.library, deletes the broker, replies
- * the messages and deletes the message port.
+ * @brief finit: deletes the broker, replies the messages, deletes the
+ * message port and closes commodities.library.
  *
  * Fixed (#561): the message fetched last and those still queued are
  * replied (after the broker is deleted, so no more come) before the port
- * is deleted; the original deleted the port with them.  BUG(orig):
- * CloseLibrary first, then DeleteCxObj through the closed base (#556);
- * only the broker is deleted, not its filters and senders (#557).
+ * is deleted; the original deleted the port with them.  Fixed (#556):
+ * commodities.library is closed last; the original closed it first and
+ * then called DeleteCxObj through the closed base.  BUG(orig): only the
+ * broker is deleted, not its filters and senders (#557).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -227,16 +229,16 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
     if (!st_cbase)
         return;
+    if (st.msgport) {
+        DeleteCxObj(st.cobject);
+        st.cobject = 0;
+        replymsg();
+        while ((m = GetMsg(st.msgport)))
+            ReplyMsg(m);
+        delmsgport(st.msgport);
+        st.msgport = 0;
+    }
     CloseLibrary(st_cbase);
-    if (!st.msgport)
-        return;
-    DeleteCxObj(st.cobject);
-    st.cobject = 0;
-    replymsg();
-    while ((m = GetMsg(st.msgport)))
-        ReplyMsg(m);
-    delmsgport(st.msgport);
-    st.msgport = 0;
 }
 BLITZ_THUNK(ricommoditieslib_libfinit, libfinit_c, "d1/a0-a1");
 
