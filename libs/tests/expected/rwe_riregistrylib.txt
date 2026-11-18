@@ -846,7 +846,8 @@ SetRegistryBoolVariable|call 0 a0|form 0 ret $002E0030|1	prog
 SetRegistryBoolVariable|call 0 a1|form 0 ret $002E0030|1	prog
 SetRegistryBoolVariable|call 0 a2|form 0 ret $002E0030|1	$FFFFFFFF
 SetRegistryBoolVariable|call 0 d0|form 0 ret $002E0030|1	$00000003
-SetRegistryBoolVariable|call 0 d1|form 0 ret $002E0030|1	$5A021234
+SetRegistryBoolVariable|call 0 d1|form 0 ret $002E0030|1 [orig]	$5A021234
+SetRegistryBoolVariable|call 0 d1|form 0 ret $002E0030|1 [fixed #782]	$00000004
 SetRegistryBoolVariable|calls|form 0 ret $00110011|1	$00000000
 SetRegistryBoolVariable|calls|form 0 ret $00110013|1	$00000000
 SetRegistryBoolVariable|calls|form 0 ret $002E0030|1	$00000001
@@ -864,7 +865,8 @@ SetRegistryIntVariable|call 0 a0|form 0 ret $002F0031|1	prog
 SetRegistryIntVariable|call 0 a1|form 0 ret $002F0031|1	prog
 SetRegistryIntVariable|call 0 a2|form 0 ret $002F0031|1	$00003039
 SetRegistryIntVariable|call 0 d0|form 0 ret $002F0031|1	$00000004
-SetRegistryIntVariable|call 0 d1|form 0 ret $002F0031|1	$00000004
+SetRegistryIntVariable|call 0 d1|form 0 ret $002F0031|1 [orig]	$5A021234
+SetRegistryIntVariable|call 0 d1|form 0 ret $002F0031|1 [fixed #782]	$00000004
 SetRegistryIntVariable|calls|form 0 ret $00120012|1	$00000000
 SetRegistryIntVariable|calls|form 0 ret $00120014|1	$00000000
 SetRegistryIntVariable|calls|form 0 ret $002F0031|1	$00000001
@@ -887,7 +889,8 @@ SetRegistryVariable|call 0 a2|form 0 ret $00210023|1	prog
 SetRegistryVariable|call 0 a2|form 1 ret $00220024|1	prog
 SetRegistryVariable|call 0 d0|form 0 ret $00210023|1	$00000001
 SetRegistryVariable|call 0 d0|form 1 ret $00220024|1	$00000002
-SetRegistryVariable|call 0 d1|form 0 ret $00210023|1	$5A021234
+SetRegistryVariable|call 0 d1|form 0 ret $00210023|1 [orig]	$5A021234
+SetRegistryVariable|call 0 d1|form 0 ret $00210023|1 [fixed #782]	$00000005
 SetRegistryVariable|call 0 d1|form 1 ret $00220024|1	$0000004D
 SetRegistryVariable|calls|form 0 ret $00040004|1	$00000000
 SetRegistryVariable|calls|form 0 ret $00040006|1	$00000000

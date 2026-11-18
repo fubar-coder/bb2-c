@@ -24,7 +24,9 @@
  * #780, the bug-orig test riregistrylib-getstring-address0; here both
  * give ""), finit.
  * With the mock: init, IsRegistryOpen, every command and form before a
- * lock (nothing called) and with a structure, the string functions with
+ * lock (nothing called) and with a structure (the size SetRegistryVariable
+ * name,value$ and SetRegistryInt/BoolVariable pass with a marker in d2:
+ * the original passes d2, fixed #782), the string functions with
  * a string value, another type, no value, no name; GetRegistryInt/
  * BoolVariable with the types 2/3/4; nested locks, a failed lock (0
  * pushed: no defect, it keeps the stack balanced), UnlockRegistry back
@@ -172,8 +174,15 @@ static void cmd(int idx, int form, const char *name, ULONG d0, ULONG d1, ULONG d
     /* the original leaves the "insert before" name in a4 (the DIFF of
        libs/userlibs/rwe/riregistrylib.c): exempt */
     DONTCARE = idx == E_INSERT ? 1UL << 12 : 0;
+    /* SetRegistryVariable name,value$: the two lengths on the a2 stack
+       (name at -4, value$ at -8), as the compiler pushes them */
     DO1(ENT(LIB, idx, form), R.d[0] = d0; R.d[1] = d1; R.d[2] = d2;
-        R.d[3] = d3; R.d[4] = d4);
+        R.d[3] = d3; R.d[4] = d4;
+        if (idx == E_SETVAR && form == 0) {
+            stk[7] = strlen((const char *)d0);
+            stk[6] = strlen((const char *)d1);
+            R.a[2] = (ULONG)&stk[8];
+        });
     DONTCARE = 0;
     /* the statements leave the library's d0 (the C build keeps d0) */
     if (idx != E_ACCESS && idx != E_DELLIBVARS && idx != E_FREESTRUCT)
@@ -193,7 +202,9 @@ static void all(void)
     cmd(E_SETBASE, 0, "SetRegistryBaseLibrary", S1, MARK(1), MARK(2), 0, 0);
     cmd(E_EXISTS, 0, "ExistsRegistryLibrary", S1, MARK(1), MARK(2), 0, 0);
     cmd(E_GETVAR, 0, "GetRegistryVariable", S1, MARK(1), MARK(2), 0, 0);
-    cmd(E_SETVAR, 0, "SetRegistryVariable", S1, S2, MARK(2), 0, 0);   /* size: d2 */
+    /* size: the caller's d2 in the original, fixed #782: the length of
+       value$ (5), 4 for the Bool and Int forms */
+    cmd(E_SETVAR, 0, "SetRegistryVariable", S1, S2, MARK(2), 0, 0);
     cmd(E_SETVAR, 1, "SetRegistryVariable", S1, S2, 77, 0, 0);
     cmd(E_CHANGE, 0, "ChangeRegistryVariable", S1, S2, 3, 4, 0);
     cmd(E_NEWLIB, 0, "NewRegistryLibrary", S1, S2, MARK(2), 0, 0);
@@ -207,7 +218,7 @@ static void all(void)
     cmd(E_SAVELIB, 0, "SaveRegistryLibrary", S1, S3, MARK(2), 0, 0);
     cmd(E_LOADLIB, 0, "LoadRegistryLibrary", S1, S3, MARK(2), 0, 0);
     cmd(E_SETBOOL, 0, "SetRegistryBoolVariable", S1, (ULONG)-1, MARK(2), 0, 0);
-    cmd(E_SETINT, 0, "SetRegistryIntVariable", S1, 12345, 4, 0, 0);
+    cmd(E_SETINT, 0, "SetRegistryIntVariable", S1, 12345, MARK(2), 0, 0);
     cmd(E_DELLIBVARS, 0, "DeleteRegistryLibraryVariables", S1, MARK(1), MARK(2), 0, 0);
     cmd(E_SETLIBVAL, 0, "SetLibraryValue", S1, S2, MARK(2), 0, 0);
     cmd(E_SETINDEX, 0, "SetRegistryVariableIndex", S1, S2, 1, 6, 9);

@@ -44,9 +44,6 @@
  * not handed through (the original passes the caller's on; a library
  * that keeps to the interface above does not see a difference).
  *
- * BUG(orig), kept:
- *   - SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable
- *     pass the caller's d2 as the size (#782).
  * Fixed (intended deviations):
  *   - The string results were copied with their 0 and left a3 behind it,
  *     so a string expression went on one byte too far; a3 now ends on
@@ -70,6 +67,10 @@
  *     (curstruct became its high word, regstruct its low word twice).
  *     With 15 structures on the stack it now returns 0 without calling
  *     the library and pushes nothing (#781, the upper limit).
+ *   - SetRegistryVariable name,value$, SetRegistryIntVariable and
+ *     SetRegistryBoolVariable passed the caller's d2 as the size (they
+ *     have no third argument); the size is now the string's length (from
+ *     the a2 stack), 4 for the two numbers (#782).
  * LockRegistry stores the result also when it is 0 (the following calls
  * then do nothing, but UnlockRegistry still pops it): no defect, it keeps
  * LockRegistry and UnlockRegistry balanced.
@@ -663,7 +664,7 @@ static ULONG BLITZ_ROUTINE getregistryvariable_c(ULONG name BL_REG(d0))
     return CALL(LVO_GetRegistryVariable, 0, 0, 0, name, 0);
 }
 
-/* doset: a1 = name, a2 = value, d0 = type, d1 = size (the caller's d2) */
+/* doset: a1 = name, a2 = value, d0 = type, d1 = size */
 static ULONG doset(ULONG type, ULONG name, ULONG value, ULONG size)
 {
     return CALL(LVO_SetRegistryVariable, type, size, 0, name, value);
@@ -672,46 +673,47 @@ static ULONG doset(ULONG type, ULONG name, ULONG value, ULONG size)
 /**
  * @brief SetRegistryIntVariable VariableName,#: sets an integer variable (type 4).
  *
- * SetRegistryVariable (-66).  BUG(orig) (#782): the size is the caller's d2.
+ * SetRegistryVariable (-66) with the size 4 (fixed, #782: the original
+ * passes the caller's d2, the command has no third argument).
  * @param name  d0: the variable name (a1)
  * @param v     d1: the value (a2)
- * @param size  d2: the caller's d2 (d1 for the call)
  * @return d0: registry.library's result, 0 without a structure
  */
-static ULONG BLITZ_ROUTINE setregistryintvariable_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
-                                                    ULONG size BL_REG(d2))
+static ULONG BLITZ_ROUTINE setregistryintvariable_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1))
 {
-    return doset(VAR_INTEGER, name, v, size);
+    return doset(VAR_INTEGER, name, v, 4);
 }
 
 /**
  * @brief SetRegistryBoolVariable VariableName,True/False: sets a boolean variable (type 3).
  *
- * SetRegistryVariable (-66).  BUG(orig) (#782): the size is the caller's d2.
+ * SetRegistryVariable (-66) with the size 4 (fixed, #782: the original
+ * passes the caller's d2, the command has no third argument).
  * @param name  d0: the variable name (a1)
  * @param v     d1: the truth value (a2)
- * @param size  d2: the caller's d2 (d1 for the call)
  * @return d0: registry.library's result, 0 without a structure
  */
-static ULONG BLITZ_ROUTINE setregistryboolvariable_c(ULONG name BL_REG(d0), BB_BOOL v BL_REG(d1),
-                                                     ULONG size BL_REG(d2))
+static ULONG BLITZ_ROUTINE setregistryboolvariable_c(ULONG name BL_REG(d0), BB_BOOL v BL_REG(d1))
 {
-    return doset(VAR_BOOLEAN, name, v, size);
+    return doset(VAR_BOOLEAN, name, v, 4);
 }
 
 /**
  * @brief SetRegistryVariable VariableName,Value$: sets a string variable (type 1).
  *
- * SetRegistryVariable (-66).  BUG(orig) (#782): the size is the caller's d2.
+ * SetRegistryVariable (-66) with the size the length of Value$ (fixed,
+ * #782: the original passes the caller's d2, this form has no third
+ * argument).
  * @param name  d0: the variable name (a1)
  * @param v     d1: the string (a2)
- * @param size  d2: the caller's d2 (d1 for the call)
+ * @param lens  a2: the argument stack (lens[-1] the length of name,
+ *              lens[-2] that of the string)
  * @return d0: registry.library's result, 0 without a structure
  */
 static ULONG BLITZ_ROUTINE setregistryvariable_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
-                                                 ULONG size BL_REG(d2))
+                                                 const ULONG *lens BL_REG(a2))
 {
-    return doset(VAR_STRING, name, v, size);
+    return doset(VAR_STRING, name, v, lens[-2]);
 }
 
 /**

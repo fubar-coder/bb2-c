@@ -115,11 +115,14 @@ kind F):
   registry.library). An UnlockRegistry after such a refused lock pops
   the 15th structure, as one after a lock without the library pops
   nothing.
-
-## BUG(orig), kept
-
-* **SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable**
-  pass the caller's d2 as the size (#782).
+* SetRegistryVariable name,value$ passes the string's length as the
+  size (from the a2 stack, as the compiler pushes it),
+  SetRegistryIntVariable and SetRegistryBoolVariable pass 4. The
+  original passed the caller's d2 in all three, which have no third
+  argument: registry.library got whatever the program had in d2 (#782;
+  `libs_emulator` cases `[fixed #782]` of `rwe_riregistrylib`, mock
+  registry.library: d1 of the call). What the lost library expected is
+  unknown; these sizes are the plain ones (user decision of 2026-11-18).
 
 LockRegistry stores its result also when it is 0: the calls do nothing
 then, but UnlockRegistry still pops it. That is no defect, it keeps
