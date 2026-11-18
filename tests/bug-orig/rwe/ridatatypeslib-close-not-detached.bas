@@ -6,6 +6,7 @@
 ; Correct: DataTypeClose detaches the object - the second AttachDataType
 ; succeeds.
 ; The window takes the output of NPrint: DefaultOutput sends it back.
+; @fixed #599
 ; @rwe ridatatypeslib
 ; @pass file=p.ilbm|@TESTDATA@/ridatatypeslib-close-not-detached.ilbm
 DEFTYPE .l

@@ -39,8 +39,7 @@
  *   - DataTypeOpen copies the name into its 384 byte buffer without a
  *     limit and reads the DataTypeHeader from the result of
  *     ObtainDataType without checking it for 0 (#604, #605).
- *   - DataTypeClose disposes of the object without detaching it from the
- *     window; it unlocks the file only if there is a DataType (#599, #605).
+ *   - DataTypeClose unlocks the file only if there is a DataType (#605).
  *   - DataTypeCreate without a tag list does not need an open file (the
  *     name is the last one DataTypeOpen copied, at first ""); a second
  *     DataTypeCreate loses the object before (#601, #600).
@@ -68,6 +67,10 @@
  *     The original read the size through the unchecked pointer: without
  *     DataTypeBitmap the two words at address 0, an object of 0 x 0
  *     (#595).
+ *   - DataTypeClose detaches the object from its window first, as finit
+ *     does.  The original disposed of it while still attached: the
+ *     window kept the freed gadget, and `attached` stayed set, so the
+ *     next AttachDataType returned 0 (#599).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -313,19 +316,21 @@ void BLITZ_ROUTINE c_detachdatatype(void)
 }
 
 /**
- * @brief DataTypeClose: disposes of the object, releases the DataType and
- * unlocks the file.
+ * @brief DataTypeClose: detaches the object, disposes of it, releases the
+ * DataType and unlocks the file.
  *
- * BUG(orig) (#599): the object is not detached from its window first;
- * BUG(orig) (#605): the file is unlocked only if there is a DataType.
- * Nothing without datatypes.library.
+ * Detached first (fixed, #599: the original disposed of an attached
+ * object, the window kept the freed gadget).  BUG(orig) (#605): the file
+ * is unlocked only if there is a DataType.  Nothing without
+ * datatypes.library.
  */
 void BLITZ_ROUTINE c_datatypeclose(void)
 {
     if (!database)
         return;
+    c_detachdatatype();                 /* fixed (#599) */
     if (object) {
-        DisposeDTObject(object);        /* BUG(orig) (#599): not detached */
+        DisposeDTObject(object);
         object = NULL;
     }
     if (!dtype)

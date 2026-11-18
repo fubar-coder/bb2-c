@@ -49,8 +49,7 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 * DataTypeOpen copies the name into its 384 byte buffer without a limit
   and reads the DataTypeHeader from ObtainDataType's result without
   checking it for 0 (#604, #605).
-* DataTypeClose disposes of the object without detaching it from a
-  window; it unlocks the file only if there is a DataType (#599, #605).
+* DataTypeClose unlocks the file only if there is a DataType (#605).
 * DataTypeCreate without a tag list does not check for an open file
   (the name is the last one DataTypeOpen copied, at first ""); a second
   DataTypeCreate loses the object before it (#601, #600).
@@ -82,6 +81,12 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   (not a picture) is not attached, the result is 0. The original read
   the size through the unchecked pointer: without DataTypeBitmap the two
   words at address 0, an object of 0 x 0 (#595).
+* DataTypeClose detaches the object from its window first, as finit
+  does. The original disposed of an attached object: the window kept the
+  freed gadget (its next refresh, a click or closing it used freed
+  memory), and the library still held the window, so the next
+  AttachDataType returned 0 and DetachDataType removed the object 0
+  (#599).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h
