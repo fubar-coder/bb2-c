@@ -33,9 +33,6 @@
  *   - finit clears the table slot at byte offset index*4/4 instead of
  *     index*4 (ASR.l #2 before the store): a long store at an odd address
  *     for the slots 1, 3 ... (an address error on a 68000) (#524).
- *   - DelAppWindow calls RemoveAppWindow also for an empty slot (NULL);
- *     DelAppIcon calls FreeDiskObject also for an empty DiskObject slot
- *     (#523).
  *   - AddAppIcon on a used id removes the old AppIcon and frees its
  *     DiskObject but leaves the old AppIcon in the slot if AddAppIconA
  *     fails (a later DelAppIcon removes it again); the new DiskObject is
@@ -55,6 +52,10 @@
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
+ * Fixed (intended deviation, #523): DelAppWindow called RemoveAppWindow
+ * also for an empty slot (NULL) and returned -1; it returns 0 now without
+ * a call, as DelAppMenu and DelAppIcon.  DelAppIcon calls FreeDiskObject
+ * only for a DiskObject (the original also for an empty slot).
  * Fixed (intended deviation, #520): AppFile(n) with n <= 0 read the WBArg
  * before the list (the index was checked against its upper bound only);
  * it returns an empty string now.
@@ -663,7 +664,7 @@ BLITZ_THUNK(addicon3, addicon3_c, "d1/a0-a1");
 /**
  * @brief DelAppIcon(id): removes the App icon and frees its DiskObject.
  *
- * BUG(orig) (#523): FreeDiskObject also for an empty DiskObject slot.
+ * Fixed (#523): FreeDiskObject only for a DiskObject.
  * @param id  d0: the id
  * @return d0: BB_TRUE, BB_FALSE if there is none (or init failed)
  */
@@ -678,8 +679,10 @@ static BB_BOOL BLITZ_ROUTINE delicon_c(LONG id BL_REG(d0))
         return BB_FALSE;
     RemoveAppIcon((struct AppIcon *)*slot);
     *slot = 0;
-    FreeDiskObject(disklist[id]);       /* BUG(orig): also NULL (#523) */
-    disklist[id] = NULL;
+    if (disklist[id]) {                 /* fixed (#523): not for NULL */
+        FreeDiskObject(disklist[id]);
+        disklist[id] = NULL;
+    }
     return BB_TRUE;
 }
 BLITZ_THUNK(delicon, delicon_c, "d1/a0-a1");
@@ -721,15 +724,16 @@ BLITZ_THUNK(addwindow, addwindow_c, "d1/a0-a1");
 /**
  * @brief DelAppWindow(windownumber): removes the App window.
  *
- * BUG(orig) (#523): RemoveAppWindow also for an empty slot (NULL).
+ * Fixed (#523): an empty slot is BB_FALSE without a call (the original
+ * called RemoveAppWindow(NULL) and returned BB_TRUE).
  * @param n  d0: the window number
- * @return d0: BB_TRUE, BB_FALSE only if init failed
+ * @return d0: BB_TRUE, BB_FALSE if there is none (or init failed)
  */
 static BB_BOOL BLITZ_ROUTINE delwindow_c(LONG n BL_REG(d0))
 {
-    if (!libflag)
+    if (!libflag || !appwindows[n])     /* fixed (#523): the empty slot */
         return BB_FALSE;
-    RemoveAppWindow((struct AppWindow *)appwindows[n]);    /* BUG(orig): also NULL (#523) */
+    RemoveAppWindow((struct AppWindow *)appwindows[n]);
     appwindows[n] = 0;
     return BB_TRUE;
 }

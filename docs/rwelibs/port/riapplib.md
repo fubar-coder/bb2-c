@@ -78,6 +78,10 @@ kind F):
   the original checked only the upper bound and read the WBArg before
   the list (its lock passed to `NameFromLock`, perhaps unlocked and
   cleared) (#520).
+* `DelAppWindow` returns 0 without a call for a window number that has
+  no App window, as `DelAppMenu` and `DelAppIcon`; the original called
+  `RemoveAppWindow(NULL)` and returned -1. `DelAppIcon` calls
+  `FreeDiskObject` only for a DiskObject (#523).
 
 ## BUG(orig), kept
 
@@ -85,9 +89,6 @@ kind F):
   `index*4` (`ASR.l #2,d7` before the store) – a long store at an odd
   address for odd indexes (an address error on a 68000), harmless at
   program end on a 68020 (#524).
-* `DelAppWindow` calls `RemoveAppWindow` for an empty slot too (NULL);
-  `DelAppIcon` calls `FreeDiskObject` for an empty DiskObject slot
-  (#523).
 * `AddAppIcon` on a used id removes the old AppIcon and frees its
   DiskObject first; if `AddAppIconA` then fails, the removed AppIcon stays
   in the slot (a later `DelAppIcon` removes it again) and the new

@@ -566,20 +566,22 @@ DelAppWindow|wb calls|id 2|1	$00000001
 DelAppWindow|wb d0|id 2|1	$00000000
 DelAppWindow|wb d1|id 2|1	$00000000
 DelAppWindow|wb fn|id 2|1	$00000002
-DelAppWindow (empty: NULL)|d0|id 7|1	$FFFFFFFF
+DelAppWindow (empty: NULL)|d0|id 7|1 [orig]	$FFFFFFFF
+DelAppWindow (empty: NULL)|d0|id 7|1 [fixed #523]	$00000000
 DelAppWindow (empty: NULL)|kept|id 7|1	kept
 DelAppWindow (empty: NULL)|popped|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb CurrentX|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb CurrentY|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb a0|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb a1 = AppMsgPort|id 7|1	$00000001
-DelAppWindow (empty: NULL)|wb a2|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb a3 = DiskObject|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb a4|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb calls|id 7|1	$00000001
-DelAppWindow (empty: NULL)|wb d0|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb d1|id 7|1	$00000000
-DelAppWindow (empty: NULL)|wb fn|id 7|1	$00000002
+DelAppWindow (empty: NULL)|wb CurrentX|id 7|1 [orig #523]	$00000000
+DelAppWindow (empty: NULL)|wb CurrentY|id 7|1 [orig #523]	$00000000
+DelAppWindow (empty: NULL)|wb a0|id 7|1 [orig #523]	$00000000
+DelAppWindow (empty: NULL)|wb a1 = AppMsgPort|id 7|1 [orig #523]	$00000001
+DelAppWindow (empty: NULL)|wb a2|id 7|1 [orig #523]	$00000000
+DelAppWindow (empty: NULL)|wb a3 = DiskObject|id 7|1 [orig #523]	$00000000
+DelAppWindow (empty: NULL)|wb a4|id 7|1 [orig #523]	$00000000
+DelAppWindow (empty: NULL)|wb calls|id 7|1 [orig]	$00000001
+DelAppWindow (empty: NULL)|wb calls|id 7|1 [fixed #523]	$00000000
+DelAppWindow (empty: NULL)|wb d0|id 7|1 [orig #523]	$00000000
+DelAppWindow (empty: NULL)|wb d1|id 7|1 [orig #523]	$00000000
+DelAppWindow (empty: NULL)|wb fn|id 7|1 [orig #523]	$00000002
 NextAppFile|a3|0|1 [orig]	$00000013
 NextAppFile|a3|0|1 [fixed #519]	$00000012
 NextAppFile|a3|0|2 [orig]	$0000001D
