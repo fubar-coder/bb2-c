@@ -84,6 +84,11 @@ Intended deviations from the original:
   the GTMenuItem/GTSubItem before (#692; test
   `rigtmenulib-menuitem-form4-mutex`, `libs_emulator` cases
   `[fixed #692]` of `rwe_rigtmenulib`).
+* **GTFreeMenu** tests the item and sub item numbers as words, as they
+  are declared. The original tests them as longs (`TST.l`): a negative
+  upper word, which the compiled code leaves in d2/d3 as it likes, made
+  the number "not given", and GTFreeMenu freed the whole item (or the
+  whole title) instead (#691; test `rigtmenulib-freemenu-tst-long`).
 
 ## BUG(orig), kept
 
@@ -97,9 +102,6 @@ Intended deviations from the original:
   GetVisualInfoA are not checked (#689).
 * **The title strings are never freed** (the object's free routine,
   GTFreeMenu) (#695).
-* **GTFreeMenu** tests the item and sub item numbers as longs (`TST.l`),
-  so the upper word of a word argument decides whether they are given
-  (#691).
 * **GTMenuState and GTSetMenuChecked** change the flags of the strip
   directly, also while it is attached to a window; a strip made again
   loses them (#693).

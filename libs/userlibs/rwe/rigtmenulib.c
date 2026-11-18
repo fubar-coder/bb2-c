@@ -40,15 +40,16 @@
  *     CreateMenusA/GetVisualInfoA (#689).
  *   - The free routines (the object's free, GTFreeMenu) never free the
  *     title strings (#695).
- *   - GTFreeMenu tests the item/sub item numbers as longs (TST.l: the
- *     upper word of a word argument decides whether they are given)
- *     (#691).
  *   - GTMenuState/GTSetMenuChecked change the flags of the menu strip
  *     directly, also while it is attached to a window (#693).
  * Fixed (intended deviations):
  *   - GTMenuItem with UserData (form 4) takes its mutual exclude (from
  *     -12(a2), the pushed 7th argument); the original jumps past MOVE.l
  *     d6,me and keeps the one of the GTMenuItem/GTSubItem before (#692).
+ *   - GTFreeMenu tests the item and sub item numbers as words; the
+ *     original tests them as longs (TST.l), so the upper word of the word
+ *     argument, which the compiled code leaves as it likes, decided
+ *     whether they are given (#691).
  * Like the original, no defects: GTMenuTitle allocates the title
  * uncleared (MEMF_PUBLIC; all three fields are written); +8 counts every
  * entry added and is never decreased (the array of CreateMenuStrip,
@@ -885,8 +886,9 @@ static void BLITZ_ROUTINE freemenu_c(struct gtmenulist *obj BL_REG(a3))
 }
 BLITZ_THUNK(freemenu, freemenu_c, "d0-d1/a0-a1");
 
-/* finditem: title d1, item d2 (if d2 >= 0 as a long), sub item d3 (if
-   d3 >= 0); *prev = the link that points to it */
+/* finditem: title d1, item d2 (if d2.w >= 0), sub item d3 (if d3.w >=
+   0); *prev = the link that points to it.  Fixed (#691): the original
+   tests d2/d3 as longs (TST.l) */
 static struct gtentry *finditem(struct gtmenulist *obj, ULONG menu, ULONG itemno, ULONG subno,
                                 struct gtentry **prev)
 {
@@ -903,7 +905,7 @@ static struct gtentry *finditem(struct gtmenulist *obj, ULONG menu, ULONG itemno
             return NULL;
         entry = entry->next;
     } while (n-- != 0);
-    if ((LONG)itemno >= 0) {
+    if ((WORD)itemno >= 0) {
         entry = HEAD(entry->items);
         n = (UWORD)itemno;
         do {
@@ -912,7 +914,7 @@ static struct gtentry *finditem(struct gtmenulist *obj, ULONG menu, ULONG itemno
                 return NULL;
             entry = entry->next;
         } while (n-- != 0);
-        if ((LONG)subno >= 0) {
+        if ((WORD)subno >= 0) {
             entry = HEAD(entry->subs);
             n = (UWORD)subno;
             do {
@@ -955,10 +957,11 @@ BLITZ_THUNK(_freetitle, freetitle_c, "d0-d1/a0-a1");
  * @brief GTFreeMenu GTMenuList#,menu,item: remove an item with its sub
  * items and strings from the list.
  *
- * BUG(orig) (#691): the item number is tested as a long (TST.l): the
- * upper word of the word argument decides whether it is given.
+ * Fixed (#691): the item number is tested as a word; the original tests
+ * it as a long (TST.l), so the upper word of the word argument decided
+ * whether it is given.
  * @param menu    d1.w: the title
- * @param itemno  d2: the item
+ * @param itemno  d2.w: the item
  * @param obj     a3: the GTMenuList object
  */
 static void BLITZ_ROUTINE freeitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
@@ -977,10 +980,11 @@ BLITZ_THUNK(_freeitem, freeitem_c, "d0-d1/a0-a1");
  * @brief GTFreeMenu GTMenuList#,menu,item,subitem: remove a sub item with
  * its strings from the list.
  *
- * BUG(orig) (#691): the numbers are tested as longs (TST.l).
+ * Fixed (#691): the numbers are tested as words (the original: as longs,
+ * TST.l).
  * @param menu    d1.w: the title
- * @param itemno  d2: the item
- * @param subno   d3: the sub item
+ * @param itemno  d2.w: the item
+ * @param subno   d3.w: the sub item
  * @param obj     a3: the GTMenuList object
  */
 static void BLITZ_ROUTINE freesubitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
