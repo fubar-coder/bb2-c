@@ -61,6 +61,11 @@ test needs beyond Workbench 3.1, it brings itself:
   `ab3pft.library`: fetched with the other AmiBlitz3 files
   (`cmake/fetch-originals.cmake`, the AmiBlitz3 repository, Apache-2.0)
   and copied to the test's `Blitz3:Libs`, which AmiBlitz3 adds to `LIBS:`.
+* The rireqlib tests with the real `req.library` 2.8 (Aminet
+  `util/libs/ReqLib28.lha`, fetched to `archive/aminet/ReqLib28/`) stage
+  it as `CORPUS:libs/req.library`; `inject libs=CORPUS:libs` adds that
+  directory to `LIBS:` while the program runs. They are skipped without
+  the library.
 * The TED A/B scripts type umlauts with the German keymap: `tedprobe`
   (gate 0) makes `DEVS:Keymaps/d` the default keymap of the session.
 

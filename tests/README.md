@@ -1281,13 +1281,21 @@ at the end of a Blitz program, `freqlib-64-lines`; self test
 `inject_guardseg`); for the
 compiled programs with `runwrap=@INJECT@|...`) and reports what the
 command leaves behind (library opens minus closes of the process, its
-current directory and whether it unlocked the start lock, with
+current directory and whether it unlocked the start lock; with
+`libs=PATH` the directory PATH is in the `LIBS:` assign while the command
+runs, for a library the Workbench does not have, e.g. the real
+`req.library` of the rireqlib tests, `@REQLIB@` (`archive/aminet/ReqLib28`,
+`cmake -P cmake/fetch-originals.cmake`; `file=libs/req.library|@REQLIB@`
+stages it, the test is skipped without it); with
 `cacheflush=NAME` whether the task that starts a process NAME flushed
 the caches after its last AllocMem, paths still in
 use); it also gives a program input while it runs: gadget clicks as
-synthetic IntuiMessages (`click=TITLE/TEXT`, optionally while the DOS
-list is locked for writing; with `undobuf` it reports whether a click
-changed the UndoBuffer pointers of the window's string gadgets) and
+synthetic IntuiMessages (`click=TITLE/TEXT`, a `_` in TITLE or TEXT also
+matches a blank, TITLE `*` any window that has the gadget, also one
+without a title, which is then reported as `click window: "TITLE"`;
+optionally while the DOS list is locked for writing; with `undobuf` it
+reports whether a click changed the UndoBuffer pointers of the window's
+string gadgets) and
 several RAWKEY events in one call of
 the input handlers at controlled times (`keys=`, an input handler with
 a clock of its own); `wbrun` starts the compiler

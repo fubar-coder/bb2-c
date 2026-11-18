@@ -46,6 +46,11 @@
  *                          (hex), NAME}: a list walked through a null
  *                          pointer (head at address 0) finds it; restored
  *                          afterwards
+ *   libs=PATH              the directory PATH is added to the LIBS: assign
+ *                          while COMMAND runs (AssignAdd; removed behind
+ *                          COMMAND): a library of the test, e.g. a real
+ *                          req.library from the Aminet, that the Workbench
+ *                          does not have, is found by OpenLibrary
  *   examinefail=NAME       Examine of a lock on a name that ends in NAME
  *                          returns DOSFALSE
  *   ownedunlock            UnLock of a lock that an OpenFromLock of the
@@ -148,7 +153,13 @@
  *                          replies to the driver.  Up to 8, sent in this
  *                          order, each after the reply of the one before
  *                          (the first 0.5 s after its window appeared,
- *                          the others 0.2 s after the reply)
+ *                          the others 0.2 s after the reply); a '_' in TEXT
+ *                          also matches a blank, as in TITLE (the arguments
+ *                          carry no blanks), e.g. req.library's "Forget it"
+ *                          TITLE "*": any window, also one without a title,
+ *                          that has a gadget with that text; the title the
+ *                          window had is written behind the answer:
+ *                          inject: click window: "TITLE"
  *   doslocked              the clicks are sent while the driver holds the
  *                          DOS list locked for writing (LockDosList); a
  *                          click not answered within 1 s ends the lock and
@@ -1124,6 +1135,7 @@ ULONG unlock_pre(ULONG lock)
 }
 
 #define MAXINUSE 4
+static char libs_path[120];                     /* libs=PATH */
 static const char *inuse[MAXINUSE];
 static int ninuse;
 
@@ -1131,7 +1143,7 @@ static int ninuse;
 
 #define MAXCLICK 8
 static struct {
-    char title[40], text[40];
+    char title[40], text[40], found[40];  /* found: the title of a "*" window */
     int result;
     int undo;                           /* undobuf: UB_... */
 } click[MAXCLICK];
@@ -1217,7 +1229,23 @@ static int sametitle(const char *t, const char *want)
     return *t == *want;
 }
 
-/* the window with that title (IBase locked) */
+/* the gadget of the window with the text (IBase locked) */
+static struct Gadget *findgadget(struct Window *w, const char *text)
+{
+    struct Gadget *g;
+
+    for (g = w->FirstGadget; g; g = g->NextGadget)
+        if (g->GadgetText && g->GadgetText->IText
+            && sametitle((const char *)g->GadgetText->IText, text))
+            return g;
+    return NULL;
+}
+
+/* the text of the gadget a title "*" window must have (set by the caller) */
+static const char *star_text;
+
+/* the window with that title (IBase locked); the title "*": any window
+   (also one without a title) that has the gadget star_text */
 static struct Window *findwin(const char *title)
 {
     struct Screen *s;
@@ -1225,7 +1253,8 @@ static struct Window *findwin(const char *title)
 
     for (s = IntuitionBase->FirstScreen; s; s = s->NextScreen)
         for (w = s->FirstWindow; w; w = w->NextWindow)
-            if (w->Title && sametitle((const char *)w->Title, title))
+            if (title[0] == '*' && !title[1] ? star_text && findgadget(w, star_text)
+                : w->Title && sametitle((const char *)w->Title, title))
                 return w;
     return NULL;
 }
@@ -1258,13 +1287,13 @@ static int sendclick(int n, struct IntuiMessage *m, struct MsgPort *reply)
 
     Forbid();
     ib = LockIBase(0);
+    star_text = click[n].text;
     w = findwin(click[n].title);
     if (w) {
         port = w->UserPort;
-        for (g = w->FirstGadget; g; g = g->NextGadget)
-            if (g->GadgetText && g->GadgetText->IText
-                && !strcmp((const char *)g->GadgetText->IText, click[n].text))
-                break;
+        g = findgadget(w, click[n].text);
+        if (click[n].title[0] == '*' && !click[n].title[1])
+            strncpy(click[n].found, w->Title ? (const char *)w->Title : "", sizeof click[n].found - 1);
     }
     UnlockIBase(ib);
     if (!w || !port || !g) {
@@ -1292,6 +1321,7 @@ static void driver_clicks(void)
     if (!reply)
         return;
     for (n = 0; n < nclick; n++) {
+        star_text = click[n].text;
         if (!waitwin(click[n].title)) {
             click[n].result = CL_NOWINDOW;
             break;
@@ -1541,6 +1571,12 @@ static int option(const char *a)
         strcpy(cd_path, a + 3);
         return o_cd = 1;
     }
+    if (!strncmp(a, "libs=", 5)) {
+        if (!a[5] || strlen(a + 5) >= sizeof libs_path)
+            return -1;
+        strcpy(libs_path, a + 5);
+        return 1;
+    }
     if (!strncmp(a, "inuse=", 6)) {
         if (!a[6] || strlen(a + 6) > 100 || ninuse >= MAXINUSE)
             return -1;
@@ -1764,7 +1800,7 @@ static const char usage[] =
     "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME ownedunlock\n"
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
     "    track pad guard guardseg fill=XX freefill=XX datestamp=YYYY-MM-DD\n"
-    "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
+    "    opencount=NAME cd[=PATH] libs=PATH inuse=PATH click=TITLE/TEXT doslocked\n"
     "    undobuf cacheflush=NAME freesignal closedevice doslist\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
 
@@ -1801,7 +1837,7 @@ int main(int argc, char **argv)
             "              [createprocfail] [track] [pad] [guard] [guardseg] [fill=XX]\n"
             "              [freefill=XX]\n"
             "              [datestamp=YYYY-MM-DD]\n"
-            "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
+            "              [opencount=NAME]... [cd[=PATH]] [libs=PATH] [inuse=PATH]...\n"
             "              [freesignal] [closedevice] [doslist]\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
@@ -1863,6 +1899,16 @@ int main(int argc, char **argv)
         }
         old_cd = CurrentDir(cd_lock);
     }
+    if (libs_path[0]) {
+        BPTR l = Lock(libs_path, SHARED_LOCK);
+
+        if (!l || !AssignAdd("LIBS", l)) {
+            if (l)
+                UnLock(l);
+            put("inject: cannot add the directory to LIBS:\n");
+            return 20;
+        }
+    }
     if (o_signals)
         for (;;) {
             BYTE s = AllocSignal(-1);
@@ -1919,6 +1965,14 @@ int main(int argc, char **argv)
         CloseDevice((struct IORequest *)io);
         DeleteIORequest((struct IORequest *)io);
         DeleteMsgPort(iport);
+    }
+    if (libs_path[0]) {
+        BPTR l = Lock(libs_path, SHARED_LOCK);
+
+        if (l) {
+            RemAssignList("LIBS", l);
+            UnLock(l);
+        }
     }
     if (o_cd) {
         BPTR now = CurrentDir(old_cd);
@@ -2046,6 +2100,11 @@ int main(int argc, char **argv)
         sprintf(line, "inject: click %.39s/%.39s: %s\n", click[k].title, click[k].text,
                 cl_text[click[k].result]);
         put(line);
+        if (click[k].found[0] || (click[k].title[0] == '*' && !click[k].title[1]
+                                  && click[k].result == CL_ANSWERED)) {
+            sprintf(line, "inject: click window: \"%.39s\"\n", click[k].found);
+            put(line);
+        }
         if (click[k].undo != UB_NOTCHECKED) {
             sprintf(line, "inject: click %.39s/%.39s: UndoBuffer of the string gadgets %s\n",
                     click[k].title, click[k].text,
