@@ -66,14 +66,17 @@ kind F):
   result (#846); the call itself uses the libraries' safe form of the NDK
   macro, which keeps a3 and a4 (`cmake/ndk-calls.cmake`).
 
+* `AddAppMenu` returns -1 on success, as `AddAppWindow` and
+  `AddAppIcon`; the original returned the AppMenuItem address (the
+  `MOVEQ #-1,d0` behind the `RTS` was never reached), so a test with
+  `=-1` failed although the item was added (#518).
+
 ## BUG(orig), kept
 
 * finit (`delapp`) clears the slot at byte offset `index*4/4` instead of
   `index*4` (`ASR.l #2,d7` before the store) – a long store at an odd
   address for odd indexes (an address error on a 68000), harmless at
   program end on a 68020 (#524).
-* `AddAppMenu` returns the AppMenuItem address instead of -1 (the
-  `MOVEQ #-1,d0` behind the `RTS` is never reached) (#518).
 * `DelAppWindow` calls `RemoveAppWindow` for an empty slot too (NULL);
   `DelAppIcon` calls `FreeDiskObject` for an empty DiskObject slot
   (#523).

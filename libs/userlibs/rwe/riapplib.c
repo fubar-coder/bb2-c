@@ -33,8 +33,6 @@
  *   - finit clears the table slot at byte offset index*4/4 instead of
  *     index*4 (ASR.l #2 before the store): a long store at an odd address
  *     for the slots 1, 3 ... (an address error on a 68000) (#524).
- *   - AddAppMenu returns the AppMenuItem address, not -1 (the MOVEQ #-1
- *     behind the RTS is never reached) (#518).
  *   - DelAppWindow calls RemoveAppWindow also for an empty slot (NULL);
  *     DelAppIcon calls FreeDiskObject also for an empty DiskObject slot
  *     (#523).
@@ -56,6 +54,9 @@
  *     freed, but the libraries already opened stay open; AppMsgPort then
  *     still returns the deleted port (#526).
  *
+ * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
+ * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
+ * returns -1 now, as AddAppWindow and AddAppIcon.
  * Fixed (intended deviation, #519): NextAppFile/AppFile copied the file
  * name with its 0 and left a3 behind the 0, so a string expression went
  * on one byte too far; a3 now ends on the 0.
@@ -542,21 +543,22 @@ BLITZ_THUNK(delmenu, delmenu_c, "d1/a0-a1");
  * unchecked.
  * @param id    d0: the id
  * @param text  d1: the item's text
- * @return d0: BUG(orig) (#518): the AppMenuItem, not -1; 0 on failure
+ * @return d0: BB_TRUE, BB_FALSE on failure (fixed, #518: the original
+ *         returned the AppMenuItem)
  */
-static ULONG BLITZ_ROUTINE addmenu_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1))
+static BB_BOOL BLITZ_ROUTINE addmenu_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1))
 {
     struct AppMenuItem *item;
 
     if (!libflag)
-        return 0;
+        return BB_FALSE;
     if (appmenus[id])
         delmenu_c(id);
     item = AddAppMenuItemA(id, 0, text, msgport, NULL);
     if (!item)
-        return 0;
+        return BB_FALSE;
     appmenus[id] = (ULONG)item;
-    return (ULONG)item;
+    return BB_TRUE;                     /* fixed (#518): not the item */
 }
 BLITZ_THUNK(addmenu, addmenu_c, "d1/a0-a1");
 

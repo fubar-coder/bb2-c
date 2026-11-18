@@ -175,11 +175,15 @@ AddAppIcon|wb fn|third run id 1|1	$00000003
 AddAppIcon|wb fn|third run id 1 (fails)|1	$00000004
 AddAppIcon|wb fn|third run id 1 (fails)|2	$00000003
 AddAppIcon|wb fn|third run id 2 (fails)|1	$00000003
-AddAppMenu|d0 = item (BUG(orig) #518)|id 0|1	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 0|1 [orig]	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 0|1 [fixed #518]	$FFFFFF7F
 AddAppMenu|d0 = item (BUG(orig) #518)|id 1|1	$00000001
-AddAppMenu|d0 = item (BUG(orig) #518)|id 1|2	$00000000
-AddAppMenu|d0 = item (BUG(orig) #518)|id 3|1	$00000000
-AddAppMenu|d0 = item (BUG(orig) #518)|id 3|2	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 1|2 [orig]	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 1|2 [fixed #518]	$FFFFFF6F
+AddAppMenu|d0 = item (BUG(orig) #518)|id 3|1 [orig]	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 3|1 [fixed #518]	$FFFFFFEF
+AddAppMenu|d0 = item (BUG(orig) #518)|id 3|2 [orig]	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 3|2 [fixed #518]	$FFFFFFDF
 AddAppMenu|d0 = item (BUG(orig) #518)|id 5 (fails)|1	$00000001
 AddAppMenu|kept|id 0|1	kept
 AddAppMenu|kept|id 1|1	kept
