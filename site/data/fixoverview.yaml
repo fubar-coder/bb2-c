@@ -4428,6 +4428,118 @@ rows:
     text: "`RXCreatePort` returns 0 when a public port of that name exists; the original added a second port of the same name."
     page: libraries
     anchor: riarexxlib-fixes
+  - issue: 600
+    severity: 1
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "DataTypeCreate"
+    text: "A second `DataTypeCreate` returns 0 while the first object exists, which stays in use; the original made a new object and lost the memory of the first."
+    page: libraries
+    anchor: datatypecreate-second
+  - issue: 595
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "AttachDataType"
+    text: "`AttachDataType window,id` without `DataTypeBitmap` before gives the object the picture's size; the original attached it at 0 x 0."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 596
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "AttachDataType"
+    text: "`AttachDataType window,id,&taglist` passes the tag list on to the object; the original ignored it and read the id as the address of a tag list."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 597
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "AttachDataType"
+    text: "`AttachDataType window,id,x,y,width,height` passes its position and size as given; the original could pass huge values made of leftovers in the registers."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 598
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "DataTypeBitmap"
+    text: "`DataTypeBitmap` of an object that is not a picture returns 0; the original returned a value left by the command before."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 599
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "DataTypeClose"
+    text: "`DataTypeClose` removes an attached object from its window before it frees it; the original left the freed object in the window."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 601
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "DataTypeCreate"
+    text: "`DataTypeCreate` without a tag list returns 0 when no file is open; the original made an object of the file opened last, closed since."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 602
+    severity: 5
+    topic: "System"
+    library: "ridatatypeslib"
+    command: ""
+    text: "Without datatypes.library, a program that uses the library still closes the other libraries it opened; the original left three of them open."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 603
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "DataTypeModeID"
+    text: "`DataTypeModeID` with a tag list uses the program's tags and leaves the list unchanged; the original overwrote the list with its own tags."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 604
+    severity: 5
+    topic: "Files"
+    library: "ridatatypeslib"
+    command: "DataTypeOpen"
+    text: "`DataTypeOpen` takes a file name of any length; the original wrote a name of 384 characters or more over the library's data."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 605
+    severity: 5
+    topic: "Files"
+    library: "ridatatypeslib"
+    command: "DataTypeOpen, DataTypeClose"
+    text: "`DataTypeOpen` of a file without a datatype returns 0 and unlocks the file; the original kept it locked, and every later `DataTypeOpen` failed."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 606
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "DataTypesPalette"
+    text: "`DataTypesPalette` copies at most the picture's colours; the original filled a larger palette with the bytes behind them, and wrote far behind a palette of 0 colours."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 607
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "DataTypesPalette"
+    text: "`DataTypesPalette` returns 0 for an object without colours; the original could report success, or copy colours from a leftover address."
+    page: libraries
+    anchor: ridatatypeslib-fixes
+  - issue: 1098
+    severity: 5
+    topic: "Graphics"
+    library: "ridatatypeslib"
+    command: "AttachDataType"
+    text: "`AttachDataType` with a position or a tag list returns 0 when there is no object; the original passed the object 0 to the system and returned -1."
+    page: libraries
+    anchor: ridatatypeslib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
