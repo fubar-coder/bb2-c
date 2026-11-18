@@ -27,8 +27,9 @@
  * BoolVariable with the types 2/3/4; nested locks, a failed lock (0
  * pushed: no defect, it keeps the stack balanced), UnlockRegistry back
  * to the structure below; finit
- * with three locks (unlocked from the top); after finit the stale
- * structure (BUG(orig), #779) and UnlockRegistry below the stack: the libfin's
+ * with three locks (unlocked from the top); after finit the structure
+ * the original leaves current (fixed #779) and UnlockRegistry below the
+ * stack: the libfin's
  * 0, then $0000FFFF unlocked (BUG(orig), #781).
  * Not covered: more than 15 locks (BUG(orig) #781: writes over curstruct and
  * regstruct with the high word of a structure address) and a fourth
@@ -398,7 +399,8 @@ int main(int argc, char **argv)
     initfinit(28);                      /* unlocks rs 2, rs 1, rs 0 */
     BOTH("closed", fake->lib_OpenCnt == 0);
 
-    /* after finit: regstruct stays (BUG(orig), #779); below the stack */
+    /* after finit: the original's regstruct stays (fixed #779); below
+       the stack */
     initfinit(22);
     current("the stale rs 2");
     unlock("rs 2, to the libfin's 0");

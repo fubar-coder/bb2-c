@@ -497,13 +497,13 @@ NextParseItem|call 0 LVO|current: $0000FFFF|1	$FFFFFFA0
 NextParseItem|call 0 LVO|current: rs 0 again|1	$FFFFFFA0
 NextParseItem|call 0 LVO|current: rs 1|1	$FFFFFFA0
 NextParseItem|call 0 LVO|current: rs 1 again|1	$FFFFFFA0
-NextParseItem|call 0 LVO|current: the stale rs 2|1	$FFFFFFA0
+NextParseItem|call 0 LVO|current: the stale rs 2|1 [orig #779]	$FFFFFFA0
 NextParseItem|call 0 LVO|form 0 ret $00270029|1	$FFFFFFA0
 NextParseItem|call 0 a0|current: $0000FFFF|1	$0000FFFF
 NextParseItem|call 0 a0|current: rs 0 again|1	prog
 NextParseItem|call 0 a0|current: rs 1|1	prog
 NextParseItem|call 0 a0|current: rs 1 again|1	prog
-NextParseItem|call 0 a0|current: the stale rs 2|1	prog
+NextParseItem|call 0 a0|current: the stale rs 2|1 [orig #779]	prog
 NextParseItem|call 0 a0|form 0 ret $00270029|1	prog
 NextParseItem|calls|current: $0000FFFF|1	$00000001
 NextParseItem|calls|current: none|1	$00000000
@@ -511,7 +511,8 @@ NextParseItem|calls|current: none (0)|1	$00000000
 NextParseItem|calls|current: rs 0 again|1	$00000001
 NextParseItem|calls|current: rs 1|1	$00000001
 NextParseItem|calls|current: rs 1 again|1	$00000001
-NextParseItem|calls|current: the stale rs 2|1	$00000001
+NextParseItem|calls|current: the stale rs 2|1 [orig]	$00000001
+NextParseItem|calls|current: the stale rs 2|1 [fixed #779]	$00000000
 NextParseItem|calls|form 0 ret $000A000A|1	$00000000
 NextParseItem|calls|form 0 ret $000A000C|1	$00000000
 NextParseItem|calls|form 0 ret $00270029|1	$00000001
@@ -821,15 +822,16 @@ SetRegistryVariableIndex|popped|form 0 ret $00150017|1	$00000000
 SetRegistryVariableIndex|popped|form 0 ret $00320034|1	$00000000
 UnlockRegistry|call 0 LVO|$0000FFFF|1	$FFFFFFDC
 UnlockRegistry|call 0 LVO|rs 1|1	$FFFFFFDC
-UnlockRegistry|call 0 LVO|rs 2, to the libfin's 0|1	$FFFFFFDC
+UnlockRegistry|call 0 LVO|rs 2, to the libfin's 0|1 [orig #779]	$FFFFFFDC
 UnlockRegistry|call 0 a0|$0000FFFF|1	$0000FFFF
 UnlockRegistry|call 0 a0|rs 1|1	prog
-UnlockRegistry|call 0 a0|rs 2, to the libfin's 0|1	prog
+UnlockRegistry|call 0 a0|rs 2, to the libfin's 0|1 [orig #779]	prog
 UnlockRegistry|calls|$0000FFFF|1	$00000001
 UnlockRegistry|calls|nothing, to $0000FFFF|1	$00000000
 UnlockRegistry|calls|of the failed lock|1	$00000000
 UnlockRegistry|calls|rs 1|1	$00000001
-UnlockRegistry|calls|rs 2, to the libfin's 0|1	$00000001
+UnlockRegistry|calls|rs 2, to the libfin's 0|1 [orig]	$00000001
+UnlockRegistry|calls|rs 2, to the libfin's 0|1 [fixed #779]	$00000000
 UnlockRegistry|kept|$0000FFFF|1	kept
 UnlockRegistry|kept|nothing, to $0000FFFF|1	kept
 UnlockRegistry|kept|of the failed lock|1	kept

@@ -55,10 +55,14 @@
  *     stop them) (#780).
  *   - SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable
  *     pass the caller's d2 as the size (#782).
- *   - finit leaves regstruct (and the base) set (#779).
- * Fixed (intended deviation, #783): the string results were copied with
- * their 0 and left a3 behind it, so a string expression went on one byte
- * too far; a3 now ends on the 0.
+ * Fixed (intended deviations):
+ *   - The string results were copied with their 0 and left a3 behind it,
+ *     so a string expression went on one byte too far; a3 now ends on
+ *     the 0 (#783).
+ *   - finit left regstruct (and the base) set: after a new init every
+ *     call before the first LockRegistry went with the structure finit
+ *     had unlocked, and UnlockRegistry unlocked it again; finit now
+ *     clears both, also without the library (#779).
  * LockRegistry stores the result also when it is 0 (the following calls
  * then do nothing, but UnlockRegistry still pops it): no defect, it keeps
  * LockRegistry and UnlockRegistry balanced.
@@ -494,13 +498,15 @@ static void BLITZ_ROUTINE libinit_c(void)
  * @brief finit: unlocks every structure still locked, closes the library.
  *
  * UnlockRegistry on structs[curstruct] ... structs[4] (those not 0, with
- * d0 = the index, a1 = the stack), then CloseLibrary.  BUG(orig) (#779):
- * regstruct and the base stay set.
+ * d0 = the index, a1 = the stack), then CloseLibrary.  Fixed (#779): the
+ * original leaves regstruct and the base set; both are cleared, regstruct
+ * also without the library.
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     WORD i;
 
+    st.regstruct = 0;
     if (!st.regbase)
         return;
     i = (WORD)st.curstruct;
@@ -517,6 +523,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
         st.curstruct = 0;
     }
     CloseLibrary(st.regbase);
+    st.regbase = 0;
 }
 
 /* ------------------------------------------------------------ commands */

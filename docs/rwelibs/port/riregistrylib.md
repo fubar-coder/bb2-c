@@ -83,6 +83,12 @@ kind F):
   ParseItemName$, ParseItemValue$) leave a3 on their 0; the original
   copied them with their 0 and left a3 behind it, so in a string
   expression the next part was written one byte too far (#783).
+* finit clears regstruct (also without the library) and the base. The
+  original left both set: after a new init (the next run of the
+  program while the library stays loaded) every call before the first
+  LockRegistry went with the structure finit had unlocked, and
+  UnlockRegistry unlocked it a second time (#779; `libs_emulator` cases
+  `[fixed #779]` of `rwe_riregistrylib`).
 
 ## BUG(orig), kept
 
@@ -96,8 +102,6 @@ kind F):
   does not stop them) (#780).
 * **SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable**
   pass the caller's d2 as the size (#782).
-* **finit leaves regstruct and the base set:** after a new init, the
-  calls use the old structure (#779).
 
 LockRegistry stores its result also when it is 0: the calls do nothing
 then, but UnlockRegistry still pops it. That is no defect, it keeps
@@ -148,8 +152,9 @@ Covered:
   * nested locks, a failed lock (0 pushed), UnlockRegistry back to the
     structure below;
   * finit with three locks (unlocked from the top);
-  * after finit and a new init: the stale structure, UnlockRegistry
-    below the stack (the libfin's 0, then `$0000FFFF` unlocked).
+  * after finit and a new init: no stale structure (the original's,
+    fixed #779), UnlockRegistry below the stack (the libfin's 0, then
+    `$0000FFFF` unlocked).
 
 Not covered:
 
