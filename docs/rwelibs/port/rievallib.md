@@ -117,7 +117,9 @@ are fields of the routine's state, with the original's operand sizes
 indirection checks, also for a register, whose parse does not set it),
 d7 (the precedence of the last operator), d0's upper bytes. lmult and
 ldivide are the original's algorithms (MULU of the word halves with the
-SWAPs, the bit-by-bit division with its `ROXR`), changing d1 as there.
+SWAPs, each swapped cross product with its low word cleared before it
+is added, #639; the bit-by-bit division with its `ROXR`), changing d1
+as there.
 The value count `argc` is a long (the original's byte: #645).
 
 ## Fixed
@@ -148,14 +150,16 @@ kind F):
 * ConvToPostFix copies a `.` with the character behind it, but not the
   string's 0: a `.` at the end ends the operand. The original copied the
   0 too and went on converting the bytes behind the string (#631).
+* PFEvaluate's `*` (also used by `^`) gives the low 32 bits of the
+  product; the original's `SWAP : ADD` added the cross products' high
+  words into the low word too, wrong whenever the product overflows
+  (`1000000 1000000 *` was -727379962 instead of -727379968) (#639).
 
 ## BUG(orig), kept
 
 In the C file's head:
 
 * ConvToPostFix: dropped characters (#632).
-* PFEvaluate: the product's high words added into the low word on
-  overflow (#639).
 * PFEvaluate: `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as
   the loop count (#641).
 * PFEvaluate: extra values are no error (#635).

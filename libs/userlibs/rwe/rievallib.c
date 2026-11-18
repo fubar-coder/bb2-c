@@ -27,9 +27,6 @@
  *   - ConvToPostFix: an operand character that is no digit, a-f,
  *     register, `$ % . { }` ends the operand and is dropped (#632).
  *   - PFEvaluate:
- *     - `*` (lmult) adds the high words of the partial products into the
- *       low word (SWAP:ADD) - wrong only when the product overflows
- *       (#639).
  *     - `^`: x^0 and x^1 are x, 0^n is 1; the loop counts with DBRA on
  *       the low word of exponent-2 (#641).
  *     - Only the last value is the result; more values are no error
@@ -68,6 +65,10 @@
  *   - ConvToPostFix copies a `.` with the character behind it, but not
  *     the string's 0: a `.` at the end ends the operand.  The original
  *     copied the 0 too and went on behind the string (#631).
+ *   - PFEvaluate's `*` (lmult, also for `^`) gives the low 32 bits of the
+ *     product: the cross products' low words are added into the high
+ *     word only.  The original's SWAP:ADD added their high words into the
+ *     low word too, wrong whenever the product overflows (#639).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -409,7 +410,8 @@ static void BLITZ_ROUTINE convtopostfix_c(UBYTE *str BL_REG(d0), UBYTE *buf BL_R
 
 /* --------------------------------------------------------- PFEvaluate */
 
-/* lmult: d0 = d0 * d1, d1 = |d1| swapped (the original's registers) */
+/* lmult: d0 = the low 32 bits of d0 * d1, d1 = |d1| swapped (the
+   original's registers) */
 static ULONG lmult(ULONG lhs, ULONG *rhs)
 {
     ULONG sign = 0, hi_lo, lo_hi;       /* d2-d4 */
@@ -426,11 +428,11 @@ static ULONG lmult(ULONG lhs, ULONG *rhs)
     lhs = bl_mulu_w((UWORD)lhs, (UWORD)*rhs);   /* MULU d1,d0 */
     hi_lo = BL_SWAP(hi_lo);
     hi_lo = bl_mulu_w((UWORD)hi_lo, (UWORD)*rhs);
-    hi_lo = BL_SWAP(hi_lo);                     /* BUG(orig) (#639): its high word too */
+    hi_lo = BL_SWAP(hi_lo) & 0xffff0000UL;      /* fixed (#639): CLR.w, not its high word */
     lhs += hi_lo;
     *rhs = BL_SWAP(*rhs);
     lo_hi = bl_mulu_w((UWORD)lo_hi, (UWORD)*rhs);
-    lo_hi = BL_SWAP(lo_hi);
+    lo_hi = BL_SWAP(lo_hi) & 0xffff0000UL;      /* fixed (#639) */
     lhs += lo_hi;
     if ((UWORD)sign)
         lhs = -lhs;
@@ -701,10 +703,10 @@ evalbin:
  * value", 5 "No close bracket on indirect", 6 "Invalid size for
  * indirection".  An empty string returns 0, error 0; a string of spaces
  * only 0, error 4 (fixed, #644).
- * BUG(orig): `*` overflows wrongly (#639); `^` (#641); only the last
- * value counts (#635); register operands (#642), the `}` check after a
- * register (#637), unchecked digits (#634), indirection at any address
- * (#636).
+ * `*` gives the low 32 bits of the product (fixed, #639).
+ * BUG(orig): `^` (#641); only the last value counts (#635); register
+ * operands (#642), the `}` check after a register (#637), unchecked
+ * digits (#634), indirection at any address (#636).
  * @param str        d0: the postfix string
  * @param caller_d1  d1: the caller's d1 (the stale d1 of a register in {})
  * @return d0: the value, 0 on an error

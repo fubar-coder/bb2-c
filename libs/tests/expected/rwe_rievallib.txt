@@ -1403,7 +1403,8 @@ PFEvaluate|d0|"2 1 <"|1	$00000000
 PFEvaluate|d0|"2 1 >"|1	$FFFFFFFF
 PFEvaluate|d0|"2 10 ^"|1	$00000400
 PFEvaluate|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$00000052
-PFEvaluate|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$B0D9CC26
+PFEvaluate|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2 [orig]	$B0D9CC26
+PFEvaluate|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2 [fixed #639]	$00000000
 PFEvaluate|d0|"2 2 <"|1 [orig]	$FFFFFFFF
 PFEvaluate|d0|"2 2 <"|1 [fixed #638]	$00000000
 PFEvaluate|d0|"2 31 ^"|1	$80000000
