@@ -99,11 +99,7 @@ are one packed struct in the order of the original's data block, so that
   `CXCMD_LIST_CHG` (#560). A second call with the same name therefore no
   longer makes commodities send the first broker `CXCMD_UNIQUE`.
 
-**BUG(orig)** (kept, commented in the code):
-
-* the help text of `MakeCommodity` lacks the closing parenthesis (#558).
-
-No `DIFF`.
+No `BUG(orig)`, no `DIFF`.
 
 **Test** (`libs/tests/rwe/ricommoditieslib.c`, snitch case
 "rwe ricommoditieslib"): each run loads one library set (the C build or

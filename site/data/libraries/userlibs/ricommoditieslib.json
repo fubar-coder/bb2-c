@@ -6,7 +6,7 @@
     {
       "name": "MakeCommodity",
       "kind": "command",
-      "help": "(name$,title$,description$",
+      "help": "(name$,title$,description$)",
       "result": "long",
       "forms": [
         {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}

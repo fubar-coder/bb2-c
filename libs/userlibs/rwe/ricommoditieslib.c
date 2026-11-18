@@ -62,10 +62,6 @@
  * use; the original made a new broker on every call without deleting the
  * previous one, which stayed active with the port that finit deletes
  * (#560).
- *
- * Kept from the original (BUG(orig)):
- *   - the help text of MakeCommodity lacks the closing parenthesis
- *     (#558).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -109,8 +105,7 @@ BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_STRING, BL_STRING, BL_STRING);
 BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(makecommodity), 0, 0);
-/* BUG(orig): the help text lacks the closing parenthesis (#558) */
-BLITZ_NAME("MakeCommodity", "(name$,title$,description$");
+BLITZ_NAME("MakeCommodity", "(name$,title$,description$)");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_STRING);
@@ -505,8 +500,7 @@ BLITZ_THUNK(status, status_c, "d1/a0-a1");
  * through a base of 0.  Fixed (#560): while the library has a broker it
  * returns 0 and the broker stays in use (user decision W4 Q4); the
  * original made a new broker on every call and left the previous one
- * active with the same port.  BUG(orig): the help text lacks the
- * closing parenthesis (#558).
+ * active with the same port.
  * @param name   d0: the name
  * @param title  d1: the title
  * @param descr  d2: the description
