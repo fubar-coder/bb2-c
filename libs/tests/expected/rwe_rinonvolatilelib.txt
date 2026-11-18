@@ -461,31 +461,56 @@ StoreNVData|d0.w|closed Item2 length 25 ret $3|1	$00000000
 StoreNVData|d0.w|closed Item2 length 655359 ret $0|1	$00000000
 StoreNVData|d0.w|closed Item2 length 655359 ret $12340001|1	$00000000
 StoreNVData|d0.w|closed Item2 length 655359 ret $3|1	$00000000
-StoreNVData|d0.w|fake Item1 length 0 ret $0|1	$00000000
-StoreNVData|d0.w|fake Item1 length 0 ret $12340001|1	$00000001
-StoreNVData|d0.w|fake Item1 length 0 ret $3|1	$00000003
-StoreNVData|d0.w|fake Item1 length 10 ret $0|1	$00000000
-StoreNVData|d0.w|fake Item1 length 10 ret $12340001|1	$00000001
-StoreNVData|d0.w|fake Item1 length 10 ret $3|1	$00000003
-StoreNVData|d0.w|fake Item1 length 65535 ret $0|1	$00000000
-StoreNVData|d0.w|fake Item1 length 65535 ret $12340001|1	$00000001
-StoreNVData|d0.w|fake Item1 length 65535 ret $3|1	$00000003
-StoreNVData|d0.w|fake Item1 length 655365 ret $0|1	$00000000
-StoreNVData|d0.w|fake Item1 length 655365 ret $12340001|1	$00000001
-StoreNVData|d0.w|fake Item1 length 655365 ret $3|1	$00000003
-StoreNVData|d0.w|fake Item2 length 1 ret $0|1	$00000000
-StoreNVData|d0.w|fake Item2 length 1 ret $12340001|1	$00000001
-StoreNVData|d0.w|fake Item2 length 1 ret $3|1	$00000003
-StoreNVData|d0.w|fake Item2 length 25 ret $0|1	$00000000
-StoreNVData|d0.w|fake Item2 length 25 ret $12340001|1	$00000001
-StoreNVData|d0.w|fake Item2 length 25 ret $3|1	$00000003
-StoreNVData|d0.w|fake Item2 length 655359 ret $0|1	$00000000
-StoreNVData|d0.w|fake Item2 length 655359 ret $12340001|1	$00000001
-StoreNVData|d0.w|fake Item2 length 655359 ret $3|1	$00000003
-StoreNVData|d0.w|system Item1 length 0 ret $0|1	$00000003
-StoreNVData|d0.w|system Item1 length 10 ret $0|1	$00000003
-StoreNVData|d0.w|system Item2 length 1 ret $0|1	$00000003
-StoreNVData|d0.w|system Item2 length 25 ret $0|1	$00000003
+StoreNVData|d0.w|fake Item1 length 0 ret $0|1 [orig]	$00000000
+StoreNVData|d0.w|fake Item1 length 0 ret $0|1 [fixed #1085]	$0000FFFF
+StoreNVData|d0.w|fake Item1 length 0 ret $12340001|1 [orig]	$00000001
+StoreNVData|d0.w|fake Item1 length 0 ret $12340001|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item1 length 0 ret $3|1 [orig]	$00000003
+StoreNVData|d0.w|fake Item1 length 0 ret $3|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item1 length 10 ret $0|1 [orig]	$00000000
+StoreNVData|d0.w|fake Item1 length 10 ret $0|1 [fixed #1085]	$0000FFFF
+StoreNVData|d0.w|fake Item1 length 10 ret $12340001|1 [orig]	$00000001
+StoreNVData|d0.w|fake Item1 length 10 ret $12340001|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item1 length 10 ret $3|1 [orig]	$00000003
+StoreNVData|d0.w|fake Item1 length 10 ret $3|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item1 length 65535 ret $0|1 [orig]	$00000000
+StoreNVData|d0.w|fake Item1 length 65535 ret $0|1 [fixed #1085]	$0000FFFF
+StoreNVData|d0.w|fake Item1 length 65535 ret $12340001|1 [orig]	$00000001
+StoreNVData|d0.w|fake Item1 length 65535 ret $12340001|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item1 length 65535 ret $3|1 [orig]	$00000003
+StoreNVData|d0.w|fake Item1 length 65535 ret $3|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item1 length 655365 ret $0|1 [orig]	$00000000
+StoreNVData|d0.w|fake Item1 length 655365 ret $0|1 [fixed #1085]	$0000FFFF
+StoreNVData|d0.w|fake Item1 length 655365 ret $12340001|1 [orig]	$00000001
+StoreNVData|d0.w|fake Item1 length 655365 ret $12340001|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item1 length 655365 ret $3|1 [orig]	$00000003
+StoreNVData|d0.w|fake Item1 length 655365 ret $3|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item2 length 1 ret $0|1 [orig]	$00000000
+StoreNVData|d0.w|fake Item2 length 1 ret $0|1 [fixed #1085]	$0000FFFF
+StoreNVData|d0.w|fake Item2 length 1 ret $12340001|1 [orig]	$00000001
+StoreNVData|d0.w|fake Item2 length 1 ret $12340001|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item2 length 1 ret $3|1 [orig]	$00000003
+StoreNVData|d0.w|fake Item2 length 1 ret $3|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item2 length 25 ret $0|1 [orig]	$00000000
+StoreNVData|d0.w|fake Item2 length 25 ret $0|1 [fixed #1085]	$0000FFFF
+StoreNVData|d0.w|fake Item2 length 25 ret $12340001|1 [orig]	$00000001
+StoreNVData|d0.w|fake Item2 length 25 ret $12340001|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item2 length 25 ret $3|1 [orig]	$00000003
+StoreNVData|d0.w|fake Item2 length 25 ret $3|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item2 length 655359 ret $0|1 [orig]	$00000000
+StoreNVData|d0.w|fake Item2 length 655359 ret $0|1 [fixed #1085]	$0000FFFF
+StoreNVData|d0.w|fake Item2 length 655359 ret $12340001|1 [orig]	$00000001
+StoreNVData|d0.w|fake Item2 length 655359 ret $12340001|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|fake Item2 length 655359 ret $3|1 [orig]	$00000003
+StoreNVData|d0.w|fake Item2 length 655359 ret $3|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|system Item1 length 0 ret $0|1 [orig]	$00000003
+StoreNVData|d0.w|system Item1 length 0 ret $0|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|system Item1 length 10 ret $0|1 [orig]	$00000003
+StoreNVData|d0.w|system Item1 length 10 ret $0|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|system Item2 length 1 ret $0|1 [orig]	$00000003
+StoreNVData|d0.w|system Item2 length 1 ret $0|1 [fixed #1085]	$00000000
+StoreNVData|d0.w|system Item2 length 25 ret $0|1 [orig]	$00000003
+StoreNVData|d0.w|system Item2 length 25 ret $0|1 [fixed #1085]	$00000000
 StoreNVData|kept|closed Item1 length 0 ret $0|1	kept
 StoreNVData|kept|closed Item1 length 0 ret $12340001|1	kept
 StoreNVData|kept|closed Item1 length 0 ret $3|1	kept

@@ -21,14 +21,17 @@
  *   - StoreNVData: the DeleteNV before StoreNV is unconditional (an item
  *     that cannot be stored again is lost), and its result is ignored
  *     (#763).
- *   - StoreNVData returns StoreNV's result (!acommand #word): 0 means
- *     stored, otherwise an NVERR_... code - and the "library not open"
- *     case returns 0 as well, "stored" (#765).
- * Fixed (intended deviation, #764): StoreNVData's DIVU.w #10 overflowed
- * for lengths of 655360 bytes and more (the quotient does not fit into a
- * word: d3 stays unchanged), StoreNV then got the low word of the length
- * (+1 if the high word is not 0) as the number of tens of bytes; the
- * length is now divided as a long.
+ * Fixed (intended deviations):
+ *   - StoreNVData's DIVU.w #10 overflowed for lengths of 655360 bytes and
+ *     more (the quotient does not fit into a word: d3 stays unchanged),
+ *     StoreNV then got the low word of the length (+1 if the high word
+ *     is not 0) as the number of tens of bytes; the length is now
+ *     divided as a long (#764).
+ *   - StoreNVData returned StoreNV's result (!acommand #word): 0 when
+ *     stored, otherwise an NVERR_... code, the reverse of the documented
+ *     TRUE/FALSE; it now returns -1 when stored, 0 when not (#1085).
+ * No defect: StoreNVData returns 0 when the library is not open (the
+ * common ReturnFalse), which is FALSE, not stored, as documented (#765).
  *
  * finit closes the library but leaves libbase set: no defect, it is the
  * last call.
@@ -137,8 +140,11 @@ static ULONG BLITZ_ROUTINE isnonvolatile_c(void)
  * @param item  d1: the item name
  * @param data  d2: the data
  * @param len   d3: its length in bytes
- * @return d0.w: StoreNV's result, 0 = stored, else an NVERR_... code;
- *         also 0 when the library is not open (BUG(orig) (#765))
+ * @return d0.w: -1 (TRUE) when StoreNV stored the data (its result 0),
+ *         0 (FALSE) when it did not (an NVERR_... code) and when the
+ *         library is not open (fixed, #1085: the original returned
+ *         StoreNV's result, 0 = stored; no defect then in the 0 without
+ *         the library, #765)
  */
 static ULONG BLITZ_ROUTINE storenvdata_c(CONST_STRPTR app BL_REG(d0),
                                          CONST_STRPTR item BL_REG(d1),
@@ -148,7 +154,7 @@ static ULONG BLITZ_ROUTINE storenvdata_c(CONST_STRPTR app BL_REG(d0),
     ULONG hi, lo, tens;
 
     if (!libbase)
-        return 0;                                       /* ReturnFalse */
+        return BB_FALSE;                                /* ReturnFalse */
     DeleteNV(app, item, 0);
     /* len / 10 as a long with two DIVU.w (fixed, #764): the high word's
        remainder (< 10) goes in front of the low word, so the second
@@ -158,7 +164,8 @@ static ULONG BLITZ_ROUTINE storenvdata_c(CONST_STRPTR app BL_REG(d0),
     tens = (hi << 16) | (UWORD)lo;
     if (lo >> 16)                                       /* remainder */
         tens++;
-    return StoreNV(app, item, data, tens, -1);
+    /* Fixed (#1085): TRUE/FALSE as documented, not StoreNV's UWORD */
+    return (UWORD)StoreNV(app, item, data, tens, -1) == 0 ? BB_TRUE : BB_FALSE;
 }
 
 /**

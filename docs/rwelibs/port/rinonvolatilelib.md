@@ -25,8 +25,8 @@ assembler. The length is divided by 10 as a long with two `bl_divu_w`
 The thunks keep d1/a0/a1, the C code a2/a6, which the original changes
 through the system calls (StoreNVData also a2 = data). `IsNonvolatile`
 keeps the upper word of d0 (`EXT.w`) like the original. StoreNVData
-returns StoreNV's `UWORD` result zero-extended; the original passes on
-the whole d0 of the library – only the low word is the command's result.
+tests StoreNV's `UWORD` result (the low word of d0) and returns -1 or 0
+as a long (fixed #1085); only the low word is the command's result.
 
 ## Fixed
 
@@ -40,15 +40,23 @@ kind F):
   of tens – 655365 bytes became 6 tens, 60 bytes, stored without an
   error (#764; `libs_emulator` cases `[fixed #764]` of
   `rwe_rinonvolatilelib`, fake nonvolatile.library: 65537 tens).
+* `StoreNVData` returns -1 (TRUE) when the data was stored and 0 (FALSE)
+  when not, as RINonVolatileLib.guide documents ("TRUE/FALSE to say
+  whether or not the save completed successfully"). The original
+  returned StoreNV's result, 0 when stored and an `NVERR_…` code when
+  not: `If StoreNVData(…)` was true exactly when the save failed (#1085;
+  test `rinonvolatilelib-storenvdata-result`, `libs_emulator` cases
+  `[fixed #1085]` of `rwe_rinonvolatilelib`, fake nonvolatile.library).
 
 ## BUG(orig)
 
 * `StoreNVData` deletes the item unconditionally before storing it (an
   item that cannot be stored again is lost); DeleteNV's result is ignored
   (#763).
-* `StoreNVData` returns StoreNV's result (0 = stored, otherwise an
-  `NVERR_…` code) - and 0 as well if the library is not open, i.e.
-  "stored" (#765).
+
+No defect: `StoreNVData` returns 0 when the library is not open (the
+common `ReturnFalse`); with the documented TRUE/FALSE that is FALSE,
+nothing stored (#765).
 
 finit closes the library but leaves `libbase` set; that is no defect (it
 is the last call).

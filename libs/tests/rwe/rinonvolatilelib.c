@@ -21,7 +21,9 @@
  *     StoreNV with the length in tens; killRequesters), lengths 0, 1, 10,
  *     25, 65535, 655359 and 655365 (the original's DIVU overflows, fixed
  *     #764), the
- *     results (d0; StoreNVData only the low word, the command is #word).
+ *     results (d0; StoreNVData only the low word, the command is #word:
+ *     the original passes StoreNV's result on, fixed #1085: -1 when
+ *     stored, 0 when not).
  * Kept registers on every call.
  */
 #include "rwecmp.h"
