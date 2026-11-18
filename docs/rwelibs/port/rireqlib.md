@@ -73,11 +73,17 @@ kind F):
   were written over the library's data behind it: the four buffer
   pointers, the colour requester structure and, at 208, the library base
   (#1088). Version 1 had its 256-byte title buffer there.
+* The title of `ReqFileRequest(title$[,flags])` is for that call only: a
+  later call without a title has the library's empty title buffer again
+  (user decision W3 Q4). The original kept the pointer to the title
+  string, which it gives up to the string work area, so a later call
+  without a title showed whatever had been built there since (#789).
 
-## BUG(orig)
+## Kept
 
-* ReqFileRequest(title$,flags) changes the flags for good (like
-  ReqFlags), and a title stays for later calls without one (#789).
+* `ReqFileRequest(title$,flags)` sets the flags for later calls too, like
+  ReqFlags: RIReqLib.guide documents it ("If this is omitted then the
+  last flag setting is used"), not a defect (#789).
 
 ## Test
 

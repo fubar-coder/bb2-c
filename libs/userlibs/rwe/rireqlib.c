@@ -17,11 +17,9 @@
  * (a0 = the window object, !libs #windowslib,#ia0|#pd0), ReqFlags the
  * flags of the file requester.
  *
- * No assembler besides the thunks.
- *
- * BUG(orig):
- *   - ReqFileRequest(title$,flags) changes the flags for good (like
- *     ReqFlags), and a title stays for later calls without one (#789).
+ * No assembler besides the thunks.  ReqFileRequest(title$,flags) sets
+ * the flags for later calls too, like ReqFlags: documented in
+ * RIReqLib.guide, kept (#789).
  *
  * Fixed (intended deviations):
  *   - ReqFileRequest copied the path with its 0 and left a3 behind the
@@ -51,6 +49,10 @@
  *     buffer) were written over the library's data behind it: in the
  *     original the buffer pointers, the colour requester structure and
  *     the library base (#1088).
+ *   - A title of ReqFileRequest(title$[,flags]) is for that call only;
+ *     a later call without a title has the empty title buffer again.
+ *     The original kept the pointer to the title string, which it gives
+ *     up to the string work area, for later calls without one (#789).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -270,8 +272,11 @@ static ULONG BLITZ_ROUTINE requestfile_c(void)
  * @brief ReqFileRequest(title$): the file requester with a title.
  *
  * The title string is given up (a3 back by its length + 1), then as
- * requestfile_c.  BUG(orig) (#789): the title stays for later calls
- * without one.  On cancel a3 stays at the start of the title string.
+ * requestfile_c.  The title is for this call only: afterwards the
+ * title field points to the library's (empty) title buffer again
+ * (fixed, #789: the original kept the pointer to the given-up string for
+ * later calls without a title).  On cancel a3 stays at the start of the
+ * title string.
  * @param title  d0: the title
  * @param lens   a2: the argument stack, -4(a2) the length of title$
  * @return d0: the length of the path; 0 on cancel
@@ -279,16 +284,22 @@ static ULONG BLITZ_ROUTINE requestfile_c(void)
 static ULONG BLITZ_ROUTINE requestfiletitle_c(STRPTR title BL_REG(d0),
                                               const ULONG *lens BL_REG(a2))
 {
+    ULONG n;
+
     blitz_string -= lens[-1] + 1;
     FrStruct.title = title;
-    return requestfile_c();
+    n = requestfile_c();
+    FrStruct.title = frq_Title;                         /* fixed (#789) */
+    return n;
 }
 
 /**
  * @brief ReqFileRequest(title$,flags): the file requester with a title
  * and flags.
  *
- * BUG(orig) (#789): the flags are set for good, like ReqFlags.
+ * The flags are set for later calls too, like ReqFlags, as
+ * RIReqLib.guide documents it ("If this is omitted then the last flag
+ * setting is used"; not a defect, #789).
  * @param title  d0: the title
  * @param flags  d1: the requester flags
  * @param lens   a2: the argument stack, -4(a2) the length of title$

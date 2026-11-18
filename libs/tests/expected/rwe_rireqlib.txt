@@ -239,8 +239,10 @@ ReqFileRequest|title|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$000000
 ReqFileRequest|title|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	path-$26C
 ReqFileRequest|title|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000000
 ReqFileRequest|title|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	path-$26C
-ReqFileRequest|title|form 0 title - flags $0 ret 1 path "overrun"|1	prog
-ReqFileRequest|title|form 0 title - flags $0 ret 1 path "title and flags stay"|1	prog
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	prog
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #789]	path-$26C
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	prog
+ReqFileRequest|title|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #789]	path-$26C
 ReqFileRequest|title|form 1 title  flags $0 ret 5 path "x"|1	prog
 ReqFileRequest|title|form 1 title Cancel flags $0 ret 0 path "never"|1	prog
 ReqFileRequest|title|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	prog
@@ -252,8 +254,10 @@ ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	nu
 ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	""
 ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	null
 ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	""
-ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "overrun"|1	"Cancel again"
-ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "title and flags stay"|1	"Cancel again"
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	"Cancel again"
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #789]	""
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	"Cancel again"
+ReqFileRequest|title text|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #789]	""
 ReqFileRequest|title text|form 1 title  flags $0 ret 5 path "x"|1	""
 ReqFileRequest|title text|form 1 title Cancel flags $0 ret 0 path "never"|1	"Cancel"
 ReqFileRequest|title text|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	"Choose a file"
