@@ -31,14 +31,16 @@
  *   - No routine checks the library base: without req.library (or after
  *     init's AllocMem failed, which closes it again) ReqFileRequest and
  *     ReqColour call through a6 = 0, ReqFileLoc returns 0 (#788).
- *   - ReqColour ignores its argument: DefColour stays 0 (#786).
  *   - ReqFileRequest(title$,flags) changes the flags for good (like
  *     ReqFlags), and a title stays for later calls without one (#789).
  *
- * Fixed (intended deviation, #784): ReqFileRequest copied the path with
- * its 0 and left a3 behind the 0, so a string expression went on one
- * byte too far; a3 now ends on the 0.  On cancel d0 = 0 and a3 stays
- * (with a title: at the start of the title string), as before.
+ * Fixed (intended deviations):
+ *   - ReqFileRequest copied the path with its 0 and left a3 behind the
+ *     0, so a string expression went on one byte too far; a3 now ends on
+ *     the 0.  On cancel d0 = 0 and a3 stays (with a title: at the start
+ *     of the title string), as before (#784).
+ *   - ReqColour passes its argument as DefColour; the original ignored
+ *     it, so the requester always started on colour 0 (#786).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -270,14 +272,16 @@ static ULONG BLITZ_ROUTINE requestfiletitleflags_c(STRPTR title BL_REG(d0),
  * @brief ReqColour(colour): the req.library colour requester on the
  * ReqOutput window.
  *
- * BUG(orig): the argument (d0) is ignored, DefColour stays 0 (#786);
- * req.library is not checked (#788).
+ * Fixed (#786): the argument is the default colour (DefColour); the
+ * original ignored it.  BUG(orig): req.library is not checked (#788).
+ * @param colour  d0: the colour the requester starts on
  * @return d0: what ColorRequester returns
  */
-static ULONG BLITZ_ROUTINE colourreq_c(void)
+static ULONG BLITZ_ROUTINE colourreq_c(ULONG colour BL_REG(d0))
 {
     struct bl_regs r = { .a0 = (ULONG)&ecr };
 
+    ecr.defcolour = (UWORD)colour;
     ecr.winptr = routput;
     return BLITZ_BASEJSR(reqbase, LVO_ColorRequester, r);
 }

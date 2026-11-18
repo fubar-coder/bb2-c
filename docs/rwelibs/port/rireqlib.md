@@ -41,6 +41,9 @@ kind F):
   was written one byte too far (see `docs/libs/cmdlibs-port.md`, "String
   results"). On cancel d0 = 0 and a3 stays (with a title: at its start),
   as before (#784).
+* ReqColour passes its argument to the colour requester as DefColour;
+  the original ignored it, so the requester always started on colour 0
+  (#786).
 
 ## BUG(orig)
 
@@ -56,7 +59,6 @@ kind F):
 * No routine checks the library base: without req.library (or after
   init's AllocMem failed, which closes it again) ReqFileRequest and
   ReqColour call through a6 = 0 (#788).
-* ReqColour ignores its argument: DefColour stays 0 (#786).
 * ReqFileRequest(title$,flags) changes the flags for good (like
   ReqFlags), and a title stays for later calls without one (#789).
 
