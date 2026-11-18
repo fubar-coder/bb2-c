@@ -7,6 +7,7 @@
 ; The program waits (at most 10 s) until no thread is left and prints
 ; how often each code ran.
 ; Correct: each thread runs its own code once: a 1, b 1.
+; @fixed #838
 ; @rwe rithreadlib
 DEFTYPE .l ga,gb
 ga=0 : gb=0

@@ -18,25 +18,29 @@
  *          thread to end sends it), closes dos.library, frees the signal
  *
  * CreateThread takes 10240 bytes (MEMF_CLEAR) through memlib's
- * globalloc (freed by memlib's finit) and saves d0-d7/a1-a6 as they are
- * after that call (d0 = the memory).  The process starts at
- * startupcode, which loads them, then a2 = memory+1024, a3 = memory+1024
- * +2048 (the string buffer), a4 = a3+4096, a0 = address, and jumps to
- * the address; when the code returns, DOS calls the exit code (cleanup):
- * the count goes down, and the parent task gets the signal when it is 0.
- * The thread shares the program's globals (a5).
+ * globalloc (freed by memlib's finit), with the thread's start data
+ * behind them: d0-d7/a1-a6 as they are after that call (d0 = the memory),
+ * the address and the memory.  It hands the start data to the process
+ * in tc_UserData, set between Forbid and Permit around CreateNewProc
+ * (the process cannot run before).  The process starts at startupcode,
+ * which takes them from its tc_UserData (and clears it), loads the
+ * registers, then a2 = memory+1024, a3 = memory+1024+2048 (the string
+ * buffer), a4 = a3+4096, a0 = address, and jumps to the address; when
+ * the code returns, DOS calls the exit code (cleanup): the count goes
+ * down, and the parent task gets the signal when it is 0.  The thread
+ * shares the program's globals (a5).
  *
  * Assembler: startupcode (it sets every register and jumps), the
  * ALibJsr to globalloc (the registers after it are the thread's), the
  * count's ADDQ/SUBQ (one instruction: the parent and the threads change
  * it), the thunks.
  *
- * BUG(orig):
- *   - The registers, the memory and the address are single variables:
- *     a second CreateThread before the first thread has started
- *     (CreateNewProc returns before the process runs) gives both
- *     threads the second call's registers, memory and code (#838).
  * Fixed (intended deviations):
+ *   - The registers, the memory and the address were single variables:
+ *     a second CreateThread before the first thread had started
+ *     (CreateNewProc returns before the process runs) gave both threads
+ *     the second call's registers, memory and code; they are now start
+ *     data of each thread (#838).
  *   - finit waited only once, so a signal left from an earlier time the
  *     count was 0 let it go on while threads ran (their exit code is in
  *     this library); it now waits until the count is 0 (#837).
@@ -53,6 +57,7 @@
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
+#include <dos/dosextens.h>
 #include <dos/dostags.h>
 #include <utility/tagitem.h>
 
@@ -87,13 +92,21 @@ BLITZ_LIBFIN();
 
 #define STRINGBUFFERSIZE 2048
 
-/* the state (the source's variables, in its order); startupcode reads
-   it by name */
-struct thstate {
-    ULONG regs[16];                     /* d0-d7/a1-a6 at regs[2..15] */
-    ULONG *regptr;
+/* the start data of a thread, behind its memory; startupcode reads it
+   through tc_UserData */
+struct thstart {
+    ULONG regs[14];                     /* d0-d7/a1-a6 */
     ULONG entrypoint;
     ULONG memory;
+};
+_Static_assert(__builtin_offsetof(struct thstart, entrypoint) == 56, "startupcode: entrypoint");
+_Static_assert(__builtin_offsetof(struct thstart, memory) == 60, "startupcode: memory");
+_Static_assert(__builtin_offsetof(struct ExecBase, ThisTask) == 276, "startupcode: ThisTask");
+_Static_assert(__builtin_offsetof(struct Task, tc_UserData) == 88, "startupcode: tc_UserData");
+
+/* the state (the source's variables, in its order, without the start
+   data); startupcode reads stringbuffersize by name */
+struct thstate {
     ULONG thesignal;                    /* -1: none allocated */
     ULONG stringbuffersize;
     volatile ULONG threadcount;
@@ -114,26 +127,26 @@ struct thstate th = {
 
 static const char dosname[] = "dos.library";
 
-/* the process's start: the saved registers, a2/a3/a4 in its memory, a0 =
-   the code, which it jumps to */
+/* the process's start: its start data from tc_UserData (cleared), the
+   saved registers, a2/a3/a4 in its memory, a0 = the code, which it jumps
+   to */
 BLITZ_ASM_BLOCK(startupcode,
 "   .globl  _startupcode\n"
 "_startupcode:\n"
-"   move.l  _th+64,a0\n"                /* regptr */
+"   move.l  4.w,a1\n"
+"   move.l  276(a1),a1\n"               /* ThisTask */
+"   move.l  88(a1),a0\n"                /* tc_UserData: the start data */
+"   clr.l   88(a1)\n"
 "   movem.l (a0)+,d0-d7/a1-a6\n"
-"   move.l  _th+72,a0\n"                /* memory */
-"   lea     1024(a0),a2\n"
-"   lea     1024(a0),a0\n"
-"   add.l   _th+80,a0\n"                /* stringbuffersize */
-"   move.l  a0,a3\n"
-"   lea     4096(a0),a4\n"
-"   move.l  _th+68,a0\n"                /* entrypoint */
+"   move.l  4(a0),a3\n"                 /* memory */
+"   lea     1024(a3),a2\n"
+"   lea     1024(a3),a3\n"
+"   add.l   _th+4,a3\n"                 /* stringbuffersize */
+"   lea     4096(a3),a4\n"
+"   move.l  (a0),a0\n"                  /* entrypoint */
 "   jmp     (a0)\n"
 );
-_Static_assert(__builtin_offsetof(struct thstate, regptr) == 64, "startupcode: regptr");
-_Static_assert(__builtin_offsetof(struct thstate, entrypoint) == 68, "startupcode: entrypoint");
-_Static_assert(__builtin_offsetof(struct thstate, memory) == 72, "startupcode: memory");
-_Static_assert(__builtin_offsetof(struct thstate, stringbuffersize) == 80,
+_Static_assert(__builtin_offsetof(struct thstate, stringbuffersize) == 4,
                "startupcode: stringbuffersize");
 
 /**
@@ -168,30 +181,35 @@ ULONG BLITZ_ROUTINE c_activethreads(void)
  * DOS process (CreateNewProc).
  *
  * Nothing without dos.library V36 (init).  Counts the thread up, takes
- * 10240 bytes (stringbuffersize + 8192, MEMF_CLEAR) through memlib's
- * globalloc (freed by memlib's finit; globalloc never returns 0, it
- * raises "Out of Memory!") and saves d0-d7/a1-a6 as they are after that
- * call (d0 = the memory) for startupcode, which loads them, sets a2/a3/a4
- * in the memory and jumps to the address.  The thread shares the
- * program's globals (a5).  BUG(orig) (#838): registers, memory and
- * address are single variables - a second CreateThread before the first
- * thread has started gives both threads the second call's.
+ * 10240 bytes (stringbuffersize + 8192, MEMF_CLEAR) and the start data
+ * behind them through memlib's globalloc (freed by memlib's finit;
+ * globalloc never returns 0, it raises "Out of Memory!") and saves
+ * d0-d7/a1-a6 as they are after that call (d0 = the memory), the address
+ * and the memory in the start data, which the new process gets in
+ * tc_UserData (set before it can run: Forbid ... Permit around
+ * CreateNewProc).  startupcode loads them, sets a2/a3/a4 in the memory
+ * and jumps to the address.  The thread shares the program's globals
+ * (a5).  Fixed (#838): the original keeps registers, memory and address
+ * in single variables - a second CreateThread before the first thread
+ * has started gives both threads the second call's.
  * @param r  a0: the registers of the call as the thunk pushed them,
  *           d0-d7/a0-a6 (d0 = name$, the process name as it is, which
  *           CreateNewProc copies; d1 = address)
  */
 void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
 {
+    struct thstart *st;
+
     if (!th.dbase)
         return;
     __asm__ volatile("addq.l #1,%0" : "+m"(th.threadcount) : : "cc");
     th.threadtaglist.name.ti_Data = r[0];
-    th.entrypoint = r[1];
     {
         /* ALibJsr globalloc: d0 = size, d1 = flags; the registers after
            it (d0 = the memory) are the thread's (memlib keeps d2-d7/
            a0-a6, so these are the call's) */
-        register ULONG d0 __asm("d0") = th.stringbuffersize + 8192;
+        register ULONG d0 __asm("d0") = th.stringbuffersize + 8192
+                                        + sizeof(struct thstart);
         register ULONG d1 __asm("d1") = MEMF_CLEAR;
         register ULONG a0 __asm("a0") = r[8];
         register ULONG a1 __asm("a1") = r[9];
@@ -202,21 +220,29 @@ void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
             : "+d"(d0), "+d"(d1), "+a"(a0), "+a"(a1), "+a"(a6)
             : "i"(BL_TOKVAL(TOK_globalloc, 0))
             : "d2", "d3", "d4", "d5", "d6", "d7", "a2", "cc", "memory");
-        th.memory = d0;
-        th.regs[2] = d0;
-        th.regs[3] = d1;
+        st = (struct thstart *)(d0 + th.stringbuffersize + 8192);
+        st->memory = d0;
+        st->entrypoint = r[1];
+        st->regs[0] = d0;
+        st->regs[1] = d1;
         for (i = 2; i < 8; i++)         /* d2-d7 */
-            th.regs[2 + i] = r[i];
-        th.regs[10] = a1;
+            st->regs[i] = r[i];
+        st->regs[8] = a1;
         for (i = 10; i < 14; i++)       /* a2-a5 */
-            th.regs[i + 1] = r[i];
-        th.regs[15] = a6;
+            st->regs[i - 1] = r[i];
+        st->regs[13] = a6;
     }
-    th.regptr = &th.regs[2];
+    /* the process cannot run before Permit: it finds its start data */
+    Forbid();
     {
         struct bl_regs cr = { .d1 = (ULONG)&th.threadtaglist };
-        BLITZ_BASEJSR(th.dbase, LVO_CreateNewProc, cr);
+        struct Process *p = (struct Process *)
+            BLITZ_BASEJSR(th.dbase, LVO_CreateNewProc, cr);
+
+        if (p)
+            p->pr_Task.tc_UserData = st;
     }
+    Permit();
 }
 
 /**

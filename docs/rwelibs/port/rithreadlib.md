@@ -4,10 +4,14 @@ Reflective Images 1995. Blitz code as a separate DOS process:
 
 * `CreateThread name$,address` – takes 10240 bytes (`MEMF_CLEAR`)
   through memlib's `globalloc` (freed by memlib's finit), saves d0–d7/
-  a1–a6 as they are after that call (d0 = the memory) and starts a
-  process (`CreateNewProc`: `NP_Entry` the library's start code,
-  `NP_Name` the string, `NP_ExitCode` the library's exit code). The
-  start code loads the saved registers, sets a2 = memory + 1024, a3 =
+  a1–a6 as they are after that call (d0 = the memory), the address and
+  the memory as the thread's start data behind the 10240 bytes and
+  starts a process (`CreateNewProc`: `NP_Entry` the library's start
+  code, `NP_Name` the string, `NP_ExitCode` the library's exit code),
+  whose `tc_UserData` gets the start data between `Forbid` and `Permit`
+  around the call (the process cannot run before). The start code
+  takes the start data from its `tc_UserData` (and clears it), loads
+  the saved registers, sets a2 = memory + 1024, a3 =
   memory + 3072 (after the 2048-byte string buffer), a4 = a3 + 4096 and
   a0 = `address`, and jumps there; the thread shares the program's
   globals (a5). When its code returns, DOS calls the exit code: the
@@ -41,8 +45,9 @@ d0/d1/a0/a1/a6). Assembler where C cannot do it:
   change it, one instruction each as in the original (a load/add/store
   of C could lose a change).
 
-The variables keep the source's order in one structure (`th`), which
-the start code reads by name.
+The variables keep the source's order in one structure (`th`), whose
+`stringbuffersize` the start code reads by name; the start data of each
+thread are a structure of their own (`thstart`).
 
 ## Fixed
 
@@ -60,13 +65,15 @@ kind F):
   runs in the shell's process - took one more of the signals 31..17;
   after 15 runs `CreateThread` did nothing (#839; `libs_emulator` cases
   `[fixed #839]` of `rwe_rithreadlib`).
+* The registers, the memory and the address are start data of each
+  thread. The original kept them in single variables, which the process
+  read only when it first ran; `CreateNewProc` returns before that, so a
+  second `CreateThread` before the first thread had started gave both
+  threads the second call's registers, memory and code (#838; test
+  `rithreadlib-shared-start-state`). The scheduling is unchanged: the
+  new process still runs when the scheduler picks it.
 
-## BUG(orig), kept
-
-* The registers, the memory and the address are single variables: a
-  second `CreateThread` before the first thread has started
-  (`CreateNewProc` returns before the process runs) gives both threads
-  the second call's registers, memory and code (#838).
+## Original behaviour that is not a defect
 
 The memory is not checked; that is no defect: memlib's `globalloc`
 never returns 0 (it raises "Out of Memory!").
@@ -106,5 +113,6 @@ memory + 1024/3072/7168, the memory cleared) and its name, and whether
 the signal of each init is still allocated after its finit (the test
 frees what the original leaves).
 
-Not covered: two `CreateThread` before the first thread runs (the
-shared variables, BUG(orig) #838): its outcome depends on the scheduling.
+Two `CreateThread` before the first thread runs (#838) are the
+bug-orig test `rithreadlib-shared-start-state`; in this scenario every
+thread runs before the next step.

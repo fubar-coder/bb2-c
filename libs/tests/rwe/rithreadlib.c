@@ -30,8 +30,8 @@
  *      fixed #837), D ends.
  * Whether the signal of each init is still allocated after its finit
  * (the original never frees it, fixed #839; the test frees what is left).
- * Not covered: two CreateThread before the first thread runs (the
- * shared registers, BUG(orig) #838: depends on the scheduling).
+ * Two CreateThread before the first thread runs (#838) are the bug-orig
+ * test rithreadlib-shared-start-state.
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
