@@ -208,7 +208,7 @@ caller's upper word of d0 (a word result).
 
 `libs/tests/rwe/rievallib.c` (snitch case "rwe rievallib"): each run
 loads one library set (the C build or the original); every routine is
-observed as cases (2049 checks), compared with the expected data
+observed as cases (2103 checks of the original), compared with the expected data
 `libs/tests/expected/rwe_rievallib.txt` recorded from the original –
 ConvToPostFix on 52 strings
 (all operators and precedences, brackets in excess, signs, operands of
@@ -217,8 +217,11 @@ nested brackets and 150-deep operators), PFEvaluate on about 120 strings
 (every operator with signs, overflow, division by 0, the power cases,
 numbers and their quirks, registers without and with a block, a register
 at the string end, `{address}` with every size and the errors,
-`{register}` with the marker d1 and with d1 = `}`, 130 values, 300
+`{register}` with the marker d1 and with d1 = `}`, 130 values (left
+over and in a complete expression), 300
 values with operators and pushes across chunk borders, empty, spaces
 only, two results), after each PFErrorType, PFErrorText,
-PFIndirectAddr; init/finit and the start state. A run with `CHUNK` 4
+PFIndirectAddr; init/finit and the start state, and a second run
+(PFRegisters and an error, then finit and init: PFErrorType and a
+register after them). A run with `CHUNK` 4
 passes too; mutations of the `.` copy and of `<` are caught.

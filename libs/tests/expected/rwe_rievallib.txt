@@ -312,6 +312,8 @@ PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2 [fixed #645]	$00000014
 PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [orig]	$00000024
 PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [fixed #645]	$00000014
+PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [orig]	$00000024
+PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [fixed #645]	$00000004
 PFErrorText|a3|"1 2 + 3"|1 [orig]	$00000004
 PFErrorText|a3|"1 2 + 3"|1 [fixed #635]	$00000014
 PFErrorText|a3|"1 2 3 * +"|1	$00000004
@@ -364,6 +366,7 @@ PFErrorText|a3|"6 -7 *"|1	$00000004
 PFErrorText|a3|"6 7 *"|1	$00000004
 PFErrorText|a3|"65536 3 *"|1	$00000004
 PFErrorText|a3|"7 -2 /"|1	$00000004
+PFErrorText|a3|"7 0 /"|1	$00000016
 PFErrorText|a3|"7 1 2 + *"|1	$00000004
 PFErrorText|a3|"7 2 /"|1	$00000004
 PFErrorText|a3|"70000 70000 *"|1	$00000004
@@ -383,6 +386,7 @@ PFErrorText|a3|"d0"|2	$00000004
 PFErrorText|a3|"d0"|3	$00000021
 PFErrorText|a3|"d1 -a2 *"|1	$00000004
 PFErrorText|a3|"d1 d2 +"|1	$00000004
+PFErrorText|a3|"d2 1 +"|1	$00000004
 PFErrorText|a3|"d7"|1	$00000004
 PFErrorText|a3|"d9"|1 [orig]	$00000004
 PFErrorText|a3|"d9"|1 [fixed #642]	$00000014
@@ -485,6 +489,8 @@ PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2 [fixed #645]	$00000010
 PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [orig]	$00000020
 PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [fixed #645]	$00000010
+PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [orig]	$00000020
+PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [fixed #645]	$00000000
 PFErrorText|d0|"1 2 + 3"|1 [orig]	$5A000000
 PFErrorText|d0|"1 2 + 3"|1 [fixed #640]	$00000010
 PFErrorText|d0|"1 2 3 * +"|1 [orig]	$5A000000
@@ -568,6 +574,7 @@ PFErrorText|d0|"65536 3 *"|1 [orig]	$5A000000
 PFErrorText|d0|"65536 3 *"|1 [fixed #640]	$00000000
 PFErrorText|d0|"7 -2 /"|1 [orig]	$5A000000
 PFErrorText|d0|"7 -2 /"|1 [fixed #640]	$00000000
+PFErrorText|d0|"7 0 /"|1	$00000012
 PFErrorText|d0|"7 1 2 + *"|1 [orig]	$5A000000
 PFErrorText|d0|"7 1 2 + *"|1 [fixed #640]	$00000000
 PFErrorText|d0|"7 2 /"|1 [orig]	$5A000000
@@ -596,6 +603,8 @@ PFErrorText|d0|"d1 -a2 *"|1 [orig]	$5A000000
 PFErrorText|d0|"d1 -a2 *"|1 [fixed #640]	$00000000
 PFErrorText|d0|"d1 d2 +"|1 [orig]	$5A000000
 PFErrorText|d0|"d1 d2 +"|1 [fixed #640]	$00000000
+PFErrorText|d0|"d2 1 +"|1 [orig]	$5A000000
+PFErrorText|d0|"d2 1 +"|1 [fixed #640]	$00000000
 PFErrorText|d0|"d7"|1 [orig]	$5A000000
 PFErrorText|d0|"d7"|1 [fixed #640]	$00000000
 PFErrorText|d0|"d9"|1 [orig]	$5A000000
@@ -679,6 +688,7 @@ PFErrorText|kept|"1 -1 >"|1	kept
 PFErrorText|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	kept
 PFErrorText|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	kept
 PFErrorText|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	kept
+PFErrorText|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	kept
 PFErrorText|kept|"1 2 + 3"|1	kept
 PFErrorText|kept|"1 2 3 * +"|1	kept
 PFErrorText|kept|"1 2 3 + "|1	kept
@@ -722,6 +732,7 @@ PFErrorText|kept|"6 -7 *"|1	kept
 PFErrorText|kept|"6 7 *"|1	kept
 PFErrorText|kept|"65536 3 *"|1	kept
 PFErrorText|kept|"7 -2 /"|1	kept
+PFErrorText|kept|"7 0 /"|1	kept
 PFErrorText|kept|"7 1 2 + *"|1	kept
 PFErrorText|kept|"7 2 /"|1	kept
 PFErrorText|kept|"70000 70000 *"|1	kept
@@ -737,6 +748,7 @@ PFErrorText|kept|"d0"|2	kept
 PFErrorText|kept|"d0"|3	kept
 PFErrorText|kept|"d1 -a2 *"|1	kept
 PFErrorText|kept|"d1 d2 +"|1	kept
+PFErrorText|kept|"d2 1 +"|1	kept
 PFErrorText|kept|"d7"|1	kept
 PFErrorText|kept|"d9"|1	kept
 PFErrorText|kept|"p"|1	kept
@@ -799,6 +811,7 @@ PFErrorText|popped|"1 -1 >"|1	$00000000
 PFErrorText|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
 PFErrorText|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
 PFErrorText|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFErrorText|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	$00000000
 PFErrorText|popped|"1 2 + 3"|1	$00000000
 PFErrorText|popped|"1 2 3 * +"|1	$00000000
 PFErrorText|popped|"1 2 3 + "|1	$00000000
@@ -842,6 +855,7 @@ PFErrorText|popped|"6 -7 *"|1	$00000000
 PFErrorText|popped|"6 7 *"|1	$00000000
 PFErrorText|popped|"65536 3 *"|1	$00000000
 PFErrorText|popped|"7 -2 /"|1	$00000000
+PFErrorText|popped|"7 0 /"|1	$00000000
 PFErrorText|popped|"7 1 2 + *"|1	$00000000
 PFErrorText|popped|"7 2 /"|1	$00000000
 PFErrorText|popped|"70000 70000 *"|1	$00000000
@@ -857,6 +871,7 @@ PFErrorText|popped|"d0"|2	$00000000
 PFErrorText|popped|"d0"|3	$00000000
 PFErrorText|popped|"d1 -a2 *"|1	$00000000
 PFErrorText|popped|"d1 d2 +"|1	$00000000
+PFErrorText|popped|"d2 1 +"|1	$00000000
 PFErrorText|popped|"d7"|1	$00000000
 PFErrorText|popped|"d9"|1	$00000000
 PFErrorText|popped|"p"|1	$00000000
@@ -927,6 +942,8 @@ PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2 [fixed #645]	bytes 64 EEEEEEEE4E6F20726573756C742076616C75652100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [orig]	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [fixed #645]	bytes 64 EEEEEEEE4E6F20726573756C742076616C75652100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [orig]	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [fixed #645]	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"1 2 + 3"|1 [orig]	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"1 2 + 3"|1 [fixed #635]	bytes 64 EEEEEEEE4E6F20726573756C742076616C75652100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"1 2 3 * +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
@@ -979,6 +996,7 @@ PFErrorText|text|"6 -7 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"6 7 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"65536 3 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"7 -2 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFErrorText|text|"7 0 /"|1	bytes 64 EEEEEEEE4469766964652062792030206572726F722100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"7 1 2 + *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"7 2 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"70000 70000 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
@@ -998,6 +1016,7 @@ PFErrorText|text|"d0"|2	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"d0"|3	bytes 64 EEEEEEEE526567697374657220737472756374757265206E6F7420666F756E642100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"d1 -a2 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"d1 d2 +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFErrorText|text|"d2 1 +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"d7"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"d9"|1 [orig]	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 PFErrorText|text|"d9"|1 [fixed #642]	bytes 64 EEEEEEEE4E6F20726573756C742076616C75652100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
@@ -1076,6 +1095,8 @@ PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2 [fixed #645]	$5A000004
 PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [orig]	$5A000001
 PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [fixed #645]	$5A000004
+PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [orig]	$5A000001
+PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [fixed #645]	$5A000000
 PFErrorType|d0|"1 2 + 3"|1 [orig]	$5A000000
 PFErrorType|d0|"1 2 + 3"|1 [fixed #635]	$5A000004
 PFErrorType|d0|"1 2 3 * +"|1	$5A000000
@@ -1128,6 +1149,7 @@ PFErrorType|d0|"6 -7 *"|1	$5A000000
 PFErrorType|d0|"6 7 *"|1	$5A000000
 PFErrorType|d0|"65536 3 *"|1	$5A000000
 PFErrorType|d0|"7 -2 /"|1	$5A000000
+PFErrorType|d0|"7 0 /"|1	$5A000003
 PFErrorType|d0|"7 1 2 + *"|1	$5A000000
 PFErrorType|d0|"7 2 /"|1	$5A000000
 PFErrorType|d0|"70000 70000 *"|1	$5A000000
@@ -1147,6 +1169,7 @@ PFErrorType|d0|"d0"|2	$5A000000
 PFErrorType|d0|"d0"|3	$5A000002
 PFErrorType|d0|"d1 -a2 *"|1	$5A000000
 PFErrorType|d0|"d1 d2 +"|1	$5A000000
+PFErrorType|d0|"d2 1 +"|1	$5A000000
 PFErrorType|d0|"d7"|1	$5A000000
 PFErrorType|d0|"d9"|1 [orig]	$5A000000
 PFErrorType|d0|"d9"|1 [fixed #642]	$5A000004
@@ -1178,6 +1201,7 @@ PFErrorType|d0|"{d0}" d1 '}'|1	$5A000000
 PFErrorType|d0|"{d0}.w"|1 [orig]	$5A000005
 PFErrorType|d0|"{d0}.w"|1 [fixed #637]	$5A000000
 PFErrorType|d0|"{d0}.w" d1 '}'|1	$5A000000
+PFErrorType|d0|second run|1	$5A000003
 PFErrorType|d0|start|1	$5A000000
 PFErrorType|kept|"   "|1	kept
 PFErrorType|kept|"  42  "|1	kept
@@ -1217,6 +1241,7 @@ PFErrorType|kept|"1 -1 >"|1	kept
 PFErrorType|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	kept
 PFErrorType|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	kept
 PFErrorType|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	kept
+PFErrorType|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	kept
 PFErrorType|kept|"1 2 + 3"|1	kept
 PFErrorType|kept|"1 2 3 * +"|1	kept
 PFErrorType|kept|"1 2 3 + "|1	kept
@@ -1260,6 +1285,7 @@ PFErrorType|kept|"6 -7 *"|1	kept
 PFErrorType|kept|"6 7 *"|1	kept
 PFErrorType|kept|"65536 3 *"|1	kept
 PFErrorType|kept|"7 -2 /"|1	kept
+PFErrorType|kept|"7 0 /"|1	kept
 PFErrorType|kept|"7 1 2 + *"|1	kept
 PFErrorType|kept|"7 2 /"|1	kept
 PFErrorType|kept|"70000 70000 *"|1	kept
@@ -1275,6 +1301,7 @@ PFErrorType|kept|"d0"|2	kept
 PFErrorType|kept|"d0"|3	kept
 PFErrorType|kept|"d1 -a2 *"|1	kept
 PFErrorType|kept|"d1 d2 +"|1	kept
+PFErrorType|kept|"d2 1 +"|1	kept
 PFErrorType|kept|"d7"|1	kept
 PFErrorType|kept|"d9"|1	kept
 PFErrorType|kept|"p"|1	kept
@@ -1298,6 +1325,7 @@ PFErrorType|kept|"{d0}"|1	kept
 PFErrorType|kept|"{d0}" d1 '}'|1	kept
 PFErrorType|kept|"{d0}.w"|1	kept
 PFErrorType|kept|"{d0}.w" d1 '}'|1	kept
+PFErrorType|kept|second run|1	kept
 PFErrorType|kept|start|1	kept
 PFErrorType|popped|"   "|1	$00000000
 PFErrorType|popped|"  42  "|1	$00000000
@@ -1337,6 +1365,7 @@ PFErrorType|popped|"1 -1 >"|1	$00000000
 PFErrorType|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
 PFErrorType|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
 PFErrorType|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFErrorType|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	$00000000
 PFErrorType|popped|"1 2 + 3"|1	$00000000
 PFErrorType|popped|"1 2 3 * +"|1	$00000000
 PFErrorType|popped|"1 2 3 + "|1	$00000000
@@ -1380,6 +1409,7 @@ PFErrorType|popped|"6 -7 *"|1	$00000000
 PFErrorType|popped|"6 7 *"|1	$00000000
 PFErrorType|popped|"65536 3 *"|1	$00000000
 PFErrorType|popped|"7 -2 /"|1	$00000000
+PFErrorType|popped|"7 0 /"|1	$00000000
 PFErrorType|popped|"7 1 2 + *"|1	$00000000
 PFErrorType|popped|"7 2 /"|1	$00000000
 PFErrorType|popped|"70000 70000 *"|1	$00000000
@@ -1395,6 +1425,7 @@ PFErrorType|popped|"d0"|2	$00000000
 PFErrorType|popped|"d0"|3	$00000000
 PFErrorType|popped|"d1 -a2 *"|1	$00000000
 PFErrorType|popped|"d1 d2 +"|1	$00000000
+PFErrorType|popped|"d2 1 +"|1	$00000000
 PFErrorType|popped|"d7"|1	$00000000
 PFErrorType|popped|"d9"|1	$00000000
 PFErrorType|popped|"p"|1	$00000000
@@ -1418,6 +1449,7 @@ PFErrorType|popped|"{d0}"|1	$00000000
 PFErrorType|popped|"{d0}" d1 '}'|1	$00000000
 PFErrorType|popped|"{d0}.w"|1	$00000000
 PFErrorType|popped|"{d0}.w" d1 '}'|1	$00000000
+PFErrorType|popped|second run|1	$00000000
 PFErrorType|popped|start|1	$00000000
 PFEvaluate|d0|"   "|1 [orig]	prog
 PFEvaluate|d0|"   "|1 [fixed #644]	$00000000
@@ -1471,6 +1503,8 @@ PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2 [fixed #645]	$00000000
 PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [orig]	$00000000
 PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [fixed #645]	$00000000
+PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [orig]	$00000000
+PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [fixed #645]	$00000082
 PFEvaluate|d0|"1 2 + 3"|1 [orig]	$00000003
 PFEvaluate|d0|"1 2 + 3"|1 [fixed #635]	$00000000
 PFEvaluate|d0|"1 2 3 * +"|1	$00000007
@@ -1527,6 +1561,7 @@ PFEvaluate|d0|"6 -7 *"|1	$FFFFFFD6
 PFEvaluate|d0|"6 7 *"|1	$0000002A
 PFEvaluate|d0|"65536 3 *"|1	$00030000
 PFEvaluate|d0|"7 -2 /"|1	$FFFFFFFD
+PFEvaluate|d0|"7 0 /"|1	$00000000
 PFEvaluate|d0|"7 1 2 + *"|1	$00000015
 PFEvaluate|d0|"7 2 /"|1	$00000003
 PFEvaluate|d0|"70000 70000 *"|1	$24101100
@@ -1546,6 +1581,7 @@ PFEvaluate|d0|"d0"|2	$40000000
 PFEvaluate|d0|"d0"|3	$00000000
 PFEvaluate|d0|"d1 -a2 *"|1	$52FFFD26
 PFEvaluate|d0|"d1 d2 +"|1	$0300001B
+PFEvaluate|d0|"d2 1 +"|1	$02000012
 PFEvaluate|d0|"d7"|1	$07000034
 PFEvaluate|d0|"d9"|1 [orig]	$40000002
 PFEvaluate|d0|"d9"|1 [fixed #642]	$00000000
@@ -1618,6 +1654,7 @@ PFEvaluate|kept|"1 -1 >"|1	kept
 PFEvaluate|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	kept
 PFEvaluate|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	kept
 PFEvaluate|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	kept
+PFEvaluate|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	kept
 PFEvaluate|kept|"1 2 + 3"|1	kept
 PFEvaluate|kept|"1 2 3 * +"|1	kept
 PFEvaluate|kept|"1 2 3 + "|1	kept
@@ -1661,6 +1698,7 @@ PFEvaluate|kept|"6 -7 *"|1	kept
 PFEvaluate|kept|"6 7 *"|1	kept
 PFEvaluate|kept|"65536 3 *"|1	kept
 PFEvaluate|kept|"7 -2 /"|1	kept
+PFEvaluate|kept|"7 0 /"|1	kept
 PFEvaluate|kept|"7 1 2 + *"|1	kept
 PFEvaluate|kept|"7 2 /"|1	kept
 PFEvaluate|kept|"70000 70000 *"|1	kept
@@ -1676,6 +1714,7 @@ PFEvaluate|kept|"d0"|2	kept
 PFEvaluate|kept|"d0"|3	kept
 PFEvaluate|kept|"d1 -a2 *"|1	kept
 PFEvaluate|kept|"d1 d2 +"|1	kept
+PFEvaluate|kept|"d2 1 +"|1	kept
 PFEvaluate|kept|"d7"|1	kept
 PFEvaluate|kept|"d9"|1	kept
 PFEvaluate|kept|"p"|1	kept
@@ -1737,6 +1776,7 @@ PFEvaluate|popped|"1 -1 >"|1	$00000000
 PFEvaluate|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
 PFEvaluate|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
 PFEvaluate|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFEvaluate|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	$00000000
 PFEvaluate|popped|"1 2 + 3"|1	$00000000
 PFEvaluate|popped|"1 2 3 * +"|1	$00000000
 PFEvaluate|popped|"1 2 3 + "|1	$00000000
@@ -1780,6 +1820,7 @@ PFEvaluate|popped|"6 -7 *"|1	$00000000
 PFEvaluate|popped|"6 7 *"|1	$00000000
 PFEvaluate|popped|"65536 3 *"|1	$00000000
 PFEvaluate|popped|"7 -2 /"|1	$00000000
+PFEvaluate|popped|"7 0 /"|1	$00000000
 PFEvaluate|popped|"7 1 2 + *"|1	$00000000
 PFEvaluate|popped|"7 2 /"|1	$00000000
 PFEvaluate|popped|"70000 70000 *"|1	$00000000
@@ -1795,6 +1836,7 @@ PFEvaluate|popped|"d0"|2	$00000000
 PFEvaluate|popped|"d0"|3	$00000000
 PFEvaluate|popped|"d1 -a2 *"|1	$00000000
 PFEvaluate|popped|"d1 d2 +"|1	$00000000
+PFEvaluate|popped|"d2 1 +"|1	$00000000
 PFEvaluate|popped|"d7"|1	$00000000
 PFEvaluate|popped|"d9"|1	$00000000
 PFEvaluate|popped|"p"|1	$00000000
@@ -1853,6 +1895,7 @@ PFEvaluate|string|"1 -1 >"|1	bytes 1400 fnv E277650C
 PFEvaluate|string|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	bytes 1400 fnv BF799E66
 PFEvaluate|string|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	bytes 1400 fnv BAC2FFDC
 PFEvaluate|string|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	bytes 1400 fnv 76DE0A1D
+PFEvaluate|string|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	bytes 1400 fnv 7A4FC306
 PFEvaluate|string|"1 2 + 3"|1	bytes 1400 fnv EE08F006
 PFEvaluate|string|"1 2 3 * +"|1	bytes 1400 fnv 812428B4
 PFEvaluate|string|"1 2 3 + "|1	bytes 1400 fnv 5634AA76
@@ -1894,6 +1937,7 @@ PFEvaluate|string|"6 -7 *"|1	bytes 1400 fnv F6DABFAD
 PFEvaluate|string|"6 7 *"|1	bytes 1400 fnv 7E04E4F6
 PFEvaluate|string|"65536 3 *"|1	bytes 1400 fnv 466E9517
 PFEvaluate|string|"7 -2 /"|1	bytes 1400 fnv 40A0C0D8
+PFEvaluate|string|"7 0 /"|1	bytes 1400 fnv DD2A803D
 PFEvaluate|string|"7 1 2 + *"|1	bytes 1400 fnv 3AEA4F10
 PFEvaluate|string|"7 2 /"|1	bytes 1400 fnv 508A6B0F
 PFEvaluate|string|"70000 70000 *"|1	bytes 1400 fnv E6FA4177
@@ -1909,6 +1953,7 @@ PFEvaluate|string|"d0"|2	bytes 1400 fnv E7480971
 PFEvaluate|string|"d0"|3	bytes 1400 fnv E7480971
 PFEvaluate|string|"d1 -a2 *"|1	bytes 1400 fnv 07A50D84
 PFEvaluate|string|"d1 d2 +"|1	bytes 1400 fnv 1FFF8113
+PFEvaluate|string|"d2 1 +"|1	bytes 1400 fnv 26705231
 PFEvaluate|string|"d7"|1	bytes 1400 fnv CAE9C3AC
 PFEvaluate|string|"d9"|1	bytes 1400 fnv 20B4210E
 PFEvaluate|string|"p"|1	bytes 1400 fnv 097E4E15
@@ -1964,6 +2009,8 @@ PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2 [fixed #637]	$40000000
 PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [orig]	$40000002
 PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3 [fixed #637]	$40000000
+PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [orig]	$40000002
+PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4 [fixed #637]	$40000000
 PFIndirectAddr|d0|"1 2 + 3"|1	$00000000
 PFIndirectAddr|d0|"1 2 3 * +"|1	$00000000
 PFIndirectAddr|d0|"1 2 3 + "|1	$00000000
@@ -2012,6 +2059,8 @@ PFIndirectAddr|d0|"6 -7 *"|1	$00000000
 PFIndirectAddr|d0|"6 7 *"|1	$00000000
 PFIndirectAddr|d0|"65536 3 *"|1	$00000000
 PFIndirectAddr|d0|"7 -2 /"|1	$00000000
+PFIndirectAddr|d0|"7 0 /"|1 [orig]	$40000002
+PFIndirectAddr|d0|"7 0 /"|1 [fixed #637]	$40000000
 PFIndirectAddr|d0|"7 1 2 + *"|1	$00000000
 PFIndirectAddr|d0|"7 2 /"|1	$00000000
 PFIndirectAddr|d0|"70000 70000 *"|1	$00000000
@@ -2029,6 +2078,8 @@ PFIndirectAddr|d0|"d0"|3 [orig]	$40000002
 PFIndirectAddr|d0|"d0"|3 [fixed #637]	$40000000
 PFIndirectAddr|d0|"d1 -a2 *"|1	$00000000
 PFIndirectAddr|d0|"d1 d2 +"|1	$00000000
+PFIndirectAddr|d0|"d2 1 +"|1 [orig]	$40000002
+PFIndirectAddr|d0|"d2 1 +"|1 [fixed #637]	$40000000
 PFIndirectAddr|d0|"d7"|1	$00000000
 PFIndirectAddr|d0|"d9"|1	$00000000
 PFIndirectAddr|d0|"p"|1	$00000000
@@ -2092,6 +2143,7 @@ PFIndirectAddr|kept|"1 -1 >"|1	kept
 PFIndirectAddr|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	kept
 PFIndirectAddr|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	kept
 PFIndirectAddr|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	kept
+PFIndirectAddr|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	kept
 PFIndirectAddr|kept|"1 2 + 3"|1	kept
 PFIndirectAddr|kept|"1 2 3 * +"|1	kept
 PFIndirectAddr|kept|"1 2 3 + "|1	kept
@@ -2135,6 +2187,7 @@ PFIndirectAddr|kept|"6 -7 *"|1	kept
 PFIndirectAddr|kept|"6 7 *"|1	kept
 PFIndirectAddr|kept|"65536 3 *"|1	kept
 PFIndirectAddr|kept|"7 -2 /"|1	kept
+PFIndirectAddr|kept|"7 0 /"|1	kept
 PFIndirectAddr|kept|"7 1 2 + *"|1	kept
 PFIndirectAddr|kept|"7 2 /"|1	kept
 PFIndirectAddr|kept|"70000 70000 *"|1	kept
@@ -2150,6 +2203,7 @@ PFIndirectAddr|kept|"d0"|2	kept
 PFIndirectAddr|kept|"d0"|3	kept
 PFIndirectAddr|kept|"d1 -a2 *"|1	kept
 PFIndirectAddr|kept|"d1 d2 +"|1	kept
+PFIndirectAddr|kept|"d2 1 +"|1	kept
 PFIndirectAddr|kept|"d7"|1	kept
 PFIndirectAddr|kept|"d9"|1	kept
 PFIndirectAddr|kept|"p"|1	kept
@@ -2212,6 +2266,7 @@ PFIndirectAddr|popped|"1 -1 >"|1	$00000000
 PFIndirectAddr|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
 PFIndirectAddr|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
 PFIndirectAddr|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFIndirectAddr|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|4	$00000000
 PFIndirectAddr|popped|"1 2 + 3"|1	$00000000
 PFIndirectAddr|popped|"1 2 3 * +"|1	$00000000
 PFIndirectAddr|popped|"1 2 3 + "|1	$00000000
@@ -2255,6 +2310,7 @@ PFIndirectAddr|popped|"6 -7 *"|1	$00000000
 PFIndirectAddr|popped|"6 7 *"|1	$00000000
 PFIndirectAddr|popped|"65536 3 *"|1	$00000000
 PFIndirectAddr|popped|"7 -2 /"|1	$00000000
+PFIndirectAddr|popped|"7 0 /"|1	$00000000
 PFIndirectAddr|popped|"7 1 2 + *"|1	$00000000
 PFIndirectAddr|popped|"7 2 /"|1	$00000000
 PFIndirectAddr|popped|"70000 70000 *"|1	$00000000
@@ -2270,6 +2326,7 @@ PFIndirectAddr|popped|"d0"|2	$00000000
 PFIndirectAddr|popped|"d0"|3	$00000000
 PFIndirectAddr|popped|"d1 -a2 *"|1	$00000000
 PFIndirectAddr|popped|"d1 d2 +"|1	$00000000
+PFIndirectAddr|popped|"d2 1 +"|1	$00000000
 PFIndirectAddr|popped|"d7"|1	$00000000
 PFIndirectAddr|popped|"d9"|1	$00000000
 PFIndirectAddr|popped|"p"|1	$00000000
@@ -2296,9 +2353,15 @@ PFIndirectAddr|popped|"{d0}.w" d1 '}'|1	$00000000
 PFIndirectAddr|popped|start|1	$00000000
 PFRegisters|kept|0|1	kept
 PFRegisters|kept|block|1	kept
+PFRegisters|kept|block|2	kept
 PFRegisters|popped|0|1	$00000000
 PFRegisters|popped|block|1	$00000000
+PFRegisters|popped|block|2	$00000000
+finit|kept|second run|1	kept
 finit|kept|start|1	kept
+finit|popped|second run|1	$00000000
 finit|popped|start|1	$00000000
+init|kept|second run|1	kept
 init|kept|start|1	kept
+init|popped|second run|1	$00000000
 init|popped|start|1	$00000000

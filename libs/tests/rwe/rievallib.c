@@ -253,10 +253,30 @@ static void evaluate(void)
     }
     ev(gen);
 
+    /* deep and right with 130 values: 1 1 ... + + ... (a long count) */
+    ev(repeat(130, "1 ", 129, "+ "));
+
     ROUT = "PFRegisters";
     strcpy(VEC, "0");
     DO1(ENT(LIB, E_REGS, 0), R.d[0] = 0);
     ev("d0");
+
+    /* a second run of the program with the library still loaded: a block
+       and an error of the first, then finit and init; the original keeps
+       both (its init and finit are RTS) */
+    ROUT = "PFRegisters";
+    strcpy(VEC, "block");
+    DO1(ENT(LIB, E_REGS, 0), R.d[0] = (ULONG)block);
+    ev("7 0 /");
+    strcpy(VEC, "second run");
+    ROUT = "finit";
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
+    ROUT = "init";
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
+    ROUT = "PFErrorType";
+    DO1(ENT(LIB, E_ETYPE, 0), (void)0);
+    OBS("d0", R.d[0]);
+    ev("d2 1 +");
 }
 
 int main(int argc, char **argv)
