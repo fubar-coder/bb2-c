@@ -107,6 +107,12 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   (in a compiled program addresses: a top of 3 went to SetAttrs as
   1073938435; a negative value without an upper word became
   32768-65535) (#597).
+* AttachDataType window,id,x,y,width,height and window,id,&taglist need
+  an object, as window,id does (#595); without, the result is 0. The
+  original checked only the open file: with a file open but no object
+  (no DataTypeCreate, or one that failed) it passed the object 0 to
+  SetAttrsA and AddDTObject and returned -1, and the library then held
+  the window as attached (#1098).
 * DataTypeModeID taglist builds its three tags (BIDTAG_NominalWidth,
   NominalHeight, Depth) in the library's buffer and chains the program's
   list behind them with TAG_MORE: the program's tags are used and its

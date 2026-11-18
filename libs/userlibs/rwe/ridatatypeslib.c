@@ -82,6 +82,11 @@
  *   - AttachDataType window,id,x,y,width,height sign-extends its four
  *     word arguments into the tag list.  The original wrote the
  *     registers as longs, with whatever upper words they had (#597).
+ *   - AttachDataType window,id,x,y,width,height and window,id,&taglist
+ *     need an object, as window,id does (#595).  The original checked
+ *     only the open file: without DataTypeCreate (or after one that
+ *     failed) it passed the object 0 to SetAttrsA and AddDTObject and
+ *     returned BB_TRUE, the window then counting as attached (#1098).
  *   - DataTypeModeID taglist builds its three tags in the library's
  *     buffer and chains the program's list behind them (TAG_MORE): the
  *     list is used and stays unchanged; a tag in both is the library's
@@ -637,14 +642,16 @@ BB_BOOL BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG
  *
  * The word arguments go into the tag list sign-extended (fixed, #597:
  * the original wrote the registers, with the upper words they had).
+ * Needs an object (fixed, #1098: the original checked only the file and
+ * passed the object 0 to SetAttrsA and AddDTObject).
  * @param id      d1: the gadget id
  * @param x       d2: left (word)
  * @param y       d3: top (word)
  * @param w       d4: width (word)
  * @param h       d5: height (word)
  * @param winobj  a0: the window object
- * @return d0: BB_TRUE, BB_FALSE without datatypes.library or an open file,
- *         or if attached already
+ * @return d0: BB_TRUE, BB_FALSE without datatypes.library, an open file
+ *         or an object, or if attached already
  */
 BB_BOOL BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), WORD x BL_REG(d2),
                                         WORD y BL_REG(d3), WORD w BL_REG(d4),
@@ -652,7 +659,7 @@ BB_BOOL BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), WORD x BL_REG(d2),
 {
     struct TagItem *t = storage->tags;
 
-    if (!database || !lock || attached)
+    if (!database || !lock || !object || attached)      /* fixed (#1098) */
         return BB_FALSE;
     attached = (ULONG)winobj;
     TAG(t, GA_ID, id);
@@ -671,19 +678,20 @@ BB_BOOL BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), WORD x BL_REG(d2),
  *
  * SetAttrs (GA_ID, ICA_TARGET ICTARGET_IDCMP, PDTA_Remap 0), SetAttrs
  * with the program's tag list (fixed, #596: the original passed the id as
- * the tag list and ignored the program's), then AddDTObject.
+ * the tag list and ignored the program's), then AddDTObject.  Needs an
+ * object (fixed, #1098, as the form with coordinates).
  * @param id      d1: the gadget id
  * @param tags    d2: the program's tag list
  * @param winobj  a0: the window object
- * @return d0: BB_TRUE, BB_FALSE without an open file or if attached
- *         already
+ * @return d0: BB_TRUE, BB_FALSE without an open file or object, or if
+ *         attached already
  */
 BB_BOOL BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), struct TagItem *tags BL_REG(d2),
                                         ULONG *winobj BL_REG(a0))
 {
     struct TagItem *t = storage->tags;
 
-    if (!lock || attached)
+    if (!lock || !object || attached)                   /* fixed (#1098) */
         return BB_FALSE;
     attached = (ULONG)winobj;
     TAG(t, GA_ID, id);
