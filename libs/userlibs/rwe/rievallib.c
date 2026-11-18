@@ -27,9 +27,7 @@
  *   - ConvToPostFix: a `.` copies the next character unchecked - at the
  *     end of the string its 0, and the scan goes on behind it (#631).  An
  *     operand character that is no digit, a-f, register, `$ % . { }`
- *     ends the operand and is dropped (#632).  A `-` is a sign only at the
- *     start of the string or right after an operator or `(` - not after
- *     a space ("3 -4" is 3-4) (#633).
+ *     ends the operand and is dropped (#632).
  *   - PFEvaluate:
  *     - `*` (lmult) adds the high words of the partial products into the
  *       low word (SWAP:ADD) - wrong only when the product overflows
@@ -64,6 +62,11 @@
  *   - PFEvaluate takes the sign before `$` and `%`: `-$10` is -16, `-%1`
  *     -1; the original tested `$`/`%` first and read them behind a `-` as
  *     decimal digits (-24410, -2451) (#643).
+ *   - ConvToPostFix skips spaces in front of a `-` before it decides: a
+ *     sign behind an operator, `(` or only spaces ("4* -2", " -5"), a
+ *     binary minus behind an operand ("3 -4" is 3-4).  The original
+ *     looked at the character right before it only, so a space made it a
+ *     binary minus without an operand (#633).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -270,11 +273,15 @@ loop:
 
     /* check the special operators - ( ) */
     if ((UBYTE)s->acc == '-') {
-        if (s->pos == s->start)                 /* start of the string */
+        UBYTE *before = s->pos;
+
+        while (before != s->start && before[-1] == ' ')
+            before--;                           /* fixed (#633): spaces skipped */
+        if (before == s->start)                 /* start of the string */
             goto notoperator;
         if (s->pos[1] == '(')
             goto checkoperator;
-        prevch = s->pos[-1];
+        prevch = before[-1];
         if (is_operator(prevch))                /* - is for negative */
             goto notoperator;
         goto checkoperator;
@@ -369,7 +376,7 @@ endthis:
  * Lower-cases the string in place, then writes the operands and
  * operators separated by spaces to the buffer (0 terminated), with an
  * operator stack; "(" ... ")" group.  A `-` is a sign at the start or
- * after an operator or `(` - not after a space (BUG(orig) #633).
+ * after an operator or `(`, spaces between skipped (fixed, #633).
  * BUG(orig): a `.` copies the next character unchecked (#631); an operand
  * character that is no digit, a-f, register, `$ % . { }` ends the operand
  * and is dropped (#632).  a3 is left at the string (a statement: nothing

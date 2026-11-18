@@ -89,7 +89,8 @@ ConvToPostFix|buffer|"2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3
 ConvToPostFix|buffer|"2^3^2"|1	bytes 2816 fnv E7DBEC24
 ConvToPostFix|buffer|"3 - 4"|1	bytes 2816 fnv 97629D11
 ConvToPostFix|buffer|"3 -4"|1	bytes 2816 fnv 97629D11
-ConvToPostFix|buffer|"3- -4"|1	bytes 2816 fnv 038911EC
+ConvToPostFix|buffer|"3- -4"|1 [orig]	bytes 2816 fnv 038911EC
+ConvToPostFix|buffer|"3- -4"|1 [fixed #633]	bytes 2816 fnv 4779B670
 ConvToPostFix|buffer|"3-"|1	bytes 2816 fnv 77435E9D
 ConvToPostFix|buffer|"3-(-4)"|1	bytes 2816 fnv 4779B670
 ConvToPostFix|buffer|"4*-2"|1	bytes 2816 fnv 073752EC

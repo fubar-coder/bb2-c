@@ -140,6 +140,11 @@ kind F):
 * PFEvaluate takes the sign before `$` and `%`: `-$10` is -16, `-%1` -1;
   the original tested `$`/`%` first and read them behind a `-` as
   decimal digits (-24410, -2451) (#643).
+* ConvToPostFix skips spaces in front of a `-` before it decides: a sign
+  behind an operator, `(` or only spaces (`4* -2`, ` -5`), a binary
+  minus behind an operand (`3 -4` is 3-4); the original looked at the
+  character right before it only, a space made it a binary minus
+  without an operand (#633).
 
 ## BUG(orig), kept
 
@@ -148,7 +153,6 @@ In the C file's head:
 * ConvToPostFix: the `.` at the end of a string (it reads on behind the
   0, #631).
 * ConvToPostFix: dropped characters (#632).
-* ConvToPostFix: signs after a space (#633).
 * PFEvaluate: the product's high words added into the low word on
   overflow (#639).
 * PFEvaluate: `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as
