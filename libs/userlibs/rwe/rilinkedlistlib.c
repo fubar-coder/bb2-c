@@ -43,9 +43,7 @@
  *     and without setting its size field (#734, #735); GetListItem copies
  *     as many bytes as the variable has, not as the node's data has (#730).
  *   - AddFirstListItem writes the new node into the old first node's
- *     next (not prev; the list becomes a loop) (#724), leaves prev, pad,
- *     data and size of the new node as the allocation left them (not
- *     cleared) (#726), and does not touch the last node.
+ *     next (not prev; the list becomes a loop) (#724).
  *   - DelListItem still reads the nodes of v0.9 (no pad): data is the
  *     long at offset 8 (the pad word and the upper word of the data
  *     pointer), size the long at 14; so it frees a wrong address (memlib:
@@ -57,6 +55,9 @@
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
  *     (#725).
+ *   - AddFirstListItem clears prev, pad, data and size of the new node
+ *     (the original wrote only its next: the rest stayed as the
+ *     allocation, flags 0, left it) (#726).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -480,11 +481,11 @@ BB_BOOL BLITZ_ROUTINE c_addlastitem(ULONG list BL_REG(d0))
  * @brief AddFirstListItem list#: a new node in front of the first one, then the current one.
  *
  * BUG(orig): the new node goes into the old first node's next, not prev:
- * the list becomes a loop (#724); prev, pad, data and size of the new
- * node stay as the allocation left them (#726); the last node is not
- * touched; an empty list writes to address 0 on (#733).  Fixed (#725):
- * the result is -1, as the manual says (the original returned list# * 4,
- * 0 for list 0).
+ * the list becomes a loop (#724); an empty list writes to address 0 on
+ * (#733).  Fixed (#725): the result is -1, as the manual says (the
+ * original returned list# * 4, 0 for list 0).  Fixed (#726): prev, pad,
+ * data and size of the new node are cleared (the original left them as
+ * the allocation, flags 0, left them).
  * @param list  d0: list# (0-4)
  * @return d0: BB_TRUE, BB_FALSE if there is no memory
  */
@@ -503,6 +504,10 @@ BB_BOOL BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
     NODE(_next)->next = nodeptr;        /* BUG(orig): next, not prev (#724) */
     TAB(current) = nodeptr;
     NODE(nodeptr)->next = _next;
+    NODE(nodeptr)->prev = 0;            /* fixed (#726): not cleared */
+    NODE(nodeptr)->pad = 0;
+    NODE(nodeptr)->data = 0;
+    NODE(nodeptr)->size = 0;
     return BB_TRUE;                     /* fixed (#725): was list# * 4 */
 }
 

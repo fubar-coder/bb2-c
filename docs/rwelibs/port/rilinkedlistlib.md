@@ -39,6 +39,13 @@ changes d1, d2, a0, a1, InitList also a2).
   so a successful call on list 0 returned 0, the failure result (#725;
   test `rilinkedlistlib-addfirst-result`, `libs_emulator` cases
   `[fixed #725]` of `rwe_rilinkedlistlib`).
+* AddFirstListItem clears prev, pad, data and size of the new node. The
+  original allocated it with flags 0 (no `MEMF_CLEAR`) and wrote only
+  its next: prev, data and size were whatever the memory held, so
+  PrevListItem, GetListItem and DelListItem used garbage pointers (#726;
+  test `rilinkedlistlib-addfirst-uncleared`, `libs_emulator` cases
+  `[fixed #726]` of `rwe_rilinkedlistlib`: the memlib stubs fill each
+  block with a pattern).
 
 **BUG(orig)** (kept):
 
@@ -58,9 +65,7 @@ changes d1, d2, a0, a1, InitList also a2).
   field (#734, #735); GetListItem copies as many bytes as the variable
   has, not as the copy has (#730).
 * AddFirstListItem writes the new node into the old first node's *next*
-  (not prev: the list becomes a loop) (#724), leaves prev, pad, data and
-  size of the new node as the allocation left them (not cleared) (#726),
-  and does not touch the last node.
+  (not prev: the list becomes a loop) (#724).
 * DelListItem still reads the v0.9 node (without pad): its data is the
   long at offset 8 (the pad word and the upper word of the data
   pointer), its size the long at 14. So it frees a wrong address (with
