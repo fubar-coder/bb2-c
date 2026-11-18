@@ -34,8 +34,6 @@
  *   - The size: a word of less than 8 in front of the variable gives a
  *     size of almost 4 GB (the allocation fails), exactly 8 a size of 0,
  *     which CopyByte takes as 2^32 bytes (#736).
- *   - GetListItem copies as many bytes as the variable has, not as the
- *     node's data has (#730).
  *
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
@@ -66,6 +64,9 @@
  *   - SetListItem frees the node's old copy once the new one is
  *     allocated (the original did not: each call on a node with data
  *     lost a copy until the end) (#734).
+ *   - GetListItem copies the smaller of the variable's size and the
+ *     node's size field (the original copied the variable's size: into a
+ *     larger variable also what lay behind the copy's allocation) (#730).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -390,22 +391,27 @@ BB_BOOL BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 /**
  * @brief GetListItem list#,var: copy the current node's data into var.
  *
- * BUG(orig) (#730): copies as many bytes as the variable has, not as
- * the node's data has; the current node is not checked (#733).
+ * BUG(orig): the current node is not checked (#733).  Fixed (#730): it
+ * copies the smaller of the variable's size and the node's size field,
+ * the rest of a larger variable stays as it is (the original copied as
+ * many bytes as the variable has, also what lay behind the copy).
  * @param list  d0: list# (0-4)
  * @param var   d1: the variable (BL_VARPTR)
  * @return d0: BB_TRUE, BB_FALSE if the node has no data
  */
 BB_BOOL BLITZ_ROUTINE c_getlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 {
-    ULONG data;
+    ULONG data, n;
 
     listnum = list << 2;
     getvarsize(var);
     data = NODE(TAB(current))->data;
     if (!data)
         return BB_FALSE;
-    copybyte(data, myvar, _size);
+    n = NODE(TAB(current))->size;       /* fixed (#730): was _size alone */
+    if (n > _size)
+        n = _size;
+    copybyte(data, myvar, n);
     return BB_TRUE;
 }
 

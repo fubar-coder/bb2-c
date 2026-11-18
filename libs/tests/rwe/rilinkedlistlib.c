@@ -32,7 +32,8 @@
  * lost in the original, freed in the C build: fixed #734; the size
  * field, unchanged in the original, the copy's in the C build: fixed
  * #735);
- * GetListItem (with and without data, a variable larger than the copy);
+ * GetListItem (with and without data, a variable larger than the copy: its
+ * size in the original, the copy's in the C build: fixed #730);
  * NextListItem/PrevListItem over the list and past its ends;
  * AddLastListItem; AddFirstListItem (the new node in the old first's
  * next in the original, in its prev in the C build: fixed #724; the
@@ -308,7 +309,7 @@ int main(int argc, char **argv)
     /* list 0: A B C, then more */
     call("InitList", INITLIST, 0, 0, 0);
     ADDR(0);
-    call("GetListItem", GETLISTITEM, 0, 7, 0);          /* 32 bytes from 12 */
+    call("GetListItem", GETLISTITEM, 0, 7, 0);          /* 32 bytes from 12 (12: fixed #730) */
     call("AddListItem", ADDLISTITEM, 0, -1, 1);         /* fails */
     call("AddListItem", ADDLISTITEM, 0, -1, 0);
     ADDR(0);

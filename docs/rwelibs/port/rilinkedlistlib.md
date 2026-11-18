@@ -88,6 +88,12 @@ changes d1, d2, a0, a1, InitList also a2).
   until the end of the program (#734; test
   `rilinkedlistlib-setlistitem-leak`, `libs_emulator` cases
   `[fixed #734]` of `rwe_rilinkedlistlib`).
+* GetListItem copies the smaller of the variable's size and the node's
+  size field; the rest of a larger variable stays as it is. The original
+  copied as many bytes as the variable has: into a larger variable also
+  what lay behind the copy's allocation (#730; test
+  `rilinkedlistlib-getlistitem-size`, `libs_emulator` cases
+  `[fixed #730]` of `rwe_rilinkedlistlib`).
 
 **BUG(orig)** (kept):
 
@@ -99,8 +105,6 @@ changes d1, d2, a0, a1, InitList also a2).
 * A size word below 8 in front of the variable gives a size of almost
   4 GB (the allocation fails); exactly 8 gives 0, which CopyByte takes
   as 2^32 bytes (#736).
-* GetListItem copies as many bytes as the variable has, not as the copy
-  has (#730).
 
 DelListItem on the only node frees nothing and returns 0; that is not a
 defect (the command refuses to delete the last node and reports it).
