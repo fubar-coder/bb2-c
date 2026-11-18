@@ -3,7 +3,8 @@ ReqColour|DefColour|colour 3|1 [orig]	$00000000
 ReqColour|DefColour|colour 3|1 [fixed #786]	$00000003
 ReqColour|DefColour|colour 4|1 [orig]	$00000000
 ReqColour|DefColour|colour 4|1 [fixed #786]	$00000004
-ReqColour|RFU 0|after overrun|1	$00000000
+ReqColour|RFU 0|after overrun|1 [orig]	$00000000
+ReqColour|RFU 0|after overrun|1 [fixed #1088]	$00000001
 ReqColour|WinPtr|colour 3|1	$CAFE0042
 ReqColour|WinPtr|colour 4|1	$CAFE0042
 ReqColour|called|after overrun|1	$00000001
@@ -25,7 +26,8 @@ ReqColour|popped|colour 4|1	$00000000
 ReqFileLoc|a0 = d0||1	$00000001
 ReqFileLoc|buffers cleared||1	$00000001
 ReqFileLoc|d0 = init's||1	$00000001
-ReqFileLoc|d0 = init's|after overrun|1	$00000000
+ReqFileLoc|d0 = init's|after overrun|1 [orig]	$00000000
+ReqFileLoc|d0 = init's|after overrun|1 [fixed #1088]	$00000001
 ReqFileLoc|kept||1	kept
 ReqFileLoc|kept|after overrun|1	kept
 ReqFileLoc|popped||1	$00000000
@@ -45,7 +47,7 @@ ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #784]	$000
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000022
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #784]	$00000024
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	$00000015
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #784]	$00000014
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #784]	$0000001E
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	$00000029
 ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #784]	$0000002B
 ReqFileRequest|a3|form 1 title  flags $0 ret 5 path "x"|1 [orig]	$00000016
@@ -72,7 +74,8 @@ ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$00000005
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	$00000008
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$0000000D
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	$00000010
-ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "overrun"|1	$00000000
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	$00000000
+ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #1088]	$0000000A
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	$00000014
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	$00000017
 ReqFileRequest|d0|form 1 title  flags $0 ret 5 path "x"|1 [orig]	$00000001
@@ -160,7 +163,8 @@ ReqFileRequest|out|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	bytes 200
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	bytes 200 fnv EE00CB8B
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	bytes 200 fnv 1F515EBC
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	bytes 200 fnv 3ADA3842
-ReqFileRequest|out|form 0 title - flags $0 ret 1 path "overrun"|1	bytes 200 fnv 2EF980AB
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	bytes 200 fnv 2EF980AB
+ReqFileRequest|out|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #1088]	bytes 200 fnv AAFAC476
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	bytes 200 fnv FA67EB9E
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	bytes 200 fnv 5400654C
 ReqFileRequest|out|form 1 title  flags $0 ret 5 path "x"|1 [orig]	bytes 200 fnv 8A1FA97D
@@ -217,7 +221,8 @@ ReqFileRequest|result|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	"RAM:x
 ReqFileRequest|result|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #785]	"FR:RAM:x"
 ReqFileRequest|result|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	"Work:dir/file"
 ReqFileRequest|result|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #785]	"FR:Work:dir/file"
-ReqFileRequest|result|form 0 title - flags $0 ret 1 path "overrun"|1	""
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path "overrun"|1 [orig]	""
+ReqFileRequest|result|form 0 title - flags $0 ret 1 path "overrun"|1 [fixed #1088]	"FR:overrun"
 ReqFileRequest|result|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	"title and flags stay"
 ReqFileRequest|result|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #785]	"FR:title and flags stay"
 ReqFileRequest|result|form 1 title  flags $0 ret 5 path "x"|1 [orig]	"x"

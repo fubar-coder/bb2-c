@@ -23,8 +23,9 @@ All routines are C behind `BLITZ_THUNK`; the requesters are called with
 `BLITZ_BASEJSR` (a0 = the structure, a6 = the library base), the result
 string is written through `blitz_string` (a3). `ReqOutput` gets the window
 object in a0 (`!libs {#windowslib,#ia0|#pd0}` = `BL_IA0|BL_PD0`).
-The structures `FrStruct` (34 bytes + 32 longs) and the colour
-requester's are packed C structs with the original's initial values. The
+The structures `FrStruct` (req.library's 356 bytes, `frq_SIZEOF`) and
+the colour requester's are packed C structs with the original's initial
+values. The
 title length is read from -4(a2) without changing a2 (DIFF as in all C
 ports, `docs/libs/cmdlibs-port.md` "General"). init returns d0 unchanged
 when the library is already open, like the original. The thunks keep
@@ -62,6 +63,16 @@ kind F):
   buffer that only the program (through ReqFileLoc) wrote, never the
   user's choice (#785). Before the first call with a title, the title
   field points to the library's title buffer, which is empty.
+* `FrStruct` is req.library's whole file requester structure, 356 bytes
+  (`frq_SIZEOF`: the field list of RIReqLib.guide, "STRUCTURE
+  AFileRequester", with `#DSIZE=130`, `#FCHARS=30`, `#WILDLENGTH=30` of
+  the CD's `REQBASE.BB2`). The original's ended at 162 (34 bytes, then
+  32 longs), so the fields the requester keeps there from call to call
+  (`frq_Show` from 152, the cursor positions at 184, `frq_Memory`,
+  `frq_Memory2`, `frq_Lock` at 200-208, its directory buffer at 212)
+  were written over the library's data behind it: the four buffer
+  pointers, the colour requester structure and, at 208, the library base
+  (#1088). Version 1 had its 256-byte title buffer there.
 
 ## BUG(orig)
 

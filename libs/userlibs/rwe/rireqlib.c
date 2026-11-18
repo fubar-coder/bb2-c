@@ -44,6 +44,13 @@
  *     (frq_Title ... frq_PathName), so the requester got 0 for them and
  *     ReqFileRequest returned the path buffer that only the program
  *     (through ReqFileLoc) wrote, never the user's choice (#785).
+ *   - FrStruct is req.library's whole file requester structure, 356
+ *     bytes (frq_SIZEOF); the original's ended at 162, so the fields the
+ *     requester keeps behind that (frq_Show from 152, the cursor
+ *     positions, frq_Memory, frq_Memory2, frq_Lock, its directory
+ *     buffer) were written over the library's data behind it: in the
+ *     original the buffer pointers, the colour requester structure and
+ *     the library base (#1088).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -106,8 +113,15 @@ BLITZ_LIBFIN();
 
 #define BUFSIZE (320 + 320 + 150 + 150)
 
-/* the FileRequester structure of req.library, as far as the original
-   fills it (34 bytes, then 32 longs 0) */
+/* the FileRequester structure of req.library (frq_SIZEOF 356 bytes,
+   RIReqLib.guide "STRUCTURE AFileRequester" with REQBASE.BB2's DSIZE,
+   FCHARS, WILDLENGTH): the fields the library fills, then the rest 0 -
+   frq_Hide at 120, frq_Show at 152, the cursor positions at 184,
+   frq_Memory, frq_Memory2, frq_Lock at 200, 204, 208 and the private
+   directory buffer at 212 are the requester's own, kept over calls.
+   Fixed (#1088): the original's structure ended at 162 (34 bytes and 32
+   longs), so the requester wrote those fields over the data behind it. */
+#define FRQ_SIZEOF 356
 struct BL_PACKED frstruct {
     UWORD version;                                      /* 0 */
     STRPTR title, dir, file, pathname;                  /* 2 6 10 14 */
@@ -115,8 +129,9 @@ struct BL_PACKED frstruct {
     UWORD maxextsel;                                    /* 22 */
     UWORD numlines, numcolumns, devcolumns;             /* 24 26 28 */
     ULONG flags;                                        /* 30 */
-    ULONG rest[32];                                     /* 34 */
+    UBYTE rest[FRQ_SIZEOF - 34];                        /* 34 */
 };
+_Static_assert(sizeof(struct frstruct) == FRQ_SIZEOF, "frq_SIZEOF");
 
 /* #frq_VersionNumber=2, #frq_Window=0, #frq_numlines=20,
    #frq_numcolumns=28, #frq_devcolumns=12, #frq_Flags: caching, info
