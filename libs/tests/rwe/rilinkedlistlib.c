@@ -13,8 +13,9 @@
  * pattern, as AllocMem without MEMF_CLEAR leaves garbage; freed blocks
  * overwritten), log every call (sizes, flags, addresses relative to the
  * region) and can let the n-th allocation of a call fail.  A wrong free
- * (DelListItem, BUG(orig) #729) is only logged - the real memlib would stop
- * with "Unable to Free Memory".  The copies are made by the real
+ * (the original's DelListItem, fixed #729) is only logged - the real
+ * memlib would stop with "Unable to Free Memory".  The copies are made
+ * by the real
  * RIAmosFuncLib CopyByte of the set (C build / AmiBlitz3 binary).  The
  * variables lie in the region too, with their size word in front.
  * Observed after every call: d0 (addresses relative to the region), the
@@ -38,8 +39,8 @@
  * result, list# * 4 in the original, -1 in the C build: fixed #725);
  * DelListItem in the middle, at the end, at the start (the new first's
  * next cleared in the original, its prev in the C build: fixed #728),
- * the only node (0), with and without data (BUG(orig) #729: the wrong
- * free); every allocation failing (InitList node and data,
+ * the only node (0), with and without data (the original's wrong free,
+ * the copy freed in the C build: fixed #729); every allocation failing (InitList node and data,
  * AddListItem, SetListItem, AddFirstListItem, AddLastListItem); lists 0
  * to 4.
  * Not covered: the commands on an empty list that read and write at

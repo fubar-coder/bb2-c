@@ -14,7 +14,7 @@
  *
  * A node (18 bytes, memlib globalloc with flags 0): next.l, prev.l,
  * pad.w, data.l (a copy of the variable, globalloc), size.l (struct
- * node; DelListItem reads a struct node09).  Per list
+ * node).  Per list
  * the first, last and current node in tables of five longs (list# * 4
  * indexes them without a check; the tables first, last, an unused one
  * and current follow each other as in the original).  The size of a
@@ -37,10 +37,6 @@
  *   - SetListItem gives the node a new copy without freeing the old one
  *     (#734); GetListItem copies as many bytes as the variable has, not
  *     as the node's data has (#730).
- *   - DelListItem still reads the nodes of v0.9 (no pad): data is the
- *     long at offset 8 (the pad word and the upper word of the data
- *     pointer), size the long at 14; so it frees a wrong address (memlib:
- *     "Unable to Free Memory") and the data is lost (#729).
  *
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
@@ -63,6 +59,11 @@
  *     command looked at, or of the node DelListItem last read), the size
  *     of the new copy after SetListItem (the original left the field as
  *     it was) (#735).
+ *   - DelListItem reads the node of v0.91 and frees its copy (the
+ *     original still read the node of v0.9, without the pad: its "data"
+ *     was the long at offset 8, the pad and the upper word of the data
+ *     pointer, so it freed a wrong address, memlib's runtime error
+ *     "Unable to Free Memory", and the copy was lost) (#729).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -185,17 +186,6 @@ static_assert(sizeof(struct node) == 18);
 #define NODESIZE sizeof(struct node)
 #define NODE(a) ((struct node *)(a))
 
-/* the node of v0.9 (no pad), as DelListItem still reads it: data and
-   size at the wrong offsets (BUG(orig) (#729)) */
-struct node09 {
-    ULONG next;                         /* +0 */
-    ULONG prev;                         /* +4 */
-    ULONG data;                         /* +8: pad and the upper word of data */
-    UWORD pad;                          /* +12: the lower word of data */
-    ULONG size;                         /* +14 */
-};
-static_assert(sizeof(struct node09) == 18);
-
 /* the word in front of a variable: its size + 8 */
 #define VARSIZEW(var) (*(UWORD *)((var) - 2))
 
@@ -209,7 +199,6 @@ static_assert(sizeof tables == 20 * 4);
 #define TAB(t) (*(ULONG *)((UBYTE *)tables.t + listnum))
 
 static ULONG nodeptr, _oldnext, _next, _prev, _data, myvar, _size, listnum;
-static UWORD pad;
 
 static ULONG globalloc(ULONG size)
 {
@@ -524,13 +513,15 @@ BB_BOOL BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
 /**
  * @brief DelListItem list#: delete the current node; the next (or previous) becomes the current one.
  *
- * BUG(orig) (#729): reads the node of v0.9 (struct node09): data is the
- * long at +8, size the long at +14, so it frees a wrong address (memlib:
- * "Unable to Free Memory") and the data is lost.  It sets the last size
- * to that of the node, which no node takes over since #735 (AddListItem
- * stores 0).  Fixed (#728): deleting the first node
- * clears the prev of the node behind it (the original cleared its next:
- * the list ended there).  The only node is not deleted: 0 (no defect).
+ * It sets the last size to that of the node, which no node takes over
+ * since #735 (AddListItem stores 0).  Fixed (#729): it reads the node of
+ * v0.91 and frees the copy with the node (the original read the node of
+ * v0.9: its data was the long at +8, the pad and the upper word of the
+ * data pointer, so it freed a wrong address, memlib: "Unable to Free
+ * Memory", and the copy was lost); the only node is not deleted and
+ * keeps its copy: 0 (no defect; the original freed the "data" before it
+ * looked).  Fixed (#728): deleting the first node clears the prev of the
+ * node behind it (the original cleared its next: the list ended there).
  * @param list  d0: list# (0-4)
  * @return d0: BB_TRUE, BB_FALSE without a current node or for the only
  *         node
@@ -543,20 +534,20 @@ BB_BOOL BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
     node = nodeptr = TAB(current);
     if (!node)
         return BB_FALSE;
-    /* the v0.9 node: next, prev, data, size (no pad) */
-    _next = ((struct node09 *)node)->next;
-    _prev = ((struct node09 *)node)->prev;
-    _data = ((struct node09 *)node)->data; /* BUG(orig) (#729) */
-    pad = ((struct node09 *)node)->pad;
-    _size = ((struct node09 *)node)->size;
+    /* fixed (#729): the node of v0.91 (the original read the v0.9 one,
+       without the pad: data at +8) */
+    _next = NODE(node)->next;
+    _prev = NODE(node)->prev;
+    _data = NODE(node)->data;
+    _size = NODE(node)->size;
+    if (!_prev && !_next)
+        return BB_FALSE;                /* the only node: kept with its copy */
     if (_data) {
         globfree(_data, _size);
         NODE(nodeptr)->data = 0;
         NODE(nodeptr)->size = 0;
     }
     if (!_prev) {
-        if (!_next)
-            return BB_FALSE;                   /* the only node */
         NODE(_next)->prev = 0;        /* fixed (#728): was its next */
         TAB(first) = _next;
         TAB(current) = _next;

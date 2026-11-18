@@ -71,6 +71,17 @@ changes d1, d2, a0, a1, InitList also a2).
   SetListItem left the field as it was (#735; test
   `rilinkedlistlib-size-field`, `libs_emulator` cases `[fixed #735]` of
   `rwe_rilinkedlistlib`).
+* DelListItem reads the node of v0.91 and frees the node's copy with the
+  node. The original still read the v0.9 node (without pad): its data
+  was the long at offset 8 (the pad word and the upper word of the data
+  pointer), its size the long at 14, so it freed a wrong address (with
+  memlib the runtime error "Unable to Free Memory", without runtime
+  error checking a crash) and the copy was lost. The only node is
+  looked at first and kept with its copy (the original freed the
+  "data" before it looked) (#729; test
+  `rilinkedlistlib-dellistitem-v09-layout`, `libs_emulator` cases
+  `[fixed #729]` of `rwe_rilinkedlistlib`: the memlib stubs log the
+  frees).
 
 **BUG(orig)** (kept):
 
@@ -84,11 +95,6 @@ changes d1, d2, a0, a1, InitList also a2).
   as 2^32 bytes (#736).
 * SetListItem does not free the old copy (#734); GetListItem copies as
   many bytes as the variable has, not as the copy has (#730).
-* DelListItem still reads the v0.9 node (without pad): its data is the
-  long at offset 8 (the pad word and the upper word of the data
-  pointer), its size the long at 14. So it frees a wrong address (with
-  memlib: the runtime error "Unable to Free Memory") and the copy is
-  lost (#729).
 
 DelListItem on the only node frees nothing and returns 0; that is not a
 defect (the command refuses to delete the last node and reports it).
