@@ -98,8 +98,8 @@ The binary is EvalLib4 plus insertions (`.cache` analysis,
 ## C and assembler
 
 All C behind `BLITZ_THUNK`s (they keep d1/a0/a1, ConvToPostFix and
-PFRegisters also d0; the original changes more). init/finit are empty
-C functions.
+PFRegisters also d0; the original changes more). init clears the register
+block and the error number (#1087); finit is an empty C function.
 
 The original keeps its stacks on a7 (ConvToPostFix the operators,
 PFEvaluate the values; `stack` holds a7 at the start, errors restore it).
@@ -195,6 +195,11 @@ kind F):
   the base 0, the base for the exponents 1, 0 and every negative one,
   and counted with `DBRA` on the low word of exponent-2 (`3 65538 ^` was
   9) (#641).
+* init clears the PFRegisters block and the error number. The original's
+  init and finit are `RTS`: a second run of the program with the library
+  still loaded (from the editor) read registers from the first run's
+  block, freed at its end, until its own PFRegisters, and PFErrorType
+  gave the first run's last error (#1087).
 
 ## BUG(orig), kept
 

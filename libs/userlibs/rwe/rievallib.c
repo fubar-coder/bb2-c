@@ -91,6 +91,11 @@
  *     returned 1 for the base 0, the base for the exponents 1, 0 and
  *     every negative one, and counted with DBRA on the low word of
  *     exponent-2 (`3 65538 ^` = 9) (#641).
+ *   - init clears the PFRegisters block and the error number.  The
+ *     original's init and finit are RTS: a second run of the program with
+ *     the library still loaded (from the editor) read registers from the
+ *     first run's freed block and PFErrorType gave its last error
+ *     (#1087).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -847,10 +852,16 @@ static ULONG BLITZ_ROUTINE indirectaddr_c(void)
 }
 
 /**
- * @brief init: nothing (RTS).
+ * @brief init: no register block and no error yet.
+ *
+ * Fixed (#1087): the original's init is RTS, so a second run of the
+ * program with the library still loaded (from the editor) started with
+ * the first run's block (freed at its end) and its last error number.
  */
 static void BLITZ_ROUTINE _libinit(void)
 {
+    regs = 0;
+    errortype = 0;
 }
 
 /**
