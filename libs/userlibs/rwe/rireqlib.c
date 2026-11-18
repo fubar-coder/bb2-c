@@ -20,9 +20,6 @@
  * No assembler besides the thunks.
  *
  * BUG(orig):
- *   - #frq_Flags = #FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB ORs bit
- *     numbers (2|4|7 = 7): the default flags are bits 0-2 instead of
- *     caching, info gadget and cache purge (#787).
  *   - init stores the buffer addresses in its own four longs (frq_Title
  *     ... frq_PathName), never in FrStruct's Directory/File/PathName
  *     fields: the requester gets 0 for them, and ReqFileRequest copies
@@ -41,6 +38,10 @@
  *     of the title string), as before (#784).
  *   - ReqColour passes its argument as DefColour; the original ignored
  *     it, so the requester always started on colour 0 (#786).
+ *   - The default flags are caching, info gadget and cache purge ($94,
+ *     the masks RIReqLib.guide lists); the original ORed the bit numbers
+ *     (#FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB = 2|4|7 = 7: bits
+ *     0-2, extended select and caching) (#787).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -116,9 +117,11 @@ struct BL_PACKED frstruct {
 };
 
 /* #frq_VersionNumber=2, #frq_Window=0, #frq_numlines=20,
-   #frq_numcolumns=28, #frq_devcolumns=12, #frq_Flags (BUG(orig): 7, #787) */
+   #frq_numcolumns=28, #frq_devcolumns=12, #frq_Flags: caching, info
+   gadget and cache purge (fixed, #787: the original ORed the bit
+   numbers, 7) */
 static struct frstruct FrStruct = {
-    2, 0, 0, 0, 0, 0, 0, 20, 28, 12, 2 | 4 | 7, { 0 }
+    2, 0, 0, 0, 0, 0, 0, 20, 28, 12, (1 << 2) | (1 << 4) | (1 << 7), { 0 }
 };
 
 /* frq_Title, frq_Dir, frq_File, frq_PathName: the buffers of the block */
@@ -186,7 +189,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * @brief ReqFlags flags: the flags of the file requester (FrStruct's
  * flags).
  *
- * The default is BUG(orig) (#787): bit numbers ORed, 7.
+ * The default is $94: caching, info gadget and cache purge (fixed, #787).
  * @param flags  d0: the req.library file requester flags
  */
 static void BLITZ_ROUTINE reqflags_c(ULONG flags BL_REG(d0))

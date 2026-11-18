@@ -44,12 +44,13 @@ kind F):
 * ReqColour passes its argument to the colour requester as DefColour;
   the original ignored it, so the requester always started on colour 0
   (#786).
+* The default flags are caching, info gadget and cache purge ($94, the
+  masks RIReqLib.guide lists). The original's
+  `#frq_Flags = #FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB` ORed bit
+  numbers (2|4|7 = 7): bits 0-2, extended select and caching (#787).
 
 ## BUG(orig)
 
-* `#frq_Flags = #FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB` ORs bit
-  numbers (2|4|7 = 7): the default flags are bits 0-2 (extended select,
-  caching) instead of caching, info gadget and cache purge (#787).
 * init stores the four buffer addresses in `frq_Title`…`frq_PathName`
   behind the structure, never in `FrStruct`'s Directory/File/PathName
   fields: the requester gets 0 for them, and ReqFileRequest copies the

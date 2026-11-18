@@ -98,7 +98,8 @@ ReqFileRequest|file|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00
 ReqFileRequest|file|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000000
 ReqFileRequest|flags|form 0 title - flags $0 ret 1 path ""|1	$12345678
 ReqFileRequest|flags|form 0 title - flags $0 ret 1 path "RAM:x"|1	$12345678
-ReqFileRequest|flags|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000007
+ReqFileRequest|flags|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000007
+ReqFileRequest|flags|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #787]	$00000094
 ReqFileRequest|flags|form 0 title - flags $0 ret 1 path "overrun"|1	$00000041
 ReqFileRequest|flags|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000041
 ReqFileRequest|flags|form 1 title  flags $0 ret 5 path "x"|1	$12345678
