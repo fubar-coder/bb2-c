@@ -49,7 +49,8 @@
  * address 0 (AddListItem, SetListItem, NextListItem, PrevListItem,
  * AddFirstListItem, GetListItem), list numbers outside 0..4 (the original
  * indexes on into its code, the C build into other data), a size of 0
- * (CopyByte copies 2^32 bytes).
+ * (the C build's CopyByte copies nothing then, #492; the original's
+ * copied 2^32 bytes).
  */
 #include "rwecmp.h"
 

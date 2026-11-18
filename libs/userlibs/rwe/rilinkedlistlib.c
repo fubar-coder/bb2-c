@@ -32,8 +32,12 @@
  *     read and write from address 0 on (#732, #733).
  *   - InitList does not free a list that is already there (#731).
  *   - The size: a word of less than 8 in front of the variable gives a
- *     size of almost 4 GB (the allocation fails), exactly 8 a size of 0,
- *     which CopyByte takes as 2^32 bytes (#736).
+ *     size of almost 4 GB (the allocation fails) (#736).  No NEWTYPE
+ *     variable has one (memlib's length of a NEWTYPE of at most 32767
+ *     bytes is 8 or more), only an address that is not such a variable.
+ *     Exactly 8 (an empty NEWTYPE) gives a size of 0, for which CopyByte
+ *     copies nothing (since #492; the original's CopyByte copied 2^32
+ *     bytes).
  *
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
@@ -251,8 +255,8 @@ static ULONG BLITZ_ROUTINE c_libfinit(void)
  *
  * The word in front of the variable minus 8 (getvarsize); also sets the
  * "last size" the other commands use.  BUG(orig) (#736): a word of less
- * than 8 gives almost 4 GB, exactly 8 a size of 0, which CopyByte takes
- * as 2^32 bytes.
+ * than 8 (no NEWTYPE variable has one) gives almost 4 GB; exactly 8 a
+ * size of 0, for which CopyByte copies nothing (since #492).
  * @param var  d0: the variable (BL_VARPTR)
  * @return d0: the size
  */

@@ -103,8 +103,13 @@ changes d1, d2, a0, a1, InitList also a2).
   address 0 on (#732, #733).
 * InitList does not free a list that is already there (#731).
 * A size word below 8 in front of the variable gives a size of almost
-  4 GB (the allocation fails); exactly 8 gives 0, which CopyByte takes
-  as 2^32 bytes (#736).
+  4 GB (the allocation fails) (#736). No NEWTYPE variable has one: the
+  compiler refuses a NEWTYPE of 32768 bytes or more ("Type too Big"),
+  so memlib's length (the size + 8) fits in the word and is 8 or more;
+  only an address that is not such a variable has one. Exactly 8 (an
+  empty NEWTYPE) gives a size of 0, for which RIAmosFuncLib's CopyByte
+  copies nothing (since #492; the original's CopyByte copied 2^32
+  bytes).
 
 DelListItem on the only node frees nothing and returns 0; that is not a
 defect (the command refuses to delete the last node and reports it).
