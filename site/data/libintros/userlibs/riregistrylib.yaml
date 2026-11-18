@@ -13,6 +13,9 @@ intro: |
   `IsRegistryOpen` tells whether that worked. Without it every command
   does nothing and returns 0. The commands work on the registry structure
   that `LockRegistry` returned last; before the first `LockRegistry`, or
-  if it returned 0, they call nothing and return 0. Locks can be nested,
-  and `UnlockRegistry` returns to the one before. Locks still held are
-  released when the program ends.
+  if it returned 0, they call nothing and return 0. Locks can be nested
+  up to 15 deep, and `UnlockRegistry` returns to the one before. Locks
+  still held are released when the program ends.
+
+  The fixed bugs of the library are listed in
+  [Fixes in riregistrylib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riregistrylib-fixes" >}}).

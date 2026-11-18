@@ -3,32 +3,26 @@
 "LockRegistry":
   text: Locks the registry with an access mode and makes the registry structure it returns the current one, on which the other commands work. Returns that structure, or 0.
   notes: |
-    Kept from the original: locks nested more than 15 deep overwrite the
-    library's own data ([#781](https://github.com/fubar-coder/bb2-c/issues/781)).
+    Locks can be nested up to 15 deep. A 16th `LockRegistry` returns 0
+    without calling registry.library, and the 15th structure stays the
+    current one.
 "UnlockRegistry":
   text: Releases the current lock; the lock before it becomes the current one again.
   notes: |
-    Kept from the original: `UnlockRegistry` without a matching
-    `LockRegistry` is not refused and reads and writes memory outside the
-    library's list of locks
-    ([#781](https://github.com/fubar-coder/bb2-c/issues/781)).
+    Without a lock, it does nothing.
 "SetRegistryBaseLibrary":
   text: Passes a library name to registry.library's function of the same name and returns its result.
 "ExistsRegistryLibrary":
   text: Asks registry.library whether a library of that name exists and returns its answer.
 "GetLibraryValue$":
   text: Asks registry.library for the value of a library and returns it if it is a string, else "".
-  notes: |
-    Kept from the original: called before any lock, it reads near
-    address 0 ([#780](https://github.com/fubar-coder/bb2-c/issues/780)).
 "GetRegistryVariable":
   text: Asks registry.library for a variable and returns its result, the variable's type - 1 string, 2 data, 3 boolean, 4 integer.
 "SetRegistryVariable":
   text: Sets a variable to a string, or to `ByteSize` bytes of data from `Address`, and returns registry.library's result.
   notes: |
-    Kept from the original: in the string form the size passed to
-    registry.library is an unpredictable value
-    ([#782](https://github.com/fubar-coder/bb2-c/issues/782)).
+    In the string form, the size passed to registry.library is the length
+    of the string.
 "ChangeRegistryVariable":
   text: Changes a variable to new data of the given type and size and returns registry.library's result.
 "NewRegistryLibrary":
@@ -51,14 +45,10 @@
   text: Loads a library from a file and returns registry.library's result.
 "GetRegistryStringVariable":
   text: The value of a variable if it is a string, else "".
-  notes: |
-    Kept from the original: called before any lock, it reads near
-    address 0 ([#780](https://github.com/fubar-coder/bb2-c/issues/780)).
 "SetRegistryBoolVariable":
   text: Sets a boolean variable and returns registry.library's result.
   notes: |
-    Kept from the original: the size passed to registry.library is an
-    unpredictable value ([#782](https://github.com/fubar-coder/bb2-c/issues/782)).
+    The size passed to registry.library is 4.
 "ParseItemName$":
   text: The name of the item reached last with `NextParseItem`.
 "ParseItemValue$":
@@ -68,8 +58,7 @@
 "SetRegistryIntVariable":
   text: Sets an integer variable and returns registry.library's result.
   notes: |
-    Kept from the original: the size passed to registry.library is an
-    unpredictable value ([#782](https://github.com/fubar-coder/bb2-c/issues/782)).
+    The size passed to registry.library is 4.
 "GetRegistryIntVariable":
   text: The value of an integer or boolean variable, or 0 for a variable of another type.
 "DeleteRegistryLibraryVariables":

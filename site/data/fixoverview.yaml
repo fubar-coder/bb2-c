@@ -3988,6 +3988,38 @@ rows:
     text: "`CreateThread` does not count a thread that could not be started, so `ActiveThreads` stays right; with the original, the program could hang at its end."
     page: libraries
     anchor: rithreadlib-fixes
+  - issue: 779
+    severity: 5
+    topic: "System"
+    library: "riregistrylib"
+    command: ""
+    text: "A program run again from the editor no longer works on the registry structure the run before had unlocked at its end."
+    page: libraries
+    anchor: riregistrylib-fixes
+  - issue: 780
+    severity: 5
+    topic: "System"
+    library: "riregistrylib"
+    command: "GetLibraryValue$, GetRegistryStringVariable"
+    text: "`GetLibraryValue$` and `GetRegistryStringVariable` without a locked structure return \"\"; the original read near address 0."
+    page: libraries
+    anchor: riregistrylib-fixes
+  - issue: 781
+    severity: 5
+    topic: "System"
+    library: "riregistrylib"
+    command: "LockRegistry, UnlockRegistry"
+    text: "`UnlockRegistry` without a lock does nothing and a 16th nested `LockRegistry` returns 0; the original wrote outside its list of locks and, without registry.library, crashed after a few pairs."
+    page: libraries
+    anchor: riregistrylib-fixes
+  - issue: 782
+    severity: 5
+    topic: "System"
+    library: "riregistrylib"
+    command: "SetRegistryVariable, SetRegistryIntVariable, SetRegistryBoolVariable"
+    text: "`SetRegistryVariable name,value$` passes the string's length as the size, the integer and boolean forms 4; the original passed whatever a register held."
+    page: libraries
+    anchor: riregistrylib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
