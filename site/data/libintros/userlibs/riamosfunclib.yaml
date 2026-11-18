@@ -9,11 +9,9 @@ intro: |
   `BankLimit` changes the number of banks. `Reserve` allocates a bank,
   `Start` and `Length` give its address and size, `Erase` frees it, and
   all banks still in use are freed when the program ends. `FillMem`,
-  `BLoad` and `BSave` take a bank or an address: a number below the bank
-  limit is a bank, anything larger an address. Bank numbers are not
-  checked against the limit; a negative or too large number reads or
-  writes outside the library's tables
-  ([#484](https://github.com/fubar-coder/bb2-c/issues/484)).
+  `BLoad` and `BSave` take a bank or an address: a number from 0 to one
+  below the bank limit is a bank, any other number an address. The other
+  bank commands treat a number outside as a bank not in use.
 
   The file and directory commands (`BLoad`, `BSave`, `FileSize`,
   `MakeDir`, `Rename`, `ChangeDir`, `FindVolume`, `DeviceName$`,
@@ -29,5 +27,8 @@ intro: |
     Erase b
   EndIf
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in riamosfunclib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riamosfunclib-fixes" >}}).
 
   *Based on the RI AMOS Func Library guide by Red When Excited.*

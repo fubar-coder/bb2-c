@@ -132,6 +132,10 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
   of a shape 32 pixels wide, only the first half of its planes.
 * [`RTEZGetLong` offered the number of the call before]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rtezgetlong-previous" >}}),
   and returned it when the user cancelled.
+* [`BankLimit n` returned an address]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#banklimit-result" >}})
+  instead of the number of banks.
+* [`FindVolume` returned an address instead of -1]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#findvolume-result" >}}),
+  so a comparison with -1 never found the volume.
 
 In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})):
 

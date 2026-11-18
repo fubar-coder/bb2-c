@@ -3204,6 +3204,166 @@ rows:
     text: "`PopUpWindow` can be used as a function and returns the address of the item chosen (0 for none); the original was a statement only and never told the item."
     page: libraries
     anchor: popupwinlib-fixes
+  - issue: 483
+    severity: 1
+    topic: "Data structures"
+    library: "riamosfunclib"
+    command: "BankLimit"
+    text: "`BankLimit n` returns the new number of banks, as its manual gives; the original returned the address of the library's new table of banks."
+    page: libraries
+    anchor: banklimit-result
+  - issue: 484
+    severity: 5
+    topic: "Data structures"
+    library: "riamosfunclib"
+    command: "Start, Length, Erase, SwapBank, Reserve, NextBank, FillMem, BLoad, BSave"
+    text: "A bank number outside 0 to one below the bank limit is no bank; the original read and wrote before or behind its tables of banks."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 486
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "BLoad"
+    text: "`BLoad(name$)` returns -1 for every failure and frees the bank of a failed read; the original returned 0, the first bank, or a bank with undefined contents."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 487
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "BLoad"
+    text: "`BLoad` into a bank leaves the bank as it was when the file cannot be opened; the original had already erased it and reserved it anew."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 488
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "BLoad"
+    text: "`BLoad` returns 0 when reading the file fails; the original returned -1, success."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 489
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "BSave"
+    text: "`BSave` with a bank writes at most the bank's length, as documented; the original also saved the memory behind a shorter bank."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 490
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "ChangeDir"
+    text: "`ChangeDir` returns -1 and remembers the new directory when the one before was the boot volume's root; the original returned 0 and never released it."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 491
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "ChangeDir"
+    text: "A program that uses `ChangeDir` ends in the directory it was started in; the original released the current directory and left the Shell with it."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 492
+    severity: 5
+    topic: "Data structures"
+    library: "riamosfunclib"
+    command: "CopyByte, CopyWord, CopyLong, FillMem"
+    text: "`CopyByte`, `CopyWord`, `CopyLong` and `FillMem` with a count of 0 do nothing; the original copied or filled 2^32 units over all memory."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 493
+    severity: 5
+    topic: "Strings"
+    library: "riamosfunclib"
+    command: "DeviceName$"
+    text: "`DeviceName$(\"\")` leaves the string expression in front of it alone; the original cleared a \":\" at its end."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 494
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "DeviceName$"
+    text: "`DeviceName$` returns \"\" for a device without a running handler; the original read from near address 0 and returned nonsense."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 495
+    severity: 5
+    topic: "Data structures"
+    library: "riamosfunclib"
+    command: "EraseAll, BankLimit"
+    text: "`EraseAll` and the end of the program free every bank also with more than 65536 banks; the original kept most of them, and `BankLimit 0` ran outside its tables."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 496
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "MakeDir"
+    text: "`MakeDir` gives back the lock of the new directory; the original gave back whatever dos.library left in a register, so the directory could stay locked."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 497
+    severity: 5
+    topic: "Data structures"
+    library: "riamosfunclib"
+    command: "NextBank"
+    text: "`NextBank` without an argument searches from bank 0; the original started at whatever number a register held."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 498
+    severity: 5
+    topic: "Data structures"
+    library: "riamosfunclib"
+    command: "Reserve"
+    text: "`Reserve(length)` returns -1 when every bank is in use; the original reserved a bank before the first one and damaged its tables."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 500
+    severity: 5
+    topic: "Data structures"
+    library: "riamosfunclib"
+    command: "Reserve"
+    text: "`Reserve(length)` with a negative length returns -1; the original returned 0, the number of the first bank."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 501
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "SaveExec"
+    text: "`SaveExec` returns 0 when the file cannot be created or the list holds no code hunk; the original returned an address and wrote a useless file for an empty list."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 502
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "SaveExec"
+    text: "`SaveExec` numbers only the code hunks it writes; the original also counted the items it left out, and the file could not be loaded."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 503
+    severity: 5
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "SaveExec"
+    text: "`SaveExec` writes a loadable executable for any number of code hunks; the original's file with two or more could not be loaded."
+    page: libraries
+    anchor: riamosfunclib-fixes
+  - issue: 1082
+    severity: 1
+    topic: "Files"
+    library: "riamosfunclib"
+    command: "FindVolume"
+    text: "`FindVolume` returns -1 for a device, volume or assign that is there, as documented; the original returned the address of its entry, so a test for -1 failed."
+    page: libraries
+    anchor: findvolume-result
   - issue: 513
     severity: 5
     topic: "Graphics"
