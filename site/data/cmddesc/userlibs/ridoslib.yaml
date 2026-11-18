@@ -4,22 +4,15 @@
     The messages arrive at the port of `NotifyPort` and are read with
     `CheckNotify` or `WaitNotify`, which return `idno`.
 
-    Kept from the original: the slot number is not checked, so a number
-    outside 0 to 63 writes outside the table
-    ([#626](https://github.com/fubar-coder/bb2-c/issues/626)); a slot used
-    a second time loses its first request, which then keeps sending
-    messages and cannot be ended
-    ([#620](https://github.com/fubar-coder/bb2-c/issues/620)); when there
-    is no free memory, the library writes to address 0
-    ([#619](https://github.com/fubar-coder/bb2-c/issues/619)); and a
-    request that could not be started stays in its slot and may never be
-    freed when the program ends
-    ([#621](https://github.com/fubar-coder/bb2-c/issues/621)).
+    A slot in use is ended first, as with `RemNotify`. The result is 0
+    also when there is not enough memory; a notification that cannot be
+    started is freed at once. With runtime error checking, a slot outside
+    0 to 63 is the error "Notify number must be 0 to 63".
 "RemNotify":
   text: Ends the notification in a slot and frees it. An empty slot is left alone.
   notes: |
-    Kept from the original: the slot number is not checked
-    ([#626](https://github.com/fubar-coder/bb2-c/issues/626)).
+    With runtime error checking, a slot outside 0 to 63 is the error
+    "Notify number must be 0 to 63".
 "CheckNotify":
   text: The slot number of the next notification message, or 0 if no message is waiting. It does not wait.
 "WaitNotify":
@@ -31,38 +24,27 @@
   notes: |
     The library sets the read bit (bit 0) itself; never set bit 1, which
     asks for write access. While the list is locked, no other program can
-    change it: call `FreeDeviceList` as soon as possible.
+    change it: call `FreeDeviceList` as soon as possible. A second
+    `GetDeviceList` unlocks the list before it locks it again, and the
+    end of the program unlocks a list that is still locked.
 "NextDevice":
   text: The name of the next entry of the list locked with `GetDeviceList`, without a colon, or "" after the last entry.
   notes: |
-    Kept from the original: called without `GetDeviceList`, it returns a
-    string of an unpredictable length
-    ([#625](https://github.com/fubar-coder/bb2-c/issues/625)).
+    Without a list locked with `GetDeviceList`, it returns "".
 "FreeDeviceList":
   text: Unlocks the DOS device list locked with `GetDeviceList`.
   notes: |
-    Kept from the original: the command does not check that the list is
-    locked. A second `FreeDeviceList`, or one without `GetDeviceList`,
-    makes exec raise an alert and breaks the task's `Forbid`
-    ([#623](https://github.com/fubar-coder/bb2-c/issues/623)), and after
-    it `DeviceEntryType` still reads the last entry of the unlocked list
-    ([#622](https://github.com/fubar-coder/bb2-c/issues/622)).
+    Without a locked list, the command does nothing.
 "NotifyPort":
   text: The address of the message port that receives the notification messages, for example to wait for it together with other ports.
 "GetFileName":
   text: The file part of a path, everything behind the last `/` or `:`. `GetFileName("Work:Test/test.txt")` returns "test.txt".
-  notes: |
-    Kept from the original: a file part of 256 characters or more
-    overwrites memory of the library
-    ([#627](https://github.com/fubar-coder/bb2-c/issues/627)).
 "GetPathName":
   text: The directory part of a path, up to and including the last `/` or `:`; "" if there is none. `GetPathName("Work:Test/test.txt")` returns "Work:Test/".
   notes: |
-    Kept from the original: the first character is never looked at, so
-    "/abc" and ":x" give "" instead of "/" and ":"
-    ([#624](https://github.com/fubar-coder/bb2-c/issues/624)); a
-    directory part of 256 characters or more overwrites memory of the
-    library
-    ([#627](https://github.com/fubar-coder/bb2-c/issues/627)).
+    "/abc" gives "/", and ":x" gives ":".
 "DeviceEntryType":
   text: The kind of the entry `NextDevice` returned last - 0 device, 1 assign (directory), 2 volume, 3 late assign, 4 non-binding assign; -1 if there is none.
+  notes: |
+    The kind is noted while the list is locked, so it stays the same
+    after `FreeDeviceList`.

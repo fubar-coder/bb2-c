@@ -14,9 +14,7 @@ intro: |
   64 entries, numbered 0 to 63, chosen by the program with `AddNotify`.
   When DOS reports a change, `CheckNotify` or `WaitNotify` returns the
   slot number. Because 0 also means "no message", slot 0 is best left
-  unused. Slot numbers are not checked, and a slot used twice loses its
-  first request ([#626](https://github.com/fubar-coder/bb2-c/issues/626),
-  [#620](https://github.com/fubar-coder/bb2-c/issues/620)).
+  unused. A slot used again ends the notification that was in it.
 
   The device list is locked with `GetDeviceList`; while it is locked, no
   other program can change it, so `FreeDeviceList` should follow as soon
@@ -31,5 +29,8 @@ intro: |
     FreeDeviceList
   EndIf
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in ridoslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#ridoslib-fixes" >}}).
 
   *Based on the RI DOS Lib guide by Red When Excited.*

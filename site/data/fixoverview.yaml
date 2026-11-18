@@ -3588,6 +3588,94 @@ rows:
     text: "`ShapeToIcon` makes the icon's image show the shape's bitplanes; the original kept those of the old image, wrong for a shape of another depth."
     page: libraries
     anchor: ritooltypeslib-fixes
+  - issue: 619
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: "AddNotify"
+    text: "`AddNotify` returns 0 when memory is short; the original wrote the file name or the request to address 0."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 620
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: "AddNotify"
+    text: "`AddNotify` with a slot in use ends the notification in it first; the original lost it, still active and impossible to end."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 621
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: "AddNotify"
+    text: "A notification that cannot be started is freed at once, and the program's end frees all; the original could leave such requests allocated."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 622
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: "DeviceEntryType"
+    text: "`DeviceEntryType` after `FreeDeviceList` returns the kind of the last entry; the original read it from the unlocked list."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 623
+    severity: 5
+    topic: "System"
+    library: "ridoslib"
+    command: "FreeDeviceList"
+    text: "`FreeDeviceList` without a locked list does nothing; the original unlocked it all the same, with a system alert."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 624
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: "GetPathName"
+    text: "`GetPathName(\"/abc\")` and `GetPathName(\":x\")` return \"/\" and \":\"; the original never looked at the first character and returned \"\"."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 625
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: "NextDevice"
+    text: "`NextDevice` without `GetDeviceList` returns \"\"; the original returned a string of random length."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 626
+    severity: 3
+    topic: "Files"
+    library: "ridoslib"
+    command: "AddNotify, RemNotify"
+    text: "With runtime error checking, `AddNotify` and `RemNotify` stop with a runtime error for a notify slot out of range; the original wrote around its table."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 627
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: "GetFileName, GetPathName"
+    text: "`GetFileName` and `GetPathName` take parts of any length; the original overwrote its code with a part of 256 characters or more."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 628
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: "GetFileName, GetPathName"
+    text: "`GetFileName` and `GetPathName` work with paths of 65536 characters or more; the original read only the low word of the length."
+    page: libraries
+    anchor: ridoslib-fixes
+  - issue: 1081
+    severity: 5
+    topic: "System"
+    library: "ridoslib"
+    command: "GetDeviceList, FreeDeviceList"
+    text: "The device list is unlocked at the program's end and before a second `GetDeviceList`; the original left it locked, and `Assign` and disk changes hung."
+    page: libraries
+    anchor: ridoslib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
