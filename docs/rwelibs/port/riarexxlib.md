@@ -228,7 +228,10 @@ kind F):
   sent without waiting (RXRunCommand, RXRunScript) that are still with
   their receivers: a reply that arrives later goes to the deleted port
   (`RXRunCommand "REXX",... : End` is enough). The manual says RXDeletePort
-  waits for them (#1095).
+  waits for them (#1095). The case `RXDeletePort|replied before it
+  returned|reply outstanding` of the library test holds a message at the
+  responder while RXDeletePort runs: the original returns with the reply
+  outstanding (0).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

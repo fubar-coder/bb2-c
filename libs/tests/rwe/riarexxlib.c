@@ -82,6 +82,8 @@ static volatile LONG resp_rc;
 static const char *volatile resp_res;
 static struct Task *maintask;
 static volatile int resp_ready;
+static volatile int resp_hold, resp_release;    /* #1095: hold a message */
+static struct MsgPort *resp_redirect;           /* its reply port, if released */
 
 static void handle(struct RexxMsg *m, int port)
 {
@@ -104,6 +106,20 @@ static void handle(struct RexxMsg *m, int port)
             strncpy(e->args[i], (char *)m->rm_Args[i], 47);
         e->nargs = i;
         nrlog++;
+    }
+    if (resp_hold) {
+        /* the message stays with the responder until the test releases it
+           (it does after RXDeletePort returned: then the library's port
+           is gone and the reply goes to the test's port instead of a freed
+           one) or 2 s have passed (a library that waits: the reply goes to
+           its port) */
+        int t;
+
+        resp_hold = 0;
+        for (t = 0; t < 100 && !resp_release; t++)
+            Delay(1);
+        if (resp_release)
+            m->rm_Node.mn_ReplyPort = resp_redirect;
     }
     m->rm_Result1 = resp_rc;
     m->rm_Result2 = 0;
@@ -594,6 +610,45 @@ int main(int argc, char **argv)
     ROUT = "RXDeletePort";
     strcpy(VEC, "no port");
     call(DELETEPORT, 0, 0, 0, 0, 0, 0);
+
+    /* RXDeletePort with a sent message whose reply is outstanding (#1095):
+       the responder holds the message; the original's RXDeletePort returns
+       with the reply still outstanding (a library that waits for it, as
+       the manual says, returns when the responder's 2 s are over, the
+       reply received).  Safe: once RXDeletePort has returned the test
+       releases the message and the responder replies to the test's port,
+       not to the library's (deleted); the test frees the message and its
+       arguments.  The held reply is the only one that can arrive late. */
+    ROUT = "RXCreatePort";
+    strcpy(VEC, "for the outstanding reply");
+    DO1(ENT(LIB, CREATEPORT, 0), R.d[0] = (ULONG)own;
+        stk[1] = strlen(own); R.a[2] = (ULONG)&stk[2]);
+    BOTH("the port", R.d[0] != 0);
+    {
+        struct RexxMsg *held;
+        int before = resp_done;
+
+        resp_release = 0;
+        resp_redirect = testport;
+        resp_hold = 1;
+        run(1, "RWERESP", "held");
+        while (resp_hold)               /* the responder has it */
+            Delay(1);
+        ROUT = "RXDeletePort";
+        strcpy(VEC, "reply outstanding");
+        call(DELETEPORT, 0, 0, 0, 0, 0, 0);
+        OBS("replied before it returned", resp_done > before);
+        resp_release = 1;
+        waitresp(before + 1);
+        BOTH("port gone", FindPort((STRPTR)own) == NULL);
+        n = resp_done;
+        /* the original: the reply is at the test's port; ours to free */
+        while ((held = (struct RexxMsg *)GetMsg(testport)) != NULL) {
+            for (i = 0; i < 16 && held->rm_Args[i]; i++)
+                DeleteArgstring(held->rm_Args[i]);
+            FreeVec(held);
+        }
+    }
 
     /* finit with a port */
     ROUT = "RXCreatePort";
