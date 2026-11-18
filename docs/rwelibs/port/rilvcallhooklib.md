@@ -66,14 +66,21 @@ kind F):
   of the next node, and an odd width was an address error on a 68000
   (#739; test `rilvcallhooklib-next-indent-offset`, `libs_emulator` cases
   `[fixed #739]` of `rwe_rilvcallhooklib`).
+* A right-aligned BitMap ends one pixel before the field's right edge,
+  as a right-aligned text does. The original drew it `ob_MinX` pixels
+  further right: the alignment adds the offset a text extent needs, but
+  the BitMap's extent already starts at `ob_MinX`; the field was filled
+  in bpen instead, and with a BitMap pointer 0 that fill ran `ob_MinX`
+  − 1 pixels past the field (#740; test `rilvcallhooklib-right-bitmap`,
+  `libs_emulator` cases `[fixed #740]` of `rwe_rilvcallhooklib`). A
+  BitMap as wide as the field (cut to it) starts one pixel left of the
+  field, the mirror of the left alignment's 2 pixels past the right edge
+  (both as in the original's placement of texts).
 
 ## BUG(orig), kept
 
 * `TextFit` gets the constraining width with `$FFFF` in the upper word
   (`MOVEQ #-3,d2` and word arithmetic) (#741).
-* A right-aligned BitMap is drawn `ob_MinX` too far right: the alignment
-  adds the offset a text extent needs, but the BitMap's extent already
-  starts at `ob_MinX` (#740).
 * The tree line pattern is written to `rp_LinePtrn` without the flags and
   count `SetDrPt` sets (#738).
 * A text pointer 0 in a text field is read as a string at address 0
@@ -104,7 +111,9 @@ layer is not clipped) are skipped: items of 10 lines and more, BitMaps
 lower than the item, no text or BitMap ending exactly at the field's
 edge. The fixed bugs give `[orig]` / `[fixed #N]` cases: #737 those of
 the items with an indent of 16 or more and the upper word `$FFFF` or
-`$8000`, #739 the planes of the items whose last tree line changes.
+`$8000`, #739 the planes of the items whose last tree line changes,
+#740 those of the items with a right-aligned BitMap (none of them starts
+exactly at the field's left edge, which would give an empty rectangle).
 Not covered: the original's 65536 tree lines (indent below 16 with an
 upper word of 1..`$8000`: the scenario gives the original only upper
 words without them), a text pointer 0, negative indents.

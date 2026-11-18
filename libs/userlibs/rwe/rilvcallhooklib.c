@@ -34,9 +34,6 @@
  * BUG(orig):
  *   - TextFit gets the width with $FFFF in the upper word (MOVEQ #-3,d2
  *     with ADD.w/SUB.w) (#741).
- *   - A right aligned BitMap is drawn ob_MinX too far right (the
- *     alignment adds the text's offset, but te_MinX is already ob_MinX)
- *     (#740).
  *   - The tree line pattern is written to rp_LinePtrn without the flags
  *     and count SetDrPt sets (#738).
  *   - A text pointer 0 in a text field is read as a string at address 0
@@ -55,6 +52,12 @@
  *     already past the first entry): the line was short or long by an
  *     unrelated word of the next node, and an odd width was an address
  *     error on a 68000 (#739).
+ *   - A right aligned BitMap ends one pixel before the field's right edge,
+ *     as a text does.  The original drew it ob_MinX pixels further right:
+ *     the alignment adds the offset a text extent needs, but a BitMap's
+ *     extent already starts at ob_MinX; the field was filled in bpen
+ *     instead, and with a BitMap pointer 0 the fill in bpen ran ob_MinX - 1
+ *     pixels past the field (#740).
  *
  * RetrieveCallHook must be called before the hook is used (the graphics
  * base is 0 before): documented usage, not a defect.
@@ -179,15 +182,18 @@ static void filloldextent(struct Library *gfx, struct RastPort *rp, const struct
 
 /* the position of the extent in the field ('vertalign): x by the
    alignment, y centred; the extent moved by them (for a text: the pen
-   position, the extent being relative to it) */
+   position, the extent being relative to it; a BitMap's extent starts at
+   the field, so right aligned its MinX is taken off too: Fixed (#740)) */
 static void place(WORD *px, WORD *py)
 {
     WORD slack, x, y;                   /* d5: the field height - the extent height */
 
     slack = (WORD)(ob.MaxY - ob.MinY - (extent.te_Extent.MaxY - extent.te_Extent.MinY));
-    if (alignment == RIGHTALIGN)
+    if (alignment == RIGHTALIGN) {
         x = (WORD)(ob.MaxX - (WORD)extent.te_Width);
-    else
+        if (isbitmap)
+            x = (WORD)(x - extent.te_Extent.MinX);
+    } else
         x = (WORD)(2 + ob.MinX - extent.te_Extent.MinX);
     y = (WORD)(((WORD)(slack + 1) >> 1) + ob.MinY - extent.te_Extent.MinY);
     extent.te_Extent.MinX += x;
@@ -250,7 +256,7 @@ static void displayfield(struct Library *gfx)
         extent.te_Extent.MaxX = (WORD)(ob.MinX + extent.te_Width - 1);
         extent.te_Extent.MaxY = (WORD)(ob.MinY + extent.te_Height - 1);
     }
-    place(&x, &y);                      /* BUG(orig): right: + ob.MinX (#740) */
+    place(&x, &y);
     if (extent.te_Width)
         BltBitMapRastPort((const struct BitMap *)text, 0, 0, rp, extent.te_Extent.MinX,
                           extent.te_Extent.MinY, extent.te_Width, extent.te_Height, 0xc0);
@@ -321,10 +327,10 @@ static void drawdisabled(struct Library *gfx, const struct Rectangle *b, struct 
  * fields drawn left to right (the last one cut at the right edge), a
  * disabled item ghosted in apen.  Not reentrant (static state, as the
  * original's).  BUG(orig): TextFit's width has $FFFF in the upper word
- * (#741); a right aligned BitMap is ob_MinX too far right (#740); the
- * line pattern without SetDrPt (#738); a text pointer 0 is read as a
- * string (#742).  Fixed: the tree line count is a word (#737); the last
- * tree line tests the next node's indent at the indent offset (#739).
+ * (#741); the line pattern without SetDrPt (#738); a text pointer 0 is
+ * read as a string (#742).  Fixed: the tree line count is a word (#737);
+ * the last tree line tests the next node's indent at the indent offset
+ * (#739); a right aligned BitMap is placed in its field (#740).
  * @param hook      a0: the Hook, h_Data = the field table
  * @param msg       a1: the LVDrawMsg
  * @param node      a2: the node

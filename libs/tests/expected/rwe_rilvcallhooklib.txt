@@ -642,17 +642,19 @@ hook|plane 0|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|
 hook|plane 0|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1 [fixed #739]	bytes 7680 fnv BE65CE60
 hook|plane 0|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	bytes 7680 fnv DEAD8F3B
 hook|plane 0|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1 [orig]	bytes 7680 fnv 843E7D58
-hook|plane 0|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1 [fixed #737]	bytes 7680 fnv C479A519
+hook|plane 0|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1 [fixed #737]	bytes 7680 fnv 2A864135
 hook|plane 0|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	bytes 7680 fnv C79FF908
 hook|plane 0|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	bytes 7680 fnv 93822713
 hook|plane 0|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	bytes 7680 fnv 835C56E5
 hook|plane 0|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	bytes 7680 fnv 6CA8339F
 hook|plane 0|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	bytes 7680 fnv 9E273235
 hook|plane 0|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	bytes 7680 fnv 538473AE
-hook|plane 0|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	bytes 7680 fnv 8567A5B8
+hook|plane 0|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1 [orig]	bytes 7680 fnv 8567A5B8
+hook|plane 0|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1 [fixed #740]	bytes 7680 fnv 4BB6BC4C
 hook|plane 0|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	bytes 7680 fnv 7579270F
 hook|plane 0|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	bytes 7680 fnv 9CEB2785
-hook|plane 0|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	bytes 7680 fnv 0C8E219D
+hook|plane 0|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1 [orig]	bytes 7680 fnv 0C8E219D
+hook|plane 0|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1 [fixed #740]	bytes 7680 fnv 331D1C87
 hook|plane 0|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	bytes 7680 fnv 7D84B879
 hook|plane 0|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	bytes 7680 fnv 3D98433E
 hook|plane 0|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	bytes 7680 fnv EBCEF45D
@@ -662,8 +664,10 @@ hook|plane 0|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|
 hook|plane 0|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1 [fixed #737]	bytes 7680 fnv 45C6454C
 hook|plane 0|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1 [orig]	bytes 7680 fnv 6834E695
 hook|plane 0|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1 [fixed #737]	bytes 7680 fnv 59EC446F
-hook|plane 0|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	bytes 7680 fnv 9AA4CB67
-hook|plane 0|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	bytes 7680 fnv 4494F13A
+hook|plane 0|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1 [orig]	bytes 7680 fnv 9AA4CB67
+hook|plane 0|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1 [fixed #740]	bytes 7680 fnv 07DFB13F
+hook|plane 0|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1 [orig]	bytes 7680 fnv 4494F13A
+hook|plane 0|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1 [fixed #740]	bytes 7680 fnv D316BABA
 hook|plane 0|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	bytes 7680 fnv 28C88125
 hook|plane 0|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	bytes 7680 fnv 659E9735
 hook|plane 0|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	bytes 7680 fnv A9EBAC05
@@ -677,9 +681,11 @@ hook|plane 0|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|
 hook|plane 0|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1 [orig]	bytes 7680 fnv 8EF9B332
 hook|plane 0|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1 [fixed #739]	bytes 7680 fnv 83FC8053
 hook|plane 0|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	bytes 7680 fnv A4EDC470
-hook|plane 0|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	bytes 7680 fnv 60E77836
+hook|plane 0|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1 [orig]	bytes 7680 fnv 60E77836
+hook|plane 0|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1 [fixed #740]	bytes 7680 fnv F6B3A756
 hook|plane 0|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	bytes 7680 fnv 53AD07E7
-hook|plane 0|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	bytes 7680 fnv 10C2BA19
+hook|plane 0|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1 [orig]	bytes 7680 fnv 10C2BA19
+hook|plane 0|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1 [fixed #740]	bytes 7680 fnv A903778C
 hook|plane 0|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1 [orig]	bytes 7680 fnv E98A17F4
 hook|plane 0|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1 [fixed #739]	bytes 7680 fnv 9A904876
 hook|plane 0|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	bytes 7680 fnv 6F1CD4E8
@@ -705,12 +711,14 @@ hook|plane 0|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|
 hook|plane 0|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1 [fixed #739]	bytes 7680 fnv D8959015
 hook|plane 0|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1 [orig]	bytes 7680 fnv A8414385
 hook|plane 0|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1 [fixed #737]	bytes 7680 fnv B78B1F3E
-hook|plane 0|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	bytes 7680 fnv 419251A0
+hook|plane 0|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1 [orig]	bytes 7680 fnv 419251A0
+hook|plane 0|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1 [fixed #740]	bytes 7680 fnv 11061E26
 hook|plane 0|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1 [orig]	bytes 7680 fnv C3A86811
 hook|plane 0|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1 [fixed #737]	bytes 7680 fnv 4FE2E2CC
 hook|plane 0|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	bytes 7680 fnv 262D396A
 hook|plane 0|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	bytes 7680 fnv CDC498FD
-hook|plane 0|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	bytes 7680 fnv BBCAB459
+hook|plane 0|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1 [orig]	bytes 7680 fnv BBCAB459
+hook|plane 0|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1 [fixed #740]	bytes 7680 fnv 874065E5
 hook|plane 0|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1 [orig]	bytes 7680 fnv CD192B2C
 hook|plane 0|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1 [fixed #739]	bytes 7680 fnv 38BBEEAC
 hook|plane 0|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	bytes 7680 fnv F2E6BAD1
@@ -718,11 +726,13 @@ hook|plane 0|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	
 hook|plane 0|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	bytes 7680 fnv 22B274F2
 hook|plane 0|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	bytes 7680 fnv 5D1CB7A6
 hook|plane 0|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1 [orig]	bytes 7680 fnv D4375B5C
-hook|plane 0|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1 [fixed #737]	bytes 7680 fnv A80DA521
+hook|plane 0|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1 [fixed #737]	bytes 7680 fnv 449D2297
 hook|plane 0|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	bytes 7680 fnv D856EFC7
 hook|plane 0|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	bytes 7680 fnv 4F7BF846
-hook|plane 0|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	bytes 7680 fnv B8CB7F62
-hook|plane 0|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	bytes 7680 fnv 2FB137E5
+hook|plane 0|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1 [orig]	bytes 7680 fnv B8CB7F62
+hook|plane 0|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1 [fixed #740]	bytes 7680 fnv 580EBCDA
+hook|plane 0|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1 [orig]	bytes 7680 fnv 2FB137E5
+hook|plane 0|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1 [fixed #740]	bytes 7680 fnv 5CEB3BF5
 hook|plane 0|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1 [orig]	bytes 7680 fnv F3F9C71C
 hook|plane 0|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1 [fixed #739]	bytes 7680 fnv 5D2F3188
 hook|plane 0|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	bytes 7680 fnv 2F4E0765
@@ -731,21 +741,27 @@ hook|plane 0|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1
 hook|plane 0|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1 [fixed #737]	bytes 7680 fnv 06A81CFD
 hook|plane 0|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1 [orig]	bytes 7680 fnv AC6E11C5
 hook|plane 0|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1 [fixed #737]	bytes 7680 fnv C893EAFB
-hook|plane 0|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	bytes 7680 fnv 4FA4B547
+hook|plane 0|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1 [orig]	bytes 7680 fnv 4FA4B547
+hook|plane 0|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1 [fixed #740]	bytes 7680 fnv 8088E6C7
 hook|plane 0|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	bytes 7680 fnv 8AD514FD
 hook|plane 0|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	bytes 7680 fnv 7B4C1A46
-hook|plane 0|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1	bytes 7680 fnv B3EFD13F
+hook|plane 0|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1 [orig]	bytes 7680 fnv B3EFD13F
+hook|plane 0|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1 [fixed #740]	bytes 7680 fnv 4EBD2841
 hook|plane 0|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	bytes 7680 fnv 6E927BE5
 hook|plane 0|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	bytes 7680 fnv B2EC9065
-hook|plane 0|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	bytes 7680 fnv A71CFF93
+hook|plane 0|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1 [orig]	bytes 7680 fnv A71CFF93
+hook|plane 0|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1 [fixed #740]	bytes 7680 fnv 9F7DBF6B
 hook|plane 0|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	bytes 7680 fnv 35FF6BD8
 hook|plane 0|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	bytes 7680 fnv A26D9511
-hook|plane 0|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	bytes 7680 fnv 019282F4
+hook|plane 0|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1 [orig]	bytes 7680 fnv 019282F4
+hook|plane 0|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1 [fixed #740]	bytes 7680 fnv 57EBEB1C
 hook|plane 0|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	bytes 7680 fnv 9B46AB9E
-hook|plane 0|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	bytes 7680 fnv E7FFA61D
+hook|plane 0|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1 [orig]	bytes 7680 fnv E7FFA61D
+hook|plane 0|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1 [fixed #740]	bytes 7680 fnv B688E5C9
 hook|plane 0|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1 [orig]	bytes 7680 fnv BE0F3C04
 hook|plane 0|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1 [fixed #737]	bytes 7680 fnv 134A944A
-hook|plane 0|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	bytes 7680 fnv D84A5DE9
+hook|plane 0|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1 [orig]	bytes 7680 fnv D84A5DE9
+hook|plane 0|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1 [fixed #740]	bytes 7680 fnv 23F18F4C
 hook|plane 0|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	bytes 7680 fnv F5367D9F
 hook|plane 0|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	bytes 7680 fnv D59D5AA5
 hook|plane 0|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	bytes 7680 fnv 83A32185
@@ -762,7 +778,8 @@ hook|plane 0|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1
 hook|plane 0|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	bytes 7680 fnv 07E53A33
 hook|plane 0|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	bytes 7680 fnv 737C6883
 hook|plane 0|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	bytes 7680 fnv 95D2E2E9
-hook|plane 0|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	bytes 7680 fnv CF8B1C93
+hook|plane 0|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1 [orig]	bytes 7680 fnv CF8B1C93
+hook|plane 0|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1 [fixed #740]	bytes 7680 fnv 995FCCA1
 hook|plane 0|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	bytes 7680 fnv C6FF05C5
 hook|plane 0|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	bytes 7680 fnv 115D9D77
 hook|plane 0|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1 [orig]	bytes 7680 fnv 5B3F1723
@@ -774,17 +791,21 @@ hook|plane 0|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	
 hook|plane 0|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	bytes 7680 fnv 0FDE6736
 hook|plane 0|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	bytes 7680 fnv AD06A28E
 hook|plane 0|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	bytes 7680 fnv 46823B8D
-hook|plane 0|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	bytes 7680 fnv 2A963570
+hook|plane 0|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1 [orig]	bytes 7680 fnv 2A963570
+hook|plane 0|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1 [fixed #740]	bytes 7680 fnv 20339A8D
 hook|plane 0|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	bytes 7680 fnv B46D828B
-hook|plane 0|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	bytes 7680 fnv 7965CABC
-hook|plane 0|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	bytes 7680 fnv 951B694B
+hook|plane 0|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1 [orig]	bytes 7680 fnv 7965CABC
+hook|plane 0|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1 [fixed #740]	bytes 7680 fnv EC919BFD
+hook|plane 0|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1 [orig]	bytes 7680 fnv 951B694B
+hook|plane 0|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1 [fixed #740]	bytes 7680 fnv 089951EA
 hook|plane 0|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	bytes 7680 fnv 992C56F4
 hook|plane 0|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1 [orig]	bytes 7680 fnv 93A0EC10
-hook|plane 0|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1 [fixed #737]	bytes 7680 fnv D44B539B
+hook|plane 0|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1 [fixed #737]	bytes 7680 fnv 0D61E226
 hook|plane 0|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	bytes 7680 fnv D2F8905E
 hook|plane 0|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	bytes 7680 fnv AAE7D0E3
 hook|plane 0|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	bytes 7680 fnv B7F1F4D4
-hook|plane 0|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	bytes 7680 fnv F2AC2BD5
+hook|plane 0|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1 [orig]	bytes 7680 fnv F2AC2BD5
+hook|plane 0|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1 [fixed #740]	bytes 7680 fnv D192C3C5
 hook|plane 0|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	bytes 7680 fnv 19B0AF40
 hook|plane 0|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	bytes 7680 fnv 366D44BE
 hook|plane 0|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	bytes 7680 fnv 86D4284E
@@ -815,7 +836,7 @@ hook|plane 0|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|
 hook|plane 0|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1 [fixed #737]	bytes 7680 fnv 3C1DFFE6
 hook|plane 0|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	bytes 7680 fnv FC0FE2CD
 hook|plane 0|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1 [orig]	bytes 7680 fnv 4D78867A
-hook|plane 0|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1 [fixed #739]	bytes 7680 fnv 1AA10DA6
+hook|plane 0|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1 [fixed #739]	bytes 7680 fnv F752D0FA
 hook|plane 0|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	bytes 7680 fnv 1C701BE0
 hook|plane 0|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	bytes 7680 fnv AF4637E1
 hook|plane 0|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	bytes 7680 fnv 88EF5894
@@ -828,17 +849,19 @@ hook|plane 1|#103: (231,10)-(491,21), state 2, 1 fields, indent 16, d7 $FFFFD794
 hook|plane 1|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1	bytes 7680 fnv 54E9EF09
 hook|plane 1|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	bytes 7680 fnv 1978C07F
 hook|plane 1|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1 [orig]	bytes 7680 fnv 25EE4E05
-hook|plane 1|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1 [fixed #737]	bytes 7680 fnv D7DC285E
+hook|plane 1|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1 [fixed #737]	bytes 7680 fnv B2859C4E
 hook|plane 1|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	bytes 7680 fnv EEC225DD
 hook|plane 1|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	bytes 7680 fnv 1BD3815C
 hook|plane 1|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	bytes 7680 fnv 196BB6D8
 hook|plane 1|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	bytes 7680 fnv D54B354D
 hook|plane 1|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	bytes 7680 fnv 72E8CBF8
 hook|plane 1|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	bytes 7680 fnv 1D98F82D
-hook|plane 1|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	bytes 7680 fnv 2C7529F3
+hook|plane 1|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1 [orig]	bytes 7680 fnv 2C7529F3
+hook|plane 1|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1 [fixed #740]	bytes 7680 fnv 27248E63
 hook|plane 1|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	bytes 7680 fnv DAA9A5CE
 hook|plane 1|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	bytes 7680 fnv 29C318CC
-hook|plane 1|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	bytes 7680 fnv 98CB0FD6
+hook|plane 1|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1 [orig]	bytes 7680 fnv 98CB0FD6
+hook|plane 1|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1 [fixed #740]	bytes 7680 fnv F9A6E5AE
 hook|plane 1|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	bytes 7680 fnv 9F439481
 hook|plane 1|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	bytes 7680 fnv 0D354BFF
 hook|plane 1|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	bytes 7680 fnv 8754EA0D
@@ -848,8 +871,10 @@ hook|plane 1|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|
 hook|plane 1|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1 [fixed #737]	bytes 7680 fnv 391E3480
 hook|plane 1|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1 [orig]	bytes 7680 fnv 323BE84B
 hook|plane 1|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1 [fixed #737]	bytes 7680 fnv 7ECE0FEB
-hook|plane 1|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	bytes 7680 fnv 0C40EA9B
-hook|plane 1|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	bytes 7680 fnv 132BEA08
+hook|plane 1|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1 [orig]	bytes 7680 fnv 0C40EA9B
+hook|plane 1|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1 [fixed #740]	bytes 7680 fnv F9F4120B
+hook|plane 1|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1 [orig]	bytes 7680 fnv 132BEA08
+hook|plane 1|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1 [fixed #740]	bytes 7680 fnv 3E34E14B
 hook|plane 1|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	bytes 7680 fnv 71A8A315
 hook|plane 1|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	bytes 7680 fnv E06E1A61
 hook|plane 1|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	bytes 7680 fnv 00930909
@@ -862,9 +887,11 @@ hook|plane 1|#131: (228,6)-(487,24), state 2, 4 fields, indent 60, d7 $FFFF77E1|
 hook|plane 1|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|1	bytes 7680 fnv 7ADDF967
 hook|plane 1|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1	bytes 7680 fnv B6528534
 hook|plane 1|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	bytes 7680 fnv 1046CBD8
-hook|plane 1|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	bytes 7680 fnv 3D602D09
+hook|plane 1|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1 [orig]	bytes 7680 fnv 3D602D09
+hook|plane 1|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1 [fixed #740]	bytes 7680 fnv 08B524EF
 hook|plane 1|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	bytes 7680 fnv 6994666F
-hook|plane 1|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	bytes 7680 fnv 7E537332
+hook|plane 1|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1 [orig]	bytes 7680 fnv 7E537332
+hook|plane 1|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1 [fixed #740]	bytes 7680 fnv 5CEE3619
 hook|plane 1|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1 [orig]	bytes 7680 fnv 6E15F9C7
 hook|plane 1|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1 [fixed #739]	bytes 7680 fnv 45CD4E2D
 hook|plane 1|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	bytes 7680 fnv 6C97C3F2
@@ -888,22 +915,27 @@ hook|plane 1|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|
 hook|plane 1|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1 [fixed #739]	bytes 7680 fnv 6686DBB0
 hook|plane 1|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1 [orig]	bytes 7680 fnv 975C76A1
 hook|plane 1|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1 [fixed #737]	bytes 7680 fnv 04506557
-hook|plane 1|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	bytes 7680 fnv 3395A7F2
+hook|plane 1|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1 [orig]	bytes 7680 fnv 3395A7F2
+hook|plane 1|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1 [fixed #740]	bytes 7680 fnv 0E69EB9A
 hook|plane 1|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1	bytes 7680 fnv 2B1DD2BD
 hook|plane 1|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	bytes 7680 fnv 7DC96542
 hook|plane 1|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	bytes 7680 fnv CB65D667
-hook|plane 1|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	bytes 7680 fnv 9448DDB5
+hook|plane 1|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1 [orig]	bytes 7680 fnv 9448DDB5
+hook|plane 1|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1 [fixed #740]	bytes 7680 fnv CA25EEFD
 hook|plane 1|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1 [orig]	bytes 7680 fnv 0996BB02
 hook|plane 1|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1 [fixed #739]	bytes 7680 fnv A4E08A02
 hook|plane 1|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	bytes 7680 fnv A312BD53
 hook|plane 1|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	bytes 7680 fnv 58A80098
 hook|plane 1|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	bytes 7680 fnv E27A2436
 hook|plane 1|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	bytes 7680 fnv A256D782
-hook|plane 1|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1	bytes 7680 fnv 847AADEB
+hook|plane 1|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1 [orig]	bytes 7680 fnv 847AADEB
+hook|plane 1|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1 [fixed #740]	bytes 7680 fnv 38B50465
 hook|plane 1|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	bytes 7680 fnv 74F3D506
 hook|plane 1|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	bytes 7680 fnv 0237D95F
-hook|plane 1|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	bytes 7680 fnv 22AA0E58
-hook|plane 1|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	bytes 7680 fnv FF75D865
+hook|plane 1|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1 [orig]	bytes 7680 fnv 22AA0E58
+hook|plane 1|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1 [fixed #740]	bytes 7680 fnv 4F80417C
+hook|plane 1|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1 [orig]	bytes 7680 fnv FF75D865
+hook|plane 1|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1 [fixed #740]	bytes 7680 fnv EA95DCFD
 hook|plane 1|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1 [orig]	bytes 7680 fnv 166E6FAB
 hook|plane 1|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1 [fixed #739]	bytes 7680 fnv 8CB038A5
 hook|plane 1|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	bytes 7680 fnv 62D45B3F
@@ -912,22 +944,27 @@ hook|plane 1|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1
 hook|plane 1|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1 [fixed #737]	bytes 7680 fnv DE555093
 hook|plane 1|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1 [orig]	bytes 7680 fnv 4E7BA0F9
 hook|plane 1|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1 [fixed #737]	bytes 7680 fnv 7C3A43FD
-hook|plane 1|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	bytes 7680 fnv 884709AE
+hook|plane 1|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1 [orig]	bytes 7680 fnv 884709AE
+hook|plane 1|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1 [fixed #740]	bytes 7680 fnv 91B87AC7
 hook|plane 1|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	bytes 7680 fnv 8BB7232D
 hook|plane 1|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	bytes 7680 fnv 2D525465
 hook|plane 1|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1 [orig]	bytes 7680 fnv 8DD05EC2
-hook|plane 1|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1 [fixed #739]	bytes 7680 fnv EFB39EAA
+hook|plane 1|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1 [fixed #739]	bytes 7680 fnv 8BC292D8
 hook|plane 1|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	bytes 7680 fnv 2CEDD305
 hook|plane 1|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	bytes 7680 fnv BF588BDF
-hook|plane 1|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	bytes 7680 fnv 219F1431
+hook|plane 1|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1 [orig]	bytes 7680 fnv 219F1431
+hook|plane 1|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1 [fixed #740]	bytes 7680 fnv 25A0AA45
 hook|plane 1|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	bytes 7680 fnv A0E0A125
 hook|plane 1|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	bytes 7680 fnv D16EBC77
-hook|plane 1|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	bytes 7680 fnv 6D95039C
+hook|plane 1|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1 [orig]	bytes 7680 fnv 6D95039C
+hook|plane 1|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1 [fixed #740]	bytes 7680 fnv B3182C4B
 hook|plane 1|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	bytes 7680 fnv 3FC82C39
-hook|plane 1|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	bytes 7680 fnv 1924B1FE
+hook|plane 1|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1 [orig]	bytes 7680 fnv 1924B1FE
+hook|plane 1|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1 [fixed #740]	bytes 7680 fnv 10F88502
 hook|plane 1|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1 [orig]	bytes 7680 fnv 6DBEA409
 hook|plane 1|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1 [fixed #737]	bytes 7680 fnv 1A328F94
-hook|plane 1|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	bytes 7680 fnv FFA7D61F
+hook|plane 1|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1 [orig]	bytes 7680 fnv FFA7D61F
+hook|plane 1|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1 [fixed #740]	bytes 7680 fnv 9B6C0D6D
 hook|plane 1|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	bytes 7680 fnv 5B377114
 hook|plane 1|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	bytes 7680 fnv 36ACD759
 hook|plane 1|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	bytes 7680 fnv 3EFF8C45
@@ -942,7 +979,8 @@ hook|plane 1|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1
 hook|plane 1|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	bytes 7680 fnv AD49ACF5
 hook|plane 1|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	bytes 7680 fnv EB9CCD07
 hook|plane 1|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	bytes 7680 fnv 296133A5
-hook|plane 1|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	bytes 7680 fnv 448E661F
+hook|plane 1|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1 [orig]	bytes 7680 fnv 448E661F
+hook|plane 1|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1 [fixed #740]	bytes 7680 fnv 3FB3C1B0
 hook|plane 1|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	bytes 7680 fnv 89B72972
 hook|plane 1|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	bytes 7680 fnv B46FF615
 hook|plane 1|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1 [orig]	bytes 7680 fnv CED865F3
@@ -954,17 +992,21 @@ hook|plane 1|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	
 hook|plane 1|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	bytes 7680 fnv E7F777AE
 hook|plane 1|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	bytes 7680 fnv 704E7B2C
 hook|plane 1|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	bytes 7680 fnv DD414245
-hook|plane 1|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	bytes 7680 fnv B00B0F49
+hook|plane 1|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1 [orig]	bytes 7680 fnv B00B0F49
+hook|plane 1|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1 [fixed #740]	bytes 7680 fnv A038AEBD
 hook|plane 1|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	bytes 7680 fnv 7453D405
-hook|plane 1|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	bytes 7680 fnv 76C71F2F
-hook|plane 1|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	bytes 7680 fnv 629B9238
+hook|plane 1|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1 [orig]	bytes 7680 fnv 76C71F2F
+hook|plane 1|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1 [fixed #740]	bytes 7680 fnv 9FA40182
+hook|plane 1|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1 [orig]	bytes 7680 fnv 629B9238
+hook|plane 1|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1 [fixed #740]	bytes 7680 fnv FE64512C
 hook|plane 1|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	bytes 7680 fnv E216D77B
 hook|plane 1|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1 [orig]	bytes 7680 fnv 77A4624C
-hook|plane 1|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1 [fixed #737]	bytes 7680 fnv 5364BD16
+hook|plane 1|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1 [fixed #737]	bytes 7680 fnv C0DB08CA
 hook|plane 1|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	bytes 7680 fnv 0B72F273
 hook|plane 1|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	bytes 7680 fnv FDC9747C
 hook|plane 1|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	bytes 7680 fnv 83CB4F34
-hook|plane 1|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	bytes 7680 fnv 0AFA79F5
+hook|plane 1|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1 [orig]	bytes 7680 fnv 0AFA79F5
+hook|plane 1|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1 [fixed #740]	bytes 7680 fnv A538FA45
 hook|plane 1|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	bytes 7680 fnv 2EE08D12
 hook|plane 1|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	bytes 7680 fnv 5ECE9982
 hook|plane 1|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	bytes 7680 fnv E15E1104
@@ -992,7 +1034,8 @@ hook|plane 1|#94: (222,8)-(497,28), state 0, 1 fields, indent 16, d7 $FFFF26D4|1
 hook|plane 1|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1 [orig]	bytes 7680 fnv EE192EEE
 hook|plane 1|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1 [fixed #737]	bytes 7680 fnv 5EBED280
 hook|plane 1|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	bytes 7680 fnv 9CCBCD5D
-hook|plane 1|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1	bytes 7680 fnv 71ED2854
+hook|plane 1|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1 [orig]	bytes 7680 fnv 71ED2854
+hook|plane 1|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1 [fixed #740]	bytes 7680 fnv 05B5C190
 hook|plane 1|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	bytes 7680 fnv 80CB449D
 hook|plane 1|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	bytes 7680 fnv F90B875D
 hook|plane 1|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	bytes 7680 fnv F65757F4
