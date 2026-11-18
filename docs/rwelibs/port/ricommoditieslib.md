@@ -40,6 +40,11 @@ are one packed struct in the order of the original's data block, so that
   not check the base and called `CxBroker` through a base of 0, a crash
   (#559). The other commands need the broker or the port of a
   successful `MakeCommodity`.
+* `SetCxStatus` tests the broker; the original tested the message port,
+  which a `MakeCommodity` that fails at `CxBroker` (the name taken)
+  leaves without a broker, and called `ActivateCxObj(0,…)` and returned
+  -1 (#562). Values other than -1/0 do nothing and return 0, as in the
+  original.
 
 **BUG(orig)** (kept, commented in the code):
 
@@ -63,8 +68,6 @@ are one packed struct in the order of the original's data block, so that
   previous one (which stays active, with the same port: finit deletes
   only the last one, so the first keeps the deleted port – a crash as
   soon as commodities sends it something, e.g. `CXCMD_LIST_CHG`) (#560);
-* `SetCxStatus` tests the message port, not the broker; values other than
-  -1/0 do nothing and return 0 (#562);
 * the `Exchange…` functions look at the id of the last message whatever
   its type (a hotkey with id 15 counts as `ExchangeDisable`) (#555).
 

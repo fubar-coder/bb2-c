@@ -182,10 +182,12 @@
 |MakeCommodity again||1	$00000000
 |SetCxStatus -1||1	$FFFFFFFF
 |SetCxStatus -1 (no port)||1	$00000000
-|SetCxStatus -1 (port, no broker)||1	$FFFFFFFF
+|SetCxStatus -1 (port, no broker)||1 [orig]	$FFFFFFFF
+|SetCxStatus -1 (port, no broker)||1 [fixed #562]	$00000000
 |SetCxStatus 0||1	$FFFFFFFF
 |SetCxStatus 0 (no port)||1	$00000000
-|SetCxStatus 0 (port, no broker)||1	$FFFFFFFF
+|SetCxStatus 0 (port, no broker)||1 [orig]	$FFFFFFFF
+|SetCxStatus 0 (port, no broker)||1 [fixed #562]	$00000000
 |SetCxStatus 0 again||1	$FFFFFFFF
 |SetCxStatus 5||1	$00000000
 |SetHotKey (no broker)||1	$00000000

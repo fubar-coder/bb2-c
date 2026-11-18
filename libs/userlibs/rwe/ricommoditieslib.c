@@ -26,7 +26,11 @@
  *
  * Fixed: MakeCommodity returns 0 without commodities.library V37
  * (init's OpenLibrary failed), before it makes the port; the original
- * called CxBroker through a base of 0 (#559).
+ * called CxBroker through a base of 0 (#559).  SetCxStatus tests the
+ * broker; the original tested the message port, which a MakeCommodity
+ * that fails at CxBroker leaves, and called ActivateCxObj(0) (#562).
+ * SetCxStatus with a value other than -1 and 0 does nothing and returns
+ * 0, as in the original.
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
@@ -56,8 +60,6 @@
  *     previous one (on failure the old one stays in use; on success the
  *     old one stays active with the same port, which finit deletes)
  *     (#560);
- *   - SetCxStatus tests the message port, not the broker; any value other
- *     than -1 and 0 does nothing and returns 0 (#562);
  *   - the Exchange* functions look at the id of the last message whatever
  *     its type (a hotkey id 15 counts as ExchangeDisable) (#555).
  */
@@ -449,15 +451,16 @@ BLITZ_THUNK(port, port_c, "d1/a0-a1");
 /**
  * @brief SetCxStatus on|off: -1 activates, 0 deactivates the broker.
  *
- * Amiga mode only.  BUG(orig) (#562): tests the message port, not the
- * broker; any other value does nothing.
+ * Amiga mode only; any other value does nothing.  Fixed (#562): tests
+ * the broker; the original tested the message port, which a failed
+ * MakeCommodity leaves without a broker, and called ActivateCxObj(0).
  * @param on  d0: -1 or 0 (other values are tested, so a LONG)
- * @return d0: BB_TRUE, BB_FALSE without a port or for another value (a
+ * @return d0: BB_TRUE, BB_FALSE without a broker or for another value (a
  *         statement: the value is not used)
  */
 static BB_BOOL BLITZ_ROUTINE status_c(LONG on BL_REG(d0))
 {
-    if (!st.msgport)
+    if (!st.cobject)
         return BB_FALSE;
     if (on == -1)
         on = 1;
