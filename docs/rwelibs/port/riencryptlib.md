@@ -23,16 +23,23 @@ called with `BLITZ_ALIBJSR` (token `#vallib<<7 + 7`, its first form). The
 loop counters are unsigned with a sign test, to keep the original's
 `SUBQ.l #1` / `BPL` counting without signed overflow. Like the original,
 Encrypt and Decrypt return with d0's low byte = the last byte written
-(upper bytes = memadr); the thunks keep a1 (GetWheel also d1), which the
-original changes in places – more than the original, never less.
+(upper bytes = memadr; memadr itself when nothing is written); the
+thunks keep a1 (GetWheel also d1), which the original changes in
+places – more than the original, never less.
+
+## Fixed
+
+Original bugs fixed in the port (`docs/libs/deviations.md`, 3a,
+kind F):
+
+* The loops counted with `SUBQ.l #1` before a `BPL` loop whose first pass
+  is unconditional: a length of 0 processed one byte (Decrypt the byte at
+  memadr-1, in front of the block), and so did a length of 2^31 and
+  above. Such a length now does nothing; the wheels GetWheel returns stay
+  as they were (#630).
 
 ## BUG(orig)
 
-* The loops count with `SUBQ.l #1` before a `BPL` loop whose first pass
-  is unconditional: a length of 0 processes one byte (Decrypt the byte at
-  memadr-1), and so does a length above 2^31 (#630). (The first,
-  byte-identical port said 2^32 bytes; the test shows one byte, in the
-  original too.)
 * Decrypt mode 1 adds the length's bytes 0..2 to the wheels separately,
   without the carries between them: whenever wheel 1 + the low byte of the
   length overflows (or wheel 2 + the next byte), the end state is one step
@@ -51,8 +58,8 @@ scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_riencryptlib.txt` recorded from the
 original. Every form: Encrypt with wheels, Decrypt with five and six
 arguments (mode 0, 1, $101, 2), GetWheel 0..4, $101 and a long with upper
-bits; lengths 0, 1, 5, 7, 300, 700 with wheels that carry into wheel 2
-and 3 and a mode 1 case that overflows; buffer with guards, d0, wheels,
+bits; lengths 0 (`[orig]`/`[fixed #630]` pairs), 1, 5, 7, 300, 700
+with wheels that carry into wheel 2 and 3 and a mode 1 case that overflows; buffer with guards, d0, wheels,
 kept registers. Encrypt without wheels takes its wheels from vallib's
 `Rnd`, which is hardware noise without a seed; vallib is not loaded and
 its `Rnd` is a stub (`sysload_stubs`) that answers a fixed sequence, so

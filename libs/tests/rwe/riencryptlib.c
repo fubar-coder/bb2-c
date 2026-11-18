@@ -8,7 +8,8 @@
  *
  * Covered: every form - Encrypt with wheels and with random wheels,
  * Decrypt with and without mode (0, 1, $101, 2), GetWheel 0..4 and $101;
- * lengths 0 (BUG(orig) (#630): one byte), 1, 7, 300 and 700 with wheel values
+ * lengths 0 (#630, fixed: the original processes one byte), 1, 7, 300 and
+ * 700 with wheel values
  * that carry into wheel 2 and 3, Decrypt mode 1 with a length whose byte
  * addition overflows (BUG(orig) (#629)); buffer with guards, wheels, registers.
  * Encrypt without wheels takes them from vallib's Rnd, which is hardware
@@ -62,6 +63,20 @@ static void fill(void)
     for (i = 0; i < BUFSZ; i++)
         ref[i] = (UBYTE)(i * 77 + 5);
     memcpy(buf, ref, BUFSZ);
+}
+
+/* d0 after Encrypt/Decrypt: memadr with the last byte written in its low
+   byte, observed without the address (the low byte and the bits that
+   differ from memadr).  A length of 0 writes nothing and leaves memadr
+   in d0 (#630, fixed): that is observed as $FFFFFFFF, not as the
+   address's low byte */
+static ULONG d0obs(ULONG len)
+{
+    ULONG a = (ULONG)buf + OFF;
+
+    if (len == 0 && R.d[0] == a)
+        return 0xffffffffUL;
+    return (R.d[0] & 0xff) | ((R.d[0] ^ a) & ~0xffUL);
 }
 
 static void wheels(void)
@@ -121,14 +136,14 @@ int main(int argc, char **argv)
         DO1(ENT(LIB, 0, 1), R.d[0] = (ULONG)buf + OFF; R.d[1] = v[i].len;
             R.d[2] = v[i].w1; R.d[3] = v[i].w2; R.d[4] = v[i].w3);
         OBSBYTES("buffer", buf, BUFSZ);
-        OBS("d0", (R.d[0] & 0xff) | ((R.d[0] ^ ((ULONG)buf + OFF)) & ~0xffUL));
+        OBS("d0", d0obs(v[i].len));
         OBS("changed", memcmp(buf, ref, BUFSZ) != 0);
         wheels();
         ROUT = "Decrypt 5";
         DO1(ENT(LIB, 1, 0), R.d[0] = (ULONG)buf + OFF; R.d[1] = v[i].len;
             R.d[2] = v[i].w1; R.d[3] = v[i].w2; R.d[4] = v[i].w3);
         OBSBYTES("buffer", buf, BUFSZ);
-        OBS("d0", (R.d[0] & 0xff) | ((R.d[0] ^ ((ULONG)buf + OFF)) & ~0xffUL));
+        OBS("d0", d0obs(v[i].len));
         wheels();
         for (m = 0; m < sizeof modes / sizeof modes[0]; m++) {
             sprintf(VEC, "len %lu wheels %X %X %X mode %lX", v[i].len, v[i].w1, v[i].w2,
@@ -142,7 +157,7 @@ int main(int argc, char **argv)
                 R.d[2] = v[i].w1; R.d[3] = v[i].w2; R.d[4] = v[i].w3;
                 R.d[5] = modes[m]);
             OBSBYTES("buffer", buf, BUFSZ);
-            OBS("d0", (R.d[0] & 0xff) | ((R.d[0] ^ ((ULONG)buf + OFF)) & ~0xffUL));
+            OBS("d0", d0obs(v[i].len));
             OBS("restored", memcmp(buf, ref, BUFSZ) == 0);
             wheels();
         }

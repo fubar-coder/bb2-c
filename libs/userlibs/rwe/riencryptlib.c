@@ -17,14 +17,14 @@
  *
  * No assembler besides the thunks.
  *
- * BUG(orig):
- *   - The loops count with SUBQ.l #1 before a BPL loop whose first pass
- *     is unconditional: a length of 0 (or one above 2^31) processes one
- *     byte, Decrypt the one at memadr-1 (#630).
- *   - Decrypt mode 1 adds the length's bytes to the wheels without the
- *     carries between them: if w1 + (length & $FF) overflows (or w2 + the
- *     next byte), the state is one step off in w2 (w3) and the data is not
- *     decrypted correctly (#629).
+ * BUG(orig): Decrypt mode 1 adds the length's bytes to the wheels without
+ * the carries between them: if w1 + (length & $FF) overflows (or w2 + the
+ * next byte), the state is one step off in w2 (w3) and the data is not
+ * decrypted correctly (#629).
+ * Fixed (#630): the loops counted with SUBQ.l #1 before a BPL loop whose
+ * first pass is unconditional, so a length of 0 (or one above 2^31)
+ * processed one byte, Decrypt the one at memadr-1; such a length now
+ * does nothing (the wheels for GetWheel stay as they were).
  * Encrypt's random wheels: `ALibJsr Rnd` is the first form of Rnd, the
  * one without a range (Quick 0..1, the fraction in the low word): the
  * ranges 256, 65535 and -1 loaded into d0 are ignored; each wheel is the
@@ -73,7 +73,8 @@ BLITZ_LIBFIN();
 static UBYTE wheels[3];
 
 /* the loop counter: SUBQ.l #1,d1 first, then the body until SUBQ.l #1,d1
-   makes it negative (BPL) - at least one pass (BUG(orig) (#630), see above) */
+   makes it negative (BPL); entered only for a length of 1 to 2^31 - 1
+   (Fixed (#630), see above) */
 #define NEG(n) ((n) & 0x80000000UL)
 
 /**
@@ -82,14 +83,16 @@ static UBYTE wheels[3];
  *
  * Every byte b becomes b + w1 + w2 + w3, the wheels stepped before each
  * byte like an odometer (w1 + 1, on its carry w2 + 1, on that w3 + 1);
- * the last state is kept for GetWheel.  BUG(orig) (#630): length 0 (or
- * one above 2^31) processes one byte.
+ * the last state is kept for GetWheel.  A length of 0 (or one of 2^31
+ * and above) does nothing (Fixed (#630): the original processed one
+ * byte).
  * @param p       d0: memadr
  * @param len     d1: length
  * @param wheel1  d2: the start of wheel 1 (its low byte, ANDI.l #$ff)
  * @param wheel2  d3: the start of wheel 2
  * @param wheel3  d4: the start of wheel 3
- * @return d0: memadr with the last byte written in its low byte
+ * @return d0: memadr with the last byte written in its low byte (memadr
+ *         when nothing is processed)
  */
 static ULONG BLITZ_ROUTINE encrypt_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
                                     UWORD wheel1 BL_REG(d2),
@@ -98,6 +101,9 @@ static ULONG BLITZ_ROUTINE encrypt_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
 {
     UBYTE a = (UBYTE)wheel1, b = (UBYTE)wheel2, c = (UBYTE)wheel3, x;
     ULONG n = len - 1, result = (ULONG)p;           /* d0 */
+
+    if ((LONG)len <= 0)                             /* Fixed (#630) */
+        return result;
 
     do {
         if (++a == 0)                                   /* ADDQ.b #1:BCC */
@@ -146,13 +152,15 @@ static ULONG BLITZ_ROUTINE encrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1))
  *
  * The wheels are those Encrypt left (GetWheel); each byte loses w1 + w2 +
  * w3, then the wheels step back.  The last state is kept for GetWheel.
- * BUG(orig) (#630): length 0 processes one byte, the one at memadr-1.
+ * A length of 0 (or one of 2^31 and above) does nothing (Fixed (#630):
+ * the original processed one byte, the one at memadr-1).
  * @param base    d0: memadr
  * @param len     d1: length
  * @param wheel1  d2: wheel 1 (its low byte)
  * @param wheel2  d3: wheel 2
  * @param wheel3  d4: wheel 3
- * @return d0: memadr with the last byte written in its low byte
+ * @return d0: memadr with the last byte written in its low byte (memadr
+ *         when nothing is processed)
  */
 static ULONG BLITZ_ROUTINE decrypt_c(UBYTE *base BL_REG(d0), ULONG len BL_REG(d1),
                                     UWORD wheel1 BL_REG(d2),
@@ -162,6 +170,9 @@ static ULONG BLITZ_ROUTINE decrypt_c(UBYTE *base BL_REG(d0), ULONG len BL_REG(d1
     UBYTE a = (UBYTE)wheel1, b = (UBYTE)wheel2, c = (UBYTE)wheel3, x;
     ULONG n = len - 1, result = (ULONG)base;        /* d0 */
     UBYTE *p = base + n;                                /* ADD.l d1,a0 */
+
+    if ((LONG)len <= 0)                             /* Fixed (#630) */
+        return result;
 
     do {
         *p = x = (UBYTE)(*p - a - b - c);
