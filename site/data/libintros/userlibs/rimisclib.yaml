@@ -31,4 +31,7 @@ intro: |
   Until b$=""
   ```
 
+  The fixed bugs of the library are listed in
+  [Fixes in rimisclib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rimisclib-fixes" >}}).
+
   *Based on the RI Misc Lib guide by Reflective Images.*

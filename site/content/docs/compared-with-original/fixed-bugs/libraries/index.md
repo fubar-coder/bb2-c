@@ -3506,6 +3506,76 @@ Directories and devices:
   handler; the original read from near address 0 and returned nonsense
   ([#494](https://github.com/fubar-coder/bb2-c/issues/494)).
 
+### Fixes in rimisclib {#rimisclib-fixes}
+
+These fixes concern
+[rimisclib]({{< relref "/docs/libraries/userlibs/rimisclib" >}}), the
+miscellaneous commands of Reflective Images and Steve Matty; the fixes
+of [`NextArg$`](#nextarg-doubled-quote) and of
+[the text that follows a string function](#rwe-text-after-string-function)
+are described above.
+
+* `WorkbenchHere` works: it returns -1 if the title of an open screen
+  contains "Workbench", and 0 if none does. The original searched a list
+  of screens at whatever address a register of the processor held
+  ([#759](https://github.com/fubar-coder/bb2-c/issues/759)), did not stop
+  at the end of the list, so it never returned 0 and could hang
+  ([#761](https://github.com/fubar-coder/bb2-c/issues/761)), hung on a
+  title that ends with the start of "Workbench", such as "My Work"
+  ([#762](https://github.com/fubar-coder/bb2-c/issues/762)), and missed
+  "Workbench" behind another "W", as in "A Window on Workbench"
+  ([#760](https://github.com/fubar-coder/bb2-c/issues/760)).
+* Negative Quick and Float arguments of `EZRequest` and `EZRequestArgs`
+  show their whole part, -3.5 as -3, as `Int` gives it; the original
+  showed -3.5 as 65532
+  ([#750](https://github.com/fubar-coder/bb2-c/issues/750)).
+* Float arguments of `EZRequest` and `EZRequestArgs` are converted by
+  the library itself; the original called the conversion of the maths
+  library through whatever library base the program happened to hold, so
+  the value shown depended on what the program had done before
+  ([#749](https://github.com/fubar-coder/bb2-c/issues/749)).
+* `EZRequestArgs` with a shorter text than the call before shows only
+  its own; the original kept the end of the text before behind it
+  ([#747](https://github.com/fubar-coder/bb2-c/issues/747)).
+* With runtime error checking, `EZRequest` and `EZRequestArgs` with more
+  arguments than fit into their 16 longs stop with the error "Too Many
+  EZRequest Arguments"; the original wrote the rest over the code of the
+  library
+  ([`EZRequest` and `EZRequestArgs` with too many arguments]({{< relref "/docs/compared-with-original/new-errors#ezrequest-too-many-arguments" >}}),
+  [#748](https://github.com/fubar-coder/bb2-c/issues/748)).
+* `Flip$` of an empty string or of one character returns it unchanged;
+  the original exchanged 65536 pairs of bytes around the string and
+  overwrote memory
+  ([#751](https://github.com/fubar-coder/bb2-c/issues/751)).
+* `InitArgParse` copies at most 255 characters and cuts off the rest;
+  the original copied a line of any length into its 256 byte buffer and
+  overwrote the code of the library behind it
+  ([#752](https://github.com/fubar-coder/bb2-c/issues/752)).
+* `NextArgChar$` before `InitArgParse`, or after the end of the text,
+  returns "", as `NextArg$` does; the original read from memory address
+  0 on ([#754](https://github.com/fubar-coder/bb2-c/issues/754)).
+* `ProgPath$` of a program whose directory has no name that can be found
+  is the program's name alone; the original put a "/" in front of it
+  ([#758](https://github.com/fubar-coder/bb2-c/issues/758)).
+* `OpenFontPrefs` returns 0 when there is not enough memory for the
+  file; the original read the file to address 0, over the first bytes of
+  memory that the processor and the system need
+  ([#756](https://github.com/fubar-coder/bb2-c/issues/756)).
+* A second `OpenFontPrefs` frees the memory of the first; the original
+  lost 16 KB each time until the next reboot
+  ([#757](https://github.com/fubar-coder/bb2-c/issues/757)).
+* `DefaultFontHeight` and `DefaultFontName` look only at the font
+  entries of the preferences file, and return 0 or "" for a font type the
+  file does not set; the original also searched the memory behind the
+  file and could return a value from leftover data there
+  ([#745](https://github.com/fubar-coder/bb2-c/issues/745)).
+* `ASCRaw` of a code outside 0 to 113, such as the code of a key being
+  released, gives the character 0, and `RawASC` of a character that no
+  key types, or of "", gives -1. The original read the bytes before or
+  behind its table of keys and gave a meaningless character, and `RawASC` searched
+  on through memory until it found the character, or for ever
+  ([#744](https://github.com/fubar-coder/bb2-c/issues/744)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a
@@ -3515,10 +3585,6 @@ Directories and devices:
   rest of the expression be written into the data of the icon. Local
   variables and string expressions work after `AddAppIcon`
   ([#516](https://github.com/fubar-coder/bb2-c/issues/516)).
-* `InitArgParse` copied a line of any length into its 256 byte buffer and
-  overwrote the code of the library behind it; it copies at most 255
-  characters and cuts off the rest
-  ([#752](https://github.com/fubar-coder/bb2-c/issues/752)).
 * `RIAnimInit`, `RIAnimDepth`, `RIAnimWidth` and `RIAnimHeight` crashed on
   some data that is not a `FORM ANIM`, such as an IFF `LIST` of type
   `ANIM`; they return normally, and for such a `LIST` `RIAnimDepth` returns

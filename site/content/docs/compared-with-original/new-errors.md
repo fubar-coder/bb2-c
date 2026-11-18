@@ -1559,6 +1559,36 @@ is as before.
 
 Issue: [InitPage with NumBoxes of 32768 or more gives a negative table size (#1043)](https://github.com/fubar-coder/bb2-c/issues/1043).
 
+### `EZRequest` and `EZRequestArgs` with too many arguments {#ezrequest-too-many-arguments}
+
+`EZRequest` of
+[rimisclib]({{< relref "/docs/libraries/userlibs/rimisclib" >}}) shows a
+system requester whose texts can hold placeholders, filled in by the
+arguments after `gadget$`; `EZRequestArgs` shows the values of its
+arguments. Both keep these arguments in a table of 16 longs: a string, a
+long, a quick or a float takes one long, a word or a byte half of one.
+
+**What happened.** The original did not limit the number of arguments,
+also not with runtime error checking. More than fit into the table were
+written over the code of the library behind it, the code of
+`WorkbenchHere`. With the original, this call with 18 long arguments
+showed its requester, and a `WorkbenchHere` afterwards ran into the
+overwritten code and could crash the program:
+
+```
+EZRequest "BO","x","OK",q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q
+```
+
+**With the port.** With runtime error checking, arguments that do not
+fit into the 16 longs are the error "Too Many EZRequest Arguments", and
+no requester appears. Without runtime error checking, the commands are
+as before.
+
+**What to change.** Give `EZRequest` and `EZRequestArgs` at most 16
+longs of arguments; show more values with a second requester.
+
+Issue: [EZRequest/EZRequestArgs do not limit the number of arguments (16 longs) (#748)](https://github.com/fubar-coder/bb2-c/issues/748).
+
 ## A form the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the

@@ -3364,6 +3364,126 @@ rows:
     text: "`FindVolume` returns -1 for a device, volume or assign that is there, as documented; the original returned the address of its entry, so a test for -1 failed."
     page: libraries
     anchor: findvolume-result
+  - issue: 744
+    severity: 5
+    topic: "Input"
+    library: "rimisclib"
+    command: "ASCRaw, RawASC"
+    text: "`ASCRaw` of a code outside its table gives the character 0, `RawASC` of a character no key types -1; the original read beyond its table or searched for ever."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 745
+    severity: 5
+    topic: "System"
+    library: "rimisclib"
+    command: "DefaultFontHeight, DefaultFontName"
+    text: "`DefaultFontHeight` and `DefaultFontName` return 0 or \"\" for a font type the preferences do not set; the original could return leftover data behind the file."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 747
+    severity: 5
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "EZRequestArgs"
+    text: "`EZRequestArgs` with a shorter text than the call before shows only its own; the original kept the end of the text before."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 748
+    severity: 3
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "EZRequest, EZRequestArgs"
+    text: "With runtime error checking, too many arguments stop with \"Too Many EZRequest Arguments\"; the original wrote them over the library's code."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 749
+    severity: 5
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "EZRequest, EZRequestArgs"
+    text: "Float arguments of `EZRequest` and `EZRequestArgs` are converted by the library; the original called the maths library through whatever base the program held."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 750
+    severity: 5
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "EZRequest, EZRequestArgs"
+    text: "Negative Quick and Float arguments of `EZRequest` and `EZRequestArgs` show their whole part, -3.5 as -3; the original showed 65532."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 751
+    severity: 5
+    topic: "Strings"
+    library: "rimisclib"
+    command: "Flip$"
+    text: "`Flip$` of an empty or one-character string returns it unchanged; the original exchanged 65536 byte pairs around it."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 754
+    severity: 5
+    topic: "Strings"
+    library: "rimisclib"
+    command: "NextArgChar$"
+    text: "`NextArgChar$` before `InitArgParse` or after the end returns \"\"; the original read from address 0."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 756
+    severity: 5
+    topic: "System"
+    library: "rimisclib"
+    command: "OpenFontPrefs"
+    text: "`OpenFontPrefs` returns 0 when memory is short; the original read the file to address 0."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 757
+    severity: 5
+    topic: "System"
+    library: "rimisclib"
+    command: "OpenFontPrefs"
+    text: "A second `OpenFontPrefs` frees the memory of the first; the original lost 16 KB each time."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 758
+    severity: 5
+    topic: "Files"
+    library: "rimisclib"
+    command: "ProgPath$"
+    text: "`ProgPath$` of a program whose directory name cannot be found is its name alone; the original put a \"/\" in front."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 759
+    severity: 5
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "WorkbenchHere"
+    text: "`WorkbenchHere` searches the system's screens; the original searched a list at whatever address a register held."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 760
+    severity: 5
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "WorkbenchHere"
+    text: "`WorkbenchHere` finds \"Workbench\" anywhere in a title; the original missed it behind another \"W\"."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 761
+    severity: 5
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "WorkbenchHere"
+    text: "`WorkbenchHere` returns 0 when no screen title contains \"Workbench\"; the original ran past the end of the screen list and could hang."
+    page: libraries
+    anchor: rimisclib-fixes
+  - issue: 762
+    severity: 5
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "WorkbenchHere"
+    text: "`WorkbenchHere` no longer hangs on a title that ends with the start of \"Workbench\", such as \"My Work\"."
+    page: libraries
+    anchor: rimisclib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
@@ -3419,7 +3539,7 @@ rows:
     command: "InitArgParse"
     text: "`InitArgParse` copies at most 255 characters and cuts off the rest; the original overwrote the library's code with a longer line."
     page: libraries
-    anchor: rwe-other-fixes
+    anchor: rimisclib-fixes
   - issue: 755
     severity: 5
     topic: "Input"
