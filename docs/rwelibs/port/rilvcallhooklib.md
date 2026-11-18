@@ -82,6 +82,22 @@ kind F):
   read the string at address 0 (#742; test `rilvcallhooklib-text-null`;
   the `libs_emulator` scenario has no text pointer 0, it would read
   address 0 in the original's run).
+* The tree lines are drawn with the pattern `$AAAA` set as `SetDrPt`
+  does (`FRST_DOT`, count 15), and the RastPort's pattern, `FRST_DOT`
+  and count are put back on every way out. The original wrote only
+  `rp_LinePtrn` and set it to `$FFFF` after the lines instead of the old
+  pattern; an item with an indent of 1–15 (no lines) left it at `$AAAA`
+  (#738; test `rilvcallhooklib-lineptrn`, `libs_emulator` cases
+  `[fixed #738]` of `rwe_rilvcallhooklib`: the RastPort after the items
+  with an indent of 1–15). The look of the lines is unchanged (user
+  decision W3 Q7, variant b): each line starts with a dot as before. On
+  Kickstart 3.1 `Move` already starts the pattern anew (observed in
+  Amiberry), so the issue's "the phase depends on what was drawn
+  before" does not show; with an odd item height two dots meet at each
+  item boundary, in the original and the port. In a GadTools listview
+  the old leftover `$AAAA` did not reach the window's RastPort either
+  (GadTools gives the hook a RastPort of its own); it showed with a
+  RastPort of the program's own, as in the test.
 
 ## Silent correction (kind K)
 
@@ -96,8 +112,7 @@ kind F):
 
 ## BUG(orig), kept
 
-* The tree line pattern is written to `rp_LinePtrn` without the flags and
-  count `SetDrPt` sets (#738).
+None.
 
 The hook needs `RetrieveCallHook` to have been called (the graphics base
 is 0 before); that is the documented usage, not a defect.
@@ -128,7 +143,11 @@ edge. The fixed bugs give `[orig]` / `[fixed #N]` cases: #737 those of
 the items with an indent of 16 or more and the upper word `$FFFF` or
 `$8000`, #739 the planes of the items whose last tree line changes,
 #740 those of the items with a right-aligned BitMap (none of them starts
-exactly at the field's left edge, which would give an empty rectangle).
+exactly at the field's left edge, which would give an empty rectangle),
+#738 the RastPort after the items with an indent of 1–15 (the
+scenario's RastPort has the pattern `$FFFF`, so the old pattern put
+back after the lines equals the original's `$FFFF` there; the bug-orig
+test uses `$F0F0`).
 Not covered: the original's 65536 tree lines (indent below 16 with an
 upper word of 1..`$8000`: the scenario gives the original only upper
 words without them), a text pointer 0, negative indents.

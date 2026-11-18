@@ -31,10 +31,6 @@
  * init/finit are empty.  The hook is not reentrant (its state is static,
  * as the original's).  No assembler besides the thunks.
  *
- * BUG(orig):
- *   - The tree line pattern is written to rp_LinePtrn without the flags
- *     and count SetDrPt sets (#738).
- *
  * Fixed (kind F, docs/libs/deviations.md 3a):
  *   - The number of tree lines, indent / 16 - 1, is a word.  The original
  *     took it as a long with the upper word of the caller's d7 (MOVE.w
@@ -57,6 +53,13 @@
  *   - A text pointer 0 in a text field is an empty text (the field is
  *     filled in bpen), as a BitMap pointer 0 draws no BitMap.  The
  *     original read the string at address 0 (#742).
+ *   - The tree lines are drawn with the pattern $AAAA set as SetDrPt does
+ *     (with FRST_DOT and the count 15), and the RastPort's pattern, flag
+ *     and count are put back on every way out.  The original wrote only
+ *     rp_LinePtrn and set it to $FFFF after the lines, not back to the old
+ *     pattern, and an indent of 1..15 (no lines) left it at $AAAA.  Each
+ *     line starts with a dot as before (on Kickstart 3.1 Move already
+ *     starts the pattern anew), so the lines look the same (#738).
  *
  * Silent correction (kind K, docs/libs/deviations.md 3a; #741):
  *   - TextFit gets the constraining width as a word (upper word 0): the
@@ -71,6 +74,7 @@
 #include <graphics/rastport.h>
 #include <graphics/text.h>
 #include <graphics/gfx.h>
+#include <graphics/gfxmacros.h>
 #include <libraries/gadtools.h>
 #include <utility/hooks.h>
 #define __NOLIBBASE__
@@ -278,21 +282,25 @@ static void displayfield(struct Library *gfx)
    the original took the upper word of the caller's d7); the last line
    short if the next node ends the list or has a smaller indent (its word
    at indentoff: Fixed (#739), the original read it at the first field's
-   width) */
+   width); the RastPort's line pattern, its FRST_DOT and count put back
+   on the way out (Fixed (#738), the original left $FFFF, or $AAAA
+   without lines) */
 static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *node,
                         UWORD indentoff)
 {
     WORD x, y, levels;
     UWORD k;
+    UWORD oldptrn = rp->LinePtrn, oldflag = rp->Flags & FRST_DOT;
+    BYTE oldcnt = rp->linpatcnt;
 
     SetAPen(rp, 0);
     RectFill(rp, ob.MinX, ob.MinY, (WORD)(ob.MinX + indent - 1), ob.MaxY);
     SetAPen(rp, 1);
-    rp->LinePtrn = 0xaaaa;              /* BUG(orig): not SetDrPt (#738) */
+    SetDrPt(rp, 0xaaaa);
     x = (WORD)(ob.MinX + 8);
     levels = (WORD)((indent >> 4) - 1);
     if (levels < 0)
-        return;
+        goto restore;
     k = (UWORD)levels;
     for (;;) {
         Move(rp, x, ob.MinY);
@@ -312,7 +320,10 @@ static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *n
     y = (WORD)((WORD)(ob.MinY + ob.MaxY) >> 1);
     Move(rp, x, y);
     Draw(rp, (WORD)(x + 7), y);
-    rp->LinePtrn = 0xffff;
+restore:
+    rp->LinePtrn = oldptrn;
+    rp->Flags = (UWORD)((rp->Flags & ~FRST_DOT) | oldflag);
+    rp->linpatcnt = oldcnt;
 }
 
 /* DrawDisabled: the bounds ghosted in apen */
@@ -335,11 +346,12 @@ static void drawdisabled(struct Library *gfx, const struct Rectangle *b, struct 
  * or the other states), the indent cleared with dotted tree lines, the
  * fields drawn left to right (the last one cut at the right edge), a
  * disabled item ghosted in apen.  Not reentrant (static state, as the
- * original's).  BUG(orig): the line pattern without SetDrPt (#738).
- * Fixed: the tree line count is a word (#737); the last tree line tests
- * the next node's indent at the indent offset (#739); a right aligned
- * BitMap is placed in its field (#740); a text pointer 0 is an empty
- * text (#742).  TextFit's width is a word (kind K, #741).
+ * original's).  Fixed: the tree line count is a word (#737); the last
+ * tree line tests the next node's indent at the indent offset (#739); a
+ * right aligned BitMap is placed in its field (#740); a text pointer 0
+ * is an empty text (#742); the line pattern is set as SetDrPt does and
+ * put back with its flag and count (#738).  TextFit's width is a word
+ * (kind K, #741).
  * @param hook      a0: the Hook, h_Data = the field table
  * @param msg       a1: the LVDrawMsg
  * @param node      a2: the node
