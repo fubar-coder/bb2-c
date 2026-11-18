@@ -43,10 +43,8 @@
  *   - DelListItem still reads the nodes of v0.9 (no pad): data is the
  *     long at offset 8 (the pad word and the upper word of the data
  *     pointer), size the long at 14; so it frees a wrong address (memlib:
- *     "Unable to Free Memory") and the data is lost (#729).  Deleting the
- *     first node clears the next (not prev) of the node behind it, the
- *     list ends there (#728).  It sets the size of the last variable to
- *     that of the node (#735).
+ *     "Unable to Free Memory") and the data is lost (#729).  It sets the
+ *     size of the last variable to that of the node (#735).
  *
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
@@ -61,6 +59,9 @@
  *   - AddListItem in the middle sets the prev of the node behind the new
  *     one (the original left it pointing to the old current node: going
  *     back from there skipped the new node) (#727).
+ *   - DelListItem of the first node clears the prev of the node behind it,
+ *     the new first node (the original cleared its next, the place of
+ *     prev in v0.9: the list ended there) (#728).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -522,9 +523,9 @@ BB_BOOL BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
  * BUG(orig) (#729): reads the node of v0.9 (struct node09): data is the
  * long at +8, size the long at +14, so it frees a wrong address (memlib:
  * "Unable to Free Memory") and the data is lost; it sets the last size
- * to that of the node (#735).  Deleting the first node clears the next
- * (not prev) of the node behind it: the list ends there (#728).  The
- * only node is not deleted: 0 (no defect).
+ * to that of the node (#735).  Fixed (#728): deleting the first node
+ * clears the prev of the node behind it (the original cleared its next:
+ * the list ended there).  The only node is not deleted: 0 (no defect).
  * @param list  d0: list# (0-4)
  * @return d0: BB_TRUE, BB_FALSE without a current node or for the only
  *         node
@@ -551,7 +552,7 @@ BB_BOOL BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
     if (!_prev) {
         if (!_next)
             return BB_FALSE;                   /* the only node */
-        NODE(_next)->next = 0;        /* BUG(orig): next, not prev (#728) */
+        NODE(_next)->prev = 0;        /* fixed (#728): was its next */
         TAB(first) = _next;
         TAB(current) = _next;
         globfree(nodeptr, NODESIZE);

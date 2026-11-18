@@ -34,10 +34,10 @@
  * next in the original, in its prev in the C build: fixed #724; the
  * garbage in the new node, cleared in the C build: fixed #726; the
  * result, list# * 4 in the original, -1 in the C build: fixed #725);
- * DelListItem in the
- * middle, at the end, at the start (BUG(orig) #728: the new first's next
- * cleared), the only node (0), with and without data (BUG(orig) #729: the
- * wrong free); every allocation failing (InitList node and data,
+ * DelListItem in the middle, at the end, at the start (the new first's
+ * next cleared in the original, its prev in the C build: fixed #728),
+ * the only node (0), with and without data (BUG(orig) #729: the wrong
+ * free); every allocation failing (InitList node and data,
  * AddListItem, SetListItem, AddFirstListItem, AddLastListItem); lists 0
  * to 4.
  * Not covered: the commands on an empty list that read and write at
@@ -346,13 +346,13 @@ int main(int argc, char **argv)
     call("AddListItem", ADDLISTITEM, 0, -1, 0);         /* the size of the last */
     call("DelListItem", DELLISTITEM, 0, -1, 0);         /* no data */
     /* A -> C now (B deleted, D reachable from nothing); X behind C, then
-       A deleted at the start (BUG(orig) #728: C's next cleared, X lost), X at
-       the end */
+       A deleted at the start (the original: C's next cleared, X lost; fixed
+       #728), X at the end */
     call("AddLastListItem", ADDLASTLISTITEM, 0, -1, 0);
     call("FirstListItem", FIRSTLISTITEM, 0, -1, 0);
     call("DelListItem", DELLISTITEM, 0, -1, 0);
     ADDR(0);
-    call("NextListItem", NEXTLISTITEM, 0, -1, 0);       /* 0 */
+    call("NextListItem", NEXTLISTITEM, 0, -1, 0);       /* 0 in the original */
     call("LastListItem", LASTLISTITEM, 0, -1, 0);
     ADDR(0);
     call("DelListItem", DELLISTITEM, 0, -1, 0);

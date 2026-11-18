@@ -58,6 +58,11 @@ changes d1, d2, a0, a1, InitList also a2).
   DelListItem of that node unlinked the new one from the forward chain
   (#727; test `rilinkedlistlib-addlistitem-prev`, `libs_emulator` cases
   `[fixed #727]` of `rwe_rilinkedlistlib`).
+* DelListItem of the first node clears the prev of the node behind it,
+  the new first node. The original cleared its *next* (offset 0, where
+  v0.9 had prev): the list ended at the new first node, whose prev still
+  pointed to the freed node (#728; test `rilinkedlistlib-dellistitem-first`,
+  `libs_emulator` cases `[fixed #728]` of `rwe_rilinkedlistlib`).
 
 **BUG(orig)** (kept):
 
@@ -79,8 +84,7 @@ changes d1, d2, a0, a1, InitList also a2).
   long at offset 8 (the pad word and the upper word of the data
   pointer), its size the long at 14. So it frees a wrong address (with
   memlib: the runtime error "Unable to Free Memory") and the copy is
-  lost (#729). Deleting the first node clears the *next* (not prev) of
-  the node behind it (the list ends there) (#728).
+  lost (#729).
 
 DelListItem on the only node frees nothing and returns 0; that is not a
 defect (the command refuses to delete the last node and reports it).
