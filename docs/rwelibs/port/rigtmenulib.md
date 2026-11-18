@@ -89,6 +89,11 @@ Intended deviations from the original:
   upper word, which the compiled code leaves in d2/d3 as it likes, made
   the number "not given", and GTFreeMenu freed the whole item (or the
   whole title) instead (#691; test `rigtmenulib-freemenu-tst-long`).
+* **The title strings are freed** (maxslib FreeSt) with their titles, by
+  GTFreeMenu of a title and by the object's free routine. The original
+  freed only the 12-byte node: each removed title kept its string until
+  the end of the program (#695; test
+  `rigtmenulib-title-strings-not-freed`).
 
 ## BUG(orig), kept
 
@@ -100,8 +105,6 @@ Intended deviations from the original:
 * **CreateMenuStrip:** with no title, the lists are read at address 0; a
   failed allocation writes the array to address 0; CreateMenusA and
   GetVisualInfoA are not checked (#689).
-* **The title strings are never freed** (the object's free routine,
-  GTFreeMenu) (#695).
 * **GTMenuState and GTSetMenuChecked** change the flags of the strip
   directly, also while it is attached to a window; a strip made again
   loses them (#693).

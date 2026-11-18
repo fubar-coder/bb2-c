@@ -38,8 +38,6 @@
  *   - CreateMenuStrip with no title reads the list at address 0; a failed
  *     allocation writes it to address 0.  CreateMenuStrip does not check
  *     CreateMenusA/GetVisualInfoA (#689).
- *   - The free routines (the object's free, GTFreeMenu) never free the
- *     title strings (#695).
  *   - GTMenuState/GTSetMenuChecked change the flags of the menu strip
  *     directly, also while it is attached to a window (#693).
  * Fixed (intended deviations):
@@ -50,6 +48,9 @@
  *     original tests them as longs (TST.l), so the upper word of the word
  *     argument, which the compiled code leaves as it likes, decided
  *     whether they are given (#691).
+ *   - The free routines (the object's free, GTFreeMenu of a title) free
+ *     the title's string; the original frees only the node, the string
+ *     stayed until the end of the program (#695).
  * Like the original, no defects: GTMenuTitle allocates the title
  * uncleared (MEMF_PUBLIC; all three fields are written); +8 counts every
  * entry added and is never decreased (the array of CreateMenuStrip,
@@ -858,27 +859,38 @@ static void freeitemlist(struct gtentry *it, ULONG n)
     }
 }
 
+/* freetitle: a title node with its string and its items.  Fixed (#695):
+   the original frees the node only, not the string (FreeSt) */
+static void freetitle(struct gtentry *title)
+{
+    struct gtentry *items = title->items;
+
+    if ((LONG)title->text > 0)
+        freest(title->text);
+    gfree(title, TITLESIZE);
+    if (items)
+        freeitemlist(items, 99999);
+}
+
 /**
  * @brief The free routine of a GTMenuList object: the menu strip, the
  * titles and their items.
  *
  * FreeMenus with the gadtools base unchecked, like the original (a strip
- * exists only if it was open).  BUG(orig) (#695): the title strings are
- * never freed.  The object is cleared (+0, +4, the long at +8).
+ * exists only if it was open).  Fixed (#695): the title strings are freed
+ * too (the original: the nodes only).  The object is cleared (+0, +4,
+ * the long at +8).
  * @param obj  a3: the object
  */
 static void BLITZ_ROUTINE freemenu_c(struct gtmenulist *obj BL_REG(a3))
 {
-    struct gtentry *title, *next, *items;
+    struct gtentry *title, *next;
 
     if (obj->strip)
         FreeMenus(obj->strip);
     for (title = obj->titles; title; title = next) {
         next = title->next;
-        items = title->items;
-        gfree(title, TITLESIZE);
-        if (items)
-            freeitemlist(items, 99999);
+        freetitle(title);
     }
     obj->strip = NULL;
     obj->titles = NULL;
@@ -933,23 +945,20 @@ static struct gtentry *finditem(struct gtmenulist *obj, ULONG menu, ULONG itemno
  * @brief GTFreeMenu GTMenuList#,menu: remove a title with its items from
  * the list.
  *
- * Nothing without gadtools.library or if it is missing.  BUG(orig)
- * (#695): its string stays.  The menu strip is not changed (it is made
+ * Nothing without gadtools.library or if it is missing.  Fixed (#695):
+ * its string is freed too (the original: it stays).  The menu strip is not changed (it is made
  * again by CreateMenuStrip).
  * @param menu  d1.w: the title
  * @param obj   a3: the GTMenuList object
  */
 static void BLITZ_ROUTINE freetitle_c(ULONG menu BL_REG(d1), struct gtmenulist *obj BL_REG(a3))
 {
-    struct gtentry *title, *prev, *items;
+    struct gtentry *title, *prev;
 
     if (!(title = finditem(obj, menu, (ULONG)-1, (ULONG)-1, &prev)))
         return;
     prev->next = title->next;
-    items = title->items;
-    gfree(title, TITLESIZE);
-    if (items)
-        freeitemlist(items, 99999);
+    freetitle(title);
 }
 BLITZ_THUNK(_freetitle, freetitle_c, "d0-d1/a0-a1");
 
