@@ -167,9 +167,12 @@ StringSort|data|#8: 5 items of 11 bytes, string at 0, dir 0, from 0|1	bytes 800 
 StringSort|data|before init|1	bytes 800 fnv D200F192
 StringSort|data|empty list|1	bytes 800 fnv 47A88045
 StringSort|data|no lIsT|1	bytes 800 fnv 2FEC7A79
-StringSort|data|priority at 8 #0|1	bytes 800 fnv 2C6BD869
-StringSort|data|priority at 8 #1|1	bytes 800 fnv 39FAD9A7
-StringSort|data|priority at 8 #2|1	bytes 800 fnv 85EA5081
+StringSort|data|priority at 8 #0|1 [orig]	bytes 800 fnv 2C6BD869
+StringSort|data|priority at 8 #0|1 [fixed #826]	bytes 800 fnv D54528E5
+StringSort|data|priority at 8 #1|1 [orig]	bytes 800 fnv 39FAD9A7
+StringSort|data|priority at 8 #1|1 [fixed #826]	bytes 800 fnv F46DC2EB
+StringSort|data|priority at 8 #2|1 [orig]	bytes 800 fnv 85EA5081
+StringSort|data|priority at 8 #2|1 [fixed #826]	bytes 800 fnv C09B8591
 StringSort|data|priority at 8 #3|1	bytes 800 fnv 07FDD21A
 StringSort|data|priority at 8 #4|1	bytes 800 fnv 07158E3B
 StringSort|data|priority at 8 #5|1	bytes 800 fnv 67D3EB12
@@ -248,6 +251,12 @@ StringSort|popped|priority at 8 #2|1	$00000000
 StringSort|popped|priority at 8 #3|1	$00000000
 StringSort|popped|priority at 8 #4|1	$00000000
 StringSort|popped|priority at 8 #5|1	$00000000
+StringSort|priority sorted|priority at 8 #0|1 [orig]	$00000000
+StringSort|priority sorted|priority at 8 #0|1 [fixed #826]	$00000001
+StringSort|priority sorted|priority at 8 #1|1 [orig]	$00000000
+StringSort|priority sorted|priority at 8 #1|1 [fixed #826]	$00000001
+StringSort|priority sorted|priority at 8 #2|1 [orig]	$00000000
+StringSort|priority sorted|priority at 8 #2|1 [fixed #826]	$00000001
 StringSort|sorted|#0: 20 items of 8 bytes, string at 0, dir 0, from 0, lower case|1	$00000001
 StringSort|sorted|#10: 21 items of 8 bytes, string at 0, dir 1, from 0, lower case|1	$00000001
 StringSort|sorted|#40: 16 items of 12 bytes, string at 0, dir 0, from 0, lower case|1	$00000001
@@ -353,24 +362,37 @@ StringSort offset|data|#57: 20 items of 10 bytes, string at 4, dir 0, from 0|1	b
 StringSort offset|data|#59: 14 items of 10 bytes, string at 0, dir 1, from 0|1	bytes 800 fnv 13FA9B2A
 StringSort offset|data|#9: 35 items of 14 bytes, string at 8, dir 0, from 0|1	bytes 800 fnv 4DCD0B5F
 StringSort offset|data|one item|1	bytes 800 fnv D800E25D
-StringSort offset|data|priority #0: 39 items, priorities -1..2, dir 0, from 0|1	bytes 800 fnv 5493E73A
+StringSort offset|data|priority #0: 39 items, priorities -1..2, dir 0, from 0|1 [orig]	bytes 800 fnv 5493E73A
+StringSort offset|data|priority #0: 39 items, priorities -1..2, dir 0, from 0|1 [fixed #826]	bytes 800 fnv C1F28A06
 StringSort offset|data|priority #12: 10 items, priorities -1..-1, dir 0, from 0|1	bytes 800 fnv B6F53AE1
-StringSort offset|data|priority #13: 28 items, priorities -1..1, dir 1, from 0|1	bytes 800 fnv 72F71C48
+StringSort offset|data|priority #13: 28 items, priorities -1..1, dir 1, from 0|1 [orig]	bytes 800 fnv 72F71C48
+StringSort offset|data|priority #13: 28 items, priorities -1..1, dir 1, from 0|1 [fixed #826]	bytes 800 fnv 53DC1AB6
 StringSort offset|data|priority #16: 39 items, priorities -1..-1, dir 0, from 0|1	bytes 800 fnv B0A3611C
 StringSort offset|data|priority #17: 27 items, priorities -1..-1, dir 1, from 0|1	bytes 800 fnv 2FD14450
-StringSort offset|data|priority #1: 5 items, priorities -1..2, dir 1, from 0|1	bytes 800 fnv 5911FC5D
-StringSort offset|data|priority #20: 30 items, priorities -1..0, dir 0, from 0|1	bytes 800 fnv E995E0E4
-StringSort offset|data|priority #21: 38 items, priorities -1..1, dir 1, from 0|1	bytes 800 fnv BEA8071B
-StringSort offset|data|priority #24: 26 items, priorities -1..3, dir 0, from 0|1	bytes 800 fnv 7B2A7BB1
-StringSort offset|data|priority #25: 28 items, priorities -1..0, dir 1, from 0|1	bytes 800 fnv EA7D70BF
-StringSort offset|data|priority #28: 9 items, priorities -1..1, dir 0, from 0|1	bytes 800 fnv 5F824603
-StringSort offset|data|priority #29: 10 items, priorities -1..1, dir 1, from 0|1	bytes 800 fnv D81D8589
-StringSort offset|data|priority #32: 19 items, priorities -1..3, dir 0, from 0|1	bytes 800 fnv 0320345E
+StringSort offset|data|priority #1: 5 items, priorities -1..2, dir 1, from 0|1 [orig]	bytes 800 fnv 5911FC5D
+StringSort offset|data|priority #1: 5 items, priorities -1..2, dir 1, from 0|1 [fixed #826]	bytes 800 fnv E6EF3DD3
+StringSort offset|data|priority #20: 30 items, priorities -1..0, dir 0, from 0|1 [orig]	bytes 800 fnv E995E0E4
+StringSort offset|data|priority #20: 30 items, priorities -1..0, dir 0, from 0|1 [fixed #826]	bytes 800 fnv 4E63A23A
+StringSort offset|data|priority #21: 38 items, priorities -1..1, dir 1, from 0|1 [orig]	bytes 800 fnv BEA8071B
+StringSort offset|data|priority #21: 38 items, priorities -1..1, dir 1, from 0|1 [fixed #826]	bytes 800 fnv AF7DFAFB
+StringSort offset|data|priority #24: 26 items, priorities -1..3, dir 0, from 0|1 [orig]	bytes 800 fnv 7B2A7BB1
+StringSort offset|data|priority #24: 26 items, priorities -1..3, dir 0, from 0|1 [fixed #826]	bytes 800 fnv 551F8F63
+StringSort offset|data|priority #25: 28 items, priorities -1..0, dir 1, from 0|1 [orig]	bytes 800 fnv EA7D70BF
+StringSort offset|data|priority #25: 28 items, priorities -1..0, dir 1, from 0|1 [fixed #826]	bytes 800 fnv 891D8BEB
+StringSort offset|data|priority #28: 9 items, priorities -1..1, dir 0, from 0|1 [orig]	bytes 800 fnv 5F824603
+StringSort offset|data|priority #28: 9 items, priorities -1..1, dir 0, from 0|1 [fixed #826]	bytes 800 fnv 6EF0CD69
+StringSort offset|data|priority #29: 10 items, priorities -1..1, dir 1, from 0|1 [orig]	bytes 800 fnv D81D8589
+StringSort offset|data|priority #29: 10 items, priorities -1..1, dir 1, from 0|1 [fixed #826]	bytes 800 fnv 4C2CDFA1
+StringSort offset|data|priority #32: 19 items, priorities -1..3, dir 0, from 0|1 [orig]	bytes 800 fnv 0320345E
+StringSort offset|data|priority #32: 19 items, priorities -1..3, dir 0, from 0|1 [fixed #826]	bytes 800 fnv C285A16E
 StringSort offset|data|priority #33: 6 items, priorities -1..0, dir 1, from 0|1	bytes 800 fnv 90646EA9
-StringSort offset|data|priority #36: 6 items, priorities -1..1, dir 0, from 0|1	bytes 800 fnv AE3D3049
+StringSort offset|data|priority #36: 6 items, priorities -1..1, dir 0, from 0|1 [orig]	bytes 800 fnv AE3D3049
+StringSort offset|data|priority #36: 6 items, priorities -1..1, dir 0, from 0|1 [fixed #826]	bytes 800 fnv 1BA8BF71
 StringSort offset|data|priority #37: 8 items, priorities -1..-1, dir 1, from 0|1	bytes 800 fnv 16B3A3FC
-StringSort offset|data|priority #4: 8 items, priorities -1..0, dir 0, from 0|1	bytes 800 fnv 1F3446B6
-StringSort offset|data|priority #5: 20 items, priorities -1..0, dir 1, from 0|1	bytes 800 fnv 81FE0EC3
+StringSort offset|data|priority #4: 8 items, priorities -1..0, dir 0, from 0|1 [orig]	bytes 800 fnv 1F3446B6
+StringSort offset|data|priority #4: 8 items, priorities -1..0, dir 0, from 0|1 [fixed #826]	bytes 800 fnv 8BFAB46C
+StringSort offset|data|priority #5: 20 items, priorities -1..0, dir 1, from 0|1 [orig]	bytes 800 fnv 81FE0EC3
+StringSort offset|data|priority #5: 20 items, priorities -1..0, dir 1, from 0|1 [fixed #826]	bytes 800 fnv C351173B
 StringSort offset|data|priority #8: 40 items, priorities -1..-1, dir 0, from 0|1	bytes 800 fnv C8D464A8
 StringSort offset|data|priority #9: 39 items, priorities -1..-1, dir 1, from 0|1	bytes 800 fnv 7DD3FF04
 StringSort offset|data|stale a1|1	bytes 800 fnv 5B9FFD5D
@@ -504,6 +526,39 @@ StringSort offset|popped|string 0 at item 0|1	$00000000
 StringSort offset|popped|string 0 at item 3|1	$00000000
 StringSort offset|popped|string 0 at item 6|1	$00000000
 StringSort offset|popped|string 0 at item 9|1	$00000000
+StringSort offset|priority sorted|priority #0: 39 items, priorities -1..2, dir 0, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #0: 39 items, priorities -1..2, dir 0, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #12: 10 items, priorities -1..-1, dir 0, from 0|1	$00000001
+StringSort offset|priority sorted|priority #13: 28 items, priorities -1..1, dir 1, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #13: 28 items, priorities -1..1, dir 1, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #16: 39 items, priorities -1..-1, dir 0, from 0|1	$00000001
+StringSort offset|priority sorted|priority #17: 27 items, priorities -1..-1, dir 1, from 0|1	$00000001
+StringSort offset|priority sorted|priority #1: 5 items, priorities -1..2, dir 1, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #1: 5 items, priorities -1..2, dir 1, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #20: 30 items, priorities -1..0, dir 0, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #20: 30 items, priorities -1..0, dir 0, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #21: 38 items, priorities -1..1, dir 1, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #21: 38 items, priorities -1..1, dir 1, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #24: 26 items, priorities -1..3, dir 0, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #24: 26 items, priorities -1..3, dir 0, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #25: 28 items, priorities -1..0, dir 1, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #25: 28 items, priorities -1..0, dir 1, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #28: 9 items, priorities -1..1, dir 0, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #28: 9 items, priorities -1..1, dir 0, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #29: 10 items, priorities -1..1, dir 1, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #29: 10 items, priorities -1..1, dir 1, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #32: 19 items, priorities -1..3, dir 0, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #32: 19 items, priorities -1..3, dir 0, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #33: 6 items, priorities -1..0, dir 1, from 0|1	$00000001
+StringSort offset|priority sorted|priority #36: 6 items, priorities -1..1, dir 0, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #36: 6 items, priorities -1..1, dir 0, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #37: 8 items, priorities -1..-1, dir 1, from 0|1	$00000001
+StringSort offset|priority sorted|priority #4: 8 items, priorities -1..0, dir 0, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #4: 8 items, priorities -1..0, dir 0, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #5: 20 items, priorities -1..0, dir 1, from 0|1 [orig]	$00000000
+StringSort offset|priority sorted|priority #5: 20 items, priorities -1..0, dir 1, from 0|1 [fixed #826]	$00000001
+StringSort offset|priority sorted|priority #8: 40 items, priorities -1..-1, dir 0, from 0|1	$00000001
+StringSort offset|priority sorted|priority #9: 39 items, priorities -1..-1, dir 1, from 0|1	$00000001
 StringSort offset|sorted|#25: 39 items of 10 bytes, string at 4, dir 0, from 0, lower case|1	$00000001
 StringSort offset|sorted|#35: 4 items of 11 bytes, string at 4, dir 1, from 0, lower case|1	$00000001
 StringSortDir|kept|#0: 20 items of 8 bytes, string at 0, dir 0, from 0, lower case|1	kept
@@ -882,25 +937,39 @@ StringSortItem offset|data|#55: 24 items of 16 bytes, string at 0, dir 1, from 1
 StringSortItem offset|data|#5: 16 items of 9 bytes, string at 4, dir 0, from 5, lower case|1	bytes 800 fnv B8C541BF
 StringSortItem offset|data|#7: 15 items of 13 bytes, string at 0, dir 1, from 7|1	bytes 800 fnv F95D1D11
 StringSortItem offset|data|before init|1	bytes 800 fnv D200F192
-StringSortItem offset|data|priority #10: 23 items, priorities -1..1, dir 0, from 5|1	bytes 800 fnv F6589DF1
-StringSortItem offset|data|priority #11: 17 items, priorities -1..2, dir 1, from 11|1	bytes 800 fnv 12A7F0C4
-StringSortItem offset|data|priority #14: 11 items, priorities -1..0, dir 0, from 2|1	bytes 800 fnv EB46A6FA
-StringSortItem offset|data|priority #15: 28 items, priorities -1..3, dir 1, from 19|1	bytes 800 fnv 801FF0A9
-StringSortItem offset|data|priority #18: 21 items, priorities -1..0, dir 0, from 7|1	bytes 800 fnv 63626207
-StringSortItem offset|data|priority #19: 20 items, priorities -1..0, dir 1, from 3|1	bytes 800 fnv DF3D640A
+StringSortItem offset|data|priority #10: 23 items, priorities -1..1, dir 0, from 5|1 [orig]	bytes 800 fnv F6589DF1
+StringSortItem offset|data|priority #10: 23 items, priorities -1..1, dir 0, from 5|1 [fixed #826]	bytes 800 fnv E897B023
+StringSortItem offset|data|priority #11: 17 items, priorities -1..2, dir 1, from 11|1 [orig]	bytes 800 fnv 12A7F0C4
+StringSortItem offset|data|priority #11: 17 items, priorities -1..2, dir 1, from 11|1 [fixed #826]	bytes 800 fnv E2D9A84E
+StringSortItem offset|data|priority #14: 11 items, priorities -1..0, dir 0, from 2|1 [orig]	bytes 800 fnv EB46A6FA
+StringSortItem offset|data|priority #14: 11 items, priorities -1..0, dir 0, from 2|1 [fixed #826]	bytes 800 fnv 1D9528D2
+StringSortItem offset|data|priority #15: 28 items, priorities -1..3, dir 1, from 19|1 [orig]	bytes 800 fnv 801FF0A9
+StringSortItem offset|data|priority #15: 28 items, priorities -1..3, dir 1, from 19|1 [fixed #826]	bytes 800 fnv 22ED2653
+StringSortItem offset|data|priority #18: 21 items, priorities -1..0, dir 0, from 7|1 [orig]	bytes 800 fnv 63626207
+StringSortItem offset|data|priority #18: 21 items, priorities -1..0, dir 0, from 7|1 [fixed #826]	bytes 800 fnv 00E0993D
+StringSortItem offset|data|priority #19: 20 items, priorities -1..0, dir 1, from 3|1 [orig]	bytes 800 fnv DF3D640A
+StringSortItem offset|data|priority #19: 20 items, priorities -1..0, dir 1, from 3|1 [fixed #826]	bytes 800 fnv 6B8B1850
 StringSortItem offset|data|priority #22: 25 items, priorities -1..0, dir 0, from 19|1	bytes 800 fnv D6B82E62
-StringSortItem offset|data|priority #23: 26 items, priorities -1..2, dir 1, from 19|1	bytes 800 fnv 70AFB20E
-StringSortItem offset|data|priority #26: 17 items, priorities -1..0, dir 0, from 3|1	bytes 800 fnv 5102D490
-StringSortItem offset|data|priority #27: 36 items, priorities -1..2, dir 1, from 0|1	bytes 800 fnv E2E8BA42
-StringSortItem offset|data|priority #2: 35 items, priorities -1..0, dir 0, from 10|1	bytes 800 fnv F978738E
-StringSortItem offset|data|priority #30: 9 items, priorities -1..1, dir 0, from 2|1	bytes 800 fnv B7EC5A3F
+StringSortItem offset|data|priority #23: 26 items, priorities -1..2, dir 1, from 19|1 [orig]	bytes 800 fnv 70AFB20E
+StringSortItem offset|data|priority #23: 26 items, priorities -1..2, dir 1, from 19|1 [fixed #826]	bytes 800 fnv 881EEF7E
+StringSortItem offset|data|priority #26: 17 items, priorities -1..0, dir 0, from 3|1 [orig]	bytes 800 fnv 5102D490
+StringSortItem offset|data|priority #26: 17 items, priorities -1..0, dir 0, from 3|1 [fixed #826]	bytes 800 fnv 7E83DD00
+StringSortItem offset|data|priority #27: 36 items, priorities -1..2, dir 1, from 0|1 [orig]	bytes 800 fnv E2E8BA42
+StringSortItem offset|data|priority #27: 36 items, priorities -1..2, dir 1, from 0|1 [fixed #826]	bytes 800 fnv 68072524
+StringSortItem offset|data|priority #2: 35 items, priorities -1..0, dir 0, from 10|1 [orig]	bytes 800 fnv F978738E
+StringSortItem offset|data|priority #2: 35 items, priorities -1..0, dir 0, from 10|1 [fixed #826]	bytes 800 fnv 68309694
+StringSortItem offset|data|priority #30: 9 items, priorities -1..1, dir 0, from 2|1 [orig]	bytes 800 fnv B7EC5A3F
+StringSortItem offset|data|priority #30: 9 items, priorities -1..1, dir 0, from 2|1 [fixed #826]	bytes 800 fnv 3E0B1621
 StringSortItem offset|data|priority #31: 8 items, priorities -1..-1, dir 1, from 1|1	bytes 800 fnv 8323E046
 StringSortItem offset|data|priority #34: 31 items, priorities -1..1, dir 0, from 30|1	bytes 800 fnv 03D8BC50
-StringSortItem offset|data|priority #35: 25 items, priorities -1..0, dir 1, from 2|1	bytes 800 fnv 547E6DA2
-StringSortItem offset|data|priority #38: 17 items, priorities -1..1, dir 0, from 7|1	bytes 800 fnv 0749A447
+StringSortItem offset|data|priority #35: 25 items, priorities -1..0, dir 1, from 2|1 [orig]	bytes 800 fnv 547E6DA2
+StringSortItem offset|data|priority #35: 25 items, priorities -1..0, dir 1, from 2|1 [fixed #826]	bytes 800 fnv 2B5C804A
+StringSortItem offset|data|priority #38: 17 items, priorities -1..1, dir 0, from 7|1 [orig]	bytes 800 fnv 0749A447
+StringSortItem offset|data|priority #38: 17 items, priorities -1..1, dir 0, from 7|1 [fixed #826]	bytes 800 fnv 8F0E40ED
 StringSortItem offset|data|priority #39: 3 items, priorities -1..2, dir 1, from 1|1	bytes 800 fnv E3744B83
 StringSortItem offset|data|priority #3: 29 items, priorities -1..3, dir 1, from 27|1	bytes 800 fnv BE60AD77
-StringSortItem offset|data|priority #6: 31 items, priorities -1..1, dir 0, from 22|1	bytes 800 fnv 33494A99
+StringSortItem offset|data|priority #6: 31 items, priorities -1..1, dir 0, from 22|1 [orig]	bytes 800 fnv 33494A99
+StringSortItem offset|data|priority #6: 31 items, priorities -1..1, dir 0, from 22|1 [fixed #826]	bytes 800 fnv 4607E313
 StringSortItem offset|data|priority #7: 3 items, priorities -1..1, dir 1, from 0|1	bytes 800 fnv E836C85A
 StringSortItem offset|kept|#13: 30 items of 12 bytes, string at 4, dir 0, from 5|1	kept
 StringSortItem offset|kept|#15: 8 items of 15 bytes, string at 0, dir 1, from 6, lower case|1	kept
@@ -1007,6 +1076,39 @@ StringSortItem offset|popped|priority #39: 3 items, priorities -1..2, dir 1, fro
 StringSortItem offset|popped|priority #3: 29 items, priorities -1..3, dir 1, from 27|1	$00000000
 StringSortItem offset|popped|priority #6: 31 items, priorities -1..1, dir 0, from 22|1	$00000000
 StringSortItem offset|popped|priority #7: 3 items, priorities -1..1, dir 1, from 0|1	$00000000
+StringSortItem offset|priority sorted|priority #10: 23 items, priorities -1..1, dir 0, from 5|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #10: 23 items, priorities -1..1, dir 0, from 5|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #11: 17 items, priorities -1..2, dir 1, from 11|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #11: 17 items, priorities -1..2, dir 1, from 11|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #14: 11 items, priorities -1..0, dir 0, from 2|1	$00000001
+StringSortItem offset|priority sorted|priority #15: 28 items, priorities -1..3, dir 1, from 19|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #15: 28 items, priorities -1..3, dir 1, from 19|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #18: 21 items, priorities -1..0, dir 0, from 7|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #18: 21 items, priorities -1..0, dir 0, from 7|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #19: 20 items, priorities -1..0, dir 1, from 3|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #19: 20 items, priorities -1..0, dir 1, from 3|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #22: 25 items, priorities -1..0, dir 0, from 19|1	$00000001
+StringSortItem offset|priority sorted|priority #23: 26 items, priorities -1..2, dir 1, from 19|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #23: 26 items, priorities -1..2, dir 1, from 19|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #26: 17 items, priorities -1..0, dir 0, from 3|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #26: 17 items, priorities -1..0, dir 0, from 3|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #27: 36 items, priorities -1..2, dir 1, from 0|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #27: 36 items, priorities -1..2, dir 1, from 0|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #2: 35 items, priorities -1..0, dir 0, from 10|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #2: 35 items, priorities -1..0, dir 0, from 10|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #30: 9 items, priorities -1..1, dir 0, from 2|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #30: 9 items, priorities -1..1, dir 0, from 2|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #31: 8 items, priorities -1..-1, dir 1, from 1|1	$00000001
+StringSortItem offset|priority sorted|priority #34: 31 items, priorities -1..1, dir 0, from 30|1	$00000001
+StringSortItem offset|priority sorted|priority #35: 25 items, priorities -1..0, dir 1, from 2|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #35: 25 items, priorities -1..0, dir 1, from 2|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #38: 17 items, priorities -1..1, dir 0, from 7|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #38: 17 items, priorities -1..1, dir 0, from 7|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #39: 3 items, priorities -1..2, dir 1, from 1|1	$00000001
+StringSortItem offset|priority sorted|priority #3: 29 items, priorities -1..3, dir 1, from 27|1	$00000001
+StringSortItem offset|priority sorted|priority #6: 31 items, priorities -1..1, dir 0, from 22|1 [orig]	$00000000
+StringSortItem offset|priority sorted|priority #6: 31 items, priorities -1..1, dir 0, from 22|1 [fixed #826]	$00000001
+StringSortItem offset|priority sorted|priority #7: 3 items, priorities -1..1, dir 1, from 0|1	$00000001
 finit|kept|finit|1	kept
 finit|popped|finit|1	$00000000
 init|kept|init|1	kept

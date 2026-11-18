@@ -32,13 +32,8 @@
  * opened.  No
  * assembler besides the thunks.
  *
- * BUG(orig):
- *   - Swapped by the priority, the item's string is not loaded: the
- *     compare string becomes the one of the last string comparison
- *     (a1, possibly from an earlier item, or a1 of the caller if none
- *     was made yet), and the priority to compare with is not updated
- *     (the swapped-in item's priority is not taken over) (#826).
- *   - size 0 swaps 65536 bytes (DBRA with size - 1 = $FFFF) (#827).
+ * BUG(orig): size 0 swaps 65536 bytes (DBRA with size - 1 = $FFFF)
+ * (#827).
  *
  * Fixed (#824): finit closed utility.library without checking it was
  * opened (CloseLibrary(0), a crash on Kickstart 1.x); it tests the base.
@@ -46,6 +41,11 @@
  * read before the test whether the priority is enabled: with the default
  * -1 a long at data - 1, an odd address - an address error on a 68000;
  * it is read only for an offset >= 0.
+ * Fixed (#826): swapped by the priority, the item's string was not loaded
+ * (the compare string became the one of the last string comparison, or
+ * a1 of the caller if none was made yet) and the swapped-in item's
+ * priority was not taken over, so the list was not sorted; both are
+ * taken over now.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -189,25 +189,25 @@ static ULONG BLITZ_ROUTINE listbase_c(ULONG list BL_REG(d0))
  * Each item is compared with all following ones (by the priority if
  * SortPriorityOffset enabled it, then utility.library Stricmp,
  * case-insensitive, in the StringSortDir order) and the data (size bytes)
- * swapped where the order is wrong; the priority is read only when it is
- * enabled (Fixed (#825)).  BUG(orig): swapped by the priority, the
- * compare string is not loaded (#826); size 0 swaps 65536 bytes (#827).
+ * swapped where the order is wrong; after a swap the item in front is
+ * compared with its new string and priority (Fixed (#826)).  The priority
+ * is read only when it is enabled (Fixed (#825)).  BUG(orig): size 0
+ * swaps 65536 bytes (#827).
  * @param list    d0: the list ("lIsT" at -4)
  * @param size    d1: sizeof.type, the bytes swapped
  * @param off     d5: the offset of the string field (a string pointer)
  * @param hdr     d6: the list header field of the start item (-28 the
  *                first, -32 the current item)
- * @param cmpstr  a1: the caller's a1, the compare string after a swap by
- *                priority before any string compare (#826)
  * @return BB_TRUE when done; BB_FALSE without utility.library, if it is
  *         no list, the start item is 0 or a string pointer is 0 (then
  *         stopped where it was)
  */
-static BB_BOOL dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *cmpstr)
+static BB_BOOL dosort(UBYTE *list, UWORD size, WORD off, WORD hdr)
 {
     struct Library *util = utillibbase;
     UWORD dbsize = (UWORD)(size - 1);   /* d7: DBRA count */
     const char *curstr;                 /* a0 */
+    const char *cmpstr;                 /* a1 */
     struct bb_listitem *item;              /* a3 */
     WORD prioff;                        /* d4: priorityoffset */
 
@@ -240,8 +240,13 @@ static BB_BOOL dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *c
                 LONG v = FIELD(item, prioff, LONG);
                 if (v < priority)
                     continue;
-                if (v > priority)
-                    goto doswap;        /* BUG(orig): a1 not loaded (#826) */
+                if (v > priority) {     /* Fixed (#826): its string and priority */
+                    cmpstr = FIELD(item, off, const char *);
+                    if (!cmpstr)
+                        return BB_FALSE;
+                    priority = v;
+                    goto doswap;
+                }
             }
             cmpstr = FIELD(item, off, const char *);
             if (!cmpstr)
@@ -271,13 +276,11 @@ doswap:
  * the string at offset 0 of the data (see dosort).
  * @param list    d0: the list
  * @param size    d1.w: sizeof.type
- * @param cmpstr  a1: the caller's a1 (#826)
  * @return d0: BB_TRUE when done, BB_FALSE on failure
  */
-static BB_BOOL BLITZ_ROUTINE stringlistsort2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                               const char *cmpstr BL_REG(a1))
+static BB_BOOL BLITZ_ROUTINE stringlistsort2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1))
 {
-    return dosort(list, size, 0, FIRSTITEM, cmpstr);
+    return dosort(list, size, 0, FIRSTITEM);
 }
 
 /**
@@ -286,13 +289,12 @@ static BB_BOOL BLITZ_ROUTINE stringlistsort2_c(UBYTE *list BL_REG(d0), UWORD siz
  * @param list    d0: the list
  * @param size    d1.w: sizeof.type
  * @param off     d2.w: the offset of the string field
- * @param cmpstr  a1: the caller's a1 (#826)
  * @return d0: BB_TRUE when done, BB_FALSE on failure
  */
 static BB_BOOL BLITZ_ROUTINE stringlistsort_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                              UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
+                                              UWORD off BL_REG(d2))
 {
-    return dosort(list, size, (WORD)off, FIRSTITEM, cmpstr);
+    return dosort(list, size, (WORD)off, FIRSTITEM);
 }
 
 /**
@@ -300,13 +302,11 @@ static BB_BOOL BLITZ_ROUTINE stringlistsort_c(UBYTE *list BL_REG(d0), UWORD size
  * item by the string at offset 0 of the data (see dosort).
  * @param list    d0: the list
  * @param size    d1.w: sizeof.type
- * @param cmpstr  a1: the caller's a1 (#826)
  * @return d0: BB_TRUE when done, BB_FALSE on failure
  */
-static BB_BOOL BLITZ_ROUTINE stringlistsortitem2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                                   const char *cmpstr BL_REG(a1))
+static BB_BOOL BLITZ_ROUTINE stringlistsortitem2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1))
 {
-    return dosort(list, size, 0, CURRITEM, cmpstr);
+    return dosort(list, size, 0, CURRITEM);
 }
 
 /**
@@ -315,13 +315,12 @@ static BB_BOOL BLITZ_ROUTINE stringlistsortitem2_c(UBYTE *list BL_REG(d0), UWORD
  * @param list    d0: the list
  * @param size    d1.w: sizeof.type
  * @param off     d2.w: the offset of the string field
- * @param cmpstr  a1: the caller's a1 (#826)
  * @return d0: BB_TRUE when done, BB_FALSE on failure
  */
 static BB_BOOL BLITZ_ROUTINE stringlistsortitem_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                                  UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
+                                                  UWORD off BL_REG(d2))
 {
-    return dosort(list, size, (WORD)off, CURRITEM, cmpstr);
+    return dosort(list, size, (WORD)off, CURRITEM);
 }
 
 /* Registers: the original keeps everything in StringSortDir,

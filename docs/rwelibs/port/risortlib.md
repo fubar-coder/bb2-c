@@ -42,8 +42,7 @@ opened.
 All C behind `BLITZ_THUNK`s: d0–d1/a0–a1 kept for the statements, init
 and finit, d1/a0–a1 for the rest (the original changes d0–d2/d5–d7/
 a0–a1/a3/a6 in the sorts, d0–d1/a0–a1/a6 in init/finit, nothing in the
-statements and `ListBase`). The caller's a1 is a parameter of the sorts:
-see the second bug below.
+statements and `ListBase`).
 
 ## Fixed
 
@@ -60,14 +59,16 @@ kind F):
   of two or more items without `SortPriorityOffset` (68020 and up read
   it, the result was not used). It is read only for an offset ≥ 0
   (#825).
+* After a swap by priority the item's string was not loaded: the compare
+  string became the one of the last string comparison (a1, possibly of
+  an earlier item, or the caller's a1 if there was none yet), and the
+  priority to compare with stayed the old one (the swapped-in item's was
+  not taken over): with `SortPriorityOffset` the list was not sorted.
+  Both are taken over now; a string pointer 0 in the swapped-in item
+  stops the sort with 0, as in a string comparison (#826).
 
 ## BUG(orig), kept
 
-* After a swap by priority the item's string is not loaded: the compare
-  string becomes the one of the last string comparison (a1, possibly of
-  an earlier item, or the caller's a1 if there was none yet), and the
-  priority to compare with stays the old one (the swapped-in item's is
-  not taken over). The result is then not sorted (#826).
 * `size` 0 swaps 65536 bytes (`DBRA` with size − 1 = `$FFFF`) (#827).
 
 ## Test
@@ -86,6 +87,7 @@ word arguments); lists of lower case strings checked to be sorted; a
 string pointer 0 at several places (0); 46 priority sorts (the long at 0
 or 8, priorities from small ranges with negative ones, priorities
 disabled by other negative offsets) including the stale compare string
-(the caller's a1 set to a string). Checked to fail when the priority bug
-is "fixed". Not covered: size 0; the 68000 address error (#825) is
+(the caller's a1 set to a string); the priority sorts are checked to
+leave the priorities in order (the original's do not in 29 of 43: the
+`[orig]`/`[fixed #826]` pairs). Not covered: size 0; the 68000 address error (#825) is
 the bug-orig test `risortlib-priority-odd-read` on the A600.

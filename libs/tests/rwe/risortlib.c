@@ -19,9 +19,11 @@
  * offset 0 / at the offset given), sizes 8..17 (odd ones too), the
  * word arguments with garbage in the upper words; a string pointer 0
  * (stops: 0); the priority sort (SortPriorityOffset, priorities from a
- * small range so that equal ones fall back to the strings), including
- * BUG(orig) #826 - the stale compare string after a swap by priority, which
- * a1 of the caller can be (set to a string here); ListBase; finit.  For
+ * small range so that equal ones fall back to the strings; the
+ * priorities checked to be in order, which the original's are not: #826,
+ * fixed), including the compare string after a swap by priority, which
+ * in the original is stale (a1 of the caller, set to a string here, #826);
+ * ListBase; finit.  For
  * lists of lower case strings without the priority the result is also
  * checked to be sorted.  Not covered: size 0 (BUG(orig) #827: swaps 65536
  * bytes), the 68000 address error of the priority read (fixed, #825: the
@@ -155,6 +157,17 @@ static int sorted(int soff, int dir)
     return 1;
 }
 
+/* the priorities at poff in list order from item `from` on: the larger
+   first (#826) */
+static int prisorted(int poff, int from)
+{
+    int i;
+    for (i = from + 1; i < nitems; i++)
+        if (*(LONG *)(flat + (i - 1) * isize + poff) < *(LONG *)(flat + i * isize + poff))
+            return 0;
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
@@ -262,6 +275,7 @@ int main(int argc, char **argv)
         build(n, 13, curi);
         sort(e, 1, 4);
         BOTH("-1", R.d[0] == 0xffffffffUL);
+        BOTH("priority sorted", prisorted(0, curi));
     }
     /* priority at 8 with the string at 0 (form 0), and disabled again
        with a negative offset other than -1 */
@@ -273,9 +287,11 @@ int main(int argc, char **argv)
         build(n, 16, 0);
         sort(E_SORT, 0, 0);
         BOTH("-1", R.d[0] == 0xffffffffUL);
+        if (i < 3)
+            BOTH("priority sorted", prisorted(8, 0));
     }
-    /* BUG(orig) (#826): the first comparison swaps by priority - the compare
-       string becomes a1 of the caller ("middle") */
+    /* the first comparison swaps by priority - in the original the compare
+       string becomes a1 of the caller ("middle"), #826 (fixed) */
     {
         static const char *const two[] = { "aaa", "zzz" };
         sprintf(VEC, "stale a1");
