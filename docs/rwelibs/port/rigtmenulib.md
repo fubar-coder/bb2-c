@@ -73,12 +73,22 @@ follow all check functions: before, the check functions behind the
 first thunk landed in the normal code (`docs/libs/deviations.md`,
 section 6; the three `blitzlib check` warnings of rigtmenulib).
 
+## Fixed
+
+Intended deviations from the original:
+
+* **GTMenuItem form 4** (with UserData) takes its mutual exclude from
+  −12(a2), where the compiler pushes the 7th argument (from the 7th on
+  the arguments are pushed, d6 holds the last one: UserData). The
+  original jumps past `MOVE.l d6,me`: the item got the mutual exclude of
+  the GTMenuItem/GTSubItem before (#692; test
+  `rigtmenulib-menuitem-form4-mutex`, `libs_emulator` cases
+  `[fixed #692]` of `rwe_rigtmenulib`).
+
 ## BUG(orig), kept
 
 * **finit** closes gadtools.library only if it is NOT open (`TST.l
   gtbase:BNE 'ok`), so it never closes it (#690).
-* **GTMenuItem form 4** (with UserData) jumps past `MOVE.l d6,me`: the
-  item gets the mutual exclude of the GTMenuItem/GTSubItem before (#692).
 * **The shortcut$ is tested by the low word of its address** (`TST.w
   d5`/`d6`): a string at an address with low word 0 counts as no shortcut
   (#694).
@@ -125,7 +135,9 @@ Covered:
 
 * GTMenuTitle at the head, between, at the end, and behind a missing
   title;
-* GTMenuItem forms 0–4 (form 4 keeps the previous mutual exclude) and
+* GTMenuItem forms 0–4 (the original's form 4 keeps the previous mutual
+  exclude, #692; the arguments from the 7th on as the compiler passes
+  them: pushed, d6 the last one) and
   GTSubItem forms 0–4, with missing titles, items and sub items;
 * CreateMenuStrip twice (the old strip freed);
 * GTSetMenu with and without a strip, and on a window that has one;

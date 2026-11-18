@@ -17,7 +17,8 @@
  * functions, the kept registers; memlib's memory back at the end.
  * Covered: every entry and form: GTMenuTitle (at the head, in the
  * middle, at the end, behind a missing one), GTMenuItem forms 0-4
- * (BUG(orig) (#692): form 4 keeps the mutual exclude of the call before),
+ * (#692: the original's form 4 keeps the mutual exclude of the call
+ * before, the port's takes its own),
  * GTSubItem forms 0-4 (shortcut$ from the stack), missing titles/items,
  * CreateMenuStrip (twice: the old strip freed), GTSetMenu (with and
  * without a strip, a window with a strip), GTUnSetMenu, GTMenuState all
@@ -159,7 +160,10 @@ static void title(int n, ULONG menu, const char *text)
 
 /* GTMenuItem (sub < 0) or GTSubItem, form 0-4; the stack: -4 text's
    length, -8 shortcut's, -12 (GTSubItem) shortcut$, -16 mutual exclude,
-   -20 UserData (GTMenuItem form 4: UserData at -16) */
+   -20 UserData (GTMenuItem: -12 the mutual exclude in forms 3 and 4,
+   -16 UserData in form 4).  As the compiler passes them: from the 7th
+   argument on each one is pushed and d6 holds the last one (maineval,
+   regat 6), so GTMenuItem form 4 has UserData in d6 */
 static void item(int n, int form, ULONG fl, ULONG menu, ULONG it, LONG sub, const char *text,
                  const char *sc, ULONG mx, ULONG ud)
 {
@@ -178,7 +182,10 @@ static void item(int n, int form, ULONG fl, ULONG menu, ULONG it, LONG sub, cons
             R.d[4] = WA(sub); R.d[5] = (ULONG)text; R.d[6] = (ULONG)sc;
             stk[5] = (ULONG)sc; stk[4] = mx; stk[3] = ud;
         } else {
-            R.d[4] = (ULONG)text; R.d[5] = (ULONG)sc; R.d[6] = mx;
+            R.d[4] = (ULONG)text; R.d[5] = (ULONG)sc;
+            R.d[6] = form == 4 ? ud : mx;
+            if (form >= 3)
+                stk[5] = mx;
             stk[4] = ud;
         }
         R.a[2] = (ULONG)&stk[8]; R.a[3] = (ULONG)obj[n]);
@@ -337,7 +344,7 @@ int main(int argc, char **argv)
     item(0, 0, 0, 1, 1, -1, NULL, NULL, 0, 0);          /* bar label */
     item(0, 1, CHECKIT | MENUTOGGLE, 1, 2, -1, "Toggle", NULL, 0, 0);
     item(0, 3, CHECKIT, 1, 0, -1, "Mx", "M", 6, 0);     /* at the head */
-    item(0, 4, CHECKIT | CHECKED, 2, 0, -1, "Data", "D", 3, 0x1234);    /* mx stays 6 */
+    item(0, 4, CHECKIT | CHECKED, 2, 0, -1, "Data", "D", 3, 0x1234);    /* orig: mx stays 6 (#692) */
     item(0, 2, 0, 3, 0, -1, "Cut", "X", 0, 0);
     item(0, 2, 0, 3, 1, -1, "Copy", "C", 0, 0);
     item(0, 2, 0, 9, 0, -1, "None", "N", 0, 0);         /* no title 9 */

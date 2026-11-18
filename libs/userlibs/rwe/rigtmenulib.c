@@ -33,8 +33,6 @@
  * BUG(orig), kept:
  *   - finit closes gadtools.library only if it is NOT open (TST.l:BNE
  *     'ok): never (#690).
- *   - GTMenuItem with UserData (form 4) keeps the mutual exclude of the
- *     GTMenuItem/GTSubItem before (it jumps past MOVE.l d6,me) (#692).
  *   - The shortcut$ is tested by its low word (TST.w d5/d6): a string at
  *     an address with low word 0 counts as none (#694).
  *   - CreateMenuStrip with no title reads the list at address 0; a failed
@@ -47,6 +45,10 @@
  *     (#691).
  *   - GTMenuState/GTSetMenuChecked change the flags of the menu strip
  *     directly, also while it is attached to a window (#693).
+ * Fixed (intended deviations):
+ *   - GTMenuItem with UserData (form 4) takes its mutual exclude (from
+ *     -12(a2), the pushed 7th argument); the original jumps past MOVE.l
+ *     d6,me and keeps the one of the GTMenuItem/GTSubItem before (#692).
  * Like the original, no defects: GTMenuTitle allocates the title
  * uncleared (MEMF_PUBLIC; all three fields are written); +8 counts every
  * entry added and is never decreased (the array of CreateMenuStrip,
@@ -663,20 +665,25 @@ BLITZ_THUNK(_gtmenuitem4, gtmenuitem4_c, "d0-d1/a0-a1");
  * @brief GTMenuItem ...,itemtext$,shortcut$,mutualexclude,UserData:
  * insert an item with UserData.
  *
- * BUG(orig) (#692): the mutual exclude is not taken (it jumps past MOVE.l
- * d6,me): it stays from the GTMenuItem/GTSubItem before.
+ * Fixed (#692): the mutual exclude is taken from -12(a2), where the
+ * compiler pushes the 7th argument (from the 7th on the arguments are
+ * pushed, d6 holds the last one: here UserData).  The original jumps past
+ * MOVE.l d6,me and keeps the mutual exclude of the GTMenuItem/GTSubItem
+ * before.
  * @param itemflags  d1.w: the NewMenu flags
  * @param menu       d2.w: the title
  * @param itemno     d3.w: the item's number
  * @param text       d4: itemtext$
  * @param shortcut   d5: shortcut$ (#694)
- * @param exclude    d6: the mutual exclude mask (ignored, #692)
- * @param stack      a2: the argument stack, UserData at -16(a2)
+ * @param exclude    d6: UserData, the last argument (not used)
+ * @param stack      a2: the argument stack, the mutual exclude at -12(a2),
+ *                   UserData at -16(a2)
  * @param obj        a3: the GTMenuList object
  */
 static void BLITZ_ROUTINE gtmenuitem5_c(ITEMARGS)
 {
     (void)exclude;
+    me = stack[-3];                     /* -12(a2) */
     userdata = stack[-4];               /* -16(a2) */
     gtitem(itemflags, menu, itemno, text, shortcut, stack, obj);
 }
