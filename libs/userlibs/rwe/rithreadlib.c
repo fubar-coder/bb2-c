@@ -48,12 +48,12 @@
  *     run in the same task (from the editor, or a CLI program in the
  *     shell's process) took one more signal; it now frees it, also when
  *     dos.library did not open, and clears the base (#839).
- *
- * BUG(orig): CreateThread counts the thread before CreateNewProc and does
- * not test its result: a process that cannot be created (too little
- * memory) leaves ActiveThreads one too high, and finit waits for it
- * forever (the original returns only on a signal left from an earlier
- * count of 0).
+ *   - CreateThread counted the thread before CreateNewProc and did not
+ *     test its result: a process that could not be created (too little
+ *     memory) left ActiveThreads one too high, and finit waited for it
+ *     forever (the original returned only on a signal left from an
+ *     earlier count of 0); the count goes down again when CreateNewProc
+ *     returns 0 (#1086).
  *
  * No defects: the memory is not checked, but memlib's globalloc never
  * returns 0 (it raises "Out of Memory!"); the name is the string
@@ -197,7 +197,10 @@ ULONG BLITZ_ROUTINE c_activethreads(void)
  * and jumps to the address.  The thread shares the program's globals
  * (a5).  Fixed (#838): the original keeps registers, memory and address
  * in single variables - a second CreateThread before the first thread
- * has started gives both threads the second call's.
+ * has started gives both threads the second call's.  When CreateNewProc
+ * returns 0 the count goes down again (Fixed (#1086): the original kept
+ * it, ActiveThreads one too high and finit waiting for that thread; the
+ * memory stays allocated until memlib's finit, as in the original).
  * @param r  a0: the registers of the call as the thunk pushed them,
  *           d0-d7/a0-a6 (d0 = name$, the process name as it is, which
  *           CreateNewProc copies; d1 = address)
@@ -245,9 +248,10 @@ void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
         struct Process *p = (struct Process *)
             BLITZ_BASEJSR(th.dbase, LVO_CreateNewProc, cr);
 
-        /* BUG(orig): without a process the count stays one too high */
         if (p)
             p->pr_Task.tc_UserData = st;
+        else                            /* Fixed (#1086): no thread to count */
+            __asm__ volatile("subq.l #1,%0" : "+m"(th.threadcount) : : "cc");
     }
     Permit();
 }

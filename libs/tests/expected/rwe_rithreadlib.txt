@@ -1,6 +1,6 @@
 # capture rwe_rithreadlib 1
-|calls||1	$00000013
-ActiveThreads|calls|#18|1	$00000008
+|calls||1	$00000016
+ActiveThreads|calls|#21|1	$00000009
 ActiveThreads|count|#0|1	$00000000
 ActiveThreads|count|#1|1	$00000001
 ActiveThreads|count|#2|1	$00000002
@@ -10,6 +10,8 @@ ActiveThreads|count|#5|1	$00000000
 ActiveThreads|count|#6|1 [orig]	$00000001
 ActiveThreads|count|#6|1 [fixed #837]	$00000000
 ActiveThreads|count|#7|1	$00000000
+ActiveThreads|count|#8|1 [orig]	$00000001
+ActiveThreads|count|#8|1 [fixed #1086]	$00000000
 ActiveThreads|expected count|#0|1	$00000001
 ActiveThreads|expected count|#1|1	$00000001
 ActiveThreads|expected count|#2|1	$00000001
@@ -24,6 +26,7 @@ ActiveThreads|kept|#14|1	kept
 ActiveThreads|kept|#17|1	kept
 ActiveThreads|kept|#18|1	kept
 ActiveThreads|kept|#2|1	kept
+ActiveThreads|kept|#21|1	kept
 ActiveThreads|kept|#6|1	kept
 ActiveThreads|kept|#8|1	kept
 ActiveThreads|kept|#9|1	kept
@@ -32,9 +35,11 @@ ActiveThreads|popped|#14|1	$00000000
 ActiveThreads|popped|#17|1	$00000000
 ActiveThreads|popped|#18|1	$00000000
 ActiveThreads|popped|#2|1	$00000000
+ActiveThreads|popped|#21|1	$00000000
 ActiveThreads|popped|#6|1	$00000000
 ActiveThreads|popped|#8|1	$00000000
 ActiveThreads|popped|#9|1	$00000000
+CreateNewProc|calls|patched to fail|1	$00000001
 CreateThread|kept|#13|1	kept
 CreateThread|kept|#15|1	kept
 CreateThread|kept|#5|1	kept
@@ -43,6 +48,8 @@ CreateThread|popped|#13|1	$00000000
 CreateThread|popped|#15|1	$00000000
 CreateThread|popped|#5|1	$00000000
 CreateThread|popped|#7|1	$00000000
+CreateThread (CreateNewProc fails)|kept|#20|1	kept
+CreateThread (CreateNewProc fails)|popped|#20|1	$00000000
 CreateThread (no dos.library)|kept|#1|1	kept
 CreateThread (no dos.library)|popped|#1|1	$00000000
 finit (no dos.library)|kept|#3|1	kept
@@ -53,9 +60,11 @@ finit (waits for B)|kept|#10|1	kept
 finit (waits for B)|popped|#10|1	$00000000
 init|kept|#0|1	kept
 init|kept|#12|1	kept
+init|kept|#19|1	kept
 init|kept|#4|1	kept
 init|popped|#0|1	$00000000
 init|popped|#12|1	$00000000
+init|popped|#19|1	$00000000
 init|popped|#4|1	$00000000
 signals|A ended: no signal|pending 3|1	$00000001
 signals|C ended: signal pending|pending 3|1	$00000001
@@ -74,6 +83,7 @@ signals|library signal|pending 3|1 [fixed #837]	$00000000
 signals|phase 0: none||1	$00000001
 signals|phase 1: one||1	$00000001
 signals|phase 2: one||1	$00000001
+signals|phase 3: one||1	$00000001
 thread|a0 = the code|A|1	$00000001
 thread|a0 = the code|B|1	$00000001
 thread|a0 = the code|C|1	$00000001

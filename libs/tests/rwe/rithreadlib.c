@@ -28,6 +28,11 @@
  *      pending), thread D, finit: waits until D has ended (0; the
  *      original returns at once while D runs, ActiveThreads still 1,
  *      fixed #837), D ends.
+ *   3  init again, CreateThread with CreateNewProc patched to return 0
+ *      (for the test task only), ActiveThreads (the original 1: it counts
+ *      the thread before the call and does not test the result, fixed
+ *      #1086: 0); no finit (the original's would wait for that thread
+ *      forever), the test frees the signal and closes dos.library.
  * Whether the signal of each init is still allocated after its finit
  * (the original never frees it, fixed #839; the test frees what is left).
  * Two CreateThread before the first thread runs (#838) are the bug-orig
@@ -64,7 +69,7 @@ static struct seen seen[4];
 static volatile int slot;               /* the record of the next thread */
 static struct Task *testtask;
 static ULONG startsig;
-static ULONG libsig[3];                 /* the signal init took, per phase */
+static ULONG libsig[4];                 /* the signal init took, per phase */
 static ULONG active[NREC];
 static int nactive;
 static ULONG pending[4];
@@ -83,6 +88,28 @@ __asm__(
 "   jsr     _thread_c\n"
 "   addq.l  #4,sp\n"
 "   movem.l (sp)+,d0-d7/a0-a6\n"
+"   rts\n"
+);
+
+/* CreateNewProc patched to fail (phase 3): 0 for the test task, the
+   system's CreateNewProc for every other task */
+struct Task *cnp_task;
+APTR cnp_old;
+ULONG cnp_calls;
+void cnp_fail(void);
+__asm__(
+"   .text\n"
+"   .even\n"
+"   .globl  _cnp_fail\n"
+"_cnp_fail:\n"
+"   move.l  4.w,a0\n"
+"   move.l  276(a0),a0\n"               /* ThisTask */
+"   cmp.l   _cnp_task,a0\n"
+"   beq.s   1f\n"
+"   move.l  _cnp_old,-(sp)\n"
+"   rts\n"
+"1: addq.l  #1,_cnp_calls\n"
+"   moveq   #0,d0\n"
 "   rts\n"
 );
 
@@ -243,6 +270,31 @@ static void phase2(void)
     pending[3] = SetSignal(0, 0) & libsig[2];
 }
 
+/* CreateThread whose CreateNewProc fails.  No finit: in the original the
+   count stays 1, and its finit would wait for a thread that never ends
+   (#1086); the test frees the signal and closes dos.library in its
+   place */
+static void phase3(void)
+{
+    initcall(3);
+    Forbid();
+    cnp_task = testtask;
+    cnp_old = SetFunction((struct Library *)DOSBase, -498, (APTR)cnp_fail);
+    CacheClearU();
+    Permit();
+    call(CREATE, "CreateThread (CreateNewProc fails)", (ULONG)names[0], (ULONG)thread_entry);
+    Forbid();
+    SetFunction((struct Library *)DOSBase, -498, cnp_old);
+    CacheClearU();
+    Permit();
+    activecount();
+    if (libsig[3]) {
+        SetSignal(0, libsig[3]);
+        FreeSignal(__builtin_ctzl(libsig[3]));
+        CloseLibrary((struct Library *)DOSBase);    /* the one of init */
+    }
+}
+
 int main(int argc, char **argv)
 {
     static const char *libnames[] = { "memlib", LIB, NULL };
@@ -261,6 +313,7 @@ int main(int argc, char **argv)
     KEEPS("CreateThread", d2-d7|a2|a3);
     KEEPS("finit (waits for B)", d0-d7|a2|a3);
     KEEPS("finit (signal pending, D runs)", d0-d7|a2|a3);
+    KEEPS("CreateThread (CreateNewProc fails)", d2-d7|a2|a3);
     testtask = FindTask(NULL);
     {
         BYTE b = AllocSignal(-1);
@@ -282,6 +335,7 @@ int main(int argc, char **argv)
     phase0();
     phase1();
     phase2();
+    phase3();
     /* the signals the library left allocated (the original's) */
     for (i = 0; i < 32; i++)
         if ((allocated[1] | allocated[2]) & (1UL << i)) {
@@ -321,11 +375,15 @@ int main(int argc, char **argv)
             BOTH("expected count", active[k] == want[k]);
         }
     }
+    ROUT = "CreateNewProc";
+    strcpy(VEC, "patched to fail");
+    OBS("calls", cnp_calls);
     ROUT = "signals";
     strcpy(VEC, "");
     BOTH("phase 0: none", libsig[0] == 0);
     BOTH("phase 1: one", libsig[1] != 0 && !(libsig[1] & (libsig[1] - 1)));
     BOTH("phase 2: one", libsig[2] != 0 && !(libsig[2] & (libsig[2] - 1)));
+    BOTH("phase 3: one", libsig[3] != 0 && !(libsig[3] & (libsig[3] - 1)));
     for (k = 0; k < 4; k++) {
         sprintf(VEC, "pending %d", k);
         OBS("library signal", pending[k] != 0);

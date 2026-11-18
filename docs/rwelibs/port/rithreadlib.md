@@ -72,14 +72,15 @@ kind F):
   threads the second call's registers, memory and code (#838; test
   `rithreadlib-shared-start-state`). The scheduling is unchanged: the
   new process still runs when the scheduler picks it.
-
-## BUG(orig), kept
-
-* `CreateThread` counts the thread before `CreateNewProc` and does not
-  test its result: when the process cannot be created (too little
-  memory), `ActiveThreads` stays one too high and finit waits for a
-  thread that never ends (the original returns only if a signal from an
-  earlier count of 0 is still pending).
+* `CreateThread` lowers the count again when `CreateNewProc` returns 0.
+  The original counted the thread before the call and did not test its
+  result: when the process could not be created (too little memory),
+  `ActiveThreads` stayed one too high and finit waited for a thread that
+  never ends (the original returned only if a signal from an earlier
+  count of 0 was still pending; with #837 fixed it would always wait).
+  The memory taken for the thread stays allocated until memlib's finit,
+  as in the original (#1086; `libs_emulator` cases `[fixed #1086]` of
+  `rwe_rithreadlib`: phase 3).
 
 ## Original behaviour that is not a defect
 
@@ -111,7 +112,12 @@ when the test ends.
 * phase 2: init again, thread C ends (0, the signal stays pending),
   thread D, finit waits until D has ended (`ActiveThreads` 0; the
   original returns at once while D runs, `ActiveThreads` 1: fixed #837),
-  D ends.
+  D ends;
+* phase 3: init again, `CreateThread` with dos.library's `CreateNewProc`
+  patched (SetFunction) to return 0 for the test task, `ActiveThreads`
+  (the original 1, fixed #1086: 0). No finit: the original's would wait
+  for the thread that was never created; the test frees the signal and
+  closes dos.library in its place.
 
 Observed: the registers of every call (the kept ones stated per
 routine, `KEEPS`),
