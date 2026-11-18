@@ -11,12 +11,6 @@
     ([#697](https://github.com/fubar-coder/bb2-c/issues/697)).
 "IPColour":
   text: Sets the foreground pen, and the background pen if given, of the Rast in use and of the text of `IPOutput`. A negative pen leaves that pen unchanged.
-  notes: |
-    Kept from the original: with two pens and a negative `fgpen`, the
-    background pen is not set on the Rast but written into other memory
-    of the program
-    ([#696](https://github.com/fubar-coder/bb2-c/issues/696)). The pen of
-    the text of `IPOutput` is still set.
 "IPOutput":
   text: Makes the Rast object `rast` the output channel, so that `Print` and `NPrint` draw their text on its bitmap until `DefaultOutput` or another output command.
   notes: |

@@ -46,11 +46,18 @@ string, as the original: the overlong string itself is still drawn with
 the old pens, only the next text with the overwritten ones (#935, the
 bug-orig test of #698).
 
+## Fixed original bugs
+
+Intended deviations (`docs/libs/deviations.md`, section 3a, kind F):
+
+* **IPColour fgpen,bgpen with a negative fgpen** calls SetBPen on the
+  Rast. The original took a2 (the caller's, the compiler's argument
+  stack) as the RastPort, which it set to the Rast only together with
+  SetAPen: the Rast kept its background pen and SetBPen wrote into the
+  memory at a2 (#696).
+
 ## BUG(orig), kept
 
-* **IPColour fgpen,bgpen with a negative fgpen** calls SetBPen with the
-  caller's a2 (the compiler's argument stack) as the RastPort: a2 is
-  set to the Rast only together with SetAPen (#696).
 * **The single character handler** reads the character from the
   address d0 (`MOVE.l d0,a0:MOVE.b (a0)+,(a1)`), i.e. from low memory,
   not d0 itself (#699).
@@ -72,13 +79,15 @@ Observed:
 * the Rast (every field but the BitMap pointer, which must be the set's
   BitMap);
 * both planes after every output (and whether anything was drawn);
-* 128 bytes around the caller's a2 (IPColour's SetBPen there);
+* 128 bytes around the caller's a2 (the original's IPColour calls
+  SetBPen there, #696);
 * the kept registers; the memory back at the end.
 
 Covered:
 
 * init, IPBitMap, IPLocate (with upper words, negative words);
-* IPColour in both forms: pens ≥ 0, a negative fgpen (SetBPen on a2), a
+* IPColour in both forms: pens ≥ 0, a negative fgpen (the original's
+  SetBPen on a2, the port's on the Rast: #696), a
   negative bgpen;
 * IPOutput and all three handler entries through inputoutputlib's
   dooutsingle/dooutstring1/dooutstring2: a character (from the address

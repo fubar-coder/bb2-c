@@ -10,12 +10,13 @@
  * The set has its inputoutputlib, a Rast object (128 bytes) and a
  * BitMap (320 x 16, 2 planes).  Observed: the Rast (every field but the
  * BitMap pointer, which must be the BitMap), both planes after
- * every output, the 128 bytes around the caller's a2 (IPColour's
- * BUG(orig) (#696) SetBPen there), the kept registers; the memory back at the
- * end.
+ * every output, the 128 bytes around the caller's a2 (the original's
+ * IPColour calls SetBPen there, fixed #696: the port leaves them), the
+ * kept registers; the memory back at the end.
  * Covered: init, IPBitMap, IPLocate (also with upper words and a
  * negative word), IPColour both forms with pens >= 0, a negative fgpen
- * (BUG(orig) (#696): SetBPen on the caller's a2) and negative bgpen, IPOutput
+ * (fixed #696: SetBPen on the Rast, the original's on the caller's a2)
+ * and negative bgpen, IPOutput
  * and all three entries of its handler through inputoutputlib's
  * dooutsingle/dooutstring1/dooutstring2: a character (BUG(orig) (#699): read
  * from the address d0 - a string's address and the low memory address
@@ -182,7 +183,7 @@ int main(int argc, char **argv)
     colour(0, WA(3), MARK(1));
     colour(0, WA(0xffff), MARK(1));     /* nothing */
     colour(1, WA(2), WA(1));
-    colour(1, WA(0x8001), WA(3));       /* BUG(orig) (#696): SetBPen on the caller's a2 */
+    colour(1, WA(0x8001), WA(3));       /* fixed #696: SetBPen on the Rast, not a2 */
     colour(1, WA(1), WA(0xffff));       /* the bgpen stays */
     colour(1, WA(0xffff), WA(0xffff));
 

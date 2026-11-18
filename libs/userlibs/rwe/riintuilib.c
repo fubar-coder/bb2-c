@@ -25,10 +25,12 @@
  * The table ends twice like the source: !libfin{...} after the object
  * entries, then the init/finit nullsubs and a plain !libfin.
  *
+ * Fixed (#696): IPColour fgpen,bgpen with a negative fgpen called
+ * SetBPen with the caller's a2 (the compiler's argument stack) as the
+ * RastPort (a2 was set to the Rast only with SetAPen); SetBPen gets the
+ * Rast now.
+ *
  * BUG(orig), kept:
- *   - IPColour fgpen,bgpen with a negative fgpen calls SetBPen with the
- *     caller's a2 (the compiler's argument stack) as the RastPort: a2 is
- *     set to the Rast only with SetAPen (#696).
  *   - The single character handler reads the character from the address
  *     d0 (MOVE.l d0,a0:MOVE.b (a0)+,...), i.e. low memory, not d0 itself
  *     (#699).
@@ -176,26 +178,24 @@ static void BLITZ_ROUTINE iplocate_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
  *
  * SetAPen/SetBPen; a negative word leaves that pen unchanged.  The pens
  * are also kept for the IntuiText of IPOutput (their low bytes).
- * BUG(orig) (#696): the RastPort of SetBPen is a2, which is set to the
- * Rast only with SetAPen (else the caller's a2, the argument stack).
- * @param fg      d0: the foreground pen (a word)
- * @param bg      d1: the background pen (a word)
- * @param rp      a0: the used Rast (#ua0)
- * @param bpenrp  a2: the caller's a2 (SetBPen's RastPort with fg < 0)
+ * Fixed (#696): the original's SetBPen took a2 as the RastPort, which it
+ * set to the Rast only with SetAPen (else the caller's a2, the argument
+ * stack).
+ * @param fg  d0: the foreground pen (a word)
+ * @param bg  d1: the background pen (a word)
+ * @param rp  a0: the used Rast (#ua0)
  */
 static void BLITZ_ROUTINE ipcolour2_c(ULONG fg BL_REG(d0), ULONG bg BL_REG(d1),
-                                      struct RastPort *rp BL_REG(a0),
-                                      struct RastPort *bpenrp BL_REG(a2))
+                                      struct RastPort *rp BL_REG(a0))
 {
     if ((WORD)fg >= 0) {
-        bpenrp = rp;
         pr.apen = (UWORD)fg;
         SetAPen(rp, fg);
     }
     bg &= 0xffff;
     if ((WORD)bg >= 0) {
         pr.bpen = (UWORD)bg;
-        SetBPen(bpenrp, bg);
+        SetBPen(rp, bg);
     }
 }
 
@@ -203,14 +203,12 @@ static void BLITZ_ROUTINE ipcolour2_c(ULONG fg BL_REG(d0), ULONG bg BL_REG(d1),
  * @brief IPColour fgpen: sets the foreground pen only.
  *
  * As IPColour fgpen,bgpen with bgpen -1 (unchanged).
- * @param fg      d0: the foreground pen (a word)
- * @param rp      a0: the used Rast (#ua0)
- * @param bpenrp  a2: the caller's a2
+ * @param fg  d0: the foreground pen (a word)
+ * @param rp  a0: the used Rast (#ua0)
  */
-static void BLITZ_ROUTINE ipcolour_c(ULONG fg BL_REG(d0), struct RastPort *rp BL_REG(a0),
-                                     struct RastPort *bpenrp BL_REG(a2))
+static void BLITZ_ROUTINE ipcolour_c(ULONG fg BL_REG(d0), struct RastPort *rp BL_REG(a0))
 {
-    ipcolour2_c(fg, (ULONG)-1, rp, bpenrp);
+    ipcolour2_c(fg, (ULONG)-1, rp);
 }
 
 /* the pens of IPColour into the IntuiText: every handler takes them first,

@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+bgpen 2
+rc=0
