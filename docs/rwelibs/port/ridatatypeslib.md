@@ -45,8 +45,6 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 
 **BUG(orig)** (kept):
 
-* AttachDataType window,id,x,y,w,h puts its word arguments into the tag
-  list as longs, with whatever upper words the registers have (#597).
 * DataTypesPalette copies as many colours as the palette object has
   (reads behind the picture's colours; 0 colours are 65536); without
   colours it returns GetAttr's result, otherwise the buffer's address
@@ -109,6 +107,12 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   the tag list had no effect, and the id was read as the address of a
   tag list (id 0 an empty one; any other id low memory read as tags, an
   odd one an address error on a 68000) (#596).
+* AttachDataType window,id,x,y,width,height sign-extends its four word
+  arguments into the tag list. The original wrote the registers as
+  longs, with whatever upper words the code before the call had left
+  (in a compiled program addresses: a top of 3 went to SetAttrs as
+  1073938435; a negative value without an upper word became
+  32768-65535) (#597).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h

@@ -30,8 +30,8 @@
  * GetDataTypeAttr (known and unknown attributes), SetDataTypeAttr with a
  * tag list and with 1 and 2 pairs (the upper word of d7 a marker),
  * DataTypesPalette with 4 and 2 colours, AttachDataType in all three
- * forms (BUG(orig) (#597): the words of the second as longs - x and y with upper
- * words 1 and 2; the third with the id 0 and GA_Left 2), a second AttachDataType (0),
+ * forms (the second with upper words 1 and 2 in x and y, the original
+ * writes them into the tags; the third with the id 0 and GA_Left 2), a second AttachDataType (0),
  * DataTypeReady, DetachDataType (twice), DataTypeClose (then the strings
  * and sizes give 0), finit with an attached object (detached, closed, the
  * file unlocked), init again.

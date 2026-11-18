@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+object -1
+attached -1
+tags as longs -1
+rc=0
