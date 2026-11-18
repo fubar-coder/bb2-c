@@ -113,8 +113,12 @@ workbench call, a missing icon file, both forms of AddAppIcon, App
 messages of all four types put to `AppMsgPort` (replies counted),
 `NextAppFile`/`AppFile` on a root and a non-root lock (the unlock),
 past the end, the inline routine's bytes, finit with and without a
-current message (with menus, windows and icons left).
+current message (with menus, windows and icons left); a third run in
+which `AddAppIconA` fails for a used id and for a free one (icon.library's
+`FreeDiskObject` patched to count its calls, then `DelAppIcon` and
+finit), and an init in which icon.library does not open (exec's
+`OpenLibrary` patched for that call: `AppMsgPort` and the opens of
+workbench and dos.library left behind).
 
-Not covered: the failure paths of init (no memory, a missing library), a
-real Workbench, `AppFile(n)` with n ≤ 0 and `AppLock` without arguments
+Not covered: init without memory, a real Workbench, `AppFile(n)` with n ≤ 0 and `AppLock` without arguments
 (they read foreign memory), the odd-address store on a 68000.

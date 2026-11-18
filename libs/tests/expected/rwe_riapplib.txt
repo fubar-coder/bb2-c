@@ -1,4 +1,7 @@
 # capture rwe_riapplib 1
+AddAppIcon|FreeDiskObject calls|third run id 1|1	$00000000
+AddAppIcon|FreeDiskObject calls|third run id 1 (fails)|1	$00000001
+AddAppIcon|FreeDiskObject calls|third run id 2 (fails)|1	$00000000
 AddAppIcon|a3 = DiskObject|form 0 id 0 RAM:rweapp|1 [orig]	$00000001
 AddAppIcon|a3 = DiskObject|form 0 id 0 RAM:rweapp|1 [fixed #516]	$00000000
 AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|1 [orig]	$00000001
@@ -36,6 +39,9 @@ AddAppIcon|d0|form 0 id 4 RAM:rweapp (fails)|1	$00000000
 AddAppIcon|d0|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|d0|form 1 id 1 RAM:rweapp|2	$FFFFFFFF
 AddAppIcon|d0|form 1 id 2 RAM:rweapp|1	$FFFFFFFF
+AddAppIcon|d0|third run id 1|1	$FFFFFFFF
+AddAppIcon|d0|third run id 1 (fails)|1	$00000000
+AddAppIcon|d0|third run id 2 (fails)|1	$00000000
 AddAppIcon|kept|form 0 id 0 RAM:rweapp|1	kept
 AddAppIcon|kept|form 0 id 1 RAM:rweapp|1	kept
 AddAppIcon|kept|form 0 id 1 RAM:rweapp|2	kept
@@ -44,6 +50,9 @@ AddAppIcon|kept|form 0 id 4 RAM:rweapp (fails)|1	kept
 AddAppIcon|kept|form 1 id 1 RAM:rweapp|1	kept
 AddAppIcon|kept|form 1 id 1 RAM:rweapp|2	kept
 AddAppIcon|kept|form 1 id 2 RAM:rweapp|1	kept
+AddAppIcon|kept|third run id 1|1	kept
+AddAppIcon|kept|third run id 1 (fails)|1	kept
+AddAppIcon|kept|third run id 2 (fails)|1	kept
 AddAppIcon|popped|form 0 id 0 RAM:rweapp|1	$00000000
 AddAppIcon|popped|form 0 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|popped|form 0 id 1 RAM:rweapp|2	$00000000
@@ -52,48 +61,79 @@ AddAppIcon|popped|form 0 id 4 RAM:rweapp (fails)|1	$00000000
 AddAppIcon|popped|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|popped|form 1 id 1 RAM:rweapp|2	$00000000
 AddAppIcon|popped|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|popped|third run id 1|1	$00000000
+AddAppIcon|popped|third run id 1 (fails)|1	$00000000
+AddAppIcon|popped|third run id 2 (fails)|1	$00000000
 AddAppIcon|wb CurrentX|form 0 id 0 RAM:rweapp|1	$80000000
 AddAppIcon|wb CurrentX|form 0 id 1 RAM:rweapp|1	$80000000
 AddAppIcon|wb CurrentX|form 0 id 4 RAM:rweapp (fails)|1	$80000000
 AddAppIcon|wb CurrentX|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb CurrentX|form 1 id 1 RAM:rweapp|2	$0000000A
 AddAppIcon|wb CurrentX|form 1 id 2 RAM:rweapp|1	$FFFFFFFD
+AddAppIcon|wb CurrentX|third run id 1|1	$80000000
+AddAppIcon|wb CurrentX|third run id 1 (fails)|1	$00000000
+AddAppIcon|wb CurrentX|third run id 1 (fails)|2	$80000000
+AddAppIcon|wb CurrentX|third run id 2 (fails)|1	$80000000
 AddAppIcon|wb CurrentY|form 0 id 0 RAM:rweapp|1	$80000000
 AddAppIcon|wb CurrentY|form 0 id 1 RAM:rweapp|1	$80000000
 AddAppIcon|wb CurrentY|form 0 id 4 RAM:rweapp (fails)|1	$80000000
 AddAppIcon|wb CurrentY|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb CurrentY|form 1 id 1 RAM:rweapp|2	$00000014
 AddAppIcon|wb CurrentY|form 1 id 2 RAM:rweapp|1	$00007FFF
+AddAppIcon|wb CurrentY|third run id 1|1	$80000000
+AddAppIcon|wb CurrentY|third run id 1 (fails)|1	$00000000
+AddAppIcon|wb CurrentY|third run id 1 (fails)|2	$80000000
+AddAppIcon|wb CurrentY|third run id 2 (fails)|1	$80000000
 AddAppIcon|wb a0|form 0 id 0 RAM:rweapp|1	prog
 AddAppIcon|wb a0|form 0 id 1 RAM:rweapp|1	prog
 AddAppIcon|wb a0|form 0 id 4 RAM:rweapp (fails)|1	prog
 AddAppIcon|wb a0|form 1 id 1 RAM:rweapp|1	$00000050
 AddAppIcon|wb a0|form 1 id 1 RAM:rweapp|2	prog
 AddAppIcon|wb a0|form 1 id 2 RAM:rweapp|1	prog
+AddAppIcon|wb a0|third run id 1|1	prog
+AddAppIcon|wb a0|third run id 1 (fails)|1	$000000C0
+AddAppIcon|wb a0|third run id 1 (fails)|2	prog
+AddAppIcon|wb a0|third run id 2 (fails)|1	prog
 AddAppIcon|wb a1 = AppMsgPort|form 0 id 0 RAM:rweapp|1	$00000001
 AddAppIcon|wb a1 = AppMsgPort|form 0 id 1 RAM:rweapp|1	$00000001
 AddAppIcon|wb a1 = AppMsgPort|form 0 id 4 RAM:rweapp (fails)|1	$00000001
 AddAppIcon|wb a1 = AppMsgPort|form 1 id 1 RAM:rweapp|1	$00000001
 AddAppIcon|wb a1 = AppMsgPort|form 1 id 1 RAM:rweapp|2	$00000001
 AddAppIcon|wb a1 = AppMsgPort|form 1 id 2 RAM:rweapp|1	$00000001
+AddAppIcon|wb a1 = AppMsgPort|third run id 1|1	$00000001
+AddAppIcon|wb a1 = AppMsgPort|third run id 1 (fails)|1	$00000001
+AddAppIcon|wb a1 = AppMsgPort|third run id 1 (fails)|2	$00000001
+AddAppIcon|wb a1 = AppMsgPort|third run id 2 (fails)|1	$00000001
 AddAppIcon|wb a2|form 0 id 0 RAM:rweapp|1	$00000000
 AddAppIcon|wb a2|form 0 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb a2|form 0 id 4 RAM:rweapp (fails)|1	$00000000
 AddAppIcon|wb a2|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb a2|form 1 id 1 RAM:rweapp|2	$00000000
 AddAppIcon|wb a2|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|wb a2|third run id 1|1	$00000000
+AddAppIcon|wb a2|third run id 1 (fails)|1	$00000000
+AddAppIcon|wb a2|third run id 1 (fails)|2	$00000000
+AddAppIcon|wb a2|third run id 2 (fails)|1	$00000000
 AddAppIcon|wb a3 = DiskObject|form 0 id 0 RAM:rweapp|1	$00000001
 AddAppIcon|wb a3 = DiskObject|form 0 id 1 RAM:rweapp|1	$00000001
 AddAppIcon|wb a3 = DiskObject|form 0 id 4 RAM:rweapp (fails)|1	$00000001
 AddAppIcon|wb a3 = DiskObject|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb a3 = DiskObject|form 1 id 1 RAM:rweapp|2	$00000001
 AddAppIcon|wb a3 = DiskObject|form 1 id 2 RAM:rweapp|1	$00000001
+AddAppIcon|wb a3 = DiskObject|third run id 1|1	$00000001
+AddAppIcon|wb a3 = DiskObject|third run id 1 (fails)|1	$00000000
+AddAppIcon|wb a3 = DiskObject|third run id 1 (fails)|2	$00000001
+AddAppIcon|wb a3 = DiskObject|third run id 2 (fails)|1	$00000001
 AddAppIcon|wb a4|form 0 id 0 RAM:rweapp|1	$00000000
 AddAppIcon|wb a4|form 0 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb a4|form 0 id 4 RAM:rweapp (fails)|1	$00000000
 AddAppIcon|wb a4|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb a4|form 1 id 1 RAM:rweapp|2	$00000000
 AddAppIcon|wb a4|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|wb a4|third run id 1|1	$00000000
+AddAppIcon|wb a4|third run id 1 (fails)|1	$00000000
+AddAppIcon|wb a4|third run id 1 (fails)|2	$00000000
+AddAppIcon|wb a4|third run id 2 (fails)|1	$00000000
 AddAppIcon|wb calls|form 0 id 0 RAM:rweapp|1	$00000001
 AddAppIcon|wb calls|form 0 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb calls|form 0 id 1 RAM:rweapp|2	$00000001
@@ -102,24 +142,39 @@ AddAppIcon|wb calls|form 0 id 4 RAM:rweapp (fails)|1	$00000001
 AddAppIcon|wb calls|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb calls|form 1 id 1 RAM:rweapp|2	$00000002
 AddAppIcon|wb calls|form 1 id 2 RAM:rweapp|1	$00000001
+AddAppIcon|wb calls|third run id 1|1	$00000001
+AddAppIcon|wb calls|third run id 1 (fails)|1	$00000002
+AddAppIcon|wb calls|third run id 2 (fails)|1	$00000001
 AddAppIcon|wb d0|form 0 id 0 RAM:rweapp|1	$00000000
 AddAppIcon|wb d0|form 0 id 1 RAM:rweapp|1	$00000001
 AddAppIcon|wb d0|form 0 id 4 RAM:rweapp (fails)|1	$00000004
 AddAppIcon|wb d0|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb d0|form 1 id 1 RAM:rweapp|2	$00000001
 AddAppIcon|wb d0|form 1 id 2 RAM:rweapp|1	$00000002
+AddAppIcon|wb d0|third run id 1|1	$00000001
+AddAppIcon|wb d0|third run id 1 (fails)|1	$00000000
+AddAppIcon|wb d0|third run id 1 (fails)|2	$00000001
+AddAppIcon|wb d0|third run id 2 (fails)|1	$00000002
 AddAppIcon|wb d1|form 0 id 0 RAM:rweapp|1	$00000000
 AddAppIcon|wb d1|form 0 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb d1|form 0 id 4 RAM:rweapp (fails)|1	$00000000
 AddAppIcon|wb d1|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb d1|form 1 id 1 RAM:rweapp|2	$00000000
 AddAppIcon|wb d1|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|wb d1|third run id 1|1	$00000000
+AddAppIcon|wb d1|third run id 1 (fails)|1	$00000000
+AddAppIcon|wb d1|third run id 1 (fails)|2	$00000000
+AddAppIcon|wb d1|third run id 2 (fails)|1	$00000000
 AddAppIcon|wb fn|form 0 id 0 RAM:rweapp|1	$00000003
 AddAppIcon|wb fn|form 0 id 1 RAM:rweapp|1	$00000003
 AddAppIcon|wb fn|form 0 id 4 RAM:rweapp (fails)|1	$00000003
 AddAppIcon|wb fn|form 1 id 1 RAM:rweapp|1	$00000004
 AddAppIcon|wb fn|form 1 id 1 RAM:rweapp|2	$00000003
 AddAppIcon|wb fn|form 1 id 2 RAM:rweapp|1	$00000003
+AddAppIcon|wb fn|third run id 1|1	$00000003
+AddAppIcon|wb fn|third run id 1 (fails)|1	$00000004
+AddAppIcon|wb fn|third run id 1 (fails)|2	$00000003
+AddAppIcon|wb fn|third run id 2 (fails)|1	$00000003
 AddAppMenu|d0 = item (BUG(orig) #518)|id 0|1	$00000000
 AddAppMenu|d0 = item (BUG(orig) #518)|id 1|1	$00000001
 AddAppMenu|d0 = item (BUG(orig) #518)|id 1|2	$00000000
@@ -400,10 +455,16 @@ AppMessage|popped|message 3|1	$00000000
 AppMessage|popped|no message|1	$00000000
 AppMsgPort|kept||1	kept
 AppMsgPort|kept|again|1	kept
+AppMsgPort|kept|icon.library fails|1	kept
+AppMsgPort|kept|third run|1	kept
 AppMsgPort|popped||1	$00000000
 AppMsgPort|popped|again|1	$00000000
+AppMsgPort|popped|icon.library fails|1	$00000000
+AppMsgPort|popped|third run|1	$00000000
 AppMsgPort|port||1	$00000001
 AppMsgPort|port|again|1	$00000001
+AppMsgPort|port|icon.library fails|1	$00000001
+AppMsgPort|port|third run|1	$00000001
 AppNumFiles|d0|message 0|1	$00000002
 AppNumFiles|d0|message 1|1	$00000001
 AppNumFiles|d0|message 2|1	$00000002
@@ -438,6 +499,21 @@ DelAppIcon|wb calls|id 1|3	$00000000
 DelAppIcon|wb d0|id 1|1	$00000000
 DelAppIcon|wb d1|id 1|1	$00000000
 DelAppIcon|wb fn|id 1|1	$00000004
+DelAppIcon (after a failed replace)|FreeDiskObject calls|id 1|1	$00000001
+DelAppIcon (after a failed replace)|d0|id 1|1	$FFFFFFFF
+DelAppIcon (after a failed replace)|kept|id 1|1	kept
+DelAppIcon (after a failed replace)|popped|id 1|1	$00000000
+DelAppIcon (after a failed replace)|wb CurrentX|id 1|1	$00000000
+DelAppIcon (after a failed replace)|wb CurrentY|id 1|1	$00000000
+DelAppIcon (after a failed replace)|wb a0|id 1|1	$000000C0
+DelAppIcon (after a failed replace)|wb a1 = AppMsgPort|id 1|1	$00000001
+DelAppIcon (after a failed replace)|wb a2|id 1|1	$00000000
+DelAppIcon (after a failed replace)|wb a3 = DiskObject|id 1|1	$00000000
+DelAppIcon (after a failed replace)|wb a4|id 1|1	$00000000
+DelAppIcon (after a failed replace)|wb calls|id 1|1	$00000001
+DelAppIcon (after a failed replace)|wb d0|id 1|1	$00000000
+DelAppIcon (after a failed replace)|wb d1|id 1|1	$00000000
+DelAppIcon (after a failed replace)|wb fn|id 1|1	$00000004
 DelAppIcon (failed add)|d0|id 4|1	$00000000
 DelAppIcon (failed add)|kept|id 4|1	kept
 DelAppIcon (failed add)|popped|id 4|1	$00000000
@@ -530,10 +606,15 @@ NextAppFile (none left)|out|0|1	bytes 300 fnv 1BC9DCB5
 NextAppFile (none left)|popped|0|1	$00000000
 NextAppFile (none left)|wa_Lock[0]|0|1	$00000001
 NextAppFile (none left)|wa_Lock[1]|0|1	$00000000
+finit|FreeDiskObject calls|third run|1	$00000001
 finit|kept|current message|1	kept
+finit|kept|icon.library fails|1	kept
 finit|kept|no current message|1	kept
+finit|kept|third run|1	kept
 finit|popped|current message|1	$00000000
+finit|popped|icon.library fails|1	$00000000
 finit|popped|no current message|1	$00000000
+finit|popped|third run|1	$00000000
 finit|replies (both)|current message|1	$00000002
 finit|replies (none)|no current message|1	$00000000
 finit|wb CurrentX|no current message|1	$00000000
@@ -572,7 +653,9 @@ finit|wb a4|no current message|3	$00000000
 finit|wb a4|no current message|4	$00000000
 finit|wb a4|no current message|5	$00000000
 finit|wb calls|current message|1	$00000000
+finit|wb calls|icon.library fails|1	$00000000
 finit|wb calls|no current message|1	$00000005
+finit|wb calls|third run|1	$00000000
 finit|wb d0|no current message|1	$00000000
 finit|wb d0|no current message|2	$00000000
 finit|wb d0|no current message|3	$00000000
@@ -588,10 +671,17 @@ finit|wb fn|no current message|2	$00000006
 finit|wb fn|no current message|3	$00000002
 finit|wb fn|no current message|4	$00000004
 finit|wb fn|no current message|5	$00000004
+init|OpenLibrary failed|icon.library fails|1	$00000001
+init|dos.library opens left|icon.library fails|1	$00000001
 init|kept||1	kept
 init|kept|again|1	kept
+init|kept|icon.library fails|1	kept
+init|kept|third run|1	kept
 init|popped||1	$00000000
 init|popped|again|1	$00000000
+init|popped|icon.library fails|1	$00000000
+init|popped|third run|1	$00000000
+init|workbench.library opens left|icon.library fails|1	$00000001
 no init|d0|before init|1	$00000000
 no init|d0|before init|2	$00000000
 no init|d0|before init|3	$00000000
