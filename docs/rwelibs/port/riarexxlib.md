@@ -72,10 +72,9 @@ original's order (`_Static_assert` on the offsets of the reference
 build). RXDefaultPort copies without a limit into its 65 bytes and then
 overwrites rexxbase, destport, … (BUG(orig), #529).
 
-Small inline assembler for the exec and rexxsyslib calls whose leftovers
-the original uses:
+Small inline assembler for the exec call whose leftover the original
+uses, and for rexxsyslib:
 
-* d0 of AddPort (`TST.l d0` after it);
 * a0 of FindPort (RXReplyMsg's `'shit` path).
 
 maxslib AllocSt is called with `BLITZ_ALIBJSR(TOK_allocst)`.
@@ -149,6 +148,13 @@ kind F):
   always returned 0, so these replies were only FreeVec'd: their argument
   strings stayed allocated, and the message stayed in the sent list,
   which grew with every message and overflowed the block after 32 (#531).
+* **RXCreatePort** allocates the block of the lists first and makes the
+  port public last; AddPort, which returns nothing, is not tested. If the
+  block or the port cannot be made, it frees what it has and returns 0
+  (D-018). The original added the port first and tested the d0 AddPort
+  leaves; on 0, or if the lists could not be allocated, it deleted the
+  port without RemPort, so the freed port stayed in exec's list of
+  public ports (#528).
 
 ## BUG(orig), kept
 
@@ -168,9 +174,6 @@ kind F):
   * if no port of the message's ln_Name exists, the message is not
     replied, and its Result2 is deleted, as decided by the Result2 at the
     a0 that FindPort leaves (#540).
-* **RXCreatePort** tests d0 of AddPort. On 0, or if the lists cannot be
-  allocated, it deletes the port without RemPort, so the port stays in
-  the public list (#528).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
@@ -224,6 +227,5 @@ Covered:
 Not covered:
 
 * portchk without a port (TRAP #0);
-* the exec leftover in its failing case (AddPort's d0);
 * the overflows (more than 16 arguments or 32 messages, long names);
 * messages of other types.

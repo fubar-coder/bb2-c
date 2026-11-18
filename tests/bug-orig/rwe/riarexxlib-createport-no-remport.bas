@@ -10,6 +10,7 @@
 ; the program unlinks it (the neighbours are found from both ends of the
 ; list) so the system stays usable.
 ; Correct: RXCreatePort returns 0 and the port is not listed.
+; @fixed #528
 ; @rwe riarexxlib
 ; @pass runwrap=@INJECT@|allocfail=256-264/1
 DEFTYPE .l

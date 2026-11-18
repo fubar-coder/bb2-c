@@ -31,9 +31,9 @@
  * C behind thunks; the string results are written at a3 (the C build
  * moves the fixed register blitz_string itself), a2 stays unchanged
  * (DIFF: the original pops the string lengths it reads with -(a2), see
- * docs/libs/cmdlibs-port.md "General").  Assembler: exec calls whose
- * leftovers the original uses (d0 of AddPort, a0 of FindPort).  The variables from rexxportname on are one
- * packed struct in the original's order: RXDefaultPort copies without a
+ * docs/libs/cmdlibs-port.md "General").  Assembler: an exec call whose
+ * leftover the original uses (a0 of FindPort).  The variables from
+ * rexxportname on are one packed struct in the original's order: RXDefaultPort copies without a
  * limit into the 65 bytes of rexxportname and overwrites them (BUG(orig),
  * #529).
  *
@@ -82,6 +82,12 @@
  *     original's _finditem always returned 0: such replies were freed
  *     with FreeVec only and stayed in the list, which overflowed the
  *     block after 32 messages (#531).
+ *   - RXCreatePort allocates the lists before it makes the port public
+ *     and does not test AddPort (which returns nothing); on failure it
+ *     frees what it has, 0 (D-018).  The original added the port first,
+ *     tested the d0 AddPort leaves and on 0, or if the lists could not be
+ *     allocated, deleted the port without RemPort: it stayed in exec's
+ *     list of public ports (#528).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -95,9 +101,6 @@
  *     current message stays current after the reply (#541).  If the port
  *     of the message's ln_Name no longer exists, it is not replied, but
  *     its Result2 (tested at the a0 FindPort leaves) is deleted (#540).
- *   - RXCreatePort tests d0 of AddPort; on 0, or if the lists cannot be
- *     allocated, it deletes the port without RemPort (it stays in the
- *     public list) (#528).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -355,17 +358,6 @@ static void freest(ULONG s)
 }
 
 /* exec calls with what they leave */
-
-static ULONG addport_d0(struct MsgPort *port)
-{
-    register ULONG d0 __asm("d0");
-    register struct MsgPort *a1 __asm("a1") = port;
-    register struct ExecBase *a6 __asm("a6") = SysBase;
-
-    __asm volatile("jsr -354(a6)" : "=d"(d0), "+a"(a1), "+a"(a6)
-                   : : "d1", "a0", "cc", "memory");
-    return d0;
-}
 
 static struct MsgPort *findport_a0(const UBYTE *name, UBYTE **a0out)
 {
@@ -1167,9 +1159,11 @@ BLITZ_THUNK(_rxdeleteport, rxdeleteport_c, "d0-d1/a0-a1");
  * @brief RXCreatePort(name$): make the public port name$ and the message
  * lists.
  *
- * The name is copied with AllocSt.  BUG(orig) (#528): it tests d0 of
- * AddPort; on 0, or if the lists cannot be allocated, it deletes the
- * port without RemPort (it stays in the public list).
+ * The name is copied with AllocSt.  Fixed (#528): the lists are
+ * allocated before the port is made public, AddPort is not tested, and on
+ * failure what was allocated is freed (0, D-018); the original added the
+ * port first, tested the d0 AddPort leaves and on failure deleted the port
+ * without RemPort, so it stayed in the public list.
  * @param name  d0: name$
  * @param args  a2: the argument stack, -4(a2) the length of name$
  * @return d0: the MsgPort; 0 if there is one already or on failure
@@ -1180,22 +1174,23 @@ static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *ar
 
     if (msgport)
         return 0;
+    /* fixed (#528): the lists first, the port public last, AddPort not
+       tested; the original deleted a public port without RemPort */
+    lists = AllocVec(sizeof(struct msglists), MEMF_PUBLIC | MEMF_CLEAR);
+    if (!lists)
+        return 0;
     msgportname = (UBYTE *)allocst(name, args[-1]);
     msgport = CreateMsgPort();
-    if (!msgport)
+    if (!msgport) {
+        FreeVec(lists);
+        freest((ULONG)msgportname);
+        msgportname = NULL;
         return 0;
-    msgport->mp_Node.ln_Name = (char *)msgportname;
-    if (addport_d0(msgport)) {          /* BUG(orig): d0 of AddPort (#528) */
-        lists = AllocVec(sizeof(struct msglists), MEMF_PUBLIC | MEMF_CLEAR);
-        if (lists) {
-            v.messagelist = lists->messages;
-            v.sentlist = lists->sent;
-            return (ULONG)msgport;
-        }
     }
-    /* 'oops: BUG(orig) the port stays in the public list (#528) */
-    DeleteMsgPort(msgport);
-    msgport = NULL;
-    return 0;
+    msgport->mp_Node.ln_Name = (char *)msgportname;
+    v.messagelist = lists->messages;
+    v.sentlist = lists->sent;
+    AddPort(msgport);
+    return (ULONG)msgport;
 }
 BLITZ_THUNK(_rxcreateport, rxcreateport_c, "d1/a0-a1");

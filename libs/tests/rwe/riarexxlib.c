@@ -37,8 +37,8 @@
  * 5); finit with a port; init after RXDefaultPort (the original: the
  * byte at +4 stays, "REXXE"; fixed #532: "REXX", the responder gets it).
  * Not covered: the error check without a port (a runtime error, TRAP
- * #0), a failing AllocVec or AddPort (the exec flags/d0 the original
- * tests), more than 16 or 32 messages/arguments (overflows), messages of
+ * #0), a failing AllocVec (the bug-orig tests of #528 and #533 with
+ * inject), more than 16 or 32 messages/arguments, messages of
  * other types (replied at once).
  */
 #include "rwecmp.h"
