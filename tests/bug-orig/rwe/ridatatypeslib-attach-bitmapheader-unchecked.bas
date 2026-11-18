@@ -8,6 +8,7 @@
 ; Correct: the object is not attached with the size 0 x 0 (it gets the
 ; picture's size, or AttachDataType fails).
 ; The window takes the output of NPrint: DefaultOutput sends it back.
+; @fixed #595
 ; @rwe ridatatypeslib
 ; @pass file=p.ilbm|@TESTDATA@/ridatatypeslib-attach-bitmapheader-unchecked.ilbm
 DEFTYPE .l

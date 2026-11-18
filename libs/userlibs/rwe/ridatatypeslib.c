@@ -44,12 +44,10 @@
  *   - DataTypeCreate without a tag list does not need an open file (the
  *     name is the last one DataTypeOpen copied, at first ""); a second
  *     DataTypeCreate loses the object before (#601, #600).
- *   - AttachDataType window,id reads the size from the BitMapHeader
- *     without checking it (DataTypeBitmap not called: address 0);
- *     AttachDataType window,id,x,y,w,h puts the word arguments into the
+ *   - AttachDataType window,id,x,y,w,h puts the word arguments into the
  *     tag list as longs (with the upper words the registers have);
  *     AttachDataType window,id,&taglist passes the id as the tag list to
- *     SetAttrsA and ignores the tag list (#595, #597, #596).
+ *     SetAttrsA and ignores the tag list (#597, #596).
  *   - DataTypesPalette copies as many colours as the palette has (read
  *     behind the datatype's colours; 0 colours: 65536); without colours
  *     it returns GetAttr's result, otherwise the address of its buffer
@@ -64,6 +62,12 @@
  *   - DataTypeBitmap clears the buffer before GetAttr: an object that has
  *     no BitMapHeader (not a picture) gives 0.  The original took
  *     whatever the command before had left in the buffer (#598).
+ *   - AttachDataType window,id needs an object and gets the BitMapHeader
+ *     itself (as DataTypeBitmap) if DataTypeBitmap was not called; an
+ *     object without one (not a picture) is not attached (BB_FALSE).
+ *     The original read the size through the unchecked pointer: without
+ *     DataTypeBitmap the two words at address 0, an object of 0 x 0
+ *     (#595).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -502,6 +506,8 @@ ULONG BLITZ_ROUTINE c_datatypecreate(struct TagItem *tags BL_REG(d0))
     return create(tags);
 }
 
+ULONG BLITZ_ROUTINE c_datatypebitmap(void);
+
 /* doattach: the window of the window object, AddDTObject */
 static BB_BOOL doattach(const ULONG *winobj)
 {
@@ -532,24 +538,27 @@ static struct TagItem *tailtags(struct TagItem *t)
  * with the size of the BitMapHeader.
  *
  * SetAttrs (GA_Left/Top/Width/Height/ID, ICA_TARGET ICTARGET_IDCMP,
- * PDTA_Remap 0), then AddDTObject.  BUG(orig) (#595): the BitMapHeader
- * is not checked (address 0 without DataTypeBitmap).  Does not test
- * datatypes.library.
+ * PDTA_Remap 0), then AddDTObject.  Without a BitMapHeader it is got
+ * first, as DataTypeBitmap does (fixed, #595: the original read the size
+ * through the unchecked pointer, without DataTypeBitmap at address 0).
+ * Does not test datatypes.library (an open file needs it).
  * @param id      d1: the gadget id
  * @param winobj  a0: the window object (windowslib, parameter 0)
- * @return d0: BB_TRUE, BB_FALSE without an open file or if attached
- *         already
+ * @return d0: BB_TRUE, BB_FALSE without an open file or object, if the
+ *         object has no BitMapHeader or if attached already
  */
 BB_BOOL BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
 {
     struct TagItem *t = storage->tags;
 
-    if (!lock || attached)
+    if (!lock || !object || attached)                   /* fixed (#595) */
+        return BB_FALSE;
+    if (!bitmapheader && !c_datatypebitmap())
         return BB_FALSE;
     attached = (ULONG)winobj;
     TAG(t, GA_Left, 0);
     TAG(t, GA_Top, 0);
-    TAG(t, GA_Width, bitmapheader->bmh_Width);  /* BUG(orig) (#595): 0 not checked */
+    TAG(t, GA_Width, bitmapheader->bmh_Width);
     TAG(t, GA_Height, bitmapheader->bmh_Height);
     TAG(t, GA_ID, id);
     tailtags(t);

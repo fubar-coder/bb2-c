@@ -37,7 +37,7 @@
  * file unlocked), init again.
  * Not covered: a library missing at init (finit closes only up to it),
  * ObtainDataType failing (BUG(orig) (#605): reads the header from 0),
- * AttachDataType window,id without DataTypeBitmap (reads at 0),
+ * AttachDataType window,id without DataTypeBitmap,
  * DataTypeClose of an attached object, DataTypesPalette with more colours
  * than the picture or 0 (65536), SetDataTypeAttr with 0 or more than 127
  * pairs, names over 383 characters.

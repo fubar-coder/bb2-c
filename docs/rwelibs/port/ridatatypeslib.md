@@ -54,12 +54,10 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 * DataTypeCreate without a tag list does not check for an open file
   (the name is the last one DataTypeOpen copied, at first ""); a second
   DataTypeCreate loses the object before it (#601, #600).
-* AttachDataType window,id takes the size from the BitMapHeader without
-  checking it (no DataTypeBitmap: reads at address 0); window,id,x,y,w,h
-  puts its word arguments into the tag list as longs, with whatever
+* AttachDataType window,id,x,y,w,h puts its word arguments into the tag list as longs, with whatever
   upper words the registers have; window,id,&taglist passes the id as
-  the tag list of its second SetAttrsA and ignores the tag list (#595,
-  #597, #596).
+  the tag list of its second SetAttrsA and ignores the tag list (#597,
+  #596).
 * DataTypesPalette copies as many colours as the palette object has
   (reads behind the picture's colours; 0 colours are 65536); without
   colours it returns GetAttr's result, otherwise the buffer's address
@@ -78,6 +76,12 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   the command before had left in the buffer (a tag of SetDataTypeAttr,
   a value of GetDataTypeAttr) as the BitMapHeader, and DataTypeWidth,
   Height, Depth, ModeID and AttachDataType read through it (#598).
+* AttachDataType window,id needs an object, and without DataTypeBitmap
+  before it gets the BitMapHeader itself, as DataTypeBitmap does (it is
+  then the library's for DataTypeWidth etc. too); an object without one
+  (not a picture) is not attached, the result is 0. The original read
+  the size through the unchecked pointer: without DataTypeBitmap the two
+  words at address 0, an object of 0 x 0 (#595).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h
