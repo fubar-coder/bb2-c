@@ -26,7 +26,7 @@
  * "off" with a word whose upper word is set (#547, fixed); RXGetArg 0..17,
  * RXNextArg to the end, RXNumArgs, RXSendersName, RXReplyMsg both forms
  * to our own port, to the test (the Result2 string) and to a sender
- * whose port is gone (BUG(orig) #540: no reply); replies to our messages
+ * whose port is gone (no reply; its result string: #540); replies to our messages
  * (freed); RXRunCommand both forms, to a missing port; RXSendCommand
  * both forms (the result over the arguments), with result code 10 and no
  * string, to a missing port, with a message arriving while it waits;

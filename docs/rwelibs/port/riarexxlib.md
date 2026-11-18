@@ -71,10 +71,8 @@ The variables from `rexxbase` on are one packed struct in the
 original's order (`_Static_assert` on the offset of the reference
 build).
 
-Small inline assembler for the exec call whose leftover the original
-uses, and for rexxsyslib:
-
-* a0 of FindPort (RXReplyMsg's `'shit` path).
+Small inline assembler for the rexxsyslib calls (CreateArgString,
+DeleteArgString).
 
 maxslib AllocSt is called with `BLITZ_ALIBJSR(TOK_allocst)`.
 
@@ -166,6 +164,12 @@ kind F):
   code). The original always put an argument string of result$ into
   rm_Result2: a sender that asked for no result never deletes it, and one
   that reads rm_Result2 as a code gets an address (#539).
+* **RXReplyMsg** looks for the sender's port (the message's ln_Name)
+  first; when it is gone the message is not replied and no result string
+  is made. The original made the result string first and, with the port
+  gone, decided whether to delete it again by the long 36 bytes behind
+  the a0 that FindPort leaves: the string was lost, or the form without a
+  result string called DeleteArgString with 0 (#540).
 
 ## BUG(orig), kept
 
@@ -179,11 +183,7 @@ kind F):
   * Result2 is read as a string even when Result1 is not 0 (#545).
 * **RXReturnCode** returns 0 while no message is current, e.g. right
   after an RXSendCommand that found the list empty (#542).
-* **RXReplyMsg:**
-  * the replied message stays the current one (#541);
-  * if no port of the message's ln_Name exists, the message is not
-    replied, and its Result2 is deleted, as decided by the Result2 at the
-    a0 that FindPort leaves (#540).
+* **RXReplyMsg:** the replied message stays the current one (#541).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

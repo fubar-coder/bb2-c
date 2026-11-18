@@ -31,9 +31,9 @@
  * C behind thunks; the string results are written at a3 (the C build
  * moves the fixed register blitz_string itself), a2 stays unchanged
  * (DIFF: the original pops the string lengths it reads with -(a2), see
- * docs/libs/cmdlibs-port.md "General").  Assembler: an exec call whose
- * leftover the original uses (a0 of FindPort).  The variables from
- * rexxbase on are one packed struct in the original's order.
+ * docs/libs/cmdlibs-port.md "General").  Assembler: the rexxsyslib calls.
+ * The variables from rexxbase on are one packed struct in the original's
+ * order.
  *
  * Fixed (docs/libs/deviations.md, kind F):
  *   - init makes the default port "REXX" again (the original wrote "REXX"
@@ -93,6 +93,12 @@
  *   - RXReplyMsg code,result$ gives a result string only to a message
  *     that asked for one (RXFF_RESULT) and only with the code 0; the
  *     original always put one into rm_Result2 (#539).
+ *   - RXReplyMsg looks for the sender's port (the message's ln_Name)
+ *     first and makes the result string only when it replies; the
+ *     original made it first and, with the port gone, did not reply but
+ *     decided on the Result2 at the a0 FindPort leaves whether to delete
+ *     it: a string lost, or DeleteArgString(0) in the form without one
+ *     (#540).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
@@ -103,9 +109,7 @@
  *     string also when Result1 is not 0 (#545).
  *   - RXReturnCode is 0 while no message is current (#542).
  *   - RXReplyMsg: the current message stays current after the reply
- *     (#541).  If the port
- *     of the message's ln_Name no longer exists, it is not replied, but
- *     its Result2 (tested at the a0 FindPort leaves) is deleted (#540).
+ *     (#541).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -364,21 +368,6 @@ static void freest(ULONG s)
 {
     struct bl_regs r = { .d0 = s };
     BLITZ_ALIBJSR(TOK_freest, r);
-}
-
-/* exec calls with what they leave */
-
-static struct MsgPort *findport_a0(const UBYTE *name, UBYTE **a0out)
-{
-    register ULONG d0 __asm("d0");
-    register UBYTE *a0 __asm("a0");
-    register const UBYTE *a1 __asm("a1") = name;
-    register struct ExecBase *a6 __asm("a6") = SysBase;
-
-    __asm volatile("jsr -390(a6)" : "=d"(d0), "=a"(a0), "+a"(a1), "+a"(a6)
-                   : : "d1", "cc", "memory");
-    *a0out = a0;
-    return (struct MsgPort *)d0;
 }
 
 /* the string s to a3 with its 0; a3 ends at the 0, d0 = the length */
@@ -992,36 +981,32 @@ BLITZ_THUNK(waitport, rxwaitport_c, "d1/a0-a1");
 static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
 {
     struct RexxMsg *m = v.currentmessage;
-    UBYTE *leftover;
 
     if (!m)
         return BB_FALSE;
     m->rm_Result1 = code;
+    m->rm_Result2 = 0;
+    /* fixed (#540): the sender's port first, the result string only when
+       the message is replied; the original made the string first and,
+       with the port gone, tested the Result2 at the a0 FindPort leaves */
+    if (!FindPort((CONST_STRPTR)m->rm_Node.mn_Node.ln_Name))
+        return BB_FALSE;
     /* fixed (#539): a result string only if one was asked for and only
        with the code 0 (else rm_Result2 is a secondary code); the
        original always made one */
-    if (!res || !(m->rm_Action & RXFF_RESULT) || code)
-        m->rm_Result2 = 0;
-    else
+    if (res && (m->rm_Action & RXFF_RESULT) && !code)
         m->rm_Result2 = createargstring(res, args[-1]);
-    if (findport_a0((UBYTE *)m->rm_Node.mn_Node.ln_Name, &leftover)) {
-        v.currentmessage->rm_Node.mn_Node.ln_Type = NT_REPLYMSG;
-        ReplyMsg(&v.currentmessage->rm_Node);
-        return BB_TRUE;
-    }
-    /* 'shit: BUG(orig) the Result2 of the a0 FindPort left (#540) */
-    if (!((struct RexxMsg *)leftover)->rm_Result2)
-        return BB_FALSE;
-    deleteargstring(v.currentmessage->rm_Result2);
-    return BB_FALSE;
+    m->rm_Node.mn_Node.ln_Type = NT_REPLYMSG;
+    ReplyMsg(&m->rm_Node);
+    return BB_TRUE;
 }
 
 /**
  * @brief RXReplyMsg errcode: reply the current message.
  *
  * Nothing without a current message.  BUG(orig): the current message
- * stays current after the reply (#541); if the port of the message's
- * ln_Name no longer exists, it is not replied (#540).
+ * stays current after the reply (#541).  If the port of the message's
+ * ln_Name no longer exists, it is not replied.
  * @param code  d0: Result1
  */
 static void BLITZ_ROUTINE replymsg_c(ULONG code BL_REG(d0))
@@ -1035,9 +1020,10 @@ BLITZ_THUNK(_replymsg, replymsg_c, "d0-d1/a0-a1");
  * result string (CreateArgString).
  *
  * The string only if the message asked for a result (RXFF_RESULT) and
- * errcode is 0 (fixed #539: the original made it always).  As the form
- * without; BUG(orig) (#540): if the sender's port is gone,
- * the Result2 tested is the one at the a0 FindPort leaves.
+ * errcode is 0 (fixed #539: the original made it always), and only when
+ * the sender's port exists (fixed #540: the original made it first and,
+ * with the port gone, tested the Result2 at the a0 FindPort leaves).  As
+ * the form without.
  * @param code  d0: Result1
  * @param res   d1: result$, Result2
  * @param args  a2: the argument stack, -4(a2) the length of result$
