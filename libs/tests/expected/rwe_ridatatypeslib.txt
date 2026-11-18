@@ -474,7 +474,8 @@ DataTypesPalette|colour 1 red|2 colours|1	$00000001
 DataTypesPalette|colour 1 red|4 colours|1	$00000001
 DataTypesPalette|d0||1	$00000000
 DataTypesPalette|d0||2	$00000000
-DataTypesPalette|d0|no colour table|1	$00000001
+DataTypesPalette|d0|no colour table|1 [orig]	$00000001
+DataTypesPalette|d0|no colour table|1 [fixed #607]	$00000000
 DataTypesPalette|d0 = the buffer|0 colours|1 [fixed #606]	$00000001
 DataTypesPalette|d0 = the buffer|2 colours|1	$00000001
 DataTypesPalette|d0 = the buffer|4 colours|1	$00000001

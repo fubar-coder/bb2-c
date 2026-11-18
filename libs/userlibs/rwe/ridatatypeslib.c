@@ -36,8 +36,6 @@
  * (init/finit, AttachDataType) and d7/a2 (SetDataTypeAttr with pairs).
  *
  * BUG(orig):
- *   - DataTypesPalette without colours returns GetAttr's result,
- *     otherwise the address of its buffer (#607).
  *   - SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
  *     overflow the 1024 byte buffer (#608).
  *
@@ -95,6 +93,11 @@
  *     picture's colour table for a larger palette, 65536 for 0 (DBRA)
  *     (#606).  A palette smaller than the picture gets its first colours,
  *     as before (RIDataTypesLib.guide asks for 2^depth colours).
+ *   - DataTypesPalette clears the buffer before GetAttr and returns 0
+ *     without a colour table.  The original returned GetAttr's result
+ *     then (1 for a class that knows the attribute), and for an object
+ *     that does not know it took the buffer's first long, left by the
+ *     command before, as the colour table (#607).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -766,22 +769,25 @@ struct pdata {
  * original copied the palette's number, behind the picture's table for a
  * larger palette, 65536 for 0).  Does not test datatypes.library.
  * @param palobj  a0: the palette object (palettelib, parameter 0)
- * @return d0: the address of the buffer; BUG(orig) (#607): without
- *         colours GetAttr's result; 0 without object
+ * The buffer is cleared before GetAttr (fixed, #607: the original took
+ * what the command before had left in it for an object that does not
+ * know the attribute).
+ * @return d0: the address of the buffer; 0 without object or colour table
+ *         (fixed, #607: the original returned GetAttr's result)
  */
 ULONG BLITZ_ROUTINE c_datatypespalette(struct bb_palette *palobj BL_REG(a0))
 {
     const UBYTE *cr;
     struct pcolour *p;
     ULONG n, nc = 0;
-    ULONG r;
 
     if (!object)
         return 0;
-    r = GetAttr(PDTA_ColorRegisters, object, &storage->value);
+    storage->value = 0;                 /* fixed (#607) */
+    GetAttr(PDTA_ColorRegisters, object, &storage->value);
     cr = (const UBYTE *)storage->value;
     if (!cr)
-        return r;                       /* BUG(orig) (#607): GetAttr's result */
+        return 0;                       /* fixed (#607) */
     GetAttr(PDTA_NumColors, object, &nc);
     n = PALDATA(palobj)->count;
     if (nc < n)                         /* fixed (#606) */

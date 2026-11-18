@@ -45,8 +45,6 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 
 **BUG(orig)** (kept):
 
-* DataTypesPalette without colours returns GetAttr's result, otherwise
-  the buffer's address (#607).
 * SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
   overflow the buffer (#608).
 
@@ -126,6 +124,13 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   than the picture gets its first colours, as before: RIDataTypesLib.guide
   asks the program for a palette of 2^DataTypeDepth colours (no check
   added) (#606).
+* DataTypesPalette clears the buffer before GetAttr and returns 0
+  without a colour table (and copies nothing). The original returned
+  GetAttr's result then (1 for a class that knows PDTA_ColorRegisters but
+  reports no table, so `If DataTypesPalette(0)` saw success), and for an
+  object that does not know the attribute (not a picture) it took the
+  first long the command before had left in the buffer as the colour
+  table and copied from there (#607).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h
