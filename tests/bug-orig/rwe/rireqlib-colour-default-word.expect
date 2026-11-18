@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+colour 3
+...
+rc=0
