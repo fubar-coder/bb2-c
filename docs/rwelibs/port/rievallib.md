@@ -134,6 +134,9 @@ kind F):
 * PFErrorText without an error returns the length 0; the original set
   only the low word of d0, the upper word of the length was the
   caller's (#640).
+* PFEvaluate's `<` is a signed "less than", as the manual says ("Test
+  for less than") and the mirror image of `>`; the original's was
+  unsigned "lower or same" (SLS): `2 2 <` true, `-1 1 <` false (#638).
 
 ## BUG(orig), kept
 
@@ -143,7 +146,6 @@ In the C file's head:
   0, #631).
 * ConvToPostFix: dropped characters (#632).
 * ConvToPostFix: signs after a space (#633).
-* PFEvaluate: `<` is unsigned "less or same", `>` signed (#638).
 * PFEvaluate: the product's high words added into the low word on
   overflow (#639).
 * PFEvaluate: `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as

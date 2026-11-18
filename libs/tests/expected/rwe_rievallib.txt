@@ -1346,7 +1346,8 @@ PFEvaluate|d0|"- 3"|1	$00000000
 PFEvaluate|d0|"-"|1	$00000000
 PFEvaluate|d0|"-$10"|1	$FFFFA0A6
 PFEvaluate|d0|"-%1"|1	$FFFFF66D
-PFEvaluate|d0|"-1 1 <"|1	$00000000
+PFEvaluate|d0|"-1 1 <"|1 [orig]	$00000000
+PFEvaluate|d0|"-1 1 <"|1 [fixed #638]	$FFFFFFFF
 PFEvaluate|d0|"-1 1 >"|1	$00000000
 PFEvaluate|d0|"-2147483648 -1 /"|1	$80000000
 PFEvaluate|d0|"-2147483648 1 /"|1	$80000000
@@ -1363,7 +1364,8 @@ PFEvaluate|d0|"0 0 /"|1	$00000000
 PFEvaluate|d0|"0 5 /"|1	$00000000
 PFEvaluate|d0|"0 5 ^"|1	$00000001
 PFEvaluate|d0|"1 +"|1	$00000000
-PFEvaluate|d0|"1 -1 <"|1	$FFFFFFFF
+PFEvaluate|d0|"1 -1 <"|1 [orig]	$FFFFFFFF
+PFEvaluate|d0|"1 -1 <"|1 [fixed #638]	$00000000
 PFEvaluate|d0|"1 -1 >"|1	$FFFFFFFF
 PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1 [orig]	$00000000
 PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1 [fixed #645]	$00000002
@@ -1396,7 +1398,8 @@ PFEvaluate|d0|"2 1 >"|1	$FFFFFFFF
 PFEvaluate|d0|"2 10 ^"|1	$00000400
 PFEvaluate|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$00000052
 PFEvaluate|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$B0D9CC26
-PFEvaluate|d0|"2 2 <"|1	$FFFFFFFF
+PFEvaluate|d0|"2 2 <"|1 [orig]	$FFFFFFFF
+PFEvaluate|d0|"2 2 <"|1 [fixed #638]	$00000000
 PFEvaluate|d0|"2 31 ^"|1	$80000000
 PFEvaluate|d0|"2 6 +"|1	$00000008
 PFEvaluate|d0|"2147483647 1 /"|1	$7FFFFFFF

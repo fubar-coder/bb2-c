@@ -31,7 +31,6 @@
  *     start of the string or right after an operator or `(` - not after
  *     a space ("3 -4" is 3-4) (#633).
  *   - PFEvaluate:
- *     - `<` is "less or same" unsigned (SLS), `>` signed (SGT) (#638).
  *     - `*` (lmult) adds the high words of the partial products into the
  *       low word (SWAP:ADD) - wrong only when the product overflows
  *       (#639).
@@ -61,6 +60,9 @@
  *     stack, the caller's return address (MOVE.l (a7)+,d0) (#644).
  *   - PFErrorText without an error returns the length 0; the original set
  *     only d0.w (MOVE.w), the upper word was the caller's (#640).
+ *   - PFEvaluate's `<` is a signed "less than" (the manual: "Test for
+ *     less than"), the mirror image of `>`; the original's was unsigned
+ *     "lower or same" (SLS) (#638).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -539,9 +541,9 @@ gotop:
     case 2:                                     /* | */
         s->acc = st_pop(s) | *st_top(s);
         break;
-    case 3:                                     /* < : SLS, unsigned <= */
+    case 3:                                     /* < : signed; fixed (#638) */
         rhs = st_pop(s);
-        s->acc = *st_top(s) <= rhs ? BB_TRUE : BB_FALSE;
+        s->acc = (LONG)*st_top(s) < (LONG)rhs ? BB_TRUE : BB_FALSE;
         break;
     case 4:                                     /* > : SGT */
         rhs = st_pop(s);
@@ -683,14 +685,14 @@ evalbin:
  * Operands: decimal, `$` hex, `%` binary numbers, `-` signs, registers
  * `d0`-`d7`, `a0`-`a7`, `pc` of the PFRegisters block, `{...}` an
  * indirection (a long, `.b`/`.w`/`.l` behind it; PFIndirectAddr keeps the
- * address).  Operators: = & | < > + - * / ^ (comparisons give -1/0).
+ * address).  Operators: = & | < > + - * / ^ (comparisons give -1/0;
+ * `<` and `>` signed, `<` fixed, #638).
  * Errors set PFErrorType/PFErrorText and return 0: 1 "Need 2 arguments",
  * 2 "Register structure not found", 3 "Divide by 0", 4 "No result
  * value", 5 "No close bracket on indirect", 6 "Invalid size for
  * indirection".  An empty string returns 0, error 0; a string of spaces
  * only 0, error 4 (fixed, #644).
- * BUG(orig): `<` is unsigned "less or same", `>` signed (#638); `*`
- * overflows wrongly (#639); `^` (#641); only the last value counts
+ * BUG(orig): `*` overflows wrongly (#639); `^` (#641); only the last value counts
  * (#635); register operands (#642), the `}` check after a register
  * (#637), `-$`/`-%` (#643), unchecked digits (#634), indirection at any
  * address (#636).
