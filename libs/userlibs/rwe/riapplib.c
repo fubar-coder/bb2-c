@@ -40,6 +40,13 @@
  * tables lie one behind the other: window 16 landed in the AppIcon table,
  * other numbers outside the block.  The release code is unchanged (an invalid argument,
  * D-005).
+ * Fixed (intended deviation, #1099): init clears the current message
+ * (msg).  Neither init nor finit cleared it in the original, so a second
+ * run of the program with the library still loaded (from the editor)
+ * started with the message the run before's finit had replied to: the
+ * first AppEvent replied to it again (its reply port perhaps gone), and
+ * AppMessage, AppEventType, AppEventID, AppNumFiles, AppLock and AppFile
+ * read it before that AppEvent.
  * Fixed (intended deviation, #526): when a library did not open, init
  * deleted the port and freed the block but left the libraries already
  * opened open, and AppMsgPort still returned the deleted port (also when
@@ -269,12 +276,15 @@ BLITZ_INLINE(appeventidcmp, "move.l #0x800000,d0");
  * Sets libflag -1 when all is there, 0 otherwise (the commands then do
  * nothing).  Fixed (#526): on a failure the libraries opened before are
  * closed and msgport is cleared (the original left them open and kept the
- * deleted port for AppMsgPort).
+ * deleted port for AppMsgPort).  Fixed (#1099): no current message (the
+ * original kept the one of the run before, which its finit had replied
+ * to, for a second run from the editor).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     struct appblock *block;
 
+    msg = NULL;                         /* fixed (#1099) */
     msgport = CreateMsgPort();
     if (!msgport) {
         libflag = 0;

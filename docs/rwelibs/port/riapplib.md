@@ -113,6 +113,13 @@ kind F):
   original left them open (finit, which tests the flag of a successful
   init, did not close them either) and returned the deleted port, also
   when the block could not be allocated (#526).
+* init clears the current message. Neither init nor finit cleared it in
+  the original, so a second run of the program with the library still
+  loaded (from the editor) started with the message the run before's
+  finit had replied to: the first `AppEvent` replied to it a second time
+  (its reply port perhaps gone), and `AppMessage`, `AppEventType`,
+  `AppEventID`, `AppNumFiles`, `AppLock` and `AppFile` read it before
+  that `AppEvent` (#1099).
 * riapplib has an error check area: with runtime error checking an id of
   `AddAppMenu`, `DelAppMenu`, `AddAppIcon` or `DelAppIcon` outside 0-15 is
   the runtime error "App id must be 0 to 15" (`idchk`), a window number of
