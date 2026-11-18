@@ -3,8 +3,9 @@ intro: |
   This library gives a program a public message port through which
   ARexx and other programs can send it commands, and lets the program
   send commands to the ports of other programs. It needs
-  rexxsyslib.library, which comes with ARexx. All commands that work
-  with the port are Amiga mode only.
+  rexxsyslib.library, which comes with ARexx; without it, nothing is
+  sent, and the commands that send return 0 or an empty string. All
+  commands that work with the port are Amiga mode only.
 
   The library has one port, not numbered objects. `RXCreatePort` makes
   it and must come before most other commands; with runtime error
@@ -42,5 +43,8 @@ intro: |
     RXDeletePort
   EndIf
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in riarexxlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riarexxlib-fixes" >}}).
 
   *Based on the RI ARexx Lib guide by Red When Excited.*

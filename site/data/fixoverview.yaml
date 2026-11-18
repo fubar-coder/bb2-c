@@ -4236,6 +4236,198 @@ rows:
     text: "`NPrint` through `IPOutput` starts a new line; the original drew a byte from low memory instead."
     page: libraries
     anchor: riintuilib-fixes
+  - issue: 543
+    severity: 1
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXRunCommand, RXRunScript, RXExecuteScript"
+    text: "`RXRunCommand` returns -1 when the command was sent and 0 when not; the original returned a value the system left, which could be 0 for a command that was sent."
+    page: libraries
+    anchor: rxruncommand-result
+  - issue: 527
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXTokenise, RXRunCommand, RXSendCommand"
+    text: "A command of more than 16 words is sent with 16 arguments, the 16th holding the rest of the command; the original wrote the further words over the message."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 528
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXCreatePort"
+    text: "`RXCreatePort` that cannot set up its port frees it and returns 0; the original left the freed port in the system's list of public ports."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 529
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXDefaultPort"
+    text: "`RXDefaultPort` takes a name of any length; the original wrote a name of more than 65 characters over the library's data, and the next command crashed."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 530
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXDeletePort"
+    text: "`RXDeletePort` and the end of the program free the message lists and the port's name; the original lost their memory."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 531
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXRunCommand, RXRunScript"
+    text: "Replies to `RXRunCommand` are freed whole; the original lost memory with each and overwrote memory after 32 commands."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 532
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXDefaultPort"
+    text: "A program run again from the editor sends to the default port `REXX`; after an `RXDefaultPort` of the run before, the original could send to a wrong name such as `REXXE`."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 533
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXRunCommand, RXSendCommand"
+    text: "Without memory for a new message nothing is sent; the original could send the message before again, with the new arguments written into it."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 534
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXNextArg"
+    text: "`RXNextArg` moves on after an empty argument; the original returned the empty argument again and again."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 535
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXTokenise"
+    text: "A doubled quote inside a quoted word no longer keeps the word from ending at its closing quote; the original took the following words into it."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 536
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXTokenise"
+    text: "An empty quoted word `\"\"` is sent as an empty argument; the original ended the command there and dropped the words behind it."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 537
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXTokenise, RXRunCommand, RXSendCommand"
+    text: "Commands and words longer than 255 characters are split whole; the original copied them into 256-byte buffers and overwrote its own code."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 538
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXTokenise"
+    text: "The character after a closing quote starts a new word; the original dropped it, and after a quoted last word it sent words of an earlier command again."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 539
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXReplyMsg"
+    text: "`RXReplyMsg` gives a result string only to a message that asked for one, and only with the code 0; the original always gave one."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 540
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXReplyMsg"
+    text: "`RXReplyMsg` to a sender whose port is gone makes no result string; the original lost it or deleted a string at address 0."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 541
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXReplyMsg, RXGetArg, RXNextArg, RXNumArgs"
+    text: "After `RXReplyMsg` no message is current until the next `RXReadPort` or `RXWaitPort`; the original went on reading the replied message, which its sender may have freed."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 542
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXReturnCode"
+    text: "`RXReturnCode` gives the code of the last `RXSendCommand` also when no received message is current; the original returned 0 then."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 544
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXExecuteScript, RXRunScript"
+    text: "`RXExecuteScript` and `RXRunScript` run the script file named, and `RXExecuteScript` waits for its end; the original sent the name as ARexx source, so no script was loaded."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 545
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXSendCommand"
+    text: "`RXSendCommand` returns an empty string for a command that failed; the original read the error number as the address of a string."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 546
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXSendCommand"
+    text: "`RXSendCommand` frees the result string of each reply; the original lost two strings per call."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 547
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXTokenise"
+    text: "`RXTokenise Off` always switches the splitting off; the original could leave it on, depending on a register."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 1093
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: ""
+    text: "A program that uses the ARexx library closes rexxsyslib.library at its end; the original left it open, once more with every run."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 1094
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXRunCommand, RXSendCommand, RXReplyMsg"
+    text: "Without rexxsyslib.library nothing is sent and `RXReplyMsg` replies without a result string; the original crashed at the first message."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 1096
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXCreatePort"
+    text: "`RXCreatePort` returns 0 when a public port of that name exists; the original added a second port of the same name."
+    page: libraries
+    anchor: riarexxlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
