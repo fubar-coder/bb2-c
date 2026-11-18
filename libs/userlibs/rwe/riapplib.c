@@ -30,10 +30,6 @@
  * them (cmake/ndk-calls.cmake).
  *
  * BUG(orig), kept:
- *   - AddAppIcon on a used id removes the old AppIcon and frees its
- *     DiskObject but leaves the old AppIcon in the slot if AddAppIconA
- *     fails (a later DelAppIcon removes it again); the new DiskObject is
- *     stored before AddAppIconA and stays on failure (#517).
  *   - init: if a library does not open, the port is deleted and the block
  *     freed, but the libraries already opened stay open; AppMsgPort then
  *     still returns the deleted port (#526).
@@ -41,6 +37,12 @@
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
+ * Fixed (intended deviation, #517): AddAppIcon on a used id removed the
+ * old AppIcon and freed its DiskObject but left the old AppIcon in its
+ * slot if AddAppIconA failed (a later DelAppIcon or finit removed it a
+ * second time), and the new DiskObject stayed in its slot on failure;
+ * the slot is cleared after RemoveAppIcon now, and on failure the new
+ * DiskObject is freed and its slot cleared.
  * Fixed (intended deviation, #524): finit cleared the table slot at byte
  * offset index*4/4 instead of index*4 (ASR.l #2 before the store): a long
  * store at an odd address for the slots 1, 3 ... (an address error on a
@@ -568,9 +570,9 @@ BLITZ_THUNK(addmenu, addmenu_c, "d1/a0-a1");
  * @brief AddAppIcon (after the libflag test): the icon from
  * GetDiskObject(filename$) at iconx/icony, added as an App icon.
  *
- * BUG(orig) (#517): on a used id the old AppIcon is removed and its
- * DiskObject freed, but the old AppIcon stays in the slot if AddAppIconA
- * fails; the new DiskObject is stored before and stays on failure.
+ * Fixed (#517): the slot of the old AppIcon is cleared once it is
+ * removed, and a new DiskObject that AddAppIconA did not take is freed
+ * (the original left both in their slots).
  * Fixed (#516): a3 and a4 are kept around AddAppIconA.
  * @param id    d0: the id
  * @param text  d1: the icon's text
@@ -589,6 +591,7 @@ static BB_BOOL BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1
     dobj->do_CurrentY = icony;
     if (appicons[id]) {
         RemoveAppIcon((struct AppIcon *)appicons[id]);
+        appicons[id] = 0;               /* fixed (#517) */
         if (disklist[id]) {
             FreeDiskObject(disklist[id]);
             disklist[id] = NULL;
@@ -601,8 +604,11 @@ static BB_BOOL BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1
        cmake/ndk-calls.cmake); the original left a3 = the DiskObject and
        a4 = 0. */
     icon = AddAppIconA(id, 0, text, msgport, 0, dobj, NULL);
-    if (!icon)
+    if (!icon) {
+        FreeDiskObject(dobj);           /* fixed (#517) */
+        disklist[id] = NULL;
         return BB_FALSE;
+    }
     appicons[id] = (ULONG)icon;
     return BB_TRUE;
 }

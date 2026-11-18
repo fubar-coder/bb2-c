@@ -100,13 +100,15 @@ kind F):
   address for odd indexes, an address error at program end on a 68000
   with an App object left in slot 1, 3, ... (harmless on a 68020, the
   block is freed right after) (#524).
+* `AddAppIcon` on a used id clears the slot of the old AppIcon once it is
+  removed, and if `AddAppIconA` fails it frees the new DiskObject and
+  clears its slot. The original left the removed AppIcon in its slot (a
+  later `DelAppIcon` or finit called `RemoveAppIcon` on it a second
+  time) and the new DiskObject in its slot until `DelAppIcon` or finit
+  (#517).
 
 ## BUG(orig), kept
 
-* `AddAppIcon` on a used id removes the old AppIcon and frees its
-  DiskObject first; if `AddAppIconA` then fails, the removed AppIcon stays
-  in the slot (a later `DelAppIcon` removes it again) and the new
-  DiskObject stays in its slot (freed only by finit) (#517).
 * init: if a library does not open, the port is deleted and the memory
   freed, but the libraries already opened stay open; `AppMsgPort` still
   returns the deleted port (#526).
