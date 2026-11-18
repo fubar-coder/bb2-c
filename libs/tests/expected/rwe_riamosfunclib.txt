@@ -377,16 +377,19 @@ FillMem|used|bank 3|1	$00000001
 FillMem|used|bank 3|2	$00000001
 FillMem|used|bank 3|3	$00000001
 FillMem|used|bank 5|1	$00000000
+FindVolume|d0 is -1|""|1	$00000000
+FindVolume|d0 is -1|"RAM"|1 [orig]	$00000000
+FindVolume|d0 is -1|"RAM"|1 [fixed #1082]	$00000001
+FindVolume|d0 is -1|"Ram Disk"|1 [orig]	$00000000
+FindVolume|d0 is -1|"Ram Disk"|1 [fixed #1082]	$00000001
+FindVolume|d0 is -1|"TEST"|1 [orig]	$00000000
+FindVolume|d0 is -1|"TEST"|1 [fixed #1082]	$00000001
+FindVolume|d0 is -1|"nosuchvolume"|1	$00000000
 FindVolume|d0 is not 0|""|1	$00000000
 FindVolume|d0 is not 0|"RAM"|1	$00000001
 FindVolume|d0 is not 0|"Ram Disk"|1	$00000001
 FindVolume|d0 is not 0|"TEST"|1	$00000001
 FindVolume|d0 is not 0|"nosuchvolume"|1	$00000000
-FindVolume|d0 is the DosList entry of the name|""|1	$00000001
-FindVolume|d0 is the DosList entry of the name|"RAM"|1	$00000001
-FindVolume|d0 is the DosList entry of the name|"Ram Disk"|1	$00000001
-FindVolume|d0 is the DosList entry of the name|"TEST"|1	$00000001
-FindVolume|d0 is the DosList entry of the name|"nosuchvolume"|1	$00000001
 FindVolume|kept|""|1	kept
 FindVolume|kept|"RAM"|1	kept
 FindVolume|kept|"Ram Disk"|1	kept

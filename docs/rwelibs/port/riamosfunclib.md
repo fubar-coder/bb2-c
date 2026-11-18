@@ -198,18 +198,16 @@ kind F):
   an argument does (the manual's syntax:
   `[numbanks=]BankLimit[(maxbanks)]`); the original returned the address
   of the new start table, init's d0 (#483).
+* `FindVolume` returns -1 when FindDosEntry finds the device, volume or
+  assign and 0 otherwise, as the manual documents ("returns 0 if it is
+  not, or -1 if it is"). The original returned the DosList entry that
+  FindDosEntry found, taken after UnLockDosList (an entry of a list the
+  program no longer holds): as a truth value it worked, a comparison
+  with -1 never found the volume. AmiBlitz3's RIAmosFuncLib still
+  returns the address (#1082).
 
-## BUG(orig), kept
+## Original behaviour that is not a defect
 
-(In the AB3 binary; in the C file's head too.)
-
-* `FindVolume` returns the DosList entry that FindDosEntry found, taken
-  after UnLockDosList (an entry of a list the program no longer holds);
-  the manual documents -1 for a volume that is present and 0 otherwise.
-  As a truth value it works; a comparison with -1 never finds the
-  volume (test `riamosfunclib-findvolume-result`, #1082).
-
-Original behaviour that is not a defect:
 
 * `SaveExec` stops at the node whose next is 0. The list is Exec-style:
   that node is the list header's tail (`lh_Tail`), not an item, so every

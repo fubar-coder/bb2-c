@@ -623,8 +623,6 @@ static void changedir(const char *name, int relative)
     OBS("current directory", same);
 }
 
-#define LDF_FINDVOLUME_T (LDF_READ | LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS | LDF_ENTRY)
-
 /* FindVolume / DeviceName$ */
 static void volumes(void)
 {
@@ -636,19 +634,11 @@ static void volumes(void)
     for (i = 0; i < sizeof v / sizeof v[0]; i++) {
         sprintf(VEC, "\"%s\"", v[i]);
         DO1(ENT(LIB, E_FINDVOL, 0), R.d[0] = (ULONG)v[i]);
-        {
-            /* the entry dos.library itself finds; the node's address
-               depends on the system, so the case holds only whether d0
-               is 0 and whether it is that entry */
-            ULONG found = R.d[0];
-            struct DosList *dl = LockDosList(LDF_FINDVOLUME_T);
-
-            if (dl)
-                dl = FindDosEntry(dl, v[i], LDF_FINDVOLUME_T);
-            UnLockDosList(LDF_FINDVOLUME_T);
-            OBS("d0 is not 0", found != 0);
-            OBS("d0 is the DosList entry of the name", found == (ULONG)dl);
-        }
+        /* the original returns the DosList entry, whose address depends
+           on the system: the case holds only whether d0 is 0 and whether
+           it is -1, the manual's value for a name that is present (#1082) */
+        OBS("d0 is not 0", R.d[0] != 0);
+        OBS("d0 is -1", R.d[0] == 0xffffffffUL);
     }
     ROUT = "DeviceName$";
     for (i = 0; i < sizeof d / sizeof d[0]; i++) {

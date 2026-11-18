@@ -40,11 +40,6 @@
  * the thunks, the two inline forms of GTTagValue (copied by the
  * compiler).
  *
- * BUG(orig), kept:
- *   - FindVolume returns the DosList entry FindDosEntry found, taken
- *     after UnLockDosList, where the manual documents -1 (0 if the
- *     volume is not present) (test riamosfunclib-findvolume-result;
- *     #1082).
  * Fixed (intended deviations):
  *   - EraseAll counts the whole long from maxbanks-1 down to 0; the
  *     original counted with DBRA on the low word: with more than 65536
@@ -129,6 +124,9 @@
  *     file (0).  The original wrote one size slot (the sum, last hunk 0)
  *     and one HUNK_END behind all hunks: with two or more code hunks
  *     LoadSeg refused the file (#503).
+ *   - FindVolume returns -1 when FindDosEntry finds the name and 0
+ *     otherwise, as the manual documents; the original returned the
+ *     DosList entry, taken after UnLockDosList (#1082).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written (an empty list, whose head is the tail, is
@@ -1038,14 +1036,14 @@ static BB_BOOL BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
 #define LDF_FINDVOLUME (LDF_READ | LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS | LDF_ENTRY)
 
 /**
- * @brief FindVolume(volumename): the DosList entry of a device, volume or
- * assign (FindDosEntry).
+ * @brief FindVolume(volumename): whether a device, volume or assign of
+ * that name is present (FindDosEntry).
  *
- * BUG(orig) (#1082): the manual documents -1 for a volume
- * that is present; the result is the entry's address, an entry of the
- * list after UnLockDosList.
+ * Fixed (#1082): -1 for a name that is present, as the manual documents;
+ * the original returned the entry's address, an entry of the list after
+ * UnLockDosList.
  * @param name  d0: the name (without ":")
- * @return d0: the struct DosList, 0 if not found
+ * @return d0: -1 if found, 0 if not
  */
 static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0))
 {
@@ -1056,7 +1054,7 @@ static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0))
         return 0;
     dl = FindDosEntry(dl, name, LDF_FINDVOLUME);
     UnLockDosList(LDF_FINDVOLUME);
-    return (ULONG)dl;
+    return dl ? (ULONG)-1 : 0;                  /* fixed (#1082): not dl */
 }
 
 /**
