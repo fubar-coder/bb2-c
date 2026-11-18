@@ -34,6 +34,9 @@
 #                                           v3.14.0
 #   archive/aminet/ab2.42-distri/           AmiBlitz 2.42, full distribution
 #                                           (Aminet), unpacked
+#   archive/aminet/ReqLib28/                req.library 2.8 (Aminet util/libs),
+#                                           unpacked (the library the
+#                                           rireqlib tests open)
 #   archive/bernd/                          Bernd Rösch's AmiBlitz 2 archive
 #                                           (AmiBlitz 2.41 ... 3.00 beta 4),
 #                                           paths as on the site, every
@@ -137,6 +140,10 @@ endforeach()
 list(APPEND downloads
 	"ab2.42-distri.lha|https://aminet.net/dev/blitz/ab2.42-distri.lha|6f3993d1b6d911b90db9cf73a944f08d62a1576e6f8cf5deabe9abb9b3554dac"
 	"ab2.42-distri.readme|https://aminet.net/dev/blitz/ab2.42-distri.readme|b515e098cd24f2f6b476068ccdf30107245d7fc69d71b9795df9a26a72f37707")
+# req.library 2.8 (util/libs on Aminet), the library the rireqlib tests open
+list(APPEND downloads
+	"ReqLib28.lha|https://aminet.net/util/libs/ReqLib28.lha|6e55c28548b55f2272557ea8afc6667e5e9d3dc1ee51622e2025db913a02bb1f"
+	"ReqLib28.readme|https://aminet.net/util/libs/ReqLib28.readme|d657b6ff97024c78e97529454590d68642ba809174b4c6eeeedf06550a485561")
 # Bernd Rösch's AmiBlitz 2 archive, the update location the readme of
 # ab2.42-distri names: the releases 2.43 ... 3.00 beta 4 (compiler, PED,
 # AcidLibs, DefLibs, residents) and the sources of compiler and PED.
@@ -434,6 +441,20 @@ if(unpacked)
 		message(FATAL_ERROR "ab2.42-distri.lha: ${n} files, 1119 expected")
 	endif()
 	finish(${ab242} ${DOWNLOAD_DIR}/ab2.42-distri.lha)
+endif()
+
+# req.library 2.8 from Aminet: ReqLib28.lha (ReadMe, req.library) ->
+# archive/aminet/ReqLib28/, the Aminet readme next to them
+set(reqlib ${root}/archive/aminet/ReqLib28)
+unpack(${DOWNLOAD_DIR}/ReqLib28.lha ${reqlib})
+if(unpacked)
+	file(GLOB_RECURSE files ${reqlib}.part/*)
+	list(LENGTH files n)
+	if(NOT n EQUAL 2 OR NOT EXISTS ${reqlib}.part/req.library)
+		message(FATAL_ERROR "ReqLib28.lha: ${n} files, ReadMe and req.library expected")
+	endif()
+	file(COPY_FILE ${DOWNLOAD_DIR}/ReqLib28.readme ${reqlib}.part/ReqLib28.readme)
+	finish(${reqlib} ${DOWNLOAD_DIR}/ReqLib28.lha)
 endif()
 
 # Bernd Rösch's archive: bernd/PATH -> archive/bernd/PATH, LhA archives
