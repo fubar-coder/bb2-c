@@ -7,12 +7,15 @@ ReqColour|RFU 0|after overrun|1 [orig]	$00000000
 ReqColour|RFU 0|after overrun|1 [fixed #1088]	$00000001
 ReqColour|WinPtr|colour 3|1	$CAFE0042
 ReqColour|WinPtr|colour 4|1	$CAFE0042
+ReqColour|WinPtr|second run|1	$00000000
 ReqColour|called|after overrun|1	$00000001
 ReqColour|called|colour 3|1	$00000001
 ReqColour|called|colour 4|1	$00000001
+ReqColour|called|second run|1	$00000001
 ReqColour|d0|after overrun|1	$00000009
 ReqColour|d0|colour 3|1	$00000007
 ReqColour|d0|colour 4|1	$00000008
+ReqColour|d0|second run|1	$00000006
 ReqColour|ecr|colour 3|1 [orig]	bytes 30 0000CAFE0042000000000000000000000000000000000000000000000000
 ReqColour|ecr|colour 3|1 [fixed #786]	bytes 30 0003CAFE0042000000000000000000000000000000000000000000000000
 ReqColour|ecr|colour 4|1 [orig]	bytes 30 0000CAFE0042000000000000000000000000000000000000000000000000
@@ -20,9 +23,11 @@ ReqColour|ecr|colour 4|1 [fixed #786]	bytes 30 0004CAFE0042000000000000000000000
 ReqColour|kept|after overrun|1	kept
 ReqColour|kept|colour 3|1	kept
 ReqColour|kept|colour 4|1	kept
+ReqColour|kept|second run|1	kept
 ReqColour|popped|after overrun|1	$00000000
 ReqColour|popped|colour 3|1	$00000000
 ReqColour|popped|colour 4|1	$00000000
+ReqColour|popped|second run|1	$00000000
 ReqFileLoc|a0 = d0||1	$00000001
 ReqFileLoc|buffers cleared||1	$00000001
 ReqFileLoc|d0 = init's||1	$00000001
@@ -68,6 +73,7 @@ ReqFileRequest|called|form 1 title Cancel flags $0 ret 0 path "never"|1	$0000000
 ReqFileRequest|called|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000001
 ReqFileRequest|called|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000001
 ReqFileRequest|called|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000001
+ReqFileRequest|called|second run|1	$00000001
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000000
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	$00000003
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$00000005
@@ -86,6 +92,7 @@ ReqFileRequest|d0|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info
 ReqFileRequest|d0|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000000
 ReqFileRequest|d0|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	$00000012
 ReqFileRequest|d0|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #785]	$00000015
+ReqFileRequest|d0|second run|1	$00000000
 ReqFileRequest|dir|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000000
 ReqFileRequest|dir|form 0 title - flags $0 ret 1 path ""|1 [fixed #785]	path-$12C
 ReqFileRequest|dir|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$00000000
@@ -147,6 +154,7 @@ ReqFileRequest|kept|form 1 title Cancel flags $0 ret 0 path "never"|1	kept
 ReqFileRequest|kept|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	kept
 ReqFileRequest|kept|form 2 title Cancel again flags $41 ret 0 path "never"|1	kept
 ReqFileRequest|kept|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	kept
+ReqFileRequest|kept|second run|1	kept
 ReqFileRequest|maxextsel lines columns|form 0 title - flags $0 ret 1 path ""|1	bytes 8 00000014001C000C
 ReqFileRequest|maxextsel lines columns|form 0 title - flags $0 ret 1 path "RAM:x"|1	bytes 8 00000014001C000C
 ReqFileRequest|maxextsel lines columns|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	bytes 8 00000014001C000C
@@ -205,6 +213,7 @@ ReqFileRequest|popped|form 1 title Cancel flags $0 ret 0 path "never"|1	$0000000
 ReqFileRequest|popped|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000000
 ReqFileRequest|popped|form 2 title Cancel again flags $41 ret 0 path "never"|1	$00000000
 ReqFileRequest|popped|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000000
+ReqFileRequest|popped|second run|1	$00000000
 ReqFileRequest|rest|form 0 title - flags $0 ret 1 path ""|1	bytes 128 fnv A7B537C5
 ReqFileRequest|rest|form 0 title - flags $0 ret 1 path "RAM:x"|1	bytes 128 fnv A7B537C5
 ReqFileRequest|rest|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	bytes 128 fnv A7B537C5
@@ -283,13 +292,17 @@ ReqFileRequest|window|form 1 title Cancel flags $0 ret 0 path "never"|1	$CAFE004
 ReqFileRequest|window|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$CAFE0042
 ReqFileRequest|window|form 2 title Cancel again flags $41 ret 0 path "never"|1	$CAFE0042
 ReqFileRequest|window|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$CAFE0042
+ReqFileRequest|window|second run|1	$CAFE0042
 ReqFlags|kept|$12345678|1	kept
 ReqFlags|popped|$12345678|1	$00000000
 ReqOutput|kept||1	kept
 ReqOutput|popped||1	$00000000
 finit|kept||1	kept
+finit|kept|second run|1	kept
 finit|library closed||1	$00000000
+finit|library closed|second run|1	$00000000
 finit|popped||1	$00000000
+finit|popped|second run|1	$00000000
 finit (again)|kept||1	kept
 finit (again)|popped||1	$00000000
 finit (no init)|kept||1	kept
@@ -297,8 +310,11 @@ finit (no init)|kept||2	kept
 finit (no init)|popped||1	$00000000
 finit (no init)|popped||2	$00000000
 init|kept||1	kept
+init|kept|second run|1	kept
 init|library open||1	$00000001
+init|library open|second run|1	$00000001
 init|popped||1	$00000000
+init|popped|second run|1	$00000000
 init (AllocMem fails)|d0||1	$00000000
 init (AllocMem fails)|kept||1	kept
 init (AllocMem fails)|library closed||1	$00000000

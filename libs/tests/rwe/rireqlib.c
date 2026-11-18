@@ -19,7 +19,9 @@
  * requester's own fields behind offset 162 (the fake writes them once,
  * then ReqFileLoc and ReqColour show whether the library's data is
  * intact; the test writes the old bytes back before the next call),
- * finit (library closed, memory back).  Not covered: the real
+ * finit (library closed, memory back), a second run (init after finit,
+ * as from the editor: the window of ReqFileRequest and ReqColour without
+ * ReqOutput).  Not covered: the real
  * req.library (not in the system, and its requesters need a user);
  * ReqFileRequest/ReqColour without the library (the original calls
  * through a6 = 0, #788: the bug-orig test rireqlib-no-base-check).
@@ -269,8 +271,34 @@ int main(int argc, char **argv)
     DO1(ENT(LIB, E_FINIT, 0), (void)0);
     OBS("library closed", fake->lib_OpenCnt);
     check("rireqlib: library closed", fake->lib_OpenCnt == 0);
+
+    /* a second run of the program with the library still loaded (from
+       the editor): init again after finit, no ReqOutput; the window the
+       file requester (cancelled) and the colour requester get */
+    strcpy(VEC, "second run");
+    ROUT = "init";
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
+    OBS("library open", fake->lib_OpenCnt);
+    ROUT = "ReqFileRequest";
+    fk_ret = 0;
+    memset(rec_fr, 0xee, sizeof rec_fr);
+    DO1(ENT(LIB, E_FILEREQ, 0), R.a[3] = (ULONG)out + 20; fk_calls = 0);
+    OBS("d0", R.d[0]);
+    OBS("called", fk_calls);
+    OBS("window", *(ULONG *)(rec_fr + 18));
+    ROUT = "ReqColour";
+    fk_colret = 6;
+    memset(rec_cr, 0xee, sizeof rec_cr);
+    DO1(ENT(LIB, E_COLOUR, 0), R.d[0] = 1; fk_calls = 0);
+    OBS("d0", R.d[0]);
+    OBS("called", fk_calls);
+    OBS("WinPtr", *(ULONG *)(rec_cr + 2));
+    ROUT = "finit";
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
+    OBS("library closed", fake->lib_OpenCnt);
     rwe_mem_check(LIB, avail, TRUE);
     ROUT = "finit (again)";
+    strcpy(VEC, "");
     DO1(ENT(LIB, E_FINIT, 0), (void)0);
     fake_remove(fake);
     return rwe_done(LIB);
