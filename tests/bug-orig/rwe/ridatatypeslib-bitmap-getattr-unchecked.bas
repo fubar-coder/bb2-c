@@ -6,6 +6,7 @@
 ; file (text.datatype); SetDataTypeAttr leaves its tag list in the
 ; buffer (DTA_TopVert, 0).
 ; Correct: no BitMapHeader - DataTypeBitmap returns 0.
+; @fixed #598
 ; @rwe ridatatypeslib
 ; @pass file=t.txt|@TESTDATA@/ridatatypeslib-bitmap-getattr-unchecked.txt
 DEFTYPE .l

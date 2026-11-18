@@ -60,8 +60,6 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   upper words the registers have; window,id,&taglist passes the id as
   the tag list of its second SetAttrsA and ignores the tag list (#595,
   #597, #596).
-* DataTypeBitmap takes whatever is in the buffer if GetAttr fails
-  (#598).
 * DataTypesPalette copies as many colours as the palette object has
   (reads behind the picture's colours; 0 colours are 65536); without
   colours it returns GetAttr's result, otherwise the buffer's address
@@ -72,6 +70,14 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
   (#603).
 * finit closes the libraries only up to the first one that did not
   open (#602).
+
+**Fixed** (intended deviations, `docs/libs/deviations.md` 3a, kind F):
+
+* DataTypeBitmap clears the buffer before GetAttr: an object that has no
+  BitMapHeader (not a picture) gives 0. The original took the first long
+  the command before had left in the buffer (a tag of SetDataTypeAttr,
+  a value of GetDataTypeAttr) as the BitMapHeader, and DataTypeWidth,
+  Height, Depth, ModeID and AttachDataType read through it (#598).
 
 Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h

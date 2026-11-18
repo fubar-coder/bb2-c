@@ -50,8 +50,6 @@
  *     tag list as longs (with the upper words the registers have);
  *     AttachDataType window,id,&taglist passes the id as the tag list to
  *     SetAttrsA and ignores the tag list (#595, #597, #596).
- *   - DataTypeBitmap takes whatever is in the buffer if GetAttr fails
- *     (#598).
  *   - DataTypesPalette copies as many colours as the palette has (read
  *     behind the datatype's colours; 0 colours: 65536); without colours
  *     it returns GetAttr's result, otherwise the address of its buffer
@@ -61,6 +59,11 @@
  *   - DataTypeModeID with a tag list writes its own tags into it (#603).
  *   - finit closes the libraries only up to the first one that did not
  *     open (#602).
+ *
+ * Fixed (intended deviations):
+ *   - DataTypeBitmap clears the buffer before GetAttr: an object that has
+ *     no BitMapHeader (not a picture) gives 0.  The original took
+ *     whatever the command before had left in the buffer (#598).
  * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
  * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
  * (but its second form) do not check datatypes.library, like the
@@ -647,13 +650,16 @@ ULONG BLITZ_ROUTINE c_datatypesuper(void)
  * (PDTA_BitMapHeader) for DataTypeWidth/Height/Depth/ModeID and
  * AttachDataType.
  *
- * BUG(orig) (#598): takes whatever is in the buffer if GetAttr fails.
- * @return d0: the BitMapHeader, 0 without datatypes.library or object
+ * The buffer is cleared first (fixed, #598: the original took whatever
+ * the command before had left in it when GetAttr failed).
+ * @return d0: the BitMapHeader, 0 without datatypes.library or object, or
+ *         if the object has none
  */
 ULONG BLITZ_ROUTINE c_datatypebitmap(void)
 {
     if (!database || !object)
         return 0;
+    storage->value = 0;                 /* fixed (#598) */
     GetAttr(PDTA_BitMapHeader, object, &storage->value);
     bitmapheader = (struct BitMapHeader *)storage->value;
     return (ULONG)bitmapheader;
