@@ -114,7 +114,7 @@ is compiled without sibling calls, its chunk must outlive the call.
 The registers that carry state from one operand or operator to the next
 are fields of the routine's state, with the original's operand sizes
 (`BL_SETB`/`BL_SETW`): d1 (the last character a number read – what the
-indirection checks, also for a register, whose parse does not set it),
+indirection checks; a register in `{...}` sets it from the string, #637),
 d7 (the precedence of the last operator), d0's upper bytes. lmult and
 ldivide are the original's algorithms (MULU of the word halves with the
 SWAPs, each swapped cross product with its low word cleared before it
@@ -154,6 +154,12 @@ kind F):
   product; the original's `SWAP : ADD` added the cross products' high
   words into the low word too, wrong whenever the product overflows
   (`1000000 1000000 *` was -727379962 instead of -727379968) (#639).
+* PFEvaluate: a register in `{...}` (`{d0}`) is followed by its `}`,
+  which the register path checks and consumes itself. The original
+  checked d1, the last character a number loop read, stale for a
+  register (the caller's d1, or what the last number, `*`, `/` or `^`
+  left): `{d0}` mostly failed with error 5, and if it passed, the `}`
+  was then read as a value 0 (#637).
 
 ## BUG(orig), kept
 
@@ -166,8 +172,6 @@ In the C file's head:
 * PFEvaluate: a register operand reads its index character unchecked
   (also the string's 0, then it parses behind the string) and any index
   (#642).
-* PFEvaluate: `{register}` checks a stale d1, and the `}` behind it is
-  then a value 0 (#637).
 * PFEvaluate: digits are not checked (#634).
 * PFEvaluate: the indirection reads any address (an odd one is an
   address error, #636).

@@ -33,12 +33,7 @@
  *       (#635).
  *     - A register operand (`d0`, `a7`, `pc`) takes the next character
  *       unchecked (`a` + 0 skips the string's end), `a`/`d` with any
- *       character index the register block (index byte * 4) (#642).  In
- *       `{...}` the close bracket check looks at d1, the last character a
- *       number read - for a register d1 is stale (the caller's d1, or what
- *       the last number, `*`, `/` or `^` left), so `{d0}` mostly fails
- *       with error 5; if it passes, the `}` is then read as a number 0
- *       (#637).
+ *       character index the register block (index byte * 4) (#642).
  *     - Digits are not checked (`12x` = 1, 2, 'x'-'0') (#634).
  *     - The indirection reads a long at any address (an odd one is an
  *       address error on the 68000) (#636).
@@ -69,6 +64,12 @@
  *     product: the cross products' low words are added into the high
  *     word only.  The original's SWAP:ADD added their high words into the
  *     low word too, wrong whenever the product overflows (#639).
+ *   - PFEvaluate: a register in `{...}` (`{d0}`) is followed by its `}`,
+ *     which the register path checks and consumes itself.  The original
+ *     checked d1, the last character a number loop read - for a register
+ *     stale (the caller's d1, or what the last number, `*`, `/` or `^`
+ *     left): `{d0}` mostly failed with error 5, and if it passed, the `}`
+ *     was then read as a number 0 (#637).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -646,6 +647,11 @@ getreg:
     if (!regs)
         return ev_error(err_reg, 2);
     s->acc = *(ULONG *)(regs + (WORD)regoff);
+    if (indirect) {                             /* fixed (#637): the "}" behind it */
+        BL_SETB(s->aux, *s->pos);
+        if (*s->pos == '}')
+            s->pos++;
+    }
 
 endofnum:
     if (negative)
@@ -703,15 +709,15 @@ evalbin:
  * value", 5 "No close bracket on indirect", 6 "Invalid size for
  * indirection".  An empty string returns 0, error 0; a string of spaces
  * only 0, error 4 (fixed, #644).
- * `*` gives the low 32 bits of the product (fixed, #639).
+ * `*` gives the low 32 bits of the product (fixed, #639); the `}` of a
+ * register in `{...}` is checked at the string (fixed, #637).
  * BUG(orig): `^` (#641); only the last value counts (#635); register
- * operands (#642), the `}` check after a register (#637), unchecked
- * digits (#634), indirection at any address (#636).
- * @param str        d0: the postfix string
- * @param caller_d1  d1: the caller's d1 (the stale d1 of a register in {})
+ * operands (#642), unchecked digits (#634), indirection at any address
+ * (#636).
+ * @param str  d0: the postfix string
  * @return d0: the value, 0 on an error
  */
-static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_REG(d1))
+static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0))
 {
     struct state s;
     struct chunk k;
@@ -724,7 +730,7 @@ static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_
     s.loop = ev_loop;
     s.pos = s.out = s.start = str;
     s.acc = (ULONG)str;
-    s.aux = caller_d1;
+    s.aux = 0;                                  /* read only after it is set */
     s.prec = 0;
     return ev_loop(&s);
 }

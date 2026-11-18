@@ -23,11 +23,11 @@
  * exponent), decimal/hex/binary/negative numbers and their quirks,
  * registers d0-d7/a0-a7/pc and odd indexes without and with PFRegisters,
  * a register at the string end (the read behind it), {address} with .b,
- * .w, .l, a bad size, no "}", {register} with a stale d1 and with d1 =
- * "}", too few arguments, 130 values (the original's byte count,
- * #645), 300 values with operators and pushes across the chunks, an
- * empty string, spaces only
- * (the original returns the return address, #644), two results.
+ * .w, .l, a bad size, no "}", {register} with a marker d1 and with d1 =
+ * "}" (the stale d1 the original checks, #637), too few arguments, 130
+ * values (the original's byte count, #645), 300 values with operators
+ * and pushes across the chunks, an empty string, spaces only (the
+ * original returns the return address, #644), two results.
  * Not covered: an indirection at an odd address (address error).
  */
 #include "rwecmp.h"
@@ -211,7 +211,7 @@ static void evaluate(void)
     DO1(ENT(LIB, E_REGS, 0), R.d[0] = (ULONG)block);
     for (i = 0; i < sizeof r / sizeof r[0]; i++)
         ev(r[i]);
-    /* {register} with d1 = '}' (the stale d1 the check sees) */
+    /* {register} with d1 = '}' (the stale d1 the original checks, #637) */
     D1 = 0x5a01127d;
     ev("{d0}");
     ev("{d0}.w");
