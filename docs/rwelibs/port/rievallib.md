@@ -172,6 +172,13 @@ kind F):
   result value!" with the result 0. The original took every character up
   to the next space as a digit (`12x` was 192, `%2` 2, `$g` 16) (#634).
   Hex digits are lower case, as ConvToPostFix writes them.
+* PFEvaluate: a register operand is `a0`-`a7`, `d0`-`d7` or `pc`,
+  followed by a space, the end or (in `{...}`) its `}`; any other is
+  error 4 "No result value!" with the result 0. The original took the
+  character behind `a`/`d` unchecked as the index (`d9`, `dx`; behind a
+  final `d` the string's 0, and it went on behind the string) and read a
+  character behind a register as the next operand (`d01` was d0 and 1)
+  (#642).
 
 ## BUG(orig), kept
 
@@ -181,9 +188,6 @@ In the C file's head:
 * PFEvaluate: `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as
   the loop count (#641).
 * PFEvaluate: extra values are no error (#635).
-* PFEvaluate: a register operand reads its index character unchecked
-  (also the string's 0, then it parses behind the string) and any index
-  (#642).
 
 No defects, like the original: ConvToPostFix leaves a3 pointing to the
 string (a statement: nothing uses a3 after it); PFErrorType leaves the

@@ -31,9 +31,6 @@
  *       the low word of exponent-2 (#641).
  *     - Only the last value is the result; more values are no error
  *       (#635).
- *     - A register operand (`d0`, `a7`, `pc`) takes the next character
- *       unchecked (`a` + 0 skips the string's end), `a`/`d` with any
- *       character index the register block (index byte * 4) (#642).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - PFEvaluate counts its values in a long: the original's byte,
  *     compared signed, made every operator fail with "Need 2 arguments"
@@ -77,6 +74,13 @@
  *     is error 4 "No result value!" with the result 0.  The original
  *     took every character up to the next space as a digit (`12x` = 192,
  *     `%2` = 2) (#634).
+ *   - PFEvaluate: a register operand is `a` or `d` with a digit 0-7, or
+ *     `pc`, followed by a space or the end (in `{...}` by its `}`); any
+ *     other is error 4 "No result value!" with the result 0.  The
+ *     original took the character behind `a`/`d` unchecked as the index
+ *     into the register block (`d9`, `dx`; behind a final `d` the
+ *     string's 0, and it went on behind the string) and read a digit
+ *     behind a register as a number of its own (`d01` = d0, 1) (#642).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -628,13 +632,10 @@ evall:
         goto evalhex;
     if (*s->pos == '%')
         goto evalbin;
-    if (*s->pos == 'a') {
-        regoff = (UBYTE)(s->pos[1] - '0' + 8);
-        s->pos += 2;
-        goto getreg;
-    }
-    if (*s->pos == 'd') {
-        regoff = (UBYTE)(s->pos[1] - '0');
+    if (*s->pos == 'a' || *s->pos == 'd') {     /* fixed (#642): 0-7 only */
+        if (s->pos[1] < '0' || s->pos[1] > '7')
+            return ev_error(err_noresult, 4);
+        regoff = (UBYTE)(s->pos[1] - '0' + (*s->pos == 'a' ? 8 : 0));
         s->pos += 2;
         goto getreg;
     }
@@ -659,6 +660,8 @@ evall:
     goto endofnum;
 
 getreg:
+    if (!indirect && *s->pos != ' ' && *s->pos != 0)
+        return ev_error(err_noresult, 4);       /* fixed (#642): "d01" */
     regoff = (UWORD)(regoff << 2);              /* ANDI.w #$ff:ASL.w #2 */
     if (!regs)
         return ev_error(err_reg, 2);
@@ -734,9 +737,9 @@ evalbin:
  * register in `{...}` is checked at the string (fixed, #637); the
  * indirection reads the bytes of its size one by one (fixed, #636).
  * A character that is no digit of the number's base is error 4 (fixed,
- * #634).
- * BUG(orig): `^` (#641); only the last value counts (#635); register
- * operands (#642).
+ * #634); so is a register other than `a0`-`a7`, `d0`-`d7`, `pc`, or one
+ * not followed by a space, the end or its `}` (fixed, #642).
+ * BUG(orig): `^` (#641); only the last value counts (#635).
  * @param str  d0: the postfix string
  * @return d0: the value, 0 on an error
  */
