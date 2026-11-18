@@ -33,10 +33,6 @@
  * assembler besides the thunks.
  *
  * BUG(orig):
- *   - The priority of the item compared with the others is read before
- *     the test whether the priority is enabled: with the default -1 a
- *     long at data - 1, an odd address - an address error on a 68000
- *     (68020 and up read it) (#825).
  *   - Swapped by the priority, the item's string is not loaded: the
  *     compare string becomes the one of the last string comparison
  *     (a1, possibly from an earlier item, or a1 of the caller if none
@@ -46,6 +42,10 @@
  *
  * Fixed (#824): finit closed utility.library without checking it was
  * opened (CloseLibrary(0), a crash on Kickstart 1.x); it tests the base.
+ * Fixed (#825): the priority of the item compared with the others was
+ * read before the test whether the priority is enabled: with the default
+ * -1 a long at data - 1, an odd address - an address error on a 68000;
+ * it is read only for an offset >= 0.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -189,8 +189,8 @@ static ULONG BLITZ_ROUTINE listbase_c(ULONG list BL_REG(d0))
  * Each item is compared with all following ones (by the priority if
  * SortPriorityOffset enabled it, then utility.library Stricmp,
  * case-insensitive, in the StringSortDir order) and the data (size bytes)
- * swapped where the order is wrong.  BUG(orig): the priority is read
- * also when disabled, from data - 1 (#825); swapped by the priority, the
+ * swapped where the order is wrong; the priority is read only when it is
+ * enabled (Fixed (#825)).  BUG(orig): swapped by the priority, the
  * compare string is not loaded (#826); size 0 swaps 65536 bytes (#827).
  * @param list    d0: the list ("lIsT" at -4)
  * @param size    d1: sizeof.type, the bytes swapped
@@ -226,7 +226,8 @@ static BB_BOOL dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *c
         curstr = FIELD(item, off, const char *);
         if (!curstr)
             return BB_FALSE;
-        priority = FIELD(item, prioff, LONG); /* BUG(orig): also with d4 = -1 (#825) */
+        if (prioff >= 0)                /* Fixed (#825): not from data - 1 */
+            priority = FIELD(item, prioff, LONG);
         for (;;) {                      /* '_nitem */
             UBYTE *p, *q;
             ULONG n;

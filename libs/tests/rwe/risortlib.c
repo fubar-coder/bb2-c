@@ -24,7 +24,8 @@
  * a1 of the caller can be (set to a string here); ListBase; finit.  For
  * lists of lower case strings without the priority the result is also
  * checked to be sorted.  Not covered: size 0 (BUG(orig) #827: swaps 65536
- * bytes), the 68000 address error of the priority read (BUG(orig), #825).
+ * bytes), the 68000 address error of the priority read (fixed, #825: the
+ * bug-orig test risortlib-priority-odd-read on the A600).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

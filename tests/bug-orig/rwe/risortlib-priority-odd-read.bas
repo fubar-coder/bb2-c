@@ -4,6 +4,7 @@
 ; -1 that is data - 1, an odd address: on a 68000 an address error (the
 ; session ends in a timeout).  The machine is the A600 (68000).
 ; Correct: StringSort without SortPriorityOffset sorts the list ("a b").
+; @fixed #825
 ; @rwe risortlib
 ; @machine a600
 ; @pass timeout=30

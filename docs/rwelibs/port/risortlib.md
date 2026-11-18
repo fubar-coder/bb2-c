@@ -54,13 +54,15 @@ kind F):
   it does not open (Kickstart 1.x has none), `CloseLibrary(0)` crashed
   at the end of every program with the library; finit tests the base
   (#824).
+* The priority of the item the others are compared with was read before
+  the test whether the priority is enabled: with the default -1 a long at
+  data − 1, an odd address – an address error on a 68000 in every sort
+  of two or more items without `SortPriorityOffset` (68020 and up read
+  it, the result was not used). It is read only for an offset ≥ 0
+  (#825).
 
 ## BUG(orig), kept
 
-* The priority of the item the others are compared with is read before
-  the test whether the priority is enabled: with the default -1 a long at
-  data − 1, an odd address – an address error on a 68000 (68020 and up
-  read it, the result is not used) (#825).
 * After a swap by priority the item's string is not loaded: the compare
   string becomes the one of the last string comparison (a1, possibly of
   an earlier item, or the caller's a1 if there was none yet), and the
@@ -85,4 +87,5 @@ string pointer 0 at several places (0); 46 priority sorts (the long at 0
 or 8, priorities from small ranges with negative ones, priorities
 disabled by other negative offsets) including the stale compare string
 (the caller's a1 set to a string). Checked to fail when the priority bug
-is "fixed". Not covered: size 0, the 68000 address error.
+is "fixed". Not covered: size 0; the 68000 address error (#825) is
+the bug-orig test `risortlib-priority-odd-read` on the A600.
