@@ -1,0 +1,19 @@
+# the intended differences of rilinkedlistlib against the reference build of
+# its source (blitzlib compare, docs/development.md "Intended differences")
+# #732: the twelve commands with a list number get an error check
+# (listnumchk, "List number must be 0 to 4"); rilinkedlistlib gets an error
+# check area for it (the original has none)
+lib 12: header +$2C: code offset set in only one of them
+lib 12: entry 0 InitList +$C: code offset set in only one of them
+lib 12: entry 1 AddListItem +$C: code offset set in only one of them
+lib 12: entry 2 SetListItem +$C: code offset set in only one of them
+lib 12: entry 3 NextListItem +$C: code offset set in only one of them
+lib 12: entry 4 GetListItem +$C: code offset set in only one of them
+lib 12: entry 5 PrevListItem +$C: code offset set in only one of them
+lib 12: entry 6 FirstListItem +$C: code offset set in only one of them
+lib 12: entry 7 LastListItem +$C: code offset set in only one of them
+lib 12: entry 8 AddFirstListItem +$C: code offset set in only one of them
+lib 12: entry 9 AddLastListItem +$C: code offset set in only one of them
+lib 12: entry 10 DelListItem +$C: code offset set in only one of them
+lib 12: entry 11 AddrListItem +$C: code offset set in only one of them
+lib 12: relocations in the declaration part 17 != 30

@@ -26,7 +26,6 @@
  * d1, d2, a0, a1, InitList also a2); memlib and CopyByte through ALibJsr.
  *
  * BUG(orig), kept:
- *   - No command checks the list number (#732).
  *   - The size: a word of less than 8 in front of the variable gives a
  *     size of almost 4 GB (the allocation fails) (#736).  No NEWTYPE
  *     variable has one (memlib's length of a NEWTYPE of at most 32767
@@ -81,6 +80,12 @@
  *   - InitList on a list that is already there frees its nodes and their
  *     copies first (the original overwrote the entries: the old list was
  *     lost until the end) (#731).
+ *   - The list number: with runtime error checking a list# outside 0..4
+ *     is the runtime error "List number must be 0 to 4" (listnumchk, an
+ *     error check area the original has not; its tables of five longs
+ *     are indexed with list# * 4 unchecked); the release code is
+ *     unchanged (an invalid argument; the manual: "Do NOT use list
+ *     numbers of 5 or higher!") (#732).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -97,84 +102,85 @@ void rilinkedlistlib_nextlistitem(void), _getlistitem(void);
 void _prevlistitem(void), _firstlistitem(void), _lastlistitem(void);
 void _addfirstitem(void), _addlastitem(void), _dellistitem(void);
 void _addrlistitem(void), _sizeoflistitem(void), rilinkedlistlib_libinit(void);
-void rilinkedlistlib_libfinit(void);
+void rilinkedlistlib_libfinit(void), listnumchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {#rilinkedlistlib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_rilinkedlistlib, init, BL_NORET, finit, 0);
+/* !libheader {#rilinkedlistlib,init,0,finit,0}; error field: the error
+   check area of listnumchk (fixed, #732) */
+BLITZ_LIBHEADER(LIB_rilinkedlistlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_VARPTR);
 BLITZ_LIBS0();
-BLITZ_SUBS(_initlist, 0, 0);
+BLITZ_SUBS(_initlist, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("InitList", "list#,var");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_addlistitem, 0, 0);
+BLITZ_SUBS(_addlistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("AddListItem", "list#");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_VARPTR);
 BLITZ_LIBS0();
-BLITZ_SUBS(_setlistitem, 0, 0);
+BLITZ_SUBS(_setlistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("SetListItem", "list#,var");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(rilinkedlistlib_nextlistitem, 0, 0);
+BLITZ_SUBS(rilinkedlistlib_nextlistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("NextListItem", "list#");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_VARPTR);
 BLITZ_LIBS0();
-BLITZ_SUBS(_getlistitem, 0, 0);
+BLITZ_SUBS(_getlistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("GetListItem", "list#,var");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_prevlistitem, 0, 0);
+BLITZ_SUBS(_prevlistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("PrevListItem", "list#");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_firstlistitem, 0, 0);
+BLITZ_SUBS(_firstlistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("FirstListItem", "list#");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_lastlistitem, 0, 0);
+BLITZ_SUBS(_lastlistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("LastListItem", "list#");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_addfirstitem, 0, 0);
+BLITZ_SUBS(_addfirstitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("AddFirstListItem", "list#");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_addlastitem, 0, 0);
+BLITZ_SUBS(_addlastitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("AddLastListItem", "list#");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_dellistitem, 0, 0);
+BLITZ_SUBS(_dellistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("DelListItem", "list#");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_addrlistitem, 0, 0);
+BLITZ_SUBS(_addrlistitem, listnumchk, 0);  /* check: fixed #732 */
 BLITZ_NAME("AddrListItem", "list#");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -208,7 +214,8 @@ static_assert(sizeof(struct node) == 18);
 
 /* _first, _last, _sizes (unused), _current: five longs each, one after
    the other; a table entry is the table's address + list# * 4 (not
-   checked: a list# out of 0-4 reaches into the next table) */
+   checked in the release code: a list# out of 0-4 reaches into the next
+   table; listnumchk refuses it with runtime error checking, #732) */
 static struct {
     ULONG first[5], last[5], sizes[5], current[5];
 } tables;
@@ -288,7 +295,8 @@ ULONG BLITZ_ROUTINE c_sizeoflistitem(ULONG var BL_REG(d0))
 /**
  * @brief AddrListItem(list#): the address of the current node of a list.
  *
- * list# is not checked (#732).
+ * A list# outside 0..4 is refused by listnumchk with runtime error
+ * checking (fixed, #732); the release code does not check it.
  * @param list  d0: list# (0-4)
  * @return d0: the current node (struct node), 0 if there is none
  */
@@ -320,8 +328,8 @@ static void freelist(void)
  * @brief InitList list#,var: start a list with one node holding a copy of var.
  *
  * The node and the copy are memlib globalloc'ed (flags 0), the copy is
- * made by RIAmosFuncLib's CopyByte.  BUG(orig): list# is not checked
- * (#732); the size as in SizeOfListItem (#736).  Fixed (#731): a list
+ * made by RIAmosFuncLib's CopyByte; list# is checked by listnumchk (#732),
+ * the size as in SizeOfListItem (#736).  Fixed (#731): a list
  * that is already there is freed first, its nodes and their copies (the
  * original overwrote the entries: they were lost until the end).
  * @param list  d0: list# (0-4)
@@ -364,7 +372,7 @@ BB_BOOL BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 /**
  * @brief AddListItem list#: a new empty node behind the current one, then the current one.
  *
- * BUG(orig): list# is not checked (#732).  Fixed (#733): without a
+ * list# is checked by listnumchk (#732).  Fixed (#733): without a
  * current node (no list) 0, before anything is allocated (the original
  * read and wrote from address 0 on).  Fixed (#727):
  * the prev of the node behind the new one is the new node (the original
@@ -668,3 +676,29 @@ BLITZ_THUNK(_prevlistitem, c_prevlistitem, "d1/a0-a1");
 BLITZ_THUNK(_addlastitem, c_addlastitem, "d1/a0-a1");
 BLITZ_THUNK(_addfirstitem, c_addfirstitem, "d1/a0-a1");
 BLITZ_THUNK(_dellistitem, c_dellistitem, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badlist, "List number must be 0 to 4"); /* fixed, #732 */
+
+/**
+ * @brief The error check of the commands with a list number (debugger only).
+ *
+ * Fixed (#732), not in the original (rilinkedlistlib had no error check
+ * area): list# * 4 indexes the tables of five longs without a check, so
+ * a list number outside 0..4 made the commands read and write the other
+ * tables and the data behind them (the manual: "Do NOT use list numbers
+ * of 5 or higher!").  The release code is unchanged (an invalid
+ * argument).
+ *
+ * Errors: "List number must be 0 to 4".
+ * @param list  d0: list#
+ */
+static void BLITZ_ERRCHK listnumchk_c(ULONG list BL_REG(d0))
+{
+    if (list > 4)
+        BLITZ_RUNERR(badlist);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(listnumchk, listnumchk_c, "d0-d1/a0-a1");

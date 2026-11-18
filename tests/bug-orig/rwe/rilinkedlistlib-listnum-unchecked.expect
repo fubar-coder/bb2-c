@@ -1,6 +1,6 @@
 [compile]
 ok
 [run]
-0
-list 0 kept
+before
+REQUESTER: AutoRequest body "List number must be 0 to 4" *
 rc=0

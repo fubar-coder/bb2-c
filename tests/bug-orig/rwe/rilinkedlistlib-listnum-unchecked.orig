@@ -4,6 +4,7 @@ done
 [compile]
 ok
 [run]
+before
 -1
 list 0 changed
 rc=0

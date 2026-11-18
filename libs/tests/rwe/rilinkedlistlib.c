@@ -50,8 +50,11 @@
  * to 4.
  * Not covered: the original's commands on an empty list that read and
  * write at address 0 (AddListItem, SetListItem, NextListItem,
- * PrevListItem, AddFirstListItem, GetListItem), list numbers outside 0..4 (the original
- * indexes on into its code, the C build into other data), a size of 0
+ * PrevListItem, AddFirstListItem, GetListItem), list numbers outside
+ * 0..4 (the original indexes on into its code, the C build into other
+ * data; the C build's error check listnumchk, fixed #732, runs only with
+ * runtime error checking, not here: bug-orig test
+ * rilinkedlistlib-listnum-unchecked), a size of 0
  * (the C build's CopyByte copies nothing then, #492; the original's
  * copied 2^32 bytes).
  */

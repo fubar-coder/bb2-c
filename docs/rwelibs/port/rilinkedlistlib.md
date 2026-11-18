@@ -113,10 +113,20 @@ changes d1, d2, a0, a1, InitList also a2).
   (memlib frees it there) (#731; test `rilinkedlistlib-initlist-no-free`,
   `libs_emulator` cases `[fixed #731]` of `rwe_rilinkedlistlib`: the
   memlib stubs log the frees).
+* With runtime error checking a list# outside 0..4 is the runtime error
+  "List number must be 0 to 4" (`listnumchk`, the error check of the
+  twelve commands with a list number, in an error check area the
+  original has not); the release code is unchanged (an invalid argument;
+  the manual: "Do NOT use list numbers of 5 or higher! Your machine will
+  crash if you try. Future version will check for this."). The original
+  indexes its tables of five longs with list# * 4 without a check: a
+  larger list number reaches the other tables and the code behind them
+  (#732; test `rilinkedlistlib-listnum-unchecked`;
+  `rilinkedlistlib.declarations-intended.txt` names the 14 differences
+  of the declarations).
 
 **BUG(orig)** (kept):
 
-* No command checks list# (#732).
 * A size word below 8 in front of the variable gives a size of almost
   4 GB (the allocation fails) (#736). No NEWTYPE variable has one: the
   compiler refuses a NEWTYPE of 32768 bytes or more ("Type too Big"),
@@ -129,9 +139,10 @@ changes d1, d2, a0, a1, InitList also a2).
 DelListItem on the only node frees nothing and returns 0; that is not a
 defect (the command refuses to delete the last node and reports it).
 
-**DIFF:** none in the tested range. list# outside 0..4 indexes past the
-tables: into the code behind them in the original, into other data in
-the C build (not reproducible, not tested).
+**DIFF:** none in the tested range. Without runtime error checking a
+list# outside 0..4 indexes past the tables: into the code behind them
+in the original, into other data in the C build (not reproducible, not
+tested).
 
 **Test** (`libs/tests/rwe/rilinkedlistlib.c`, snitch case "rwe
 rilinkedlistlib"): each run loads one library set (the C build or the
