@@ -19,8 +19,10 @@
  * string), the kept registers.
  * Covered: every entry; functions without a port and without a current
  * message (0); the error check portchk with a port; RXCreatePort twice;
- * the tokenizer (spaces, quotes, doubled quotes, the character after a
- * closing quote skipped: BUG(orig) #538, RXQuoteChar), RXTokenise off and
+ * the tokenizer, one command per case (spaces, quotes, empty quotes in a
+ * word, a doubled quote: BUG(orig) #535, the character after a closing
+ * quote: #538, an empty word: #536, a closing quote at the end of a
+ * command after a longer one: #538, RXQuoteChar), RXTokenise off and
  * BUG(orig) #547 "off" with a word whose upper word is set; RXGetArg 0..17,
  * RXNextArg to the end, RXNumArgs, RXSendersName, RXReplyMsg both forms
  * to our own port, to the test (the Result2 string) and to a sender
@@ -304,6 +306,17 @@ static void reply(int form, ULONG code, const char *res, const char *what)
     call(REPLYMSG, form, code, (ULONG)res, res ? strlen(res) : 0, 0, 0);
 }
 
+/* a command to the own port, received as the current message, its
+   arguments, replied (RXReplyMsg 0) and the reply read */
+static void tokenised(const char *cmd, const char *what)
+{
+    run(1, NULL, cmd);
+    readport(READPORT, 1, what);
+    current(what);
+    reply(0, 0, NULL, what);
+    readport(READPORT, 0, "the reply");
+}
+
 static void strarg(int idx, const char *name, const char *s)
 {
     ROUT = name;
@@ -449,11 +462,18 @@ int main(int argc, char **argv)
     BOTH("list", R.d[0] != 0);
 
     /* the tokenizer, own port */
-    run(1, NULL, "load  \"a b\" c\"\"d \"e\"\"f\" \"g\"h  i");
+    run(1, NULL, "load  \"a b\"  i");
     readport(READPORT, 1, "own message");
     current("tokenised");
     reply(1, 0, "the result", "own");
     readport(READPORT, 0, "the reply");
+    /* one command per case of the quotes, so that each fix has its own */
+    tokenised("c\"\"d e", "empty quotes in a word");
+    tokenised("\"e\"\"f\" c d", "doubled quote");
+    tokenised("\"g\"h", "after a closing quote");
+    tokenised("a \"\" c", "empty word");
+    tokenised("one two three four five six", "long command");
+    tokenised("say \"hi\"", "closing quote at the end");
     ROUT = "RXTokenise";
     strcpy(VEC, "0");
     call(TOKENISE, 0, 0, 0, 0, 0, 0);

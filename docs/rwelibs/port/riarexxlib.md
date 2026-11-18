@@ -158,7 +158,9 @@ Covered:
 
 * the functions without a port and without a message;
 * portchk with a port; RXCreatePort twice;
-* the tokenizer: spaces, quotes, doubled quotes, the skipped character,
+* the tokenizer, one command per case: spaces, quotes, empty quotes in
+  a word, a doubled quote, the character after a closing quote, an empty
+  word, a closing quote at the end of a command after a longer one,
   RXQuoteChar `'`, an empty command;
 * RXTokenise off, and "off" with an upper word;
 * RXGetArg 0..17, RXNextArg to the end, RXNumArgs, RXSendersName;
