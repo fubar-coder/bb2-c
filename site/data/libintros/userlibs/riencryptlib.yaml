@@ -21,4 +21,7 @@ intro: |
   NPrint a$
   ```
 
+  The fixed bugs of the library are listed in
+  [Fixes in riencryptlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riencryptlib-fixes" >}}).
+
   *Based on the RI Encrypt Lib guide by Reflective Images.*

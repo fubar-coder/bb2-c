@@ -3976,6 +3976,23 @@ Images.
   without checking that it had opened it
   ([#824](https://github.com/fubar-coder/bb2-c/issues/824)).
 
+### Fixes in riencryptlib {#riencryptlib-fixes}
+
+These fixes concern
+[riencryptlib]({{< relref "/docs/libraries/userlibs/riencryptlib" >}}),
+the three-wheel cipher by Reflective Images.
+
+* `Decrypt` with `mode` 1 restores the data for every start position
+  and length. It works out where the wheels stopped from the length,
+  and the original did so without the carry from one wheel to the next:
+  for many start positions and lengths, a wheel came out one step off,
+  and the data stayed scrambled
+  ([#629](https://github.com/fubar-coder/bb2-c/issues/629)).
+* `Encrypt` and `Decrypt` with a length of 0 change nothing; the
+  original changed one byte, `Encrypt` the one at the address and
+  `Decrypt` the one in front of it
+  ([#630](https://github.com/fubar-coder/bb2-c/issues/630)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a

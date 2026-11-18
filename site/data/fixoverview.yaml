@@ -3932,6 +3932,22 @@ rows:
     text: "`StringSort` and `StringSortItem` with a size of 0 exchange nothing and return 0; the original exchanged 65536 bytes each time and overwrote the memory behind the items."
     page: libraries
     anchor: risortlib-fixes
+  - issue: 629
+    severity: 5
+    topic: "Data structures"
+    library: "riencryptlib"
+    command: "Decrypt"
+    text: "`Decrypt` with mode 1 restores the data for every start position and length; the original added the length without the carries between the wheels and often left the data scrambled."
+    page: libraries
+    anchor: riencryptlib-fixes
+  - issue: 630
+    severity: 5
+    topic: "Data structures"
+    library: "riencryptlib"
+    command: "Encrypt, Decrypt"
+    text: "`Encrypt` and `Decrypt` with a length of 0 change nothing; the original changed one byte, `Decrypt` the one in front of the block."
+    page: libraries
+    anchor: riencryptlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
