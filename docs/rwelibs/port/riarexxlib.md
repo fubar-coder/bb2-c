@@ -177,6 +177,11 @@ kind F):
   again and could already be freed (#541). The manual asks for the
   information to be taken before the reply, so a program that follows it
   sees no change.
+* **RXSendCommand** takes the reply's Result2 as its result string only
+  when Result1 is 0; with an error (Result1 not 0) Result2 is a secondary
+  error code and the result is "". The original read it as the address
+  of a string also then: after a failing ARexx program (error 6,
+  "unterminated comment") it returned the bytes from address 6 on (#545).
 
 ## BUG(orig), kept
 
@@ -186,8 +191,7 @@ kind F):
   (#544).
 * **The reply of RXSendCommand:**
   * its Result2 is copied with AllocSt and never freed (#546);
-  * the reply's own argument string is never deleted (#546);
-  * Result2 is read as a string even when Result1 is not 0 (#545).
+  * the reply's own argument string is never deleted (#546).
 * **RXReturnCode** returns 0 while no message is current, e.g. right
   after an RXSendCommand that found the list empty (#542).
 

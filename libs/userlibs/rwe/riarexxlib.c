@@ -103,14 +103,16 @@
  *     is gone; the original kept the replied message current, so the
  *     argument functions read a message that belonged to its sender
  *     again (#541).
+ *   - The reply of RXSendCommand has a result string only with Result1
+ *     0; with an error Result2 is a secondary code, the result "" (the
+ *     original read it as the address of a string) (#545).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
  *     _rxruncommand overwrites it: both send RXCOMM|RXFF_STRING (the
  *     script name as a string program), without a result (#544).
  *   - The result string of a reply is copied (AllocSt, never freed); the
- *     reply's own string is never deleted (#546); Result2 is taken as a
- *     string also when Result1 is not 0 (#545).
+ *     reply's own string is never deleted (#546).
  *   - RXReturnCode is 0 while no message is current (#542).
  */
 #include "blitzlib.h"
@@ -844,9 +846,10 @@ BLITZ_THUNK(_rxsendcommand2, rxsendcommand2_c, "d1/a0-a1");
  * RXCOMM|RXFF_STRING|RXFF_RESULT.  The result goes over the two
  * arguments: a3 back by both lengths (on the a2 stack) + 2.  While it
  * waits, received messages go to the message list.  The reply's Result1
- * is RXReturnCode.  BUG(orig): the result string is copied (AllocSt,
- * never freed), the reply's own string never deleted (#546); Result2 is
- * taken as a string also when Result1 is not 0 (#545).
+ * is RXReturnCode; its Result2 is the result string only with Result1 0
+ * (fixed #545: the original read it as a string also with an error).
+ * BUG(orig): the result string is copied (AllocSt, never freed), the
+ * reply's own string never deleted (#546).
  * @param port  d0: portname$
  * @param cmd   d1: command$
  * @param args  a2: the argument stack, -4/-8(a2) the two lengths
@@ -880,7 +883,9 @@ static void storeresult(struct RexxMsg *m)
     ULONG s, n;
 
     v.returncode = m->rm_Result1;
-    s = m->rm_Result2;
+    /* fixed (#545): with Result1 not 0, Result2 is a secondary error
+       code, not a string; the original read it as one */
+    s = m->rm_Result1 ? 0 : m->rm_Result2;
     if (s) {
         for (n = 0; ((UBYTE *)s)[n]; n++)
             ;

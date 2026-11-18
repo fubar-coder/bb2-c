@@ -7,6 +7,7 @@
 ; Correct: an error has no result string - "".
 ; RexxMast is not started in the sessions: the program starts it
 ; (SYS:System/RexxMast, which writes nothing) and waits for its port.
+; @fixed #545
 ; @rwe riarexxlib
 DEFTYPE .l
 r$="REXX"
