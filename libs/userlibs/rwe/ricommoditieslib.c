@@ -14,8 +14,9 @@
  *   CommodityEvent / WaitCommodity   fetch a message into `msg`
  *   HotKeyHit       id of a CXM_IEVENT message, else -1
  *   ExchangeMessage command of a CXM_COMMAND message, else 0
- *   ExchangeDisable ... ExchangeUnique   -1 if the last id is that
- *       CXCMD_ code; CxDisable ... CxUnique: the codes (inline)
+ *   ExchangeDisable ... ExchangeUnique   -1 if the last message is a
+ *       CXM_COMMAND with that CXCMD_ code; CxDisable ... CxUnique: the
+ *       codes (inline)
  *   SetCxStatus on|off, CommodityMsgPort
  *
  * Every routine is C behind a thunk that keeps d1/a0/a1 (the original
