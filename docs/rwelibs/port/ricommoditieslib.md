@@ -21,8 +21,6 @@ keeps d1/a0/a1 (the original keeps them in some paths; GCC keeps
 d2-d7/a2-a6), so every register the original keeps is kept. The variables
 are one packed struct in the order of the original's data block, so that
 `SetHotKey`'s unchecked slot index hits the same neighbours.
-`AttachCxObj` (void) is called through the jump table
-(`BLITZ_BASEJSR`), because the original tests the d0 it leaves.
 
 **Assembler, and why:**
 
@@ -85,12 +83,17 @@ are one packed struct in the order of the original's data block, so that
   (`RemoveCxObj`, the sender only if the filter existed), so every
   replacement lost two objects, and after a failure the half-made
   hotkey stayed in its slot and in the broker (#563).
+* `SetHotKey` refuses a description commodities cannot parse: when
+  `CxObjError` of the new filter is not 0 (`COERR_BADFILTER`), the filter
+  is deleted and the result is 0. It no longer tests the d0 that the
+  void `AttachCxObj` leaves. The original never called `CxObjError` (its
+  `'oops2` tail is unreachable, not translated), so a misspelt hotkey
+  returned -1 and never triggered, and it tested `AttachCxObj`'s d0
+  (not 0 with Workbench 3.1's commodities.library) (#565).
 
 **BUG(orig)** (kept, commented in the code):
 
 * the help text of `MakeCommodity` lacks the closing parenthesis (#558);
-* `SetHotKey`: `CxObjError` is not looked at (the `'oops2` tail is
-  unreachable, not translated) (#565);
 * `MakeCommodity` makes a new broker on every call without deleting the
   previous one (which stays active, with the same port: finit deletes
   only the last one, so the first keeps the deleted port – a crash as

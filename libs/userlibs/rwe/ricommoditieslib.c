@@ -53,14 +53,15 @@
  * deletes a replaced hotkey's filter with its sender (DeleteCxObjAll),
  * and on a failure the objects it made, and clears the slots; the
  * original only removed the replaced objects (RemoveCxObj) and left what
- * it had made before a failure (#563).
+ * it had made before a failure (#563).  SetHotKey refuses a description
+ * commodities cannot parse (CxObjError of the new filter: the filter is
+ * deleted, the result 0) and no longer tests the d0 that the void
+ * AttachCxObj leaves; the original did both the other way round (its
+ * 'oops2 tail with CxObjError is unreachable, not translated) (#565).
  *
  * Kept from the original (BUG(orig)):
  *   - the help text of MakeCommodity lacks the closing parenthesis
  *     (#558);
- *   - SetHotKey: AttachCxObj (void) is tested through the d0 it leaves;
- *     CxObjError is not looked at (the unreachable 'oops2 tail is not
- *     translated) (#565);
  *   - MakeCommodity makes a new broker on every call without deleting the
  *     previous one (on failure the old one stays in use; on success the
  *     old one stays active with the same port, which finit deletes)
@@ -392,14 +393,6 @@ BLITZ_THUNK(kill, kill_c, "d1/a0-a1");
 BLITZ_THUNK(list, list_c, "d1/a0-a1");
 BLITZ_THUNK(unqiue, unqiue_c, "d1/a0-a1");
 
-/* AttachCxObj is void; the original tests the d0 it leaves, so it is
-   called through the jump table with d0 as the result */
-static LONG attach(CxObj *head, CxObj *co)
-{
-    struct bl_regs r = { .a0 = (ULONG)head, .a1 = (ULONG)co };
-    return BLITZ_BASEJSR(st_cbase, -84, r);
-}
-
 /* delhotkey: deletes the filter of slot n with the sender attached to it
    (DeleteCxObjAll detaches it from the broker first) and clears both
    slots (Fixed (#563)) */
@@ -426,11 +419,15 @@ static void delhotkey(LONG n)
  * new filter (with a sender attached to it) is deleted and the slots are
  * cleared; the original only removed the replaced objects (RemoveCxObj,
  * the sender only if the filter existed) and left what it had made
- * before a failure.  BUG(orig): AttachCxObj (void) is tested through the
- * d0 it leaves, CxObjError is not looked at (#565).
+ * before a failure.  Fixed (#565): a description commodities cannot
+ * parse (CxObjError of the new filter, COERR_BADFILTER) is refused: the
+ * filter is deleted, the result 0; AttachCxObj (void) is not tested.  The
+ * original never called CxObjError (its 'oops2 tail is unreachable) and
+ * tested the d0 AttachCxObj leaves.
  * @param n     d0: the hotkey number
  * @param desc  d1: the hotkey description (CX_FILTER)
- * @return d0: BB_TRUE, BB_FALSE without a broker or if a step fails
+ * @return d0: BB_TRUE, BB_FALSE without a broker, for a description
+ *         commodities cannot parse or if an object cannot be made
  */
 static BB_BOOL BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d1))
 {
@@ -446,20 +443,18 @@ static BB_BOOL BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d
         return BB_FALSE;
     st.currentfilter = obj;
     *SLOT(st.cxfilter, st.hotkey) = (ULONG)obj;
-    if (!attach(st.cobject, st.currentfilter)) {
+    if (CxObjError(obj)) {
         delhotkey(st.hotkey);
         return BB_FALSE;
     }
+    AttachCxObj(st.cobject, st.currentfilter);
     obj = CreateCxObj(CX_SEND, (LONG)st.msgport, st.hotkey);
     if (!obj) {
         delhotkey(st.hotkey);
         return BB_FALSE;
     }
     *SLOT(st.cxsends, st.hotkey) = (ULONG)obj;
-    if (!attach(st.currentfilter, obj)) {
-        delhotkey(st.hotkey);           /* the sender is attached: deleted too */
-        return BB_FALSE;
-    }
+    AttachCxObj(st.currentfilter, obj);
     ActivateCxObj(st.cobject, 1);
     return BB_TRUE;
 }

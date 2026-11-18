@@ -220,10 +220,13 @@
 |SetHotKey 3: DeleteCxObj||1	$00000000
 |SetHotKey 3: DeleteCxObjAll||1	$00000000
 |SetHotKey 3: RemoveCxObj||1	$00000000
-|SetHotKey 5 nonsense||1	$FFFFFFFF
-|SetHotKey 5 nonsense: CreateCxObj||1	$00000002
+|SetHotKey 5 nonsense||1 [orig]	$FFFFFFFF
+|SetHotKey 5 nonsense||1 [fixed #565]	$00000000
+|SetHotKey 5 nonsense: CreateCxObj||1 [orig]	$00000002
+|SetHotKey 5 nonsense: CreateCxObj||1 [fixed #565]	$00000001
 |SetHotKey 5 nonsense: DeleteCxObj||1	$00000000
-|SetHotKey 5 nonsense: DeleteCxObjAll||1	$00000000
+|SetHotKey 5 nonsense: DeleteCxObjAll||1 [orig]	$00000000
+|SetHotKey 5 nonsense: DeleteCxObjAll||1 [fixed #565]	$00000001
 |SetHotKey 5 nonsense: RemoveCxObj||1	$00000000
 |SetHotKey 6 (no sender)||1	$00000000
 |SetHotKey 6 (no sender): CreateCxObj||1	$00000002
