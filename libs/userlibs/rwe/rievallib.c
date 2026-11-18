@@ -38,9 +38,6 @@
  *       (#639).
  *     - `^`: x^0 and x^1 are x, 0^n is 1; the loop counts with DBRA on
  *       the low word of exponent-2 (#641).
- *     - The value count is a byte compared signed: 128 or more values on
- *       the stack make every operator fail with "Need 2 arguments"
- *       (#645).
  *     - Only the last value is the result; more values are no error
  *       (#635).
  *     - A string of spaces only: "No result value!" (error 4), and the
@@ -61,6 +58,10 @@
  *       address error on the 68000) (#636).
  *   - PFErrorText with no error returns no string length: d0's upper word
  *     is the caller's (MOVE.w) (#640).
+ * Fixed (intended deviations, docs/libs/deviations.md):
+ *   - PFEvaluate counts its values in a long: the original's byte,
+ *     compared signed, made every operator fail with "Need 2 arguments"
+ *     from 128 values on (#645).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -143,7 +144,8 @@ static const char err_close[] = "No close bracket on indirect!";
 static const char err_size[] = "Invalid size for indirection!";
 
 static ULONG lastaddr;                  /* PFIndirectAddr */
-static UBYTE negative, argc, indirect;  /* argc: compared signed (CMPI.b) */
+static UBYTE negative, indirect;
+static ULONG argc;                      /* the values on the stack */
 static ULONG regs;                      /* PFRegisters */
 static UWORD errortype;
 static const char *errortext;
@@ -529,7 +531,7 @@ evloop:
     goto evall;
 
 gotop:
-    if ((BYTE)argc < 2)                         /* !argcheck */
+    if (argc < 2)                               /* !argcheck; fixed (#645) */
         return ev_error(err_arg, 1);
     switch (op) {
     case 0:                                     /* = */
@@ -692,7 +694,7 @@ evalbin:
  * value", 5 "No close bracket on indirect", 6 "Invalid size for
  * indirection".  An empty string returns 0, error 0.
  * BUG(orig): `<` is unsigned "less or same", `>` signed (#638); `*`
- * overflows wrongly (#639); `^` (#641); 128 or more values (#645); only
+ * overflows wrongly (#639); `^` (#641); only
  * the last value counts (#635); a string of spaces returns the caller's
  * return address with error 4 (#644); register operands (#642), the `}`
  * check after a register (#637), `-$`/`-%` (#643), unchecked digits

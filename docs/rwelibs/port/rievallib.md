@@ -120,24 +120,36 @@ indirection checks, also for a register, whose parse does not set it),
 d7 (the precedence of the last operator), d0's upper bytes. lmult and
 ldivide are the original's algorithms (MULU of the word halves with the
 SWAPs, the bit-by-bit division with its `ROXR`), changing d1 as there.
-The value count `argc` is a byte compared signed.
+The value count `argc` is a long (the original's byte: #645).
+
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* PFEvaluate counts its values in a long; the original's byte, compared
+  signed, made every operator fail with "Need 2 arguments" from 128
+  values on (#645).
 
 ## BUG(orig), kept
 
-In the C file's head: the `.` at the end of a string (ConvToPostFix
-reads on behind the 0, #631), dropped characters (#632), signs after a
-space (#633); `<` is unsigned "less or same", `>` signed (#638); the
-product's high words added into the low word on overflow (#639); `x^0`
-= `x^1` = `x`, `0^n` = 1, the exponent's low word as the loop count
-(#641); 128 or more values make every operator fail (#645); extra values
-are no error (#635); a string of spaces returns the caller's return
-address with error 4 (#644); a register operand reads its index
-character unchecked (also the string's 0, then it parses behind the
-string) and any index (#642); `{register}` checks a stale d1, and the
-`}` behind it is then a value 0 (#637); `-$10`/`-%1` read `$`/`%` as a
-digit (#643); digits are not checked (#634); the indirection reads any
-address (an odd one is an address error, #636); PFErrorText without an
-error returns the caller's upper word of d0 as the length (#640).
+In the C file's head:
+
+* ConvToPostFix: the `.` at the end of a string (it reads on behind the
+  0, #631); dropped characters (#632); signs after a space (#633).
+* PFEvaluate: `<` is unsigned "less or same", `>` signed (#638); the
+  product's high words added into the low word on overflow (#639);
+  `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as the loop
+  count (#641); extra values are no error (#635); a string of spaces
+  returns the caller's return address with error 4 (#644); a register
+  operand reads its index character unchecked (also the string's 0,
+  then it parses behind the string) and any index (#642); `{register}`
+  checks a stale d1, and the `}` behind it is then a value 0 (#637);
+  `-$10`/`-%1` read `$`/`%` as a digit (#643); digits are not checked
+  (#634); the indirection reads any address (an odd one is an address
+  error, #636).
+* PFErrorText without an error returns the caller's upper word of d0 as
+  the length (#640).
 
 No defects, like the original: ConvToPostFix leaves a3 pointing to the
 string (a statement: nothing uses a3 after it); PFErrorType leaves the

@@ -24,8 +24,9 @@
  * registers d0-d7/a0-a7/pc and odd indexes without and with PFRegisters,
  * a register at the string end (the read behind it), {address} with .b,
  * .w, .l, a bad size, no "}", {register} with a stale d1 and with d1 =
- * "}", too few arguments, 130 values (the byte count), 300 values with
- * operators and pushes across the chunks, an empty string, spaces only
+ * "}", too few arguments, 130 values (the original's byte count,
+ * #645), 300 values with operators and pushes across the chunks, an
+ * empty string, spaces only
  * (the return address as result, BUG(orig) (#644)), two results.
  * Not covered: an indirection at an odd address (address error).
  */
