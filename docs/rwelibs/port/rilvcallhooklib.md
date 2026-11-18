@@ -59,13 +59,16 @@ kind F):
   were drawn (`DBRA` on the low word) (#737; test
   `rilvcallhooklib-d7-upper-word`, `libs_emulator` cases `[fixed #737]`
   of `rwe_rilvcallhooklib`).
+* The test for the short tree line of the last indent level reads the
+  next node's indent at the indent offset. The original read it at the
+  offset of the first field entry's *width* (`dispaddress` is already
+  past the first entry): the line was short or long by an unrelated word
+  of the next node, and an odd width was an address error on a 68000
+  (#739; test `rilvcallhooklib-next-indent-offset`, `libs_emulator` cases
+  `[fixed #739]` of `rwe_rilvcallhooklib`).
 
 ## BUG(orig), kept
 
-* The test for the short tree line of the last indent level reads the
-  next node's indent at the offset of the first field entry's *width*
-  (`dispaddress` is already past the first entry), not at the indent
-  offset; an odd width is an address error on a 68000 (#739).
 * `TextFit` gets the constraining width with `$FFFF` in the upper word
   (`MOVEQ #-3,d2` and word arithmetic) (#741).
 * A right-aligned BitMap is drawn `ob_MinX` too far right: the alignment
@@ -92,15 +95,16 @@ still run): d0, both planes, the RastPort without the BitMap pointer,
 kept registers. 150 random items: bounds, states 0/1/2/8/4, 1–4 fields of
 texts and BitMaps (left/right, BitMaps wider/higher than the field
 cut, a BitMap pointer 0), the last field cut, indents of 1–60 pixels or
-none, the next node last or not and its "indent" word random, the
+none, the next node last or not and its words (the indent and the one
+the original reads instead, #739) random, the
 caller's d7 with upper words 0, `$FFFF`, `$8001`, `$0001`, `$8000`.
 A message other than `LV_DRAW` (nothing drawn), init/finit. Layouts that
 would give graphics.library an empty rectangle (a RastPort without a
 layer is not clipped) are skipped: items of 10 lines and more, BitMaps
 lower than the item, no text or BitMap ending exactly at the field's
-edge. Checked to fail when the width-offset bug is "fixed"; the fixed
-d7 bug (#737) gives the cases `[orig]` / `[fixed #737]` of the items
-with an indent of 16 or more and the upper word `$FFFF` or `$8000`.
+edge. The fixed bugs give `[orig]` / `[fixed #N]` cases: #737 those of
+the items with an indent of 16 or more and the upper word `$FFFF` or
+`$8000`, #739 the planes of the items whose last tree line changes.
 Not covered: the original's 65536 tree lines (indent below 16 with an
 upper word of 1..`$8000`: the scenario gives the original only upper
 words without them), a text pointer 0, negative indents.

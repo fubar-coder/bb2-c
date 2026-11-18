@@ -32,10 +32,6 @@
  * as the original's).  No assembler besides the thunks.
  *
  * BUG(orig):
- *   - The test for the tree line of the last indent level reads the
- *     indent of the next node at the offset of the first field entry's
- *     width (dispaddress is already past the first entry), not at the
- *     indent offset (an odd width: an address error on a 68000) (#739).
  *   - TextFit gets the width with $FFFF in the upper word (MOVEQ #-3,d2
  *     with ADD.w/SUB.w) (#741).
  *   - A right aligned BitMap is drawn ob_MinX too far right (the
@@ -53,6 +49,12 @@
  *     the RastPort's line pattern at $AAAA; an indent below 16 with an
  *     upper word of 1..$8000 drew 65536 lines (DBRA on the low word)
  *     (#737).
+ *   - The test for the tree line of the last indent level reads the
+ *     indent of the next node at the indent offset.  The original read it
+ *     at the offset of the first field entry's width (dispaddress is
+ *     already past the first entry): the line was short or long by an
+ *     unrelated word of the next node, and an odd width was an address
+ *     error on a 68000 (#739).
  *
  * RetrieveCallHook must be called before the hook is used (the graphics
  * base is 0 before): documented usage, not a defect.
@@ -258,8 +260,12 @@ static void displayfield(struct Library *gfx)
 
 /* ClearIndent: the indent in pen 0, the tree lines in pen 1 (one per
    16 pixels of indent but the first; their count a word: Fixed (#737),
-   the original took the upper word of the caller's d7) */
-static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *node)
+   the original took the upper word of the caller's d7); the last line
+   short if the next node ends the list or has a smaller indent (its word
+   at indentoff: Fixed (#739), the original read it at the first field's
+   width) */
+static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *node,
+                        UWORD indentoff)
 {
     WORD x, y, levels;
     UWORD k;
@@ -279,7 +285,7 @@ static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *n
         if (k == 0) {                   /* the last level: short if the last node */
             const UBYTE *next = *(const UBYTE *const *)node;
             if (!*(const ULONG *)next
-                || WAT(next, dispaddress->width) < indent) /* BUG(orig): not indentoff (#739) */
+                || WAT(next, indentoff) < indent)
                 y = (WORD)((WORD)(y + ob.MinY) >> 1);
         }
         Draw(rp, x, y);
@@ -314,12 +320,11 @@ static void drawdisabled(struct Library *gfx, const struct Rectangle *b, struct 
  * or the other states), the indent cleared with dotted tree lines, the
  * fields drawn left to right (the last one cut at the right edge), a
  * disabled item ghosted in apen.  Not reentrant (static state, as the
- * original's).  BUG(orig): the last tree line tests the next node at the
- * first field's width, not the indent offset (#739); TextFit's width has
- * $FFFF in the upper word (#741); a right aligned BitMap is ob_MinX too
- * far right (#740); the line pattern without SetDrPt (#738); a text
- * pointer 0 is read as a string (#742).  Fixed: the tree line count is
- * a word (#737).
+ * original's).  BUG(orig): TextFit's width has $FFFF in the upper word
+ * (#741); a right aligned BitMap is ob_MinX too far right (#740); the
+ * line pattern without SetDrPt (#738); a text pointer 0 is read as a
+ * string (#742).  Fixed: the tree line count is a word (#737); the last
+ * tree line tests the next node's indent at the indent offset (#739).
  * @param hook      a0: the Hook, h_Data = the field table
  * @param msg       a1: the LVDrawMsg
  * @param node      a2: the node
@@ -363,7 +368,7 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
     maxXboundary = msg->lvdm_Bounds.MaxX;
     ob = msg->lvdm_Bounds;
     if (indent)
-        clearindent(gfx, msgrastport, node);
+        clearindent(gfx, msgrastport, node, indentoff);
     ob.MinX += indent;
 
     entry = dispaddress;
