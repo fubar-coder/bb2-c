@@ -4132,6 +4132,54 @@ rows:
     text: "A listview text field whose pointer is 0 stays empty; the original showed the bytes at address 0."
     page: libraries
     anchor: rilvcallhooklib-fixes
+  - issue: 785
+    severity: 5
+    topic: "Files"
+    library: "rireqlib"
+    command: "ReqFileRequest"
+    text: "`ReqFileRequest` returns the file the user chose; the original never gave the requester its buffers and returned only what the program had written itself."
+    page: libraries
+    anchor: rireqlib-fixes
+  - issue: 786
+    severity: 5
+    topic: "Windows & screens"
+    library: "rireqlib"
+    command: "ReqColour"
+    text: "`ReqColour` opens the colour requester on the colour it is given; the original always started on colour 0."
+    page: libraries
+    anchor: rireqlib-fixes
+  - issue: 787
+    severity: 2
+    topic: "Files"
+    library: "rireqlib"
+    command: "ReqFileRequest, ReqFlags"
+    text: "Without `ReqFlags`, the file requester has caching, the info gadget and cache purge, as the library means; the original's had extended select and showed `.info` files."
+    page: libraries
+    anchor: reqfilerequest-default-flags
+  - issue: 788
+    severity: 5
+    topic: "Files"
+    library: "rireqlib"
+    command: "ReqFileRequest, ReqColour"
+    text: "Without req.library, `ReqFileRequest` returns an empty string and `ReqColour` the colour given; the original crashed."
+    page: libraries
+    anchor: rireqlib-fixes
+  - issue: 789
+    severity: 5
+    topic: "Files"
+    library: "rireqlib"
+    command: "ReqFileRequest"
+    text: "A `ReqFileRequest` title is for that call only; in the original a later call without a title showed whatever text was left in its memory."
+    page: libraries
+    anchor: rireqlib-fixes
+  - issue: 1088
+    severity: 5
+    topic: "Files"
+    library: "rireqlib"
+    command: "ReqFileRequest"
+    text: "The file requester structure has req.library's full size; the original's was too short, so the requester wrote over the library's data behind it."
+    page: libraries
+    anchor: rireqlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

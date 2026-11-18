@@ -771,7 +771,9 @@ A tracker module with a pattern break in its last song position loops at
 its song length, and a MED module with more than 8 tracks no longer runs
 the commands of tracks 8 to 11, as a MED player does (in the list of
 [music players](#music-players)). Four smaller changes concern tapes of
-mouse and keyboard events and the keyboard in Blitz mode.
+mouse and keyboard events and the keyboard in Blitz mode. In the RWE
+userlibs, the file requester of `ReqFileRequest` opens with the default
+flags its library means.
 
 ### `CustomColors` with a `thru256flag` of 0 acted as 1 {#customcolors-thru256flag}
 
@@ -890,6 +892,32 @@ described in the lists of the other fixes below.
   such; the pointer moves as before ([Tapes and simulated input](#tapes)).
 * `BlitzKeys Off` gives the keyboard input back to the input used before
   `BlitzKeys On` ([Input](#input)).
+
+### The file requester of `ReqFileRequest` opened with other flags {#reqfilerequest-default-flags}
+
+`ReqFileRequest` of
+[rireqlib]({{< relref "/docs/libraries/userlibs/rireqlib" >}}) opens the
+file requester of req.library, a requester library that is not part of
+AmigaOS. Flags decide what the requester offers, such as the selection
+of several files or a gadget that hides `.info` files. `ReqFlags` sets
+them; until a program does, the library uses its own default flags.
+
+**What happened.** The library is written to start with three flags:
+directory caching, the gadget that hides `.info` files, and the purge of
+the cache when a directory changes. The original combined the numbers
+of these flag bits instead of their values and so started with three
+other flags: show `.info` files, extended select of several files, and
+directory caching.
+
+**With the port.** A program that does not call `ReqFlags` gets the
+requester the library means: with the gadget for `.info` files, a cache
+that is purged when a directory changes, and without extended select.
+
+**What to change.** A program that relies on the requester of the
+original sets its flags itself, with `ReqFlags %111` or the flags
+argument of `ReqFileRequest`.
+
+Issue: [The default requester flags OR bit numbers (2|4|7 = 7) instead of bit masks (#787)](https://github.com/fubar-coder/bb2-c/issues/787).
 
 ## Dates
 
@@ -4198,6 +4226,41 @@ as dotted tree lines.
   with it. In a GadTools listview the hook gets a RastPort of its own,
   and the tree lines look as before
   ([#738](https://github.com/fubar-coder/bb2-c/issues/738)).
+
+### Fixes in rireqlib {#rireqlib-fixes}
+
+These fixes concern
+[rireqlib]({{< relref "/docs/libraries/userlibs/rireqlib" >}}), the file
+and colour requesters of req.library, a requester library that is not
+part of AmigaOS, by Steven Matty; the fixes of
+[the text that follows `ReqFileRequest`](#rwe-text-after-string-function)
+and of [its default flags](#reqfilerequest-default-flags) are described
+above.
+
+* `ReqFileRequest` returns the path of the file the user chose. The
+  original never gave the requester the library's buffers for the
+  directory, the file and the path, so it returned only what the program
+  itself had written to the path buffer at `ReqFileLoc`, or an empty
+  string ([#785](https://github.com/fubar-coder/bb2-c/issues/785)).
+* The library reserves req.library's whole file requester structure. The
+  original's was too short, so the fields that the requester keeps there
+  from call to call were written over the library's data behind it,
+  among them the addresses of its buffers and the colour requester
+  ([#1088](https://github.com/fubar-coder/bb2-c/issues/1088)).
+* A title given to `ReqFileRequest` is for that call only; a later call
+  without a title passes the library's empty title, as before the first
+  call with one. In the original such a call showed whatever text had
+  been put since in the memory where the earlier title had been. The
+  flags of `ReqFileRequest(title$,flags)` stay set for later calls, as
+  the guide documents
+  ([#789](https://github.com/fubar-coder/bb2-c/issues/789)).
+* Without req.library, `ReqFileRequest` returns an empty string, as when
+  the user cancels, and `ReqColour` returns the colour it is given; the
+  original crashed the system
+  ([#788](https://github.com/fubar-coder/bb2-c/issues/788)).
+* `ReqColour` opens the colour requester on the colour it is given; the
+  original ignored it and always started on colour 0
+  ([#786](https://github.com/fubar-coder/bb2-c/issues/786)).
 
 ### Other fixes {#rwe-other-fixes}
 
