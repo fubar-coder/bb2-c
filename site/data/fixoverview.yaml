@@ -3676,6 +3676,134 @@ rows:
     text: "The device list is unlocked at the program's end and before a second `GetDeviceList`; the original left it locked, and `Assign` and disk changes hung."
     page: libraries
     anchor: ridoslib-fixes
+  - issue: 631
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "ConvToPostFix"
+    text: "`ConvToPostFix` stops at the end of an expression that ends in `.`; the original went on converting the memory behind it."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 632
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "ConvToPostFix"
+    text: "`ConvToPostFix` keeps a foreign character in its operand, so `PFEvaluate` reports it; the original dropped it and split the operand, so `1,2` gave 2."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 633
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "ConvToPostFix"
+    text: "`ConvToPostFix` takes a `-` after an operator and a space, as in `4* -2`, for a sign; the original made it a subtraction without a first value."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 634
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`PFEvaluate` reports error 4 for a number with a character that is no digit of its base, such as `12x` or `%2`; the original returned a meaningless value."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 635
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`PFEvaluate` reports error 4 for an expression that leaves more than one value, such as `1 2`; the original returned the last value without an error."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 636
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`{address}.b` and `{address}.w` in `PFEvaluate` read only the byte or word, also at an odd address on a 68000; the original read a long there and crashed."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 637
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "A register inside `{}`, such as `{d0}`, works in `PFEvaluate`; the original mostly failed with \"No close bracket on indirect!\"."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 638
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`<` in `PFEvaluate` is \"less than\" with sign, as documented; the original's was \"less than or equal\" without sign, so `2 2 <` was true and `-1 1 <` false."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 639
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`*` and `^` in `PFEvaluate` give the low 32 bits of a product that overflows; the original also got its low word wrong."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 640
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFErrorText"
+    text: "`PFErrorText` without an error returns \"\"; the original could return a string of 64 KB or more, depending on what a register held."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 641
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`^` in `PFEvaluate` is the integer power, so `3^0` is 1 and `0^5` is 0; the original returned the base for the exponents 0 and below, 1 for the base 0, and counted only 16 bits of the exponent."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 642
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`PFEvaluate` accepts only `d0` to `d7`, `a0` to `a7` and `pc` as registers and reports error 4 for others; the original read any character after `a` or `d` as the register number, up to and behind the end of the string."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 643
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "Negative hexadecimal and binary numbers, such as `-$10` and `-%1`, have their value in `PFEvaluate`; the original read `$` and `%` after a `-` as decimal digits."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 644
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`PFEvaluate` of a string of spaces returns 0 with error 4; the original returned an address in the program."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 645
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFEvaluate"
+    text: "`PFEvaluate` works with 128 or more values pending; the original failed every operator from then on with \"Need 2 arguments for expression!\"."
+    page: libraries
+    anchor: rievallib-fixes
+  - issue: 1087
+    severity: 5
+    topic: "Numbers & dates"
+    library: "rievallib"
+    command: "PFRegisters, PFErrorType"
+    text: "A program run a second time from the editor starts without the first run's register block and error number; the original kept both and read the registers from freed memory."
+    page: libraries
+    anchor: rievallib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

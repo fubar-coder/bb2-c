@@ -25,12 +25,11 @@ intro: |
   - `*` and `/`,
   - `^` (power).
 
-  The comparisons `=`, `<` and `>` give -1 for true and 0 for false.
-  Kept from the original: `<` means "less than or equal" and compares
-  without sign, `>` compares with sign
-  ([#638](https://github.com/fubar-coder/bb2-c/issues/638)). Brackets
-  group operands and change the precedence. Upper and lower case are the
-  same. The commands work in Amiga and Blitz mode.
+  The comparisons `=`, `<` (less than) and `>` (greater than) give -1
+  for true and 0 for false; `<` and `>` compare with sign. Brackets
+  group operands and change the precedence. `ConvToPostFix` makes upper
+  case letters lower case, the form `PFEvaluate` reads. The commands
+  work in Amiga and Blitz mode.
 
   The library has the number of a library of Blitz Basic 2's own set, so
   it can only be used with the library variant rwe-1999-eval, which moves
@@ -48,5 +47,8 @@ intro: |
     NPrint PFErrorText
   EndIf
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in rievallib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rievallib-fixes" >}}).
 
   *Based on the RI Eval Lib guide by Reflective Images.*

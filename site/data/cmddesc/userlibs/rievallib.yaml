@@ -2,9 +2,13 @@
   text: Converts the expression in `string` into postfix form, with operands and operators separated by spaces, and writes it to the memory at `buffer`, ending with a zero byte. Read it with `Peek$(buffer)`.
   notes: |
     The buffer should be at least twice as long as the expression, plus
-    one byte. A `-`
-    counts as a sign at the start of the expression, after an operator
-    and after `(`.
+    one byte. A `-` counts as a sign at the start of the expression,
+    after an operator and after `(`, also with spaces in between, so
+    `4* -2` is a product with -2; after a value it is a subtraction, so
+    `3 -4` is 3-4. The command makes the letters of `string` lower case,
+    in place. A character that cannot belong to an operand, such as the
+    `,` in `1,2`, stays in the operand, and `PFEvaluate` reports it as
+    error 4.
 
     A sign works only before a number or a register, not before a
     bracket. Inside the expression a `-` directly before `(` is always a
@@ -14,15 +18,6 @@
     with nothing to subtract from, and `PFEvaluate` fails with the same
     error. Write a negated bracket as a subtraction from 0 or a product
     with -1 instead: `2*(0-3)` gives -6, and `-1*(3)` gives -3.
-
-    Kept from the original: a `-` after a space is a subtraction, so
-    `3 -4` is 3-4
-    ([#633](https://github.com/fubar-coder/bb2-c/issues/633)); a character
-    in an operand that cannot belong to one is dropped without an error
-    ([#632](https://github.com/fubar-coder/bb2-c/issues/632)); and a `.` at
-    the very end of the expression makes the command read and convert
-    whatever follows the string in memory
-    ([#631](https://github.com/fubar-coder/bb2-c/issues/631)).
 "PFEvaluate":
   text: Evaluates a postfix expression as `ConvToPostFix` makes it and returns its value. On an error it returns 0; check `PFErrorType` afterwards.
   notes: |
@@ -32,28 +27,19 @@
     indirect!" and 6 "Invalid size for indirection!". An empty string
     returns 0 without an error.
 
-    Kept from the original, among others:
+    A number may hold only the digits of its base: 0 to 9, after `$`
+    also `a` to `f`, after `%` only 0 and 1. The registers are `d0` to
+    `d7`, `a0` to `a7` and `pc`. Letters must be lower case, as
+    `ConvToPostFix` writes them. Any other operand, and an expression
+    that leaves more than one value, such as `1 2`, is error 4; so is a
+    string of spaces only.
 
-    - `x^0` and `x^1` are both `x`, and `0^n` is 1
-      ([#641](https://github.com/fubar-coder/bb2-c/issues/641)).
-    - A product that overflows 32 bits comes out with a wrong value
-      ([#639](https://github.com/fubar-coder/bb2-c/issues/639)).
-    - A negative hexadecimal or binary number, such as `-$10`, gives a
-      wrong value ([#643](https://github.com/fubar-coder/bb2-c/issues/643)),
-      and invalid digits are not refused
-      ([#634](https://github.com/fubar-coder/bb2-c/issues/634)).
-    - Only the last value is the result: values left over are no error
-      ([#635](https://github.com/fubar-coder/bb2-c/issues/635)); with 128
-      or more values pending, every operator fails with error 1
-      ([#645](https://github.com/fubar-coder/bb2-c/issues/645)).
-    - A string of spaces gives error 4 and a meaningless value
-      ([#644](https://github.com/fubar-coder/bb2-c/issues/644)).
-    - A register inside `{}` mostly fails with error 5
-      ([#637](https://github.com/fubar-coder/bb2-c/issues/637)); the
-      character after `a` or `d` is not checked, so a name such as `d9`
-      reads another entry of the register block or memory behind it ([#642](https://github.com/fubar-coder/bb2-c/issues/642)).
-    - `{address}` reads any address; an odd one crashes a 68000
-      ([#636](https://github.com/fubar-coder/bb2-c/issues/636)).
+    `*` and `^` give the low 32 bits of a result that does not fit into
+    a long. `^` is the integer power: `x^0` is 1, and a negative exponent
+    gives the whole part of the result, 0 for most bases; `0` with a
+    negative exponent is error 3. There is no limit to the number of
+    values pending. `{address}.b` and `{address}.w` read only the byte or
+    the word, so they also work at an odd address on a 68000.
 "PFRegisters":
   text: Sets the register block whose values `PFEvaluate` uses for the register names. The block is 17 longs, in this order - `d0` to `d7`, `a0` to `a7` and `pc`.
   notes: |
@@ -64,8 +50,6 @@
 "PFErrorText":
   text: The text of the error of the last `PFEvaluate`, such as "Divide by 0 error!".
   notes: |
-    Kept from the original: call it only after an error; when there was
-    none, it returns a string of meaningless length
-    ([#640](https://github.com/fubar-coder/bb2-c/issues/640)).
+    After a `PFEvaluate` without an error it returns "".
 "PFIndirectAddr":
   text: The address read by the last `{address}` in an expression that `PFEvaluate` evaluated.
