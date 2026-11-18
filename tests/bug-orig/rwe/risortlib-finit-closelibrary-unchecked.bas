@@ -11,6 +11,7 @@
 ; freed: finit runs after End.  The call with a1 = 0 is seen as the hang
 ; (session timeout); a program that ends normally never made it.
 ; Correct: the program ends normally, also on Kickstart 1.3.
+; @fixed #824
 ; @rwe risortlib
 ; @machine a500
 ; @pass timeout=30

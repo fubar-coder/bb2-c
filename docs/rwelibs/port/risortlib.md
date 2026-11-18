@@ -23,7 +23,8 @@ the current item at -32; an item: next (0), prev (4), the data of
   negative value) disables it. Documented nowhere (the 30/8/96 change of
   the source).
 
-init opens utility.library (any version), finit closes it.
+init opens utility.library (any version), finit closes it if it was
+opened.
 
 * **Source:** `rwelibsrc/sortlib/RISortlib2.bb` (as TED shows it:
   `build/amiga/rwelibsrc/sortlib/RISortlib2.bb`).
@@ -44,6 +45,16 @@ a0–a1/a3/a6 in the sorts, d0–d1/a0–a1/a6 in init/finit, nothing in the
 statements and `ListBase`). The caller's a1 is a parameter of the sorts:
 see the second bug below.
 
+## Fixed
+
+Original bugs fixed in the port (`docs/libs/deviations.md`, 3a,
+kind F):
+
+* finit closed utility.library without checking it was opened: where
+  it does not open (Kickstart 1.x has none), `CloseLibrary(0)` crashed
+  at the end of every program with the library; finit tests the base
+  (#824).
+
 ## BUG(orig), kept
 
 * The priority of the item the others are compared with is read before
@@ -56,7 +67,6 @@ see the second bug below.
   priority to compare with stays the old one (the swapped-in item's is
   not taken over). The result is then not sorted (#826).
 * `size` 0 swaps 65536 bytes (`DBRA` with size − 1 = `$FFFF`) (#827).
-* finit closes utility.library without checking it was opened (#824).
 
 ## Test
 

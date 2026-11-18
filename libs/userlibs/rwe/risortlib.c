@@ -28,7 +28,8 @@
  *       priorities by the string); -1 (the default, every negative
  *       value) disables it
  *
- * init opens utility.library (any version), finit closes it.  No
+ * init opens utility.library (any version), finit closes it if it was
+ * opened.  No
  * assembler besides the thunks.
  *
  * BUG(orig):
@@ -42,7 +43,9 @@
  *     was made yet), and the priority to compare with is not updated
  *     (the swapped-in item's priority is not taken over) (#826).
  *   - size 0 swaps 65536 bytes (DBRA with size - 1 = $FFFF) (#827).
- *   - finit closes utility.library without checking it was opened (#824).
+ *
+ * Fixed (#824): finit closed utility.library without checking it was
+ * opened (CloseLibrary(0), a crash on Kickstart 1.x); it tests the base.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -136,13 +139,15 @@ static void BLITZ_ROUTINE libinit_c(void)
 }
 
 /**
- * @brief finit: close utility.library.
+ * @brief finit: close utility.library if init opened it.
  *
- * BUG(orig) (#824): also when OpenLibrary failed (CloseLibrary(0)).
+ * Fixed (#824): the original closed it also when OpenLibrary failed
+ * (CloseLibrary(0), which exec 1.x does not catch).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
-    CloseLibrary(utillibbase);
+    if (utillibbase)
+        CloseLibrary(utillibbase);
 }
 
 /**
