@@ -35,8 +35,6 @@
  *       unchecked (`a` + 0 skips the string's end), `a`/`d` with any
  *       character index the register block (index byte * 4) (#642).
  *     - Digits are not checked (`12x` = 1, 2, 'x'-'0') (#634).
- *     - The indirection reads a long at any address (an odd one is an
- *       address error on the 68000) (#636).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - PFEvaluate counts its values in a long: the original's byte,
  *     compared signed, made every operator fail with "Need 2 arguments"
@@ -70,6 +68,11 @@
  *     stale (the caller's d1, or what the last number, `*`, `/` or `^`
  *     left): `{d0}` mostly failed with error 5, and if it passed, the `}`
  *     was then read as a number 0 (#637).
+ *   - PFEvaluate: the indirection reads the size behind the `}` first and
+ *     then that many bytes one by one (`.b` a byte, `.w` a word, `.l` or
+ *     none a long, the same values): no word or long access at an odd
+ *     address.  The original always read a long and took its top byte
+ *     or word - an address error on the 68000 at an odd address (#636).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -482,10 +485,17 @@ static ULONG ev_error(const char *text, UWORD type)
     return 0;
 }
 
-/* the indirection after a {number}: d0 = the long at d0 (lastaddr),
-   .b/.w/.l behind the "}"; 0 = ok, else the error result */
+/* the indirection after a {number}: d0 = the byte, word or long at d0
+   (lastaddr), .b/.w/.l behind the "}" (none: a long); 0 = ok, else the
+   error result.  Fixed (#636): the size is read first, then that many
+   bytes one by one - no word or long access at an odd address (an
+   address error on the 68000); the original read a long and took its
+   top byte or word */
 static int ev_indirect(struct state *s)
 {
+    const UBYTE *at;
+    ULONG value = 0;
+    int size = 4;
     UBYTE c;
 
     if ((UBYTE)s->aux != '}') {
@@ -493,25 +503,25 @@ static int ev_indirect(struct state *s)
         return 1;
     }
     lastaddr = s->acc;
-    s->acc = *(ULONG *)s->acc;
+    at = (const UBYTE *)s->acc;
     BL_SETB(s->aux, *s->pos);
-    if ((UBYTE)s->aux != '.')
-        return 0;
-    s->pos++;
-    c = *s->pos++;
-    BL_SETB(s->aux, c);
-    if (c == 'b') {
-        s->acc = (s->acc << 8 | s->acc >> 24) & 0xff;
-        return 0;
+    if ((UBYTE)s->aux == '.') {
+        s->pos++;
+        c = *s->pos++;
+        BL_SETB(s->aux, c);
+        if (c == 'b')
+            size = 1;
+        else if (c == 'w')
+            size = 2;
+        else if (c != 'l') {
+            ev_error(err_size, 6);
+            return 1;
+        }
     }
-    if (c == 'w') {
-        s->acc = BL_SWAP(s->acc) & 0xffff;
-        return 0;
-    }
-    if (c == 'l')
-        return 0;
-    ev_error(err_size, 6);
-    return 1;
+    while (size--)
+        value = value << 8 | *at++;
+    s->acc = value;
+    return 0;
 }
 
 /* the loop of PFEvaluate from evloop */
@@ -710,10 +720,10 @@ evalbin:
  * indirection".  An empty string returns 0, error 0; a string of spaces
  * only 0, error 4 (fixed, #644).
  * `*` gives the low 32 bits of the product (fixed, #639); the `}` of a
- * register in `{...}` is checked at the string (fixed, #637).
+ * register in `{...}` is checked at the string (fixed, #637); the
+ * indirection reads the bytes of its size one by one (fixed, #636).
  * BUG(orig): `^` (#641); only the last value counts (#635); register
- * operands (#642), unchecked digits (#634), indirection at any address
- * (#636).
+ * operands (#642), unchecked digits (#634).
  * @param str  d0: the postfix string
  * @return d0: the value, 0 on an error
  */

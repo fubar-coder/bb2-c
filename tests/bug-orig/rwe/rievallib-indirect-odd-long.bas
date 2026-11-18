@@ -7,6 +7,7 @@
 ; acidlibs' polylib on the CD: ref and port get the acidlibs of the
 ; variant rwe-1999-eval too (C build, without polylib).
 ; Correct: {address}.b reads the byte, 90.
+; @fixed #636
 ; @rwe rievallib
 ; @machine a600
 ; @pass timeout=30

@@ -160,6 +160,13 @@ kind F):
   register (the caller's d1, or what the last number, `*`, `/` or `^`
   left): `{d0}` mostly failed with error 5, and if it passed, the `}`
   was then read as a value 0 (#637).
+* PFEvaluate: the indirection reads the size behind the `}` first and
+  then that many bytes one by one (`.b` a byte, `.w` a word, `.l` or
+  none a long; the same values): no word or long access at an odd
+  address. The original always read a long and took its top byte or
+  word, an address error on a 68000/68010 at an odd address, and on
+  every processor 3 bytes more than `.b` asks for (#636; the bug-orig
+  test `rievallib-indirect-odd-long` runs on the A600).
 
 ## BUG(orig), kept
 
@@ -173,8 +180,6 @@ In the C file's head:
   (also the string's 0, then it parses behind the string) and any index
   (#642).
 * PFEvaluate: digits are not checked (#634).
-* PFEvaluate: the indirection reads any address (an odd one is an
-  address error, #636).
 
 No defects, like the original: ConvToPostFix leaves a3 pointing to the
 string (a statement: nothing uses a3 after it); PFErrorType leaves the

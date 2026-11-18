@@ -28,7 +28,8 @@
  * values (the original's byte count, #645), 300 values with operators
  * and pushes across the chunks, an empty string, spaces only (the
  * original returns the return address, #644), two results.
- * Not covered: an indirection at an odd address (address error).
+ * Not covered: an indirection at an odd address (an address error of the
+ * original on a 68000: the bug-orig test rievallib-indirect-odd-long, #636).
  */
 #include "rwecmp.h"
 
