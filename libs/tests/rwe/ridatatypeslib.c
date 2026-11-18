@@ -30,7 +30,8 @@
  * GetDataTypeAttr (known and unknown attributes), SetDataTypeAttr with a
  * tag list and with 1 and 2 pairs (the upper word of d7 a marker),
  * DataTypesPalette with 4 and 2 colours (and 0, the C build only: the
- * original copies 65536), AttachDataType in all three
+ * original copies 65536; and for an object without a colour table,
+ * intuition's GetAttr patched to give PDTA_ColorRegisters 0), AttachDataType in all three
  * forms (the second with upper words 1 and 2 in x and y, the original
  * writes them into the tags; the third with the id 0 and GA_Left 2), a second AttachDataType (0),
  * DataTypeReady, DetachDataType (twice), DataTypeClose (then the strings
@@ -141,6 +142,27 @@ static void same_mlog(void)
         OBS(buf, mlog[i].flags);
     }
 }
+
+/* ------------------------------------------------------------ GetAttr */
+
+/* intuition's GetAttr (-654: d0 attribute, a0 object, a1 storage)
+   patched for one call of DataTypesPalette: PDTA_ColorRegisters gives a
+   colour table 0 and the result 1 (a class that knows the attribute but
+   has no table), every other attribute goes to the system's GetAttr */
+static_assert(PDTA_ColorRegisters == 0x800010CBUL);
+void dt_getattr(void);
+APTR dt_oldgetattr;
+__asm__(
+"   .text\n"
+"   .even\n"
+"_dt_getattr:\n"
+"   cmp.l   #0x800010CB,d0\n"
+"   bne.s   1f\n"
+"   clr.l   (a1)\n"
+"   moveq   #1,d0\n"
+"   rts\n"
+"1: move.l  _dt_oldgetattr,-(sp)\n"
+"   rts\n");
 
 /* ------------------------------------------------------------ files */
 
@@ -482,6 +504,29 @@ int main(int argc, char **argv)
         /* a palette of 0 colours gets none (fixed #606); the original
            copies 65536 colours (DBRA), over memory behind paldata */
         palette(0);
+    }
+    /* an object without a colour table: GetAttr patched (the patch and
+       the call under Forbid, the layout process of the datatype does not
+       run in between) */
+    {
+        int i;
+
+        for (i = 0; i < (int)sizeof paldata; i++)
+            paldata[i] = (UBYTE)(0x11 * i + 3);
+        *(UWORD *)paldata = 4;
+        *(UWORD *)(paldata + 2) = 0;
+        ROUT = "DataTypesPalette";
+        strcpy(VEC, "no colour table");
+        Forbid();
+        dt_oldgetattr = SetFunction(TIntui, -654, (APTR)dt_getattr);
+        CacheClearU();
+        DO1(ENT(LIB, E_PALETTE, 0), R.d[0] = WA(1); R.a[0] = (ULONG)palobj);
+        SetFunction(TIntui, -654, dt_oldgetattr);
+        CacheClearU();
+        Permit();
+        OBS("d0", R.d[0]);
+        OBSBYTES("palette", paldata, sizeof paldata);
+        strcpy(VEC, "");
     }
     getattr(DTA_NominalHoriz);
 

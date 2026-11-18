@@ -474,6 +474,7 @@ DataTypesPalette|colour 1 red|2 colours|1	$00000001
 DataTypesPalette|colour 1 red|4 colours|1	$00000001
 DataTypesPalette|d0||1	$00000000
 DataTypesPalette|d0||2	$00000000
+DataTypesPalette|d0|no colour table|1	$00000001
 DataTypesPalette|d0 = the buffer|0 colours|1 [fixed #606]	$00000001
 DataTypesPalette|d0 = the buffer|2 colours|1	$00000001
 DataTypesPalette|d0 = the buffer|4 colours|1	$00000001
@@ -482,14 +483,17 @@ DataTypesPalette|kept||2	kept
 DataTypesPalette|kept|0 colours|1 [fixed #606]	kept
 DataTypesPalette|kept|2 colours|1	kept
 DataTypesPalette|kept|4 colours|1	kept
+DataTypesPalette|kept|no colour table|1	kept
 DataTypesPalette|palette|0 colours|1 [fixed #606]	bytes 52 000000004758697A8B9CADBECFE0F102132435465768798A9BACBDCEDFF00112233445566778899AABBCCDDEEF00112233445566
 DataTypesPalette|palette|2 colours|1	bytes 52 000200000058697A009CADBE00E0F102FF2435460068798A00ACBDCEDFF00112233445566778899AABBCCDDEEF00112233445566
 DataTypesPalette|palette|4 colours|1	bytes 52 000400000058697A009CADBE00E0F102FF2435460068798A00ACBDCE00F00112FF3445560078899A00BCCDDE00001122FF445566
+DataTypesPalette|palette|no colour table|1	bytes 52 000400004758697A8B9CADBECFE0F102132435465768798A9BACBDCEDFF00112233445566778899AABBCCDDEEF00112233445566
 DataTypesPalette|popped||1	$00000000
 DataTypesPalette|popped||2	$00000000
 DataTypesPalette|popped|0 colours|1 [fixed #606]	$00000000
 DataTypesPalette|popped|2 colours|1	$00000000
 DataTypesPalette|popped|4 colours|1	$00000000
+DataTypesPalette|popped|no colour table|1	$00000000
 DetachDataType|d0||1	$00000000
 DetachDataType|d0||2	$00000000
 DetachDataType|d0||3	$00000000

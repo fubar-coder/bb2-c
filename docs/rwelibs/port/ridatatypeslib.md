@@ -155,12 +155,15 @@ known values. DataTypeReady is polled until the layout is done. Cases: every com
 and form with nothing open; DataTypeCreate without a file; a missing
 file; the text file; a second DataTypeOpen; the picture with every
 command and form (unknown attributes, 1 and 2 pairs with a marker in
-d7's upper word, 4 and 2 colours, x and y with upper words 1 and 2, id
-0 as tag list); a second AttachDataType; DetachDataType twice;
+d7's upper word, 4 and 2 colours (0 in the C build only: the original
+copies 65536), no colour table (intuition's GetAttr patched under
+Forbid: PDTA_ColorRegisters 0, result 1), x and y with upper words 1
+and 2, id 0 with a tag list); a second AttachDataType; DetachDataType twice;
 DataTypeClose; DataTypeCreate with a tag list; finit with the object
 attached (detached, closed, the file unlocked: an exclusive Lock
 succeeds); init and finit again. Not covered: a library missing at
 init, ObtainDataType failing, AttachDataType window,id without
 DataTypeBitmap, DataTypeClose of an attached object, DataTypesPalette
-with more colours than the picture or 0, SetDataTypeAttr with 0 or over
+with more colours than the picture (these have bug-orig tests),
+SetDataTypeAttr with 0 or over
 127 pairs, names over 383 characters.
