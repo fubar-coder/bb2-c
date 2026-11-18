@@ -32,9 +32,10 @@
  * with three locks (unlocked from the top); after finit the structure
  * the original leaves current (fixed #779) and UnlockRegistry below the
  * stack: the libfin's
- * 0, then $0000FFFF unlocked (the original; fixed #781: nothing).
- * Not covered: more than 15 locks (BUG(orig) #781: writes over curstruct and
- * regstruct with the high word of a structure address); a structure
+ * 0, then $0000FFFF unlocked (the original; fixed #781: nothing); 16
+ * nested locks (the original writes the 16th structure over curstruct
+ * and regstruct; fixed #781: the 16th is refused), an unlock, finit.
+ * Not covered: a structure
  * while registry.library is missing (the call goes to address LVO).
  */
 #include "rwecmp.h"
@@ -313,6 +314,7 @@ int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
     ULONG avail;
+    int i;
 
     if (argc < 2) {
         printf("usage: riregistrylib DIR\n");
@@ -410,6 +412,20 @@ int main(int argc, char **argv)
     unlock("$0000FFFF");
     initfinit(28);
     BOTH("closed again", fake->lib_OpenCnt == 0);
+
+    /* 16 nested locks: the stack has room for 15.  The 16th structure is
+       $00380038, so that in the original its long over curstruct and
+       regstruct gives curstruct 56 (inside the stack) and regstruct
+       $00380038 (fixed #781: refused, nothing called) */
+    initfinit(22);
+    for (i = 0; i < 15; i++)
+        lock(1, (ULONG)rs[i % 3]);
+    lock(1, 0x00380038);
+    current("after 16 locks");
+    unlock("after 16 locks");
+    current("after 16 locks and one unlock");
+    initfinit(28);
+    BOTH("closed after 16 locks", fake->lib_OpenCnt == 0);
 
     fake_remove(fake);
     rwe_mem_check(LIB, avail, TRUE);

@@ -45,8 +45,6 @@
  * that keeps to the interface above does not see a difference).
  *
  * BUG(orig), kept:
- *   - The structure stack has no upper limit: LockRegistry beyond 15
- *     levels writes over curstruct and regstruct behind it (#781).
  *   - SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable
  *     pass the caller's d2 as the size (#782).
  * Fixed (intended deviations):
@@ -67,6 +65,11 @@
  *     LockRegistry/UnlockRegistry pair did so, as LockRegistry pushes
  *     nothing then.  It now does nothing without a pushed lock (#781,
  *     the lower limit).
+ *   - LockRegistry had no upper limit: the 16th nested lock wrote the
+ *     structure over curstruct and regstruct behind the stack
+ *     (curstruct became its high word, regstruct its low word twice).
+ *     With 15 structures on the stack it now returns 0 without calling
+ *     the library and pushes nothing (#781, the upper limit).
  * LockRegistry stores the result also when it is 0 (the following calls
  * then do nothing, but UnlockRegistry still pops it): no defect, it keeps
  * LockRegistry and UnlockRegistry balanced.
@@ -386,8 +389,9 @@ static_assert(offsetof(struct regstructure, data) == 24);
 #define VAR_BOOLEAN 3
 #define VAR_INTEGER 4
 
-/* structs, curstruct, regstruct, regbase in the original's order (a
-   stack overflow runs into curstruct and regstruct) */
+/* structs, curstruct, regstruct, regbase in the original's order (its
+   stack overflow ran into curstruct and regstruct, fixed #781); entry 0
+   is never used, so the stack holds 15 structures */
 static struct BL_PACKED {
     ULONG structs[16];
     UWORD curstruct;
@@ -543,10 +547,12 @@ static ULONG BLITZ_ROUTINE isregistryopen_c(void)
  * LockRegistry (-30, d0 = the mode); the result is pushed on the
  * structure stack and is the current structure - also 0 (the following
  * calls then do nothing, UnlockRegistry still pops it: no defect).
- * BUG(orig) (#781): no limit - beyond 15 levels the stack runs into
- * curstruct and regstruct.
+ * With 15 structures on the stack (it is full) nothing is called or
+ * pushed and the result is 0 (fixed, #781: the original writes the 16th
+ * over curstruct and regstruct).
  * @param mode  d0: the access mode
- * @return d0: the registry structure, 0 without the library
+ * @return d0: the registry structure, 0 without the library or with a
+ *         full stack
  */
 static ULONG BLITZ_ROUTINE lockregistry_c(ULONG mode BL_REG(d0))
 {
@@ -554,6 +560,8 @@ static ULONG BLITZ_ROUTINE lockregistry_c(ULONG mode BL_REG(d0))
 
     if (!st.regbase)
         return 0;
+    if ((WORD)st.curstruct >= (WORD)(sizeof st.structs - sizeof st.structs[0]))
+        return 0;                       /* Fixed (#781): the stack is full */
     r = regjsr(LVO_LockRegistry, 0, mode, 0, 0, 0, 0, (ULONG)blitz_string,
                (ULONG)blitz_locals);
     st.curstruct += 4;

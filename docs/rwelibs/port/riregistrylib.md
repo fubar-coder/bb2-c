@@ -24,7 +24,8 @@ locked and closes the library.
 * **The structure stack:** `structs`, 16 longs; `curstruct`, a word
   byte offset (the first structure at 4); `regstruct`, the current
   structure; then `regbase`. LockRegistry pushes what the library
-  returns (also 0), UnlockRegistry pops.
+  returns (also 0), at most 15 structures (fixed #781), UnlockRegistry
+  pops (nothing on an empty stack, fixed #781).
 * **CallLibrary:** a0 = regstruct, a6 = regbase, `JMP 0(a6,d7.w)`; no
   call and d0 = 0 without a structure. Every command but
   IsRegistryOpen and LockRegistry goes through it.
@@ -104,11 +105,19 @@ kind F):
   the call went through a base of 0: a crash after a few pairs (#781,
   the lower limit; test `riregistrylib-unlock-below-stack`,
   `libs_emulator` cases `[fixed #781]` of `rwe_riregistrylib`).
+* LockRegistry with 15 structures on the stack (it is full) returns 0
+  without calling the library and pushes nothing. The original pushed
+  the 16th structure behind the stack, over curstruct and regstruct:
+  curstruct became the high word of the structure's address, regstruct
+  its low word twice, and the following calls went with that structure
+  and indexed far outside the stack (#781, the upper limit;
+  `libs_emulator` cases `[fixed #781]` of `rwe_riregistrylib`, mock
+  registry.library). An UnlockRegistry after such a refused lock pops
+  the 15th structure, as one after a lock without the library pops
+  nothing.
 
 ## BUG(orig), kept
 
-* **The structure stack has no upper limit.** LockRegistry beyond 15
-  levels writes over curstruct and regstruct (#781).
 * **SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable**
   pass the caller's d2 as the size (#782).
 
@@ -162,11 +171,11 @@ Covered:
   * after finit and a new init: no stale structure (the original's,
     fixed #779), three UnlockRegistry without a lock (nothing; the
     original goes below the stack to the libfin's 0, then unlocks
-    `$0000FFFF`, fixed #781).
+    `$0000FFFF`, fixed #781);
+  * 16 nested locks, an UnlockRegistry, finit (the original writes the
+    16th structure over curstruct and regstruct; fixed #781: refused).
 
 Not covered:
 
-* more than 15 locks (curstruct and regstruct get the high word of a
-  structure's address);
 * a structure while registry.library is missing (the call goes to the
   address of the LVO).

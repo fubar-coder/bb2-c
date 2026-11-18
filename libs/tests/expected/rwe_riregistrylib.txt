@@ -429,35 +429,133 @@ LockRegistry|call 0 LVO|mode 0|1	$FFFFFFE2
 LockRegistry|call 0 LVO|mode 1|1	$FFFFFFE2
 LockRegistry|call 0 LVO|mode 1|2	$FFFFFFE2
 LockRegistry|call 0 LVO|mode 1|3	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|4	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|5	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|6	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|7	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|8	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|9	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|10	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|11	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|12	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|13	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|14	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|15	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|16	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|17	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|18	$FFFFFFE2
+LockRegistry|call 0 LVO|mode 1|19 [orig #781]	$FFFFFFE2
 LockRegistry|call 0 LVO|mode 2|1	$FFFFFFE2
 LockRegistry|call 0 d0|mode 0|1	$00000000
 LockRegistry|call 0 d0|mode 1|1	$00000001
 LockRegistry|call 0 d0|mode 1|2	$00000001
 LockRegistry|call 0 d0|mode 1|3	$00000001
+LockRegistry|call 0 d0|mode 1|4	$00000001
+LockRegistry|call 0 d0|mode 1|5	$00000001
+LockRegistry|call 0 d0|mode 1|6	$00000001
+LockRegistry|call 0 d0|mode 1|7	$00000001
+LockRegistry|call 0 d0|mode 1|8	$00000001
+LockRegistry|call 0 d0|mode 1|9	$00000001
+LockRegistry|call 0 d0|mode 1|10	$00000001
+LockRegistry|call 0 d0|mode 1|11	$00000001
+LockRegistry|call 0 d0|mode 1|12	$00000001
+LockRegistry|call 0 d0|mode 1|13	$00000001
+LockRegistry|call 0 d0|mode 1|14	$00000001
+LockRegistry|call 0 d0|mode 1|15	$00000001
+LockRegistry|call 0 d0|mode 1|16	$00000001
+LockRegistry|call 0 d0|mode 1|17	$00000001
+LockRegistry|call 0 d0|mode 1|18	$00000001
+LockRegistry|call 0 d0|mode 1|19 [orig #781]	$00000001
 LockRegistry|call 0 d0|mode 2|1	$00000002
 LockRegistry|calls|mode 0|1	$00000001
 LockRegistry|calls|mode 1|1	$00000000
 LockRegistry|calls|mode 1|2	$00000001
 LockRegistry|calls|mode 1|3	$00000001
 LockRegistry|calls|mode 1|4	$00000001
+LockRegistry|calls|mode 1|5	$00000001
+LockRegistry|calls|mode 1|6	$00000001
+LockRegistry|calls|mode 1|7	$00000001
+LockRegistry|calls|mode 1|8	$00000001
+LockRegistry|calls|mode 1|9	$00000001
+LockRegistry|calls|mode 1|10	$00000001
+LockRegistry|calls|mode 1|11	$00000001
+LockRegistry|calls|mode 1|12	$00000001
+LockRegistry|calls|mode 1|13	$00000001
+LockRegistry|calls|mode 1|14	$00000001
+LockRegistry|calls|mode 1|15	$00000001
+LockRegistry|calls|mode 1|16	$00000001
+LockRegistry|calls|mode 1|17	$00000001
+LockRegistry|calls|mode 1|18	$00000001
+LockRegistry|calls|mode 1|19	$00000001
+LockRegistry|calls|mode 1|20 [orig]	$00000001
+LockRegistry|calls|mode 1|20 [fixed #781]	$00000000
 LockRegistry|calls|mode 2|1	$00000001
 LockRegistry|d0|mode 0|1	$00000000
 LockRegistry|d0|mode 1|1	$00000000
 LockRegistry|d0|mode 1|2	prog
 LockRegistry|d0|mode 1|3	prog
 LockRegistry|d0|mode 1|4	prog
+LockRegistry|d0|mode 1|5	prog
+LockRegistry|d0|mode 1|6	prog
+LockRegistry|d0|mode 1|7	prog
+LockRegistry|d0|mode 1|8	prog
+LockRegistry|d0|mode 1|9	prog
+LockRegistry|d0|mode 1|10	prog
+LockRegistry|d0|mode 1|11	prog
+LockRegistry|d0|mode 1|12	prog
+LockRegistry|d0|mode 1|13	prog
+LockRegistry|d0|mode 1|14	prog
+LockRegistry|d0|mode 1|15	prog
+LockRegistry|d0|mode 1|16	prog
+LockRegistry|d0|mode 1|17	prog
+LockRegistry|d0|mode 1|18	prog
+LockRegistry|d0|mode 1|19	prog
+LockRegistry|d0|mode 1|20 [orig]	$00380038
+LockRegistry|d0|mode 1|20 [fixed #781]	$00000000
 LockRegistry|d0|mode 2|1	prog
 LockRegistry|kept|mode 0|1	kept
 LockRegistry|kept|mode 1|1	kept
 LockRegistry|kept|mode 1|2	kept
 LockRegistry|kept|mode 1|3	kept
 LockRegistry|kept|mode 1|4	kept
+LockRegistry|kept|mode 1|5	kept
+LockRegistry|kept|mode 1|6	kept
+LockRegistry|kept|mode 1|7	kept
+LockRegistry|kept|mode 1|8	kept
+LockRegistry|kept|mode 1|9	kept
+LockRegistry|kept|mode 1|10	kept
+LockRegistry|kept|mode 1|11	kept
+LockRegistry|kept|mode 1|12	kept
+LockRegistry|kept|mode 1|13	kept
+LockRegistry|kept|mode 1|14	kept
+LockRegistry|kept|mode 1|15	kept
+LockRegistry|kept|mode 1|16	kept
+LockRegistry|kept|mode 1|17	kept
+LockRegistry|kept|mode 1|18	kept
+LockRegistry|kept|mode 1|19	kept
+LockRegistry|kept|mode 1|20	kept
 LockRegistry|kept|mode 2|1	kept
 LockRegistry|popped|mode 0|1	$00000000
 LockRegistry|popped|mode 1|1	$00000000
 LockRegistry|popped|mode 1|2	$00000000
 LockRegistry|popped|mode 1|3	$00000000
 LockRegistry|popped|mode 1|4	$00000000
+LockRegistry|popped|mode 1|5	$00000000
+LockRegistry|popped|mode 1|6	$00000000
+LockRegistry|popped|mode 1|7	$00000000
+LockRegistry|popped|mode 1|8	$00000000
+LockRegistry|popped|mode 1|9	$00000000
+LockRegistry|popped|mode 1|10	$00000000
+LockRegistry|popped|mode 1|11	$00000000
+LockRegistry|popped|mode 1|12	$00000000
+LockRegistry|popped|mode 1|13	$00000000
+LockRegistry|popped|mode 1|14	$00000000
+LockRegistry|popped|mode 1|15	$00000000
+LockRegistry|popped|mode 1|16	$00000000
+LockRegistry|popped|mode 1|17	$00000000
+LockRegistry|popped|mode 1|18	$00000000
+LockRegistry|popped|mode 1|19	$00000000
+LockRegistry|popped|mode 1|20	$00000000
 LockRegistry|popped|mode 2|1	$00000000
 NewRegistryLibrary|call 0 LVO|form 0 ret $00240026|1	$FFFFFFB2
 NewRegistryLibrary|call 0 LVO|form 1 ret $00250027|1	$FFFFFFB2
@@ -494,12 +592,17 @@ NewRegistryLibrary|popped|form 1 ret $00080008|1	$00000000
 NewRegistryLibrary|popped|form 1 ret $0008000A|1	$00000000
 NewRegistryLibrary|popped|form 1 ret $00250027|1	$00000000
 NextParseItem|call 0 LVO|current: $0000FFFF|1 [orig #781]	$FFFFFFA0
+NextParseItem|call 0 LVO|current: after 16 locks|1	$FFFFFFA0
+NextParseItem|call 0 LVO|current: after 16 locks and one unlock|1	$FFFFFFA0
 NextParseItem|call 0 LVO|current: rs 0 again|1	$FFFFFFA0
 NextParseItem|call 0 LVO|current: rs 1|1	$FFFFFFA0
 NextParseItem|call 0 LVO|current: rs 1 again|1	$FFFFFFA0
 NextParseItem|call 0 LVO|current: the stale rs 2|1 [orig #779]	$FFFFFFA0
 NextParseItem|call 0 LVO|form 0 ret $00270029|1	$FFFFFFA0
 NextParseItem|call 0 a0|current: $0000FFFF|1 [orig #781]	$0000FFFF
+NextParseItem|call 0 a0|current: after 16 locks|1 [orig]	$00380038
+NextParseItem|call 0 a0|current: after 16 locks|1 [fixed #781]	prog
+NextParseItem|call 0 a0|current: after 16 locks and one unlock|1	prog
 NextParseItem|call 0 a0|current: rs 0 again|1	prog
 NextParseItem|call 0 a0|current: rs 1|1	prog
 NextParseItem|call 0 a0|current: rs 1 again|1	prog
@@ -507,6 +610,8 @@ NextParseItem|call 0 a0|current: the stale rs 2|1 [orig #779]	prog
 NextParseItem|call 0 a0|form 0 ret $00270029|1	prog
 NextParseItem|calls|current: $0000FFFF|1 [orig]	$00000001
 NextParseItem|calls|current: $0000FFFF|1 [fixed #781]	$00000000
+NextParseItem|calls|current: after 16 locks|1	$00000001
+NextParseItem|calls|current: after 16 locks and one unlock|1	$00000001
 NextParseItem|calls|current: none|1	$00000000
 NextParseItem|calls|current: none (0)|1	$00000000
 NextParseItem|calls|current: rs 0 again|1	$00000001
@@ -518,6 +623,8 @@ NextParseItem|calls|form 0 ret $000A000A|1	$00000000
 NextParseItem|calls|form 0 ret $000A000C|1	$00000000
 NextParseItem|calls|form 0 ret $00270029|1	$00000001
 NextParseItem|d0|current: $0000FFFF|1	$00000000
+NextParseItem|d0|current: after 16 locks|1	$00000000
+NextParseItem|d0|current: after 16 locks and one unlock|1	$00000000
 NextParseItem|d0|current: none|1	$00000000
 NextParseItem|d0|current: none (0)|1	$00000000
 NextParseItem|d0|current: rs 0 again|1	$00000000
@@ -528,6 +635,8 @@ NextParseItem|d0|form 0 ret $000A000A|1	$00000000
 NextParseItem|d0|form 0 ret $000A000C|1	$00000000
 NextParseItem|d0|form 0 ret $00270029|1	$00270029
 NextParseItem|kept|current: $0000FFFF|1	kept
+NextParseItem|kept|current: after 16 locks|1	kept
+NextParseItem|kept|current: after 16 locks and one unlock|1	kept
 NextParseItem|kept|current: none|1	kept
 NextParseItem|kept|current: none (0)|1	kept
 NextParseItem|kept|current: rs 0 again|1	kept
@@ -538,6 +647,8 @@ NextParseItem|kept|form 0 ret $000A000A|1	kept
 NextParseItem|kept|form 0 ret $000A000C|1	kept
 NextParseItem|kept|form 0 ret $00270029|1	kept
 NextParseItem|popped|current: $0000FFFF|1	$00000000
+NextParseItem|popped|current: after 16 locks|1	$00000000
+NextParseItem|popped|current: after 16 locks and one unlock|1	$00000000
 NextParseItem|popped|current: none|1	$00000000
 NextParseItem|popped|current: none (0)|1	$00000000
 NextParseItem|popped|current: rs 0 again|1	$00000000
@@ -822,51 +933,80 @@ SetRegistryVariableIndex|popped|form 0 ret $00150015|1	$00000000
 SetRegistryVariableIndex|popped|form 0 ret $00150017|1	$00000000
 SetRegistryVariableIndex|popped|form 0 ret $00320034|1	$00000000
 UnlockRegistry|call 0 LVO|$0000FFFF|1 [orig #781]	$FFFFFFDC
+UnlockRegistry|call 0 LVO|after 16 locks|1	$FFFFFFDC
 UnlockRegistry|call 0 LVO|rs 1|1	$FFFFFFDC
 UnlockRegistry|call 0 LVO|rs 2, to the libfin's 0|1 [orig #779]	$FFFFFFDC
 UnlockRegistry|call 0 a0|$0000FFFF|1 [orig #781]	$0000FFFF
+UnlockRegistry|call 0 a0|after 16 locks|1 [orig]	$00380038
+UnlockRegistry|call 0 a0|after 16 locks|1 [fixed #781]	prog
 UnlockRegistry|call 0 a0|rs 1|1	prog
 UnlockRegistry|call 0 a0|rs 2, to the libfin's 0|1 [orig #779]	prog
 UnlockRegistry|calls|$0000FFFF|1 [orig]	$00000001
 UnlockRegistry|calls|$0000FFFF|1 [fixed #781]	$00000000
+UnlockRegistry|calls|after 16 locks|1	$00000001
 UnlockRegistry|calls|nothing, to $0000FFFF|1	$00000000
 UnlockRegistry|calls|of the failed lock|1	$00000000
 UnlockRegistry|calls|rs 1|1	$00000001
 UnlockRegistry|calls|rs 2, to the libfin's 0|1 [orig]	$00000001
 UnlockRegistry|calls|rs 2, to the libfin's 0|1 [fixed #779]	$00000000
 UnlockRegistry|kept|$0000FFFF|1	kept
+UnlockRegistry|kept|after 16 locks|1	kept
 UnlockRegistry|kept|nothing, to $0000FFFF|1	kept
 UnlockRegistry|kept|of the failed lock|1	kept
 UnlockRegistry|kept|rs 1|1	kept
 UnlockRegistry|kept|rs 2, to the libfin's 0|1	kept
 UnlockRegistry|popped|$0000FFFF|1	$00000000
+UnlockRegistry|popped|after 16 locks|1	$00000000
 UnlockRegistry|popped|nothing, to $0000FFFF|1	$00000000
 UnlockRegistry|popped|of the failed lock|1	$00000000
 UnlockRegistry|popped|rs 1|1	$00000000
 UnlockRegistry|popped|rs 2, to the libfin's 0|1	$00000000
 finit|call 0 LVO||1	$FFFFFFDC
+finit|call 0 LVO||2	$FFFFFFDC
 finit|call 0 a0||1	prog
+finit|call 0 a0||2	prog
 finit|call 1 LVO||1	$FFFFFFDC
+finit|call 1 LVO||2	$FFFFFFDC
 finit|call 1 a0||1	prog
+finit|call 1 a0||2	prog
 finit|call 2 LVO||1	$FFFFFFDC
+finit|call 2 LVO||2	$FFFFFFDC
 finit|call 2 a0||1	prog
+finit|call 2 a0||2	prog
+finit|call 3 LVO||1	$FFFFFFDC
+finit|call 3 a0||1	prog
+finit|call 4 LVO||1	$FFFFFFDC
+finit|call 4 a0||1	prog
+finit|call 5 LVO||1	$FFFFFFDC
+finit|call 5 a0||1	prog
+finit|call 6 LVO||1	$FFFFFFDC
+finit|call 6 a0||1	prog
+finit|call 7 LVO||1	$FFFFFFDC
+finit|call 7 a0||1	prog
 finit|calls||1	$00000000
 finit|calls||2	$00000003
 finit|calls||3	$00000000
+finit|calls||4	$00000008
 finit|closed||1	$00000001
+finit|closed after 16 locks||1	$00000001
 finit|closed again||1	$00000001
 finit|kept||1	kept
 finit|kept||2	kept
 finit|kept||3	kept
+finit|kept||4	kept
 finit|popped||1	$00000000
 finit|popped||2	$00000000
 finit|popped||3	$00000000
+finit|popped||4	$00000000
 init|calls||1	$00000000
 init|calls||2	$00000000
 init|calls||3	$00000000
+init|calls||4	$00000000
 init|kept||1	kept
 init|kept||2	kept
 init|kept||3	kept
+init|kept||4	kept
 init|popped||1	$00000000
 init|popped||2	$00000000
 init|popped||3	$00000000
+init|popped||4	$00000000
