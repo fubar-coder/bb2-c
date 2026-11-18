@@ -32,8 +32,8 @@
  * moves the fixed register blitz_string itself), a2 stays unchanged
  * (DIFF: the original pops the string lengths it reads with -(a2), see
  * docs/libs/cmdlibs-port.md "General").  Assembler: exec calls whose
- * leftovers the original uses (the flags of AllocVec, d0 of AddPort and
- * PutMsg, a0 of FindPort).  The variables from rexxportname on are one
+ * leftovers the original uses (the flags of AllocVec, d0 of AddPort, a0
+ * of FindPort).  The variables from rexxportname on are one
  * packed struct in the original's order: RXDefaultPort copies without a
  * limit into the 65 bytes of rexxportname and overwrites them (BUG(orig),
  * #529).
@@ -42,6 +42,9 @@
  *   - init writes "REXX" and its 0 at +4 into the default port name (the
  *     original wrote the 0 at +5: the byte at +4 of an earlier
  *     RXDefaultPort stayed) (#532).
+ *   - RXRunCommand (and RXExecuteScript, RXRunScript) return -1 when the
+ *     message was sent (the original returned the d0 PutMsg leaves)
+ *     (#543).
  *   - RXTokenise stores and tests the word of its argument (the original
  *     stored the whole register: "off" with a set upper word stayed on)
  *     (#547).
@@ -52,8 +55,6 @@
  *     script name as a string program), without a result (#544).
  *   - _makemsg tests the flags AllocVec leaves (MOVE.l d0,a1 is a MOVEA):
  *     if they say 0, the message stays the one before (or 0) (#533).
- *   - RXRunCommand returns d0 of PutMsg (exec leaves something there)
- *     (#543).
  *   - Replies to messages sent without waiting are found in the sent
  *     list by _finditem, which always returns 0: they are freed with
  *     FreeVec only (their argument strings stay allocated) and stay in
@@ -351,18 +352,6 @@ static ULONG addport_d0(struct MsgPort *port)
     return d0;
 }
 
-static ULONG putmsg_d0(struct MsgPort *port, struct Message *m)
-{
-    register ULONG d0 __asm("d0");
-    register struct MsgPort *a0 __asm("a0") = port;
-    register struct Message *a1 __asm("a1") = m;
-    register struct ExecBase *a6 __asm("a6") = SysBase;
-
-    __asm volatile("jsr -366(a6)" : "=d"(d0), "+a"(a0), "+a"(a1), "+a"(a6)
-                   : : "d1", "cc", "memory");
-    return d0;
-}
-
 static struct MsgPort *findport_a0(const UBYTE *name, UBYTE **a0out)
 {
     register ULONG d0 __asm("d0");
@@ -636,9 +625,10 @@ static ULONG sendmsg(void)
 
     if (!v.thismsg)
         return 0;
-    result = putmsg_d0(v.destport, &v.thismsg->rm_Node);
+    PutMsg(v.destport, &v.thismsg->rm_Node);
     if (!v.replyreq)
-        return result;                  /* BUG(orig): PutMsg's d0 (#543) */
+        return BB_TRUE;                 /* fixed (#543): the original's PutMsg d0 */
+    result = 0;
     do {
         oktodelete = 0xffff;
         result = waitport_c(result);
@@ -680,7 +670,7 @@ static ULONG runcommand(const UBYTE *port, ULONG cmd)
  * @param port  d0: portname$
  * @param cmd   d1: command$
  * @return d0: 0 if the port is not found or there is no message; else
- *         d0 of PutMsg (BUG(orig) #543)
+ *         -1 (fixed #543: the original returned the d0 PutMsg leaves)
  */
 static ULONG BLITZ_ROUTINE rxruncommand_c(const UBYTE *port BL_REG(d0), ULONG cmd BL_REG(d1))
 {
@@ -691,7 +681,7 @@ BLITZ_THUNK(_rxruncommand, rxruncommand_c, "d1/a0-a1");
 /**
  * @brief RXRunCommand command$: as RXRunCommand to the RXDefaultPort port.
  * @param cmd  d0: command$
- * @return d0: as above (#543)
+ * @return d0: as above
  */
 static ULONG BLITZ_ROUTINE rxruncommand2_c(ULONG cmd BL_REG(d0))
 {
@@ -707,7 +697,7 @@ BLITZ_THUNK(_rxruncommand2, rxruncommand2_c, "d1/a0-a1");
  * by _rxruncommand: it sends RXCOMM|RXFF_STRING (the script name as a
  * string program), without a result.
  * @param name  d0: scriptname$
- * @return d0: as RXRunCommand (#543)
+ * @return d0: as RXRunCommand
  */
 static ULONG BLITZ_ROUTINE rxexecutescript_c(ULONG name BL_REG(d0))
 {
@@ -722,7 +712,7 @@ BLITZ_THUNK(_rxexecutescript, rxexecutescript_c, "d1/a0-a1");
  *
  * BUG(orig) (#544): its type RXCOMM is overwritten as in RXExecuteScript.
  * @param name  d0: scriptname$
- * @return d0: as RXRunCommand (#543)
+ * @return d0: as RXRunCommand
  */
 static ULONG BLITZ_ROUTINE rxrunscript_c(ULONG name BL_REG(d0))
 {

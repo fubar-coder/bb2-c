@@ -76,8 +76,7 @@ Small inline assembler for the exec and rexxsyslib calls whose leftovers
 the original uses:
 
 * the Z flag of AllocVec (`MOVE.l d0,a1:BEQ` is a MOVEA);
-* d0 of AddPort (`TST.l d0` after it) and of PutMsg (RXRunCommand's
-  result);
+* d0 of AddPort (`TST.l d0` after it);
 * a0 of FindPort (RXReplyMsg's `'shit` path).
 
 maxslib AllocSt is called with `BLITZ_ALIBJSR(TOK_allocst)`.
@@ -95,6 +94,10 @@ kind F):
 * **RXTokenise** stores and tests the word of its argument. The original
   stored the whole register (`MOVE.l d0`), so "off" with a set upper
   word stayed on (#547).
+* **RXRunCommand** (and RXExecuteScript, RXRunScript, which share its
+  code) returns -1 when the message was sent, 0 when not, as the manual
+  says of the older generation's RXSendMsg. The original returned
+  whatever d0 PutMsg leaves (#543).
 
 ## BUG(orig), kept
 
@@ -104,7 +107,6 @@ kind F):
   (#544).
 * **`_makemsg`** decides on AllocVec's flags (above): if they say 0, the
   previous message (or 0) is sent again (#533).
-* **RXRunCommand** returns whatever d0 PutMsg leaves (#543).
 * **Replies to messages sent without waiting.** `_finditem` falls from
   the found case into `'notfound` and always returns 0. So these replies
   are only FreeVec'd: their argument strings stay allocated, and the

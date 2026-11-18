@@ -272,7 +272,8 @@ static void run(int form, const char *port, const char *cmd)
             R.d[1] = (ULONG)cmd; R.a[3] = (ULONG)sbuf);
     else
         DO1(ENT(LIB, RUNCOMMAND, 0), R.d[0] = (ULONG)cmd; R.a[3] = (ULONG)sbuf);
-    /* d0 is PutMsg's (BUG(orig), #543); 0 if the port is missing */
+    /* d0: the original's is PutMsg's (#543, fixed: -1); 0 if the port
+       is missing */
     OBS("sent", R.d[0] != 0 || port == NULL || FindPort((STRPTR)port) != NULL);
 }
 
