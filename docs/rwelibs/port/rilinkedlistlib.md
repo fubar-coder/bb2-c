@@ -125,16 +125,18 @@ changes d1, d2, a0, a1, InitList also a2).
   `rilinkedlistlib.declarations-intended.txt` names the 14 differences
   of the declarations).
 
-**BUG(orig)** (kept):
-
-* A size word below 8 in front of the variable gives a size of almost
-  4 GB (the allocation fails) (#736). No NEWTYPE variable has one: the
-  compiler refuses a NEWTYPE of 32768 bytes or more ("Type too Big"),
-  so memlib's length (the size + 8) fits in the word and is 8 or more;
-  only an address that is not such a variable has one. Exactly 8 (an
-  empty NEWTYPE) gives a size of 0, for which RIAmosFuncLib's CopyByte
-  copies nothing (since #492; the original's CopyByte copied 2^32
-  bytes).
+**No defect:** the size of a variable is the word in front of it minus
+8 as a long, so a word below 8 would give a size of almost 4 GB (#736).
+No NEWTYPE variable has one: the compiler refuses a NEWTYPE of 32768
+bytes or more ("Type too Big"), so memlib's length of a NEWTYPE variable
+(the size + 8) is 8 to 32775, fits in the word and equals the long; only
+an address that is not such a variable (an invalid argument) has a word
+below 8. Exactly 8 (an empty NEWTYPE) gives a size of 0, for which
+RIAmosFuncLib's CopyByte copies nothing (since #492; the original's
+CopyByte copied 2^32 bytes). A NEWTYPE with a field like `a.b[65540]` is
+no counterexample: the compiler takes an array field's count of 65536 or
+more modulo 65536 (compiler issue #1084), so that NEWTYPE is 4 bytes and
+its word says so.
 
 DelListItem on the only node frees nothing and returns 0; that is not a
 defect (the command refuses to delete the last node and reports it).

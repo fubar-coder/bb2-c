@@ -25,14 +25,18 @@
  * Everything is C behind thunks that keep d1/a0/a1 (the original changes
  * d1, d2, a0, a1, InitList also a2); memlib and CopyByte through ALibJsr.
  *
- * BUG(orig), kept:
- *   - The size: a word of less than 8 in front of the variable gives a
- *     size of almost 4 GB (the allocation fails) (#736).  No NEWTYPE
- *     variable has one (memlib's length of a NEWTYPE of at most 32767
- *     bytes is 8 or more), only an address that is not such a variable.
- *     Exactly 8 (an empty NEWTYPE) gives a size of 0, for which CopyByte
- *     copies nothing (since #492; the original's CopyByte copied 2^32
- *     bytes).
+ * No defect: the size is the word in front of the variable minus 8 as a
+ * long, so a word of less than 8 would give almost 4 GB (#736).  No
+ * NEWTYPE variable has one: the compiler refuses a NEWTYPE of 32768
+ * bytes or more ("Type too Big"), so memlib's length (the size + 8) of
+ * a NEWTYPE variable is 8 to 32775 and fits in the word, which equals
+ * the long; only an address that is not such a variable (an invalid
+ * argument) has a word below 8.  Exactly 8 (an empty NEWTYPE) gives a
+ * size of 0, for which CopyByte copies nothing (since #492; the
+ * original's CopyByte copied 2^32 bytes).  A NEWTYPE with a field like
+ * a.b[65540] is no counterexample: the compiler takes an array field's
+ * count of 65536 or more modulo 65536 (compiler issue #1084), so that
+ * NEWTYPE is 4 bytes and its word says so.
  *
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
@@ -281,9 +285,10 @@ static ULONG BLITZ_ROUTINE c_libfinit(void)
  * @brief SizeOfListItem(var): the size of a variable as the list commands copy it.
  *
  * The word in front of the variable minus 8 (getvarsize); also sets the
- * "last size" the other commands use.  BUG(orig) (#736): a word of less
- * than 8 (no NEWTYPE variable has one) gives almost 4 GB; exactly 8 a
- * size of 0, for which CopyByte copies nothing (since #492).
+ * "last size" the other commands use.  No defect (#736, see the file's
+ * head): a word of less than 8 would give almost 4 GB, but no NEWTYPE
+ * variable has one; exactly 8 gives a size of 0, for which CopyByte
+ * copies nothing (since #492).
  * @param var  d0: the variable (BL_VARPTR)
  * @return d0: the size
  */
