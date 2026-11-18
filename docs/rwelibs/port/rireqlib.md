@@ -48,6 +48,11 @@ kind F):
   masks RIReqLib.guide lists). The original's
   `#frq_Flags = #FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB` ORed bit
   numbers (2|4|7 = 7): bits 0-2, extended select and caching (#787).
+* Without req.library (not installed, or init's AllocMem failed, which
+  closes it again) ReqFileRequest returns "" as on cancel (with a title:
+  a3 back at its start) and ReqColour the colour it is given; the
+  original checked no base and called through a6 = 0, a crash (#788).
+  ReqFileLoc returns 0 then, as before.
 
 ## BUG(orig)
 
@@ -57,9 +62,6 @@ kind F):
   cleared path buffer of init, which only the program (through
   ReqFileLoc) writes. Unless req.library copes with the 0 pointers itself,
   the result is always empty (#785).
-* No routine checks the library base: without req.library (or after
-  init's AllocMem failed, which closes it again) ReqFileRequest and
-  ReqColour call through a6 = 0 (#788).
 * ReqFileRequest(title$,flags) changes the flags for good (like
   ReqFlags), and a title stays for later calls without one (#789).
 

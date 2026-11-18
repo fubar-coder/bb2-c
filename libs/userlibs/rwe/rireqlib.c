@@ -25,9 +25,6 @@
  *     fields: the requester gets 0 for them, and ReqFileRequest copies
  *     the cleared path buffer, which nothing but the program (through
  *     ReqFileLoc) writes (#785).
- *   - No routine checks the library base: without req.library (or after
- *     init's AllocMem failed, which closes it again) ReqFileRequest and
- *     ReqColour call through a6 = 0, ReqFileLoc returns 0 (#788).
  *   - ReqFileRequest(title$,flags) changes the flags for good (like
  *     ReqFlags), and a title stays for later calls without one (#789).
  *
@@ -42,6 +39,10 @@
  *     the masks RIReqLib.guide lists); the original ORed the bit numbers
  *     (#FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB = 2|4|7 = 7: bits
  *     0-2, extended select and caching) (#787).
+ *   - Without req.library (not installed, or init's AllocMem failed,
+ *     which closes it again) ReqFileRequest returns "" as on cancel and
+ *     ReqColour the colour it is given; the original checked no base and
+ *     called through a6 = 0 (#788).  ReqFileLoc returns 0, as before.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -216,7 +217,8 @@ static ULONG BLITZ_ROUTINE file_c(void)
  * FileRequester(FrStruct); the path buffer is copied to a3, a3 ends on
  * the terminating 0 (fixed, #784: the original left it behind the 0).
  * BUG(orig): FrStruct has no buffers, so the path is what the program
- * wrote with ReqFileLoc (#785); req.library is not checked (#788).
+ * wrote with ReqFileLoc (#785).  Fixed (#788): without req.library it
+ * returns "" as on cancel; the original called through a6 = 0.
  * @return d0: the length of the path; 0 on cancel (a3 unchanged)
  */
 static ULONG BLITZ_ROUTINE requestfile_c(void)
@@ -225,6 +227,8 @@ static ULONG BLITZ_ROUTINE requestfile_c(void)
     const UBYTE *s;
     UWORD n = 0;
 
+    if (!reqbase)                                       /* fixed (#788) */
+        return 0;
     if (!BLITZ_BASEJSR(reqbase, LVO_FileRequester, r))
         return 0;
     s = frq_PathName;
@@ -276,14 +280,17 @@ static ULONG BLITZ_ROUTINE requestfiletitleflags_c(STRPTR title BL_REG(d0),
  * ReqOutput window.
  *
  * Fixed (#786): the argument is the default colour (DefColour); the
- * original ignored it.  BUG(orig): req.library is not checked (#788).
+ * original ignored it.  Fixed (#788): without req.library it returns
+ * the colour it is given; the original called through a6 = 0.
  * @param colour  d0: the colour the requester starts on
- * @return d0: what ColorRequester returns
+ * @return d0: what ColorRequester returns; without req.library colour
  */
 static ULONG BLITZ_ROUTINE colourreq_c(ULONG colour BL_REG(d0))
 {
     struct bl_regs r = { .a0 = (ULONG)&ecr };
 
+    if (!reqbase)                                       /* fixed (#788) */
+        return colour;
     ecr.defcolour = (UWORD)colour;
     ecr.winptr = routput;
     return BLITZ_BASEJSR(reqbase, LVO_ColorRequester, r);

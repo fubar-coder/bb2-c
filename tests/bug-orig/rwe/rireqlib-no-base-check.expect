@@ -3,6 +3,8 @@ ok
 [run]
 0
 result 0
+title <>
+colour 5
 inject: openlibfail: *
 inject: rc=0
 rc=0
