@@ -186,6 +186,10 @@ kind F):
   it (rexxsyslib DeleteArgString, the sender's duty). The original copied
   it with AllocSt, never freed the copy and never deleted the reply's
   string: two strings lost per call (#546).
+* **RXReturnCode** returns the Result1 of the last reply to
+  RXSendCommand also while no message is current. The original returned
+  0 then, e.g. right after an RXSendCommand that found no message of its
+  own waiting, so the code of a failed command was lost (#542).
 
 ## BUG(orig), kept
 
@@ -193,8 +197,6 @@ kind F):
   `_rxruncommand` overwrites. Both send RXCOMM|RXFF_STRING without
   RXFF_RESULT: the script name is run as a string program, tokenised
   (#544).
-* **RXReturnCode** returns 0 while no message is current, e.g. right
-  after an RXSendCommand that found the list empty (#542).
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

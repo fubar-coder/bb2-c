@@ -30,7 +30,7 @@
  * (freed); RXRunCommand both forms, to a missing port; RXSendCommand
  * both forms (the result over the arguments), with result code 10 and no
  * string, to a missing port, with a message arriving while it waits;
- * RXReturnCode (BUG(orig) #542: 0 without a current message); RXDefaultPort;
+ * RXReturnCode (also without a current message: #542, fixed); RXDefaultPort;
  * RXExecuteScript/RXRunScript (BUG(orig) #544: both RXCOMM|RXFF_STRING; to
  * the responder if there is no REXX port, else to RexxMast with the
  * string program "exit", its reply awaited with RXWaitPort); RXDeletePort with messages queued (replied with

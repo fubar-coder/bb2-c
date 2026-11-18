@@ -109,12 +109,14 @@
  *   - RXSendCommand copies the reply's result string to a3 and deletes
  *     it (DeleteArgString); the original copied it with AllocSt, never
  *     freed the copy and never deleted the reply's string (#546).
+ *   - RXReturnCode returns the code of the last reply to RXSendCommand
+ *     also while no message is current (the original returned 0 then)
+ *     (#542).
  *
  * BUG(orig), kept:
  *   - RXExecuteScript/RXRunScript set their message type, but
  *     _rxruncommand overwrites it: both send RXCOMM|RXFF_STRING (the
  *     script name as a string program), without a result (#544).
- *   - RXReturnCode is 0 while no message is current (#542).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -466,12 +468,13 @@ BLITZ_THUNK(_rxtokenise, rxtokenise_c, "d0-d1/a0-a1");
 
 /**
  * @brief RXReturnCode: the Result1 of the last reply to RXSendCommand.
- * @return d0: the code; BUG(orig) (#542): 0 while no message is current
+ *
+ * Fixed (#542): also while no message is current; the original returned
+ * 0 then, e.g. right after an RXSendCommand that found the list empty.
+ * @return d0: the code
  */
 static ULONG BLITZ_ROUTINE rxreturncode_c(void)
 {
-    if (!v.currentmessage)
-        return 0;
     return v.returncode;
 }
 BLITZ_THUNK(_rxreturncode, rxreturncode_c, "d1/a0-a1");
