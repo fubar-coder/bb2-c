@@ -99,6 +99,11 @@
  *   PlaneOnOff 0 (no plane picked); PlanePick is now (1 << depth) - 1.
  *   The gadget flags 6 (GADGHIMAGE, the others dropped) are documented
  *   (RIToolTypesLib.guide, IconRender) and stay.
+ * Fixed (intended deviation, #1083): ShapeToIcon (both forms) put the
+ *   shape into the icon's own Image (GadgetRender) but kept the icon's
+ *   PlanePick and PlaneOnOff: a shape of another depth than the icon's
+ *   image had planes picked that it does not have, or planes not drawn.
+ *   PlanePick is now (1 << depth) - 1 of the shape, PlaneOnOff 0.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -770,7 +775,9 @@ void BLITZ_ROUTINE c_seticonhit(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
  * @brief ShapeToIcon shape: the icon's image from a shape.
  *
  * The gadget gets the shape's width and height + 1, its GadgetRender
- * Image the shape's width, height, depth and data.
+ * Image the shape's width, height, depth and data, and picks the shape's
+ * planes (PlanePick (1 << depth) - 1, PlaneOnOff 0; fixed #1083: the
+ * original kept the icon's PlanePick and PlaneOnOff).
  * @param shape  a0: the shape object (#ia0|#pd0)
  * Returns nothing (nothing happens without an icon).
  */
@@ -788,6 +795,8 @@ void BLITZ_ROUTINE c_shapetoicon(const struct bb_shape *shape BL_REG(a0))
     im->Height = shape->height;
     im->Depth = shape->depth;
     im->ImageData = (UWORD *)shape->data;
+    im->PlanePick = (UBYTE)((1 << shape->depth) - 1);
+    im->PlaneOnOff = 0;
 }
 
 /**

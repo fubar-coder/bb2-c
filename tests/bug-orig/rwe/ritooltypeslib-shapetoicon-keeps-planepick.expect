@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+A pick 3 onoff 0 depth 2
+B pick 1 onoff 0 depth 1
+C pick 3 onoff 0 depth 2
+rc=0

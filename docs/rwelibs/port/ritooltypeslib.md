@@ -98,6 +98,12 @@ that are not the result.
   bug-orig test `ritooltypeslib-shapetoicon-planepick-0`). The gadget
   flags 6 (GADGHIMAGE, the others dropped) stay: RIToolTypesLib.guide,
   node IconRender, documents them.
+* ShapeToIcon (both forms) gives the icon's own Image (GadgetRender)
+  PlanePick `(1 << depth) - 1` of the shape and PlaneOnOff 0; the
+  original kept the icon's values, so a shape of another depth than the
+  icon's image had planes picked that it does not have (Intuition reads
+  them behind the shape's data) or planes that were not drawn (#1083;
+  bug-orig test `ritooltypeslib-shapetoicon-keeps-planepick`).
 
 **BUG(orig)** (kept):
 
