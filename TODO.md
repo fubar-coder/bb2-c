@@ -982,6 +982,22 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `results libs-update RUN_DIR EXPECTED_DIR --fix KEY#N` by hand on the run the
   target had just made. A fix: an escape for `;` in the variable, or a
   file of keys; with a test of a key with `;` in `libs_capture_target`.
+- [ ] **`libs-update` does not rebuild the RWE userlibs it tests** (found
+  2026-11-18 in round W3, group C3): the target depends on `libs_tests`,
+  `acidlibs` and `host_tools` only (`add_dependencies`,
+  `libs/tests/CMakeLists.txt:157`). The `NAME.obj` of an RWE userlib reaches
+  the run as a path in `-DUSERLIBS` (the global property `RWE_EMULATOR_LIBS`,
+  `libs/userlibs/rwe/CMakeLists.txt:226`); the targets that build those
+  files (`blitz_library`'s `NAME_obj`, part of `ALL`,
+  `cmake/BlitzLibrary.cmake:207`) are no dependency of `libs-update`, and
+  `libs_tests` does not link them. After a change to
+  `libs/userlibs/rwe/NAME.c`, building the target `libs-update` alone runs
+  the old `NAME.obj`: the first run after a change of `rireqlib.c` reported
+  "0 cases changed" and wrote nothing; after a full `cmake --build` it
+  worked. A fix: make `libs-update` depend on the `NAME_obj` targets of the
+  userlibs in `RWE_EMULATOR_LIBS`; with a test in `libs_capture_target`.
+  `libs-capture` passes the same `-DUSERLIBS` but runs the originals, so
+  its result does not depend on the `.obj`.
 
 ## 3 Only once §1 is done
 
