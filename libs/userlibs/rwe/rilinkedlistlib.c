@@ -34,9 +34,8 @@
  *   - The size: a word of less than 8 in front of the variable gives a
  *     size of almost 4 GB (the allocation fails), exactly 8 a size of 0,
  *     which CopyByte takes as 2^32 bytes (#736).
- *   - SetListItem gives the node a new copy without freeing the old one
- *     (#734); GetListItem copies as many bytes as the variable has, not
- *     as the node's data has (#730).
+ *   - GetListItem copies as many bytes as the variable has, not as the
+ *     node's data has (#730).
  *
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
@@ -64,6 +63,9 @@
  *     was the long at offset 8, the pad and the upper word of the data
  *     pointer, so it freed a wrong address, memlib's runtime error
  *     "Unable to Free Memory", and the copy was lost) (#729).
+ *   - SetListItem frees the node's old copy once the new one is
+ *     allocated (the original did not: each call on a node with data
+ *     lost a copy until the end) (#734).
  *
  * DelListItem on the only node frees nothing and returns 0: not a defect,
  * the command refuses to delete the last node and says so with 0.
@@ -358,24 +360,29 @@ BB_BOOL BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
 /**
  * @brief SetListItem list#,var: a new copy of var for the current node.
  *
- * BUG(orig): the old copy is not freed (#734); the current node is not
- * checked (#733).  Fixed (#735): the size field is the new copy's size
- * (the original left it as it was).
+ * BUG(orig): the current node is not checked (#733).  Fixed (#734): the
+ * node's old copy is freed once the new one is allocated (the original
+ * did not free it; without memory the old copy stays).  Fixed (#735):
+ * the size field is the new copy's size (the original left it as it
+ * was).
  * @param list  d0: list# (0-4)
  * @param var   d1: the variable (BL_VARPTR)
  * @return d0: BB_TRUE, BB_FALSE if there is no memory
  */
 BB_BOOL BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 {
-    ULONG mem;
+    ULONG mem, node, old;
 
     listnum = list << 2;
     mem = globalloc(getvarsize(var));
     if (!mem)
         return BB_FALSE;
-    /* BUG(orig): the old copy is not freed (#734) */
-    NODE(TAB(current))->data = mem;
-    NODE(TAB(current))->size = _size;   /* fixed (#735): was not set */
+    node = TAB(current);
+    old = NODE(node)->data;
+    if (old)                            /* fixed (#734): was not freed */
+        globfree(old, NODE(node)->size);
+    NODE(node)->data = mem;
+    NODE(node)->size = _size;           /* fixed (#735): was not set */
     copybyte(myvar, mem, _size);
     return BB_TRUE;
 }

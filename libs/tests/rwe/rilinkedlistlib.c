@@ -28,9 +28,10 @@
  * one: the old one is not freed); AddListItem at the end and in the
  * middle (the prev of the node behind, not set in the original, set in
  * the C build: fixed #727; the size field, the last size in the
- * original, 0 in the C build: fixed #735); SetListItem (the old copy not
- * freed; the size field, unchanged in the original, the copy's in the C
- * build: fixed #735);
+ * original, 0 in the C build: fixed #735); SetListItem (the old copy,
+ * lost in the original, freed in the C build: fixed #734; the size
+ * field, unchanged in the original, the copy's in the C build: fixed
+ * #735);
  * GetListItem (with and without data, a variable larger than the copy);
  * NextListItem/PrevListItem over the list and past its ends;
  * AddLastListItem; AddFirstListItem (the new node in the old first's
@@ -314,7 +315,7 @@ int main(int argc, char **argv)
     call("GetListItem", GETLISTITEM, 0, 6, 0);          /* no data: 0 */
     call("SetListItem", SETLISTITEM, 0, 1, 1);          /* fails */
     call("SetListItem", SETLISTITEM, 0, 1, 0);
-    call("SetListItem", SETLISTITEM, 0, 2, 0);          /* again: old copy lost */
+    call("SetListItem", SETLISTITEM, 0, 2, 0);          /* again: old copy lost in the original (fixed #734) */
     call("AddLastListItem", ADDLASTLISTITEM, 0, -1, 1); /* fails, current = last */
     call("AddLastListItem", ADDLASTLISTITEM, 0, -1, 0);
     call("SetListItem", SETLISTITEM, 0, 3, 0);
