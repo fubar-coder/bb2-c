@@ -7,8 +7,8 @@
 ; (the session ends in a timeout) before ReqColour.
 ; Correct: without req.library ReqFileRequest returns "" (as on cancel,
 ; also with a title: the rest of the expression follows at once;
-; ReqFileLoc returns 0) and ReqColour the colour it is given, the
-; program goes on.
+; ReqFileLoc returns 0) and ReqColour 65535 ($FFFF, what the real
+; ColorRequester returns on cancel), the program goes on.
 ; @fixed #788
 ; @rwe rireqlib
 ; @pass runwrap=@INJECT@|openlibfail=req.library

@@ -4,7 +4,7 @@ ok
 0
 result 0
 title <>
-colour 5
+colour 65535
 inject: openlibfail: *
 inject: rc=0
 rc=0

@@ -1,8 +1,8 @@
 ; rireqlib-real-needs-libs - the control of rireqlib-real-cancel: the
 ; real req.library is staged in CORPUS:libs, but without inject's libs=
 ; the Workbench's LIBS: does not have it, so the library does not open
-; (ReqFileLoc 0) and the requesters return at once: "" and the colour
-; they are given (#788).  Shows that rireqlib-real-cancel gets the
+; (ReqFileLoc 0) and the requesters return at once: "" and 65535, as
+; on cancel (#788).  Shows that rireqlib-real-cancel gets the
 ; library through libs=.
 ; @configs clib
 ; @rwe rireqlib

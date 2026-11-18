@@ -60,9 +60,12 @@ kind F):
   numbers (2|4|7 = 7): bits 0-2, extended select and caching (#787).
 * Without req.library (not installed, or init's AllocMem failed, which
   closes it again) ReqFileRequest returns "" as on cancel (with a title:
-  a3 back at its start) and ReqColour the colour it is given; the
-  original checked no base and called through a6 = 0, a crash (#788).
-  ReqFileLoc returns 0 then, as before.
+  a3 back at its start) and ReqColour 65535 ($FFFF, a word), what
+  req.library's ColorRequester returns on cancel (measured with
+  req.library 2.8), so a program sees the same as when the user cancels
+  (user decision of 2026-11-18, replacing W3 Q5); the original checked
+  no base and called through a6 = 0, a crash (#788). ReqFileLoc returns
+  0 then, as before.
 * init puts the four buffers into `FrStruct`'s title, directory, file and
   path fields, and finit clears them, as the first version `ReqLib.bb`
   had them (its fields pointed to its static buffers; AmiBlitz3's

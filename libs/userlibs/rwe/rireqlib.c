@@ -41,8 +41,9 @@
  *     0-2, extended select and caching) (#787).
  *   - Without req.library (not installed, or init's AllocMem failed,
  *     which closes it again) ReqFileRequest returns "" as on cancel and
- *     ReqColour the colour it is given; the original checked no base and
- *     called through a6 = 0 (#788).  ReqFileLoc returns 0, as before.
+ *     ReqColour 65535 ($FFFF, a word), what req.library's ColorRequester
+ *     returns on cancel; the original checked no base and called through
+ *     a6 = 0 (#788).  ReqFileLoc returns 0, as before.
  *   - init puts the four buffers into FrStruct's title, directory, file
  *     and path fields (finit clears them), as the first version ReqLib.bb
  *     had them: the original stored them only in its own four longs
@@ -344,17 +345,19 @@ static ULONG BLITZ_ROUTINE requestfiletitleflags_c(STRPTR title BL_REG(d0),
  * original ignored it.  Fixed (#1091): DefColour is a long at 0 and the
  * window at 4, as req.library reads them; the original's word at 0 and
  * window at 2 gave the requester another colour and a mangled window
- * (so #786 alone had no effect with the real library).  Fixed (#788): without req.library it returns
- * the colour it is given; the original called through a6 = 0.
+ * (so #786 alone had no effect with the real library).  Fixed (#788):
+ * without req.library it returns $FFFF, what ColorRequester returns on
+ * cancel; the original called through a6 = 0.
  * @param colour  d0: the colour the requester starts on
- * @return d0: what ColorRequester returns; without req.library colour
+ * @return d0: what ColorRequester returns ($FFFF on cancel); without
+ *         req.library $FFFF
  */
 static ULONG BLITZ_ROUTINE colourreq_c(ULONG colour BL_REG(d0))
 {
     struct bl_regs r = { .a0 = (ULONG)&ecr };
 
     if (!reqbase)                                       /* fixed (#788) */
-        return colour;
+        return 0xffff;                                  /* as on cancel */
     ecr.defcolour = colour;                             /* fixed (#786, #1091) */
     ecr.winptr = routput;
     return BLITZ_BASEJSR(reqbase, LVO_ColorRequester, r);

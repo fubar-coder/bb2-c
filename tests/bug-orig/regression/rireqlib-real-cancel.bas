@@ -11,8 +11,7 @@
 ;    without one has the title of the empty title buffer, "", not "RQ"
 ;    (the title the call before had);
 ;  - ReqColour on cancel returns what ColorRequester returns, the word
-;    $FFFF (#788 returns the colour it is given only without the
-;    library);
+;    $FFFF (also what #788 returns without the library);
 ;  - the library is closed again (opencount +0).
 ; @configs clib
 ; @rwe rireqlib
