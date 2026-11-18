@@ -15,7 +15,7 @@
  *   init:  a signal of the calling task (the highest free of 31..17),
  *          the task, dos.library V36 (none without a free signal)
  *   finit: waits for that signal until no thread runs (the last
- *          thread to end sends it), closes dos.library
+ *          thread to end sends it), closes dos.library, frees the signal
  *
  * CreateThread takes 10240 bytes (MEMF_CLEAR) through memlib's
  * globalloc (freed by memlib's finit) and saves d0-d7/a1-a6 as they are
@@ -36,11 +36,14 @@
  *     a second CreateThread before the first thread has started
  *     (CreateNewProc returns before the process runs) gives both
  *     threads the second call's registers, memory and code (#838).
- *   - The signal is never freed, dos.library's base not cleared (#839).
- * Fixed (intended deviation, #837): finit waited only once, so a signal
- * left from an earlier time the count was 0 let it go on while threads
- * ran (their exit code is in this library); it now waits until the count
- * is 0.
+ * Fixed (intended deviations):
+ *   - finit waited only once, so a signal left from an earlier time the
+ *     count was 0 let it go on while threads ran (their exit code is in
+ *     this library); it now waits until the count is 0 (#837).
+ *   - finit never freed the signal and left dos.library's base set: every
+ *     run in the same task (from the editor, or a CLI program in the
+ *     shell's process) took one more signal; it now frees it, also when
+ *     dos.library did not open, and clears the base (#839).
  *
  * No defects: the memory is not checked, but memlib's globalloc never
  * returns 0 (it raises "Out of Memory!"); the name is the string
@@ -91,7 +94,7 @@ struct thstate {
     ULONG *regptr;
     ULONG entrypoint;
     ULONG memory;
-    ULONG thesignal;
+    ULONG thesignal;                    /* -1: none allocated */
     ULONG stringbuffersize;
     volatile ULONG threadcount;
     struct Task *parenttask;
@@ -103,6 +106,7 @@ struct thstate {
 static_assert(sizeof(((struct thstate *)0)->threadtaglist) == 8 * 4);
 
 struct thstate th = {
+    .thesignal = (ULONG)-1,
     .stringbuffersize = STRINGBUFFERSIZE,
     .threadtaglist = { { NP_Entry, (ULONG)startupcode }, { NP_Name, 0 },
                        { NP_ExitCode, (ULONG)cleanup }, { TAG_END, TAG_END } },
@@ -230,6 +234,7 @@ static void BLITZ_ROUTINE c_libinit(void)
         if (sig != -1)
             break;
         if (--n == 16) {
+            th.thesignal = (ULONG)-1;
             th.dbase = 0;
             return;
         }
@@ -240,21 +245,29 @@ static void BLITZ_ROUTINE c_libinit(void)
 }
 
 /**
- * @brief finit: wait for the last thread, close dos.library.
+ * @brief finit: wait for the last thread, close dos.library, free the
+ * signal.
  *
  * Waits for the signal until no thread runs (the last one to end sends
  * it).  Fixed (#837): the original waits only once, so a signal left from
  * an earlier time the count was 0 lets it go on while threads run.
- * BUG(orig) (#839): the signal is never freed, dos.library's base not
- * cleared.
+ * Fixed (#839): the original never frees the signal and leaves the base
+ * set; the signal is freed (cleared first) also when dos.library did not
+ * open.
  */
 static void BLITZ_ROUTINE c_libfinit(void)
 {
-    if (!th.dbase)
-        return;
-    while (th.threadcount)
-        Wait(1UL << th.thesignal);
-    CloseLibrary(th.dbase);
+    if (th.dbase) {
+        while (th.threadcount)
+            Wait(1UL << th.thesignal);
+        CloseLibrary(th.dbase);
+        th.dbase = 0;
+    }
+    if (th.thesignal != (ULONG)-1) {
+        SetSignal(0, 1UL << th.thesignal);
+        FreeSignal((LONG)th.thesignal);
+        th.thesignal = (ULONG)-1;
+    }
 }
 
 /* entries: CreateThread gets the registers of its call (and keeps them

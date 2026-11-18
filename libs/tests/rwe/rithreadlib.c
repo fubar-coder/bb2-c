@@ -28,8 +28,9 @@
  *      pending), thread D, finit: waits until D has ended (0; the
  *      original returns at once while D runs, ActiveThreads still 1,
  *      fixed #837), D ends.
- * The signals init allocates are never freed (BUG(orig), #839); the test frees
- * them.  Not covered: two CreateThread before the first thread runs (the
+ * Whether the signal of each init is still allocated after its finit
+ * (the original never frees it, fixed #839; the test frees what is left).
+ * Not covered: two CreateThread before the first thread runs (the
  * shared registers, BUG(orig) #838: depends on the scheduling).
  */
 #include "rwecmp.h"
@@ -67,6 +68,7 @@ static ULONG libsig[3];                 /* the signal init took, per phase */
 static ULONG active[NREC];
 static int nactive;
 static ULONG pending[4];
+static ULONG allocated[3];              /* the init's signal after finit */
 static char names[4][24];
 
 /* the thread's code: all registers to thread_c */
@@ -216,6 +218,7 @@ static void phase1(void)
     pending[0] = SetSignal(0, 0) & libsig[1];
     release(1);
     call(FINIT, "finit (waits for B)", 0, 0);
+    allocated[1] = testtask->tc_SigAlloc & libsig[1];
     check("rithreadlib: thread B ended", waitgone(names[1]));
     activecount();
     pending[1] = SetSignal(0, 0) & libsig[1];
@@ -232,6 +235,7 @@ static void phase2(void)
     seen[3].selfend = 1;
     create(3, names[3]);
     call(FINIT, "finit (signal pending, D runs)", 0, 0);
+    allocated[2] = testtask->tc_SigAlloc & libsig[2];
     activecount();
     release(3);
     check("rithreadlib: thread D ended", waitgone(names[3]));
@@ -278,9 +282,9 @@ int main(int argc, char **argv)
     phase0();
     phase1();
     phase2();
-    /* the library never frees its signals */
+    /* the signals the library left allocated (the original's) */
     for (i = 0; i < 32; i++)
-        if ((libsig[1] | libsig[2]) & (1UL << i)) {
+        if ((allocated[1] | allocated[2]) & (1UL << i)) {
             SetSignal(0, 1UL << i);
             FreeSignal(i);
         }
@@ -330,6 +334,10 @@ int main(int argc, char **argv)
     BOTH("finit took B's signal", pending[1] == 0);
     BOTH("C ended: signal pending", pending[2] != 0);
     BOTH("D ended: signal", pending[3] != 0);
+    for (k = 1; k < 3; k++) {
+        sprintf(VEC, "phase %d", k);
+        OBS("allocated after finit", allocated[k] != 0);
+    }
 
     ROUT = "thread";
     for (k = 0; k < 4; k++) {

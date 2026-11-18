@@ -16,7 +16,7 @@ Reflective Images 1995. Blitz code as a separate DOS process:
 * init: the highest free signal of 31..17 of the calling task, the task,
   dos.library V36 (none if no signal is free: then `CreateThread` does
   nothing). finit: waits for the signal until no thread runs, closes
-  dos.library.
+  dos.library and frees the signal.
 
 * **Source:** `rwelibsrc/threadlib.bb` (as TED shows it:
   `build/amiga/rwelibsrc/threadlib.bb`).
@@ -54,6 +54,12 @@ kind F):
   threads still ran, in the program's code and with their exit code in
   this library, both freed when the program ended (#837; `libs_emulator`
   cases `[fixed #837]` of `rwe_rithreadlib`).
+* finit frees the signal (cleared first), also when dos.library V36 did
+  not open, and clears dos.library's base. The original never freed it:
+  every run in the same task - from the editor, or a CLI program, which
+  runs in the shell's process - took one more of the signals 31..17;
+  after 15 runs `CreateThread` did nothing (#839; `libs_emulator` cases
+  `[fixed #839]` of `rwe_rithreadlib`).
 
 ## BUG(orig), kept
 
@@ -61,7 +67,6 @@ kind F):
   second `CreateThread` before the first thread has started
   (`CreateNewProc` returns before the process runs) gives both threads
   the second call's registers, memory and code (#838).
-* The signal is never freed and dos.library's base not cleared (#839).
 
 The memory is not checked; that is no defect: memlib's `globalloc`
 never returns 0 (it raises "Out of Memory!").
@@ -97,8 +102,9 @@ Observed: the registers of every call (the kept ones stated per
 routine, `KEEPS`),
 `ActiveThreads`, the signal of each init and whether it is pending, the
 thread's registers (d1–d7/a1/a5/a6 the same, a0 = the code, a2/a3/a4 =
-memory + 1024/3072/7168, the memory cleared) and its name. The test
-frees the signals the library leaves allocated.
+memory + 1024/3072/7168, the memory cleared) and its name, and whether
+the signal of each init is still allocated after its finit (the test
+frees what the original leaves).
 
 Not covered: two `CreateThread` before the first thread runs (the
 shared variables, BUG(orig) #838): its outcome depends on the scheduling.
