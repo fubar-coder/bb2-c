@@ -46,9 +46,7 @@
  *       the last number, `*`, `/` or `^` left), so `{d0}` mostly fails
  *       with error 5; if it passes, the `}` is then read as a number 0
  *       (#637).
- *     - `-$10`, `-%1`: the sign is taken first, then `$`/`%` is read as
- *       a decimal digit (#643).  Digits are not checked (`12x` = 1, 2,
- *       'x'-'0') (#634).
+ *     - Digits are not checked (`12x` = 1, 2, 'x'-'0') (#634).
  *     - The indirection reads a long at any address (an odd one is an
  *       address error on the 68000) (#636).
  * Fixed (intended deviations, docs/libs/deviations.md):
@@ -63,6 +61,9 @@
  *   - PFEvaluate's `<` is a signed "less than" (the manual: "Test for
  *     less than"), the mirror image of `>`; the original's was unsigned
  *     "lower or same" (SLS) (#638).
+ *   - PFEvaluate takes the sign before `$` and `%`: `-$10` is -16, `-%1`
+ *     -1; the original tested `$`/`%` first and read them behind a `-` as
+ *     decimal digits (-24410, -2451) (#643).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -593,13 +594,13 @@ evall:
         indirect = 0xff;
         s->pos++;
     }
+    negative = *s->pos == '-' ? 0xff : 0;       /* fixed (#643): the sign first */
+    if (negative)
+        s->pos++;
     if (*s->pos == '$')
         goto evalhex;
     if (*s->pos == '%')
         goto evalbin;
-    negative = *s->pos == '-' ? 0xff : 0;
-    if (negative)
-        s->pos++;
     if (*s->pos == 'a') {
         regoff = (UBYTE)(s->pos[1] - '0' + 8);
         s->pos += 2;
@@ -644,7 +645,6 @@ endofnum:
     goto evloop;
 
 evalhex:
-    negative = 0;
     s->acc = 0;
     s->aux = 0;
     s->pos++;
@@ -664,7 +664,6 @@ evalhex:
     goto endofnum;
 
 evalbin:
-    negative = 0;
     s->acc = 0;
     s->aux = 0;
     s->pos++;
@@ -692,10 +691,10 @@ evalbin:
  * value", 5 "No close bracket on indirect", 6 "Invalid size for
  * indirection".  An empty string returns 0, error 0; a string of spaces
  * only 0, error 4 (fixed, #644).
- * BUG(orig): `*` overflows wrongly (#639); `^` (#641); only the last value counts
- * (#635); register operands (#642), the `}` check after a register
- * (#637), `-$`/`-%` (#643), unchecked digits (#634), indirection at any
- * address (#636).
+ * BUG(orig): `*` overflows wrongly (#639); `^` (#641); only the last
+ * value counts (#635); register operands (#642), the `}` check after a
+ * register (#637), unchecked digits (#634), indirection at any address
+ * (#636).
  * @param str        d0: the postfix string
  * @param caller_d1  d1: the caller's d1 (the stale d1 of a register in {})
  * @return d0: the value, 0 on an error

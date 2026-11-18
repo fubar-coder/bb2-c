@@ -1344,8 +1344,10 @@ PFEvaluate|d0|"(1 2 +)"|1	$000000F9
 PFEvaluate|d0|"+"|1	$00000000
 PFEvaluate|d0|"- 3"|1	$00000000
 PFEvaluate|d0|"-"|1	$00000000
-PFEvaluate|d0|"-$10"|1	$FFFFA0A6
-PFEvaluate|d0|"-%1"|1	$FFFFF66D
+PFEvaluate|d0|"-$10"|1 [orig]	$FFFFA0A6
+PFEvaluate|d0|"-$10"|1 [fixed #643]	$FFFFFFF0
+PFEvaluate|d0|"-%1"|1 [orig]	$FFFFF66D
+PFEvaluate|d0|"-%1"|1 [fixed #643]	$FFFFFFFF
 PFEvaluate|d0|"-1 1 <"|1 [orig]	$00000000
 PFEvaluate|d0|"-1 1 <"|1 [fixed #638]	$FFFFFFFF
 PFEvaluate|d0|"-1 1 >"|1	$00000000

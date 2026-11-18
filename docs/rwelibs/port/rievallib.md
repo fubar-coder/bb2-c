@@ -137,6 +137,9 @@ kind F):
 * PFEvaluate's `<` is a signed "less than", as the manual says ("Test
   for less than") and the mirror image of `>`; the original's was
   unsigned "lower or same" (SLS): `2 2 <` true, `-1 1 <` false (#638).
+* PFEvaluate takes the sign before `$` and `%`: `-$10` is -16, `-%1` -1;
+  the original tested `$`/`%` first and read them behind a `-` as
+  decimal digits (-24410, -2451) (#643).
 
 ## BUG(orig), kept
 
@@ -156,7 +159,6 @@ In the C file's head:
   (#642).
 * PFEvaluate: `{register}` checks a stale d1, and the `}` behind it is
   then a value 0 (#637).
-* PFEvaluate: `-$10`/`-%1` read `$`/`%` as a digit (#643).
 * PFEvaluate: digits are not checked (#634).
 * PFEvaluate: the indirection reads any address (an odd one is an
   address error, #636).
