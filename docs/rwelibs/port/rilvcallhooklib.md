@@ -41,9 +41,10 @@ reentrant, as the original).
 All C behind `BLITZ_THUNK`s. The hook's thunk keeps d1/a0/a1, the C
 code d2–d7/a2–a6 (the original keeps a2–a6/d2–d7; `TextFit` takes its
 constraining extent in a3, which the libraries' safe form of the NDK
-macro keeps, `cmake/ndk-calls.cmake`). The graphics calls get the
-registers the original passes where their upper words can matter
-(`TextFit`'s width with `$FFFF` above, its length as a long). The
+macro keeps, `cmake/ndk-calls.cmake`). The NDK's inline passes
+`TextFit`'s length, width and height as words, zero-extended (the
+original: the length a long with upper word 0, the width with `$FFFF`
+above: a silent correction, below). The
 original's unused load of `lvdm_DrawInfo->dri_Pens` is left out.
 
 ## Fixed
@@ -82,10 +83,19 @@ kind F):
   the `libs_emulator` scenario has no text pointer 0, it would read
   address 0 in the original's run).
 
+## Silent correction (kind K)
+
+* `TextFit` gets the constraining width as a word (upper word 0): the
+  NDK's inline casts the argument to `UWORD`. The original's
+  `MOVEQ #-3,d2` with `ADD.w`/`SUB.w` leaves `$FFFF` in the upper word.
+  graphics.library takes the word, so it is not observable (#741,
+  `docs/libs/deviations.md` 3a, kind K). The `libs_emulator` scenario
+  observes the low word of d2 that `TextFit` gets (equal in both sets);
+  the expected data have no form for a known difference without a fix,
+  so the upper word is not a case.
+
 ## BUG(orig), kept
 
-* `TextFit` gets the constraining width with `$FFFF` in the upper word
-  (`MOVEQ #-3,d2` and word arithmetic) (#741).
 * The tree line pattern is written to `rp_LinePtrn` without the flags and
   count `SetDrPt` sets (#738).
 
@@ -108,7 +118,9 @@ cut, a BitMap pointer 0), the last field cut, indents of 1–60 pixels or
 none, the next node last or not and its words (the indent and the one
 the original reads instead, #739) random, the
 caller's d7 with upper words 0, `$FFFF`, `$8001`, `$0001`, `$8000`.
-A message other than `LV_DRAW` (nothing drawn), init/finit. Layouts that
+A message other than `LV_DRAW` (nothing drawn); one item of one text
+field with graphics' `TextFit` patched (`SetFunction`, a stub that
+records d0, d2 and d3 and goes on to `TextFit`); init/finit. Layouts that
 would give graphics.library an empty rectangle (a RastPort without a
 layer is not clipped) are skipped: items of 10 lines and more, BitMaps
 lower than the item, no text or BitMap ending exactly at the field's

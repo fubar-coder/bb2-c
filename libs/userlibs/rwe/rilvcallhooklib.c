@@ -32,8 +32,6 @@
  * as the original's).  No assembler besides the thunks.
  *
  * BUG(orig):
- *   - TextFit gets the width with $FFFF in the upper word (MOVEQ #-3,d2
- *     with ADD.w/SUB.w) (#741).
  *   - The tree line pattern is written to rp_LinePtrn without the flags
  *     and count SetDrPt sets (#738).
  *
@@ -59,6 +57,12 @@
  *   - A text pointer 0 in a text field is an empty text (the field is
  *     filled in bpen), as a BitMap pointer 0 draws no BitMap.  The
  *     original read the string at address 0 (#742).
+ *
+ * Silent correction (kind K, docs/libs/deviations.md 3a; #741):
+ *   - TextFit gets the constraining width as a word (upper word 0): the
+ *     NDK's inline casts it to UWORD.  The original's MOVEQ #-3,d2 with
+ *     ADD.w/SUB.w leaves $FFFF in the upper word; graphics.library takes
+ *     the word, so it is not observable.
  *
  * RetrieveCallHook must be called before the hook is used (the graphics
  * base is 0 before): documented usage, not a defect.
@@ -217,8 +221,10 @@ static void displayfield(struct Library *gfx)
         const char *s = text ? (const char *)text : "";
         ULONG n = 0, w, h;
 
-        /* the constraining width: MOVEQ #-3,d2 + word arithmetic */
-        w = 0xffff0000UL | (UWORD)(-3 + ob.MaxX - ob.MinX);    /* BUG(orig) (#741) */
+        /* the constraining width, a word (the NDK's inline casts it to
+           UWORD); the original's MOVEQ #-3,d2 + word arithmetic leaves
+           $FFFF in the upper word: kind K (#741) */
+        w = (UWORD)(-3 + ob.MaxX - ob.MinX);
         h = (UWORD)(1 + ob.MaxY - ob.MinY);
         while (s[n])
             n++;
@@ -329,11 +335,11 @@ static void drawdisabled(struct Library *gfx, const struct Rectangle *b, struct 
  * or the other states), the indent cleared with dotted tree lines, the
  * fields drawn left to right (the last one cut at the right edge), a
  * disabled item ghosted in apen.  Not reentrant (static state, as the
- * original's).  BUG(orig): TextFit's width has $FFFF in the upper word
- * (#741); the line pattern without SetDrPt (#738).  Fixed: the tree line
- * count is a word (#737); the last tree line tests the next node's
- * indent at the indent offset (#739); a right aligned BitMap is placed
- * in its field (#740); a text pointer 0 is an empty text (#742).
+ * original's).  BUG(orig): the line pattern without SetDrPt (#738).
+ * Fixed: the tree line count is a word (#737); the last tree line tests
+ * the next node's indent at the indent offset (#739); a right aligned
+ * BitMap is placed in its field (#740); a text pointer 0 is an empty
+ * text (#742).  TextFit's width is a word (kind K, #741).
  * @param hook      a0: the Hook, h_Data = the field table
  * @param msg       a1: the LVDrawMsg
  * @param node      a2: the node

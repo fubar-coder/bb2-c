@@ -21,10 +21,16 @@
  * the right edge, with and without an indent of 1..60 pixels (tree lines
  * every 16 pixels, the short last line by the next node: the end of the
  * list or its indent, the words of the next node random: the original
- * reads its "indent" at the first field width, #739 fixed), and the caller's d7 with upper words 0, $FFFF, $8001, $0001 and
- * $8000 (the original, #737 fixed: a negative d7 draws no tree lines and
- * leaves the line pattern $AAAA).  Also a message other than LV_DRAW
- * (LVCB_UNKNOWN, nothing drawn).
+ * reads its "indent" at the first field width, #739 fixed), and the
+ * caller's d7 with upper words 0, $FFFF, $8001, $0001 and $8000 (the
+ * original, #737 fixed: a negative d7 draws no tree lines and leaves the
+ * line pattern $AAAA).  Also a message other than LV_DRAW (LVCB_UNKNOWN,
+ * nothing drawn), and one item of one text field with graphics'
+ * TextFit patched (SetFunction) by a stub that records d0, d2 and d3
+ * (the length, the constraining width and height) and goes on to
+ * TextFit; of d2 only the low word is a case (the original passes $FFFF
+ * in the upper word, the C build 0: kind K, #741, not observable with
+ * graphics.library).
  *
  * Layouts in which graphics.library would get an empty rectangle (a
  * RastPort without a layer is not clipped) are skipped: item heights of
@@ -139,6 +145,58 @@ static int pick(int lo, int hi)
 static int textw(const char *s)
 {
     return TextLength(&rp, (CONST_STRPTR)s, strlen(s));
+}
+
+/* graphics' TextFit (-696) patched: the stub keeps d0, d2 and d3 of the call
+   and jumps to the original with every register as it was */
+volatile ULONG tf_d0, tf_d2, tf_d3;   /* written by the stub */
+APTR tf_old;
+void tf_stub(void);
+__asm__(
+"   .text\n"
+"   .even\n"
+"_tf_stub:\n"
+"   move.l  d2,_tf_d2\n"
+"   move.l  d3,_tf_d3\n"
+"   move.l  d0,_tf_d0\n"
+"   move.l  _tf_old,-(sp)\n"
+"   rts\n");
+
+/* an item of one text field, 100 pixels wide, with TextFit patched:
+   the length, width and height the hook passes */
+static void textfit_regs(void)
+{
+    static const struct Rectangle b = { 230, 5, 400, 16 };
+    UWORD *e = fields + 7;
+
+    memset(nodes, 0, sizeof nodes);
+    *(UBYTE **)nodes[0] = nodes[1];
+    coltab[0] = 1;
+    coltab[1] = 0;
+    coltab[2] = 2;
+    coltab[3] = 3;
+    *(UWORD **)(nodes[0] + N_COL) = coltab;
+    *(const char **)(nodes[0] + N_TEXT1) = strs[1];
+    memset(fields, 0, sizeof fields);
+    fields[1] = N_COL;
+    e[0] = 100;
+    e[1] = N_TEXT1;
+    hook.h_Data = fields;
+    strcpy(VEC, "TextFit width");
+    tf_d0 = tf_d2 = tf_d3 = 0x12345678;
+    Forbid();
+    tf_old = SetFunction(lvgfx, -696, (APTR)tf_stub);
+    CacheClearU();
+    Permit();
+    reset(1, 0);
+    callhook(LV_DRAW, LVR_NORMAL, &b, 0);
+    Forbid();
+    SetFunction(lvgfx, -696, tf_old);
+    CacheClearU();
+    Permit();
+    OBS("TextFit d2 word", tf_d2 & 0xffff);       /* upper word: kind K (#741) */
+    OBS("TextFit d3", tf_d3);
+    OBS("TextFit d0", tf_d0);
 }
 
 /* one random item; 0 if its layout is one of those skipped */
@@ -277,6 +335,7 @@ int main(int argc, char **argv)
     for (i = 0, n = 0; n < 150 && i < 2000; i++)
         n += item(i);
     check("enough items", n == 150);
+    textfit_regs();
 
     strcpy(VEC, "init/finit");
     ROUT = "init";
