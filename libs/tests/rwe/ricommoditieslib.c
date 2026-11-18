@@ -13,16 +13,22 @@
  *
  * The scenario: every command before MakeCommodity (no broker); the
  * inline constants Cx... (copied like the compiler does); MakeCommodity
+ * while a broker of the test has the name (fails at CxBroker, the port is
+ * made: SetCxStatus with a port and no broker); MakeCommodity
  * and a second one with the same name (fails, the first broker gets
  * CXCMD_UNIQUE: NBU_NOTIFY); the six other Exchange commands through
  * commodities' BrokerCommand, each fetched with CommodityEvent and looked
  * at with HotKeyHit, ExchangeMessage and all Exchange...; hotkeys on the
  * input event class "timer" (input.device sends timer events all the
  * time, so messages come without input): two slots, one replaced, one
- * with a description ParseIX does not understand; WaitCommodity with two
- * messages queued; SetCxStatus off/on/other.  The messages the library
- * takes from its port are replied here (the library never does), and the
- * port is drained before finit.
+ * with a description ParseIX does not understand, one whose sender cannot
+ * be made (CreateCxObj(CX_SEND) made to fail); WaitCommodity with two
+ * messages queued; SetCxStatus off/on/other; finit with a message of the
+ * test queued.  The commodities calls of SetHotKey and finit, finit's
+ * CloseLibrary and the library's ReplyMsg calls are noted through
+ * patches (below).  The test does not reply the messages the library
+ * takes from its port (whether the library replies them is observed); it
+ * drains (and replies) what stays queued.
  *
  * Not covered: WaitCommodity on an empty port (with the CCR exec leaves
  * it waits for the next message - with no hotkey forever), real keys
@@ -66,12 +72,141 @@ static void rec(const char *what, ULONG v)
     nv++;
 }
 
+/* ------------------------------------------------------------ patches */
+
+/* While the scenario runs, commodities' CreateCxObj, DeleteCxObj,
+   DeleteCxObjAll, RemoveCxObj and exec's ReplyMsg and CloseLibrary are
+   patched (SetFunction).  A stub saves d0-d1/a0-a1, calls hk_note(kind, regs)
+   and then the old function with the registers it was called with, so
+   the library sees what the real function leaves (a stub of commodities
+   also returns through itself, to count nesting: a call that a patched
+   call makes is not noted).  hk_note notes a call only while a routine
+   of the library runs (in_lib), from this task in user mode (its stack;
+   an interrupt runs on the supervisor stack).  A nonzero result of
+   hk_note makes the call fail (d0 = 0): CreateCxObj(CX_SEND) while
+   fail_send is set. */
+enum { HK_CREATE, HK_DELETE, HK_DELETEALL, HK_REMOVE, HK_REPLY, HK_CLOSE, HK_N };
+static const WORD hk_lvo[HK_N] = { -30, -48, -54, -102, -378, -414 };
+APTR hk_old[HK_N];
+ULONG hk_depth;
+extern char hk_create[], hk_delete[], hk_deleteall[], hk_remove[], hk_reply[], hk_close[];
+static char *const hk_stub[HK_N] = { hk_create, hk_delete, hk_deleteall, hk_remove, hk_reply,
+                                     hk_close };
+
+#define HK_CX(name, n)                                                      \
+    "   .globl  _" #name "\n_" #name ":\n"                                  \
+    "   movem.l d0-d1/a0-a1,-(sp)\n"                                        \
+    "   move.l  sp,-(sp)\n"                                                 \
+    "   move.l  #" #n ",-(sp)\n"                                            \
+    "   jsr     _hk_note\n"                                                 \
+    "   addq.l  #8,sp\n"                                                    \
+    "   tst.l   d0\n"                                                       \
+    "   movem.l (sp)+,d0-d1/a0-a1\n"    /* keeps the CCR */                 \
+    "   bne.s   1f\n"                                                       \
+    "   addq.l  #1,_hk_depth\n"                                             \
+    "   pea     2f\n"                                                       \
+    "   move.l  _hk_old+4*" #n ",-(sp)\n"                                   \
+    "   rts\n"                                                              \
+    "2: subq.l  #1,_hk_depth\n"                                             \
+    "   rts\n"                                                              \
+    "1: moveq   #0,d0\n"                                                    \
+    "   rts\n"
+/* an exec function: noted, then a jump to the old one */
+#define HK_EXEC(name, n)                                                    \
+    "   .globl  _" #name "\n_" #name ":\n"                                  \
+    "   movem.l d0-d1/a0-a1,-(sp)\n"                                        \
+    "   move.l  sp,-(sp)\n"                                                 \
+    "   move.l  #" #n ",-(sp)\n"                                            \
+    "   jsr     _hk_note\n"                                                 \
+    "   addq.l  #8,sp\n"                                                    \
+    "   movem.l (sp)+,d0-d1/a0-a1\n"                                        \
+    "   move.l  _hk_old+4*" #n ",-(sp)\n"                                   \
+    "   rts\n"
+__asm__("   .text\n   .even\n"
+        HK_CX(hk_create, 0) HK_CX(hk_delete, 1) HK_CX(hk_deleteall, 2) HK_CX(hk_remove, 3)
+        HK_EXEC(hk_reply, 4) HK_EXEC(hk_close, 5));
+
+static volatile int in_lib, fail_send;
+static struct Task *me;
+static ULONG hk_count[HK_N];            /* the calls noted, per kind */
+static ULONG hk_closed;                 /* CloseLibrary(commodities) calls
+                                           before the last DeleteCxObj or
+                                           DeleteCxObjAll */
+#define MAXREPLIED 32
+static struct Message *replied[MAXREPLIED];
+static int nreplied;
+
+int hk_note(int kind, ULONG *regs);
+int hk_note(int kind, ULONG *regs)
+{
+    if (!in_lib || SysBase->ThisTask != me
+        || (APTR)regs < me->tc_SPLower || (APTR)regs >= me->tc_SPUpper)
+        return 0;
+    if (kind < HK_REPLY && hk_depth)
+        return 0;
+    if (kind == HK_CLOSE && regs[3] != (ULONG)CxBase)
+        return 0;
+    hk_count[kind]++;
+    switch (kind) {
+    case HK_CREATE:                     /* d0 = the type */
+        return fail_send && regs[0] == CX_SEND;
+    case HK_DELETE:
+    case HK_DELETEALL:
+        hk_closed = hk_count[HK_CLOSE];
+        break;
+    case HK_REPLY:                      /* a1 = the message */
+        if (nreplied < MAXREPLIED)
+            replied[nreplied++] = (struct Message *)regs[3];
+        break;
+    }
+    return 0;
+}
+
+static void patch(int on)
+{
+    int i;
+
+    Forbid();
+    for (i = 0; i < HK_N; i++) {
+        struct Library *base = i >= HK_REPLY ? (struct Library *)SysBase : CxBase;
+        if (on)
+            hk_old[i] = SetFunction(base, hk_lvo[i], (APTR)hk_stub[i]);
+        else
+            SetFunction(base, hk_lvo[i], hk_old[i]);
+    }
+    CacheClearU();
+    Permit();
+}
+
+/* forget the calls noted so far */
+static void hk_clear(void)
+{
+    memset(hk_count, 0, sizeof hk_count);
+    hk_closed = 0;
+    nreplied = 0;
+}
+
+/* whether the library replied m since hk_clear */
+static ULONG was_replied(struct Message *m)
+{
+    int i;
+
+    if (!m)
+        return 0;
+    for (i = 0; i < nreplied; i++)
+        if (replied[i] == m)
+            return 1;
+    return 0;
+}
+
 /* the call of fn as routine `name` with the registers r: its kept case */
 static void call_kept(const char *name, APTR fn, struct regs *r)
 {
     struct regs in = *r;
 
+    in_lib = 1;
     callregs(fn, r, 0, 0);
+    in_lib = 0;
     ROUT = name;
     obs_kept(&in, r);
     ROUT = "";
@@ -174,7 +309,7 @@ static void drain(struct MsgPort *p)
 }
 
 static struct MsgPort *port;
-static struct Message *removed;   /* taken from the port by the library */
+static struct Message *held;      /* the message the library took last */
 
 static struct Message *head(void)
 {
@@ -188,12 +323,11 @@ static struct Message *head(void)
     return m;
 }
 
-/* reply what the library took from the port (after it is done with it) */
-static void settle(void)
+/* after a call that fetches a message: whether the library replied the
+   one it took before (the test does not reply what the library takes) */
+static void replied_before(const char *what)
 {
-    if (removed)
-        ReplyMsg(removed);
-    removed = NULL;
+    rec(what, was_replied(held));
 }
 
 /* all evaluating functions on the current message */
@@ -210,14 +344,34 @@ static void look(void)
 /* CommodityEvent and a look at the message */
 static void event_round(void)
 {
-    struct Message *before = head();
+    struct Message *before = head(), *removed = NULL;
 
+    hk_clear();
     REC0(E_EVENT);
+    replied_before("CommodityEvent replied the message taken before");
     if (before && !queued(port, before))
         removed = before;
     rec("event took the head", removed == before);
+    held = removed;
     look();
-    settle();
+}
+
+/* SetHotKey n,desc and the commodities calls it made */
+static void hotkey(const char *what, LONG n, const char *desc)
+{
+    static const char *kname[] = { "CreateCxObj", "DeleteCxObj", "DeleteCxObjAll",
+                                   "RemoveCxObj" };
+    char t[80];
+    int k;
+
+    hk_clear();
+    rec(what, cx(E_HOTKEY, 2, (ULONG)n, (ULONG)desc, 0));
+    for (k = HK_CREATE; k <= HK_REMOVE; k++) {
+        strcpy(t, what);
+        strcat(t, ": ");
+        strcat(t, kname[k]);
+        rec(t, hk_count[k]);
+    }
 }
 
 /* every message that is queued, one by one */
@@ -244,7 +398,8 @@ static void scenario(void)
 {
     static const LONG cmds[] = { CXCMD_DISABLE, CXCMD_ENABLE, CXCMD_APPEAR,
                                  CXCMD_DISAPPEAR, CXCMD_KILL, CXCMD_LIST_CHG };
-    struct Message *before;
+    struct Message *before, own;
+    struct MsgPort *rp = NULL;
     unsigned i;
     int e;
 
@@ -265,6 +420,24 @@ static void scenario(void)
     for (e = E_CXDISABLE; e <= E_CXUNIQUE; e++)
         inline_call(e);
 
+    /* the name taken by a broker of the test: MakeCommodity makes its
+       port and fails at CxBroker (NBU_UNIQUE, no notification), so there
+       is a port without a broker; the next MakeCommodity keeps the port */
+    {
+        struct NewBroker nb = { .nb_Version = NB_VERSION, .nb_Name = (STRPTR)bname,
+                                .nb_Title = (STRPTR)"test", .nb_Descr = (STRPTR)"name taken",
+                                .nb_Unique = NBU_UNIQUE };
+        CxObj *own = CxBroker(&nb, NULL);
+
+        rec("own broker", own != NULL);
+        rec("MakeCommodity (name taken)",
+            cx(E_MAKE, 3, (ULONG)bname, (ULONG)btitle, (ULONG)bdescr));
+        rec("CommodityMsgPort != 0 (name taken)", CX0(E_PORT) != 0);
+        rec("SetCxStatus -1 (port, no broker)", cx(E_STATUS, 1, (ULONG)-1, 0, 0));
+        rec("SetCxStatus 0 (port, no broker)", cx(E_STATUS, 1, 0, 0, 0));
+        DeleteCxObj(own);
+    }
+
     /* the broker */
     rec("MakeCommodity", cx(E_MAKE, 3, (ULONG)bname, (ULONG)btitle, (ULONG)bdescr));
     port = (struct MsgPort *)CX0(E_PORT);
@@ -284,19 +457,22 @@ static void scenario(void)
         all_events();
     }
     /* nothing queued: msg = 0, the ids stay */
+    hk_clear();
     REC0(E_EVENT);
+    replied_before("CommodityEvent (nothing queued) replied the message taken before");
+    held = NULL;
     look();
 
     /* hotkeys */
-    rec("SetHotKey 0", cx(E_HOTKEY, 2, 0, (ULONG)timer, 0));
+    hotkey("SetHotKey 0", 0, timer);
     rec("timer message", waitmsgs(port, 1));
-    rec("SetHotKey 3", cx(E_HOTKEY, 2, 3, (ULONG)timer, 0));
+    hotkey("SetHotKey 3", 3, timer);
     drain(port);
     rec("two timer messages", waitmsgs(port, 2));
     event_round();                     /* id 0 */
     event_round();                     /* id 3 */
-    rec("SetHotKey 0 again", cx(E_HOTKEY, 2, 0, (ULONG)timer, 0));
-    rec("SetHotKey 5 nonsense", cx(E_HOTKEY, 2, 5, (ULONG)nonsense, 0));
+    hotkey("SetHotKey 0 again", 0, timer);
+    hotkey("SetHotKey 5 nonsense", 5, nonsense);
     drain(port);
     rec("two timer messages again", waitmsgs(port, 2));
     event_round();                     /* id 3: slot 0 is behind it now */
@@ -306,12 +482,12 @@ static void scenario(void)
     drain(port);
     if (waitmsgs(port, 2)) {
         before = head();
+        hk_clear();
         REC0(E_WAIT);
+        replied_before("WaitCommodity replied the message taken before");
         rec("WaitCommodity took the head", !queued(port, before));
-        if (!queued(port, before))
-            removed = before;
+        held = !queued(port, before) ? before : NULL;
         look();
-        settle();
     } else {
         rec("WaitCommodity: no messages", 0);
     }
@@ -330,8 +506,35 @@ static void scenario(void)
     rec("SetCxStatus 0 again", cx(E_STATUS, 1, 0, 0, 0));
     Delay(5);
     drain(port);
+
+    /* the sender of a hotkey cannot be made (CreateCxObj(CX_SEND) fails;
+       the broker stays off: SetHotKey activates it only on success) */
+    fail_send = 1;
+    hotkey("SetHotKey 6 (no sender)", 6, timer);
+    fail_send = 0;
+
+    /* a message of the test queued at finit (the broker is off, nothing
+       else comes): it comes back to the test's reply port if finit
+       replies it */
+    rp = CreateMsgPort();
+    if (rp) {
+        memset(&own, 0, sizeof own);
+        own.mn_ReplyPort = rp;
+        own.mn_Length = sizeof own;
+        PutMsg(port, &own);
+    }
 out:
+    hk_clear();
     CX0(E_FINIT);
+    rec("finit: DeleteCxObj", hk_count[HK_DELETE]);
+    rec("finit: DeleteCxObjAll", hk_count[HK_DELETEALL]);
+    rec("finit: CloseLibrary", hk_count[HK_CLOSE]);
+    rec("finit: closed before the delete", hk_closed);
+    rec("finit replied the message taken last", was_replied(held));
+    if (rp) {
+        rec("finit replied a queued message", GetMsg(rp) == &own);
+        DeleteMsgPort(rp);
+    }
     rec("broker gone", brokercommand(bname, CXCMD_ENABLE) != 0);
 }
 
@@ -376,7 +579,11 @@ int main(int argc, char **argv)
         check("commodities.library V37", FALSE);
         return 20;
     }
+    me = FindTask(NULL);
+    patch(1);
     scenario();
+    patch(0);
+    Delay(2);                           /* no task left in a stub */
     CloseLibrary(CxBase);
 
     OBS("results", nv);

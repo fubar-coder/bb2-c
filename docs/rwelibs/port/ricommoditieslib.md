@@ -76,11 +76,14 @@ the original) and runs the scenario once (init … finit); every result is
 observed as a case, and every call writes the kept registers of its
 routine (stated per routine, `KEEPS`), compared with the expected data
 `libs/tests/expected/rwe_ricommoditieslib.txt` recorded from the
-original (399 checks). Only values that do not depend on addresses are
+original (450 cases). Only values that do not depend on addresses are
 observed (results, "port != 0", message counts):
 
 * every command before `MakeCommodity` (no broker, no port);
 * the inline constants, copied with an RTS as the compiler does;
+* `MakeCommodity` while a broker of the test has the name (fails at
+  `CxBroker`, the port is made) and `SetCxStatus -1`/`0` with that port
+  and no broker;
 * `MakeCommodity`; a second one with the same name (fails,
   `CXCMD_UNIQUE` to the first broker through `NBU_NOTIFY`);
 * `CXCMD_ENABLE`, `DISABLE`, `APPEAR`, `DISAPPEAR`, `KILL`, `LIST_CHG`
@@ -91,14 +94,24 @@ observed (results, "port != 0", message counts):
 * hotkeys on the input event class `timer` (input.device sends timer
   events continuously, so messages come without input): slots 0 and 3
   (ids in the order of the broker's list), slot 0 replaced (now behind
-  3), slot 5 with a description ParseIX does not understand;
+  3), slot 5 with a description ParseIX does not understand, slot 6 whose
+  sender cannot be made (`CreateCxObj(CX_SEND)` made to fail);
 * `WaitCommodity` with two messages queued (takes the first, returns the
   second);
 * `SetCxStatus` 0 (no messages any more), 5 (nothing), -1 (messages
-  again).
+  again);
+* finit with a message of the test queued (does it come back to the
+  test's reply port).
 
-The test replies the messages the library takes from its port and drains
-the port before finit. The broker name must be shorter than 24
+While the scenario runs, commodities' `CreateCxObj`, `DeleteCxObj`,
+`DeleteCxObjAll`, `RemoveCxObj` and exec's `ReplyMsg` and `CloseLibrary`
+are patched (SetFunction): a stub notes the calls the library makes (per
+`SetHotKey` and in finit: the commodities calls, whether commodities was
+closed before the delete; after every fetch: whether the library replied
+the message it took before) and then calls the real function with the
+registers it got. The test does not reply the messages the library takes
+from its port; it drains (and replies) what stays queued. The broker
+name must be shorter than 24
 characters (commodities keeps 23 and compares them with the full name).
 
 **Not covered:** `WaitCommodity` on an empty port (waits, without a

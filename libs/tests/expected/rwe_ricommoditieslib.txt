@@ -19,8 +19,22 @@
 |CommodityEvent||12	$FFFFFFFF
 |CommodityEvent||13	$FFFFFFFF
 |CommodityEvent||14	$FFFFFFFF
+|CommodityEvent (nothing queued) replied the message taken before||1	$00000000
+|CommodityEvent replied the message taken before||1	$00000000
+|CommodityEvent replied the message taken before||2	$00000000
+|CommodityEvent replied the message taken before||3	$00000000
+|CommodityEvent replied the message taken before||4	$00000000
+|CommodityEvent replied the message taken before||5	$00000000
+|CommodityEvent replied the message taken before||6	$00000000
+|CommodityEvent replied the message taken before||7	$00000000
+|CommodityEvent replied the message taken before||8	$00000000
+|CommodityEvent replied the message taken before||9	$00000000
+|CommodityEvent replied the message taken before||10	$00000000
+|CommodityEvent replied the message taken before||11	$00000000
+|CommodityEvent replied the message taken before||12	$00000000
 |CommodityMsgPort||1	$00000000
 |CommodityMsgPort != 0||1	$00000001
+|CommodityMsgPort != 0 (name taken)||1	$00000001
 |CxAppear||1	$00000013
 |CxDisAppear||1	$00000015
 |CxDisable||1	$0000000F
@@ -164,24 +178,49 @@
 |HotKeyHit||14	$00000000
 |HotKeyHit||15	$00000000
 |MakeCommodity||1	$FFFFFFFF
+|MakeCommodity (name taken)||1	$00000000
 |MakeCommodity again||1	$00000000
 |SetCxStatus -1||1	$FFFFFFFF
 |SetCxStatus -1 (no port)||1	$00000000
+|SetCxStatus -1 (port, no broker)||1	$FFFFFFFF
 |SetCxStatus 0||1	$FFFFFFFF
 |SetCxStatus 0 (no port)||1	$00000000
+|SetCxStatus 0 (port, no broker)||1	$FFFFFFFF
 |SetCxStatus 0 again||1	$FFFFFFFF
 |SetCxStatus 5||1	$00000000
 |SetHotKey (no broker)||1	$00000000
 |SetHotKey 0||1	$FFFFFFFF
 |SetHotKey 0 again||1	$FFFFFFFF
+|SetHotKey 0 again: CreateCxObj||1	$00000002
+|SetHotKey 0 again: DeleteCxObj||1	$00000000
+|SetHotKey 0 again: DeleteCxObjAll||1	$00000000
+|SetHotKey 0 again: RemoveCxObj||1	$00000002
+|SetHotKey 0: CreateCxObj||1	$00000002
+|SetHotKey 0: DeleteCxObj||1	$00000000
+|SetHotKey 0: DeleteCxObjAll||1	$00000000
+|SetHotKey 0: RemoveCxObj||1	$00000000
 |SetHotKey 3||1	$FFFFFFFF
+|SetHotKey 3: CreateCxObj||1	$00000002
+|SetHotKey 3: DeleteCxObj||1	$00000000
+|SetHotKey 3: DeleteCxObjAll||1	$00000000
+|SetHotKey 3: RemoveCxObj||1	$00000000
 |SetHotKey 5 nonsense||1	$FFFFFFFF
+|SetHotKey 5 nonsense: CreateCxObj||1	$00000002
+|SetHotKey 5 nonsense: DeleteCxObj||1	$00000000
+|SetHotKey 5 nonsense: DeleteCxObjAll||1	$00000000
+|SetHotKey 5 nonsense: RemoveCxObj||1	$00000000
+|SetHotKey 6 (no sender)||1	$00000000
+|SetHotKey 6 (no sender): CreateCxObj||1	$00000002
+|SetHotKey 6 (no sender): DeleteCxObj||1	$00000000
+|SetHotKey 6 (no sender): DeleteCxObjAll||1	$00000000
+|SetHotKey 6 (no sender): RemoveCxObj||1	$00000000
 |WaitCommodity||1	$00000000
 |WaitCommodity||2	$FFFFFFFF
+|WaitCommodity replied the message taken before||1	$00000000
 |WaitCommodity took the head||1	$00000001
 |broker gone||1	$00000001
 |broker there||1	$00000001
-|calls||1	$000000AF
+|calls||1	$000000B4
 |command message||1	$00000001
 |command message||2	$00000001
 |command message||3	$00000001
@@ -200,6 +239,12 @@
 |event took the head||10	$00000001
 |event took the head||11	$00000001
 |event took the head||12	$00000001
+|finit replied a queued message||1	$00000000
+|finit replied the message taken last||1	$00000000
+|finit: CloseLibrary||1	$00000001
+|finit: DeleteCxObj||1	$00000001
+|finit: DeleteCxObjAll||1	$00000000
+|finit: closed before the delete||1	$00000001
 |inline $A000||1	$00000001
 |inline $A000||2	$00000001
 |inline $A000||3	$00000001
@@ -209,6 +254,7 @@
 |inline $A000||7	$00000001
 |off: no messages||1	$00000000
 |on: messages||1	$00000001
+|own broker||1	$00000001
 |queued||1	$00000001
 |queued||2	$00000001
 |queued||3	$00000001
@@ -217,7 +263,7 @@
 |queued||6	$00000001
 |queued||7	$00000001
 |queued||8	$00000001
-|results||1	$000000DE
+|results||1	$0000010C
 |still off||1	$00000000
 |timer message||1	$00000001
 |two timer messages||1	$00000001
@@ -239,6 +285,7 @@ CommodityEvent|kept||13	kept
 CommodityEvent|kept||14	kept
 CommodityMsgPort|kept||1	kept
 CommodityMsgPort|kept||2	kept
+CommodityMsgPort|kept||3	kept
 CxAppear|kept||1	kept
 CxDisAppear|kept||1	kept
 CxDisable|kept||1	kept
@@ -383,17 +430,21 @@ HotKeyHit|kept||14	kept
 HotKeyHit|kept||15	kept
 MakeCommodity|kept||1	kept
 MakeCommodity|kept||2	kept
+MakeCommodity|kept||3	kept
 SetCxStatus|kept||1	kept
 SetCxStatus|kept||2	kept
 SetCxStatus|kept||3	kept
 SetCxStatus|kept||4	kept
 SetCxStatus|kept||5	kept
 SetCxStatus|kept||6	kept
+SetCxStatus|kept||7	kept
+SetCxStatus|kept||8	kept
 SetHotKey|kept||1	kept
 SetHotKey|kept||2	kept
 SetHotKey|kept||3	kept
 SetHotKey|kept||4	kept
 SetHotKey|kept||5	kept
+SetHotKey|kept||6	kept
 WaitCommodity|kept||1	kept
 WaitCommodity|kept||2	kept
 finit|kept||1	kept
