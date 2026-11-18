@@ -68,14 +68,23 @@ data `libs/tests/expected/rwe_rireqlib.txt` recorded from the original.
 
 The requesters need a user, so the test adds a fake `req.library` to the
 library list; its FileRequester and ColorRequester record the structure
-they are given (162 / 30 bytes) and return a chosen value. Observed:
+they are given (162 / 30 bytes) and return a chosen value; a confirmed
+FileRequester writes `FR:` and the path into the structure's path buffer
+when it has one, as req.library does. Observed:
 init when OpenLibrary fails, when AllocMem fails (the
 library is closed again), when it works and a second time (nothing
 happens, d0 unchanged); ReqFileLoc (= init's buffer, cleared, a0);
 ReqFlags; ReqOutput; all three forms of ReqFileRequest with ok and cancel
-(d0, a3, the copied path – written by the test through ReqFileLoc – and
-the FrStruct the requester sees: version, title, window, flags, the 0
-pointers); ReqColour (d0, the structure); finit (library closed, memory
-back). Not covered: the real req.library (not installed in the emulator,
-and its requesters need a user); ReqFileRequest/ReqColour without the
-library (they call through a6 = 0).
+(d0, a3, the result – the test writes another path through ReqFileLoc –
+and the fields of the FrStruct the requester sees: version, the four
+buffers relative to init's path buffer, window, flags, the rest, and the
+title text); ReqColour (d0, the structure); the requester's own fields
+behind offset 162: the fake writes offsets 152-207 once (frq_Show, the
+cursor positions, frq_Memory, frq_Memory2; not frq_Lock at 208, where
+both builds of the 162-byte structure have the library base), then
+ReqFileLoc and the colour structure show whether the library's data is
+intact, and the test writes the old bytes back; finit (library closed,
+memory back). Not covered: the real req.library (not installed in the
+emulator, and its requesters need a user); ReqFileRequest/ReqColour
+without the library (the original calls through a6 = 0: the bug-orig
+test `rireqlib-no-base-check`).
