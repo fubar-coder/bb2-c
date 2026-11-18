@@ -136,6 +136,10 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
   instead of the number of banks.
 * [`FindVolume` returned an address instead of -1]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#findvolume-result" >}}),
   so a comparison with -1 never found the volume.
+* [`PutIconObject` reported a failed write as success]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#puticonobject-result" >}})
+  and dropped the icon.
+* [`SetToolValue` replaced a tool type whose name only began with the name given]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#settoolvalue-prefix" >}}):
+  `SetToolValue "FL","x"` replaced `FLAG`.
 
 In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})):
 

@@ -3484,6 +3484,110 @@ rows:
     text: "`WorkbenchHere` no longer hangs on a title that ends with the start of \"Workbench\", such as \"My Work\"."
     page: libraries
     anchor: rimisclib-fixes
+  - issue: 840
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "SetToolValue, NewToolType, IconDefTool"
+    text: "`SetToolValue`, `NewToolType` and `IconDefTool` free their new string and return 0 when the icon's free list cannot take it; the original freed address 0."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 841
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "SetToolValue, NewToolType"
+    text: "`SetToolValue` and `NewToolType` with an empty name make the tool type `=value`; the original copied the bytes behind the name into it."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 842
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "FindToolType"
+    text: "`FindToolType` with `bracket_check` takes a name of any length; the original wrote a name over 253 characters behind its buffer."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 843
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "FindToolType"
+    text: "`FindToolType` with one argument never finds a switched-off `(name)`; the original did after an earlier call with `bracket_check`."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 844
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "FindToolValue"
+    text: "`FindToolValue` returns the whole value, also with a `)` in it; the original cut it at the first `)`."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 847
+    severity: 5
+    topic: "Graphics"
+    library: "ritooltypeslib"
+    command: "IconToShape"
+    text: "`IconToShape` copies only the data the shape has room for; the original wrote one word per line behind it for a width that is a multiple of 16."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 850
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "PutIconObject"
+    text: "`PutIconObject` frees the icon it has written; the original kept its memory until the next reboot."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 851
+    severity: 1
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "PutIconObject"
+    text: "`PutIconObject` returns 0 when the icon cannot be written, and the icon stays loaded; the original returned -1 and dropped it."
+    page: libraries
+    anchor: puticonobject-result
+  - issue: 852
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "SetIconType"
+    text: "`SetIconType` without a loaded icon returns 0; the original returned its argument."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 853
+    severity: 1
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "SetToolValue"
+    text: "`SetToolValue` replaces only the tool type of that name; the original replaced the first one that began with it, `FLAG` for `FL`."
+    page: libraries
+    anchor: settoolvalue-prefix
+  - issue: 854
+    severity: 5
+    topic: "Graphics"
+    library: "ritooltypeslib"
+    command: "ShapeToIcon"
+    text: "`ShapeToIcon` with two shapes makes the selected image show the shape's bitplanes; the original showed none of them."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 855
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "GetIconObject, NewToolType"
+    text: "An icon can have any number of tool types; the original wrote behind its list of 100 entries."
+    page: libraries
+    anchor: ritooltypeslib-fixes
+  - issue: 1083
+    severity: 5
+    topic: "Graphics"
+    library: "ritooltypeslib"
+    command: "ShapeToIcon"
+    text: "`ShapeToIcon` makes the icon's image show the shape's bitplanes; the original kept those of the old image, wrong for a shape of another depth."
+    page: libraries
+    anchor: ritooltypeslib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
