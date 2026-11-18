@@ -34,7 +34,6 @@
  *     - A register operand (`d0`, `a7`, `pc`) takes the next character
  *       unchecked (`a` + 0 skips the string's end), `a`/`d` with any
  *       character index the register block (index byte * 4) (#642).
- *     - Digits are not checked (`12x` = 1, 2, 'x'-'0') (#634).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - PFEvaluate counts its values in a long: the original's byte,
  *     compared signed, made every operator fail with "Need 2 arguments"
@@ -73,6 +72,11 @@
  *     none a long, the same values): no word or long access at an odd
  *     address.  The original always read a long and took its top byte
  *     or word - an address error on the 68000 at an odd address (#636).
+ *   - PFEvaluate checks the digits of a number: a character that is no
+ *     digit of its base (decimal 0-9, `$` hex 0-9 a-f, `%` binary 0 1)
+ *     is error 4 "No result value!" with the result 0.  The original
+ *     took every character up to the next space as a digit (`12x` = 192,
+ *     `%2` = 2) (#634).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -646,6 +650,8 @@ evall:
         BL_SETB(s->aux, *s->pos++);
         if ((UBYTE)s->aux == ' ' || (UBYTE)s->aux == '}')
             break;
+        if ((UBYTE)s->aux < '0' || (UBYTE)s->aux > '9')
+            return ev_error(err_noresult, 4);   /* fixed (#634): no digit */
         s->acc = (s->acc << 3) + s->acc + s->acc;
         BL_SETB(s->aux, s->aux - '0');
         s->acc += s->aux;
@@ -680,6 +686,9 @@ evalhex:
         BL_SETB(s->aux, *s->pos++);
         if ((UBYTE)s->aux == ' ' || (UBYTE)s->aux == '}')
             break;
+        if (!((UBYTE)s->aux >= '0' && (UBYTE)s->aux <= '9')
+            && !((UBYTE)s->aux >= 'a' && (UBYTE)s->aux <= 'f'))
+            return ev_error(err_noresult, 4);   /* fixed (#634): no hex digit */
         s->acc <<= 4;
         if ((BYTE)s->aux < 'a') {
             BL_SETB(s->aux, s->aux - '0');
@@ -699,6 +708,8 @@ evalbin:
         BL_SETB(s->aux, *s->pos++);
         if ((UBYTE)s->aux == ' ' || (UBYTE)s->aux == '}')
             break;
+        if ((UBYTE)s->aux != '0' && (UBYTE)s->aux != '1')
+            return ev_error(err_noresult, 4);   /* fixed (#634): no binary digit */
         s->acc <<= 1;
         BL_SETB(s->aux, s->aux - '0');
         s->acc |= (UBYTE)s->aux;
@@ -722,8 +733,10 @@ evalbin:
  * `*` gives the low 32 bits of the product (fixed, #639); the `}` of a
  * register in `{...}` is checked at the string (fixed, #637); the
  * indirection reads the bytes of its size one by one (fixed, #636).
+ * A character that is no digit of the number's base is error 4 (fixed,
+ * #634).
  * BUG(orig): `^` (#641); only the last value counts (#635); register
- * operands (#642), unchecked digits (#634).
+ * operands (#642).
  * @param str  d0: the postfix string
  * @return d0: the value, 0 on an error
  */

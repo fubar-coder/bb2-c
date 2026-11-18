@@ -167,6 +167,11 @@ kind F):
   word, an address error on a 68000/68010 at an odd address, and on
   every processor 3 bytes more than `.b` asks for (#636; the bug-orig
   test `rievallib-indirect-odd-long` runs on the A600).
+* PFEvaluate checks the digits of a number: a character that is no digit
+  of its base (decimal 0-9, `$` 0-9 and a-f, `%` 0 and 1) is error 4 "No
+  result value!" with the result 0. The original took every character up
+  to the next space as a digit (`12x` was 192, `%2` 2, `$g` 16) (#634).
+  Hex digits are lower case, as ConvToPostFix writes them.
 
 ## BUG(orig), kept
 
@@ -179,7 +184,6 @@ In the C file's head:
 * PFEvaluate: a register operand reads its index character unchecked
   (also the string's 0, then it parses behind the string) and any index
   (#642).
-* PFEvaluate: digits are not checked (#634).
 
 No defects, like the original: ConvToPostFix leaves a3 pointing to the
 string (a statement: nothing uses a3 after it); PFErrorType leaves the
