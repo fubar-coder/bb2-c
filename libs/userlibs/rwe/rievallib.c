@@ -24,11 +24,8 @@
  * Assembler: the thunks; everything else is C.
  *
  * BUG(orig), kept:
- *   - ConvToPostFix: an operand character that is no digit, a-f,
- *     register, `$ % . { }` ends the operand and is dropped (#632).
- *   - PFEvaluate:
- *     - `^`: x^0 and x^1 are x, 0^n is 1; the loop counts with DBRA on
- *       the low word of exponent-2 (#641).
+ *   - PFEvaluate `^`: x^0 and x^1 are x, 0^n is 1; the loop counts with
+ *     DBRA on the low word of exponent-2 (#641).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - PFEvaluate counts its values in a long: the original's byte,
  *     compared signed, made every operator fail with "Need 2 arguments"
@@ -83,6 +80,12 @@
  *     error 4 "No result value!" with the result 0.  The original
  *     returned the top value without an error (`1 2` = 2, `1 2 + 3` = 3)
  *     (#635).
+ *   - ConvToPostFix keeps every character of an operand up to a space,
+ *     an operator, `)` or the end, and PFEvaluate rejects one that is no
+ *     part of a number or register (error 4).  The original ended the
+ *     operand at a character that is no digit, a-f, register,
+ *     `$ % . { }` and dropped it: `1,2` became `1 2 `, `12x+3`
+ *     `12 3 + ` (15) (#632).
  * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
  * string pointer) = the string (a statement: nothing uses a3 after it);
  * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
@@ -348,11 +351,10 @@ notoperator:                                    /* a number or register */
                 break;
             c = *s->pos++;
             BL_SETB(s->acc, c);
-        } else if (c != 'a' && c != 'd' && c != 'p' && c != 'c' && c != '$'
-                   && c != '%' && c != '{' && c != '}'
-                   && !((BYTE)c >= 'a' && (BYTE)c <= 'f')
-                   && !((BYTE)c >= '0' && (BYTE)c <= '9'))
-            break;                              /* 'endeval: c dropped */
+        }
+        /* fixed (#632): any other character is copied too (the original
+           ended the operand at one that is no digit, a-f, register,
+           `$ % { }` and dropped it); PFEvaluate rejects it (#634, #642) */
         *s->out++ = c;                          /* 'putchar */
     }
     *s->out++ = ' ';                            /* 'endeval */
@@ -396,8 +398,8 @@ endthis:
  * operator stack; "(" ... ")" group.  A `-` is a sign at the start or
  * after an operator or `(`, spaces between skipped (fixed, #633).
  * A `.` copies the character behind it, not the string's 0 (fixed, #631).
- * BUG(orig): an operand character that is no digit, a-f, register,
- * `$ % . { }` ends the operand and is dropped (#632).  a3 is left at the
+ * Every other character of an operand is kept, for PFEvaluate to reject
+ * (fixed, #632).  a3 is left at the
  * string (a statement: nothing uses it after it).
  * @param str  d0: the expression (changed: lower case)
  * @param buf  d1: the output buffer

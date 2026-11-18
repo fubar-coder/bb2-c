@@ -182,12 +182,16 @@ kind F):
 * PFEvaluate: more than one value left at the end of the string is
   error 4 "No result value!" with the result 0; the original returned
   the top value without an error (`1 2` was 2, `1 2 + 3` 3) (#635).
+* ConvToPostFix keeps every character of an operand up to a space, an
+  operator, `)` or the end; PFEvaluate rejects one that is no part of a
+  number or register (error 4). The original ended the operand at a
+  character that is no digit, a-f, register, `$ % . { }` and dropped it:
+  `1,2` became `1 2 `, `12x+3` `12 3 + ` (15) (#632).
 
 ## BUG(orig), kept
 
 In the C file's head:
 
-* ConvToPostFix: dropped characters (#632).
 * PFEvaluate: `x^0` = `x^1` = `x`, `0^n` = 1, the exponent's low word as
   the loop count (#641).
 

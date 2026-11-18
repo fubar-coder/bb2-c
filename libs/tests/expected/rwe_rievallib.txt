@@ -52,7 +52,8 @@ ConvToPostFix|a3|"x+a."|1	$00000000
 ConvToPostFix|a3|"{1000}.w+2"|1	$00000000
 ConvToPostFix|a3|"{a0}.b*{$10}.l"|1	$00000000
 ConvToPostFix|buffer|"   "|1	bytes 2816 fnv 32C3B12B
-ConvToPostFix|buffer|"  12x+3"|1	bytes 2816 fnv 8042EF9A
+ConvToPostFix|buffer|"  12x+3"|1 [orig]	bytes 2816 fnv 8042EF9A
+ConvToPostFix|buffer|"  12x+3"|1 [fixed #632]	bytes 2816 fnv 69B3267C
 ConvToPostFix|buffer|""|1	bytes 2816 fnv 32C3B12B
 ConvToPostFix|buffer|"$FF&%1010\|7"|1	bytes 2816 fnv 6903477F
 ConvToPostFix|buffer|"%101."|1 [orig]	bytes 2816 fnv E77A4FF6
@@ -76,7 +77,8 @@ ConvToPostFix|buffer|"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+
 ConvToPostFix|buffer|"1+2)"|1	bytes 2816 fnv B0551923
 ConvToPostFix|buffer|"1+2)*3"|1	bytes 2816 fnv 1487B236
 ConvToPostFix|buffer|"1+2*3"|1	bytes 2816 fnv E345A2CE
-ConvToPostFix|buffer|"1,2;3"|1	bytes 2816 fnv 67C2A67B
+ConvToPostFix|buffer|"1,2;3"|1 [orig]	bytes 2816 fnv 67C2A67B
+ConvToPostFix|buffer|"1,2;3"|1 [fixed #632]	bytes 2816 fnv 63100926
 ConvToPostFix|buffer|"1-2-3"|1	bytes 2816 fnv F898C023
 ConvToPostFix|buffer|"1."|1 [orig]	bytes 2816 fnv 11784026
 ConvToPostFix|buffer|"1."|1 [fixed #631]	bytes 2816 fnv 1071CCAE
@@ -99,12 +101,13 @@ ConvToPostFix|buffer|"4*-2"|1	bytes 2816 fnv 073752EC
 ConvToPostFix|buffer|"8/(4/2)"|1	bytes 2816 fnv 5D4125CD
 ConvToPostFix|buffer|"9.9+1"|1	bytes 2816 fnv 303E46C3
 ConvToPostFix|buffer|"A0+D1*PC"|1	bytes 2816 fnv A67F1DB3
-ConvToPostFix|buffer|"Zz+yY"|1	bytes 2816 fnv DA82697C
+ConvToPostFix|buffer|"Zz+yY"|1 [orig]	bytes 2816 fnv DA82697C
+ConvToPostFix|buffer|"Zz+yY"|1 [fixed #632]	bytes 2816 fnv 7ECDDBE6
 ConvToPostFix|buffer|"a7-d0"|1	bytes 2816 fnv 293AC37E
 ConvToPostFix|buffer|"abcdef+1"|1	bytes 2816 fnv 1FE7F6FC
 ConvToPostFix|buffer|"c+p+$"|1	bytes 2816 fnv 33A83440
 ConvToPostFix|buffer|"x+a."|1 [orig]	bytes 2816 fnv 6730D55A
-ConvToPostFix|buffer|"x+a."|1 [fixed #631]	bytes 2816 fnv 13161381
+ConvToPostFix|buffer|"x+a."|1 [fixed #631]	bytes 2816 fnv 3883CF33
 ConvToPostFix|buffer|"{1000}.w+2"|1	bytes 2816 fnv 38B68A4A
 ConvToPostFix|buffer|"{a0}.b*{$10}.l"|1	bytes 2816 fnv 4CA37DFF
 ConvToPostFix|kept|"   "|1	kept
