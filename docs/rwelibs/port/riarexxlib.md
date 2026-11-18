@@ -217,6 +217,14 @@ kind F):
   name, so messages for it reached whichever port FindPort found first
   and the program could not tell that its name was taken (#1096).
 
+## BUG(orig), kept
+
+* **RXDeletePort** and finit do not wait for the replies to the messages
+  sent without waiting (RXRunCommand, RXRunScript) that are still with
+  their receivers: a reply that arrives later goes to the deleted port
+  (`RXRunCommand "REXX",... : End` is enough). The manual says RXDeletePort
+  waits for them (#1095).
+
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
 init clears the port pointer without deleting a port (it runs before

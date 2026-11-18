@@ -127,6 +127,11 @@
  *     base of 0 (#1094).
  *   - RXCreatePort returns 0 when a public port of the name exists (as the
  *     manual says); the original added a second port of the name (#1096).
+ *
+ * BUG(orig), kept:
+ *   - RXDeletePort and finit do not wait for the replies to messages sent
+ *     without waiting (RXRunCommand, RXRunScript): a reply that arrives
+ *     later goes to the deleted port (#1095).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -1183,7 +1188,8 @@ BLITZ_THUNK(_rxnumargs, rxnumargs_c, "d1/a0-a1");
 /* ------------------------------------------------------------ the port */
 
 /* RXDeletePort, finit: reply what is waiting, delete the port, free the
-   lists and (freename) the name */
+   lists and (freename) the name.  BUG(orig) (#1095): the messages of the
+   sent list are not waited for; their replies go to the deleted port */
 static void deleteport(BB_BOOL freename)
 {
     ULONG *l;
