@@ -4020,6 +4020,22 @@ rows:
     text: "`SetRegistryVariable name,value$` passes the string's length as the size, the integer and boolean forms 4; the original passed whatever a register held."
     page: libraries
     anchor: riregistrylib-fixes
+  - issue: 764
+    severity: 5
+    topic: "System"
+    library: "rinonvolatilelib"
+    command: "StoreNVData"
+    text: "`StoreNVData` stores items of 655360 bytes or more with their whole length; the original stored them as a few bytes without an error."
+    page: libraries
+    anchor: rinonvolatilelib-fixes
+  - issue: 1085
+    severity: 1
+    topic: "System"
+    library: "rinonvolatilelib"
+    command: "StoreNVData"
+    text: "`StoreNVData` returns -1 when the item was stored and 0 when not, as documented; the original returned 0 for a stored item and an error code otherwise."
+    page: libraries
+    anchor: storenvdata-result
   - issue: 513
     severity: 5
     topic: "Graphics"

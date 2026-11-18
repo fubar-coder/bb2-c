@@ -140,6 +140,8 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
   and dropped the icon.
 * [`SetToolValue` replaced a tool type whose name only began with the name given]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#settoolvalue-prefix" >}}):
   `SetToolValue "FL","x"` replaced `FLAG`.
+* [`StoreNVData` returned 0 for a stored item]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#storenvdata-result" >}}),
+  and an error code, a true value, when it could not store it.
 
 In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})):
 
