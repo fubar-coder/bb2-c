@@ -88,6 +88,12 @@ kind F):
   `:`, so a second `AppFile` of the same argument had lock 0 and
   `AppLock` returned 0; its `:` test read the byte before the string for
   an empty path, which now gets no `/` (#521).
+* finit replies to the current message and then to every message still
+  queued at the port. The original replied to the queue only if a
+  message was current (the last `AppEvent`), the flag for the other case
+  was never set: after a loop `Repeat … Until AppEvent=0` the messages
+  that came later stayed unreplied when the port was deleted, and
+  Workbench never got them and their locks back (#525).
 
 ## BUG(orig), kept
 
@@ -99,10 +105,6 @@ kind F):
   DiskObject first; if `AddAppIconA` then fails, the removed AppIcon stays
   in the slot (a later `DelAppIcon` removes it again) and the new
   DiskObject stays in its slot (freed only by finit) (#517).
-* finit replies to the messages still queued at the port only if a
-  message is current (the last `AppEvent`); the flag `msgportflag` for the
-  other case is never set. Otherwise they stay unreplied when the port is
-  deleted (#525).
 * init: if a library does not open, the port is deleted and the memory
   freed, but the libraries already opened stay open; `AppMsgPort` still
   returns the deleted port (#526).

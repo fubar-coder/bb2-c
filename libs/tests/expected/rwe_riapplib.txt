@@ -631,7 +631,8 @@ finit|popped|icon.library fails|1	$00000000
 finit|popped|no current message|1	$00000000
 finit|popped|third run|1	$00000000
 finit|replies (both)|current message|1	$00000002
-finit|replies (none)|no current message|1	$00000000
+finit|replies (none)|no current message|1 [orig]	$00000000
+finit|replies (none)|no current message|1 [fixed #525]	$00000001
 finit|wb CurrentX|no current message|1	$00000000
 finit|wb CurrentX|no current message|2	$00000000
 finit|wb CurrentX|no current message|3	$00000000

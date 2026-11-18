@@ -37,10 +37,6 @@
  *     DiskObject but leaves the old AppIcon in the slot if AddAppIconA
  *     fails (a later DelAppIcon removes it again); the new DiskObject is
  *     stored before AddAppIconA and stays on failure (#517).
- *   - finit replies to the messages queued at the port only if a message
- *     is current (the last AppEvent) - the flag `msgportflag` for the
- *     other case is never set; otherwise they stay unreplied when the
- *     port is deleted (#525).
  *   - init: if a library does not open, the port is deleted and the block
  *     freed, but the libraries already opened stay open; AppMsgPort then
  *     still returns the deleted port (#526).
@@ -48,6 +44,11 @@
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
+ * Fixed (intended deviation, #525): finit replied to the messages queued
+ * at the port only if a message was current (the last AppEvent) - the
+ * flag for the other case was never set - so they stayed unreplied when
+ * the port was deleted; it replies to the current message and the whole
+ * queue now.
  * Fixed (intended deviation, #521): NextAppFile/AppFile unlocked the lock
  * of the WBArg (ChangeMode + UnLock - Workbench's own lock) and cleared it
  * in the message unless the path ended with ':', and the ':' test read
@@ -225,7 +226,6 @@ static_assert(sizeof(struct appblock) == BLOCKSIZE);
 
 static struct Library *wbbase, *iconbase;
 static struct DosLibrary *dosbase;
-static ULONG msgportflag;               /* never set (see finit) */
 static ULONG *appmenus, *appwindows, *appicons;
 static struct DiskObject **disklist;
 static UBYTE *arglist;                  /* path buffer of NextAppFile */
@@ -258,7 +258,6 @@ static void BLITZ_ROUTINE libinit_c(void)
 {
     struct appblock *block;
 
-    msgportflag = 0;
     msgport = CreateMsgPort();
     if (!msgport) {
         libflag = 0;
@@ -315,8 +314,9 @@ static void delapp(ULONG *table, int kind)
  * @brief finit: replies the messages, removes every App object, deletes
  * the port, frees the block and closes the libraries.
  *
- * BUG(orig) (#525): the queue is replied only if a message is current;
- * BUG(orig) (#524): the table slot cleared is the long at byte offset
+ * Fixed (#525): the current message and then the whole queue are
+ * replied (the original replied to the queue only if a message was
+ * current).  BUG(orig) (#524): the table slot cleared is the long at byte offset
  * index*4/4.
  */
 static void BLITZ_ROUTINE libfinit_c(void)
@@ -325,13 +325,11 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
     if (!libflag)
         return;
-    /* BUG(orig): the queue is replied only if a message is current (#525) */
-    m = (struct Message *)msg;
-    if (m || (msgportflag && (m = GetMsg(msgport)) != NULL)) {
-        do
-            ReplyMsg(m);
-        while ((m = GetMsg(msgport)) != NULL);
-    }
+    /* fixed (#525): the queue also without a current message */
+    if (msg)
+        ReplyMsg(&msg->am_Message);
+    while ((m = GetMsg(msgport)) != NULL)
+        ReplyMsg(m);
     delapp(appmenus, 0);
     delapp(appwindows, 1);
     delapp(appicons, 2);
