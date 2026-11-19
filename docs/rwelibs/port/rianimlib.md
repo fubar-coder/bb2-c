@@ -99,6 +99,15 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   before an RIAnimInit walked it (perhaps freed memory), and an AnimLoop
   Off of the run before stayed off (the manual's default is on)
   (#1107; `rianimlib.declarations-intended.txt`).
+* The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers,
+  RINextAnimFrame's steps over the frame, ANHD and CMAP) add the pad
+  byte of an odd length when it is 0; a non-zero byte there is taken as
+  the next chunk, so files written without pad bytes stay readable (as
+  ilbmifflib, #189). The original added length + 8 only: behind an
+  odd-length chunk (an ANNO, a CMAP of an odd number of colours) the walk
+  was one byte off, BMHD, frames, CMAP and DLTA were missed (#505).
+  RINextAnimFrame pays a test of the length's bit 0 per step, about 20
+  cycles on a 68000, three steps per frame.
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
@@ -110,8 +119,6 @@ bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
   pushes a1 and returns without popping it: the RTS jumps to the
   caller's a1. **DIFF:** the C build returns -1 as if a1 had been popped
   (the original crashes; not reproducible in C) (#513).
-* The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers) add
-  length + 8 without the pad byte of odd lengths (#505).
 * ANIM7: the test for the short (word) form tests the operation
   (always 7), so the long form is always used and the short code is
   unreachable (#504); the columns are width >> 5 (ASR.w) – the rest of a
@@ -149,5 +156,6 @@ RINextAnimFrame before RIAnimInit, through every frame, past the end
 with AnimLoop on and off; AnimLoop with a value whose low byte is 0.
 Not covered: a frame with other chunks before its DLTA (the original
 crashes; bug-orig test `rianimlib-nextframe-no-dlta`), a chunk with the ID at
-+8 that is no FORM (the DIFF), odd chunk lengths, depth 0, run counts
++8 that is no FORM (the DIFF), odd chunk lengths (fixed #505; bug-orig
+test `rianimlib-chunk-pad-byte`), depth 0, run counts
 of 0, ANIM7 widths below 32.

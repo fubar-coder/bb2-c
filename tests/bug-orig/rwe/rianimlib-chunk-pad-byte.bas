@@ -3,6 +3,7 @@
 ; ANNO chunk of 5 bytes: the search for the BMHD is one byte off behind
 ; it, reads a garbage length and gives up; RIAnimDepth returns 0.
 ; Correct: the BMHD is found, RIAnimDepth returns 1.
+; @fixed #505
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-chunk-pad-byte.anim

@@ -35,9 +35,6 @@
  *     it: the RTS jumps to the caller's a1 (DIFF: the C build returns
  *     -1 as if a1 had been popped - a crash in the original, not
  *     reproducible) (#513).
- *   - The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers)
- *     add the chunk length + 8 without the pad byte of odd lengths
- *     (#505).
  *   - ANIM7: the test for the short (word) form tests the operation (7),
  *     so the long form is always used (the short code is unreachable and
  *     not ported) (#504); the columns are width >> 5 (ASR.w), dropping
@@ -94,6 +91,12 @@
  *   - init (the original has none) clears the animation and sets AnimLoop
  *     on: a second run from the editor with the library still loaded
  *     started with the run before's animation and AnimLoop (#1107).
+ *   - The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers,
+ *     RINextAnimFrame's steps over the frame, ANHD and CMAP) add the pad
+ *     byte of an odd length when it is 0; a non-zero byte there is taken
+ *     as the next chunk, so files written without pad bytes stay readable
+ *     (as ilbmifflib, #189).  The original added no pad byte: behind an
+ *     odd-length chunk the walk was one byte off (#505).
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
@@ -249,15 +252,29 @@ static LONG initfindchunk(UBYTE *chunk, ULONG id)
     return -1;
 }
 
+/* the length of chunk data at data of length len with its pad byte:
+   an odd length is rounded up when the byte behind the data is 0; a
+   non-zero byte there is the next chunk (a file written without pad
+   bytes stays readable) (fixed #505: the original added no pad byte) */
+static inline __attribute__((always_inline)) ULONG padded(const UBYTE *data, ULONG len)
+{
+    if ((len & 1) && !data[len])
+        len++;
+    return len;
+}
+
 /* the chunk behind the chunk at p (p < end), NULL if its length passes
-   end (fixed #506: the original stepped on, and compared signed) */
+   end (fixed #506: the original stepped on, and compared signed); with
+   its pad byte (fixed #505) */
 static UBYTE *nextchunk(UBYTE *p, UBYTE *end)
 {
     ULONG room = (ULONG)(end - p), len = LG(p + 4);
 
     if (room < 8 || len > room - 8)
         return NULL;
-    return p + 8 + len;                 /* BUG(orig): no pad byte (#505) */
+    if (len < room - 8)                 /* a pad byte inside the end */
+        len = padded(p + 8, len);
+    return p + 8 + len;
 }
 
 /* fcloop: the chunk id from p on up to endoffile; *a2 = its data */
@@ -313,9 +330,10 @@ static LONG findbmhd(ULONG address, struct BitMapHeader **data)
 /**
  * @brief RIAnimDepth address: the depth (bmh_Depth) of the ANIM's first frame.
  *
- * The BMHD is searched up to the end of the ANIM (InitFindChunk of the
- * ANIM and of its first ILBM, then FindChunk); the chunk walk adds no
- * pad byte (BUG(orig) (#505)).  It changes the chunk search state.
+ * The BMHD is searched in the first frame (InitFindChunk of the ANIM
+ * and of its first ILBM, then FindChunk); the chunk walk adds the pad
+ * byte of an odd length when it is 0 (fixed #505).  It changes the chunk
+ * search state.
  * @param address  d0: the ANIM file in memory
  * @return d0: the depth (a byte), 0 without ANIM, ILBM or BMHD
  */
@@ -513,7 +531,7 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
  *
  * Counts the FORM ILBM chunks of the ANIM (fixed #510: the original
  * counted every chunk).  The walk is unsigned and stays inside the ANIM
- * (fixed #506).  BUG(orig): it adds no pad byte (#505).
+ * (fixed #506), with the pad bytes (fixed #505).
  * @return d0: the number of frames, 0 before an RIAnimInit
  */
 ULONG BLITZ_ROUTINE c_CountFrames(void)
@@ -694,20 +712,20 @@ ULONG BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
     }
     len = LG(chunk + 4);
     chunk += 8;
-    nextanimframe = chunk + len;
+    nextanimframe = chunk + padded(chunk, len);     /* fixed #505 */
     chunk += 4;                         /* skip ILBM */
     if (LG(chunk) != ID_ANHD)
         return 0;
     anhd = (const struct anhd *)(chunk + 8);
     animtype = anhd->operation;
     animtype7 = anhd->bits;
-    chunk += LG(chunk + 4) + 8;
+    chunk += padded(chunk + 8, LG(chunk + 4)) + 8;    /* fixed #505 */
     if (LG(chunk) == ID_CMAP) {
         cmapchunk = chunk;
         r = (struct bl_regs){ .d0 = (ULONG)chunk, .d1 = palettenumber };
         BLITZ_ALIBJSR(TOK_ilbmpalette, r);
         chunk = cmapchunk;
-        chunk += LG(chunk + 4) + 8;
+        chunk += padded(chunk + 8, LG(chunk + 4)) + 8;    /* fixed #505 */
     }
     if (LG(chunk) != ID_DLTA) {         /* fixed #515: was an RTS without MOVEM */
         chunk = otherchunks(chunk);
