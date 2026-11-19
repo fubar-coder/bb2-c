@@ -18,8 +18,10 @@ ChunkyBitmap|blocks|1,22,22|1	$00000002
 ChunkyBitmap|blocks|2,16,16|1	$00000001
 ChunkyBitmap|blocks|3,8,8|1	$00000002
 ChunkyBitmap|cleared|0,320,256|1	$00000001
-ChunkyBitmap|data below $10000 freed|1,20,20|1	$00000000
-ChunkyBitmap|data below $10000 freed|1,22,22|1	$00000000
+ChunkyBitmap|data below $10000 freed|1,20,20|1 [orig]	$00000000
+ChunkyBitmap|data below $10000 freed|1,20,20|1 [fixed #885]	$00000001
+ChunkyBitmap|data below $10000 freed|1,22,22|1 [orig]	$00000000
+ChunkyBitmap|data below $10000 freed|1,22,22|1 [fixed #885]	$00000002
 ChunkyBitmap|kept|0,100,50|1	kept
 ChunkyBitmap|kept|0,320,256|1	kept
 ChunkyBitmap|kept|0,320,256|2	kept
@@ -73,7 +75,8 @@ ChunkyBitmap|object 1 data|0,320,256|1	$00000000
 ChunkyBitmap|object 1 data|0,320,256|2	$00000000
 ChunkyBitmap|object 1 data|1,16,16|1	$00000000
 ChunkyBitmap|object 1 data|1,20,20|1	$00000001
-ChunkyBitmap|object 1 data|1,22,22|1	$00000001
+ChunkyBitmap|object 1 data|1,22,22|1 [orig]	$00000001
+ChunkyBitmap|object 1 data|1,22,22|1 [fixed #885]	$00000000
 ChunkyBitmap|object 1 data|2,16,16|1	$00000000
 ChunkyBitmap|object 1 data|3,8,8|1	$00000000
 ChunkyBitmap|object 1 w/h/d/6|0,100,50|1	$00000000

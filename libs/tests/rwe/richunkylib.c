@@ -25,7 +25,8 @@
  * allocation with and without old data, the unused word
  * at offset 6 set without data: the free routine without data, data
  * below $10000 - the address FAKEDATA, its frees counted by the stub -
- * with and without a failing allocation, BUG(orig), #885), ChunkyData, ChunkyToPlanar with random chunky data (depth
+ * with and without a failing allocation: not freed in the original,
+ * freed in the C build, #885), ChunkyData, ChunkyToPlanar with random chunky data (depth
  * 8, the depth word $0108 = with bm_Flags, 7 = nothing, $8008 = with
  * bm_Flags bit 7: nothing in the original, converted in the C build
  * (#883), an object without data = nothing), RaycastSky (random columns, heights
@@ -366,10 +367,10 @@ int main(int argc, char **argv)
     chunkybitmap(3, 8, 8);
     chunkydata(3);
 
-    /* data below $10000: ChunkyBitmap tests the long at offset 6 (the
-       unused word and the upper word of the pointer), so the original
-       neither frees it nor, when the allocation fails, clears the pointer
-       (BUG(orig), #885) */
+    /* data below $10000: the original's ChunkyBitmap tests the long at
+       offset 6 (the unused word and the upper word of the pointer), so it
+       neither frees it nor, when the allocation fails, clears the pointer;
+       the C build tests the pointer (fixed, #885) */
     setfake(1, 24, 24);
     chunkybitmap(1, 20, 20);
     OBS("data below $10000 freed", fakefrees);

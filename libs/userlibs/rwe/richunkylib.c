@@ -29,17 +29,17 @@
  * not read.  No assembler besides the thunks.
  *
  * BUG(orig):
- *   - ChunkyBitmap decides whether the object holds data by TST.l 6(a0),
- *     the unused word and the upper word of the data pointer: data below
- *     $10000 is not freed (and never is) (#885).
- *   - ChunkyBitmap on an object whose data was not freed (the TST.l above)
- *     overwrites width and height and, if the allocation fails, clears
- *     them but keeps the old data pointer (#885).
  *   - ChunkyToPlanar ignores the sizes (the chunky data must have 81920
  *     bytes, the bitmap 8 contiguous planes of 10240 bytes) (#884).
  *   - RaycastSky: no checks; the offsets x and column are added as signed
  *     words, the height is a DBRA count (height 0 copies 65536 bytes)
  *     (#887).
+ * Fixed (intended deviation, #885): ChunkyBitmap frees the data the
+ * object holds when its data pointer is not 0; the original tested the
+ * long at offset 6 (TST.l 6(a0): the unused word and the pointer's upper
+ * word), so data below $10000 was never freed and, when the new
+ * allocation failed, the object kept the old pointer with width, height
+ * and depth 0.
  * Fixed (intended deviation, #886): the free routine leaves CIA-A PRA
  * bit 1 (the power LED / audio filter) as it is; the original toggled it
  * (BCHG #1,$bfe001, a debug flash left in).
@@ -131,10 +131,9 @@ struct chunky {
 };
 static_assert(sizeof(struct chunky) == 16);
 
-/* the longs the original addresses across members: at +0 (width and
-   height) and at +6 (the unused word and the data pointer's upper word) */
+/* the long the original addresses across members: at +0 (width and
+   height) */
 #define WIDTHHEIGHT(o) (*(ULONG *)&(o)->width)
-#define AT6(o) (*(ULONG *)&(o)->unused6)
 
 /**
  * @brief init, finit, PlanarToChunky bitmap#,chunky# and ChunkyLoadBitMap
@@ -187,12 +186,11 @@ static void BLITZ_ROUTINE dofreechunkybitmap_c(ULONG callerd1 BL_REG(d1), struct
  * @brief ChunkyBitmap chunky#,width,height: a chunky object of
  * width*height bytes (memlib globalloc, MEMF_CLEAR), depth 8.
  *
- * Amiga mode only.  An object with data is freed first, decided by
- * TST.l 6(a0): BUG(orig) (#885) the unused word and the pointer's upper
- * word - data below $10000 is never freed, and then width and height
- * are overwritten and, if the allocation fails, cleared with the old
- * data pointer kept.  On failure ('cantalloc) width, height and depth
- * are 0.
+ * Amiga mode only.  An object with data is freed first, decided by the
+ * data pointer: fixed (#885), the original tested the long at offset 6
+ * (the unused word and the pointer's upper word), so data below $10000
+ * was never freed and a failing allocation left the old pointer in the
+ * object.  On failure ('cantalloc) width, height and depth are 0.
  * @param w  d1: the width (a word)
  * @param h  d2: the height (a word)
  * @param o  a0: the object (!libs #richunkylib,#ia0|#pd0)
@@ -202,9 +200,9 @@ static void BLITZ_ROUTINE chunkybitmap_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2),
 {
     struct bl_regs r;
 
-    /* TST.l 6(a0): the unused word and the pointer's upper word,
-       BUG(orig) (#885) */
-    if (AT6(o))
+    /* the data pointer; fixed (#885): the original's TST.l 6(a0) tested
+       the unused word and the pointer's upper word */
+    if (o->data)
         freechunky(o, w);
     o->width = (WORD)w;
     o->height = (WORD)h;

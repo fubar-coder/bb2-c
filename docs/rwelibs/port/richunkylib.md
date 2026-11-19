@@ -54,13 +54,15 @@ kind F):
   (`CMPI.w #8,4(a1)`), so a Flags byte of 1-127 let any depth pass (8
   planes written into a bitmap of fewer) and one with bit 7 set refused
   even a bitmap of depth 8 (#883).
+* ChunkyBitmap frees the data the object holds when its data pointer is
+  not 0; the original tested the long at offset 6 (`TST.l 6(a0)`: the
+  unused word and the upper word of the data pointer), so data below
+  `$10000` was never freed, and a ChunkyBitmap on such an object whose
+  allocation failed kept the old pointer with width, height and depth 0
+  (#885).
 
 ## BUG(orig), kept
 
-* ChunkyBitmap decides whether the object holds data by `TST.l 6(a0)`:
-  the unused word and the upper word of the data pointer. Data below
-  `$10000` is never freed, and a ChunkyBitmap on such an object whose
-  allocation fails keeps the old pointer (#885).
 * ChunkyToPlanar checks nothing but the depth and the data pointer: the
   sizes of both bitmaps are assumed (#884).
 * RaycastSky checks nothing; x and column are added as signed words, the
@@ -86,7 +88,9 @@ pointer as 0 / not 0), the chunky data, the planes with the guard, the
 block count, CIA-A PRA bit 1, d0 where there is a result, kept
 registers. Cases: ChunkyData without and with data, ChunkyBitmap new /
 again with data (freed first) / with failing allocations / with the
-unused word set but no data, two rounds of random chunky data through
+unused word set but no data / on data below `$10000` (the address
+`$1234`, whose frees the `globfree` stub counts instead of freeing it;
+with and without a failing allocation, `[fixed #885]`), two rounds of random chunky data through
 ChunkyToPlanar (depth words 8 and `$0108`; 7, `$8008` and no data do
 nothing), 40 random RaycastSky calls (heights 1–256, marker upper
 words, negative columns), PlanarToChunky, ChunkyLoadBitMap, the free
