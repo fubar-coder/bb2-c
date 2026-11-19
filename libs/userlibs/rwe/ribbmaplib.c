@@ -62,13 +62,12 @@
  * locations, the MFRM chunk and the caches (the original's init is an
  * RTS: a second run from the editor with the library still loaded saw
  * the run before's files).
- * Original behaviour, not defects: the scenario routines before a
- * SetBBScenarioLoc and the map routines (but BBMapScenarioID,
- * BBMapWidth, BBMapHeight, BBMapInfo) before a SetBBMapLoc search from
- * address 12 (a program sets the location first); a failed
- * SetBBScenarioLoc keeps the old file and its cache; BBGetPalette frees
- * the old colour block with the size count*12 (memlib's globfree ignores
- * the size).
+ * Before the first SetBBScenarioLoc/SetBBMapLoc the routines give 0 and
+ * read nothing (location and end 0: the search ends at once; the
+ * original read the long at address 12).
+ * Original behaviour, not defects: a failed SetBBScenarioLoc keeps the
+ * old file and its cache; BBGetPalette frees the old colour block with
+ * the size count*12 (memlib's globfree ignores the size).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"

@@ -96,9 +96,11 @@ kind F):
 
 ## Original behaviour, not defects
 
-* The scenario routines before a `SetBBScenarioLoc`, and the map chunk
-  routines before a `SetBBMapLoc`, search from address 12: a program
-  sets the location first.
+* Before the first `SetBBScenarioLoc`/`SetBBMapLoc` the routines give 0
+  and read nothing: the location and the end are 0, the search's end
+  test (#553) ends it at once. (The original searched from address 12:
+  it read the long there and found the chunk if it matched; a program
+  sets the location first.)
 * The cache is the id alone: a failed `SetBBScenarioLoc` leaves the
   file and its cache as they were (the old file stays usable).
 * `BBGetPalette` frees the old colour block with the size count*12:
@@ -114,15 +116,17 @@ scenario, a full map, a scenario with only `GFX!`, `SFX!` and a `COLR`
 of $81..$83 (or none), a map without `MFRM`, a `FORM` of the wrong type;
 chunks shuffled with random lengths and contents, six rounds. Every
 accessor twice (search and cache), present and missing, an id behind
-the end of a file (on odd rounds; the original finds it), `BBShadowValue` with a word
-index overflow and a negative index, author strings at odd and even
-addresses, `BBGetPalette` without and with a new block (from 0–4 and 4
-colours, twice), with 200 colours, low > high and without `COLR`, a
-failed `SetBBScenarioLoc` and a failed `SetBBMapLoc` after a good one;
+the end of a file (on odd rounds; the original finds it),
+`BBShadowValue` with a word index overflow and a negative index, author
+strings at odd and even addresses, `BBGetPalette` without and with a
+new block (from 0–4 and 4 colours, twice), with 200 colours, low > high
+and without `COLR`, a failed `SetBBScenarioLoc` and a failed `SetBBMapLoc` after a good one;
 a second run (init after finit, as from the editor with the library
 still loaded, the run before ending with a good scenario and map): the
 map info functions, two cached chunks and a search before any `Set…`.
 Observed: d0 (addresses relative to the
 buffer), strings and a3, palette objects and colour blocks, kept
 registers. Not covered: calls before the first `Set…` of the first run,
-odd chunk lengths, `BBGetPalette` writing behind its block.
+odd chunk lengths (the bug-orig tests `ribbmaplib-odd-chunk-length` and
+`ribbmaplib-odd-chunk-length-68000`), `BBGetPalette` writing behind its
+block (`ribbmaplib-getpalette-low-gt-high`).

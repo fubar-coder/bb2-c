@@ -23,9 +23,10 @@
  * address); a second run (init after finit, as from the editor with the
  * library still loaded): the map info routines, two
  * cached chunks and a search before any Set.
- * Not covered: the routines before the first Set of the first run (they
- * search from address 12), odd chunk lengths (address errors),
- * BBGetPalette writing behind its new block.
+ * Not covered: the routines before the first Set of the first run (the
+ * original reads the long at address 12), odd chunk lengths (address
+ * errors on a 68000; the bug-orig tests ribbmaplib-odd-chunk-length*),
+ * BBGetPalette writing behind its block (ribbmaplib-getpalette-low-gt-high).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
