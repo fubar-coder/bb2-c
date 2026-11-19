@@ -94,6 +94,10 @@
  * stays, and a3 ends on text$, its first string argument, giving back the
  * space of the arguments, which the compiler does not take back after a
  * function with a numeric result (#846).
+ * Fixed (intended deviation, #1103): AppLock returned the first
+ * argument's lock whatever NextAppFile or AppFile had read; it returns
+ * the lock of the argument read last now (the first before any read), as
+ * RIAppLib.guide says ("the lock associated with the current AppFile").
  * Fixed (intended deviation, #1102): AppEventID returned 0 without a
  * current App event (before init too), which is also the id of an object;
  * it returns -1 now, as RIAppLib.guide says ("-1 means that no AppEvent
@@ -263,6 +267,7 @@ static LONG numargs;
 static LONG libflag;                    /* -1 = all opened */
 static struct AppMessage *msg;          /* current message */
 static LONG argnum;                     /* next argument of NextAppFile */
+static LONG lockarg;                    /* argument read last, for AppLock (#1103) */
 static ULONG iconx, icony;              /* position of the next App icon */
 
 /**
@@ -406,17 +411,22 @@ static ULONG BLITZ_ROUTINE appmessage_c(void)
 BLITZ_THUNK(appmessage, appmessage_c, "d1/a0-a1");
 
 /**
- * @brief AppLock: the lock of the current message's first argument.
+ * @brief AppLock: the lock of the current AppFile, the argument
+ * NextAppFile or AppFile read last (the first argument before any read).
  *
- * Fixed (#522): a message without arguments has no lock (the original
- * read the first WBArg without looking at am_NumArgs).
+ * Fixed (#1103): the original returned the first argument's lock
+ * whatever NextAppFile or AppFile had read; RIAppLib.guide: "the lock
+ * associated with the current AppFile".  A read that finds no argument
+ * (none left, a number out of range) leaves it.  Fixed (#522): a message
+ * without arguments has no lock (the original read the first WBArg
+ * without looking at am_NumArgs).
  * @return d0: the lock, 0 if there is no message or it has no arguments
  */
 static ULONG BLITZ_ROUTINE applock_c(void)
 {
     if (!libflag || !msg || numargs <= 0)       /* fixed (#522) */
         return 0;
-    return (ULONG)msg->am_ArgList->wa_Lock;
+    return (ULONG)msg->am_ArgList[lockarg].wa_Lock;     /* fixed (#1103) */
 }
 BLITZ_THUNK(applock, applock_c, "d1/a0-a1");
 
@@ -425,12 +435,13 @@ BLITZ_THUNK(applock, applock_c, "d1/a0-a1");
  *
  * Its id, number of arguments and type are kept for AppEventID,
  * AppNumFiles and AppEventType; NextAppFile starts again at the first
- * argument.
+ * argument, and AppLock returns the first argument's lock until a read.
  * @return d0: $800000 (AppEventIDCMP) if there is a message, else 0
  */
 static ULONG BLITZ_ROUTINE appevent_c(void)
 {
     argnum = 0;
+    lockarg = 0;                                /* fixed (#1103) */
     if (!libflag)
         return 0;
     if (msg) {
@@ -502,7 +513,8 @@ BLITZ_THUNK(appeventcode, appeventcode_c, "d1/a0-a1");
  * message (the original unlocked and cleared it unless the path ended
  * with ':'), and an empty path gets no '/' (the original's test read the
  * byte before the string).  a3 ends on the 0 (fixed, #519: the original
- * left it behind the 0).
+ * left it behind the 0).  The argument becomes AppLock's (fixed, #1103),
+ * also if NameFromLock fails.
  * @return d0: the length, 0 if there is no message, no argument left or
  *         NameFromLock fails
  */
@@ -515,6 +527,7 @@ static ULONG BLITZ_ROUTINE appfile_c(void)
         return 0;
     if (argnum < 0 || argnum >= numargs)        /* fixed (#520): argnum < 0 */
         return 0;
+    lockarg = argnum;                           /* fixed (#1103) */
     arg = msg->am_ArgList + argnum++;
     if (!NameFromLock(arg->wa_Lock, (STRPTR)arglist, 255))
         return 0;

@@ -461,13 +461,19 @@ AppLock|d0 = lock|message 1|1	$00000001
 AppLock|d0 = lock|message 2|1	$00000001
 AppLock|d0 = lock|message 3|1	$00000001
 AppLock|d0 = lock of|after AppFile 1|1	$00000001
-AppLock|d0 = lock of|after AppFile 100|1	$00000001
-AppLock|d0 = lock of|after AppFile 2|1	$00000001
-AppLock|d0 = lock of|after AppFile 3|1	$00000001
-AppLock|d0 = lock of|after NextAppFile (argnum kept)|1	$00000001
-AppLock|d0 = lock of|after NextAppFile (none left)|1	$00000001
+AppLock|d0 = lock of|after AppFile 100|1 [orig]	$00000001
+AppLock|d0 = lock of|after AppFile 100|1 [fixed #1103]	$00000002
+AppLock|d0 = lock of|after AppFile 2|1 [orig]	$00000001
+AppLock|d0 = lock of|after AppFile 2|1 [fixed #1103]	$00000002
+AppLock|d0 = lock of|after AppFile 3|1 [orig]	$00000001
+AppLock|d0 = lock of|after AppFile 3|1 [fixed #1103]	$00000002
+AppLock|d0 = lock of|after NextAppFile (argnum kept)|1 [orig]	$00000001
+AppLock|d0 = lock of|after NextAppFile (argnum kept)|1 [fixed #1103]	$00000002
+AppLock|d0 = lock of|after NextAppFile (none left)|1 [orig]	$00000001
+AppLock|d0 = lock of|after NextAppFile (none left)|1 [fixed #1103]	$00000002
 AppLock|d0 = lock of|after NextAppFile 1|1	$00000001
-AppLock|d0 = lock of|after NextAppFile 2|1	$00000001
+AppLock|d0 = lock of|after NextAppFile 2|1 [orig]	$00000001
+AppLock|d0 = lock of|after NextAppFile 2|1 [fixed #1103]	$00000002
 AppLock|kept|after AppFile 1|1	kept
 AppLock|kept|after AppFile 100|1	kept
 AppLock|kept|after AppFile 2|1	kept

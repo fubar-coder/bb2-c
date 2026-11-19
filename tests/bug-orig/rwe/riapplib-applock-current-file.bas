@@ -14,6 +14,7 @@
 ; The original also unlocks the lock of an argument that is no root and
 ; clears it in the message (#521): the program reads f2 and f3 once each
 ; and unlocks only the locks still in the message.
+; @fixed #1103
 ; @rwe riapplib
 DEFTYPE .l
 d=CreateDir_("RAM:bo1103a")

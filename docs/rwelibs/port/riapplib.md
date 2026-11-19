@@ -22,7 +22,7 @@ its own, opened by init:
   (`$800000` or 0); `AppEventType` (1 window, 2 icon, 3 menu, else 0),
   `AppEventID`, `AppNumFiles`, `NextAppFile`/`AppFile(n)` (the full path
   of an argument, a string result at a3), `AppLock` (the lock of the
-  first argument), `AppMessage`, `AppMsgPort`; `AppEventIDCMP` is an
+  argument read last, the first before any read), `AppMessage`, `AppMsgPort`; `AppEventIDCMP` is an
   inline routine (`Dc $a000`) that returns `$800000`.
 
 init allocates one block of 768 bytes (MEMF_CLEAR): 16 longs each for
@@ -81,6 +81,14 @@ kind F):
   init), as RIAppLib.guide says ("-1 means that no AppEvent occurred");
   the original returned 0, which is also the id of an object, so a
   program could not tell "no event" from an event of object 0 (#1102).
+* `AppLock` returns the lock of the current AppFile, as RIAppLib.guide
+  says: the argument `NextAppFile` or `AppFile(n)` read last (its own
+  index, apart from `NextAppFile`'s position, which `AppFile(n)` keeps),
+  the first argument after `AppEvent` before any read; a read that finds
+  no argument (none left, a number out of range) leaves it. The original
+  returned the first argument's lock whatever was read, wrong for every
+  file but the first of a message with files in several directories
+  (#1103).
 * `AppFile(n)` with n ≤ 0 is out of range and returns an empty string;
   the original checked only the upper bound and read the WBArg before
   the list (its lock passed to `NameFromLock`, perhaps unlocked and
