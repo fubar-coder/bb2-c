@@ -18,9 +18,10 @@
  * negative index; author strings at an odd and an even address;
  * BBGetPalette without a new block, with one (from 0 and from 4
  * colours), low > high, no COLR; a map without MFRM; a failed
- * SetBBMapLoc after a good one (BUG(orig) #554: the info chunk, the cache and
- * the end of the old map stay); a second run (init after finit, as from
- * the editor with the library still loaded): the map info routines, two
+ * SetBBMapLoc after a good one (the original, #554: the info chunk, the
+ * cache and the end of the old map stay, the searches start at the new
+ * address); a second run (init after finit, as from the editor with the
+ * library still loaded): the map info routines, two
  * cached chunks and a search before any Set.
  * Not covered: the routines before the first Set of the first run (they
  * search from address 12), odd chunk lengths (address errors),
@@ -411,14 +412,14 @@ int main(int argc, char **argv)
         allmap(what);
         setloc(SETMAP, 2048);
         fn(MAPDATA, "map 1 again");
-        setloc(SETMAP, 3000);                   /* no FORM: maploc stays set */
+        setloc(SETMAP, 3000);   /* no FORM (the original: maploc set, #554) */
         sprintf(what, "round %d, after a failed SetBBMapLoc", round);
         fn(MAPDATA, what);                      /* the cache */
         fn(MAPWIDTH, what);
         fn(MAPHEIGHT, what);
         fn(MAPSCENID, what);
         fn(MAPINFO, what);
-        fn(MAPSTART, what);                     /* a search from 3000 to the old end */
+        fn(MAPSTART, what);                     /* the original: from 3000 to the old end */
     }
 
     /* the run ends with a good scenario and map, two chunks cached */

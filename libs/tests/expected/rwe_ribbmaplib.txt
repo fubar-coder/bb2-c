@@ -1117,27 +1117,32 @@ BBMapScenarioID|popped|round 5, map without MFRM|2	$00000000
 BBMapScenarioID|popped|second run|1	$00000000
 BBMapStartPos|d0|round 0|1	$000008FA
 BBMapStartPos|d0|round 0|2	$000008FA
-BBMapStartPos|d0|round 0, after a failed SetBBMapLoc|1	$00000000
+BBMapStartPos|d0|round 0, after a failed SetBBMapLoc|1 [orig]	$00000000
+BBMapStartPos|d0|round 0, after a failed SetBBMapLoc|1 [fixed #554]	$000008FA
 BBMapStartPos|d0|round 0, map without MFRM|1	$00001890
 BBMapStartPos|d0|round 0, map without MFRM|2	$00001890
 BBMapStartPos|d0|round 1|1	$00000938
 BBMapStartPos|d0|round 1|2	$00000938
-BBMapStartPos|d0|round 1, after a failed SetBBMapLoc|1	$00000000
+BBMapStartPos|d0|round 1, after a failed SetBBMapLoc|1 [orig]	$00000000
+BBMapStartPos|d0|round 1, after a failed SetBBMapLoc|1 [fixed #554]	$00000938
 BBMapStartPos|d0|round 1, map without MFRM|1	$00001848
 BBMapStartPos|d0|round 1, map without MFRM|2	$00001848
 BBMapStartPos|d0|round 2|1	$00000826
 BBMapStartPos|d0|round 2|2	$00000826
-BBMapStartPos|d0|round 2, after a failed SetBBMapLoc|1	$00000000
+BBMapStartPos|d0|round 2, after a failed SetBBMapLoc|1 [orig]	$00000000
+BBMapStartPos|d0|round 2, after a failed SetBBMapLoc|1 [fixed #554]	$00000826
 BBMapStartPos|d0|round 2, map without MFRM|1	$00001814
 BBMapStartPos|d0|round 2, map without MFRM|2	$00001814
 BBMapStartPos|d0|round 3|1	$000008F4
 BBMapStartPos|d0|round 3|2	$000008F4
-BBMapStartPos|d0|round 3, after a failed SetBBMapLoc|1	$00000000
+BBMapStartPos|d0|round 3, after a failed SetBBMapLoc|1 [orig]	$00000000
+BBMapStartPos|d0|round 3, after a failed SetBBMapLoc|1 [fixed #554]	$000008F4
 BBMapStartPos|d0|round 3, map without MFRM|1	$00001828
 BBMapStartPos|d0|round 3, map without MFRM|2	$00001828
 BBMapStartPos|d0|round 4|1	$00000828
 BBMapStartPos|d0|round 4|2	$00000828
-BBMapStartPos|d0|round 4, after a failed SetBBMapLoc|1	$00000000
+BBMapStartPos|d0|round 4, after a failed SetBBMapLoc|1 [orig]	$00000000
+BBMapStartPos|d0|round 4, after a failed SetBBMapLoc|1 [fixed #554]	$00000828
 BBMapStartPos|d0|round 4, map without MFRM|1	$000018A6
 BBMapStartPos|d0|round 4, map without MFRM|2	$000018A6
 BBMapStartPos|d0|round 5|1	$00000874

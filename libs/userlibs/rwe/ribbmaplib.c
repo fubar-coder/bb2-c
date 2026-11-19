@@ -29,12 +29,8 @@
  * caller's), 0 when the chunk is missing.
  *
  * BUG(orig), kept:
- *   - SetBBMapLoc stores the address before it checks it: after a failed
- *     call BBMapScenarioID/Width/Height/Info use the MFRM chunk of the
- *     map before (and the chunk searches the new address), and the
- *     cache (the id alone) returns a chunk of the old map for its id
- *     (#554).  A map without MFRM sets the info chunk to the address
- *     behind the last chunk id (#551).
+ *   - A map without MFRM sets the info chunk to the address behind the
+ *     last chunk id (#551).
  *   - The search ends only after an id that does not match (the id read
  *     can be behind the end) and compares the addresses signed (#553);
  *     an odd length makes the next id odd (an address error on a 68000)
@@ -45,6 +41,12 @@
  *     high even if low > high (one colour at low, possibly behind the
  *     block) (#549).  BBScenarioLowCol/HighCol extend the byte with its
  *     sign (#550).
+ * Fixed (intended deviation, #554): SetBBMapLoc stores the address only
+ * after its checks; a failed call leaves the map before whole (the
+ * original stored it first: after a failed call the info functions used
+ * the old map's MFRM chunk, the searches ran from the new address to the
+ * old end, the cache returned a chunk of the old map, and before any
+ * good call the info functions read from address 0).
  * Fixed (intended deviation, #1108): init clears the map and scenario
  * locations, the MFRM chunk and the caches (the original's init is an
  * RTS: a second run from the editor with the library still loaded saw
@@ -272,18 +274,18 @@ static BB_BOOL BLITZ_ROUTINE setbbscenarioloc_c(struct form *form BL_REG(d0))
  * @brief SetBBMapLoc address: the map file ("FORM" .. "BMAP") in memory for
  * the BBMap... functions; finds its MFRM chunk.
  *
- * BUG(orig) (#554): the address is stored before it is checked (after a
- * failed call the chunk searches use the new address, the MFRM chunk
- * and the cache the old map's).  BUG(orig) (#551): without MFRM the info
- * chunk is the address behind the last chunk id.
+ * A failed call keeps the old map, its info chunk and its cache (fixed,
+ * #554: the original stored the address before the checks).
+ * BUG(orig) (#551): without MFRM the info chunk is the address behind
+ * the last chunk id.
  * @param form  d0: the address of the file
  * @return d0: BB_TRUE, BB_FALSE if it is no FORM of type BMAP
  */
 static BB_BOOL BLITZ_ROUTINE setbbmaploc_c(struct form *form BL_REG(d0))
 {
-    maploc = (UBYTE *)form;             /* BUG(orig): before the check (#554) */
     if (form->id != ID('F', 'O', 'R', 'M') || form->type != ID('B', 'M', 'A', 'P'))
         return BB_FALSE;
+    maploc = (UBYTE *)form;             /* fixed (#554): after the checks */
     mapend = (UBYTE *)form + form->length + 8;
     lastmapchunk = 0;
     search(ID('M', 'F', 'R', 'M'), maploc, mapend, &lastmapchunk, &lastmapchunkaddr,

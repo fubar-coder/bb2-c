@@ -58,13 +58,17 @@ kind F):
   memory), the cached chunks were returned and the searches ran through
   the old files (#1108).
 
+* `SetBBMapLoc` stores the address only after its checks: a failed call
+  leaves the map before whole (as `SetBBScenarioLoc`). The original
+  stored it first: after a failed call the info functions used the old
+  map's `MFRM`, the searches ran from the rejected address to the old
+  end, the cache returned a chunk of the old map, and before any good
+  call the info functions read from address 0 (#554).
+
 ## BUG(orig), kept
 
-* `SetBBMapLoc` stores the address before it checks it: after a failed
-  call the info chunk (`BBMapScenarioID`/`Width`/`Height`/`Info`), the
-  cache and the end of the old map stay, the searches start at the new
-  address (#554). A map without `MFRM` makes the info chunk the address
-  behind the last id read (#551).
+* A map without `MFRM` makes the info chunk the address behind the
+  last id read (#551).
 * The search stops only after an id that does not match: the id behind
   the end of the file is read and found if it matches. The addresses
   are compared signed (#553). An odd chunk length makes the following

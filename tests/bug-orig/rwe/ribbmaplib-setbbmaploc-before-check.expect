@@ -1,0 +1,13 @@
+[compile]
+ok
+[run]
+failed first 0
+width 0
+id 0
+good -1
+data 40
+failed 0
+width 40 height 30 id 7
+data 40
+start 52
+rc=0
