@@ -28,9 +28,6 @@
  * except those thunks.
  *
  * Kept from the original (BUG(orig)):
- *   - Derez is declared with a result (!acommand{#long}) but sets none:
- *     d0 is what the routine leaves there (the input for derez 0) -
- *     reproduced, it is what a Blitz program gets (#672);
  *   - Derez with a value >= 3 builds its mask table myline with 20 words
  *     (21 for values > 31) into the 18 words the source reserves: the
  *     19th goes over myflag and the pad byte, the 20th (21st) over the
@@ -78,6 +75,11 @@
  *     lines of 80 bytes in place (the left 40 bytes of each), so it fits
  *     640 x 32 only: on a narrower bitmap the lines are not its rows, on a
  *     smaller one it writes behind the plane (#676);
+ *   - Derez, declared with a result (!acommand{#long}), returns -1 when it
+ *     worked and 0 when it did nothing (derez value 0); the original set
+ *     none, d0 was what the routine left there (its d0 on entry for 0, the
+ *     upper word of it and $FFFF for 1, the last long of UnrezX2 for 2, a
+ *     mask or source word for the others) (#672; W6 decision Q3);
  *   - Derez and ZoomXY load the depth into sbitdepth as a whole word; the
  *     original set only its low byte (MOVE.b into sbitdepth+1), so after a
  *     depth 0 the upper byte stayed $FF for every later call (#675; seen
@@ -144,7 +146,8 @@ RI_BMAPS();
 BLITZ_SUBS(zoomx4_xy, bm2chk, 0);                /* check: fixed #947 #674 */
 BLITZ_NAME("ZoomX4", "source#,dest#,sourceadd,destadd,width,height[,xy_select]");
 
-/* BUG(orig) (#672): declared with a result, sets none (see asmderez) */
+/* the result: -1 when it worked, 0 for derez value 0 (fixed #672: the
+   original declared a result and set none, see asmderez) */
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 RI_BMAPS();
@@ -1041,11 +1044,10 @@ static void screencopy(void)
     } while (plane-- != 0);
 }
 
-/* UnrezX2: every second pixel doubled, every second line doubled;
-   returns the last long (d0) */
-static ULONG unrezx2(void)
+/* UnrezX2: every second pixel doubled, every second line doubled */
+static void unrezx2(void)
 {
-    ULONG *bitptr = bit_add, *destptr = dest_add, from, to, pixels = 0;
+    ULONG *bitptr = bit_add, *destptr = dest_add, from, to, pixels;
     UWORD lines, plane = sbitdepth, y, x;
 
     lines = (UWORD)(((WORD)(height + 1) >> 1) - 1);
@@ -1067,7 +1069,6 @@ static ULONG unrezx2(void)
             to += 40;
         } while (y-- != 0);
     } while (plane-- != 0);
-    return pixels;
 }
 
 /**
@@ -1076,44 +1077,42 @@ static ULONG unrezx2(void)
  *
  * Blocks of derez_value pixels and lines get the colour of their first
  * pixel (1 = ScreenCopy, 2 = UnrezX2, up to 17 through the mask table
- * myline, above that bit by bit); derez_value 0 does nothing.  BUG(orig):
- * no result is set (#672) - the d0 returned here is what the original
- * leaves in d0 (the input for 0, its upper word and $FFFF for 1, the
- * last long for 2, else the last mask/source word); values >= 3 write
- * 20 (21) words of myline into 18 (#671, DIFF: room for 21 here).  A
+ * myline, above that bit by bit); derez_value 0 does nothing.  The
+ * result: -1, 0 for derez_value 0 (fixed #672: the original set none, d0
+ * was what the routine left there - the input for 0, its upper word and
+ * $FFFF for 1, the last long for 2, else the last mask/source word).
+ * Values >= 3 write 20 (21) words of myline into 18 (BUG(orig) #671,
+ * DIFF: room for 21 here).  A
  * depth-0 source gives 65536 planes, more than 16 planes overrun the
  * pointer arrays: refused by bm2chk (fixed #947, #674).  sbitdepth is
  * set as a whole word (fixed #675: the original set its low byte only).
- * @param callerd0  d0: the caller's d0 (source#), the "result" for 0
  * @param sadd      d2: byte offset added to every source plane
  * @param dadd      d3: byte offset added to every destination plane
  * @param rez       d4.w: derez_value, the block size
  * @param h         d5.w: the number of lines
  * @param src       a0: the source bitmap (d0)
  * @param dst       a1: the destination bitmap (d1)
- * @return d0: what the routine leaves there (declared !acommand{#long})
+ * @return d0: -1 when it worked, 0 for derez_value 0
  */
-static ULONG BLITZ_ROUTINE asmderez_c(ULONG callerd0 BL_REG(d0), ULONG sadd BL_REG(d2),
+static ULONG BLITZ_ROUTINE asmderez_c(ULONG sadd BL_REG(d2),
                                       ULONG dadd BL_REG(d3), ULONG rez BL_REG(d4),
                                       ULONG h BL_REG(d5), ULONG src BL_REG(a0),
                                       ULONG dst BL_REG(a1))
 {
     /* bitptr a0, destptr a6, copysrc a1, pos a2 (the source line),
        nextline a2, dstline a3, carry d1, mask/rot/dstword d2, maskptr a5,
-       count d4, plane d6, lines d7, bitno d3.b, cols d5.b, leftover/value
-       d0 */
+       count d4, plane d6, lines d7, bitno d3.b, cols d5.b, value d0 */
     ULONG *bitptr, *destptr, copysrc, pos, nextline, dstline, carry;
     ULONG mask;                                 /* d2: a myline word being built */
     ULONG rot;                                  /* d2: the rotated copy of value */
     ULONG dstword;                              /* d2: the destination word */
-    ULONG leftover;                             /* d0: the DBRA leftover */
-    ULONG value;                                /* d0: the source word, the result */
+    ULONG value;                                /* d0: the source word */
     UWORD *maskptr, count, plane, rv;
     WORD c, b, lines;
     BYTE bitno, cols;
 
     if (!(UWORD)rez)
-        return callerd0;
+        return 0;                       /* fixed (#672): the caller's d0 */
     res_value = (UWORD)rez;
     res_value2 = (UWORD)(rez - 1);
     res_value3 = (UWORD)(rez - 2);
@@ -1121,14 +1120,15 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG callerd0 BL_REG(d0), ULONG sadd BL_R
     sbitdepth = BM_DEPTH(src);          /* the whole word: fixed (#675) */
     sbitdepth--;                        /* depth 0 = $FFFF: bm2chk (#947) */
     store_bitplanes(src, dst, sadd, dadd);
-    leftover = (callerd0 & 0xffff0000UL) | 0xffff; /* DBRA d0 of store_bitplanes */
 
     if (!res_value2) {
         screencopy();
-        return leftover;
+        return (ULONG)-1;               /* fixed (#672): no result set */
     }
-    if (res_value == 2)
-        return unrezx2();
+    if (res_value == 2) {
+        unrezx2();
+        return (ULONG)-1;
+    }
 
     add_value = bl_mulu_w(40, res_value);
     yvalue = height;
@@ -1270,7 +1270,7 @@ yloop:
         if ((WORD)yvalue < 0)
             break;
     }
-    return value;
+    return (ULONG)-1;
 }
 /* the original keeps d1-d7/a0-a6 */
 BLITZ_THUNK(asmderez, asmderez_c, "d1/a0-a1");

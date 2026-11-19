@@ -74,6 +74,12 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   in place (the left 40 bytes of each), so on a narrower bitmap the
   lines are not its rows and on a smaller one it writes behind the plane
   (#676, test `rwe/rifxlib-zoomyzoom-small`);
+* `Derez`, declared with a result (`!acommand{#long}`), returns -1 when it
+  worked and 0 when it did nothing (derez value 0); the original set
+  none: d0 was whatever the routine left there (its d0 on entry for 0,
+  the upper word of it and $FFFF for 1, the last long for 2, the last
+  mask word swapped/the last source word for the others) (#672, W6
+  decision Q3, test `rwe/rifxlib-derez-result`);
 * `Derez` and `ZoomXY` load the depth into `sbitdepth` as a whole word;
   the original set only its low byte (`MOVE.b` into `sbitdepth+1`), so
   after a depth-0 bitmap the upper byte stayed $FF for every later call
@@ -82,11 +88,6 @@ counts a `volatile` variable (the compiler would drop an empty loop).
 
 **BUG(orig)** (kept, commented in the code):
 
-* `Derez` is declared with a result (`!acommand{#long}`) but sets none:
-  d0 is whatever the routine leaves there (the input for 0, the input's
-  upper word and $FFFF for 1, the last long for 2, the last mask word
-  swapped/the last source word for the others). The C version returns
-  exactly that – it is what a Blitz program gets (#672);
 * `Derez` with a value ≥ 3 builds its mask table `myline` with 20 words
   (21 for values > 31) into the 18 words the source reserves: the 19th
   goes over `myflag` and the pad byte, the 20th (and 21st) over the first

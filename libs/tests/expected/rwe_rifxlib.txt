@@ -137,20 +137,34 @@ ClearBitmap|memory|8x12 x2 h $5 off $3|1 [orig]	bytes 32768 fnv 445E806E
 ClearBitmap|memory|8x12 x2 h $5 off $3|1 [fixed #668]	bytes 32768 fnv 4362A79C
 ClearBitmap|memory|8x12 x2 h $C off $0|1 [orig]	bytes 32768 fnv 3B338D51
 ClearBitmap|memory|8x12 x2 h $C off $0|1 [fixed #668]	bytes 32768 fnv 466CB51A
-Derez|d0|0 h 6 x2|1	$00120034
-Derez|d0|1 h 6 x2|1	$0012FFFF
-Derez|d0|10 h 20 x1|1	$FFFF0000
-Derez|d0|11 h 20 x2|1	$C0000000
-Derez|d0|12 h 20 x1|1	$0000CCA7
-Derez|d0|19 h 30 x1|1	$00008D5B
-Derez|d0|2 h 6 x2|1	$F300CCFF
-Derez|d0|2 h 7 x1|1	$00F0FC00
-Derez|d0|28 h 41 x1|1	$0000AF0A
-Derez|d0|3 h 9 x2|1	$C01F8000
-Derez|d0|4 h 8 x1|1	$00F00000
-Derez|d0|5 h 11 x2|1	$7C1F0000
-Derez|d0|7 h 8 x1|1	$0FE00000
-Derez|d0|FFFF0003 h 6 x1|1	$07E38000
+Derez|d0|0 h 6 x2|1 [orig]	$00120034
+Derez|d0|0 h 6 x2|1 [fixed #672]	$00000000
+Derez|d0|1 h 6 x2|1 [orig]	$0012FFFF
+Derez|d0|1 h 6 x2|1 [fixed #672]	$FFFFFFFF
+Derez|d0|10 h 20 x1|1 [orig]	$FFFF0000
+Derez|d0|10 h 20 x1|1 [fixed #672]	$FFFFFFFF
+Derez|d0|11 h 20 x2|1 [orig]	$C0000000
+Derez|d0|11 h 20 x2|1 [fixed #672]	$FFFFFFFF
+Derez|d0|12 h 20 x1|1 [orig]	$0000CCA7
+Derez|d0|12 h 20 x1|1 [fixed #672]	$FFFFFFFF
+Derez|d0|19 h 30 x1|1 [orig]	$00008D5B
+Derez|d0|19 h 30 x1|1 [fixed #672]	$FFFFFFFF
+Derez|d0|2 h 6 x2|1 [orig]	$F300CCFF
+Derez|d0|2 h 6 x2|1 [fixed #672]	$FFFFFFFF
+Derez|d0|2 h 7 x1|1 [orig]	$00F0FC00
+Derez|d0|2 h 7 x1|1 [fixed #672]	$FFFFFFFF
+Derez|d0|28 h 41 x1|1 [orig]	$0000AF0A
+Derez|d0|28 h 41 x1|1 [fixed #672]	$FFFFFFFF
+Derez|d0|3 h 9 x2|1 [orig]	$C01F8000
+Derez|d0|3 h 9 x2|1 [fixed #672]	$FFFFFFFF
+Derez|d0|4 h 8 x1|1 [orig]	$00F00000
+Derez|d0|4 h 8 x1|1 [fixed #672]	$FFFFFFFF
+Derez|d0|5 h 11 x2|1 [orig]	$7C1F0000
+Derez|d0|5 h 11 x2|1 [fixed #672]	$FFFFFFFF
+Derez|d0|7 h 8 x1|1 [orig]	$0FE00000
+Derez|d0|7 h 8 x1|1 [fixed #672]	$FFFFFFFF
+Derez|d0|FFFF0003 h 6 x1|1 [orig]	$07E38000
+Derez|d0|FFFF0003 h 6 x1|1 [fixed #672]	$FFFFFFFF
 Derez|kept|0 h 6 x2|1	kept
 Derez|kept|1 h 6 x2|1	kept
 Derez|kept|10 h 20 x1|1	kept
