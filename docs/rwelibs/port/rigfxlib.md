@@ -89,14 +89,18 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   object's plane pointers are cleared (#679). MergeBitplanes still takes
   the word: it writes numplanes there (Flags 0) and compares sums of
   such words.
+* `CopyColour` compares the colour numbers with the palettes' numbers of
+  colours unsigned (`BCC`): a negative colour number fails (0), as the
+  manual says ("The command fails if either of the colour numbers is out
+  of the range of the relevant palette"). The original compared them
+  signed (`BGE`): negative numbers passed and indexed up to 786 KB behind
+  the palette, the result -1 (#678).
 
 ## BUG(orig), kept
 
 * `SaveCMAP` writes no pad byte behind a CMAP of odd length (odd number
   of colours) (#687); a palette of 0 colours copies 65536 colours into
   the 48 byte block (#688).
-* `CopyColour` checks the colour numbers signed (`BGE`): negative colour
-  numbers pass and index up to 786 KB behind the palette (#678).
 * `PalAdjust` and the colour functions use the palette of the last
   `PaletteInfo` without a check (before it: address 0) (#686);
   `PalAdjust` without start/end takes the number of colours of that

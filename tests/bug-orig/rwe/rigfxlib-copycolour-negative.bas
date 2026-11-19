@@ -6,6 +6,7 @@
 ; temporarily a block of the program's own (800000 bytes), so the
 ; source colour -1 is read inside it.
 ; Correct: CopyColour refuses the colour -1 and returns 0.
+; @fixed #678
 ; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
 ; @rwe rigfxlib riamosfunclib
 DEFTYPE .l

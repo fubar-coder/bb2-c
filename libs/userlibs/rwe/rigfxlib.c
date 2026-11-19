@@ -31,8 +31,6 @@
  * BUG(orig), kept:
  *   - SaveCMAP writes no pad byte behind a CMAP of odd length (#687); a
  *     palette of 0 colours copies 65536 (#688).
- *   - CopyColour compares the colour numbers signed: negative ones pass
- *     and index far behind the palette (MULU.w) (#678).
  *   - PalAdjust/PalRed... use the palette of the last PaletteInfo
  *     unchecked (before one: address 0) (#686); PalAdjust without
  *     start/end takes the number of colours of THAT palette, not of the
@@ -61,6 +59,11 @@
  *     "Illegal BitMap Depth" (cpuclschk; the original has no error check
  *     area); the release code clears 65536 planes then, as the original
  *     (an invalid argument, D-005) (#679).
+ *   - CopyColour compares the colour numbers unsigned (CMP.w : BCC), so
+ *     negative ones fail (0), as the manual says ("The command fails if
+ *     either of the colour numbers is out of the range of the relevant
+ *     palette"); the original compared them signed (BGE): they passed and
+ *     indexed up to 786 KB behind the palette (MULU.w) (#678).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -473,9 +476,10 @@ BLITZ_THUNK(fillpalette, fillpalette_c, "d0-d1/a0-a1");
  * @brief CopyColour(sourcepal#,destpal#,colsource#,coldest#): copy one colour between palettes.
  *
  * The three channel longs of colsource# of the source palette go to
- * coldest# of the target.  BUG(orig) (#678): the colour numbers are
- * compared with the palettes' number of colours as signed words:
- * negative ones pass and index far behind the palette (MULU.w).
+ * coldest# of the target.  The colour numbers are compared with the
+ * palettes' number of colours as unsigned words (fixed #678: the
+ * original compared them signed, so negative ones passed and indexed up
+ * to 786 KB behind the palette, MULU.w).
  * @param src  a0: the source palette object (#ia0)
  * @param dst  a1: the target palette object (#ia1)
  * @param cs   d2: the source colour
@@ -489,9 +493,9 @@ static BB_BOOL BLITZ_ROUTINE copycolour_c(struct bb_palette *src BL_REG(a0),
 {
     struct palcol *s, *d;
 
-    if ((WORD)cs >= (WORD)src->numcols)
+    if ((UWORD)cs >= (UWORD)src->numcols)    /* CMP.w : BCC - fixed #678 */
         return BB_FALSE;
-    if ((WORD)cd >= (WORD)dst->numcols)
+    if ((UWORD)cd >= (UWORD)dst->numcols)
         return BB_FALSE;
     s = (struct palcol *)(COLBYTES(PALDATA(src)) + bl_mulu_w((UWORD)cs, 12));
     d = (struct palcol *)(COLBYTES(PALDATA(dst)) + bl_mulu_w((UWORD)cd, 12));
