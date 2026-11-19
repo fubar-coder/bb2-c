@@ -13,9 +13,10 @@
  * d0 (form 1: the address of the data, relative to the buffer; form 2:
  * 1), the whole buffers (also checked against the expected data) and the
  * kept registers.  Both forms with other data
- * (0, nothing written).  Not covered: corrupt data (writes anywhere),
- * more than 16 far offset bits (the DIFF of the run table), a far offset
- * that is negative as a word.
+ * (0, nothing written).  Not covered: corrupt data (the original writes
+ * anywhere; the bug-orig tests ristcdecrunchlib-optidec-no-checks and
+ * -real-data, #833), more than 16 far offset bits (refused now, #833), a
+ * far offset that is negative as a word.
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

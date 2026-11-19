@@ -12,16 +12,19 @@
  *   STCDecrunch(source)       unpacks the S404 data at source in place,
  *                             to source + the security offset; returns
  *                             that address (a0 after the decruncher), 0
- *                             if source is no S404 file
+ *                             if source is no S404 file or its data are
+ *                             corrupt
  *   STCDecrunch(source,dest)  unpacks to dest (no offset); returns 1 (d0
- *                             of the decruncher), 0 if no S404 file
+ *                             of the decruncher), 0 if no S404 file or
+ *                             corrupt data
  *
  * init and finit are empty (!nullsub{0,0,0}).  No assembler besides the
  * thunks.
  *
- * BUG(orig): the decruncher does not check the data (optidec.h): corrupt
- *   data write below the destination and read below the packed words
- *   (#833).
+ * Fixed (#833): corrupt data no longer write below the destination; the
+ *   original's decruncher wrote a match or literal run past its start.
+ *   The checks cost nothing per token on the main path (optidec.h); such
+ *   data give 0.  Reads are not checked (a known limit, optidec.h).
  * Form 2 does not check that dest is large enough: no defect, the caller
  *   gives a dest for the unpacked length (the header has it).
  * DIFF: the decruncher's run table index (optidec.h).
@@ -60,36 +63,39 @@ BLITZ_LIBFIN();
  * @brief STCDecrunch(source): unpack S404 data in place.
  *
  * The data are unpacked to source + the security offset (the long at
- * source + 4); the result is a0 at the end of the decruncher.  The
- * decruncher checks nothing: BUG(orig) (#833), corrupt data write below
- * the destination.
+ * source + 4); the result is a0 at the end of the decruncher.  Corrupt
+ * data are refused and never written below the destination (fixed #833:
+ * the original wrote a match or literal run past its start).
  * @param a  d0: the S404 file in memory
  * @return d0: the address of the unpacked data, 0 if source is no S404
- *         file
+ *         file or its data are corrupt
  */
 static ULONG BLITZ_ROUTINE stcdecrunch_c(UBYTE *a BL_REG(d0))
 {
-    if (LONGAT(a) != S404)
+    UBYTE *end;
+
+    if (LONGAT(a) != S404 || !dostc(a, a + LONGAT(a + 4), &end))
         return 0;
-    return (ULONG)dostc(a, a + LONGAT(a + 4));
+    return (ULONG)end;
 }
 
 /**
  * @brief STCDecrunch(source,dest): unpack S404 data to dest.
  *
  * No security offset; dest is not checked (the caller gives one for the
- * unpacked length of the header: no defect).  BUG(orig) (#833) as in the
- * first form.
+ * unpacked length of the header: no defect).  Corrupt data as in the
+ * first form (fixed #833).
  * @param a     d0: the S404 file in memory
  * @param dest  d1: the destination
  * @return d0: 1 (d0 of the decruncher, MOVEQ #1,d0), 0 if source is no
- *         S404 file
+ *         S404 file or its data are corrupt
  */
 static ULONG BLITZ_ROUTINE stcdecrunch2_c(const UBYTE *a BL_REG(d0), UBYTE *dest BL_REG(d1))
 {
-    if (LONGAT(a) != S404)
+    UBYTE *end;
+
+    if (LONGAT(a) != S404 || !dostc(a, dest, &end))
         return 0;
-    dostc(a, dest);
     return 1;
 }
 

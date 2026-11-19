@@ -24,8 +24,10 @@
  * file (the original unpacks it anyway - a harmless one: offset and lengths
  * chosen so; the C build returns 0, fixed #836); the number of UnLock calls of the test task during one
  * STCLoad of an S404 file (dos.library's UnLock patched to count them:
- * the original unlocks the lock OpenFromLock took over, fixed #835).  Not covered: corrupt data (writes anywhere), more than 16
- * far offset bits (the DIFF of the run table), a far offset that is
+ * the original unlocks the lock OpenFromLock took over, fixed #835).  Not
+ * covered: corrupt data (the original writes anywhere; the bug-orig tests
+ * of ristcdecrunchlib cover the shared decruncher, #833), more than 16
+ * far offset bits (refused now, #833), a far offset that is
  * negative as a word (16 bits >= $8000: reads before the destination).
  */
 #include "rwecmp.h"

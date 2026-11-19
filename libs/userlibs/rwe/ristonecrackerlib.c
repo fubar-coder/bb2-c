@@ -37,11 +37,11 @@
  *   has no size argument (the caller gives a buffer of STCSafeLen bytes and
  *   at least the file's size).
  *
- * BUG(orig):
- *   - The decruncher does not check the data: corrupt data write below
- *     the buffer (a match or literal run past the start) and read the
- *     packed words below the file (#833).
  * Fixed:
+ *   - Corrupt data no longer write below the buffer: the original's
+ *     decruncher wrote a match or literal run past its start (#833).  The
+ *     checks cost nothing per token on the main path (optidec.h); STCLoad
+ *     then returns 0.  Reads are not checked (a known limit, optidec.h).
  *   - finit closes dos.library; the original never closed it (finit 0)
  *     (#834).
  *   - STCLoad does not unlock the lock after Close: OpenFromLock has taken
@@ -55,10 +55,10 @@
  *     gave (#836).
  * DIFF: the literal run reads its shift count from a table indexed by the
  *   bit count d7 (MOVE.b table(pc,d7.w)); d7 leaves 0..15 only with a
- *   header of more than 16 offset bits, and then the original reads
- *   whatever lies around the table (its own code) - the C build takes the
- *   index modulo 16.  With d7 = 0..15 (every file with 0..16 offset bits)
- *   the result is the same.
+ *   first bit count (the trailer's third word) above 16 (or more than 16
+ *   offset bits, which the C build refuses, #833), and then the original
+ *   reads whatever lies around the table (its own code) - the C build
+ *   takes the index modulo 16.  With d7 = 0..15 the result is the same.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -128,14 +128,14 @@ static const char dosname[] = "dos.library";
 /* the decruncher: dostc */
 #include "optidec.h"
 
-/* _stcdecrunch: unpack the file at a in place; the unpacked length (read
-   before) */
-static ULONG stcdecrunch(UBYTE *a)
+/* _stcdecrunch: unpack the file at a in place; 1, or 0 for corrupt data
+   (fixed #833; the original returned the unpacked length, read before,
+   which STCLoad did not use) */
+static int stcdecrunch(UBYTE *a)
 {
-    ULONG len = HDR(a)->unpacked;       /* MOVE.l 8(a1),-(a7) */
+    UBYTE *end;
 
-    dostc(a, a + HDR(a)->offset);
-    return len;
+    return dostc(a, a + HDR(a)->offset, &end);
 }
 
 /* ------------------------------------------------------------ commands */
@@ -213,14 +213,14 @@ static ULONG BLITZ_ROUTINE stcsafelen_c(const UBYTE *a BL_REG(d0))
  * succeeded, Read read the whole file and it is an S404 file whose packed
  * data and trailer lie within it (fixed #836: the original checked none
  * of it).  The whole file is read whatever the buffer's size (the command
- * has no size argument).  BUG(orig): the decruncher does not check the
- * data (#833).
+ * has no size argument).  Corrupt data give 0 and are not written below
+ * the buffer (fixed #833).
  * @param name  d0: filename$
  * @param ad    d1: the buffer (STCSafeLen bytes, at least the file's size)
  * @return d0: the start of the unpacked data (address + offset), 0 if the
  *         file cannot be locked, examined, opened or read whole, there is
  *         no memory for the FileInfoBlock, or it is no S404 file whose
- *         packed data and trailer it holds
+ *         packed data and trailer it holds, or its data are corrupt
  */
 static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_REG(d1))
 {
@@ -253,7 +253,8 @@ static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_
     if (got != size || size < (LONG)sizeof(struct s404hdr) + 2
         || HDR(ad)->id != S404 || HDR(ad)->packed > (ULONG)size - 18)
         return 0;
-    stcdecrunch(ad);
+    if (!stcdecrunch(ad))               /* fixed (#833): corrupt data */
+        return 0;
     return (ULONG)ad + HDR(ad)->offset;
 }
 

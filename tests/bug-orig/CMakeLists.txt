@@ -92,6 +92,8 @@
 #   REQLIB (the real req.library 2.8 of Aminet, archive/aminet/ReqLib28;
 #   file=libs/req.library|@REQLIB@ with runwrap=@INJECT@|libs=CORPUS:libs,
 #   skipped without it),
+#   ANCIENT (the files of ancient, archive/ancient/github-1491a35a: real
+#   StoneCracker S404 data; file=DEST|@ANCIENT@/PATH, skipped without it),
 #   CD (the CD), CD_BLITZ2 (the CD's BLITZ2 directory), TESTDATA
 #   (the generated test data, see below; use
 #   file=DEST|@TESTDATA@/NAME, the program reads CORPUS:DEST)
@@ -120,6 +122,7 @@ set(CD_BLITZ2 ${CD}/BLITZ2)
 set(REF_BLITZ2 ${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2)
 set(USERLIB ${CMAKE_CURRENT_BINARY_DIR}/amiga/bugorig_userlib.obj)
 set(REQLIB ${PROJECT_SOURCE_DIR}/archive/aminet/ReqLib28/req.library)
+set(ANCIENT ${PROJECT_SOURCE_DIR}/archive/ancient/github-1491a35a)
 set(INJECT $<TARGET_FILE:inject>)
 set(WBRUN $<TARGET_FILE:wbrun>)
 set(TESTDATA ${CMAKE_CURRENT_BINARY_DIR}/testdata)

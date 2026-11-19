@@ -1357,7 +1357,8 @@ canned replies, among them `N` with a byte count and `S`, an XOFF that
 holds the program's writes), `rtg=on` (the RTG variant of the emulator,
 `amiga_emulation_rtg`: the uaegfx board and the Workbench hardfile with
 its monitor, for a screen taller than the native modes), with `@USERLIB@`,
-`@INJECT@`, `@WBRUN@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
+`@INJECT@`, `@WBRUN@`, `@CD_BLITZ2@`, `@TESTDATA@`, `@ANCIENT@` (the files of
+ancient that `cmake/fetch-originals.cmake` fetches: real S404 data); `; @configs port` restricts the
 configurations judged; `; @rwe NAME...` for the RWE userlibs, below) and `ID.expect` (the correct behaviour; a line
 beginning with `[` is a section header, so the program's output must
 not begin with `[`). Test

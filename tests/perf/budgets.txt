@@ -247,7 +247,10 @@
 # 96eb58bc (2026-11-19), before the checks of #833: c1pack410 33452874.1,
 # onebyte 1455.7 both times.  Their targets from two runs of the pass
 # perf_bstc.pass with the tag orig (the reference build of the source):
-# 11836874.2 and 504.7 both times.
+# 11836874.2 and 504.7 both times.  Then from two runs with the checks of
+# #833 (2026-11-19): c1pack410 31426874.2 (the restructured loop, 6 %
+# faster) and onebyte 1655.2 (a budget that goes up: the checks once per
+# call and the tail loop cost 199.5 cycles per call) both times.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bbblit.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -397,8 +400,8 @@ bproc.pgrow                  11203     13322.6  pgrow{a$} (u$="a" : u$=s$, the s
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bstc.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bstc.c1pack410           33787406 11836874.2  c=STCDecrunch(f,d) (test_C1.pack410: 152089 bytes of text, efficiency 14)
-bstc.onebyte                 1474      504.7  c=STCDecrunch(s,s+32) (a file of one literal byte)
+bstc.c1pack410           31741146 11836874.2  c=STCDecrunch(f,d) (test_C1.pack410: 152089 bytes of text, efficiency 14)
+bstc.onebyte                 1675      504.7  c=STCDecrunch(s,s+32) (a file of one literal byte)
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1229     1367.5  r$=a$
 bstr.mid                     1464     1553.5  r$=Mid$(a$,3,5)

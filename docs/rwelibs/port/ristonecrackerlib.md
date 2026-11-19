@@ -70,9 +70,6 @@ entry and never called: left out.
 
 ## BUG(orig), kept
 
-* The decruncher checks nothing: corrupt data write below the
-  destination (a match or literal run past the start) and read packed
-  words below the file (#833).
 
 ## Fixed (kind F, docs/libs/deviations.md 3a)
 
@@ -91,14 +88,21 @@ entry and never called: left out.
   loaded properly or was not a valid packed file"). The original checked
   none of it and unpacked whatever it had read with the offsets and
   lengths its words gave, returning the address (#836).
+* The decruncher (`optidec.h`, shared with `ristcdecrunchlib`) no longer
+  writes corrupt data below the destination; `STCLoad` returns 0 for
+  them. The original wrote a match or literal run that starts just above
+  the destination past its start. The checks cost nothing per token on
+  the main path; reads are not checked (a known limit). Details:
+  `docs/rwelibs/port/ristcdecrunchlib.md` (#833).
 
 ## DIFF
 
 A literal run reads the shift count of its straddling byte from a table
 behind the code, indexed by the bit count d7 (`MOVE.b $44C(pc,d7.w)`).
-d7 leaves 0..15 only with a header of more than 16 far offset bits; the
-original then reads whatever lies around the table (its own code), the C
-build takes the index modulo 16. Files with 0..16 offset bits unpack the
+d7 leaves 0..15 only with a first bit count above 16 (the trailer's third
+word; more than 16 far offset bits, the other way there, are refused,
+#833); the original then reads whatever lies around the table (its own
+code), the C build takes the index modulo 16. Other files unpack the
 same.
 
 ## Test
@@ -121,6 +125,7 @@ functions on each file and on other data
 build returns 0), a missing file
 and a directory (OpenFromLock fails), the number of UnLock calls of one
 STCLoad (dos.library's UnLock patched to count them), kept registers. Not covered:
-corrupt data (writes anywhere), more than 16 offset bits (the DIFF), a
+corrupt data (the bug-orig tests of `ristcdecrunchlib` cover the shared
+decruncher), a first bit count above 16 (the DIFF), a
 16-bit far offset of $8000 or more (negative as a word: reads before the
 destination).
