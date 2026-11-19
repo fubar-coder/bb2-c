@@ -446,6 +446,8 @@ UnpackIFF|d0|64x10x3 form 0 lines $0 xy 0|1	$FFFFFFFF
 UnpackIFF|d0|64x10x3 form 1 lines $0 xy 0|1	$00000000
 UnpackIFF|d0|64x10x3 form 1 lines $5A000004 xy 2|1	$FFFFFFFF
 UnpackIFF|d0|64x10x3 form 1 lines $5A00FFFF xy 0|1	$FFFFFFFF
+UnpackIFF|d0|64x10x3 masked form 0 lines $0 xy 0|1	$FFFFFFFF
+UnpackIFF|d0|64x10x3 masked form 1 lines $4 xy 0|1	$FFFFFFFF
 UnpackIFF|d0|64x10x3 more lines form 1 lines $64 xy 1|1	$FFFFFFFF
 UnpackIFF|d0|64x10x3 no plane 0 form 0 lines $0 xy 0|1	$00000000
 UnpackIFF|d0|FORM PBM form 0 lines $0 xy 0|1 [orig]	$FFFFFFFF
@@ -464,6 +466,8 @@ UnpackIFF|kept|64x10x3 form 0 lines $0 xy 0|1	kept
 UnpackIFF|kept|64x10x3 form 1 lines $0 xy 0|1	kept
 UnpackIFF|kept|64x10x3 form 1 lines $5A000004 xy 2|1	kept
 UnpackIFF|kept|64x10x3 form 1 lines $5A00FFFF xy 0|1	kept
+UnpackIFF|kept|64x10x3 masked form 0 lines $0 xy 0|1	kept
+UnpackIFF|kept|64x10x3 masked form 1 lines $4 xy 0|1	kept
 UnpackIFF|kept|64x10x3 more lines form 1 lines $64 xy 1|1	kept
 UnpackIFF|kept|64x10x3 no plane 0 form 0 lines $0 xy 0|1	kept
 UnpackIFF|kept|FORM PBM form 0 lines $0 xy 0|1	kept
@@ -483,6 +487,10 @@ UnpackIFF|planes|64x10x3 form 0 lines $0 xy 0|1	bytes 24064 fnv 43718581
 UnpackIFF|planes|64x10x3 form 1 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
 UnpackIFF|planes|64x10x3 form 1 lines $5A000004 xy 2|1	bytes 24064 fnv BCBD1B4B
 UnpackIFF|planes|64x10x3 form 1 lines $5A00FFFF xy 0|1	bytes 24064 fnv 43718581
+UnpackIFF|planes|64x10x3 masked form 0 lines $0 xy 0|1 [orig]	bytes 24064 fnv 6DE6B65C
+UnpackIFF|planes|64x10x3 masked form 0 lines $0 xy 0|1 [fixed #1112]	bytes 24064 fnv E7369C84
+UnpackIFF|planes|64x10x3 masked form 1 lines $4 xy 0|1 [orig]	bytes 24064 fnv 4B36C465
+UnpackIFF|planes|64x10x3 masked form 1 lines $4 xy 0|1 [fixed #1112]	bytes 24064 fnv 362DAF15
 UnpackIFF|planes|64x10x3 more lines form 1 lines $64 xy 1|1	bytes 24064 fnv C1AEFC61
 UnpackIFF|planes|64x10x3 no plane 0 form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
 UnpackIFF|planes|FORM PBM form 0 lines $0 xy 0|1 [orig]	bytes 24064 fnv 40DC78A7
@@ -501,6 +509,8 @@ UnpackIFF|popped|64x10x3 form 0 lines $0 xy 0|1	$00000000
 UnpackIFF|popped|64x10x3 form 1 lines $0 xy 0|1	$00000000
 UnpackIFF|popped|64x10x3 form 1 lines $5A000004 xy 2|1	$00000000
 UnpackIFF|popped|64x10x3 form 1 lines $5A00FFFF xy 0|1	$00000000
+UnpackIFF|popped|64x10x3 masked form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|popped|64x10x3 masked form 1 lines $4 xy 0|1	$00000000
 UnpackIFF|popped|64x10x3 more lines form 1 lines $64 xy 1|1	$00000000
 UnpackIFF|popped|64x10x3 no plane 0 form 0 lines $0 xy 0|1	$00000000
 UnpackIFF|popped|FORM PBM form 0 lines $0 xy 0|1	$00000000

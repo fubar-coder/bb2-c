@@ -62,6 +62,13 @@
  * copies the rows as they are, 1 unpacks ByteRun1, any other value is
  * refused (BB_FALSE); the original decoded every BODY as ByteRun1.
  *
+ * Fixed (#1112): UnpackIFF reads the masking byte of the BMHD: with
+ * masking 1 (mskHasMask) the mask row behind the plane rows of every
+ * line is skipped; the original never read the byte and decoded the mask
+ * row as the next line's first plane (every line from the second on out
+ * of step, the last lines not reached).  The masking byte is read once
+ * per call; the line loop tests the result once per line.
+ *
  * Fixed (#769, #991, #1105): ILBMPalette with an offset makes a palette
  * that is too small (or has no colour block) grow to offset + CMAP
  * colours and keeps its colours; a CMAP below 3 bytes is refused and the
@@ -586,6 +593,40 @@ static struct {
 } BL_PACKED v;
 
 /**
+ * @brief Skips the mask row of a line (fixed #1112), as UnpackIFF reads
+ * a plane row: uncompressed its bytes, ByteRun1 its runs (a run past the
+ * end of the row skipped whole).
+ *
+ * Always inline: as a call in the line loop it took registers from the
+ * loops of the plane rows (their code got slower by 12 % for an unmasked
+ * picture); inline the unmasked picture pays one test per line.
+ * @param body    the BODY data of the mask row
+ * @param packed  the BMHD's compression (0 or 1)
+ * @return the BODY data behind the mask row
+ */
+static inline __attribute__((always_inline)) const UBYTE *skiprow(const UBYTE *body,
+                                                                  UBYTE packed)
+{
+    WORD left = (WORD)(v.bytewidth + 1);
+
+    if (!packed)
+        return body + left;
+    while (left > 0) {
+        UBYTE code = *body++;
+        if (code == 0x80)
+            continue;
+        if (!(code & 0x80)) {
+            left = (WORD)(left - (code + 1));
+            body += code + 1;
+        } else {
+            left = (WORD)(left - (257 - code));
+            body++;
+        }
+    }
+    return body;
+}
+
+/**
  * @brief UnpackIFF(sourceaddr,bitmap#,numlines,xy_offset): the BODY of an
  * ILBM in memory into a bitmap.
  *
@@ -601,7 +642,9 @@ static struct {
  * bytes and more); a run is cut at the end of the row (fixed #776: the
  * original wrote it into the next row).  The BMHD's compression decides:
  * 0 rows as they are, 1 ByteRun1, anything else fails (fixed #773: the
- * original took every BODY as ByteRun1).
+ * original took every BODY as ByteRun1).  With the BMHD's masking 1 the
+ * mask row behind the planes of every line is skipped (fixed #1112: the
+ * original decoded it as the next line's first plane).
  * @param src    d0: the ILBM data (FORM)
  * @param bm     a1: the bitmap object (parameter 1)
  * @param lines  d2: the number of lines (word; < 0: the BMHD's height;
@@ -619,7 +662,7 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
     UWORD rowbytes;                             /* d7: the BMHD byte width */
     UWORD bodyleft;                             /* d7: the BODY search countdown */
     UWORD line;
-    UBYTE planes, code, packed;
+    UBYTE planes, code, packed, masked;
 
     /* fixed #766: a FORM ILBM is walked, another FORM refused; the raw
        search of the original is the fallback */
@@ -654,6 +697,7 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
     packed = hd->bmh_Compression;
     if (packed > cmpByteRun1)
         return BB_FALSE;
+    masked = hd->bmh_Masking == mskHasMask;     /* fixed #1112 */
     v.iffdepth = (UBYTE)(planes - 1);
     v.bitmapwidth = bm->BytesPerRow;
     if (!LG(bm->Planes))                        /* MOVE.l 8(a1),d0 */
@@ -722,6 +766,8 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
                 }
             }
         } while (plane-- != 0);
+        if (masked)                             /* fixed #1112: the mask row */
+            body = skiprow(body, packed);
     } while (line-- != 0);
     return BB_TRUE;
 }

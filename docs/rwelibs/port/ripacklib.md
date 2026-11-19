@@ -113,6 +113,15 @@ kind F):
   as they are, 1 unpacks ByteRun1, any other value is refused (0). The
   original decoded every BODY as ByteRun1, so an uncompressed picture
   became garbage (#773).
+* **UnpackIFF** reads the masking byte of the BMHD: with masking 1
+  (`mskHasMask`, e.g. a brush saved with a mask) the BODY holds a mask
+  row behind the plane rows of every line, which is skipped (ByteRun1
+  runs read as in a plane row). The original never read the byte and
+  decoded the mask row as the next line's first plane: every line from
+  the second on came out of step, the last lines were not reached
+  (#1112). The line loop tests the masking once per line: an unmasked
+  picture costs about 26 cycles per line more (a 320x256x5 ByteRun1
+  picture: 2015574 to 2022274 cycles, 0.3 %).
 * **ILBMPalette** with an offset: a palette with fewer than offset + CMAP
   colours, or without a colour block, grows to offset + CMAP colours; its
   colours are copied into the new block, the ones between them and the

@@ -526,8 +526,10 @@ static ULONG brun(UBYTE *o, const UBYTE *r, ULONG n)
 }
 
 /* an ILBM: width w, height h, nplanes planes, ncols colours; cmap 0: none;
-   the rows of the BODY word-aligned, as ILBM stores them */
-static ULONG mkilbm(UBYTE *f, UWORD w, UWORD h, UBYTE nplanes, ULONG ncols, ULONG lead)
+   the rows of the BODY word-aligned, as ILBM stores them; mask 1: masking
+   1 (mskHasMask), a mask row behind the planes of every line */
+static ULONG mkilbm(UBYTE *f, UWORD w, UWORD h, UBYTE nplanes, ULONG ncols, ULONG lead,
+                    UBYTE mask)
 {
     ULONG k = 0, y, pl, i, rowbytes = ((ULONG)w + 15) / 16 * 2, form;
     UBYTE row[256];
@@ -544,7 +546,7 @@ static ULONG mkilbm(UBYTE *f, UWORD w, UWORD h, UBYTE nplanes, ULONG ncols, ULON
     k += put16(f + k, h);
     k += put32(f + k, 0);
     f[k++] = nplanes;
-    f[k++] = 0;
+    f[k++] = mask;
     f[k++] = 1;
     f[k++] = 0;
     k += put16(f + k, 0);
@@ -563,13 +565,19 @@ static ULONG mkilbm(UBYTE *f, UWORD w, UWORD h, UBYTE nplanes, ULONG ncols, ULON
     k += put32(f + k, 0x424f4459);              /* BODY */
     i = k;
     k += 4;
-    for (y = 0; y < h; y++)
+    for (y = 0; y < h; y++) {
+        ULONG x;
         for (pl = 0; pl < nplanes; pl++) {
-            ULONG x;
             for (x = 0; x < rowbytes; x++)
                 row[x] = (UBYTE)(x < rowbytes / 2 ? y * 16 + pl : rnd() & (pl ? 0x0f : 0xff));
             k += brun(f + k, row, rowbytes);
         }
+        if (mask) {
+            for (x = 0; x < rowbytes; x++)
+                row[x] = (UBYTE)(0xA0 + y + (rnd() & 0x10));
+            k += brun(f + k, row, rowbytes);
+        }
+    }
     put32(f + i, k - i - 4);
     if (k & 1)
         f[k++] = 0;
@@ -611,7 +619,7 @@ static void unpackiff(const char *what, int form, ULONG lines, ULONG xy)
 static void test_unpackiff(void)
 {
     seed = 11;
-    mkilbm(ilbm, 64, 10, 3, 8, 6);
+    mkilbm(ilbm, 64, 10, 3, 8, 6, 0);
     mkbitmap(10, 12, 3, 1);
     unpackiff("64x10x3", 0, 0, 0);
     mkbitmap(10, 12, 3, 1);
@@ -635,21 +643,21 @@ static void test_unpackiff(void)
     unpackiff("64x10x3 bpr 8", 0, 0, 0);
 
     seed = 12;
-    mkilbm(ilbm, 40, 5, 2, 0, 2);               /* 6 bytes a row (5 by width/8), no CMAP */
+    mkilbm(ilbm, 40, 5, 2, 0, 2, 0);            /* 6 bytes a row (5 by width/8), no CMAP */
     mkbitmap(6, 8, 2, 1);
     unpackiff("40x5x2", 0, 0, 0);
     seed = 13;
-    mkilbm(ilbm, 1040, 2, 1, 2, 0);             /* 130 bytes: a negative byte count (fixed #774) */
+    mkilbm(ilbm, 1040, 2, 1, 2, 0, 0);          /* 130 bytes: a negative byte count (fixed #774) */
     mkbitmap(132, 4, 1, 1);
     unpackiff("1040x2x1", 0, 0, 0);
     seed = 14;
-    mkilbm(ilbm, 1016, 2, 1, 2, 0);             /* 128 bytes (127 by width/8) */
+    mkilbm(ilbm, 1016, 2, 1, 2, 0, 0);          /* 128 bytes (127 by width/8) */
     mkbitmap(128, 4, 1, 1);
     unpackiff("1016x2x1", 0, 0, 0);
 
     /* a run past the end of the row (cut there, fixed #776) */
     seed = 15;
-    mkilbm(ilbm, 16, 2, 1, 0, 0);
+    mkilbm(ilbm, 16, 2, 1, 0, 0, 0);
     {
         UBYTE *b = ilbm;
         while (memcmp(b, "BODY", 4))
@@ -664,7 +672,7 @@ static void test_unpackiff(void)
     memset(ilbm, 0, 5200);
     mkbitmap(10, 12, 3, 1);
     unpackiff("no BMHD", 0, 0, 0);
-    mkilbm(ilbm, 64, 10, 3, 8, 0);
+    mkilbm(ilbm, 64, 10, 3, 8, 0, 0);
     {
         UBYTE *b = ilbm;
         while (memcmp(b, "BODY", 4))
@@ -676,10 +684,19 @@ static void test_unpackiff(void)
     /* a FORM PBM with BMHD and BODY: refused (the original decodes it as
        ILBM rows, fixed #766) */
     seed = 16;
-    mkilbm(ilbm, 64, 10, 3, 8, 0);
+    mkilbm(ilbm, 64, 10, 3, 8, 0, 0);
     memcpy(ilbm + 8, "PBM ", 4);
     mkbitmap(10, 12, 3, 1);
     unpackiff("FORM PBM", 0, 0, 0);
+
+    /* masking 1: a mask row behind the planes of every line, skipped
+       (fixed #1112: the original took it as the next line's first plane) */
+    seed = 17;
+    mkilbm(ilbm, 64, 10, 3, 8, 0, 1);
+    mkbitmap(10, 12, 3, 1);
+    unpackiff("64x10x3 masked", 0, 0, 0);
+    mkbitmap(10, 12, 3, 1);
+    unpackiff("64x10x3 masked", 1, 4, 0);
 }
 
 /* ------------------------------------------------------------ palettes */
@@ -711,18 +728,18 @@ static void test_ilbmpalette(void)
 {
     memset(palo, 0, sizeof palo);
     seed = 21;
-    mkilbm(ilbm, 32, 2, 3, 8, 0);
+    mkilbm(ilbm, 32, 2, 3, 8, 0, 0);
     ilbmpalette("8 colours, empty palette", 0, 0);
     seed = 22;
-    mkilbm(ilbm, 32, 2, 2, 4, 4);
+    mkilbm(ilbm, 32, 2, 2, 4, 4, 0);
     ilbmpalette("4 colours", 1, 2);             /* fits: at colour 2 */
     ilbmpalette("4 colours", 1, 0);
     ilbmpalette("4 colours", 1, 4);             /* just fits */
     ilbmpalette("4 colours", 1, 6);             /* too small: grows (the original: a new
                                                    block, offset lost; fixed #769) */
-    ilbmpalette("4 colours", 0, 0);             /* always a new block */
+    ilbmpalette("4 colours", 0, 0);          /* always a new block */
     seed = 23;
-    mkilbm(ilbm, 32, 2, 1, 2, 2);
+    mkilbm(ilbm, 32, 2, 1, 2, 2, 0);
     ilbmpalette("2 colours", 1, 1);
     {                                           /* a CMAP of 10 bytes: 3 colours */
         UBYTE *b = ilbm;
@@ -745,7 +762,7 @@ static void test_ilbmpalette(void)
         unsigned i;
 
         seed = 24;
-        mkilbm(ilbm, 32, 2, 1, 2, 0);
+        mkilbm(ilbm, 32, 2, 1, 2, 0, 0);
         for (i = 0; i < sizeof lens / sizeof lens[0]; i++) {
             char what[32];
             UBYTE *b = ilbm;
@@ -781,7 +798,7 @@ static void test_ilbmgrab(void)
 {
     memset(palo, 0, sizeof palo);
     seed = 31;
-    mkilbm(ilbm, 48, 6, 2, 4, 0);
+    mkilbm(ilbm, 48, 6, 2, 4, 0, 0);
     mkbitmap(6, 8, 2, 1);
     ROUT = "ILBMGrab";
     strcpy(VEC, "48x6x2");
@@ -840,7 +857,7 @@ static void loadiff(const char *name, int form, const char *what)
 static void test_loadiff(void)
 {
     seed = 41;
-    ilbmlen = mkilbm(ilbm, 64, 10, 3, 8, 0);
+    ilbmlen = mkilbm(ilbm, 64, 10, 3, 8, 0, 0);
     writeilbm(ilbmlen);
     /* the original looks for a bank from 51 on, RIAmosFuncLib has 50
        unless BankLimit raised the number: no bank, 0 (fixed #770: from 0) */
