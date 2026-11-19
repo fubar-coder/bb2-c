@@ -18,8 +18,9 @@
  * of the port; its token list is the one of the BSS2 binary the original
  * rigfxlib was built against) with the original - and initialised after
  * memlib; the file it writes in RAM: is read back and observed, with the
- * FORM header and length checked, and one into a missing directory
- * (BSave fails: 0).
+ * FORM header and length checked (3 bytes per colour + 48, or that
+ * rounded up to even: a pad byte behind a CMAP of odd length), and one
+ * into a missing directory (BSave fails: 0).
  */
 #include "sysload.h"
 #include "amosfunc.h"
@@ -280,7 +281,8 @@ static void savecmap(ULONG *obj, const char *dir)
     readfile(cmapname);
     OBS("file length", bs_len);
     if (R.d[0])                                 /* written: FORM, the length */
-        check("SaveCMAP: the file", bs_len == (LONG)(n * 3 + 48)
+        check("SaveCMAP: the file", (bs_len == (LONG)(n * 3 + 48)       /* no pad byte */
+                                     || bs_len == (LONG)((n * 3 + 49) & ~1UL))
               && !memcmp(bs_data, "FORM", 4));
     else
         check("SaveCMAP: no file", bs_len == -1);
