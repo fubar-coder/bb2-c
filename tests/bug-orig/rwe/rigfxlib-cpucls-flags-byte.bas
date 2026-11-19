@@ -11,6 +11,7 @@
 ; goes on and reports which buffer was cleared.
 ; Correct: the depth is the byte at 5, one plane is cleared: A is
 ; cleared, B stays.
+; @fixed #679
 ; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
 ; @rwe rigfxlib riamosfunclib
 DEFTYPE .l

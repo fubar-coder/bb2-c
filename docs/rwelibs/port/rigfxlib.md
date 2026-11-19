@@ -78,11 +78,20 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   original cleared the rest as words (`ASR.w #1`) and left that byte, 8
   pixels at the top left of every plane of a bitmap whose BytesPerRow ×
   Rows is odd (#681). Decided once per call.
+* `CPUCls` reads the depth as the byte Depth at +5; the original read the
+  word at +4 (Flags<<8 | Depth), so a Flags byte other than 0 gave
+  hundreds of planes, through plane pointers far behind the BitMap (as
+  #670 in rifxlib). With runtime error checking a depth of 0 is refused:
+  "Illegal BitMap Depth" (`cpuclschk`, bitmaplib's text, an error check
+  area the original has not; `rigfxlib.declarations-intended.txt`). The
+  release code is unchanged for it (an invalid argument, D-005): the
+  `DBRA` counter is $FFFF, 65536 planes through the longs behind the
+  object's plane pointers are cleared (#679). MergeBitplanes still takes
+  the word: it writes numplanes there (Flags 0) and compares sums of
+  such words.
 
 ## BUG(orig), kept
 
-* `CPUCls`: the depth is the word at +4 (Flags<<8 | Depth); depth 0
-  clears 65536 planes (#679).
 * `SaveCMAP` writes no pad byte behind a CMAP of odd length (odd number
   of colours) (#687); a palette of 0 colours copies 65536 colours into
   the 48 byte block (#688).

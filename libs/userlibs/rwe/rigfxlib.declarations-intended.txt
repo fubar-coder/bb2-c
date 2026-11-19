@@ -1,0 +1,9 @@
+# the intended differences of rigfxlib against its reference, the CD
+# binary BSS2 RIGFXLIB.OBJ (blitzlib compare, docs/development.md
+# "Intended differences")
+# #679: CPUCls gets an error check (cpuclschk, "Illegal BitMap Depth" for
+# depth 0); rigfxlib gets an error check area for it (the original has
+# none)
+lib 65: header +$2C: code offset set in only one of them
+lib 65: entry 11 CPUCls +$10: code offset set in only one of them
+lib 65: relocations in the declaration part 17 != 19

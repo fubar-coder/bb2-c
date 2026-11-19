@@ -15,6 +15,7 @@
 ; pointers are not put back.  Nothing else is touched, so the program
 ; goes on and reports whether the buffer was cleared.
 ; Correct: the error check refuses the bitmap: "Illegal BitMap Depth".
+; @fixed #679
 ; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
 ; @rwe rigfxlib riamosfunclib
 ; @pass runtime_errors=on

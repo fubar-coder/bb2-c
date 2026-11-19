@@ -29,8 +29,6 @@
  * and RIAmosFuncLib's BSave (form 1) through ALibJsr.
  *
  * BUG(orig), kept:
- *   - CPUCls: the depth is the word Flags<<8|Depth, 0 planes = 65536
- *     (#679).
  *   - SaveCMAP writes no pad byte behind a CMAP of odd length (#687); a
  *     palette of 0 colours copies 65536 (#688).
  *   - CopyColour compares the colour numbers signed: negative ones pass
@@ -57,6 +55,12 @@
  *   - CPUCls clears the last byte of an odd rest, the plane's first byte;
  *     the original cleared the rest as words (ASR.w #1) and left it
  *     (#681).
+ *   - CPUCls reads the depth as the byte Depth; the original read the
+ *     word Flags<<8|Depth, so a Flags byte other than 0 gave hundreds of
+ *     planes.  With runtime error checking a depth of 0 is refused:
+ *     "Illegal BitMap Depth" (cpuclschk; the original has no error check
+ *     area); the release code clears 65536 planes then, as the original
+ *     (an invalid argument, D-005) (#679).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -73,10 +77,11 @@ void palred(void), palgreen(void), palblue(void), paletteinfo(void);
 void agapalred(void), agapalgreen(void), agapalblue(void);
 void paladjust(void), paladjust2(void), fillpalette(void), fillpalette2(void);
 void agafillpalette(void), agafillpalette2(void), copycolour(void);
-void cpucls(void), savecmap(void), mergebitplanes(void);
+void cpucls(void), savecmap(void), mergebitplanes(void), cpuclschk(void);
 
-/* !libheader {#rigfxlib,0,0,0,0} */
-BLITZ_LIBHEADER(LIB_rigfxlib, 0, BL_NORET, 0, 0);
+/* !libheader {#rigfxlib,0,0,0,0}; error field: the error check area
+   (fixed, #679; the original has none) */
+BLITZ_LIBHEADER(LIB_rigfxlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
@@ -157,7 +162,7 @@ BLITZ_NAME("CopyColour", "sourcepal#,destpal#,colsource#,coldest#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);
-BLITZ_SUBS(cpucls, 0, 0);
+BLITZ_SUBS(cpucls, cpuclschk, 0);                   /* check: fixed #679 */
 BLITZ_NAME("CPUCls", "bitmap#");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -197,8 +202,9 @@ static_assert(sizeof(struct palcol) == 12 && offsetof(struct paldata, col) == 4)
 #define PALDATA(o) ((struct paldata *)(o)->pdata)
 
 /* a bitmap object (bitmaplib, 2^6 bytes): struct bb_bitmap (blitzobj.h); this
-   library takes Flags/Depth as one word (BUG(orig) (#679)), the planes as
-   longs, and MergeBitplanes copies two words at a time as a long (PAIR) */
+   library takes the planes as longs; CPUCls reads the byte Depth (fixed
+   #679), MergeBitplanes the word Flags<<8|Depth (it writes numplanes there,
+   Flags 0) and copies two words at a time as a long (PAIR) */
 #define PAIR(b, m) (*(ULONG *)&(b)->m)
 
 /* the file SaveCMAP writes: FORM ILBM with an empty BMHD, then the CMAP
@@ -535,15 +541,17 @@ static void clearplane(UBYTE *end, ULONG moves, BOOL blocks, BOOL odd)
  * $FFFF, 65536 blocks, 2.6 MB below the plane); the last byte of an odd
  * rest, the plane's first, is cleared as well (fixed #681: the original
  * cleared the rest as words, ASR.w #1, and left it).  Both decided once
- * per call.  BUG(orig): the depth is the word Flags<<8|Depth, 0 planes =
- * 65536 (#679).
+ * per call.  The depth is the byte Depth (fixed #679: the original read
+ * the word Flags<<8|Depth); depth 0 gives the DBRA counter $FFFF, 65536
+ * planes - an invalid argument, refused by cpuclschk with runtime error
+ * checking (fixed #679), here unchecked.
  * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
  */
 static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
 {
     ULONG size = bl_mulu_w(bm->bpr, bm->rows);
     ULONG moves = bl_divu_w(size, 40);
-    UWORD planes = (UWORD)(bm->flagsdepth - 1);    /* BUG(orig) (#679) */
+    UWORD planes = (UWORD)(bm->depth - 1);         /* fixed #679 */
     const ULONG *pl = (const ULONG *)bm->planes;
     BOOL blocks = size >= 40;           /* fixed #682 */
     BOOL odd = (moves >> 16) & 1;       /* the rest; fixed #681 */
@@ -670,3 +678,28 @@ static void BLITZ_ROUTINE mergebitplanes_c(struct bb_bitmap *src1 BL_REG(a0),
     }
 }
 BLITZ_THUNK(mergebitplanes, mergebitplanes_c, "d0-d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");          /* fixed, #679 */
+
+/**
+ * @brief The error check of CPUCls (debugger only).
+ *
+ * Fixed (#679), not in the original (rigfxlib had no error check area):
+ * CPUCls counts the planes with SUBQ.w #1 ... DBRA on the depth, so a
+ * bitmap of depth 0 clears 65536 "planes" through the longs behind the
+ * object's 8 plane pointers.  The release code is unchanged (an invalid
+ * argument, D-005).
+ *
+ * Errors: "Illegal BitMap Depth" (bitmaplib's text) for a depth of 0.
+ * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
+ */
+static void BLITZ_ERRCHK cpuclschk_c(const struct bb_bitmap *bm BL_REG(a0))
+{
+    if (!bm->depth)
+        BLITZ_RUNERR(baddepth);
+}
+
+/* the thunks of the check functions */
+BLITZ_ERRCHK_THUNK(cpuclschk, cpuclschk_c, "d0-d1/a0-a1");
