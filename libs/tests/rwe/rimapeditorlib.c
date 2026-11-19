@@ -27,6 +27,11 @@
  * characters: BUG(orig) #899 the byte length) and SetMapObjName$; the text
  * commands and the pen; SetWindowDraw; M_NextArg$ before M_InitParse,
  * strings with empty arguments; the free routine; init, finit.
+ * At the end a second run of a program with the library still loaded (as
+ * from the editor): the stencil pointer of the run before is found in the
+ * library, init runs, and the pointer, M_NextArg$ before M_InitParse (the
+ * run before left the parse in the middle of "left,over") and the
+ * ScanShapes results before ScanShapes are observed; then finit again.
  * Not covered: negative coordinates for MapCanDraw, sizes 0 of the DBRA
  * loops, M_InitParse of more than 255 characters (BUG(orig), #897), a map whose
  * data lies at $xxxx0000 (BUG(orig) #894: not freed).
@@ -327,6 +332,40 @@ static void nextarg(void)
     samestring();
 }
 
+/* a second run of a program with the library still loaded (from the
+   editor): the stencil pointer of the run before is found in the
+   library's block by its value (its place differs between the sets),
+   init runs, and then the pointer, M_NextArg$ before any M_InitParse
+   (the run before left the parse after "left," of "left,over") and the
+   ScanShapes results before any ScanShapes are observed; then finit */
+static void secondrun(void)
+{
+    struct lib *l = getlib(&loaded, LIB);
+    static const int e[3] = { MAXW, MAXH, MAXD };
+    UBYTE *p, *st = NULL;
+    int i;
+
+    for (p = l->code; p + 4 <= l->code + l->size; p += 2)
+        if (L(p) == (ULONG)stencil) {
+            st = p;
+            break;
+        }
+    check("rimapeditorlib test: stencil pointer found", st != NULL);
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, INIT, 0), (void)0);
+    if (st)
+        OBS("stencil of the run before", L(st) == (ULONG)stencil);
+    nextarg();
+    for (i = 0; i < 3; i++) {
+        ROUT = i == 0 ? "ScanMaxWidth" : i == 1 ? "ScanMaxheight" : "ScanMaxdepth";
+        DO1(ENT(LIB, e[i], 0), R.d[0] = 0x5a5a1234UL);
+        OBS("d0", R.d[0]);
+    }
+    ROUT = "finit";
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+}
+
 static void memlib(int idx)
 {
     markregs(&R);
@@ -536,6 +575,11 @@ int main(int argc, char **argv)
             nextarg();
     }
 
+    /* the parse position left in the middle of a string, for the second
+       run */
+    initparse("left,over");
+    nextarg();
+
     /* the free routine */
     for (i = 0; i < NMAP; i++) {
         ROUT = "free";
@@ -546,6 +590,7 @@ int main(int argc, char **argv)
     ROUT = "finit";
     strcpy(VEC, "");
     DO1(ENT(LIB, FINIT, 0), (void)0);
+    secondrun();
     ROUT = "memlib finit";
     memlib(8);
     rwe_mem_check(LIB, avail, TRUE);

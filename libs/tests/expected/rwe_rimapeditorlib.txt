@@ -212,12 +212,14 @@ M_InitParse|kept|","|1	kept
 M_InitParse|kept|",,lead"|1	kept
 M_InitParse|kept|"a,b,"|1	kept
 M_InitParse|kept|"alpha,beta,,gamma delta, x"|1	kept
+M_InitParse|kept|"left,over"|1	kept
 M_InitParse|kept|"one"|1	kept
 M_InitParse|popped|""|1	$00000000
 M_InitParse|popped|","|1	$00000000
 M_InitParse|popped|",,lead"|1	$00000000
 M_InitParse|popped|"a,b,"|1	$00000000
 M_InitParse|popped|"alpha,beta,,gamma delta, x"|1	$00000000
+M_InitParse|popped|"left,over"|1	$00000000
 M_InitParse|popped|"one"|1	$00000000
 M_NextArg$|a3|""|1	$00000000
 M_NextArg$|a3|""|2	$00000000
@@ -249,6 +251,7 @@ M_NextArg$|a3|"alpha,beta,,gamma delta, x"|3	$00000000
 M_NextArg$|a3|"alpha,beta,,gamma delta, x"|4	$0000000B
 M_NextArg$|a3|"alpha,beta,,gamma delta, x"|5	$00000002
 M_NextArg$|a3|"alpha,beta,,gamma delta, x"|6	$00000000
+M_NextArg$|a3|"left,over"|1	$00000004
 M_NextArg$|a3|"one"|1	$00000003
 M_NextArg$|a3|"one"|2	$00000000
 M_NextArg$|a3|"one"|3	$00000000
@@ -256,6 +259,7 @@ M_NextArg$|a3|"one"|4	$00000000
 M_NextArg$|a3|"one"|5	$00000000
 M_NextArg$|a3|"one"|6	$00000000
 M_NextArg$|a3|mode $5A010000|1	$00000000
+M_NextArg$|a3|second run|1	$00000004
 M_NextArg$|d0|""|1	$00000000
 M_NextArg$|d0|""|2	$00000000
 M_NextArg$|d0|""|3	$00000000
@@ -286,6 +290,7 @@ M_NextArg$|d0|"alpha,beta,,gamma delta, x"|3	$00000000
 M_NextArg$|d0|"alpha,beta,,gamma delta, x"|4	$0000000B
 M_NextArg$|d0|"alpha,beta,,gamma delta, x"|5	$00000002
 M_NextArg$|d0|"alpha,beta,,gamma delta, x"|6	$00000000
+M_NextArg$|d0|"left,over"|1	$00000004
 M_NextArg$|d0|"one"|1	$00000003
 M_NextArg$|d0|"one"|2	$00000000
 M_NextArg$|d0|"one"|3	$00000000
@@ -293,6 +298,7 @@ M_NextArg$|d0|"one"|4	$00000000
 M_NextArg$|d0|"one"|5	$00000000
 M_NextArg$|d0|"one"|6	$00000000
 M_NextArg$|d0|mode $5A010000|1	$00000000
+M_NextArg$|d0|second run|1	$00000004
 M_NextArg$|kept|""|1	kept
 M_NextArg$|kept|""|2	kept
 M_NextArg$|kept|""|3	kept
@@ -323,6 +329,7 @@ M_NextArg$|kept|"alpha,beta,,gamma delta, x"|3	kept
 M_NextArg$|kept|"alpha,beta,,gamma delta, x"|4	kept
 M_NextArg$|kept|"alpha,beta,,gamma delta, x"|5	kept
 M_NextArg$|kept|"alpha,beta,,gamma delta, x"|6	kept
+M_NextArg$|kept|"left,over"|1	kept
 M_NextArg$|kept|"one"|1	kept
 M_NextArg$|kept|"one"|2	kept
 M_NextArg$|kept|"one"|3	kept
@@ -330,6 +337,7 @@ M_NextArg$|kept|"one"|4	kept
 M_NextArg$|kept|"one"|5	kept
 M_NextArg$|kept|"one"|6	kept
 M_NextArg$|kept|mode $5A010000|1	kept
+M_NextArg$|kept|second run|1	kept
 M_NextArg$|popped|""|1	$00000000
 M_NextArg$|popped|""|2	$00000000
 M_NextArg$|popped|""|3	$00000000
@@ -360,6 +368,7 @@ M_NextArg$|popped|"alpha,beta,,gamma delta, x"|3	$00000000
 M_NextArg$|popped|"alpha,beta,,gamma delta, x"|4	$00000000
 M_NextArg$|popped|"alpha,beta,,gamma delta, x"|5	$00000000
 M_NextArg$|popped|"alpha,beta,,gamma delta, x"|6	$00000000
+M_NextArg$|popped|"left,over"|1	$00000000
 M_NextArg$|popped|"one"|1	$00000000
 M_NextArg$|popped|"one"|2	$00000000
 M_NextArg$|popped|"one"|3	$00000000
@@ -367,6 +376,7 @@ M_NextArg$|popped|"one"|4	$00000000
 M_NextArg$|popped|"one"|5	$00000000
 M_NextArg$|popped|"one"|6	$00000000
 M_NextArg$|popped|mode $5A010000|1	$00000000
+M_NextArg$|popped|second run|1	$00000000
 M_NextArg$|string|""|1	bytes 400 fnv FC2BB505
 M_NextArg$|string|""|2	bytes 400 fnv FC2BB505
 M_NextArg$|string|""|3	bytes 400 fnv FC2BB505
@@ -397,6 +407,7 @@ M_NextArg$|string|"alpha,beta,,gamma delta, x"|3	bytes 400 fnv FC2BB505
 M_NextArg$|string|"alpha,beta,,gamma delta, x"|4	bytes 400 fnv B0D195DA
 M_NextArg$|string|"alpha,beta,,gamma delta, x"|5	bytes 400 fnv 709F6A3D
 M_NextArg$|string|"alpha,beta,,gamma delta, x"|6	bytes 400 fnv FC2BB505
+M_NextArg$|string|"left,over"|1	bytes 400 fnv B8BF0698
 M_NextArg$|string|"one"|1	bytes 400 fnv 675CEE23
 M_NextArg$|string|"one"|2	bytes 400 fnv FC2BB505
 M_NextArg$|string|"one"|3	bytes 400 fnv FC2BB505
@@ -404,6 +415,7 @@ M_NextArg$|string|"one"|4	bytes 400 fnv FC2BB505
 M_NextArg$|string|"one"|5	bytes 400 fnv FC2BB505
 M_NextArg$|string|"one"|6	bytes 400 fnv FC2BB505
 M_NextArg$|string|mode $5A010000|1	bytes 400 fnv FC2BB505
+M_NextArg$|string|second run|1	bytes 400 fnv C9E775FF
 MapCanDraw|d0|map 0 shape 0 at 11,3|1	$FFFFFFFF
 MapCanDraw|d0|map 0 shape 0 at 4,1|1	$FFFFFFFF
 MapCanDraw|d0|map 0 shape 0 at 5,4|1	$5A000001
@@ -2733,54 +2745,63 @@ ScanMaxWidth|d0|11,12|1	$5A5A0060
 ScanMaxWidth|d0|13,2|1	$5A5A0070
 ScanMaxWidth|d0|4,6|1	$5A5A0040
 ScanMaxWidth|d0|8,8|1	$5A5A0018
+ScanMaxWidth|d0|second run|1	$5A5A0070
 ScanMaxWidth|kept|0,15|1	kept
 ScanMaxWidth|kept|0,3|1	kept
 ScanMaxWidth|kept|11,12|1	kept
 ScanMaxWidth|kept|13,2|1	kept
 ScanMaxWidth|kept|4,6|1	kept
 ScanMaxWidth|kept|8,8|1	kept
+ScanMaxWidth|kept|second run|1	kept
 ScanMaxWidth|popped|0,15|1	$00000000
 ScanMaxWidth|popped|0,3|1	$00000000
 ScanMaxWidth|popped|11,12|1	$00000000
 ScanMaxWidth|popped|13,2|1	$00000000
 ScanMaxWidth|popped|4,6|1	$00000000
 ScanMaxWidth|popped|8,8|1	$00000000
+ScanMaxWidth|popped|second run|1	$00000000
 ScanMaxdepth|d0|0,15|1	$5A5A0003
 ScanMaxdepth|d0|0,3|1	$5A5A0003
 ScanMaxdepth|d0|11,12|1	$5A5A0002
 ScanMaxdepth|d0|13,2|1	$5A5A0004
 ScanMaxdepth|d0|4,6|1	$5A5A0002
 ScanMaxdepth|d0|8,8|1	$5A5A0004
+ScanMaxdepth|d0|second run|1	$5A5A0004
 ScanMaxdepth|kept|0,15|1	kept
 ScanMaxdepth|kept|0,3|1	kept
 ScanMaxdepth|kept|11,12|1	kept
 ScanMaxdepth|kept|13,2|1	kept
 ScanMaxdepth|kept|4,6|1	kept
 ScanMaxdepth|kept|8,8|1	kept
+ScanMaxdepth|kept|second run|1	kept
 ScanMaxdepth|popped|0,15|1	$00000000
 ScanMaxdepth|popped|0,3|1	$00000000
 ScanMaxdepth|popped|11,12|1	$00000000
 ScanMaxdepth|popped|13,2|1	$00000000
 ScanMaxdepth|popped|4,6|1	$00000000
 ScanMaxdepth|popped|8,8|1	$00000000
+ScanMaxdepth|popped|second run|1	$00000000
 ScanMaxheight|d0|0,15|1	$5A5A001F
 ScanMaxheight|d0|0,3|1	$5A5A0017
 ScanMaxheight|d0|11,12|1	$5A5A000C
 ScanMaxheight|d0|13,2|1	$5A5A000E
 ScanMaxheight|d0|4,6|1	$5A5A001F
 ScanMaxheight|d0|8,8|1	$5A5A0005
+ScanMaxheight|d0|second run|1	$5A5A000E
 ScanMaxheight|kept|0,15|1	kept
 ScanMaxheight|kept|0,3|1	kept
 ScanMaxheight|kept|11,12|1	kept
 ScanMaxheight|kept|13,2|1	kept
 ScanMaxheight|kept|4,6|1	kept
 ScanMaxheight|kept|8,8|1	kept
+ScanMaxheight|kept|second run|1	kept
 ScanMaxheight|popped|0,15|1	$00000000
 ScanMaxheight|popped|0,3|1	$00000000
 ScanMaxheight|popped|11,12|1	$00000000
 ScanMaxheight|popped|13,2|1	$00000000
 ScanMaxheight|popped|4,6|1	$00000000
 ScanMaxheight|popped|8,8|1	$00000000
+ScanMaxheight|popped|second run|1	$00000000
 ScanShapes|d0|0,15|1	$5A000007
 ScanShapes|d0|0,3|1	$5A000003
 ScanShapes|d0|11,12|1	$5A00000C
@@ -2886,7 +2907,9 @@ ShapeTo1616|popped|shape 3 (1 high, depth 3)|1	$00000000
 ShapeTo1616|popped|shape 8 (5 high, depth 4)|1	$00000000
 ShapeTo1616|popped|shape 9 (33 high, depth 2)|1	$00000000
 finit|kept||1	kept
+finit|kept|second run|1	kept
 finit|popped||1	$00000000
+finit|popped|second run|1	$00000000
 free|kept|map 0|1	kept
 free|kept|map 1|1	kept
 free|kept|map 2|1	kept
@@ -2924,4 +2947,7 @@ free|popped|map 1|1	$00000000
 free|popped|map 2|1	$00000000
 free|popped|map 3|1	$00000000
 init|kept||1	kept
+init|kept|second run|1	kept
 init|popped||1	$00000000
+init|popped|second run|1	$00000000
+init|stencil of the run before|second run|1	$00000001
