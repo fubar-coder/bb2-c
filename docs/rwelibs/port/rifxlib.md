@@ -92,6 +92,12 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   the upper word of it and $FFFF for 1, the last long for 2, the last
   mask word swapped/the last source word for the others) (#672, W6
   decision Q3, test `rwe/rifxlib-derez-result`);
+* with runtime error checking `ZoomXY` refuses to run without an
+  `InitZoomXY`: "ZoomXY needs InitZoomXY". The release code is unchanged
+  (D-005): with no bitmaps stored (before the first `InitZoomXY` of a
+  run) `ZoomXY` reads a struct BitMap at address 0 (its depth a byte of
+  the ExecBase pointer, its plane pointers the exception vectors) and
+  writes through it (#1131, test `rwe/rifxlib-zoomxy-no-init`);
 * init clears the `InitZoomXY` state (source and destination bitmap, the
   two offsets), as at the first load; the original kept the values of the
   run before, so a second run of a program from the editor used the

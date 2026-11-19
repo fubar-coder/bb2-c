@@ -80,6 +80,11 @@
  *     none, d0 was what the routine left there (its d0 on entry for 0, the
  *     upper word of it and $FFFF for 1, the last long of UnrezX2 for 2, a
  *     mask or source word for the others) (#672; W6 decision Q3);
+ *   - With runtime error checking ZoomXY refuses to run without an
+ *     InitZoomXY: "ZoomXY needs InitZoomXY".  The release code is
+ *     unchanged (D-005): with no bitmaps stored ZoomXY reads a struct
+ *     BitMap at address 0 and writes through its "plane pointers", the
+ *     exception vectors (#1131);
  *   - init clears the InitZoomXY state (source and destination bitmap, the
  *     two offsets), as at the first load; the original kept the values of
  *     the run before, so a second run of a program from the editor (the
@@ -166,7 +171,7 @@ BLITZ_NAME("Derez", "source#,dest#,sourceadd,destadd,derez_value,height");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(AsmZoom, zoomxychk, 0);                /* check: fixed #947 #674 */
+BLITZ_SUBS(AsmZoom, zoomxychk, 0);                /* check: fixed #947 #674 #1131 */
 BLITZ_NAME("ZoomXY", "xzoom,yzoom,height");
 
 BLITZ_ASTATEMENT();
@@ -1322,7 +1327,9 @@ BLITZ_THUNK(InitZoomxy, initzoomxy_c, "d0-d1/a0-a1");
  * Every source pixel becomes xzoom pixels wide, every line yzoom lines
  * high; 1,1 = ScreenCopy; a factor 0 does nothing.  A depth-0 source
  * gives 65536 planes, more than 16 planes overrun the pointer arrays:
- * refused by zoomxychk (fixed #947, #674).  sbitdepth is set as a whole
+ * refused by zoomxychk (fixed #947, #674), as is a ZoomXY before any
+ * InitZoomXY (fixed #1131: the bitmaps at address 0).  sbitdepth is set
+ * as a whole
  * word (fixed #675: the original set its low byte only).
  * @param xz  d0.w: xzoom
  * @param yz  d1.w: yzoom
@@ -1462,6 +1469,7 @@ BLITZ_THUNK(ADDValue, addvalue_c, "a0-a1");
 
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");     /* fixed, #947 #674 */
 BLITZ_ERRCHK_MESSAGE(baddelay, "Delay must not be 0");      /* fixed, #669 */
+BLITZ_ERRCHK_MESSAGE(noinitxy, "ZoomXY needs InitZoomXY");  /* fixed, #1131 */
 BLITZ_ERRCHK_MESSAGE(badzoomy, "ZoomyZoom needs a bitmap of at least 640 x 32"); /* fixed, #676 */
 
 /* the depth of the bitmap `bm`: 1 to 8 (bitmaplib's checks and text) */
@@ -1544,18 +1552,23 @@ static void BLITZ_ERRCHK bm2chk_c(ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
  * @brief The error check of ZoomXY (debugger only): the bitmaps of
  * InitZoomXY.
  *
- * Fixed (#947, #674), not in the original: as bm2chk_c for the bitmaps
- * InitZoomXY stored (ZoomXY takes no bitmap itself).  Not checked: a
- * ZoomXY before any InitZoomXY (no bitmap stored).
+ * Fixed (#1131), not in the original: ZoomXY did not look whether
+ * InitZoomXY stored any bitmaps; before it (also after init, #1127) both
+ * are 0, and ZoomXY read a struct BitMap at address 0 (its depth a byte of
+ * the ExecBase pointer, its planes the exception vectors) and wrote
+ * through it.  Fixed (#947, #674): as bm2chk_c for the bitmaps InitZoomXY
+ * stored (ZoomXY takes no bitmap itself).  The release code is unchanged
+ * (a command before its setup command, D-005).
  *
- * Errors: "Illegal BitMap Depth" (depth 0 or more than 8, either bitmap).
+ * Errors: "ZoomXY needs InitZoomXY" (no bitmap stored), "Illegal BitMap
+ * Depth" (depth 0 or more than 8, either bitmap).
  */
 static void BLITZ_ERRCHK zoomxychk_c(void)
 {
-    if (source_address)
-        depthchk(source_address);
-    if (dest_address)
-        depthchk(dest_address);
+    if (!source_address || !dest_address)
+        BLITZ_RUNERR(noinitxy);
+    depthchk(source_address);
+    depthchk(dest_address);
 }
 
 /**

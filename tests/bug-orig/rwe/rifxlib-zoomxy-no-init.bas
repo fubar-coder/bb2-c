@@ -7,6 +7,7 @@
 ; area.  Here with runtime error checking.
 ; Correct: the error check refuses ZoomXY without an InitZoomXY: "ZoomXY
 ; needs InitZoomXY", nothing is written.
+; @fixed #1131
 ; @rwe rifxlib
 ; @pass timeout=30
 ; @pass runtime_errors=on
