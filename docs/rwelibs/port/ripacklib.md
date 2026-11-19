@@ -95,12 +95,16 @@ kind F):
   passes; `SUBQ.b #1` made the depth 255, and 256 plane pointers were
   stored into its table of 8, over its variables and the code behind it
   (#777).
+* **UnpackIFF** takes the bytes of a row as ILBM stores them, padded to
+  whole words (`((width + 15) / 16) * 2`), and tests that width against
+  the bitmap's bytes per row. The original took width/8 (`ASR.w #3`):
+  for every picture whose width is no multiple of 16 the BODY was read
+  out of step from the second row on (#775).
 
 ## BUG(orig), kept
 
 * `UnpackIFF` treats every BODY as ByteRun1 (the compression byte of the
-  BMHD is not read) (#773), takes the row width as width/8 (`ASR.w #3`;
-  rows that ILBM pads to words lose their alignment) (#775), counts the
+  BMHD is not read) (#773), counts the
   bytes of a row in a signed byte (rows of 129 bytes and more unpack
   nothing but still return -1) (#774), does not stop a run at the end of
   a row (it runs into the next row or behind the plane) (#776).

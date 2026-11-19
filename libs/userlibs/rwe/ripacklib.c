@@ -44,11 +44,14 @@
  * before it fills its table of plane pointers; the original stored 256
  * pointers into the table of 8, over its variables and the code behind.
  *
+ * Fixed (#775): UnpackIFF takes the bytes of a row as ILBM stores them,
+ * padded to words (((width + 15) >> 4) << 1), and tests that width
+ * against the bitmap; the original took width/8 and read the BODY out of
+ * step for every width that is no multiple of 16.
+ *
  * BUG(orig), kept:
  *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
  *     the BMHD is not read) (#773).
- *   - UnpackIFF takes the row width as width/8 (rows that ILBM pads to
- *     words lose their alignment) (#775).
  *   - UnpackIFF counts the bytes of a row in a signed byte (rows of 129
  *     bytes and more are skipped) (#774).
  *   - UnpackIFF does not stop a run at the end of the row (#776).
@@ -529,8 +532,7 @@ static struct {
  * if the bitmap has fewer planes or bytes per row than the picture, or no
  * planes, or if the BMHD has no planes (fixed #777: the original stored
  * 256 plane pointers into its table of 8).  BUG(orig): every BODY is
- * taken as ByteRun1 (#773), the row width is width/8 (#775), a row counts
- * its bytes in a signed byte (rows of 129 bytes and more are skipped,
+ * taken as ByteRun1 (#773), a row counts its bytes in a signed byte (rows of 129 bytes and more are skipped,
  * #774), a run does not stop at the end of the row (#776).
  * @param src    d0: the ILBM data (FORM)
  * @param bm     a1: the bitmap object (parameter 1)
@@ -580,7 +582,8 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
             *to++ = (UBYTE *)(*pl++ + xy);
         while (n-- != 0);
     }
-    rowbytes = (UWORD)((WORD)hd->bmh_Width >> 3); /* ASR.w #3 */
+    /* fixed #775: the word-aligned ILBM row (the original: ASR.w #3) */
+    rowbytes = (UWORD)((((ULONG)hd->bmh_Width + 15) >> 4) << 1);
     if (rowbytes > v.bitmapwidth)               /* BHI */
         return BB_FALSE;
     v.bytewidth = (UWORD)(rowbytes - 1);

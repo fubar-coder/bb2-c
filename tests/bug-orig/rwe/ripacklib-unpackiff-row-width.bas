@@ -5,6 +5,7 @@
 ; original decodes 1 byte per row: row 1 gets row 0's pad byte ($00).
 ; Correct: row 0 is $FF, row 1 $0F (pixel 4 of row 1 has colour 1).
 ; ripacklib needs RIAmosFuncLib (LoadIFF calls its NextBank, BLoad, ...).
+; @fixed #775
 ; @rwe ripacklib riamosfunclib
 DEFTYPE .l
 m=AllocMem_(6000,$10001)
