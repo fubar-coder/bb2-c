@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+unpack -1 1 0 0 1
+unpack -1 1 0 0 1
+palette -1 1 000000F0
+rc=0

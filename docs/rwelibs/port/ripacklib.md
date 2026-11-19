@@ -19,8 +19,9 @@ of both LoadIFF forms); the code is C, not byte-identical.
   unpacked length, a bit stream read from the end; literal runs, strings
   with 2–1033 bytes and three offset classes, the Atari picture mode that
   converts bitplanes); -1, or 0 if there is no "ICE!".
-* `UnpackIFF(source,bitmap#[,numlines,xy_offset])` – finds BMHD (and from
-  there BODY) by searching the memory in steps of 2 bytes and unpacks the
+* `UnpackIFF(source,bitmap#[,numlines,xy_offset])` – finds BMHD and BODY
+  by walking the FORM ILBM at source (without a FORM there, or when the
+  walk misses: by the original's search in steps of 2 bytes) and unpacks the
   BODY into the planes of the bitmap object (`#ia1|#pd1`), from
   `xy_offset` bytes into each plane, `numlines` lines (< 0: all); 0 if a
   chunk is missing, the bitmap is too small or not deep enough, or plane
@@ -129,12 +130,30 @@ kind F):
   block from the low word of the CMAP length (#1105). The new block is
   allocated before the old one is freed, so a failed allocation leaves
   the palette as it was (the original kept the freed block then, #768).
+* **UnpackIFF** and **ILBMPalette** find their chunks by walking the FORM
+  at the given address, from chunk to chunk by their lengths (the pad
+  byte of an odd length skipped when it is 0, as #189; behind a non-zero
+  one the next chunk would start at an odd address, where the walk
+  stops), within the FORM's length. UnpackIFF takes only a FORM ILBM (a
+  FORM of another type, e.g. PBM or ACBM, is refused); ILBMPalette any
+  FORM. The original's raw search is the fallback, when the address
+  holds no FORM (a CMAP chunk itself, as the manual allows for
+  ILBMPalette, or data in front of the FORM) or the walk does not find
+  the chunk: a long compared at every even address, BMHD within 5120
+  bytes, BODY within 5120 bytes from the BMHD on, CMAP within 5122 bytes.
+  The original searched only that way: it took an id inside another
+  chunk (the text "BODY" in an ANNO) for the chunk, missed a chunk more
+  than about 5 KB behind its start (a large ANNO before the BODY), and
+  decoded any FORM with a BMHD as ILBM rows (#766). Cost (D-007, the
+  benchmark loop of `tests/perf` on a 16x1 picture with a CMAP of 256
+  colours, CAMG, DPPS and four CRNG, 2000 calls): UnpackIFF 30373 cycles
+  a call before, 4246 after; ILBMPalette (in place) 26923 before, 25975
+  after; a 320x256x5 ByteRun1 picture 1944700 before, 1952500 after
+  (+0.4 %; the unpack loop is the same instructions, the walk replaces a
+  search of about 60 steps).
 
 ## BUG(orig), kept
 
-* The chunk searches step by 2 bytes from the given address: BMHD within
-  5120 bytes, BODY within 5120 bytes from the BMHD on (a word counter),
-  CMAP within 5122 bytes (#766).
 * `DeIce`: the picture flag of Pack-Ice loads the default count `$0f9f`
   into d7, the register of the bit buffer; the next bit (the "own count"
   flag) and the first 6 bits of the count then come from `$9f`: the

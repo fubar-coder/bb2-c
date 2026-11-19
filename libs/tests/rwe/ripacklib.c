@@ -650,6 +650,14 @@ static void test_unpackiff(void)
         b[0] = 'X';
     }
     unpackiff("no BODY", 0, 0, 0);
+
+    /* a FORM PBM with BMHD and BODY: refused (the original decodes it as
+       ILBM rows, fixed #766) */
+    seed = 16;
+    mkilbm(ilbm, 64, 10, 3, 8, 0);
+    memcpy(ilbm + 8, "PBM ", 4);
+    mkbitmap(10, 12, 3, 1);
+    unpackiff("FORM PBM", 0, 0, 0);
 }
 
 /* ------------------------------------------------------------ palettes */

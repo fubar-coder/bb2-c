@@ -73,10 +73,15 @@
  * allocation leaves the palette as it was (the original kept the freed
  * block then, #768).
  *
+ * Fixed (#766): UnpackIFF and ILBMPalette walk the chunks of a FORM at
+ * the given address (UnpackIFF only a FORM ILBM, another FORM is
+ * refused); the original's raw search (a long compared at every even
+ * address: BMHD within 5120 bytes, BODY within 5120 bytes from the BMHD,
+ * CMAP within 5122 bytes) is the fallback when the address holds no FORM
+ * or the walk does not find the chunk.  The original found ids inside
+ * other chunks and missed chunks behind a large one.
+ *
  * BUG(orig), kept:
- *   - The chunk searches step by 2 bytes from the given address (BMHD:
- *     5120 bytes, BODY: from the BMHD on, word counter; CMAP 5122 bytes)
- *     (#766).
  *   - DeIce: the picture flag of Pack-Ice overwrites the bit buffer with
  *     the default count $0f9f, whose bits then give the "own count" flag
  *     (always set) and the first 6 bits of the count: the default is
@@ -527,6 +532,43 @@ BLITZ_THUNK(deice, deice_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ UnpackIFF */
 
+/**
+ * @brief The chunk `id` of a FORM, found by walking its chunks (fixed
+ * #766).
+ *
+ * From the first chunk behind the FORM type up to the end of the FORM
+ * (its length); a chunk of odd length is followed by its pad byte when
+ * that byte is 0, otherwise the next chunk starts right behind the data
+ * (a file written without pad, as #189) - an odd address, where the walk
+ * stops (the long reads of the callers need even addresses; the raw
+ * search, the fallback, does not look there either).
+ * @param form  the FORM (its id was checked)
+ * @param id    the chunk id
+ * @return the chunk (its id), NULL if the FORM has none, a length runs
+ *         past the FORM's end, or the walk reaches an odd address
+ */
+static const UBYTE *walkform(const UBYTE *form, ULONG id)
+{
+    const UBYTE *p = form + 12, *end = form + 8 + getinfo(form + 4);
+
+    if (end < p)                                /* a length that wraps */
+        return NULL;
+    while ((ULONG)(end - p) >= 8) {
+        ULONG len;
+        if ((ULONG)p & 1)
+            return NULL;
+        if (LG(p) == id)
+            return p;
+        len = LG(p + 4);
+        if (len > (ULONG)(end - p) - 8)
+            return NULL;
+        p += 8 + len;
+        if ((len & 1) && p < end && *p == 0)
+            p++;                                /* the pad byte */
+    }
+    return NULL;
+}
+
 /* the variables of the unpacker in the original's order */
 static struct {
     ULONG iffsource, iffdest;
@@ -539,8 +581,9 @@ static struct {
  * @brief UnpackIFF(sourceaddr,bitmap#,numlines,xy_offset): the BODY of an
  * ILBM in memory into a bitmap.
  *
- * Searches the BMHD (5120 bytes from source, by 2 bytes) and the BODY
- * (from the BMHD on, BUG(orig) (#766)), then unpacks numlines lines into
+ * Finds the BMHD and the BODY by walking the FORM ILBM at source (fixed
+ * #766; another FORM fails), else by the raw search of the original (BMHD
+ * 5120 bytes from source, BODY from the BMHD on, by 2 bytes), then unpacks numlines lines into
  * the planes, each plane pointer + xy_offset.  Fails without BMHD or BODY,
  * if the bitmap has fewer planes or bytes per row than the picture, or no
  * planes, or if the BMHD has no planes (fixed #777: the original stored
@@ -562,7 +605,7 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
                                          struct BitMap *bm BL_REG(a1),
                                          ULONG lines BL_REG(d2), ULONG xy BL_REG(d3))
 {
-    const UBYTE *chunk = src, *body;
+    const UBYTE *chunk = NULL, *body = NULL;
     const struct BitMapHeader *hd;
     ULONG left = 5120;
     UWORD rowbytes;                             /* d7: the BMHD byte width */
@@ -570,10 +613,22 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
     UWORD line;
     UBYTE planes, code, packed;
 
-    while (LG(chunk) != ID('B', 'M', 'H', 'D')) {
-        chunk += 2;
-        if ((left -= 2) == 0)
+    /* fixed #766: a FORM ILBM is walked, another FORM refused; the raw
+       search of the original is the fallback */
+    if (getinfo(src) == ID('F', 'O', 'R', 'M')) {
+        if (getinfo(src + 8) != ID('I', 'L', 'B', 'M'))
             return BB_FALSE;
+        chunk = walkform(src, ID('B', 'M', 'H', 'D'));
+        if (chunk)
+            body = walkform(src, ID('B', 'O', 'D', 'Y'));
+    }
+    if (!chunk) {
+        chunk = src;
+        while (LG(chunk) != ID('B', 'M', 'H', 'D')) {
+            chunk += 2;
+            if ((left -= 2) == 0)
+                return BB_FALSE;
+        }
     }
     hd = (const struct BitMapHeader *)(chunk + 8);
     if ((WORD)lines < 0)
@@ -608,13 +663,15 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
     if (rowbytes > v.bitmapwidth)               /* BHI */
         return BB_FALSE;
     v.bytewidth = (UWORD)(rowbytes - 1);
-    body = (const UBYTE *)hd;
-    bodyleft = 5120;
-    while (LG(body) != ID('B', 'O', 'D', 'Y')) {
-        body += 2;
-        bodyleft -= 2;                          /* SUBQ.w #2:BMI */
-        if ((WORD)bodyleft < 0)
-            return BB_FALSE;
+    if (!body) {                                /* the fallback */
+        body = (const UBYTE *)hd;
+        bodyleft = 5120;
+        while (LG(body) != ID('B', 'O', 'D', 'Y')) {
+            body += 2;
+            bodyleft -= 2;                      /* SUBQ.w #2:BMI */
+            if ((WORD)bodyleft < 0)
+                return BB_FALSE;
+        }
     }
     body += 8;
     line = v.iffheight;
@@ -684,8 +741,9 @@ BLITZ_THUNK(iff1, iff1_c, "d1/a0-a1");
  * @brief ILBMPalette(sourceaddr,palette#,offset): the CMAP of an ILBM into
  * a palette object.
  *
- * Searches the CMAP (5122 bytes from source, by 2 bytes, BUG(orig)
- * (#766)) and writes its colours from colour `offset` on; offset < 0
+ * Finds the CMAP by walking the FORM at source (fixed #766), else by the
+ * raw search of the original (5122 bytes from source, by 2 bytes: also a
+ * CMAP chunk at source itself), and writes its colours from colour `offset` on; offset < 0
  * gives the object a new colour block of the CMAP's size (the old one
  * freed: "this information is deleted").  Fixed (#769, #991): with an
  * offset, a palette with fewer than offset + CMAP colours (or none)
@@ -710,16 +768,23 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
                                             struct bb_palette *obj BL_REG(a1),
                                             LONG offset BL_REG(d2))
 {
-    const UBYTE *cmap = src;
+    const UBYTE *cmap = NULL;
     LONG left = 5120;
     UBYTE *to, *old = (UBYTE *)PDATA(obj);
     ULONG cols, oldcols = obj->numcols, count, first;
     struct bl_regs r;
 
-    while (LG(cmap) != ID('C', 'M', 'A', 'P')) {
-        cmap += 2;
-        if ((left -= 2) < 0)                    /* SUBQ.l #2:BPL */
-            return BB_FALSE;
+    /* fixed #766: a FORM (of any type) is walked; the raw search of the
+       original is the fallback (it also takes a CMAP chunk itself) */
+    if (getinfo(src) == ID('F', 'O', 'R', 'M'))
+        cmap = walkform(src, ID('C', 'M', 'A', 'P'));
+    if (!cmap) {
+        cmap = src;
+        while (LG(cmap) != ID('C', 'M', 'A', 'P')) {
+            cmap += 2;
+            if ((left -= 2) < 0)                /* SUBQ.l #2:BPL */
+                return BB_FALSE;
+        }
     }
     /* fixed #1105: the whole count; none, or more than a palette holds
        (the quotient would not fit DIVU's word), is refused */
