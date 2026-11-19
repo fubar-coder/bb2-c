@@ -92,7 +92,6 @@ The original returns to that data address; `rs_crash` jumps there.
     last save that had a palette (#816).
   * The shape header buffer is allocated with the upper word of the d0
     that `_saveCMAP` leaves, and freed with size 14 instead of 12 (#817).
-  * A palette of 0 colours copies 65536 (#823).
   * When the pack buffer is missing, two runtime errors follow (TRAP #0:
     "Not enough memory to pack shapes", "Shape Compression Failed!"),
     then CreateCookie on the shape, whose RTS returns from
@@ -177,6 +176,11 @@ kind F):
   dos.library of the emulator's Kickstart/Workbench 3.1 leaves Z clear
   (#814, `libs_emulator` cases `[fixed #814]` of `rwe_rishapeslib`: a
   Write patched to return with Z set, D-019).
+* LESaveShapes writes no CMAP for a palette of 0 colours, as the manual
+  says for an empty palette ("no palette data will be saved"). The
+  original allocated colours × 3 + 8 bytes and copied the colours with
+  a DBRA counter: 65536 colours (196608 bytes) into the 8-byte buffer
+  (#823, test `rishapeslib-savecmap-zero-colours`).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push

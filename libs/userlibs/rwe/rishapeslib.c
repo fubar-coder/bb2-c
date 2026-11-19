@@ -61,7 +61,7 @@
  *   - LESaveShapes: the FORM length is 8 too large and has the
  *     CMAP size of the last save with a palette (#816); the shape header
  *     buffer is allocated with the upper word of d0 of _saveCMAP (#817); a
- *     palette of 0 colours copies 65536 (#823); a failing pack buffer is a
+ *     failing pack buffer is a
  *     runtime error (TRAP #0) (#818); PackPBM's failure path runs
  *     UnPackPBM with d3 = 12 (#772).
  *
@@ -89,7 +89,8 @@
  * passes SHHD and CMAP by their lengths (the original took SHHD as 20
  * bytes and the CMAP as the colours decoded, #811).  LESaveShapes writes
  * the CMAP whenever there is a palette with data (the original tested the
- * Z flag of dos Write behind a MOVEA, #814).
+ * Z flag of dos Write behind a MOVEA, #814), none for a palette of 0
+ * colours (the original copied 65536 colours into an 8-byte buffer, #823).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
  * (unused since the own cookie code).  LELoadShapes form 3
@@ -1138,6 +1139,8 @@ static ULONG savecmap(BPTR fh, ULONG result)
     if (!(pal = paletteptr) || !FL(pal, bb_palette, pdata))
         return result;
     pal = (const UBYTE *)FL(pal, bb_palette, pdata);
+    if (!FW(pal, paldata, colours))     /* Fixed (#823): no colours, no CMAP */
+        return result;
     centry = bl_mulu_w(FW(pal, paldata, colours), 3);
     chunksize = centry + 8;
     mem = galloc(chunksize, 0);
@@ -1243,10 +1246,11 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
  * (#815); the FORM length is 8 too large and has the CMAP size of the
  * last save with a palette (#816); the shape header buffer is allocated
  * with the upper word of d0 of _saveCMAP and freed as 14 bytes (#817); a
- * palette of 0 colours copies 65536 (#823); a missing pack buffer is two
+ * missing pack buffer is two
  * runtime errors (#818); PackPBM's failure runs UnPackPBM with d3 = 12
  * (#772).  Fixed (#814): the CMAP is written whenever there is a palette
- * with data (the original tested the Z flag of dos Write).
+ * with data (the original tested the Z flag of dos Write).  Fixed (#823):
+ * a palette of 0 colours writes no CMAP (the original copied 65536).
  * @param shape1   d0.w: the first shape# * 32
  * @param shape2   d1.w: the last shape# * 32
  * @param name     d2: filename$

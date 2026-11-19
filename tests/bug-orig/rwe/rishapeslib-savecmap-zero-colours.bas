@@ -16,6 +16,7 @@
 ; Correct: 0 colours are not copied, the marker stays.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
+; @fixed #823
 ; @rwe rishapeslib ripacklib riamosfunclib
 DEFTYPE .l
 Dim f.l(4000),s.l(4000)
