@@ -26,8 +26,12 @@
  *     same values to both builds.
  * Freed tables stay in the library's list (BUG(orig), #868 #871); the test finds the
  * list in each build's data and clears those entries, so that a later
- * finit does not free them twice.  Not covered: negative zone or table
- * numbers and zones behind a table (they write or read outside it).
+ * finit does not free them twice.  The second init (without memory) is
+ * the next run of a program with the library still loaded: what finit
+ * and init leave of the run before (the list entries, the current table,
+ * the adaptor status the run ended with) is observed.  Not covered:
+ * negative zone or table numbers and zones behind a table (they write or
+ * read outside it).
  */
 #include "rwecmp.h"
 
@@ -364,22 +368,41 @@ int main(int argc, char **argv)
     strcpy(VEC, "7 (current)");
     CALLV(E_FREEZT, 0, "FreeZoneTable", R.d[0] = 7);
     OBS("entry 7 still set", zlist[7] != 0);
-    zlist[7] = 0;                          /* not freed twice by finit */
     CALLV(E_ZTNUM, 0, "ZoneTableNumber", (void)0);
     ROUT = "ZoneTable";
     DO1(ENT(LIB, E_ZTABLE, 0), (void)0);
     OBS("table 0 again", R.d[0] == t0);
+    /* the freed number (#868): the original selects the freed block (only
+       the pointer is set, nothing is read), then table 0 again */
+    strcpy(VEC, "7 (freed)");
+    CALLV(E_USEZT, 0, "UseZoneTable", R.d[0] = 7);
+    CALLV(E_ZTNUM, 0, "ZoneTableNumber", (void)0);
+    strcpy(VEC, "0 after 7 freed");
+    CALLV(E_USEZT, 0, "UseZoneTable", R.d[0] = 0);
+    zlist[7] = 0;                          /* not freed twice by finit */
 
     joysticks();
 
+    /* the end of the run with the adaptor off (#1132: the next run's
+       status) */
+    strcpy(VEC, "before finit");
+    CALLV(E_ADAPTOR, 0, "JAdaptorStatus", R.d[0] = 0x12340000UL);
     strcpy(VEC, "");
     ROUT = "finit";
     DO1(ENT(LIB, E_FINIT, 0), (void)0);
-    for (i = 0; i < 16; i++)
-        zlist[i] = 0;                      /* finit leaves them set */
+    /* what finit leaves for the next run (#871): the entries and the
+       current table */
+    ROUT = "finit";
+    strcpy(VEC, "current table");
+    OBS("set after finit", zlist[-1] != 0);
+    for (i = 0; i < 16; i++) {
+        sprintf(VEC, "entry %u", i);
+        OBS("set after finit", zlist[i] != 0);
+    }
     rwe_mem_check(LIB, avail, TRUE);
 
-    /* ------------------------------------------- no memory for table 0 */
+    /* -------------------- the next run (the library stays loaded), no
+       memory for table 0 */
     Forbid();
     old = SetFunction((struct Library *)SysBase, -198, (APTR)rwe_fail0);
     CacheClearU();
@@ -389,11 +412,26 @@ int main(int argc, char **argv)
     SetFunction((struct Library *)SysBase, -198, old);
     CacheClearU();
     Permit();
+    /* what init leaves of the run before (#871, #1132) */
+    ROUT = "init";
+    for (i = 1; i < 16; i++) {
+        sprintf(VEC, "second run entry %u", i);
+        OBS("set after init", zlist[i] != 0);
+    }
+    strcpy(VEC, "second run");
+    CALLV(E_ADAPTOR, 0, "JAdaptorStatus", R.d[0] = 0x123400ffUL);
     notable();
     strcpy(VEC, "no table");
     CALLV(E_USEZT, 0, "UseZoneTable", R.d[0] = 0);
     CALLV(E_FREEZT, 0, "FreeZoneTable", R.d[0] = 1);
     joysticks();
+    /* table 3 of the run before, freed by its finit (#871): the original
+       selects the freed block (only the pointer is set) */
+    strcpy(VEC, "second run: 3 of the run before");
+    CALLV(E_USEZT, 0, "UseZoneTable", R.d[0] = 3);
+    for (i = 0; i < 16; i++)
+        zlist[i] = 0;                      /* the original's finit left them set */
+    strcpy(VEC, "");
     ROUT = "finit";
     DO1(ENT(LIB, E_FINIT, 0), (void)0);
     return rwe_done(LIB);

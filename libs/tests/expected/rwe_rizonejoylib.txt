@@ -1171,14 +1171,20 @@ JAdaptorStatus|d0|adaptor off|1	$123400FF
 JAdaptorStatus|d0|adaptor off|2	$123400FF
 JAdaptorStatus|d0|adaptor on|1	$12340000
 JAdaptorStatus|d0|adaptor on|2	$12340000
+JAdaptorStatus|d0|before finit|1	$123400FF
+JAdaptorStatus|d0|second run|1	$12340000
 JAdaptorStatus|kept|adaptor off|1	kept
 JAdaptorStatus|kept|adaptor off|2	kept
 JAdaptorStatus|kept|adaptor on|1	kept
 JAdaptorStatus|kept|adaptor on|2	kept
+JAdaptorStatus|kept|before finit|1	kept
+JAdaptorStatus|kept|second run|1	kept
 JAdaptorStatus|popped|adaptor off|1	$00000000
 JAdaptorStatus|popped|adaptor off|2	$00000000
 JAdaptorStatus|popped|adaptor on|1	$00000000
 JAdaptorStatus|popped|adaptor on|2	$00000000
+JAdaptorStatus|popped|before finit|1	$00000000
+JAdaptorStatus|popped|second run|1	$00000000
 JFire|d0|adaptor off port 0|1	$00000000
 JFire|d0|adaptor off port 0|2	$00000000
 JFire|d0|adaptor off port 0|3	$00000000
@@ -1651,23 +1657,32 @@ SetZoneMode|kept|0|1	kept
 SetZoneMode|popped|-1|1	$00000000
 SetZoneMode|popped|0|1	$00000000
 UseZoneTable|d0|0|1	$FFFFFFFF
+UseZoneTable|d0|0 after 7 freed|1	$FFFFFFFF
 UseZoneTable|d0|16|1	$00000000
 UseZoneTable|d0|3|1	$FFFFFFFF
 UseZoneTable|d0|5 (empty)|1	$00000000
 UseZoneTable|d0|7|1	$FFFFFFFF
+UseZoneTable|d0|7 (freed)|1	$FFFFFFFF
 UseZoneTable|d0|no table|1	$00000000
+UseZoneTable|d0|second run: 3 of the run before|1	$FFFFFFFF
 UseZoneTable|kept|0|1	kept
+UseZoneTable|kept|0 after 7 freed|1	kept
 UseZoneTable|kept|16|1	kept
 UseZoneTable|kept|3|1	kept
 UseZoneTable|kept|5 (empty)|1	kept
 UseZoneTable|kept|7|1	kept
+UseZoneTable|kept|7 (freed)|1	kept
 UseZoneTable|kept|no table|1	kept
+UseZoneTable|kept|second run: 3 of the run before|1	kept
 UseZoneTable|popped|0|1	$00000000
+UseZoneTable|popped|0 after 7 freed|1	$00000000
 UseZoneTable|popped|16|1	$00000000
 UseZoneTable|popped|3|1	$00000000
 UseZoneTable|popped|5 (empty)|1	$00000000
 UseZoneTable|popped|7|1	$00000000
+UseZoneTable|popped|7 (freed)|1	$00000000
 UseZoneTable|popped|no table|1	$00000000
+UseZoneTable|popped|second run: 3 of the run before|1	$00000000
 Zone|d0|000 (-1,-1)|1	$00000003
 Zone|d0|000 (-1,-100)|1	$00000003
 Zone|d0|000 (-1,-150)|1	$00000003
@@ -4991,16 +5006,19 @@ ZoneTable|zonetablelist found||1	$00000001
 ZoneTableNumber|d0||1	$00000000
 ZoneTableNumber|d0|3|1	$00000003
 ZoneTableNumber|d0|7 (current)|1	$00000000
+ZoneTableNumber|d0|7 (freed)|1	$00000007
 ZoneTableNumber|d0|no table|1	$FFFFFFFF
 ZoneTableNumber|d0|zone $12340003|1	$00000000
 ZoneTableNumber|kept||1	kept
 ZoneTableNumber|kept|3|1	kept
 ZoneTableNumber|kept|7 (current)|1	kept
+ZoneTableNumber|kept|7 (freed)|1	kept
 ZoneTableNumber|kept|no table|1	kept
 ZoneTableNumber|kept|zone $12340003|1	kept
 ZoneTableNumber|popped||1	$00000000
 ZoneTableNumber|popped|3|1	$00000000
 ZoneTableNumber|popped|7 (current)|1	$00000000
+ZoneTableNumber|popped|7 (freed)|1	$00000000
 ZoneTableNumber|popped|no table|1	$00000000
 ZoneTableNumber|popped|zone $12340003|1	$00000000
 ZoneTableSize|d0||1	$00000100
@@ -5391,10 +5409,42 @@ ZoneTest range|popped|table 3: 256..299 (5,5)|1	$00000000
 ZoneTest range|popped|table 3: 260..260 (5,5)|1	$00000000
 ZoneTest range|popped|table 3: 4..299 (5,5)|1	$00000000
 finit|kept||1	kept
-finit|kept|port $10002|1	kept
+finit|kept||2	kept
 finit|popped||1	$00000000
-finit|popped|port $10002|1	$00000000
+finit|popped||2	$00000000
+finit|set after finit|current table|1	$00000001
+finit|set after finit|entry 0|1	$00000001
+finit|set after finit|entry 1|1	$00000000
+finit|set after finit|entry 10|1	$00000000
+finit|set after finit|entry 11|1	$00000000
+finit|set after finit|entry 12|1	$00000000
+finit|set after finit|entry 13|1	$00000000
+finit|set after finit|entry 14|1	$00000000
+finit|set after finit|entry 15|1	$00000000
+finit|set after finit|entry 2|1	$00000000
+finit|set after finit|entry 3|1	$00000001
+finit|set after finit|entry 4|1	$00000000
+finit|set after finit|entry 5|1	$00000000
+finit|set after finit|entry 6|1	$00000000
+finit|set after finit|entry 7|1	$00000000
+finit|set after finit|entry 8|1	$00000000
+finit|set after finit|entry 9|1	$00000000
 init|kept||1	kept
 init|kept|no memory|1	kept
 init|popped||1	$00000000
 init|popped|no memory|1	$00000000
+init|set after init|second run entry 1|1	$00000000
+init|set after init|second run entry 10|1	$00000000
+init|set after init|second run entry 11|1	$00000000
+init|set after init|second run entry 12|1	$00000000
+init|set after init|second run entry 13|1	$00000000
+init|set after init|second run entry 14|1	$00000000
+init|set after init|second run entry 15|1	$00000000
+init|set after init|second run entry 2|1	$00000000
+init|set after init|second run entry 3|1	$00000001
+init|set after init|second run entry 4|1	$00000000
+init|set after init|second run entry 5|1	$00000000
+init|set after init|second run entry 6|1	$00000000
+init|set after init|second run entry 7|1	$00000000
+init|set after init|second run entry 8|1	$00000000
+init|set after init|second run entry 9|1	$00000000
