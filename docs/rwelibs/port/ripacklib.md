@@ -122,8 +122,8 @@ literal runs of every length class, strings of every length and offset
 class including repeats, data at an odd address, no "ICE!", the
 picture mode (on 132 KB below the data); UnpackIFF both forms with all
 line counts (all, fewer, more than the bitmap, 0), xy offset, a too
-shallow or narrow bitmap, no plane 0, rows of 5, 127 and 130 bytes, a run
-past the row, no BMHD, no BODY; ILBMPalette into an empty palette, with
+shallow or narrow bitmap, no plane 0, rows of 6, 128 and 130 bytes (the
+BODY rows word-aligned, as ILBM stores them), a run past the row, no BMHD, no BODY; ILBMPalette into an empty palette, with
 offsets that fit or not, without offset, a CMAP of 10 bytes, no CMAP;
 ILBMGrab; LoadIFF both forms with a good file, a file that does not load,
 no free bank, a file that is no ILBM; ChunkHeader; memlib's memory all

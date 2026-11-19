@@ -378,10 +378,10 @@ UnpackIFF|kept|64x10x3 more lines form 1 lines $64 xy 1|1	kept
 UnpackIFF|kept|64x10x3 no plane 0 form 0 lines $0 xy 0|1	kept
 UnpackIFF|kept|no BMHD form 0 lines $0 xy 0|1	kept
 UnpackIFF|kept|no BODY form 0 lines $0 xy 0|1	kept
-UnpackIFF|planes|1016x2x1 form 0 lines $0 xy 0|1	bytes 24064 fnv 1AEEF8FA
+UnpackIFF|planes|1016x2x1 form 0 lines $0 xy 0|1	bytes 24064 fnv C0E3D430
 UnpackIFF|planes|1040x2x1 form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
 UnpackIFF|planes|16x2 run past the row form 0 lines $0 xy 0|1	bytes 24064 fnv A4BE46F8
-UnpackIFF|planes|40x5x2 form 0 lines $0 xy 0|1	bytes 24064 fnv 7D1606BA
+UnpackIFF|planes|40x5x2 form 0 lines $0 xy 0|1	bytes 24064 fnv 54CB4B5F
 UnpackIFF|planes|64x10x3 6 rows form 0 lines $0 xy 0|1	bytes 24064 fnv A799794B
 UnpackIFF|planes|64x10x3 bpr 7 form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
 UnpackIFF|planes|64x10x3 bpr 8 form 0 lines $0 xy 0|1	bytes 24064 fnv 400BA479

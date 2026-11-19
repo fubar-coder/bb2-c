@@ -501,10 +501,11 @@ static ULONG brun(UBYTE *o, const UBYTE *r, ULONG n)
     return k;
 }
 
-/* an ILBM: width w, height h, nplanes planes, ncols colours; cmap 0: none */
+/* an ILBM: width w, height h, nplanes planes, ncols colours; cmap 0: none;
+   the rows of the BODY word-aligned, as ILBM stores them */
 static ULONG mkilbm(UBYTE *f, UWORD w, UWORD h, UBYTE nplanes, ULONG ncols, ULONG lead)
 {
-    ULONG k = 0, y, pl, i, rowbytes = w / 8, form;
+    ULONG k = 0, y, pl, i, rowbytes = ((ULONG)w + 15) / 16 * 2, form;
     UBYTE row[256];
 
     memset(f, 0, lead);
@@ -610,7 +611,7 @@ static void test_unpackiff(void)
     unpackiff("64x10x3 bpr 8", 0, 0, 0);
 
     seed = 12;
-    mkilbm(ilbm, 40, 5, 2, 0, 2);               /* 5 bytes a row, no CMAP */
+    mkilbm(ilbm, 40, 5, 2, 0, 2);               /* 6 bytes a row (5 by width/8), no CMAP */
     mkbitmap(6, 8, 2, 1);
     unpackiff("40x5x2", 0, 0, 0);
     seed = 13;
@@ -618,7 +619,7 @@ static void test_unpackiff(void)
     mkbitmap(132, 4, 1, 1);
     unpackiff("1040x2x1", 0, 0, 0);
     seed = 14;
-    mkilbm(ilbm, 1016, 2, 1, 2, 0);             /* 127 bytes */
+    mkilbm(ilbm, 1016, 2, 1, 2, 0);             /* 128 bytes (127 by width/8) */
     mkbitmap(128, 4, 1, 1);
     unpackiff("1016x2x1", 0, 0, 0);
 
