@@ -348,6 +348,17 @@
 # times, snowpile 30969.2 and 30964.2 (1.00 of the original); both budgets
 # lowered.
 #
+# bzone (a new program: Zone and ZoneTest of the RWE userlib rizonejoylib,
+# header "; @rwe rizonejoylib"; the A500 has a 68000, so the library's
+# 68000 mode) from three runs on main 227228a9 (2026-11-20): zonemiss
+# 15492.1/15493.0/15492.0, zonerect 975.1/975.5/975.0, zonecircle
+# 4068.1/4068.0/4068.5, rangemiss 4536.1/4536.0/4536.0, rect1hit
+# 915.1/915.0/915.0, rect1miss 919.1/919.0/918.5, circle1hit
+# 1047.1/1047.0/1047.0, circle1miss 1088.1/1088.0/1088.0.  Their targets
+# from two runs of the pass perf_bzone.pass with the tag orig (the CD's
+# binary): 18590.2/18589.2, 437.2/437.1, 2275.2 both times, 2690.7 both
+# times, 393.2/393.1, 392.7/392.6, 524.7/524.6, 556.7/556.6.
+#
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 banim.anim5                 31505    46282.5  c=RINextAnimFrame(0) (INTRO.ANIM: 320 x 256 x 3, ANIM5, its frames 3 to 14)
@@ -554,3 +565,12 @@ bstr.lenfld                   706      746.5  c=Len(rr\name) (a field of a NewTy
 bstr.ascfld                   772      812.5  c=Asc(rr\name)
 bstr.instrv                  2366     3571.1  c=Instr(a$,f$) (f$="Blitz")
 bstr.cvi                      544      469.1  c=Cvi(m$) (m$=Mki$(1234))
+bzone.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
+bzone.zonemiss              15651    18590.2  r=Zone(300,10) (no zone: 12 rectangles and 4 circles in zones 0-15, 240 zones not set)
+bzone.zonerect                989      437.2  r=Zone(5,5) (zone 0, a rectangle)
+bzone.zonecircle             4113     2275.2  r=Zone(245,125) (zone 13, a circle)
+bzone.rangemiss              4585     2690.7  r=ZoneTest(0,15,300,10) (the 16 zones, none)
+bzone.rect1hit                928      393.2  r=ZoneTest(3,65,35) (a rectangle, inside)
+bzone.rect1miss               932      392.7  r=ZoneTest(3,300,10) (a rectangle, outside)
+bzone.circle1hit             1061      524.7  r=ZoneTest(13,245,125) (a circle, inside)
+bzone.circle1miss            1102      556.7  r=ZoneTest(13,300,10) (a circle, outside)
