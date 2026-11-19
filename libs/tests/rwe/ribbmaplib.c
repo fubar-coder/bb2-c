@@ -19,10 +19,12 @@
  * BBGetPalette without a new block, with one (from 0 and from 4
  * colours), low > high, no COLR; a map without MFRM; a failed
  * SetBBMapLoc after a good one (BUG(orig) #554: the info chunk, the cache and
- * the end of the old map stay).
- * Not covered: the routines before the first Set (they search from
- * address 12), odd chunk lengths (address errors), BBGetPalette writing
- * behind its new block.
+ * the end of the old map stay); a second run (init after finit, as from
+ * the editor with the library still loaded): the map info routines, two
+ * cached chunks and a search before any Set.
+ * Not covered: the routines before the first Set of the first run (they
+ * search from address 12), odd chunk lengths (address errors),
+ * BBGetPalette writing behind its new block.
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
@@ -419,8 +421,36 @@ int main(int argc, char **argv)
         fn(MAPSTART, what);                     /* a search from 3000 to the old end */
     }
 
+    /* the run ends with a good scenario and map, two chunks cached */
+    memset(tmpl, 0, BUFSZ);
+    fillrnd(tmpl, BUFSZ);
+    scenario(0, 0, 15, 1, 5);
+    map(2048, 1);
+    install();
+    setloc(SETSCEN, 0);
+    setloc(SETMAP, 2048);
+    fn(MAPDATA, "end of the run");
+    fn(PALETTE, "end of the run");
+
     ROUT = "finit";
     strcpy(VEC, "");
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+
+    /* a second run of a program with the library still loaded (from the
+       editor): the map and scenario routines before any Set; the files
+       of the run before are still in the buffer */
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, INIT, 0), (void)0);
+    fn(MAPSCENID, "second run");
+    fn(MAPWIDTH, "second run");
+    fn(MAPHEIGHT, "second run");
+    fn(MAPINFO, "second run");
+    fn(MAPDATA, "second run");                  /* the cache of the run before */
+    fn(PALETTE, "second run");                  /* the cache of the run before */
+    fn(LEVEL, "second run");
+    ROUT = "finit";
+    strcpy(VEC, "second run");
     DO1(ENT(LIB, FINIT, 0), (void)0);
     memcall(8, 0, 0);
     FreeMem(buf, BUFSZ);

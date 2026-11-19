@@ -370,6 +370,7 @@ BBMapDBOverLay|popped|round 5|1	$00000000
 BBMapDBOverLay|popped|round 5|2	$00000000
 BBMapDBOverLay|popped|round 5, map without MFRM|1	$00000000
 BBMapDBOverLay|popped|round 5, map without MFRM|2	$00000000
+BBMapData|d0|end of the run|1	$000008A0
 BBMapData|d0|map 1 again|1	$00000814
 BBMapData|d0|map 1 again|2	$00000894
 BBMapData|d0|map 1 again|3	$000008D6
@@ -406,6 +407,8 @@ BBMapData|d0|round 5|2	$0000087E
 BBMapData|d0|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapData|d0|round 5, map without MFRM|1	$00000000
 BBMapData|d0|round 5, map without MFRM|2	$00000000
+BBMapData|d0|second run|1	$000008A0
+BBMapData|kept|end of the run|1	kept
 BBMapData|kept|map 1 again|1	kept
 BBMapData|kept|map 1 again|2	kept
 BBMapData|kept|map 1 again|3	kept
@@ -442,6 +445,8 @@ BBMapData|kept|round 5|2	kept
 BBMapData|kept|round 5, after a failed SetBBMapLoc|1	kept
 BBMapData|kept|round 5, map without MFRM|1	kept
 BBMapData|kept|round 5, map without MFRM|2	kept
+BBMapData|kept|second run|1	kept
+BBMapData|popped|end of the run|1	$00000000
 BBMapData|popped|map 1 again|1	$00000000
 BBMapData|popped|map 1 again|2	$00000000
 BBMapData|popped|map 1 again|3	$00000000
@@ -478,6 +483,7 @@ BBMapData|popped|round 5|2	$00000000
 BBMapData|popped|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapData|popped|round 5, map without MFRM|1	$00000000
 BBMapData|popped|round 5, map without MFRM|2	$00000000
+BBMapData|popped|second run|1	$00000000
 BBMapHeight|d0|round 0|1	$5A0083C7
 BBMapHeight|d0|round 0|2	$5A0083C7
 BBMapHeight|d0|round 0, after a failed SetBBMapLoc|1	$5A0083C7
@@ -508,6 +514,7 @@ BBMapHeight|d0|round 5|2	$5A002C30
 BBMapHeight|d0|round 5, after a failed SetBBMapLoc|1	$5A000000
 BBMapHeight|d0|round 5, map without MFRM|1	$5A000000
 BBMapHeight|d0|round 5, map without MFRM|2	$5A000000
+BBMapHeight|d0|second run|1	$5A008EBD
 BBMapHeight|kept|round 0|1	kept
 BBMapHeight|kept|round 0|2	kept
 BBMapHeight|kept|round 0, after a failed SetBBMapLoc|1	kept
@@ -538,6 +545,7 @@ BBMapHeight|kept|round 5|2	kept
 BBMapHeight|kept|round 5, after a failed SetBBMapLoc|1	kept
 BBMapHeight|kept|round 5, map without MFRM|1	kept
 BBMapHeight|kept|round 5, map without MFRM|2	kept
+BBMapHeight|kept|second run|1	kept
 BBMapHeight|popped|round 0|1	$00000000
 BBMapHeight|popped|round 0|2	$00000000
 BBMapHeight|popped|round 0, after a failed SetBBMapLoc|1	$00000000
@@ -568,6 +576,7 @@ BBMapHeight|popped|round 5|2	$00000000
 BBMapHeight|popped|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapHeight|popped|round 5, map without MFRM|1	$00000000
 BBMapHeight|popped|round 5, map without MFRM|2	$00000000
+BBMapHeight|popped|second run|1	$00000000
 BBMapInfo|d0|round 0|1	$000008E6
 BBMapInfo|d0|round 0|2	$000008E6
 BBMapInfo|d0|round 0, after a failed SetBBMapLoc|1	$000008E6
@@ -598,6 +607,7 @@ BBMapInfo|d0|round 5|2	$00000830
 BBMapInfo|d0|round 5, after a failed SetBBMapLoc|1	$00000830
 BBMapInfo|d0|round 5, map without MFRM|1	$00000830
 BBMapInfo|d0|round 5, map without MFRM|2	$00000830
+BBMapInfo|d0|second run|1	$00000814
 BBMapInfo|kept|round 0|1	kept
 BBMapInfo|kept|round 0|2	kept
 BBMapInfo|kept|round 0, after a failed SetBBMapLoc|1	kept
@@ -628,6 +638,7 @@ BBMapInfo|kept|round 5|2	kept
 BBMapInfo|kept|round 5, after a failed SetBBMapLoc|1	kept
 BBMapInfo|kept|round 5, map without MFRM|1	kept
 BBMapInfo|kept|round 5, map without MFRM|2	kept
+BBMapInfo|kept|second run|1	kept
 BBMapInfo|popped|round 0|1	$00000000
 BBMapInfo|popped|round 0|2	$00000000
 BBMapInfo|popped|round 0, after a failed SetBBMapLoc|1	$00000000
@@ -658,6 +669,7 @@ BBMapInfo|popped|round 5|2	$00000000
 BBMapInfo|popped|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapInfo|popped|round 5, map without MFRM|1	$00000000
 BBMapInfo|popped|round 5, map without MFRM|2	$00000000
+BBMapInfo|popped|second run|1	$00000000
 BBMapName$|a3|round 0|1	$0000001D
 BBMapName$|a3|round 0, map without MFRM|1	$0000000F
 BBMapName$|a3|round 1|1	$00000013
@@ -1036,6 +1048,7 @@ BBMapScenarioID|d0|round 5|2	$319BF2B6
 BBMapScenarioID|d0|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapScenarioID|d0|round 5, map without MFRM|1	$00000000
 BBMapScenarioID|d0|round 5, map without MFRM|2	$00000000
+BBMapScenarioID|d0|second run|1	$4BE955BB
 BBMapScenarioID|kept|round 0|1	kept
 BBMapScenarioID|kept|round 0|2	kept
 BBMapScenarioID|kept|round 0, after a failed SetBBMapLoc|1	kept
@@ -1066,6 +1079,7 @@ BBMapScenarioID|kept|round 5|2	kept
 BBMapScenarioID|kept|round 5, after a failed SetBBMapLoc|1	kept
 BBMapScenarioID|kept|round 5, map without MFRM|1	kept
 BBMapScenarioID|kept|round 5, map without MFRM|2	kept
+BBMapScenarioID|kept|second run|1	kept
 BBMapScenarioID|popped|round 0|1	$00000000
 BBMapScenarioID|popped|round 0|2	$00000000
 BBMapScenarioID|popped|round 0, after a failed SetBBMapLoc|1	$00000000
@@ -1096,6 +1110,7 @@ BBMapScenarioID|popped|round 5|2	$00000000
 BBMapScenarioID|popped|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapScenarioID|popped|round 5, map without MFRM|1	$00000000
 BBMapScenarioID|popped|round 5, map without MFRM|2	$00000000
+BBMapScenarioID|popped|second run|1	$00000000
 BBMapStartPos|d0|round 0|1	$000008FA
 BBMapStartPos|d0|round 0|2	$000008FA
 BBMapStartPos|d0|round 0, after a failed SetBBMapLoc|1	$00000000
@@ -1216,6 +1231,7 @@ BBMapWidth|d0|round 5|2	$5A002DA6
 BBMapWidth|d0|round 5, after a failed SetBBMapLoc|1	$5A000000
 BBMapWidth|d0|round 5, map without MFRM|1	$5A000000
 BBMapWidth|d0|round 5, map without MFRM|2	$5A000000
+BBMapWidth|d0|second run|1	$5A00ED13
 BBMapWidth|kept|round 0|1	kept
 BBMapWidth|kept|round 0|2	kept
 BBMapWidth|kept|round 0, after a failed SetBBMapLoc|1	kept
@@ -1246,6 +1262,7 @@ BBMapWidth|kept|round 5|2	kept
 BBMapWidth|kept|round 5, after a failed SetBBMapLoc|1	kept
 BBMapWidth|kept|round 5, map without MFRM|1	kept
 BBMapWidth|kept|round 5, map without MFRM|2	kept
+BBMapWidth|kept|second run|1	kept
 BBMapWidth|popped|round 0|1	$00000000
 BBMapWidth|popped|round 0|2	$00000000
 BBMapWidth|popped|round 0, after a failed SetBBMapLoc|1	$00000000
@@ -1276,6 +1293,7 @@ BBMapWidth|popped|round 5|2	$00000000
 BBMapWidth|popped|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapWidth|popped|round 5, map without MFRM|1	$00000000
 BBMapWidth|popped|round 5, map without MFRM|2	$00000000
+BBMapWidth|popped|second run|1	$00000000
 BBNumBackGround|d0|round 0|1	$FFFFDC95
 BBNumBackGround|d0|round 0|2	$FFFFDC95
 BBNumBackGround|d0|round 0|3	$FFFFDC95
@@ -2602,6 +2620,7 @@ BBScenarioLevel|d0|round 5, scenario 2|1	$00000000
 BBScenarioLevel|d0|round 5, scenario 2|2	$00000000
 BBScenarioLevel|d0|round 5, scenario 2|3	$00000000
 BBScenarioLevel|d0|round 5, scenario 2|4	$00000000
+BBScenarioLevel|d0|second run|1	$FFFFA788
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|1	kept
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|2	kept
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|3	kept
@@ -2656,6 +2675,7 @@ BBScenarioLevel|kept|round 5, scenario 2|1	kept
 BBScenarioLevel|kept|round 5, scenario 2|2	kept
 BBScenarioLevel|kept|round 5, scenario 2|3	kept
 BBScenarioLevel|kept|round 5, scenario 2|4	kept
+BBScenarioLevel|kept|second run|1	kept
 BBScenarioLevel|popped|after a failed SetBBScenarioLoc|1	$00000000
 BBScenarioLevel|popped|after a failed SetBBScenarioLoc|2	$00000000
 BBScenarioLevel|popped|after a failed SetBBScenarioLoc|3	$00000000
@@ -2710,6 +2730,7 @@ BBScenarioLevel|popped|round 5, scenario 2|1	$00000000
 BBScenarioLevel|popped|round 5, scenario 2|2	$00000000
 BBScenarioLevel|popped|round 5, scenario 2|3	$00000000
 BBScenarioLevel|popped|round 5, scenario 2|4	$00000000
+BBScenarioLevel|popped|second run|1	$00000000
 BBScenarioLowCol|d0|round 0|1	$FFFF0003
 BBScenarioLowCol|d0|round 0|2	$FFFF0003
 BBScenarioLowCol|d0|round 0|3	$FFFF0003
@@ -2974,6 +2995,7 @@ BBScenarioName|string|round 5|1	bytes 300 fnv 70BFB6FF
 BBScenarioName|string|round 5|2	bytes 300 fnv 70BFB6FF
 BBScenarioName|string|round 5, scenario 2|1	bytes 300 fnv 1BC9DCB5
 BBScenarioName|string|round 5, scenario 2|2	bytes 300 fnv 1BC9DCB5
+BBScenarioPalette|d0|end of the run|1	$000000E0
 BBScenarioPalette|d0|round 0|1	$00000064
 BBScenarioPalette|d0|round 0|2	$00000064
 BBScenarioPalette|d0|round 0|3	$00000064
@@ -3022,6 +3044,8 @@ BBScenarioPalette|d0|round 5, scenario 2|1	$00001062
 BBScenarioPalette|d0|round 5, scenario 2|2	$00001062
 BBScenarioPalette|d0|round 5, scenario 2|3	$00001062
 BBScenarioPalette|d0|round 5, scenario 2|4	$00001062
+BBScenarioPalette|d0|second run|1	$000000E0
+BBScenarioPalette|kept|end of the run|1	kept
 BBScenarioPalette|kept|round 0|1	kept
 BBScenarioPalette|kept|round 0|2	kept
 BBScenarioPalette|kept|round 0|3	kept
@@ -3070,6 +3094,8 @@ BBScenarioPalette|kept|round 5, scenario 2|1	kept
 BBScenarioPalette|kept|round 5, scenario 2|2	kept
 BBScenarioPalette|kept|round 5, scenario 2|3	kept
 BBScenarioPalette|kept|round 5, scenario 2|4	kept
+BBScenarioPalette|kept|second run|1	kept
+BBScenarioPalette|popped|end of the run|1	$00000000
 BBScenarioPalette|popped|round 0|1	$00000000
 BBScenarioPalette|popped|round 0|2	$00000000
 BBScenarioPalette|popped|round 0|3	$00000000
@@ -3118,6 +3144,7 @@ BBScenarioPalette|popped|round 5, scenario 2|1	$00000000
 BBScenarioPalette|popped|round 5, scenario 2|2	$00000000
 BBScenarioPalette|popped|round 5, scenario 2|3	$00000000
 BBScenarioPalette|popped|round 5, scenario 2|4	$00000000
+BBScenarioPalette|popped|second run|1	$00000000
 BBScenarioPrefix|d0|round 0|1	$242E3A3B
 BBScenarioPrefix|d0|round 0|2	$242E3A3B
 BBScenarioPrefix|d0|round 0|3	$242E3A3B
@@ -4144,6 +4171,7 @@ SetBBMapLoc|d0|at 2048|9	$FFFFFFFF
 SetBBMapLoc|d0|at 2048|10	$FFFFFFFF
 SetBBMapLoc|d0|at 2048|11	$FFFFFFFF
 SetBBMapLoc|d0|at 2048|12	$00000000
+SetBBMapLoc|d0|at 2048|13	$FFFFFFFF
 SetBBMapLoc|d0|at 3000|1	$00000000
 SetBBMapLoc|d0|at 3000|2	$00000000
 SetBBMapLoc|d0|at 3000|3	$00000000
@@ -4174,6 +4202,7 @@ SetBBMapLoc|kept|at 2048|9	kept
 SetBBMapLoc|kept|at 2048|10	kept
 SetBBMapLoc|kept|at 2048|11	kept
 SetBBMapLoc|kept|at 2048|12	kept
+SetBBMapLoc|kept|at 2048|13	kept
 SetBBMapLoc|kept|at 3000|1	kept
 SetBBMapLoc|kept|at 3000|2	kept
 SetBBMapLoc|kept|at 3000|3	kept
@@ -4204,6 +4233,7 @@ SetBBMapLoc|popped|at 2048|9	$00000000
 SetBBMapLoc|popped|at 2048|10	$00000000
 SetBBMapLoc|popped|at 2048|11	$00000000
 SetBBMapLoc|popped|at 2048|12	$00000000
+SetBBMapLoc|popped|at 2048|13	$00000000
 SetBBMapLoc|popped|at 3000|1	$00000000
 SetBBMapLoc|popped|at 3000|2	$00000000
 SetBBMapLoc|popped|at 3000|3	$00000000
@@ -4223,6 +4253,7 @@ SetBBScenarioLoc|d0|at 0|4	$FFFFFFFF
 SetBBScenarioLoc|d0|at 0|5	$FFFFFFFF
 SetBBScenarioLoc|d0|at 0|6	$FFFFFFFF
 SetBBScenarioLoc|d0|at 0|7	$FFFFFFFF
+SetBBScenarioLoc|d0|at 0|8	$FFFFFFFF
 SetBBScenarioLoc|d0|at 1024|1	$00000000
 SetBBScenarioLoc|d0|at 1024|2	$00000000
 SetBBScenarioLoc|d0|at 1024|3	$00000000
@@ -4254,6 +4285,7 @@ SetBBScenarioLoc|kept|at 0|4	kept
 SetBBScenarioLoc|kept|at 0|5	kept
 SetBBScenarioLoc|kept|at 0|6	kept
 SetBBScenarioLoc|kept|at 0|7	kept
+SetBBScenarioLoc|kept|at 0|8	kept
 SetBBScenarioLoc|kept|at 1024|1	kept
 SetBBScenarioLoc|kept|at 1024|2	kept
 SetBBScenarioLoc|kept|at 1024|3	kept
@@ -4285,6 +4317,7 @@ SetBBScenarioLoc|popped|at 0|4	$00000000
 SetBBScenarioLoc|popped|at 0|5	$00000000
 SetBBScenarioLoc|popped|at 0|6	$00000000
 SetBBScenarioLoc|popped|at 0|7	$00000000
+SetBBScenarioLoc|popped|at 0|8	$00000000
 SetBBScenarioLoc|popped|at 1024|1	$00000000
 SetBBScenarioLoc|popped|at 1024|2	$00000000
 SetBBScenarioLoc|popped|at 1024|3	$00000000
@@ -4310,6 +4343,10 @@ SetBBScenarioLoc|popped|at 4096|4	$00000000
 SetBBScenarioLoc|popped|at 4096|5	$00000000
 SetBBScenarioLoc|popped|at 4096|6	$00000000
 finit|kept||1	kept
+finit|kept|second run|1	kept
 finit|popped||1	$00000000
+finit|popped|second run|1	$00000000
 init|kept||1	kept
+init|kept|second run|1	kept
 init|popped||1	$00000000
+init|popped|second run|1	$00000000

@@ -89,8 +89,11 @@ the end of a file (found on odd rounds), `BBShadowValue` with a word
 index overflow and a negative index, author strings at odd and even
 addresses, `BBGetPalette` without and with a new block (from 0–4 and 4
 colours, twice), with 200 colours, low > high and without `COLR`, a
-failed `SetBBScenarioLoc` and a failed `SetBBMapLoc` after a good one.
+failed `SetBBScenarioLoc` and a failed `SetBBMapLoc` after a good one;
+a second run (init after finit, as from the editor with the library
+still loaded, the run before ending with a good scenario and map): the
+map info functions, two cached chunks and a search before any `Set…`.
 Observed: d0 (addresses relative to the
 buffer), strings and a3, palette objects and colour blocks, kept
-registers. Not covered: calls before the first `Set…`, odd chunk
-lengths, `BBGetPalette` writing behind its block.
+registers. Not covered: calls before the first `Set…` of the first run,
+odd chunk lengths, `BBGetPalette` writing behind its block.
