@@ -24,7 +24,13 @@ podman run --rm -p 1313:1313 -v $PWD/site:/src docker.io/hugomods/hugo:exts-0.15
 `--enableGitInfo=false` is needed because only `site/` is mounted and the
 container then sees no repository (the CI build has one). To keep the
 "last modified" dates in the preview, mount the repository root and add
-`--source site`. Add `:Z` to the volume on SELinux hosts.
+`--source site`. Git is used for nothing else (`enableGitInfo` in
+`hugo.yaml`; `editURL` is off). In a git worktree `.git` is a file that
+points into the main checkout's `.git/worktrees/`, so the root alone is
+not a repository in the container: mount the main checkout's `.git` at
+the same path as well and mark the root as a safe directory
+(`git config --global --add safe.directory ...` in the container), or
+keep `--enableGitInfo=false`. Add `:Z` to the volume on SELinux hosts.
 
 A one-off build, as CI does it, into `site/public/`:
 
