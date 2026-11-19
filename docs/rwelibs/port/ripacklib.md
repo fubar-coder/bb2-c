@@ -90,6 +90,11 @@ kind F):
 * **LoadIFF** returns the result of UnpackIFF, and 0 when it was asked
   for the palette and ILBMPalette fails (no CMAP); the bank is erased in
   every case. The original returned -1 whenever the file loaded (#771).
+* **UnpackIFF** refuses a BMHD with nPlanes 0 (0, nothing written). The
+  original checked nPlanes only against the bitmap's depth, which 0
+  passes; `SUBQ.b #1` made the depth 255, and 256 plane pointers were
+  stored into its table of 8, over its variables and the code behind it
+  (#777).
 
 ## BUG(orig), kept
 
@@ -98,9 +103,7 @@ kind F):
   rows that ILBM pads to words lose their alignment) (#775), counts the
   bytes of a row in a signed byte (rows of 129 bytes and more unpack
   nothing but still return -1) (#774), does not stop a run at the end of
-  a row (it runs into the next row or behind the plane) (#776), and
-  nPlanes 0 stores 256 plane pointers into its table of 8 (over its other
-  variables) (#777).
+  a row (it runs into the next row or behind the plane) (#776).
 * The chunk searches step by 2 bytes from the given address: BMHD within
   5120 bytes, BODY within 5120 bytes from the BMHD on (a word counter),
   CMAP within 5122 bytes (#766).

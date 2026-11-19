@@ -40,14 +40,18 @@
  * palette's ILBMPalette fails); the original returned -1 whenever the
  * file loaded.
  *
+ * Fixed (#777): UnpackIFF refuses a BMHD with nPlanes 0 (BB_FALSE)
+ * before it fills its table of plane pointers; the original stored 256
+ * pointers into the table of 8, over its variables and the code behind.
+ *
  * BUG(orig), kept:
  *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
- *     the BMHD is not read) (#773), takes the row width as width/8 (rows
- *     that ILBM pads to words lose their alignment) (#775), counts the
- *     bytes of a row in a signed byte (rows of 129 bytes and more are
- *     skipped) (#774) and does not stop a run at the end of the row
- *     (#776); nPlanes 0 stores 256 plane pointers into its table of 8
- *     (#777).
+ *     the BMHD is not read) (#773).
+ *   - UnpackIFF takes the row width as width/8 (rows that ILBM pads to
+ *     words lose their alignment) (#775).
+ *   - UnpackIFF counts the bytes of a row in a signed byte (rows of 129
+ *     bytes and more are skipped) (#774).
+ *   - UnpackIFF does not stop a run at the end of the row (#776).
  *   - The chunk searches step by 2 bytes from the given address (BMHD:
  *     5120 bytes, BODY: from the BMHD on, word counter; CMAP 5122 bytes)
  *     (#766).
@@ -507,8 +511,7 @@ BLITZ_THUNK(deice, deice_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ UnpackIFF */
 
-/* the variables of the unpacker in the original's order (nPlanes 0
-   writes 256 plane pointers from `bitplanes` on, BUG(orig) #777) */
+/* the variables of the unpacker in the original's order */
 static struct {
     ULONG iffsource, iffdest;
     UBYTE *bitplanes[8];
@@ -524,10 +527,11 @@ static struct {
  * (from the BMHD on, BUG(orig) (#766)), then unpacks numlines lines into
  * the planes, each plane pointer + xy_offset.  Fails without BMHD or BODY,
  * if the bitmap has fewer planes or bytes per row than the picture, or no
- * planes.  BUG(orig): every BODY is taken as ByteRun1 (#773), the row
- * width is width/8 (#775), a row counts its bytes in a signed byte (rows
- * of 129 bytes and more are skipped, #774), a run does not stop at the
- * end of the row (#776), nPlanes 0 stores 256 plane pointers (#777).
+ * planes, or if the BMHD has no planes (fixed #777: the original stored
+ * 256 plane pointers into its table of 8).  BUG(orig): every BODY is
+ * taken as ByteRun1 (#773), the row width is width/8 (#775), a row counts
+ * its bytes in a signed byte (rows of 129 bytes and more are skipped,
+ * #774), a run does not stop at the end of the row (#776).
  * @param src    d0: the ILBM data (FORM)
  * @param bm     a1: the bitmap object (parameter 1)
  * @param lines  d2: the number of lines (word; < 0: the BMHD's height;
@@ -562,7 +566,7 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
         return BB_FALSE;
     v.iffheight = (UWORD)lines;
     planes = hd->bmh_Depth;
-    if (planes > bm->Depth)                     /* BHI: unsigned bytes */
+    if (!planes || planes > bm->Depth)          /* fixed #777: 0 refused */
         return BB_FALSE;
     v.iffdepth = (UBYTE)(planes - 1);
     v.bitmapwidth = bm->BytesPerRow;

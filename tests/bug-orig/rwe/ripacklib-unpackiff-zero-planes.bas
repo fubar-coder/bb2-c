@@ -6,6 +6,7 @@
 ; the code behind the table.
 ; Correct: an ILBM without planes is refused, the program goes on.
 ; ripacklib needs RIAmosFuncLib (LoadIFF calls its NextBank, BLoad, ...).
+; @fixed #777
 ; @rwe ripacklib riamosfunclib
 ; @pass timeout=30
 DEFTYPE .l
