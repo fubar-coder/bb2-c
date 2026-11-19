@@ -1,13 +1,16 @@
 ; rifnslib-settab-zero (#666) - FNSSetTab stores the tab size unchecked;
 ; a Chr$(9) in a printed text moves x to the next tab stop with DIVU
 ; tabsize: after FNSSetTab 0 a division by zero (the session ends in a
-; timeout).  The font (built in memory, installed in slot 1) is 16 pixels
-; wide and 8 high, its glyphs empty.
-; Correct: FNSSetTab 0 does not make a tab divide by zero; the program
-; prints "after" and ends normally.
+; timeout).  A tab size below 1 is an invalid argument; the original has
+; no error check area.  Here with runtime error checking.  The font
+; (built in memory, installed in slot 1) is 16 pixels wide and 8 high,
+; its glyphs empty.
+; Correct: the error check refuses the tab size: "FNSSetTab size must be
+; at least 1".
 ; rifnslib needs RIAmosFuncLib (FNSLoad and FNSUnload use its banks).
 ; @rwe rifnslib riamosfunclib
 ; @pass timeout=30
+; @pass runtime_errors=on
 DEFTYPE .l
 f=AllocMem_(1024,$10001)
 If f=0 Then NPrint "no memory" : End
@@ -19,8 +22,8 @@ r=InstallFNS(1,f)
 FNSOutput 0
 FNSClip 0,0,319,63
 FNSInk 1
-FNSSetTab 0
 NPrint "before"
+FNSSetTab 0
 FNSPrint 1,0,0,"a"+Chr$(9)+"b"
 NPrint "after"
 RemoveFNS 1

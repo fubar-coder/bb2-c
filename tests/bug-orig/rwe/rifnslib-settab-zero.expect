@@ -1,4 +1,6 @@
+[compile]
+ok
 [run]
 before
-after
+REQUESTER: AutoRequest body "FNSSetTab size must be at least 1" *
 rc=0
