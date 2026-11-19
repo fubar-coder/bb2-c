@@ -151,6 +151,14 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   with the first run's settings, and FNSPrint before FNSOutput drew into
   the first run's freed bitmap (#1124).
 
+* The clip zone's ymax is the first row outside it, as xmax is the
+  first column: rows are drawn while y < ymax, and FNSClipOutput sets
+  ymax to the bitmap's rows. The manual's example for a 320x256 bitmap,
+  `FNSClip 0,0,320,256`, is the whole bitmap; the original drew rows up
+  to ymax itself (and FNSClipOutput set the rows − 1), so with the
+  manual's example a text at the bottom drew a row behind the bitmap
+  (user decision W6 "#1128 FNSClip", option (a)) (#1128).
+
 ## BUG(orig), kept
 
 * A bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane

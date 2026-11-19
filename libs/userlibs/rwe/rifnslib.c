@@ -107,6 +107,11 @@
  *   always used 55 + slot: with the default 50 banks BLoad took the
  *   number as an address and read the file to the address 55 + slot (a
  *   font over the vector table), and FNSLoad returned -1.
+ * Fixed (#1128): ymax is the first row outside the clip zone, as xmax is
+ *   the first column (the manual: "FNSClip 0,0,320,256" for a 320x256
+ *   bitmap), FNSClipOutput sets it to the rows; the original drew rows up
+ *   to ymax itself and set the rows - 1, so the manual's example drew a
+ *   row behind the bitmap.
  * Fixed (#1124): init sets every variable to its start value (the output
  *   bitmap, the slots 1-15, FNSPrefs, FNSInk, FNSSetTab's 32, the clip
  *   zone); the original set slot 0 and the origin only, so a second run
@@ -452,7 +457,7 @@ static void drawchar(const UWORD *g, ULONG rowoff, UWORD s)
             UWORD w2 = *g++;
             ULONG b1, b2, m1, m2, b3 = 0, b4 = 0, m3 = 0, m4 = 0;
             UBYTE pl;
-            if ((WORD)y < (WORD)fns.ymin || y > fns.ymax)
+            if ((WORD)y < (WORD)fns.ymin || y >= fns.ymax)     /* fixed (#1128) */
                 goto next;
             b1 = (ULONG)w1 << (16 - s);
             b2 = (ULONG)w2 << (16 - s);
@@ -496,7 +501,7 @@ static void drawchar(const UWORD *g, ULONG rowoff, UWORD s)
         } else {                        /* 16 pixels */
             ULONG b, m;
             UWORD col, n;
-            if ((WORD)y < (WORD)fns.ymin || y > fns.ymax)
+            if ((WORD)y < (WORD)fns.ymin || y >= fns.ymax)     /* fixed (#1128) */
                 goto next;
             b = (ULONG)w1 << (16 - s);  /* ROR.l d2,d3:SWAP d3 */
             m = ~b;
@@ -668,7 +673,7 @@ static void underline(UWORD x)
     if ((WORD)xend > (WORD)fns.xmax)
         fns.linewidth = (UWORD)(fns.xmax - x);
     y = (UWORD)(fns.ycord + fns.underpos);
-    if ((WORD)y < (WORD)fns.ymin || y > fns.ymax)
+    if ((WORD)y < (WORD)fns.ymin || y >= fns.ymax)     /* fixed (#1128) */
         return;
     off = bl_mulu_w((UWORD)fns.scr_width, y) + (UWORD)((WORD)(x & 0xfff0) >> 3);
     bit = (UBYTE)(~x & 15);
@@ -900,7 +905,8 @@ static void BLITZ_ROUTINE removefns_c(ULONG n BL_REG(d0))
 /**
  * @brief FNSClipOutput: the clipping zone = the whole output bitmap.
  *
- * xmin, ymin 0, xmax = the bytes per row * 8, ymax = the rows - 1.
+ * xmin, ymin 0, xmax = the bytes per row * 8, ymax = the rows (fixed,
+ * #1128: the first row outside, as xmax; the original set the rows - 1).
  */
 static void BLITZ_ROUTINE clipoutput_c(void)
 {
@@ -908,7 +914,7 @@ static void BLITZ_ROUTINE clipoutput_c(void)
 
     fns.xmin = 0;
     fns.ymin = 0;
-    fns.ymax = (UWORD)(bm->Rows - 1);
+    fns.ymax = bm->Rows;                        /* fixed (#1128) */
     fns.xmax = (UWORD)(bm->BytesPerRow << 3);
 }
 
@@ -1015,6 +1021,9 @@ static ULONG BLITZ_ROUTINE width_c(ULONG n BL_REG(d0))
 /**
  * @brief FNSClip xmin,ymin,xmax,ymax: the clipping zone; x rounded down to 16.
  *
+ * xmax and ymax are the first column and row outside the zone (fixed,
+ * #1128: the manual's "FNSClip 0,0,320,256" for a 320x256 bitmap; the
+ * original drew rows up to ymax itself, one behind such a bitmap).
  * A negative xmin or ymin is the programmer's: with runtime error
  * checking clipchk refuses it (fixed #664). @param x0  d0: xmin
  * @param y0  d1: ymin
