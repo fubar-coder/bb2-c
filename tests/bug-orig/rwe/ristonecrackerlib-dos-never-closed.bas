@@ -3,6 +3,7 @@
 ; The program runs through inject, which counts the opens minus the
 ; closes of dos.library by the process (opencount=).
 ; Correct: dos.library is closed again (+0); the original leaves it +1.
+; @fixed #834
 ; @rwe ristonecrackerlib
 ; @pass runwrap=@INJECT@|opencount=dos.library
 NPrint STCLength(0)

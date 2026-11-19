@@ -39,10 +39,12 @@
  *   - STCLoad does not check the header: any other file is "unpacked"
  *     with whatever its words say; it reads the whole file whatever the
  *     buffer's size; Examine's and Read's results are not checked (#836).
- *   - dos.library (opened by init) is never closed (finit is 0) (#834).
  *   - The decruncher does not check the data: corrupt data write below
  *     the buffer (a match or literal run past the start) and read the
  *     packed words below the file (#833).
+ * Fixed:
+ *   - finit closes dos.library; the original never closed it (finit 0)
+ *     (#834).
  * DIFF: the literal run reads its shift count from a table indexed by the
  *   bit count d7 (MOVE.b table(pc,d7.w)); d7 leaves 0..15 only with a
  *   header of more than 16 offset bits, and then the original reads
@@ -60,7 +62,7 @@
 
 /* entry points (thunks, below) */
 void _stclength(void), _stcstart(void), _stcsafelen(void), _stcload(void);
-void ristonecrackerlib_codeinit(void);
+void ristonecrackerlib_codeinit(void), ristonecrackerlib_codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -93,7 +95,7 @@ BLITZ_SUBS(_stcload, 0, 0);
 BLITZ_NAME("STCLoad", "filename$,address");
 
 BLITZ_NULLSUB_AT(init, ristonecrackerlib_codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, 0, 0, 0);
+BLITZ_NULLSUB_AT(finit, ristonecrackerlib_codefinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -131,13 +133,25 @@ static ULONG stcdecrunch(UBYTE *a)
 /* ------------------------------------------------------------ commands */
 
 /**
- * @brief init (codeinit): opens dos.library, any version.
- *
- * BUG(orig) (#834): it is never closed (finit is 0).
+ * @brief init (codeinit): opens dos.library, any version (finit closes
+ * it).
  */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     dosbase = OpenLibrary((CONST_STRPTR)dosname, 0);
+}
+
+/**
+ * @brief finit: closes dos.library if init opened it.
+ *
+ * Fixed (#834): the original's finit is 0, dos.library was never closed.
+ */
+static void BLITZ_ROUTINE codefinit_c(void)
+{
+    if (dosbase) {
+        CloseLibrary(dosbase);
+        dosbase = NULL;
+    }
 }
 
 /**
@@ -229,9 +243,10 @@ static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_
 
 /* Registers: the original changes d0/a0 (STCLength, STCStart,
    STCSafeLen), d0-d1/a0-a1/a6 (init), and d0-d7/a0-a1/a6 (STCLoad: the
-   system calls and the decruncher); the thunks keep d1/a0/a1, the C code
-   d2-d7/a2-a6. */
+   system calls and the decruncher); finit (only in the C build) keeps
+   d2-d7/a2-a6 as init; the thunks keep d1/a0/a1, the C code d2-d7/a2-a6. */
 BLITZ_THUNK(ristonecrackerlib_codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(ristonecrackerlib_codefinit, codefinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_stclength, stclength_c, "d1/a0-a1");
 BLITZ_THUNK(_stcstart, stcstart_c, "d1/a0-a1");
 BLITZ_THUNK(_stcsafelen, stcsafelen_c, "d1/a0-a1");

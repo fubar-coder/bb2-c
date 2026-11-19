@@ -16,7 +16,8 @@ address + offset + unpacked length down to address + offset.
   place and returns `STCStart`; 0 if the file cannot be locked or opened
   (e.g. a directory) or the FileInfoBlock not allocated.
 
-init opens dos.library (any version); finit is 0.
+init opens dos.library (any version); finit closes it (the original's finit
+is 0, #834).
 
 * **Source:** `rwelibsrc/stclib.bb` (as TED shows it:
   `build/amiga/rwelibsrc/stclib.bb`) with `rwelibsrc/optidec.bin`, the
@@ -73,10 +74,15 @@ entry and never called: left out.
 * `STCLoad` does not check the header (any file is unpacked with what its
   words say), reads the whole file whatever the buffer's size, and does
   not check Examine's and Read's results (#836).
-* dos.library is opened by init and never closed (finit is 0) (#834).
 * The decruncher checks nothing: corrupt data write below the
   destination (a match or literal run past the start) and read packed
   words below the file (#833).
+
+## Fixed (kind F, docs/libs/deviations.md 3a)
+
+* finit closes dos.library. The original's finit is 0: dos.library was
+  never closed, its open count one higher after every program run
+  (#834).
 
 ## DIFF
 

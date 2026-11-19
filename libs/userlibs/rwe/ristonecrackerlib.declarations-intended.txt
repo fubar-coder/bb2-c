@@ -1,0 +1,6 @@
+# the intended differences of ristonecrackerlib against its reference, the
+# CD binary (blitzlib compare, docs/development.md "Intended differences")
+# #834: finit has code (it closes dos.library); the original's finit is
+# !nullsub{0,0,0}
+lib 17: entry 5 (nullsub) +$C: code offset set in only one of them
+lib 17: relocations in the declaration part 7 != 8
