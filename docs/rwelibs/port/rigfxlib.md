@@ -95,6 +95,12 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   of the range of the relevant palette"). The original compared them
   signed (`BGE`): negative numbers passed and indexed up to 786 KB behind
   the palette, the result -1 (#678).
+* With runtime error checking `PalAdjust`'s long form refuses end <
+  start (signed words, FillPalette's compare): "PalAdjust end colour
+  before the start colour" (`paladj2chk`). The release code is unchanged
+  (an invalid argument, D-005; user decision W6 6.2): the count end −
+  start + 1 is a word, × 3 (`MULU.w`) − 1 the `DBRA` counter, so end =
+  start − 1 writes 65536 channels (256 KB) from colour start on (#684).
 
 ## BUG(orig), kept
 
@@ -105,8 +111,7 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   `PaletteInfo` without a check (before it: address 0) (#686);
   `PalAdjust` without start/end takes the number of colours of that
   palette, not of the target (#685); colour numbers from 2731 on index
-  before the palette (12·c as a signed word) (#677); `PalAdjust` with
-  end = start − 1 runs 65536·3 channels (#684).
+  before the palette (12·c as a signed word) (#677).
 * `FillPalette … ,start,0` fills up to the last colour (end 0 = all), but
   an `end` with a zero low word and a non-zero upper word is end 0 itself
   (#683).

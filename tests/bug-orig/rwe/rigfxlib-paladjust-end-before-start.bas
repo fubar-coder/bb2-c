@@ -10,6 +10,7 @@
 ; channel behind colour 5, ratio 0.5 halves what is written there.
 ; Correct: the error check refuses the range: "PalAdjust end colour
 ; before the start colour".
+; @fixed #684
 ; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
 ; @rwe rigfxlib riamosfunclib
 ; @pass runtime_errors=on

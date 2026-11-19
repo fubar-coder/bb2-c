@@ -35,8 +35,7 @@
  *     unchecked (before one: address 0) (#686); PalAdjust without
  *     start/end takes the number of colours of THAT palette, not of the
  *     target (#685); colour numbers from 2731 on index before the palette
- *     (12*c as a signed word) (#677); end < start in PalAdjust runs
- *     65536*3 channels (count 0 after MULU.w/SUBQ.w) (#684).
+ *     (12*c as a signed word) (#677).
  *   - FillPalette tests the whole register of `end` for 0 (= the last
  *     colour), the word for the comparison with start (#683).
  * SaveCMAP's BMHD chunk is 20 zero bytes, like the original: no defect
@@ -64,6 +63,12 @@
  *     either of the colour numbers is out of the range of the relevant
  *     palette"); the original compared them signed (BGE): they passed and
  *     indexed up to 786 KB behind the palette (MULU.w) (#678).
+ *   - With runtime error checking PalAdjust's long form refuses end <
+ *     start (signed words, as FillPalette's own test): "PalAdjust end
+ *     colour before the start colour" (paladj2chk).  The release code is
+ *     unchanged: the count end - start + 1 is a word, * 3 (MULU.w) - 1
+ *     the DBRA counter, so end = start - 1 writes 65536 channels (an
+ *     invalid argument, D-005) (#684).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -80,10 +85,10 @@ void palred(void), palgreen(void), palblue(void), paletteinfo(void);
 void agapalred(void), agapalgreen(void), agapalblue(void);
 void paladjust(void), paladjust2(void), fillpalette(void), fillpalette2(void);
 void agafillpalette(void), agafillpalette2(void), copycolour(void);
-void cpucls(void), savecmap(void), mergebitplanes(void), cpuclschk(void);
+void cpucls(void), savecmap(void), mergebitplanes(void), cpuclschk(void), paladj2chk(void);
 
 /* !libheader {#rigfxlib,0,0,0,0}; error field: the error check area
-   (fixed, #679; the original has none) */
+   (fixed, #679, #684; the original has none) */
 BLITZ_LIBHEADER(LIB_rigfxlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_WORD);
@@ -134,7 +139,7 @@ BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(paladjust, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_QUICK, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
-BLITZ_SUBS(paladjust2, 0, 0);
+BLITZ_SUBS(paladjust2, paladj2chk, 0);               /* check: fixed #684 */
 BLITZ_NAME("PalAdjust", "palette#,ratio.q[,start_col,end_col]");
 
 BLITZ_ASTATEMENT();
@@ -324,9 +329,10 @@ BLITZ_THUNK(agapalblue, agapalblue_c, "d1/a0-a1");
  * Target colours start..end = PaletteInfo's colours * ratio (8.8 fixed
  * point from the Quick 16.16), saturated at 255; only the top byte of
  * each channel is written.  BUG(orig): PaletteInfo's palette unchecked
- * (#686); colour numbers from 2731 on index before the palettes (#677);
- * end < start runs 65536*3 channels (count 0 after MULU.w/SUBQ.w)
- * (#684).
+ * (#686); colour numbers from 2731 on index before the palettes (#677).
+ * end < start runs 65536*3 channels (count 0 after MULU.w/SUBQ.w): an
+ * invalid argument, refused by paladj2chk with runtime error checking
+ * (fixed #684), here unchecked.
  * @param obj    a0: the target palette object (!libs #palettelib,#ia0|#pd0)
  * @param ratio  d1: the ratio, a Quick (16.16)
  * @param start  d2: the first colour
@@ -686,6 +692,7 @@ BLITZ_THUNK(mergebitplanes, mergebitplanes_c, "d0-d1/a0-a1");
 /* ------------------------------------------- error checks (debugger only) */
 
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");          /* fixed, #679 */
+BLITZ_ERRCHK_MESSAGE(endbefore, "PalAdjust end colour before the start colour");  /* fixed, #684 */
 
 /**
  * @brief The error check of CPUCls (debugger only).
@@ -705,5 +712,27 @@ static void BLITZ_ERRCHK cpuclschk_c(const struct bb_bitmap *bm BL_REG(a0))
         BLITZ_RUNERR(baddepth);
 }
 
+/**
+ * @brief The error check of PalAdjust's long form (debugger only).
+ *
+ * Fixed (#684), not in the original: PalAdjust takes the count end -
+ * start + 1 as a word, * 3 (MULU.w) - 1 as the DBRA counter, so end =
+ * start - 1 wrote 65536 channels (256 KB) from colour start on, and a
+ * smaller end about as many.  The release code is unchanged (an invalid
+ * argument, D-005; FillPalette refuses end < start in its release code,
+ * PalAdjust has no such test).
+ *
+ * Errors: "PalAdjust end colour before the start colour" (end < start as
+ * signed words, FillPalette's compare).
+ * @param start  d2: the first colour
+ * @param end    d3: the last colour
+ */
+static void BLITZ_ERRCHK paladj2chk_c(ULONG start BL_REG(d2), ULONG end BL_REG(d3))
+{
+    if ((WORD)end < (WORD)start)
+        BLITZ_RUNERR(endbefore);
+}
+
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(cpuclschk, cpuclschk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(paladj2chk, paladj2chk_c, "d0-d1/a0-a1");

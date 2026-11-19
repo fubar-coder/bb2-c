@@ -6,4 +6,8 @@
 # none)
 lib 65: header +$2C: code offset set in only one of them
 lib 65: entry 11 CPUCls +$10: code offset set in only one of them
-lib 65: relocations in the declaration part 17 != 19
+# #684: PalAdjust's long form gets an error check (paladj2chk, "PalAdjust
+# end colour before the start colour")
+lib 65: entry 7 PalAdjust +$28: code offset set in only one of them
+# #679, #684: the relocations of the error field and the checks
+lib 65: relocations in the declaration part 17 != 20
