@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+20: 1 21: 0
+rc=0

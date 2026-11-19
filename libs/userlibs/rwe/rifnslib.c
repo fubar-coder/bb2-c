@@ -57,10 +57,7 @@
  *     loop draws bitdepthminusone + 1 planes, the word (Flags<<8|Depth) - 1
  *     of the bitmap - with Flags set or depth 0 hundreds or 65536 planes
  *     (#658).
- *   - Rows above ymax are tested unsigned, rows below ymin signed (#664);
- *     48 and 64 pixel fonts read their third/fourth word only for rows
- *     that are not clipped: after a clipped row the glyph data are
- *     shifted (#656).
+ *   - Rows above ymax are tested unsigned, rows below ymin signed (#664).
  *   - Planes 8 and on take the colour bit of plane & 7 (BTST on memory)
  *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop (#658).
  *   - FNSSetTab 0: chr$(9) divides by 0 (exception) (#666).
@@ -76,6 +73,9 @@
  *   checked only the id in InstallFNS and nothing in FNSLoad, and a
  *   height of 0 drew 65536 rows per character (every row of the clip
  *   zone, the last ones below ymax).
+ * Fixed (#656): a clipped row of a 48 or 64 pixel font passes its third
+ *   (and fourth) glyph word too; the original read them only for a row
+ *   it drew, so every row after a clipped one took the wrong words.
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): FNSLength's font number outside the block, and
  *   the glyphs of codes the font has no data for - the built-in font ends
@@ -378,8 +378,11 @@ static void drawchar(const UWORD *g, UWORD y, ULONG rowoff, UWORD s, UWORD rows,
             UWORD w2 = *g++;
             ULONG b1, b2, m1, m2, b3 = 0, b4 = 0, m3 = 0, m4 = 0;
             UBYTE pl;
-            if ((WORD)y < (WORD)fns.ymin || y > fns.ymax)
+            if ((WORD)y < (WORD)fns.ymin || y > fns.ymax) {
+                if (fw != 32)           /* fixed (#656): the 3rd (4th) word */
+                    g += fw == 64 ? 2 : 1;
                 goto next;
+            }
             b1 = (ULONG)w1 << (16 - s);
             b2 = (ULONG)w2 << (16 - s);
             m1 = ~b1;
@@ -602,9 +605,8 @@ static void underline(UWORD x)
  * (FNSSetTab), chr$(10) a new line, chr$(0), codes below 32 and from 160
  * on (BUG(orig) #657) end the text; clipped by FNSClip.  BUG(orig): an
  * empty text counts width 1 (#659); depth 0 or above 8 overruns the
- * plane stack (#658); rows above ymax are tested unsigned (#664), 48/64
- * pixel glyphs shift after a clipped row (#656); FNSSetTab 0 divides by
- * 0 (#666); the underline ignores xmin (#667).
+ * plane stack (#658); rows above ymax are tested unsigned (#664);
+ * FNSSetTab 0 divides by 0 (#666); the underline ignores xmin (#667).
  * @param fontnum  d0: the font slot
  * @param x        d1: x
  * @param y        d2: y

@@ -2935,20 +2935,24 @@ FNSPrint|bitmap|f1 font 3 142,24 "Prefs AbC\tx" prefs E col 11/0|1	bytes 20992 f
 FNSPrint|bitmap|f1 font 3 145,25 "Prefs AbC\tx" prefs F col 10/0|1	bytes 20992 fnv BBFADEF5
 FNSPrint|bitmap|f1 font 3 15,30 "" prefs 3 col 3/0|1	bytes 20992 fnv ED488AD1
 FNSPrint|bitmap|f1 font 3 15,6 "" prefs 9 col 25/0|1	bytes 20992 fnv 02B16C05
-FNSPrint|bitmap|f1 font 3 20,15 "clipped top AND left" prefs 4 col 7/0|1	bytes 20992 fnv EEB58672
-FNSPrint|bitmap|f1 font 3 20,26 "clipped bottom\x0Anext" prefs 4 col 6/0|1	bytes 20992 fnv 619374E2
+FNSPrint|bitmap|f1 font 3 20,15 "clipped top AND left" prefs 4 col 7/0|1 [orig]	bytes 20992 fnv EEB58672
+FNSPrint|bitmap|f1 font 3 20,15 "clipped top AND left" prefs 4 col 7/0|1 [fixed #656]	bytes 20992 fnv E1F0A5AC
+FNSPrint|bitmap|f1 font 3 20,26 "clipped bottom\x0Anext" prefs 4 col 6/0|1 [orig]	bytes 20992 fnv 619374E2
+FNSPrint|bitmap|f1 font 3 20,26 "clipped bottom\x0Anext" prefs 4 col 6/0|1 [fixed #656]	bytes 20992 fnv 576FD50C
 FNSPrint|bitmap|f1 font 3 20,30 "" prefs 4 col 3/0|1	bytes 20992 fnv 4782BDC6
 FNSPrint|bitmap|f1 font 3 22,12 "a\x0A\x0Ab" prefs 4 col 6/0|1	bytes 20992 fnv 95DF7EE5
 FNSPrint|bitmap|f1 font 3 23,12 "a\x0A\x0Ab" prefs 5 col 9/0|1	bytes 20992 fnv 13B7C1B5
 FNSPrint|bitmap|f1 font 3 24,12 "a\x0A\x0Ab" prefs 6 col 12/0|1	bytes 20992 fnv 41D80B1B
-FNSPrint|bitmap|f1 font 3 240,22 "right" prefs 0 col 5/0|1	bytes 20992 fnv 619374E2
+FNSPrint|bitmap|f1 font 3 240,22 "right" prefs 0 col 5/0|1 [orig]	bytes 20992 fnv 619374E2
+FNSPrint|bitmap|f1 font 3 240,22 "right" prefs 0 col 5/0|1 [fixed #656]	bytes 20992 fnv 576FD50C
 FNSPrint|bitmap|f1 font 3 25,12 "a\x0A\x0Ab" prefs 7 col 15/0|1	bytes 20992 fnv 4A19F625
 FNSPrint|bitmap|f1 font 3 25,30 "" prefs 5 col 3/0|1	bytes 20992 fnv 4EE5B625
 FNSPrint|bitmap|f1 font 3 26,12 "a\x0A\x0Ab" prefs 8 col 18/0|1	bytes 20992 fnv 82C54697
 FNSPrint|bitmap|f1 font 3 27,12 "a\x0A\x0Ab" prefs 9 col 21/0|1	bytes 20992 fnv 9FE6B431
 FNSPrint|bitmap|f1 font 3 28,12 "a\x0A\x0Ab" prefs A col 24/0|1	bytes 20992 fnv DC357E6F
 FNSPrint|bitmap|f1 font 3 29,12 "a\x0A\x0Ab" prefs B col 27/0|1	bytes 20992 fnv 7D1D7585
-FNSPrint|bitmap|f1 font 3 3,58 "below the bitmap" prefs 0 col 5/0|1	bytes 20992 fnv 995BB196
+FNSPrint|bitmap|f1 font 3 3,58 "below the bitmap" prefs 0 col 5/0|1 [orig]	bytes 20992 fnv 995BB196
+FNSPrint|bitmap|f1 font 3 3,58 "below the bitmap" prefs 0 col 5/0|1 [fixed #656]	bytes 20992 fnv 02B0BBDC
 FNSPrint|bitmap|f1 font 3 30,30 "" prefs 6 col 3/0|1	bytes 20992 fnv CF0C5D2D
 FNSPrint|bitmap|f1 font 3 300,40 "near the edge" prefs 0 col 15/0|1	bytes 20992 fnv EEF0465D
 FNSPrint|bitmap|f1 font 3 300,40 "near the edge" prefs 1 col 15/0|1	bytes 20992 fnv BB003DD7
@@ -3035,20 +3039,24 @@ FNSPrint|bitmap|f1 font 4 142,24 "Prefs AbC\tx" prefs E col 11/0|1	bytes 20992 f
 FNSPrint|bitmap|f1 font 4 145,25 "Prefs AbC\tx" prefs F col 10/0|1	bytes 20992 fnv 41C0846D
 FNSPrint|bitmap|f1 font 4 15,30 "" prefs 3 col 3/0|1	bytes 20992 fnv A7937A85
 FNSPrint|bitmap|f1 font 4 15,7 "" prefs 9 col 25/0|1	bytes 20992 fnv 979C66C5
-FNSPrint|bitmap|f1 font 4 20,15 "clipped top AND left" prefs 4 col 7/0|1	bytes 20992 fnv 56415E18
-FNSPrint|bitmap|f1 font 4 20,26 "clipped bottom\x0Anext" prefs 4 col 6/0|1	bytes 20992 fnv 24DE228E
+FNSPrint|bitmap|f1 font 4 20,15 "clipped top AND left" prefs 4 col 7/0|1 [orig]	bytes 20992 fnv 56415E18
+FNSPrint|bitmap|f1 font 4 20,15 "clipped top AND left" prefs 4 col 7/0|1 [fixed #656]	bytes 20992 fnv BEC152B1
+FNSPrint|bitmap|f1 font 4 20,26 "clipped bottom\x0Anext" prefs 4 col 6/0|1 [orig]	bytes 20992 fnv 24DE228E
+FNSPrint|bitmap|f1 font 4 20,26 "clipped bottom\x0Anext" prefs 4 col 6/0|1 [fixed #656]	bytes 20992 fnv 45E76ABF
 FNSPrint|bitmap|f1 font 4 20,30 "" prefs 4 col 3/0|1	bytes 20992 fnv 4DFA32E5
 FNSPrint|bitmap|f1 font 4 22,13 "a\x0A\x0Ab" prefs 4 col 6/0|1	bytes 20992 fnv 28B583E7
 FNSPrint|bitmap|f1 font 4 23,13 "a\x0A\x0Ab" prefs 5 col 9/0|1	bytes 20992 fnv 7DB0B255
 FNSPrint|bitmap|f1 font 4 24,13 "a\x0A\x0Ab" prefs 6 col 12/0|1	bytes 20992 fnv F4F16659
-FNSPrint|bitmap|f1 font 4 240,22 "right" prefs 0 col 5/0|1	bytes 20992 fnv 24DE228E
+FNSPrint|bitmap|f1 font 4 240,22 "right" prefs 0 col 5/0|1 [orig]	bytes 20992 fnv 24DE228E
+FNSPrint|bitmap|f1 font 4 240,22 "right" prefs 0 col 5/0|1 [fixed #656]	bytes 20992 fnv 45E76ABF
 FNSPrint|bitmap|f1 font 4 25,13 "a\x0A\x0Ab" prefs 7 col 15/0|1	bytes 20992 fnv ADFCE845
 FNSPrint|bitmap|f1 font 4 25,30 "" prefs 5 col 3/0|1	bytes 20992 fnv 6AF1E045
 FNSPrint|bitmap|f1 font 4 26,13 "a\x0A\x0Ab" prefs 8 col 18/0|1	bytes 20992 fnv D956909F
 FNSPrint|bitmap|f1 font 4 27,13 "a\x0A\x0Ab" prefs 9 col 21/0|1	bytes 20992 fnv 9B45E62D
 FNSPrint|bitmap|f1 font 4 28,13 "a\x0A\x0Ab" prefs A col 24/0|1	bytes 20992 fnv B94A88B5
 FNSPrint|bitmap|f1 font 4 29,13 "a\x0A\x0Ab" prefs B col 27/0|1	bytes 20992 fnv 6F08D4B5
-FNSPrint|bitmap|f1 font 4 3,58 "below the bitmap" prefs 0 col 5/0|1	bytes 20992 fnv 9F79EEDE
+FNSPrint|bitmap|f1 font 4 3,58 "below the bitmap" prefs 0 col 5/0|1 [orig]	bytes 20992 fnv 9F79EEDE
+FNSPrint|bitmap|f1 font 4 3,58 "below the bitmap" prefs 0 col 5/0|1 [fixed #656]	bytes 20992 fnv 1B14517F
 FNSPrint|bitmap|f1 font 4 30,30 "" prefs 6 col 3/0|1	bytes 20992 fnv 50984765
 FNSPrint|bitmap|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1 [orig]	bytes 20992 fnv 5B56C451
 FNSPrint|bitmap|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	bytes 20992 fnv 19D1E070

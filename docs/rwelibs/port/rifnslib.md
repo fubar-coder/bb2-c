@@ -74,6 +74,10 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   (the manual: "A failure could either be a load error or an
   installation error"), and a height of 0 drew 65536 rows per character:
   every row of the clip zone, the last ones below ymax (#663).
+* A clipped row of a 48 or 64 pixel font passes its 3rd (and 4th) glyph
+  word too. The original read them only for a row it drew, so after a
+  clipped row (above ymin) the glyph was drawn shifted, mixed with the
+  next rows' words (#656).
 
 ## BUG(orig), kept
 
@@ -88,9 +92,7 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
   0), planes from 8 on with the colour bit `plane & 7` (#658).
-* Rows are clipped signed at ymin, unsigned at ymax (with x: #664);
-  48/64-pixel fonts read their 3rd/4th glyph word only for rows that are
-  drawn, so after a clipped row the glyph is shifted (#656).
+* Rows are clipped signed at ymin, unsigned at ymax (with x: #664).
 * FNSSetTab 0: a tab divides by 0 (#666). The underline is clipped at
   x = 0, not at xmin (#667). Codes from 160 end the text (signed byte
   compare) (#657).
