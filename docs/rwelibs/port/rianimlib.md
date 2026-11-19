@@ -92,6 +92,13 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   as the bitmap has; the manual: "You must ensure that the bitmap is big
   and deep enough to actually hold the animation"). ILBMPalette's result
   is not looked at, as in the original (#1106).
+* init (a nullsub behind the commands; the original has none) clears
+  the animation and sets AnimLoop on. Without it a second run of a
+  program with the library still loaded (from the editor) started with
+  the run before's animation: RIAnimFrameCount and RINextAnimFrame
+  before an RIAnimInit walked it (perhaps freed memory), and an AnimLoop
+  Off of the run before stayed off (the manual's default is on)
+  (#1107; `rianimlib.declarations-intended.txt`).
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×

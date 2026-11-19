@@ -1,9 +1,18 @@
 # the intended differences of rianimlib against its reference, the CD
 # binary BSS2 RIANIMLIB.OBJ (blitzlib compare, docs/development.md
 # "Intended differences")
+# #1107: the library has an init (a nullsub behind the commands that
+# clears the animation and sets AnimLoop on); the original's header has
+# init 0 (the first difference of the header: it covers the error field
+# of #514 at +$2C, which differs as well)
+lib 57: header +$16: code offset set in only one of them
+lib 57: end of the table +$25C: $FF != $00
+lib 57: 7 entries != 8
+lib 57: declaration part $262 != $276 bytes
 # #514: RIAnimInit's x,y form gets an error check (xychk, "Animation
 # position outside the bitmap"); rianimlib gets an error check area for it
 # (the original has none)
-lib 57: header +$2C: code offset set in only one of them
 lib 57: entry 0 RIAnimInit +$3C: code offset set in only one of them
-lib 57: relocations in the declaration part 9 != 11
+# #514, #1107: the relocations of the error field, the check and the
+# init entry
+lib 57: relocations in the declaration part 9 != 13

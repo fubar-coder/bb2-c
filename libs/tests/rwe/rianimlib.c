@@ -28,9 +28,9 @@
  * operation), past the end with AnimLoop on (the third frame) and off,
  * before RIAnimInit;
  * AnimLoop with on, off and a value whose low byte is 0; a second run
- * (init, if the set has one, as from the editor with the library still
- * loaded): RIAnimFrameCount and RINextAnimFrame before RIAnimInit, the
- * AnimLoop of the run before.
+ * (init if the set has one, the C build since #1107; as from the editor
+ * with the library still loaded): RIAnimFrameCount and RINextAnimFrame
+ * before RIAnimInit, the AnimLoop of the run before.
  * Not covered: a frame with other chunks before its DLTA (fixed #515; the
  * original returns through its saved d1 - a crash), a chunk with the ID at +8 that is no
  * FORM (BUG(orig) #513: returns through a1; DIFF), odd chunk lengths, depth 0

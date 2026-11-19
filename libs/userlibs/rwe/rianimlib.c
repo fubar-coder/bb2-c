@@ -87,6 +87,9 @@
  *     bitmap too narrow, too shallow or without plane 0); the original
  *     dropped UnpackIFF's result and played the deltas into that bitmap
  *     (#1106).  The height is not checked.
+ *   - init (the original has none) clears the animation and sets AnimLoop
+ *     on: a second run from the editor with the library still loaded
+ *     started with the run before's animation and AnimLoop (#1107).
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
@@ -106,10 +109,13 @@
 void _InitAnim2(void), _InitAnim(void), _InitAnim3(void), _NextAnimFrame(void);
 void _AnimLoop(void), _CountFrames(void), _AnimDepth(void), _AnimWidth(void);
 void _AnimHeight(void), xychk(void);
+static void codeinit(void);
 
-/* !libheader {#rianimlib,0,0,0,0}; error field: the error check area of
-   xychk (fixed, #514) */
-BLITZ_LIBHEADER(LIB_rianimlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
+BLITZ_ENTRY_DECL(init);
+
+/* !libheader {#rianimlib,0,0,0,0}; init: fixed, #1107 (the original has
+   none); error field: the error check area of xychk (fixed, #514) */
+BLITZ_LIBHEADER(LIB_rianimlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG);
@@ -159,6 +165,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_AnimHeight, 0, 0);
 BLITZ_NAME("RIAnimHeight", "address -- address of your animation file");
 
+BLITZ_NULLSUB_AT(init, codeinit, 0, 0);                  /* fixed #1107 */
+
 BLITZ_LIBFIN();
 
 /* ---------------------------------------------------------------- data */
@@ -201,6 +209,22 @@ static ULONG animtype7, bitplaneoffset;
 static UBYTE *thirdframe;
 static UBYTE *cmapchunk;                /* the CMAP chunk over the ILBMPalette call */
 static UBYTE doanimloop = 0xff, bitmapnumber, palettenumber, animtype;
+
+/**
+ * @brief init: no animation, AnimLoop on.
+ *
+ * Fixed (#1107): the original has no init, so a second run of a program
+ * with the library still loaded (from the editor) started with the
+ * animation of the run before: RIAnimFrameCount and RINextAnimFrame
+ * before an RIAnimInit walked it (perhaps freed memory), and an AnimLoop
+ * Off of the run before stayed off (the manual's default is on).  Clears
+ * with CLR.l/ST on absolute addresses: no register changes.
+ */
+static void BLITZ_ROUTINE codeinit(void)
+{
+    animaddress = nextanimframe = thirdframe = NULL;
+    doanimloop = 0xff;
+}
 
 /* InitFindChunk(a0, id): a FORM of type id (its chunks), or a chunk
    with id at +8 */
