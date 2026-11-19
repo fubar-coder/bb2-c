@@ -366,7 +366,7 @@ int main(int argc, char **argv)
     bmbuf = AllocMem(BMSZ, MEMF_PUBLIC);
     bank = AllocMem(20000, MEMF_PUBLIC | MEMF_CLEAR);
     for (f = 0; f < 5; f++) {
-        font[f] = AllocMem(20000, MEMF_PUBLIC);
+        font[f] = AllocMem(20000, MEMF_PUBLIC | MEMF_CLEAR);  /* behind the glyphs: 0 */
         fontsz[f] = mkfont(font[f], fws[f], fhs[f], (UWORD)(fhs[f] - 2 + f % 2 * 4));
     }
     clear();
