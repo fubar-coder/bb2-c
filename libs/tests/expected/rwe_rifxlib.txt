@@ -125,12 +125,18 @@ ClearBitmap|kept|8x12 x2|1	kept
 ClearBitmap|kept|8x12 x2 h $10005 off $FFFF0002|1	kept
 ClearBitmap|kept|8x12 x2 h $5 off $3|1	kept
 ClearBitmap|kept|8x12 x2 h $C off $0|1	kept
-ClearBitmap|memory|10x30 x3|1	bytes 32768 fnv 8A36B86E
-ClearBitmap|memory|6x25 x1 h $15 off $2|1	bytes 32768 fnv A4BCBF76
-ClearBitmap|memory|8x12 x2|1	bytes 32768 fnv 0D661BAA
-ClearBitmap|memory|8x12 x2 h $10005 off $FFFF0002|1	bytes 32768 fnv 6A5AA74E
-ClearBitmap|memory|8x12 x2 h $5 off $3|1	bytes 32768 fnv 445E806E
-ClearBitmap|memory|8x12 x2 h $C off $0|1	bytes 32768 fnv 3B338D51
+ClearBitmap|memory|10x30 x3|1 [orig]	bytes 32768 fnv 8A36B86E
+ClearBitmap|memory|10x30 x3|1 [fixed #668]	bytes 32768 fnv BE1066E5
+ClearBitmap|memory|6x25 x1 h $15 off $2|1 [orig]	bytes 32768 fnv A4BCBF76
+ClearBitmap|memory|6x25 x1 h $15 off $2|1 [fixed #668]	bytes 32768 fnv 34F1F0E1
+ClearBitmap|memory|8x12 x2|1 [orig]	bytes 32768 fnv 0D661BAA
+ClearBitmap|memory|8x12 x2|1 [fixed #668]	bytes 32768 fnv BBED95A4
+ClearBitmap|memory|8x12 x2 h $10005 off $FFFF0002|1 [orig]	bytes 32768 fnv 6A5AA74E
+ClearBitmap|memory|8x12 x2 h $10005 off $FFFF0002|1 [fixed #668]	bytes 32768 fnv DE17F461
+ClearBitmap|memory|8x12 x2 h $5 off $3|1 [orig]	bytes 32768 fnv 445E806E
+ClearBitmap|memory|8x12 x2 h $5 off $3|1 [fixed #668]	bytes 32768 fnv 4362A79C
+ClearBitmap|memory|8x12 x2 h $C off $0|1 [orig]	bytes 32768 fnv 3B338D51
+ClearBitmap|memory|8x12 x2 h $C off $0|1 [fixed #668]	bytes 32768 fnv 466CB51A
 Derez|d0|0 h 6 x2|1	$00120034
 Derez|d0|1 h 6 x2|1	$0012FFFF
 Derez|d0|10 h 20 x1|1	$FFFF0000

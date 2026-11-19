@@ -28,10 +28,6 @@
  * except those thunks.
  *
  * Kept from the original (BUG(orig)):
- *   - ClearBitmap starts at end-4 (its comment says 2): every pass is one
- *     word too low, the last word of the area stays and the last pass
- *     clears the word before the area (before the bitplane for offset 0)
- *     (#668);
  *   - delay 0 in ClearBitmap/FadeInBitmap means 2^32 turns of the loop
  *     (#669);
  *   - Derez is declared with a result (!acommand{#long}) but sets none:
@@ -62,9 +58,15 @@
  *     other variables here (one array pa[] with the four variables in the
  *     same order);
  *   - finit frees the tables but keeps the pointers (#673).
- * Fixed (intended deviation, #670): ClearBitmap, FadeInBitmap and
- * ZoomyZoom read the depth as the byte bm_Depth; the original read the
- * word at 4 (bm_Flags:bm_Depth), right only while bm_Flags is 0.
+ * Fixed (intended deviations):
+ *   - ClearBitmap, FadeInBitmap and ZoomyZoom read the depth as the byte
+ *     bm_Depth; the original read the word at 4 (bm_Flags:bm_Depth),
+ *     right only while bm_Flags is 0 (#670);
+ *   - ClearBitmap starts at the last word of the area (end-2, as its
+ *     comment says); the original started at end-4, so every pass was one
+ *     word too low, the last word of the area stayed and the last pass
+ *     cleared the word before the area (before the bitplane for offset 0)
+ *     (#668).
  * Not bugs but limits the source names: ZoomXY, Derez (and their
  * ScreenCopy) only for lores bitmaps (40 bytes per line).
  */
@@ -381,7 +383,7 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
     BDepth = (UWORD)(BM_DEPTH(bm) - 1);         /* the byte; fixed (#670) */
     BHeight = (UWORD)(h - 1);
     areaend = bl_mulu_w((UWORD)(h + off), BM_BPR(bm));
-    areaend -= 4;                               /* BUG(orig) (#668): 4, not 2 */
+    areaend -= 2;                               /* fixed (#668): the original 4 */
 
     ptr = (ULONG *)BM_PLANES(bm);
     ptrs = bit_add;
@@ -439,9 +441,10 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
  * @brief ClearBitmap bitmap#,delay: clears the whole bitmap line by line
  * with a dither fade (see clearbitmap_c).
  *
- * Height bm_Rows, offset 0.  BUG(orig): one word too low (#668), delay
- * 0 = 2^32 turns (#669), more than 16 planes overrun the pointer arrays
- * (#674).  Fixed (#670): the depth is the byte bm_Depth.
+ * Height bm_Rows, offset 0.  BUG(orig): delay 0 = 2^32 turns (#669),
+ * more than 16 planes overrun the pointer arrays (#674).  Fixed: the
+ * depth is the byte bm_Depth (#670); the passes start at the last word
+ * of the area, not one word lower (#668).
  * @param delay  d1: turns of the busy loop per line
  * @param bm     a0: the bitmap (struct BitMap) of bitmap# (d0)
  * Returns nothing (keeps a4-a6 only).
@@ -456,10 +459,11 @@ static void BLITZ_ROUTINE clearbitmap2(ULONG delay BL_REG(d1), ULONG bm BL_REG(a
  * from line `offset` on with a dither fade.
  *
  * Backwards from the end of the area: each line is first ANDed with the
- * alternating mask $AAAA/$5555, 19 lines later cleared.  BUG(orig): starts
- * at end-4, not end-2: one word too low, the last word of the area stays
- * and the word before the area is cleared (#668); delay 0 = 2^32 turns
- * (#669); more than 16 planes overrun the pointer arrays (#674).  Fixed
+ * alternating mask $AAAA/$5555, 19 lines later cleared.  BUG(orig): delay
+ * 0 = 2^32 turns (#669); more than 16 planes overrun the pointer arrays
+ * (#674).  Fixed: the passes start at the last word of the area (end-2);
+ * the original started at end-4, one word too low: the last word of the
+ * area stayed and the word before the area was cleared (#668).  Fixed
  * (#670): the depth is the byte bm_Depth (the original read the word
  * bm_Flags:bm_Depth).
  * @param delay  d1: turns of the busy loop per line

@@ -7,6 +7,7 @@
 ; and 2 (height 2, offset 1), so the word in front of it is the last word
 ; of row 0.
 ; Correct: rows 1 and 2 are cleared, rows 0 and 3 stay.
+; @fixed #668
 ; @rwe rifxlib
 DEFTYPE .l
 BitMap 0,32,4,1

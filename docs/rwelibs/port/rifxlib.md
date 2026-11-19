@@ -32,17 +32,19 @@ counts a `volatile` variable (the compiler would drop an empty loop).
 **Assembler:** none except the thunks (`BLITZ_THUNK`).
 
 **Fixed** (intended deviations, `docs/libs/deviations.md`, kind F):
-`ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the depth as the byte
-`bm_Depth`; the original read the word at 4 (`bm_Flags:bm_Depth`),
-right only while `bm_Flags` is 0 (#670, test
-`rwe/rifxlib-depth-word-at-4`).
+
+* `ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the depth as the
+  byte `bm_Depth`; the original read the word at 4 (`bm_Flags:bm_Depth`),
+  right only while `bm_Flags` is 0 (#670, test
+  `rwe/rifxlib-depth-word-at-4`);
+* `ClearBitmap` starts at the last word of the area (end-2, as its
+  comment says); the original started at end-4, so every pass was one
+  word too low, the last word of the area stayed and the last pass
+  cleared the word before the area (before the bitplane for offset 0)
+  (#668, test `rwe/rifxlib-clearbitmap-last-word`).
 
 **BUG(orig)** (kept, commented in the code):
 
-* `ClearBitmap` starts at end-4 (its comment says 2): every line pass is
-  one word too low, the last word of the area stays and the last pass
-  clears the word before the area (before the bitplane for offset 0)
-  (#668);
 * delay 0 in `ClearBitmap`/`FadeInBitmap` means 2^32 turns of the busy
   loop (#669);
 * `Derez` is declared with a result (`!acommand{#long}`) but sets none:
