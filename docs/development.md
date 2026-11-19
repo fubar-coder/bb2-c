@@ -145,7 +145,11 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
    changed results (executables, TED's files, library files) named in
    the commit message, every other result byte-identical to the
    previous commit; and a line `Fixes #NNN` in the commit message
-   (GitHub closes the issue on the push);
+   (GitHub closes the issue on the push). "fix", "fixes" or "fixed"
+   (also "close(s)", "resolve(s)") followed by `#NNN` appears in a
+   commit message only in that line: GitHub closes the issue for any
+   of them, also in the name of a `[fixed #NNN]` test case. Write such
+   a name rephrased ("the fixed case of #NNN");
 3. the entry on the website page of fixed original bugs
    (the area page in `site/content/docs/compared-with-original/fixed-bugs/`:
    a one-sentence entry, or a section with an example of the original's
