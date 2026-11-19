@@ -93,6 +93,11 @@ kind F):
   empty range). The original's loop tested its end only after a
   colour: it wrote the colour at low, behind the colour block when low
   was not below its count (#549).
+* `BBGetPalette` reads only the colours that lie inside the `COLR` chunk
+  (and the file): high is cut to the last colour the chunk holds, and
+  nothing is stored when it holds none. The original read the colours
+  low..high from the bytes behind a shorter chunk: the next chunk, or
+  memory behind the file (#1113).
 
 ## Original behaviour, not defects
 

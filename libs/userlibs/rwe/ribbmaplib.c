@@ -31,6 +31,10 @@
  * Fixed (intended deviation, #549): BBGetPalette with low > high in the
  * COLR chunk stores nothing (the original wrote the colour at low, also
  * behind the colour block when low was not below its count).
+ * Fixed (intended deviation, #1113): BBGetPalette reads only the colours
+ * that lie inside the COLR chunk (and the file): high is cut to the last
+ * of them, nothing is stored without one (the original read the colours
+ * low..high from the bytes behind a shorter chunk).
  * Fixed (intended deviation, #548): BBGetPalette sets the count of a new
  * colour block (in the block and the object) to high+1, its size (the
  * original set it to high: the last colour outside the palette, and the
@@ -550,7 +554,10 @@ static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
  * old block freed with the size count*12) if high >= the colour count.
  * The new block has high+1 colours and that count (fixed, #548: the
  * original set it to high).  Nothing without the chunk, nothing when
- * low > high (fixed, #549: the original wrote the colour at low).
+ * low > high (fixed, #549: the original wrote the colour at low).  Only
+ * the colours that lie inside the chunk and the file are read: high is
+ * cut to the last of them, nothing without one (fixed, #1113: the
+ * original read the colours behind the chunk).
  * @param pal  a0: the palette object (palettelib)
  */
 static void BLITZ_ROUTINE bbgetpalette_c(struct bb_palette *pal BL_REG(a0))
@@ -565,6 +572,22 @@ static void BLITZ_ROUTINE bbgetpalette_c(struct bb_palette *pal BL_REG(a0))
     high = chunk[1];
     if (low > high)                     /* fixed (#549): an empty range */
         return;
+    {
+        /* fixed (#1113): only the colours inside the chunk (and the
+           file) are read; high is cut to the last of them */
+        ULONG len = LONGAT(chunk - 4), room = (ULONG)(scenarioend - chunk);
+        UWORD have;
+        if (len > room)
+            len = room;
+        if (len > 2 + 3 * 256)          /* more than any range: a word */
+            len = 2 + 3 * 256;
+        have = len < 2 ? 0 : (UWORD)((UWORD)(len - 2) / 3);
+        if (have <= high - low) {
+            if (!have)
+                return;
+            high = (UWORD)(low + have - 1);
+        }
+    }
     chunk += 2;
     num = pal->numcols;
     if (!((WORD)high < (WORD)num)) {
