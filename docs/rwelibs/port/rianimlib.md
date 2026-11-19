@@ -35,7 +35,7 @@ search (InitFindChunk, FindChunk, FindNextChunk) is the code of
 Pack-Library9, with its globals. The thunks keep d1/a0/a1 (GCC the
 rest): RINextAnimFrame keeps everything but d0, as the original. Not ported,
 without effect: `GetChunkHeader` (called by nothing), `_libfinit` (an
-RTS no header refers to), `UnpackAnim7Short` (unreachable, see below).
+RTS no header refers to).
 The `MULU`/`DIVU` of the original are `bl_mulu_w`/`bl_divu_w` (DIVU
 with its overflow); the row steps have an `asm` barrier (GCC would
 compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
@@ -108,6 +108,12 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   was one byte off, BMHD, frames, CMAP and DLTA were missed (#505).
   RINextAnimFrame pays a test of the length's bit 0 per step, about 20
   cycles on a 68000, three steps per frame.
+* ANIM7 decodes the short (word) form when bit 0 of the ANHD bits is
+  clear, with the words of the row as its columns, (width + 15) / 16.
+  The original tested the operation (always 7) instead of the bits:
+  every ANIM7 was decoded as long data, garbage for short data, and its
+  `UnpackAnim7Short` was unreachable (#504). An ANIM7 frame pays a test
+  of the bit and a compare per plane.
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
@@ -119,9 +125,7 @@ bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
   pushes a1 and returns without popping it: the RTS jumps to the
   caller's a1. **DIFF:** the C build returns -1 as if a1 had been popped
   (the original crashes; not reproducible in C) (#513).
-* ANIM7: the test for the short (word) form tests the operation
-  (always 7), so the long form is always used and the short code is
-  unreachable (#504); the columns are width >> 5 (ASR.w) – the rest of a
+* ANIM7, long data: the columns are width >> 5 (ASR.w) – the rest of a
   width that is not a multiple of 32 is dropped, a width below 32 gives
   65536 columns (DBRA) (#507, its ANIM7 half: what the last long column
   of a row with an odd number of words holds is not in the format's

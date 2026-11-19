@@ -35,9 +35,7 @@
  *     it: the RTS jumps to the caller's a1 (DIFF: the C build returns
  *     -1 as if a1 had been popped - a crash in the original, not
  *     reproducible) (#513).
- *   - ANIM7: the test for the short (word) form tests the operation (7),
- *     so the long form is always used (the short code is unreachable and
- *     not ported) (#504); the columns are width >> 5 (ASR.w), dropping
+ *   - ANIM7 (long data): the columns are width >> 5 (ASR.w), dropping
  *     the rest of a width that is not a multiple of 32, and a width below
  *     32 gives 65536 columns (DBRA) (#507, its ANIM7 half: what the last
  *     long column of a row with an odd number of words holds is not in
@@ -97,11 +95,16 @@
  *     as the next chunk, so files written without pad bytes stay readable
  *     (as ilbmifflib, #189).  The original added no pad byte: behind an
  *     odd-length chunk the walk was one byte off (#505).
+ *   - ANIM7 decodes the short (word) form when bit 0 of the ANHD bits is
+ *     clear, with the words of the row as its columns ((width + 15) /
+ *     16).  The original tested the operation (always 7) instead of the
+ *     bits: every ANIM7 was decoded as long data and its short code was
+ *     unreachable (#504).
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
- * (an RTS no header refers to), the short ANIM7 code.
+ * (an RTS no header refers to).
  */
 #include "blitzlib.h"
 #include <graphics/gfx.h>
@@ -209,7 +212,9 @@ static UBYTE *firstchunk, *lastfoundchunk, *endoffile;
 static UBYTE *firstframe, *animaddress, *animend, *nextanimframe;
 static UWORD animheight, animwidth;
 static UWORD deltacolumns;              /* a delta's columns per plane - 1 (DBRA) */
-static UWORD columns5, columns7;        /* the same for ANIM5 and ANIM7, from RIAnimInit */
+/* the same per decoder (ANIM5, ANIM7 long, ANIM7 short), from RIAnimInit */
+enum { DELTA5, DELTA7, DELTA7SHORT };
+static UWORD columns[3];
 static UBYTE animdepth;
 static PLANEPTR *bitmapaddress;         /* the Planes of the bitmap object */
 static ULONG animtype7, bitplaneoffset;
@@ -460,10 +465,12 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
        a width of 0 is refused */
     if (!animwidth)
         return BB_FALSE;
-    columns5 = (UWORD)((((ULONG)animwidth + 15) >> 4 << 1) - 1);
+    columns[DELTA5] = (UWORD)((((ULONG)animwidth + 15) >> 4 << 1) - 1);
+    /* fixed #504: the words of the row for ANIM7's short form */
+    columns[DELTA7SHORT] = (UWORD)((((ULONG)animwidth + 15) >> 4) - 1);
     /* BUG(orig) (#507, ANIM7): width >> 5 (ASR.w), a width below 32 gives
        65536 columns */
-    columns7 = (UWORD)(((WORD)animwidth >> 5) - 1);
+    columns[DELTA7] = (UWORD)(((WORD)animwidth >> 5) - 1);
     animheight = bmhd->bmh_Height;
     animdepth = bmhd->bmh_Depth;
     /* fixed #509: the delta planes loop counts a byte up to the depth;
@@ -626,8 +633,47 @@ static void plane7(const UBYTE *ops, UBYTE *column, const ULONG *data, ULONG mod
     } while (col-- != 0);
 }
 
-/* the DLTA (header at dlta) into the planes of the bitmap */
-static void unpackanim(UBYTE *dlta, BOOL seven)
+/* ANIM7 (short form): one plane, columns of words; the data from a3
+   (fixed #504: the original never reached its UnpackAnim7Short) */
+static void plane7short(const UBYTE *ops, UBYTE *column, const UWORD *data, ULONG mod)
+{
+    UWORD col = deltacolumns, c;
+    UBYTE *dst;
+    UBYTE n, op;
+    UWORD v;
+
+    do {
+        dst = column;
+        column += 2;
+        n = *ops++;
+        if (!n)
+            continue;
+        do {
+            op = *ops++;
+            if (!op) {                  /* run */
+                c = COUNT(*ops++);
+                v = *data++;
+                do {
+                    WD(dst) = v;
+                    dst += mod;
+                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
+                } while (c-- != 0);
+            } else if (op & 0x80) {     /* copy */
+                c = COUNT(op & 0x7f);
+                do {
+                    WD(dst) = *data++;
+                    dst += mod;
+                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
+                } while (c-- != 0);
+            } else                      /* skip */
+                dst += bl_mulu_w(op, (UWORD)mod);
+        } while (--n);
+    } while (col-- != 0);
+}
+
+/* the DLTA (header at dlta) into the planes of the bitmap with the
+   decoder kind (DELTA5, DELTA7, DELTA7SHORT) */
+static void unpackanim(UBYTE *dlta, int kind)
 {
     UBYTE *body = dlta + 8;
     const ULONG *offsets = (const ULONG *)body;
@@ -636,17 +682,19 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
     ULONG mod = WD((UBYTE *)planes - offsetof(struct BitMap, Planes));
     UBYTE plane = 0;
 
-    deltacolumns = seven ? columns7 : columns5;
+    deltacolumns = columns[kind];
     do {                                /* depth 1-8 (fixed #509, RIAnimInit) */
         UBYTE *column = *planes++ + bitplaneoffset;
         ULONG op = offsets[0], data = offsets[8];
 
         offsets++;
         if (op) {
-            if (seven)
+            if (kind == DELTA5)
+                plane5(body + op, column, mod);
+            else if (kind == DELTA7)
                 plane7(body + op, column, (const ULONG *)(body + data), mod);
             else
-                plane5(body + op, column, mod);
+                plane7short(body + op, column, (const UWORD *)(body + data), mod);
         }
     } while (++plane != animdepth);
 }
@@ -680,13 +728,15 @@ static __attribute__((noinline)) UBYTE *otherchunks(UBYTE *chunk)
 /**
  * @brief RINextAnimFrame bitmap#: apply the DLTA of the next frame to the bitmap.
  *
- * ANHD operation 5 or 65 (byte vertical delta) or 7 (long vertical
- * delta; the short form is never used, BUG(orig) (#504)) on the planes
+ * ANHD operation 5 or 65 (byte vertical delta) or 7 (short or long
+ * vertical delta by bit 0 of the ANHD bits; fixed #504: the original
+ * always took the long form) on the planes
  * (+ the offset of RIAnimInit); a CMAP of the frame goes through
  * ILBMPalette.  At the end of the ANIM it goes on with the third frame
  * if AnimLoop is on, else returns 0.  ANIM5 has the byte columns of the
- * word-aligned row (fixed #507).  BUG(orig): the ANIM7 columns are width
- * >> 5, dropping a rest and giving 65536 columns below 32 pixels (#507);
+ * word-aligned row (fixed #507), ANIM7's short form the words of the row
+ * (fixed #504).  BUG(orig): the ANIM7 long columns are width >> 5,
+ * dropping a rest and giving 65536 columns below 32 pixels (#507);
  * a run or copy count of 0 is 256 (#508).  The depth is
  * 1 to 8 (fixed #509: RIAnimInit refuses 0 and above 8).  Other chunks between ANHD (and CMAP) and the DLTA are
  * skipped inside the frame, a CMAP among them goes through ILBMPalette; a
@@ -733,9 +783,11 @@ ULONG BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
             return 0;
     }
     if (animtype == 5 || animtype == 65)
-        unpackanim(chunk, FALSE);
+        unpackanim(chunk, DELTA5);
     else if (animtype == 7)
-        unpackanim(chunk, TRUE);        /* BUG(orig): never the short form (#504) */
+        /* fixed #504: bit 0 of the ANHD bits (the original tested the
+           operation, never the short form) */
+        unpackanim(chunk, (animtype7 & 1) ? DELTA7 : DELTA7SHORT);
     else
         return 0;
     return (ULONG)-1;
