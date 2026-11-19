@@ -6,6 +6,7 @@
 ; message, for an App message of its own with id 0 (am_ID 0, no
 ; arguments) and after the AppEvent that replied to it.
 ; Correct: -1 without an event, 0 for the message of id 0.
+; @fixed #1102
 ; @rwe riapplib
 DEFTYPE .l
 NPrint "before AppEvent: ",AppEventID

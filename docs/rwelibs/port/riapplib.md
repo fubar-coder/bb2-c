@@ -76,6 +76,11 @@ kind F):
   chosen without icons); the original read the first WBArg without
   looking at `am_NumArgs` and returned whatever `am_ArgList` pointed at
   (#522).
+* `AppEventID` returns -1 without a current App event (before the first
+  `AppEvent`, after an `AppEvent` that found no message, also before
+  init), as RIAppLib.guide says ("-1 means that no AppEvent occurred");
+  the original returned 0, which is also the id of an object, so a
+  program could not tell "no event" from an event of object 0 (#1102).
 * `AppFile(n)` with n ≤ 0 is out of range and returns an empty string;
   the original checked only the upper bound and read the WBArg before
   the list (its lock passed to `NameFromLock`, perhaps unlocked and

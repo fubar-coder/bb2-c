@@ -367,14 +367,16 @@ AppEvent|replies|message 2|1	$00000001
 AppEvent|replies|message 3|1	$00000001
 AppEvent|replies|third run|1 [orig]	$00000001
 AppEvent|replies|third run|1 [fixed #1099]	$00000000
-AppEventID|d0|last|1	$00000000
+AppEventID|d0|last|1 [orig]	$00000000
+AppEventID|d0|last|1 [fixed #1102]	$FFFFFFFF
 AppEventID|d0|message 0|1	$00000100
 AppEventID|d0|message 1|1	$00000101
 AppEventID|d0|message 2|1	$00000102
 AppEventID|d0|message 3|1	$00000103
-AppEventID|d0|no message|1	$00000000
+AppEventID|d0|no message|1 [orig]	$00000000
+AppEventID|d0|no message|1 [fixed #1102]	$FFFFFFFF
 AppEventID|d0|third run|1 [orig]	$00000007
-AppEventID|d0|third run|1 [fixed #1099]	$00000000
+AppEventID|d0|third run|1 [fixed #1099]	$FFFFFFFF
 AppEventID|kept|last|1	kept
 AppEventID|kept|message 0|1	kept
 AppEventID|kept|message 1|1	kept
@@ -756,7 +758,8 @@ init|workbench.library opens left|icon.library fails|1 [orig]	$00000001
 init|workbench.library opens left|icon.library fails|1 [fixed #526]	$00000000
 no init|d0|before init|1	$00000000
 no init|d0|before init|2	$00000000
-no init|d0|before init|3	$00000000
+no init|d0|before init|3 [orig]	$00000000
+no init|d0|before init|3 [fixed #1102]	$FFFFFFFF
 no init|d0|before init|4	$00000000
 no init|d0|before init|5	$00000000
 no init|d0|before init|6	$00000000

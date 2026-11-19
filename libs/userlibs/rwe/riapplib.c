@@ -94,6 +94,10 @@
  * stays, and a3 ends on text$, its first string argument, giving back the
  * space of the arguments, which the compiler does not take back after a
  * function with a numeric result (#846).
+ * Fixed (intended deviation, #1102): AppEventID returned 0 without a
+ * current App event (before init too), which is also the id of an object;
+ * it returns -1 now, as RIAppLib.guide says ("-1 means that no AppEvent
+ * occurred").
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -458,12 +462,15 @@ BLITZ_THUNK(appfiles, appfiles_c, "d1/a0-a1");
 
 /**
  * @brief AppEventID: the id (am_ID) of the current message.
- * @return d0: the id, 0 if there is no message
+ *
+ * Fixed (#1102): -1 without a current message, as RIAppLib.guide says
+ * (the original returned 0, also the id of an object).
+ * @return d0: the id, -1 if there is no message (or init failed)
  */
 static ULONG BLITZ_ROUTINE appeventid_c(void)
 {
     if (!libflag || !msg)
-        return 0;
+        return (ULONG)-1;                       /* fixed (#1102) */
     return msgid;
 }
 BLITZ_THUNK(appeventid, appeventid_c, "d1/a0-a1");
