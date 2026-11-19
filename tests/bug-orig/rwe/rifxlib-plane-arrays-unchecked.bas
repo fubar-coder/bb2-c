@@ -11,6 +11,7 @@
 ; original has no error check area.  Here with runtime error checking.
 ; Correct: the FadeInBitmap of depth 8 works; the error check refuses the
 ; depth of 9: "Illegal BitMap Depth", nothing is copied.
+; @fixed #674
 ; @rwe rifxlib
 ; @pass runtime_errors=on
 DEFTYPE .l

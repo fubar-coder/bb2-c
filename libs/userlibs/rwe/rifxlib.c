@@ -33,12 +33,6 @@
  *   - Derez is declared with a result (!acommand{#long}) but sets none:
  *     d0 is what the routine leaves there (the input for derez 0) -
  *     reproduced, it is what a Blitz program gets (#672);
- *   - Derez and ZoomXY keep the upper byte of sbitdepth from the previous
- *     call (MOVE.b into its low byte; after a depth 0 it is $FF) (#675);
- *   - Derez and ZoomXY do not check the depth: a depth-0 source bitmap
- *     gives SUBQ.w #1 = $FFFF and 65536 rounds of the DBRA loops -
- *     store_bitplanes writes 65536 plane pointers over bit_add/dest_add
- *     and what follows them (#947);
  *   - Derez with a value >= 3 builds its mask table myline with 20 words
  *     (21 for values > 31) into the 18 words the source reserves: the
  *     19th goes over myflag and the pad byte, the 20th (21st) over the
@@ -48,15 +42,6 @@
  *     (#671);
  *   - ZoomyZoom ignores the bitmap's size: fixed 32 lines of 80 bytes, the
  *     left 40 bytes doubled in place (#676);
- *   - the pointer arrays bit_add/dest_add hold 16 longs each and are not
- *     checked (#674): FadeInBitmap (two pointers per plane in each) runs
- *     from bit_add into dest_add and from dest_add over the four
- *     variables behind it from 9 planes on, and from 11 planes on over
- *     what follows them; ClearBitmap, Derez and ZoomXY (one pointer per
- *     plane) reach the variables from 17 planes on and what follows from
- *     21 on.  What follows is the code of InitZoomXY in the original,
- *     other variables here (one array pa[] with the four variables in the
- *     same order);
  *   - finit frees the tables but keeps the pointers (#673).
  * Fixed (intended deviations):
  *   - ClearBitmap, FadeInBitmap and ZoomyZoom read the depth as the byte
@@ -66,7 +51,30 @@
  *     comment says); the original started at end-4, so every pass was one
  *     word too low, the last word of the area stayed and the last pass
  *     cleared the word before the area (before the bitplane for offset 0)
- *     (#668).
+ *     (#668);
+ *   - With runtime error checking every command that counts the planes of
+ *     a bitmap (ClearBitmap, FadeInBitmap, ZoomX2, ZoomX4, ZoomX8,
+ *     ReduceX2, ZoomyZoom, Derez, ZoomXY) refuses a bitmap of depth 0 or
+ *     more than 8: "Illegal BitMap Depth" (the original has no error check
+ *     area).  The release code is unchanged (invalid arguments, D-005;
+ *     the manual: "the maximum bitmap depth for these functions is 8"):
+ *     depth 0 runs the DBRA loops 65536 times (a word: ClearBitmap,
+ *     FadeInBitmap, ZoomyZoom, Derez and ZoomXY, whose store_bitplanes
+ *     writes 65536 plane pointers over bit_add/dest_add and what follows
+ *     them) or 256 times (a byte: the zooms and ReduceX2, through the plane
+ *     pointers behind the bitmap object) (#947); the pointer arrays
+ *     bit_add/dest_add hold 16 longs each: FadeInBitmap (two pointers per
+ *     plane in each) runs from bit_add into dest_add and from dest_add
+ *     over the four variables behind it from 9 planes on, and from 11
+ *     planes on over what follows them; ClearBitmap, Derez and ZoomXY (one
+ *     pointer per plane) reach the variables from 17 planes on and what
+ *     follows from 21 on.  What follows is the code of InitZoomXY in the
+ *     original, other variables here (one array pa[] with the four
+ *     variables in the same order) (#674);
+ *   - Derez and ZoomXY load the depth into sbitdepth as a whole word; the
+ *     original set only its low byte (MOVE.b into sbitdepth+1), so after a
+ *     depth 0 the upper byte stayed $FF for every later call (#675; seen
+ *     only after a depth-0 call, which itself overruns the arrays).
  * Not bugs but limits the source names: ZoomXY, Derez (and their
  * ScreenCopy) only for lores bitmaps (40 bytes per line).
  */
@@ -87,6 +95,7 @@ void zoomxy_no_xy(void), zoomx4_xy(void), asmderez(void), AsmZoom(void);
 void InitZoomxy(void), zoomx2(void), zoomtables(void), zoomx8(void);
 void ADDValue(void), ReduceX2(void), dozoomy(void), rifxlib_libinit(void);
 void rifxlib_libfinit(void);
+void clearchk(void), fadechk(void), bm2chk(void), zoomxychk(void), zoomychk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -97,47 +106,48 @@ BLITZ_ENTRY_DECL(finit);
 /* source# and dest#: the bitmaps of parameters 0 and 1 into a0 and a1 */
 #define RI_BMAPS() BLITZ_LIBS(RI_BMAP(0, 0), RI_BMAP(1, 1))
 
-/* !libheader {#rifxlib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_rifxlib, init, BL_NORET, finit, 0);
+/* !libheader {#rifxlib,init,0,finit,0}; error field: the error check
+   area of the depth checks (fixed, #947, #674) */
+BLITZ_LIBHEADER(LIB_rifxlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS(RI_BMAP(0, 0));
-BLITZ_SUBS(clearbitmap2, 0, 0);
+BLITZ_SUBS(clearbitmap2, clearchk, 0);           /* check: fixed #947 #674 */
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS(RI_BMAP(0, 0));
-BLITZ_SUBS(clearbitmap, 0, 0);
+BLITZ_SUBS(clearbitmap, clearchk, 0);            /* check: fixed #947 #674 */
 BLITZ_NAME("ClearBitmap", "bitmap#,delay[,height,offset]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG);
 RI_BMAPS();
-BLITZ_SUBS(fadeinbitmap2, 0, 0);
+BLITZ_SUBS(fadeinbitmap2, fadechk, 0);           /* check: fixed #947 #674 */
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_WORD, BL_WORD, BL_WORD);
 RI_BMAPS();
-BLITZ_SUBS(fadeinbitmap, 0, 0);
+BLITZ_SUBS(fadeinbitmap, fadechk, 0);            /* check: fixed #947 #674 */
 BLITZ_NAME("FadeInBitmap", "bitmapsource#,bitmapdest#,delay[,height,offset1,offset2]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_BYTE, BL_BYTE, BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 RI_BMAPS();
-BLITZ_SUBS(zoomxy_no_xy, 0, 0);
+BLITZ_SUBS(zoomxy_no_xy, bm2chk, 0);             /* check: fixed #947 #674 */
 BLITZ_ARGS(BL_BYTE, BL_BYTE, BL_LONG, BL_LONG, BL_WORD, BL_WORD, BL_BYTE);
 RI_BMAPS();
-BLITZ_SUBS(zoomx4_xy, 0, 0);
+BLITZ_SUBS(zoomx4_xy, bm2chk, 0);                /* check: fixed #947 #674 */
 BLITZ_NAME("ZoomX4", "source#,dest#,sourceadd,destadd,width,height[,xy_select]");
 
 /* BUG(orig) (#672): declared with a result, sets none (see asmderez) */
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 RI_BMAPS();
-BLITZ_SUBS(asmderez, 0, 0);
+BLITZ_SUBS(asmderez, bm2chk, 0);                 /* check: fixed #947 #674 */
 BLITZ_NAME("Derez", "source#,dest#,sourceadd,destadd,derez_value,height");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(AsmZoom, 0, 0);
+BLITZ_SUBS(AsmZoom, zoomxychk, 0);                /* check: fixed #947 #674 */
 BLITZ_NAME("ZoomXY", "xzoom,yzoom,height");
 
 BLITZ_ASTATEMENT();
@@ -149,7 +159,7 @@ BLITZ_NAME("InitZoomXY", "source#,dest#,sourceadd,destadd");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 RI_BMAPS();
-BLITZ_SUBS(zoomx2, 0, 0);
+BLITZ_SUBS(zoomx2, bm2chk, 0);                    /* check: fixed #947 #674 */
 BLITZ_NAME("ZoomX2", "source#,dest#,sourceadd,destadd,width,height");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -163,7 +173,7 @@ BLITZ_NULLSUB(0, 0, 0);
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_BYTE, BL_BYTE, BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 RI_BMAPS();
-BLITZ_SUBS(zoomx8, 0, 0);
+BLITZ_SUBS(zoomx8, bm2chk, 0);                    /* check: fixed #947 #674 */
 BLITZ_NAME("ZoomX8", "source#,dest#,sourceadd,destadd,width,height");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -175,13 +185,13 @@ BLITZ_NAME("ADDValue", "(bitmap#,x,y)");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_BYTE, BL_BYTE, BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 RI_BMAPS();
-BLITZ_SUBS(ReduceX2, 0, 0);
+BLITZ_SUBS(ReduceX2, bm2chk, 0);                  /* check: fixed #947 #674 */
 BLITZ_NAME("ReduceX2", "source#,dest#,sourceadd,destadd,width,height");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(RI_BMAP(0, 0));
-BLITZ_SUBS(dozoomy, 0, 0);
+BLITZ_SUBS(dozoomy, zoomychk, 0);                 /* check: fixed #947 #674 */
 BLITZ_NAME("ZoomyZoom", "bitmap#");
 
 BLITZ_NULLSUB_AT(finit, rifxlib_libfinit, 0, 0);
@@ -238,8 +248,9 @@ static UWORD sbitdepth, yvalue, height;
 
 /* bit_add (16 longs), dest_add (16 longs), source_address, dest_address,
    add_source, add_dest - one block: the stores of the plane pointers do
-   not check the depth and run from one into the next (BUG(orig) (#674),
-   (#947)), so they go through `all`, the block as one array */
+   not check the depth in the release code and run from one into the next
+   (the error checks refuse such a depth: fixed #674, #947), so they go
+   through `all`, the block as one array */
 static union {
     ULONG all[36];
     struct {
@@ -441,8 +452,9 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
  * @brief ClearBitmap bitmap#,delay: clears the whole bitmap line by line
  * with a dither fade (see clearbitmap_c).
  *
- * Height bm_Rows, offset 0.  BUG(orig): delay 0 = 2^32 turns (#669),
- * more than 16 planes overrun the pointer arrays (#674).  Fixed: the
+ * Height bm_Rows, offset 0.  BUG(orig): delay 0 = 2^32 turns (#669).
+ * More than 16 planes overrun the pointer arrays, depth 0 runs 65536
+ * planes: refused by clearchk (fixed #674, #947).  Fixed: the
  * depth is the byte bm_Depth (#670); the passes start at the last word
  * of the area, not one word lower (#668).
  * @param delay  d1: turns of the busy loop per line
@@ -460,8 +472,8 @@ static void BLITZ_ROUTINE clearbitmap2(ULONG delay BL_REG(d1), ULONG bm BL_REG(a
  *
  * Backwards from the end of the area: each line is first ANDed with the
  * alternating mask $AAAA/$5555, 19 lines later cleared.  BUG(orig): delay
- * 0 = 2^32 turns (#669); more than 16 planes overrun the pointer arrays
- * (#674).  Fixed: the passes start at the last word of the area (end-2);
+ * 0 = 2^32 turns (#669).  Depth 0 or more than 8: clearchk (fixed #947,
+ * #674).  Fixed: the passes start at the last word of the area (end-2);
  * the original started at end-4, one word too low: the last word of the
  * area stayed and the word before the area was cleared (#668).  Fixed
  * (#670): the depth is the byte bm_Depth (the original read the word
@@ -557,7 +569,8 @@ static void fadein_c(ULONG delay, UWORD h, UWORD off1, UWORD off2, ULONG src, UL
  * source into the destination line by line (see fadein_c).
  *
  * Height bm_Rows of the source, offsets 0.  BUG(orig): delay 0 = 2^32
- * turns (#669), more than 8 planes overrun the pointer arrays (#674).
+ * turns (#669).  More than 8 planes overrun the pointer arrays, depth 0
+ * runs 65536 planes: refused by fadechk (fixed #674, #947).
  * Fixed (#670): the depth is the byte bm_Depth.
  * @param delay  d2: turns of the busy loop per line
  * @param src    a0: the source bitmap (bitmapsource#, d0)
@@ -579,8 +592,9 @@ static void BLITZ_ROUTINE fadeinbitmap2(ULONG delay BL_REG(d2), ULONG src BL_REG
  * offsets come from the source bitmap (offsets times the SOURCE's bytes
  * per row).  Fixed (#670): the depth is the byte bm_Depth (the original
  * read the word bm_Flags:bm_Depth).  BUG(orig): delay 0 = 2^32 turns
- * (#669); from 9 planes on the two pointers per
- * plane overrun bit_add/dest_add (#674).
+ * (#669).  From 9 planes on the two pointers per plane overrun
+ * bit_add/dest_add, depth 0 runs 65536 planes: refused by fadechk (fixed
+ * #674, #947).
  * @param delay  d2: turns of the busy loop per line
  * @param h      d3.w: the number of lines
  * @param off1   d4.w: the first source line
@@ -701,7 +715,7 @@ static void zoomx4_c(UBYTE sel, ULONG srcadd, ULONG dstadd, UWORD width, UWORD h
  *
  * Nothing without the table (init found no memory), with a width below 8
  * or a height below 1.  The number of planes is the source's bm_Depth (a
- * byte: 0 = 256).
+ * byte: 0 = 256; bm2chk refuses 0 and more than 8: fixed #947, #674).
  * @param srcadd  d2: byte offset added to every source plane
  * @param dstadd  d3: byte offset added to every destination plane
  * @param width   d4.w: the width in pixels (ASR.w #3: whole bytes)
@@ -752,7 +766,8 @@ BLITZ_THUNK(zoomx4_xy, zoomx4_7_c, "d0-d1/a0-a1");
  * pixel becomes 2x2 pixels (zoomx2 table).
  *
  * Nothing without the table, with a width below 8 or a height below 1.
- * The number of planes is the source's bm_Depth (0 = 256).
+ * The number of planes is the source's bm_Depth (0 = 256;
+ * bm2chk refuses 0 and more than 8: fixed #947, #674).
  * @param srcadd  d2: byte offset added to every source plane
  * @param dstadd  d3: byte offset added to every destination plane
  * @param width   d4.w: the width in pixels (ASR.w #3: whole bytes)
@@ -807,7 +822,8 @@ BLITZ_THUNK(zoomx2, zoomx2_c, "d0-d1/a0-a1");
  *
  * Every source line becomes 8 lines of 8 times the width (two passes of 4
  * lines).  Nothing without the table, with a width below 8 or a height
- * below 1.  The number of planes is the source's bm_Depth (0 = 256).
+ * below 1.  The number of planes is the source's bm_Depth (0 = 256;
+ * bm2chk refuses 0 and more than 8: fixed #947, #674).
  * @param srcadd  d2: byte offset added to every source plane
  * @param dstadd  d3: byte offset added to every destination plane
  * @param width   d4.w: the width in pixels (ASR.w #3: whole bytes)
@@ -879,7 +895,9 @@ BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
  * BUG(orig) (#676): fixed 32 lines of 80 bytes whatever the bitmap's
  * size; the left 40 bytes of a line are doubled in place (from the right, so nothing is read after it is
  * written).  Nothing without the table.  Fixed (#670): the depth is the
- * byte bm_Depth (the original read the word bm_Flags:bm_Depth).
+ * byte bm_Depth (the original read the word bm_Flags:bm_Depth); depth 0
+ * (65536 planes) and more than 8 are refused by zoomychk (fixed #947,
+ * #674).
  * @param bm  a0: the bitmap of bitmap# (d0)
  * Returns nothing (all registers kept).
  */
@@ -913,7 +931,8 @@ BLITZ_THUNK(dozoomy, dozoomy_c, "d0-d1/a0-a1");
  *
  * Every second line, two source bytes -> one (bits 7,5,3,1).  Nothing
  * without the table, with a width below 16 or a height below 2.  The
- * number of planes is the source's bm_Depth (0 = 256).
+ * number of planes is the source's bm_Depth (0 = 256;
+ * bm2chk refuses 0 and more than 8: fixed #947, #674).
  * @param srcadd  d2: byte offset added to every source plane
  * @param dstadd  d3: byte offset added to every destination plane
  * @param width   d4.w: the source width in pixels
@@ -1051,10 +1070,11 @@ static ULONG unrezx2(void)
  * myline, above that bit by bit); derez_value 0 does nothing.  BUG(orig):
  * no result is set (#672) - the d0 returned here is what the original
  * leaves in d0 (the input for 0, its upper word and $FFFF for 1, the
- * last long for 2, else the last mask/source word); only the low byte of
- * sbitdepth is set (#675); a depth-0 source gives 65536 planes (#947);
- * values >= 3 write 20 (21) words of myline into 18 (#671, DIFF: room
- * for 21 here); more than 16 planes overrun the pointer arrays (#674).
+ * last long for 2, else the last mask/source word); values >= 3 write
+ * 20 (21) words of myline into 18 (#671, DIFF: room for 21 here).  A
+ * depth-0 source gives 65536 planes, more than 16 planes overrun the
+ * pointer arrays: refused by bm2chk (fixed #947, #674).  sbitdepth is
+ * set as a whole word (fixed #675: the original set its low byte only).
  * @param callerd0  d0: the caller's d0 (source#), the "result" for 0
  * @param sadd      d2: byte offset added to every source plane
  * @param dadd      d3: byte offset added to every destination plane
@@ -1089,8 +1109,8 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG callerd0 BL_REG(d0), ULONG sadd BL_R
     res_value2 = (UWORD)(rez - 1);
     res_value3 = (UWORD)(rez - 2);
     height = (UWORD)(h - 1);
-    sbitdepth = (UWORD)((sbitdepth & 0xff00) | BM_DEPTH(src));  /* BUG(orig) (#675) */
-    sbitdepth--;                        /* BUG(orig): depth 0 = $FFFF (#947) */
+    sbitdepth = BM_DEPTH(src);          /* the whole word: fixed (#675) */
+    sbitdepth--;                        /* depth 0 = $FFFF: bm2chk (#947) */
     store_bitplanes(src, dst, sadd, dadd);
     leftover = (callerd0 & 0xffff0000UL) | 0xffff; /* DBRA d0 of store_bitplanes */
 
@@ -1270,9 +1290,10 @@ BLITZ_THUNK(InitZoomxy, initzoomxy_c, "d0-d1/a0-a1");
  * (lores, 40 bytes per line) by whole factors.
  *
  * Every source pixel becomes xzoom pixels wide, every line yzoom lines
- * high; 1,1 = ScreenCopy; a factor 0 does nothing.  BUG(orig): only the
- * low byte of sbitdepth is set (#675); a depth-0 source gives 65536
- * planes (#947); more than 16 planes overrun the pointer arrays (#674).
+ * high; 1,1 = ScreenCopy; a factor 0 does nothing.  A depth-0 source
+ * gives 65536 planes, more than 16 planes overrun the pointer arrays:
+ * refused by zoomxychk (fixed #947, #674).  sbitdepth is set as a whole
+ * word (fixed #675: the original set its low byte only).
  * @param xz  d0.w: xzoom
  * @param yz  d1.w: yzoom
  * @param h   d2.w: the number of lines
@@ -1294,8 +1315,8 @@ static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), UL
     yzoom_value2 = (UWORD)yz;
     yzoom_value = (UWORD)(yz - 1);
     height = (UWORD)(h - 1);
-    sbitdepth = (UWORD)((sbitdepth & 0xff00) | BM_DEPTH(source_address));
-    sbitdepth--;                        /* BUG(orig): depth 0 = $FFFF (#947) */
+    sbitdepth = BM_DEPTH(source_address); /* the whole word: fixed (#675) */
+    sbitdepth--;                        /* depth 0 = $FFFF: zoomxychk (#947) */
     store_bitplanes(source_address, dest_address, add_source, add_dest);
     if (!xzoom_value && !yzoom_value) {
         screencopy();
@@ -1406,3 +1427,112 @@ static ULONG BLITZ_ROUTINE addvalue_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
     return bl_mulu_w(BM_BPR(bm), (UWORD)y) + (UWORD)((WORD)x >> 3);
 }
 BLITZ_THUNK(ADDValue, addvalue_c, "a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");     /* fixed, #947 #674 */
+
+/* the depth of the bitmap `bm`: 1 to 8 (bitmaplib's checks and text) */
+static void BLITZ_ERRCHK depthchk(ULONG bm)
+{
+    UBYTE depth = BM_DEPTH(bm);
+
+    if (depth == 0 || depth > 8)
+        BLITZ_RUNERR(baddepth);
+}
+
+/**
+ * @brief The error check of ClearBitmap (both forms; debugger only).
+ *
+ * Fixed (#947, #674), not in the original (rifxlib had no error check
+ * area): the depth of the bitmap was not checked - depth 0 ran the plane
+ * loops 65536 times (DBRA on depth - 1 as a word), over the 16-entry
+ * plane pointer arrays and what follows them, and so did more than 16
+ * planes.  The manual: "the maximum bitmap depth for these functions is
+ * 8".  The release code is unchanged (an invalid argument, D-005).
+ *
+ * Errors: "Illegal BitMap Depth" (depth 0 or more than 8).
+ * @param bm  a0: the bitmap of bitmap#
+ */
+static void BLITZ_ERRCHK clearchk_c(ULONG bm BL_REG(a0))
+{
+    depthchk(bm);
+}
+
+/**
+ * @brief The error check of FadeInBitmap (both forms; debugger only).
+ *
+ * Fixed (#947, #674), not in the original: as clearchk_c for both
+ * bitmaps; FadeInBitmap stores two pointers per plane in each array, so
+ * the original overran them from 9 planes on.
+ *
+ * Errors: "Illegal BitMap Depth" (depth 0 or more than 8, either bitmap).
+ * @param src  a0: the source bitmap
+ * @param dst  a1: the destination bitmap
+ */
+static void BLITZ_ERRCHK fadechk_c(ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
+{
+    depthchk(src);
+    depthchk(dst);
+}
+
+/**
+ * @brief The error check of ZoomX2, ZoomX4 (both forms), ZoomX8,
+ * ReduceX2 and Derez (debugger only).
+ *
+ * Fixed (#947, #674), not in the original: the source's depth was not
+ * checked - the zooms count it as a byte (depth 0 = 256 planes, through
+ * the plane pointers behind the bitmap object), Derez as a word (65536
+ * planes over the 16-entry plane pointer arrays and the 256 KB behind
+ * them); more than 16 planes overran Derez's arrays.  The release code is
+ * unchanged (D-005).
+ *
+ * Errors: "Illegal BitMap Depth" (depth 0 or more than 8, either bitmap).
+ * @param src  a0: the source bitmap (source#)
+ * @param dst  a1: the destination bitmap (dest#)
+ */
+static void BLITZ_ERRCHK bm2chk_c(ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
+{
+    depthchk(src);
+    depthchk(dst);
+}
+
+/**
+ * @brief The error check of ZoomXY (debugger only): the bitmaps of
+ * InitZoomXY.
+ *
+ * Fixed (#947, #674), not in the original: as bm2chk_c for the bitmaps
+ * InitZoomXY stored (ZoomXY takes no bitmap itself).  Not checked: a
+ * ZoomXY before any InitZoomXY (no bitmap stored).
+ *
+ * Errors: "Illegal BitMap Depth" (depth 0 or more than 8, either bitmap).
+ */
+static void BLITZ_ERRCHK zoomxychk_c(void)
+{
+    if (source_address)
+        depthchk(source_address);
+    if (dest_address)
+        depthchk(dest_address);
+}
+
+/**
+ * @brief The error check of ZoomyZoom (debugger only).
+ *
+ * Fixed (#947, #674), not in the original: the depth was not checked
+ * (depth 0: 65536 planes through the plane pointers behind the bitmap
+ * object).  The release code is unchanged (D-005).
+ *
+ * Errors: "Illegal BitMap Depth" (depth 0 or more than 8).
+ * @param bm  a0: the bitmap of bitmap#
+ */
+static void BLITZ_ERRCHK zoomychk_c(ULONG bm BL_REG(a0))
+{
+    depthchk(bm);
+}
+
+/* the thunks of the check functions: they keep every register */
+BLITZ_ERRCHK_THUNK(clearchk, clearchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(fadechk, fadechk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(bm2chk, bm2chk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(zoomxychk, zoomxychk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(zoomychk, zoomychk_c, "d0-d1/a0-a1");

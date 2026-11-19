@@ -1,0 +1,19 @@
+# the intended differences of rifxlib against its reference, the CD
+# binary BSS2 RIFXLIB.OBJ (blitzlib compare, docs/development.md
+# "Intended differences")
+# #947, #674: every command that takes a bitmap and counts its planes
+# (ClearBitmap, FadeInBitmap, ZoomX4, Derez, ZoomXY, ZoomX2, ZoomX8,
+# ReduceX2, ZoomyZoom; all their forms) gets an error check of the depth
+# ("Illegal BitMap Depth"); rifxlib gets an error check area for it (the
+# original has none)
+lib 66: header +$2C: code offset set in only one of them
+lib 66: entry 0 ClearBitmap +$10: code offset set in only one of them
+lib 66: entry 1 FadeInBitmap +$16: code offset set in only one of them
+lib 66: entry 2 ZoomX4 +$18: code offset set in only one of them
+lib 66: entry 3 Derez +$18: code offset set in only one of them
+lib 66: entry 4 ZoomXY +$E: code offset set in only one of them
+lib 66: entry 6 ZoomX2 +$18: code offset set in only one of them
+lib 66: entry 9 ZoomX8 +$18: code offset set in only one of them
+lib 66: entry 11 ReduceX2 +$18: code offset set in only one of them
+lib 66: entry 12 ZoomyZoom +$10: code offset set in only one of them
+lib 66: relocations in the declaration part 19 != 32

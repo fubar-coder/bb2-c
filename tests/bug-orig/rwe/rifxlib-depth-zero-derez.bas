@@ -9,6 +9,7 @@
 ; checking.
 ; Correct: the Derez of depth 1 works; the error check refuses the
 ; source of depth 0: "Illegal BitMap Depth", nothing is written.
+; @fixed #947
 ; @rwe rifxlib
 ; @pass timeout=30
 ; @pass runtime_errors=on

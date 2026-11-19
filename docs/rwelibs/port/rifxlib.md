@@ -41,7 +41,32 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   comment says); the original started at end-4, so every pass was one
   word too low, the last word of the area stayed and the last pass
   cleared the word before the area (before the bitplane for offset 0)
-  (#668, test `rwe/rifxlib-clearbitmap-last-word`).
+  (#668, test `rwe/rifxlib-clearbitmap-last-word`);
+* with runtime error checking every command that counts the planes of a
+  bitmap (`ClearBitmap`, `FadeInBitmap`, `ZoomX2`, `ZoomX4`, `ZoomX8`,
+  `ReduceX2`, `ZoomyZoom`, `Derez`, `ZoomXY` - for `ZoomXY` the bitmaps of
+  `InitZoomXY`) refuses a bitmap of depth 0 or more than 8: "Illegal
+  BitMap Depth" (bitmaplib's text; the original has no error check
+  area). The release code is unchanged (invalid arguments, D-005; the
+  manual: "the maximum bitmap depth for these functions is 8"): depth 0
+  runs the DBRA loops 65536 times (the word count of `ClearBitmap`,
+  `FadeInBitmap`, `ZoomyZoom`, `Derez` and `ZoomXY`, whose
+  `store_bitplanes` writes 65536 plane pointers over `bit_add`/`dest_add`
+  and what follows) or 256 times (the byte count of the zooms and
+  `ReduceX2`, through the plane pointers behind the bitmap object) (#947,
+  test `rwe/rifxlib-depth-zero-derez`); the pointer arrays hold 16 longs
+  each: `FadeInBitmap` stores two per plane in each, so from 9 planes on
+  it runs from `bit_add` into `dest_add` and from `dest_add` over the
+  four variables behind it, from 11 planes on beyond the 36 longs of the
+  array; `ClearBitmap`, `Derez` and `ZoomXY` (one per plane) reach the
+  variables from 17 planes on and go beyond the array from 21 on. Beyond
+  the array the original overwrites the code of `InitZoomXY` (#674, test
+  `rwe/rifxlib-plane-arrays-unchecked`);
+* `Derez` and `ZoomXY` load the depth into `sbitdepth` as a whole word;
+  the original set only its low byte (`MOVE.b` into `sbitdepth+1`), so
+  after a depth-0 bitmap the upper byte stayed $FF for every later call
+  (#675; seen only after a depth-0 call, which itself overruns the
+  arrays: no test of its own).
 
 **BUG(orig)** (kept, commented in the code):
 
@@ -52,13 +77,6 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   upper word and $FFFF for 1, the last long for 2, the last mask word
   swapped/the last source word for the others). The C version returns
   exactly that – it is what a Blitz program gets (#672);
-* `Derez` and `ZoomXY` set only the low byte of `sbitdepth` (`MOVE.b`
-  into `sbitdepth+1`): after a depth-0 bitmap the upper byte is $FF and
-  stays (#675);
-* `Derez` and `ZoomXY` do not check the depth: with a depth-0 source
-  bitmap `SUBQ.w #1,sbitdepth` gives $FFFF, and the DBRA loops run 65536
-  times - `store_bitplanes` writes 65536 plane pointers over
-  `bit_add`/`dest_add` and what follows (#947);
 * `Derez` with a value ≥ 3 builds its mask table `myline` with 20 words
   (21 for values > 31) into the 18 words the source reserves: the 19th
   goes over `myflag` and the pad byte, the 20th (and 21st) over the first
@@ -69,13 +87,6 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   (#671);
 * `ZoomyZoom` ignores the bitmap's size: fixed 32 lines of 80 bytes, the
   left 40 bytes doubled in place (#676);
-* the pointer arrays hold 16 longs each and the depth is not checked
-  (#674): `FadeInBitmap` stores two per plane in each, so from 9 planes
-  on it runs from `bit_add` into `dest_add` and from `dest_add` over the
-  four variables behind it, from 11 planes on beyond the 36 longs of
-  the array; `ClearBitmap`, `Derez` and `ZoomXY` (one per plane) reach
-  the variables from 17 planes on and go beyond the array from 21 on.
-  Beyond the array the original overwrites the code of `InitZoomXY`;
 * finit frees the tables but keeps the pointers (#673).
 
 Not bugs but limits the source names: `ZoomXY` and `Derez` (and
