@@ -142,6 +142,14 @@ Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
 Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h
 do not check datatypes.library (without it there is no file or object).
 
+**Manual wrong** (kept, #1104): RIDataTypesLib.guide says of DataTypeOpen
+"A return code of -1 indicates success" and of DataTypeCreate "-1
+indicates success". Both return an address, as the original does
+(`rwelibsrc/datatypeslib6.bb`): DataTypeOpen the DataType's, DataTypeCreate
+the object's, 0 on failure. `If DataTypeOpen(f$)` works; `If
+DataTypeOpen(f$)=-1` never is true. A program tests the value as a truth
+value or against 0.
+
 **DIFF:** SetDataTypeAttr with pairs leaves a2 unchanged (the original
 leaves it below the pairs), as in all C ports
 (`docs/libs/cmdlibs-port.md`).
