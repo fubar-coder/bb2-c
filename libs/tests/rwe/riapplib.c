@@ -352,6 +352,7 @@ static void test_messages(void)
     call_noargs("AppEvent", APPEVENT);
     call_noargs("AppMessage", APPMESSAGE);
     call_noargs("AppEventType", APPEVENTTYPE);
+    call_noargs("AppEventID", APPEVENTID);
 
     /* window, icon, menu, other type */
     for (i = 0; i < 4; i++) {
@@ -393,6 +394,7 @@ static void test_messages(void)
     OBS("replies", replies());
     call_noargs("AppMessage", APPMESSAGE);
     call_noargs("AppEventType", APPEVENTTYPE);
+    call_noargs("AppEventID", APPEVENTID);
     UnLock(rootlock);
     if (args[1].wa_Lock == dirlock)     /* not unlocked by NextAppFile */
         UnLock(dirlock);

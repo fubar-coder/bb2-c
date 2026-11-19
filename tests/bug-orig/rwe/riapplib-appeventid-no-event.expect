@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+before AppEvent: -1
+no message: -1
+message of id 0
+after the last message: -1
+rc=0

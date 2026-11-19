@@ -367,21 +367,27 @@ AppEvent|replies|message 2|1	$00000001
 AppEvent|replies|message 3|1	$00000001
 AppEvent|replies|third run|1 [orig]	$00000001
 AppEvent|replies|third run|1 [fixed #1099]	$00000000
+AppEventID|d0|last|1	$00000000
 AppEventID|d0|message 0|1	$00000100
 AppEventID|d0|message 1|1	$00000101
 AppEventID|d0|message 2|1	$00000102
 AppEventID|d0|message 3|1	$00000103
+AppEventID|d0|no message|1	$00000000
 AppEventID|d0|third run|1 [orig]	$00000007
 AppEventID|d0|third run|1 [fixed #1099]	$00000000
+AppEventID|kept|last|1	kept
 AppEventID|kept|message 0|1	kept
 AppEventID|kept|message 1|1	kept
 AppEventID|kept|message 2|1	kept
 AppEventID|kept|message 3|1	kept
+AppEventID|kept|no message|1	kept
 AppEventID|kept|third run|1	kept
+AppEventID|popped|last|1	$00000000
 AppEventID|popped|message 0|1	$00000000
 AppEventID|popped|message 1|1	$00000000
 AppEventID|popped|message 2|1	$00000000
 AppEventID|popped|message 3|1	$00000000
+AppEventID|popped|no message|1	$00000000
 AppEventID|popped|third run|1	$00000000
 AppEventIDCMP|$a000,len|inline|1	$A0000006
 AppEventIDCMP|code|inline|1	$203C0080
