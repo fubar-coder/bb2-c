@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "No palette selected with PaletteInfo" *
+rc=0

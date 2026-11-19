@@ -9,13 +9,21 @@ lib 65: header +$16: code offset set in only one of them
 lib 65: end of the table +$46E: $FF != $00
 lib 65: 14 entries != 15
 lib 65: declaration part $474 != $488 bytes
+# #686: the colour functions and both forms of PalAdjust get an error
+# check ("No palette selected with PaletteInfo"); PalAdjust's first
+# difference is the check of its short form (+$10), which covers the
+# check of the long form (+$28, #684) as well
+lib 65: entry 0 PalRed +$C: code offset set in only one of them
+lib 65: entry 1 PalGreen +$C: code offset set in only one of them
+lib 65: entry 2 PalBlue +$C: code offset set in only one of them
+lib 65: entry 4 AGAPalRed +$C: code offset set in only one of them
+lib 65: entry 5 AGAPalGreen +$C: code offset set in only one of them
+lib 65: entry 6 AGAPalBlue +$C: code offset set in only one of them
+lib 65: entry 7 PalAdjust +$10: code offset set in only one of them
 # #679: CPUCls gets an error check (cpuclschk, "Illegal BitMap Depth" for
 # depth 0); rigfxlib gets an error check area for it (the original has
 # none)
 lib 65: entry 11 CPUCls +$10: code offset set in only one of them
-# #684: PalAdjust's long form gets an error check (paladj2chk, "PalAdjust
-# end colour before the start colour")
-lib 65: entry 7 PalAdjust +$28: code offset set in only one of them
-# #679, #684, #1125: the relocations of the error field, the checks and
-# the init entry
-lib 65: relocations in the declaration part 17 != 22
+# #679, #684, #686, #1125: the relocations of the error field, the checks
+# and the init entry
+lib 65: relocations in the declaration part 17 != 29

@@ -29,11 +29,10 @@
  * and RIAmosFuncLib's BSave (form 1) through ALibJsr.
  *
  * BUG(orig), kept:
- *   - PalAdjust/PalRed... use the palette of the last PaletteInfo
- *     unchecked (before one: address 0) (#686); PalAdjust without
- *     start/end takes the number of colours of THAT palette, not of the
- *     target (#685); colour numbers from 2731 on index before the palette
- *     (12*c as a signed word) (#677).
+ *   - PalAdjust without start/end takes the number of colours of
+ *     PaletteInfo's palette, not of the target (#685); colour numbers
+ *     from 2731 on index before the palette (12*c as a signed word)
+ *     (#677).
  * SaveCMAP's BMHD chunk is 20 zero bytes, like the original: no defect
  * (a palette file: what is read of it is the CMAP).
  * Fixed (intended deviations, docs/libs/deviations.md):
@@ -80,6 +79,11 @@
  *     second run from the editor with the library still loaded started
  *     with the run before's palette, which PalRed ... and PalAdjust read
  *     before a PaletteInfo (#1125).
+ *   - With runtime error checking PalRed ... AGAPalBlue and both forms
+ *     of PalAdjust refuse to run before a PaletteInfo: "No palette
+ *     selected with PaletteInfo" (colchk, paladjchk, paladj2chk).  The
+ *     release code is unchanged: before the first PaletteInfo they read
+ *     from address 0 (a programming error, as #176) (#686).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -97,31 +101,32 @@ void agapalred(void), agapalgreen(void), agapalblue(void);
 void paladjust(void), paladjust2(void), fillpalette(void), fillpalette2(void);
 void agafillpalette(void), agafillpalette2(void), copycolour(void);
 void cpucls(void), savecmap(void), mergebitplanes(void), cpuclschk(void), paladj2chk(void);
+void colchk(void), paladjchk(void);
 static void codeinit(void);
 
 BLITZ_ENTRY_DECL(init);
 
 /* !libheader {#rigfxlib,0,0,0,0}; init: fixed, #1125 (the original has
-   none); error field: the error check area (fixed, #679, #684; the
+   none); error field: the error check area (fixed, #679, #684, #686; the
    original has none) */
 BLITZ_LIBHEADER(LIB_rigfxlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(palred, 0, 0);
+BLITZ_SUBS(palred, colchk, 0);                       /* check: fixed #686 */
 BLITZ_NAME("PalRed", "(colour#)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(palgreen, 0, 0);
+BLITZ_SUBS(palgreen, colchk, 0);                     /* check: fixed #686 */
 BLITZ_NAME("PalGreen", "(colour#)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(palblue, 0, 0);
+BLITZ_SUBS(palblue, colchk, 0);                      /* check: fixed #686 */
 BLITZ_NAME("PalBlue", "(colour#)");
 
 BLITZ_ASTATEMENT();
@@ -133,28 +138,28 @@ BLITZ_NAME("PaletteInfo", "palette#");
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(agapalred, 0, 0);
+BLITZ_SUBS(agapalred, colchk, 0);                    /* check: fixed #686 */
 BLITZ_NAME("AGAPalRed", "(colour#)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(agapalgreen, 0, 0);
+BLITZ_SUBS(agapalgreen, colchk, 0);                  /* check: fixed #686 */
 BLITZ_NAME("AGAPalGreen", "(colour#)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(agapalblue, 0, 0);
+BLITZ_SUBS(agapalblue, colchk, 0);                   /* check: fixed #686 */
 BLITZ_NAME("AGAPalBlue", "(colour#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_QUICK);
 BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
-BLITZ_SUBS(paladjust, 0, 0);
+BLITZ_SUBS(paladjust, paladjchk, 0);                 /* check: fixed #686 */
 BLITZ_ARGS(BL_WORD, BL_QUICK, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
-BLITZ_SUBS(paladjust2, paladj2chk, 0);               /* check: fixed #684 */
+BLITZ_SUBS(paladjust2, paladj2chk, 0);               /* check: fixed #684, #686 */
 BLITZ_NAME("PalAdjust", "palette#,ratio.q[,start_col,end_col]");
 
 BLITZ_ASTATEMENT();
@@ -185,7 +190,7 @@ BLITZ_NAME("CopyColour", "sourcepal#,destpal#,colsource#,coldest#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);
-BLITZ_SUBS(cpucls, cpuclschk, 0);                   /* check: fixed #679 */
+BLITZ_SUBS(cpucls, cpuclschk, 0);                    /* check: fixed #679 */
 BLITZ_NAME("CPUCls", "bitmap#");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -285,9 +290,10 @@ BLITZ_THUNK(paletteinfo, paletteinfo_c, "d0-d1/a0-a1");
  * @brief PalRed(colour#): the red value (4 bit) of a colour of PaletteInfo's palette.
  *
  * MOVE.b 0/4/8(a0,d0.w),d0: ASR.l #4:ANDI.l #15 (4 bit) or ANDI.l #$ff
- * (the AGA functions).  BUG(orig): the palette of the last PaletteInfo
- * is used unchecked (before one: address 0) (#686); colour numbers from
- * 2731 on index before the palette (12 * c as a signed word) (#677).
+ * (the AGA functions).  The palette of the last PaletteInfo is used
+ * unchecked (before one: address 0), refused by colchk with runtime
+ * error checking (fixed #686).  BUG(orig): colour numbers from 2731 on
+ * index before the palette (12 * c as a signed word) (#677).
  * @param c  d0: colour# (its low word)
  * @return d0: the top 4 bits of the colour's red byte
  */
@@ -298,7 +304,7 @@ static ULONG BLITZ_ROUTINE palred_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(palred, palred_c, "d1/a0-a1");
 
 /**
- * @brief PalGreen(colour#): the green value (4 bit); as PalRed (#686, #677).
+ * @brief PalGreen(colour#): the green value (4 bit); as PalRed (fixed #686; #677).
  * @param c  d0: colour#
  * @return d0: the top 4 bits of the colour's green byte
  */
@@ -309,7 +315,7 @@ static ULONG BLITZ_ROUTINE palgreen_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(palgreen, palgreen_c, "d1/a0-a1");
 
 /**
- * @brief PalBlue(colour#): the blue value (4 bit); as PalRed (#686, #677).
+ * @brief PalBlue(colour#): the blue value (4 bit); as PalRed (fixed #686; #677).
  * @param c  d0: colour#
  * @return d0: the top 4 bits of the colour's blue byte
  */
@@ -320,7 +326,7 @@ static ULONG BLITZ_ROUTINE palblue_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(palblue, palblue_c, "d1/a0-a1");
 
 /**
- * @brief AGAPalRed(colour#): the red value (8 bit); as PalRed (#686, #677).
+ * @brief AGAPalRed(colour#): the red value (8 bit); as PalRed (fixed #686; #677).
  * @param c  d0: colour#
  * @return d0: the colour's red byte
  */
@@ -331,7 +337,7 @@ static ULONG BLITZ_ROUTINE agapalred_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(agapalred, agapalred_c, "d1/a0-a1");
 
 /**
- * @brief AGAPalGreen(colour#): the green value (8 bit); as PalRed (#686, #677).
+ * @brief AGAPalGreen(colour#): the green value (8 bit); as PalRed (fixed #686; #677).
  * @param c  d0: colour#
  * @return d0: the colour's green byte
  */
@@ -342,7 +348,7 @@ static ULONG BLITZ_ROUTINE agapalgreen_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(agapalgreen, agapalgreen_c, "d1/a0-a1");
 
 /**
- * @brief AGAPalBlue(colour#): the blue value (8 bit); as PalRed (#686, #677).
+ * @brief AGAPalBlue(colour#): the blue value (8 bit); as PalRed (fixed #686; #677).
  * @param c  d0: colour#
  * @return d0: the colour's blue byte
  */
@@ -359,11 +365,11 @@ BLITZ_THUNK(agapalblue, agapalblue_c, "d1/a0-a1");
  *
  * Target colours start..end = PaletteInfo's colours * ratio (8.8 fixed
  * point from the Quick 16.16), saturated at 255; only the top byte of
- * each channel is written.  BUG(orig): PaletteInfo's palette unchecked
- * (#686); colour numbers from 2731 on index before the palettes (#677).
- * end < start runs 65536*3 channels (count 0 after MULU.w/SUBQ.w): an
- * invalid argument, refused by paladj2chk with runtime error checking
- * (fixed #684), here unchecked.
+ * each channel is written.  PaletteInfo's palette is used unchecked
+ * (before one: address 0) and end < start runs 65536*3 channels (count 0
+ * after MULU.w/SUBQ.w): refused by paladj2chk with runtime error checking
+ * (fixed #686, #684), here unchecked.  BUG(orig): colour numbers from
+ * 2731 on index before the palettes (#677).
  * @param obj    a0: the target palette object (!libs #palettelib,#ia0|#pd0)
  * @param ratio  d1: the ratio, a Quick (16.16)
  * @param start  d2: the first colour
@@ -728,6 +734,7 @@ BLITZ_THUNK(mergebitplanes, mergebitplanes_c, "d0-d1/a0-a1");
 
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");          /* fixed, #679 */
 BLITZ_ERRCHK_MESSAGE(endbefore, "PalAdjust end colour before the start colour");  /* fixed, #684 */
+BLITZ_ERRCHK_MESSAGE(noinfo, "No palette selected with PaletteInfo");   /* fixed, #686 */
 
 /**
  * @brief The error check of CPUCls (debugger only).
@@ -747,27 +754,70 @@ static void BLITZ_ERRCHK cpuclschk_c(const struct bb_bitmap *bm BL_REG(a0))
         BLITZ_RUNERR(baddepth);
 }
 
+/* the PaletteInfo palette: fixed (#686), the commands that read it used
+   address 0 before the first PaletteInfo */
+static void BLITZ_ERRCHK infochk(void)
+{
+    if (!paladdr)
+        BLITZ_RUNERR(noinfo);
+}
+
+/**
+ * @brief The error check of PalRed ... AGAPalBlue (debugger only).
+ *
+ * Fixed (#686), not in the original: the colour functions read the
+ * palette of the last PaletteInfo without a test, before the first one
+ * from address 0 (the exception vectors).  The release code is unchanged
+ * (a command before its setup command, a programming error; as #176).
+ *
+ * Errors: "No palette selected with PaletteInfo".
+ */
+static void BLITZ_ERRCHK colchk_c(void)
+{
+    infochk();
+}
+
+/**
+ * @brief The error check of PalAdjust's short form (debugger only).
+ *
+ * Fixed (#686), not in the original: PalAdjust takes the colours and their
+ * number from the palette of the last PaletteInfo, before the first one
+ * from address 0 and the count from address -4.  The release code is
+ * unchanged.
+ *
+ * Errors: "No palette selected with PaletteInfo".
+ */
+static void BLITZ_ERRCHK paladjchk_c(void)
+{
+    infochk();
+}
+
 /**
  * @brief The error check of PalAdjust's long form (debugger only).
  *
- * Fixed (#684), not in the original: PalAdjust takes the count end -
- * start + 1 as a word, * 3 (MULU.w) - 1 as the DBRA counter, so end =
- * start - 1 wrote 65536 channels (256 KB) from colour start on, and a
- * smaller end about as many.  The release code is unchanged (an invalid
- * argument, D-005; FillPalette refuses end < start in its release code,
- * PalAdjust has no such test).
+ * Fixed (#684, #686), not in the original: PalAdjust reads the palette of
+ * the last PaletteInfo without a test (before the first one: address 0),
+ * and it takes the count end - start + 1 as a word, * 3 (MULU.w) - 1 as
+ * the DBRA counter, so end = start - 1 wrote 65536 channels (256 KB) from
+ * colour start on, and a smaller end about as many.  The release code is
+ * unchanged (invalid arguments, D-005; FillPalette refuses end < start in
+ * its release code, PalAdjust has no such test).
  *
- * Errors: "PalAdjust end colour before the start colour" (end < start as
- * signed words, FillPalette's compare).
+ * Errors: "No palette selected with PaletteInfo"; "PalAdjust end colour
+ * before the start colour" (end < start as signed words, FillPalette's
+ * compare).
  * @param start  d2: the first colour
  * @param end    d3: the last colour
  */
 static void BLITZ_ERRCHK paladj2chk_c(ULONG start BL_REG(d2), ULONG end BL_REG(d3))
 {
+    infochk();
     if ((WORD)end < (WORD)start)
         BLITZ_RUNERR(endbefore);
 }
 
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(cpuclschk, cpuclschk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(colchk, colchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(paladjchk, paladjchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(paladj2chk, paladj2chk_c, "d0-d1/a0-a1");

@@ -126,13 +126,20 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   before a PaletteInfo read the first run's freed palette (#1125;
   `rigfxlib.declarations-intended.txt`). The init clears with `CLR.l` on
   an absolute address and changes no register.
+* With runtime error checking the colour functions (`PalRed` …
+  `AGAPalBlue`) and both forms of `PalAdjust` refuse to run before a
+  `PaletteInfo`: "No palette selected with PaletteInfo" (`colchk`,
+  `paladjchk`, `paladj2chk`). The release code is unchanged (a command
+  before its setup command, a programming error; as #176): before the
+  first PaletteInfo they read from address 0, the exception vectors, and
+  PalAdjust's short form takes its count from address −4 (#686). The
+  init of #1125 makes the check hold in a second run from the editor.
 
 ## BUG(orig), kept
-* `PalAdjust` and the colour functions use the palette of the last
-  `PaletteInfo` without a check (before it: address 0) (#686);
-  `PalAdjust` without start/end takes the number of colours of that
-  palette, not of the target (#685); colour numbers from 2731 on index
-  before the palette (12·c as a signed word) (#677).
+
+* `PalAdjust` without start/end takes the number of colours of
+  PaletteInfo's palette, not of the target (#685); colour numbers from
+  2731 on index before the palette (12·c as a signed word) (#677).
 
 Not a defect (kept): `SaveCMAP`'s BMHD chunk is 20 zero bytes (a palette
 file: what is read of it is the CMAP).
