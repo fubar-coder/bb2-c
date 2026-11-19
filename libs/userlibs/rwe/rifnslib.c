@@ -397,12 +397,20 @@ static UWORD countwidth(const UBYTE *font, const UBYTE *p, UBYTE bold)
     }
 }
 
-/* the glyph rows of one character: rows `rows` + 1 from y, rowoff (d7) =
-   the x offset in bytes (+ scr_width per row), s = x & 15, the font
-   width `fw`.  A row of 48 or 64 pixels passes its 3rd (4th) word only
-   when it is drawn: print passes the rows above ymin (fixed, #656) */
-static void drawchar(const UWORD *g, UWORD y, ULONG rowoff, UWORD s, UWORD rows, UWORD fw)
+/* the first glyph row print draws of a line and the rows - 1 from it
+   (fixed, #656: the rows above ymin passed) */
+static UWORD gly, glrows;
+
+/* the glyph rows of one character: glrows + 1 rows from row gly (the
+   line's, set by print), rowoff (d7) = the x offset in bytes (+
+   scr_width per row), s = x & 15, the font width fns.fontwidth.  A row
+   of 48 or 64 pixels passes its 3rd (4th) word only when it is drawn:
+   print passes the rows above ymin (fixed, #656).  The line's values are
+   read here, not passed per character (D-007: 6 arguments a character
+   were most of print's per-character work) */
+static void drawchar(const UWORD *g, ULONG rowoff, UWORD s)
 {
+    UWORD y = gly, rows = glrows, fw = fns.fontwidth;
     ULONG *bs;
     UBYTE *p;
 
@@ -478,9 +486,6 @@ next:
     } while (rows-- != 0);
 }
 
-/* the first glyph row print draws of a line and the rows - 1 from it
-   (fixed, #656: the rows above ymin passed) */
-static UWORD gly, glrows;
 
 /* _FNSPrint2 (behind the bitmap check of the entry): fontnum, x, y,
    string, prefs, colour; the result a0 (`result`, the caller's a0
@@ -589,8 +594,7 @@ draw:
                                              + bl_mulu_w(fns.multi, (UBYTE)(c - 32)));
             if ((WORD)(UWORD)(xc + w) >= (WORD)fns.xmax)
                 break;
-            drawchar(g, gly, (UWORD)((WORD)(xc & 0xfff0) >> 3), xc & 15, glrows,
-                     fns.fontwidth);
+            drawchar(g, (UWORD)((WORD)(xc & 0xfff0) >> 3), xc & 15);
         }
         /* add_xcord */
         c = fns.character;

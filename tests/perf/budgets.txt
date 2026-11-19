@@ -281,7 +281,9 @@
 # first committed: the per-row test cost 63 %, registers spilled in the
 # print loop), 8795.0 and 8796.0 with the rows above ymin passed once per
 # line in print (the commit that moved it there); fnslength unchanged
-# (4957.6).
+# (4957.6).  fnsprint 6287.1 and 6292.1 after drawchar read the line's
+# first row, row count and font width itself (three of its six arguments
+# per character); fnslength 4988.6 both times then (after #660-#662).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -308,7 +310,7 @@ bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
 bdisp.dispsprite             948~4      965.5  DisplaySprite 0,0,100,100,0
 bdisp.disppalette          1289~16     1292.0  DisplayPalette 0,0
 bfns.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bfns.fnsprint                8886    60445.2  FNSPrint 0,8,100,t$ (the built-in font, 32 characters, 3 planes)
+bfns.fnsprint                6359    60445.2  FNSPrint 0,8,100,t$ (the built-in font, 32 characters, 3 planes)
 bfns.fnslength               5011     3686.2  c=FNSLength(0,t$) (32 characters)
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bgfx.blit16                 2051~2     2108.3  Blit 0,100,100
