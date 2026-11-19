@@ -12,9 +12,12 @@
  *
  * A font: "FNS." +4 height.w, +6 width in pixels (16, 32, 48, 64; any
  * other value is drawn as 16), +8 underline offset, +10 bytes per
- * character; the width table is indexed by the character code from +0
- * (codes 32..159 are used); the glyphs from +256, character c at
- * (c - 32) * bytes per character, one row after the other (1..4 words).
+ * character; the width table is indexed by the character code from +0;
+ * the glyphs from +256, character c at (c - 32) * bytes per character,
+ * one row after the other (1..4 words).  A font has the glyphs of the
+ * codes 32 to its last code: FNSLoad takes it from the file size, the
+ * new InstallFNS form from its character count, the old form takes 122
+ * (the 91 glyphs of every known font, also the built-in one).
  * 16 font slots; slot 0 is the font built into the library (def_font).
  *
  *   FNSOutput bitmap[,clip]  the bitmap to print into (clip: FNSClipOutput)
@@ -23,13 +26,15 @@
  *   FNSPrint font,x,y,a$[,prefs,colour]  prints; prefs bit 0 centred, 1
  *                            bold, 2 underlined, 3 right aligned; chr$(1)
  *                            + c changes the colour, chr$(9) tab,
- *                            chr$(10) a new line, chr$(0) and codes below
- *                            32 or from 160 on end the text; a0 = the
- *                            address of the end x and y (words)
+ *                            chr$(10) a new line, chr$(0) and other codes
+ *                            below 32 end the text, a code behind the
+ *                            font's last is a space; a0 = the address of
+ *                            the end x and y (words)
  *   FNSShadowPrint ...[,prefs,colour[,shadow]]  first in the shadow colour
  *                            at x+1,y+1, then normal
  *   FNSInk, FNSPrefs, FNSOrigin, FNSSetTab   settings
- *   InstallFNS, RemoveFNS, FNSLoad, FNSUnload, FNSSlot   font slots
+ *   InstallFNS(fontnum,address[,characters]), RemoveFNS, FNSLoad,
+ *   FNSUnload, FNSSlot       font slots
  *                            (FNSLoad/FNSUnload: RIAmosFuncLib bank 55+n,
  *                            or the highest free one below BankLimit)
  *   FNSHeight, FNSWidth, FNSUnderline, FNSLength, FNSVersion
@@ -51,7 +56,6 @@
  *     (#658).
  *   - Planes 8 and on take the colour bit of plane & 7 (BTST on memory)
  *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop (#658).
- *   - Codes from 160 end the text (a sign test after CMPI.b #32) (#657).
  * Fixed (#665): FNSPrint/FNSShadowPrint before FNSOutput (no bitmap)
  *   return at once (the prefs and the colour stored as on the way without
  *   a font); the original pushed 13 registers and returned with RTS - to
@@ -103,9 +107,13 @@
  *   always used 55 + slot: with the default 50 banks BLoad took the
  *   number as an address and read the file to the address 55 + slot (a
  *   font over the vector table), and FNSLoad returned -1.
- * DIFF: what the original reads behind its variables reads other bytes
- *   here (its code there): the glyphs of codes the font has no data for - the built-in font ends
- *   at 'z' (91 glyphs), codes 123..159 are drawn from the bytes behind it.
+ * Fixed (#657): a code from 32 on that the font has no glyph for (behind
+ *   its last code, see above) is printed and counted as a space (code
+ *   32), in FNSPrint, FNSShadowPrint and FNSLength; codes below 32 keep
+ *   their meaning.  The original took the codes from 160 on for the end
+ *   of the text (a sign test after CMPI.b #32) and drew the codes behind
+ *   the font from the bytes behind it (the built-in font and every known
+ *   font end at 'z', 122).
  */
 #include "blitzlib.h"
 #include <graphics/gfx.h>
@@ -114,6 +122,7 @@
 /* RIAmosFuncLib (75): index n-1 of its token list */
 #define TOK_bload ((LIB_riamosfunclib << 7) + 15)       /* form 1: d0 name, d1 bank */
 #define TOK_start ((LIB_riamosfunclib << 7) + 17)       /* d0 bank -> d0 address */
+#define TOK_length ((LIB_riamosfunclib << 7) + 18)      /* d0 bank -> d0 its length */
 #define TOK_erase ((LIB_riamosfunclib << 7) + 19)       /* d0 bank */
 #define TOK_banklimit ((LIB_riamosfunclib << 7) + 36)   /* form 1: -> d0 the number of banks */
 
@@ -121,7 +130,8 @@
 #define FONTSIZE 1712
 
 /* entry points (thunks, below) */
-void _fnsprint(void), _fnsprint2(void), _installfns(void), _fnsoutput2(void);
+void _fnsprint(void), _fnsprint2(void), _installfns(void), _installfns3(void);
+void _fnsoutput2(void);
 void _fnsoutput(void), _fnsink(void), _fnsprefs2(void), _fnsprefs(void);
 void _fnsheight(void), _fnsclipset(void), _fnsclipoutputset(void);
 void _removefns(void), _fnsunderline(void), _fnslength2(void);
@@ -153,7 +163,10 @@ BLITZ_ACOMMAND(BL_BYTE);
 BLITZ_ARGS(BL_BYTE, BL_LONG);
 BLITZ_LIBS0();
 BLITZ_SUBS(_installfns, 0, 0);
-BLITZ_NAME("InstallFNS", "(fontnum,address)");
+BLITZ_ARGS(BL_BYTE, BL_LONG, BL_WORD);                 /* fixed #657: the count */
+BLITZ_LIBS0();
+BLITZ_SUBS(_installfns3, 0, 0);
+BLITZ_NAME("InstallFNS", "(fontnum,address[,characters])");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
@@ -340,7 +353,8 @@ struct fns fns __asm__("_fns") = {
 };
 
 /* the header of an FNS font; the width table, indexed by the character
-   code, starts at +0 too (codes 32..159 are used), the glyphs at +256 */
+   code, starts at +0 too, the glyphs at +256 (codes 32 to the font's
+   last, lastglyph) */
 struct fnshead {
     ULONG id;                           /* FNSID */
     UWORD height, width, underpos;      /* 4 6 8 */
@@ -350,6 +364,13 @@ static_assert(sizeof(struct fnshead) == 12);
 #define FH(font) ((const struct fnshead *)(font))
 
 #define LONGAT(p) (*(ULONG *)(p))
+
+/* the glyph of the last code each slot's font has, last code - 32 (fixed,
+   #657): FNSLoad takes it from the file size, InstallFNS from its
+   character count or 90 (code 122: the 91 glyphs of every known font, the
+   built-in one too); one glyph at least, the space */
+#define DEFLAST (122 - 32)
+static UBYTE lastglyph[16] = { [0 ... 15] = DEFLAST };
 
 /* the slots whose font is the one FNSLoad loaded into the slot's bank
    (bit n: slot n), so that a refused file empties the slot whose font it
@@ -373,27 +394,34 @@ static int isfont(const UBYTE *font)
 
 static void underline(UWORD x);
 
-/* the width count of FNSPrint/FNSLength: the widths of the codes 32..159
-   (+ bold for every one that is not 0), TAB skipped, chr$(1) and its
-   colour skipped, everything else ends it */
-static UWORD countwidth(const UBYTE *font, const UBYTE *p, UBYTE bold)
+/* the width count of FNSPrint/FNSLength: the widths of the codes from 32
+   (+ bold for every one that is not 0; a code behind the last glyph,
+   32 + `lastg`, counts as a space: fixed #657), TAB skipped, chr$(1) and
+   its colour skipped, every other code below 32 ends it.  One compare for
+   a code of the font (the original's sign test cost as much) */
+static UWORD countwidth(const UBYTE *font BL_REG(a1), const UBYTE *p BL_REG(a0),
+                        UBYTE bold BL_REG(d1), UBYTE lastg BL_REG(d2))
 {
     UWORD w = 0;
     UBYTE c, cw;
 
     for (;;) {
         c = *p++;
-        if ((BYTE)(c - 32) >= 0) {      /* CMPI.b #32:BPL */
-            cw = font[c];
-            if (cw)
-                w = (UWORD)(w + (UBYTE)(cw + bold));
-            continue;
+        if ((UBYTE)(c - 32) > lastg) {  /* fixed (#657) */
+            if (c >= 32)
+                c = 32;
+            else {
+                if (c == 9)
+                    continue;
+                if (c != 1)
+                    return w;
+                p++;
+                continue;
+            }
         }
-        if (c == 9)
-            continue;
-        if (c != 1)
-            return w;
-        p++;
+        cw = font[c];
+        if (cw)
+            w = (UWORD)(w + (UBYTE)(cw + bold));
     }
 }
 
@@ -498,7 +526,7 @@ static UBYTE *print(UWORD fontnum, UWORD x0, UWORD y0, const UBYTE *str, UBYTE p
     UWORD x, y, n, width, lw;
     const UBYTE *glyphs;                /* the glyph of code 32 (+ the rows passed) */
     ULONG yoff;
-    UBYTE c, i;
+    UBYTE c, i, lastg;
 
 restart:
     fns.textprefs = prefs;
@@ -506,6 +534,7 @@ restart:
     font = (const UBYTE *)fns.font_add[fontnum & 15];
     if (FH(font)->id != FNSID)
         return result;
+    lastg = lastglyph[fontnum & 15];
     x = (UWORD)(x0 + fns.originx);
     y = (UWORD)(y0 + fns.originy);
     s = str;
@@ -544,7 +573,7 @@ restart:
     /* the binary had no TST.w d5:BEQ exit here (the source's guard ended
        the print); fixed (#659): an empty line is neither centred, aligned
        nor underlined, the print goes on with the next line */
-    width = countwidth(font, s, fns.bold);
+    width = countwidth(font, s, fns.bold, lastg);
     lw = (UWORD)(width + 1);
     fns.linewidth = lw;
     if (!width)
@@ -563,28 +592,36 @@ restart:
     for (;;) {
         UWORD xc;
         c = *s++;
-        fns.character = c;
-        if ((BYTE)(c - 32) < 0) {       /* testchar */
-            if (c == 0)
-                break;
-            if (c == 9) {
-                xc = fns.xcord;
-                xc = (UWORD)(xc - (UWORD)(bl_divu_w(xc, fns.tabsize) >> 16) + fns.tabsize);
-                fns.xcord = xc;
-                if ((WORD)xc >= (WORD)fns.xmax)
+        /* fixed (#657): one compare for a code of the font; a code behind
+           it is a space, one below 32 a control code */
+        if ((UBYTE)(c - 32) > lastg) {
+            if (c >= 32)
+                c = 32;
+            else {                      /* testchar */
+                fns.character = c;
+                if (c == 0)
                     break;
+                if (c == 9) {
+                    xc = fns.xcord;
+                    xc = (UWORD)(xc - (UWORD)(bl_divu_w(xc, fns.tabsize) >> 16)
+                                 + fns.tabsize);
+                    fns.xcord = xc;
+                    if ((WORD)xc >= (WORD)fns.xmax)
+                        break;
+                    continue;
+                }
+                if (c == 10) {          /* a new line: _FNSPrint2 again */
+                    y0 = (UWORD)(y0 + fns.height + 1);
+                    str = s;
+                    goto restart;
+                }
+                if (c != 1)
+                    break;
+                fns.tcolour = *s++;
                 continue;
             }
-            if (c == 10) {              /* a new line: _FNSPrint2 again */
-                y0 = (UWORD)(y0 + fns.height + 1);
-                str = s;
-                goto restart;
-            }
-            if (c != 1)
-                break;
-            fns.tcolour = *s++;
-            continue;
         }
+        fns.character = c;
         fns.nbold = fns.bold;
 draw:
         xc = fns.xcord;
@@ -664,8 +701,9 @@ static void underline(UWORD x)
  * bitmap.  At x,y + the origin, in the font of slot fontnum & 15 (nothing
  * if it is no "FNS." font); prefs bit 0 centred, 1 bold, 2 underlined, 3
  * right aligned; chr$(1) + c changes the colour, chr$(9) a tab
- * (FNSSetTab), chr$(10) a new line, chr$(0), codes below 32 and from 160
- * on (BUG(orig) #657) end the text; clipped by FNSClip; an empty line
+ * (FNSSetTab), chr$(10) a new line, chr$(0) and other codes below 32 end
+ * the text, a code behind the font's last is printed as a space (fixed
+ * #657); clipped by FNSClip; an empty line
  * is neither centred, aligned nor underlined (fixed #659).  BUG(orig):
  * depth 0 or above 8 overruns the plane stack (#658).  With a negative
  * xmin or ymin (refused by FNSClip's error check, fixed #664) text at
@@ -787,22 +825,44 @@ static void BLITZ_ROUTINE _libfinit(void)
 }
 
 /**
- * @brief InstallFNS(fontnum,address): puts a font in memory into a slot.
+ * @brief InstallFNS(fontnum,address,characters): puts a font of `characters` glyphs into a slot.
  *
- * Only an "FNS." font with a height of at least 1 (fixed, #663: the
- * original took a height of 0, which drew 65536 rows per character).
- * @param n     d0: the slot (& 15)
- * @param font  d1: the address of the font
+ * Fixed (#657), a form the original does not have: the font has the
+ * glyphs of the codes 32 to 31 + characters (1 to 224: 0 is taken as 1,
+ * the space; above 224 as 224, up to code 255); a code behind them is
+ * printed and counted as a space.  Only an "FNS." font with a
+ * height of at least 1 (fixed, #663).
+ * @param n      d0: the slot (& 15)
+ * @param font   d1: the address of the font
+ * @param count  d2: the number of glyphs (a word)
  * @return d0.b: the slot, 0 if it is no FNS font or its height is 0
  */
-static ULONG BLITZ_ROUTINE installfns_c(ULONG n BL_REG(d0), const UBYTE *font BL_REG(d1))
+static ULONG BLITZ_ROUTINE installfns3_c(ULONG n BL_REG(d0), const UBYTE *font BL_REG(d1),
+                                         UWORD count BL_REG(d2))
 {
     if (!isfont(font))
         return 0;
     n &= 15;
     fns.font_add[n] = (ULONG)font;
     loadedslots &= (UWORD)~(1 << n);
+    lastglyph[n] = !count ? 0 : count > 255 - 31 ? 255 - 32 : (UBYTE)(count - 1);
     return n;
+}
+
+/**
+ * @brief InstallFNS(fontnum,address): puts a font in memory into a slot.
+ *
+ * Only an "FNS." font with a height of at least 1 (fixed, #663: the
+ * original took a height of 0, which drew 65536 rows per character).
+ * The font is taken to have the glyphs of the codes 32 to 122 (fixed,
+ * #657: the 91 of every known font; a code behind them is a space).
+ * @param n     d0: the slot (& 15)
+ * @param font  d1: the address of the font
+ * @return d0.b: the slot, 0 if it is no FNS font or its height is 0
+ */
+static ULONG BLITZ_ROUTINE installfns_c(ULONG n BL_REG(d0), const UBYTE *font BL_REG(d1))
+{
+    return installfns3_c(n, font, DEFLAST + 1);
 }
 
 /**
@@ -813,6 +873,7 @@ static void BLITZ_ROUTINE removefns_c(ULONG n BL_REG(d0))
 {
     fns.font_add[n & 15] = 0;
     loadedslots &= (UWORD)~(1 << (n & 15));
+    lastglyph[n & 15] = DEFLAST;
 }
 
 /**
@@ -969,7 +1030,7 @@ static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(
 
     if (FH(font)->id != FNSID)
         return (ULONG)-1;
-    return countwidth(font, str, (prefs & 2) ? 1 : 0);          /* fixed (#662) */
+    return countwidth(font, str, (prefs & 2) ? 1 : 0, lastglyph[n & 15]);  /* fixed (#662) */
 }
 
 /**
@@ -1006,6 +1067,21 @@ static void BLITZ_ROUTINE origin_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
     fns.originy = y;
 }
 
+/* the last glyph (code - 32) of a font file of `size` bytes: its glyphs,
+   (size - 256) / bytes per character, - 1; 0 (the space) at least, 223
+   (code 255) at most (fixed, #657) */
+static UBYTE filelast(const UBYTE *font, ULONG size)
+{
+    UWORD multi = FH(font)->multi, n;
+
+    if (size <= 256)
+        return 0;
+    if (!multi || size - 256 >= bl_mulu_w(multi, 255 - 31))
+        return 255 - 32;
+    n = (UWORD)bl_divu_w(size - 256, multi);
+    return n ? (UBYTE)(n - 1) : 0;
+}
+
 /**
  * @brief FNSLoad(fontname$,fontslot): loads a font file into a slot.
  *
@@ -1015,7 +1091,9 @@ static void BLITZ_ROUTINE origin_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
  * when every bank is in use), remembered for FNSUnload.  The original
  * always used 55 + slot: with RIAmosFuncLib's default of 50 banks BLoad
  * took the number as an address and read the file to the address
- * 55 + slot, Start returned 0 and FNSLoad -1.  Fixed (#663): a file that is no "FNS." font or has a height of 0 is
+ * 55 + slot, Start returned 0 and FNSLoad -1.  Fixed (#657): the font
+ * has the glyphs of the codes 32 to 31 + (the bank's length - 256) /
+ * bytes per character (Length of the bank, the file's size).  Fixed (#663): a file that is no "FNS." font or has a height of 0 is
  * refused: -1, the bank erased, and the slot emptied if its font was the
  * one FNSLoad had put in that bank (BLoad overwrote it); the original
  * stored whatever Start returned (FNSPrint then drew nothing, a font of
@@ -1071,6 +1149,8 @@ static ULONG BLITZ_ROUTINE load_c(ULONG name BL_REG(d0), ULONG slot BL_REG(d1))
     fns.font_add[slot] = start;
     loadedslots |= (UWORD)(1 << slot);
     slotbank[slot] = bank;
+    r = (struct bl_regs){ .d0 = (ULONG)bank };
+    lastglyph[slot] = filelast((const UBYTE *)start, BLITZ_ALIBJSR(TOK_length, r));
     return slot;
 }
 
@@ -1089,6 +1169,7 @@ static void BLITZ_ROUTINE unload_c(ULONG slot BL_REG(d0))
     slot &= 15;
     fns.font_add[slot] = 0;
     loadedslots &= (UWORD)~(1 << slot);
+    lastglyph[slot] = DEFLAST;
     bank = slotbank[slot] >= 0 ? slotbank[slot] : (LONG)(55 + slot);
     slotbank[slot] = -1;
     r = (struct bl_regs){ .d0 = (ULONG)bank };
@@ -1121,6 +1202,7 @@ static void BLITZ_ROUTINE settab_c(UWORD t BL_REG(d0))
    but d0 as the original. */
 BLITZ_THUNK(rifnslib_libinit, libinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_installfns, installfns_c, "d1/a0-a1");
+BLITZ_THUNK(_installfns3, installfns3_c, "d1/a0-a1");
 BLITZ_THUNK(_removefns, removefns_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_fnsoutput, output_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_fnsoutput2, output2_c, "d0-d1/a0-a1");

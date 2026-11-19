@@ -19,7 +19,8 @@
  * FNSPrint/FNSShadowPrint all forms with all 16 prefs (centred, bold,
  * underlined, right aligned), colours, chr$(1) colour changes, tabs
  * (FNSSetTab), new lines (also leading and double ones: the binary's
- * missing guard), zero-width characters, codes from 160 (end), x on every
+ * missing guard), zero-width characters, codes from 160 (fixed #657: a
+ * space; the original ended the text) and behind the font, x on every
  * bit position, near xmax, below xmin, rows clipped at ymin/ymax (the
  * 48/64 pixel fonts: fixed #656), an empty text (fixed #659: in the
  * original underline 1 pixel, the centring by -32767), FNSOrigin;

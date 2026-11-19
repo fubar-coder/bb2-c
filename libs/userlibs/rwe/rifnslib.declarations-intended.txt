@@ -1,13 +1,36 @@
 # the intended differences of rifnslib against its reference, the CD
 # binary BSS2 RIFNSLIB.OBJ (blitzlib compare, docs/development.md
 # "Intended differences")
-# #664: FNSClip gets an error check (clipchk, "FNSClip zone must not start
-# below 0"); rifnslib gets an error check area for it (the original has
-# none)
+# #664, #666: rifnslib gets an error check area (the original has none)
+# for the checks of FNSClip (clipchk, "FNSClip zone must not start below
+# 0") and FNSSetTab (tabchk, "FNSSetTab size must be at least 1"); the
+# two entries' check fields are covered by the shift below
 lib 93: header +$2C: code offset set in only one of them
-lib 93: entry 6 FNSClip +$E: code offset set in only one of them
-# #666: FNSSetTab gets an error check (tabchk, "FNSSetTab size must be at
-# least 1")
-lib 93: entry 17 FNSSetTab +$C: code offset set in only one of them
-# #664, #666: the relocations of the error field and the two checks
-lib 93: relocations in the declaration part 30 != 33
+# #657: InstallFNS gets a second form (fontnum,address,characters) and the
+# help text "(fontnum,address[,characters])"; its bytes move the entries
+# behind it (their first differences), the end of the table and the
+# declaration part; the relocations of the error field, the two checks
+# and the new form
+lib 93: entry 1 InstallFNS +$18: $FF != $00
+lib 93: entry 2 FNSOutput +$1: $01 != $28
+lib 93: entry 3 FNSInk +$0: $00 != $74
+lib 93: entry 4 FNSPrefs +$0: $00 != $00
+lib 93: entry 5 FNSHeight +$0: $02 != $FF
+lib 93: entry 6 FNSClip +$0: $00 != $00
+lib 93: entry 7 FNSClipOutput +$0: $00 != $00
+lib 93: entry 8 RemoveFNS +$0: $00 != $70
+lib 93: entry 9 FNSUnderline +$0: $02 != $12
+lib 93: entry 10 FNSLength +$0: $02 != $FF
+lib 93: entry 11 FNSVersion +$0: $04 != $46
+lib 93: entry 12 FNSOrigin +$0: $00 != $75
+lib 93: entry 13 FNSWidth +$0: $02 != $00
+lib 93: entry 14 FNSLoad +$0: $02 != $00
+lib 93: entry 15 FNSSlot +$0: $03 != $00
+lib 93: entry 16 FNSUnload +$1: $01 != $00
+lib 93: entry 17 FNSSetTab +$0: $00 != $00
+lib 93: entry 18 FNSShadowPrint +$0: $00 != $62
+lib 93: entry 19 (nullsub) +$0: $00 != $64
+lib 93: entry 20 (nullsub) +$0: $00 != $5B
+lib 93: end of the table +$5A2: $FF != $00
+lib 93: declaration part $5A8 != $5C8 bytes
+lib 93: relocations in the declaration part 30 != 34

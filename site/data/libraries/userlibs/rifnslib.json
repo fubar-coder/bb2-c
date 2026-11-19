@@ -15,10 +15,11 @@
     {
       "name": "InstallFNS",
       "kind": "command",
-      "help": "(fontnum,address)",
+      "help": "(fontnum,address[,characters])",
       "result": "byte",
       "forms": [
-        {"args": [{"type": "byte", "code": 1}, {"type": "long", "code": 3}]}
+        {"args": [{"type": "byte", "code": 1}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "byte", "code": 1}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
       ]
     },
     {

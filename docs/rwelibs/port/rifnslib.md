@@ -11,8 +11,13 @@ slot, or the highest free one below BankLimit).
 
 A font: `FNS.`, +4 height, +6 width in pixels (16, 32, 48, 64; anything
 else is drawn as 16), +8 underline offset, +10 bytes per character; the
-width table is indexed by the character code from +0 (codes 32..159), the
-glyphs from +256, row by row.
+width table is indexed by the character code from +0, the glyphs from
++256, row by row, from code 32 to the font's last code. The format has no
+count: FNSLoad takes it from the file size, `InstallFNS(fontnum,address,
+characters)` (a form of the port, #657) from its third argument, the
+form without it takes 91 glyphs (codes 32 to 122), the number of every
+known FNS font (the 21 fonts of the CD and the 2.42 distribution, the
+built-in one too).
 
 * **Source:** `rwelibsrc/FNSLib/fns-library11.bb` (as TED shows it:
   `build/amiga/rwelibsrc/FNSLib/fns-library11.bb`); it `IncBin`s
@@ -125,6 +130,18 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   same mismatch (#770, fixed). Test `rifnslib-fnsload-bank-55` (a font
   header of 12 bytes: the original writes only the addresses 55 to 66)
   (#984).
+* A code from 32 on that the font has no glyph for is printed and counted
+  as a space (the width and the glyph of code 32), in FNSPrint,
+  FNSShadowPrint and FNSLength; codes below 32 keep their meaning. The
+  font's glyphs: above (FNSLoad: (file size − 256) / bytes per character;
+  InstallFNS's new form: its character count, 1 to 224; the old form and
+  RemoveFNS/FNSUnload: 91). The original took a code from 160 on for the
+  end of the text (`CMPI.b #32` and a sign test) and drew the codes from
+  123 to 159 from the bytes behind the font (in the built-in font: the
+  library's code) (#657; user decision W6 Q2 of 2026-11-19: characters
+  the font does not have as a space). One compare per character replaces
+  the sign test; FNSPrint of 32 characters 7092 cycles (6292 without the
+  compare, perf `bfns.fnsprint`), FNSLength 5232 (4989).
 
 ## BUG(orig), kept
 
@@ -132,15 +149,6 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
   0), planes from 8 on with the colour bit `plane & 7` (#658).
-* Codes from 160 end the text (signed byte compare) (#657).
-
-## DIFF
-
-What the original reads behind its variables or its font is its own
-code; the C build reads other bytes there: glyphs of codes the font has
-no data for – the
-built-in font has glyphs only up to `z` (91), codes 123..159 read behind
-it.
 
 ## The font
 
@@ -172,10 +180,11 @@ print, the end position at a0 (or a0 unchanged without a font), d0, the
 kept registers, the stub calls. Covered: see the header of the test (all
 entries and forms, all prefs, colours and `chr$(1)`, tabs and FNSSetTab,
 new lines including leading/double ones, zero-width characters, codes
-from 160, every x bit position, xmax, xmin, rows clipped at ymin/ymax for
+from 160 and behind the font's glyphs, every x bit position, xmax, xmin, rows clipped at ymin/ymax for
 every font width, empty texts, origin, FNSLength's font numbers 16,
-17, −1, −2, InstallFNS of a non-font, FNSLoad ok/BLoad fails/Start 0,
-FNSUnload). Not covered: FNSPrint without a bitmap (the original
+17, −1, −2, InstallFNS of a non-font and with a character count (the
+C build only), FNSLoad ok/BLoad fails/Start 0/no font/height 0/40
+glyphs/BankLimit 80, FNSUnload, a second run). Not covered: FNSPrint without a bitmap (the original
 crashes; bug-orig test `rifnslib-print-no-bitmap-crash`), depth 0 / above 8 /
 flags, FNSSetTab 0, negative xmin (writes 64 KB away, #664), font 0 with the
-codes behind `z` (the DIFF).
+codes behind `z` (the original reads its own code there).

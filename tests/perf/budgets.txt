@@ -284,6 +284,11 @@
 # (4957.6).  fnsprint 6287.1 and 6292.1 after drawchar read the line's
 # first row, row count and font width itself (three of its six arguments
 # per character); fnslength 4988.6 both times then (after #660-#662).
+# After #657 (a code behind the font's glyphs is a space: one compare per
+# character in FNSPrint and FNSLength): fnsprint 7092.1 and 7093.1,
+# fnslength 5232.6 both times; both budgets go up with it (fnslength
+# above its earlier budget of 5011; W6 decision Q2: "Sollte nicht viel
+# Performance kosten", measured: +25 and +8 cycles per character).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -310,8 +315,8 @@ bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
 bdisp.dispsprite             948~4      965.5  DisplaySprite 0,0,100,100,0
 bdisp.disppalette          1289~16     1292.0  DisplayPalette 0,0
 bfns.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bfns.fnsprint                6359    60445.2  FNSPrint 0,8,100,t$ (the built-in font, 32 characters, 3 planes)
-bfns.fnslength               5011     3686.2  c=FNSLength(0,t$) (32 characters)
+bfns.fnsprint                7168    60445.2  FNSPrint 0,8,100,t$ (the built-in font, 32 characters, 3 planes)
+bfns.fnslength               5288     3686.2  c=FNSLength(0,t$) (32 characters)
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bgfx.blit16                 2051~2     2108.3  Blit 0,100,100
 bgfx.blit16s                 2075     2108.3  Blit 0,105,100
