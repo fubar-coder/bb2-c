@@ -100,6 +100,11 @@
  *     16).  The original tested the operation (always 7) instead of the
  *     bits: every ANIM7 was decoded as long data and its short code was
  *     unreachable (#504).
+ *   - RINextAnimFrame skips chunks of the ANIM that are no FORM on its
+ *     way to the next frame (an ANNO between two frames); the original
+ *     took such a chunk as the end of the animation (#1116).  The step
+ *     from frame to frame is unchanged; only the frame's FORM test that
+ *     fails leads into the skip.
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
@@ -725,6 +730,19 @@ static __attribute__((noinline)) UBYTE *otherchunks(UBYTE *chunk)
     }
 }
 
+/* the next frame from chunk on: chunks of the ANIM that are no FORM
+   skipped; NULL at the end of the ANIM (fixed #1116: the original took
+   such a chunk as the end).  Not on the path from frame to frame. */
+static __attribute__((noinline)) UBYTE *nextform(UBYTE *chunk)
+{
+    while (chunk && chunk < animend) {
+        if (LG(chunk) == ID_FORM)
+            return chunk;
+        chunk = nextchunk(chunk, animend);
+    }
+    return NULL;
+}
+
 /**
  * @brief RINextAnimFrame bitmap#: apply the DLTA of the next frame to the bitmap.
  *
@@ -732,7 +750,9 @@ static __attribute__((noinline)) UBYTE *otherchunks(UBYTE *chunk)
  * vertical delta by bit 0 of the ANHD bits; fixed #504: the original
  * always took the long form) on the planes
  * (+ the offset of RIAnimInit); a CMAP of the frame goes through
- * ILBMPalette.  At the end of the ANIM it goes on with the third frame
+ * ILBMPalette.  Chunks of the ANIM that are no FORM are skipped (fixed
+ * #1116: the original took one between two frames as the end).  At the
+ * end of the ANIM it goes on with the third frame
  * if AnimLoop is on, else returns 0.  ANIM5 has the byte columns of the
  * word-aligned row (fixed #507), ANIM7's short form the words of the row
  * (fixed #504).  BUG(orig): the ANIM7 long columns are width >> 5,
@@ -756,9 +776,13 @@ ULONG BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
         return 0;
     bitmapaddress = bitmap->Planes;
     if (chunk >= animend || LG(chunk) != ID_FORM) {    /* fixed #506: unsigned */
-        if (!doanimloop)
-            return 0;
-        chunk = thirdframe;
+        /* fixed #1116: a chunk that is no FORM is skipped, not the end */
+        chunk = nextform(chunk);
+        if (!chunk) {
+            if (!doanimloop)
+                return 0;
+            chunk = thirdframe;
+        }
     }
     len = LG(chunk + 4);
     chunk += 8;

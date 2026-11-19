@@ -114,6 +114,13 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   every ANIM7 was decoded as long data, garbage for short data, and its
   `UnpackAnim7Short` was unreachable (#504). An ANIM7 frame pays a test
   of the bit and a compare per plane.
+* RINextAnimFrame skips chunks of the ANIM that are no FORM on its way
+  to the next frame (an `ANNO` between two frames); the original took
+  such a chunk as the end of the animation and stopped there, or went on
+  with the third frame with AnimLoop on (#1116; bug-orig test
+  `rianimlib-nextframe-skip-chunk`). Free per frame: only the frame's
+  FORM test that fails (a chunk that is no FORM, or the end) leads into
+  the skip.
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
