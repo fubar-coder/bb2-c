@@ -25,9 +25,10 @@
  * frame if AnimLoop is on (the default).  The chunk search is the
  * InitFindChunk/FindChunk code of RIPackLib (Pack-Library9).
  *
- * C behind thunks.  The thunks keep d1/a0/a1 (GCC the rest); the
- * original changes d1, d3, d6, d7 and a2 in RIAnimInit, a0/a2 in
- * RIAnimDepth/Width/Height, a0/a1 in RIAnimFrameCount.
+ * C behind thunks, the ANIM7 plane decoder an asm block (ANIM7_PLANE:
+ * C stayed behind the original).  The thunks keep d1/a0/a1 (GCC the
+ * rest); the original changes d1, d3, d6, d7 and a2 in RIAnimInit, a0/a2
+ * in RIAnimDepth/Width/Height, a0/a1 in RIAnimFrameCount.
  *
  * BUG(orig):
  *   - InitFindChunk on data that is not a FORM but has the ID at +8 (a
@@ -649,79 +650,100 @@ static void plane5(const UBYTE *ops, UBYTE *column, ULONG mod)
     } while (col-- != 0);
 }
 
-/* ANIM7 (long form): one plane, columns of longs; the data from a3 */
-static void plane7(const UBYTE *ops, UBYTE *column, const ULONG *data, ULONG mod)
-{
-    UWORD col = deltacolumns, c;
-    UBYTE *dst;
-    UBYTE n, op;
-    ULONG v;
+/* ANIM7: one plane, columns of longs (SZ "l", the long form) or words
+   (SZ "w", the short form), STEP the bytes of a column; the data from
+   a3.  Assembler (C stays behind: gcc keeps the column or the op pointer
+   on the stack, a3-a5 are fixed): the original's loop (UnpackAnim7
+   'unpackaplane) with the op's sign as the copy test and the column's
+   end behind each op.  The counts as COUNT (0 = 256, #508): the byte - 1
+   in a register that is 0 above it, DBF on the word. */
+#define ANIM7_PLANE(SZ, STEP)                                               \
+    __asm__ volatile(                                                       \
+        "0: move.b  (%[ops])+,%[n]\n"   /* the column's op count */         \
+        "   beq.s   8f\n"                                                   \
+        "   move.l  %[col],%[dst]\n"                                        \
+        "1: moveq   #0,%[op]\n"                                             \
+        "   move.b  (%[ops])+,%[op]\n"                                      \
+        "   beq.s   4f\n"                                                   \
+        "   bmi.s   3f\n"                                                   \
+        "   mulu.w  %[mod],%[op]\n"     /* skip: op rows */                 \
+        "   add.l   %[op],%[dst]\n"                                         \
+        "   subq.b  #1,%[n]\n"                                              \
+        "   bne.s   1b\n"                                                   \
+        "   addq.l  #" STEP ",%[col]\n"                                     \
+        "   dbf     %[cols],0b\n"                                           \
+        "   bra.s   9f\n"                                                   \
+        "3: and.b   #0x7f,%[op]\n"      /* copy: op & $7F values */         \
+        "   subq.b  #1,%[op]\n"                                             \
+        "5: move." SZ "  (%[data])+,(%[dst])\n"                             \
+        "   add.l   %[mod],%[dst]\n"                                        \
+        "   dbf     %[op],5b\n"                                             \
+        "   subq.b  #1,%[n]\n"                                              \
+        "   bne.s   1b\n"                                                   \
+        "   addq.l  #" STEP ",%[col]\n"                                     \
+        "   dbf     %[cols],0b\n"                                           \
+        "   bra.s   9f\n"                                                   \
+        "4: move.b  (%[ops])+,%[op]\n"  /* run: its count, one value */     \
+        "   subq.b  #1,%[op]\n"                                             \
+        "   move." SZ "  (%[data])+,%[v]\n"                                 \
+        "6: move." SZ "  %[v],(%[dst])\n"                                   \
+        "   add.l   %[mod],%[dst]\n"                                        \
+        "   dbf     %[op],6b\n"                                             \
+        "   subq.b  #1,%[n]\n"                                              \
+        "   bne.s   1b\n"                                                   \
+        "8: addq.l  #" STEP ",%[col]\n"                                     \
+        "   dbf     %[cols],0b\n"                                           \
+        "9:"                                                                \
+        : [ops] "+a"(ops), [col] "+a"(column), [data] "+a"(data),           \
+          [cols] "+d"(cols), [dst] "=&a"(dst), [n] "=&d"(n),                \
+          [op] "=&d"(op), [v] "=&d"(v)                                      \
+        : [mod] "d"(mod)                                                    \
+        : "cc", "memory")
 
-    do {
-        dst = column;
-        column += 4;
-        n = *ops++;
-        if (!n)
-            continue;
-        do {
-            op = *ops++;
-            if (!op) {                  /* run */
-                c = COUNT(*ops++);
-                v = *data++;
-                do {
-                    LG(dst) = v;
-                    dst += mod;
-                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
-                } while (c-- != 0);
-            } else if (op & 0x80) {     /* copy */
-                c = COUNT(op & 0x7f);
-                do {
-                    LG(dst) = *data++;
-                    dst += mod;
-                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
-                } while (c-- != 0);
-            } else                      /* skip */
-                dst += bl_mulu_w(op, (UWORD)mod);
-        } while (--n);
-    } while (col-- != 0);
+/* ANIM7 (long form): one plane, columns of longs; the data from a3 */
+static inline __attribute__((always_inline)) void plane7(const UBYTE *ops, UBYTE *column,
+                                                          const ULONG *data, ULONG mod)
+{
+    UWORD cols = deltacolumns;
+    UBYTE *dst;
+    ULONG n, op, v;
+
+    ANIM7_PLANE("l", "4");
 }
 
 /* ANIM7 (short form): one plane, columns of words; the data from a3
    (fixed #504: the original never reached its UnpackAnim7Short) */
-static void plane7short(const UBYTE *ops, UBYTE *column, const UWORD *data, ULONG mod)
+static inline __attribute__((always_inline)) void plane7short(const UBYTE *ops, UBYTE *column,
+                                                               const UWORD *data, ULONG mod)
 {
-    UWORD col = deltacolumns, c;
+    UWORD cols = deltacolumns;
     UBYTE *dst;
-    UBYTE n, op;
-    UWORD v;
+    ULONG n, op, v;
+
+    ANIM7_PLANE("w", "2");
+}
+
+/* the planes of an ANIM7 DLTA (body: its data), the decoder of kind
+   (DELTA7, DELTA7SHORT) inline: no call per plane; a function of its own,
+   so that unpackanim's ANIM5 loop keeps its registers */
+static __attribute__((noinline)) void planes7(UBYTE *body, int kind, ULONG mod)
+{
+    const ULONG *offsets = (const ULONG *)body;
+    PLANEPTR *planes = bitmapaddress;
+    UBYTE plane = 0;
 
     do {
-        dst = column;
-        column += 2;
-        n = *ops++;
-        if (!n)
-            continue;
-        do {
-            op = *ops++;
-            if (!op) {                  /* run */
-                c = COUNT(*ops++);
-                v = *data++;
-                do {
-                    WD(dst) = v;
-                    dst += mod;
-                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
-                } while (c-- != 0);
-            } else if (op & 0x80) {     /* copy */
-                c = COUNT(op & 0x7f);
-                do {
-                    WD(dst) = *data++;
-                    dst += mod;
-                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
-                } while (c-- != 0);
-            } else                      /* skip */
-                dst += bl_mulu_w(op, (UWORD)mod);
-        } while (--n);
-    } while (col-- != 0);
+        UBYTE *column = *planes++ + bitplaneoffset;
+        ULONG op = offsets[0], data = offsets[8];
+
+        offsets++;
+        if (op) {
+            if (kind == DELTA7)
+                plane7(body + op, column, (const ULONG *)(body + data), mod);
+            else
+                plane7short(body + op, column, (const UWORD *)(body + data), mod);
+        }
+    } while (++plane != animdepth);
 }
 
 /* the DLTA (header at dlta) into the planes of the bitmap with the
@@ -767,19 +789,16 @@ static int unpackanim(UBYTE *dlta, int kind)
         }
     }
     deltacolumns = columns[kind];
+    if (kind != DELTA5) {
+        planes7(body, kind, mod);
+        return 1;
+    }
     do {                                /* depth 1-8 (fixed #509, RIAnimInit) */
         UBYTE *column = *planes++ + bitplaneoffset;
-        ULONG op = offsets[0], data = offsets[8];
+        ULONG op = *offsets++;
 
-        offsets++;
-        if (op) {
-            if (kind == DELTA5)
-                plane5(body + op, column, mod);
-            else if (kind == DELTA7)
-                plane7(body + op, column, (const ULONG *)(body + data), mod);
-            else
-                plane7short(body + op, column, (const UWORD *)(body + data), mod);
-        }
+        if (op)
+            plane5(body + op, column, mod);
     } while (++plane != animdepth);
     return 1;
 }

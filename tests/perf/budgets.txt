@@ -262,11 +262,15 @@
 # runs on main c9045679 (2026-11-19): anim5 31189.2, anim7 104904.1 both
 # times.  Their targets from two runs of the pass perf_banim.pass with the
 # tag orig: anim5 46282.5 and 46280.8, anim7 98227.5 and 98230.8.
+# anim7 from two runs after the ANIM7 decoder in assembler (rianimlib
+# follow-up C3, 2026-11-19): 97310.9 both times (105760.9 before, 0.99 of
+# the original); anim5 31442.5 both times then (31477.5 before), its
+# budget kept.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 banim.anim5                 31505    46282.5  c=RINextAnimFrame(0) (INTRO.ANIM: 320 x 256 x 3, ANIM5, its frames 3 to 14)
-banim.anim7                105957    98230.8  c=RINextAnimFrame(1) (320 x 256 x 5, ANIM7 long data, 2400 longs per frame)
+banim.anim7                 98288    98230.8  c=RINextAnimFrame(1) (320 x 256 x 5, ANIM7 long data, 2400 longs per frame)
 bbblit.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
 bbblit.specialblock          1485     1557.8  SpecialBlock 0,1,96,96 (16x16, 3 planes, 320-pixel bitmap)
 bbblit.specialblocko         1399     1450.3  SpecialBlock 0,1,3852 (the offset form)

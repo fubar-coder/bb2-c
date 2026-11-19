@@ -27,7 +27,8 @@ equal the BSS2 binary (`rwe_declarations_rianimlib`). The BUM/OL
 `RIANIMLIB.OBJ` (4 entries) is the older v1.3. Library number
 `LIB_rianimlib` (57) in the bb2-2.10 libnums.
 
-**C:** `libs/userlibs/rwe/rianimlib.c`, everything C behind thunks.
+**C:** `libs/userlibs/rwe/rianimlib.c`, C behind thunks; the ANIM7
+decoder of a plane (long and short data) is an `asm` block.
 UnpackIFF (form 1: d0 source, d1 bitmap#, d2 -1,
 d3 offset) and ILBMPalette (d0 source, d1 palette#) are called through
 ALibJsr; RIPackLib's token list is that of the BSS2 binary. The chunk
@@ -39,6 +40,14 @@ RTS no header refers to).
 The `MULU`/`DIVU` of the original are `bl_mulu_w`/`bl_divu_w` (DIVU
 with its overflow); the row steps have an `asm` barrier (GCC would
 compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
+The ANIM7 plane decoder is assembler (`ANIM7_PLANE`, one block for the
+long and the short form): in C, with a3-a5 fixed, gcc kept the column
+or the op pointer on the stack and the frame of the benchmark `banim`
+took 105761 cycles against the original's 98231. The block is the
+original's loop (`'unpackaplane`) with the op's sign as the copy test and
+the column's end behind each op, inline in `planes7` (no call per
+plane): 97311 cycles, 0.99 of the original. The counts are those of the
+C code (a count of 0 is 256, #508).
 
 **Fixed** (intended deviations, `docs/libs/deviations.md`, kind F):
 
