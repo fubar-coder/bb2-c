@@ -45,6 +45,13 @@
  *     not define it, the reference decoders read it as 0 rows - and a
  *     test would cost every run and copy op of RINextAnimFrame, D-007;
  *     user decision W5 Q4 of 2026-11-19).
+ *   - The ops of a DLTA's columns (and the ANIM7 data they take) are not
+ *     bounded by the chunk: a corrupt op list reads on behind the DLTA and
+ *     writes its deltas into the planes or behind them (#1120, the part
+ *     not fixed: a check per op would cost every delta op of
+ *     RINextAnimFrame, the game path, D-007; user decision "C2 findings"
+ *     of 2026-11-19; test rianimlib-delta-ops-past-chunk).  The plane
+ *     offsets are checked (fixed, below).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - RIAnimInit searches the BMHD in the first frame only; the original
  *     searched up to the end of the ANIM and took a BMHD chunk of the
@@ -117,6 +124,12 @@
  *     RIAnimHeight) stops at such a chunk: on a 68000 the long reads of
  *     its ID and length were an address error.  One scan at RIAnimInit,
  *     nothing per frame (#1119).
+ *   - RINextAnimFrame refuses (0) a frame whose DLTA leaves the frame, is
+ *     shorter than its header of plane offsets (8 longs for ANIM5, 16 for
+ *     ANIM7), or has an op list offset (ANIM7: or a data list offset) of
+ *     a plane it plays at or behind its end; once per frame, before a
+ *     plane is played.  The original took the offsets as they were and
+ *     read op lists and data from anywhere (#1120).
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
@@ -712,16 +725,47 @@ static void plane7short(const UBYTE *ops, UBYTE *column, const UWORD *data, ULON
 }
 
 /* the DLTA (header at dlta) into the planes of the bitmap with the
-   decoder kind (DELTA5, DELTA7, DELTA7SHORT) */
-static void unpackanim(UBYTE *dlta, int kind)
+   decoder kind (DELTA5, DELTA7, DELTA7SHORT); 0 if its plane offsets do
+   not fit it (fixed #1120) */
+static int unpackanim(UBYTE *dlta, int kind)
 {
     UBYTE *body = dlta + 8;
     const ULONG *offsets = (const ULONG *)body;
     PLANEPTR *planes = bitmapaddress;
     /* the bitmap's ebwidth: BytesPerRow, 8 bytes in front of Planes */
     ULONG mod = WD((UBYTE *)planes - offsetof(struct BitMap, Planes));
+    ULONG len = LG(dlta + 4);
     UBYTE plane = 0;
 
+    /* fixed #1120: the DLTA inside the frame, its header (the op list
+       offsets; for ANIM7 the data list offsets too) inside the DLTA, and
+       the offsets of the planes it plays inside the DLTA, before a plane
+       is played (the original took them as they were).  The ops of the
+       columns stay unchecked (BUG(orig) (#1120), see the head) */
+    if (body > nextanimframe || len > (ULONG)(nextanimframe - body))
+        return 0;
+    {
+        const ULONG *o = offsets;
+        UWORD n = animdepth - 1;        /* DBRA: depth 1-8 (fixed #509) */
+
+        if (kind == DELTA5) {
+            if (len < 8 * 4)
+                return 0;
+            do
+                if (*o++ >= len)
+                    return 0;
+            while (n-- != 0);
+        } else {
+            if (len < 16 * 4)
+                return 0;
+            do {
+                ULONG op = *o++;
+
+                if (op >= len || (op && o[7] >= len))
+                    return 0;
+            } while (n-- != 0);
+        }
+    }
     deltacolumns = columns[kind];
     do {                                /* depth 1-8 (fixed #509, RIAnimInit) */
         UBYTE *column = *planes++ + bitplaneoffset;
@@ -737,6 +781,7 @@ static void unpackanim(UBYTE *dlta, int kind)
                 plane7short(body + op, column, (const UWORD *)(body + data), mod);
         }
     } while (++plane != animdepth);
+    return 1;
 }
 
 /* the DLTA of a frame whose chunk behind ANHD (and CMAP) is another one:
@@ -814,7 +859,9 @@ static __attribute__((noinline)) UBYTE *nextform(UBYTE *chunk)
  * ANHD and CMAP stay inside the frame: a frame too short for its ILBM
  * and ANHD fields, or an ANHD or CMAP whose length leaves no chunk header
  * in the frame, returns 0 (fixed #1117: the original stepped by the
- * length and read the next chunk anywhere).
+ * length and read the next chunk anywhere).  A DLTA whose plane offsets
+ * leave it returns 0 (fixed #1120; the ops inside the columns stay
+ * unchecked, BUG(orig) (#1120)).
  * @param bitmap  a0: the bitmap object (!bmap {0,0})
  * @return d0: -1 if a delta was applied, else 0
  */
@@ -824,6 +871,7 @@ ULONG BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
     const struct anhd *anhd;
     struct bl_regs r;
     ULONG len;
+    int kind;
 
     if (!chunk)
         return 0;
@@ -867,14 +915,15 @@ ULONG BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
             return 0;
     }
     if (animtype == 5 || animtype == 65)
-        unpackanim(chunk, DELTA5);
+        kind = DELTA5;
     else if (animtype == 7)
         /* fixed #504: bit 0 of the ANHD bits (the original tested the
            operation, never the short form) */
-        unpackanim(chunk, (animtype7 & 1) ? DELTA7 : DELTA7SHORT);
+        kind = (animtype7 & 1) ? DELTA7 : DELTA7SHORT;
     else
         return 0;
-    return (ULONG)-1;
+    /* fixed #1120: a DLTA whose plane offsets leave it is refused */
+    return unpackanim(chunk, kind) ? (ULONG)-1 : 0;
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */

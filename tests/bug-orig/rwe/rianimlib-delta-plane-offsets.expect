@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+frame 2: 0 row 3 00000000
+frame 3: 0 row 0 00000000
+frame 4: -1 row 3 000000AA
+rc=0

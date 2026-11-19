@@ -138,6 +138,16 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   `rianimlib-chunk-odd-address-68000` on the A600). One scan of the
   ANIM at RIAnimInit, stepping as RINextAnimFrame does; nothing per
   frame.
+* RINextAnimFrame refuses (returns 0, no plane played) a frame whose
+  `DLTA` leaves the frame, is shorter than its header of plane offsets
+  (8 longs for ANIM5, 16 for ANIM7), or has an op list offset (ANIM7: or
+  a data list offset) of a plane it plays at or behind its end. The
+  original took the offsets as they were and read op lists and data
+  from anywhere in memory (#1120; bug-orig test
+  `rianimlib-delta-plane-offsets`: offsets that point at the next
+  frames played their ops). Once per frame, before the first plane:
+  about 0.6 % of an ANIM5 frame and 0.4 % of an ANIM7 frame of the
+  benchmark `banim` (+195 and +463 cycles).
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
@@ -165,6 +175,13 @@ bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
   rows), and a test would cost every run and copy op of RINextAnimFrame,
   the game path (D-007). The bug-orig test `rianimlib-delta-count-zero`
   stays REPRODUCED.
+* The ops of a `DLTA`'s columns, and the ANIM7 data they take, are not
+  bounded by the chunk: a corrupt op list reads on behind the `DLTA` and
+  writes its deltas into the planes or behind them (#1120, the part not
+  fixed; user decision "C2 findings" of 2026-11-19: a check per op would
+  cost every delta op of RINextAnimFrame, the game path, D-007; bug-orig
+  test `rianimlib-delta-ops-past-chunk`, REPRODUCED). The plane offsets
+  are checked (above).
 
 **Test** (`libs/tests/rwe/rianimlib.c`, snitch case "rwe rianimlib"):
 each run loads one library set (the C build or the CD original); the
