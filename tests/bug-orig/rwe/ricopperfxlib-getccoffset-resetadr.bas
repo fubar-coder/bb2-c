@@ -4,6 +4,7 @@
 ; address and coplistaddr to 0: the commands write their instructions
 ; and advance the offset, but GetCCOffset returns -1.
 ; Correct: GetCCOffset returns the offset (1 after one CopperMove).
+; @fixed #593
 ; @rwe ricopperfxlib
 DEFTYPE .l
 m=AllocMem_(4096,$10000)

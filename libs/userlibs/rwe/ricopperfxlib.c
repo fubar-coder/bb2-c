@@ -35,8 +35,6 @@
  *                (MOVE.b d0,lo_bplcon3 with lo_bplcon3: Dc.w 0)
  *
  * BUG(orig):
- *   - GetCCOffset tests coplistaddr, not customaddr: after CopperResetAdr
- *     (coplistaddr 0) it returns -1 although the commands work (#593).
  *   - DoColSplit is a command with a word result, but d0 is the red step
  *     value at the end (its cols_adr argument without a custom space);
  *     CopperAGACol (long result) returns 1234 without a custom space,
@@ -52,6 +50,9 @@
  *   - CopperWait: the x position is ((x >> 1) & $FE) + 6 as a word, so the
  *     +6 can carry into the line bits (x >= 500) (#591).
  * Fixed:
+ *   - GetCCOffset tests customaddr, as every other command (the original
+ *     tests coplistaddr: after CopperResetAdr, coplistaddr 0, it returned
+ *     -1 although the commands worked) (#593).
  *   - init clears the state block (the original's is an RTS): a second
  *     run from the editor with the library still loaded wrote into the
  *     custom space of the run before before its CopperReset and kept its
@@ -400,8 +401,7 @@ void BLITZ_ROUTINE c_splitreset2(UWORD startline BL_REG(d1),
 /**
  * @brief CopperResetAdr address,startline: use a custom copper space at an address.
  *
- * coplistaddr becomes 0 (GetCCOffset then returns -1, BUG(orig) (#593)),
- * ccoffset 0.
+ * coplistaddr becomes 0, ccoffset 0.
  * @param custom     d0: the address of the custom space
  * @param startline  d1: the line of the next colour split
  */
@@ -417,14 +417,15 @@ void BLITZ_ROUTINE c_splitresethard(UBYTE *custom BL_REG(d0),
 /**
  * @brief GetCCOffset: the current offset in the custom space, in instructions.
  *
- * ASR.w on a d0 cleared by MOVEQ: the upper word is 0.  BUG(orig)
- * (#593): tests coplistaddr, not customaddr: after CopperResetAdr it
- * returns -1 although the commands work.
- * @return d0: ccoffset / 4, -1 without a coplist
+ * ASR.w on a d0 cleared by MOVEQ: the upper word is 0.  Fixed (#593):
+ * tests customaddr as every other command; the original tests
+ * coplistaddr, so after CopperResetAdr it returned -1 although the
+ * commands worked.
+ * @return d0: ccoffset / 4, -1 without a custom space
  */
 ULONG BLITZ_ROUTINE c_getccoffset(void)
 {
-    if (!cfx.coplistaddr)
+    if (!cfx.customaddr)
         return (ULONG)-1;
     return (UWORD)((WORD)cfx.ccoffset >> 2);
 }

@@ -1991,7 +1991,8 @@ GetCCOffset|d0||2	$00000000
 GetCCOffset|d0||3	$0000009B
 GetCCOffset|d0||4	$0000009B
 GetCCOffset|d0||5	$00000191
-GetCCOffset|d0||6	$FFFFFFFF
+GetCCOffset|d0||6 [orig]	$FFFFFFFF
+GetCCOffset|d0||6 [fixed #593]	$00000037
 GetCCOffset|d0||7	$FFFFFFFF
 GetCCOffset|d0||8	$00000014
 GetCCOffset|kept||1	kept
@@ -2016,7 +2017,8 @@ GetCCOffset (after CopperResetAdr)|colreg/lo_bplcon3||1	$0190FF00
 GetCCOffset (after CopperResetAdr)|coplistaddr||1	$00000000
 GetCCOffset (after CopperResetAdr)|custom space||1	bytes 8192 fnv 2F741DC5
 GetCCOffset (after CopperResetAdr)|customaddr||1	$000103E8
-GetCCOffset (after CopperResetAdr)|d0||1	$FFFFFFFF
+GetCCOffset (after CopperResetAdr)|d0||1 [orig]	$FFFFFFFF
+GetCCOffset (after CopperResetAdr)|d0||1 [fixed #593]	$00000000
 GetCCOffset (after CopperResetAdr)|kept||1	kept
 GetCCOffset (after CopperResetAdr)|startline/ccoffset||1	$00070000
 GetCCOffset (no coplist)|bplcon3LO/HI||1	$00000000

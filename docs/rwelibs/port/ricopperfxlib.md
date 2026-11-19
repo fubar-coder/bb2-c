@@ -35,8 +35,6 @@ reproduced.
 
 **BUG(orig)** (kept):
 
-* `GetCCOffset` tests the coplist pointer, not the custom space: after
-  `CopperResetAdr` (coplist 0) it returns -1 although the commands work (#593).
 * `DoColSplit` is a command with a word result, but d0 is the red step
   at the end (its `cols_adr` argument without a custom space);
   `CopperAGACol` (long result) returns 1234 without custom space,
@@ -53,6 +51,9 @@ reproduced.
 
 **Fixed:**
 
+* `GetCCOffset` tests the custom space, as every other command: the
+  original tests the coplist pointer, so after `CopperResetAdr` (coplist
+  0) it returned -1 although the commands worked (#593).
 * init clears the state block (the original's init is an RTS): a second
   run from the editor with the library still loaded wrote into the custom
   space of the run before with every command before its `CopperReset`,
@@ -70,7 +71,7 @@ the buffer and coplist) and the kept registers. Cases: before any reset (nothing
 `CopperReset` with and without ccoffset, splits across line 256 and from
 line 0, falling, rising and out-of-range colour values, `ColSplitBplcon3`,
 40 random splits with `RedoColSplit` over them, `CopperResetAdr` with
-the `GetCCOffset` -1, init/finit, a second run (init, the commands
+`GetCCOffset` (the original's -1), init/finit, a second run (init, the commands
 before `CopperReset`, the `ColSplitBplcon3` byte of the run before). Not covered: the lists running in the
 copper (nothing is displayed), numlines 0 or negative, a ccoffset above
 $FFFF for `RedoColSplit`.

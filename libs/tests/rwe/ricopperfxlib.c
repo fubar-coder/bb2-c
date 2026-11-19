@@ -278,7 +278,8 @@ int main(int argc, char **argv)
         agacol(rnd() & 0xff, rnd() & 0xff, rnd() & 0xff, rnd() & 0xff);
     }
 
-    /* CopperResetAdr: works, but GetCCOffset says -1 (BUG(orig) (#593)) */
+    /* CopperResetAdr: the commands work; the original's GetCCOffset says -1
+       (fixed #593: the offset) */
     fillbuf();
     ROUT = "CopperResetAdr";
     strcpy(VEC, "buf+1000,7");
