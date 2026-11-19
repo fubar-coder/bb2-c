@@ -68,13 +68,17 @@ kind F):
   still succeeds (the other chunks are usable). The original took the
   address behind the last chunk id read, behind the file, as the info
   chunk (#551).
+* The search tests the end of the file before it reads an id: a chunk
+  counts only if its id and length lie inside the file, and a length
+  that reaches the end (also one that would wrap the address) ends the
+  search. The original read the id behind the end and found it if it
+  matched (e.g. the next file in the same buffer), and compared the
+  addresses signed (#553).
 
 ## BUG(orig), kept
 
-* The search stops only after an id that does not match: the id behind
-  the end of the file is read and found if it matches. The addresses
-  are compared signed (#553). An odd chunk length makes the following
-  ids odd (address error on a 68000) (#552).
+* An odd chunk length makes the following ids odd (address error on a
+  68000) (#552).
 * `BBGetPalette`: when the high colour is not below the object's colour
   count it allocates a block of high+1 colours but sets the count (in
   the object and the block) to high, so the last colour is outside
@@ -104,7 +108,7 @@ scenario, a full map, a scenario with only `GFX!`, `SFX!` and a `COLR`
 of $81..$83 (or none), a map without `MFRM`, a `FORM` of the wrong type;
 chunks shuffled with random lengths and contents, six rounds. Every
 accessor twice (search and cache), present and missing, an id behind
-the end of a file (found on odd rounds), `BBShadowValue` with a word
+the end of a file (on odd rounds; the original finds it), `BBShadowValue` with a word
 index overflow and a negative index, author strings at odd and even
 addresses, `BBGetPalette` without and with a new block (from 0–4 and 4
 colours, twice), with 200 colours, low > high and without `COLR`, a

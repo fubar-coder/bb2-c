@@ -11,10 +11,14 @@ BBDestructLoc|d0|round 1|1	$00000064
 BBDestructLoc|d0|round 1|2	$00000064
 BBDestructLoc|d0|round 1|3	$00000064
 BBDestructLoc|d0|round 1|4	$00000064
-BBDestructLoc|d0|round 1, scenario 2|1	$00001040
-BBDestructLoc|d0|round 1, scenario 2|2	$00001040
-BBDestructLoc|d0|round 1, scenario 2|3	$00001040
-BBDestructLoc|d0|round 1, scenario 2|4	$00001040
+BBDestructLoc|d0|round 1, scenario 2|1 [orig]	$00001040
+BBDestructLoc|d0|round 1, scenario 2|1 [fixed #553]	$00000000
+BBDestructLoc|d0|round 1, scenario 2|2 [orig]	$00001040
+BBDestructLoc|d0|round 1, scenario 2|2 [fixed #553]	$00000000
+BBDestructLoc|d0|round 1, scenario 2|3 [orig]	$00001040
+BBDestructLoc|d0|round 1, scenario 2|3 [fixed #553]	$00000000
+BBDestructLoc|d0|round 1, scenario 2|4 [orig]	$00001040
+BBDestructLoc|d0|round 1, scenario 2|4 [fixed #553]	$00000000
 BBDestructLoc|d0|round 2|1	$0000005C
 BBDestructLoc|d0|round 2|2	$0000005C
 BBDestructLoc|d0|round 2|3	$0000005C
@@ -27,10 +31,14 @@ BBDestructLoc|d0|round 3|1	$00000030
 BBDestructLoc|d0|round 3|2	$00000030
 BBDestructLoc|d0|round 3|3	$00000030
 BBDestructLoc|d0|round 3|4	$00000030
-BBDestructLoc|d0|round 3, scenario 2|1	$0000103E
-BBDestructLoc|d0|round 3, scenario 2|2	$0000103E
-BBDestructLoc|d0|round 3, scenario 2|3	$0000103E
-BBDestructLoc|d0|round 3, scenario 2|4	$0000103E
+BBDestructLoc|d0|round 3, scenario 2|1 [orig]	$0000103E
+BBDestructLoc|d0|round 3, scenario 2|1 [fixed #553]	$00000000
+BBDestructLoc|d0|round 3, scenario 2|2 [orig]	$0000103E
+BBDestructLoc|d0|round 3, scenario 2|2 [fixed #553]	$00000000
+BBDestructLoc|d0|round 3, scenario 2|3 [orig]	$0000103E
+BBDestructLoc|d0|round 3, scenario 2|3 [fixed #553]	$00000000
+BBDestructLoc|d0|round 3, scenario 2|4 [orig]	$0000103E
+BBDestructLoc|d0|round 3, scenario 2|4 [fixed #553]	$00000000
 BBDestructLoc|d0|round 4|1	$0000003E
 BBDestructLoc|d0|round 4|2	$0000003E
 BBDestructLoc|d0|round 4|3	$0000003E
@@ -43,10 +51,14 @@ BBDestructLoc|d0|round 5|1	$0000010C
 BBDestructLoc|d0|round 5|2	$0000010C
 BBDestructLoc|d0|round 5|3	$0000010C
 BBDestructLoc|d0|round 5|4	$0000010C
-BBDestructLoc|d0|round 5, scenario 2|1	$0000109C
-BBDestructLoc|d0|round 5, scenario 2|2	$0000109C
-BBDestructLoc|d0|round 5, scenario 2|3	$0000109C
-BBDestructLoc|d0|round 5, scenario 2|4	$0000109C
+BBDestructLoc|d0|round 5, scenario 2|1 [orig]	$0000109C
+BBDestructLoc|d0|round 5, scenario 2|1 [fixed #553]	$00000000
+BBDestructLoc|d0|round 5, scenario 2|2 [orig]	$0000109C
+BBDestructLoc|d0|round 5, scenario 2|2 [fixed #553]	$00000000
+BBDestructLoc|d0|round 5, scenario 2|3 [orig]	$0000109C
+BBDestructLoc|d0|round 5, scenario 2|3 [fixed #553]	$00000000
+BBDestructLoc|d0|round 5, scenario 2|4 [orig]	$0000109C
+BBDestructLoc|d0|round 5, scenario 2|4 [fixed #553]	$00000000
 BBDestructLoc|kept|round 0|1	kept
 BBDestructLoc|kept|round 0|2	kept
 BBDestructLoc|kept|round 0|3	kept
@@ -759,16 +771,20 @@ BBMapObjects|d0|round 0, map without MFRM|1	$00000000
 BBMapObjects|d0|round 0, map without MFRM|2	$00000000
 BBMapObjects|d0|round 1|1	$0000087E
 BBMapObjects|d0|round 1|2	$0000087E
-BBMapObjects|d0|round 1, map without MFRM|1	$00001854
-BBMapObjects|d0|round 1, map without MFRM|2	$00001854
+BBMapObjects|d0|round 1, map without MFRM|1 [orig]	$00001854
+BBMapObjects|d0|round 1, map without MFRM|1 [fixed #553]	$00000000
+BBMapObjects|d0|round 1, map without MFRM|2 [orig]	$00001854
+BBMapObjects|d0|round 1, map without MFRM|2 [fixed #553]	$00000000
 BBMapObjects|d0|round 2|1	$000008FE
 BBMapObjects|d0|round 2|2	$000008FE
 BBMapObjects|d0|round 2, map without MFRM|1	$00000000
 BBMapObjects|d0|round 2, map without MFRM|2	$00000000
 BBMapObjects|d0|round 3|1	$000008D0
 BBMapObjects|d0|round 3|2	$000008D0
-BBMapObjects|d0|round 3, map without MFRM|1	$00001864
-BBMapObjects|d0|round 3, map without MFRM|2	$00001864
+BBMapObjects|d0|round 3, map without MFRM|1 [orig]	$00001864
+BBMapObjects|d0|round 3, map without MFRM|1 [fixed #553]	$00000000
+BBMapObjects|d0|round 3, map without MFRM|2 [orig]	$00001864
+BBMapObjects|d0|round 3, map without MFRM|2 [fixed #553]	$00000000
 BBMapObjects|d0|round 4|1	$00000814
 BBMapObjects|d0|round 4|2	$00000814
 BBMapObjects|d0|round 4, map without MFRM|1	$00000000

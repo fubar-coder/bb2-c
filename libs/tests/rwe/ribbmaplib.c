@@ -14,8 +14,8 @@
  * registers.  Covered: both Set routines with no FORM, the wrong type
  * and good files; every accessor with the chunk present (twice: the
  * cache) and missing; a chunk id read behind the end of the file
- * (BUG(orig) #553: found); BBShadowValue with word index overflow and a
- * negative index; author strings at an odd and an even address;
+ * (the original, #553: found); BBShadowValue with word index overflow and
+ * a negative index; author strings at an odd and an even address;
  * BBGetPalette without a new block, with one (from 0 and from 4
  * colours), low > high, no COLR; a map without MFRM; a failed
  * SetBBMapLoc after a good one (the original, #554: the info chunk, the
@@ -361,7 +361,8 @@ int main(int argc, char **argv)
            chunks at 4096, a map without MFRM at 6144 */
         scenario(0, (int)pick(0, 15), (int)pick(16, 40), 1, (int)pick(0, 30));
         map(2048, 1);
-        /* the ids behind the ends of the others: found on odd rounds */
+        /* the ids behind the ends of the others, on odd rounds (the original
+           finds them, #553) */
         end = scenario(4096, round == 3 ? -1 : 0x81, 0x83, 0, (int)pick(0, 30));
         memcpy(tmpl + end, round & 1 ? "DEST" : "NONE", 4);
         end = map(6144, 0);

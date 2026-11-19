@@ -29,16 +29,18 @@
  * caller's), 0 when the chunk is missing.
  *
  * BUG(orig), kept:
- *   - The search ends only after an id that does not match (the id read
- *     can be behind the end) and compares the addresses signed (#553);
- *     an odd length makes the next id odd (an address error on a 68000)
- *     (#552).
+ *   - An odd chunk length makes the next id odd (an address error on a
+ *     68000) (#552).
  *   - BBGetPalette: an object with high colour >= its colour count gets
  *     a new block of high+1 colours, but its count is set to high (the
  *     last colour outside) (#548); the colours are written from low to
  *     high even if low > high (one colour at low, possibly behind the
  *     block) (#549).  BBScenarioLowCol/HighCol extend the byte with its
  *     sign (#550).
+ * Fixed (intended deviation, #553): the search tests the end of the file
+ * before it reads an id; a chunk whose id and length do not lie inside
+ * the file is not found (the original read the id behind the end and
+ * found it if it matched, and compared the addresses signed).
  * Fixed (intended deviation, #551): a map without MFRM has no info
  * chunk: BBMapScenarioID, BBMapWidth, BBMapHeight and BBMapInfo give 0
  * (the original took the address behind the last chunk id read, behind
@@ -213,7 +215,11 @@ static void BLITZ_ROUTINE codefinit(void)
 {
 }
 
-/* _findchunk / _findmapchunk: the data of chunk `id`, or NULL */
+/* _findchunk / _findmapchunk: the data of chunk `id`, or NULL.  Fixed
+   (#553): a chunk counts only if its id and length lie inside the file
+   (the end tested before the id is read, as a distance, so a file across
+   $80000000 is no exception); a length that reaches the end (also one
+   that would wrap the address) ends the search */
 static UBYTE *search(ULONG id, UBYTE *loc, UBYTE *end, ULONG *last, UBYTE **lastaddr)
 {
     UBYTE *cursor;
@@ -222,15 +228,18 @@ static UBYTE *search(ULONG id, UBYTE *loc, UBYTE *end, ULONG *last, UBYTE **last
         return *lastaddr;
     cursor = loc + 12;
     for (;;) {
-        ULONG c = LONGAT(cursor);
-        cursor += 4;
+        ULONG c, len;
+        if ((LONG)(end - cursor) < 8)   /* fixed (#553): before the id */
+            return NULL;
+        c = LONGAT(cursor);
+        len = LONGAT(cursor + 4);
+        cursor += 8;
         if (c == id)
             break;
-        if ((LONG)cursor >= (LONG)end)  /* CMP.l a1,a0: BGE */
+        if (len >= (ULONG)(end - cursor))
             return NULL;
-        cursor += LONGAT(cursor) + 4;
+        cursor += len;
     }
-    cursor += 4;
     *last = id;
     *lastaddr = cursor;
     return cursor;
