@@ -2,21 +2,12 @@
   text: Makes `numshapes` shapes from `shape#` on out of shapes in memory at `address`, in the form `SaveShapes` writes (a 32-byte header and the data of each shape), and copies their data into chip memory. As a function it returns -1, or 0 if `numshapes` is 0.
   notes: |
     Shapes that are in use are freed first. A cookie is made for each
-    shape while `LEAutoCookie` is on, which it is at the start.
-
-    Kept from the original: an empty shape in memory (width or height 0)
-    is skipped by 32 bytes plus the data size of the shape before it,
-    even one of an earlier call, so the following shapes are read from
-    the wrong place ([#809](https://github.com/fubar-coder/bb2-c/issues/809));
-    a shape whose data size is 0 copies 64 KB and overwrites memory
-    ([#808](https://github.com/fubar-coder/bb2-c/issues/808)).
+    shape while `LEAutoCookie` is on, which it is at the start. A shape
+    in memory whose width, height or data size is 0 is an empty shape:
+    it has only its 32-byte header, and the next shape follows directly
+    behind it.
 "SafeToBlit":
-  text: Returns -1 if the shape can be drawn at `x`,`y` in the current bitmap, else 0. The shape must have a cookie, `x` and `y` must not be negative, and the shape must fit into the bitmap's width and height.
-  notes: |
-    Kept from the original: the shape number is divided by 32 before it is
-    compared with the maximum of shapes, so a shape number beyond the
-    maximum is not refused
-    ([#822](https://github.com/fubar-coder/bb2-c/issues/822)).
+  text: Returns -1 if the shape can be drawn at `x`,`y` in the current bitmap, else 0. The shape number must be below the maximum number of shapes, the shape must have a cookie, `x` and `y` must not be negative, and the shape must fit into the bitmap's width and height.
 "LELoadShapes":
   text: Loads the shapes of an LE shapes file into the shapes from the first `shape#` to the second, or to the last shape if only one is given, and its palette into `palette#` if the file has one and a palette is given.
   notes: |
@@ -24,43 +15,26 @@
     gets a cookie. A file that is not an IFF file goes to `LoadShapes` of
     the shapes library. Nothing happens if the file cannot be opened.
 
-    Kept from the original:
+    A palette chunk that holds no whole colour leaves the palette as it
+    is.
 
-    * The form `shape#,filename$,palette#` does not load the palette into
-      the palette named, but into an unknown one; use the form with both
-      shape numbers instead
-      ([#812](https://github.com/fubar-coder/bb2-c/issues/812)).
-    * A file that is not an IFF file loads only one shape, into the last
-      shape of the range
-      ([#813](https://github.com/fubar-coder/bb2-c/issues/813)).
-    * A palette chunk of fewer than 3 bytes writes 65536 colours over
-      memory ([#820](https://github.com/fubar-coder/bb2-c/issues/820)).
+    The library guide names a form `shape#,filename$,palette#` and says
+    that it cannot be used: with three arguments the compiler takes the
+    form `shape#,shape#,filename$`. To load a palette, give both shape
+    numbers.
 "LESaveShapes":
   text: Saves the shapes from the first `shape#` to the second as an LE shapes file, with the colours of `palette#` if it is given. The data is packed while `LECompressShapes` is on.
   notes: |
     A shape that the packer cannot pack is stored unpacked.
-    Nothing happens if the file cannot be opened.
-
-    Kept from the original:
-
-    * The number of shapes stored in the file is taken from the shape
-      numbers divided by 32, so the file loads back only about one shape
-      per 32 shape numbers
-      ([#815](https://github.com/fubar-coder/bb2-c/issues/815)).
-    * Whether the palette is written depends on what the system's file
-      write routine leaves behind; on OS 3.2 it is written
-      ([#814](https://github.com/fubar-coder/bb2-c/issues/814)).
-    * The length of the IFF file in its header is 8 too large, and after
-      a save with a palette, a later save without one still counts that
-      palette's size
-      ([#816](https://github.com/fubar-coder/bb2-c/issues/816)).
-    * A buffer is allocated with a size that depends on leftovers and
-      freed with another size
-      ([#817](https://github.com/fubar-coder/bb2-c/issues/817)).
-    * A palette of 0 colours copies 65536 colours and overwrites memory
-      ([#823](https://github.com/fubar-coder/bb2-c/issues/823)).
+    Nothing happens if the file cannot be opened. A palette of 0
+    colours is not saved. The palette chunk has no pad byte, so with an
+    odd number of colours the chunks behind it start at an odd offset;
+    `LELoadShapes` and `LECludgeShapes` read such files.
 "LECompressShapes":
   text: Switches the packing of `LESaveShapes` on (`True`) or off (`False`). It is off at the start.
+  notes: |
+    The library guide says that packing is on at the start; the library
+    starts with it off, so call `LECompressShapes True` to pack.
 "LECludgeShapes":
   text: Decodes an LE shapes file that is in memory at `address` into the shapes from the first `shape#` to the second, and its palette into `palette#`.
   notes: |
@@ -68,12 +42,10 @@
     file is not packed and lies in chip memory (below 2 MB), the shapes
     use the data where it is instead of a copy, unless `copymemflag` is
     negative (-1): then the data is always copied into chip memory. Packed
-    data is always unpacked into chip memory. Nothing happens if the
-    memory does not hold an LE shapes file.
-
-    Kept from the original: a palette chunk whose size is not a multiple
-    of 3 makes the command miss the shape data, and nothing is loaded
-    ([#811](https://github.com/fubar-coder/bb2-c/issues/811)).
+    data is always unpacked into chip memory, and so are shapes whose
+    data lie at an odd address, as in a file with an odd number of
+    colours, since the blitter cannot draw them there. Nothing happens if
+    the memory does not hold an LE shapes file.
 "LEInitShape":
   text: Makes an empty shape of the given width, height and depth, with cleared data and cookie in chip memory and both handles at 0.
   notes: |

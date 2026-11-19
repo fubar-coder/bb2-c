@@ -4956,6 +4956,102 @@ rows:
     text: "`STCLoad` returns 0 for a file that is not wholly a StoneCracker 4.04 file or cannot be read; the original unpacked it and wrote outside the buffer."
     page: libraries
     anchor: stonecracker-fixes
+  - issue: 808
+    severity: 5
+    topic: "Graphics"
+    library: "rishapeslib"
+    command: "CludgeShapes, CludgeShapesToAddress"
+    text: "`CludgeShapes` takes a shape in memory whose data size is 0 as empty; the original copied 64 KB for it and overwrote memory."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 809
+    severity: 5
+    topic: "Graphics"
+    library: "rishapeslib"
+    command: "CludgeShapes, CludgeShapesToAddress"
+    text: "`CludgeShapes` reads the shapes behind an empty shape in memory from the right place; the original skipped by the size of the shape before it."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 810
+    severity: 5
+    topic: "Graphics"
+    library: "rishapeslib"
+    command: "LELoadShapes, LECludgeShapes, LEInitShape"
+    text: "`LELoadShapes`, `LECludgeShapes` and `LEInitShape` free the cookie of the shape they replace; the original used up chip memory with every reload."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 811
+    severity: 5
+    topic: "Graphics"
+    library: "rishapeslib"
+    command: "LECludgeShapes"
+    text: "`LECludgeShapes` finds the shapes of LE files with a longer header chunk or a padded palette chunk; the original missed them."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 814
+    severity: 5
+    topic: "Files"
+    library: "rishapeslib"
+    command: "LESaveShapes"
+    text: "`LESaveShapes` writes the palette whenever one is given; the original's choice depended on the flags the system's write routine left."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 815
+    severity: 5
+    topic: "Files"
+    library: "rishapeslib"
+    command: "LESaveShapes"
+    text: "`LESaveShapes` takes the shape count from the lower 16 bits of the shape numbers; the original also used the upper bits of a long value."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 816
+    severity: 5
+    topic: "Files"
+    library: "rishapeslib"
+    command: "LESaveShapes"
+    text: "Files written by `LESaveShapes` give the right IFF length; the original's was 8 too large or counted the palette of an earlier save."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 817
+    severity: 5
+    topic: "Files"
+    library: "rishapeslib"
+    command: "LESaveShapes"
+    text: "`LESaveShapes` asks for 12 bytes for its shape header; the original could ask for up to 4 GB."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 820
+    severity: 5
+    topic: "Graphics"
+    library: "rishapeslib"
+    command: "LELoadShapes, LECludgeShapes"
+    text: "Loading LE shapes with a palette chunk shorter than one colour leaves the palette as it is; the original wrote 768 KB over memory."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 823
+    severity: 5
+    topic: "Files"
+    library: "rishapeslib"
+    command: "LESaveShapes"
+    text: "`LESaveShapes` with a palette of 0 colours writes no palette; the original overwrote 192 KB of memory."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 1109
+    severity: 5
+    topic: "Graphics"
+    library: "rishapeslib"
+    command: "LEAutoCookie, LEMaxShapeWidth, LEMaxShapeHeight, LEMaxShapeDepth"
+    text: "A program run again from the editor starts with `LEAutoCookie` on and the maximum shape sizes at 0; the original kept those of the run before."
+    page: libraries
+    anchor: rishapeslib-fixes
+  - issue: 1118
+    severity: 5
+    topic: "Graphics"
+    library: "rishapeslib"
+    command: "LECludgeShapes"
+    text: "`LECludgeShapes` decodes LE files with an odd number of colours on a 68000; the original crashed there and linked the shapes at an odd address on a 68020."
+    page: libraries
+    anchor: rishapeslib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

@@ -20,14 +20,9 @@ intro: |
   installed too. The commands that read or write files go through
   AmigaDOS, so call them in Amiga mode.
 
-  Kept from the original: `LESaveShapes` takes the shape numbers divided
-  by 32 for the count it stores, so the file loads back only about one
-  shape per 32 shape numbers of the range; a file of shapes 0 to 31 loads
-  back as a single shape
-  ([#815](https://github.com/fubar-coder/bb2-c/issues/815)). The cookie
-  of a shape that `LELoadShapes`, `LECludgeShapes` or `LEInitShape`
-  replaces is never freed, so chip memory is lost each time
-  ([#810](https://github.com/fubar-coder/bb2-c/issues/810)).
+  A shape that a command replaces is freed first, with its cookie.
+  `LEAutoCookie` is on and the `LEMaxShape` values are 0 at the start of
+  every run, also of a program run again from the editor.
 
   The largest size of ten shapes:
 
@@ -36,5 +31,8 @@ intro: |
   LEScanShapes 0,9
   NPrint LEMaxShapeWidth," x ",LEMaxShapeHeight
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in rishapeslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rishapeslib-fixes" >}}).
 
   *Based on the RI Shapes Lib guide by Red When Excited.*
