@@ -458,10 +458,34 @@ AppLock|d0 = lock|message 0|1	$00000001
 AppLock|d0 = lock|message 1|1	$00000001
 AppLock|d0 = lock|message 2|1	$00000001
 AppLock|d0 = lock|message 3|1	$00000001
+AppLock|d0 = lock of|after AppFile 1|1	$00000001
+AppLock|d0 = lock of|after AppFile 100|1	$00000001
+AppLock|d0 = lock of|after AppFile 2|1	$00000001
+AppLock|d0 = lock of|after AppFile 3|1	$00000001
+AppLock|d0 = lock of|after NextAppFile (argnum kept)|1	$00000001
+AppLock|d0 = lock of|after NextAppFile (none left)|1	$00000001
+AppLock|d0 = lock of|after NextAppFile 1|1	$00000001
+AppLock|d0 = lock of|after NextAppFile 2|1	$00000001
+AppLock|kept|after AppFile 1|1	kept
+AppLock|kept|after AppFile 100|1	kept
+AppLock|kept|after AppFile 2|1	kept
+AppLock|kept|after AppFile 3|1	kept
+AppLock|kept|after NextAppFile (argnum kept)|1	kept
+AppLock|kept|after NextAppFile (none left)|1	kept
+AppLock|kept|after NextAppFile 1|1	kept
+AppLock|kept|after NextAppFile 2|1	kept
 AppLock|kept|message 0|1	kept
 AppLock|kept|message 1|1	kept
 AppLock|kept|message 2|1	kept
 AppLock|kept|message 3|1	kept
+AppLock|popped|after AppFile 1|1	$00000000
+AppLock|popped|after AppFile 100|1	$00000000
+AppLock|popped|after AppFile 2|1	$00000000
+AppLock|popped|after AppFile 3|1	$00000000
+AppLock|popped|after NextAppFile (argnum kept)|1	$00000000
+AppLock|popped|after NextAppFile (none left)|1	$00000000
+AppLock|popped|after NextAppFile 1|1	$00000000
+AppLock|popped|after NextAppFile 2|1	$00000000
 AppLock|popped|message 0|1	$00000000
 AppLock|popped|message 1|1	$00000000
 AppLock|popped|message 2|1	$00000000

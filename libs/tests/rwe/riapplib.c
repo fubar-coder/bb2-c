@@ -317,6 +317,20 @@ static void stringfn(const char *name, int idx, LONG num)
     OBS("wa_Lock[1]", args[1].wa_Lock == dirlock);
 }
 
+/* AppLock after a NextAppFile or AppFile (what: the call, in the
+   vector): 1 the lock of the first argument (RAM:), 2 the
+   second's (RAM:rweappdir), 0 none, else 3 */
+static void lockafter(const char *what)
+{
+    ULONG l;
+
+    ROUT = "AppLock";
+    sprintf(VEC, "after %s", what);
+    DO1(ent(APPLOCK, 0), (void)0);
+    l = R.d[0];
+    OBS("d0 = lock of", l == (ULONG)rootlock ? 1 : l == (ULONG)dirlock ? 2 : l ? 3 : 0);
+}
+
 static void before_init(void)
 {
     static const int fns[] = { APPEVENT, APPEVENTTYPE, APPEVENTID, NEXTAPPFILE, APPNUMFILES,
@@ -377,14 +391,23 @@ static void test_messages(void)
         if (i == 0) {
             /* the first argument: "Ram Disk:" ends with ':' - the lock
                stays; the second is unlocked (BUG(orig), #521) */
+            /* AppLock after each: the lock of the argument read last */
             stringfn("NextAppFile", NEXTAPPFILE, 0);
+            lockafter("NextAppFile 1");
             stringfn("NextAppFile", NEXTAPPFILE, 0);
+            lockafter("NextAppFile 2");
             stringfn("NextAppFile (none left)", NEXTAPPFILE, 0);
+            lockafter("NextAppFile (none left)");
             stringfn("AppFile", APPFILE, 1);
+            lockafter("AppFile 1");
             stringfn("AppFile (lock 0 now)", APPFILE, 2);
+            lockafter("AppFile 2");
             stringfn("AppFile", APPFILE, 3);
+            lockafter("AppFile 3");
             stringfn("AppFile", APPFILE, 100);
+            lockafter("AppFile 100");
             stringfn("NextAppFile (argnum kept)", NEXTAPPFILE, 0);
+            lockafter("NextAppFile (argnum kept)");
         }
     }
     strcpy(VEC, "last");

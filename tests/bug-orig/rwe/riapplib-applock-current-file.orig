@@ -1,0 +1,29 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+done
+[compile]
+ok
+[run]
+AppEvent: lock 1
+Ram Disk:f1: lock 1
+Ram Disk:bo1103a/f2: lock 1
+AppFile(1) Ram Disk:f1: lock 1
+Ram Disk:bo1103b/f3: lock 1
+none left (): lock 1
+AppFile(9) (): lock 1
+AppFile(1) Ram Disk:f1: lock 1
+next AppEvent: lock 1
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/riapplib-applock-current-file.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/riapplib-applock-current-file
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
