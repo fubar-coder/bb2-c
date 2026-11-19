@@ -127,7 +127,8 @@ bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
   (the original crashes; not reproducible in C) (#513).
 * ANIM7, long data: the columns are width >> 5 (ASR.w) – the rest of a
   width that is not a multiple of 32 is dropped, a width below 32 gives
-  65536 columns (DBRA) (#507, its ANIM7 half: what the last long column
+  65536 columns (DBRA) (#1115; bug-orig test
+  `rianimlib-anim7-long-columns`; what the last long column
   of a row with an odd number of words holds is not in the format's
   description, the ANIM7 appendix of 1992; xanim truncates as the
   original, FFmpeg writes the upper word of the last long: not decided
@@ -162,4 +163,4 @@ Not covered: a frame with other chunks before its DLTA (the original
 crashes; bug-orig test `rianimlib-nextframe-no-dlta`), a chunk with the ID at
 +8 that is no FORM (the DIFF), odd chunk lengths (fixed #505; bug-orig
 test `rianimlib-chunk-pad-byte`), depth 0, run counts
-of 0, ANIM7 widths below 32.
+of 0, ANIM7 widths below 32 (bug-orig test `rianimlib-anim7-long-columns`).

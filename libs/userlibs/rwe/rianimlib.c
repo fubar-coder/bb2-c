@@ -37,9 +37,9 @@
  *     reproducible) (#513).
  *   - ANIM7 (long data): the columns are width >> 5 (ASR.w), dropping
  *     the rest of a width that is not a multiple of 32, and a width below
- *     32 gives 65536 columns (DBRA) (#507, its ANIM7 half: what the last
- *     long column of a row with an odd number of words holds is not in
- *     the format's description).
+ *     32 gives 65536 columns (DBRA) (#1115; what the last long column of
+ *     a row with an odd number of words holds is not in the format's
+ *     description).
  *   - A run or copy count of 0 is 256 (DBRA on the byte) (#508; kept on
  *     purpose: encoders never write a count of 0 - the ANIM format does
  *     not define it, the reference decoders read it as 0 rows - and a
@@ -468,7 +468,7 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     columns[DELTA5] = (UWORD)((((ULONG)animwidth + 15) >> 4 << 1) - 1);
     /* fixed #504: the words of the row for ANIM7's short form */
     columns[DELTA7SHORT] = (UWORD)((((ULONG)animwidth + 15) >> 4) - 1);
-    /* BUG(orig) (#507, ANIM7): width >> 5 (ASR.w), a width below 32 gives
+    /* BUG(orig) (#1115): width >> 5 (ASR.w), a width below 32 gives
        65536 columns */
     columns[DELTA7] = (UWORD)(((WORD)animwidth >> 5) - 1);
     animheight = bmhd->bmh_Height;
@@ -736,7 +736,7 @@ static __attribute__((noinline)) UBYTE *otherchunks(UBYTE *chunk)
  * if AnimLoop is on, else returns 0.  ANIM5 has the byte columns of the
  * word-aligned row (fixed #507), ANIM7's short form the words of the row
  * (fixed #504).  BUG(orig): the ANIM7 long columns are width >> 5,
- * dropping a rest and giving 65536 columns below 32 pixels (#507);
+ * dropping a rest and giving 65536 columns below 32 pixels (#1115);
  * a run or copy count of 0 is 256 (#508).  The depth is
  * 1 to 8 (fixed #509: RIAnimInit refuses 0 and above 8).  Other chunks between ANHD (and CMAP) and the DLTA are
  * skipped inside the frame, a CMAP among them goes through ILBMPalette; a
