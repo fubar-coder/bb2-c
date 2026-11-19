@@ -102,8 +102,8 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
 * The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers,
   RINextAnimFrame's steps over the frame, ANHD and CMAP) add the pad
   byte of an odd length when it is 0; a non-zero byte there is taken as
-  the next chunk, so files written without pad bytes stay readable (as
-  ilbmifflib, #189). The original added length + 8 only: behind an
+  the next chunk (as ilbmifflib, #189; that chunk starts at an odd
+  address, and RIAnimInit refuses such an ANIM, #1119 below). The original added length + 8 only: behind an
   odd-length chunk (an ANNO, a CMAP of an odd number of colours) the walk
   was one byte off, BMHD, frames, CMAP and DLTA were missed (#505).
   RINextAnimFrame pays a test of the length's bit 0 per step, about 20
@@ -129,6 +129,15 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   `rianimlib-nextframe-anhd-length`: an `ANHD` length that ends at the
   `DLTA` of the next frame played that delta). Per frame a compare of the
   frame's length and two per step.
+* RIAnimInit refuses an ANIM in which a chunk, of its top level or
+  inside a frame, starts at an odd address (behind an odd length
+  without its pad byte: the non-zero byte there taken as the next
+  chunk), and FindChunk (RIAnimDepth, RIAnimWidth, RIAnimHeight) stops
+  at such a chunk. The long reads of its ID and length were an address
+  error on a 68000; a 68020 read them (#1119; bug-orig test
+  `rianimlib-chunk-odd-address-68000` on the A600). One scan of the
+  ANIM at RIAnimInit, stepping as RINextAnimFrame does; nothing per
+  frame.
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×

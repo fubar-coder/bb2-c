@@ -92,9 +92,10 @@
  *   - The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers,
  *     RINextAnimFrame's steps over the frame, ANHD and CMAP) add the pad
  *     byte of an odd length when it is 0; a non-zero byte there is taken
- *     as the next chunk, so files written without pad bytes stay readable
- *     (as ilbmifflib, #189).  The original added no pad byte: behind an
- *     odd-length chunk the walk was one byte off (#505).
+ *     as the next chunk (as ilbmifflib, #189; that chunk starts at an odd
+ *     address, and RIAnimInit refuses such an ANIM, #1119).  The original
+ *     added no pad byte: behind an odd-length chunk the walk was one byte
+ *     off (#505).
  *   - ANIM7 decodes the short (word) form when bit 0 of the ANHD bits is
  *     clear, with the words of the row as its columns ((width + 15) /
  *     16).  The original tested the operation (always 7) instead of the
@@ -110,6 +111,12 @@
  *     whose length leaves no chunk header in the frame, returns 0; the
  *     original stepped by the length and read the next chunk ID and
  *     length anywhere (#1117).
+ *   - RIAnimInit refuses an ANIM in which a chunk (of its top level or
+ *     inside a frame) starts at an odd address, behind an odd length
+ *     without its pad byte, and FindChunk (RIAnimDepth, RIAnimWidth,
+ *     RIAnimHeight) stops at such a chunk: on a 68000 the long reads of
+ *     its ID and length were an address error.  One scan at RIAnimInit,
+ *     nothing per frame (#1119).
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
@@ -269,8 +276,9 @@ static LONG initfindchunk(UBYTE *chunk, ULONG id)
 
 /* the length of chunk data at data of length len with its pad byte:
    an odd length is rounded up when the byte behind the data is 0; a
-   non-zero byte there is the next chunk (a file written without pad
-   bytes stays readable) (fixed #505: the original added no pad byte) */
+   non-zero byte there is the next chunk, at an odd address (RIAnimInit
+   refuses such an ANIM, fixed #1119) (fixed #505: the original added no
+   pad byte) */
 static inline __attribute__((always_inline)) ULONG padded(const UBYTE *data, ULONG len)
 {
     if ((len & 1) && !data[len])
@@ -298,7 +306,9 @@ static LONG fcloop(UBYTE *p, ULONG id, UBYTE **data)
     for (;;) {
         UBYTE *next;
 
-        if (p >= endoffile) {           /* fixed #506: unsigned */
+        /* fixed #506: unsigned; fixed #1119: a chunk at an odd address
+           (no pad byte behind an odd length) ends the walk */
+        if (p >= endoffile || ((ULONG)p & 1)) {
             *data = p;
             return 0;
         }
@@ -332,6 +342,19 @@ static LONG findnextchunk(ULONG id, UBYTE **data)
     return fcloop(p, id, data);
 }
 
+/* a chunk at an odd address inside the FORM at form (which fits the
+   ANIM), stepped as RINextAnimFrame steps through a frame (fixed #1119:
+   on a 68000 the long reads of its ID and length are an address error) */
+static int oddchunk(UBYTE *form)
+{
+    UBYTE *end = form + 8 + LG(form + 4), *p;
+
+    for (p = form + 12; p && p < end; p = nextchunk(p, end))
+        if ((ULONG)p & 1)
+            return 1;
+    return 0;
+}
+
 /* findbmhd: the BMHD of the first frame of the ANIM at address */
 static LONG findbmhd(ULONG address, struct BitMapHeader **data)
 {
@@ -347,8 +370,8 @@ static LONG findbmhd(ULONG address, struct BitMapHeader **data)
  *
  * The BMHD is searched in the first frame (InitFindChunk of the ANIM
  * and of its first ILBM, then FindChunk); the chunk walk adds the pad
- * byte of an odd length when it is 0 (fixed #505).  It changes the chunk
- * search state.
+ * byte of an odd length when it is 0 (fixed #505) and stops at a chunk at
+ * an odd address (fixed #1119).  It changes the chunk search state.
  * @param address  d0: the ANIM file in memory
  * @return d0: the depth (a byte), 0 without ANIM, ILBM or BMHD
  */
@@ -427,7 +450,8 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
  * @param offset   d3: the byte offset into each plane
  * @return d0: BB_TRUE, BB_FALSE if there is no ANIM with an ILBM and BMHD,
  *         the BMHD depth is 0 or above 8 (fixed #509) or its width 0 (fixed #507),
- *         or UnpackIFF refuses the bitmap (fixed #1106)
+ *         UnpackIFF refuses the bitmap (fixed #1106), or a chunk of the
+ *         ANIM or of a frame starts at an odd address (fixed #1119)
  */
 BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                  ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
@@ -449,14 +473,20 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     animend = endoffile;
     /* fixed #506: the ANIM ends at the first chunk whose length passes its
        end (so RINextAnimFrame's step from frame to frame stays inside it);
-       the first frame must fit */
+       the first frame must fit.  Fixed #1119: an ANIM with a chunk at an
+       odd address, of its top level or inside a frame, is refused */
     for (chunk = firstframe; chunk < animend; ) {
-        UBYTE *next = nextchunk(chunk, animend);
+        UBYTE *next;
 
+        if ((ULONG)chunk & 1)
+            return BB_FALSE;
+        next = nextchunk(chunk, animend);
         if (!next) {
             animend = chunk;
             break;
         }
+        if (LG(chunk) == ID_FORM && oddchunk(chunk))
+            return BB_FALSE;
         chunk = next;
     }
     if (animend == firstframe)
