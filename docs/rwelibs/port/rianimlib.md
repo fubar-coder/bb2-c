@@ -121,6 +121,14 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   `rianimlib-nextframe-skip-chunk`). Free per frame: only the frame's
   FORM test that fails (a chunk that is no FORM, or the end) leads into
   the skip.
+* RINextAnimFrame's steps over `ANHD` and `CMAP` stay inside the frame:
+  a frame too short for its `ILBM` and the `ANHD` fields up to the bits,
+  or an `ANHD` or `CMAP` whose length leaves no chunk header in the
+  frame, returns 0. The original stepped by the length and read the next
+  chunk ID and length anywhere in memory (#1117; bug-orig test
+  `rianimlib-nextframe-anhd-length`: an `ANHD` length that ends at the
+  `DLTA` of the next frame played that delta). Per frame a compare of the
+  frame's length and two per step.
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×

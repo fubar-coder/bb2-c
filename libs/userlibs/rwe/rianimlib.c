@@ -105,6 +105,11 @@
  *     took such a chunk as the end of the animation (#1116).  The step
  *     from frame to frame is unchanged; only the frame's FORM test that
  *     fails leads into the skip.
+ *   - RINextAnimFrame's steps over ANHD and CMAP stay inside the frame: a
+ *     frame too short for its ILBM and ANHD fields, or an ANHD or CMAP
+ *     whose length leaves no chunk header in the frame, returns 0; the
+ *     original stepped by the length and read the next chunk ID and
+ *     length anywhere (#1117).
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
@@ -730,6 +735,20 @@ static __attribute__((noinline)) UBYTE *otherchunks(UBYTE *chunk)
     }
 }
 
+/* the chunk behind the chunk at p (its header inside the frame) with its
+   pad byte (fixed #505); NULL unless it ends 8 bytes (a chunk header)
+   before the frame's end (fixed #1117: the original stepped by the length
+   without a look at the frame's end).  On the path from frame to frame:
+   two compares more than the plain step. */
+static inline __attribute__((always_inline)) UBYTE *framestep(UBYTE *p)
+{
+    ULONG left = (ULONG)(nextanimframe - p), len = LG(p + 4);
+
+    if (left < 16 || len > left - 16)
+        return NULL;
+    return p + 8 + padded(p + 8, len);
+}
+
 /* the next frame from chunk on: chunks of the ANIM that are no FORM
    skipped; NULL at the end of the ANIM (fixed #1116: the original took
    such a chunk as the end).  Not on the path from frame to frame. */
@@ -761,7 +780,11 @@ static __attribute__((noinline)) UBYTE *nextform(UBYTE *chunk)
  * 1 to 8 (fixed #509: RIAnimInit refuses 0 and above 8).  Other chunks between ANHD (and CMAP) and the DLTA are
  * skipped inside the frame, a CMAP among them goes through ILBMPalette; a
  * frame without DLTA returns 0 (fixed #515: the original returned without
- * restoring its 14 saved registers, through the saved d1).
+ * restoring its 14 saved registers, through the saved d1).  The steps over
+ * ANHD and CMAP stay inside the frame: a frame too short for its ILBM
+ * and ANHD fields, or an ANHD or CMAP whose length leaves no chunk header
+ * in the frame, returns 0 (fixed #1117: the original stepped by the
+ * length and read the next chunk anywhere).
  * @param bitmap  a0: the bitmap object (!bmap {0,0})
  * @return d0: -1 if a delta was applied, else 0
  */
@@ -787,19 +810,26 @@ ULONG BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
     len = LG(chunk + 4);
     chunk += 8;
     nextanimframe = chunk + padded(chunk, len);     /* fixed #505 */
+    /* fixed #1117: ILBM, the ANHD header and its fields up to the bits
+       inside the frame */
+    if (len < 4 + 8 + offsetof(struct anhd, bits) + 4)
+        return 0;
     chunk += 4;                         /* skip ILBM */
     if (LG(chunk) != ID_ANHD)
         return 0;
     anhd = (const struct anhd *)(chunk + 8);
     animtype = anhd->operation;
     animtype7 = anhd->bits;
-    chunk += padded(chunk + 8, LG(chunk + 4)) + 8;    /* fixed #505 */
+    chunk = framestep(chunk);           /* fixed #505, #1117 */
+    if (!chunk)
+        return 0;
     if (LG(chunk) == ID_CMAP) {
         cmapchunk = chunk;
         r = (struct bl_regs){ .d0 = (ULONG)chunk, .d1 = palettenumber };
         BLITZ_ALIBJSR(TOK_ilbmpalette, r);
-        chunk = cmapchunk;
-        chunk += padded(chunk + 8, LG(chunk + 4)) + 8;    /* fixed #505 */
+        chunk = framestep(cmapchunk);   /* fixed #505, #1117 */
+        if (!chunk)
+            return 0;
     }
     if (LG(chunk) != ID_DLTA) {         /* fixed #515: was an RTS without MOVEM */
         chunk = otherchunks(chunk);
