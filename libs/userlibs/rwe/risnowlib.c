@@ -38,10 +38,8 @@
  *
  * BUG(orig):
  *   - No routine checks the list number (0-3; 16 bytes per number
- *     indexed by ASL.w #4) (#913); InitSnowDrop computes the size with
- *     ASL.w #2 on numpoints*16 (numpoints from 1024 on the block is too
- *     small for the lists written into it) (#912) and never frees an
- *     earlier block of the same number (#911).
+ *     indexed by ASL.w #4) (#913); InitSnowDrop never frees an earlier
+ *     block of the same number (#911).
  *   - The drop lists' "last" stays 0 until the first LDoSnow:
  *     LDoSnowActivate before it writes to address 0 (#908).
  *   - The lists have no bounds: more entries than numpoints*4 run into
@@ -51,6 +49,11 @@
  *     the first rows) (#910).
  *   - LDoSnowActivate does not update the drop list's "last" (the next
  *     LDoSnowActivate before an LDoSnow overwrites the entries) (#909).
+ * Fixed (intended deviations):
+ *   - InitSnowDrop computes the size of its block as a long; the
+ *     original took numpoints*16 times 4 with ASL.w #2, so from
+ *     numpoints 1024 on the block was too small for the lists written
+ *     into it (#912).
  * Not defects: the allocation is not checked (memlib's globalloc raises
  * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
  * pixel again (always clear there: redundant, no effect); the end of
@@ -217,9 +220,9 @@ static UBYTE *killhead(UBYTE *p, ULONG size)
  * One block (memlib globalloc, MEMF_CLEAR; not checked: memlib raises
  * Out of Memory) for drop lists A and B and kill lists 1 and 2, each
  * numpoints*16 bytes, all empty.  BUG(orig): the list number is not
- * checked (#913); the size is computed with ASL.w #2 (numpoints from
- * 1024 on: the block is too small, #912); an earlier block of the same
- * number is not freed (#911).
+ * checked (#913); an earlier block of the same number is not freed
+ * (#911).  Fixed (#912): the size is a long (the original's ASL.w #2
+ * made the block too small from numpoints 1024 on).
  * @param n       d0: the list number (0-3)
  * @param num     d1: the number of points
  * @param bpsize  d3: the end offset in the plane (bp_size)
@@ -234,7 +237,7 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
     struct bl_regs r;
     UBYTE *p;
 
-    r.d0 = ASLW(size, 2) + 32 + 8;      /* BUG(orig): ASL.w (#912) */
+    r.d0 = (size << 2) + 32 + 8;        /* a long: fixed (#912) */
     r.d1 = 0x10000;                     /* MEMF_CLEAR */
     r.a0 = 0;
     r.a1 = 0;

@@ -49,12 +49,18 @@ are the original's `BTST`/`BCLR`/`BSET` on bytes (bit modulo 8, word
 indexes), the lookup tables keep their order (left-first, then
 right-first), COLOR00 is written as the original writes it.
 
+## Fixed (intended deviations)
+
+* InitSnowDrop computes the size of its block (4 × numpoints × 16 + 40)
+  as a long; the original took the factor 4 with `ASL.w #2`, which
+  keeps the low word only: from numpoints 1024 on the block was too
+  small and the lists were written behind it (#912, test
+  `rwe/risnowlib-initsnowdrop-size-aslw`).
+
 ## BUG(orig), kept
 
 * No routine checks the list number (0–3; `ASL.w #4` as the index)
-  (#913); InitSnowDrop computes the size with `ASL.w #2` on
-  numpoints × 16 (from numpoints 1024 on the block is too small) (#912)
-  and never frees an earlier block (#911).
+  (#913); InitSnowDrop never frees an earlier block (#911).
 * The drop lists' "last" stays 0 until the first LDoSnow:
   LDoSnowActivate before it writes to address 0 (#908).
 * The lists have no bounds: more than numpoints × 4 entries run into the

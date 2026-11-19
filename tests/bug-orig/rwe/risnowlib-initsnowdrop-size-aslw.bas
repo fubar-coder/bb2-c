@@ -8,6 +8,7 @@
 ; block is the start of the region, the lists written behind it stay
 ; inside the region.  The size of the block is what the region lost.
 ; Correct: the block holds the four lists (at least 65576 bytes).
+; @fixed #912
 ; @rwe risnowlib
 DEFTYPE .l
 Dim f.l(4000),s.l(4000)
