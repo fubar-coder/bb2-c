@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+with palette: 88 88
+without: 68 68
+rc=0

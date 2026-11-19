@@ -58,8 +58,7 @@
  *     (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
  *   - read_palette: no check of the allocation (writes to address 0)
  *     (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
- *   - LESaveShapes: the FORM length is 8 too large and has the
- *     CMAP size of the last save with a palette (#816); the shape header
+ *   - LESaveShapes: the shape header
  *     buffer is allocated with the upper word of d0 of _saveCMAP (#817); a
  *     failing pack buffer is a
  *     runtime error (TRAP #0) (#818); PackPBM's failure path runs
@@ -90,7 +89,9 @@
  * bytes and the CMAP as the colours decoded, #811).  LESaveShapes writes
  * the CMAP whenever there is a palette with data (the original tested the
  * Z flag of dos Write behind a MOVEA, #814), none for a palette of 0
- * colours (the original copied 65536 colours into an 8-byte buffer, #823).
+ * colours (the original copied 65536 colours into an 8-byte buffer, #823),
+ * and the FORM length the file's size - 8 (the original's was 8 larger,
+ * with the CMAP size of the last save that had a palette, #816).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
  * (unused since the own cookie code).  LELoadShapes form 3
@@ -300,7 +301,7 @@ static_assert(sizeof(struct leshape) == 12);
 static struct DosLibrary *dosbase;      /* a6 of the entry (#doslib,#la6) */
 static UWORD maxw, maxh, maxd;
 static ULONG bytespershape;             /* the size of the current shape */
-static ULONG centry;                    /* CMAP bytes + 8 of the last save */
+static ULONG centry;                    /* the CMAP chunk's bytes of this save */
 static ULONG chunksize, chunkptr, chunkid, filehandle;
 static UBYTE *paletteptr, *startshape, *endshape;
 static ULONG shapecount;
@@ -1243,14 +1244,15 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
  * stored when packing fails).  Nothing if the file cannot be opened.
  * BUG(orig): the count is s2 - s1 of a word subtraction with the upper
  * word of d1 uncleared (compiled code leaves one from a long expression)
- * (#815); the FORM length is 8 too large and has the CMAP size of the
- * last save with a palette (#816); the shape header buffer is allocated
+ * (#815); the shape header buffer is allocated
  * with the upper word of d0 of _saveCMAP and freed as 14 bytes (#817); a
  * missing pack buffer is two
  * runtime errors (#818); PackPBM's failure runs UnPackPBM with d3 = 12
  * (#772).  Fixed (#814): the CMAP is written whenever there is a palette
  * with data (the original tested the Z flag of dos Write).  Fixed (#823):
  * a palette of 0 colours writes no CMAP (the original copied 65536).
+ * Fixed (#816): the FORM length is the file's size - 8 (the original's
+ * was 8 larger and had the CMAP size of the last save with a palette).
  * @param shape1   d0.w: the first shape# * 32
  * @param shape2   d1.w: the last shape# * 32
  * @param name     d2: filename$
@@ -1272,6 +1274,7 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 B
 
     dosbase = dos;
     paletteptr = palette;
+    centry = 0;                         /* Fixed (#816): no CMAP yet */
     startshape = first;
     endshape = last;
     BL_SETW(shape1, (WORD)shape1 >> 5);
@@ -1289,7 +1292,9 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 B
     Seek(fh, -(LONG)(written - 4), OFFSET_CURRENT);
     len = written - 8;
     Write(fh, &len, 4);
-    written += centry + 40;             /* BUG(orig): 8 too many (#816) */
+    /* Fixed (#816): the file without the FORM header (the original added
+       40 and the CMAP size of the last save that had a palette) */
+    written += centry + 32;
     Seek(fh, 4, OFFSET_BEGINNING);
     len = written;
     Write(fh, &len, 4);

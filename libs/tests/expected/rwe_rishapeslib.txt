@@ -567,15 +567,22 @@ LEMaxShapeWidth|popped|4..5|1	$00000000
 LEMaxShapeWidth|popped|second run|1	$00000000
 LESaveShapes|CMAP written|0..3 up $0 pal 0 file 6|1 [orig]	$00000000
 LESaveShapes|CMAP written|0..3 up $0 pal 0 file 6|1 [fixed #814]	$00000001
-LESaveShapes|file|0..3 up $0 pal -1 file 0|1	bytes 30000 fnv 0244D876
-LESaveShapes|file|0..3 up $0 pal 0 file 1|1	bytes 30000 fnv E5D2BB93
+LESaveShapes|file|0..3 up $0 pal -1 file 0|1 [orig]	bytes 30000 fnv 0244D876
+LESaveShapes|file|0..3 up $0 pal -1 file 0|1 [fixed #816]	bytes 30000 fnv 75AF986E
+LESaveShapes|file|0..3 up $0 pal 0 file 1|1 [orig]	bytes 30000 fnv E5D2BB93
+LESaveShapes|file|0..3 up $0 pal 0 file 1|1 [fixed #816]	bytes 30000 fnv AFA9C99B
 LESaveShapes|file|0..3 up $0 pal 0 file 6|1 [orig]	bytes 30000 fnv 92D80F0A
-LESaveShapes|file|0..3 up $0 pal 0 file 6|1 [fixed #814]	bytes 30000 fnv E5D2BB93
-LESaveShapes|file|0..3 up $0 pal 0 file 7|1	bytes 30000 fnv E5D2BB93
-LESaveShapes|file|0..3 up $5a01 pal -1 file 3|1	bytes 30000 fnv 92C31D27
-LESaveShapes|file|0..64 up $0 pal 0 file 2|1	bytes 30000 fnv EBC77BC5
-LESaveShapes|file|0..64 up $0 pal 0 file 4|1	bytes 30000 fnv 6BA09DD8
-LESaveShapes|file|2..2 up $0 pal 0 file 5|1	bytes 30000 fnv C6F39633
+LESaveShapes|file|0..3 up $0 pal 0 file 6|1 [fixed #814]	bytes 30000 fnv AFA9C99B
+LESaveShapes|file|0..3 up $0 pal 0 file 7|1 [orig]	bytes 30000 fnv E5D2BB93
+LESaveShapes|file|0..3 up $0 pal 0 file 7|1 [fixed #816]	bytes 30000 fnv AFA9C99B
+LESaveShapes|file|0..3 up $5a01 pal -1 file 3|1 [orig]	bytes 30000 fnv 92C31D27
+LESaveShapes|file|0..3 up $5a01 pal -1 file 3|1 [fixed #816]	bytes 30000 fnv A3717A9B
+LESaveShapes|file|0..64 up $0 pal 0 file 2|1 [orig]	bytes 30000 fnv EBC77BC5
+LESaveShapes|file|0..64 up $0 pal 0 file 2|1 [fixed #816]	bytes 30000 fnv 0B36F41D
+LESaveShapes|file|0..64 up $0 pal 0 file 4|1 [orig]	bytes 30000 fnv 6BA09DD8
+LESaveShapes|file|0..64 up $0 pal 0 file 4|1 [fixed #816]	bytes 30000 fnv DFADD6C0
+LESaveShapes|file|2..2 up $0 pal 0 file 5|1 [orig]	bytes 30000 fnv C6F39633
+LESaveShapes|file|2..2 up $0 pal 0 file 5|1 [fixed #816]	bytes 30000 fnv 936166AB
 LESaveShapes|file length|0..3 up $0 pal -1 file 0|1	$00000144
 LESaveShapes|file length|0..3 up $0 pal 0 file 1|1	$00000170
 LESaveShapes|file length|0..3 up $0 pal 0 file 6|1 [orig]	$00000144

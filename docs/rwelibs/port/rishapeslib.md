@@ -88,8 +88,6 @@ The original returns to that data address; `rs_crash` jumps there.
 * **read_palette:** the allocation is not checked; a failure writes to
   address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * **LESaveShapes:**
-  * The FORM length is 8 too large and contains the CMAP size of the
-    last save that had a palette (#816).
   * The shape header buffer is allocated with the upper word of the d0
     that `_saveCMAP` leaves, and freed with size 14 instead of 12 (#817).
   * When the pack buffer is missing, two runtime errors follow (TRAP #0:
@@ -181,6 +179,14 @@ kind F):
   original allocated colours × 3 + 8 bytes and copied the colours with
   a DBRA counter: 65536 colours (196608 bytes) into the 8-byte buffer
   (#823, test `rishapeslib-savecmap-zero-colours`).
+* LESaveShapes writes the FORM length as the file's size − 8. The
+  original added the SDAT size, the CMAP size and 40 (the FORM header,
+  `LESH` and the SHHD chunk, the FORM header's 8 bytes included), and
+  the CMAP size was kept from the last save that had a palette, so every
+  file had a FORM length 8 too large, and one saved without a palette
+  after one with it larger still (#816, test
+  `rishapeslib-lesaveshapes-form-length`). The loaders ignore the FORM
+  length; other IFF readers saw a truncated file.
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push
