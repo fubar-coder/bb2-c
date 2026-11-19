@@ -142,11 +142,19 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   12 · colour (`MULU.w`) as a signed index, so from colour 2731 on the
   colour is read (by PalAdjust written) before the palette, a smaller
   number past the palette's colours behind it (#677).
+* With runtime error checking `PalAdjust` refuses a target too small for
+  the colours it writes: "PalAdjust colours outside the target palette"
+  (`paladjchk`: the short form, when the target's colour data have fewer
+  colours than PaletteInfo's palette; `paladj2chk`: the long form, when
+  end is not below the target's number of colours). The release code is
+  unchanged (user decision W6 Q5 (a), D-005): the short form adjusts as
+  many colours as PaletteInfo's palette has, without a look at the
+  target, as the manual leaves it to the programmer ("This destination
+  should be a pre-reserved palette and should be AT LEAST as big [as] the
+  source palette"), so a smaller target is written behind its colours
+  (#685).
 
-## BUG(orig), kept
-
-* `PalAdjust` without start/end takes the number of colours of
-  PaletteInfo's palette, not of the target (#685).
+No original bug of this library is kept.
 
 Not a defect (kept): `SaveCMAP`'s BMHD chunk is 20 zero bytes (a palette
 file: what is read of it is the CMAP).

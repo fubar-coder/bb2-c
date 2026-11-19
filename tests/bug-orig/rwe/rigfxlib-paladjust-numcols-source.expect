@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "PalAdjust colours outside the target palette" *
+rc=0

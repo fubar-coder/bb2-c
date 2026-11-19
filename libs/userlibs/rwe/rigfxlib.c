@@ -28,9 +28,6 @@
  * colour numbers and counts come out the same.  SaveCMAP calls memlib
  * and RIAmosFuncLib's BSave (form 1) through ALibJsr.
  *
- * BUG(orig), kept:
- *   - PalAdjust without start/end takes the number of colours of
- *     PaletteInfo's palette, not of the target (#685).
  * SaveCMAP's BMHD chunk is 20 zero bytes, like the original: no defect
  * (a palette file: what is read of it is the CMAP).
  * Fixed (intended deviations, docs/libs/deviations.md):
@@ -90,6 +87,15 @@
  *     word of 12 * colour (MULU.w) as a signed index, so from colour 2731
  *     on the colour is read (by PalAdjust written) before the palette
  *     (an invalid argument, D-005) (#677).
+ *   - With runtime error checking PalAdjust refuses a target too small
+ *     for the colours it writes: "PalAdjust colours outside the target
+ *     palette" (paladjchk: the short form, the target's colour data have
+ *     fewer colours than PaletteInfo's palette; paladj2chk: end not below
+ *     the target's number of colours).  The release code is unchanged: the
+ *     short form adjusts as many colours as PaletteInfo's palette has,
+ *     without a look at the target (the manual: the target "should be AT
+ *     LEAST as big [as] the source palette"; user decision W6 Q5 (a))
+ *     (#685).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -404,9 +410,10 @@ BLITZ_THUNK(paladjust2, paladjust2_c, "d0-d1/a0-a1");
 /**
  * @brief PalAdjust palette#,ratio.q: c_paladjust2() for the colours 0 .. n-1.
  *
- * n is the number of colours of PaletteInfo's palette, not of the target
- * (BUG(orig) (#685)); the upper word of `end` is the caller's d3
- * (SUB.w), unused.
+ * n is the number of colours of PaletteInfo's palette, not of the target:
+ * a smaller target is refused by paladjchk with runtime error checking
+ * (fixed #685), here unchecked; the upper word of `end` is the caller's
+ * d3 (SUB.w), unused.
  * @param obj    a0: the target palette object
  * @param ratio  d1: the ratio, a Quick (16.16)
  * @param end    d3: the caller's d3 (its low word is replaced)
@@ -743,6 +750,7 @@ BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");          /* fixed, #679 
 BLITZ_ERRCHK_MESSAGE(endbefore, "PalAdjust end colour before the start colour");  /* fixed, #684 */
 BLITZ_ERRCHK_MESSAGE(noinfo, "No palette selected with PaletteInfo");   /* fixed, #686 */
 BLITZ_ERRCHK_MESSAGE(badcol, "Colour number outside the PaletteInfo palette");  /* fixed, #677 */
+BLITZ_ERRCHK_MESSAGE(pasttarget, "PalAdjust colours outside the target palette");  /* fixed, #685 */
 
 /**
  * @brief The error check of CPUCls (debugger only).
@@ -804,46 +812,62 @@ static void BLITZ_ERRCHK colchk_c(ULONG c BL_REG(d0))
 /**
  * @brief The error check of PalAdjust's short form (debugger only).
  *
- * Fixed (#686), not in the original: PalAdjust takes the colours and their
- * number from the palette of the last PaletteInfo, before the first one
- * from address 0 and the count from address -4.  The release code is
- * unchanged.
+ * Fixed (#686, #685), not in the original: PalAdjust takes the colours and
+ * their number from the palette of the last PaletteInfo, before the first
+ * one from address 0 and the count from address -4, and writes that many
+ * colours into the target without a look at the target's number: a target
+ * smaller than the source was written behind its colours.  The release
+ * code is unchanged (a programming error as #176; an invalid argument,
+ * D-005; the manual: the target "should be AT LEAST as big [as] the
+ * source palette").
  *
- * Errors: "No palette selected with PaletteInfo".
+ * Errors: "No palette selected with PaletteInfo"; "PalAdjust colours
+ * outside the target palette" (the target's colour data have fewer
+ * colours than PaletteInfo's palette).
+ * @param obj  a0: the target palette object (!libs #palettelib,#ia0|#pd0)
  */
-static void BLITZ_ERRCHK paladjchk_c(void)
+static void BLITZ_ERRCHK paladjchk_c(const struct bb_palette *obj BL_REG(a0))
 {
     infochk();
+    if (PALDATA(obj)->numcols < PALOF(paladdr)->numcols)
+        BLITZ_RUNERR(pasttarget);
 }
 
 /**
  * @brief The error check of PalAdjust's long form (debugger only).
  *
- * Fixed (#684, #686, #677), not in the original: PalAdjust reads the
- * palette of the last PaletteInfo without a test (before the first one:
- * address 0); it takes the count end - start + 1 as a word, * 3 (MULU.w)
- * - 1 as the DBRA counter, so end = start - 1 wrote 65536 channels (256
- * KB) from colour start on, and a smaller end about as many; and it
- * indexes both palettes with the low word of 12 * start as a signed
+ * Fixed (#684, #686, #677, #685), not in the original: PalAdjust reads
+ * the palette of the last PaletteInfo without a test (before the first
+ * one: address 0); it takes the count end - start + 1 as a word, * 3
+ * (MULU.w) - 1 as the DBRA counter, so end = start - 1 wrote 65536
+ * channels (256 KB) from colour start on, and a smaller end about as many;
+ * it indexes both palettes with the low word of 12 * start as a signed
  * offset, so a start from 2731 on wrote before the target palette, a
- * range past PaletteInfo's colours read behind them.  The release code
- * is unchanged (invalid arguments, D-005; FillPalette refuses end < start
- * in its release code, PalAdjust has no such test).
+ * range past PaletteInfo's colours read behind them; and a range past the
+ * target's colours wrote behind them.  The release code is unchanged
+ * (invalid arguments, D-005; FillPalette refuses end < start in its
+ * release code, PalAdjust has no such test).
  *
  * Errors: "No palette selected with PaletteInfo"; "PalAdjust end colour
  * before the start colour" (end < start as signed words, FillPalette's
  * compare); "Colour number outside the PaletteInfo palette" (the word of
- * start or end not below the number of colours of that palette).
+ * start or end not below the number of colours of that palette);
+ * "PalAdjust colours outside the target palette" (the word of end not
+ * below the number of colours of the target's colour data).
+ * @param obj    a0: the target palette object (!libs #palettelib,#ia0|#pd0)
  * @param start  d2: the first colour
  * @param end    d3: the last colour
  */
-static void BLITZ_ERRCHK paladj2chk_c(ULONG start BL_REG(d2), ULONG end BL_REG(d3))
+static void BLITZ_ERRCHK paladj2chk_c(const struct bb_palette *obj BL_REG(a0),
+                                      ULONG start BL_REG(d2), ULONG end BL_REG(d3))
 {
     infochk();
     if ((WORD)end < (WORD)start)
         BLITZ_RUNERR(endbefore);
     colnumchk(start);
     colnumchk(end);
+    if ((UWORD)end >= PALDATA(obj)->numcols)
+        BLITZ_RUNERR(pasttarget);
 }
 
 /* the thunks of the check functions */
