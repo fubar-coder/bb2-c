@@ -78,6 +78,10 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   word too. The original read them only for a row it drew, so after a
   clipped row (above ymin) the glyph was drawn shifted, mixed with the
   next rows' words (#656).
+* The underline is clipped at xmin. The original clipped it at x = 0
+  only: with FNSClip's xmin above 0 the
+  underline of a text that starts left of xmin stuck out of the clip
+  zone (#667).
 
 ## BUG(orig), kept
 
@@ -93,9 +97,8 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
   0), planes from 8 on with the colour bit `plane & 7` (#658).
 * Rows are clipped signed at ymin, unsigned at ymax (with x: #664).
-* FNSSetTab 0: a tab divides by 0 (#666). The underline is clipped at
-  x = 0, not at xmin (#667). Codes from 160 end the text (signed byte
-  compare) (#657).
+* FNSSetTab 0: a tab divides by 0 (#666). Codes from 160 end the text
+  (signed byte compare) (#657).
 * FNSLoad loads into RIAmosFuncLib bank 55 + slot, which is above its
   default of 50 banks: `BLoad` takes the number as an address and reads the
   file to the address 55 + slot (a real font destroys the vector table),

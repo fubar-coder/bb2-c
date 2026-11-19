@@ -61,7 +61,6 @@
  *   - Planes 8 and on take the colour bit of plane & 7 (BTST on memory)
  *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop (#658).
  *   - FNSSetTab 0: chr$(9) divides by 0 (exception) (#666).
- *   - The underline ignores xmin (it is clipped at x = 0 only) (#667).
  *   - Codes from 160 end the text (a sign test after CMPI.b #32) (#657).
  * Fixed (#665): FNSPrint/FNSShadowPrint before FNSOutput (no bitmap)
  *   return at once (the prefs and the colour stored as on the way without
@@ -76,6 +75,8 @@
  * Fixed (#656): a clipped row of a 48 or 64 pixel font passes its third
  *   (and fourth) glyph word too; the original read them only for a row
  *   it drew, so every row after a clipped one took the wrong words.
+ * Fixed (#667): the underline is clipped at xmin; the original clipped it
+ *   at x = 0 only.
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): FNSLength's font number outside the block, and
  *   the glyphs of codes the font has no data for - the built-in font ends
@@ -548,7 +549,8 @@ draw:
 }
 
 /* draw_underline: from x (after centring), linewidth - 1 pixels at
-   ycord + underpos, in the planes of the bitmap */
+   ycord + underpos, in the planes of the bitmap; clipped at xmin (fixed,
+   #667: the original clipped at 0 only) and xmax */
 static void underline(UWORD x)
 {
     PLANEPTR *planes = fns.bit_address->Planes;
@@ -557,9 +559,9 @@ static void underline(UWORD x)
     ULONG off;
     UBYTE pl, bit, b;
 
-    if ((WORD)x < 0) {                  /* clipped at 0, not at xmin (#667) */
-        fns.linewidth = (UWORD)(fns.linewidth + x);
-        x = 0;
+    if ((WORD)x < (WORD)fns.xmin) {     /* fixed (#667): at xmin, not at 0 */
+        fns.linewidth = (UWORD)(fns.linewidth + x - fns.xmin);
+        x = fns.xmin;
     }
     xend = (UWORD)(x + fns.linewidth);
     if ((WORD)xend > (WORD)fns.xmax)
@@ -606,7 +608,7 @@ static void underline(UWORD x)
  * on (BUG(orig) #657) end the text; clipped by FNSClip.  BUG(orig): an
  * empty text counts width 1 (#659); depth 0 or above 8 overruns the
  * plane stack (#658); rows above ymax are tested unsigned (#664);
- * FNSSetTab 0 divides by 0 (#666); the underline ignores xmin (#667).
+ * FNSSetTab 0 divides by 0 (#666).
  * @param fontnum  d0: the font slot
  * @param x        d1: x
  * @param y        d2: y
