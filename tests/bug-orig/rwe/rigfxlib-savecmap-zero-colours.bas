@@ -11,6 +11,7 @@
 ; region is the program's; a marker 100000 bytes behind the block shows
 ; the overwrite.
 ; Correct: 0 colours are not copied, the marker stays.
+; @fixed #688
 ; @rwe rigfxlib riamosfunclib
 DEFTYPE .l
 Dim f.l(4000),s.l(4000)

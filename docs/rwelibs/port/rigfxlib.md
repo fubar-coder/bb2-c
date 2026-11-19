@@ -114,11 +114,12 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   rounded up to even, the cleared memory is the pad byte, the CMAP length
   stays 3 × colours. The original wrote none: the file ended a byte short
   and its FORM length was odd (#687).
+* `SaveCMAP` of a palette of 0 colours writes a CMAP of length 0, a file
+  of 48 bytes, and returns BSave's result. The original copied the
+  colours with `SUBQ.w #1 … DBRA` from the count: 65536 colours, 196608
+  bytes written behind its 48-byte block (#688).
 
 ## BUG(orig), kept
-
-* `SaveCMAP`: a palette of 0 colours copies 65536 colours into the 48
-  byte block (#688).
 * `PalAdjust` and the colour functions use the palette of the last
   `PaletteInfo` without a check (before it: address 0) (#686);
   `PalAdjust` without start/end takes the number of colours of that

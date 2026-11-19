@@ -29,7 +29,6 @@
  * and RIAmosFuncLib's BSave (form 1) through ALibJsr.
  *
  * BUG(orig), kept:
- *   - SaveCMAP: a palette of 0 colours copies 65536 (#688).
  *   - PalAdjust/PalRed... use the palette of the last PaletteInfo
  *     unchecked (before one: address 0) (#686); PalAdjust without
  *     start/end takes the number of colours of THAT palette, not of the
@@ -74,6 +73,9 @@
  *     number of colours): the file and the FORM length are rounded up to
  *     even, the CMAP length is not; the original wrote no pad byte, the
  *     file was no correct IFF file (#687).
+ *   - SaveCMAP of a palette of 0 colours writes a CMAP of length 0 (a
+ *     file of 48 bytes); the original copied with DBRA from numcols - 1,
+ *     65536 colours, 196608 bytes behind its 48-byte block (#688).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -597,8 +599,9 @@ BLITZ_THUNK(cpucls, cpucls_c, "d0-d1/a0-a1");
  * RIAmosFuncLib's BSave (form 1: d0 name, d1 address, d2 length) and
  * frees it.  A CMAP of odd length gets its pad byte (the cleared memory;
  * the file and the FORM length rounded up to even, the CMAP length not:
- * fixed #687, the original wrote none).  BUG(orig): a palette of 0
- * colours copies 65536 (#688).
+ * fixed #687, the original wrote none).  A palette of 0 colours gives a
+ * CMAP of length 0, a file of 48 bytes (fixed #688: the original's DBRA
+ * from numcols - 1 copied 65536 colours, 196608 bytes behind the block).
  * @param obj   a0: the palette object (!libs #palettelib,#ia0|#pd0)
  * @param name  d1: the file name
  * @return d0: BSave's result, 0 if the palette has no data or there is
@@ -631,14 +634,14 @@ static ULONG BLITZ_ROUTINE savecmap_c(struct bb_palette *obj BL_REG(a0), ULONG n
     h->cmaplen = colsize;
     p = h->colours;
     s = COLBYTES(data);                 /* the top bytes of r, g, b */
-    n = (UWORD)(data->numcols - 1);     /* DBRA */
-    do {
+    n = data->numcols;                  /* 0: no pass, fixed #688 */
+    while (n-- != 0) {
         p[0] = s[0];
         p[1] = s[4];
         p[2] = s[8];
         p += 3;
         s += 12;
-    } while (n-- != 0);
+    }
     res = BL_JSR_D4_(BL_TOKVAL(TOK_bsave, 1), name, (ULONG)h, size, 0);
     r = (struct bl_regs){ .d0 = size, .a1 = (ULONG)h };
     BLITZ_ALIBJSR(TOK_globfree, r);
