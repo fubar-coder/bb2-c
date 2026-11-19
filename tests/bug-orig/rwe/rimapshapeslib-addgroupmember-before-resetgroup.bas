@@ -7,6 +7,7 @@
 ; Made safe: interrupts off (Disable_) from before AddGroupMember until the
 ; three longs at 0, 4 and 8 are put back.
 ; Correct: the member goes into the (empty) group: addresses 0-11 stay.
+; @fixed #901
 ; @rwe rimapshapeslib
 DEFTYPE .l
 SetNumMapShapes 10

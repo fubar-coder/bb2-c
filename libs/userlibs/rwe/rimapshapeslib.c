@@ -39,13 +39,19 @@
  *     (DBRA); the depth is not limited to the 8 pointers: depths 9-13
  *     write into the unused bytes 42-63 of the 64-byte map shape, from
  *     depth 14 on the pointers run into the next map shape (#903).
- *   - AddGroupMember before ResetGroup writes at address 0 (#901);
- *     members are not counted: the 64th member's end mark is written
+ *   - Members are not counted: the 64th member's end mark is written
  *     behind the 512-byte block (#904).
  *   - BlitGroup does not load graphics.library (no #graphicslib in its
  *     !libs): it calls BltBitMapRastPort with the caller's a6 (#902).
  *   - init does not check its AllocVec: ResetGroup then writes at 0
  *     (#905).
+ * Fixed:
+ *   - init sets the next-member pointer to its (cleared) group block and
+ *     the block size to 0, as at the first load; the original set only
+ *     the group's address: an AddGroupMember before the first ResetGroup
+ *     wrote at address 0 (#901), and in a second run of a program from
+ *     the editor (the library stays loaded) into the run before's freed
+ *     group, with the run before's block size (#1134).
  * Not a defect: RemapMapShape does nothing (the ReMap call is commented
  * out in the source: a command left unfinished); its !libs asks for
  * "library 254, $5600" (sic).
@@ -172,12 +178,19 @@ static struct member *groupaddr;        /* the group, 512 bytes */
 /**
  * @brief init: the group block (512 bytes, AllocVec MEMF_PUBLIC|MEMF_CLEAR).
  *
- * BUG(orig) (#905): the AllocVec is not checked (ResetGroup then writes
- * at 0).
+ * The next-member pointer is set to the (cleared, so empty) group and the
+ * block size to 0, as at the first load: fixed (#901, #1134), the original
+ * set only the group's address, so an AddGroupMember before ResetGroup
+ * wrote at 0, and in a second run from the editor into the run before's
+ * freed group with its block size.  BUG(orig) (#905): the AllocVec is not
+ * checked (ResetGroup then writes at 0).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     groupaddr = AllocVec(512, MEMF_PUBLIC | MEMF_CLEAR);
+    nextgroupmember = groupaddr;        /* fixed (#901, #1134) */
+    blockwidth = 0;                     /* fixed (#1134): the run before's */
+    blockheight = 0;
 }
 BLITZ_THUNK(rimapshapeslib_libinit, libinit_c, "d0-d1/a0-a1");
 
@@ -395,9 +408,10 @@ BLITZ_THUNK(_resetgroup, resetgroup_c, "d1/a0-a1");
  * @brief AddGroupMember mapshape#,dx,dy: a map shape added to the group.
  *
  * The member {map shape, dx*blockwidth, dy*blockheight (MULU.w, the low
- * words)}, then the end mark.  BUG(orig): no limit, the 64th member's
- * end mark is written behind the 512-byte block (#904); before
- * ResetGroup it writes at address 0 (#901).
+ * words)}, then the end mark.  Before the first ResetGroup it adds to
+ * the empty group of init (fixed #901: the original wrote at address 0).
+ * BUG(orig): no limit, the 64th member's end mark is written behind the
+ * 512-byte block (#904).
  * @param n   d0: the map shape number
  * @param dx  d1: the column in blocks
  * @param dy  d2: the row in blocks

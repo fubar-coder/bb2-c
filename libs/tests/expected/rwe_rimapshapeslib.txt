@@ -223,7 +223,8 @@ AddGroupMember|group member 9|4,11,5|1	$00000080
 AddGroupMember|group member 9 offsets|2,9,4|1	$001B0014
 AddGroupMember|group member 9 offsets|3,10,5|1	$001B0014
 AddGroupMember|group member 9 offsets|4,11,5|1	$001B0014
-AddGroupMember|its offsets|second run, 3,2,3 before ResetGroup|1	$000A0015
+AddGroupMember|its offsets|second run, 3,2,3 before ResetGroup|1 [orig]	$000A0015
+AddGroupMember|its offsets|second run, 3,2,3 before ResetGroup|1 [fixed #1134]	$00000000
 AddGroupMember|its offsets in the new group|second run, 3,2,3 before ResetGroup|1	$00000000
 AddGroupMember|kept|0,0,0|1	kept
 AddGroupMember|kept|0,2,0|1	kept
@@ -246,8 +247,10 @@ AddGroupMember|kept|5,5,2|1	kept
 AddGroupMember|kept|6,5,3|1	kept
 AddGroupMember|kept|6,6,3|1	kept
 AddGroupMember|kept|second run, 3,2,3 before ResetGroup|1	kept
-AddGroupMember|member in the new group|second run, 3,2,3 before ResetGroup|1	$FFFFFFFF
-AddGroupMember|member in the run before's group|second run, 3,2,3 before ResetGroup|1	$000000C0
+AddGroupMember|member in the new group|second run, 3,2,3 before ResetGroup|1 [orig]	$FFFFFFFF
+AddGroupMember|member in the new group|second run, 3,2,3 before ResetGroup|1 [fixed #1134]	$000000C0
+AddGroupMember|member in the run before's group|second run, 3,2,3 before ResetGroup|1 [orig]	$000000C0
+AddGroupMember|member in the run before's group|second run, 3,2,3 before ResetGroup|1 [fixed #1134]	$FFFFFFFF
 AddGroupMember|popped|0,0,0|1	$00000000
 AddGroupMember|popped|0,2,0|1	$00000000
 AddGroupMember|popped|0,7,3|1	$00000000

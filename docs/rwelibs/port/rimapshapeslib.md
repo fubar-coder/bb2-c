@@ -71,13 +71,26 @@ holds the member's address before, so its upper word is that address's.
   (`DBRA`); the depth is not limited to the 8 pointers: depths 9–13
   write into the unused bytes 42–63 of the 64-byte map shape, from depth
   14 on the pointers run into the next map shape (#903).
-* `AddGroupMember` before `ResetGroup` writes at address 0 (#901); the
-  members are not counted: the end mark of the 64th member is written
-  behind the 512-byte block (#904).
+* The members are not counted: the end mark of the 64th member is
+  written behind the 512-byte block (#904).
 * `BlitGroup` has no `#graphicslib,#la6` in its `!libs`: it calls
   `BltBitMapRastPort` with the caller's a6 (#902).
 * init does not check its `AllocVec`: `ResetGroup` then writes at 0
   (#905).
+
+## Fixed
+
+Intended deviations, `docs/libs/deviations.md` (3a), kind F:
+
+* init sets the next-member pointer to its group block (cleared, so an
+  empty group) and the block size to 0, as at the first load. The
+  original set only the group's address: an `AddGroupMember` before the
+  first `ResetGroup` wrote the member and the end mark to addresses 0–11,
+  over the ExecBase pointer (#901; test
+  `rwe/rimapshapeslib-addgroupmember-before-resetgroup`), and in a second
+  run of a program from the editor (the library stays loaded) into the
+  run before's freed group, with the run before's block size (#1134; the
+  libs test's second run).
 
 Not a defect: `RemapMapShape` does nothing (the `ReMap` call is
 commented out in the source – a command left unfinished, not a fault in
@@ -97,9 +110,11 @@ the blocks, the bitmap after every blit (and that a blit changed it, an
 empty map shape not), the kept registers. Covered: every entry: shapes
 of depth 1–3, widths 16–48, odd heights; blits at several positions,
 `BlitMapShapeSize` with a smaller and a clamped height; groups with an
-empty member, two block sizes, an empty group; `FreeMapShapes` with a
+empty member, three block sizes, an empty group; `FreeMapShapes` with a
 range, last < first, one shape, first = −1 (the word compare passes, the
-address compare not); a second `SetNumMapShapes`; init, finit. Checked
+address compare not); a second `SetNumMapShapes`; init, finit; a second run with the library
+still loaded (the freed group of the run before reserved by the test):
+init, `SetNumMapShapes`, `AddGroupMember` before `ResetGroup`. Checked
 to fail with a wrong blit width in the C build. Not covered: the bugs
 above, blits that leave the bitmap or have a size ≤ 0 (without a layer
 nothing clips them).
