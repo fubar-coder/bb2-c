@@ -1,0 +1,9 @@
+# the intended differences of richunkylib against its reference, the
+# reference build of rwelibsrc/chunkylib.bb (blitzlib compare,
+# docs/development.md "Intended differences")
+# #887: RaycastSky gets an error check (raycastchk, "RaycastSky outside
+# the chunky bitmap", "RaycastSky column below 0"); richunkylib gets an
+# error check area for it (the original has none)
+lib 24: header +$2C: code offset set in only one of them
+lib 24: entry 5 RaycastSky +$14: code offset set in only one of them
+lib 24: relocations in the declaration part 16 != 18

@@ -31,15 +31,19 @@
  * BUG(orig):
  *   - ChunkyToPlanar ignores the sizes (the chunky data must have 81920
  *     bytes, the bitmap 8 contiguous planes of 10240 bytes) (#884).
- *   - RaycastSky: no checks; the offsets x and column are added as signed
- *     words, the height is a DBRA count (height 0 copies 65536 bytes)
- *     (#887).
+ *   - RaycastSky: the height is a DBRA count (height 0 copies 65536
+ *     bytes) (#887).
  * Fixed (intended deviation, #885): ChunkyBitmap frees the data the
  * object holds when its data pointer is not 0; the original tested the
  * long at offset 6 (TST.l 6(a0): the unused word and the pointer's upper
  * word), so data below $10000 was never freed and, when the new
  * allocation failed, the object kept the old pointer with width, height
  * and depth 0.
+ * Fixed (intended deviation, #887): with runtime error checking
+ * RaycastSky refuses an x whose column leaves the chunky data (also a
+ * height below 1, 65536 rows and more) and a negative texture column
+ * (raycastchk; the original has no error check area); the release code
+ * is unchanged.
  * Fixed (intended deviation, #886): the free routine leaves CIA-A PRA
  * bit 1 (the power LED / audio filter) as it is; the original toggled it
  * (BCHG #1,$bfe001, a debug flash left in).
@@ -58,6 +62,7 @@
 void _chunkybitmap(void), _c2p(void), _p2c(void), _chunkyloadbitmap(void);
 void _chunkydata(void), _raycastsky(void), _dofreechunkybitmap(void);
 void richunkylib_libinit(void), richunkylib_libfinit(void);
+void raycastchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -66,8 +71,9 @@ BLITZ_ENTRY_DECL(_save);
 BLITZ_ENTRY_DECL(_use);
 BLITZ_ENTRY_DECL(_free);
 
-/* !libheader {#richunkylib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_richunkylib, init, BL_NORET, finit, 0);
+/* !libheader {#richunkylib,init,0,finit,0}; error field: the error check
+   area of raycastchk (fixed, #887) */
+BLITZ_LIBHEADER(LIB_richunkylib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
@@ -102,7 +108,7 @@ BLITZ_NAME("ChunkyData", "chunkybitmap#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG);
 BLITZ_LIBS(LIB_richunkylib, BL_IA0|BL_PD0);
-BLITZ_SUBS(_raycastsky, 0, 0);
+BLITZ_SUBS(_raycastsky, raycastchk, 0);                   /* check: fixed #887 */
 BLITZ_NAME("RaycastSky", "chunkybitmap#,x,height,column,&texture");
 
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
@@ -235,8 +241,11 @@ static ULONG BLITZ_ROUTINE chunkydata_c(struct chunky *o BL_REG(a0))
  * @brief RaycastSky chunky#,x,height,column,&texture: height bytes of a
  * texture column to a chunky column, both 320 bytes apart.
  *
- * BUG(orig) (#887): no checks; x and column are added as signed words,
- * the height is a DBRA count (height 0 copies 65536 bytes).
+ * x and column are added as signed words (offsets: x may hold rows of
+ * 320 bytes); with runtime error checking raycastchk refuses a column
+ * that leaves the chunky data and a negative texture column (fixed,
+ * #887), the release code checks nothing.  BUG(orig) (#887): the height
+ * is a DBRA count (height 0 copies 65536 bytes).
  * @param x    d1: the column in the chunky data (a signed word)
  * @param h    d2: the number of bytes
  * @param col  d3: the column in the texture (a signed word)
@@ -371,3 +380,43 @@ BLITZ_THUNK(_dofreechunkybitmap, dofreechunkybitmap_c, "d1/a0-a1");
 BLITZ_THUNK(_chunkydata, chunkydata_c, "d1/a0-a1");
 BLITZ_THUNK(_raycastsky, raycastsky_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_c2p, c2p_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(outside, "RaycastSky outside the chunky bitmap");  /* fixed, #887 */
+BLITZ_ERRCHK_MESSAGE(badcolumn, "RaycastSky column below 0");           /* fixed, #887 */
+
+/**
+ * @brief The error check of RaycastSky (debugger only).
+ *
+ * Fixed (#887), not in the original (richunkylib had no error check
+ * area): RaycastSky adds x and column to the chunky data and the texture
+ * as signed words and copies height bytes 320 apart without a look at
+ * the chunky bitmap: a negative x wrote before the chunky data, an x
+ * whose column runs past the last row behind it, a negative column read
+ * before the texture.  The release code is unchanged (invalid arguments,
+ * D-005).  The rows are those the release code copies: height - 1 is its
+ * DBRA count, so a height below 1 is 65536 + height rows (BUG(orig),
+ * #887), which no chunky bitmap holds.
+ *
+ * Errors: "RaycastSky outside the chunky bitmap" (x below 0, or x + 320 *
+ * (rows - 1) not below width * height: also an object without data),
+ * "RaycastSky column below 0" (column, a word, below 0).
+ * @param x    d1: the offset in the chunky data (a word)
+ * @param h    d2: the number of rows (a word)
+ * @param col  d3: the offset in the texture (a word)
+ * @param o    a0: the object
+ */
+static void BLITZ_ERRCHK raycastchk_c(ULONG x BL_REG(d1), ULONG h BL_REG(d2),
+                                      ULONG col BL_REG(d3), const struct chunky *o BL_REG(a0))
+{
+    LONG last = 320L * (UWORD)(h - 1);          /* the DBRA count: rows - 1 */
+
+    if ((WORD)x < 0 || (WORD)x + last >= (LONG)o->width * o->height)
+        BLITZ_RUNERR(outside);
+    if ((WORD)col < 0)
+        BLITZ_RUNERR(badcolumn);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(raycastchk, raycastchk_c, "d0-d1/a0-a1");

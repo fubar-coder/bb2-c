@@ -7,6 +7,7 @@
 ; area.  Here with runtime error checking.
 ; Correct: the error check refuses x -1: "RaycastSky outside the chunky
 ; bitmap", the byte before the data is not written.
+; @fixed #887
 ; @rwe richunkylib
 ; @pass timeout=30
 ; @pass runtime_errors=on

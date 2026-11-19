@@ -60,13 +60,23 @@ kind F):
   `$10000` was never freed, and a ChunkyBitmap on such an object whose
   allocation failed kept the old pointer with width, height and depth 0
   (#885).
+* With runtime error checking RaycastSky refuses a column that leaves
+  the chunky data, "RaycastSky outside the chunky bitmap" (x below 0, or
+  x + 320 × (rows − 1) not below width × height, the rows those the
+  release code copies: a height below 1 is 65536 + height rows), and a
+  negative texture column, "RaycastSky column below 0" (`raycastchk`;
+  the original has no error check area). The release code is unchanged
+  (#887; invalid arguments, D-005). x and column are offsets: x may hold
+  whole rows of 320 bytes, the column is not checked against the
+  texture's width, which the library does not know.
 
 ## BUG(orig), kept
 
 * ChunkyToPlanar checks nothing but the depth and the data pointer: the
   sizes of both bitmaps are assumed (#884).
-* RaycastSky checks nothing; x and column are added as signed words, the
-  height is a `DBRA` count (0 copies 65536 rows) (#887).
+* RaycastSky's height is a `DBRA` count: 0 copies 65536 rows (#887).
+  Without runtime error checking x and column are not checked either
+  (signed words added to the chunky data and the texture).
 
 Not a defect: the free routine extends the width twice and not the
 height (`EXT.l d0` twice), so the size it computes has the caller's

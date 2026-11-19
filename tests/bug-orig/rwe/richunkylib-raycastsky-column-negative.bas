@@ -6,6 +6,7 @@
 ; error check area.  Here with runtime error checking.
 ; Correct: the error check refuses column -1: "RaycastSky column below
 ; 0", the byte before the texture is not copied.
+; @fixed #887
 ; @rwe richunkylib
 ; @pass timeout=30
 ; @pass runtime_errors=on

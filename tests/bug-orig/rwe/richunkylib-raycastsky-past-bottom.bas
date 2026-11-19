@@ -8,6 +8,7 @@
 ; area.  Here with runtime error checking.
 ; Correct: the error check refuses the 101 rows: "RaycastSky outside the
 ; chunky bitmap", row 100 is not written.
+; @fixed #887
 ; @rwe richunkylib
 ; @pass timeout=30
 ; @pass runtime_errors=on
