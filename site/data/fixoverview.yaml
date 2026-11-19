@@ -5180,6 +5180,22 @@ rows:
     text: "`RINextAnimFrame` refuses a frame whose DLTA plane offsets point outside the chunk; the original read the delta data from anywhere in memory."
     page: libraries
     anchor: rianimlib-fixes
+  - issue: 1121
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame"
+    text: "`RINextAnimFrame` refuses an ANIM7 frame whose DLTA puts a plane's data list at an odd offset; the original crashed with a Software Failure on a 68000."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 1122
+    severity: 3
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame, RIAnimInit"
+    text: "With runtime error checking, an ANIM7 frame at an odd byte position of `RIAnimInit` stops with \"Animation position on an odd byte for ANIM7\"; the original crashed with a Software Failure on a 68000."
+    page: libraries
+    anchor: rianimlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

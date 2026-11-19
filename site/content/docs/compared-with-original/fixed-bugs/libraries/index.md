@@ -5191,6 +5191,19 @@ Other fixes.
   columns are still not checked, so that playing stays as fast as in
   the original
   ([#1120](https://github.com/fubar-coder/bb2-c/issues/1120)).
+* `RINextAnimFrame` refuses an ANIM7 frame whose delta data puts the
+  data of a plane at an odd offset in the delta chunk, and returns 0
+  without drawing. On a 68000 the original crashed with a Software
+  Failure on such a frame; the port refuses it on every processor
+  ([#1121](https://github.com/fubar-coder/bb2-c/issues/1121)).
+* With runtime error checking, `RINextAnimFrame` stops with the runtime
+  error "Animation position on an odd byte for ANIM7" before an ANIM7
+  frame when the position given to `RIAnimInit` puts the frame at an odd
+  byte: an `x` of 8 to 15, 24 to 31 and so on, or an odd byte offset.
+  On a 68000 the original crashed with a Software Failure there. ANIM5
+  frames play at any position, and without error checking the port
+  plays as the original
+  ([#1122](https://github.com/fubar-coder/bb2-c/issues/1122)).
 * A program run a second time from the editor starts with no animation
   and with `AnimLoop` on. The original's `RIAnimFrameCount` and
   `RINextAnimFrame` worked on the animation of the run before, which may

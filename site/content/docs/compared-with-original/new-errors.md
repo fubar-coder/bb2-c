@@ -1644,6 +1644,41 @@ error checking, the commands are as before.
 
 Issue: [The list number is not checked: list# outside 0–4 indexes past the list tables (#732)](https://github.com/fubar-coder/bb2-c/issues/732).
 
+### An ANIM7 animation at an odd byte {#anim7-odd-byte}
+
+`RIAnimInit` of
+[rianimlib]({{< relref "/docs/libraries/userlibs/rianimlib" >}}) takes
+the position of the animation in the bitmap either as a pixel position
+`x`,`y`, with `x` rounded down to a multiple of 8, or as a byte offset
+into the bitplanes. `RINextAnimFrame` then draws each frame at that
+position.
+
+**What happened.** The decoder of the ANIM7 format writes whole words
+and longs into the bitplanes, which a 68000 can only do at an even
+address. The original did not check the position, also not with runtime
+error checking: at an odd byte, an `x` of 8 to 15, 24 to 31 and so on or
+an odd byte offset, the first ANIM7 frame crashed a 68000 with a Software
+Failure. With an ANIM7 animation loaded at address `m`, this crashed at
+`RINextAnimFrame`:
+
+```
+BitMap 0,64,16,1
+If RIAnimInit(m,0,0,8,0)
+  r=RINextAnimFrame(0)
+EndIf
+```
+
+**With the port.** With runtime error checking, `RINextAnimFrame` stops
+before an ANIM7 frame at an odd byte with the error "Animation position
+on an odd byte for ANIM7", on every processor. ANIM5 frames are written
+byte by byte and play at any position. Without runtime error checking,
+the commands are as before.
+
+**What to change.** Place ANIM7 animations at an even byte: an `x` of
+0 to 7, 16 to 23 and so on, or an even byte offset.
+
+Issue: [RIAnimInit with an odd byte offset (`x>>3` or `xy_offset`) for an ANIM7 animation: address error on a 68000 at RINextAnimFrame, no error check (#1122)](https://github.com/fubar-coder/bb2-c/issues/1122).
+
 ## A form the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the

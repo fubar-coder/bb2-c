@@ -7,7 +7,12 @@
     the same position. With runtime error checking, an `x`,`y` outside
     the bitmap stops the program with the runtime error "Animation
     position outside the bitmap"; nothing checks that the whole
-    animation fits into the bitmap at the position.
+    animation fits into the bitmap at the position. Place an ANIM7
+    animation at an even byte, an `x` of 0 to 7, 16 to 23 and so on, or
+    an even byte offset: at an odd byte its frames crash a 68000, and
+    with runtime error checking `RINextAnimFrame` stops before such a
+    frame with the runtime error "Animation position on an odd byte for
+    ANIM7". ANIM5 plays at any position.
 
     The bitmap header must be in the first frame. After a failed call
     there is no animation: `RIAnimFrameCount` and `RINextAnimFrame`
@@ -21,9 +26,12 @@
     `AnimLoop` off. It also returns 0 before an `RIAnimInit`, for a
     frame of another delta format, for a frame without delta data and
     for one whose chunks claim to be longer than the frame or whose delta
-    data points outside its chunk. Other chunks
-    between the frames, or before the delta data of a frame, are
-    skipped. ANIM7 is played with short (word) and with long data.
+    data points outside its chunk, or, for ANIM7, to an odd offset in it.
+    Other chunks between the frames, or before the delta data of a frame,
+    are skipped. ANIM7 is played with short (word) and with long data.
+    With runtime error checking, an ANIM7 frame at an odd byte position
+    of `RIAnimInit` stops the program with the runtime error "Animation
+    position on an odd byte for ANIM7".
 
     Not fixed: an ANIM7 animation with long data whose width is no
     multiple of 32 pixels loses its right edge, and one narrower than 32

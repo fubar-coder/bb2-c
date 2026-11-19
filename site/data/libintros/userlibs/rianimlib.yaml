@@ -18,8 +18,12 @@ intro: |
   not checked, nor whether the animation fits at the chosen position:
   make the bitmaps large enough. With runtime error checking, a position
   outside the bitmap stops the program with the runtime error
-  "Animation position outside the bitmap". A first frame stored as a
-  delta instead of a full picture is not supported.
+  "Animation position outside the bitmap". Place an ANIM7 animation at
+  an even byte of the bitmap, an `x` of 0 to 7, 16 to 23 and so on: at
+  an odd byte its frames crash a 68000, and with runtime error checking
+  `RINextAnimFrame` stops with the runtime error "Animation position on
+  an odd byte for ANIM7". A first frame stored as a delta instead of a full
+  picture is not supported.
 
   The library steps through the animation from chunk to chunk, within
   its length, and skips the pad byte the IFF standard puts behind a
