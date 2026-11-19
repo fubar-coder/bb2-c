@@ -407,7 +407,8 @@ BBMapData|d0|round 5|2	$0000087E
 BBMapData|d0|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapData|d0|round 5, map without MFRM|1	$00000000
 BBMapData|d0|round 5, map without MFRM|2	$00000000
-BBMapData|d0|second run|1	$000008A0
+BBMapData|d0|second run|1 [orig]	$000008A0
+BBMapData|d0|second run|1 [fixed #1108]	$00000000
 BBMapData|kept|end of the run|1	kept
 BBMapData|kept|map 1 again|1	kept
 BBMapData|kept|map 1 again|2	kept
@@ -514,7 +515,8 @@ BBMapHeight|d0|round 5|2	$5A002C30
 BBMapHeight|d0|round 5, after a failed SetBBMapLoc|1	$5A000000
 BBMapHeight|d0|round 5, map without MFRM|1	$5A000000
 BBMapHeight|d0|round 5, map without MFRM|2	$5A000000
-BBMapHeight|d0|second run|1	$5A008EBD
+BBMapHeight|d0|second run|1 [orig]	$5A008EBD
+BBMapHeight|d0|second run|1 [fixed #1108]	$00000000
 BBMapHeight|kept|round 0|1	kept
 BBMapHeight|kept|round 0|2	kept
 BBMapHeight|kept|round 0, after a failed SetBBMapLoc|1	kept
@@ -607,7 +609,8 @@ BBMapInfo|d0|round 5|2	$00000830
 BBMapInfo|d0|round 5, after a failed SetBBMapLoc|1	$00000830
 BBMapInfo|d0|round 5, map without MFRM|1	$00000830
 BBMapInfo|d0|round 5, map without MFRM|2	$00000830
-BBMapInfo|d0|second run|1	$00000814
+BBMapInfo|d0|second run|1 [orig]	$00000814
+BBMapInfo|d0|second run|1 [fixed #1108]	$00000000
 BBMapInfo|kept|round 0|1	kept
 BBMapInfo|kept|round 0|2	kept
 BBMapInfo|kept|round 0, after a failed SetBBMapLoc|1	kept
@@ -1048,7 +1051,8 @@ BBMapScenarioID|d0|round 5|2	$319BF2B6
 BBMapScenarioID|d0|round 5, after a failed SetBBMapLoc|1	$00000000
 BBMapScenarioID|d0|round 5, map without MFRM|1	$00000000
 BBMapScenarioID|d0|round 5, map without MFRM|2	$00000000
-BBMapScenarioID|d0|second run|1	$4BE955BB
+BBMapScenarioID|d0|second run|1 [orig]	$4BE955BB
+BBMapScenarioID|d0|second run|1 [fixed #1108]	$00000000
 BBMapScenarioID|kept|round 0|1	kept
 BBMapScenarioID|kept|round 0|2	kept
 BBMapScenarioID|kept|round 0, after a failed SetBBMapLoc|1	kept
@@ -1231,7 +1235,8 @@ BBMapWidth|d0|round 5|2	$5A002DA6
 BBMapWidth|d0|round 5, after a failed SetBBMapLoc|1	$5A000000
 BBMapWidth|d0|round 5, map without MFRM|1	$5A000000
 BBMapWidth|d0|round 5, map without MFRM|2	$5A000000
-BBMapWidth|d0|second run|1	$5A00ED13
+BBMapWidth|d0|second run|1 [orig]	$5A00ED13
+BBMapWidth|d0|second run|1 [fixed #1108]	$00000000
 BBMapWidth|kept|round 0|1	kept
 BBMapWidth|kept|round 0|2	kept
 BBMapWidth|kept|round 0, after a failed SetBBMapLoc|1	kept
@@ -2620,7 +2625,8 @@ BBScenarioLevel|d0|round 5, scenario 2|1	$00000000
 BBScenarioLevel|d0|round 5, scenario 2|2	$00000000
 BBScenarioLevel|d0|round 5, scenario 2|3	$00000000
 BBScenarioLevel|d0|round 5, scenario 2|4	$00000000
-BBScenarioLevel|d0|second run|1	$FFFFA788
+BBScenarioLevel|d0|second run|1 [orig]	$FFFFA788
+BBScenarioLevel|d0|second run|1 [fixed #1108]	$00000000
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|1	kept
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|2	kept
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|3	kept
@@ -3044,7 +3050,8 @@ BBScenarioPalette|d0|round 5, scenario 2|1	$00001062
 BBScenarioPalette|d0|round 5, scenario 2|2	$00001062
 BBScenarioPalette|d0|round 5, scenario 2|3	$00001062
 BBScenarioPalette|d0|round 5, scenario 2|4	$00001062
-BBScenarioPalette|d0|second run|1	$000000E0
+BBScenarioPalette|d0|second run|1 [orig]	$000000E0
+BBScenarioPalette|d0|second run|1 [fixed #1108]	$00000000
 BBScenarioPalette|kept|end of the run|1	kept
 BBScenarioPalette|kept|round 0|1	kept
 BBScenarioPalette|kept|round 0|2	kept

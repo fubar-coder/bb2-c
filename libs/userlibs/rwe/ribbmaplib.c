@@ -22,7 +22,8 @@
  * chunk found is kept per file (one id each), and returned without a
  * search when the same id is asked for again.
  *
- * init and finit are RTS.  No assembler besides the thunks.  Results in
+ * init clears the files and the caches; finit is an RTS.  No assembler
+ * besides the thunks.  Results in
  * d0 as the original leaves them: the word functions have $FFFF in the
  * upper word (MOVEQ #-1 of the chunk search; BBMapWidth/Height: the
  * caller's), 0 when the chunk is missing.
@@ -44,6 +45,10 @@
  *     high even if low > high (one colour at low, possibly behind the
  *     block) (#549).  BBScenarioLowCol/HighCol extend the byte with its
  *     sign (#550).
+ * Fixed (intended deviation, #1108): init clears the map and scenario
+ * locations, the MFRM chunk and the caches (the original's init is an
+ * RTS: a second run from the editor with the library still loaded saw
+ * the run before's files).
  * Original behaviour, not defects: the scenario routines before a
  * SetBBScenarioLoc and the map routines (but BBMapScenarioID,
  * BBMapWidth, BBMapHeight, BBMapInfo) before a SetBBMapLoc search from
@@ -152,20 +157,6 @@ BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-/**
- * @brief init: does nothing (RTS).
- */
-static void BLITZ_ROUTINE codeinit(void)
-{
-}
-
-/**
- * @brief finit: does nothing (RTS).
- */
-static void BLITZ_ROUTINE codefinit(void)
-{
-}
-
 #define ID(a, b, c, d) ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (ULONG)(c) << 8 | (ULONG)(d))
 #define LONGAT(p) (*(ULONG *)(p))
 #define WORDAT(p) (*(UWORD *)(p))
@@ -194,6 +185,29 @@ static struct mfrm *mfrmchunk;
 static UBYTE *scenarioloc, *scenarioend;
 static ULONG lastchunk, lastmapchunk;
 static UBYTE *lastchunkaddr, *lastmapchunkaddr;
+
+/**
+ * @brief init: no map, no scenario, nothing cached.
+ *
+ * Fixed (#1108): the original's init is an RTS, so a second run of a
+ * program with the library still loaded (from the editor) started with
+ * the files and caches of the run before.
+ */
+static void BLITZ_ROUTINE codeinit(void)
+{
+    maploc = mapend = NULL;
+    mfrmchunk = NULL;
+    scenarioloc = scenarioend = NULL;
+    lastchunk = lastmapchunk = 0;
+    lastchunkaddr = lastmapchunkaddr = NULL;
+}
+
+/**
+ * @brief finit: does nothing (RTS).
+ */
+static void BLITZ_ROUTINE codefinit(void)
+{
+}
 
 /* _findchunk / _findmapchunk: the data of chunk `id`, or NULL; *at = a0
    at the end (also when not found: behind the last id read) */

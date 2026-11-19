@@ -24,7 +24,7 @@ Bombers in memory:
 A missing chunk gives 0. The search starts 12 bytes into the file and
 steps by 8 + the chunk length (no IFF padding); the last chunk found is
 kept per file and returned without a search when the same id is asked
-for again. init and finit are `RTS`.
+for again. init clears the files and the caches; finit is an `RTS`.
 
 * **Source:** `rwelibsrc/blitzbomberslib/bbmaplib2.bb` (30/9/95; as TED
   shows it: `build/amiga/rwelibsrc/blitzbomberslib/bbmaplib2.bb`).
@@ -44,6 +44,19 @@ functions have `$FFFF` in the upper word (the `MOVEQ #-1,d0` of the
 search), `BBMapWidth`/`BBMapHeight` the caller's upper word. The strings
 are written at a3 without a terminating 0 (a3 ends behind the last
 character). `BBGetPalette` calls memlib's globalloc/globfree.
+
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* init clears the map and scenario locations, the info chunk and the
+  caches. The original's init is an `RTS`, so a second run of a program
+  with the library still loaded (from the editor) started with the run
+  before's files: `BBMapScenarioID`, `BBMapWidth`, `BBMapHeight` and
+  `BBMapInfo` before a `SetBBMapLoc` read the old map (perhaps freed
+  memory), the cached chunks were returned and the searches ran through
+  the old files (#1108).
 
 ## BUG(orig), kept
 
