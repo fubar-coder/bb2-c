@@ -11,6 +11,7 @@
 ; check area.  Here with runtime error checking.
 ; Correct: the error check refuses numlines -1: "Colour split needs at
 ; least one line", nothing is written.
+; @fixed #589
 ; @rwe ricopperfxlib
 ; @pass timeout=30
 ; @pass runtime_errors=on

@@ -1,0 +1,10 @@
+# the intended differences of ricopperfxlib against its reference, the CD
+# binary BSS2 RICOPPERFXLIB.OBJ (blitzlib compare, docs/development.md
+# "Intended differences")
+# #589: DoColSplit and RedoColSplit get an error check (colsplitchk,
+# "Colour split needs at least one line"); ricopperfxlib gets an error
+# check area for it (the original has none)
+lib 11: header +$2C: code offset set in only one of them
+lib 11: entry 0 DoColSplit +$E: code offset set in only one of them
+lib 11: entry 1 RedoColSplit +$E: code offset set in only one of them
+lib 11: relocations in the declaration part 18 != 21

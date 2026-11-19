@@ -39,11 +39,14 @@
  *     value at the end (its cols_adr argument without a custom space);
  *     CopperAGACol (long result) returns 1234 without a custom space,
  *     otherwise its col# argument (#592, #590).
- *   - DoColSplit/RedoColSplit: numlines is not checked (0: DIVS by zero,
- *     the divide-by-zero exception as in the original; negative: the DBRA
- *     counter numlines-1 as a word, up to 65536 lines); the step
- *     (1 << 14) / numlines is a word quotient (#589).
  * Fixed:
+ *   - With runtime error checking DoColSplit and RedoColSplit refuse
+ *     numlines below 1: "Colour split needs at least one line" (colsplitchk;
+ *     the original has no error check area).  The release code is
+ *     unchanged: 0 divides by zero (DIVS, the divide-by-zero exception as
+ *     in the original), a negative value makes the DBRA counter
+ *     numlines - 1 a word, up to 65536 lines (#589; an invalid argument,
+ *     D-005).
  *   - DoColSplit writes the $FFE1FFFE wait (line 256) only when the line
  *     (the word) is not 0: the original tested the low byte alone and
  *     wrote it also before line 0, so a split from line 0 started at line
@@ -62,6 +65,8 @@
  *     run from the editor with the library still loaded wrote into the
  *     custom space of the run before before its CopperReset and kept its
  *     ColSplitBplcon3 byte (#1126).
+ * Kept: the step (1 << 14) / numlines is a word quotient (named in #589;
+ * numlines above 16384 gives a step of 0, the source says "256 is MAX!").
  * Registers: the original changes d6/d7/a0 (and more) in every command,
  * but keeps others depending on the routine (a1 nearly always, d0/d1 in
  * the statements); the thunks keep all of d0/d1/a0/a1 that are not the
@@ -90,23 +95,25 @@ void ricopperfxlib_docolsplit(void), redocolsplit(void), splitreset2(void);
 void splitreset(void), EndSplit(void), InfoBlock(void), CustomCommand(void);
 void CustomMove(void), CustomWait(void), CustomSkip(void), getccoffset(void);
 void CustomAGACol(void), splitresethard(void), splitbplcon3(void);
+void colsplitchk(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
 
-/* !libheader {#ricopperfx,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_ricopperfx, init, BL_NORET, finit, 0);
+/* !libheader {#ricopperfx,init,0,finit,0}; error field: the error check
+   area of colsplitchk (fixed, #589) */
+BLITZ_LIBHEADER(LIB_ricopperfx, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_WORD);
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(ricopperfxlib_docolsplit, 0, 0);
+BLITZ_SUBS(ricopperfxlib_docolsplit, colsplitchk, 0);     /* check: fixed #589 */
 BLITZ_NAME("DoColSplit", "cols_adr,numlines,colour_register");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(redocolsplit, 0, 0);
+BLITZ_SUBS(redocolsplit, colsplitchk, 0);                 /* check: fixed #589 */
 BLITZ_NAME("RedoColSplit", "cols_adr,numlines,ccoffset");
 
 BLITZ_ASTATEMENT();
@@ -271,10 +278,11 @@ static void gradient(struct grad *g, const struct colsplit *cols, UWORD numlines
  * register, BPLCON3 (low nibbles), the colour register; the bank of the
  * register selects bits 13-15 of BPLCON3 (| ColSplitBplcon3's low byte).
  * The colours run linearly from the start to the end r, g, b.  Without a
- * custom space only bplcon3LO/HI and colreg are set.  BUG(orig):
- * numlines is not checked (0: DIVS by zero, the exception as in the
- * original; negative: up to 65536 lines, the DBRA counter as a word);
- * the step (1 << 14) / numlines is a word quotient (#589).  The
+ * custom space only bplcon3LO/HI and colreg are set.  numlines below 1
+ * is the programmer's: with runtime error checking colsplitchk refuses
+ * it (fixed #589); without it 0 divides by zero (the exception as in the
+ * original) and a negative value runs up to 65536 lines (the DBRA counter
+ * as a word).  The step (1 << 14) / numlines is a word quotient.  The
  * $FFE1FFFE wait (line 256) comes before a line whose low byte is 0 but
  * not before line 0: fixed (#588), the original tested the low byte
  * alone, so a split from line 0 waited for line 256 first.
@@ -340,7 +348,7 @@ ULONG BLITZ_ROUTINE c_docolsplit(const struct colsplit *cols BL_REG(d0),
  * WAIT, writes only the two colour values per line.  Nothing without a
  * custom space.  The byte offset is ccoffset * 4 as a long: fixed (#594),
  * the original's ASL.w #2 shifted only the low word and added the upper
- * word unchanged.  BUG(orig): numlines as in DoColSplit (#589).
+ * word unchanged.  numlines as in DoColSplit (colsplitchk, fixed #589).
  * @param cols      d0: the colours (cols_adr)
  * @param numlines  d1: the number of lines
  * @param ccoffset  d2: the split's offset in instructions (4 bytes)
@@ -602,3 +610,31 @@ BLITZ_THUNK(splitbplcon3, c_splitbplcon3, "d0-d1/a0-a1");
 /* init clears the state block (fixed, #1126); _libfinit: RTS */
 BLITZ_THUNK(ricopperfxlib_libinit, c_libinit, "d0-d1/a0-a1");
 BLITZ_THUNK(ricopperfxlib_libfinit, c_libfinit, "d0-d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badlines, "Colour split needs at least one line");  /* fixed, #589 */
+
+/**
+ * @brief The error check of DoColSplit and RedoColSplit (debugger only).
+ *
+ * Fixed (#589), not in the original (ricopperfxlib had no error check
+ * area): both compute the colour step with DIVS by numlines and loop with
+ * DBRA on numlines - 1 as a word, without a look at numlines: 0 raised
+ * the divide-by-zero exception, a negative value wrote (DoColSplit) or
+ * rewrote (RedoColSplit) up to 65536 lines of 20 bytes behind the custom
+ * space.  The release code is unchanged (an invalid argument, D-005).
+ *
+ * Errors: "Colour split needs at least one line" (numlines, a word, below
+ * 1).
+ * @param numlines  d1: the number of lines (a word; the upper word is
+ *                  the caller's)
+ */
+static void BLITZ_ERRCHK colsplitchk_c(ULONG numlines BL_REG(d1))
+{
+    if ((WORD)numlines < 1)
+        BLITZ_RUNERR(badlines);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(colsplitchk, colsplitchk_c, "d0-d1/a0-a1");

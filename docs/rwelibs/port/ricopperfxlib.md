@@ -39,12 +39,15 @@ reproduced.
   at the end (its `cols_adr` argument without a custom space);
   `CopperAGACol` (long result) returns 1234 without custom space,
   otherwise its `col#` argument (#592, #590).
-* `DoColSplit`/`RedoColSplit` do not check numlines (0: DIVS by zero;
-  negative: the DBRA counter as a word, up to 65536 lines; the step
-  `(1<<14)/numlines` is a word quotient) (#589).
 
 **Fixed:**
 
+* With runtime error checking `DoColSplit` and `RedoColSplit` refuse
+  numlines below 1: "Colour split needs at least one line" (`colsplitchk`;
+  the original has no error check area). The release code is unchanged:
+  0 divides by zero (DIVS), a negative value runs the DBRA counter as a
+  word, up to 65536 lines (#589; an invalid argument, D-005). Kept: the
+  step `(1<<14)/numlines` is a word quotient.
 * `DoColSplit` writes the `$FFE1FFFE` wait (line 256) before a line
   whose low byte is 0 only when the line is not 0: the original tested
   the low byte alone, so a split from line 0 started with the wait and
