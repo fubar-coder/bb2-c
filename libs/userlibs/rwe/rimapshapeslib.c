@@ -43,8 +43,6 @@
  *     behind the 512-byte block (#904).
  *   - BlitGroup does not load graphics.library (no #graphicslib in its
  *     !libs): it calls BltBitMapRastPort with the caller's a6 (#902).
- *   - init does not check its AllocVec: ResetGroup then writes at 0
- *     (#905).
  * Fixed:
  *   - init sets the next-member pointer to its (cleared) group block and
  *     the block size to 0, as at the first load; the original set only
@@ -52,6 +50,10 @@
  *     wrote at address 0 (#901), and in a second run of a program from
  *     the editor (the library stays loaded) into the run before's freed
  *     group, with the run before's block size (#1134).
+ *   - Without the group block (init's AllocVec failed) ResetGroup writes
+ *     nothing and returns 0, AddGroupMember and BlitGroup do nothing; the
+ *     original did not check the AllocVec, and the three wrote and read
+ *     the group at address 0 (#905).
  * Not a defect: RemapMapShape does nothing (the ReMap call is commented
  * out in the source: a command left unfinished); its !libs asks for
  * "library 254, $5600" (sic).
@@ -182,8 +184,9 @@ static struct member *groupaddr;        /* the group, 512 bytes */
  * block size to 0, as at the first load: fixed (#901, #1134), the original
  * set only the group's address, so an AddGroupMember before ResetGroup
  * wrote at 0, and in a second run from the editor into the run before's
- * freed group with its block size.  BUG(orig) (#905): the AllocVec is not
- * checked (ResetGroup then writes at 0).
+ * freed group with its block size.  Without memory groupaddr and the
+ * pointer are 0: the group commands then do nothing (fixed #905, the
+ * original did not check the AllocVec).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -389,16 +392,18 @@ BLITZ_THUNK(_freemapshapes, freemapshapes_c, "d0-d1/a0-a1");
  * @brief ResetGroup(blockwidth,blockheight): empties the group and sets
  * the block size for AddGroupMember.
  *
- * BUG(orig) (#905): without init's block (not checked) it writes at 0.
+ * Without init's block (its AllocVec failed) it writes nothing and
+ * returns 0 (fixed #905: the original cleared the long at address 0).
  * @param bw  d0: the block width
  * @param bh  d1: the block height
- * @return d0: the group's address
+ * @return d0: the group's address, 0 without a group block
  */
 static struct member *BLITZ_ROUTINE resetgroup_c(UWORD bw BL_REG(d0), UWORD bh BL_REG(d1))
 {
     blockwidth = bw;
     blockheight = bh;
-    groupaddr[0].ms = NULL;
+    if (groupaddr)                      /* fixed (#905) */
+        groupaddr[0].ms = NULL;
     nextgroupmember = groupaddr;
     return groupaddr;
 }
@@ -410,6 +415,7 @@ BLITZ_THUNK(_resetgroup, resetgroup_c, "d1/a0-a1");
  * The member {map shape, dx*blockwidth, dy*blockheight (MULU.w, the low
  * words)}, then the end mark.  Before the first ResetGroup it adds to
  * the empty group of init (fixed #901: the original wrote at address 0).
+ * Without a group block it does nothing (fixed #905).
  * BUG(orig): no limit, the 64th member's end mark is written behind the
  * 512-byte block (#904).
  * @param n   d0: the map shape number
@@ -421,6 +427,8 @@ static void BLITZ_ROUTINE addgroupmember_c(UWORD n BL_REG(d0), UWORD dx BL_REG(d
 {
     struct member *p = nextgroupmember;
 
+    if (!p)                             /* fixed (#905): no group block */
+        return;
     p->ms = MAPSHAPE(n);
     p->dx = (UWORD)bl_mulu_w(dx, blockwidth);
     p->dy = (UWORD)bl_mulu_w(dy, blockheight);
@@ -438,8 +446,9 @@ BLITZ_THUNK(_addgroupmember, addgroupmember_c, "d0-d1/a0-a1");
  * are words, with the upper words of the caller's d2/d3.  The original's
  * d5 is the member's address when _blitmapshape2 loads the height into
  * its low word.  d2 comes in with y in its low word and becomes xbase.
- * BUG(orig) (#902): a6 is the caller's, not graphics.library's (no
- * #graphicslib in the !libs).
+ * Without a group block it does nothing (fixed #905: the original read
+ * the members from address 0).  BUG(orig) (#902): a6 is the caller's, not
+ * graphics.library's (no #graphicslib in the !libs).
  * @param x        d1: x (a word)
  * @param yin      d2: y in the low word, the caller's upper word
  * @param ybase    d3: the caller's d3 (upper word)
@@ -458,6 +467,8 @@ static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG yin BL_REG(d2),
     ULONG xbase = yin;                  /* d2 */
     struct mapshape *ms;
 
+    if (!p)                             /* fixed (#905): no group block */
+        return;
     BL_SETW(ybase, yin);                /* MOVE.w d2,d3 */
     BL_SETW(xbase, x);                  /* MOVE.w d1,d2 */
     while ((ms = p->ms) != NULL) {

@@ -75,8 +75,6 @@ holds the member's address before, so its upper word is that address's.
   written behind the 512-byte block (#904).
 * `BlitGroup` has no `#graphicslib,#la6` in its `!libs`: it calls
   `BltBitMapRastPort` with the caller's a6 (#902).
-* init does not check its `AllocVec`: `ResetGroup` then writes at 0
-  (#905).
 
 ## Fixed
 
@@ -91,6 +89,13 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   run of a program from the editor (the library stays loaded) into the
   run before's freed group, with the run before's block size (#1134; the
   libs test's second run).
+* Without the group block (init's `AllocVec` failed) `ResetGroup` writes
+  nothing and returns 0, `AddGroupMember` and `BlitGroup` do nothing
+  (D-018: fail silently; one test per call). The original did not check
+  the `AllocVec`: `ResetGroup` cleared the long at address 0,
+  `AddGroupMember` wrote its members from 0 on (over the ExecBase
+  pointer) and `BlitGroup` read the group there (#905; test
+  `rwe/rimapshapeslib-init-allocvec-unchecked`, inject allocfail).
 
 Not a defect: `RemapMapShape` does nothing (the `ReMap` call is
 commented out in the source – a command left unfinished, not a fault in

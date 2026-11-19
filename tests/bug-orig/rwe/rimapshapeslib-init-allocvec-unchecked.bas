@@ -7,6 +7,7 @@
 ; end).
 ; Correct: without a group block ResetGroup writes nothing (the marker
 ; stays).
+; @fixed #905
 ; @rwe rimapshapeslib
 ; @pass runwrap=@INJECT@|allocfail=512-528/1
 DEFTYPE .l
