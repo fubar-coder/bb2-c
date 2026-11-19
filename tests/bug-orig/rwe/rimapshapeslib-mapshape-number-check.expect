@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "Map shape not allocated by SetNumMapShapes" *
+...
+rc=0

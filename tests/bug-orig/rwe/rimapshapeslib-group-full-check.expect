@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "Group holds at most 63 members" *
+...
+rc=0

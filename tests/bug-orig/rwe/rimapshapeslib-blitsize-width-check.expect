@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+before
+16 wide
+REQUESTER: AutoRequest body "BlitMapShapeSize wider than the map shape" *
+rc=0
