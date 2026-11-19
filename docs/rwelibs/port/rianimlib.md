@@ -42,6 +42,12 @@ The `MULU`/`DIVU` of the original are `bl_mulu_w`/`bl_divu_w` (DIVU
 with its overflow); the row steps have an `asm` barrier (GCC would
 compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
 
+**Fixed** (intended deviations, `docs/libs/deviations.md`, kind F):
+
+* RIAnimInit searches the BMHD in the first frame only; the original
+  searched up to the end of the ANIM and took a BMHD chunk of the ANIM
+  behind a first frame without one (#511).
+
 **BUG(orig)** (kept):
 
 * RINextAnimFrame returns without restoring its 14 saved registers when
@@ -55,10 +61,8 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   length + 8 without the pad byte of odd lengths (#505) and compare
   addresses signed (#506); RIAnimFrameCount counts every chunk of the
   ANIM, not only the frames (#510).
-* RIAnimInit searches the BMHD from the first frame's chunks up to the
-  end of the ANIM (a BMHD chunk of the ANIM behind the first frame is
-  found) (#511); if no ILBM or BMHD is found it keeps the ANIM's address
-  and end (RIAnimFrameCount counts it) and the frame pointers of the
+* If RIAnimInit finds no ILBM or BMHD, it keeps the ANIM's address and
+  end (RIAnimFrameCount counts it) and the frame pointers of the
   animation before (#512).
 * RIAnimInit x,y: the offset is ebwidth × y (MULU.w, low words) + x >> 3
   (ASR.l); the `DIVU.w #64` that undoes the compiler's bitmap# × 64

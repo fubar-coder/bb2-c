@@ -15,7 +15,7 @@
  * Notes: docs/rwelibs/port/rianimlib.md.
  *
  * RIAnimInit finds the first frame (FORM ILBM in the FORM ANIM), its
- * BMHD (searched up to the end of the ANIM), unpacks it with
+ * BMHD (in that frame), unpacks it with
  * RIPackLib's UnpackIFF (form 1: d0 source, d1 bitmap#, d2 -1 lines,
  * d3 offset) and ILBMPalette (d0 source, d1 palette#) through ALibJsr,
  * and remembers the second and third frame.  RINextAnimFrame applies the
@@ -43,9 +43,8 @@
  *     add the chunk length + 8 without the pad byte of odd lengths
  *     (#505) and compare addresses signed (#506); RIAnimFrameCount counts
  *     every chunk of the ANIM, not only the frames (#510).
- *   - RIAnimInit searches the BMHD up to the end of the ANIM, not of the
- *     first frame (#511); it keeps the ANIM's address and end even if no
- *     ILBM or BMHD is found (RIAnimFrameCount then counts), and the frame
+ *   - RIAnimInit keeps the ANIM's address and end even if no ILBM or
+ *     BMHD is found (RIAnimFrameCount then counts), and the frame
  *     pointers of the animation before (#512).
  *   - RIAnimInit x,y form: the offset is ebwidth * y (MULU.w: the low
  *     words) + x >> 3 (ASR.l); DIVU.w #64 of the bitmap# overflows (no
@@ -60,6 +59,10 @@
  *     depth 0 is 256 planes; more than 8 read behind the bitmap's plane
  *     pointers (#509).  A run or copy count of 0 is 256 (DBRA on the
  *     byte) (#508).
+ * Fixed (intended deviations, docs/libs/deviations.md):
+ *   - RIAnimInit searches the BMHD in the first frame only; the original
+ *     searched up to the end of the ANIM and took a BMHD chunk of the
+ *     ANIM behind the first frame (#511).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -288,9 +291,9 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
 /**
  * @brief RIAnimInit address,bitmap#,palette#,xy_offset: show the first frame of an ANIM.
  *
- * Finds the first frame (FORM ILBM in the FORM ANIM) and its BMHD
- * (searched up to the end of the ANIM, not of the frame: BUG(orig)
- * (#511)), unpacks it into the bitmap with RIPackLib's UnpackIFF (form
+ * Finds the first frame (FORM ILBM in the FORM ANIM) and its BMHD (in
+ * that frame; fixed #511: the original searched up to the end of the
+ * ANIM), unpacks it into the bitmap with RIPackLib's UnpackIFF (form
  * 1: d0 source, d1 bitmap#, d2 -1 lines, d3 offset) and sets the palette
  * with ILBMPalette (d0 source, d1 palette#), both through ALibJsr; then
  * remembers the second and third frame (the first if there are none).
@@ -321,9 +324,11 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     animaddress = (UBYTE *)address;
     if (!initfindchunk(firstchunk, ID_ILBM))
         return BB_FALSE;
-    endoffile = animend;                /* BUG(orig): the whole ANIM (#511) */
+    /* fixed #511: the BMHD of the first frame only (the original set
+       endoffile to the ANIM's end here) */
     if (!findchunk(ID_BMHD, &chunk))
         return BB_FALSE;
+    endoffile = animend;                /* the frames: the whole ANIM */
     bmhd = (struct BitMapHeader *)chunk;
     animwidth = bmhd->bmh_Width;
     animheight = bmhd->bmh_Height;

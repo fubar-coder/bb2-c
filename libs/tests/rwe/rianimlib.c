@@ -22,7 +22,7 @@
  * forms (offset 0, an offset, x,y with a marker in y's upper word, the
  * bitmap# * 64 of #pd1 and one whose DIVU overflows), failing (no ANIM,
  * no ILBM, no BMHD: BUG(orig) #512, RIAnimFrameCount still counts), a BMHD
- * chunk of the ANIM behind the first frame (BUG(orig) #511: found), one and
+ * chunk of the ANIM behind the first frame (fixed #511: not taken), one and
  * two frame anims (the safety nets); RINextAnimFrame through every
  * frame (ANIM5, ANIM5 with CMAP, ANIM7 long, operation 65, an unknown
  * operation), past the end with AnimLoop on (the third frame) and off,
