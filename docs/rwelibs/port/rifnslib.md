@@ -50,10 +50,8 @@ same places (bitstack for a depth above 8, FNSLength's unmasked font
 number), and FNSPrint's a0 and FNSSlot point into it as in the original;
 `_Static_assert`s check the offsets the original has. Everything is C
 behind thunks except: the FNSPrint/FNSShadowPrint entries (assembler:
-without a bitmap the original pushes 13 registers and returns with RTS –
-to the pushed d0, a crash; a stack imbalance C cannot express – they
-load the default prefs/colour for the short forms and call the C code
-otherwise), and FNSVersion (an inline routine, `BLITZ_INLINE`). FNSLoad
+they test for a bitmap, load the default prefs/colour for the short
+forms and call the C code), and FNSVersion (an inline routine, `BLITZ_INLINE`). FNSLoad
 calls RIAmosFuncLib's BLoad (form 1), Start and Erase with
 `BLITZ_ALIBJSR`/`BL_JSR_D4_` (tokens `#riamosfunclib<<7` + 15/17/19, as
 ripacklib). The register-level details are kept: word and byte widths,
@@ -61,9 +59,17 @@ ripacklib). The register-level details are kept: word and byte widths,
 `bl_divu_w`), signed/unsigned compares, DBRA on bytes and words, the
 glyph `ROR.l`/`SWAP` as `data << (16 - x & 15)`.
 
+## Fixed
+
+Intended deviations, `docs/libs/deviations.md` (3a), kind F:
+
+* FNSPrint/FNSShadowPrint before FNSOutput (no bitmap) store the prefs
+  and the colour and return, a0 unchanged, as without a font. The
+  original pushed 13 registers first and returned with RTS – to the
+  pushed d0, a crash (#665).
+
 ## BUG(orig), kept
 
-* FNSPrint/FNSShadowPrint before FNSOutput: a crash (above) (#665).
 * An empty text, or a line starting with `chr$(10)`, counts width 1:
   underlined it sets 1 pixel, centred x moves by −32767 (#659).
 * FNSLength returns width − 2 (at least 0) (#662), takes the prefs of
@@ -130,6 +136,7 @@ new lines including leading/double ones, zero-width characters, codes
 from 160, every x bit position, xmax, xmin, rows clipped at ymin/ymax for
 every font width, empty texts, origin, FNSLength's unmasked numbers 16,
 17, −1, −2, InstallFNS of a non-font, FNSLoad ok/BLoad fails/Start 0,
-FNSUnload). Not covered: the crash without a bitmap, depth 0 / above 8 /
+FNSUnload). Not covered: FNSPrint without a bitmap (the original
+crashes; bug-orig test `rifnslib-print-no-bitmap-crash`), depth 0 / above 8 /
 flags, FNSSetTab 0, negative xmin (writes 64 KB away, #664), font 0 with the
 codes behind `z` (the DIFF).

@@ -38,13 +38,11 @@
  * depth above 8, font_add read with FNSLength's unmasked number), and
  * FNSPrint's a0 and FNSSlot point into it as in the original.
  *
- * Assembler: the FNSPrint/FNSShadowPrint entries (they share the
- * original's crash, below, which needs a stack imbalance) and
- * FNSVersion (an inline routine); everything else is C behind thunks.
+ * Assembler: the FNSPrint/FNSShadowPrint entries (the test for a bitmap,
+ * the short forms' prefs and colour in d4/d5) and FNSVersion (an inline
+ * routine); everything else is C behind thunks.
  *
  * BUG(orig):
- *   - FNSPrint before FNSOutput (no bitmap): RTS with 13 registers on the
- *     stack - it returns to the pushed d0, a crash (#665).
  *   - An empty text (or a line that begins with chr$(10), which the
  *     binary prints - the source's guard stopped there) still counts
  *     width + 1 = 1: underlined, it sets 1 pixel; centred, the ASR.l of
@@ -69,6 +67,10 @@
  *   - The underline ignores xmin (it is clipped at x = 0 only) (#667).
  *   - A font height of 0 draws 65536 rows (#663).
  *   - Codes from 160 end the text (a sign test after CMPI.b #32) (#657).
+ * Fixed (#665): FNSPrint/FNSShadowPrint before FNSOutput (no bitmap)
+ *   return at once (the prefs and the colour stored as on the way without
+ *   a font); the original pushed 13 registers and returned with RTS - to
+ *   the pushed d0, a crash.
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): FNSLength's font number outside the block, and
  *   the glyphs of codes the font has no data for - the built-in font ends
@@ -631,13 +633,15 @@ static UBYTE *BLITZ_ROUTINE shadow_c(UWORD fontnum BL_REG(d0), UWORD x BL_REG(d1
 
 /* The FNSPrint entries (_fnsprint: FNSPrint fontnum,x,y,a$; _fnsprint2:
    with prefs,colour; _fnsshadowprint, ...2, ...3: FNSShadowPrint without
-   prefs, with prefs,colour, with the shadow colour).  _FNSPrint2 pushes d0-d6/a1-a6 and then, without
-   a bitmap (bit_address 0), returns with RTS - to the pushed d0
-   (BUG(orig) (#665)): a stack imbalance C cannot express, so the entries are
-   assembler; the work is print_c/shadow_c.  They keep d0-d6/a1-a6 (the
-   original restores them), a0 = the result; the forms without prefs and
-   colour take FNSPrefs'/FNSInk's (d4/d5 changed, as in the original),
-   the shadow forms without shadow colour take 0 (d6 = 0). */
+   prefs, with prefs,colour, with the shadow colour).  Without a bitmap
+   (bit_address 0) they store the prefs and the colour and return, a0
+   unchanged, as print does without a font (Fixed (#665): _FNSPrint2
+   pushed d0-d6/a1-a6 first and returned with RTS - to the pushed d0; the
+   shadow forms crashed in their first print); the work is
+   print_c/shadow_c.  They keep d0-d6/a1-a6 (the original restores them),
+   a0 = the result; the forms without prefs and colour take
+   FNSPrefs'/FNSInk's (d4/d5 changed, as in the original), the shadow
+   forms without shadow colour take 0 (d6 = 0). */
 #define S_(x) BL_STR(x)
 BLITZ_ASM_ROUTINE(_fnsprint,
     "   move.b  _fns+" S_(OFF_TCOLOUR2) ",d5\n"
@@ -648,8 +652,7 @@ BLITZ_ASM_ROUTINE(_fnsprint2,
     "   bne.s   1f\n"
     "   move.b  d4,_fns+" S_(OFF_TEXTPREFS) "\n"
     "   move.b  d5,_fns+" S_(OFF_TCOLOUR) "\n"
-    "   movem.l d0-d6/a1-a6,-(sp)\n"
-    "   rts\n"
+    "   rts\n"                         /* fixed (#665) */
     "1: movem.l d0-d1/a1,-(sp)\n"
     "   jsr     _print_c\n"
     "   move.l  d0,a0\n"
@@ -665,8 +668,7 @@ BLITZ_ASM_ROUTINE(_fnsshadowprint2,
 BLITZ_ASM_ROUTINE(_fnsshadowprint3,
     "   tst.l   _fns+" S_(OFF_BITADDRESS) "\n"
     "   bne.s   1f\n"
-    "   move.b  d6,d5\n"                /* the shadow print crashes first */
-    "   bra.w   __fnsprint2\n"
+    "   bra.w   __fnsprint2\n"          /* the prefs and colour stored (#665) */
     "1: movem.l d0-d1/a1,-(sp)\n"
     "   jsr     _shadow_c\n"
     "   move.l  d0,a0\n"

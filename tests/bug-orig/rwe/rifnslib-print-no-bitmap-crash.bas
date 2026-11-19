@@ -4,6 +4,7 @@
 ; font number 0) - a crash (the session ends in a timeout).
 ; Correct: FNSPrint without FNSOutput does nothing, the program goes on.
 ; rifnslib needs RIAmosFuncLib (FNSLoad and FNSUnload use its banks).
+; @fixed #665
 ; @rwe rifnslib riamosfunclib
 ; @pass timeout=30
 NPrint "before"
