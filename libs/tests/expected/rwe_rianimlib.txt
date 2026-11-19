@@ -1,9 +1,11 @@
 # capture rwe_rianimlib 1
 AnimLoop|kept|$00000000|1	kept
+AnimLoop|kept|$00000000|2	kept
 AnimLoop|kept|$00000001|1	kept
 AnimLoop|kept|$00000101|1	kept
 AnimLoop|kept|$5A5A5A00|1	kept
 AnimLoop|popped|$00000000|1	$00000000
+AnimLoop|popped|$00000000|2	$00000000
 AnimLoop|popped|$00000001|1	$00000000
 AnimLoop|popped|$00000101|1	$00000000
 AnimLoop|popped|$5A5A5A00|1	$00000000
@@ -47,6 +49,7 @@ RIAnimFrameCount|d0|no BMHD|1 [orig]	$00000002
 RIAnimFrameCount|d0|no BMHD|1 [fixed #512]	$00000000
 RIAnimFrameCount|d0|no FORM|1	$00000000
 RIAnimFrameCount|d0|one frame|1	$00000001
+RIAnimFrameCount|d0|second run|1	$00000002
 RIAnimFrameCount|d0|six frames|1	$00000006
 RIAnimFrameCount|d0|two frames|1	$00000002
 RIAnimFrameCount|kept||1	kept
@@ -56,6 +59,7 @@ RIAnimFrameCount|kept|first chunk no FORM|1	kept
 RIAnimFrameCount|kept|no BMHD|1	kept
 RIAnimFrameCount|kept|no FORM|1	kept
 RIAnimFrameCount|kept|one frame|1	kept
+RIAnimFrameCount|kept|second run|1	kept
 RIAnimFrameCount|kept|six frames|1	kept
 RIAnimFrameCount|kept|two frames|1	kept
 RIAnimFrameCount|popped||1	$00000000
@@ -65,6 +69,7 @@ RIAnimFrameCount|popped|first chunk no FORM|1	$00000000
 RIAnimFrameCount|popped|no BMHD|1	$00000000
 RIAnimFrameCount|popped|no FORM|1	$00000000
 RIAnimFrameCount|popped|one frame|1	$00000000
+RIAnimFrameCount|popped|second run|1	$00000000
 RIAnimFrameCount|popped|six frames|1	$00000000
 RIAnimFrameCount|popped|two frames|1	$00000000
 RIAnimHeight|RIPackLib calls|ANIM|1	$00000000
@@ -107,6 +112,11 @@ RIAnimInit|RIPackLib call 0|one frame|2	$00000440
 RIAnimInit|RIPackLib call 0|one frame|3	$00000003
 RIAnimInit|RIPackLib call 0|one frame|4	$FFFFFFFF
 RIAnimInit|RIPackLib call 0|one frame|5	$00000000
+RIAnimInit|RIPackLib call 0|second run|1	$00000001
+RIAnimInit|RIPackLib call 0|second run|2	$0000000C
+RIAnimInit|RIPackLib call 0|second run|3	$00000003
+RIAnimInit|RIPackLib call 0|second run|4	$FFFFFFFF
+RIAnimInit|RIPackLib call 0|second run|5	$00000000
 RIAnimInit|RIPackLib call 0|six frames|1	$00000001
 RIAnimInit|RIPackLib call 0|six frames|2	$0000000C
 RIAnimInit|RIPackLib call 0|six frames|3	$00000003
@@ -127,6 +137,11 @@ RIAnimInit|RIPackLib call 1|one frame|2	$00000440
 RIAnimInit|RIPackLib call 1|one frame|3	$00000004
 RIAnimInit|RIPackLib call 1|one frame|4	$00000000
 RIAnimInit|RIPackLib call 1|one frame|5	$00000000
+RIAnimInit|RIPackLib call 1|second run|1	$00000002
+RIAnimInit|RIPackLib call 1|second run|2	$0000000C
+RIAnimInit|RIPackLib call 1|second run|3	$00000004
+RIAnimInit|RIPackLib call 1|second run|4	$00000000
+RIAnimInit|RIPackLib call 1|second run|5	$00000000
 RIAnimInit|RIPackLib call 1|six frames|1	$00000002
 RIAnimInit|RIPackLib call 1|six frames|2	$0000000C
 RIAnimInit|RIPackLib call 1|six frames|3	$00000004
@@ -144,6 +159,7 @@ RIAnimInit|RIPackLib calls|first chunk no FORM|1	$00000000
 RIAnimInit|RIPackLib calls|no BMHD|1	$00000000
 RIAnimInit|RIPackLib calls|no FORM|1	$00000000
 RIAnimInit|RIPackLib calls|one frame|1	$00000002
+RIAnimInit|RIPackLib calls|second run|1	$00000002
 RIAnimInit|RIPackLib calls|six frames|1	$00000002
 RIAnimInit|RIPackLib calls|two frames|1	$00000002
 RIAnimInit|d0|BMHD behind frame 1|1 [orig]	$FFFFFFFF
@@ -153,6 +169,7 @@ RIAnimInit|d0|first chunk no FORM|1	$00000000
 RIAnimInit|d0|no BMHD|1	$00000000
 RIAnimInit|d0|no FORM|1	$00000000
 RIAnimInit|d0|one frame|1	$FFFFFFFF
+RIAnimInit|d0|second run|1	$FFFFFFFF
 RIAnimInit|d0|six frames|1	$FFFFFFFF
 RIAnimInit|d0|two frames|1	$FFFFFFFF
 RIAnimInit|kept|BMHD behind frame 1|1	kept
@@ -161,6 +178,7 @@ RIAnimInit|kept|first chunk no FORM|1	kept
 RIAnimInit|kept|no BMHD|1	kept
 RIAnimInit|kept|no FORM|1	kept
 RIAnimInit|kept|one frame|1	kept
+RIAnimInit|kept|second run|1	kept
 RIAnimInit|kept|six frames|1	kept
 RIAnimInit|kept|two frames|1	kept
 RIAnimInit|planes|BMHD behind frame 1|1	bytes 512 fnv 09B9D2C5
@@ -169,6 +187,7 @@ RIAnimInit|planes|first chunk no FORM|1	bytes 512 fnv 09B9D2C5
 RIAnimInit|planes|no BMHD|1	bytes 512 fnv 09B9D2C5
 RIAnimInit|planes|no FORM|1	bytes 512 fnv 09B9D2C5
 RIAnimInit|planes|one frame|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|planes|second run|1	bytes 512 fnv 09B9D2C5
 RIAnimInit|planes|six frames|1	bytes 512 fnv 09B9D2C5
 RIAnimInit|planes|two frames|1	bytes 512 fnv 09B9D2C5
 RIAnimInit|popped|BMHD behind frame 1|1	$00000000
@@ -177,6 +196,7 @@ RIAnimInit|popped|first chunk no FORM|1	$00000000
 RIAnimInit|popped|no BMHD|1	$00000000
 RIAnimInit|popped|no FORM|1	$00000000
 RIAnimInit|popped|one frame|1	$00000000
+RIAnimInit|popped|second run|1	$00000000
 RIAnimInit|popped|six frames|1	$00000000
 RIAnimInit|popped|two frames|1	$00000000
 RIAnimInit offset|RIPackLib call 0|offset 9|1	$00000001
@@ -269,6 +289,11 @@ RINextAnimFrame|RIPackLib call 0|$00000101|2	$000001B8
 RINextAnimFrame|RIPackLib call 0|$00000101|3	$00000004
 RINextAnimFrame|RIPackLib call 0|$00000101|4	$00000000
 RINextAnimFrame|RIPackLib call 0|$00000101|5	$00000000
+RINextAnimFrame|RIPackLib call 0|second run|1	$00000002
+RINextAnimFrame|RIPackLib call 0|second run|2	$000001B8
+RINextAnimFrame|RIPackLib call 0|second run|3	$00000004
+RINextAnimFrame|RIPackLib call 0|second run|4	$00000000
+RINextAnimFrame|RIPackLib call 0|second run|5	$00000000
 RINextAnimFrame|RIPackLib call 0|six frames|1	$00000002
 RINextAnimFrame|RIPackLib call 0|six frames|2	$000001B8
 RINextAnimFrame|RIPackLib call 0|six frames|3	$00000004
@@ -306,6 +331,13 @@ RINextAnimFrame|RIPackLib calls|$5A5A5A00|5	$00000000
 RINextAnimFrame|RIPackLib calls|BMHD behind frame 1|1	$00000000
 RINextAnimFrame|RIPackLib calls|one frame|1	$00000000
 RINextAnimFrame|RIPackLib calls|one frame|2	$00000000
+RINextAnimFrame|RIPackLib calls|second run|1	$00000000
+RINextAnimFrame|RIPackLib calls|second run|2	$00000000
+RINextAnimFrame|RIPackLib calls|second run|3	$00000001
+RINextAnimFrame|RIPackLib calls|second run|4	$00000000
+RINextAnimFrame|RIPackLib calls|second run|5	$00000000
+RINextAnimFrame|RIPackLib calls|second run|6	$00000000
+RINextAnimFrame|RIPackLib calls|second run|7	$00000000
 RINextAnimFrame|RIPackLib calls|six frames|1	$00000000
 RINextAnimFrame|RIPackLib calls|six frames|2	$00000001
 RINextAnimFrame|RIPackLib calls|six frames|3	$00000000
@@ -343,6 +375,13 @@ RINextAnimFrame|d0|BMHD behind frame 1|1 [orig]	$FFFFFFFF
 RINextAnimFrame|d0|BMHD behind frame 1|1 [fixed #511]	$00000000
 RINextAnimFrame|d0|one frame|1	$00000000
 RINextAnimFrame|d0|one frame|2	$00000000
+RINextAnimFrame|d0|second run|1	$FFFFFFFF
+RINextAnimFrame|d0|second run|2	$FFFFFFFF
+RINextAnimFrame|d0|second run|3	$FFFFFFFF
+RINextAnimFrame|d0|second run|4	$FFFFFFFF
+RINextAnimFrame|d0|second run|5	$FFFFFFFF
+RINextAnimFrame|d0|second run|6	$00000000
+RINextAnimFrame|d0|second run|7	$00000000
 RINextAnimFrame|d0|six frames|1	$FFFFFFFF
 RINextAnimFrame|d0|six frames|2	$FFFFFFFF
 RINextAnimFrame|d0|six frames|3	$FFFFFFFF
@@ -379,6 +418,13 @@ RINextAnimFrame|kept|$5A5A5A00|5	kept
 RINextAnimFrame|kept|BMHD behind frame 1|1	kept
 RINextAnimFrame|kept|one frame|1	kept
 RINextAnimFrame|kept|one frame|2	kept
+RINextAnimFrame|kept|second run|1	kept
+RINextAnimFrame|kept|second run|2	kept
+RINextAnimFrame|kept|second run|3	kept
+RINextAnimFrame|kept|second run|4	kept
+RINextAnimFrame|kept|second run|5	kept
+RINextAnimFrame|kept|second run|6	kept
+RINextAnimFrame|kept|second run|7	kept
 RINextAnimFrame|kept|six frames|1	kept
 RINextAnimFrame|kept|six frames|2	kept
 RINextAnimFrame|kept|six frames|3	kept
@@ -416,6 +462,13 @@ RINextAnimFrame|planes|BMHD behind frame 1|1 [orig]	bytes 512 fnv 4AC3CB95
 RINextAnimFrame|planes|BMHD behind frame 1|1 [fixed #511]	bytes 512 fnv 09B9D2C5
 RINextAnimFrame|planes|one frame|1	bytes 512 fnv 09B9D2C5
 RINextAnimFrame|planes|one frame|2	bytes 512 fnv 09B9D2C5
+RINextAnimFrame|planes|second run|1	bytes 512 fnv 6000AF17
+RINextAnimFrame|planes|second run|2	bytes 512 fnv 8CE7A2D9
+RINextAnimFrame|planes|second run|3	bytes 512 fnv B3C1180A
+RINextAnimFrame|planes|second run|4	bytes 512 fnv C8300D45
+RINextAnimFrame|planes|second run|5	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|planes|second run|6	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|planes|second run|7	bytes 512 fnv 5F0EA6CB
 RINextAnimFrame|planes|six frames|1	bytes 512 fnv 8CE7A2D9
 RINextAnimFrame|planes|six frames|2	bytes 512 fnv B3C1180A
 RINextAnimFrame|planes|six frames|3	bytes 512 fnv C8300D45
@@ -452,6 +505,13 @@ RINextAnimFrame|popped|$5A5A5A00|5	$00000000
 RINextAnimFrame|popped|BMHD behind frame 1|1	$00000000
 RINextAnimFrame|popped|one frame|1	$00000000
 RINextAnimFrame|popped|one frame|2	$00000000
+RINextAnimFrame|popped|second run|1	$00000000
+RINextAnimFrame|popped|second run|2	$00000000
+RINextAnimFrame|popped|second run|3	$00000000
+RINextAnimFrame|popped|second run|4	$00000000
+RINextAnimFrame|popped|second run|5	$00000000
+RINextAnimFrame|popped|second run|6	$00000000
+RINextAnimFrame|popped|second run|7	$00000000
 RINextAnimFrame|popped|six frames|1	$00000000
 RINextAnimFrame|popped|six frames|2	$00000000
 RINextAnimFrame|popped|six frames|3	$00000000

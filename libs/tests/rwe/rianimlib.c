@@ -27,7 +27,10 @@
  * frame (ANIM5, ANIM5 with CMAP, ANIM7 long, operation 65, an unknown
  * operation), past the end with AnimLoop on (the third frame) and off,
  * before RIAnimInit;
- * AnimLoop with on, off and a value whose low byte is 0.
+ * AnimLoop with on, off and a value whose low byte is 0; a second run
+ * (init, if the set has one, as from the editor with the library still
+ * loaded): RIAnimFrameCount and RINextAnimFrame before RIAnimInit, the
+ * AnimLoop of the run before.
  * Not covered: a frame with other chunks before its DLTA (fixed #515; the
  * original returns through its saved d1 - a crash), a chunk with the ID at +8 that is no
  * FORM (BUG(orig) #513: returns through a1; DIFF), odd chunk lengths, depth 0
@@ -38,7 +41,8 @@
 
 #define LIB "rianimlib"
 
-enum { E_INIT, E_NEXT, E_LOOP, E_COUNT, E_DEPTH, E_WIDTH, E_HEIGHT };
+enum { E_INIT, E_NEXT, E_LOOP, E_COUNT, E_DEPTH, E_WIDTH, E_HEIGHT,
+       E_LIBINIT };                     /* init: a nullsub behind them (none in the original) */
 
 /* ------------------------------------------------------------ RIPackLib */
 
@@ -430,6 +434,7 @@ int main(int argc, char **argv)
     KEEPS("AnimLoop", d0-d7|a0-a3|a6);
     KEEPS("RIAnimInit offset", d3-d6|a1|a3|a6);
     KEEPS("RIAnimInit x,y", d4|d5|a1|a3|a6);
+    KEEPS("init", d0-d7|a0-a3|a6);      /* the C build only (the original has none) */
     build();
     if (tlen > ANIMSZ) {
         check("rianimlib: the ANIMs fit", FALSE);
@@ -515,6 +520,23 @@ int main(int argc, char **argv)
     init0("two frames", a_two);
     count();
     for (i = 0; i < 4; i++)
+        next();
+    loop(0);                            /* AnimLoop Off at the end of the run */
+
+    /* a second run of a program with the library still loaded (from the
+       editor): init (if the set has one), then RIAnimFrameCount and
+       RINextAnimFrame before any RIAnimInit (the animation of the run
+       before is still in the buffer), then the six frames past the end
+       (AnimLoop not set in this run) */
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    if (ENT(LIB, E_LIBINIT, 0))
+        DO1(ENT(LIB, E_LIBINIT, 0), (void)0);
+    count();
+    next();
+    resetbitmap();
+    init0("second run", a_full);
+    for (i = 0; i < 6; i++)
         next();
 
     return rwe_done("rianimlib");
