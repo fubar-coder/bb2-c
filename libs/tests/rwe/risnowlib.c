@@ -28,7 +28,10 @@
  * (flakes falling, moving aside both ways, stopping on plane 1, leaving
  * the plane at the bottom, the index of the random table wrapping at
  * 1024), KillPoint on blue and on clear pixels (also in row 0), and
- * LDoSnowActivate every 7 steps, finit.  Not covered: list numbers
+ * LDoSnowActivate every 7 steps; then two pairs of KillPoint and
+ * LDoSnowActivate without an LDoSnow between them, each releasing the
+ * stopped snow above a blue pixel made for it (#909: the second call
+ * starts at the drop list's old end); finit.  Not covered: list numbers
  * outside 0-3, numpoints from 1024 on, more flakes than the lists hold,
  * bits above 7 in the random table, LDoSnowActivate before the first
  * LDoSnow (all BUG(orig), #913 #912 #914 #910 #908: memory outside the library's).
@@ -154,6 +157,41 @@ static void killpoint(UWORD x, UWORD y)
     OBS("d0", R.d[0]);
 }
 
+/* the pixel x,y of plane n set or cleared */
+static void pixel(int n, UWORD x, UWORD y, int on)
+{
+    UBYTE *p = area + MARGIN + n * (PL + MARGIN) + y * 40 + x / 8;
+    UBYTE b = (UBYTE)(0x80 >> (x % 8));
+    *p = (UBYTE)(on ? *p | b : *p & ~b);
+}
+
+/* two pairs of KillPoint and LDoSnowActivate on field 0 without an
+   LDoSnow between them: a blue pixel at x,20 with stopped snow above it
+   (plane 1 set, plane 2 clear at x,19; nothing around them), released by
+   the LDoSnowActivate after its KillPoint (#909) */
+static void activatetwice(void)
+{
+    static const UWORD xs[2] = { 100, 140 };
+    int j;
+
+    for (j = 0; j < 2; j++) {
+        int n, d;
+        for (n = 0; n < 3; n++)
+            for (d = -1; d <= 1; d++) {
+                pixel(n, (UWORD)(xs[j] + d), 19, 0);
+                pixel(n, (UWORD)(xs[j] + d), 20, 0);
+            }
+        pixel(2, xs[j], 20, 1);
+        pixel(1, xs[j], 19, 1);
+    }
+    for (j = 0; j < 2; j++) {
+        killpoint(xs[j], 20);
+        sprintf(VEC, "twice %d", j);
+        call1(ACTIVATE, "LDoSnowActivate", 0, 0, 0, 0);
+        OBS("d0", R.d[0]);
+    }
+}
+
 int main(int argc, char **argv)
 {
     static const char *names[] = { "memlib", LIB, NULL };
@@ -248,6 +286,7 @@ int main(int argc, char **argv)
             OBS("d0", R.d[0]);
         }
     }
+    activatetwice();
     strcpy(VEC, "");
     call1(FINIT, "finit", 0, 0, 0, 0);
     memlib(8);

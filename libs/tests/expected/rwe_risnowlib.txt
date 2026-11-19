@@ -43,6 +43,7 @@ InitSnowDrop|random table|1,40|1	bytes 1028 fnv 3C9379EA
 InitSnowDrop|random table|1,40|2	bytes 1028 fnv 3C9379EA
 KillPoint|COLOR00|0,29|1	$00001234
 KillPoint|COLOR00|10,5|1	$00001234
+KillPoint|COLOR00|100,20|1	$00001234
 KillPoint|COLOR00|113,37|1	$00001234
 KillPoint|COLOR00|115,23|1	$00001234
 KillPoint|COLOR00|12,16|1	$00001234
@@ -54,6 +55,7 @@ KillPoint|COLOR00|132,0|1	$00001234
 KillPoint|COLOR00|133,0|1	$00001234
 KillPoint|COLOR00|133,36|1	$00001234
 KillPoint|COLOR00|134,21|1	$00001234
+KillPoint|COLOR00|140,20|1	$00001234
 KillPoint|COLOR00|141,35|1	$00001234
 KillPoint|COLOR00|144,8|1	$00001234
 KillPoint|COLOR00|147,9|1	$00001234
@@ -163,6 +165,7 @@ KillPoint|COLOR00|95,32|1	$00001234
 KillPoint|COLOR00|96,41|1	$00001234
 KillPoint|block 0|0,29|1	bytes 19240 fnv 7ACD8200
 KillPoint|block 0|10,5|1	bytes 19240 fnv 11673EB6
+KillPoint|block 0|100,20|1	bytes 19240 fnv 857DE9FF
 KillPoint|block 0|113,37|1	bytes 19240 fnv 3062A7D3
 KillPoint|block 0|115,23|1	bytes 19240 fnv E651D547
 KillPoint|block 0|12,16|1	bytes 19240 fnv 071572C8
@@ -174,6 +177,7 @@ KillPoint|block 0|132,0|1	bytes 19240 fnv 2D223978
 KillPoint|block 0|133,0|1	bytes 19240 fnv 4FD20103
 KillPoint|block 0|133,36|1	bytes 19240 fnv 904F52F3
 KillPoint|block 0|134,21|1	bytes 19240 fnv B244CA89
+KillPoint|block 0|140,20|1	bytes 19240 fnv 91962AC9
 KillPoint|block 0|141,35|1	bytes 19240 fnv 112EA08C
 KillPoint|block 0|144,8|1	bytes 19240 fnv F6B74818
 KillPoint|block 0|147,9|1	bytes 19240 fnv 312C7C22
@@ -283,6 +287,7 @@ KillPoint|block 0|95,32|1	bytes 19240 fnv 2FE9D1A0
 KillPoint|block 0|96,41|1	bytes 19240 fnv 90327720
 KillPoint|block 1|0,29|1	bytes 2600 fnv 3E41B4AB
 KillPoint|block 1|10,5|1	bytes 2600 fnv B79C51E5
+KillPoint|block 1|100,20|1	bytes 2600 fnv 84F5C514
 KillPoint|block 1|113,37|1	bytes 2600 fnv 94D6A55C
 KillPoint|block 1|115,23|1	bytes 2600 fnv DBB1E3EE
 KillPoint|block 1|12,16|1	bytes 2600 fnv A202E18C
@@ -294,6 +299,7 @@ KillPoint|block 1|132,0|1	bytes 2600 fnv 3D1D34BF
 KillPoint|block 1|133,0|1	bytes 2600 fnv DBB1E3EE
 KillPoint|block 1|133,36|1	bytes 2600 fnv 94D6A55C
 KillPoint|block 1|134,21|1	bytes 2600 fnv 8F0AB0A0
+KillPoint|block 1|140,20|1	bytes 2600 fnv 84F5C514
 KillPoint|block 1|141,35|1	bytes 2600 fnv 84F5C514
 KillPoint|block 1|144,8|1	bytes 2600 fnv DBB1E3EE
 KillPoint|block 1|147,9|1	bytes 2600 fnv A202E18C
@@ -403,6 +409,7 @@ KillPoint|block 1|95,32|1	bytes 2600 fnv F63F8406
 KillPoint|block 1|96,41|1	bytes 2600 fnv C2355A84
 KillPoint|d0|0,29|1	$FFFFFFFF
 KillPoint|d0|10,5|1	$00000000
+KillPoint|d0|100,20|1	$FFFFFFFF
 KillPoint|d0|113,37|1	$00000000
 KillPoint|d0|115,23|1	$00000000
 KillPoint|d0|12,16|1	$00000000
@@ -414,6 +421,7 @@ KillPoint|d0|132,0|1	$00000000
 KillPoint|d0|133,0|1	$00000000
 KillPoint|d0|133,36|1	$00000000
 KillPoint|d0|134,21|1	$00000000
+KillPoint|d0|140,20|1	$FFFFFFFF
 KillPoint|d0|141,35|1	$00000000
 KillPoint|d0|144,8|1	$FFFFFFFF
 KillPoint|d0|147,9|1	$FFFFFFFF
@@ -523,6 +531,7 @@ KillPoint|d0|95,32|1	$00000000
 KillPoint|d0|96,41|1	$FFFFFFFF
 KillPoint|kept|0,29|1	kept
 KillPoint|kept|10,5|1	kept
+KillPoint|kept|100,20|1	kept
 KillPoint|kept|113,37|1	kept
 KillPoint|kept|115,23|1	kept
 KillPoint|kept|12,16|1	kept
@@ -534,6 +543,7 @@ KillPoint|kept|132,0|1	kept
 KillPoint|kept|133,0|1	kept
 KillPoint|kept|133,36|1	kept
 KillPoint|kept|134,21|1	kept
+KillPoint|kept|140,20|1	kept
 KillPoint|kept|141,35|1	kept
 KillPoint|kept|144,8|1	kept
 KillPoint|kept|147,9|1	kept
@@ -643,6 +653,7 @@ KillPoint|kept|95,32|1	kept
 KillPoint|kept|96,41|1	kept
 KillPoint|list table 0.0|0,29|1	$40000000
 KillPoint|list table 0.0|10,5|1	$400012D0
+KillPoint|list table 0.0|100,20|1	$40000000
 KillPoint|list table 0.0|113,37|1	$400012D0
 KillPoint|list table 0.0|115,23|1	$40000000
 KillPoint|list table 0.0|12,16|1	$400012D0
@@ -654,6 +665,7 @@ KillPoint|list table 0.0|132,0|1	$400012D0
 KillPoint|list table 0.0|133,0|1	$40000000
 KillPoint|list table 0.0|133,36|1	$400012D0
 KillPoint|list table 0.0|134,21|1	$40000000
+KillPoint|list table 0.0|140,20|1	$40000000
 KillPoint|list table 0.0|141,35|1	$40000000
 KillPoint|list table 0.0|144,8|1	$40000000
 KillPoint|list table 0.0|147,9|1	$400012D0
@@ -763,6 +775,7 @@ KillPoint|list table 0.0|95,32|1	$40000000
 KillPoint|list table 0.0|96,41|1	$400012D0
 KillPoint|list table 0.1|0,29|1	$400012D0
 KillPoint|list table 0.1|10,5|1	$40000000
+KillPoint|list table 0.1|100,20|1	$400012D0
 KillPoint|list table 0.1|113,37|1	$40000000
 KillPoint|list table 0.1|115,23|1	$400012D0
 KillPoint|list table 0.1|12,16|1	$40000000
@@ -774,6 +787,7 @@ KillPoint|list table 0.1|132,0|1	$40000000
 KillPoint|list table 0.1|133,0|1	$400012D0
 KillPoint|list table 0.1|133,36|1	$40000000
 KillPoint|list table 0.1|134,21|1	$400012D0
+KillPoint|list table 0.1|140,20|1	$400012D0
 KillPoint|list table 0.1|141,35|1	$400012D0
 KillPoint|list table 0.1|144,8|1	$400012D0
 KillPoint|list table 0.1|147,9|1	$40000000
@@ -883,6 +897,7 @@ KillPoint|list table 0.1|95,32|1	$400012D0
 KillPoint|list table 0.1|96,41|1	$40000000
 KillPoint|list table 0.2|0,29|1	$40003864
 KillPoint|list table 0.2|10,5|1	$400025A0
+KillPoint|list table 0.2|100,20|1	$400025A0
 KillPoint|list table 0.2|113,37|1	$400025A0
 KillPoint|list table 0.2|115,23|1	$40003864
 KillPoint|list table 0.2|12,16|1	$400025A0
@@ -894,6 +909,7 @@ KillPoint|list table 0.2|132,0|1	$400025A0
 KillPoint|list table 0.2|133,0|1	$40003864
 KillPoint|list table 0.2|133,36|1	$400025A0
 KillPoint|list table 0.2|134,21|1	$40003864
+KillPoint|list table 0.2|140,20|1	$40003864
 KillPoint|list table 0.2|141,35|1	$40003864
 KillPoint|list table 0.2|144,8|1	$40003864
 KillPoint|list table 0.2|147,9|1	$400025A0
@@ -1003,6 +1019,7 @@ KillPoint|list table 0.2|95,32|1	$40003864
 KillPoint|list table 0.2|96,41|1	$400025A0
 KillPoint|list table 0.3|0,29|1	$400025A0
 KillPoint|list table 0.3|10,5|1	$40003864
+KillPoint|list table 0.3|100,20|1	$40003864
 KillPoint|list table 0.3|113,37|1	$40003864
 KillPoint|list table 0.3|115,23|1	$400025A0
 KillPoint|list table 0.3|12,16|1	$40003864
@@ -1014,6 +1031,7 @@ KillPoint|list table 0.3|132,0|1	$40003864
 KillPoint|list table 0.3|133,0|1	$400025A0
 KillPoint|list table 0.3|133,36|1	$40003864
 KillPoint|list table 0.3|134,21|1	$400025A0
+KillPoint|list table 0.3|140,20|1	$400025A0
 KillPoint|list table 0.3|141,35|1	$400025A0
 KillPoint|list table 0.3|144,8|1	$400025A0
 KillPoint|list table 0.3|147,9|1	$40003864
@@ -1123,6 +1141,7 @@ KillPoint|list table 0.3|95,32|1	$400025A0
 KillPoint|list table 0.3|96,41|1	$40003864
 KillPoint|list table 1.0|0,29|1	$40000290
 KillPoint|list table 1.0|10,5|1	$40000290
+KillPoint|list table 1.0|100,20|1	$40000290
 KillPoint|list table 1.0|113,37|1	$40000290
 KillPoint|list table 1.0|115,23|1	$40000290
 KillPoint|list table 1.0|12,16|1	$40000000
@@ -1134,6 +1153,7 @@ KillPoint|list table 1.0|132,0|1	$40000000
 KillPoint|list table 1.0|133,0|1	$40000290
 KillPoint|list table 1.0|133,36|1	$40000290
 KillPoint|list table 1.0|134,21|1	$40000000
+KillPoint|list table 1.0|140,20|1	$40000290
 KillPoint|list table 1.0|141,35|1	$40000290
 KillPoint|list table 1.0|144,8|1	$40000290
 KillPoint|list table 1.0|147,9|1	$40000000
@@ -1243,6 +1263,7 @@ KillPoint|list table 1.0|95,32|1	$40000000
 KillPoint|list table 1.0|96,41|1	$40000000
 KillPoint|list table 1.1|0,29|1	$40000000
 KillPoint|list table 1.1|10,5|1	$40000000
+KillPoint|list table 1.1|100,20|1	$40000000
 KillPoint|list table 1.1|113,37|1	$40000000
 KillPoint|list table 1.1|115,23|1	$40000000
 KillPoint|list table 1.1|12,16|1	$40000290
@@ -1254,6 +1275,7 @@ KillPoint|list table 1.1|132,0|1	$40000290
 KillPoint|list table 1.1|133,0|1	$40000000
 KillPoint|list table 1.1|133,36|1	$40000000
 KillPoint|list table 1.1|134,21|1	$40000290
+KillPoint|list table 1.1|140,20|1	$40000000
 KillPoint|list table 1.1|141,35|1	$40000000
 KillPoint|list table 1.1|144,8|1	$40000000
 KillPoint|list table 1.1|147,9|1	$40000290
@@ -1363,6 +1385,7 @@ KillPoint|list table 1.1|95,32|1	$40000290
 KillPoint|list table 1.1|96,41|1	$40000290
 KillPoint|list table 1.2|0,29|1	$40000520
 KillPoint|list table 1.2|10,5|1	$40000520
+KillPoint|list table 1.2|100,20|1	$40000520
 KillPoint|list table 1.2|113,37|1	$40000520
 KillPoint|list table 1.2|115,23|1	$40000520
 KillPoint|list table 1.2|12,16|1	$40000520
@@ -1374,6 +1397,7 @@ KillPoint|list table 1.2|132,0|1	$40000520
 KillPoint|list table 1.2|133,0|1	$40000520
 KillPoint|list table 1.2|133,36|1	$40000520
 KillPoint|list table 1.2|134,21|1	$40000520
+KillPoint|list table 1.2|140,20|1	$40000520
 KillPoint|list table 1.2|141,35|1	$40000520
 KillPoint|list table 1.2|144,8|1	$40000520
 KillPoint|list table 1.2|147,9|1	$40000520
@@ -1483,6 +1507,7 @@ KillPoint|list table 1.2|95,32|1	$40000520
 KillPoint|list table 1.2|96,41|1	$40000520
 KillPoint|list table 1.3|0,29|1	$400007A4
 KillPoint|list table 1.3|10,5|1	$400007A4
+KillPoint|list table 1.3|100,20|1	$400007A4
 KillPoint|list table 1.3|113,37|1	$400007A4
 KillPoint|list table 1.3|115,23|1	$400007A4
 KillPoint|list table 1.3|12,16|1	$400007A4
@@ -1494,6 +1519,7 @@ KillPoint|list table 1.3|132,0|1	$400007A4
 KillPoint|list table 1.3|133,0|1	$400007A4
 KillPoint|list table 1.3|133,36|1	$400007A4
 KillPoint|list table 1.3|134,21|1	$400007A4
+KillPoint|list table 1.3|140,20|1	$400007A4
 KillPoint|list table 1.3|141,35|1	$400007A4
 KillPoint|list table 1.3|144,8|1	$400007A4
 KillPoint|list table 1.3|147,9|1	$400007A4
@@ -1603,6 +1629,7 @@ KillPoint|list table 1.3|95,32|1	$400007A4
 KillPoint|list table 1.3|96,41|1	$400007A4
 KillPoint|planes|0,29|1	bytes 6784 fnv 7B5F956A
 KillPoint|planes|10,5|1	bytes 6784 fnv 23A2046B
+KillPoint|planes|100,20|1	bytes 6784 fnv 370B1BD9
 KillPoint|planes|113,37|1	bytes 6784 fnv 53E687C8
 KillPoint|planes|115,23|1	bytes 6784 fnv 75F2C6AB
 KillPoint|planes|12,16|1	bytes 6784 fnv A607EC34
@@ -1614,6 +1641,7 @@ KillPoint|planes|132,0|1	bytes 6784 fnv 41525FA9
 KillPoint|planes|133,0|1	bytes 6784 fnv F38B32CB
 KillPoint|planes|133,36|1	bytes 6784 fnv 26E11948
 KillPoint|planes|134,21|1	bytes 6784 fnv 4C6060EF
+KillPoint|planes|140,20|1	bytes 6784 fnv BCF3CE49
 KillPoint|planes|141,35|1	bytes 6784 fnv 88F418B5
 KillPoint|planes|144,8|1	bytes 6784 fnv 909B144B
 KillPoint|planes|147,9|1	bytes 6784 fnv 2990F6FC
@@ -1723,6 +1751,7 @@ KillPoint|planes|95,32|1	bytes 6784 fnv D0321423
 KillPoint|planes|96,41|1	bytes 6784 fnv 2265B5BE
 KillPoint|popped|0,29|1	$00000000
 KillPoint|popped|10,5|1	$00000000
+KillPoint|popped|100,20|1	$00000000
 KillPoint|popped|113,37|1	$00000000
 KillPoint|popped|115,23|1	$00000000
 KillPoint|popped|12,16|1	$00000000
@@ -1734,6 +1763,7 @@ KillPoint|popped|132,0|1	$00000000
 KillPoint|popped|133,0|1	$00000000
 KillPoint|popped|133,36|1	$00000000
 KillPoint|popped|134,21|1	$00000000
+KillPoint|popped|140,20|1	$00000000
 KillPoint|popped|141,35|1	$00000000
 KillPoint|popped|144,8|1	$00000000
 KillPoint|popped|147,9|1	$00000000
@@ -1843,6 +1873,7 @@ KillPoint|popped|95,32|1	$00000000
 KillPoint|popped|96,41|1	$00000000
 KillPoint|random table|0,29|1	bytes 1028 fnv D49E4BCE
 KillPoint|random table|10,5|1	bytes 1028 fnv 7E287D75
+KillPoint|random table|100,20|1	bytes 1028 fnv BAF03EE2
 KillPoint|random table|113,37|1	bytes 1028 fnv DEA5FEE5
 KillPoint|random table|115,23|1	bytes 1028 fnv 47FEDD67
 KillPoint|random table|12,16|1	bytes 1028 fnv F586B3A3
@@ -1854,6 +1885,7 @@ KillPoint|random table|132,0|1	bytes 1028 fnv 894ACB3A
 KillPoint|random table|133,0|1	bytes 1028 fnv 47FEDD67
 KillPoint|random table|133,36|1	bytes 1028 fnv DEA5FEE5
 KillPoint|random table|134,21|1	bytes 1028 fnv 115A295D
+KillPoint|random table|140,20|1	bytes 1028 fnv BAF03EE2
 KillPoint|random table|141,35|1	bytes 1028 fnv BAF03EE2
 KillPoint|random table|144,8|1	bytes 1028 fnv 47FEDD67
 KillPoint|random table|147,9|1	bytes 1028 fnv F586B3A3
@@ -4793,6 +4825,8 @@ LDoSnowActivate|COLOR00|step 76|1	$00001234
 LDoSnowActivate|COLOR00|step 83|1	$00001234
 LDoSnowActivate|COLOR00|step 90|1	$00001234
 LDoSnowActivate|COLOR00|step 97|1	$00001234
+LDoSnowActivate|COLOR00|twice 0|1	$00001234
+LDoSnowActivate|COLOR00|twice 1|1	$00001234
 LDoSnowActivate|block 0|step 104|1	bytes 19240 fnv EB3BC5C7
 LDoSnowActivate|block 0|step 111|1	bytes 19240 fnv EC7BACA6
 LDoSnowActivate|block 0|step 118|1	bytes 19240 fnv 16C79FEB
@@ -4813,6 +4847,8 @@ LDoSnowActivate|block 0|step 76|1	bytes 19240 fnv FD6B0B78
 LDoSnowActivate|block 0|step 83|1	bytes 19240 fnv CDBDE21F
 LDoSnowActivate|block 0|step 90|1	bytes 19240 fnv E7182875
 LDoSnowActivate|block 0|step 97|1	bytes 19240 fnv 7166A273
+LDoSnowActivate|block 0|twice 0|1	bytes 19240 fnv 3C208C87
+LDoSnowActivate|block 0|twice 1|1	bytes 19240 fnv C75F1B28
 LDoSnowActivate|block 1|step 104|1	bytes 2600 fnv 729F00D9
 LDoSnowActivate|block 1|step 111|1	bytes 2600 fnv 3E41B4AB
 LDoSnowActivate|block 1|step 118|1	bytes 2600 fnv 3D1D34BF
@@ -4833,6 +4869,8 @@ LDoSnowActivate|block 1|step 76|1	bytes 2600 fnv 76BE764F
 LDoSnowActivate|block 1|step 83|1	bytes 2600 fnv 8F0AB0A0
 LDoSnowActivate|block 1|step 90|1	bytes 2600 fnv C2355A84
 LDoSnowActivate|block 1|step 97|1	bytes 2600 fnv 5FEC7E00
+LDoSnowActivate|block 1|twice 0|1	bytes 2600 fnv 84F5C514
+LDoSnowActivate|block 1|twice 1|1	bytes 2600 fnv 84F5C514
 LDoSnowActivate|d0|step 104|1	$00000004
 LDoSnowActivate|d0|step 111|1	$00000005
 LDoSnowActivate|d0|step 118|1	$00000004
@@ -4853,6 +4891,8 @@ LDoSnowActivate|d0|step 76|1	$00000004
 LDoSnowActivate|d0|step 83|1	$00000003
 LDoSnowActivate|d0|step 90|1	$00000004
 LDoSnowActivate|d0|step 97|1	$00000005
+LDoSnowActivate|d0|twice 0|1	$00000003
+LDoSnowActivate|d0|twice 1|1	$00000003
 LDoSnowActivate|kept|step 104|1	kept
 LDoSnowActivate|kept|step 111|1	kept
 LDoSnowActivate|kept|step 118|1	kept
@@ -4873,6 +4913,8 @@ LDoSnowActivate|kept|step 76|1	kept
 LDoSnowActivate|kept|step 83|1	kept
 LDoSnowActivate|kept|step 90|1	kept
 LDoSnowActivate|kept|step 97|1	kept
+LDoSnowActivate|kept|twice 0|1	kept
+LDoSnowActivate|kept|twice 1|1	kept
 LDoSnowActivate|list table 0.0|step 104|1	$400012D0
 LDoSnowActivate|list table 0.0|step 111|1	$40000000
 LDoSnowActivate|list table 0.0|step 118|1	$400012D0
@@ -4893,6 +4935,8 @@ LDoSnowActivate|list table 0.0|step 76|1	$400012D0
 LDoSnowActivate|list table 0.0|step 83|1	$40000000
 LDoSnowActivate|list table 0.0|step 90|1	$400012D0
 LDoSnowActivate|list table 0.0|step 97|1	$40000000
+LDoSnowActivate|list table 0.0|twice 0|1	$40000000
+LDoSnowActivate|list table 0.0|twice 1|1	$40000000
 LDoSnowActivate|list table 0.1|step 104|1	$40000000
 LDoSnowActivate|list table 0.1|step 111|1	$400012D0
 LDoSnowActivate|list table 0.1|step 118|1	$40000000
@@ -4913,6 +4957,8 @@ LDoSnowActivate|list table 0.1|step 76|1	$40000000
 LDoSnowActivate|list table 0.1|step 83|1	$400012D0
 LDoSnowActivate|list table 0.1|step 90|1	$40000000
 LDoSnowActivate|list table 0.1|step 97|1	$400012D0
+LDoSnowActivate|list table 0.1|twice 0|1	$400012D0
+LDoSnowActivate|list table 0.1|twice 1|1	$400012D0
 LDoSnowActivate|list table 0.2|step 104|1	$40003864
 LDoSnowActivate|list table 0.2|step 111|1	$400025A0
 LDoSnowActivate|list table 0.2|step 118|1	$40003864
@@ -4933,6 +4979,8 @@ LDoSnowActivate|list table 0.2|step 76|1	$40003864
 LDoSnowActivate|list table 0.2|step 83|1	$400025A0
 LDoSnowActivate|list table 0.2|step 90|1	$40003864
 LDoSnowActivate|list table 0.2|step 97|1	$400025A0
+LDoSnowActivate|list table 0.2|twice 0|1	$40003864
+LDoSnowActivate|list table 0.2|twice 1|1	$400025A0
 LDoSnowActivate|list table 0.3|step 104|1	$400025A0
 LDoSnowActivate|list table 0.3|step 111|1	$40003864
 LDoSnowActivate|list table 0.3|step 118|1	$400025A0
@@ -4953,6 +5001,8 @@ LDoSnowActivate|list table 0.3|step 76|1	$400025A0
 LDoSnowActivate|list table 0.3|step 83|1	$40003864
 LDoSnowActivate|list table 0.3|step 90|1	$400025A0
 LDoSnowActivate|list table 0.3|step 97|1	$40003864
+LDoSnowActivate|list table 0.3|twice 0|1	$400025A0
+LDoSnowActivate|list table 0.3|twice 1|1	$40003864
 LDoSnowActivate|list table 1.0|step 104|1	$40000290
 LDoSnowActivate|list table 1.0|step 111|1	$40000290
 LDoSnowActivate|list table 1.0|step 118|1	$40000000
@@ -4973,6 +5023,8 @@ LDoSnowActivate|list table 1.0|step 76|1	$40000000
 LDoSnowActivate|list table 1.0|step 83|1	$40000000
 LDoSnowActivate|list table 1.0|step 90|1	$40000000
 LDoSnowActivate|list table 1.0|step 97|1	$40000290
+LDoSnowActivate|list table 1.0|twice 0|1	$40000290
+LDoSnowActivate|list table 1.0|twice 1|1	$40000290
 LDoSnowActivate|list table 1.1|step 104|1	$40000000
 LDoSnowActivate|list table 1.1|step 111|1	$40000000
 LDoSnowActivate|list table 1.1|step 118|1	$40000290
@@ -4993,6 +5045,8 @@ LDoSnowActivate|list table 1.1|step 76|1	$40000290
 LDoSnowActivate|list table 1.1|step 83|1	$40000290
 LDoSnowActivate|list table 1.1|step 90|1	$40000290
 LDoSnowActivate|list table 1.1|step 97|1	$40000000
+LDoSnowActivate|list table 1.1|twice 0|1	$40000000
+LDoSnowActivate|list table 1.1|twice 1|1	$40000000
 LDoSnowActivate|list table 1.2|step 104|1	$40000520
 LDoSnowActivate|list table 1.2|step 111|1	$40000520
 LDoSnowActivate|list table 1.2|step 118|1	$40000520
@@ -5013,6 +5067,8 @@ LDoSnowActivate|list table 1.2|step 76|1	$40000520
 LDoSnowActivate|list table 1.2|step 83|1	$40000520
 LDoSnowActivate|list table 1.2|step 90|1	$40000520
 LDoSnowActivate|list table 1.2|step 97|1	$40000520
+LDoSnowActivate|list table 1.2|twice 0|1	$40000520
+LDoSnowActivate|list table 1.2|twice 1|1	$40000520
 LDoSnowActivate|list table 1.3|step 104|1	$400007A4
 LDoSnowActivate|list table 1.3|step 111|1	$400007A4
 LDoSnowActivate|list table 1.3|step 118|1	$400007A4
@@ -5033,6 +5089,8 @@ LDoSnowActivate|list table 1.3|step 76|1	$400007A4
 LDoSnowActivate|list table 1.3|step 83|1	$400007A4
 LDoSnowActivate|list table 1.3|step 90|1	$400007A4
 LDoSnowActivate|list table 1.3|step 97|1	$400007A4
+LDoSnowActivate|list table 1.3|twice 0|1	$400007A4
+LDoSnowActivate|list table 1.3|twice 1|1	$400007A4
 LDoSnowActivate|planes|step 104|1	bytes 6784 fnv 83BC4DBA
 LDoSnowActivate|planes|step 111|1	bytes 6784 fnv 94E4696A
 LDoSnowActivate|planes|step 118|1	bytes 6784 fnv BF4DB6AA
@@ -5053,6 +5111,8 @@ LDoSnowActivate|planes|step 76|1	bytes 6784 fnv E9AE37D6
 LDoSnowActivate|planes|step 83|1	bytes 6784 fnv DFEBD0AF
 LDoSnowActivate|planes|step 90|1	bytes 6784 fnv 6F86B49E
 LDoSnowActivate|planes|step 97|1	bytes 6784 fnv 700E3F7A
+LDoSnowActivate|planes|twice 0|1	bytes 6784 fnv 13BBB461
+LDoSnowActivate|planes|twice 1|1	bytes 6784 fnv 379174C1
 LDoSnowActivate|popped|step 104|1	$00000000
 LDoSnowActivate|popped|step 111|1	$00000000
 LDoSnowActivate|popped|step 118|1	$00000000
@@ -5073,6 +5133,8 @@ LDoSnowActivate|popped|step 76|1	$00000000
 LDoSnowActivate|popped|step 83|1	$00000000
 LDoSnowActivate|popped|step 90|1	$00000000
 LDoSnowActivate|popped|step 97|1	$00000000
+LDoSnowActivate|popped|twice 0|1	$00000000
+LDoSnowActivate|popped|twice 1|1	$00000000
 LDoSnowActivate|random table|step 104|1	bytes 1028 fnv 9A74ACA0
 LDoSnowActivate|random table|step 111|1	bytes 1028 fnv D49E4BCE
 LDoSnowActivate|random table|step 118|1	bytes 1028 fnv 894ACB3A
@@ -5093,8 +5155,10 @@ LDoSnowActivate|random table|step 76|1	bytes 1028 fnv 44451E33
 LDoSnowActivate|random table|step 83|1	bytes 1028 fnv 115A295D
 LDoSnowActivate|random table|step 90|1	bytes 1028 fnv BAE27B3F
 LDoSnowActivate|random table|step 97|1	bytes 1028 fnv E62E429B
+LDoSnowActivate|random table|twice 0|1	bytes 1028 fnv BAF03EE2
+LDoSnowActivate|random table|twice 1|1	bytes 1028 fnv BAF03EE2
 finit|COLOR00||1	$00001234
-finit|block 0||1	bytes 19240 fnv 5D6515CC
+finit|block 0||1	bytes 19240 fnv C75F1B28
 finit|block 1||1	bytes 2600 fnv 84F5C514
 finit|kept||1	kept
 finit|list table 0.0||1	$40000000
@@ -5105,7 +5169,7 @@ finit|list table 1.0||1	$40000290
 finit|list table 1.1||1	$40000000
 finit|list table 1.2||1	$40000520
 finit|list table 1.3||1	$400007A4
-finit|planes||1	bytes 6784 fnv 45C18095
+finit|planes||1	bytes 6784 fnv 379174C1
 finit|popped||1	$00000000
 finit|random table||1	bytes 1028 fnv BAF03EE2
 init|COLOR00||1	$00001234

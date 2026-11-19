@@ -99,7 +99,10 @@ memory area, the random table, the list table and the field blocks
 (pointers as offsets), the COLOR00 word, d0 where there is a result,
 kept registers. Cases: two fields on the same bitmap, 140 LDoSnow steps
 on field 0 and 47 on field 1 (the table index wraps at 1024), 120
-KillPoints (blue and clear pixels, row 0) and 20 LDoSnowActivates.
+KillPoints (blue and clear pixels, row 0) and 20 LDoSnowActivates,
+then two pairs of KillPoint and LDoSnowActivate without an LDoSnow
+between them, each releasing the stopped snow above a blue pixel made
+for it (#909).
 Checked to fail when the alternation, the stop in plane 1, the removal
 at the bottom, the second side or one of the LDoSnowActivate tests is
 changed. Not covered: the BUG(orig) cases above that write outside the
