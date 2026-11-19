@@ -1883,6 +1883,27 @@ command is as before.
 
 Issue: [ZoomyZoom ignores the bitmap's size: always 32 lines of 80 bytes (#676)](https://github.com/fubar-coder/bb2-c/issues/676).
 
+### `ZoomXY` without `InitZoomXY` {#zoomxy-without-initzoomxy}
+
+`ZoomXY` of
+[rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}) takes no
+bitmap of its own: it zooms from the source into the destination that
+`InitZoomXY` chose, so `InitZoomXY` must come first.
+
+**What happened.** The original did not look whether `InitZoomXY` had
+chosen any bitmaps, also not with runtime error checking. Before it,
+`ZoomXY` read a bitmap at address 0, took the processor's exception
+vectors there for its bitplane pointers and wrote through them, and the
+machine crashed.
+
+**With the port.** With runtime error checking, `ZoomXY` before any
+`InitZoomXY` of the run is the error "ZoomXY needs InitZoomXY". Without
+runtime error checking, the command is as before.
+
+**What to change.** Call `InitZoomXY` before the first `ZoomXY`.
+
+Issue: [ZoomXY before InitZoomXY reads a bitmap at address 0 and writes through the exception vectors (#1131)](https://github.com/fubar-coder/bb2-c/issues/1131).
+
 ### A colour split of fewer than one line {#colsplit-numlines}
 
 `DoColSplit` of

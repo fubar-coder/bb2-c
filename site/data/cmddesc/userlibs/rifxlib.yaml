@@ -42,10 +42,15 @@
   text: Enlarges the source chosen with `InitZoomXY` into its destination, every pixel `xzoom` pixels wide and every line `yzoom` lines high. The result is clipped to 320 pixels in width and `height` lines; 1,1 copies, and a factor of 0 does nothing.
   notes: |
     Only for low resolution bitmaps 320 pixels (40 bytes) wide, and only
-    after `InitZoomXY`. The bitmaps of `InitZoomXY` are checked as with
-    `Derez`.
+    after `InitZoomXY`. With runtime error checking, a `ZoomXY` before
+    any `InitZoomXY` of the run is the error "ZoomXY needs InitZoomXY";
+    without it, such a `ZoomXY` reads a bitmap at address 0 and writes
+    through the processor's exception vectors there. The bitmaps of `InitZoomXY` are checked as with `Derez`.
 "InitZoomXY":
   text: Chooses the source and destination bitmap of `ZoomXY` and the byte offsets in them where it starts reading and writing.
+  notes: |
+    The choice holds for the rest of the run. Every run of a program
+    starts with none, also a second run from the editor.
 "ZoomX2":
   text: Enlarges a rectangle of `width` x `height` pixels twice in both directions, from byte offset `sourceadd` of the source bitmap to byte offset `destadd` of the destination.
   notes: |

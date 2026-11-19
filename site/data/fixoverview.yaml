@@ -5468,6 +5468,22 @@ rows:
     text: "`ZoomXY` works after a `Derez` of 3 or more; in the original such a `Derez` overwrote the first instructions of `ZoomXY`."
     page: libraries
     anchor: rifxlib-fixes
+  - issue: 1127
+    severity: 5
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "InitZoomXY, ZoomXY"
+    text: "A second run from the editor starts without the bitmaps of `InitZoomXY`; in the original a `ZoomXY` before `InitZoomXY` zoomed with the bitmaps of the run before."
+    page: libraries
+    anchor: rifxlib-fixes
+  - issue: 1131
+    severity: 3
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "ZoomXY"
+    text: "With runtime error checking, `ZoomXY` before any `InitZoomXY` stops with \"ZoomXY needs InitZoomXY\"; the original zoomed a bitmap at address 0 and crashed."
+    page: libraries
+    anchor: rifxlib-fixes
   - issue: 590
     severity: 1
     topic: "Graphics"

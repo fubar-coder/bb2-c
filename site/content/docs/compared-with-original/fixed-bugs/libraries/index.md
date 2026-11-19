@@ -5601,6 +5601,16 @@ effects by Reflective Images. The fix of
   instructions of `ZoomXY`: after a `Derez` of 5, `ZoomXY` cleared a
   byte somewhere in memory and zoomed nothing
   ([#671](https://github.com/fubar-coder/bb2-c/issues/671)).
+* With runtime error checking, `ZoomXY` before any `InitZoomXY` stops
+  with "ZoomXY needs InitZoomXY". The original zoomed a bitmap at
+  address 0 and crashed
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#zoomxy-without-initzoomxy" >}}),
+  [#1131](https://github.com/fubar-coder/bb2-c/issues/1131)).
+* A program run a second time from the editor starts without the
+  bitmaps and offsets of an `InitZoomXY`. In the original, a `ZoomXY`
+  before the run's own `InitZoomXY` zoomed with the bitmaps of the run
+  before, which may have been freed
+  ([#1127](https://github.com/fubar-coder/bb2-c/issues/1127)).
 
 ### Fixes in ricopperfxlib {#ricopperfxlib-fixes}
 
