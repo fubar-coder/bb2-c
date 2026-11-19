@@ -364,6 +364,14 @@ before init|memory|ZoomX8|1	bytes 32768 fnv CB86E5ED
 before init|memory|ZoomyZoom|1	bytes 32768 fnv 1F840C6D
 before init|tables 0|GetZoomTables|1	$00000000
 finit|kept||1	kept
+finit|kept|second run|1	kept
 finit|memory||1	bytes 32768 fnv EEE352B7
+finit|memory|second run|1	bytes 32768 fnv 1EAD9FDC
+init|InitZoomXY dest# of the run before|second run|1	$00000001
+init|InitZoomXY destadd|second run|1	$00000050
+init|InitZoomXY source# of the run before|second run|1	$00000001
+init|InitZoomXY sourceadd|second run|1	$00000028
 init|kept|GetZoomTables|1	kept
+init|kept|second run|1	kept
 init|memory|GetZoomTables|1	bytes 32768 fnv FDBD9242
+init|memory|second run|1	bytes 32768 fnv BE2F59D7

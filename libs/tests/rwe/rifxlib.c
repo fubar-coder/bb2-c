@@ -23,6 +23,13 @@
  * instruction of ZoomXY (#671: the port has room for the table, its
  * ZoomXY stays intact; the bug-orig test rifxlib-derez-zoomxy shows it).
  *
+ * At the end a second run of a program with the library still loaded (as
+ * from the editor): before it the four longs of the InitZoomXY state are
+ * found in the library (the values of the run's last InitZoomXY: source,
+ * dest, 40, 80), then init runs and the four are observed (ZoomXY itself
+ * is not called: without an InitZoomXY of its run it reads a bitmap at
+ * address 0, see #1131); then finit again.
+ *
  * Not covered: delay 0 (2^32 turns), bitmaps with bm_Flags != 0 (in the
  * original the depth word gives plane counts in the thousands; the
  * bug-orig test rwe/rifxlib-depth-word-at-4 covers it, #670), depths
@@ -350,6 +357,34 @@ static void test_derez(void)
     }
 }
 
+/* a second run with the library still loaded: the InitZoomXY state after
+   init (#1127).  The state is found by its values, the last InitZoomXY of
+   test_zoomxy (SRC, DST, sourceadd 40, destadd 80), in the library's
+   block - its place differs between the sets */
+static void test_secondrun(void)
+{
+    struct lib *l = getlib(&loaded, LIBNAME);
+    UBYTE *p, *state = NULL;
+
+    for (p = l->code; p + 16 <= l->code + l->size; p += 2)
+        if (L(p) == SRC && L(p + 4) == DST && L(p + 8) == 40 && L(p + 12) == 80) {
+            state = p;
+            break;
+        }
+    check("rifxlib test: InitZoomXY state found", state != NULL);
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    DO1(E_INIT, 0, (void)0);
+    if (state) {
+        OBS("InitZoomXY source# of the run before", L(state) == SRC);
+        OBS("InitZoomXY dest# of the run before", L(state + 4) == DST);
+        OBS("InitZoomXY sourceadd", L(state + 8));
+        OBS("InitZoomXY destadd", L(state + 12));
+    }
+    ROUT = "finit";
+    DO1(E_FINIT, 0, (void)0);
+}
+
 /* ------------------------------------------------------------ main */
 
 static const char *names[] = { "memlib", LIBNAME, NULL };
@@ -400,6 +435,7 @@ int main(int argc, char **argv)
     ROUT = "finit";
     VEC[0] = 0;
     DO1(E_FINIT, 0, (void)0);
+    test_secondrun();
     markregs(&R);
     callregs(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, 0, 0);
     FreeMem(arena, ARENA);
