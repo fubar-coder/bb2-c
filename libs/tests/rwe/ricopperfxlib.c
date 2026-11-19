@@ -14,7 +14,9 @@
  * and the kept registers (KEEPS).  Covered: all 14 commands and both
  * forms of CopperReset, before any reset (no custom space), after
  * CopperReset and CopperResetAdr, colour splits crossing line 256,
- * falling/rising/negative colour values, random splits.
+ * falling/rising/negative colour values, random splits; a second run
+ * (init, as from the editor with the library still loaded): the commands
+ * before CopperReset, the ColSplitBplcon3 byte of the run before.
  * Not covered: the copper actually running the lists (nothing here is
  * displayed - the lists are only built in memory), DoColSplit/RedoColSplit
  * with numlines 0 (divide-by-zero exception) or negative (65536 lines),
@@ -291,6 +293,24 @@ int main(int argc, char **argv)
     strcpy(VEC, "");
     DO1(FINIT, 0, (void)0);
     same_state();
+
+    /* a second run of a program with the library still loaded (from the
+       editor): init, then the commands before any CopperReset (the run
+       before left the custom space of CopperResetAdr and ColSplitBplcon3
+       $FF), then CopperReset and a split with the run's BPLCON3 byte */
+    fillbuf();
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    DO1(INIT, 0, (void)0);
+    same_state();
+    nullary(GETCCOFFSET, "GetCCOffset", 1);
+    two(MOVE, "CopperMove", 0x180, 0x0f0);
+    agacol(9, 0x10, 0x20, 0x30);
+    setcols(0, 0, 0, 255, 128, 64);
+    colsplit(4, 7);
+    reset(60, 0, 0);
+    colsplit(4, 7);
+    nullary(GETCCOFFSET, "GetCCOffset", 1);
 
     FreeMem(buf, BUFSIZE);
     printf("%d checks, %d failures\n", checks, failures);
