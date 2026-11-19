@@ -33,13 +33,12 @@ not the result (the original keeps a1 nearly always and d0/d1 in several
 statements); the original's changes of d2/d6/d7/a0/a2 are not
 reproduced.
 
-**BUG(orig)** (kept):
-
-* `CopperAGACol` (long result) returns 1234 without custom space,
-  otherwise its `col#` argument (#590).
-
 **Fixed:**
 
+* `CopperAGACol` (a command with a long result) returns -1 when it wrote
+  the colour, 0 without a custom space: the original returned 1234
+  without a custom space, otherwise its `col#` argument (#590; decision
+  W6 Q3).
 * `DoColSplit` (a command with a word result) returns -1 when it wrote
   the split, 0 without a custom space: the original left the red step in
   d0 (its `cols_adr` argument without a custom space) (#592; decision W6

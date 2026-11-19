@@ -284,60 +284,112 @@ CopperAGACol|customaddr|9,$10,$20,$30|1 [orig]	$000103E8
 CopperAGACol|customaddr|9,$10,$20,$30|1 [fixed #1126]	$00000000
 CopperAGACol|customaddr|97,$1E,$81,$A3|1	$00010000
 CopperAGACol|customaddr|99,$BA,$18,$22|1	$00010000
-CopperAGACol|d0|0,$CB,$AF,$D7|1	$A5A50000
-CopperAGACol|d0|1,$0,$96,$5B|1	$A5A50001
-CopperAGACol|d0|116,$D5,$F3,$24|1	$A5A50074
-CopperAGACol|d0|122,$2F,$A8,$41|1	$A5A5007A
-CopperAGACol|d0|122,$F6,$73,$B8|1	$A5A5007A
-CopperAGACol|d0|126,$44,$4A,$37|1	$A5A5007E
-CopperAGACol|d0|137,$D6,$D5,$7B|1	$A5A50089
-CopperAGACol|d0|146,$9E,$3E,$2B|1	$A5A50092
-CopperAGACol|d0|156,$B5,$80,$D8|1	$A5A5009C
-CopperAGACol|d0|167,$71,$9E,$C4|1	$A5A500A7
-CopperAGACol|d0|176,$FC,$FF,$2D|1	$A5A500B0
-CopperAGACol|d0|18,$59,$9,$F6|1	$A5A50012
-CopperAGACol|d0|180,$BD,$C9,$40|1	$A5A500B4
-CopperAGACol|d0|200,$1E,$46,$38|1	$A5A500C8
-CopperAGACol|d0|200,$FF,$80,$1|1	$000004D2
-CopperAGACol|d0|200,$FF,$80,$1|2	$A5A500C8
-CopperAGACol|d0|200,$FF,$80,$1|3	$A5A500C8
-CopperAGACol|d0|204,$9F,$BD,$CD|1	$A5A500CC
-CopperAGACol|d0|212,$6A,$1D,$7C|1	$A5A500D4
-CopperAGACol|d0|221,$C3,$55,$8B|1	$A5A500DD
-CopperAGACol|d0|228,$CA,$49,$98|1	$A5A500E4
-CopperAGACol|d0|229,$23,$A6,$3E|1	$A5A500E5
-CopperAGACol|d0|241,$95,$80,$2D|1	$A5A500F1
-CopperAGACol|d0|25,$60,$D,$84|1	$A5A50019
-CopperAGACol|d0|250,$18,$5C,$5A|1	$A5A500FA
-CopperAGACol|d0|255,$1FF,$FEDC,$8000|1	$000004D2
-CopperAGACol|d0|255,$1FF,$FEDC,$8000|2	$A5A500FF
-CopperAGACol|d0|255,$1FF,$FEDC,$8000|3	$A5A500FF
-CopperAGACol|d0|37,$12,$34,$56|1	$000004D2
-CopperAGACol|d0|37,$12,$34,$56|2	$A5A50025
-CopperAGACol|d0|37,$12,$34,$56|3	$A5A50025
-CopperAGACol|d0|38,$B7,$69,$5D|1	$A5A50026
-CopperAGACol|d0|40,$A2,$1,$3D|1	$A5A50028
-CopperAGACol|d0|41,$70,$4A,$92|1	$A5A50029
-CopperAGACol|d0|44,$FD,$70,$8D|1	$A5A5002C
-CopperAGACol|d0|4660,$0,$0,$0|1	$000004D2
-CopperAGACol|d0|4660,$0,$0,$0|2	$A5A51234
-CopperAGACol|d0|4660,$0,$0,$0|3	$A5A51234
-CopperAGACol|d0|47,$B1,$D5,$14|1	$A5A5002F
-CopperAGACol|d0|49,$12,$9A,$FF|1	$A5A50031
-CopperAGACol|d0|49,$C9,$62,$A5|1	$A5A50031
-CopperAGACol|d0|54,$4,$15,$B4|1	$A5A50036
-CopperAGACol|d0|61,$87,$A5,$C3|1	$A5A5003D
-CopperAGACol|d0|66,$B5,$74,$60|1	$A5A50042
-CopperAGACol|d0|66,$DE,$6B,$4|1	$A5A50042
-CopperAGACol|d0|68,$CA,$43,$C7|1	$A5A50044
-CopperAGACol|d0|73,$C,$8A,$43|1	$A5A50049
-CopperAGACol|d0|78,$2D,$77,$B3|1	$A5A5004E
-CopperAGACol|d0|79,$D5,$E,$11|1	$A5A5004F
-CopperAGACol|d0|8,$45,$C3,$61|1	$A5A50008
+CopperAGACol|d0|0,$CB,$AF,$D7|1 [orig]	$A5A50000
+CopperAGACol|d0|0,$CB,$AF,$D7|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|1,$0,$96,$5B|1 [orig]	$A5A50001
+CopperAGACol|d0|1,$0,$96,$5B|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|116,$D5,$F3,$24|1 [orig]	$A5A50074
+CopperAGACol|d0|116,$D5,$F3,$24|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|122,$2F,$A8,$41|1 [orig]	$A5A5007A
+CopperAGACol|d0|122,$2F,$A8,$41|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|122,$F6,$73,$B8|1 [orig]	$A5A5007A
+CopperAGACol|d0|122,$F6,$73,$B8|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|126,$44,$4A,$37|1 [orig]	$A5A5007E
+CopperAGACol|d0|126,$44,$4A,$37|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|137,$D6,$D5,$7B|1 [orig]	$A5A50089
+CopperAGACol|d0|137,$D6,$D5,$7B|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|146,$9E,$3E,$2B|1 [orig]	$A5A50092
+CopperAGACol|d0|146,$9E,$3E,$2B|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|156,$B5,$80,$D8|1 [orig]	$A5A5009C
+CopperAGACol|d0|156,$B5,$80,$D8|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|167,$71,$9E,$C4|1 [orig]	$A5A500A7
+CopperAGACol|d0|167,$71,$9E,$C4|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|176,$FC,$FF,$2D|1 [orig]	$A5A500B0
+CopperAGACol|d0|176,$FC,$FF,$2D|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|18,$59,$9,$F6|1 [orig]	$A5A50012
+CopperAGACol|d0|18,$59,$9,$F6|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|180,$BD,$C9,$40|1 [orig]	$A5A500B4
+CopperAGACol|d0|180,$BD,$C9,$40|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|200,$1E,$46,$38|1 [orig]	$A5A500C8
+CopperAGACol|d0|200,$1E,$46,$38|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|200,$FF,$80,$1|1 [orig]	$000004D2
+CopperAGACol|d0|200,$FF,$80,$1|1 [fixed #590]	$00000000
+CopperAGACol|d0|200,$FF,$80,$1|2 [orig]	$A5A500C8
+CopperAGACol|d0|200,$FF,$80,$1|2 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|200,$FF,$80,$1|3 [orig]	$A5A500C8
+CopperAGACol|d0|200,$FF,$80,$1|3 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|204,$9F,$BD,$CD|1 [orig]	$A5A500CC
+CopperAGACol|d0|204,$9F,$BD,$CD|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|212,$6A,$1D,$7C|1 [orig]	$A5A500D4
+CopperAGACol|d0|212,$6A,$1D,$7C|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|221,$C3,$55,$8B|1 [orig]	$A5A500DD
+CopperAGACol|d0|221,$C3,$55,$8B|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|228,$CA,$49,$98|1 [orig]	$A5A500E4
+CopperAGACol|d0|228,$CA,$49,$98|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|229,$23,$A6,$3E|1 [orig]	$A5A500E5
+CopperAGACol|d0|229,$23,$A6,$3E|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|241,$95,$80,$2D|1 [orig]	$A5A500F1
+CopperAGACol|d0|241,$95,$80,$2D|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|25,$60,$D,$84|1 [orig]	$A5A50019
+CopperAGACol|d0|25,$60,$D,$84|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|250,$18,$5C,$5A|1 [orig]	$A5A500FA
+CopperAGACol|d0|250,$18,$5C,$5A|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|255,$1FF,$FEDC,$8000|1 [orig]	$000004D2
+CopperAGACol|d0|255,$1FF,$FEDC,$8000|1 [fixed #590]	$00000000
+CopperAGACol|d0|255,$1FF,$FEDC,$8000|2 [orig]	$A5A500FF
+CopperAGACol|d0|255,$1FF,$FEDC,$8000|2 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|255,$1FF,$FEDC,$8000|3 [orig]	$A5A500FF
+CopperAGACol|d0|255,$1FF,$FEDC,$8000|3 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|37,$12,$34,$56|1 [orig]	$000004D2
+CopperAGACol|d0|37,$12,$34,$56|1 [fixed #590]	$00000000
+CopperAGACol|d0|37,$12,$34,$56|2 [orig]	$A5A50025
+CopperAGACol|d0|37,$12,$34,$56|2 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|37,$12,$34,$56|3 [orig]	$A5A50025
+CopperAGACol|d0|37,$12,$34,$56|3 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|38,$B7,$69,$5D|1 [orig]	$A5A50026
+CopperAGACol|d0|38,$B7,$69,$5D|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|40,$A2,$1,$3D|1 [orig]	$A5A50028
+CopperAGACol|d0|40,$A2,$1,$3D|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|41,$70,$4A,$92|1 [orig]	$A5A50029
+CopperAGACol|d0|41,$70,$4A,$92|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|44,$FD,$70,$8D|1 [orig]	$A5A5002C
+CopperAGACol|d0|44,$FD,$70,$8D|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|4660,$0,$0,$0|1 [orig]	$000004D2
+CopperAGACol|d0|4660,$0,$0,$0|1 [fixed #590]	$00000000
+CopperAGACol|d0|4660,$0,$0,$0|2 [orig]	$A5A51234
+CopperAGACol|d0|4660,$0,$0,$0|2 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|4660,$0,$0,$0|3 [orig]	$A5A51234
+CopperAGACol|d0|4660,$0,$0,$0|3 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|47,$B1,$D5,$14|1 [orig]	$A5A5002F
+CopperAGACol|d0|47,$B1,$D5,$14|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|49,$12,$9A,$FF|1 [orig]	$A5A50031
+CopperAGACol|d0|49,$12,$9A,$FF|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|49,$C9,$62,$A5|1 [orig]	$A5A50031
+CopperAGACol|d0|49,$C9,$62,$A5|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|54,$4,$15,$B4|1 [orig]	$A5A50036
+CopperAGACol|d0|54,$4,$15,$B4|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|61,$87,$A5,$C3|1 [orig]	$A5A5003D
+CopperAGACol|d0|61,$87,$A5,$C3|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|66,$B5,$74,$60|1 [orig]	$A5A50042
+CopperAGACol|d0|66,$B5,$74,$60|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|66,$DE,$6B,$4|1 [orig]	$A5A50042
+CopperAGACol|d0|66,$DE,$6B,$4|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|68,$CA,$43,$C7|1 [orig]	$A5A50044
+CopperAGACol|d0|68,$CA,$43,$C7|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|73,$C,$8A,$43|1 [orig]	$A5A50049
+CopperAGACol|d0|73,$C,$8A,$43|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|78,$2D,$77,$B3|1 [orig]	$A5A5004E
+CopperAGACol|d0|78,$2D,$77,$B3|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|79,$D5,$E,$11|1 [orig]	$A5A5004F
+CopperAGACol|d0|79,$D5,$E,$11|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|8,$45,$C3,$61|1 [orig]	$A5A50008
+CopperAGACol|d0|8,$45,$C3,$61|1 [fixed #590]	$FFFFFFFF
 CopperAGACol|d0|9,$10,$20,$30|1 [orig]	$A5A50009
-CopperAGACol|d0|9,$10,$20,$30|1 [fixed #1126]	$000004D2
-CopperAGACol|d0|97,$1E,$81,$A3|1	$A5A50061
-CopperAGACol|d0|99,$BA,$18,$22|1	$A5A50063
+CopperAGACol|d0|9,$10,$20,$30|1 [fixed #1126]	$00000000
+CopperAGACol|d0|97,$1E,$81,$A3|1 [orig]	$A5A50061
+CopperAGACol|d0|97,$1E,$81,$A3|1 [fixed #590]	$FFFFFFFF
+CopperAGACol|d0|99,$BA,$18,$22|1 [orig]	$A5A50063
+CopperAGACol|d0|99,$BA,$18,$22|1 [fixed #590]	$FFFFFFFF
 CopperAGACol|kept|0,$CB,$AF,$D7|1	kept
 CopperAGACol|kept|1,$0,$96,$5B|1	kept
 CopperAGACol|kept|116,$D5,$F3,$24|1	kept

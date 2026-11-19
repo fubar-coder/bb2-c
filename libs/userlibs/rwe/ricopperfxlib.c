@@ -34,10 +34,10 @@
  *                writes and reads it as the first byte of a word
  *                (MOVE.b d0,lo_bplcon3 with lo_bplcon3: Dc.w 0)
  *
- * BUG(orig):
- *   - CopperAGACol (long result) returns 1234 without a custom space,
- *     otherwise its col# argument (#590).
  * Fixed:
+ *   - CopperAGACol returns -1 when it wrote the colour, 0 without a custom
+ *     space (a command with a long result; the original returned 1234,
+ *     or its col# argument) (#590).
  *   - DoColSplit returns -1 when it wrote the split, 0 without a custom
  *     space (a command with a word result; the original left the red step
  *     value in d0, or its cols_adr argument) (#592).
@@ -539,8 +539,9 @@ void BLITZ_ROUTINE c_EndSplit(void)
  * @param r    d1: red (8 bit)
  * @param g    d2: green
  * @param b    d3: blue
- * @return d0: the col# argument, 1234 without a custom space
- *         (BUG(orig) (#590))
+ * @return d0: -1 when the colour was written, 0 without a custom space
+ *         (fixed #590: the original returned the col# argument, 1234
+ *         without a custom space)
  */
 ULONG BLITZ_ROUTINE c_CustomAGACol(ULONG col BL_REG(d0), UWORD r BL_REG(d1),
                                           UWORD g BL_REG(d2), UWORD b BL_REG(d3))
@@ -548,7 +549,7 @@ ULONG BLITZ_ROUTINE c_CustomAGACol(ULONG col BL_REG(d0), UWORD r BL_REG(d1),
     UWORD *p = getcustom(), reg;
 
     if (!p)
-        return 1234;
+        return 0;                           /* fixed #590 (the original: 1234) */
     reg = colourreg((UBYTE)col);
     *(ULONG *)p = AGAHIGHNIBBLE | bank((UBYTE)col);
     p[2] = reg;
@@ -557,7 +558,7 @@ ULONG BLITZ_ROUTINE c_CustomAGACol(ULONG col BL_REG(d0), UWORD r BL_REG(d1),
     p[6] = reg;
     p[7] = lownibbles(r, g, b);
     cfx.ccoffset += 16;
-    return col;
+    return (ULONG)-1;                       /* fixed #590 (the original: col) */
 }
 
 /**

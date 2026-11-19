@@ -4,6 +4,7 @@
 ; program's own memory (CopperResetAdr).
 ; Correct (decision W6 Q3): -1 when the command worked, 0 when not (no
 ; custom space).
+; @fixed #590
 ; @rwe ricopperfxlib
 DEFTYPE .l
 m=AllocMem_(256,$10000)
