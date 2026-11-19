@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+both flakes in the drop list
+rc=0
