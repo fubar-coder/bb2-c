@@ -17,15 +17,20 @@
  * buffer), the palettes made by the loaders, the files LESaveShapes
  * writes (all bytes), the kept registers; memlib's memory all back at
  * the end.
+ * The shape numbers in d0/d1 of SafeToBlit, LESaveShapes and LELoadShapes
+ * are passed as compiled code passes them (shifted by 5, OBJ), and
+ * LELoadShapes reaches shapeslib's LoadShapes through a stub as compiled
+ * code does (lsh_stub).
  * Covered: init, LEInitShape (fresh, used: BUG(orig) #810 the cookie stays),
- * LEScanShapes and LEMaxShape*, SafeToBlit (BUG(orig) #822 shape/32 against
- * the maximum; no cookie, negative and too large coordinates),
+ * LEScanShapes and LEMaxShape*, SafeToBlit (beyond the maximum, no cookie,
+ * negative and too large coordinates),
  * LESaveShapes both forms (without and with a palette, packed with
  * packable and unpackable data - PackPBM's failure path -, the shape
- * count from the >>5 of the shape numbers, with the upper word of d1),
- * LELoadShapes all four forms (BUG(orig) #812 form 3: the palette of d3),
+ * count, with an upper word in d1: BUG(orig) #815),
+ * LELoadShapes all four forms (form 3, which compiled code never reaches,
+ * called directly with a0 set),
  * a missing file, a file that is FORM but no LESH, a file in shapeslib's
- * format (BUG(orig) #813: LoadShapes into the last shape), LECludgeShapes from
+ * format (LoadShapes into the first shape), LECludgeShapes from
  * fast memory (copied) and chip memory (linked, "cL", and copied with
  * copymemflag -1), packed (copied), with and without a palette, a CMAP
  * of 7 bytes (BUG(orig) #811: SDAT then not found), no FORM;
@@ -58,6 +63,32 @@ static char fname[40];
 #define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
 #define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
 #define WA(v) (0x5A000000UL | ((ULONG)(v) & 0xffff))   /* word, marker above */
+/* a shape number in a #pd register as compiled code passes it: the
+   compiler shifts it in place by the object's size shift (LSL.w #5,
+   libcall.c toreg) before it adds it to the #ia register */
+#define OBJ(n) ((UWORD)((n) << 5))
+
+/* shapeslib's LoadShapes form 1 as compiled code reaches it from
+   LELoadShapes: through the ALibJsr stub that loads the callee's !libs
+   first (#ia3|#pd0, #ia2|#pd1, #doslib,#la6; docs/libs/cmdlibs-port.md,
+   editlib #130), so a3 and a2 are the shapes of the numbers in d0 and
+   d1, whatever a2/a3 the library leaves.  link_loadshapes_stub links
+   rishapeslib's call to this stub. */
+UBYTE *lsh_base;                        /* shape 0 */
+APTR lsh_loadshapes;                    /* LoadShapes form 1 */
+void lsh_stub(void);
+__asm__("   .text\n"
+        "   .even\n"
+        "_lsh_stub:\n"
+        "   move.l  _lsh_base,a3\n"
+        "   lsl.w   #5,d0\n"
+        "   adda.w  d0,a3\n"
+        "   move.l  _lsh_base,a2\n"
+        "   lsl.w   #5,d1\n"
+        "   adda.w  d1,a2\n"
+        "   move.l  _DOSBase,a6\n"
+        "   move.l  _lsh_loadshapes,-(sp)\n"
+        "   rts\n");
 
 static const char *setname(int n)
 {
@@ -177,7 +208,7 @@ static void safe(ULONG s, ULONG x, ULONG y, ULONG max)
 {
     ROUT = "SafeToBlit";
     sprintf(VEC, "shape %lu at %ld,%ld max %lu", s, (LONG)(WORD)x, (LONG)(WORD)y, max);
-    DO1(ENT(LIB, SAFE, 0), R.d[0] = WA(s); R.d[1] = WA(x); R.d[2] = WA(y);
+    DO1(ENT(LIB, SAFE, 0), R.d[0] = WA(OBJ(s)); R.d[1] = WA(x); R.d[2] = WA(y);
         R.d[6] = WA(max); R.a[3] = (ULONG)shp[s % NSH];
         R.a[2] = (ULONG)bm);
     OBS("d0", R.d[0]);
@@ -196,8 +227,8 @@ static void save(int n, int s1, int s2, ULONG up, int p)
 {
     ROUT = "LESaveShapes";
     sprintf(VEC, "%d..%d up $%lx pal %d file %d", s1, s2, up, p, n);
-    DO1(ENT(LIB, LESAVE, p < 0 ? 0 : 1), R.d[0] = WA(s1);
-        R.d[1] = up << 16 | (UWORD)s2; R.d[2] = (ULONG)setname(n);
+    DO1(ENT(LIB, LESAVE, p < 0 ? 0 : 1), R.d[0] = WA(OBJ(s1));
+        R.d[1] = up << 16 | OBJ(s2); R.d[2] = (ULONG)setname(n);
         R.d[3] = WA(p); R.a[0] = p < 0 ? 0 : (ULONG)pal[p];
         R.a[2] = (ULONG)shp[s1]; R.a[3] = (ULONG)shp[s2];
         R.a[6] = (ULONG)DOSBase);
@@ -211,12 +242,12 @@ static void load(int form, int n, int s1, int s2, int p, const char *name)
     sprintf(VEC, "form %d %d,%d pal %d file %d %s", form, s1, s2, p, n, name ? name : "");
     DO1(ENT(LIB, LELOAD, form),
         const char *fn = name ? name : setname(n);
-        R.d[0] = WA(s1);
+        R.d[0] = WA(OBJ(s1));
         R.a[2] = (ULONG)shp[s1];
         R.a[6] = (ULONG)DOSBase;
         R.a[0] = p < 0 ? 0 : (ULONG)pal[p];
         if (form < 2) {
-            R.d[1] = WA(s2); R.d[2] = (ULONG)fn; R.a[3] = (ULONG)shp[s2];
+            R.d[1] = WA(OBJ(s2)); R.d[2] = (ULONG)fn; R.a[3] = (ULONG)shp[s2];
         } else {
             /* the maximum in d4, a3 = shape 0 */
             R.d[1] = (ULONG)fn; R.d[4] = WA(s2); R.a[3] = (ULONG)shp[0];
@@ -300,6 +331,28 @@ static APTR nullsub(const char *name, int off)
     return (APTR)L(p + 2 + 4);
 }
 
+/* rishapeslib's link to LoadShapes form 1 (token #shapeslib<<7+10, form
+   1; shapeslib = 154) goes through lsh_stub; FALSE unless there is
+   exactly one */
+static BOOL link_loadshapes_stub(void)
+{
+    struct lib *l = getlib(&loaded, LIB);
+    ULONG r, to = (ULONG)find_token(&loaded, (UWORD)((154 << 7) + 10), 1) & ~1UL;
+    int n = 0;
+
+    lsh_base = shp[0];
+    lsh_loadshapes = (APTR)to;
+    for (r = 0; r < l->nrelocs; r++) {
+        ULONG *at = (ULONG *)(l->code + l->relocs[r]);
+        if (*at == to) {
+            *at = (ULONG)lsh_stub;
+            n++;
+        }
+    }
+    CacheClearU();
+    return n == 1;
+}
+
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, "memlib", "shapeslib", "ripacklib", "riamosfunclib",
@@ -314,6 +367,10 @@ int main(int argc, char **argv)
     }
     if (!load_set(argv[1], names))
         return 20;
+    if (!link_loadshapes_stub()) {
+        printf("rishapeslib: not one call of LoadShapes in %s\n", LIB);
+        return 20;
+    }
     KEEPS("init", d0-d7|a0-a3|a6);
     KEEPS("LEInitShape", d3-d7|a0|a2|a3|a6);
     KEEPS("LEScanShapes", d3-d7|a0|a1|a3|a6);
@@ -373,18 +430,18 @@ int main(int argc, char **argv)
     safe(0, 0, 0x8000, 10);
     safe(1, 304, 199, 10);
     safe(4, 0, 0, 10);                  /* no cookie */
-    safe(31, 0, 0, 1);                  /* 31/32 = 0 < 1 */
-    safe(32, 0, 0, 1);                  /* 32/32 = 1: not below the maximum */
+    safe(31, 0, 0, 1);                  /* beyond the maximum */
+    safe(32, 0, 0, 1);                  /* beyond the maximum */
     safe(0, 0, 0, 0);
     safe(0, 0, 0, 0xffff);
 
     /* LESaveShapes, LELoadShapes */
-    save(0, 0, 3, 0, -1);               /* count 0 */
+    save(0, 0, 3, 0, -1);               /* count 3 */
     save(1, 0, 3, 0, 0);                /* with the palette */
     printf("rishapeslib: LESaveShapes with a palette: %s\n",
            fbuf[40] == 'C' ? "CMAP written" : "no CMAP (Write's Z flag)");
-    save(2, 0, 64, 0, 0);               /* count 2 */
-    save(3, 0, 3, 0x5A01, -1);          /* the upper word in the count */
+    save(2, 0, 64, 0, 0);               /* count 64 */
+    save(3, 0, 3, 0x5A01, -1);          /* the upper word of d1 in the count (#815) */
     compress(0xffff);
     save(4, 0, 64, 0, 0);               /* packed: shapes 0, 2 pack, 1, 3 not */
     compress(0);
@@ -392,11 +449,11 @@ int main(int argc, char **argv)
 
     load(1, 0, 10, 13, -1, NULL);
     sameshapes(10, 13);
-    BOTH("one shape loaded", SW(shp[10], 0) == 20 && !SW(shp[11], 0));
+    BOTH("four shapes loaded", SW(shp[10], 0) == 20 && SW(shp[13], 0) == 1);
     load(0, 1, 14, 17, 1, NULL);
     sameshapes(14, 17);
     samepal(1);
-    load(0, 2, 20, 23, 1, NULL);        /* 3 shapes; the old palette freed */
+    load(0, 2, 20, 23, 1, NULL);        /* 4 of 65 shapes; the old palette freed */
     sameshapes(20, 23);
     samepal(1);
     load(1, 4, 24, 27, -1, NULL);       /* packed */
@@ -430,7 +487,7 @@ int main(int argc, char **argv)
     }
     load(1, 0, 40, 43, -1, "RAM:rwesh_acid");
     sameshapes(40, 43);
-    BOTH("LoadShapes into the last shape", SW(shp[43], 0) == 24 && !SW(shp[40], 0));
+    BOTH("LoadShapes into the first shape", SW(shp[40], 0) == 24 && !SW(shp[43], 0));
 
     /* LECludgeShapes */
     tomem(2, MEMF_FAST);

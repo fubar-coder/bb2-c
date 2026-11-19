@@ -149,7 +149,13 @@ scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_rishapeslib.txt` recorded from the
 original. The set has its own memlib, shapeslib and RIPackLib (original
 set: the CD's binaries; C set: this build); the test has 70 shape
-objects, palettes, a bitmap object and files in RAM:.
+objects, palettes, a bitmap object and files in RAM:. It passes the
+registers as compiled code does: the shape numbers of `SafeToBlit`,
+`LESaveShapes` and `LELoadShapes` shifted by 5 (the compiler shifts a
+`#pd` register by the object size before it adds it to the `#ia`
+register), and `LELoadShapes` reaches shapeslib's `LoadShapes` through a
+stub that loads the callee's registers from its `!libs` first, as the
+compiler links every ALibJsr call.
 
 Observed:
 
@@ -162,18 +168,18 @@ Observed:
 * memlib's memory, all back at the end.
 
 Cases of the expected effect (the truth value of a condition, observed
-like any other) show that the scenarios do what they say (one shape
-loaded, packed shapes loaded, "cL", LoadShapes into the last shape, the
+like any other) show that the scenarios do what they say (four shapes
+loaded, packed shapes loaded, "cL", LoadShapes into the first shape, the
 stale-size skip).
 
 Covered:
 
 * LEInitShape on fresh and on used shapes.
 * LEScanShapes and LEMax*.
-* SafeToBlit: limits, negative coordinates, no cookie, shape/32 against
+* SafeToBlit: limits, negative coordinates, no cookie, shapes beyond
   the maximum.
 * LESaveShapes: both forms, with a palette, packed (packable data and
-  data PackPBM fails on), count 0 and 2, the upper word in the count.
+  data PackPBM fails on), count 3 and 64, an upper word of d1 in the count.
 * LELoadShapes: all four forms; into used shapes; a missing file; FORM
   without LESH; a shapeslib file.
 * LECludgeShapes: from fast memory; from chip memory, copied (flag −1),
