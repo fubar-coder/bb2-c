@@ -46,9 +46,6 @@
  * defect (#822, #815 as titled; a run of the original confirms it).
  *
  * BUG(orig), kept:
- *   - LESaveShapes stores s2-s1 as the shape count with a word
- *     subtraction: the upper word of d1, which compiled code leaves from
- *     a long expression, goes into the long count (#815).
  *   - An allocation that fails in the shape loop or in the cookie of
  *     readshapes returns with a0 still pushed: it jumps to the data
  *     address (#806; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The stack imbalance that C cannot express: see rs_crash.
@@ -91,7 +88,8 @@
  * and the FORM length the file's size - 8 (the original's was 8 larger,
  * with the CMAP size of the last save that had a palette, #816); its shape
  * header buffer is 12 bytes (the original's MOVE.w #12,d0 kept the upper
- * word that FreeMem left in d0, #817).
+ * word that FreeMem left in d0, #817), and its shape count is last - first
+ * as a word (the original kept the upper word of d1 in the long, #815).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
  * (unused since the own cookie code).  LELoadShapes form 3
@@ -1242,9 +1240,7 @@ static ULONG writeshapes(BPTR fh)
  * FORM LESH, SHHD (count, compression), CMAP if there is a palette, SDAT
  * with the shapes (packed with PackPBM if LECompressShapes is on, -1 =
  * stored when packing fails).  Nothing if the file cannot be opened.
- * BUG(orig): the count is s2 - s1 of a word subtraction with the upper
- * word of d1 uncleared (compiled code leaves one from a long expression)
- * (#815); a missing pack buffer is two
+ * BUG(orig): a missing pack buffer is two
  * runtime errors (#818); PackPBM's failure runs UnPackPBM with d3 = 12
  * (#772).  Fixed (#814): the CMAP is written whenever there is a palette
  * with data (the original tested the Z flag of dos Write).  Fixed (#823):
@@ -1252,7 +1248,10 @@ static ULONG writeshapes(BPTR fh)
  * Fixed (#816): the FORM length is the file's size - 8 (the original's
  * was 8 larger and had the CMAP size of the last save with a palette).
  * Fixed (#817): the shape header buffer is 12 bytes (the original's had
- * the upper word of the d0 that _saveCMAP left).
+ * the upper word of the d0 that _saveCMAP left).  Fixed (#815): the count
+ * is last - first as a word, sign-extended (the original's word subtraction
+ * kept the upper word of d1, which compiled code leaves from a long
+ * expression).
  * @param shape1   d0.w: the first shape# * 32
  * @param shape2   d1.w: the last shape# * 32
  * @param name     d2: filename$
@@ -1269,7 +1268,6 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 B
 {
     BPTR fh;
     ULONG written, len, result;
-    ULONG count = shape2;               /* d1: the shape count, upper word kept */
     UWORD num2;                         /* d1: shape2 >> 5 */
 
     dosbase = dos;
@@ -1279,8 +1277,9 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 B
     endshape = last;
     BL_SETW(shape1, (WORD)shape1 >> 5);
     num2 = (UWORD)((WORD)shape2 >> 5);
-    BL_SETW(count, num2 - shape1);
-    shapecount = count;                 /* BUG(orig): the upper word too (#815) */
+    /* Fixed (#815): the count as a word, sign-extended (the original's
+       SUB.w left the upper word of d1 in the long count) */
+    shapecount = (ULONG)(LONG)(WORD)(num2 - (UWORD)shape1);
     fh = Open((STRPTR)name, MODE_NEWFILE);
     if (!fh)
         return;

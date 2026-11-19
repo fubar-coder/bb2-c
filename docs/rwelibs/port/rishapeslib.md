@@ -74,11 +74,6 @@ The original returns to that data address; `rs_crash` jumps there.
 
 ## BUG(orig), kept
 
-* **LESaveShapes' shape count:** s2 − s1 is a word subtraction, and the
-  upper word of d1 goes into the long count. Compiled code leaves one
-  there from a long expression (`a.l=$50009 : LESaveShapes 0,a,…`
-  writes the count $50009). The loader reads count + 1 shapes
-  (`SUB.l #1:BMI`), limited by the last shape (#815).
 * **A failing allocation in readshapes** returns with a0 pushed (#806;
   see the stack imbalance above).
 * **LELoadShapes:** a failing chunk allocation runs the caller's cleanup
@@ -192,6 +187,13 @@ kind F):
   allocation wrote no SDAT and a broken file (#817, `libs_emulator`
   cases `[fixed #817]` of `rwe_rishapeslib`: a globfree that leaves 1 in
   the upper word, D-019).
+* LESaveShapes stores the shape count (last − first) as a word,
+  sign-extended. The original's `SUB.w` left the upper word of d1 in the
+  long count, and compiled code leaves one there from a long expression
+  (`a.l=$50009 : LESaveShapes 0,a,…` wrote the count $50009); the loaders
+  read count + 1 shapes, limited only by the last target shape, so they
+  read behind the file's shapes (#815, test
+  `rishapeslib-lesaveshapes-count-upper-word`).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push

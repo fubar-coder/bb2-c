@@ -576,7 +576,7 @@ LESaveShapes|file|0..3 up $0 pal 0 file 6|1 [fixed #814]	bytes 30000 fnv AFA9C99
 LESaveShapes|file|0..3 up $0 pal 0 file 7|1 [orig]	bytes 30000 fnv E5D2BB93
 LESaveShapes|file|0..3 up $0 pal 0 file 7|1 [fixed #816]	bytes 30000 fnv AFA9C99B
 LESaveShapes|file|0..3 up $5a01 pal -1 file 3|1 [orig]	bytes 30000 fnv 92C31D27
-LESaveShapes|file|0..3 up $5a01 pal -1 file 3|1 [fixed #816]	bytes 30000 fnv A3717A9B
+LESaveShapes|file|0..3 up $5a01 pal -1 file 3|1 [fixed #816]	bytes 30000 fnv 75AF986E
 LESaveShapes|file|0..64 up $0 pal 0 file 2|1 [orig]	bytes 30000 fnv EBC77BC5
 LESaveShapes|file|0..64 up $0 pal 0 file 2|1 [fixed #816]	bytes 30000 fnv 0B36F41D
 LESaveShapes|file|0..64 up $0 pal 0 file 4|1 [orig]	bytes 30000 fnv 6BA09DD8
