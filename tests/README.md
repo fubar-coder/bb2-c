@@ -934,7 +934,7 @@ cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -975,6 +975,13 @@ cycle values do not depend on the host's load or on what else runs
   libraries and the library's reference. Such a program is not in
   `perf.pass`; its targets come from its own pass (`perf_bbblit.pass`,
   tag `orig`) after the reference build (`ctest -R rwe_refbuild`).
+  `bstc` measures the S404 decruncher of `ristcdecrunchlib` (shared with
+  `ristonecrackerlib`) on real data: one `STCDecrunch` of ancient's
+  `test_C1.pack410` (152089 bytes of text) per loop, and the call on a
+  file of one byte. A header line `; @file DEST|PATH` gives a program a
+  file, `CORPUS:DEST` in the session (`@ANCIENT@` in PATH: the files of
+  ancient that `cmake/fetch-originals.cmake` fetches); without the file
+  the program is left out (configure says so).
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the

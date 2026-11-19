@@ -4,7 +4,11 @@
 # subtracted; the cycles per call of the C libraries.
 #   bench/    the Blitz sources, one program per area (text, tokenised here
 #             with tedsrc tok like the corpus); a program with the header
-#             line "; @rwe NAME..." uses RWE userlibs (below)
+#             line "; @rwe NAME..." uses RWE userlibs (below), one with
+#             "; @file DEST|PATH" reads the file PATH as CORPUS:DEST
+#             (@ANCIENT@ in PATH: archive/ancient/github-1491a35a, from
+#             cmake/fetch-originals.cmake; the program is left out without
+#             the file)
 #   budgets.txt the budgets: the highest allowed cycles per call of each
 #             command, and the original's value as the target
 #   perf.cmake  the test script: corpusrun pass --observe, then results perf
@@ -12,6 +16,7 @@
 
 # --------------------------------------------------------- the sources
 set(PERF_SRC ${CMAKE_CURRENT_BINARY_DIR}/src)
+set(PERF_ANCIENT ${PROJECT_SOURCE_DIR}/archive/ancient/github-1491a35a)
 set(TED_TOKENS ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 file(GLOB bas CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bench/*.bas)
 set(perf_sources)
@@ -25,7 +30,27 @@ foreach(b IN LISTS bas)
 	# the C build of each library in blitz2:userlibs/rwe/, orig the CD's
 	# libraries and the reference (perf_NAME_RWE_* below)
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${b})
+	# data files (; @file DEST|PATH): file= lines of its passes; without
+	# the file the program is left out
 	# (the line's ";" is CMake's list separator: matched without it)
+	file(STRINGS ${b} pfiles REGEX "^; @file ")
+	set(perf_${name}_DATA "")
+	set(missing "")
+	foreach(l IN LISTS pfiles)
+		string(REGEX MATCH "@file ([^|]+)\\|(.+)$" l "${l}")
+		if(NOT l)
+			continue()
+		endif()
+		string(REPLACE "@ANCIENT@" "${PERF_ANCIENT}" path "${CMAKE_MATCH_2}")
+		if(NOT EXISTS ${path})
+			set(missing ${path})
+		endif()
+		string(APPEND perf_${name}_DATA "file=${CMAKE_MATCH_1}|${path}\n")
+	endforeach()
+	if(missing)
+		message(STATUS "perf: ${name} left out: no ${missing} (cmake -P cmake/fetch-originals.cmake)")
+		continue()
+	endif()
 	file(STRINGS ${b} rwe REGEX "^; @rwe ")
 	set(tok ${TED_TOKENS})
 	if(rwe)
@@ -142,13 +167,15 @@ function(perf_pass name out)
 	set(${out} ${CMAKE_CURRENT_BINARY_DIR}/${name}.pass PARENT_SCOPE)
 endfunction()
 set(perf_all)
+set(perf_all_data "")
 foreach(src IN LISTS perf_sources)
 	get_filename_component(prog ${src} NAME_WE)
 	if(NOT DEFINED perf_${prog}_RWE_DIR)
 		list(APPEND perf_all ${src})
+		string(APPEND perf_all_data "${perf_${prog}_DATA}")
 	endif()
 endforeach()
-perf_pass(perf PERF_PASS SOURCES ${perf_all})
+perf_pass(perf PERF_PASS FILES "${perf_all_data}" SOURCES ${perf_all})
 set(PERF_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/perf.cmake)
 
 # ------------------------------------------------------------ the tests
@@ -162,9 +189,9 @@ foreach(src IN LISTS perf_sources)
 	get_filename_component(prog ${src} NAME_WE)
 	if(DEFINED perf_${prog}_RWE_DIR)
 		perf_pass(perf_${prog} pass LIBDIR ${perf_${prog}_RWE_DIR}
-			FILES "${perf_${prog}_RWE_FILES}" SOURCES ${src})
+			FILES "${perf_${prog}_RWE_FILES}${perf_${prog}_DATA}" SOURCES ${src})
 	else()
-		perf_pass(perf_${prog} pass SOURCES ${src})
+		perf_pass(perf_${prog} pass FILES "${perf_${prog}_DATA}" SOURCES ${src})
 	endif()
 	add_test(NAME perf_${prog} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN} -DRESULTS=${RESULTS}
 		-DPASS=${pass} -DTAG=clib -DPROGRAM=${prog} -DBUDGETS=${PERF_BUDGETS}

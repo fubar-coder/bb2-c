@@ -241,6 +241,13 @@
 # 16991.8 to 16995.8, 32725.8 to 32729.8 (before: 21547.9, 20745.9,
 # 36265.9); the other lines of bbblit in those runs within 1.1 cycles of
 # their measurements above.
+# bstc (a new program: the S404 decruncher of the RWE userlib
+# ristcdecrunchlib, header "; @rwe ristcdecrunchlib"; the data
+# test_C1.pack410 of ancient, cmake/fetch-originals.cmake) from two runs on
+# 96eb58bc (2026-11-19), before the checks of #833: c1pack410 33452874.1,
+# onebyte 1455.7 both times.  Their targets from two runs of the pass
+# perf_bstc.pass with the tag orig (the reference build of the source):
+# 11836874.2 and 504.7 both times.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bbblit.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -389,6 +396,9 @@ bproc.fstr                    8822     10783.6  c=fstr{a$} (the same as a Functi
 bproc.pgrow                  11203     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
+bstc.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
+bstc.c1pack410           33787406 11836874.2  c=STCDecrunch(f,d) (test_C1.pack410: 152089 bytes of text, efficiency 14)
+bstc.onebyte                 1474      504.7  c=STCDecrunch(s,s+32) (a file of one literal byte)
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1229     1367.5  r$=a$
 bstr.mid                     1464     1553.5  r$=Mid$(a$,3,5)
