@@ -256,7 +256,7 @@ int main(int argc, char **argv)
     colsplit(1, 0);
     colsplit(7, 31);
     nullary(GETCCOFFSET, "GetCCOffset", 1);
-    reset(0, 1, 2);                     /* line 0: the line 256 wait */
+    reset(0, 1, 2);                     /* line 0: the original's line 256 wait (fixed #588) */
     setcols(1, 2, 3, 4, 5, 6);
     colsplit(3, 64);
     ROUT = "ColSplitBplcon3";

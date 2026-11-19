@@ -42,10 +42,12 @@
  *   - DoColSplit/RedoColSplit: numlines is not checked (0: DIVS by zero,
  *     the divide-by-zero exception as in the original; negative: the DBRA
  *     counter numlines-1 as a word, up to 65536 lines); the step
- *     (1 << 14) / numlines is a word quotient; the $FFE1FFFE wait (line
- *     256) is written whenever the low byte of the line is 0, also for
- *     line 0 (#589, #588).
+ *     (1 << 14) / numlines is a word quotient (#589).
  * Fixed:
+ *   - DoColSplit writes the $FFE1FFFE wait (line 256) only when the line
+ *     (the word) is not 0: the original tested the low byte alone and
+ *     wrote it also before line 0, so a split from line 0 started at line
+ *     256 (#588).
  *   - GetCCOffset tests customaddr, as every other command (the original
  *     tests coplistaddr: after CopperResetAdr, coplistaddr 0, it returned
  *     -1 although the commands worked) (#593).
@@ -272,9 +274,10 @@ static void gradient(struct grad *g, const struct colsplit *cols, UWORD numlines
  * custom space only bplcon3LO/HI and colreg are set.  BUG(orig):
  * numlines is not checked (0: DIVS by zero, the exception as in the
  * original; negative: up to 65536 lines, the DBRA counter as a word);
- * the step (1 << 14) / numlines is a word quotient (#589); the $FFE1FFFE
- * wait (line 256) is written whenever the low byte of the line is 0,
- * also for line 0 (#588).
+ * the step (1 << 14) / numlines is a word quotient (#589).  The
+ * $FFE1FFFE wait (line 256) comes before a line whose low byte is 0 but
+ * not before line 0: fixed (#588), the original tested the low byte
+ * alone, so a split from line 0 waited for line 256 first.
  * @param cols      d0: the colours (cols_adr)
  * @param numlines  d1: the number of lines
  * @param reg       d2: the colour register (0-255)
@@ -301,7 +304,8 @@ ULONG BLITZ_ROUTINE c_docolsplit(const struct colsplit *cols BL_REG(d0),
     do {
         WORD r = (WORD)(g.v[0] >> 14), gr = (WORD)(g.v[1] >> 14), b = (WORD)(g.v[2] >> 14);
 
-        if (!y) {
+        /* fixed #588: not before line 0 (the original: !y alone) */
+        if (!y && cfx.startline) {
             *p++ = 0xffe1;                  /* wait for $e0,$ff */
             *p++ = 0xfffe;
         }

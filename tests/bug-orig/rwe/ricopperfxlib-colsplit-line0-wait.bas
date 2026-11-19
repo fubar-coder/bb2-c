@@ -6,6 +6,7 @@
 ; Correct: a split from line 0 starts with the WAIT of line 0
 ; ($0001,$FFEE); a split from line 250 still has the line 256 wait
 ; before its seventh line (byte 6 * 20).
+; @fixed #588
 ; @rwe ricopperfxlib
 DEFTYPE .l
 Dim c.l(5)

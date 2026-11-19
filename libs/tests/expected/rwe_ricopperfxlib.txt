@@ -1757,7 +1757,7 @@ DoColSplit|custom space|lines 28 reg 102 (45,26,243)-(226,229,14)|1	bytes 8192 f
 DoColSplit|custom space|lines 28 reg 30 (146,149,87)-(54,222,182)|1	bytes 8192 fnv C05C5212
 DoColSplit|custom space|lines 29 reg 156 (381,1639,-1853)-(584,-71,-1746)|1	bytes 8192 fnv E4BFC6FE
 DoColSplit|custom space|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [orig]	bytes 8192 fnv 143B6320
-DoColSplit|custom space|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [fixed #591]	bytes 8192 fnv E02BAA3C
+DoColSplit|custom space|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [fixed #591]	bytes 8192 fnv 07555A6F
 DoColSplit|custom space|lines 30 reg 151 (91,161,101)-(144,56,216)|1	bytes 8192 fnv 665537DE
 DoColSplit|custom space|lines 32 reg 171 (1281,1485,-88)-(686,-152,1977)|1	bytes 8192 fnv 487CE64D
 DoColSplit|custom space|lines 33 reg 66 (142,86,84)-(141,104,33)|1	bytes 8192 fnv 20B9451F
@@ -1777,7 +1777,7 @@ DoColSplit|custom space|lines 40 reg 111 (110,108,13)-(120,103,65)|1	bytes 8192 
 DoColSplit|custom space|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	bytes 8192 fnv 770E3BF9
 DoColSplit|custom space|lines 40 reg 95 (83,161,212)-(164,248,32)|1	bytes 8192 fnv E4E2EF9F
 DoColSplit|custom space|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [orig]	bytes 8192 fnv 72DE662C
-DoColSplit|custom space|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [fixed #591]	bytes 8192 fnv EA6E9078
+DoColSplit|custom space|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [fixed #591]	bytes 8192 fnv 7CA82E05
 DoColSplit|custom space|lines 7 reg 220 (178,138,34)-(155,88,115)|1	bytes 8192 fnv 75BE5DDD
 DoColSplit|custom space|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1 [orig]	bytes 8192 fnv 432CB198
 DoColSplit|custom space|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1 [fixed #591]	bytes 8192 fnv 433DE594
@@ -1963,7 +1963,8 @@ DoColSplit|startline/ccoffset|lines 24 reg 195 (18,27,206)-(163,50,96)|1	$017303
 DoColSplit|startline/ccoffset|lines 28 reg 102 (45,26,243)-(226,229,14)|1	$018A0530
 DoColSplit|startline/ccoffset|lines 28 reg 30 (146,149,87)-(54,222,182)|1	$01E80498
 DoColSplit|startline/ccoffset|lines 29 reg 156 (381,1639,-1853)-(584,-71,-1746)|1	$014604A8
-DoColSplit|startline/ccoffset|lines 3 reg 64 (1,2,3)-(4,5,6)|1	$00030048
+DoColSplit|startline/ccoffset|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [orig]	$00030048
+DoColSplit|startline/ccoffset|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [fixed #588]	$00030044
 DoColSplit|startline/ccoffset|lines 30 reg 151 (91,161,101)-(144,56,216)|1	$00AA052C
 DoColSplit|startline/ccoffset|lines 32 reg 171 (1281,1485,-88)-(686,-152,1977)|1	$004E0524
 DoColSplit|startline/ccoffset|lines 33 reg 66 (142,86,84)-(141,104,33)|1	$012E0540
@@ -1981,7 +1982,8 @@ DoColSplit|startline/ccoffset|lines 4 reg 7 (0,0,0)-(255,128,64)|2	$00400050
 DoColSplit|startline/ccoffset|lines 40 reg 111 (110,108,13)-(120,103,65)|1	$01FB0550
 DoColSplit|startline/ccoffset|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	$00CC03EC
 DoColSplit|startline/ccoffset|lines 40 reg 95 (83,161,212)-(164,248,32)|1	$01FD0530
-DoColSplit|startline/ccoffset|lines 5 reg 128 (1,2,3)-(4,5,6)|1	$000800AC
+DoColSplit|startline/ccoffset|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [orig]	$000800AC
+DoColSplit|startline/ccoffset|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [fixed #588]	$000800A8
 DoColSplit|startline/ccoffset|lines 7 reg 220 (178,138,34)-(155,88,115)|1	$005D0370
 DoColSplit|startline/ccoffset|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1	$010E0644
 GetCCOffset|bplcon3LO/HI||1	$00000000

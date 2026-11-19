@@ -41,12 +41,14 @@ reproduced.
   otherwise its `col#` argument (#592, #590).
 * `DoColSplit`/`RedoColSplit` do not check numlines (0: DIVS by zero;
   negative: the DBRA counter as a word, up to 65536 lines; the step
-  `(1<<14)/numlines` is a word quotient); the `$FFE1FFFE` wait (line
-  256) is written whenever the low byte of the line is 0, also for line
-  0 (#589, #588).
+  `(1<<14)/numlines` is a word quotient) (#589).
 
 **Fixed:**
 
+* `DoColSplit` writes the `$FFE1FFFE` wait (line 256) before a line
+  whose low byte is 0 only when the line is not 0: the original tested
+  the low byte alone, so a split from line 0 started with the wait and
+  showed at line 256 (#588).
 * `RedoColSplit` shifts the whole long ccoffset argument (`ASL.l #2`):
   the original's `ASL.w #2` shifted only the low word and added the upper
   word unchanged, so from $4000 instructions on the colours were written
