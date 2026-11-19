@@ -45,7 +45,11 @@
  *     32 gives 65536 columns (DBRA) (#507, its ANIM7 half: what the last
  *     long column of a row with an odd number of words holds is not in
  *     the format's description).
- *   - A run or copy count of 0 is 256 (DBRA on the byte) (#508).
+ *   - A run or copy count of 0 is 256 (DBRA on the byte) (#508; kept on
+ *     purpose: encoders never write a count of 0 - the ANIM format does
+ *     not define it, the reference decoders read it as 0 rows - and a
+ *     test would cost every run and copy op of RINextAnimFrame, D-007;
+ *     user decision W5 Q4 of 2026-11-19).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - RIAnimInit searches the BMHD in the first frame only; the original
  *     searched up to the end of the ANIM and took a BMHD chunk of the
@@ -528,7 +532,8 @@ ULONG BLITZ_ROUTINE c_CountFrames(void)
 
 /* ---------------------------------------------------------- the deltas */
 
-/* the count of a run or copy: DBRA on the byte count - 1 (0 = 256) */
+/* the count of a run or copy: DBRA on the byte count - 1 (0 = 256,
+   BUG(orig) (#508), kept: no encoder writes 0, see the head) */
 #define COUNT(c) ((UWORD)(UBYTE)((c) - 1))
 
 /* ANIM5: one plane, columns of bytes */

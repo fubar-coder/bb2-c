@@ -121,7 +121,14 @@ bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
   description, the ANIM7 appendix of 1992; xanim truncates as the
   original, FFmpeg writes the upper word of the last long: not decided
   here).
-* A run or copy count of 0 is 256 (DBRA on the byte) (#508).
+* A run or copy count of 0 is 256 (DBRA on the byte) (#508). Kept on
+  purpose (won't fix, user decision W5 Q4 of 2026-11-19): encoders never
+  write a count of 0 (the ANIM format and its op 7 appendix do not define
+  it; Kent's skip.c writes no run of 0, and the reference decoders -
+  Kent's unvscomp.asm, FFmpeg, xanim, AROS anim.datatype - read it as 0
+  rows), and a test would cost every run and copy op of RINextAnimFrame,
+  the game path (D-007). The bug-orig test `rianimlib-delta-count-zero`
+  stays REPRODUCED.
 
 **Test** (`libs/tests/rwe/rianimlib.c`, snitch case "rwe rianimlib"):
 each run loads one library set (the C build or the CD original); the
