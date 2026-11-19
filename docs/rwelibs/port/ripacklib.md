@@ -15,7 +15,8 @@ of both LoadIFF forms); the code is C, not byte-identical.
   smaller than `length` ("never writes a file bigger than the source").
 * `UnPackPBM source,dest,length,destlength` – ByteRun1 back (`-128` is
   skipped).
-* `DeIce(source,dest)` – the Pack-Ice 2.40 decruncher ("ICE!", packed and
+* `DeIce(source,dest)` – the Pack-Ice 2.40 decruncher with the picture
+  mode of 2.34 ("ICE!", packed and
   unpacked length, a bit stream read from the end; literal runs, strings
   with 2–1033 bytes and three offset classes, the Atari picture mode that
   converts bitplanes); -1, or 0 if there is no "ICE!".
@@ -41,10 +42,9 @@ init and finit are empty (RTS).
 Everything is C, no assembler. The originals of the packers and
 unpackers save all registers but d0 (`MOVEM.l d1-d7/a0-a6` /
 `d0-d7/a0-a6`); the thunks keep d1/a0/a1, GCC the rest. The register
-arithmetic that decides the results is reproduced: byte counters and
-DBRA on words (ByteRun1, the row counter of UnpackIFF as a signed byte),
-signed address comparisons (`CMP.l`/`BLT`/`BGT`), `DIVU #3` (with its
-overflow case, `bl_divu_w`) and `MULU.w` of the palette code, the
+arithmetic that decides the results is reproduced where no fix (below)
+changes it: byte counters and DBRA on words, signed address comparisons
+(`CMP.l`/`BGT` of the ICE decruncher), the
 sign-extended word offsets of the ICE strings, the X flag of the ICE bit
 buffer (a marker bit shifted in with ADDX), the order and size of the
 memory accesses (ICE's header is read byte by byte, so it may be at an
@@ -151,15 +151,23 @@ kind F):
   after; a 320x256x5 ByteRun1 picture 1944700 before, 1952500 after
   (+0.4 %; the unpack loop is the same instructions, the walk replaces a
   search of about 60 steps).
+* **DeIce**'s picture mode reads the "own count" flag and the count from
+  the packed data, as the decruncher of Pack-Ice 2.34 does (the default
+  count $0F9F, 4000 groups of 8 bytes, a 32000-byte screen, when the
+  flag is 0), and converts at most the unpacked length / 8 groups. The
+  original is the 2.40 decruncher, which loads the default count into
+  d7, the register of the bit buffer: the flag came from `$9f` and was
+  always set, the count was at least `$3C00`, and 15361 or more groups
+  were converted, ending at the end of the data (123 KB and more below
+  it for short data) (#767; user decision W5 Q2). Pack-Ice 2.40's own
+  verify has the same defect: in Hatari with EmuTOS it ends in an
+  address error after packing a 32000-byte file with the picture
+  option, so 2.40 writes no such file; 2.34 and 2.40 write the same
+  header bits.
 
 ## BUG(orig), kept
 
-* `DeIce`: the picture flag of Pack-Ice loads the default count `$0f9f`
-  into d7, the register of the bit buffer; the next bit (the "own count"
-  flag) and the first 6 bits of the count then come from `$9f`: the
-  default is never used, and the count is at least `$3C00` – 15361 or
-  more groups of 8 bytes are converted, ending at the end of the data
-  (123 KB and more below it for short data) (#767).
+None known.
 
 ## Test
 
@@ -176,7 +184,9 @@ round trips through UnPackPBM, the failure path (with d3 0, 4, -8),
 UnPackPBM with no-ops and short source/destination limits; DeIce with
 literal runs of every length class, strings of every length and offset
 class including repeats, data at an odd address, no "ICE!", the
-picture mode (on 132 KB below the data); UnpackIFF both forms with all
+picture mode (on 132 KB below the data; the stream as the original
+reads it and as Pack-Ice 2.34 writes it: own counts of 10, 124 and 1000
+groups for 125 groups of data, the default count); UnpackIFF both forms with all
 line counts (all, fewer, more than the bitmap, 0), xy offset, a too
 shallow or narrow bitmap, no plane 0, rows of 6, 128 and 130 bytes (the
 BODY rows word-aligned, as ILBM stores them), a run past the row, no BMHD, no BODY; ILBMPalette into an empty palette, with
@@ -198,5 +208,6 @@ The first LoadIFF runs with RIAmosFuncLib's default of 50 banks (the
 original finds no bank from 51 on and returns 0, fixed #770); then the
 test raises the limit to 60.
 
-Not covered: corrupt ICE data, PackPBM's failure with a large d3,
-nPlanes 0, a failing memlib allocation.
+Not covered: corrupt ICE data, a failing memlib allocation, a file packed
+by Pack-Ice itself with the picture option (see DeIce above); nPlanes 0 is
+the bug-orig test `ripacklib-unpackiff-zero-planes`.

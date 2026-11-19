@@ -355,7 +355,10 @@ static ULONG e_find(const UBYTE *plain, ULONG n, ULONG p, LONG maxoff, LONG *off
 }
 
 /* plain[0..n) -> ICE data at pk; returns its length; picture: the
-   picture flag (with the 10 bits of the count that come from the data) */
+   picture flag, 1 as the original's decruncher reads it (its bit buffer
+   replaced by $9f: the 10 bits of the count that come from the data),
+   2 as Pack-Ice 2.34 writes it (the "own count" flag and count10 as 16
+   bits, or the flag 0 for the default count when count10 is -1) */
 static ULONG ice_pack(const UBYTE *plain, ULONG n, UBYTE *pk, LONG maxoff, int picture, ULONG count10)
 {
     static UBYTE st[BUFSZ * 2];
@@ -377,7 +380,15 @@ static ULONG ice_pack(const UBYTE *plain, ULONG n, UBYTE *pk, LONG maxoff, int p
             lits++;
     }
     e_literals(&e, plain, pos, lits);
-    if (picture) {
+    if (picture == 2) {
+        e_bit(&e, 1);
+        if (count10 == (ULONG)-1)
+            e_bit(&e, 0);
+        else {
+            e_bit(&e, 1);
+            e_bits(&e, count10, 16);
+        }
+    } else if (picture) {
         e_bit(&e, 1);
         e.nbits = e.cap;                /* the bit buffer is replaced by $9f */
         e_bits(&e, count10, 10);
@@ -406,6 +417,32 @@ static void deice(const char *what, ULONG n, LONG maxoff, ULONG at)
     OBS("d0", R.d[0]);
     OBSBYTES("dest", out, sizeof out);
     check("DeIce: the plain data (encoder)", memcmp(out + 32, plain, n) == 0);
+}
+
+/* DeIce of 1000 bytes in picture mode (ice_pack's picture, count10)
+   into a buffer with 132 KB below the data */
+static void deicepicture(const char *what, int picture, ULONG count10)
+{
+    const ULONG below = 132 * 1024;
+    UBYTE *pic;
+    ULONG size, i;
+
+    seed = 5;
+    mkdata(plain, 1000, 1);
+    size = ice_pack(plain, 1000, icebuf, 600, picture, count10);
+    pic = AllocMem(below + 1100, MEMF_ANY);
+    if (!pic) {
+        check("picture buffers", FALSE);
+        return;
+    }
+    for (i = 0; i < below + 1100; i++)
+        pic[i] = (UBYTE)(i * 13 + (i >> 9));
+    ROUT = "DeIce";
+    sprintf(VEC, "%s %lu bytes", what, size);
+    DO1(ent(DEICE, 0), R.d[0] = (ULONG)icebuf; R.d[1] = (ULONG)pic + below);
+    OBS("d0", R.d[0]);
+    OBSBYTES("dest", pic, below + 1100);
+    FreeMem(pic, below + 1100);
 }
 
 static void test_deice(void)
@@ -438,29 +475,14 @@ static void test_deice(void)
     DO1(ent(DEICE, 0), R.d[0] = (ULONG)icebuf; R.d[1] = (ULONG)out);
     OBS("d0", R.d[0]);
 
-    /* picture mode: 15361+ groups of 8 bytes below the end */
-    {
-        const ULONG below = 132 * 1024;
-        UBYTE *pic;
-        ULONG size;
-
-        seed = 5;
-        mkdata(plain, 1000, 1);
-        size = ice_pack(plain, 1000, icebuf, 600, 1, 37);
-        pic = AllocMem(below + 1100, MEMF_ANY);
-        if (pic)
-            for (i = 0; i < below + 1100; i++)
-                pic[i] = (UBYTE)(i * 13 + (i >> 9));
-        if (pic) {
-            sprintf(VEC, "picture %lu bytes", size);
-            DO1(ent(DEICE, 0), R.d[0] = (ULONG)icebuf; R.d[1] = (ULONG)pic + below);
-            OBS("d0", R.d[0]);
-            OBSBYTES("dest", pic, below + 1100);
-        } else
-            check("picture buffers", FALSE);
-        if (pic)
-            FreeMem(pic, below + 1100);
-    }
+    /* picture mode: the original converts 15361+ groups of 8 bytes below
+       the end; 132 KB below the data are observed (fixed #767: the count
+       of the data, at most the data) */
+    deicepicture("picture", 1, 37);
+    deicepicture("picture 2.34 own count 124", 2, 124);
+    deicepicture("picture 2.34 own count 10", 2, 10);
+    deicepicture("picture 2.34 own count 1000", 2, 1000);
+    deicepicture("picture 2.34 default count", 2, (ULONG)-1);
 }
 
 /* ----------------------------------------------------------- ILBM data */

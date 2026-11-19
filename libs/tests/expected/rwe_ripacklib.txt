@@ -22,6 +22,10 @@ DeIce|d0|noise 1000 -> 1023 bytes|1	$FFFFFFFF
 DeIce|d0|noise 1000 -> 1024 bytes|1	$FFFFFFFF
 DeIce|d0|one byte 1 -> 14 bytes|1	$FFFFFFFF
 DeIce|d0|one long run 1200 -> 21 bytes|1	$FFFFFFFF
+DeIce|d0|picture 2.34 default count 509 bytes|1	$FFFFFFFF
+DeIce|d0|picture 2.34 own count 10 511 bytes|1	$FFFFFFFF
+DeIce|d0|picture 2.34 own count 1000 511 bytes|1	$FFFFFFFF
+DeIce|d0|picture 2.34 own count 124 511 bytes|1	$FFFFFFFF
 DeIce|d0|picture 511 bytes|1	$FFFFFFFF
 DeIce|d0|two bytes 2 -> 15 bytes|1	$FFFFFFFF
 DeIce|dest|far repeats 2600 -> 2140 bytes|1	bytes 8256 fnv 91218A9A
@@ -34,7 +38,16 @@ DeIce|dest|noise 1000 -> 1023 bytes|1	bytes 8256 fnv 20556D3A
 DeIce|dest|noise 1000 -> 1024 bytes|1	bytes 8256 fnv F2194BB9
 DeIce|dest|one byte 1 -> 14 bytes|1	bytes 8256 fnv 6AB4CB69
 DeIce|dest|one long run 1200 -> 21 bytes|1	bytes 8256 fnv 2ED6C6B6
-DeIce|dest|picture 511 bytes|1	bytes 136268 fnv 1386ECE0
+DeIce|dest|picture 2.34 default count 509 bytes|1 [orig]	bytes 136268 fnv 31B7D4D6
+DeIce|dest|picture 2.34 default count 509 bytes|1 [fixed #767]	bytes 136268 fnv D8ED5438
+DeIce|dest|picture 2.34 own count 10 511 bytes|1 [orig]	bytes 136268 fnv C9EDA768
+DeIce|dest|picture 2.34 own count 10 511 bytes|1 [fixed #767]	bytes 136268 fnv E8FE4A78
+DeIce|dest|picture 2.34 own count 1000 511 bytes|1 [orig]	bytes 136268 fnv FD76979E
+DeIce|dest|picture 2.34 own count 1000 511 bytes|1 [fixed #767]	bytes 136268 fnv D8ED5438
+DeIce|dest|picture 2.34 own count 124 511 bytes|1 [orig]	bytes 136268 fnv 7BD229AA
+DeIce|dest|picture 2.34 own count 124 511 bytes|1 [fixed #767]	bytes 136268 fnv D8ED5438
+DeIce|dest|picture 511 bytes|1 [orig]	bytes 136268 fnv 1386ECE0
+DeIce|dest|picture 511 bytes|1 [fixed #767]	bytes 136268 fnv D8ED5438
 DeIce|dest|two bytes 2 -> 15 bytes|1	bytes 8256 fnv 81EDACFF
 DeIce|kept|far repeats 2600 -> 2140 bytes|1	kept
 DeIce|kept|literals 700 -> 717 bytes|1	kept
@@ -47,6 +60,10 @@ DeIce|kept|noise 1000 -> 1023 bytes|1	kept
 DeIce|kept|noise 1000 -> 1024 bytes|1	kept
 DeIce|kept|one byte 1 -> 14 bytes|1	kept
 DeIce|kept|one long run 1200 -> 21 bytes|1	kept
+DeIce|kept|picture 2.34 default count 509 bytes|1	kept
+DeIce|kept|picture 2.34 own count 10 511 bytes|1	kept
+DeIce|kept|picture 2.34 own count 1000 511 bytes|1	kept
+DeIce|kept|picture 2.34 own count 124 511 bytes|1	kept
 DeIce|kept|picture 511 bytes|1	kept
 DeIce|kept|two bytes 2 -> 15 bytes|1	kept
 DeIce|popped|far repeats 2600 -> 2140 bytes|1	$00000000
@@ -60,6 +77,10 @@ DeIce|popped|noise 1000 -> 1023 bytes|1	$00000000
 DeIce|popped|noise 1000 -> 1024 bytes|1	$00000000
 DeIce|popped|one byte 1 -> 14 bytes|1	$00000000
 DeIce|popped|one long run 1200 -> 21 bytes|1	$00000000
+DeIce|popped|picture 2.34 default count 509 bytes|1	$00000000
+DeIce|popped|picture 2.34 own count 10 511 bytes|1	$00000000
+DeIce|popped|picture 2.34 own count 1000 511 bytes|1	$00000000
+DeIce|popped|picture 2.34 own count 124 511 bytes|1	$00000000
 DeIce|popped|picture 511 bytes|1	$00000000
 DeIce|popped|two bytes 2 -> 15 bytes|1	$00000000
 ILBMGrab|+6|48x6x2|1	$00000000

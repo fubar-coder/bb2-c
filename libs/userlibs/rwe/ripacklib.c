@@ -2,7 +2,7 @@
  * ripacklib - userlib 73 (RWE, Reflective Images "PACK-library" v1.2):
  * ByteRun1 packing and ILBM/ICE unpacking in memory.
  *   PackPBM(source,dest,length)     UnPackPBM source,dest,length,destlength
- *   DeIce(source,dest)              (Pack-Ice 2.40 decruncher)
+ *   DeIce(source,dest)              (Pack-Ice decruncher, 2.34's picture mode)
  *   UnpackIFF(source,bitmap#[,numlines,xy_offset])
  *   ILBMPalette(source,palette#[,offset])   ILBMGrab source,bitmap#,palette#
  *   LoadIFF(filename$,bitmap[,palette])      ChunkHeader(a$)
@@ -17,7 +17,8 @@
  * d0 (MOVEM) in the packers and unpackers, so do the thunks (d1/a0/a1;
  * GCC keeps the rest).  The byte/word arithmetic of the original (DBRA on
  * words, byte counters, signed address comparisons, DIVU with overflow)
- * is reproduced, so corrupt or odd data give the same results.  LoadIFF
+ * is reproduced where no fix below changes it, so corrupt or odd data give
+ * the same results there.  LoadIFF
  * calls RIAmosFuncLib (NextBank, BLoad, Start, Erase), ILBMPalette memlib
  * (globalloc/globfree), through ALibJsr.  No assembler.
  *
@@ -81,12 +82,12 @@
  * or the walk does not find the chunk.  The original found ids inside
  * other chunks and missed chunks behind a large one.
  *
- * BUG(orig), kept:
- *   - DeIce: the picture flag of Pack-Ice overwrites the bit buffer with
- *     the default count $0f9f, whose bits then give the "own count" flag
- *     (always set) and the first 6 bits of the count: the default is
- *     never used, and the count read is at least $3C00 (15361 groups of
- *     8 bytes converted below the end of the data) (#767).
+ * Fixed (#767): DeIce's picture mode reads the "own count" flag and the
+ * count from the packed data, as the Pack-Ice 2.34 decruncher does, and
+ * converts at most the unpacked length / 8 groups.  The original (the
+ * 2.40 decruncher) loaded the default count $0f9f into the register of
+ * the bit buffer: the flag was always set, the count at least $3C00
+ * (15361 groups of 8 bytes converted below the end of the data).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -479,9 +480,12 @@ static ULONG getinfo(const UBYTE *p)
  *
  * The data must start with "ICE!" (then the packed and the unpacked
  * length); the picture flag of Pack-Ice converts Atari ST low-res
- * bitplanes into interleaved words.  BUG(orig) (#767): the picture flag
- * overwrites the bit buffer with the default count $0F9F: the default is
- * never used, the count read is at least $3C00.
+ * bitplanes into interleaved words, by default 4000 groups of 8 bytes
+ * (a 32000-byte picture), else the count stored behind the flag.
+ * Fixed (#767): the flag and the count come from the data (Pack-Ice
+ * 2.34's decruncher), and at most the unpacked length / 8 groups are
+ * converted; the original's (2.40's) default count overwrote the bit
+ * buffer: the default was never used, the count was at least $3C00.
  * @param src  d0: the packed data
  * @param dst  d1: the destination
  * @return d0: BB_TRUE after unpacking, BB_FALSE without "ICE!"
@@ -490,7 +494,7 @@ static BB_BOOL BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_
 {
     struct ice s;
     UBYTE *end;
-    UWORD count;
+    ULONG groups, most;
     UWORD *p;
 
     if (getinfo(src) != ID('I', 'C', 'E', '!'))
@@ -504,11 +508,15 @@ static BB_BOOL BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_
     /* the picture flag: Atari ST low-res bitplanes -> interleaved words */
     if (!ice_bit(&s))
         return BB_TRUE;
-    /* BUG(orig): MOVE.w #$0f9f,d7 replaces the bit buffer (#767) */
-    s.bits = 0x9f;
-    count = 0x0f9f;
+    /* fixed #767: the bit buffer stays (the original: MOVE.w #$0f9f,d7) */
+    groups = 0x0f9fUL + 1;
     if (ice_bit(&s))
-        count = ice_bits(&s, 15);
+        groups = (ULONG)ice_bits(&s, 15) + 1;
+    most = getinfo(src + 8) >> 3;               /* fixed #767: in the data */
+    if (groups > most)
+        groups = most;
+    if (!groups)
+        return BB_TRUE;
     p = (UWORD *)end;
     do {
         UWORD c[4] = { 0, 0, 0, 0 };
@@ -525,7 +533,7 @@ static BB_BOOL BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_
         p[1] = c[1];
         p[2] = c[2];
         p[3] = c[3];
-    } while (count-- != 0);
+    } while (--groups);
     return BB_TRUE;
 }
 BLITZ_THUNK(deice, deice_c, "d1/a0-a1");
