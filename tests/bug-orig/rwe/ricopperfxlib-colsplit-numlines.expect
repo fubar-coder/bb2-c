@@ -1,6 +1,5 @@
 [compile]
 ok
 [run]
-marker kept
-after
+REQUESTER: AutoRequest body "Colour split needs at least one line" *
 rc=0

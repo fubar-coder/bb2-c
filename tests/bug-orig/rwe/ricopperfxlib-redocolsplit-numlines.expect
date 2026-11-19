@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+REQUESTER: AutoRequest body "Colour split needs at least one line" *
+rc=0
