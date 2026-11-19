@@ -29,7 +29,7 @@ of both LoadIFF forms); the code is C, not byte-identical.
   object (allocating its colour block with memlib when it has none).
 * `ILBMGrab source,bitmap#,palette#` – UnpackIFF and ILBMPalette.
 * `LoadIFF(filename$,bitmap[,palette])` – the file into a free bank of
-  RIAmosFuncLib (from bank 51 on), UnpackIFF and ILBMPalette from there,
+  RIAmosFuncLib (from bank 0 on), UnpackIFF and ILBMPalette from there,
   the bank erased.
 * `ChunkHeader(a$)` – the first long of a string (a chunk id).
 
@@ -55,10 +55,11 @@ odd address).
   `TOK_globfree`; MEMF_PUBLIC|MEMF_CLEAR).
 * `LoadIFF`: **RIAmosFuncLib** (75), tokens `(LIB_riamosfunclib << 7) +
   index+1` with the index in the token list of the CD's
-  `BSS2 RIAMOSFUNCLIB.OBJ`: `NextBank` (`$A596`, d0 = 51 → bank or
-  -1; the original calls form 0, which in the original RIAmosFuncLib
-  starts at d0; the C version calls form 1, the form with the start bank,
-  since form 0 of the C RIAmosFuncLib searches from bank 0, #497), `BLoad` form 1 (`$A58F`, d0 = name, d1 = bank → d0; called with
+  `BSS2 RIAMOSFUNCLIB.OBJ`: `NextBank` (`$A596`, d0 = 0 → bank or
+  -1; the original calls form 0 with d0 = 51, which in the original
+  RIAmosFuncLib starts at d0; the C version calls form 1, the form with
+  the start bank, with 0, #770; form 0 of the C RIAmosFuncLib searches
+  from bank 0, #497), `BLoad` form 1 (`$A58F`, d0 = name, d1 = bank → d0; called with
   `BL_JSR_D4_`/`BL_TOKVAL(…, 1)`), `Start` (`$A591`, d0 = bank → address),
   `Erase` (`$A593`, d0 = bank). The original also loads d2 = 0 and
   d4 = -1 for BLoad, which form 1 does not read; the C version passes
@@ -81,6 +82,11 @@ kind F):
   The original tested after the access and signed: it read the byte at
   source+length, wrote one byte past destlength and read a literal run
   past the source's end (#778).
+* **LoadIFF** takes the first free bank of RIAmosFuncLib from bank 0 on,
+  as RWE's own V2.5 of the library does (`MOVEQ #0,D0 : ALibJsr
+  NextBank,0`). The original asked for one from bank 51 on; with
+  RIAmosFuncLib's default of 50 banks there is none, and LoadIFF returned
+  0 unless the program had raised the number with `BankLimit` (#770).
 
 ## BUG(orig), kept
 
@@ -147,11 +153,10 @@ token list is the one of the BSS2 binary the original was built against)
 with the original, initialised after memlib, the ALibJsr targets
 fixed up with `amosfunc_fixjsrs` (`libs/tests/rwe/amosfunc.h`: BLoad is
 Amiga mode only). LoadIFF reads an ILBM of the test from `RAM:`; besides
-bitmap and palette the bank afterwards is observed (bank 51 free again,
-NextBank(51)). With RIAmosFuncLib's default of 50 banks there is no
-bank 51: LoadIFF returns 0 (a real program needs `BankLimit` above 51 –
-BUG(orig) of the combination, #770); the test observes that case and then
-raises the limit to 60.
+bitmap and palette bank 51 afterwards is observed (free, NextBank(51)).
+The first LoadIFF runs with RIAmosFuncLib's default of 50 banks (the
+original finds no bank from 51 on and returns 0, fixed #770); then the
+test raises the limit to 60.
 
 Not covered: corrupt ICE data, PackPBM's failure with a large d3,
 nPlanes 0, DIVU overflows (CMAP chunks of 196 KB), a failing memlib

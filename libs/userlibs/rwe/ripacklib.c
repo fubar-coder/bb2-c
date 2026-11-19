@@ -31,6 +31,11 @@
  * original tested after the access (signed): it read the byte at
  * source+length and wrote one byte past destlength.
  *
+ * Fixed (#770): LoadIFF takes the first free bank of RIAmosFuncLib from
+ * bank 0 on (NextBank(0), as RWE's V2.5 of the library); the original
+ * asked for one from bank 51 on, which RIAmosFuncLib's default of 50
+ * banks does not have (LoadIFF returned 0 unless BankLimit raised it).
+ *
  * BUG(orig), kept:
  *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
  *     the BMHD is not read) (#773), takes the row width as width/8 (rows
@@ -757,9 +762,10 @@ BLITZ_THUNK(ilbmgrab, ilbmgrab_c, "d0-d1/a0-a1");
  * @brief LoadIFF(filename$,bitmap,palette): loads an ILBM file into a
  * bitmap and a palette.
  *
- * The file goes into a free bank of RIAmosFuncLib (NextBank from 51 on,
- * BLoad), UnpackIFF and (with a palette) ILBMPalette from there, then
- * the bank is erased.  BUG(orig) (#771): BB_TRUE also if UnpackIFF
+ * The file goes into a free bank of RIAmosFuncLib (NextBank from 0 on,
+ * fixed #770: the original's from 51 on needed BankLimit above 51; BLoad),
+ * UnpackIFF and (with a palette) ILBMPalette from there, then the bank is
+ * erased.  BUG(orig) (#771): BB_TRUE also if UnpackIFF
  * failed.
  * @param name  d0: the file name
  * @param bm    a0: the bitmap object (parameter 1)
@@ -770,7 +776,7 @@ BLITZ_THUNK(ilbmgrab, ilbmgrab_c, "d0-d1/a0-a1");
 static BB_BOOL BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0),
                                         struct bb_palette *pal BL_REG(a1))
 {
-    struct bl_regs r = { .d0 = 51 };
+    struct bl_regs r = { .d0 = 0 };             /* fixed #770: was 51 */
     ULONG bank, start;
 
     bank = BLITZ_ALIBJSR_FORM(TOK_nextbank, 1, r);

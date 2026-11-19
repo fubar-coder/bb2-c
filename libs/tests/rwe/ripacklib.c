@@ -23,10 +23,11 @@
  * binary (the reference of the port; its token list is the one of the
  * BSS2 binary the original ripacklib was built against) with the
  * original - and initialised after memlib.  LoadIFF reads an ILBM of
- * this test from RAM: into bank 51; observed are the bitmap, the palette
- * and the bank afterwards (free again, NextBank(51)); with RIAmosFuncLib's
- * default of 50 banks there is no bank 51 (0, BUG(orig), #770), so the test
- * raises it with BankLimit 60.
+ * this test from RAM: into a free bank (the original: from bank 51 on,
+ * the C build from bank 0 on); observed are the bitmap, the palette and
+ * bank 51 afterwards (free, NextBank(51)); with RIAmosFuncLib's default
+ * of 50 banks the original finds no bank (0, fixed #770), so the test
+ * raises the number with BankLimit 60.
  */
 #include "sysload.h"
 #include "amosfunc.h"
@@ -769,10 +770,9 @@ static void test_loadiff(void)
     seed = 41;
     ilbmlen = mkilbm(ilbm, 64, 10, 3, 8, 0);
     writeilbm(ilbmlen);
-    /* BUG(orig) (#770): LoadIFF looks for a bank from 51 on, RIAmosFuncLib has 50
-       unless BankLimit raised the number: no bank, 0 */
+    /* the original looks for a bank from 51 on, RIAmosFuncLib has 50
+       unless BankLimit raised the number: no bank, 0 (fixed #770: from 0) */
     loadiff(ILBMFILE, 1, ", 50 banks");
-    check("LoadIFF: 0 with 50 banks", liff == 0);
     amos(AMOS_E_BANKLIMIT, 0, 60);
     loadiff(ILBMFILE, 0, "");
     check("LoadIFF: -1 with 60 banks", liff == (ULONG)-1);

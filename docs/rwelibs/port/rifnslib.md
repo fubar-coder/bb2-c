@@ -85,7 +85,7 @@ glyph `ROR.l`/`SWAP` as `data << (16 - x & 15)`.
   default of 50 banks: `BLoad` takes the number as an address and reads the
   file to the address 55 + slot (a real font destroys the vector table),
   `Start` returns 0 and FNSLoad -1; with `BankLimit` above 55 + slot it
-  works. Same mismatch as ripacklib's LoadIFF (#770). Test
+  works. ripacklib's LoadIFF had the same mismatch (#770, fixed). Test
   `rifnslib-fnsload-bank-55` (a 1-byte font file touches only address 55).
   FNSUnload erases the same bank number (not checked). (#984)
 

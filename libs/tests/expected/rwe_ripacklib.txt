@@ -158,13 +158,16 @@ LoadIFF|block|RAM:rwe-pack.bad form 1|1	$00000000
 LoadIFF|block|RAM:rwe-pack.iff form 0|1	$00000000
 LoadIFF|block|RAM:rwe-pack.iff form 0|2	$00000000
 LoadIFF|block|RAM:rwe-pack.iff form 1|1	$00000001
-LoadIFF|block|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|block|RAM:rwe-pack.iff form 1, 50 banks|1 [orig]	$00000000
+LoadIFF|block|RAM:rwe-pack.iff form 1, 50 banks|1 [fixed #770]	$00000001
 LoadIFF|colours|RAM:rwe-pack.iff form 1|1	bytes 100 fnv 66410A15
+LoadIFF|colours|RAM:rwe-pack.iff form 1, 50 banks|1 [fixed #770]	bytes 100 fnv 66410A15
 LoadIFF|d0|RAM:rwe-pack.bad form 1|1	$00000000
 LoadIFF|d0|RAM:rwe-pack.iff form 0|1	$FFFFFFFF
 LoadIFF|d0|RAM:rwe-pack.iff form 0|2	$FFFFFFFF
 LoadIFF|d0|RAM:rwe-pack.iff form 1|1	$FFFFFFFF
-LoadIFF|d0|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|d0|RAM:rwe-pack.iff form 1, 50 banks|1 [orig]	$00000000
+LoadIFF|d0|RAM:rwe-pack.iff form 1, 50 banks|1 [fixed #770]	$FFFFFFFF
 LoadIFF|kept|RAM:rwe-pack.bad form 1|1	kept
 LoadIFF|kept|RAM:rwe-pack.iff form 0|1	kept
 LoadIFF|kept|RAM:rwe-pack.iff form 0|2	kept
@@ -174,12 +177,14 @@ LoadIFF|numcols|RAM:rwe-pack.bad form 1|1	$00000000
 LoadIFF|numcols|RAM:rwe-pack.iff form 0|1	$00000000
 LoadIFF|numcols|RAM:rwe-pack.iff form 0|2	$00000000
 LoadIFF|numcols|RAM:rwe-pack.iff form 1|1	$00000008
-LoadIFF|numcols|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|numcols|RAM:rwe-pack.iff form 1, 50 banks|1 [orig]	$00000000
+LoadIFF|numcols|RAM:rwe-pack.iff form 1, 50 banks|1 [fixed #770]	$00000008
 LoadIFF|planes|RAM:rwe-pack.bad form 1|1	bytes 24064 fnv 17CC15C5
 LoadIFF|planes|RAM:rwe-pack.iff form 0|1	bytes 24064 fnv 7E27789A
 LoadIFF|planes|RAM:rwe-pack.iff form 0|2	bytes 24064 fnv 17CC15C5
 LoadIFF|planes|RAM:rwe-pack.iff form 1|1	bytes 24064 fnv 7E27789A
-LoadIFF|planes|RAM:rwe-pack.iff form 1, 50 banks|1	bytes 24064 fnv 17CC15C5
+LoadIFF|planes|RAM:rwe-pack.iff form 1, 50 banks|1 [orig]	bytes 24064 fnv 17CC15C5
+LoadIFF|planes|RAM:rwe-pack.iff form 1, 50 banks|1 [fixed #770]	bytes 24064 fnv 7E27789A
 LoadIFF|popped|RAM:rwe-pack.bad form 1|1	$00000000
 LoadIFF|popped|RAM:rwe-pack.iff form 0|1	$00000000
 LoadIFF|popped|RAM:rwe-pack.iff form 0|2	$00000000
