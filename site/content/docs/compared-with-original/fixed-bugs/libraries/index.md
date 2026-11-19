@@ -5028,6 +5028,33 @@ the game Blitz Bombers from memory. `SetBBMapLoc` and
   files of the first run, which may have been freed
   ([#1108](https://github.com/fubar-coder/bb2-c/issues/1108)).
 
+### Fixes in ristonecrackerlib and ristcdecrunchlib {#stonecracker-fixes}
+
+These fixes concern the two libraries by Reflective Images for data
+files packed with StoneCracker 4.04:
+[ristonecrackerlib]({{< relref "/docs/libraries/userlibs/ristonecrackerlib" >}}),
+which tells the sizes of such a file and loads and unpacks one with
+`STCLoad`, and
+[ristcdecrunchlib]({{< relref "/docs/libraries/userlibs/ristcdecrunchlib" >}}),
+whose `STCDecrunch` unpacks one in memory. Both use the same unpacking
+code.
+
+* `STCDecrunch` and `STCLoad` write nothing below the destination for
+  damaged StoneCracker data; such data give 0. The original wrote a
+  piece of the data past the start of the destination, into the memory
+  below, and could crash the machine
+  ([#833](https://github.com/fubar-coder/bb2-c/issues/833)).
+* `STCLoad` returns 0 for a file that is not, or not wholly, a
+  StoneCracker 4.04 file, and for one it cannot read. The original
+  unpacked whatever it had read and could write anywhere in memory
+  ([#836](https://github.com/fubar-coder/bb2-c/issues/836)).
+* `STCLoad` releases the lock of the file once. The original released
+  it a second time after closing the file, on every load that worked
+  ([#835](https://github.com/fubar-coder/bb2-c/issues/835)).
+* ristonecrackerlib closes dos.library at the end of the program. The
+  original left it open, one more time after every run
+  ([#834](https://github.com/fubar-coder/bb2-c/issues/834)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a

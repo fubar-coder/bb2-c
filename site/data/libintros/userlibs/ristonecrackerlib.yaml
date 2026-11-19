@@ -14,11 +14,16 @@ intro: |
   holds no StoneCracker 4.04 file.
 
   `STCLoad` loads a file and unpacks it in one step, with dos.library,
-  which the library opens when the program starts. The other functions
-  use no operating system calls.
+  which the library opens when the program starts and closes at its
+  end. The other functions use no operating system calls.
 
-  The unpacking code does not check the data: a damaged file writes
-  below the start of the buffer
-  ([#833](https://github.com/fubar-coder/bb2-c/issues/833)).
+  `STCLoad` unpacks a file only if it could read all of it and it is a
+  whole StoneCracker 4.04 file. The unpacking code, the same as that of
+  `STCDecrunch`, writes nothing outside the buffer for damaged data and
+  then returns 0; it does not check what it reads. It is a little
+  faster than the original's, about 4 % on a large file.
+
+  The fixed bugs of the libraries are listed in
+  [Fixes in ristonecrackerlib and ristcdecrunchlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#stonecracker-fixes" >}}).
 
   *Based on the RI STC Lib guide by Reflective Images.*

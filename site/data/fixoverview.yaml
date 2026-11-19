@@ -4924,6 +4924,38 @@ rows:
     text: "With runtime error checking, a shadow set the scenario does not have stops with \"Shadow set must lie in the SHDW chunk\"; the original read behind the chunk."
     page: libraries
     anchor: ribbmaplib-fixes
+  - issue: 833
+    severity: 5
+    topic: "Files"
+    library: "ristcdecrunchlib, ristonecrackerlib"
+    command: "STCDecrunch, STCLoad"
+    text: "`STCDecrunch` and `STCLoad` write nothing below the destination for damaged StoneCracker data and return 0; the original wrote into the memory below."
+    page: libraries
+    anchor: stonecracker-fixes
+  - issue: 834
+    severity: 5
+    topic: "System"
+    library: "ristonecrackerlib"
+    command: ""
+    text: "ristonecrackerlib closes dos.library at the end of the program; the original left its open count one higher after every run."
+    page: libraries
+    anchor: stonecracker-fixes
+  - issue: 835
+    severity: 5
+    topic: "Files"
+    library: "ristonecrackerlib"
+    command: "STCLoad"
+    text: "`STCLoad` releases the file's lock once; the original released it a second time after closing the file, on every load that worked."
+    page: libraries
+    anchor: stonecracker-fixes
+  - issue: 836
+    severity: 5
+    topic: "Files"
+    library: "ristonecrackerlib"
+    command: "STCLoad"
+    text: "`STCLoad` returns 0 for a file that is not wholly a StoneCracker 4.04 file or cannot be read; the original unpacked it and wrote outside the buffer."
+    page: libraries
+    anchor: stonecracker-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

@@ -8,8 +8,12 @@ intro: |
   the sizes needed and where the data are after unpacking in place. It
   works in Amiga and Blitz mode.
 
-  The unpacking code does not check the data: a damaged file writes
-  below the start of the destination and can crash the machine
-  ([#833](https://github.com/fubar-coder/bb2-c/issues/833)).
+  For damaged data the unpacking code writes nothing outside the
+  destination and returns 0; it does not check what it reads, so such
+  data can unpack wrong. It is a little faster than the original's:
+  about 4 % on a large file, and a call on a tiny file about 7 %.
+
+  The fixed bugs of the libraries are listed in
+  [Fixes in ristonecrackerlib and ristcdecrunchlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#stonecracker-fixes" >}}).
 
   *Based on the RI STCDecrunch Lib guide by Reflective Images.*
