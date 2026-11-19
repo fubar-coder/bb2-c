@@ -26,7 +26,11 @@ read them first):
   warnings and `ctest --preset host` for every commit; the other tests
   as the brief names them. A newly found original bug gets a
   `BUG(orig)` note and a bug-orig test that comes out REPRODUCED, and
-  is reported (the coordinator files the issue).
+  is reported (the coordinator files the issue). The report gives its
+  class by D-021 with the reason: (a) hit with valid data or in normal
+  use; (b) only with broken or hand-made files, saying whether it
+  crashes or overwrites memory; (c) programming error (D-005). Do not
+  fix it unless the brief says so.
 * AB3 mode: new behaviour only in `programs/blitz2/src/ab3*.c` behind
   an extension point of `ext.h`.
 * If the brief, this file, CLAUDE.md or a decision contradict each
