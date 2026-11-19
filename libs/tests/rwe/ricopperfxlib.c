@@ -15,8 +15,9 @@
  * forms of CopperReset, before any reset (no custom space), after
  * CopperReset and CopperResetAdr, colour splits crossing line 256,
  * falling/rising/negative colour values, random splits; a second run
- * (init, as from the editor with the library still loaded): the commands
- * before CopperReset, the ColSplitBplcon3 byte of the run before.
+ * (init, as from the editor with the library still loaded; it clears the
+ * state in the C build since #1126): the commands before CopperReset, the
+ * ColSplitBplcon3 byte of the run before.
  * Not covered: the copper actually running the lists (nothing here is
  * displayed - the lists are only built in memory), DoColSplit/RedoColSplit
  * with numlines 0 (divide-by-zero exception) or negative (65536 lines),

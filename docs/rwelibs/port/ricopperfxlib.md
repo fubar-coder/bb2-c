@@ -51,6 +51,13 @@ reproduced.
 * `CopperWait`: x becomes `((x >> 1) & $FE) + 6` as a word, the +6 can
   carry into the line byte (#591).
 
+**Fixed:**
+
+* init clears the state block (the original's init is an RTS): a second
+  run from the editor with the library still loaded wrote into the custom
+  space of the run before with every command before its `CopperReset`,
+  and its `ColSplitBplcon3` byte stayed in effect (#1126).
+
 **Test** (`libs/tests/rwe/ricopperfxlib.c`, snitch case "rwe
 ricopperfxlib"): each run loads one library set (the C build or the CD
 original); the scenario writes its observations as cases, compared with
@@ -63,6 +70,7 @@ the buffer and coplist) and the kept registers. Cases: before any reset (nothing
 `CopperReset` with and without ccoffset, splits across line 256 and from
 line 0, falling, rising and out-of-range colour values, `ColSplitBplcon3`,
 40 random splits with `RedoColSplit` over them, `CopperResetAdr` with
-the `GetCCOffset` -1, init/finit. Not covered: the lists running in the
+the `GetCCOffset` -1, init/finit, a second run (init, the commands
+before `CopperReset`, the `ColSplitBplcon3` byte of the run before). Not covered: the lists running in the
 copper (nothing is displayed), numlines 0 or negative, a ccoffset above
 $FFFF for `RedoColSplit`.

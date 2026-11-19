@@ -57,7 +57,8 @@ CopperAGACol|bplcon3LO/HI|73,$C,$8A,$43|1	$0EFF0CFF
 CopperAGACol|bplcon3LO/HI|78,$2D,$77,$B3|1	$2EFF2CFF
 CopperAGACol|bplcon3LO/HI|79,$D5,$E,$11|1	$8EFF8CFF
 CopperAGACol|bplcon3LO/HI|8,$45,$C3,$61|1	$4EFF4CFF
-CopperAGACol|bplcon3LO/HI|9,$10,$20,$30|1	$0EFF0CFF
+CopperAGACol|bplcon3LO/HI|9,$10,$20,$30|1 [orig]	$0EFF0CFF
+CopperAGACol|bplcon3LO/HI|9,$10,$20,$30|1 [fixed #1126]	$00000000
 CopperAGACol|bplcon3LO/HI|97,$1E,$81,$A3|1	$CEFFCCFF
 CopperAGACol|bplcon3LO/HI|99,$BA,$18,$22|1	$6EFF6CFF
 CopperAGACol|colreg/lo_bplcon3|0,$CB,$AF,$D7|1	$018CFF00
@@ -110,7 +111,8 @@ CopperAGACol|colreg/lo_bplcon3|73,$C,$8A,$43|1	$01A6FF00
 CopperAGACol|colreg/lo_bplcon3|78,$2D,$77,$B3|1	$01A8FF00
 CopperAGACol|colreg/lo_bplcon3|79,$D5,$E,$11|1	$01AEFF00
 CopperAGACol|colreg/lo_bplcon3|8,$45,$C3,$61|1	$019EFF00
-CopperAGACol|colreg/lo_bplcon3|9,$10,$20,$30|1	$0186FF00
+CopperAGACol|colreg/lo_bplcon3|9,$10,$20,$30|1 [orig]	$0186FF00
+CopperAGACol|colreg/lo_bplcon3|9,$10,$20,$30|1 [fixed #1126]	$00000000
 CopperAGACol|colreg/lo_bplcon3|97,$1E,$81,$A3|1	$0182FF00
 CopperAGACol|colreg/lo_bplcon3|99,$BA,$18,$22|1	$019EFF00
 CopperAGACol|coplistaddr|0,$CB,$AF,$D7|1	$00000001
@@ -216,7 +218,8 @@ CopperAGACol|custom space|73,$C,$8A,$43|1	bytes 8192 fnv 0404C117
 CopperAGACol|custom space|78,$2D,$77,$B3|1	bytes 8192 fnv FDAC8F1C
 CopperAGACol|custom space|79,$D5,$E,$11|1	bytes 8192 fnv 9AC5E535
 CopperAGACol|custom space|8,$45,$C3,$61|1	bytes 8192 fnv 5CCF8F7F
-CopperAGACol|custom space|9,$10,$20,$30|1	bytes 8192 fnv 3255291E
+CopperAGACol|custom space|9,$10,$20,$30|1 [orig]	bytes 8192 fnv 3255291E
+CopperAGACol|custom space|9,$10,$20,$30|1 [fixed #1126]	bytes 8192 fnv 2F741DC5
 CopperAGACol|custom space|97,$1E,$81,$A3|1	bytes 8192 fnv 722F6909
 CopperAGACol|custom space|99,$BA,$18,$22|1	bytes 8192 fnv D31D2BE8
 CopperAGACol|customaddr|0,$CB,$AF,$D7|1	$00010000
@@ -269,7 +272,8 @@ CopperAGACol|customaddr|73,$C,$8A,$43|1	$00010000
 CopperAGACol|customaddr|78,$2D,$77,$B3|1	$00010000
 CopperAGACol|customaddr|79,$D5,$E,$11|1	$00010000
 CopperAGACol|customaddr|8,$45,$C3,$61|1	$00010000
-CopperAGACol|customaddr|9,$10,$20,$30|1	$000103E8
+CopperAGACol|customaddr|9,$10,$20,$30|1 [orig]	$000103E8
+CopperAGACol|customaddr|9,$10,$20,$30|1 [fixed #1126]	$00000000
 CopperAGACol|customaddr|97,$1E,$81,$A3|1	$00010000
 CopperAGACol|customaddr|99,$BA,$18,$22|1	$00010000
 CopperAGACol|d0|0,$CB,$AF,$D7|1	$A5A50000
@@ -322,7 +326,8 @@ CopperAGACol|d0|73,$C,$8A,$43|1	$A5A50049
 CopperAGACol|d0|78,$2D,$77,$B3|1	$A5A5004E
 CopperAGACol|d0|79,$D5,$E,$11|1	$A5A5004F
 CopperAGACol|d0|8,$45,$C3,$61|1	$A5A50008
-CopperAGACol|d0|9,$10,$20,$30|1	$A5A50009
+CopperAGACol|d0|9,$10,$20,$30|1 [orig]	$A5A50009
+CopperAGACol|d0|9,$10,$20,$30|1 [fixed #1126]	$000004D2
 CopperAGACol|d0|97,$1E,$81,$A3|1	$A5A50061
 CopperAGACol|d0|99,$BA,$18,$22|1	$A5A50063
 CopperAGACol|kept|0,$CB,$AF,$D7|1	kept
@@ -428,7 +433,8 @@ CopperAGACol|startline/ccoffset|73,$C,$8A,$43|1	$01F30104
 CopperAGACol|startline/ccoffset|78,$2D,$77,$B3|1	$01CD04E4
 CopperAGACol|startline/ccoffset|79,$D5,$E,$11|1	$00AA053C
 CopperAGACol|startline/ccoffset|8,$45,$C3,$61|1	$0115046C
-CopperAGACol|startline/ccoffset|9,$10,$20,$30|1	$00170230
+CopperAGACol|startline/ccoffset|9,$10,$20,$30|1 [orig]	$00170230
+CopperAGACol|startline/ccoffset|9,$10,$20,$30|1 [fixed #1126]	$00000000
 CopperAGACol|startline/ccoffset|97,$1E,$81,$A3|1	$01050128
 CopperAGACol|startline/ccoffset|99,$BA,$18,$22|1	$01FB0560
 CopperCommand|bplcon3LO/HI|$1FE,$0|1	$00000000
@@ -502,14 +508,16 @@ CopperInfoBlock|custom space||1	bytes 8192 fnv 2F741DC5
 CopperInfoBlock|customaddr||1	$00000000
 CopperInfoBlock|kept||1	kept
 CopperInfoBlock|startline/ccoffset||1	$00000000
-CopperMove|bplcon3LO/HI|$180,$F0|1	$0EFF0CFF
+CopperMove|bplcon3LO/HI|$180,$F0|1 [orig]	$0EFF0CFF
+CopperMove|bplcon3LO/HI|$180,$F0|1 [fixed #1126]	$00000000
 CopperMove|bplcon3LO/HI|$181,$123|1	$00000000
 CopperMove|bplcon3LO/HI|$181,$123|2	$2E222C22
 CopperMove|bplcon3LO/HI|$181,$123|3	$2EFF2CFF
 CopperMove|bplcon3LO/HI|$FE,$FFFF|1	$00000000
 CopperMove|bplcon3LO/HI|$FE,$FFFF|2	$2E222C22
 CopperMove|bplcon3LO/HI|$FE,$FFFF|3	$2EFF2CFF
-CopperMove|colreg/lo_bplcon3|$180,$F0|1	$0186FF00
+CopperMove|colreg/lo_bplcon3|$180,$F0|1 [orig]	$0186FF00
+CopperMove|colreg/lo_bplcon3|$180,$F0|1 [fixed #1126]	$00000000
 CopperMove|colreg/lo_bplcon3|$181,$123|1	$00000000
 CopperMove|colreg/lo_bplcon3|$181,$123|2	$018A2200
 CopperMove|colreg/lo_bplcon3|$181,$123|3	$0190FF00
@@ -523,14 +531,16 @@ CopperMove|coplistaddr|$181,$123|3	$00000000
 CopperMove|coplistaddr|$FE,$FFFF|1	$00000000
 CopperMove|coplistaddr|$FE,$FFFF|2	$00000001
 CopperMove|coplistaddr|$FE,$FFFF|3	$00000000
-CopperMove|custom space|$180,$F0|1	bytes 8192 fnv DB621FA4
+CopperMove|custom space|$180,$F0|1 [orig]	bytes 8192 fnv DB621FA4
+CopperMove|custom space|$180,$F0|1 [fixed #1126]	bytes 8192 fnv 2F741DC5
 CopperMove|custom space|$181,$123|1	bytes 8192 fnv 2F741DC5
 CopperMove|custom space|$181,$123|2	bytes 8192 fnv D9D505EC
 CopperMove|custom space|$181,$123|3	bytes 8192 fnv EE36A808
 CopperMove|custom space|$FE,$FFFF|1	bytes 8192 fnv 2F741DC5
 CopperMove|custom space|$FE,$FFFF|2	bytes 8192 fnv 33F92ED0
 CopperMove|custom space|$FE,$FFFF|3	bytes 8192 fnv 5A2F7A64
-CopperMove|customaddr|$180,$F0|1	$000103E8
+CopperMove|customaddr|$180,$F0|1 [orig]	$000103E8
+CopperMove|customaddr|$180,$F0|1 [fixed #1126]	$00000000
 CopperMove|customaddr|$181,$123|1	$00000000
 CopperMove|customaddr|$181,$123|2	$00010000
 CopperMove|customaddr|$181,$123|3	$000103E8
@@ -544,7 +554,8 @@ CopperMove|kept|$181,$123|3	kept
 CopperMove|kept|$FE,$FFFF|1	kept
 CopperMove|kept|$FE,$FFFF|2	kept
 CopperMove|kept|$FE,$FFFF|3	kept
-CopperMove|startline/ccoffset|$180,$F0|1	$00170220
+CopperMove|startline/ccoffset|$180,$F0|1 [orig]	$00170220
+CopperMove|startline/ccoffset|$180,$F0|1 [fixed #1126]	$00000000
 CopperMove|startline/ccoffset|$181,$123|1	$00000000
 CopperMove|startline/ccoffset|$181,$123|2	$003C0194
 CopperMove|startline/ccoffset|$181,$123|3	$00070004
@@ -590,7 +601,8 @@ CopperReset|bplcon3LO/HI|line 467 off 140 form 1|1	$6EFF6CFF
 CopperReset|bplcon3LO/HI|line 469 off 132 form 1|1	$CEFFCCFF
 CopperReset|bplcon3LO/HI|line 489 off 11 form 1|1	$6EFF6CFF
 CopperReset|bplcon3LO/HI|line 498 off 13 form 1|1	$0EFF0CFF
-CopperReset|bplcon3LO/HI|line 60 off 0 form 0|1	$0EFF0CFF
+CopperReset|bplcon3LO/HI|line 60 off 0 form 0|1 [orig]	$0EFF0CFF
+CopperReset|bplcon3LO/HI|line 60 off 0 form 0|1 [fixed #1126]	$0E000C00
 CopperReset|bplcon3LO/HI|line 68 off 188 form 1|1	$8EFF8CFF
 CopperReset|bplcon3LO/HI|line 72 off 177 form 1|1	$2EFF2CFF
 CopperReset|bplcon3LO/HI|line 86 off 185 form 1|1	$0EFF0CFF
@@ -634,7 +646,8 @@ CopperReset|colreg/lo_bplcon3|line 467 off 140 form 1|1	$01B8FF00
 CopperReset|colreg/lo_bplcon3|line 469 off 132 form 1|1	$01B2FF00
 CopperReset|colreg/lo_bplcon3|line 489 off 11 form 1|1	$019EFF00
 CopperReset|colreg/lo_bplcon3|line 498 off 13 form 1|1	$01BCFF00
-CopperReset|colreg/lo_bplcon3|line 60 off 0 form 0|1	$018EFF00
+CopperReset|colreg/lo_bplcon3|line 60 off 0 form 0|1 [orig]	$018EFF00
+CopperReset|colreg/lo_bplcon3|line 60 off 0 form 0|1 [fixed #1126]	$018E0000
 CopperReset|colreg/lo_bplcon3|line 68 off 188 form 1|1	$0180FF00
 CopperReset|colreg/lo_bplcon3|line 72 off 177 form 1|1	$01B4FF00
 CopperReset|colreg/lo_bplcon3|line 86 off 185 form 1|1	$01BCFF00
@@ -722,7 +735,8 @@ CopperReset|custom space|line 467 off 140 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 469 off 132 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 489 off 11 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 498 off 13 form 1|1	bytes 8192 fnv 2F741DC5
-CopperReset|custom space|line 60 off 0 form 0|1	bytes 8192 fnv F82270B6
+CopperReset|custom space|line 60 off 0 form 0|1 [orig]	bytes 8192 fnv F82270B6
+CopperReset|custom space|line 60 off 0 form 0|1 [fixed #1126]	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 68 off 188 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 72 off 177 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 86 off 185 form 1|1	bytes 8192 fnv 2F741DC5
@@ -1559,8 +1573,10 @@ DoColSplit|bplcon3LO/HI|lines 35 reg 58 (43,3,33)-(101,204,204)|1	$2EFF2CFF
 DoColSplit|bplcon3LO/HI|lines 37 reg 167 (81,20,208)-(174,14,63)|1	$AEFFACFF
 DoColSplit|bplcon3LO/HI|lines 37 reg 217 (146,230,129)-(72,64,101)|1	$CEFFCCFF
 DoColSplit|bplcon3LO/HI|lines 39 reg 64 (200,229,56)-(134,102,203)|1	$4EFF4CFF
-DoColSplit|bplcon3LO/HI|lines 4 reg 7 (0,0,0)-(255,128,64)|1	$0EFF0CFF
-DoColSplit|bplcon3LO/HI|lines 4 reg 7 (0,0,0)-(255,128,64)|2	$0EFF0CFF
+DoColSplit|bplcon3LO/HI|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [orig]	$0EFF0CFF
+DoColSplit|bplcon3LO/HI|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [fixed #1126]	$0E000C00
+DoColSplit|bplcon3LO/HI|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [orig]	$0EFF0CFF
+DoColSplit|bplcon3LO/HI|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [fixed #1126]	$0E000C00
 DoColSplit|bplcon3LO/HI|lines 40 reg 111 (110,108,13)-(120,103,65)|1	$6EFF6CFF
 DoColSplit|bplcon3LO/HI|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	$EEFFECFF
 DoColSplit|bplcon3LO/HI|lines 40 reg 95 (83,161,212)-(164,248,32)|1	$4EFF4CFF
@@ -1609,8 +1625,10 @@ DoColSplit|colreg/lo_bplcon3|lines 35 reg 58 (43,3,33)-(101,204,204)|1	$01B4FF00
 DoColSplit|colreg/lo_bplcon3|lines 37 reg 167 (81,20,208)-(174,14,63)|1	$018EFF00
 DoColSplit|colreg/lo_bplcon3|lines 37 reg 217 (146,230,129)-(72,64,101)|1	$01B2FF00
 DoColSplit|colreg/lo_bplcon3|lines 39 reg 64 (200,229,56)-(134,102,203)|1	$0180FF00
-DoColSplit|colreg/lo_bplcon3|lines 4 reg 7 (0,0,0)-(255,128,64)|1	$018EFF00
-DoColSplit|colreg/lo_bplcon3|lines 4 reg 7 (0,0,0)-(255,128,64)|2	$018EFF00
+DoColSplit|colreg/lo_bplcon3|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [orig]	$018EFF00
+DoColSplit|colreg/lo_bplcon3|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [fixed #1126]	$018E0000
+DoColSplit|colreg/lo_bplcon3|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [orig]	$018EFF00
+DoColSplit|colreg/lo_bplcon3|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [fixed #1126]	$018E0000
 DoColSplit|colreg/lo_bplcon3|lines 40 reg 111 (110,108,13)-(120,103,65)|1	$019EFF00
 DoColSplit|colreg/lo_bplcon3|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	$01A2FF00
 DoColSplit|colreg/lo_bplcon3|lines 40 reg 95 (83,161,212)-(164,248,32)|1	$01BEFF00
@@ -1709,8 +1727,10 @@ DoColSplit|custom space|lines 35 reg 58 (43,3,33)-(101,204,204)|1	bytes 8192 fnv
 DoColSplit|custom space|lines 37 reg 167 (81,20,208)-(174,14,63)|1	bytes 8192 fnv DDF2864D
 DoColSplit|custom space|lines 37 reg 217 (146,230,129)-(72,64,101)|1	bytes 8192 fnv E051EFB6
 DoColSplit|custom space|lines 39 reg 64 (200,229,56)-(134,102,203)|1	bytes 8192 fnv 97808700
-DoColSplit|custom space|lines 4 reg 7 (0,0,0)-(255,128,64)|1	bytes 8192 fnv F82270B6
-DoColSplit|custom space|lines 4 reg 7 (0,0,0)-(255,128,64)|2	bytes 8192 fnv 44101D7A
+DoColSplit|custom space|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [orig]	bytes 8192 fnv F82270B6
+DoColSplit|custom space|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [fixed #1126]	bytes 8192 fnv 2F741DC5
+DoColSplit|custom space|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [orig]	bytes 8192 fnv 44101D7A
+DoColSplit|custom space|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [fixed #1126]	bytes 8192 fnv E2589B5D
 DoColSplit|custom space|lines 40 reg 111 (110,108,13)-(120,103,65)|1	bytes 8192 fnv 82EBAEC3
 DoColSplit|custom space|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	bytes 8192 fnv 770E3BF9
 DoColSplit|custom space|lines 40 reg 95 (83,161,212)-(164,248,32)|1	bytes 8192 fnv E4E2EF9F
@@ -1759,7 +1779,8 @@ DoColSplit|customaddr|lines 35 reg 58 (43,3,33)-(101,204,204)|1	$00010000
 DoColSplit|customaddr|lines 37 reg 167 (81,20,208)-(174,14,63)|1	$00010000
 DoColSplit|customaddr|lines 37 reg 217 (146,230,129)-(72,64,101)|1	$00010000
 DoColSplit|customaddr|lines 39 reg 64 (200,229,56)-(134,102,203)|1	$00010000
-DoColSplit|customaddr|lines 4 reg 7 (0,0,0)-(255,128,64)|1	$000103E8
+DoColSplit|customaddr|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [orig]	$000103E8
+DoColSplit|customaddr|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [fixed #1126]	$00000000
 DoColSplit|customaddr|lines 4 reg 7 (0,0,0)-(255,128,64)|2	$00010000
 DoColSplit|customaddr|lines 40 reg 111 (110,108,13)-(120,103,65)|1	$00010000
 DoColSplit|customaddr|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	$00010000
@@ -1809,7 +1830,8 @@ DoColSplit|d0|lines 35 reg 58 (43,3,33)-(101,204,204)|1	$00006A08
 DoColSplit|d0|lines 37 reg 167 (81,20,208)-(174,14,63)|1	$0000A092
 DoColSplit|d0|lines 37 reg 217 (146,230,129)-(72,64,101)|1	$FFFF803C
 DoColSplit|d0|lines 39 reg 64 (200,229,56)-(134,102,203)|1	$FFFF93B8
-DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|1	$000FF000
+DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [orig]	$000FF000
+DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [fixed #1126]	$00000001
 DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|2	$000FF000
 DoColSplit|d0|lines 40 reg 111 (110,108,13)-(120,103,65)|1	$00000FFA
 DoColSplit|d0|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	$0003D02B
@@ -1909,7 +1931,8 @@ DoColSplit|startline/ccoffset|lines 35 reg 58 (43,3,33)-(101,204,204)|1	$008004B
 DoColSplit|startline/ccoffset|lines 37 reg 167 (81,20,208)-(174,14,63)|1	$010E058C
 DoColSplit|startline/ccoffset|lines 37 reg 217 (146,230,129)-(72,64,101)|1	$00E80494
 DoColSplit|startline/ccoffset|lines 39 reg 64 (200,229,56)-(134,102,203)|1	$01D30470
-DoColSplit|startline/ccoffset|lines 4 reg 7 (0,0,0)-(255,128,64)|1	$001B0280
+DoColSplit|startline/ccoffset|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [orig]	$001B0280
+DoColSplit|startline/ccoffset|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [fixed #1126]	$00000000
 DoColSplit|startline/ccoffset|lines 4 reg 7 (0,0,0)-(255,128,64)|2	$00400050
 DoColSplit|startline/ccoffset|lines 40 reg 111 (110,108,13)-(120,103,65)|1	$01FB0550
 DoColSplit|startline/ccoffset|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	$00CC03EC
@@ -1923,16 +1946,20 @@ GetCCOffset|bplcon3LO/HI||3	$2E222C22
 GetCCOffset|bplcon3LO/HI||4	$2E222C22
 GetCCOffset|bplcon3LO/HI||5	$0E220C22
 GetCCOffset|bplcon3LO/HI||6	$2EFF2CFF
-GetCCOffset|bplcon3LO/HI||7	$0EFF0CFF
-GetCCOffset|bplcon3LO/HI||8	$0EFF0CFF
+GetCCOffset|bplcon3LO/HI||7 [orig]	$0EFF0CFF
+GetCCOffset|bplcon3LO/HI||7 [fixed #1126]	$00000000
+GetCCOffset|bplcon3LO/HI||8 [orig]	$0EFF0CFF
+GetCCOffset|bplcon3LO/HI||8 [fixed #1126]	$0E000C00
 GetCCOffset|colreg/lo_bplcon3||1	$00000000
 GetCCOffset|colreg/lo_bplcon3||2	$018A0000
 GetCCOffset|colreg/lo_bplcon3||3	$018A2200
 GetCCOffset|colreg/lo_bplcon3||4	$018A2200
 GetCCOffset|colreg/lo_bplcon3||5	$01BE2200
 GetCCOffset|colreg/lo_bplcon3||6	$0190FF00
-GetCCOffset|colreg/lo_bplcon3||7	$0186FF00
-GetCCOffset|colreg/lo_bplcon3||8	$018EFF00
+GetCCOffset|colreg/lo_bplcon3||7 [orig]	$0186FF00
+GetCCOffset|colreg/lo_bplcon3||7 [fixed #1126]	$00000000
+GetCCOffset|colreg/lo_bplcon3||8 [orig]	$018EFF00
+GetCCOffset|colreg/lo_bplcon3||8 [fixed #1126]	$018E0000
 GetCCOffset|coplistaddr||1	$00000000
 GetCCOffset|coplistaddr||2	$00000001
 GetCCOffset|coplistaddr||3	$00000001
@@ -1948,14 +1975,16 @@ GetCCOffset|custom space||4	bytes 8192 fnv 751E2227
 GetCCOffset|custom space||5	bytes 8192 fnv 432CB198
 GetCCOffset|custom space||6	bytes 8192 fnv 109CA586
 GetCCOffset|custom space||7	bytes 8192 fnv 2F741DC5
-GetCCOffset|custom space||8	bytes 8192 fnv 44101D7A
+GetCCOffset|custom space||8 [orig]	bytes 8192 fnv 44101D7A
+GetCCOffset|custom space||8 [fixed #1126]	bytes 8192 fnv E2589B5D
 GetCCOffset|customaddr||1	$00000000
 GetCCOffset|customaddr||2	$00010000
 GetCCOffset|customaddr||3	$00010000
 GetCCOffset|customaddr||4	$00010000
 GetCCOffset|customaddr||5	$00010000
 GetCCOffset|customaddr||6	$000103E8
-GetCCOffset|customaddr||7	$000103E8
+GetCCOffset|customaddr||7 [orig]	$000103E8
+GetCCOffset|customaddr||7 [fixed #1126]	$00000000
 GetCCOffset|customaddr||8	$00010000
 GetCCOffset|d0||1	$FFFFFFFF
 GetCCOffset|d0||2	$00000000
@@ -1979,7 +2008,8 @@ GetCCOffset|startline/ccoffset||3	$003C026C
 GetCCOffset|startline/ccoffset||4	$003C026C
 GetCCOffset|startline/ccoffset||5	$010E0644
 GetCCOffset|startline/ccoffset||6	$000700DC
-GetCCOffset|startline/ccoffset||7	$0017021C
+GetCCOffset|startline/ccoffset||7 [orig]	$0017021C
+GetCCOffset|startline/ccoffset||7 [fixed #1126]	$00000000
 GetCCOffset|startline/ccoffset||8	$00400050
 GetCCOffset (after CopperResetAdr)|bplcon3LO/HI||1	$2EFF2CFF
 GetCCOffset (after CopperResetAdr)|colreg/lo_bplcon3||1	$0190FF00
@@ -2312,11 +2342,15 @@ finit|custom space||1	bytes 8192 fnv D93E6DCB
 finit|customaddr||1	$000103E8
 finit|kept||1	kept
 finit|startline/ccoffset||1	$0017021C
-init|bplcon3LO/HI|second run|1	$0EFF0CFF
-init|colreg/lo_bplcon3|second run|1	$0186FF00
+init|bplcon3LO/HI|second run|1 [orig]	$0EFF0CFF
+init|bplcon3LO/HI|second run|1 [fixed #1126]	$00000000
+init|colreg/lo_bplcon3|second run|1 [orig]	$0186FF00
+init|colreg/lo_bplcon3|second run|1 [fixed #1126]	$00000000
 init|coplistaddr|second run|1	$00000000
 init|custom space|second run|1	bytes 8192 fnv 2F741DC5
-init|customaddr|second run|1	$000103E8
+init|customaddr|second run|1 [orig]	$000103E8
+init|customaddr|second run|1 [fixed #1126]	$00000000
 init|kept||1	kept
 init|kept|second run|1	kept
-init|startline/ccoffset|second run|1	$0017021C
+init|startline/ccoffset|second run|1 [orig]	$0017021C
+init|startline/ccoffset|second run|1 [fixed #1126]	$00000000

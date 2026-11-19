@@ -51,6 +51,11 @@
  *     shifted), the upper word of the argument is added unchanged (#594).
  *   - CopperWait: the x position is ((x >> 1) & $FE) + 6 as a word, so the
  *     +6 can carry into the line bits (x >= 500) (#591).
+ * Fixed:
+ *   - init clears the state block (the original's is an RTS): a second
+ *     run from the editor with the library still loaded wrote into the
+ *     custom space of the run before before its CopperReset and kept its
+ *     ColSplitBplcon3 byte (#1126).
  * Registers: the original changes d6/d7/a0 (and more) in every command,
  * but keeps others depending on the routine (a1 nearly always, d0/d1 in
  * the statements); the thunks keep all of d0/d1/a0/a1 that are not the
@@ -545,9 +550,27 @@ ULONG BLITZ_ROUTINE c_InfoBlock(void)
 }
 
 /**
- * @brief init and finit: nothing (_libinit/_libfinit are an RTS).
+ * @brief init: no custom space, the state block cleared.
+ *
+ * Fixed (#1126): the original's init is an RTS, so a second run of a
+ * program with the library still loaded (from the editor) started with
+ * the state of the run before: a command before CopperReset wrote into
+ * the custom space of the run before (perhaps a freed coplist), and its
+ * ColSplitBplcon3 byte stayed in effect.  The whole block is cleared,
+ * as at the first load (Dc.l 0/Dc.w 0); stores to absolute addresses,
+ * no register changes.
  */
 static void BLITZ_ROUTINE c_libinit(void)
+{
+    ULONG *p = (ULONG *)&cfx;
+
+    p[0] = p[1] = p[2] = p[3] = p[4] = 0;
+}
+
+/**
+ * @brief finit: nothing (_libfinit is an RTS).
+ */
+static void BLITZ_ROUTINE c_libfinit(void)
 {
 }
 
@@ -566,6 +589,6 @@ BLITZ_THUNK(getccoffset, c_getccoffset, "d1/a0-a1");
 BLITZ_THUNK(CustomAGACol, c_CustomAGACol, "d1/a0-a1");
 BLITZ_THUNK(splitresethard, c_splitresethard, "d0-d1/a0-a1");
 BLITZ_THUNK(splitbplcon3, c_splitbplcon3, "d0-d1/a0-a1");
-/* _libinit/_libfinit: RTS (nothing to set up) */
+/* init clears the state block (fixed, #1126); _libfinit: RTS */
 BLITZ_THUNK(ricopperfxlib_libinit, c_libinit, "d0-d1/a0-a1");
-BLITZ_THUNK(ricopperfxlib_libfinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ricopperfxlib_libfinit, c_libfinit, "d0-d1/a0-a1");
