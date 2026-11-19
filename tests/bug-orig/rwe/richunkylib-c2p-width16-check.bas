@@ -10,6 +10,7 @@
 ; Correct: 48 x 10 is converted (row 1 of the chunky data in row 1 of
 ; the bitmap), the error check refuses 40 x 10: "Chunky bitmap width not
 ; a multiple of 16".
+; @fixed #884
 ; @rwe richunkylib
 ; @pass timeout=30
 ; @pass runtime_errors=on

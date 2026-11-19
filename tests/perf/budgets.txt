@@ -315,6 +315,8 @@
 # original's 8 pixel step, four unrolled per long, the planes through one
 # pointer; W6 group F2): 6241124.1 and 6241124.2 (11414874.2 before, 0.98
 # of the original); its budget lowered.
+# c2p320 after #884 (the shape checks once per call: sizes, the plane
+# stride): 6242124.2 both times (+1000); its budget set to that.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -340,7 +342,7 @@ bchunky.raycast1              224      210.7  RaycastSky 0,100,1,37,tx (height 1
 bchunky.raycast10             583      561.7  RaycastSky 0,100,10,37,tx (height 10)
 bchunky.raycast100           4141     4090.7  RaycastSky 0,100,100,37,tx (height 100)
 bchunky.raycast200           8100     8006.7  RaycastSky 0,100,200,37,tx (height 200)
-bchunky.c2p320            6303539  6366624.2  ChunkyToPlanar 0,0 (320 x 256 chunky into 320 x 256 x 8, contiguous planes)
+bchunky.c2p320            6304549  6366624.2  ChunkyToPlanar 0,0 (320 x 256 chunky into 320 x 256 x 8, contiguous planes)
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8

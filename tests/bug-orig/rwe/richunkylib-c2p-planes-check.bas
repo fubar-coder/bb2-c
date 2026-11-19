@@ -8,6 +8,7 @@
 ; area.  Here with runtime error checking.
 ; Correct: the first conversion is done, the error check refuses the
 ; second: "Bitmap planes not equally spaced", the buffer stays as it is.
+; @fixed #884
 ; @rwe richunkylib
 ; @pass timeout=30
 ; @pass runtime_errors=on

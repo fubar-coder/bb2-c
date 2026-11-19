@@ -26,13 +26,18 @@
  * 32 pixels buffered then written as longs), in assembler (c2pcore, for
  * speed) with the same steps, four of them unrolled per long; the longs
  * go to planes 7 down to 0 (the original: 1, 7, 6, 5, 4, 3, 2, 0, which
- * differs only for planes that overlap).  The planes must be contiguous:
- * plane n is plane 0 + n*10240, the bitmap's other plane pointers are
- * not read.  RaycastSky is an assembler entry (speed), the rest C.
+ * differs only for planes that overlap), row by row with the bitmap's
+ * BytesPerRow, a 16-pixel step at the end of a row whose width is an odd
+ * multiple of 16.  RaycastSky is an assembler entry (speed), the rest C.
  *
  * BUG(orig):
- *   - ChunkyToPlanar ignores the sizes (the chunky data must have 81920
- *     bytes, the bitmap 8 contiguous planes of 10240 bytes) (#884).
+ * Fixed (intended deviation, #884): ChunkyToPlanar converts the chunky
+ * bitmap's width x height into the bitmap's top left (BytesPerRow, the
+ * plane stride from the plane pointers) and refuses a width that is not
+ * a multiple of 16, a chunky bitmap wider or higher than the bitmap and
+ * planes that are not equally spaced (c2pchk's error with runtime error
+ * checking); the original converted 320 x 256 into planes 10240 bytes
+ * apart from plane 0 whatever the sizes.
  * Fixed (intended deviation, #885): ChunkyBitmap frees the data the
  * object holds when its data pointer is not 0; the original tested the
  * long at offset 6 (TST.l 6(a0): the unused word and the pointer's upper
@@ -63,7 +68,7 @@
 void _chunkybitmap(void), _c2p(void), _p2c(void), _chunkyloadbitmap(void);
 void _chunkydata(void), _raycastsky(void), _dofreechunkybitmap(void);
 void richunkylib_libinit(void), richunkylib_libfinit(void);
-void raycastchk(void);
+void raycastchk(void), c2pchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -73,7 +78,7 @@ BLITZ_ENTRY_DECL(_use);
 BLITZ_ENTRY_DECL(_free);
 
 /* !libheader {#richunkylib,init,0,finit,0}; error field: the error check
-   area of raycastchk (fixed, #887) */
+   area of raycastchk (fixed, #887) and c2pchk (fixed, #884) */
 BLITZ_LIBHEADER(LIB_richunkylib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
@@ -85,8 +90,8 @@ BLITZ_NAME_AT(_toke, "ChunkyBitmap", "bitmap#,width,height");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_richunkylib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_IA1|BL_PD1);
-BLITZ_SUBS(_c2p, 0, 0);
-BLITZ_NAME("ChunkyToPlanar", "chunkybitmap,bitmap    --320x256x8 bitmap");
+BLITZ_SUBS(_c2p, c2pchk, 0);                              /* check: fixed #884 */
+BLITZ_NAME("ChunkyToPlanar", "chunkybitmap,bitmap    --320x256x8 bitmap");  /* the original's help text: other shapes too (#884) */
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
@@ -444,39 +449,64 @@ static void c2p_run(const struct c2pargs *a)
     __asm__ volatile("jsr     _c2pcore" : "+a"(p) : : "d0", "d1", "a1", "cc", "memory");
 }
 
+/* the plane stride of bm (plane n = plane 0 + n * stride for all 8
+   planes) in *ps; 0 if the planes are not equally spaced */
+static int planestride(const struct BitMap *bm, LONG *ps)
+{
+    const ULONG *pl = (const ULONG *)bm->Planes;
+    LONG d = (LONG)(pl[1] - pl[0]);
+    int n;
+
+    for (n = 2; n < 8; n++)
+        if ((LONG)(pl[n] - pl[n - 1]) != d)
+            return 0;
+    *ps = d;
+    return 1;
+}
+
 /**
- * @brief ChunkyToPlanar chunky#,bitmap#: chunky to planar (C2P), 81920
- * pixels to the 8 planes from the bitmap's first plane.
+ * @brief ChunkyToPlanar chunky#,bitmap#: chunky to planar (C2P), the
+ * chunky bitmap to the top left of the bitmap's 8 planes.
  *
- * The planes must be contiguous (plane n = plane 0 + n*10240); nothing
- * without chunky data, nothing for a bitmap of depth below 8.
- * BUG(orig): the sizes are ignored (#884).  Fixed (#883): the depth is
- * the byte Depth; the original compared Flags and Depth as one signed
- * word.  The conversion is c2pcore, the original's merge network in
- * assembler (speed).
+ * Nothing without chunky data, nothing for a bitmap of depth below 8.
+ * Fixed (#884): the chunky bitmap's width and height are converted, row
+ * by row with the bitmap's BytesPerRow, into planes that are equally
+ * spaced (the stride from the plane pointers, checked once per call);
+ * nothing (with runtime error checking c2pchk's error) for a width that
+ * is not a multiple of 16, a chunky bitmap wider or higher than the
+ * bitmap, or planes that are not equally spaced.  The original always
+ * converted 320 x 256 pixels into planes 10240 bytes apart from plane 0,
+ * reading behind smaller chunky data and writing behind smaller bitmaps.
+ * Fixed (#883): the depth is the byte Depth; the original compared Flags
+ * and Depth as one signed word.  The conversion is c2pcore, the
+ * original's merge network in assembler (speed).
  * @param o   a0: the chunky object
  * @param bm  a1: the bitmap (a struct BitMap)
  */
 static void BLITZ_ROUTINE c2p_c(struct chunky *o BL_REG(a0), struct BitMap *bm BL_REG(a1))
 {
     struct c2pargs a;
-    ULONG pl;
+    WORD w = o->width, h = o->height;
+    LONG ps;
 
     /* the byte Depth; fixed (#883): the original's CMPI.w #8,4(a1): BLT
        compared Flags and Depth as one signed word */
     if (bm->Depth < 8)
         return;
-    pl = *(ULONG *)&bm->Planes[0];              /* read as a long, as the data */
     if (!o->data)
         return;
+    /* the shapes (fixed, #884) */
+    if (w <= 0 || h <= 0 || (w & 15) || (UWORD)w > bm->BytesPerRow * 8U
+        || (UWORD)h > bm->Rows || !planestride(bm, &ps))
+        return;
     a.src = o->data;
-    a.dst = pl + 7 * PLSIZ;
-    a.ps = PLSIZ;
-    a.back = 7 * PLSIZ + 4;
-    a.skip = 0;
-    a.rows = 256;
-    a.steps = 320 / 32;
-    a.tail = 0;
+    a.dst = *(ULONG *)&bm->Planes[0] + 7 * ps;  /* read as a long, as the data */
+    a.ps = ps;
+    a.back = 7 * ps + 4;
+    a.skip = bm->BytesPerRow - (w >> 3);
+    a.rows = h;
+    a.steps = w >> 5;
+    a.tail = (w >> 4) & 1;
     c2p_run(&a);
 }
 
@@ -534,3 +564,42 @@ static void BLITZ_ERRCHK raycastchk_c(ULONG x BL_REG(d1), ULONG h BL_REG(d2),
 
 /* the thunk of the check function */
 BLITZ_ERRCHK_THUNK(raycastchk, raycastchk_c, "d0-d1/a0-a1");
+
+BLITZ_ERRCHK_MESSAGE(badwidth, "Chunky bitmap width not a multiple of 16");  /* fixed, #884 */
+BLITZ_ERRCHK_MESSAGE(toolarge, "Chunky bitmap larger than the bitmap");      /* fixed, #884 */
+BLITZ_ERRCHK_MESSAGE(badplanes, "Bitmap planes not equally spaced");         /* fixed, #884 */
+
+/**
+ * @brief The error check of ChunkyToPlanar (debugger only).
+ *
+ * Fixed (#884), not in the original: the shapes ChunkyToPlanar refuses
+ * without a word in release code.  Nothing for a bitmap of depth below 8
+ * or a chunky bitmap without data (the release code does nothing there,
+ * as the original).
+ *
+ * Errors: "Chunky bitmap width not a multiple of 16", "Chunky bitmap
+ * larger than the bitmap" (wider than BytesPerRow * 8 or higher than
+ * Rows), "Bitmap planes not equally spaced" (the 8 plane pointers).
+ * @param o   a0: the chunky object
+ * @param bm  a1: the bitmap
+ */
+static void BLITZ_ERRCHK c2pchk_c(const struct chunky *o BL_REG(a0),
+                                  const struct BitMap *bm BL_REG(a1))
+{
+    const ULONG *pl = (const ULONG *)bm->Planes;
+    WORD w = o->width, h = o->height;
+    int n;
+
+    if (bm->Depth < 8 || !o->data || w <= 0 || h <= 0)
+        return;
+    if (w & 15)
+        BLITZ_RUNERR(badwidth);
+    if ((UWORD)w > bm->BytesPerRow * 8U || (UWORD)h > bm->Rows)
+        BLITZ_RUNERR(toolarge);
+    for (n = 2; n < 8; n++)
+        if (pl[n] - pl[n - 1] != pl[1] - pl[0])
+            BLITZ_RUNERR(badplanes);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(c2pchk, c2pchk_c, "d0-d1/a0-a1");

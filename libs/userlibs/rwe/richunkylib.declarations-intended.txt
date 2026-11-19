@@ -4,6 +4,10 @@
 # #887: RaycastSky gets an error check (raycastchk, "RaycastSky outside
 # the chunky bitmap", "RaycastSky column below 0"); richunkylib gets an
 # error check area for it (the original has none)
+# #884: ChunkyToPlanar gets an error check (c2pchk, "Chunky bitmap width
+# not a multiple of 16", "Chunky bitmap larger than the bitmap", "Bitmap
+# planes not equally spaced")
 lib 24: header +$2C: code offset set in only one of them
+lib 24: entry 1 ChunkyToPlanar +$14: code offset set in only one of them
 lib 24: entry 5 RaycastSky +$14: code offset set in only one of them
-lib 24: relocations in the declaration part 16 != 18
+lib 24: relocations in the declaration part 16 != 19

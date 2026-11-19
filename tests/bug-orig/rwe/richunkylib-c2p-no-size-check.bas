@@ -7,6 +7,7 @@
 ; chunky bitmap has the size the command expects (320 x 256).
 ; Correct: the conversion stays inside the bitmap (or is refused), the
 ; marker stays.
+; @fixed #884
 ; @rwe richunkylib
 DEFTYPE .l
 m=AllocMem_(90000,$10002)

@@ -8,6 +8,7 @@
 ; runtime error checking.
 ; Correct: the 320 x 200 one is converted, the error check refuses the
 ; 320 x 256 one: "Chunky bitmap larger than the bitmap", the marker stays.
+; @fixed #884
 ; @rwe richunkylib
 ; @pass timeout=30
 ; @pass runtime_errors=on

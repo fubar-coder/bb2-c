@@ -7,7 +7,8 @@ Reflective Images (S. Matty, 14/8/95). An object library for chunky
   `globalloc`, `MEMF_CLEAR`); data the object already holds is freed
   first.
 * `ChunkyToPlanar chunky#,bitmap#` – chunky to planar into a bitmap of
-  depth ≥ 8 (81920 pixels, the 8 planes contiguous from the first).
+  depth ≥ 8 (in the original 81920 pixels, the 8 planes contiguous from
+  the first; here the chunky bitmap's size, below).
 * `PlanarToChunky bitmap#,chunky#`, `ChunkyLoadBitMap filename$,chunky#`
   – no code (`RTS`).
 * `ChunkyData(chunky#)` – the address of the data.
@@ -67,6 +68,20 @@ kind F):
   `$10000` was never freed, and a ChunkyBitmap on such an object whose
   allocation failed kept the old pointer with width, height and depth 0
   (#885).
+* ChunkyToPlanar converts the chunky bitmap's width × height into the
+  top left of the bitmap: row by row with the bitmap's `BytesPerRow`,
+  into planes that are equally spaced (the stride from the 8 plane
+  pointers, checked once per call; so interleaved bitmaps work too). It
+  does nothing for a width that is not a multiple of 16 (the conversion
+  takes 32-pixel steps and one 16-pixel step at the end of a row), a
+  chunky bitmap wider (`BytesPerRow` × 8) or higher (`Rows`) than the
+  bitmap, or planes that are not equally spaced; with runtime error
+  checking these are the errors "Chunky bitmap width not a multiple of
+  16", "Chunky bitmap larger than the bitmap" and "Bitmap planes not
+  equally spaced" (`c2pchk`). The original converted 320 × 256 pixels
+  into planes 10240 bytes apart from plane 0, whatever the sizes: it
+  read behind smaller chunky data and wrote behind smaller bitmaps
+  (#884). 320 × 256 into a contiguous 320 × 256 × 8 bitmap is as before.
 * RaycastSky copies nothing for a height below 1; the original took
   height − 1 as a `DBRA` count, so a height of 0 copied 65536 rows,
   20 MB of addresses (#887; one `BLT` after the `SUBQ`, 8 cycles per
@@ -82,8 +97,6 @@ kind F):
 
 ## BUG(orig), kept
 
-* ChunkyToPlanar checks nothing but the depth and the data pointer: the
-  sizes of both bitmaps are assumed (#884).
 * Without runtime error checking RaycastSky does not check x and column
   (signed words added to the chunky data and the texture; #887 gives
   them an error check only, D-005).
@@ -112,7 +125,9 @@ unused word set but no data / on data below `$10000` (the address
 `$1234`, whose frees the `globfree` stub counts instead of freeing it;
 with and without a failing allocation, `[fixed #885]`), two rounds of random chunky data through
 ChunkyToPlanar (depth words 8 and `$0108`; 7, `$8008` and no data do
-nothing), 40 random RaycastSky calls (heights 1–256, marker upper
+nothing), ChunkyToPlanar with other shapes (smaller, a 16-pixel tail, a
+width not a multiple of 16, wider or higher than the bitmap, planes not
+equally spaced, an interleaved bitmap; `[fixed #884]`), 40 random RaycastSky calls (heights 1–256, marker upper
 words, negative columns), PlanarToChunky, ChunkyLoadBitMap, the free
 routine with and without data, init, finit. Not covered: RaycastSky
 with height 0 (65536 rows in the original) or a negative x (writes
