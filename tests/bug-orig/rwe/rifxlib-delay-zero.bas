@@ -5,6 +5,7 @@
 ; original has no error check area.  Here with runtime error checking.
 ; Correct: a ClearBitmap with a delay of 1 works; the error check refuses
 ; the delay of 0: "Delay must not be 0".
+; @fixed #669
 ; @rwe rifxlib
 ; @pass timeout=30
 ; @pass runtime_errors=on

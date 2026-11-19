@@ -28,8 +28,6 @@
  * except those thunks.
  *
  * Kept from the original (BUG(orig)):
- *   - delay 0 in ClearBitmap/FadeInBitmap means 2^32 turns of the loop
- *     (#669);
  *   - Derez is declared with a result (!acommand{#long}) but sets none:
  *     d0 is what the routine leaves there (the input for derez 0) -
  *     reproduced, it is what a Blitz program gets (#672);
@@ -71,6 +69,10 @@
  *     follows from 21 on.  What follows is the code of InitZoomXY in the
  *     original, other variables here (one array pa[] with the four
  *     variables in the same order) (#674);
+ *   - With runtime error checking ClearBitmap and FadeInBitmap refuse a
+ *     delay of 0: "Delay must not be 0".  The release code is unchanged
+ *     (the manual: "don't pass 0"; D-005): the busy loop decrements before
+ *     its test (SUBQ.l #1 / BNE), so 0 means 2^32 turns per line (#669);
  *   - Derez and ZoomXY load the depth into sbitdepth as a whole word; the
  *     original set only its low byte (MOVE.b into sbitdepth+1), so after a
  *     depth 0 the upper byte stayed $FF for every later call (#675; seen
@@ -113,19 +115,19 @@ BLITZ_LIBHEADER(LIB_rifxlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS(RI_BMAP(0, 0));
-BLITZ_SUBS(clearbitmap2, clearchk, 0);           /* check: fixed #947 #674 */
+BLITZ_SUBS(clearbitmap2, clearchk, 0);           /* check: fixed #947 #674 #669 */
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS(RI_BMAP(0, 0));
-BLITZ_SUBS(clearbitmap, clearchk, 0);            /* check: fixed #947 #674 */
+BLITZ_SUBS(clearbitmap, clearchk, 0);            /* check: fixed #947 #674 #669 */
 BLITZ_NAME("ClearBitmap", "bitmap#,delay[,height,offset]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG);
 RI_BMAPS();
-BLITZ_SUBS(fadeinbitmap2, fadechk, 0);           /* check: fixed #947 #674 */
+BLITZ_SUBS(fadeinbitmap2, fadechk, 0);           /* check: fixed #947 #674 #669 */
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_WORD, BL_WORD, BL_WORD);
 RI_BMAPS();
-BLITZ_SUBS(fadeinbitmap, fadechk, 0);            /* check: fixed #947 #674 */
+BLITZ_SUBS(fadeinbitmap, fadechk, 0);            /* check: fixed #947 #674 #669 */
 BLITZ_NAME("FadeInBitmap", "bitmapsource#,bitmapdest#,delay[,height,offset1,offset2]");
 
 BLITZ_ASTATEMENT();
@@ -369,7 +371,8 @@ BLITZ_THUNK(zoomtables, zoomtables_c, "d1/a0-a1");
 
 /* ------------------------------------------------- ClearBitmap/FadeIn */
 
-/* the delay: SUBQ.l #1,d7:BNE - BUG(orig) (#669): 0 = 2^32 turns */
+/* the delay: SUBQ.l #1,d7:BNE - 0 = 2^32 turns (clearchk and fadechk
+   refuse it: fixed #669) */
 static void slow_down(void)
 {
     volatile ULONG t = delay_timer;
@@ -452,9 +455,9 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
  * @brief ClearBitmap bitmap#,delay: clears the whole bitmap line by line
  * with a dither fade (see clearbitmap_c).
  *
- * Height bm_Rows, offset 0.  BUG(orig): delay 0 = 2^32 turns (#669).
- * More than 16 planes overrun the pointer arrays, depth 0 runs 65536
- * planes: refused by clearchk (fixed #674, #947).  Fixed: the
+ * Height bm_Rows, offset 0.  Delay 0 = 2^32 turns, more than 16 planes
+ * overrun the pointer arrays, depth 0 runs 65536 planes: refused by
+ * clearchk (fixed #669, #674, #947).  Fixed: the
  * depth is the byte bm_Depth (#670); the passes start at the last word
  * of the area, not one word lower (#668).
  * @param delay  d1: turns of the busy loop per line
@@ -471,8 +474,8 @@ static void BLITZ_ROUTINE clearbitmap2(ULONG delay BL_REG(d1), ULONG bm BL_REG(a
  * from line `offset` on with a dither fade.
  *
  * Backwards from the end of the area: each line is first ANDed with the
- * alternating mask $AAAA/$5555, 19 lines later cleared.  BUG(orig): delay
- * 0 = 2^32 turns (#669).  Depth 0 or more than 8: clearchk (fixed #947,
+ * alternating mask $AAAA/$5555, 19 lines later cleared.  Delay 0 (2^32
+ * turns), depth 0 or more than 8: refused by clearchk (fixed #669, #947,
  * #674).  Fixed: the passes start at the last word of the area (end-2);
  * the original started at end-4, one word too low: the last word of the
  * area stayed and the word before the area was cleared (#668).  Fixed
@@ -568,9 +571,9 @@ static void fadein_c(ULONG delay, UWORD h, UWORD off1, UWORD off2, ULONG src, UL
  * @brief FadeInBitmap bitmapsource#,bitmapdest#,delay: fades the whole
  * source into the destination line by line (see fadein_c).
  *
- * Height bm_Rows of the source, offsets 0.  BUG(orig): delay 0 = 2^32
- * turns (#669).  More than 8 planes overrun the pointer arrays, depth 0
- * runs 65536 planes: refused by fadechk (fixed #674, #947).
+ * Height bm_Rows of the source, offsets 0.  Delay 0 = 2^32 turns, more
+ * than 8 planes overrun the pointer arrays, depth 0 runs 65536 planes:
+ * refused by fadechk (fixed #669, #674, #947).
  * Fixed (#670): the depth is the byte bm_Depth.
  * @param delay  d2: turns of the busy loop per line
  * @param src    a0: the source bitmap (bitmapsource#, d0)
@@ -591,10 +594,9 @@ static void BLITZ_ROUTINE fadeinbitmap2(ULONG delay BL_REG(d2), ULONG src BL_REG
  * $AAAA/$5555, 19 lines later copied whole.  Width, depth and both line
  * offsets come from the source bitmap (offsets times the SOURCE's bytes
  * per row).  Fixed (#670): the depth is the byte bm_Depth (the original
- * read the word bm_Flags:bm_Depth).  BUG(orig): delay 0 = 2^32 turns
- * (#669).  From 9 planes on the two pointers per plane overrun
- * bit_add/dest_add, depth 0 runs 65536 planes: refused by fadechk (fixed
- * #674, #947).
+ * read the word bm_Flags:bm_Depth).  Delay 0 = 2^32 turns, from 9 planes
+ * on the two pointers per plane overrun bit_add/dest_add, depth 0 runs
+ * 65536 planes: refused by fadechk (fixed #669, #674, #947).
  * @param delay  d2: turns of the busy loop per line
  * @param h      d3.w: the number of lines
  * @param off1   d4.w: the first source line
@@ -1431,6 +1433,7 @@ BLITZ_THUNK(ADDValue, addvalue_c, "a0-a1");
 /* ------------------------------------------- error checks (debugger only) */
 
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");     /* fixed, #947 #674 */
+BLITZ_ERRCHK_MESSAGE(baddelay, "Delay must not be 0");      /* fixed, #669 */
 
 /* the depth of the bitmap `bm`: 1 to 8 (bitmaplib's checks and text) */
 static void BLITZ_ERRCHK depthchk(ULONG bm)
@@ -1449,14 +1452,20 @@ static void BLITZ_ERRCHK depthchk(ULONG bm)
  * loops 65536 times (DBRA on depth - 1 as a word), over the 16-entry
  * plane pointer arrays and what follows them, and so did more than 16
  * planes.  The manual: "the maximum bitmap depth for these functions is
- * 8".  The release code is unchanged (an invalid argument, D-005).
+ * 8".  Fixed (#669): the delay was not checked - 0 ran the busy loop
+ * 2^32 times per line (SUBQ.l #1 before its test); the manual: "don't
+ * pass 0".  The release code is unchanged (invalid arguments, D-005).
  *
- * Errors: "Illegal BitMap Depth" (depth 0 or more than 8).
- * @param bm  a0: the bitmap of bitmap#
+ * Errors: "Illegal BitMap Depth" (depth 0 or more than 8), "Delay must
+ * not be 0".
+ * @param delay  d1: the delay (a long)
+ * @param bm     a0: the bitmap of bitmap#
  */
-static void BLITZ_ERRCHK clearchk_c(ULONG bm BL_REG(a0))
+static void BLITZ_ERRCHK clearchk_c(ULONG delay BL_REG(d1), ULONG bm BL_REG(a0))
 {
     depthchk(bm);
+    if (!delay)
+        BLITZ_RUNERR(baddelay);
 }
 
 /**
@@ -1464,16 +1473,21 @@ static void BLITZ_ERRCHK clearchk_c(ULONG bm BL_REG(a0))
  *
  * Fixed (#947, #674), not in the original: as clearchk_c for both
  * bitmaps; FadeInBitmap stores two pointers per plane in each array, so
- * the original overran them from 9 planes on.
+ * the original overran them from 9 planes on; the delay as there (#669).
  *
- * Errors: "Illegal BitMap Depth" (depth 0 or more than 8, either bitmap).
- * @param src  a0: the source bitmap
- * @param dst  a1: the destination bitmap
+ * Errors: "Illegal BitMap Depth" (depth 0 or more than 8, either bitmap),
+ * "Delay must not be 0".
+ * @param delay  d2: the delay (a long)
+ * @param src    a0: the source bitmap
+ * @param dst    a1: the destination bitmap
  */
-static void BLITZ_ERRCHK fadechk_c(ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
+static void BLITZ_ERRCHK fadechk_c(ULONG delay BL_REG(d2), ULONG src BL_REG(a0),
+                                   ULONG dst BL_REG(a1))
 {
     depthchk(src);
     depthchk(dst);
+    if (!delay)
+        BLITZ_RUNERR(baddelay);
 }
 
 /**

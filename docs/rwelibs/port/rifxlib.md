@@ -62,6 +62,11 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   variables from 17 planes on and go beyond the array from 21 on. Beyond
   the array the original overwrites the code of `InitZoomXY` (#674, test
   `rwe/rifxlib-plane-arrays-unchecked`);
+* with runtime error checking `ClearBitmap` and `FadeInBitmap` refuse a
+  delay of 0: "Delay must not be 0". The release code is unchanged (the
+  manual: "don't pass 0"; D-005): the busy loop decrements before its
+  test, so 0 means 2^32 turns per line (#669, tests
+  `rwe/rifxlib-delay-zero`, `rwe/rifxlib-fadein-delay-zero`);
 * `Derez` and `ZoomXY` load the depth into `sbitdepth` as a whole word;
   the original set only its low byte (`MOVE.b` into `sbitdepth+1`), so
   after a depth-0 bitmap the upper byte stayed $FF for every later call
@@ -70,8 +75,6 @@ counts a `volatile` variable (the compiler would drop an empty loop).
 
 **BUG(orig)** (kept, commented in the code):
 
-* delay 0 in `ClearBitmap`/`FadeInBitmap` means 2^32 turns of the busy
-  loop (#669);
 * `Derez` is declared with a result (`!acommand{#long}`) but sets none:
   d0 is whatever the routine leaves there (the input for 0, the input's
   upper word and $FFFF for 1, the last long for 2, the last mask word
@@ -126,7 +129,8 @@ checks):
   40 (bit by bit, 40 with the 21-word table), $FFFF0003 – after the
   `ZoomXY` tests (see above).
 
-**Not covered:** delay 0 (2^32 turns), bitmaps with `bm_Flags` ≠ 0 (in
+**Not covered:** delay 0 (2^32 turns; the error check of #669 has its
+bug-orig tests), bitmaps with `bm_Flags` ≠ 0 (in
 the original the depth word gives thousands of planes; the bug-orig test
 `rwe/rifxlib-depth-word-at-4` covers the case), more than 8 planes, `ZoomXY`
 after `Derez` ≥ 3 (the original's code is corrupt then).
