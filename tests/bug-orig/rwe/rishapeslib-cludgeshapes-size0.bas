@@ -7,6 +7,7 @@
 ; Correct: a shape without data is not copied; the program goes on.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
+; @fixed #808
 ; @rwe rishapeslib ripacklib riamosfunclib
 ; @pass timeout=30
 DEFTYPE .l
