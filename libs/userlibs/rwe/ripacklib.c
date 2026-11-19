@@ -36,6 +36,10 @@
  * asked for one from bank 51 on, which RIAmosFuncLib's default of 50
  * banks does not have (LoadIFF returned 0 unless BankLimit raised it).
  *
+ * Fixed (#771): LoadIFF returns UnpackIFF's result (0 also when the
+ * palette's ILBMPalette fails); the original returned -1 whenever the
+ * file loaded.
+ *
  * BUG(orig), kept:
  *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
  *     the BMHD is not read) (#773), takes the row width as width/8 (rows
@@ -53,7 +57,6 @@
  *     (#769).  The size of the freed block comes from the object's colour
  *     count; if the new allocation fails, the object keeps the freed
  *     block (#768).
- *   - LoadIFF returns -1 even if UnpackIFF failed (#771).
  *   - DeIce: the picture flag of Pack-Ice overwrites the bit buffer with
  *     the default count $0f9f, whose bits then give the "own count" flag
  *     (always set) and the first 6 bits of the count: the default is
@@ -765,19 +768,21 @@ BLITZ_THUNK(ilbmgrab, ilbmgrab_c, "d0-d1/a0-a1");
  * The file goes into a free bank of RIAmosFuncLib (NextBank from 0 on,
  * fixed #770: the original's from 51 on needed BankLimit above 51; BLoad),
  * UnpackIFF and (with a palette) ILBMPalette from there, then the bank is
- * erased.  BUG(orig) (#771): BB_TRUE also if UnpackIFF
- * failed.
+ * erased.  Fixed (#771): the result is UnpackIFF's, BB_FALSE also when
+ * ILBMPalette fails; the original returned BB_TRUE whenever the file
+ * loaded.
  * @param name  d0: the file name
  * @param bm    a0: the bitmap object (parameter 1)
  * @param pal   a1: the palette object (parameter 2), NULL: none
- * @return d0: BB_TRUE, BB_FALSE if there is no bank or the file does not
- *         load
+ * @return d0: BB_TRUE, BB_FALSE if there is no bank, the file does not
+ *         load, or UnpackIFF or ILBMPalette fails
  */
 static BB_BOOL BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0),
                                         struct bb_palette *pal BL_REG(a1))
 {
     struct bl_regs r = { .d0 = 0 };             /* fixed #770: was 51 */
     ULONG bank, start;
+    BB_BOOL ok;
 
     bank = BLITZ_ALIBJSR_FORM(TOK_nextbank, 1, r);
     if ((LONG)bank < 0)
@@ -789,15 +794,16 @@ static BB_BOOL BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm
     }
     r = (struct bl_regs){ .d0 = bank };
     start = BLITZ_ALIBJSR(TOK_start, r);
-    iff1_c((const UBYTE *)start, bm, 0);
+    ok = iff1_c((const UBYTE *)start, bm, 0);
     if (pal) {
         r = (struct bl_regs){ .d0 = bank };
         start = BLITZ_ALIBJSR(TOK_start, r);
-        ilbmpalette_c((const UBYTE *)start, pal);
+        if (!ilbmpalette_c((const UBYTE *)start, pal))
+            ok = BB_FALSE;
     }
     r = (struct bl_regs){ .d0 = bank };
     BLITZ_ALIBJSR(TOK_erase, r);
-    return BB_TRUE;
+    return ok;                                  /* fixed #771: was BB_TRUE */
 }
 BLITZ_THUNK(ilbmload, ilbmload_c, "d1/a0-a1");
 

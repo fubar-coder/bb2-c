@@ -778,7 +778,8 @@ static void test_loadiff(void)
     check("LoadIFF: -1 with 60 banks", liff == (ULONG)-1);
     loadiff(ILBMFILE, 1, "");
     loadiff("RAM:rwe-pack.bad", 1, "");                 /* missing: 0 */
-    /* a file that is no ILBM: UnpackIFF fails, LoadIFF says -1 (BUG(orig), #771) */
+    /* a file that is no ILBM: UnpackIFF fails, LoadIFF 0 (the original: -1,
+       fixed #771) */
     memset(ilbm, 0, 5300);
     writeilbm(5200);
     loadiff(ILBMFILE, 0, "");

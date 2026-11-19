@@ -164,7 +164,8 @@ LoadIFF|colours|RAM:rwe-pack.iff form 1|1	bytes 100 fnv 66410A15
 LoadIFF|colours|RAM:rwe-pack.iff form 1, 50 banks|1 [fixed #770]	bytes 100 fnv 66410A15
 LoadIFF|d0|RAM:rwe-pack.bad form 1|1	$00000000
 LoadIFF|d0|RAM:rwe-pack.iff form 0|1	$FFFFFFFF
-LoadIFF|d0|RAM:rwe-pack.iff form 0|2	$FFFFFFFF
+LoadIFF|d0|RAM:rwe-pack.iff form 0|2 [orig]	$FFFFFFFF
+LoadIFF|d0|RAM:rwe-pack.iff form 0|2 [fixed #771]	$00000000
 LoadIFF|d0|RAM:rwe-pack.iff form 1|1	$FFFFFFFF
 LoadIFF|d0|RAM:rwe-pack.iff form 1, 50 banks|1 [orig]	$00000000
 LoadIFF|d0|RAM:rwe-pack.iff form 1, 50 banks|1 [fixed #770]	$FFFFFFFF

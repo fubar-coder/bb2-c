@@ -87,6 +87,9 @@ kind F):
   NextBank,0`). The original asked for one from bank 51 on; with
   RIAmosFuncLib's default of 50 banks there is none, and LoadIFF returned
   0 unless the program had raised the number with `BankLimit` (#770).
+* **LoadIFF** returns the result of UnpackIFF, and 0 when it was asked
+  for the palette and ILBMPalette fails (no CMAP); the bank is erased in
+  every case. The original returned -1 whenever the file loaded (#771).
 
 ## BUG(orig), kept
 
@@ -114,8 +117,6 @@ kind F):
   outside it (an offset of 4 with a 4-colour CMAP: 36 bytes behind the 64
   byte block). Test `ripacklib-ilbmpalette-offset-empty-palette` (inject
   guard). (#991)
-* `LoadIFF` returns -1 even if UnpackIFF failed (its result is not
-  looked at) (#771).
 * `DeIce`: the picture flag of Pack-Ice loads the default count `$0f9f`
   into d7, the register of the bit buffer; the next bit (the "own count"
   flag) and the first 6 bits of the count then come from `$9f`: the
