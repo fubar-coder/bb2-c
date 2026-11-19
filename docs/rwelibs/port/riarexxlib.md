@@ -302,7 +302,9 @@ Covered:
 * RXExecuteScript/RXRunScript (to the responder, or to RexxMast if one
   runs): the message's action;
 * RXDeletePort with two queued messages (replied with 5), with 33
-  messages and one of them current (#1100, #1101), and without a port;
+  messages and one of them current (#1100, #1101), with a reply the
+  responder holds for 2 s and one it holds for 8 s (#1095), and without
+  a port;
 * finit with a port; init after RXDefaultPort (the original: "REXXE",
   nothing sent; fixed: "REXX", #532).
 

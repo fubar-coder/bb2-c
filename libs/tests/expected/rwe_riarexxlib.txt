@@ -4,18 +4,21 @@ RXCreatePort|kept||2	kept
 RXCreatePort|kept|after init|1	kept
 RXCreatePort|kept|for 33 messages|1	kept
 RXCreatePort|kept|for finit|1	kept
+RXCreatePort|kept|for the late reply|1	kept
 RXCreatePort|kept|for the outstanding reply|1	kept
 RXCreatePort|popped||1	$00000000
 RXCreatePort|popped||2	$00000000
 RXCreatePort|popped|after init|1	$00000000
 RXCreatePort|popped|for 33 messages|1	$00000000
 RXCreatePort|popped|for finit|1	$00000000
+RXCreatePort|popped|for the late reply|1	$00000000
 RXCreatePort|popped|for the outstanding reply|1	$00000000
 RXCreatePort|second port: 0||1	$00000000
 RXCreatePort|the port||1	$00000001
 RXCreatePort|the port|after init|1	$00000001
 RXCreatePort|the port|for 33 messages|1	$00000001
 RXCreatePort|the port|for finit|1	$00000001
+RXCreatePort|the port|for the late reply|1	$00000001
 RXCreatePort|the port|for the outstanding reply|1	$00000001
 RXDefaultPort|kept|"RWERESP"|1	kept
 RXDefaultPort|kept|"RWERX_X"|1	kept
@@ -26,21 +29,27 @@ RXDefaultPort|popped|own|1	$00000000
 RXDeletePort|kept|2 queued|1	kept
 RXDeletePort|kept|33 messages|1	kept
 RXDeletePort|kept|no port|1	kept
+RXDeletePort|kept|reply late|1	kept
 RXDeletePort|kept|reply outstanding|1	kept
 RXDeletePort|popped|2 queued|1	$00000000
 RXDeletePort|popped|33 messages|1	$00000000
 RXDeletePort|popped|no port|1	$00000000
+RXDeletePort|popped|reply late|1	$00000000
 RXDeletePort|popped|reply outstanding|1	$00000000
 RXDeletePort|port gone|2 queued|1	$00000001
+RXDeletePort|port gone|reply late|1	$00000001
 RXDeletePort|port gone|reply outstanding|1	$00000001
+RXDeletePort|replied before it returned|reply late|1	$00000000
 RXDeletePort|replied before it returned|reply outstanding|1	$00000000
 RXDeletePort|replies|2 queued|1	$00000001
 RXDeletePort|replies at the test's port|33 messages|1 [orig]	$00000020
 RXDeletePort|replies at the test's port|33 messages|1 [fixed #1101]	$00000021
+RXDeletePort|replies at the test's port|reply late|1	$00000001
 RXDeletePort|reply Result1|2 queued|1	$00000005
 RXDeletePort|reply Result1|2 queued|2	$00000005
 RXDeletePort|reply Result2|2 queued|1	$00000000
 RXDeletePort|reply Result2|2 queued|2	$00000000
+RXDeletePort|returned after 4.5 s|reply late|1	$00000000
 RXExecuteScript|RXCOMM\|RXFF_STRING||1 [orig]	$00000001
 RXExecuteScript|RXCOMM\|RXFF_STRING||1 [fixed #544]	$00000000
 RXExecuteScript|RXExecuteScript: message||1	$00000007
@@ -2081,9 +2090,10 @@ RXRunCommand|argument|default "to REXXE"|13 [fixed #532]	bytes 48 00000000000000
 RXRunCommand|argument|default "to REXXE"|14 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 RXRunCommand|argument|default "to REXXE"|15 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 RXRunCommand|argument|default "to REXXE"|16 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-RXRunCommand|default port after init: message|default "to REXXE"|1 [fixed #532]	$0000000A
+RXRunCommand|default port after init: message|default "to REXXE"|1 [fixed #532]	$0000000B
 RXRunCommand|kept|RWENOWHERE "cmd"|1	kept
 RXRunCommand|kept|RWERESP "cmd a b"|1	kept
+RXRunCommand|kept|RWERESP "held long"|1	kept
 RXRunCommand|kept|RWERESP "held"|1	kept
 RXRunCommand|kept|default "hello default"|1	kept
 RXRunCommand|kept|default "nowhere"|1	kept
@@ -2107,6 +2117,7 @@ RXRunCommand|ln_Name|RWERESP "cmd a b"|1	$00000001
 RXRunCommand|ln_Name|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|popped|RWENOWHERE "cmd"|1	$00000000
 RXRunCommand|popped|RWERESP "cmd a b"|1	$00000000
+RXRunCommand|popped|RWERESP "held long"|1	$00000000
 RXRunCommand|popped|RWERESP "held"|1	$00000000
 RXRunCommand|popped|default "hello default"|1	$00000000
 RXRunCommand|popped|default "nowhere"|1	$00000000
@@ -2136,6 +2147,7 @@ RXRunCommand|responder got it|RWERESP "cmd a b"|1	$00000001
 RXRunCommand|responder got it|default "to REXXE"|1 [fixed #532]	$00000001
 RXRunCommand|sent|RWENOWHERE "cmd"|1	$00000000
 RXRunCommand|sent|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|sent|RWERESP "held long"|1	$00000001
 RXRunCommand|sent|RWERESP "held"|1	$00000001
 RXRunCommand|sent|default "hello default"|1	$00000001
 RXRunCommand|sent|default "nowhere"|1	$00000001
