@@ -65,6 +65,12 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   and returns 0 for a frame without DLTA. The original returned without
   restoring its 14 saved registers: the RTS took the saved d1 as return
   address (#515).
+* RIAnimInit fails for a BMHD depth of 0 or above 8, before UnpackIFF.
+  The original's planes loop counted a byte up to the depth: depth 0 gave
+  256 planes, more than 8 took plane pointers from behind the bitmap's 8
+  and plane offsets from behind the DLTA's (#509). A bitmap shallower
+  than the animation stays the programmer's (the manual: "You must
+  ensure that the bitmap is big and deep enough").
 
 **BUG(orig)** (kept):
 
@@ -82,9 +88,7 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   unreachable (#504); the columns are width >> 5 (ASR.w) – the rest of a
   width that is not a multiple of 32 is dropped, a width below 32 gives
   65536 columns (DBRA). ANIM5 likewise with width >> 3 (#507).
-* The planes loop counts a byte up to the depth: depth 0 gives 256
-  planes, more than 8 read behind the bitmap's plane pointers (#509). A
-  run or copy count of 0 is 256 (DBRA on the byte) (#508).
+* A run or copy count of 0 is 256 (DBRA on the byte) (#508).
 
 **Test** (`libs/tests/rwe/rianimlib.c`, snitch case "rwe rianimlib"):
 each run loads one library set (the C build or the CD original); the

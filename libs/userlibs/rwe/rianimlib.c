@@ -47,10 +47,7 @@
  *     the rest of a width that is not a multiple of 32, and a width below
  *     32 gives 65536 columns (DBRA); ANIM5 likewise with width >> 3
  *     (#507).
- *   - The planes loop runs until the counter (a byte) equals the depth:
- *     depth 0 is 256 planes; more than 8 read behind the bitmap's plane
- *     pointers (#509).  A run or copy count of 0 is 256 (DBRA on the
- *     byte) (#508).
+ *   - A run or copy count of 0 is 256 (DBRA on the byte) (#508).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - RIAnimInit searches the BMHD in the first frame only; the original
  *     searched up to the end of the ANIM and took a BMHD chunk of the
@@ -73,6 +70,10 @@
  *     and returns 0 for a frame without DLTA; the original returned
  *     without restoring its 14 saved registers, through the saved d1
  *     (#515).
+ *   - RIAnimInit fails for a BMHD depth of 0 or above 8, before UnpackIFF;
+ *     the original's planes loop counted a byte up to the depth: 0 gave
+ *     256 planes, above 8 took plane pointers from behind the bitmap's 8
+ *     and plane offsets from behind the DLTA's (#509).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -340,7 +341,8 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
  * @param bm       d1: bitmap# (its low byte is kept)
  * @param pal      d2: palette# (its low byte is kept)
  * @param offset   d3: the byte offset into each plane
- * @return d0: BB_TRUE, BB_FALSE if there is no ANIM with an ILBM and BMHD
+ * @return d0: BB_TRUE, BB_FALSE if there is no ANIM with an ILBM and BMHD,
+ *         or the BMHD depth is 0 or above 8 (fixed #509)
  */
 BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                  ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
@@ -381,11 +383,15 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     if (!findchunk(ID_BMHD, &chunk))
         return BB_FALSE;
     endoffile = animend;                /* the frames: the whole ANIM */
-    animaddress = (UBYTE *)address;
     bmhd = (struct BitMapHeader *)chunk;
     animwidth = bmhd->bmh_Width;
     animheight = bmhd->bmh_Height;
     animdepth = bmhd->bmh_Depth;
+    /* fixed #509: the delta planes loop counts a byte up to the depth;
+       0 was 256 planes, above 8 behind the bitmap's plane pointers */
+    if (!animdepth || animdepth > 8)
+        return BB_FALSE;
+    animaddress = (UBYTE *)address;
     BL_JSR_D4_(BL_TOKVAL(TOK_unpackiff, 1), (ULONG)firstframe, bitmapnumber, (ULONG)-1,
                bitplaneoffset);
     r = (struct bl_regs){ .d0 = (ULONG)firstframe, .d1 = palettenumber };
@@ -546,7 +552,7 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
     UBYTE plane = 0;
 
     deltacolumns = (UWORD)(((WORD)animwidth >> (seven ? 5 : 3)) - 1);
-    do {                                /* BUG(orig): up to the byte (#509) */
+    do {                                /* depth 1-8 (fixed #509, RIAnimInit) */
         UBYTE *column = *planes++ + bitplaneoffset;
         ULONG op = offsets[0], data = offsets[8];
 
@@ -595,8 +601,8 @@ static __attribute__((noinline)) UBYTE *otherchunks(UBYTE *chunk)
  * ILBMPalette.  At the end of the ANIM it goes on with the third frame
  * if AnimLoop is on, else returns 0.  BUG(orig): the columns are width
  * >> 5 / >> 3, dropping a rest and giving 65536 columns below 32 / 8
- * pixels (#507); a run or copy count of 0 is 256 (#508); depth 0 is 256
- * planes (#509).  Other chunks between ANHD (and CMAP) and the DLTA are
+ * pixels (#507); a run or copy count of 0 is 256 (#508).  The depth is
+ * 1 to 8 (fixed #509: RIAnimInit refuses 0 and above 8).  Other chunks between ANHD (and CMAP) and the DLTA are
  * skipped inside the frame, a CMAP among them goes through ILBMPalette; a
  * frame without DLTA returns 0 (fixed #515: the original returned without
  * restoring its 14 saved registers, through the saved d1).

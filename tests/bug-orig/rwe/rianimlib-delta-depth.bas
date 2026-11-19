@@ -7,6 +7,7 @@
 ; for the call (and restored); UnpackIFF refuses the depth of 9 for the
 ; first frame.
 ; Correct: a depth above 8 is refused, the block stays 0.
+; @fixed #509
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-delta-depth.anim
