@@ -24,6 +24,14 @@
  * graphics.library (BUG(orig) #902: the caller's a6), twice with another
  * ResetGroup; FreeMapShapes (a range, last < first, one shape, first
  * -1: the word compare passes, the address compare not); finit.
+ * At the end a second run of a program with the library still loaded (as
+ * from the editor, #1134): before finit a group of two members with the
+ * block size 5,7; the library's group pointer is found in its block by
+ * its value; after finit the test reserves the freed group block of that
+ * run (AllocAbs, cleared), runs init, SetNumMapShapes and an
+ * AddGroupMember 3,2,3 before any ResetGroup, and observes where the
+ * member went (the run before's group, behind its two members, or the new
+ * group) and its offsets; then ResetGroup and finit again.
  * Not covered: map shapes before SetNumMapShapes (address 0), depth 0,
  * more than 63 group members, BlitGroup with another a6 (all BUG(orig): #906 #903 #904 #902);
  * blits that leave the bitmap or have a size <= 0 (without a layer
@@ -241,6 +249,52 @@ static void freems(UWORD first, UWORD last)
     samemapshapes();
 }
 
+/* a second run with the library still loaded (#1134): the next-member
+   pointer and the block size of the run before after init.  The run
+   before's group G (two members, block size 5,7) is reserved after finit
+   so that a write there stays in memory of the test; the library's group
+   pointer is found by its value G (its place differs between the sets) */
+static void test_secondrun(void)
+{
+    struct lib *l = getlib(&loaded, LIB);
+    ULONG g = (ULONG)group, *res, *g2;
+    UBYTE *p, *slot = NULL;
+    int n = 0;
+
+    for (p = l->code; p + 4 <= l->code + l->size; p += 2)
+        if (L(p) == g) {
+            slot = p;
+            n++;
+        }
+    check("rimapshapeslib test: the group pointer found once", n == 1);
+    ROUT = "finit";
+    strcpy(VEC, "");
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+    /* AllocVec's block: its size long in front of the group */
+    res = AllocAbs(516, (APTR)(g - 4));
+    check("rimapshapeslib test: the run before's group reserved", res == (ULONG *)(g - 4));
+    if (!slot || res != (ULONG *)(g - 4))
+        return;
+    memset(res, 0, 516);
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, INIT, 0), (void)0);
+    setnum(NMS);
+    ROUT = "AddGroupMember";
+    strcpy(VEC, "second run, 3,2,3 before ResetGroup");
+    DO1(ENT(LIB, ADDMEMBER, 0), R.d[0] = WA(3); R.d[1] = WA(2); R.d[2] = WA(3));
+    g2 = (ULONG *)L(slot);
+    OBS("member in the run before's group", group[4] ? group[4] - (ULONG)base : 0xffffffffUL);
+    OBS("its offsets", group[5]);
+    OBS("member in the new group", g2[0] ? g2[0] - (ULONG)base : 0xffffffffUL);
+    OBS("its offsets in the new group", g2[1]);
+    resetgroup(16, 8);
+    ROUT = "finit";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+    FreeMem(res, 516);
+}
+
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
@@ -333,10 +387,11 @@ int main(int argc, char **argv)
     freems(0xffff, 3);                  /* -1 <= 3, but map shape 65535 lies behind 3: nothing */
     setnum(NMS);                        /* new block, cleared */
     samemapshapes();
+    resetgroup(5, 7);                   /* the state the second run meets */
+    member(1, 1, 1);
+    member(2, 2, 2);
 
-    ROUT = "finit";
-    strcpy(VEC, "");
-    DO1(ENT(LIB, FINIT, 0), (void)0);
+    test_secondrun();                   /* finit, then a second run */
 
     for (p = 0; p < DEPTH; p++)
         FreeRaster(bm.Planes[p], BMW, BMH);
