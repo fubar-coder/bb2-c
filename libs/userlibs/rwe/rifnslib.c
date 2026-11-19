@@ -43,7 +43,6 @@
  * routine); everything else is C behind thunks.
  *
  * BUG(orig):
- *   - FNSLength gives the width - 2 (0 at least) (#662).
  *   - A depth of 0 (or more than 8) overruns bitstack: 256 (depth) plane
  *     pointers are written over the variables and the font; the 16 pixel
  *     loop draws bitdepthminusone + 1 planes, the word (Flags<<8|Depth) - 1
@@ -84,6 +83,9 @@
  *   FNSPrint without prefs uses (the manual: "the previously selected
  *   preferences ... See: FNSPrefs"); the original took those of the last
  *   FNSPrint.
+ * Fixed (#662): FNSLength returns the width FNSPrint uses for the text
+ *   (the manual: "the x size, in pixels, of the string if it were to be
+ *   printed"); the original subtracted 2 (0 at least).
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): the glyphs of codes the font has no data for - the built-in font ends
  *   at 'z' (91 glyphs), codes 123..159 are drawn from the bytes behind it.
@@ -917,27 +919,24 @@ static void BLITZ_ROUTINE clipset_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1),
  * @brief FNSLength(fontnum,a$,prefs): the width of a text in pixels.
  *
  * The widths of the characters (+ 1 for bold, prefs bit 1) up to the
- * first code that ends the text.  BUG(orig): the result is the width - 2,
- * 0 at least (#662).  Fixed (#660): the font number & 15 (the original
+ * first code that ends the text: the width FNSPrint uses (fixed, #662:
+ * the original returned the width - 2, 0 at least).  Fixed (#660): the
+ * font number & 15 (the original
  * shifted the whole word: 16 on read the font data, negative numbers the
  * variables before font_add).
  * @param n      d0: the slot (& 15)
  * @param str    d1: the text
  * @param prefs  d2: the prefs (a byte)
- * @return d0.w: the width - 2 (0 at least), -1 if the slot has no FNS font
+ * @return d0.w: the width, -1 if the slot has no FNS font
  */
 static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(d1),
                                     UWORD prefs BL_REG(d2))
 {
     const UBYTE *font = (const UBYTE *)fns.font_add[n & 15];     /* fixed (#660) */
-    UWORD w;
 
     if (FH(font)->id != FNSID)
         return (ULONG)-1;
-    w = (UWORD)(countwidth(font, str, (prefs & 2) ? 1 : 0) - 2);
-    if ((WORD)w < 0)
-        return 0;
-    return w;
+    return countwidth(font, str, (prefs & 2) ? 1 : 0);          /* fixed (#662) */
 }
 
 /**

@@ -96,10 +96,13 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   this function will use the previously selected preferences … See:
   FNSPrefs"). The original took the prefs of the last FNSPrint (of them
   only the bold bit counts) (#661).
+* FNSLength returns the width FNSPrint uses for the text, the sum of the
+  widths (+ 1 per character for bold): "the x size, in pixels, of the
+  string if it were to be printed" (the manual). The original subtracted
+  2 (0 at least) (#662).
 
 ## BUG(orig), kept
 
-* FNSLength returns width − 2 (at least 0) (#662).
 * A bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
