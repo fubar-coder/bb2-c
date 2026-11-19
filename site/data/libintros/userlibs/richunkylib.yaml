@@ -18,7 +18,7 @@ intro: |
   only.
 
   `ChunkyToPlanar` is a little faster than the original's, and
-  `RaycastSky` as fast.
+  `RaycastSky` about as fast.
 
   A chunky bitmap with one dot, converted into a bitmap whose planes lie
   in one block of chip memory:

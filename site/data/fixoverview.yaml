@@ -5740,6 +5740,14 @@ rows:
     text: "`ChunkyBitmap` frees the data a chunky bitmap holds also below address 65536; the original lost it there, and after a failed allocation kept the old address in the object."
     page: libraries
     anchor: richunkylib-fixes
+  - issue: 887
+    severity: 3
+    topic: "Graphics"
+    library: "richunkylib"
+    command: "RaycastSky"
+    text: "With runtime error checking, `RaycastSky` outside the chunky bitmap stops with \"RaycastSky outside the chunky bitmap\", and a height below 1 copies nothing; the original wrote outside, for a height of 0 about 20 MB."
+    page: libraries
+    anchor: richunkylib-fixes
   - issue: 883
     severity: 5
     topic: "Graphics"

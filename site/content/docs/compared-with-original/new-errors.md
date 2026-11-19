@@ -1953,6 +1953,31 @@ wide and as high.
 
 Issue: [ChunkyToPlanar ignores the sizes of the chunky bitmap and of the bitmap (always 320×256×8) (#884)](https://github.com/fubar-coder/bb2-c/issues/884).
 
+### `RaycastSky` outside the chunky bitmap {#raycastsky-outside}
+
+`RaycastSky` of
+[richunkylib]({{< relref "/docs/libraries/userlibs/richunkylib" >}})
+copies `height` bytes of a column of a texture into a column of a
+chunky bitmap, both with rows of 320 bytes. `x` and `column` are
+offsets from the start of the chunky bitmap and of the texture.
+
+**What happened.** The original checked neither offset, also not with
+runtime error checking. A negative `x` wrote in front of the chunky
+bitmap, an `x` whose column runs past the last row wrote behind it, and
+a negative `column` read in front of the texture.
+
+**With the port.** With runtime error checking, an `x` below 0, or one
+whose column would run past the end of the chunky bitmap, is the error
+"RaycastSky outside the chunky bitmap", and a `column` below 0 is the
+error "RaycastSky column below 0". A height below 1 is not checked:
+`RaycastSky` copies nothing for it. Without runtime error checking, the
+offsets are not checked.
+
+**What to change.** Keep `x` and `column` at 0 or above, and the column
+of `height` rows inside the chunky bitmap.
+
+Issue: [RaycastSky with height 0 copies 65536 rows; x and column are not checked (#887)](https://github.com/fubar-coder/bb2-c/issues/887).
+
 ## Forms the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the

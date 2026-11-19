@@ -5701,6 +5701,15 @@ their conversion into planar bitmaps.
   new chunky bitmap on that object lost it; when the new memory could
   not be allocated, the object kept the old address with a size of 0
   ([#885](https://github.com/fubar-coder/bb2-c/issues/885)).
+* `RaycastSky` with a height of 0 or below copies nothing. The
+  original copied 65536 rows, about 20 MB of memory
+  ([#887](https://github.com/fubar-coder/bb2-c/issues/887)).
+* With runtime error checking, `RaycastSky` stops with "RaycastSky
+  outside the chunky bitmap" when the column it would write leaves the
+  chunky bitmap, and with "RaycastSky column below 0" for a negative
+  texture column. The original wrote or read outside
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#raycastsky-outside" >}}),
+  [#887](https://github.com/fubar-coder/bb2-c/issues/887)).
 * Freeing a chunky bitmap, when `ChunkyBitmap` makes it again or at the
   end of the program, leaves the audio filter and the power LED as they
   are. The original switched them over
