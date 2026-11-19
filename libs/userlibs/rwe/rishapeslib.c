@@ -76,7 +76,10 @@
  *     UnPackPBM with d3 = 12 (#772).
  *   - LECludgeShapes skips the SHHD chunk as 20 bytes (#811).
  *
- * Fixed (intended deviation, docs/libs/deviations.md 3a): LELoadShapes and
+ * Fixed (intended deviation, docs/libs/deviations.md 3a): init also sets
+ * LEAutoCookie on and clears the maxima of LEScanShapes (the original's
+ * init clears only the compression flag: a second run from the editor
+ * with the library still loaded kept them, #1109).  LELoadShapes and
  * LECludgeShapes replace a shape in use that is cludged ("cL") like any
  * other.  The original's readshapes skips the push of a0 for such a shape
  * but not the pop: the shape data was read from the return address into
@@ -333,11 +336,19 @@ static void __attribute__((noreturn)) rs_crash(UBYTE *pushed)
 /* ------------------------------------------------------- init / finit */
 
 /**
- * @brief init: LECompressShapes off.
+ * @brief init: LECompressShapes off, LEAutoCookie on, the maxima of
+ * LEScanShapes 0.
+ *
+ * Fixed (#1109): the original's init clears only the compression flag, so
+ * a second run of a program with the library still loaded (from the
+ * editor) started with the LEAutoCookie setting and the maxima of the run
+ * before.
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     compress = 0;
+    cookeeemode = 1;
+    maxw = maxh = maxd = 0;
 }
 BLITZ_THUNK(rishapeslib_libinit, libinit_c, "d0-d1/a0-a1");
 

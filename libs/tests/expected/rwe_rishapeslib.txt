@@ -62,7 +62,9 @@ CludgeShapes|shape 64 data|60 num 5 at 0 again, used|1	bytes 16 05121F2C39465360
 CludgeShapes|shape 64 data set|60 num 5 at 0 again, used|1	$00000001
 CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|1	bytes 14 0040000200010008008400030002
 CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|2	bytes 10 00100014001000140000
-CludgeShapes|shape 68 cookie set|68 num 1 at 0 second run|1	$00000000
+CludgeShapes|shape 68 cookie|68 num 1 at 0 second run|1 [fixed #1109]	bytes 16 D1DEFBF835525F7C7976D3F0FDFAB7D4
+CludgeShapes|shape 68 cookie set|68 num 1 at 0 second run|1 [orig]	$00000000
+CludgeShapes|shape 68 cookie set|68 num 1 at 0 second run|1 [fixed #1109]	$00000001
 CludgeShapes|shape 68 data|68 num 1 at 0 second run|1	bytes 32 010E1B2835424F5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794
 CludgeShapes|shape 68 data set|68 num 1 at 0 second run|1	$00000001
 CludgeShapes|shape 68 fields|68 num 1 at 0 second run|1	bytes 14 0014000400020004010200030002
@@ -500,7 +502,8 @@ LEMaxShapeDepth|d0|0..3|1	$00000002
 LEMaxShapeDepth|d0|0..3|2	$00000002
 LEMaxShapeDepth|d0|1..1|1	$00000001
 LEMaxShapeDepth|d0|4..5|1	$00000000
-LEMaxShapeDepth|d0|second run|1	$00000002
+LEMaxShapeDepth|d0|second run|1 [orig]	$00000002
+LEMaxShapeDepth|d0|second run|1 [fixed #1109]	$00000000
 LEMaxShapeDepth|kept|0..3|1	kept
 LEMaxShapeDepth|kept|0..3|2	kept
 LEMaxShapeDepth|kept|1..1|1	kept
@@ -515,7 +518,8 @@ LEMaxShapeHeight|d0|0..3|1	$0000001E
 LEMaxShapeHeight|d0|0..3|2	$0000001E
 LEMaxShapeHeight|d0|1..1|1	$00000008
 LEMaxShapeHeight|d0|4..5|1	$00000000
-LEMaxShapeHeight|d0|second run|1	$0000001E
+LEMaxShapeHeight|d0|second run|1 [orig]	$0000001E
+LEMaxShapeHeight|d0|second run|1 [fixed #1109]	$00000000
 LEMaxShapeHeight|kept|0..3|1	kept
 LEMaxShapeHeight|kept|0..3|2	kept
 LEMaxShapeHeight|kept|1..1|1	kept
@@ -530,7 +534,8 @@ LEMaxShapeWidth|d0|0..3|1	$00000028
 LEMaxShapeWidth|d0|0..3|2	$00000028
 LEMaxShapeWidth|d0|1..1|1	$00000010
 LEMaxShapeWidth|d0|4..5|1	$00000000
-LEMaxShapeWidth|d0|second run|1	$00000028
+LEMaxShapeWidth|d0|second run|1 [orig]	$00000028
+LEMaxShapeWidth|d0|second run|1 [fixed #1109]	$00000000
 LEMaxShapeWidth|kept|0..3|1	kept
 LEMaxShapeWidth|kept|0..3|2	kept
 LEMaxShapeWidth|kept|1..1|1	kept

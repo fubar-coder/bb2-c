@@ -7,8 +7,9 @@ an optional `CMAP` and `SDAT`, optionally ByteRun1-packed by RIPackLib),
 which `LESaveShapes` writes and `LELoadShapes` reads. A file that is not
 an LE file goes to shapeslib's `LoadShapes`. The other entries:
 `SafeToBlit`, `LEInitShape`, `LEScanShapes` with `LEMaxShapeWidth/Height/Depth`,
-`LECompressShapes`, `LEAutoCookie`. init clears the compression flag;
-finit does nothing.
+`LECompressShapes`, `LEAutoCookie`. init clears the compression flag
+and the maxima of `LEScanShapes` and sets `LEAutoCookie` on; finit does
+nothing.
 
 * **Source:** `rwelibsrc/shapeslib/RIShapesLib2.bb` (31/8/97, BB22
   format; as TED shows it: `build/amiga/rwelibsrc/shapeslib/RIShapesLib2.bb`).
@@ -150,6 +151,12 @@ Original behaviour that is no defect:
 Intended deviations from the original (`docs/libs/deviations.md`,
 kind F):
 
+* init sets `LEAutoCookie` on and clears the maxima of `LEScanShapes`
+  besides the compression flag. The original's init clears only the
+  compression flag, so a second run of a program with the library still
+  loaded (from the editor) started with the run before's `LEAutoCookie`
+  setting (off: `CludgeShapes` made no cookies) and its
+  `LEMaxShapeWidth/Height/Depth` (#1109).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push
