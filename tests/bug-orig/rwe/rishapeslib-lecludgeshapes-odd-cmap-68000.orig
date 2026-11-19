@@ -1,0 +1,24 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+timeout
+[compile]
+ok
+[run]
+file: 93 CMAP 9
+before
+REQUESTER: EasyRequest title "Software Failure" text "%s
+%s%lx).
+%s" gadgets "Suspend|Reboot" -> answered 0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/rishapeslib-lecludgeshapes-odd-cmap-68000.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/rishapeslib-lecludgeshapes-odd-cmap-68000
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

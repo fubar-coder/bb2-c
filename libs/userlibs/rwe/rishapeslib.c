@@ -80,7 +80,11 @@
  * leaves the palette for a CMAP of no colour or of more than 65535 (the
  * original decoded 65536 colours into 8 bytes, #820).  LECludgeShapes
  * passes SHHD and CMAP by their lengths (the original took SHHD as 20
- * bytes and the CMAP as the colours decoded, #811).  LESaveShapes writes
+ * bytes and the CMAP as the colours decoded, #811), reads the chunk and
+ * shape headers byte by byte and copies a shape at an odd address
+ * instead of linking it (an odd CMAP without its pad byte, as
+ * LESaveShapes writes it, puts SDAT at an odd address: the original's
+ * word reads there were an address error on a 68000, #1118).  LESaveShapes writes
  * the CMAP whenever there is a palette with data (the original tested the
  * Z flag of dos Write behind a MOVEA, #814), none for a palette of 0
  * colours (the original copied 65536 colours into an 8-byte buffer, #823),
@@ -102,7 +106,8 @@
  * from the shape numbers in d0, d1), so the registers left do not matter
  * (#813; as editlib #130).  LECludgeShapes links the shapes
  * into the memory (no copy, "cL") if it is below 2 MB and the file
- * uncompressed, unless copymemflag is negative (intended).
+ * uncompressed, unless copymemflag is negative (intended); a shape at an
+ * odd address is copied (#1118).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -246,6 +251,18 @@ BLITZ_LIBFIN();
 #define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
 #define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
 #define ID(a, b, c, d) ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (ULONG)(c) << 8 | (ULONG)(d))
+
+/* a word / long of LE data read byte by byte: the chunks of an LE file in
+   memory may lie at an odd address (LESaveShapes writes an odd CMAP
+   without its pad byte), where a 68000 cannot read a word (#1118) */
+static inline UWORD getw(const UBYTE *p)
+{
+    return (UWORD)((UWORD)p[0] << 8 | p[1]);
+}
+static inline ULONG getl(const UBYTE *p)
+{
+    return (ULONG)getw(p) << 16 | getw(p + 2);
+}
 
 /* the layouts below are read and written through SW/SL at the member's
    offset (the code stays that of the offsets): FW/FL a word/long member,
@@ -746,13 +763,16 @@ static void readshapes(UBYTE *data)
             }
             freecookie(shape);  /* Fixed (#810) */
         }
-        SHPAIR(shape, width) = FPAIR(data, leshape, width);
-        SHW(shape, depth) = FW(data, leshape, depth);     /* depth */
-        SHPAIR(shape, handlex) = FPAIR(data, leshape, xhandle);    /* handles */
-        SHW(shape, size) = FW(data, leshape, size);   /* bytes of the shape */
+        /* Fixed (#1118): the header is read byte by byte, the data of a
+           shape at an odd address is copied (the original read and linked
+           them there: an address error on a 68000) */
+        SHPAIR(shape, width) = getl(data + offsetof(struct leshape, width));
+        SHW(shape, depth) = getw(data + offsetof(struct leshape, depth));
+        SHPAIR(shape, handlex) = getl(data + offsetof(struct leshape, xhandle));
+        SHW(shape, size) = getw(data + offsetof(struct leshape, size));
         data += 12;
         shapesizes(shape, 0);
-        if (inchip < 0) {
+        if (inchip < 0 && !((ULONG)data & 1)) {
             /* 'decludgeshape: the data stays where it is */
             SHL(shape, data) = (ULONG)data;
             data += SHW(shape, size);
@@ -761,7 +781,7 @@ static void readshapes(UBYTE *data)
             SHL(shape, data) = galloc(SHW(shape, size), MEMF_CHIP);
             if (!SHL(shape, data))
                 rs_crash(data);         /* never reached (#806) */
-            if ((WORD)compressed < 0 && (LONG)(packedsize = SL(data, 0)) >= 0) {
+            if ((WORD)compressed < 0 && (LONG)(packedsize = getl(data)) >= 0) {
                 /* 'unpack_shape */
                 data += 4;
                 packptr = (ULONG)data;
@@ -821,7 +841,8 @@ static UBYTE *skipchunk(UBYTE *p, ULONG len)
  *
  * Nothing if the file is no FORM LESH with SHHD first or has no SDAT.
  * The shapes are linked into the memory ("cL", no copy) if the file is
- * uncompressed and below 2 MB, unless copymemflag is negative; otherwise
+ * uncompressed and below 2 MB, unless copymemflag is negative or the
+ * shape lies at an odd address; otherwise
  * copied (unpacked) into chip memory.  Every shape gets a cookie.  At
  * most count + 1 shapes of the file are read.  Fixed (#811): the SHHD
  * and CMAP chunks are passed by their lengths with the IFF pad byte (a
@@ -829,7 +850,11 @@ static UBYTE *skipchunk(UBYTE *p, ULONG len)
  * SHHD as 20 bytes and the CMAP by the colours decoded, so a longer SHHD,
  * a CMAP size that is no multiple of 3 or a pad byte missed SDAT.  The
  * palette as in LELoadShapes
- * (fixed #820).  Fixed (#810): the old cookies are freed.  Fixed (#807): a shape
+ * (fixed #820).  Fixed (#1118): the chunk headers behind SHHD and the
+ * shape headers are read byte by byte, and a shape whose data lies at an
+ * odd address is copied (LESaveShapes writes an odd CMAP without its pad
+ * byte; the original read words there, an address error on a 68000, and
+ * linked the shapes at the odd address).  Fixed (#810): the old cookies are freed.  Fixed (#807): a shape
  * in use that is cludged is replaced like any other (the original pops a0
  * it never pushed and returns past the caller).
  * @param file     d2: the LE file in memory (address)
@@ -865,14 +890,15 @@ static void BLITZ_ROUTINE lecludgeshapes2_c(ULONG file BL_REG(d2), ULONG copymem
        (the original took SHHD as 20 bytes and the CMAP as the colours
        read_palette decoded) */
     p = skipchunk(p, FL(file, lehead, shhdlen));
-    if (FL(p, iffchunk, id) == ID('C', 'M', 'A', 'P')) {
-        chunksize = FL(p, iffchunk, len);
+    /* Fixed (#1118): the chunk headers behind SHHD are read byte by byte */
+    if (getl(p + offsetof(struct iffchunk, id)) == ID('C', 'M', 'A', 'P')) {
+        chunksize = getl(p + offsetof(struct iffchunk, len));
         p += 8;
         if (paletteptr)
             read_palette(p);
         p = skipchunk(p, chunksize);
     }
-    if (FL(p, iffchunk, id) != ID('S', 'D', 'A', 'T'))
+    if (getl(p + offsetof(struct iffchunk, id)) != ID('S', 'D', 'A', 'T'))
         return;
     readshapes(p + 8);
 }

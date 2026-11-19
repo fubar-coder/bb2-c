@@ -111,7 +111,8 @@ Original behaviour that is no defect:
 * LELoadShapes, a statement, leaves `packedsize` of the last packed
   shape in d0 (a statement has no result).
 * LECludgeShapes links memory below 2 MB that is not compressed instead
-  of copying it (`"cL"`), unless copymemflag is negative; the form
+  of copying it (`"cL"`), unless copymemflag is negative or the shape
+  lies at an odd address (#1118); the form
   without copymemflag links. That is intended.
 * LEInitShape: the data and the cookie are cleared chip memory; the
   cookie is not computed (a shape of cleared data has an empty cookie).
@@ -162,6 +163,15 @@ kind F):
   CMAP by the colours read_palette decoded: a longer SHHD, a CMAP size
   that is no multiple of 3 or an IFF pad byte missed SDAT, and nothing
   was loaded (#811, test `rishapeslib-lecludgeshapes-chunk-lengths`).
+* LECludgeShapes reads the chunk headers behind SHHD, the shape headers
+  and the packed sizes byte by byte, and copies a shape whose data lies
+  at an odd address into chip memory instead of linking it there.
+  LESaveShapes writes the CMAP as colours × 3 bytes without the IFF pad
+  byte (unchanged), so with an odd number of colours the SDAT chunk
+  starts at an odd offset; the original read its words and longs there,
+  an address error on a 68000, and linked the shapes of an uncompressed
+  file at an odd address, where the blitter cannot draw them (#1118,
+  test `rishapeslib-lecludgeshapes-odd-cmap-68000`, machine A600).
 * LESaveShapes writes the CMAP whenever it has a palette with data. In
   the original's `_saveCMAP`, `MOVE.l paletteptr,a0` is a MOVEA and sets
   no flags, so the `BNE` behind it tested the Z flag that dos `Write` of
