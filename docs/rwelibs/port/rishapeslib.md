@@ -88,8 +88,6 @@ The original returns to that data address; `rs_crash` jumps there.
 * **read_palette:** the allocation is not checked; a failure writes to
   address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * **LESaveShapes:**
-  * The shape header buffer is allocated with the upper word of the d0
-    that `_saveCMAP` leaves, and freed with size 14 instead of 12 (#817).
   * When the pack buffer is missing, two runtime errors follow (TRAP #0:
     "Not enough memory to pack shapes", "Shape Compression Failed!"),
     then CreateCookie on the shape, whose RTS returns from
@@ -187,6 +185,13 @@ kind F):
   after one with it larger still (#816, test
   `rishapeslib-lesaveshapes-form-length`). The loaders ignore the FORM
   length; other IFF readers saw a truncated file.
+* LESaveShapes allocates its shape header buffer as 12 bytes. The
+  original's `MOVE.w #12,d0` kept the upper word of the d0 that
+  `_saveCMAP` left: after a CMAP, whatever memlib's `globfree` (exec's
+  `FreeMem`) left there, so up to 4 GB were asked for; a failed
+  allocation wrote no SDAT and a broken file (#817, `libs_emulator`
+  cases `[fixed #817]` of `rwe_rishapeslib`: a globfree that leaves 1 in
+  the upper word, D-019).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push

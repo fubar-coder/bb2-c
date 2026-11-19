@@ -28,7 +28,7 @@
  * packable and unpackable data - PackPBM's failure path -, the shape
  * count, with an upper word in d1: BUG(orig) #815; with dos Write
  * returning Z set: fixed #814, and globfree leaving an upper word in
- * d0: BUG(orig) #817, both as the system may leave them, D-019),
+ * d0: fixed #817, both as the system may leave them, D-019),
  * LELoadShapes all four forms (form 3, which compiled code never reaches,
  * called directly with a0 set),
  * a missing file, a file that is FORM but no LESH, a file in shapeslib's

@@ -601,7 +601,8 @@ LESaveShapes|file written|0..64 up $0 pal 0 file 2|1	$00000001
 LESaveShapes|file written|0..64 up $0 pal 0 file 4|1	$00000001
 LESaveShapes|file written|2..2 up $0 pal 0 file 5|1	$00000001
 LESaveShapes|globalloc size|0..3 up $0 pal 0 file 7|1	$0000002C
-LESaveShapes|globalloc size|0..3 up $0 pal 0 file 7|2	$0001000C
+LESaveShapes|globalloc size|0..3 up $0 pal 0 file 7|2 [orig]	$0001000C
+LESaveShapes|globalloc size|0..3 up $0 pal 0 file 7|2 [fixed #817]	$0000000C
 LESaveShapes|kept|0..3 up $0 pal -1 file 0|1	kept
 LESaveShapes|kept|0..3 up $0 pal 0 file 1|1	kept
 LESaveShapes|kept|0..3 up $0 pal 0 file 6|1	kept
