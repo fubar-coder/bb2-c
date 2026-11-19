@@ -81,6 +81,9 @@ kind F):
   #189). The original stepped by 8 + length: after an odd chunk the next
   id was read one byte early, at an odd address (on a 68000 an address
   error, on a 68020 a wrong id and a wrong length) (#552).
+* `BBScenarioLowCol`/`BBScenarioHighCol` read the colour byte unsigned,
+  as `BBGetPalette` and `BBNumBaddies` read theirs; the original
+  sign-extended it, so colours 128-255 came out as -128..-1 (#550).
 
 ## BUG(orig), kept
 
@@ -90,8 +93,6 @@ kind F):
   (#548); the colours are written from low up to high, at least one
   (low > high writes the colour at low, possibly behind the block)
   (#549).
-* `BBScenarioLowCol`/`BBScenarioHighCol` sign-extend the byte;
-  `BBGetPalette` and `BBNumBaddies` do not (#550).
 
 ## Original behaviour, not defects
 

@@ -2492,26 +2492,38 @@ BBScenarioHighCol|d0|round 0|1	$FFFF0011
 BBScenarioHighCol|d0|round 0|2	$FFFF0011
 BBScenarioHighCol|d0|round 0|3	$FFFF0011
 BBScenarioHighCol|d0|round 0|4	$FFFF0011
-BBScenarioHighCol|d0|round 0, scenario 2|1	$FFFFFF83
-BBScenarioHighCol|d0|round 0, scenario 2|2	$FFFFFF83
-BBScenarioHighCol|d0|round 0, scenario 2|3	$FFFFFF83
-BBScenarioHighCol|d0|round 0, scenario 2|4	$FFFFFF83
+BBScenarioHighCol|d0|round 0, scenario 2|1 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 0, scenario 2|1 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 0, scenario 2|2 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 0, scenario 2|2 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 0, scenario 2|3 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 0, scenario 2|3 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 0, scenario 2|4 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 0, scenario 2|4 [fixed #550]	$FFFF0083
 BBScenarioHighCol|d0|round 1|1	$FFFF001A
 BBScenarioHighCol|d0|round 1|2	$FFFF001A
 BBScenarioHighCol|d0|round 1|3	$FFFF001A
 BBScenarioHighCol|d0|round 1|4	$FFFF001A
-BBScenarioHighCol|d0|round 1, scenario 2|1	$FFFFFF83
-BBScenarioHighCol|d0|round 1, scenario 2|2	$FFFFFF83
-BBScenarioHighCol|d0|round 1, scenario 2|3	$FFFFFF83
-BBScenarioHighCol|d0|round 1, scenario 2|4	$FFFFFF83
+BBScenarioHighCol|d0|round 1, scenario 2|1 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 1, scenario 2|1 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 1, scenario 2|2 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 1, scenario 2|2 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 1, scenario 2|3 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 1, scenario 2|3 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 1, scenario 2|4 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 1, scenario 2|4 [fixed #550]	$FFFF0083
 BBScenarioHighCol|d0|round 2|1	$FFFF0013
 BBScenarioHighCol|d0|round 2|2	$FFFF0013
 BBScenarioHighCol|d0|round 2|3	$FFFF0013
 BBScenarioHighCol|d0|round 2|4	$FFFF0013
-BBScenarioHighCol|d0|round 2, scenario 2|1	$FFFFFF83
-BBScenarioHighCol|d0|round 2, scenario 2|2	$FFFFFF83
-BBScenarioHighCol|d0|round 2, scenario 2|3	$FFFFFF83
-BBScenarioHighCol|d0|round 2, scenario 2|4	$FFFFFF83
+BBScenarioHighCol|d0|round 2, scenario 2|1 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 2, scenario 2|1 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 2, scenario 2|2 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 2, scenario 2|2 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 2, scenario 2|3 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 2, scenario 2|3 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 2, scenario 2|4 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 2, scenario 2|4 [fixed #550]	$FFFF0083
 BBScenarioHighCol|d0|round 3|1	$FFFF0014
 BBScenarioHighCol|d0|round 3|2	$FFFF0014
 BBScenarioHighCol|d0|round 3|3	$FFFF0014
@@ -2524,18 +2536,26 @@ BBScenarioHighCol|d0|round 4|1	$FFFF001A
 BBScenarioHighCol|d0|round 4|2	$FFFF001A
 BBScenarioHighCol|d0|round 4|3	$FFFF001A
 BBScenarioHighCol|d0|round 4|4	$FFFF001A
-BBScenarioHighCol|d0|round 4, scenario 2|1	$FFFFFF83
-BBScenarioHighCol|d0|round 4, scenario 2|2	$FFFFFF83
-BBScenarioHighCol|d0|round 4, scenario 2|3	$FFFFFF83
-BBScenarioHighCol|d0|round 4, scenario 2|4	$FFFFFF83
+BBScenarioHighCol|d0|round 4, scenario 2|1 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 4, scenario 2|1 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 4, scenario 2|2 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 4, scenario 2|2 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 4, scenario 2|3 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 4, scenario 2|3 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 4, scenario 2|4 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 4, scenario 2|4 [fixed #550]	$FFFF0083
 BBScenarioHighCol|d0|round 5|1	$FFFF0013
 BBScenarioHighCol|d0|round 5|2	$FFFF0013
 BBScenarioHighCol|d0|round 5|3	$FFFF0013
 BBScenarioHighCol|d0|round 5|4	$FFFF0013
-BBScenarioHighCol|d0|round 5, scenario 2|1	$FFFFFF83
-BBScenarioHighCol|d0|round 5, scenario 2|2	$FFFFFF83
-BBScenarioHighCol|d0|round 5, scenario 2|3	$FFFFFF83
-BBScenarioHighCol|d0|round 5, scenario 2|4	$FFFFFF83
+BBScenarioHighCol|d0|round 5, scenario 2|1 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 5, scenario 2|1 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 5, scenario 2|2 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 5, scenario 2|2 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 5, scenario 2|3 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 5, scenario 2|3 [fixed #550]	$FFFF0083
+BBScenarioHighCol|d0|round 5, scenario 2|4 [orig]	$FFFFFF83
+BBScenarioHighCol|d0|round 5, scenario 2|4 [fixed #550]	$FFFF0083
 BBScenarioHighCol|kept|round 0|1	kept
 BBScenarioHighCol|kept|round 0|2	kept
 BBScenarioHighCol|kept|round 0|3	kept
@@ -2802,26 +2822,38 @@ BBScenarioLowCol|d0|round 0|1	$FFFF0003
 BBScenarioLowCol|d0|round 0|2	$FFFF0003
 BBScenarioLowCol|d0|round 0|3	$FFFF0003
 BBScenarioLowCol|d0|round 0|4	$FFFF0003
-BBScenarioLowCol|d0|round 0, scenario 2|1	$FFFFFF81
-BBScenarioLowCol|d0|round 0, scenario 2|2	$FFFFFF81
-BBScenarioLowCol|d0|round 0, scenario 2|3	$FFFFFF81
-BBScenarioLowCol|d0|round 0, scenario 2|4	$FFFFFF81
+BBScenarioLowCol|d0|round 0, scenario 2|1 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 0, scenario 2|1 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 0, scenario 2|2 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 0, scenario 2|2 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 0, scenario 2|3 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 0, scenario 2|3 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 0, scenario 2|4 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 0, scenario 2|4 [fixed #550]	$FFFF0081
 BBScenarioLowCol|d0|round 1|1	$FFFF0001
 BBScenarioLowCol|d0|round 1|2	$FFFF0001
 BBScenarioLowCol|d0|round 1|3	$FFFF0001
 BBScenarioLowCol|d0|round 1|4	$FFFF0001
-BBScenarioLowCol|d0|round 1, scenario 2|1	$FFFFFF81
-BBScenarioLowCol|d0|round 1, scenario 2|2	$FFFFFF81
-BBScenarioLowCol|d0|round 1, scenario 2|3	$FFFFFF81
-BBScenarioLowCol|d0|round 1, scenario 2|4	$FFFFFF81
+BBScenarioLowCol|d0|round 1, scenario 2|1 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 1, scenario 2|1 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 1, scenario 2|2 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 1, scenario 2|2 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 1, scenario 2|3 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 1, scenario 2|3 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 1, scenario 2|4 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 1, scenario 2|4 [fixed #550]	$FFFF0081
 BBScenarioLowCol|d0|round 2|1	$FFFF000D
 BBScenarioLowCol|d0|round 2|2	$FFFF000D
 BBScenarioLowCol|d0|round 2|3	$FFFF000D
 BBScenarioLowCol|d0|round 2|4	$FFFF000D
-BBScenarioLowCol|d0|round 2, scenario 2|1	$FFFFFF81
-BBScenarioLowCol|d0|round 2, scenario 2|2	$FFFFFF81
-BBScenarioLowCol|d0|round 2, scenario 2|3	$FFFFFF81
-BBScenarioLowCol|d0|round 2, scenario 2|4	$FFFFFF81
+BBScenarioLowCol|d0|round 2, scenario 2|1 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 2, scenario 2|1 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 2, scenario 2|2 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 2, scenario 2|2 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 2, scenario 2|3 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 2, scenario 2|3 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 2, scenario 2|4 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 2, scenario 2|4 [fixed #550]	$FFFF0081
 BBScenarioLowCol|d0|round 3|1	$FFFF000D
 BBScenarioLowCol|d0|round 3|2	$FFFF000D
 BBScenarioLowCol|d0|round 3|3	$FFFF000D
@@ -2834,18 +2866,26 @@ BBScenarioLowCol|d0|round 4|1	$FFFF000F
 BBScenarioLowCol|d0|round 4|2	$FFFF000F
 BBScenarioLowCol|d0|round 4|3	$FFFF000F
 BBScenarioLowCol|d0|round 4|4	$FFFF000F
-BBScenarioLowCol|d0|round 4, scenario 2|1	$FFFFFF81
-BBScenarioLowCol|d0|round 4, scenario 2|2	$FFFFFF81
-BBScenarioLowCol|d0|round 4, scenario 2|3	$FFFFFF81
-BBScenarioLowCol|d0|round 4, scenario 2|4	$FFFFFF81
+BBScenarioLowCol|d0|round 4, scenario 2|1 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 4, scenario 2|1 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 4, scenario 2|2 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 4, scenario 2|2 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 4, scenario 2|3 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 4, scenario 2|3 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 4, scenario 2|4 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 4, scenario 2|4 [fixed #550]	$FFFF0081
 BBScenarioLowCol|d0|round 5|1	$FFFF0007
 BBScenarioLowCol|d0|round 5|2	$FFFF0007
 BBScenarioLowCol|d0|round 5|3	$FFFF0007
 BBScenarioLowCol|d0|round 5|4	$FFFF0007
-BBScenarioLowCol|d0|round 5, scenario 2|1	$FFFFFF81
-BBScenarioLowCol|d0|round 5, scenario 2|2	$FFFFFF81
-BBScenarioLowCol|d0|round 5, scenario 2|3	$FFFFFF81
-BBScenarioLowCol|d0|round 5, scenario 2|4	$FFFFFF81
+BBScenarioLowCol|d0|round 5, scenario 2|1 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 5, scenario 2|1 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 5, scenario 2|2 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 5, scenario 2|2 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 5, scenario 2|3 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 5, scenario 2|3 [fixed #550]	$FFFF0081
+BBScenarioLowCol|d0|round 5, scenario 2|4 [orig]	$FFFFFF81
+BBScenarioLowCol|d0|round 5, scenario 2|4 [fixed #550]	$FFFF0081
 BBScenarioLowCol|kept|round 0|1	kept
 BBScenarioLowCol|kept|round 0|2	kept
 BBScenarioLowCol|kept|round 0|3	kept

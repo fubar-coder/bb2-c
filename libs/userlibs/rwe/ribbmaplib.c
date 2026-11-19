@@ -33,8 +33,10 @@
  *     a new block of high+1 colours, but its count is set to high (the
  *     last colour outside) (#548); the colours are written from low to
  *     high even if low > high (one colour at low, possibly behind the
- *     block) (#549).  BBScenarioLowCol/HighCol extend the byte with its
- *     sign (#550).
+ *     block) (#549).
+ * Fixed (intended deviation, #550): BBScenarioLowCol/HighCol read the
+ * colour byte unsigned, as BBGetPalette does (the original extended it
+ * with its sign: colours 128-255 came out as -128..-1).
  * Fixed (intended deviation, #552): the search skips the IFF pad byte
  * behind a chunk of odd length; a byte other than 0 in its place is
  * taken as the start of the next chunk, so files written without pad
@@ -363,26 +365,26 @@ static ULONG BLITZ_ROUTINE bbscenariopalette_c(void)
  * @brief BBScenarioLowCol: the first colour of the COLR chunk (its byte
  * 0).
  *
- * BUG(orig) (#550): the byte is extended with its sign (EXT.w).
+ * Fixed (#550): the byte unsigned (the original: EXT.w).
  * @return d0: $FFFF:word, 0 without the chunk
  */
 static ULONG BLITZ_ROUTINE bbscenariolowcol_c(void)
 {
     UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
-    return chunk ? HI | (UWORD)(WORD)(BYTE)chunk[0] : 0;
+    return chunk ? HI | chunk[0] : 0;
 }
 
 /**
  * @brief BBScenarioHighCol: the last colour of the COLR chunk (its byte
  * 1).
  *
- * BUG(orig) (#550): the byte is extended with its sign (EXT.w).
+ * Fixed (#550): the byte unsigned (the original: EXT.w).
  * @return d0: $FFFF:word, 0 without the chunk
  */
 static ULONG BLITZ_ROUTINE bbscenariohighcol_c(void)
 {
     UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
-    return chunk ? HI | (UWORD)(WORD)(BYTE)chunk[1] : 0;
+    return chunk ? HI | chunk[1] : 0;
 }
 
 /**
