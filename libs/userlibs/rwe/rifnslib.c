@@ -50,7 +50,6 @@
  *     (#658).
  *   - Planes 8 and on take the colour bit of plane & 7 (BTST on memory)
  *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop (#658).
- *   - FNSSetTab 0: chr$(9) divides by 0 (exception) (#666).
  *   - Codes from 160 end the text (a sign test after CMPI.b #32) (#657).
  * Fixed (#665): FNSPrint/FNSShadowPrint before FNSOutput (no bitmap)
  *   return at once (the prefs and the colour stored as on the way without
@@ -92,6 +91,10 @@
  *   of x is ASR.w of the long x & $FFF0, so with a negative xmin or ymin
  *   a text at negative x or y is written about 64K bytes or rows away
  *   (an invalid argument, D-005).
+ * Fixed (#666): with runtime error checking FNSSetTab refuses a tab size
+ *   below 1: "FNSSetTab size must be at least 1" (tabchk).  The release
+ *   code is unchanged: with a tab size of 0 a chr$(9) divides by 0 (an
+ *   invalid argument, D-005).
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): the glyphs of codes the font has no data for - the built-in font ends
  *   at 'z' (91 glyphs), codes 123..159 are drawn from the bytes behind it.
@@ -116,14 +119,14 @@ void _removefns(void), _fnsunderline(void), _fnslength2(void);
 void _fnslength(void), _fnsversion(void), _fnsorigin2(void), _fnsorigin(void);
 void _fnswidth(void), _fnsload(void), _fnsslot(void), _fnsunload(void);
 void _fnssettab(void), _fnsshadowprint(void), _fnsshadowprint2(void);
-void _fnsshadowprint3(void), rifnslib_libinit(void), clipchk(void);
+void _fnsshadowprint3(void), rifnslib_libinit(void), clipchk(void), tabchk(void);
 static void _libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
 /* !libheader {#rifnslib,init,0,finit,0}; error field: the error check
-   area of clipchk (fixed, #664) */
+   area of clipchk and tabchk (fixed, #664, #666) */
 BLITZ_LIBHEADER(LIB_rifnslib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 #define BMAP0 LIB_bitmaplib, BL_IA0|BL_PD0                     /* !bmap {0,0} */
@@ -248,7 +251,7 @@ BLITZ_NAME("FNSUnload", "fontslot");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_fnssettab, 0, 0);
+BLITZ_SUBS(_fnssettab, tabchk, 0);                  /* check: fixed #666 */
 BLITZ_NAME("FNSSetTab", "tab_size - set tab size in pixels");
 
 BLITZ_ASTATEMENT();
@@ -646,10 +649,11 @@ static void underline(UWORD x)
  * (FNSSetTab), chr$(10) a new line, chr$(0), codes below 32 and from 160
  * on (BUG(orig) #657) end the text; clipped by FNSClip; an empty line
  * is neither centred, aligned nor underlined (fixed #659).  BUG(orig):
- * depth 0 or above 8 overruns the plane stack (#658); FNSSetTab 0
- * divides by 0 (#666).  With a negative xmin or ymin (refused by
- * FNSClip's error check, fixed #664) text at negative x or y is written
- * about 64K bytes or rows away.
+ * depth 0 or above 8 overruns the plane stack (#658).  With a negative
+ * xmin or ymin (refused by FNSClip's error check, fixed #664) text at
+ * negative x or y is written about 64K bytes or rows away; with a tab
+ * size of 0 (refused by FNSSetTab's error check, fixed #666) a chr$(9)
+ * divides by 0.
  * @param fontnum  d0: the font slot
  * @param x        d1: x
  * @param y        d2: y
@@ -1054,7 +1058,8 @@ static ULONG BLITZ_ROUTINE slot_c(void)
 /**
  * @brief FNSSetTab tab_size: the tab size in pixels (32 at first).
  *
- * BUG(orig) (#666): 0 makes chr$(9) divide by 0.
+ * A size of 0 makes chr$(9) divide by 0: with runtime error checking
+ * tabchk refuses a size below 1 (fixed #666).
  * @param t  d0: the tab size
  */
 static void BLITZ_ROUTINE settab_c(UWORD t BL_REG(d0))
@@ -1090,6 +1095,7 @@ BLITZ_THUNK(_fnssettab, settab_c, "d0-d1/a0-a1");
 /* ------------------------------------------- error checks (debugger only) */
 
 BLITZ_ERRCHK_MESSAGE(badclip, "FNSClip zone must not start below 0");  /* fixed, #664 */
+BLITZ_ERRCHK_MESSAGE(badtab, "FNSSetTab size must be at least 1");     /* fixed, #666 */
 
 /**
  * @brief The error check of FNSClip (debugger only).
@@ -1110,5 +1116,23 @@ static void BLITZ_ERRCHK clipchk_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1))
         BLITZ_RUNERR(badclip);
 }
 
-/* the thunk of the check function */
+/**
+ * @brief The error check of FNSSetTab (debugger only).
+ *
+ * Fixed (#666), not in the original: a chr$(9) in a printed text moves
+ * x to the next tab stop with DIVU tabsize; a size of 0 divided by 0.
+ * The release code is unchanged (an invalid argument, D-005).
+ *
+ * Errors: "FNSSetTab size must be at least 1" (the size, a signed word,
+ * below 1).
+ * @param t  d0: the tab size
+ */
+static void BLITZ_ERRCHK tabchk_c(UWORD t BL_REG(d0))
+{
+    if ((WORD)t < 1)
+        BLITZ_RUNERR(badtab);
+}
+
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(clipchk, clipchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(tabchk, tabchk_c, "d0-d1/a0-a1");

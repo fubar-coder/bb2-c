@@ -107,6 +107,9 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   `ASR.w` of the long x & $FFF0, so with a negative xmin or ymin a text
   at negative x or y is written about 64K bytes or rows away (an invalid
   argument, D-005) (#664).
+* With runtime error checking FNSSetTab refuses a tab size below 1:
+  "FNSSetTab size must be at least 1" (`tabchk`). The release code is
+  unchanged: after FNSSetTab 0 a tab divides by 0 (#666).
 
 ## BUG(orig), kept
 
@@ -114,8 +117,7 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
   0), planes from 8 on with the colour bit `plane & 7` (#658).
-* FNSSetTab 0: a tab divides by 0 (#666). Codes from 160 end the text
-  (signed byte compare) (#657).
+* Codes from 160 end the text (signed byte compare) (#657).
 * FNSLoad loads into RIAmosFuncLib bank 55 + slot, which is above its
   default of 50 banks: `BLoad` takes the number as an address and reads the
   file to the address 55 + slot (a real font destroys the vector table),

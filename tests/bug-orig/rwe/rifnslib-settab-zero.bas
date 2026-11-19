@@ -8,6 +8,7 @@
 ; Correct: the error check refuses the tab size: "FNSSetTab size must be
 ; at least 1".
 ; rifnslib needs RIAmosFuncLib (FNSLoad and FNSUnload use its banks).
+; @fixed #666
 ; @rwe rifnslib riamosfunclib
 ; @pass timeout=30
 ; @pass runtime_errors=on

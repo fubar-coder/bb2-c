@@ -6,5 +6,8 @@
 # none)
 lib 93: header +$2C: code offset set in only one of them
 lib 93: entry 6 FNSClip +$E: code offset set in only one of them
-# #664: the relocations of the error field and the check
-lib 93: relocations in the declaration part 30 != 32
+# #666: FNSSetTab gets an error check (tabchk, "FNSSetTab size must be at
+# least 1")
+lib 93: entry 17 FNSSetTab +$C: code offset set in only one of them
+# #664, #666: the relocations of the error field and the two checks
+lib 93: relocations in the declaration part 30 != 33
