@@ -68,9 +68,10 @@
  *   checked only the id in InstallFNS and nothing in FNSLoad, and a
  *   height of 0 drew 65536 rows per character (every row of the clip
  *   zone, the last ones below ymax).
- * Fixed (#656): a clipped row of a 48 or 64 pixel font passes its third
- *   (and fourth) glyph word too; the original read them only for a row
- *   it drew, so every row after a clipped one took the wrong words.
+ * Fixed (#656): the glyph rows above ymin are passed with all their words
+ *   (print does it once per line); the 48 and 64 pixel loops read the
+ *   third (and fourth) word only for a row they draw, so in the original
+ *   every row after a row above ymin took the wrong words.
  * Fixed (#667): the underline is clipped at xmin; the original clipped it
  *   at x = 0 only.
  * Fixed (#659): an empty line (an empty text, or a line that begins with
@@ -369,7 +370,8 @@ static UWORD countwidth(const UBYTE *font, const UBYTE *p, UBYTE bold)
 
 /* the glyph rows of one character: rows `rows` + 1 from y, rowoff (d7) =
    the x offset in bytes (+ scr_width per row), s = x & 15, the font
-   width `fw` */
+   width `fw`.  A row of 48 or 64 pixels passes its 3rd (4th) word only
+   when it is drawn: print passes the rows above ymin (fixed, #656) */
 static void drawchar(const UWORD *g, UWORD y, ULONG rowoff, UWORD s, UWORD rows, UWORD fw)
 {
     ULONG *bs;
@@ -381,11 +383,8 @@ static void drawchar(const UWORD *g, UWORD y, ULONG rowoff, UWORD s, UWORD rows,
             UWORD w2 = *g++;
             ULONG b1, b2, m1, m2, b3 = 0, b4 = 0, m3 = 0, m4 = 0;
             UBYTE pl;
-            if ((WORD)y < (WORD)fns.ymin || y > fns.ymax) {
-                if (fw != 32)           /* fixed (#656): the 3rd (4th) word */
-                    g += fw == 64 ? 2 : 1;
+            if ((WORD)y < (WORD)fns.ymin || y > fns.ymax)
                 goto next;
-            }
             b1 = (ULONG)w1 << (16 - s);
             b2 = (ULONG)w2 << (16 - s);
             m1 = ~b1;
@@ -450,6 +449,10 @@ next:
     } while (rows-- != 0);
 }
 
+/* the first glyph row print draws of a line and the rows - 1 from it
+   (fixed, #656: the rows above ymin passed) */
+static UWORD gly, glrows;
+
 /* _FNSPrint2 (behind the bitmap check of the entry): fontnum, x, y,
    string, prefs, colour; the result a0 (`result`, the caller's a0
    without a font) */
@@ -459,6 +462,7 @@ static UBYTE *print(UWORD fontnum, UWORD x0, UWORD y0, const UBYTE *str, UBYTE p
     const UBYTE *font, *s;
     UBYTE *planes;                      /* the plane pointers */
     UWORD x, y, n, width, lw;
+    const UBYTE *glyphs;                /* the glyph of code 32 (+ the rows passed) */
     ULONG yoff;
     UBYTE c, i;
 
@@ -477,8 +481,24 @@ restart:
     fns.underpos = FH(font)->underpos;
     planes = (UBYTE *)fns.bit_address->Planes;
     fns.ycord = y;
-    if ((WORD)y < (WORD)fns.ymin)
+    /* fixed (#656): the glyph rows above ymin are passed here, once per
+       line, with all their words (drawchar's 48/64 pixel loops pass the
+       3rd/4th word of a row only when they draw it); if every row is
+       above ymin, drawchar clips them all as before */
+    glyphs = font + 256;
+    gly = y;
+    glrows = fns.height;
+    if ((WORD)y < (WORD)fns.ymin) {
+        UWORD k = (UWORD)(fns.ymin - y);
+        if (k <= fns.height) {
+            UWORD bpr = fns.fontwidth == 32 ? 4 : fns.fontwidth == 48 ? 6
+                      : fns.fontwidth == 64 ? 8 : 2;
+            glyphs += bl_mulu_w(k, bpr);
+            gly = fns.ymin;
+            glrows = (UWORD)(fns.height - k);
+        }
         y = fns.ymin;
+    }
     yoff = bl_mulu_w((UWORD)fns.scr_width, y);
     n = (UBYTE)(fns.bitdepth - 1);      /* DBRA on a byte count */
     i = 0;
@@ -536,12 +556,12 @@ draw:
         xc = fns.xcord;
         if ((WORD)xc >= (WORD)fns.xmin) {
             UBYTE w = (UBYTE)(font[c] + fns.bold);
-            const UWORD *g = (const UWORD *)(font + 256
+            const UWORD *g = (const UWORD *)(glyphs
                                              + bl_mulu_w(fns.multi, (UBYTE)(c - 32)));
             if ((WORD)(UWORD)(xc + w) >= (WORD)fns.xmax)
                 break;
-            drawchar(g, fns.ycord, (UWORD)((WORD)(xc & 0xfff0) >> 3), xc & 15,
-                     fns.height, fns.fontwidth);
+            drawchar(g, gly, (UWORD)((WORD)(xc & 0xfff0) >> 3), xc & 15, glrows,
+                     fns.fontwidth);
         }
         /* add_xcord */
         c = fns.character;

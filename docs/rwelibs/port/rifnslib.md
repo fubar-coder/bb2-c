@@ -74,10 +74,11 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   (the manual: "A failure could either be a load error or an
   installation error"), and a height of 0 drew 65536 rows per character:
   every row of the clip zone, the last ones below ymax (#663).
-* A clipped row of a 48 or 64 pixel font passes its 3rd (and 4th) glyph
-  word too. The original read them only for a row it drew, so after a
-  clipped row (above ymin) the glyph was drawn shifted, mixed with the
-  next rows' words (#656).
+* The glyph rows above ymin are passed with all their words, once per
+  line (in print, before the characters). The 48 and 64 pixel loops
+  read the 3rd (and 4th) word of a row only for a row they draw, so in
+  the original the glyph was drawn shifted after a row above ymin, mixed
+  with the next rows' words (#656).
 * The underline is clipped at xmin. The original clipped it at x = 0
   only: with FNSClip's xmin above 0 the
   underline of a text that starts left of xmin stuck out of the clip
