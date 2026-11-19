@@ -44,11 +44,13 @@ reproduced.
   `(1<<14)/numlines` is a word quotient); the `$FFE1FFFE` wait (line
   256) is written whenever the low byte of the line is 0, also for line
   0 (#589, #588).
-* `RedoColSplit`: `ASL.w #2` of the ccoffset argument shifts only the
-  low word, the upper word is added unchanged (#594).
 
 **Fixed:**
 
+* `RedoColSplit` shifts the whole long ccoffset argument (`ASL.l #2`):
+  the original's `ASL.w #2` shifted only the low word and added the upper
+  word unchanged, so from $4000 instructions on the colours were written
+  64 KB steps off (#594).
 * `CopperWait` masks the x position again after the +6: the original's
   `((x >> 1) & $FE) + 6` as a word carried into the line byte for x from
   500 on (#591).
@@ -74,5 +76,6 @@ line 0, falling, rising and out-of-range colour values, `ColSplitBplcon3`,
 40 random splits with `RedoColSplit` over them, `CopperResetAdr` with
 `GetCCOffset` (the original's -1), init/finit, a second run (init, the commands
 before `CopperReset`, the `ColSplitBplcon3` byte of the run before). Not covered: the lists running in the
-copper (nothing is displayed), numlines 0 or negative, a ccoffset above
-$FFFF for `RedoColSplit`.
+copper (nothing is displayed), numlines 0 or negative, a ccoffset of
+$4000 and above for `RedoColSplit` (the bug-orig test
+`ricopperfxlib-redocolsplit-ccoffset-word` has it).

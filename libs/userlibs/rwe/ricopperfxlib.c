@@ -45,8 +45,6 @@
  *     (1 << 14) / numlines is a word quotient; the $FFE1FFFE wait (line
  *     256) is written whenever the low byte of the line is 0, also for
  *     line 0 (#589, #588).
- *   - RedoColSplit: ccoffset * 4 is ASL.w (only the low word is
- *     shifted), the upper word of the argument is added unchanged (#594).
  * Fixed:
  *   - GetCCOffset tests customaddr, as every other command (the original
  *     tests coplistaddr: after CopperResetAdr, coplistaddr 0, it returned
@@ -54,6 +52,10 @@
  *   - CopperWait masks the x position after the +6: the original's
  *     ((x >> 1) & $FE) + 6 as a word carried into the line bits for
  *     x >= 500 (#591).
+ *   - RedoColSplit shifts the whole long ccoffset (ASL.l): the original's
+ *     ASL.w shifted only the low word and added the upper word unchanged,
+ *     so an offset of $4000 instructions and more landed in 64 KB steps
+ *     off (#594).
  *   - init clears the state block (the original's is an RTS): a second
  *     run from the editor with the library still loaded wrote into the
  *     custom space of the run before before its CopperReset and kept its
@@ -332,9 +334,9 @@ ULONG BLITZ_ROUTINE c_docolsplit(const struct colsplit *cols BL_REG(d0),
  *
  * Starts at instruction ccoffset of the custom space, skips a line 256
  * WAIT, writes only the two colour values per line.  Nothing without a
- * custom space.  BUG(orig): ccoffset * 4 is ASL.w (only the low word is
- * shifted), the upper word of the argument is added unchanged (#594);
- * numlines as in DoColSplit (#589).
+ * custom space.  The byte offset is ccoffset * 4 as a long: fixed (#594),
+ * the original's ASL.w #2 shifted only the low word and added the upper
+ * word unchanged.  BUG(orig): numlines as in DoColSplit (#589).
  * @param cols      d0: the colours (cols_adr)
  * @param numlines  d1: the number of lines
  * @param ccoffset  d2: the split's offset in instructions (4 bytes)
@@ -348,9 +350,9 @@ void BLITZ_ROUTINE c_redocolsplit(const struct colsplit *cols BL_REG(d0),
 
     if (!getcustom())
         return;
-    /* ASL.w #2,d2:ADD.l d2,a0 (BUG(orig) (#594): only the low word shifted) */
-    p = (UWORD *)(cfx.customaddr
-                  + ((ccoffset & 0xffff0000UL) | (UWORD)(ccoffset << 2)));
+    /* ASL.l #2,d2:ADD.l d2,a0 (fixed #594: the original's ASL.w shifted
+       only the low word) */
+    p = (UWORD *)(cfx.customaddr + (ccoffset << 2));
     gradient(&g, cols, numlines);
     n = (UWORD)(numlines - 1);
     do {

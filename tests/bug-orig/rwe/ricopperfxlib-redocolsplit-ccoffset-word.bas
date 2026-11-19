@@ -7,6 +7,7 @@
 ; of the split.
 ; Correct: the colour words are written at $10000 + 10 (and + 18), the
 ; start of the space stays 0.
+; @fixed #594
 ; @rwe ricopperfxlib
 DEFTYPE .l
 Dim c.l(5)

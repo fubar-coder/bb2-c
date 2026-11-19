@@ -21,7 +21,8 @@
  * Not covered: the copper actually running the lists (nothing here is
  * displayed - the lists are only built in memory), DoColSplit/RedoColSplit
  * with numlines 0 (divide-by-zero exception) or negative (65536 lines),
- * RedoColSplit with a ccoffset above $FFFF (writes 64 KB further on).
+ * RedoColSplit with a ccoffset of $4000 and above (past the 8 KB buffer;
+ * the bug-orig test ricopperfxlib-redocolsplit-ccoffset-word has it).
  */
 #include "sysload.h"
 
