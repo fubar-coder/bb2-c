@@ -98,12 +98,13 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   (#675; seen only after a depth-0 call, which itself overruns the
   arrays: no test of its own).
 
-**BUG(orig)** (kept, commented in the code):
-
-* finit frees the tables but keeps the pointers (#673).
-
 Not bugs but limits the source names: `ZoomXY` and `Derez` (and
 `ScreenCopy`) only for lores bitmaps (40 bytes per line).
+
+Not a defect (#673): finit frees the tables but keeps the pointers. Every
+init sets them anew, because memlib's `globalloc` never returns 0
+(without memory it ends the program with "Out of Memory!"), so the stale
+pointers are never used and finit never frees twice.
 
 **DIFF:** `myline` has room for 21 words, so `ZoomXY` stays intact after
 a `Derez` ≥ 3 (code that corrupts code cannot be translated; the mask

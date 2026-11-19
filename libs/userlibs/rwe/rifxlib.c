@@ -27,8 +27,6 @@
  * behind thunks (BLITZ_THUNK) that keep d0/d1/a0/a1 too.  No assembler
  * except those thunks.
  *
- * Kept from the original (BUG(orig)):
- *   - finit frees the tables but keeps the pointers (#673).
  * Fixed (intended deviations):
  *   - ClearBitmap, FadeInBitmap and ZoomyZoom read the depth as the byte
  *     bm_Depth; the original read the word at 4 (bm_Flags:bm_Depth),
@@ -88,6 +86,10 @@
  *     only after a depth-0 call, which itself overruns the arrays).
  * Not bugs but limits the source names: ZoomXY, Derez (and their
  * ScreenCopy) only for lores bitmaps (40 bytes per line).
+ * Not a defect (#673): finit frees the tables but keeps the pointers;
+ * every init sets them anew, because memlib's globalloc never returns 0
+ * (without memory it ends the program with "Out of Memory!"), so the
+ * stale pointers are never used and finit never frees twice.
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -285,8 +287,9 @@ static_assert(sizeof pa == 36 * 4);
 /**
  * @brief finit: frees the zoom tables (1856 bytes, memlib globfree).
  *
- * Nothing if init could not allocate them.  BUG(orig) (#673): the table
- * pointers stay set after the free.
+ * Nothing without tables.  The table pointers stay set after the free,
+ * as in the original: not a defect, the next init sets them anew (#673,
+ * see the head of the file).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -295,7 +298,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     if (!tableaddress)
         return;
     r = (struct bl_regs){ .d0 = TABLESIZE, .a1 = tableaddress };
-    BLITZ_ALIBJSR(TOK_globfree, r);     /* BUG(orig) (#673): the pointers stay */
+    BLITZ_ALIBJSR(TOK_globfree, r);     /* the pointers stay (#673: no defect) */
 }
 BLITZ_THUNK(rifxlib_libfinit, libfinit_c, "d1/a0-a1");
 
@@ -305,8 +308,10 @@ BLITZ_THUNK(rifxlib_libfinit, libfinit_c, "d1/a0-a1");
  *
  * reducex2: 256 bytes, bits 7,5,3,1 to bits 3-0; zoomx2: 256 words, every
  * bit twice; zoomx4: 256 longs, every bit four times; zoomx8: 16 longs,
- * four bits eight times each.  Without memory the pointers stay 0 and the
- * zooms that need a table do nothing.
+ * four bits eight times each.  The test of globalloc's result is the
+ * original's: globalloc does not return without memory (memlib ends the
+ * program with "Out of Memory!"), so init always sets the pointers; they
+ * are 0 only before the first init, when the zooms do nothing.
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
