@@ -67,10 +67,6 @@ entry and never called: left out.
 
 ## BUG(orig), kept
 
-* `STCLoad`: `OpenFromLock` takes over the lock, but after `Close` the
-  lock is unlocked once more (`BSR oopsfreefib`: FreeMem + UnLock) – a
-  second UnLock of a lock the file system has already freed (on `RAM:` in
-  the test without visible effect) (#835).
 * `STCLoad` does not check the header (any file is unpacked with what its
   words say), reads the whole file whatever the buffer's size, and does
   not check Examine's and Read's results (#836).
@@ -83,6 +79,11 @@ entry and never called: left out.
 * finit closes dos.library. The original's finit is 0: dos.library was
   never closed, its open count one higher after every program run
   (#834).
+* `STCLoad` leaves the lock to the file handle after `OpenFromLock`
+  (`Close` frees it). The original unlocked it once more after `Close`
+  (`BSR oopsfreefib`: FreeMem + UnLock), an UnLock of a lock the file
+  system had already freed (on `RAM:` without visible effect; the test
+  counts the UnLock calls: 1 in the original, 0 now) (#835).
 
 ## DIFF
 

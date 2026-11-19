@@ -33,9 +33,6 @@
  * address) is not in the token table and not called: left out.
  *
  * BUG(orig):
- *   - STCLoad: OpenFromLock takes over the lock, but after Close the lock
- *     is unlocked again (oopsfreefib: FreeMem + UnLock) - a second UnLock
- *     of a lock the file system has already freed (#835).
  *   - STCLoad does not check the header: any other file is "unpacked"
  *     with whatever its words say; it reads the whole file whatever the
  *     buffer's size; Examine's and Read's results are not checked (#836).
@@ -45,6 +42,10 @@
  * Fixed:
  *   - finit closes dos.library; the original never closed it (finit 0)
  *     (#834).
+ *   - STCLoad does not unlock the lock after Close: OpenFromLock has taken
+ *     it over, Close frees it.  The original unlocked it again
+ *     (oopsfreefib: FreeMem + UnLock), an UnLock of a lock the file system
+ *     had already freed (#835).
  * DIFF: the literal run reads its shift count from a table indexed by the
  *   bit count d7 (MOVE.b table(pc,d7.w)); d7 leaves 0..15 only with a
  *   header of more than 16 offset bits, and then the original reads
@@ -200,10 +201,11 @@ static ULONG BLITZ_ROUTINE stcsafelen_c(const UBYTE *a BL_REG(d0))
  * @brief STCLoad filename$,address: reads an S404 file to address (its
  * whole length) and unpacks it in place.
  *
- * Examine's and Read's results are not checked.  BUG(orig): the lock that
- * OpenFromLock took over is unlocked again after Close (#835); the header
- * is not checked and the whole file is read whatever the buffer's size
- * (#836); the decruncher does not check the data (#833).
+ * Examine's and Read's results are not checked.  The lock belongs to the
+ * file handle after OpenFromLock, Close frees it (fixed #835: the original
+ * unlocked it again).  BUG(orig): the header is not checked and the whole
+ * file is read whatever the buffer's size (#836); the decruncher does not
+ * check the data (#833).
  * @param name  d0: filename$
  * @param ad    d1: the buffer (STCSafeLen bytes)
  * @return d0: the start of the unpacked data (address + offset), 0 if the
@@ -235,8 +237,7 @@ static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_
     }
     Read(fh, ad, size);                 /* not checked */
     Close(fh);
-    FreeMem(fib, FIBSIZE);              /* BSR oopsfreefib */
-    UnLock(lock);                       /* BUG(orig): OpenFromLock took it (#835) */
+    FreeMem(fib, FIBSIZE);              /* fixed (#835): no UnLock, Close freed it */
     stcdecrunch(ad);                    /* BUG(orig): no header check (#836) */
     return (ULONG)ad + HDR(ad)->offset;
 }

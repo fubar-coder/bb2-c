@@ -24,7 +24,7 @@
  * file (BUG(orig) #836: unpacked anyway - a harmless one: offset and lengths
  * chosen so); the number of UnLock calls of the test task during one
  * STCLoad of an S404 file (dos.library's UnLock patched to count them:
- * BUG(orig) #835, the lock OpenFromLock took over is unlocked again).  Not covered: corrupt data (writes anywhere), more than 16
+ * the original unlocks the lock OpenFromLock took over, fixed #835).  Not covered: corrupt data (writes anywhere), more than 16
  * far offset bits (the DIFF of the run table), a far offset that is
  * negative as a word (16 bits >= $8000: reads before the destination).
  */
@@ -176,8 +176,8 @@ int main(int argc, char **argv)
         OBS("d0", R.d[0]);
     }
 
-    /* the UnLock calls of one STCLoad of an S404 file (BUG(orig) #835:
-       one, of the lock OpenFromLock took over; correct: none) */
+    /* the UnLock calls of one STCLoad of an S404 file (#835: the original
+       one, of the lock OpenFromLock took over; the C build none) */
     strcpy(VEC, "S404 file, UnLock counted");
     make(300, 5, 8, 0, 0xff);
     *(ULONG *)(file + 4) = (filelen + 3) & ~3UL;
