@@ -488,28 +488,38 @@ BBMapData|popped|second run|1	$00000000
 BBMapHeight|d0|round 0|1	$5A0083C7
 BBMapHeight|d0|round 0|2	$5A0083C7
 BBMapHeight|d0|round 0, after a failed SetBBMapLoc|1	$5A0083C7
-BBMapHeight|d0|round 0, map without MFRM|1	$5A005587
-BBMapHeight|d0|round 0, map without MFRM|2	$5A005587
+BBMapHeight|d0|round 0, map without MFRM|1 [orig]	$5A005587
+BBMapHeight|d0|round 0, map without MFRM|1 [fixed #551]	$00000000
+BBMapHeight|d0|round 0, map without MFRM|2 [orig]	$5A005587
+BBMapHeight|d0|round 0, map without MFRM|2 [fixed #551]	$00000000
 BBMapHeight|d0|round 1|1	$5A00CB6E
 BBMapHeight|d0|round 1|2	$5A00CB6E
 BBMapHeight|d0|round 1, after a failed SetBBMapLoc|1	$5A00CB6E
-BBMapHeight|d0|round 1, map without MFRM|1	$5A0075D3
-BBMapHeight|d0|round 1, map without MFRM|2	$5A0075D3
+BBMapHeight|d0|round 1, map without MFRM|1 [orig]	$5A0075D3
+BBMapHeight|d0|round 1, map without MFRM|1 [fixed #551]	$00000000
+BBMapHeight|d0|round 1, map without MFRM|2 [orig]	$5A0075D3
+BBMapHeight|d0|round 1, map without MFRM|2 [fixed #551]	$00000000
 BBMapHeight|d0|round 2|1	$5A00D162
 BBMapHeight|d0|round 2|2	$5A00D162
 BBMapHeight|d0|round 2, after a failed SetBBMapLoc|1	$5A00D162
-BBMapHeight|d0|round 2, map without MFRM|1	$5A0088A4
-BBMapHeight|d0|round 2, map without MFRM|2	$5A0088A4
+BBMapHeight|d0|round 2, map without MFRM|1 [orig]	$5A0088A4
+BBMapHeight|d0|round 2, map without MFRM|1 [fixed #551]	$00000000
+BBMapHeight|d0|round 2, map without MFRM|2 [orig]	$5A0088A4
+BBMapHeight|d0|round 2, map without MFRM|2 [fixed #551]	$00000000
 BBMapHeight|d0|round 3|1	$5A006C97
 BBMapHeight|d0|round 3|2	$5A006C97
 BBMapHeight|d0|round 3, after a failed SetBBMapLoc|1	$5A006C97
-BBMapHeight|d0|round 3, map without MFRM|1	$5A00D51D
-BBMapHeight|d0|round 3, map without MFRM|2	$5A00D51D
+BBMapHeight|d0|round 3, map without MFRM|1 [orig]	$5A00D51D
+BBMapHeight|d0|round 3, map without MFRM|1 [fixed #551]	$00000000
+BBMapHeight|d0|round 3, map without MFRM|2 [orig]	$5A00D51D
+BBMapHeight|d0|round 3, map without MFRM|2 [fixed #551]	$00000000
 BBMapHeight|d0|round 4|1	$5A0035AF
 BBMapHeight|d0|round 4|2	$5A0035AF
 BBMapHeight|d0|round 4, after a failed SetBBMapLoc|1	$5A0035AF
-BBMapHeight|d0|round 4, map without MFRM|1	$5A002BDF
-BBMapHeight|d0|round 4, map without MFRM|2	$5A002BDF
+BBMapHeight|d0|round 4, map without MFRM|1 [orig]	$5A002BDF
+BBMapHeight|d0|round 4, map without MFRM|1 [fixed #551]	$00000000
+BBMapHeight|d0|round 4, map without MFRM|2 [orig]	$5A002BDF
+BBMapHeight|d0|round 4, map without MFRM|2 [fixed #551]	$00000000
 BBMapHeight|d0|round 5|1	$5A002C30
 BBMapHeight|d0|round 5|2	$5A002C30
 BBMapHeight|d0|round 5, after a failed SetBBMapLoc|1	$5A000000
@@ -582,28 +592,38 @@ BBMapHeight|popped|second run|1	$00000000
 BBMapInfo|d0|round 0|1	$000008E6
 BBMapInfo|d0|round 0|2	$000008E6
 BBMapInfo|d0|round 0, after a failed SetBBMapLoc|1	$000008E6
-BBMapInfo|d0|round 0, map without MFRM|1	$000018A6
-BBMapInfo|d0|round 0, map without MFRM|2	$000018A6
+BBMapInfo|d0|round 0, map without MFRM|1 [orig]	$000018A6
+BBMapInfo|d0|round 0, map without MFRM|1 [fixed #551]	$00000000
+BBMapInfo|d0|round 0, map without MFRM|2 [orig]	$000018A6
+BBMapInfo|d0|round 0, map without MFRM|2 [fixed #551]	$00000000
 BBMapInfo|d0|round 1|1	$00000924
 BBMapInfo|d0|round 1|2	$00000924
 BBMapInfo|d0|round 1, after a failed SetBBMapLoc|1	$00000924
-BBMapInfo|d0|round 1, map without MFRM|1	$00001850
-BBMapInfo|d0|round 1, map without MFRM|2	$00001850
+BBMapInfo|d0|round 1, map without MFRM|1 [orig]	$00001850
+BBMapInfo|d0|round 1, map without MFRM|1 [fixed #551]	$00000000
+BBMapInfo|d0|round 1, map without MFRM|2 [orig]	$00001850
+BBMapInfo|d0|round 1, map without MFRM|2 [fixed #551]	$00000000
 BBMapInfo|d0|round 2|1	$00000838
 BBMapInfo|d0|round 2|2	$00000838
 BBMapInfo|d0|round 2, after a failed SetBBMapLoc|1	$00000838
-BBMapInfo|d0|round 2, map without MFRM|1	$0000184C
-BBMapInfo|d0|round 2, map without MFRM|2	$0000184C
+BBMapInfo|d0|round 2, map without MFRM|1 [orig]	$0000184C
+BBMapInfo|d0|round 2, map without MFRM|1 [fixed #551]	$00000000
+BBMapInfo|d0|round 2, map without MFRM|2 [orig]	$0000184C
+BBMapInfo|d0|round 2, map without MFRM|2 [fixed #551]	$00000000
 BBMapInfo|d0|round 3|1	$00000940
 BBMapInfo|d0|round 3|2	$00000940
 BBMapInfo|d0|round 3, after a failed SetBBMapLoc|1	$00000940
-BBMapInfo|d0|round 3, map without MFRM|1	$00001860
-BBMapInfo|d0|round 3, map without MFRM|2	$00001860
+BBMapInfo|d0|round 3, map without MFRM|1 [orig]	$00001860
+BBMapInfo|d0|round 3, map without MFRM|1 [fixed #551]	$00000000
+BBMapInfo|d0|round 3, map without MFRM|2 [orig]	$00001860
+BBMapInfo|d0|round 3, map without MFRM|2 [fixed #551]	$00000000
 BBMapInfo|d0|round 4|1	$00000850
 BBMapInfo|d0|round 4|2	$00000850
 BBMapInfo|d0|round 4, after a failed SetBBMapLoc|1	$00000850
-BBMapInfo|d0|round 4, map without MFRM|1	$000018AE
-BBMapInfo|d0|round 4, map without MFRM|2	$000018AE
+BBMapInfo|d0|round 4, map without MFRM|1 [orig]	$000018AE
+BBMapInfo|d0|round 4, map without MFRM|1 [fixed #551]	$00000000
+BBMapInfo|d0|round 4, map without MFRM|2 [orig]	$000018AE
+BBMapInfo|d0|round 4, map without MFRM|2 [fixed #551]	$00000000
 BBMapInfo|d0|round 5|1	$00000830
 BBMapInfo|d0|round 5|2	$00000830
 BBMapInfo|d0|round 5, after a failed SetBBMapLoc|1	$00000830
@@ -1024,28 +1044,38 @@ BBMapPowerUps|popped|round 5, map without MFRM|2	$00000000
 BBMapScenarioID|d0|round 0|1	$6CD4B768
 BBMapScenarioID|d0|round 0|2	$6CD4B768
 BBMapScenarioID|d0|round 0, after a failed SetBBMapLoc|1	$6CD4B768
-BBMapScenarioID|d0|round 0, map without MFRM|1	$AC20BC85
-BBMapScenarioID|d0|round 0, map without MFRM|2	$AC20BC85
+BBMapScenarioID|d0|round 0, map without MFRM|1 [orig]	$AC20BC85
+BBMapScenarioID|d0|round 0, map without MFRM|1 [fixed #551]	$00000000
+BBMapScenarioID|d0|round 0, map without MFRM|2 [orig]	$AC20BC85
+BBMapScenarioID|d0|round 0, map without MFRM|2 [fixed #551]	$00000000
 BBMapScenarioID|d0|round 1|1	$EF1E8EB3
 BBMapScenarioID|d0|round 1|2	$EF1E8EB3
 BBMapScenarioID|d0|round 1, after a failed SetBBMapLoc|1	$EF1E8EB3
-BBMapScenarioID|d0|round 1, map without MFRM|1	$20F0DE4C
-BBMapScenarioID|d0|round 1, map without MFRM|2	$20F0DE4C
+BBMapScenarioID|d0|round 1, map without MFRM|1 [orig]	$20F0DE4C
+BBMapScenarioID|d0|round 1, map without MFRM|1 [fixed #551]	$00000000
+BBMapScenarioID|d0|round 1, map without MFRM|2 [orig]	$20F0DE4C
+BBMapScenarioID|d0|round 1, map without MFRM|2 [fixed #551]	$00000000
 BBMapScenarioID|d0|round 2|1	$38A7C82D
 BBMapScenarioID|d0|round 2|2	$38A7C82D
 BBMapScenarioID|d0|round 2, after a failed SetBBMapLoc|1	$38A7C82D
-BBMapScenarioID|d0|round 2, map without MFRM|1	$34C4A8C0
-BBMapScenarioID|d0|round 2, map without MFRM|2	$34C4A8C0
+BBMapScenarioID|d0|round 2, map without MFRM|1 [orig]	$34C4A8C0
+BBMapScenarioID|d0|round 2, map without MFRM|1 [fixed #551]	$00000000
+BBMapScenarioID|d0|round 2, map without MFRM|2 [orig]	$34C4A8C0
+BBMapScenarioID|d0|round 2, map without MFRM|2 [fixed #551]	$00000000
 BBMapScenarioID|d0|round 3|1	$C7A734C1
 BBMapScenarioID|d0|round 3|2	$C7A734C1
 BBMapScenarioID|d0|round 3, after a failed SetBBMapLoc|1	$C7A734C1
-BBMapScenarioID|d0|round 3, map without MFRM|1	$D78E2270
-BBMapScenarioID|d0|round 3, map without MFRM|2	$D78E2270
+BBMapScenarioID|d0|round 3, map without MFRM|1 [orig]	$D78E2270
+BBMapScenarioID|d0|round 3, map without MFRM|1 [fixed #551]	$00000000
+BBMapScenarioID|d0|round 3, map without MFRM|2 [orig]	$D78E2270
+BBMapScenarioID|d0|round 3, map without MFRM|2 [fixed #551]	$00000000
 BBMapScenarioID|d0|round 4|1	$279F141E
 BBMapScenarioID|d0|round 4|2	$279F141E
 BBMapScenarioID|d0|round 4, after a failed SetBBMapLoc|1	$279F141E
-BBMapScenarioID|d0|round 4, map without MFRM|1	$E2269A78
-BBMapScenarioID|d0|round 4, map without MFRM|2	$E2269A78
+BBMapScenarioID|d0|round 4, map without MFRM|1 [orig]	$E2269A78
+BBMapScenarioID|d0|round 4, map without MFRM|1 [fixed #551]	$00000000
+BBMapScenarioID|d0|round 4, map without MFRM|2 [orig]	$E2269A78
+BBMapScenarioID|d0|round 4, map without MFRM|2 [fixed #551]	$00000000
 BBMapScenarioID|d0|round 5|1	$319BF2B6
 BBMapScenarioID|d0|round 5|2	$319BF2B6
 BBMapScenarioID|d0|round 5, after a failed SetBBMapLoc|1	$00000000
@@ -1213,28 +1243,38 @@ BBMapStartPos|popped|round 5, map without MFRM|2	$00000000
 BBMapWidth|d0|round 0|1	$5A0012D7
 BBMapWidth|d0|round 0|2	$5A0012D7
 BBMapWidth|d0|round 0, after a failed SetBBMapLoc|1	$5A0012D7
-BBMapWidth|d0|round 0, map without MFRM|1	$5A00267E
-BBMapWidth|d0|round 0, map without MFRM|2	$5A00267E
+BBMapWidth|d0|round 0, map without MFRM|1 [orig]	$5A00267E
+BBMapWidth|d0|round 0, map without MFRM|1 [fixed #551]	$00000000
+BBMapWidth|d0|round 0, map without MFRM|2 [orig]	$5A00267E
+BBMapWidth|d0|round 0, map without MFRM|2 [fixed #551]	$00000000
 BBMapWidth|d0|round 1|1	$5A001BB7
 BBMapWidth|d0|round 1|2	$5A001BB7
 BBMapWidth|d0|round 1, after a failed SetBBMapLoc|1	$5A001BB7
-BBMapWidth|d0|round 1, map without MFRM|1	$5A00D891
-BBMapWidth|d0|round 1, map without MFRM|2	$5A00D891
+BBMapWidth|d0|round 1, map without MFRM|1 [orig]	$5A00D891
+BBMapWidth|d0|round 1, map without MFRM|1 [fixed #551]	$00000000
+BBMapWidth|d0|round 1, map without MFRM|2 [orig]	$5A00D891
+BBMapWidth|d0|round 1, map without MFRM|2 [fixed #551]	$00000000
 BBMapWidth|d0|round 2|1	$5A00AE06
 BBMapWidth|d0|round 2|2	$5A00AE06
 BBMapWidth|d0|round 2, after a failed SetBBMapLoc|1	$5A00AE06
-BBMapWidth|d0|round 2, map without MFRM|1	$5A008978
-BBMapWidth|d0|round 2, map without MFRM|2	$5A008978
+BBMapWidth|d0|round 2, map without MFRM|1 [orig]	$5A008978
+BBMapWidth|d0|round 2, map without MFRM|1 [fixed #551]	$00000000
+BBMapWidth|d0|round 2, map without MFRM|2 [orig]	$5A008978
+BBMapWidth|d0|round 2, map without MFRM|2 [fixed #551]	$00000000
 BBMapWidth|d0|round 3|1	$5A00FA00
 BBMapWidth|d0|round 3|2	$5A00FA00
 BBMapWidth|d0|round 3, after a failed SetBBMapLoc|1	$5A00FA00
-BBMapWidth|d0|round 3, map without MFRM|1	$5A00205C
-BBMapWidth|d0|round 3, map without MFRM|2	$5A00205C
+BBMapWidth|d0|round 3, map without MFRM|1 [orig]	$5A00205C
+BBMapWidth|d0|round 3, map without MFRM|1 [fixed #551]	$00000000
+BBMapWidth|d0|round 3, map without MFRM|2 [orig]	$5A00205C
+BBMapWidth|d0|round 3, map without MFRM|2 [fixed #551]	$00000000
 BBMapWidth|d0|round 4|1	$5A0057B3
 BBMapWidth|d0|round 4|2	$5A0057B3
 BBMapWidth|d0|round 4, after a failed SetBBMapLoc|1	$5A0057B3
-BBMapWidth|d0|round 4, map without MFRM|1	$5A00D473
-BBMapWidth|d0|round 4, map without MFRM|2	$5A00D473
+BBMapWidth|d0|round 4, map without MFRM|1 [orig]	$5A00D473
+BBMapWidth|d0|round 4, map without MFRM|1 [fixed #551]	$00000000
+BBMapWidth|d0|round 4, map without MFRM|2 [orig]	$5A00D473
+BBMapWidth|d0|round 4, map without MFRM|2 [fixed #551]	$00000000
 BBMapWidth|d0|round 5|1	$5A002DA6
 BBMapWidth|d0|round 5|2	$5A002DA6
 BBMapWidth|d0|round 5, after a failed SetBBMapLoc|1	$5A000000

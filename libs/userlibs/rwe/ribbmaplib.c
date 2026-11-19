@@ -29,8 +29,6 @@
  * caller's), 0 when the chunk is missing.
  *
  * BUG(orig), kept:
- *   - A map without MFRM sets the info chunk to the address behind the
- *     last chunk id (#551).
  *   - The search ends only after an id that does not match (the id read
  *     can be behind the end) and compares the addresses signed (#553);
  *     an odd length makes the next id odd (an address error on a 68000)
@@ -41,6 +39,10 @@
  *     high even if low > high (one colour at low, possibly behind the
  *     block) (#549).  BBScenarioLowCol/HighCol extend the byte with its
  *     sign (#550).
+ * Fixed (intended deviation, #551): a map without MFRM has no info
+ * chunk: BBMapScenarioID, BBMapWidth, BBMapHeight and BBMapInfo give 0
+ * (the original took the address behind the last chunk id read, behind
+ * the file, as the info chunk).
  * Fixed (intended deviation, #554): SetBBMapLoc stores the address only
  * after its checks; a failed call leaves the map before whole (the
  * original stored it first: after a failed call the info functions used
@@ -211,43 +213,37 @@ static void BLITZ_ROUTINE codefinit(void)
 {
 }
 
-/* _findchunk / _findmapchunk: the data of chunk `id`, or NULL; *at = a0
-   at the end (also when not found: behind the last id read) */
-static UBYTE *search(ULONG id, UBYTE *loc, UBYTE *end, ULONG *last, UBYTE **lastaddr,
-                     UBYTE **at)
+/* _findchunk / _findmapchunk: the data of chunk `id`, or NULL */
+static UBYTE *search(ULONG id, UBYTE *loc, UBYTE *end, ULONG *last, UBYTE **lastaddr)
 {
     UBYTE *cursor;
 
     if (id == *last)
-        return *at = *lastaddr;
+        return *lastaddr;
     cursor = loc + 12;
     for (;;) {
         ULONG c = LONGAT(cursor);
         cursor += 4;
         if (c == id)
             break;
-        if ((LONG)cursor >= (LONG)end) { /* CMP.l a1,a0: BGE */
-            *at = cursor;
+        if ((LONG)cursor >= (LONG)end)  /* CMP.l a1,a0: BGE */
             return NULL;
-        }
         cursor += LONGAT(cursor) + 4;
     }
     cursor += 4;
     *last = id;
     *lastaddr = cursor;
-    return *at = cursor;
+    return cursor;
 }
 
 static UBYTE *findchunk(ULONG id)
 {
-    UBYTE *at;
-    return search(id, scenarioloc, scenarioend, &lastchunk, &lastchunkaddr, &at);
+    return search(id, scenarioloc, scenarioend, &lastchunk, &lastchunkaddr);
 }
 
 static UBYTE *findmapchunk(ULONG id)
 {
-    UBYTE *at;
-    return search(id, maploc, mapend, &lastmapchunk, &lastmapchunkaddr, &at);
+    return search(id, maploc, mapend, &lastmapchunk, &lastmapchunkaddr);
 }
 
 /* ------------------------------------------------------------- the files */
@@ -276,8 +272,8 @@ static BB_BOOL BLITZ_ROUTINE setbbscenarioloc_c(struct form *form BL_REG(d0))
  *
  * A failed call keeps the old map, its info chunk and its cache (fixed,
  * #554: the original stored the address before the checks).
- * BUG(orig) (#551): without MFRM the info chunk is the address behind
- * the last chunk id.
+ * Without MFRM there is no info chunk (fixed, #551: the original took
+ * the address behind the last chunk id read); the call still succeeds.
  * @param form  d0: the address of the file
  * @return d0: BB_TRUE, BB_FALSE if it is no FORM of type BMAP
  */
@@ -288,8 +284,8 @@ static BB_BOOL BLITZ_ROUTINE setbbmaploc_c(struct form *form BL_REG(d0))
     maploc = (UBYTE *)form;             /* fixed (#554): after the checks */
     mapend = (UBYTE *)form + form->length + 8;
     lastmapchunk = 0;
-    search(ID('M', 'F', 'R', 'M'), maploc, mapend, &lastmapchunk, &lastmapchunkaddr,
-           (UBYTE **)&mfrmchunk);
+    mfrmchunk = (struct mfrm *)search(ID('M', 'F', 'R', 'M'), maploc, mapend, &lastmapchunk,
+                                      &lastmapchunkaddr);   /* fixed (#551): NULL if missing */
     return BB_TRUE;
 }
 
@@ -592,40 +588,42 @@ static ULONG mapchunkaddr(ULONG id)
 /**
  * @brief BBMapScenarioID: the scenario id of the map (+0 of its MFRM
  * chunk).
- * @return d0: the id, 0 before a SetBBMapLoc
+ * @return d0: the id, 0 before a SetBBMapLoc or without MFRM
  */
 static ULONG BLITZ_ROUTINE bbmapscenarioid_c(void)
 {
-    return maploc ? mfrmchunk->scenarioid : 0;
+    return mfrmchunk ? mfrmchunk->scenarioid : 0;
 }
 
 /**
  * @brief BBMapWidth: the width of the map (+4 of its MFRM chunk).
  * @param prev  d0: d0 at the call (its upper word stays)
- * @return d0: the width in the low word, 0 before a SetBBMapLoc
+ * @return d0: the width in the low word, 0 before a SetBBMapLoc or
+ * without MFRM
  */
 static ULONG BLITZ_ROUTINE bbmapwidth_c(ULONG prev BL_REG(d0))
 {
-    return maploc ? (prev & HI) | mfrmchunk->width : 0;
+    return mfrmchunk ? (prev & HI) | mfrmchunk->width : 0;
 }
 
 /**
  * @brief BBMapHeight: the height of the map (+6 of its MFRM chunk).
  * @param prev  d0: d0 at the call (its upper word stays)
- * @return d0: the height in the low word, 0 before a SetBBMapLoc
+ * @return d0: the height in the low word, 0 before a SetBBMapLoc or
+ * without MFRM
  */
 static ULONG BLITZ_ROUTINE bbmapheight_c(ULONG prev BL_REG(d0))
 {
-    return maploc ? (prev & HI) | mfrmchunk->height : 0;
+    return mfrmchunk ? (prev & HI) | mfrmchunk->height : 0;
 }
 
 /**
  * @brief BBMapInfo: the map's information chunk (the data of MFRM).
- * @return d0: its address, 0 before a SetBBMapLoc
+ * @return d0: its address, 0 before a SetBBMapLoc or without MFRM
  */
 static ULONG BLITZ_ROUTINE bbmapinfo_c(void)
 {
-    return maploc ? (ULONG)mfrmchunk : 0;
+    return (ULONG)mfrmchunk;
 }
 
 /**
