@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+depth 2 done
+REQUESTER: AutoRequest body "ShapeTo1616 needs a 16 x 16 destination as deep as the source" *
+rc=0
