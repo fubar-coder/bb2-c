@@ -21,6 +21,11 @@
  * FORM header and length checked (3 bytes per colour + 48, or that
  * rounded up to even: a pad byte behind a CMAP of odd length), and one
  * into a missing directory (BSave fails: 0).
+ *
+ * At the end a second run of a program with the library still loaded (as
+ * from the editor): the library's init if the set has one (the original
+ * and the C build have none today), then PalRed, AGAPalBlue and
+ * PalAdjust's long form before any PaletteInfo of that run.
  */
 #include "sysload.h"
 #include "amosfunc.h"
@@ -51,7 +56,8 @@ static UBYTE *ent(int idx, int form)
 
 enum { PALRED, PALGREEN, PALBLUE, PALETTEINFO, AGAPALRED, AGAPALGREEN, AGAPALBLUE,
        PALADJUST, FILLPALETTE, AGAFILLPALETTE, COPYCOLOUR, CPUCLS, SAVECMAP,
-       MERGEBITPLANES };
+       MERGEBITPLANES,
+       LIBINIT };                       /* init: a nullsub behind them (none in the original) */
 
 static ULONG seed = 0x13579bdf;
 static ULONG rnd(void)
@@ -352,6 +358,34 @@ static void test_merge(void)
     merge(0x7fff, 0x7fff, WA(3), 1, 1, 0);      /* sum negative as a word */
 }
 
+/* a second run of a program with the library still loaded (from the
+   editor): init (if the set has one), then the colour functions and
+   PalAdjust before any PaletteInfo of this run - the palette of the run
+   before (A, the last PaletteInfo) is still in the buffer */
+static void test_secondrun(void)
+{
+    UBYTE *init = ent(LIBINIT, 0);
+
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    if (init)
+        DO1(init, (void)0);
+    ROUT = "PalRed";
+    strcpy(VEC, "second run, no PaletteInfo");
+    DO1(ent(PALRED, 0), R.d[0] = 1);
+    OBS("d0", R.d[0]);
+    ROUT = "AGAPalBlue";
+    DO1(ent(AGAPALBLUE, 0), R.d[0] = 2);
+    OBS("d0", R.d[0]);
+    fillmem();
+    setpal(objB, PALB, 20, 20);
+    ROUT = "PalAdjust";
+    strcpy(VEC, "second run, no PaletteInfo, 0..1");
+    DO1(ent(PALADJUST, 1), R.d[0] = WA(2); R.d[1] = 0x10000; R.a[0] = (ULONG)objB;
+        R.d[2] = WA(0); R.d[3] = WA(1));
+    OBSBYTES("memory", mem, MEMSZ);
+}
+
 static const char *names[] = { "memlib", "rigfxlib", "riamosfunclib", NULL };
 
 int main(int argc, char **argv)
@@ -378,6 +412,7 @@ int main(int argc, char **argv)
     KEEPS("CPUCls", a6);
     KEEPS("SaveCMAP", d4-d6|a2|a3);
     KEEPS("MergeBitplanes", d2|d4-d7|a3|a6);
+    KEEPS("init", d0-d7|a0-a3|a6);      /* the C build only (the original has none) */
 
     test_colours();
     test_paladjust();
@@ -400,6 +435,7 @@ int main(int argc, char **argv)
     markregs(&R);
     callstk(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, NULL, 0, &POP);
     rwe_mem_check("rigfxlib", avail, TRUE);
+    test_secondrun();
 
     printf("%d checks, %d failures\n", checks, failures);
     kept_summary();

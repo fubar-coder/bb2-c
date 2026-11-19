@@ -41,6 +41,7 @@ AGAPalBlue|d0|A colour $AAA|1	$0000007B
 AGAPalBlue|d0|A colour $AAB|1	$00000066
 AGAPalBlue|d0|A colour $F|1	$0000006A
 AGAPalBlue|d0|A colour $FFFF|1	$00000000
+AGAPalBlue|d0|second run, no PaletteInfo|1	$00000026
 AGAPalBlue|kept|A colour $0|1	kept
 AGAPalBlue|kept|A colour $1|1	kept
 AGAPalBlue|kept|A colour $10|1	kept
@@ -53,6 +54,7 @@ AGAPalBlue|kept|A colour $AAA|1	kept
 AGAPalBlue|kept|A colour $AAB|1	kept
 AGAPalBlue|kept|A colour $F|1	kept
 AGAPalBlue|kept|A colour $FFFF|1	kept
+AGAPalBlue|kept|second run, no PaletteInfo|1	kept
 AGAPalBlue|memory|A colour $5A010003|1	bytes 72000 fnv 1D06881A
 AGAPalBlue|popped|A colour $0|1	$00000000
 AGAPalBlue|popped|A colour $1|1	$00000000
@@ -66,6 +68,7 @@ AGAPalBlue|popped|A colour $AAA|1	$00000000
 AGAPalBlue|popped|A colour $AAB|1	$00000000
 AGAPalBlue|popped|A colour $F|1	$00000000
 AGAPalBlue|popped|A colour $FFFF|1	$00000000
+AGAPalBlue|popped|second run, no PaletteInfo|1	$00000000
 AGAPalGreen|d0|A colour $0|1	$000000A0
 AGAPalGreen|d0|A colour $1|1	$000000B2
 AGAPalGreen|d0|A colour $10|1	$000000A8
@@ -276,6 +279,7 @@ PalAdjust|kept|form 1 ratio $18000 0..11|1	kept
 PalAdjust|kept|form 1 ratio $30000 5..5|1	kept
 PalAdjust|kept|form 1 ratio $8000 2..5|1	kept
 PalAdjust|kept|form 1 ratio $9000 7..9|1	kept
+PalAdjust|kept|second run, no PaletteInfo, 0..1|1	kept
 PalAdjust|memory|form 0 ratio $0 0..0|1	bytes 72000 fnv 94231F3B
 PalAdjust|memory|form 0 ratio $10000 0..0|1	bytes 72000 fnv A77637D8
 PalAdjust|memory|form 0 ratio $1234567 0..0|1	bytes 72000 fnv CF9EB1E7
@@ -291,6 +295,7 @@ PalAdjust|memory|form 1 ratio $18000 0..11|1	bytes 72000 fnv D2193B89
 PalAdjust|memory|form 1 ratio $30000 5..5|1	bytes 72000 fnv 02176DD9
 PalAdjust|memory|form 1 ratio $8000 2..5|1	bytes 72000 fnv 5CC5FB54
 PalAdjust|memory|form 1 ratio $9000 7..9|1	bytes 72000 fnv E203E509
+PalAdjust|memory|second run, no PaletteInfo, 0..1|1	bytes 72000 fnv 5269187D
 PalAdjust|popped|form 0 ratio $0 0..0|1	$00000000
 PalAdjust|popped|form 0 ratio $10000 0..0|1	$00000000
 PalAdjust|popped|form 0 ratio $1234567 0..0|1	$00000000
@@ -306,6 +311,7 @@ PalAdjust|popped|form 1 ratio $18000 0..11|1	$00000000
 PalAdjust|popped|form 1 ratio $30000 5..5|1	$00000000
 PalAdjust|popped|form 1 ratio $8000 2..5|1	$00000000
 PalAdjust|popped|form 1 ratio $9000 7..9|1	$00000000
+PalAdjust|popped|second run, no PaletteInfo, 0..1|1	$00000000
 PalBlue|d0|A colour $0|1	$0000000D
 PalBlue|d0|A colour $1|1	$00000006
 PalBlue|d0|A colour $10|1	$0000000B
@@ -391,6 +397,7 @@ PalRed|d0|A colour $AAB|1	$00000007
 PalRed|d0|A colour $F|1	$0000000D
 PalRed|d0|A colour $FFFF|1	$00000000
 PalRed|d0|no PaletteInfo|1	$00000000
+PalRed|d0|second run, no PaletteInfo|1	$00000008
 PalRed|kept|A colour $0|1	kept
 PalRed|kept|A colour $1|1	kept
 PalRed|kept|A colour $10|1	kept
@@ -404,6 +411,7 @@ PalRed|kept|A colour $AAB|1	kept
 PalRed|kept|A colour $F|1	kept
 PalRed|kept|A colour $FFFF|1	kept
 PalRed|kept|no PaletteInfo|1	kept
+PalRed|kept|second run, no PaletteInfo|1	kept
 PalRed|popped|A colour $0|1	$00000000
 PalRed|popped|A colour $1|1	$00000000
 PalRed|popped|A colour $10|1	$00000000
@@ -417,6 +425,7 @@ PalRed|popped|A colour $AAB|1	$00000000
 PalRed|popped|A colour $F|1	$00000000
 PalRed|popped|A colour $FFFF|1	$00000000
 PalRed|popped|no PaletteInfo|1	$00000000
+PalRed|popped|second run, no PaletteInfo|1	$00000000
 PaletteInfo|kept|A|1	kept
 PaletteInfo|kept|A|2	kept
 PaletteInfo|popped|A|1	$00000000
