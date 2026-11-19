@@ -2711,6 +2711,7 @@ BBScenarioLevel|d0|after a failed SetBBScenarioLoc|3	$FFFFE3B4
 BBScenarioLevel|d0|after a failed SetBBScenarioLoc|4	$FFFF8043
 BBScenarioLevel|d0|after a failed SetBBScenarioLoc|5	$FFFF7756
 BBScenarioLevel|d0|after a failed SetBBScenarioLoc|6	$FFFFD3C8
+BBScenarioLevel|d0|odd chunk without pad|1	$FFFF0007
 BBScenarioLevel|d0|round 0|1	$FFFF4D1D
 BBScenarioLevel|d0|round 0|2	$FFFF4D1D
 BBScenarioLevel|d0|round 0|3	$FFFF4D1D
@@ -2767,6 +2768,7 @@ BBScenarioLevel|kept|after a failed SetBBScenarioLoc|3	kept
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|4	kept
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|5	kept
 BBScenarioLevel|kept|after a failed SetBBScenarioLoc|6	kept
+BBScenarioLevel|kept|odd chunk without pad|1	kept
 BBScenarioLevel|kept|round 0|1	kept
 BBScenarioLevel|kept|round 0|2	kept
 BBScenarioLevel|kept|round 0|3	kept
@@ -2822,6 +2824,7 @@ BBScenarioLevel|popped|after a failed SetBBScenarioLoc|3	$00000000
 BBScenarioLevel|popped|after a failed SetBBScenarioLoc|4	$00000000
 BBScenarioLevel|popped|after a failed SetBBScenarioLoc|5	$00000000
 BBScenarioLevel|popped|after a failed SetBBScenarioLoc|6	$00000000
+BBScenarioLevel|popped|odd chunk without pad|1	$00000000
 BBScenarioLevel|popped|round 0|1	$00000000
 BBScenarioLevel|popped|round 0|2	$00000000
 BBScenarioLevel|popped|round 0|3	$00000000
@@ -3035,6 +3038,7 @@ BBScenarioLowCol|popped|round 5, scenario 2|1	$00000000
 BBScenarioLowCol|popped|round 5, scenario 2|2	$00000000
 BBScenarioLowCol|popped|round 5, scenario 2|3	$00000000
 BBScenarioLowCol|popped|round 5, scenario 2|4	$00000000
+BBScenarioName|a3|odd chunk without pad|1	$00000006
 BBScenarioName|a3|round 0|1	$0000001E
 BBScenarioName|a3|round 0|2	$0000001E
 BBScenarioName|a3|round 0, scenario 2|1	$00000002
@@ -3059,6 +3063,7 @@ BBScenarioName|a3|round 5|1	$00000013
 BBScenarioName|a3|round 5|2	$00000013
 BBScenarioName|a3|round 5, scenario 2|1	$00000002
 BBScenarioName|a3|round 5, scenario 2|2	$00000002
+BBScenarioName|d0|odd chunk without pad|1	$00000004
 BBScenarioName|d0|round 0|1	$0000001C
 BBScenarioName|d0|round 0|2	$0000001C
 BBScenarioName|d0|round 0, scenario 2|1	$00000000
@@ -3083,6 +3088,7 @@ BBScenarioName|d0|round 5|1	$00000011
 BBScenarioName|d0|round 5|2	$00000011
 BBScenarioName|d0|round 5, scenario 2|1	$00000000
 BBScenarioName|d0|round 5, scenario 2|2	$00000000
+BBScenarioName|kept|odd chunk without pad|1	kept
 BBScenarioName|kept|round 0|1	kept
 BBScenarioName|kept|round 0|2	kept
 BBScenarioName|kept|round 0, scenario 2|1	kept
@@ -3107,6 +3113,7 @@ BBScenarioName|kept|round 5|1	kept
 BBScenarioName|kept|round 5|2	kept
 BBScenarioName|kept|round 5, scenario 2|1	kept
 BBScenarioName|kept|round 5, scenario 2|2	kept
+BBScenarioName|popped|odd chunk without pad|1	$00000000
 BBScenarioName|popped|round 0|1	$00000000
 BBScenarioName|popped|round 0|2	$00000000
 BBScenarioName|popped|round 0, scenario 2|1	$00000000
@@ -3131,6 +3138,7 @@ BBScenarioName|popped|round 5|1	$00000000
 BBScenarioName|popped|round 5|2	$00000000
 BBScenarioName|popped|round 5, scenario 2|1	$00000000
 BBScenarioName|popped|round 5, scenario 2|2	$00000000
+BBScenarioName|string|odd chunk without pad|1	bytes 300 fnv 670472DD
 BBScenarioName|string|round 0|1	bytes 300 fnv 54A0B90A
 BBScenarioName|string|round 0|2	bytes 300 fnv 54A0B90A
 BBScenarioName|string|round 0, scenario 2|1	bytes 300 fnv 1BC9DCB5
@@ -4415,6 +4423,7 @@ SetBBScenarioLoc|d0|at 0|5	$FFFFFFFF
 SetBBScenarioLoc|d0|at 0|6	$FFFFFFFF
 SetBBScenarioLoc|d0|at 0|7	$FFFFFFFF
 SetBBScenarioLoc|d0|at 0|8	$FFFFFFFF
+SetBBScenarioLoc|d0|at 0|9	$FFFFFFFF
 SetBBScenarioLoc|d0|at 1024|1	$00000000
 SetBBScenarioLoc|d0|at 1024|2	$00000000
 SetBBScenarioLoc|d0|at 1024|3	$00000000
@@ -4447,6 +4456,7 @@ SetBBScenarioLoc|kept|at 0|5	kept
 SetBBScenarioLoc|kept|at 0|6	kept
 SetBBScenarioLoc|kept|at 0|7	kept
 SetBBScenarioLoc|kept|at 0|8	kept
+SetBBScenarioLoc|kept|at 0|9	kept
 SetBBScenarioLoc|kept|at 1024|1	kept
 SetBBScenarioLoc|kept|at 1024|2	kept
 SetBBScenarioLoc|kept|at 1024|3	kept
@@ -4479,6 +4489,7 @@ SetBBScenarioLoc|popped|at 0|5	$00000000
 SetBBScenarioLoc|popped|at 0|6	$00000000
 SetBBScenarioLoc|popped|at 0|7	$00000000
 SetBBScenarioLoc|popped|at 0|8	$00000000
+SetBBScenarioLoc|popped|at 0|9	$00000000
 SetBBScenarioLoc|popped|at 1024|1	$00000000
 SetBBScenarioLoc|popped|at 1024|2	$00000000
 SetBBScenarioLoc|popped|at 1024|3	$00000000

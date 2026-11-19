@@ -22,7 +22,8 @@
  * cache and the end of the old map stay, the searches start at the new
  * address); a second run (init after finit, as from the editor with the
  * library still loaded): the map info routines, two
- * cached chunks and a search before any Set.
+ * cached chunks and a search before any Set; a chunk of odd length
+ * without its pad byte (the next chunk directly behind it).
  * Not covered: the routines before the first Set of the first run (the
  * original reads the long at address 12), odd chunk lengths (address
  * errors on a 68000; the bug-orig tests ribbmaplib-odd-chunk-length*),
@@ -425,6 +426,23 @@ int main(int argc, char **argv)
         fn(MAPINFO, what);
         fn(MAPSTART, what);                     /* the original: from 3000 to the old end */
     }
+
+    /* an odd chunk without its pad byte (a writer that leaves it out):
+       ANNO of 5 bytes, LEVL directly behind it at an odd offset, found
+       (with the pad byte skipped only when it is 0, #552, still so) */
+    memset(tmpl, 0, BUFSZ);
+    memcpy(tmpl, "FORM", 4);
+    SL(tmpl, 4) = 27;
+    memcpy(tmpl + 8, "SCENANNO", 8);
+    SL(tmpl, 16) = 5;
+    memcpy(tmpl + 20, "ABCD", 5);
+    memcpy(tmpl + 25, "LEVL", 4);
+    SL(tmpl, 29) = 2;
+    SW(tmpl, 33) = 7;
+    install();
+    setloc(SETSCEN, 0);
+    fn(LEVEL, "odd chunk without pad");
+    strfn(SCNAME, "odd chunk without pad");
 
     /* the run ends with a good scenario and map, two chunks cached */
     memset(tmpl, 0, BUFSZ);
