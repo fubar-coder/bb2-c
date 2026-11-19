@@ -28,7 +28,7 @@
 "AppEventType":
   text: The kind of object that sent the current message - 1 an App window, 2 an App icon, 3 an App menu item - or 0 if there is no message.
 "AppEventID":
-  text: The id of the object that sent the current message, or 0 if there is no message.
+  text: The id of the object that sent the current message, or -1 if there is no message.
 "NextAppFile":
   text: The full path of the next file, drawer or disk of the current message, beginning with the first after each `AppEvent`; an empty string if there is none left.
 "AppFile":
@@ -36,7 +36,7 @@
 "AppNumFiles":
   text: The number of files, drawers and disks of the current message, or 0 if there is no message.
 "AppLock":
-  text: The lock of the drawer of the first file of the current message, or 0 if there is no message or the message has no files, as for an App menu item chosen without icons selected.
+  text: The lock of the drawer of the file that `NextAppFile` or `AppFile` read last from the current message, or of its first file before either has read one. 0 if there is no message or the message has no files, as for an App menu item chosen without icons selected.
 "AppMessage":
   text: The address of the current message (an AppMessage of the operating system), or 0 if there is none.
 "AppMsgPort":

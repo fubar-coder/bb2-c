@@ -3,11 +3,12 @@
 "RXDeletePort":
   text: Removes the program's message port. The current message and the messages that are still waiting are replied with the return code 5 first.
   notes: |
-    Kept from the original: the command does not wait for the replies to
-    commands sent with `RXRunCommand` or `RXRunScript` that are still
-    with their receivers, and neither does the end of the program; a
-    reply that comes later goes to the deleted port
-    ([#1095](https://github.com/fubar-coder/bb2-c/issues/1095)).
+    Then the command waits up to 5 seconds for the replies to commands
+    sent with `RXRunCommand` or `RXRunScript` that are still with their
+    receivers, and replies messages that arrive meanwhile with the
+    return code 5; the end of the program does the same. If a reply is
+    still out after 5 seconds, the port is taken off the public list but
+    kept in memory, so that the late reply has somewhere to go.
 "RXReadPort":
   text: Takes the messages that have arrived at the port and makes the next one the current message. Returns its address, or 0 if no message is waiting.
   notes: |
@@ -15,10 +16,9 @@
     at the port that is neither a message nor a reply is replied at once,
     and the reading stops there.
 
-    Kept from the original: the library's list of received messages has
-    room for 31; when more are waiting in it, the further ones are
-    written past its end, over other memory
-    ([#1100](https://github.com/fubar-coder/bb2-c/issues/1100)).
+    The library's list of received messages has room for 31. While it
+    is full, further messages stay in the port, in the order they came,
+    and are taken into the list as it gets room.
 "RXWaitPort":
   text: Like `RXReadPort`, but waits for a message if none is waiting. Returns the address of the new current message, or 0 if only replies to the program's own messages arrived.
 "RXReplyMsg":

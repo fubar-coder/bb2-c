@@ -46,7 +46,8 @@ not write and keeps it open, `SetToolValue` no longer replaces a
 tool type whose name only begins with the name given, `StoreNVData`
 returns True for a stored item instead of 0, `RXRunCommand` and
 `AddAppMenu` return -1 for success instead of a value the system left or
-an address, a second `DataTypeCreate` or `MakeCommodity` is refused
+an address, `AppEventID` returns -1 instead of 0 when there is no App
+event, a second `DataTypeCreate` or `MakeCommodity` is refused
 while the first object or commodity exists, and `ILBMPalette` with an
 offset makes a palette that is too small larger instead of replacing it.
 
@@ -958,6 +959,41 @@ workbench.library itself gets -1 now; the library removes the item with
 
 Issue: [AddAppMenu returns the AppMenuItem address instead of -1 (#518)](https://github.com/fubar-coder/bb2-c/issues/518).
 
+### `AppEventID` returned 0 without an App event {#appeventid-no-event}
+
+[riapplib]({{< relref "/docs/libraries/userlibs/riapplib" >}}) numbers
+its App windows, App icons and App menu items from 0 to 15. After
+`AppEvent` has fetched a message, `AppEventID` gives the id of the
+object that sent it. Without a current message, before the first
+`AppEvent` or after one that found no message, it returns -1, as the
+library's guide says: "-1 means that no AppEvent occurred".
+
+**What happened.** The original returned 0 without a message, which is
+also the id of the first object of each kind. A program that read
+`AppEventID` without testing the result of `AppEvent` could not tell
+"no message" from "a message of object 0". This program has one App
+icon with the id 0 and asks `AppEventID` in every frame:
+
+```
+If AddAppIcon(0,"Drop here","SYS:System/Format")=0 Then End
+Repeat
+  VWait
+  r=AppEvent
+  If AppEventID=0 Then NPrint "icon 0"
+Until Joyb(0)
+DelAppIcon 0
+```
+
+With the original it printed `icon 0` in every frame, whether files
+were dropped on the icon or not. With the port it prints `icon 0` only
+for a message of the icon.
+
+**What to change.** A program that tests the result of `AppEvent`
+before it reads `AppEventID` works as before. One that took 0 for "no
+message" tests for -1, or tests `AppEvent` first.
+
+Issue: [AppEventID returns 0 without an event; the manual says -1 (#1102)](https://github.com/fubar-coder/bb2-c/issues/1102).
+
 ### `ILBMPalette` with an offset replaced a palette that was too small {#ilbmpalette-offset}
 
 [ripacklib]({{< relref "/docs/libraries/userlibs/ripacklib" >}})
@@ -999,8 +1035,10 @@ the commands of tracks 8 to 11, as a MED player does (in the list of
 mouse and keyboard events and the keyboard in Blitz mode. In the RWE
 userlibs, the file requester of `ReqFileRequest` opens with the default
 flags its library means, `LoadIFF` works without `BankLimit` and returns 0
-for a picture it could not unpack, and `UnpackIFF` reads pictures whose
-width is no multiple of 16 pixels.
+for a picture it could not unpack, `UnpackIFF` reads pictures whose
+width is no multiple of 16 pixels, and `RXDeletePort` and the end of a
+program wait up to 5 seconds for the replies to ARexx commands sent
+without waiting ([Fixes in riarexxlib](#riarexxlib-fixes)).
 
 ### `CustomColors` with a `thru256flag` of 0 acted as 1 {#customcolors-thru256flag}
 
@@ -4634,6 +4672,15 @@ The port and the library:
   replied only the messages still waiting, so the sender of the current
   one waited for ever
   ([#1101](https://github.com/fubar-coder/bb2-c/issues/1101)).
+* `RXDeletePort`, and the end of the program, wait up to 5 seconds for
+  the replies to commands sent with `RXRunCommand` or `RXRunScript`
+  that are still with their receivers, and reply the messages that
+  arrive meanwhile with the return code 5. A reply that is still out
+  after 5 seconds finds the port taken off the public list but kept in
+  memory for it. The original deleted the port at once, so a late reply
+  was written into freed memory. A program whose receiver is slow, or
+  never replies, takes up to 5 seconds longer to end
+  ([#1095](https://github.com/fubar-coder/bb2-c/issues/1095)).
 * A program that uses the library closes rexxsyslib.library at its end;
   the original left it open, once more with every run, so the system
   could never remove it from memory
@@ -4732,6 +4779,13 @@ Received messages:
 * `RXNextArg` moves on after an empty argument; the original returned
   the empty argument again and again
   ([#534](https://github.com/fubar-coder/bb2-c/issues/534)).
+* The list of received messages has room for 31. While it is full,
+  `RXReadPort` and `RXWaitPort` leave further messages in the port, in
+  the order they came, and take them into the list as it gets room;
+  replies to the program's own commands are still taken at once. The
+  original wrote the 32nd and later messages past the end of the list,
+  over the list of sent messages and the memory behind it
+  ([#1100](https://github.com/fubar-coder/bb2-c/issues/1100)).
 
 ### Fixes in ridatatypeslib {#ridatatypeslib-fixes}
 
@@ -4869,6 +4923,7 @@ Images. Each of them sends the program a message when the user drops
 files on it or chooses it; `AppEvent` fetches the message, and
 `NextAppFile`, `AppFile` and `AppLock` tell which files it holds. The
 fixes of [the result of `AddAppMenu`](#addappmenu-result), of
+[the result of `AppEventID`](#appeventid-no-event), of
 [the text that follows `NextAppFile` and `AppFile`](#rwe-text-after-string-function)
 and of [the local variables after `AddAppIcon`](#rwe-other-fixes) are
 described elsewhere on this page.
@@ -4885,6 +4940,12 @@ described elsewhere on this page.
   an App menu item chosen without icons selected. The original returned
   a value from memory that was no lock
   ([#522](https://github.com/fubar-coder/bb2-c/issues/522)).
+* `AppLock` returns the lock of the drawer of the file that
+  `NextAppFile` or `AppFile` read last, as the guide says, and the first
+  file's lock before either has read one. The original always returned
+  the first file's lock, so for the other files of a message it gave
+  the wrong drawer
+  ([#1103](https://github.com/fubar-coder/bb2-c/issues/1103)).
 * `DelAppWindow` of a window that is no App window returns 0, as
   `DelAppMenu` and `DelAppIcon` do for an id without an object. The
   original returned -1 and passed an empty App window to the system

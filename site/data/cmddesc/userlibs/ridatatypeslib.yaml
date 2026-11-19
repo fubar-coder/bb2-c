@@ -1,5 +1,5 @@
 "DataTypeOpen":
-  text: Opens a file and finds the datatype that matches it. Returns a value other than 0 on success, and 0 if the file cannot be found, no datatype matches it, another file is still open or datatypes.library could not be opened.
+  text: Opens a file and finds the datatype that matches it. Returns the address of the datatype on success, and 0 if the file cannot be found, no datatype matches it, another file is still open or datatypes.library could not be opened.
 "DataTypeClose":
   text: Frees the datatype object and closes the file opened with `DataTypeOpen`. An object that is still attached to a window is removed from it first.
 "DataTypeName":

@@ -4436,6 +4436,22 @@ rows:
     text: "`RXDeletePort` and the end of the program also reply the current message; the original left its sender waiting for ever."
     page: libraries
     anchor: riarexxlib-fixes
+  - issue: 1095
+    severity: 2
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXDeletePort"
+    text: "`RXDeletePort` and the end of the program wait up to 5 seconds for the replies to commands sent with `RXRunCommand` or `RXRunScript`; the original deleted the port at once, and a late reply was written into freed memory."
+    page: libraries
+    anchor: riarexxlib-fixes
+  - issue: 1100
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXReadPort, RXWaitPort"
+    text: "`RXReadPort` and `RXWaitPort` leave further messages in the port while the list of received messages is full (31); the original wrote the 32nd and later ones past the list, over the list of sent messages and the memory behind it."
+    page: libraries
+    anchor: riarexxlib-fixes
   - issue: 600
     severity: 1
     topic: "Graphics"
@@ -4644,6 +4660,14 @@ rows:
     text: "`AddAppMenu` returns -1 on success, as `AddAppWindow` and `AddAppIcon` do; the original returned the address of the menu item, so a test for -1 failed."
     page: libraries
     anchor: addappmenu-result
+  - issue: 1102
+    severity: 1
+    topic: "System"
+    library: "riapplib"
+    command: "AppEventID"
+    text: "`AppEventID` returns -1 when there is no current App event, as the manual says; the original returned 0, which is also the id of an object."
+    page: libraries
+    anchor: appeventid-no-event
   - issue: 517
     severity: 5
     topic: "System"
@@ -4722,6 +4746,14 @@ rows:
     library: "riapplib"
     command: "AppEvent, AppMessage, AppEventType, AppEventID"
     text: "A program run again from the editor starts without an App message; the original started with the last message of the run before and answered it a second time."
+    page: libraries
+    anchor: riapplib-fixes
+  - issue: 1103
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: "AppLock"
+    text: "`AppLock` returns the lock of the file that `NextAppFile` or `AppFile` read last, as the manual says; the original always returned the first file's lock."
     page: libraries
     anchor: riapplib-fixes
   - issue: 769

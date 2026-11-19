@@ -13,7 +13,8 @@ intro: |
   without it. `RXDeletePort` removes the port again; the program does
   that by itself when it ends.
 
-  Received messages are kept in a list. `RXReadPort` and `RXWaitPort`
+  Received messages are kept in a list of up to 31; further ones wait
+  in the port until the list has room. `RXReadPort` and `RXWaitPort`
   take the next one from it and make it the current message, which
   `RXNumArgs`, `RXGetArg`, `RXNextArg` and `RXSendersName` read and
   `RXReplyMsg` answers. Every received message must be replied, or its
