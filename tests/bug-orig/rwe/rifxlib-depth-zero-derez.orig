@@ -1,0 +1,22 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+# varies: the way the crash ends with the memory layout (the original timed out in both recording runs, the port's Derez halts the CPU)
+*
+[compile]
+ok
+[run]
+depth 1 done
+before
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/rifxlib-depth-zero-derez.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/rifxlib-depth-zero-derez
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
