@@ -186,7 +186,8 @@ static void test_pbm(void)
     src[0] = 1; src[1] = 2;
     packpbm("2 different (fails)", 2, 0);
 
-    /* UnPackPBM: no-ops, runs, a short destination (one byte too many) */
+    /* UnPackPBM: no-ops, runs, a short destination (the original writes one
+       byte too many, fixed #778) */
     {
         static const UBYTE pk[] = { 0x80, 2, 'a', 'b', 'c', 0xfe, 'R', 0x80, 0x81, '*', 0, 'z',
                                     0x80, 5, '1', '2', '3', '4', '5', '6' };

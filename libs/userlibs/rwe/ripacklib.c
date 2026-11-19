@@ -26,10 +26,12 @@
  * into UnPackPBM with d0 = -1, which unpacked from address -1 (then 0,
  * 1 ...) into dest, limited by the caller's d3 + dest.
  *
+ * Fixed (#778): UnPackPBM tests both limits before each access
+ * (unsigned) and stops a literal run at the end of the source; the
+ * original tested after the access (signed): it read the byte at
+ * source+length and wrote one byte past destlength.
+ *
  * BUG(orig), kept:
- *   - UnPackPBM reads the byte at source+length and writes one byte
- *     past destlength (the limits are tested after the access, signed)
- *     (#778).
  *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
  *     the BMHD is not read) (#773), takes the row width as width/8 (rows
  *     that ILBM pads to words lose their alignment) (#775), counts the
@@ -187,9 +189,10 @@ BLITZ_THUNK(chunkheader, chunkheader_c, "d1/a0-a1");
  *
  * n >= 0 copies n+1 bytes, n < 0 (not -128) repeats the next byte 1-n
  * times, -128 is skipped; stops at the end of the source or of the
- * destination.  BUG(orig) (#778): the end tests come after the access
- * and compare signed - the byte at source+length is read, one byte past
- * destlength written.
+ * destination.  Fixed (#778): both limits are tested before each access,
+ * unsigned, also inside a literal run: nothing at or behind
+ * source+length is read, nothing at or behind dest+destlength written.
+ * The original tested after the access and signed.
  * @param src   d0: the packed data
  * @param dst   d1: the destination
  * @param len   d2: the length of the packed data
@@ -198,32 +201,36 @@ BLITZ_THUNK(chunkheader, chunkheader_c, "d1/a0-a1");
 static void BLITZ_ROUTINE unpackpbm_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
                                       ULONG len BL_REG(d2), ULONG dlen BL_REG(d3))
 {
-    /* addresses as numbers: PackPBM's failure starts at -1 */
-    const UBYTE *end = (const UBYTE *)((ULONG)src + len);
-    UBYTE *dend = (UBYTE *)((ULONG)dst + dlen);
+    ULONG left = len;                           /* source bytes left */
     UWORD n;
 
-    for (;;) {
+    while (left) {
         UBYTE b = *src++;
-        if ((LONG)end < (LONG)src)              /* CMP.l a0,a6:BLT */
-            return;
+        left--;
         if (b == 0x80)
             continue;
         if (!(b & 0x80)) {
-            n = b;
+            n = (UWORD)(b + 1);
             do {
+                if (!left || !dlen)
+                    return;
                 *dst++ = *src++;
-                if ((LONG)dend < (LONG)dst)
-                    return;
-            } while (n-- != 0);
+                left--;
+                dlen--;
+            } while (--n);
         } else {
-            UBYTE v = *src++;
-            n = (UBYTE)-b;                      /* NEG.b, upper bits 0 */
+            UBYTE v;
+            if (!left)
+                return;
+            v = *src++;
+            left--;
+            n = (UWORD)(257 - b);
             do {
-                *dst++ = v;
-                if ((LONG)dend < (LONG)dst)
+                if (!dlen)
                     return;
-            } while (n-- != 0);
+                *dst++ = v;
+                dlen--;
+            } while (--n);
         }
     }
 }

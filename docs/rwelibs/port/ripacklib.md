@@ -75,11 +75,15 @@ kind F):
   of the caller and d0 = -1, unpacked from address -1 (then 0, 1, …)
   into dest, as far as the caller's d3 + dest allowed, and returned -1
   (#772).
+* **UnPackPBM** tests both limits before each access (unsigned) and stops
+  a literal run at the end of the source: nothing at or behind
+  source+length is read, nothing at or behind dest+destlength written.
+  The original tested after the access and signed: it read the byte at
+  source+length, wrote one byte past destlength and read a literal run
+  past the source's end (#778).
 
 ## BUG(orig), kept
 
-* `UnPackPBM` tests its limits after the access and signed: it reads the
-  byte at source+length and writes one byte past destlength (#778).
 * `UnpackIFF` treats every BODY as ByteRun1 (the compression byte of the
   BMHD is not read) (#773), takes the row width as width/8 (`ASR.w #3`;
   rows that ILBM pads to words lose their alignment) (#775), counts the

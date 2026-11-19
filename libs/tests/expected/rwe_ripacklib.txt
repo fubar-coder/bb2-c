@@ -292,8 +292,10 @@ PackPBM|round trip|mixed 2 bytes|1	$00000001
 PackPBM|round trip|mixed 5 bytes|1	$00000001
 UnPackPBM|dest|129 literals, 131 equal 177 -> 300|1	bytes 8256 fnv 877FBF23
 UnPackPBM|dest|crafted 20 -> 200|1	bytes 8256 fnv 268CF255
-UnPackPBM|dest|crafted, dest 0 20 -> 0|1	bytes 8256 fnv 909A7E31
-UnPackPBM|dest|crafted, dest 3 20 -> 3|1	bytes 8256 fnv C948F83F
+UnPackPBM|dest|crafted, dest 0 20 -> 0|1 [orig]	bytes 8256 fnv 909A7E31
+UnPackPBM|dest|crafted, dest 0 20 -> 0|1 [fixed #778]	bytes 8256 fnv C18F6885
+UnPackPBM|dest|crafted, dest 3 20 -> 3|1 [orig]	bytes 8256 fnv C948F83F
+UnPackPBM|dest|crafted, dest 3 20 -> 3|1 [fixed #778]	bytes 8256 fnv 8EE69D1E
 UnPackPBM|dest|crafted, source 0 0 -> 200|1	bytes 8256 fnv C18F6885
 UnPackPBM|dest|crafted, source 5 5 -> 200|1	bytes 8256 fnv 8EE69D1E
 UnPackPBM|dest|mixed 0 -> 4|1	bytes 8256 fnv C18F6885
