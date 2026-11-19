@@ -39,14 +39,16 @@
  * the flags of dos Write (see savecmap), and the original's stack
  * imbalances (below).
  *
+ * Shape numbers: SafeToBlit, LELoadShapes and LESaveShapes shift d0/d1
+ * right by 5.  Compiled code passes them shifted left by 5 (the compiler
+ * shifts a #pd register by the object size before it adds it to the #ia
+ * register, libcall.c toreg), so the shift gives the numbers back: no
+ * defect (#822, #815 as titled; a run of the original confirms it).
+ *
  * BUG(orig), kept:
- *   - SafeToBlit, LELoadShapes and LESaveShapes shift the shape NUMBERS
- *     right by 5 as if they were object offsets: SafeToBlit compares
- *     shape/32 with the maximum (#822), LESaveShapes stores
- *     (s2>>5)-(s1>>5) (the upper word of the register uncleared) as the
- *     shape count, and the shapes passed on to shapeslib's LoadShapes are
- *     s>>5.  The loader reads count+1 shapes, so a saved file of shapes
- *     below 32 loads one shape (#815).
+ *   - LESaveShapes stores s2-s1 as the shape count with a word
+ *     subtraction: the upper word of d1, which compiled code leaves from
+ *     a long expression, goes into the long count (#815).
  *   - CludgeShapes: an empty shape in memory (width or height 0) advances
  *     by 32 + the low word of the size of the shape before (also of an
  *     earlier call: the variable stays) (#809); a shape with size 0
@@ -57,10 +59,7 @@
  *   - An allocation that fails in the shape loop or in the cookie of
  *     readshapes returns with a0 still pushed: it jumps to the data
  *     address (#806; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The stack imbalance that C cannot express: see rs_crash.
- *   - LELoadShapes form 3 (shape#,filename$,palette#) takes the palette of
- *     d3, not of the third argument (!libs #pd3) (#812).  LELoadShapes
- *     hands a non-LE file to shapeslib's LoadShapes with the shapes
- *     exchanged (a3 = the last shape, a2 = the first) (#813).  A failing
+ *   - LELoadShapes: a failing
  *     chunk allocation frees the header buffer and closes the file twice
  *     (readchunk jumps to the cleanup of its caller and returns there)
  *     (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
@@ -86,7 +85,16 @@
  * second such shape returned into the Blitz program's stack (#807).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
- * (unused since the own cookie code).  LECludgeShapes links the shapes
+ * (unused since the own cookie code).  LELoadShapes form 3
+ * (shape#,filename$,palette#) asks for the palette of d3 (!libs #pd3),
+ * but the compiler takes the first form whose argument count fits, form 1
+ * (shape#,shape#,filename$), so no compiled program reaches it (the
+ * manual names the limitation; #812).  LELoadShapes hands a non-LE file to
+ * shapeslib's LoadShapes with a2 = the first and a3 = the last shape,
+ * where LoadShapes takes them the other way round; compiled code links the
+ * ALibJsr through a stub that loads LoadShapes' own !libs first (a3, a2
+ * from the shape numbers in d0, d1), so the registers left do not matter
+ * (#813; as editlib #130).  LECludgeShapes links the shapes
  * into the memory (no copy, "cL") if it is below 2 MB and the file
  * uncompressed, unless copymemflag is negative (intended).
  */
@@ -430,9 +438,10 @@ BLITZ_THUNK(_lescanshapes, lescanshapes_c, "d0-d1/a0-a1");
  *
  * True if the shape exists (in range, has a cookie), x and y are not
  * negative, and it fits into the bitmap's width and height (+56.w/+58.w
- * of the bitmap object).  BUG(orig) (#822): shape/32 is compared with the
- * maximum, not the shape number.
- * @param shapenum   d0.w: shape
+ * of the bitmap object).  d0 is the shape number shifted by 5, as compiled
+ * code passes it (#pd0); the ASR #5 gives the number back for the compare
+ * with the maximum (not a defect, #822).
+ * @param shapenum   d0.w: shape * 32
  * @param x          d1.w: x
  * @param y          d2.w: y
  * @param bitmap     a2: the used bitmap object
@@ -832,8 +841,10 @@ BLITZ_THUNK(_lecludgeshapes, lecludgeshapes_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------- LELoadShapes */
 
-/* LoadShapes of shapeslib (form 1) with the shapes of a2 (as the last)
-   and a3 (as the first; BUG(orig): exchanged, #813), d2 = the name, a6 = dos */
+/* LoadShapes of shapeslib (form 1): d0/d1 = the shape numbers, d2 = the
+   name, a6 = dos; a2 = the first and a3 = the last shape as the original
+   leaves them (LoadShapes takes a3 as the first; compiled code calls it
+   through a stub that sets a3/a2 from d0/d1 first, so no defect, #813) */
 static void acidloadshapes(UBYTE *first, UBYTE *last)
 {
     register ULONG d0 __asm("d0") = aciddata_s1;
@@ -956,17 +967,16 @@ static ULONG leloadshapes(ULONG shape1, ULONG shape2, ULONG name, UBYTE *palette
  *
  * At most count + 1 shapes of the file, unpacked if compressed, each with
  * a cookie; the CMAP into the palette object.  A file that is no FORM goes
- * to shapeslib's LoadShapes (form 1).  BUG(orig): the shape numbers given
- * on to LoadShapes are shifted right by 5 (#815), and the first and last
- * shape are exchanged (#813); a failing chunk allocation frees the header
+ * to shapeslib's LoadShapes (form 1), with the shape numbers (d0/d1 >> 5).
+ * BUG(orig): a failing chunk allocation frees the header
  * buffer and closes the file twice (#819, never in practice); the
  * palette: no check of the allocation (#821), DIVU #3 overflow, 0 colours
  * = 65536 (#820); the old cookies are not freed (#810).  Fixed (#807): a
  * shape in use that is cludged is replaced like any other (the original
  * pops a0 it never pushed and returns past the caller without freeing the
  * buffers or closing the file).
- * @param shape1   d0.w: the first shape#
- * @param shape2   d1.w: the last shape#
+ * @param shape1   d0.w: the first shape# * 32 (#pd0)
+ * @param shape2   d1.w: the last shape# * 32 (#pd1)
  * @param name     d2: filename$
  * @param palette  a0: the palette object of palette# (d3)
  * @param first    a2: the first shape object
@@ -986,8 +996,8 @@ BLITZ_THUNK(_leloadshapes, leloadshapesp_c, "d0-d1/a0-a1");
 /**
  * @brief LELoadShapes shape#,shape#,filename$: as above without a palette
  * (the CMAP is skipped).
- * @param shape1  d0.w: the first shape#
- * @param shape2  d1.w: the last shape#
+ * @param shape1  d0.w: the first shape# * 32
+ * @param shape2  d1.w: the last shape# * 32
  * @param name    d2: filename$
  * @param first   a2: the first shape object
  * @param last    a3: the last shape object
@@ -1010,12 +1020,14 @@ BLITZ_THUNK(_leloadshapesnop, leloadshapesnop_c, "d0-d1/a0-a1");
  * @brief LELoadShapes shape#,filename$,palette#: as above from shape# up
  * to the last shape (the maximum - 1), as many as the file has.
  *
- * BUG(orig) (#812): the palette is that of d3, not of the third argument
- * (!libs #pd3).
- * @param shapenum   d0.w: shape#
+ * The declaration asks for the palette of d3, not of the third argument
+ * (!libs #pd3), but no compiled program reaches this form: the compiler
+ * takes form 1 (shape#,shape#,filename$), the first with three
+ * arguments, as the manual says (not a defect, #812).
+ * @param shapenum   d0.w: shape# * 32
  * @param name       d1: filename$
  * @param maxshapes  d4: the maximum of shapes
- * @param palette    a0: the palette object of the number in d3 (#812)
+ * @param palette    a0: the palette object of the number in d3
  * @param first      a2: the shape object of shape#
  * @param objects    a3: the first shape object (item 0)
  * @param dos        a6: dos.library
@@ -1036,7 +1048,7 @@ BLITZ_THUNK(_leloadshapesingle, leloadshapesingle_c, "d0-d1/a0-a1");
 
 /**
  * @brief LELoadShapes shape#,filename$: as above without a palette.
- * @param shapenum   d0.w: shape#
+ * @param shapenum   d0.w: shape# * 32
  * @param name       d1: filename$
  * @param maxshapes  d4: the maximum of shapes
  * @param first      a2: the shape object of shape#
@@ -1186,8 +1198,8 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
  * FORM LESH, SHHD (count, compression), CMAP if there is a palette, SDAT
  * with the shapes (packed with PackPBM if LECompressShapes is on, -1 =
  * stored when packing fails).  Nothing if the file cannot be opened.
- * BUG(orig): the count is (shape2>>5)-(shape1>>5) with the upper word of
- * the register uncleared, so a file of shapes below 32 loads one shape
+ * BUG(orig): the count is s2 - s1 of a word subtraction with the upper
+ * word of d1 uncleared (compiled code leaves one from a long expression)
  * (#815); whether the CMAP is written depends on dos Write's Z flag
  * (#814); the FORM length is 8 too large and has the CMAP size of the
  * last save with a palette (#816); the shape header buffer is allocated
@@ -1195,8 +1207,8 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
  * palette of 0 colours copies 65536 (#823); a missing pack buffer is two
  * runtime errors (#818); PackPBM's failure runs UnPackPBM with d3 = 12
  * (#772).
- * @param shape1   d0.w: the first shape#
- * @param shape2   d1.w: the last shape#
+ * @param shape1   d0.w: the first shape# * 32
+ * @param shape2   d1.w: the last shape# * 32
  * @param name     d2: filename$
  * @param palette  a0: the palette object of palette# (d3)
  * @param first    a2: the first shape object
@@ -1247,8 +1259,8 @@ BLITZ_THUNK(_lesaveshapes, lesaveshapes_c, "d0-d1/a0-a1");
 /**
  * @brief LESaveShapes shape#,shape#,filename$: as above without a palette
  * (the Write's flags decide as above, #814).
- * @param shape1  d0.w: the first shape#
- * @param shape2  d1.w: the last shape#
+ * @param shape1  d0.w: the first shape# * 32
+ * @param shape2  d1.w: the last shape# * 32
  * @param name    d2: filename$
  * @param first   a2: the first shape object
  * @param last    a3: the last shape object

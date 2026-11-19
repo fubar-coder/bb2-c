@@ -28,7 +28,16 @@ The source writes some `!libs` flags without `#` (`#ia3|pd1`,
 the constants (pd1, pd3, la6), so the C file uses the normal flags.
 `LELoadShapes` form 3 (`shape#,filename$,palette#`) asks for the palette
 of **d3**, although that form has only three arguments (d0–d2), as the
-source's comment "This little bastard won't work below" warns.
+source's comment "This little bastard won't work below" warns. No
+compiled program reaches it: the compiler takes the first form whose
+argument count fits, form 1 (`shape#,shape#,filename$`), as the manual
+says ("you cannot use the following form of the command"). The libs
+test calls its routine directly.
+
+The shape numbers in d0/d1 (`#pd0`, `#pd1`) arrive shifted by 5: the
+compiler shifts a `#pd` register by the object size before it adds it
+to the `#ia` register. `SafeToBlit`, `LESaveShapes` and `LELoadShapes`
+shift them back with `ASR #5`.
 
 ## C and assembler
 
@@ -50,10 +59,13 @@ Calls into other libraries (ALibJsr):
 * RIPackLib (73): `PackPBM` (token `#ripacklib<<7+1`, d0 = source,
   d1 = destination, d2 = length, d3 = 12 as the original leaves it,
   through `BL_JSR_D4_`) and `UnPackPBM` (`+8`, d0–d3).
-* shapeslib `LoadShapes` form 1 (`#shapeslib<<7+10`). This call is
-  inline assembler, because the callee takes the first shape in a3 (the
-  register fixed for GCC) and the last one in a2. The original passes
-  them exchanged (below).
+* shapeslib `LoadShapes` form 1 (`#shapeslib<<7+10`), with the shape
+  numbers in d0/d1. This call is inline assembler, because the callee
+  takes the first shape in a3 (the register fixed for GCC) and the last
+  one in a2. The original leaves them the other way round (a2 = the
+  first, a3 = the last); compiled code links the ALibJsr through a stub
+  that loads LoadShapes' own `!libs` first (a3, a2 from d0, d1), so this
+  does not matter (#813, as editlib #130 in `docs/libs/cmdlibs-port.md`).
 
 Further assembler:
 
@@ -67,14 +79,11 @@ Further assembler:
 
 ## BUG(orig), kept
 
-* **Shape numbers shifted as object offsets (`ASR #5`):**
-  * `SafeToBlit` compares shape/32 with the maximum (#822).
-  * `LESaveShapes` stores (s2>>5)−(s1>>5) as the count, with the upper
-    word of d1 uncleared.
-  * The shapes handed on to shapeslib's `LoadShapes` are s>>5.
-
-  The loader reads count + 1 shapes (`SUB.l #1:BMI`), limited by the
-  last shape. So a file of shapes below 32 loads one shape (#815).
+* **LESaveShapes' shape count:** s2 − s1 is a word subtraction, and the
+  upper word of d1 goes into the long count. Compiled code leaves one
+  there from a long expression (`a.l=$50009 : LESaveShapes 0,a,…`
+  writes the count $50009). The loader reads count + 1 shapes
+  (`SUB.l #1:BMI`), limited by the last shape (#815).
 * **CludgeShapes:**
   * An empty shape (width or height 0) advances by 32 + the low word of
     the size of the shape before it, which may come from an earlier call
@@ -85,14 +94,10 @@ Further assembler:
   `CLR 30(a2)` tests the CLR, so the branch is always taken (#810).
 * **A failing allocation in readshapes** returns with a0 pushed (#806;
   see the stack imbalance above).
-* **LELoadShapes:**
-  * Form 3 uses the palette of d3 (#812).
-  * A non-LE file goes to `LoadShapes` with a3 = the last shape and
-    a2 = the first. One shape is loaded into the last shape (#813).
-  * A failing chunk allocation runs the caller's cleanup and returns
-    there. The caller then frees the header buffer and closes the file a
-    second time if packedsize is 0, and otherwise uses packedsize as the
-    chunk (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+* **LELoadShapes:** a failing chunk allocation runs the caller's cleanup
+  and returns there. The caller then frees the header buffer and closes
+  the file a second time if packedsize is 0, and otherwise uses
+  packedsize as the chunk (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * **read_palette:**
   * The allocation is not checked; a failure writes to address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
   * The colour count is `DIVU #3` of the chunk size; on overflow the
@@ -120,6 +125,18 @@ Further assembler:
 Original behaviour that is no defect:
 
 * CludgeShapes: shape# is divided by 32 and never used.
+* SafeToBlit compares d0 >> 5 with the maximum, LESaveShapes counts
+  (d1 >> 5) − (d0 >> 5), LELoadShapes hands d0 >> 5 and d1 >> 5 on to
+  `LoadShapes`: the shape numbers, as compiled code passes them shifted
+  (above; #822, #815 as titled). Blitz programs run against the
+  original show it: `SafeToBlit(40,0,0)` with 30 shapes is 0,
+  `LESaveShapes 0,9` writes the count 9 and `LELoadShapes 20,29` of it
+  loads ten shapes.
+* LELoadShapes of a non-LE file: `SaveShapes 0,2` then
+  `LELoadShapes 10,12` loads the three shapes into 10–12 (the stub,
+  above; #813).
+* LELoadShapes form 3 takes the palette of d3, but cannot be compiled
+  (Declarations; #812).
 * LELoadShapes, a statement, leaves `packedsize` of the last packed
   shape in d0 (a statement has no result).
 * LECludgeShapes links memory below 2 MB that is not compressed instead
