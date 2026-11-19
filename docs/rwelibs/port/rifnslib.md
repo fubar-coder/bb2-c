@@ -46,8 +46,7 @@ Checked in the disassembly (code at `$5A8`, variables `$B66`–`$BF7`, font
 
 The variables are one packed struct in the original's order (`temp` …
 `font_add`, the font behind), so the original's overruns land in the
-same places (bitstack for a depth above 8, FNSLength's unmasked font
-number), and FNSPrint's a0 and FNSSlot point into it as in the original;
+same places (bitstack for a depth above 8), and FNSPrint's a0 and FNSSlot point into it as in the original;
 `_Static_assert`s check the offsets the original has. Everything is C
 behind thunks except: the FNSPrint/FNSShadowPrint entries (assembler:
 they test for a bitmap, load the default prefs/colour for the short
@@ -88,14 +87,15 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   next line. The binary has no guard for a width of 0 (the source's
   `TST.w d5:BEQ exit` ended the whole print there): the line counted
   width 1, underlined it set 1 pixel, centred x moved by −32767 (#659).
+* FNSLength takes the font number & 15, as every other command. The
+  original shifted the whole word (`ASL.w #2`): 16 on read the built-in
+  font's bytes as font pointers, negative numbers the variables before
+  `font_add` (#660).
 
 ## BUG(orig), kept
 
-* FNSLength returns width − 2 (at least 0) (#662), takes the prefs of
-  the last FNSPrint when called without prefs (#661), and does not mask
-  the font number (`ASL.w #2` of the word): 16 on read the built-in
-  font's bytes as font pointers, negative numbers the variables before
-  `font_add` (#660).
+* FNSLength returns width − 2 (at least 0) (#662) and takes the prefs of
+  the last FNSPrint when called without prefs (#661).
 * A bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
@@ -114,8 +114,8 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
 ## DIFF
 
 What the original reads behind its variables or its font is its own
-code; the C build reads other bytes there: FNSLength with a font number
-outside the block, and glyphs of codes the font has no data for – the
+code; the C build reads other bytes there: glyphs of codes the font has
+no data for – the
 built-in font has glyphs only up to `z` (91), codes 123..159 read behind
 it.
 
@@ -150,7 +150,7 @@ kept registers, the stub calls. Covered: see the header of the test (all
 entries and forms, all prefs, colours and `chr$(1)`, tabs and FNSSetTab,
 new lines including leading/double ones, zero-width characters, codes
 from 160, every x bit position, xmax, xmin, rows clipped at ymin/ymax for
-every font width, empty texts, origin, FNSLength's unmasked numbers 16,
+every font width, empty texts, origin, FNSLength's font numbers 16,
 17, −1, −2, InstallFNS of a non-font, FNSLoad ok/BLoad fails/Start 0,
 FNSUnload). Not covered: FNSPrint without a bitmap (the original
 crashes; bug-orig test `rifnslib-print-no-bitmap-crash`), depth 0 / above 8 /

@@ -35,17 +35,15 @@
  *
  * The variables are one block in the original's order (struct fns): the
  * original's overruns stay inside it as there (bitstack written for a
- * depth above 8, font_add read with FNSLength's unmasked number), and
- * FNSPrint's a0 and FNSSlot point into it as in the original.
+ * depth above 8), and FNSPrint's a0 and FNSSlot point into it as in the
+ * original.
  *
  * Assembler: the FNSPrint/FNSShadowPrint entries (the test for a bitmap,
  * the short forms' prefs and colour in d4/d5) and FNSVersion (an inline
  * routine); everything else is C behind thunks.
  *
  * BUG(orig):
- *   - FNSLength gives the width - 2 (0 at least) (#662) and does not mask
- *     the font number (ASL.w #2 of the whole word: slots 16 on read the
- *     font data, negative ones the variables before font_add) (#660).
+ *   - FNSLength gives the width - 2 (0 at least) (#662).
  *     FNSLength without prefs takes the prefs of the last FNSPrint, not
  *     FNSPrefs' (#661).
  *   - A depth of 0 (or more than 8) overruns bitstack: 256 (depth) plane
@@ -80,9 +78,12 @@
  *   source's ended the whole print there): the line counted width 1,
  *   underlined it set 1 pixel, centred the ASR.l of $0000FFFF moved x by
  *   -32767.
+ * Fixed (#660): FNSLength takes the font number & 15, as every other
+ *   command; the original shifted the whole word (ASL.w #2): 16 on read
+ *   the built-in font's bytes as font pointers, negative numbers the
+ *   variables before font_add.
  * DIFF: what the original reads behind its variables reads other bytes
- *   here (its code there): FNSLength's font number outside the block, and
- *   the glyphs of codes the font has no data for - the built-in font ends
+ *   here (its code there): the glyphs of codes the font has no data for - the built-in font ends
  *   at 'z' (91 glyphs), codes 123..159 are drawn from the bytes behind it.
  */
 #include "blitzlib.h"
@@ -915,10 +916,10 @@ static void BLITZ_ROUTINE clipset_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1),
  *
  * The widths of the characters (+ 1 for bold, prefs bit 1) up to the
  * first code that ends the text.  BUG(orig): the result is the width - 2,
- * 0 at least (#662); the font number is not masked (ASL.w #2 of the whole
- * word: slots 16 on read the font data, negative ones the variables
- * before font_add) (#660; DIFF outside the block).
- * @param n      d0: the slot
+ * 0 at least (#662).  Fixed (#660): the font number & 15 (the original
+ * shifted the whole word: 16 on read the font data, negative numbers the
+ * variables before font_add).
+ * @param n      d0: the slot (& 15)
  * @param str    d1: the text
  * @param prefs  d2: the prefs (a byte)
  * @return d0.w: the width - 2 (0 at least), -1 if the slot has no FNS font
@@ -926,7 +927,7 @@ static void BLITZ_ROUTINE clipset_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1),
 static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(d1),
                                     UWORD prefs BL_REG(d2))
 {
-    const UBYTE *font = (const UBYTE *)LONGAT((UBYTE *)fns.font_add + (WORD)(n << 2));
+    const UBYTE *font = (const UBYTE *)fns.font_add[n & 15];     /* fixed (#660) */
     UWORD w;
 
     if (FH(font)->id != FNSID)
@@ -941,7 +942,7 @@ static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(
  * @brief FNSLength(fontnum,a$): as FNSLength with the prefs of the last FNSPrint.
  *
  * BUG(orig) (#661): not FNSPrefs' prefs.
- * @param n    d0: the slot
+ * @param n    d0: the slot (& 15)
  * @param str  d1: the text
  * @return d0.w: as FNSLength
  */

@@ -717,8 +717,10 @@ FNSLength|d0|f0 font 5A000006 "high \xA0 ends" prefs 0|1	$FFFFFFFF
 FNSLength|d0|f0 font 5A000006 "line one\x0Aline two\x0Ath" prefs 0|1	$FFFFFFFF
 FNSLength|d0|f0 font 5A000006 "tab\there\t!" prefs 0|1	$FFFFFFFF
 FNSLength|d0|f0 font 5A000006 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1	$FFFFFFFF
-FNSLength|d0|f1 font 10 "x" prefs 0|1	$FFFFFFFF
-FNSLength|d0|f1 font 11 "x" prefs 0|1	$FFFFFFFF
+FNSLength|d0|f1 font 10 "x" prefs 0|1 [orig]	$FFFFFFFF
+FNSLength|d0|f1 font 10 "x" prefs 0|1 [fixed #660]	$00000006
+FNSLength|d0|f1 font 11 "x" prefs 0|1 [orig]	$FFFFFFFF
+FNSLength|d0|f1 font 11 "x" prefs 0|1 [fixed #660]	$00000000
 FNSLength|d0|f1 font 5A000000 "!"#$%&'()*+,-./01234" prefs 21|1	$00000286
 FNSLength|d0|f1 font 5A000000 "" prefs 3|1	$00000000
 FNSLength|d0|f1 font 5A000000 "Hello, World!" prefs 0|1	$0000004A

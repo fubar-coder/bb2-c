@@ -24,8 +24,8 @@
  * (the 48/64 pixel fonts: fixed #656), an empty text (fixed #659: in the
  * original underline 1 pixel, the centring by -32767), FNSOrigin;
  * FNSLength both forms (the prefs of the
- * last FNSPrint) and its unmasked font number (16, 17, -1, -2: the
- * variables and the font of the block); FNSHeight/Width/Underline,
+ * last FNSPrint) and its font number 16, 17, -1, -2 (fixed #660: & 15;
+ * the original read the variables and the font of the block); FNSHeight/Width/Underline,
  * InstallFNS (and a non-FNS address), RemoveFNS, FNSSlot, FNSInk,
  * FNSPrefs, FNSVersion (inline), FNSLoad (ok, BLoad fails, Start 0, a
  * file without "FNS.", one of height 0, one of 40 glyphs printed with
