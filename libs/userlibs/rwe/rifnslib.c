@@ -30,7 +30,8 @@
  *                            at x+1,y+1, then normal
  *   FNSInk, FNSPrefs, FNSOrigin, FNSSetTab   settings
  *   InstallFNS, RemoveFNS, FNSLoad, FNSUnload, FNSSlot   font slots
- *                            (FNSLoad/FNSUnload: RIAmosFuncLib banks 55+n)
+ *                            (FNSLoad/FNSUnload: RIAmosFuncLib bank 55+n,
+ *                            or the highest free one below BankLimit)
  *   FNSHeight, FNSWidth, FNSUnderline, FNSLength, FNSVersion
  *
  * The variables are one block in the original's order (struct fns): the
@@ -95,6 +96,13 @@
  *   below 1: "FNSSetTab size must be at least 1" (tabchk).  The release
  *   code is unchanged: with a tab size of 0 a chr$(9) divides by 0 (an
  *   invalid argument, D-005).
+ * Fixed (#984): FNSLoad uses bank 55 + slot only when it exists (below
+ *   RIAmosFuncLib's BankLimit, 50 at the start); otherwise the bank the
+ *   slot's font is in, or the highest free bank below the limit,
+ *   remembered per slot, and FNSUnload erases that bank.  The original
+ *   always used 55 + slot: with the default 50 banks BLoad took the
+ *   number as an address and read the file to the address 55 + slot (a
+ *   font over the vector table), and FNSLoad returned -1.
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): the glyphs of codes the font has no data for - the built-in font ends
  *   at 'z' (91 glyphs), codes 123..159 are drawn from the bytes behind it.
@@ -107,6 +115,7 @@
 #define TOK_bload ((LIB_riamosfunclib << 7) + 15)       /* form 1: d0 name, d1 bank */
 #define TOK_start ((LIB_riamosfunclib << 7) + 17)       /* d0 bank -> d0 address */
 #define TOK_erase ((LIB_riamosfunclib << 7) + 19)       /* d0 bank */
+#define TOK_banklimit ((LIB_riamosfunclib << 7) + 36)   /* form 1: -> d0 the number of banks */
 
 #define FNSID 0x464e532eUL                              /* "FNS." */
 #define FONTSIZE 1712
@@ -342,10 +351,15 @@ static_assert(sizeof(struct fnshead) == 12);
 
 #define LONGAT(p) (*(ULONG *)(p))
 
-/* the slots whose font FNSLoad loaded into bank 55 + slot (bit n: slot
-   n), so that a refused file empties the slot whose font it overwrote
-   (fixed, #663) */
+/* the slots whose font is the one FNSLoad loaded into the slot's bank
+   (bit n: slot n), so that a refused file empties the slot whose font it
+   overwrote (fixed, #663) and a new FNSLoad uses that bank again (fixed,
+   #984) */
 static UWORD loadedslots;
+
+/* the bank FNSLoad last loaded each slot's font into, -1: none (FNSUnload
+   erases 55 + slot then, as the original) (fixed, #984) */
+static LONG slotbank[16] = { [0 ... 15] = -1 };
 
 /* a font the library takes: "FNS." and a height of at least 1 (fixed,
    #663: a height of 0 drew 65536 rows) */
@@ -991,16 +1005,17 @@ static void BLITZ_ROUTINE origin_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 /**
  * @brief FNSLoad(fontname$,fontslot): loads a font file into a slot.
  *
- * RIAmosFuncLib BLoad into bank 55 + slot, then its Start into the slot.
- * Fixed (#663): a file that is no "FNS." font or has a height of 0 is
+ * RIAmosFuncLib BLoad into a bank, then its Start into the slot.  Fixed
+ * (#984): bank 55 + slot when it exists (below BankLimit); else the bank
+ * the slot's font is in, or the highest free bank below the limit (-1
+ * when every bank is in use), remembered for FNSUnload.  The original
+ * always used 55 + slot: with RIAmosFuncLib's default of 50 banks BLoad
+ * took the number as an address and read the file to the address
+ * 55 + slot, Start returned 0 and FNSLoad -1.  Fixed (#663): a file that is no "FNS." font or has a height of 0 is
  * refused: -1, the bank erased, and the slot emptied if its font was the
  * one FNSLoad had put in that bank (BLoad overwrote it); the original
  * stored whatever Start returned (FNSPrint then drew nothing, a font of
  * height 0 65536 rows per character).  Amiga mode only.
- * BUG(orig) (#984): bank 55 + slot is at or above RIAmosFuncLib's default of
- * 50 banks, so BLoad takes it as an address and reads the file to the
- * address 55 + slot; Start(55 + slot) is then 0 and the result -1 (it works
- * after BankLimit above 55 + slot).
  * @param name  d0: the file name
  * @param slot  d1: the slot (& 15)
  * @return d0.w: the slot, -1 if the load failed
@@ -1008,10 +1023,30 @@ static void BLITZ_ROUTINE origin_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 static ULONG BLITZ_ROUTINE load_c(ULONG name BL_REG(d0), ULONG slot BL_REG(d1))
 {
     struct bl_regs r;
-    ULONG bank, start;
+    ULONG start;
+    LONG bank, limit;
 
     slot &= 15;
+    r = (struct bl_regs){ 0 };
+    limit = (LONG)BLITZ_ALIBJSR_FORM(TOK_banklimit, 1, r);
     bank = 55 + slot;
+    if (bank >= limit) {                        /* fixed (#984) */
+        bank = slotbank[slot];
+        if (bank >= 0 && bank < limit && (loadedslots & (1 << slot))) {
+            r = (struct bl_regs){ .d0 = (ULONG)bank };
+            if (BLITZ_ALIBJSR(TOK_start, r) != fns.font_add[slot])
+                bank = -1;
+        } else
+            bank = -1;
+        if (bank < 0)
+            for (bank = limit - 1; bank >= 0; bank--) {
+                r = (struct bl_regs){ .d0 = (ULONG)bank };
+                if (!BLITZ_ALIBJSR(TOK_start, r))
+                    break;
+            }
+        if (bank < 0)
+            return (ULONG)-1;
+    }
     if (!BL_JSR_D4_(BL_TOKVAL(TOK_bload, 1), name, bank, 0, 0))
         return (ULONG)-1;
     r = (struct bl_regs){ .d0 = bank };
@@ -1019,30 +1054,40 @@ static ULONG BLITZ_ROUTINE load_c(ULONG name BL_REG(d0), ULONG slot BL_REG(d1))
     if (!start)
         return (ULONG)-1;
     if (!isfont((const UBYTE *)start)) {        /* fixed (#663) */
-        r = (struct bl_regs){ .d0 = bank };
+        r = (struct bl_regs){ .d0 = (ULONG)bank };
         BLITZ_ALIBJSR(TOK_erase, r);
-        if (loadedslots & (1 << slot))
-            fns.font_add[slot] = 0;
-        loadedslots &= (UWORD)~(1 << slot);
+        if (slotbank[slot] == bank) {
+            if (loadedslots & (1 << slot))
+                fns.font_add[slot] = 0;
+            loadedslots &= (UWORD)~(1 << slot);
+            slotbank[slot] = -1;
+        }
         return (ULONG)-1;
     }
     fns.font_add[slot] = start;
     loadedslots |= (UWORD)(1 << slot);
+    slotbank[slot] = bank;
     return slot;
 }
 
 /**
- * @brief FNSUnload fontslot: empties the slot and erases bank 55 + slot.
+ * @brief FNSUnload fontslot: empties the slot and erases its bank.
+ *
+ * The bank FNSLoad last loaded the slot's font into (fixed, #984), bank
+ * 55 + slot if there is none (the original's always).
  * @param slot  d0: the slot (& 15)
  */
 static void BLITZ_ROUTINE unload_c(ULONG slot BL_REG(d0))
 {
     struct bl_regs r;
+    LONG bank;
 
     slot &= 15;
     fns.font_add[slot] = 0;
     loadedslots &= (UWORD)~(1 << slot);
-    r = (struct bl_regs){ .d0 = 55 + slot };
+    bank = slotbank[slot] >= 0 ? slotbank[slot] : (LONG)(55 + slot);
+    slotbank[slot] = -1;
+    r = (struct bl_regs){ .d0 = (ULONG)bank };
     BLITZ_ALIBJSR(TOK_erase, r);
 }
 

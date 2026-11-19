@@ -5,7 +5,8 @@ Reflective Images, "FNS Library Version 1.1" (1995). Prints text in
 the font built into the library), clipping zone, origin, tab size, prefs
 (bit 0 centred, 1 bold, 2 underlined, 3 right aligned), colour changes in
 the text (`chr$(1)` + colour), tabs, new lines (`chr$(10)`), a shadow
-form; `FNSLoad`/`FNSUnload` load a font into RIAmosFuncLib bank 55 + slot.
+form; `FNSLoad`/`FNSUnload` load a font into a RIAmosFuncLib bank (55 +
+slot, or the highest free one below BankLimit).
 `FNSPrint` returns in a0 the address of the end position (x, y words).
 
 A font: `FNS.`, +4 height, +6 width in pixels (16, 32, 48, 64; anything
@@ -110,6 +111,20 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
 * With runtime error checking FNSSetTab refuses a tab size below 1:
   "FNSSetTab size must be at least 1" (`tabchk`). The release code is
   unchanged: after FNSSetTab 0 a tab divides by 0 (#666).
+* FNSLoad uses RIAmosFuncLib bank 55 + slot only when it exists (below
+  `BankLimit`, 50 at the start): then it behaves as the original.
+  Otherwise it takes the bank the slot's font is in (loaded there by an
+  FNSLoad before, still in the slot), or the highest free bank below the
+  limit (49 down, away from the program's low bank numbers), and
+  remembers it per slot; FNSUnload erases that bank (55 + slot for a
+  slot FNSLoad never loaded, as the original). `EraseAll` still deletes
+  the font, as the manual says. The original always used 55 + slot: with
+  the default 50 banks `BLoad` took the number as an address and read
+  the file to the address 55 + slot (a real font destroys the vector
+  table), `Start` returned 0 and FNSLoad -1. ripacklib's LoadIFF had the
+  same mismatch (#770, fixed). Test `rifnslib-fnsload-bank-55` (a font
+  header of 12 bytes: the original writes only the addresses 55 to 66)
+  (#984).
 
 ## BUG(orig), kept
 
@@ -118,13 +133,6 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
   0), planes from 8 on with the colour bit `plane & 7` (#658).
 * Codes from 160 end the text (signed byte compare) (#657).
-* FNSLoad loads into RIAmosFuncLib bank 55 + slot, which is above its
-  default of 50 banks: `BLoad` takes the number as an address and reads the
-  file to the address 55 + slot (a real font destroys the vector table),
-  `Start` returns 0 and FNSLoad -1; with `BankLimit` above 55 + slot it
-  works. ripacklib's LoadIFF had the same mismatch (#770, fixed). Test
-  `rifnslib-fnsload-bank-55` (a 1-byte font file touches only address 55).
-  FNSUnload erases the same bank number (not checked). (#984)
 
 ## DIFF
 

@@ -10,6 +10,7 @@
 ; Correct: FNSLoad does not write to address 55 and loads the font (the
 ; slot, 0, in both lines; the byte at 55 stays 0).
 ; ripacklib's LoadIFF has the same mismatch (#770).
+; @fixed #984
 ; @rwe rifnslib riamosfunclib
 ; @pass timeout=30
 DEFTYPE .l
