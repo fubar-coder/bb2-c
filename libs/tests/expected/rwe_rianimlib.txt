@@ -38,10 +38,13 @@ RIAnimDepth|popped|first chunk no FORM|1	$00000000
 RIAnimDepth|popped|no BMHD|1	$00000000
 RIAnimDepth|popped|no FORM|1	$00000000
 RIAnimFrameCount|d0||1	$00000000
-RIAnimFrameCount|d0|BMHD behind frame 1|1	$00000003
+RIAnimFrameCount|d0|BMHD behind frame 1|1 [orig]	$00000003
+RIAnimFrameCount|d0|BMHD behind frame 1|1 [fixed #512]	$00000000
 RIAnimFrameCount|d0|FORM ILBM|1	$00000000
-RIAnimFrameCount|d0|first chunk no FORM|1	$00000002
-RIAnimFrameCount|d0|no BMHD|1	$00000002
+RIAnimFrameCount|d0|first chunk no FORM|1 [orig]	$00000002
+RIAnimFrameCount|d0|first chunk no FORM|1 [fixed #512]	$00000000
+RIAnimFrameCount|d0|no BMHD|1 [orig]	$00000002
+RIAnimFrameCount|d0|no BMHD|1 [fixed #512]	$00000000
 RIAnimFrameCount|d0|no FORM|1	$00000000
 RIAnimFrameCount|d0|one frame|1	$00000001
 RIAnimFrameCount|d0|six frames|1	$00000006

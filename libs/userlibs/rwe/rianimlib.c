@@ -43,9 +43,6 @@
  *     add the chunk length + 8 without the pad byte of odd lengths
  *     (#505) and compare addresses signed (#506); RIAnimFrameCount counts
  *     every chunk of the ANIM, not only the frames (#510).
- *   - RIAnimInit keeps the ANIM's address and end even if no ILBM or
- *     BMHD is found (RIAnimFrameCount then counts), and the frame
- *     pointers of the animation before (#512).
  *   - RIAnimInit x,y form: the offset is ebwidth * y (MULU.w: the low
  *     words) + x >> 3 (ASR.l); DIVU.w #64 of the bitmap# overflows (no
  *     change) for numbers of 64 * 65536 and above (#514).
@@ -63,6 +60,10 @@
  *   - RIAnimInit searches the BMHD in the first frame only; the original
  *     searched up to the end of the ANIM and took a BMHD chunk of the
  *     ANIM behind the first frame (#511).
+ *   - A failed RIAnimInit leaves no animation (RIAnimFrameCount and
+ *     RINextAnimFrame return 0); the original kept the ANIM's address and
+ *     end when no ILBM or BMHD was found, and the frame pointers of the
+ *     animation before (#512).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -297,8 +298,9 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
  * 1: d0 source, d1 bitmap#, d2 -1 lines, d3 offset) and sets the palette
  * with ILBMPalette (d0 source, d1 palette#), both through ALibJsr; then
  * remembers the second and third frame (the first if there are none).
- * BUG(orig) (#512): it keeps the ANIM's address and end even if no ILBM
- * or BMHD is found, and the frame pointers of the animation before.  The
+ * A failed RIAnimInit leaves no animation: RIAnimFrameCount and
+ * RINextAnimFrame return 0 (fixed #512: the original kept the ANIM's
+ * address and end, and the frame pointers of the animation before).  The
  * original returns to the caller's a1 for a chunk "pointed at directly"
  * (#513, DIFF: -1 here).
  * @param address  d0: the ANIM file in memory
@@ -317,11 +319,14 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     bitmapnumber = (UBYTE)bm;
     palettenumber = (UBYTE)pal;
     bitplaneoffset = offset;
+    /* fixed #512: no animation until this one is found (the original kept
+       the frame pointers of the one before, and the new address and end
+       from here on) */
+    animaddress = nextanimframe = thirdframe = NULL;
     if (!initfindchunk((UBYTE *)address, ID_ANIM))
         return BB_FALSE;
     firstframe = firstchunk;
     animend = endoffile;
-    animaddress = (UBYTE *)address;
     if (!initfindchunk(firstchunk, ID_ILBM))
         return BB_FALSE;
     /* fixed #511: the BMHD of the first frame only (the original set
@@ -329,6 +334,7 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     if (!findchunk(ID_BMHD, &chunk))
         return BB_FALSE;
     endoffile = animend;                /* the frames: the whole ANIM */
+    animaddress = (UBYTE *)address;
     bmhd = (struct BitMapHeader *)chunk;
     animwidth = bmhd->bmh_Width;
     animheight = bmhd->bmh_Height;

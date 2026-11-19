@@ -47,6 +47,11 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
 * RIAnimInit searches the BMHD in the first frame only; the original
   searched up to the end of the ANIM and took a BMHD chunk of the ANIM
   behind a first frame without one (#511).
+* A failed RIAnimInit leaves no animation: RIAnimFrameCount and
+  RINextAnimFrame return 0. The original kept the ANIM's address and end
+  when no ILBM or BMHD was found (RIAnimFrameCount counted it) and the
+  frame pointers of the animation before, which RINextAnimFrame went on
+  playing (#512).
 
 **BUG(orig)** (kept):
 
@@ -61,9 +66,6 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   length + 8 without the pad byte of odd lengths (#505) and compare
   addresses signed (#506); RIAnimFrameCount counts every chunk of the
   ANIM, not only the frames (#510).
-* If RIAnimInit finds no ILBM or BMHD, it keeps the ANIM's address and
-  end (RIAnimFrameCount counts it) and the frame pointers of the
-  animation before (#512).
 * RIAnimInit x,y: the offset is ebwidth × y (MULU.w, low words) + x >> 3
   (ASR.l); the `DIVU.w #64` that undoes the compiler's bitmap# × 64
   overflows (no change) from 64 × 65536 on (#514).

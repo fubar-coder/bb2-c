@@ -21,7 +21,7 @@
  * RIAnimFrameCount before and after RIAnimInit; RIAnimInit in all three
  * forms (offset 0, an offset, x,y with a marker in y's upper word, the
  * bitmap# * 64 of #pd1 and one whose DIVU overflows), failing (no ANIM,
- * no ILBM, no BMHD: BUG(orig) #512, RIAnimFrameCount still counts), a BMHD
+ * no ILBM, no BMHD: fixed #512, RIAnimFrameCount then 0), a BMHD
  * chunk of the ANIM behind the first frame (fixed #511: not taken), one and
  * two frame anims (the safety nets); RINextAnimFrame through every
  * frame (ANIM5, ANIM5 with CMAP, ANIM7 long, operation 65, an unknown
@@ -456,7 +456,7 @@ int main(int argc, char **argv)
     init0("FORM ILBM", a_ilbm);
     count();
     init0("first chunk no FORM", a_noilbm);
-    count();                            /* BUG(orig) (#512): the ANIM is kept */
+    count();                            /* fixed #512: 0 (the original: the ANIM is kept) */
     init0("no BMHD", a_nobmhd);
     count();
     init0("BMHD behind frame 1", a_late);
