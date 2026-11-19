@@ -131,11 +131,14 @@
  *     as the others); the original's loop made the next message of the
  *     list current without replying it: its sender waited for ever
  *     (#1101).
+ *   - RXDeletePort and finit wait up to 5 s for the replies to the
+ *     messages sent without waiting (RXRunCommand, RXRunScript; user
+ *     decision W4.2); with a reply still outstanding the port is taken
+ *     off the public list and stays allocated with its name, so a late
+ *     reply does not go into freed memory.  The original did not wait:
+ *     a reply that arrived later went to the deleted port (#1095).
  *
  * BUG(orig), kept:
- *   - RXDeletePort and finit do not wait for the replies to messages sent
- *     without waiting (RXRunCommand, RXRunScript): a reply that arrives
- *     later goes to the deleted port (#1095).
  *   - RXReadPort/RXWaitPort (readport_c) append every received message to
  *     the 32-long message list without a limit (addtolist): the 32nd
  *     message overwrites the end mark, later ones run into the sent
@@ -147,6 +150,8 @@
 #include <rexx/storage.h>
 #define __NOLIBBASE__
 #include <proto/exec.h>
+#define DOS_BASE_NAME dosbase
+#include <proto/dos.h>
 #undef __NOLIBBASE__
 
 /* entry points (thunks, defined below) */
@@ -333,6 +338,7 @@ static UWORD wholearg;                  /* the string as one argument (RXExecute
 static UWORD noresult;                  /* waiting without a result string (RXExecuteScript) */
 static const UBYTE *curadr;             /* the parser (parseadr unused) */
 static const char rexxname[] = "rexxsyslib.library";
+static const char dosname[] = "dos.library";      /* deleteport's Delay (#1095) */
 static const char realrexxportname[] = "REXX";
 static const char emptyname[] = "";
 
@@ -453,8 +459,9 @@ static void deleteport(BB_BOOL freename);
 
 /**
  * @brief finit: RXTokenise on again, delete the port if there is one (as
- * RXDeletePort; the name is left to maxslib, which frees its strings at
- * the end of the program), close rexxsyslib.library.
+ * RXDeletePort, with its wait of up to 5 s for the replies of the sent
+ * list (fixed #1095); the name is left to maxslib, which frees its
+ * strings at the end of the program), close rexxsyslib.library.
  *
  * Fixed (#1093): the original never closed rexxsyslib.library.
  */
@@ -1197,32 +1204,90 @@ BLITZ_THUNK(_rxnumargs, rxnumargs_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ the port */
 
-/* RXDeletePort, finit: reply what is waiting (the current message first),
-   delete the port, free the lists and (freename) the name.  BUG(orig)
-   (#1095): the messages of the sent list are not waited for; their
-   replies go to the deleted port */
-static void deleteport(BB_BOOL freename)
-{
-    ULONG *l;
-    struct Message *m;
+/* deleteport's wait for the replies of the sent list: 5 s in all (user
+   decision W4.2, #1095) */
+#define REPLYWAIT_TICKS 250
 
-    /* fixed (#1101): the current message is replied first; the original's
-       loop made the next one current at once, this one was never replied */
-    if (v.currentmessage)
-        replymsg(5, NULL, NULL);
+/* reply 5 to every received message: each one RXReadPort makes current,
+   until none is left */
+static void replywaiting(void)
+{
     for (;;) {
         readport_c();
         if (!v.currentmessage)
             break;
         replymsg(5, NULL, NULL);
     }
+}
+
+/* the time in ticks (DateStamp), modulo 2^32: the difference of two is
+   right also across a midnight */
+static ULONG ticksnow(struct Library *dosbase)
+{
+    struct DateStamp d;
+
+    DateStamp(&d);
+    return ((ULONG)d.ds_Days * 1440 + (ULONG)d.ds_Minute) * TICKS_PER_SECOND * 60
+           + (ULONG)d.ds_Tick;
+}
+
+/* wait up to REPLYWAIT_TICKS for the replies to the messages of the sent
+   list (RXRunCommand, RXRunScript), polled with Delay(1) and measured
+   with DateStamp (a Delay(1) can take up to two ticks); messages arriving
+   meanwhile are replied with 5.  BB_TRUE if no reply is outstanding.
+   Fixed (#1095) */
+static BB_BOOL waitsent(void)
+{
+    struct Library *dosbase;
+    ULONG start;
+
+    if (!v.sentlist[0])
+        return BB_TRUE;
+    if (!(dosbase = OpenLibrary((CONST_STRPTR)dosname, 33)))
+        return BB_FALSE;
+    start = ticksnow(dosbase);
+    while (v.sentlist[0] && ticksnow(dosbase) - start < REPLYWAIT_TICKS) {
+        Delay(1);
+        replywaiting();
+    }
+    CloseLibrary(dosbase);
+    return !v.sentlist[0];
+}
+
+/* RXDeletePort, finit: reply what is waiting (the current message first),
+   wait for the replies of the sent list, delete the port, free the lists
+   and (freename) the name.  Fixed (#1095): the original did not wait, a
+   reply that came later went to the deleted port.  Here the wait ends
+   after 5 s; with a reply still outstanding the port is taken off the
+   public list and kept with the name (a late reply goes into it, the
+   receiver may read the name): PA_IGNORE, so a late PutMsg does not
+   signal, and its signal bit is freed */
+static void deleteport(BB_BOOL freename)
+{
+    ULONG *l;
+    struct Message *m;
+    BB_BOOL replied;
+
+    /* fixed (#1101): the current message is replied first; the original's
+       loop made the next one current at once, this one was never replied */
+    if (v.currentmessage)
+        replymsg(5, NULL, NULL);
+    replywaiting();
+    replied = waitsent();               /* fixed (#1095) */
     for (l = v.messagelist; *l; ) {
         m = (struct Message *)*l++;
         l[-1] = 0;
         ReplyMsg(m);
     }
     RemPort(msgport);
-    DeleteMsgPort(msgport);
+    if (replied)
+        DeleteMsgPort(msgport);
+    else {
+        /* a reply outstanding after 5 s: the port stays allocated */
+        msgport->mp_Flags = PA_IGNORE;
+        FreeSignal(msgport->mp_SigBit);
+        freename = BB_FALSE;
+    }
     msgport = NULL;
     /* fixed (#530): the original freed neither the lists nor the name */
     FreeVec(v.messagelist);             /* the block: struct msglists */
@@ -1237,10 +1302,16 @@ static void deleteport(BB_BOOL freename)
  *
  * Messages still waiting are replied (RXReplyMsg 5 for the current
  * message, then for each one RXReadPort makes current, then ReplyMsg for
- * the rest of the message list), then RemPort, DeleteMsgPort; the block
- * of the lists and the name are freed (fixed #530: the original freed
- * neither).  Fixed (#1101): the original never replied the message
- * current when it was called.  Error check portchk.
+ * the rest of the message list); then it waits up to 5 s for the replies
+ * to the messages sent without waiting (RXRunCommand, RXRunScript),
+ * replying 5 to messages that arrive meanwhile; then RemPort,
+ * DeleteMsgPort; the block of the lists and the name are freed (fixed
+ * #530: the original freed neither).  With a reply still outstanding
+ * after 5 s the port is only taken off the public list: it and the name
+ * stay allocated for the late reply (fixed #1095: the original did not
+ * wait, the reply went to the deleted port).  Fixed (#1101): the
+ * original never replied the message current when it was called.  Error
+ * check portchk.
  */
 static void BLITZ_ROUTINE rxdeleteport_c(void)
 {

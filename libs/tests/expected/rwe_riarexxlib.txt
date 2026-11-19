@@ -40,7 +40,8 @@ RXDeletePort|port gone|2 queued|1	$00000001
 RXDeletePort|port gone|reply late|1	$00000001
 RXDeletePort|port gone|reply outstanding|1	$00000001
 RXDeletePort|replied before it returned|reply late|1	$00000000
-RXDeletePort|replied before it returned|reply outstanding|1	$00000000
+RXDeletePort|replied before it returned|reply outstanding|1 [orig]	$00000000
+RXDeletePort|replied before it returned|reply outstanding|1 [fixed #1095]	$00000001
 RXDeletePort|replies|2 queued|1	$00000001
 RXDeletePort|replies at the test's port|33 messages|1 [orig]	$00000020
 RXDeletePort|replies at the test's port|33 messages|1 [fixed #1101]	$00000021
@@ -49,7 +50,8 @@ RXDeletePort|reply Result1|2 queued|1	$00000005
 RXDeletePort|reply Result1|2 queued|2	$00000005
 RXDeletePort|reply Result2|2 queued|1	$00000000
 RXDeletePort|reply Result2|2 queued|2	$00000000
-RXDeletePort|returned after 4.5 s|reply late|1	$00000000
+RXDeletePort|returned after 4.5 s|reply late|1 [orig]	$00000000
+RXDeletePort|returned after 4.5 s|reply late|1 [fixed #1095]	$00000001
 RXExecuteScript|RXCOMM\|RXFF_STRING||1 [orig]	$00000001
 RXExecuteScript|RXCOMM\|RXFF_STRING||1 [fixed #544]	$00000000
 RXExecuteScript|RXExecuteScript: message||1	$00000007

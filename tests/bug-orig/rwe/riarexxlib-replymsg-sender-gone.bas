@@ -11,6 +11,9 @@
 ; stays 0.
 ; @fixed #540
 ; @rwe riarexxlib
+; The message sent to the own port is never replied: finit waits 5 s for
+; its reply (#1095), silent; the hang check gets 20 s instead of 8.
+; @pass hang_after=20
 DEFTYPE .l
 p=RXCreatePort("BUGORIG")
 RXTokenise On

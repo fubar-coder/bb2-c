@@ -229,17 +229,26 @@ kind F):
   never got its reply, and its sender waited for ever (#1101). The
   library test's case `RXDeletePort|replies at the test's port|33
   messages` has a current message: the original replies 32 of the 33.
+* **RXDeletePort** and finit wait up to 5 s in all for the replies to
+  the messages sent without waiting (RXRunCommand, RXRunScript) that
+  are still with their receivers, as the manual says ("It will wait until
+  all replies ... have been received"); messages that arrive meanwhile
+  are replied with code 5, as the other waiting messages. If a reply is
+  still outstanding after 5 s, the port is taken off the public list but
+  not freed, nor its name: the late reply goes into it, not into freed
+  memory (the port is set to PA_IGNORE, so it does not signal, and its
+  signal bit is freed). The original did not wait: a reply that arrived
+  later was put into the deleted port (`RXRunCommand "REXX",... : End`
+  is enough) (#1095; user decision "Reopen, B: timeout + leak", limit
+  5 s). The wait polls once a tick (dos.library Delay). The library
+  test's case `RXDeletePort|replied before it returned|reply
+  outstanding` holds the message 2 s (the original 0, here 1), the case
+  `RXDeletePort|returned after 4.5 s|reply late` holds it 8 s (the
+  original returns at once, 0; here after the limit, 1, the reply not
+  yet there).
 
 ## BUG(orig), kept
 
-* **RXDeletePort** and finit do not wait for the replies to the messages
-  sent without waiting (RXRunCommand, RXRunScript) that are still with
-  their receivers: a reply that arrives later goes to the deleted port
-  (`RXRunCommand "REXX",... : End` is enough). The manual says RXDeletePort
-  waits for them (#1095). The case `RXDeletePort|replied before it
-  returned|reply outstanding` of the library test holds a message at the
-  responder while RXDeletePort runs: the original returns with the reply
-  outstanding (0).
 * **RXReadPort**, **RXWaitPort** (and finit, RXDeletePort through the
   same routine) append every message they take from the port to the
   message list with `addtolist`, which has no limit. The list has 32
