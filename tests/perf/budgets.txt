@@ -256,7 +256,17 @@
 # before; 0.96 of the original: the 101xx match reads its 2 bits one by
 # one) and onebyte 467.0 (1655.2 before) both times.
 #
+# banim (a new program: RINextAnimFrame of the RWE userlib rianimlib,
+# header "; @rwe rianimlib ripacklib riamosfunclib"; anim5 the CD's
+# BUI9/SHED/IFF/INTRO.ANIM, anim7 an ANIM7 the program builds) from two
+# runs on main c9045679 (2026-11-19): anim5 31189.2, anim7 104904.1 both
+# times.  Their targets from two runs of the pass perf_banim.pass with the
+# tag orig: anim5 46282.5 and 46280.8, anim7 98227.5 and 98230.8.
+#
 # COMMAND                 BUDGET     TARGET  LOOP
+banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
+banim.anim5                 31505    46282.5  c=RINextAnimFrame(0) (INTRO.ANIM: 320 x 256 x 3, ANIM5, its frames 3 to 14)
+banim.anim7                105957    98230.8  c=RINextAnimFrame(1) (320 x 256 x 5, ANIM7 long data, 2400 longs per frame)
 bbblit.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
 bbblit.specialblock          1485     1557.8  SpecialBlock 0,1,96,96 (16x16, 3 planes, 320-pixel bitmap)
 bbblit.specialblocko         1399     1450.3  SpecialBlock 0,1,3852 (the offset form)

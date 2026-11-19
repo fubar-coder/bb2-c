@@ -7,8 +7,9 @@
 #             line "; @rwe NAME..." uses RWE userlibs (below), one with
 #             "; @file DEST|PATH" reads the file PATH as CORPUS:DEST
 #             (@ANCIENT@ in PATH: archive/ancient/github-1491a35a, from
-#             cmake/fetch-originals.cmake; the program is left out without
-#             the file)
+#             cmake/fetch-originals.cmake; @CD@: the CD's directory
+#             archive/cd/ultimate-blitz-basic-2.1; the program is left
+#             out without the file)
 #   budgets.txt the budgets: the highest allowed cycles per call of each
 #             command, and the original's value as the target
 #   perf.cmake  the test script: corpusrun pass --observe, then results perf
@@ -17,6 +18,7 @@
 # --------------------------------------------------------- the sources
 set(PERF_SRC ${CMAKE_CURRENT_BINARY_DIR}/src)
 set(PERF_ANCIENT ${PROJECT_SOURCE_DIR}/archive/ancient/github-1491a35a)
+set(PERF_CD ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1)
 set(TED_TOKENS ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 file(GLOB bas CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bench/*.bas)
 set(perf_sources)
@@ -42,6 +44,7 @@ foreach(b IN LISTS bas)
 			continue()
 		endif()
 		string(REPLACE "@ANCIENT@" "${PERF_ANCIENT}" path "${CMAKE_MATCH_2}")
+		string(REPLACE "@CD@" "${PERF_CD}" path "${path}")
 		if(NOT EXISTS ${path})
 			set(missing ${path})
 		endif()
