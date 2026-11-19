@@ -19,24 +19,26 @@
  * FNSPrint/FNSShadowPrint all forms with all 16 prefs (centred, bold,
  * underlined, right aligned), colours, chr$(1) colour changes, tabs
  * (FNSSetTab), new lines (also leading and double ones: the binary's
- * missing guard), zero-width characters, codes from 160 (end), x on
- * every bit position, near xmax, below xmin, rows clipped at ymin/ymax
- * (the 48/64 pixel fonts: fixed #656), an empty text (fixed #659: in the
+ * missing guard), zero-width characters, codes from 160 (end), x on every
+ * bit position, near xmax, below xmin, rows clipped at ymin/ymax (the
+ * 48/64 pixel fonts: fixed #656), an empty text (fixed #659: in the
  * original underline 1 pixel, the centring by -32767), FNSOrigin;
  * FNSLength both forms (the short one: FNSPrefs' prefs, fixed #661; the
- * original took the last FNSPrint's) and its font number 16, 17, -1, -2 (fixed #660: & 15;
- * the original read the variables and the font of the block); FNSHeight/Width/Underline,
- * InstallFNS (and a non-FNS address), RemoveFNS, FNSSlot, FNSInk,
- * FNSPrefs, FNSVersion (inline), FNSLoad (ok, BLoad fails, Start 0, a
- * file without "FNS.", one of height 0, one of 40 glyphs printed with
- * later codes, BankLimit 80) and FNSUnload (also of a slot never
- * loaded); a second run (init, as from the editor with the library
- * still loaded): the slots, FNSPrint before FNSOutput (the bitmap of the
- * run before), the short forms of FNSPrint and FNSLength with the prefs,
- * ink and tab size the run before left.  Not covered: FNSPrint without a
- * bitmap in the first run (a crash), depth 0
- * or above 8 and bitmaps with flags (the bitstack overrun), FNSSetTab 0
- * (division by zero), x below 0 with xmin below 0 (writes 64 KB away).
+ * original took the last FNSPrint's) and its font number 16, 17, -1, -2
+ * (fixed #660: & 15; the original read the variables and the font of the
+ * block); FNSHeight/Width/Underline, InstallFNS (and a non-FNS address;
+ * the form with a character count, which the original does not have, if
+ * the set's library has it), RemoveFNS, FNSSlot, FNSInk, FNSPrefs,
+ * FNSVersion (inline), FNSLoad (ok, BLoad fails, Start 0, a file without
+ * "FNS.", one of height 0, one of 40 glyphs printed with later codes,
+ * BankLimit 80) and FNSUnload (also of a slot never loaded); a second run
+ * (init, as from the editor with the library still loaded): the slots,
+ * FNSPrint before FNSOutput (the bitmap of the run before), the short
+ * forms of FNSPrint and FNSLength with the prefs, ink and tab size the
+ * run before left.  Not covered: FNSPrint without a bitmap in the first
+ * run (a crash), depth 0 or above 8 and bitmaps with flags (the bitstack
+ * overrun), FNSSetTab 0 (division by zero), x below 0 with xmin below 0
+ * (writes 64 KB away).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
@@ -521,6 +523,25 @@ int main(int argc, char **argv)
         unload(7);
         unload(11);
         unload(12);
+    }
+
+    /* InstallFNS(fontnum,address,characters): a form the original does
+       not have (the set's library may lack it): font 1 (128 glyphs) as
+       40, 0 and 300 characters, printed and measured with codes behind
+       the 40th */
+    if (ENT(LIB, INSTALL, 1)) {
+        static const ULONG nchars[] = { 40, 0, 300 };
+        for (i = 0; i < 3; i++) {
+            ROUT = "InstallFNS";
+            sprintf(VEC, "slot 8 font 1 characters %lu", nchars[i]);
+            DO1(ENT(LIB, INSTALL, 1), R.d[0] = 8; R.d[1] = (ULONG)font[1];
+                R.d[2] = 0x5a000000 | nchars[i]);
+            OBS("d0", R.d[0]);
+            clear();
+            print(1, 8, 10, 10 + 10 * i, "abc FGH xyz \240\377", 0, 3, 0);
+            length(1, 8, "abc FGH xyz \240\377", 0);
+        }
+        stmt1(REMOVE, 0, "RemoveFNS", 8);
     }
 
     /* the settings the run leaves: prefs, ink, tab size, clip zone, the
