@@ -314,6 +314,10 @@ Covered:
   messages and one of them current (#1100, #1101), with a reply the
   responder holds for 2 s and one it holds for 8 s (#1095), and without
   a port;
+* 40 messages in the port and the reply of an RXSendCommand behind them
+  (the list's state after it, the messages left in the port), then the
+  40 read and replied one by one: how many come in the order they were
+  put (#1100);
 * finit with a port; init after RXDefaultPort (the original: "REXXE",
   nothing sent; fixed: "REXX", #532).
 

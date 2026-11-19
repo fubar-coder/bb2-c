@@ -37,12 +37,15 @@
  * RXDeletePort with messages queued (replied with
  * 5), with a reply outstanding (#1095: for 2 s, and for 8 s, past a time
  * limit of 5 s) and with 33 messages received
- * (#1100; one of them current: #1101); finit with a port; init after
+ * (#1100; one of them current: #1101); 40 messages and the reply of an
+ * RXSendCommand behind them, then read and replied one by one (#1100:
+ * the order, the sent list);
+ * finit with a port; init after
  * RXDefaultPort (the original: the byte at +4 stays, "REXXE"; fixed
  * #532: "REXX", the responder gets it).
  * Not covered: the error check without a port (a runtime error, TRAP
  * #0), a failing AllocVec (the bug-orig tests of #528 and #533 with
- * inject), more than 33 messages, more than 16 arguments, messages of
+ * inject), more than 40 messages, more than 16 arguments, messages of
  * other types (replied at once).
  */
 #include "rwecmp.h"
@@ -752,6 +755,84 @@ int main(int argc, char **argv)
             replies++;
         OBS("replies at the test's port", replies);
         for (k = 0; k < 33; k++)
+            FreeVec(many[k]);
+    }
+
+    /* 40 messages received before one is taken, then an RXSendCommand
+       whose reply arrives behind them (#1100): RXSendCommand waits for its
+       reply while the 40 are in the library's port.  Observed after it:
+       its result, the long at the list's 32nd place, whether the sent
+       list is all 0, how many longs of the block are not 0 and how many
+       messages are still in the port.  Then each message is read and
+       replied (RXReplyMsg 0, to the test's port); observed: how many came
+       in the order they were put (the loop stops at the first that does
+       not), the replies at the test's port.  The original appends all 40
+       while it waits (the 32nd to the 40th run into the sent list; 40
+       stay inside the block, as the 33 above), so the list is one run of
+       40 and reads in order; a library that leaves the messages it has
+       no room for in the port still has to take the reply out of it, and
+       takes the rest later, in the same order. */
+    ROUT = "RXCreatePort";
+    strcpy(VEC, "for 40 messages");
+    DO1(ENT(LIB, CREATEPORT, 0), R.d[0] = (ULONG)own;
+        stk[1] = strlen(own); R.a[2] = (ULONG)&stk[2]);
+    BOTH("the port", R.d[0] != 0);
+    {
+        struct RexxMsg *many[40], *m;
+        struct MsgPort *p = (struct MsgPort *)R.d[0];
+        struct Node *nd;
+        ULONG *list;
+        int nz, left, replies = 0, inorder = 0, sentclear = 1, k;
+
+        for (k = 0; k < 40; k++) {
+            many[k] = AllocVec(128, MEMF_PUBLIC | MEMF_CLEAR);
+            many[k]->rm_Node.mn_Node.ln_Name = (char *)"RWETEST";
+            many[k]->rm_Node.mn_Length = 128;
+            many[k]->rm_Node.mn_ReplyPort = testport;
+            many[k]->rm_Action = RXCOMM;
+            PutMsg(p, &many[k]->rm_Node);
+        }
+        send(1, "RWERESP", "behind 40", 0, "after 40");
+        waitresp(n += 1);
+        ROUT = "RXMessageList";
+        strcpy(VEC, "40 messages");
+        call(MESSAGELIST, 0, 0, 0, 0, 0, 0);
+        list = (ULONG *)R.d[0];
+        for (nz = 0, k = 0; k < 64; k++)
+            if (list[k])
+                nz++;
+        for (k = 32; k < 64; k++)
+            if (list[k])
+                sentclear = 0;
+        left = 0;
+        Forbid();
+        for (nd = p->mp_MsgList.lh_Head; nd->ln_Succ; nd = nd->ln_Succ)
+            left++;
+        Permit();
+        OBS("long 31 of the list", list[31] != 0);
+        OBS("the sent list all 0", sentclear);
+        OBS("longs of the block not 0", nz);
+        OBS("messages left in the port", left);
+        readport(READPORT, 1, "40 messages");
+        m = (struct RexxMsg *)R.d[0];
+        for (k = 0; k < 40 && m == many[k]; k++) {
+            inorder++;
+            reply(0, 0, NULL, "40 messages");
+            if (k < 39) {
+                readport(READPORT, 1, "40 messages");
+                m = (struct RexxMsg *)R.d[0];
+            }
+        }
+        ROUT = "RXReadPort";
+        strcpy(VEC, "40 messages");
+        OBS("in the order put", inorder);
+        ROUT = "RXDeletePort";
+        strcpy(VEC, "40 messages");
+        call(DELETEPORT, 0, 0, 0, 0, 0, 0);
+        while (GetMsg(testport))
+            replies++;
+        OBS("replies at the test's port", replies);
+        for (k = 0; k < 40; k++)
             FreeVec(many[k]);
     }
 

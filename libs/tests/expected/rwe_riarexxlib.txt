@@ -3,6 +3,7 @@ RXCreatePort|kept||1	kept
 RXCreatePort|kept||2	kept
 RXCreatePort|kept|after init|1	kept
 RXCreatePort|kept|for 33 messages|1	kept
+RXCreatePort|kept|for 40 messages|1	kept
 RXCreatePort|kept|for finit|1	kept
 RXCreatePort|kept|for the late reply|1	kept
 RXCreatePort|kept|for the outstanding reply|1	kept
@@ -10,6 +11,7 @@ RXCreatePort|popped||1	$00000000
 RXCreatePort|popped||2	$00000000
 RXCreatePort|popped|after init|1	$00000000
 RXCreatePort|popped|for 33 messages|1	$00000000
+RXCreatePort|popped|for 40 messages|1	$00000000
 RXCreatePort|popped|for finit|1	$00000000
 RXCreatePort|popped|for the late reply|1	$00000000
 RXCreatePort|popped|for the outstanding reply|1	$00000000
@@ -17,6 +19,7 @@ RXCreatePort|second port: 0||1	$00000000
 RXCreatePort|the port||1	$00000001
 RXCreatePort|the port|after init|1	$00000001
 RXCreatePort|the port|for 33 messages|1	$00000001
+RXCreatePort|the port|for 40 messages|1	$00000001
 RXCreatePort|the port|for finit|1	$00000001
 RXCreatePort|the port|for the late reply|1	$00000001
 RXCreatePort|the port|for the outstanding reply|1	$00000001
@@ -28,11 +31,13 @@ RXDefaultPort|popped|"RWERX_X"|1	$00000000
 RXDefaultPort|popped|own|1	$00000000
 RXDeletePort|kept|2 queued|1	kept
 RXDeletePort|kept|33 messages|1	kept
+RXDeletePort|kept|40 messages|1	kept
 RXDeletePort|kept|no port|1	kept
 RXDeletePort|kept|reply late|1	kept
 RXDeletePort|kept|reply outstanding|1	kept
 RXDeletePort|popped|2 queued|1	$00000000
 RXDeletePort|popped|33 messages|1	$00000000
+RXDeletePort|popped|40 messages|1	$00000000
 RXDeletePort|popped|no port|1	$00000000
 RXDeletePort|popped|reply late|1	$00000000
 RXDeletePort|popped|reply outstanding|1	$00000000
@@ -45,6 +50,7 @@ RXDeletePort|replied before it returned|reply outstanding|1 [fixed #1095]	$00000
 RXDeletePort|replies|2 queued|1	$00000001
 RXDeletePort|replies at the test's port|33 messages|1 [orig]	$00000020
 RXDeletePort|replies at the test's port|33 messages|1 [fixed #1101]	$00000021
+RXDeletePort|replies at the test's port|40 messages|1	$00000028
 RXDeletePort|replies at the test's port|reply late|1	$00000001
 RXDeletePort|reply Result1|2 queued|1	$00000005
 RXDeletePort|reply Result1|2 queued|2	$00000005
@@ -1490,15 +1496,21 @@ RXGetArg|string area|untokenised arg 8|1	bytes 1024 fnv 472C7DC5
 RXGetArg|string area|untokenised arg 9|1	bytes 1024 fnv 472C7DC5
 RXMessageList|d0|no port|1	$00000000
 RXMessageList|kept|33 messages|1	kept
+RXMessageList|kept|40 messages|1	kept
 RXMessageList|kept|no port|1	kept
 RXMessageList|kept|with a port|1	kept
 RXMessageList|list|with a port|1	$00000001
 RXMessageList|long 31 of the list|33 messages|1	$00000001
+RXMessageList|long 31 of the list|40 messages|1	$00000001
 RXMessageList|long 32, the sent list's first|33 messages|1	$00000000
 RXMessageList|longs of the block not 0|33 messages|1	$00000020
+RXMessageList|longs of the block not 0|40 messages|1	$00000028
+RXMessageList|messages left in the port|40 messages|1	$00000000
 RXMessageList|popped|33 messages|1	$00000000
+RXMessageList|popped|40 messages|1	$00000000
 RXMessageList|popped|no port|1	$00000000
 RXMessageList|popped|with a port|1	$00000000
+RXMessageList|the sent list all 0|40 messages|1	$00000000
 RXNextArg|a3|after a closing quote next 0|1	$00000011
 RXNextArg|a3|after a closing quote next 1|1 [orig]	$00000010
 RXNextArg|a3|after a closing quote next 1|1 [fixed #538]	$00000011
@@ -1869,7 +1881,48 @@ RXQuoteChar|kept|"""|1	kept
 RXQuoteChar|kept|"'"|1	kept
 RXQuoteChar|popped|"""|1	$00000000
 RXQuoteChar|popped|"'"|1	$00000000
+RXReadPort|in the order put|40 messages|1	$00000028
 RXReadPort|kept|33 messages|1	kept
+RXReadPort|kept|40 messages|1	kept
+RXReadPort|kept|40 messages|2	kept
+RXReadPort|kept|40 messages|3	kept
+RXReadPort|kept|40 messages|4	kept
+RXReadPort|kept|40 messages|5	kept
+RXReadPort|kept|40 messages|6	kept
+RXReadPort|kept|40 messages|7	kept
+RXReadPort|kept|40 messages|8	kept
+RXReadPort|kept|40 messages|9	kept
+RXReadPort|kept|40 messages|10	kept
+RXReadPort|kept|40 messages|11	kept
+RXReadPort|kept|40 messages|12	kept
+RXReadPort|kept|40 messages|13	kept
+RXReadPort|kept|40 messages|14	kept
+RXReadPort|kept|40 messages|15	kept
+RXReadPort|kept|40 messages|16	kept
+RXReadPort|kept|40 messages|17	kept
+RXReadPort|kept|40 messages|18	kept
+RXReadPort|kept|40 messages|19	kept
+RXReadPort|kept|40 messages|20	kept
+RXReadPort|kept|40 messages|21	kept
+RXReadPort|kept|40 messages|22	kept
+RXReadPort|kept|40 messages|23	kept
+RXReadPort|kept|40 messages|24	kept
+RXReadPort|kept|40 messages|25	kept
+RXReadPort|kept|40 messages|26	kept
+RXReadPort|kept|40 messages|27	kept
+RXReadPort|kept|40 messages|28	kept
+RXReadPort|kept|40 messages|29	kept
+RXReadPort|kept|40 messages|30	kept
+RXReadPort|kept|40 messages|31	kept
+RXReadPort|kept|40 messages|32	kept
+RXReadPort|kept|40 messages|33	kept
+RXReadPort|kept|40 messages|34	kept
+RXReadPort|kept|40 messages|35	kept
+RXReadPort|kept|40 messages|36	kept
+RXReadPort|kept|40 messages|37	kept
+RXReadPort|kept|40 messages|38	kept
+RXReadPort|kept|40 messages|39	kept
+RXReadPort|kept|40 messages|40	kept
 RXReadPort|kept|after a closing quote|1	kept
 RXReadPort|kept|arrived while waiting|1	kept
 RXReadPort|kept|closing quote at the end|1	kept
@@ -1896,6 +1949,46 @@ RXReadPort|kept|the reply|8	kept
 RXReadPort|kept|the script replies|1	kept
 RXReadPort|kept|untokenised|1	kept
 RXReadPort|message|33 messages|1	$00000001
+RXReadPort|message|40 messages|1	$00000001
+RXReadPort|message|40 messages|2	$00000001
+RXReadPort|message|40 messages|3	$00000001
+RXReadPort|message|40 messages|4	$00000001
+RXReadPort|message|40 messages|5	$00000001
+RXReadPort|message|40 messages|6	$00000001
+RXReadPort|message|40 messages|7	$00000001
+RXReadPort|message|40 messages|8	$00000001
+RXReadPort|message|40 messages|9	$00000001
+RXReadPort|message|40 messages|10	$00000001
+RXReadPort|message|40 messages|11	$00000001
+RXReadPort|message|40 messages|12	$00000001
+RXReadPort|message|40 messages|13	$00000001
+RXReadPort|message|40 messages|14	$00000001
+RXReadPort|message|40 messages|15	$00000001
+RXReadPort|message|40 messages|16	$00000001
+RXReadPort|message|40 messages|17	$00000001
+RXReadPort|message|40 messages|18	$00000001
+RXReadPort|message|40 messages|19	$00000001
+RXReadPort|message|40 messages|20	$00000001
+RXReadPort|message|40 messages|21	$00000001
+RXReadPort|message|40 messages|22	$00000001
+RXReadPort|message|40 messages|23	$00000001
+RXReadPort|message|40 messages|24	$00000001
+RXReadPort|message|40 messages|25	$00000001
+RXReadPort|message|40 messages|26	$00000001
+RXReadPort|message|40 messages|27	$00000001
+RXReadPort|message|40 messages|28	$00000001
+RXReadPort|message|40 messages|29	$00000001
+RXReadPort|message|40 messages|30	$00000001
+RXReadPort|message|40 messages|31	$00000001
+RXReadPort|message|40 messages|32	$00000001
+RXReadPort|message|40 messages|33	$00000001
+RXReadPort|message|40 messages|34	$00000001
+RXReadPort|message|40 messages|35	$00000001
+RXReadPort|message|40 messages|36	$00000001
+RXReadPort|message|40 messages|37	$00000001
+RXReadPort|message|40 messages|38	$00000001
+RXReadPort|message|40 messages|39	$00000001
+RXReadPort|message|40 messages|40	$00000001
 RXReadPort|message|after a closing quote|1	$00000001
 RXReadPort|message|arrived while waiting|1	$00000001
 RXReadPort|message|closing quote at the end|1	$00000001
@@ -1922,6 +2015,46 @@ RXReadPort|message|the reply|8	$00000000
 RXReadPort|message|the script replies|1	$00000000
 RXReadPort|message|untokenised|1	$00000001
 RXReadPort|message as expected|33 messages|1	$00000001
+RXReadPort|message as expected|40 messages|1	$00000001
+RXReadPort|message as expected|40 messages|2	$00000001
+RXReadPort|message as expected|40 messages|3	$00000001
+RXReadPort|message as expected|40 messages|4	$00000001
+RXReadPort|message as expected|40 messages|5	$00000001
+RXReadPort|message as expected|40 messages|6	$00000001
+RXReadPort|message as expected|40 messages|7	$00000001
+RXReadPort|message as expected|40 messages|8	$00000001
+RXReadPort|message as expected|40 messages|9	$00000001
+RXReadPort|message as expected|40 messages|10	$00000001
+RXReadPort|message as expected|40 messages|11	$00000001
+RXReadPort|message as expected|40 messages|12	$00000001
+RXReadPort|message as expected|40 messages|13	$00000001
+RXReadPort|message as expected|40 messages|14	$00000001
+RXReadPort|message as expected|40 messages|15	$00000001
+RXReadPort|message as expected|40 messages|16	$00000001
+RXReadPort|message as expected|40 messages|17	$00000001
+RXReadPort|message as expected|40 messages|18	$00000001
+RXReadPort|message as expected|40 messages|19	$00000001
+RXReadPort|message as expected|40 messages|20	$00000001
+RXReadPort|message as expected|40 messages|21	$00000001
+RXReadPort|message as expected|40 messages|22	$00000001
+RXReadPort|message as expected|40 messages|23	$00000001
+RXReadPort|message as expected|40 messages|24	$00000001
+RXReadPort|message as expected|40 messages|25	$00000001
+RXReadPort|message as expected|40 messages|26	$00000001
+RXReadPort|message as expected|40 messages|27	$00000001
+RXReadPort|message as expected|40 messages|28	$00000001
+RXReadPort|message as expected|40 messages|29	$00000001
+RXReadPort|message as expected|40 messages|30	$00000001
+RXReadPort|message as expected|40 messages|31	$00000001
+RXReadPort|message as expected|40 messages|32	$00000001
+RXReadPort|message as expected|40 messages|33	$00000001
+RXReadPort|message as expected|40 messages|34	$00000001
+RXReadPort|message as expected|40 messages|35	$00000001
+RXReadPort|message as expected|40 messages|36	$00000001
+RXReadPort|message as expected|40 messages|37	$00000001
+RXReadPort|message as expected|40 messages|38	$00000001
+RXReadPort|message as expected|40 messages|39	$00000001
+RXReadPort|message as expected|40 messages|40	$00000001
 RXReadPort|message as expected|after a closing quote|1	$00000001
 RXReadPort|message as expected|arrived while waiting|1	$00000001
 RXReadPort|message as expected|closing quote at the end|1	$00000001
@@ -1948,6 +2081,46 @@ RXReadPort|message as expected|the reply|8	$00000001
 RXReadPort|message as expected|the script replies|1	$00000001
 RXReadPort|message as expected|untokenised|1	$00000001
 RXReadPort|popped|33 messages|1	$00000000
+RXReadPort|popped|40 messages|1	$00000000
+RXReadPort|popped|40 messages|2	$00000000
+RXReadPort|popped|40 messages|3	$00000000
+RXReadPort|popped|40 messages|4	$00000000
+RXReadPort|popped|40 messages|5	$00000000
+RXReadPort|popped|40 messages|6	$00000000
+RXReadPort|popped|40 messages|7	$00000000
+RXReadPort|popped|40 messages|8	$00000000
+RXReadPort|popped|40 messages|9	$00000000
+RXReadPort|popped|40 messages|10	$00000000
+RXReadPort|popped|40 messages|11	$00000000
+RXReadPort|popped|40 messages|12	$00000000
+RXReadPort|popped|40 messages|13	$00000000
+RXReadPort|popped|40 messages|14	$00000000
+RXReadPort|popped|40 messages|15	$00000000
+RXReadPort|popped|40 messages|16	$00000000
+RXReadPort|popped|40 messages|17	$00000000
+RXReadPort|popped|40 messages|18	$00000000
+RXReadPort|popped|40 messages|19	$00000000
+RXReadPort|popped|40 messages|20	$00000000
+RXReadPort|popped|40 messages|21	$00000000
+RXReadPort|popped|40 messages|22	$00000000
+RXReadPort|popped|40 messages|23	$00000000
+RXReadPort|popped|40 messages|24	$00000000
+RXReadPort|popped|40 messages|25	$00000000
+RXReadPort|popped|40 messages|26	$00000000
+RXReadPort|popped|40 messages|27	$00000000
+RXReadPort|popped|40 messages|28	$00000000
+RXReadPort|popped|40 messages|29	$00000000
+RXReadPort|popped|40 messages|30	$00000000
+RXReadPort|popped|40 messages|31	$00000000
+RXReadPort|popped|40 messages|32	$00000000
+RXReadPort|popped|40 messages|33	$00000000
+RXReadPort|popped|40 messages|34	$00000000
+RXReadPort|popped|40 messages|35	$00000000
+RXReadPort|popped|40 messages|36	$00000000
+RXReadPort|popped|40 messages|37	$00000000
+RXReadPort|popped|40 messages|38	$00000000
+RXReadPort|popped|40 messages|39	$00000000
+RXReadPort|popped|40 messages|40	$00000000
 RXReadPort|popped|after a closing quote|1	$00000000
 RXReadPort|popped|arrived while waiting|1	$00000000
 RXReadPort|popped|closing quote at the end|1	$00000000
@@ -1973,6 +2146,46 @@ RXReadPort|popped|the reply|7	$00000000
 RXReadPort|popped|the reply|8	$00000000
 RXReadPort|popped|the script replies|1	$00000000
 RXReadPort|popped|untokenised|1	$00000000
+RXReplyMsg|kept|40 messages 0 -|1	kept
+RXReplyMsg|kept|40 messages 0 -|2	kept
+RXReplyMsg|kept|40 messages 0 -|3	kept
+RXReplyMsg|kept|40 messages 0 -|4	kept
+RXReplyMsg|kept|40 messages 0 -|5	kept
+RXReplyMsg|kept|40 messages 0 -|6	kept
+RXReplyMsg|kept|40 messages 0 -|7	kept
+RXReplyMsg|kept|40 messages 0 -|8	kept
+RXReplyMsg|kept|40 messages 0 -|9	kept
+RXReplyMsg|kept|40 messages 0 -|10	kept
+RXReplyMsg|kept|40 messages 0 -|11	kept
+RXReplyMsg|kept|40 messages 0 -|12	kept
+RXReplyMsg|kept|40 messages 0 -|13	kept
+RXReplyMsg|kept|40 messages 0 -|14	kept
+RXReplyMsg|kept|40 messages 0 -|15	kept
+RXReplyMsg|kept|40 messages 0 -|16	kept
+RXReplyMsg|kept|40 messages 0 -|17	kept
+RXReplyMsg|kept|40 messages 0 -|18	kept
+RXReplyMsg|kept|40 messages 0 -|19	kept
+RXReplyMsg|kept|40 messages 0 -|20	kept
+RXReplyMsg|kept|40 messages 0 -|21	kept
+RXReplyMsg|kept|40 messages 0 -|22	kept
+RXReplyMsg|kept|40 messages 0 -|23	kept
+RXReplyMsg|kept|40 messages 0 -|24	kept
+RXReplyMsg|kept|40 messages 0 -|25	kept
+RXReplyMsg|kept|40 messages 0 -|26	kept
+RXReplyMsg|kept|40 messages 0 -|27	kept
+RXReplyMsg|kept|40 messages 0 -|28	kept
+RXReplyMsg|kept|40 messages 0 -|29	kept
+RXReplyMsg|kept|40 messages 0 -|30	kept
+RXReplyMsg|kept|40 messages 0 -|31	kept
+RXReplyMsg|kept|40 messages 0 -|32	kept
+RXReplyMsg|kept|40 messages 0 -|33	kept
+RXReplyMsg|kept|40 messages 0 -|34	kept
+RXReplyMsg|kept|40 messages 0 -|35	kept
+RXReplyMsg|kept|40 messages 0 -|36	kept
+RXReplyMsg|kept|40 messages 0 -|37	kept
+RXReplyMsg|kept|40 messages 0 -|38	kept
+RXReplyMsg|kept|40 messages 0 -|39	kept
+RXReplyMsg|kept|40 messages 0 -|40	kept
 RXReplyMsg|kept|after a closing quote 0 -|1	kept
 RXReplyMsg|kept|closing quote at the end 0 -|1	kept
 RXReplyMsg|kept|default 0 -|1	kept
@@ -1984,6 +2197,46 @@ RXReplyMsg|kept|own 0 the result|1	kept
 RXReplyMsg|kept|sender gone 0 lost|1	kept
 RXReplyMsg|kept|to the test 0 answer|1	kept
 RXReplyMsg|kept|untokenised 3 -|1	kept
+RXReplyMsg|popped|40 messages 0 -|1	$00000000
+RXReplyMsg|popped|40 messages 0 -|2	$00000000
+RXReplyMsg|popped|40 messages 0 -|3	$00000000
+RXReplyMsg|popped|40 messages 0 -|4	$00000000
+RXReplyMsg|popped|40 messages 0 -|5	$00000000
+RXReplyMsg|popped|40 messages 0 -|6	$00000000
+RXReplyMsg|popped|40 messages 0 -|7	$00000000
+RXReplyMsg|popped|40 messages 0 -|8	$00000000
+RXReplyMsg|popped|40 messages 0 -|9	$00000000
+RXReplyMsg|popped|40 messages 0 -|10	$00000000
+RXReplyMsg|popped|40 messages 0 -|11	$00000000
+RXReplyMsg|popped|40 messages 0 -|12	$00000000
+RXReplyMsg|popped|40 messages 0 -|13	$00000000
+RXReplyMsg|popped|40 messages 0 -|14	$00000000
+RXReplyMsg|popped|40 messages 0 -|15	$00000000
+RXReplyMsg|popped|40 messages 0 -|16	$00000000
+RXReplyMsg|popped|40 messages 0 -|17	$00000000
+RXReplyMsg|popped|40 messages 0 -|18	$00000000
+RXReplyMsg|popped|40 messages 0 -|19	$00000000
+RXReplyMsg|popped|40 messages 0 -|20	$00000000
+RXReplyMsg|popped|40 messages 0 -|21	$00000000
+RXReplyMsg|popped|40 messages 0 -|22	$00000000
+RXReplyMsg|popped|40 messages 0 -|23	$00000000
+RXReplyMsg|popped|40 messages 0 -|24	$00000000
+RXReplyMsg|popped|40 messages 0 -|25	$00000000
+RXReplyMsg|popped|40 messages 0 -|26	$00000000
+RXReplyMsg|popped|40 messages 0 -|27	$00000000
+RXReplyMsg|popped|40 messages 0 -|28	$00000000
+RXReplyMsg|popped|40 messages 0 -|29	$00000000
+RXReplyMsg|popped|40 messages 0 -|30	$00000000
+RXReplyMsg|popped|40 messages 0 -|31	$00000000
+RXReplyMsg|popped|40 messages 0 -|32	$00000000
+RXReplyMsg|popped|40 messages 0 -|33	$00000000
+RXReplyMsg|popped|40 messages 0 -|34	$00000000
+RXReplyMsg|popped|40 messages 0 -|35	$00000000
+RXReplyMsg|popped|40 messages 0 -|36	$00000000
+RXReplyMsg|popped|40 messages 0 -|37	$00000000
+RXReplyMsg|popped|40 messages 0 -|38	$00000000
+RXReplyMsg|popped|40 messages 0 -|39	$00000000
+RXReplyMsg|popped|40 messages 0 -|40	$00000000
 RXReplyMsg|popped|after a closing quote 0 -|1	$00000000
 RXReplyMsg|popped|closing quote at the end 0 -|1	$00000000
 RXReplyMsg|popped|default 0 -|1	$00000000
@@ -2092,7 +2345,7 @@ RXRunCommand|argument|default "to REXXE"|13 [fixed #532]	bytes 48 00000000000000
 RXRunCommand|argument|default "to REXXE"|14 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 RXRunCommand|argument|default "to REXXE"|15 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 RXRunCommand|argument|default "to REXXE"|16 [fixed #532]	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-RXRunCommand|default port after init: message|default "to REXXE"|1 [fixed #532]	$0000000B
+RXRunCommand|default port after init: message|default "to REXXE"|1 [fixed #532]	$0000000C
 RXRunCommand|kept|RWENOWHERE "cmd"|1	kept
 RXRunCommand|kept|RWERESP "cmd a b"|1	kept
 RXRunCommand|kept|RWERESP "held long"|1	kept
@@ -2207,6 +2460,7 @@ RXSendCommand|a3|form 0  "default send" rc 0 res from the default port|1	$000000
 RXSendCommand|a3|form 0  "empty result" rc 0 res |1	$0000000E
 RXSendCommand|a3|form 1 RWENOWHERE "cmd" rc 0 res x|1	$00000000
 RXSendCommand|a3|form 1 RWERESP "again" rc 0 res x|1	$00000001
+RXSendCommand|a3|form 1 RWERESP "behind 40" rc 0 res after 40|1	$00000008
 RXSendCommand|a3|form 1 RWERESP "fail" rc 10 res -|1	$00000000
 RXSendCommand|a3|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$0000000A
 RXSendCommand|action|form 0  "default send" rc 0 res from the default port|1	$01060000
@@ -2249,12 +2503,14 @@ RXSendCommand|d0|form 0  "default send" rc 0 res from the default port|1	$000000
 RXSendCommand|d0|form 0  "empty result" rc 0 res |1	$00000000
 RXSendCommand|d0|form 1 RWENOWHERE "cmd" rc 0 res x|1	$00000000
 RXSendCommand|d0|form 1 RWERESP "again" rc 0 res x|1	$00000001
+RXSendCommand|d0|form 1 RWERESP "behind 40" rc 0 res after 40|1	$00000008
 RXSendCommand|d0|form 1 RWERESP "fail" rc 10 res -|1	$00000000
 RXSendCommand|d0|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$0000000A
 RXSendCommand|kept|form 0  "default send" rc 0 res from the default port|1	kept
 RXSendCommand|kept|form 0  "empty result" rc 0 res |1	kept
 RXSendCommand|kept|form 1 RWENOWHERE "cmd" rc 0 res x|1	kept
 RXSendCommand|kept|form 1 RWERESP "again" rc 0 res x|1	kept
+RXSendCommand|kept|form 1 RWERESP "behind 40" rc 0 res after 40|1	kept
 RXSendCommand|kept|form 1 RWERESP "fail" rc 10 res -|1	kept
 RXSendCommand|kept|form 1 RWERESP "get "the" thing" rc 0 res the result|1	kept
 RXSendCommand|length|form 0  "default send" rc 0 res from the default port|1	$00000080
@@ -2265,6 +2521,7 @@ RXSendCommand|popped|form 0  "default send" rc 0 res from the default port|1	$00
 RXSendCommand|popped|form 0  "empty result" rc 0 res |1	$00000000
 RXSendCommand|popped|form 1 RWENOWHERE "cmd" rc 0 res x|1	$00000000
 RXSendCommand|popped|form 1 RWERESP "again" rc 0 res x|1	$00000000
+RXSendCommand|popped|form 1 RWERESP "behind 40" rc 0 res after 40|1	$00000000
 RXSendCommand|popped|form 1 RWERESP "fail" rc 10 res -|1	$00000000
 RXSendCommand|popped|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000000
 RXSendCommand|port|form 0  "default send" rc 0 res from the default port|1	$00000000
@@ -2281,6 +2538,7 @@ RXSendCommand|string area|form 0  "default send" rc 0 res from the default port|
 RXSendCommand|string area|form 0  "empty result" rc 0 res |1	bytes 1024 fnv F0632337
 RXSendCommand|string area|form 1 RWENOWHERE "cmd" rc 0 res x|1	bytes 1024 fnv FB60F977
 RXSendCommand|string area|form 1 RWERESP "again" rc 0 res x|1	bytes 1024 fnv AC0DEEB6
+RXSendCommand|string area|form 1 RWERESP "behind 40" rc 0 res after 40|1	bytes 1024 fnv 6B4847B5
 RXSendCommand|string area|form 1 RWERESP "fail" rc 10 res -|1	bytes 1024 fnv 893EB667
 RXSendCommand|string area|form 1 RWERESP "get "the" thing" rc 0 res the result|1	bytes 1024 fnv 6F59FBEA
 RXSendCommand|type|form 0  "default send" rc 0 res from the default port|1	$00000005
