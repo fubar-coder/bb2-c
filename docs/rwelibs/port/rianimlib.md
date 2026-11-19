@@ -9,7 +9,7 @@ third frame; `RINextAnimFrame(bitmap#)` applies the next frame's DLTA
 to the bitmap's planes (plus the offset), a CMAP of the frame through
 `ILBMPalette`; after the last frame it goes on with the third if
 `AnimLoop On` (the default), otherwise it returns 0.
-`RIAnimFrameCount` counts the chunks of the ANIM, `RIAnimDepth`,
+`RIAnimFrameCount` counts the frames (FORM ILBM chunks) of the ANIM, `RIAnimDepth`,
 `RIAnimWidth`, `RIAnimHeight(address)` read the first frame's BMHD.
 
 **Source and reference:** `rwelibsrc/ANIMLib/Anim-Library3.bb` (BB22,
@@ -52,6 +52,9 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   when no ILBM or BMHD was found (RIAnimFrameCount counted it) and the
   frame pointers of the animation before, which RINextAnimFrame went on
   playing (#512).
+* RIAnimFrameCount counts the FORM ILBM chunks of the ANIM, the frames;
+  the original counted every chunk (an ANNO or other chunk of the ANIM
+  as a frame) (#510).
 
 **BUG(orig)** (kept):
 
@@ -64,8 +67,7 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   (the original crashes; not reproducible in C) (#513).
 * The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers) add
   length + 8 without the pad byte of odd lengths (#505) and compare
-  addresses signed (#506); RIAnimFrameCount counts every chunk of the
-  ANIM, not only the frames (#510).
+  addresses signed (#506).
 * RIAnimInit x,y: the offset is ebwidth × y (MULU.w, low words) + x >> 3
   (ASR.l); the `DIVU.w #64` that undoes the compiler's bitmap# × 64
   overflows (no change) from 64 × 65536 on (#514).

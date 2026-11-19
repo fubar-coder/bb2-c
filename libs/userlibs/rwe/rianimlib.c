@@ -41,8 +41,7 @@
  *     the saved d1 (reproduced by the thunk) (#515).
  *   - The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers)
  *     add the chunk length + 8 without the pad byte of odd lengths
- *     (#505) and compare addresses signed (#506); RIAnimFrameCount counts
- *     every chunk of the ANIM, not only the frames (#510).
+ *     (#505) and compare addresses signed (#506).
  *   - RIAnimInit x,y form: the offset is ebwidth * y (MULU.w: the low
  *     words) + x >> 3 (ASR.l); DIVU.w #64 of the bitmap# overflows (no
  *     change) for numbers of 64 * 65536 and above (#514).
@@ -64,6 +63,8 @@
  *     RINextAnimFrame return 0); the original kept the ANIM's address and
  *     end when no ILBM or BMHD was found, and the frame pointers of the
  *     animation before (#512).
+ *   - RIAnimFrameCount counts the FORM ILBM chunks of the ANIM, the
+ *     frames; the original counted every chunk (#510).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -392,10 +393,10 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
 /**
  * @brief RIAnimFrameCount: the number of frames of the ANIM of the last RIAnimInit.
  *
- * BUG(orig): counts every chunk of the ANIM, not only the frames (#510);
- * the walk adds no pad byte (#505) and compares the addresses signed
- * (#506).
- * @return d0: the number of chunks, 0 before an RIAnimInit
+ * Counts the FORM ILBM chunks of the ANIM (fixed #510: the original
+ * counted every chunk).  BUG(orig): the walk adds no pad byte (#505) and
+ * compares the addresses signed (#506).
+ * @return d0: the number of frames, 0 before an RIAnimInit
  */
 ULONG BLITZ_ROUTINE c_CountFrames(void)
 {
@@ -405,7 +406,8 @@ ULONG BLITZ_ROUTINE c_CountFrames(void)
     if (!animaddress)
         return 0;
     for (p = animaddress + 12; (LONG)animend > (LONG)p; p += LG(p + 4) + 8)
-        n++;
+        if (LG(p) == ID_FORM && LG(p + 8) == ID_ILBM)   /* fixed #510 */
+            n++;
     return n;
 }
 
