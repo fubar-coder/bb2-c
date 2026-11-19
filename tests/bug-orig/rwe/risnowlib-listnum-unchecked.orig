@@ -4,6 +4,7 @@ done
 [compile]
 ok
 [run]
+before
 behind the table overwritten
 rc=0
 [blitz2]
