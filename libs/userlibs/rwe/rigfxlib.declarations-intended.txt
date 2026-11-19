@@ -1,13 +1,21 @@
 # the intended differences of rigfxlib against its reference, the CD
 # binary BSS2 RIGFXLIB.OBJ (blitzlib compare, docs/development.md
 # "Intended differences")
+# #1125: the library has an init (a nullsub behind the commands that
+# clears the PaletteInfo palette); the original's header has init 0 (the
+# first difference of the header: it covers the error field of #679 at
+# +$2C, which differs as well)
+lib 65: header +$16: code offset set in only one of them
+lib 65: end of the table +$46E: $FF != $00
+lib 65: 14 entries != 15
+lib 65: declaration part $474 != $488 bytes
 # #679: CPUCls gets an error check (cpuclschk, "Illegal BitMap Depth" for
 # depth 0); rigfxlib gets an error check area for it (the original has
 # none)
-lib 65: header +$2C: code offset set in only one of them
 lib 65: entry 11 CPUCls +$10: code offset set in only one of them
 # #684: PalAdjust's long form gets an error check (paladj2chk, "PalAdjust
 # end colour before the start colour")
 lib 65: entry 7 PalAdjust +$28: code offset set in only one of them
-# #679, #684: the relocations of the error field and the checks
-lib 65: relocations in the declaration part 17 != 20
+# #679, #684, #1125: the relocations of the error field, the checks and
+# the init entry
+lib 65: relocations in the declaration part 17 != 22

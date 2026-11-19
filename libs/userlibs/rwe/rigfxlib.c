@@ -76,6 +76,10 @@
  *   - SaveCMAP of a palette of 0 colours writes a CMAP of length 0 (a
  *     file of 48 bytes); the original copied with DBRA from numcols - 1,
  *     65536 colours, 196608 bytes behind its 48-byte block (#688).
+ *   - init (the original has none) clears the PaletteInfo palette: a
+ *     second run from the editor with the library still loaded started
+ *     with the run before's palette, which PalRed ... and PalAdjust read
+ *     before a PaletteInfo (#1125).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -93,10 +97,14 @@ void agapalred(void), agapalgreen(void), agapalblue(void);
 void paladjust(void), paladjust2(void), fillpalette(void), fillpalette2(void);
 void agafillpalette(void), agafillpalette2(void), copycolour(void);
 void cpucls(void), savecmap(void), mergebitplanes(void), cpuclschk(void), paladj2chk(void);
+static void codeinit(void);
 
-/* !libheader {#rigfxlib,0,0,0,0}; error field: the error check area
-   (fixed, #679, #684; the original has none) */
-BLITZ_LIBHEADER(LIB_rigfxlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
+BLITZ_ENTRY_DECL(init);
+
+/* !libheader {#rigfxlib,0,0,0,0}; init: fixed, #1125 (the original has
+   none); error field: the error check area (fixed, #679, #684; the
+   original has none) */
+BLITZ_LIBHEADER(LIB_rigfxlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
@@ -192,6 +200,8 @@ BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_IA1|BL_PD1, LIB_bitma
 BLITZ_SUBS(mergebitplanes, 0, 0);
 BLITZ_NAME("MergeBitplanes", "srcbitmap,srcbitmap,destbitmap,numplanes");
 
+BLITZ_NULLSUB_AT(init, codeinit, 0, 0);                  /* fixed #1125 */
+
 BLITZ_LIBFIN();
 
 /* ---------------------------------------------------------------- data */
@@ -234,6 +244,20 @@ struct cmapfile {
 static_assert(sizeof(struct cmapfile) == 48);
 
 static UBYTE *paladdr;                  /* colour 0 of PaletteInfo's palette */
+
+/**
+ * @brief init: no PaletteInfo palette.
+ *
+ * Fixed (#1125): the original has no init, so a second run of a program
+ * with the library still loaded (from the editor) started with the
+ * PaletteInfo palette of the run before: PalRed ... AGAPalBlue and
+ * PalAdjust before a PaletteInfo read the first run's freed palette.
+ * Clears with CLR.l on an absolute address: no register changes.
+ */
+static void BLITZ_ROUTINE codeinit(void)
+{
+    paladdr = NULL;
+}
 
 /* 12 * colour as the original indexes: MULU.w #12, then the low word as
    a signed index (0(a0,d0.w), ADDA.w) */

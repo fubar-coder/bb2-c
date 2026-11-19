@@ -41,7 +41,8 @@ AGAPalBlue|d0|A colour $AAA|1	$0000007B
 AGAPalBlue|d0|A colour $AAB|1	$00000066
 AGAPalBlue|d0|A colour $F|1	$0000006A
 AGAPalBlue|d0|A colour $FFFF|1	$00000000
-AGAPalBlue|d0|second run, no PaletteInfo|1	$00000026
+AGAPalBlue|d0|second run, no PaletteInfo|1 [orig]	$00000026
+AGAPalBlue|d0|second run, no PaletteInfo|1 [fixed #1125]	$00000000
 AGAPalBlue|kept|A colour $0|1	kept
 AGAPalBlue|kept|A colour $1|1	kept
 AGAPalBlue|kept|A colour $10|1	kept
@@ -295,7 +296,8 @@ PalAdjust|memory|form 1 ratio $18000 0..11|1	bytes 72000 fnv D2193B89
 PalAdjust|memory|form 1 ratio $30000 5..5|1	bytes 72000 fnv 02176DD9
 PalAdjust|memory|form 1 ratio $8000 2..5|1	bytes 72000 fnv 5CC5FB54
 PalAdjust|memory|form 1 ratio $9000 7..9|1	bytes 72000 fnv E203E509
-PalAdjust|memory|second run, no PaletteInfo, 0..1|1	bytes 72000 fnv 5269187D
+PalAdjust|memory|second run, no PaletteInfo, 0..1|1 [orig]	bytes 72000 fnv 5269187D
+PalAdjust|memory|second run, no PaletteInfo, 0..1|1 [fixed #1125]	bytes 72000 fnv A64C710E
 PalAdjust|popped|form 0 ratio $0 0..0|1	$00000000
 PalAdjust|popped|form 0 ratio $10000 0..0|1	$00000000
 PalAdjust|popped|form 0 ratio $1234567 0..0|1	$00000000
@@ -397,7 +399,8 @@ PalRed|d0|A colour $AAB|1	$00000007
 PalRed|d0|A colour $F|1	$0000000D
 PalRed|d0|A colour $FFFF|1	$00000000
 PalRed|d0|no PaletteInfo|1	$00000000
-PalRed|d0|second run, no PaletteInfo|1	$00000008
+PalRed|d0|second run, no PaletteInfo|1 [orig]	$00000008
+PalRed|d0|second run, no PaletteInfo|1 [fixed #1125]	$00000000
 PalRed|kept|A colour $0|1	kept
 PalRed|kept|A colour $1|1	kept
 PalRed|kept|A colour $10|1	kept
@@ -462,3 +465,5 @@ SaveCMAP|popped|32 colours, |1	$00000000
 SaveCMAP|popped|32 colours, rwe-nodir|1	$00000000
 SaveCMAP|popped|5 colours, |1	$00000000
 SaveCMAP|popped|no data|1	$00000000
+init|kept|second run|1 [fixed #1125]	kept
+init|popped|second run|1 [fixed #1125]	$00000000

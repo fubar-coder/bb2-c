@@ -29,8 +29,9 @@ when the planes belong to the object):
   dest's word 62 is set to 1). Nothing happens if that or the number of
   planes does not fit.
 
-No init or finit (`!libheader {#rigfxlib,0,0,0,0}`); the original's
-`_libfinit` (an RTS without a reference) is not ported.
+The original has no init or finit (`!libheader {#rigfxlib,0,0,0,0}`); its
+`_libfinit` (an RTS without a reference) is not ported. The port has an
+init (fixed, #1125, below).
 
 ## C and assembler
 
@@ -118,6 +119,13 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   of 48 bytes, and returns BSave's result. The original copied the
   colours with `SUBQ.w #1 … DBRA` from the count: 65536 colours, 196608
   bytes written behind its 48-byte block (#688).
+* The library has an init (a nullsub behind the commands) that clears
+  the PaletteInfo palette: the original has none, so a second run of a
+  program with the library still loaded (from the editor) started with
+  the palette of the run before, and PalRed … AGAPalBlue and PalAdjust
+  before a PaletteInfo read the first run's freed palette (#1125;
+  `rigfxlib.declarations-intended.txt`). The init clears with `CLR.l` on
+  an absolute address and changes no register.
 
 ## BUG(orig), kept
 * `PalAdjust` and the colour functions use the palette of the last
@@ -152,11 +160,14 @@ checked); BSave failing is a file in a missing directory. Covered: all colour fu
 palette, the negative word index, before PaletteInfo), PalAdjust both
 forms with nine ratios (saturation, negative, fractions) and ranges past
 the palette and before it, both fill commands with all forms of start/end
-(the `TST.l` case, end < start), CopyColour in and out of range, CPUCls
-with whole blocks, a word rest, an odd rest and odd plane addresses,
-SaveCMAP with odd/even colour counts, BSave failing, no data, memlib's
-memory all back, MergeBitplanes with all counts (0 = all, too many,
-negative), the flag checks and a negative word sum.
+(an end of 0 in the word only, end < start), CopyColour in and out of
+range, CPUCls with whole blocks, a word rest, an odd rest and odd plane
+addresses, SaveCMAP with odd/even colour counts, BSave failing, no data,
+memlib's memory all back, MergeBitplanes with all counts (0 = all, too
+many, negative), the flag checks and a negative word sum; at the end a
+second run (the init if the set has one, the C build since #1125; as
+from the editor with the library still loaded): PalRed, AGAPalBlue and
+PalAdjust before a PaletteInfo of that run.
 
 Not covered, because they crash or write far outside any buffer (each
 has a bug-orig test instead): CPUCls on a bitmap without plane 0

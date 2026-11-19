@@ -23,8 +23,8 @@
  * into a missing directory (BSave fails: 0).
  *
  * At the end a second run of a program with the library still loaded (as
- * from the editor): the library's init if the set has one (the original
- * and the C build have none today), then PalRed, AGAPalBlue and
+ * from the editor): the library's init if the set has one (the C build
+ * since #1125; the original has none), then PalRed, AGAPalBlue and
  * PalAdjust's long form before any PaletteInfo of that run.
  */
 #include "sysload.h"
