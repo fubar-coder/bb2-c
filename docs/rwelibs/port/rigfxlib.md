@@ -45,10 +45,8 @@ CopyColour, DBRA counts on words, `TST.l` of the whole `end` register in
 FillPalette but `CMP.w` against start, `DIVU #40` with its overflow case
 in CPUCls (`bl_divu_w`).
 
-Assembler remains only in the entry of `CPUCls`: the `TST.l 8(a0):BEQ
-'oops` of the original jumps to `MOVEM.l (a7)+,a4-a6:RTS` before the
-matching `MOVEM.l a4-a6,-(a7)` has run (BUG(orig) below) – a stack
-imbalance C cannot express. The clearing itself is C.
+There is no assembler (the entry of `CPUCls`, which kept the stack
+imbalance of the original's exit, became C with the fix of #680).
 
 ## Calls into other libraries
 
@@ -60,11 +58,19 @@ imbalance C cannot express. The clearing itself is C.
   `BL_TOKVAL(…, 1)` because BLITZ_ALIBJSR passes no d2. SaveCMAP returns
   BSave's result.
 
+## Fixed
+
+Intended deviations, `docs/libs/deviations.md` (3a), kind F:
+
+* `CPUCls` on a bitmap without plane 0 (`8(a0)` = 0) returns without
+  doing anything. The original's `TST.l 8(a0) : BEQ 'oops` went to the
+  `MOVEM.l (a7)+,a4-a6 : RTS` of the routine's end before the matching
+  `MOVEM.l a4-a6,-(a7)` had run: it popped the return address and two
+  more longs into a4–a6 and returned to whatever followed on the stack –
+  a crash (#680; the original has the test, only its exit was wrong).
+
 ## BUG(orig), kept
 
-* `CPUCls` on a bitmap without plane 0 (`8(a0)` = 0) pops the return
-  address and two more longs into a4–a6 and returns to whatever follows
-  on the stack – a crash (#680).
 * `CPUCls` clears with MOVEM blocks of 40 bytes, `DBRA` on blocks − 1: a
   bitplane of less than 40 bytes gives −1, i.e. 65536 blocks – 2.6 MB
   below the plane are cleared (#682). A rest of an odd number of bytes
@@ -117,7 +123,9 @@ SaveCMAP with odd/even colour counts, BSave failing, no data, memlib's
 memory all back, MergeBitplanes with all counts (0 = all, too many,
 negative), the flag checks and a negative word sum.
 
-Not covered: the crash and the 65536-block/-plane cases of CPUCls, the
+Not covered: CPUCls on a bitmap without plane 0 (the original crashes;
+bug-orig test `rigfxlib-cpucls-no-plane-crash`), the 65536-block/-plane
+cases of CPUCls, the
 DIVU overflow (planes of 2.6 MB), negative colours in CopyColour,
 PalAdjust with end < start, SaveCMAP with 0 colours (they write far
 outside any buffer); the real BSave.

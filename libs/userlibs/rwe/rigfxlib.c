@@ -29,9 +29,6 @@
  * and RIAmosFuncLib's BSave (form 1) through ALibJsr.
  *
  * BUG(orig), kept:
- *   - CPUCls on a bitmap without plane 0 pops a4-a6 it never pushed and
- *     returns to a foreign address (the BEQ 'oops before the MOVEM) - in
- *     assembler, see cpucls below (#680).
  *   - CPUCls clears with blocks of 40 bytes, DBRA on blocks - 1: a plane
  *     of less than 40 bytes clears 65536 blocks (2.6 MB below the plane)
  *     (#682); an odd rest byte stays (#681); the depth is the word
@@ -50,6 +47,12 @@
  *     colour), the word for the comparison with start (#683).
  * SaveCMAP's BMHD chunk is 20 zero bytes, like the original: no defect
  * (a palette file: what is read of it is the CMAP).
+ * Fixed (intended deviations, docs/libs/deviations.md):
+ *   - CPUCls on a bitmap without plane 0 returns without doing anything;
+ *     the original's BEQ 'oops went to the MOVEM.l (a7)+,a4-a6:RTS of the
+ *     routine's end before the MOVEM.l a4-a6,-(a7) had run: it popped the
+ *     return address and two more longs into a4-a6 and returned to a
+ *     foreign address (#680).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -513,9 +516,11 @@ static void clearplane(UBYTE *end, ULONG moves)
 }
 
 /**
- * @brief CPUCls bitmap#: clear every plane of a bitmap with the CPU (the work behind the entry cpucls).
+ * @brief CPUCls bitmap#: clear every plane of a bitmap with the CPU.
  *
- * BytesPerRow*Rows bytes per plane, cleared from the end down; the
+ * Nothing without plane 0 (fixed #680: the original's test left through
+ * the wrong exit, see the file's head).  BytesPerRow*Rows bytes per
+ * plane, cleared from the end down; the
  * original's register arithmetic for the block count (DIVU #40, the rest
  * as words).  BUG(orig): blocks of 40 bytes, DBRA on blocks - 1: a plane
  * of less than 40 bytes clears 65536 blocks (2.6 MB below the plane)
@@ -530,6 +535,8 @@ static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
     UWORD planes = (UWORD)(bm->flagsdepth - 1);    /* BUG(orig) (#679) */
     const ULONG *pl = (const ULONG *)bm->planes;
 
+    if (!*pl)                           /* TST.l 8(a0):BEQ - fixed #680 */
+        return;
     BL_SETW(moves, moves - 1);          /* blocks - 1 */
     moves = BL_SWAP(moves);
     BL_SETW(moves, (WORD)moves >> 1);   /* rest / 2 (ASR.w) */
@@ -540,26 +547,7 @@ static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
     while (planes-- != 0);
 }
 
-/**
- * @brief CPUCls bitmap#: the entry; nothing (but a crash) without plane 0.
- *
- * TST.l 8(a0):BEQ 'oops - BUG(orig) (#680): 'oops is the MOVEM.l
- * (a7)+,a4-a6:RTS meant for after MOVEM.l a4-a6,-(a7), which has not
- * run yet: it pops the return address and two more longs into a4-a6 and
- * returns to whatever follows on the stack.  A stack imbalance C cannot
- * express, so this entry is assembler; the real work is cpucls_c(),
- * called with d0/d1/a0/a1 kept.
- * a0: the bitmap object.
- */
-BLITZ_ASM_ROUTINE(cpucls,
-    "   tst.l   8(a0)\n"
-    "   beq.s   1f\n"
-    "   movem.l d0-d1/a0-a1,-(sp)\n"
-    "   jsr     _cpucls_c\n"
-    "   movem.l (sp)+,d0-d1/a0-a1\n"
-    "   rts\n"
-    "1: movem.l (sp)+,a4-a6\n"
-    "   rts");
+BLITZ_THUNK(cpucls, cpucls_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------------- SaveCMAP */
 

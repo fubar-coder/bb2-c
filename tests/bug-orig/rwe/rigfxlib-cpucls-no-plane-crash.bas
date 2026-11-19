@@ -5,6 +5,7 @@
 ; caller into a4-a6 and returns to the next long - a crash (the session
 ; ends in a timeout).  Bitmap 5 was never set up: its plane 0 is 0.
 ; Correct: CPUCls returns without doing anything, the program goes on.
+; @fixed #680
 ; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
 ; @rwe rigfxlib riamosfunclib
 ; @pass timeout=30
