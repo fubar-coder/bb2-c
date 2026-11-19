@@ -4,7 +4,7 @@ done
 [compile]
 ok
 [run]
-default: -1 88
+default: -1 70
 limit 80: 0 0
 rc=0
 [blitz2]
