@@ -27,28 +27,29 @@ All C behind `BLITZ_THUNK`s (keep d1/a0/a1, and d0 for init, finit and
 ViewBitmap; the original changes d0/d1/a0/a1/a6 in init and finit,
 d0–d6/a0/a1/a6 in InitView). The variables `viewsize` and `cop` are a
 struct in the original's order (the test finds them by the address
-InitView returns). The words of the copper list are read from the
-absolute addresses the original reads (below), each with one `MOVE.w`
-in inline assembler (`absw`): the compiler splits a read it knows to be
-odd into two byte reads, which a 68000 takes without the address error
-of the original.
+InitView returns).
 
 ## BUG(orig), kept
 
 * InitView loses the colour count (`MOVE.w d0,d3` overwrites it with
   the height before it is read): the size is 16 × numsprites + 16 ×
   depth + 8 × height + 38, computed as a word and sign-extended (#890).
-* `!cmove{diwstrt,$2c81}` assembles to `MOVE.w diwstrt,(a0)+` /
-  `MOVE.w $2c81,(a0)+`: the register name is its offset (`diwstrt` =
-  `$8E`) and the value has no `#`, so both are read as absolute
-  addresses: the list gets the words at `$8E`, `$2C81`, `$90`, `$2CC1`, `$92`,
-  `$38`, `$94`, `$D0` – low memory and the vector table, two of them at
-  odd addresses (an address error on a 68000) (#889).
 * AllocMem is not checked: without chip memory the eight words go to
   address 0 (over ExecBase at 4) (#888).
 * Every InitView allocates a new list and forgets the old one; finit
   frees only the last, and only if graphics.library was opened (#891)
   (`FreeMem(0,size)` if the last allocation failed, #888).
+
+## Fixed
+
+* The four moves of the list are the register moves DIWSTRT `$2C81`,
+  DIWSTOP `$2CC1`, DDFSTRT `$0038`, DDFSTOP `$00D0` (#889). In the
+  original `!cmove{diwstrt,$2c81}` assembles to `MOVE.w diwstrt,(a0)+` /
+  `MOVE.w $2c81,(a0)+`: the register name is its offset (`diwstrt` =
+  `$8E`) and the value has no `#`, so both were read as absolute
+  addresses: the list got the words at `$8E`, `$2C81`, `$90`, `$2CC1`,
+  `$92`, `$38`, `$94`, `$D0` – low memory and the vector table, two of
+  them at odd addresses (an address error on a 68000).
 
 ## Test
 
@@ -57,8 +58,9 @@ scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_ridisplaylib.txt` recorded from the
 original. Observed after every call: d0 (InitView: as "is the list the
 library keeps"), `viewsize` and `cop`, the list's eight words (each
-equal to the word at its address, BUG(orig) #889, and the value of the
-ones in the vector table), the change of graphics.library's open count, the test task's
+compared with its register move and with the word at the absolute
+address the original reads, and the value of the ones at even
+addresses), the change of graphics.library's open count, the test task's
 memory balance (rwemem.h), kept registers. Cases: init, five InitViews (marker upper
 words, colour counts that change nothing), ViewBitmap, finit with a
 list, finit again (nothing), init and finit without a list, InitView

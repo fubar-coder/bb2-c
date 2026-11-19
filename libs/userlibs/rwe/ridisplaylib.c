@@ -17,23 +17,25 @@
  *
  * The variables viewsize and cop are kept together in the original's
  * order (the test finds them by the address InitView returns).  No
- * assembler besides the thunks and the word reads of InitView (absw).
+ * assembler besides the thunks.
  *
  * BUG(orig):
  *   - InitView: the colour count is lost (MOVE.w d0,d3 overwrites it with
  *     the height before it is read): the size is 16*numsprites +
  *     16*depth + 8*height + 38, computed as a word (#890).
- *   - The copper moves are read from absolute addresses: !cmove{diwstrt,
- *     $2c81} is MOVE.w diwstrt,(a0)+:MOVE.w $2c81,(a0)+, the register
- *     name is its offset ($8E) and the value has no #: the list gets the
- *     words at $8E, $2C81, $90, $2CC1, $92, $38, $94, $D0 - low memory
- *     and the vector table, two odd addresses (an address error on a
- *     68000) (#889).
  *   - No check of AllocMem: without chip memory the moves go to address
  *     0 (over ExecBase at 4) (#888).
  *   - Every InitView allocates a new list; only the last one is freed (by
  *     finit, and only if graphics.library was opened) (#891):
  *     FreeMem(0, size) if the last allocation failed (#888).
+ * Fixed:
+ *   - The four copper moves are the register moves DIWSTRT $2C81, DIWSTOP
+ *     $2CC1, DDFSTRT $0038, DDFSTOP $00D0 (#889).  The original's
+ *     !cmove{diwstrt,$2c81} is MOVE.w diwstrt,(a0)+:MOVE.w $2c81,(a0)+:
+ *     the register name is its offset ($8E) and the value has no #, so
+ *     the list got the words at $8E, $2C81, $90, $2CC1, $92, $38, $94,
+ *     $D0 (low memory and the vector table; the odd addresses are an
+ *     address error on a 68000).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -105,18 +107,6 @@ static void BLITZ_ROUTINE codefinit_c(void)
     vd.cop = NULL;
 }
 
-/* the word at an absolute address (a "register name", BUG(orig), #889):
-   one word read, as the original's MOVE.w abs,(a0)+, also at an odd
-   address (an address error on a 68000; the compiler splits a read it
-   knows to be odd into two byte reads) */
-static inline UWORD absw(ULONG a)
-{
-    UWORD v;
-    __asm volatile("move.w (%1),%0" : "=d"(v) : "a"(a));
-    return v;
-}
-#define ABSW(a) absw(a)
-
 /**
  * @brief InitView height,depth,numsprites,numcolours: allocate a copper
  * list in chip memory and write its first four moves.
@@ -124,10 +114,10 @@ static inline UWORD absw(ULONG a)
  * The size is 16*numsprites + 16*depth + 8*height + 38, computed as a
  * word and sign-extended (EXT.l): the colour count is lost, MOVE.w d0,d3
  * overwrites it with the height before it is read (BUG(orig) (#890)).
- * The four `!cmove`s read their register and value from absolute
- * addresses: the list gets the words at $8E, $2C81, $90, $2CC1, $92,
- * $38, $94, $D0 (two odd addresses: an address error on a 68000)
- * (BUG(orig) (#889)).  AllocMem is not checked: without chip memory the
+ * The four moves are DIWSTRT $2C81, DIWSTOP $2CC1, DDFSTRT $0038,
+ * DDFSTOP $00D0 (fixed (#889): the original's `!cmove`s read register
+ * and value from those absolute addresses, an address error on a 68000
+ * at the odd ones).  AllocMem is not checked: without chip memory the
  * words go to address 0 (BUG(orig) (#888)).  Every call allocates a new
  * list; the old one is forgotten (BUG(orig) (#891)).  The list is never
  * installed.
@@ -152,15 +142,15 @@ static ULONG BLITZ_ROUTINE initview_c(UWORD height BL_REG(d0), UWORD depth BL_RE
     vd.viewsize = (ULONG)(LONG)(WORD)size;              /* EXT.l d2 */
     p = AllocMem(vd.viewsize, MEMF_CHIP);
     vd.cop = p;
-    /* !cmove{diwstrt,$2c81} ...: words from absolute addresses */
-    *p++ = ABSW(0x8e);
-    *p++ = ABSW(0x2c81);
-    *p++ = ABSW(0x90);
-    *p++ = ABSW(0x2cc1);
-    *p++ = ABSW(0x92);
-    *p++ = ABSW(0x38);
-    *p++ = ABSW(0x94);
-    *p++ = ABSW(0xd0);
+    /* !cmove{diwstrt,$2c81} ...: the register moves (#889) */
+    *p++ = 0x008e;                                      /* DIWSTRT */
+    *p++ = 0x2c81;
+    *p++ = 0x0090;                                      /* DIWSTOP */
+    *p++ = 0x2cc1;
+    *p++ = 0x0092;                                      /* DDFSTRT */
+    *p++ = 0x0038;
+    *p++ = 0x0094;                                      /* DDFSTOP */
+    *p++ = 0x00d0;
     return (ULONG)vd.cop;
 }
 

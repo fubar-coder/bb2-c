@@ -9,6 +9,7 @@
 ; other word (what lies at those addresses differs between machines).
 ; Correct: the list begins with $008E,$2C81, $0090,$2CC1, $0092,$0038,
 ; $0094,$00D0 (DIWSTRT, DIWSTOP, DDFSTRT, DDFSTOP).
+; @fixed #889
 ; @rwe ridisplaylib
 DEFTYPE .l
 c=InitView(256,5,8,32)

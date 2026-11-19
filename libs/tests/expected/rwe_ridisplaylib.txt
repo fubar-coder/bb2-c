@@ -37,116 +37,226 @@ InitView|viewsize|0,0,0,0|1	$00000026
 InitView|viewsize|1000,8,8,2|1	$00002066
 InitView|viewsize|200,5,0,32|1	$000006B6
 InitView|viewsize|3000,1,100,65535|1	$00006436
-InitView|word 0|0,0,0,0|1	$00000B6E
-InitView|word 0|1000,8,8,2|1	$00000B6E
-InitView|word 0|200,5,0,32|1	$00000B6E
-InitView|word 0|256,8,8,256|1	$00000B6E
-InitView|word 0|3000,1,100,65535|1	$00000B6E
-InitView|word 0 = $008E|0,0,0,0|1	$00000000
-InitView|word 0 = $008E|1000,8,8,2|1	$00000000
-InitView|word 0 = $008E|200,5,0,32|1	$00000000
-InitView|word 0 = $008E|256,8,8,256|1	$00000000
-InitView|word 0 = $008E|3000,1,100,65535|1	$00000000
-InitView|word 0 = ($8E)|0,0,0,0|1	$00000001
-InitView|word 0 = ($8E)|1000,8,8,2|1	$00000001
-InitView|word 0 = ($8E)|200,5,0,32|1	$00000001
-InitView|word 0 = ($8E)|256,8,8,256|1	$00000001
-InitView|word 0 = ($8E)|3000,1,100,65535|1	$00000001
-InitView|word 1 = $2C81|0,0,0,0|1	$00000000
-InitView|word 1 = $2C81|1000,8,8,2|1	$00000000
-InitView|word 1 = $2C81|200,5,0,32|1	$00000000
-InitView|word 1 = $2C81|256,8,8,256|1	$00000000
-InitView|word 1 = $2C81|3000,1,100,65535|1	$00000000
-InitView|word 1 = ($2C81)|0,0,0,0|1	$00000001
-InitView|word 1 = ($2C81)|1000,8,8,2|1	$00000001
-InitView|word 1 = ($2C81)|200,5,0,32|1	$00000001
-InitView|word 1 = ($2C81)|256,8,8,256|1	$00000001
-InitView|word 1 = ($2C81)|3000,1,100,65535|1	$00000001
-InitView|word 2|0,0,0,0|1	$000000F8
-InitView|word 2|1000,8,8,2|1	$000000F8
-InitView|word 2|200,5,0,32|1	$000000F8
-InitView|word 2|256,8,8,256|1	$000000F8
-InitView|word 2|3000,1,100,65535|1	$000000F8
-InitView|word 2 = $0090|0,0,0,0|1	$00000000
-InitView|word 2 = $0090|1000,8,8,2|1	$00000000
-InitView|word 2 = $0090|200,5,0,32|1	$00000000
-InitView|word 2 = $0090|256,8,8,256|1	$00000000
-InitView|word 2 = $0090|3000,1,100,65535|1	$00000000
-InitView|word 2 = ($90)|0,0,0,0|1	$00000001
-InitView|word 2 = ($90)|1000,8,8,2|1	$00000001
-InitView|word 2 = ($90)|200,5,0,32|1	$00000001
-InitView|word 2 = ($90)|256,8,8,256|1	$00000001
-InitView|word 2 = ($90)|3000,1,100,65535|1	$00000001
-InitView|word 3 = $2CC1|0,0,0,0|1	$00000000
-InitView|word 3 = $2CC1|1000,8,8,2|1	$00000000
-InitView|word 3 = $2CC1|200,5,0,32|1	$00000000
-InitView|word 3 = $2CC1|256,8,8,256|1	$00000000
-InitView|word 3 = $2CC1|3000,1,100,65535|1	$00000000
-InitView|word 3 = ($2CC1)|0,0,0,0|1	$00000001
-InitView|word 3 = ($2CC1)|1000,8,8,2|1	$00000001
-InitView|word 3 = ($2CC1)|200,5,0,32|1	$00000001
-InitView|word 3 = ($2CC1)|256,8,8,256|1	$00000001
-InitView|word 3 = ($2CC1)|3000,1,100,65535|1	$00000001
-InitView|word 4|0,0,0,0|1	$00000B70
-InitView|word 4|1000,8,8,2|1	$00000B70
-InitView|word 4|200,5,0,32|1	$00000B70
-InitView|word 4|256,8,8,256|1	$00000B70
-InitView|word 4|3000,1,100,65535|1	$00000B70
-InitView|word 4 = $0092|0,0,0,0|1	$00000000
-InitView|word 4 = $0092|1000,8,8,2|1	$00000000
-InitView|word 4 = $0092|200,5,0,32|1	$00000000
-InitView|word 4 = $0092|256,8,8,256|1	$00000000
-InitView|word 4 = $0092|3000,1,100,65535|1	$00000000
-InitView|word 4 = ($92)|0,0,0,0|1	$00000001
-InitView|word 4 = ($92)|1000,8,8,2|1	$00000001
-InitView|word 4 = ($92)|200,5,0,32|1	$00000001
-InitView|word 4 = ($92)|256,8,8,256|1	$00000001
-InitView|word 4 = ($92)|3000,1,100,65535|1	$00000001
-InitView|word 5|0,0,0,0|1	$000000F8
-InitView|word 5|1000,8,8,2|1	$000000F8
-InitView|word 5|200,5,0,32|1	$000000F8
-InitView|word 5|256,8,8,256|1	$000000F8
-InitView|word 5|3000,1,100,65535|1	$000000F8
-InitView|word 5 = $0038|0,0,0,0|1	$00000000
-InitView|word 5 = $0038|1000,8,8,2|1	$00000000
-InitView|word 5 = $0038|200,5,0,32|1	$00000000
-InitView|word 5 = $0038|256,8,8,256|1	$00000000
-InitView|word 5 = $0038|3000,1,100,65535|1	$00000000
-InitView|word 5 = ($38)|0,0,0,0|1	$00000001
-InitView|word 5 = ($38)|1000,8,8,2|1	$00000001
-InitView|word 5 = ($38)|200,5,0,32|1	$00000001
-InitView|word 5 = ($38)|256,8,8,256|1	$00000001
-InitView|word 5 = ($38)|3000,1,100,65535|1	$00000001
-InitView|word 6|0,0,0,0|1	$000000F8
-InitView|word 6|1000,8,8,2|1	$000000F8
-InitView|word 6|200,5,0,32|1	$000000F8
-InitView|word 6|256,8,8,256|1	$000000F8
-InitView|word 6|3000,1,100,65535|1	$000000F8
-InitView|word 6 = $0094|0,0,0,0|1	$00000000
-InitView|word 6 = $0094|1000,8,8,2|1	$00000000
-InitView|word 6 = $0094|200,5,0,32|1	$00000000
-InitView|word 6 = $0094|256,8,8,256|1	$00000000
-InitView|word 6 = $0094|3000,1,100,65535|1	$00000000
-InitView|word 6 = ($94)|0,0,0,0|1	$00000001
-InitView|word 6 = ($94)|1000,8,8,2|1	$00000001
-InitView|word 6 = ($94)|200,5,0,32|1	$00000001
-InitView|word 6 = ($94)|256,8,8,256|1	$00000001
-InitView|word 6 = ($94)|3000,1,100,65535|1	$00000001
-InitView|word 7|0,0,0,0|1	$000000F8
-InitView|word 7|1000,8,8,2|1	$000000F8
-InitView|word 7|200,5,0,32|1	$000000F8
-InitView|word 7|256,8,8,256|1	$000000F8
-InitView|word 7|3000,1,100,65535|1	$000000F8
-InitView|word 7 = $00D0|0,0,0,0|1	$00000000
-InitView|word 7 = $00D0|1000,8,8,2|1	$00000000
-InitView|word 7 = $00D0|200,5,0,32|1	$00000000
-InitView|word 7 = $00D0|256,8,8,256|1	$00000000
-InitView|word 7 = $00D0|3000,1,100,65535|1	$00000000
-InitView|word 7 = ($D0)|0,0,0,0|1	$00000001
-InitView|word 7 = ($D0)|1000,8,8,2|1	$00000001
-InitView|word 7 = ($D0)|200,5,0,32|1	$00000001
-InitView|word 7 = ($D0)|256,8,8,256|1	$00000001
-InitView|word 7 = ($D0)|3000,1,100,65535|1	$00000001
+InitView|word 0|0,0,0,0|1 [orig]	$00000B6E
+InitView|word 0|0,0,0,0|1 [fixed #889]	$0000008E
+InitView|word 0|1000,8,8,2|1 [orig]	$00000B6E
+InitView|word 0|1000,8,8,2|1 [fixed #889]	$0000008E
+InitView|word 0|200,5,0,32|1 [orig]	$00000B6E
+InitView|word 0|200,5,0,32|1 [fixed #889]	$0000008E
+InitView|word 0|256,8,8,256|1 [orig]	$00000B6E
+InitView|word 0|256,8,8,256|1 [fixed #889]	$0000008E
+InitView|word 0|3000,1,100,65535|1 [orig]	$00000B6E
+InitView|word 0|3000,1,100,65535|1 [fixed #889]	$0000008E
+InitView|word 0 = $008E|0,0,0,0|1 [orig]	$00000000
+InitView|word 0 = $008E|0,0,0,0|1 [fixed #889]	$00000001
+InitView|word 0 = $008E|1000,8,8,2|1 [orig]	$00000000
+InitView|word 0 = $008E|1000,8,8,2|1 [fixed #889]	$00000001
+InitView|word 0 = $008E|200,5,0,32|1 [orig]	$00000000
+InitView|word 0 = $008E|200,5,0,32|1 [fixed #889]	$00000001
+InitView|word 0 = $008E|256,8,8,256|1 [orig]	$00000000
+InitView|word 0 = $008E|256,8,8,256|1 [fixed #889]	$00000001
+InitView|word 0 = $008E|3000,1,100,65535|1 [orig]	$00000000
+InitView|word 0 = $008E|3000,1,100,65535|1 [fixed #889]	$00000001
+InitView|word 0 = ($8E)|0,0,0,0|1 [orig]	$00000001
+InitView|word 0 = ($8E)|0,0,0,0|1 [fixed #889]	$00000000
+InitView|word 0 = ($8E)|1000,8,8,2|1 [orig]	$00000001
+InitView|word 0 = ($8E)|1000,8,8,2|1 [fixed #889]	$00000000
+InitView|word 0 = ($8E)|200,5,0,32|1 [orig]	$00000001
+InitView|word 0 = ($8E)|200,5,0,32|1 [fixed #889]	$00000000
+InitView|word 0 = ($8E)|256,8,8,256|1 [orig]	$00000001
+InitView|word 0 = ($8E)|256,8,8,256|1 [fixed #889]	$00000000
+InitView|word 0 = ($8E)|3000,1,100,65535|1 [orig]	$00000001
+InitView|word 0 = ($8E)|3000,1,100,65535|1 [fixed #889]	$00000000
+InitView|word 1 = $2C81|0,0,0,0|1 [orig]	$00000000
+InitView|word 1 = $2C81|0,0,0,0|1 [fixed #889]	$00000001
+InitView|word 1 = $2C81|1000,8,8,2|1 [orig]	$00000000
+InitView|word 1 = $2C81|1000,8,8,2|1 [fixed #889]	$00000001
+InitView|word 1 = $2C81|200,5,0,32|1 [orig]	$00000000
+InitView|word 1 = $2C81|200,5,0,32|1 [fixed #889]	$00000001
+InitView|word 1 = $2C81|256,8,8,256|1 [orig]	$00000000
+InitView|word 1 = $2C81|256,8,8,256|1 [fixed #889]	$00000001
+InitView|word 1 = $2C81|3000,1,100,65535|1 [orig]	$00000000
+InitView|word 1 = $2C81|3000,1,100,65535|1 [fixed #889]	$00000001
+InitView|word 1 = ($2C81)|0,0,0,0|1 [orig]	$00000001
+InitView|word 1 = ($2C81)|0,0,0,0|1 [fixed #889]	$00000000
+InitView|word 1 = ($2C81)|1000,8,8,2|1 [orig]	$00000001
+InitView|word 1 = ($2C81)|1000,8,8,2|1 [fixed #889]	$00000000
+InitView|word 1 = ($2C81)|200,5,0,32|1 [orig]	$00000001
+InitView|word 1 = ($2C81)|200,5,0,32|1 [fixed #889]	$00000000
+InitView|word 1 = ($2C81)|256,8,8,256|1 [orig]	$00000001
+InitView|word 1 = ($2C81)|256,8,8,256|1 [fixed #889]	$00000000
+InitView|word 1 = ($2C81)|3000,1,100,65535|1 [orig]	$00000001
+InitView|word 1 = ($2C81)|3000,1,100,65535|1 [fixed #889]	$00000000
+InitView|word 2|0,0,0,0|1 [orig]	$000000F8
+InitView|word 2|0,0,0,0|1 [fixed #889]	$00000090
+InitView|word 2|1000,8,8,2|1 [orig]	$000000F8
+InitView|word 2|1000,8,8,2|1 [fixed #889]	$00000090
+InitView|word 2|200,5,0,32|1 [orig]	$000000F8
+InitView|word 2|200,5,0,32|1 [fixed #889]	$00000090
+InitView|word 2|256,8,8,256|1 [orig]	$000000F8
+InitView|word 2|256,8,8,256|1 [fixed #889]	$00000090
+InitView|word 2|3000,1,100,65535|1 [orig]	$000000F8
+InitView|word 2|3000,1,100,65535|1 [fixed #889]	$00000090
+InitView|word 2 = $0090|0,0,0,0|1 [orig]	$00000000
+InitView|word 2 = $0090|0,0,0,0|1 [fixed #889]	$00000001
+InitView|word 2 = $0090|1000,8,8,2|1 [orig]	$00000000
+InitView|word 2 = $0090|1000,8,8,2|1 [fixed #889]	$00000001
+InitView|word 2 = $0090|200,5,0,32|1 [orig]	$00000000
+InitView|word 2 = $0090|200,5,0,32|1 [fixed #889]	$00000001
+InitView|word 2 = $0090|256,8,8,256|1 [orig]	$00000000
+InitView|word 2 = $0090|256,8,8,256|1 [fixed #889]	$00000001
+InitView|word 2 = $0090|3000,1,100,65535|1 [orig]	$00000000
+InitView|word 2 = $0090|3000,1,100,65535|1 [fixed #889]	$00000001
+InitView|word 2 = ($90)|0,0,0,0|1 [orig]	$00000001
+InitView|word 2 = ($90)|0,0,0,0|1 [fixed #889]	$00000000
+InitView|word 2 = ($90)|1000,8,8,2|1 [orig]	$00000001
+InitView|word 2 = ($90)|1000,8,8,2|1 [fixed #889]	$00000000
+InitView|word 2 = ($90)|200,5,0,32|1 [orig]	$00000001
+InitView|word 2 = ($90)|200,5,0,32|1 [fixed #889]	$00000000
+InitView|word 2 = ($90)|256,8,8,256|1 [orig]	$00000001
+InitView|word 2 = ($90)|256,8,8,256|1 [fixed #889]	$00000000
+InitView|word 2 = ($90)|3000,1,100,65535|1 [orig]	$00000001
+InitView|word 2 = ($90)|3000,1,100,65535|1 [fixed #889]	$00000000
+InitView|word 3 = $2CC1|0,0,0,0|1 [orig]	$00000000
+InitView|word 3 = $2CC1|0,0,0,0|1 [fixed #889]	$00000001
+InitView|word 3 = $2CC1|1000,8,8,2|1 [orig]	$00000000
+InitView|word 3 = $2CC1|1000,8,8,2|1 [fixed #889]	$00000001
+InitView|word 3 = $2CC1|200,5,0,32|1 [orig]	$00000000
+InitView|word 3 = $2CC1|200,5,0,32|1 [fixed #889]	$00000001
+InitView|word 3 = $2CC1|256,8,8,256|1 [orig]	$00000000
+InitView|word 3 = $2CC1|256,8,8,256|1 [fixed #889]	$00000001
+InitView|word 3 = $2CC1|3000,1,100,65535|1 [orig]	$00000000
+InitView|word 3 = $2CC1|3000,1,100,65535|1 [fixed #889]	$00000001
+InitView|word 3 = ($2CC1)|0,0,0,0|1 [orig]	$00000001
+InitView|word 3 = ($2CC1)|0,0,0,0|1 [fixed #889]	$00000000
+InitView|word 3 = ($2CC1)|1000,8,8,2|1 [orig]	$00000001
+InitView|word 3 = ($2CC1)|1000,8,8,2|1 [fixed #889]	$00000000
+InitView|word 3 = ($2CC1)|200,5,0,32|1 [orig]	$00000001
+InitView|word 3 = ($2CC1)|200,5,0,32|1 [fixed #889]	$00000000
+InitView|word 3 = ($2CC1)|256,8,8,256|1 [orig]	$00000001
+InitView|word 3 = ($2CC1)|256,8,8,256|1 [fixed #889]	$00000000
+InitView|word 3 = ($2CC1)|3000,1,100,65535|1 [orig]	$00000001
+InitView|word 3 = ($2CC1)|3000,1,100,65535|1 [fixed #889]	$00000000
+InitView|word 4|0,0,0,0|1 [orig]	$00000B70
+InitView|word 4|0,0,0,0|1 [fixed #889]	$00000092
+InitView|word 4|1000,8,8,2|1 [orig]	$00000B70
+InitView|word 4|1000,8,8,2|1 [fixed #889]	$00000092
+InitView|word 4|200,5,0,32|1 [orig]	$00000B70
+InitView|word 4|200,5,0,32|1 [fixed #889]	$00000092
+InitView|word 4|256,8,8,256|1 [orig]	$00000B70
+InitView|word 4|256,8,8,256|1 [fixed #889]	$00000092
+InitView|word 4|3000,1,100,65535|1 [orig]	$00000B70
+InitView|word 4|3000,1,100,65535|1 [fixed #889]	$00000092
+InitView|word 4 = $0092|0,0,0,0|1 [orig]	$00000000
+InitView|word 4 = $0092|0,0,0,0|1 [fixed #889]	$00000001
+InitView|word 4 = $0092|1000,8,8,2|1 [orig]	$00000000
+InitView|word 4 = $0092|1000,8,8,2|1 [fixed #889]	$00000001
+InitView|word 4 = $0092|200,5,0,32|1 [orig]	$00000000
+InitView|word 4 = $0092|200,5,0,32|1 [fixed #889]	$00000001
+InitView|word 4 = $0092|256,8,8,256|1 [orig]	$00000000
+InitView|word 4 = $0092|256,8,8,256|1 [fixed #889]	$00000001
+InitView|word 4 = $0092|3000,1,100,65535|1 [orig]	$00000000
+InitView|word 4 = $0092|3000,1,100,65535|1 [fixed #889]	$00000001
+InitView|word 4 = ($92)|0,0,0,0|1 [orig]	$00000001
+InitView|word 4 = ($92)|0,0,0,0|1 [fixed #889]	$00000000
+InitView|word 4 = ($92)|1000,8,8,2|1 [orig]	$00000001
+InitView|word 4 = ($92)|1000,8,8,2|1 [fixed #889]	$00000000
+InitView|word 4 = ($92)|200,5,0,32|1 [orig]	$00000001
+InitView|word 4 = ($92)|200,5,0,32|1 [fixed #889]	$00000000
+InitView|word 4 = ($92)|256,8,8,256|1 [orig]	$00000001
+InitView|word 4 = ($92)|256,8,8,256|1 [fixed #889]	$00000000
+InitView|word 4 = ($92)|3000,1,100,65535|1 [orig]	$00000001
+InitView|word 4 = ($92)|3000,1,100,65535|1 [fixed #889]	$00000000
+InitView|word 5|0,0,0,0|1 [orig]	$000000F8
+InitView|word 5|0,0,0,0|1 [fixed #889]	$00000038
+InitView|word 5|1000,8,8,2|1 [orig]	$000000F8
+InitView|word 5|1000,8,8,2|1 [fixed #889]	$00000038
+InitView|word 5|200,5,0,32|1 [orig]	$000000F8
+InitView|word 5|200,5,0,32|1 [fixed #889]	$00000038
+InitView|word 5|256,8,8,256|1 [orig]	$000000F8
+InitView|word 5|256,8,8,256|1 [fixed #889]	$00000038
+InitView|word 5|3000,1,100,65535|1 [orig]	$000000F8
+InitView|word 5|3000,1,100,65535|1 [fixed #889]	$00000038
+InitView|word 5 = $0038|0,0,0,0|1 [orig]	$00000000
+InitView|word 5 = $0038|0,0,0,0|1 [fixed #889]	$00000001
+InitView|word 5 = $0038|1000,8,8,2|1 [orig]	$00000000
+InitView|word 5 = $0038|1000,8,8,2|1 [fixed #889]	$00000001
+InitView|word 5 = $0038|200,5,0,32|1 [orig]	$00000000
+InitView|word 5 = $0038|200,5,0,32|1 [fixed #889]	$00000001
+InitView|word 5 = $0038|256,8,8,256|1 [orig]	$00000000
+InitView|word 5 = $0038|256,8,8,256|1 [fixed #889]	$00000001
+InitView|word 5 = $0038|3000,1,100,65535|1 [orig]	$00000000
+InitView|word 5 = $0038|3000,1,100,65535|1 [fixed #889]	$00000001
+InitView|word 5 = ($38)|0,0,0,0|1 [orig]	$00000001
+InitView|word 5 = ($38)|0,0,0,0|1 [fixed #889]	$00000000
+InitView|word 5 = ($38)|1000,8,8,2|1 [orig]	$00000001
+InitView|word 5 = ($38)|1000,8,8,2|1 [fixed #889]	$00000000
+InitView|word 5 = ($38)|200,5,0,32|1 [orig]	$00000001
+InitView|word 5 = ($38)|200,5,0,32|1 [fixed #889]	$00000000
+InitView|word 5 = ($38)|256,8,8,256|1 [orig]	$00000001
+InitView|word 5 = ($38)|256,8,8,256|1 [fixed #889]	$00000000
+InitView|word 5 = ($38)|3000,1,100,65535|1 [orig]	$00000001
+InitView|word 5 = ($38)|3000,1,100,65535|1 [fixed #889]	$00000000
+InitView|word 6|0,0,0,0|1 [orig]	$000000F8
+InitView|word 6|0,0,0,0|1 [fixed #889]	$00000094
+InitView|word 6|1000,8,8,2|1 [orig]	$000000F8
+InitView|word 6|1000,8,8,2|1 [fixed #889]	$00000094
+InitView|word 6|200,5,0,32|1 [orig]	$000000F8
+InitView|word 6|200,5,0,32|1 [fixed #889]	$00000094
+InitView|word 6|256,8,8,256|1 [orig]	$000000F8
+InitView|word 6|256,8,8,256|1 [fixed #889]	$00000094
+InitView|word 6|3000,1,100,65535|1 [orig]	$000000F8
+InitView|word 6|3000,1,100,65535|1 [fixed #889]	$00000094
+InitView|word 6 = $0094|0,0,0,0|1 [orig]	$00000000
+InitView|word 6 = $0094|0,0,0,0|1 [fixed #889]	$00000001
+InitView|word 6 = $0094|1000,8,8,2|1 [orig]	$00000000
+InitView|word 6 = $0094|1000,8,8,2|1 [fixed #889]	$00000001
+InitView|word 6 = $0094|200,5,0,32|1 [orig]	$00000000
+InitView|word 6 = $0094|200,5,0,32|1 [fixed #889]	$00000001
+InitView|word 6 = $0094|256,8,8,256|1 [orig]	$00000000
+InitView|word 6 = $0094|256,8,8,256|1 [fixed #889]	$00000001
+InitView|word 6 = $0094|3000,1,100,65535|1 [orig]	$00000000
+InitView|word 6 = $0094|3000,1,100,65535|1 [fixed #889]	$00000001
+InitView|word 6 = ($94)|0,0,0,0|1 [orig]	$00000001
+InitView|word 6 = ($94)|0,0,0,0|1 [fixed #889]	$00000000
+InitView|word 6 = ($94)|1000,8,8,2|1 [orig]	$00000001
+InitView|word 6 = ($94)|1000,8,8,2|1 [fixed #889]	$00000000
+InitView|word 6 = ($94)|200,5,0,32|1 [orig]	$00000001
+InitView|word 6 = ($94)|200,5,0,32|1 [fixed #889]	$00000000
+InitView|word 6 = ($94)|256,8,8,256|1 [orig]	$00000001
+InitView|word 6 = ($94)|256,8,8,256|1 [fixed #889]	$00000000
+InitView|word 6 = ($94)|3000,1,100,65535|1 [orig]	$00000001
+InitView|word 6 = ($94)|3000,1,100,65535|1 [fixed #889]	$00000000
+InitView|word 7|0,0,0,0|1 [orig]	$000000F8
+InitView|word 7|0,0,0,0|1 [fixed #889]	$000000D0
+InitView|word 7|1000,8,8,2|1 [orig]	$000000F8
+InitView|word 7|1000,8,8,2|1 [fixed #889]	$000000D0
+InitView|word 7|200,5,0,32|1 [orig]	$000000F8
+InitView|word 7|200,5,0,32|1 [fixed #889]	$000000D0
+InitView|word 7|256,8,8,256|1 [orig]	$000000F8
+InitView|word 7|256,8,8,256|1 [fixed #889]	$000000D0
+InitView|word 7|3000,1,100,65535|1 [orig]	$000000F8
+InitView|word 7|3000,1,100,65535|1 [fixed #889]	$000000D0
+InitView|word 7 = $00D0|0,0,0,0|1 [orig]	$00000000
+InitView|word 7 = $00D0|0,0,0,0|1 [fixed #889]	$00000001
+InitView|word 7 = $00D0|1000,8,8,2|1 [orig]	$00000000
+InitView|word 7 = $00D0|1000,8,8,2|1 [fixed #889]	$00000001
+InitView|word 7 = $00D0|200,5,0,32|1 [orig]	$00000000
+InitView|word 7 = $00D0|200,5,0,32|1 [fixed #889]	$00000001
+InitView|word 7 = $00D0|256,8,8,256|1 [orig]	$00000000
+InitView|word 7 = $00D0|256,8,8,256|1 [fixed #889]	$00000001
+InitView|word 7 = $00D0|3000,1,100,65535|1 [orig]	$00000000
+InitView|word 7 = $00D0|3000,1,100,65535|1 [fixed #889]	$00000001
+InitView|word 7 = ($D0)|0,0,0,0|1 [orig]	$00000001
+InitView|word 7 = ($D0)|0,0,0,0|1 [fixed #889]	$00000000
+InitView|word 7 = ($D0)|1000,8,8,2|1 [orig]	$00000001
+InitView|word 7 = ($D0)|1000,8,8,2|1 [fixed #889]	$00000000
+InitView|word 7 = ($D0)|200,5,0,32|1 [orig]	$00000001
+InitView|word 7 = ($D0)|200,5,0,32|1 [fixed #889]	$00000000
+InitView|word 7 = ($D0)|256,8,8,256|1 [orig]	$00000001
+InitView|word 7 = ($D0)|256,8,8,256|1 [fixed #889]	$00000000
+InitView|word 7 = ($D0)|3000,1,100,65535|1 [orig]	$00000001
+InitView|word 7 = ($D0)|3000,1,100,65535|1 [fixed #889]	$00000000
 InitView (no init)|cop|100,2,1,4|1	$00000001
 InitView (no init)|d0 = cop|100,2,1,4|1	$00000001
 InitView (no init)|graphics.library open count|100,2,1,4|1	$00000000
@@ -155,28 +265,50 @@ InitView (no init)|memory balance|100,2,1,4|1	$00000378
 InitView (no init)|popped|100,2,1,4|1	$00000000
 InitView (no init)|variables found|100,2,1,4|1	$00000001
 InitView (no init)|viewsize|100,2,1,4|1	$00000376
-InitView (no init)|word 0|100,2,1,4|1	$00000B6E
-InitView (no init)|word 0 = $008E|100,2,1,4|1	$00000000
-InitView (no init)|word 0 = ($8E)|100,2,1,4|1	$00000001
-InitView (no init)|word 1 = $2C81|100,2,1,4|1	$00000000
-InitView (no init)|word 1 = ($2C81)|100,2,1,4|1	$00000001
-InitView (no init)|word 2|100,2,1,4|1	$000000F8
-InitView (no init)|word 2 = $0090|100,2,1,4|1	$00000000
-InitView (no init)|word 2 = ($90)|100,2,1,4|1	$00000001
-InitView (no init)|word 3 = $2CC1|100,2,1,4|1	$00000000
-InitView (no init)|word 3 = ($2CC1)|100,2,1,4|1	$00000001
-InitView (no init)|word 4|100,2,1,4|1	$00000B70
-InitView (no init)|word 4 = $0092|100,2,1,4|1	$00000000
-InitView (no init)|word 4 = ($92)|100,2,1,4|1	$00000001
-InitView (no init)|word 5|100,2,1,4|1	$000000F8
-InitView (no init)|word 5 = $0038|100,2,1,4|1	$00000000
-InitView (no init)|word 5 = ($38)|100,2,1,4|1	$00000001
-InitView (no init)|word 6|100,2,1,4|1	$000000F8
-InitView (no init)|word 6 = $0094|100,2,1,4|1	$00000000
-InitView (no init)|word 6 = ($94)|100,2,1,4|1	$00000001
-InitView (no init)|word 7|100,2,1,4|1	$000000F8
-InitView (no init)|word 7 = $00D0|100,2,1,4|1	$00000000
-InitView (no init)|word 7 = ($D0)|100,2,1,4|1	$00000001
+InitView (no init)|word 0|100,2,1,4|1 [orig]	$00000B6E
+InitView (no init)|word 0|100,2,1,4|1 [fixed #889]	$0000008E
+InitView (no init)|word 0 = $008E|100,2,1,4|1 [orig]	$00000000
+InitView (no init)|word 0 = $008E|100,2,1,4|1 [fixed #889]	$00000001
+InitView (no init)|word 0 = ($8E)|100,2,1,4|1 [orig]	$00000001
+InitView (no init)|word 0 = ($8E)|100,2,1,4|1 [fixed #889]	$00000000
+InitView (no init)|word 1 = $2C81|100,2,1,4|1 [orig]	$00000000
+InitView (no init)|word 1 = $2C81|100,2,1,4|1 [fixed #889]	$00000001
+InitView (no init)|word 1 = ($2C81)|100,2,1,4|1 [orig]	$00000001
+InitView (no init)|word 1 = ($2C81)|100,2,1,4|1 [fixed #889]	$00000000
+InitView (no init)|word 2|100,2,1,4|1 [orig]	$000000F8
+InitView (no init)|word 2|100,2,1,4|1 [fixed #889]	$00000090
+InitView (no init)|word 2 = $0090|100,2,1,4|1 [orig]	$00000000
+InitView (no init)|word 2 = $0090|100,2,1,4|1 [fixed #889]	$00000001
+InitView (no init)|word 2 = ($90)|100,2,1,4|1 [orig]	$00000001
+InitView (no init)|word 2 = ($90)|100,2,1,4|1 [fixed #889]	$00000000
+InitView (no init)|word 3 = $2CC1|100,2,1,4|1 [orig]	$00000000
+InitView (no init)|word 3 = $2CC1|100,2,1,4|1 [fixed #889]	$00000001
+InitView (no init)|word 3 = ($2CC1)|100,2,1,4|1 [orig]	$00000001
+InitView (no init)|word 3 = ($2CC1)|100,2,1,4|1 [fixed #889]	$00000000
+InitView (no init)|word 4|100,2,1,4|1 [orig]	$00000B70
+InitView (no init)|word 4|100,2,1,4|1 [fixed #889]	$00000092
+InitView (no init)|word 4 = $0092|100,2,1,4|1 [orig]	$00000000
+InitView (no init)|word 4 = $0092|100,2,1,4|1 [fixed #889]	$00000001
+InitView (no init)|word 4 = ($92)|100,2,1,4|1 [orig]	$00000001
+InitView (no init)|word 4 = ($92)|100,2,1,4|1 [fixed #889]	$00000000
+InitView (no init)|word 5|100,2,1,4|1 [orig]	$000000F8
+InitView (no init)|word 5|100,2,1,4|1 [fixed #889]	$00000038
+InitView (no init)|word 5 = $0038|100,2,1,4|1 [orig]	$00000000
+InitView (no init)|word 5 = $0038|100,2,1,4|1 [fixed #889]	$00000001
+InitView (no init)|word 5 = ($38)|100,2,1,4|1 [orig]	$00000001
+InitView (no init)|word 5 = ($38)|100,2,1,4|1 [fixed #889]	$00000000
+InitView (no init)|word 6|100,2,1,4|1 [orig]	$000000F8
+InitView (no init)|word 6|100,2,1,4|1 [fixed #889]	$00000094
+InitView (no init)|word 6 = $0094|100,2,1,4|1 [orig]	$00000000
+InitView (no init)|word 6 = $0094|100,2,1,4|1 [fixed #889]	$00000001
+InitView (no init)|word 6 = ($94)|100,2,1,4|1 [orig]	$00000001
+InitView (no init)|word 6 = ($94)|100,2,1,4|1 [fixed #889]	$00000000
+InitView (no init)|word 7|100,2,1,4|1 [orig]	$000000F8
+InitView (no init)|word 7|100,2,1,4|1 [fixed #889]	$000000D0
+InitView (no init)|word 7 = $00D0|100,2,1,4|1 [orig]	$00000000
+InitView (no init)|word 7 = $00D0|100,2,1,4|1 [fixed #889]	$00000001
+InitView (no init)|word 7 = ($D0)|100,2,1,4|1 [orig]	$00000001
+InitView (no init)|word 7 = ($D0)|100,2,1,4|1 [fixed #889]	$00000000
 ViewBitmap|cop||1	$00000001
 ViewBitmap|graphics.library open count||1	$00000000
 ViewBitmap|kept||1	kept

@@ -7,6 +7,7 @@
 ; A600 (68000).
 ; Correct: InitView works on a 68000 and writes the register moves
 ; $008E,$2C81, $0090,$2CC1, $0092,$0038, $0094,$00D0.
+; @fixed #889
 ; @rwe ridisplaylib
 ; @machine a600
 ; @pass timeout=30
