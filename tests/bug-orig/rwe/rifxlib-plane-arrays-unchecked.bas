@@ -6,12 +6,18 @@
 ; of the destination gets only the dithered lines of the mask pass).
 ; Bitmaps 0 and 1 are 16x8 with 8 planes and get a ninth one (depth 9,
 ; the pointer at +40 of the object: 256 bytes of chip memory, room for
-; the pointers that run on); plane 0 of the source is all set.
-; Correct: all 9 planes are copied, plane 0 of the destination is all set.
+; the pointers that run on); plane 0 of the source is all set.  The
+; manual: "the maximum bitmap depth for these functions is 8"; the
+; original has no error check area.  Here with runtime error checking.
+; Correct: the FadeInBitmap of depth 8 works; the error check refuses the
+; depth of 9: "Illegal BitMap Depth", nothing is copied.
 ; @rwe rifxlib
+; @pass runtime_errors=on
 DEFTYPE .l
 BitMap 0,16,8,8
 BitMap 1,16,8,8
+FadeInBitmap 0,1,1
+NPrint "depth 8 done"
 m=AllocMem_(512,$10002)
 If m=0 Then NPrint "no memory" : End
 a=Addr BitMap(0) : b=Addr BitMap(1)

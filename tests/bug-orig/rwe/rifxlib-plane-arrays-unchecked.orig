@@ -4,6 +4,7 @@ done
 [compile]
 ok
 [run]
+depth 8 done
 plane 0: 8 rows incomplete
 rc=0
 [blitz2]
