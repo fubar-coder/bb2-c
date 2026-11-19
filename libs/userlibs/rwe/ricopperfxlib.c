@@ -9,8 +9,9 @@
  *
  * C translation of rwelibsrc/Copperlib/CopperFX3.bb (Reflective Images,
  * 8/3/95); the declarations equal the CD's BSS2 RICOPPERFXLIB.OBJ
- * (ctest rwe_declarations_ricopperfxlib), the behaviour is compared with
- * it in libs/tests/rwe/ricopperfxlib.c.  Notes:
+ * (ctest rwe_declarations_ricopperfxlib) but for the error check area of
+ * #589 (ricopperfxlib.declarations-intended.txt), the behaviour is
+ * compared with it in libs/tests/rwe/ricopperfxlib.c.  Notes:
  * docs/rwelibs/port/ricopperfxlib.md.
  *
  * Nothing here touches the hardware: the routines only write copper

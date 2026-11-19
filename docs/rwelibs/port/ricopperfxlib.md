@@ -16,7 +16,10 @@ instructions, `ColSplitBplcon3` the low byte of BPLCON3 for the splits
 **Source and reference:** `rwelibsrc/Copperlib/CopperFX3.bb`
 (Reflective Images, 8/3/95), reference BSS2 `RICOPPERFXLIB.OBJ`
 (1856 bytes) = the blitz2 2.10 build of the source. The C build has the
-same declarations (`rwe_declarations_ricopperfxlib`); the code is not
+same declarations (`rwe_declarations_ricopperfxlib`) but for the error
+check area of #589 (the header's error field and the checks of
+`DoColSplit` and `RedoColSplit`, listed in
+`ricopperfxlib.declarations-intended.txt`); the code is not
 byte-identical.
 
 **C:** everything (`libs/userlibs/rwe/ricopperfxlib.c`). The routines
