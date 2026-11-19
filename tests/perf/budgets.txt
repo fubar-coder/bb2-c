@@ -293,6 +293,16 @@
 # sollte eigentlich nicht leiden"): fnsprint 6455.1 and 6455.0, fnslength
 # 3465.6 and 3465.0 (0.94 of the original); both budgets lowered.
 #
+# bchunky (a new program: RaycastSky and ChunkyToPlanar of the RWE userlib
+# richunkylib, header "; @rwe richunkylib") from two runs on main d08af69f
+# (2026-11-19): raycast1 395.1/395.2, raycast10 786.1/786.8, raycast100
+# 4689.1/4689.8, raycast200 9026.6/9026.2, c2p320 11414874.2 both times.
+# Their targets from two runs of the pass perf_bchunky.pass with the tag
+# orig (the reference build of the source): 210.6/210.7, 561.5/561.7,
+# 4090.6/4090.7, 8006.1/8006.7, 6366624.0 (8 calls per loop) and
+# 6366624.2.  c2p320 runs 4 times per loop: the timer's 16 bits hold
+# 65.5 million cycles (10 calls of the C port, 114 million, wrapped).
+#
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 banim.anim5                 31505    46282.5  c=RINextAnimFrame(0) (INTRO.ANIM: 320 x 256 x 3, ANIM5, its frames 3 to 14)
@@ -312,6 +322,12 @@ bbblit.sblocktoshape         1308     1355.8  SpecialBlockToShape 0,1,12
 bbblit.blocktoshape           679      684.9  BlockToShape 0,12 (16x16, 3 planes)
 bbblit.tblockimage           2547     2696.3  TBlockImage img,0,96,32 (6 planes of a 320-pixel bitmap)
 bbblit.btblockimage4u       33061    33089.8  BTBlockImage 1,img,20,20,0 : BTBlockImage 1,img,60,20,0 : BTBlockImage 1,img,100,20,0 : BTBlockImage 1,img,140,20,0 : UnBuffer 1
+bchunky.emptylong               3          -  the empty loop again, 150000 iterations (the subtraction)
+bchunky.raycast1              403      210.7  RaycastSky 0,100,1,37,tx (height 1)
+bchunky.raycast10             798      561.7  RaycastSky 0,100,10,37,tx (height 10)
+bchunky.raycast100           4740     4090.7  RaycastSky 0,100,100,37,tx (height 100)
+bchunky.raycast200           9120     8006.7  RaycastSky 0,100,200,37,tx (height 200)
+bchunky.c2p320           11529026  6366624.2  ChunkyToPlanar 0,0 (320 x 256 chunky into 320 x 256 x 8, contiguous planes)
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
