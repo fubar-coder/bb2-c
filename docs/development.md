@@ -190,7 +190,9 @@ its `asm_check` list in the same commit and names it in the commit
 message. There is no list of intended differences for instructions.
 
 The expected data that came from the originals changes in the fix commit
-as well, never the test program around it (`tests/README.md`):
+as well, never the test scenario around it (what the test program does;
+a change of the scenario is a test commit of its own). Comments and notes
+in the test program may change with the fix (`tests/README.md`):
 
 * a corpus program's output (`tests/corpus/expect/PASS/NAME.out`,
   `NAME.serial`): a fix that changes it makes it the pair
