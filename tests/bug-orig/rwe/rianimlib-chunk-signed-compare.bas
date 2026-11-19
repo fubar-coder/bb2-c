@@ -25,6 +25,7 @@ n=Read_(f,a,4096)
 Close_ f
 If a<$40000000 Then NPrint "not in Z3 memory" : End
 InitPalette 0,2                 ; palettelib linked by the program itself (#335)
+BitMap 0,16,16,1                ; the bitmap the first frame is unpacked into
 r=RIAnimInit(a,0,0)
 c=RIAnimFrameCount
 If c=1
