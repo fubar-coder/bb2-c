@@ -21,7 +21,7 @@
  * are passed as compiled code passes them (shifted by 5, OBJ), and
  * LELoadShapes reaches shapeslib's LoadShapes through a stub as compiled
  * code does (lsh_stub).
- * Covered: init, LEInitShape (fresh, used: BUG(orig) #810 the cookie stays),
+ * Covered: init, LEInitShape (fresh, used: fixed #810, the old cookie freed),
  * LEScanShapes and LEMaxShape*, SafeToBlit (beyond the maximum, no cookie,
  * negative and too large coordinates),
  * LESaveShapes both forms (without and with a palette, packed with

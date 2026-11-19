@@ -49,9 +49,6 @@
  *   - LESaveShapes stores s2-s1 as the shape count with a word
  *     subtraction: the upper word of d1, which compiled code leaves from
  *     a long expression, goes into the long count (#815).
- *   - The cookie of a shape that is freed by LELoadShapes, LECludgeShapes
- *     or LEInitShape is never freed (the BEQ after a MOVEA tests the CLR
- *     before it, always taken) (#810).
  *   - An allocation that fails in the shape loop or in the cookie of
  *     readshapes returns with a0 still pushed: it jumps to the data
  *     address (#806; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The stack imbalance that C cannot express: see rs_crash.
@@ -88,7 +85,9 @@
  * height 0) advances CludgeShapes by 32 (the original cleared only the
  * upper word of the size with MOVE.w #0, so an empty shape advanced by 32
  * + the low word of the size of the shape before, also of an earlier
- * call, #809).
+ * call, #809).  LELoadShapes, LECludgeShapes and LEInitShape free the cookie
+ * of the shape they replace (the original's MOVE.l 18(a2),a1:BEQ tested the
+ * Z flag of the CLR before it and never freed it, #810).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
  * (unused since the own cookie code).  LELoadShapes form 3
@@ -505,6 +504,19 @@ static void createcookie(UBYTE *shape, UBYTE *pushed)
     } while (planes-- != 0);
 }
 
+/* the cookie of a shape, if it has one (always memlib's: CreateCookie,
+   readshapes, LEInitShape and shapeslib allocate it with globalloc, also
+   for a shape linked into memory) */
+static void freecookie(UBYTE *shape)
+{
+    ULONG cookie;
+
+    if ((cookie = SHL(shape, cookie)) != 0) {
+        SHL(shape, cookie) = 0;
+        gfree(cookie, SHW(shape, planesize));
+    }
+}
+
 /* _freeshapesm: free the shape's data (not if "cL") and its cookie */
 static void freeshapesm(UBYTE *shape)
 {
@@ -639,7 +651,9 @@ static void shapesizes(UBYTE *shape, int init)
  * A shape in use is freed first; the sizes are computed, the data and
  * the cookie get new cleared chip memory (the cookie is not computed),
  * the handles are 0.  Without memory for the data no cookie is
- * allocated.  BUG(orig) (#810): the old cookie is not freed.
+ * allocated.  Fixed (#810): the old cookie is freed (the original's
+ * MOVE.l 18(a2),a1:BEQ tested the Z flag of the CLR before it, so it
+ * never freed it).
  * @param width   d1.w: the width
  * @param height  d2.w: the height
  * @param depth   d3.w: the depth
@@ -654,7 +668,7 @@ static void BLITZ_ROUTINE leinitshape_c(ULONG width BL_REG(d1), ULONG height BL_
         if (SHW(shape, cludge) != BB_CLUDGE)
             gfree(SHL(shape, data), SHW(shape, size));
         SHW(shape, cludge) = 0;
-        /* MOVE.l 18(a2),a1:BEQ - the Z of the CLR: never freed */
+        freecookie(shape);              /* Fixed (#810) */
     }
     SHW(shape, width) = (UWORD)width;
     SHW(shape, height) = (UWORD)height;
@@ -722,8 +736,8 @@ static void readshapes(UBYTE *data)
             } else {
                 gfree(SHL(shape, data), SHW(shape, size));
                 SHW(shape, cludge) = 0;
-                /* the cookie: MOVE.l 18(a2),a1:BEQ after the CLR, never freed */
             }
+            freecookie(shape);  /* Fixed (#810) */
         }
         SHPAIR(shape, width) = FPAIR(data, leshape, width);
         SHW(shape, depth) = FW(data, leshape, depth);     /* depth */
@@ -793,7 +807,7 @@ static void readshapes(UBYTE *data)
  * most count + 1 shapes of the file are read.  BUG(orig): the SHHD chunk
  * is skipped as 20 bytes whatever its length (#811); a CMAP size that is
  * no multiple of 3 misses SDAT (#811); the palette as in LELoadShapes
- * (#820); the old cookies are not freed (#810).  Fixed (#807): a shape
+ * (#820).  Fixed (#810): the old cookies are freed.  Fixed (#807): a shape
  * in use that is cludged is replaced like any other (the original pops a0
  * it never pushed and returns past the caller).
  * @param file     d2: the LE file in memory (address)
@@ -991,7 +1005,7 @@ static ULONG leloadshapes(ULONG shape1, ULONG shape2, ULONG name, UBYTE *palette
  * BUG(orig): a failing chunk allocation frees the header
  * buffer and closes the file twice (#819, never in practice); the
  * palette: no check of the allocation (#821), DIVU #3 overflow, 0 colours
- * = 65536 (#820); the old cookies are not freed (#810).  Fixed (#807): a
+ * = 65536 (#820).  Fixed (#810): the old cookies are freed.  Fixed (#807): a
  * shape in use that is cludged is replaced like any other (the original
  * pops a0 it never pushed and returns past the caller without freeing the
  * buffers or closing the file).

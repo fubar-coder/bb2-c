@@ -85,9 +85,6 @@ Further assembler:
   there from a long expression (`a.l=$50009 : LESaveShapes 0,a,…`
   writes the count $50009). The loader reads count + 1 shapes
   (`SUB.l #1:BMI`), limited by the last shape (#815).
-* **The cookie of a freed shape is never freed** (LELoadShapes,
-  LECludgeShapes, LEInitShape). `MOVE.l 18(a2),a1:BEQ` after
-  `CLR 30(a2)` tests the CLR, so the branch is always taken (#810).
 * **A failing allocation in readshapes** returns with a0 pushed (#806;
   see the stack imbalance above).
 * **LELoadShapes:** a failing chunk allocation runs the caller's cleanup
@@ -164,6 +161,12 @@ kind F):
   of the size of the shape before it, also of an earlier call, and the
   shapes behind it were read from the wrong place (#809, test
   `rishapeslib-cludgeshapes-empty-stale-size`).
+* LELoadShapes, LECludgeShapes and LEInitShape free the cookie of the
+  shape they replace (always memlib's memory, also for a shape linked
+  into memory). The original's `MOVE.l 18(a2),a1:BEQ` after
+  `CLR 30(a2)` tests the Z flag of the CLR (a MOVEA sets no flags), so
+  the cookie, one plane of chip memory, was lost on every reload (#810,
+  test `rishapeslib-cookie-not-freed`).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push
