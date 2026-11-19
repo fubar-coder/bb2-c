@@ -1644,14 +1644,45 @@ error checking, the commands are as before.
 
 Issue: [The list number is not checked: list# outside 0–4 indexes past the list tables (#732)](https://github.com/fubar-coder/bb2-c/issues/732).
 
-### An ANIM7 animation at an odd byte {#anim7-odd-byte}
+### An animation position outside the bitmap {#anim-position-outside}
 
 `RIAnimInit` of
-[rianimlib]({{< relref "/docs/libraries/userlibs/rianimlib" >}}) takes
-the position of the animation in the bitmap either as a pixel position
-`x`,`y`, with `x` rounded down to a multiple of 8, or as a byte offset
-into the bitplanes. `RINextAnimFrame` then draws each frame at that
-position.
+[rianimlib]({{< relref "/docs/libraries/userlibs/rianimlib" >}}) unpacks
+the first frame of an animation into a bitmap and takes the position of
+the animation in the bitmap either as a pixel position `x`,`y`, with `x`
+rounded down to a multiple of 8, or as a byte offset into the
+bitplanes. `RINextAnimFrame` then draws each frame at that position.
+
+**What happened.** The original turned `x`,`y` into a byte offset
+without a look at the bitmap, also not with runtime error checking. A
+position outside the bitmap put the frames into the memory behind it,
+and a negative `y` far away from it. With an animation loaded at address
+`a`, this program printed `before` and `after -1`, and the first frame
+went into the row below the one the position named:
+
+```
+BitMap 0,32,16,1
+NPrint "before"
+r=RIAnimInit(a,0,0,32,0)
+NPrint "after ",r
+```
+
+**With the port.** With runtime error checking, an `x` outside 0 to
+the bitmap's width minus 1 or a `y` outside 0 to its height minus 1 is
+the error "Animation position outside the bitmap"; the program above
+prints `before` and stops at `RIAnimInit`. The byte offset form is not
+checked. Without runtime error checking, the command is as before.
+
+**What to change.** Give a position inside the bitmap, and make the
+bitmap large enough for the whole animation at that position: that part
+is not checked.
+
+Issue: [RIAnimInit x,y: the row offset is MULU.w of the low words – a negative y gives a huge offset (#514)](https://github.com/fubar-coder/bb2-c/issues/514).
+
+### An ANIM7 animation at an odd byte {#anim7-odd-byte}
+
+`RIAnimInit` places an animation at a byte of the bitmap
+([An animation position outside the bitmap](#anim-position-outside)).
 
 **What happened.** The decoder of the ANIM7 format writes whole words
 and longs into the bitplanes, which a 68000 can only do at an even
@@ -1678,6 +1709,39 @@ the commands are as before.
 0 to 7, 16 to 23 and so on, or an even byte offset.
 
 Issue: [RIAnimInit with an odd byte offset (`x>>3` or `xy_offset`) for an ANIM7 animation: address error on a 68000 at RINextAnimFrame, no error check (#1122)](https://github.com/fubar-coder/bb2-c/issues/1122).
+
+### `BBShadowValue` with a shadow set the scenario does not have {#bbshadowvalue-set}
+
+`BBShadowValue` of
+[ribbmaplib]({{< relref "/docs/libraries/userlibs/ribbmaplib" >}})
+returns one long number, a shadow set, from the `SHDW` chunk of the
+scenario chosen with `SetBBScenarioLoc`; the sets are counted from 0.
+
+**What happened.** The original did not compare the set with the length
+of the chunk, also not with runtime error checking: a set the scenario
+does not have returned the bytes behind the chunk, the next chunk or
+memory behind the file. With a scenario at address `m` whose `SHDW`
+chunk holds two sets, the values `$11111111` and `$22222222`, followed by
+a chunk `NEXT`, this program printed `-1`, `22222222` and `4E455854`,
+the name of the next chunk:
+
+```
+NPrint SetBBScenarioLoc(m)
+NPrint Hex$(BBShadowValue(1))
+NPrint Hex$(BBShadowValue(2))
+```
+
+**With the port.** With runtime error checking, a negative set or one
+the chunk does not hold is the error "Shadow set must lie in the SHDW
+chunk"; the program above prints `-1` and `22222222` and stops at
+`BBShadowValue(2)`. A scenario without a `SHDW` chunk is not checked,
+and `BBShadowValue` returns 0 for it. Without runtime error checking,
+the command is as before.
+
+**What to change.** Ask only for the sets the scenario holds, from 0 to
+one less than their number.
+
+Issue: [BBShadowValue reads outside the SHDW chunk for a set it does not hold, with no error check (#1114)](https://github.com/fubar-coder/bb2-c/issues/1114).
 
 ## A form the original refused {#forms-the-original-refused}
 
