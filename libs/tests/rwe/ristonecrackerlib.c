@@ -21,8 +21,8 @@
  * across words), the three header functions on S404 data and on other
  * data (0, the S404 check of the binary), STCLoad with a missing file and
  * with a directory (OpenFromLock fails), and with a file that is no S404
- * file (BUG(orig) #836: unpacked anyway - a harmless one: offset and lengths
- * chosen so); the number of UnLock calls of the test task during one
+ * file (the original unpacks it anyway - a harmless one: offset and lengths
+ * chosen so; the C build returns 0, fixed #836); the number of UnLock calls of the test task during one
  * STCLoad of an S404 file (dos.library's UnLock patched to count them:
  * the original unlocks the lock OpenFromLock took over, fixed #835).  Not covered: corrupt data (writes anywhere), more than 16
  * far offset bits (the DIFF of the run table), a far offset that is
@@ -155,8 +155,9 @@ int main(int argc, char **argv)
         load(1, (UBYTE)(i * 13));
     }
 
-    /* no S404 file, unpacked anyway (BUG(orig), #836): a header whose words make
-       a short literal stream inside the buffer */
+    /* no S404 file: the original unpacks it anyway, the C build returns 0
+       and leaves the file as read (#836); a header whose words make a short
+       literal stream inside the buffer */
     strcpy(VEC, "S403 file");
     make(100, 16, 4, 0, 0x01);
     memcpy(file, "S403", 4);

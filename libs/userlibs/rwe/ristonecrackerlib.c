@@ -21,8 +21,9 @@
  *   STCSafeLen(a)  unpacked length + offset, 0 if no S404 file
  *   STCLoad f$,a   reads file f$ to a (its whole length), unpacks it in
  *                  place, returns the start of the data (0 if the file
- *                  cannot be locked, opened or the FileInfoBlock not
- *                  allocated)
+ *                  cannot be locked, examined, opened or read whole, the
+ *                  FileInfoBlock not allocated, or the file is no S404
+ *                  file whose packed data and trailer it holds)
  *
  * The decruncher (optidec.bin, third party code of StoneCracker 4.04) is
  * translated register by register (dostc in optidec.h, which
@@ -32,10 +33,11 @@
  * besides the thunks.  _stcdecrunch2 of the source (unpack to another
  * address) is not in the token table and not called: left out.
  *
+ * STCLoad reads the whole file whatever the buffer's size: the command
+ *   has no size argument (the caller gives a buffer of STCSafeLen bytes and
+ *   at least the file's size).
+ *
  * BUG(orig):
- *   - STCLoad does not check the header: any other file is "unpacked"
- *     with whatever its words say; it reads the whole file whatever the
- *     buffer's size; Examine's and Read's results are not checked (#836).
  *   - The decruncher does not check the data: corrupt data write below
  *     the buffer (a match or literal run past the start) and read the
  *     packed words below the file (#833).
@@ -46,6 +48,11 @@
  *     it over, Close frees it.  The original unlocked it again
  *     (oopsfreefib: FreeMem + UnLock), an UnLock of a lock the file system
  *     had already freed (#835).
+ *   - STCLoad checks Examine, that Read read the whole file and the
+ *     header ("S404", the packed data and the trailer within the file)
+ *     before it unpacks, else 0.  The original checked none of it and
+ *     unpacked whatever it had read with the offsets and lengths its words
+ *     gave (#836).
  * DIFF: the literal run reads its shift count from a table indexed by the
  *   bit count d7 (MOVE.b table(pc,d7.w)); d7 leaves 0..15 only with a
  *   header of more than 16 offset bits, and then the original reads
@@ -201,23 +208,26 @@ static ULONG BLITZ_ROUTINE stcsafelen_c(const UBYTE *a BL_REG(d0))
  * @brief STCLoad filename$,address: reads an S404 file to address (its
  * whole length) and unpacks it in place.
  *
- * Examine's and Read's results are not checked.  The lock belongs to the
- * file handle after OpenFromLock, Close frees it (fixed #835: the original
- * unlocked it again).  BUG(orig): the header is not checked and the whole
- * file is read whatever the buffer's size (#836); the decruncher does not
- * check the data (#833).
+ * The lock belongs to the file handle after OpenFromLock, Close frees it
+ * (fixed #835: the original unlocked it again).  Unpacked only if Examine
+ * succeeded, Read read the whole file and it is an S404 file whose packed
+ * data and trailer lie within it (fixed #836: the original checked none
+ * of it).  The whole file is read whatever the buffer's size (the command
+ * has no size argument).  BUG(orig): the decruncher does not check the
+ * data (#833).
  * @param name  d0: filename$
- * @param ad    d1: the buffer (STCSafeLen bytes)
+ * @param ad    d1: the buffer (STCSafeLen bytes, at least the file's size)
  * @return d0: the start of the unpacked data (address + offset), 0 if the
- *         file cannot be locked or opened or there is no memory for the
- *         FileInfoBlock
+ *         file cannot be locked, examined, opened or read whole, there is
+ *         no memory for the FileInfoBlock, or it is no S404 file whose
+ *         packed data and trailer it holds
  */
 static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_REG(d1))
 {
     struct Library *dos = dosbase;
     struct FileInfoBlock *fib;
     BPTR lock, fh;
-    LONG size;
+    LONG size, got;
 
     lock = Lock(name, ACCESS_READ);     /* MOVEQ #-2,d2 */
     if (!lock)
@@ -227,18 +237,23 @@ static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_
         UnLock(lock);
         return 0;
     }
-    Examine(lock, fib);                 /* not checked */
+    fh = 0;
+    if (Examine(lock, fib))             /* fixed (#836): checked */
+        fh = OpenFromLock(lock);
     size = fib->fib_Size;
-    fh = OpenFromLock(lock);
+    FreeMem(fib, FIBSIZE);
     if (!fh) {
-        FreeMem(fib, FIBSIZE);
         UnLock(lock);
         return 0;
     }
-    Read(fh, ad, size);                 /* not checked */
-    Close(fh);
-    FreeMem(fib, FIBSIZE);              /* fixed (#835): no UnLock, Close freed it */
-    stcdecrunch(ad);                    /* BUG(orig): no header check (#836) */
+    got = Read(fh, ad, size);
+    Close(fh);                          /* fixed (#835): no UnLock, Close freed it */
+    /* fixed (#836): the whole file read, "S404", the packed data and the
+       trailer (12 + packed length + 6 bytes) within it */
+    if (got != size || size < (LONG)sizeof(struct s404hdr) + 2
+        || HDR(ad)->id != S404 || HDR(ad)->packed > (ULONG)size - 18)
+        return 0;
+    stcdecrunch(ad);
     return (ULONG)ad + HDR(ad)->offset;
 }
 

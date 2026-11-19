@@ -12,9 +12,12 @@ address + offset + unpacked length down to address + offset.
   if no S404 file.
 * `STCSafeLen(a)` – unpacked length + offset, the buffer size for
   unpacking in place; 0 if no S404 file.
-* `STCLoad f$,a` – reads the file to `a` (all of it), unpacks it in
-  place and returns `STCStart`; 0 if the file cannot be locked or opened
-  (e.g. a directory) or the FileInfoBlock not allocated.
+* `STCLoad f$,a` – reads the file to `a` (all of it, whatever the
+  buffer's size: the command has no size argument), unpacks it in place
+  and returns `STCStart`; 0 if the file cannot be locked, examined,
+  opened (e.g. a directory) or read whole, the FileInfoBlock not
+  allocated, or the file is no S404 file whose packed data and trailer
+  lie within it.
 
 init opens dos.library (any version); finit closes it (the original's finit
 is 0, #834).
@@ -67,9 +70,6 @@ entry and never called: left out.
 
 ## BUG(orig), kept
 
-* `STCLoad` does not check the header (any file is unpacked with what its
-  words say), reads the whole file whatever the buffer's size, and does
-  not check Examine's and Read's results (#836).
 * The decruncher checks nothing: corrupt data write below the
   destination (a match or literal run past the start) and read packed
   words below the file (#833).
@@ -84,6 +84,13 @@ entry and never called: left out.
   (`BSR oopsfreefib`: FreeMem + UnLock), an UnLock of a lock the file
   system had already freed (on `RAM:` without visible effect; the test
   counts the UnLock calls: 1 in the original, 0 now) (#835).
+* `STCLoad` unpacks only if `Examine` succeeded, `Read` read the whole
+  file, and the file is an S404 file whose packed data and trailer (12 +
+  packed length + 6 bytes) lie within it; otherwise it returns 0, as the
+  manual says ("If this command returns 0 then the file could not be
+  loaded properly or was not a valid packed file"). The original checked
+  none of it and unpacked whatever it had read with the offsets and
+  lengths its words gave, returning the address (#836).
 
 ## DIFF
 
@@ -110,7 +117,8 @@ as cases, compared with the expected data
 original: d0, the whole buffer, and as truth values that the data equal
 what the test worked out, the start and the header; the three header
 functions on each file and on other data
-(0). Also a file that is no S404 file (unpacked anyway), a missing file
+(0). Also a file that is no S404 file (the original unpacks it anyway, the C
+build returns 0), a missing file
 and a directory (OpenFromLock fails), the number of UnLock calls of one
 STCLoad (dos.library's UnLock patched to count them), kept registers. Not covered:
 corrupt data (writes anywhere), more than 16 offset bits (the DIFF), a
