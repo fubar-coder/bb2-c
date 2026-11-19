@@ -21,11 +21,12 @@
  * calls RIAmosFuncLib (NextBank, BLoad, Start, Erase), ILBMPalette memlib
  * (globalloc/globfree), through ALibJsr.  No assembler.
  *
+ * Fixed (#772): PackPBM's failure (the packed data would not be smaller
+ * than the source) returns -1; the original had no RTS there and fell
+ * into UnPackPBM with d0 = -1, which unpacked from address -1 (then 0,
+ * 1 ...) into dest, limited by the caller's d3 + dest.
+ *
  * BUG(orig), kept:
- *   - PackPBM's failure (the packed data would not be smaller than the
- *     source: -1) falls into UnPackPBM with the restored registers and
- *     d0 = -1: it unpacks from address -1 (then 0, 1 ...) into dest,
- *     limited by the CALLER'S d3 + dest, before returning -1 (#772).
  *   - UnPackPBM reads the byte at source+length and writes one byte
  *     past destlength (the limits are tested after the access, signed)
  *     (#778).
@@ -188,7 +189,7 @@ BLITZ_THUNK(chunkheader, chunkheader_c, "d1/a0-a1");
  * times, -128 is skipped; stops at the end of the source or of the
  * destination.  BUG(orig) (#778): the end tests come after the access
  * and compare signed - the byte at source+length is read, one byte past
- * destlength written.  Also the tail of PackPBM's failure (#772).
+ * destlength written.
  * @param src   d0: the packed data
  * @param dst   d1: the destination
  * @param len   d2: the length of the packed data
@@ -233,18 +234,18 @@ BLITZ_THUNK(unpackpbm, unpackpbm_c, "d0-d1/a0-a1");
 /**
  * @brief PackPBM(sourceaddr,destaddr,length): packs data with ByteRun1.
  *
- * Runs of at most 128 (127 in the counter).  BUG(orig) (#772): the
- * failure falls into UnPackPBM with d0 = -1, which unpacks from address
- * -1 into dest, limited by the caller's d3, before -1 is returned.
+ * Runs of at most 128 (127 in the counter).  Fixed (#772): the failure
+ * returns -1; dest holds the packed bytes written up to it.  The
+ * original fell into UnPackPBM with d0 = -1, which unpacked from address
+ * -1 into dest, limited by the caller's d3.
  * @param src   d0: the source
  * @param dst   d1: the destination
  * @param size  d2: the length of the source
- * @param dlen  d3: only used by the failure (UnPackPBM's destlength)
  * @return d0: the length of the packed data, or -1 if it would reach
  *         `length` bytes
  */
 static ULONG BLITZ_ROUTINE packpbm_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
-                                     ULONG size BL_REG(d2), ULONG dlen BL_REG(d3))
+                                     ULONG size BL_REG(d2))
 {
     const UBYTE *in = src, *scan, *end = src + size;
     UBYTE *out = dst, *limit = dst + size;
@@ -310,9 +311,7 @@ static ULONG BLITZ_ROUTINE packpbm_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_
         }
     }
 failure:
-    /* BUG(orig): no RTS - into _UnPackPBM with d0 = -1 (#772) */
-    unpackpbm_c((const UBYTE *)-1, dst, size, dlen);
-    return -1;
+    return -1;                                  /* fixed #772: the RTS */
 #undef PUT
 }
 BLITZ_THUNK(packpbm, packpbm_c, "d1/a0-a1");

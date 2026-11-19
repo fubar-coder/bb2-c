@@ -210,28 +210,36 @@ PackPBM|d0|one run 140 bytes|1	$00000004
 PackPBM|d0|short runs 15 bytes|1	$FFFFFFFF
 PackPBM|d0 = -1|noise (fails), d3 0 600 bytes|1	$00000001
 PackPBM|dest|129 literals, 131 equal 300 bytes|1	bytes 8256 fnv CBA28D14
-PackPBM|dest|2 different (fails) 2 bytes|1	bytes 8256 fnv DBC3AC1E
+PackPBM|dest|2 different (fails) 2 bytes|1 [orig]	bytes 8256 fnv DBC3AC1E
+PackPBM|dest|2 different (fails) 2 bytes|1 [fixed #772]	bytes 8256 fnv A7C0369F
 PackPBM|dest|mixed 0 bytes|1	bytes 8256 fnv BB8BDEC5
 PackPBM|dest|mixed 1 bytes|1	bytes 8256 fnv A7B3D82B
 PackPBM|dest|mixed 1000 bytes|1	bytes 8256 fnv 4A07DBE4
 PackPBM|dest|mixed 127 bytes|1	bytes 8256 fnv B7184F82
 PackPBM|dest|mixed 128 bytes|1	bytes 8256 fnv 1B7AB01C
-PackPBM|dest|mixed 129 bytes|1	bytes 8256 fnv 3035373B
-PackPBM|dest|mixed 2 bytes|1	bytes 8256 fnv D44F6CE8
+PackPBM|dest|mixed 129 bytes|1 [orig]	bytes 8256 fnv 3035373B
+PackPBM|dest|mixed 129 bytes|1 [fixed #772]	bytes 8256 fnv 0FB7A770
+PackPBM|dest|mixed 2 bytes|1 [orig]	bytes 8256 fnv D44F6CE8
+PackPBM|dest|mixed 2 bytes|1 [fixed #772]	bytes 8256 fnv 589512F5
 PackPBM|dest|mixed 200 bytes|1	bytes 8256 fnv 297BC3EB
 PackPBM|dest|mixed 3 bytes|1	bytes 8256 fnv 5C8DCA5F
 PackPBM|dest|mixed 4000 bytes|1	bytes 8256 fnv B523E864
-PackPBM|dest|mixed 5 bytes|1	bytes 8256 fnv 3D088ECD
-PackPBM|dest|noise (fails), d3 -8 600 bytes|1	bytes 8256 fnv 45FF741E
-PackPBM|dest|noise (fails), d3 0 600 bytes|1	bytes 8256 fnv 45FF741E
-PackPBM|dest|noise (fails), d3 4 600 bytes|1	bytes 8256 fnv 9B2D2925
+PackPBM|dest|mixed 5 bytes|1 [orig]	bytes 8256 fnv 3D088ECD
+PackPBM|dest|mixed 5 bytes|1 [fixed #772]	bytes 8256 fnv E671C2E1
+PackPBM|dest|noise (fails), d3 -8 600 bytes|1 [orig]	bytes 8256 fnv 45FF741E
+PackPBM|dest|noise (fails), d3 -8 600 bytes|1 [fixed #772]	bytes 8256 fnv EA0819AD
+PackPBM|dest|noise (fails), d3 0 600 bytes|1 [orig]	bytes 8256 fnv 45FF741E
+PackPBM|dest|noise (fails), d3 0 600 bytes|1 [fixed #772]	bytes 8256 fnv EA0819AD
+PackPBM|dest|noise (fails), d3 4 600 bytes|1 [orig]	bytes 8256 fnv 9B2D2925
+PackPBM|dest|noise (fails), d3 4 600 bytes|1 [fixed #772]	bytes 8256 fnv EA0819AD
 PackPBM|dest|one run 120 bytes|1	bytes 8256 fnv 6BD73F08
 PackPBM|dest|one run 124 bytes|1	bytes 8256 fnv B83DAE5C
 PackPBM|dest|one run 128 bytes|1	bytes 8256 fnv BA736030
 PackPBM|dest|one run 132 bytes|1	bytes 8256 fnv 5C6F9BE1
 PackPBM|dest|one run 136 bytes|1	bytes 8256 fnv 3F3D5635
 PackPBM|dest|one run 140 bytes|1	bytes 8256 fnv 984382D9
-PackPBM|dest|short runs 15 bytes|1	bytes 8256 fnv 0F2594DB
+PackPBM|dest|short runs 15 bytes|1 [orig]	bytes 8256 fnv 0F2594DB
+PackPBM|dest|short runs 15 bytes|1 [fixed #772]	bytes 8256 fnv 15AC34A8
 PackPBM|kept|129 literals, 131 equal 300 bytes|1	kept
 PackPBM|kept|2 different (fails) 2 bytes|1	kept
 PackPBM|kept|mixed 0 bytes|1	kept

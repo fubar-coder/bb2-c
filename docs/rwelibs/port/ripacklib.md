@@ -64,12 +64,20 @@ odd address).
   d4 = -1 for BLoad, which form 1 does not read; the C version passes
   d2 = d3 = 0.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* **PackPBM** returns -1 when the packed data would not be smaller than
+  the source; dest holds the packed bytes written up to that point. The
+  original had no RTS there: it fell into `UnPackPBM` with the registers
+  of the caller and d0 = -1, unpacked from address -1 (then 0, 1, …)
+  into dest, as far as the caller's d3 + dest allowed, and returned -1
+  (#772).
+
 ## BUG(orig), kept
 
-* `PackPBM`'s failure path has no RTS: it falls into `UnPackPBM` with the
-  registers of the caller and d0 = -1, i.e. it unpacks from address -1
-  (then 0, 1, …) into dest, as far as the **caller's d3** + dest allows,
-  before returning -1. With a large d3 that overwrites memory (#772).
 * `UnPackPBM` tests its limits after the access and signed: it reads the
   byte at source+length and writes one byte past destlength (#778).
 * `UnpackIFF` treats every BODY as ByteRun1 (the compression byte of the

@@ -175,8 +175,8 @@ static void test_pbm(void)
     packpbm("129 literals, 131 equal", 300, 0);
     unpackpbm("129 literals, 131 equal", out + 16, packed, 300);
 
-    /* not smaller: -1, BUG(orig) (#772) - then UnPackPBM from address -1 into
-       dest, as far as the caller's d3 allows */
+    /* not smaller: -1; the original then runs UnPackPBM from address -1
+       into dest, as far as the caller's d3 allows (fixed #772) */
     seed = 77;
     mkdata(src, 600, 0);
     packpbm("noise (fails), d3 0", 600, 0);
