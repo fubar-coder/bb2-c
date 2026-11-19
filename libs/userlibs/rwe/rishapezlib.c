@@ -15,10 +15,15 @@
  * inline routine (Dc $a000): both assembler.  SetWinDrawShapeZ is C.
  * init and finit do nothing.
  *
- * BUG(orig):
- *   - PeekByte has no RTS: called as a subroutine (not inline), it runs
- *     on into CludgeAcid with d0 = the byte - a byte 1 loads a4 with the
- *     saved value, any other byte saves a4 (#907).  The layout is kept.
+ * PeekByte has no RTS behind its inline code: called as a subroutine it
+ *   would run on into CludgeAcid with d0 = the byte.  No compiled program
+ *   does that (#907, not a defect): the compiler always copies an inline
+ *   routine to the call (blitz2.s doajsr2, libcall.c `doajsr2`); its
+ *   constant evaluation would JSR into a library, but only into one whose
+ *   header allows it (LIBF_CONSTOK, `uselib3`: "Can't use this
+ *   Library!"), and rishapezlib's does not; no other library calls it.
+ *   Only the libs test calls the code as a subroutine.  The layout is
+ *   kept.
  *
  * CludgeAcid 1 before any CludgeAcid 0 sets a4 = 0 (nothing saved yet).
  */
@@ -81,8 +86,9 @@ ULONG rishapez_myold;
  * original, CludgeAcid on|off: d0.b = 1 sets a4 = the saved a4 (0 if
  * nothing was saved yet), any other value saves a4 (the Blitz program's
  * locals pointer, fixed for GCC: assembler); no result.
- * BUG(orig) (#907): PeekByte has no RTS - as a subroutine it runs into
- * CludgeAcid with d0 = the byte.
+ * PeekByte has no RTS: as a subroutine it would run into CludgeAcid with
+ * d0 = the byte, but compiled programs always copy it inline (#907, not a
+ * defect; see the head of the file).
  */
 BLITZ_ASM_BLOCK(peekb, "   .globl  __peekb\n"
         "__peekb:\n"

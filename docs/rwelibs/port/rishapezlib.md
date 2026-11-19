@@ -28,14 +28,21 @@ init and finit do nothing.
 `SetWinDrawShapeZ` is C behind a thunk (keeps d0–d1/a0–a1; the original
 changes a0 and, with a pattern, a1). `CludgeAcid` sets a4, which GCC has
 fixed, and `PeekByte` is inline (`Dc $a000`): both stay assembler, in one
-block in the original's order, because of the first bug below. The saved
-a4 is the global `rishapez_myold` (the original keeps it in its code).
+block in the original's order (see below). The saved a4 is the global
+`rishapez_myold` (the original keeps it in its code).
 
-## BUG(orig), kept
+## PeekByte without RTS: not a defect in compiled programs
 
-* `PeekByte` has no RTS behind its inline code: called as a subroutine
-  (not inline) it runs on into `CludgeAcid` with d0 = the byte – a byte
-  1 loads a4 with the saved value, any other byte saves a4 (#907).
+`PeekByte` has no RTS behind its inline code: called as a subroutine it
+would run on into `CludgeAcid` with d0 = the byte (a byte 1 loads a4 with
+the saved value, any other byte saves a4). No compiled program calls it
+so (#907): the compiler always copies an inline routine to the call
+(`doajsr2`, blitz2.s:11541, `programs/blitz2/src/libcall.c`); in constant
+evaluation it would emit a JSR into the library instead, but it allows
+that only for a library whose header has the flag for it (`uselib3`,
+"Can't use this Library!"), and rishapezlib's header has no flags; no
+other library calls rishapezlib. Only the libs test calls the code as a
+subroutine, which is why its cases show a4 saved and loaded.
 
 ## Test
 
@@ -47,6 +54,7 @@ object = a pointer to the Window). Observed: d0 and a4, the RastPort fields set
 (the pattern by its words) and their neighbours, the kept registers.
 Covered: `CludgeAcid` before anything was saved, 0/1 with garbage above
 the low byte; `PeekByte` inline with the same length, and its code as a
-subroutine with the bytes 0, 1, $80, $FF (the bug: a4 saved and loaded);
+subroutine with the bytes 0, 1, $80, $FF (a4 saved and loaded: the
+fall-through into `CludgeAcid`, which compiled programs never reach);
 `SetWinDrawShapeZ` with modes 1, 0, $8000 and a word 0 with garbage
 above it; init, finit.
