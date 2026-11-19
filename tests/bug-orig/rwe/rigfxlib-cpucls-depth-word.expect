@@ -2,5 +2,5 @@
 ok
 [run]
 before
-buffer untouched
+REQUESTER: AutoRequest body "Illegal BitMap Depth" *
 rc=0
