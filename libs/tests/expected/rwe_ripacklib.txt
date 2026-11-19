@@ -76,7 +76,14 @@ ILBMPalette|+6|4 colours form 1 offset 2|1	$00000000
 ILBMPalette|+6|4 colours form 1 offset 4|1	$00000000
 ILBMPalette|+6|4 colours form 1 offset 6|1	$00000000
 ILBMPalette|+6|8 colours, empty palette form 0 offset 0|1	$00000000
+ILBMPalette|+6|CMAP 0 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|+6|CMAP 0 bytes form 1 offset 1|1 [fixed #1105]	$00000000
 ILBMPalette|+6|CMAP 10 bytes form 0 offset 0|1	$00000000
+ILBMPalette|+6|CMAP 196608 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|+6|CMAP 196608 bytes form 1 offset 1|1 [fixed #1105]	$00000000
+ILBMPalette|+6|CMAP 2 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|+6|CMAP 2 bytes form 1 offset 1|1 [fixed #1105]	$00000000
+ILBMPalette|+6|CMAP 65539 bytes form 0 offset 0|1 [fixed #1105]	$00000000
 ILBMPalette|+6|no CMAP form 0 offset 0|1	$00000000
 ILBMPalette|+6|no CMAP form 1 offset 3|1	$00000000
 ILBMPalette|block|2 colours form 1 offset 1|1	$00000001
@@ -86,7 +93,14 @@ ILBMPalette|block|4 colours form 1 offset 2|1	$00000001
 ILBMPalette|block|4 colours form 1 offset 4|1	$00000001
 ILBMPalette|block|4 colours form 1 offset 6|1	$00000001
 ILBMPalette|block|8 colours, empty palette form 0 offset 0|1	$00000001
+ILBMPalette|block|CMAP 0 bytes form 0 offset 0|1 [fixed #1105]	$00000001
+ILBMPalette|block|CMAP 0 bytes form 1 offset 1|1 [fixed #1105]	$00000001
 ILBMPalette|block|CMAP 10 bytes form 0 offset 0|1	$00000001
+ILBMPalette|block|CMAP 196608 bytes form 0 offset 0|1 [fixed #1105]	$00000001
+ILBMPalette|block|CMAP 196608 bytes form 1 offset 1|1 [fixed #1105]	$00000001
+ILBMPalette|block|CMAP 2 bytes form 0 offset 0|1 [fixed #1105]	$00000001
+ILBMPalette|block|CMAP 2 bytes form 1 offset 1|1 [fixed #1105]	$00000001
+ILBMPalette|block|CMAP 65539 bytes form 0 offset 0|1 [fixed #1105]	$00000001
 ILBMPalette|block|no CMAP form 0 offset 0|1	$00000001
 ILBMPalette|block|no CMAP form 1 offset 3|1	$00000001
 ILBMPalette|colours|2 colours form 1 offset 1|1	bytes 52 00040000050000002A0000004F000000050000002A0000004F0000007400000099000000BE00000052000000770000009C000000
@@ -94,9 +108,17 @@ ILBMPalette|colours|4 colours form 0 offset 0|1	bytes 52 00040000050000002A00000
 ILBMPalette|colours|4 colours form 1 offset 0|1	bytes 100 fnv 3F2939B9
 ILBMPalette|colours|4 colours form 1 offset 2|1	bytes 100 fnv A058BD55
 ILBMPalette|colours|4 colours form 1 offset 4|1	bytes 100 fnv C8F1103D
-ILBMPalette|colours|4 colours form 1 offset 6|1	bytes 52 00040000050000002A0000004F0000007400000099000000BE000000E3000000080000002D00000052000000770000009C000000
+ILBMPalette|colours|4 colours form 1 offset 6|1 [orig]	bytes 52 00040000050000002A0000004F0000007400000099000000BE000000E3000000080000002D00000052000000770000009C000000
+ILBMPalette|colours|4 colours form 1 offset 6|1 [fixed #769]	bytes 124 fnv 72A78F14
 ILBMPalette|colours|8 colours, empty palette form 0 offset 0|1	bytes 100 fnv 66410A15
+ILBMPalette|colours|CMAP 0 bytes form 0 offset 0|1 [fixed #1105]	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMPalette|colours|CMAP 0 bytes form 1 offset 1|1 [fixed #1105]	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
 ILBMPalette|colours|CMAP 10 bytes form 0 offset 0|1	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMPalette|colours|CMAP 196608 bytes form 0 offset 0|1 [fixed #1105]	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMPalette|colours|CMAP 196608 bytes form 1 offset 1|1 [fixed #1105]	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMPalette|colours|CMAP 2 bytes form 0 offset 0|1 [fixed #1105]	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMPalette|colours|CMAP 2 bytes form 1 offset 1|1 [fixed #1105]	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMPalette|colours|CMAP 65539 bytes form 0 offset 0|1 [fixed #1105]	bytes 262156 fnv D62ADFD5
 ILBMPalette|colours|no CMAP form 0 offset 0|1	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
 ILBMPalette|colours|no CMAP form 1 offset 3|1	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
 ILBMPalette|d0|2 colours form 1 offset 1|1	$FFFFFFFF
@@ -106,7 +128,14 @@ ILBMPalette|d0|4 colours form 1 offset 2|1	$FFFFFFFF
 ILBMPalette|d0|4 colours form 1 offset 4|1	$FFFFFFFF
 ILBMPalette|d0|4 colours form 1 offset 6|1	$FFFFFFFF
 ILBMPalette|d0|8 colours, empty palette form 0 offset 0|1	$FFFFFFFF
+ILBMPalette|d0|CMAP 0 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|d0|CMAP 0 bytes form 1 offset 1|1 [fixed #1105]	$00000000
 ILBMPalette|d0|CMAP 10 bytes form 0 offset 0|1	$FFFFFFFF
+ILBMPalette|d0|CMAP 196608 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|d0|CMAP 196608 bytes form 1 offset 1|1 [fixed #1105]	$00000000
+ILBMPalette|d0|CMAP 2 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|d0|CMAP 2 bytes form 1 offset 1|1 [fixed #1105]	$00000000
+ILBMPalette|d0|CMAP 65539 bytes form 0 offset 0|1 [fixed #1105]	$FFFFFFFF
 ILBMPalette|d0|no CMAP form 0 offset 0|1	$00000000
 ILBMPalette|d0|no CMAP form 1 offset 3|1	$00000000
 ILBMPalette|kept|2 colours form 1 offset 1|1	kept
@@ -116,7 +145,14 @@ ILBMPalette|kept|4 colours form 1 offset 2|1	kept
 ILBMPalette|kept|4 colours form 1 offset 4|1	kept
 ILBMPalette|kept|4 colours form 1 offset 6|1	kept
 ILBMPalette|kept|8 colours, empty palette form 0 offset 0|1	kept
+ILBMPalette|kept|CMAP 0 bytes form 0 offset 0|1 [fixed #1105]	kept
+ILBMPalette|kept|CMAP 0 bytes form 1 offset 1|1 [fixed #1105]	kept
 ILBMPalette|kept|CMAP 10 bytes form 0 offset 0|1	kept
+ILBMPalette|kept|CMAP 196608 bytes form 0 offset 0|1 [fixed #1105]	kept
+ILBMPalette|kept|CMAP 196608 bytes form 1 offset 1|1 [fixed #1105]	kept
+ILBMPalette|kept|CMAP 2 bytes form 0 offset 0|1 [fixed #1105]	kept
+ILBMPalette|kept|CMAP 2 bytes form 1 offset 1|1 [fixed #1105]	kept
+ILBMPalette|kept|CMAP 65539 bytes form 0 offset 0|1 [fixed #1105]	kept
 ILBMPalette|kept|no CMAP form 0 offset 0|1	kept
 ILBMPalette|kept|no CMAP form 1 offset 3|1	kept
 ILBMPalette|numcols|2 colours form 1 offset 1|1	$00000004
@@ -124,9 +160,17 @@ ILBMPalette|numcols|4 colours form 0 offset 0|1	$00000004
 ILBMPalette|numcols|4 colours form 1 offset 0|1	$00000008
 ILBMPalette|numcols|4 colours form 1 offset 2|1	$00000008
 ILBMPalette|numcols|4 colours form 1 offset 4|1	$00000008
-ILBMPalette|numcols|4 colours form 1 offset 6|1	$00000004
+ILBMPalette|numcols|4 colours form 1 offset 6|1 [orig]	$00000004
+ILBMPalette|numcols|4 colours form 1 offset 6|1 [fixed #769]	$0000000A
 ILBMPalette|numcols|8 colours, empty palette form 0 offset 0|1	$00000008
+ILBMPalette|numcols|CMAP 0 bytes form 0 offset 0|1 [fixed #1105]	$00000003
+ILBMPalette|numcols|CMAP 0 bytes form 1 offset 1|1 [fixed #1105]	$00000003
 ILBMPalette|numcols|CMAP 10 bytes form 0 offset 0|1	$00000003
+ILBMPalette|numcols|CMAP 196608 bytes form 0 offset 0|1 [fixed #1105]	$00000003
+ILBMPalette|numcols|CMAP 196608 bytes form 1 offset 1|1 [fixed #1105]	$00000003
+ILBMPalette|numcols|CMAP 2 bytes form 0 offset 0|1 [fixed #1105]	$00000003
+ILBMPalette|numcols|CMAP 2 bytes form 1 offset 1|1 [fixed #1105]	$00000003
+ILBMPalette|numcols|CMAP 65539 bytes form 0 offset 0|1 [fixed #1105]	$00005556
 ILBMPalette|numcols|no CMAP form 0 offset 0|1	$00000003
 ILBMPalette|numcols|no CMAP form 1 offset 3|1	$00000003
 ILBMPalette|popped|2 colours form 1 offset 1|1	$00000000
@@ -136,7 +180,14 @@ ILBMPalette|popped|4 colours form 1 offset 2|1	$00000000
 ILBMPalette|popped|4 colours form 1 offset 4|1	$00000000
 ILBMPalette|popped|4 colours form 1 offset 6|1	$00000000
 ILBMPalette|popped|8 colours, empty palette form 0 offset 0|1	$00000000
+ILBMPalette|popped|CMAP 0 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|popped|CMAP 0 bytes form 1 offset 1|1 [fixed #1105]	$00000000
 ILBMPalette|popped|CMAP 10 bytes form 0 offset 0|1	$00000000
+ILBMPalette|popped|CMAP 196608 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|popped|CMAP 196608 bytes form 1 offset 1|1 [fixed #1105]	$00000000
+ILBMPalette|popped|CMAP 2 bytes form 0 offset 0|1 [fixed #1105]	$00000000
+ILBMPalette|popped|CMAP 2 bytes form 1 offset 1|1 [fixed #1105]	$00000000
+ILBMPalette|popped|CMAP 65539 bytes form 0 offset 0|1 [fixed #1105]	$00000000
 ILBMPalette|popped|no CMAP form 0 offset 0|1	$00000000
 ILBMPalette|popped|no CMAP form 1 offset 3|1	$00000000
 LoadIFF|+6|RAM:rwe-pack.bad form 1|1	$00000000

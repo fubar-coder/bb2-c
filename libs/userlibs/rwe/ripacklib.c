@@ -61,16 +61,22 @@
  * copies the rows as they are, 1 unpacks ByteRun1, any other value is
  * refused (BB_FALSE); the original decoded every BODY as ByteRun1.
  *
+ * Fixed (#769, #991, #1105): ILBMPalette with an offset makes a palette
+ * that is too small (or has no colour block) grow to offset + CMAP
+ * colours and keeps its colours; a CMAP below 3 bytes is refused and the
+ * block is sized from the whole colour count.  The original replaced a
+ * palette that was too small with one of the CMAP's size and ignored the
+ * offset (#769), wrote the colours offset * 12 bytes into a new block of
+ * the CMAP's size (#991), wrote 65536 colours for a CMAP below 3 bytes
+ * and sized the block from the low word of the CMAP length (#1105).  The
+ * new block is allocated before the old one is freed, so a failed
+ * allocation leaves the palette as it was (the original kept the freed
+ * block then, #768).
+ *
  * BUG(orig), kept:
  *   - The chunk searches step by 2 bytes from the given address (BMHD:
  *     5120 bytes, BODY: from the BMHD on, word counter; CMAP 5122 bytes)
  *     (#766).
- *   - ILBMPalette without offset always frees the palette's colour block
- *     (when there is one) and allocates a new one; with an offset into a
- *     palette that is too small it does the same and ignores the offset
- *     (#769).  The size of the freed block comes from the object's colour
- *     count; if the new allocation fails, the object keeps the freed
- *     block (#768).
  *   - DeIce: the picture flag of Pack-Ice overwrites the bit buffer with
  *     the default count $0f9f, whose bits then give the "own count" flag
  *     (always set) and the first 6 bits of the count: the default is
@@ -680,16 +686,25 @@ BLITZ_THUNK(iff1, iff1_c, "d1/a0-a1");
  *
  * Searches the CMAP (5122 bytes from source, by 2 bytes, BUG(orig)
  * (#766)) and writes its colours from colour `offset` on; offset < 0
- * gives the object a new colour block of the CMAP's size.
- * BUG(orig) (#769): without offset, or with an offset into a palette
- * that is too small, the old block is always freed and a new one
- * allocated (the offset ignored); BUG(orig) (#768): the freed size comes
- * from the object's colour count, and on a failed allocation the object
- * keeps the freed block.
+ * gives the object a new colour block of the CMAP's size (the old one
+ * freed: "this information is deleted").  Fixed (#769, #991): with an
+ * offset, a palette with fewer than offset + CMAP colours (or none)
+ * grows: a new block for offset + CMAP colours, the old colours copied
+ * into it, the ones between cleared, the cycles kept (as palettelib's
+ * DecodePalette since #226); the original replaced it with a block of
+ * the CMAP's size and ignored the offset (#769), or for a palette
+ * without a block wrote the colours offset * 12 bytes into a block of
+ * the CMAP's size (#991).  Fixed (#1105): a CMAP of fewer than 3 bytes
+ * is refused, the block is sized from the whole colour count; the
+ * original wrote 65536 colours for a CMAP below 3 bytes and sized the
+ * block from the low word of the CMAP length.  The new block is
+ * allocated before the old one is freed.
  * @param src     d0: the ILBM data
  * @param obj     a1: the palette object (parameter 1)
  * @param offset  d2: the first colour, < 0: a new block
- * @return d0: BB_TRUE, BB_FALSE without CMAP or memory
+ * @return d0: BB_TRUE, BB_FALSE without CMAP, with a CMAP of no colour or
+ *         of more than the 65535 colours of a palette, or without memory
+ *         (the palette unchanged)
  */
 static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
                                             struct bb_palette *obj BL_REG(a1),
@@ -697,57 +712,52 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
 {
     const UBYTE *cmap = src;
     LONG left = 5120;
-    UBYTE *to;
+    UBYTE *to, *old = (UBYTE *)PDATA(obj);
+    ULONG cols, oldcols = obj->numcols, count, first;
     struct bl_regs r;
-    UWORD n;
 
     while (LG(cmap) != ID('C', 'M', 'A', 'P')) {
         cmap += 2;
         if ((left -= 2) < 0)                    /* SUBQ.l #2:BPL */
             return BB_FALSE;
     }
-    cmap += 4;                                  /* the chunk size */
-    if (PDATA(obj)) {
-        ULONG oldcols = ((ULONG)src & 0xffff0000UL) | obj->numcols;  /* MOVE.w 4(a1),d0 */
-        int kill = offset < 0;
-        if (!kill) {
-            ULONG need = (bl_divu_w(LG(cmap), 3) & 0xffff) + offset;
-            kill = (WORD)oldcols < (WORD)need;  /* CMP.w d7,d0:BLT */
-        }
-        if (!kill)
-            to = (UBYTE *)PDATA(obj) + 4;
-        else {                                  /* killmem */
-            offset = -1;
-            r = (struct bl_regs){ .d0 = bl_mulu_w((UWORD)oldcols, 12) + 16, .a1 = PDATA(obj) };
-            BLITZ_ALIBJSR(TOK_globfree, r);
-            goto reserve;
-        }
+    /* fixed #1105: the whole count; none, or more than a palette holds
+       (the quotient would not fit DIVU's word), is refused */
+    if (LG(cmap + 4) < 3 || LG(cmap + 4) >= 3UL * 0x10000UL)
+        return BB_FALSE;
+    cols = bl_divu_w(LG(cmap + 4), 3) & 0xffff;
+    first = offset < 0 ? 0 : (ULONG)offset;
+    if (first > 0xffffUL || cols > 0xffffUL - first)
+        return BB_FALSE;                        /* more than a palette holds */
+    count = first + cols;
+    if (offset >= 0 && old && oldcols >= count) {
+        to = old + 4;                           /* it fits: in place */
     } else {
-    reserve: {
-            ULONG cols;
-            UBYTE *block;
-            r = (struct bl_regs){ .d0 = bl_mulu_w((UWORD)LG(cmap), 4) + 16,
-                                  .d1 = MEMF_PUBLIC | MEMF_CLEAR };
-            block = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
-            if (!block)
-                return BB_FALSE;
-            PDATA(obj) = (ULONG)block;
-            cols = bl_divu_w(LG(cmap), 3);
-            obj->numcols = (UWORD)cols;
-            *(ULONG *)&obj->cyc[0] = 0;
-            LG(block) = 0;
-            W(block) = (UWORD)cols;
-            to = block + 4;
+        UBYTE *block;
+        r = (struct bl_regs){ .d0 = bl_mulu_w((UWORD)count, 12) + 16,
+                              .d1 = MEMF_PUBLIC | MEMF_CLEAR };
+        block = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
+        if (!block)
+            return BB_FALSE;
+        if (offset >= 0 && old) {               /* fixed #769: it grows */
+            const ULONG *from = (const ULONG *)(old + 4);
+            ULONG *into = (ULONG *)(block + 4), k;
+            for (k = bl_mulu_w((UWORD)oldcols, 3); k; k--)
+                *into++ = *from++;
+        } else
+            *(ULONG *)&obj->cyc[0] = 0;         /* a new palette */
+        if (old) {
+            r = (struct bl_regs){ .d0 = bl_mulu_w((UWORD)oldcols, 12) + 16, .a1 = (ULONG)old };
+            BLITZ_ALIBJSR(TOK_globfree, r);
         }
+        PDATA(obj) = (ULONG)block;
+        obj->numcols = (UWORD)count;
+        LG(block) = 0;
+        W(block) = (UWORD)count;
+        to = block + 4;
     }
-    /* BUG(orig) (#991): for a palette without a colour block the offset is
-       not reset (only killmem does it): the block above is sized for the
-       CMAP alone and the colours land offset * 12 bytes into it, from
-       offset 2 on behind it. */
-    if (offset >= 0)                            /* palbig */
-        to += bl_mulu_w((UWORD)offset, 12);
-    n = (UWORD)(bl_divu_w(LG(cmap), 3) - 1);
-    cmap += 4;
+    to += bl_mulu_w((UWORD)first, 12);          /* fixed #991: inside the block */
+    cmap += 8;
     do {
         int i;
         for (i = 0; i < 3; i++) {
@@ -755,7 +765,7 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
             *to = *cmap++;
             to += 4;
         }
-    } while (n-- != 0);
+    } while (--cols);
     return BB_TRUE;
 }
 BLITZ_THUNK(ilbmpalette2, ilbmpalette2_c, "d1/a0-a1");

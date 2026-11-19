@@ -688,7 +688,8 @@ static void test_ilbmpalette(void)
     ilbmpalette("4 colours", 1, 2);             /* fits: at colour 2 */
     ilbmpalette("4 colours", 1, 0);
     ilbmpalette("4 colours", 1, 4);             /* just fits */
-    ilbmpalette("4 colours", 1, 6);             /* too small: a new block, offset lost */
+    ilbmpalette("4 colours", 1, 6);             /* too small: grows (the original: a new
+                                                   block, offset lost; fixed #769) */
     ilbmpalette("4 colours", 0, 0);             /* always a new block */
     seed = 23;
     mkilbm(ilbm, 32, 2, 1, 2, 2);
@@ -703,6 +704,47 @@ static void test_ilbmpalette(void)
     memset(ilbm, 0, 5300);
     ilbmpalette("no CMAP", 0, 0);
     ilbmpalette("no CMAP", 1, 3);
+
+    /* a CMAP of 0 or 2 bytes, 196608 bytes and 65539 bytes: refused,
+       refused, refused, 21846 colours (fixed #1105; the original writes
+       65536 colours, 65536, 65536, 21846 into a block of 16 to 28 bytes:
+       the C build only) */
+    if (!strcmp(bl_libset, "obj")) {
+        static const ULONG lens[] = { 0, 2, 196608 };
+        UBYTE *big;
+        unsigned i;
+
+        seed = 24;
+        mkilbm(ilbm, 32, 2, 1, 2, 0);
+        for (i = 0; i < sizeof lens / sizeof lens[0]; i++) {
+            char what[32];
+            UBYTE *b = ilbm;
+            while (memcmp(b, "CMAP", 4))
+                b++;
+            put32(b + 4, lens[i]);
+            sprintf(what, "CMAP %lu bytes", lens[i]);
+            ilbmpalette(what, 0, 0);
+            ilbmpalette(what, 1, 1);
+        }
+        big = AllocMem(65600, MEMF_ANY | MEMF_CLEAR);
+        if (big) {
+            put32(big, 0x464f524d);             /* FORM */
+            put32(big + 4, 65539 + 1 + 12);
+            put32(big + 8, 0x494c424d);         /* ILBM */
+            put32(big + 12, 0x434d4150);        /* CMAP */
+            put32(big + 16, 65539);
+            for (i = 0; i < 65539; i++)
+                big[20 + i] = (UBYTE)(i * 7);
+            ROUT = "ILBMPalette";
+            strcpy(VEC, "CMAP 65539 bytes form 0 offset 0");
+            DO1(ent(ILBMPALETTE, 0), R.d[0] = (ULONG)big; R.d[1] = 0x5A001234;
+                R.a[1] = (ULONG)palo);
+            OBS("d0", R.d[0]);
+            samepal();
+            FreeMem(big, 65600);
+        } else
+            check("CMAP 65539 bytes: memory", FALSE);
+    }
 }
 
 static void test_ilbmgrab(void)

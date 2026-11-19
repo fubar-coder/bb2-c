@@ -11,6 +11,7 @@
 ; allocation, checked when it is freed and at the end).
 ; Correct: nothing is written behind an allocation.
 ; ripacklib needs RIAmosFuncLib (LoadIFF calls its NextBank, BLoad, ...).
+; @fixed #991
 ; @rwe ripacklib riamosfunclib
 ; @pass runwrap=@INJECT@|guard
 DEFTYPE .l

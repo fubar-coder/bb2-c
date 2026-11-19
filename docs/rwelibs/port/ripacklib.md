@@ -112,25 +112,29 @@ kind F):
   as they are, 1 unpacks ByteRun1, any other value is refused (0). The
   original decoded every BODY as ByteRun1, so an uncompressed picture
   became garbage (#773).
+* **ILBMPalette** with an offset: a palette with fewer than offset + CMAP
+  colours, or without a colour block, grows to offset + CMAP colours; its
+  colours are copied into the new block, the ones between them and the
+  offset are cleared, its cycles stay (the shape of palettelib's
+  DecodePalette, #226). Without an offset the palette is replaced by the
+  CMAP's colours, as documented. The original replaced a palette that was
+  too small by a block of the CMAP's size and ignored the offset (#769),
+  and for a palette without a colour block allocated the CMAP's size and
+  still wrote the colours offset * 12 bytes into it, from offset 2 on
+  behind the block (#991).
+* **ILBMPalette** refuses a CMAP of fewer than 3 bytes (and one of 65536
+  colours or more, which no palette holds) and sizes the block from the
+  whole colour count. The original took the count 0 as 65536 colours
+  (786432 bytes written into a block of 16 to 24 bytes) and sized the
+  block from the low word of the CMAP length (#1105). The new block is
+  allocated before the old one is freed, so a failed allocation leaves
+  the palette as it was (the original kept the freed block then, #768).
 
 ## BUG(orig), kept
 
 * The chunk searches step by 2 bytes from the given address: BMHD within
   5120 bytes, BODY within 5120 bytes from the BMHD on (a word counter),
   CMAP within 5122 bytes (#766).
-* `ILBMPalette` without offset always frees the palette's colour block
-  (if it has one) and allocates a new one of the CMAP's size; with an
-  offset into a palette that is too small it does the same and ignores
-  the offset (#769). The size passed for the freed block comes from the
-  object's colour count; if the new allocation fails, the object keeps
-  the freed block (#768).
-* `ILBMPalette` with an offset on a palette that has no colour block yet
-  allocates the block for the CMAP's colours (12 bytes each + 16) and still
-  adds offset * 12 to the destination (only the killmem path resets the
-  offset): the last `offset` colours lie behind the block, from offset 2 on
-  outside it (an offset of 4 with a 4-colour CMAP: 36 bytes behind the 64
-  byte block). Test `ripacklib-ilbmpalette-offset-empty-palette` (inject
-  guard). (#991)
 * `DeIce`: the picture flag of Pack-Ice loads the default count `$0f9f`
   into d7, the register of the bit buffer; the next bit (the "own count"
   flag) and the first 6 bits of the count then come from `$9f`: the
@@ -157,7 +161,9 @@ picture mode (on 132 KB below the data); UnpackIFF both forms with all
 line counts (all, fewer, more than the bitmap, 0), xy offset, a too
 shallow or narrow bitmap, no plane 0, rows of 6, 128 and 130 bytes (the
 BODY rows word-aligned, as ILBM stores them), a run past the row, no BMHD, no BODY; ILBMPalette into an empty palette, with
-offsets that fit or not, without offset, a CMAP of 10 bytes, no CMAP;
+offsets that fit or not, without offset, a CMAP of 10 bytes, no CMAP,
+(the C build only: the original writes 65536 or 21846 colours there,
+#1105) a CMAP of 0 and 2 bytes and one of 65539 bytes;
 ILBMGrab; LoadIFF both forms with a good file, a file that does not load,
 no free bank, a file that is no ILBM; ChunkHeader; memlib's memory all
 back.
@@ -174,5 +180,4 @@ original finds no bank from 51 on and returns 0, fixed #770); then the
 test raises the limit to 60.
 
 Not covered: corrupt ICE data, PackPBM's failure with a large d3,
-nPlanes 0, DIVU overflows (CMAP chunks of 196 KB), a failing memlib
-allocation.
+nPlanes 0, a failing memlib allocation.
