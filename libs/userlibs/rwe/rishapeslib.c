@@ -35,8 +35,8 @@
  * file that is no LE file).  The routines are C behind thunks; the
  * register arithmetic of the original (word operations, MULU.w, DBRA on
  * words, the flags a MOVEA does not set) is reproduced.  Assembler: the
- * call of shapeslib's LoadShapes (a2/a3/a6 as the original leaves them),
- * the flags of dos Write (see savecmap), and the original's stack
+ * call of shapeslib's LoadShapes (a2/a3/a6 as the original leaves them)
+ * and the original's stack
  * imbalances (below).
  *
  * Shape numbers: SafeToBlit, LELoadShapes and LESaveShapes shift d0/d1
@@ -58,9 +58,7 @@
  *     (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
  *   - read_palette: no check of the allocation (writes to address 0)
  *     (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
- *   - LESaveShapes: whether the palette is written depends on the flags
- *     dos Write leaves (MOVE.l paletteptr,a0 is a MOVEA, the BNE tests
- *     Write's flags) (#814); the FORM length is 8 too large and has the
+ *   - LESaveShapes: the FORM length is 8 too large and has the
  *     CMAP size of the last save with a palette (#816); the shape header
  *     buffer is allocated with the upper word of d0 of _saveCMAP (#817); a
  *     palette of 0 colours copies 65536 (#823); a failing pack buffer is a
@@ -89,7 +87,9 @@
  * leaves the palette for a CMAP of no colour or of more than 65535 (the
  * original decoded 65536 colours into 8 bytes, #820).  LECludgeShapes
  * passes SHHD and CMAP by their lengths (the original took SHHD as 20
- * bytes and the CMAP as the colours decoded, #811).
+ * bytes and the CMAP as the colours decoded, #811).  LESaveShapes writes
+ * the CMAP whenever there is a palette with data (the original tested the
+ * Z flag of dos Write behind a MOVEA, #814).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
  * (unused since the own cookie code).  LELoadShapes form 3
@@ -1123,35 +1123,19 @@ BLITZ_THUNK(_leloadshapesinglenop, leloadshapesinglenop_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------- LESaveShapes */
 
-/* dos Write with the Z flag it leaves (BUG(orig): _saveCMAP's BNE, #814) */
-static LONG write_z(BPTR fh, APTR buf, LONG len, UBYTE *z)
-{
-    register LONG d0 __asm("d0");
-    register BPTR d1 __asm("d1") = fh;
-    register APTR d2 __asm("d2") = buf;
-    register LONG d3 __asm("d3") = len;
-    register struct DosLibrary *a6 __asm("a6") = dosbase;
-
-    __asm volatile("jsr -48(a6)\n\tseq %1"
-                   : "=d"(d0), "=m"(*z), "+d"(d1), "+d"(d2), "+d"(d3), "+a"(a6)
-                   :
-                   : "a0", "a1", "cc", "memory");
-    return d0;
-}
-
-/* _saveCMAP: the CMAP chunk of paletteptr; `z` = the Z flag of the Write
-   before; returns the d0 the original leaves */
-static ULONG savecmap(BPTR fh, ULONG result, UBYTE z)
+/* _saveCMAP: the CMAP chunk of paletteptr; `result` = d0 of the Write
+   before; returns the d0 the original leaves.  Fixed (#814): the palette
+   pointer is tested (the original's MOVE.l paletteptr,a0 is a MOVEA, its
+   BNE tested the Z flag of the Write before: Z set wrote no CMAP, Z clear
+   without a palette read the long at address 0 as the palette data) */
+static ULONG savecmap(BPTR fh, ULONG result)
 {
     const UBYTE *pal;
     UBYTE *p;
     ULONG mem;
     UWORD n;
 
-    if (z)                              /* MOVEA sets no flags: BNE */
-        return result;
-    pal = *(UBYTE *volatile *)&paletteptr;
-    if (!*(volatile ULONG *)pal)        /* address 0 without a palette */
+    if (!(pal = paletteptr) || !FL(pal, bb_palette, pdata))
         return result;
     pal = (const UBYTE *)FL(pal, bb_palette, pdata);
     centry = bl_mulu_w(FW(pal, paldata, colours), 3);
@@ -1256,13 +1240,13 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
  * stored when packing fails).  Nothing if the file cannot be opened.
  * BUG(orig): the count is s2 - s1 of a word subtraction with the upper
  * word of d1 uncleared (compiled code leaves one from a long expression)
- * (#815); whether the CMAP is written depends on dos Write's Z flag
- * (#814); the FORM length is 8 too large and has the CMAP size of the
+ * (#815); the FORM length is 8 too large and has the CMAP size of the
  * last save with a palette (#816); the shape header buffer is allocated
  * with the upper word of d0 of _saveCMAP and freed as 14 bytes (#817); a
  * palette of 0 colours copies 65536 (#823); a missing pack buffer is two
  * runtime errors (#818); PackPBM's failure runs UnPackPBM with d3 = 12
- * (#772).
+ * (#772).  Fixed (#814): the CMAP is written whenever there is a palette
+ * with data (the original tested the Z flag of dos Write).
  * @param shape1   d0.w: the first shape# * 32
  * @param shape2   d1.w: the last shape# * 32
  * @param name     d2: filename$
@@ -1281,7 +1265,6 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 B
     ULONG written, len, result;
     ULONG count = shape2;               /* d1: the shape count, upper word kept */
     UWORD num2;                         /* d1: shape2 >> 5 */
-    UBYTE z;
 
     dosbase = dos;
     paletteptr = palette;
@@ -1296,8 +1279,8 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 B
         return;
     FL(&emptyheader, lehead, hd.count) = shapecount;
     FW(&emptyheader, lehead, hd.compression) = compress;
-    result = write_z(fh, &emptyheader, sizeof emptyheader, &z);
-    result = savecmap(fh, result, z);
+    result = Write(fh, &emptyheader, sizeof emptyheader);
+    result = savecmap(fh, result);
     written = writeshapes(fh, result);
     Seek(fh, -(LONG)(written - 4), OFFSET_CURRENT);
     len = written - 8;
@@ -1314,7 +1297,7 @@ BLITZ_THUNK(_lesaveshapes, lesaveshapes_c, "d0-d1/a0-a1");
 
 /**
  * @brief LESaveShapes shape#,shape#,filename$: as above without a palette
- * (the Write's flags decide as above, #814).
+ * (no CMAP).
  * @param shape1  d0.w: the first shape# * 32
  * @param shape2  d1.w: the last shape# * 32
  * @param name    d2: filename$

@@ -27,7 +27,7 @@
  * LESaveShapes both forms (without and with a palette, packed with
  * packable and unpackable data - PackPBM's failure path -, the shape
  * count, with an upper word in d1: BUG(orig) #815; with dos Write
- * returning Z set: BUG(orig) #814, and globfree leaving an upper word in
+ * returning Z set: fixed #814, and globfree leaving an upper word in
  * d0: BUG(orig) #817, both as the system may leave them, D-019),
  * LELoadShapes all four forms (form 3, which compiled code never reaches,
  * called directly with a0 set),

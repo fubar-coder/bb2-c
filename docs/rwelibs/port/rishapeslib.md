@@ -68,15 +68,9 @@ Calls into other libraries (ALibJsr):
   that loads LoadShapes' own `!libs` first (a3, a2 from d0, d1), so this
   does not matter (#813, as editlib #130 in `docs/libs/cmdlibs-port.md`).
 
-Further assembler:
-
-* **dos Write with the flags it leaves.** In `_saveCMAP`,
-  `MOVE.l paletteptr,a0` is a MOVEA and sets no flags. The `BNE` behind
-  it therefore tests the Z flag that dos `Write` of the file header left.
-  `write_z` calls Write and records that flag with `seq`.
-* **The stack imbalance.** An allocation that fails in readshapes'
-  shape loop or in the cookie returns with a0 still pushed. The original
-  returns to that data address; `rs_crash` jumps there.
+Further assembler: **the stack imbalance.** An allocation that fails in
+readshapes' shape loop or in the cookie returns with a0 still pushed.
+The original returns to that data address; `rs_crash` jumps there.
 
 ## BUG(orig), kept
 
@@ -94,8 +88,6 @@ Further assembler:
 * **read_palette:** the allocation is not checked; a failure writes to
   address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * **LESaveShapes:**
-  * Whether the CMAP is written depends on Write's Z flag (above). In
-    the emulator (OS 3.2) it is written (#814).
   * The FORM length is 8 too large and contains the CMAP size of the
     last save that had a palette (#816).
   * The shape header buffer is allocated with the upper word of the d0
@@ -177,6 +169,14 @@ kind F):
   CMAP by the colours read_palette decoded: a longer SHHD, a CMAP size
   that is no multiple of 3 or an IFF pad byte missed SDAT, and nothing
   was loaded (#811, test `rishapeslib-lecludgeshapes-chunk-lengths`).
+* LESaveShapes writes the CMAP whenever it has a palette with data. In
+  the original's `_saveCMAP`, `MOVE.l paletteptr,a0` is a MOVEA and sets
+  no flags, so the `BNE` behind it tested the Z flag that dos `Write` of
+  the file header left: with Z set no CMAP was written, with Z clear and
+  no palette the long at address 0 was taken as the palette data. The
+  dos.library of the emulator's Kickstart/Workbench 3.1 leaves Z clear
+  (#814, `libs_emulator` cases `[fixed #814]` of `rwe_rishapeslib`: a
+  Write patched to return with Z set, D-019).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push
