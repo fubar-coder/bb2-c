@@ -4,6 +4,7 @@ done
 [compile]
 ok
 [run]
+before
 map shape 4000 overwritten
 rc=0
 [blitz2]
