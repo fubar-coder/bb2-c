@@ -1,0 +1,9 @@
+# the intended differences of rianimlib against its reference, the CD
+# binary BSS2 RIANIMLIB.OBJ (blitzlib compare, docs/development.md
+# "Intended differences")
+# #514: RIAnimInit's x,y form gets an error check (xychk, "Animation
+# position outside the bitmap"); rianimlib gets an error check area for it
+# (the original has none)
+lib 57: header +$2C: code offset set in only one of them
+lib 57: entry 0 RIAnimInit +$3C: code offset set in only one of them
+lib 57: relocations in the declaration part 9 != 11

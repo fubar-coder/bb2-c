@@ -77,6 +77,19 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   and the pad byte of the row were never decoded, and a width below 8 gave
   65536 columns (DBRA). RIAnimInit computes the counts and fails for a
   width of 0 (#507, its ANIM5 half).
+* With runtime error checking RIAnimInit's x,y form refuses a position
+  outside the bitmap (x not in 0 to its width − 1, y not in 0 to its
+  rows − 1): "Animation position outside the bitmap" (`xychk`, an error
+  check area the original has not; `rianimlib.declarations-intended.txt`).
+  The release code is unchanged (an invalid argument, D-005): the offset
+  is ebwidth × y (MULU.w, low words) + x >> 3 (ASR.l), so a negative y
+  or one of 65536 and above gives an offset of up to 65535 rows, where
+  UnpackIFF and every RINextAnimFrame write; the manual: "You should
+  ensure that your animation will never go off screen" (#514).
+
+Kept, without effect: the `DIVU.w #64` that undoes the compiler's
+bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
+65536 on; the number is kept as a byte anyway (named in #514).
 
 **BUG(orig)** (kept):
 
@@ -86,9 +99,6 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   (the original crashes; not reproducible in C) (#513).
 * The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers) add
   length + 8 without the pad byte of odd lengths (#505).
-* RIAnimInit x,y: the offset is ebwidth × y (MULU.w, low words) + x >> 3
-  (ASR.l); the `DIVU.w #64` that undoes the compiler's bitmap# × 64
-  overflows (no change) from 64 × 65536 on (#514).
 * ANIM7: the test for the short (word) form tests the operation
   (always 7), so the long form is always used and the short code is
   unreachable (#504); the columns are width >> 5 (ASR.w) – the rest of a

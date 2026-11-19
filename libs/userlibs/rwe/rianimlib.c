@@ -38,9 +38,6 @@
  *   - The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers)
  *     add the chunk length + 8 without the pad byte of odd lengths
  *     (#505).
- *   - RIAnimInit x,y form: the offset is ebwidth * y (MULU.w: the low
- *     words) + x >> 3 (ASR.l); DIVU.w #64 of the bitmap# overflows (no
- *     change) for numbers of 64 * 65536 and above (#514).
  *   - ANIM7: the test for the short (word) form tests the operation (7),
  *     so the long form is always used (the short code is unreachable and
  *     not ported) (#504); the columns are width >> 5 (ASR.w), dropping
@@ -80,6 +77,15 @@
  *     that is no multiple of 8 and leaving the pad byte of the row, and a
  *     width below 8 gave 65536 columns (DBRA).  RIAnimInit fails for a
  *     width of 0; the counts are computed there (#507, its ANIM5 half).
+ *   - With runtime error checking RIAnimInit's x,y form refuses a position
+ *     outside the bitmap: "Animation position outside the bitmap" (xychk;
+ *     the original has no error check area).  The release code is
+ *     unchanged: the offset is ebwidth * y (MULU.w: the low words) + x >> 3
+ *     (ASR.l), a negative y or one of 65536 and above gives an offset of up
+ *     to 65535 rows (#514; an invalid argument, D-005).
+ * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
+ * change) for bitmap numbers of 65536 and above; the number is kept as a
+ * byte anyway (named in #514).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -95,10 +101,11 @@
 /* entry points (thunks, defined below) */
 void _InitAnim2(void), _InitAnim(void), _InitAnim3(void), _NextAnimFrame(void);
 void _AnimLoop(void), _CountFrames(void), _AnimDepth(void), _AnimWidth(void);
-void _AnimHeight(void);
+void _AnimHeight(void), xychk(void);
 
-/* !libheader {#rianimlib,0,0,0,0} */
-BLITZ_LIBHEADER(LIB_rianimlib, 0, BL_NORET, 0, 0);
+/* !libheader {#rianimlib,0,0,0,0}; error field: the error check area of
+   xychk (fixed, #514) */
+BLITZ_LIBHEADER(LIB_rianimlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG);
@@ -109,7 +116,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_InitAnim, 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD1);           /* !bmap {0,1} */
-BLITZ_SUBS(_InitAnim3, 0, 0);
+BLITZ_SUBS(_InitAnim3, xychk, 0);                  /* check: fixed #514 */
 BLITZ_NAME("RIAnimInit", "(address,bitmap#,palette# [,xy_offset]|[,x,y])");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -440,7 +447,9 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim2(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
  *
  * The offset is BytesPerRow * y (MULU.w: the low words) + x >> 3
  * (ASR.l); the bitmap# is d1 / 64 with DIVU.w, which overflows (no
- * change) for numbers of 64 * 65536 and above (BUG(orig) (#514)).
+ * change) for numbers of 64 * 65536 and above.  A position outside the
+ * bitmap is the programmer's: with runtime error checking xychk refuses
+ * it (fixed #514).
  * @param address  d0: the ANIM file in memory
  * @param bm       d1: bitmap# * 64 (#pd1)
  * @param pal      d2: palette#
@@ -683,3 +692,33 @@ BLITZ_THUNK(_AnimWidth, c_AnimWidth, "d1/a0-a1");
 BLITZ_THUNK(_AnimHeight, c_AnimHeight, "d1/a0-a1");
 /* RINextAnimFrame keeps all but d0, as the original */
 BLITZ_THUNK(_NextAnimFrame, c_NextAnimFrame, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badxy, "Animation position outside the bitmap");  /* fixed, #514 */
+
+/**
+ * @brief The error check of RIAnimInit's x,y form (debugger only).
+ *
+ * Fixed (#514), not in the original (rianimlib had no error check
+ * area): the position becomes the byte offset BytesPerRow * y (MULU.w of
+ * the low words) + x >> 3 into every plane, without a look at the bitmap;
+ * a negative y or one of 65536 and above gave an offset of up to 65535
+ * rows, and UnpackIFF and every RINextAnimFrame wrote there.  The release
+ * code is unchanged (an invalid argument, D-005).
+ *
+ * Errors: "Animation position outside the bitmap" (x not in 0 to the
+ * bitmap's width in pixels - 1, or y not in 0 to its rows - 1).
+ * @param x       d3: the x position in pixels
+ * @param y       d4: the y position in lines
+ * @param bitmap  a0: the bitmap object (!bmap {0,1})
+ */
+static void BLITZ_ERRCHK xychk_c(ULONG x BL_REG(d3), ULONG y BL_REG(d4),
+                                 const struct BitMap *bitmap BL_REG(a0))
+{
+    if (x >= (ULONG)bitmap->BytesPerRow * 8 || y >= bitmap->Rows)
+        BLITZ_RUNERR(badxy);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(xychk, xychk_c, "d0-d1/a0-a1");
