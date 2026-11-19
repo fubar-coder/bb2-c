@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+3 5 4 6
+-1
+rc=0
