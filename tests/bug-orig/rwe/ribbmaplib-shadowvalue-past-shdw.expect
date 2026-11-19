@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+-1
+22222222
+REQUESTER: AutoRequest body "Shadow set must lie in the SHDW chunk" *
+rc=0

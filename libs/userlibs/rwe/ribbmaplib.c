@@ -62,6 +62,13 @@
  * the old map's MFRM chunk, the searches ran from the new address to the
  * old end, the cache returned a chunk of the old map, and before any
  * good call the info functions read from address 0).
+ * Fixed (intended deviation, #1114): with runtime error checking
+ * BBShadowValue with a set outside the SHDW chunk (negative, from
+ * $2000 on, where the word index wraps, or not below the chunk's length
+ * / 4) is the runtime error "Shadow set must lie in the SHDW chunk"
+ * (shadowchk); the original has no error check area and read the
+ * following chunk or memory behind the file.  The release code is
+ * unchanged (an invalid argument, D-005).
  * Fixed (intended deviation, #1108): init clears the map and scenario
  * locations, the MFRM chunk and the caches (the original's init is an
  * RTS: a second run from the editor with the library still loaded saw
@@ -89,14 +96,16 @@ void _bbmapheight(void), _bbmappowerups(void), _bbmapdata(void);
 void _bbmapstartpos(void), _bbmapname(void), _bbmapinfo(void);
 void _bbmappumask(void), _bbmapdboverlay(void), _bbmaponeplayerinfo(void);
 void _bbmapobjects(void), _bbnumbaddies(void);
+void shadowchk(void);
 static void codeinit(void);
 static void codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader{#ribbmaplib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_ribbmaplib, init, BL_NORET, finit, 0);
+/* !libheader{#ribbmaplib,init,0,finit,0}; error field: the error check
+   area of shadowchk (fixed, #1114) */
+BLITZ_LIBHEADER(LIB_ribbmaplib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
@@ -139,7 +148,7 @@ FN0(BL_WORD, _bbnumtunnels, "BBNumTunnels", "");
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_bbshadowvalue, 0, 0);
+BLITZ_SUBS(_bbshadowvalue, shadowchk, 0);     /* check: fixed #1114 */
 BLITZ_NAME("BBShadowValue", "shadowset");
 
 FN0(BL_LONG, _bbtunnelholes, "BBTunnelHoles", "");
@@ -440,6 +449,9 @@ static ULONG BLITZ_ROUTINE bbnumbaddies_c(void)
 /**
  * @brief BBShadowValue shadowset: the long number `set` of the SHDW chunk
  * (ASL.w #2: a word index).
+ *
+ * A set outside the chunk is read unchecked (an invalid argument); with
+ * runtime error checking shadowchk refuses it (fixed, #1114).
  * @param set  d0: the shadow set
  * @return d0: the long, 0 without the chunk
  */
@@ -783,3 +795,39 @@ BLITZ_THUNK(_bbmapdboverlay, bbmapdboverlay_c, "d1/a0-a1");
 BLITZ_THUNK(_bbmaponeplayerinfo, bbmaponeplayerinfo_c, "d1/a0-a1");
 BLITZ_THUNK(_bbmapobjects, bbmapobjects_c, "d1/a0-a1");
 BLITZ_THUNK(_bbnumbaddies, bbnumbaddies_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badshadow, "Shadow set must lie in the SHDW chunk");  /* fixed, #1114 */
+
+/**
+ * @brief The error check of BBShadowValue (debugger only).
+ *
+ * Fixed (#1114), not in the original (ribbmaplib had no error check
+ * area): the set indexes the SHDW chunk without a check.  A set is
+ * refused when it is negative, $2000 or more (its word index wraps) or
+ * not below the chunk's length / 4 (the length cut at the file's end).
+ * Without a scenario or a SHDW chunk nothing is checked (BBShadowValue
+ * gives 0).  The search runs on copies of the cache: the check changes
+ * nothing.  The release code is unchanged (an invalid argument).
+ *
+ * Errors: "Shadow set must lie in the SHDW chunk".
+ * @param set  d0: the shadow set (word)
+ */
+static void BLITZ_ERRCHK shadowchk_c(ULONG set BL_REG(d0))
+{
+    ULONG last = lastchunk;
+    UBYTE *lastaddr = lastchunkaddr;
+    UBYTE *chunk = search(ID('S', 'H', 'D', 'W'), scenarioloc, scenarioend, &last, &lastaddr);
+
+    if (chunk) {
+        ULONG len = LONGAT(chunk - 4), room = (ULONG)(scenarioend - chunk);
+        if (len > room)
+            len = room;
+        if ((UWORD)set >= 0x2000 || (UWORD)set >= len >> 2)
+            BLITZ_RUNERR(badshadow);
+    }
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(shadowchk, shadowchk_c, "d0-d1/a0-a1");

@@ -1,0 +1,8 @@
+# the intended differences of ribbmaplib against the reference
+# (blitzlib compare, docs/development.md "Intended differences")
+# #1114: BBShadowValue gets an error check (shadowchk: "Shadow set must
+# lie in the SHDW chunk"); ribbmaplib gets an error check area for it
+# (the original has none)
+lib 34: header +$2C: code offset set in only one of them
+lib 34: entry 19 BBShadowValue +$C: code offset set in only one of them
+lib 34: relocations in the declaration part 39 != 41

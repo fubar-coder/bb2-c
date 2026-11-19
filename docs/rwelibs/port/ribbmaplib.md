@@ -98,6 +98,13 @@ kind F):
   nothing is stored when it holds none. The original read the colours
   low..high from the bytes behind a shorter chunk: the next chunk, or
   memory behind the file (#1113).
+* `BBShadowValue` with runtime error checking refuses a set outside the
+  `SHDW` chunk (negative, from $2000 on, where the word index wraps, or
+  not below the chunk's length / 4): the runtime error "Shadow set must
+  lie in the SHDW chunk" (`shadowchk`, an error check area the original
+  has not). The release code is unchanged: such a set is an invalid
+  argument (D-005) and reads the following chunk or memory behind the
+  file, as in the original (#1114).
 
 ## Original behaviour, not defects
 
