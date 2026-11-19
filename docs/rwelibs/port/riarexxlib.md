@@ -247,23 +247,34 @@ kind F):
   original returns at once, 0; here after the limit, 1, the reply not
   yet there).
 
+* **RXReadPort**, **RXWaitPort** (and finit, RXDeletePort through the
+  same routine) take no more messages from the port while the message
+  list holds 31 (its 32nd long is the end mark): the others stay queued
+  in the port, in their order, and are taken once the program has made
+  room (each RXReadPort makes the first of the list current and takes it
+  off the list). Replies to the program's own messages are still taken
+  out of the port while the list is full (a scan of the port under
+  Disable, only the NT_REPLYMSG nodes removed), so the waits of
+  RXSendCommand, RXExecuteScript and RXDeletePort end; RXSendCommand's
+  wait then waits for the port's signal instead of WaitPort, which would
+  return at once for the messages left in the port (user decision "Leave
+  in the port"). The original appended every message to the list with
+  `addtolist`, which has no limit: the 32nd message overwrote the list's
+  end mark, the 33rd to the 64th ran into the sent list (the 256-byte
+  block's second half) and later ones past the block (#1100). The
+  library test's 33 messages (`RXMessageList|long 31 of the list|33
+  messages` and the longs not 0 of the block) and its 40 messages with
+  the reply of an RXSendCommand behind them (the same values, the sent
+  list all 0, the messages left in the port: 9) show it; all 40 are read
+  in the order they were put, in either library. There is no bug-orig
+  test (D-019): a Blitz program that shows the overflow needs more than
+  64 messages, writes behind the block and then hangs or not depending
+  on what lies there (RXDeletePort replies up to the first 0 long), so
+  the outcome differs between the configurations.
+
 ## BUG(orig), kept
 
-* **RXReadPort**, **RXWaitPort** (and finit, RXDeletePort through the
-  same routine) append every message they take from the port to the
-  message list with `addtolist`, which has no limit. The list has 32
-  longs (the first half of the 256-byte block, the sent list is the
-  second): the 32nd message overwrites the list's end mark, the 33rd to
-  the 64th run into the sent list and later ones past the block. The
-  library test puts 33 messages to the port and observes the list's
-  32nd long, the one behind it and the number of longs of the block
-  that are not 0 (`RXMessageList|long 31 of the list|33 messages` and
-  its two neighbours; the 33 stay inside the block, the test does not
-  corrupt memory) (#1100). There is no bug-orig test (D-019): a Blitz
-  program that shows the overflow needs more than 64 messages, writes
-  behind the block and then hangs or not depending on what lies there
-  (RXDeletePort replies up to the first 0 long), so the outcome differs
-  between the configurations.
+None.
 
 Original behaviour that is not a defect: an empty result of
 RXSendCommand gives 0 (AllocSt of length 0), the same as no result;

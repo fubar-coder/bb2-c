@@ -1500,17 +1500,23 @@ RXMessageList|kept|40 messages|1	kept
 RXMessageList|kept|no port|1	kept
 RXMessageList|kept|with a port|1	kept
 RXMessageList|list|with a port|1	$00000001
-RXMessageList|long 31 of the list|33 messages|1	$00000001
-RXMessageList|long 31 of the list|40 messages|1	$00000001
+RXMessageList|long 31 of the list|33 messages|1 [orig]	$00000001
+RXMessageList|long 31 of the list|33 messages|1 [fixed #1100]	$00000000
+RXMessageList|long 31 of the list|40 messages|1 [orig]	$00000001
+RXMessageList|long 31 of the list|40 messages|1 [fixed #1100]	$00000000
 RXMessageList|long 32, the sent list's first|33 messages|1	$00000000
-RXMessageList|longs of the block not 0|33 messages|1	$00000020
-RXMessageList|longs of the block not 0|40 messages|1	$00000028
-RXMessageList|messages left in the port|40 messages|1	$00000000
+RXMessageList|longs of the block not 0|33 messages|1 [orig]	$00000020
+RXMessageList|longs of the block not 0|33 messages|1 [fixed #1100]	$0000001E
+RXMessageList|longs of the block not 0|40 messages|1 [orig]	$00000028
+RXMessageList|longs of the block not 0|40 messages|1 [fixed #1100]	$0000001F
+RXMessageList|messages left in the port|40 messages|1 [orig]	$00000000
+RXMessageList|messages left in the port|40 messages|1 [fixed #1100]	$00000009
 RXMessageList|popped|33 messages|1	$00000000
 RXMessageList|popped|40 messages|1	$00000000
 RXMessageList|popped|no port|1	$00000000
 RXMessageList|popped|with a port|1	$00000000
-RXMessageList|the sent list all 0|40 messages|1	$00000000
+RXMessageList|the sent list all 0|40 messages|1 [orig]	$00000000
+RXMessageList|the sent list all 0|40 messages|1 [fixed #1100]	$00000001
 RXNextArg|a3|after a closing quote next 0|1	$00000011
 RXNextArg|a3|after a closing quote next 1|1 [orig]	$00000010
 RXNextArg|a3|after a closing quote next 1|1 [fixed #538]	$00000011

@@ -137,12 +137,13 @@
  *     off the public list and stays allocated with its name, so a late
  *     reply does not go into freed memory.  The original did not wait:
  *     a reply that arrived later went to the deleted port (#1095).
- *
- * BUG(orig), kept:
- *   - RXReadPort/RXWaitPort (readport_c) append every received message to
- *     the 32-long message list without a limit (addtolist): the 32nd
- *     message overwrites the end mark, later ones run into the sent
- *     list and past the block (#1100).
+ *   - RXReadPort/RXWaitPort (readport_c) take no more messages while the
+ *     message list holds 31: the rest stay in the port, in their order,
+ *     until entries are taken; replies are still taken out of the port
+ *     (user decision W4.2 "Leave in the port").  The original appended
+ *     every received message without a limit (addtolist): the 32nd
+ *     overwrote the end mark, later ones ran into the sent list and past
+ *     the block (#1100).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -558,9 +559,13 @@ BLITZ_THUNK(_rxdefportname, rxdefportname_c, "d0-d1/a0-a1");
 
 /* --------------------------------------------------------- the lists */
 
-/* _addtolist: d0 into the first 0 long of the list.  BUG(orig) (#1100):
-   without a limit; the message list has 32 longs (struct msglists), more
-   than 31 received messages run into the sent list and past the block */
+/* the message list holds 31 messages (its 32nd long is the end): fixed
+   (#1100), readport_c takes no more then */
+#define MSGLIST_FULL() (v.messagelist[30] != 0)
+
+/* _addtolist: d0 into the first 0 long of the list; without a limit, the
+   caller tests MSGLIST_FULL first (fixed #1100: the original did not, more
+   than 31 received messages ran into the sent list and past the block) */
 static void addtolist(ULONG *l, ULONG item)
 {
     while (*l++)
@@ -990,6 +995,31 @@ static void handlereply(void)
     FreeVec(m);                         /* 'skip: in neither (as the original) */
 }
 
+/* the message list full: take only the replies out of the port (to our
+   messages: the sent list's, RXSendCommand's), the other messages stay
+   there in their order.  The scan and the Remove under Disable, as
+   exec's GetMsg (a PutMsg may come from an interrupt).  Fixed (#1100) */
+static void takereplies(void)
+{
+    struct Node *n, *reply;
+
+    for (;;) {
+        reply = NULL;
+        Disable();
+        for (n = msgport->mp_MsgList.lh_Head; n->ln_Succ; n = n->ln_Succ)
+            if (n->ln_Type == NT_REPLYMSG) {
+                Remove(n);
+                reply = n;
+                break;
+            }
+        Enable();
+        if (!reply)
+            return;
+        v.thismsg = (struct RexxMsg *)reply;
+        handlereply();
+    }
+}
+
 /* donereadport: the first message of the list becomes current */
 static ULONG donereadport(ULONG passed)
 {
@@ -1010,7 +1040,10 @@ static ULONG donereadport(ULONG passed)
  *
  * Replies to our messages are freed (to RXSendCommand's: its result
  * kept); messages go to the message list; anything else is replied and
- * ends the reading.  Error check portchk: "No message port opened!".
+ * ends the reading.  Fixed (#1100): while the list holds 31 messages the
+ * others stay in the port, in their order, and only the replies are
+ * taken out of it; the original appended every message without a limit,
+ * past the list.  Error check portchk: "No message port opened!".
  * @return d0: the new current message (0 if the list is empty); 0 while
  *         RXSendCommand waits (oktodelete: no message becomes current)
  */
@@ -1019,6 +1052,10 @@ static ULONG readport_c(void)
     struct Message *m;
 
     for (;;) {
+        if (MSGLIST_FULL()) {           /* fixed (#1100) */
+            takereplies();
+            return donereadport(0);
+        }
         m = GetMsg(msgport);
         if (!m)
             return donereadport(0);
@@ -1035,11 +1072,18 @@ static ULONG readport_c(void)
 }
 BLITZ_THUNK(readport, readport_c, "d1/a0-a1");
 
+/* waiting for a reply (RXSendCommand) with the message list full: the
+   port can hold messages that stay there, so WaitPort would return at
+   once and the wait would spin; the signal of the port is waited for, a
+   reply arriving after the scan of readport_c sets it (fixed #1100) */
 static ULONG waitport_c(ULONG result)
 {
     if (!v.waitreply && v.messagelist[0])
         return donereadport(result);
-    WaitPort(msgport);
+    if (MSGLIST_FULL())
+        Wait(1UL << msgport->mp_SigBit);
+    else
+        WaitPort(msgport);
     return readport_c();
 }
 
