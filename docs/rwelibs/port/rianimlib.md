@@ -27,15 +27,13 @@ equal the BSS2 binary (`rwe_declarations_rianimlib`). The BUM/OL
 `RIANIMLIB.OBJ` (4 entries) is the older v1.3. Library number
 `LIB_rianimlib` (57) in the bb2-2.10 libnums.
 
-**C:** `libs/userlibs/rwe/rianimlib.c`, everything C but the thunk of
-RINextAnimFrame (assembler: it saves d1–d7/a0–a6 like the original and
-restores them unless the C function reports the case where the original
-does not, see below). UnpackIFF (form 1: d0 source, d1 bitmap#, d2 -1,
+**C:** `libs/userlibs/rwe/rianimlib.c`, everything C behind thunks.
+UnpackIFF (form 1: d0 source, d1 bitmap#, d2 -1,
 d3 offset) and ILBMPalette (d0 source, d1 palette#) are called through
 ALibJsr; RIPackLib's token list is that of the BSS2 binary. The chunk
 search (InitFindChunk, FindChunk, FindNextChunk) is the code of
-Pack-Library9, with its globals. The other thunks keep d1/a0/a1;
-RINextAnimFrame keeps everything but d0, as the original. Not ported,
+Pack-Library9, with its globals. The thunks keep d1/a0/a1 (GCC the
+rest): RINextAnimFrame keeps everything but d0, as the original. Not ported,
 without effect: `GetChunkHeader` (called by nothing), `_libfinit` (an
 RTS no header refers to), `UnpackAnim7Short` (unreachable, see below).
 The `MULU`/`DIVU` of the original are `bl_mulu_w`/`bl_divu_w` (DIVU
@@ -62,12 +60,14 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   fit. The original compared signed: a corrupt length that moved the
   pointer past $7FFFFFFF made it "below" the end, and the walks went on
   reading chunk headers from there (#506).
+* RINextAnimFrame skips other chunks between ANHD (and CMAP) and the
+  DLTA inside the frame (a CMAP among them goes through `ILBMPalette`)
+  and returns 0 for a frame without DLTA. The original returned without
+  restoring its 14 saved registers: the RTS took the saved d1 as return
+  address (#515).
 
 **BUG(orig)** (kept):
 
-* RINextAnimFrame returns without restoring its 14 saved registers when
-  a frame has no DLTA after its ANHD (and CMAP): the RTS takes the saved
-  d1 as return address. Reproduced by the thunk (#515).
 * InitFindChunk on data that is not a FORM but has the wanted ID at +8
   pushes a1 and returns without popping it: the RTS jumps to the
   caller's a1. **DIFF:** the C build returns -1 as if a1 had been popped
@@ -103,6 +103,7 @@ a marker in y's upper word, bitmap# × 64, a DIVU overflow, a negative
 x), failing, with a BMHD behind the first frame, one and two frames;
 RINextAnimFrame before RIAnimInit, through every frame, past the end
 with AnimLoop on and off; AnimLoop with a value whose low byte is 0.
-Not covered: a frame without DLTA (the crash), a chunk with the ID at
+Not covered: a frame with other chunks before its DLTA (the original
+crashes; bug-orig test `rianimlib-nextframe-no-dlta`), a chunk with the ID at
 +8 that is no FORM (the DIFF), odd chunk lengths, depth 0, run counts
 of 0, widths below 8 or 32.

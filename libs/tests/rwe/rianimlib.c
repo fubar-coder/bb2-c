@@ -28,8 +28,8 @@
  * operation), past the end with AnimLoop on (the third frame) and off,
  * before RIAnimInit;
  * AnimLoop with on, off and a value whose low byte is 0.
- * Not covered: a frame without DLTA (BUG(orig) #515: RINextAnimFrame returns
- * through its saved d1 - a crash), a chunk with the ID at +8 that is no
+ * Not covered: a frame with other chunks before its DLTA (fixed #515; the
+ * original returns through its saved d1 - a crash), a chunk with the ID at +8 that is no
  * FORM (BUG(orig) #513: returns through a1; DIFF), odd chunk lengths, depth 0
  * (256 planes), runs of 0 (256 rows), widths below 8 or 32 (65536
  * columns).

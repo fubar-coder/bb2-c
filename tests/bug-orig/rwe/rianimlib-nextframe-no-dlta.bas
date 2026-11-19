@@ -4,6 +4,7 @@
 ; the saved d1 as the return address - a crash (the session ends in a
 ; timeout).  Frame 2 has a DPAN chunk between ANHD and DLTA.
 ; Correct: RINextAnimFrame returns, the program goes on.
+; @fixed #515
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-nextframe-no-dlta.anim

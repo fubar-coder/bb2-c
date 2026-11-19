@@ -25,8 +25,7 @@
  * frame if AnimLoop is on (the default).  The chunk search is the
  * InitFindChunk/FindChunk code of RIPackLib (Pack-Library9).
  *
- * C behind thunks; RINextAnimFrame's thunk is assembler for its stack
- * (BUG(orig) below, #515).  The thunks keep d1/a0/a1 (GCC the rest); the
+ * C behind thunks.  The thunks keep d1/a0/a1 (GCC the rest); the
  * original changes d1, d3, d6, d7 and a2 in RIAnimInit, a0/a2 in
  * RIAnimDepth/Width/Height, a0/a1 in RIAnimFrameCount.
  *
@@ -36,9 +35,6 @@
  *     it: the RTS jumps to the caller's a1 (DIFF: the C build returns
  *     -1 as if a1 had been popped - a crash in the original, not
  *     reproducible) (#513).
- *   - RINextAnimFrame returns without restoring its 14 saved registers
- *     when a frame has no DLTA after ANHD (and CMAP): its RTS jumps to
- *     the saved d1 (reproduced by the thunk) (#515).
  *   - The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers)
  *     add the chunk length + 8 without the pad byte of odd lengths
  *     (#505).
@@ -72,6 +68,11 @@
  *     does not fit.  The original compared signed: a corrupt length that
  *     moved the pointer past $7FFFFFFF made it "below" the end, and the
  *     walks went on reading chunk headers from there (#506).
+ *   - RINextAnimFrame skips other chunks between ANHD (and CMAP) and the
+ *     DLTA inside the frame (a CMAP among them goes through ILBMPalette)
+ *     and returns 0 for a frame without DLTA; the original returned
+ *     without restoring its 14 saved registers, through the saved d1
+ *     (#515).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -559,6 +560,32 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
     } while (++plane != animdepth);
 }
 
+/* the DLTA of a frame whose chunk behind ANHD (and CMAP) is another one:
+   the chunks up to the frame's end (nextanimframe) skipped, a CMAP through
+   ILBMPalette; NULL without a DLTA (fixed #515: the original returned
+   through its saved d1 here).  Not on the path of a frame of ANHD, CMAP,
+   DLTA. */
+static __attribute__((noinline)) UBYTE *otherchunks(UBYTE *chunk)
+{
+    struct bl_regs r;
+
+    for (;;) {
+        if (chunk >= nextanimframe)
+            return NULL;
+        if (LG(chunk) == ID_DLTA)
+            return chunk;
+        if (LG(chunk) == ID_CMAP) {
+            cmapchunk = chunk;
+            r = (struct bl_regs){ .d0 = (ULONG)chunk, .d1 = palettenumber };
+            BLITZ_ALIBJSR(TOK_ilbmpalette, r);
+            chunk = cmapchunk;
+        }
+        chunk = nextchunk(chunk, nextanimframe);
+        if (!chunk)
+            return NULL;
+    }
+}
+
 /**
  * @brief RINextAnimFrame bitmap#: apply the DLTA of the next frame to the bitmap.
  *
@@ -569,15 +596,14 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
  * if AnimLoop is on, else returns 0.  BUG(orig): the columns are width
  * >> 5 / >> 3, dropping a rest and giving 65536 columns below 32 / 8
  * pixels (#507); a run or copy count of 0 is 256 (#508); depth 0 is 256
- * planes (#509); without a DLTA after the ANHD (and CMAP) the original
- * returns without restoring its 14 saved registers (#515, reproduced by
- * the thunk __NextAnimFrame).
+ * planes (#509).  Other chunks between ANHD (and CMAP) and the DLTA are
+ * skipped inside the frame, a CMAP among them goes through ILBMPalette; a
+ * frame without DLTA returns 0 (fixed #515: the original returned without
+ * restoring its 14 saved registers, through the saved d1).
  * @param bitmap  a0: the bitmap object (!bmap {0,0})
- * @return the upper long: d0 = -1 if a delta was applied, else 0; the
- *         lower long: 1 if the thunk must return without restoring the
- *         registers (no DLTA), else 0
+ * @return d0: -1 if a delta was applied, else 0
  */
-unsigned long long BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
+ULONG BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
 {
     UBYTE *chunk = nextanimframe;
     const struct anhd *anhd;
@@ -609,15 +635,18 @@ unsigned long long BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0
         chunk = cmapchunk;
         chunk += LG(chunk + 4) + 8;
     }
-    if (LG(chunk) != ID_DLTA)
-        return 1;                       /* BUG(orig): RTS without MOVEM (#515) */
+    if (LG(chunk) != ID_DLTA) {         /* fixed #515: was an RTS without MOVEM */
+        chunk = otherchunks(chunk);
+        if (!chunk)
+            return 0;
+    }
     if (animtype == 5 || animtype == 65)
         unpackanim(chunk, FALSE);
     else if (animtype == 7)
         unpackanim(chunk, TRUE);        /* BUG(orig): never the short form (#504) */
     else
         return 0;
-    return 0xffffffffULL << 32;
+    return (ULONG)-1;
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
@@ -629,16 +658,5 @@ BLITZ_THUNK(_CountFrames, c_CountFrames, "d1/a0-a1");
 BLITZ_THUNK(_AnimDepth, c_AnimDepth, "d1/a0-a1");
 BLITZ_THUNK(_AnimWidth, c_AnimWidth, "d1/a0-a1");
 BLITZ_THUNK(_AnimHeight, c_AnimHeight, "d1/a0-a1");
-
-/* RINextAnimFrame: d1-d7/a0-a6 saved as by the original; restored unless
-   the C function says the original does not (d1 = 1: the RTS takes the
-   saved d1 as its return address, BUG(orig), #515) */
-BLITZ_ASM_BLOCK(nextanimframe,
-"   .globl  __NextAnimFrame\n"
-"__NextAnimFrame:\n"
-"   movem.l d1-d7/a0-a6,-(sp)\n"
-"   jsr     _c_NextAnimFrame\n"
-"   tst.l   d1\n"
-"   bne.s   1f\n"
-"   movem.l (sp)+,d1-d7/a0-a6\n"
-"1: rts\n");
+/* RINextAnimFrame keeps all but d0, as the original */
+BLITZ_THUNK(_NextAnimFrame, c_NextAnimFrame, "d1/a0-a1");
