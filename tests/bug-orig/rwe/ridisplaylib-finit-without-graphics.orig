@@ -7,8 +7,8 @@ ok
 list made
 inject: openlibfail: 1 opens failed
 inject: rc=0
-inject: track: 1 allocations left, 2294 bytes
-inject:   2294 bytes, flags $2
+inject: track: 1 allocations left, 502 bytes
+inject:   502 bytes, flags $2
 rc=0
 [blitz2]
 rc=0

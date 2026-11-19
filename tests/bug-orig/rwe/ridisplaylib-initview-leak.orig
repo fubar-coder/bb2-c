@@ -6,16 +6,16 @@ ok
 [run]
 lists made
 inject: rc=0
-inject: track: 9 allocations left, 20646 bytes
-inject:   2294 bytes, flags $2
-inject:   2294 bytes, flags $2
-inject:   2294 bytes, flags $2
-inject:   2294 bytes, flags $2
-inject:   2294 bytes, flags $2
-inject:   2294 bytes, flags $2
-inject:   2294 bytes, flags $2
-inject:   2294 bytes, flags $2
-inject:   2294 bytes, flags $2
+inject: track: 9 allocations left, 4518 bytes
+inject:   502 bytes, flags $2
+inject:   502 bytes, flags $2
+inject:   502 bytes, flags $2
+inject:   502 bytes, flags $2
+inject:   502 bytes, flags $2
+inject:   502 bytes, flags $2
+inject:   502 bytes, flags $2
+inject:   502 bytes, flags $2
+inject:   502 bytes, flags $2
 rc=0
 [blitz2]
 rc=0
