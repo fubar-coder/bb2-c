@@ -8,11 +8,14 @@
 ; own (item 0 of the bitmaps: the pointers in the globals that hold the
 ; address of bitmap 0 are replaced for the call), with depth 9 and all 64
 ; longs from +8 pointing to one 640-byte buffer filled with $AA
-; (BytesPerRow 40 x Rows 16) between margins of $AA.  The buffer lies at
-; an address whose low word is below $8000, so the word at +62 of the
-; block ("planes allocated here" of bitmaplib) is positive and the end of
-; the program frees nothing of it even when the pointers are not put
-; back.  The program goes on and reports whether the buffer was cleared.
+; (BytesPerRow 40 x Rows 16) between margins of $AA.  The block is as
+; large as the array of the 10 bitmap objects (640 bytes), and its longs
+; from +8 all point to the buffer, whose address has a low word below
+; $8000: every word at +62 of the 64-byte objects of the block ("planes
+; allocated here" of bitmaplib) is positive, so the end of the program,
+; which frees all 10 objects, frees nothing of it even when the pointers
+; are not put back (the error check ends the program before that).  The
+; program goes on and reports whether the buffer was cleared.
 ; Correct: the error check refuses the bitmap: "Illegal BitMap Depth".
 ; @fixed #679
 ; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
@@ -23,14 +26,14 @@ Dim h(15)
 BitMap 0,320,16,1
 v=0 : a=&v
 ob=Addr BitMap(0)+1                 ; +1: not found by the scan below
-bs=8+64*4
+bs=640
 ss=65536+1024
 buf=AllocMem_(bs,$10001)
 sac=AllocMem_(ss,$10001)
 If buf=0 OR sac=0 Then NPrint "no memory" : End
 s=((sac+64+$FFFF) AND $FFFF0000)+64
 For i=0 To 191 : Poke.l s-64+i*4,$AAAAAAAA : Next
-For i=0 To 63 : Poke.l buf+8+i*4,s : Next
+For i=0 To 157 : Poke.l buf+8+i*4,s : Next
 nh=0
 For i=-256 To 256
   p=a+i*4
