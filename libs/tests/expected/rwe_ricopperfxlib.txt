@@ -1832,57 +1832,106 @@ DoColSplit|customaddr|lines 40 reg 95 (83,161,212)-(164,248,32)|1	$00010000
 DoColSplit|customaddr|lines 5 reg 128 (1,2,3)-(4,5,6)|1	$00010000
 DoColSplit|customaddr|lines 7 reg 220 (178,138,34)-(155,88,115)|1	$00010000
 DoColSplit|customaddr|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1	$00010000
-DoColSplit|d0|lines 1 reg 0 (-100,300,7)-(100,-300,7)|1	$00320000
-DoColSplit|d0|lines 10 reg 19 (-93,541,303)-(647,691,-1049)|1	$00127ED8
-DoColSplit|d0|lines 10 reg 5 (0,0,0)-(255,128,64)|1	$00000001
-DoColSplit|d0|lines 12 reg 255 (255,255,255)-(0,0,0)|1	$FFFAB055
-DoColSplit|d0|lines 13 reg 193 (35,255,123)-(135,84,177)|1	$0001EC30
-DoColSplit|d0|lines 13 reg 201 (84,33,110)-(226,169,57)|1	$0002BAE8
-DoColSplit|d0|lines 13 reg 230 (-265,-1819,-1477)-(-636,1718,-1680)|1	$FFF8DDFC
-DoColSplit|d0|lines 14 reg 112 (225,156,233)-(226,51,229)|1	$00000492
-DoColSplit|d0|lines 14 reg 152 (157,135,102)-(123,22,245)|1	$FFFF649C
-DoColSplit|d0|lines 14 reg 82 (36,181,52)-(113,168,100)|1	$00015FEA
-DoColSplit|d0|lines 16 reg 132 (187,192,13)-(240,14,123)|1	$0000D400
-DoColSplit|d0|lines 16 reg 3 (9,99,199)-(0,255,255)|1	$FFFFDC00
-DoColSplit|d0|lines 16 reg 85 (1641,-1364,789)-(724,-1070,1327)|1	$FFF1AC00
-DoColSplit|d0|lines 17 reg 10 (77,204,10)-(9,127,245)|1	$FFFF0034
-DoColSplit|d0|lines 17 reg 254 (65,123,52)-(85,145,140)|1	$00004B3C
-DoColSplit|d0|lines 17 reg 98 (188,11,90)-(113,134,245)|1	$FFFEE5DF
-DoColSplit|d0|lines 18 reg 124 (182,249,75)-(202,155,82)|1	$00004718
-DoColSplit|d0|lines 19 reg 124 (-1634,-2003,1203)-(-1209,-1956,-1378)|1	$0005970E
-DoColSplit|d0|lines 2 reg 46 (154,108,63)-(33,153,37)|1	$FFF0E000
-DoColSplit|d0|lines 20 reg 176 (134,203,72)-(184,209,67)|1	$00009FF6
-DoColSplit|d0|lines 20 reg 218 (185,53,150)-(25,119,110)|1	$FFFE0020
-DoColSplit|d0|lines 20 reg 30 (565,1921,1304)-(1840,1611,1984)|1	$000FEF01
-DoColSplit|d0|lines 20 reg 37 (0,0,0)-(255,128,64)|1	$00032FCD
-DoColSplit|d0|lines 20 reg 40 (657,-733,1515)-(-1437,1696,-1521)|1	$FFE5D4D6
-DoColSplit|d0|lines 21 reg 161 (137,224,195)-(2,140,156)|1	$FFFE64AC
-DoColSplit|d0|lines 21 reg 79 (136,19,101)-(79,218,43)|1	$FFFF5254
-DoColSplit|d0|lines 24 reg 195 (18,27,206)-(163,50,96)|1	$0001824A
-DoColSplit|d0|lines 28 reg 102 (45,26,243)-(226,229,14)|1	$00019D9D
-DoColSplit|d0|lines 28 reg 30 (146,149,87)-(54,222,182)|1	$FFFF2DC4
-DoColSplit|d0|lines 29 reg 156 (381,1639,-1853)-(584,-71,-1746)|1	$0001BF3C
-DoColSplit|d0|lines 3 reg 64 (1,2,3)-(4,5,6)|1	$00003FFF
-DoColSplit|d0|lines 30 reg 151 (91,161,101)-(144,56,216)|1	$0000710A
-DoColSplit|d0|lines 32 reg 171 (1281,1485,-88)-(686,-152,1977)|1	$FFFB5A00
-DoColSplit|d0|lines 33 reg 66 (142,86,84)-(141,104,33)|1	$FFFFFE10
-DoColSplit|d0|lines 34 reg 182 (-282,1632,1145)-(-734,168,-753)|1	$FFFCAEBC
-DoColSplit|d0|lines 34 reg 5 (121,33,118)-(16,39,160)|1	$FFFF3AB7
-DoColSplit|d0|lines 35 reg 4 (1,117,83)-(208,20,7)|1	$00017A6C
-DoColSplit|d0|lines 35 reg 52 (247,200,38)-(161,106,23)|1	$FFFF62C8
-DoColSplit|d0|lines 35 reg 58 (43,3,33)-(101,204,204)|1	$00006A08
-DoColSplit|d0|lines 37 reg 167 (81,20,208)-(174,14,63)|1	$0000A092
-DoColSplit|d0|lines 37 reg 217 (146,230,129)-(72,64,101)|1	$FFFF803C
-DoColSplit|d0|lines 39 reg 64 (200,229,56)-(134,102,203)|1	$FFFF93B8
+DoColSplit|d0|lines 1 reg 0 (-100,300,7)-(100,-300,7)|1 [orig]	$00320000
+DoColSplit|d0|lines 1 reg 0 (-100,300,7)-(100,-300,7)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 10 reg 19 (-93,541,303)-(647,691,-1049)|1 [orig]	$00127ED8
+DoColSplit|d0|lines 10 reg 19 (-93,541,303)-(647,691,-1049)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 10 reg 5 (0,0,0)-(255,128,64)|1 [orig]	$00000001
+DoColSplit|d0|lines 10 reg 5 (0,0,0)-(255,128,64)|1 [fixed #592]	$00000000
+DoColSplit|d0|lines 12 reg 255 (255,255,255)-(0,0,0)|1 [orig]	$FFFAB055
+DoColSplit|d0|lines 12 reg 255 (255,255,255)-(0,0,0)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 13 reg 193 (35,255,123)-(135,84,177)|1 [orig]	$0001EC30
+DoColSplit|d0|lines 13 reg 193 (35,255,123)-(135,84,177)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 13 reg 201 (84,33,110)-(226,169,57)|1 [orig]	$0002BAE8
+DoColSplit|d0|lines 13 reg 201 (84,33,110)-(226,169,57)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 13 reg 230 (-265,-1819,-1477)-(-636,1718,-1680)|1 [orig]	$FFF8DDFC
+DoColSplit|d0|lines 13 reg 230 (-265,-1819,-1477)-(-636,1718,-1680)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 14 reg 112 (225,156,233)-(226,51,229)|1 [orig]	$00000492
+DoColSplit|d0|lines 14 reg 112 (225,156,233)-(226,51,229)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 14 reg 152 (157,135,102)-(123,22,245)|1 [orig]	$FFFF649C
+DoColSplit|d0|lines 14 reg 152 (157,135,102)-(123,22,245)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 14 reg 82 (36,181,52)-(113,168,100)|1 [orig]	$00015FEA
+DoColSplit|d0|lines 14 reg 82 (36,181,52)-(113,168,100)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 16 reg 132 (187,192,13)-(240,14,123)|1 [orig]	$0000D400
+DoColSplit|d0|lines 16 reg 132 (187,192,13)-(240,14,123)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 16 reg 3 (9,99,199)-(0,255,255)|1 [orig]	$FFFFDC00
+DoColSplit|d0|lines 16 reg 3 (9,99,199)-(0,255,255)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 16 reg 85 (1641,-1364,789)-(724,-1070,1327)|1 [orig]	$FFF1AC00
+DoColSplit|d0|lines 16 reg 85 (1641,-1364,789)-(724,-1070,1327)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 17 reg 10 (77,204,10)-(9,127,245)|1 [orig]	$FFFF0034
+DoColSplit|d0|lines 17 reg 10 (77,204,10)-(9,127,245)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 17 reg 254 (65,123,52)-(85,145,140)|1 [orig]	$00004B3C
+DoColSplit|d0|lines 17 reg 254 (65,123,52)-(85,145,140)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 17 reg 98 (188,11,90)-(113,134,245)|1 [orig]	$FFFEE5DF
+DoColSplit|d0|lines 17 reg 98 (188,11,90)-(113,134,245)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 18 reg 124 (182,249,75)-(202,155,82)|1 [orig]	$00004718
+DoColSplit|d0|lines 18 reg 124 (182,249,75)-(202,155,82)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 19 reg 124 (-1634,-2003,1203)-(-1209,-1956,-1378)|1 [orig]	$0005970E
+DoColSplit|d0|lines 19 reg 124 (-1634,-2003,1203)-(-1209,-1956,-1378)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 2 reg 46 (154,108,63)-(33,153,37)|1 [orig]	$FFF0E000
+DoColSplit|d0|lines 2 reg 46 (154,108,63)-(33,153,37)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 20 reg 176 (134,203,72)-(184,209,67)|1 [orig]	$00009FF6
+DoColSplit|d0|lines 20 reg 176 (134,203,72)-(184,209,67)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 20 reg 218 (185,53,150)-(25,119,110)|1 [orig]	$FFFE0020
+DoColSplit|d0|lines 20 reg 218 (185,53,150)-(25,119,110)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 20 reg 30 (565,1921,1304)-(1840,1611,1984)|1 [orig]	$000FEF01
+DoColSplit|d0|lines 20 reg 30 (565,1921,1304)-(1840,1611,1984)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 20 reg 37 (0,0,0)-(255,128,64)|1 [orig]	$00032FCD
+DoColSplit|d0|lines 20 reg 37 (0,0,0)-(255,128,64)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 20 reg 40 (657,-733,1515)-(-1437,1696,-1521)|1 [orig]	$FFE5D4D6
+DoColSplit|d0|lines 20 reg 40 (657,-733,1515)-(-1437,1696,-1521)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 21 reg 161 (137,224,195)-(2,140,156)|1 [orig]	$FFFE64AC
+DoColSplit|d0|lines 21 reg 161 (137,224,195)-(2,140,156)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 21 reg 79 (136,19,101)-(79,218,43)|1 [orig]	$FFFF5254
+DoColSplit|d0|lines 21 reg 79 (136,19,101)-(79,218,43)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 24 reg 195 (18,27,206)-(163,50,96)|1 [orig]	$0001824A
+DoColSplit|d0|lines 24 reg 195 (18,27,206)-(163,50,96)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 28 reg 102 (45,26,243)-(226,229,14)|1 [orig]	$00019D9D
+DoColSplit|d0|lines 28 reg 102 (45,26,243)-(226,229,14)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 28 reg 30 (146,149,87)-(54,222,182)|1 [orig]	$FFFF2DC4
+DoColSplit|d0|lines 28 reg 30 (146,149,87)-(54,222,182)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 29 reg 156 (381,1639,-1853)-(584,-71,-1746)|1 [orig]	$0001BF3C
+DoColSplit|d0|lines 29 reg 156 (381,1639,-1853)-(584,-71,-1746)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [orig]	$00003FFF
+DoColSplit|d0|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 30 reg 151 (91,161,101)-(144,56,216)|1 [orig]	$0000710A
+DoColSplit|d0|lines 30 reg 151 (91,161,101)-(144,56,216)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 32 reg 171 (1281,1485,-88)-(686,-152,1977)|1 [orig]	$FFFB5A00
+DoColSplit|d0|lines 32 reg 171 (1281,1485,-88)-(686,-152,1977)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 33 reg 66 (142,86,84)-(141,104,33)|1 [orig]	$FFFFFE10
+DoColSplit|d0|lines 33 reg 66 (142,86,84)-(141,104,33)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 34 reg 182 (-282,1632,1145)-(-734,168,-753)|1 [orig]	$FFFCAEBC
+DoColSplit|d0|lines 34 reg 182 (-282,1632,1145)-(-734,168,-753)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 34 reg 5 (121,33,118)-(16,39,160)|1 [orig]	$FFFF3AB7
+DoColSplit|d0|lines 34 reg 5 (121,33,118)-(16,39,160)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 35 reg 4 (1,117,83)-(208,20,7)|1 [orig]	$00017A6C
+DoColSplit|d0|lines 35 reg 4 (1,117,83)-(208,20,7)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 35 reg 52 (247,200,38)-(161,106,23)|1 [orig]	$FFFF62C8
+DoColSplit|d0|lines 35 reg 52 (247,200,38)-(161,106,23)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 35 reg 58 (43,3,33)-(101,204,204)|1 [orig]	$00006A08
+DoColSplit|d0|lines 35 reg 58 (43,3,33)-(101,204,204)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 37 reg 167 (81,20,208)-(174,14,63)|1 [orig]	$0000A092
+DoColSplit|d0|lines 37 reg 167 (81,20,208)-(174,14,63)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 37 reg 217 (146,230,129)-(72,64,101)|1 [orig]	$FFFF803C
+DoColSplit|d0|lines 37 reg 217 (146,230,129)-(72,64,101)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 39 reg 64 (200,229,56)-(134,102,203)|1 [orig]	$FFFF93B8
+DoColSplit|d0|lines 39 reg 64 (200,229,56)-(134,102,203)|1 [fixed #592]	$FFFFFFFF
 DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [orig]	$000FF000
-DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [fixed #1126]	$00000001
-DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|2	$000FF000
-DoColSplit|d0|lines 40 reg 111 (110,108,13)-(120,103,65)|1	$00000FFA
-DoColSplit|d0|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	$0003D02B
-DoColSplit|d0|lines 40 reg 95 (83,161,212)-(164,248,32)|1	$00008169
-DoColSplit|d0|lines 5 reg 128 (1,2,3)-(4,5,6)|1	$00002664
-DoColSplit|d0|lines 7 reg 220 (178,138,34)-(155,88,115)|1	$FFFF2DC4
-DoColSplit|d0|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1	$00072420
+DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|1 [fixed #1126]	$00000000
+DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [orig]	$000FF000
+DoColSplit|d0|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 40 reg 111 (110,108,13)-(120,103,65)|1 [orig]	$00000FFA
+DoColSplit|d0|lines 40 reg 111 (110,108,13)-(120,103,65)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1 [orig]	$0003D02B
+DoColSplit|d0|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 40 reg 95 (83,161,212)-(164,248,32)|1 [orig]	$00008169
+DoColSplit|d0|lines 40 reg 95 (83,161,212)-(164,248,32)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [orig]	$00002664
+DoColSplit|d0|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 7 reg 220 (178,138,34)-(155,88,115)|1 [orig]	$FFFF2DC4
+DoColSplit|d0|lines 7 reg 220 (178,138,34)-(155,88,115)|1 [fixed #592]	$FFFFFFFF
+DoColSplit|d0|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1 [orig]	$00072420
+DoColSplit|d0|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1 [fixed #592]	$FFFFFFFF
 DoColSplit|kept|lines 1 reg 0 (-100,300,7)-(100,-300,7)|1	kept
 DoColSplit|kept|lines 10 reg 19 (-93,541,303)-(647,691,-1049)|1	kept
 DoColSplit|kept|lines 10 reg 5 (0,0,0)-(255,128,64)|1	kept

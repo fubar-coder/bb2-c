@@ -35,13 +35,15 @@ reproduced.
 
 **BUG(orig)** (kept):
 
-* `DoColSplit` is a command with a word result, but d0 is the red step
-  at the end (its `cols_adr` argument without a custom space);
-  `CopperAGACol` (long result) returns 1234 without custom space,
-  otherwise its `col#` argument (#592, #590).
+* `CopperAGACol` (long result) returns 1234 without custom space,
+  otherwise its `col#` argument (#590).
 
 **Fixed:**
 
+* `DoColSplit` (a command with a word result) returns -1 when it wrote
+  the split, 0 without a custom space: the original left the red step in
+  d0 (its `cols_adr` argument without a custom space) (#592; decision W6
+  Q3).
 * With runtime error checking `DoColSplit` and `RedoColSplit` refuse
   numlines below 1: "Colour split needs at least one line" (`colsplitchk`;
   the original has no error check area). The release code is unchanged:

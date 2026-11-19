@@ -6,6 +6,7 @@
 ; (CopperResetAdr).
 ; Correct (decision W6 Q3): -1 when the command worked, 0 when not (no
 ; custom space).
+; @fixed #592
 ; @rwe ricopperfxlib
 DEFTYPE .l
 Dim c.l(5)

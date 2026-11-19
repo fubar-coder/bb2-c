@@ -108,7 +108,8 @@ static void colsplit(ULONG lines, ULONG reg)
             cols[1], cols[2], cols[3], cols[4], cols[5]);
     DO1(DOCOLSPLIT, 0, R.d[0] = (ULONG)cols; R.d[1] = WARG(lines);
         R.d[2] = WARG(reg));
-    /* d0 = the red step, or cols_adr without a custom space */
+    /* d0: the original's red step, or cols_adr without a custom space
+       (1 here); fixed #592: -1, 0 without a custom space */
     OBS("d0", R.d[0] == (ULONG)cols ? 1 : R.d[0]);
     same_state();
 }

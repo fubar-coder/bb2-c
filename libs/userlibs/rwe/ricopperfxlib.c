@@ -35,11 +35,12 @@
  *                (MOVE.b d0,lo_bplcon3 with lo_bplcon3: Dc.w 0)
  *
  * BUG(orig):
- *   - DoColSplit is a command with a word result, but d0 is the red step
- *     value at the end (its cols_adr argument without a custom space);
- *     CopperAGACol (long result) returns 1234 without a custom space,
- *     otherwise its col# argument (#592, #590).
+ *   - CopperAGACol (long result) returns 1234 without a custom space,
+ *     otherwise its col# argument (#590).
  * Fixed:
+ *   - DoColSplit returns -1 when it wrote the split, 0 without a custom
+ *     space (a command with a word result; the original left the red step
+ *     value in d0, or its cols_adr argument) (#592).
  *   - With runtime error checking DoColSplit and RedoColSplit refuse
  *     numlines below 1: "Colour split needs at least one line" (colsplitchk;
  *     the original has no error check area).  The release code is
@@ -289,8 +290,9 @@ static void gradient(struct grad *g, const struct colsplit *cols, UWORD numlines
  * @param cols      d0: the colours (cols_adr)
  * @param numlines  d1: the number of lines
  * @param reg       d2: the colour register (0-255)
- * @return d0: a #word result, but the red step value at the end, or
- *         cols_adr without a custom space (BUG(orig) (#592))
+ * @return d0: -1 when the split was written, 0 without a custom space
+ *         (fixed #592: the original left the red step value, or cols_adr
+ *         without a custom space)
  */
 ULONG BLITZ_ROUTINE c_docolsplit(const struct colsplit *cols BL_REG(d0),
                                         UWORD numlines BL_REG(d1),
@@ -305,7 +307,7 @@ ULONG BLITZ_ROUTINE c_docolsplit(const struct colsplit *cols BL_REG(d0),
     cfx.colreg = colourreg(reg);
     p = getcustom();
     if (!p)
-        return (ULONG)cols;
+        return 0;                           /* fixed #592 (the original: cols) */
     y = (UBYTE)cfx.startline;
     gradient(&g, cols, numlines);
     n = (UWORD)(numlines - 1);
@@ -338,7 +340,7 @@ ULONG BLITZ_ROUTINE c_docolsplit(const struct colsplit *cols BL_REG(d0),
         cfx.startline++;
     } while (n-- != 0);                     /* DBRA */
     cfx.ccoffset = (UWORD)((UBYTE *)p - cfx.customaddr);
-    return (ULONG)g.step[0];
+    return (ULONG)-1;                       /* fixed #592 (the original: the red step) */
 }
 
 /**
