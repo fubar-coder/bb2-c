@@ -44,10 +44,11 @@
  *     (#681).
  *   - CPUCls reads the depth as the byte Depth; the original read the
  *     word Flags<<8|Depth, so a Flags byte other than 0 gave hundreds of
- *     planes.  With runtime error checking a depth of 0 is refused:
- *     "Illegal BitMap Depth" (cpuclschk; the original has no error check
- *     area); the release code clears 65536 planes then, as the original
- *     (an invalid argument, D-005) (#679).
+ *     planes.  With runtime error checking a depth of 0 or above 8 is
+ *     refused: "Illegal BitMap Depth" (cpuclschk; the original has no
+ *     error check area); the release code clears 65536 planes for depth
+ *     0, and takes plane pointers behind the 8 for a depth above 8, as
+ *     the original (an invalid argument, D-005) (#679).
  *   - CopyColour compares the colour numbers unsigned (CMP.w : BCC), so
  *     negative ones fail (0), as the manual says ("The command fails if
  *     either of the colour numbers is out of the range of the relevant
@@ -605,8 +606,9 @@ static void clearplane(UBYTE *end, ULONG moves, BOOL blocks, BOOL odd)
  * cleared the rest as words, ASR.w #1, and left it).  Both decided once
  * per call.  The depth is the byte Depth (fixed #679: the original read
  * the word Flags<<8|Depth); depth 0 gives the DBRA counter $FFFF, 65536
- * planes - an invalid argument, refused by cpuclschk with runtime error
- * checking (fixed #679), here unchecked.
+ * planes, a depth above 8 plane pointers behind the 8 - an invalid
+ * argument, refused by cpuclschk with runtime error checking (fixed
+ * #679), here unchecked.
  * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
  */
 static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
@@ -758,15 +760,18 @@ BLITZ_ERRCHK_MESSAGE(pasttarget, "PalAdjust colours outside the target palette")
  * Fixed (#679), not in the original (rigfxlib had no error check area):
  * CPUCls counts the planes with SUBQ.w #1 ... DBRA on the depth, so a
  * bitmap of depth 0 clears 65536 "planes" through the longs behind the
- * object's 8 plane pointers.  The release code is unchanged (an invalid
- * argument, D-005).
+ * object's 8 plane pointers, and a depth above 8 takes the longs behind
+ * them as plane addresses as well.  The release code is unchanged (an
+ * invalid argument, D-005).
  *
- * Errors: "Illegal BitMap Depth" (bitmaplib's text) for a depth of 0.
+ * Errors: "Illegal BitMap Depth" (bitmaplib's text) for a depth of 0 or
+ * above 8 (as bitmaplib's checks; the depth above 8 by the user's
+ * decision "rigfxlib" of W6, as #674 in rifxlib).
  * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
  */
 static void BLITZ_ERRCHK cpuclschk_c(const struct bb_bitmap *bm BL_REG(a0))
 {
-    if (!bm->depth)
+    if (!bm->depth || bm->depth > 8)
         BLITZ_RUNERR(baddepth);
 }
 

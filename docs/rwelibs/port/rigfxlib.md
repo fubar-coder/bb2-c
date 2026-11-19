@@ -81,12 +81,15 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
 * `CPUCls` reads the depth as the byte Depth at +5; the original read the
   word at +4 (Flags<<8 | Depth), so a Flags byte other than 0 gave
   hundreds of planes, through plane pointers far behind the BitMap (as
-  #670 in rifxlib). With runtime error checking a depth of 0 is refused:
-  "Illegal BitMap Depth" (`cpuclschk`, bitmaplib's text, an error check
-  area the original has not; `rigfxlib.declarations-intended.txt`). The
-  release code is unchanged for it (an invalid argument, D-005): the
-  `DBRA` counter is $FFFF, 65536 planes through the longs behind the
-  object's plane pointers are cleared (#679). MergeBitplanes still takes
+  #670 in rifxlib). With runtime error checking a depth of 0 or above 8
+  is refused: "Illegal BitMap Depth" (`cpuclschk`, bitmaplib's text, an
+  error check area the original has not;
+  `rigfxlib.declarations-intended.txt`; the depth above 8 by the user's
+  decision of W6, as #674 in rifxlib). The release code is unchanged for
+  them (an invalid argument, D-005): for depth 0 the `DBRA` counter is
+  $FFFF, 65536 planes through the longs behind the object's plane
+  pointers are cleared; a depth above 8 takes the longs behind the 8
+  plane pointers as plane addresses too (#679). MergeBitplanes still takes
   the word: it writes numplanes there (Flags 0) and compares sums of
   such words.
 * `CopyColour` compares the colour numbers with the palettes' numbers of
@@ -194,8 +197,9 @@ PalAdjust before a PaletteInfo of that run.
 Not covered, because they crash or write far outside any buffer (each
 has a bug-orig test instead): CPUCls on a bitmap without plane 0
 (`rigfxlib-cpucls-no-plane-crash`), on a plane of less than 40 bytes
-(`rigfxlib-cpucls-small-plane`) and of depth 0
-(`rigfxlib-cpucls-depth-word`), negative colours in CopyColour
+(`rigfxlib-cpucls-small-plane`), of depth 0
+(`rigfxlib-cpucls-depth-word`) and of depth 9
+(`rigfxlib-cpucls-depth-above-8`), negative colours in CopyColour
 (`rigfxlib-copycolour-negative`), PalAdjust with end < start
 (`rigfxlib-paladjust-end-before-start`), SaveCMAP with 0 colours
 (`rigfxlib-savecmap-zero-colours`). Not covered at all: the DIVU
