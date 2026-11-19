@@ -9,6 +9,7 @@
 ; restored at once.
 ; Correct: InitView returns 0 and writes nothing; nothing is freed at the
 ; end.
+; @fixed #888
 ; @rwe ridisplaylib
 ; @pass runwrap=@INJECT@|allocfail=2342-2350/chip
 DEFTYPE .l

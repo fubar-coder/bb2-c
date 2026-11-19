@@ -31,11 +31,8 @@ InitView returns).
 
 ## BUG(orig), kept
 
-* AllocMem is not checked: without chip memory the eight words go to
-  address 0 (over ExecBase at 4) (#888).
 * Every InitView allocates a new list and forgets the old one; finit
-  frees only the last, and only if graphics.library was opened (#891)
-  (`FreeMem(0,size)` if the last allocation failed, #888).
+  frees only the last, and only if graphics.library was opened (#891).
 
 ## Fixed
 
@@ -52,6 +49,10 @@ InitView returns).
   first instruction, `MOVE.w d0,d3`, overwrites the colour count with
   the height before it is read: its size was 8 × height instead of 8 ×
   numcolours, computed as a word and sign-extended.
+* Without chip memory InitView returns 0, writes nothing and keeps the
+  list before; finit frees a list only if there is one (#888). The
+  original does not test AllocMem: the eight words went to address 0
+  (over ExecBase at 4), and finit called `FreeMem(0,size)`.
 
 ## Test
 

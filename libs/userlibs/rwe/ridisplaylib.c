@@ -20,12 +20,13 @@
  * assembler besides the thunks.
  *
  * BUG(orig):
- *   - No check of AllocMem: without chip memory the moves go to address
- *     0 (over ExecBase at 4) (#888).
  *   - Every InitView allocates a new list; only the last one is freed (by
- *     finit, and only if graphics.library was opened) (#891):
- *     FreeMem(0, size) if the last allocation failed (#888).
+ *     finit, and only if graphics.library was opened) (#891).
  * Fixed:
+ *   - InitView tests AllocMem: without chip memory it returns 0, writes
+ *     nothing and keeps the list before; finit frees a list only if
+ *     there is one (#888).  The original writes the moves to address 0
+ *     (over ExecBase at 4) and finit calls FreeMem(0, size).
  *   - The four copper moves are the register moves DIWSTRT $2C81, DIWSTOP
  *     $2CC1, DDFSTRT $0038, DDFSTOP $00D0 (#889).  The original's
  *     !cmove{diwstrt,$2c81} is MOVE.w diwstrt,(a0)+:MOVE.w $2c81,(a0)+:
@@ -92,8 +93,9 @@ static void BLITZ_ROUTINE codeinit_c(void)
  * @brief finit: close graphics.library and free the last copper list.
  *
  * Nothing happens if init could not open the library.  Only the list of
- * the last InitView is freed, the earlier ones are lost (BUG(orig)
- * (#891)); after a failed AllocMem this is FreeMem(0, size) (#888).
+ * the last InitView that got one is freed, the earlier ones are lost
+ * (BUG(orig) (#891)); no list, nothing freed (fixed (#888): the original
+ * calls FreeMem(0, size) after a failed AllocMem).
  */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
@@ -101,7 +103,7 @@ static void BLITZ_ROUTINE codefinit_c(void)
         return;
     CloseLibrary(gfxbase);
     gfxbase = NULL;
-    if (!vd.viewsize)
+    if (!vd.cop)
         return;
     FreeMem(vd.cop, vd.viewsize);
     vd.viewsize = 0;
@@ -116,13 +118,14 @@ static void BLITZ_ROUTINE codefinit_c(void)
  * (fixed (#890): the original's MOVE.w d0,d3 overwrites the colour count
  * with the height before it is read, so its size is 8*height instead of
  * 8*numcolours, computed as a word and sign-extended).  The height is not
- * part of the size.  The four moves are DIWSTRT $2C81, DIWSTOP $2CC1, DDFSTRT $0038,
- * DDFSTOP $00D0 (fixed (#889): the original's `!cmove`s read register
- * and value from those absolute addresses, an address error on a 68000
- * at the odd ones).  AllocMem is not checked: without chip memory the
- * words go to address 0 (BUG(orig) (#888)).  Every call allocates a new
- * list; the old one is forgotten (BUG(orig) (#891)).  The list is never
- * installed.
+ * part of the size.  The four moves are DIWSTRT $2C81, DIWSTOP $2CC1,
+ * DDFSTRT $0038, DDFSTOP $00D0 (fixed (#889): the original's `!cmove`s
+ * read register and value from those absolute addresses, an address
+ * error on a 68000 at the odd ones).  Without chip memory InitView
+ * returns 0, writes nothing and keeps the list before (fixed (#888): the
+ * original does not test AllocMem, the words go to address 0 and finit
+ * calls FreeMem(0, size)).  Every call allocates a new list; the old one
+ * is forgotten (BUG(orig) (#891)).  The list is never installed.
  * @param height   d0.w: the height (not used)
  * @param depth    d1.w: the depth (16 bytes per plane)
  * @param sprites  d2.w: the number of sprites (16 bytes each)
@@ -132,13 +135,17 @@ static void BLITZ_ROUTINE codefinit_c(void)
 static ULONG BLITZ_ROUTINE initview_c(UWORD height BL_REG(d0), UWORD depth BL_REG(d1),
                                       UWORD sprites BL_REG(d2), UWORD colours BL_REG(d3))
 {
+    ULONG size;
     UWORD *p;
 
     (void)height;
     /* sprites*16 + depth*8 + colours*8 + depth*8 (colour setups) + 38,
        as a long (#890) */
-    vd.viewsize = ((ULONG)sprites << 4) + ((ULONG)depth << 4) + ((ULONG)colours << 3) + 38;
-    p = AllocMem(vd.viewsize, MEMF_CHIP);
+    size = ((ULONG)sprites << 4) + ((ULONG)depth << 4) + ((ULONG)colours << 3) + 38;
+    p = AllocMem(size, MEMF_CHIP);
+    if (!p)
+        return 0;                                       /* (#888) */
+    vd.viewsize = size;
     vd.cop = p;
     /* !cmove{diwstrt,$2c81} ...: the register moves (#889) */
     *p++ = 0x008e;                                      /* DIWSTRT */
