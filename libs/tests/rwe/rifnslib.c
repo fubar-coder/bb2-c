@@ -12,7 +12,8 @@
  * kept registers.  Fonts: the built-in one (slot 0) and
  * fonts made here, 16, 32, 48 and 64 pixels wide (random glyphs, widths
  * 0..width).  RIAmosFuncLib is not loaded: stubs (sysload_stubs) take
- * the place of BLoad, Start and Erase and record the calls.
+ * the place of BLoad, Start, Length, Erase and BankLimit (a bank table,
+ * 50 banks unless a case sets 80) and record the calls.
  *
  * Covered: FNSOutput both forms, depths 1..8; FNSClip/FNSClipOutput;
  * FNSPrint/FNSShadowPrint all forms with all 16 prefs (centred, bold,
@@ -25,8 +26,10 @@
  * last FNSPrint) and its unmasked font number (16, 17, -1, -2: the
  * variables and the font of the block); FNSHeight/Width/Underline,
  * InstallFNS (and a non-FNS address), RemoveFNS, FNSSlot, FNSInk,
- * FNSPrefs, FNSVersion (inline), FNSLoad (ok, BLoad fails, Start 0) and
- * FNSUnload.  Not covered: FNSPrint without a bitmap (a crash), depth 0
+ * FNSPrefs, FNSVersion (inline), FNSLoad (ok, BLoad fails, Start 0, a
+ * file without "FNS.", one of height 0, one of 40 glyphs printed with
+ * later codes, BankLimit 80) and FNSUnload (also of a slot never
+ * loaded).  Not covered: FNSPrint without a bitmap (a crash), depth 0
  * or above 8 and bitmaps with flags (the bitstack overrun), FNSSetTab 0
  * (division by zero), x below 0 with xmin below 0 (writes 64 KB away).
  */
@@ -51,14 +54,24 @@ static const char *VECSTR;
 
 /* -------------------------------------------------------- RIAmosFuncLib */
 
-enum { BLOAD = 1, START, ERASE };
-static struct { int fn; ULONG d0, d1; } flog[8];
+/* A bank table as RIAmosFuncLib keeps it: BLoad (form 1) puts the file
+   (`loadsrc`, `loadsz`: font[1] unless a case says otherwise) into the
+   one buffer `bank` and enters it as bank b; Start/Length read the table,
+   Erase clears the entry; BankLimit (both forms: one token) returns
+   `banklimit`.  Every call is recorded. */
+enum { BLOAD = 1, START, ERASE, LENGTH_, BANKLIMIT };
+#define NBANKS 80
+#define NFLOG 16
+static struct { int fn; ULONG d0, d1; } flog[NFLOG];
 static int nflog, bloadfail, startnull;
 static UBYTE *bank;
+static const UBYTE *loadsrc;
+static ULONG loadsz, banklimit = 50;
+static ULONG bankstart[NBANKS], banklen[NBANKS];
 
 static void flogit(int fn, ULONG d0, ULONG d1)
 {
-    if (nflog < 8) {
+    if (nflog < NFLOG) {
         flog[nflog].fn = fn;
         flog[nflog].d0 = d0;
         flog[nflog].d1 = d1;
@@ -71,25 +84,47 @@ static ULONG __attribute__((used)) st_bload(ULONG name __asm("d0"), ULONG b __as
     flogit(BLOAD, strcmp((const char *)name, "RAM:font"), b);
     if (bloadfail)
         return 0;
-    memcpy(bank, font[1], fontsz[1]);
+    memcpy(bank, loadsrc, loadsz);
+    if (b < NBANKS) {
+        bankstart[b] = (ULONG)bank;
+        banklen[b] = loadsz;
+    }
     return (ULONG)-1;
 }
 
 static ULONG __attribute__((used)) st_start(ULONG b __asm("d0"))
 {
     flogit(START, b, 0);
-    return startnull ? 0 : (ULONG)bank;
+    if (startnull || b >= NBANKS)
+        return 0;
+    return bankstart[b];
+}
+
+static ULONG __attribute__((used)) st_length(ULONG b __asm("d0"))
+{
+    flogit(LENGTH_, b, 0);
+    return b < NBANKS ? banklen[b] : 0;
 }
 
 static void __attribute__((used)) st_erase(ULONG b __asm("d0"))
 {
     flogit(ERASE, b, 0);
+    if (b < NBANKS)
+        bankstart[b] = banklen[b] = 0;
+}
+
+static ULONG __attribute__((used)) st_banklimit(void)
+{
+    flogit(BANKLIMIT, banklimit, 0);
+    return banklimit;
 }
 
 static const struct stub stubs[] = {
     { (75 << 7) + 15, (APTR)st_bload },
     { (75 << 7) + 17, (APTR)st_start },
+    { (75 << 7) + 18, (APTR)st_length },
     { (75 << 7) + 19, (APTR)st_erase },
+    { (75 << 7) + 36, (APTR)st_banklimit },
     { 0, NULL }
 };
 
@@ -224,6 +259,42 @@ static void length(int form, ULONG n, const char *str, UWORD prefs)
     DO1(ENT(LIB, LENGTH, form), R.d[0] = n; R.d[1] = (ULONG)str;
         if (form) R.d[2] = 0x5a000000 | prefs);
     OBS("d0", R.d[0]);
+}
+
+/* FNSLoad("RAM:font",slot) through the stubs (case n), its calls, the
+   slots, a print with font pslot */
+static void load(unsigned n, ULONG slot, UWORD pslot)
+{
+    static const char name[] = "RAM:font";
+    int t;
+    nflog = 0;
+    ROUT = "FNSLoad";
+    sprintf(VEC, "case %u", n);
+    DO1(ENT(LIB, LOAD, 0), R.d[0] = (ULONG)name; R.d[1] = slot);
+    OBS("d0", R.d[0]);
+    OBS("calls", nflog);
+    for (t = 0; t < nflog; t++) {
+        OBS("call", flog[t].fn);
+        OBS("call d0", flog[t].d0);
+        OBS("call d1", flog[t].d1);
+    }
+    fontfuncs();
+    print(1, pslot, 30, 30, "loaded", 0, 1, 0);
+}
+
+/* FNSUnload slot through the stubs: the bank it erases */
+static void unload(ULONG slot)
+{
+    int t;
+    nflog = 0;
+    stmt1(UNLOAD, 0, "FNSUnload", slot);
+    OBS("calls", nflog);
+    OBS("erase bank", nflog ? flog[0].d0 : 0xffffffffUL);
+    for (t = 1; t < nflog; t++) {
+        OBS("call", flog[t].fn);
+        OBS("call d0", flog[t].d0);
+    }
+    fontfuncs();
 }
 
 static const char *texts[] = {
@@ -408,30 +479,43 @@ int main(int argc, char **argv)
 
     /* FNSLoad / FNSUnload through the stubs */
     {
-        static const char name[] = "RAM:font";
         static const ULONG slots[] = { 9, 0x5a000019, 3 };
+        loadsrc = font[1];
+        loadsz = fontsz[1];
         for (i = 0; i < 5; i++) {
             bloadfail = i == 3;
             startnull = i == 4;
-            nflog = 0;
-            ROUT = "FNSLoad";
-            sprintf(VEC, "case %u", i);
-            DO1(ENT(LIB, LOAD, 0), R.d[0] = (ULONG)name; R.d[1] = slots[i % 3]);
-            OBS("d0", R.d[0]);
-            OBS("calls", nflog);
-            for (t = 0; t < (unsigned)nflog; t++) {
-                OBS("call", flog[t].fn);
-                OBS("call d0", flog[t].d0);
-                OBS("call d1", flog[t].d1);
-            }
-            fontfuncs();
-            print(1, 9, 30, 30, "loaded", 0, 1, 0);
+            load(i, slots[i % 3], 9);
         }
-        nflog = 0;
-        stmt1(UNLOAD, 0, "FNSUnload", 0x5a000019);
-        OBS("calls", nflog);
-        OBS("erase bank", flog[0].d0);
-        fontfuncs();
+        bloadfail = startnull = 0;
+        unload(0x5a000019);
+
+        /* files that are no font: no "FNS.", a height of 0; a font
+           file of 40 glyphs (codes 32..71: a text with later codes);
+           BankLimit 80 (bank 55 + slot exists); the slots unloaded,
+           one that was never loaded */
+        memcpy(bank + 10000, font[2], fontsz[2]);
+        memcpy(bank + 10000, "FNX.", 4);
+        loadsrc = bank + 10000;
+        loadsz = fontsz[2];
+        load(5, 4, 4);
+        memcpy(bank + 10000, font[2], fontsz[2]);
+        *(UWORD *)(bank + 10000 + 4) = 0;
+        load(6, 0x5a000006, 6);
+        loadsrc = font[1];
+        loadsz = 256 + 40UL * *(const UWORD *)(font[1] + 10);
+        load(7, 0x5a000007, 7);
+        print(1, 7, 30, 40, "abc FGH xyz", 0, 2, 0);
+        length(1, 7, "abc FGH xyz", 0);
+        loadsz = fontsz[1];
+        banklimit = 80;
+        load(8, 0x5a00000b, 11);
+        banklimit = 50;
+        unload(4);
+        unload(6);
+        unload(7);
+        unload(11);
+        unload(12);
     }
 
     ROUT = "finit";
