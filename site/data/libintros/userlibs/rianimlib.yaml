@@ -24,7 +24,8 @@ intro: |
   The library steps through the animation from chunk to chunk, within
   its length, and skips the pad byte the IFF standard puts behind a
   chunk of odd length; chunks other than frames, such as annotations,
-  may lie between the frames.
+  may lie between the frames. `RIAnimInit` refuses an animation written
+  without those pad bytes.
 
   The library uses the RI Pack library to unpack the first frame and to
   read the palettes, so that library must be installed too.

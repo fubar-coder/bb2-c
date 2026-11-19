@@ -5158,6 +5158,12 @@ Other fixes.
   sending it into memory that is not there; `RIAnimInit` could hang on
   it in the original
   ([#506](https://github.com/fubar-coder/bb2-c/issues/506)).
+* `RIAnimInit` returns 0 for an animation written without pad bytes, in
+  which a chunk behind one of odd length starts at an odd address, and
+  `RIAnimDepth`, `RIAnimWidth` and `RIAnimHeight` return 0 when this
+  happens before the bitmap header. On a 68000 the original crashed with
+  a Software Failure on such a file; a 68020 or later read it
+  ([#1119](https://github.com/fubar-coder/bb2-c/issues/1119)).
 * `RINextAnimFrame` plays a frame that has another chunk, such as a
   DPAN, before its delta data, and returns 0 for a frame without delta
   data. The original crashed there
@@ -5178,6 +5184,13 @@ Other fixes.
   to be longer than the frame, and returns 0. The original read the
   next chunk from wherever that length pointed in memory
   ([#1117](https://github.com/fubar-coder/bb2-c/issues/1117)).
+* `RINextAnimFrame` refuses a frame whose delta data gives a plane's
+  data outside the delta chunk, and returns 0 without drawing. The
+  original read the delta data of that plane from anywhere in memory
+  and wrote it into the bitmap. The runs and copies inside a plane's
+  columns are still not checked, so that playing stays as fast as in
+  the original
+  ([#1120](https://github.com/fubar-coder/bb2-c/issues/1120)).
 * A program run a second time from the editor starts with no animation
   and with `AnimLoop` on. The original's `RIAnimFrameCount` and
   `RINextAnimFrame` worked on the animation of the run before, which may

@@ -5164,6 +5164,22 @@ rows:
     text: "`RINextAnimFrame` refuses a frame whose ANHD or CMAP length points outside the frame; the original read the next chunk from anywhere in memory."
     page: libraries
     anchor: rianimlib-fixes
+  - issue: 1119
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit, RIAnimDepth, RIAnimWidth, RIAnimHeight"
+    text: "`RIAnimInit` refuses an ANIM in which a chunk starts at an odd address because a pad byte is missing; the original crashed with a Software Failure on a 68000."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 1120
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame"
+    text: "`RINextAnimFrame` refuses a frame whose DLTA plane offsets point outside the chunk; the original read the delta data from anywhere in memory."
+    page: libraries
+    anchor: rianimlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
