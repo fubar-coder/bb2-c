@@ -27,11 +27,22 @@ Reflective Images, last change 12/8/95. Two parts:
 
 ## C and assembler
 
-All routines are C behind `BLITZ_THUNK`; no other assembler.
+`Zone` and `ZoneTest` (both forms) are assembler entries without a
+thunk, for speed: a game tests a point against the zone table every
+frame (`tests/perf/bench/bzone.bas`). In the C port behind a thunk they
+took 915 cycles for `ZoneTest` of one rectangle against the original's
+393, 975 for a `Zone` that hits zone 0 against 437; now 361 and 284
+(`budgets.txt`). They change d1-d7 and a0 (`ZoneTest` with a range
+keeps d2 and d3), as the original does, which the register rule allows
+for a user-level function. The loops count with `DBF` and read a set
+zone with `MOVEM.w`; `Zone` goes to the loop without the range checks
+(start 0, end the last zone) unless the count is 0 or above $80000000.
+All other routines are C behind `BLITZ_THUNK`.
 
-* `CMP2.w` (68020 mode) is the same signed bounds test in C (the
-  library is built for the 68000); the 68000 mode keeps its own tests
-  (`BGT` for x1/y1, `BMI` on the word difference for x2/y2).
+* The 68020 mode tests rectangles with the original's `CMP2.w` (encoded
+  as data, the library is built for the 68000; the mode is on only on a
+  68020 or better); the 68000 mode keeps its own tests (`BGT` for x1/y1,
+  `BMI` on the word difference for x2/y2).
 * The word arithmetic of the original (`ASL.w`, `ADDQ.w` on a long
   counter, the start zone through `MOVE.b`) is kept with explicit masks,
   so out-of-range numbers address the same places (#878).

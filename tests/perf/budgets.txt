@@ -358,6 +358,11 @@
 # from two runs of the pass perf_bzone.pass with the tag orig (the CD's
 # binary): 18590.2/18589.2, 437.2/437.1, 2275.2 both times, 2690.7 both
 # times, 393.2/393.1, 392.7/392.6, 524.7/524.6, 556.7/556.6.
+# From two runs after Zone and ZoneTest became assembler entries in the
+# original's form (W7 group A, 2026-11-20): zonemiss 12153.0 both times,
+# zonerect 284.0/284.6, zonecircle 1921.0/1921.5, rangemiss
+# 2316.5/2316.6, rect1hit 361.5/361.1, rect1miss 361.0/361.1, circle1hit
+# 444.0/444.1, circle1miss 468.5/468.6; the eight budgets lowered.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -566,11 +571,11 @@ bstr.ascfld                   772      812.5  c=Asc(rr\name)
 bstr.instrv                  2366     3571.1  c=Instr(a$,f$) (f$="Blitz")
 bstr.cvi                      544      469.1  c=Cvi(m$) (m$=Mki$(1234))
 bzone.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
-bzone.zonemiss              15651    18590.2  r=Zone(300,10) (no zone: 12 rectangles and 4 circles in zones 0-15, 240 zones not set)
-bzone.zonerect                989      437.2  r=Zone(5,5) (zone 0, a rectangle)
-bzone.zonecircle             4113     2275.2  r=Zone(245,125) (zone 13, a circle)
-bzone.rangemiss              4585     2690.7  r=ZoneTest(0,15,300,10) (the 16 zones, none)
-bzone.rect1hit                928      393.2  r=ZoneTest(3,65,35) (a rectangle, inside)
-bzone.rect1miss               932      392.7  r=ZoneTest(3,300,10) (a rectangle, outside)
-bzone.circle1hit             1061      524.7  r=ZoneTest(13,245,125) (a circle, inside)
-bzone.circle1miss            1102      556.7  r=ZoneTest(13,300,10) (a circle, outside)
+bzone.zonemiss              12278    18590.2  r=Zone(300,10) (no zone: 12 rectangles and 4 circles in zones 0-15, 240 zones not set)
+bzone.zonerect                291      437.2  r=Zone(5,5) (zone 0, a rectangle)
+bzone.zonecircle             1944     2275.2  r=Zone(245,125) (zone 13, a circle)
+bzone.rangemiss              2343     2690.7  r=ZoneTest(0,15,300,10) (the 16 zones, none)
+bzone.rect1hit                369      393.2  r=ZoneTest(3,65,35) (a rectangle, inside)
+bzone.rect1miss               368      392.7  r=ZoneTest(3,300,10) (a rectangle, outside)
+bzone.circle1hit              452      524.7  r=ZoneTest(13,245,125) (a circle, inside)
+bzone.circle1miss             477      556.7  r=ZoneTest(13,300,10) (a circle, outside)

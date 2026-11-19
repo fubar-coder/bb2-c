@@ -17,10 +17,11 @@
  * negative y2), x2 = the radius squared (a word), (x1, y1) the centre.
  * init allocates table 0 with 256 zones (MEMF_PUBLIC), finit frees every
  * table.  The 68020 mode (ZoneMode, SetZoneMode; on by default on a
- * 68020 or better) tests rectangles with CMP2, here the same signed
- * bounds test in C.
+ * 68020 or better) tests rectangles with CMP2 (the original's code: only
+ * called on a 68020 or better).  The 68000 mode compares words.
  *
- * No assembler besides the thunks.  ReadJoyPad clocks the CD32 pad's
+ * Zone and ZoneTest are assembler entries (speed: the per-frame test of
+ * a game, tests/perf bzone), the rest C.  ReadJoyPad clocks the CD32 pad's
  * shift register through the fire line; its delays are CIA reads (each
  * synchronised to the E clock), kept as the same volatile accesses in
  * the same order, so its timing does not depend on the code around them.
@@ -249,14 +250,20 @@ static_assert(sizeof(struct zonetable) == 4);
 
 /* endzone, _zonetable, zonetablelist, zones020, is020 in the original's
    order: the entry -1 of the list is _zonetable (negative table numbers,
-   BUG(orig) #872) */
-static struct BL_PACKED {
+   BUG(orig) #872).  The zone tests (assembler, below) read it as _zd. */
+struct zdata {
     UWORD endzone;                                      /* Dc.w 1, unused */
     struct zonetable *zonetable;                        /* _zonetable */
     struct zonetable *list[16];                         /* zonetablelist */
     UBYTE zones020, is020;
-} zd = { 1, 0, { 0 }, 0, 0 };
+} BL_PACKED;
+static struct zdata zd __asm__("_zd") __attribute__((used)) = { 1, 0, { 0 }, 0, 0 };
 static_assert(sizeof zd == 2 + 4 + 16 * 4 + 2);
+/* the offsets the zone tests use */
+#define ZD_ZONETABLE 2
+#define ZD_ZONES020 70
+static_assert(offsetof(struct zdata, zonetable) == ZD_ZONETABLE);
+static_assert(offsetof(struct zdata, zones020) == ZD_ZONES020);
 
 static UBYTE fourplayer = 0xff;                         /* Dc.b -1 */
 
@@ -471,104 +478,137 @@ static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
 
 /* ---------------------------------------------------------- zone tests */
 
-/* _TestZoneRange: start d0, end d1, x, y - the number of the zonenum zone
-   that contains (x,y), -1 if none */
-static ULONG testrange(ULONG zonenum, ULONG lastnum, UWORD x, UWORD y)
-{
-    struct zonetable *zt = zd.zonetable;
-    ULONG last;
-    const struct zone *z;
-    UWORD end;
-
-    if (!zt)
-        return (ULONG)-1;
-    last = zt->count - 1;
-    if (MI(last, zonenum))
-        zonenum = last;
-    if (MI(last, lastnum) || MI(lastnum, zonenum))
-        return (ULONG)-1;
-    end = (UWORD)(lastnum + 1);
-    z = zone(zt, (UWORD)((UBYTE)zonenum << 3));         /* MOVE.b d0,d4: BUG(orig) #881 */
-    do {
-        WORD x1 = z->x1, x2 = z->x2, y1 = z->y1, y2 = z->y2;
-
-        z++;
-        if (x1 >= 0) {                                  /* TST.w: BMI = not set */
-            if (zd.zones020 ? y2 < 0 : y2 == -1) {      /* circle */
-                WORD dx = (WORD)(x - x1), dy = (WORD)(y - y1);
-                ULONG d = (ULONG)bl_muls_w(dx, dx) + (ULONG)bl_muls_w(dy, dy);
-                ULONG r = (UWORD)x2;                    /* ANDI.l #$ffff,d6 */
-
-                if (zd.zones020 ? (WORD)r >= (WORD)d    /* CMP.w: BUG(orig) #880 */
-                                : (LONG)r >= (LONG)d)   /* CMP.l:BGE */
-                    return zonenum;
-            } else if (zd.zones020) {
-                /* CMP2.w (a0),d2 / CMP2.w 4(a0),d3: signed bounds */
-                if ((WORD)x >= x1 && (WORD)x <= x2 && (WORD)y >= y1 && (WORD)y <= y2)
-                    return zonenum;
-            } else {
-                /* x1 > x, y1 > y: BGT; x2 - x, y2 - y < 0: BMI (BUG(orig) #879) */
-                if (!(x1 > (WORD)x) && !(y1 > (WORD)y) && !MIW(x2, x) && !MIW(y2, y))
-                    return zonenum;
-            }
-        }
-        zonenum = INCW(zonenum);
-    } while ((UWORD)zonenum != end);
-    return (ULONG)-1;
-}
-
-/**
- * @brief Zone(x,y): the first zone of the current table that contains x,y.
+/*
+ * Zone(x,y), ZoneTest(start_num,x,y), ZoneTest(start_num,end_num,x,y):
+ * assembler entries for speed (a game's per-frame test of a point against
+ * the zone table, bzone in tests/perf), in the original's form and
+ * without a thunk.  They change d1-d7 and a0 (ZoneTest with a range keeps
+ * d2 and d3), as the original does, which the register rule allows for a
+ * user-level function.
  *
- * Rectangles: x1 <= x <= x2, y1 <= y <= y2 (68000 mode: BUG(orig) #879, the
- * sign of x2-x/y2-y; 68020 mode: signed bounds as CMP2); circles: the
- * squared distance <= x2 (BUG(orig) #867, #880 in the 68020 mode); zones
- * with x1 < 0 are skipped.
- * @param x  d0: x (a word)
- * @param y  d1: y (a word)
- * @return d0: the zone number, -1 if none or without a table
- */
-static ULONG BLITZ_ROUTINE zonetest_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
-{
-    if (!zd.zonetable)
-        return (ULONG)-1;
-    return testrange(0, zd.zonetable->count - 1, x, y);
-}
-
-/**
- * @brief ZoneTest(start_num,x,y): whether the zone start contains x,y.
+ * Zone(x,y) (d0.w x, d1.w y): the first zone of the current table that
+ * contains x,y - ZoneTest(0,count-1,x,y); -1 if none or without a table
+ * (the original reads the count from address 0 before it notices, not
+ * observable: here the table is tested first).
  *
- * As Zone(x,y) for the one zone; start beyond the table is the last zone.
- * BUG(orig) (#881): the zone is found through the low byte of start.
- * @param s  d0: the zone number
- * @param x  d1: x (a word)
- * @param y  d2: y (a word)
- * @return d0: the zone number, -1 if it does not contain x,y
- */
-static ULONG BLITZ_ROUTINE testzonerange2_c(ULONG s BL_REG(d0), UWORD x BL_REG(d1),
-                                            UWORD y BL_REG(d2))
-{
-    return testrange(s, s, x, y);
-}
-
-/**
- * @brief ZoneTest(start_num,end_num,x,y): the first zone of start..end that contains x,y.
+ * ZoneTest(start_num,x,y) (d0 start, d1.w x, d2.w y): whether the zone
+ * start contains x,y - ZoneTest(start,start,x,y).
  *
- * As Zone(x,y) for the range; start beyond the table is the last zone,
- * a bad range gives -1.  BUG(orig) (#881): from zone 256 on, the zones are
- * found through the low byte of start (wrong zones under the right
- * numbers).
- * @param s  d0: the first zone
- * @param e  d1: the last zone
- * @param x  d2: x (a word)
- * @param y  d3: y (a word)
- * @return d0: the zone number, -1 if none
+ * ZoneTest(start_num,end_num,x,y) (d0 start, d1 end, d2.w x, d3.w y): the
+ * first zone of start..end that contains x,y, its number in d0 (the
+ * counter: the low word counted, the upper word of start kept); -1 if
+ * none, without a table or for a bad range (end beyond the table or
+ * before start, CMP.l : BMI); start beyond the table is the last zone.
+ * Rectangles x1 <= x <= x2, y1 <= y <= y2; zones with x1 < 0 are not
+ * set.  BUG(orig) (#881): the start zone is found through the low byte of
+ * start (MOVE.b), from zone 256 on the wrong zones are tested under the
+ * right numbers.
+ *
+ * The 68020 mode (zones020 set): every zone with a negative y2 is a
+ * circle (BUG(orig) #866), a rectangle is tested with CMP2.w (x1..x2,
+ * y1..y2 as bounds), a circle by its squared distance against the word
+ * x2 as words (CMP.w, BUG(orig) #880).  The 68000 mode: a circle has
+ * y2 = -1, its squared distance is compared as a long; x1 > x, y1 > y
+ * (BGT) and the sign of the word differences x2 - x, y2 - y (BMI, BUG(orig)
+ * #879) leave a rectangle.  Both square the word differences x - x1,
+ * y - y1 (MULS.w; BUG(orig) #867, the radius squared a word).
  */
-static ULONG BLITZ_ROUTINE testzonerange_c(ULONG s BL_REG(d0), ULONG e BL_REG(d1),
-                                           UWORD x BL_REG(d2), UWORD y BL_REG(d3))
-{
-    return testrange(s, e, x, y);
-}
+#define S_(x) BL_STR(x)
+BLITZ_ASM_BLOCK(zonetests,
+"   .globl  __ZoneTest\n"
+"__ZoneTest:\n"
+"   move.l  d1,d3\n"                        /* y */
+"   move.l  d0,d2\n"                        /* x */
+"   move.l  _zd+" S_(ZD_ZONETABLE) ",d1\n"
+"   beq.s   9f\n"
+"   move.l  d1,a0\n"
+"   moveq   #0,d0\n"                        /* from zone 0 */
+"   move.l  (a0)+,d1\n"
+"   subq.l  #1,d1\n"                        /* to the last: the DBF count */
+"   bpl.s   2f\n"
+"   bra.s   __TestZoneRange\n"              /* count 0 or above $80000000 */
+"   .globl  __TestZoneRange2\n"
+"__TestZoneRange2:\n"
+"   move.l  d2,d3\n"                        /* y */
+"   move.l  d1,d2\n"                        /* x */
+"   move.l  d0,d1\n"                        /* end = start */
+"   .globl  __TestZoneRange\n"
+"__TestZoneRange:\n"
+"   move.l  _zd+" S_(ZD_ZONETABLE) ",d4\n"
+"   beq.s   9f\n"
+"   move.l  d4,a0\n"
+"   move.l  (a0)+,d7\n"
+"   subq.l  #1,d7\n"                        /* the last zone */
+"   cmp.l   d0,d7\n"
+"   bpl.s   1f\n"
+"   move.l  d7,d0\n"                        /* start beyond the table: the last */
+"1: cmp.l   d1,d7\n"
+"   bmi.s   9f\n"
+"   cmp.l   d0,d1\n"
+"   bmi.s   9f\n"
+"   sub.w   d0,d1\n"                        /* the DBF count: end - start */
+"   moveq   #0,d4\n"
+"   move.b  d0,d4\n"                        /* MOVE.b: BUG(orig) (#881) */
+"   lsl.w   #3,d4\n"
+"   add.l   d4,a0\n"
+"2: tst.b   _zd+" S_(ZD_ZONES020) "\n"
+"   beq.s   5f\n"
+/* the 68020 mode (only on a 68020 or better: CMP2) */
+"3: tst.w   (a0)\n"                         /* x1 < 0: not set */
+"   bmi.s   4f\n"
+"   tst.w   6(a0)\n"
+"   bmi.s   8f\n"                           /* y2 < 0: a circle, BUG(orig) (#866) */
+"   .long   0x02d02000\n"                   /* CMP2.w (a0),d2: x1 <= x <= x2 */
+"   bcs.s   4f\n"
+"   .long   0x02e83000\n"                   /* CMP2.w 4(a0),d3: y1 <= y <= y2 */
+"   .word   4\n"
+"   bcs.s   4f\n"
+"   rts\n"
+"4: addq.l  #8,a0\n"
+"   addq.w  #1,d0\n"
+"   dbf     d1,3b\n"
+"9: moveq   #-1,d0\n"
+"   rts\n"
+"8: movem.w (a0),d4-d7\n"                   /* x1, x2, y1, y2 */
+"   sub.w   d2,d4\n"
+"   muls.w  d4,d4\n"
+"   sub.w   d3,d6\n"
+"   muls.w  d6,d6\n"
+"   add.l   d6,d4\n"                        /* the squared distance */
+"   cmp.w   d4,d5\n"                        /* as words: BUG(orig) (#880) */
+"   blt.s   4b\n"
+"   rts\n"
+/* the 68000 mode */
+"5: move.w  (a0)+,d4\n"                     /* x1; < 0: not set */
+"   bmi.s   6f\n"
+"   movem.w (a0)+,d5-d7\n"                  /* x2, y1, y2 */
+"   cmp.w   #-1,d7\n"
+"   beq.s   7f\n"                           /* a circle */
+"   cmp.w   d4,d2\n"                        /* x1 > x: BGT */
+"   blt.s   0f\n"
+"   cmp.w   d6,d3\n"                        /* y1 > y */
+"   blt.s   0f\n"
+"   cmp.w   d2,d5\n"                        /* x2 - x: BMI, BUG(orig) (#879) */
+"   bmi.s   0f\n"
+"   cmp.w   d3,d7\n"                        /* y2 - y */
+"   bmi.s   0f\n"
+"   rts\n"
+"6: addq.l  #6,a0\n"
+"0: addq.w  #1,d0\n"
+"   dbf     d1,5b\n"
+"   moveq   #-1,d0\n"
+"   rts\n"
+"7: sub.w   d2,d4\n"
+"   muls.w  d4,d4\n"
+"   sub.w   d3,d6\n"
+"   muls.w  d6,d6\n"
+"   add.l   d6,d4\n"                        /* the squared distance */
+"   moveq   #0,d7\n"
+"   move.w  d5,d7\n"                        /* the radius squared (ANDI.l #$ffff) */
+"   cmp.l   d4,d7\n"
+"   blt.s   0b\n"
+"   rts");
+#undef S_
 
 /* --------------------------------------------------------- zone tables */
 
@@ -952,7 +992,8 @@ static ULONG BLITZ_ROUTINE readjoypad_c(UWORD port BL_REG(d0))
 }
 
 /* Registers: the original changes d0 and, depending on the routine,
-   d1-d7, a0, a1, a6; the thunks keep d1/a0/a1, the C code d2-d7/a2-a6.
+   d1-d7, a0, a1, a6; the thunks keep d1/a0/a1, the C code d2-d7/a2-a6
+   (Zone and ZoneTest are assembler entries, above).
    ZoneMode replaces only the low byte of d0 (MOVE.b). */
 BLITZ_THUNK(rizonejoylib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_Initmem, initmem_c, "d1/a0-a1");
@@ -961,9 +1002,6 @@ BLITZ_THUNK(_ZoneInit2, zoneinit2_c, "d1/a0-a1");
 BLITZ_THUNK(_ZoneInit, zoneinit_c, "d1/a0-a1");
 BLITZ_THUNK(_SetZone2, setzone2_c, "d1/a0-a1");
 BLITZ_THUNK(_SetZone, setzone_c, "d1/a0-a1");
-BLITZ_THUNK(_ZoneTest, zonetest_c, "d1/a0-a1");
-BLITZ_THUNK(_TestZoneRange2, testzonerange2_c, "d1/a0-a1");
-BLITZ_THUNK(_TestZoneRange, testzonerange_c, "d1/a0-a1");
 BLITZ_THUNK(_ZoneTable, zonetable_c, "d1/a0-a1");
 BLITZ_THUNK(_ZoneTableSize, zonetablesize_c, "d1/a0-a1");
 BLITZ_THUNK(_NewZoneTable, newzonetable_c, "d1/a0-a1");
