@@ -9,5 +9,5 @@ intro: |
   libraries complete.
 
   The library opens graphics.library version 39 (OS 3.0) at program
-  start and closes it at the end, together with the last list
-  `InitView` allocated.
+  start and closes it at the end. At the end it also frees every list
+  `InitView` allocated, whether graphics.library could be opened or not.

@@ -22,7 +22,8 @@ intro: |
   `Derez` and `ZoomXY` work only on low resolution bitmaps 320 pixels
   (40 bytes) wide, and `ZoomyZoom` on bitmaps 640 pixels wide; the
   others work on bitmaps of any width. The bitmaps
-  may have at most 8 bitplanes. The zooms by 2, 4 and 8, `ReduceX2` and
+  may have at most 8 bitplanes; with runtime error checking, a bitmap of
+  depth 0 or more than 8 is the error "Illegal BitMap Depth". The zooms by 2, 4 and 8, `ReduceX2` and
   `ZoomyZoom` use tables the library builds at program start.
 
   A picture zoomed to twice its size from its middle, then faded in on

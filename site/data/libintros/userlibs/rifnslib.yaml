@@ -31,15 +31,16 @@ intro: |
   whose code is the new colour changes the colour within the text,
   `Chr$(9)` moves on to the next tab position (`FNSSetTab`), and
   `Chr$(10)` starts a new line below, aligned like the first. Any other
-  character below the space ends the text. Kept from the original, so
-  does any character from code 160 on, such as the accented letters
-  ([#657](https://github.com/fubar-coder/bb2-c/issues/657)).
+  character below the space ends the text. A character the font has no
+  glyph for, such as an accented letter in a font that ends at `z`, is
+  printed and measured as a space.
 
-  Kept from the original: printing before `FNSOutput` has chosen a bitmap
-  crashes the machine
-  ([#665](https://github.com/fubar-coder/bb2-c/issues/665)), and so may a
-  bitmap with more than 8 bitplanes
-  ([#658](https://github.com/fubar-coder/bb2-c/issues/658)).
+  Printing before `FNSOutput` has chosen a bitmap does nothing. Kept
+  from the original: a bitmap with more than 8 bitplanes may crash the
+  machine ([#658](https://github.com/fubar-coder/bb2-c/issues/658)).
+
+  `FNSPrint` is many times faster than the original's, and `FNSLength`
+  a little faster.
 
   ```blitzbasic
   BitMap 0,320,256,3

@@ -8,14 +8,17 @@ intro: |
 
   The functions that read a colour (`PalRed`, `AGAPalRed` and the others)
   and `PalAdjust` work on the palette chosen last with `PaletteInfo`.
-  Call `PaletteInfo` first: the library does not check that a palette
-  was chosen ([#686](https://github.com/fubar-coder/bb2-c/issues/686)).
+  Call `PaletteInfo` first: with runtime error checking, these commands
+  stop with "No palette selected with PaletteInfo" before it, and
+  without it they read the colours from address 0.
   The commands that fill or copy colours name their palettes themselves.
 
   The plain commands use the 4 bit colour values of the original chip
   set, 0 to 15; the commands that begin with `AGA` use 8 bit values, 0 to
-  255, which only an AGA machine can show in full. Colour numbers are not
-  checked against the size of the palette, except by `CopyColour`.
+  255, which only an AGA machine can show in full. Without runtime error
+  checking, colour numbers are not checked against the size of the
+  palette, except by `CopyColour`; with it, the colour functions and
+  `PalAdjust` check them too.
 
   A fade to black in 16 steps: palette 0 keeps the colours of a picture,
   palette 1, of the same size, gets the faded ones and is shown:

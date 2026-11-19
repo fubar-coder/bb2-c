@@ -48,8 +48,11 @@ returns True for a stored item instead of 0, `RXRunCommand` and
 `AddAppMenu` return -1 for success instead of a value the system left or
 an address, `AppEventID` returns -1 instead of 0 when there is no App
 event, a second `DataTypeCreate` or `MakeCommodity` is refused
-while the first object or commodity exists, and `ILBMPalette` with an
-offset makes a palette that is too small larger instead of replacing it.
+while the first object or commodity exists, `ILBMPalette` with an
+offset makes a palette that is too small larger instead of replacing it,
+`FillPalette` with an end colour of 0 fills up to the last colour,
+`Derez`, `DoColSplit` and `CopperAGACol` return -1 or 0, and
+`GetCCOffset` returns its offset after `CopperResetAdr`.
 
 The fixes that leave a program doing its job, but change something you
 may notice, such as its sound or the events on a tape, follow in
@@ -1021,6 +1024,113 @@ too small and used the colours from 0 on leaves the offset out.
 
 Issue: [ILBMPalette with an offset into a palette that is too small replaces the palette and ignores the offset (#769)](https://github.com/fubar-coder/bb2-c/issues/769).
 
+### `FillPalette` with an end colour of 0 filled nothing {#fillpalette-end-zero}
+
+`FillPalette palette#,r,g,b,start_col,end_col` of
+[rigfxlib]({{< relref "/docs/libraries/userlibs/rigfxlib" >}}) sets the
+colours `start_col` to `end_col` of a palette object to one colour, and
+`AGAFillPalette` does the same with 8 bit values. An `end_col` of 0
+means "up to the last colour of the palette", as the library's guide
+says.
+
+**What happened.** The end colour is a word, but the original tested
+the whole register it came in for 0. What the upper half of that
+register held depended on the code the compiler had made before the
+command: with the constant 0 or a word variable that holds 0 it was not
+empty, so the command took colour 0 as the end colour and filled
+nothing, or only colour 0 for a `start_col` of 0. Only a long variable
+gave the documented result. In this program the first `FillPalette`
+sets the colours 2 to 7 of an 8-colour palette to 1, and the second
+should set them to 2:
+
+```
+DEFTYPE .l
+InitPalette 0,8
+PaletteInfo 0
+FillPalette 0,1,1,1,2,7
+FillPalette 0,2,2,2,2,0
+NPrint PalRed(1)," ",PalRed(2)," ",PalRed(7)
+```
+
+With the original it printed `0 1 1`: the second `FillPalette` did
+nothing. With the port it prints `0 2 2`.
+
+**What to change.** Nothing in a program that uses the documented form.
+A program that wrote the number of the last colour instead of 0, to get
+around the bug, works as before.
+
+Issue: [FillPalette/AGAFillPalette test the whole register of end for 0, but compare only its word (#683)](https://github.com/fubar-coder/bb2-c/issues/683).
+
+### `Derez`, `DoColSplit` and `CopperAGACol` returned no useful value {#rwe-effect-results}
+
+Three commands of the RWE userlibs can be used as functions:
+`Derez` of [rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}),
+which makes a picture blocky, and `DoColSplit` and `CopperAGACol` of
+[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}}),
+which write a colour split or one AGA colour into a copper list. Each of
+them returns -1 when it did its work and 0 when it did nothing: `Derez`
+with a `derez_value` of 0, `DoColSplit` and `CopperAGACol` when no
+custom space for the copper instructions was chosen with `CopperReset`
+or `CopperResetAdr`.
+
+**What happened.** The original set no result for `Derez` and
+`DoColSplit`: the program got whatever the command had left in the
+register, an address, a colour step or a word of the picture.
+`CopperAGACol` returned 1234 without a custom space and its colour
+number with one. This program asks `Derez` for its result four times:
+
+```
+DEFTYPE .l
+BitMap 1,320,16,1
+BitMap 2,320,16,1
+r=Derez(1,2,0,0,0,8) : NPrint "0: ",r
+r=Derez(1,2,0,0,1,8) : NPrint "1: ",r
+r=Derez(1,2,0,0,2,8) : NPrint "2: ",r
+r=Derez(1,2,0,0,3,8) : NPrint "3: ",r
+```
+
+With the original it printed `64`, `65535`, `0` and `0`; with the port
+it prints `0`, `-1`, `-1` and `-1`.
+
+**What to change.** A program that uses the commands as statements
+works as before. One that used the original's values, such as the
+colour number `CopperAGACol` returned, takes them from its own
+variables.
+
+Issues: [Derez is declared with a long result but returns no defined value (#672)](https://github.com/fubar-coder/bb2-c/issues/672),
+[DoColSplit is declared with a word result but returns no defined value (#592)](https://github.com/fubar-coder/bb2-c/issues/592),
+[CopperAGACol is declared with a long result but returns 1234 or its col# argument (#590)](https://github.com/fubar-coder/bb2-c/issues/590).
+
+### `GetCCOffset` returned -1 after `CopperResetAdr` {#getccoffset-resetadr}
+
+`GetCCOffset` of
+[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}})
+returns the place in the custom space where the library writes its next
+copper instruction, counted in instructions; `RedoColSplit` needs it to
+find a colour split again. `CopperResetAdr` points the library at a
+space in a copper list of the program's own, instead of the custom space
+of a coplist.
+
+**What happened.** The original's `GetCCOffset` tested whether a
+coplist had been chosen, not whether there was a custom space, so after
+`CopperResetAdr` it returned -1, "no custom space", although the other
+commands wrote their instructions. With a block of memory at `m`:
+
+```
+CopperResetAdr m,44
+CopperMove $180,$fff
+NPrint GetCCOffset
+```
+
+With the original this printed `-1`; with the port it prints `1`, the
+place after the `CopperMove`.
+
+**What to change.** A program that used `RedoColSplit` with
+`CopperResetAdr` and counted the offsets itself can take them from
+`GetCCOffset`.
+
+Issue: [GetCCOffset returns -1 after CopperResetAdr although the commands work (#593)](https://github.com/fubar-coder/bb2-c/issues/593).
+
 ## Changes you may notice {#noticeable-changes}
 
 With the fixes in this part, a program that ran correctly with the
@@ -1038,7 +1148,13 @@ flags its library means, `LoadIFF` works without `BankLimit` and returns 0
 for a picture it could not unpack, `UnpackIFF` reads pictures whose
 width is no multiple of 16 pixels, and `RXDeletePort` and the end of a
 program wait up to 5 seconds for the replies to ARexx commands sent
-without waiting ([Fixes in riarexxlib](#riarexxlib-fixes)).
+without waiting ([Fixes in riarexxlib](#riarexxlib-fixes)). `FNSLength`
+returns the whole width of a text, and the FNS fonts print a character
+they have no glyph for as a space instead of ending the text there.
+Three more are in the lists below: `FNSLoad` works without `BankLimit`
+([Fixes in rifnslib](#rifnslib-fixes)), `ClearBitmap` clears the last
+word of its area ([Fixes in rifxlib](#rifxlib-fixes)), and a colour split
+from line 0 starts at line 0 ([Fixes in ricopperfxlib](#ricopperfxlib-fixes)).
 
 ### `CustomColors` with a `thru256flag` of 0 acted as 1 {#customcolors-thru256flag}
 
@@ -1250,6 +1366,65 @@ rows, for example by saving brushes only in widths that are a multiple
 of 16; such brushes load as before.
 
 Issue: [UnpackIFF takes the row width as width/8 instead of the word-aligned ILBM row (#775)](https://github.com/fubar-coder/bb2-c/issues/775).
+
+### `FNSLength` measured a text 2 pixels short {#fnslength-width}
+
+`FNSLength(fontnum,a$[,prefs])` of
+[rifnslib]({{< relref "/docs/libraries/userlibs/rifnslib" >}}) returns
+the width in pixels that `a$` has when `FNSPrint` prints it in the font
+of slot `fontnum`, for example to centre a text or to print another one
+behind it. The style `prefs` counts because bold adds one pixel per
+character; without it, the style set with `FNSPrefs` counts, as for
+`FNSPrint` without one.
+
+**What happened.** The original subtracted 2 from the width, and gave
+0 for a text narrower than that. Without `prefs` it took the style of
+the last `FNSPrint` instead of the one of `FNSPrefs`, so after a bold
+print it counted one pixel more per character. In the font built into
+the library, the five characters of `Hello` are 30 pixels wide:
+
+```
+NPrint FNSLength(0,"Hello",0)
+```
+
+With the original this printed `28`; with the port it prints `30`.
+
+**What to change.** A program that added 2 to the result takes the
+result as it is. One that relied on the style of the last print gives
+`FNSLength` the style itself.
+
+Issues: [FNSLength returns the text width minus 2 (#662)](https://github.com/fubar-coder/bb2-c/issues/662),
+[FNSLength without prefs uses the prefs of the last FNSPrint instead of those of FNSPrefs (#661)](https://github.com/fubar-coder/bb2-c/issues/661).
+
+### Characters an FNS font has no glyph for {#fns-missing-glyphs}
+
+A font of
+[rifnslib]({{< relref "/docs/libraries/userlibs/rifnslib" >}}) holds a
+glyph for each character from the space, code 32, up to its last one.
+The font built into the library and every known FNS font end at `z`,
+code 122, so they have no accented letters, no braces and no tilde.
+
+**What happened.** The original took every character from code 160 on,
+such as the accented letters, for the end of the text: `FNSPrint`
+printed nothing from there on, and `FNSLength` stopped counting. The
+characters from code 123 to 159 it drew from the memory behind the
+font, for the built-in font from the library's own code. So
+`FNSPrint 0,10,10,"Grüße"` printed only `Gr`.
+
+**With the port.** `FNSPrint`, `FNSShadowPrint` and `FNSLength` take a
+character the font has no glyph for as a space, with the width of the
+space; the control characters below 32 keep their meaning. How many
+glyphs a font has, `FNSLoad` takes from the size of the file. A font in
+memory does not say it, so `InstallFNS(fontnum,address)` takes the 91
+glyphs of the known fonts, up to `z`, and the form
+`InstallFNS(fontnum,address,characters)` takes the number given.
+
+**What to change.** A text with such characters goes on behind them.
+A font of your own with glyphs behind `z` that a program puts into a
+slot with `InstallFNS` needs the form with the number of its
+characters; loaded with `FNSLoad`, it works as it is.
+
+Issue: [Character codes from 160 on end the text (sign test after CMPI.b #32) (#657)](https://github.com/fubar-coder/bb2-c/issues/657).
 
 ## Dates
 
@@ -5271,6 +5446,225 @@ Other fixes.
   have been freed, and an `AnimLoop Off` stayed off
   ([#1107](https://github.com/fubar-coder/bb2-c/issues/1107)).
 
+### Fixes in rifnslib {#rifnslib-fixes}
+
+These fixes concern
+[rifnslib]({{< relref "/docs/libraries/userlibs/rifnslib" >}}), the
+library by Reflective Images that prints text in its own FNS fonts into
+a bitmap with the processor. The fixes of
+[the width `FNSLength` returns](#fnslength-width) and of
+[characters a font has no glyph for](#fns-missing-glyphs) are described
+above.
+
+* `FNSPrint` and `FNSShadowPrint` before `FNSOutput` has chosen a
+  bitmap print nothing. The original crashed the machine
+  ([#665](https://github.com/fubar-coder/bb2-c/issues/665)).
+* `InstallFNS` returns 0 for a font of height 0, and `FNSLoad` returns
+  -1 for such a font and for a file that is no FNS font. The original
+  took them, and a font of height 0 drew 65536 rows for every
+  character, over the whole clip zone and below it
+  ([#663](https://github.com/fubar-coder/bb2-c/issues/663)).
+* `FNSLoad` loads the font into bank 55 plus the slot number of
+  [riamosfunclib]({{< relref "/docs/libraries/userlibs/riamosfunclib" >}})
+  only when the program has raised the number of banks with `BankLimit`
+  so that this bank exists. Otherwise it takes the highest free bank
+  below the limit, and `FNSUnload` frees the bank the font is in. The
+  original always took bank 55 plus the slot: with the 50 banks
+  riamosfunclib starts with, it wrote the file into memory at the
+  address 55 plus the slot, over the system's vectors, and returned -1
+  ([#984](https://github.com/fubar-coder/bb2-c/issues/984)).
+* Characters of 48 and 64 pixel fonts whose top rows lie above the clip
+  zone are drawn as they should be. The original drew the rest of such
+  a character garbled
+  ([#656](https://github.com/fubar-coder/bb2-c/issues/656)).
+* The bottom edge of the clip zone works like its right edge: `ymax` of
+  `FNSClip` is the first row not drawn in, as `xmax` is the first
+  column, and `FNSClipOutput` sets the zone to match. The guide's
+  example for a bitmap of 320 x 256 pixels, `FNSClip 0,0,320,256`, is
+  the whole bitmap. The original drew rows up to `ymax` itself, so with
+  that example a text at the bottom wrote a row behind the bitmap. A
+  program that gave the last row of the zone as `ymax` gives one more
+  ([#1128](https://github.com/fubar-coder/bb2-c/issues/1128)).
+* The underline is clipped at the left edge of the clip zone, like the
+  characters. The original clipped it at the left edge of the bitmap, so
+  it stuck out of a zone that starts further right
+  ([#667](https://github.com/fubar-coder/bb2-c/issues/667)).
+* An underline that lies wholly outside the clip zone draws nothing.
+  The original set one pixel at the edge of the zone
+  ([#1130](https://github.com/fubar-coder/bb2-c/issues/1130)).
+* An empty text, or an empty line in a text, is neither underlined,
+  centred nor aligned. The original set one pixel for it when the style
+  was underlined, and centred it moved the position far to the left
+  ([#659](https://github.com/fubar-coder/bb2-c/issues/659)).
+* `FNSLength` counts only the low 4 bits of the font number, so 16 is
+  slot 0 again, as with every other command of the library. The
+  original read a font number from 16 on, or a negative one, from
+  memory behind or before the slots and returned a meaningless width
+  ([#660](https://github.com/fubar-coder/bb2-c/issues/660)).
+* With runtime error checking, `FNSClip` with an `xmin` or `ymin` below
+  0 stops with "FNSClip zone must not start below 0", and
+  `FNSSetTab` with a size below 1 with "FNSSetTab size must be at least
+  1" ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#fns-clip-tab-checks" >}}),
+  [#664](https://github.com/fubar-coder/bb2-c/issues/664),
+  [#666](https://github.com/fubar-coder/bb2-c/issues/666)).
+* A program run a second time from the editor starts with no bitmap
+  chosen, the slots 1 to 15 empty, and the style, colour, tab size and
+  clip zone at their start values. The original kept those of the run
+  before, and `FNSPrint` before `FNSOutput` drew into that run's bitmap,
+  which had been freed
+  ([#1124](https://github.com/fubar-coder/bb2-c/issues/1124)).
+
+### Fixes in rigfxlib {#rigfxlib-fixes}
+
+These fixes concern
+[rigfxlib]({{< relref "/docs/libraries/userlibs/rigfxlib" >}}), the
+palette and bitmap helpers by Reflective Images. The fix of
+[`FillPalette` with an end colour of 0](#fillpalette-end-zero) is
+described above.
+
+* `CPUCls` on a bitmap without a first bitplane returns without doing
+  anything. The original crashed
+  ([#680](https://github.com/fubar-coder/bb2-c/issues/680)).
+* `CPUCls` on a bitmap of less than 40 bytes per bitplane, such as one
+  of 16 x 16 pixels, clears only its bitplanes. The original cleared
+  2.6 MB of memory below each of them
+  ([#682](https://github.com/fubar-coder/bb2-c/issues/682)).
+* `CPUCls` clears the whole bitplane also when its size in bytes is odd.
+  The original left its first byte, 8 pixels at the top left
+  ([#681](https://github.com/fubar-coder/bb2-c/issues/681)).
+* `CPUCls` reads the depth of the bitmap alone. The original read it
+  together with the bitmap's flags, so a bitmap whose flags are set
+  counted as one with hundreds of bitplanes. With runtime error
+  checking, a bitmap of depth 0 or more than 8 stops with "Illegal
+  BitMap Depth"
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rwe-effects-depth" >}}),
+  [#679](https://github.com/fubar-coder/bb2-c/issues/679)).
+* `CopyColour` with a negative colour number fails and returns 0, as
+  for a colour beyond the palette. The original copied from or to
+  memory up to 786 KB away from the palette and returned -1
+  ([#678](https://github.com/fubar-coder/bb2-c/issues/678)).
+* With runtime error checking, the functions that read a colour and
+  `PalAdjust` stop with a runtime error before `PaletteInfo` has chosen
+  a palette, for a colour number the palette does not have, and
+  `PalAdjust` also for an end colour before the start colour and for a
+  target palette too small for the colours it writes
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rigfxlib-palette-checks" >}}),
+  [#686](https://github.com/fubar-coder/bb2-c/issues/686),
+  [#677](https://github.com/fubar-coder/bb2-c/issues/677),
+  [#684](https://github.com/fubar-coder/bb2-c/issues/684),
+  [#685](https://github.com/fubar-coder/bb2-c/issues/685)).
+* `SaveCMAP` writes the pad byte that the IFF standard puts behind a
+  chunk of odd length, so a palette with an odd number of colours gives
+  a correct IFF file. The original's file was one byte short
+  ([#687](https://github.com/fubar-coder/bb2-c/issues/687)).
+* `SaveCMAP` of a palette of 0 colours writes a file with an empty
+  colour chunk. The original wrote 192 KB over the memory behind its
+  buffer ([#688](https://github.com/fubar-coder/bb2-c/issues/688)).
+* A program run a second time from the editor starts with no palette
+  chosen with `PaletteInfo`. The original kept the one of the run
+  before, and the colour functions and `PalAdjust` read that run's
+  freed palette
+  ([#1125](https://github.com/fubar-coder/bb2-c/issues/1125)).
+
+### Fixes in rifxlib {#rifxlib-fixes}
+
+These fixes concern
+[rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}), the bitmap
+effects by Reflective Images. The fix of
+[the result of `Derez`](#rwe-effect-results) is described above.
+
+* `ClearBitmap` clears the whole area. The original left the last word
+  of each bitplane's area as it was and cleared the word in front of
+  the area instead, for an `offset` of 0 the word in front of the
+  bitplane ([#668](https://github.com/fubar-coder/bb2-c/issues/668)).
+* `ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the depth of the
+  bitmap alone. The original read it together with the bitmap's flags,
+  so a bitmap whose flags are set counted as one with hundreds of
+  bitplanes and the program crashed
+  ([#670](https://github.com/fubar-coder/bb2-c/issues/670)).
+* With runtime error checking, every command that works through the
+  bitplanes of a bitmap stops with "Illegal BitMap Depth" for a bitmap
+  of depth 0 or more than 8, `ClearBitmap` and `FadeInBitmap` with
+  "Delay must not be 0" for a delay of 0, and `ZoomyZoom` with "ZoomyZoom
+  needs a bitmap of at least 640 x 32" for a smaller one
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rwe-effects-depth" >}}),
+  [#947](https://github.com/fubar-coder/bb2-c/issues/947),
+  [#674](https://github.com/fubar-coder/bb2-c/issues/674),
+  [#669](https://github.com/fubar-coder/bb2-c/issues/669),
+  [#676](https://github.com/fubar-coder/bb2-c/issues/676)).
+* After a `Derez` or `ZoomXY` with a bitmap of depth 0, the next calls
+  count the bitplanes of their own bitmaps. In the original the count
+  stayed wrong for every later call
+  ([#675](https://github.com/fubar-coder/bb2-c/issues/675)).
+* `ZoomXY` works after a `Derez` with a value of 3 or more. In the
+  original, such a `Derez` wrote its table of masks over the first
+  instructions of `ZoomXY`: after a `Derez` of 5, `ZoomXY` cleared a
+  byte somewhere in memory and zoomed nothing
+  ([#671](https://github.com/fubar-coder/bb2-c/issues/671)).
+
+### Fixes in ricopperfxlib {#ricopperfxlib-fixes}
+
+These fixes concern
+[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}}),
+the copper instructions by Reflective Images for the custom space of a
+coplist. The fixes of
+[the results of `DoColSplit` and `CopperAGACol`](#rwe-effect-results)
+and of [`GetCCOffset` after `CopperResetAdr`](#getccoffset-resetadr) are
+described above.
+
+* A colour split of `DoColSplit` that starts at line 0 starts there. The
+  original first wrote the wait for line 256 that the copper needs for
+  the lines below 255, so the split appeared at line 256, or not at all
+  on a display that ends before it
+  ([#588](https://github.com/fubar-coder/bb2-c/issues/588)).
+* With runtime error checking, `DoColSplit` and `RedoColSplit` with
+  fewer than one line stop with "Colour split needs at least one line".
+  The original divided by zero for 0 lines and wrote up to 65536 lines
+  over the memory behind the custom space for a negative number
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#colsplit-numlines" >}}),
+  [#589](https://github.com/fubar-coder/bb2-c/issues/589)).
+* `CopperWait` with an `x` of 500 or more waits on the line given. The
+  original waited one line later
+  ([#591](https://github.com/fubar-coder/bb2-c/issues/591)).
+* `RedoColSplit` with a `ccoffset` of 16384 instructions or more writes
+  its colours at that place. The original wrote them 64 KB or a multiple
+  of it away, into other memory. `GetCCOffset` never returns such a
+  large offset; only a program that computes the offset itself meets it
+  ([#594](https://github.com/fubar-coder/bb2-c/issues/594)).
+* A program run a second time from the editor starts with no custom
+  space chosen and with the `ColSplitBplcon3` value 0. In the original,
+  every command before `CopperReset` wrote into the copper list of the
+  run before, which had been freed, and that run's `ColSplitBplcon3`
+  value stayed in effect
+  ([#1126](https://github.com/fubar-coder/bb2-c/issues/1126)).
+
+### Fixes in ridisplaylib {#ridisplaylib-fixes}
+
+These fixes concern
+[ridisplaylib]({{< relref "/docs/libraries/userlibs/ridisplaylib" >}}),
+the unfinished start of a display library by Reflective Images. Its
+`InitView` allocates a copper list that is never shown.
+
+* `InitView` writes the moves of the display window and data fetch
+  registers into its list. The original wrote words read from fixed
+  addresses of low memory instead, and two of these addresses are odd,
+  which crashed a 68000
+  ([#889](https://github.com/fubar-coder/bb2-c/issues/889)).
+* `InitView` sizes the list by the number of colours it is given, and
+  computes the size as a long. The original used the height instead of
+  the number of colours and computed a word, so large values gave a
+  wrong or negative size
+  ([#890](https://github.com/fubar-coder/bb2-c/issues/890)).
+* Without enough chip memory, `InitView` returns 0 and writes nothing.
+  The original wrote its list to address 0, over system memory, and
+  freed address 0 at the end of the program
+  ([#888](https://github.com/fubar-coder/bb2-c/issues/888)).
+* At the end of the program the library frees the lists of all
+  `InitView` calls, also when it could not open graphics.library 39.
+  The original freed only the last list, and only with
+  graphics.library 39
+  ([#891](https://github.com/fubar-coder/bb2-c/issues/891)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a
@@ -5373,7 +5767,3 @@ Other fixes.
   depending on the flags it wrote 8 planes into a bitmap with fewer, or
   refused a bitmap of depth 8; it checks the depth alone
   ([#883](https://github.com/fubar-coder/bb2-c/issues/883)).
-* `ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the depth of the
-  bitmap together with its flags, so a bitmap whose flags are set counted
-  as one with hundreds of planes and the program crashed; they read the
-  depth alone ([#670](https://github.com/fubar-coder/bb2-c/issues/670)).

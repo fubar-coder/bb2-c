@@ -20,55 +20,34 @@
     must have at least as many colours as the source. With `start_col`
     and `end_col`, only that range is adjusted and stored.
 
-    Kept from the original: without a range, the number of colours of
-    the source palette counts, not of the target
-    ([#685](https://github.com/fubar-coder/bb2-c/issues/685)); an
-    `end_col` below `start_col` is not refused: one below adjusts 65536
-    colour values, about 21845 colours
-    ([#684](https://github.com/fubar-coder/bb2-c/issues/684)), and colour
-    numbers from 2731 on reach before the palette
-    ([#677](https://github.com/fubar-coder/bb2-c/issues/677)).
+    With runtime error checking, `PalAdjust` before `PaletteInfo`, a
+    colour number the source palette does not have, an `end_col` below
+    `start_col` and a target palette too small for the colours written
+    are runtime errors. Without it, nothing is checked, so that the
+    command stays fast, for example for a fade in every frame.
 "FillPalette":
   text: Sets all colours of a palette, or the range `start_col` to `end_col`, to one colour, with red, green and blue from 0 to 15.
   notes: |
     Unlike `PalAdjust`, this command names its palette itself and does not
     use the one of `PaletteInfo`. A range is not checked against the size
-    of the palette. An `end_col` of 0 fills up to the last colour; kept
-    from the original, this test looks at the whole register, so
-    depending on the code before the command an `end_col` of 0 can fill
-    only colour 0 or nothing
-    ([#683](https://github.com/fubar-coder/bb2-c/issues/683)).
+    of the palette. An `end_col` of 0 fills up to the last colour.
 "AGAFillPalette":
   text: Like `FillPalette`, with red, green and blue from 0 to 255.
 "CopyColour":
-  text: Copies a colour from one palette to another, or within one palette. As a function it returns -1 on success and 0 if a colour number is not below the number of colours of its palette.
-  notes: |
-    Kept from the original: negative colour numbers are not refused
-    ([#678](https://github.com/fubar-coder/bb2-c/issues/678)).
+  text: Copies a colour from one palette to another, or within one palette. As a function it returns -1 on success and 0 if a colour number is negative or not below the number of colours of its palette.
 "CPUCls":
   text: Clears all bitplanes of a bitmap with the processor instead of the blitter.
   notes: |
-    Kept from the original: a bitmap without a first bitplane crashes
-    ([#680](https://github.com/fubar-coder/bb2-c/issues/680)); a bitplane
-    smaller than 40 bytes clears 2.6 MB of memory below it
-    ([#682](https://github.com/fubar-coder/bb2-c/issues/682)); when the
-    size of a bitplane is odd, its first byte stays
-    ([#681](https://github.com/fubar-coder/bb2-c/issues/681)); and a bitmap
-    of depth 0 counts as 65536 planes
-    ([#679](https://github.com/fubar-coder/bb2-c/issues/679)).
+    A bitmap without a first bitplane is left as it is. With runtime
+    error checking, a bitmap of depth 0 or more than 8 is the error
+    "Illegal BitMap Depth".
 "SaveCMAP":
   text: Saves a palette as an IFF ILBM file that holds only the colours. As a function it returns -1 if the file was written, and 0 if it was not, if the palette has no data or if there is no memory.
   notes: |
     Amiga mode only. The file name is a long, the address of a name that
     ends in a zero byte, for example `&f$`. The library writes the file
     with `BSave` of the AMOS functions library, which must be installed
-    too.
-
-    Kept from the original: a palette with an odd number of colours gives
-    a colour chunk without its pad byte
-    ([#687](https://github.com/fubar-coder/bb2-c/issues/687)), and a
-    palette of 0 colours overwrites memory
-    ([#688](https://github.com/fubar-coder/bb2-c/issues/688)).
+    too. A palette of 0 colours gives a file with an empty colour chunk.
 "MergeBitplanes":
   text: Builds a bitmap from the bitplanes of two others. The target bitmap gets the bitplanes of the first source and then those of the second, `numplanes` planes in all, and the size of the first source.
   notes: |

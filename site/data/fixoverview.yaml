@@ -5180,6 +5180,390 @@ rows:
     text: "A program run again from the editor starts with no animation and `AnimLoop` on; the original played the freed animation of the run before."
     page: libraries
     anchor: rianimlib-fixes
+  - issue: 665
+    severity: 5
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSPrint, FNSShadowPrint"
+    text: "`FNSPrint` and `FNSShadowPrint` before `FNSOutput` print nothing; the original crashed the machine."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 663
+    severity: 5
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "InstallFNS, FNSLoad"
+    text: "`InstallFNS` and `FNSLoad` refuse a font of height 0, and `FNSLoad` a file that is no FNS font; the original took them and drew 65536 rows per character."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 984
+    severity: 2
+    topic: "Files"
+    library: "rifnslib"
+    command: "FNSLoad, FNSUnload"
+    text: "`FNSLoad` works without `BankLimit`: it takes a free bank below the limit; the original wrote the font to the memory address 55 plus the slot and returned -1."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 657
+    severity: 2
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSPrint, FNSShadowPrint, FNSLength, InstallFNS"
+    text: "A character the font has no glyph for is printed and measured as a space, and `InstallFNS` takes the number of characters as a third argument; the original ended the text at accented letters and drew others from memory."
+    page: libraries
+    anchor: fns-missing-glyphs
+  - issue: 662
+    severity: 2
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSLength"
+    text: "`FNSLength` returns the width of the text as `FNSPrint` draws it; the original returned 2 less."
+    page: libraries
+    anchor: fnslength-width
+  - issue: 661
+    severity: 2
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSLength"
+    text: "`FNSLength` without prefs uses the style set with `FNSPrefs`, as the manual says; the original used the one of the last `FNSPrint`."
+    page: libraries
+    anchor: fnslength-width
+  - issue: 660
+    severity: 5
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSLength"
+    text: "`FNSLength` counts the low 4 bits of the font number, like every FNS command; the original read numbers from 16 on and negative ones from memory beside the slots."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 656
+    severity: 5
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSPrint, FNSShadowPrint"
+    text: "Characters of 48 and 64 pixel fonts whose top rows lie above the clip zone are drawn correctly; the original drew them garbled."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 1128
+    severity: 2
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSClip, FNSClipOutput"
+    text: "The `ymax` of `FNSClip` is the first row outside the zone, like `xmax`; with the manual's `FNSClip 0,0,320,256` the original drew a row behind the bitmap."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 667
+    severity: 5
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSPrint, FNSShadowPrint"
+    text: "The underline is clipped at the left edge of the clip zone like the characters; the original clipped it at the edge of the bitmap."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 1130
+    severity: 5
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSPrint, FNSShadowPrint"
+    text: "An underline wholly outside the clip zone draws nothing; the original left a pixel at the zone's edge."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 659
+    severity: 5
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSPrint, FNSShadowPrint"
+    text: "An empty text or line is neither underlined nor centred; the original set a stray underline pixel and moved a centred position far to the left."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 664
+    severity: 3
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSClip"
+    text: "With runtime error checking, a clip zone that starts below 0 stops with \"FNSClip zone must not start below 0\"; the original wrote text about 64 KB away."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 666
+    severity: 3
+    topic: "Graphics"
+    library: "rifnslib"
+    command: "FNSSetTab"
+    text: "With runtime error checking, `FNSSetTab` with a size below 1 stops with \"FNSSetTab size must be at least 1\"; in the original a tab character then divided by zero."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 1124
+    severity: 5
+    topic: "System"
+    library: "rifnslib"
+    command: "FNSOutput, FNSPrint"
+    text: "A program run again from the editor starts with no bitmap, empty slots and the start settings; the original printed into the freed bitmap of the run before."
+    page: libraries
+    anchor: rifnslib-fixes
+  - issue: 683
+    severity: 1
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "FillPalette, AGAFillPalette"
+    text: "`FillPalette` and `AGAFillPalette` with an end colour of 0 fill up to the last colour, as documented; the original filled nothing when the 0 was a constant or a word variable."
+    page: libraries
+    anchor: fillpalette-end-zero
+  - issue: 680
+    severity: 5
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "CPUCls"
+    text: "`CPUCls` on a bitmap without a first bitplane returns without doing anything; the original crashed."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 682
+    severity: 5
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "CPUCls"
+    text: "`CPUCls` on a bitmap of less than 40 bytes per bitplane clears only its bitplanes; the original cleared 2.6 MB of memory below each."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 681
+    severity: 5
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "CPUCls"
+    text: "`CPUCls` clears a bitplane of an odd number of bytes completely; the original left 8 pixels at the top left."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 679
+    severity: 3
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "CPUCls"
+    text: "`CPUCls` reads the depth alone, and with runtime error checking stops with \"Illegal BitMap Depth\" for 0 or more than 8; the original cleared hundreds of planes."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 678
+    severity: 5
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "CopyColour"
+    text: "`CopyColour` with a negative colour number fails and returns 0, as documented; the original copied memory up to 786 KB away and returned -1."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 686
+    severity: 3
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "PalRed, PalGreen, PalBlue, AGAPalRed, AGAPalGreen, AGAPalBlue, PalAdjust"
+    text: "With runtime error checking, the colour functions and `PalAdjust` before `PaletteInfo` stop with \"No palette selected with PaletteInfo\"; the original read address 0."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 677
+    severity: 3
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "PalRed, PalGreen, PalBlue, AGAPalRed, AGAPalGreen, AGAPalBlue, PalAdjust"
+    text: "With runtime error checking, a colour number the palette does not have stops with \"Colour number outside the PaletteInfo palette\"; the original read or wrote memory beside the palette."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 684
+    severity: 3
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "PalAdjust"
+    text: "With runtime error checking, `PalAdjust` with the end colour below the start stops with \"PalAdjust end colour before the start colour\"; the original wrote 256 KB behind the palette."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 685
+    severity: 3
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "PalAdjust"
+    text: "With runtime error checking, `PalAdjust` into a target too small stops with \"PalAdjust colours outside the target palette\"; the original wrote behind the target's colours."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 687
+    severity: 5
+    topic: "Files"
+    library: "rigfxlib"
+    command: "SaveCMAP"
+    text: "`SaveCMAP` writes the pad byte behind an odd number of colours, so the file is a correct IFF file; the original's file was a byte short."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 688
+    severity: 5
+    topic: "Files"
+    library: "rigfxlib"
+    command: "SaveCMAP"
+    text: "`SaveCMAP` of a palette of 0 colours writes an empty colour chunk; the original wrote 192 KB behind its buffer."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 1125
+    severity: 5
+    topic: "Graphics"
+    library: "rigfxlib"
+    command: "PaletteInfo, PalRed, PalAdjust"
+    text: "A program run again from the editor starts with no `PaletteInfo` palette; the original read the freed palette of the run before."
+    page: libraries
+    anchor: rigfxlib-fixes
+  - issue: 672
+    severity: 1
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "Derez"
+    text: "`Derez` used as a function returns -1 when it worked and 0 for a derez value of 0; the original returned whatever a register held."
+    page: libraries
+    anchor: rwe-effect-results
+  - issue: 668
+    severity: 2
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "ClearBitmap"
+    text: "`ClearBitmap` clears the whole area; the original left its last word and cleared the word in front of it."
+    page: libraries
+    anchor: rifxlib-fixes
+  - issue: 947
+    severity: 3
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "ClearBitmap, FadeInBitmap, ZoomX2, ZoomX4, ZoomX8, ReduceX2, ZoomyZoom, Derez, ZoomXY"
+    text: "With runtime error checking, a bitmap of depth 0 stops with \"Illegal BitMap Depth\"; the original ran 65536 or 256 planes over memory."
+    page: libraries
+    anchor: rifxlib-fixes
+  - issue: 674
+    severity: 3
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "ClearBitmap, FadeInBitmap, ZoomX2, ZoomX4, ZoomX8, ReduceX2, ZoomyZoom, Derez, ZoomXY"
+    text: "With runtime error checking, a bitmap of more than 8 planes stops with \"Illegal BitMap Depth\"; the original wrote past its plane tables."
+    page: libraries
+    anchor: rifxlib-fixes
+  - issue: 669
+    severity: 3
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "ClearBitmap, FadeInBitmap"
+    text: "With runtime error checking, a delay of 0 stops with \"Delay must not be 0\"; the original waited 4294967296 turns per line."
+    page: libraries
+    anchor: rifxlib-fixes
+  - issue: 676
+    severity: 3
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "ZoomyZoom"
+    text: "With runtime error checking, `ZoomyZoom` on a bitmap smaller than 640 x 32 stops with a runtime error; the original garbled it or wrote behind it."
+    page: libraries
+    anchor: rifxlib-fixes
+  - issue: 675
+    severity: 5
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "Derez, ZoomXY"
+    text: "After a `Derez` or `ZoomXY` with a bitmap of depth 0, the next calls count their own bitmap's planes; in the original the count stayed wrong."
+    page: libraries
+    anchor: rifxlib-fixes
+  - issue: 671
+    severity: 5
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "Derez, ZoomXY"
+    text: "`ZoomXY` works after a `Derez` of 3 or more; in the original such a `Derez` overwrote the first instructions of `ZoomXY`."
+    page: libraries
+    anchor: rifxlib-fixes
+  - issue: 590
+    severity: 1
+    topic: "Graphics"
+    library: "ricopperfxlib"
+    command: "CopperAGACol"
+    text: "`CopperAGACol` used as a function returns -1 when it wrote the colour and 0 without a custom space; the original returned 1234 or its colour number."
+    page: libraries
+    anchor: rwe-effect-results
+  - issue: 592
+    severity: 1
+    topic: "Graphics"
+    library: "ricopperfxlib"
+    command: "DoColSplit"
+    text: "`DoColSplit` used as a function returns -1 when it wrote the split and 0 without a custom space; the original returned whatever a register held."
+    page: libraries
+    anchor: rwe-effect-results
+  - issue: 593
+    severity: 1
+    topic: "Graphics"
+    library: "ricopperfxlib"
+    command: "GetCCOffset"
+    text: "`GetCCOffset` returns the current offset after `CopperResetAdr`; the original returned -1."
+    page: libraries
+    anchor: getccoffset-resetadr
+  - issue: 588
+    severity: 2
+    topic: "Graphics"
+    library: "ricopperfxlib"
+    command: "DoColSplit"
+    text: "A colour split of `DoColSplit` from line 0 starts at line 0; the original first waited for line 256, so the split appeared there or not at all."
+    page: libraries
+    anchor: ricopperfxlib-fixes
+  - issue: 589
+    severity: 3
+    topic: "Graphics"
+    library: "ricopperfxlib"
+    command: "DoColSplit, RedoColSplit"
+    text: "With runtime error checking, fewer than one line stops with \"Colour split needs at least one line\"; the original divided by zero or wrote up to 65536 lines."
+    page: libraries
+    anchor: ricopperfxlib-fixes
+  - issue: 591
+    severity: 5
+    topic: "Graphics"
+    library: "ricopperfxlib"
+    command: "CopperWait"
+    text: "`CopperWait` with an x of 500 or more waits on the line given; the original waited one line later."
+    page: libraries
+    anchor: ricopperfxlib-fixes
+  - issue: 594
+    severity: 5
+    topic: "Graphics"
+    library: "ricopperfxlib"
+    command: "RedoColSplit"
+    text: "`RedoColSplit` with an offset of 16384 instructions or more writes at that offset; the original wrote 64 KB steps away into other memory."
+    page: libraries
+    anchor: ricopperfxlib-fixes
+  - issue: 1126
+    severity: 5
+    topic: "Graphics"
+    library: "ricopperfxlib"
+    command: "CopperReset, ColSplitBplcon3"
+    text: "A program run again from the editor starts with no custom space and `ColSplitBplcon3` 0; the original wrote into the freed copper list of the run before."
+    page: libraries
+    anchor: ricopperfxlib-fixes
+  - issue: 889
+    severity: 5
+    topic: "Graphics"
+    library: "ridisplaylib"
+    command: "InitView"
+    text: "`InitView` writes the display window and data fetch moves into its copper list; the original wrote words read from low memory and crashed a 68000."
+    page: libraries
+    anchor: ridisplaylib-fixes
+  - issue: 890
+    severity: 5
+    topic: "Graphics"
+    library: "ridisplaylib"
+    command: "InitView"
+    text: "`InitView` sizes its copper list by the number of colours, as a long; the original used the height instead, as a word."
+    page: libraries
+    anchor: ridisplaylib-fixes
+  - issue: 888
+    severity: 5
+    topic: "Graphics"
+    library: "ridisplaylib"
+    command: "InitView"
+    text: "`InitView` returns 0 without enough chip memory; the original wrote its list over address 0 and freed address 0 at the end."
+    page: libraries
+    anchor: ridisplaylib-fixes
+  - issue: 891
+    severity: 5
+    topic: "System"
+    library: "ridisplaylib"
+    command: "InitView"
+    text: "The copper lists of all `InitView` calls are freed at the end of the program, also without graphics.library 39; the original freed only the last one."
+    page: libraries
+    anchor: ridisplaylib-fixes
   - issue: 1116
     severity: 5
     topic: "Graphics"
@@ -5267,7 +5651,7 @@ rows:
     command: "ClearBitmap, FadeInBitmap, ZoomyZoom"
     text: "`ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the bitmap's depth alone; the original read it with the flags and crashed on bitmaps with flags set."
     page: libraries
-    anchor: rwe-other-fixes
+    anchor: rifxlib-fixes
   - issue: 743
     severity: 5
     topic: "Strings"

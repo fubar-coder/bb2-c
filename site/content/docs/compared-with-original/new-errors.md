@@ -1,7 +1,7 @@
 ---
 title: Sources that compile differently
 weight: 3
-description: Sources that Blitz Basic 2 accepted and the BB2 C port refuses or compiles to something else, the new runtime errors of the libraries and a form only the port accepts, with what the original did and how to change them.
+description: Sources that Blitz Basic 2 accepted and the BB2 C port refuses or compiles to something else, the new runtime errors of the libraries and the forms only the port accepts, with what the original did and how to change them.
 ---
 
 Before this page you should know the fixed bugs of the compiler
@@ -15,11 +15,12 @@ original did with it, what the port does, and what to change in a source
 that relies on the old behaviour. A few fixes of the libraries work the
 same way when the program runs: a command that the original carried out
 with a wrong argument stops with a runtime error
-([Runtime errors of the libraries](#runtime-errors)). Two cases go the
+([Runtime errors of the libraries](#runtime-errors)). Three cases go the
 other way: `Frac` of a string, which the original refused when compiling,
-compiles and is a runtime error, and `PlayWait` without a tape number
-([A form the original refused](#forms-the-original-refused)) compiles and
-waits for the playback.
+compiles and is a runtime error, `PlayWait` without a tape number
+compiles and waits for the playback, and `InstallFNS` takes the number
+of characters of a font
+([Forms the original refused](#forms-the-original-refused)).
 
 The outputs shown were recorded in an emulator. The original is
 Blitz Basic 2 built from its published source, with the libraries of the
@@ -1743,11 +1744,170 @@ one less than their number.
 
 Issue: [BBShadowValue reads outside the SHDW chunk for a set it does not hold, with no error check (#1114)](https://github.com/fubar-coder/bb2-c/issues/1114).
 
-## A form the original refused {#forms-the-original-refused}
+### `FNSClip` below 0 and `FNSSetTab` below 1 {#fns-clip-tab-checks}
+
+`FNSClip xmin,ymin,xmax,ymax` of
+[rifnslib]({{< relref "/docs/libraries/userlibs/rifnslib" >}}) sets the
+clip zone, the part of the bitmap that the FNS prints may draw in, and
+`FNSSetTab` the distance between the tab positions of a text.
+
+**What happened.** The original checked neither, also not with runtime
+error checking. With a clip zone that starts left of or above the
+bitmap, a text at a negative position was written about 64 KB away from
+the bitmap. After `FNSSetTab 0`, a tab character in a text divided by
+zero.
+
+**With the port.** With runtime error checking, an `xmin` or `ymin`
+below 0 is the error "FNSClip zone must not start below 0", and a tab
+size below 1 the error "FNSSetTab size must be at least 1". Without
+runtime error checking, the commands are as before.
+
+**What to change.** Start the clip zone at 0 or further right and down,
+for example with `FNSClipOutput`, and give `FNSSetTab` a size of 1 or
+more.
+
+Issues: [A clip zone with negative xmin/ymin lets text at negative x/y be written about 64K bytes/rows away (#664)](https://github.com/fubar-coder/bb2-c/issues/664),
+[FNSSetTab 0: a tab character divides by zero (#666)](https://github.com/fubar-coder/bb2-c/issues/666).
+
+### The checks of the palette commands of rigfxlib {#rigfxlib-palette-checks}
+
+The functions of
+[rigfxlib]({{< relref "/docs/libraries/userlibs/rigfxlib" >}}) that read
+a colour, `PalRed`, `AGAPalRed` and the others, and `PalAdjust` work on
+the palette chosen with `PaletteInfo`. `PalAdjust` writes the adjusted
+colours into a target palette, all of them or those from `start_col`
+to `end_col`.
+
+**What happened.** The original checked none of the arguments, also not
+with runtime error checking. Before the first `PaletteInfo` the
+commands read the colours from address 0. A colour number beyond the
+palette read, or for `PalAdjust` wrote, the memory behind its colours,
+and one from 2731 on the memory before them. `PalAdjust` with an end
+colour one below the start colour wrote 256 KB of colours, and without
+a range it wrote as many colours as the palette of `PaletteInfo` has,
+also into a smaller target palette.
+
+**With the port.** With runtime error checking, these are runtime
+errors:
+
+* a colour function or `PalAdjust` before `PaletteInfo`: "No palette
+  selected with PaletteInfo";
+* a colour number the palette of `PaletteInfo` does not have, also as
+  `start_col` or `end_col` of `PalAdjust`: "Colour number outside the
+  PaletteInfo palette";
+* an `end_col` of `PalAdjust` below its `start_col`: "PalAdjust end
+  colour before the start colour";
+* a target palette of `PalAdjust` with fewer colours than it writes:
+  "PalAdjust colours outside the target palette".
+
+Without runtime error checking, the commands are as before, so they
+stay as fast as in the original, for example when `PalAdjust` fades a
+palette in every frame.
+
+**What to change.** Choose the palette with `PaletteInfo` first, ask
+only for the colours it has, and give `PalAdjust` a target palette at
+least as large as the colours it writes, as the library's guide asks.
+
+Issues: [PalRed/…/AGAPalBlue and PalAdjust read from address 0 before PaletteInfo (#686)](https://github.com/fubar-coder/bb2-c/issues/686),
+[Colour numbers from 2731 on index before the palette (12 × colour used as a signed word) (#677)](https://github.com/fubar-coder/bb2-c/issues/677),
+[PalAdjust with end < start runs up to 65536 × 3 channels (#684)](https://github.com/fubar-coder/bb2-c/issues/684),
+[PalAdjust without start/end adjusts as many colours as PaletteInfo's palette has, not the target (#685)](https://github.com/fubar-coder/bb2-c/issues/685).
+
+### Bitmap depths for the effects of rifxlib and `CPUCls` {#rwe-effects-depth}
+
+The effects of
+[rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}), such as
+`ClearBitmap`, `FadeInBitmap`, the zooms and `Derez`, and `CPUCls` of
+[rigfxlib]({{< relref "/docs/libraries/userlibs/rigfxlib" >}}) work
+through the bitplanes of a bitmap object one by one. The guide of
+rifxlib allows at most 8 bitplanes.
+
+**What happened.** The original checked the depth nowhere, also not
+with runtime error checking. A bitmap of depth 0 ran their loops 65536
+or 256 times, over the plane pointers and the memory behind the bitmap
+object and over the library's own data. With more bitplanes than its
+tables hold, rifxlib wrote its plane pointers over its own variables
+and, from 11 or 21 planes on, over its code; `CPUCls` cleared memory through the
+pointers behind the bitmap's eight.
+
+**With the port.** With runtime error checking, a bitmap of depth 0 or
+more than 8 is the error "Illegal BitMap Depth". For `ZoomXY` the check is on the bitmaps chosen
+with `InitZoomXY`. Without runtime error checking, the commands are as
+before.
+
+**What to change.** Use bitmaps of 1 to 8 bitplanes.
+
+Issues: [Derez and ZoomXY with a depth-0 source bitmap count 65536 planes (#947)](https://github.com/fubar-coder/bb2-c/issues/947),
+[The 16-entry plane pointer arrays are not checked against the depth: FadeInBitmap overflows with more than 8 planes (#674)](https://github.com/fubar-coder/bb2-c/issues/674),
+[CPUCls: depth 0 clears 65536 planes (#679)](https://github.com/fubar-coder/bb2-c/issues/679).
+
+### A delay of 0 for `ClearBitmap` and `FadeInBitmap` {#rifxlib-delay-zero}
+
+`ClearBitmap` and `FadeInBitmap` of
+[rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}) wait after
+every line for a number of turns of an empty loop, the delay, so that
+the effect can be seen.
+
+**What happened.** The loop counts down before it tests, so a delay of
+0 meant 4294967296 turns per line, and the program seemed to hang. The
+library's guide warns against 0, but the original did not check it,
+also not with runtime error checking.
+
+**With the port.** With runtime error checking, a delay of 0 is the
+error "Delay must not be 0". Without runtime error checking, the
+commands are as before.
+
+**What to change.** Give a delay of 1 or more.
+
+Issue: [ClearBitmap/FadeInBitmap: delay 0 means 2^32 turns of the busy loop per line (#669)](https://github.com/fubar-coder/bb2-c/issues/669).
+
+### `ZoomyZoom` on a bitmap smaller than 640 x 32 {#zoomyzoom-size}
+
+`ZoomyZoom` of
+[rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}) doubles
+the left half of the first 32 lines of a bitmap 640 pixels wide in
+place.
+
+**What happened.** The original did not look at the size of the bitmap,
+also not with runtime error checking: it always worked on 32 lines of
+80 bytes. On a narrower bitmap these were not its lines, and on a
+smaller one it wrote behind the bitplanes.
+
+**With the port.** With runtime error checking, a bitmap less than 640
+pixels wide or less than 32 lines high is the error "ZoomyZoom needs a
+bitmap of at least 640 x 32". Without runtime error checking, the
+command is as before.
+
+**What to change.** Use `ZoomyZoom` only on bitmaps of at least 640 x
+32 pixels.
+
+Issue: [ZoomyZoom ignores the bitmap's size: always 32 lines of 80 bytes (#676)](https://github.com/fubar-coder/bb2-c/issues/676).
+
+### A colour split of fewer than one line {#colsplit-numlines}
+
+`DoColSplit` of
+[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}})
+writes a colour gradient over `numlines` lines into the custom space of
+a coplist, and `RedoColSplit` writes new colours into such a split.
+
+**What happened.** The original did not check `numlines`, also not with
+runtime error checking. A count of 0 divided by zero and stopped the
+program with a processor exception; a negative count wrote up to 65536
+lines of copper instructions over the memory behind the custom space.
+
+**With the port.** With runtime error checking, a `numlines` below 1 is
+the error "Colour split needs at least one line". Without runtime error
+checking, the commands are as before.
+
+**What to change.** Give every colour split at least one line.
+
+Issue: [DoColSplit/RedoColSplit do not check numlines: 0 divides by zero, a negative value writes up to 65536 lines (#589)](https://github.com/fubar-coder/bb2-c/issues/589).
+
+## Forms the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the
-port does not, or compiles them to something else. The case in this
-section goes the other way, as `Frac` of a string does: a source that the
+port does not, or compiles them to something else. The cases in this
+section go the other way, as `Frac` of a string does: a source that the
 original refused compiles with the port.
 
 ### `PlayWait` without a tape number {#playwait-without-tape}
@@ -1779,3 +1939,26 @@ the original waited for ever.
 original waits with `Repeat : VWait : Until XStatus=0`.
 
 Issue: [PlayWait only restarts a playback that is already running (#99)](https://github.com/fubar-coder/bb2-c/issues/99).
+
+### `InstallFNS` with a number of characters {#installfns-characters}
+
+**What happened.** `InstallFNS(fontnum,address)` of
+[rifnslib]({{< relref "/docs/libraries/userlibs/rifnslib" >}}) puts an
+FNS font that a program holds in memory into a font slot. The font
+does not say how many characters it has, and the original drew a
+character behind its last glyph from the memory behind the font. It
+took no third argument: the compiler refused `InstallFNS(1,f,100)`.
+
+**With the port.** A character the font has no glyph for is printed as
+a space ([Characters an FNS font has no glyph for]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#fns-missing-glyphs" >}})).
+For that the library needs the number of glyphs. The form
+`InstallFNS(fontnum,address,characters)` gives it, counted from the
+space on; the form without it takes the 91 glyphs, from the space to
+`z`, that every known FNS font has.
+
+**What to change.** Nothing for a font that ends at `z`. Give a font
+with more characters its number as the third argument; a source that
+must also compile with the original loads such a font with `FNSLoad`,
+which takes the number from the size of the file.
+
+Issue: [Character codes from 160 on end the text (sign test after CMPI.b #32) (#657)](https://github.com/fubar-coder/bb2-c/issues/657).
