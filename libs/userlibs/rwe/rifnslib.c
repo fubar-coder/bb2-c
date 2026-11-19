@@ -43,10 +43,6 @@
  * routine); everything else is C behind thunks.
  *
  * BUG(orig):
- *   - An empty text (or a line that begins with chr$(10), which the
- *     binary prints - the source's guard stopped there) still counts
- *     width + 1 = 1: underlined, it sets 1 pixel; centred, the ASR.l of
- *     $0000FFFF moves x by -32767 (#659).
  *   - FNSLength gives the width - 2 (0 at least) (#662) and does not mask
  *     the font number (ASL.w #2 of the whole word: slots 16 on read the
  *     font data, negative ones the variables before font_add) (#660).
@@ -77,6 +73,12 @@
  *   it drew, so every row after a clipped one took the wrong words.
  * Fixed (#667): the underline is clipped at xmin; the original clipped it
  *   at x = 0 only.
+ * Fixed (#659): an empty line (an empty text, or a line that begins with
+ *   chr$(10)) is not centred, aligned or underlined; the print goes on
+ *   with the next line.  The binary had no guard for a width of 0 (the
+ *   source's ended the whole print there): the line counted width 1,
+ *   underlined it set 1 pixel, centred the ASR.l of $0000FFFF moved x by
+ *   -32767.
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): FNSLength's font number outside the block, and
  *   the glyphs of codes the font has no data for - the built-in font ends
@@ -456,7 +458,7 @@ static UBYTE *print(UWORD fontnum, UWORD x0, UWORD y0, const UBYTE *str, UBYTE p
 {
     const UBYTE *font, *s;
     UBYTE *planes;                      /* the plane pointers */
-    UWORD x, y, n, lw;
+    UWORD x, y, n, width, lw;
     ULONG yoff;
     UBYTE c, i;
 
@@ -485,10 +487,15 @@ restart:
     while (n-- != 0);
 
     fns.bold = (fns.textprefs & 2) ? 1 : 0;
-    /* the binary: no TST.w d5:BEQ exit here (the source's guard) */
-    lw = (UWORD)(countwidth(font, s, fns.bold) + 1);
+    /* the binary had no TST.w d5:BEQ exit here (the source's guard ended
+       the print); fixed (#659): an empty line is neither centred, aligned
+       nor underlined, the print goes on with the next line */
+    width = countwidth(font, s, fns.bold);
+    lw = (UWORD)(width + 1);
     fns.linewidth = lw;
-    if (fns.textprefs & 1) {            /* centred: ASR.l of the long */
+    if (!width)
+        ;
+    else if (fns.textprefs & 1) {       /* centred: ASR.l of the long */
         lw = (UWORD)(lw - 2);
         x = (UWORD)(x - (UWORD)((ULONG)lw >> 1));
     } else if (fns.textprefs & 8) {     /* right aligned */
@@ -496,7 +503,7 @@ restart:
         x = (UWORD)(x - lw);
     }
     fns.xcord = x;
-    if (fns.textprefs & 4)
+    if (width && (fns.textprefs & 4))
         underline(x);
 
     for (;;) {
@@ -605,9 +612,9 @@ static void underline(UWORD x)
  * if it is no "FNS." font); prefs bit 0 centred, 1 bold, 2 underlined, 3
  * right aligned; chr$(1) + c changes the colour, chr$(9) a tab
  * (FNSSetTab), chr$(10) a new line, chr$(0), codes below 32 and from 160
- * on (BUG(orig) #657) end the text; clipped by FNSClip.  BUG(orig): an
- * empty text counts width 1 (#659); depth 0 or above 8 overruns the
- * plane stack (#658); rows above ymax are tested unsigned (#664);
+ * on (BUG(orig) #657) end the text; clipped by FNSClip; an empty line
+ * is neither centred, aligned nor underlined (fixed #659).  BUG(orig):
+ * depth 0 or above 8 overruns the plane stack (#658); rows above ymax are tested unsigned (#664);
  * FNSSetTab 0 divides by 0 (#666).
  * @param fontnum  d0: the font slot
  * @param x        d1: x

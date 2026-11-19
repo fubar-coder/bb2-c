@@ -21,8 +21,9 @@
  * (FNSSetTab), new lines (also leading and double ones: the binary's
  * missing guard), zero-width characters, codes from 160 (end), x on
  * every bit position, near xmax, below xmin, rows clipped at ymin/ymax
- * (the 48/64 pixel fonts: fixed #656), an empty text (underline 1 pixel, the
- * centring by -32767), FNSOrigin; FNSLength both forms (the prefs of the
+ * (the 48/64 pixel fonts: fixed #656), an empty text (fixed #659: in the
+ * original underline 1 pixel, the centring by -32767), FNSOrigin;
+ * FNSLength both forms (the prefs of the
  * last FNSPrint) and its unmasked font number (16, 17, -1, -2: the
  * variables and the font of the block); FNSHeight/Width/Underline,
  * InstallFNS (and a non-FNS address), RemoveFNS, FNSSlot, FNSInk,

@@ -82,11 +82,14 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   only: with FNSClip's xmin above 0 the
   underline of a text that starts left of xmin stuck out of the clip
   zone (#667).
+* An empty line (an empty text, or a line that starts with `chr$(10)`)
+  is neither centred, aligned nor underlined; the print goes on with the
+  next line. The binary has no guard for a width of 0 (the source's
+  `TST.w d5:BEQ exit` ended the whole print there): the line counted
+  width 1, underlined it set 1 pixel, centred x moved by −32767 (#659).
 
 ## BUG(orig), kept
 
-* An empty text, or a line starting with `chr$(10)`, counts width 1:
-  underlined it sets 1 pixel, centred x moves by −32767 (#659).
 * FNSLength returns width − 2 (at least 0) (#662), takes the prefs of
   the last FNSPrint when called without prefs (#661), and does not mask
   the font number (`ASL.w #2` of the word): 16 on read the built-in
