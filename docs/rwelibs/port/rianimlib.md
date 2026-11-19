@@ -71,6 +71,12 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   and plane offsets from behind the DLTA's (#509). A bitmap shallower
   than the animation stays the programmer's (the manual: "You must
   ensure that the bitmap is big and deep enough").
+* ANIM5 decodes the byte columns of the word-aligned row, (width + 15) /
+  16 × 2, as the encoders write them (Kent's skip.c, FFmpeg). The
+  original took width >> 3: the rest of a width that is no multiple of 8
+  and the pad byte of the row were never decoded, and a width below 8 gave
+  65536 columns (DBRA). RIAnimInit computes the counts and fails for a
+  width of 0 (#507, its ANIM5 half).
 
 **BUG(orig)** (kept):
 
@@ -87,7 +93,11 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   (always 7), so the long form is always used and the short code is
   unreachable (#504); the columns are width >> 5 (ASR.w) – the rest of a
   width that is not a multiple of 32 is dropped, a width below 32 gives
-  65536 columns (DBRA). ANIM5 likewise with width >> 3 (#507).
+  65536 columns (DBRA) (#507, its ANIM7 half: what the last long column
+  of a row with an odd number of words holds is not in the format's
+  description, the ANIM7 appendix of 1992; xanim truncates as the
+  original, FFmpeg writes the upper word of the last long: not decided
+  here).
 * A run or copy count of 0 is 256 (DBRA on the byte) (#508).
 
 **Test** (`libs/tests/rwe/rianimlib.c`, snitch case "rwe rianimlib"):
@@ -110,4 +120,4 @@ with AnimLoop on and off; AnimLoop with a value whose low byte is 0.
 Not covered: a frame with other chunks before its DLTA (the original
 crashes; bug-orig test `rianimlib-nextframe-no-dlta`), a chunk with the ID at
 +8 that is no FORM (the DIFF), odd chunk lengths, depth 0, run counts
-of 0, widths below 8 or 32.
+of 0, ANIM7 widths below 32.

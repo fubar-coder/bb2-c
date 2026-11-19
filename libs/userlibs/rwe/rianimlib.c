@@ -45,8 +45,9 @@
  *     so the long form is always used (the short code is unreachable and
  *     not ported) (#504); the columns are width >> 5 (ASR.w), dropping
  *     the rest of a width that is not a multiple of 32, and a width below
- *     32 gives 65536 columns (DBRA); ANIM5 likewise with width >> 3
- *     (#507).
+ *     32 gives 65536 columns (DBRA) (#507, its ANIM7 half: what the last
+ *     long column of a row with an odd number of words holds is not in
+ *     the format's description).
  *   - A run or copy count of 0 is 256 (DBRA on the byte) (#508).
  * Fixed (intended deviations, docs/libs/deviations.md):
  *   - RIAnimInit searches the BMHD in the first frame only; the original
@@ -74,6 +75,11 @@
  *     the original's planes loop counted a byte up to the depth: 0 gave
  *     256 planes, above 8 took plane pointers from behind the bitmap's 8
  *     and plane offsets from behind the DLTA's (#509).
+ *   - ANIM5 decodes the byte columns of the word-aligned row, (width + 15)
+ *     / 16 * 2; the original took width >> 3, dropping the rest of a width
+ *     that is no multiple of 8 and leaving the pad byte of the row, and a
+ *     width below 8 gave 65536 columns (DBRA).  RIAnimInit fails for a
+ *     width of 0; the counts are computed there (#507, its ANIM5 half).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -177,6 +183,7 @@ static UBYTE *firstchunk, *lastfoundchunk, *endoffile;
 static UBYTE *firstframe, *animaddress, *animend, *nextanimframe;
 static UWORD animheight, animwidth;
 static UWORD deltacolumns;              /* a delta's columns per plane - 1 (DBRA) */
+static UWORD columns5, columns7;        /* the same for ANIM5 and ANIM7, from RIAnimInit */
 static UBYTE animdepth;
 static PLANEPTR *bitmapaddress;         /* the Planes of the bitmap object */
 static ULONG animtype7, bitplaneoffset;
@@ -342,7 +349,7 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
  * @param pal      d2: palette# (its low byte is kept)
  * @param offset   d3: the byte offset into each plane
  * @return d0: BB_TRUE, BB_FALSE if there is no ANIM with an ILBM and BMHD,
- *         or the BMHD depth is 0 or above 8 (fixed #509)
+ *         the BMHD depth is 0 or above 8 (fixed #509) or its width 0 (fixed #507)
  */
 BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                  ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
@@ -385,6 +392,15 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     endoffile = animend;                /* the frames: the whole ANIM */
     bmhd = (struct BitMapHeader *)chunk;
     animwidth = bmhd->bmh_Width;
+    /* fixed #507 (ANIM5): the byte columns of the word-aligned row (the
+       original: width >> 3, dropping the rest; 0 columns were 65536), so
+       a width of 0 is refused */
+    if (!animwidth)
+        return BB_FALSE;
+    columns5 = (UWORD)((((ULONG)animwidth + 15) >> 4 << 1) - 1);
+    /* BUG(orig) (#507, ANIM7): width >> 5 (ASR.w), a width below 32 gives
+       65536 columns */
+    columns7 = (UWORD)(((WORD)animwidth >> 5) - 1);
     animheight = bmhd->bmh_Height;
     animdepth = bmhd->bmh_Depth;
     /* fixed #509: the delta planes loop counts a byte up to the depth;
@@ -551,7 +567,7 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
     ULONG mod = WD((UBYTE *)planes - offsetof(struct BitMap, Planes));
     UBYTE plane = 0;
 
-    deltacolumns = (UWORD)(((WORD)animwidth >> (seven ? 5 : 3)) - 1);
+    deltacolumns = seven ? columns7 : columns5;
     do {                                /* depth 1-8 (fixed #509, RIAnimInit) */
         UBYTE *column = *planes++ + bitplaneoffset;
         ULONG op = offsets[0], data = offsets[8];
@@ -599,9 +615,10 @@ static __attribute__((noinline)) UBYTE *otherchunks(UBYTE *chunk)
  * delta; the short form is never used, BUG(orig) (#504)) on the planes
  * (+ the offset of RIAnimInit); a CMAP of the frame goes through
  * ILBMPalette.  At the end of the ANIM it goes on with the third frame
- * if AnimLoop is on, else returns 0.  BUG(orig): the columns are width
- * >> 5 / >> 3, dropping a rest and giving 65536 columns below 32 / 8
- * pixels (#507); a run or copy count of 0 is 256 (#508).  The depth is
+ * if AnimLoop is on, else returns 0.  ANIM5 has the byte columns of the
+ * word-aligned row (fixed #507).  BUG(orig): the ANIM7 columns are width
+ * >> 5, dropping a rest and giving 65536 columns below 32 pixels (#507);
+ * a run or copy count of 0 is 256 (#508).  The depth is
  * 1 to 8 (fixed #509: RIAnimInit refuses 0 and above 8).  Other chunks between ANHD (and CMAP) and the DLTA are
  * skipped inside the frame, a CMAP among them goes through ILBMPalette; a
  * frame without DLTA returns 0 (fixed #515: the original returned without

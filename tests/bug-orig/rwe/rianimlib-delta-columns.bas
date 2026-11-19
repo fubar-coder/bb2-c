@@ -3,6 +3,7 @@
 ; column, the second is never decoded.  Frame 2 sets row 0 of both
 ; columns ($F0, $0F).
 ; Correct: both columns are decoded, the second byte of row 0 is $0F.
+; @fixed #507
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-delta-columns.anim
