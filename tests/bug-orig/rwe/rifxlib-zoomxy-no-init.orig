@@ -1,0 +1,23 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+# varies: the way the crash ends (the original halted the CPU in both recording runs, the port's ZoomXY times out in the Software Failure requester)
+*
+[compile]
+ok
+[run]
+before
+# varies: what the crash leaves (the original halts the CPU at once, the port's ZoomXY first raises the debugger's exception requester and the Software Failure)
+...
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/rifxlib-zoomxy-no-init.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/rifxlib-zoomxy-no-init
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
