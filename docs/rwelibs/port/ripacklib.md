@@ -100,13 +100,15 @@ kind F):
   the bitmap's bytes per row. The original took width/8 (`ASR.w #3`):
   for every picture whose width is no multiple of 16 the BODY was read
   out of step from the second row on (#775).
+* **UnpackIFF** counts the bytes of a row in a word. The original counted
+  in a signed byte (`TST.b d5`): rows of 129 to 256 bytes (pictures
+  1032 to 2047 pixels wide) were "done" before anything was read, and
+  longer rows were read out of step (#774).
 
 ## BUG(orig), kept
 
 * `UnpackIFF` treats every BODY as ByteRun1 (the compression byte of the
-  BMHD is not read) (#773), counts the
-  bytes of a row in a signed byte (rows of 129 bytes and more unpack
-  nothing but still return -1) (#774), does not stop a run at the end of
+  BMHD is not read) (#773), does not stop a run at the end of
   a row (it runs into the next row or behind the plane) (#776).
 * The chunk searches step by 2 bytes from the given address: BMHD within
   5120 bytes, BODY within 5120 bytes from the BMHD on (a word counter),

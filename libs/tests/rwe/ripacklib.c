@@ -617,7 +617,7 @@ static void test_unpackiff(void)
     mkbitmap(6, 8, 2, 1);
     unpackiff("40x5x2", 0, 0, 0);
     seed = 13;
-    mkilbm(ilbm, 1040, 2, 1, 2, 0);             /* 130 bytes: a negative byte count */
+    mkilbm(ilbm, 1040, 2, 1, 2, 0);             /* 130 bytes: a negative byte count (fixed #774) */
     mkbitmap(132, 4, 1, 1);
     unpackiff("1040x2x1", 0, 0, 0);
     seed = 14;

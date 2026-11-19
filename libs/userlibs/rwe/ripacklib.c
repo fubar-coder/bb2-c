@@ -49,11 +49,13 @@
  * against the bitmap; the original took width/8 and read the BODY out of
  * step for every width that is no multiple of 16.
  *
+ * Fixed (#774): UnpackIFF counts the bytes of a row in a word; the
+ * original counted in a signed byte, so rows of 129 to 256 bytes were
+ * skipped without reading and longer rows read out of step.
+ *
  * BUG(orig), kept:
  *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
  *     the BMHD is not read) (#773).
- *   - UnpackIFF counts the bytes of a row in a signed byte (rows of 129
- *     bytes and more are skipped) (#774).
  *   - UnpackIFF does not stop a run at the end of the row (#776).
  *   - The chunk searches step by 2 bytes from the given address (BMHD:
  *     5120 bytes, BODY: from the BMHD on, word counter; CMAP 5122 bytes)
@@ -531,9 +533,11 @@ static struct {
  * the planes, each plane pointer + xy_offset.  Fails without BMHD or BODY,
  * if the bitmap has fewer planes or bytes per row than the picture, or no
  * planes, or if the BMHD has no planes (fixed #777: the original stored
- * 256 plane pointers into its table of 8).  BUG(orig): every BODY is
- * taken as ByteRun1 (#773), a row counts its bytes in a signed byte (rows of 129 bytes and more are skipped,
- * #774), a run does not stop at the end of the row (#776).
+ * 256 plane pointers into its table of 8).  A row has the word-aligned
+ * width of ILBM (fixed #775: the original's width/8), its bytes counted
+ * in a word (fixed #774: the original's signed byte skipped rows of 129
+ * bytes and more).  BUG(orig): every BODY is taken as ByteRun1 (#773), a
+ * run does not stop at the end of the row (#776).
  * @param src    d0: the ILBM data (FORM)
  * @param bm     a1: the bitmap object (parameter 1)
  * @param lines  d2: the number of lines (word; < 0: the BMHD's height;
@@ -602,15 +606,15 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
         UWORD plane = v.iffdepth;
         do {
             UBYTE *out = *pp;
-            UBYTE cnt = (UBYTE)v.bytewidth;     /* d5.b */
+            WORD cnt = (WORD)v.bytewidth;       /* fixed #774: a word (was d5.b) */
             *pp++ += v.bitmapwidth;
-            while (!(cnt & 0x80)) {             /* TST.b d5:BMI */
+            while (cnt >= 0) {
                 UWORD n;
                 code = *body++;
                 if (code == 0x80)
                     continue;
                 if (!(code & 0x80)) {
-                    cnt = (UBYTE)(cnt - code - 1);
+                    cnt = (WORD)(cnt - code - 1);
                     n = code;
                     do
                         *out++ = *body++;
@@ -618,7 +622,7 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
                 } else {
                     UBYTE b = *body++;
                     code = (UBYTE)-code;
-                    cnt = (UBYTE)(cnt - code - 1);
+                    cnt = (WORD)(cnt - code - 1);
                     n = code;
                     do
                         *out++ = b;
