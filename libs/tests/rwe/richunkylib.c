@@ -23,8 +23,9 @@
  *
  * Covered: ChunkyBitmap (new, again with data = free first, a failing
  * allocation with and without old data, the unused word
- * at offset 6 set without data: the free routine without data,
- * BUG(orig), #885), ChunkyData, ChunkyToPlanar with random chunky data (depth
+ * at offset 6 set without data: the free routine without data, data
+ * below $10000 - the address FAKEDATA, its frees counted by the stub -
+ * with and without a failing allocation, BUG(orig), #885), ChunkyData, ChunkyToPlanar with random chunky data (depth
  * 8, the depth word $0108 = with bm_Flags, 7 = nothing, $8008 = with
  * bm_Flags bit 7: nothing in the original, converted in the C build
  * (#883), an object without data = nothing), RaycastSky (random columns, heights
@@ -59,6 +60,12 @@ static UBYTE pra;                       /* PRA bit 1 before each call (the start
 
 static LONG blocks;                     /* blocks allocated by the stubs */
 static int failalloc;                   /* the globalloc stub fails */
+static LONG fakefrees;                  /* globfree calls for FAKEDATA */
+
+/* the data pointer of an object whose data lies below $10000 (#885): no
+   allocation can be placed there, so the object gets this address and
+   the globfree stub counts it instead of freeing it */
+#define FAKEDATA 0x1234UL
 
 /* the stubs of memlib's globalloc (d0 = size, d1 = flags -> d0) and
    globfree (a1 = memory): the size in a longword before the block */
@@ -76,6 +83,10 @@ ULONG chunky_fake_alloc(ULONG size, ULONG flags)
 
 void chunky_fake_free(ULONG *mem)
 {
+    if ((ULONG)mem == FAKEDATA) {
+        fakefrees++;
+        return;
+    }
     blocks--;
     FreeMem(mem - 1, mem[-1]);
 }
@@ -243,6 +254,16 @@ static void set_free(void)
     R.a[3] = (ULONG)obj(cb_n);
 }
 
+/* object n holds FAKEDATA (w x h, depth 8, the unused word 0) */
+static void setfake(int n, UWORD w, UWORD h)
+{
+    memset(obj(n), 0, 16);
+    *(UWORD *)obj(n) = w;
+    *(UWORD *)(obj(n) + 2) = h;
+    *(UWORD *)(obj(n) + 4) = 8;
+    *(ULONG *)(obj(n) + 8) = FAKEDATA;
+}
+
 static void objfree(int n)
 {
     cb_n = n;
@@ -344,6 +365,21 @@ int main(int argc, char **argv)
     chunkybitmap(2, 16, 16);
     chunkybitmap(3, 8, 8);
     chunkydata(3);
+
+    /* data below $10000: ChunkyBitmap tests the long at offset 6 (the
+       unused word and the upper word of the pointer), so the original
+       neither frees it nor, when the allocation fails, clears the pointer
+       (BUG(orig), #885) */
+    setfake(1, 24, 24);
+    chunkybitmap(1, 20, 20);
+    OBS("data below $10000 freed", fakefrees);
+    chunky_fake_free((ULONG *)data(1));         /* the new block, not by the library */
+    setfake(1, 24, 24);
+    failalloc = 1;
+    chunkybitmap(1, 22, 22);
+    failalloc = 0;
+    OBS("data below $10000 freed", fakefrees);
+    memset(obj(1), 0, 16);
 
     objfree(3);
     objfree(3);                                 /* no data: nothing */
