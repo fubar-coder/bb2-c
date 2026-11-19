@@ -5114,6 +5114,76 @@ listed under Other fixes.
   `LEMaxShapeDepth` at 0. The original kept those of the run before
   ([#1109](https://github.com/fubar-coder/bb2-c/issues/1109)).
 
+### Fixes in rianimlib {#rianimlib-fixes}
+
+These fixes concern
+[rianimlib]({{< relref "/docs/libraries/userlibs/rianimlib" >}}), the
+library by Reflective Images that plays IFF animations (ANIM files) of
+the delta formats ANIM5 and ANIM7 from memory into bitmaps.
+`RIAnimInit` unpacks the first frame and starts the animation, and each
+`RINextAnimFrame` draws the next frame. The fix of
+[data that is not a `FORM ANIM`](#rwe-other-fixes) is listed under
+Other fixes.
+
+* `RIAnimInit` takes the bitmap header (BMHD) from the first frame only
+  and fails when that frame has none. The original searched the whole
+  animation and could take a header from a later part
+  ([#511](https://github.com/fubar-coder/bb2-c/issues/511)).
+* A failed `RIAnimInit` leaves no animation: `RIAnimFrameCount` and
+  `RINextAnimFrame` return 0. The original went on playing the
+  animation started before
+  ([#512](https://github.com/fubar-coder/bb2-c/issues/512)).
+* `RIAnimInit` returns 0 when the bitmap cannot hold the first frame,
+  because it is too narrow or not deep enough. The original reported
+  success and played the frames into that bitmap
+  ([#1106](https://github.com/fubar-coder/bb2-c/issues/1106)).
+* `RIAnimInit` refuses an animation whose header gives a depth of 0 or
+  more than 8 bitplanes. The original wrote through plane pointers from
+  behind the bitmap's
+  ([#509](https://github.com/fubar-coder/bb2-c/issues/509)).
+* With runtime error checking, `RIAnimInit` with a position `x`,`y`
+  outside the bitmap stops with the runtime error "Animation position
+  outside the bitmap". The original drew the frames far outside the
+  bitmap, as the port does without error checking
+  ([#514](https://github.com/fubar-coder/bb2-c/issues/514)).
+* `RIAnimFrameCount` counts only the frames. The original counted every
+  chunk of the animation, an annotation as well
+  ([#510](https://github.com/fubar-coder/bb2-c/issues/510)).
+* The library finds the bitmap header, the frames, their colours and
+  their delta data behind a chunk of odd length, such as an annotation
+  (ANNO); it skips the pad byte that the IFF standard puts there. The
+  original read one byte off and missed them
+  ([#505](https://github.com/fubar-coder/bb2-c/issues/505)).
+* A corrupt chunk length ends the walk through the animation instead of
+  sending it into memory that is not there; `RIAnimInit` could hang on
+  it in the original
+  ([#506](https://github.com/fubar-coder/bb2-c/issues/506)).
+* `RINextAnimFrame` plays a frame that has another chunk, such as a
+  DPAN, before its delta data, and returns 0 for a frame without delta
+  data. The original crashed there
+  ([#515](https://github.com/fubar-coder/bb2-c/issues/515)).
+* `RINextAnimFrame` plays ANIM7 animations stored with short (word)
+  data. The original decoded every ANIM7 as long data and drew garbage
+  ([#504](https://github.com/fubar-coder/bb2-c/issues/504)).
+* `RINextAnimFrame` decodes the last column of ANIM5 animations whose
+  width is no multiple of 16 pixels. The original left the right edge
+  of such frames as it was, and for an animation narrower than 8 pixels
+  wrote far beyond the bitmap
+  ([#507](https://github.com/fubar-coder/bb2-c/issues/507)).
+* `RINextAnimFrame` plays on past a chunk between two frames, such as
+  an annotation. The original took it for the end of the animation and
+  stopped there or started again
+  ([#1116](https://github.com/fubar-coder/bb2-c/issues/1116)).
+* `RINextAnimFrame` refuses a frame whose header or colour chunk claims
+  to be longer than the frame, and returns 0. The original read the
+  next chunk from wherever that length pointed in memory
+  ([#1117](https://github.com/fubar-coder/bb2-c/issues/1117)).
+* A program run a second time from the editor starts with no animation
+  and with `AnimLoop` on. The original's `RIAnimFrameCount` and
+  `RINextAnimFrame` worked on the animation of the run before, which may
+  have been freed, and an `AnimLoop Off` stayed off
+  ([#1107](https://github.com/fubar-coder/bb2-c/issues/1107)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a

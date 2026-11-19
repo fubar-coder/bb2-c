@@ -5052,6 +5052,118 @@ rows:
     text: "`LECludgeShapes` decodes LE files with an odd number of colours on a 68000; the original crashed there and linked the shapes at an odd address on a 68020."
     page: libraries
     anchor: rishapeslib-fixes
+  - issue: 504
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame"
+    text: "`RINextAnimFrame` plays ANIM7 animations with short (word) data; the original decoded them as long data and drew garbage."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 505
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit, RINextAnimFrame, RIAnimFrameCount"
+    text: "The library finds the BMHD, frames, CMAP and DLTA behind a chunk of odd length, such as an ANNO; the original read one byte off and missed them."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 506
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit, RINextAnimFrame, RIAnimFrameCount"
+    text: "A corrupt chunk length ends the walk through the animation; the original's walks went on into unmapped memory, and `RIAnimInit` could hang."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 507
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame"
+    text: "ANIM5 animations whose width is no multiple of 16 decode their last column; the original dropped it and overran the bitmap below 8 pixels."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 509
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit"
+    text: "`RIAnimInit` refuses a depth of 0 or above 8; the original wrote through stray plane pointers."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 510
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimFrameCount"
+    text: "`RIAnimFrameCount` counts only the frames; the original counted every chunk of the animation."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 511
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit"
+    text: "`RIAnimInit` takes the BMHD from the first frame only and fails without one; the original could take one from outside the first frame."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 512
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit, RINextAnimFrame, RIAnimFrameCount"
+    text: "A failed `RIAnimInit` leaves no animation; the original went on playing the previous one."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 514
+    severity: 3
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit"
+    text: "With runtime error checking, `RIAnimInit`'s `x`,`y` outside the bitmap stops with \"Animation position outside the bitmap\"; the original drew outside it."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 515
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame"
+    text: "`RINextAnimFrame` plays a frame with another chunk, such as DPAN, before its DLTA; the original crashed on it."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 1106
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit"
+    text: "`RIAnimInit` returns 0 when the bitmap cannot hold the first frame; the original reported success and played into it."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 1107
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame, RIAnimFrameCount, AnimLoop"
+    text: "A program run again from the editor starts with no animation and `AnimLoop` on; the original played the freed animation of the run before."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 1116
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame"
+    text: "`RINextAnimFrame` plays the frames behind a chunk between two frames, such as an ANNO; the original stopped there or started again."
+    page: libraries
+    anchor: rianimlib-fixes
+  - issue: 1117
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame"
+    text: "`RINextAnimFrame` refuses a frame whose ANHD or CMAP length points outside the frame; the original read the next chunk from anywhere in memory."
+    page: libraries
+    anchor: rianimlib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"

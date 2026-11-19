@@ -13,13 +13,18 @@ intro: |
   frame. In these formats every frame is stored as the change against
   the frame two steps before it, so an animation is played double
   buffered: two bitmaps that both start with the first frame, and the
-  frames drawn into them in turn. Nothing checks the size of the
-  bitmaps: they must be large and deep enough for the animation at the
-  chosen position. A first frame stored as a delta instead of a full
-  picture is not supported. Kept from the original: the library steps
-  from chunk to chunk without the pad byte the IFF standard puts behind a
-  chunk of odd length, so a file with such chunks is read wrong
-  ([#505](https://github.com/fubar-coder/bb2-c/issues/505)).
+  frames drawn into them in turn. `RIAnimInit` refuses a bitmap that is
+  too narrow or not deep enough for the first frame, but the height is
+  not checked, nor whether the animation fits at the chosen position:
+  make the bitmaps large enough. With runtime error checking, a position
+  outside the bitmap stops the program with the runtime error
+  "Animation position outside the bitmap". A first frame stored as a
+  delta instead of a full picture is not supported.
+
+  The library steps through the animation from chunk to chunk, within
+  its length, and skips the pad byte the IFF standard puts behind a
+  chunk of odd length; chunks other than frames, such as annotations,
+  may lie between the frames.
 
   The library uses the RI Pack library to unpack the first frame and to
   read the palettes, so that library must be installed too.
@@ -41,5 +46,8 @@ intro: |
     Wend
   EndIf
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in rianimlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rianimlib-fixes" >}}).
 
   *Based on the RI Anim Lib guide by Reflective Images.*
