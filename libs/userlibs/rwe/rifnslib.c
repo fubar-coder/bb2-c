@@ -112,6 +112,9 @@
  *   bitmap), FNSClipOutput sets it to the rows; the original drew rows up
  *   to ymax itself and set the rows - 1, so the manual's example drew a
  *   row behind the bitmap.
+ * Fixed (#1130): an underline the clip zone leaves no pixel of (wholly
+ *   left of xmin, or from xmax on) draws nothing; the original's loop set
+ *   its first pixel before it tested the count, one at xmin or at x.
  * Fixed (#1124): init sets every variable to its start value (the output
  *   bitmap, the slots 1-15, FNSPrefs, FNSInk, FNSSetTab's 32, the clip
  *   zone); the original set slot 0 and the origin only, so a second run
@@ -691,6 +694,8 @@ static void underline(UWORD x)
     xend = (UWORD)(x + fns.linewidth);
     if ((WORD)xend > (WORD)fns.xmax)
         fns.linewidth = (UWORD)(fns.xmax - x);
+    if ((WORD)fns.linewidth <= 1)       /* fixed (#1130): no pixel left */
+        return;
     y = (UWORD)(fns.ycord + fns.underpos);
     if ((WORD)y < (WORD)fns.ymin || y >= fns.ymax)     /* fixed (#1128) */
         return;

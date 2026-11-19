@@ -164,6 +164,12 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   manual's example a text at the bottom drew a row behind the bitmap
   (user decision W6 "#1128 FNSClip", option (a)) (#1128).
 
+* An underline the clip zone leaves no pixel of (a text wholly left of
+  xmin, or one that starts at or behind xmax) draws nothing. The
+  original's underline loop sets its first pixel before it tests the
+  count: one pixel at xmin (at 0 in the original, which clipped there,
+  #667) or at the text's x (#1130).
+
 ## BUG(orig), kept
 
 * A bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane
