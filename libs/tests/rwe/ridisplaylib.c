@@ -15,12 +15,15 @@
  * value of the ones in the vector table), the change of
  * graphics.library's open count and the test task's memory balance
  * (rwemem.h), and the kept registers.  The lists InitView
- * leaks (only the last one is kept, BUG(orig), #891) are freed by the test.
+ * leaks (only the last one is kept, BUG(orig), #891) are freed by the test
+ * after finit: the ones finit's memory balance shows it did not free (all
+ * but the last, or all when it freed nothing).
  *
  * Covered: init, InitView (sizes with marker upper words, the colour
  * count ignored, BUG(orig), #890), ViewBitmap (no code), finit with a list,
  * finit again (nothing: graphics.library closed), init and finit
- * without a list.  Not covered: InitView without chip memory or with a
+ * without a list, InitView without init and finit then (graphics.library
+ * not open).  Not covered: InitView without chip memory or with a
  * size that is negative as a word (both write to address 0).
  */
 #include "rwecmp.h"
@@ -32,8 +35,9 @@ enum { INITVIEW, VIEWBITMAP, INIT, FINIT };
 static struct Library *gfx;
 static LONG opened, membal;
 static ULONG *vars;                     /* viewsize, cop */
-static ULONG oldcop, oldsize;           /* the list before (leaked) */
 static ULONG cop;
+static ULONG lists[8], sizes[8];        /* the lists made, their viewsize */
+static int nlists;
 
 static ULONG findvars(struct lib *l, ULONG list)
 {
@@ -73,16 +77,14 @@ static void call2(int idx, const char *name, ULONG d0, ULONG d1, ULONG d2, ULONG
     }
 }
 
-static void initview(UWORD h, UWORD d, UWORD s, UWORD c)
+static void initview(const char *name, UWORD h, UWORD d, UWORD s, UWORD c)
 {
     static const ULONG addr[8] = { 0x8e, 0x2c81, 0x90, 0x2cc1, 0x92, 0x38, 0x94, 0xd0 };
     int i;
     char buf[40];
 
     sprintf(VEC, "%u,%u,%u,%u", h, d, s, c);
-    oldcop = vars ? vars[1] : 0;
-    oldsize = vars ? vars[0] : 0;
-    call2(INITVIEW, "InitView", 0xa5a50000UL | h, 0x5a5a0000UL | d, 0x12340000UL | s,
+    call2(INITVIEW, name, 0xa5a50000UL | h, 0x5a5a0000UL | d, 0x12340000UL | s,
           0xfedc0000UL | c);
     cop = R.d[0];
     if (!vars)
@@ -99,8 +101,26 @@ static void initview(UWORD h, UWORD d, UWORD s, UWORD c)
         sprintf(buf, "word %d", i);
         OBS(buf, ((UWORD *)cop)[i]);
     }
-    if (oldcop)
-        FreeMem((APTR)oldcop, oldsize);
+    if (cop && nlists < 8) {
+        lists[nlists] = cop;
+        sizes[nlists++] = vars[0];
+    }
+}
+
+/* after a finit: free the lists it left (the original frees only the
+   last, and none without graphics.library, BUG(orig), #891), as its
+   memory balance shows */
+static void freeleft(void)
+{
+    int i, n = 0;
+
+    if (!membal)
+        n = nlists;
+    else if (nlists > 1 && membal == -(LONG)RWE_MEMSIZE(sizes[nlists - 1]))
+        n = nlists - 1;
+    for (i = 0; i < n; i++)
+        FreeMem((APTR)lists[i], sizes[i]);
+    nlists = 0;
 }
 
 int main(int argc, char **argv)
@@ -120,6 +140,8 @@ int main(int argc, char **argv)
     KEEPS("finit (again)", d0-d7|a0-a3|a6);
     KEEPS("init (again)", d2-d7|a2|a3);
     KEEPS("finit (no list)", d0-d7|a2|a3);
+    KEEPS("InitView (no init)", d7|a2|a3);
+    KEEPS("finit (no graphics)", d0-d7|a0-a3|a6);
     gfx = OpenLibrary((CONST_STRPTR)"graphics.library", 39);
     if (!gfx) {
         check("ridisplaylib: graphics.library 39", FALSE);
@@ -127,18 +149,23 @@ int main(int argc, char **argv)
     }
     strcpy(VEC, "");
     call2(INIT, "init", 0, 0, 0, 0);
-    initview(256, 8, 8, 256);
-    initview(200, 5, 0, 32);
-    initview(0, 0, 0, 0);
-    initview(1000, 8, 8, 2);
-    initview(3000, 1, 100, 0xffff);
+    initview("InitView", 256, 8, 8, 256);
+    initview("InitView", 200, 5, 0, 32);
+    initview("InitView", 0, 0, 0, 0);
+    initview("InitView", 1000, 8, 8, 2);
+    initview("InitView", 3000, 1, 100, 0xffff);
     strcpy(VEC, "");
     call2(VIEWBITMAP, "ViewBitmap", 0x12345678, 0, 0, 0);
     call2(FINIT, "finit", 0, 0, 0, 0);
     BOTH("freed", vars && !vars[0] && !vars[1]);
+    freeleft();
     call2(FINIT, "finit (again)", 0, 0, 0, 0);
     call2(INIT, "init (again)", 0, 0, 0, 0);
     call2(FINIT, "finit (no list)", 0, 0, 0, 0);
+    initview("InitView (no init)", 100, 2, 1, 4);
+    strcpy(VEC, "");
+    call2(FINIT, "finit (no graphics)", 0, 0, 0, 0);
+    freeleft();
     CloseLibrary(gfx);
     return rwe_done(LIB);
 }

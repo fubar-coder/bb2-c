@@ -61,7 +61,9 @@ equal to the word at its address, BUG(orig) #889, and the value of the
 ones in the vector table), the change of graphics.library's open count, the test task's
 memory balance (rwemem.h), kept registers. Cases: init, five InitViews (marker upper
 words, colour counts that change nothing), ViewBitmap, finit with a
-list, finit again (nothing), init and finit without a list. The lists
-InitView leaks are freed by the test. Not covered: InitView without
+list, finit again (nothing), init and finit without a list, InitView
+without init and finit then (graphics.library not open). The lists
+InitView leaks are freed by the test after finit, the ones finit's memory
+balance shows it left. Not covered: InitView without
 chip memory or with a size that is negative as a word (writes to
 address 0).
