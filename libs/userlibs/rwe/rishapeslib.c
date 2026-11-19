@@ -56,8 +56,7 @@
  *   - read_palette: no check of the allocation (writes to address 0)
  *     (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
  *   - LESaveShapes: a failing pack buffer is a
- *     runtime error (TRAP #0) (#818); PackPBM's failure path runs
- *     UnPackPBM with d3 = 12 (#772).
+ *     runtime error (TRAP #0) (#818).
  *
  * Fixed (intended deviation, docs/libs/deviations.md 3a): init also sets
  * LEAutoCookie on and clears the maxima of LEScanShapes (the original's
@@ -1209,7 +1208,9 @@ static ULONG writeshapes(BPTR fh)
                     createcookie(shape, buf + 12);
                     return written;
                 }
-                /* d3 = 12 (the last Write): BUG(orig) of PackPBM's failure (#772) */
+                /* d3 = 12 (the last Write), as the original leaves it; the
+                   original PackPBM's failure path unpacked into the buffer as
+                   far as d3 allowed (ripacklib, fixed #772) */
                 packed = BL_JSR_D4_(BL_TOKVAL(TOK_packpbm, 0), SHL(shape, data), (ULONG)pk + 4,
                                     SHW(shape, size), 12);
                 SL(packptr, 0) = packed;
@@ -1241,8 +1242,10 @@ static ULONG writeshapes(BPTR fh)
  * with the shapes (packed with PackPBM if LECompressShapes is on, -1 =
  * stored when packing fails).  Nothing if the file cannot be opened.
  * BUG(orig): a missing pack buffer is two
- * runtime errors (#818); PackPBM's failure runs UnPackPBM with d3 = 12
- * (#772).  Fixed (#814): the CMAP is written whenever there is a palette
+ * runtime errors (#818).  PackPBM's failure returns -1 and the shape is
+ * stored (ripacklib's fix of #772: the original's PackPBM ran on into
+ * UnPackPBM, here with d3 = 12, which rishapeslib passes as before).
+ * Fixed (#814): the CMAP is written whenever there is a palette
  * with data (the original tested the Z flag of dos Write).  Fixed (#823):
  * a palette of 0 colours writes no CMAP (the original copied 65536).
  * Fixed (#816): the FORM length is the file's size - 8 (the original's

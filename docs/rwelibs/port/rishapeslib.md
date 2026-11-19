@@ -82,13 +82,16 @@ The original returns to that data address; `rs_crash` jumps there.
   packedsize as the chunk (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * **read_palette:** the allocation is not checked; a failure writes to
   address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
-* **LESaveShapes:**
-  * When the pack buffer is missing, two runtime errors follow (TRAP #0:
-    "Not enough memory to pack shapes", "Shape Compression Failed!"),
-    then CreateCookie on the shape, whose RTS returns from
-    `_writeshapes` (#818).
-  * PackPBM's failure runs UnPackPBM with d3 = 12 (RIPackLib's
-    BUG(orig), #772).
+* **LESaveShapes:** when the pack buffer is missing, two runtime errors
+  follow (TRAP #0: "Not enough memory to pack shapes", "Shape
+  Compression Failed!"), then CreateCookie on the shape, whose RTS
+  returns from `_writeshapes` (#818).
+
+LESaveShapes calls PackPBM with d3 = 12, as the original leaves it.
+RIPackLib's original PackPBM ran on into UnPackPBM on failure, which
+unpacked into the pack buffer as far as d3 allowed; that is fixed in
+ripacklib (#772), so with this build's RIPackLib a shape that does not
+pack is stored (−1 and the data) without it.
 
 Original behaviour that is no defect:
 
