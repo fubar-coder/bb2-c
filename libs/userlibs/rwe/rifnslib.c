@@ -107,6 +107,10 @@
  *   always used 55 + slot: with the default 50 banks BLoad took the
  *   number as an address and read the file to the address 55 + slot (a
  *   font over the vector table), and FNSLoad returned -1.
+ * Fixed (#1124): init sets every variable to its start value (the output
+ *   bitmap, the slots 1-15, FNSPrefs, FNSInk, FNSSetTab's 32, the clip
+ *   zone); the original set slot 0 and the origin only, so a second run
+ *   from the editor kept the first run's.
  * Fixed (#657): a code from 32 on that the font has no glyph for (behind
  *   its last code, see above) is printed and counted as a space (code
  *   32), in FNSPrint, FNSShadowPrint and FNSLength; codes below 32 keep
@@ -808,13 +812,30 @@ BLITZ_INLINE(_fnsversion, "move.l #65536+6553,d0");
 /* ---------------------------------------------------------- the rest */
 
 /**
- * @brief init: slot 0 = the built-in font, origin 0,0.
+ * @brief init: the variables as the library is loaded, slot 0 = the built-in font.
+ *
+ * Fixed (#1124): every variable in front of the built-in font back to its
+ * start value (0, the tab size 32: no output bitmap, the slots 1-15
+ * empty, FNSPrefs, FNSInk, the clip zone and the origin 0), the slots'
+ * glyph counts 91 and no FNSLoad bank; the original set slot 0 and the
+ * origin only, so a second run of a program from the editor (the library
+ * stays loaded) printed with the first run's settings, and FNSPrint
+ * before FNSOutput drew into the first run's freed bitmap.
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
+    UBYTE *p = (UBYTE *)&fns;
+    UWORD i;
+
+    for (i = 0; i < offsetof(struct fns, def_font); i++)
+        p[i] = 0;
+    fns.tabsize = 32;
     fns.font_add[0] = (ULONG)fns.def_font;
-    fns.originx = 0;
-    fns.originy = 0;
+    for (i = 0; i < 16; i++) {
+        lastglyph[i] = DEFLAST;
+        slotbank[i] = -1;
+    }
+    loadedslots = 0;
 }
 
 /**

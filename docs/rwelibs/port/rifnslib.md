@@ -143,6 +143,14 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   the sign test; FNSPrint of 32 characters 7092 cycles (6292 without the
   compare, perf `bfns.fnsprint`), FNSLength 5232 (4989).
 
+* init sets every variable in front of the built-in font to its start
+  value (no output bitmap, the slots 1-15 empty, FNSPrefs, FNSInk and the
+  clip zone 0, the tab size 32), the glyph counts of the slots and
+  FNSLoad's banks. The original set slot 0 and the origin only: a second
+  run of a program from the editor (the library stays loaded) printed
+  with the first run's settings, and FNSPrint before FNSOutput drew into
+  the first run's freed bitmap (#1124).
+
 ## BUG(orig), kept
 
 * A bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane
