@@ -5,6 +5,7 @@ FNSClip|kept|0,0,320,63|3	kept
 FNSClip|kept|0,0,320,63|4	kept
 FNSClip|kept|0,0,320,63|5	kept
 FNSClip|kept|0,0,320,63|6	kept
+FNSClip|kept|16,8,200,40|1	kept
 FNSClip|kept|37,20,250,30|1	kept
 FNSClip|kept|37,20,250,30|2	kept
 FNSClip|kept|37,20,250,30|3	kept
@@ -17,6 +18,7 @@ FNSClip|popped|0,0,320,63|3	$00000000
 FNSClip|popped|0,0,320,63|4	$00000000
 FNSClip|popped|0,0,320,63|5	$00000000
 FNSClip|popped|0,0,320,63|6	$00000000
+FNSClip|popped|16,8,200,40|1	$00000000
 FNSClip|popped|37,20,250,30|1	$00000000
 FNSClip|popped|37,20,250,30|2	$00000000
 FNSClip|popped|37,20,250,30|3	$00000000
@@ -61,6 +63,7 @@ FNSHeight|d0|0|15	$00000008
 FNSHeight|d0|0|16	$00000008
 FNSHeight|d0|0|17	$00000008
 FNSHeight|d0|0|18	$00000008
+FNSHeight|d0|0|19	$00000008
 FNSHeight|d0|1|1	$FFFFFFFF
 FNSHeight|d0|1|2	$00000009
 FNSHeight|d0|1|3	$00000009
@@ -79,6 +82,7 @@ FNSHeight|d0|1|15	$00000009
 FNSHeight|d0|1|16	$00000009
 FNSHeight|d0|1|17	$00000009
 FNSHeight|d0|1|18	$00000009
+FNSHeight|d0|1|19	$00000009
 FNSHeight|d0|2|1	$FFFFFFFF
 FNSHeight|d0|2|2	$0000000C
 FNSHeight|d0|2|3	$0000000C
@@ -97,6 +101,7 @@ FNSHeight|d0|2|15	$0000000C
 FNSHeight|d0|2|16	$0000000C
 FNSHeight|d0|2|17	$0000000C
 FNSHeight|d0|2|18	$0000000C
+FNSHeight|d0|2|19	$0000000C
 FNSHeight|d0|3|1	$FFFFFFFF
 FNSHeight|d0|3|2	$00000007
 FNSHeight|d0|3|3	$00000007
@@ -115,6 +120,7 @@ FNSHeight|d0|3|15	$0000000C
 FNSHeight|d0|3|16	$0000000C
 FNSHeight|d0|3|17	$0000000C
 FNSHeight|d0|3|18	$0000000C
+FNSHeight|d0|3|19	$0000000C
 FNSHeight|d0|4|1	$FFFFFFFF
 FNSHeight|d0|4|2	$0000000A
 FNSHeight|d0|4|3	$0000000A
@@ -133,6 +139,7 @@ FNSHeight|d0|4|15	$FFFFFFFF
 FNSHeight|d0|4|16	$FFFFFFFF
 FNSHeight|d0|4|17	$FFFFFFFF
 FNSHeight|d0|4|18	$FFFFFFFF
+FNSHeight|d0|4|19	$FFFFFFFF
 FNSHeight|d0|5|1	$FFFFFFFF
 FNSHeight|d0|5|2	$00000008
 FNSHeight|d0|5|3	$00000008
@@ -151,6 +158,7 @@ FNSHeight|d0|5|15	$00000008
 FNSHeight|d0|5|16	$00000008
 FNSHeight|d0|5|17	$00000008
 FNSHeight|d0|5|18	$00000008
+FNSHeight|d0|5|19	$00000008
 FNSHeight|d0|5A000005|1	$FFFFFFFF
 FNSHeight|d0|5A000005|2	$00000008
 FNSHeight|d0|5A000005|3	$00000008
@@ -169,6 +177,7 @@ FNSHeight|d0|5A000005|15	$00000008
 FNSHeight|d0|5A000005|16	$00000008
 FNSHeight|d0|5A000005|17	$00000008
 FNSHeight|d0|5A000005|18	$00000008
+FNSHeight|d0|5A000005|19	$00000008
 FNSHeight|d0|5A000010|1	$00000008
 FNSHeight|d0|5A000010|2	$00000008
 FNSHeight|d0|5A000010|3	$00000008
@@ -187,6 +196,7 @@ FNSHeight|d0|5A000010|15	$00000008
 FNSHeight|d0|5A000010|16	$00000008
 FNSHeight|d0|5A000010|17	$00000008
 FNSHeight|d0|5A000010|18	$00000008
+FNSHeight|d0|5A000010|19	$00000008
 FNSHeight|d0|9|1	$FFFFFFFF
 FNSHeight|d0|9|2	$FFFFFFFF
 FNSHeight|d0|9|3	$FFFFFFFF
@@ -205,6 +215,7 @@ FNSHeight|d0|9|15	$FFFFFFFF
 FNSHeight|d0|9|16	$FFFFFFFF
 FNSHeight|d0|9|17	$FFFFFFFF
 FNSHeight|d0|9|18	$FFFFFFFF
+FNSHeight|d0|9|19	$FFFFFFFF
 FNSHeight|d0|F|1	$FFFFFFFF
 FNSHeight|d0|F|2	$FFFFFFFF
 FNSHeight|d0|F|3	$FFFFFFFF
@@ -223,6 +234,7 @@ FNSHeight|d0|F|15	$FFFFFFFF
 FNSHeight|d0|F|16	$FFFFFFFF
 FNSHeight|d0|F|17	$FFFFFFFF
 FNSHeight|d0|F|18	$FFFFFFFF
+FNSHeight|d0|F|19	$FFFFFFFF
 FNSHeight|kept|0|1	kept
 FNSHeight|kept|0|2	kept
 FNSHeight|kept|0|3	kept
@@ -241,6 +253,7 @@ FNSHeight|kept|0|15	kept
 FNSHeight|kept|0|16	kept
 FNSHeight|kept|0|17	kept
 FNSHeight|kept|0|18	kept
+FNSHeight|kept|0|19	kept
 FNSHeight|kept|1|1	kept
 FNSHeight|kept|1|2	kept
 FNSHeight|kept|1|3	kept
@@ -259,6 +272,7 @@ FNSHeight|kept|1|15	kept
 FNSHeight|kept|1|16	kept
 FNSHeight|kept|1|17	kept
 FNSHeight|kept|1|18	kept
+FNSHeight|kept|1|19	kept
 FNSHeight|kept|2|1	kept
 FNSHeight|kept|2|2	kept
 FNSHeight|kept|2|3	kept
@@ -277,6 +291,7 @@ FNSHeight|kept|2|15	kept
 FNSHeight|kept|2|16	kept
 FNSHeight|kept|2|17	kept
 FNSHeight|kept|2|18	kept
+FNSHeight|kept|2|19	kept
 FNSHeight|kept|3|1	kept
 FNSHeight|kept|3|2	kept
 FNSHeight|kept|3|3	kept
@@ -295,6 +310,7 @@ FNSHeight|kept|3|15	kept
 FNSHeight|kept|3|16	kept
 FNSHeight|kept|3|17	kept
 FNSHeight|kept|3|18	kept
+FNSHeight|kept|3|19	kept
 FNSHeight|kept|4|1	kept
 FNSHeight|kept|4|2	kept
 FNSHeight|kept|4|3	kept
@@ -313,6 +329,7 @@ FNSHeight|kept|4|15	kept
 FNSHeight|kept|4|16	kept
 FNSHeight|kept|4|17	kept
 FNSHeight|kept|4|18	kept
+FNSHeight|kept|4|19	kept
 FNSHeight|kept|5|1	kept
 FNSHeight|kept|5|2	kept
 FNSHeight|kept|5|3	kept
@@ -331,6 +348,7 @@ FNSHeight|kept|5|15	kept
 FNSHeight|kept|5|16	kept
 FNSHeight|kept|5|17	kept
 FNSHeight|kept|5|18	kept
+FNSHeight|kept|5|19	kept
 FNSHeight|kept|5A000005|1	kept
 FNSHeight|kept|5A000005|2	kept
 FNSHeight|kept|5A000005|3	kept
@@ -349,6 +367,7 @@ FNSHeight|kept|5A000005|15	kept
 FNSHeight|kept|5A000005|16	kept
 FNSHeight|kept|5A000005|17	kept
 FNSHeight|kept|5A000005|18	kept
+FNSHeight|kept|5A000005|19	kept
 FNSHeight|kept|5A000010|1	kept
 FNSHeight|kept|5A000010|2	kept
 FNSHeight|kept|5A000010|3	kept
@@ -367,6 +386,7 @@ FNSHeight|kept|5A000010|15	kept
 FNSHeight|kept|5A000010|16	kept
 FNSHeight|kept|5A000010|17	kept
 FNSHeight|kept|5A000010|18	kept
+FNSHeight|kept|5A000010|19	kept
 FNSHeight|kept|9|1	kept
 FNSHeight|kept|9|2	kept
 FNSHeight|kept|9|3	kept
@@ -385,6 +405,7 @@ FNSHeight|kept|9|15	kept
 FNSHeight|kept|9|16	kept
 FNSHeight|kept|9|17	kept
 FNSHeight|kept|9|18	kept
+FNSHeight|kept|9|19	kept
 FNSHeight|kept|F|1	kept
 FNSHeight|kept|F|2	kept
 FNSHeight|kept|F|3	kept
@@ -403,6 +424,7 @@ FNSHeight|kept|F|15	kept
 FNSHeight|kept|F|16	kept
 FNSHeight|kept|F|17	kept
 FNSHeight|kept|F|18	kept
+FNSHeight|kept|F|19	kept
 FNSHeight|popped|0|1	$00000000
 FNSHeight|popped|0|2	$00000000
 FNSHeight|popped|0|3	$00000000
@@ -421,6 +443,7 @@ FNSHeight|popped|0|15	$00000000
 FNSHeight|popped|0|16	$00000000
 FNSHeight|popped|0|17	$00000000
 FNSHeight|popped|0|18	$00000000
+FNSHeight|popped|0|19	$00000000
 FNSHeight|popped|1|1	$00000000
 FNSHeight|popped|1|2	$00000000
 FNSHeight|popped|1|3	$00000000
@@ -439,6 +462,7 @@ FNSHeight|popped|1|15	$00000000
 FNSHeight|popped|1|16	$00000000
 FNSHeight|popped|1|17	$00000000
 FNSHeight|popped|1|18	$00000000
+FNSHeight|popped|1|19	$00000000
 FNSHeight|popped|2|1	$00000000
 FNSHeight|popped|2|2	$00000000
 FNSHeight|popped|2|3	$00000000
@@ -457,6 +481,7 @@ FNSHeight|popped|2|15	$00000000
 FNSHeight|popped|2|16	$00000000
 FNSHeight|popped|2|17	$00000000
 FNSHeight|popped|2|18	$00000000
+FNSHeight|popped|2|19	$00000000
 FNSHeight|popped|3|1	$00000000
 FNSHeight|popped|3|2	$00000000
 FNSHeight|popped|3|3	$00000000
@@ -475,6 +500,7 @@ FNSHeight|popped|3|15	$00000000
 FNSHeight|popped|3|16	$00000000
 FNSHeight|popped|3|17	$00000000
 FNSHeight|popped|3|18	$00000000
+FNSHeight|popped|3|19	$00000000
 FNSHeight|popped|4|1	$00000000
 FNSHeight|popped|4|2	$00000000
 FNSHeight|popped|4|3	$00000000
@@ -493,6 +519,7 @@ FNSHeight|popped|4|15	$00000000
 FNSHeight|popped|4|16	$00000000
 FNSHeight|popped|4|17	$00000000
 FNSHeight|popped|4|18	$00000000
+FNSHeight|popped|4|19	$00000000
 FNSHeight|popped|5|1	$00000000
 FNSHeight|popped|5|2	$00000000
 FNSHeight|popped|5|3	$00000000
@@ -511,6 +538,7 @@ FNSHeight|popped|5|15	$00000000
 FNSHeight|popped|5|16	$00000000
 FNSHeight|popped|5|17	$00000000
 FNSHeight|popped|5|18	$00000000
+FNSHeight|popped|5|19	$00000000
 FNSHeight|popped|5A000005|1	$00000000
 FNSHeight|popped|5A000005|2	$00000000
 FNSHeight|popped|5A000005|3	$00000000
@@ -529,6 +557,7 @@ FNSHeight|popped|5A000005|15	$00000000
 FNSHeight|popped|5A000005|16	$00000000
 FNSHeight|popped|5A000005|17	$00000000
 FNSHeight|popped|5A000005|18	$00000000
+FNSHeight|popped|5A000005|19	$00000000
 FNSHeight|popped|5A000010|1	$00000000
 FNSHeight|popped|5A000010|2	$00000000
 FNSHeight|popped|5A000010|3	$00000000
@@ -547,6 +576,7 @@ FNSHeight|popped|5A000010|15	$00000000
 FNSHeight|popped|5A000010|16	$00000000
 FNSHeight|popped|5A000010|17	$00000000
 FNSHeight|popped|5A000010|18	$00000000
+FNSHeight|popped|5A000010|19	$00000000
 FNSHeight|popped|9|1	$00000000
 FNSHeight|popped|9|2	$00000000
 FNSHeight|popped|9|3	$00000000
@@ -565,6 +595,7 @@ FNSHeight|popped|9|15	$00000000
 FNSHeight|popped|9|16	$00000000
 FNSHeight|popped|9|17	$00000000
 FNSHeight|popped|9|18	$00000000
+FNSHeight|popped|9|19	$00000000
 FNSHeight|popped|F|1	$00000000
 FNSHeight|popped|F|2	$00000000
 FNSHeight|popped|F|3	$00000000
@@ -583,8 +614,13 @@ FNSHeight|popped|F|15	$00000000
 FNSHeight|popped|F|16	$00000000
 FNSHeight|popped|F|17	$00000000
 FNSHeight|popped|F|18	$00000000
+FNSHeight|popped|F|19	$00000000
+FNSInk|kept|3|1	kept
 FNSInk|kept|5A000006|1	kept
+FNSInk|popped|3|1	$00000000
 FNSInk|popped|5A000006|1	$00000000
+FNSLength|d0|f0 font 0 "second\trun" prefs 0|1	$0000003C
+FNSLength|d0|f0 font 1 "second\trun" prefs 0|1	$00000012
 FNSLength|d0|f0 font 2 "bold?" prefs 0|1	$0000003D
 FNSLength|d0|f0 font 5A000000 "!"#$%&'()*+,-./01234" prefs 0|1	$00000286
 FNSLength|d0|f0 font 5A000000 "" prefs 0|1	$00000000
@@ -773,6 +809,8 @@ FNSLength|d0|f1 font 5A000006 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 24|1	$FF
 FNSLength|d0|f1 font 7 "abc FGH xyz" prefs 0|1	$0000009D
 FNSLength|d0|f1 font FFFE "x" prefs 0|1	$FFFFFFFF
 FNSLength|d0|f1 font FFFF "x" prefs 0|1	$FFFFFFFF
+FNSLength|kept|f0 font 0 "second\trun" prefs 0|1	kept
+FNSLength|kept|f0 font 1 "second\trun" prefs 0|1	kept
 FNSLength|kept|f0 font 2 "bold?" prefs 0|1	kept
 FNSLength|kept|f0 font 5A000000 "!"#$%&'()*+,-./01234" prefs 0|1	kept
 FNSLength|kept|f0 font 5A000000 "" prefs 0|1	kept
@@ -961,6 +999,8 @@ FNSLength|kept|f1 font 5A000006 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 24|1	k
 FNSLength|kept|f1 font 7 "abc FGH xyz" prefs 0|1	kept
 FNSLength|kept|f1 font FFFE "x" prefs 0|1	kept
 FNSLength|kept|f1 font FFFF "x" prefs 0|1	kept
+FNSLength|popped|f0 font 0 "second\trun" prefs 0|1	$00000000
+FNSLength|popped|f0 font 1 "second\trun" prefs 0|1	$00000000
 FNSLength|popped|f0 font 2 "bold?" prefs 0|1	$00000000
 FNSLength|popped|f0 font 5A000000 "!"#$%&'()*+,-./01234" prefs 0|1	$00000000
 FNSLength|popped|f0 font 5A000000 "" prefs 0|1	$00000000
@@ -1242,6 +1282,7 @@ FNSOrigin|popped|f0 font 2 200,10 "prefs 2" prefs 0 col 0/0|1	$00000000
 FNSOrigin|popped|f1 font 0 5,40 "\ta\t\tb\t" prefs 4 col 3/0|1	$00000000
 FNSOutput|kept|depth 1 form 1|1	kept
 FNSOutput|kept|depth 2 form 0|1	kept
+FNSOutput|kept|depth 2 form 1|1	kept
 FNSOutput|kept|depth 3 form 1|1	kept
 FNSOutput|kept|depth 4 form 0|1	kept
 FNSOutput|kept|depth 4 form 1|1	kept
@@ -1251,6 +1292,7 @@ FNSOutput|kept|depth 7 form 1|1	kept
 FNSOutput|kept|depth 8 form 0|1	kept
 FNSOutput|popped|depth 1 form 1|1	$00000000
 FNSOutput|popped|depth 2 form 0|1	$00000000
+FNSOutput|popped|depth 2 form 1|1	$00000000
 FNSOutput|popped|depth 3 form 1|1	$00000000
 FNSOutput|popped|depth 4 form 0|1	$00000000
 FNSOutput|popped|depth 4 form 1|1	$00000000
@@ -1258,12 +1300,16 @@ FNSOutput|popped|depth 5 form 1|1	$00000000
 FNSOutput|popped|depth 6 form 0|1	$00000000
 FNSOutput|popped|depth 7 form 1|1	$00000000
 FNSOutput|popped|depth 8 form 0|1	$00000000
+FNSPrefs|kept|5|1	kept
 FNSPrefs|kept|5A000005|1	kept
 FNSPrefs|kept|f0 font 0 10,10 "ink and prefs" prefs 0 col 0/0|1	kept
+FNSPrefs|popped|5|1	$00000000
 FNSPrefs|popped|5A000005|1	$00000000
 FNSPrefs|popped|f0 font 0 10,10 "ink and prefs" prefs 0 col 0/0|1	$00000000
 FNSPrint|a0|f0 font 0 1,0 "Hello, World!" prefs 1 col 3/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 0 10,10 "ink and prefs" prefs 0 col 0/0|1	$FFFFFFD2
+FNSPrint|a0|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|1	$FFFFFFD2
+FNSPrint|a0|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|2	$FFFFFFD2
 FNSPrint|a0|f0 font 0 15,6 "\x0A" prefs 3 col 5/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 0 16,6 "\x0A" prefs 4 col 8/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 0 17,6 "\x0A" prefs 5 col 11/0|1	$FFFFFFD2
@@ -1312,6 +1358,7 @@ FNSPrint|a0|f0 font 0 77,30 "WWWWWWWWWWWWWWWWWWWW" prefs 1 col 31/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 0 78,30 "WWWWWWWWWWWWWWWWWWWW" prefs 2 col 34/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 0 8,0 "Hello, World!" prefs 8 col 24/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 1 1,1 "Hello, World!" prefs 1 col 3/0|1	$FFFFFFD2
+FNSPrint|a0|f0 font 1 10,10 "second\trun" prefs 0 col 0/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 1 10,20 "origin" prefs 0 col 0/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 1 15,7 "\x0A" prefs 3 col 5/0|1	$FFFFFFD2
 FNSPrint|a0|f0 font 1 16,7 "\x0A" prefs 4 col 8/0|1	$FFFFFFD2
@@ -2209,6 +2256,8 @@ FNSPrint|a0|f1 font 9 30,30 "loaded" prefs 0 col 1/0|4	$FFFFFFD2
 FNSPrint|a0|f1 font 9 30,30 "loaded" prefs 0 col 1/0|5	$FFFFFFD2
 FNSPrint|bitmap|f0 font 0 1,0 "Hello, World!" prefs 1 col 3/0|1	bytes 20992 fnv 41149497
 FNSPrint|bitmap|f0 font 0 10,10 "ink and prefs" prefs 0 col 0/0|1	bytes 20992 fnv 09D33185
+FNSPrint|bitmap|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|1	bytes 20992 fnv 0337DE79
+FNSPrint|bitmap|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|2	bytes 20992 fnv 6A6DF645
 FNSPrint|bitmap|f0 font 0 15,6 "\x0A" prefs 3 col 5/0|1	bytes 20992 fnv 41149497
 FNSPrint|bitmap|f0 font 0 16,6 "\x0A" prefs 4 col 8/0|1	bytes 20992 fnv 17DE6305
 FNSPrint|bitmap|f0 font 0 17,6 "\x0A" prefs 5 col 11/0|1	bytes 20992 fnv F6730C4D
@@ -2257,6 +2306,7 @@ FNSPrint|bitmap|f0 font 0 77,30 "WWWWWWWWWWWWWWWWWWWW" prefs 1 col 31/0|1	bytes 
 FNSPrint|bitmap|f0 font 0 78,30 "WWWWWWWWWWWWWWWWWWWW" prefs 2 col 34/0|1	bytes 20992 fnv EA162014
 FNSPrint|bitmap|f0 font 0 8,0 "Hello, World!" prefs 8 col 24/0|1	bytes 20992 fnv D965CD05
 FNSPrint|bitmap|f0 font 1 1,1 "Hello, World!" prefs 1 col 3/0|1	bytes 20992 fnv F83F2FEF
+FNSPrint|bitmap|f0 font 1 10,10 "second\trun" prefs 0 col 0/0|1	bytes 20992 fnv 5EB57475
 FNSPrint|bitmap|f0 font 1 10,20 "origin" prefs 0 col 0/0|1	bytes 20992 fnv D6B539C9
 FNSPrint|bitmap|f0 font 1 15,7 "\x0A" prefs 3 col 5/0|1	bytes 20992 fnv F83F2FEF
 FNSPrint|bitmap|f0 font 1 16,7 "\x0A" prefs 4 col 8/0|1	bytes 20992 fnv 8595BE05
@@ -3154,6 +3204,8 @@ FNSPrint|bitmap|f1 font 9 30,30 "loaded" prefs 0 col 1/0|4	bytes 20992 fnv 5B56C
 FNSPrint|bitmap|f1 font 9 30,30 "loaded" prefs 0 col 1/0|5	bytes 20992 fnv 5B56C451
 FNSPrint|end x|f0 font 0 1,0 "Hello, World!" prefs 1 col 3/0|1	$0000004D
 FNSPrint|end x|f0 font 0 10,10 "ink and prefs" prefs 0 col 0/0|1	$00000034
+FNSPrint|end x|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|1	$00000030
+FNSPrint|end x|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|2	$00000030
 FNSPrint|end x|f0 font 0 15,6 "\x0A" prefs 3 col 5/0|1	$0000000F
 FNSPrint|end x|f0 font 0 16,6 "\x0A" prefs 4 col 8/0|1	$00000010
 FNSPrint|end x|f0 font 0 17,6 "\x0A" prefs 5 col 11/0|1	$00000011
@@ -3202,6 +3254,7 @@ FNSPrint|end x|f0 font 0 77,30 "WWWWWWWWWWWWWWWWWWWW" prefs 1 col 31/0|1	$000001
 FNSPrint|end x|f0 font 0 78,30 "WWWWWWWWWWWWWWWWWWWW" prefs 2 col 34/0|1	$00000138
 FNSPrint|end x|f0 font 0 8,0 "Hello, World!" prefs 8 col 24/0|1	$00000054
 FNSPrint|end x|f0 font 1 1,1 "Hello, World!" prefs 1 col 3/0|1	$00000021
+FNSPrint|end x|f0 font 1 10,10 "second\trun" prefs 0 col 0/0|1	$00000016
 FNSPrint|end x|f0 font 1 10,20 "origin" prefs 0 col 0/0|1	$00000020
 FNSPrint|end x|f0 font 1 15,7 "\x0A" prefs 3 col 5/0|1	$0000000F
 FNSPrint|end x|f0 font 1 16,7 "\x0A" prefs 4 col 8/0|1	$00000010
@@ -4098,6 +4151,8 @@ FNSPrint|end x|f1 font 9 30,30 "loaded" prefs 0 col 1/0|4	$00000076
 FNSPrint|end x|f1 font 9 30,30 "loaded" prefs 0 col 1/0|5	$00000076
 FNSPrint|end y|f0 font 0 1,0 "Hello, World!" prefs 1 col 3/0|1	$00000000
 FNSPrint|end y|f0 font 0 10,10 "ink and prefs" prefs 0 col 0/0|1	$0000000A
+FNSPrint|end y|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|1	$00000014
+FNSPrint|end y|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|2	$00000014
 FNSPrint|end y|f0 font 0 15,6 "\x0A" prefs 3 col 5/0|1	$0000000E
 FNSPrint|end y|f0 font 0 16,6 "\x0A" prefs 4 col 8/0|1	$0000000E
 FNSPrint|end y|f0 font 0 17,6 "\x0A" prefs 5 col 11/0|1	$0000000E
@@ -4146,6 +4201,7 @@ FNSPrint|end y|f0 font 0 77,30 "WWWWWWWWWWWWWWWWWWWW" prefs 1 col 31/0|1	$000000
 FNSPrint|end y|f0 font 0 78,30 "WWWWWWWWWWWWWWWWWWWW" prefs 2 col 34/0|1	$0000001E
 FNSPrint|end y|f0 font 0 8,0 "Hello, World!" prefs 8 col 24/0|1	$00000000
 FNSPrint|end y|f0 font 1 1,1 "Hello, World!" prefs 1 col 3/0|1	$00000001
+FNSPrint|end y|f0 font 1 10,10 "second\trun" prefs 0 col 0/0|1	$0000000A
 FNSPrint|end y|f0 font 1 10,20 "origin" prefs 0 col 0/0|1	$0000001B
 FNSPrint|end y|f0 font 1 15,7 "\x0A" prefs 3 col 5/0|1	$00000010
 FNSPrint|end y|f0 font 1 16,7 "\x0A" prefs 4 col 8/0|1	$00000010
@@ -5042,6 +5098,8 @@ FNSPrint|end y|f1 font 9 30,30 "loaded" prefs 0 col 1/0|4	$0000001E
 FNSPrint|end y|f1 font 9 30,30 "loaded" prefs 0 col 1/0|5	$0000001E
 FNSPrint|kept|f0 font 0 1,0 "Hello, World!" prefs 1 col 3/0|1	kept
 FNSPrint|kept|f0 font 0 10,10 "ink and prefs" prefs 0 col 0/0|1	kept
+FNSPrint|kept|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|1	kept
+FNSPrint|kept|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|2	kept
 FNSPrint|kept|f0 font 0 15,6 "\x0A" prefs 3 col 5/0|1	kept
 FNSPrint|kept|f0 font 0 16,6 "\x0A" prefs 4 col 8/0|1	kept
 FNSPrint|kept|f0 font 0 17,6 "\x0A" prefs 5 col 11/0|1	kept
@@ -5090,6 +5148,7 @@ FNSPrint|kept|f0 font 0 77,30 "WWWWWWWWWWWWWWWWWWWW" prefs 1 col 31/0|1	kept
 FNSPrint|kept|f0 font 0 78,30 "WWWWWWWWWWWWWWWWWWWW" prefs 2 col 34/0|1	kept
 FNSPrint|kept|f0 font 0 8,0 "Hello, World!" prefs 8 col 24/0|1	kept
 FNSPrint|kept|f0 font 1 1,1 "Hello, World!" prefs 1 col 3/0|1	kept
+FNSPrint|kept|f0 font 1 10,10 "second\trun" prefs 0 col 0/0|1	kept
 FNSPrint|kept|f0 font 1 10,20 "origin" prefs 0 col 0/0|1	kept
 FNSPrint|kept|f0 font 1 15,7 "\x0A" prefs 3 col 5/0|1	kept
 FNSPrint|kept|f0 font 1 16,7 "\x0A" prefs 4 col 8/0|1	kept
@@ -5987,6 +6046,8 @@ FNSPrint|kept|f1 font 9 30,30 "loaded" prefs 0 col 1/0|4	kept
 FNSPrint|kept|f1 font 9 30,30 "loaded" prefs 0 col 1/0|5	kept
 FNSPrint|popped|f0 font 0 1,0 "Hello, World!" prefs 1 col 3/0|1	$00000000
 FNSPrint|popped|f0 font 0 10,10 "ink and prefs" prefs 0 col 0/0|1	$00000000
+FNSPrint|popped|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|1	$00000000
+FNSPrint|popped|f0 font 0 10,20 "second\trun" prefs 0 col 0/0|2	$00000000
 FNSPrint|popped|f0 font 0 15,6 "\x0A" prefs 3 col 5/0|1	$00000000
 FNSPrint|popped|f0 font 0 16,6 "\x0A" prefs 4 col 8/0|1	$00000000
 FNSPrint|popped|f0 font 0 17,6 "\x0A" prefs 5 col 11/0|1	$00000000
@@ -6035,6 +6096,7 @@ FNSPrint|popped|f0 font 0 77,30 "WWWWWWWWWWWWWWWWWWWW" prefs 1 col 31/0|1	$00000
 FNSPrint|popped|f0 font 0 78,30 "WWWWWWWWWWWWWWWWWWWW" prefs 2 col 34/0|1	$00000000
 FNSPrint|popped|f0 font 0 8,0 "Hello, World!" prefs 8 col 24/0|1	$00000000
 FNSPrint|popped|f0 font 1 1,1 "Hello, World!" prefs 1 col 3/0|1	$00000000
+FNSPrint|popped|f0 font 1 10,10 "second\trun" prefs 0 col 0/0|1	$00000000
 FNSPrint|popped|f0 font 1 10,20 "origin" prefs 0 col 0/0|1	$00000000
 FNSPrint|popped|f0 font 1 15,7 "\x0A" prefs 3 col 5/0|1	$00000000
 FNSPrint|popped|f0 font 1 16,7 "\x0A" prefs 4 col 8/0|1	$00000000
@@ -6932,8 +6994,10 @@ FNSPrint|popped|f1 font 9 30,30 "loaded" prefs 0 col 1/0|4	$00000000
 FNSPrint|popped|f1 font 9 30,30 "loaded" prefs 0 col 1/0|5	$00000000
 FNSSetTab|kept|5A000050|1	kept
 FNSSetTab|kept|7|1	kept
+FNSSetTab|kept|7|2	kept
 FNSSetTab|popped|5A000050|1	$00000000
 FNSSetTab|popped|7|1	$00000000
+FNSSetTab|popped|7|2	$00000000
 FNSShadowPrint|a0|f0 font 0 10,5 "shadow 0" prefs 0 col 0/0|1	$FFFFFFD2
 FNSShadowPrint|a0|f0 font 1 10,5 "shadow 0" prefs 0 col 0/0|1	$FFFFFFD2
 FNSShadowPrint|a0|f0 font 2 10,5 "shadow 0" prefs 0 col 0/0|1	$FFFFFFD2
@@ -7096,6 +7160,7 @@ FNSUnderline|d0|0|15	$00000007
 FNSUnderline|d0|0|16	$00000007
 FNSUnderline|d0|0|17	$00000007
 FNSUnderline|d0|0|18	$00000007
+FNSUnderline|d0|0|19	$00000007
 FNSUnderline|d0|1|1	$FFFFFFFF
 FNSUnderline|d0|1|2	$00000007
 FNSUnderline|d0|1|3	$00000007
@@ -7114,6 +7179,7 @@ FNSUnderline|d0|1|15	$00000007
 FNSUnderline|d0|1|16	$00000007
 FNSUnderline|d0|1|17	$00000007
 FNSUnderline|d0|1|18	$00000007
+FNSUnderline|d0|1|19	$00000007
 FNSUnderline|d0|2|1	$FFFFFFFF
 FNSUnderline|d0|2|2	$0000000E
 FNSUnderline|d0|2|3	$0000000E
@@ -7132,6 +7198,7 @@ FNSUnderline|d0|2|15	$0000000E
 FNSUnderline|d0|2|16	$0000000E
 FNSUnderline|d0|2|17	$0000000E
 FNSUnderline|d0|2|18	$0000000E
+FNSUnderline|d0|2|19	$0000000E
 FNSUnderline|d0|3|1	$FFFFFFFF
 FNSUnderline|d0|3|2	$00000005
 FNSUnderline|d0|3|3	$00000005
@@ -7150,6 +7217,7 @@ FNSUnderline|d0|3|15	$0000000E
 FNSUnderline|d0|3|16	$0000000E
 FNSUnderline|d0|3|17	$0000000E
 FNSUnderline|d0|3|18	$0000000E
+FNSUnderline|d0|3|19	$0000000E
 FNSUnderline|d0|4|1	$FFFFFFFF
 FNSUnderline|d0|4|2	$0000000C
 FNSUnderline|d0|4|3	$0000000C
@@ -7168,6 +7236,7 @@ FNSUnderline|d0|4|15	$FFFFFFFF
 FNSUnderline|d0|4|16	$FFFFFFFF
 FNSUnderline|d0|4|17	$FFFFFFFF
 FNSUnderline|d0|4|18	$FFFFFFFF
+FNSUnderline|d0|4|19	$FFFFFFFF
 FNSUnderline|d0|5|1	$FFFFFFFF
 FNSUnderline|d0|5|2	$00000006
 FNSUnderline|d0|5|3	$00000006
@@ -7186,6 +7255,7 @@ FNSUnderline|d0|5|15	$00000006
 FNSUnderline|d0|5|16	$00000006
 FNSUnderline|d0|5|17	$00000006
 FNSUnderline|d0|5|18	$00000006
+FNSUnderline|d0|5|19	$00000006
 FNSUnderline|d0|5A000005|1	$FFFFFFFF
 FNSUnderline|d0|5A000005|2	$00000006
 FNSUnderline|d0|5A000005|3	$00000006
@@ -7204,6 +7274,7 @@ FNSUnderline|d0|5A000005|15	$00000006
 FNSUnderline|d0|5A000005|16	$00000006
 FNSUnderline|d0|5A000005|17	$00000006
 FNSUnderline|d0|5A000005|18	$00000006
+FNSUnderline|d0|5A000005|19	$00000006
 FNSUnderline|d0|5A000010|1	$00000007
 FNSUnderline|d0|5A000010|2	$00000007
 FNSUnderline|d0|5A000010|3	$00000007
@@ -7222,6 +7293,7 @@ FNSUnderline|d0|5A000010|15	$00000007
 FNSUnderline|d0|5A000010|16	$00000007
 FNSUnderline|d0|5A000010|17	$00000007
 FNSUnderline|d0|5A000010|18	$00000007
+FNSUnderline|d0|5A000010|19	$00000007
 FNSUnderline|d0|9|1	$FFFFFFFF
 FNSUnderline|d0|9|2	$FFFFFFFF
 FNSUnderline|d0|9|3	$FFFFFFFF
@@ -7240,6 +7312,7 @@ FNSUnderline|d0|9|15	$FFFFFFFF
 FNSUnderline|d0|9|16	$FFFFFFFF
 FNSUnderline|d0|9|17	$FFFFFFFF
 FNSUnderline|d0|9|18	$FFFFFFFF
+FNSUnderline|d0|9|19	$FFFFFFFF
 FNSUnderline|d0|F|1	$FFFFFFFF
 FNSUnderline|d0|F|2	$FFFFFFFF
 FNSUnderline|d0|F|3	$FFFFFFFF
@@ -7258,6 +7331,7 @@ FNSUnderline|d0|F|15	$FFFFFFFF
 FNSUnderline|d0|F|16	$FFFFFFFF
 FNSUnderline|d0|F|17	$FFFFFFFF
 FNSUnderline|d0|F|18	$FFFFFFFF
+FNSUnderline|d0|F|19	$FFFFFFFF
 FNSUnderline|kept|0|1	kept
 FNSUnderline|kept|0|2	kept
 FNSUnderline|kept|0|3	kept
@@ -7276,6 +7350,7 @@ FNSUnderline|kept|0|15	kept
 FNSUnderline|kept|0|16	kept
 FNSUnderline|kept|0|17	kept
 FNSUnderline|kept|0|18	kept
+FNSUnderline|kept|0|19	kept
 FNSUnderline|kept|1|1	kept
 FNSUnderline|kept|1|2	kept
 FNSUnderline|kept|1|3	kept
@@ -7294,6 +7369,7 @@ FNSUnderline|kept|1|15	kept
 FNSUnderline|kept|1|16	kept
 FNSUnderline|kept|1|17	kept
 FNSUnderline|kept|1|18	kept
+FNSUnderline|kept|1|19	kept
 FNSUnderline|kept|2|1	kept
 FNSUnderline|kept|2|2	kept
 FNSUnderline|kept|2|3	kept
@@ -7312,6 +7388,7 @@ FNSUnderline|kept|2|15	kept
 FNSUnderline|kept|2|16	kept
 FNSUnderline|kept|2|17	kept
 FNSUnderline|kept|2|18	kept
+FNSUnderline|kept|2|19	kept
 FNSUnderline|kept|3|1	kept
 FNSUnderline|kept|3|2	kept
 FNSUnderline|kept|3|3	kept
@@ -7330,6 +7407,7 @@ FNSUnderline|kept|3|15	kept
 FNSUnderline|kept|3|16	kept
 FNSUnderline|kept|3|17	kept
 FNSUnderline|kept|3|18	kept
+FNSUnderline|kept|3|19	kept
 FNSUnderline|kept|4|1	kept
 FNSUnderline|kept|4|2	kept
 FNSUnderline|kept|4|3	kept
@@ -7348,6 +7426,7 @@ FNSUnderline|kept|4|15	kept
 FNSUnderline|kept|4|16	kept
 FNSUnderline|kept|4|17	kept
 FNSUnderline|kept|4|18	kept
+FNSUnderline|kept|4|19	kept
 FNSUnderline|kept|5|1	kept
 FNSUnderline|kept|5|2	kept
 FNSUnderline|kept|5|3	kept
@@ -7366,6 +7445,7 @@ FNSUnderline|kept|5|15	kept
 FNSUnderline|kept|5|16	kept
 FNSUnderline|kept|5|17	kept
 FNSUnderline|kept|5|18	kept
+FNSUnderline|kept|5|19	kept
 FNSUnderline|kept|5A000005|1	kept
 FNSUnderline|kept|5A000005|2	kept
 FNSUnderline|kept|5A000005|3	kept
@@ -7384,6 +7464,7 @@ FNSUnderline|kept|5A000005|15	kept
 FNSUnderline|kept|5A000005|16	kept
 FNSUnderline|kept|5A000005|17	kept
 FNSUnderline|kept|5A000005|18	kept
+FNSUnderline|kept|5A000005|19	kept
 FNSUnderline|kept|5A000010|1	kept
 FNSUnderline|kept|5A000010|2	kept
 FNSUnderline|kept|5A000010|3	kept
@@ -7402,6 +7483,7 @@ FNSUnderline|kept|5A000010|15	kept
 FNSUnderline|kept|5A000010|16	kept
 FNSUnderline|kept|5A000010|17	kept
 FNSUnderline|kept|5A000010|18	kept
+FNSUnderline|kept|5A000010|19	kept
 FNSUnderline|kept|9|1	kept
 FNSUnderline|kept|9|2	kept
 FNSUnderline|kept|9|3	kept
@@ -7420,6 +7502,7 @@ FNSUnderline|kept|9|15	kept
 FNSUnderline|kept|9|16	kept
 FNSUnderline|kept|9|17	kept
 FNSUnderline|kept|9|18	kept
+FNSUnderline|kept|9|19	kept
 FNSUnderline|kept|F|1	kept
 FNSUnderline|kept|F|2	kept
 FNSUnderline|kept|F|3	kept
@@ -7438,6 +7521,7 @@ FNSUnderline|kept|F|15	kept
 FNSUnderline|kept|F|16	kept
 FNSUnderline|kept|F|17	kept
 FNSUnderline|kept|F|18	kept
+FNSUnderline|kept|F|19	kept
 FNSUnderline|popped|0|1	$00000000
 FNSUnderline|popped|0|2	$00000000
 FNSUnderline|popped|0|3	$00000000
@@ -7456,6 +7540,7 @@ FNSUnderline|popped|0|15	$00000000
 FNSUnderline|popped|0|16	$00000000
 FNSUnderline|popped|0|17	$00000000
 FNSUnderline|popped|0|18	$00000000
+FNSUnderline|popped|0|19	$00000000
 FNSUnderline|popped|1|1	$00000000
 FNSUnderline|popped|1|2	$00000000
 FNSUnderline|popped|1|3	$00000000
@@ -7474,6 +7559,7 @@ FNSUnderline|popped|1|15	$00000000
 FNSUnderline|popped|1|16	$00000000
 FNSUnderline|popped|1|17	$00000000
 FNSUnderline|popped|1|18	$00000000
+FNSUnderline|popped|1|19	$00000000
 FNSUnderline|popped|2|1	$00000000
 FNSUnderline|popped|2|2	$00000000
 FNSUnderline|popped|2|3	$00000000
@@ -7492,6 +7578,7 @@ FNSUnderline|popped|2|15	$00000000
 FNSUnderline|popped|2|16	$00000000
 FNSUnderline|popped|2|17	$00000000
 FNSUnderline|popped|2|18	$00000000
+FNSUnderline|popped|2|19	$00000000
 FNSUnderline|popped|3|1	$00000000
 FNSUnderline|popped|3|2	$00000000
 FNSUnderline|popped|3|3	$00000000
@@ -7510,6 +7597,7 @@ FNSUnderline|popped|3|15	$00000000
 FNSUnderline|popped|3|16	$00000000
 FNSUnderline|popped|3|17	$00000000
 FNSUnderline|popped|3|18	$00000000
+FNSUnderline|popped|3|19	$00000000
 FNSUnderline|popped|4|1	$00000000
 FNSUnderline|popped|4|2	$00000000
 FNSUnderline|popped|4|3	$00000000
@@ -7528,6 +7616,7 @@ FNSUnderline|popped|4|15	$00000000
 FNSUnderline|popped|4|16	$00000000
 FNSUnderline|popped|4|17	$00000000
 FNSUnderline|popped|4|18	$00000000
+FNSUnderline|popped|4|19	$00000000
 FNSUnderline|popped|5|1	$00000000
 FNSUnderline|popped|5|2	$00000000
 FNSUnderline|popped|5|3	$00000000
@@ -7546,6 +7635,7 @@ FNSUnderline|popped|5|15	$00000000
 FNSUnderline|popped|5|16	$00000000
 FNSUnderline|popped|5|17	$00000000
 FNSUnderline|popped|5|18	$00000000
+FNSUnderline|popped|5|19	$00000000
 FNSUnderline|popped|5A000005|1	$00000000
 FNSUnderline|popped|5A000005|2	$00000000
 FNSUnderline|popped|5A000005|3	$00000000
@@ -7564,6 +7654,7 @@ FNSUnderline|popped|5A000005|15	$00000000
 FNSUnderline|popped|5A000005|16	$00000000
 FNSUnderline|popped|5A000005|17	$00000000
 FNSUnderline|popped|5A000005|18	$00000000
+FNSUnderline|popped|5A000005|19	$00000000
 FNSUnderline|popped|5A000010|1	$00000000
 FNSUnderline|popped|5A000010|2	$00000000
 FNSUnderline|popped|5A000010|3	$00000000
@@ -7582,6 +7673,7 @@ FNSUnderline|popped|5A000010|15	$00000000
 FNSUnderline|popped|5A000010|16	$00000000
 FNSUnderline|popped|5A000010|17	$00000000
 FNSUnderline|popped|5A000010|18	$00000000
+FNSUnderline|popped|5A000010|19	$00000000
 FNSUnderline|popped|9|1	$00000000
 FNSUnderline|popped|9|2	$00000000
 FNSUnderline|popped|9|3	$00000000
@@ -7600,6 +7692,7 @@ FNSUnderline|popped|9|15	$00000000
 FNSUnderline|popped|9|16	$00000000
 FNSUnderline|popped|9|17	$00000000
 FNSUnderline|popped|9|18	$00000000
+FNSUnderline|popped|9|19	$00000000
 FNSUnderline|popped|F|1	$00000000
 FNSUnderline|popped|F|2	$00000000
 FNSUnderline|popped|F|3	$00000000
@@ -7618,6 +7711,7 @@ FNSUnderline|popped|F|15	$00000000
 FNSUnderline|popped|F|16	$00000000
 FNSUnderline|popped|F|17	$00000000
 FNSUnderline|popped|F|18	$00000000
+FNSUnderline|popped|F|19	$00000000
 FNSUnload|calls|4|1	$00000001
 FNSUnload|calls|5A000019|1	$00000001
 FNSUnload|calls|6|1	$00000001
@@ -7665,6 +7759,7 @@ FNSWidth|d0|0|15	$00000010
 FNSWidth|d0|0|16	$00000010
 FNSWidth|d0|0|17	$00000010
 FNSWidth|d0|0|18	$00000010
+FNSWidth|d0|0|19	$00000010
 FNSWidth|d0|1|1	$FFFFFFFF
 FNSWidth|d0|1|2	$00000010
 FNSWidth|d0|1|3	$00000010
@@ -7683,6 +7778,7 @@ FNSWidth|d0|1|15	$00000010
 FNSWidth|d0|1|16	$00000010
 FNSWidth|d0|1|17	$00000010
 FNSWidth|d0|1|18	$00000010
+FNSWidth|d0|1|19	$00000010
 FNSWidth|d0|2|1	$FFFFFFFF
 FNSWidth|d0|2|2	$00000020
 FNSWidth|d0|2|3	$00000020
@@ -7701,6 +7797,7 @@ FNSWidth|d0|2|15	$00000020
 FNSWidth|d0|2|16	$00000020
 FNSWidth|d0|2|17	$00000020
 FNSWidth|d0|2|18	$00000020
+FNSWidth|d0|2|19	$00000020
 FNSWidth|d0|3|1	$FFFFFFFF
 FNSWidth|d0|3|2	$00000030
 FNSWidth|d0|3|3	$00000030
@@ -7719,6 +7816,7 @@ FNSWidth|d0|3|15	$00000020
 FNSWidth|d0|3|16	$00000020
 FNSWidth|d0|3|17	$00000020
 FNSWidth|d0|3|18	$00000020
+FNSWidth|d0|3|19	$00000020
 FNSWidth|d0|4|1	$FFFFFFFF
 FNSWidth|d0|4|2	$00000040
 FNSWidth|d0|4|3	$00000040
@@ -7737,6 +7835,7 @@ FNSWidth|d0|4|15	$FFFFFFFF
 FNSWidth|d0|4|16	$FFFFFFFF
 FNSWidth|d0|4|17	$FFFFFFFF
 FNSWidth|d0|4|18	$FFFFFFFF
+FNSWidth|d0|4|19	$FFFFFFFF
 FNSWidth|d0|5|1	$FFFFFFFF
 FNSWidth|d0|5|2	$00000018
 FNSWidth|d0|5|3	$00000018
@@ -7755,6 +7854,7 @@ FNSWidth|d0|5|15	$00000018
 FNSWidth|d0|5|16	$00000018
 FNSWidth|d0|5|17	$00000018
 FNSWidth|d0|5|18	$00000018
+FNSWidth|d0|5|19	$00000018
 FNSWidth|d0|5A000005|1	$FFFFFFFF
 FNSWidth|d0|5A000005|2	$00000018
 FNSWidth|d0|5A000005|3	$00000018
@@ -7773,6 +7873,7 @@ FNSWidth|d0|5A000005|15	$00000018
 FNSWidth|d0|5A000005|16	$00000018
 FNSWidth|d0|5A000005|17	$00000018
 FNSWidth|d0|5A000005|18	$00000018
+FNSWidth|d0|5A000005|19	$00000018
 FNSWidth|d0|5A000010|1	$00000010
 FNSWidth|d0|5A000010|2	$00000010
 FNSWidth|d0|5A000010|3	$00000010
@@ -7791,6 +7892,7 @@ FNSWidth|d0|5A000010|15	$00000010
 FNSWidth|d0|5A000010|16	$00000010
 FNSWidth|d0|5A000010|17	$00000010
 FNSWidth|d0|5A000010|18	$00000010
+FNSWidth|d0|5A000010|19	$00000010
 FNSWidth|d0|9|1	$FFFFFFFF
 FNSWidth|d0|9|2	$FFFFFFFF
 FNSWidth|d0|9|3	$FFFFFFFF
@@ -7809,6 +7911,7 @@ FNSWidth|d0|9|15	$FFFFFFFF
 FNSWidth|d0|9|16	$FFFFFFFF
 FNSWidth|d0|9|17	$FFFFFFFF
 FNSWidth|d0|9|18	$FFFFFFFF
+FNSWidth|d0|9|19	$FFFFFFFF
 FNSWidth|d0|F|1	$FFFFFFFF
 FNSWidth|d0|F|2	$FFFFFFFF
 FNSWidth|d0|F|3	$FFFFFFFF
@@ -7827,6 +7930,7 @@ FNSWidth|d0|F|15	$FFFFFFFF
 FNSWidth|d0|F|16	$FFFFFFFF
 FNSWidth|d0|F|17	$FFFFFFFF
 FNSWidth|d0|F|18	$FFFFFFFF
+FNSWidth|d0|F|19	$FFFFFFFF
 FNSWidth|kept|0|1	kept
 FNSWidth|kept|0|2	kept
 FNSWidth|kept|0|3	kept
@@ -7845,6 +7949,7 @@ FNSWidth|kept|0|15	kept
 FNSWidth|kept|0|16	kept
 FNSWidth|kept|0|17	kept
 FNSWidth|kept|0|18	kept
+FNSWidth|kept|0|19	kept
 FNSWidth|kept|1|1	kept
 FNSWidth|kept|1|2	kept
 FNSWidth|kept|1|3	kept
@@ -7863,6 +7968,7 @@ FNSWidth|kept|1|15	kept
 FNSWidth|kept|1|16	kept
 FNSWidth|kept|1|17	kept
 FNSWidth|kept|1|18	kept
+FNSWidth|kept|1|19	kept
 FNSWidth|kept|2|1	kept
 FNSWidth|kept|2|2	kept
 FNSWidth|kept|2|3	kept
@@ -7881,6 +7987,7 @@ FNSWidth|kept|2|15	kept
 FNSWidth|kept|2|16	kept
 FNSWidth|kept|2|17	kept
 FNSWidth|kept|2|18	kept
+FNSWidth|kept|2|19	kept
 FNSWidth|kept|3|1	kept
 FNSWidth|kept|3|2	kept
 FNSWidth|kept|3|3	kept
@@ -7899,6 +8006,7 @@ FNSWidth|kept|3|15	kept
 FNSWidth|kept|3|16	kept
 FNSWidth|kept|3|17	kept
 FNSWidth|kept|3|18	kept
+FNSWidth|kept|3|19	kept
 FNSWidth|kept|4|1	kept
 FNSWidth|kept|4|2	kept
 FNSWidth|kept|4|3	kept
@@ -7917,6 +8025,7 @@ FNSWidth|kept|4|15	kept
 FNSWidth|kept|4|16	kept
 FNSWidth|kept|4|17	kept
 FNSWidth|kept|4|18	kept
+FNSWidth|kept|4|19	kept
 FNSWidth|kept|5|1	kept
 FNSWidth|kept|5|2	kept
 FNSWidth|kept|5|3	kept
@@ -7935,6 +8044,7 @@ FNSWidth|kept|5|15	kept
 FNSWidth|kept|5|16	kept
 FNSWidth|kept|5|17	kept
 FNSWidth|kept|5|18	kept
+FNSWidth|kept|5|19	kept
 FNSWidth|kept|5A000005|1	kept
 FNSWidth|kept|5A000005|2	kept
 FNSWidth|kept|5A000005|3	kept
@@ -7953,6 +8063,7 @@ FNSWidth|kept|5A000005|15	kept
 FNSWidth|kept|5A000005|16	kept
 FNSWidth|kept|5A000005|17	kept
 FNSWidth|kept|5A000005|18	kept
+FNSWidth|kept|5A000005|19	kept
 FNSWidth|kept|5A000010|1	kept
 FNSWidth|kept|5A000010|2	kept
 FNSWidth|kept|5A000010|3	kept
@@ -7971,6 +8082,7 @@ FNSWidth|kept|5A000010|15	kept
 FNSWidth|kept|5A000010|16	kept
 FNSWidth|kept|5A000010|17	kept
 FNSWidth|kept|5A000010|18	kept
+FNSWidth|kept|5A000010|19	kept
 FNSWidth|kept|9|1	kept
 FNSWidth|kept|9|2	kept
 FNSWidth|kept|9|3	kept
@@ -7989,6 +8101,7 @@ FNSWidth|kept|9|15	kept
 FNSWidth|kept|9|16	kept
 FNSWidth|kept|9|17	kept
 FNSWidth|kept|9|18	kept
+FNSWidth|kept|9|19	kept
 FNSWidth|kept|F|1	kept
 FNSWidth|kept|F|2	kept
 FNSWidth|kept|F|3	kept
@@ -8007,6 +8120,7 @@ FNSWidth|kept|F|15	kept
 FNSWidth|kept|F|16	kept
 FNSWidth|kept|F|17	kept
 FNSWidth|kept|F|18	kept
+FNSWidth|kept|F|19	kept
 FNSWidth|popped|0|1	$00000000
 FNSWidth|popped|0|2	$00000000
 FNSWidth|popped|0|3	$00000000
@@ -8025,6 +8139,7 @@ FNSWidth|popped|0|15	$00000000
 FNSWidth|popped|0|16	$00000000
 FNSWidth|popped|0|17	$00000000
 FNSWidth|popped|0|18	$00000000
+FNSWidth|popped|0|19	$00000000
 FNSWidth|popped|1|1	$00000000
 FNSWidth|popped|1|2	$00000000
 FNSWidth|popped|1|3	$00000000
@@ -8043,6 +8158,7 @@ FNSWidth|popped|1|15	$00000000
 FNSWidth|popped|1|16	$00000000
 FNSWidth|popped|1|17	$00000000
 FNSWidth|popped|1|18	$00000000
+FNSWidth|popped|1|19	$00000000
 FNSWidth|popped|2|1	$00000000
 FNSWidth|popped|2|2	$00000000
 FNSWidth|popped|2|3	$00000000
@@ -8061,6 +8177,7 @@ FNSWidth|popped|2|15	$00000000
 FNSWidth|popped|2|16	$00000000
 FNSWidth|popped|2|17	$00000000
 FNSWidth|popped|2|18	$00000000
+FNSWidth|popped|2|19	$00000000
 FNSWidth|popped|3|1	$00000000
 FNSWidth|popped|3|2	$00000000
 FNSWidth|popped|3|3	$00000000
@@ -8079,6 +8196,7 @@ FNSWidth|popped|3|15	$00000000
 FNSWidth|popped|3|16	$00000000
 FNSWidth|popped|3|17	$00000000
 FNSWidth|popped|3|18	$00000000
+FNSWidth|popped|3|19	$00000000
 FNSWidth|popped|4|1	$00000000
 FNSWidth|popped|4|2	$00000000
 FNSWidth|popped|4|3	$00000000
@@ -8097,6 +8215,7 @@ FNSWidth|popped|4|15	$00000000
 FNSWidth|popped|4|16	$00000000
 FNSWidth|popped|4|17	$00000000
 FNSWidth|popped|4|18	$00000000
+FNSWidth|popped|4|19	$00000000
 FNSWidth|popped|5|1	$00000000
 FNSWidth|popped|5|2	$00000000
 FNSWidth|popped|5|3	$00000000
@@ -8115,6 +8234,7 @@ FNSWidth|popped|5|15	$00000000
 FNSWidth|popped|5|16	$00000000
 FNSWidth|popped|5|17	$00000000
 FNSWidth|popped|5|18	$00000000
+FNSWidth|popped|5|19	$00000000
 FNSWidth|popped|5A000005|1	$00000000
 FNSWidth|popped|5A000005|2	$00000000
 FNSWidth|popped|5A000005|3	$00000000
@@ -8133,6 +8253,7 @@ FNSWidth|popped|5A000005|15	$00000000
 FNSWidth|popped|5A000005|16	$00000000
 FNSWidth|popped|5A000005|17	$00000000
 FNSWidth|popped|5A000005|18	$00000000
+FNSWidth|popped|5A000005|19	$00000000
 FNSWidth|popped|5A000010|1	$00000000
 FNSWidth|popped|5A000010|2	$00000000
 FNSWidth|popped|5A000010|3	$00000000
@@ -8151,6 +8272,7 @@ FNSWidth|popped|5A000010|15	$00000000
 FNSWidth|popped|5A000010|16	$00000000
 FNSWidth|popped|5A000010|17	$00000000
 FNSWidth|popped|5A000010|18	$00000000
+FNSWidth|popped|5A000010|19	$00000000
 FNSWidth|popped|9|1	$00000000
 FNSWidth|popped|9|2	$00000000
 FNSWidth|popped|9|3	$00000000
@@ -8169,6 +8291,7 @@ FNSWidth|popped|9|15	$00000000
 FNSWidth|popped|9|16	$00000000
 FNSWidth|popped|9|17	$00000000
 FNSWidth|popped|9|18	$00000000
+FNSWidth|popped|9|19	$00000000
 FNSWidth|popped|F|1	$00000000
 FNSWidth|popped|F|2	$00000000
 FNSWidth|popped|F|3	$00000000
@@ -8187,8 +8310,10 @@ FNSWidth|popped|F|15	$00000000
 FNSWidth|popped|F|16	$00000000
 FNSWidth|popped|F|17	$00000000
 FNSWidth|popped|F|18	$00000000
+FNSWidth|popped|F|19	$00000000
 InstallFNS|d0|no FNS|1	$00000000
 InstallFNS|d0|slot 1 font 0|1	$00000001
+InstallFNS|d0|slot 1 font 0|2	$00000001
 InstallFNS|d0|slot 1509949463 font 0|1	$00000007
 InstallFNS|d0|slot 2 font 1|1	$00000002
 InstallFNS|d0|slot 3 font 2|1	$00000003
@@ -8196,6 +8321,7 @@ InstallFNS|d0|slot 4 font 3|1	$00000004
 InstallFNS|d0|slot 5 font 4|1	$00000005
 InstallFNS|kept|no FNS|1	kept
 InstallFNS|kept|slot 1 font 0|1	kept
+InstallFNS|kept|slot 1 font 0|2	kept
 InstallFNS|kept|slot 1509949463 font 0|1	kept
 InstallFNS|kept|slot 2 font 1|1	kept
 InstallFNS|kept|slot 3 font 2|1	kept
@@ -8203,6 +8329,7 @@ InstallFNS|kept|slot 4 font 3|1	kept
 InstallFNS|kept|slot 5 font 4|1	kept
 InstallFNS|popped|no FNS|1	$00000000
 InstallFNS|popped|slot 1 font 0|1	$00000000
+InstallFNS|popped|slot 1 font 0|2	$00000000
 InstallFNS|popped|slot 1509949463 font 0|1	$00000000
 InstallFNS|popped|slot 2 font 1|1	$00000000
 InstallFNS|popped|slot 3 font 2|1	$00000000
@@ -8211,8 +8338,12 @@ InstallFNS|popped|slot 5 font 4|1	$00000000
 RemoveFNS|kept|5A000017|1	kept
 RemoveFNS|popped|5A000017|1	$00000000
 finit|kept||1	kept
+finit|kept|second run|1	kept
 finit|popped||1	$00000000
+finit|popped|second run|1	$00000000
 init|built-in font||1	bytes 1712 fnv E1C80702
 init|kept||1	kept
+init|kept|second run|1	kept
 init|popped||1	$00000000
+init|popped|second run|1	$00000000
 init|slot 0 = the built-in font||1	$00000001

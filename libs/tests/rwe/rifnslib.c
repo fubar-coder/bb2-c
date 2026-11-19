@@ -29,7 +29,11 @@
  * FNSPrefs, FNSVersion (inline), FNSLoad (ok, BLoad fails, Start 0, a
  * file without "FNS.", one of height 0, one of 40 glyphs printed with
  * later codes, BankLimit 80) and FNSUnload (also of a slot never
- * loaded).  Not covered: FNSPrint without a bitmap (a crash), depth 0
+ * loaded); a second run (init, as from the editor with the library
+ * still loaded): the slots, FNSPrint before FNSOutput (the bitmap of the
+ * run before), the short forms of FNSPrint and FNSLength with the prefs,
+ * ink and tab size the run before left.  Not covered: FNSPrint without a
+ * bitmap in the first run (a crash), depth 0
  * or above 8 and bitmaps with flags (the bitstack overrun), FNSSetTab 0
  * (division by zero), x below 0 with xmin below 0 (writes 64 KB away).
  */
@@ -518,8 +522,37 @@ int main(int argc, char **argv)
         unload(12);
     }
 
+    /* the settings the run leaves: prefs, ink, tab size, clip zone, the
+       output bitmap and fonts in slots 1-15 */
+    install(1, 0);
+    stmt1(INK, 0, "FNSInk", 3);
+    stmt1(PREFS, 0, "FNSPrefs", 5);
+    stmt1(SETTAB, 0, "FNSSetTab", 7);
+    clip(16, 8, 200, 40);
+
     ROUT = "finit";
     strcpy(VEC, "");
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+
+    /* a second run of a program with the library still loaded (from the
+       editor): init, then the slots, a print before FNSOutput (the
+       bitmap of the run before is still allocated here), the short forms
+       of FNSPrint and FNSLength with a tab, and the same after
+       FNSOutput */
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, INIT, 0), (void)0);
+    fontfuncs();
+    clear();
+    print(0, 1, 10, 10, "second\trun", 0, 0, 0);
+    length(0, 1, "second\trun", 0);
+    print(0, 0, 10, 20, "second\trun", 0, 0, 0);
+    output(2, 1);
+    clear();
+    print(0, 0, 10, 20, "second\trun", 0, 0, 0);
+    length(0, 0, "second\trun", 0);
+    ROUT = "finit";
+    strcpy(VEC, "second run");
     DO1(ENT(LIB, FINIT, 0), (void)0);
     FreeMem(bmbuf, BMSZ);
     FreeMem(bank, 20000);
