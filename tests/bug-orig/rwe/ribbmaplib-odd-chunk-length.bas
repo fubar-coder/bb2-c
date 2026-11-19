@@ -8,6 +8,7 @@
 ; positive address): FORM SCEN, an ANNO chunk of length 7 with its pad
 ; byte, then LEVL (2 bytes, level 5).
 ; Correct: BBScenarioLevel finds LEVL behind the padded chunk: 5.
+; @fixed #552
 ; @rwe ribbmaplib
 DEFTYPE .l
 m=AllocMem_(64,$10002)

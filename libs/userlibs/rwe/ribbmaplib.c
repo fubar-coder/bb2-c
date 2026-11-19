@@ -18,25 +18,29 @@
  *   BBMap...   the chunks of the map
  *
  * A chunk: id.l, length.l, data; the search starts 12 bytes into the
- * file and steps by 8 + length (no padding).  The address of the last
- * chunk found is kept per file (one id each), and returned without a
- * search when the same id is asked for again.
+ * file and steps by 8 + length, rounded up to even unless the pad byte is
+ * not 0.  The address of the last chunk found is kept per file (one id
+ * each), and returned without a search when the same id is asked for
+ * again.
  *
  * init clears the files and the caches; finit is an RTS.  No assembler
- * besides the thunks.  Results in
- * d0 as the original leaves them: the word functions have $FFFF in the
- * upper word (MOVEQ #-1 of the chunk search; BBMapWidth/Height: the
- * caller's), 0 when the chunk is missing.
+ * besides the thunks.  Results in d0 as the original leaves them: the
+ * word functions have $FFFF in the upper word (MOVEQ #-1 of the chunk
+ * search; BBMapWidth/Height: the caller's), 0 when the chunk is missing.
  *
  * BUG(orig), kept:
- *   - An odd chunk length makes the next id odd (an address error on a
- *     68000) (#552).
  *   - BBGetPalette: an object with high colour >= its colour count gets
  *     a new block of high+1 colours, but its count is set to high (the
  *     last colour outside) (#548); the colours are written from low to
  *     high even if low > high (one colour at low, possibly behind the
  *     block) (#549).  BBScenarioLowCol/HighCol extend the byte with its
  *     sign (#550).
+ * Fixed (intended deviation, #552): the search skips the IFF pad byte
+ * behind a chunk of odd length; a byte other than 0 in its place is
+ * taken as the start of the next chunk, so files written without pad
+ * bytes stay readable (the shape of #189).  The original stepped by
+ * 8 + length: after an odd chunk the next id was read one byte early (on
+ * a 68000 an address error at the odd address).
  * Fixed (intended deviation, #553): the search tests the end of the file
  * before it reads an id; a chunk whose id and length do not lie inside
  * the file is not found (the original read the id behind the end and
@@ -219,7 +223,9 @@ static void BLITZ_ROUTINE codefinit(void)
    (#553): a chunk counts only if its id and length lie inside the file
    (the end tested before the id is read, as a distance, so a file across
    $80000000 is no exception); a length that reaches the end (also one
-   that would wrap the address) ends the search */
+   that would wrap the address) ends the search.  Fixed (#552): the pad
+   byte of an odd chunk is skipped unless it is not 0 (a writer without
+   pad bytes: then the next chunk starts there) */
 static UBYTE *search(ULONG id, UBYTE *loc, UBYTE *end, ULONG *last, UBYTE **lastaddr)
 {
     UBYTE *cursor;
@@ -238,6 +244,8 @@ static UBYTE *search(ULONG id, UBYTE *loc, UBYTE *end, ULONG *last, UBYTE **last
             break;
         if (len >= (ULONG)(end - cursor))
             return NULL;
+        if ((len & 1) && cursor[len] == 0)  /* fixed (#552): the pad byte */
+            len++;
         cursor += len;
     }
     *last = id;

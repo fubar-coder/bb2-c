@@ -22,7 +22,8 @@ Bombers in memory:
   `BBMapOnePlayerInfo` (`1PLY`), `BBMapObjects` (`OBJS`).
 
 A missing chunk gives 0. The search starts 12 bytes into the file and
-steps by 8 + the chunk length (no IFF padding); the last chunk found is
+steps by 8 + the chunk length and the IFF pad byte of an odd length
+(unless that byte is not 0); the last chunk found is
 kept per file and returned without a search when the same id is asked
 for again. init clears the files and the caches; finit is an `RTS`.
 
@@ -74,11 +75,15 @@ kind F):
   search. The original read the id behind the end and found it if it
   matched (e.g. the next file in the same buffer), and compared the
   addresses signed (#553).
+* The search skips the IFF pad byte behind a chunk of odd length; a
+  byte other than 0 in its place is taken as the start of the next
+  chunk, so files written without pad bytes stay readable (the shape of
+  #189). The original stepped by 8 + length: after an odd chunk the next
+  id was read one byte early, at an odd address (on a 68000 an address
+  error, on a 68020 a wrong id and a wrong length) (#552).
 
 ## BUG(orig), kept
 
-* An odd chunk length makes the following ids odd (address error on a
-  68000) (#552).
 * `BBGetPalette`: when the high colour is not below the object's colour
   count it allocates a block of high+1 colours but sets the count (in
   the object and the block) to high, so the last colour is outside
