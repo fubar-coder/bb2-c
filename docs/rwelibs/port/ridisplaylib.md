@@ -9,7 +9,7 @@ that was to build its own copper list; two commands:
 * `ViewBitmap(bitmap)` – no code (`RTS`, d0 unchanged).
 
 init opens graphics.library 39 (the base is not used otherwise), finit
-closes it and frees the last list. The list is never installed: the
+closes it and frees every list. The list is never installed: the
 library does not touch the display.
 
 * **Source:** `rwelibsrc/mydisplaylib.bb` (as TED shows it:
@@ -27,14 +27,15 @@ All C behind `BLITZ_THUNK`s (keep d1/a0/a1, and d0 for init, finit and
 ViewBitmap; the original changes d0/d1/a0/a1/a6 in init and finit,
 d0–d6/a0/a1/a6 in InitView). The variables `viewsize` and `cop` are a
 struct in the original's order (the test finds them by the address
-InitView returns).
-
-## BUG(orig), kept
-
-* Every InitView allocates a new list and forgets the old one; finit
-  frees only the last, and only if graphics.library was opened (#891).
+InitView returns), the chain of all lists behind them.
 
 ## Fixed
+
+* finit frees the lists of all InitViews, also without graphics.library
+  (#891): each list has a header of 8 bytes in front (the next list, the
+  size of the block) that chains it to the ones before. The original
+  keeps only the last list – a new InitView forgets the one before – and
+  frees it only if init opened graphics.library 39.
 
 * The four moves of the list are the register moves DIWSTRT `$2C81`,
   DIWSTOP `$2CC1`, DDFSTRT `$0038`, DDFSTOP `$00D0` (#889). In the

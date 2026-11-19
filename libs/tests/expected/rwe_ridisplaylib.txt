@@ -18,14 +18,16 @@ InitView|kept|1000,8,8,2|1	kept
 InitView|kept|200,5,0,32|1	kept
 InitView|kept|256,8,8,256|1	kept
 InitView|kept|3000,1,100,65535|1	kept
-InitView|memory balance|0,0,0,0|1	$00000028
+InitView|memory balance|0,0,0,0|1 [orig]	$00000028
+InitView|memory balance|0,0,0,0|1 [fixed #891]	$00000030
 InitView|memory balance|1000,8,8,2|1 [orig]	$00002068
-InitView|memory balance|1000,8,8,2|1 [fixed #890]	$00000138
+InitView|memory balance|1000,8,8,2|1 [fixed #890]	$00000140
 InitView|memory balance|200,5,0,32|1 [orig]	$000006B8
-InitView|memory balance|200,5,0,32|1 [fixed #890]	$00000178
-InitView|memory balance|256,8,8,256|1	$00000928
+InitView|memory balance|200,5,0,32|1 [fixed #890]	$00000180
+InitView|memory balance|256,8,8,256|1 [orig]	$00000928
+InitView|memory balance|256,8,8,256|1 [fixed #891]	$00000930
 InitView|memory balance|3000,1,100,65535|1 [orig]	$00006438
-InitView|memory balance|3000,1,100,65535|1 [fixed #890]	$00080670
+InitView|memory balance|3000,1,100,65535|1 [fixed #890]	$00080678
 InitView|popped|0,0,0,0|1	$00000000
 InitView|popped|1000,8,8,2|1	$00000000
 InitView|popped|200,5,0,32|1	$00000000
@@ -268,7 +270,7 @@ InitView (no init)|d0 = cop|100,2,1,4|1	$00000001
 InitView (no init)|graphics.library open count|100,2,1,4|1	$00000000
 InitView (no init)|kept|100,2,1,4|1	kept
 InitView (no init)|memory balance|100,2,1,4|1 [orig]	$00000378
-InitView (no init)|memory balance|100,2,1,4|1 [fixed #890]	$00000078
+InitView (no init)|memory balance|100,2,1,4|1 [fixed #890]	$00000080
 InitView (no init)|popped|100,2,1,4|1	$00000000
 InitView (no init)|variables found|100,2,1,4|1	$00000001
 InitView (no init)|viewsize|100,2,1,4|1 [orig]	$00000376
@@ -329,7 +331,7 @@ finit|freed||1	$00000001
 finit|graphics.library open count||1	$00000000
 finit|kept||1	kept
 finit|memory balance||1 [orig]	$FFFF9BC8
-finit|memory balance||1 [fixed #890]	$FFF7F990
+finit|memory balance||1 [fixed #890]	$FFF7ED68
 finit|popped||1	$00000000
 finit|viewsize||1	$00000000
 finit (again)|cop||1	$00000000
@@ -338,13 +340,15 @@ finit (again)|kept||1	kept
 finit (again)|memory balance||1	$00000000
 finit (again)|popped||1	$00000000
 finit (again)|viewsize||1	$00000000
-finit (no graphics)|cop||1	$00000001
+finit (no graphics)|cop||1 [orig]	$00000001
+finit (no graphics)|cop||1 [fixed #891]	$00000000
 finit (no graphics)|graphics.library open count||1	$00000000
 finit (no graphics)|kept||1	kept
-finit (no graphics)|memory balance||1	$00000000
+finit (no graphics)|memory balance||1 [orig]	$00000000
+finit (no graphics)|memory balance||1 [fixed #891]	$FFFFFF80
 finit (no graphics)|popped||1	$00000000
 finit (no graphics)|viewsize||1 [orig]	$00000376
-finit (no graphics)|viewsize||1 [fixed #890]	$00000076
+finit (no graphics)|viewsize||1 [fixed #890]	$00000000
 finit (no list)|cop||1	$00000000
 finit (no list)|graphics.library open count||1	$00000000
 finit (no list)|kept||1	kept

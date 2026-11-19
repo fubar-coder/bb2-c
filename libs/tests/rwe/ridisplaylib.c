@@ -12,11 +12,11 @@
  * and cop (found in both libraries by the list InitView returns), the
  * list's 8 words (each compared with its register move $008E, $2C81,
  * $0090, $2CC1, $0092, $0038, $0094, $00D0 and with the word at that
- * absolute address - the original's list, BUG(orig) #889 -, and the value
+ * absolute address - the original's list, #889 -, and the value
  * of the ones at even addresses), the change of
  * graphics.library's open count and the test task's memory balance
- * (rwemem.h), and the kept registers.  The lists InitView
- * leaks (only the last one is kept, BUG(orig), #891) are freed by the test
+ * (rwemem.h), and the kept registers.  The lists the
+ * original leaks (it keeps only the last one, #891) are freed by the test
  * after finit: the ones finit's memory balance shows it did not free (all
  * but the last, or all when it freed nothing).
  *
@@ -114,7 +114,7 @@ static void initview(const char *name, UWORD h, UWORD d, UWORD s, UWORD c)
 }
 
 /* after a finit: free the lists it left (the original frees only the
-   last, and none without graphics.library, BUG(orig), #891), as its
+   last, and none without graphics.library, #891), as its
    memory balance shows */
 static void freeleft(void)
 {

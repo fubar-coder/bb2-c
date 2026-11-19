@@ -8,6 +8,7 @@
 ; equals the colour count, so the list is 502 bytes with the height or
 ; with the colours in its size (#890).
 ; Correct: nothing is left allocated.
+; @fixed #891
 ; @rwe ridisplaylib
 ; @pass runwrap=@INJECT@|openlibfail=graphics.library track
 DEFTYPE .l

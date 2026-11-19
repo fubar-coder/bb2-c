@@ -7,7 +7,7 @@
  *                       moves; returns its address
  *   ViewBitmap(bitmap)  no code
  * init opens graphics.library 39 (the base is not used), finit closes it
- * and frees the last copper list.  Nothing is shown: the library never
+ * and frees every copper list.  Nothing is shown: the library never
  * installs the list, it does not touch the display.
  *
  * C translation of rwelibsrc/mydisplaylib.bb; reference: the reference
@@ -16,13 +16,15 @@
  * docs/rwelibs/port/ridisplaylib.md.
  *
  * The variables viewsize and cop are kept together in the original's
- * order (the test finds them by the address InitView returns).  No
- * assembler besides the thunks.
+ * order (the test finds them by the address InitView returns), the chain
+ * of all lists behind them.  No assembler besides the thunks.
  *
- * BUG(orig):
- *   - Every InitView allocates a new list; only the last one is freed (by
- *     finit, and only if graphics.library was opened) (#891).
  * Fixed:
+ *   - finit frees the lists of all InitViews, also without
+ *     graphics.library (#891): each list has a header of 8 bytes in front
+ *     that chains it to the ones before.  The original keeps only the
+ *     last list (a new InitView forgets the one before) and frees it only
+ *     if init opened graphics.library 39.
  *   - InitView tests AllocMem: without chip memory it returns 0, writes
  *     nothing and keeps the list before; finit frees a list only if
  *     there is one (#888).  The original writes the moves to address 0
@@ -71,10 +73,18 @@ BLITZ_LIBFIN();
 
 /* ------------------------------------------------------------- the data */
 
+/* the header in front of each list: the lists of all InitViews are
+   chained, finit frees them all (#891) */
+struct viewlist {
+    struct viewlist *next;
+    ULONG size;                         /* of the block, the header included */
+};
+
 static struct BL_PACKED {
     ULONG viewsize;                     /* the size of the last list */
     UWORD *cop;                         /* the last list */
-} vd = { 0, 0 };
+    struct viewlist *lists;             /* all lists, the last first */
+} vd = { 0, 0, 0 };
 
 static struct Library *gfxbase;
 
@@ -90,22 +100,27 @@ static void BLITZ_ROUTINE codeinit_c(void)
 }
 
 /**
- * @brief finit: close graphics.library and free the last copper list.
+ * @brief finit: close graphics.library and free every copper list.
  *
- * Nothing happens if init could not open the library.  Only the list of
- * the last InitView that got one is freed, the earlier ones are lost
- * (BUG(orig) (#891)); no list, nothing freed (fixed (#888): the original
- * calls FreeMem(0, size) after a failed AllocMem).
+ * Closes the library if init opened it, and frees the lists of all
+ * InitViews, also without graphics.library (fixed (#891): the original
+ * frees only the last list, and nothing when init could not open the
+ * library; fixed (#888): it calls FreeMem(0, size) after a failed
+ * AllocMem).
  */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
-    if (!gfxbase)
-        return;
-    CloseLibrary(gfxbase);
-    gfxbase = NULL;
-    if (!vd.cop)
-        return;
-    FreeMem(vd.cop, vd.viewsize);
+    struct viewlist *l, *next;
+
+    if (gfxbase) {
+        CloseLibrary(gfxbase);
+        gfxbase = NULL;
+    }
+    for (l = vd.lists; l; l = next) {
+        next = l->next;
+        FreeMem(l, l->size);
+    }
+    vd.lists = NULL;
     vd.viewsize = 0;
     vd.cop = NULL;
 }
@@ -124,8 +139,10 @@ static void BLITZ_ROUTINE codefinit_c(void)
  * error on a 68000 at the odd ones).  Without chip memory InitView
  * returns 0, writes nothing and keeps the list before (fixed (#888): the
  * original does not test AllocMem, the words go to address 0 and finit
- * calls FreeMem(0, size)).  Every call allocates a new list; the old one
- * is forgotten (BUG(orig) (#891)).  The list is never installed.
+ * calls FreeMem(0, size)).  Every call allocates a new list, behind a
+ * header of 8 bytes that chains it to the lists before; finit frees them
+ * all (fixed (#891): the original forgets the list before).  The list is
+ * never installed.
  * @param height   d0.w: the height (not used)
  * @param depth    d1.w: the depth (16 bytes per plane)
  * @param sprites  d2.w: the number of sprites (16 bytes each)
@@ -136,15 +153,20 @@ static ULONG BLITZ_ROUTINE initview_c(UWORD height BL_REG(d0), UWORD depth BL_RE
                                       UWORD sprites BL_REG(d2), UWORD colours BL_REG(d3))
 {
     ULONG size;
+    struct viewlist *l;
     UWORD *p;
 
     (void)height;
     /* sprites*16 + depth*8 + colours*8 + depth*8 (colour setups) + 38,
        as a long (#890) */
     size = ((ULONG)sprites << 4) + ((ULONG)depth << 4) + ((ULONG)colours << 3) + 38;
-    p = AllocMem(size, MEMF_CHIP);
-    if (!p)
+    l = AllocMem(sizeof *l + size, MEMF_CHIP);
+    if (!l)
         return 0;                                       /* (#888) */
+    l->next = vd.lists;                                 /* (#891) */
+    l->size = sizeof *l + size;
+    vd.lists = l;
+    p = (UWORD *)(l + 1);
     vd.viewsize = size;
     vd.cop = p;
     /* !cmove{diwstrt,$2c81} ...: the register moves (#889) */
