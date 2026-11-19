@@ -67,6 +67,13 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   and the colour and return, a0 unchanged, as without a font. The
   original pushed 13 registers first and returned with RTS – to the
   pushed d0, a crash (#665).
+* InstallFNS refuses a font of height 0 (result 0), FNSLoad a file that
+  is no `FNS.` font or has a height of 0 (-1; the bank is erased, and the
+  slot emptied if its font was the one FNSLoad had put in that bank).
+  The original checked only the id in InstallFNS and nothing in FNSLoad
+  (the manual: "A failure could either be a load error or an
+  installation error"), and a height of 0 drew 65536 rows per character:
+  every row of the clip zone, the last ones below ymax (#663).
 
 ## BUG(orig), kept
 
@@ -85,8 +92,8 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   48/64-pixel fonts read their 3rd/4th glyph word only for rows that are
   drawn, so after a clipped row the glyph is shifted (#656).
 * FNSSetTab 0: a tab divides by 0 (#666). The underline is clipped at
-  x = 0, not at xmin (#667). A font height of 0 draws 65536 rows (#663).
-  Codes from 160 end the text (signed byte compare) (#657).
+  x = 0, not at xmin (#667). Codes from 160 end the text (signed byte
+  compare) (#657).
 * FNSLoad loads into RIAmosFuncLib bank 55 + slot, which is above its
   default of 50 banks: `BLoad` takes the number as an address and reads the
   file to the address 55 + slot (a real font destroys the vector table),

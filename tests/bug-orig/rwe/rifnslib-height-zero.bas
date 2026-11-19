@@ -6,6 +6,7 @@
 ; rows drawn stay inside the bitmap.
 ; Correct: a font of height 0 draws nothing (pixel 1,5 stays 0).
 ; rifnslib needs RIAmosFuncLib (FNSLoad and FNSUnload use its banks).
+; @fixed #663
 ; @rwe rifnslib riamosfunclib
 DEFTYPE .l
 f=AllocMem_(1024,$10001)

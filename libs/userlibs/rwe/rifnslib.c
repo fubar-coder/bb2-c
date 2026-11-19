@@ -65,12 +65,17 @@
  *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop (#658).
  *   - FNSSetTab 0: chr$(9) divides by 0 (exception) (#666).
  *   - The underline ignores xmin (it is clipped at x = 0 only) (#667).
- *   - A font height of 0 draws 65536 rows (#663).
  *   - Codes from 160 end the text (a sign test after CMPI.b #32) (#657).
  * Fixed (#665): FNSPrint/FNSShadowPrint before FNSOutput (no bitmap)
  *   return at once (the prefs and the colour stored as on the way without
  *   a font); the original pushed 13 registers and returned with RTS - to
  *   the pushed d0, a crash.
+ * Fixed (#663): InstallFNS refuses a font of height 0 (0), FNSLoad a file
+ *   that is no "FNS." font or has a height of 0 (-1, the bank erased, the
+ *   slot emptied if its font was the one in that bank); the original
+ *   checked only the id in InstallFNS and nothing in FNSLoad, and a
+ *   height of 0 drew 65536 rows per character (every row of the clip
+ *   zone, the last ones below ymax).
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): FNSLength's font number outside the block, and
  *   the glyphs of codes the font has no data for - the built-in font ends
@@ -317,6 +322,18 @@ static_assert(sizeof(struct fnshead) == 12);
 #define FH(font) ((const struct fnshead *)(font))
 
 #define LONGAT(p) (*(ULONG *)(p))
+
+/* the slots whose font FNSLoad loaded into bank 55 + slot (bit n: slot
+   n), so that a refused file empties the slot whose font it overwrote
+   (fixed, #663) */
+static UWORD loadedslots;
+
+/* a font the library takes: "FNS." and a height of at least 1 (fixed,
+   #663: a height of 0 drew 65536 rows) */
+static int isfont(const UBYTE *font)
+{
+    return FH(font)->id == FNSID && FH(font)->height;
+}
 #define BITSTACK ((ULONG *)((UBYTE *)&fns + offsetof(struct fns, bitstack)))
 
 /* ------------------------------------------------------------ FNSPrint */
@@ -587,8 +604,7 @@ static void underline(UWORD x)
  * empty text counts width 1 (#659); depth 0 or above 8 overruns the
  * plane stack (#658); rows above ymax are tested unsigned (#664), 48/64
  * pixel glyphs shift after a clipped row (#656); FNSSetTab 0 divides by
- * 0 (#666); the underline ignores xmin (#667); height 0 draws 65536 rows
- * (#663).
+ * 0 (#666); the underline ignores xmin (#667).
  * @param fontnum  d0: the font slot
  * @param x        d1: x
  * @param y        d2: y
@@ -706,17 +722,19 @@ static void BLITZ_ROUTINE _libfinit(void)
 /**
  * @brief InstallFNS(fontnum,address): puts a font in memory into a slot.
  *
- * Only an "FNS." font.
+ * Only an "FNS." font with a height of at least 1 (fixed, #663: the
+ * original took a height of 0, which drew 65536 rows per character).
  * @param n     d0: the slot (& 15)
  * @param font  d1: the address of the font
- * @return d0.b: the slot, 0 if it is no FNS font
+ * @return d0.b: the slot, 0 if it is no FNS font or its height is 0
  */
 static ULONG BLITZ_ROUTINE installfns_c(ULONG n BL_REG(d0), const UBYTE *font BL_REG(d1))
 {
-    if (FH(font)->id != FNSID)
+    if (!isfont(font))
         return 0;
     n &= 15;
     fns.font_add[n] = (ULONG)font;
+    loadedslots &= (UWORD)~(1 << n);
     return n;
 }
 
@@ -727,6 +745,7 @@ static ULONG BLITZ_ROUTINE installfns_c(ULONG n BL_REG(d0), const UBYTE *font BL
 static void BLITZ_ROUTINE removefns_c(ULONG n BL_REG(d0))
 {
     fns.font_add[n & 15] = 0;
+    loadedslots &= (UWORD)~(1 << (n & 15));
 }
 
 /**
@@ -923,8 +942,12 @@ static void BLITZ_ROUTINE origin_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 /**
  * @brief FNSLoad(fontname$,fontslot): loads a font file into a slot.
  *
- * RIAmosFuncLib BLoad into bank 55 + slot, then its Start into the slot
- * (no "FNS." check).  Amiga mode only.
+ * RIAmosFuncLib BLoad into bank 55 + slot, then its Start into the slot.
+ * Fixed (#663): a file that is no "FNS." font or has a height of 0 is
+ * refused: -1, the bank erased, and the slot emptied if its font was the
+ * one FNSLoad had put in that bank (BLoad overwrote it); the original
+ * stored whatever Start returned (FNSPrint then drew nothing, a font of
+ * height 0 65536 rows per character).  Amiga mode only.
  * BUG(orig) (#984): bank 55 + slot is at or above RIAmosFuncLib's default of
  * 50 banks, so BLoad takes it as an address and reads the file to the
  * address 55 + slot; Start(55 + slot) is then 0 and the result -1 (it works
@@ -946,7 +969,16 @@ static ULONG BLITZ_ROUTINE load_c(ULONG name BL_REG(d0), ULONG slot BL_REG(d1))
     start = BLITZ_ALIBJSR(TOK_start, r);
     if (!start)
         return (ULONG)-1;
+    if (!isfont((const UBYTE *)start)) {        /* fixed (#663) */
+        r = (struct bl_regs){ .d0 = bank };
+        BLITZ_ALIBJSR(TOK_erase, r);
+        if (loadedslots & (1 << slot))
+            fns.font_add[slot] = 0;
+        loadedslots &= (UWORD)~(1 << slot);
+        return (ULONG)-1;
+    }
     fns.font_add[slot] = start;
+    loadedslots |= (UWORD)(1 << slot);
     return slot;
 }
 
@@ -960,6 +992,7 @@ static void BLITZ_ROUTINE unload_c(ULONG slot BL_REG(d0))
 
     slot &= 15;
     fns.font_add[slot] = 0;
+    loadedslots &= (UWORD)~(1 << slot);
     r = (struct bl_regs){ .d0 = 55 + slot };
     BLITZ_ALIBJSR(TOK_erase, r);
 }

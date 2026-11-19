@@ -130,10 +130,14 @@ FNSHeight|d0|4|6	$0000000A
 FNSHeight|d0|4|7	$0000000A
 FNSHeight|d0|4|8	$0000000A
 FNSHeight|d0|4|9	$0000000A
-FNSHeight|d0|4|10	$FFFFFFFF
-FNSHeight|d0|4|11	$00000000
-FNSHeight|d0|4|12	$0000000C
-FNSHeight|d0|4|13	$0000000C
+FNSHeight|d0|4|10 [orig]	$FFFFFFFF
+FNSHeight|d0|4|10 [fixed #663]	$0000000A
+FNSHeight|d0|4|11 [orig]	$00000000
+FNSHeight|d0|4|11 [fixed #663]	$0000000A
+FNSHeight|d0|4|12 [orig]	$0000000C
+FNSHeight|d0|4|12 [fixed #663]	$0000000A
+FNSHeight|d0|4|13 [orig]	$0000000C
+FNSHeight|d0|4|13 [fixed #663]	$0000000A
 FNSHeight|d0|4|14	$FFFFFFFF
 FNSHeight|d0|4|15	$FFFFFFFF
 FNSHeight|d0|4|16	$FFFFFFFF
@@ -1200,8 +1204,10 @@ FNSLoad|call|case 4|1	$00000001
 FNSLoad|call|case 4|2	$00000002
 FNSLoad|call|case 5|1	$00000001
 FNSLoad|call|case 5|2	$00000002
+FNSLoad|call|case 5|3 [fixed #663]	$00000003
 FNSLoad|call|case 6|1	$00000001
 FNSLoad|call|case 6|2	$00000002
+FNSLoad|call|case 6|3 [fixed #663]	$00000003
 FNSLoad|call|case 7|1	$00000001
 FNSLoad|call|case 7|2	$00000002
 FNSLoad|call|case 8|1	$00000001
@@ -1217,8 +1223,10 @@ FNSLoad|call d0|case 4|1	$00000000
 FNSLoad|call d0|case 4|2	$00000040
 FNSLoad|call d0|case 5|1	$00000000
 FNSLoad|call d0|case 5|2	$0000003B
+FNSLoad|call d0|case 5|3 [fixed #663]	$0000003B
 FNSLoad|call d0|case 6|1	$00000000
 FNSLoad|call d0|case 6|2	$0000003D
+FNSLoad|call d0|case 6|3 [fixed #663]	$0000003D
 FNSLoad|call d0|case 7|1	$00000000
 FNSLoad|call d0|case 7|2	$0000003E
 FNSLoad|call d0|case 8|1	$00000000
@@ -1234,8 +1242,10 @@ FNSLoad|call d1|case 4|1	$00000040
 FNSLoad|call d1|case 4|2	$00000000
 FNSLoad|call d1|case 5|1	$0000003B
 FNSLoad|call d1|case 5|2	$00000000
+FNSLoad|call d1|case 5|3 [fixed #663]	$00000000
 FNSLoad|call d1|case 6|1	$0000003D
 FNSLoad|call d1|case 6|2	$00000000
+FNSLoad|call d1|case 6|3 [fixed #663]	$00000000
 FNSLoad|call d1|case 7|1	$0000003E
 FNSLoad|call d1|case 7|2	$00000000
 FNSLoad|call d1|case 8|1	$00000042
@@ -1245,8 +1255,10 @@ FNSLoad|calls|case 1|1	$00000002
 FNSLoad|calls|case 2|1	$00000002
 FNSLoad|calls|case 3|1	$00000001
 FNSLoad|calls|case 4|1	$00000002
-FNSLoad|calls|case 5|1	$00000002
-FNSLoad|calls|case 6|1	$00000002
+FNSLoad|calls|case 5|1 [orig]	$00000002
+FNSLoad|calls|case 5|1 [fixed #663]	$00000003
+FNSLoad|calls|case 6|1 [orig]	$00000002
+FNSLoad|calls|case 6|1 [fixed #663]	$00000003
 FNSLoad|calls|case 7|1	$00000002
 FNSLoad|calls|case 8|1	$00000002
 FNSLoad|d0|case 0|1	$00000009
@@ -1254,8 +1266,10 @@ FNSLoad|d0|case 1|1	$00000009
 FNSLoad|d0|case 2|1	$00000003
 FNSLoad|d0|case 3|1	$FFFFFFFF
 FNSLoad|d0|case 4|1	$FFFFFFFF
-FNSLoad|d0|case 5|1	$00000004
-FNSLoad|d0|case 6|1	$00000006
+FNSLoad|d0|case 5|1 [orig]	$00000004
+FNSLoad|d0|case 5|1 [fixed #663]	$FFFFFFFF
+FNSLoad|d0|case 6|1 [orig]	$00000006
+FNSLoad|d0|case 6|1 [fixed #663]	$FFFFFFFF
 FNSLoad|d0|case 7|1	$00000007
 FNSLoad|d0|case 8|1	$0000000B
 FNSLoad|kept|case 0|1	kept
@@ -2085,7 +2099,8 @@ FNSPrint|a0|f1 font 4 28,13 "a\x0A\x0Ab" prefs A col 24/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 4 29,13 "a\x0A\x0Ab" prefs B col 27/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 4 3,58 "below the bitmap" prefs 0 col 5/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 4 30,30 "" prefs 6 col 3/0|1	$FFFFFFD2
-FNSPrint|a0|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1	$00000001
+FNSPrint|a0|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1 [orig]	$00000001
+FNSPrint|a0|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	$FFFFFFD2
 FNSPrint|a0|f1 font 4 300,40 "near the edge" prefs 0 col 15/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 4 300,40 "near the edge" prefs 1 col 15/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 4 300,40 "near the edge" prefs 2 col 15/0|1	$FFFFFFD2
@@ -2246,7 +2261,8 @@ FNSPrint|a0|f1 font 5 83,38 "!"#$%&'()*+,-./01234" prefs 1 col 29/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 5 84,38 "!"#$%&'()*+,-./01234" prefs 2 col 32/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 5 85,38 "!"#$%&'()*+,-./01234" prefs 3 col 35/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 5 9,8 "" prefs 3 col 7/0|1	$FFFFFFD2
-FNSPrint|a0|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1	$FFFFFFD2
+FNSPrint|a0|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1 [orig]	$FFFFFFD2
+FNSPrint|a0|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	$00000001
 FNSPrint|a0|f1 font 7 30,30 "loaded" prefs 0 col 1/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 7 30,40 "abc FGH xyz" prefs 0 col 2/0|1	$FFFFFFD2
 FNSPrint|a0|f1 font 9 30,30 "loaded" prefs 0 col 1/0|1	$FFFFFFD2
@@ -2791,7 +2807,8 @@ FNSPrint|bitmap|f1 font 1 83,34 "!"#$%&'()*+,-./01234" prefs 1 col 29/0|1	bytes 
 FNSPrint|bitmap|f1 font 1 84,34 "!"#$%&'()*+,-./01234" prefs 2 col 32/0|1	bytes 20992 fnv 6C21654C
 FNSPrint|bitmap|f1 font 1 85,34 "!"#$%&'()*+,-./01234" prefs 3 col 35/0|1	bytes 20992 fnv CDC9F3AC
 FNSPrint|bitmap|f1 font 1 9,4 "" prefs 3 col 7/0|1	bytes 20992 fnv 8595BE05
-FNSPrint|bitmap|f1 font 11 30,30 "loaded" prefs 0 col 1/0|1	bytes 20992 fnv 27080E75
+FNSPrint|bitmap|f1 font 11 30,30 "loaded" prefs 0 col 1/0|1 [orig]	bytes 20992 fnv 27080E75
+FNSPrint|bitmap|f1 font 11 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	bytes 20992 fnv 14FEA8BF
 FNSPrint|bitmap|f1 font 2 0,30 "" prefs 0 col 3/0|1	bytes 20992 fnv 1A140D65
 FNSPrint|bitmap|f1 font 2 10,30 "" prefs 2 col 3/0|1	bytes 20992 fnv 9B75E4C5
 FNSPrint|bitmap|f1 font 2 10,5 "" prefs 4 col 10/0|1	bytes 20992 fnv E61E4C27
@@ -3033,7 +3050,8 @@ FNSPrint|bitmap|f1 font 4 28,13 "a\x0A\x0Ab" prefs A col 24/0|1	bytes 20992 fnv 
 FNSPrint|bitmap|f1 font 4 29,13 "a\x0A\x0Ab" prefs B col 27/0|1	bytes 20992 fnv 6F08D4B5
 FNSPrint|bitmap|f1 font 4 3,58 "below the bitmap" prefs 0 col 5/0|1	bytes 20992 fnv 9F79EEDE
 FNSPrint|bitmap|f1 font 4 30,30 "" prefs 6 col 3/0|1	bytes 20992 fnv 50984765
-FNSPrint|bitmap|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1	bytes 20992 fnv 5B56C451
+FNSPrint|bitmap|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1 [orig]	bytes 20992 fnv 5B56C451
+FNSPrint|bitmap|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	bytes 20992 fnv 19D1E070
 FNSPrint|bitmap|f1 font 4 300,40 "near the edge" prefs 0 col 15/0|1	bytes 20992 fnv 99908FD5
 FNSPrint|bitmap|f1 font 4 300,40 "near the edge" prefs 1 col 15/0|1	bytes 20992 fnv 6022E77B
 FNSPrint|bitmap|f1 font 4 300,40 "near the edge" prefs 2 col 15/0|1	bytes 20992 fnv 488CF946
@@ -3194,9 +3212,12 @@ FNSPrint|bitmap|f1 font 5 83,38 "!"#$%&'()*+,-./01234" prefs 1 col 29/0|1	bytes 
 FNSPrint|bitmap|f1 font 5 84,38 "!"#$%&'()*+,-./01234" prefs 2 col 32/0|1	bytes 20992 fnv 20A68034
 FNSPrint|bitmap|f1 font 5 85,38 "!"#$%&'()*+,-./01234" prefs 3 col 35/0|1	bytes 20992 fnv 57A6F80C
 FNSPrint|bitmap|f1 font 5 9,8 "" prefs 3 col 7/0|1	bytes 20992 fnv 11F16D95
-FNSPrint|bitmap|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1	bytes 20992 fnv CDF285C0
-FNSPrint|bitmap|f1 font 7 30,30 "loaded" prefs 0 col 1/0|1	bytes 20992 fnv 7C53CF6D
-FNSPrint|bitmap|f1 font 7 30,40 "abc FGH xyz" prefs 0 col 2/0|1	bytes 20992 fnv B8DB48F1
+FNSPrint|bitmap|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1 [orig]	bytes 20992 fnv CDF285C0
+FNSPrint|bitmap|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	bytes 20992 fnv 19D1E070
+FNSPrint|bitmap|f1 font 7 30,30 "loaded" prefs 0 col 1/0|1 [orig]	bytes 20992 fnv 7C53CF6D
+FNSPrint|bitmap|f1 font 7 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	bytes 20992 fnv 052FEB3B
+FNSPrint|bitmap|f1 font 7 30,40 "abc FGH xyz" prefs 0 col 2/0|1 [orig]	bytes 20992 fnv B8DB48F1
+FNSPrint|bitmap|f1 font 7 30,40 "abc FGH xyz" prefs 0 col 2/0|1 [fixed #663]	bytes 20992 fnv B196C6A7
 FNSPrint|bitmap|f1 font 9 30,30 "loaded" prefs 0 col 1/0|1	bytes 20992 fnv 5B56C451
 FNSPrint|bitmap|f1 font 9 30,30 "loaded" prefs 0 col 1/0|2	bytes 20992 fnv 5B56C451
 FNSPrint|bitmap|f1 font 9 30,30 "loaded" prefs 0 col 1/0|3	bytes 20992 fnv 5B56C451
@@ -3981,6 +4002,7 @@ FNSPrint|end x|f1 font 4 28,13 "a\x0A\x0Ab" prefs A col 24/0|1	$0000001D
 FNSPrint|end x|f1 font 4 29,13 "a\x0A\x0Ab" prefs B col 27/0|1	$00000034
 FNSPrint|end x|f1 font 4 3,58 "below the bitmap" prefs 0 col 5/0|1	$00000120
 FNSPrint|end x|f1 font 4 30,30 "" prefs 6 col 3/0|1	$0000001E
+FNSPrint|end x|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	$00000098
 FNSPrint|end x|f1 font 4 300,40 "near the edge" prefs 0 col 15/0|1	$0000012C
 FNSPrint|end x|f1 font 4 300,40 "near the edge" prefs 1 col 15/0|1	$00000125
 FNSPrint|end x|f1 font 4 300,40 "near the edge" prefs 2 col 15/0|1	$0000012C
@@ -4141,7 +4163,7 @@ FNSPrint|end x|f1 font 5 83,38 "!"#$%&'()*+,-./01234" prefs 1 col 29/0|1	$000001
 FNSPrint|end x|f1 font 5 84,38 "!"#$%&'()*+,-./01234" prefs 2 col 32/0|1	$0000013E
 FNSPrint|end x|f1 font 5 85,38 "!"#$%&'()*+,-./01234" prefs 3 col 35/0|1	$0000013A
 FNSPrint|end x|f1 font 5 9,8 "" prefs 3 col 7/0|1	$0000800A
-FNSPrint|end x|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1	$000000B1
+FNSPrint|end x|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1 [orig #663]	$000000B1
 FNSPrint|end x|f1 font 7 30,30 "loaded" prefs 0 col 1/0|1	$00000076
 FNSPrint|end x|f1 font 7 30,40 "abc FGH xyz" prefs 0 col 2/0|1	$000000BD
 FNSPrint|end x|f1 font 9 30,30 "loaded" prefs 0 col 1/0|1	$00000076
@@ -4928,6 +4950,7 @@ FNSPrint|end y|f1 font 4 28,13 "a\x0A\x0Ab" prefs A col 24/0|1	$00000021
 FNSPrint|end y|f1 font 4 29,13 "a\x0A\x0Ab" prefs B col 27/0|1	$00000021
 FNSPrint|end y|f1 font 4 3,58 "below the bitmap" prefs 0 col 5/0|1	$0000003A
 FNSPrint|end y|f1 font 4 30,30 "" prefs 6 col 3/0|1	$0000001E
+FNSPrint|end y|f1 font 4 30,30 "loaded" prefs 0 col 1/0|1 [fixed #663]	$0000001E
 FNSPrint|end y|f1 font 4 300,40 "near the edge" prefs 0 col 15/0|1	$00000028
 FNSPrint|end y|f1 font 4 300,40 "near the edge" prefs 1 col 15/0|1	$00000028
 FNSPrint|end y|f1 font 4 300,40 "near the edge" prefs 2 col 15/0|1	$00000028
@@ -5088,7 +5111,7 @@ FNSPrint|end y|f1 font 5 83,38 "!"#$%&'()*+,-./01234" prefs 1 col 29/0|1	$000000
 FNSPrint|end y|f1 font 5 84,38 "!"#$%&'()*+,-./01234" prefs 2 col 32/0|1	$00000026
 FNSPrint|end y|f1 font 5 85,38 "!"#$%&'()*+,-./01234" prefs 3 col 35/0|1	$00000026
 FNSPrint|end y|f1 font 5 9,8 "" prefs 3 col 7/0|1	$00000008
-FNSPrint|end y|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1	$0000001E
+FNSPrint|end y|f1 font 6 30,30 "loaded" prefs 0 col 1/0|1 [orig #663]	$0000001E
 FNSPrint|end y|f1 font 7 30,30 "loaded" prefs 0 col 1/0|1	$0000001E
 FNSPrint|end y|f1 font 7 30,40 "abc FGH xyz" prefs 0 col 2/0|1	$00000028
 FNSPrint|end y|f1 font 9 30,30 "loaded" prefs 0 col 1/0|1	$0000001E
@@ -7227,10 +7250,14 @@ FNSUnderline|d0|4|6	$0000000C
 FNSUnderline|d0|4|7	$0000000C
 FNSUnderline|d0|4|8	$0000000C
 FNSUnderline|d0|4|9	$0000000C
-FNSUnderline|d0|4|10	$FFFFFFFF
-FNSUnderline|d0|4|11	$00000005
-FNSUnderline|d0|4|12	$0000000E
-FNSUnderline|d0|4|13	$0000000E
+FNSUnderline|d0|4|10 [orig]	$FFFFFFFF
+FNSUnderline|d0|4|10 [fixed #663]	$0000000C
+FNSUnderline|d0|4|11 [orig]	$00000005
+FNSUnderline|d0|4|11 [fixed #663]	$0000000C
+FNSUnderline|d0|4|12 [orig]	$0000000E
+FNSUnderline|d0|4|12 [fixed #663]	$0000000C
+FNSUnderline|d0|4|13 [orig]	$0000000E
+FNSUnderline|d0|4|13 [fixed #663]	$0000000C
 FNSUnderline|d0|4|14	$FFFFFFFF
 FNSUnderline|d0|4|15	$FFFFFFFF
 FNSUnderline|d0|4|16	$FFFFFFFF
@@ -7826,10 +7853,14 @@ FNSWidth|d0|4|6	$00000040
 FNSWidth|d0|4|7	$00000040
 FNSWidth|d0|4|8	$00000040
 FNSWidth|d0|4|9	$00000040
-FNSWidth|d0|4|10	$FFFFFFFF
-FNSWidth|d0|4|11	$00000030
-FNSWidth|d0|4|12	$00000020
-FNSWidth|d0|4|13	$00000020
+FNSWidth|d0|4|10 [orig]	$FFFFFFFF
+FNSWidth|d0|4|10 [fixed #663]	$00000040
+FNSWidth|d0|4|11 [orig]	$00000030
+FNSWidth|d0|4|11 [fixed #663]	$00000040
+FNSWidth|d0|4|12 [orig]	$00000020
+FNSWidth|d0|4|12 [fixed #663]	$00000040
+FNSWidth|d0|4|13 [orig]	$00000020
+FNSWidth|d0|4|13 [fixed #663]	$00000040
 FNSWidth|d0|4|14	$FFFFFFFF
 FNSWidth|d0|4|15	$FFFFFFFF
 FNSWidth|d0|4|16	$FFFFFFFF
