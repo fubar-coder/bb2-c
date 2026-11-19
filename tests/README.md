@@ -1318,7 +1318,13 @@ reports whether a click changed the UndoBuffer pointers of the window's
 string gadgets) and
 several RAWKEY events in one call of
 the input handlers at controlled times (`keys=`, an input handler with
-a clock of its own); `wbrun` starts the compiler
+a clock of its own). The `|` of `@INJECT@|...` only separates the helper
+from its options; several options are separated by blanks
+(`runwrap=@INJECT@|guardseg click=FQ/CANCEL`); the text after the `|`
+reaches the command line as it is. A `|` between two options joins them
+into one word, without a message: `openlibfail=graphics.library|track`
+fails an OpenLibrary of the name `graphics.library|track`, and `track` is
+not set. `wbrun` starts the compiler
 (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
 Workbench and reports the current directory at the end, how often the
 process opened minus closed dos.library and files left in use; with
