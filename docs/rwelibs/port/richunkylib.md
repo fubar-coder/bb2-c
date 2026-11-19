@@ -32,9 +32,13 @@ bytes. init and finit are empty; the object manager's free routine
 
 ## C and assembler
 
-All C behind `BLITZ_THUNK`s (keep d1/a0/a1, d0 too for the empty
+C behind `BLITZ_THUNK`s (keep d1/a0/a1, d0 too for the empty
 routines; the original changes d0/d1/d7/a0/a1 in ChunkyBitmap and the
-free routine, d2/a0/a1 in RaycastSky). The calls of lmullib
+free routine), except RaycastSky: an assembler entry in the original's
+form without a thunk, the per-column call of a ray caster at the
+original's speed; it changes d2/a0/a1 as the original does (a
+user-level statement, the register rule of `docs/libs/deviations.md`
+section 1). The calls of lmullib
 (`lmultiply`) and memlib (`globalloc`, `globfree`) are `ALibJsr`s with
 the original's registers. The C2P is the original's merge network
 (the masks `$0F0F0F0F`, `$3333CCCC`, `$55555555`, 8 pixels per step, 32

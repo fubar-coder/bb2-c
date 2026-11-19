@@ -302,6 +302,10 @@
 # 4090.6/4090.7, 8006.1/8006.7, 6366624.0 (8 calls per loop) and
 # 6366624.2.  c2p320 runs 4 times per loop: the timer's 16 bits hold
 # 65.5 million cycles (10 calls of the C port, 114 million, wrapped).
+# raycast* from two runs after RaycastSky became an assembler entry in the
+# original's form (W6 group F2, 2026-11-19): raycast1 211.2, raycast10
+# 561.8, raycast100 4090.2, raycast200 8006.8 both times (395.2, 786.2,
+# 4689.8, 9026.6 before); the four budgets lowered.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -323,10 +327,10 @@ bbblit.blocktoshape           679      684.9  BlockToShape 0,12 (16x16, 3 planes
 bbblit.tblockimage           2547     2696.3  TBlockImage img,0,96,32 (6 planes of a 320-pixel bitmap)
 bbblit.btblockimage4u       33061    33089.8  BTBlockImage 1,img,20,20,0 : BTBlockImage 1,img,60,20,0 : BTBlockImage 1,img,100,20,0 : BTBlockImage 1,img,140,20,0 : UnBuffer 1
 bchunky.emptylong               3          -  the empty loop again, 150000 iterations (the subtraction)
-bchunky.raycast1              403      210.7  RaycastSky 0,100,1,37,tx (height 1)
-bchunky.raycast10             798      561.7  RaycastSky 0,100,10,37,tx (height 10)
-bchunky.raycast100           4740     4090.7  RaycastSky 0,100,100,37,tx (height 100)
-bchunky.raycast200           9120     8006.7  RaycastSky 0,100,200,37,tx (height 200)
+bchunky.raycast1              217      210.7  RaycastSky 0,100,1,37,tx (height 1)
+bchunky.raycast10             571      561.7  RaycastSky 0,100,10,37,tx (height 10)
+bchunky.raycast100           4135     4090.7  RaycastSky 0,100,100,37,tx (height 100)
+bchunky.raycast200           8090     8006.7  RaycastSky 0,100,200,37,tx (height 200)
 bchunky.c2p320           11529026  6366624.2  ChunkyToPlanar 0,0 (320 x 256 chunky into 320 x 256 x 8, contiguous planes)
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0

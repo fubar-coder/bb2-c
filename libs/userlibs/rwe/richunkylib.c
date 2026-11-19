@@ -26,7 +26,7 @@
  * 32 pixels buffered then written as longs), in C with the same steps
  * and the same accesses to the planes.  The planes must be contiguous:
  * plane n is plane 0 + n*10240, the bitmap's other plane pointers are
- * not read.  No assembler besides the thunks.
+ * not read.  RaycastSky is an assembler entry (speed), the rest C.
  *
  * BUG(orig):
  *   - ChunkyToPlanar ignores the sizes (the chunky data must have 81920
@@ -246,26 +246,25 @@ static ULONG BLITZ_ROUTINE chunkydata_c(struct chunky *o BL_REG(a0))
  * that leaves the chunky data and a negative texture column (fixed,
  * #887), the release code checks nothing.  BUG(orig) (#887): the height
  * is a DBRA count (height 0 copies 65536 bytes).
- * @param x    d1: the column in the chunky data (a signed word)
- * @param h    d2: the number of bytes
- * @param col  d3: the column in the texture (a signed word)
- * @param tex  d4: the texture
- * @param o    a0: the object
+ * An assembler entry in the original's form, without a thunk (a
+ * user-level statement: it changes d2, a0 and a1, as the original, which
+ * the register rule allows): the per-column call of a ray caster, at the
+ * original's speed (bchunky.raycast*).
+ * In: d1 x (the offset in the chunky data, a signed word), d2 the height
+ * (a word), d3 the column (the offset in the texture, a signed word), d4
+ * the texture, a0 the object.
  */
-static void BLITZ_ROUTINE raycastsky_c(ULONG x BL_REG(d1), ULONG h BL_REG(d2),
-                                       ULONG col BL_REG(d3), ULONG tex BL_REG(d4),
-                                       struct chunky *o BL_REG(a0))
-{
-    UBYTE *dst = (UBYTE *)o->data + (WORD)x;           /* ADD.w d1,a0 */
-    const UBYTE *src = (const UBYTE *)tex + (WORD)col;  /* ADD.w d3,a1 */
-    UWORD n = (UWORD)(h - 1);                           /* SUBQ.w #1: DBRA */
-
-    do {
-        *dst = *src;
-        src += 320;
-        dst += 320;
-    } while (n-- != 0);
-}
+BLITZ_ASM_ROUTINE(_raycastsky,
+"   move.l  8(a0),a0\n"                /* the chunky data */
+"   move.l  d4,a1\n"                   /* the texture */
+"   add.w   d1,a0\n"                   /* ADD.w: x a signed word */
+"   add.w   d3,a1\n"                   /* ADD.w: the column a signed word */
+"   subq.w  #1,d2\n"                   /* the DBRA count, BUG(orig) (#887) */
+"0: move.b  (a1),(a0)\n"
+"   lea     320(a1),a1\n"
+"   lea     320(a0),a0\n"
+"   dbf     d2,0b\n"
+"   rts");
 
 /* ------------------------------------------------------------ C2P */
 
@@ -368,9 +367,10 @@ static void BLITZ_ROUTINE c2p_c(struct chunky *o BL_REG(a0), struct BitMap *bm B
 }
 
 /* Registers: the original changes d0, d1, d7, a0, a1 (ChunkyBitmap,
-   the free routine), d2 (RaycastSky), d0/d1/a0/a1 (ChunkyToPlanar), and
-   nothing in its empty routines; the thunks keep d1/a0/a1 (and d0 for
-   the empty ones and RaycastSky), the C code d2-d7/a2-a6. */
+   the free routine), d2/a0/a1 (RaycastSky, an assembler entry above),
+   d0/d1/a0/a1 (ChunkyToPlanar), and nothing in its empty routines; the
+   thunks keep d1/a0/a1 (and d0 for the empty ones), the C code
+   d2-d7/a2-a6. */
 BLITZ_THUNK(richunkylib_libinit, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(richunkylib_libfinit, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_p2c, nothing_c, "d0-d1/a0-a1");
@@ -378,7 +378,6 @@ BLITZ_THUNK(_chunkyloadbitmap, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_chunkybitmap, chunkybitmap_c, "d1/a0-a1");
 BLITZ_THUNK(_dofreechunkybitmap, dofreechunkybitmap_c, "d1/a0-a1");
 BLITZ_THUNK(_chunkydata, chunkydata_c, "d1/a0-a1");
-BLITZ_THUNK(_raycastsky, raycastsky_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_c2p, c2p_c, "d1/a0-a1");
 
 /* ------------------------------------------- error checks (debugger only) */
