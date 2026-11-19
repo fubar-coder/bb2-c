@@ -3,6 +3,7 @@
 ; added after the mask, so for x from 500 on the sum carries into bit 8,
 ; the line.  CopperWait 500,$40 waits for line $41.
 ; Correct: the line byte is y ($40) for every x; x = 498 as the control.
+; @fixed #591
 ; @rwe ricopperfxlib
 DEFTYPE .l
 m=AllocMem_(64,$10000)

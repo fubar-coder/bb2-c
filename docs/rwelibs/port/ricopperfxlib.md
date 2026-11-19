@@ -46,11 +46,12 @@ reproduced.
   0 (#589, #588).
 * `RedoColSplit`: `ASL.w #2` of the ccoffset argument shifts only the
   low word, the upper word is added unchanged (#594).
-* `CopperWait`: x becomes `((x >> 1) & $FE) + 6` as a word, the +6 can
-  carry into the line byte (#591).
 
 **Fixed:**
 
+* `CopperWait` masks the x position again after the +6: the original's
+  `((x >> 1) & $FE) + 6` as a word carried into the line byte for x from
+  500 on (#591).
 * `GetCCOffset` tests the custom space, as every other command: the
   original tests the coplist pointer, so after `CopperResetAdr` (coplist
   0) it returned -1 although the commands worked (#593).

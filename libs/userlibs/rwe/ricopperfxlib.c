@@ -47,12 +47,13 @@
  *     line 0 (#589, #588).
  *   - RedoColSplit: ccoffset * 4 is ASL.w (only the low word is
  *     shifted), the upper word of the argument is added unchanged (#594).
- *   - CopperWait: the x position is ((x >> 1) & $FE) + 6 as a word, so the
- *     +6 can carry into the line bits (x >= 500) (#591).
  * Fixed:
  *   - GetCCOffset tests customaddr, as every other command (the original
  *     tests coplistaddr: after CopperResetAdr, coplistaddr 0, it returned
  *     -1 although the commands worked) (#593).
+ *   - CopperWait masks the x position after the +6: the original's
+ *     ((x >> 1) & $FE) + 6 as a word carried into the line bits for
+ *     x >= 500 (#591).
  *   - init clears the state block (the original's is an RTS): a second
  *     run from the editor with the library still loaded wrote into the
  *     custom space of the run before before its CopperReset and kept its
@@ -471,14 +472,16 @@ void BLITZ_ROUTINE c_CustomMove(UWORD reg BL_REG(d0), UWORD value BL_REG(d1))
 /**
  * @brief CopperWait x,y: a WAIT instruction for the position x,y.
  *
- * BUG(orig) (#591): the x position is ((x >> 1) & $FE) + 6 as a word,
- * so the +6 can carry into the line bits (x >= 500).
+ * The x position is ((x >> 1) & $FE) + 6, masked with $FE again: fixed
+ * (#591), the original adds the 6 as a word after the mask, so for
+ * x >= 500 it carried into the line bits (line y | 1, x 0-4); now the
+ * horizontal position wraps within its byte and the line stays y.
  * @param x  d0: the x position
  * @param y  d1: the line
  */
 void BLITZ_ROUTINE c_CustomWait(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 {
-    UWORD w = (UWORD)((UWORD)((((WORD)x >> 1) & 0xfe) + 6) | (UWORD)(y << 8));
+    UWORD w = (UWORD)((UWORD)(((((WORD)x >> 1) & 0xfe) + 6) & 0xfe) | (UWORD)(y << 8));
 
     c_CustomCommand((UWORD)(w | 1), 0xffee);
 }

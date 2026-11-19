@@ -183,8 +183,10 @@ CopperAGACol|custom space|18,$59,$9,$F6|1	bytes 8192 fnv C5E50B4F
 CopperAGACol|custom space|180,$BD,$C9,$40|1	bytes 8192 fnv BB63638C
 CopperAGACol|custom space|200,$1E,$46,$38|1	bytes 8192 fnv D9385540
 CopperAGACol|custom space|200,$FF,$80,$1|1	bytes 8192 fnv 2F741DC5
-CopperAGACol|custom space|200,$FF,$80,$1|2	bytes 8192 fnv 14772879
-CopperAGACol|custom space|200,$FF,$80,$1|3	bytes 8192 fnv BF27EE75
+CopperAGACol|custom space|200,$FF,$80,$1|2 [orig]	bytes 8192 fnv 14772879
+CopperAGACol|custom space|200,$FF,$80,$1|2 [fixed #591]	bytes 8192 fnv 9962033D
+CopperAGACol|custom space|200,$FF,$80,$1|3 [orig]	bytes 8192 fnv BF27EE75
+CopperAGACol|custom space|200,$FF,$80,$1|3 [fixed #591]	bytes 8192 fnv 2E64B4B9
 CopperAGACol|custom space|204,$9F,$BD,$CD|1	bytes 8192 fnv 68F95791
 CopperAGACol|custom space|212,$6A,$1D,$7C|1	bytes 8192 fnv F45EB4E1
 CopperAGACol|custom space|221,$C3,$55,$8B|1	bytes 8192 fnv D3DBC84F
@@ -194,18 +196,24 @@ CopperAGACol|custom space|241,$95,$80,$2D|1	bytes 8192 fnv BA13BDB8
 CopperAGACol|custom space|25,$60,$D,$84|1	bytes 8192 fnv 4D7E00CA
 CopperAGACol|custom space|250,$18,$5C,$5A|1	bytes 8192 fnv 33A9E1B2
 CopperAGACol|custom space|255,$1FF,$FEDC,$8000|1	bytes 8192 fnv 2F741DC5
-CopperAGACol|custom space|255,$1FF,$FEDC,$8000|2	bytes 8192 fnv 858DD94B
-CopperAGACol|custom space|255,$1FF,$FEDC,$8000|3	bytes 8192 fnv A465C70F
+CopperAGACol|custom space|255,$1FF,$FEDC,$8000|2 [orig]	bytes 8192 fnv 858DD94B
+CopperAGACol|custom space|255,$1FF,$FEDC,$8000|2 [fixed #591]	bytes 8192 fnv C90E132F
+CopperAGACol|custom space|255,$1FF,$FEDC,$8000|3 [orig]	bytes 8192 fnv A465C70F
+CopperAGACol|custom space|255,$1FF,$FEDC,$8000|3 [fixed #591]	bytes 8192 fnv D351A893
 CopperAGACol|custom space|37,$12,$34,$56|1	bytes 8192 fnv 2F741DC5
-CopperAGACol|custom space|37,$12,$34,$56|2	bytes 8192 fnv A21DF75C
-CopperAGACol|custom space|37,$12,$34,$56|3	bytes 8192 fnv E9618940
+CopperAGACol|custom space|37,$12,$34,$56|2 [orig]	bytes 8192 fnv A21DF75C
+CopperAGACol|custom space|37,$12,$34,$56|2 [fixed #591]	bytes 8192 fnv CD213B40
+CopperAGACol|custom space|37,$12,$34,$56|3 [orig]	bytes 8192 fnv E9618940
+CopperAGACol|custom space|37,$12,$34,$56|3 [fixed #591]	bytes 8192 fnv 031263E4
 CopperAGACol|custom space|38,$B7,$69,$5D|1	bytes 8192 fnv 907A04E9
 CopperAGACol|custom space|40,$A2,$1,$3D|1	bytes 8192 fnv D9ABA9EE
 CopperAGACol|custom space|41,$70,$4A,$92|1	bytes 8192 fnv 42C01CEE
 CopperAGACol|custom space|44,$FD,$70,$8D|1	bytes 8192 fnv 0B7F609F
 CopperAGACol|custom space|4660,$0,$0,$0|1	bytes 8192 fnv 2F741DC5
-CopperAGACol|custom space|4660,$0,$0,$0|2	bytes 8192 fnv DB7FACD9
-CopperAGACol|custom space|4660,$0,$0,$0|3	bytes 8192 fnv 581C2355
+CopperAGACol|custom space|4660,$0,$0,$0|2 [orig]	bytes 8192 fnv DB7FACD9
+CopperAGACol|custom space|4660,$0,$0,$0|2 [fixed #591]	bytes 8192 fnv E58E793D
+CopperAGACol|custom space|4660,$0,$0,$0|3 [orig]	bytes 8192 fnv 581C2355
+CopperAGACol|custom space|4660,$0,$0,$0|3 [fixed #591]	bytes 8192 fnv D71DB2B9
 CopperAGACol|custom space|47,$B1,$D5,$14|1	bytes 8192 fnv 75F5E507
 CopperAGACol|custom space|49,$12,$9A,$FF|1	bytes 8192 fnv 8B91A511
 CopperAGACol|custom space|49,$C9,$62,$A5|1	bytes 8192 fnv 1A28B0C2
@@ -456,11 +464,15 @@ CopperCommand|coplistaddr|$4321,$8765|1	$00000000
 CopperCommand|coplistaddr|$4321,$8765|2	$00000001
 CopperCommand|coplistaddr|$4321,$8765|3	$00000000
 CopperCommand|custom space|$1FE,$0|1	bytes 8192 fnv 2F741DC5
-CopperCommand|custom space|$1FE,$0|2	bytes 8192 fnv 6DD56688
-CopperCommand|custom space|$1FE,$0|3	bytes 8192 fnv ED04D21C
+CopperCommand|custom space|$1FE,$0|2 [orig]	bytes 8192 fnv 6DD56688
+CopperCommand|custom space|$1FE,$0|2 [fixed #591]	bytes 8192 fnv 39C3A9CC
+CopperCommand|custom space|$1FE,$0|3 [orig]	bytes 8192 fnv ED04D21C
+CopperCommand|custom space|$1FE,$0|3 [fixed #591]	bytes 8192 fnv F5375A30
 CopperCommand|custom space|$4321,$8765|1	bytes 8192 fnv 2F741DC5
-CopperCommand|custom space|$4321,$8765|2	bytes 8192 fnv BB73621C
-CopperCommand|custom space|$4321,$8765|3	bytes 8192 fnv 0521FD10
+CopperCommand|custom space|$4321,$8765|2 [orig]	bytes 8192 fnv BB73621C
+CopperCommand|custom space|$4321,$8765|2 [fixed #591]	bytes 8192 fnv 2F6B9B50
+CopperCommand|custom space|$4321,$8765|3 [orig]	bytes 8192 fnv 0521FD10
+CopperCommand|custom space|$4321,$8765|3 [fixed #591]	bytes 8192 fnv E27A5244
 CopperCommand|customaddr|$1FE,$0|1	$00000000
 CopperCommand|customaddr|$1FE,$0|2	$00010000
 CopperCommand|customaddr|$1FE,$0|3	$000103E8
@@ -489,8 +501,10 @@ CopperEnd|coplistaddr||1	$00000000
 CopperEnd|coplistaddr||2	$00000001
 CopperEnd|coplistaddr||3	$00000000
 CopperEnd|custom space||1	bytes 8192 fnv 2F741DC5
-CopperEnd|custom space||2	bytes 8192 fnv 1B46BF3A
-CopperEnd|custom space||3	bytes 8192 fnv 109CA586
+CopperEnd|custom space||2 [orig]	bytes 8192 fnv 1B46BF3A
+CopperEnd|custom space||2 [fixed #591]	bytes 8192 fnv E36CDDAE
+CopperEnd|custom space||3 [orig]	bytes 8192 fnv 109CA586
+CopperEnd|custom space||3 [fixed #591]	bytes 8192 fnv 18D49E5A
 CopperEnd|customaddr||1	$00000000
 CopperEnd|customaddr||2	$00010000
 CopperEnd|customaddr||3	$000103E8
@@ -696,7 +710,8 @@ CopperReset|coplistaddr|line 68 off 188 form 1|1	$00000001
 CopperReset|coplistaddr|line 72 off 177 form 1|1	$00000001
 CopperReset|coplistaddr|line 86 off 185 form 1|1	$00000001
 CopperReset|coplistaddr|line 93 off 128 form 1|1	$00000001
-CopperReset|custom space|line 0 off 2 form 1|1	bytes 8192 fnv 432CB198
+CopperReset|custom space|line 0 off 2 form 1|1 [orig]	bytes 8192 fnv 432CB198
+CopperReset|custom space|line 0 off 2 form 1|1 [fixed #591]	bytes 8192 fnv 433DE594
 CopperReset|custom space|line 100 off 138 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 109 off 140 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 132 off 143 form 1|1	bytes 8192 fnv 2F741DC5
@@ -707,7 +722,8 @@ CopperReset|custom space|line 224 off 113 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 233 off 169 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 246 off 199 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 248 off 4 form 1|1	bytes 8192 fnv 2F741DC5
-CopperReset|custom space|line 250 off 300 form 1|1	bytes 8192 fnv 751E2227
+CopperReset|custom space|line 250 off 300 form 1|1 [orig]	bytes 8192 fnv 751E2227
+CopperReset|custom space|line 250 off 300 form 1|1 [fixed #591]	bytes 8192 fnv 177B9233
 CopperReset|custom space|line 256 off 173 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 269 off 171 form 1|1	bytes 8192 fnv 2F741DC5
 CopperReset|custom space|line 292 off 170 form 1|1	bytes 8192 fnv 2F741DC5
@@ -1025,8 +1041,10 @@ CopperSkip|custom space|$1F2,$F6|1	bytes 8192 fnv 2F741DC5
 CopperSkip|custom space|$1F2,$F6|2	bytes 8192 fnv 76A05B20
 CopperSkip|custom space|$1F2,$F6|3	bytes 8192 fnv 7EC4DD44
 CopperSkip|custom space|$1F4,$F5|1	bytes 8192 fnv 2F741DC5
-CopperSkip|custom space|$1F4,$F5|2	bytes 8192 fnv 0BEE4A9D
-CopperSkip|custom space|$1F4,$F5|3	bytes 8192 fnv 254EC4A1
+CopperSkip|custom space|$1F4,$F5|2 [orig]	bytes 8192 fnv 0BEE4A9D
+CopperSkip|custom space|$1F4,$F5|2 [fixed #591]	bytes 8192 fnv 89D93F38
+CopperSkip|custom space|$1F4,$F5|3 [orig]	bytes 8192 fnv 254EC4A1
+CopperSkip|custom space|$1F4,$F5|3 [fixed #591]	bytes 8192 fnv 5F997C34
 CopperSkip|custom space|$2,$FD|1	bytes 8192 fnv 2F741DC5
 CopperSkip|custom space|$2,$FD|2	bytes 8192 fnv 924B25D0
 CopperSkip|custom space|$2,$FD|3	bytes 8192 fnv 21F61AAC
@@ -1037,11 +1055,15 @@ CopperSkip|custom space|$64,$FB|1	bytes 8192 fnv 2F741DC5
 CopperSkip|custom space|$64,$FB|2	bytes 8192 fnv B57037C0
 CopperSkip|custom space|$64,$FB|3	bytes 8192 fnv 6BC8A2EC
 CopperSkip|custom space|$7FFF,$F4|1	bytes 8192 fnv 2F741DC5
-CopperSkip|custom space|$7FFF,$F4|2	bytes 8192 fnv FA4296C3
-CopperSkip|custom space|$7FFF,$F4|3	bytes 8192 fnv 79366A8F
+CopperSkip|custom space|$7FFF,$F4|2 [orig]	bytes 8192 fnv FA4296C3
+CopperSkip|custom space|$7FFF,$F4|2 [fixed #591]	bytes 8192 fnv 63E8739E
+CopperSkip|custom space|$7FFF,$F4|3 [orig]	bytes 8192 fnv 79366A8F
+CopperSkip|custom space|$7FFF,$F4|3 [fixed #591]	bytes 8192 fnv D11BB442
 CopperSkip|custom space|$8000,$F3|1	bytes 8192 fnv 2F741DC5
-CopperSkip|custom space|$8000,$F3|2	bytes 8192 fnv 4C09ED89
-CopperSkip|custom space|$8000,$F3|3	bytes 8192 fnv 61218655
+CopperSkip|custom space|$8000,$F3|2 [orig]	bytes 8192 fnv 4C09ED89
+CopperSkip|custom space|$8000,$F3|2 [fixed #591]	bytes 8192 fnv C05F3E9C
+CopperSkip|custom space|$8000,$F3|3 [orig]	bytes 8192 fnv 61218655
+CopperSkip|custom space|$8000,$F3|3 [fixed #591]	bytes 8192 fnv 304F8850
 CopperSkip|custom space|$E2,$FA|1	bytes 8192 fnv 2F741DC5
 CopperSkip|custom space|$E2,$FA|2	bytes 8192 fnv B4F2BEC0
 CopperSkip|custom space|$E2,$FA|3	bytes 8192 fnv 3042E9F4
@@ -1055,11 +1077,15 @@ CopperSkip|custom space|$FF,$F7|1	bytes 8192 fnv 2F741DC5
 CopperSkip|custom space|$FF,$F7|2	bytes 8192 fnv 6E322A80
 CopperSkip|custom space|$FF,$F7|3	bytes 8192 fnv 6960FB6C
 CopperSkip|custom space|$FFFE,$F2|1	bytes 8192 fnv 2F741DC5
-CopperSkip|custom space|$FFFE,$F2|2	bytes 8192 fnv 1DD599E3
-CopperSkip|custom space|$FFFE,$F2|3	bytes 8192 fnv 50F3E457
+CopperSkip|custom space|$FFFE,$F2|2 [orig]	bytes 8192 fnv 1DD599E3
+CopperSkip|custom space|$FFFE,$F2|2 [fixed #591]	bytes 8192 fnv 84C457BE
+CopperSkip|custom space|$FFFE,$F2|3 [orig]	bytes 8192 fnv 50F3E457
+CopperSkip|custom space|$FFFE,$F2|3 [fixed #591]	bytes 8192 fnv 1636DC3A
 CopperSkip|custom space|$FFFF,$F1|1	bytes 8192 fnv 2F741DC5
-CopperSkip|custom space|$FFFF,$F1|2	bytes 8192 fnv FAB21B28
-CopperSkip|custom space|$FFFF,$F1|3	bytes 8192 fnv 1892D89C
+CopperSkip|custom space|$FFFF,$F1|2 [orig]	bytes 8192 fnv FAB21B28
+CopperSkip|custom space|$FFFF,$F1|2 [fixed #591]	bytes 8192 fnv 46AB956C
+CopperSkip|custom space|$FFFF,$F1|3 [orig]	bytes 8192 fnv 1892D89C
+CopperSkip|custom space|$FFFF,$F1|3 [fixed #591]	bytes 8192 fnv F3AFE600
 CopperSkip|customaddr|$0,$FF|1	$00000000
 CopperSkip|customaddr|$0,$FF|2	$00010000
 CopperSkip|customaddr|$0,$FF|3	$000103E8
@@ -1349,14 +1375,18 @@ CopperWait|custom space|$1F2,$35|1	bytes 8192 fnv 2F741DC5
 CopperWait|custom space|$1F2,$35|2	bytes 8192 fnv 27DA4F09
 CopperWait|custom space|$1F2,$35|3	bytes 8192 fnv 64D9230D
 CopperWait|custom space|$1F4,$36|1	bytes 8192 fnv 2F741DC5
-CopperWait|custom space|$1F4,$36|2	bytes 8192 fnv BDCF476D
-CopperWait|custom space|$1F4,$36|3	bytes 8192 fnv 21D9FBD1
+CopperWait|custom space|$1F4,$36|2 [orig]	bytes 8192 fnv BDCF476D
+CopperWait|custom space|$1F4,$36|2 [fixed #591]	bytes 8192 fnv ECFCA890
+CopperWait|custom space|$1F4,$36|3 [orig]	bytes 8192 fnv 21D9FBD1
+CopperWait|custom space|$1F4,$36|3 [fixed #591]	bytes 8192 fnv E5CA4CDC
 CopperWait|custom space|$2,$2E|1	bytes 8192 fnv 2F741DC5
 CopperWait|custom space|$2,$2E|2	bytes 8192 fnv 8A780D5E
 CopperWait|custom space|$2,$2E|3	bytes 8192 fnv 238D6E6A
 CopperWait|custom space|$28,$1FF|1	bytes 8192 fnv 2F741DC5
-CopperWait|custom space|$28,$1FF|2	bytes 8192 fnv 8466E113
-CopperWait|custom space|$28,$1FF|3	bytes 8192 fnv 79B227DF
+CopperWait|custom space|$28,$1FF|2 [orig]	bytes 8192 fnv 8466E113
+CopperWait|custom space|$28,$1FF|2 [fixed #591]	bytes 8192 fnv D3DF68FF
+CopperWait|custom space|$28,$1FF|3 [orig]	bytes 8192 fnv 79B227DF
+CopperWait|custom space|$28,$1FF|3 [fixed #591]	bytes 8192 fnv 81B8CBEB
 CopperWait|custom space|$3,$2F|1	bytes 8192 fnv 2F741DC5
 CopperWait|custom space|$3,$2F|2	bytes 8192 fnv 16652EC7
 CopperWait|custom space|$3,$2F|3	bytes 8192 fnv DDB01CD3
@@ -1364,11 +1394,15 @@ CopperWait|custom space|$64,$30|1	bytes 8192 fnv 2F741DC5
 CopperWait|custom space|$64,$30|2	bytes 8192 fnv 5832A6EE
 CopperWait|custom space|$64,$30|3	bytes 8192 fnv 3AA2CADA
 CopperWait|custom space|$7FFF,$37|1	bytes 8192 fnv 2F741DC5
-CopperWait|custom space|$7FFF,$37|2	bytes 8192 fnv 07BF4C78
-CopperWait|custom space|$7FFF,$37|3	bytes 8192 fnv 684E3B34
+CopperWait|custom space|$7FFF,$37|2 [orig]	bytes 8192 fnv 07BF4C78
+CopperWait|custom space|$7FFF,$37|2 [fixed #591]	bytes 8192 fnv B5847D81
+CopperWait|custom space|$7FFF,$37|3 [orig]	bytes 8192 fnv 684E3B34
+CopperWait|custom space|$7FFF,$37|3 [fixed #591]	bytes 8192 fnv 9AC68ED5
 CopperWait|custom space|$8000,$38|1	bytes 8192 fnv 2F741DC5
-CopperWait|custom space|$8000,$38|2	bytes 8192 fnv 458CE2FB
-CopperWait|custom space|$8000,$38|3	bytes 8192 fnv 62A3DD7F
+CopperWait|custom space|$8000,$38|2 [orig]	bytes 8192 fnv 458CE2FB
+CopperWait|custom space|$8000,$38|2 [fixed #591]	bytes 8192 fnv 6EF79B5E
+CopperWait|custom space|$8000,$38|3 [orig]	bytes 8192 fnv 62A3DD7F
+CopperWait|custom space|$8000,$38|3 [fixed #591]	bytes 8192 fnv E480ED4A
 CopperWait|custom space|$E2,$31|1	bytes 8192 fnv 2F741DC5
 CopperWait|custom space|$E2,$31|2	bytes 8192 fnv E4FFC2C5
 CopperWait|custom space|$E2,$31|3	bytes 8192 fnv 277F91A1
@@ -1382,11 +1416,15 @@ CopperWait|custom space|$FF,$34|1	bytes 8192 fnv 2F741DC5
 CopperWait|custom space|$FF,$34|2	bytes 8192 fnv E3698F08
 CopperWait|custom space|$FF,$34|3	bytes 8192 fnv B9281594
 CopperWait|custom space|$FFFE,$39|1	bytes 8192 fnv 2F741DC5
-CopperWait|custom space|$FFFE,$39|2	bytes 8192 fnv 343B8CEE
-CopperWait|custom space|$FFFE,$39|3	bytes 8192 fnv 5752FDB2
+CopperWait|custom space|$FFFE,$39|2 [orig]	bytes 8192 fnv 343B8CEE
+CopperWait|custom space|$FFFE,$39|2 [fixed #591]	bytes 8192 fnv 623E3AD7
+CopperWait|custom space|$FFFE,$39|3 [orig]	bytes 8192 fnv 5752FDB2
+CopperWait|custom space|$FFFE,$39|3 [fixed #591]	bytes 8192 fnv EEC0BE13
 CopperWait|custom space|$FFFF,$3A|1	bytes 8192 fnv 2F741DC5
-CopperWait|custom space|$FFFF,$3A|2	bytes 8192 fnv 7627591E
-CopperWait|custom space|$FFFF,$3A|3	bytes 8192 fnv CB1EA672
+CopperWait|custom space|$FFFF,$3A|2 [orig]	bytes 8192 fnv 7627591E
+CopperWait|custom space|$FFFF,$3A|2 [fixed #591]	bytes 8192 fnv 176AACDA
+CopperWait|custom space|$FFFF,$3A|3 [orig]	bytes 8192 fnv CB1EA672
+CopperWait|custom space|$FFFF,$3A|3 [fixed #591]	bytes 8192 fnv E498645E
 CopperWait|customaddr|$0,$2C|1	$00000000
 CopperWait|customaddr|$0,$2C|2	$00010000
 CopperWait|customaddr|$0,$2C|3	$000103E8
@@ -1685,10 +1723,12 @@ DoColSplit|coplistaddr|lines 40 reg 95 (83,161,212)-(164,248,32)|1	$00000001
 DoColSplit|coplistaddr|lines 5 reg 128 (1,2,3)-(4,5,6)|1	$00000001
 DoColSplit|coplistaddr|lines 7 reg 220 (178,138,34)-(155,88,115)|1	$00000001
 DoColSplit|coplistaddr|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1	$00000001
-DoColSplit|custom space|lines 1 reg 0 (-100,300,7)-(100,-300,7)|1	bytes 8192 fnv 6FAD1DF6
+DoColSplit|custom space|lines 1 reg 0 (-100,300,7)-(100,-300,7)|1 [orig]	bytes 8192 fnv 6FAD1DF6
+DoColSplit|custom space|lines 1 reg 0 (-100,300,7)-(100,-300,7)|1 [fixed #591]	bytes 8192 fnv E4E9045A
 DoColSplit|custom space|lines 10 reg 19 (-93,541,303)-(647,691,-1049)|1	bytes 8192 fnv F030B020
 DoColSplit|custom space|lines 10 reg 5 (0,0,0)-(255,128,64)|1	bytes 8192 fnv 2F741DC5
-DoColSplit|custom space|lines 12 reg 255 (255,255,255)-(0,0,0)|1	bytes 8192 fnv 3594D324
+DoColSplit|custom space|lines 12 reg 255 (255,255,255)-(0,0,0)|1 [orig]	bytes 8192 fnv 3594D324
+DoColSplit|custom space|lines 12 reg 255 (255,255,255)-(0,0,0)|1 [fixed #591]	bytes 8192 fnv 86D38E28
 DoColSplit|custom space|lines 13 reg 193 (35,255,123)-(135,84,177)|1	bytes 8192 fnv 13B8B37B
 DoColSplit|custom space|lines 13 reg 201 (84,33,110)-(226,169,57)|1	bytes 8192 fnv 48BFA82D
 DoColSplit|custom space|lines 13 reg 230 (-265,-1819,-1477)-(-636,1718,-1680)|1	bytes 8192 fnv 93A8467F
@@ -1696,7 +1736,8 @@ DoColSplit|custom space|lines 14 reg 112 (225,156,233)-(226,51,229)|1	bytes 8192
 DoColSplit|custom space|lines 14 reg 152 (157,135,102)-(123,22,245)|1	bytes 8192 fnv 9C109C83
 DoColSplit|custom space|lines 14 reg 82 (36,181,52)-(113,168,100)|1	bytes 8192 fnv D9076549
 DoColSplit|custom space|lines 16 reg 132 (187,192,13)-(240,14,123)|1	bytes 8192 fnv 1BC85D9A
-DoColSplit|custom space|lines 16 reg 3 (9,99,199)-(0,255,255)|1	bytes 8192 fnv 71E02B54
+DoColSplit|custom space|lines 16 reg 3 (9,99,199)-(0,255,255)|1 [orig]	bytes 8192 fnv 71E02B54
+DoColSplit|custom space|lines 16 reg 3 (9,99,199)-(0,255,255)|1 [fixed #591]	bytes 8192 fnv 928BB040
 DoColSplit|custom space|lines 16 reg 85 (1641,-1364,789)-(724,-1070,1327)|1	bytes 8192 fnv 81EAA2C3
 DoColSplit|custom space|lines 17 reg 10 (77,204,10)-(9,127,245)|1	bytes 8192 fnv 9BCCCDB1
 DoColSplit|custom space|lines 17 reg 254 (65,123,52)-(85,145,140)|1	bytes 8192 fnv A18733F5
@@ -1715,7 +1756,8 @@ DoColSplit|custom space|lines 24 reg 195 (18,27,206)-(163,50,96)|1	bytes 8192 fn
 DoColSplit|custom space|lines 28 reg 102 (45,26,243)-(226,229,14)|1	bytes 8192 fnv 29BFB2FB
 DoColSplit|custom space|lines 28 reg 30 (146,149,87)-(54,222,182)|1	bytes 8192 fnv C05C5212
 DoColSplit|custom space|lines 29 reg 156 (381,1639,-1853)-(584,-71,-1746)|1	bytes 8192 fnv E4BFC6FE
-DoColSplit|custom space|lines 3 reg 64 (1,2,3)-(4,5,6)|1	bytes 8192 fnv 143B6320
+DoColSplit|custom space|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [orig]	bytes 8192 fnv 143B6320
+DoColSplit|custom space|lines 3 reg 64 (1,2,3)-(4,5,6)|1 [fixed #591]	bytes 8192 fnv E02BAA3C
 DoColSplit|custom space|lines 30 reg 151 (91,161,101)-(144,56,216)|1	bytes 8192 fnv 665537DE
 DoColSplit|custom space|lines 32 reg 171 (1281,1485,-88)-(686,-152,1977)|1	bytes 8192 fnv 487CE64D
 DoColSplit|custom space|lines 33 reg 66 (142,86,84)-(141,104,33)|1	bytes 8192 fnv 20B9451F
@@ -1734,9 +1776,11 @@ DoColSplit|custom space|lines 4 reg 7 (0,0,0)-(255,128,64)|2 [fixed #1126]	bytes
 DoColSplit|custom space|lines 40 reg 111 (110,108,13)-(120,103,65)|1	bytes 8192 fnv 82EBAEC3
 DoColSplit|custom space|lines 40 reg 241 (1167,1804,988)-(1778,1572,899)|1	bytes 8192 fnv 770E3BF9
 DoColSplit|custom space|lines 40 reg 95 (83,161,212)-(164,248,32)|1	bytes 8192 fnv E4E2EF9F
-DoColSplit|custom space|lines 5 reg 128 (1,2,3)-(4,5,6)|1	bytes 8192 fnv 72DE662C
+DoColSplit|custom space|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [orig]	bytes 8192 fnv 72DE662C
+DoColSplit|custom space|lines 5 reg 128 (1,2,3)-(4,5,6)|1 [fixed #591]	bytes 8192 fnv EA6E9078
 DoColSplit|custom space|lines 7 reg 220 (178,138,34)-(155,88,115)|1	bytes 8192 fnv 75BE5DDD
-DoColSplit|custom space|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1	bytes 8192 fnv 432CB198
+DoColSplit|custom space|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1 [orig]	bytes 8192 fnv 432CB198
+DoColSplit|custom space|lines 7 reg 31 (-100,300,7)-(100,-300,7)|1 [fixed #591]	bytes 8192 fnv 433DE594
 DoColSplit|customaddr|lines 1 reg 0 (-100,300,7)-(100,-300,7)|1	$00010000
 DoColSplit|customaddr|lines 10 reg 19 (-93,541,303)-(647,691,-1049)|1	$00010000
 DoColSplit|customaddr|lines 10 reg 5 (0,0,0)-(255,128,64)|1	$00000000
@@ -1970,10 +2014,14 @@ GetCCOffset|coplistaddr||7	$00000000
 GetCCOffset|coplistaddr||8	$00000001
 GetCCOffset|custom space||1	bytes 8192 fnv 2F741DC5
 GetCCOffset|custom space||2	bytes 8192 fnv 2F741DC5
-GetCCOffset|custom space||3	bytes 8192 fnv 1B46BF3A
-GetCCOffset|custom space||4	bytes 8192 fnv 751E2227
-GetCCOffset|custom space||5	bytes 8192 fnv 432CB198
-GetCCOffset|custom space||6	bytes 8192 fnv 109CA586
+GetCCOffset|custom space||3 [orig]	bytes 8192 fnv 1B46BF3A
+GetCCOffset|custom space||3 [fixed #591]	bytes 8192 fnv E36CDDAE
+GetCCOffset|custom space||4 [orig]	bytes 8192 fnv 751E2227
+GetCCOffset|custom space||4 [fixed #591]	bytes 8192 fnv 177B9233
+GetCCOffset|custom space||5 [orig]	bytes 8192 fnv 432CB198
+GetCCOffset|custom space||5 [fixed #591]	bytes 8192 fnv 433DE594
+GetCCOffset|custom space||6 [orig]	bytes 8192 fnv 109CA586
+GetCCOffset|custom space||6 [fixed #591]	bytes 8192 fnv 18D49E5A
 GetCCOffset|custom space||7	bytes 8192 fnv 2F741DC5
 GetCCOffset|custom space||8 [orig]	bytes 8192 fnv 44101D7A
 GetCCOffset|custom space||8 [fixed #1126]	bytes 8192 fnv E2589B5D
@@ -2163,14 +2211,16 @@ RedoColSplit|coplistaddr|lines 40 offset 51 (1778,1572,899)-(1167,1804,988)|1	$0
 RedoColSplit|coplistaddr|lines 7 offset 185 (155,88,115)-(178,138,34)|1	$00000001
 RedoColSplit|custom space|lines 10 offset 0 (0,0,0)-(255,128,64)|1	bytes 8192 fnv 2F741DC5
 RedoColSplit|custom space|lines 10 offset 11 (647,691,-1049)-(-93,541,303)|1	bytes 8192 fnv 79DBF76C
-RedoColSplit|custom space|lines 12 offset 300 (-100,300,7)-(100,-300,7)|1	bytes 8192 fnv 765BBAE8
+RedoColSplit|custom space|lines 12 offset 300 (-100,300,7)-(100,-300,7)|1 [orig]	bytes 8192 fnv 765BBAE8
+RedoColSplit|custom space|lines 12 offset 300 (-100,300,7)-(100,-300,7)|1 [fixed #591]	bytes 8192 fnv EC22D524
 RedoColSplit|custom space|lines 13 offset 143 (-636,1718,-1680)-(-265,-1819,-1477)|1	bytes 8192 fnv 08D09A2A
 RedoColSplit|custom space|lines 13 offset 4 (135,84,177)-(35,255,123)|1	bytes 8192 fnv C750CA4B
 RedoColSplit|custom space|lines 13 offset 5 (226,169,57)-(84,33,110)|1	bytes 8192 fnv 6B405EC2
 RedoColSplit|custom space|lines 14 offset 138 (123,22,245)-(157,135,102)|1	bytes 8192 fnv 78679E66
 RedoColSplit|custom space|lines 14 offset 170 (113,168,100)-(36,181,52)|1	bytes 8192 fnv 3AB83EC8
 RedoColSplit|custom space|lines 14 offset 196 (226,51,229)-(225,156,233)|1	bytes 8192 fnv 4767B454
-RedoColSplit|custom space|lines 16 offset 0 (9,99,199)-(0,255,255)|1	bytes 8192 fnv D93E6DCB
+RedoColSplit|custom space|lines 16 offset 0 (9,99,199)-(0,255,255)|1 [orig]	bytes 8192 fnv D93E6DCB
+RedoColSplit|custom space|lines 16 offset 0 (9,99,199)-(0,255,255)|1 [fixed #591]	bytes 8192 fnv 507F418B
 RedoColSplit|custom space|lines 16 offset 140 (724,-1070,1327)-(1641,-1364,789)|1	bytes 8192 fnv F994CC4E
 RedoColSplit|custom space|lines 16 offset 63 (240,14,123)-(187,192,13)|1	bytes 8192 fnv ACA88992
 RedoColSplit|custom space|lines 17 offset 11 (9,127,245)-(77,204,10)|1	bytes 8192 fnv 973FF3AB
@@ -2179,7 +2229,8 @@ RedoColSplit|custom space|lines 17 offset 188 (113,134,245)-(188,11,90)|1	bytes 
 RedoColSplit|custom space|lines 18 offset 32 (202,155,82)-(182,249,75)|1	bytes 8192 fnv 0738FEE2
 RedoColSplit|custom space|lines 19 offset 143 (-1209,-1956,-1378)-(-1634,-2003,1203)|1	bytes 8192 fnv E2A64018
 RedoColSplit|custom space|lines 2 offset 113 (33,153,37)-(154,108,63)|1	bytes 8192 fnv 6544C135
-RedoColSplit|custom space|lines 20 offset 0 (200,10,255)-(30,250,0)|1	bytes 8192 fnv 751E2227
+RedoColSplit|custom space|lines 20 offset 0 (200,10,255)-(30,250,0)|1 [orig]	bytes 8192 fnv 751E2227
+RedoColSplit|custom space|lines 20 offset 0 (200,10,255)-(30,250,0)|1 [fixed #591]	bytes 8192 fnv 177B9233
 RedoColSplit|custom space|lines 20 offset 13 (1840,1611,1984)-(565,1921,1304)|1	bytes 8192 fnv CF77B3FE
 RedoColSplit|custom space|lines 20 offset 189 (-1437,1696,-1521)-(657,-733,1515)|1	bytes 8192 fnv 4D19DB86
 RedoColSplit|custom space|lines 20 offset 59 (25,119,110)-(185,53,150)|1	bytes 8192 fnv 2B91DECB
@@ -2340,7 +2391,8 @@ RedoColSplit|startline/ccoffset|lines 7 offset 185 (155,88,115)-(178,138,34)|1	$
 finit|bplcon3LO/HI||1	$0EFF0CFF
 finit|colreg/lo_bplcon3||1	$0186FF00
 finit|coplistaddr||1	$00000000
-finit|custom space||1	bytes 8192 fnv D93E6DCB
+finit|custom space||1 [orig]	bytes 8192 fnv D93E6DCB
+finit|custom space||1 [fixed #591]	bytes 8192 fnv 507F418B
 finit|customaddr||1	$000103E8
 finit|kept||1	kept
 finit|startline/ccoffset||1	$0017021C
