@@ -1,0 +1,28 @@
+; rigfxlib-fillpalette-end-upper-word (#683) - FillPalette
+; palette#,r,g,b,start,end takes an end of 0 as "up to the last colour",
+; but tests it with TST.l d5, the whole register, while end is a #word
+; argument and the comparison with start and the loop use its word only.
+; The compiled program leaves an upper word other than 0 in d5 for the
+; constant 0 and for a word variable that holds 0 (a long variable gives
+; a clear register): end is then colour 0, and with start 2 nothing is
+; filled.  The palette has 8 colours; colours 2 to 7 are 1 before each
+; form, colour 1 is 0 throughout.
+; Correct: end 0 fills colours 2 to 7 in all three forms.
+; @fixed #683
+; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
+; @rwe rigfxlib riamosfunclib
+DEFTYPE .l
+InitPalette 0,8
+PaletteInfo 0
+FillPalette 0,1,1,1,2,7
+FillPalette 0,2,2,2,2,0
+NPrint "constant: ",PalRed(1)," ",PalRed(2)," ",PalRed(7)
+FillPalette 0,1,1,1,2,7
+e.w=0
+FillPalette 0,3,3,3,2,e
+NPrint "word: ",PalRed(1)," ",PalRed(2)," ",PalRed(7)
+FillPalette 0,1,1,1,2,7
+f.l=0
+FillPalette 0,4,4,4,2,f
+NPrint "long: ",PalRed(1)," ",PalRed(2)," ",PalRed(7)
+End

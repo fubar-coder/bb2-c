@@ -11,12 +11,15 @@ AGAFillPalette|kept|form 1 $D,$E,$F 5A000000..10000|1	kept
 AGAFillPalette|memory|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	bytes 72000 fnv 7EEC5538
 AGAFillPalette|memory|form 0 $5A01FFFF,$1234,$A5 0..0|1	bytes 72000 fnv 8CD35056
 AGAFillPalette|memory|form 1 $1,$2,$3 5A000004..5A000004|1	bytes 72000 fnv 0334333A
-AGAFillPalette|memory|form 1 $21,$43,$65 5A000005..5A000014|1	bytes 72000 fnv C620BFF4
+AGAFillPalette|memory|form 1 $21,$43,$65 5A000005..5A000014|1 [orig]	bytes 72000 fnv C620BFF4
+AGAFillPalette|memory|form 1 $21,$43,$65 5A000005..5A000014|1 [fixed #683]	bytes 72000 fnv 9F096DB4
 AGAFillPalette|memory|form 1 $4,$5,$6 5A000003..5A000001|1	bytes 72000 fnv 0334333A
 AGAFillPalette|memory|form 1 $5A000003,$5A000088,$5A0000FF 5A000001..5A000003|1	bytes 72000 fnv F683049C
 AGAFillPalette|memory|form 1 $7,$8,$9 0..0|1	bytes 72000 fnv 5D85684E
-AGAFillPalette|memory|form 1 $A,$B,$C 5A000002..10000|1	bytes 72000 fnv 5D85684E
-AGAFillPalette|memory|form 1 $D,$E,$F 5A000000..10000|1	bytes 72000 fnv 3ADF21F4
+AGAFillPalette|memory|form 1 $A,$B,$C 5A000002..10000|1 [orig]	bytes 72000 fnv 5D85684E
+AGAFillPalette|memory|form 1 $A,$B,$C 5A000002..10000|1 [fixed #683]	bytes 72000 fnv 4C171395
+AGAFillPalette|memory|form 1 $D,$E,$F 5A000000..10000|1 [orig]	bytes 72000 fnv 3ADF21F4
+AGAFillPalette|memory|form 1 $D,$E,$F 5A000000..10000|1 [fixed #683]	bytes 72000 fnv 048DBF74
 AGAFillPalette|popped|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	$00000000
 AGAFillPalette|popped|form 0 $5A01FFFF,$1234,$A5 0..0|1	$00000000
 AGAFillPalette|popped|form 1 $1,$2,$3 5A000004..5A000004|1	$00000000
@@ -198,12 +201,15 @@ FillPalette|kept|form 1 $D,$E,$F 5A000000..10000|1	kept
 FillPalette|memory|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	bytes 72000 fnv D0B0BE89
 FillPalette|memory|form 0 $5A01FFFF,$1234,$A5 0..0|1	bytes 72000 fnv A80E5909
 FillPalette|memory|form 1 $1,$2,$3 5A000004..5A000004|1	bytes 72000 fnv 747D7249
-FillPalette|memory|form 1 $21,$43,$65 5A000005..5A000014|1	bytes 72000 fnv 5CF0D1A0
+FillPalette|memory|form 1 $21,$43,$65 5A000005..5A000014|1 [orig]	bytes 72000 fnv 5CF0D1A0
+FillPalette|memory|form 1 $21,$43,$65 5A000005..5A000014|1 [fixed #683]	bytes 72000 fnv 00392B20
 FillPalette|memory|form 1 $4,$5,$6 5A000003..5A000001|1	bytes 72000 fnv 747D7249
 FillPalette|memory|form 1 $5A000003,$5A000088,$5A0000FF 5A000001..5A000003|1	bytes 72000 fnv B3D87669
 FillPalette|memory|form 1 $7,$8,$9 0..0|1	bytes 72000 fnv E7F38709
-FillPalette|memory|form 1 $A,$B,$C 5A000002..10000|1	bytes 72000 fnv E7F38709
-FillPalette|memory|form 1 $D,$E,$F 5A000000..10000|1	bytes 72000 fnv 9CADAC69
+FillPalette|memory|form 1 $A,$B,$C 5A000002..10000|1 [orig]	bytes 72000 fnv E7F38709
+FillPalette|memory|form 1 $A,$B,$C 5A000002..10000|1 [fixed #683]	bytes 72000 fnv 539A2019
+FillPalette|memory|form 1 $D,$E,$F 5A000000..10000|1 [orig]	bytes 72000 fnv 9CADAC69
+FillPalette|memory|form 1 $D,$E,$F 5A000000..10000|1 [fixed #683]	bytes 72000 fnv 0A0EBB69
 FillPalette|popped|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	$00000000
 FillPalette|popped|form 0 $5A01FFFF,$1234,$A5 0..0|1	$00000000
 FillPalette|popped|form 1 $1,$2,$3 5A000004..5A000004|1	$00000000

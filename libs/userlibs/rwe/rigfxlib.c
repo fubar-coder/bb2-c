@@ -36,8 +36,6 @@
  *     start/end takes the number of colours of THAT palette, not of the
  *     target (#685); colour numbers from 2731 on index before the palette
  *     (12*c as a signed word) (#677).
- *   - FillPalette tests the whole register of `end` for 0 (= the last
- *     colour), the word for the comparison with start (#683).
  * SaveCMAP's BMHD chunk is 20 zero bytes, like the original: no defect
  * (a palette file: what is read of it is the CMAP).
  * Fixed (intended deviations, docs/libs/deviations.md):
@@ -69,6 +67,10 @@
  *     unchanged: the count end - start + 1 is a word, * 3 (MULU.w) - 1
  *     the DBRA counter, so end = start - 1 writes 65536 channels (an
  *     invalid argument, D-005) (#684).
+ *   - FillPalette/AGAFillPalette test the word of `end` for 0 (= the last
+ *     colour), as the comparison with start; the original tested the
+ *     whole register (TST.l), so an end of 0 with an upper word other than
+ *     0 was colour 0 (#683).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -378,7 +380,8 @@ BLITZ_THUNK(paladjust, paladjust_c, "d0-d1/a0-a1");
 /* ---------------------------------------------------------- FillPalette */
 
 /* r, g, b = the top bytes (AGA: the low bytes of the arguments);
-   end = 0 (the whole register): the last colour */
+   end = 0 (its word: fixed #683, the original tested the whole register):
+   the last colour */
 static void fill(struct bb_palette *obj, ULONG r, ULONG g, ULONG b, ULONG start, ULONG end)
 {
     struct paldata *data = PALDATA(obj);
@@ -388,7 +391,7 @@ static void fill(struct bb_palette *obj, ULONG r, ULONG g, ULONG b, ULONG start,
     r = (r & 0xff) << 24;               /* ANDI.l #$ff:ROR.l #8 */
     g = (g & 0xff) << 24;
     b = (b & 0xff) << 24;
-    if (!end)                           /* TST.l d5 */
+    if (!(UWORD)end)                    /* TST.w d5 - fixed #683 */
         BL_SETW(end, data->numcols - 1);
     n = (UWORD)((UWORD)end - (UWORD)start);
     if ((WORD)n < 0)                    /* CMP.w d4,d5:BPL */
@@ -412,9 +415,9 @@ static ULONG nib(ULONG v)
  * @brief AGAFillPalette palette#,r,g,b,start_col,end_col: fill colours with an 8 bit r,g,b.
  *
  * The low bytes of r, g, b become the top bytes of the channels.  end =
- * 0 means the last colour; BUG(orig) (#683): that test is on the whole
- * register, the comparison with start on the words.  Nothing if end <
- * start.
+ * 0 means the last colour; that test is on the word, as the comparison
+ * with start (fixed #683: the original tested the whole register, so an
+ * end whose upper word was not 0 was colour 0).  Nothing if end < start.
  * @param obj    a0: the palette object (!libs #palettelib,#ia0|#pd0)
  * @param r      d1: red
  * @param g      d2: green
@@ -447,7 +450,7 @@ BLITZ_THUNK(agafillpalette, agafillpalette_c, "d0-d1/a0-a1");
  * @brief FillPalette palette#,r,g,b,start_col,end_col: fill colours with a 4 bit r,g,b.
  *
  * As AGAFillPalette with the low nibbles of r, g, b as the top nibbles
- * of the channel bytes (ANDI.b #$f:ASL.b #4) (#683).
+ * of the channel bytes (ANDI.b #$f:ASL.b #4) (the end test fixed, #683).
  * @param obj    a0: the palette object (!libs #palettelib,#ia0|#pd0)
  * @param r      d1: red
  * @param g      d2: green

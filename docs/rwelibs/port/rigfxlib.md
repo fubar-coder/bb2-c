@@ -41,9 +41,8 @@ keeps them. The register arithmetic of the original is reproduced where
 it decides the result: `MULU.w #12` with the low word of the product as
 a signed index (`0(a0,d0.w)`, `ADDA.w`) for the colour functions and
 PalAdjust, `ADD.l` of the unsigned product for FillPalette and
-CopyColour, DBRA counts on words, `TST.l` of the whole `end` register in
-FillPalette but `CMP.w` against start, `DIVU #40` with its overflow case
-in CPUCls (`bl_divu_w`).
+CopyColour, DBRA counts on words, `DIVU #40` with its overflow case in
+CPUCls (`bl_divu_w`).
 
 There is no assembler (the entry of `CPUCls`, which kept the stack
 imbalance of the original's exit, became C with the fix of #680).
@@ -101,6 +100,15 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   (an invalid argument, D-005; user decision W6 6.2): the count end −
   start + 1 is a word, × 3 (`MULU.w`) − 1 the `DBRA` counter, so end =
   start − 1 writes 65536 channels (256 KB) from colour start on (#684).
+* `FillPalette`/`AGAFillPalette … ,start,end`: an `end` of 0 (up to the
+  last colour, what the short forms pass) is tested on its word
+  (`TST.w`), as the comparison with start and the loop. The original
+  tested the whole register (`TST.l`): an `end` of 0 with an upper word
+  other than 0 was colour 0, so the command filled nothing (start > 0)
+  or colour 0 alone, depending on what the compiled program left in the
+  upper word of d5 – with blitz2 2.10 that is the case for the constant
+  0 and for a word variable, only a long variable gives a clear register
+  (test `rigfxlib-fillpalette-end-upper-word`) (#683).
 
 ## BUG(orig), kept
 
@@ -112,9 +120,6 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   `PalAdjust` without start/end takes the number of colours of that
   palette, not of the target (#685); colour numbers from 2731 on index
   before the palette (12·c as a signed word) (#677).
-* `FillPalette … ,start,0` fills up to the last colour (end 0 = all), but
-  an `end` with a zero low word and a non-zero upper word is end 0 itself
-  (#683).
 
 Not a defect (kept): `SaveCMAP`'s BMHD chunk is 20 zero bytes (a palette
 file: what is read of it is the CMAP).
