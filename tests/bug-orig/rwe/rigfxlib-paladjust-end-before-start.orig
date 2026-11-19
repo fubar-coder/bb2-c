@@ -4,6 +4,7 @@ done
 [compile]
 ok
 [run]
+before
 marker overwritten
 rc=0
 [blitz2]
