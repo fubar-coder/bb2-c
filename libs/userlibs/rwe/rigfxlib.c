@@ -29,9 +29,7 @@
  * and RIAmosFuncLib's BSave (form 1) through ALibJsr.
  *
  * BUG(orig), kept:
- *   - CPUCls clears with blocks of 40 bytes, DBRA on blocks - 1: a plane
- *     of less than 40 bytes clears 65536 blocks (2.6 MB below the plane)
- *     (#682); an odd rest byte stays (#681); the depth is the word
+ *   - CPUCls: an odd rest byte stays (#681); the depth is the word
  *     Flags<<8|Depth, 0 planes = 65536 (#679).
  *   - SaveCMAP writes no pad byte behind a CMAP of odd length (#687); a
  *     palette of 0 colours copies 65536 (#688).
@@ -53,6 +51,9 @@
  *     routine's end before the MOVEM.l a4-a6,-(a7) had run: it popped the
  *     return address and two more longs into a4-a6 and returned to a
  *     foreign address (#680).
+ *   - CPUCls clears with blocks of 40 bytes, DBRA on blocks - 1; a plane
+ *     of less than 40 bytes has no block (the original's counter was
+ *     $FFFF: 65536 blocks, 2.6 MB below the plane) (#682).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -494,18 +495,20 @@ BLITZ_THUNK(copycolour, copycolour_c, "d1/a0-a1");
 
 /* --------------------------------------------------------------- CPUCls */
 
-/* ClearPlane: clear below `end`: (UWORD)moves + 1 blocks of 40 bytes,
-   then (UWORD)(moves >> 16) + 1 words unless that is $FFFF */
-static void clearplane(UBYTE *end, ULONG moves)
+/* ClearPlane: clear below `end`: (UWORD)moves + 1 blocks of 40 bytes if
+   `blocks` (fixed #682: none for a plane of less than 40 bytes), then
+   (UWORD)(moves >> 16) + 1 words unless that is $FFFF */
+static void clearplane(UBYTE *end, ULONG moves, BOOL blocks)
 {
     ULONG *l = (ULONG *)end;
     UWORD *w;
     UWORD n = (UWORD)moves;
 
-    do {
-        l -= 10;                        /* MOVEM.l d0-d6/a1-a3,-(a0) */
-        l[0] = l[1] = l[2] = l[3] = l[4] = l[5] = l[6] = l[7] = l[8] = l[9] = 0;
-    } while (n-- != 0);
+    if (blocks)
+        do {
+            l -= 10;                    /* MOVEM.l d0-d6/a1-a3,-(a0) */
+            l[0] = l[1] = l[2] = l[3] = l[4] = l[5] = l[6] = l[7] = l[8] = l[9] = 0;
+        } while (n-- != 0);
     n = (UWORD)(moves >> 16);
     if (n == 0xffff)
         return;
@@ -522,9 +525,10 @@ static void clearplane(UBYTE *end, ULONG moves)
  * the wrong exit, see the file's head).  BytesPerRow*Rows bytes per
  * plane, cleared from the end down; the
  * original's register arithmetic for the block count (DIVU #40, the rest
- * as words).  BUG(orig): blocks of 40 bytes, DBRA on blocks - 1: a plane
- * of less than 40 bytes clears 65536 blocks (2.6 MB below the plane)
- * (#682); an odd rest byte stays (#681); the depth is the word
+ * as words).  Blocks of 40 bytes, DBRA on blocks - 1; a plane of less
+ * than 40 bytes has no block (fixed #682: the original's counter was
+ * $FFFF, 65536 blocks, 2.6 MB below the plane; decided once per call).
+ * BUG(orig): an odd rest byte stays (#681); the depth is the word
  * Flags<<8|Depth, 0 planes = 65536 (#679).
  * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
  */
@@ -534,6 +538,7 @@ static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
     ULONG moves = bl_divu_w(size, 40);
     UWORD planes = (UWORD)(bm->flagsdepth - 1);    /* BUG(orig) (#679) */
     const ULONG *pl = (const ULONG *)bm->planes;
+    BOOL blocks = size >= 40;           /* fixed #682 */
 
     if (!*pl)                           /* TST.l 8(a0):BEQ - fixed #680 */
         return;
@@ -543,7 +548,7 @@ static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
     BL_SETW(moves, moves - 1);
     moves = BL_SWAP(moves);
     do
-        clearplane((UBYTE *)(*pl++ + size), moves);
+        clearplane((UBYTE *)(*pl++ + size), moves, blocks);
     while (planes-- != 0);
 }
 

@@ -7,6 +7,7 @@
 ; end of the plane shows the clearing.  The object is cleared again
 ; afterwards.
 ; Correct: CPUCls clears the 32 bytes of the plane, the marker stays.
+; @fixed #682
 ; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
 ; @rwe rigfxlib riamosfunclib
 DEFTYPE .l

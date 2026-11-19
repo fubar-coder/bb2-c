@@ -68,12 +68,15 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   `MOVEM.l a4-a6,-(a7)` had run: it popped the return address and two
   more longs into a4–a6 and returned to whatever followed on the stack –
   a crash (#680; the original has the test, only its exit was wrong).
+* `CPUCls` clears with MOVEM blocks of 40 bytes, `DBRA` on blocks − 1; a
+  bitplane of less than 40 bytes (a 16 × 16 bitmap) has no block. The
+  original's counter was −1 there, i.e. 65536 blocks – 2.6 MB below the
+  plane were cleared (#682). Decided once per call, before the plane
+  loop.
 
 ## BUG(orig), kept
 
-* `CPUCls` clears with MOVEM blocks of 40 bytes, `DBRA` on blocks − 1: a
-  bitplane of less than 40 bytes gives −1, i.e. 65536 blocks – 2.6 MB
-  below the plane are cleared (#682). A rest of an odd number of bytes
+* `CPUCls`: a rest of an odd number of bytes
   leaves the first byte of the plane (#681). The depth is the word at +4
   (Flags<<8 | Depth); depth 0 clears 65536 planes (#679).
 * `SaveCMAP` writes no pad byte behind a CMAP of odd length (odd number
@@ -123,9 +126,12 @@ SaveCMAP with odd/even colour counts, BSave failing, no data, memlib's
 memory all back, MergeBitplanes with all counts (0 = all, too many,
 negative), the flag checks and a negative word sum.
 
-Not covered: CPUCls on a bitmap without plane 0 (the original crashes;
-bug-orig test `rigfxlib-cpucls-no-plane-crash`), the 65536-block/-plane
-cases of CPUCls, the
-DIVU overflow (planes of 2.6 MB), negative colours in CopyColour,
-PalAdjust with end < start, SaveCMAP with 0 colours (they write far
-outside any buffer); the real BSave.
+Not covered, because they crash or write far outside any buffer (each
+has a bug-orig test instead): CPUCls on a bitmap without plane 0
+(`rigfxlib-cpucls-no-plane-crash`), on a plane of less than 40 bytes
+(`rigfxlib-cpucls-small-plane`) and of depth 0
+(`rigfxlib-cpucls-depth-word`), negative colours in CopyColour
+(`rigfxlib-copycolour-negative`), PalAdjust with end < start
+(`rigfxlib-paladjust-end-before-start`), SaveCMAP with 0 colours
+(`rigfxlib-savecmap-zero-colours`). Not covered at all: the DIVU
+overflow (planes of 2.6 MB); the real BSave.
