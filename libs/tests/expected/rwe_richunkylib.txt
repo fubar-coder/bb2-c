@@ -253,36 +253,85 @@ ChunkyLoadBitMap|object 3 w/h/d/6||2	$00000000
 ChunkyLoadBitMap|planes||1 [orig]	bytes 81984 fnv 6222DFC5
 ChunkyLoadBitMap|planes||1 [fixed #883]	bytes 81984 fnv 63AB52D9
 ChunkyLoadBitMap|popped||1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|CIA-A PRA bit 1|0 depth 7|1	$00000000
 ChunkyToPlanar|CIA-A PRA bit 1|0 depth 8|1	$00000000
 ChunkyToPlanar|CIA-A PRA bit 1|0 depth 8|2	$00000000
 ChunkyToPlanar|CIA-A PRA bit 1|0 depth word $0108|1	$00000000
 ChunkyToPlanar|CIA-A PRA bit 1|0 depth word $8008|1	$00000000
 ChunkyToPlanar|CIA-A PRA bit 1|0 no data|1	$00000000
+ChunkyToPlanar|blocks|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000001
+ChunkyToPlanar|blocks|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000001
+ChunkyToPlanar|blocks|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000001
+ChunkyToPlanar|blocks|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000001
+ChunkyToPlanar|blocks|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000001
+ChunkyToPlanar|blocks|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000001
+ChunkyToPlanar|blocks|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000001
 ChunkyToPlanar|blocks|0 depth 7|1	$00000001
 ChunkyToPlanar|blocks|0 depth 8|1	$00000001
 ChunkyToPlanar|blocks|0 depth 8|2	$00000001
 ChunkyToPlanar|blocks|0 depth word $0108|1	$00000001
 ChunkyToPlanar|blocks|0 depth word $8008|1	$00000001
 ChunkyToPlanar|blocks|0 no data|1	$00000000
+ChunkyToPlanar|kept|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	kept
+ChunkyToPlanar|kept|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	kept
+ChunkyToPlanar|kept|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	kept
+ChunkyToPlanar|kept|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	kept
+ChunkyToPlanar|kept|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	kept
+ChunkyToPlanar|kept|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	kept
+ChunkyToPlanar|kept|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	kept
 ChunkyToPlanar|kept|0 depth 7|1	kept
 ChunkyToPlanar|kept|0 depth 8|1	kept
 ChunkyToPlanar|kept|0 depth 8|2	kept
 ChunkyToPlanar|kept|0 depth word $0108|1	kept
 ChunkyToPlanar|kept|0 depth word $8008|1	kept
 ChunkyToPlanar|kept|0 no data|1	kept
+ChunkyToPlanar|object 0 12|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 0 12|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 0 12|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 0 12|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 0 12|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 0 12|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 0 12|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|object 0 12|0 depth 7|1	$00000000
 ChunkyToPlanar|object 0 12|0 depth 8|1	$00000000
 ChunkyToPlanar|object 0 12|0 depth 8|2	$00000000
 ChunkyToPlanar|object 0 12|0 depth word $0108|1	$00000000
 ChunkyToPlanar|object 0 12|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 0 12|0 no data|1	$00000000
+ChunkyToPlanar|object 0 data|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000001
+ChunkyToPlanar|object 0 data|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000001
+ChunkyToPlanar|object 0 data|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000001
+ChunkyToPlanar|object 0 data|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000001
+ChunkyToPlanar|object 0 data|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000001
+ChunkyToPlanar|object 0 data|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000001
+ChunkyToPlanar|object 0 data|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000001
 ChunkyToPlanar|object 0 data|0 depth 7|1	$00000001
 ChunkyToPlanar|object 0 data|0 depth 8|1	$00000001
 ChunkyToPlanar|object 0 data|0 depth 8|2	$00000001
 ChunkyToPlanar|object 0 data|0 depth word $0108|1	$00000001
 ChunkyToPlanar|object 0 data|0 depth word $8008|1	$00000001
 ChunkyToPlanar|object 0 data|0 no data|1	$00000000
+ChunkyToPlanar|object 0 w/h/d/6|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00A00064
+ChunkyToPlanar|object 0 w/h/d/6|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|2	$00080000
+ChunkyToPlanar|object 0 w/h/d/6|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$01400100
+ChunkyToPlanar|object 0 w/h/d/6|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|2	$00080000
+ChunkyToPlanar|object 0 w/h/d/6|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$01400100
+ChunkyToPlanar|object 0 w/h/d/6|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|2	$00080000
+ChunkyToPlanar|object 0 w/h/d/6|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$01400020
+ChunkyToPlanar|object 0 w/h/d/6|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|2	$00080000
+ChunkyToPlanar|object 0 w/h/d/6|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$0150000A
+ChunkyToPlanar|object 0 w/h/d/6|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|2	$00080000
+ChunkyToPlanar|object 0 w/h/d/6|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$0028000A
+ChunkyToPlanar|object 0 w/h/d/6|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|2	$00080000
+ChunkyToPlanar|object 0 w/h/d/6|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$0030000A
+ChunkyToPlanar|object 0 w/h/d/6|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|2	$00080000
 ChunkyToPlanar|object 0 w/h/d/6|0 depth 7|1	$01400100
 ChunkyToPlanar|object 0 w/h/d/6|0 depth 7|2	$00080000
 ChunkyToPlanar|object 0 w/h/d/6|0 depth 8|1	$01400100
@@ -295,18 +344,46 @@ ChunkyToPlanar|object 0 w/h/d/6|0 depth word $8008|1	$01400100
 ChunkyToPlanar|object 0 w/h/d/6|0 depth word $8008|2	$00080000
 ChunkyToPlanar|object 0 w/h/d/6|0 no data|1	$00000000
 ChunkyToPlanar|object 0 w/h/d/6|0 no data|2	$00000000
+ChunkyToPlanar|object 1 12|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 1 12|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 1 12|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 1 12|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 1 12|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 1 12|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 1 12|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|object 1 12|0 depth 7|1	$00000000
 ChunkyToPlanar|object 1 12|0 depth 8|1	$00000000
 ChunkyToPlanar|object 1 12|0 depth 8|2	$00000000
 ChunkyToPlanar|object 1 12|0 depth word $0108|1	$00000000
 ChunkyToPlanar|object 1 12|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 1 12|0 no data|1	$00000000
+ChunkyToPlanar|object 1 data|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 1 data|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 1 data|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 1 data|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 1 data|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 1 data|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 1 data|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|object 1 data|0 depth 7|1	$00000000
 ChunkyToPlanar|object 1 data|0 depth 8|1	$00000000
 ChunkyToPlanar|object 1 data|0 depth 8|2	$00000000
 ChunkyToPlanar|object 1 data|0 depth word $0108|1	$00000000
 ChunkyToPlanar|object 1 data|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 1 data|0 no data|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|2	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|2	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|2	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|2	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|2	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|2	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|2	$00000000
 ChunkyToPlanar|object 1 w/h/d/6|0 depth 7|1	$00000000
 ChunkyToPlanar|object 1 w/h/d/6|0 depth 7|2	$00000000
 ChunkyToPlanar|object 1 w/h/d/6|0 depth 8|1	$00000000
@@ -319,18 +396,46 @@ ChunkyToPlanar|object 1 w/h/d/6|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 1 w/h/d/6|0 depth word $8008|2	$00000000
 ChunkyToPlanar|object 1 w/h/d/6|0 no data|1	$00000000
 ChunkyToPlanar|object 1 w/h/d/6|0 no data|2	$00000000
+ChunkyToPlanar|object 2 12|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 2 12|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 2 12|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 2 12|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 2 12|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 2 12|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 2 12|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|object 2 12|0 depth 7|1	$00000000
 ChunkyToPlanar|object 2 12|0 depth 8|1	$00000000
 ChunkyToPlanar|object 2 12|0 depth 8|2	$00000000
 ChunkyToPlanar|object 2 12|0 depth word $0108|1	$00000000
 ChunkyToPlanar|object 2 12|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 2 12|0 no data|1	$00000000
+ChunkyToPlanar|object 2 data|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 2 data|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 2 data|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 2 data|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 2 data|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 2 data|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 2 data|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|object 2 data|0 depth 7|1	$00000000
 ChunkyToPlanar|object 2 data|0 depth 8|1	$00000000
 ChunkyToPlanar|object 2 data|0 depth 8|2	$00000000
 ChunkyToPlanar|object 2 data|0 depth word $0108|1	$00000000
 ChunkyToPlanar|object 2 data|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 2 data|0 no data|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|2	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|2	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|2	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|2	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|2	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|2	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|2	$00000000
 ChunkyToPlanar|object 2 w/h/d/6|0 depth 7|1	$00000000
 ChunkyToPlanar|object 2 w/h/d/6|0 depth 7|2	$00000000
 ChunkyToPlanar|object 2 w/h/d/6|0 depth 8|1	$00000000
@@ -343,18 +448,46 @@ ChunkyToPlanar|object 2 w/h/d/6|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 2 w/h/d/6|0 depth word $8008|2	$00000000
 ChunkyToPlanar|object 2 w/h/d/6|0 no data|1	$00000000
 ChunkyToPlanar|object 2 w/h/d/6|0 no data|2	$00000000
+ChunkyToPlanar|object 3 12|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 3 12|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 3 12|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 3 12|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 3 12|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 3 12|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 3 12|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|object 3 12|0 depth 7|1	$00000000
 ChunkyToPlanar|object 3 12|0 depth 8|1	$00000000
 ChunkyToPlanar|object 3 12|0 depth 8|2	$00000000
 ChunkyToPlanar|object 3 12|0 depth word $0108|1	$00000000
 ChunkyToPlanar|object 3 12|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 3 12|0 no data|1	$00000000
+ChunkyToPlanar|object 3 data|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 3 data|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 3 data|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 3 data|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 3 data|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 3 data|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 3 data|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|object 3 data|0 depth 7|1	$00000000
 ChunkyToPlanar|object 3 data|0 depth 8|1	$00000000
 ChunkyToPlanar|object 3 data|0 depth 8|2	$00000000
 ChunkyToPlanar|object 3 data|0 depth word $0108|1	$00000000
 ChunkyToPlanar|object 3 data|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 3 data|0 no data|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|2	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|2	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|2	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|2	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|2	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|2	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|2	$00000000
 ChunkyToPlanar|object 3 w/h/d/6|0 depth 7|1	$00000000
 ChunkyToPlanar|object 3 w/h/d/6|0 depth 7|2	$00000000
 ChunkyToPlanar|object 3 w/h/d/6|0 depth 8|1	$00000000
@@ -367,6 +500,13 @@ ChunkyToPlanar|object 3 w/h/d/6|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 3 w/h/d/6|0 depth word $8008|2	$00000000
 ChunkyToPlanar|object 3 w/h/d/6|0 no data|1	$00000000
 ChunkyToPlanar|object 3 w/h/d/6|0 no data|2	$00000000
+ChunkyToPlanar|planes|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	bytes 81984 fnv 63AB52D9
+ChunkyToPlanar|planes|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	bytes 81984 fnv 63AB52D9
+ChunkyToPlanar|planes|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	bytes 81984 fnv 63AB52D9
+ChunkyToPlanar|planes|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	bytes 81984 fnv 63AB52D9
+ChunkyToPlanar|planes|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	bytes 81984 fnv 63AB52D9
+ChunkyToPlanar|planes|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	bytes 81984 fnv 63AB52D9
+ChunkyToPlanar|planes|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	bytes 81984 fnv 63AB52D9
 ChunkyToPlanar|planes|0 depth 7|1	bytes 81984 fnv 6222DFC5
 ChunkyToPlanar|planes|0 depth 8|1	bytes 81984 fnv 4DC42EF1
 ChunkyToPlanar|planes|0 depth 8|2	bytes 81984 fnv 63AB52D9
@@ -374,6 +514,13 @@ ChunkyToPlanar|planes|0 depth word $0108|1	bytes 81984 fnv 63AB52D9
 ChunkyToPlanar|planes|0 depth word $8008|1 [orig]	bytes 81984 fnv 6222DFC5
 ChunkyToPlanar|planes|0 depth word $8008|1 [fixed #883]	bytes 81984 fnv 63AB52D9
 ChunkyToPlanar|planes|0 no data|1	bytes 81984 fnv 6222DFC5
+ChunkyToPlanar|popped|0 160x100 into 40 bytes x 256 rows, planes 10240 apart (smaller)|1	$00000000
+ChunkyToPlanar|popped|0 320x256 into 40 bytes x 200 rows, planes 10240 apart (higher than the bitmap)|1	$00000000
+ChunkyToPlanar|popped|0 320x256 into 40 bytes x 256 rows, planes 10240 apart, 6 and 7 swapped (planes not equally spaced)|1	$00000000
+ChunkyToPlanar|popped|0 320x32 into 320 bytes x 32 rows, planes 40 apart (interleaved)|1	$00000000
+ChunkyToPlanar|popped|0 336x10 into 40 bytes x 256 rows, planes 10240 apart (wider than the bitmap)|1	$00000000
+ChunkyToPlanar|popped|0 40x10 into 40 bytes x 256 rows, planes 10240 apart (width not a multiple of 16)|1	$00000000
+ChunkyToPlanar|popped|0 48x10 into 40 bytes x 256 rows, planes 10240 apart (a 16 pixel tail)|1	$00000000
 ChunkyToPlanar|popped|0 depth 7|1	$00000000
 ChunkyToPlanar|popped|0 depth 8|1	$00000000
 ChunkyToPlanar|popped|0 depth 8|2	$00000000

@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+contiguous: plane 7 128
+REQUESTER: AutoRequest body "Bitmap planes not equally spaced" *
+rc=0

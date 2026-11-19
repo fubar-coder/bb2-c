@@ -29,7 +29,10 @@
  * freed in the C build, #885), ChunkyData, ChunkyToPlanar with random chunky data (depth
  * 8, the depth word $0108 = with bm_Flags, 7 = nothing, $8008 = with
  * bm_Flags bit 7: nothing in the original, converted in the C build
- * (#883), an object without data = nothing), RaycastSky (random columns, heights
+ * (#883), an object without data = nothing; other shapes of the chunky
+ * object and the bitmap: smaller, a 16 pixel tail, a width not a
+ * multiple of 16, wider or higher than the bitmap, planes not equally
+ * spaced, an interleaved bitmap, #884), RaycastSky (random columns, heights
  * 1..256, x and column with marker upper words, negative columns),
  * PlanarToChunky and ChunkyLoadBitMap (no code), the object manager's
  * free routine (a3 = the object; with and without data), init, finit.
@@ -237,6 +240,38 @@ static void c2p(int n, UWORD depthword, const char *what)
     OBSBYTES("planes", planes, PLANES + GUARD);
 }
 
+/* ChunkyToPlanar n,bitmap with another shape (#884): object n (with
+   81920 bytes of data) made to say w x h, the bitmap bpr bytes per row,
+   `rows` rows, plane p at planes + p * ps (planes 6 and 7 swapped if
+   `swap67`); the object's size is put back afterwards */
+static void c2pshape(int n, UWORD w, UWORD h, UWORD bpr, UWORD rows, ULONG ps, int swap67,
+                     const char *what)
+{
+    UBYTE *o = obj(n);
+    ULONG wh = *(ULONG *)o;
+    int p;
+
+    *(UWORD *)o = w;
+    *(UWORD *)(o + 2) = h;
+    bm->BytesPerRow = bpr;
+    bm->Rows = rows;
+    *(UWORD *)&bm->Flags = 8;
+    for (p = 0; p < 8; p++)
+        bm->Planes[p] = (PLANEPTR)(planes + p * ps);
+    if (swap67) {
+        PLANEPTR t = bm->Planes[6];
+        bm->Planes[6] = bm->Planes[7];
+        bm->Planes[7] = t;
+    }
+    fillpattern();
+    cb_n = n;
+    sprintf(VEC, "%d %ux%u into %u bytes x %u rows, planes %lu apart%s (%s)", n, w, h, bpr,
+            rows, ps, swap67 ? ", 6 and 7 swapped" : "", what);
+    call2(C2P, "ChunkyToPlanar", set_c2p);
+    OBSBYTES("planes", planes, PLANES + GUARD);
+    *(ULONG *)o = wh;
+}
+
 /* RaycastSky n,x,height,column,&texture: d0-d4, a0 = the object */
 static ULONG rs_x, rs_h, rs_col, rs_tex;
 static void set_rs(void)
@@ -326,6 +361,17 @@ int main(int argc, char **argv)
     }
     c2p(0, 0x0108, "depth word $0108");
     c2p(0, 7, "depth 7");
+
+    /* other shapes (#884): the original converts 320 x 256 from plane 0
+       whatever the sizes say */
+    c2pshape(0, 160, 100, 40, 256, PLSIZ, 0, "smaller");
+    c2pshape(0, 48, 10, 40, 256, PLSIZ, 0, "a 16 pixel tail");
+    c2pshape(0, 40, 10, 40, 256, PLSIZ, 0, "width not a multiple of 16");
+    c2pshape(0, 336, 10, 40, 256, PLSIZ, 0, "wider than the bitmap");
+    c2pshape(0, 320, 256, 40, 200, PLSIZ, 0, "higher than the bitmap");
+    c2pshape(0, 320, 256, 40, 256, PLSIZ, 1, "planes not equally spaced");
+    c2pshape(0, 320, 32, 320, 32, 40, 0, "interleaved");
+
     c2p(0, 0x8008, "depth word $8008");
 
     /* RaycastSky: texture columns into the chunky data */

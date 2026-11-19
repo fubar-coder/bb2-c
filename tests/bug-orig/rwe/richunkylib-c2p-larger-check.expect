@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+320x200: plane 0 128
+REQUESTER: AutoRequest body "Chunky bitmap larger than the bitmap" *
+rc=0
