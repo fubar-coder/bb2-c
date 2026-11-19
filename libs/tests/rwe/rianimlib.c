@@ -49,7 +49,7 @@ enum { E_INIT, E_NEXT, E_LOOP, E_COUNT, E_DEPTH, E_WIDTH, E_HEIGHT };
 static UBYTE anim[ANIMSZ];              /* the copy of the ANIM */
 
 static struct { ULONG fn, d0, d1, d2, d3; } plog[16];
-static int nplog, plogdone;
+static int nplog;                       /* the calls since the last same_state() */
 
 static ULONG rel(ULONG a)
 {
@@ -342,7 +342,7 @@ static void same_state(void)
 
     OBSBYTES("planes", planes, sizeof planes);
     OBS("RIPackLib calls", nplog);
-    for (i = plogdone; i < nplog && i < 16; i++) {
+    for (i = 0; i < nplog && i < 16; i++) {
         sprintf(buf, "RIPackLib call %d", i);
         OBS(buf, plog[i].fn);
         OBS(buf, plog[i].d0);
@@ -350,7 +350,7 @@ static void same_state(void)
         OBS(buf, plog[i].d2);
         OBS(buf, plog[i].d3);
     }
-    plogdone = nplog;
+    nplog = 0;
 }
 
 /* ------------------------------------------------------------ calls */
