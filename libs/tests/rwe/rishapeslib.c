@@ -26,7 +26,9 @@
  * negative and too large coordinates),
  * LESaveShapes both forms (without and with a palette, packed with
  * packable and unpackable data - PackPBM's failure path -, the shape
- * count, with an upper word in d1: BUG(orig) #815),
+ * count, with an upper word in d1: BUG(orig) #815; with dos Write
+ * returning Z set: BUG(orig) #814, and globfree leaving an upper word in
+ * d0: BUG(orig) #817, both as the system may leave them, D-019),
  * LELoadShapes all four forms (form 3, which compiled code never reaches,
  * called directly with a0 set),
  * a missing file, a file that is FORM but no LESH, a file in shapeslib's
@@ -90,6 +92,77 @@ __asm__("   .text\n"
         "   move.l  _DOSBase,a6\n"
         "   move.l  _lsh_loadshapes,-(sp)\n"
         "   rts\n");
+
+/* What the system leaves (D-019), for one LESaveShapes each:
+   - dos Write returning with the Z flag set (wz_on): the original's
+     _saveCMAP tests that flag instead of the palette pointer (#814);
+   - memlib's globfree returning with 1 in the upper word of d0 (mf_on),
+     as exec's FreeMem may leave it: the original's _writeshapes sizes
+     its header buffer with that upper word (#817); the sizes of
+     rishapeslib's globalloc calls are noted meanwhile (ma_size).
+   wz_stub is Write while the test runs (SetFunction); rishapeslib's
+   links to globalloc/globfree go through ma_stub/mf_stub. */
+ULONG wz_on, mf_on;
+APTR wz_old, ma_old, mf_old;
+static ULONG ma_size[8], ma_n;
+void wz_stub(void), ma_stub(void), mf_stub(void);
+void __attribute__((used)) ma_note(ULONG size)
+{
+    if (ma_n < 8)
+        ma_size[ma_n++] = size;
+}
+__asm__("   .text\n"
+        "   .even\n"
+        "_wz_stub:\n"
+        "   tst.l   _wz_on\n"
+        "   bne.s   1f\n"
+        "   move.l  _wz_old,-(sp)\n"
+        "   rts\n"
+        "1: pea     2f(pc)\n"
+        "   move.l  _wz_old,-(sp)\n"
+        "   rts\n"
+        "2: cmp.l   d0,d0\n"
+        "   rts\n"
+        "_ma_stub:\n"
+        "   tst.l   _mf_on\n"
+        "   beq.s   1f\n"
+        "   movem.l d0-d1/a0-a1,-(sp)\n"
+        "   move.l  d0,-(sp)\n"
+        "   jsr     _ma_note\n"
+        "   addq.l  #4,sp\n"
+        "   movem.l (sp)+,d0-d1/a0-a1\n"
+        "1: move.l  _ma_old,-(sp)\n"
+        "   rts\n"
+        "_mf_stub:\n"
+        "   tst.l   _mf_on\n"
+        "   bne.s   1f\n"
+        "   move.l  _mf_old,-(sp)\n"
+        "   rts\n"
+        "1: pea     2f(pc)\n"
+        "   move.l  _mf_old,-(sp)\n"
+        "   rts\n"
+        "2: swap    d0\n"
+        "   move.w  #1,d0\n"
+        "   swap    d0\n"
+        "   rts\n");
+
+/* rishapeslib's links to the routine `to` go through `stub`; the count */
+static int relink(ULONG to, APTR stub)
+{
+    struct lib *l = getlib(&loaded, LIB);
+    ULONG r;
+    int n = 0;
+
+    for (r = 0; r < l->nrelocs; r++) {
+        ULONG *at = (ULONG *)(l->code + l->relocs[r]);
+        if (*at == to) {
+            *at = (ULONG)stub;
+            n++;
+        }
+    }
+    CacheClearU();
+    return n;
+}
 
 static const char *setname(int n)
 {
@@ -333,25 +406,20 @@ static APTR nullsub(const char *name, int off)
 }
 
 /* rishapeslib's link to LoadShapes form 1 (token #shapeslib<<7+10, form
-   1; shapeslib = 154) goes through lsh_stub; FALSE unless there is
-   exactly one */
+   1; shapeslib = 154) goes through lsh_stub, its links to memlib's
+   globalloc/globfree (tokens $c002/$c003) through ma_stub/mf_stub; FALSE
+   unless there is exactly one LoadShapes and some of each memlib routine */
 static BOOL link_loadshapes_stub(void)
 {
-    struct lib *l = getlib(&loaded, LIB);
-    ULONG r, to = (ULONG)find_token(&loaded, (UWORD)((154 << 7) + 10), 1) & ~1UL;
-    int n = 0;
+    ULONG to = (ULONG)find_token(&loaded, (UWORD)((154 << 7) + 10), 1) & ~1UL;
 
     lsh_base = shp[0];
     lsh_loadshapes = (APTR)to;
-    for (r = 0; r < l->nrelocs; r++) {
-        ULONG *at = (ULONG *)(l->code + l->relocs[r]);
-        if (*at == to) {
-            *at = (ULONG)lsh_stub;
-            n++;
-        }
-    }
-    CacheClearU();
-    return n == 1;
+    if (relink(to, (APTR)lsh_stub) != 1)
+        return FALSE;
+    ma_old = (APTR)((ULONG)find_token(&loaded, 0xc002, 0) & ~1UL);
+    mf_old = (APTR)((ULONG)find_token(&loaded, 0xc003, 0) & ~1UL);
+    return relink((ULONG)ma_old, (APTR)ma_stub) > 0 && relink((ULONG)mf_old, (APTR)mf_stub) > 0;
 }
 
 int main(int argc, char **argv)
@@ -447,6 +515,21 @@ int main(int argc, char **argv)
     save(4, 0, 64, 0, 0);               /* packed: shapes 0, 2 pack, 1, 3 not */
     compress(0);
     save(5, 2, 2, 0, 0);
+    /* dos Write returns with Z set: a save with a palette (#814) */
+    wz_old = SetFunction((struct Library *)DOSBase, -48, (APTR)wz_stub);
+    wz_on = 1;
+    save(6, 0, 3, 0, 0);
+    wz_on = 0;
+    SetFunction((struct Library *)DOSBase, -48, wz_old);
+    OBS("CMAP written", fbuf[40] == 'C');
+    /* globfree leaves 1 in the upper word of d0: the allocations of a
+       save with a palette (#817) */
+    ma_n = 0;
+    mf_on = 1;
+    save(7, 0, 3, 0, 0);
+    mf_on = 0;
+    for (i = 0; i < (int)ma_n; i++)
+        OBS("globalloc size", ma_size[i]);
 
     load(1, 0, 10, 13, -1, NULL);
     sameshapes(10, 13);
@@ -577,7 +660,7 @@ int main(int argc, char **argv)
     memlib(8);
     FreeMem(srcpal, 4 + 12 * 12);
     FreeMem(mem, memlen);
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 8; i++)
         DeleteFile((STRPTR)setname(i));
     DeleteFile((STRPTR)"RAM:rwesh_form");
     DeleteFile((STRPTR)"RAM:rwesh_acid");
