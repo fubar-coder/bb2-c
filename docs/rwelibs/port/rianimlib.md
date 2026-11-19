@@ -68,9 +68,7 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
 * RIAnimInit fails for a BMHD depth of 0 or above 8, before UnpackIFF.
   The original's planes loop counted a byte up to the depth: depth 0 gave
   256 planes, more than 8 took plane pointers from behind the bitmap's 8
-  and plane offsets from behind the DLTA's (#509). A bitmap shallower
-  than the animation stays the programmer's (the manual: "You must
-  ensure that the bitmap is big and deep enough").
+  and plane offsets from behind the DLTA's (#509).
 * ANIM5 decodes the byte columns of the word-aligned row, (width + 15) /
   16 × 2, as the encoders write them (Kent's skip.c, FFmpeg). The
   original took width >> 3: the rest of a width that is no multiple of 8
@@ -86,6 +84,14 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   or one of 65536 and above gives an offset of up to 65535 rows, where
   UnpackIFF and every RINextAnimFrame write; the manual: "You should
   ensure that your animation will never go off screen" (#514).
+* RIAnimInit fails (0) when RIPackLib's `UnpackIFF` refuses the first
+  frame: a bitmap too narrow (fewer bytes per row than the frame's
+  word-aligned row), too shallow or without plane 0. The original
+  dropped UnpackIFF's result, returned true and played the deltas into
+  that bitmap. The height is not checked (UnpackIFF unpacks as many rows
+  as the bitmap has; the manual: "You must ensure that the bitmap is big
+  and deep enough to actually hold the animation"). ILBMPalette's result
+  is not looked at, as in the original (#1106).
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×

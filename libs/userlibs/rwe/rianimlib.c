@@ -83,6 +83,10 @@
  *     unchanged: the offset is ebwidth * y (MULU.w: the low words) + x >> 3
  *     (ASR.l), a negative y or one of 65536 and above gives an offset of up
  *     to 65535 rows (#514; an invalid argument, D-005).
+ *   - RIAnimInit fails (0) when UnpackIFF refuses the first frame (a
+ *     bitmap too narrow, too shallow or without plane 0); the original
+ *     dropped UnpackIFF's result and played the deltas into that bitmap
+ *     (#1106).  The height is not checked.
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
@@ -346,6 +350,11 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
  * 1: d0 source, d1 bitmap#, d2 -1 lines, d3 offset) and sets the palette
  * with ILBMPalette (d0 source, d1 palette#), both through ALibJsr; then
  * remembers the second and third frame (the first if there are none).
+ * RIAnimInit fails when UnpackIFF refuses the bitmap (fixed #1106: the
+ * original dropped its result): too narrow (fewer bytes per row than the
+ * frame's word-aligned row), too shallow or without plane 0; the height
+ * is not checked (UnpackIFF unpacks as many rows as the bitmap has).
+ * ILBMPalette's result is not looked at, as in the original.
  * A failed RIAnimInit leaves no animation: RIAnimFrameCount and
  * RINextAnimFrame return 0 (fixed #512: the original kept the ANIM's
  * address and end, and the frame pointers of the animation before).  The
@@ -356,7 +365,8 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
  * @param pal      d2: palette# (its low byte is kept)
  * @param offset   d3: the byte offset into each plane
  * @return d0: BB_TRUE, BB_FALSE if there is no ANIM with an ILBM and BMHD,
- *         the BMHD depth is 0 or above 8 (fixed #509) or its width 0 (fixed #507)
+ *         the BMHD depth is 0 or above 8 (fixed #509) or its width 0 (fixed #507),
+ *         or UnpackIFF refuses the bitmap (fixed #1106)
  */
 BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                  ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
@@ -414,9 +424,12 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
        0 was 256 planes, above 8 behind the bitmap's plane pointers */
     if (!animdepth || animdepth > 8)
         return BB_FALSE;
+    /* fixed #1106: UnpackIFF's result (the original dropped it): a bitmap
+       too narrow, too shallow or without plane 0 fails RIAnimInit */
+    if (!BL_JSR_D4_(BL_TOKVAL(TOK_unpackiff, 1), (ULONG)firstframe, bitmapnumber, (ULONG)-1,
+                    bitplaneoffset))
+        return BB_FALSE;
     animaddress = (UBYTE *)address;
-    BL_JSR_D4_(BL_TOKVAL(TOK_unpackiff, 1), (ULONG)firstframe, bitmapnumber, (ULONG)-1,
-               bitplaneoffset);
     r = (struct bl_regs){ .d0 = (ULONG)firstframe, .d1 = palettenumber };
     BLITZ_ALIBJSR(TOK_ilbmpalette, r);
     /* safety nets for short anims :) */
