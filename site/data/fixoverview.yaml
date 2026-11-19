@@ -5724,6 +5724,22 @@ rows:
     text: "`LELoadShapes` and `LECludgeShapes` replace a shape linked by an earlier `LECludgeShapes` like any other; the original read wrongly, left the file open and crashed."
     page: libraries
     anchor: rwe-other-fixes
+  - issue: 884
+    severity: 5
+    topic: "Graphics"
+    library: "richunkylib"
+    command: "ChunkyToPlanar"
+    text: "`ChunkyToPlanar` converts chunky bitmaps of other sizes, widths a multiple of 16, into any 8-plane bitmap at least as big, also interleaved; the original always converted 320 x 256 and wrote behind smaller bitmaps."
+    page: libraries
+    anchor: richunkylib-fixes
+  - issue: 885
+    severity: 5
+    topic: "System"
+    library: "richunkylib"
+    command: "ChunkyBitmap"
+    text: "`ChunkyBitmap` frees the data a chunky bitmap holds also below address 65536; the original lost it there, and after a failed allocation kept the old address in the object."
+    page: libraries
+    anchor: richunkylib-fixes
   - issue: 883
     severity: 5
     topic: "Graphics"
@@ -5731,7 +5747,7 @@ rows:
     command: "ChunkyToPlanar"
     text: "`ChunkyToPlanar` checks the bitmap's depth alone; the original read it with the flags, wrote 8 planes into smaller bitmaps or refused depth 8."
     page: libraries
-    anchor: rwe-other-fixes
+    anchor: richunkylib-fixes
   - issue: 886
     severity: 5
     topic: "Graphics"
@@ -5739,7 +5755,7 @@ rows:
     command: "ChunkyBitmap"
     text: "Freeing a chunky bitmap leaves the audio filter and power LED as they are; the original toggled them."
     page: libraries
-    anchor: rwe-other-fixes
+    anchor: richunkylib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

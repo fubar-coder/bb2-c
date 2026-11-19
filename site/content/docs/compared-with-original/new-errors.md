@@ -1924,6 +1924,35 @@ checking, the commands are as before.
 
 Issue: [DoColSplit/RedoColSplit do not check numlines: 0 divides by zero, a negative value writes up to 65536 lines (#589)](https://github.com/fubar-coder/bb2-c/issues/589).
 
+### `ChunkyToPlanar` with sizes that do not fit {#chunkytoplanar-sizes}
+
+`ChunkyToPlanar` of
+[richunkylib]({{< relref "/docs/libraries/userlibs/richunkylib" >}})
+converts a chunky bitmap, one byte per pixel, into the eight bitplanes
+of a bitmap. It converts the chunky bitmap's width and height into the
+top left of the bitmap, row by row.
+
+**What happened.** The original always converted 320 x 256 pixels into
+bitplanes 10240 bytes apart, whatever the sizes of the chunky bitmap
+and of the bitmap, also with runtime error checking. It read behind a
+smaller chunky bitmap, wrote behind a smaller bitmap and mixed up the
+bitplanes of an interleaved one.
+
+**With the port.** A chunky bitmap whose width is not a multiple of 16,
+one that is wider or higher than the bitmap, and a bitmap whose
+bitplanes are not equally far apart are not converted: nothing is
+written. With runtime error checking these are the errors "Chunky
+bitmap width not a multiple of 16", "Chunky bitmap larger than the
+bitmap" and "Bitmap planes not equally spaced". A bitmap of fewer than
+8 bitplanes and a chunky bitmap without data do nothing, as in the
+original, also with runtime error checking.
+
+**What to change.** Give the chunky bitmap a width that is a multiple
+of 16, and convert it into a bitmap of 8 bitplanes that is at least as
+wide and as high.
+
+Issue: [ChunkyToPlanar ignores the sizes of the chunky bitmap and of the bitmap (always 320×256×8) (#884)](https://github.com/fubar-coder/bb2-c/issues/884).
+
 ## Forms the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the

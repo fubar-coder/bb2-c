@@ -3,17 +3,21 @@
   notes: |
     Amiga mode only. If the memory cannot be allocated, the program
     stops with the runtime error "Out of Memory!".
-
-    Kept from the original: data at an address below 65536 is never
-    freed, and making a new chunky bitmap on such an object loses it
-    ([#885](https://github.com/fubar-coder/bb2-c/issues/885)).
 "ChunkyToPlanar":
-  text: Converts a chunky bitmap of 320 x 256 pixels into the eight bitplanes of a bitmap. The bitplanes must lie one after the other in memory, 10240 bytes each, from the bitmap's first plane on.
+  text: Converts a chunky bitmap into the eight bitplanes of a bitmap. Its `width` x `height` pixels go to the top left of the bitmap, row by row; the width must be a multiple of 16, and the bitmap at least as wide and as high.
   notes: |
-    Nothing happens if the bitmap has fewer than 8 bitplanes or the
-    chunky bitmap has no data. Kept from the original: the sizes of
-    both are not checked, so a smaller bitmap or chunky bitmap is
-    overrun ([#884](https://github.com/fubar-coder/bb2-c/issues/884)).
+    The bitplanes of the bitmap must be equally far apart, as they are
+    when they lie one after the other in one block of memory or are
+    interleaved. Nothing happens if the bitmap has fewer than 8
+    bitplanes or the chunky bitmap has no data.
+
+    A chunky bitmap whose width is not a multiple of 16, one that is
+    wider or higher than the bitmap, and a bitmap whose bitplanes are
+    not equally far apart are not converted, and nothing is written.
+    With runtime error checking these are the errors "Chunky bitmap
+    width not a multiple of 16", "Chunky bitmap larger than the bitmap"
+    and "Bitmap planes not equally spaced". The help line names a
+    320x256x8 bitmap, the only size the original library converted.
 "PlanarToChunky":
   text: Does nothing; the command was never written.
 "ChunkyLoadBitMap":
@@ -23,6 +27,13 @@
 "RaycastSky":
   text: Copies `height` bytes of a column of a texture into column `x` of a chunky bitmap, both with rows of 320 bytes. `column` is the column in the texture, `&texture` the address of the texture.
   notes: |
-    Kept from the original: nothing is checked, and a height of 0 copies
-    65536 rows, far beyond the chunky bitmap
-    ([#887](https://github.com/fubar-coder/bb2-c/issues/887)).
+    A height below 1 copies nothing. `x` and `column` are offsets from
+    the start of the chunky bitmap and of the texture, so `x` may also
+    hold whole rows of 320 bytes.
+
+    With runtime error checking, an `x` below 0, or one whose column
+    would run past the end of the chunky bitmap, is the error
+    "RaycastSky outside the chunky bitmap", and a `column` below 0 is
+    the error "RaycastSky column below 0". Without runtime error
+    checking, neither is checked, and such a call writes or reads
+    outside the chunky bitmap or the texture.

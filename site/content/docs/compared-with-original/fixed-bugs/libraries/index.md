@@ -5675,6 +5675,37 @@ the unfinished start of a display library by Reflective Images. Its
   graphics.library 39
   ([#891](https://github.com/fubar-coder/bb2-c/issues/891)).
 
+### Fixes in richunkylib {#richunkylib-fixes}
+
+These fixes concern
+[richunkylib]({{< relref "/docs/libraries/userlibs/richunkylib" >}}),
+the chunky bitmaps of Reflective Images, with one byte per pixel, and
+their conversion into planar bitmaps.
+
+* `ChunkyToPlanar` converts chunky bitmaps of other sizes, with a width
+  that is a multiple of 16 pixels, into the top left of any bitmap of 8
+  bitplanes that is at least as big, also an interleaved one. A chunky bitmap the
+  bitmap cannot take is not converted; with runtime error checking it
+  is a runtime error. The original always converted 320 x 256 pixels
+  into bitplanes 10240 bytes apart: it read behind a smaller chunky
+  bitmap and wrote behind a smaller bitmap
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#chunkytoplanar-sizes" >}}),
+  [#884](https://github.com/fubar-coder/bb2-c/issues/884)).
+* `ChunkyToPlanar` reads the depth of the bitmap alone. The original
+  read it together with the bitmap's flags: depending on the flags it
+  wrote 8 bitplanes into a bitmap with fewer, or refused a bitmap of
+  depth 8
+  ([#883](https://github.com/fubar-coder/bb2-c/issues/883)).
+* `ChunkyBitmap` frees the data a chunky bitmap already holds also when
+  it lies below address 65536. The original never freed such data, so a
+  new chunky bitmap on that object lost it; when the new memory could
+  not be allocated, the object kept the old address with a size of 0
+  ([#885](https://github.com/fubar-coder/bb2-c/issues/885)).
+* Freeing a chunky bitmap, when `ChunkyBitmap` makes it again or at the
+  end of the program, leaves the audio filter and the power LED as they
+  are. The original switched them over
+  ([#886](https://github.com/fubar-coder/bb2-c/issues/886)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a
@@ -5769,11 +5800,3 @@ the unfinished start of a display library by Reflective Images. Its
   it."; the original freed it and went on playing the freed memory
   ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#freetrackermodule-playing" >}}),
   [#436](https://github.com/fubar-coder/bb2-c/issues/436)).
-* Freeing a chunky bitmap, when `ChunkyBitmap` makes it again or at the
-  end of the program, switched the audio filter and the power LED over;
-  both stay as they are
-  ([#886](https://github.com/fubar-coder/bb2-c/issues/886)).
-* `ChunkyToPlanar` read the depth of the bitmap together with its flags:
-  depending on the flags it wrote 8 planes into a bitmap with fewer, or
-  refused a bitmap of depth 8; it checks the depth alone
-  ([#883](https://github.com/fubar-coder/bb2-c/issues/883)).
