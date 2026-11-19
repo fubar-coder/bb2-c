@@ -93,9 +93,6 @@ Further assembler:
   packedsize as the chunk (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * **read_palette:**
   * The allocation is not checked; a failure writes to address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
-  * The colour count is `DIVU #3` of the chunk size; on overflow the
-    register is unchanged (#820).
-  * 0 colours decode 65536 (#820).
   * A CMAP size that is not a multiple of 3 makes LECludgeShapes miss
     SDAT (#811).
 * **LESaveShapes:**
@@ -167,6 +164,15 @@ kind F):
   `CLR 30(a2)` tests the Z flag of the CLR (a MOVEA sets no flags), so
   the cookie, one plane of chip memory, was lost on every reload (#810,
   test `rishapeslib-cookie-not-freed`).
+* read_palette (LELoadShapes, LECludgeShapes with a palette) leaves the
+  palette as it is for a CMAP of no colour (below 3 bytes) or of more
+  than the 65535 colours a palette holds, and sizes the colour block
+  with long additions, as ripacklib's ILBMPalette since #1105. The
+  original took the count as `DIVU #3` of the chunk size: a CMAP below
+  3 bytes gave 0 colours, 8 bytes allocated and 65536 colours (768 KB)
+  decoded into them; on the overflow of a CMAP from 196608 bytes the
+  register stayed unchanged; `ADDQ #8` on a word lost its carry from
+  5461 colours (#820, test `rishapeslib-read-palette-colour-count`).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push

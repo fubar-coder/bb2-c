@@ -10,6 +10,7 @@
 ; allocation.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
+; @fixed #820
 ; @rwe rishapeslib ripacklib riamosfunclib
 ; @pass file=s.le|@TESTDATA@/rishapeslib-read-palette-colour-count.le
 ; @pass runwrap=@INJECT@|guard

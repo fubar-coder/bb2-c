@@ -57,8 +57,7 @@
  *     (readchunk jumps to the cleanup of its caller and returns there)
  *     (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
  *   - read_palette: no check of the allocation (writes to address 0)
- *     (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"), the colour count of DIVU #3 (overflow: unchanged), 0 colours
- *     decode 65536; sizes are word additions (ADDQ #8) (#820).
+ *     (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
  *   - LESaveShapes: whether the palette is written depends on the flags
  *     dos Write leaves (MOVE.l paletteptr,a0 is a MOVEA, the BNE tests
  *     Write's flags) (#814); the FORM length is 8 too large and has the
@@ -685,27 +684,33 @@ BLITZ_THUNK(_leinitshape, leinitshape_c, "d0-d1/a0-a1");
 /* ----------------------------------------------------- reading LE data */
 
 /* read_palette: the CMAP at a0 (chunksize bytes) into the palette object
-   paletteptr (nothing without one) */
+   paletteptr (nothing without one).  Fixed (#820): a CMAP of no colour
+   (below 3 bytes) or of more than the 65535 colours of a palette (the
+   quotient would not fit DIVU's word) leaves the palette as it is
+   (colourcount 0); the sizes are long additions.  The original decoded
+   65536 colours into a block of none for a CMAP below 3 bytes, kept the
+   register on DIVU's overflow and lost the carry of ADDQ #8 on a word. */
 static void read_palette(const UBYTE *cmap)
 {
     UBYTE *palette;
     ULONG *p;
-    ULONG size, colours;
+    ULONG size;
     UWORD n;
     int i;
 
-    colours = bl_divu_w(chunksize, 3);  /* BUG(orig): overflow keeps it (#820) */
-    colourcount = (UWORD)colours;
+    if (chunksize < 3 || chunksize >= 3UL * 0x10000UL) {
+        colourcount = 0;
+        return;
+    }
+    colourcount = (UWORD)bl_divu_w(chunksize, 3);
     if (!paletteptr)
         return;
     palette = paletteptr;
     if (FL(palette, bb_palette, pdata)) {
-        size = bl_mulu_w(FW(palette, bb_palette, numcols), 12);
-        BL_SETW(size, size + 8);        /* ADDQ #8,d0: a word addition */
+        size = bl_mulu_w(FW(palette, bb_palette, numcols), 12) + 8;
         gfree(FL(palette, bb_palette, pdata), size);
     }
-    size = bl_mulu_w(colourcount, 12);
-    BL_SETW(size, size + 8);
+    size = bl_mulu_w(colourcount, 12) + 8;
     /* unchecked: harmless (#821) */
     FL(palette, bb_palette, pdata) = galloc(size, MEMF_PUBLIC | MEMF_CLEAR);
     FW(palette, bb_palette, numcols) = colourcount;
@@ -806,8 +811,8 @@ static void readshapes(UBYTE *data)
  * copied (unpacked) into chip memory.  Every shape gets a cookie.  At
  * most count + 1 shapes of the file are read.  BUG(orig): the SHHD chunk
  * is skipped as 20 bytes whatever its length (#811); a CMAP size that is
- * no multiple of 3 misses SDAT (#811); the palette as in LELoadShapes
- * (#820).  Fixed (#810): the old cookies are freed.  Fixed (#807): a shape
+ * no multiple of 3 misses SDAT (#811).  The palette as in LELoadShapes
+ * (fixed #820).  Fixed (#810): the old cookies are freed.  Fixed (#807): a shape
  * in use that is cludged is replaced like any other (the original pops a0
  * it never pushed and returns past the caller).
  * @param file     d2: the LE file in memory (address)
@@ -846,8 +851,6 @@ static void BLITZ_ROUTINE lecludgeshapes2_c(ULONG file BL_REG(d2), ULONG copymem
         if (paletteptr) {
             read_palette(p);
             p += bl_mulu_w(colourcount, 3);     /* a0 behind the colours */
-            if (!colourcount)
-                p += 3 * 65536;
         } else
             p += chunksize;
     }
@@ -1004,8 +1007,8 @@ static ULONG leloadshapes(ULONG shape1, ULONG shape2, ULONG name, UBYTE *palette
  * to shapeslib's LoadShapes (form 1), with the shape numbers (d0/d1 >> 5).
  * BUG(orig): a failing chunk allocation frees the header
  * buffer and closes the file twice (#819, never in practice); the
- * palette: no check of the allocation (#821), DIVU #3 overflow, 0 colours
- * = 65536 (#820).  Fixed (#810): the old cookies are freed.  Fixed (#807): a
+ * palette: no check of the allocation (#821).  Fixed (#820): a CMAP of
+ * no colour or of more than 65535 leaves the palette.  Fixed (#810): the old cookies are freed.  Fixed (#807): a
  * shape in use that is cludged is replaced like any other (the original
  * pops a0 it never pushed and returns past the caller without freeing the
  * buffers or closing the file).
