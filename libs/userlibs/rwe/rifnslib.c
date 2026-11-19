@@ -44,8 +44,6 @@
  *
  * BUG(orig):
  *   - FNSLength gives the width - 2 (0 at least) (#662).
- *     FNSLength without prefs takes the prefs of the last FNSPrint, not
- *     FNSPrefs' (#661).
  *   - A depth of 0 (or more than 8) overruns bitstack: 256 (depth) plane
  *     pointers are written over the variables and the font; the 16 pixel
  *     loop draws bitdepthminusone + 1 planes, the word (Flags<<8|Depth) - 1
@@ -82,6 +80,10 @@
  *   command; the original shifted the whole word (ASL.w #2): 16 on read
  *   the built-in font's bytes as font pointers, negative numbers the
  *   variables before font_add.
+ * Fixed (#661): FNSLength without prefs takes FNSPrefs' prefs, the ones
+ *   FNSPrint without prefs uses (the manual: "the previously selected
+ *   preferences ... See: FNSPrefs"); the original took those of the last
+ *   FNSPrint.
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): the glyphs of codes the font has no data for - the built-in font ends
  *   at 'z' (91 glyphs), codes 123..159 are drawn from the bytes behind it.
@@ -939,16 +941,17 @@ static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(
 }
 
 /**
- * @brief FNSLength(fontnum,a$): as FNSLength with the prefs of the last FNSPrint.
+ * @brief FNSLength(fontnum,a$): as FNSLength with FNSPrefs' prefs.
  *
- * BUG(orig) (#661): not FNSPrefs' prefs.
+ * Fixed (#661): the prefs FNSPrint without prefs uses; the original took
+ * those of the last FNSPrint.
  * @param n    d0: the slot (& 15)
  * @param str  d1: the text
  * @return d0.w: as FNSLength
  */
 static ULONG BLITZ_ROUTINE length2_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(d1))
 {
-    return length_c(n, str, fns.textprefs);
+    return length_c(n, str, fns.textprefs2);    /* fixed (#661) */
 }
 
 /**

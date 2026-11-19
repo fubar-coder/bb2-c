@@ -91,11 +91,15 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   original shifted the whole word (`ASL.w #2`): 16 on read the built-in
   font's bytes as font pointers, negative numbers the variables before
   `font_add` (#660).
+* FNSLength without prefs takes FNSPrefs' prefs, the ones FNSPrint
+  without prefs uses (the manual: "if you specify no preferences then
+  this function will use the previously selected preferences … See:
+  FNSPrefs"). The original took the prefs of the last FNSPrint (of them
+  only the bold bit counts) (#661).
 
 ## BUG(orig), kept
 
-* FNSLength returns width − 2 (at least 0) (#662) and takes the prefs of
-  the last FNSPrint when called without prefs (#661).
+* FNSLength returns width − 2 (at least 0) (#662).
 * A bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for

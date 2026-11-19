@@ -626,84 +626,141 @@ FNSInk|popped|5A000006|1	$00000000
 FNSLength|d0|f0 font 0 "second\trun" prefs 0|1	$0000003C
 FNSLength|d0|f0 font 1 "second\trun" prefs 0|1	$00000012
 FNSLength|d0|f0 font 2 "bold?" prefs 0|1	$0000003D
-FNSLength|d0|f0 font 5A000000 "!"#$%&'()*+,-./01234" prefs 0|1	$00000286
+FNSLength|d0|f0 font 5A000000 "!"#$%&'()*+,-./01234" prefs 0|1 [orig]	$00000286
+FNSLength|d0|f0 font 5A000000 "!"#$%&'()*+,-./01234" prefs 0|1 [fixed #661]	$000002E0
 FNSLength|d0|f0 font 5A000000 "" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000000 "Hello, World!" prefs 0|1	$0000004A
-FNSLength|d0|f0 font 5A000000 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1	$00000178
+FNSLength|d0|f0 font 5A000000 "Hello, World!" prefs 0|1 [orig]	$0000004A
+FNSLength|d0|f0 font 5A000000 "Hello, World!" prefs 0|1 [fixed #661]	$00000057
+FNSLength|d0|f0 font 5A000000 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [orig]	$00000178
+FNSLength|d0|f0 font 5A000000 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [fixed #661]	$000001A2
 FNSLength|d0|f0 font 5A000000 "\x0A" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000000 "\x0Aleading" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000000 "a\x0A\x0Ab" prefs 0|1	$00000005
-FNSLength|d0|f0 font 5A000000 "col\x01\x03our\x01\x05s" prefs 0|1	$0000002B
-FNSLength|d0|f0 font 5A000000 "ctrl \x02 ends" prefs 0|1	$0000001B
-FNSLength|d0|f0 font 5A000000 "high \xA0 ends" prefs 0|1	$0000001C
-FNSLength|d0|f0 font 5A000000 "line one\x0Aline two\x0Ath" prefs 0|1	$0000002E
-FNSLength|d0|f0 font 5A000000 "tab\there\t!" prefs 0|1	$00000030
-FNSLength|d0|f0 font 5A000000 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1	$000000C3
-FNSLength|d0|f0 font 5A000001 "!"#$%&'()*+,-./01234" prefs 0|1	$000001C7
+FNSLength|d0|f0 font 5A000000 "a\x0A\x0Ab" prefs 0|1 [orig]	$00000005
+FNSLength|d0|f0 font 5A000000 "a\x0A\x0Ab" prefs 0|1 [fixed #661]	$00000006
+FNSLength|d0|f0 font 5A000000 "col\x01\x03our\x01\x05s" prefs 0|1 [orig]	$0000002B
+FNSLength|d0|f0 font 5A000000 "col\x01\x03our\x01\x05s" prefs 0|1 [fixed #661]	$00000032
+FNSLength|d0|f0 font 5A000000 "ctrl \x02 ends" prefs 0|1 [orig]	$0000001B
+FNSLength|d0|f0 font 5A000000 "ctrl \x02 ends" prefs 0|1 [fixed #661]	$00000020
+FNSLength|d0|f0 font 5A000000 "high \xA0 ends" prefs 0|1 [orig]	$0000001C
+FNSLength|d0|f0 font 5A000000 "high \xA0 ends" prefs 0|1 [fixed #661]	$00000021
+FNSLength|d0|f0 font 5A000000 "line one\x0Aline two\x0Ath" prefs 0|1 [orig]	$0000002E
+FNSLength|d0|f0 font 5A000000 "line one\x0Aline two\x0Ath" prefs 0|1 [fixed #661]	$00000036
+FNSLength|d0|f0 font 5A000000 "tab\there\t!" prefs 0|1 [orig]	$00000030
+FNSLength|d0|f0 font 5A000000 "tab\there\t!" prefs 0|1 [fixed #661]	$00000038
+FNSLength|d0|f0 font 5A000000 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [orig]	$000000C3
+FNSLength|d0|f0 font 5A000000 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [fixed #661]	$000000DF
+FNSLength|d0|f0 font 5A000001 "!"#$%&'()*+,-./01234" prefs 0|1 [orig]	$000001C7
+FNSLength|d0|f0 font 5A000001 "!"#$%&'()*+,-./01234" prefs 0|1 [fixed #661]	$00000203
 FNSLength|d0|f0 font 5A000001 "" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000001 "Hello, World!" prefs 0|1	$0000001E
-FNSLength|d0|f0 font 5A000001 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1	$000000A6
+FNSLength|d0|f0 font 5A000001 "Hello, World!" prefs 0|1 [orig]	$0000001E
+FNSLength|d0|f0 font 5A000001 "Hello, World!" prefs 0|1 [fixed #661]	$00000024
+FNSLength|d0|f0 font 5A000001 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [orig]	$000000A6
+FNSLength|d0|f0 font 5A000001 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [fixed #661]	$000000D0
 FNSLength|d0|f0 font 5A000001 "\x0A" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000001 "\x0Aleading" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000001 "a\x0A\x0Ab" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000001 "col\x01\x03our\x01\x05s" prefs 0|1	$0000000F
-FNSLength|d0|f0 font 5A000001 "ctrl \x02 ends" prefs 0|1	$0000000C
-FNSLength|d0|f0 font 5A000001 "high \xA0 ends" prefs 0|1	$00000027
-FNSLength|d0|f0 font 5A000001 "line one\x0Aline two\x0Ath" prefs 0|1	$0000001B
-FNSLength|d0|f0 font 5A000001 "tab\there\t!" prefs 0|1	$0000001C
-FNSLength|d0|f0 font 5A000001 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1	$000000A1
-FNSLength|d0|f0 font 5A000002 "!"#$%&'()*+,-./01234" prefs 0|1	$0000043E
+FNSLength|d0|f0 font 5A000001 "col\x01\x03our\x01\x05s" prefs 0|1 [orig]	$0000000F
+FNSLength|d0|f0 font 5A000001 "col\x01\x03our\x01\x05s" prefs 0|1 [fixed #661]	$00000013
+FNSLength|d0|f0 font 5A000001 "ctrl \x02 ends" prefs 0|1 [orig]	$0000000C
+FNSLength|d0|f0 font 5A000001 "ctrl \x02 ends" prefs 0|1 [fixed #661]	$0000000E
+FNSLength|d0|f0 font 5A000001 "high \xA0 ends" prefs 0|1 [orig]	$00000027
+FNSLength|d0|f0 font 5A000001 "high \xA0 ends" prefs 0|1 [fixed #661]	$0000002B
+FNSLength|d0|f0 font 5A000001 "line one\x0Aline two\x0Ath" prefs 0|1 [orig]	$0000001B
+FNSLength|d0|f0 font 5A000001 "line one\x0Aline two\x0Ath" prefs 0|1 [fixed #661]	$0000001F
+FNSLength|d0|f0 font 5A000001 "tab\there\t!" prefs 0|1 [orig]	$0000001C
+FNSLength|d0|f0 font 5A000001 "tab\there\t!" prefs 0|1 [fixed #661]	$0000001F
+FNSLength|d0|f0 font 5A000001 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [orig]	$000000A1
+FNSLength|d0|f0 font 5A000001 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [fixed #661]	$000000B5
+FNSLength|d0|f0 font 5A000002 "!"#$%&'()*+,-./01234" prefs 0|1 [orig]	$0000043E
+FNSLength|d0|f0 font 5A000002 "!"#$%&'()*+,-./01234" prefs 0|1 [fixed #661]	$0000047D
 FNSLength|d0|f0 font 5A000002 "" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000002 "Hello, World!" prefs 0|1	$0000009B
-FNSLength|d0|f0 font 5A000002 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1	$000001F6
+FNSLength|d0|f0 font 5A000002 "Hello, World!" prefs 0|1 [orig]	$0000009B
+FNSLength|d0|f0 font 5A000002 "Hello, World!" prefs 0|1 [fixed #661]	$000000A4
+FNSLength|d0|f0 font 5A000002 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [orig]	$000001F6
+FNSLength|d0|f0 font 5A000002 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [fixed #661]	$00000220
 FNSLength|d0|f0 font 5A000002 "\x0A" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000002 "\x0Aleading" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000002 "a\x0A\x0Ab" prefs 0|1	$0000001D
-FNSLength|d0|f0 font 5A000002 "col\x01\x03our\x01\x05s" prefs 0|1	$00000025
-FNSLength|d0|f0 font 5A000002 "ctrl \x02 ends" prefs 0|1	$00000046
-FNSLength|d0|f0 font 5A000002 "high \xA0 ends" prefs 0|1	$0000002E
-FNSLength|d0|f0 font 5A000002 "line one\x0Aline two\x0Ath" prefs 0|1	$00000044
-FNSLength|d0|f0 font 5A000002 "tab\there\t!" prefs 0|1	$0000004E
-FNSLength|d0|f0 font 5A000002 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1	$0000013D
-FNSLength|d0|f0 font 5A000003 "!"#$%&'()*+,-./01234" prefs 0|1	$0000072D
+FNSLength|d0|f0 font 5A000002 "a\x0A\x0Ab" prefs 0|1 [orig]	$0000001D
+FNSLength|d0|f0 font 5A000002 "a\x0A\x0Ab" prefs 0|1 [fixed #661]	$0000001E
+FNSLength|d0|f0 font 5A000002 "col\x01\x03our\x01\x05s" prefs 0|1 [orig]	$00000025
+FNSLength|d0|f0 font 5A000002 "col\x01\x03our\x01\x05s" prefs 0|1 [fixed #661]	$00000027
+FNSLength|d0|f0 font 5A000002 "ctrl \x02 ends" prefs 0|1 [orig]	$00000046
+FNSLength|d0|f0 font 5A000002 "ctrl \x02 ends" prefs 0|1 [fixed #661]	$0000004A
+FNSLength|d0|f0 font 5A000002 "high \xA0 ends" prefs 0|1 [orig]	$0000002E
+FNSLength|d0|f0 font 5A000002 "high \xA0 ends" prefs 0|1 [fixed #661]	$00000031
+FNSLength|d0|f0 font 5A000002 "line one\x0Aline two\x0Ath" prefs 0|1 [orig]	$00000044
+FNSLength|d0|f0 font 5A000002 "line one\x0Aline two\x0Ath" prefs 0|1 [fixed #661]	$0000004B
+FNSLength|d0|f0 font 5A000002 "tab\there\t!" prefs 0|1 [orig]	$0000004E
+FNSLength|d0|f0 font 5A000002 "tab\there\t!" prefs 0|1 [fixed #661]	$00000053
+FNSLength|d0|f0 font 5A000002 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [orig]	$0000013D
+FNSLength|d0|f0 font 5A000002 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [fixed #661]	$00000150
+FNSLength|d0|f0 font 5A000003 "!"#$%&'()*+,-./01234" prefs 0|1 [orig]	$0000072D
+FNSLength|d0|f0 font 5A000003 "!"#$%&'()*+,-./01234" prefs 0|1 [fixed #661]	$0000076E
 FNSLength|d0|f0 font 5A000003 "" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000003 "Hello, World!" prefs 0|1	$00000147
+FNSLength|d0|f0 font 5A000003 "Hello, World!" prefs 0|1 [orig]	$00000147
+FNSLength|d0|f0 font 5A000003 "Hello, World!" prefs 0|1 [fixed #661]	$00000153
 FNSLength|d0|f0 font 5A000003 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000003 "\x0A" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000003 "\x0Aleading" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000003 "a\x0A\x0Ab" prefs 0|1	$0000000D
-FNSLength|d0|f0 font 5A000003 "col\x01\x03our\x01\x05s" prefs 0|1	$000000D7
-FNSLength|d0|f0 font 5A000003 "ctrl \x02 ends" prefs 0|1	$0000006D
-FNSLength|d0|f0 font 5A000003 "high \xA0 ends" prefs 0|1	$00000068
-FNSLength|d0|f0 font 5A000003 "line one\x0Aline two\x0Ath" prefs 0|1	$000000EB
-FNSLength|d0|f0 font 5A000003 "tab\there\t!" prefs 0|1	$000000BB
-FNSLength|d0|f0 font 5A000003 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1	$00000207
-FNSLength|d0|f0 font 5A000004 "!"#$%&'()*+,-./01234" prefs 0|1	$00000872
+FNSLength|d0|f0 font 5A000003 "a\x0A\x0Ab" prefs 0|1 [orig]	$0000000D
+FNSLength|d0|f0 font 5A000003 "a\x0A\x0Ab" prefs 0|1 [fixed #661]	$0000000E
+FNSLength|d0|f0 font 5A000003 "col\x01\x03our\x01\x05s" prefs 0|1 [orig]	$000000D7
+FNSLength|d0|f0 font 5A000003 "col\x01\x03our\x01\x05s" prefs 0|1 [fixed #661]	$000000DE
+FNSLength|d0|f0 font 5A000003 "ctrl \x02 ends" prefs 0|1 [orig]	$0000006D
+FNSLength|d0|f0 font 5A000003 "ctrl \x02 ends" prefs 0|1 [fixed #661]	$00000071
+FNSLength|d0|f0 font 5A000003 "high \xA0 ends" prefs 0|1 [orig]	$00000068
+FNSLength|d0|f0 font 5A000003 "high \xA0 ends" prefs 0|1 [fixed #661]	$0000006B
+FNSLength|d0|f0 font 5A000003 "line one\x0Aline two\x0Ath" prefs 0|1 [orig]	$000000EB
+FNSLength|d0|f0 font 5A000003 "line one\x0Aline two\x0Ath" prefs 0|1 [fixed #661]	$000000F3
+FNSLength|d0|f0 font 5A000003 "tab\there\t!" prefs 0|1 [orig]	$000000BB
+FNSLength|d0|f0 font 5A000003 "tab\there\t!" prefs 0|1 [fixed #661]	$000000C1
+FNSLength|d0|f0 font 5A000003 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [orig]	$00000207
+FNSLength|d0|f0 font 5A000003 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [fixed #661]	$0000021B
+FNSLength|d0|f0 font 5A000004 "!"#$%&'()*+,-./01234" prefs 0|1 [orig]	$00000872
+FNSLength|d0|f0 font 5A000004 "!"#$%&'()*+,-./01234" prefs 0|1 [fixed #661]	$000008B3
 FNSLength|d0|f0 font 5A000004 "" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000004 "Hello, World!" prefs 0|1	$00000198
-FNSLength|d0|f0 font 5A000004 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1	$000001F6
+FNSLength|d0|f0 font 5A000004 "Hello, World!" prefs 0|1 [orig]	$00000198
+FNSLength|d0|f0 font 5A000004 "Hello, World!" prefs 0|1 [fixed #661]	$000001A3
+FNSLength|d0|f0 font 5A000004 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [orig]	$000001F6
+FNSLength|d0|f0 font 5A000004 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [fixed #661]	$00000220
 FNSLength|d0|f0 font 5A000004 "\x0A" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000004 "\x0Aleading" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000004 "a\x0A\x0Ab" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000004 "col\x01\x03our\x01\x05s" prefs 0|1	$000000FA
-FNSLength|d0|f0 font 5A000004 "ctrl \x02 ends" prefs 0|1	$00000088
-FNSLength|d0|f0 font 5A000004 "high \xA0 ends" prefs 0|1	$00000062
-FNSLength|d0|f0 font 5A000004 "line one\x0Aline two\x0Ath" prefs 0|1	$0000010D
-FNSLength|d0|f0 font 5A000004 "tab\there\t!" prefs 0|1	$00000056
-FNSLength|d0|f0 font 5A000004 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1	$000002CC
-FNSLength|d0|f0 font 5A000005 "!"#$%&'()*+,-./01234" prefs 0|1	$00000314
+FNSLength|d0|f0 font 5A000004 "col\x01\x03our\x01\x05s" prefs 0|1 [orig]	$000000FA
+FNSLength|d0|f0 font 5A000004 "col\x01\x03our\x01\x05s" prefs 0|1 [fixed #661]	$00000100
+FNSLength|d0|f0 font 5A000004 "ctrl \x02 ends" prefs 0|1 [orig]	$00000088
+FNSLength|d0|f0 font 5A000004 "ctrl \x02 ends" prefs 0|1 [fixed #661]	$0000008C
+FNSLength|d0|f0 font 5A000004 "high \xA0 ends" prefs 0|1 [orig]	$00000062
+FNSLength|d0|f0 font 5A000004 "high \xA0 ends" prefs 0|1 [fixed #661]	$00000065
+FNSLength|d0|f0 font 5A000004 "line one\x0Aline two\x0Ath" prefs 0|1 [orig]	$0000010D
+FNSLength|d0|f0 font 5A000004 "line one\x0Aline two\x0Ath" prefs 0|1 [fixed #661]	$00000115
+FNSLength|d0|f0 font 5A000004 "tab\there\t!" prefs 0|1 [orig]	$00000056
+FNSLength|d0|f0 font 5A000004 "tab\there\t!" prefs 0|1 [fixed #661]	$0000005A
+FNSLength|d0|f0 font 5A000004 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [orig]	$000002CC
+FNSLength|d0|f0 font 5A000004 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [fixed #661]	$000002E0
+FNSLength|d0|f0 font 5A000005 "!"#$%&'()*+,-./01234" prefs 0|1 [orig]	$00000314
+FNSLength|d0|f0 font 5A000005 "!"#$%&'()*+,-./01234" prefs 0|1 [fixed #661]	$00000357
 FNSLength|d0|f0 font 5A000005 "" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000005 "Hello, World!" prefs 0|1	$000000BA
-FNSLength|d0|f0 font 5A000005 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1	$0000031C
+FNSLength|d0|f0 font 5A000005 "Hello, World!" prefs 0|1 [orig]	$000000BA
+FNSLength|d0|f0 font 5A000005 "Hello, World!" prefs 0|1 [fixed #661]	$000000C5
+FNSLength|d0|f0 font 5A000005 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [orig]	$0000031C
+FNSLength|d0|f0 font 5A000005 "WWWWWWWWWWWWWWWWWWWW" prefs 0|1 [fixed #661]	$00000346
 FNSLength|d0|f0 font 5A000005 "\x0A" prefs 0|1	$00000000
 FNSLength|d0|f0 font 5A000005 "\x0Aleading" prefs 0|1	$00000000
-FNSLength|d0|f0 font 5A000005 "a\x0A\x0Ab" prefs 0|1	$00000003
-FNSLength|d0|f0 font 5A000005 "col\x01\x03our\x01\x05s" prefs 0|1	$0000005E
-FNSLength|d0|f0 font 5A000005 "ctrl \x02 ends" prefs 0|1	$00000035
-FNSLength|d0|f0 font 5A000005 "high \xA0 ends" prefs 0|1	$00000042
-FNSLength|d0|f0 font 5A000005 "line one\x0Aline two\x0Ath" prefs 0|1	$0000004F
-FNSLength|d0|f0 font 5A000005 "tab\there\t!" prefs 0|1	$00000049
-FNSLength|d0|f0 font 5A000005 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1	$00000119
+FNSLength|d0|f0 font 5A000005 "a\x0A\x0Ab" prefs 0|1 [orig]	$00000003
+FNSLength|d0|f0 font 5A000005 "a\x0A\x0Ab" prefs 0|1 [fixed #661]	$00000004
+FNSLength|d0|f0 font 5A000005 "col\x01\x03our\x01\x05s" prefs 0|1 [orig]	$0000005E
+FNSLength|d0|f0 font 5A000005 "col\x01\x03our\x01\x05s" prefs 0|1 [fixed #661]	$00000064
+FNSLength|d0|f0 font 5A000005 "ctrl \x02 ends" prefs 0|1 [orig]	$00000035
+FNSLength|d0|f0 font 5A000005 "ctrl \x02 ends" prefs 0|1 [fixed #661]	$00000039
+FNSLength|d0|f0 font 5A000005 "high \xA0 ends" prefs 0|1 [orig]	$00000042
+FNSLength|d0|f0 font 5A000005 "high \xA0 ends" prefs 0|1 [fixed #661]	$00000047
+FNSLength|d0|f0 font 5A000005 "line one\x0Aline two\x0Ath" prefs 0|1 [orig]	$0000004F
+FNSLength|d0|f0 font 5A000005 "line one\x0Aline two\x0Ath" prefs 0|1 [fixed #661]	$00000057
+FNSLength|d0|f0 font 5A000005 "tab\there\t!" prefs 0|1 [orig]	$00000049
+FNSLength|d0|f0 font 5A000005 "tab\there\t!" prefs 0|1 [fixed #661]	$00000050
+FNSLength|d0|f0 font 5A000005 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [orig]	$00000119
+FNSLength|d0|f0 font 5A000005 "{\|}~\x7F\x80\x8F\x9F the codes u" prefs 0|1 [fixed #661]	$00000131
 FNSLength|d0|f0 font 5A000006 "!"#$%&'()*+,-./01234" prefs 0|1	$FFFFFFFF
 FNSLength|d0|f0 font 5A000006 "" prefs 0|1	$FFFFFFFF
 FNSLength|d0|f0 font 5A000006 "Hello, World!" prefs 0|1	$FFFFFFFF

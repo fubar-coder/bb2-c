@@ -23,8 +23,8 @@
  * every bit position, near xmax, below xmin, rows clipped at ymin/ymax
  * (the 48/64 pixel fonts: fixed #656), an empty text (fixed #659: in the
  * original underline 1 pixel, the centring by -32767), FNSOrigin;
- * FNSLength both forms (the prefs of the
- * last FNSPrint) and its font number 16, 17, -1, -2 (fixed #660: & 15;
+ * FNSLength both forms (the short one: FNSPrefs' prefs, fixed #661; the
+ * original took the last FNSPrint's) and its font number 16, 17, -1, -2 (fixed #660: & 15;
  * the original read the variables and the font of the block); FNSHeight/Width/Underline,
  * InstallFNS (and a non-FNS address), RemoveFNS, FNSSlot, FNSInk,
  * FNSPrefs, FNSVersion (inline), FNSLoad (ok, BLoad fails, Start 0, a
