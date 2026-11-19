@@ -406,32 +406,51 @@ static void underline(UWORD x);
 /* the width count of FNSPrint/FNSLength: the widths of the codes from 32
    (+ bold for every one that is not 0; a code behind the last glyph,
    32 + `lastg`, counts as a space: fixed #657), TAB skipped, chr$(1) and
-   its colour skipped, every other code below 32 ends it.  One compare for
-   a code of the font (the original's sign test cost as much) */
-static UWORD countwidth(const UBYTE *font BL_REG(a1), const UBYTE *p BL_REG(a0),
-                        UBYTE bold BL_REG(d1), UBYTE lastg BL_REG(d2))
+   its colour skipped, every other code below 32 ends it.  Assembler (D-007:
+   gcc's loop kept its arguments on the stack and took 1.42 times the
+   original's time): c and cw are cleared once and then written as bytes
+   only, so c.w indexes the width table and cw.w adds the byte width + bold
+   (a byte, as the original's ADD.b) to the word sum */
+static inline __attribute__((always_inline)) UWORD countwidth(const UBYTE *font,
+                                                              const UBYTE *p, UBYTE bold,
+                                                              UBYTE lastg)
 {
-    UWORD w = 0;
-    UBYTE c, cw;
+    UWORD w;
+    ULONG c, cw, t;
 
-    for (;;) {
-        c = *p++;
-        if ((UBYTE)(c - 32) > lastg) {  /* fixed (#657) */
-            if (c >= 32)
-                c = 32;
-            else {
-                if (c == 9)
-                    continue;
-                if (c != 1)
-                    return w;
-                p++;
-                continue;
-            }
-        }
-        cw = font[c];
-        if (cw)
-            w = (UWORD)(w + (UBYTE)(cw + bold));
-    }
+    __asm__(
+        "   moveq   #0,%[w]\n"
+        "   moveq   #0,%[c]\n"
+        "   moveq   #0,%[cw]\n"
+        "0: move.b  (%[p])+,%[c]\n"
+        "   move.b  %[c],%[t]\n"
+        "   sub.b   #32,%[t]\n"
+        "   cmp.b   %[lg],%[t]\n"       /* a glyph of the font: one compare */
+        "   bhi.s   5f\n"
+        "1: move.b  0(%[f],%[c].w),%[cw]\n"
+        "   beq.s   0b\n"
+        "   add.b   %[b],%[cw]\n"
+        "   add.w   %[cw],%[w]\n"
+        "   move.b  (%[p])+,%[c]\n"     /* the next code: the loop's test */
+        "   move.b  %[c],%[t]\n"        /* at its end (no BRA a character) */
+        "   sub.b   #32,%[t]\n"
+        "   cmp.b   %[lg],%[t]\n"
+        "   bls.s   1b\n"
+        "5: cmp.b   #32,%[c]\n"
+        "   bcc.s   6f\n"
+        "   cmp.b   #9,%[c]\n"          /* TAB: skipped */
+        "   beq.s   0b\n"
+        "   cmp.b   #1,%[c]\n"          /* chr$(1): its colour skipped */
+        "   bne.s   9f\n"
+        "   addq.l  #1,%[p]\n"
+        "   bra.s   0b\n"
+        "6: moveq   #32,%[c]\n"         /* behind the font: a space (#657) */
+        "   bra.s   1b\n"
+        "9:"
+        : [w] "=&d"(w), [c] "=&d"(c), [cw] "=&d"(cw), [t] "=&d"(t), [p] "+a"(p)
+        : [f] "a"(font), [b] "d"(bold), [lg] "d"(lastg)
+        : "cc");
+    return w;
 }
 
 /* the first glyph row print draws of a line and the rows - 1 from it

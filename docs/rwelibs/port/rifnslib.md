@@ -56,7 +56,10 @@ same places (bitstack for a depth above 8), and FNSPrint's a0 and FNSSlot point 
 `_Static_assert`s check the offsets the original has. Everything is C
 behind thunks except: the FNSPrint/FNSShadowPrint entries (assembler:
 they test for a bitmap, load the default prefs/colour for the short
-forms and call the C code), and FNSVersion (an inline routine, `BLITZ_INLINE`). FNSLoad
+forms and call the C code), FNSVersion (an inline routine, `BLITZ_INLINE`)
+and the width count of FNSPrint and FNSLength (`countwidth`, inline
+assembler: gcc kept its arguments on the stack, 1.42 times the original's
+time; now 0.94). FNSLoad
 calls RIAmosFuncLib's BLoad (form 1), Start and Erase with
 `BLITZ_ALIBJSR`/`BL_JSR_D4_` (tokens `#riamosfunclib<<7` + 15/17/19, as
 ripacklib). The register-level details are kept: word and byte widths,
@@ -141,7 +144,9 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   library's code) (#657; user decision W6 Q2 of 2026-11-19: characters
   the font does not have as a space). One compare per character replaces
   the sign test; FNSPrint of 32 characters 7092 cycles (6292 without the
-  compare, perf `bfns.fnsprint`), FNSLength 5232 (4989).
+  compare, perf `bfns.fnsprint`), FNSLength 5232 (4989) in C; with the
+  width count in assembler (below) 6455 and 3466 (the original: 60445
+  and 3686).
 
 * init sets every variable in front of the built-in font to its start
   value (no output bitmap, the slots 1-15 empty, FNSPrefs, FNSInk and the

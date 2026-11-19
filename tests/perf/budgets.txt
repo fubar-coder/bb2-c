@@ -289,6 +289,9 @@
 # fnslength 5232.6 both times; both budgets go up with it (fnslength
 # above its earlier budget of 5011; W6 decision Q2: "Sollte nicht viel
 # Performance kosten", measured: +25 and +8 cycles per character).
+# After the width count in assembler (group A follow-up A2, user: "Performance
+# sollte eigentlich nicht leiden"): fnsprint 6455.1 and 6455.0, fnslength
+# 3465.6 and 3465.0 (0.94 of the original); both budgets lowered.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -315,8 +318,8 @@ bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
 bdisp.dispsprite             948~4      965.5  DisplaySprite 0,0,100,100,0
 bdisp.disppalette          1289~16     1292.0  DisplayPalette 0,0
 bfns.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bfns.fnsprint                7168    60445.2  FNSPrint 0,8,100,t$ (the built-in font, 32 characters, 3 planes)
-bfns.fnslength               5288     3686.2  c=FNSLength(0,t$) (32 characters)
+bfns.fnsprint                6523    60445.2  FNSPrint 0,8,100,t$ (the built-in font, 32 characters, 3 planes)
+bfns.fnslength               3504     3686.2  c=FNSLength(0,t$) (32 characters)
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bgfx.blit16                 2051~2     2108.3  Blit 0,100,100
 bgfx.blit16s                 2075     2108.3  Blit 0,105,100
