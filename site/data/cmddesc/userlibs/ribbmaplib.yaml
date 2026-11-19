@@ -1,13 +1,9 @@
 "SetBBMapLoc":
-  text: Chooses the map file at `address` for the `BBMap` functions and finds its information chunk. Returns -1, or 0 if the file is not an IFF file of type `BMAP`.
+  text: Chooses the map file at `address` for the `BBMap` functions and finds its information chunk. Returns -1, or 0 if the file is not an IFF file of type `BMAP`; then the map chosen before stays.
   notes: |
-    Kept from the original: a failed call still changes the address the
-    map functions search, while `BBMapScenarioID`, `BBMapWidth`,
-    `BBMapHeight` and `BBMapInfo` keep reading the map before
-    ([#554](https://github.com/fubar-coder/bb2-c/issues/554)). For a map
-    without an information chunk, these four read from a wrong address
-    instead of returning 0
-    ([#551](https://github.com/fubar-coder/bb2-c/issues/551)).
+    For a map without an information chunk (`MFRM`), `BBMapScenarioID`,
+    `BBMapWidth`, `BBMapHeight` and `BBMapInfo` return 0; the other
+    chunks of the map can be used.
 "SetBBScenarioLoc":
   text: Chooses the scenario file at `address` for the scenario functions. Returns -1, or 0 if the file is not an IFF file of type `SCEN`; then the scenario chosen before stays.
 "BBScenarioName":
@@ -25,15 +21,9 @@
 "BBScenarioPalette":
   text: The address of the colours of the scenario in its `COLR` chunk, three bytes red, green and blue per colour; 0 without the chunk.
 "BBScenarioLowCol":
-  text: The number of the first colour in the `COLR` chunk of the scenario, 0 without it.
-  notes: |
-    Kept from the original: a colour number above 127 is returned
-    negative ([#550](https://github.com/fubar-coder/bb2-c/issues/550)).
+  text: The number of the first colour in the `COLR` chunk of the scenario, 0 to 255; 0 without the chunk.
 "BBScenarioHighCol":
-  text: The number of the last colour in the `COLR` chunk of the scenario, 0 without it.
-  notes: |
-    Kept from the original: a colour number above 127 is returned
-    negative ([#550](https://github.com/fubar-coder/bb2-c/issues/550)).
+  text: The number of the last colour in the `COLR` chunk of the scenario, 0 to 255; 0 without the chunk.
 "BBScenarioLevel":
   text: The level number stored in the `LEVL` chunk of the scenario, 0 without it.
 "BBNumBackGround":
@@ -47,7 +37,12 @@
 "BBNumTunnels":
   text: The number of tunnels, the first word of the `TUNL` chunk of the scenario; 0 without it.
 "BBShadowValue":
-  text: The long number `shadowset` (counted from 0) of the `SHDW` chunk of the scenario, 0 without the chunk. The number is not checked against the size of the chunk.
+  text: The long number `shadowset` (counted from 0) of the `SHDW` chunk of the scenario, 0 without the chunk.
+  notes: |
+    With runtime error checking, a shadow set outside the chunk stops
+    the program with the runtime error "Shadow set must lie in the SHDW
+    chunk". Without it, the number is not checked, and such a set reads
+    the bytes behind the chunk.
 "BBTunnelHoles":
   text: The long behind the first word of the `TUNL` chunk of the scenario, 0 without it.
 "BBTunnelsLoc":
@@ -55,13 +50,10 @@
 "BBGetPalette":
   text: Copies the colours of the `COLR` chunk of the scenario into a palette object, from its first to its last colour number. A palette with too few colours is enlarged.
   notes: |
-    Nothing happens without the chunk. Kept from the original: an
-    enlarged palette counts one colour less than it holds, so its last
-    colour is not used
-    ([#548](https://github.com/fubar-coder/bb2-c/issues/548)), and a
-    chunk whose first colour number is above its last writes one colour,
-    possibly beyond the palette
-    ([#549](https://github.com/fubar-coder/bb2-c/issues/549)).
+    Nothing happens without the chunk, or when its first colour number
+    is above its last. Only the colours the chunk holds are copied: a
+    last colour number beyond them is cut to the last colour in the
+    chunk.
 "BBDestructLoc":
   text: The address of the data of the `DEST` chunk of the scenario, 0 without it.
 "BBMapScenarioID":

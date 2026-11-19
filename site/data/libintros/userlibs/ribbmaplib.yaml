@@ -14,14 +14,15 @@ intro: |
   described here. `BBGetPalette` is the one command that changes
   something: it copies the colours of a scenario into a palette object.
 
-  Choose the file before the other commands: without it they search from
-  a meaningless address. The chunks are found by walking the file from
-  chunk to chunk, without the pad byte the IFF standard puts behind a
-  chunk of odd length. Kept from the original: a chunk behind one of odd
-  length is not found, or crashes a 68000
-  ([#552](https://github.com/fubar-coder/bb2-c/issues/552)); and the walk
-  reads one chunk id beyond the end of the file and accepts it if it
-  matches ([#553](https://github.com/fubar-coder/bb2-c/issues/553)).
+  Choose the file before the other commands: until then they return 0
+  or an empty string. The chunks are found by walking the file from
+  chunk to chunk, within the length of the file. Behind a chunk of odd
+  length the walk skips the pad byte that the IFF standard puts there; a
+  file written without pad bytes is read as well.
+
+  With runtime error checking, `BBShadowValue` with a shadow set the
+  scenario does not have stops the program with the runtime error
+  "Shadow set must lie in the SHDW chunk".
 
   With a scenario file loaded at address `m`:
 
@@ -31,3 +32,6 @@ intro: |
     NPrint "Level ",BBScenarioLevel
   EndIf
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in ribbmaplib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#ribbmaplib-fixes" >}}).

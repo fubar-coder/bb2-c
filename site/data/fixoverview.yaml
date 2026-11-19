@@ -4844,6 +4844,86 @@ rows:
     text: "Pictures saved with a mask, such as DPaint brushes, are unpacked correctly; the original shifted every line from the second on."
     page: libraries
     anchor: ripacklib-fixes
+  - issue: 548
+    severity: 5
+    topic: "Graphics"
+    library: "ribbmaplib"
+    command: "BBGetPalette"
+    text: "`BBGetPalette` counts all colours of a palette it enlarges, so the scenario's last colour is used; the original counted one colour less."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 549
+    severity: 5
+    topic: "Graphics"
+    library: "ribbmaplib"
+    command: "BBGetPalette"
+    text: "`BBGetPalette` with a first colour above the last stores nothing; the original wrote one colour, possibly behind the palette's memory."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 550
+    severity: 5
+    topic: "Graphics"
+    library: "ribbmaplib"
+    command: "BBScenarioLowCol, BBScenarioHighCol"
+    text: "`BBScenarioLowCol` and `BBScenarioHighCol` return the colours 128 to 255 as such; the original returned them negative."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 551
+    severity: 5
+    topic: "Files"
+    library: "ribbmaplib"
+    command: "BBMapScenarioID, BBMapWidth, BBMapHeight, BBMapInfo"
+    text: "The map information functions return 0 for a map without an MFRM chunk; the original read behind the file."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 552
+    severity: 5
+    topic: "Files"
+    library: "ribbmaplib"
+    command: ""
+    text: "The chunk search of maps and scenarios skips the IFF pad byte; the original crashed a 68000 or missed the chunks behind a chunk of odd length."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 553
+    severity: 5
+    topic: "Files"
+    library: "ribbmaplib"
+    command: ""
+    text: "The chunk search ends at the end of the file; the original could find a missing chunk in the memory behind it."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 554
+    severity: 5
+    topic: "Files"
+    library: "ribbmaplib"
+    command: "SetBBMapLoc"
+    text: "A failed `SetBBMapLoc` leaves the map chosen before as it was; the original mixed the rejected file with the old map."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 1108
+    severity: 5
+    topic: "Files"
+    library: "ribbmaplib"
+    command: "SetBBMapLoc, SetBBScenarioLoc"
+    text: "A program run again from the editor starts without the map and scenario of the run before; the original's commands read the old files."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 1113
+    severity: 5
+    topic: "Graphics"
+    library: "ribbmaplib"
+    command: "BBGetPalette"
+    text: "`BBGetPalette` reads only the colours the scenario's COLR chunk holds; the original took the rest from the bytes behind it."
+    page: libraries
+    anchor: ribbmaplib-fixes
+  - issue: 1114
+    severity: 3
+    topic: "Data structures"
+    library: "ribbmaplib"
+    command: "BBShadowValue"
+    text: "With runtime error checking, a shadow set the scenario does not have stops with \"Shadow set must lie in the SHDW chunk\"; the original read behind the chunk."
+    page: libraries
+    anchor: ribbmaplib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
