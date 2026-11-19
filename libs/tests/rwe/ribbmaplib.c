@@ -236,8 +236,10 @@ static void getpal(const char *what)
     OBS("new block", SL(pal, 0) != was);
     {
         const UBYTE *d = (UBYTE *)SL(pal, 0);
-        /* a new block has count+1 colours (BUG(orig), #548) */
-        OBSBYTES("colours", d, 4 + 12 * ((ULONG)SW(pal, 4) + (SL(pal, 0) != was)));
+        /* the whole colour block, its length from memlib's block header
+           (length + 8 at -4): the original's new block has one colour
+           more than its count (#548) */
+        OBSBYTES("colours", d, SL(d, -4) - 8);
     }
 }
 
