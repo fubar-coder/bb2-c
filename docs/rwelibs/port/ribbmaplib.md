@@ -89,12 +89,10 @@ kind F):
   set it to high: the scenario's last colour lay outside the palette
   (`Use Palette` did not set it), and every further `BBGetPalette`
   allocated a new block again (#548).
-
-## BUG(orig), kept
-
-* `BBGetPalette` writes the colours from low up to high, at least one
-  (low > high writes the colour at low, possibly behind the block)
-  (#549).
+* `BBGetPalette` with low > high in the `COLR` chunk stores nothing (an
+  empty range). The original's loop tested its end only after a
+  colour: it wrote the colour at low, behind the colour block when low
+  was not below its count (#549).
 
 ## Original behaviour, not defects
 

@@ -399,7 +399,7 @@ int main(int argc, char **argv)
         newpal(200);
         getpal(what);
 
-        /* low > high: one colour at low */
+        /* low > high (the original: one colour at low, #549) */
         if (round == 5) {
             memset(tmpl, 0, BUFSZ);
             scenario(0, 20, 10, 0, 3);

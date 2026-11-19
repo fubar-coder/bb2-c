@@ -28,9 +28,9 @@
  * word functions have $FFFF in the upper word (MOVEQ #-1 of the chunk
  * search; BBMapWidth/Height: the caller's), 0 when the chunk is missing.
  *
- * BUG(orig), kept:
- *   - BBGetPalette: the colours are written from low to high even if
- *     low > high (one colour at low, possibly behind the block) (#549).
+ * Fixed (intended deviation, #549): BBGetPalette with low > high in the
+ * COLR chunk stores nothing (the original wrote the colour at low, also
+ * behind the colour block when low was not below its count).
  * Fixed (intended deviation, #548): BBGetPalette sets the count of a new
  * colour block (in the block and the object) to high+1, its size (the
  * original set it to high: the last colour outside the palette, and the
@@ -550,8 +550,8 @@ static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
  * object's colour low; a new colour block (the old colours copied, the
  * old block freed with the size count*12) if high >= the colour count.
  * The new block has high+1 colours and that count (fixed, #548: the
- * original set it to high).  BUG(orig) (#549): the colours are written from low on even if
- * low > high (one colour).  Nothing without the chunk.
+ * original set it to high).  Nothing without the chunk, nothing when
+ * low > high (fixed, #549: the original wrote the colour at low).
  * @param pal  a0: the palette object (palettelib)
  */
 static void BLITZ_ROUTINE bbgetpalette_c(struct bb_palette *pal BL_REG(a0))
@@ -564,6 +564,8 @@ static void BLITZ_ROUTINE bbgetpalette_c(struct bb_palette *pal BL_REG(a0))
         return;
     low = chunk[0];
     high = chunk[1];
+    if (low > high)                     /* fixed (#549): an empty range */
+        return;
     chunk += 2;
     num = pal->numcols;
     if (!((WORD)high < (WORD)num)) {
