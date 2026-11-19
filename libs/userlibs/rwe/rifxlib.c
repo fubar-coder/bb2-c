@@ -28,13 +28,6 @@
  * except those thunks.
  *
  * Kept from the original (BUG(orig)):
- *   - Derez with a value >= 3 builds its mask table myline with 20 words
- *     (21 for values > 31) into the 18 words the source reserves: the
- *     19th goes over myflag and the pad byte, the 20th (21st) over the
- *     first instruction(s) of ZoomXY (_AsmZoom: TST.w d0, BEQ ...).  DIFF:
- *     here myline has room for 21 words, ZoomXY stays intact - corrupting
- *     code cannot be translated (the values read back are the same)
- *     (#671);
  *   - finit frees the tables but keeps the pointers (#673).
  * Fixed (intended deviations):
  *   - ClearBitmap, FadeInBitmap and ZoomyZoom read the depth as the byte
@@ -75,6 +68,15 @@
  *     lines of 80 bytes in place (the left 40 bytes of each), so it fits
  *     640 x 32 only: on a narrower bitmap the lines are not its rows, on a
  *     smaller one it writes behind the plane (#676);
+ *   - Derez with a value >= 3 builds its mask table myline with 20 words
+ *     (21 for some values); the source reserves 18, so in the original
+ *     the 19th went over myflag and its pad byte and the 20th (21st) over
+ *     the first instruction(s) of ZoomXY (_AsmZoom: TST.w d0, BEQ ...),
+ *     which then ran a mask word (for 5: CLR.b (a0), and the BEQ behind it
+ *     left ZoomXY at once).  Here myline has room for 21 words (DIFF) and
+ *     ZoomXY stays intact - code that overwrites code cannot be
+ *     translated; the mask words read back are the same (#671: the port
+ *     never had the defect, W6 decision Q6);
  *   - Derez, declared with a result (!acommand{#long}), returns -1 when it
  *     worked and 0 when it did nothing (derez value 0); the original set
  *     none, d0 was what the routine left there (its d0 on entry for 0, the
@@ -245,8 +247,8 @@ static_assert(sizeof tables == 4 * 4);
 
 static ULONG add_value = 1;
 static UWORD res_value, res_value2, res_value3;
-/* myline: 18 words in the source, written with up to 21 (BUG(orig)
-   (#671) and DIFF, see the head of the file) */
+/* myline: 18 words in the source, written with up to 21: room for 21
+   here (DIFF; fixed #671, see the head of the file) */
 static UWORD myline[21] = {
     0x6db6, 0xdb6d, 0xb6db, 0x6db6, 0xdb6d, 0xb6db,
     0x6db6, 0xdb6d, 0xb6db, 0x6db6, 0xdb6d, 0xb6db,
@@ -1081,8 +1083,9 @@ static void unrezx2(void)
  * result: -1, 0 for derez_value 0 (fixed #672: the original set none, d0
  * was what the routine left there - the input for 0, its upper word and
  * $FFFF for 1, the last long for 2, else the last mask/source word).
- * Values >= 3 write 20 (21) words of myline into 18 (BUG(orig) #671,
- * DIFF: room for 21 here).  A
+ * Values >= 3 write 20 (21) words of myline, which has room for 21 here
+ * (the original's 18 words were followed by ZoomXY's code: fixed #671,
+ * DIFF).  A
  * depth-0 source gives 65536 planes, more than 16 planes overrun the
  * pointer arrays: refused by bm2chk (fixed #947, #674).  sbitdepth is
  * set as a whole word (fixed #675: the original set its low byte only).
@@ -1134,7 +1137,8 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG sadd BL_REG(d2),
     yvalue = height;
 
     /* myline: one word per 16 pixels, a bit at the first pixel of every
-       block.  BUG(orig) (#671): 20 (21) words, see the head of the file. */
+       block: 20 (21) words, room for 21 (fixed #671, see the head of the
+       file). */
     maskptr = myline;
     c = 19;
     b = 15;

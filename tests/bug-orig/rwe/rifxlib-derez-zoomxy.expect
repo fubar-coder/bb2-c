@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before Derez: *
+after Derez: the same
+rc=0

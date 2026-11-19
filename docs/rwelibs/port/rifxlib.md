@@ -74,6 +74,18 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   in place (the left 40 bytes of each), so on a narrower bitmap the
   lines are not its rows and on a smaller one it writes behind the plane
   (#676, test `rwe/rifxlib-zoomyzoom-small`);
+* `Derez` with a value ≥ 3 builds its mask table `myline` with 20 words
+  (21 for some values); the source reserves 18, so in the original the
+  19th goes over `myflag` and its pad byte, the 20th (and 21st) over the
+  first instruction(s) of `ZoomXY` (`TST.w d0`, `BEQ …`; checked in the
+  CD binary: `myline` at $F84, `_AsmZoom` at $FAA of the file). After
+  such a `Derez`, `ZoomXY` of the original runs a mask word as its first
+  instruction: for 3 `MOVE.l (a2),(a2)` ($2492, harmless while the long
+  at a2 is not 0), for 5 `CLR.b (a0)` ($4210: a byte cleared wherever a0
+  points, and the `BEQ` behind it leaves `ZoomXY` at once). The port's
+  `myline` has room for 21 words (DIFF below), so its `ZoomXY` stays
+  intact (#671: the port never had the defect, W6 decision Q6; test
+  `rwe/rifxlib-derez-zoomxy`, `Derez` 5);
 * `Derez`, declared with a result (`!acommand{#long}`), returns -1 when it
   worked and 0 when it did nothing (derez value 0); the original set
   none: d0 was whatever the routine left there (its d0 on entry for 0,
@@ -88,14 +100,6 @@ counts a `volatile` variable (the compiler would drop an empty loop).
 
 **BUG(orig)** (kept, commented in the code):
 
-* `Derez` with a value ≥ 3 builds its mask table `myline` with 20 words
-  (21 for values > 31) into the 18 words the source reserves: the 19th
-  goes over `myflag` and the pad byte, the 20th (and 21st) over the first
-  instruction(s) of `ZoomXY` (`TST.w d0`, `BEQ …`; checked in the CD
-  binary: `myline` at $F84, `_AsmZoom` at $FAA of the file). After such a
-  `Derez`, `ZoomXY` of the original runs a mask word as its first
-  instruction (for 3: `MOVE.l (a2),d2`, the height comes from memory)
-  (#671);
 * finit frees the tables but keeps the pointers (#673).
 
 Not bugs but limits the source names: `ZoomXY` and `Derez` (and
@@ -103,7 +107,7 @@ Not bugs but limits the source names: `ZoomXY` and `Derez` (and
 
 **DIFF:** `myline` has room for 21 words, so `ZoomXY` stays intact after
 a `Derez` ≥ 3 (code that corrupts code cannot be translated; the mask
-words read back are the same). The overflow of the 36 pointer longs
+words read back are the same; #671 above). The overflow of the 36 pointer longs
 (`FadeInBitmap` from 11 planes, the others from 21) lands on other
 variables of the C build.
 
@@ -139,4 +143,5 @@ checks):
 bug-orig tests), bitmaps with `bm_Flags` ≠ 0 (in
 the original the depth word gives thousands of planes; the bug-orig test
 `rwe/rifxlib-depth-word-at-4` covers the case), more than 8 planes, `ZoomXY`
-after `Derez` ≥ 3 (the original's code is corrupt then).
+after `Derez` ≥ 3 (the original's code is corrupt then; the bug-orig
+test `rwe/rifxlib-derez-zoomxy` covers it, #671).
