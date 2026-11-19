@@ -108,11 +108,13 @@ kind F):
   skips the whole run, as ilbmifflib's DecodeILBM does (#191). The
   original wrote every run completely, up to 127 bytes into the next row
   of the plane or, in the last row, behind the plane (#776).
+* **UnpackIFF** reads the compression byte of the BMHD: 0 copies the rows
+  as they are, 1 unpacks ByteRun1, any other value is refused (0). The
+  original decoded every BODY as ByteRun1, so an uncompressed picture
+  became garbage (#773).
 
 ## BUG(orig), kept
 
-* `UnpackIFF` treats every BODY as ByteRun1 (the compression byte of the
-  BMHD is not read) (#773).
 * The chunk searches step by 2 bytes from the given address: BMHD within
   5120 bytes, BODY within 5120 bytes from the BMHD on (a word counter),
   CMAP within 5122 bytes (#766).

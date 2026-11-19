@@ -6,6 +6,7 @@
 ; Correct: the uncompressed row is taken as it is, pixel 0 has colour 0
 ; and pixel 8 colour 1.
 ; ripacklib needs RIAmosFuncLib (LoadIFF calls its NextBank, BLoad, ...).
+; @fixed #773
 ; @rwe ripacklib riamosfunclib
 DEFTYPE .l
 m=AllocMem_(6000,$10001)

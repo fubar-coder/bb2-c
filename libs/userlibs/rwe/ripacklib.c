@@ -57,9 +57,11 @@
  * still skips the whole run); the original wrote every run completely,
  * into the next row or behind the plane.
  *
+ * Fixed (#773): UnpackIFF reads the compression byte of the BMHD: 0
+ * copies the rows as they are, 1 unpacks ByteRun1, any other value is
+ * refused (BB_FALSE); the original decoded every BODY as ByteRun1.
+ *
  * BUG(orig), kept:
- *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
- *     the BMHD is not read) (#773).
  *   - The chunk searches step by 2 bytes from the given address (BMHD:
  *     5120 bytes, BODY: from the BMHD on, word counter; CMAP 5122 bytes)
  *     (#766).
@@ -540,8 +542,9 @@ static struct {
  * width of ILBM (fixed #775: the original's width/8), its bytes counted
  * in a word (fixed #774: the original's signed byte skipped rows of 129
  * bytes and more); a run is cut at the end of the row (fixed #776: the
- * original wrote it into the next row).  BUG(orig): every BODY is taken
- * as ByteRun1 (#773).
+ * original wrote it into the next row).  The BMHD's compression decides:
+ * 0 rows as they are, 1 ByteRun1, anything else fails (fixed #773: the
+ * original took every BODY as ByteRun1).
  * @param src    d0: the ILBM data (FORM)
  * @param bm     a1: the bitmap object (parameter 1)
  * @param lines  d2: the number of lines (word; < 0: the BMHD's height;
@@ -559,7 +562,7 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
     UWORD rowbytes;                             /* d7: the BMHD byte width */
     UWORD bodyleft;                             /* d7: the BODY search countdown */
     UWORD line;
-    UBYTE planes, code;
+    UBYTE planes, code, packed;
 
     while (LG(chunk) != ID('B', 'M', 'H', 'D')) {
         chunk += 2;
@@ -577,6 +580,10 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
     v.iffheight = (UWORD)lines;
     planes = hd->bmh_Depth;
     if (!planes || planes > bm->Depth)          /* fixed #777: 0 refused */
+        return BB_FALSE;
+    /* fixed #773: 0 the rows as they are, 1 ByteRun1, nothing else */
+    packed = hd->bmh_Compression;
+    if (packed > cmpByteRun1)
         return BB_FALSE;
     v.iffdepth = (UBYTE)(planes - 1);
     v.bitmapwidth = bm->BytesPerRow;
@@ -613,6 +620,11 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
             /* the bytes of the row left: a word (fixed #774, was d5.b) */
             WORD left = (WORD)(v.bytewidth + 1);
             *pp++ += v.bitmapwidth;
+            if (!packed) {                      /* fixed #773: uncompressed */
+                do
+                    *out++ = *body++;
+                while (--left);
+            }
             while (left > 0) {
                 UWORD n, put;
                 code = *body++;
