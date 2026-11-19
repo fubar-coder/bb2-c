@@ -28,7 +28,10 @@ ViewBitmap; the original changes d0/d1/a0/a1/a6 in init and finit,
 d0–d6/a0/a1/a6 in InitView). The variables `viewsize` and `cop` are a
 struct in the original's order (the test finds them by the address
 InitView returns). The words of the copper list are read from the
-absolute addresses the original reads (below), as volatile words.
+absolute addresses the original reads (below), each with one `MOVE.w`
+in inline assembler (`absw`): the compiler splits a read it knows to be
+odd into two byte reads, which a 68000 takes without the address error
+of the original.
 
 ## BUG(orig), kept
 

@@ -17,7 +17,7 @@
  *
  * The variables viewsize and cop are kept together in the original's
  * order (the test finds them by the address InitView returns).  No
- * assembler besides the thunks.
+ * assembler besides the thunks and the word reads of InitView (absw).
  *
  * BUG(orig):
  *   - InitView: the colour count is lost (MOVE.w d0,d3 overwrites it with
@@ -105,8 +105,17 @@ static void BLITZ_ROUTINE codefinit_c(void)
     vd.cop = NULL;
 }
 
-/* the word at an absolute address (a "register name", BUG(orig), #889) */
-#define ABSW(a) (*(volatile const UWORD *)(a))
+/* the word at an absolute address (a "register name", BUG(orig), #889):
+   one word read, as the original's MOVE.w abs,(a0)+, also at an odd
+   address (an address error on a 68000; the compiler splits a read it
+   knows to be odd into two byte reads) */
+static inline UWORD absw(ULONG a)
+{
+    UWORD v;
+    __asm volatile("move.w (%1),%0" : "=d"(v) : "a"(a));
+    return v;
+}
+#define ABSW(a) absw(a)
 
 /**
  * @brief InitView height,depth,numsprites,numcolours: allocate a copper
