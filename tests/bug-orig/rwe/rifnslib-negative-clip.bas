@@ -9,6 +9,7 @@
 ; Correct: the error check refuses the clip zone: "FNSClip zone must not
 ; start below 0".
 ; rifnslib needs RIAmosFuncLib (FNSLoad and FNSUnload use its banks).
+; @fixed #664
 ; @rwe rifnslib riamosfunclib
 ; @pass runtime_errors=on
 DEFTYPE .l

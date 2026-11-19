@@ -1,0 +1,10 @@
+# the intended differences of rifnslib against its reference, the CD
+# binary BSS2 RIFNSLIB.OBJ (blitzlib compare, docs/development.md
+# "Intended differences")
+# #664: FNSClip gets an error check (clipchk, "FNSClip zone must not start
+# below 0"); rifnslib gets an error check area for it (the original has
+# none)
+lib 93: header +$2C: code offset set in only one of them
+lib 93: entry 6 FNSClip +$E: code offset set in only one of them
+# #664: the relocations of the error field and the check
+lib 93: relocations in the declaration part 30 != 32

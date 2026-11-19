@@ -48,7 +48,6 @@
  *     loop draws bitdepthminusone + 1 planes, the word (Flags<<8|Depth) - 1
  *     of the bitmap - with Flags set or depth 0 hundreds or 65536 planes
  *     (#658).
- *   - Rows above ymax are tested unsigned, rows below ymin signed (#664).
  *   - Planes 8 and on take the colour bit of plane & 7 (BTST on memory)
  *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop (#658).
  *   - FNSSetTab 0: chr$(9) divides by 0 (exception) (#666).
@@ -86,6 +85,13 @@
  * Fixed (#662): FNSLength returns the width FNSPrint uses for the text
  *   (the manual: "the x size, in pixels, of the string if it were to be
  *   printed"); the original subtracted 2 (0 at least).
+ * Fixed (#664): with runtime error checking FNSClip refuses an xmin or
+ *   ymin below 0: "FNSClip zone must not start below 0" (clipchk; the
+ *   original has no error check area).  The release code is unchanged:
+ *   rows are tested signed at ymin and unsigned at ymax, the byte offset
+ *   of x is ASR.w of the long x & $FFF0, so with a negative xmin or ymin
+ *   a text at negative x or y is written about 64K bytes or rows away
+ *   (an invalid argument, D-005).
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): the glyphs of codes the font has no data for - the built-in font ends
  *   at 'z' (91 glyphs), codes 123..159 are drawn from the bytes behind it.
@@ -110,14 +116,15 @@ void _removefns(void), _fnsunderline(void), _fnslength2(void);
 void _fnslength(void), _fnsversion(void), _fnsorigin2(void), _fnsorigin(void);
 void _fnswidth(void), _fnsload(void), _fnsslot(void), _fnsunload(void);
 void _fnssettab(void), _fnsshadowprint(void), _fnsshadowprint2(void);
-void _fnsshadowprint3(void), rifnslib_libinit(void);
+void _fnsshadowprint3(void), rifnslib_libinit(void), clipchk(void);
 static void _libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {#rifnslib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_rifnslib, init, BL_NORET, finit, 0);
+/* !libheader {#rifnslib,init,0,finit,0}; error field: the error check
+   area of clipchk (fixed, #664) */
+BLITZ_LIBHEADER(LIB_rifnslib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 #define BMAP0 LIB_bitmaplib, BL_IA0|BL_PD0                     /* !bmap {0,0} */
 
@@ -169,7 +176,7 @@ BLITZ_NAME("FNSHeight", "(fontnum)");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_fnsclipset, 0, 0);
+BLITZ_SUBS(_fnsclipset, clipchk, 0);                /* check: fixed #664 */
 BLITZ_NAME("FNSClip", "xmin,ymin,xmax,ymax");
 
 BLITZ_ASTATEMENT();
@@ -639,8 +646,10 @@ static void underline(UWORD x)
  * (FNSSetTab), chr$(10) a new line, chr$(0), codes below 32 and from 160
  * on (BUG(orig) #657) end the text; clipped by FNSClip; an empty line
  * is neither centred, aligned nor underlined (fixed #659).  BUG(orig):
- * depth 0 or above 8 overruns the plane stack (#658); rows above ymax are tested unsigned (#664);
- * FNSSetTab 0 divides by 0 (#666).
+ * depth 0 or above 8 overruns the plane stack (#658); FNSSetTab 0
+ * divides by 0 (#666).  With a negative xmin or ymin (refused by
+ * FNSClip's error check, fixed #664) text at negative x or y is written
+ * about 64K bytes or rows away.
  * @param fontnum  d0: the font slot
  * @param x        d1: x
  * @param y        d2: y
@@ -901,7 +910,9 @@ static ULONG BLITZ_ROUTINE width_c(ULONG n BL_REG(d0))
 
 /**
  * @brief FNSClip xmin,ymin,xmax,ymax: the clipping zone; x rounded down to 16.
- * @param x0  d0: xmin
+ *
+ * A negative xmin or ymin is the programmer's: with runtime error
+ * checking clipchk refuses it (fixed #664). @param x0  d0: xmin
  * @param y0  d1: ymin
  * @param x1  d2: xmax
  * @param y1  d3: ymax
@@ -1075,3 +1086,29 @@ BLITZ_THUNK(_fnsload, load_c, "d1/a0-a1");
 BLITZ_THUNK(_fnsunload, unload_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_fnsslot, slot_c, "d1/a0-a1");
 BLITZ_THUNK(_fnssettab, settab_c, "d0-d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badclip, "FNSClip zone must not start below 0");  /* fixed, #664 */
+
+/**
+ * @brief The error check of FNSClip (debugger only).
+ *
+ * Fixed (#664), not in the original (rifnslib had no error check area):
+ * FNSPrint tests the rows signed at ymin and unsigned at ymax and takes
+ * the byte offset of x as ASR.w of the long x & $FFF0; with a negative
+ * xmin or ymin a text at negative x or y was written about 64K bytes or
+ * rows away.  The release code is unchanged (an invalid argument, D-005).
+ *
+ * Errors: "FNSClip zone must not start below 0" (xmin or ymin below 0).
+ * @param x0  d0: xmin
+ * @param y0  d1: ymin
+ */
+static void BLITZ_ERRCHK clipchk_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1))
+{
+    if ((WORD)x0 < 0 || (WORD)y0 < 0)
+        BLITZ_RUNERR(badclip);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(clipchk, clipchk_c, "d0-d1/a0-a1");

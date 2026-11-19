@@ -100,6 +100,13 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   widths (+ 1 per character for bold): "the x size, in pixels, of the
   string if it were to be printed" (the manual). The original subtracted
   2 (0 at least) (#662).
+* With runtime error checking FNSClip refuses an xmin or ymin below 0:
+  "FNSClip zone must not start below 0" (`clipchk`; the original has no
+  error check area). The release code is unchanged: rows are clipped
+  signed at ymin and unsigned at ymax, and the byte offset of x is
+  `ASR.w` of the long x & $FFF0, so with a negative xmin or ymin a text
+  at negative x or y is written about 64K bytes or rows away (an invalid
+  argument, D-005) (#664).
 
 ## BUG(orig), kept
 
@@ -107,7 +114,6 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
   0), planes from 8 on with the colour bit `plane & 7` (#658).
-* Rows are clipped signed at ymin, unsigned at ymax (with x: #664).
 * FNSSetTab 0: a tab divides by 0 (#666). Codes from 160 end the text
   (signed byte compare) (#657).
 * FNSLoad loads into RIAmosFuncLib bank 55 + slot, which is above its
