@@ -4,6 +4,7 @@ done
 [compile]
 ok
 [run]
+before
 pixels far below the text
 rc=0
 [blitz2]
