@@ -26,11 +26,10 @@
  *                  file whose packed data and trailer it holds)
  *
  * The decruncher (optidec.bin, third party code of StoneCracker 4.04) is
- * translated register by register (dostc in optidec.h, which
- * ristcdecrunchlib.c shares): d6 is the 32 bit bit buffer, the counts are words, shifts are taken modulo 64 as by the
- * 68000, DBF loops count the low word down to -1 - the unpacked data are
- * the original's for every input it handles (see DIFF).  No assembler
- * besides the thunks.  _stcdecrunch2 of the source (unpack to another
+ * its source optidec.S in assembler (sd_dec in optidec.h, which
+ * ristcdecrunchlib.c shares; for speed, perf bstc) with the checks of
+ * #833 - the unpacked data are the original's for every input it handles
+ * (see DIFF); the rest is C.  _stcdecrunch2 of the source (unpack to another
  * address) is not in the token table and not called: left out.
  *
  * STCLoad reads the whole file whatever the buffer's size: the command
@@ -125,17 +124,24 @@ static_assert(sizeof(struct FileInfoBlock) <= FIBSIZE);
 static struct Library *dosbase;         /* _dosbase */
 static const char dosname[] = "dos.library";
 
-/* the decruncher: dostc */
+/* the decruncher: sd_dec (assembler for speed, perf bstc; optidec.h) */
 #include "optidec.h"
+BLITZ_ASM_BLOCK(optidec, OPTIDEC_ASM);
 
 /* _stcdecrunch: unpack the file at a in place; 1, or 0 for corrupt data
    (fixed #833; the original returned the unpacked length, read before,
    which STCLoad did not use) */
 static int stcdecrunch(UBYTE *a)
 {
-    UBYTE *end;
+    register ULONG d0 __asm("d0");
+    register UBYTE *a0 __asm("a0") = a + HDR(a)->offset;
+    register UBYTE *a1 __asm("a1") = a;
 
-    return dostc(a, a + HDR(a)->offset, &end);
+    __asm volatile("jsr     sd_dec(pc)"
+                   : "=d" (d0), "+a" (a0), "+a" (a1)
+                   :
+                   : "d1", "d2", "d3", "d4", "d5", "d6", "d7", "cc", "memory");
+    return (int)d0;
 }
 
 /* ------------------------------------------------------------ commands */

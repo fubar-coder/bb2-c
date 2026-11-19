@@ -18,8 +18,8 @@
  *                             of the decruncher), 0 if no S404 file or
  *                             corrupt data
  *
- * init and finit are empty (!nullsub{0,0,0}).  No assembler besides the
- * thunks.
+ * init and finit are empty (!nullsub{0,0,0}).  The entries and the
+ * decruncher are assembler (speed: perf bstc; optidec.h).
  *
  * Fixed (#833): corrupt data no longer write below the destination; the
  *   original's decruncher wrote a match or literal run past its start.
@@ -31,7 +31,7 @@
  */
 #include "blitzlib.h"
 
-/* entry points (thunks, below) */
+/* entry points (assembler, below) */
 void _stcdecrunch(void), _stcdecrunch2(void);
 
 /* !libheader{#ristcdecrunchlib,init,0,finit,0} */
@@ -54,53 +54,44 @@ BLITZ_NULLSUB_AT(finit, 0, 0, 0);
 
 BLITZ_LIBFIN();
 
-#define S404 0x53343034UL
-
-/* the decruncher: dostc */
+/* the decruncher: sd_dec (OPTIDEC_ASM) */
 #include "optidec.h"
 
-/**
- * @brief STCDecrunch(source): unpack S404 data in place.
- *
- * The data are unpacked to source + the security offset (the long at
- * source + 4); the result is a0 at the end of the decruncher.  Corrupt
- * data are refused and never written below the destination (fixed #833:
- * the original wrote a match or literal run past its start).
- * @param a  d0: the S404 file in memory
- * @return d0: the address of the unpacked data, 0 if source is no S404
- *         file or its data are corrupt
+/*
+ * _stcdecrunch, STCDecrunch(source): unpack S404 data in place, to source
+ * + the security offset (the long at source + 4); returns d0 = that
+ * address (a0 at the end of the decruncher), 0 if source is no S404 file
+ * or its data are corrupt.
+ * _stcdecrunch2, STCDecrunch(source,dest): unpack to dest (no offset;
+ * dest is not checked: the caller gives one for the unpacked length of
+ * the header, no defect); returns d0 = 1 (d0 of the decruncher, MOVEQ
+ * #1,d0), 0 for no S404 file or corrupt data.  It runs on into sd_dec.
+ * In: d0 the S404 file in memory, d1 (form 2) the destination.
+ * Corrupt data are refused and never written below the destination
+ * (fixed #833: the original wrote a match or literal run past its start).
+ * Registers: the original's entries change d0-d7/a0-a1 and keep a2-a6
+ * (MOVEM.l a2-a6 around the decruncher); so do these (sd_dec saves
+ * a2-a6).  Assembler for speed (perf bstc, optidec.h).
  */
-static ULONG BLITZ_ROUTINE stcdecrunch_c(UBYTE *a BL_REG(d0))
-{
-    UBYTE *end;
-
-    if (LONGAT(a) != S404 || !dostc(a, a + LONGAT(a + 4), &end))
-        return 0;
-    return (ULONG)end;
-}
-
-/**
- * @brief STCDecrunch(source,dest): unpack S404 data to dest.
- *
- * No security offset; dest is not checked (the caller gives one for the
- * unpacked length of the header: no defect).  Corrupt data as in the
- * first form (fixed #833).
- * @param a     d0: the S404 file in memory
- * @param dest  d1: the destination
- * @return d0: 1 (d0 of the decruncher, MOVEQ #1,d0), 0 if source is no
- *         S404 file or its data are corrupt
- */
-static ULONG BLITZ_ROUTINE stcdecrunch2_c(const UBYTE *a BL_REG(d0), UBYTE *dest BL_REG(d1))
-{
-    UBYTE *end;
-
-    if (LONGAT(a) != S404 || !dostc(a, dest, &end))
-        return 0;
-    return 1;
-}
-
-/* Registers: the original changes d0-d7/a0-a1 (the decruncher; a0/a1 =
-   source without an S404 header in form 1, a1 in form 2) and keeps
-   a2-a6; the thunks keep d1/a0/a1, the C code d2-d7/a2-a6. */
-BLITZ_THUNK(_stcdecrunch, stcdecrunch_c, "d1/a0-a1");
-BLITZ_THUNK(_stcdecrunch2, stcdecrunch2_c, "d1/a0-a1");
+BLITZ_ASM_BLOCK(stcdecrunch,
+"   .globl  __stcdecrunch, __stcdecrunch2\n"
+"__stcdecrunch:\n"
+"   move.l  d0,a1\n"
+"   cmp.l   #0x53343034,(a1)\n"         /* "S404" */
+"   bne.s   sd_oops\n"
+"   move.l  a1,a0\n"
+"   add.l   4(a1),a0\n"                 /* + the security offset */
+"   bsr     sd_dec\n"
+"   tst.l   d0\n"
+"   beq.s   sd_oops\n"
+"   move.l  a0,d0\n"
+"   rts\n"
+"sd_oops:\n"
+"   moveq   #0,d0\n"
+"   rts\n"
+"__stcdecrunch2:\n"
+"   move.l  d0,a1\n"
+"   cmp.l   #0x53343034,(a1)\n"
+"   bne.s   sd_oops\n"
+"   move.l  d1,a0\n"
+OPTIDEC_ASM);

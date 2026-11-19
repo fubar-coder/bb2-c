@@ -46,14 +46,15 @@ STC packed file").
 ## C and assembler
 
 All C behind `BLITZ_THUNK`s (keep d1/a0/a1; the original changes d0/a0
-in the header functions and d0–d7/a0/a1/a6 in STCLoad). The decruncher
-is C too (`libs/userlibs/rwe/optidec.h`, shared with
-`ristcdecrunchlib`), translated register by register like the decrunchers of
-`libs/acidlibs/crunchlib.c`: d6 is the 32-bit bit buffer (`ADD.w d6,d6`
-for a bit, `LSL.l` with the count modulo 64, `ROL.w #8`, `SWAP`), d7 the
-bit count as a word, `DBF` loops on the low word, the targets of the
-original's `JMP (a6)` (the continuation after its getbits routine) are
-labels. The code it reads (MSB first, words backwards from the trailer):
+in the header functions and d0–d7/a0/a1/a6 in STCLoad), except the
+decruncher: it is assembler for speed (`sd_dec` in
+`libs/userlibs/rwe/optidec.h`, shared with `ristcdecrunchlib`; perf
+`bstc`), the original's source `optidec.S` v1.1 instruction by
+instruction with the checks of #833, and `STCLoad`'s C calls it with
+`JSR` (it keeps a2–a6 itself). d6 is the 32-bit bit buffer (`ADD.w
+d6,d6` for a bit, `LSL.l`, `ROL.w #8`, `SWAP`), d7 the bit count as a
+word, `DBF` loops on the low word, the getbits routine returns by `JMP
+(a6)`. The code it reads (MSB first, words backwards from the trailer):
 
 | Bits | Meaning |
 |---|---|
@@ -102,7 +103,7 @@ behind the code, indexed by the bit count d7 (`MOVE.b $44C(pc,d7.w)`).
 d7 leaves 0..15 only with a first bit count above 16 (the trailer's third
 word; more than 16 far offset bits, the other way there, are refused,
 #833); the original then reads whatever lies around the table (its own
-code), the C build takes the index modulo 16. Other files unpack the
+code), the port takes the index modulo 16. Other files unpack the
 same.
 
 ## Test

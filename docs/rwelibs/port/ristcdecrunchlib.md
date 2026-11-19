@@ -35,10 +35,23 @@ result of form 1 as a length do not work with this library.
 
 ## C and assembler
 
-All C behind two `BLITZ_THUNK`s (keep d1/a0/a1; the original changes
-d0–d7/a0/a1 and keeps a2–a6). The decruncher is `dostc` of
-`libs/userlibs/rwe/optidec.h`, the translation shared with
-`ristonecrackerlib` (see its notes for the code it reads).
+Assembler for speed (perf `bstc`): the two entries and the decruncher
+`sd_dec` of `libs/userlibs/rwe/optidec.h` (shared with
+`ristonecrackerlib`, see its notes for the code it reads), the
+original's source `optidec.S` v1.1 instruction by instruction with the
+checks of #833. As in the original, the entries change d0–d7/a0/a1 and
+keep a2–a6; form 2 runs on into the decruncher (no `BSR`). In C the
+decruncher took 1.8 times the original's cycles (helpers inlined, `LSL`
+as an assembler statement), so it is assembler (the libraries'
+performance rule: assembler where C stays behind).
+
+The decruncher is faster than the original on real data: the 101xx
+match (4..7 bytes, the most frequent code in text) reads its 2 bits one
+at a time like the 11x match, not through the getbits routine; the
+result is the same bit for bit (in the main loop the bit count stays
+0..15). On `test_C1.pack410` (perf `bstc.c1pack410`) 11358874 cycles
+against the original's 11836874 (0.96), a call on a file of one byte
+(`bstc.onebyte`) 467.0 against 504.7 (0.93).
 
 ## Fixed (kind F, docs/libs/deviations.md 3a)
 
@@ -47,21 +60,19 @@ d0–d7/a0/a1 and keeps a2–a6). The decruncher is `dostc` of
   output has reached the destination: a match or a literal run that
   starts just above it wrote its whole length past the start into the
   memory below. The checks cost nothing per token on the main path: the
-  loop's one test compares with destination + 44 instead of the
-  destination, so no token but a long match can reach below it there;
-  the last bytes go through a second copy of the loop that checks each
-  literal run and match against the room left, and a long match (23
-  bytes or more) is checked in both. Once per call far offset bits above
-  16 and an odd packed length are refused. Such data give 0 and leave
-  everything outside destination .. destination + unpacked length
-  untouched. On real data (`test_C1.pack410`, perf `bstc.c1pack410`) the
-  decruncher is 6 % faster than before (33452874 -> 31426874 cycles,
-  the restructured loop); a call costs about 200 cycles more (perf
-  `bstc.onebyte`, 1455.7 -> 1655.2). Not checked, a known limit: reads.
-  A stream that runs out reads words below the packed data (the header,
-  then the memory below the file), and a match may read up to 544 +
-  65535 bytes above the output written so far; such data unpack wrong,
-  nothing is written outside the destination.
+  loop's one test compares with destination + 276 instead of the
+  destination, so no token but a long match of more than one length
+  byte (more than 277 bytes) can reach below it there, and such a match
+  is checked; the last bytes go through a second copy of the loop that
+  checks each literal run and match against the room left (so does a
+  file whose first bit count, the trailer's third word, is above 16).
+  Once per call far offset bits above 16 and an odd packed length are
+  refused. Such data give 0 and leave everything outside destination ..
+  destination + unpacked length untouched. Not checked, a known limit:
+  reads. A stream that runs out reads words below the packed data (the
+  header, then the memory below the file), and a match may read up to
+  544 + 65535 bytes above the output written so far; such data unpack
+  wrong, nothing is written outside the destination.
 
 Form 2 does not know the size of `dest`; that is no defect (the caller
 provides a `dest` for the unpacked length, which the header gives).
@@ -70,7 +81,7 @@ provides a `dest` for the unpacked length, which the header gives).
 
 The run table index of the decruncher (`optidec.h`, as in
 `ristonecrackerlib`): with a first bit count above 16 (the trailer's
-third word) the original reads its own code as the table, the C build
+third word) the original reads its own code as the table, the port
 takes the index modulo 16 (more than 16 far offset bits, the other way
 there, are refused, #833).
 
