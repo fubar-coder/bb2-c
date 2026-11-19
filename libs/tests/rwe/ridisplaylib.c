@@ -20,12 +20,13 @@
  * after finit: the ones finit's memory balance shows it did not free (all
  * but the last, or all when it freed nothing).
  *
- * Covered: init, InitView (sizes with marker upper words, the colour
- * count ignored, BUG(orig), #890), ViewBitmap (no code), finit with a list,
+ * Covered: init, InitView (sizes with marker upper words and colour
+ * counts other than the height: the original ignores them, #890),
+ * ViewBitmap (no code), finit with a list,
  * finit again (nothing: graphics.library closed), init and finit
  * without a list, InitView without init and finit then (graphics.library
- * not open).  Not covered: InitView without chip memory or with a
- * size that is negative as a word (both write to address 0).
+ * not open).  Not covered: InitView without chip memory (the original
+ * writes to address 0; bug-orig test ridisplaylib-allocmem-unchecked).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

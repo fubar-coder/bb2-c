@@ -6,6 +6,7 @@
 ; how much more chip memory the second one took (with Forbid, so that no
 ; other task allocates in between).
 ; Correct: the 224 colours more take 8 bytes each: 1792 bytes more.
+; @fixed #890
 ; @rwe ridisplaylib
 DEFTYPE .l
 Forbid_

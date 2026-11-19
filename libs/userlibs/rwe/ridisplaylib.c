@@ -20,9 +20,6 @@
  * assembler besides the thunks.
  *
  * BUG(orig):
- *   - InitView: the colour count is lost (MOVE.w d0,d3 overwrites it with
- *     the height before it is read): the size is 16*numsprites +
- *     16*depth + 8*height + 38, computed as a word (#890).
  *   - No check of AllocMem: without chip memory the moves go to address
  *     0 (over ExecBase at 4) (#888).
  *   - Every InitView allocates a new list; only the last one is freed (by
@@ -36,6 +33,10 @@
  *     the list got the words at $8E, $2C81, $90, $2CC1, $92, $38, $94,
  *     $D0 (low memory and the vector table; the odd addresses are an
  *     address error on a 68000).
+ *   - InitView's size is 16*numsprites + 16*depth + 8*numcolours + 38, as
+ *     a long (#890).  The original's MOVE.w d0,d3 overwrites the colour
+ *     count with the height before it is read: its size was 8*height
+ *     instead of 8*numcolours, computed as a word.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -111,35 +112,32 @@ static void BLITZ_ROUTINE codefinit_c(void)
  * @brief InitView height,depth,numsprites,numcolours: allocate a copper
  * list in chip memory and write its first four moves.
  *
- * The size is 16*numsprites + 16*depth + 8*height + 38, computed as a
- * word and sign-extended (EXT.l): the colour count is lost, MOVE.w d0,d3
- * overwrites it with the height before it is read (BUG(orig) (#890)).
- * The four moves are DIWSTRT $2C81, DIWSTOP $2CC1, DDFSTRT $0038,
+ * The size is 16*numsprites + 16*depth + 8*numcolours + 38, as a long
+ * (fixed (#890): the original's MOVE.w d0,d3 overwrites the colour count
+ * with the height before it is read, so its size is 8*height instead of
+ * 8*numcolours, computed as a word and sign-extended).  The height is not
+ * part of the size.  The four moves are DIWSTRT $2C81, DIWSTOP $2CC1, DDFSTRT $0038,
  * DDFSTOP $00D0 (fixed (#889): the original's `!cmove`s read register
  * and value from those absolute addresses, an address error on a 68000
  * at the odd ones).  AllocMem is not checked: without chip memory the
  * words go to address 0 (BUG(orig) (#888)).  Every call allocates a new
  * list; the old one is forgotten (BUG(orig) (#891)).  The list is never
  * installed.
- * @param height   d0.w: the height (counts 8 bytes per line)
+ * @param height   d0.w: the height (not used)
  * @param depth    d1.w: the depth (16 bytes per plane)
  * @param sprites  d2.w: the number of sprites (16 bytes each)
- *                 (d3.w numcolours: ignored, see above)
+ * @param colours  d3.w: the number of colours (8 bytes each)
  * @return d0: the address of the copper list (0 without chip memory)
  */
 static ULONG BLITZ_ROUTINE initview_c(UWORD height BL_REG(d0), UWORD depth BL_REG(d1),
-                                      UWORD sprites BL_REG(d2))
+                                      UWORD sprites BL_REG(d2), UWORD colours BL_REG(d3))
 {
-    UWORD size;
     UWORD *p;
 
-    /* d3 = height (MOVE.w d0,d3: the colours are lost, BUG(orig), #890) */
-    size = (UWORD)(sprites << 4);                       /* ASL.w #4,d2 */
-    size += (UWORD)(depth << 3);                        /* + depth*8 */
-    size += (UWORD)(height << 3);                       /* + "colours"*8 */
-    size += (UWORD)(depth << 3);                        /* + depth*8 */
-    size += 38;
-    vd.viewsize = (ULONG)(LONG)(WORD)size;              /* EXT.l d2 */
+    (void)height;
+    /* sprites*16 + depth*8 + colours*8 + depth*8 (colour setups) + 38,
+       as a long (#890) */
+    vd.viewsize = ((ULONG)sprites << 4) + ((ULONG)depth << 4) + ((ULONG)colours << 3) + 38;
     p = AllocMem(vd.viewsize, MEMF_CHIP);
     vd.cop = p;
     /* !cmove{diwstrt,$2c81} ...: the register moves (#889) */

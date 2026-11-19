@@ -31,9 +31,6 @@ InitView returns).
 
 ## BUG(orig), kept
 
-* InitView loses the colour count (`MOVE.w d0,d3` overwrites it with
-  the height before it is read): the size is 16 × numsprites + 16 ×
-  depth + 8 × height + 38, computed as a word and sign-extended (#890).
 * AllocMem is not checked: without chip memory the eight words go to
   address 0 (over ExecBase at 4) (#888).
 * Every InitView allocates a new list and forgets the old one; finit
@@ -50,6 +47,11 @@ InitView returns).
   addresses: the list got the words at `$8E`, `$2C81`, `$90`, `$2CC1`,
   `$92`, `$38`, `$94`, `$D0` – low memory and the vector table, two of
   them at odd addresses (an address error on a 68000).
+* The size of the list is 16 × numsprites + 16 × depth + 8 × numcolours
+  + 38, as a long (#890); the height is not part of it. The original's
+  first instruction, `MOVE.w d0,d3`, overwrites the colour count with
+  the height before it is read: its size was 8 × height instead of 8 ×
+  numcolours, computed as a word and sign-extended.
 
 ## Test
 
@@ -62,10 +64,10 @@ compared with its register move and with the word at the absolute
 address the original reads, and the value of the ones at even
 addresses), the change of graphics.library's open count, the test task's
 memory balance (rwemem.h), kept registers. Cases: init, five InitViews (marker upper
-words, colour counts that change nothing), ViewBitmap, finit with a
+words, colour counts other than the height), ViewBitmap, finit with a
 list, finit again (nothing), init and finit without a list, InitView
 without init and finit then (graphics.library not open). The lists
 InitView leaks are freed by the test after finit, the ones finit's memory
 balance shows it left. Not covered: InitView without
-chip memory or with a size that is negative as a word (writes to
-address 0).
+chip memory (the original writes to address 0; bug-orig test
+`ridisplaylib-allocmem-unchecked`).
