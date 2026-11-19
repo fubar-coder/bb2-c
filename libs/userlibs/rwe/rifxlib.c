@@ -80,6 +80,11 @@
  *     none, d0 was what the routine left there (its d0 on entry for 0, the
  *     upper word of it and $FFFF for 1, the last long of UnrezX2 for 2, a
  *     mask or source word for the others) (#672; W6 decision Q3);
+ *   - init clears the InitZoomXY state (source and destination bitmap, the
+ *     two offsets), as at the first load; the original kept the values of
+ *     the run before, so a second run of a program from the editor (the
+ *     library stays loaded) used the bitmaps of the run before, perhaps
+ *     freed, with a ZoomXY before its InitZoomXY (#1127);
  *   - Derez and ZoomXY load the depth into sbitdepth as a whole word; the
  *     original set only its low byte (MOVE.b into sbitdepth+1), so after a
  *     depth 0 the upper byte stayed $FF for every later call (#675; seen
@@ -311,13 +316,20 @@ BLITZ_THUNK(rifxlib_libfinit, libfinit_c, "d1/a0-a1");
  * four bits eight times each.  The test of globalloc's result is the
  * original's: globalloc does not return without memory (memlib ends the
  * program with "Out of Memory!"), so init always sets the pointers; they
- * are 0 only before the first init, when the zooms do nothing.
+ * are 0 only before the first init, when the zooms do nothing.  Then it
+ * clears the InitZoomXY state, as at the first load: fixed (#1127), the
+ * original kept the bitmaps and offsets of the run before.
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     struct bl_regs r = { .d0 = TABLESIZE, .d1 = MEMF_PUBLIC };
     ULONG table, bits;
     UWORD index;
+
+    source_address = 0;                 /* fixed (#1127): the run before's */
+    dest_address = 0;
+    add_source = 0;
+    add_dest = 0;
 
     table = BLITZ_ALIBJSR(TOK_globalloc, r);
     if (!table)

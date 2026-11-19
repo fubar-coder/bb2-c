@@ -92,6 +92,11 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   the upper word of it and $FFFF for 1, the last long for 2, the last
   mask word swapped/the last source word for the others) (#672, W6
   decision Q3, test `rwe/rifxlib-derez-result`);
+* init clears the `InitZoomXY` state (source and destination bitmap, the
+  two offsets), as at the first load; the original kept the values of the
+  run before, so a second run of a program from the editor used the
+  bitmaps of the run before (perhaps freed) with a `ZoomXY` before its
+  `InitZoomXY` (#1127; the libs test's second run);
 * `Derez` and `ZoomXY` load the depth into `sbitdepth` as a whole word;
   the original set only its low byte (`MOVE.b` into `sbitdepth+1`), so
   after a depth-0 bitmap the upper byte stayed $FF for every later call
