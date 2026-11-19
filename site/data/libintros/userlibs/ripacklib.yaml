@@ -8,7 +8,8 @@ intro: |
   and be at least as wide and as deep as the picture; the palette object
   gets as many colours as the picture has. Besides, `PackPBM` and
   `UnPackPBM` pack and unpack blocks with ByteRun1, the method of IFF
-  pictures, and `DeIce` unpacks files packed with Pack-Ice 2.40.
+  pictures, and `DeIce` unpacks files packed with Pack-Ice 2.40 on the
+  Atari ST.
 
   All commands except `ILBMGrab` and `UnPackPBM` can be used as functions
   that return -1 on success and 0 on failure, or a length (`PackPBM`) or
@@ -16,36 +17,30 @@ intro: |
   in Amiga mode.
 
   `LoadIFF` loads the file into a memory bank of the RI Amos Func
-  library, which must be present as well. It takes the first free bank
-  from number 51 on, but that library has 50 banks unless the program
-  asks for more with `BankLimit`; without that, `LoadIFF` always fails
-  ([#770](https://github.com/fubar-coder/bb2-c/issues/770)).
+  library, which must be present as well, and frees the bank again; it
+  takes the first free bank, so it works with the library's 50 banks.
 
-  The unpacking of pictures has limits, kept from the original:
-
-  - The chunks are searched for only near the start: the BMHD and CMAP
-    chunks must lie within the first 5120 bytes of the data, the BODY
-    within 5120 bytes behind the BMHD
-    ([#766](https://github.com/fubar-coder/bb2-c/issues/766)).
-  - Every picture is taken as packed with ByteRun1; an unpacked picture
-    comes out garbled
-    ([#773](https://github.com/fubar-coder/bb2-c/issues/773)).
-  - Only widths that are a multiple of 16 pixels unpack correctly
-    ([#775](https://github.com/fubar-coder/bb2-c/issues/775)), and only up
-    to 1024 pixels: a wider picture is not unpacked, though the command
-    reports success ([#774](https://github.com/fubar-coder/bb2-c/issues/774)).
-  - A stencil (mask plane) in the picture is not recognised; save
-    pictures without one.
+  `UnpackIFF` and `ILBMPalette` find the chunks of the picture by
+  walking the IFF file from chunk to chunk; for data that do not begin
+  with a FORM, such as a CMAP chunk given to `ILBMPalette` by itself,
+  they search the first few kilobytes for them. `UnpackIFF` unpacks pictures packed with ByteRun1 and
+  uncompressed ones, of any width; a mask that the picture was saved
+  with, as in brushes of DPaint, is skipped. A picture whose width is no
+  multiple of 16 has its rows padded to whole words in the file; the
+  bitmap must be as wide as the padded rows, which a bitmap made with
+  `BitMap` always is when it is as wide as the picture.
 
   Loading a picture of up to 320 by 256 pixels and 32 colours into
   bitmap 0 and palette 0:
 
   ```blitzbasic
-  BankLimit 60
   BitMap 0,320,256,5
   If LoadIFF("picture.iff",0,0)
     NPrint "loaded"
   EndIf
   ```
+
+  The fixed bugs of the library are listed in
+  [Fixes in ripacklib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#ripacklib-fixes" >}}).
 
   *Based on the RI Pack Lib guide by Reflective Images.*

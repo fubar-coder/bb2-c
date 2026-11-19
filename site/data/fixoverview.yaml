@@ -4724,6 +4724,126 @@ rows:
     text: "A program run again from the editor starts without an App message; the original started with the last message of the run before and answered it a second time."
     page: libraries
     anchor: riapplib-fixes
+  - issue: 769
+    severity: 1
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "ILBMPalette"
+    text: "`ILBMPalette` with an offset makes a palette that is too small larger and keeps its colours; the original replaced it by the CMAP's colours from colour 0 on."
+    page: libraries
+    anchor: ilbmpalette-offset
+  - issue: 770
+    severity: 2
+    topic: "Files"
+    library: "ripacklib"
+    command: "LoadIFF"
+    text: "`LoadIFF` works with riamosfunclib's default of 50 banks; the original needed `BankLimit` above 51 and returned 0 without it."
+    page: libraries
+    anchor: loadiff-bank-result
+  - issue: 771
+    severity: 2
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "LoadIFF"
+    text: "`LoadIFF` returns 0 when the picture cannot be unpacked into the bitmap or, with a palette, has no CMAP; the original returned -1."
+    page: libraries
+    anchor: loadiff-bank-result
+  - issue: 775
+    severity: 2
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "UnpackIFF, ILBMGrab, LoadIFF"
+    text: "`UnpackIFF` reads pictures whose width is no multiple of 16 correctly; the original ignored the padding of the rows and garbled them."
+    page: libraries
+    anchor: unpackiff-row-width
+  - issue: 766
+    severity: 5
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "UnpackIFF, ILBMPalette"
+    text: "`UnpackIFF` and `ILBMPalette` find the chunks by walking the file, also behind large chunks; the original searched raw data within about 5 KB."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 767
+    severity: 5
+    topic: "Files"
+    library: "ripacklib"
+    command: "DeIce"
+    text: "`DeIce`'s picture mode converts the number of groups stored in the data, at most the unpacked data; the original wrote over 120 KB below it."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 772
+    severity: 5
+    topic: "Files"
+    library: "ripacklib"
+    command: "PackPBM"
+    text: "`PackPBM` returns -1 for data that does not pack smaller; the original first filled the destination with bytes unpacked from low memory."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 773
+    severity: 5
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "UnpackIFF"
+    text: "`UnpackIFF` unpacks uncompressed pictures; the original decoded every picture as ByteRun1."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 774
+    severity: 5
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "UnpackIFF"
+    text: "`UnpackIFF` unpacks pictures wider than 1024 pixels; the original skipped their rows or read them out of step."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 776
+    severity: 5
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "UnpackIFF"
+    text: "`UnpackIFF` cuts a ByteRun1 run at the end of the row; the original wrote it into the next row or behind the plane."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 777
+    severity: 5
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "UnpackIFF"
+    text: "`UnpackIFF` refuses a picture with 0 planes; the original took it as 256 planes and overwrote its own code."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 778
+    severity: 5
+    topic: "Files"
+    library: "ripacklib"
+    command: "UnPackPBM"
+    text: "`UnPackPBM` writes nothing past `destlength` and reads nothing past the packed data; the original wrote and read one byte too many."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 991
+    severity: 5
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "ILBMPalette"
+    text: "`ILBMPalette` with an offset on a palette without colours no longer writes behind the palette's memory."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 1105
+    severity: 5
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "ILBMPalette"
+    text: "`ILBMPalette` refuses a CMAP without a whole colour and sizes the palette from the whole CMAP; the original wrote 65536 colours for such a CMAP."
+    page: libraries
+    anchor: ripacklib-fixes
+  - issue: 1112
+    severity: 5
+    topic: "Graphics"
+    library: "ripacklib"
+    command: "UnpackIFF, ILBMGrab, LoadIFF"
+    text: "Pictures saved with a mask, such as DPaint brushes, are unpacked correctly; the original shifted every line from the second on."
+    page: libraries
+    anchor: ripacklib-fixes
   - issue: 513
     severity: 5
     topic: "Graphics"
