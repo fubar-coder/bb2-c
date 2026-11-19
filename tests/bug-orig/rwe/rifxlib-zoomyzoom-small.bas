@@ -10,6 +10,7 @@
 ; Correct: the 640 x 32 bitmap is zoomed; the error check refuses the
 ; 320 x 64 one: "ZoomyZoom needs a bitmap of at least 640 x 32", nothing
 ; is written.
+; @fixed #676
 ; @rwe rifxlib
 ; @pass runtime_errors=on
 DEFTYPE .l

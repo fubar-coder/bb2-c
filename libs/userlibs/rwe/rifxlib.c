@@ -38,8 +38,6 @@
  *     here myline has room for 21 words, ZoomXY stays intact - corrupting
  *     code cannot be translated (the values read back are the same)
  *     (#671);
- *   - ZoomyZoom ignores the bitmap's size: fixed 32 lines of 80 bytes, the
- *     left 40 bytes doubled in place (#676);
  *   - finit frees the tables but keeps the pointers (#673).
  * Fixed (intended deviations):
  *   - ClearBitmap, FadeInBitmap and ZoomyZoom read the depth as the byte
@@ -73,6 +71,13 @@
  *     delay of 0: "Delay must not be 0".  The release code is unchanged
  *     (the manual: "don't pass 0"; D-005): the busy loop decrements before
  *     its test (SUBQ.l #1 / BNE), so 0 means 2^32 turns per line (#669);
+ *   - With runtime error checking ZoomyZoom refuses a bitmap smaller than
+ *     640 x 32 (fewer than 80 bytes per row or 32 rows): "ZoomyZoom needs
+ *     a bitmap of at least 640 x 32".  The release code is unchanged
+ *     (D-005): ZoomyZoom ignores the bitmap's size and always doubles 32
+ *     lines of 80 bytes in place (the left 40 bytes of each), so it fits
+ *     640 x 32 only: on a narrower bitmap the lines are not its rows, on a
+ *     smaller one it writes behind the plane (#676);
  *   - Derez and ZoomXY load the depth into sbitdepth as a whole word; the
  *     original set only its low byte (MOVE.b into sbitdepth+1), so after a
  *     depth 0 the upper byte stayed $FF for every later call (#675; seen
@@ -193,7 +198,7 @@ BLITZ_NAME("ReduceX2", "source#,dest#,sourceadd,destadd,width,height");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(RI_BMAP(0, 0));
-BLITZ_SUBS(dozoomy, zoomychk, 0);                 /* check: fixed #947 #674 */
+BLITZ_SUBS(dozoomy, zoomychk, 0);                 /* check: fixed #947 #674 #676 */
 BLITZ_NAME("ZoomyZoom", "bitmap#");
 
 BLITZ_NULLSUB_AT(finit, rifxlib_libfinit, 0, 0);
@@ -894,9 +899,11 @@ BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
  * @brief ZoomyZoom bitmap#: doubles the left half of the bitmap in x, in
  * place (zoomx2 table).
  *
- * BUG(orig) (#676): fixed 32 lines of 80 bytes whatever the bitmap's
- * size; the left 40 bytes of a line are doubled in place (from the right, so nothing is read after it is
- * written).  Nothing without the table.  Fixed (#670): the depth is the
+ * Fixed 32 lines of 80 bytes whatever the bitmap's size; the left 40
+ * bytes of a line are doubled in place (from the right, so nothing is
+ * read after it is written).  A bitmap smaller than 640 x 32 is refused
+ * by zoomychk (fixed #676; the original's size is kept in the release
+ * code).  Nothing without the table.  Fixed (#670): the depth is the
  * byte bm_Depth (the original read the word bm_Flags:bm_Depth); depth 0
  * (65536 planes) and more than 8 are refused by zoomychk (fixed #947,
  * #674).
@@ -1434,6 +1441,7 @@ BLITZ_THUNK(ADDValue, addvalue_c, "a0-a1");
 
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");     /* fixed, #947 #674 */
 BLITZ_ERRCHK_MESSAGE(baddelay, "Delay must not be 0");      /* fixed, #669 */
+BLITZ_ERRCHK_MESSAGE(badzoomy, "ZoomyZoom needs a bitmap of at least 640 x 32"); /* fixed, #676 */
 
 /* the depth of the bitmap `bm`: 1 to 8 (bitmaplib's checks and text) */
 static void BLITZ_ERRCHK depthchk(ULONG bm)
@@ -1534,14 +1542,21 @@ static void BLITZ_ERRCHK zoomxychk_c(void)
  *
  * Fixed (#947, #674), not in the original: the depth was not checked
  * (depth 0: 65536 planes through the plane pointers behind the bitmap
- * object).  The release code is unchanged (D-005).
+ * object).  Fixed (#676): nor was the size - ZoomyZoom works on 32 lines
+ * of 80 bytes per plane whatever the bitmap is; a narrower bitmap is
+ * garbled (the lines are not its rows), a smaller one overwritten behind
+ * the plane.  The release code is unchanged (D-005; W6 decision Q5).
  *
- * Errors: "Illegal BitMap Depth" (depth 0 or more than 8).
+ * Errors: "Illegal BitMap Depth" (depth 0 or more than 8), "ZoomyZoom
+ * needs a bitmap of at least 640 x 32" (fewer than 80 bytes per row or
+ * fewer than 32 rows).
  * @param bm  a0: the bitmap of bitmap#
  */
 static void BLITZ_ERRCHK zoomychk_c(ULONG bm BL_REG(a0))
 {
     depthchk(bm);
+    if (BM_BPR(bm) < 80 || BM_ROWS(bm) < 32)
+        BLITZ_RUNERR(badzoomy);
 }
 
 /* the thunks of the check functions: they keep every register */

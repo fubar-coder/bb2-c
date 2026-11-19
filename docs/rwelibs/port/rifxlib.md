@@ -67,6 +67,13 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   manual: "don't pass 0"; D-005): the busy loop decrements before its
   test, so 0 means 2^32 turns per line (#669, tests
   `rwe/rifxlib-delay-zero`, `rwe/rifxlib-fadein-delay-zero`);
+* with runtime error checking `ZoomyZoom` refuses a bitmap smaller than
+  640 x 32 (fewer than 80 bytes per row or 32 rows): "ZoomyZoom needs a
+  bitmap of at least 640 x 32". The release code is unchanged (D-005):
+  it ignores the bitmap's size and always doubles 32 lines of 80 bytes
+  in place (the left 40 bytes of each), so on a narrower bitmap the
+  lines are not its rows and on a smaller one it writes behind the plane
+  (#676, test `rwe/rifxlib-zoomyzoom-small`);
 * `Derez` and `ZoomXY` load the depth into `sbitdepth` as a whole word;
   the original set only its low byte (`MOVE.b` into `sbitdepth+1`), so
   after a depth-0 bitmap the upper byte stayed $FF for every later call
@@ -88,8 +95,6 @@ counts a `volatile` variable (the compiler would drop an empty loop).
   `Derez`, `ZoomXY` of the original runs a mask word as its first
   instruction (for 3: `MOVE.l (a2),d2`, the height comes from memory)
   (#671);
-* `ZoomyZoom` ignores the bitmap's size: fixed 32 lines of 80 bytes, the
-  left 40 bytes doubled in place (#676);
 * finit frees the tables but keeps the pointers (#673).
 
 Not bugs but limits the source names: `ZoomXY` and `Derez` (and
