@@ -31,19 +31,18 @@
  * BUG(orig):
  *   - ChunkyToPlanar ignores the sizes (the chunky data must have 81920
  *     bytes, the bitmap 8 contiguous planes of 10240 bytes) (#884).
- *   - RaycastSky: the height is a DBRA count (height 0 copies 65536
- *     bytes) (#887).
  * Fixed (intended deviation, #885): ChunkyBitmap frees the data the
  * object holds when its data pointer is not 0; the original tested the
  * long at offset 6 (TST.l 6(a0): the unused word and the pointer's upper
  * word), so data below $10000 was never freed and, when the new
  * allocation failed, the object kept the old pointer with width, height
  * and depth 0.
- * Fixed (intended deviation, #887): with runtime error checking
- * RaycastSky refuses an x whose column leaves the chunky data (also a
- * height below 1, 65536 rows and more) and a negative texture column
- * (raycastchk; the original has no error check area); the release code
- * is unchanged.
+ * Fixed (intended deviation, #887): RaycastSky copies nothing for a
+ * height below 1; the original took height - 1 as a DBRA count, so a
+ * height of 0 copied 65536 rows (20 MB of addresses).  With runtime error
+ * checking it also refuses an x whose column leaves the chunky data and
+ * a negative texture column (raycastchk; the original has no error check
+ * area); without it x and column are not checked.
  * Fixed (intended deviation, #886): the free routine leaves CIA-A PRA
  * bit 1 (the power LED / audio filter) as it is; the original toggled it
  * (BCHG #1,$bfe001, a debug flash left in).
@@ -244,8 +243,9 @@ static ULONG BLITZ_ROUTINE chunkydata_c(struct chunky *o BL_REG(a0))
  * x and column are added as signed words (offsets: x may hold rows of
  * 320 bytes); with runtime error checking raycastchk refuses a column
  * that leaves the chunky data and a negative texture column (fixed,
- * #887), the release code checks nothing.  BUG(orig) (#887): the height
- * is a DBRA count (height 0 copies 65536 bytes).
+ * #887), the release code checks nothing.  A height below 1 copies
+ * nothing: fixed (#887), the original's DBRA count height - 1 copied
+ * 65536 rows for a height of 0 (BLT after the SUBQ: 8 cycles per call).
  * An assembler entry in the original's form, without a thunk (a
  * user-level statement: it changes d2, a0 and a1, as the original, which
  * the register rule allows): the per-column call of a ray caster, at the
@@ -259,12 +259,13 @@ BLITZ_ASM_ROUTINE(_raycastsky,
 "   move.l  d4,a1\n"                   /* the texture */
 "   add.w   d1,a0\n"                   /* ADD.w: x a signed word */
 "   add.w   d3,a1\n"                   /* ADD.w: the column a signed word */
-"   subq.w  #1,d2\n"                   /* the DBRA count, BUG(orig) (#887) */
+"   subq.w  #1,d2\n"                   /* the DBRA count */
+"   blt.s   1f\n"                     /* fixed (#887): a height below 1, nothing */
 "0: move.b  (a1),(a0)\n"
 "   lea     320(a1),a1\n"
 "   lea     320(a0),a0\n"
 "   dbf     d2,0b\n"
-"   rts");
+"1: rts");
 
 /* ------------------------------------------------------------ C2P */
 
@@ -394,9 +395,8 @@ BLITZ_ERRCHK_MESSAGE(badcolumn, "RaycastSky column below 0");           /* fixed
  * the chunky bitmap: a negative x wrote before the chunky data, an x
  * whose column runs past the last row behind it, a negative column read
  * before the texture.  The release code is unchanged (invalid arguments,
- * D-005).  The rows are those the release code copies: height - 1 is its
- * DBRA count, so a height below 1 is 65536 + height rows (BUG(orig),
- * #887), which no chunky bitmap holds.
+ * D-005).  A height below 1 is not checked: RaycastSky copies nothing
+ * for it (fixed, #887).
  *
  * Errors: "RaycastSky outside the chunky bitmap" (x below 0, or x + 320 *
  * (rows - 1) not below width * height: also an object without data),
@@ -409,8 +409,10 @@ BLITZ_ERRCHK_MESSAGE(badcolumn, "RaycastSky column below 0");           /* fixed
 static void BLITZ_ERRCHK raycastchk_c(ULONG x BL_REG(d1), ULONG h BL_REG(d2),
                                       ULONG col BL_REG(d3), const struct chunky *o BL_REG(a0))
 {
-    LONG last = 320L * (UWORD)(h - 1);          /* the DBRA count: rows - 1 */
+    LONG last = 320L * ((WORD)h - 1);           /* the offset of the last row */
 
+    if ((WORD)h < 1)
+        return;
     if ((WORD)x < 0 || (WORD)x + last >= (LONG)o->width * o->height)
         BLITZ_RUNERR(outside);
     if ((WORD)col < 0)

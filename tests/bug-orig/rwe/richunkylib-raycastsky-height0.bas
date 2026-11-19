@@ -6,6 +6,7 @@
 ; the 65536 rows stay inside both; the texture has a marker byte in row
 ; 1000, the program prints whether it arrived in the chunky data.
 ; Correct: a height of 0 copies nothing.
+; @fixed #887
 ; @rwe richunkylib
 DEFTYPE .l
 s=32000*656

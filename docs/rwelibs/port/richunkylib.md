@@ -64,10 +64,13 @@ kind F):
   `$10000` was never freed, and a ChunkyBitmap on such an object whose
   allocation failed kept the old pointer with width, height and depth 0
   (#885).
+* RaycastSky copies nothing for a height below 1; the original took
+  height − 1 as a `DBRA` count, so a height of 0 copied 65536 rows,
+  20 MB of addresses (#887; one `BLT` after the `SUBQ`, 8 cycles per
+  call).
 * With runtime error checking RaycastSky refuses a column that leaves
   the chunky data, "RaycastSky outside the chunky bitmap" (x below 0, or
-  x + 320 × (rows − 1) not below width × height, the rows those the
-  release code copies: a height below 1 is 65536 + height rows), and a
+  x + 320 × (height − 1) not below width × height), and a
   negative texture column, "RaycastSky column below 0" (`raycastchk`;
   the original has no error check area). The release code is unchanged
   (#887; invalid arguments, D-005). x and column are offsets: x may hold
@@ -78,9 +81,9 @@ kind F):
 
 * ChunkyToPlanar checks nothing but the depth and the data pointer: the
   sizes of both bitmaps are assumed (#884).
-* RaycastSky's height is a `DBRA` count: 0 copies 65536 rows (#887).
-  Without runtime error checking x and column are not checked either
-  (signed words added to the chunky data and the texture).
+* Without runtime error checking RaycastSky does not check x and column
+  (signed words added to the chunky data and the texture; #887 gives
+  them an error check only, D-005).
 
 Not a defect: the free routine extends the width twice and not the
 height (`EXT.l d0` twice), so the size it computes has the caller's
@@ -109,4 +112,5 @@ ChunkyToPlanar (depth words 8 and `$0108`; 7, `$8008` and no data do
 nothing), 40 random RaycastSky calls (heights 1–256, marker upper
 words, negative columns), PlanarToChunky, ChunkyLoadBitMap, the free
 routine with and without data, init, finit. Not covered: RaycastSky
-with height 0 or a negative x (writes outside the data).
+with height 0 (65536 rows in the original) or a negative x (writes
+outside the data).
