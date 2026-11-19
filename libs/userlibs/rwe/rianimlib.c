@@ -41,7 +41,7 @@
  *     the saved d1 (reproduced by the thunk) (#515).
  *   - The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers)
  *     add the chunk length + 8 without the pad byte of odd lengths
- *     (#505) and compare addresses signed (#506).
+ *     (#505).
  *   - RIAnimInit x,y form: the offset is ebwidth * y (MULU.w: the low
  *     words) + x >> 3 (ASR.l); DIVU.w #64 of the bitmap# overflows (no
  *     change) for numbers of 64 * 65536 and above (#514).
@@ -65,6 +65,13 @@
  *     animation before (#512).
  *   - RIAnimFrameCount counts the FORM ILBM chunks of the ANIM, the
  *     frames; the original counted every chunk (#510).
+ *   - The chunk walks compare addresses unsigned and stop at a chunk whose
+ *     length passes the end; RIAnimInit ends the ANIM at the first chunk of
+ *     its top level that does not fit (so RINextAnimFrame's step from
+ *     frame to frame stays inside the ANIM) and fails if the first frame
+ *     does not fit.  The original compared signed: a corrupt length that
+ *     moved the pointer past $7FFFFFFF made it "below" the end, and the
+ *     walks went on reading chunk headers from there (#506).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -194,17 +201,35 @@ static LONG initfindchunk(UBYTE *chunk, ULONG id)
     return -1;
 }
 
+/* the chunk behind the chunk at p (p < end), NULL if its length passes
+   end (fixed #506: the original stepped on, and compared signed) */
+static UBYTE *nextchunk(UBYTE *p, UBYTE *end)
+{
+    ULONG room = (ULONG)(end - p), len = LG(p + 4);
+
+    if (room < 8 || len > room - 8)
+        return NULL;
+    return p + 8 + len;                 /* BUG(orig): no pad byte (#505) */
+}
+
 /* fcloop: the chunk id from p on up to endoffile; *a2 = its data */
 static LONG fcloop(UBYTE *p, ULONG id, UBYTE **data)
 {
     for (;;) {
-        if ((LONG)p >= (LONG)endoffile) {
+        UBYTE *next;
+
+        if (p >= endoffile) {           /* fixed #506: unsigned */
             *data = p;
             return 0;
         }
         if (LG(p) == id)
             break;
-        p += LG(p + 4) + 8;             /* BUG(orig): no pad byte (#505) */
+        next = nextchunk(p, endoffile);
+        if (!next) {                    /* fixed #506: past the end */
+            *data = p;
+            return 0;
+        }
+        p = next;
     }
     lastfoundchunk = p;
     *data = p + 8;
@@ -218,7 +243,13 @@ static LONG findchunk(ULONG id, UBYTE **data)
 
 static LONG findnextchunk(ULONG id, UBYTE **data)
 {
-    return fcloop(lastfoundchunk + LG(lastfoundchunk + 4) + 8, id, data);
+    UBYTE *p = lastfoundchunk < endoffile ? nextchunk(lastfoundchunk, endoffile) : NULL;
+
+    if (!p) {                           /* fixed #506 */
+        *data = lastfoundchunk;
+        return 0;
+    }
+    return fcloop(p, id, data);
 }
 
 /* findbmhd: the BMHD of the first frame of the ANIM at address */
@@ -328,6 +359,20 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
         return BB_FALSE;
     firstframe = firstchunk;
     animend = endoffile;
+    /* fixed #506: the ANIM ends at the first chunk whose length passes its
+       end (so RINextAnimFrame's step from frame to frame stays inside it);
+       the first frame must fit */
+    for (chunk = firstframe; chunk < animend; ) {
+        UBYTE *next = nextchunk(chunk, animend);
+
+        if (!next) {
+            animend = chunk;
+            break;
+        }
+        chunk = next;
+    }
+    if (animend == firstframe)
+        return BB_FALSE;
     if (!initfindchunk(firstchunk, ID_ILBM))
         return BB_FALSE;
     /* fixed #511: the BMHD of the first frame only (the original set
@@ -394,8 +439,8 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
  * @brief RIAnimFrameCount: the number of frames of the ANIM of the last RIAnimInit.
  *
  * Counts the FORM ILBM chunks of the ANIM (fixed #510: the original
- * counted every chunk).  BUG(orig): the walk adds no pad byte (#505) and
- * compares the addresses signed (#506).
+ * counted every chunk).  The walk is unsigned and stays inside the ANIM
+ * (fixed #506).  BUG(orig): it adds no pad byte (#505).
  * @return d0: the number of frames, 0 before an RIAnimInit
  */
 ULONG BLITZ_ROUTINE c_CountFrames(void)
@@ -405,7 +450,8 @@ ULONG BLITZ_ROUTINE c_CountFrames(void)
 
     if (!animaddress)
         return 0;
-    for (p = animaddress + 12; (LONG)animend > (LONG)p; p += LG(p + 4) + 8)
+    /* fixed #506: unsigned, and no chunk passes animend (RIAnimInit) */
+    for (p = animaddress + 12; p < animend; p = nextchunk(p, animend))
         if (LG(p) == ID_FORM && LG(p + 8) == ID_ILBM)   /* fixed #510 */
             n++;
     return n;
@@ -541,7 +587,7 @@ unsigned long long BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0
     if (!chunk)
         return 0;
     bitmapaddress = bitmap->Planes;
-    if ((LONG)chunk >= (LONG)animend || LG(chunk) != ID_FORM) {
+    if (chunk >= animend || LG(chunk) != ID_FORM) {    /* fixed #506: unsigned */
         if (!doanimloop)
             return 0;
         chunk = thirdframe;

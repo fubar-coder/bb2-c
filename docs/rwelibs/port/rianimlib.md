@@ -55,6 +55,13 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
 * RIAnimFrameCount counts the FORM ILBM chunks of the ANIM, the frames;
   the original counted every chunk (an ANNO or other chunk of the ANIM
   as a frame) (#510).
+* The chunk walks compare addresses unsigned and stop at a chunk whose
+  length passes the end. RIAnimInit ends the ANIM at the first chunk of
+  its top level that does not fit (so RINextAnimFrame's step from frame
+  to frame stays inside the ANIM) and fails if the first frame does not
+  fit. The original compared signed: a corrupt length that moved the
+  pointer past $7FFFFFFF made it "below" the end, and the walks went on
+  reading chunk headers from there (#506).
 
 **BUG(orig)** (kept):
 
@@ -66,8 +73,7 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   caller's a1. **DIFF:** the C build returns -1 as if a1 had been popped
   (the original crashes; not reproducible in C) (#513).
 * The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers) add
-  length + 8 without the pad byte of odd lengths (#505) and compare
-  addresses signed (#506).
+  length + 8 without the pad byte of odd lengths (#505).
 * RIAnimInit x,y: the offset is ebwidth × y (MULU.w, low words) + x >> 3
   (ASR.l); the `DIVU.w #64` that undoes the compiler's bitmap# × 64
   overflows (no change) from 64 × 65536 on (#514).
