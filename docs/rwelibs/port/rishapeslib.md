@@ -204,7 +204,9 @@ Covered:
   FORM.
 * CludgeShapes and CludgeShapesToAddress: with and without LEAutoCookie,
   empty shapes, 0 shapes, used and linked targets.
-* init and finit.
+* init and finit; a second run (finit and init again, as from the
+  editor with the library still loaded): LEMax* and LEAutoCookie before
+  anything else.
 
 Not covered: failing allocations (they jump
 into data), failing chunk allocations, a palette of 0 colours, the pack

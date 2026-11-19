@@ -3,14 +3,17 @@ CludgeShapes|d0|56 num 1 at 0 into a linked shape|1	$FFFFFFFF
 CludgeShapes|d0|60 num 0 at 0 none|1	$00000000
 CludgeShapes|d0|60 num 3 at 0 |1	$FFFFFFFF
 CludgeShapes|d0|60 num 5 at 0 again, used|1	$FFFFFFFF
+CludgeShapes|d0|68 num 1 at 0 second run|1	$FFFFFFFF
 CludgeShapes|kept|56 num 1 at 0 into a linked shape|1	kept
 CludgeShapes|kept|60 num 0 at 0 none|1	kept
 CludgeShapes|kept|60 num 3 at 0 |1	kept
 CludgeShapes|kept|60 num 5 at 0 again, used|1	kept
+CludgeShapes|kept|68 num 1 at 0 second run|1	kept
 CludgeShapes|popped|56 num 1 at 0 into a linked shape|1	$00000000
 CludgeShapes|popped|60 num 0 at 0 none|1	$00000000
 CludgeShapes|popped|60 num 3 at 0 |1	$00000000
 CludgeShapes|popped|60 num 5 at 0 again, used|1	$00000000
+CludgeShapes|popped|68 num 1 at 0 second run|1	$00000000
 CludgeShapes|shape 56 cookie|56 num 1 at 0 into a linked shape|1	bytes 16 D1DEFBF835525F7C7976D3F0FDFAB7D4
 CludgeShapes|shape 56 cookie set|56 num 1 at 0 into a linked shape|1	$00000001
 CludgeShapes|shape 56 data|56 num 1 at 0 into a linked shape|1	bytes 32 010E1B2835424F5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794
@@ -59,6 +62,11 @@ CludgeShapes|shape 64 data|60 num 5 at 0 again, used|1	bytes 16 05121F2C39465360
 CludgeShapes|shape 64 data set|60 num 5 at 0 again, used|1	$00000001
 CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|1	bytes 14 0040000200010008008400030002
 CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|2	bytes 10 00100014001000140000
+CludgeShapes|shape 68 cookie set|68 num 1 at 0 second run|1	$00000000
+CludgeShapes|shape 68 data|68 num 1 at 0 second run|1	bytes 32 010E1B2835424F5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794
+CludgeShapes|shape 68 data set|68 num 1 at 0 second run|1	$00000001
+CludgeShapes|shape 68 fields|68 num 1 at 0 second run|1	bytes 14 0014000400020004010200030002
+CludgeShapes|shape 68 fields|68 num 1 at 0 second run|2	bytes 10 00100018002000300000
 CludgeShapes|the stale size skips to the next shape|60 num 5 at 0 again, used|1	$00000001
 CludgeShapesToAddress|d0|65 num 1 at 0 no cookie|1	$FFFFFFFF
 CludgeShapesToAddress|d0|66 num 2 at 0 |1	$FFFFFFFF
@@ -82,8 +90,10 @@ CludgeShapesToAddress|shape 67 data set|66 num 2 at 0 |1	$00000000
 CludgeShapesToAddress|shape 67 fields|66 num 2 at 0 |1	bytes 14 0000000000000000000000000000
 CludgeShapesToAddress|shape 67 fields|66 num 2 at 0 |2	bytes 10 00000000000000000000
 LEAutoCookie|kept|0|1	kept
+LEAutoCookie|kept|0|2	kept
 LEAutoCookie|kept|1|1	kept
 LEAutoCookie|popped|0|1	$00000000
+LEAutoCookie|popped|0|2	$00000000
 LEAutoCookie|popped|1|1	$00000000
 LECludgeShapes|kept|form 0 44,47 pal -1 flag 0 fast|1	kept
 LECludgeShapes|kept|form 0 55,57 pal 3 flag 0 chip, linked|1	kept
@@ -487,32 +497,50 @@ LELoadShapes|shape 43 data set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$0000
 LELoadShapes|shape 43 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	bytes 14 0000000000000000000000000000
 LELoadShapes|shape 43 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|2	bytes 10 00000000000000000000
 LEMaxShapeDepth|d0|0..3|1	$00000002
+LEMaxShapeDepth|d0|0..3|2	$00000002
 LEMaxShapeDepth|d0|1..1|1	$00000001
 LEMaxShapeDepth|d0|4..5|1	$00000000
+LEMaxShapeDepth|d0|second run|1	$00000002
 LEMaxShapeDepth|kept|0..3|1	kept
+LEMaxShapeDepth|kept|0..3|2	kept
 LEMaxShapeDepth|kept|1..1|1	kept
 LEMaxShapeDepth|kept|4..5|1	kept
+LEMaxShapeDepth|kept|second run|1	kept
 LEMaxShapeDepth|popped|0..3|1	$00000000
+LEMaxShapeDepth|popped|0..3|2	$00000000
 LEMaxShapeDepth|popped|1..1|1	$00000000
 LEMaxShapeDepth|popped|4..5|1	$00000000
+LEMaxShapeDepth|popped|second run|1	$00000000
 LEMaxShapeHeight|d0|0..3|1	$0000001E
+LEMaxShapeHeight|d0|0..3|2	$0000001E
 LEMaxShapeHeight|d0|1..1|1	$00000008
 LEMaxShapeHeight|d0|4..5|1	$00000000
+LEMaxShapeHeight|d0|second run|1	$0000001E
 LEMaxShapeHeight|kept|0..3|1	kept
+LEMaxShapeHeight|kept|0..3|2	kept
 LEMaxShapeHeight|kept|1..1|1	kept
 LEMaxShapeHeight|kept|4..5|1	kept
+LEMaxShapeHeight|kept|second run|1	kept
 LEMaxShapeHeight|popped|0..3|1	$00000000
+LEMaxShapeHeight|popped|0..3|2	$00000000
 LEMaxShapeHeight|popped|1..1|1	$00000000
 LEMaxShapeHeight|popped|4..5|1	$00000000
+LEMaxShapeHeight|popped|second run|1	$00000000
 LEMaxShapeWidth|d0|0..3|1	$00000028
+LEMaxShapeWidth|d0|0..3|2	$00000028
 LEMaxShapeWidth|d0|1..1|1	$00000010
 LEMaxShapeWidth|d0|4..5|1	$00000000
+LEMaxShapeWidth|d0|second run|1	$00000028
 LEMaxShapeWidth|kept|0..3|1	kept
+LEMaxShapeWidth|kept|0..3|2	kept
 LEMaxShapeWidth|kept|1..1|1	kept
 LEMaxShapeWidth|kept|4..5|1	kept
+LEMaxShapeWidth|kept|second run|1	kept
 LEMaxShapeWidth|popped|0..3|1	$00000000
+LEMaxShapeWidth|popped|0..3|2	$00000000
 LEMaxShapeWidth|popped|1..1|1	$00000000
 LEMaxShapeWidth|popped|4..5|1	$00000000
+LEMaxShapeWidth|popped|second run|1	$00000000
 LESaveShapes|file|0..3 up $0 pal -1 file 0|1	bytes 30000 fnv 0244D876
 LESaveShapes|file|0..3 up $0 pal 0 file 1|1	bytes 30000 fnv E5D2BB93
 LESaveShapes|file|0..3 up $5a01 pal -1 file 3|1	bytes 30000 fnv 92C31D27
@@ -544,9 +572,11 @@ LESaveShapes|popped|0..64 up $0 pal 0 file 2|1	$00000000
 LESaveShapes|popped|0..64 up $0 pal 0 file 4|1	$00000000
 LESaveShapes|popped|2..2 up $0 pal 0 file 5|1	$00000000
 LEScanShapes|kept|0..3|1	kept
+LEScanShapes|kept|0..3|2	kept
 LEScanShapes|kept|1..1|1	kept
 LEScanShapes|kept|4..5|1	kept
 LEScanShapes|popped|0..3|1	$00000000
+LEScanShapes|popped|0..3|2	$00000000
 LEScanShapes|popped|1..1|1	$00000000
 LEScanShapes|popped|4..5|1	$00000000
 SafeToBlit|d0|shape 0 at -1,0 max 10|1	$00000000
@@ -586,6 +616,10 @@ SafeToBlit|popped|shape 31 at 0,0 max 1|1	$00000000
 SafeToBlit|popped|shape 32 at 0,0 max 1|1	$00000000
 SafeToBlit|popped|shape 4 at 0,0 max 10|1	$00000000
 finit|kept||1	kept
+finit|kept|end of the run|1	kept
 finit|popped||1	$00000000
+finit|popped|end of the run|1	$00000000
 init|kept||1	kept
+init|kept|second run|1	kept
 init|popped||1	$00000000
+init|popped|second run|1	$00000000

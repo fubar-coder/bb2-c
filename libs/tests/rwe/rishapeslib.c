@@ -36,7 +36,8 @@
  * of 7 bytes (BUG(orig) #811: SDAT then not found), no FORM;
  * CludgeShapes/CludgeShapesToAddress with and without LEAutoCookie, an
  * empty shape in memory (BUG(orig) #809: the stale size), 0 shapes, into used
- * and linked shapes; LECompressShapes; finit.
+ * and linked shapes; LECompressShapes; finit; a second run (finit and init
+ * again: LEMaxShape* and LEAutoCookie before anything else).
  * Not covered: LELoadShapes/LECludgeShapes on a linked shape (the
  * original returns past its caller; fixed, #807: bug-orig test
  * rishapeslib-cludged-shape-pop), failing allocations in the shape loop
@@ -542,6 +543,29 @@ int main(int argc, char **argv)
     sameshapes(66, 67);
     cludge(0, 56, 1, 0, "into a linked shape");
     sameshapes(56, 56);
+
+    /* a second run of a program from the editor: the library stays
+       loaded, finit and init run between the runs.  The run before ends
+       with LEAutoCookie off and the maxima of an LEScanShapes set */
+    autocookie(0);
+    scan(0, 3);
+    ROUT = "finit";
+    strcpy(VEC, "end of the run");
+    DO1(ENT(LIB, FINIT, 0), R.a[6] = (ULONG)DOSBase);
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, INIT, 0), (void)0);
+    ROUT = "LEMaxShapeWidth";
+    DO1(ENT(LIB, MAXW, 0), (void)0);
+    OBS("d0", R.d[0]);
+    ROUT = "LEMaxShapeHeight";
+    DO1(ENT(LIB, MAXH, 0), (void)0);
+    OBS("d0", R.d[0]);
+    ROUT = "LEMaxShapeDepth";
+    DO1(ENT(LIB, MAXD, 0), (void)0);
+    OBS("d0", R.d[0]);
+    cludge(0, 68, 1, 0, "second run");  /* a cookie if LEAutoCookie is on */
+    sameshapes(68, 68);
 
     ROUT = "finit";
     strcpy(VEC, "");
