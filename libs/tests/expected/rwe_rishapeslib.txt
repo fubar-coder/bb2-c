@@ -40,28 +40,46 @@ CludgeShapes|shape 61 fields|60 num 3 at 0 |1	bytes 14 0000000000000000000000000
 CludgeShapes|shape 61 fields|60 num 3 at 0 |2	bytes 10 00000000000000000000
 CludgeShapes|shape 61 fields|60 num 5 at 0 again, used|1	bytes 14 0000000000000000000000000000
 CludgeShapes|shape 61 fields|60 num 5 at 0 again, used|2	bytes 10 00000000000000000000
-CludgeShapes|shape 62 cookie|60 num 3 at 0 |1	bytes 12 BFFCFDEEFFFCFDFEEFFCBDFE
-CludgeShapes|shape 62 cookie|60 num 5 at 0 again, used|1	bytes 12 BFFCFDEEFFFCFDFEEFFCBDFE
-CludgeShapes|shape 62 cookie set|60 num 3 at 0 |1	$00000001
-CludgeShapes|shape 62 cookie set|60 num 5 at 0 again, used|1	$00000001
-CludgeShapes|shape 62 data|60 num 3 at 0 |1	bytes 36 03101D2A3744515E6B7885929FACB9C6D3E0EDFA0714212E3B4855626F7C8996A3B0BDCA
-CludgeShapes|shape 62 data|60 num 5 at 0 again, used|1	bytes 36 03101D2A3744515E6B7885929FACB9C6D3E0EDFA0714212E3B4855626F7C8996A3B0BDCA
-CludgeShapes|shape 62 data set|60 num 3 at 0 |1	$00000001
-CludgeShapes|shape 62 data set|60 num 5 at 0 again, used|1	$00000001
-CludgeShapes|shape 62 fields|60 num 3 at 0 |1	bytes 14 001100030003000400C200030002
-CludgeShapes|shape 62 fields|60 num 3 at 0 |2	bytes 10 000C0012002400360000
-CludgeShapes|shape 62 fields|60 num 5 at 0 again, used|1	bytes 14 001100030003000400C200030002
-CludgeShapes|shape 62 fields|60 num 5 at 0 again, used|2	bytes 10 000C0012002400360000
-CludgeShapes|shape 63 cookie set|60 num 5 at 0 again, used|1	$00000000
-CludgeShapes|shape 63 data set|60 num 5 at 0 again, used|1	$00000000
-CludgeShapes|shape 63 fields|60 num 5 at 0 again, used|1	bytes 14 0000000000000000000000000000
-CludgeShapes|shape 63 fields|60 num 5 at 0 again, used|2	bytes 10 00000000000000000000
-CludgeShapes|shape 64 cookie|60 num 5 at 0 again, used|1	bytes 16 05121F2C394653606D7A8794A1AEBBC8
-CludgeShapes|shape 64 cookie set|60 num 5 at 0 again, used|1	$00000001
-CludgeShapes|shape 64 data|60 num 5 at 0 again, used|1	bytes 16 05121F2C394653606D7A8794A1AEBBC8
-CludgeShapes|shape 64 data set|60 num 5 at 0 again, used|1	$00000001
-CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|1	bytes 14 0040000200010008008400030002
-CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|2	bytes 10 00100014001000140000
+CludgeShapes|shape 62 cookie|60 num 3 at 0 |1 [orig #809]	bytes 12 BFFCFDEEFFFCFDFEEFFCBDFE
+CludgeShapes|shape 62 cookie|60 num 5 at 0 again, used|1 [orig #809]	bytes 12 BFFCFDEEFFFCFDFEEFFCBDFE
+CludgeShapes|shape 62 cookie set|60 num 3 at 0 |1 [orig]	$00000001
+CludgeShapes|shape 62 cookie set|60 num 3 at 0 |1 [fixed #809]	$00000000
+CludgeShapes|shape 62 cookie set|60 num 5 at 0 again, used|1 [orig]	$00000001
+CludgeShapes|shape 62 cookie set|60 num 5 at 0 again, used|1 [fixed #809]	$00000000
+CludgeShapes|shape 62 data|60 num 3 at 0 |1 [orig #809]	bytes 36 03101D2A3744515E6B7885929FACB9C6D3E0EDFA0714212E3B4855626F7C8996A3B0BDCA
+CludgeShapes|shape 62 data|60 num 5 at 0 again, used|1 [orig #809]	bytes 36 03101D2A3744515E6B7885929FACB9C6D3E0EDFA0714212E3B4855626F7C8996A3B0BDCA
+CludgeShapes|shape 62 data set|60 num 3 at 0 |1 [orig]	$00000001
+CludgeShapes|shape 62 data set|60 num 3 at 0 |1 [fixed #809]	$00000000
+CludgeShapes|shape 62 data set|60 num 5 at 0 again, used|1 [orig]	$00000001
+CludgeShapes|shape 62 data set|60 num 5 at 0 again, used|1 [fixed #809]	$00000000
+CludgeShapes|shape 62 fields|60 num 3 at 0 |1 [orig]	bytes 14 001100030003000400C200030002
+CludgeShapes|shape 62 fields|60 num 3 at 0 |1 [fixed #809]	bytes 14 0000000000000000000000000000
+CludgeShapes|shape 62 fields|60 num 3 at 0 |2 [orig]	bytes 10 000C0012002400360000
+CludgeShapes|shape 62 fields|60 num 3 at 0 |2 [fixed #809]	bytes 10 00000000000000000000
+CludgeShapes|shape 62 fields|60 num 5 at 0 again, used|1 [orig]	bytes 14 001100030003000400C200030002
+CludgeShapes|shape 62 fields|60 num 5 at 0 again, used|1 [fixed #809]	bytes 14 0000000000000000000000000000
+CludgeShapes|shape 62 fields|60 num 5 at 0 again, used|2 [orig]	bytes 10 000C0012002400360000
+CludgeShapes|shape 62 fields|60 num 5 at 0 again, used|2 [fixed #809]	bytes 10 00000000000000000000
+CludgeShapes|shape 63 cookie|60 num 5 at 0 again, used|1 [fixed #809]	bytes 12 BFFCFDEEFFFCFDFEEFFCBDFE
+CludgeShapes|shape 63 cookie set|60 num 5 at 0 again, used|1 [orig]	$00000000
+CludgeShapes|shape 63 cookie set|60 num 5 at 0 again, used|1 [fixed #809]	$00000001
+CludgeShapes|shape 63 data|60 num 5 at 0 again, used|1 [fixed #809]	bytes 36 03101D2A3744515E6B7885929FACB9C6D3E0EDFA0714212E3B4855626F7C8996A3B0BDCA
+CludgeShapes|shape 63 data set|60 num 5 at 0 again, used|1 [orig]	$00000000
+CludgeShapes|shape 63 data set|60 num 5 at 0 again, used|1 [fixed #809]	$00000001
+CludgeShapes|shape 63 fields|60 num 5 at 0 again, used|1 [orig]	bytes 14 0000000000000000000000000000
+CludgeShapes|shape 63 fields|60 num 5 at 0 again, used|1 [fixed #809]	bytes 14 001100030003000400C200030002
+CludgeShapes|shape 63 fields|60 num 5 at 0 again, used|2 [orig]	bytes 10 00000000000000000000
+CludgeShapes|shape 63 fields|60 num 5 at 0 again, used|2 [fixed #809]	bytes 10 000C0012002400360000
+CludgeShapes|shape 64 cookie|60 num 5 at 0 again, used|1 [orig #809]	bytes 16 05121F2C394653606D7A8794A1AEBBC8
+CludgeShapes|shape 64 cookie set|60 num 5 at 0 again, used|1 [orig]	$00000001
+CludgeShapes|shape 64 cookie set|60 num 5 at 0 again, used|1 [fixed #809]	$00000000
+CludgeShapes|shape 64 data|60 num 5 at 0 again, used|1 [orig #809]	bytes 16 05121F2C394653606D7A8794A1AEBBC8
+CludgeShapes|shape 64 data set|60 num 5 at 0 again, used|1 [orig]	$00000001
+CludgeShapes|shape 64 data set|60 num 5 at 0 again, used|1 [fixed #809]	$00000000
+CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|1 [orig]	bytes 14 0040000200010008008400030002
+CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|1 [fixed #809]	bytes 14 0000000000000000000000000000
+CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|2 [orig]	bytes 10 00100014001000140000
+CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|2 [fixed #809]	bytes 10 00000000000000000000
 CludgeShapes|shape 68 cookie|68 num 1 at 0 second run|1 [fixed #1109]	bytes 16 D1DEFBF835525F7C7976D3F0FDFAB7D4
 CludgeShapes|shape 68 cookie set|68 num 1 at 0 second run|1 [orig]	$00000000
 CludgeShapes|shape 68 cookie set|68 num 1 at 0 second run|1 [fixed #1109]	$00000001
@@ -69,7 +87,8 @@ CludgeShapes|shape 68 data|68 num 1 at 0 second run|1	bytes 32 010E1B2835424F5C6
 CludgeShapes|shape 68 data set|68 num 1 at 0 second run|1	$00000001
 CludgeShapes|shape 68 fields|68 num 1 at 0 second run|1	bytes 14 0014000400020004010200030002
 CludgeShapes|shape 68 fields|68 num 1 at 0 second run|2	bytes 10 00100018002000300000
-CludgeShapes|the stale size skips to the next shape|60 num 5 at 0 again, used|1	$00000001
+CludgeShapes|the stale size skips to the next shape|60 num 5 at 0 again, used|1 [orig]	$00000001
+CludgeShapes|the stale size skips to the next shape|60 num 5 at 0 again, used|1 [fixed #809]	$00000000
 CludgeShapesToAddress|d0|65 num 1 at 0 no cookie|1	$FFFFFFFF
 CludgeShapesToAddress|d0|66 num 2 at 0 |1	$FFFFFFFF
 CludgeShapesToAddress|kept|65 num 1 at 0 no cookie|1	kept

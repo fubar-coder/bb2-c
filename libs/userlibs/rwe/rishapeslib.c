@@ -49,9 +49,6 @@
  *   - LESaveShapes stores s2-s1 as the shape count with a word
  *     subtraction: the upper word of d1, which compiled code leaves from
  *     a long expression, goes into the long count (#815).
- *   - CludgeShapes: an empty shape in memory (width or height 0) advances
- *     by 32 + the low word of the size of the shape before (also of an
- *     earlier call: the variable stays) (#809).
  *   - The cookie of a shape that is freed by LELoadShapes, LECludgeShapes
  *     or LEInitShape is never freed (the BEQ after a MOVEA tests the CLR
  *     before it, always taken) (#810).
@@ -87,7 +84,11 @@
  * second such shape returned into the Blitz program's stack (#807).
  * CludgeShapes takes a shape in memory whose size (plane size x depth) is
  * 0 as empty and copies a size above 64 KB whole (the original's DBRA
- * copied 65536 bytes for 0, #808).
+ * copied 65536 bytes for 0, #808).  An empty shape in memory (width or
+ * height 0) advances CludgeShapes by 32 (the original cleared only the
+ * upper word of the size with MOVE.w #0, so an empty shape advanced by 32
+ * + the low word of the size of the shape before, also of an earlier
+ * call, #809).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
  * (unused since the own cookie code).  LELoadShapes form 3
@@ -296,7 +297,7 @@ static_assert(sizeof(struct leshape) == 12);
 
 static struct DosLibrary *dosbase;      /* a6 of the entry (#doslib,#la6) */
 static UWORD maxw, maxh, maxd;
-static ULONG bytespershape;             /* stays from call to call */
+static ULONG bytespershape;             /* the size of the current shape */
 static ULONG centry;                    /* CMAP bytes + 8 of the last save */
 static ULONG chunksize, chunkptr, chunkid, filehandle;
 static UBYTE *paletteptr, *startshape, *endshape;
@@ -526,10 +527,10 @@ static void freeshapesm(UBYTE *shape)
  * memory.
  *
  * Shapes that are in use are freed first; a cookie is made if
- * LEAutoCookie is on.  BUG(orig): an empty shape in memory (width or
- * height 0) advances by 32 + the low word of the size of the shape before
- * - also of an earlier call, the variable stays (#809); a failing cookie
- * allocation would jump to the data address (#806, never in practice).
+ * LEAutoCookie is on.  A failing cookie allocation would jump to the data
+ * address (#806, never in practice).  Fixed (#809): an empty shape in
+ * memory (width or height 0) advances by 32 (the original by 32 + the
+ * low word of the size of the shape before, also of an earlier call).
  * Fixed (#808): a shape whose size (plane size x depth) is 0 is taken as
  * empty, and a size above 64 KB is copied whole (the original copied
  * 65536 bytes for a size of 0, and only the low word of a larger size).
@@ -551,7 +552,7 @@ static BB_BOOL BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numsh
     do {
         if (SHW(shapeptr, width))
             freeshapesm(shapeptr);
-        bytespershape &= 0xffff;        /* MOVE.w #0,bytespershape */
+        bytespershape = 0;              /* Fixed (#809): the long (MOVE.w #0 cleared its upper word) */
         if (SHW(shaperam, width) && SHW(shaperam, height)
             /* calcsize; Fixed (#808): a size of 0 is an empty shape */
             && (bytespershape = bl_mulu_w(SHW(shaperam, planesize), SHW(shaperam, depth)))) {
@@ -593,7 +594,7 @@ BLITZ_THUNK(_loadshapes, loadshapes_c, "d1/a0-a1");
  * @brief CludgeShapesToAddress Address,numshapes,address: CludgeShapes
  * into shape objects at an address of the program's own.
  *
- * MOVE.l d0,a0:MOVEQ #0,d0, then as CludgeShapes (#809; fixed: #808).
+ * MOVE.l d0,a0:MOVEQ #0,d0, then as CludgeShapes (fixed: #808, #809).
  * @param objects    d0: the first of numshapes shape objects (32 bytes each)
  * @param numshapes  d1: the number of shapes
  * @param address    d2: the shapes in memory

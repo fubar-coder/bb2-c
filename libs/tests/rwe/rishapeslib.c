@@ -35,7 +35,7 @@
  * copymemflag -1), packed (copied), with and without a palette, a CMAP
  * of 7 bytes (BUG(orig) #811: SDAT then not found), no FORM;
  * CludgeShapes/CludgeShapesToAddress with and without LEAutoCookie, an
- * empty shape in memory (BUG(orig) #809: the stale size), 0 shapes, into used
+ * empty shape in memory (fixed #809: the stale size skipped the padding), 0 shapes, into used
  * and linked shapes; LECompressShapes; finit; a second run (finit and init
  * again: LEMaxShape* and LEAutoCookie before anything else).
  * Not covered: LELoadShapes/LECludgeShapes on a linked shape (the
@@ -521,8 +521,9 @@ int main(int argc, char **argv)
         FreeMem(mem, memlen);
     mem = AllocMem(4096, MEMF_CLEAR);
     memlen = 4096;
-    /* an empty shape advances by 32 + the size of the one before
-       (BUG(orig), #809): padding of that size behind each */
+    /* padding of the size of the shape before behind each empty shape:
+       the original skips it (#809: 32 + the stale size), the port reads
+       it as an empty shape (zeros) */
     off = ramshape(mem, 20, 4, 2, 1);                  /* 32 bytes */
     off += ramshape(mem + off, 0, 4, 2, 2) + 32;       /* empty */
     off += ramshape(mem + off, 17, 3, 3, 3);           /* 36 bytes */

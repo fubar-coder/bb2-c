@@ -85,9 +85,6 @@ Further assembler:
   there from a long expression (`a.l=$50009 : LESaveShapes 0,a,…`
   writes the count $50009). The loader reads count + 1 shapes
   (`SUB.l #1:BMI`), limited by the last shape (#815).
-* **CludgeShapes:** an empty shape (width or height 0) advances by 32 +
-  the low word of the size of the shape before it, which may come from an
-  earlier call (#809).
 * **The cookie of a freed shape is never freed** (LELoadShapes,
   LECludgeShapes, LEInitShape). `MOVE.l 18(a2),a1:BEQ` after
   `CLR 30(a2)` tests the CLR, so the branch is always taken (#810).
@@ -161,6 +158,12 @@ kind F):
   DBRA on the low word of the size: a size of 0 copied 65536 bytes into
   a block of none, a larger size only its low word (#808, test
   `rishapeslib-cludgeshapes-size0`).
+* CludgeShapes advances by 32 behind an empty shape in memory (width or
+  height 0). The original cleared the size, a long, with `MOVE.w #0`
+  (its upper word only), so an empty shape advanced by 32 + the low word
+  of the size of the shape before it, also of an earlier call, and the
+  shapes behind it were read from the wrong place (#809, test
+  `rishapeslib-cludgeshapes-empty-stale-size`).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push
