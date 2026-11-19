@@ -37,6 +37,11 @@
 #   archive/aminet/ReqLib28/                req.library 2.8 (Aminet util/libs),
 #                                           unpacked (the library the
 #                                           rireqlib tests open)
+#   archive/ancient/github-1491a35a/        single files of temisu's
+#                                           ancient (decompressors, GitHub
+#                                           commit 1491a35a2c49), paths as
+#                                           there: StoneCracker 4.10 test
+#                                           files (the S404 tests)
 #   archive/bernd/                          Bernd Rösch's AmiBlitz 2 archive
 #                                           (AmiBlitz 2.41 ... 3.00 beta 4),
 #                                           paths as on the site, every
@@ -134,6 +139,23 @@ foreach(f IN LISTS ab3dev_files)
 	list(GET f 1 sha)
 	get_filename_component(name ${path} NAME)
 	list(APPEND downloads "ab3dev-${name}|https://raw.githubusercontent.com/AmiBlitz/AmiBlitz3/${ab3dev_commit}/${path}|${sha}")
+endforeach()
+# ancient (temisu/ancient, BSD-2-Clause), GitHub at a fixed commit: its
+# test files of StoneCracker 4.10 ("S404"; the text alice29.txt of the
+# Canterbury Corpus packed with efficiency 14 and 10) and the text itself,
+# for the tests of ristcdecrunchlib and ristonecrackerlib:
+# download name ancient-NAME -> archive/ancient/github-1491a35a/PATH
+set(ancient_commit 1491a35a2c49a97e77757e744e7ed6e4fe5e6bab)
+set(ancient_files
+	"testing/test_files/test_C1.raw|7467306ee0feed4971260f3c87421154a05be571d944e9cb021a5713700c38f0"
+	"testing/test_files/test_C1.pack410|6c73de6933b629fe7dadf292f02f462f3da74dab25f1263d8f69a3fa6509cee2"
+	"testing/test_files/test_C1.pack410_0|6583f0aacbfe26377c532397a6389e46c5372bc6c38a62bbb5572af2266a773e")
+foreach(f IN LISTS ancient_files)
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 path)
+	list(GET f 1 sha)
+	get_filename_component(name ${path} NAME)
+	list(APPEND downloads "ancient-${name}|https://raw.githubusercontent.com/temisu/ancient/${ancient_commit}/${path}|${sha}")
 endforeach()
 # AmiBlitz 2.42, the full distribution on Aminet, and its readme (in git
 # as archive/sources/ab2.42-distri.readme)
@@ -409,6 +431,25 @@ foreach(f IN LISTS ab3v314_files)
 	get_filename_component(dir ${dest} DIRECTORY)
 	file(MAKE_DIRECTORY ${dir})
 	file(COPY_FILE ${DOWNLOAD_DIR}/ab3v314-${name} ${dest})
+	message(STATUS "${dest}: copied")
+endforeach()
+
+# ancient from GitHub: ancient-NAME -> archive/ancient/github-1491a35a/PATH
+foreach(f IN LISTS ancient_files)
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 path)
+	list(GET f 1 sha)
+	get_filename_component(name ${path} NAME)
+	set(dest ${root}/archive/ancient/github-1491a35a/${path})
+	if(EXISTS ${dest})
+		file(SHA256 ${dest} have)
+		if(have STREQUAL sha)
+			continue()
+		endif()
+	endif()
+	get_filename_component(dir ${dest} DIRECTORY)
+	file(MAKE_DIRECTORY ${dir})
+	file(COPY_FILE ${DOWNLOAD_DIR}/ancient-${name} ${dest})
 	message(STATUS "${dest}: copied")
 endforeach()
 
