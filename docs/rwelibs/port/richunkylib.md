@@ -42,8 +42,11 @@ section 1). The calls of lmullib
 (`lmultiply`) and memlib (`globalloc`, `globfree`) are `ALibJsr`s with
 the original's registers. The C2P is the original's merge network
 (the masks `$0F0F0F0F`, `$3333CCCC`, `$55555555`, 8 pixels per step, 32
-pixels buffered and written as longs in the original's plane order) in
-C.
+pixels buffered and written as longs) in assembler (`c2pcore`, for
+speed: `bchunky.c2p320`), called from C: the four steps of a long
+unrolled (no end test of the buffer), the longs written to planes 7 down
+to 0 through one pointer (the original: 1, 7, 6, 5, 4, 3, 2, 0; the
+order matters only for planes that overlap).
 
 ## Fixed
 

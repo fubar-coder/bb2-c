@@ -23,8 +23,10 @@
  *
  * C2P: the 8-pixel merge network of the original (a well-known 68000
  * C2P routine: 4 pixels per long, $0F0F0F0F/$3333CCCC/$55555555 masks,
- * 32 pixels buffered then written as longs), in C with the same steps
- * and the same accesses to the planes.  The planes must be contiguous:
+ * 32 pixels buffered then written as longs), in assembler (c2pcore, for
+ * speed) with the same steps, four of them unrolled per long; the longs
+ * go to planes 7 down to 0 (the original: 1, 7, 6, 5, 4, 3, 2, 0, which
+ * differs only for planes that overlap).  The planes must be contiguous:
  * plane n is plane 0 + n*10240, the bitmap's other plane pointers are
  * not read.  RaycastSky is an assembler entry (speed), the rest C.
  *
@@ -271,14 +273,175 @@ BLITZ_ASM_ROUTINE(_raycastsky,
 
 #define PLSIZ 10240                             /* 320*256/8 */
 
-/* ((x & $33330000) << 2) | (swap(x) & $3333CCCC) | ((x & $0000CCCC) >> 2) */
-static ULONG merge2(ULONG x)
-{
-    ULONG hi = (x & 0x33330000UL) << 2;
-    UWORD lo = (UWORD)((x & 0x0000ccccUL) >> 2);
-    ULONG sw = (x << 16 | x >> 16) & 0x3333ccccUL;
+/* What c2pcore converts (a0 = this block): `rows` rows of `steps` 32
+   pixel steps and, if `tail`, one 16 pixel step behind them; the chunky
+   rows lie one behind the other from `src`.  `dst` is the row's position
+   in plane 7, the planes are `ps` bytes apart (written 7 down to 0),
+   `back` = 7 * ps + 4 returns from plane 0 to plane 7's next long, `skip`
+   is added at the end of each row. */
+struct c2pargs {
+    ULONG src;                                  /* +0 */
+    ULONG dst;                                  /* +4 */
+    LONG ps;                                    /* +8 */
+    LONG back;                                  /* +12 */
+    LONG skip;                                  /* +16 */
+    UWORD rows;                                 /* +20: 1 or more */
+    UWORD steps;                                /* +22 */
+    UWORD tail;                                 /* +24: 0 or 1 */
+};
+static_assert(sizeof(struct c2pargs) == 26);
 
-    return (hi | lo) | sw;
+/* 8 chunky pixels (two longs from a0) through the original's merge
+   network into the stack buffers: plane 0/1 bytes at (a3)/4(a3), 2/3 at
+   (a4)/4(a4), 4/5 at (a5)/4(a5), 6/7 at (a6)/4(a6), a3-a6 advanced by
+   one; d5 = $0F0F0F0F, d6 = $55555555, d7 = $3333CCCC (_chunky2planar of
+   chunkylib.bb, instruction for instruction) */
+#define C2P8                                                                \
+"   move.l  (a0)+,d0\n"                                                     \
+"   move.l  (a0)+,d1\n"                                                     \
+"   move.l  d0,d2\n"                                                        \
+"   and.l   d5,d2\n"                                                        \
+"   eor.l   d2,d0\n"                                                        \
+"   move.l  d1,d3\n"                                                        \
+"   and.l   d5,d3\n"                                                        \
+"   eor.l   d3,d1\n"                                                        \
+"   lsl.l   #4,d2\n"                                                        \
+"   or.l    d3,d2\n"                                                        \
+"   lsr.l   #4,d1\n"                                                        \
+"   or.l    d1,d0\n"                                                        \
+"   move.l  d2,d3\n"                                                        \
+"   and.l   d7,d3\n"                                                        \
+"   move.w  d3,d1\n"                                                        \
+"   clr.w   d3\n"                                                           \
+"   lsl.l   #2,d3\n"                                                        \
+"   lsr.w   #2,d1\n"                                                        \
+"   or.w    d1,d3\n"                                                        \
+"   swap    d2\n"                                                           \
+"   and.l   d7,d2\n"                                                        \
+"   or.l    d2,d3\n"                                                        \
+"   move.l  d0,d1\n"                                                        \
+"   and.l   d7,d1\n"                                                        \
+"   move.w  d1,d2\n"                                                        \
+"   clr.w   d1\n"                                                           \
+"   lsl.l   #2,d1\n"                                                        \
+"   lsr.w   #2,d2\n"                                                        \
+"   or.w    d2,d1\n"                                                        \
+"   swap    d0\n"                                                           \
+"   and.l   d7,d0\n"                                                        \
+"   or.l    d0,d1\n"                                                        \
+"   move.l  d1,d2\n"                                                        \
+"   lsr.l   #7,d2\n"                                                        \
+"   move.l  d1,d0\n"                                                        \
+"   and.l   d6,d0\n"                                                        \
+"   eor.l   d0,d1\n"                                                        \
+"   move.l  d2,d4\n"                                                        \
+"   and.l   d6,d4\n"                                                        \
+"   eor.l   d4,d2\n"                                                        \
+"   or.l    d4,d1\n"                                                        \
+"   lsr.l   #1,d1\n"                                                        \
+"   move.b  d1,4(a6)\n"                 /* plane 7 */                       \
+"   swap    d1\n"                                                           \
+"   move.b  d1,4(a5)\n"                 /* plane 5 */                       \
+"   or.l    d0,d2\n"                                                        \
+"   move.b  d2,(a6)+\n"                 /* plane 6 */                       \
+"   swap    d2\n"                                                           \
+"   move.b  d2,(a5)+\n"                 /* plane 4 */                       \
+"   move.l  d3,d2\n"                                                        \
+"   lsr.l   #7,d2\n"                                                        \
+"   move.l  d3,d0\n"                                                        \
+"   and.l   d6,d0\n"                                                        \
+"   eor.l   d0,d3\n"                                                        \
+"   move.l  d2,d4\n"                                                        \
+"   and.l   d6,d4\n"                                                        \
+"   eor.l   d4,d2\n"                                                        \
+"   or.l    d4,d3\n"                                                        \
+"   lsr.l   #1,d3\n"                                                        \
+"   move.b  d3,4(a4)\n"                 /* plane 3 */                       \
+"   swap    d3\n"                                                           \
+"   move.b  d3,4(a3)\n"                 /* plane 1 */                       \
+"   or.l    d0,d2\n"                                                        \
+"   move.b  d2,(a4)+\n"                 /* plane 2 */                       \
+"   swap    d2\n"                                                           \
+"   move.b  d2,(a3)+\n"                 /* plane 0 */
+
+/* the buffers of planes 7 down to 0 to the planes (SZ "l" after four
+   C2P8, "w" after two; OFF the offset of the odd plane's bytes from the
+   advanced pointer: 0 or 2), a1 from plane 7 down by a2 (the plane
+   stride); the pointers back at the buffers' start */
+#define C2PFLUSH(SZ, OFF)                                                   \
+"   move." SZ "  " OFF "(a6),(a1)\n"    /* plane 7 */                       \
+"   suba.l  a2,a1\n"                                                        \
+"   move." SZ "  -(a6),(a1)\n"          /* plane 6 */                       \
+"   suba.l  a2,a1\n"                                                        \
+"   move." SZ "  " OFF "(a5),(a1)\n"    /* plane 5 */                       \
+"   suba.l  a2,a1\n"                                                        \
+"   move." SZ "  -(a5),(a1)\n"          /* plane 4 */                       \
+"   suba.l  a2,a1\n"                                                        \
+"   move." SZ "  " OFF "(a4),(a1)\n"    /* plane 3 */                       \
+"   suba.l  a2,a1\n"                                                        \
+"   move." SZ "  -(a4),(a1)\n"          /* plane 2 */                       \
+"   suba.l  a2,a1\n"                                                        \
+"   move." SZ "  " OFF "(a3),(a1)\n"    /* plane 1 */                       \
+"   suba.l  a2,a1\n"                                                        \
+"   move." SZ "  -(a3),(a1)\n"          /* plane 0 */                       \
+"   adda.l  8(sp),a1\n"                 /* back: plane 7, the next long */
+
+/* c2pcore (a0 = struct c2pargs): the conversion; keeps d2-d7/a2-a6.
+   Assembler for speed (bchunky.c2p320): the original's 8 pixel step,
+   four of them unrolled per long (no end test of the buffer, so a2 holds
+   the plane stride), the planes written through one pointer.  Stack:
+   0 the steps left in the row, 2 the rows left, 4 steps, 6 tail, 8 back,
+   12 skip, 16 the size of the aligned 32 byte buffer above them. */
+BLITZ_ASM_BLOCK(c2pcore,
+"   .globl  _c2pcore\n"
+"_c2pcore:\n"
+"   movem.l d2-d7/a2-a6,-(sp)\n"
+"   move.w  sp,d0\n"                    /* a long aligned 32 byte buffer */
+"   and.w   #2,d0\n"
+"   add.w   #32,d0\n"
+"   suba.w  d0,sp\n"
+"   movea.l sp,a3\n"
+"   move.w  d0,-(sp)\n"
+"   move.l  16(a0),-(sp)\n"             /* skip */
+"   move.l  12(a0),-(sp)\n"             /* back */
+"   move.l  22(a0),-(sp)\n"             /* steps, tail */
+"   move.w  20(a0),-(sp)\n"             /* rows */
+"   subq.l  #2,sp\n"                    /* the steps left */
+"   movea.l 8(a0),a2\n"
+"   movea.l 4(a0),a1\n"
+"   movea.l (a0),a0\n"
+"   move.l  #0x0f0f0f0f,d5\n"
+"   move.l  #0x55555555,d6\n"
+"   move.l  #0x3333cccc,d7\n"
+"   lea     8(a3),a4\n"
+"   lea     8(a4),a5\n"
+"   lea     8(a5),a6\n"
+"1: move.w  4(sp),(sp)\n"               /* a row */
+"   beq.w   3f\n"
+"2:\n"
+C2P8 C2P8 C2P8 C2P8
+C2PFLUSH("l", "")
+"   subq.w  #1,(sp)\n"
+"   bne.w   2b\n"
+"3: tst.w   6(sp)\n"                    /* the 16 pixel tail */
+"   beq.w   4f\n"
+C2P8 C2P8
+C2PFLUSH("w", "2")
+"   subq.l  #2,a1\n"                    /* a word, not a long */
+"4: adda.l  12(sp),a1\n"                /* the row's end */
+"   subq.w  #1,2(sp)\n"
+"   bne.w   1b\n"
+"   lea     16(sp),sp\n"
+"   adda.w  (sp)+,sp\n"
+"   movem.l (sp)+,d2-d7/a2-a6\n"
+"   rts\n");
+
+/* the conversion of a (a struct c2pargs) */
+static void c2p_run(const struct c2pargs *a)
+{
+    register const struct c2pargs *p __asm("a0") = a;
+
+    __asm__ volatile("jsr     _c2pcore" : "+a"(p) : : "d0", "d1", "a1", "cc", "memory");
 }
 
 /**
@@ -289,82 +452,32 @@ static ULONG merge2(ULONG x)
  * without chunky data, nothing for a bitmap of depth below 8.
  * BUG(orig): the sizes are ignored (#884).  Fixed (#883): the depth is
  * the byte Depth; the original compared Flags and Depth as one signed
- * word.
+ * word.  The conversion is c2pcore, the original's merge network in
+ * assembler (speed).
  * @param o   a0: the chunky object
  * @param bm  a1: the bitmap (a struct BitMap)
  */
 static void BLITZ_ROUTINE c2p_c(struct chunky *o BL_REG(a0), struct BitMap *bm BL_REG(a1))
 {
-    const ULONG *src;
-    ULONG *pl;
-    UBYTE buf[8][4];                            /* 4 bytes per plane */
-    UWORD outer;
+    struct c2pargs a;
+    ULONG pl;
 
     /* the byte Depth; fixed (#883): the original's CMPI.w #8,4(a1): BLT
        compared Flags and Depth as one signed word */
     if (bm->Depth < 8)
         return;
-    pl = (ULONG *)*(ULONG *)&bm->Planes[0];     /* read as a long, as the data */
+    pl = *(ULONG *)&bm->Planes[0];              /* read as a long, as the data */
     if (!o->data)
         return;
-    src = (const ULONG *)o->data;
-    for (outer = PLSIZ / 4; outer; outer--) {
-        int k;
-
-        for (k = 0; k < 4; k++) {
-            /* d0-d4: the pixels, then nibble and bit groups */
-            ULONG px0 = *src++, px1 = *src++;   /* d0, d1: the input longs */
-            ULONG lo0, lo1, hi0, hi1;           /* d2, d3, d0, d1: the nibble halves */
-            ULONG lonib, hinib;                 /* d2, d0: the merged nibbles */
-            ULONG lomerge, himerge;             /* d3, d1: merge2 of them */
-
-            lo0 = px0 & 0x0f0f0f0fUL;
-            hi0 = px0 ^ lo0;
-            lo1 = px1 & 0x0f0f0f0fUL;
-            hi1 = px1 ^ lo1;
-            lonib = (lo0 << 4) | lo1;
-            hinib = hi0 | hi1 >> 4;
-            lomerge = merge2(lonib);
-            himerge = merge2(hinib);
-
-            {                                   /* planes 7, 5, 6, 4 */
-                ULONG shifted = himerge >> 7;               /* d2 */
-                ULONG even = himerge & 0x55555555UL;        /* d0 */
-                ULONG odd = himerge ^ even;                 /* d1 */
-                ULONG mask = shifted & 0x55555555UL;        /* d4 */
-                ULONG oddpl = (odd | mask) >> 1;            /* d1 */
-                ULONG evenpl = (shifted ^ mask) | even;     /* d2 */
-
-                buf[7][k] = (UBYTE)oddpl;
-                buf[5][k] = (UBYTE)(oddpl >> 16);
-                buf[6][k] = (UBYTE)evenpl;
-                buf[4][k] = (UBYTE)(evenpl >> 16);
-            }
-            {                                   /* planes 3, 1, 2, 0 */
-                ULONG shifted = lomerge >> 7;               /* d2 */
-                ULONG even = lomerge & 0x55555555UL;        /* d0 */
-                ULONG odd = lomerge ^ even;                 /* d3 */
-                ULONG mask = shifted & 0x55555555UL;        /* d4 */
-                ULONG oddpl = (odd | mask) >> 1;            /* d3 */
-                ULONG evenpl = (shifted ^ mask) | even;     /* d2 */
-
-                buf[3][k] = (UBYTE)oddpl;
-                buf[1][k] = (UBYTE)(oddpl >> 16);
-                buf[2][k] = (UBYTE)evenpl;
-                buf[0][k] = (UBYTE)(evenpl >> 16);
-            }
-        }
-        /* the buffers to the planes as longs, in the original's order */
-        pl[PLSIZ / 4 * 1] = *(ULONG *)buf[1];
-        pl[PLSIZ / 4 * 7] = *(ULONG *)buf[7];
-        pl[PLSIZ / 4 * 6] = *(ULONG *)buf[6];
-        pl[PLSIZ / 4 * 5] = *(ULONG *)buf[5];
-        pl[PLSIZ / 4 * 4] = *(ULONG *)buf[4];
-        pl[PLSIZ / 4 * 3] = *(ULONG *)buf[3];
-        pl[PLSIZ / 4 * 2] = *(ULONG *)buf[2];
-        pl[0] = *(ULONG *)buf[0];
-        pl++;
-    }
+    a.src = o->data;
+    a.dst = pl + 7 * PLSIZ;
+    a.ps = PLSIZ;
+    a.back = 7 * PLSIZ + 4;
+    a.skip = 0;
+    a.rows = 256;
+    a.steps = 320 / 32;
+    a.tail = 0;
+    c2p_run(&a);
 }
 
 /* Registers: the original changes d0, d1, d7, a0, a1 (ChunkyBitmap,
