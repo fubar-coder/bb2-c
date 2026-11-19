@@ -22,7 +22,9 @@
  * data (0, the S404 check of the binary), STCLoad with a missing file and
  * with a directory (OpenFromLock fails), and with a file that is no S404
  * file (BUG(orig) #836: unpacked anyway - a harmless one: offset and lengths
- * chosen so).  Not covered: corrupt data (writes anywhere), more than 16
+ * chosen so); the number of UnLock calls of the test task during one
+ * STCLoad of an S404 file (dos.library's UnLock patched to count them:
+ * BUG(orig) #835, the lock OpenFromLock took over is unlocked again).  Not covered: corrupt data (writes anywhere), more than 16
  * far offset bits (the DIFF of the run table), a far offset that is
  * negative as a word (16 bits >= $8000: reads before the destination).
  */
@@ -37,6 +39,28 @@
 #include "s404.h"
 
 static UBYTE *buf;                      /* STCLoad's buffer */
+
+/* dos.library's UnLock (-90) counts the calls of the test task and goes
+   on to the system's routine */
+struct Task *stc_task;
+ULONG stc_nunlock;
+APTR stc_old_unlock;
+void stc_unlock(void);
+__asm__(
+"   .text\n"
+"   .even\n"
+"   .globl  _stc_unlock\n"
+"_stc_unlock:\n"
+"   move.l  a0,-(sp)\n"
+"   move.l  4.w,a0\n"
+"   move.l  276(a0),a0\n"               /* ThisTask */
+"   cmp.l   _stc_task,a0\n"
+"   movea.l (sp)+,a0\n"                 /* movea: the flags stay */
+"   bne.s   1f\n"
+"   addq.l  #1,_stc_nunlock\n"
+"1: move.l  _stc_old_unlock,-(sp)\n"
+"   rts\n"
+);
 
 /* ------------------------------------------------------------ the tests */
 
@@ -151,6 +175,24 @@ int main(int argc, char **argv)
         DO1(ENT(LIB, 3, 0), R.d[0] = (ULONG)dir; R.d[1] = (ULONG)buf);
         OBS("d0", R.d[0]);
     }
+
+    /* the UnLock calls of one STCLoad of an S404 file (BUG(orig) #835:
+       one, of the lock OpenFromLock took over; correct: none) */
+    strcpy(VEC, "S404 file, UnLock counted");
+    make(300, 5, 8, 0, 0xff);
+    *(ULONG *)(file + 4) = (filelen + 3) & ~3UL;
+    savefile(file, filelen);
+    stc_task = FindTask(NULL);
+    stc_nunlock = 0;
+    Forbid();
+    stc_old_unlock = SetFunction((struct Library *)DOSBase, -90, (APTR)stc_unlock);
+    Permit();
+    load(1, 0x33);
+    Forbid();
+    SetFunction((struct Library *)DOSBase, -90, stc_old_unlock);
+    Permit();
+    OBS("UnLock calls", stc_nunlock);
+    DeleteFile((STRPTR)FNAME);
 
     FreeMem(buf, BUFSZ);
     return rwe_done(LIB);

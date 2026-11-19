@@ -110,7 +110,8 @@ original: d0, the whole buffer, and as truth values that the data equal
 what the test worked out, the start and the header; the three header
 functions on each file and on other data
 (0). Also a file that is no S404 file (unpacked anyway), a missing file
-and a directory (OpenFromLock fails), kept registers. Not covered:
+and a directory (OpenFromLock fails), the number of UnLock calls of one
+STCLoad (dos.library's UnLock patched to count them), kept registers. Not covered:
 corrupt data (writes anywhere), more than 16 offset bits (the DIFF), a
 16-bit far offset of $8000 or more (negative as a word: reads before the
 destination).

@@ -122,6 +122,7 @@ STCLength|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$000
 STCLength|popped|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000000
 STCLength|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
 STCLength|popped|S403|1	$00000000
+STCLoad|UnLock calls|S404 file, UnLock counted|1	$00000001
 STCLoad|buffer|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	bytes 56384 fnv 1C083637
 STCLoad|buffer|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	bytes 56384 fnv 7A41F4F6
 STCLoad|buffer|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	bytes 56384 fnv F1E0A746
@@ -163,6 +164,7 @@ STCLoad|buffer|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	bytes 
 STCLoad|buffer|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	bytes 56384 fnv B1CC77DD
 STCLoad|buffer|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	bytes 56384 fnv 5B38C533
 STCLoad|buffer|S403 file|1	bytes 56384 fnv 65BFE506
+STCLoad|buffer|S404 file, UnLock counted|1	bytes 56384 fnv 4C77364F
 STCLoad|buffer|missing file|1	bytes 56384 fnv B77DD5C5
 STCLoad|d0|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000044
 STCLoad|d0|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00002E98
@@ -205,6 +207,7 @@ STCLoad|d0|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000021
 STCLoad|d0|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000084
 STCLoad|d0|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000170
 STCLoad|d0|S403 file|1	$00000088
+STCLoad|d0|S404 file, UnLock counted|1	$00000030
 STCLoad|d0|a directory|1	$00000000
 STCLoad|d0|missing file|1	$00000000
 STCLoad|d0 = start|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
@@ -248,6 +251,7 @@ STCLoad|d0 = start|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$0
 STCLoad|d0 = start|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000001
 STCLoad|d0 = start|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
 STCLoad|d0 = start|S403 file|1	$00000001
+STCLoad|d0 = start|S404 file, UnLock counted|1	$00000001
 STCLoad|data|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
 STCLoad|data|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000001
 STCLoad|data|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000001
@@ -289,6 +293,7 @@ STCLoad|data|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$0000000
 STCLoad|data|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000001
 STCLoad|data|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
 STCLoad|data|S403 file|1	$00000001
+STCLoad|data|S404 file, UnLock counted|1	$00000001
 STCLoad|header kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
 STCLoad|header kept|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000001
 STCLoad|header kept|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000001
@@ -330,6 +335,7 @@ STCLoad|header kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$
 STCLoad|header kept|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000001
 STCLoad|header kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
 STCLoad|header kept|S403 file|1	$00000001
+STCLoad|header kept|S404 file, UnLock counted|1	$00000001
 STCLoad|kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	kept
 STCLoad|kept|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	kept
 STCLoad|kept|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	kept
@@ -371,6 +377,7 @@ STCLoad|kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	kept
 STCLoad|kept|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	kept
 STCLoad|kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	kept
 STCLoad|kept|S403 file|1	kept
+STCLoad|kept|S404 file, UnLock counted|1	kept
 STCLoad|kept|a directory|1	kept
 STCLoad|kept|missing file|1	kept
 STCLoad|popped|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000000
@@ -414,6 +421,7 @@ STCLoad|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000
 STCLoad|popped|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000000
 STCLoad|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
 STCLoad|popped|S403 file|1	$00000000
+STCLoad|popped|S404 file, UnLock counted|1	$00000000
 STCLoad|popped|a directory|1	$00000000
 STCLoad|popped|missing file|1	$00000000
 STCSafeLen|d0|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$0000010C
