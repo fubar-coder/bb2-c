@@ -40,8 +40,6 @@
  *   - No routine checks the list number (0-3; 16 bytes per number
  *     indexed by ASL.w #4) (#913); InitSnowDrop never frees an earlier
  *     block of the same number (#911).
- *   - The drop lists' "last" stays 0 until the first LDoSnow:
- *     LDoSnowActivate before it writes to address 0 (#908).
  *   - The lists have no bounds: more entries than numpoints*4 run into
  *     the next list (and behind the block) (#914).
  *   - A bit number above 7 (from the random table) indexes the lookup
@@ -53,7 +51,10 @@
  *   - InitSnowDrop computes the size of its block as a long; the
  *     original took numpoints*16 times 4 with ASL.w #2, so from
  *     numpoints 1024 on the block was too small for the lists written
- *     into it (#912).
+ *     into it (#912);
+ *   - InitSnowDrop sets the drop lists' "last" to their end mark, as the
+ *     kill lists'; the original left it 0 until the first LDoSnow, so an
+ *     LDoSnowActivate before it wrote to address 0 (#908).
  * Not defects: the allocation is not checked (memlib's globalloc raises
  * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
  * pixel again (always clear there: redundant, no effect); the end of
@@ -195,12 +196,14 @@ static void BLITZ_ROUTINE nothing_c(void)
 }
 
 /* ------------------------------------------------------- InitSnowDrop */
-/* a drop list's header at p: size, bitmap, bp_size, (last), then END */
+/* a drop list's header at p: size, bitmap, bp_size, last = its first
+   entry (fixed (#908): the original skipped it, 0), then END */
 static UBYTE *drophead(UBYTE *p, ULONG size, ULONG bm, ULONG bpsize)
 {
     DROP(p)->size = size;
     DROP(p)->bm = bm;
     DROP(p)->bpsize = bpsize;
+    DROP(p)->last = (ULONG)DROP(p)->entries;
     DROP(p)->entries[0] = END;
     return p + 16 + size;
 }
@@ -222,7 +225,8 @@ static UBYTE *killhead(UBYTE *p, ULONG size)
  * numpoints*16 bytes, all empty.  BUG(orig): the list number is not
  * checked (#913); an earlier block of the same number is not freed
  * (#911).  Fixed (#912): the size is a long (the original's ASL.w #2
- * made the block too small from numpoints 1024 on).
+ * made the block too small from numpoints 1024 on).  Fixed (#908): the
+ * drop lists' last is set (the original left it 0).
  * @param n       d0: the list number (0-3)
  * @param num     d1: the number of points
  * @param bpsize  d3: the end offset in the plane (bp_size)
@@ -371,9 +375,11 @@ static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWOR
  * (plane 1 set, plane 2 clear) at the two sides below and at the pixel
  * is cleared in plane 1 and added to the newer drop list; the pixel above
  * goes into the other kill list.  Checking plane 2 at the killed pixel
- * again is redundant (no defect).  BUG(orig): the drop list's last is 0
- * before the first LDoSnow (writes at 0, #908) and is not updated
- * (#909); the list number is not checked (#913); a bit above 7 (#910).
+ * again is redundant (no defect).  BUG(orig): the drop list's last is not
+ * updated (#909); the list number is not checked (#913); a bit above 7
+ * (#910).  Fixed (#908): before the first LDoSnow the drop list's last is
+ * its first entry (InitSnowDrop sets it; the original's 0 wrote at
+ * address 0).
  * @param n  d0: the list number
  * @return d0: the number of kill list entries + 1
  */
@@ -383,8 +389,8 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
     UBYTE *drops = (UBYTE *)e->drop[0], *killin, *killout, *plane1, *plane2;
     const UBYTE *bm = (const UBYTE *)DROP(drops)->bm;
     const UBYTE *look = (const UBYTE *)lookup[0];
-    UWORD *drop = (UWORD *)DROP(drops)->last, *src, *dst;  /* BUG(orig): 0 before
-                                                              LDoSnow (#908) */
+    UWORD *drop = (UWORD *)DROP(drops)->last, *src, *dst;  /* set by InitSnowDrop:
+                                                              fixed (#908) */
     ULONG count = 0;
 
     plane1 = PLANE(bm, 1);

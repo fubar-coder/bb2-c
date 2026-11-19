@@ -56,13 +56,16 @@ right-first), COLOR00 is written as the original writes it.
   keeps the low word only: from numpoints 1024 on the block was too
   small and the lists were written behind it (#912, test
   `rwe/risnowlib-initsnowdrop-size-aslw`).
+* InitSnowDrop sets the drop lists' "last" to their end mark (their
+  first entry), as it does for the kill lists; the original skipped the
+  field (`ADDQ.l #4,a0`), so it stayed 0 until the first LDoSnow and an
+  LDoSnowActivate before it appended its entries at address 0 and wrote
+  `$ABCD` there (#908, test `rwe/risnowlib-activate-before-dosnow`).
 
 ## BUG(orig), kept
 
 * No routine checks the list number (0–3; `ASL.w #4` as the index)
   (#913); InitSnowDrop never frees an earlier block (#911).
-* The drop lists' "last" stays 0 until the first LDoSnow:
-  LDoSnowActivate before it writes to address 0 (#908).
 * The lists have no bounds: more than numpoints × 4 entries run into the
   next list and behind the block (#914).
 * A bit number above 7 from the random table indexes the lookup tables

@@ -3,10 +3,14 @@ InitSnowDrop|COLOR00|0,300|1	$00001234
 InitSnowDrop|COLOR00|0,300|2	$00001234
 InitSnowDrop|COLOR00|1,40|1	$00001234
 InitSnowDrop|COLOR00|1,40|2	$00001234
-InitSnowDrop|block 0|0,300|1	bytes 19240 fnv CC715340
-InitSnowDrop|block 0|1,40|1	bytes 19240 fnv CC715340
-InitSnowDrop|block 0|1,40|2	bytes 19240 fnv CC715340
-InitSnowDrop|block 1|1,40|1	bytes 2600 fnv 4E10A7D7
+InitSnowDrop|block 0|0,300|1 [orig]	bytes 19240 fnv CC715340
+InitSnowDrop|block 0|0,300|1 [fixed #908]	bytes 19240 fnv D647DB7E
+InitSnowDrop|block 0|1,40|1 [orig]	bytes 19240 fnv CC715340
+InitSnowDrop|block 0|1,40|1 [fixed #908]	bytes 19240 fnv D647DB7E
+InitSnowDrop|block 0|1,40|2 [orig]	bytes 19240 fnv CC715340
+InitSnowDrop|block 0|1,40|2 [fixed #908]	bytes 19240 fnv D647DB7E
+InitSnowDrop|block 1|1,40|1 [orig]	bytes 2600 fnv 4E10A7D7
+InitSnowDrop|block 1|1,40|1 [fixed #908]	bytes 2600 fnv 69E1F581
 InitSnowDrop|d0 = the list table|0,300|1	$00000001
 InitSnowDrop|d0 = the list table|1,40|1	$00000001
 InitSnowDrop|kept|0,300|1	kept
@@ -2097,7 +2101,8 @@ LDoSnow|COLOR00|step 96|1	$00000000
 LDoSnow|COLOR00|step 97|1	$00000000
 LDoSnow|COLOR00|step 98|1	$00000000
 LDoSnow|COLOR00|step 99|1	$00000000
-LDoSnow|block 0|step 0|1	bytes 19240 fnv AA1EAEAC
+LDoSnow|block 0|step 0|1 [orig]	bytes 19240 fnv AA1EAEAC
+LDoSnow|block 0|step 0|1 [fixed #908]	bytes 19240 fnv 550D413C
 LDoSnow|block 0|step 1|1	bytes 19240 fnv D34CBBC4
 LDoSnow|block 0|step 10|1	bytes 19240 fnv 6D8D888C
 LDoSnow|block 0|step 100|1	bytes 19240 fnv 2EF16C36
@@ -2237,8 +2242,10 @@ LDoSnow|block 0|step 96|1	bytes 19240 fnv AD0DA9B1
 LDoSnow|block 0|step 97|1	bytes 19240 fnv 66BF3CEB
 LDoSnow|block 0|step 98|1	bytes 19240 fnv 63180115
 LDoSnow|block 0|step 99|1	bytes 19240 fnv 8A7E43C5
-LDoSnow|block 1|step 0|1	bytes 2600 fnv 4E10A7D7
-LDoSnow|block 1|step 1|1	bytes 2600 fnv 4E10A7D7
+LDoSnow|block 1|step 0|1 [orig]	bytes 2600 fnv 4E10A7D7
+LDoSnow|block 1|step 0|1 [fixed #908]	bytes 2600 fnv 69E1F581
+LDoSnow|block 1|step 1|1 [orig]	bytes 2600 fnv 4E10A7D7
+LDoSnow|block 1|step 1|1 [fixed #908]	bytes 2600 fnv 69E1F581
 LDoSnow|block 1|step 10|1	bytes 2600 fnv 62A5B7EE
 LDoSnow|block 1|step 100|1	bytes 2600 fnv 5FEC7E00
 LDoSnow|block 1|step 101|1	bytes 2600 fnv EFB851F0
@@ -2289,7 +2296,8 @@ LDoSnow|block 1|step 16|1	bytes 2600 fnv F73F2594
 LDoSnow|block 1|step 17|1	bytes 2600 fnv 5A5DC132
 LDoSnow|block 1|step 18|1	bytes 2600 fnv 5A5DC132
 LDoSnow|block 1|step 19|1	bytes 2600 fnv 5A5DC132
-LDoSnow|block 1|step 2|1	bytes 2600 fnv BAD1F98F
+LDoSnow|block 1|step 2|1 [orig]	bytes 2600 fnv BAD1F98F
+LDoSnow|block 1|step 2|1 [fixed #908]	bytes 2600 fnv C4E1B6DF
 LDoSnow|block 1|step 20|1	bytes 2600 fnv 94D6A55C
 LDoSnow|block 1|step 21|1	bytes 2600 fnv 94D6A55C
 LDoSnow|block 1|step 22|1	bytes 2600 fnv 94D6A55C
@@ -2300,7 +2308,8 @@ LDoSnow|block 1|step 26|1	bytes 2600 fnv DBB1E3EE
 LDoSnow|block 1|step 27|1	bytes 2600 fnv DBB1E3EE
 LDoSnow|block 1|step 28|1	bytes 2600 fnv DBB1E3EE
 LDoSnow|block 1|step 29|1	bytes 2600 fnv 563C3477
-LDoSnow|block 1|step 3|1	bytes 2600 fnv BAD1F98F
+LDoSnow|block 1|step 3|1 [orig]	bytes 2600 fnv BAD1F98F
+LDoSnow|block 1|step 3|1 [fixed #908]	bytes 2600 fnv C4E1B6DF
 LDoSnow|block 1|step 30|1	bytes 2600 fnv 563C3477
 LDoSnow|block 1|step 31|1	bytes 2600 fnv 563C3477
 LDoSnow|block 1|step 32|1	bytes 2600 fnv 8E92D729
@@ -2311,7 +2320,8 @@ LDoSnow|block 1|step 36|1	bytes 2600 fnv A202E18C
 LDoSnow|block 1|step 37|1	bytes 2600 fnv A202E18C
 LDoSnow|block 1|step 38|1	bytes 2600 fnv 2D64F13A
 LDoSnow|block 1|step 39|1	bytes 2600 fnv 2D64F13A
-LDoSnow|block 1|step 4|1	bytes 2600 fnv BAD1F98F
+LDoSnow|block 1|step 4|1 [orig]	bytes 2600 fnv BAD1F98F
+LDoSnow|block 1|step 4|1 [fixed #908]	bytes 2600 fnv C4E1B6DF
 LDoSnow|block 1|step 40|1	bytes 2600 fnv 2D64F13A
 LDoSnow|block 1|step 41|1	bytes 2600 fnv 6AA8AA59
 LDoSnow|block 1|step 42|1	bytes 2600 fnv 6AA8AA59
@@ -4151,7 +4161,8 @@ LDoSnow (list 1)|block 0|step 88|1	bytes 19240 fnv B90549D6
 LDoSnow (list 1)|block 0|step 91|1	bytes 19240 fnv CDD7E714
 LDoSnow (list 1)|block 0|step 94|1	bytes 19240 fnv 40E9D822
 LDoSnow (list 1)|block 0|step 97|1	bytes 19240 fnv 66BF3CEB
-LDoSnow (list 1)|block 1|step 1|1	bytes 2600 fnv BAD1F98F
+LDoSnow (list 1)|block 1|step 1|1 [orig]	bytes 2600 fnv BAD1F98F
+LDoSnow (list 1)|block 1|step 1|1 [fixed #908]	bytes 2600 fnv C4E1B6DF
 LDoSnow (list 1)|block 1|step 10|1	bytes 2600 fnv EDB27469
 LDoSnow (list 1)|block 1|step 100|1	bytes 2600 fnv EFB851F0
 LDoSnow (list 1)|block 1|step 103|1	bytes 2600 fnv 729F00D9

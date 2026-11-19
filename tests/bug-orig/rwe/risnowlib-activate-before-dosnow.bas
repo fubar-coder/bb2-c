@@ -4,6 +4,7 @@
 ; $ABCD: before the first LDoSnow it writes to address 0.  The kill list
 ; is empty, so only the end mark is written (the word at 0, restored).
 ; Correct: LDoSnowActivate leaves address 0 alone.
+; @fixed #908
 ; @rwe risnowlib
 DEFTYPE .l
 BitMap 0,320,256,3
