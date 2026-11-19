@@ -1,0 +1,12 @@
+[compile]
+ok
+[run]
+word 0 0000008E
+word 1 00002C81
+word 2 00000090
+word 3 00002CC1
+word 4 00000092
+word 5 00000038
+word 6 00000094
+word 7 000000D0
+rc=0

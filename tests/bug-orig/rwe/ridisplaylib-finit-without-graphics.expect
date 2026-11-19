@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+list made
+inject: openlibfail: 1 opens failed
+inject: rc=0
+inject: track: 0 allocations left, 0 bytes
+rc=0
