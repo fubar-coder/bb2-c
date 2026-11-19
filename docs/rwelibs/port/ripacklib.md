@@ -104,12 +104,15 @@ kind F):
   in a signed byte (`TST.b d5`): rows of 129 to 256 bytes (pictures
   1032 to 2047 pixels wide) were "done" before anything was read, and
   longer rows were read out of step (#774).
+* **UnpackIFF** cuts a run at the end of the row; the source still
+  skips the whole run, as ilbmifflib's DecodeILBM does (#191). The
+  original wrote every run completely, up to 127 bytes into the next row
+  of the plane or, in the last row, behind the plane (#776).
 
 ## BUG(orig), kept
 
 * `UnpackIFF` treats every BODY as ByteRun1 (the compression byte of the
-  BMHD is not read) (#773), does not stop a run at the end of
-  a row (it runs into the next row or behind the plane) (#776).
+  BMHD is not read) (#773).
 * The chunk searches step by 2 bytes from the given address: BMHD within
   5120 bytes, BODY within 5120 bytes from the BMHD on (a word counter),
   CMAP within 5122 bytes (#766).

@@ -53,10 +53,13 @@
  * original counted in a signed byte, so rows of 129 to 256 bytes were
  * skipped without reading and longer rows read out of step.
  *
+ * Fixed (#776): UnpackIFF cuts a run at the end of the row (the source
+ * still skips the whole run); the original wrote every run completely,
+ * into the next row or behind the plane.
+ *
  * BUG(orig), kept:
  *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
  *     the BMHD is not read) (#773).
- *   - UnpackIFF does not stop a run at the end of the row (#776).
  *   - The chunk searches step by 2 bytes from the given address (BMHD:
  *     5120 bytes, BODY: from the BMHD on, word counter; CMAP 5122 bytes)
  *     (#766).
@@ -536,8 +539,9 @@ static struct {
  * 256 plane pointers into its table of 8).  A row has the word-aligned
  * width of ILBM (fixed #775: the original's width/8), its bytes counted
  * in a word (fixed #774: the original's signed byte skipped rows of 129
- * bytes and more).  BUG(orig): every BODY is taken as ByteRun1 (#773), a
- * run does not stop at the end of the row (#776).
+ * bytes and more); a run is cut at the end of the row (fixed #776: the
+ * original wrote it into the next row).  BUG(orig): every BODY is taken
+ * as ByteRun1 (#773).
  * @param src    d0: the ILBM data (FORM)
  * @param bm     a1: the bitmap object (parameter 1)
  * @param lines  d2: the number of lines (word; < 0: the BMHD's height;
@@ -606,27 +610,32 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
         UWORD plane = v.iffdepth;
         do {
             UBYTE *out = *pp;
-            WORD cnt = (WORD)v.bytewidth;       /* fixed #774: a word (was d5.b) */
+            /* the bytes of the row left: a word (fixed #774, was d5.b) */
+            WORD left = (WORD)(v.bytewidth + 1);
             *pp++ += v.bitmapwidth;
-            while (cnt >= 0) {
-                UWORD n;
+            while (left > 0) {
+                UWORD n, put;
                 code = *body++;
                 if (code == 0x80)
                     continue;
+                /* fixed #776: a run is cut at the end of the row */
                 if (!(code & 0x80)) {
-                    cnt = (WORD)(cnt - code - 1);
-                    n = code;
+                    n = (UWORD)(code + 1);
+                    put = (WORD)n < left ? n : (UWORD)left;
+                    left = (WORD)(left - n);
+                    n -= put;                   /* the rest is skipped */
                     do
                         *out++ = *body++;
-                    while (n-- != 0);
+                    while (--put);
+                    body += n;
                 } else {
                     UBYTE b = *body++;
-                    code = (UBYTE)-code;
-                    cnt = (WORD)(cnt - code - 1);
-                    n = code;
+                    n = (UWORD)(257 - code);
+                    put = (WORD)n < left ? n : (UWORD)left;
+                    left = (WORD)(left - n);
                     do
                         *out++ = b;
-                    while (n-- != 0);
+                    while (--put);
                 }
             }
         } while (plane-- != 0);

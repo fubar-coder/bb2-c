@@ -625,7 +625,7 @@ static void test_unpackiff(void)
     mkbitmap(128, 4, 1, 1);
     unpackiff("1016x2x1", 0, 0, 0);
 
-    /* a run past the end of the row */
+    /* a run past the end of the row (cut there, fixed #776) */
     seed = 15;
     mkilbm(ilbm, 16, 2, 1, 0, 0);
     {
