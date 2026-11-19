@@ -29,8 +29,8 @@
  * and RIAmosFuncLib's BSave (form 1) through ALibJsr.
  *
  * BUG(orig), kept:
- *   - CPUCls: an odd rest byte stays (#681); the depth is the word
- *     Flags<<8|Depth, 0 planes = 65536 (#679).
+ *   - CPUCls: the depth is the word Flags<<8|Depth, 0 planes = 65536
+ *     (#679).
  *   - SaveCMAP writes no pad byte behind a CMAP of odd length (#687); a
  *     palette of 0 colours copies 65536 (#688).
  *   - CopyColour compares the colour numbers signed: negative ones pass
@@ -54,6 +54,9 @@
  *   - CPUCls clears with blocks of 40 bytes, DBRA on blocks - 1; a plane
  *     of less than 40 bytes has no block (the original's counter was
  *     $FFFF: 65536 blocks, 2.6 MB below the plane) (#682).
+ *   - CPUCls clears the last byte of an odd rest, the plane's first byte;
+ *     the original cleared the rest as words (ASR.w #1) and left it
+ *     (#681).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -497,8 +500,9 @@ BLITZ_THUNK(copycolour, copycolour_c, "d1/a0-a1");
 
 /* ClearPlane: clear below `end`: (UWORD)moves + 1 blocks of 40 bytes if
    `blocks` (fixed #682: none for a plane of less than 40 bytes), then
-   (UWORD)(moves >> 16) + 1 words unless that is $FFFF */
-static void clearplane(UBYTE *end, ULONG moves, BOOL blocks)
+   (UWORD)(moves >> 16) + 1 words unless that is $FFFF, then one byte if
+   `odd` (fixed #681: the rest of an odd number of bytes) */
+static void clearplane(UBYTE *end, ULONG moves, BOOL blocks, BOOL odd)
 {
     ULONG *l = (ULONG *)end;
     UWORD *w;
@@ -509,13 +513,14 @@ static void clearplane(UBYTE *end, ULONG moves, BOOL blocks)
             l -= 10;                    /* MOVEM.l d0-d6/a1-a3,-(a0) */
             l[0] = l[1] = l[2] = l[3] = l[4] = l[5] = l[6] = l[7] = l[8] = l[9] = 0;
         } while (n-- != 0);
-    n = (UWORD)(moves >> 16);
-    if (n == 0xffff)
-        return;
     w = (UWORD *)l;
-    do
-        *--w = 0;
-    while (n-- != 0);
+    n = (UWORD)(moves >> 16);
+    if (n != 0xffff)
+        do
+            *--w = 0;
+        while (n-- != 0);
+    if (odd)
+        *((UBYTE *)w - 1) = 0;          /* the plane's first byte */
 }
 
 /**
@@ -527,9 +532,11 @@ static void clearplane(UBYTE *end, ULONG moves, BOOL blocks)
  * original's register arithmetic for the block count (DIVU #40, the rest
  * as words).  Blocks of 40 bytes, DBRA on blocks - 1; a plane of less
  * than 40 bytes has no block (fixed #682: the original's counter was
- * $FFFF, 65536 blocks, 2.6 MB below the plane; decided once per call).
- * BUG(orig): an odd rest byte stays (#681); the depth is the word
- * Flags<<8|Depth, 0 planes = 65536 (#679).
+ * $FFFF, 65536 blocks, 2.6 MB below the plane); the last byte of an odd
+ * rest, the plane's first, is cleared as well (fixed #681: the original
+ * cleared the rest as words, ASR.w #1, and left it).  Both decided once
+ * per call.  BUG(orig): the depth is the word Flags<<8|Depth, 0 planes =
+ * 65536 (#679).
  * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
  */
 static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
@@ -539,6 +546,7 @@ static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
     UWORD planes = (UWORD)(bm->flagsdepth - 1);    /* BUG(orig) (#679) */
     const ULONG *pl = (const ULONG *)bm->planes;
     BOOL blocks = size >= 40;           /* fixed #682 */
+    BOOL odd = (moves >> 16) & 1;       /* the rest; fixed #681 */
 
     if (!*pl)                           /* TST.l 8(a0):BEQ - fixed #680 */
         return;
@@ -548,7 +556,7 @@ static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
     BL_SETW(moves, moves - 1);
     moves = BL_SWAP(moves);
     do
-        clearplane((UBYTE *)(*pl++ + size), moves, blocks);
+        clearplane((UBYTE *)(*pl++ + size), moves, blocks, odd);
     while (planes-- != 0);
 }
 

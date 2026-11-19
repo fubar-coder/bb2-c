@@ -73,12 +73,16 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   original's counter was −1 there, i.e. 65536 blocks – 2.6 MB below the
   plane were cleared (#682). Decided once per call, before the plane
   loop.
+* `CPUCls` clears the last byte of a rest of an odd number of bytes (the
+  first byte of the plane, which is cleared from its end down); the
+  original cleared the rest as words (`ASR.w #1`) and left that byte, 8
+  pixels at the top left of every plane of a bitmap whose BytesPerRow ×
+  Rows is odd (#681). Decided once per call.
 
 ## BUG(orig), kept
 
-* `CPUCls`: a rest of an odd number of bytes
-  leaves the first byte of the plane (#681). The depth is the word at +4
-  (Flags<<8 | Depth); depth 0 clears 65536 planes (#679).
+* `CPUCls`: the depth is the word at +4 (Flags<<8 | Depth); depth 0
+  clears 65536 planes (#679).
 * `SaveCMAP` writes no pad byte behind a CMAP of odd length (odd number
   of colours) (#687); a palette of 0 colours copies 65536 colours into
   the 48 byte block (#688).

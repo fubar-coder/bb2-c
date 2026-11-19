@@ -142,11 +142,13 @@ CPUCls|kept|40x256 depth 1 at 1000|1	kept
 CPUCls|kept|41x3 depth 2 at 1000|1	kept
 CPUCls|kept|6x7 depth 1 at 1000|1	kept
 CPUCls|kept|80x2 depth 3 at 1000|1	kept
-CPUCls|memory|21x3 depth 3 at 2001|1	bytes 72000 fnv CA0299BD
+CPUCls|memory|21x3 depth 3 at 2001|1 [orig]	bytes 72000 fnv CA0299BD
+CPUCls|memory|21x3 depth 3 at 2001|1 [fixed #681]	bytes 72000 fnv 37DA0DC3
 CPUCls|memory|40x1 depth 2 at 2001|1	bytes 72000 fnv 152BE0D8
 CPUCls|memory|40x10 depth 1 at 1000|1	bytes 72000 fnv 8E691B67
 CPUCls|memory|40x256 depth 1 at 1000|1	bytes 72000 fnv FA3A0499
-CPUCls|memory|41x3 depth 2 at 1000|1	bytes 72000 fnv BDB197D5
+CPUCls|memory|41x3 depth 2 at 1000|1 [orig]	bytes 72000 fnv BDB197D5
+CPUCls|memory|41x3 depth 2 at 1000|1 [fixed #681]	bytes 72000 fnv 785E18E8
 CPUCls|memory|6x7 depth 1 at 1000|1	bytes 72000 fnv B74BC3CA
 CPUCls|memory|80x2 depth 3 at 1000|1	bytes 72000 fnv A3590CF6
 CPUCls|popped|21x3 depth 3 at 2001|1	$00000000
