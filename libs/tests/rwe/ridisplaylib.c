@@ -10,9 +10,10 @@
  * the display is not touched.  Observed after every call: d0 (InitView:
  * the list, as "is the list the library keeps"), the variables viewsize
  * and cop (found in both libraries by the list InitView returns), the
- * list's 8 words (the words at the absolute addresses $8E, $2C81, $90,
- * $2CC1, $92, $38, $94, $D0, BUG(orig) #889: equal to those words, and the
- * value of the ones in the vector table), the change of
+ * list's 8 words (each compared with its register move $008E, $2C81,
+ * $0090, $2CC1, $0092, $0038, $0094, $00D0 and with the word at that
+ * absolute address - the original's list, BUG(orig) #889 -, and the value
+ * of the ones at even addresses), the change of
  * graphics.library's open count and the test task's memory balance
  * (rwemem.h), and the kept registers.  The lists InitView
  * leaks (only the last one is kept, BUG(orig), #891) are freed by the test
@@ -82,6 +83,7 @@ static void initview(const char *name, UWORD h, UWORD d, UWORD s, UWORD c)
     static const ULONG addr[8] = { 0x8e, 0x2c81, 0x90, 0x2cc1, 0x92, 0x38, 0x94, 0xd0 };
     int i;
     char buf[40];
+    UWORD w;
 
     sprintf(VEC, "%u,%u,%u,%u", h, d, s, c);
     call2(INITVIEW, name, 0xa5a50000UL | h, 0x5a5a0000UL | d, 0x12340000UL | s,
@@ -94,8 +96,11 @@ static void initview(const char *name, UWORD h, UWORD d, UWORD s, UWORD c)
         return;
     BOTH("d0 = cop", cop && vars[1] == cop);
     for (i = 0; i < 8; i++) {
+        w = ((UWORD *)cop)[i];
+        sprintf(buf, "word %d = $%04lX", i, addr[i]);
+        BOTH(buf, w == addr[i]);
         sprintf(buf, "word %d = ($%lX)", i, addr[i]);
-        BOTH(buf, ((UWORD *)cop)[i] == *(volatile UWORD *)addr[i]);
+        BOTH(buf, w == *(volatile UWORD *)addr[i]);
         if (addr[i] & 1)
             continue;
         sprintf(buf, "word %d", i);
