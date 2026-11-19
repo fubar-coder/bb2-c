@@ -12,6 +12,9 @@ end
 chunk CMAP
 b 0 0 0 255 255 255
 end
+chunk BODY              ; 16 rows of 2 bytes, uncompressed
+fill 32 0
+end
 end
 form ILBM
 chunk ANHD
