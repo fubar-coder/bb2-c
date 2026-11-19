@@ -90,6 +90,13 @@
  *     unchanged: the offset is ebwidth * y (MULU.w: the low words) + x >> 3
  *     (ASR.l), a negative y or one of 65536 and above gives an offset of up
  *     to 65535 rows (#514; an invalid argument, D-005).
+ *   - With runtime error checking RINextAnimFrame refuses an ANIM7 frame
+ *     when a plane pointer of the bitmap plus RIAnimInit's offset is odd
+ *     (an x with an odd byte offset x >> 3, or an odd xy_offset): "Animation
+ *     position on an odd byte for ANIM7" (nextchk).  The ANIM7 decoders
+ *     write words and longs: an address error on a 68000.  ANIM5 plays at
+ *     any offset; the release code is unchanged (#1122; an invalid
+ *     argument, D-005).
  *   - RIAnimInit fails (0) when UnpackIFF refuses the first frame (a
  *     bitmap too narrow, too shallow or without plane 0); the original
  *     dropped UnpackIFF's result and played the deltas into that bitmap
@@ -153,13 +160,14 @@
 /* entry points (thunks, defined below) */
 void _InitAnim2(void), _InitAnim(void), _InitAnim3(void), _NextAnimFrame(void);
 void _AnimLoop(void), _CountFrames(void), _AnimDepth(void), _AnimWidth(void);
-void _AnimHeight(void), xychk(void);
+void _AnimHeight(void), xychk(void), nextchk(void);
 static void codeinit(void);
 
 BLITZ_ENTRY_DECL(init);
 
 /* !libheader {#rianimlib,0,0,0,0}; init: fixed, #1107 (the original has
-   none); error field: the error check area of xychk (fixed, #514) */
+   none); error field: the error check area of xychk (fixed, #514) and
+   nextchk (fixed, #1122) */
 BLITZ_LIBHEADER(LIB_rianimlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -177,7 +185,7 @@ BLITZ_NAME("RIAnimInit", "(address,bitmap#,palette# [,xy_offset]|[,x,y])");
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_BYTE);
 BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);           /* !bmap {0,0} */
-BLITZ_SUBS(_NextAnimFrame, 0, 0);
+BLITZ_SUBS(_NextAnimFrame, nextchk, 0);              /* check: fixed #1122 */
 BLITZ_NAME("RINextAnimFrame", "(bitmap#)");
 
 BLITZ_ASTATEMENT();
@@ -573,7 +581,8 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim2(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
  * (ASR.l); the bitmap# is d1 / 64 with DIVU.w, which overflows (no
  * change) for numbers of 64 * 65536 and above.  A position outside the
  * bitmap is the programmer's: with runtime error checking xychk refuses
- * it (fixed #514).
+ * it (fixed #514); an odd byte offset for an ANIM7 frame is refused by
+ * RINextAnimFrame's check, nextchk (fixed #1122).
  * @param address  d0: the ANIM file in memory
  * @param bm       d1: bitmap# * 64 (#pd1)
  * @param pal      d2: palette#
@@ -890,7 +899,8 @@ static __attribute__((noinline)) UBYTE *nextform(UBYTE *chunk)
  * length and read the next chunk anywhere).  A DLTA whose plane offsets
  * leave it returns 0 (fixed #1120; the ops inside the columns stay
  * unchecked, BUG(orig) (#1120)), so does an ANIM7 DLTA with an odd data
- * list offset (fixed #1121).
+ * list offset (fixed #1121).  With runtime error checking nextchk refuses
+ * an ANIM7 frame at an odd plane address (fixed #1122).
  * @param bitmap  a0: the bitmap object (!bmap {0,0})
  * @return d0: -1 if a delta was applied, else 0
  */
@@ -996,3 +1006,52 @@ static void BLITZ_ERRCHK xychk_c(ULONG x BL_REG(d3), ULONG y BL_REG(d4),
 
 /* the thunk of the check function */
 BLITZ_ERRCHK_THUNK(xychk, xychk_c, "d0-d1/a0-a1");
+
+BLITZ_ERRCHK_MESSAGE(oddanim7, "Animation position on an odd byte for ANIM7");  /* fixed, #1122 */
+
+/**
+ * @brief The error check of RINextAnimFrame (debugger only).
+ *
+ * Fixed (#1122), not in the original: RIAnimInit adds its offset (the x,y
+ * form: BytesPerRow * y + x >> 3; the xy_offset form: the offset as
+ * given) to the plane pointers, and the ANIM7 decoders write words and
+ * longs through them: an odd address was an address error on a 68000.
+ * ANIM5 writes bytes and plays at any offset.  The check finds the
+ * coming frame as RINextAnimFrame does (nextanimframe, a chunk that is
+ * no FORM skipped, at the end the third frame with AnimLoop on) and looks
+ * at the operation of its ANHD; a frame RINextAnimFrame refuses before
+ * its DLTA (no frame, too short, no ANHD) passes.  The release code is
+ * unchanged (an invalid argument, D-005).
+ *
+ * Errors: "Animation position on an odd byte for ANIM7" (the coming
+ * frame is ANIM7 and a plane pointer of the bitmap plus the offset is
+ * odd, for a plane of the animation's depth).
+ * @param bitmap  a0: the bitmap object (!bmap {0,0})
+ */
+static void BLITZ_ERRCHK nextchk_c(const struct BitMap *bitmap BL_REG(a0))
+{
+    UBYTE *chunk = nextanimframe;
+    UBYTE plane;
+
+    if (!chunk)
+        return;
+    if (chunk >= animend || LG(chunk) != ID_FORM) {
+        chunk = nextform(chunk);
+        if (!chunk) {
+            if (!doanimloop)
+                return;
+            chunk = thirdframe;
+        }
+    }
+    /* RINextAnimFrame's tests of the frame up to its ANHD (#1117) */
+    if (LG(chunk + 4) < 4 + 8 + offsetof(struct anhd, bits) + 4 || LG(chunk + 12) != ID_ANHD)
+        return;
+    if (((const struct anhd *)(chunk + 20))->operation != 7)
+        return;
+    for (plane = 0; plane < animdepth; plane++)
+        if (((ULONG)bitmap->Planes[plane] + bitplaneoffset) & 1)
+            BLITZ_RUNERR(oddanim7);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(nextchk, nextchk_c, "d0-d1/a0-a1");

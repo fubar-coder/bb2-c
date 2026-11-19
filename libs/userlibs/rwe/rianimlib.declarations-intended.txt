@@ -13,6 +13,9 @@ lib 57: declaration part $262 != $276 bytes
 # position outside the bitmap"); rianimlib gets an error check area for it
 # (the original has none)
 lib 57: entry 0 RIAnimInit +$3C: code offset set in only one of them
-# #514, #1107: the relocations of the error field, the check and the
-# init entry
-lib 57: relocations in the declaration part 9 != 13
+# #1122: RINextAnimFrame gets an error check (nextchk, "Animation
+# position on an odd byte for ANIM7")
+lib 57: entry 1 RINextAnimFrame +$10: code offset set in only one of them
+# #514, #1107, #1122: the relocations of the error field, the two checks
+# and the init entry
+lib 57: relocations in the declaration part 9 != 14

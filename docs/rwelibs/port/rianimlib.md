@@ -165,6 +165,18 @@ C code (a count of 0 is 256, #508).
   a file a 68000 cannot play is refused on a 68020 too. A bit test per
   plane in the check of #1120: +130 cycles of an ANIM7 frame of `banim`
   (0.13 %), an ANIM5 frame unchanged.
+* With runtime error checking RINextAnimFrame refuses an ANIM7 frame
+  when a plane pointer of the bitmap plus RIAnimInit's offset is odd:
+  "Animation position on an odd byte for ANIM7" (`nextchk`, error check
+  area only). The offset is odd for an x whose byte offset x >> 3 is odd
+  (x from 8 to 15, 24 to 31, ...) or an odd xy_offset; the ANIM7
+  decoders write words and longs through those pointers, an address
+  error on a 68000. ANIM5 writes bytes and plays at any offset. The
+  check finds the coming frame as RINextAnimFrame does and reads the
+  operation of its ANHD; the release code is unchanged (#1122, an
+  invalid argument, D-005; bug-orig tests
+  `rianimlib-nextframe-odd-x-anim7-68000` and
+  `rianimlib-nextframe-odd-offset-anim7-68000` on the A600).
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
