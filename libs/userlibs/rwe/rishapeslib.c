@@ -66,7 +66,6 @@
  *     palette of 0 colours copies 65536 (#823); a failing pack buffer is a
  *     runtime error (TRAP #0) (#818); PackPBM's failure path runs
  *     UnPackPBM with d3 = 12 (#772).
- *   - LECludgeShapes skips the SHHD chunk as 20 bytes (#811).
  *
  * Fixed (intended deviation, docs/libs/deviations.md 3a): init also sets
  * LEAutoCookie on and clears the maxima of LEScanShapes (the original's
@@ -86,7 +85,11 @@
  * + the low word of the size of the shape before, also of an earlier
  * call, #809).  LELoadShapes, LECludgeShapes and LEInitShape free the cookie
  * of the shape they replace (the original's MOVE.l 18(a2),a1:BEQ tested the
- * Z flag of the CLR before it and never freed it, #810).
+ * Z flag of the CLR before it and never freed it, #810).  read_palette
+ * leaves the palette for a CMAP of no colour or of more than 65535 (the
+ * original decoded 65536 colours into 8 bytes, #820).  LECludgeShapes
+ * passes SHHD and CMAP by their lengths (the original took SHHD as 20
+ * bytes and the CMAP as the colours decoded, #811).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
  * (unused since the own cookie code).  LELoadShapes form 3
@@ -801,6 +804,18 @@ static void readshapes(UBYTE *data)
 
 /* ------------------------------------------------------ LECludgeShapes */
 
+/* behind the data of a chunk of `len` bytes at p: the IFF pad byte of an
+   odd length is skipped, a byte other than 0 in its place is taken as
+   the next chunk (files written without pad bytes, as LESaveShapes
+   writes an odd CMAP, stay readable; the shape of #189) */
+static UBYTE *skipchunk(UBYTE *p, ULONG len)
+{
+    p += len;
+    if ((len & 1) && !*p)
+        p++;
+    return p;
+}
+
 /**
  * @brief LECludgeShapes shape#,shape#,address,palette#,copymemflag: the
  * shapes (and the palette) of an LE file in memory.
@@ -809,9 +824,12 @@ static void readshapes(UBYTE *data)
  * The shapes are linked into the memory ("cL", no copy) if the file is
  * uncompressed and below 2 MB, unless copymemflag is negative; otherwise
  * copied (unpacked) into chip memory.  Every shape gets a cookie.  At
- * most count + 1 shapes of the file are read.  BUG(orig): the SHHD chunk
- * is skipped as 20 bytes whatever its length (#811); a CMAP size that is
- * no multiple of 3 misses SDAT (#811).  The palette as in LELoadShapes
+ * most count + 1 shapes of the file are read.  Fixed (#811): the SHHD
+ * and CMAP chunks are passed by their lengths with the IFF pad byte (a
+ * byte other than 0 there starts the next chunk); the original skipped
+ * SHHD as 20 bytes and the CMAP by the colours decoded, so a longer SHHD,
+ * a CMAP size that is no multiple of 3 or a pad byte missed SDAT.  The
+ * palette as in LELoadShapes
  * (fixed #820).  Fixed (#810): the old cookies are freed.  Fixed (#807): a shape
  * in use that is cludged is replaced like any other (the original pops a0
  * it never pushed and returns past the caller).
@@ -844,15 +862,16 @@ static void BLITZ_ROUTINE lecludgeshapes2_c(ULONG file BL_REG(d2), ULONG copymem
     compressed = FW(p, shhd, compression);
     if (compressed)
         inchip = 0;
-    p += 20;                            /* BUG(orig): SHHD as 20 bytes (#811) */
+    /* Fixed (#811): the SHHD and CMAP chunks are passed by their lengths
+       (the original took SHHD as 20 bytes and the CMAP as the colours
+       read_palette decoded) */
+    p = skipchunk(p, FL(file, lehead, shhdlen));
     if (FL(p, iffchunk, id) == ID('C', 'M', 'A', 'P')) {
         chunksize = FL(p, iffchunk, len);
         p += 8;
-        if (paletteptr) {
+        if (paletteptr)
             read_palette(p);
-            p += bl_mulu_w(colourcount, 3);     /* a0 behind the colours */
-        } else
-            p += chunksize;
+        p = skipchunk(p, chunksize);
     }
     if (FL(p, iffchunk, id) != ID('S', 'D', 'A', 'T'))
         return;

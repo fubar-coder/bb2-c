@@ -91,10 +91,8 @@ Further assembler:
   and returns there. The caller then frees the header buffer and closes
   the file a second time if packedsize is 0, and otherwise uses
   packedsize as the chunk (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
-* **read_palette:**
-  * The allocation is not checked; a failure writes to address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
-  * A CMAP size that is not a multiple of 3 makes LECludgeShapes miss
-    SDAT (#811).
+* **read_palette:** the allocation is not checked; a failure writes to
+  address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * **LESaveShapes:**
   * Whether the CMAP is written depends on Write's Z flag (above). In
     the emulator (OS 3.2) it is written (#814).
@@ -109,8 +107,6 @@ Further assembler:
     `_writeshapes` (#818).
   * PackPBM's failure runs UnPackPBM with d3 = 12 (RIPackLib's
     BUG(orig), #772).
-* **LECludgeShapes:** the SHHD chunk is skipped as 20 bytes, whatever its
-  length (#811).
 
 Original behaviour that is no defect:
 
@@ -173,6 +169,14 @@ kind F):
   decoded into them; on the overflow of a CMAP from 196608 bytes the
   register stayed unchanged; `ADDQ #8` on a word lost its carry from
   5461 colours (#820, test `rishapeslib-read-palette-colour-count`).
+* LECludgeShapes passes the SHHD and CMAP chunks by their lengths, with
+  the IFF pad byte of an odd length (a byte other than 0 in its place
+  is taken as the next chunk, so files written without pad bytes, as
+  LESaveShapes writes an odd CMAP, stay readable; the shape of #189).
+  The original skipped SHHD as 20 bytes whatever its length and the
+  CMAP by the colours read_palette decoded: a longer SHHD, a CMAP size
+  that is no multiple of 3 or an IFF pad byte missed SDAT, and nothing
+  was loaded (#811, test `rishapeslib-lecludgeshapes-chunk-lengths`).
 * LELoadShapes and LECludgeShapes replace a shape in use that is
   cludged (`"cL"`) like any other. The original's readshapes saves a0
   (the read pointer) around the free of a used shape but skips the push

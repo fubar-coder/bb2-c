@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+SHHD 24: 16
+CMAP 3: 24 F0F0F0F0
+rc=0

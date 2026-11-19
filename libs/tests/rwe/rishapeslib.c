@@ -33,7 +33,7 @@
  * format (LoadShapes into the first shape), LECludgeShapes from
  * fast memory (copied) and chip memory (linked, "cL", and copied with
  * copymemflag -1), packed (copied), with and without a palette, a CMAP
- * of 7 bytes (BUG(orig) #811: SDAT then not found), no FORM;
+ * of 7 bytes (fixed #811: passed by its length), no FORM;
  * CludgeShapes/CludgeShapesToAddress with and without LEAutoCookie, an
  * empty shape in memory (fixed #809: the stale size skipped the padding), 0 shapes, into used
  * and linked shapes; LECompressShapes; finit; a second run (finit and init
@@ -507,7 +507,8 @@ int main(int argc, char **argv)
     samepal(3);
     BOTH("linked", SW(shp[55], 30) == 0x634c);
     initshape(55, 8, 8, 1);             /* a linked shape: not freed */
-    /* CMAP of 7 bytes: the colours end at +6, SDAT is not found */
+    /* a CMAP that claims 7 of its 36 bytes: SDAT is not found (the original
+       stops behind the 2 colours, the port behind the 7 bytes) */
     SL(mem, 44) = 7;
     lecludge(0, 58, 59, 3, 0, "CMAP 7");
     sameshapes(58, 59);
