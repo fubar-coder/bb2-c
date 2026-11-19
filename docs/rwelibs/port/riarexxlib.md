@@ -281,6 +281,17 @@ RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
 init clears the port pointer without deleting a port (it runs before
 any RXCreatePort).
 
+**Manual differs** (kept, #1123): RIARexxLib.guide says RXDeletePort
+"replies to all new messages with the error code HOSTNOTFOUND" (ARexx's
+error 13). RXDeletePort and finit reply the current message, the
+waiting ones and those that arrive during the wait for the replies with
+the return code 5 (RC_WARN), as the original does. Nothing shows which
+was meant: the original has a single `MOVEQ #5,d0` in the routine, the
+only return code the library itself replies; its constants are structure
+offsets, node types and library offsets, none for an ARexx return or
+error code, and the NDK has no name HOSTNOTFOUND (the error is
+`ERR10_013`, "host environment not found").
+
 ## Test
 
 Each run loads one library set (the C build or the original); the
