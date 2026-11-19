@@ -1,5 +1,6 @@
 [compile]
 ok
 [run]
-marker kept
+width 16 done
+REQUESTER: AutoRequest body "FillBitplane width must be at least 16" *
 rc=0

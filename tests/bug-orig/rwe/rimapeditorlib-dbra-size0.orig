@@ -4,6 +4,7 @@ done
 [compile]
 ok
 [run]
+width 16 done
 marker overwritten
 rc=0
 [blitz2]
