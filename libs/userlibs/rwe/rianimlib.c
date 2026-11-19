@@ -131,6 +131,10 @@
  *     a plane it plays at or behind its end; once per frame, before a
  *     plane is played.  The original took the offsets as they were and
  *     read op lists and data from anywhere (#1120).
+ *   - RINextAnimFrame refuses (0) an ANIM7 frame with an odd data list
+ *     offset of a plane it plays, on every CPU; on a 68000 the word or
+ *     long reads of that data list were an address error.  A bit test
+ *     per plane in the check of #1120 (#1121).
  * Kept, without effect: the DIVU.w #64 of the x,y form overflows (no
  * change) for bitmap numbers of 65536 and above; the number is kept as a
  * byte anyway (named in #514).
@@ -748,7 +752,8 @@ static __attribute__((noinline)) void planes7(UBYTE *body, int kind, ULONG mod)
 
 /* the DLTA (header at dlta) into the planes of the bitmap with the
    decoder kind (DELTA5, DELTA7, DELTA7SHORT); 0 if its plane offsets do
-   not fit it (fixed #1120) */
+   not fit it (fixed #1120) or an ANIM7 data list offset is odd (fixed
+   #1121) */
 static int unpackanim(UBYTE *dlta, int kind)
 {
     UBYTE *body = dlta + 8;
@@ -762,7 +767,8 @@ static int unpackanim(UBYTE *dlta, int kind)
     /* fixed #1120: the DLTA inside the frame, its header (the op list
        offsets; for ANIM7 the data list offsets too) inside the DLTA, and
        the offsets of the planes it plays inside the DLTA, before a plane
-       is played (the original took them as they were).  The ops of the
+       is played (the original took them as they were); for ANIM7 an even
+       data list offset (fixed #1121).  The ops of the
        columns stay unchecked (BUG(orig) (#1120), see the head) */
     if (body > nextanimframe || len > (ULONG)(nextanimframe - body))
         return 0;
@@ -783,7 +789,10 @@ static int unpackanim(UBYTE *dlta, int kind)
             do {
                 ULONG op = *o++;
 
-                if (op >= len || (op && o[7] >= len))
+                /* fixed #1121: an odd data list offset too (its words
+                   or longs at odd addresses: an address error on a
+                   68000; refused on every CPU) */
+                if (op >= len || (op && (o[7] >= len || (o[7] & 1))))
                     return 0;
             } while (n-- != 0);
         }
@@ -880,7 +889,8 @@ static __attribute__((noinline)) UBYTE *nextform(UBYTE *chunk)
  * in the frame, returns 0 (fixed #1117: the original stepped by the
  * length and read the next chunk anywhere).  A DLTA whose plane offsets
  * leave it returns 0 (fixed #1120; the ops inside the columns stay
- * unchecked, BUG(orig) (#1120)).
+ * unchecked, BUG(orig) (#1120)), so does an ANIM7 DLTA with an odd data
+ * list offset (fixed #1121).
  * @param bitmap  a0: the bitmap object (!bmap {0,0})
  * @return d0: -1 if a delta was applied, else 0
  */

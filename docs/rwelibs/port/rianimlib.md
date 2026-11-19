@@ -157,6 +157,14 @@ C code (a count of 0 is 256, #508).
   frames played their ops). Once per frame, before the first plane:
   about 0.6 % of an ANIM5 frame and 0.4 % of an ANIM7 frame of the
   benchmark `banim` (+195 and +463 cycles).
+* RINextAnimFrame refuses (returns 0, no plane played) an ANIM7 frame
+  whose `DLTA` has an odd data list offset for a plane it plays: the
+  word or long reads of that data list were an address error on a
+  68000 (#1121; bug-orig test `rianimlib-anim7-odd-data-offset-68000`
+  on the A600). The frame is refused on every CPU, as the ANIM of #1119:
+  a file a 68000 cannot play is refused on a 68020 too. A bit test per
+  plane in the check of #1120: +130 cycles of an ANIM7 frame of `banim`
+  (0.13 %), an ANIM5 frame unchanged.
 
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×

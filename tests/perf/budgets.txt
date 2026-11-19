@@ -265,7 +265,10 @@
 # anim7 from two runs after the ANIM7 decoder in assembler (rianimlib
 # follow-up C3, 2026-11-19): 97310.9 both times (105760.9 before, 0.99 of
 # the original); anim5 31442.5 both times then (31477.5 before), its
-# budget kept.
+# budget kept.  anim7 after the test of an odd data list offset (#1121,
+# a bit test per plane; 2026-11-19): 97440.7 both times (97310.7 before),
+# its budget kept; anim5 unchanged (31442.3, now and then 31443.2, one
+# timer unit, as before).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
