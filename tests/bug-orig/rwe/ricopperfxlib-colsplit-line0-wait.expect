@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+line 0: wait for 0
+line 250: wait for 256 at line 256
+rc=0

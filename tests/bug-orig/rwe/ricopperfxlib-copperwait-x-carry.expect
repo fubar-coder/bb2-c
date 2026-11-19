@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+x 498: line 64
+x 500: line 64
+rc=0

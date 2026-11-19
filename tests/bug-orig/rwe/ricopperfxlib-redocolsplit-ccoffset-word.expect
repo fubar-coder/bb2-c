@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+at 10: 0
+at $1000A: 309
+rc=0
