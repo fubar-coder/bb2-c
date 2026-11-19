@@ -134,12 +134,19 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   first PaletteInfo they read from address 0, the exception vectors, and
   PalAdjust's short form takes its count from address −4 (#686). The
   init of #1125 makes the check hold in a second run from the editor.
+* With runtime error checking the colour number of the colour functions
+  and PalAdjust's start and end are refused when their word is not below
+  the number of colours of PaletteInfo's palette: "Colour number outside
+  the PaletteInfo palette" (`colchk`, `paladj2chk`). The release code is
+  unchanged (an invalid argument, D-005): the offset is the low word of
+  12 · colour (`MULU.w`) as a signed index, so from colour 2731 on the
+  colour is read (by PalAdjust written) before the palette, a smaller
+  number past the palette's colours behind it (#677).
 
 ## BUG(orig), kept
 
 * `PalAdjust` without start/end takes the number of colours of
-  PaletteInfo's palette, not of the target (#685); colour numbers from
-  2731 on index before the palette (12·c as a signed word) (#677).
+  PaletteInfo's palette, not of the target (#685).
 
 Not a defect (kept): `SaveCMAP`'s BMHD chunk is 20 zero bytes (a palette
 file: what is read of it is the CMAP).

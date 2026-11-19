@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "Colour number outside the PaletteInfo palette" *
+rc=0

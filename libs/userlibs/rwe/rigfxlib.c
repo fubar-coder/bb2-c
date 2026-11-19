@@ -30,9 +30,7 @@
  *
  * BUG(orig), kept:
  *   - PalAdjust without start/end takes the number of colours of
- *     PaletteInfo's palette, not of the target (#685); colour numbers
- *     from 2731 on index before the palette (12*c as a signed word)
- *     (#677).
+ *     PaletteInfo's palette, not of the target (#685).
  * SaveCMAP's BMHD chunk is 20 zero bytes, like the original: no defect
  * (a palette file: what is read of it is the CMAP).
  * Fixed (intended deviations, docs/libs/deviations.md):
@@ -84,6 +82,14 @@
  *     selected with PaletteInfo" (colchk, paladjchk, paladj2chk).  The
  *     release code is unchanged: before the first PaletteInfo they read
  *     from address 0 (a programming error, as #176) (#686).
+ *   - With runtime error checking the colour number of PalRed ...
+ *     AGAPalBlue and PalAdjust's start and end are refused when their
+ *     word is not below the number of colours of PaletteInfo's palette:
+ *     "Colour number outside the PaletteInfo palette" (colchk,
+ *     paladj2chk).  The release code is unchanged: the offset is the low
+ *     word of 12 * colour (MULU.w) as a signed index, so from colour 2731
+ *     on the colour is read (by PalAdjust written) before the palette
+ *     (an invalid argument, D-005) (#677).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -291,9 +297,10 @@ BLITZ_THUNK(paletteinfo, paletteinfo_c, "d0-d1/a0-a1");
  *
  * MOVE.b 0/4/8(a0,d0.w),d0: ASR.l #4:ANDI.l #15 (4 bit) or ANDI.l #$ff
  * (the AGA functions).  The palette of the last PaletteInfo is used
- * unchecked (before one: address 0), refused by colchk with runtime
- * error checking (fixed #686).  BUG(orig): colour numbers from 2731 on
- * index before the palette (12 * c as a signed word) (#677).
+ * unchecked (before one: address 0), and colour numbers from 2731 on
+ * index before the palette (12 * c as a signed word), any past its
+ * colours behind it: refused by colchk with runtime error checking
+ * (fixed #686, #677), here unchecked.
  * @param c  d0: colour# (its low word)
  * @return d0: the top 4 bits of the colour's red byte
  */
@@ -304,7 +311,7 @@ static ULONG BLITZ_ROUTINE palred_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(palred, palred_c, "d1/a0-a1");
 
 /**
- * @brief PalGreen(colour#): the green value (4 bit); as PalRed (fixed #686; #677).
+ * @brief PalGreen(colour#): the green value (4 bit); as PalRed (fixed #686, #677).
  * @param c  d0: colour#
  * @return d0: the top 4 bits of the colour's green byte
  */
@@ -315,7 +322,7 @@ static ULONG BLITZ_ROUTINE palgreen_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(palgreen, palgreen_c, "d1/a0-a1");
 
 /**
- * @brief PalBlue(colour#): the blue value (4 bit); as PalRed (fixed #686; #677).
+ * @brief PalBlue(colour#): the blue value (4 bit); as PalRed (fixed #686, #677).
  * @param c  d0: colour#
  * @return d0: the top 4 bits of the colour's blue byte
  */
@@ -326,7 +333,7 @@ static ULONG BLITZ_ROUTINE palblue_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(palblue, palblue_c, "d1/a0-a1");
 
 /**
- * @brief AGAPalRed(colour#): the red value (8 bit); as PalRed (fixed #686; #677).
+ * @brief AGAPalRed(colour#): the red value (8 bit); as PalRed (fixed #686, #677).
  * @param c  d0: colour#
  * @return d0: the colour's red byte
  */
@@ -337,7 +344,7 @@ static ULONG BLITZ_ROUTINE agapalred_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(agapalred, agapalred_c, "d1/a0-a1");
 
 /**
- * @brief AGAPalGreen(colour#): the green value (8 bit); as PalRed (fixed #686; #677).
+ * @brief AGAPalGreen(colour#): the green value (8 bit); as PalRed (fixed #686, #677).
  * @param c  d0: colour#
  * @return d0: the colour's green byte
  */
@@ -348,7 +355,7 @@ static ULONG BLITZ_ROUTINE agapalgreen_c(ULONG c BL_REG(d0))
 BLITZ_THUNK(agapalgreen, agapalgreen_c, "d1/a0-a1");
 
 /**
- * @brief AGAPalBlue(colour#): the blue value (8 bit); as PalRed (fixed #686; #677).
+ * @brief AGAPalBlue(colour#): the blue value (8 bit); as PalRed (fixed #686, #677).
  * @param c  d0: colour#
  * @return d0: the colour's blue byte
  */
@@ -366,10 +373,10 @@ BLITZ_THUNK(agapalblue, agapalblue_c, "d1/a0-a1");
  * Target colours start..end = PaletteInfo's colours * ratio (8.8 fixed
  * point from the Quick 16.16), saturated at 255; only the top byte of
  * each channel is written.  PaletteInfo's palette is used unchecked
- * (before one: address 0) and end < start runs 65536*3 channels (count 0
- * after MULU.w/SUBQ.w): refused by paladj2chk with runtime error checking
- * (fixed #686, #684), here unchecked.  BUG(orig): colour numbers from
- * 2731 on index before the palettes (#677).
+ * (before one: address 0), end < start runs 65536*3 channels (count 0
+ * after MULU.w/SUBQ.w) and colour numbers from 2731 on index before the
+ * palettes: refused by paladj2chk with runtime error checking (fixed
+ * #686, #684, #677), here unchecked.
  * @param obj    a0: the target palette object (!libs #palettelib,#ia0|#pd0)
  * @param ratio  d1: the ratio, a Quick (16.16)
  * @param start  d2: the first colour
@@ -735,6 +742,7 @@ BLITZ_THUNK(mergebitplanes, mergebitplanes_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal BitMap Depth");          /* fixed, #679 */
 BLITZ_ERRCHK_MESSAGE(endbefore, "PalAdjust end colour before the start colour");  /* fixed, #684 */
 BLITZ_ERRCHK_MESSAGE(noinfo, "No palette selected with PaletteInfo");   /* fixed, #686 */
+BLITZ_ERRCHK_MESSAGE(badcol, "Colour number outside the PaletteInfo palette");  /* fixed, #677 */
 
 /**
  * @brief The error check of CPUCls (debugger only).
@@ -762,19 +770,35 @@ static void BLITZ_ERRCHK infochk(void)
         BLITZ_RUNERR(noinfo);
 }
 
+/* a colour number (its word) of the PaletteInfo palette: fixed (#677),
+   the commands indexed with the low word of 12 * c as a signed offset
+   and checked nothing */
+static void BLITZ_ERRCHK colnumchk(ULONG c)
+{
+    if ((UWORD)c >= PALOF(paladdr)->numcols)
+        BLITZ_RUNERR(badcol);
+}
+
 /**
  * @brief The error check of PalRed ... AGAPalBlue (debugger only).
  *
- * Fixed (#686), not in the original: the colour functions read the
+ * Fixed (#686, #677), not in the original: the colour functions read the
  * palette of the last PaletteInfo without a test, before the first one
- * from address 0 (the exception vectors).  The release code is unchanged
- * (a command before its setup command, a programming error; as #176).
+ * from address 0 (the exception vectors), and index it with the low word
+ * of 12 * colour as a signed offset, so a colour number from 2731 on read
+ * before the palette, and any number past the palette's colours behind
+ * it.  The release code is unchanged (a command before its setup
+ * command, a programming error, as #176; an invalid argument, D-005).
  *
- * Errors: "No palette selected with PaletteInfo".
+ * Errors: "No palette selected with PaletteInfo"; "Colour number outside
+ * the PaletteInfo palette" (the colour's word not below the number of
+ * colours of that palette).
+ * @param c  d0: colour#
  */
-static void BLITZ_ERRCHK colchk_c(void)
+static void BLITZ_ERRCHK colchk_c(ULONG c BL_REG(d0))
 {
     infochk();
+    colnumchk(c);
 }
 
 /**
@@ -795,17 +819,21 @@ static void BLITZ_ERRCHK paladjchk_c(void)
 /**
  * @brief The error check of PalAdjust's long form (debugger only).
  *
- * Fixed (#684, #686), not in the original: PalAdjust reads the palette of
- * the last PaletteInfo without a test (before the first one: address 0),
- * and it takes the count end - start + 1 as a word, * 3 (MULU.w) - 1 as
- * the DBRA counter, so end = start - 1 wrote 65536 channels (256 KB) from
- * colour start on, and a smaller end about as many.  The release code is
- * unchanged (invalid arguments, D-005; FillPalette refuses end < start in
- * its release code, PalAdjust has no such test).
+ * Fixed (#684, #686, #677), not in the original: PalAdjust reads the
+ * palette of the last PaletteInfo without a test (before the first one:
+ * address 0); it takes the count end - start + 1 as a word, * 3 (MULU.w)
+ * - 1 as the DBRA counter, so end = start - 1 wrote 65536 channels (256
+ * KB) from colour start on, and a smaller end about as many; and it
+ * indexes both palettes with the low word of 12 * start as a signed
+ * offset, so a start from 2731 on wrote before the target palette, a
+ * range past PaletteInfo's colours read behind them.  The release code
+ * is unchanged (invalid arguments, D-005; FillPalette refuses end < start
+ * in its release code, PalAdjust has no such test).
  *
  * Errors: "No palette selected with PaletteInfo"; "PalAdjust end colour
  * before the start colour" (end < start as signed words, FillPalette's
- * compare).
+ * compare); "Colour number outside the PaletteInfo palette" (the word of
+ * start or end not below the number of colours of that palette).
  * @param start  d2: the first colour
  * @param end    d3: the last colour
  */
@@ -814,6 +842,8 @@ static void BLITZ_ERRCHK paladj2chk_c(ULONG start BL_REG(d2), ULONG end BL_REG(d
     infochk();
     if ((WORD)end < (WORD)start)
         BLITZ_RUNERR(endbefore);
+    colnumchk(start);
+    colnumchk(end);
 }
 
 /* the thunks of the check functions */
