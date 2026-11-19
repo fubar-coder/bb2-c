@@ -388,7 +388,7 @@ int main(int argc, char **argv)
         getpal(what);                           /* no new block */
         newpal((UWORD)pick(0, 4));
         getpal(what);                           /* a new block */
-        getpal(what);                           /* count = high: again */
+        getpal(what);                           /* the original: count = high, again (#548) */
 
         /* the second scenario: chunks missing, COLR $81..$83 */
         setloc(SETSCEN, 4096);

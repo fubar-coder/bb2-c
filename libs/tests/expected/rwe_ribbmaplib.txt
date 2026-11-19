@@ -156,156 +156,208 @@ BBDestructLoc|popped|round 5, scenario 2|2	$00000000
 BBDestructLoc|popped|round 5, scenario 2|3	$00000000
 BBDestructLoc|popped|round 5, scenario 2|4	$00000000
 BBGetPalette|colours|low > high, 32 colours|1	bytes 388 fnv 956D9689
-BBGetPalette|colours|round 0, 17 colours|1	bytes 220 fnv 2B7D2A66
-BBGetPalette|colours|round 0, 2 colours|1	bytes 220 fnv 2B7D2A66
+BBGetPalette|colours|round 0, 17 colours|1 [orig #548]	bytes 220 fnv 2B7D2A66
+BBGetPalette|colours|round 0, 18 colours|1 [fixed #548]	bytes 220 fnv 4A0CFE0B
+BBGetPalette|colours|round 0, 2 colours|1 [orig]	bytes 220 fnv 2B7D2A66
+BBGetPalette|colours|round 0, 2 colours|1 [fixed #548]	bytes 220 fnv 4A0CFE0B
 BBGetPalette|colours|round 0, 32 colours|1	bytes 388 fnv DDCF11E1
 BBGetPalette|colours|round 0, scenario 2, 200 colours|1	bytes 2404 fnv 6FD68A5D
-BBGetPalette|colours|round 0, scenario 2, 4 colours|1	bytes 1588 fnv 51E7F9FC
-BBGetPalette|colours|round 1, 2 colours|1	bytes 328 fnv 8A5D5E4F
-BBGetPalette|colours|round 1, 26 colours|1	bytes 328 fnv 8A5D5E4F
+BBGetPalette|colours|round 0, scenario 2, 4 colours|1 [orig]	bytes 1588 fnv 51E7F9FC
+BBGetPalette|colours|round 0, scenario 2, 4 colours|1 [fixed #548]	bytes 1588 fnv A534B769
+BBGetPalette|colours|round 1, 2 colours|1 [orig]	bytes 328 fnv 8A5D5E4F
+BBGetPalette|colours|round 1, 2 colours|1 [fixed #548]	bytes 328 fnv 178A0878
+BBGetPalette|colours|round 1, 26 colours|1 [orig #548]	bytes 328 fnv 8A5D5E4F
+BBGetPalette|colours|round 1, 27 colours|1 [fixed #548]	bytes 328 fnv 178A0878
 BBGetPalette|colours|round 1, 32 colours|1	bytes 388 fnv 79CD68C9
 BBGetPalette|colours|round 1, scenario 2, 200 colours|1	bytes 2404 fnv 188C6E55
-BBGetPalette|colours|round 1, scenario 2, 4 colours|1	bytes 1588 fnv 10DACC54
-BBGetPalette|colours|round 2, 0 colours|1	bytes 244 fnv 45A11398
-BBGetPalette|colours|round 2, 19 colours|1	bytes 244 fnv 45A11398
+BBGetPalette|colours|round 1, scenario 2, 4 colours|1 [orig]	bytes 1588 fnv 10DACC54
+BBGetPalette|colours|round 1, scenario 2, 4 colours|1 [fixed #548]	bytes 1588 fnv C1C3D281
+BBGetPalette|colours|round 2, 0 colours|1 [orig]	bytes 244 fnv 45A11398
+BBGetPalette|colours|round 2, 0 colours|1 [fixed #548]	bytes 244 fnv C049180D
+BBGetPalette|colours|round 2, 19 colours|1 [orig #548]	bytes 244 fnv 45A11398
+BBGetPalette|colours|round 2, 20 colours|1 [fixed #548]	bytes 244 fnv C049180D
 BBGetPalette|colours|round 2, 32 colours|1	bytes 388 fnv 6392A209
 BBGetPalette|colours|round 2, scenario 2, 200 colours|1	bytes 2404 fnv 75DD1829
-BBGetPalette|colours|round 2, scenario 2, 4 colours|1	bytes 1588 fnv B8756D68
-BBGetPalette|colours|round 3, 20 colours|1	bytes 256 fnv 6693CA71
+BBGetPalette|colours|round 2, scenario 2, 4 colours|1 [orig]	bytes 1588 fnv B8756D68
+BBGetPalette|colours|round 2, scenario 2, 4 colours|1 [fixed #548]	bytes 1588 fnv 8045C4E5
+BBGetPalette|colours|round 3, 20 colours|1 [orig #548]	bytes 256 fnv 6693CA71
+BBGetPalette|colours|round 3, 21 colours|1 [fixed #548]	bytes 256 fnv 18A4A206
 BBGetPalette|colours|round 3, 32 colours|1	bytes 388 fnv F23B328D
-BBGetPalette|colours|round 3, 4 colours|1	bytes 256 fnv 6693CA71
+BBGetPalette|colours|round 3, 4 colours|1 [orig]	bytes 256 fnv 6693CA71
+BBGetPalette|colours|round 3, 4 colours|1 [fixed #548]	bytes 256 fnv 18A4A206
 BBGetPalette|colours|round 3, scenario 2, 200 colours|1	bytes 2404 fnv 7FDDAE7D
 BBGetPalette|colours|round 3, scenario 2, 4 colours|1	bytes 52 00040000040B121920272E353C434A51585F666D747B828990979EA5ACB3BAC1C8CFD6DDE4EBF2F900070E151C232A31383F464D
-BBGetPalette|colours|round 4, 0 colours|1	bytes 328 fnv DDF938CF
-BBGetPalette|colours|round 4, 26 colours|1	bytes 328 fnv DDF938CF
+BBGetPalette|colours|round 4, 0 colours|1 [orig]	bytes 328 fnv DDF938CF
+BBGetPalette|colours|round 4, 0 colours|1 [fixed #548]	bytes 328 fnv D2F6CAAC
+BBGetPalette|colours|round 4, 26 colours|1 [orig #548]	bytes 328 fnv DDF938CF
+BBGetPalette|colours|round 4, 27 colours|1 [fixed #548]	bytes 328 fnv D2F6CAAC
 BBGetPalette|colours|round 4, 32 colours|1	bytes 388 fnv 05B3AC3D
 BBGetPalette|colours|round 4, scenario 2, 200 colours|1	bytes 2404 fnv AAE9EB45
-BBGetPalette|colours|round 4, scenario 2, 4 colours|1	bytes 1588 fnv 3657C90C
-BBGetPalette|colours|round 5, 19 colours|1	bytes 244 fnv EC96E230
-BBGetPalette|colours|round 5, 3 colours|1	bytes 244 fnv EC96E230
+BBGetPalette|colours|round 4, scenario 2, 4 colours|1 [orig]	bytes 1588 fnv 3657C90C
+BBGetPalette|colours|round 4, scenario 2, 4 colours|1 [fixed #548]	bytes 1588 fnv FF76A061
+BBGetPalette|colours|round 5, 19 colours|1 [orig #548]	bytes 244 fnv EC96E230
+BBGetPalette|colours|round 5, 20 colours|1 [fixed #548]	bytes 244 fnv 7DAD8FD9
+BBGetPalette|colours|round 5, 3 colours|1 [orig]	bytes 244 fnv EC96E230
+BBGetPalette|colours|round 5, 3 colours|1 [fixed #548]	bytes 244 fnv 7DAD8FD9
 BBGetPalette|colours|round 5, 32 colours|1	bytes 388 fnv 4F001AC1
 BBGetPalette|colours|round 5, scenario 2, 200 colours|1	bytes 2404 fnv 41DE2C0D
-BBGetPalette|colours|round 5, scenario 2, 4 colours|1	bytes 1588 fnv 03009CEC
+BBGetPalette|colours|round 5, scenario 2, 4 colours|1 [orig]	bytes 1588 fnv 03009CEC
+BBGetPalette|colours|round 5, scenario 2, 4 colours|1 [fixed #548]	bytes 1588 fnv 9A15BA79
 BBGetPalette|count|low > high, 32 colours|1	$00000020
-BBGetPalette|count|round 0, 17 colours|1	$00000011
-BBGetPalette|count|round 0, 2 colours|1	$00000011
+BBGetPalette|count|round 0, 17 colours|1 [orig #548]	$00000011
+BBGetPalette|count|round 0, 18 colours|1 [fixed #548]	$00000012
+BBGetPalette|count|round 0, 2 colours|1 [orig]	$00000011
+BBGetPalette|count|round 0, 2 colours|1 [fixed #548]	$00000012
 BBGetPalette|count|round 0, 32 colours|1	$00000020
 BBGetPalette|count|round 0, scenario 2, 200 colours|1	$000000C8
-BBGetPalette|count|round 0, scenario 2, 4 colours|1	$00000083
-BBGetPalette|count|round 1, 2 colours|1	$0000001A
-BBGetPalette|count|round 1, 26 colours|1	$0000001A
+BBGetPalette|count|round 0, scenario 2, 4 colours|1 [orig]	$00000083
+BBGetPalette|count|round 0, scenario 2, 4 colours|1 [fixed #548]	$00000084
+BBGetPalette|count|round 1, 2 colours|1 [orig]	$0000001A
+BBGetPalette|count|round 1, 2 colours|1 [fixed #548]	$0000001B
+BBGetPalette|count|round 1, 26 colours|1 [orig #548]	$0000001A
+BBGetPalette|count|round 1, 27 colours|1 [fixed #548]	$0000001B
 BBGetPalette|count|round 1, 32 colours|1	$00000020
 BBGetPalette|count|round 1, scenario 2, 200 colours|1	$000000C8
-BBGetPalette|count|round 1, scenario 2, 4 colours|1	$00000083
-BBGetPalette|count|round 2, 0 colours|1	$00000013
-BBGetPalette|count|round 2, 19 colours|1	$00000013
+BBGetPalette|count|round 1, scenario 2, 4 colours|1 [orig]	$00000083
+BBGetPalette|count|round 1, scenario 2, 4 colours|1 [fixed #548]	$00000084
+BBGetPalette|count|round 2, 0 colours|1 [orig]	$00000013
+BBGetPalette|count|round 2, 0 colours|1 [fixed #548]	$00000014
+BBGetPalette|count|round 2, 19 colours|1 [orig #548]	$00000013
+BBGetPalette|count|round 2, 20 colours|1 [fixed #548]	$00000014
 BBGetPalette|count|round 2, 32 colours|1	$00000020
 BBGetPalette|count|round 2, scenario 2, 200 colours|1	$000000C8
-BBGetPalette|count|round 2, scenario 2, 4 colours|1	$00000083
-BBGetPalette|count|round 3, 20 colours|1	$00000014
+BBGetPalette|count|round 2, scenario 2, 4 colours|1 [orig]	$00000083
+BBGetPalette|count|round 2, scenario 2, 4 colours|1 [fixed #548]	$00000084
+BBGetPalette|count|round 3, 20 colours|1 [orig #548]	$00000014
+BBGetPalette|count|round 3, 21 colours|1 [fixed #548]	$00000015
 BBGetPalette|count|round 3, 32 colours|1	$00000020
-BBGetPalette|count|round 3, 4 colours|1	$00000014
+BBGetPalette|count|round 3, 4 colours|1 [orig]	$00000014
+BBGetPalette|count|round 3, 4 colours|1 [fixed #548]	$00000015
 BBGetPalette|count|round 3, scenario 2, 200 colours|1	$000000C8
 BBGetPalette|count|round 3, scenario 2, 4 colours|1	$00000004
-BBGetPalette|count|round 4, 0 colours|1	$0000001A
-BBGetPalette|count|round 4, 26 colours|1	$0000001A
+BBGetPalette|count|round 4, 0 colours|1 [orig]	$0000001A
+BBGetPalette|count|round 4, 0 colours|1 [fixed #548]	$0000001B
+BBGetPalette|count|round 4, 26 colours|1 [orig #548]	$0000001A
+BBGetPalette|count|round 4, 27 colours|1 [fixed #548]	$0000001B
 BBGetPalette|count|round 4, 32 colours|1	$00000020
 BBGetPalette|count|round 4, scenario 2, 200 colours|1	$000000C8
-BBGetPalette|count|round 4, scenario 2, 4 colours|1	$00000083
-BBGetPalette|count|round 5, 19 colours|1	$00000013
-BBGetPalette|count|round 5, 3 colours|1	$00000013
+BBGetPalette|count|round 4, scenario 2, 4 colours|1 [orig]	$00000083
+BBGetPalette|count|round 4, scenario 2, 4 colours|1 [fixed #548]	$00000084
+BBGetPalette|count|round 5, 19 colours|1 [orig #548]	$00000013
+BBGetPalette|count|round 5, 20 colours|1 [fixed #548]	$00000014
+BBGetPalette|count|round 5, 3 colours|1 [orig]	$00000013
+BBGetPalette|count|round 5, 3 colours|1 [fixed #548]	$00000014
 BBGetPalette|count|round 5, 32 colours|1	$00000020
 BBGetPalette|count|round 5, scenario 2, 200 colours|1	$000000C8
-BBGetPalette|count|round 5, scenario 2, 4 colours|1	$00000083
+BBGetPalette|count|round 5, scenario 2, 4 colours|1 [orig]	$00000083
+BBGetPalette|count|round 5, scenario 2, 4 colours|1 [fixed #548]	$00000084
 BBGetPalette|kept|low > high, 32 colours|1	kept
-BBGetPalette|kept|round 0, 17 colours|1	kept
+BBGetPalette|kept|round 0, 17 colours|1 [orig #548]	kept
+BBGetPalette|kept|round 0, 18 colours|1 [fixed #548]	kept
 BBGetPalette|kept|round 0, 2 colours|1	kept
 BBGetPalette|kept|round 0, 32 colours|1	kept
 BBGetPalette|kept|round 0, scenario 2, 200 colours|1	kept
 BBGetPalette|kept|round 0, scenario 2, 4 colours|1	kept
 BBGetPalette|kept|round 1, 2 colours|1	kept
-BBGetPalette|kept|round 1, 26 colours|1	kept
+BBGetPalette|kept|round 1, 26 colours|1 [orig #548]	kept
+BBGetPalette|kept|round 1, 27 colours|1 [fixed #548]	kept
 BBGetPalette|kept|round 1, 32 colours|1	kept
 BBGetPalette|kept|round 1, scenario 2, 200 colours|1	kept
 BBGetPalette|kept|round 1, scenario 2, 4 colours|1	kept
 BBGetPalette|kept|round 2, 0 colours|1	kept
-BBGetPalette|kept|round 2, 19 colours|1	kept
+BBGetPalette|kept|round 2, 19 colours|1 [orig #548]	kept
+BBGetPalette|kept|round 2, 20 colours|1 [fixed #548]	kept
 BBGetPalette|kept|round 2, 32 colours|1	kept
 BBGetPalette|kept|round 2, scenario 2, 200 colours|1	kept
 BBGetPalette|kept|round 2, scenario 2, 4 colours|1	kept
-BBGetPalette|kept|round 3, 20 colours|1	kept
+BBGetPalette|kept|round 3, 20 colours|1 [orig #548]	kept
+BBGetPalette|kept|round 3, 21 colours|1 [fixed #548]	kept
 BBGetPalette|kept|round 3, 32 colours|1	kept
 BBGetPalette|kept|round 3, 4 colours|1	kept
 BBGetPalette|kept|round 3, scenario 2, 200 colours|1	kept
 BBGetPalette|kept|round 3, scenario 2, 4 colours|1	kept
 BBGetPalette|kept|round 4, 0 colours|1	kept
-BBGetPalette|kept|round 4, 26 colours|1	kept
+BBGetPalette|kept|round 4, 26 colours|1 [orig #548]	kept
+BBGetPalette|kept|round 4, 27 colours|1 [fixed #548]	kept
 BBGetPalette|kept|round 4, 32 colours|1	kept
 BBGetPalette|kept|round 4, scenario 2, 200 colours|1	kept
 BBGetPalette|kept|round 4, scenario 2, 4 colours|1	kept
-BBGetPalette|kept|round 5, 19 colours|1	kept
+BBGetPalette|kept|round 5, 19 colours|1 [orig #548]	kept
+BBGetPalette|kept|round 5, 20 colours|1 [fixed #548]	kept
 BBGetPalette|kept|round 5, 3 colours|1	kept
 BBGetPalette|kept|round 5, 32 colours|1	kept
 BBGetPalette|kept|round 5, scenario 2, 200 colours|1	kept
 BBGetPalette|kept|round 5, scenario 2, 4 colours|1	kept
 BBGetPalette|new block|low > high, 32 colours|1	$00000000
-BBGetPalette|new block|round 0, 17 colours|1	$00000001
+BBGetPalette|new block|round 0, 17 colours|1 [orig #548]	$00000001
+BBGetPalette|new block|round 0, 18 colours|1 [fixed #548]	$00000000
 BBGetPalette|new block|round 0, 2 colours|1	$00000001
 BBGetPalette|new block|round 0, 32 colours|1	$00000000
 BBGetPalette|new block|round 0, scenario 2, 200 colours|1	$00000000
 BBGetPalette|new block|round 0, scenario 2, 4 colours|1	$00000001
 BBGetPalette|new block|round 1, 2 colours|1	$00000001
-BBGetPalette|new block|round 1, 26 colours|1	$00000001
+BBGetPalette|new block|round 1, 26 colours|1 [orig #548]	$00000001
+BBGetPalette|new block|round 1, 27 colours|1 [fixed #548]	$00000000
 BBGetPalette|new block|round 1, 32 colours|1	$00000000
 BBGetPalette|new block|round 1, scenario 2, 200 colours|1	$00000000
 BBGetPalette|new block|round 1, scenario 2, 4 colours|1	$00000001
 BBGetPalette|new block|round 2, 0 colours|1	$00000001
-BBGetPalette|new block|round 2, 19 colours|1	$00000001
+BBGetPalette|new block|round 2, 19 colours|1 [orig #548]	$00000001
+BBGetPalette|new block|round 2, 20 colours|1 [fixed #548]	$00000000
 BBGetPalette|new block|round 2, 32 colours|1	$00000000
 BBGetPalette|new block|round 2, scenario 2, 200 colours|1	$00000000
 BBGetPalette|new block|round 2, scenario 2, 4 colours|1	$00000001
-BBGetPalette|new block|round 3, 20 colours|1	$00000001
+BBGetPalette|new block|round 3, 20 colours|1 [orig #548]	$00000001
+BBGetPalette|new block|round 3, 21 colours|1 [fixed #548]	$00000000
 BBGetPalette|new block|round 3, 32 colours|1	$00000000
 BBGetPalette|new block|round 3, 4 colours|1	$00000001
 BBGetPalette|new block|round 3, scenario 2, 200 colours|1	$00000000
 BBGetPalette|new block|round 3, scenario 2, 4 colours|1	$00000000
 BBGetPalette|new block|round 4, 0 colours|1	$00000001
-BBGetPalette|new block|round 4, 26 colours|1	$00000001
+BBGetPalette|new block|round 4, 26 colours|1 [orig #548]	$00000001
+BBGetPalette|new block|round 4, 27 colours|1 [fixed #548]	$00000000
 BBGetPalette|new block|round 4, 32 colours|1	$00000000
 BBGetPalette|new block|round 4, scenario 2, 200 colours|1	$00000000
 BBGetPalette|new block|round 4, scenario 2, 4 colours|1	$00000001
-BBGetPalette|new block|round 5, 19 colours|1	$00000001
+BBGetPalette|new block|round 5, 19 colours|1 [orig #548]	$00000001
+BBGetPalette|new block|round 5, 20 colours|1 [fixed #548]	$00000000
 BBGetPalette|new block|round 5, 3 colours|1	$00000001
 BBGetPalette|new block|round 5, 32 colours|1	$00000000
 BBGetPalette|new block|round 5, scenario 2, 200 colours|1	$00000000
 BBGetPalette|new block|round 5, scenario 2, 4 colours|1	$00000001
 BBGetPalette|popped|low > high, 32 colours|1	$00000000
-BBGetPalette|popped|round 0, 17 colours|1	$00000000
+BBGetPalette|popped|round 0, 17 colours|1 [orig #548]	$00000000
+BBGetPalette|popped|round 0, 18 colours|1 [fixed #548]	$00000000
 BBGetPalette|popped|round 0, 2 colours|1	$00000000
 BBGetPalette|popped|round 0, 32 colours|1	$00000000
 BBGetPalette|popped|round 0, scenario 2, 200 colours|1	$00000000
 BBGetPalette|popped|round 0, scenario 2, 4 colours|1	$00000000
 BBGetPalette|popped|round 1, 2 colours|1	$00000000
-BBGetPalette|popped|round 1, 26 colours|1	$00000000
+BBGetPalette|popped|round 1, 26 colours|1 [orig #548]	$00000000
+BBGetPalette|popped|round 1, 27 colours|1 [fixed #548]	$00000000
 BBGetPalette|popped|round 1, 32 colours|1	$00000000
 BBGetPalette|popped|round 1, scenario 2, 200 colours|1	$00000000
 BBGetPalette|popped|round 1, scenario 2, 4 colours|1	$00000000
 BBGetPalette|popped|round 2, 0 colours|1	$00000000
-BBGetPalette|popped|round 2, 19 colours|1	$00000000
+BBGetPalette|popped|round 2, 19 colours|1 [orig #548]	$00000000
+BBGetPalette|popped|round 2, 20 colours|1 [fixed #548]	$00000000
 BBGetPalette|popped|round 2, 32 colours|1	$00000000
 BBGetPalette|popped|round 2, scenario 2, 200 colours|1	$00000000
 BBGetPalette|popped|round 2, scenario 2, 4 colours|1	$00000000
-BBGetPalette|popped|round 3, 20 colours|1	$00000000
+BBGetPalette|popped|round 3, 20 colours|1 [orig #548]	$00000000
+BBGetPalette|popped|round 3, 21 colours|1 [fixed #548]	$00000000
 BBGetPalette|popped|round 3, 32 colours|1	$00000000
 BBGetPalette|popped|round 3, 4 colours|1	$00000000
 BBGetPalette|popped|round 3, scenario 2, 200 colours|1	$00000000
 BBGetPalette|popped|round 3, scenario 2, 4 colours|1	$00000000
 BBGetPalette|popped|round 4, 0 colours|1	$00000000
-BBGetPalette|popped|round 4, 26 colours|1	$00000000
+BBGetPalette|popped|round 4, 26 colours|1 [orig #548]	$00000000
+BBGetPalette|popped|round 4, 27 colours|1 [fixed #548]	$00000000
 BBGetPalette|popped|round 4, 32 colours|1	$00000000
 BBGetPalette|popped|round 4, scenario 2, 200 colours|1	$00000000
 BBGetPalette|popped|round 4, scenario 2, 4 colours|1	$00000000
-BBGetPalette|popped|round 5, 19 colours|1	$00000000
+BBGetPalette|popped|round 5, 19 colours|1 [orig #548]	$00000000
+BBGetPalette|popped|round 5, 20 colours|1 [fixed #548]	$00000000
 BBGetPalette|popped|round 5, 3 colours|1	$00000000
 BBGetPalette|popped|round 5, 32 colours|1	$00000000
 BBGetPalette|popped|round 5, scenario 2, 200 colours|1	$00000000

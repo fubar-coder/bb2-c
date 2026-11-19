@@ -84,13 +84,15 @@ kind F):
 * `BBScenarioLowCol`/`BBScenarioHighCol` read the colour byte unsigned,
   as `BBGetPalette` and `BBNumBaddies` read theirs; the original
   sign-extended it, so colours 128-255 came out as -128..-1 (#550).
+* `BBGetPalette` sets the count of a new colour block (in the block and
+  the object) to high+1, the number of colours it holds. The original
+  set it to high: the scenario's last colour lay outside the palette
+  (`Use Palette` did not set it), and every further `BBGetPalette`
+  allocated a new block again (#548).
 
 ## BUG(orig), kept
 
-* `BBGetPalette`: when the high colour is not below the object's colour
-  count it allocates a block of high+1 colours but sets the count (in
-  the object and the block) to high, so the last colour is outside
-  (#548); the colours are written from low up to high, at least one
+* `BBGetPalette` writes the colours from low up to high, at least one
   (low > high writes the colour at low, possibly behind the block)
   (#549).
 

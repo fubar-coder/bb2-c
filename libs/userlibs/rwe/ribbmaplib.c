@@ -29,11 +29,12 @@
  * search; BBMapWidth/Height: the caller's), 0 when the chunk is missing.
  *
  * BUG(orig), kept:
- *   - BBGetPalette: an object with high colour >= its colour count gets
- *     a new block of high+1 colours, but its count is set to high (the
- *     last colour outside) (#548); the colours are written from low to
- *     high even if low > high (one colour at low, possibly behind the
- *     block) (#549).
+ *   - BBGetPalette: the colours are written from low to high even if
+ *     low > high (one colour at low, possibly behind the block) (#549).
+ * Fixed (intended deviation, #548): BBGetPalette sets the count of a new
+ * colour block (in the block and the object) to high+1, its size (the
+ * original set it to high: the last colour outside the palette, and the
+ * next BBGetPalette allocated a new block again).
  * Fixed (intended deviation, #550): BBScenarioLowCol/HighCol read the
  * colour byte unsigned, as BBGetPalette does (the original extended it
  * with its sign: colours 128-255 came out as -128..-1).
@@ -548,8 +549,8 @@ static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
  * The colours low..high (bytes r,g,b, each made a long $xxxxxxxx) at the
  * object's colour low; a new colour block (the old colours copied, the
  * old block freed with the size count*12) if high >= the colour count.
- * BUG(orig) (#548): the new block has high+1 colours, the count is set
- * to high; BUG(orig) (#549): the colours are written from low on even if
+ * The new block has high+1 colours and that count (fixed, #548: the
+ * original set it to high).  BUG(orig) (#549): the colours are written from low on even if
  * low > high (one colour).  Nothing without the chunk.
  * @param pal  a0: the palette object (palettelib)
  */
@@ -579,8 +580,8 @@ static void BLITZ_ROUTINE bbgetpalette_c(struct bb_palette *pal BL_REG(a0))
             } while (i--);
         }
         PDATA(pal) = (ULONG)new;
-        WORDAT(new) = high;
-        pal->numcols = high;
+        WORDAT(new) = high + 1;             /* fixed (#548): not high */
+        pal->numcols = high + 1;
         if (num) {
             struct bl_regs f = { .d0 = (ULONG)num * 12, .a1 = (ULONG)old };
             BLITZ_ALIBJSR(TOK_globfree, f);
