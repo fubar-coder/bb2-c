@@ -934,7 +934,7 @@ cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -988,6 +988,9 @@ cycle values do not depend on the host's load or on what else runs
   its frames 3 to 14 a hundred times) and an ANIM7 the program builds in
   memory (320 x 256 x 5, long data, 2400 longs per frame); the value is
   the cycles per frame.
+  `bfns` measures `FNSPrint` and `FNSLength` of `rifnslib` (a score or
+  a message printed per frame): the built-in font, a text of 32
+  characters, a 320 x 256 x 3 bitmap; the value is the cycles per call.
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the

@@ -270,6 +270,14 @@
 # its budget kept; anim5 unchanged (31442.3, now and then 31443.2, one
 # timer unit, as before).
 #
+# bfns (a new program: FNSPrint and FNSLength of the RWE userlib rifnslib,
+# header "; @rwe rifnslib riamosfunclib"; the built-in font, a text of 32
+# characters, a 320 x 256 x 3 bitmap) from two runs on main e400cbd1 with
+# the libs test commits of W6 group A (2026-11-19): fnsprint 9081.1 and
+# 9083.1, fnslength 4957.6 both times.  Their targets from two runs of the
+# pass perf_bfns.pass with the tag orig: fnsprint 60445.2, fnslength
+# 3686.2 both times.
+#
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 banim.anim5                 31505    46282.5  c=RINextAnimFrame(0) (INTRO.ANIM: 320 x 256 x 3, ANIM5, its frames 3 to 14)
@@ -294,6 +302,9 @@ bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
 bdisp.dispsprite             948~4      965.5  DisplaySprite 0,0,100,100,0
 bdisp.disppalette          1289~16     1292.0  DisplayPalette 0,0
+bfns.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
+bfns.fnsprint                9177    60445.2  FNSPrint 0,8,100,t$ (the built-in font, 32 characters, 3 planes)
+bfns.fnslength               5011     3686.2  c=FNSLength(0,t$) (32 characters)
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bgfx.blit16                 2051~2     2108.3  Blit 0,100,100
 bgfx.blit16s                 2075     2108.3  Blit 0,105,100
