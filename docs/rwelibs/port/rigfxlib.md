@@ -109,12 +109,16 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   upper word of d5 – with blitz2 2.10 that is the case for the constant
   0 and for a word variable, only a long variable gives a clear register
   (test `rigfxlib-fillpalette-end-upper-word`) (#683).
+* `SaveCMAP` writes the pad byte behind a CMAP of odd length (an odd
+  number of colours), as IFF asks: the block and the FORM length are
+  rounded up to even, the cleared memory is the pad byte, the CMAP length
+  stays 3 × colours. The original wrote none: the file ended a byte short
+  and its FORM length was odd (#687).
 
 ## BUG(orig), kept
 
-* `SaveCMAP` writes no pad byte behind a CMAP of odd length (odd number
-  of colours) (#687); a palette of 0 colours copies 65536 colours into
-  the 48 byte block (#688).
+* `SaveCMAP`: a palette of 0 colours copies 65536 colours into the 48
+  byte block (#688).
 * `PalAdjust` and the colour functions use the palette of the last
   `PaletteInfo` without a check (before it: address 0) (#686);
   `PalAdjust` without start/end takes the number of colours of that

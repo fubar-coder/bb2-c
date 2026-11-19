@@ -29,8 +29,7 @@
  * and RIAmosFuncLib's BSave (form 1) through ALibJsr.
  *
  * BUG(orig), kept:
- *   - SaveCMAP writes no pad byte behind a CMAP of odd length (#687); a
- *     palette of 0 colours copies 65536 (#688).
+ *   - SaveCMAP: a palette of 0 colours copies 65536 (#688).
  *   - PalAdjust/PalRed... use the palette of the last PaletteInfo
  *     unchecked (before one: address 0) (#686); PalAdjust without
  *     start/end takes the number of colours of THAT palette, not of the
@@ -71,6 +70,10 @@
  *     colour), as the comparison with start; the original tested the
  *     whole register (TST.l), so an end of 0 with an upper word other than
  *     0 was colour 0 (#683).
+ *   - SaveCMAP writes the pad byte behind a CMAP of odd length (an odd
+ *     number of colours): the file and the FORM length are rounded up to
+ *     even, the CMAP length is not; the original wrote no pad byte, the
+ *     file was no correct IFF file (#687).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -592,8 +595,10 @@ BLITZ_THUNK(cpucls, cpucls_c, "d0-d1/a0-a1");
  * palette file) and the CMAP (3 bytes per colour, the channels' top
  * bytes) in memory (memlib globalloc, MEMF_CLEAR), writes it with
  * RIAmosFuncLib's BSave (form 1: d0 name, d1 address, d2 length) and
- * frees it.  BUG(orig): no pad byte behind a CMAP of odd length (#687);
- * a palette of 0 colours copies 65536 (#688).
+ * frees it.  A CMAP of odd length gets its pad byte (the cleared memory;
+ * the file and the FORM length rounded up to even, the CMAP length not:
+ * fixed #687, the original wrote none).  BUG(orig): a palette of 0
+ * colours copies 65536 (#688).
  * @param obj   a0: the palette object (!libs #palettelib,#ia0|#pd0)
  * @param name  d1: the file name
  * @return d0: BSave's result, 0 if the palette has no data or there is
@@ -612,7 +617,7 @@ static ULONG BLITZ_ROUTINE savecmap_c(struct bb_palette *obj BL_REG(a0), ULONG n
     if (!data)
         return 0;
     colsize = bl_mulu_w(data->numcols, 3);
-    size = colsize + 8 + 12 + 28;
+    size = (colsize + 8 + 12 + 28 + 1) & ~1UL;     /* the pad byte: fixed #687 */
     r = (struct bl_regs){ .d0 = size, .d1 = MEMF_CLEAR };
     h = (struct cmapfile *)BLITZ_ALIBJSR(TOK_globalloc, r);
     if (!h)

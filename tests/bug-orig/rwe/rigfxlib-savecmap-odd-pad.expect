@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+file length 64
+FORM length 56
+CMAP length 15
+rc=0
