@@ -123,15 +123,20 @@ loop optimisation (no `__mulsi3`).
   so a string of 256 characters or more overwrote the pointer behind
   the buffer, and from 260 characters the code of `M_NextArg$` behind it
   (#897; test `rimapeditorlib-initparse-overflow`).
+* `MapDataGrab` fills nothing into a map without data (its `CreateMap`
+  could not allocate them, also for a width or height of 0; D-018); the
+  original's `DBRA` loops took the width and height 0 of such a map as
+  65536 each and wrote from address 0 over all memory (#895, the
+  `MapDataGrab` part; test `rimapeditorlib-mapdatagrab-no-data`).
 
 ## BUG(orig), kept
 
 * `MapCanDraw`'s stencil index is the map's word as a signed word;
   without `SetStencil` the stencil is at address 0 (#893).
-* The `DBRA` loops (`MapDataGrab`, `ShapeTo1616`, `FillBitplane`) run
-  65536 times for a size of 0 (`FillBitplane` also for a width below 16)
-  (#895); `ShapeTo1616` writes 16 words per
-  plane regardless of the destination's size (#900).
+* The `DBRA` loops of `ShapeTo1616` and `FillBitplane` run 65536 times
+  for a size of 0 (`FillBitplane` also for a width below 16) (#895);
+  `ShapeTo1616` writes 16 words per plane regardless of the
+  destination's size (#900).
 * finit closes graphics.library also if it did not open (#896).
 
 Original behaviour that is not a defect:

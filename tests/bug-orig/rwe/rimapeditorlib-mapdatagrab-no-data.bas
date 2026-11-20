@@ -7,6 +7,7 @@
 ; height 1 by hand, so one value is written - at address 0, whose long
 ; holds a marker (put back at the end).
 ; Correct: a map without data gets nothing (the marker stays).
+; @fixed #895
 ; @rwe rimapeditorlib
 DEFTYPE .l
 b=AllocMem_(2,$10000)

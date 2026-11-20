@@ -39,10 +39,10 @@
  * BUG(orig):
  *   - MapCanDraw's stencil index is the map value as a signed word;
  *     without SetStencil the stencil is at address 0 (#893).
- *   - The DBRA loops (MapDataGrab, ShapeTo1616, FillBitplane) run 65536
- *     times for a size of 0 (FillBitplane also for a width below 16)
- *     (#895); ShapeTo1616 copies a word from every
- *     row regardless of the destination's size (#900).
+ *   - The DBRA loops of ShapeTo1616 and FillBitplane run 65536 times for
+ *     a size of 0 (FillBitplane also for a width below 16) (#895);
+ *     ShapeTo1616 copies a word from every row regardless of the
+ *     destination's size (#900).
  *   - finit closes graphics.library also if it did not open (#896).
  * Fixed (intended deviations):
  *   - init clears the stencil of SetStencil, the ScanShapes results and
@@ -70,7 +70,11 @@
  *   - M_InitParse copies at most 255 characters and a 0 into its 256-byte
  *     buffer; the original copied without a limit, so a longer string
  *     overwrote the pointer behind the buffer (and its code behind it)
- *     (#897).
+ *     (#897);
+ *   - MapDataGrab fills nothing into a map without data (its CreateMap
+ *     could not allocate them, D-018); the original's DBRA loops took the
+ *     width and height 0 of such a map as 65536 each and wrote from
+ *     address 0 over all memory (#895, the MapDataGrab part).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -806,7 +810,10 @@ BLITZ_INLINE(_mapobjheight, "move.w 2(a3),d0");
  * mapnull into the data.  Each byte is zero-extended: fixed (#898), in
  * the original the upper byte of the previous value stayed in the
  * register (MOVE.b), so a byte + mapnull beyond 255 carried into the
- * following values.  BUG(orig): width or height 0 -> 65536 (DBRA, #895).
+ * following values.  A map without data (its CreateMap could not
+ * allocate them, also for a width or height of 0) gets nothing: fixed
+ * (#895), the original's DBRA loops took its width and height 0 as 65536
+ * each and wrote from address 0 over all memory.
  * @param src   d0: the address
  * @param type  d1: the data size (0 = bytes)
  * @param null  d2: mapnull, added to every value
@@ -818,6 +825,8 @@ static void BLITZ_ROUTINE mapgrab_c(const UBYTE *src BL_REG(d0), UWORD type BL_R
     UWORD *dst = (UWORD *)map->data;
     UWORD rows = map->height - 1, n;
 
+    if (!dst)                           /* fixed (#895): no data, nothing to fill */
+        return;
     if (!type) {
         do {
             n = map->width - 1;
