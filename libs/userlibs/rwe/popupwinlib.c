@@ -14,7 +14,7 @@
  *
  * An item: +0 next, +4 the text (0: a separator line), +12 the sub
  * menu's first item (0: none); +8/+10/+16/+20 are not used.  Each menu
- * level has a 64 byte structure (AllocVec, cleared) and a window
+ * level has a 64 byte structure (AllocVec's layout, cleared) and a window
  * (WFLG_BORDERLESS|REPORTMOUSE|ACTIVATE on the screen of screenslib's
  * object; the windows share the library's message port, IDCMP
  * MOUSEBUTTONS, INACTIVEWINDOW, MOUSEMOVE and CLOSEWINDOW).  The window
@@ -26,9 +26,10 @@
  * highlight; a mouse button closes all levels.  The position comes from
  * the windows' MouseX/MouseY (not from the messages).
  *
- * init opens intuition.library and graphics.library (any version, not
- * checked) and creates the message port; finit replies what is still in
- * the port, deletes it and closes the libraries.
+ * init opens intuition.library and graphics.library (any version: below
+ * intuition V36 the windows open with OpenWindow and a NewWindow, from
+ * V36 on with the tag list) and builds the message port by hand; finit
+ * replies what is still in the port, frees it and closes the libraries.
  *
  * Not ported: the routines of the source that nothing calls (WPrint,
  * WinInnerCls, BitMaptoWin, WSizeLimits, WinGadgetHit) and the GadTools
@@ -53,6 +54,16 @@
  *     (no active item, a menu level without memory or window); the
  *     original was a statement only, and its d0 was `selecteditem`,
  *     which nothing but a clear wrote: always 0 (#471).
+ *   - The library runs on Kickstart 1.x: the message port is built by
+ *     hand and the structures are allocated in AllocVec's layout with
+ *     exec V33 functions (blitzexec.h), one path on every Kickstart;
+ *     below intuition V36 the windows open with OpenWindow and a
+ *     NewWindow of the same fields.  The original called CreateMsgPort,
+ *     DeleteMsgPort, AllocVec, FreeVec (exec V36) and OpenWindowTagList
+ *     (intuition V36) without a version check: every program with the
+ *     library crashed at start-up on Kickstart 1.x (#1140).  There a
+ *     menu level whose window does not fit the screen does not open: the
+ *     level returns 0, which closes the menu.
  * Not a defect: the item number count at +8 of the structure is the
  * number of items - 1, but nothing uses that field.
  */
@@ -162,10 +173,13 @@ static ULONG strlen0(const UBYTE *s)
 
 /* ------------------------------------------------------------- windows */
 
-/* WindowInit: the message port */
+/* WindowInit: the message port.  Fixed (#1140): built by hand with exec
+   V33 functions (blitzexec.h's bl_newport), one path on every Kickstart;
+   the original's CreateMsgPort (exec V36) crashed in init on Kickstart
+   1.x */
 static void windowinit(void)
 {
-    msgport = CreateMsgPort();
+    msgport = bl_newport();
 }
 
 /* FlushWinEvents: reply every message in the port (those without a
@@ -187,28 +201,61 @@ static void windowfinit(void)
         return;
     Forbid();
     flushwinevents();
-    DeleteMsgPort(msgport);
+    bl_freeport(msgport);               /* fixed (#1140): DeleteMsgPort is V36 */
     Permit();
     msgport = NULL;
 }
 
+/* openwindow13: the window of the tag list below intuition V36
+   (Kickstart 1.x), with OpenWindow and a NewWindow of the same fields
+   (no title, no gadgets, no IDCMP, the screen's pens, the size limits;
+   WA_NewLookMenus has no field: the windows have no menu strip).  A
+   window that does not fit the screen does not open there (the menu
+   level returns 0 and closes the menu) */
+static struct Window *openwindow13(struct Screen *scr, ULONG x, ULONG y, ULONG w, ULONG h,
+                                   ULONG flags)
+{
+    struct NewWindow nw = { 0 };
+
+    nw.LeftEdge = x;
+    nw.TopEdge = y;
+    nw.Width = w;
+    nw.Height = h;
+    nw.DetailPen = (UBYTE)-1;
+    nw.BlockPen = (UBYTE)-1;
+    nw.Flags = flags;
+    nw.Screen = scr;
+    nw.MinWidth = 32;
+    nw.MinHeight = 11;
+    nw.MaxWidth = 640;
+    nw.MaxHeight = 512;
+    nw.Type = CUSTOMSCREEN;
+    return OpenWindow(&nw);
+}
+
 /* OpenWindow: on screen scr at x,y, w x h, with the flags and IDCMP;
-   the window gets the shared port */
+   the window gets the shared port.  Fixed (#1140): below intuition V36
+   OpenWindow with a NewWindow (openwindow13); the original called
+   OpenWindowTagList (V36) on every Kickstart */
 static struct Window *openwindow(struct Screen *scr, ULONG x, ULONG y, ULONG w, ULONG h,
                                  ULONG flags, ULONG idcmp)
 {
     struct Window *win;
 
-    wwtags.extra.ti_Tag = 0;                        /* no extra tags */
-    wwtags.left.ti_Data = x;
-    wwtags.top.ti_Data = y;
-    wwtags.width.ti_Data = w;
-    wwtags.height.ti_Data = h;
-    wwtags.title.ti_Data = 0;                       /* no title */
-    wwtags.screen.ti_Data = (ULONG)scr;
-    wwtags.flags.ti_Data = flags;
-    wwtags.gadgets.ti_Data = 0;                     /* no gadgets */
-    win = OpenWindowTagList(NULL, &wwtags.left);
+    if (intuibase->lib_Version < 36)
+        win = openwindow13(scr, x, y, w, h, flags);
+    else {
+        wwtags.extra.ti_Tag = 0;                    /* no extra tags */
+        wwtags.left.ti_Data = x;
+        wwtags.top.ti_Data = y;
+        wwtags.width.ti_Data = w;
+        wwtags.height.ti_Data = h;
+        wwtags.title.ti_Data = 0;                   /* no title */
+        wwtags.screen.ti_Data = (ULONG)scr;
+        wwtags.flags.ti_Data = flags;
+        wwtags.gadgets.ti_Data = 0;                 /* no gadgets */
+        win = OpenWindowTagList(NULL, &wwtags.left);
+    }
     if (win) {
         win->UserPort = msgport;
         ModifyIDCMP(win, idcmp | IDCMP_CLOSEWINDOW | IDCMP_MOUSEBUTTONS);
@@ -418,7 +465,7 @@ static void mousemove(struct popup *p)
 /* AllocStruct: the structure of a level (0: no memory) */
 static struct popup *allocstruct(struct pitem *items, struct popup *parent)
 {
-    struct popup *p = AllocVec(STRUCT_SIZEOF, MEMF_PUBLIC | MEMF_CLEAR);
+    struct popup *p = bl_allocvec(STRUCT_SIZEOF, MEMF_PUBLIC | MEMF_CLEAR);
     UWORD n;
 
     if (!p)
@@ -535,7 +582,7 @@ static ULONG dopop(struct pitem *items, struct popup *parent, UWORD x, UWORD y)
     }
     closewin(p->windowptr);
 theend:
-    FreeVec(p);
+    bl_freevec(p);                      /* fixed (#1140): FreeVec is V36 */
     return result;
 }
 
@@ -555,8 +602,9 @@ static void inittemprast(void)
 /* ------------------------------------------------------------ commands */
 
 /**
- * @brief init: opens intuition.library and graphics.library (any version,
- * not checked) and creates the message port.
+ * @brief init: opens intuition.library and graphics.library (any version;
+ * intuition's decides how the windows open) and builds the message port
+ * (fixed #1140: by hand, exec V33).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -579,7 +627,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
 /**
  * @brief PopUpInit: the message port for the menu windows, if there is
  * none (init has made it; PopUpInit makes it after a failed
- * CreateMsgPort).
+ * port: no memory or no free signal).
  *
  * Fixed (#470): the original created a new port each time and left the
  * old one with its signal bit.  (The word argument is not used.)

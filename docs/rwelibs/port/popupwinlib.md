@@ -27,7 +27,8 @@ AmiBlitz3's port took 24, RWE's `#richunkylib`).
 * **An item:** +0 next, +4 the text (0: a separator line), +12 the
   first item of its sub menu (0: none). +8, +10, +16 and +20 are named in
   the source but not used.
-* **A menu level:** a 64 byte structure (AllocVec, cleared) and a window:
+* **A menu level:** a 64 byte structure (in AllocVec's layout, cleared)
+  and a window:
   `WFLG_BORDERLESS|REPORTMOUSE|ACTIVATE`, IDCMP MOUSEBUTTONS,
   INACTIVEWINDOW, MOUSEMOVE and CLOSEWINDOW; all windows share the
   library's message port.
@@ -42,9 +43,11 @@ AmiBlitz3's port took 24, RWE's `#richunkylib`).
   highlight. A mouse button closes all levels. The position is taken
   from the windows' MouseX/MouseY, not from the messages.
 
-init opens intuition.library and graphics.library (any version, not
-checked) and creates the port; finit replies what is still in it,
-deletes it and closes the libraries.
+init opens intuition.library and graphics.library (any version) and
+builds the port by hand; finit replies what is still in it, frees it
+and closes the libraries. From intuition V36 on the windows open with
+OpenWindowTagList and the tag list, below it (Kickstart 1.x) with
+OpenWindow and a NewWindow of the same fields.
 
 ## C and assembler
 
@@ -78,6 +81,24 @@ kind F):
   the item chosen (the item highlighted when a mouse button was
   pressed), 0 for none. The original was a statement only, and its d0
   was `selecteditem`, which nothing but a clear wrote: always 0 (#471).
+* The library runs on Kickstart 1.x. The port is built by hand
+  (blitzexec.h's `bl_newport`: AllocMem, AllocSignal, FindTask, an empty
+  message list) and the structure of a menu level is allocated in
+  AllocVec's layout (`bl_allocvec`: AllocMem of 68 bytes, the size in
+  the first long), with exec V33 functions, one path on every
+  Kickstart. The window opens with OpenWindowTagList from intuition V36
+  on, as before, and below it with OpenWindow and a NewWindow of the
+  same fields: no title, no gadgets, no IDCMP (the shared port is set
+  afterwards, as on V36), the screen's pens, the size limits;
+  WA_NewLookMenus has no field and no effect here (the windows have no
+  menu strip). The original called CreateMsgPort and DeleteMsgPort,
+  AllocVec and FreeVec (exec V36) and OpenWindowTagList (intuition V36)
+  without a version check: every program with the library crashed at
+  start-up on Kickstart 1.x (#1140). On Kickstart 1.x a menu level whose window does not fit the screen
+  (a sub menu at the right or bottom edge) does not open: OpenWindow
+  fails, the level returns 0 and the whole menu closes, as with a failed
+  OpenWindow on V36+. The library does not move such a window onto the
+  screen (left as it is, user decision).
 
 Not a defect: the item count at +8 of the structure is the number of
 items − 1, but nothing uses the field.
@@ -135,4 +156,11 @@ Covered:
 PopUpWindow as a function (driven by a vertical blank interrupt of the
 program): the bug-orig test `popupwinlib-result-lost`. A failed
 AllocVec: the bug-orig test `popupwinlib-allocvec-unchecked`
-(through inject). Not covered: a failed OpenWindow; real mouse input.
+(through inject). Kickstart 1.x (the library tests do not run there):
+the bug-orig tests `popupwinlib-v36-calls` (start-up, PopUpInit, finit)
+and `popupwinlib-v36-menu` (the menu of `popupwinlib-result-lost` as a
+statement, with a reply port built by hand: the window opens through
+OpenWindow, both messages reach it, the button closes the menu), each on
+the a500, a500-204 and a1200. Not covered: a failed OpenWindow, a level
+that does not fit the screen on Kickstart 1.x, the result of the
+function form on Kickstart 1.x; real mouse input.
