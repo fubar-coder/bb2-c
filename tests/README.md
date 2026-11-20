@@ -934,7 +934,7 @@ cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`, `bchunky`, `bmapshapes`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`, `bchunky`, `bmapshapes`, `bsnow`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -1003,6 +1003,10 @@ cycle values do not depend on the host's load or on what else runs
   targets: the original library's init calls `AllocVec` (exec V36), so
   on Kickstart 1.3 the program crashes with it at start-up (#1141; the
   original's values on an a600 are in the comment of `budgets.txt`).
+  `bsnow` measures `LDoSnow` of `risnowlib`, the call per frame of a snow
+  field, on two fields of 500 points: snowfall (an empty 320 x 256 x 3
+  bitmap, a flake per row falling) and snowpile (a ground and obstacles,
+  flakes move aside and stop); 200 calls per loop.
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the

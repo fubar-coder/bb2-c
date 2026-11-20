@@ -336,6 +336,14 @@
 # same within a cycle (8946.2/8945.2, 9727.2/9727.8, 8676.2/8676.8,
 # 1990.2/1990.2).
 #
+# bsnow (a new program: LDoSnow of the RWE userlib risnowlib, header
+# "; @rwe risnowlib") from two runs on the W7 group C branch (2026-11-20,
+# after the fix of #913): snowfall 163309.1 both times, snowpile 128189.1
+# both times. Their targets from two runs of the pass perf_bsnow.pass with
+# the tag orig (the reference build of the source): 38979.2 and 30934.2
+# both times; the C port is 4.2 times slower.  The loops run 200 calls:
+# 1000 calls of the C port wrapped the timer's 16 bits.
+#
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 banim.anim5                 31505    46282.5  c=RINextAnimFrame(0) (INTRO.ANIM: 320 x 256 x 3, ANIM5, its frames 3 to 14)
@@ -500,6 +508,9 @@ bproc.fstr                    8822     10783.6  c=fstr{a$} (the same as a Functi
 bproc.pgrow                  11203     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
+bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
+bsnow.snowfall             164946    38979.2  LDoSnow 0,rt (snowfall: an empty 320 x 256 x 3 bitmap, a flake per row falling)
+bsnow.snowpile             129474    30934.2  LDoSnow 1,rt (snowpile: a ground in row 200 and obstacles, flakes move aside and stop)
 bstc.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstc.c1pack410           11472466 11836874.2  c=STCDecrunch(f,d) (test_C1.pack410: 152089 bytes of text, efficiency 14)
 bstc.onebyte                  475      504.7  c=STCDecrunch(s,s+32) (a file of one literal byte)
