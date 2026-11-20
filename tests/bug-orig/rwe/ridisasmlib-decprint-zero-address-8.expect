@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+displacement 0: [move.l   0(a0),d0                 ]
+rc=0
