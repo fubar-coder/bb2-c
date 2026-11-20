@@ -9,8 +9,9 @@ intro: |
   selected.
 
   The library needs workbench.library, dos.library and icon.library of
-  version 37 or later, so Kickstart 2.04 or later. Without them the
-  commands do nothing and return 0 or an empty string
+  version 37 or later, so Kickstart 2.04 or later. Without them, as on
+  Kickstart 1.x, a program with the library runs, but the commands do
+  nothing and return 0 or an empty string
   (`AppEventIDCMP` excepted). All commands but `AppEventIDCMP`
   work in Amiga mode only.
 

@@ -6812,6 +6812,14 @@ rows:
     text: "Programs with the DOS helpers run on Kickstart 1.x, where the notification and device list commands return 0 and the path functions work; the original crashed at the start."
     page: libraries
     anchor: ridoslib-fixes
+  - issue: 1143
+    severity: 5
+    topic: "System"
+    library: "riapplib"
+    command: ""
+    text: "Programs with the App commands run on Kickstart 1.x, where the commands do nothing; the original crashed at the start."
+    page: libraries
+    anchor: riapplib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

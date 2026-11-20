@@ -4915,6 +4915,12 @@ fixes of [the result of `AddAppMenu`](#addappmenu-result), of
 and of [the local variables after `AddAppIcon`](#rwe-other-fixes) are
 described elsewhere on this page.
 
+* Programs that use the library run on Kickstart 1.x. The App commands
+  need Workbench 2.0 and do nothing there, as on any system without the
+  Workbench libraries they need. The original called a function of
+  Kickstart 2.0 before it checked for them, and every program with the
+  library crashed at its start
+  ([#1143](https://github.com/fubar-coder/bb2-c/issues/1143)).
 * `NextAppFile` and `AppFile` leave Workbench's lock of the file's
   drawer in the message. The original gave the lock back to the system,
   so reading the same file again with `AppFile` gave a wrong path, and
