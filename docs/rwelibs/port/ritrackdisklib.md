@@ -42,8 +42,6 @@ original's changes of a6 and d4-d7 are not reproduced.
   open) (#862); a negative unit passes the check (`CMP #3: BGT`), but the
   table routines ignore it: the request is lost, or `DeleteIORequest(0)`
   if OpenDevice failed (#861).
-* finit closes units 0-2, not 3; init clears only three table entries
-  (#863).
 * `WriteBoot unit,bootdata` overwrites bootdata (d1 = sector 0) and
   takes the buffer from d2, which is no argument (whatever the caller
   left there; the C routine takes d2 as a register parameter for the same
@@ -72,6 +70,13 @@ original's changes of a6 and d4-d7 are not reproduced.
   Tests: bug-orig `rwe/ritrackdisklib-v36-calls` (a500), the regression
   test `ritrackdisklib-floppy-key` reads a disk in DF1 on the a500,
   a500-204 and a1200 with these requests.
+* #863: the original's finit closed units 0-2 only (unit 3 stayed open,
+  its request leaked, and the port it names was deleted), and its init
+  cleared only three table entries (a second init kept unit 3's stale
+  request). init clears and finit closes all four units; with finit
+  fixed the init half shows only if finit did not run. Test: the
+  `libs_emulator` cases `[fixed #863]` (finit with unit 3 open, init
+  again).
 
 **Test** (`libs/tests/rwe/ritrackdisklib.c`, snitch case "rwe
 ritrackdisklib"): each run loads one library set (the C build or the CD
@@ -89,8 +94,8 @@ unit, sector commands with and without count (offset overflow of
 `sector << 9`), device errors (positive and negative io_Error),
 FormatTrack with the track's upper word set, both WriteBoot forms (the
 default block observed by its 8 bytes), BootProg twice, DiskStatus,
-DiskIO, DiskMotor, CloseDisk of open/closed/invalid units, finit (unit 3
-stays open) and init again (unit 3's stale entry). Then the real
+DiskIO, DiskMotor, CloseDisk of open/closed/invalid units, finit with
+unit 3 open and init again (unit 3's entry). Then the real
 trackdisk.device on the empty DF0: of the emulator: OpenDisk, MotorOn,
 DiskMotor, MotorOff, DiskMotor, ReadSector (29 = no disk), DiskStatus,
 CloseDisk. Not covered: trackdisk.device with a disk (no floppy image;

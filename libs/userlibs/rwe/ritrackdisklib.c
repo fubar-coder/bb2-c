@@ -11,7 +11,7 @@
  * docs/rwelibs/port/ritrackdisklib.md.
  *   init:  the reply port msgport, built by hand (newport(); 0 if that
  *          fails: then every command returns 0)
- *   finit: CloseDisk 0, 1, 2 and frees the port (freeport())
+ *   finit: CloseDisk 0-3 and frees the port (freeport())
  *
  * Units 0-3: one IOStdReq (200 bytes, built by hand: newreq()) per unit
  * in iorequests, all with the reply port msgport.  Port and requests use
@@ -39,8 +39,6 @@
  *     check (CMP #3: BGT), but putioreq/getioreq ignore it: the request
  *     is lost (OpenDevice ok) or the free gets 0 (OpenDevice
  *     failed) (#861).
- *   - finit closes units 0-2 only, not 3; init clears only the first
- *     three entries of iorequests (#863).
  *   - WriteBoot unit,bootdata sets d1 = 0 (sector) over bootdata and
  *     takes the buffer from d2, which is not an argument (whatever the
  *     caller left there; here a register parameter d2 for the same
@@ -56,6 +54,8 @@
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
  *     help text says "-1 if motor is on" (#857).
+ * Fixed (#863): the original's finit closed units 0-2 only, not 3, and
+ * its init cleared only the first three entries of iorequests.
  * Fixed (#941): the original called CreateMsgPort, CreateIORequest,
  * DeleteIORequest and DeleteMsgPort (exec V36) without a version check:
  * on Kickstart 1.x every program with the library crashed at start-up.
@@ -284,14 +284,15 @@ static ULONG doio(struct IOStdReq *req)
 /**
  * @brief init: clear the request table and create the reply port.
  *
- * BUG(orig): clears only entries 0-2, not 3 (#863).  Without a port
- * (msgport 0) every command returns 0.
+ * Fixed (#863): all four entries (the original cleared 0-2 only).
+ * Without a port (msgport 0) every command returns 0.
  */
 static void BLITZ_ROUTINE c_libinit(void)
 {
-    td.iorequests[0] = NULL;            /* BUG(orig): not [3] (#863) */
-    td.iorequests[1] = NULL;
-    td.iorequests[2] = NULL;
+    int u;
+
+    for (u = 0; u < 4; u++)             /* Fixed (#863): also [3] */
+        td.iorequests[u] = NULL;
     td.msgport = newport();             /* Fixed (#941): by hand, V33 */
 }
 
@@ -333,15 +334,16 @@ BB_BOOL BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
 }
 
 /**
- * @brief finit: CloseDisk 0, 1, 2 and free the reply port.
+ * @brief finit: CloseDisk 0-3 and free the reply port.
  *
- * BUG(orig): unit 3 is not closed (#863).
+ * Fixed (#863): unit 3 too (the original closed 0-2 only).
  */
 static void BLITZ_ROUTINE c_libfinit(void)
 {
-    c_closedisk(0);                     /* BUG(orig): not 3 (#863) */
-    c_closedisk(1);
-    c_closedisk(2);
+    int u;
+
+    for (u = 0; u < 4; u++)             /* Fixed (#863): also 3 */
+        c_closedisk(u);
     if (td.msgport) {
         freeport(td.msgport);
         td.msgport = NULL;
