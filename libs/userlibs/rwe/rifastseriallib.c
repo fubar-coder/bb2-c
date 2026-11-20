@@ -65,9 +65,11 @@
  *   - init sets the state as at the load (slave, not initialised, no
  *     buffers); the original's init was empty, a second run from the
  *     editor started with the state of the run before (#1159).
- * BUG(orig):
- *   - SyncSerial: two machines starting at the same time both become
- *     master (each takes the other's sync byte for the echo) (#655).
+ * BUG(orig) (#655), wontfix: SyncSerial - two machines that start at the
+ * same time both become master (each takes the other's sync byte for the
+ * echo).  Not changed (R10 decision Q5 (a)): the handshake would need a
+ * new protocol on both ends; a program avoids the race by starting one
+ * side first or by choosing the roles itself (SetSerialMode).
  * SyncGet sends the byte in bytebuf (whatever was last written there) for
  * every byte received: no defect, like the original (the answer only
  * paces the sender, its value does not matter).
@@ -544,8 +546,9 @@ void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
  * A byte already waiting makes this side the slave: it waits for the
  * sync byte, echoes it and reads until a 0 arrives.  Otherwise it is the
  * master: it sends the sync byte until it comes back, then sends 0 and
- * flushes.  BUG(orig) (#655): two machines starting at the same time
- * both become master (each takes the other's sync byte for the echo).
+ * flushes.  BUG(orig) (#655), wontfix: two machines starting at the same
+ * time both become master (each takes the other's sync byte for the
+ * echo); see the file's head.
  * BB_FALSE if not initialised (fixed (#652): the original ran on the
  * port).
  * @param sync  d0: the sync byte

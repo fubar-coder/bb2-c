@@ -95,8 +95,12 @@ d0/d1/a0/a1 that are not the result.
 
 **BUG(orig)** (kept):
 
-* `SyncSerial`: two machines starting at the same time both become
-  master (each takes the other's sync byte for the echo) (#655).
+* **BUG(orig) (#655), wontfix:** `SyncSerial` - two machines starting at
+  the same time both become master (each takes the other's sync byte for
+  the echo). Not changed (R10 decision Q5 (a), no test): the handshake
+  would need a new protocol on both ends; a program avoids the race by
+  starting one side first or by choosing the roles itself
+  (`SetSerialMode`).
 
 Not a defect (kept): `SyncGet` sends the byte in `temp` (whatever was
 last written there) for every byte received; `SyncPut` only waits for
