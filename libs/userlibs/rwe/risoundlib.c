@@ -16,8 +16,8 @@
  * the BODY chunk among the first seven chunks, copies it into chip
  * memory (memlib globalloc) and fills the object: +0 sample, +4 period
  * (3579545 / rate), +6 length in words, +8 .l/+12 .w/+14 .w = 0 (no
- * loop).  Result -1, or 0 when it is no 8SVX/VHDR file, has no BODY or
- * the memory is missing.
+ * loop).  Result -1, or 0 when it is no 8SVX/VHDR file, its rate is 0,
+ * it has no BODY or the memory is missing.
  *
  * No assembler besides the thunk.
  *
@@ -26,7 +26,6 @@
  *     keeps the pointer: when CludgeSound then fails, the sound object
  *     points to freed memory (and the next CludgeSound frees it again)
  *     (#831).
- *   - The period is a subtraction loop: rate 0 never ends (#830).
  *   - The chunk walk adds length + 8 without the IFF pad byte of an odd
  *     chunk (#828).
  *   - The copy is a DBRA loop on length - 1: it copies ((length - 1) &
@@ -41,7 +40,8 @@
  * not find it ("Unable to Free Memory", TRAP #0) (#945).  The sample
  * rate is samplesPerSec, the word at offset 12 of the VHDR data; the
  * original took the word at VHDR + the chunk length, which is that word
- * only for the usual length 20 (#832).
+ * only for the usual length 20 (#832).  A rate of 0 gives the result 0:
+ * the original's subtraction loop for the period never ended (#830).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -99,7 +99,6 @@ static void BLITZ_ROUTINE _libfinit(void)
  *   - the old sample is freed before the file is checked and the object
  *     keeps the pointer: a failing call leaves it pointing to freed
  *     memory (#831);
- *   - rate 0 never ends the period loop (#830);
  *   - the chunk walk has no IFF pad byte (#828);
  *   - the copy is a DBRA loop on length - 1, the length in words
  *     (length & $FFFF) / 2 (#829).
@@ -107,8 +106,8 @@ static void BLITZ_ROUTINE _libfinit(void)
  *               length in its low word)
  * @param sram   d1: the 8SVX file
  * @param saddr  a0: the sound object (!libs #audiolib,#ia0|#pd0)
- * @return d0: BB_TRUE, BB_FALSE if it is no 8SVX/VHDR file, has no BODY
- *         or the chip memory is missing
+ * @return d0: BB_TRUE, BB_FALSE if it is no 8SVX/VHDR file, its rate is
+ *         0 (fixed: #830), it has no BODY or the chip memory is missing
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                           struct bb_sound *saddr BL_REG(a0))
@@ -130,9 +129,11 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
         return BB_FALSE;
     rate = WORDAT(sram + 12 + 8 + 12);  /* Fixed (#832): samplesPerSec, not
                                            the word at VHDR + its length */
+    if (!rate)                          /* Fixed (#830): the loop never ended */
+        return BB_FALSE;
     clock = 3579545;                    /* CMP.l d1,d0:BLT: signed */
     sper = 0;
-    while ((LONG)clock >= (LONG)rate) { /* BUG(orig): rate 0 never ends (#830) */
+    while ((LONG)clock >= (LONG)rate) {
         sper++;
         clock -= rate;
     }

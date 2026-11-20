@@ -47,7 +47,6 @@ with its signed compare.
   stays in the object: a CludgeSound that fails leaves the object
   pointing to freed memory, and the next CludgeSound on it frees it again
   (memlib's "not found" error) (#831).
-* Rate 0 never returns (the subtraction loop) (#830).
 * The chunk walk adds length + 8 without the pad byte of an odd chunk: a
   correct file with an odd chunk before BODY is not found (or walks off
   into its data); a file without the pad byte works (#828).
@@ -70,6 +69,10 @@ kind F):
   The original took the word at VHDR + the VHDR length (`ADD.l
   4(a0),a0`), which is that word only for the usual length 20 (#832;
   test `tests/bug-orig/rwe/risoundlib-vhdr-rate-offset`).
+* A rate of 0 gives the result 0; the original's subtraction loop for
+  the period never ended (#830; tests
+  `tests/bug-orig/rwe/risoundlib-rate-zero-hangs`,
+  `risoundlib2-rate-zero-hangs`).
 
 ## Test
 
@@ -87,6 +90,6 @@ back. Covered: nine rates (1, 2, 0x8000, 0xFFFF …), each call
 freeing the previous sample; chunks before BODY, BODY as the 7th (found)
 and 8th chunk (not), no `8SVX`, no `VHDR`, a VHDR of 24 bytes, an odd
 chunk with and without the pad byte, odd and 1-byte BODYs, BODYs of
-65536, 70000, 131071 and 131072 bytes, the old sample freed by a failure.
-Not covered: rate 0 and an empty BODY (see above); audiolib itself (only
-the object layout).
+65536, 70000, 131071 and 131072 bytes, the old sample freed by a failure;
+in the C build only (the original never returns): rate 0. Not covered:
+an empty BODY (see above); audiolib itself (only the object layout).

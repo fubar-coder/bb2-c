@@ -4,6 +4,7 @@
 ; session ends in a timeout).  The 8SVX data are built in memory: a VHDR
 ; of the usual length 20 with samplesPerSec 0, a BODY of 4 bytes.
 ; Correct: CludgeSound returns, the program goes on.
+; @fixed #830
 ; @rwe risoundlib
 ; @pass timeout=30
 DEFTYPE .l

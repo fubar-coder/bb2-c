@@ -21,8 +21,9 @@
  * bytes (((length - 1) & $FFFF) + 1 bytes copied, the length in words of
  * the low word, #829) up to 131071 and 131072 bytes, the old sample freed
  * on a failure and the stale pointer kept (#831), an odd BODY length.
- * Not covered by the original: rate 0 (never returns, #830) and an empty
- * BODY (copies 65536 bytes into an 8 byte block, #829).
+ * In the C build only (cases [fixed #N]): rate 0 (the original never
+ * returns, #830).  Not covered: an empty BODY (the original copies 65536
+ * bytes into an 8 byte block, #829).
  */
 #ifndef RISOUNDCLUDGE_H
 #define RISOUNDCLUDGE_H
@@ -267,6 +268,15 @@ static void cs_cases(const char *lib, int idx)
     cs_body(1, 1);
     cs_finish();
     cs_cludge(12);
+
+    if (!strcmp(bl_libset, "obj")) {    /* the original hangs (#830) */
+        strcpy(VEC, "rate 0");
+        cs_begin("8SVX", "VHDR", 20, 0);
+        cs_body(100, 1);
+        cs_finish();
+        cs_cludge(16);
+        cs_forget();
+    }
 
     FreeMem(cs_file, CS_FILESZ);
 }
