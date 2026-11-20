@@ -99,6 +99,10 @@
  *     run of a program with the library still loaded (from the editor)
  *     found the tables of the run before, freed, and its finit freed
  *     them again (#871).
+ *   - init sets the four player adaptor's status to on, the manual's
+ *     "Default status for the adaptor is on"; the original kept the
+ *     status of the run before, so after JAdaptorStatus Off a second run
+ *     from the editor started with the adaptor off (#1132).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -438,7 +442,10 @@ static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zonenum BL_REG(d0))
  * memory there is no table.  All 16 entries of the list are cleared:
  * fixed (#871), the original cleared only entry 0, so the next run of a
  * program with the library still loaded found the tables of the run
- * before, freed by its finit.
+ * before, freed by its finit.  The four player adaptor's status is set
+ * to on, the manual's default: fixed (#1132), the original kept the
+ * status of the run before (after JAdaptorStatus Off the next run
+ * started with the adaptor off).
  */
 static void BLITZ_ROUTINE initmem_c(void)
 {
@@ -448,6 +455,7 @@ static void BLITZ_ROUTINE initmem_c(void)
 
     zd.is020 = f;
     zd.zones020 = f;
+    fourplayer = 0xff;                                  /* on: fixed (#1132) */
     zd.zonetable = NULL;
     for (i = 0; i < 16; i++)
         zd.list[i] = NULL;                              /* fixed (#871) */

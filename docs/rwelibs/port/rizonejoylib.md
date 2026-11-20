@@ -174,6 +174,12 @@ All other routines are C behind `BLITZ_THUNK`.
   again (#871; D-019: no Blitz program can run twice with the library
   loaded, `libs_emulator` cases `[fixed #871]` of `rwe_rizonejoylib`,
   the scenario's second init).
+* init sets the four player adaptor's status to on, as the manual says
+  ("Default status for the adaptor is on"). The original set it only at
+  the load (`Dc.b -1`), so after `JAdaptorStatus Off` a second run of
+  the program from the editor started with the adaptor off (#1132;
+  D-019, `libs_emulator` case `[fixed #1132]` of `rwe_rizonejoylib`:
+  JAdaptorStatus's old status in the scenario's second run).
 
 ## BUG(orig)
 

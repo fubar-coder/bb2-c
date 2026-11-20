@@ -1200,7 +1200,8 @@ JAdaptorStatus|d0|adaptor off|2	$123400FF
 JAdaptorStatus|d0|adaptor on|1	$12340000
 JAdaptorStatus|d0|adaptor on|2	$12340000
 JAdaptorStatus|d0|before finit|1	$123400FF
-JAdaptorStatus|d0|second run|1	$12340000
+JAdaptorStatus|d0|second run|1 [orig]	$12340000
+JAdaptorStatus|d0|second run|1 [fixed #1132]	$123400FF
 JAdaptorStatus|kept|adaptor off|1	kept
 JAdaptorStatus|kept|adaptor off|2	kept
 JAdaptorStatus|kept|adaptor on|1	kept
