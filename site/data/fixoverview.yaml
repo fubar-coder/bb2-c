@@ -5764,6 +5764,134 @@ rows:
     text: "Freeing a chunky bitmap leaves the audio filter and power LED as they are; the original toggled them."
     page: libraries
     anchor: richunkylib-fixes
+  - issue: 875
+    severity: 2
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "NewZoneTable"
+    text: "`NewZoneTable` clears the zones of the new table and leaves the current table alone; the original cleared the current table and left the new one uncleared."
+    page: libraries
+    anchor: newzonetable-current-table
+  - issue: 880
+    severity: 2
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "Zone, ZoneTest"
+    text: "In the 68020 mode, the default on a 68020, circular zones hit only the points inside them, also with a radius of 182 or more; the original hit points far outside and missed points inside large circles."
+    page: libraries
+    anchor: zone-circles
+  - issue: 867
+    severity: 2
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "SetZone"
+    text: "`SetZone` refuses a circle's radius outside 0 to 255 and returns 0; the original stored a much smaller circle for a radius of 256 or more."
+    page: libraries
+    anchor: zone-circles
+  - issue: 866
+    severity: 2
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "SetZone, Zone, ZoneTest"
+    text: "Only a bottom edge of -1 marks a circular zone, and `SetZone` refuses a rectangle that ends at -1; the original's 68020 mode tested every rectangle above the top of the screen as a circle."
+    page: libraries
+    anchor: zone-negative-y
+  - issue: 872
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "NewZoneTable, UseZoneTable, FreeZoneTable"
+    text: "`NewZoneTable`, `UseZoneTable` and `FreeZoneTable` refuse a negative table number; the original took -1 for an entry in front of its list and freed or chose the wrong table."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 873
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "ZoneInit, SetZone"
+    text: "`ZoneInit` and `SetZone` refuse a negative zone number; the original wrote in front of the zone table."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 878
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "SetZone, ZoneInit"
+    text: "`SetZone` and `ZoneInit` reach every zone of a table with more than 8192 zones; in the original, zone n was zone n modulo 8192."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 881
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "ZoneTest"
+    text: "`ZoneTest` from zone 256 on tests the zones it names; the original tested zone n modulo 256 under the right numbers."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 879
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "Zone, ZoneTest"
+    text: "In the 68000 mode, `Zone` and `ZoneTest` find points in zones more than 32767 pixels wide or high; the original missed them."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 870
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "GetZoneX1, GetZoneY1, GetZoneX2, GetZoneY2"
+    text: "`GetZoneX1` to `GetZoneY2` return a zone's values also in tables of up to 6 zones, and -1 for a zone beyond the table or without a table; the original returned -1 there and read behind the table."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 876
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "SetZone, ZoneTable"
+    text: "Without memory for zone table 0, `SetZone` returns False and `ZoneTable` 0; the original returned -1 for both."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 868
+    severity: 5
+    topic: "System"
+    library: "rizonejoylib"
+    command: "FreeZoneTable"
+    text: "`FreeZoneTable` removes the freed table from the library's list; the original left it there, and the end of the program freed it a second time."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 874
+    severity: 5
+    topic: "System"
+    library: "rizonejoylib"
+    command: "NewZoneTable"
+    text: "`NewZoneTable` without memory for a table that replaces another leaves no freed table to choose; the original kept the freed one in its list."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 1136
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "NewZoneTable"
+    text: "`NewZoneTable` accepts a table of one zone, as the guide allows; the original took 2 zones at least."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 871
+    severity: 5
+    topic: "System"
+    library: "rizonejoylib"
+    command: ""
+    text: "A program run again from the editor starts with zone table 0 alone; the original found the freed tables of the run before and freed them again."
+    page: libraries
+    anchor: rizonejoylib-fixes
+  - issue: 1132
+    severity: 5
+    topic: "Input"
+    library: "rizonejoylib"
+    command: "JAdaptorStatus"
+    text: "A program run again from the editor starts with the four player adaptor switched on, as documented; the original kept it off after `JAdaptorStatus Off`."
+    page: libraries
+    anchor: rizonejoylib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

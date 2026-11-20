@@ -10,14 +10,12 @@ intro: |
   when the program starts; `NewZoneTable` creates the tables 1 to 15 with
   up to 65535 zones each, `UseZoneTable` chooses the table the zone
   commands work on, and `FreeZoneTable` frees one. All tables are freed
-  when the program ends. Zone and table numbers are not checked for
-  negative values; a negative number writes outside the table
-  ([#873](https://github.com/fubar-coder/bb2-c/issues/873),
-  [#872](https://github.com/fubar-coder/bb2-c/issues/872)).
+  when the program ends.
 
   On a 68020 or later processor the zones are tested with a faster
-  method, which `SetZoneMode` can switch off. The two methods differ in a
-  few edge cases, described with `Zone`.
+  method, which `SetZoneMode` can switch off. Both methods give the same
+  results for the zones `SetZone` makes. `Zone` and `ZoneTest` are
+  faster than the original's.
 
   The second part reads the joysticks directly from the hardware: port 1
   is the joystick port, port 2 the mouse port, and ports 3 and 4 the two
