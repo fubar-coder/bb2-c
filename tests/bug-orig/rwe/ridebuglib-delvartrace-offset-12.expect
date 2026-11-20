@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+set
+messages 1
+add 255 bb
+messages 2
+del 254 a
+rc=0
