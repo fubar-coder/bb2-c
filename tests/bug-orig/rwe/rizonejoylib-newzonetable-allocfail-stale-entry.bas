@@ -7,6 +7,7 @@
 ; second time).
 ; Correct: after the failed NewZoneTable table 1 does not exist,
 ; UseZoneTable 1 returns 0.
+; @fixed #874
 ; @rwe rizonejoylib
 ; The program is silent for about 11 s (more than BUG_ORIG_RUN_HANG_AFTER):
 ; @pass hang_after=30

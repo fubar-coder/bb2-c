@@ -190,12 +190,16 @@ All other routines are C behind `BLITZ_THUNK`.
   `_zonetable` on the freed block (#875, test
   `rwe/rizonejoylib-newzonetable-inits-current`; `libs_emulator` cases
   `[fixed #875]` of `rwe_rizonejoylib`: table 0 after NewZoneTable 3).
+* If NewZoneTable has freed the old table of that number and the
+  AllocMem fails, the table no longer exists: its entry is cleared, the
+  result is 0, and if it was the current table, table 0 becomes current
+  (as FreeZoneTable does) (D-018). The original left the freed block in
+  the entry, where UseZoneTable selected it and finit freed it again,
+  and, for the current table, in `_zonetable` (#874, test
+  `rwe/rizonejoylib-newzonetable-allocfail-stale-entry`).
 
 ## BUG(orig)
 
-* If NewZoneTable replaces a table and the AllocMem fails, the entry
-  keeps the freed block; if the replaced table is the current one,
-  `_zonetable` points to freed memory (#874).
 * FreeZoneTable always makes table 0 the current one (#869).
 * ReadJoyPad reads the joystick port for every port number but 2 (#877).
 

@@ -27,8 +27,6 @@
  * the same order, so its timing does not depend on the code around them.
  *
  * BUG(orig):
- *   - If NewZoneTable freed the old table of that number and the AllocMem
- *     fails, the entry keeps the freed block (#874).
  *   - FreeZoneTable always makes table 0 the current one (#869).
  *   - ReadJoyPad reads the joystick port for every port number but 2
  *     (#877).
@@ -108,6 +106,12 @@
  *     block.  The original ran ZoneInit on the current table (_zonetable)
  *     and left AllocMem's garbage in the new one, and a replaced current
  *     table left _zonetable on the freed block (#875).
+ *   - If NewZoneTable freed the old table of that number and the AllocMem
+ *     fails, the table no longer exists: its entry is cleared, 0 is
+ *     returned, and if it was the current table, table 0 becomes current
+ *     (as after FreeZoneTable).  The original left the freed block in the
+ *     entry (UseZoneTable selected it, finit freed it again) and in
+ *     _zonetable (#874, D-018).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -737,8 +741,11 @@ static void clearzones(struct zonetable *zt)
  * first.  All zones of the new table are cleared and the current table
  * stays as it is; a replaced current table stays current under its new
  * block: fixed (#875), the original ran ZoneInit on the current table
- * and left AllocMem's garbage in the new one.  BUG(orig): if the
- * AllocMem fails after the free, the entry keeps the freed block (#874).
+ * and left AllocMem's garbage in the new one.  If the AllocMem fails
+ * after the free, the table no longer exists (its entry cleared, 0
+ * returned) and, if it was the current one, table 0 becomes current:
+ * fixed (#874, D-018), the original left the freed block in the entry
+ * and in _zonetable.
  * Fixed (#872): n is compared unsigned, a negative n is refused (the
  * original passed it: entry -1 is _zonetable).
  * @param n    d0: the table number
@@ -754,11 +761,16 @@ static BB_BOOL BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG
         return BB_FALSE;                                /* _return0 */
     e = entry(n);
     old = *e;
-    if (old)
+    if (old) {
         free_mem(old);
+        *e = NULL;                                      /* fixed (#874) */
+    }
     mem = AllocMem((num << 3) + 4, MEMF_PUBLIC);
-    if (!mem)
+    if (!mem) {
+        if (old && zd.zonetable == old)
+            zd.zonetable = zd.list[0];                  /* fixed (#874) */
         return BB_FALSE;
+    }
     *e = mem;
     mem->count = num;
     clearzones(mem);                                    /* the new table: fixed (#875) */
