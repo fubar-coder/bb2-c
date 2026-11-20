@@ -7,6 +7,7 @@
 ; the start of the track behind the last one played, or the lead-out);
 ; -1 when it worked, 0 otherwise: 0 before CDReadTOC, -1 for tracks 1
 ; and 2, 0 for track 3 (there is none).
+; @fixed #580
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
 ; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image

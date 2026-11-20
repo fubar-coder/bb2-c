@@ -119,13 +119,23 @@ d1/d2 (CDTrackLength) are not reproduced.
   8 bytes of room there since #946, which kept the pointers of its SCSI
   buffers from being overwritten; it is the end of the struct now.)
   (#948)
+* `CDPlayTrack track#,numtracks` with scsiflag sends PLAY AUDIO(12)
+  (`$A5`, as the author began it) from the SCSI TOC of `CDReadTOC`: the
+  LBA of track# and the length to the start of the track behind the last
+  one played (the lead-out at the most). It returns -1 when the command
+  worked, else 0: also without a `CDReadTOC`, for a track the TOC does
+  not hold and for 0 tracks (the manual: "A return value of true means
+  that the command succeeded"). The original ignores its arguments,
+  plays the author's test values (blocks 14000 to 15000) and returns
+  DoIO's error code. Only `CDPlayTrack`, `CDReadTOC` and the TOC
+  functions speak SCSI; `CDStop`, `CDPause` and the others send
+  cd.device commands also with scsiflag (a SCSI play is a completed
+  command: `CDStop` does not stop it). (#580)
 
 **BUG(orig)** (kept):
 
 * `CDStop` (also in `CloseCD`) is AbortIO only, no WaitIO; it sets
   io_Command first. (#574)
-* `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
-  15000 (test values), io_Offset = 1. (#580)
 
 **Test** (`libs/tests/rwe/ricompactdisclib.c`, snitch case "rwe
 ricompactdisclib"): each run loads one library set (the C build or the

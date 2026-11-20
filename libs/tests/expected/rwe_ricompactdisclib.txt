@@ -3456,14 +3456,18 @@ CDPlayTrack|command|no port 3,2|1	$00000000
 CDPlayTrack|command|no request 3,2|1	$00000000
 CDPlayTrack|command|not open 3,2|1	$00000000
 CDPlayTrack|command|open 3,2|1	$00000025
-CDPlayTrack|command|scsi 0,1|1	$0000001C
+CDPlayTrack|command|scsi 0,1|1 [orig]	$0000001C
+CDPlayTrack|command|scsi 0,1|1 [fixed #580]	$00000000
 CDPlayTrack|command|scsi 2,1|1	$0000001C
-CDPlayTrack|command|scsi 3,0|1	$0000001C
-CDPlayTrack|command|scsi 3,2|1	$0000001C
+CDPlayTrack|command|scsi 3,0|1 [orig]	$0000001C
+CDPlayTrack|command|scsi 3,0|1 [fixed #580]	$00000000
+CDPlayTrack|command|scsi 3,2|1 [orig]	$0000001C
+CDPlayTrack|command|scsi 3,2|1 [fixed #580]	$00000000
 CDPlayTrack|command|scsi 5,1|1	$0000001C
 CDPlayTrack|command|scsi 6,5|1	$0000001C
 CDPlayTrack|command|scsi 7,1|1	$0000001C
-CDPlayTrack|command|scsi 8,1|1	$0000001C
+CDPlayTrack|command|scsi 8,1|1 [orig]	$0000001C
+CDPlayTrack|command|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|command|scsi kept|1 [orig]	$0000001C
 CDPlayTrack|command|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|d0|2|1	$00000000
@@ -3478,12 +3482,16 @@ CDPlayTrack|d0|no request 3,2|1	$00000000
 CDPlayTrack|d0|not open 3,2|1	$00000000
 CDPlayTrack|d0|open 3,2|1	$00000000
 CDPlayTrack|d0|scsi 0,1|1	$00000000
-CDPlayTrack|d0|scsi 2,1|1	$00000000
+CDPlayTrack|d0|scsi 2,1|1 [orig]	$00000000
+CDPlayTrack|d0|scsi 2,1|1 [fixed #580]	$FFFFFFFF
 CDPlayTrack|d0|scsi 3,0|1	$00000000
 CDPlayTrack|d0|scsi 3,2|1	$00000000
-CDPlayTrack|d0|scsi 5,1|1	$00000000
-CDPlayTrack|d0|scsi 6,5|1	$00000000
-CDPlayTrack|d0|scsi 7,1|1	$00000000
+CDPlayTrack|d0|scsi 5,1|1 [orig]	$00000000
+CDPlayTrack|d0|scsi 5,1|1 [fixed #580]	$FFFFFFFF
+CDPlayTrack|d0|scsi 6,5|1 [orig]	$00000000
+CDPlayTrack|d0|scsi 6,5|1 [fixed #580]	$FFFFFFFF
+CDPlayTrack|d0|scsi 7,1|1 [orig]	$00000000
+CDPlayTrack|d0|scsi 7,1|1 [fixed #580]	$FFFFFFFF
 CDPlayTrack|d0|scsi 8,1|1	$00000000
 CDPlayTrack|d0|scsi kept|1	$00000000
 CDPlayTrack|data|2|1	$00000000
@@ -3497,14 +3505,18 @@ CDPlayTrack|data|no port 3,2|1	$00000000
 CDPlayTrack|data|no request 3,2|1	$00000000
 CDPlayTrack|data|not open 3,2|1	$00000000
 CDPlayTrack|data|open 3,2|1	$00000000
-CDPlayTrack|data|scsi 0,1|1	$00000002
+CDPlayTrack|data|scsi 0,1|1 [orig]	$00000002
+CDPlayTrack|data|scsi 0,1|1 [fixed #580]	$00000000
 CDPlayTrack|data|scsi 2,1|1	$00000002
-CDPlayTrack|data|scsi 3,0|1	$00000002
-CDPlayTrack|data|scsi 3,2|1	$00000002
+CDPlayTrack|data|scsi 3,0|1 [orig]	$00000002
+CDPlayTrack|data|scsi 3,0|1 [fixed #580]	$00000000
+CDPlayTrack|data|scsi 3,2|1 [orig]	$00000002
+CDPlayTrack|data|scsi 3,2|1 [fixed #580]	$00000000
 CDPlayTrack|data|scsi 5,1|1	$00000002
 CDPlayTrack|data|scsi 6,5|1	$00000002
 CDPlayTrack|data|scsi 7,1|1	$00000002
-CDPlayTrack|data|scsi 8,1|1	$00000002
+CDPlayTrack|data|scsi 8,1|1 [orig]	$00000002
+CDPlayTrack|data|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|data|scsi kept|1 [orig]	$00000002
 CDPlayTrack|data|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|failed opens|2|1	$00000000
@@ -3538,14 +3550,18 @@ CDPlayTrack|flags|no port 3,2|1	$00000000
 CDPlayTrack|flags|no request 3,2|1	$00000000
 CDPlayTrack|flags|not open 3,2|1	$00000000
 CDPlayTrack|flags|open 3,2|1	$00000000
-CDPlayTrack|flags|scsi 0,1|1	$00000001
+CDPlayTrack|flags|scsi 0,1|1 [orig]	$00000001
+CDPlayTrack|flags|scsi 0,1|1 [fixed #580]	$00000000
 CDPlayTrack|flags|scsi 2,1|1	$00000001
-CDPlayTrack|flags|scsi 3,0|1	$00000001
-CDPlayTrack|flags|scsi 3,2|1	$00000001
+CDPlayTrack|flags|scsi 3,0|1 [orig]	$00000001
+CDPlayTrack|flags|scsi 3,0|1 [fixed #580]	$00000000
+CDPlayTrack|flags|scsi 3,2|1 [orig]	$00000001
+CDPlayTrack|flags|scsi 3,2|1 [fixed #580]	$00000000
 CDPlayTrack|flags|scsi 5,1|1	$00000001
 CDPlayTrack|flags|scsi 6,5|1	$00000001
 CDPlayTrack|flags|scsi 7,1|1	$00000001
-CDPlayTrack|flags|scsi 8,1|1	$00000001
+CDPlayTrack|flags|scsi 8,1|1 [orig]	$00000001
+CDPlayTrack|flags|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|flags|scsi kept|1 [orig]	$00000001
 CDPlayTrack|flags|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|kept|2|1	kept
@@ -3579,14 +3595,18 @@ CDPlayTrack|length|no port 3,2|1	$00000000
 CDPlayTrack|length|no request 3,2|1	$00000000
 CDPlayTrack|length|not open 3,2|1	$00000000
 CDPlayTrack|length|open 3,2|1	$00000002
-CDPlayTrack|length|scsi 0,1|1	$0000001E
+CDPlayTrack|length|scsi 0,1|1 [orig]	$0000001E
+CDPlayTrack|length|scsi 0,1|1 [fixed #580]	$00000000
 CDPlayTrack|length|scsi 2,1|1	$0000001E
-CDPlayTrack|length|scsi 3,0|1	$0000001E
-CDPlayTrack|length|scsi 3,2|1	$0000001E
+CDPlayTrack|length|scsi 3,0|1 [orig]	$0000001E
+CDPlayTrack|length|scsi 3,0|1 [fixed #580]	$00000000
+CDPlayTrack|length|scsi 3,2|1 [orig]	$0000001E
+CDPlayTrack|length|scsi 3,2|1 [fixed #580]	$00000000
 CDPlayTrack|length|scsi 5,1|1	$0000001E
 CDPlayTrack|length|scsi 6,5|1	$0000001E
 CDPlayTrack|length|scsi 7,1|1	$0000001E
-CDPlayTrack|length|scsi 8,1|1	$0000001E
+CDPlayTrack|length|scsi 8,1|1 [orig]	$0000001E
+CDPlayTrack|length|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|length|scsi kept|1 [orig]	$0000001E
 CDPlayTrack|length|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|offset|2|1	$00000002
@@ -3600,14 +3620,18 @@ CDPlayTrack|offset|no port 3,2|1	$00000000
 CDPlayTrack|offset|no request 3,2|1	$00000000
 CDPlayTrack|offset|not open 3,2|1	$00000000
 CDPlayTrack|offset|open 3,2|1	$00000003
-CDPlayTrack|offset|scsi 0,1|1	$00000001
+CDPlayTrack|offset|scsi 0,1|1 [orig]	$00000001
+CDPlayTrack|offset|scsi 0,1|1 [fixed #580]	$00000000
 CDPlayTrack|offset|scsi 2,1|1	$00000001
-CDPlayTrack|offset|scsi 3,0|1	$00000001
-CDPlayTrack|offset|scsi 3,2|1	$00000001
+CDPlayTrack|offset|scsi 3,0|1 [orig]	$00000001
+CDPlayTrack|offset|scsi 3,0|1 [fixed #580]	$00000000
+CDPlayTrack|offset|scsi 3,2|1 [orig]	$00000001
+CDPlayTrack|offset|scsi 3,2|1 [fixed #580]	$00000000
 CDPlayTrack|offset|scsi 5,1|1	$00000001
 CDPlayTrack|offset|scsi 6,5|1	$00000001
 CDPlayTrack|offset|scsi 7,1|1	$00000001
-CDPlayTrack|offset|scsi 8,1|1	$00000001
+CDPlayTrack|offset|scsi 8,1|1 [orig]	$00000001
+CDPlayTrack|offset|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|offset|scsi kept|1 [orig]	$00000001
 CDPlayTrack|offset|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|opens|2|1	$00000000
@@ -3663,14 +3687,18 @@ CDPlayTrack|requests|no port 3,2|1	$00000000
 CDPlayTrack|requests|no request 3,2|1	$00000000
 CDPlayTrack|requests|not open 3,2|1	$00000000
 CDPlayTrack|requests|open 3,2|1	$00000001
-CDPlayTrack|requests|scsi 0,1|1	$00000001
+CDPlayTrack|requests|scsi 0,1|1 [orig]	$00000001
+CDPlayTrack|requests|scsi 0,1|1 [fixed #580]	$00000000
 CDPlayTrack|requests|scsi 2,1|1	$00000001
-CDPlayTrack|requests|scsi 3,0|1	$00000001
-CDPlayTrack|requests|scsi 3,2|1	$00000001
+CDPlayTrack|requests|scsi 3,0|1 [orig]	$00000001
+CDPlayTrack|requests|scsi 3,0|1 [fixed #580]	$00000000
+CDPlayTrack|requests|scsi 3,2|1 [orig]	$00000001
+CDPlayTrack|requests|scsi 3,2|1 [fixed #580]	$00000000
 CDPlayTrack|requests|scsi 5,1|1	$00000001
 CDPlayTrack|requests|scsi 6,5|1	$00000001
 CDPlayTrack|requests|scsi 7,1|1	$00000001
-CDPlayTrack|requests|scsi 8,1|1	$00000001
+CDPlayTrack|requests|scsi 8,1|1 [orig]	$00000001
+CDPlayTrack|requests|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|requests|scsi kept|1 [orig]	$00000001
 CDPlayTrack|requests|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|requests begun while the play was out|held 1,1|1	$00000000
@@ -3726,14 +3754,18 @@ CDPlayTrack|scsi_CmdLength|no port 3,2|1	$00000000
 CDPlayTrack|scsi_CmdLength|no request 3,2|1	$00000000
 CDPlayTrack|scsi_CmdLength|not open 3,2|1	$00000000
 CDPlayTrack|scsi_CmdLength|open 3,2|1	$00000000
-CDPlayTrack|scsi_CmdLength|scsi 0,1|1	$0000000C
+CDPlayTrack|scsi_CmdLength|scsi 0,1|1 [orig]	$0000000C
+CDPlayTrack|scsi_CmdLength|scsi 0,1|1 [fixed #580]	$00000000
 CDPlayTrack|scsi_CmdLength|scsi 2,1|1	$0000000C
-CDPlayTrack|scsi_CmdLength|scsi 3,0|1	$0000000C
-CDPlayTrack|scsi_CmdLength|scsi 3,2|1	$0000000C
+CDPlayTrack|scsi_CmdLength|scsi 3,0|1 [orig]	$0000000C
+CDPlayTrack|scsi_CmdLength|scsi 3,0|1 [fixed #580]	$00000000
+CDPlayTrack|scsi_CmdLength|scsi 3,2|1 [orig]	$0000000C
+CDPlayTrack|scsi_CmdLength|scsi 3,2|1 [fixed #580]	$00000000
 CDPlayTrack|scsi_CmdLength|scsi 5,1|1	$0000000C
 CDPlayTrack|scsi_CmdLength|scsi 6,5|1	$0000000C
 CDPlayTrack|scsi_CmdLength|scsi 7,1|1	$0000000C
-CDPlayTrack|scsi_CmdLength|scsi 8,1|1	$0000000C
+CDPlayTrack|scsi_CmdLength|scsi 8,1|1 [orig]	$0000000C
+CDPlayTrack|scsi_CmdLength|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|scsi_CmdLength|scsi kept|1 [orig]	$0000000C
 CDPlayTrack|scsi_CmdLength|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|scsi_Command|2|1	bytes 12 000000000000000000000000
@@ -3747,14 +3779,22 @@ CDPlayTrack|scsi_Command|no port 3,2|1	bytes 12 000000000000000000000000
 CDPlayTrack|scsi_Command|no request 3,2|1	bytes 12 000000000000000000000000
 CDPlayTrack|scsi_Command|not open 3,2|1	bytes 12 000000000000000000000000
 CDPlayTrack|scsi_Command|open 3,2|1	bytes 12 000000000000000000000000
-CDPlayTrack|scsi_Command|scsi 0,1|1	bytes 12 A5000036B000003A98000000
-CDPlayTrack|scsi_Command|scsi 2,1|1	bytes 12 A5000036B000003A98000000
-CDPlayTrack|scsi_Command|scsi 3,0|1	bytes 12 A5000036B000003A98000000
-CDPlayTrack|scsi_Command|scsi 3,2|1	bytes 12 A5000036B000003A98000000
-CDPlayTrack|scsi_Command|scsi 5,1|1	bytes 12 A5000036B000003A98000000
-CDPlayTrack|scsi_Command|scsi 6,5|1	bytes 12 A5000036B000003A98000000
-CDPlayTrack|scsi_Command|scsi 7,1|1	bytes 12 A5000036B000003A98000000
-CDPlayTrack|scsi_Command|scsi 8,1|1	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 0,1|1 [orig]	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 0,1|1 [fixed #580]	bytes 12 000000000000000000000000
+CDPlayTrack|scsi_Command|scsi 2,1|1 [orig]	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 2,1|1 [fixed #580]	bytes 12 A50000001C71000027450000
+CDPlayTrack|scsi_Command|scsi 3,0|1 [orig]	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 3,0|1 [fixed #580]	bytes 12 000000000000000000000000
+CDPlayTrack|scsi_Command|scsi 3,2|1 [orig]	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 3,2|1 [fixed #580]	bytes 12 000000000000000000000000
+CDPlayTrack|scsi_Command|scsi 5,1|1 [orig]	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 5,1|1 [fixed #580]	bytes 12 A5000000B2C5000047CA0000
+CDPlayTrack|scsi_Command|scsi 6,5|1 [orig]	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 6,5|1 [fixed #580]	bytes 12 A5000000FA8F0000B0190000
+CDPlayTrack|scsi_Command|scsi 7,1|1 [orig]	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 7,1|1 [fixed #580]	bytes 12 A50000014D3000005D780000
+CDPlayTrack|scsi_Command|scsi 8,1|1 [orig]	bytes 12 A5000036B000003A98000000
+CDPlayTrack|scsi_Command|scsi 8,1|1 [fixed #580]	bytes 12 000000000000000000000000
 CDPlayTrack|scsi_Command|scsi kept|1 [orig]	bytes 12 A5000036B000003A98000000
 CDPlayTrack|scsi_Command|scsi kept|1 [fixed #577]	bytes 12 000000000000000000000000
 CDPlayTrack|scsi_Data|2|1	$00000000
@@ -3788,14 +3828,18 @@ CDPlayTrack|scsi_Flags|no port 3,2|1	$00000000
 CDPlayTrack|scsi_Flags|no request 3,2|1	$00000000
 CDPlayTrack|scsi_Flags|not open 3,2|1	$00000000
 CDPlayTrack|scsi_Flags|open 3,2|1	$00000000
-CDPlayTrack|scsi_Flags|scsi 0,1|1	$00000002
+CDPlayTrack|scsi_Flags|scsi 0,1|1 [orig]	$00000002
+CDPlayTrack|scsi_Flags|scsi 0,1|1 [fixed #580]	$00000000
 CDPlayTrack|scsi_Flags|scsi 2,1|1	$00000002
-CDPlayTrack|scsi_Flags|scsi 3,0|1	$00000002
-CDPlayTrack|scsi_Flags|scsi 3,2|1	$00000002
+CDPlayTrack|scsi_Flags|scsi 3,0|1 [orig]	$00000002
+CDPlayTrack|scsi_Flags|scsi 3,0|1 [fixed #580]	$00000000
+CDPlayTrack|scsi_Flags|scsi 3,2|1 [orig]	$00000002
+CDPlayTrack|scsi_Flags|scsi 3,2|1 [fixed #580]	$00000000
 CDPlayTrack|scsi_Flags|scsi 5,1|1	$00000002
 CDPlayTrack|scsi_Flags|scsi 6,5|1	$00000002
 CDPlayTrack|scsi_Flags|scsi 7,1|1	$00000002
-CDPlayTrack|scsi_Flags|scsi 8,1|1	$00000002
+CDPlayTrack|scsi_Flags|scsi 8,1|1 [orig]	$00000002
+CDPlayTrack|scsi_Flags|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|scsi_Flags|scsi kept|1 [orig]	$00000002
 CDPlayTrack|scsi_Flags|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|scsi_Length|2|1	$00000000

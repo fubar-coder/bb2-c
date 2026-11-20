@@ -41,11 +41,11 @@
  * address 0, fixed #582), CDTrackLength of every track 1..9 of the 9 track CD
  * and 40..50 of the 50 track CD (the original: from track 44 the start is
  * wrong, fixed #585; the last track reads the entry behind it, fixed #583), CDTrackMins/CDTrackSecs offsets 0, 1, 4, 5, -1..-5 and the
- * high bits of d0 (the release code as the original; the error check of #586 is not called here), the SCSI path (scsiflag: CDPlayTrack's
- * fixed blocks 14000-15000 and io_Offset 1 before and after READ TOC,
+ * high bits of d0 (the release code as the original; the error check of #586 is not called here), the SCSI path (scsiflag: CDPlayTrack (the original's
+ * fixed blocks 14000-15000, fixed #580: from the SCSI TOC) before and after READ TOC,
  * with tracks inside, at the ends of and outside the TOC, CDNumTracks
  * from the SCSI TOC data, CDFirstTrack, CDLastTrack and CDTrackLength
- * from it (the original: from toc, fixed #582; BUG(orig) (#580)); the flag kept by OpenCD (the original; fixed #577: cleared)
+ * from it (the original: from toc, fixed #582); the flag kept by OpenCD (the original; fixed #577: cleared)
  * without arguments), CloseCD (twice), finit with a device open and
  * without port, init again, init without a message port
  * (AllocSignal fails) and OpenCD without a request (AllocMem of 200 bytes

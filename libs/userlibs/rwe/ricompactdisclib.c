@@ -103,12 +103,17 @@
  *   and a device that writes the whole struct (uaescsi.device) writes 8
  *   bytes behind MyCDInfo, the end of the library.  (The port had 8 bytes
  *   of room there since #946, a DIFF; it is the struct's end now.)
+ * Fixed (#580): CDPlayTrack track#,numtracks with scsiflag sends PLAY
+ *   AUDIO(12) from the SCSI TOC of CDReadTOC (the LBA of track# and the
+ *   length to the start of the track behind the last one played, the
+ *   lead-out at the most) and returns -1 when it worked, else 0 (also
+ *   without a TOC, for a track the TOC does not hold, for 0 tracks); the
+ *   original ignores its arguments, plays the author's test values
+ *   (blocks 14000 to 15000) and returns DoIO's error code.
  *
  * BUG(orig):
  *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
  *     io_Command of the request first (#574).
- *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
- *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
  * Registers: the original changes d0/d1/a0/a1, a6 and (CDReadTOC d7,
  * CDTrackLength d1/d2) others; the thunks keep d1/a0/a1, GCC keeps
  * d2-d7/a2-a6.
@@ -620,6 +625,9 @@ ULONG BLITZ_ROUTINE c_eject(ULONG on BL_REG(d0))
 }
 
 /* CDPlayTrack track#,numtracks: CD_PLAYTRACK through SendIO */
+static const UBYTE *scsidesc(ULONG t);
+static ULONG getlong(const UBYTE *p);
+
 ULONG BLITZ_ROUTINE c_playtrack(ULONG track BL_REG(d0), ULONG num BL_REG(d1))
 {
     UBYTE *c;
@@ -628,19 +636,42 @@ ULONG BLITZ_ROUTINE c_playtrack(ULONG track BL_REG(d0), ULONG num BL_REG(d1))
         return 0;
     if (!scsiflag)
         return cdio(SENDIO, CD_PLAYTRACK, NULL, track, num);
-    /* _playtrackscsi - BUG(orig) (#580): the arguments are ignored */
-    cd.ioreq->io_Offset = 1;
-    c = SCSICMD12;
-    c[0] = SCSI_CMD_PLAYAUDIO12;
-    /* Fixed (#579): the bytes one by one; the original writes the two
-       longs and the word with MOVE to the odd addresses 1, 5 and 9 (an
-       address error on a 68000) */
-    putlong(c + 1, 14000);
-    putlong(c + 5, 15000);
-    c[9] = 0;
-    c[10] = 0;
-    c[11] = 0;
-    return doscsi(SCSICMD12, SIZEOF_SCSICMD12, NULL, 0, 0);
+    /* _playtrackscsi.  Fixed (#580): PLAY AUDIO(12) from the SCSI TOC of
+       CDReadTOC: the LBA of track# and the length to the start of the
+       track behind the last one played (the lead-out at the most); 0
+       without a TOC, for a track it does not hold or for 0 tracks; -1
+       when DoIO worked, else 0.  The original ignores its arguments and
+       sends the author's test values (blocks 14000 to 15000), and returns
+       DoIO's error code.  io_Offset = 1 as in the original (HD_SCSICMD
+       does not look at it). */
+    {
+        const UBYTE *d, *e;
+        ULONG lastt, endt, start;
+
+        if (!scsitoc || !num)
+            return 0;
+        lastt = TOCData[3];
+        if (track < TOCData[2] || track > lastt)
+            return 0;
+        endt = num > lastt + 1 - track ? lastt + 1 : track + num;
+        d = scsidesc(track);
+        e = scsidesc(endt);
+        if (!d || !e)
+            return 0;
+        start = getlong(d + 4);
+        cd.ioreq->io_Offset = 1;
+        c = SCSICMD12;
+        /* Fixed (#579): the bytes one by one; the original writes two
+           longs and a word with MOVE to the odd addresses 1, 5 and 9 (an
+           address error on a 68000) */
+        c[0] = SCSI_CMD_PLAYAUDIO12;
+        c[1] = 0;
+        putlong(c + 2, start);
+        putlong(c + 6, getlong(e + 4) - start);
+        c[10] = 0;
+        c[11] = 0;
+        return doscsi(SCSICMD12, SIZEOF_SCSICMD12, NULL, 0, 0) ? 0 : (ULONG)-1;
+    }
 }
 
 /* CDReadTOC without scsiflag: CD_TOCMSF into toc */
