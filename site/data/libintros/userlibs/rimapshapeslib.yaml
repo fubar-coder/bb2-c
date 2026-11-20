@@ -8,12 +8,13 @@ intro: |
   used.
 
   Map shapes are numbered from 0, but they are no Blitz objects: call
-  `SetNumMapShapes` first, which allocates room for them. The numbers
-  are not checked against that number, and before `SetNumMapShapes` the
-  map shapes lie at address 0
-  ([#906](https://github.com/fubar-coder/bb2-c/issues/906)). The
-  commands that blit work on a window of the windows library and draw
-  through the graphics library.
+  `SetNumMapShapes` first, which allocates room for them; before it, the
+  map shape commands do nothing. With runtime error checking, a number
+  beyond that room is a runtime error. The commands that blit work on a
+  window of the windows library and draw through the graphics library.
+  `BlitMapShape` and `BlitMapShapeSize` are as fast as the original's,
+  and the library runs also on Kickstart 1.3, where the original could
+  not start.
 
   A group collects map shapes at offsets measured in blocks, to draw
   them in one go with `BlitGroup`. `ResetGroup` starts a group and sets

@@ -6036,6 +6036,70 @@ rows:
     text: "A program run again from the editor starts with no snow field set up; in the original, snow commands worked on the lists the run before had freed."
     page: libraries
     anchor: risnowlib-fixes
+  - issue: 1141
+    severity: 5
+    topic: "Graphics"
+    library: "rimapshapeslib"
+    command: ""
+    text: "Programs with rimapshapeslib run on Kickstart 1.3; the original crashed at start-up because it allocated its memory with a function of Kickstart 2.0."
+    page: libraries
+    anchor: rimapshapeslib-fixes
+  - issue: 902
+    severity: 5
+    topic: "Graphics"
+    library: "rimapshapeslib"
+    command: "BlitGroup"
+    text: "`BlitGroup` calls the graphics library itself; the original called whatever library the command before had left in the register."
+    page: libraries
+    anchor: rimapshapeslib-fixes
+  - issue: 901
+    severity: 5
+    topic: "Graphics"
+    library: "rimapshapeslib"
+    command: "AddGroupMember"
+    text: "`AddGroupMember` before the first `ResetGroup` adds to the empty group; the original wrote over the pointer to exec at address 4."
+    page: libraries
+    anchor: rimapshapeslib-fixes
+  - issue: 905
+    severity: 5
+    topic: "System"
+    library: "rimapshapeslib"
+    command: "ResetGroup, AddGroupMember, BlitGroup"
+    text: "Without memory for the group, the group commands do nothing; the original wrote the group at address 0."
+    page: libraries
+    anchor: rimapshapeslib-fixes
+  - issue: 904
+    severity: 3
+    topic: "Graphics"
+    library: "rimapshapeslib"
+    command: "AddGroupMember"
+    text: "A group holds at most 63 members, so a group of 64 blits one less; with runtime error checking a 64th stops with \"Group holds at most 63 members\"; the original wrote behind the group."
+    page: libraries
+    anchor: rimapshapeslib-fixes
+  - issue: 903
+    severity: 3
+    topic: "Graphics"
+    library: "rimapshapeslib"
+    command: "ShapeToMapShape"
+    text: "With runtime error checking, `ShapeToMapShape` of a shape of depth 0 or more than 8 stops with \"Illegal Shape Depth\"; the original overwrote memory."
+    page: libraries
+    anchor: rimapshapeslib-fixes
+  - issue: 906
+    severity: 3
+    topic: "Graphics"
+    library: "rimapshapeslib"
+    command: "SetNumMapShapes, ShapeToMapShape, BlitMapShape, BlitMapShapeSize, MapShapeAddr, FreeMapShapes"
+    text: "Without map shapes the map shape commands do nothing, and with runtime error checking a number beyond `SetNumMapShapes` stops with \"Map shape not allocated by SetNumMapShapes\"; the original used map shapes at address 0 or behind its memory."
+    page: libraries
+    anchor: rimapshapeslib-fixes
+  - issue: 1134
+    severity: 5
+    topic: "Graphics"
+    library: "rimapshapeslib"
+    command: "AddGroupMember"
+    text: "A program run again from the editor starts with an empty group; the original added members to the freed group of the run before."
+    page: libraries
+    anchor: rimapshapeslib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
