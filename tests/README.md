@@ -934,7 +934,7 @@ cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`, `bchunky`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`, `bchunky`, `bmapshapes`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -995,6 +995,14 @@ cycle values do not depend on the host's load or on what else runs
   screen column, with the heights 1, 10, 100 and 200, and `ChunkyToPlanar`
   of a 320 x 256 chunky bitmap into a 320 x 256 x 8 bitmap (4 calls per
   loop: more would overflow the timer's 16 bits).
+  `bmapshapes` measures `rimapshapeslib`: `BlitMapShape` (a map editor's
+  call per tile) of a 16 x 16 and a 32 x 32 map shape, `BlitMapShapeSize`
+  and `BlitGroup` of four members, into a window on the Workbench screen.
+  Blitz mode owns the blitter, and `BltBitMapRastPort` waits for it: the
+  program gives it back (`DisownBlitter_`) for its loops. It has no
+  targets: the original library's init calls `AllocVec` (exec V36), so
+  on Kickstart 1.3 the program crashes with it at start-up (#1141; the
+  original's values on an a600 are in the comment of `budgets.txt`).
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the

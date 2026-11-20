@@ -63,7 +63,11 @@ functions; the original keeps less), but the three blit entries
 for speed: `BlitMapShape` is a map editor's call per tile, and the C
 version took about 530 cycles more per call than the original (9461
 against 8931 for a 16 × 16 map shape of 2 planes into a window, a600);
-as assembler 8931. They change d0, d1, a0, a1 and the low words of d4–d6,
+as assembler 8931. The benchmark `tests/perf/bench/bmapshapes.bas`
+(ctest `perf_bmapshapes`) runs on the a500 (Kickstart 1.3: 11356 cycles
+for the 16 × 16 map shape), where the original cannot run (#1141); the
+a600 values come from a pass of the program on that machine
+(`tests/perf/budgets.txt`). They change d0, d1, a0, a1 and the low words of d4–d6,
 as the original. `RemapMapShape` is an empty C function. The
 `BltBitMapRastPort` calls get what the original passes in
 the registers, upper words included: x and y (and width/height of
@@ -132,7 +136,7 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   `ShapeToMapShape` wrote over the ExecBase pointer, `FreeMapShapes`
   cleared words there, the blits read a "bitmap" from low memory. One
   test of the pointer per call; measured for `BlitMapShape` (a map
-  editor's call per tile; a bench program on the a600, not committed):
+  editor's call per tile; on the a600):
   8931 → 8945 cycles for a 16 × 16 map shape (+0.16 %), 32 × 32 +0.07 %,
   `BlitMapShapeSize` +0.1 % (w7-decisions Q5 (a): under the cost limit
   of 0.33 %). With runtime error checking a map shape number not below
