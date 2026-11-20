@@ -15,7 +15,8 @@
  * the font printer's check is the port's, #707).  The debugger program
  * that used it hands it its token list (SetupLESDebug) and the tokenised
  * lines of the source (FPrintDetoke, FindLineToken).
- *   init/finit           open/close graphics.library (any version)
+ *   init/finit           open/close graphics.library (any version); init
+ *                        also resets the state (#700, #1169)
  *   D_FindVolume         FindDosEntry (devices, volumes, assigns)
  *   D_GetSR, D_HexWord, D_CheckNMove[A|Word], GetHex$, GetHexAdr$,
  *   PeekMax$, GetDataItem   memory and registers as text; addresses
@@ -141,6 +142,10 @@
  *   - GetHexAdr$ reads a word or long byte by byte; the original's
  *     MOVE.w/MOVE.l was an address error on a 68000 at an odd address
  *     (#1168).
+ *   - init sets the state to its first load's values (the cursor,
+ *     FInverse, FYOffset, SearchMemFound, the token list and tokenise,
+ *     the parser position, the %c text); the original kept the run
+ *     before's in a second run from the editor (#1169).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -507,7 +512,11 @@ static const UBYTE customchipnames[256][8] = {
  *
  * AddProcessPtr's 20 entries are cleared (fixed #700: a run from the
  * editor started with the run before's entries, which counted toward the
- * limit and pointed into its freed strings).
+ * limit and pointed into its freed strings).  The rest of the state gets
+ * its first load's values too (fixed #1169: a second run started with
+ * the run before's cursor, FInverse, FYOffset, SearchMemFound, token
+ * list and tokenise, parser position and %c text): the library stays
+ * loaded between two runs of a program from the editor.
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -520,6 +529,13 @@ static void BLITZ_ROUTINE libinit_c(void)
         stringtokens.user[i].c = 0;
         stringtokens.user[i].p = NULL;
     }
+    xcurs = ycurs = inverse = yoffset = 0;              /* fixed (#1169) */
+    tokens = 0;
+    chartyp = plz_tokenise = 0;
+    findaddress = 0;
+    curadr = NULL;
+    for (i = 0; i < (int)sizeof tokenaddr; i++)
+        tokenaddr[i] = 0;
 }
 
 /**

@@ -37,8 +37,9 @@ Software; the program itself is not part of the release). 33 commands:
   `ExtractLabel(string)`, `D_FindVolume(name)` (-1 or 0; FindDosEntry, below
   dos.library V36 a walk of the device list under `Forbid`).
 
-init opens graphics.library (any version) and sets the `%p`/`%c`
-entries; finit closes it.
+init opens graphics.library (any version), sets the `%p`/`%c` entries
+and gives the rest of the state its first load's values (#700, #1169);
+finit closes graphics.library.
 
 It is a library of ordinary commands: it does not talk to blitz2's
 runtime debugger (unlike `ridebuglib`, 51). The original has no error
@@ -135,6 +136,17 @@ d5-d7, a0-a3 and a6 in places.
   fields with it, whose addresses can be odd) (#1168; test
   `rilesdebuglib-gethexadr-odd` on the a500; the `libs_emulator`
   scenario reads words and longs at even addresses only, unchanged).
+* init gives the library's state its first load's values: the cursor,
+  FInverse, FYOffset, SearchMemFound, the token list and tokenise of
+  SetupLESDebug, the parser position and the `%c` text (the 20
+  AddProcessPtr entries: #700). The library stays loaded between two
+  runs of a program from the editor, and the original kept all of it: a
+  second run printed inverse after a run that ended with FInverse on,
+  SearchMemFound before a search returned the run before's address,
+  FPrintDetoke before SetupLESDebug walked the run before's token list
+  (#1169; no Blitz test: a program cannot run twice in one load of the
+  library, D-019; the `libs_emulator` cases `[fixed #1169]` of the
+  second run).
 * `GetCustomReg` compares the register word unsigned with $1FC and looks
   at the word only. The original compared the word signed and tested the
   whole long for a negative value: a word of $8000 or more with d0.l not
