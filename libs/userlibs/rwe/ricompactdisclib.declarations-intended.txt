@@ -10,5 +10,8 @@ lib 14: entry 11 CDTrackLength +$C: code offset set in only one of them
 # the offset (offsetchk, "Offset must be 0 or 1")
 lib 14: entry 19 CDTrackMins +$1C: code offset set in only one of them
 lib 14: entry 20 CDTrackSecs +$1C: code offset set in only one of them
-# #583, #586: the relocations of the error field and the three checks
-lib 14: relocations in the declaration part 31 != 35
+# #578: OpenCD gets an error check in all three forms (opencdchk, "CD
+# device already open: CloseCD first")
+lib 14: entry 0 OpenCD +$A: code offset set in only one of them
+# #583, #586, #578: the relocations of the error field and the six checks
+lib 14: relocations in the declaration part 31 != 38

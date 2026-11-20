@@ -87,9 +87,13 @@
  *   another offset reads qcodeinfo[5 + 4 * offset] (6 + ...) without a
  *   limit (D-005).  They and CDTrackPlaying read the Q-code without an
  *   open device: the data of the last CDUpdateInfo (0 before one).
+ * Fixed (#578): with runtime error checking OpenCD (all three forms)
+ *   refuses to open while a device is open ("CD device already open:
+ *   CloseCD first"; the manual asks for CloseCD between them).  The
+ *   release code is the original's: the open request is lost and stays
+ *   open (D-005).
  *
  * BUG(orig):
- *   - OpenCD while open: the old request stays open, lost (#578).
  *   - CDVolume volume,fade puts the volume into io_Length and the fade into
  *     io_Offset, the reverse of cd.device's CD_ATTENUATE (#982).
  *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
@@ -123,7 +127,7 @@ void cdrewind(void), cdfastforward(void), cdnormalspeed(void);
 void cdchangespeed(void), cdtrackmins2(void), cdtrackmins(void);
 void cdtracksecs2(void), cdtracksecs(void), cdtrackplaying(void);
 void cdmotor(void);
-void _cdtracklengthchk(void), _offsetchk(void);
+void _cdtracklengthchk(void), _offsetchk(void), _opencdchk(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -135,13 +139,13 @@ BLITZ_LIBHEADER(LIB_ricompactdisclib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
-BLITZ_SUBS(opencd, 0, 0);
+BLITZ_SUBS(opencd, _opencdchk, 0);                      /* check: fixed #578 */
 BLITZ_ARGS(BL_STRING, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(opencd2, 0, 0);
+BLITZ_SUBS(opencd2, _opencdchk, 0);                     /* check: fixed #578 */
 BLITZ_ARGS(BL_STRING, BL_LONG, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(opencd3, 0, 0);
+BLITZ_SUBS(opencd3, _opencdchk, 0);                     /* check: fixed #578 */
 BLITZ_NAME("OpenCD", "[devicename,unit,scsiflag] - open a CD compatible device");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -523,7 +527,7 @@ static ULONG doopen(void)
         cd.flag = 0;
         return 0;
     }
-    cd.ioreq = req;                     /* BUG(orig) (#578): an open one is lost */
+    cd.ioreq = req;                     /* an open one is lost (#578: refused by opencdchk) */
     r = (struct bl_regs){ .d0 = cd.trackversion, .d1 = 0, .a0 = (ULONG)cd.trackname,
                           .a1 = (ULONG)req };
     if (BLITZ_BASEJSR(SysBase, LVO_OpenDevice, r)) {
@@ -899,6 +903,7 @@ ULONG BLITZ_ROUTINE c_cdnormalspeed(void)
 
 BLITZ_ERRCHK_MESSAGE(badtrack, "Track number out of range");      /* fixed, #583 */
 BLITZ_ERRCHK_MESSAGE(badoffset, "Offset must be 0 or 1");          /* fixed, #586 */
+BLITZ_ERRCHK_MESSAGE(isopen, "CD device already open: CloseCD first");  /* fixed, #578 */
 
 /**
  * @brief The error check of CDTrackLength (debugger only).
@@ -956,9 +961,27 @@ static void BLITZ_ERRCHK offsetchk_c(ULONG offset BL_REG(d0))
         BLITZ_RUNERR(badoffset);
 }
 
+/**
+ * @brief The error check of OpenCD, all three forms (debugger only).
+ *
+ * Fixed (#578), not in the original: the manual says "you must call
+ * CloseCD between calls to OpenCD (e.g. when changing devices)"; the
+ * release code makes a new request and opens the device again, and the
+ * open request is lost (it stays open).  Release code unchanged (a call
+ * the programmer controls, D-005).
+ *
+ * Errors: "CD device already open: CloseCD first".
+ */
+static void BLITZ_ERRCHK opencdchk_c(void)
+{
+    if (cd.flag)
+        BLITZ_RUNERR(isopen);
+}
+
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(_cdtracklengthchk, cdtracklengthchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_offsetchk, offsetchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_opencdchk, opencdchk_c, "d0-d1/a0-a1");
 
 /* entries: keep d1/a0/a1 (and d0 in init/finit) */
 BLITZ_THUNK(ricompactdisclib_libinit, c_libinit, "d0-d1/a0-a1");

@@ -5,6 +5,7 @@
 ; no error check area.  Here with runtime error checking.  The machine is
 ; the A1200 with uaescsi.device and the library's CD image.
 ; Correct: the error check refuses the second OpenCD after "second".
+; @fixed #578
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
 ; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image

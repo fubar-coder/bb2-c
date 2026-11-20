@@ -104,10 +104,14 @@ d1/d2 (CDTrackLength) are not reproduced.
   low byte only, the index is the whole word, the high bytes of d0 stay
   in the result, no limit. They and `CDTrackPlaying` read the Q-code
   without an open device (the data of the last `CDUpdateInfo`). (#586)
+* With runtime error checking `OpenCD` (all three forms) refuses to open
+  while a device is open ("CD device already open: CloseCD first"; the
+  manual: "you must call CloseCD between calls to OpenCD"). The release
+  code is the original's (D-005): the open request is lost and stays
+  open. (#578)
 
 **BUG(orig)** (kept):
 
-* `OpenCD` while open: the old request stays open, lost. (#578)
 * `CDStop` (also in `CloseCD`) is AbortIO only, no WaitIO; it sets
   io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to

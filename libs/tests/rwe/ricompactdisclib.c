@@ -33,7 +33,7 @@
  * anyway), OpenCD of cd.device (missing in the emulator: the failure
  * path; the original returns the d0 of DeleteIORequest, fixed #575: 0), of unit 3 (OpenDevice fails),
  * the name and unit kept for OpenCD without arguments (the original; fixed #577: cd.device unit 0), OpenCD while open
- * (BUG(orig) (#578): the old request is lost), all CD commands with their
+ * (the old request is lost: the release code as the original, the error check of #578 is not called here), all CD commands with their
  * arguments and io_Errors, CDReadTOC twice (the old TOC freed, the second
  * read failing), a failing summary read (the original goes on, fixed #581), a play in
  * progress stopped, closed and its request used again (BUG(orig) (#574,
@@ -714,7 +714,7 @@ int main(int argc, char **argv)
     tocfuncs(1, 3);
 
     /* OpenCD without arguments: rwecd.device unit 1 kept (the original; fixed #577: cd.device unit 0, missing here); the open
-       request is lost (BUG(orig) (#578)) */
+       request is lost (the release code; refused with runtime error checking, #578) */
     ntracks = 9;
     opencd(NULL, 0, 0, 0);
     CALL0(READTOC, "CDReadTOC");
