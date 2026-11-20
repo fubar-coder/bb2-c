@@ -6292,27 +6292,48 @@ GetCustomReg|popped|$80000000|2	$00000000
 GetCustomReg|popped|$FFFF0010|1	$00000000
 GetCustomRegAdr|d0|""|1	$FFFFFFFF
 GetCustomRegAdr|d0|""|2 [orig #702]	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|2	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|3	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|4	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|5	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|6	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|7	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|8	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|9	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|10	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|11	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|12	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|13	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|14	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|15	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|16	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|17	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|18	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|19	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|20	$FFFFFFFF
-GetCustomRegAdr|d0|"<UNUSED>"|21	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|1 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|2 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|2 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|3 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|3 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|4 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|4 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|5 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|5 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|6 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|6 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|7 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|7 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|8 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|8 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|9 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|9 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|10 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|10 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|11 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|11 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|12 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|12 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|13 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|13 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|14 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|14 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|15 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|15 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|16 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|16 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|17 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|17 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|18 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|18 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|19 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|19 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|20 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|20 [fixed #713]	$00000068
+GetCustomRegAdr|d0|"<UNUSED>"|21 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"<UNUSED>"|21 [fixed #713]	$00000068
 GetCustomRegAdr|d0|"ADKCON"|1	$0000009E
 GetCustomRegAdr|d0|"ADKCONR"|1	$00000010
 GetCustomRegAdr|d0|"AUD0DAT"|1	$000000AA
@@ -6339,7 +6360,8 @@ GetCustomRegAdr|d0|"AUD3LCL"|1	$000000D2
 GetCustomRegAdr|d0|"AUD3LEN"|1	$000000D4
 GetCustomRegAdr|d0|"AUD3PER"|1	$000000D6
 GetCustomRegAdr|d0|"AUD3VOL"|1	$000000D8
-GetCustomRegAdr|d0|"BEAMCON0"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"BEAMCON0"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"BEAMCON0"|1 [fixed #713]	$000001DC
 GetCustomRegAdr|d0|"BLTADAT"|1	$00000074
 GetCustomRegAdr|d0|"BLTAFWM"|1	$00000044
 GetCustomRegAdr|d0|"BLTALWM"|1	$00000046
@@ -6353,9 +6375,12 @@ GetCustomRegAdr|d0|"BLTBPTL"|1	$0000004E
 GetCustomRegAdr|d0|"BLTCDAT"|1	$00000070
 GetCustomRegAdr|d0|"BLTCMOD"|1	$00000060
 GetCustomRegAdr|d0|"BLTCON0"|1	$00000040
-GetCustomRegAdr|d0|"BLTCON0L"|1	$00000040
-GetCustomRegAdr|d0|"BLTCON0L"|2	$00000040
-GetCustomRegAdr|d0|"BLTCON0LBLTSIZV"|1	$00000040
+GetCustomRegAdr|d0|"BLTCON0L"|1 [orig]	$00000040
+GetCustomRegAdr|d0|"BLTCON0L"|1 [fixed #713]	$0000005A
+GetCustomRegAdr|d0|"BLTCON0L"|2 [orig]	$00000040
+GetCustomRegAdr|d0|"BLTCON0L"|2 [fixed #713]	$0000005A
+GetCustomRegAdr|d0|"BLTCON0LBLTSIZV"|1 [orig]	$00000040
+GetCustomRegAdr|d0|"BLTCON0LBLTSIZV"|1 [fixed #713]	$FFFFFFFF
 GetCustomRegAdr|d0|"BLTCON1"|1	$00000042
 GetCustomRegAdr|d0|"BLTCPTH"|1	$00000048
 GetCustomRegAdr|d0|"BLTCPTL"|1	$0000004A
@@ -6384,7 +6409,8 @@ GetCustomRegAdr|d0|"BPL6PTH"|1	$000000F8
 GetCustomRegAdr|d0|"BPL6PTL"|1	$000000FA
 GetCustomRegAdr|d0|"BPL7PTH"|1	$000000FC
 GetCustomRegAdr|d0|"BPL7PTL"|1	$000000FE
-GetCustomRegAdr|d0|"BPLCON0 "|1	$00000100
+GetCustomRegAdr|d0|"BPLCON0 "|1 [orig]	$00000100
+GetCustomRegAdr|d0|"BPLCON0 "|1 [fixed #713]	$FFFFFFFF
 GetCustomRegAdr|d0|"BPLCON0"|1	$00000100
 GetCustomRegAdr|d0|"BPLCON1"|1	$00000102
 GetCustomRegAdr|d0|"BPLCON2"|1	$00000104
@@ -6401,10 +6427,13 @@ GetCustomRegAdr|d0|"BPLDAT7"|1	$0000011E
 GetCustomRegAdr|d0|"BPLHMOD"|1	$000001E6
 GetCustomRegAdr|d0|"BPLHPTH"|1	$000001EC
 GetCustomRegAdr|d0|"BPLHPTL"|1	$000001EE
-GetCustomRegAdr|d0|"BPLHSTOP"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"BPLHSTRT"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"BPLHSTOP"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"BPLHSTOP"|1 [fixed #713]	$000001D6
+GetCustomRegAdr|d0|"BPLHSTRT"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"BPLHSTRT"|1 [fixed #713]	$000001D4
 GetCustomRegAdr|d0|"CLXCON"|1	$00000098
-GetCustomRegAdr|d0|"CLXCON2"|1	$00000098
+GetCustomRegAdr|d0|"CLXCON2"|1 [orig]	$00000098
+GetCustomRegAdr|d0|"CLXCON2"|1 [fixed #713]	$0000010E
 GetCustomRegAdr|d0|"CLXDAT"|1	$0000000E
 GetCustomRegAdr|d0|"COLOR00"|1	$00000180
 GetCustomRegAdr|d0|"COLOR00"|2	$00000180
@@ -6449,8 +6478,10 @@ GetCustomRegAdr|d0|"COPJMP1"|1	$00000088
 GetCustomRegAdr|d0|"COPJMP2"|1	$0000008A
 GetCustomRegAdr|d0|"DDFSTOP"|1	$00000094
 GetCustomRegAdr|d0|"DDFSTRT"|1	$00000092
-GetCustomRegAdr|d0|"DENISEID"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"DENISEID"|2	$FFFFFFFF
+GetCustomRegAdr|d0|"DENISEID"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"DENISEID"|1 [fixed #713]	$0000007C
+GetCustomRegAdr|d0|"DENISEID"|2 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"DENISEID"|2 [fixed #713]	$0000007C
 GetCustomRegAdr|d0|"DIWHIGH"|1	$000001E4
 GetCustomRegAdr|d0|"DIWSTOP"|1	$00000090
 GetCustomRegAdr|d0|"DIWSTRT"|1	$0000008E
@@ -6458,7 +6489,8 @@ GetCustomRegAdr|d0|"DMA"|1	$FFFFFFFF
 GetCustomRegAdr|d0|"DMACON"|1	$00000096
 GetCustomRegAdr|d0|"DMACON"|2	$00000096
 GetCustomRegAdr|d0|"DMACONR"|1	$00000002
-GetCustomRegAdr|d0|"DMACONXYZ"|1	$00000096
+GetCustomRegAdr|d0|"DMACONXYZ"|1 [orig]	$00000096
+GetCustomRegAdr|d0|"DMACONXYZ"|1 [fixed #713]	$FFFFFFFF
 GetCustomRegAdr|d0|"DSKBYTR"|1	$0000001A
 GetCustomRegAdr|d0|"DSKDAT"|1	$00000026
 GetCustomRegAdr|d0|"DSKDATR"|1	$00000008
@@ -6495,65 +6527,88 @@ GetCustomRegAdr|d0|"SERDAT"|1	$00000030
 GetCustomRegAdr|d0|"SERDATR"|1	$00000018
 GetCustomRegAdr|d0|"SERPER"|1	$00000032
 GetCustomRegAdr|d0|"SPR0CTL"|1	$00000142
-GetCustomRegAdr|d0|"SPR0DATA"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR0DATB"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR0DATA"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR0DATA"|1 [fixed #713]	$00000144
+GetCustomRegAdr|d0|"SPR0DATB"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR0DATB"|1 [fixed #713]	$00000146
 GetCustomRegAdr|d0|"SPR0POS"|1	$00000140
 GetCustomRegAdr|d0|"SPR0PTH"|1	$00000120
 GetCustomRegAdr|d0|"SPR0PTL"|1	$00000122
 GetCustomRegAdr|d0|"SPR1CTL"|1	$0000014A
-GetCustomRegAdr|d0|"SPR1DATA"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR1DATB"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR1DATA"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR1DATA"|1 [fixed #713]	$0000014C
+GetCustomRegAdr|d0|"SPR1DATB"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR1DATB"|1 [fixed #713]	$0000014E
 GetCustomRegAdr|d0|"SPR1POS"|1	$00000148
 GetCustomRegAdr|d0|"SPR1PTH"|1	$00000124
 GetCustomRegAdr|d0|"SPR1PTL"|1	$00000126
 GetCustomRegAdr|d0|"SPR2CTL"|1	$00000152
-GetCustomRegAdr|d0|"SPR2DATA"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR2DATB"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR2DATA"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR2DATA"|1 [fixed #713]	$00000154
+GetCustomRegAdr|d0|"SPR2DATB"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR2DATB"|1 [fixed #713]	$00000156
 GetCustomRegAdr|d0|"SPR2POS"|1	$00000150
 GetCustomRegAdr|d0|"SPR2PTH"|1	$00000128
 GetCustomRegAdr|d0|"SPR2PTL"|1	$0000012A
 GetCustomRegAdr|d0|"SPR3CTL"|1	$0000015A
-GetCustomRegAdr|d0|"SPR3DATA"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR3DATB"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR3DATA"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR3DATA"|1 [fixed #713]	$0000015C
+GetCustomRegAdr|d0|"SPR3DATB"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR3DATB"|1 [fixed #713]	$0000015E
 GetCustomRegAdr|d0|"SPR3POS"|1	$00000158
 GetCustomRegAdr|d0|"SPR3PTH"|1	$0000012C
 GetCustomRegAdr|d0|"SPR3PTL"|1	$0000012E
 GetCustomRegAdr|d0|"SPR4CTL"|1	$00000162
-GetCustomRegAdr|d0|"SPR4DATA"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR4DATB"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR4DATA"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR4DATA"|1 [fixed #713]	$00000164
+GetCustomRegAdr|d0|"SPR4DATB"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR4DATB"|1 [fixed #713]	$00000166
 GetCustomRegAdr|d0|"SPR4POS"|1	$00000160
 GetCustomRegAdr|d0|"SPR4PTH"|1	$00000130
 GetCustomRegAdr|d0|"SPR4PTL"|1	$00000132
 GetCustomRegAdr|d0|"SPR5CTL"|1	$0000016A
-GetCustomRegAdr|d0|"SPR5DATA"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR5DATB"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR5DATA"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR5DATA"|1 [fixed #713]	$0000016C
+GetCustomRegAdr|d0|"SPR5DATB"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR5DATB"|1 [fixed #713]	$0000016E
 GetCustomRegAdr|d0|"SPR5POS"|1	$00000168
 GetCustomRegAdr|d0|"SPR5PTH"|1	$00000134
 GetCustomRegAdr|d0|"SPR5PTL"|1	$00000136
 GetCustomRegAdr|d0|"SPR6CTL"|1	$00000172
-GetCustomRegAdr|d0|"SPR6DATA"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR6DATB"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR6DATA"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR6DATA"|1 [fixed #713]	$00000174
+GetCustomRegAdr|d0|"SPR6DATB"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR6DATB"|1 [fixed #713]	$00000176
 GetCustomRegAdr|d0|"SPR6POS"|1	$00000170
 GetCustomRegAdr|d0|"SPR6PTH"|1	$00000138
 GetCustomRegAdr|d0|"SPR6PTL"|1	$0000013A
 GetCustomRegAdr|d0|"SPR7CTL"|1	$0000017A
-GetCustomRegAdr|d0|"SPR7DATA"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR7DATB"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPR7DATB"|2	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR7DATA"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR7DATA"|1 [fixed #713]	$0000017C
+GetCustomRegAdr|d0|"SPR7DATB"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR7DATB"|1 [fixed #713]	$0000017E
+GetCustomRegAdr|d0|"SPR7DATB"|2 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPR7DATB"|2 [fixed #713]	$0000017E
 GetCustomRegAdr|d0|"SPR7POS"|1	$00000178
 GetCustomRegAdr|d0|"SPR7PTH"|1	$0000013C
 GetCustomRegAdr|d0|"SPR7PTL"|1	$0000013E
 GetCustomRegAdr|d0|"SPRHDAT"|1	$00000078
 GetCustomRegAdr|d0|"SPRHPTH"|1	$000001E8
 GetCustomRegAdr|d0|"SPRHPTL"|1	$000001EA
-GetCustomRegAdr|d0|"SPRHSTOP"|1	$FFFFFFFF
-GetCustomRegAdr|d0|"SPRHSTRT"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"SPRHSTOP"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPRHSTOP"|1 [fixed #713]	$000001D2
+GetCustomRegAdr|d0|"SPRHSTRT"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"SPRHSTRT"|1 [fixed #713]	$000001D0
 GetCustomRegAdr|d0|"STR"|1	$00000038
 GetCustomRegAdr|d0|"STR"|2	$00000038
-GetCustomRegAdr|d0|"STRHOR"|1	$00000038
-GetCustomRegAdr|d0|"STRLONG"|1	$00000038
-GetCustomRegAdr|d0|"STRVBL"|1	$00000038
-GetCustomRegAdr|d0|"STRX"|1	$00000038
+GetCustomRegAdr|d0|"STRHOR"|1 [orig]	$00000038
+GetCustomRegAdr|d0|"STRHOR"|1 [fixed #713]	$0000003C
+GetCustomRegAdr|d0|"STRLONG"|1 [orig]	$00000038
+GetCustomRegAdr|d0|"STRLONG"|1 [fixed #713]	$0000003E
+GetCustomRegAdr|d0|"STRVBL"|1 [orig]	$00000038
+GetCustomRegAdr|d0|"STRVBL"|1 [fixed #713]	$0000003A
+GetCustomRegAdr|d0|"STRX"|1 [orig]	$00000038
+GetCustomRegAdr|d0|"STRX"|1 [fixed #713]	$FFFFFFFF
 GetCustomRegAdr|d0|"VBSTOP"|1	$000001CE
 GetCustomRegAdr|d0|"VBSTRT"|1	$000001CC
 GetCustomRegAdr|d0|"VHPOSR"|1	$00000006

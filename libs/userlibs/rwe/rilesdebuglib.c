@@ -55,8 +55,6 @@
  *     (GetDataItem) (#717).
  *   - PeekMax$ copies max+1 characters but returns the length max (a3 is
  *     one behind the result) (#718).
- *   - GetCustomRegAdr matches a prefix (the name may go on behind the
- *     table's) and never finds a name of 8 characters (#713).
  *   - GetCopIns$ clears bit 0 of both nibbles of the horizontal positions
  *     (WAIT/SKIP position and mask), so odd digits never show (#711).
  *   - FPrint and FPrintDetoke: the column check is a byte compare with
@@ -102,6 +100,9 @@
  *   - GetCustomReg copies at most 8 characters; the original copied a 9th
  *     behind a name of 8 (the first of the next name) and returned 8, a3
  *     one behind the result (#712).
+ *   - GetCustomRegAdr finds a register only by its whole name; the
+ *     original matched a prefix (the string could go on behind the
+ *     table's name) and never found a name of 8 characters (#713).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1230,10 +1231,10 @@ static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
 /**
  * @brief GetCustomRegAdr(name$): the offset of a custom chip register.
  *
- * The first register among $000-$1FE whose name (up to a space) the
- * string starts with: a prefix match, the string may go on behind the
- * name; a name of 8 characters is never found (BUG(orig) (#713)).  The
- * last register, $1FE NOOP, is looked at too (fixed #702: the original
+ * The first register among $000-$1FE whose name (up to a space, at most
+ * 8 characters) the string is (fixed #713: the original matched a prefix,
+ * the string could go on behind the name, and never found a name of 8
+ * characters, its compare ran into the next name).  The last register, $1FE NOOP, is looked at too (fixed #702: the original
  * stopped at $1FC).
  * @param name  d0: the name
  * @return d0: the offset, -1 if not found (not a truth value)
@@ -1244,14 +1245,13 @@ static ULONG BLITZ_ROUTINE getcustomregadr_c(const UBYTE *name BL_REG(d0))
     ULONG reg = 0;
 
     do {
-        const UBYTE *a = name, *b = t;
+        int i;
 
-        for (;;) {
-            if (*b == ' ')
-                return reg;
-            if (*a++ != *b++)
+        for (i = 0; i < 8 && t[i] != ' '; i++)          /* fixed (#713) */
+            if (name[i] != t[i])
                 break;
-        }
+        if ((i == 8 || t[i] == ' ') && !name[i])
+            return reg;
         t += 8;
         reg += 2;
     } while ((WORD)reg <= 0x1fe);                    /* fixed (#702) */

@@ -145,6 +145,13 @@ d5-d7, a0-a3 and a6 in places.
   it lost its next part (`GetCustomReg($5A)+"|"` gave "BLTCON0LB") (#712;
   test `rilesdebuglib-getcustomreg-eight-chars`; the `libs_emulator`
   cases `[fixed #712]`).
+* `GetCustomRegAdr` finds a register only by its whole name (up to the
+  table's space, at most 8 characters). The original matched a prefix -
+  the string could go on behind the name (`DMACONXYZ` gave $096, `STRX`
+  and `STRHOR` gave $038, STR) - and never found a name of 8 characters
+  (DENISEID, SPR7DATB, BLTCON0L gave BLTCON0's $040): its compare ran
+  into the next name (#713; test `rilesdebuglib-getcustomregadr-prefix`;
+  the `libs_emulator` cases `[fixed #713]`).
 
 ## BUG(orig)
 
@@ -157,8 +164,6 @@ d5-d7, a0-a3 and a6 in places.
   `*` too (GetDataItem: 0) (#717).
 * PeekMax$ copies max+1 characters but returns the length max (a3 one
   character behind the result) (#718).
-* GetCustomRegAdr matches a prefix (`DMACONXYZ` gives $096), never finds
-  a name of 8 characters (the compare runs into the next name) (#713).
 * GetCopIns$ masks bit 0 of both digits of a horizontal position (WAIT,
   SKIP and their masks): odd digits never show (#711).
 * FPrint/FPrintDetoke: the column test is `CMPI.b #80` with `BPL`, so
