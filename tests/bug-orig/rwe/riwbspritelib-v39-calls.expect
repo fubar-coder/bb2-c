@@ -1,0 +1,13 @@
+[session]
+done
+[compile]
+ok
+[run]
+before
+2
+10 20
+-1 100 50
+-1
+-1
+1
+rc=0
