@@ -5958,6 +5958,18 @@ bitmap.
   background pen unchanged and wrote the pen into memory of the program
   instead ([#696](https://github.com/fubar-coder/bb2-c/issues/696)).
 
+### Fixes in rilesdebuglib {#rilesdebuglib-fixes}
+
+This fix concerns
+[rilesdebuglib]({{< relref "/docs/libraries/userlibs/rilesdebuglib" >}}),
+the helper library of the REDDebugger program by Leading Edge Software.
+
+* `D_FindVolume` works on Kickstart 1.x: there it reads the list of
+  devices, volumes and assigns in the way Kickstart 1.x knows. The
+  original called functions of Kickstart 2.0, and a program crashed at
+  `D_FindVolume` on Kickstart 1.x
+  ([#1148](https://github.com/fubar-coder/bb2-c/issues/1148)).
+
 ### Fixes in rilinkedlistlib {#rilinkedlistlib-fixes}
 
 These fixes concern

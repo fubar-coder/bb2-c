@@ -6844,6 +6844,14 @@ rows:
     text: "`STCLoad` works on Kickstart 1.x; the original opened the file with a function of Kickstart 2.0 and crashed there."
     page: libraries
     anchor: stonecracker-fixes
+  - issue: 1148
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "D_FindVolume"
+    text: "`D_FindVolume` works on Kickstart 1.x; the original called functions of Kickstart 2.0 and crashed there."
+    page: libraries
+    anchor: rilesdebuglib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
