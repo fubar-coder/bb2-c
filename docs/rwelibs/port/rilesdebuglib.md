@@ -230,6 +230,12 @@ d5-d7, a0-a3 and a6 in places.
   `rilesdebuglib-searchmem-partial-match`; the `libs_emulator` cases
   `[fixed #723]` "string ab" and `"ab" after "aab"`, now found at 502,
   with one RawStatus call less).
+* `SearchMem` with an empty search string finds nothing: 0,
+  SearchMemFound 0. The original compared the string's 0 and the bytes
+  behind it with memory and "found" a 0 followed by those bytes (the
+  debugger's user types the string) (#721; test
+  `rilesdebuglib-searchmem-empty-string`; the `libs_emulator` cases
+  `[fixed #721]` "empty string": no RawStatus call).
 
 ## BUG(orig)
 
@@ -251,8 +257,7 @@ d5-d7, a0-a3 and a6 in places.
 * FPrintDetoke: after the `>` marker an inverse space follows too when
   the column counter (with the caller's high word of d6) became 0 (#708).
 * D_FindStringPtr never compares the long at areg5 itself (#705).
-* SearchMem: the empty string compares the bytes behind its 0 (#721).
-  The space bar test reads RawStatus
+* SearchMem: the space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.
 * AddProcessPtr has no limit of 20 entries (#700).
 

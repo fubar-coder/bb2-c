@@ -61,8 +61,6 @@
  *   - FPrintDetoke: after the '>' marker, an inverse space follows if the
  *     column count (d6 with the caller's high word) became 0 (#708).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705).
- *   - SearchMem with an empty string compares the bytes behind its 0
- *     (#721).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
  *     other data) (#700).
@@ -119,6 +117,8 @@
  *   - SearchMem's string search goes on one byte behind the start of a
  *     partial match after a mismatch; the original went on behind the
  *     mismatch ("ab" was not found in "aab") (#723).
+ *   - SearchMem with an empty string finds nothing (0); the original
+ *     compared its 0 and the bytes behind it (#721).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1317,10 +1317,10 @@ static int space_down(void)
  * ends the search.  After a mismatch behind a partial match the string
  * search goes on one byte behind the partial match's start (fixed #723:
  * the original went on behind the mismatch, "ab" was not found in "aab");
- * an empty string compares the bytes behind its 0 (BUG(orig) (#721)).
- * A word or long counts only if
- * it lies in front of the end (fixed #722: the original compared bytes
- * up to 1 or 3 behind the end).
+ * an empty string finds nothing (fixed #721: the original compared its
+ * 0 and the bytes behind it).  A word or long counts only if it lies in
+ * front of the end (fixed #722: the original compared bytes up to 1 or 3
+ * behind the end).
  * @param type   d0.b: the type
  * @param value  d1: the value, or the string's address
  * @param p      d2: the start
@@ -1386,6 +1386,8 @@ static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG
         }
     case 4:
         s = (const UBYTE *)value;
+        if (!*s)                        /* fixed (#721): finds nothing */
+            goto notfound;
         match = s;
         p--;
         for (;;) {

@@ -8202,7 +8202,8 @@ SearchMem|RawStatus calls|4,$1510+sh,0,1024 string ab|1 [orig]	$00000004
 SearchMem|RawStatus calls|4,$1510+sh,0,1024 string ab|1 [fixed #723]	$00000003
 SearchMem|RawStatus calls|4,$1510+sh,500,520 "ab" after "aab"|1	$00000000
 SearchMem|RawStatus calls|4,$1520+sh,0,1024 string xaab|1	$00000003
-SearchMem|RawStatus calls|4,$1530+sh,0,1024 empty string|1	$00000008
+SearchMem|RawStatus calls|4,$1530+sh,0,1024 empty string|1 [orig]	$00000008
+SearchMem|RawStatus calls|4,$1530+sh,0,1024 empty string|1 [fixed #721]	$00000000
 SearchMem|RawStatus calls|4,$1540+sh,0,1024 space bar, string|1	$00000001
 SearchMem|RawStatus calls|4,$1540+sh,0,1024 string not found|1	$00000008
 SearchMem|RawStatus calls|5,$30A1234,0,1021 long across|1	$00000008
@@ -8227,7 +8228,8 @@ SearchMem|RawStatus key|4,$1500+sh,0,1024 string|1	$00000040
 SearchMem|RawStatus key|4,$1510+sh,0,1024 string ab|1	$00000040
 SearchMem|RawStatus key|4,$1510+sh,500,520 "ab" after "aab"|1	$00000000
 SearchMem|RawStatus key|4,$1520+sh,0,1024 string xaab|1	$00000040
-SearchMem|RawStatus key|4,$1530+sh,0,1024 empty string|1	$00000040
+SearchMem|RawStatus key|4,$1530+sh,0,1024 empty string|1 [orig]	$00000040
+SearchMem|RawStatus key|4,$1530+sh,0,1024 empty string|1 [fixed #721]	$00000000
 SearchMem|RawStatus key|4,$1540+sh,0,1024 space bar, string|1	$00000040
 SearchMem|RawStatus key|4,$1540+sh,0,1024 string not found|1	$00000040
 SearchMem|RawStatus key|5,$30A1234,0,1021 long across|1	$00000040
