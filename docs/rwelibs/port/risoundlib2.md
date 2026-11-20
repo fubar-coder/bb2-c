@@ -61,9 +61,7 @@ that fill in the missing values and call the one of 6 arguments.
 
 ## BUG(orig), kept
 
-* AHIOutputRequest: the current screen of
-  `!libs {#screenslib,#ua0}` is not used (`AHIR_Screen` stays 0)
-  (#929). Every call allocates a
+* AHIOutputRequest: every call allocates a
   requester; none is ever freed (#930).
 * AHIRequestedID and AHIRequestedFreq return the data of the
   requester's initial tags (always -1 and 0), not what the user chose
@@ -154,6 +152,12 @@ kind F):
   d4 as it was), 1 argument to "AudioID, Frequency" (the argument lost,
   d4/d5 as they were), 2 to "X,Y,WIDTH,HEIGHT" (d2/d3 as they were)
   (#928; `libs_emulator` cases `[fixed #928]` of `rwe_risoundlib2`).
+* AHIOutputRequest sets `AHIR_Screen` to the struct Screen of the used
+  screen: `!libs {#screenslib,#ua0}` passes the used screen object
+  (8 bytes, the struct Screen its first long) in a0, 0 without one
+  (then 0, AHI's default). The original never set the tag (`AHIR_Screen`
+  stayed 0) (#929; `libs_emulator` cases `[fixed #929]` of
+  `rwe_risoundlib2`).
 
 ## Test
 

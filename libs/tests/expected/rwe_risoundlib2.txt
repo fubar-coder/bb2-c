@@ -900,29 +900,29 @@ AHIOutputRequest|requester tags|reopened, 4 arguments|1	$00000000
 AHIOutputRequest|requester tags|reopened, 5 arguments|1	$00000000
 AHIOutputRequest|requester tags|reopened, 6 arguments|1	$00000000
 AHIOutputRequest|tag list|cancelled, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIOutputRequest|tag list|cancelled, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIOutputRequest|tag list|cancelled, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIOutputRequest|tag list|cancelled, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIOutputRequest|tag list|cancelled, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIOutputRequest|tag list|cancelled, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIOutputRequest|tag list|cancelled, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIOutputRequest|tag list|cancelled, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIOutputRequest|tag list|cancelled, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIOutputRequest|tag list|cancelled, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIOutputRequest|tag list|cancelled, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIOutputRequest|tag list|cancelled, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIOutputRequest|tag list|cancelled, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIOutputRequest|tag list|cancelled, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIOutputRequest|tag list|cancelled, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIOutputRequest|tag list|cancelled, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|cancelled, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|cancelled, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|closed, 0 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|closed, 0 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|closed, 0 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|closed, 1 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|closed, 1 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|closed, 1 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|closed, 2 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|closed, 2 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|closed, 2 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|closed, 4 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|closed, 4 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|closed, 4 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|closed, 5 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|closed, 5 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|closed, 5 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|closed, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|closed, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|closed, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|no device opened, 0 arguments|1	bytes 68 fnv 83E79215
 AHIOutputRequest|tag list|no device opened, 1 arguments|1	bytes 68 fnv 83E79215
 AHIOutputRequest|tag list|no device opened, 2 arguments|1	bytes 68 fnv 83E79215
@@ -936,17 +936,17 @@ AHIOutputRequest|tag list|no device, 4 arguments|1	bytes 68 fnv 83E79215
 AHIOutputRequest|tag list|no device, 5 arguments|1	bytes 68 fnv 83E79215
 AHIOutputRequest|tag list|no device, 6 arguments|1	bytes 68 fnv 83E79215
 AHIOutputRequest|tag list|no requester, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIOutputRequest|tag list|no requester, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIOutputRequest|tag list|no requester, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIOutputRequest|tag list|no requester, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIOutputRequest|tag list|no requester, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIOutputRequest|tag list|no requester, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIOutputRequest|tag list|no requester, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIOutputRequest|tag list|no requester, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIOutputRequest|tag list|no requester, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIOutputRequest|tag list|no requester, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIOutputRequest|tag list|no requester, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIOutputRequest|tag list|no requester, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIOutputRequest|tag list|no requester, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIOutputRequest|tag list|no requester, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIOutputRequest|tag list|no requester, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIOutputRequest|tag list|no requester, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|no requester, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|no requester, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|no screen, 0 arguments|1 [orig]	bytes 68 fnv C223F788
 AHIOutputRequest|tag list|no screen, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
 AHIOutputRequest|tag list|no screen, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
@@ -960,29 +960,29 @@ AHIOutputRequest|tag list|no screen, 5 arguments|1 [fixed #931]	bytes 68 fnv 63E
 AHIOutputRequest|tag list|no screen, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
 AHIOutputRequest|tag list|no screen, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
 AHIOutputRequest|tag list|open, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIOutputRequest|tag list|open, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIOutputRequest|tag list|open, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIOutputRequest|tag list|open, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIOutputRequest|tag list|open, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIOutputRequest|tag list|open, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIOutputRequest|tag list|open, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIOutputRequest|tag list|open, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIOutputRequest|tag list|open, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIOutputRequest|tag list|open, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIOutputRequest|tag list|open, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIOutputRequest|tag list|open, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIOutputRequest|tag list|open, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIOutputRequest|tag list|open, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIOutputRequest|tag list|open, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIOutputRequest|tag list|open, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|open, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|open, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|tag list|reopened, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIOutputRequest|tag list|reopened, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIOutputRequest|tag list|reopened, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIOutputRequest|tag list|reopened, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIOutputRequest|tag list|reopened, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIOutputRequest|tag list|reopened, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIOutputRequest|tag list|reopened, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIOutputRequest|tag list|reopened, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIOutputRequest|tag list|reopened, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIOutputRequest|tag list|reopened, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIOutputRequest|tag list|reopened, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIOutputRequest|tag list|reopened, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIOutputRequest|tag list|reopened, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIOutputRequest|tag list|reopened, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIOutputRequest|tag list|reopened, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIOutputRequest|tag list|reopened, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIOutputRequest|tag list|reopened, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIOutputRequest|tag list|reopened, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIOutputRequest|unit|cancelled, 0 arguments|1	$00000000
 AHIOutputRequest|unit|cancelled, 1 arguments|1	$00000000
 AHIOutputRequest|unit|cancelled, 2 arguments|1	$00000000
@@ -2053,31 +2053,31 @@ AHIRequestedFreq|requester tags|reopened, 5 arguments|1	$00000000
 AHIRequestedFreq|requester tags|reopened, 6 arguments|1	$00000000
 AHIRequestedFreq|requester tags|request in use|1	$00000000
 AHIRequestedFreq|tag list|cancelled, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIRequestedFreq|tag list|cancelled, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIRequestedFreq|tag list|cancelled, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIRequestedFreq|tag list|cancelled, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIRequestedFreq|tag list|cancelled, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIRequestedFreq|tag list|cancelled, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIRequestedFreq|tag list|cancelled, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIRequestedFreq|tag list|cancelled, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIRequestedFreq|tag list|cancelled, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIRequestedFreq|tag list|cancelled, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIRequestedFreq|tag list|cancelled, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIRequestedFreq|tag list|cancelled, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIRequestedFreq|tag list|cancelled, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIRequestedFreq|tag list|cancelled, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIRequestedFreq|tag list|cancelled, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIRequestedFreq|tag list|cancelled, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|cancelled, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|cancelled, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|closed|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|closed|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|closed|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|closed, 0 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|closed, 0 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|closed, 0 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|closed, 1 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|closed, 1 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|closed, 1 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|closed, 2 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|closed, 2 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|closed, 2 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|closed, 4 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|closed, 4 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|closed, 4 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|closed, 5 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|closed, 5 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|closed, 5 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|closed, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|closed, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|closed, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|no device|1	bytes 68 fnv 83E79215
 AHIRequestedFreq|tag list|no device opened, 0 arguments|1	bytes 68 fnv 83E79215
 AHIRequestedFreq|tag list|no device opened, 1 arguments|1	bytes 68 fnv 83E79215
@@ -2094,17 +2094,17 @@ AHIRequestedFreq|tag list|no device, 6 arguments|1	bytes 68 fnv 83E79215
 AHIRequestedFreq|tag list|no port|1 [orig]	bytes 68 fnv 02343B5D
 AHIRequestedFreq|tag list|no port|1 [fixed #931]	bytes 68 fnv EFB64B36
 AHIRequestedFreq|tag list|no requester, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIRequestedFreq|tag list|no requester, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIRequestedFreq|tag list|no requester, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIRequestedFreq|tag list|no requester, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIRequestedFreq|tag list|no requester, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIRequestedFreq|tag list|no requester, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIRequestedFreq|tag list|no requester, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIRequestedFreq|tag list|no requester, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIRequestedFreq|tag list|no requester, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIRequestedFreq|tag list|no requester, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIRequestedFreq|tag list|no requester, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIRequestedFreq|tag list|no requester, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIRequestedFreq|tag list|no requester, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIRequestedFreq|tag list|no requester, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIRequestedFreq|tag list|no requester, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIRequestedFreq|tag list|no requester, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|no requester, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|no requester, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|no screen, 0 arguments|1 [orig]	bytes 68 fnv C223F788
 AHIRequestedFreq|tag list|no screen, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
 AHIRequestedFreq|tag list|no screen, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
@@ -2118,33 +2118,33 @@ AHIRequestedFreq|tag list|no screen, 5 arguments|1 [fixed #931]	bytes 68 fnv 63E
 AHIRequestedFreq|tag list|no screen, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
 AHIRequestedFreq|tag list|no screen, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
 AHIRequestedFreq|tag list|open|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|open|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|open|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|open, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIRequestedFreq|tag list|open, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIRequestedFreq|tag list|open, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIRequestedFreq|tag list|open, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIRequestedFreq|tag list|open, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIRequestedFreq|tag list|open, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIRequestedFreq|tag list|open, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIRequestedFreq|tag list|open, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIRequestedFreq|tag list|open, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIRequestedFreq|tag list|open, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIRequestedFreq|tag list|open, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIRequestedFreq|tag list|open, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIRequestedFreq|tag list|open, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIRequestedFreq|tag list|open, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIRequestedFreq|tag list|open, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIRequestedFreq|tag list|open, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|open, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|open, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|reopened, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIRequestedFreq|tag list|reopened, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIRequestedFreq|tag list|reopened, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIRequestedFreq|tag list|reopened, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIRequestedFreq|tag list|reopened, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIRequestedFreq|tag list|reopened, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIRequestedFreq|tag list|reopened, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIRequestedFreq|tag list|reopened, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIRequestedFreq|tag list|reopened, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIRequestedFreq|tag list|reopened, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIRequestedFreq|tag list|reopened, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIRequestedFreq|tag list|reopened, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIRequestedFreq|tag list|reopened, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIRequestedFreq|tag list|reopened, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIRequestedFreq|tag list|reopened, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIRequestedFreq|tag list|reopened, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|reopened, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|reopened, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|tag list|request in use|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedFreq|tag list|request in use|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedFreq|tag list|request in use|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedFreq|unit|cancelled, 0 arguments|1	$00000000
 AHIRequestedFreq|unit|cancelled, 1 arguments|1	$00000000
 AHIRequestedFreq|unit|cancelled, 2 arguments|1	$00000000
@@ -3251,31 +3251,31 @@ AHIRequestedID|requester tags|reopened, 6 arguments|1	$00000000
 AHIRequestedID|requester tags|request in use|1	$00000000
 AHIRequestedID|six requesters|open, 6 arguments|1	$00000001
 AHIRequestedID|tag list|cancelled, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIRequestedID|tag list|cancelled, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIRequestedID|tag list|cancelled, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIRequestedID|tag list|cancelled, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIRequestedID|tag list|cancelled, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIRequestedID|tag list|cancelled, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIRequestedID|tag list|cancelled, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIRequestedID|tag list|cancelled, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIRequestedID|tag list|cancelled, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIRequestedID|tag list|cancelled, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIRequestedID|tag list|cancelled, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIRequestedID|tag list|cancelled, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIRequestedID|tag list|cancelled, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIRequestedID|tag list|cancelled, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIRequestedID|tag list|cancelled, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIRequestedID|tag list|cancelled, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|cancelled, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|cancelled, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|closed|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|closed|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|closed|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|closed, 0 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|closed, 0 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|closed, 0 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|closed, 1 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|closed, 1 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|closed, 1 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|closed, 2 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|closed, 2 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|closed, 2 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|closed, 4 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|closed, 4 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|closed, 4 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|closed, 5 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|closed, 5 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|closed, 5 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|closed, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|closed, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|closed, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|no device|1	bytes 68 fnv 83E79215
 AHIRequestedID|tag list|no device opened, 0 arguments|1	bytes 68 fnv 83E79215
 AHIRequestedID|tag list|no device opened, 1 arguments|1	bytes 68 fnv 83E79215
@@ -3292,17 +3292,17 @@ AHIRequestedID|tag list|no device, 6 arguments|1	bytes 68 fnv 83E79215
 AHIRequestedID|tag list|no port|1 [orig]	bytes 68 fnv 02343B5D
 AHIRequestedID|tag list|no port|1 [fixed #931]	bytes 68 fnv EFB64B36
 AHIRequestedID|tag list|no requester, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIRequestedID|tag list|no requester, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIRequestedID|tag list|no requester, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIRequestedID|tag list|no requester, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIRequestedID|tag list|no requester, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIRequestedID|tag list|no requester, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIRequestedID|tag list|no requester, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIRequestedID|tag list|no requester, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIRequestedID|tag list|no requester, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIRequestedID|tag list|no requester, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIRequestedID|tag list|no requester, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIRequestedID|tag list|no requester, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIRequestedID|tag list|no requester, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIRequestedID|tag list|no requester, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIRequestedID|tag list|no requester, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIRequestedID|tag list|no requester, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|no requester, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|no requester, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|no screen, 0 arguments|1 [orig]	bytes 68 fnv C223F788
 AHIRequestedID|tag list|no screen, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
 AHIRequestedID|tag list|no screen, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
@@ -3316,35 +3316,35 @@ AHIRequestedID|tag list|no screen, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF
 AHIRequestedID|tag list|no screen, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
 AHIRequestedID|tag list|no screen, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
 AHIRequestedID|tag list|open|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|open|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|open|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|open, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIRequestedID|tag list|open, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIRequestedID|tag list|open, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIRequestedID|tag list|open, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIRequestedID|tag list|open, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIRequestedID|tag list|open, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIRequestedID|tag list|open, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIRequestedID|tag list|open, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIRequestedID|tag list|open, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIRequestedID|tag list|open, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIRequestedID|tag list|open, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIRequestedID|tag list|open, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIRequestedID|tag list|open, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIRequestedID|tag list|open, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIRequestedID|tag list|open, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIRequestedID|tag list|open, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|open, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|open, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|open, 6 arguments|2 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|open, 6 arguments|2 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|open, 6 arguments|2 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|reopened, 0 arguments|1 [orig]	bytes 68 fnv C223F788
-AHIRequestedID|tag list|reopened, 0 arguments|1 [fixed #931]	bytes 68 fnv DFE975CB
+AHIRequestedID|tag list|reopened, 0 arguments|1 [fixed #929]	bytes 68 fnv 31FD42C4
 AHIRequestedID|tag list|reopened, 1 arguments|1 [orig]	bytes 68 fnv E894BC0B
-AHIRequestedID|tag list|reopened, 1 arguments|1 [fixed #928]	bytes 68 fnv 11E395C5
+AHIRequestedID|tag list|reopened, 1 arguments|1 [fixed #929]	bytes 68 fnv 79F899DE
 AHIRequestedID|tag list|reopened, 2 arguments|1 [orig]	bytes 68 fnv DE725149
-AHIRequestedID|tag list|reopened, 2 arguments|1 [fixed #928]	bytes 68 fnv CEF750D1
+AHIRequestedID|tag list|reopened, 2 arguments|1 [fixed #929]	bytes 68 fnv 49F8A6DA
 AHIRequestedID|tag list|reopened, 4 arguments|1 [orig]	bytes 68 fnv FDECA548
-AHIRequestedID|tag list|reopened, 4 arguments|1 [fixed #928]	bytes 68 fnv B18AD100
+AHIRequestedID|tag list|reopened, 4 arguments|1 [fixed #929]	bytes 68 fnv FEE821AF
 AHIRequestedID|tag list|reopened, 5 arguments|1 [orig]	bytes 68 fnv 9A6AC75D
-AHIRequestedID|tag list|reopened, 5 arguments|1 [fixed #931]	bytes 68 fnv 63EEF2F6
+AHIRequestedID|tag list|reopened, 5 arguments|1 [fixed #929]	bytes 68 fnv 828D29FD
 AHIRequestedID|tag list|reopened, 6 arguments|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|reopened, 6 arguments|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|reopened, 6 arguments|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|tag list|request in use|1 [orig]	bytes 68 fnv 02343B5D
-AHIRequestedID|tag list|request in use|1 [fixed #931]	bytes 68 fnv EFB64B36
+AHIRequestedID|tag list|request in use|1 [fixed #929]	bytes 68 fnv 8AA6503D
 AHIRequestedID|unit|cancelled, 0 arguments|1	$00000000
 AHIRequestedID|unit|cancelled, 1 arguments|1	$00000000
 AHIRequestedID|unit|cancelled, 2 arguments|1	$00000000
@@ -3501,14 +3501,14 @@ CloseAHI|requester tags|open|1	$00000000
 CloseAHI|requester tags|playing|1	$00000000
 CloseAHI|requester tags|request in use|1	$00000000
 CloseAHI|tag list|again|1 [orig]	bytes 68 fnv 02343B5D
-CloseAHI|tag list|again|1 [fixed #931]	bytes 68 fnv EFB64B36
+CloseAHI|tag list|again|1 [fixed #929]	bytes 68 fnv 8AA6503D
 CloseAHI|tag list|nothing open|1	bytes 68 fnv 83E79215
 CloseAHI|tag list|open|1 [orig]	bytes 68 fnv 02343B5D
-CloseAHI|tag list|open|1 [fixed #931]	bytes 68 fnv EFB64B36
+CloseAHI|tag list|open|1 [fixed #929]	bytes 68 fnv 8AA6503D
 CloseAHI|tag list|playing|1 [orig]	bytes 68 fnv 02343B5D
-CloseAHI|tag list|playing|1 [fixed #931]	bytes 68 fnv EFB64B36
+CloseAHI|tag list|playing|1 [fixed #929]	bytes 68 fnv 8AA6503D
 CloseAHI|tag list|request in use|1 [orig]	bytes 68 fnv 02343B5D
-CloseAHI|tag list|request in use|1 [fixed #931]	bytes 68 fnv EFB64B36
+CloseAHI|tag list|request in use|1 [fixed #929]	bytes 68 fnv 8AA6503D
 CloseAHI|unit|again|1 [orig]	$00000002
 CloseAHI|unit|again|1 [fixed #924]	$00000000
 CloseAHI|unit|nothing open|1	$00000000
@@ -4059,13 +4059,13 @@ OpenAHI|requester tags|no ahi.device unit 0|1	$00000000
 OpenAHI|requester tags|no ahi.device unit 1|1	$00000000
 OpenAHI|requester tags|test device unit 0|1	$00000000
 OpenAHI|tag list|after init, unit 3|1 [orig]	bytes 68 fnv 02343B5D
-OpenAHI|tag list|after init, unit 3|1 [fixed #931]	bytes 68 fnv EFB64B36
+OpenAHI|tag list|after init, unit 3|1 [fixed #929]	bytes 68 fnv 8AA6503D
 OpenAHI|tag list|after playing, unit 0|1 [orig]	bytes 68 fnv 02343B5D
-OpenAHI|tag list|after playing, unit 0|1 [fixed #931]	bytes 68 fnv EFB64B36
+OpenAHI|tag list|after playing, unit 0|1 [fixed #929]	bytes 68 fnv 8AA6503D
 OpenAHI|tag list|again, unit 2|1 [orig]	bytes 68 fnv 02343B5D
-OpenAHI|tag list|again, unit 2|1 [fixed #931]	bytes 68 fnv EFB64B36
+OpenAHI|tag list|again, unit 2|1 [fixed #929]	bytes 68 fnv 8AA6503D
 OpenAHI|tag list|for playing, unit 0|1 [orig]	bytes 68 fnv 02343B5D
-OpenAHI|tag list|for playing, unit 0|1 [fixed #931]	bytes 68 fnv EFB64B36
+OpenAHI|tag list|for playing, unit 0|1 [fixed #929]	bytes 68 fnv 8AA6503D
 OpenAHI|tag list|no ahi.device unit 0|1	bytes 68 fnv 83E79215
 OpenAHI|tag list|no ahi.device unit 1|1	bytes 68 fnv 83E79215
 OpenAHI|tag list|test device unit 0|1	bytes 68 fnv 83E79215
@@ -4536,13 +4536,13 @@ PlayRawAHI|tag list|open|1	bytes 68 fnv 83E79215
 PlayRawAHI|tag list|open|2	bytes 68 fnv 83E79215
 PlayRawAHI|tag list|open|3	bytes 68 fnv 83E79215
 PlayRawAHI|tag list|open twice|1 [orig]	bytes 68 fnv 02343B5D
-PlayRawAHI|tag list|open twice|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlayRawAHI|tag list|open twice|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlayRawAHI|tag list|open twice|2 [orig]	bytes 68 fnv 02343B5D
-PlayRawAHI|tag list|open twice|2 [fixed #931]	bytes 68 fnv EFB64B36
+PlayRawAHI|tag list|open twice|2 [fixed #929]	bytes 68 fnv 8AA6503D
 PlayRawAHI|tag list|open twice|3 [orig]	bytes 68 fnv 02343B5D
-PlayRawAHI|tag list|open twice|3 [fixed #931]	bytes 68 fnv EFB64B36
+PlayRawAHI|tag list|open twice|3 [fixed #929]	bytes 68 fnv 8AA6503D
 PlayRawAHI|tag list|playing, raw|1 [orig]	bytes 68 fnv 02343B5D
-PlayRawAHI|tag list|playing, raw|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlayRawAHI|tag list|playing, raw|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlayRawAHI|unit|no device|1	$00000000
 PlayRawAHI|unit|no device|2	$00000000
 PlayRawAHI|unit|no device|3	$00000000
@@ -5225,11 +5225,11 @@ PlaySoundAHI|requester tags|playing, first|1	$00000000
 PlaySoundAHI|requester tags|playing, second|1	$00000000
 PlaySoundAHI|requester tags|playing, third|1	$00000000
 PlaySoundAHI|tag list|after CloseAHI|1 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|after CloseAHI|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|after CloseAHI|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|tag list|ended, first|1 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|ended, first|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|ended, first|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|tag list|ended, second|1 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|ended, second|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|ended, second|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|tag list|no device|1	bytes 68 fnv 83E79215
 PlaySoundAHI|tag list|no device|2	bytes 68 fnv 83E79215
 PlaySoundAHI|tag list|no device|3	bytes 68 fnv 83E79215
@@ -5243,19 +5243,19 @@ PlaySoundAHI|tag list|open|1	bytes 68 fnv 83E79215
 PlaySoundAHI|tag list|open|2	bytes 68 fnv 83E79215
 PlaySoundAHI|tag list|open|3	bytes 68 fnv 83E79215
 PlaySoundAHI|tag list|open twice|1 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|open twice|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|open twice|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|tag list|open twice|2 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|open twice|2 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|open twice|2 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|tag list|open twice|3 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|open twice|3 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|open twice|3 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|tag list|playing at finit|1 [orig]	bytes 68 fnv 02343B5D
 PlaySoundAHI|tag list|playing at finit|1 [fixed #931]	bytes 68 fnv EFB64B36
 PlaySoundAHI|tag list|playing, first|1 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|playing, first|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|playing, first|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|tag list|playing, second|1 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|playing, second|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|playing, second|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|tag list|playing, third|1 [orig]	bytes 68 fnv 02343B5D
-PlaySoundAHI|tag list|playing, third|1 [fixed #931]	bytes 68 fnv EFB64B36
+PlaySoundAHI|tag list|playing, third|1 [fixed #929]	bytes 68 fnv 8AA6503D
 PlaySoundAHI|unit|after CloseAHI|1	$00000000
 PlaySoundAHI|unit|ended, first|1	$00000000
 PlaySoundAHI|unit|ended, second|1	$00000000
@@ -5397,15 +5397,15 @@ finit|requester tags|no port|1	$00000000
 finit|requester tags|open|1	$00000000
 finit|requester tags|playing|1	$00000000
 finit|tag list|after CloseAHI|1 [orig]	bytes 68 fnv 02343B5D
-finit|tag list|after CloseAHI|1 [fixed #931]	bytes 68 fnv EFB64B36
+finit|tag list|after CloseAHI|1 [fixed #929]	bytes 68 fnv 8AA6503D
 finit|tag list|closed|1 [orig]	bytes 68 fnv 02343B5D
-finit|tag list|closed|1 [fixed #931]	bytes 68 fnv EFB64B36
+finit|tag list|closed|1 [fixed #929]	bytes 68 fnv 8AA6503D
 finit|tag list|last|1 [orig]	bytes 68 fnv 02343B5D
 finit|tag list|last|1 [fixed #931]	bytes 68 fnv EFB64B36
 finit|tag list|no port|1 [orig]	bytes 68 fnv 02343B5D
 finit|tag list|no port|1 [fixed #931]	bytes 68 fnv EFB64B36
 finit|tag list|open|1 [orig]	bytes 68 fnv 02343B5D
-finit|tag list|open|1 [fixed #931]	bytes 68 fnv EFB64B36
+finit|tag list|open|1 [fixed #929]	bytes 68 fnv 8AA6503D
 finit|tag list|playing|1 [orig]	bytes 68 fnv 02343B5D
 finit|tag list|playing|1 [fixed #931]	bytes 68 fnv EFB64B36
 finit|unit|after CloseAHI|1	$00000000
@@ -5547,12 +5547,12 @@ init|requester tags|last|1	$00000000
 init|requester tags|no port|1	$00000000
 init|tag list||1	bytes 68 fnv 83E79215
 init|tag list|after finit|1 [orig]	bytes 68 fnv 02343B5D
-init|tag list|after finit|1 [fixed #931]	bytes 68 fnv EFB64B36
+init|tag list|after finit|1 [fixed #929]	bytes 68 fnv 8AA6503D
 init|tag list|after playing|1 [orig]	bytes 68 fnv 02343B5D
-init|tag list|after playing|1 [fixed #931]	bytes 68 fnv EFB64B36
+init|tag list|after playing|1 [fixed #929]	bytes 68 fnv 8AA6503D
 init|tag list|again|1	bytes 68 fnv 83E79215
 init|tag list|for playing|1 [orig]	bytes 68 fnv 02343B5D
-init|tag list|for playing|1 [fixed #931]	bytes 68 fnv EFB64B36
+init|tag list|for playing|1 [fixed #929]	bytes 68 fnv 8AA6503D
 init|tag list|last|1 [orig]	bytes 68 fnv 02343B5D
 init|tag list|last|1 [fixed #931]	bytes 68 fnv EFB64B36
 init|tag list|no port|1 [orig]	bytes 68 fnv 02343B5D

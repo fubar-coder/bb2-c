@@ -35,9 +35,7 @@
  * same offsets.
  *
  * BUG(orig):
- *   - AHIOutputRequest: !libs's screen (a0) is
- *     not used, AHIR_Screen stays 0 (#929);
- *     every call allocates a requester that is never freed
+ *   - AHIOutputRequest: every call allocates a requester that is never freed
  *     (#930).
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
@@ -88,7 +86,10 @@
  * with 1, 2 and 4 arguments (mode id; mode id, frequency; x, y, width,
  * height) go to the entries made for them; the original's !subs mixed
  * them up, so the arguments were lost and others came from whatever
- * d2-d5 held (#928).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * d2-d5 held (#928).  AHIOutputRequest sets AHIR_Screen to the struct
+ * Screen of the used screen object (!libs #screenslib,#ua0: the
+ * object's first long), so the requester opens on the program's screen;
+ * the original never set it (#929).  CludgeSound writes nothing behind audiolib's 16 byte sound
  * object; the original stored the rate at +16, the high word of the next
  * object's sample pointer (behind the last object whatever follows), for
  * PlaySoundAHI, which now takes its frequency from the object's period:
@@ -563,21 +564,25 @@ ULONG BLITZ_ROUTINE c_playraw(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
  * edge, top edge, width, height, audio id and mix frequency (offsets 4,
  * 12, 20, 28, 36, 44; fixed: #931, the original wrote the last four to
  * 16, 20, 24, 28, over the tag ids of width and height), then
- * AHI_AllocAudioRequestA and AHI_AudioRequestA (no tags).
- * BUG(orig): !libs's screen (a0) is not used,
- * AHIR_Screen stays 0 (#929).  Every call allocates a requester that is
- * never freed (#930).
+ * AHIR_Screen = the struct Screen of the used screen object (its first
+ * long; 0 without one: AHI's default; fixed: #929, the original never
+ * set it), then AHI_AllocAudioRequestA and AHI_AudioRequestA (no tags).
+ * BUG(orig): every call allocates a requester that is never freed
+ * (#930).
  * @param x     d0: the initial left edge
  * @param y     d1: the initial top edge
  * @param w     d2: the initial width
  * @param h     d3: the initial height
  * @param id    d4: the initial audio mode id
  * @param freq  d5: the initial mixing frequency
+ * @param scr   a0: the used screen object of screenslib (its first long
+ *              the struct Screen), 0 without one (!libs #screenslib,#ua0)
  * @return d0: AHI_AudioRequestA's result (0 when cancelled), 0 without
  *         ahi.device or when the requester could not be allocated
  */
 ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL_REG(d2),
-                              ULONG h BL_REG(d3), ULONG id BL_REG(d4), ULONG freq BL_REG(d5))
+                              ULONG h BL_REG(d3), ULONG id BL_REG(d4), ULONG freq BL_REG(d5),
+                              const ULONG *scr BL_REG(a0))
 {
     struct bl_regs r;
 
@@ -589,6 +594,7 @@ ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
     ahireqtags.height.ti_Data = h;      /* 28(a0) */
     ahireqtags.audioid.ti_Data = id;    /* 36(a0) */
     ahireqtags.mixfreq.ti_Data = freq;  /* 44(a0) */
+    ahireqtags.screen.ti_Data = scr ? *scr : 0;     /* Fixed (#929) */
     r = (struct bl_regs){ .a0 = (ULONG)&ahireqtags };
     ahirequest = (APTR)BLITZ_BASEJSR(ahibase, LVO_AHI_AllocAudioRequestA, r);
     if (!ahirequest)
@@ -599,11 +605,13 @@ ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
 
 /**
  * @brief AHIOutputRequest: c_outreq6() with x, y, width, height -1 and mode id, frequency 0.
+ * @param scr   a0: the used screen object of screenslib (its first long
+ *              the struct Screen), 0 without one (!libs #screenslib,#ua0)
  * @return d0: as c_outreq6()
  */
-ULONG BLITZ_ROUTINE c_outreq1(void)
+ULONG BLITZ_ROUTINE c_outreq1(const ULONG *scr BL_REG(a0))
 {
-    return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, 0, 0);
+    return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, 0, 0, scr);
 }
 
 /**
@@ -613,11 +621,13 @@ ULONG BLITZ_ROUTINE c_outreq1(void)
  * (fixed: #928; the original gave it to the form with 4 arguments, x, y,
  * width and height replaced by -1, the mode id whatever d4 held).
  * @param id  d0: the mode id
+ * @param scr   a0: the used screen object of screenslib (its first long
+ *              the struct Screen), 0 without one (!libs #screenslib,#ua0)
  * @return d0: as c_outreq6()
  */
-ULONG BLITZ_ROUTINE c_outreq2(ULONG id BL_REG(d0))
+ULONG BLITZ_ROUTINE c_outreq2(ULONG id BL_REG(d0), const ULONG *scr BL_REG(a0))
 {
-    return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, 0);
+    return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, 0, scr);
 }
 
 /**
@@ -628,11 +638,14 @@ ULONG BLITZ_ROUTINE c_outreq2(ULONG id BL_REG(d0))
  * argument, which was lost, mode id and frequency whatever d4/d5 held).
  * @param id    d0: the mode id
  * @param freq  d1: the frequency
+ * @param scr   a0: the used screen object of screenslib (its first long
+ *              the struct Screen), 0 without one (!libs #screenslib,#ua0)
  * @return d0: as c_outreq6()
  */
-ULONG BLITZ_ROUTINE c_outreq3(ULONG id BL_REG(d0), ULONG freq BL_REG(d1))
+ULONG BLITZ_ROUTINE c_outreq3(ULONG id BL_REG(d0), ULONG freq BL_REG(d1),
+                              const ULONG *scr BL_REG(a0))
 {
-    return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, freq);
+    return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, freq, scr);
 }
 
 /**
@@ -645,12 +658,14 @@ ULONG BLITZ_ROUTINE c_outreq3(ULONG id BL_REG(d0), ULONG freq BL_REG(d1))
  * @param y  d1: the top edge
  * @param w  d2: the width
  * @param h  d3: the height
+ * @param scr a0: the used screen object of screenslib (its first long
+ *            the struct Screen), 0 without one (!libs #screenslib,#ua0)
  * @return d0: as c_outreq6()
  */
 ULONG BLITZ_ROUTINE c_outreq4(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL_REG(d2),
-                              ULONG h BL_REG(d3))
+                              ULONG h BL_REG(d3), const ULONG *scr BL_REG(a0))
 {
-    return c_outreq6(x, y, w, h, 0, 0);
+    return c_outreq6(x, y, w, h, 0, 0, scr);
 }
 
 /**
@@ -660,12 +675,15 @@ ULONG BLITZ_ROUTINE c_outreq4(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
  * @param w   d2: the width
  * @param h   d3: the height
  * @param id  d4: the mode id
+ * @param scr a0: the used screen object of screenslib (its first long
+ *            the struct Screen), 0 without one (!libs #screenslib,#ua0)
  * @return d0: as c_outreq6()
  */
 ULONG BLITZ_ROUTINE c_outreq5(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL_REG(d2),
-                              ULONG h BL_REG(d3), ULONG id BL_REG(d4))
+                              ULONG h BL_REG(d3), ULONG id BL_REG(d4),
+                              const ULONG *scr BL_REG(a0))
 {
-    return c_outreq6(x, y, w, h, id, 0);
+    return c_outreq6(x, y, w, h, id, 0, scr);
 }
 
 /**
