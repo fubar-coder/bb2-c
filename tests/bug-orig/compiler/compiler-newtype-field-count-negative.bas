@@ -6,6 +6,7 @@
 ; "Type too Big" that a.b[-1] (65535 bytes) fails.  The program prints the
 ; NewType's size.
 ; Correct: the compile error "Type too Big" at the field's line.
+; @fixed #1084
 NEWTYPE .t
   a.b[-65532]
 End NEWTYPE

@@ -861,11 +861,18 @@ void typemode(UWORD c)
         if (isfloat)
             fpconerr();
         getchar3();
+        /* Fixed (#1084): the count is stored as a word (ndims, the
+           bound of the index check; relayout sizes the field from it
+           again) and multiplied as one (MULU): the original took a
+           count of 65536 or more, and a negative one, modulo 65536, and
+           a.b[65540] or a.b[-65532] passed the "Type too Big" check
+           below as a field of 4 bytes.  Such a count is "Type too Big"
+           now, before it is stored; every other count is unchanged
+           (tests compiler-newtype-field-count-word,
+           compiler-newtype-field-count-negative) */
+        if (count >= 65536)
+            toolongerr();
         f->ndims = count;
-        /* BUG(orig) (#1084): the count as a word (MULU): a
-           count of 65536 or more is taken modulo 65536 and passes the
-           "Type too Big" check below (test
-           compiler-newtype-field-count-word) */
         size = (ULONG)(UWORD)count * (UWORD)size; /* mulu d1,d3 */
         flagmask |= 2;
     }

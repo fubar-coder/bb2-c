@@ -134,9 +134,10 @@ an address that is not such a variable (an invalid argument) has a word
 below 8. Exactly 8 (an empty NEWTYPE) gives a size of 0, for which
 RIAmosFuncLib's CopyByte copies nothing (since #492; the original's
 CopyByte copied 2^32 bytes). A NEWTYPE with a field like `a.b[65540]` is
-no counterexample: the compiler takes an array field's count of 65536 or
-more modulo 65536 (compiler issue #1084), so that NEWTYPE is 4 bytes and
-its word says so.
+no counterexample: the port's compiler refuses it ("Type too Big",
+compiler issue #1084), and the original compiler takes an array field's
+count of 65536 or more modulo 65536, so that NEWTYPE is 4 bytes and its
+word says so.
 
 DelListItem on the only node frees nothing and returns 0; that is not a
 defect (the command refuses to delete the last node and reports it).

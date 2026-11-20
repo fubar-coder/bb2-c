@@ -34,9 +34,10 @@
  * argument) has a word below 8.  Exactly 8 (an empty NEWTYPE) gives a
  * size of 0, for which CopyByte copies nothing (since #492; the
  * original's CopyByte copied 2^32 bytes).  A NEWTYPE with a field like
- * a.b[65540] is no counterexample: the compiler takes an array field's
- * count of 65536 or more modulo 65536 (compiler issue #1084), so that
- * NEWTYPE is 4 bytes and its word says so.
+ * a.b[65540] is no counterexample: the port's compiler refuses it ("Type
+ * too Big", compiler issue #1084), and the original compiler takes an
+ * array field's count of 65536 or more modulo 65536, so that NEWTYPE is
+ * 4 bytes and its word says so.
  *
  * Fixed (intended deviations):
  *   - AddFirstListItem returns -1 (the original: list# * 4, 0 for list 0)
