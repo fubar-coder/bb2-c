@@ -1,0 +1,15 @@
+# the intended differences of riseriallib against the reference build of its
+# source (blitzlib compare, docs/development.md "Intended differences")
+# #1161: SerialReadString's !libs list loads strings1lib's init value (the
+# string work area) into a0 for its limit; the original's list is empty:
+# the longer list moves every entry behind it (the first difference of each)
+lib 22: entry 11 SerialReadString +$8: $00 != $FE
+lib 22: entry 12 SerialProgress +$0: $03 != $6E
+lib 22: entry 13 SerialReadLong +$0: $03 != $73
+lib 22: entry 14 SerialWriteLong +$0: $00 != $6E
+lib 22: entry 15 SerialStop +$0: $00 != $64
+lib 22: entry 16 SerialGot +$0: $02 != $6F
+lib 22: entry 17 SerialWait +$0: $02 != $65
+lib 22: entry 18 (nullsub) +$0: $00 != $74
+lib 22: end of the table +$466: $FF != $00
+lib 22: declaration part $46C != $470 bytes

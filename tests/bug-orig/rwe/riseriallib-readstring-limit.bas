@@ -6,6 +6,7 @@
 ; for 2000 bytes without a 0 and reads them with SerialReadString.
 ; Correct: SerialReadString stops at the end of the string work area (and
 ; stores the 0 there): a string of 999 characters.
+; @fixed #1161
 ; @rwe riseriallib
 ; @pass serial=on
 ; @pass timeout=30

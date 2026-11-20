@@ -14,7 +14,7 @@
  *   SerialReceiveBlock address,length
  *   SerialFlush                  reads until the buffer is empty
  *   SerialSendString a$          the characters of the string (no 0)
- *   SerialReadString             bytes up to a 0
+ *   SerialReadString             bytes up to a 0 (at most what fits)
  *   SerialProgress               the remaining length of a block
  *   SerialReadLong / SerialWriteLong longword, the low byte first
  *   SerialStop                   ends a block transfer
@@ -140,6 +140,12 @@
  *     puts the old ones back there; the original wrote them at $64/$74
  *     whatever the VBR was, so with a moved table they were never called
  *     (#804).
+ *   - SerialReadString stops at the end of the string work area (and
+ *     stores the 0 there; the rest stays in the ring); the original
+ *     stored received bytes until a 0 came, without a limit: a sender
+ *     that sent no 0 wrote over the string work area and behind it
+ *     (#1161).  Its declaration asks for strings1lib's init value (the
+ *     work area, as seriallib's ReadSerialString since #256) in a0.
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -233,7 +239,7 @@ BLITZ_NAME("SerialSendString", "(a$)");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS0();
-BLITZ_LIBS0();
+BLITZ_LIBS(LIB_strings1lib, BL_LA0);    /* fixed (#1161): the string work area */
 BLITZ_SUBS(_readserialstring, 0, 0);
 BLITZ_NAME("SerialReadString", "");
 
@@ -647,25 +653,41 @@ void BLITZ_ROUTINE c_sendserialstring(const UBYTE *str BL_REG(d0),
  * had pushed).  Fixed (#797): the loop ends at a 0 (the original only if
  * the upper word of d0 at the call was 0 and no wait came before).
  * Opens the port when it is closed (fixed (#793): the original called
- * SerialOpen's code only when the port was open).
+ * SerialOpen's code only when the port was open).  At most as many
+ * characters as fit in front of the end of the string work area with
+ * the 0 behind them; the rest stays in the ring (fixed (#1161): the
+ * original had no limit).
+ * @param sbuf  a0: strings1lib's init value, the string work area
+ *              (memlib globalloc: its block length, size + 8, at -4)
  * @return d0: the number of characters (the string's length)
  */
-ULONG BLITZ_ROUTINE c_readserialstring(void)
+ULONG BLITZ_ROUTINE c_readserialstring(const UBYTE *sbuf BL_REG(a0))
 {
     ULONG value;
+    LONG room;
 
     quitflag = 0;                       /* fixed (#1162) */
     if (!openflag)                      /* fixed (#793) */
         openserial(0);
     numchars = 0;                       /* fixed (#796): every call */
-    do {
+    /* fixed (#1161): the room in front of the end, one byte for the 0 */
+    room = (LONG)(sbuf + ((const ULONG *)sbuf)[-1] - 8 - blitz_string) - 1;
+    if (room < 0)
+        return 0;
+    for (;;) {
+        if ((LONG)numchars >= room) {   /* fixed (#1161) */
+            *blitz_string = 0;
+            break;
+        }
         while ((value = readser()) == (ULONG)-1)    /* fixed (#797) */
             ;
+        *blitz_string = (UBYTE)value;
+        if (!value)
+            break;                      /* fixed (#795): a3 on the 0 */
+        blitz_string++;
         numchars++;
-        *blitz_string++ = (UBYTE)value;
-    } while (value);
-    blitz_string--;                     /* fixed (#795): a3 on the 0 */
-    return numchars - 1;
+    }
+    return numchars;
 }
 
 /**

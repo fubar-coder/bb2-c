@@ -194,6 +194,16 @@ kind F):
   it) the handlers were never called (#804; library decisions Q14; test
   `riseriallib-vbr` on the A500 with a 68010; the library test's machine
   has VBR 0, its cases stay).
+* `SerialReadString` stops at the end of the string work area: it stores
+  at most as many characters as fit in front of its end with the 0
+  behind them (the rest stays in the ring), the limit of seriallib's
+  `ReadSerialString` since #256; its declaration asks for strings1lib's
+  init value, the work area, in a0 (`riseriallib.declarations-intended.txt`).
+  The original stored received bytes until a 0 came, without a limit: a
+  sender that sent no 0 wrote over the string work area and behind it
+  (#1161; the work area is the string buffer of the compiler options,
+  10240 bytes by default; test `riseriallib-readstring-limit` with 1000
+  bytes: 999 characters).
 
 ## BUG(orig), kept
 
