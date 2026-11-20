@@ -18,7 +18,7 @@
  *     forms (bad ranges too);
  *   - NewZoneTable (bad numbers and sizes; it initialises the current
  *     table, BUG(orig), #875), UseZoneTable, ZoneTableNumber, ZoneTableSize,
- *     ZoneTable, ZoneTest from zone 256 on (low byte, BUG(orig), #881),
+ *     ZoneTable, ZoneTest from zone 256 on (#881: the low byte in the original),
  *     FreeZoneTable (the entry stays set, BUG(orig), #868);
  *   - JFire, JVert, JHoriz for the ports 0..5 with the adaptor on and
  *     off, JAdaptorStatus, AllFire with and without bits, ReadJoyPad for

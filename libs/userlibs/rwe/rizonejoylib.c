@@ -38,9 +38,6 @@
  *     tables again (#871).
  *   - SetZone without a table returns -1 (= done); ZoneTable without a
  *     table returns -1, not 0 (#876).
- *   - ZoneTest(start,end,x,y) finds the start zone through the low BYTE
- *     of start (the counter is a word): from zone 256 on it tests the
- *     wrong zones under the right numbers (#881).
  *   - The 68000 test of x2/y2 uses BMI (the sign of x2-x), not BLT: wrong
  *     for differences beyond 32767 (#879).  The circle test squares word
  *     differences; the radius squared is stored as a word (radius >= 256
@@ -67,6 +64,11 @@
  *     and above of a table of up to 65535 zones are their own.  The
  *     original's ASL.w #3 kept the low word, so zone n of a large table
  *     was zone n mod 8192 (#878).
+ *   - ZoneTest finds its start zone through the whole number: from zone
+ *     256 on the original tested the wrong zones under the right numbers
+ *     (MOVE.b, the low byte, while it counts a word); its range checks
+ *     are unsigned with it, a negative start is beyond the table (the
+ *     last zone), a negative end refused (#881).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -510,12 +512,16 @@ static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
  * ZoneTest(start_num,end_num,x,y) (d0 start, d1 end, d2.w x, d3.w y): the
  * first zone of start..end that contains x,y, its number in d0 (the
  * counter: the low word counted, the upper word of start kept); -1 if
- * none, without a table or for a bad range (end beyond the table or
- * before start, CMP.l : BMI); start beyond the table is the last zone.
+ * none, without a table or zones, or for a bad range (end beyond the
+ * table or before start); start beyond the table is the last zone.
  * Rectangles x1 <= x <= x2, y1 <= y <= y2; zones with x1 < 0 are not
- * set.  BUG(orig) (#881): the start zone is found through the low byte of
- * start (MOVE.b), from zone 256 on the wrong zones are tested under the
- * right numbers.
+ * set.  Fixed (#881): the start zone is found through the whole number
+ * (the original took its low byte, MOVE.b: from zone 256 on it tested
+ * the wrong zones under the right numbers), and the range is checked
+ * unsigned, so a negative start is beyond the table and a negative end
+ * refused (the original compared signed, CMP.l : BMI; with its low byte
+ * a negative start stayed inside the table).  A count of 0 gives -1, as
+ * in the original.
  *
  * The 68020 mode (zones020 set): every zone with a negative y2 is a
  * circle (BUG(orig) #866), a rectangle is tested with CMP2.w (x1..x2,
@@ -550,19 +556,18 @@ BLITZ_ASM_BLOCK(zonetests,
 "   move.l  _zd+" S_(ZD_ZONETABLE) ",d4\n"
 "   beq.s   9f\n"
 "   move.l  d4,a0\n"
-"   move.l  (a0)+,d7\n"
-"   subq.l  #1,d7\n"                        /* the last zone */
-"   cmp.l   d0,d7\n"
-"   bpl.s   1f\n"
+"   move.l  (a0)+,d7\n"                     /* the count */
+"   cmp.l   d7,d0\n"                        /* unsigned (#881) */
+"   bcs.s   1f\n"
 "   move.l  d7,d0\n"                        /* start beyond the table: the last */
-"1: cmp.l   d1,d7\n"
-"   bmi.s   9f\n"
+"   subq.l  #1,d0\n"
+"1: cmp.l   d7,d1\n"                        /* end beyond the table (or no zones) */
+"   bcc.s   9f\n"
 "   cmp.l   d0,d1\n"
-"   bmi.s   9f\n"
+"   bcs.s   9f\n"
 "   sub.w   d0,d1\n"                        /* the DBF count: end - start */
-"   moveq   #0,d4\n"
-"   move.b  d0,d4\n"                        /* MOVE.b: BUG(orig) (#881) */
-"   lsl.w   #3,d4\n"
+"   move.l  d0,d4\n"
+"   lsl.l   #3,d4\n"                        /* the whole number: fixed (#881) */
 "   add.l   d4,a0\n"
 "2: tst.b   _zd+" S_(ZD_ZONES020) "\n"
 "   beq.s   5f\n"

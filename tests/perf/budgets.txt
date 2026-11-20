@@ -363,6 +363,12 @@
 # zonerect 284.0/284.6, zonecircle 1921.0/1921.5, rangemiss
 # 2316.5/2316.6, rect1hit 361.5/361.1, rect1miss 361.0/361.1, circle1hit
 # 444.0/444.1, circle1miss 468.5/468.6; the eight budgets lowered.
+# After #881 (the start zone from the whole number, the range checked
+# unsigned against the count): rangemiss 2306.7/2306.6, rect1hit
+# 350.1/350.1, rect1miss 350.6/348.1, circle1hit 434.6/432.6,
+# circle1miss 458.6/460.6 (the compare with the count saves the SUBQ);
+# zonemiss 12154.1/12153.1, zonerect 284.6/284.1, zonecircle
+# 1921.2/1921.1 unchanged; the five ZoneTest budgets lowered.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -574,8 +580,8 @@ bzone.emptylong                 3          -  the empty loop again, 150000 itera
 bzone.zonemiss              12278    18590.2  r=Zone(300,10) (no zone: 12 rectangles and 4 circles in zones 0-15, 240 zones not set)
 bzone.zonerect                291      437.2  r=Zone(5,5) (zone 0, a rectangle)
 bzone.zonecircle             1944     2275.2  r=Zone(245,125) (zone 13, a circle)
-bzone.rangemiss              2343     2690.7  r=ZoneTest(0,15,300,10) (the 16 zones, none)
-bzone.rect1hit                369      393.2  r=ZoneTest(3,65,35) (a rectangle, inside)
-bzone.rect1miss               368      392.7  r=ZoneTest(3,300,10) (a rectangle, outside)
-bzone.circle1hit              452      524.7  r=ZoneTest(13,245,125) (a circle, inside)
-bzone.circle1miss             477      556.7  r=ZoneTest(13,300,10) (a circle, outside)
+bzone.rangemiss              2333     2690.7  r=ZoneTest(0,15,300,10) (the 16 zones, none)
+bzone.rect1hit                357      393.2  r=ZoneTest(3,65,35) (a rectangle, inside)
+bzone.rect1miss               358      392.7  r=ZoneTest(3,300,10) (a rectangle, outside)
+bzone.circle1hit              442      524.7  r=ZoneTest(13,245,125) (a circle, inside)
+bzone.circle1miss             469      556.7  r=ZoneTest(13,300,10) (a circle, outside)

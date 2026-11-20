@@ -4,6 +4,7 @@
 ; numbers.  ZoneTest(260,5,5) tests zone 4 (a rectangle around the point)
 ; and returns 260; zone 260 is not set.
 ; Correct: zone 260 is tested, the result is -1.
+; @fixed #881
 ; @rwe rizonejoylib
 r=NewZoneTable(1,300)
 UseZoneTable 1

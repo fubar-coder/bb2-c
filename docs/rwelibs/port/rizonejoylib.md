@@ -86,6 +86,17 @@ All other routines are C behind `BLITZ_THUNK`.
   size") are their own. The original's `ASL.w #3` kept the low word, so
   zone n of a large table was zone n mod 8192 (#878, test
   `rwe/rizonejoylib-zone-offset-word`).
+* ZoneTest finds its start zone through the whole number. The original
+  took its low **byte** (`MOVE.b`) while it counts a word: from zone 256
+  on it tested the wrong zones under the right numbers
+  (`ZoneTest(260,5,5)` tested zone 4 and returned 260). With the long
+  offset the range checks are unsigned (`BCC`/`BCS` for `BPL`/`BMI`), so
+  the zones read stay inside the table: a negative start is beyond the
+  table (the last zone, like any start beyond it), a negative end is
+  refused (-1); a table with a count of 0 gives -1, as in the original
+  (#881, test `rwe/rizonejoylib-zonetest-start-byte`; `libs_emulator`
+  cases `[fixed #881]` of `rwe_rizonejoylib`, ZoneTest from zone 256 on
+  in table 3).
 
 ## BUG(orig)
 
@@ -101,9 +112,6 @@ All other routines are C behind `BLITZ_THUNK`.
   (#871).
 * SetZone without a table returns -1 (= done); ZoneTable without a table
   returns -1, not 0 (#876).
-* ZoneTest(start,end,x,y) finds the start zone through the low **byte**
-  of start while the counter is a word: from zone 256 on it tests the
-  wrong zones under the right numbers (#881).
 * The 68000 test of x2/y2 uses `BMI` (the sign of x2-x), not `BLT`: wrong
   when the difference exceeds 32767 (e.g. y1 = -32768, y2 = 32767)
   (#879). The circle test squares word differences; the radius squared

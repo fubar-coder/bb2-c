@@ -5299,8 +5299,10 @@ ZoneTest range|d0|020 65538..65540 (150,150)|1	$FFFFFFFF
 ZoneTest range|d0|020 65538..65540 (305,0)|1	$FFFFFFFF
 ZoneTest range|d0|no table|1	$FFFFFFFF
 ZoneTest range|d0|table 3: 250..270 (5,5)|1	$000000FF
-ZoneTest range|d0|table 3: 256..299 (5,5)|1	$00000103
-ZoneTest range|d0|table 3: 260..260 (5,5)|1	$FFFFFFFF
+ZoneTest range|d0|table 3: 256..299 (5,5)|1 [orig]	$00000103
+ZoneTest range|d0|table 3: 256..299 (5,5)|1 [fixed #881]	$00000104
+ZoneTest range|d0|table 3: 260..260 (5,5)|1 [orig]	$FFFFFFFF
+ZoneTest range|d0|table 3: 260..260 (5,5)|1 [fixed #881]	$00000104
 ZoneTest range|d0|table 3: 4..299 (5,5)|1	$000000FF
 ZoneTest range|kept|000 0..255 (150,150)|1	kept
 ZoneTest range|kept|000 0..255 (305,0)|1	kept
