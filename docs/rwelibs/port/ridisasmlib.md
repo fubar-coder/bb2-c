@@ -35,8 +35,8 @@ LineBuff, opsize/opextra/extrainstr/isdestop/docomma and the condition
 tables - a line up to 86 bytes overwrites the same words. The operand
 pointer a5 of the original is a variable, because `docomma` compares it.
 The instruction stream is read with the original's widths (volatile
-word/long reads at the given address) and the string is written to a3
-with 17 word writes, as in the original. The thunks keep d1/a0/a1; the
+word/long reads at the given address); the string is written to a3
+byte by byte (the original: 17 word writes, #617). The thunks keep d1/a0/a1; the
 original changes d1-d7, a0, a1 (it saves a2-a6 itself).
 
 **BUG(orig)** (kept):
@@ -54,8 +54,15 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
 * The string is cut after 34 columns; two memory indirect `<ea>`s with
   32-bit displacements make a line of 86 bytes, over the end of the
   80-byte LineBuff (opsize, opextra, extrainstr) (#616).
-* Word writes to a3 and word/long reads of the code: an odd a3 or address
-  is an address error on a 68000 (#617).
+
+**Fixed** (intended deviations, `docs/libs/deviations.md`, kind F):
+
+* The string is written to a3 byte by byte: the original's 17 word
+  writes (`MOVE.w (a0)+,(a3)+`) were an address error on a 68000 when a3
+  was odd, after a string of odd length in an expression
+  (`"x"+DisAssemble$(a)`) (#617; test `ridisasmlib-odd-a3-address-error`
+  on the a500). The word and long reads of the code at an odd address
+  stay: disassembling there means nothing.
 
 **Test** (`libs/tests/rwe/ridisasmlib.c`, snitch case "rwe ridisasmlib"):
 each run loads one library set (the C build or the original) and
@@ -80,4 +87,5 @@ of MOVE.l (pc,xn),d0 forms (every second); MOVEM lists (every mask for
 (every third: all 4096 codes); an odd code address and an odd a3 (fine
 on the emulator's 68020); init and finit; a second run (init after
 finit, then InstrSize before the first DisAssemble$). Not covered: the 68000
-address errors.
+address error of an odd a3 (the bug-orig test on the a500) and of an
+odd code address.

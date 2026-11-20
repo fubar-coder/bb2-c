@@ -28,7 +28,7 @@
  * displacements 0 (BUG(orig) (#614): the bytes at address 8 instead of "0");
  * MOVEC with every third control register word (all 4096 codes); an odd
  * instruction address and an odd a3 (the emulator has a 68020; on a
- * 68000 both are address errors, BUG(orig) (#617)); init and finit (RTS);
+ * 68000 both were address errors, the odd a3 Fixed (#617)); init and finit (RTS);
  * a second run (init after finit, then InstrSize before the first
  * DisAssemble$: the last run's size, BUG(orig) (#1170)).
  * Not covered: the 68000 address errors; the steps leave out some

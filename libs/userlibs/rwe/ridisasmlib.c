@@ -18,7 +18,7 @@
  * line is built in LineBuff: the name (with condition codes for "*", s/u
  * for "!" and the size) in columns 0-8, the operands from column 9; the
  * string is always the first 34 columns (spaces after the operands, cut
- * after 34), written to a3 with 17 word writes; InstrSize = the bytes
+ * after 34), written to a3 byte by byte; InstrSize = the bytes
  * the instruction took.  An instruction not in the table gives "?????"
  * (length 5) and InstrSize 2.
  *
@@ -45,9 +45,12 @@
  *   - The string is cut after 34 columns: longer operands are lost; a line
  *     can grow to 86 bytes (two memory indirect <ea>s with 32 bit
  *     displacements) and overwrite opsize, opextra and extrainstr (#616).
- *   - DisAssemble$ writes words to a3: an odd a3 is an address error on a
- *     68000 (here as well), like the instruction reads at an odd address
- *     (#617).
+ *
+ * Fixed (intended deviation, #617): the original writes the string to a3
+ * with 17 word writes (MOVE.w (a0)+,(a3)+), an address error on a 68000
+ * when a3 is odd (after a string of odd length in an expression); the
+ * port writes it byte by byte.  The instruction reads at an odd address
+ * stay (the caller's address; disassembling there means nothing).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -999,12 +1002,13 @@ static int decode(const struct disdata *e, UWORD op)
  *
  * The first word is matched against DisData; the line (name and size in
  * columns 0-8, the operands from column 9, spaces behind) is written to
- * a3 with 17 word writes.  InstrSize becomes the bytes the instruction
- * took.  BUG(orig): a decimal 0 is the bytes at address 8 (#614); a
- * source that only moves the operand pointer gets a comma (#615); longer
- * operands are cut after 34 columns, a line can overwrite the variables
- * behind LineBuff (#616); an odd a3 or address is an address error on a
- * 68000 (#617).
+ * a3 byte by byte (Fixed (#617): the original's word writes were an
+ * address error at an odd a3 on a 68000).  InstrSize becomes the bytes
+ * the instruction took.  BUG(orig): a decimal 0 is the bytes at address
+ * 8 (#614); a source that only moves the operand pointer gets a comma
+ * (#615); longer operands are cut after 34 columns, a line can overwrite
+ * the variables behind LineBuff (#616).  An odd address is an address
+ * error on a 68000.
  * @param addr  d0: the address of the instruction
  * @return d0: 34, the length; 5 for an instruction not in the table
  *         ("?????", InstrSize 2)
@@ -1031,10 +1035,8 @@ ULONG BLITZ_ROUTINE c_disoneline(ULONG addr BL_REG(d0))
             break;
     }
     disasm_add = (ULONG)instr - disasm_add;
-    for (i = 0; i < 17; i++) {          /* MOVE.w (a0)+,(a3)+ */
-        *(volatile UWORD *)blitz_string = ((const UWORD *)v.linebuff)[i];
-        blitz_string += 2;
-    }
+    for (i = 0; i < 34; i++)            /* Fixed (#617): byte writes */
+        *blitz_string++ = v.linebuff[i];
     return 34;
 }
 

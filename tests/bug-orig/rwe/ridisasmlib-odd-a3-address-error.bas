@@ -4,6 +4,7 @@
 ; word write to an odd address is an address error on a 68000 (the
 ; program crashes; a 68020 writes it).
 ; Correct: the line is written byte by byte on every CPU.
+; @fixed #617
 ; @rwe ridisasmlib
 ; @machine a500
 ; @pass timeout=30
