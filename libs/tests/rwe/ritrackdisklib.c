@@ -519,7 +519,9 @@ int main(int argc, char **argv)
 
     printf("rwetest.device: %lu requests, %lu opens, %lu failed\n", last.n, last.opens,
            last.failed);
-    check("rwetest.device used", last.n >= 20 && last.opens >= 5 && last.failed >= 2);
+    /* units 0, 1 and 3 open, unit 2 fails, in either set and with the
+       corrections for #861 and #862 (fewer opens of -1, -2 and the open unit 1) */
+    check("rwetest.device used", last.n >= 20 && last.opens >= 3 && last.failed >= 1);
     unitcmd(CLOSEDISK, "CloseDisk", 1);
     unitcmd(CLOSEDISK, "CloseDisk", 1);
     unitcmd(CLOSEDISK, "CloseDisk", 9);
