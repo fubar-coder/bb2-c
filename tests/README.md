@@ -547,6 +547,19 @@ and block. The two large programs take about
 machine; the ctest time limit adds 300 s and the queue wait), that of the
 small tests below `LIBS_SELFTEST_TIMEOUT` (60 s).
 
+**Another machine** (`emulator.cmake` `-DMACHINE=NAME`, `-DUAE=KEY=VALUE;...`:
+`amiga_run --machine`, `--set`): the libs tests run on the a1200 by
+default; a library's path for an older Kickstart runs in a test of its
+own with `MACHINE` (and its own expected data where its cases differ from
+the default machine's). `libs_tests` is linked with libnix20 (Kickstart
+2.0 or newer, not the a500) and needs about 8.5 MB, 7.5 MB of it in one
+block: more than a 68000 machine has ("not enough memory available" on
+the a500-204 and the a600), so on the a500-204 it runs with
+`UAE=cpu_type=68020;cpu_model=68020;cpu_24bit_addressing=false;z3mem_size=32`
+(a 68020 with 32 MB Zorro III fast memory, Kickstart 2.04 unchanged).
+`libs_emulator_machine` runs `libtest ldivlib` there against the expected
+data.
+
 **The checks have tests with broken input** (no CD): `libs_compare_*` and
 `libs_accept_*` (host: the judge on fake files: a changed value, a
 missing and an added case, a changed block, the qualifiers, a regressed
@@ -560,7 +573,10 @@ the lines and hashes of the text path), `libs_capture_target` (the
 record and update targets with a fake emulator run), `fix_scope_*` (the
 fix-scope check), `libs_emulator_wrong` (an emulator run whose output has
 a changed case fails with that key), `libs_emulator_lost` (a datalib
-whose thunks change d2: `lost d2`, the run fails), `libs_keeps_wrong`
+whose thunks change d2: `lost d2`, the run fails),
+`libs_emulator_machine_unknown` and `libs_emulator_machine_uae` (a
+machine the emulation does not know, refused by `amiga_run` before a
+session; a configuration change without `KEY=`), `libs_keeps_wrong`
 (a wrong `KEEPS` statement, a lost register of the rule) and `libs_mem_wrong` (the check "all memory
 back", the task's own AllocMem/FreeMem balance of `rwe/rwemem.h`: a
 block not freed, a foreign block freed, no allocation seen; and the marks of

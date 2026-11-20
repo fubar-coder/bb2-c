@@ -196,6 +196,37 @@ add_test(NAME libs_emulator_wrong COMMAND ${CMAKE_COMMAND}
 set_tests_properties(libs_emulator_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"libtest_ldivlib: \\|routine count\\|\\|1: expected \\$00000002, got \\$00000000\n")
+# another machine (emulator.cmake MACHINE, UAE): libtest ldivlib on the
+# a500-204 (Kickstart 2.04) with a 68020 and Zorro III fast memory (libs_tests
+# needs more memory than a 68000 machine has) against the expected data, the
+# way a library's Kickstart 2.x path is tested; and with broken input a
+# machine the emulation does not know (a3000), which amiga_run refuses
+# before any session, and a configuration change without KEY=
+add_test(NAME libs_emulator_machine COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON
+	-DLIBSET=obj -DEXPECTED=${expected} -DRESULTS=${RESULTS} "-DFILTER=libtest ldivlib"
+	-DMACHINE=a500-204
+	"-DUAE=cpu_type=68020$<SEMICOLON>cpu_model=68020$<SEMICOLON>cpu_24bit_addressing=false$<SEMICOLON>z3mem_size=32"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_machine -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -P ${WITH_WORKDIR})
+set_tests_properties(libs_emulator_machine PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
+	"libtest_ldivlib: set obj: [0-9]+ cases, [0-9]+ equal, 0 differ, 0 missing")
+foreach(t unknown uae)
+	set(opts -DMACHINE=a3000)
+	set(re "amiga_run: unknown machine \"a3000\"(.*\n)*.*libs_emulator: amiga_run refused the run")
+	if(t STREQUAL "uae")
+		set(opts -DMACHINE=a500-204 -DUAE=z3mem_size)
+		set(re "emulator.cmake: UAE: z3mem_size: KEY=VALUE")
+	endif()
+	add_test(NAME libs_emulator_machine_${t} COMMAND ${CMAKE_COMMAND}
+		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON ${opts}
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_machine_${t}
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -DWANT_FAIL=ON -P ${WITH_WORKDIR})
+	set_tests_properties(libs_emulator_machine_${t} PROPERTIES PASS_REGULAR_EXPRESSION "${re}")
+endforeach()
 # the dump of one case (emulator.cmake CAP_DUMP, the shell variable
 # LIBS_CAP_DUMP of capture.h): a bytes case of rwe riarrayslib whose key
 # holds |, $ and spaces writes its bytes to the dump, shown by the run; a

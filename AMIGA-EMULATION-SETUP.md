@@ -316,7 +316,9 @@ of its own.
   hardfile), the snapshot mode (the clock by `DATE` as on the a500).
   `libs_tests` (libnix20) starts on Kickstart 2.04 but needs more memory
   than the machine's 2 MB (about 8.5 MB, 7.5 MB in one block; 8 MB of
-  Zorro II fast memory are not enough). Not on Workbench 2.1: what needs 3.0 or newer
+  Zorro II fast memory are not enough): the libs tests run there with a
+  68020 and Zorro III fast memory (`tests/README.md`, "Another
+  machine"). Not on Workbench 2.1: what needs 3.0 or newer
   (`RequestChoice`, `RequestFile`, datatypes, `lowlevel.library`,
   `nonvolatile.library`). No Kickstart 2.0 (V36) ROM is on Amiga
   Forever's disc, so a path that differs between V36 and V37 cannot be

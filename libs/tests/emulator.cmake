@@ -5,7 +5,7 @@
 #         [-DUSERLIBS=OBJ|ORIG;...] [-DLIBSET=obj|orig]
 #         [-DLIBS_PAD=N] [-DEXPECTED=DIR -DRESULTS=results [-DCAPTURE_CORRUPT=NAME]]
 #         [-DOBJ_VARIANTS=FILE;...] [-DCAP_DUMP=KEY|BLOCK:N -DRESULTS=results]
-#         [-DKEEP_BIN=ON] -P emulator.cmake
+#         [-DKEEP_BIN=ON] [-DMACHINE=NAME] [-DUAE=KEY=VALUE;...] -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
 # with the same number from ORIGINALS as NAME.orig; USERLIBS: further
 # library files OBJ (C build, as NAME.obj) with their original ORIG (as
@@ -13,6 +13,14 @@
 # DIR2/NAME.obj that take the place of DIR/NAME.obj (a broken build, the
 # test of a check: libs_emulator_lost).  The exit status is
 # that of libs_tests; 77 (skipped) without the CD or the emulator.
+# MACHINE: the emulated machine (amiga_run --machine, e.g. a500-204 for a
+# library's Kickstart 2.x path; default the a1200); UAE: changes of its
+# configuration (amiga_run --set).  libs_tests is linked with libnix20 and
+# needs Kickstart 2.0 or newer, and its hunks take about 8.5 MB, 7.5 MB of
+# them in one block: more than a 68000 machine has (the a500-204, the
+# a600: "not enough memory available"), so on the a500-204 it runs with
+# UAE=cpu_type=68020;cpu_model=68020;cpu_24bit_addressing=false;z3mem_size=32
+# (a 68020 with Zorro III fast memory, the Kickstart unchanged).
 # NO_ORIGINALS: only the NAME.obj (BLITZLIB and ORIGINALS not needed).
 # LIBSET (the shell variable of the run): the library set the programs
 # load (sysload.h load_set), obj (NAME.obj) or orig (NAME.orig); each
@@ -64,6 +72,14 @@ endif()
 if(LIBSET AND NOT LIBSET MATCHES "^(obj|orig)$")
 	message(FATAL_ERROR "emulator.cmake: LIBSET=${LIBSET}: obj or orig")
 endif()
+if(DEFINED MACHINE AND NOT MACHINE MATCHES "^[a-z0-9-]+$")
+	message(FATAL_ERROR "emulator.cmake: MACHINE=${MACHINE}: a machine name (amiga_run --machine)")
+endif()
+foreach(u IN LISTS UAE)
+	if(NOT u MATCHES "^[a-z0-9_.]+=")
+		message(FATAL_ERROR "emulator.cmake: UAE: ${u}: KEY=VALUE (amiga_run --set)")
+	endif()
+endforeach()
 if(DEFINED LIBS_PAD AND NOT LIBS_PAD MATCHES "^[0-9]+$")
 	message(FATAL_ERROR "emulator.cmake: LIBS_PAD=${LIBS_PAD}: a number of bytes")
 endif()
@@ -139,8 +155,14 @@ if(FILTER)
 	set(args " \"${FILTER}\"")
 endif()
 set(run_opts "")
+if(MACHINE)
+	list(APPEND run_opts --machine ${MACHINE})
+endif()
+foreach(u IN LISTS UAE)
+	list(APPEND run_opts --set ${u})
+endforeach()
 if(ILLEGAL_WATCH)
-	set(run_opts --log --set log_illegal_mem=true)
+	list(APPEND run_opts --log --set log_illegal_mem=true)
 endif()
 file(WRITE ${WORK}/run.script "${vars_cmd}TEST:libs_tests${args} >TEST:libs_tests.txt\n"
 	"Echo \"rc=$RC\" >>TEST:libs_tests.txt\n")
@@ -153,6 +175,9 @@ endif()
 if(EXISTS ${test}/libs_tests.txt)
 	file(READ ${test}/libs_tests.txt out)
 	message("${out}")
+endif()
+if(rc EQUAL 2)
+	message(FATAL_ERROR "libs_emulator: amiga_run refused the run (usage, above)")
 endif()
 if(rc)
 	message(FATAL_ERROR "libs_emulator: the emulator run failed (${WORK})")
