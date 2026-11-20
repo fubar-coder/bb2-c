@@ -41,6 +41,23 @@ d0, d2, d3 and a2, ProcControl d0.b) and whatever docall changes. The
 type word is read from -2(a2) without changing a2 (DIFF as in all C
 ports, `docs/libs/cmdlibs-port.md` "General").
 
+## The manuals and the library
+
+Two manuals describe the library: the CD's
+`BUM9B/BUM9DOCS/DOCS_RILIBS/RILESDEBUGLIB.DOC` (despite its name the "RI
+Debug Library" text) and AmiBlitz 2.42's
+`REDHelp/REDBlitzLibs/RIDebugLib.guide`. They differ from the library in
+one command; the library is kept as it is (#1171, closed as not a bug):
+
+* **DisAsmWindow has no address.** The guide gives the syntax
+  `DisAsmWindow [Address]`; the library declares `DisAsmWindow` without
+  a parameter (the CD's text agrees with it), so the form with an
+  address does not compile. Both texts say the window "will open at the
+  address of the command following DisAsmWindow"; the check sends the
+  address of the TRAP #1 the debugger's code puts in front of the
+  `DisAsmWindow` statement itself, so the window opens at that
+  statement.
+
 ## Fixed
 
 * AddVarTrace/DelVarTrace cut the name to the 252 characters of `mess1`
