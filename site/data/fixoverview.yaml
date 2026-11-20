@@ -7662,3 +7662,11 @@ rows:
     text: "`LoadShape` closes an animation file before \"ANIM format not supported\" and \"Illegal ANIM interleave value\"; the original left it open and locked until reboot."
     page: libraries
     anchor: iff-files
+  - issue: 1074
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Data"
+    text: "`Data.q -32768` stores the smallest Quick number; the original stopped the compile with \"Bad Data\"."
+    page: compiler
+    anchor: expressions-and-statements

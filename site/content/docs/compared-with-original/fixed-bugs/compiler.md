@@ -731,6 +731,10 @@ Each point says first what the original did, then what the port does.
   32768 and became -32768, and `Data.q` refused such a value with "Bad
   Data"; it is the largest Quick number, 32767.99998, also in `Data.q`
   ([#1070](https://github.com/fubar-coder/bb2-c/issues/1070)).
+* `Data.q -32768`, the smallest Quick number, stopped the compile with
+  "Bad Data", although `q=-32768` worked; it stores -32768, also when
+  written `Data.q -$8000`. `Data.q 32768` stays "Bad Data"
+  ([#1074](https://github.com/fubar-coder/bb2-c/issues/1074)).
 
 ### Names, labels and constants
 
