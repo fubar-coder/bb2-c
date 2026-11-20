@@ -11,7 +11,8 @@
  *     zone command without a table (GetZoneX1... read from address 0 -
  *     the same in both builds);
  *   - SetZone (rectangles, swapped corners, circles with radius^2 above
- *     32767 and above 65535, a negative y2, zone out of range), Zone(x,y)
+ *     32767 and above 65535 (radius 300: refused, #867), a negative y2,
+ *     zone out of range), Zone(x,y)
  *     on a grid of 19 x 19 points in the 68000 and the 68020 mode
  *     (SetZoneMode, ZoneMode), ZoneTest with one zone and with ranges
  *     (start clamped, bad ranges), GetZoneX1/Y1/X2/Y2, ZoneInit's three

@@ -38,8 +38,6 @@
  *     tables again (#871).
  *   - SetZone without a table returns -1 (= done); ZoneTable without a
  *     table returns -1, not 0 (#876).
- *   - The circle test squares word differences; the radius squared is
- *     stored as a word (radius >= 256 wraps) (#867).
  *   - GetZoneX1/Y1/X2/Y2 compare the zone count with the field offset
  *     (0/2/4/6) instead of the zone number: no range check (a table of up
  *     to 6 zones returns -1 for some fields), the index is a word, and
@@ -82,6 +80,15 @@
  *     y2 for a circle, its 68000 mode y2 = -1, and SetZone stored a
  *     bottom edge of -1 (#866).  With #879 and #880 the two modes give
  *     the same results for every zone SetZone makes.
+ *   - SetZone num,x,y,radius refuses a radius outside 0-255 (0, nothing
+ *     stored); the original stored the low word of the radius squared,
+ *     so radius 256 and more wrapped (256: a circle of radius 0, 300:
+ *     radius 156) (#867, W7 decision Q1 (a)).  Kept from the original:
+ *     the zone tests square the word differences x - x1, y - y1, so a
+ *     point more than 32767 from a circle's centre (far outside any
+ *     screen) wraps and may hit the circle; not changed, it would cost
+ *     an instruction per zone in the per-frame loop (the second half of
+ *     #867).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -496,18 +503,25 @@ static BB_BOOL BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
 /**
  * @brief SetZone(num,x,y,radius): sets a circular zone of the current table.
  *
- * x1, y1 = the centre, x2 = radius^2 as a word (BUG(orig) #867: radius
- * 256 and more wraps), y2 = -1.  Results and bugs as the rectangle form.
+ * x1, y1 = the centre, x2 = radius^2 (a word), y2 = -1.  The radius is
+ * a word, like the coordinates (the original's MULS.w); one outside 0-255
+ * is refused (BB_FALSE, nothing stored): fixed (#867, W7 decision Q1
+ * (a)), the original stored the radius squared's low word, so radius 256
+ * and more wrapped (256: 0, 300: 24464).  Results otherwise as the
+ * rectangle form.
  * @param n  d0: the zone number
  * @param x  d1: the centre x
  * @param y  d2: the centre y
- * @param r  d3: the radius
+ * @param r  d3: the radius (a word, 0-255)
  * @return d0: BB_TRUE done (also without a table), BB_FALSE out of range
+ *         or a radius outside 0-255
  */
 static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
                                         UWORD y BL_REG(d2), UWORD r BL_REG(d3))
 {
-    return doset(n, x, y, (UWORD)bl_muls_w(r, r), 0xffff);
+    if (r > 255)
+        return BB_FALSE;                                /* fixed (#867) */
+    return doset(n, x, y, (UWORD)(r * r), 0xffff);
 }
 
 /* ---------------------------------------------------------- zone tests */
@@ -551,8 +565,8 @@ static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
  * #879, the original took the sign of the word differences, BMI): the
  * same results for every zone SetZone makes (x1 <= x2, y1 <= y2), so the
  * mode only chooses the instructions.  Both square the word
- * differences x - x1, y - y1 (MULS.w; BUG(orig) #867, the radius squared
- * a word).
+ * differences x - x1, y - y1 (MULS.w), as the original: a point more
+ * than 32767 from a circle's centre wraps (see the file's head, #867).
  */
 #define S_(x) BL_STR(x)
 BLITZ_ASM_BLOCK(zonetests,

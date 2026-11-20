@@ -5,6 +5,7 @@
 ; lies in it.
 ; Correct: a radius outside 0-255 is refused (SetZone returns 0, nothing
 ; is stored), so the centre lies in no zone.
+; @fixed #867
 ; @rwe rizonejoylib
 ZoneInit
 NPrint SetZone(1,1000,1000,256)

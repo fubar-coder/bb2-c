@@ -126,6 +126,19 @@ All other routines are C behind `BLITZ_THUNK`.
   and #880 the two modes give the same results for every zone SetZone
   makes; `ZoneMode`/`SetZoneMode` only choose the instructions (`CMP2`
   for rectangles in the 68020 mode).
+* `SetZone num,x,y,radius` refuses a radius outside 0-255: it returns 0
+  and stores nothing (W7 decision Q1 (a)). The radius is a word, like
+  the coordinates (the original's `MULS.w`; the upper word of the long
+  argument is not read). The original stored the low word of the radius
+  squared, so radius 256 and more wrapped: 256 became a circle of radius
+  0, 300 one of radius 156 (#867, test
+  `rwe/rizonejoylib-circle-radius-word`; `libs_emulator` cases
+  `[fixed #867]` of `rwe_rizonejoylib`, the circle of radius 300). Kept
+  from the original: the zone tests square the word differences
+  x - x1, y - y1, so a point more than 32767 from a circle's centre (far
+  outside any screen) wraps and may hit the circle; not changed, it
+  would cost an instruction per zone in the per-frame loop (the second
+  half of #867).
 
 ## BUG(orig)
 
@@ -141,8 +154,6 @@ All other routines are C behind `BLITZ_THUNK`.
   (#871).
 * SetZone without a table returns -1 (= done); ZoneTable without a table
   returns -1, not 0 (#876).
-* The circle test squares word differences; the radius squared
-  is stored as a word (radius >= 256 wraps) (#867).
 * GetZoneX1/Y1/X2/Y2 compare the zone **count** with the field offset
   (0/2/4/6) instead of the zone number: no range check (a table of up to
   6 zones returns -1 for some fields), the index is a word, and without a
