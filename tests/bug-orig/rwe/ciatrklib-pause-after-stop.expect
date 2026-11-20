@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+loaded -1
+free -1
+stop twice -1
+stop -1
+again -1
+rc=0
