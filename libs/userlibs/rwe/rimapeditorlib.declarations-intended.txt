@@ -8,8 +8,13 @@
 # area for them (the original has none)
 # under #892: MapDataAdr's x,y form gets an error check (mapdataadrchk,
 # "Map position outside the map")
+# #895: ShapeTo1616 gets an error check (to1616chk, "ShapeTo1616 source
+# of height or depth 0"), FillBitplane one (fillbpchk, "FillBitplane
+# width must be at least 16", "FillBitplane height must be at least 1")
 lib 8: header +$2C: code offset set in only one of them
+lib 8: entry 1 ShapeTo1616 +$14: code offset set in only one of them
+lib 8: entry 10 FillBitplane +$12: code offset set in only one of them
 lib 8: entry 12 MapDataAdr +$24: code offset set in only one of them
 lib 8: entry 16 MapDataGrab +$12: code offset set in only one of them
 lib 8: entry 24 MapCanDraw +$12: code offset set in only one of them
-lib 8: relocations in the declaration part 43 != 47
+lib 8: relocations in the declaration part 43 != 49

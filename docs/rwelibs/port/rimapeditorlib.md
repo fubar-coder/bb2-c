@@ -39,7 +39,8 @@ name.l (18, a maxslib string), changed.w (22), the last address of
   number.
 * `FillBitplane bitmap#,width,height` – a mesh in plane 0 (width/16
   words of $5555/$AAAA per row, alternating; a width below 16 gives
-  65536 words per row, #895).
+  65536 words per row, a height of 0 65536 rows; refused with runtime
+  error checking, #895).
 * `MapOutText`, `MapOutTextCenter`, `MapOutTextRight x,y,rastport,string`
   – `Move` to x (centred: − length/2, right: − (length − 1)), y + the
   font's baseline, then `Text`; `MapOutTextPen rastport,pen` – `SetAPen`.
@@ -155,12 +156,18 @@ and commands before their setup command).
   x at or beyond the width gives a word of a later row, y at or beyond
   the height an address behind the map) (under #892; test
   `rimapeditorlib-mapdataadr-outside`).
+* `FillBitplane` refuses a width below 16 ("FillBitplane width must be
+  at least 16"; the release code writes 65536 words per row) and a
+  height of 0 ("FillBitplane height must be at least 1"; 65536 rows)
+  (#895; test `rimapeditorlib-dbra-size0`).
+* `ShapeTo1616` refuses a source shape of height or depth 0
+  ("ShapeTo1616 source of height or depth 0"; the release code copies
+  65536 rows or planes into the destination; an invalid shape object,
+  Blitz's own commands make none) (#895).
 
 ## BUG(orig), kept
 
-* The `DBRA` loops of `ShapeTo1616` and `FillBitplane` run 65536 times
-  for a size of 0 (`FillBitplane` also for a width below 16) (#895);
-  `ShapeTo1616` writes 16 words per plane regardless of the
+* `ShapeTo1616` writes 16 words per plane regardless of the
   destination's size (#900).
 * finit closes graphics.library also if it did not open (#896).
 

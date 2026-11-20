@@ -10,6 +10,7 @@
 ; Correct: the FillBitplane of width 16 works; the error check refuses
 ; the width of 8: "FillBitplane width must be at least 16", nothing is
 ; written.
+; @fixed #895
 ; @rwe rimapeditorlib
 ; @pass runtime_errors=on
 DEFTYPE .l

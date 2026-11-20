@@ -37,9 +37,7 @@
  * fields it wrote; the string functions: behind the characters).
  *
  * BUG(orig):
- *   - The DBRA loops of ShapeTo1616 and FillBitplane run 65536 times for
- *     a size of 0 (FillBitplane also for a width below 16) (#895);
- *     ShapeTo1616 copies a word from every row regardless of the
+ *   - ShapeTo1616 copies a word from every row regardless of the
  *     destination's size (#900).
  *   - finit closes graphics.library also if it did not open (#896).
  * Fixed (intended deviations):
@@ -81,8 +79,12 @@
  *     refuse a used map without data ("MapObject has no map data", under
  *     #893).  MapDataAdr(x,y) refuses a position outside the map ("Map
  *     position outside the map", under #892; the inline routine has no
- *     range check).  The original has no error check area; the release
- *     code is unchanged (D-005).
+ *     range check).  ShapeTo1616 refuses a source shape of height or
+ *     depth 0 ("ShapeTo1616 source of height or depth 0"), FillBitplane a
+ *     width below 16 and a height of 0 ("FillBitplane width must be at
+ *     least 16", "FillBitplane height must be at least 1"); their DBRA
+ *     loops ran 65536 times for them (#895).  The original has no error
+ *     check area; the release code is unchanged (D-005).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -117,7 +119,7 @@ void _OutTextCenter(void), _OutTextRight(void);
 void rimapeditorlib_SetWindowDraw(void), _InitParse(void);
 void rimapeditorlib_nextparsearg(void), _freemap(void);
 void rimapeditorlib_libinit(void), rimapeditorlib_libfinit(void);
-void candrawchk(void), mapgrabchk(void), mapdataadrchk(void);
+void candrawchk(void), mapgrabchk(void), mapdataadrchk(void), to1616chk(void), fillbpchk(void);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -135,7 +137,7 @@ BLITZ_DUMTOKE(_toke, "MapObject", "");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_shapeslib, BL_IA1|BL_PD1);
-BLITZ_SUBS(_shapetosquare, 0, 0);
+BLITZ_SUBS(_shapetosquare, to1616chk, 0);       /* check: fixed #895 */
 BLITZ_NAME("ShapeTo1616", "source shape,dest shape");
 
 BLITZ_ASTATEMENT();
@@ -184,7 +186,7 @@ BLITZ_NAME("MapDataChanged", "[newstate] - has map changed since last load?");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);
-BLITZ_SUBS(_fillbitplane, 0, 0);
+BLITZ_SUBS(_fillbitplane, fillbpchk, 0);        /* check: fixed #895 */
 BLITZ_NAME("FillBitplane", "bitmap#,width,height");
 
 BLITZ_ASTATEMENT();
@@ -576,9 +578,10 @@ BLITZ_THUNK(_scanmaxdepth, scanmaxdepth_c, "d1/a0-a1");
  * @brief ShapeTo1616 source shape,dest shape: the left 16 pixels of a shape, 16 rows.
  *
  * The first word of every row of every plane of src into dest's data,
- * 16 rows per plane (missing rows 0, more rows skipped).  BUG(orig):
- * height or depth 0 -> 65536 (DBRA) (#895); a word of every row is copied
- * regardless of the destination's size (#900).
+ * 16 rows per plane (missing rows 0, more rows skipped).  Height or depth
+ * 0 -> 65536 (DBRA): refused by to1616chk (fixed #895; the release code
+ * keeps it).  BUG(orig): a word of every row is copied regardless of the
+ * destination's size (#900).
  * @param src  a0: the source shape (#ia0|#pd0)
  * @param dst  a1: the destination shape (#ia1|#pd1)
  */
@@ -646,8 +649,9 @@ BLITZ_THUNK(_shapemaskfill, shapemaskfill_c, "d0-d1/a0-a1");
  *
  * Plane 0 of the bitmap object (a struct BitMap: its ebwidth at 0,
  * planes at 8) gets width/16 words per row (65536 for a width below 16:
- * DBRA from -1) of $5555/$AAAA, alternating per row.  BUG(orig) (#895):
- * height 0 -> 65536 rows.  DIFF: a2 unchanged (the original uses it as its pointer).
+ * DBRA from -1) of $5555/$AAAA, alternating per row; height 0 -> 65536
+ * rows.  Both refused by fillbpchk (fixed #895; the release code keeps
+ * them).  DIFF: a2 unchanged (the original uses it as its pointer).
  * @param w   d1: the width in pixels
  * @param h   d2: the height in rows
  * @param bm  a0: the bitmap object (#ia0|#pd0)
@@ -1130,6 +1134,9 @@ BLITZ_ERRCHK_MESSAGE(nomap, "MapObject has no map data");          /* fixed, und
 BLITZ_ERRCHK_MESSAGE(nostencil, "MapCanDraw needs SetStencil");     /* fixed, #893 */
 BLITZ_ERRCHK_MESSAGE(badvalue, "Map value above 32767 for the stencil"); /* fixed, #893 */
 BLITZ_ERRCHK_MESSAGE(outside, "Map position outside the map");     /* fixed, under #892 */
+BLITZ_ERRCHK_MESSAGE(badsrc, "ShapeTo1616 source of height or depth 0");  /* fixed, #895 */
+BLITZ_ERRCHK_MESSAGE(narrow, "FillBitplane width must be at least 16");   /* fixed, #895 */
+BLITZ_ERRCHK_MESSAGE(norows, "FillBitplane height must be at least 1");   /* fixed, #895 */
 
 /**
  * @brief The error check of MapCanDraw (debugger only).
@@ -1219,7 +1226,50 @@ static void BLITZ_ERRCHK mapdataadrchk_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
         BLITZ_RUNERR(outside);
 }
 
+/**
+ * @brief The error check of ShapeTo1616 (debugger only).
+ *
+ * Fixed (#895), not in the original: the source shape's depth and (for a
+ * shape lower than 16) its height were taken - 1 as DBRA counts without
+ * a test for 0: depth 0 copied 65536 planes, height 0 65536 rows into the
+ * destination.  An invalid shape object (Blitz's own commands make none
+ * of depth or height 0); the release code is unchanged (the depth-0
+ * decision of R2, as #429 and #947).
+ *
+ * Errors: "ShapeTo1616 source of height or depth 0".
+ * @param src  a0: the source shape
+ */
+static void BLITZ_ERRCHK to1616chk_c(const struct bb_shape *src BL_REG(a0))
+{
+    if (!src->height || !src->depth)
+        BLITZ_RUNERR(badsrc);
+}
+
+/**
+ * @brief The error check of FillBitplane (debugger only).
+ *
+ * Fixed (#895), not in the original: the width / 16 - 1 words per row
+ * and the height - 1 rows were DBRA counts without a test: a width below
+ * 16 wrote 65536 words (128 KB) per row, a height of 0 65536 rows.
+ * Arguments the programmer controls (D-005); the release code is
+ * unchanged.
+ *
+ * Errors: "FillBitplane width must be at least 16", "FillBitplane height
+ * must be at least 1".
+ * @param w  d1: the width in pixels
+ * @param h  d2: the height in rows
+ */
+static void BLITZ_ERRCHK fillbpchk_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2))
+{
+    if (w < 16)
+        BLITZ_RUNERR(narrow);
+    if (!h)
+        BLITZ_RUNERR(norows);
+}
+
 /* the thunks of the check functions: they keep every register */
 BLITZ_ERRCHK_THUNK(candrawchk, candrawchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(mapgrabchk, mapgrabchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(mapdataadrchk, mapdataadrchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(to1616chk, to1616chk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(fillbpchk, fillbpchk_c, "d0-d1/a0-a1");
