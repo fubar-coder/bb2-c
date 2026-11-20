@@ -8,6 +8,7 @@
 ; the overwrite.  The shape is a 16x16 one whose depth word is set to 0
 ; (and back before the end).
 ; Correct: the error check refuses the shape: "Illegal Shape Depth".
+; @fixed #903
 ; @rwe rimapshapeslib
 ; @pass runtime_errors=on
 DEFTYPE .l

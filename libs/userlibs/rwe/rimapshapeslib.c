@@ -35,10 +35,6 @@
  *   - No check of the map shape number: before SetNumMapShapes (or after
  *     one that failed or allocated 0) the map shapes are at address 0
  *     (#906).
- *   - ShapeToMapShape of a shape with depth 0 writes 65536 plane pointers
- *     (DBRA); the depth is not limited to the 8 pointers: depths 9-13
- *     write into the unused bytes 42-63 of the 64-byte map shape, from
- *     depth 14 on the pointers run into the next map shape (#903).
  *   - Members are not counted: the 64th member's end mark is written
  *     behind the 512-byte block (#904).
  * Fixed:
@@ -55,6 +51,13 @@
  *   - BlitGroup's !libs has #graphicslib,#la6, as BlitMapShape's: the
  *     original's had the window only, so BlitGroup called
  *     BltBitMapRastPort through the caller's a6 (#902).
+ *   - With runtime error checking ShapeToMapShape refuses a shape of
+ *     depth 0 or of more than 8 planes: "Illegal Shape Depth"
+ *     (shapetomapshapechk; the original has no error check area).  The
+ *     release code is unchanged (an invalid object, D-005): depth 0 writes
+ *     65536 plane pointers (DBRA), depths 9-13 write into the unused
+ *     bytes 42-63 of the 64-byte map shape, from depth 14 on the pointers
+ *     run into the next map shape (#903).
  * Not a defect: RemapMapShape does nothing (the ReMap call is commented
  * out in the source: a command left unfinished); its !libs asks for
  * "library 254, $5600" (sic).
@@ -76,18 +79,19 @@ void _shapetomapshape(void), _blitmapshape(void), _remapmapshape(void);
 void _blitmapshapesize(void), _setnummapshapes(void), _mapshapeaddr(void);
 void _freemapshapes(void), _addgroupmember(void), _blitgroup(void);
 void _resetgroup(void), rimapshapeslib_libinit(void);
-void rimapshapeslib_libfinit(void);
+void rimapshapeslib_libfinit(void), _shapetomapshapechk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {#rimapshapeslib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_rimapshapeslib, init, BL_NORET, finit, 0);
+/* !libheader {#rimapshapeslib,init,0,finit,0}; error field: the error
+   check area (fixed, #903; the original has none) */
+BLITZ_LIBHEADER(LIB_rimapshapeslib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0);
-BLITZ_SUBS(_shapetomapshape, 0, 0);
+BLITZ_SUBS(_shapetomapshape, _shapetomapshapechk, 0);  /* check: fixed #903 */
 BLITZ_NAME("ShapeToMapShape", "source shape,dest Mapshape");
 
 BLITZ_ASTATEMENT();
@@ -220,9 +224,10 @@ BLITZ_THUNK(rimapshapeslib_libfinit, libfinit_c, "d0-d1/a0-a1");
  *
  * Width, height, depth and ebwidth of the shape; the plane pointers point
  * into the shape's data (onebpmem apart, not copied).  BUG(orig): no
- * check of the map shape number (#906); depth 0 writes 65536 plane
+ * check of the map shape number (#906).  Depth 0 writes 65536 plane
  * pointers (DBRA), depths above 8 run into unused[] and the next map
- * shapes (#903).
+ * shapes: an invalid object, refused by shapetomapshapechk with runtime
+ * error checking (fixed #903), here unchecked.
  * @param n   d1: the map shape number
  * @param sh  a0: the shape (!libs #shapeslib,#ia0|#pd0)
  */
@@ -238,8 +243,8 @@ static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const struct bb_
     ms->bm.Rows = sh->height;
     *(UWORD *)&ms->bm.Flags = depth;    /* Flags 0, Depth */
     ms->bm.BytesPerRow = sh->ebwidth;
-    /* BUG(orig): depth 0 -> 65536 planes (DBRA), more than 8 run into
-       unused[] and the next map shapes (#903) */
+    /* depth 0 -> 65536 planes (DBRA), more than 8 run into unused[] and
+       the next map shapes: refused by the error check (fixed #903) */
     c = depth - 1;
     do {
         *planes++ = p;
@@ -483,3 +488,30 @@ static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG yin BL_REG(d2),
     }
 }
 BLITZ_THUNK(_blitgroup, blitgroup_c, "d0-d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal Shape Depth");          /* fixed, #903 */
+
+/**
+ * @brief The error check of ShapeToMapShape (debugger only).
+ *
+ * Fixed (#903), not in the original (rimapshapeslib had no error check
+ * area): ShapeToMapShape copies one plane pointer per plane of the shape
+ * with SUBQ.w #1 ... DBRA into the 8 of the map shape, so a shape of
+ * depth 0 writes 65536 pointers and one of more than 8 planes runs into
+ * the unused bytes and the next map shape.  The release code is unchanged
+ * (an invalid object, D-005).
+ *
+ * Errors: "Illegal Shape Depth" (shapeslib's text) for a depth of 0 or
+ * above 8.
+ * @param sh  a0: the shape (!libs #shapeslib,#ia0|#pd0)
+ */
+static void BLITZ_ERRCHK shapetomapshapechk_c(const struct bb_shape *sh BL_REG(a0))
+{
+    if (!sh->depth || sh->depth > 8)
+        BLITZ_RUNERR(baddepth);
+}
+
+/* the thunks of the check functions */
+BLITZ_ERRCHK_THUNK(_shapetomapshapechk, shapetomapshapechk_c, "d0-d1/a0-a1");

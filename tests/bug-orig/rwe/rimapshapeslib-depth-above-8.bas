@@ -9,6 +9,7 @@
 ; the end); only its plane addresses are written, its data is not read.
 ; Map shape 1 shows the overrun.
 ; Correct: the error check refuses the shape: "Illegal Shape Depth".
+; @fixed #903
 ; @rwe rimapshapeslib
 ; @pass runtime_errors=on
 DEFTYPE .l

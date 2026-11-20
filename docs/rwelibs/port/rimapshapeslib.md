@@ -69,10 +69,6 @@ holds the member's address before, so its upper word is that address's.
 * The map shape number is not checked; before `SetNumMapShapes` (or
   after one that failed or allocated 0 shapes) the map shapes lie at
   address 0 (#906).
-* `ShapeToMapShape` of a shape of depth 0 writes 65536 plane pointers
-  (`DBRA`); the depth is not limited to the 8 pointers: depths 9–13
-  write into the unused bytes 42–63 of the 64-byte map shape, from depth
-  14 on the pointers run into the next map shape (#903).
 * The members are not counted: the end mark of the 64th member is
   written behind the 512-byte block (#904).
 
@@ -103,6 +99,14 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   command that left graphics.library there (#902; test
   `rwe/rimapshapeslib-blitgroup-caller-a6`). A declaration change: one
   library/register pair more.
+* With runtime error checking `ShapeToMapShape` refuses a shape of depth
+  0 or of more than 8 planes: "Illegal Shape Depth" (shapeslib's text;
+  `shapetomapshapechk`, in an error check area the original does not
+  have). The release code is unchanged (an invalid object, D-005): depth
+  0 writes 65536 plane pointers (`DBRA`), depths 9–13 write into the
+  unused bytes 42–63 of the 64-byte map shape, from depth 14 on the
+  pointers run into the next map shape (#903; tests
+  `rwe/rimapshapeslib-depth0-dbra`, `rwe/rimapshapeslib-depth-above-8`).
 
 Not a defect: `RemapMapShape` does nothing (the `ReMap` call is
 commented out in the source – a command left unfinished, not a fault in
