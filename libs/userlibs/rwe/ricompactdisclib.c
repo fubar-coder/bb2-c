@@ -66,6 +66,9 @@
  *   arguments opens cd.device unit 0 without scsiflag (the manual); the
  *   original keeps the name, the unit and scsiflag of the OpenCD before
  *   (only init clears scsiflag and sets the name back, not the unit).
+ * Fixed (#584): CDTrackLength 1 is the start of track 2 minus the start
+ *   of track 1, as for every other track; the original returns the start
+ *   of track 2 (the 2 seconds of the pregap counted).
  *
  * BUG(orig):
  *   - OpenCD while open: the old request stays open, lost (#578).
@@ -76,13 +79,12 @@
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
  *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
  *   - CDTrackLength n: start of track n+1 - start of track n in seconds
- *     (minutes * 60 + seconds); for track 1 the start of track 2 (the
- *     pregap counted).  From track 44 on the offset (n-1)*6 is > 255 and
+ *     (minutes * 60 + seconds).  From track 44 on the offset (n-1)*6 is > 255 and
  *     its high byte stays in the low word that MULU.w multiplies: the
  *     start of track n is wrong.  The last track takes the entry behind
  *     it (CD_TOCMSF does not write it: the lead-out is in the summary),
  *     track 0 reads 65539 bytes behind toc.  (Without a TOC: 0,
- *     fixed #582.) (#584, #585, #583).
+ *     fixed #582.) (#585, #583).
  *   - CDUpdateInfo without an open device returns the caller's a0 + 5 (#587).
  *   - CDStatus asks for 26 bytes of CD_INFO (a struct CDInfo has 34): a
  *     device that writes all of it (uaescsi.device) writes 8 bytes behind
@@ -773,10 +775,10 @@ ULONG BLITZ_ROUTINE c_cdtracklength(ULONG track BL_REG(d0))
     }
     if (!cd.toc)
         return 0;
+    /* Fixed (#584): track 1 takes the general path (entries 1 and 2); the
+       original returns the start of track 2 for it (the pregap counted) */
     track--;
-    if (!track)
-        return (UWORD)(bl_mulu_w(cd.toc[15], 60) + cd.toc[16]);
-    off = bl_mulu_w((UWORD)track, 6);   /* AND.l #$ffff: a word already */
+    off =bl_mulu_w((UWORD)track, 6);   /* AND.l #$ffff: a word already */
     p = cd.toc + 9 + off;
     /* MOVE.b (a0),d0: the high byte of the offset stays in the word */
     start = (UWORD)(bl_mulu_w((UWORD)((off & 0xff00) | p[0]), 60) + p[1]);

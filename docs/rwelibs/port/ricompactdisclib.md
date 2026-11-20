@@ -81,6 +81,9 @@ d1/d2 (CDTrackLength) are not reproduced.
   the unit and scsiflag of the `OpenCD` before (only init clears scsiflag
   and sets the name back, not the unit, so a second run from the editor
   opens cd.device with the unit of the first). (#577)
+* `CDTrackLength 1` is the start of track 2 minus the start of track 1,
+  as for every other track; the original returns the start of track 2
+  (the 2 seconds of the pregap counted). (#584)
 
 **BUG(orig)** (kept):
 
@@ -90,12 +93,12 @@ d1/d2 (CDTrackLength) are not reproduced.
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
   15000 (test values), io_Offset = 1. (#580)
 * `CDTrackLength n` = start of track n+1 − start of track n in seconds
-  (minutes × 60 + seconds), for track 1 the start of track 2. From track
+  (minutes × 60 + seconds). From track
   44 the offset (n−1) × 6 exceeds 255 and its high byte stays in the
   word that `MULU.w #60` multiplies (`MOVE.b (a0),d0` replaces the low
   byte only): the start is wrong. The last track takes the entry behind
   it, which CD_TOCMSF does not write; track 0 reads 65539 bytes behind
-  toc. (#584, #585, #583)
+  toc. (#585, #583)
 * `CDUpdateInfo` without an open device returns the caller's a0 + 5. (#587)
 * `CDStatus` asks for 26 bytes of CD_INFO, a struct CDInfo has 34: a
   device that writes all of it (uaescsi.device) writes 8 bytes behind
