@@ -102,6 +102,13 @@ kind F):
   time, until a long with the low byte 0 (#801; test
   `riseriallib-sendstring`; `libs_emulator` cases `[fixed #801]` of
   `rwe_riseriallib`).
+* `SerialSendString` and `SerialReadString` open the port when it is
+  closed. The original tested the open flag the other way round and
+  called `SerialOpen`'s code only when the port was open (where it only
+  cleared the stop flag): with the port closed nothing was sent, and
+  `SerialReadString` waited for bytes the closed port never received
+  (#793; test `riseriallib-sendstring-opens`; `libs_emulator` cases
+  `[fixed #793]` of `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
@@ -113,9 +120,6 @@ kind F):
   long, with the first instruction of `SerialClose` (`$4A79`) behind it:
   never 0. So the first three never open the port, the other two always
   call `SerialOpen`'s code (opening it if it is closed) (#792).
-  `SerialSendString` and `SerialReadString` test the word the other way
-  round: they call that code only when the port is open (it then only
-  clears the stop flag) (#793).
 * `SerialReceiveBlock` throws away what is in the ring first, then
   waits (#798); a length of 1 receives without end (the count goes below
   0) (#799).

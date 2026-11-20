@@ -7,6 +7,7 @@
 ; (each empty read followed by a VWait, at most 100).
 ; Correct: SerialSendString opens the port: the request goes out (with the
 ; fix of #801, the characters of the string), the reply comes.
+; @fixed #793
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l

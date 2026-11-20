@@ -60,9 +60,7 @@
  *     SerialFlush, SerialReadLong and SerialWriteLong test it as a long
  *     (with the first instruction of SerialClose behind it, $4A79: never
  *     0): the first three never open the port, the other two always call
- *     SerialOpen's code (#792).  SerialSendString and SerialReadString
- *     test the word the other way round: they call it when the port is
- *     open (it then only clears the stop flag) (#793).
+ *     SerialOpen's code (#792).
  *   - SerialReceiveBlock first throws away what is in the buffer, then
  *     waits (#798); a length of 1 receives without end (the count goes
  *     below 0) (#799); SerialStop during it ends it by taking its return
@@ -103,6 +101,12 @@
  *     ports); the original sent the low byte of the string's address
  *     once for every long it read from the a2 stack, down to one with a
  *     low byte 0 (#801).
+ *   - SerialSendString and SerialReadString open the port when it is
+ *     closed; the original tested the open flag the other way round and
+ *     called SerialOpen's code only when the port was open (where it only
+ *     cleared the stop flag): with the port closed nothing was sent, and
+ *     SerialReadString waited for bytes that the closed port never
+ *     received (#793).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -540,8 +544,9 @@ void BLITZ_ROUTINE c_flushser(void)
  * a program that reads with SerialReadString on the other side sends
  * the 0 itself).  Fixed (#801): the original sent the low byte of the
  * string's address (with the stop bit) once for every long it read from
- * the a2 stack, down to one with a low byte 0.  BUG(orig) (#793): calls
- * SerialOpen's code only when the port is open.
+ * the a2 stack, down to one with a low byte 0.  Opens the port when it
+ * is closed (fixed (#793): the original called SerialOpen's code only
+ * when the port was open).
  * @param str       d0: the string
  * @param argstack  a2: the argument stack (the length at -4)
  */
@@ -550,7 +555,7 @@ void BLITZ_ROUTINE c_sendserialstring(const UBYTE *str BL_REG(d0),
 {
     ULONG n = argstack[-1];
 
-    if (openflag)
+    if (!openflag)                      /* fixed (#793) */
         openserial(0);
     while (n--)                         /* fixed (#801) */
         writeser(*str++);
@@ -565,14 +570,15 @@ void BLITZ_ROUTINE c_sendserialstring(const UBYTE *str BL_REG(d0),
  * port was open, and there it returned to the d0 of the call, which it
  * had pushed).  Fixed (#797): the loop ends at a 0 (the original only if
  * the upper word of d0 at the call was 0 and no wait came before).
- * BUG(orig) (#793): calls SerialOpen's code when the port is open.
+ * Opens the port when it is closed (fixed (#793): the original called
+ * SerialOpen's code only when the port was open).
  * @return d0: the number of characters (the string's length)
  */
 ULONG BLITZ_ROUTINE c_readserialstring(void)
 {
     ULONG value;
 
-    if (openflag)
+    if (!openflag)                      /* fixed (#793) */
         openserial(0);
     numchars = 0;                       /* fixed (#796): every call */
     do {
