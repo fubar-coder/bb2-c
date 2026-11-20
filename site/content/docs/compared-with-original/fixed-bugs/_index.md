@@ -28,13 +28,7 @@ way.
 ## Changes for existing programs
 
 A few fixes change what an existing program does. These are the ones an
-ordinary program meets most easily. The first is in the compiler and
-changes every program that uses the comparison `=<`. The next two concern
-programs that were written to make up for the bug; no known example
-program, demo or game uses the commands this way. The two after them
-change every program that uses the commands with the values named, and
-the last one stops a program that loads a very large picture as a shape.
-Check your own programs for them:
+ordinary program meets most easily. Check your own programs for them:
 
 * [`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}):
   `If a=<b` was true whenever `a` and `b` differed. It is less-or-equal,
@@ -42,11 +36,13 @@ Check your own programs for them:
 * [`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rendertobitmap-dither" >}}):
   `RenderToBitmap 0,1` made `RenderPoly` draw on bitmap 1. It draws on
   bitmap 0, with bitmap 1 as the pattern; a program that swapped the two
-  numbers has to put them in this order.
+  numbers has to put them in this order. No known example program, demo
+  or game uses the command this way.
 * [`Box` added the bitmap origin twice]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#box-origin" >}})
   after `BitMapOrigin`. It adds it once, as `Line` and `Boxf` do; a program
   that gave `Box` reduced coordinates has to give the same ones as for
-  `Line`.
+  `Line`. No known example program, demo or game uses the command this
+  way.
 * [`CustomSprites` took its offset 16 times too large]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#customsprites-ccoffset" >}}):
   a `CCOffset` of 1 meant 16 custom copper instructions. It counts single
   instructions, as for `CustomColors`; a program that gives an offset
@@ -58,8 +54,8 @@ Check your own programs for them:
 * [`LoadShape` refuses pictures too large to blit]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#loadshape-blit-size" >}}):
   a picture taller than 1023 rows or wider than 992 pixels is the runtime
   error "Can't Read/Write Shapes File", also without runtime error
-  checking. A program that loaded such a picture as a shape now stops
-  there; load it as a bitmap instead.
+  checking. A program that loads such a picture as a shape stops there;
+  load it as a bitmap instead.
 
 The same fixes are in the warning box of
 [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}}).
