@@ -11,12 +11,15 @@
   notes: |
     Bytes at addresses below $420 show as `**`.
 
-    Kept from the original: a `num` of 0 writes 65536 words
-    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)); at an odd
-    `source` each word shows as its two bytes with a space between them
-    and none behind ([#715](https://github.com/fubar-coder/bb2-c/issues/715));
-    addresses from $80000000 on also show as `*`
-    ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
+    Kept from the original:
+
+    * A `num` of 0 writes 65536 words
+      ([#701](https://github.com/fubar-coder/bb2-c/issues/701)).
+    * At an odd `source` each word shows as its two bytes with a space
+      between them and none behind
+      ([#715](https://github.com/fubar-coder/bb2-c/issues/715)).
+    * Addresses from $80000000 on also show as `*`
+      ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
 "D_CheckNMove":
   text: Copies `count` longs (1 without `count`) from `source_address` to `dest_address` as four characters each, leaving one byte free behind each long.
   notes: |
@@ -50,11 +53,12 @@
     Printing stops at column 80; nothing checks the height of the
     bitmap.
 
-    Kept from the original: a cursor in a column from 208 to 255 still
-    prints, beyond the end of its row
-    ([#707](https://github.com/fubar-coder/bb2-c/issues/707)); a string
-    of 32769 characters or more prints nothing
-    ([#710](https://github.com/fubar-coder/bb2-c/issues/710)).
+    Kept from the original:
+
+    * A cursor in a column from 208 to 255 still prints, beyond the end of
+      its row ([#707](https://github.com/fubar-coder/bb2-c/issues/707)).
+    * A string of 32769 characters or more prints nothing
+      ([#710](https://github.com/fubar-coder/bb2-c/issues/710)).
 "FNPrint":
   text: Like `FPrint`, then the cursor goes to the start of the next row.
 "FInverse":
@@ -77,13 +81,15 @@
     address found is given by `SearchMemFound`. Holding down the space
     bar stops a long search; `SearchMemFound` then keeps its value.
 
-    Kept from the original: the string search does not go back after a
-    partial match, so `ab` is not found in `aab`
-    ([#723](https://github.com/fubar-coder/bb2-c/issues/723)); an empty
-    string compares the bytes behind it
-    ([#721](https://github.com/fubar-coder/bb2-c/issues/721)); a word or
-    long search compares up to 1 or 3 bytes behind `end_ad`
-    ([#722](https://github.com/fubar-coder/bb2-c/issues/722)).
+    Kept from the original:
+
+    * The string search does not go back after a partial match, so `ab` is
+      not found in `aab`
+      ([#723](https://github.com/fubar-coder/bb2-c/issues/723)).
+    * An empty string compares the bytes behind it
+      ([#721](https://github.com/fubar-coder/bb2-c/issues/721)).
+    * A word or long search compares up to 1 or 3 bytes behind `end_ad`
+      ([#722](https://github.com/fubar-coder/bb2-c/issues/722)).
 "SearchMemFound":
   text: The address the last `SearchMem` found, or 0 if it found nothing.
 "PeekMax$":
@@ -97,10 +103,12 @@
 "D_CheckNMoveWord":
   text: Copies `count` words (1 without `count`) from `source_address` to `dest_address` as two characters each, without a gap. A 0 byte becomes the character 1, and bytes at addresses below $420 become `*`.
   notes: |
-    Kept from the original: a `count` of 0 or $8000 copies 32768 words
-    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)); addresses
-    from $80000000 on also give `*`
-    ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
+    Kept from the original:
+
+    * A `count` of 0 or $8000 copies 32768 words
+      ([#701](https://github.com/fubar-coder/bb2-c/issues/701)).
+    * Addresses from $80000000 on also give `*`
+      ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
 "GetHex$":
   text: The value as hexadecimal text with upper case digits; `mode` 1 gives 2 digits (a byte), 2 gives 4 (a word) and any other mode 8 (a long).
 "GetHexAdr$":
@@ -111,20 +119,25 @@
 "GetCustomReg":
   text: The name of the custom chip register at offset `address` ($000 to $1FC), for example `DMACON` for $096; an empty string for an offset out of range.
   notes: |
-    Kept from the original: the last register, $1FE, counts as out of
-    range ([#702](https://github.com/fubar-coder/bb2-c/issues/702)); for a name of 8 characters, one more
-    character is written into string memory behind the result
-    ([#712](https://github.com/fubar-coder/bb2-c/issues/712)); a negative
-    offset can read in front of the table of names and return rubbish
-    ([#714](https://github.com/fubar-coder/bb2-c/issues/714)).
+    Kept from the original:
+
+    * The last register, $1FE, counts as out of range
+      ([#702](https://github.com/fubar-coder/bb2-c/issues/702)).
+    * For a name of 8 characters, one more character is written into string
+      memory behind the result
+      ([#712](https://github.com/fubar-coder/bb2-c/issues/712)).
+    * A negative offset can read in front of the table of names and return
+      rubbish ([#714](https://github.com/fubar-coder/bb2-c/issues/714)).
 "GetCustomRegAdr":
   text: The offset of the custom chip register named `name$`, for example $180 for `COLOR00`, or -1 if the name is not known. The names are in upper case.
   notes: |
-    Kept from the original: the name only has to start with a register's
-    name, so `DMACONXYZ` gives $096, and names of 8 characters are never
-    found ([#713](https://github.com/fubar-coder/bb2-c/issues/713)); the
-    last register, $1FE `NOOP`, is never found
-    ([#702](https://github.com/fubar-coder/bb2-c/issues/702)).
+    Kept from the original:
+
+    * The name only has to start with a register's name, so `DMACONXYZ`
+      gives $096, and names of 8 characters are never found
+      ([#713](https://github.com/fubar-coder/bb2-c/issues/713)).
+    * The last register, $1FE `NOOP`, is never found
+      ([#702](https://github.com/fubar-coder/bb2-c/issues/702)).
 "FPrintDetoke":
   text: Prints a tokenised Blitz source line with the font printer, its tokens as their names. A marker goes before the character at `cio`, `lineoffset` characters are skipped from the left, and the cursor moves on.
   notes: |
@@ -135,16 +148,19 @@
     another colour. The marker is `>` for a `typ` of 0, otherwise an
     inverse space.
 
-    Kept from the original: `FInverse 1` does not invert the line, as
-    this command reads only the upper byte of the setting, and the marker
-    changes that byte ([#706](https://github.com/fubar-coder/bb2-c/issues/706));
-    inverse token names in two bitplanes get a wrong character in the
-    second plane ([#709](https://github.com/fubar-coder/bb2-c/issues/709));
-    the `>` marker can be followed by an extra inverse space
-    ([#708](https://github.com/fubar-coder/bb2-c/issues/708)); the
-    column limit works as in `FPrint`, and the marker takes a column
-    without that check
-    ([#707](https://github.com/fubar-coder/bb2-c/issues/707)).
+    Kept from the original:
+
+    * `FInverse 1` does not invert the line, as this command reads only the
+      upper byte of the setting, and the marker changes that byte
+      ([#706](https://github.com/fubar-coder/bb2-c/issues/706)).
+    * Inverse token names in two bitplanes get a wrong character in the
+      second plane
+      ([#709](https://github.com/fubar-coder/bb2-c/issues/709)).
+    * The `>` marker can be followed by an extra inverse space
+      ([#708](https://github.com/fubar-coder/bb2-c/issues/708)).
+    * The column limit works as in `FPrint`, and the marker takes a column
+      without that check
+      ([#707](https://github.com/fubar-coder/bb2-c/issues/707)).
 "SetupLESDebug":
   text: Gives the library the token list that `FPrintDetoke` takes the token names from; with `tokenise` not 0, `FPrintDetoke` draws the names into the second bitplane too.
   notes: |
@@ -168,10 +184,12 @@
 "D_CheckNMoveA":
   text: Like `D_CheckNMove`, but a 0 byte becomes the character 1, and bytes at addresses below $420 become `*`.
   notes: |
-    Kept from the original: a `count` of 0 copies 65536 longs
-    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)); addresses
-    from $80000000 on also give `*`
-    ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
+    Kept from the original:
+
+    * A `count` of 0 copies 65536 longs
+      ([#701](https://github.com/fubar-coder/bb2-c/issues/701)).
+    * Addresses from $80000000 on also give `*`
+      ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
 "OutTextPen":
   text: Sets the pen that `OutText` draws with on a rastport.
 "D_InitParse":
@@ -193,11 +211,13 @@
     current place, so after a `D_NextArg$` only the rest is processed. A
     `%` code without an entry is dropped.
 
-    Kept from the original: called before `D_InitParse`, or after the
-    last argument, it reads from memory address 0
-    ([#719](https://github.com/fubar-coder/bb2-c/issues/719)); a `%` at
-    the end of the text runs on into the memory behind it
-    ([#720](https://github.com/fubar-coder/bb2-c/issues/720)).
+    Kept from the original:
+
+    * Called before `D_InitParse`, or after the last argument, it reads from
+      memory address 0
+      ([#719](https://github.com/fubar-coder/bb2-c/issues/719)).
+    * A `%` at the end of the text runs on into the memory behind it
+      ([#720](https://github.com/fubar-coder/bb2-c/issues/720)).
 "AddProcessPtr":
   text: Adds a `%` code for `ProcessString`; `character` is a string whose first character is the code, `string` the address of the 0-terminated text to put for it.
   notes: |
@@ -213,8 +233,10 @@
 "GetDataItem":
   text: The byte (`size` 1), word (2) or long (any other size) at `address`, read byte by byte, so odd addresses work too; 0 for an address below $420.
   notes: |
-    Kept from the original: a `size` of 0 or below reads thousands of
-    bytes (65536 for 0) and returns the last four of them
-    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)); addresses
-    from $80000000 on also give 0
-    ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
+    Kept from the original:
+
+    * A `size` of 0 or below reads thousands of bytes (65536 for 0) and
+      returns the last four of them
+      ([#701](https://github.com/fubar-coder/bb2-c/issues/701)).
+    * Addresses from $80000000 on also give 0
+      ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
