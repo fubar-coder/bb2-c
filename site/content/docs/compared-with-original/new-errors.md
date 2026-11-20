@@ -15,12 +15,15 @@ original did with it, what the port does, and what to change in a source
 that relies on the old behaviour. A few fixes of the libraries work the
 same way when the program runs: a command that the original carried out
 with a wrong argument stops with a runtime error
-([Runtime errors of the libraries](#runtime-errors)). Three cases go the
-other way: `Frac` of a string, which the original refused when compiling,
-compiles and is a runtime error, `PlayWait` without a tape number
-compiles and waits for the playback, and `InstallFNS` takes the number
-of characters of a font
-([Forms the original refused](#forms-the-original-refused)).
+([Runtime errors of the libraries](#runtime-errors)).
+
+Three cases go the other way
+([Forms the original refused](#forms-the-original-refused)):
+
+* `Frac` of a string, which the original refused when compiling,
+  compiles and is a runtime error.
+* `PlayWait` without a tape number compiles and waits for the playback.
+* `InstallFNS` takes the number of characters of a font.
 
 The outputs shown were recorded in an emulator. The original is
 Blitz Basic 2 built from its published source, with the libraries of the
@@ -562,9 +565,11 @@ line: here line 1.
 
 **What to change.** Use a shorter path, for example with an assign.
 
-Issues: [IncDir path of 96 characters or more (#16)](https://github.com/fubar-coder/bb2-c/issues/16),
-[include file name of more than 127 characters (#325)](https://github.com/fubar-coder/bb2-c/issues/325),
-[UsePath path of 128 characters or more (#31)](https://github.com/fubar-coder/bb2-c/issues/31).
+Issues:
+
+* [IncDir path of 96 characters or more (#16)](https://github.com/fubar-coder/bb2-c/issues/16)
+* [include file name of more than 127 characters (#325)](https://github.com/fubar-coder/bb2-c/issues/325)
+* [UsePath path of 128 characters or more (#31)](https://github.com/fubar-coder/bb2-c/issues/31)
 
 ## Macros
 
@@ -623,8 +628,10 @@ the size. A macro text of more than 65535 bytes is always "Macro too Big".
 If one of yours fails with "Macro too Big", set its Macro Buffer back to
 the default or larger in the COMPILER OPTIONS.
 
-Issues: [The Macro Buffer option had no effect (#336)](https://github.com/fubar-coder/bb2-c/issues/336),
-[A macro text of 65536 bytes or more was cut (#964)](https://github.com/fubar-coder/bb2-c/issues/964).
+Issues:
+
+* [The Macro Buffer option had no effect (#336)](https://github.com/fubar-coder/bb2-c/issues/336)
+* [A macro text of 65536 bytes or more was cut (#964)](https://github.com/fubar-coder/bb2-c/issues/964)
 
 ## Inline assembler
 
@@ -677,7 +684,7 @@ Issue: [copyconst copies an operand text into namebuff without a length check (#
 
 The cases above are found by the compiler. The ones in this section
 compile as before (except `Frac` of a string) but stop when the program
-runs: where the original went on with a wrong argument and wrote over
+runs. Where the original went on with a wrong argument and wrote over
 memory or hung, the port's library reports a runtime error. Most of them
 are error checks, so they come only in a program compiled with runtime
 error checking, like the other checks of Blitz Basic 2; without it, the
@@ -935,10 +942,12 @@ such a shape out of `ShapeGadget`.
 
 **What to change.** Give a depth from 1 to 8.
 
-Issues: [Bitmaps of depth 0 made the plane loops run 65536 times (#393)](https://github.com/fubar-coder/bb2-c/issues/393),
-[BBlit with depth 0 (#74)](https://github.com/fubar-coder/bb2-c/issues/74),
-[QBlit with a shape of depth 0 (#243)](https://github.com/fubar-coder/bb2-c/issues/243),
-[A shape gadget of depth 0 (#167)](https://github.com/fubar-coder/bb2-c/issues/167).
+Issues:
+
+* [Bitmaps of depth 0 made the plane loops run 65536 times (#393)](https://github.com/fubar-coder/bb2-c/issues/393)
+* [BBlit with depth 0 (#74)](https://github.com/fubar-coder/bb2-c/issues/74)
+* [QBlit with a shape of depth 0 (#243)](https://github.com/fubar-coder/bb2-c/issues/243)
+* [A shape gadget of depth 0 (#167)](https://github.com/fubar-coder/bb2-c/issues/167)
 
 ### `BitMap` with a wrong depth {#bitmap-depth-text}
 
@@ -1037,10 +1046,10 @@ Issue: [RenderPoly after RenderToChunky read colours above 14 behind its table (
 
 ### `LoadShape` of a picture with very large planes {#loadshape-large-plane}
 
-**What happened.** A shape keeps the size of one of its planes in 16
-bits, in memory and in the files of `SaveShapes`, and also in 16 bits the
-size of a plane with an extra word per row, which `BBlit` saves of the
-background. `LoadShape` of an IFF picture with a plane of 64 KB or more,
+**What happened.** A shape keeps two sizes in 16 bits each, in memory
+and in the files of `SaveShapes`: the size of one plane, and the size of
+one plane with an extra word per row. `BBlit` saves that second amount
+of the background. `LoadShape` of an IFF picture with a plane of 64 KB or more,
 such as 1024 by 520 pixels, took only the lower 16 bits of that size,
 made the shape far too small and wrote the whole picture into it, over
 the memory behind it. A picture whose plane is just under 64 KB, such as
@@ -1051,14 +1060,16 @@ amount of the background.
 Shapes File", also without runtime error checking, as for a file that
 cannot be read. The shape stays empty. The limit is that of `InitShape`
 and `GetaShape` ([Shapes too large for their size fields](#shape-too-big)):
-the width in bytes, rounded up to whole 16 pixel words and plus 2, times
-the height must be less than 64 KB. A picture of 992 by 520 pixels loads.
+the size of one plane, (⌈width / 16⌉ × 2 + 2) × height bytes, must stay
+below 65536 (64 KB). A picture of 992 by 520 pixels loads.
 
 **What to change.** Load the picture as a bitmap, or cut it into shapes
 within that limit.
 
-Issues: [Large shapes had their line and plane steps and sizes only as a word (#263)](https://github.com/fubar-coder/bb2-c/issues/263),
-[LoadShape and the shape creation checks use different 64 KB plane limits (#1055)](https://github.com/fubar-coder/bb2-c/issues/1055).
+Issues:
+
+* [Large shapes had their line and plane steps and sizes only as a word (#263)](https://github.com/fubar-coder/bb2-c/issues/263)
+* [LoadShape and the shape creation checks use different 64 KB plane limits (#1055)](https://github.com/fubar-coder/bb2-c/issues/1055)
 
 ### `LoadShape` of a picture too large to blit {#loadshape-blit-size}
 
@@ -1122,17 +1133,24 @@ width or height 0, whose blits ran their loops 65536 times.
 
 **With the port.** With runtime error checking, `InitShape`,
 `GetaShape`, `Rotate` and `Scale` stop with "Shape too Big" when the new
-shape has a plane of 64 KB or more (the width in bytes, rounded up to
-whole 16 pixel words and plus 2, times the height), is taller than 1023
-rows or is wider than 992 pixels. `InitShape` with a width or height of
+shape breaks one of these limits:
+
+* the size of one plane, (⌈width / 16⌉ × 2 + 2) × height bytes, must
+  stay below 65536 (64 KB);
+* the height must be at most 1023 rows;
+* the width must be at most 992 pixels.
+
+`InitShape` with a width or height of
 0 is the error "Illegal Shape Size". Without runtime error checking, the
 commands are as before.
 
 **What to change.** Keep shapes within these sizes; draw a larger image
 on a bitmap.
 
-Issues: [InitShape, GetaShape, Rotate and Scale do not check for planes of 64 KB or more (#1047)](https://github.com/fubar-coder/bb2-c/issues/1047),
-[The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046).
+Issues:
+
+* [InitShape, GetaShape, Rotate and Scale do not check for planes of 64 KB or more (#1047)](https://github.com/fubar-coder/bb2-c/issues/1047)
+* [The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046)
 
 ### `CreateShape` with a count of 0 or past the last shape {#createshape-count}
 
@@ -1156,8 +1174,10 @@ written then. Without runtime error checking, the command is as before.
 **What to change.** Give a count of at least 1, and raise the maximum of
 shapes in the compiler options if the shapes do not fit.
 
-Issues: [CreateShape with count 0 creates 65536 shape objects (#428)](https://github.com/fubar-coder/bb2-c/issues/428),
-[CreateShape writes past the shape table when start_shape + count exceeds Maximum Shapes (#1077)](https://github.com/fubar-coder/bb2-c/issues/1077).
+Issues:
+
+* [CreateShape with count 0 creates 65536 shape objects (#428)](https://github.com/fubar-coder/bb2-c/issues/428)
+* [CreateShape writes past the shape table when start_shape + count exceeds Maximum Shapes (#1077)](https://github.com/fubar-coder/bb2-c/issues/1077)
 
 ### A shape that was never defined for the Blitz Bombers blits {#bb-blitlib-shape-undefined}
 
@@ -1357,9 +1377,11 @@ Slice". A slice that is not set up is still "Uninitialized Slice".
 **What to change.** Nothing; a program that stopped with one of these
 errors now stops with the message that names its cause.
 
-Issues: [The checks of the fades tested only the upper word of the palette (#135)](https://github.com/fubar-coder/bb2-c/issues/135),
-[An uninitialised palette reported "Not enough colours in Slice" (#330)](https://github.com/fubar-coder/bb2-c/issues/330),
-[A too large colour range reported "Uninitialized Slice" (#331)](https://github.com/fubar-coder/bb2-c/issues/331).
+Issues:
+
+* [The checks of the fades tested only the upper word of the palette (#135)](https://github.com/fubar-coder/bb2-c/issues/135)
+* [An uninitialised palette reported "Not enough colours in Slice" (#330)](https://github.com/fubar-coder/bb2-c/issues/330)
+* [A too large colour range reported "Uninitialized Slice" (#331)](https://github.com/fubar-coder/bb2-c/issues/331)
 
 ### The check of `SetPeriod` {#setperiod-check}
 
@@ -1766,8 +1788,10 @@ runtime error checking, the commands are as before.
 for example with `FNSClipOutput`, and give `FNSSetTab` a size of 1 or
 more.
 
-Issues: [A clip zone with negative xmin/ymin lets text at negative x/y be written about 64K bytes/rows away (#664)](https://github.com/fubar-coder/bb2-c/issues/664),
-[FNSSetTab 0: a tab character divides by zero (#666)](https://github.com/fubar-coder/bb2-c/issues/666).
+Issues:
+
+* [A clip zone with negative xmin/ymin lets text at negative x/y be written about 64K bytes/rows away (#664)](https://github.com/fubar-coder/bb2-c/issues/664)
+* [FNSSetTab 0: a tab character divides by zero (#666)](https://github.com/fubar-coder/bb2-c/issues/666)
 
 ### The checks of the palette commands of rigfxlib {#rigfxlib-palette-checks}
 
@@ -1808,10 +1832,12 @@ palette in every frame.
 only for the colours it has, and give `PalAdjust` a target palette at
 least as large as the colours it writes, as the library's guide asks.
 
-Issues: [PalRed/…/AGAPalBlue and PalAdjust read from address 0 before PaletteInfo (#686)](https://github.com/fubar-coder/bb2-c/issues/686),
-[Colour numbers from 2731 on index before the palette (12 × colour used as a signed word) (#677)](https://github.com/fubar-coder/bb2-c/issues/677),
-[PalAdjust with end < start runs up to 65536 × 3 channels (#684)](https://github.com/fubar-coder/bb2-c/issues/684),
-[PalAdjust without start/end adjusts as many colours as PaletteInfo's palette has, not the target (#685)](https://github.com/fubar-coder/bb2-c/issues/685).
+Issues:
+
+* [PalRed/…/AGAPalBlue and PalAdjust read from address 0 before PaletteInfo (#686)](https://github.com/fubar-coder/bb2-c/issues/686)
+* [Colour numbers from 2731 on index before the palette (12 × colour used as a signed word) (#677)](https://github.com/fubar-coder/bb2-c/issues/677)
+* [PalAdjust with end < start runs up to 65536 × 3 channels (#684)](https://github.com/fubar-coder/bb2-c/issues/684)
+* [PalAdjust without start/end adjusts as many colours as PaletteInfo's palette has, not the target (#685)](https://github.com/fubar-coder/bb2-c/issues/685)
 
 ### Bitmap depths for the effects of rifxlib and `CPUCls` {#rwe-effects-depth}
 
@@ -1837,9 +1863,11 @@ before.
 
 **What to change.** Use bitmaps of 1 to 8 bitplanes.
 
-Issues: [Derez and ZoomXY with a depth-0 source bitmap count 65536 planes (#947)](https://github.com/fubar-coder/bb2-c/issues/947),
-[The 16-entry plane pointer arrays are not checked against the depth: FadeInBitmap overflows with more than 8 planes (#674)](https://github.com/fubar-coder/bb2-c/issues/674),
-[CPUCls: depth 0 clears 65536 planes (#679)](https://github.com/fubar-coder/bb2-c/issues/679).
+Issues:
+
+* [Derez and ZoomXY with a depth-0 source bitmap count 65536 planes (#947)](https://github.com/fubar-coder/bb2-c/issues/947)
+* [The 16-entry plane pointer arrays are not checked against the depth: FadeInBitmap overflows with more than 8 planes (#674)](https://github.com/fubar-coder/bb2-c/issues/674)
+* [CPUCls: depth 0 clears 65536 planes (#679)](https://github.com/fubar-coder/bb2-c/issues/679)
 
 ### A delay of 0 for `ClearBitmap` and `FadeInBitmap` {#rifxlib-delay-zero}
 
@@ -2014,8 +2042,10 @@ that `MapDataGrab` fills nothing into a map without data.
 cell values below 32768, and ask `MapDataAdr` only for positions
 inside the map.
 
-Issues: [MapCanDraw's stencil lookup is unchecked: without SetStencil it reads low memory; map words ≥ $8000 index before the stencil (#893)](https://github.com/fubar-coder/bb2-c/issues/893),
-[MapCanDraw compares x/y signed: negative coordinates pass and index far behind the map data (#892)](https://github.com/fubar-coder/bb2-c/issues/892).
+Issues:
+
+* [MapCanDraw's stencil lookup is unchecked: without SetStencil it reads low memory; map words ≥ $8000 index before the stencil (#893)](https://github.com/fubar-coder/bb2-c/issues/893)
+* [MapCanDraw compares x/y signed: negative coordinates pass and index far behind the map data (#892)](https://github.com/fubar-coder/bb2-c/issues/892)
 
 ### `FillBitplane` and `ShapeTo1616` with sizes that do not fit {#rimapeditorlib-size-checks}
 
@@ -2053,8 +2083,10 @@ Without runtime error checking, the commands are as before.
 height of 1 or more, and give `ShapeTo1616` a destination shape of 16
 by 16 pixels with as many planes as the source.
 
-Issues: [MapDataGrab, ShapeTo1616 and FillBitplane loop 65536 times for a size of 0 (DBRA) (#895)](https://github.com/fubar-coder/bb2-c/issues/895),
-[ShapeTo1616 writes 16 words per source plane into the destination shape regardless of its size (#900)](https://github.com/fubar-coder/bb2-c/issues/900).
+Issues:
+
+* [MapDataGrab, ShapeTo1616 and FillBitplane loop 65536 times for a size of 0 (DBRA) (#895)](https://github.com/fubar-coder/bb2-c/issues/895)
+* [ShapeTo1616 writes 16 words per source plane into the destination shape regardless of its size (#900)](https://github.com/fubar-coder/bb2-c/issues/900)
 
 ### `CreateMap` wider than 32767 cells {#createmap-width}
 
@@ -2169,12 +2201,14 @@ next and the last one behind the shape.
 **With the port.** Without map shapes, before `SetNumMapShapes` or
 after one that got no memory or asked for 0, the map shape commands
 do nothing and `MapShapeAddr` returns 0. With runtime error checking,
-a map shape number not below the number given to `SetNumMapShapes` is
-the error "Map shape not allocated by SetNumMapShapes", for
-`ShapeToMapShape`, `BlitMapShape`, `BlitMapShapeSize`,
-`MapShapeAddr`, `FreeMapShapes` and `AddGroupMember`, and a
-`BlitMapShapeSize` wider than the map shape is the error
-"BlitMapShapeSize wider than the map shape".
+the port reports two errors:
+
+* For `ShapeToMapShape`, `BlitMapShape`, `BlitMapShapeSize`,
+  `MapShapeAddr`, `FreeMapShapes` and `AddGroupMember`, a map shape
+  number not below the number given to `SetNumMapShapes` is the error
+  "Map shape not allocated by SetNumMapShapes".
+* A `BlitMapShapeSize` wider than the map shape is the error
+  "BlitMapShapeSize wider than the map shape".
 
 **What to change.** Call `SetNumMapShapes` first, use only the numbers
 it makes room for, and blit at most the width of the map shape.
@@ -2216,9 +2250,11 @@ shape changed in memory meets that check.
 **What to change.** Use the channels 0 to 7, or -1 with `GetWBSprite`,
 and ask for the position only of a sprite the program has got.
 
-Issues: [The sprite channel is not checked: channels outside 0–7 index the tag lists, the library name and its base (#916)](https://github.com/fubar-coder/bb2-c/issues/916),
-[A shape with height or depth 0 is copied as 65536 rows/planes (DBRA) (#917)](https://github.com/fubar-coder/bb2-c/issues/917),
-[WBSpriteX/WBSpriteY on a channel without a sprite read the words at addresses 6 and 8 (#922)](https://github.com/fubar-coder/bb2-c/issues/922).
+Issues:
+
+* [The sprite channel is not checked: channels outside 0–7 index the tag lists, the library name and its base (#916)](https://github.com/fubar-coder/bb2-c/issues/916)
+* [A shape with height or depth 0 is copied as 65536 rows/planes (DBRA) (#917)](https://github.com/fubar-coder/bb2-c/issues/917)
+* [WBSpriteX/WBSpriteY on a channel without a sprite read the words at addresses 6 and 8 (#922)](https://github.com/fubar-coder/bb2-c/issues/922)
 
 ### Devices, tracks and offsets of ricompactdisclib {#compactdisc-checks}
 
@@ -2255,9 +2291,11 @@ library's guide asks. Check a track number against `CDFirstTrack` and
 `CDLastTrack` before `CDTrackLength`, and give `CDTrackMins` and
 `CDTrackSecs` an offset of 0 or 1 only.
 
-Issues: [OpenCD while a device is open loses the open request (#578)](https://github.com/fubar-coder/bb2-c/issues/578),
-[CDTrackLength reads unwritten or foreign memory for the last track, track 0 and tracks behind the last (#583)](https://github.com/fubar-coder/bb2-c/issues/583),
-[CDTrackMins/CDTrackSecs offset: only the low byte is shifted, the index has no limit, the high byte stays in the result (#586)](https://github.com/fubar-coder/bb2-c/issues/586).
+Issues:
+
+* [OpenCD while a device is open loses the open request (#578)](https://github.com/fubar-coder/bb2-c/issues/578)
+* [CDTrackLength reads unwritten or foreign memory for the last track, track 0 and tracks behind the last (#583)](https://github.com/fubar-coder/bb2-c/issues/583)
+* [CDTrackMins/CDTrackSecs offset: only the low byte is shifted, the index has no limit, the high byte stays in the result (#586)](https://github.com/fubar-coder/bb2-c/issues/586)
 
 ## Forms the original refused {#forms-the-original-refused}
 
