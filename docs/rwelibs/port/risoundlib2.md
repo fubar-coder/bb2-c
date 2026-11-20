@@ -56,17 +56,12 @@ vectors through `BLITZ_BASEJSR` where the original passes the whole d0
 on (OpenDevice, SendIO, DoIO, the AHI calls); memlib through
 `BLITZ_ALIBJSR`. The tag list of the requester is the original's (in its
 code) with the original's offsets, so AHIOutputRequest writes the same
-longs. The five entries of AHIOutputRequest with fewer arguments take
-the registers the original's entries keep (d2–d5) as parameters.
+longs. The forms of AHIOutputRequest with fewer arguments are entries
+that fill in the missing values and call the one of 6 arguments.
 
 ## BUG(orig), kept
 
-* AHIOutputRequest: the `!subs` of the forms with 1, 2 and 4 arguments
-  point to the wrong entries – 4 arguments go to the "AudioID" entry
-  (x, y, width, height replaced by -1, the mode id is d4 as it was), 1
-  argument to "AudioID, Frequency" (the argument replaced, d4/d5 as they
-  were), 2 to "X,Y,WIDTH,HEIGHT" (d2/d3 as they were)
-  (#928). The current screen of
+* AHIOutputRequest: the current screen of
   `!libs {#screenslib,#ua0}` is not used (`AHIR_Screen` stays 0)
   (#929). Every call allocates a
   requester; none is ever freed (#930).
@@ -151,6 +146,14 @@ kind F):
   height and frequency their data, and `AHIR_InitialAudioID`/
   `AHIR_InitialMixFreq` kept -1 and 0 (#931; `libs_emulator` cases
   `[fixed #931]` of `rwe_risoundlib2`).
+* The forms of AHIOutputRequest with 1, 2 and 4 arguments go to the
+  entries the source's comments describe: 1 argument the mode id, 2 the
+  mode id and the frequency, 4 x, y, width and height (the declaration
+  is unchanged). The original's `!subs` mixed them up: 4 arguments went
+  to the "AudioID" entry (x, y, width, height replaced by -1, the mode id
+  d4 as it was), 1 argument to "AudioID, Frequency" (the argument lost,
+  d4/d5 as they were), 2 to "X,Y,WIDTH,HEIGHT" (d2/d3 as they were)
+  (#928; `libs_emulator` cases `[fixed #928]` of `rwe_risoundlib2`).
 
 ## Test
 

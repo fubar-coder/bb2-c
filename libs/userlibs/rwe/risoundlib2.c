@@ -35,11 +35,7 @@
  * same offsets.
  *
  * BUG(orig):
- *   - AHIOutputRequest: the forms with 1, 2 and 4 arguments go to the
- *     wrong entries (4 arguments: x, y, width, height replaced by -1, the
- *     mode id whatever d4 holds; 1 argument: lost, d4/d5 whatever they
- *     hold; 2: d2/d3 whatever they hold) (#928);
- *     !libs's screen (a0) is
+ *   - AHIOutputRequest: !libs's screen (a0) is
  *     not used, AHIR_Screen stays 0 (#929);
  *     every call allocates a requester that is never freed
  *     (#930).
@@ -88,7 +84,11 @@
  * original wrote them at the offsets 16, 20, 24, 28 of the tag list,
  * over the tag ids of width and height, so that width and mode id became
  * tag ids (mode id 0 = TAG_DONE ended the list) and the initial audio id
- * and frequency were never set (#931).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * and frequency were never set (#931).  The forms of AHIOutputRequest
+ * with 1, 2 and 4 arguments (mode id; mode id, frequency; x, y, width,
+ * height) go to the entries made for them; the original's !subs mixed
+ * them up, so the arguments were lost and others came from whatever
+ * d2-d5 held (#928).  CludgeSound writes nothing behind audiolib's 16 byte sound
  * object; the original stored the rate at +16, the high word of the next
  * object's sample pointer (behind the last object whatever follows), for
  * PlaySoundAHI, which now takes its frequency from the object's period:
@@ -163,21 +163,22 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_PlayRawAHI2, 0, 0);
 BLITZ_NAME("PlayRawAHI", "address,length,frequency,[volume,[balance]]");
 
-/* BUG(orig) (#928): the entries of 1, 2 and 4
-   arguments are mixed up */
+/* Fixed (#928): the forms with 1, 2 and 4 arguments go to the entries
+   their comments describe (the original: 1 -> AHIOutputRequest3, 2 ->
+   AHIOutputRequest4, 4 -> AHIOutputRequest2) */
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
 BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest1), 0, 0);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS(LIB_screenslib, BL_UA0);
-BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest3), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest2), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_screenslib, BL_UA0);
-BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest4), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest3), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_screenslib, BL_UA0);
-BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest2), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest4), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest5), 0, 0);
@@ -606,43 +607,44 @@ ULONG BLITZ_ROUTINE c_outreq1(void)
 }
 
 /**
- * @brief The entry "AudioID": c_outreq6() with x, y, width, height -1.
+ * @brief AHIOutputRequest modeid: c_outreq6() with x, y, width, height -1, frequency 0.
  *
- * BUG(orig) (#928): !subs gives it to the form with 4 arguments
- * (x,y,width,height): those are replaced by -1, the mode id is whatever
- * d4 holds.
- * @param id  d4: the mode id (the caller's d4)
+ * The entry "AudioID" of the original, for the form with 1 argument
+ * (fixed: #928; the original gave it to the form with 4 arguments, x, y,
+ * width and height replaced by -1, the mode id whatever d4 held).
+ * @param id  d0: the mode id
  * @return d0: as c_outreq6()
  */
-ULONG BLITZ_ROUTINE c_outreq2(ULONG id BL_REG(d4))
+ULONG BLITZ_ROUTINE c_outreq2(ULONG id BL_REG(d0))
 {
     return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, 0);
 }
 
 /**
- * @brief The entry "AudioID, Frequency": c_outreq6() with x, y, width, height -1.
+ * @brief AHIOutputRequest modeid,frequency: c_outreq6() with x, y, width, height -1.
  *
- * BUG(orig) (#928): !subs gives it to the form with 1 argument: the
- * argument (d0) is replaced, mode id and frequency are whatever d4/d5
- * hold.
- * @param id    d4: the mode id (the caller's d4)
- * @param freq  d5: the frequency (the caller's d5)
+ * The entry "AudioID, Frequency" of the original, for the form with 2
+ * arguments (fixed: #928; the original gave it to the form with 1
+ * argument, which was lost, mode id and frequency whatever d4/d5 held).
+ * @param id    d0: the mode id
+ * @param freq  d1: the frequency
  * @return d0: as c_outreq6()
  */
-ULONG BLITZ_ROUTINE c_outreq3(ULONG id BL_REG(d4), ULONG freq BL_REG(d5))
+ULONG BLITZ_ROUTINE c_outreq3(ULONG id BL_REG(d0), ULONG freq BL_REG(d1))
 {
     return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, freq);
 }
 
 /**
- * @brief The entry "X,Y,WIDTH,HEIGHT": c_outreq6() with mode id and frequency 0.
+ * @brief AHIOutputRequest x,y,width,height: c_outreq6() with mode id and frequency 0.
  *
- * BUG(orig) (#928): !subs gives it to the form with 2 arguments: width
- * and height are whatever d2/d3 hold.
+ * The entry "X,Y,WIDTH,HEIGHT" of the original, for the form with 4
+ * arguments (fixed: #928; the original gave it to the form with 2
+ * arguments, width and height whatever d2/d3 held).
  * @param x  d0: the left edge
  * @param y  d1: the top edge
- * @param w  d2: the width (the caller's d2)
- * @param h  d3: the height (the caller's d3)
+ * @param w  d2: the width
+ * @param h  d3: the height
  * @return d0: as c_outreq6()
  */
 ULONG BLITZ_ROUTINE c_outreq4(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL_REG(d2),
