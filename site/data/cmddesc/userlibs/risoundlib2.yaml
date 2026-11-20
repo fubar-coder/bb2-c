@@ -1,17 +1,10 @@
 "CludgeSound":
-  text: Makes sound object `sound#` from the IFF 8SVX file at `address` in memory, copying its sample into chip memory. As a function it returns -1 on success, and 0 if the file is no 8SVX file or has no sample data among its first chunks; without enough chip memory the program stops with the runtime error "Out of Memory!".
+  text: Makes sound object `sound#` from the IFF 8SVX file at `address` in memory, copying its sample into chip memory. As a function it returns -1 on success, and 0 if the file cannot be used; without enough chip memory the program stops with the runtime error "Out of Memory!".
   notes: |
-    The same command as in the first sound library, with its faults kept
-    from the original (see there): a failing call leaves freed memory in
-    the sound object
-    ([#831](https://github.com/fubar-coder/bb2-c/issues/831)), the rate is
-    right only for the usual header
-    ([#832](https://github.com/fubar-coder/bb2-c/issues/832)) and a rate of
-    0 hangs ([#830](https://github.com/fubar-coder/bb2-c/issues/830)), an
-    odd chunk before the sample data is not passed correctly
-    ([#828](https://github.com/fubar-coder/bb2-c/issues/828)), and empty
-    samples or samples of 64 KB or more go wrong
-    ([#829](https://github.com/fubar-coder/bb2-c/issues/829)).
+    The same command as in the first sound library (see there for the
+    files it refuses): a call that fails leaves the sound as it was, the
+    rate comes from the file's header, and the search for the sample data
+    expects the pad byte behind a chunk of odd length.
 
     Also kept from the original, and only in this library: the sample rate
     is stored behind the sound object, over the start of the next one, so

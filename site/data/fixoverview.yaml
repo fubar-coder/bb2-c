@@ -6268,6 +6268,46 @@ rows:
     text: "The end of a program closes unit 3 too, and a second run starts with all units closed; the original left unit 3 open."
     page: libraries
     anchor: ritrackdisklib-fixes
+  - issue: 832
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib, risoundlib2"
+    command: "CludgeSound"
+    text: "`CludgeSound` reads the sample rate from the rate field of the header, whatever its length; the original was right only for a header of 20 bytes."
+    page: libraries
+    anchor: risoundlib-fixes
+  - issue: 830
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib, risoundlib2"
+    command: "CludgeSound"
+    text: "`CludgeSound` returns 0 for an 8SVX file with a sample rate of 0; the original hung."
+    page: libraries
+    anchor: risoundlib-fixes
+  - issue: 828
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib, risoundlib2"
+    command: "CludgeSound"
+    text: "`CludgeSound` finds the sample data behind a chunk of odd length with its IFF pad byte; a file without pad bytes no longer loads."
+    page: libraries
+    anchor: risoundlib-fixes
+  - issue: 831
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib, risoundlib2"
+    command: "CludgeSound"
+    text: "A `CludgeSound` that fails leaves the sound as it was; the original left it pointing to freed memory, and the next call stopped with \"Unable to Free Memory\"."
+    page: libraries
+    anchor: risoundlib-fixes
+  - issue: 829
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib, risoundlib2"
+    command: "CludgeSound"
+    text: "`CludgeSound` copies a sample of up to 128 KB completely, and an empty or longer one gives 0; the original cut samples of 64 KB or more and overwrote memory for an empty one."
+    page: libraries
+    anchor: risoundlib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

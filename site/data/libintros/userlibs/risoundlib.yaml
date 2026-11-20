@@ -8,9 +8,9 @@ intro: |
   The sample is copied into chip memory, so the file in memory can be
   freed afterwards, and the sound is played with `Sound` as usual.
 
-  The sound gets no loop: it plays once. Only the usual form of an 8SVX
-  file works reliably, with a header chunk of 20 bytes and the sample data
-  among the first chunks of the file (see the command's notes).
+  The sound gets no loop: it plays once. The file must be a valid IFF
+  file, with the pad byte behind every chunk of odd length, and have its
+  sample data among its first seven chunks (see the command's notes).
 
   Its successor, the second sound library
   ([risoundlib2]({{< relref "/docs/libraries/userlibs/risoundlib2" >}})),
