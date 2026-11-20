@@ -45,7 +45,6 @@
  *     row regardless of the destination's size (#900).
  *   - M_InitParse copies without limit into its 256-byte buffer (the
  *     pointer behind it is overwritten by a longer string) (#897).
- *   - MapObjName$ returns the length as a byte (ADDQ.b) (#899).
  *   - finit closes graphics.library also if it did not open (#896).
  * Fixed (intended deviations):
  *   - init clears the stencil of SetStencil, the ScanShapes results and
@@ -66,7 +65,10 @@
  *   - MapDataGrab of bytes zero-extends each byte; the original loaded it
  *     with MOVE.b into the register of the previous sum, whose upper byte
  *     stayed: a byte + mapnull beyond 255 carried into the following
- *     values (#898).
+ *     values (#898);
+ *   - MapObjName$ counts the length as a long; the original counted it
+ *     as a byte (ADDQ.b), so a name of 256 characters or more came back
+ *     with its length modulo 256 (#899).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -835,10 +837,11 @@ BLITZ_THUNK(_mapgrab, mapgrab_c, "d0-d1/a0-a1");
 /**
  * @brief MapObjName$: the name of the used map.
  *
- * The name's characters at a3 (no 0).  BUG(orig) (#899): the length is
- * counted as a byte (ADDQ.b).
+ * The name's characters at a3 (no 0).  The length is counted as a long:
+ * fixed (#899), the original counted it as a byte (ADDQ.b), so a name of
+ * 256 characters or more came back with its length modulo 256.
  * @param map  a1: the used map (#ua1)
- * @return d0: the number of characters (the low byte), 0 without a name
+ * @return d0: the number of characters, 0 without a name
  */
 static ULONG BLITZ_ROUTINE mapobjname_c(const struct mapobject *map BL_REG(a1))
 {
@@ -849,7 +852,7 @@ static ULONG BLITZ_ROUTINE mapobjname_c(const struct mapobject *map BL_REG(a1))
     if (!s)
         return 0;
     while ((c = *s++) != 0) {
-        BL_SETB(n, n + 1);
+        n++;                            /* fixed (#899): ADDQ.l */
         *blitz_string++ = c;
     }
     return n;

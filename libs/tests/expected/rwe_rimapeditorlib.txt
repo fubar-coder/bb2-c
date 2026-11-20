@@ -2342,7 +2342,8 @@ MapObjName$|a3|map 1|1	$00000000
 MapObjName$|a3|map 1|2	$0000000B
 MapObjName$|a3|map 3|1	$00000005
 MapObjName$|d0|map 0|1	$00000006
-MapObjName$|d0|map 0|2	$0000002C
+MapObjName$|d0|map 0|2 [orig]	$0000002C
+MapObjName$|d0|map 0|2 [fixed #899]	$0000012C
 MapObjName$|d0|map 0|3	$00000000
 MapObjName$|d0|map 1|1	$00000000
 MapObjName$|d0|map 1|2	$0000000B

@@ -113,6 +113,11 @@ loop optimisation (no `__mulsi3`).
   stayed: a byte + mapnull beyond 255 carried into the following values
   (#898; test `rimapeditorlib-mapdatagrab-byte-carry`, the libs test's
   bytes 250–255 with mapnull 10).
+* `MapObjName$` counts the length as a long; the original counted it in
+  a byte (`ADDQ.b`), so a name of 256 characters or more came back with
+  its length modulo 256 (#899; test
+  `rimapeditorlib-mapobjname-byte-length`, the libs test's name of 300
+  characters).
 
 ## BUG(orig), kept
 
@@ -124,7 +129,6 @@ loop optimisation (no `__mulsi3`).
   plane regardless of the destination's size (#900).
 * `M_InitParse` copies without limit into its 256-byte buffer (a longer
   string overwrites the pointer behind it) (#897).
-* `MapObjName$` counts the length in a byte (`ADDQ.b`) (#899).
 * finit closes graphics.library also if it did not open (#896).
 
 Original behaviour that is not a defect:

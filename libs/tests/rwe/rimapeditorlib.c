@@ -25,7 +25,7 @@
  * ScanShapes (to highest, to an empty shape, start > highest) and the
  * maxima; ShapeTo1616 of heights < 16, 16, > 16, depths 1-4;
  * ShapeMaskFill; FillBitplane; MapObjName$ (no name, a name of 300
- * characters: BUG(orig) #899 the byte length) and SetMapObjName$; the text
+ * characters: the original's byte length, #899) and SetMapObjName$; the text
  * commands and the pen; SetWindowDraw; M_NextArg$ before M_InitParse,
  * strings with empty arguments; the free routine; init, finit.
  * At the end a second run of a program with the library still loaded (as
@@ -549,7 +549,7 @@ int main(int argc, char **argv)
     objname(0);
     objname(1);                         /* no name: "" */
     setname(1, "renamed map");
-    setname(0, longname);               /* BUG(orig) (#899): the length as a byte */
+    setname(0, longname);               /* the original's byte length (#899) */
     setname(0, "");
     setname(3, "third");
 
