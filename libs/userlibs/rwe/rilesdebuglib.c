@@ -138,6 +138,9 @@
  *   - D_FindVolume returns -1 if the name is there, else 0, as
  *     riamosfunclib's FindVolume; the original returned the entry it had
  *     found after unlocking the list (#1167).
+ *   - GetHexAdr$ reads a word or long byte by byte; the original's
+ *     MOVE.w/MOVE.l was an address error on a 68000 at an odd address
+ *     (#1168).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -855,8 +858,10 @@ static ULONG BLITZ_ROUTINE gethex_c(ULONG v BL_REG(d0), UBYTE mode BL_REG(d1))
  * @brief GetHexAdr$(*value,mode): the byte, word or long at an address in
  * hex.
  *
- * As GetHex$; no check of low addresses (a word or long at an odd
- * address: an address error on a 68000).
+ * As GetHex$; no check of low addresses.  The word or long is read byte
+ * by byte, as GetDataItem does, so an odd address works on a 68000 too
+ * (fixed #1168: the original read it with one MOVE.w or MOVE.l, an
+ * address error there).
  * @param addr  d0: the address
  * @param mode  d1.b: 1 byte, 2 word, otherwise long
  * @return d0: the length (2, 4, 8)
@@ -865,9 +870,10 @@ static ULONG BLITZ_ROUTINE gethexadr_c(const UBYTE *addr BL_REG(d0), UBYTE mode 
 {
     if (mode == 1)
         return hexout(*addr, 1);
-    if (mode == 2)
-        return hexout(*(const UWORD *)addr, 2);
-    return hexout(*(const ULONG *)addr, 3);
+    if (mode == 2)                                      /* fixed (#1168) */
+        return hexout((ULONG)addr[0] << 8 | addr[1], 2);
+    return hexout((ULONG)addr[0] << 24 | (ULONG)addr[1] << 16 |
+                  (ULONG)addr[2] << 8 | addr[3], 3);
 }
 
 /**

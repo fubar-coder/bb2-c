@@ -129,6 +129,12 @@ d5-d7, a0-a3 and a6 in places.
   (`If D_FindVolume("ENV")`) (#1167; test
   `rilesdebuglib-findvolume-value` on the a1200 and a500; the
   `libs_emulator` cases `[fixed #1167]`).
+* `GetHexAdr$` reads a word or long byte by byte, as `GetDataItem` does:
+  an odd address works on a 68000. The original read it with one
+  `MOVE.w` or `MOVE.l`: an address error there (the debugger shows object
+  fields with it, whose addresses can be odd) (#1168; test
+  `rilesdebuglib-gethexadr-odd` on the a500; the `libs_emulator`
+  scenario reads words and longs at even addresses only, unchanged).
 * `GetCustomReg` compares the register word unsigned with $1FC and looks
   at the word only. The original compared the word signed and tested the
   whole long for a negative value: a word of $8000 or more with d0.l not
