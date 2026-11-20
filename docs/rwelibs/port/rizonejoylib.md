@@ -48,8 +48,9 @@ All other routines are C behind `BLITZ_THUNK`.
   out-of-range numbers address the same places; the zone offset of
   SetZone and ZoneInit is a long (fixed, #878).
 * The data `endzone`, `_zonetable`, `zonetablelist`, `zones020`, `is020`
-  are one packed struct in the original's order: the list entry -1 (a
-  negative table number) is `_zonetable`, as in the original.
+  are one packed struct in the original's order (the list entry -1 is
+  `_zonetable`, as in the original; a negative table number is refused,
+  #872); the zone tests read it as `_zd`.
 * The hardware registers (CIA A/B, POTGO, POTINP, JOYxDAT) are volatile
   accesses of the original's width (byte reads of `$dff016` for
   `BTST #n,$dff016`). ReadJoyPad clocks the pad's shift register through
@@ -204,12 +205,54 @@ All other routines are C behind `BLITZ_THUNK`.
   `libs_emulator` cases `[fixed #1136]` of `rwe_rizonejoylib`:
   NewZoneTable 3,1).
 
-## BUG(orig)
+## Documented behaviour (no defects)
 
-* FreeZoneTable always makes table 0 the current one (#869).
-* ReadJoyPad reads the joystick port for every port number but 2 (#877).
+* **FreeZoneTable makes table 0 the current table**, whichever table it
+  frees and whichever table was current. That is what the manual
+  documents (RIZoneJoyLib.guide in
+  `archive/aminet/ab2.42-distri/Amiblitz2/REDHelp/REDBlitzLibs`,
+  FreeZoneTable: "When successfully called, this command will free the
+  zonetable and change the currently used zonetable to table number
+  0."). A program that frees another table than the current one selects
+  its table again with UseZoneTable (#869, closed as not a bug).
+* **ReadJoyPad reads the mouse port for port number 2 and the joystick
+  port for every other number.** The manual names 1 (joystick port) and
+  2 (mouse port), and its own example reads the joystick port with
+  `ReadJoyPad(0)` ("pausebutton=(ReadJoyPad(0) AND PAUSE)"); refusing
+  other numbers would break that example (#877, W7 decision Q3 (a),
+  closed as not a bug).
 
-Original behaviour that is no defect:
+## The manual and the library
+
+The manual differs from the library in these points; the library is
+kept as it is (programs are written against it; the original's change
+log of 27/1/95, "was getting x1,y,x2,y2 in wrong order", shows the
+author met the mix-up himself) (#1137, closed as not a bug):
+
+* **ZoneTable's layout.** The manual gives "+0: x1, +2: y1, +4: x2,
+  +6: y2" and for a circle "+4: radius of zone". The library stores
+  per zone x1, x2, y1, y2 (words), and for a circle the radius
+  **squared** in x2 (+2) and -1 in y2 (+6); the manual's own GetZoneX2
+  entry says "For circular zones, this command will return the radius
+  of the circle squared". The table starts with the zone count (a long),
+  the zones follow at +4.
+* **The size of a zone and of table 0.** The manual: "each zone taking
+  up 8 words (16 bytes) in the data area, making a total size of 2048
+  bytes". A zone takes 8 bytes (4 words); table 0 (256 zones) is 2052
+  bytes with its count.
+* **Table sizes.** The manual: "The new zonetables can be from 1 to
+  65536 in size", "The maximum size for a zonetable is 65536 zones".
+  NewZoneTable takes 1 to 65535 zones (65536 and more are refused: the
+  zone loops count in words; the original's source: "max number of
+  zones!"); a table of one zone is accepted (#1136).
+* **ReadJoyPad's port numbers.** The manual names 1 for the joystick
+  port and 2 for the mouse port and uses 0 in its example; the library
+  reads the mouse port for 2 and the joystick port for any other number
+  (above).
+* **SetZone's corners.** "x2,y2 should be the bottom left" means the
+  bottom right corner; SetZone orders the corners itself.
+
+## Other original behaviour that is no defect
 
 * JHoriz(1) "right" returns d0 unchanged: the port number 1 (upper bits
   included), which is also the result for "right".

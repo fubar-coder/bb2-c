@@ -26,10 +26,20 @@
  * synchronised to the E clock), kept as the same volatile accesses in
  * the same order, so its timing does not depend on the code around them.
  *
- * BUG(orig):
- *   - FreeZoneTable always makes table 0 the current one (#869).
- *   - ReadJoyPad reads the joystick port for every port number but 2
- *     (#877).
+ * Documented behaviour, no defects (RIZoneJoyLib.guide):
+ *   - FreeZoneTable always makes table 0 the current one: "When
+ *     successfully called, this command will free the zonetable and
+ *     change the currently used zonetable to table number 0" (#869).
+ *   - ReadJoyPad reads the mouse port for port number 2 and the joystick
+ *     port for every other number: the manual names 1 and 2, and its own
+ *     example reads the joystick port with ReadJoyPad(0) (#877).
+ * The manual differs from the library (the library kept, #1137): its
+ * ZoneTable layout is "+0: x1, +2: y1, +4: x2, +6: y2" with "+4: radius
+ * of zone" for a circle, the library's x1, x2, y1, y2 with the radius
+ * squared in x2 (as its GetZoneX2 entry says); "8 words (16 bytes)" per
+ * zone and "2048 bytes" for table 0 are 8 bytes and 2052 bytes; tables
+ * "from 1 to 65536" zones are 1 to 65535; ReadJoyPad's port numbers as
+ * above.
  * Fixed (intended deviations):
  *   - NewZoneTable, UseZoneTable and FreeZoneTable compare the table
  *     number unsigned: a negative number is refused (0).  The original
@@ -499,7 +509,9 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
 /**
  * @brief SetZone(num,x1,y1,x2,y2): sets a rectangular zone of the current table.
  *
- * The corners are ordered (EXG) so that x1 < x2 and y1 < y2.  Without a
+ * The corners are ordered (EXG) so that x1 < x2 and y1 < y2 (the
+ * manual's "x2,y2 should be the bottom left" means the bottom right;
+ * either order works, #1137).  Without a
  * table the result is 0: fixed (#876, the original returned -1, "done").
  * num is compared unsigned:
  * fixed (#873), the original wrote a negative num before the table.  A
@@ -705,6 +717,12 @@ BLITZ_ASM_BLOCK(zonetests,
 
 /**
  * @brief ZoneTable: the address of the current zone table.
+ *
+ * The table: the zone count (a long), then per zone x1, x2, y1, y2
+ * (words, 8 bytes); a circle has the radius squared in x2 and -1 in y2;
+ * table 0 is 2052 bytes.  The manual differs ("+0: x1, +2: y1, +4: x2,
+ * +6: y2", "+4: radius of zone", "8 words (16 bytes)", "2048 bytes"); the
+ * library's layout is the one programs use (#1137).
  * @return d0: the table, 0 if none (fixed, #876: the original returned -1)
  */
 static ULONG BLITZ_ROUTINE zonetable_c(void)
@@ -737,9 +755,10 @@ static void clearzones(struct zonetable *zt)
  * @brief NewZoneTable table#,num_zones: allocates zone table n.
  *
  * n 1..15, num_zones 1..65535 (1: fixed, #1136, the original refused a
- * table of one zone, which the manual allows); an old table of that
- * number is freed first.  All zones of the new table are cleared and the current table
- * stays as it is; a replaced current table stays current under its new
+ * table of one zone, which the manual allows; the manual's 65536 is
+ * refused, the zone loops count in words, #1137); an old table of that
+ * number is freed first.  All zones of the new table are cleared and the
+ * current table stays as it is; a replaced current table stays current under its new
  * block: fixed (#875), the original ran ZoneInit on the current table
  * and left AllocMem's garbage in the new one.  If the AllocMem fails
  * after the free, the table no longer exists (its entry cleared, 0
@@ -804,9 +823,10 @@ static BB_BOOL BLITZ_ROUTINE usezonetable_c(ULONG n BL_REG(d0))
  * @brief FreeZoneTable table#: frees zone table n (1..15).
  *
  * The entry is cleared: fixed (#868), the original left the freed block
- * there.  BUG(orig): table 0 always becomes the current one (#869).
- * Fixed (#872): n is compared unsigned,
- * a negative n is refused (the original freed the current table).
+ * there.  Table 0 always becomes the current one, as the manual
+ * documents ("change the currently used zonetable to table number 0";
+ * no defect, #869).  Fixed (#872): n is compared unsigned, a negative n
+ * is refused (the original freed the current table).
  * @param n  d0: the table number
  * @return d0: BB_TRUE done, BB_FALSE bad number or no such table
  */
@@ -1114,8 +1134,12 @@ first:
  * @brief ReadJoyPad(port#): the buttons of a CD32 pad.
  *
  * Clocks the pad's shift register through the fire line (see readpad).
- * BUG(orig) (#877): every port number but 2 reads the joystick port.
- * @param port  d0.w: the port (2 = the mouse port)
+ * Every port number but 2 reads the joystick port: documented, no
+ * defect (#877; the manual names 1 for the joystick port and 2 for the
+ * mouse port, and its example reads the joystick port with
+ * ReadJoyPad(0)).
+ * @param port  d0.w: the port (2 = the mouse port, any other number the
+ *              joystick port)
  * @return d0: bits 7..0 = B, R, Y, G, FF, RW, PL, 0 (as the help text)
  */
 static ULONG BLITZ_ROUTINE readjoypad_c(UWORD port BL_REG(d0))
