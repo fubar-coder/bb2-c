@@ -43,9 +43,10 @@ All other routines are C behind `BLITZ_THUNK`.
   as data, the library is built for the 68000; the mode is on only on a
   68020 or better); the 68000 mode keeps its own tests (`BGT` for x1/y1,
   `BMI` on the word difference for x2/y2).
-* The word arithmetic of the original (`ASL.w`, `ADDQ.w` on a long
-  counter, the start zone through `MOVE.b`) is kept with explicit masks,
-  so out-of-range numbers address the same places (#878).
+* The word arithmetic of the original (`ADDQ.w` on a long counter, the
+  start zone through `MOVE.b`) is kept with explicit masks, so
+  out-of-range numbers address the same places; the zone offset of
+  SetZone and ZoneInit is a long (fixed, #878).
 * The data `endzone`, `_zonetable`, `zonetablelist`, `zones020`, `is020`
   are one packed struct in the original's order: the list entry -1 (a
   negative table number) is `_zonetable`, as in the original.
@@ -80,6 +81,11 @@ All other routines are C behind `BLITZ_THUNK`.
   (`CMP.l : BMI`): zone -1 is the 8 bytes in front of zone 0, the long in
   front of the table block and the table's count (#873, test
   `rwe/rizonejoylib-negative-zone-number`).
+* SetZone and ZoneInit compute a zone's offset as a long: zones 8192 and
+  above of a table of up to 65535 zones (the manual: "from 1 to 65536 in
+  size") are their own. The original's `ASL.w #3` kept the low word, so
+  zone n of a large table was zone n mod 8192 (#878, test
+  `rwe/rizonejoylib-zone-offset-word`).
 
 ## BUG(orig)
 

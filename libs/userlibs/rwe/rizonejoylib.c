@@ -63,6 +63,10 @@
  *     checked only the upper bound (CMP.l : BMI): zone -1 is the 8 bytes
  *     in front of zone 0, the long in front of the table block and the
  *     table's count (#873).
+ *   - SetZone and ZoneInit compute a zone's offset as a long: zone 8192
+ *     and above of a table of up to 65535 zones are their own.  The
+ *     original's ASL.w #3 kept the low word, so zone n of a large table
+ *     was zone n mod 8192 (#878).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -343,7 +347,7 @@ static ULONG BLITZ_ROUTINE zoneinit_c(ULONG zonenum BL_REG(d0), ULONG lastnum BL
     if (zonenum >= zt->count || lastnum >= zt->count || zonenum > lastnum)
         return (ULONG)-1;
     end = (UWORD)(lastnum + 1);                         /* ADDQ.w #1,d1 */
-    z = (LONG *)zone(zt, ASLW(zonenum, 3));
+    z = (LONG *)zone(zt, zonenum << 3);                 /* a long: fixed (#878) */
     do {
         *z++ = -1;
         *z++ = -1;
@@ -383,7 +387,7 @@ static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zonenum BL_REG(d0))
 
     if (!zt || zonenum >= zt->count)                    /* unsigned: fixed (#873) */
         return (ULONG)-1;
-    off = ASLW(zonenum, 3);
+    off = zonenum << 3;                                 /* a long: fixed (#878) */
     z = (LONG *)zone(zt, off);
     z[0] = -1;
     z[1] = -1;
@@ -428,7 +432,7 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
         return BB_TRUE;                             /* _nozones: BUG(orig) #876 */
     if (n >= zt->count)                                 /* unsigned: fixed (#873) */
         return BB_FALSE;
-    z = zone(zt, ASLW(n, 3));
+    z = zone(zt, n << 3);                               /* a long: fixed (#878) */
     z->x1 = x1;
     z->x2 = x2;
     z->y1 = y1;

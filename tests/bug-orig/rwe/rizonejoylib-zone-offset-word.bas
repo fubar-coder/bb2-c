@@ -4,6 +4,7 @@
 ; zones, all cleared with ZoneInit; zone 8192 is set to a rectangle.
 ; Correct: the point 15,15 lies in zone 8192 (the bug finds it in zone
 ; 0).
+; @fixed #878
 ; @rwe rizonejoylib
 r=NewZoneTable(1,10000)
 UseZoneTable 1
