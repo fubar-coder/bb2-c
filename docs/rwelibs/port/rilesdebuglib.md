@@ -248,6 +248,12 @@ d5-d7, a0-a3 and a6 in places.
   original took the length as a word with `SUBQ.w #1`/`BMI` and printed
   nothing for such a string (#710; test `rilesdebuglib-fprint-long-string`;
   the scenario of `libs_emulator` has no string that long).
+* `FPrintDetoke`'s `>` marker is never followed by the inverse space.
+  The original's `BSR draw_char : SBNE 'con` drew the inverse space too
+  when the column counter - d6 with the caller's high word - became 0
+  behind the marker (a high word of $FFFF and the column $FFFF) (#708;
+  no Blitz test: a program cannot set d6, D-019; the `libs_emulator`
+  case `[fixed #708]` of the column $FFFF).
 
 ## BUG(orig)
 
@@ -263,8 +269,6 @@ d5-d7, a0-a3 and a6 in places.
   drawn into both planes, plane 1 gets the glyph of another character
   (the inverse drawing leaves the last glyph byte in d0's low byte)
   (#709).
-* FPrintDetoke: after the `>` marker an inverse space follows too when
-  the column counter (with the caller's high word of d6) became 0 (#708).
 * D_FindStringPtr never compares the long at areg5 itself (#705).
 * SearchMem: the space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.

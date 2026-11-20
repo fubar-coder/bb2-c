@@ -2341,7 +2341,8 @@ FPrintDetoke|plane 0|line 8001..,9,65280,30|1	bytes 6400 fnv 32901D3D
 FPrintDetoke|plane 0|line 8001..,9,65280,30|2	bytes 6400 fnv 32901D3D
 FPrintDetoke|plane 0|line 8001..,9,65280,7|1	bytes 6400 fnv 814E8313
 FPrintDetoke|plane 0|line 8001..,9,65280,7|2	bytes 6400 fnv 814E8313
-FPrintDetoke|plane 0|line 8005..,0,0,0 column $FFFF, d6 $FFFFxxxx|1	bytes 66560 fnv 99F5E18B
+FPrintDetoke|plane 0|line 8005..,0,0,0 column $FFFF, d6 $FFFFxxxx|1 [orig]	bytes 66560 fnv 99F5E18B
+FPrintDetoke|plane 0|line 8005..,0,0,0 column $FFFF, d6 $FFFFxxxx|1 [fixed #708]	bytes 66560 fnv 07FA38E3
 FPrintDetoke|plane 0|line 8005..,0,257,0|1	bytes 6400 fnv B6CD4EE7
 FPrintDetoke|plane 0|line 8005..,0,257,0|2	bytes 6400 fnv B6CD4EE7
 FPrintDetoke|plane 0|line 8005..,0,257,1|1	bytes 6400 fnv 5C139487

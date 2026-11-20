@@ -55,8 +55,6 @@
  *     byte set and tokens drawn into two planes, the second plane gets
  *     the character of the last glyph byte (the inverse drawing
  *     overwrites d0's low byte) (#709).
- *   - FPrintDetoke: after the '>' marker, an inverse space follows if the
- *     column count (d6 with the caller's high word) became 0 (#708).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
@@ -122,6 +120,9 @@
  *     values never showed (#711).
  *   - FPrint counts the string's length as a long; the original's
  *     SUBQ.w/BMI printed nothing for 32769 characters or more (#710).
+ *   - FPrintDetoke's '>' marker is never followed by the inverse space;
+ *     the original drew it too when the column count (d6 with the
+ *     caller's high word) became 0 (#708).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1040,8 +1041,9 @@ static UWORD draw_char(struct dt *t, UWORD glyph)
  * printing tests the high byte of the FInverse word, the marker sets and
  * clears it (BUG(orig) (#706)); with it set and tokens drawn into two
  * planes, the second plane gets the character of the last glyph byte
- * (#709).  After the '>' marker an inverse space follows if the column
- * count (d6 with the caller's high word) became 0 (#708).  The column
+ * (#709).  The '>' marker is never followed by the inverse space (fixed
+ * #708: the original's BSR draw_char : SBNE 'con drew it too when the
+ * column count, d6 with the caller's high word, became 0).  The column
  * check is FPrint's (#707).
  * @param line       d0: the tokenised line (0-terminated)
  * @param cio        d1.w: the character before which the marker goes
@@ -1078,8 +1080,7 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
             if (chartyp)
                 goto curins;
             draw_char(&t, '>' * 8);
-            if (t.col != 0)                             /* BSR draw_char:SBNE 'con */
-                goto con;
+            goto con;                                   /* fixed (#708) */
         curins:
             INVERSE_HI = 0xff;
             draw_char(&t, ' ' * 8);
