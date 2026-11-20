@@ -959,7 +959,8 @@ CDFirstTrack|command||8	$00000022
 CDFirstTrack|d0||1	$00000001
 CDFirstTrack|d0||2	$00000001
 CDFirstTrack|d0||3	$00000001
-CDFirstTrack|d0||4	$00000001
+CDFirstTrack|d0||4 [orig]	$00000001
+CDFirstTrack|d0||4 [fixed #581]	$00000000
 CDFirstTrack|d0||5	$00000001
 CDFirstTrack|d0||6 [orig]	$00000001
 CDFirstTrack|d0||6 [fixed #582]	$00000002
@@ -968,7 +969,8 @@ CDFirstTrack|d0||8	$00000001
 CDFirstTrack|data||1	$00000002
 CDFirstTrack|data||2	$00000002
 CDFirstTrack|data||3	$00000002
-CDFirstTrack|data||4	$00000002
+CDFirstTrack|data||4 [orig]	$00000002
+CDFirstTrack|data||4 [fixed #581]	$00000001
 CDFirstTrack|data||5	$00000002
 CDFirstTrack|data||6	$00000002
 CDFirstTrack|data||7	$00000002
@@ -1000,7 +1002,8 @@ CDFirstTrack|kept||8	kept
 CDFirstTrack|length||1	$0000000B
 CDFirstTrack|length||2	$00000034
 CDFirstTrack|length||3	$00000034
-CDFirstTrack|length||4	$00000034
+CDFirstTrack|length||4 [orig]	$00000034
+CDFirstTrack|length||4 [fixed #581]	$00000001
 CDFirstTrack|length||5	$0000000B
 CDFirstTrack|length||6	$0000001E
 CDFirstTrack|length||7	$0000001E
@@ -1310,7 +1313,8 @@ CDLastTrack|command||8	$00000022
 CDLastTrack|d0||1	$00000009
 CDLastTrack|d0||2	$00000032
 CDLastTrack|d0||3	$00000032
-CDLastTrack|d0||4	$00000009
+CDLastTrack|d0||4 [orig]	$00000009
+CDLastTrack|d0||4 [fixed #581]	$00000000
 CDLastTrack|d0||5	$00000009
 CDLastTrack|d0||6 [orig]	$00000009
 CDLastTrack|d0||6 [fixed #582]	$00000007
@@ -1319,7 +1323,8 @@ CDLastTrack|d0||8	$00000009
 CDLastTrack|data||1	$00000002
 CDLastTrack|data||2	$00000002
 CDLastTrack|data||3	$00000002
-CDLastTrack|data||4	$00000002
+CDLastTrack|data||4 [orig]	$00000002
+CDLastTrack|data||4 [fixed #581]	$00000001
 CDLastTrack|data||5	$00000002
 CDLastTrack|data||6	$00000002
 CDLastTrack|data||7	$00000002
@@ -1351,7 +1356,8 @@ CDLastTrack|kept||8	kept
 CDLastTrack|length||1	$0000000B
 CDLastTrack|length||2	$00000034
 CDLastTrack|length||3	$00000034
-CDLastTrack|length||4	$00000034
+CDLastTrack|length||4 [orig]	$00000034
+CDLastTrack|length||4 [fixed #581]	$00000001
 CDLastTrack|length||5	$0000000B
 CDLastTrack|length||6	$0000001E
 CDLastTrack|length||7	$0000001E
@@ -2419,7 +2425,8 @@ CDNumTracks|command|scsi kept|1	$0000001C
 CDNumTracks|d0||1	$00000009
 CDNumTracks|d0||2	$00000032
 CDNumTracks|d0||3	$00000032
-CDNumTracks|d0||4	$00000009
+CDNumTracks|d0||4 [orig]	$00000009
+CDNumTracks|d0||4 [fixed #581]	$00000000
 CDNumTracks|d0||5	$00000009
 CDNumTracks|d0||6	$00000006
 CDNumTracks|d0||7 [orig]	$00000001
@@ -2430,7 +2437,8 @@ CDNumTracks|d0|scsi kept|1	$00000011
 CDNumTracks|data||1	$00000002
 CDNumTracks|data||2	$00000002
 CDNumTracks|data||3	$00000002
-CDNumTracks|data||4	$00000002
+CDNumTracks|data||4 [orig]	$00000002
+CDNumTracks|data||4 [fixed #581]	$00000001
 CDNumTracks|data||5	$00000002
 CDNumTracks|data||6	$00000002
 CDNumTracks|data||7	$00000002
@@ -2470,7 +2478,8 @@ CDNumTracks|kept|scsi kept|1	kept
 CDNumTracks|length||1	$0000000B
 CDNumTracks|length||2	$00000034
 CDNumTracks|length||3	$00000034
-CDNumTracks|length||4	$00000034
+CDNumTracks|length||4 [orig]	$00000034
+CDNumTracks|length||4 [fixed #581]	$00000001
 CDNumTracks|length||5	$0000000B
 CDNumTracks|length||6	$0000001E
 CDNumTracks|length||7	$0000001E
@@ -3930,17 +3939,20 @@ CDReadTOC|d0|error|1	$00000000
 CDReadTOC|d0|rwecd.device,0 (form 1, scsiflag 0)|1	$00000000
 CDReadTOC|d0|scsi|1	$00000000
 CDReadTOC|d0|scsi kept|1	$00000000
-CDReadTOC|d0|summary error|1	$FFFFFFFF
+CDReadTOC|d0|summary error|1 [orig]	$FFFFFFFF
+CDReadTOC|d0|summary error|1 [fixed #581]	$00000000
 CDReadTOC|data||1	$00000000
 CDReadTOC|data|-,0 (form 0, scsiflag 0)|1	$00000002
 CDReadTOC|data|50 tracks|1	$00000002
 CDReadTOC|data|9 tracks|1	$00000002
 CDReadTOC|data|again|1	$00000002
-CDReadTOC|data|error|1	$00000002
+CDReadTOC|data|error|1 [orig]	$00000002
+CDReadTOC|data|error|1 [fixed #581]	$00000001
 CDReadTOC|data|rwecd.device,0 (form 1, scsiflag 0)|1	$00000002
 CDReadTOC|data|scsi|1	$00000002
 CDReadTOC|data|scsi kept|1	$00000002
-CDReadTOC|data|summary error|1	$00000002
+CDReadTOC|data|summary error|1 [orig]	$00000002
+CDReadTOC|data|summary error|1 [fixed #581]	$00000001
 CDReadTOC|failed opens||1	$00000000
 CDReadTOC|failed opens|-,0 (form 0, scsiflag 0)|1	$00000000
 CDReadTOC|failed opens|50 tracks|1	$00000000
@@ -3976,11 +3988,13 @@ CDReadTOC|length|-,0 (form 0, scsiflag 0)|1	$0000000B
 CDReadTOC|length|50 tracks|1	$00000034
 CDReadTOC|length|9 tracks|1	$0000000B
 CDReadTOC|length|again|1	$0000000B
-CDReadTOC|length|error|1	$00000034
+CDReadTOC|length|error|1 [orig]	$00000034
+CDReadTOC|length|error|1 [fixed #581]	$00000001
 CDReadTOC|length|rwecd.device,0 (form 1, scsiflag 0)|1	$0000001E
 CDReadTOC|length|scsi|1	$0000001E
 CDReadTOC|length|scsi kept|1	$0000001E
-CDReadTOC|length|summary error|1	$00000034
+CDReadTOC|length|summary error|1 [orig]	$00000034
+CDReadTOC|length|summary error|1 [fixed #581]	$00000001
 CDReadTOC|offset||1	$00000000
 CDReadTOC|offset|-,0 (form 0, scsiflag 0)|1	$00000000
 CDReadTOC|offset|50 tracks|1	$00000000
@@ -4016,11 +4030,13 @@ CDReadTOC|requests|-,0 (form 0, scsiflag 0)|1	$00000002
 CDReadTOC|requests|50 tracks|1	$00000002
 CDReadTOC|requests|9 tracks|1	$00000002
 CDReadTOC|requests|again|1	$00000002
-CDReadTOC|requests|error|1	$00000002
+CDReadTOC|requests|error|1 [orig]	$00000002
+CDReadTOC|requests|error|1 [fixed #581]	$00000001
 CDReadTOC|requests|rwecd.device,0 (form 1, scsiflag 0)|1	$00000001
 CDReadTOC|requests|scsi|1	$00000001
 CDReadTOC|requests|scsi kept|1	$00000001
-CDReadTOC|requests|summary error|1	$00000002
+CDReadTOC|requests|summary error|1 [orig]	$00000002
+CDReadTOC|requests|summary error|1 [fixed #581]	$00000001
 CDReadTOC|scsi_Actual||1	$00000000
 CDReadTOC|scsi_Actual|-,0 (form 0, scsiflag 0)|1	$00000000
 CDReadTOC|scsi_Actual|50 tracks|1	$00000000
@@ -5812,14 +5828,16 @@ CDTrackLength|command|8|1	$00000022
 CDTrackLength|command|9|1	$00000022
 CDTrackLength|d0|1|1	$00000063
 CDTrackLength|d0|1|2	$00000063
-CDTrackLength|d0|1|3	$00000063
+CDTrackLength|d0|1|3 [orig]	$00000063
+CDTrackLength|d0|1|3 [fixed #581]	$00000000
 CDTrackLength|d0|1|4	$00000063
 CDTrackLength|d0|1|5 [orig]	$00000348
 CDTrackLength|d0|1|5 [fixed #582]	$00000000
 CDTrackLength|d0|1|6	$00000063
 CDTrackLength|d0|2|1	$00000086
 CDTrackLength|d0|2|2	$00000086
-CDTrackLength|d0|2|3	$00000086
+CDTrackLength|d0|2|3 [orig]	$00000086
+CDTrackLength|d0|2|3 [fixed #581]	$00000000
 CDTrackLength|d0|2|4	$00000086
 CDTrackLength|d0|2|5	$00000086
 CDTrackLength|d0|2|6 [orig]	$000036E2
@@ -5827,7 +5845,8 @@ CDTrackLength|d0|2|6 [fixed #582]	$00000000
 CDTrackLength|d0|2|7	$00000086
 CDTrackLength|d0|3|1	$000000AB
 CDTrackLength|d0|3|2	$000000AB
-CDTrackLength|d0|3|3	$000000AB
+CDTrackLength|d0|3|3 [orig]	$000000AB
+CDTrackLength|d0|3|3 [fixed #581]	$00000000
 CDTrackLength|d0|3|4	$000000AB
 CDTrackLength|d0|3|5	$000000AB
 CDTrackLength|d0|4|1	$000000D0
@@ -5853,20 +5872,23 @@ CDTrackLength|d0|8|1	$00000164
 CDTrackLength|d0|9|1	$000031A0
 CDTrackLength|data|1|1	$00000002
 CDTrackLength|data|1|2	$00000002
-CDTrackLength|data|1|3	$00000002
+CDTrackLength|data|1|3 [orig]	$00000002
+CDTrackLength|data|1|3 [fixed #581]	$00000001
 CDTrackLength|data|1|4	$00000002
 CDTrackLength|data|1|5	$00000002
 CDTrackLength|data|1|6	$00000002
 CDTrackLength|data|2|1	$00000002
 CDTrackLength|data|2|2	$00000002
-CDTrackLength|data|2|3	$00000002
+CDTrackLength|data|2|3 [orig]	$00000002
+CDTrackLength|data|2|3 [fixed #581]	$00000001
 CDTrackLength|data|2|4	$00000002
 CDTrackLength|data|2|5	$00000002
 CDTrackLength|data|2|6	$00000002
 CDTrackLength|data|2|7	$00000002
 CDTrackLength|data|3|1	$00000002
 CDTrackLength|data|3|2	$00000002
-CDTrackLength|data|3|3	$00000002
+CDTrackLength|data|3|3 [orig]	$00000002
+CDTrackLength|data|3|3 [fixed #581]	$00000001
 CDTrackLength|data|3|4	$00000002
 CDTrackLength|data|3|5	$00000002
 CDTrackLength|data|4|1	$00000002
@@ -6009,20 +6031,23 @@ CDTrackLength|kept|8|1	kept
 CDTrackLength|kept|9|1	kept
 CDTrackLength|length|1|1	$0000000B
 CDTrackLength|length|1|2	$00000034
-CDTrackLength|length|1|3	$00000034
+CDTrackLength|length|1|3 [orig]	$00000034
+CDTrackLength|length|1|3 [fixed #581]	$00000001
 CDTrackLength|length|1|4	$0000000B
 CDTrackLength|length|1|5	$0000001E
 CDTrackLength|length|1|6	$0000000B
 CDTrackLength|length|2|1	$0000000B
 CDTrackLength|length|2|2	$00000034
-CDTrackLength|length|2|3	$00000034
+CDTrackLength|length|2|3 [orig]	$00000034
+CDTrackLength|length|2|3 [fixed #581]	$00000001
 CDTrackLength|length|2|4	$0000000B
 CDTrackLength|length|2|5	$0000001E
 CDTrackLength|length|2|6	$0000001E
 CDTrackLength|length|2|7	$0000000B
 CDTrackLength|length|3|1	$0000000B
 CDTrackLength|length|3|2	$00000034
-CDTrackLength|length|3|3	$00000034
+CDTrackLength|length|3|3 [orig]	$00000034
+CDTrackLength|length|3|3 [fixed #581]	$00000001
 CDTrackLength|length|3|4	$0000000B
 CDTrackLength|length|3|5	$0000001E
 CDTrackLength|length|4|1	$0000000B
@@ -12758,7 +12783,8 @@ OpenCD|d0|rwecd.device,1 (form 1, scsiflag 0)|2	$FFFFFFFF
 OpenCD|d0|rwecd.device,2 (form 2, scsiflag 1)|1	$FFFFFFFF
 OpenCD|d0|rwecd.device,3 (form 1, scsiflag 0)|1	$000000C8
 OpenCD|data|-,0 (form 0, scsiflag 0)|1	$00000000
-OpenCD|data|-,0 (form 0, scsiflag 0)|2	$00000002
+OpenCD|data|-,0 (form 0, scsiflag 0)|2 [orig]	$00000002
+OpenCD|data|-,0 (form 0, scsiflag 0)|2 [fixed #581]	$00000001
 OpenCD|data|-,0 (form 0, scsiflag 0)|3	$00000002
 OpenCD|data|-,0 (form 0, scsiflag 0)|4	$00000002
 OpenCD|data|rwecd.device,0 (form 1, scsiflag 0)|1	$00000002
@@ -12806,7 +12832,8 @@ OpenCD|kept|rwecd.device,1 (form 1, scsiflag 0)|2	kept
 OpenCD|kept|rwecd.device,2 (form 2, scsiflag 1)|1	kept
 OpenCD|kept|rwecd.device,3 (form 1, scsiflag 0)|1	kept
 OpenCD|length|-,0 (form 0, scsiflag 0)|1	$00000000
-OpenCD|length|-,0 (form 0, scsiflag 0)|2	$00000034
+OpenCD|length|-,0 (form 0, scsiflag 0)|2 [orig]	$00000034
+OpenCD|length|-,0 (form 0, scsiflag 0)|2 [fixed #581]	$00000001
 OpenCD|length|-,0 (form 0, scsiflag 0)|3	$0000001E
 OpenCD|length|-,0 (form 0, scsiflag 0)|4	$0000001E
 OpenCD|length|rwecd.device,0 (form 1, scsiflag 0)|1	$0000001E

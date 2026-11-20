@@ -35,7 +35,7 @@
  * the name and unit kept for OpenCD without arguments, OpenCD while open
  * (BUG(orig) (#578): the old request is lost), all CD commands with their
  * arguments and io_Errors, CDReadTOC twice (the old TOC freed, the second
- * read failing), a failing summary read (BUG(orig) (#581)), a play in
+ * read failing), a failing summary read (the original goes on, fixed #581), a play in
  * progress stopped, closed and its request used again (BUG(orig) (#574,
  * #1156)), the TOC functions before any CDReadTOC (the original reads
  * address 0, fixed #582), CDTrackLength of every track 1..9 of the 9 track CD
@@ -676,7 +676,7 @@ int main(int argc, char **argv)
     errcmd = 0;
     CALL0(STATUS, "CDStatus");
     /* only the summary read fails (nothing written): the entries are read
-       with the last track of the summary before (BUG(orig) (#581)) */
+       with the last track of the summary before (the original; fixed #581: 0, no TOC) */
     ntracks = 9;
     cdstatus = CDSTSF_CLOSED | CDSTSF_DISK | CDSTSF_TOC;
     errcmd = CD_TOCMSF;

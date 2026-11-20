@@ -55,6 +55,13 @@ d1/d2 (CDTrackLength) are not reproduced.
   lead-out, frames / 75; 0 for a track it does not hold). The original
   reads toc without a test (address 0 before any `CDReadTOC`) and with
   scsiflag counts only `CDNumTracks` from the SCSI TOC. (#582)
+* `CDReadTOC` returns 0 and leaves no TOC when the summary read, the
+  globalloc of the TOC or the read of the entries fails (the old TOC is
+  freed first). The original checks neither the summary read (it reads
+  the entries with the last track of an earlier summary and returns -1)
+  nor the globalloc, and keeps the uncleared buffer of a failed read.
+  toclen = (last + 2) × 8 + 32 for 6-byte entries, as in the
+  original. (#581)
 
 **BUG(orig)** (kept):
 
@@ -67,8 +74,6 @@ d1/d2 (CDTrackLength) are not reproduced.
   io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
   15000 (test values), io_Offset = 1. (#580)
-* `CDReadTOC`: the summary read is not checked, nor the globalloc of the
-  TOC; toclen = (last + 2) × 8 + 32 for 6-byte entries. (#581)
 * `CDTrackLength n` = start of track n+1 − start of track n in seconds
   (minutes × 60 + seconds), for track 1 the start of track 2. From track
   44 the offset (n−1) × 6 exceeds 255 and its high byte stays in the

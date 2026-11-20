@@ -49,6 +49,11 @@
  *   track it does not hold).  The original reads toc without a test
  *   (address 0 before a CDReadTOC) and with scsiflag counts only
  *   CDNumTracks from the SCSI TOC.
+ * Fixed (#581): CDReadTOC checks the summary read and the globalloc of
+ *   the TOC (0, no TOC) and leaves no TOC behind a failed read; the
+ *   original reads the entries with an earlier summary, and keeps the
+ *   uncleared buffer of a failed read.  toclen = (last track + 2) * 8 +
+ *   32 for entries of 6 bytes, as in the original.
  *
  * BUG(orig):
  *   - OpenCD name$,unit keeps the name, the unit and scsiflag for later
@@ -62,9 +67,6 @@
  *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
  *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
- *   - CDReadTOC: the summary read is not checked; the globalloc of the
- *     TOC is not checked (DoIO then writes to address 0).  toclen =
- *     (last track + 2) * 8 + 32 for entries of 6 bytes (#581).
  *   - CDTrackLength n: start of track n+1 - start of track n in seconds
  *     (minutes * 60 + seconds); for track 1 the start of track 2 (the
  *     pregap counted).  From track 44 on the offset (n-1)*6 is > 255 and
@@ -560,16 +562,29 @@ ULONG BLITZ_ROUTINE c_gettoc(void)
         scsitoc = !r.d0;                /* fixed #582: the TOC functions use it */
         return r.d0;
     }
+    /* Fixed (#581): the old TOC is gone before the reads (toc 0), a
+       failing summary read or globalloc returns 0 without a TOC, and a
+       failing read of the entries frees the new one; the original reads
+       the entries with the summary of an earlier CDReadTOC and keeps the
+       buffer of a failed read */
     if (cd.toc) {
         r = (struct bl_regs){ .d0 = cd.toclen, .a1 = (ULONG)cd.toc };
         BLITZ_ALIBJSR(TOK_globfree, r);
+        cd.toc = NULL;
     }
-    cdio(DOIO, CD_TOCMSF, cd.temptoc, 0, 1);    /* the summary */
+    if (cdio(DOIO, CD_TOCMSF, cd.temptoc, 0, 1))    /* the summary */
+        return 0;
     n = (ULONG)cd.temptoc[1] + 2;
     cd.toclen = bl_mulu_w((UWORD)n, 8) + 32;
-    cd.toc = (UBYTE *)globalloc(cd.toclen, 0);      /* BUG(orig) (#581): unchecked */
-    if (cdio(DOIO, CD_TOCMSF, cd.toc, 0, n))
+    cd.toc = (UBYTE *)globalloc(cd.toclen, 0);
+    if (!cd.toc)
         return 0;
+    if (cdio(DOIO, CD_TOCMSF, cd.toc, 0, n)) {
+        r = (struct bl_regs){ .d0 = cd.toclen, .a1 = (ULONG)cd.toc };
+        BLITZ_ALIBJSR(TOK_globfree, r);
+        cd.toc = NULL;
+        return 0;
+    }
     return (ULONG)-1;
 }
 

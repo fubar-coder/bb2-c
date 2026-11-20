@@ -7,6 +7,7 @@
 ; library's CD image.
 ; Correct: CDReadTOC returns 0 and leaves no TOC: the TOC functions
 ; return 0.
+; @fixed #581
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
 ; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image
