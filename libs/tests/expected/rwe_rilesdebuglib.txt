@@ -3619,8 +3619,10 @@ GetCustomReg|a3|$056|1	$0000000B
 GetCustomReg|a3|$057|1	$00000007
 GetCustomReg|a3|$058|1	$0000000B
 GetCustomReg|a3|$059|1	$00000007
-GetCustomReg|a3|$05A|1	$0000000D
-GetCustomReg|a3|$05B|1	$0000000D
+GetCustomReg|a3|$05A|1 [orig]	$0000000D
+GetCustomReg|a3|$05A|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$05B|1 [orig]	$0000000D
+GetCustomReg|a3|$05B|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$05C|1	$0000000B
 GetCustomReg|a3|$05D|1	$00000007
 GetCustomReg|a3|$05E|1	$0000000B
@@ -3633,28 +3635,42 @@ GetCustomReg|a3|$064|1	$0000000B
 GetCustomReg|a3|$065|1	$00000007
 GetCustomReg|a3|$066|1	$0000000B
 GetCustomReg|a3|$067|1	$00000007
-GetCustomReg|a3|$068|1	$0000000D
-GetCustomReg|a3|$069|1	$0000000D
-GetCustomReg|a3|$06A|1	$0000000D
-GetCustomReg|a3|$06B|1	$0000000D
-GetCustomReg|a3|$06C|1	$0000000D
-GetCustomReg|a3|$06D|1	$0000000D
-GetCustomReg|a3|$06E|1	$0000000D
-GetCustomReg|a3|$06F|1	$0000000D
+GetCustomReg|a3|$068|1 [orig]	$0000000D
+GetCustomReg|a3|$068|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$069|1 [orig]	$0000000D
+GetCustomReg|a3|$069|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$06A|1 [orig]	$0000000D
+GetCustomReg|a3|$06A|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$06B|1 [orig]	$0000000D
+GetCustomReg|a3|$06B|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$06C|1 [orig]	$0000000D
+GetCustomReg|a3|$06C|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$06D|1 [orig]	$0000000D
+GetCustomReg|a3|$06D|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$06E|1 [orig]	$0000000D
+GetCustomReg|a3|$06E|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$06F|1 [orig]	$0000000D
+GetCustomReg|a3|$06F|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$070|1	$0000000B
 GetCustomReg|a3|$071|1	$00000007
 GetCustomReg|a3|$072|1	$0000000B
 GetCustomReg|a3|$073|1	$00000007
 GetCustomReg|a3|$074|1	$0000000B
 GetCustomReg|a3|$075|1	$00000007
-GetCustomReg|a3|$076|1	$0000000D
-GetCustomReg|a3|$077|1	$0000000D
+GetCustomReg|a3|$076|1 [orig]	$0000000D
+GetCustomReg|a3|$076|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$077|1 [orig]	$0000000D
+GetCustomReg|a3|$077|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$078|1	$0000000B
 GetCustomReg|a3|$079|1	$00000007
-GetCustomReg|a3|$07A|1	$0000000D
-GetCustomReg|a3|$07B|1	$0000000D
-GetCustomReg|a3|$07C|1	$0000000D
-GetCustomReg|a3|$07D|1	$0000000D
+GetCustomReg|a3|$07A|1 [orig]	$0000000D
+GetCustomReg|a3|$07A|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$07B|1 [orig]	$0000000D
+GetCustomReg|a3|$07B|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$07C|1 [orig]	$0000000D
+GetCustomReg|a3|$07C|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$07D|1 [orig]	$0000000D
+GetCustomReg|a3|$07D|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$07E|1	$0000000B
 GetCustomReg|a3|$07F|1	$00000007
 GetCustomReg|a3|$080|1	$0000000B
@@ -3701,10 +3717,14 @@ GetCustomReg|a3|$0A8|1	$0000000B
 GetCustomReg|a3|$0A9|1	$00000007
 GetCustomReg|a3|$0AA|1	$0000000B
 GetCustomReg|a3|$0AB|1	$00000007
-GetCustomReg|a3|$0AC|1	$0000000D
-GetCustomReg|a3|$0AD|1	$0000000D
-GetCustomReg|a3|$0AE|1	$0000000D
-GetCustomReg|a3|$0AF|1	$0000000D
+GetCustomReg|a3|$0AC|1 [orig]	$0000000D
+GetCustomReg|a3|$0AC|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0AD|1 [orig]	$0000000D
+GetCustomReg|a3|$0AD|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0AE|1 [orig]	$0000000D
+GetCustomReg|a3|$0AE|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0AF|1 [orig]	$0000000D
+GetCustomReg|a3|$0AF|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$0B0|1	$0000000B
 GetCustomReg|a3|$0B1|1	$00000007
 GetCustomReg|a3|$0B2|1	$0000000B
@@ -3717,10 +3737,14 @@ GetCustomReg|a3|$0B8|1	$0000000B
 GetCustomReg|a3|$0B9|1	$00000007
 GetCustomReg|a3|$0BA|1	$0000000B
 GetCustomReg|a3|$0BB|1	$00000007
-GetCustomReg|a3|$0BC|1	$0000000D
-GetCustomReg|a3|$0BD|1	$0000000D
-GetCustomReg|a3|$0BE|1	$0000000D
-GetCustomReg|a3|$0BF|1	$0000000D
+GetCustomReg|a3|$0BC|1 [orig]	$0000000D
+GetCustomReg|a3|$0BC|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0BD|1 [orig]	$0000000D
+GetCustomReg|a3|$0BD|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0BE|1 [orig]	$0000000D
+GetCustomReg|a3|$0BE|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0BF|1 [orig]	$0000000D
+GetCustomReg|a3|$0BF|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$0C0|1	$0000000B
 GetCustomReg|a3|$0C1|1	$00000007
 GetCustomReg|a3|$0C2|1	$0000000B
@@ -3733,10 +3757,14 @@ GetCustomReg|a3|$0C8|1	$0000000B
 GetCustomReg|a3|$0C9|1	$00000007
 GetCustomReg|a3|$0CA|1	$0000000B
 GetCustomReg|a3|$0CB|1	$00000007
-GetCustomReg|a3|$0CC|1	$0000000D
-GetCustomReg|a3|$0CD|1	$0000000D
-GetCustomReg|a3|$0CE|1	$0000000D
-GetCustomReg|a3|$0CF|1	$0000000D
+GetCustomReg|a3|$0CC|1 [orig]	$0000000D
+GetCustomReg|a3|$0CC|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0CD|1 [orig]	$0000000D
+GetCustomReg|a3|$0CD|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0CE|1 [orig]	$0000000D
+GetCustomReg|a3|$0CE|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0CF|1 [orig]	$0000000D
+GetCustomReg|a3|$0CF|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$0D0|1	$0000000B
 GetCustomReg|a3|$0D1|1	$00000007
 GetCustomReg|a3|$0D2|1	$0000000B
@@ -3749,10 +3777,14 @@ GetCustomReg|a3|$0D8|1	$0000000B
 GetCustomReg|a3|$0D9|1	$00000007
 GetCustomReg|a3|$0DA|1	$0000000B
 GetCustomReg|a3|$0DB|1	$00000007
-GetCustomReg|a3|$0DC|1	$0000000D
-GetCustomReg|a3|$0DD|1	$0000000D
-GetCustomReg|a3|$0DE|1	$0000000D
-GetCustomReg|a3|$0DF|1	$0000000D
+GetCustomReg|a3|$0DC|1 [orig]	$0000000D
+GetCustomReg|a3|$0DC|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0DD|1 [orig]	$0000000D
+GetCustomReg|a3|$0DD|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0DE|1 [orig]	$0000000D
+GetCustomReg|a3|$0DE|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$0DF|1 [orig]	$0000000D
+GetCustomReg|a3|$0DF|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$0E0|1	$0000000B
 GetCustomReg|a3|$0E1|1	$00000007
 GetCustomReg|a3|$0E2|1	$0000000B
@@ -3853,66 +3885,98 @@ GetCustomReg|a3|$140|1	$0000000B
 GetCustomReg|a3|$141|1	$00000007
 GetCustomReg|a3|$142|1	$0000000B
 GetCustomReg|a3|$143|1	$00000007
-GetCustomReg|a3|$144|1	$0000000D
-GetCustomReg|a3|$145|1	$0000000D
-GetCustomReg|a3|$146|1	$0000000D
-GetCustomReg|a3|$147|1	$0000000D
+GetCustomReg|a3|$144|1 [orig]	$0000000D
+GetCustomReg|a3|$144|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$145|1 [orig]	$0000000D
+GetCustomReg|a3|$145|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$146|1 [orig]	$0000000D
+GetCustomReg|a3|$146|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$147|1 [orig]	$0000000D
+GetCustomReg|a3|$147|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$148|1	$0000000B
 GetCustomReg|a3|$149|1	$00000007
 GetCustomReg|a3|$14A|1	$0000000B
 GetCustomReg|a3|$14B|1	$00000007
-GetCustomReg|a3|$14C|1	$0000000D
-GetCustomReg|a3|$14D|1	$0000000D
-GetCustomReg|a3|$14E|1	$0000000D
-GetCustomReg|a3|$14F|1	$0000000D
+GetCustomReg|a3|$14C|1 [orig]	$0000000D
+GetCustomReg|a3|$14C|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$14D|1 [orig]	$0000000D
+GetCustomReg|a3|$14D|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$14E|1 [orig]	$0000000D
+GetCustomReg|a3|$14E|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$14F|1 [orig]	$0000000D
+GetCustomReg|a3|$14F|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$150|1	$0000000B
 GetCustomReg|a3|$151|1	$00000007
 GetCustomReg|a3|$152|1	$0000000B
 GetCustomReg|a3|$153|1	$00000007
-GetCustomReg|a3|$154|1	$0000000D
-GetCustomReg|a3|$155|1	$0000000D
-GetCustomReg|a3|$156|1	$0000000D
-GetCustomReg|a3|$157|1	$0000000D
+GetCustomReg|a3|$154|1 [orig]	$0000000D
+GetCustomReg|a3|$154|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$155|1 [orig]	$0000000D
+GetCustomReg|a3|$155|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$156|1 [orig]	$0000000D
+GetCustomReg|a3|$156|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$157|1 [orig]	$0000000D
+GetCustomReg|a3|$157|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$158|1	$0000000B
 GetCustomReg|a3|$159|1	$00000007
 GetCustomReg|a3|$15A|1	$0000000B
 GetCustomReg|a3|$15B|1	$00000007
-GetCustomReg|a3|$15C|1	$0000000D
-GetCustomReg|a3|$15D|1	$0000000D
-GetCustomReg|a3|$15E|1	$0000000D
-GetCustomReg|a3|$15F|1	$0000000D
+GetCustomReg|a3|$15C|1 [orig]	$0000000D
+GetCustomReg|a3|$15C|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$15D|1 [orig]	$0000000D
+GetCustomReg|a3|$15D|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$15E|1 [orig]	$0000000D
+GetCustomReg|a3|$15E|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$15F|1 [orig]	$0000000D
+GetCustomReg|a3|$15F|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$160|1	$0000000B
 GetCustomReg|a3|$161|1	$00000007
 GetCustomReg|a3|$162|1	$0000000B
 GetCustomReg|a3|$163|1	$00000007
-GetCustomReg|a3|$164|1	$0000000D
-GetCustomReg|a3|$165|1	$0000000D
-GetCustomReg|a3|$166|1	$0000000D
-GetCustomReg|a3|$167|1	$0000000D
+GetCustomReg|a3|$164|1 [orig]	$0000000D
+GetCustomReg|a3|$164|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$165|1 [orig]	$0000000D
+GetCustomReg|a3|$165|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$166|1 [orig]	$0000000D
+GetCustomReg|a3|$166|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$167|1 [orig]	$0000000D
+GetCustomReg|a3|$167|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$168|1	$0000000B
 GetCustomReg|a3|$169|1	$00000007
 GetCustomReg|a3|$16A|1	$0000000B
 GetCustomReg|a3|$16B|1	$00000007
-GetCustomReg|a3|$16C|1	$0000000D
-GetCustomReg|a3|$16D|1	$0000000D
-GetCustomReg|a3|$16E|1	$0000000D
-GetCustomReg|a3|$16F|1	$0000000D
+GetCustomReg|a3|$16C|1 [orig]	$0000000D
+GetCustomReg|a3|$16C|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$16D|1 [orig]	$0000000D
+GetCustomReg|a3|$16D|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$16E|1 [orig]	$0000000D
+GetCustomReg|a3|$16E|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$16F|1 [orig]	$0000000D
+GetCustomReg|a3|$16F|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$170|1	$0000000B
 GetCustomReg|a3|$171|1	$00000007
 GetCustomReg|a3|$172|1	$0000000B
 GetCustomReg|a3|$173|1	$00000007
-GetCustomReg|a3|$174|1	$0000000D
-GetCustomReg|a3|$175|1	$0000000D
-GetCustomReg|a3|$176|1	$0000000D
-GetCustomReg|a3|$177|1	$0000000D
+GetCustomReg|a3|$174|1 [orig]	$0000000D
+GetCustomReg|a3|$174|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$175|1 [orig]	$0000000D
+GetCustomReg|a3|$175|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$176|1 [orig]	$0000000D
+GetCustomReg|a3|$176|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$177|1 [orig]	$0000000D
+GetCustomReg|a3|$177|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$178|1	$0000000B
 GetCustomReg|a3|$179|1	$00000007
 GetCustomReg|a3|$17A|1	$0000000B
 GetCustomReg|a3|$17B|1	$00000007
-GetCustomReg|a3|$17C|1	$0000000D
-GetCustomReg|a3|$17D|1	$0000000D
-GetCustomReg|a3|$17E|1	$0000000D
-GetCustomReg|a3|$17F|1	$0000000D
+GetCustomReg|a3|$17C|1 [orig]	$0000000D
+GetCustomReg|a3|$17C|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$17D|1 [orig]	$0000000D
+GetCustomReg|a3|$17D|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$17E|1 [orig]	$0000000D
+GetCustomReg|a3|$17E|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$17F|1 [orig]	$0000000D
+GetCustomReg|a3|$17F|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$180|1	$0000000B
 GetCustomReg|a3|$181|1	$00000007
 GetCustomReg|a3|$182|1	$0000000B
@@ -3993,20 +4057,30 @@ GetCustomReg|a3|$1CC|1	$0000000A
 GetCustomReg|a3|$1CD|1	$00000006
 GetCustomReg|a3|$1CE|1	$0000000A
 GetCustomReg|a3|$1CF|1	$00000006
-GetCustomReg|a3|$1D0|1	$0000000D
-GetCustomReg|a3|$1D1|1	$0000000D
-GetCustomReg|a3|$1D2|1	$0000000D
-GetCustomReg|a3|$1D3|1	$0000000D
-GetCustomReg|a3|$1D4|1	$0000000D
-GetCustomReg|a3|$1D5|1	$0000000D
-GetCustomReg|a3|$1D6|1	$0000000D
-GetCustomReg|a3|$1D7|1	$0000000D
+GetCustomReg|a3|$1D0|1 [orig]	$0000000D
+GetCustomReg|a3|$1D0|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1D1|1 [orig]	$0000000D
+GetCustomReg|a3|$1D1|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1D2|1 [orig]	$0000000D
+GetCustomReg|a3|$1D2|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1D3|1 [orig]	$0000000D
+GetCustomReg|a3|$1D3|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1D4|1 [orig]	$0000000D
+GetCustomReg|a3|$1D4|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1D5|1 [orig]	$0000000D
+GetCustomReg|a3|$1D5|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1D6|1 [orig]	$0000000D
+GetCustomReg|a3|$1D6|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1D7|1 [orig]	$0000000D
+GetCustomReg|a3|$1D7|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$1D8|1	$0000000A
 GetCustomReg|a3|$1D9|1	$00000006
 GetCustomReg|a3|$1DA|1	$0000000A
 GetCustomReg|a3|$1DB|1	$00000006
-GetCustomReg|a3|$1DC|1	$0000000D
-GetCustomReg|a3|$1DD|1	$0000000D
+GetCustomReg|a3|$1DC|1 [orig]	$0000000D
+GetCustomReg|a3|$1DC|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1DD|1 [orig]	$0000000D
+GetCustomReg|a3|$1DD|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$1DE|1	$0000000A
 GetCustomReg|a3|$1DF|1	$00000006
 GetCustomReg|a3|$1E0|1	$0000000A
@@ -4025,18 +4099,30 @@ GetCustomReg|a3|$1EC|1	$0000000B
 GetCustomReg|a3|$1ED|1	$00000007
 GetCustomReg|a3|$1EE|1	$0000000B
 GetCustomReg|a3|$1EF|1	$00000007
-GetCustomReg|a3|$1F0|1	$0000000D
-GetCustomReg|a3|$1F1|1	$0000000D
-GetCustomReg|a3|$1F2|1	$0000000D
-GetCustomReg|a3|$1F3|1	$0000000D
-GetCustomReg|a3|$1F4|1	$0000000D
-GetCustomReg|a3|$1F5|1	$0000000D
-GetCustomReg|a3|$1F6|1	$0000000D
-GetCustomReg|a3|$1F7|1	$0000000D
-GetCustomReg|a3|$1F8|1	$0000000D
-GetCustomReg|a3|$1F9|1	$0000000D
-GetCustomReg|a3|$1FA|1	$0000000D
-GetCustomReg|a3|$1FB|1	$0000000D
+GetCustomReg|a3|$1F0|1 [orig]	$0000000D
+GetCustomReg|a3|$1F0|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F1|1 [orig]	$0000000D
+GetCustomReg|a3|$1F1|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F2|1 [orig]	$0000000D
+GetCustomReg|a3|$1F2|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F3|1 [orig]	$0000000D
+GetCustomReg|a3|$1F3|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F4|1 [orig]	$0000000D
+GetCustomReg|a3|$1F4|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F5|1 [orig]	$0000000D
+GetCustomReg|a3|$1F5|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F6|1 [orig]	$0000000D
+GetCustomReg|a3|$1F6|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F7|1 [orig]	$0000000D
+GetCustomReg|a3|$1F7|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F8|1 [orig]	$0000000D
+GetCustomReg|a3|$1F8|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1F9|1 [orig]	$0000000D
+GetCustomReg|a3|$1F9|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1FA|1 [orig]	$0000000D
+GetCustomReg|a3|$1FA|1 [fixed #712]	$0000000C
+GetCustomReg|a3|$1FB|1 [orig]	$0000000D
+GetCustomReg|a3|$1FB|1 [fixed #712]	$0000000C
 GetCustomReg|a3|$1FC|1	$00000009
 GetCustomReg|a3|$1FD|1 [orig]	$00000004
 GetCustomReg|a3|$1FD|1 [fixed #702]	$00000005
@@ -5176,8 +5262,10 @@ GetCustomReg|out|$056|1	bytes 800 fnv 77F05EF5
 GetCustomReg|out|$057|1	bytes 800 fnv CC1DD4CB
 GetCustomReg|out|$058|1	bytes 800 fnv 8E014266
 GetCustomReg|out|$059|1	bytes 800 fnv 601DB029
-GetCustomReg|out|$05A|1	bytes 800 fnv A4A54113
-GetCustomReg|out|$05B|1	bytes 800 fnv AB15DEA4
+GetCustomReg|out|$05A|1 [orig]	bytes 800 fnv A4A54113
+GetCustomReg|out|$05A|1 [fixed #712]	bytes 800 fnv 0B00505F
+GetCustomReg|out|$05B|1 [orig]	bytes 800 fnv AB15DEA4
+GetCustomReg|out|$05B|1 [fixed #712]	bytes 800 fnv 4B65177B
 GetCustomReg|out|$05C|1	bytes 800 fnv EBD63019
 GetCustomReg|out|$05D|1	bytes 800 fnv 6819FF3E
 GetCustomReg|out|$05E|1	bytes 800 fnv DDFA2E07
@@ -5190,28 +5278,42 @@ GetCustomReg|out|$064|1	bytes 800 fnv C438A70A
 GetCustomReg|out|$065|1	bytes 800 fnv 4862F7E7
 GetCustomReg|out|$066|1	bytes 800 fnv 24A1E5B5
 GetCustomReg|out|$067|1	bytes 800 fnv 4862F7E7
-GetCustomReg|out|$068|1	bytes 800 fnv A1234177
-GetCustomReg|out|$069|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$06A|1	bytes 800 fnv A1234177
-GetCustomReg|out|$06B|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$06C|1	bytes 800 fnv A1234177
-GetCustomReg|out|$06D|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$06E|1	bytes 800 fnv 390EBE09
-GetCustomReg|out|$06F|1	bytes 800 fnv CF3D6C3E
+GetCustomReg|out|$068|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$068|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$069|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$069|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$06A|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$06A|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$06B|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$06B|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$06C|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$06C|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$06D|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$06D|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$06E|1 [orig]	bytes 800 fnv 390EBE09
+GetCustomReg|out|$06E|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$06F|1 [orig]	bytes 800 fnv CF3D6C3E
+GetCustomReg|out|$06F|1 [fixed #712]	bytes 800 fnv C3C97004
 GetCustomReg|out|$070|1	bytes 800 fnv 31BB3143
 GetCustomReg|out|$071|1	bytes 800 fnv 3A6B1898
 GetCustomReg|out|$072|1	bytes 800 fnv A5F3D828
 GetCustomReg|out|$073|1	bytes 800 fnv 3A6B1898
 GetCustomReg|out|$074|1	bytes 800 fnv FF33CEB1
 GetCustomReg|out|$075|1	bytes 800 fnv 3A6B1898
-GetCustomReg|out|$076|1	bytes 800 fnv E67D3B60
-GetCustomReg|out|$077|1	bytes 800 fnv DBEE526C
+GetCustomReg|out|$076|1 [orig]	bytes 800 fnv E67D3B60
+GetCustomReg|out|$076|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$077|1 [orig]	bytes 800 fnv DBEE526C
+GetCustomReg|out|$077|1 [fixed #712]	bytes 800 fnv 5CFE4E96
 GetCustomReg|out|$078|1	bytes 800 fnv 44952069
 GetCustomReg|out|$079|1	bytes 800 fnv 3A6B1898
-GetCustomReg|out|$07A|1	bytes 800 fnv F324E76F
-GetCustomReg|out|$07B|1	bytes 800 fnv D2D6E410
-GetCustomReg|out|$07C|1	bytes 800 fnv AC60C154
-GetCustomReg|out|$07D|1	bytes 800 fnv 14E4648C
+GetCustomReg|out|$07A|1 [orig]	bytes 800 fnv F324E76F
+GetCustomReg|out|$07A|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$07B|1 [orig]	bytes 800 fnv D2D6E410
+GetCustomReg|out|$07B|1 [fixed #712]	bytes 800 fnv 341A99D5
+GetCustomReg|out|$07C|1 [orig]	bytes 800 fnv AC60C154
+GetCustomReg|out|$07C|1 [fixed #712]	bytes 800 fnv B9995D8E
+GetCustomReg|out|$07D|1 [orig]	bytes 800 fnv 14E4648C
+GetCustomReg|out|$07D|1 [fixed #712]	bytes 800 fnv 05AB8D13
 GetCustomReg|out|$07E|1	bytes 800 fnv DD03FA08
 GetCustomReg|out|$07F|1	bytes 800 fnv 521C938B
 GetCustomReg|out|$080|1	bytes 800 fnv 00C3FCD7
@@ -5258,10 +5360,14 @@ GetCustomReg|out|$0A8|1	bytes 800 fnv 2F31A10A
 GetCustomReg|out|$0A9|1	bytes 800 fnv B0C0FB7C
 GetCustomReg|out|$0AA|1	bytes 800 fnv D23C9FD6
 GetCustomReg|out|$0AB|1	bytes 800 fnv 3A6B1898
-GetCustomReg|out|$0AC|1	bytes 800 fnv A1234177
-GetCustomReg|out|$0AD|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$0AE|1	bytes 800 fnv 800606F2
-GetCustomReg|out|$0AF|1	bytes 800 fnv DFAD4DFC
+GetCustomReg|out|$0AC|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$0AC|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$0AD|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$0AD|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$0AE|1 [orig]	bytes 800 fnv 800606F2
+GetCustomReg|out|$0AE|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$0AF|1 [orig]	bytes 800 fnv DFAD4DFC
+GetCustomReg|out|$0AF|1 [fixed #712]	bytes 800 fnv 1FB841FE
 GetCustomReg|out|$0B0|1	bytes 800 fnv 31F2502F
 GetCustomReg|out|$0B1|1	bytes 800 fnv 7F7F401A
 GetCustomReg|out|$0B2|1	bytes 800 fnv E6C48D4B
@@ -5274,10 +5380,14 @@ GetCustomReg|out|$0B8|1	bytes 800 fnv B9D5A331
 GetCustomReg|out|$0B9|1	bytes 800 fnv B0C0FB7C
 GetCustomReg|out|$0BA|1	bytes 800 fnv B65AA721
 GetCustomReg|out|$0BB|1	bytes 800 fnv 3A6B1898
-GetCustomReg|out|$0BC|1	bytes 800 fnv A1234177
-GetCustomReg|out|$0BD|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$0BE|1	bytes 800 fnv 800606F2
-GetCustomReg|out|$0BF|1	bytes 800 fnv 70AC5421
+GetCustomReg|out|$0BC|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$0BC|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$0BD|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$0BD|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$0BE|1 [orig]	bytes 800 fnv 800606F2
+GetCustomReg|out|$0BE|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$0BF|1 [orig]	bytes 800 fnv 70AC5421
+GetCustomReg|out|$0BF|1 [fixed #712]	bytes 800 fnv CD524F43
 GetCustomReg|out|$0C0|1	bytes 800 fnv 172E4B9A
 GetCustomReg|out|$0C1|1	bytes 800 fnv 7F7F401A
 GetCustomReg|out|$0C2|1	bytes 800 fnv 757E7796
@@ -5290,10 +5400,14 @@ GetCustomReg|out|$0C8|1	bytes 800 fnv 7F09745C
 GetCustomReg|out|$0C9|1	bytes 800 fnv B0C0FB7C
 GetCustomReg|out|$0CA|1	bytes 800 fnv 62AD5A98
 GetCustomReg|out|$0CB|1	bytes 800 fnv 3A6B1898
-GetCustomReg|out|$0CC|1	bytes 800 fnv A1234177
-GetCustomReg|out|$0CD|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$0CE|1	bytes 800 fnv 800606F2
-GetCustomReg|out|$0CF|1	bytes 800 fnv 4BE0971A
+GetCustomReg|out|$0CC|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$0CC|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$0CD|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$0CD|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$0CE|1 [orig]	bytes 800 fnv 800606F2
+GetCustomReg|out|$0CE|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$0CF|1 [orig]	bytes 800 fnv 4BE0971A
+GetCustomReg|out|$0CF|1 [fixed #712]	bytes 800 fnv E082DD98
 GetCustomReg|out|$0D0|1	bytes 800 fnv B18033BD
 GetCustomReg|out|$0D1|1	bytes 800 fnv 7F7F401A
 GetCustomReg|out|$0D2|1	bytes 800 fnv 20694779
@@ -5306,10 +5420,14 @@ GetCustomReg|out|$0D8|1	bytes 800 fnv 6837A12B
 GetCustomReg|out|$0D9|1	bytes 800 fnv B0C0FB7C
 GetCustomReg|out|$0DA|1	bytes 800 fnv 49ECBB33
 GetCustomReg|out|$0DB|1	bytes 800 fnv 3A6B1898
-GetCustomReg|out|$0DC|1	bytes 800 fnv A1234177
-GetCustomReg|out|$0DD|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$0DE|1	bytes 800 fnv 390EBE09
-GetCustomReg|out|$0DF|1	bytes 800 fnv BCF6A287
+GetCustomReg|out|$0DC|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$0DC|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$0DD|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$0DD|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$0DE|1 [orig]	bytes 800 fnv 390EBE09
+GetCustomReg|out|$0DE|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$0DF|1 [orig]	bytes 800 fnv BCF6A287
+GetCustomReg|out|$0DF|1 [fixed #712]	bytes 800 fnv 76EA12B9
 GetCustomReg|out|$0E0|1	bytes 800 fnv 1DCC9351
 GetCustomReg|out|$0E1|1	bytes 800 fnv 24821A4F
 GetCustomReg|out|$0E2|1	bytes 800 fnv D9B38835
@@ -5410,66 +5528,98 @@ GetCustomReg|out|$140|1	bytes 800 fnv B7F34478
 GetCustomReg|out|$141|1	bytes 800 fnv CDD1A735
 GetCustomReg|out|$142|1	bytes 800 fnv 9E0006D9
 GetCustomReg|out|$143|1	bytes 800 fnv 24E1857C
-GetCustomReg|out|$144|1	bytes 800 fnv FB39E881
-GetCustomReg|out|$145|1	bytes 800 fnv C59AC006
-GetCustomReg|out|$146|1	bytes 800 fnv 3F6AE2B0
-GetCustomReg|out|$147|1	bytes 800 fnv F1CF172C
+GetCustomReg|out|$144|1 [orig]	bytes 800 fnv FB39E881
+GetCustomReg|out|$144|1 [fixed #712]	bytes 800 fnv 96FB4B64
+GetCustomReg|out|$145|1 [orig]	bytes 800 fnv C59AC006
+GetCustomReg|out|$145|1 [fixed #712]	bytes 800 fnv 6005251C
+GetCustomReg|out|$146|1 [orig]	bytes 800 fnv 3F6AE2B0
+GetCustomReg|out|$146|1 [fixed #712]	bytes 800 fnv C853A8B5
+GetCustomReg|out|$147|1 [orig]	bytes 800 fnv F1CF172C
+GetCustomReg|out|$147|1 [fixed #712]	bytes 800 fnv 057EDEE2
 GetCustomReg|out|$148|1	bytes 800 fnv 1B15CDCB
 GetCustomReg|out|$149|1	bytes 800 fnv CDD1A735
 GetCustomReg|out|$14A|1	bytes 800 fnv C735CCAE
 GetCustomReg|out|$14B|1	bytes 800 fnv 24E1857C
-GetCustomReg|out|$14C|1	bytes 800 fnv 3D76553A
-GetCustomReg|out|$14D|1	bytes 800 fnv 5933D96D
-GetCustomReg|out|$14E|1	bytes 800 fnv 48A35A3F
-GetCustomReg|out|$14F|1	bytes 800 fnv 99D37EB9
+GetCustomReg|out|$14C|1 [orig]	bytes 800 fnv 3D76553A
+GetCustomReg|out|$14C|1 [fixed #712]	bytes 800 fnv 118BB1CF
+GetCustomReg|out|$14D|1 [orig]	bytes 800 fnv 5933D96D
+GetCustomReg|out|$14D|1 [fixed #712]	bytes 800 fnv D0AC9587
+GetCustomReg|out|$14E|1 [orig]	bytes 800 fnv 48A35A3F
+GetCustomReg|out|$14E|1 [fixed #712]	bytes 800 fnv 84DB278A
+GetCustomReg|out|$14F|1 [orig]	bytes 800 fnv 99D37EB9
+GetCustomReg|out|$14F|1 [fixed #712]	bytes 800 fnv DFE00E87
 GetCustomReg|out|$150|1	bytes 800 fnv C78C70E2
 GetCustomReg|out|$151|1	bytes 800 fnv CDD1A735
 GetCustomReg|out|$152|1	bytes 800 fnv CC9CA6F7
 GetCustomReg|out|$153|1	bytes 800 fnv 24E1857C
-GetCustomReg|out|$154|1	bytes 800 fnv 14212397
-GetCustomReg|out|$155|1	bytes 800 fnv C6C06FF8
-GetCustomReg|out|$156|1	bytes 800 fnv D00E2672
-GetCustomReg|out|$157|1	bytes 800 fnv B5F072F2
+GetCustomReg|out|$154|1 [orig]	bytes 800 fnv 14212397
+GetCustomReg|out|$154|1 [fixed #712]	bytes 800 fnv 26940892
+GetCustomReg|out|$155|1 [orig]	bytes 800 fnv C6C06FF8
+GetCustomReg|out|$155|1 [fixed #712]	bytes 800 fnv F64B65E2
+GetCustomReg|out|$156|1 [orig]	bytes 800 fnv D00E2672
+GetCustomReg|out|$156|1 [fixed #712]	bytes 800 fnv F8966DB7
+GetCustomReg|out|$157|1 [orig]	bytes 800 fnv B5F072F2
+GetCustomReg|out|$157|1 [fixed #712]	bytes 800 fnv 6F389E1C
 GetCustomReg|out|$158|1	bytes 800 fnv E270E7ED
 GetCustomReg|out|$159|1	bytes 800 fnv CDD1A735
 GetCustomReg|out|$15A|1	bytes 800 fnv ECF654AC
 GetCustomReg|out|$15B|1	bytes 800 fnv 24E1857C
-GetCustomReg|out|$15C|1	bytes 800 fnv 15B233F8
-GetCustomReg|out|$15D|1	bytes 800 fnv 7C50C547
-GetCustomReg|out|$15E|1	bytes 800 fnv A67DD289
-GetCustomReg|out|$15F|1	bytes 800 fnv 839D743F
+GetCustomReg|out|$15C|1 [orig]	bytes 800 fnv 15B233F8
+GetCustomReg|out|$15C|1 [fixed #712]	bytes 800 fnv DD4A47AD
+GetCustomReg|out|$15D|1 [orig]	bytes 800 fnv 7C50C547
+GetCustomReg|out|$15D|1 [fixed #712]	bytes 800 fnv DFD6AD2D
+GetCustomReg|out|$15E|1 [orig]	bytes 800 fnv A67DD289
+GetCustomReg|out|$15E|1 [fixed #712]	bytes 800 fnv F6AB659C
+GetCustomReg|out|$15F|1 [orig]	bytes 800 fnv 839D743F
+GetCustomReg|out|$15F|1 [fixed #712]	bytes 800 fnv 48EB1101
 GetCustomReg|out|$160|1	bytes 800 fnv 70AA95EC
 GetCustomReg|out|$161|1	bytes 800 fnv CDD1A735
 GetCustomReg|out|$162|1	bytes 800 fnv 5A810785
 GetCustomReg|out|$163|1	bytes 800 fnv 24E1857C
-GetCustomReg|out|$164|1	bytes 800 fnv B3727B0D
-GetCustomReg|out|$165|1	bytes 800 fnv 80DB6E6A
-GetCustomReg|out|$166|1	bytes 800 fnv E9B4FAFC
-GetCustomReg|out|$167|1	bytes 800 fnv D610CD58
+GetCustomReg|out|$164|1 [orig]	bytes 800 fnv B3727B0D
+GetCustomReg|out|$164|1 [fixed #712]	bytes 800 fnv C6AF1518
+GetCustomReg|out|$165|1 [orig]	bytes 800 fnv 80DB6E6A
+GetCustomReg|out|$165|1 [fixed #712]	bytes 800 fnv E81212B0
+GetCustomReg|out|$166|1 [orig]	bytes 800 fnv E9B4FAFC
+GetCustomReg|out|$166|1 [fixed #712]	bytes 800 fnv 58E6D329
+GetCustomReg|out|$167|1 [orig]	bytes 800 fnv D610CD58
+GetCustomReg|out|$167|1 [fixed #712]	bytes 800 fnv 654964F6
 GetCustomReg|out|$168|1	bytes 800 fnv BE58141F
 GetCustomReg|out|$169|1	bytes 800 fnv CDD1A735
 GetCustomReg|out|$16A|1	bytes 800 fnv 2804F5FA
 GetCustomReg|out|$16B|1	bytes 800 fnv 24E1857C
-GetCustomReg|out|$16C|1	bytes 800 fnv 02E38406
-GetCustomReg|out|$16D|1	bytes 800 fnv 03B79B71
-GetCustomReg|out|$16E|1	bytes 800 fnv 9885FEAB
-GetCustomReg|out|$16F|1	bytes 800 fnv 437E4225
+GetCustomReg|out|$16C|1 [orig]	bytes 800 fnv 02E38406
+GetCustomReg|out|$16C|1 [fixed #712]	bytes 800 fnv 35B5EF63
+GetCustomReg|out|$16D|1 [orig]	bytes 800 fnv 03B79B71
+GetCustomReg|out|$16D|1 [fixed #712]	bytes 800 fnv 7416259B
+GetCustomReg|out|$16E|1 [orig]	bytes 800 fnv 9885FEAB
+GetCustomReg|out|$16E|1 [fixed #712]	bytes 800 fnv F46D721E
+GetCustomReg|out|$16F|1 [orig]	bytes 800 fnv 437E4225
+GetCustomReg|out|$16F|1 [fixed #712]	bytes 800 fnv 83499E9B
 GetCustomReg|out|$170|1	bytes 800 fnv 9F8F9F96
 GetCustomReg|out|$171|1	bytes 800 fnv CDD1A735
 GetCustomReg|out|$172|1	bytes 800 fnv 706E1EB3
 GetCustomReg|out|$173|1	bytes 800 fnv 24E1857C
-GetCustomReg|out|$174|1	bytes 800 fnv 07284313
-GetCustomReg|out|$175|1	bytes 800 fnv 4EC54C8C
-GetCustomReg|out|$176|1	bytes 800 fnv 6CA9478E
-GetCustomReg|out|$177|1	bytes 800 fnv 1EB4C7BE
+GetCustomReg|out|$174|1 [orig]	bytes 800 fnv 07284313
+GetCustomReg|out|$174|1 [fixed #712]	bytes 800 fnv 4CF8B656
+GetCustomReg|out|$175|1 [orig]	bytes 800 fnv 4EC54C8C
+GetCustomReg|out|$175|1 [fixed #712]	bytes 800 fnv 5615EBF6
+GetCustomReg|out|$176|1 [orig]	bytes 800 fnv 6CA9478E
+GetCustomReg|out|$176|1 [fixed #712]	bytes 800 fnv 7697C5FB
+GetCustomReg|out|$177|1 [orig]	bytes 800 fnv 1EB4C7BE
+GetCustomReg|out|$177|1 [fixed #712]	bytes 800 fnv F7458BB0
 GetCustomReg|out|$178|1	bytes 800 fnv BC1A0A61
 GetCustomReg|out|$179|1	bytes 800 fnv CDD1A735
 GetCustomReg|out|$17A|1	bytes 800 fnv DA010628
 GetCustomReg|out|$17B|1	bytes 800 fnv 24E1857C
-GetCustomReg|out|$17C|1	bytes 800 fnv 7EF49314
-GetCustomReg|out|$17D|1	bytes 800 fnv D1826A6B
-GetCustomReg|out|$17E|1	bytes 800 fnv 5BC86015
-GetCustomReg|out|$17F|1	bytes 800 fnv A86C464F
+GetCustomReg|out|$17C|1 [orig]	bytes 800 fnv 7EF49314
+GetCustomReg|out|$17C|1 [fixed #712]	bytes 800 fnv 94E6FFD1
+GetCustomReg|out|$17D|1 [orig]	bytes 800 fnv D1826A6B
+GetCustomReg|out|$17D|1 [fixed #712]	bytes 800 fnv 39B79801
+GetCustomReg|out|$17E|1 [orig]	bytes 800 fnv 5BC86015
+GetCustomReg|out|$17E|1 [fixed #712]	bytes 800 fnv 0C936A40
+GetCustomReg|out|$17F|1 [orig]	bytes 800 fnv A86C464F
+GetCustomReg|out|$17F|1 [fixed #712]	bytes 800 fnv A4444BF3
 GetCustomReg|out|$180|1	bytes 800 fnv DD34054A
 GetCustomReg|out|$181|1	bytes 800 fnv ED36DC79
 GetCustomReg|out|$182|1	bytes 800 fnv B1255D7F
@@ -5550,20 +5700,30 @@ GetCustomReg|out|$1CC|1	bytes 800 fnv E9F00EDC
 GetCustomReg|out|$1CD|1	bytes 800 fnv 79BDA1DB
 GetCustomReg|out|$1CE|1	bytes 800 fnv 5D8BB4B9
 GetCustomReg|out|$1CF|1	bytes 800 fnv 8273AEE6
-GetCustomReg|out|$1D0|1	bytes 800 fnv 5C9DB658
-GetCustomReg|out|$1D1|1	bytes 800 fnv 22B3B120
-GetCustomReg|out|$1D2|1	bytes 800 fnv 6CCDD8B0
-GetCustomReg|out|$1D3|1	bytes 800 fnv B6ACC026
-GetCustomReg|out|$1D4|1	bytes 800 fnv 0103D5CE
-GetCustomReg|out|$1D5|1	bytes 800 fnv D560E937
-GetCustomReg|out|$1D6|1	bytes 800 fnv 10D6B4CD
-GetCustomReg|out|$1D7|1	bytes 800 fnv A6F14905
+GetCustomReg|out|$1D0|1 [orig]	bytes 800 fnv 5C9DB658
+GetCustomReg|out|$1D0|1 [fixed #712]	bytes 800 fnv AC50CD4D
+GetCustomReg|out|$1D1|1 [orig]	bytes 800 fnv 22B3B120
+GetCustomReg|out|$1D1|1 [fixed #712]	bytes 800 fnv 48971B45
+GetCustomReg|out|$1D2|1 [orig]	bytes 800 fnv 6CCDD8B0
+GetCustomReg|out|$1D2|1 [fixed #712]	bytes 800 fnv 69258FAC
+GetCustomReg|out|$1D3|1 [orig]	bytes 800 fnv B6ACC026
+GetCustomReg|out|$1D3|1 [fixed #712]	bytes 800 fnv 6E961D43
+GetCustomReg|out|$1D4|1 [orig]	bytes 800 fnv 0103D5CE
+GetCustomReg|out|$1D4|1 [fixed #712]	bytes 800 fnv 7EADA172
+GetCustomReg|out|$1D5|1 [orig]	bytes 800 fnv D560E937
+GetCustomReg|out|$1D5|1 [fixed #712]	bytes 800 fnv 991A02F2
+GetCustomReg|out|$1D6|1 [orig]	bytes 800 fnv 10D6B4CD
+GetCustomReg|out|$1D6|1 [fixed #712]	bytes 800 fnv A7DF060B
+GetCustomReg|out|$1D7|1 [orig]	bytes 800 fnv A6F14905
+GetCustomReg|out|$1D7|1 [fixed #712]	bytes 800 fnv 16C4F9E0
 GetCustomReg|out|$1D8|1	bytes 800 fnv C1D3B976
 GetCustomReg|out|$1D9|1	bytes 800 fnv 2501B2F7
 GetCustomReg|out|$1DA|1	bytes 800 fnv 904C6861
 GetCustomReg|out|$1DB|1	bytes 800 fnv 280B7EFC
-GetCustomReg|out|$1DC|1	bytes 800 fnv 547FDC5C
-GetCustomReg|out|$1DD|1	bytes 800 fnv 828C3973
+GetCustomReg|out|$1DC|1 [orig]	bytes 800 fnv 547FDC5C
+GetCustomReg|out|$1DC|1 [fixed #712]	bytes 800 fnv 0E9F59BA
+GetCustomReg|out|$1DD|1 [orig]	bytes 800 fnv 828C3973
+GetCustomReg|out|$1DD|1 [fixed #712]	bytes 800 fnv 32FC64CF
 GetCustomReg|out|$1DE|1	bytes 800 fnv BC089955
 GetCustomReg|out|$1DF|1	bytes 800 fnv 79BDA1DB
 GetCustomReg|out|$1E0|1	bytes 800 fnv A813FF47
@@ -5582,18 +5742,30 @@ GetCustomReg|out|$1EC|1	bytes 800 fnv ED599109
 GetCustomReg|out|$1ED|1	bytes 800 fnv 24821A4F
 GetCustomReg|out|$1EE|1	bytes 800 fnv 66D5908D
 GetCustomReg|out|$1EF|1	bytes 800 fnv CC1DD4CB
-GetCustomReg|out|$1F0|1	bytes 800 fnv A1234177
-GetCustomReg|out|$1F1|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$1F2|1	bytes 800 fnv A1234177
-GetCustomReg|out|$1F3|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$1F4|1	bytes 800 fnv A1234177
-GetCustomReg|out|$1F5|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$1F6|1	bytes 800 fnv A1234177
-GetCustomReg|out|$1F7|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$1F8|1	bytes 800 fnv A1234177
-GetCustomReg|out|$1F9|1	bytes 800 fnv 9CAC42FC
-GetCustomReg|out|$1FA|1	bytes 800 fnv 1DD189ED
-GetCustomReg|out|$1FB|1	bytes 800 fnv A9998BB2
+GetCustomReg|out|$1F0|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$1F0|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$1F1|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$1F1|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$1F2|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$1F2|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$1F3|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$1F3|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$1F4|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$1F4|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$1F5|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$1F5|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$1F6|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$1F6|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$1F7|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$1F7|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$1F8|1 [orig]	bytes 800 fnv A1234177
+GetCustomReg|out|$1F8|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$1F9|1 [orig]	bytes 800 fnv 9CAC42FC
+GetCustomReg|out|$1F9|1 [fixed #712]	bytes 800 fnv 0BDE1B29
+GetCustomReg|out|$1FA|1 [orig]	bytes 800 fnv 1DD189ED
+GetCustomReg|out|$1FA|1 [fixed #712]	bytes 800 fnv 32855D85
+GetCustomReg|out|$1FB|1 [orig]	bytes 800 fnv A9998BB2
+GetCustomReg|out|$1FB|1 [fixed #712]	bytes 800 fnv DCC9D761
 GetCustomReg|out|$1FC|1	bytes 800 fnv BE31401C
 GetCustomReg|out|$1FD|1 [orig]	bytes 800 fnv 34142445
 GetCustomReg|out|$1FD|1 [fixed #702]	bytes 800 fnv E7B59A46

@@ -138,6 +138,13 @@ d5-d7, a0-a3 and a6 in places.
   (`CMPI.w #$1fc`): $1FE had no name and "NOOP" was not found (#702;
   test `rilesdebuglib-customreg-noop`; the `libs_emulator` cases
   `[fixed #702]`, also of $1FD, an odd offset inside the range).
+* `GetCustomReg` copies at most 8 characters of the name. The original
+  stopped only after a 9th: a name of 8 characters (BLTCON0L, DENISEID,
+  the SPRxDATA/B) got the first character of the next name behind it and
+  the length 8, a3 one behind the result, so a string expression behind
+  it lost its next part (`GetCustomReg($5A)+"|"` gave "BLTCON0LB") (#712;
+  test `rilesdebuglib-getcustomreg-eight-chars`; the `libs_emulator`
+  cases `[fixed #712]`).
 
 ## BUG(orig)
 
@@ -150,8 +157,6 @@ d5-d7, a0-a3 and a6 in places.
   `*` too (GetDataItem: 0) (#717).
 * PeekMax$ copies max+1 characters but returns the length max (a3 one
   character behind the result) (#718).
-* GetCustomReg of a name of 8 characters copies the first character of
-  the next name too and returns 8 (#712).
 * GetCustomRegAdr matches a prefix (`DMACONXYZ` gives $096), never finds
   a name of 8 characters (the compare runs into the next name) (#713).
 * GetCopIns$ masks bit 0 of both digits of a horizontal position (WAIT,

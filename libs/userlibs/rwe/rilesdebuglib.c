@@ -55,8 +55,6 @@
  *     (GetDataItem) (#717).
  *   - PeekMax$ copies max+1 characters but returns the length max (a3 is
  *     one behind the result) (#718).
- *   - GetCustomReg of a name of 8 characters copies one more character
- *     (the first of the next name) and returns 8 (#712).
  *   - GetCustomRegAdr matches a prefix (the name may go on behind the
  *     table's) and never finds a name of 8 characters (#713).
  *   - GetCopIns$ clears bit 0 of both nibbles of the horizontal positions
@@ -101,6 +99,9 @@
  *     table (#714).
  *   - GetCustomReg and GetCustomRegAdr take the last register of the
  *     table, $1FE NOOP, too; the original ended both at $1FC (#702).
+ *   - GetCustomReg copies at most 8 characters; the original copied a 9th
+ *     behind a name of 8 (the first of the next name) and returned 8, a3
+ *     one behind the result (#712).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1201,9 +1202,10 @@ static ULONG BLITZ_ROUTINE getcopins_c(const UWORD *ins BL_REG(d0))
 /**
  * @brief GetCustomReg(address): the name of a custom chip register.
  *
- * The name up to its first space, at most 8 characters, at a3; a name
- * of 8 characters copies one more (the first of the next name) and
- * returns 8 (BUG(orig) (#712)).  The range is $000-$1FE (fixed #702: the
+ * The name up to its first space, at most 8 characters, at a3 (fixed
+ * #712: the original stopped only after a 9th character, so a name of 8
+ * characters got the first one of the next name behind it, a3 one behind
+ * the result of the length 8).  The range is $000-$1FE (fixed #702: the
  * original stopped at $1FC, the last register NOOP had no name); the
  * range test compares the word unsigned (fixed #714: the original tested
  * the word signed and the long for negative, so a negative word with d0.l
@@ -1220,13 +1222,8 @@ static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
     if ((UWORD)reg > 0x1fe)                     /* fixed (#714, #702) */
         return 0;
     p = &customchipnames[0][0] + ((UWORD)reg << 2);
-    for (n = 0;; n++) {
-        if (*p == ' ')
-            break;
+    for (n = 0; n < 8 && *p != ' '; n++)               /* fixed (#712) */
         *blitz_string++ = *p++;
-        if ((UBYTE)n == 8)
-            break;
-    }
     return n;
 }
 
