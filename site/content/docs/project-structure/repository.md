@@ -101,10 +101,14 @@ you would go there:
 
 ## Comments that refer to the original
 
-Many comments in the C code refer to the original: a comment such as
-`blitz2.s:13837` or `ted.s:1542` names the line of the original source a
-function translates, `BUG(orig)` marks a bug of the original that is not
-fixed yet, `Fixed` with an issue number marks the place of a fixed one,
-and `DIFF` marks a place where the C code has to work differently from
-the original. The reasons behind them are in the notes
+Many comments in the C code refer to the original:
+
+| Comment | Meaning |
+|---|---|
+| `blitz2.s:13837`, `ted.s:1542` | the line of the original source a function translates |
+| `BUG(orig)` | a bug of the original that is not fixed yet |
+| `Fixed` with an issue number | the place of a fixed bug of the original |
+| `DIFF` | a place where the C code has to work differently from the original |
+
+The reasons behind them are in the notes
 in `docs/`.
