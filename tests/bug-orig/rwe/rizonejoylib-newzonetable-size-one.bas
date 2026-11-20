@@ -3,6 +3,7 @@
 ; zonetables can be from 1 to 65536 in size".
 ; Correct: table 1 with one zone is made (-1); zone 0 can be set and
 ; found, the table has 1 zone.
+; @fixed #1136
 ; @rwe rizonejoylib
 r=NewZoneTable(1,1)
 NPrint r

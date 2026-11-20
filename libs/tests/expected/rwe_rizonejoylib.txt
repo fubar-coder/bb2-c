@@ -1540,7 +1540,8 @@ JVert|popped|adaptor on port 5|1	$00000000
 JVert|popped|adaptor on port 5|2	$00000000
 NewZoneTable|d0|0, 10|1	$00000000
 NewZoneTable|d0|10, 10|1	$00000000
-NewZoneTable|d0|3, 1|1	$00000000
+NewZoneTable|d0|3, 1|1 [orig]	$00000000
+NewZoneTable|d0|3, 1|1 [fixed #1136]	$FFFFFFFF
 NewZoneTable|d0|3, 300 (initialises table 0)|1	$FFFFFFFF
 NewZoneTable|d0|3, 40 (replaces 3)|1	$FFFFFFFF
 NewZoneTable|d0|3, 65536|1	$00000000

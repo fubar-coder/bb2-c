@@ -197,6 +197,12 @@ All other routines are C behind `BLITZ_THUNK`.
   the entry, where UseZoneTable selected it and finit freed it again,
   and, for the current table, in `_zonetable` (#874, test
   `rwe/rizonejoylib-newzonetable-allocfail-stale-entry`).
+* NewZoneTable accepts a table of one zone, as the manual allows ("The
+  new zonetables can be from 1 to 65536 in size"); the original took 2
+  to 65535 zones. 65536 and more stay refused: the zone loops count in
+  words (#1136, test `rwe/rizonejoylib-newzonetable-size-one`;
+  `libs_emulator` cases `[fixed #1136]` of `rwe_rizonejoylib`:
+  NewZoneTable 3,1).
 
 ## BUG(orig)
 

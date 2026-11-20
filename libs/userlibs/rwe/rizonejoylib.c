@@ -112,6 +112,9 @@
  *     (as after FreeZoneTable).  The original left the freed block in the
  *     entry (UseZoneTable selected it, finit freed it again) and in
  *     _zonetable (#874, D-018).
+ *   - NewZoneTable accepts a table of one zone ("The new zonetables can
+ *     be from 1 to 65536 in size"); the original took 2 to 65535 zones.
+ *     65536 and more stay refused (the zone loops count in words) (#1136).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -323,10 +326,6 @@ static_assert(offsetof(struct zdata, zones020) == ZD_ZONES020);
 
 static UBYTE fourplayer = 0xff;                         /* Dc.b -1 */
 
-/* CMP.l b,a : BMI - the sign of a - b (no overflow check, like BMI) */
-#define MI(a, b) ((((ULONG)(a) - (ULONG)(b)) & 0x80000000UL) != 0)
-/* the sign of a word difference (CMP.w b,a : BMI) */
-#define MIW(a, b) ((((UWORD)(a) - (UWORD)(b)) & 0x8000) != 0)
 /* ASL.w #n,d / ADDQ.w: the low word changed, the upper word kept */
 #define ASLW(d, n) (((ULONG)(d) & 0xffff0000UL) | (UWORD)((ULONG)(d) << (n)))
 #define INCW(d) (((ULONG)(d) & 0xffff0000UL) | (UWORD)((ULONG)(d) + 1))
@@ -737,8 +736,9 @@ static void clearzones(struct zonetable *zt)
 /**
  * @brief NewZoneTable table#,num_zones: allocates zone table n.
  *
- * n 1..15, num_zones 2..65535; an old table of that number is freed
- * first.  All zones of the new table are cleared and the current table
+ * n 1..15, num_zones 1..65535 (1: fixed, #1136, the original refused a
+ * table of one zone, which the manual allows); an old table of that
+ * number is freed first.  All zones of the new table are cleared and the current table
  * stays as it is; a replaced current table stays current under its new
  * block: fixed (#875), the original ran ZoneInit on the current table
  * and left AllocMem's garbage in the new one.  If the AllocMem fails
@@ -757,7 +757,7 @@ static BB_BOOL BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG
     struct zonetable **e, *old, *mem;
 
     /* n unsigned: fixed (#872) */
-    if (!n || n >= 16 || MI(num, 2) || !MI(num, 65536))
+    if (!n || n >= 16 || !num || num >= 65536)        /* 1 zone: fixed (#1136) */
         return BB_FALSE;                                /* _return0 */
     e = entry(n);
     old = *e;
