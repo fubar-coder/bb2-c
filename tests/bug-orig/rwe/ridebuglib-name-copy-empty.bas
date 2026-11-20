@@ -12,6 +12,7 @@
 ; name; the bytes at +8 and from +9 of the second message.
 ; Correct: only the 0 of the empty name is copied; +9 keeps the "b" of
 ; the previous message.
+; @fixed #612
 ; @rwe ridebuglib
 ; @pass runtime_errors=on
 DEFTYPE .l

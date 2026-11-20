@@ -47,12 +47,12 @@ ports, `docs/libs/cmdlibs-port.md` "General").
   (the name and its 0): the original copied without a limit, a longer
   name overwrote what follows `mess1`, in the original the check routines
   (the next check crashed) (#613).
+* AddVarTrace/DelVarTrace test each byte of the name before they copy
+  it: the original's loop tested the byte *after* the one copied, so an
+  empty name copied its 0 and then whatever followed up to the next 0
+  (#612).
 
 ## BUG(orig)
-
-* AddVarTrace/DelVarTrace copy the name with a loop that tests the byte
-  *after* the one copied: an empty name copies its 0 and then whatever
-  follows up to the next 0 (#612).
 * AddVarTrace converts the type word with an 8 byte table indexed without
   a check: a type outside 0..7 reads the code behind the table in the
   original, other bytes in the C build (DIFF, unavoidable) (#609).

@@ -13,7 +13,8 @@
  * 260 bytes, so the bytes a command leaves from the previous one are
  * observed too) and calls the checks of every form in one sequence:
  * AddVarTrace with every type 0..7, output 0..2 and names
- * (also the empty one, BUG(orig) (#612): copies on to the next 0), DelVarTrace,
+ * (also the empty one, fixed (#612): only its 0, the original copies on
+ * to the next 0), DelVarTrace,
  * VarTraceWindow, DisAsmWindow (called from a code block in front of
  * which there is a TRAP #1 word), CopperTrace with 0, an address, an
  * object + offset (also negative, and a 0 copper list), ProcControl
