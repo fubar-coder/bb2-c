@@ -91,8 +91,8 @@ pull the library in. The whole file is
 on GitHub.
 
 A command library such as stringfunclib (number 185) has a table with an
-entry for each of its commands, `Left$`, `Mid$`, `Instr` and the others,
-and a start routine without any other library. windowslib (number 138)
+entry for each of its commands, `Left$`, `Mid$`, `Instr` and the others.
+Its start routine names no other library. windowslib (number 138)
 also has an end routine, and its start routine names the AmigaOS
 libraries graphics and intuition, whose bases it receives in registers
 a0 and a1. It manages *objects*, the windows, so its table ends with the
