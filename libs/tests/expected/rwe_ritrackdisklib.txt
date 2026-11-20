@@ -1035,7 +1035,7 @@ WriteBoot|d0|0|1	$00000000
 WriteBoot|d0|0 (disk DOS 3)|1	$00000000
 WriteBoot|d0|0,bootdata (d2 = buf+512)|1	$00000000
 WriteBoot|data written|0,bootdata (d2 = buf+512)|1 [orig]	$4715E000
-WriteBoot|data written|0,bootdata (d2 = buf+512)|1 [fixed #864]	$8B12F8E3
+WriteBoot|data written|0,bootdata (d2 = buf+512)|1 [fixed #864]	$A2C0E000
 WriteBoot|default boot block|0|1 [orig]	$00000001
 WriteBoot|default boot block|0|1 [fixed #865]	$00000000
 WriteBoot|disk|0|1 [orig]	bytes 16384 fnv 6F292DCB
@@ -1043,7 +1043,7 @@ WriteBoot|disk|0|1 [fixed #858]	bytes 16384 fnv 428D0276
 WriteBoot|disk|0 (disk DOS 3)|1 [orig]	bytes 16384 fnv 8713E22F
 WriteBoot|disk|0 (disk DOS 3)|1 [fixed #858]	bytes 16384 fnv 5E2D07F2
 WriteBoot|disk|0,bootdata (d2 = buf+512)|1 [orig]	bytes 16384 fnv D4DC77C5
-WriteBoot|disk|0,bootdata (d2 = buf+512)|1 [fixed #858]	bytes 16384 fnv 700F67E4
+WriteBoot|disk|0,bootdata (d2 = buf+512)|1 [fixed #858]	bytes 16384 fnv EA474419
 WriteBoot|disk boot block head|0|1 [orig]	bytes 12 444F5300FFFFFFFF6D7A8794
 WriteBoot|disk boot block head|0|1 [fixed #865]	bytes 12 444F5300D2A50F1900000370
 WriteBoot|disk boot block head|0 (disk DOS 3)|1 [orig]	bytes 12 444F5300FFFFFFFF00000000
@@ -1067,7 +1067,7 @@ WriteBoot|head|0|1 [fixed #865]	bytes 8 444F5300D2A50F19
 WriteBoot|head|0 (disk DOS 3)|1 [orig]	bytes 8 444F5300FFFFFFFF
 WriteBoot|head|0 (disk DOS 3)|1 [fixed #865]	bytes 8 444F5303D2A50F16
 WriteBoot|head|0,bootdata (d2 = buf+512)|1 [orig]	bytes 8 4F586576838C99AA
-WriteBoot|head|0,bootdata (d2 = buf+512)|1 [fixed #864]	bytes 8 4003B47800000490
+WriteBoot|head|0,bootdata (d2 = buf+512)|1 [fixed #864]	bytes 8 091623303D4A5764
 WriteBoot|kept|0|1	kept
 WriteBoot|kept|0 (disk DOS 3)|1	kept
 WriteBoot|kept|0,bootdata (d2 = buf+512)|1	kept

@@ -457,7 +457,10 @@ int main(int argc, char **argv)
     same_device(0);
     OBS("default boot block", memcmp(last.head, "DOS\0\377\377\377\377", 8) == 0);
     disk_bootblock();
-    /* WriteBoot unit,bootdata: the buffer is d2 */
+    /* WriteBoot unit,bootdata: the original takes the buffer from d2; the
+       bootdata (boot) is filled first, so that its write is the same in
+       every run */
+    fill(boot, 1024, 9);
     strcpy(VEC, "0,bootdata (d2 = buf+512)");
     DO1(WRITEBOOT, 1, R.d[0] = 0; R.d[1] = (ULONG)boot;
         R.d[2] = (ULONG)buf + 512);
