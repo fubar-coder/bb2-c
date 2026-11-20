@@ -4980,6 +4980,11 @@ each, unless `RXTokenise Off` is given. The fix of
 
 The port and the library:
 
+* `RXCreatePort` works on Kickstart 1.x: the library builds its port,
+  its lists and its messages with functions that every Kickstart has.
+  The original used functions of Kickstart 2.0 for them, and a program
+  crashed at its first `RXCreatePort` on Kickstart 1.x
+  ([#1144](https://github.com/fubar-coder/bb2-c/issues/1144)).
 * `RXCreatePort` returns 0 when a public port of that name exists, as
   the guide says. The original added a second port of the same name, so
   messages for it reached whichever of the two ports the system found

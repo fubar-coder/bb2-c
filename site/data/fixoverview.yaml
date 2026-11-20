@@ -6796,6 +6796,14 @@ rows:
     text: "Programs with popup menus run on Kickstart 1.x, and the menus work there, except a sub menu that does not fit the screen; the original crashed at the start."
     page: libraries
     anchor: popupwinlib-fixes
+  - issue: 1144
+    severity: 5
+    topic: "System"
+    library: "riarexxlib"
+    command: "RXCreatePort"
+    text: "`RXCreatePort` works on Kickstart 1.x; the original used functions of Kickstart 2.0 there and crashed."
+    page: libraries
+    anchor: riarexxlib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
