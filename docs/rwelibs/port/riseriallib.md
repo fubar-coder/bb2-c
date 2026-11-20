@@ -180,14 +180,18 @@ kind F):
   `ROL.l #8`, which gives b2 b3 b4 b1 for the bytes b1 … b4 (#794; test
   `riseriallib-readlong`; `libs_emulator` cases `[fixed #794]` of
   `rwe_riseriallib`).
+* `SerialWriteLong` sends the four bytes of its argument, the low byte
+  first (R10 decision P2-4 (a)); the original sent the low byte and then
+  three times `$01`: it rotated the register `SerialWrite` had changed
+  (the word `$01xx`) instead of the argument (#805; test
+  `riseriallib-writelong`; `libs_emulator` cases `[fixed #805]` of
+  `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
   is (#804); the old ones go into the code (two `JMP` operands) without
   clearing the instruction cache (#791).
-* `SerialWriteLong` sends the low byte of its argument and then three
-  times `$01` (it rotates the register `SerialWrite` changed) (#805).
 
 No defects: `SerialProgress` gives the remaining count of the last send
 or receive block, what it is meant to give; `SerialBaud 0` divides by 0

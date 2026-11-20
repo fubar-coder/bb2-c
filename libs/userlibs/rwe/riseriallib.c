@@ -56,8 +56,6 @@
  *     looked at) (#804), the old ones into the operands of two JMP
  *     instructions in the code without clearing the instruction cache
  *     (#791).
- *   - SerialWriteLong sends the low byte of its argument and then three
- *     times $01 (it rotates the register SerialWrite changed) (#805).
  *
  * Fixed (intended deviations):
  *   - SerialReadString stored the 0 and left a3 behind it, so a string
@@ -134,6 +132,10 @@
  *     original never returned: its loop took the counter back from the
  *     stack every time and read bytes without end, and it rotated the
  *     long the wrong way (ROL, which gives b2 b3 b4 b1) (#794).
+ *   - SerialWriteLong sends the four bytes of its argument, the low byte
+ *     first (decided, R10 P2-4 (a)); the original sent the low byte and
+ *     then three times $01: it rotated the register SerialWrite had
+ *     changed (the word $01xx) (#805).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -668,10 +670,11 @@ ULONG BLITZ_ROUTINE c_readlong(void)
 }
 
 /**
- * @brief SerialWriteLong longword: meant to send a long.
+ * @brief SerialWriteLong longword: sends a long, the low byte first.
  *
- * BUG(orig) (#805): sends the low byte, then three times $01 (it rotates
- * the register SerialWrite changed).  Opens the port when it is closed
+ * Fixed (#805): the original sent the low byte, then three times $01 (it
+ * rotated the register SerialWrite had changed).  Opens the port when it
+ * is closed
  * (fixed (#792): the original always ran SerialOpen's code).
  * @param longword  d0: the long
  */
@@ -682,7 +685,7 @@ void BLITZ_ROUTINE c_writelong(ULONG longword BL_REG(d0))
     if (!openflag)                      /* fixed (#792) */
         openserial(longword);
     for (i = 0; i < 4; i++) {
-        longword = writeser(longword);
+        writeser(longword);             /* fixed (#805): the argument's byte */
         longword = longword >> 8 | longword << 24; /* ROR.l #8 */
     }
 }

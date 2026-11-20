@@ -6,6 +6,7 @@
 ; read followed by a VWait, at most 100).  (A $01 starts a new session at
 ; the remote end: the original's request is not answered.)
 ; Correct (decided: the low byte first): the bytes "ABCD".
+; @fixed #805
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l
