@@ -6,5 +6,9 @@
 # an error check area for it (the original has none)
 lib 14: header +$2C: code offset set in only one of them
 lib 14: entry 11 CDTrackLength +$C: code offset set in only one of them
-# #583: the relocations of the error field and the check
-lib 14: relocations in the declaration part 31 != 33
+# #586: CDTrackMins offset and CDTrackSecs offset get an error check of
+# the offset (offsetchk, "Offset must be 0 or 1")
+lib 14: entry 19 CDTrackMins +$1C: code offset set in only one of them
+lib 14: entry 20 CDTrackSecs +$1C: code offset set in only one of them
+# #583, #586: the relocations of the error field and the three checks
+lib 14: relocations in the declaration part 31 != 35

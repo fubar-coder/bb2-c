@@ -5,6 +5,7 @@
 ; The offset is an argument the programmer controls; the original has no
 ; error check area.  Here with runtime error checking.
 ; Correct: the error check refuses offset 2 after "before".
+; @fixed #586
 ; @rwe ricompactdisclib
 ; @pass runtime_errors=on
 NPrint "before"

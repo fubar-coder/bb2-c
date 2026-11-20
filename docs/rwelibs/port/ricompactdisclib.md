@@ -97,6 +97,13 @@ d1/d2 (CDTrackLength) are not reproduced.
   disc"); the release code is unchanged there (track 0 reads 65539 bytes
   behind toc, D-005). The library gets an error check area for it
   (`ricompactdisclib.declarations-intended.txt`). (#583)
+* With runtime error checking `CDTrackMins offset` and `CDTrackSecs
+  offset` refuse an offset other than 0 or 1 ("Offset must be 0 or 1";
+  the manual: "The optional parameter offset can take the value of 0 or
+  1"). The release code is the original's (D-005): `ASL.b #2` shifts the
+  low byte only, the index is the whole word, the high bytes of d0 stay
+  in the result, no limit. They and `CDTrackPlaying` read the Q-code
+  without an open device (the data of the last `CDUpdateInfo`). (#586)
 
 **BUG(orig)** (kept):
 
@@ -110,10 +117,6 @@ d1/d2 (CDTrackLength) are not reproduced.
   device that writes all of it (uaescsi.device) writes 8 bytes behind
   `MyCDInfo`, the end of the library (here into `mycdinfo_rest`, see
   above). (#948)
-* `CDTrackMins`/`CDTrackSecs offset`: `ASL.b #2` shifts the low byte
-  only, the index is the whole word, the high bytes of d0 stay in the
-  result; no limit. They and `CDTrackPlaying` do not check for an open
-  device. (#586)
 * `CDVolume volume,fade` sends CD_ATTENUATE with the volume in `io_Length`
   and the fade time in `io_Offset`; cd.device wants it the other way round
   (`io_Offset` = volume, `io_Length` = fade in frames), so

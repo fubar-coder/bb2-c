@@ -79,6 +79,14 @@
  *   TOC's first to last track is refused ("Track number out of range");
  *   in the release code such a track still reads entries that do not
  *   exist (track 0: 65539 bytes behind toc), as in the original (D-005).
+ * Fixed (#586): with runtime error checking CDTrackMins offset and
+ *   CDTrackSecs offset refuse an offset other than 0 or 1 ("Offset must
+ *   be 0 or 1"; the manual allows those two).  The release code is the
+ *   original's: ASL.b #2 shifts the low byte only, the index is the whole
+ *   word (high byte kept), the high bytes of d0 stay in the result, and
+ *   another offset reads qcodeinfo[5 + 4 * offset] (6 + ...) without a
+ *   limit (D-005).  They and CDTrackPlaying read the Q-code without an
+ *   open device: the data of the last CDUpdateInfo (0 before one).
  *
  * BUG(orig):
  *   - OpenCD while open: the old request stays open, lost (#578).
@@ -93,11 +101,6 @@
  *     device that writes all of it (uaescsi.device) writes 8 bytes behind
  *     MyCDInfo, the end of the library.  DIFF: here 8 bytes of room behind
  *     mycdinfo take them (#948, #946).
- *   - CDTrackMins/CDTrackSecs offset: ASL.b #2 shifts the low byte only,
- *     the index is the whole word (high byte kept), and the high bytes of
- *     d0 stay in the result; any offset reads qcodeinfo[5 + 4 * offset]
- *     (6 + ...) without a limit.  They and CDTrackPlaying do not check
- *     flag (#586).
  * Registers: the original changes d0/d1/a0/a1, a6 and (CDReadTOC d7,
  * CDTrackLength d1/d2) others; the thunks keep d1/a0/a1, GCC keeps
  * d2-d7/a2-a6.
@@ -120,7 +123,7 @@ void cdrewind(void), cdfastforward(void), cdnormalspeed(void);
 void cdchangespeed(void), cdtrackmins2(void), cdtrackmins(void);
 void cdtracksecs2(void), cdtracksecs(void), cdtrackplaying(void);
 void cdmotor(void);
-void _cdtracklengthchk(void);
+void _cdtracklengthchk(void), _offsetchk(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -255,7 +258,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(cdtrackmins2, 0, 0);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(cdtrackmins, 0, 0);
+BLITZ_SUBS(cdtrackmins, _offsetchk, 0);                 /* check: fixed #586 */
 BLITZ_NAME("CDTrackMins", "[offset] - mins for current track");
 
 BLITZ_AFUNCTION(BL_WORD);
@@ -264,7 +267,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(cdtracksecs2, 0, 0);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(cdtracksecs, 0, 0);
+BLITZ_SUBS(cdtracksecs, _offsetchk, 0);                 /* check: fixed #586 */
 BLITZ_NAME("CDTrackSecs", "[offset] - secs for current track");
 
 BLITZ_AFUNCTION(BL_WORD);
@@ -895,6 +898,7 @@ ULONG BLITZ_ROUTINE c_cdnormalspeed(void)
 /* ------------------------------------------- error checks (debugger only) */
 
 BLITZ_ERRCHK_MESSAGE(badtrack, "Track number out of range");      /* fixed, #583 */
+BLITZ_ERRCHK_MESSAGE(badoffset, "Offset must be 0 or 1");          /* fixed, #586 */
 
 /**
  * @brief The error check of CDTrackLength (debugger only).
@@ -932,8 +936,29 @@ static void BLITZ_ERRCHK cdtracklengthchk_c(ULONG track BL_REG(d0))
         BLITZ_RUNERR(badtrack);
 }
 
+/**
+ * @brief The error check of CDTrackMins offset and CDTrackSecs offset
+ *        (debugger only).
+ *
+ * Fixed (#586), not in the original: the manual says "The optional
+ * parameter offset can take the value of 0 or 1"; the release code shifts
+ * the low byte of the offset by 2 (ASL.b), indexes the Q-code data with
+ * the whole word and keeps the high bytes of d0 in the result, so another
+ * offset reads 4 bytes per step behind (or before) the 12 bytes of the
+ * Q-code.  Release code unchanged (D-005).
+ *
+ * Errors: "Offset must be 0 or 1".
+ * @param offset  d0.w: the offset
+ */
+static void BLITZ_ERRCHK offsetchk_c(ULONG offset BL_REG(d0))
+{
+    if ((UWORD)offset > 1)
+        BLITZ_RUNERR(badoffset);
+}
+
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(_cdtracklengthchk, cdtracklengthchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_offsetchk, offsetchk_c, "d0-d1/a0-a1");
 
 /* entries: keep d1/a0/a1 (and d0 in init/finit) */
 BLITZ_THUNK(ricompactdisclib_libinit, c_libinit, "d0-d1/a0-a1");

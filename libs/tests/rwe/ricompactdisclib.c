@@ -28,7 +28,7 @@
  * (other registers = markers); observed are d0, the requests the device
  * saw, the data the commands return (the Q-code bytes behind
  * CDUpdateInfo's address) and the kept registers.
- * Covered: every command without an open device (0; BUG(orig) (#587, #586):
+ * Covered: every command without an open device (0; BUG(orig) (#587):
  * CDUpdateInfo returns a0 + 5, CDTrackMins/Secs/Playing read their data
  * anyway), OpenCD of cd.device (missing in the emulator: the failure
  * path; the original returns the d0 of DeleteIORequest, fixed #575: 0), of unit 3 (OpenDevice fails),
@@ -41,7 +41,7 @@
  * address 0, fixed #582), CDTrackLength of every track 1..9 of the 9 track CD
  * and 40..50 of the 50 track CD (the original: from track 44 the start is
  * wrong, fixed #585; the last track reads the entry behind it, fixed #583), CDTrackMins/CDTrackSecs offsets 0, 1, 4, 5, -1..-5 and the
- * high bits of d0 (BUG(orig) (#586)), the SCSI path (scsiflag: CDPlayTrack's
+ * high bits of d0 (the release code as the original; the error check of #586 is not called here), the SCSI path (scsiflag: CDPlayTrack's
  * fixed blocks 14000-15000 and io_Offset 1 before and after READ TOC,
  * with tracks inside, at the ends of and outside the TOC, CDNumTracks
  * from the SCSI TOC data, CDFirstTrack, CDLastTrack and CDTrackLength
