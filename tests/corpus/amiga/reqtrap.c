@@ -133,7 +133,7 @@ static LONG run13(char *cmd)
     UBYTE *name = cli ? BADDR(cli->cli_CommandName) : 0, oldname[256];
     BPTR oldmod = cli ? cli->cli_Module : 0, seg;
     char *args = strchr(cmd, ' ');
-    LONG rc, n;
+    LONG rc, n, cmdlen;
 
     if (args)
         *args++ = 0;
@@ -141,13 +141,16 @@ static LONG run13(char *cmd)
         args = cmd + strlen(cmd);
     if (!(seg = LoadSeg(cmd)))
         return 20;
+    /* the name's length before the newline is added: without arguments
+       args is the end of cmd, and the newline would become part of the
+       command name */
+    cmdlen = strlen(cmd);
     n = strlen(args);
     args[n] = '\n';
     args[n + 1] = 0;
     if (name) {
         memcpy(oldname, name, name[0] + 1);
-        n = strlen(cmd);
-        name[0] = n > 255 ? 255 : n;
+        name[0] = cmdlen > 255 ? 255 : cmdlen;
         memcpy(name + 1, cmd, name[0]);
         cli->cli_Module = seg;
     }
