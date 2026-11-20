@@ -52,13 +52,17 @@ d0/d1/a0/a1 that are not the result.
   `rifastseriallib-finit-interrupts`: RBF of serial.device on again;
   `libs_emulator` cases `[fixed #651]` of `rwe_rifastseriallib`: the
   saved inten).
+* `InitSerialIO` (#long result) returns -1 when it set the port up, 0
+  when it did nothing because it was already initialised; the original
+  returned its baud argument in both cases (#650; the result of a
+  command that works, as the other RWE fixes; test
+  `rifastseriallib-initserialio-result`; `libs_emulator` cases
+  `[fixed #650]` of `rwe_rifastseriallib`).
 
 **BUG(orig)** (kept):
 
-* `InitSerialIO` (#long result) returns its baud argument, also when it
-  does nothing because it was already initialised (#650); a baud rate that
-  gives SERPER 0 (≥ 1773448) leaves the library "not initialised"
-  (#653).
+* A baud rate that gives SERPER 0 (≥ 1773448) leaves the library "not
+  initialised" (#653).
 * Only `FinitSerialIO`, `InitSerialIO`, `PutSerial` and `SetIOSpeed`
   check the initialisation (#652).
 * `GetSerial address,bytes` (#byte result) returns its address argument

@@ -44,11 +44,12 @@
  *     clear: FinitSerialIO never wrote, RBF and TBE stayed off) (#651),
  *     and its write went to the absolute address $9A (intena without
  *     custom+) (#648).
+ *   - InitSerialIO (#long result) returns -1 when it set the port up, 0
+ *     when it did nothing because it was already initialised; the
+ *     original returned its baud argument in both cases (#650).
  * BUG(orig):
- *   - InitSerialIO (#long result) returns its baud argument, also when it
- *     does nothing because it was already initialised (#650).  A baud rate
- *     that gives SERPER 0 (>= 1773448) leaves the library "not
- *     initialised" (#653).
+ *   - A baud rate that gives SERPER 0 (>= 1773448) leaves the library
+ *     "not initialised" (#653).
  *   - Only FinitSerialIO, InitSerialIO, PutSerial and SetIOSpeed check
  *     the initialisation (#652).
  *   - GetSerial address,bytes (#byte result) returns its address argument
@@ -332,20 +333,21 @@ void BLITZ_ROUTINE c_doserialIO2(void)
  * @param numbytes  d1: the bytes of a DoSerialIO
  * @param inbuf     d2: the receive buffer
  * @param outbuf    d3: the send buffer
- * @return d0: the baud argument, also when it did nothing (BUG(orig) (#650))
+ * @return d0: -1 when it set the port up, 0 when it did nothing (fixed
+ *         (#650): the original returned the baud argument in both cases)
  */
 ULONG BLITZ_ROUTINE c_initserialio(ULONG baud BL_REG(d0), UWORD numbytes BL_REG(d1),
                                    UBYTE *inbuf BL_REG(d2), UBYTE *outbuf BL_REG(d3))
 {
     if (fs.baud)
-        return baud;
+        return 0;                       /* fixed (#650) */
     fs.inten = INTENAR;                 /* fixed (#651): the value */
     INTENA = 0x0801;                    /* TBE and RBF interrupts off */
     fs.numbytes = (UWORD)(numbytes - 1);
     setbaud(baud);
     fs.inbuf = inbuf;
     fs.outbuf = outbuf;
-    return baud;
+    return (ULONG)-1;                   /* fixed (#650) */
 }
 
 /**

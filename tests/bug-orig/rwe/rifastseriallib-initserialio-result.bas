@@ -3,6 +3,7 @@
 ; time, when the library is already initialised and it does nothing.
 ; Correct (the result of a command of the RWE libraries that works: -1
 ; when it set the port up, 0 when it did nothing): -1, then 0.
+; @fixed #650
 ; @rwe rifastseriallib
 DEFTYPE .l
 r1=InitSerialIO(19200,16,?inbuf,?outbuf)
