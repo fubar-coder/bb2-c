@@ -56,7 +56,12 @@
  *   - LDoSnowActivate stores the new end of the drop list into its
  *     "last"; the original stored only the kill list's, so a second
  *     LDoSnowActivate before the next LDoSnow overwrote the flakes the
- *     first released (#909).
+ *     first released (#909);
+ *   - init clears the list table, as at the first load; the original's
+ *     init was empty, so in a second run of a program from the editor
+ *     (the library stays loaded) the table pointed to the lists the first
+ *     run had freed, and a snow command before InitSnowDrop worked on
+ *     them (#1135).
  * Not defects: the allocation is not checked (memlib's globalloc raises
  * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
  * pixel again (always clear there: redundant, no effect); the end of
@@ -192,7 +197,23 @@ static void bset(UBYTE *p, UWORD idx, UWORD bit)
     p[(WORD)idx] |= (UBYTE)(1 << (bit & 7));
 }
 
-/** @brief init and finit: RTS (nothing to do). */
+/**
+ * @brief init: clears the list table, as at the first load.
+ *
+ * Fixed (#1135): the original's init was an RTS; in a second run of a
+ * program from the editor (the library stays loaded, memlib has freed
+ * the blocks) the table still pointed to the first run's lists.
+ */
+static void BLITZ_ROUTINE libinit_c(void)
+{
+    ULONG *p = (ULONG *)lp;
+    int i;
+
+    for (i = 0; i < 4 * 4; i++)          /* 4 snow fields of 4 longs */
+        p[i] = 0;
+}
+
+/** @brief finit: RTS (nothing to do). */
 static void BLITZ_ROUTINE nothing_c(void)
 {
 }
@@ -471,9 +492,9 @@ static BB_BOOL BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
 }
 
 /* Registers: the original changes d0-d7/a0-a3 (keeps a4-a6); the thunks
-   keep d1/a0/a1 (and d0 for init and finit, which change nothing), the C
+   keep d1/a0/a1 (and d0 for init and finit, which return nothing), the C
    code d2-d7/a2-a6. */
-BLITZ_THUNK(risnowlib_libinit, nothing_c, "d0-d1/a0-a1");
+BLITZ_THUNK(risnowlib_libinit, libinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(risnowlib_libfinit, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_InitSnowDrop, initsnowdrop_c, "d1/a0-a1");
 BLITZ_THUNK(_AsmDoSnow, asmdosnow_c, "d1/a0-a1");

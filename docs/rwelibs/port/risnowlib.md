@@ -30,7 +30,7 @@ the four lists of numpoints × 16 bytes each: a drop list starts with
 size, bitmap object, bp_size and "last" (its end), a kill list with
 "last"; entries are offset.w (the byte in the plane), bit.w, ended by
 `$ABCD`. Plane 0 is the snow, plane 1 the stopped snow, plane 2 the
-blue pixels. init and finit are empty.
+blue pixels. init clears the list table, finit is empty.
 
 * **Source:** `rwelibsrc/Snow/SnowLib3.bb` (as TED shows it:
   `build/amiga/rwelibsrc/Snow/SnowLib3.bb`).
@@ -67,6 +67,12 @@ right-first), COLOR00 is written as the original writes it.
   overwrote the flakes the first had released: cleared in plane 1, they
   vanished without falling (#909, test
   `rwe/risnowlib-activate-last-not-updated`).
+* init clears the list table, as at the first load; the original's init
+  is empty, so in a second run of a program from the editor (the
+  library stays loaded, memlib has freed the blocks) every entry pointed
+  to a list the first run had freed, and a snow command before
+  InitSnowDrop worked on it (#1135; D-019: `libs_emulator` cases
+  `[fixed #1135]` of `rwe_risnowlib`, the scenario's second run).
 
 ## BUG(orig), kept
 
