@@ -71,15 +71,22 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   words per row back to back: a shape whose width is no multiple of 16
   has one word more per row, so its image was sheared and its next
   planes read from inside plane 0.
+* With runtime error checking every command refuses a channel outside
+  0–7 (-1 to 7 for GetWBSprite): "Sprite channel must be 0 to 7",
+  "Sprite channel must be -1 to 7" (#916, test
+  `rwe/riwbspritelib-channel-unchecked`; the original has no error check
+  area). The release code is unchanged (an invalid argument, D-005):
+  GetWBSprite stores at table + channel × 4 (a word index); FreeWBSprite
+  takes the channel modulo 16 for the table (entries 8–15 are the name
+  and the base) but passes the whole register to `FreeSprite`;
+  MoveWBSprite, ChangeWBSprite and WBSpriteX/Y index the table with the
+  channel as is. `GetWBSprite(10,10,0,8)` returned 8 (the "grap" of the
+  name in entry 8) before #920's fix, -1 now.
 
 ## BUG(orig), kept
 
-* No channel is checked: GetWBSprite stores at table + channel × 4 (a
-  word index); FreeWBSprite takes the channel modulo 16 for the table
-  (entries 8–15 are the name and the base) but passes the whole register
-  to `FreeSprite`; MoveWBSprite, ChangeWBSprite and WBSpriteX/Y index the
-  table with the channel as is (#916) (without a sprite WBSpriteX/Y read
-  the words at addresses 6 and 8, #922).
+* Without a sprite WBSpriteX/Y read the words at addresses 6 and 8
+  (#922).
 * The shape is copied with `DBRA` counts (height or depth 0: 65536
   rows/planes) (#917).
 * finit does not clear the library base: a second finit closes

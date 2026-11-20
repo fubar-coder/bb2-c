@@ -7,6 +7,7 @@
 ; error check area.  Here with runtime error checking.
 ; Correct: the error check refuses channel 8: "Sprite channel must be -1
 ; to 7" after "before"; no sprite is allocated.
+; @fixed #916
 ; @rwe riwbspritelib
 ; @pass runtime_errors=on
 BitMap 0,320,64,2

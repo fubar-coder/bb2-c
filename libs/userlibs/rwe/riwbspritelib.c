@@ -19,9 +19,10 @@
  *
  * The variables, tag lists, the sprite table (spritepointers: the
  * ExtSprite of each channel), the library name and base are one block
- * in the original's order (struct wbs): the routines index the sprite
- * table without bounds and so read the tag list before it and the name
- * behind it (BUG(orig), #916).  A shape is copied into a bitmap of
+ * in the original's order (struct wbs): the release code indexes the
+ * sprite table without bounds and so reads the tag list before it and
+ * the name behind it (the error checks refuse such a channel, fixed
+ * #916).  A shape is copied into a bitmap of
  * AllocBitMap, which AllocSpriteDataA converts.  Assembler besides the
  * thunks: the calls of MoveSprite and FreeSpriteData (the original
  * returned the d0 they leave; FreeWBSprite still does, a statement).
@@ -47,15 +48,18 @@
  *     back to back, so a shape whose width is no multiple of 16 (one word
  *     more per row) was sheared and its next planes read from inside
  *     plane 0 (#918).  The sprite keeps its width (rounded down to 16).
+ *   - With runtime error checking every command refuses a channel
+ *     outside 0-7 (-1 to 7 for GetWBSprite): "Sprite channel must be 0
+ *     to 7" / "... -1 to 7" (the original has no error check area).  The
+ *     release code is unchanged (an invalid argument, D-005): GetWBSprite
+ *     stores at spritepointers + channel*4 (as a word index);
+ *     FreeWBSprite takes the channel modulo 16 for the table (entries
+ *     8-15 are the name and the base) but passes the whole register to
+ *     FreeSprite; MoveWBSprite, ChangeWBSprite, WBSpriteX/Y index the
+ *     table with the channel as is (#916).
  *
  * BUG(orig):
- *   - No routine checks the channel: GetWBSprite stores at
- *     spritepointers + channel*4 (as a word index); FreeWBSprite takes
- *     the channel modulo 16 for the table (entries 8-15 are the name and
- *     the base) but passes the whole register to FreeSprite; MoveWBSprite,
- *     ChangeWBSprite, WBSpriteX/Y index the table with the channel as is
- *     (#916) (WBSpriteX/Y without a sprite read the words at 6 and 8,
- *     #922).
+ *   - WBSpriteX/Y without a sprite read the words at 6 and 8 (#922).
  *   - The shape is copied with DBRA counts: height or depth 0 copy 65536
  *     rows/planes (#917).
  *   - finit does not clear the library base: a second finit closes
@@ -73,48 +77,52 @@
 void _GetWBSprite(void), _freesprite(void), _movewbsprite(void);
 void _changewbsprite(void), _wbspritex(void), _wbspritey(void);
 void riwbspritelib_libinit(void), riwbspritelib_libfinit(void);
+void _getwbspritechk(void), _freesprchk(void), _movewbspritechk(void);
+void _changewbspritechk(void), _wbspritexychk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {10,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_riwbspritelib, init, BL_NORET, finit, 0);
+/* !libheader {10,init,0,finit,0}; error field: the error check area of
+   the channel checks (fixed, #916) */
+BLITZ_LIBHEADER(LIB_riwbspritelib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 /* `#ia0|pd2` in the source: pd2 is 2, the shape of parameter 2 */
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG);
 BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD2);
-BLITZ_SUBS((char *)_GetWBSprite + 1, 0, 0);     /* +1: Amiga mode only */
+/* +1: Amiga mode only; check: fixed #916 */
+BLITZ_SUBS((char *)_GetWBSprite + 1, _getwbspritechk, 0);
 BLITZ_NAME("GetWBSprite", "x,y,shape[,spritechannel]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_BYTE);
 BLITZ_LIBS0();
-BLITZ_SUBS((char *)_freesprite + 1, 0, 0);
+BLITZ_SUBS((char *)_freesprite + 1, _freesprchk, 0);       /* check: fixed #916 */
 BLITZ_NAME("FreeWBSprite", "sprite_channel");
 
 BLITZ_ACOMMAND(BL_BYTE);
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS((char *)_movewbsprite + 1, 0, 0);
+BLITZ_SUBS((char *)_movewbsprite + 1, _movewbspritechk, 0);    /* check: fixed #916 */
 BLITZ_NAME("MoveWBSprite", "viewport,x,y,sprite_channel");
 
 BLITZ_ACOMMAND(BL_BYTE);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD2);
-BLITZ_SUBS((char *)_changewbsprite + 1, 0, 0);
+BLITZ_SUBS((char *)_changewbsprite + 1, _changewbspritechk, 0);    /* check: fixed #916 */
 BLITZ_NAME("ChangeWBSprite", "viewport,sprite_channel,shape#");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS((char *)_wbspritex + 1, 0, 0);
+BLITZ_SUBS((char *)_wbspritex + 1, _wbspritexychk, 0);     /* check: fixed #916 */
 BLITZ_NAME("WBSpriteX", "sprite_channel");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS((char *)_wbspritey + 1, 0, 0);
+BLITZ_SUBS((char *)_wbspritey + 1, _wbspritexychk, 0);     /* check: fixed #916 */
 BLITZ_NAME("WBSpriteY", "sprite_channel");
 
 BLITZ_NULLSUB_AT(finit, riwbspritelib_libfinit, 0, 0);
@@ -320,7 +328,8 @@ static ULONG newsprite(void)
  * Amiga mode only.  The shape is copied into a bitmap of AllocBitMap,
  * converted with AllocSpriteDataA (x, y set) and got with GetExtSpriteA
  * (channel -1: any); the sprite goes into the table.  BUG(orig): the
- * channel is not checked (#916); the copy has DBRA counts (#917).
+ * copy has DBRA counts (#917).  The channel: getwbspritechk (fixed
+ * #916).
  * Fixed (#918): the copy steps by the shape's ebwidth and the bitmap's
  * BytesPerRow.  Fixed (#920): every
  * failure (no graphics.library, no shape data, a shape narrower than
@@ -369,9 +378,9 @@ static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
  * @brief FreeWBSprite sprite_channel: frees a sprite (FreeSprite,
  * FreeSpriteData) and clears its table entry.
  *
- * Amiga mode only.  The table entry of channel & 15.  BUG(orig) (#916):
- * entries 8-15 are the library name and base, and FreeSprite gets the
- * whole register.
+ * Amiga mode only.  The table entry of channel & 15: entries 8-15 are
+ * the library name and base, and FreeSprite gets the whole register (a
+ * channel outside 0-7 is refused by freesprchk, fixed #916).
  * @param ch  d0.b: the channel
  * @return d0: 0 without a sprite (failed: MOVEQ #0), else as
  *         FreeSpriteData leaves it (a statement: the value is not used)
@@ -384,7 +393,7 @@ static ULONG BLITZ_ROUTINE freesprite_c(ULONG ch BL_REG(d0))
     if (!*e)
         return 0;
     wd.temppointer = (ULONG)e;
-    FreeSprite((WORD)ch);                               /* the whole d0: BUG(orig) (#916) */
+    FreeSprite((WORD)ch);                               /* the whole d0 (freesprchk, #916) */
     spr = *e;
     *e = 0;
     return freespritedata(spr);
@@ -394,9 +403,9 @@ static ULONG BLITZ_ROUTINE freesprite_c(ULONG ch BL_REG(d0))
  * @brief MoveWBSprite(viewport,x,y,sprite_channel): MoveSprite of the
  * channel's sprite.
  *
- * Amiga mode only; nothing without a sprite.  BUG(orig): the channel is
- * not checked (#916).  Fixed (#921): the result is -1 when the sprite
- * was moved (the original returned the d0 MoveSprite leaves, declared
+ * Amiga mode only; nothing without a sprite.  The channel:
+ * movewbspritechk (fixed #916).  Fixed (#921): the result is -1 when
+ * the sprite was moved (the original returned the d0 MoveSprite leaves, declared
  * as a byte).
  * @param vp  d0: the ViewPort
  * @param x   d1: x
@@ -421,8 +430,8 @@ static ULONG BLITZ_ROUTINE movewbsprite_c(ULONG vp BL_REG(d0), ULONG x BL_REG(d1
  *
  * Amiga mode only.  The shape is converted as in GetWBSprite, at the
  * sprite's position; on success the old sprite data are freed and the
- * new ones replace them in the table.  BUG(orig): the channel is not
- * checked (#916).  Fixed (#915): if ChangeExtSpriteA fails, the new
+ * new ones replace them in the table.  The channel: changewbspritechk
+ * (fixed #916).  Fixed (#915): if ChangeExtSpriteA fails, the new
  * sprite data are freed (the original lost them).
  * @param vp     d0: the ViewPort
  * @param ch     d1: the channel
@@ -468,8 +477,8 @@ static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_R
 /**
  * @brief WBSpriteX(sprite_channel): the x of the channel's sprite.
  *
- * Amiga mode only.  BUG(orig): the channel is not checked (#916); without
- * a sprite the word at 6 is read (address 6, #922).
+ * Amiga mode only.  BUG(orig): without a sprite the word at 6 is read
+ * (address 6, #922).  The channel: wbspritexychk (fixed #916).
  * @param ch  d0.w: the channel
  * @return d0: the low word replaced by es_SimpleSprite.x
  */
@@ -483,7 +492,7 @@ static ULONG BLITZ_ROUTINE wbspritex_c(ULONG ch BL_REG(d0))
 /**
  * @brief WBSpriteY(sprite_channel): the y of the channel's sprite.
  *
- * As WBSpriteX, the word at 8 (#916, #922).
+ * As WBSpriteX, the word at 8 (#922; the channel: fixed #916).
  * @param ch  d0.w: the channel
  * @return d0: the low word replaced by es_SimpleSprite.y
  */
@@ -504,3 +513,97 @@ BLITZ_THUNK(_movewbsprite, movewbsprite_c, "d1/a0-a1");
 BLITZ_THUNK(_changewbsprite, changewbsprite_c, "d1/a0-a1");
 BLITZ_THUNK(_wbspritex, wbspritex_c, "d1/a0-a1");
 BLITZ_THUNK(_wbspritey, wbspritey_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badgetch, "Sprite channel must be -1 to 7");    /* fixed, #916 */
+BLITZ_ERRCHK_MESSAGE(badch, "Sprite channel must be 0 to 7");        /* fixed, #916 */
+
+/* a channel 0 to 7 */
+static void BLITZ_ERRCHK chchk(ULONG ch)
+{
+    if (ch > 7)
+        BLITZ_RUNERR(badch);
+}
+
+/**
+ * @brief The error check of GetWBSprite (debugger only).
+ *
+ * Fixed (#916), not in the original (riwbspritelib had no error check
+ * area): the channel indexes the sprite table of 8 entries without a
+ * check (the tag lists before it, the library name and base behind it).
+ * The release code is unchanged (an invalid argument, D-005).
+ *
+ * Errors: "Sprite channel must be -1 to 7".
+ * @param ch  d3: the channel (a long), -1 for any
+ */
+static void BLITZ_ERRCHK getwbspritechk_c(LONG ch BL_REG(d3))
+{
+    if (ch < -1 || ch > 7)
+        BLITZ_RUNERR(badgetch);
+}
+
+/**
+ * @brief The error check of FreeWBSprite (debugger only).
+ *
+ * Fixed (#916), not in the original: the release code takes the channel
+ * modulo 16 for the table (entries 8-15 are the library name and base)
+ * and passes the whole register to FreeSprite.  Release code unchanged
+ * (D-005).
+ *
+ * Errors: "Sprite channel must be 0 to 7".
+ * @param ch  d0.b: the channel
+ */
+static void BLITZ_ERRCHK freesprchk_c(ULONG ch BL_REG(d0))
+{
+    chchk((UBYTE)ch);
+}
+
+/**
+ * @brief The error check of MoveWBSprite (debugger only).
+ *
+ * Fixed (#916), not in the original: the channel (a long) indexes the
+ * table without a check.  Release code unchanged (D-005).
+ *
+ * Errors: "Sprite channel must be 0 to 7".
+ * @param ch  d3: the channel
+ */
+static void BLITZ_ERRCHK movewbspritechk_c(ULONG ch BL_REG(d3))
+{
+    chchk(ch);
+}
+
+/**
+ * @brief The error check of ChangeWBSprite (debugger only).
+ *
+ * Fixed (#916), not in the original: the channel (a long) indexes the
+ * table without a check.  Release code unchanged (D-005).
+ *
+ * Errors: "Sprite channel must be 0 to 7".
+ * @param ch  d1: the channel
+ */
+static void BLITZ_ERRCHK changewbspritechk_c(ULONG ch BL_REG(d1))
+{
+    chchk(ch);
+}
+
+/**
+ * @brief The error check of WBSpriteX and WBSpriteY (debugger only).
+ *
+ * Fixed (#916), not in the original: the channel (a word) indexes the
+ * table without a check.  Release code unchanged (D-005).
+ *
+ * Errors: "Sprite channel must be 0 to 7".
+ * @param ch  d0.w: the channel
+ */
+static void BLITZ_ERRCHK wbspritexychk_c(ULONG ch BL_REG(d0))
+{
+    chchk((UWORD)ch);
+}
+
+/* the thunks of the check functions */
+BLITZ_ERRCHK_THUNK(_getwbspritechk, getwbspritechk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_freesprchk, freesprchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_movewbspritechk, movewbspritechk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_changewbspritechk, changewbspritechk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_wbspritexychk, wbspritexychk_c, "d0-d1/a0-a1");

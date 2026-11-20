@@ -1,0 +1,16 @@
+# the intended differences of riwbspritelib against its reference, the
+# reference build of rwelibsrc/wbspritelib/WBSprite-library2.bb by blitz2
+# 2.10 (blitzlib compare, docs/development.md "Intended differences")
+# #916: every command gets an error check of the sprite channel
+# (getwbspritechk, freesprchk, movewbspritechk, changewbspritechk,
+# wbspritexychk; "Sprite channel must be -1 to 7" / "... 0 to 7");
+# riwbspritelib gets an error check area for them (the original has none)
+lib 10: header +$2C: code offset set in only one of them
+lib 10: entry 0 GetWBSprite +$12: code offset set in only one of them
+lib 10: entry 1 FreeWBSprite +$C: code offset set in only one of them
+lib 10: entry 2 MoveWBSprite +$E: code offset set in only one of them
+lib 10: entry 3 ChangeWBSprite +$12: code offset set in only one of them
+lib 10: entry 4 WBSpriteX +$C: code offset set in only one of them
+lib 10: entry 5 WBSpriteY +$C: code offset set in only one of them
+# #916: the relocations of the error field and the six checks
+lib 10: relocations in the declaration part 10 != 17
