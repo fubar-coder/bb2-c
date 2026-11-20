@@ -7,6 +7,7 @@
 ; the pixel to its left (x 86), the right-first row moves it right to
 ; x 88.  Higher bits read the code behind the tables.
 ; Correct: the bit is taken modulo 8, the flake moves left to x 86.
+; @fixed #910
 ; @rwe risnowlib
 DEFTYPE .l
 BitMap 0,320,256,3

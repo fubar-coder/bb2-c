@@ -40,9 +40,6 @@
  * BUG(orig):
  *   - The lists have no bounds: more entries than numpoints*4 run into
  *     the next list (and behind the block) (#914).
- *   - A bit number above 7 (from the random table) indexes the lookup
- *     tables beyond their end; the offsets of the table are bytes (only
- *     the first rows) (#910).
  * Fixed (intended deviations):
  *   - InitSnowDrop computes the size of its block as a long; the
  *     original took numpoints*16 times 4 with ASL.w #2, so from
@@ -76,8 +73,15 @@
  *     lists would be read at address 0), and KillPoint a pixel outside
  *     the 320 pixels of a row or the bitmap's rows ("KillPoint outside
  *     the bitmap": the library assumes 40 bytes per row).  The release
- *     code is unchanged (invalid arguments, D-005).
- * Not defects: the allocation is not checked (memlib's globalloc raises
+ *     code is unchanged (invalid arguments, D-005);
+ *   - LDoSnow takes the bit of a new flake from the random table modulo
+ *     8 (AND #7); the original took the whole byte, and a blocked flake
+ *     with a bit above 7 looked up its side moves bit*8 bytes into the
+ *     tables of 8 rows: bits 8-15 read the right-first table behind the
+ *     left-first one (the wrong neighbours), higher ones the code behind
+ *     the tables (#910).  The bit operations themselves took it modulo 8.
+ * Not defects: the random table's offsets are bytes (new flakes start
+ * in the first 6.4 rows); the allocation is not checked (memlib's globalloc raises
  * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
  * pixel again (always clear there: redundant, no effect); the end of
  * LDoSnow behind its loop ('endthis) is dead code: the loop ends only at
@@ -333,8 +337,9 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
  * a4-a6 (the original a4-a6, the C thunk d1/a0/a1); changes d0, d2-d7,
  * a2, a3.
  *
- * BUG(orig): no bounds for the lists (#914); a bit above 7 reads behind
- * the side tables (#910).  The list number: fieldchk (fixed #913).
+ * BUG(orig): no bounds for the lists (#914).  The list number: fieldchk
+ * (fixed #913).  Fixed (#910): the bit of a new flake is taken modulo 8
+ * (a bit above 7 read behind the side tables).
  * @arg d0 the list number
  * @arg d1 the random table (index.w, then pairs offset.b, bit.b)
  */
@@ -383,6 +388,7 @@ BLITZ_ASM_ROUTINE(_AsmDoSnow,
 "   move.b  2(a5,d4.w),d1\n"
 "   move.w  d1,(a2)+\n"
 "   move.b  3(a5,d4.w),d1\n"
+"   and.w   #7,d1\n"                      /* the bit modulo 8: fixed (#910) */
 "   move.w  d1,(a2)+\n"
 "   addq.w  #2,d4\n"
 "   and.w   #1023,d4\n"
@@ -458,8 +464,8 @@ static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWOR
  * (plane 1 set, plane 2 clear) at the two sides below and at the pixel
  * is cleared in plane 1 and added to the newer drop list; the pixel above
  * goes into the other kill list.  Checking plane 2 at the killed pixel
- * again is redundant (no defect).  BUG(orig): a bit above 7 (#910).
- * The list number: fieldchk (fixed #913).  Fixed (#909): the drop list's
+ * again is redundant (no defect).  The bits of the entries are 0-7
+ * (fixed #910: LDoSnow masks the random table's).  The list number: fieldchk (fixed #913).  Fixed (#909): the drop list's
  * last is updated (the original's stayed, so the next call overwrote
  * the entries).  Fixed (#908): before the first LDoSnow the drop list's last is
  * its first entry (InitSnowDrop sets it; the original's 0 wrote at
@@ -496,7 +502,7 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
         bit = *src++;
         if (btst(plane2, at, bit))
             continue;
-        idx = (UWORD)(bit << 3);        /* BUG(orig): bit > 7 (#910) */
+        idx = (UWORD)(bit << 3);        /* bit 0-7: fixed (#910) */
         /* the two sides below (left-first table: struct side at idx and
            idx + 4), then the pixel */
         found |= unpause(plane1, plane2, (UWORD)(at + 40 + *(const WORD *)(look + (WORD)idx)),

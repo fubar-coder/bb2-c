@@ -104,16 +104,25 @@ written as the original writes it.
   field's bitmap ("KillPoint outside the bitmap": the library assumes 40
   bytes per row).
 
+* LDoSnow takes the bit of a new flake from the random table modulo 8
+  (`AND.w #7` behind the byte read, 8 cycles per call); the original took
+  the whole byte, and a blocked flake with a bit above 7 looked up its
+  side moves bit × 8 bytes into the tables of 8 rows: bits 8–15 read the
+  right-first table behind the left-first one (the wrong neighbours),
+  higher ones the code behind the tables, and the flake jumped up to
+  ±32 KB from its place, every frame again (#910, test
+  `rwe/risnowlib-bit-above-7-lookup`). The bit operations themselves took
+  the bit modulo 8.
+
 ## BUG(orig), kept
 
 * The lists have no bounds: more than numpoints × 4 entries run into the
   next list and behind the block (#914).
-* A bit number above 7 from the random table indexes the lookup tables
-  beyond their end; the table's offsets are bytes (the first rows only)
-  (#910).
 
 ## Original behaviour, not defects
 
+* The random table's offsets are bytes: new flakes start in the first
+  6.4 rows (offsets 0–255).
 * The allocation is not checked: memlib's `globalloc` raises Out of
   Memory itself.
 * LDoSnowActivate tests plane 2 at the killed pixel again (always clear
