@@ -57,7 +57,8 @@ BootProg (no request)|offset|7,boot|1	$00000E00
 BootProg (no request)|opens|7,boot|1	$00000000
 BootProg (no request)|read buffer|7,boot|1	bytes 4096 fnv 671EA9C5
 BootProg (no request)|requests|7,boot|1	$00000000
-BootProg (no request)|unit|7,boot|1	$FFFFFFFF
+BootProg (no request)|unit|7,boot|1 [orig]	$FFFFFFFF
+BootProg (no request)|unit|7,boot|1 [fixed #861]	$00000001
 BootProg (no request)|updates|7,boot|1	$00000000
 CloseDisk|actual|-1|1	$00000000
 CloseDisk|actual|0|1	$00000000
@@ -511,7 +512,8 @@ MotorOn|requests|0|1	$00000000
 MotorOn|requests|0|2	$00000001
 MotorOn|requests|0|3	$00000001
 MotorOn|requests|3|1	$00000001
-MotorOn|unit|-1|1	$FFFFFFFF
+MotorOn|unit|-1|1 [orig]	$FFFFFFFF
+MotorOn|unit|-1|1 [fixed #861]	$00000001
 MotorOn|unit|0|1	$00000000
 MotorOn|unit|0|2	$00000000
 MotorOn|unit|0|3	$00000000
@@ -588,7 +590,8 @@ OpenDisk|command|2,rwetest.device|1	$0000000B
 OpenDisk|command|3,rwetest.device|1	$0000000B
 OpenDisk|command|4,rwetest.device|1	$00000000
 OpenDisk|command|5,-|1	$00000000
-OpenDisk|d0|-1,rwetest.device|1	$FFFFFFFF
+OpenDisk|d0|-1,rwetest.device|1 [orig]	$FFFFFFFF
+OpenDisk|d0|-1,rwetest.device|1 [fixed #861]	$00000000
 OpenDisk|d0|-2,rwetest.device|1	$00000000
 OpenDisk|d0|0,rwetest.device|1	$FFFFFFFF
 OpenDisk|d0|0,trackdisk.device|1	$FFFFFFFF
@@ -611,7 +614,8 @@ OpenDisk|disk|3,rwetest.device|1	bytes 16384 fnv 8713E22F
 OpenDisk|disk|4,rwetest.device|1	bytes 16384 fnv E35F79C5
 OpenDisk|disk|5,-|1	bytes 16384 fnv E35F79C5
 OpenDisk|failed opens|-1,rwetest.device|1	$00000000
-OpenDisk|failed opens|-2,rwetest.device|1	$00000002
+OpenDisk|failed opens|-2,rwetest.device|1 [orig]	$00000002
+OpenDisk|failed opens|-2,rwetest.device|1 [fixed #861]	$00000000
 OpenDisk|failed opens|0,rwetest.device|1	$00000000
 OpenDisk|failed opens|0,trackdisk.device|1	$00000000
 OpenDisk|failed opens|1,rwetest.device|1	$00000000
@@ -677,7 +681,8 @@ OpenDisk|offset|2,rwetest.device|1	$00000000
 OpenDisk|offset|3,rwetest.device|1	$00000000
 OpenDisk|offset|4,rwetest.device|1	$00000000
 OpenDisk|offset|5,-|1	$00000000
-OpenDisk|opens|-1,rwetest.device|1	$00000001
+OpenDisk|opens|-1,rwetest.device|1 [orig]	$00000001
+OpenDisk|opens|-1,rwetest.device|1 [fixed #861]	$00000000
 OpenDisk|opens|-2,rwetest.device|1	$00000000
 OpenDisk|opens|0,rwetest.device|1	$00000001
 OpenDisk|opens|0,trackdisk.device|1	$00000000
@@ -710,8 +715,10 @@ OpenDisk|requests|2,rwetest.device|1	$00000000
 OpenDisk|requests|3,rwetest.device|1	$00000000
 OpenDisk|requests|4,rwetest.device|1	$00000000
 OpenDisk|requests|5,-|1	$00000000
-OpenDisk|unit|-1,rwetest.device|1	$FFFFFFFF
-OpenDisk|unit|-2,rwetest.device|1	$FFFFFFFF
+OpenDisk|unit|-1,rwetest.device|1 [orig]	$FFFFFFFF
+OpenDisk|unit|-1,rwetest.device|1 [fixed #861]	$00000001
+OpenDisk|unit|-2,rwetest.device|1 [orig]	$FFFFFFFF
+OpenDisk|unit|-2,rwetest.device|1 [fixed #861]	$00000001
 OpenDisk|unit|0,rwetest.device|1	$00000000
 OpenDisk|unit|0,trackdisk.device|1	$00000003
 OpenDisk|unit|1,rwetest.device|1	$00000001
@@ -882,7 +889,8 @@ ReadSector|requests|0,2,+100,5 (form 1)|1	$00000001
 ReadSector|requests|0,3,+0,0 (form 0)|1	$00000001
 ReadSector|requests|0,8388611,+0,0 (form 0)|1	$00000001
 ReadSector|requests|1,7,+0,2 (form 1)|1	$00000001
-ReadSector|unit|-1,0,+0,0 (form 0)|1	$FFFFFFFF
+ReadSector|unit|-1,0,+0,0 (form 0)|1 [orig]	$FFFFFFFF
+ReadSector|unit|-1,0,+0,0 (form 0)|1 [fixed #861]	$00000001
 ReadSector|unit|0,0,+0,2 (form 1)|1	$00000000
 ReadSector|unit|0,0,+0,8 (form 1)|1	$00000000
 ReadSector|unit|0,1,+0,0 (form 0)|1	$00000000

@@ -35,10 +35,7 @@
  *     msgport - (#860) and keeps it: a later OpenDisk without name uses
  *     it too (#859).
  *   - OpenDisk of a unit that is open replaces its request (the old one
- *     stays open, lost) (#862); OpenDisk with a negative unit passes the
- *     check (CMP #3: BGT), but putioreq/getioreq ignore it: the request
- *     is lost (OpenDevice ok) or the free gets 0 (OpenDevice
- *     failed) (#861).
+ *     stays open, lost) (#862).
  *   - WriteBoot unit,bootdata sets d1 = 0 (sector) over bootdata and
  *     takes the buffer from d2, which is not an argument (whatever the
  *     caller left there; here a register parameter d2 for the same
@@ -54,6 +51,8 @@
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
  *     help text says "-1 if motor is on" (#857).
+ * Fixed (#861): the original's OpenDisk let a negative unit pass its
+ * check (CMP #3: BGT) and lost the request (the table ignores it).
  * Fixed (#863): the original's finit closed units 0-2 only, not 3, and
  * its init cleared only the first three entries of iorequests.
  * Fixed (#941): the original called CreateMsgPort, CreateIORequest,
@@ -355,9 +354,10 @@ static void BLITZ_ROUTINE c_libfinit(void)
  *
  * A new request (newreq(), 200 bytes) on the reply port, then OpenDevice of the name in trackname ("trackdisk.device", or the last
  * name given, #859).  BUG(orig): a unit that is open gets a new request,
- * the old one stays open and is lost (#862); a negative unit passes the
- * check (CMP #3: BGT), but the table ignores it: the request is lost
- * (OpenDevice ok) or the free gets 0 (OpenDevice failed) (#861).
+ * the old one stays open and is lost (#862).  Fixed (#861): a unit
+ * outside 0-3 is refused before the request is made (the original's
+ * signed CMP #3: BGT let negative units pass; the table ignored them, so
+ * the request was lost or 0 was freed).
  * @param unit  d0: unit# (0-3)
  * @return d0: BB_TRUE if the device opened, else BB_FALSE
  */
@@ -365,16 +365,15 @@ BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
 
-    if (unit > 3 || !td.msgport)
+    if ((ULONG)unit > 3 || !td.msgport) /* Fixed (#861): unsigned */
         return BB_FALSE;
     req = newreq();
     if (!req)
         return BB_FALSE;
     putioreq(unit, req);
     if (OpenDevice((CONST_STRPTR)td.trackname, unit, (struct IORequest *)req, 0)) {
-        req = getioreq(unit);           /* 0 for a negative unit */
         putioreq(unit, NULL);
-        freereq(req);                   /* 0 for a negative unit (#861) */
+        freereq(req);
         return BB_FALSE;
     }
     return BB_TRUE;

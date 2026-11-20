@@ -39,9 +39,7 @@ original's changes of a6 and d4-d7 are not reproduced.
   and the port) (#860) and keeps it for later `OpenDisk` without a name
   (#859).
 * `OpenDisk` of an open unit replaces its request (the old one stays
-  open) (#862); a negative unit passes the check (`CMP #3: BGT`), but the
-  table routines ignore it: the request is lost, or `DeleteIORequest(0)`
-  if OpenDevice failed (#861).
+  open) (#862).
 * `WriteBoot unit,bootdata` overwrites bootdata (d1 = sector 0) and
   takes the buffer from d2, which is no argument (whatever the caller
   left there; the C routine takes d2 as a register parameter for the same
@@ -70,6 +68,13 @@ original's changes of a6 and d4-d7 are not reproduced.
   Tests: bug-orig `rwe/ritrackdisklib-v36-calls` (a500), the regression
   test `ritrackdisklib-floppy-key` reads a disk in DF1 on the a500,
   a500-204 and a1200 with these requests.
+* #861: the original's `OpenDisk` checked the unit with a signed
+  compare (`CMP #3: BGT`): a negative unit passed, the table routines
+  ignored it, and the request was lost (OpenDevice ok, the device stayed
+  open) or `DeleteIORequest(0)` was called (OpenDevice failed). A unit
+  outside 0-3 is refused before the request is made (an unsigned
+  compare); OpenDisk returns 0. Test: the `libs_emulator` cases
+  `[fixed #861]` (units -1 and -2).
 * #863: the original's finit closed units 0-2 only (unit 3 stayed open,
   its request leaked, and the port it names was deleted), and its init
   cleared only three table entries (a second init kept unit 3's stale
