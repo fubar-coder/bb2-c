@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "No sprite on this channel" *
+rc=0
