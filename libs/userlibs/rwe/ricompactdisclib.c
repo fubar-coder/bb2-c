@@ -69,6 +69,10 @@
  * Fixed (#584): CDTrackLength 1 is the start of track 2 minus the start
  *   of track 1, as for every other track; the original returns the start
  *   of track 2 (the 2 seconds of the pregap counted).
+ * Fixed (#585): CDTrackLength takes the start's minutes alone; from track
+ *   44 on the entry offset (n-1)*6 is > 255, and the original's MOVE.b
+ *   (a0),d0 leaves its high byte in the word MULU.w multiplies: the start
+ *   of the track was wrong.
  *
  * BUG(orig):
  *   - OpenCD while open: the old request stays open, lost (#578).
@@ -79,12 +83,10 @@
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
  *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
  *   - CDTrackLength n: start of track n+1 - start of track n in seconds
- *     (minutes * 60 + seconds).  From track 44 on the offset (n-1)*6 is > 255 and
- *     its high byte stays in the low word that MULU.w multiplies: the
- *     start of track n is wrong.  The last track takes the entry behind
+ *     (minutes * 60 + seconds).  The last track takes the entry behind
  *     it (CD_TOCMSF does not write it: the lead-out is in the summary),
  *     track 0 reads 65539 bytes behind toc.  (Without a TOC: 0,
- *     fixed #582.) (#585, #583).
+ *     fixed #582.) (#583).
  *   - CDUpdateInfo without an open device returns the caller's a0 + 5 (#587).
  *   - CDStatus asks for 26 bytes of CD_INFO (a struct CDInfo has 34): a
  *     device that writes all of it (uaescsi.device) writes 8 bytes behind
@@ -780,8 +782,10 @@ ULONG BLITZ_ROUTINE c_cdtracklength(ULONG track BL_REG(d0))
     track--;
     off =bl_mulu_w((UWORD)track, 6);   /* AND.l #$ffff: a word already */
     p = cd.toc + 9 + off;
-    /* MOVE.b (a0),d0: the high byte of the offset stays in the word */
-    start = (UWORD)(bl_mulu_w((UWORD)((off & 0xff00) | p[0]), 60) + p[1]);
+    /* Fixed (#585): the minutes alone; the original's MOVE.b (a0),d0
+       leaves the high byte of the offset (track 44 on) in the word that
+       MULU.w multiplies */
+    start = (UWORD)(bl_mulu_w(p[0], 60) + p[1]);
     end = (UWORD)(bl_mulu_w(p[6], 60) + p[7]);
     return end - start;
 }

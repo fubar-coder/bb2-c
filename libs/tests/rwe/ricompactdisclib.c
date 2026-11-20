@@ -39,8 +39,8 @@
  * progress stopped, closed and its request used again (BUG(orig) (#574,
  * #1156)), the TOC functions before any CDReadTOC (the original reads
  * address 0, fixed #582), CDTrackLength of every track 1..9 of the 9 track CD
- * and 40..50 of the 50 track CD (BUG(orig) (#585, #583): from track 44 the start is
- * wrong; the last track reads the entry behind it), CDTrackMins/CDTrackSecs offsets 0, 1, 4, 5, -1..-5 and the
+ * and 40..50 of the 50 track CD (the original: from track 44 the start is
+ * wrong, fixed #585; the last track reads the entry behind it, BUG(orig) (#583)), CDTrackMins/CDTrackSecs offsets 0, 1, 4, 5, -1..-5 and the
  * high bits of d0 (BUG(orig) (#586)), the SCSI path (scsiflag: CDPlayTrack's
  * fixed blocks 14000-15000 and io_Offset 1 before and after READ TOC,
  * with tracks inside, at the ends of and outside the TOC, CDNumTracks
@@ -688,7 +688,7 @@ int main(int argc, char **argv)
     updateinfo();
     qcode();
 
-    /* a CD with 50 tracks: the old TOC freed; from track 44 BUG(orig) (#585) */
+    /* a CD with 50 tracks: the old TOC freed; from track 44 the original's start is wrong (fixed #585) */
     ntracks = 50;
     strcpy(VEC, "50 tracks");
     CALL0(READTOC, "CDReadTOC");

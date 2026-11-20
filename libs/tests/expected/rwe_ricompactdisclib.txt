@@ -5894,15 +5894,22 @@ CDTrackLength|d0|40|1	$00000154
 CDTrackLength|d0|41|1	$0000004D
 CDTrackLength|d0|42|1	$00000072
 CDTrackLength|d0|43|1	$00000097
-CDTrackLength|d0|44|1	$FFFFC4BC
-CDTrackLength|d0|45|1	$FFFFC4E1
-CDTrackLength|d0|46|1	$FFFFC506
-CDTrackLength|d0|47|1	$FFFFC52B
-CDTrackLength|d0|48|1	$FFFFC550
-CDTrackLength|d0|49|1	$FFFFC449
+CDTrackLength|d0|44|1 [orig]	$FFFFC4BC
+CDTrackLength|d0|44|1 [fixed #585]	$000000BC
+CDTrackLength|d0|45|1 [orig]	$FFFFC4E1
+CDTrackLength|d0|45|1 [fixed #585]	$000000E1
+CDTrackLength|d0|46|1 [orig]	$FFFFC506
+CDTrackLength|d0|46|1 [fixed #585]	$00000106
+CDTrackLength|d0|47|1 [orig]	$FFFFC52B
+CDTrackLength|d0|47|1 [fixed #585]	$0000012B
+CDTrackLength|d0|48|1 [orig]	$FFFFC550
+CDTrackLength|d0|48|1 [fixed #585]	$00000150
+CDTrackLength|d0|49|1 [orig]	$FFFFC449
+CDTrackLength|d0|49|1 [fixed #585]	$00000049
 CDTrackLength|d0|5|1	$000000F5
 CDTrackLength|d0|5|2	$000000F5
-CDTrackLength|d0|50|1	$FFFFD3D3
+CDTrackLength|d0|50|1 [orig]	$FFFFD3D3
+CDTrackLength|d0|50|1 [fixed #585]	$00000FD3
 CDTrackLength|d0|6|1	$0000011A
 CDTrackLength|d0|6|2	$0000011A
 CDTrackLength|d0|7|1	$0000013F
