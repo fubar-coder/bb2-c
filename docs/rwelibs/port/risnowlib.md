@@ -166,5 +166,6 @@ memlib's and the library's init run and the list table is observed
 (#1135).
 Checked to fail when the alternation, the stop in plane 1, the removal
 at the bottom, the second side or one of the LDoSnowActivate tests is
-changed. Not covered: the BUG(orig) cases above that write outside the
-library's memory.
+changed. Not covered: the fixed cases above in which the original
+writes outside the library's memory (#913, #912, #914, #910, #908);
+their bug-orig tests show them.

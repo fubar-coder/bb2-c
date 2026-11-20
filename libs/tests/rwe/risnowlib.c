@@ -40,7 +40,9 @@
  * freed blocks, as offsets into them); finit again.  Not covered: list numbers
  * outside 0-3, numpoints from 1024 on, more flakes than the lists hold,
  * bits above 7 in the random table, LDoSnowActivate before the first
- * LDoSnow (all BUG(orig), #913 #912 #914 #910 #908: memory outside the library's).
+ * LDoSnow (#913 #912 #914 #910 #908, fixed: the original writes outside
+ * the library's memory there; the bug-orig tests rwe/risnowlib-* show
+ * them).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
