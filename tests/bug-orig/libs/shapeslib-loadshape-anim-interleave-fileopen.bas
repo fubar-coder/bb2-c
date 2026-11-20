@@ -10,6 +10,7 @@
 ; fails while it is open (object in use).  The sibling
 ; shapeslib-loadshape-anim-fileopen covers "ANIM format not supported".
 ; Correct: after the error the file is closed - the exclusive lock works.
+; @fixed #1072
 ; @configs clib
 ; @pass file=anim.iff|@TESTDATA@/shapeslib-loadshape-anim-interleave-fileopen.ilbm
 DEFTYPE .l

@@ -31,11 +31,6 @@
  *    follows) (#264).  Not a bug: only `depth`
  *    DLTA pointers are read (one per plane); the copied frame shares
  *    nothing (its cookie is cleared, made again with AutoCookie On).
- *  - LoadShape: "ANIM format not supported" and "Illegal ANIM interleave
- *    value" (the first ANHD) are raised without iffclose: the file stays
- *    open, also after the program's end (iffiolib has no finit) (tests
- *    shapeslib-loadshape-anim-fileopen and
- *    shapeslib-loadshape-anim-interleave-fileopen; #1072).
  *  - Not a bug (by design): DecodeShapes stops silently at the first block
  *    that does not match (the end of the sequence); memory below 2 MB
  *    ($FFE00000 clear, chip RAM) is used in place ("cL"), above it is
@@ -95,6 +90,11 @@
  *    loop (DBF on bytes per row - 1) or the row loop (rows - 1) ran 65536
  *    times behind it.  Here LoadShape refuses such a picture (file data:
  *    "Illegal Shape Size", nothing loaded). (#1054)
+ *  - LoadShape raised "ANIM format not supported" and "Illegal ANIM
+ *    interleave value" (the first ANHD) without iffclose: the file stayed
+ *    open, also after the program's end (iffiolib has no finit), and
+ *    locked until reboot.  Here it is closed before both errors; the
+ *    first frame stays loaded in the shape, as in the original. (#1072)
  *  - LoadShape of an ANIM read the XOR bit (ANHD bits & 2) only from the
  *    first ANHD and applied every later frame with it; here each frame
  *    takes the bit of its own ANHD. (#266)
@@ -1089,16 +1089,19 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     res = IJSRZ(TOK_ifffind, 0x414e4844, st, &z); /* "ANHD" */
     if (!z)
         goto skipanim;
-    /* BUG(orig) (#1072): mess7 and mess8 without iffclose, the
-       file stays open (tests shapeslib-loadshape-anim-fileopen,
-       shapeslib-loadshape-anim-interleave-fileopen) */
+    /* fixed #1072: the file is closed before mess7 and mess8 (the
+       original left it open); the first frame stays loaded */
     res = IJSR(TOK_iffbyte, res, st);
-    if ((UBYTE)res != 5)
+    if ((UBYTE)res != 5) {
+        IJSR(TOK_iffclose, 0, st);
         BLITZ_RUNERR(mess7);
+    }
     res = IJSR(TOK_iffskip, 17, st);
     res = IJSR(TOK_iffbyte, res, st);
-    if ((UBYTE)res != 1)
+    if ((UBYTE)res != 1) {
+        IJSR(TOK_iffclose, 0, st);
         BLITZ_RUNERR(mess8);
+    }
     res = IJSR(TOK_iffbyte, res, st);
     res = IJSR(TOK_ifflong, res, st);
     xordelta = (UWORD)res & 2;
@@ -1238,7 +1241,9 @@ skipanim:
  * (#264).
  * Errors (in the normal code, their texts in the error area): "Can't open
  * Shapes File", "ANIM format not supported" (op <> 5), "Illegal ANIM
- * interleave value" (<> 1), "Can't Read/Write Shapes File" (a plane with
+ * interleave value" (<> 1; both close the file first and keep the first
+ * frame loaded, fixed #1072: the original left the file open),
+ * "Can't Read/Write Shapes File" (a plane with
  * the extra word of every row of 64K or more, fixed #263, #1055; more
  * than 1023 rows or 62 words, fixed #1046), "Illegal Shape Depth" (0 planes, fixed #1052: the original
  * wrote 65536 planes of every row behind a block of 0 bytes), "Illegal
