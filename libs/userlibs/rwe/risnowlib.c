@@ -33,7 +33,8 @@
  * bit.b; the index steps by 2 modulo 1024).  The routine sets COLOR00 to
  * red while it runs ($F00, then 0: a debug flash).
  *
- * No assembler besides the thunks.  The lookup tables keep the
+ * LDoSnow is assembler (the original's loop: as C it was 4.2 times
+ * slower); the rest C behind thunks.  The lookup tables keep the
  * original's order (left-first then right-first, 8 entries of 4 words).
  *
  * BUG(orig):
@@ -129,7 +130,6 @@ BLITZ_LIBFIN();
 /* ------------------------------------------------------------- the data */
 
 #define END 0xabcd                      /* the end of a list */
-#define COLOR00 (*(volatile UWORD *)0xdff180)
 
 /* The lists' addresses are longs, as in the original (as pointers GCC
    builds other code). */
@@ -198,20 +198,27 @@ static struct snowfield *entry(ULONG n)
 /* plane n of a Blitz bitmap object (struct BitMap) at address bm */
 #define PLANE(bm, n) ((UBYTE *)*(ULONG *)&((const struct BitMap *)(bm))->Planes[n])
 
-/* BTST/BCLR/BSET Dn,d(An,Dm.w): the bit modulo 8 of a byte */
-static int btst(const UBYTE *p, UWORD idx, UWORD bit)
+/* BTST/BCLR/BSET Dn,0(An,Dm.w), the original's instructions: the bit
+   modulo 8 of the byte at p + the word index idx (sign-extended).  Inline
+   assembler: as C (shifts and masks, the helpers not inlined at -Os)
+   LDoSnow took 4.2 times the original's cycles.  The planes are read and
+   written only through these (volatile, kept in order). */
+static inline __attribute__((always_inline)) int btst(const UBYTE *p, UWORD idx, UWORD bit)
 {
-    return p[(WORD)idx] >> (bit & 7) & 1;
+    UBYTE r;
+
+    __asm volatile("btst %2,0(%1,%3.w)\n\tsne %0" : "=d"(r) : "a"(p), "d"(bit), "d"(idx) : "cc");
+    return r;
 }
 
-static void bclr(UBYTE *p, UWORD idx, UWORD bit)
+static inline __attribute__((always_inline)) void bclr(UBYTE *p, UWORD idx, UWORD bit)
 {
-    p[(WORD)idx] &= (UBYTE)~(1 << (bit & 7));
+    __asm volatile("bclr %1,0(%0,%2.w)" : : "a"(p), "d"(bit), "d"(idx) : "cc", "memory");
 }
 
-static void bset(UBYTE *p, UWORD idx, UWORD bit)
+static inline __attribute__((always_inline)) void bset(UBYTE *p, UWORD idx, UWORD bit)
 {
-    p[(WORD)idx] |= (UBYTE)(1 << (bit & 7));
+    __asm volatile("bset %1,0(%0,%2.w)" : : "a"(p), "d"(bit), "d"(idx) : "cc", "memory");
 }
 
 /**
@@ -313,92 +320,121 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
  * moves one row down if the pixel there is clear, else to the side (left
  * or right first, alternating) where the pixel and the one below are
  * clear, else it stays; one that cannot move with plane 1 set below it
- * stops (set in plane 1, dropped).  A flake below bp_size is removed.
- * Then a new flake from the random table (the index steps by 2 modulo
- * 1024).  COLOR00 is red while it runs ($F00, then 0: a debug flash).
+ * stops (set in plane 1, dropped).  A flake below bp_size (compared as a
+ * signed word) is removed.  Then a new flake from the random table (the
+ * index steps by 2 modulo 1024).  COLOR00 is red while it runs ($F00,
+ * then 0: a debug flash).
+ *
+ * An assembler entry, the original's loop (registers as there: a1 plane
+ * 0, a4 plane 1, a0 the list read, a2 the list written, a5 the random
+ * table, d7 bp_size, d6 left or right first, a3 the side table): as C
+ * (even with the bit operations as inline assembler) it took 4.2 and 1.7
+ * times the original's cycles per call (perf bsnow).  Keeps d1/a0/a1 and
+ * a4-a6 (the original a4-a6, the C thunk d1/a0/a1); changes d0, d2-d7,
+ * a2, a3.
+ *
  * BUG(orig): no bounds for the lists (#914); a bit above 7 reads behind
- * the side tables (#910).  The list number: initchk/fieldchk (fixed
- * #913).
- * @param n   d0: the list number
- * @param rt  d1: the random table (index.w, then pairs offset.b, bit.b)
+ * the side tables (#910).  The list number: fieldchk (fixed #913).
+ * @arg d0 the list number
+ * @arg d1 the random table (index.w, then pairs offset.b, bit.b)
  */
-static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), struct randomtable *rt BL_REG(d1))
-{
-    struct snowfield *e;
-    UBYTE *in, *out, *plane0, *plane1;
-    const UBYTE *bm;
-    UWORD bpsize, i;
-    UBYTE flip = 0;                     /* d6: left or right first */
+BLITZ_ASM_ROUTINE(_AsmDoSnow,
+"   movem.l d1/a0-a1/a4-a6,-(sp)\n"
+"   move.w  #0x0f00,0xdff180\n"           /* COLOR00 red */
+"   lea     _lp(pc),a2\n"
+"   asl.w   #4,d0\n"                      /* ASL.w: the list number's upper word kept */
+"   add.l   d0,a2\n"
+"   move.l  (a2),d0\n"                    /* the newer list: read */
+"   move.l  4(a2),d2\n"                   /* the other: written */
+"   move.l  d2,(a2)\n"
+"   move.l  d0,4(a2)\n"
+"   move.l  d1,a5\n"
+"   move.l  d0,a0\n"
+"   move.l  4(a0),a1\n"                   /* the bitmap */
+"   move.l  8(a0),d7\n"                   /* bp_size */
+"   lea     16(a0),a0\n"                  /* its entries */
+"   add.l   #12,d2\n"
+"   move.l  d2,-(sp)\n"                   /* &last of the list written */
+"   addq.l  #4,d2\n"
+"   move.l  d2,a2\n"                      /* its entries */
+"   move.l  12(a1),a4\n"                  /* plane 1 */
+"   move.l  8(a1),a1\n"                   /* plane 0 */
+"   moveq   #0,d4\n"
+"   moveq   #0,d6\n"
+"0: cmp.w   #0xabcd,(a0)\n"               /* 'loop */
+"   beq.s   8f\n"
+"   move.w  (a0)+,d1\n"
+"   move.w  (a0)+,d2\n"
+"   move.w  d1,d3\n"
+"   add.w   #40,d1\n"
+"   cmp.w   d1,d7\n"
+"   bgt.s   1f\n"
+"   bclr    d2,0(a1,d3.w)\n"              /* out of the plane */
+"   bra.s   0b\n"
+"1: btst    d2,0(a1,d1.w)\n"              /* 'insidebitplane */
+"   bne.s   2f\n"
+"   bclr    d2,0(a1,d3.w)\n"              /* 'drawit */
+"   bset    d2,0(a1,d1.w)\n"
+"   move.w  d1,(a2)+\n"
+"   move.w  d2,(a2)+\n"
+"   bra.s   0b\n"
+"8: move.w  (a5),d4\n"                    /* 'addone: a new flake */
+"   moveq   #0,d1\n"
+"   move.b  2(a5,d4.w),d1\n"
+"   move.w  d1,(a2)+\n"
+"   move.b  3(a5,d4.w),d1\n"
+"   move.w  d1,(a2)+\n"
+"   addq.w  #2,d4\n"
+"   and.w   #1023,d4\n"
+"   move.w  d4,(a5)\n"
+"   move.w  #0xabcd,(a2)\n"
+"   move.l  (sp)+,a0\n"
+"   move.l  a2,(a0)\n"                    /* last */
+"   move.w  #0,0xdff180\n"
+"   movem.l (sp)+,d1/a0-a1/a4-a6\n"
+"   rts\n"
+"2: lea     _lookup(pc),a3\n"             /* 'look: left first */
+"   tst.b   d6\n"
+"   jeq     3f\n"
+"   lea     64(a3),a3\n"                  /* right first */
+"   moveq   #0,d6\n"
+"   jra     4f\n"
+"3: moveq   #1,d6\n"
+"4: move.w  d2,d4\n"                      /* 'gottable: bit * 8 bytes in */
+"   asl.w   #3,d4\n"
+"   add.l   d4,a3\n"
+"   move.w  d3,d5\n"                      /* 'doleft */
+"   add.w   (a3)+,d5\n"
+"   move.w  (a3)+,d4\n"
+"   btst    d4,0(a1,d5.w)\n"
+"   jne     5f\n"
+"   btst    d4,40(a1,d5.w)\n"
+"   jne     5f\n"
+"   bclr    d2,0(a1,d3.w)\n"
+"   bset    d4,0(a1,d5.w)\n"
+"   move.w  d5,(a2)+\n"
+"   move.w  d4,(a2)+\n"
+"   jra     0b\n"
+"5: move.w  d3,d5\n"                      /* 'doright */
+"   add.w   (a3)+,d5\n"
+"   move.w  (a3)+,d4\n"
+"   btst    d4,0(a1,d5.w)\n"
+"   jne     6f\n"
+"   btst    d4,40(a1,d5.w)\n"
+"   jne     6f\n"
+"   bclr    d2,0(a1,d3.w)\n"
+"   bset    d4,0(a1,d5.w)\n"
+"   move.w  d5,(a2)+\n"
+"   move.w  d4,(a2)+\n"
+"   jra     0b\n"
+"6: btst    d2,40(a4,d3.w)\n"             /* 'skipitstore */
+"   jne     7f\n"
+"   move.w  d3,(a2)+\n"
+"   move.w  d2,(a2)+\n"
+"   jra     0b\n"
+"7: bset    d2,0(a4,d3.w)\n"              /* 'okpause: stopped */
+"   jra     0b");
 
-    COLOR00 = 0x0f00;
-    e = entry(n);
-    in = (UBYTE *)e->drop[0];           /* the newer list: read */
-    out = (UBYTE *)e->drop[1];          /* the other: written */
-    e->drop[0] = (ULONG)out;
-    e->drop[1] = (ULONG)in;
-    bm = (const UBYTE *)DROP(in)->bm;
-    bpsize = (UWORD)DROP(in)->bpsize;   /* compared as a word */
-    plane1 = PLANE(bm, 1);
-    plane0 = PLANE(bm, 0);
-    {
-        UWORD *src = DROP(in)->entries, *dst = DROP(out)->entries;
-
-        while (*src != END) {
-            UWORD at = *src++, bit = *src++, below = (UWORD)(at + 40);
-            const struct side *look;
-            UWORD side, sbit;
-
-            if (!((WORD)bpsize > (WORD)below)) {
-                bclr(plane0, at, bit);                  /* out of the plane */
-                continue;
-            }
-            if (!btst(plane0, below, bit)) {            /* 'drawit */
-                bclr(plane0, at, bit);
-                bset(plane0, below, bit);
-                *dst++ = below;
-                *dst++ = bit;
-                continue;
-            }
-            /* 'look: left or right first, alternating; bit << 3 bytes
-               into the table (BUG(orig): a bit above 7 behind it, #910) */
-            look = lookup[flip][0];
-            flip = !flip;
-            look = (const struct side *)((const UBYTE *)look + (UWORD)(bit << 3));
-            side = (UWORD)(at + look[0].offset);        /* 'doleft */
-            sbit = look[0].bit;
-            if (!btst(plane0, side, sbit) && !btst(plane0 + 40, side, sbit)) {
-                bclr(plane0, at, bit);
-                bset(plane0, side, sbit);
-                *dst++ = side;
-                *dst++ = sbit;
-                continue;
-            }
-            side = (UWORD)(at + look[1].offset);        /* 'doright */
-            sbit = look[1].bit;
-            if (!btst(plane0, side, sbit) && !btst(plane0 + 40, side, sbit)) {
-                bclr(plane0, at, bit);
-                bset(plane0, side, sbit);
-                *dst++ = side;
-                *dst++ = sbit;
-                continue;
-            }
-            if (!btst(plane1 + 40, at, bit)) {          /* 'skipitstore */
-                *dst++ = at;
-                *dst++ = bit;
-                continue;
-            }
-            bset(plane1, at, bit);                      /* 'okpause */
-        }
-        /* 'addone: a new flake from the random table */
-        i = rt->index;
-        *dst++ = rt->pairs[(WORD)i];
-        *dst++ = rt->pairs[1 + (WORD)i];
-        rt->index = (UWORD)((i + 2) & 1023);
-        *dst = END;
-        DROP(out)->last = (ULONG)dst;
-    }
-    COLOR00 = 0;
-}
 
 /* ---------------------------------------------------- LDoSnowActivate */
 
@@ -521,7 +557,6 @@ static BB_BOOL BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
 BLITZ_THUNK(risnowlib_libinit, libinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(risnowlib_libfinit, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_InitSnowDrop, initsnowdrop_c, "d1/a0-a1");
-BLITZ_THUNK(_AsmDoSnow, asmdosnow_c, "d1/a0-a1");
 BLITZ_THUNK(_DoKillList, dokilllist_c, "d1/a0-a1");
 BLITZ_THUNK(_KillPoint, killpoint_c, "d1/a0-a1");
 

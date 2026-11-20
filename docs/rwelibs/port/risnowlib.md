@@ -43,11 +43,19 @@ blue pixels. init clears the list table, finit is empty.
 
 ## C and assembler
 
-All C behind `BLITZ_THUNK`s (keep d1/a0/a1, d0 too for init and finit;
-the original changes d0–d7/a0–a3 and keeps a4–a6). The bit operations
-are the original's `BTST`/`BCLR`/`BSET` on bytes (bit modulo 8, word
-indexes), the lookup tables keep their order (left-first, then
-right-first), COLOR00 is written as the original writes it.
+`LDoSnow` is an assembler entry, the original's loop (its registers: a1
+plane 0, a4 plane 1, a0 the list read, a2 the list written, a5 the
+random table, d7 bp_size, d6 left or right first, a3 the side table): as
+C it took 4.2 times the original's cycles per call, with the bit
+operations as inline assembler still 1.7 times (perf `bsnow`: 163309
+and 67339 against 38979 cycles for a field of about 255 falling
+flakes); the assembler takes 39009 (1.00). It keeps d1/a0/a1 and a4-a6.
+The rest is C behind `BLITZ_THUNK`s (keep d1/a0/a1, d0 too for init and
+finit; the original changes d0–d7/a0–a3 and keeps a4–a6). The bit
+operations are the original's `BTST`/`BCLR`/`BSET Dn,0(An,Dm.w)` on
+bytes (bit modulo 8, word indexes) as inline assembler, the lookup
+tables keep their order (left-first, then right-first), COLOR00 is
+written as the original writes it.
 
 ## Fixed (intended deviations)
 
