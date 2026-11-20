@@ -73,11 +73,16 @@ All other routines are C behind `BLITZ_THUNK`.
   the list, `_zonetable` itself; `FreeZoneTable -1` and `NewZoneTable -1`
   freed the current table and left it there (#872, test
   `rwe/rizonejoylib-negative-table-number`).
+* ZoneInit (one zone and a range) and SetZone (both forms) compare the
+  zone number unsigned: a negative number is refused, as the manual's "A
+  zone number outside the range of the current table will cause this
+  command to abort" says. The original checked only the upper bound
+  (`CMP.l : BMI`): zone -1 is the 8 bytes in front of zone 0, the long in
+  front of the table block and the table's count (#873, test
+  `rwe/rizonejoylib-negative-zone-number`).
 
 ## BUG(orig)
 
-* No routine checks a zone number for < 0 (ZoneInit, SetZone write before
-  the table) (#873).
 * NewZoneTable initialises the **current** table (`ZoneInit1` on
   `_zonetable`), not the new one, which keeps AllocMem's garbage (#875).
   If it replaces a table and the AllocMem fails, the entry keeps the

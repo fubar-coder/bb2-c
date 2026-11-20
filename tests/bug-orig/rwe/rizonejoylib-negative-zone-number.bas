@@ -8,6 +8,7 @@
 ; (another allocation, a free chunk) - left at -1 it crashed or hung some
 ; sessions and not others.
 ; Correct: zone -1 is refused, the table keeps its 256 zones.
+; @fixed #873
 ; @rwe rizonejoylib
 DEFTYPE .l
 t=ZoneTable

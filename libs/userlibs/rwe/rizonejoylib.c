@@ -27,8 +27,6 @@
  * the same order, so its timing does not depend on the code around them.
  *
  * BUG(orig):
- *   - No routine checks a zone number for < 0 (ZoneInit2, SetZone write
- *     before the table) (#873).
  *   - NewZoneTable initialises the CURRENT table (ZoneInit1 on
  *     _zonetable), not the new one, which keeps AllocMem's garbage
  *     (#875); if the old table of that number was freed and the AllocMem
@@ -60,6 +58,11 @@
  *     compared it signed (BPL on number - 16): UseZoneTable -1 selected
  *     entry -1 of the list, _zonetable itself, FreeZoneTable -1 and
  *     NewZoneTable -1 freed the current table and left it there (#872).
+ *   - ZoneInit (one zone and a range) and SetZone (both forms) compare the
+ *     zone number unsigned: a negative number is refused.  The original
+ *     checked only the upper bound (CMP.l : BMI): zone -1 is the 8 bytes
+ *     in front of zone 0, the long in front of the table block and the
+ *     table's count (#873).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -322,7 +325,8 @@ static void BLITZ_ROUTINE libfinit_c(void)
 /**
  * @brief ZoneInit start_num,end_num: clears the zones start..end of the current table.
  *
- * x1..y2 = -1 (not set).  BUG(orig) (#873): start is not checked for < 0.
+ * x1..y2 = -1 (not set).  The numbers are compared unsigned: fixed
+ * (#873), the original passed a negative start (CMP.l : BMI).
  * @param zonenum  d0: the first zone
  * @param lastnum  d1: the last zone
  * @return d0: end + 1 (the low word), -1 without a table or for a bad range
@@ -330,14 +334,13 @@ static void BLITZ_ROUTINE libfinit_c(void)
 static ULONG BLITZ_ROUTINE zoneinit_c(ULONG zonenum BL_REG(d0), ULONG lastnum BL_REG(d1))
 {
     struct zonetable *zt = zd.zonetable;
-    ULONG last;
     LONG *z;                            /* a zone as two longs: x1/x2, y1/y2 */
     UWORD end;
 
     if (!zt)
         return (ULONG)-1;                               /* _nozones */
-    last = zt->count - 1;
-    if (MI(last, zonenum) || MI(last, lastnum) || MI(lastnum, zonenum))
+    /* unsigned: fixed (#873) */
+    if (zonenum >= zt->count || lastnum >= zt->count || zonenum > lastnum)
         return (ULONG)-1;
     end = (UWORD)(lastnum + 1);                         /* ADDQ.w #1,d1 */
     z = (LONG *)zone(zt, ASLW(zonenum, 3));
@@ -366,8 +369,9 @@ static ULONG BLITZ_ROUTINE zoneinit1_c(void)
 /**
  * @brief ZoneInit zone_num: clears one zone of the current table.
  *
- * Only the upper bound is checked (BUG(orig) #873: a negative number
- * writes before the table).
+ * The number is compared unsigned: fixed (#873), the original checked
+ * only the upper bound (CMP.l : BMI), a negative number wrote before the
+ * table.
  * @param zonenum  d0: the zone
  * @return d0: the zone's byte offset, -1 without a table or out of range
  */
@@ -377,7 +381,7 @@ static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zonenum BL_REG(d0))
     ULONG off;                          /* d0: the zone's byte offset */
     LONG *z;                            /* the zone as two longs */
 
-    if (!zt || MI(zt->count - 1, zonenum))
+    if (!zt || zonenum >= zt->count)                    /* unsigned: fixed (#873) */
         return (ULONG)-1;
     off = ASLW(zonenum, 3);
     z = (LONG *)zone(zt, off);
@@ -422,7 +426,7 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
 
     if (!zt)
         return BB_TRUE;                             /* _nozones: BUG(orig) #876 */
-    if (MI(zt->count - 1, n))
+    if (n >= zt->count)                                 /* unsigned: fixed (#873) */
         return BB_FALSE;
     z = zone(zt, ASLW(n, 3));
     z->x1 = x1;
@@ -436,7 +440,8 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
  * @brief SetZone(num,x1,y1,x2,y2): sets a rectangular zone of the current table.
  *
  * The corners are ordered (EXG) so that x1 < x2 and y1 < y2.  BUG(orig):
- * no check for num < 0 (#873); without a table the result is -1 (#876).
+ * without a table the result is -1 (#876).  num is compared unsigned:
+ * fixed (#873), the original wrote a negative num before the table.
  * @param n   d0: the zone number
  * @param x1  d1: a corner x
  * @param y1  d2: a corner y
