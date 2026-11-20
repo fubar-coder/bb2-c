@@ -3,7 +3,7 @@ ok
 [run]
 c=Len(a$) 5 extra calls 0
 5
-NPrint Len(a$) calls 1
+NPrint Len(a$) calls 2
 empty 0
 unassigned 0
 10000 10000

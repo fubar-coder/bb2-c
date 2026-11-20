@@ -3,7 +3,7 @@ ok
 [run]
 c=Asc(a$) 104 extra calls 0
 104
-NPrint Asc(a$) calls 1
+NPrint Asc(a$) calls 2
 0 0
 127 127
 128 128

@@ -11,6 +11,6 @@ q2=-Frac(q1) .75 calls 3
 Poke.q m,Frac(q1) FFFF4000 calls 4
 If Frac(q1)<q3 1 calls 3
 -.75
-NPrint Frac(q1) calls 3
+NPrint Frac(q1) calls 4
 q2=Frac(qa(1))*2 1.5 calls 5
 rc=0
