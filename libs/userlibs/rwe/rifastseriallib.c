@@ -27,8 +27,8 @@
  *
  * State: mode (SetSerialMode writes the first byte of the word, TST.b
  * reads it), numbytes (DoSerialIO's count - 1), inbuf/outbuf, baud (the
- * SERPER value, 0 = not initialised), inten, bytebuf (temp: one byte
- * buffer, the first byte of a word).
+ * SERPER value), inten, bytebuf (temp: one byte buffer, the first byte
+ * of a word), and behind them ready (initialised, #653).
  *
  * Fixed (intended deviations):
  *   - InitSerialIO/SetIOSpeed divide in C, not with the 68020 instruction
@@ -47,9 +47,12 @@
  *   - InitSerialIO (#long result) returns -1 when it set the port up, 0
  *     when it did nothing because it was already initialised; the
  *     original returned its baud argument in both cases (#650).
+ *   - The library keeps a flag of its own for "initialised"; the original
+ *     took SERPER 0 (3546895 baud) for "not initialised", so after it
+ *     PutSerial, SetIOSpeed and FinitSerialIO did nothing.  InitSerialIO
+ *     and SetIOSpeed refuse a baud rate outside 109-3546895, whose SERPER
+ *     does not fit (the original divided by 0 for baud 0) (#653).
  * BUG(orig):
- *   - A baud rate that gives SERPER 0 (>= 1773448) leaves the library
- *     "not initialised" (#653).
  *   - Only FinitSerialIO, InitSerialIO, PutSerial and SetIOSpeed check
  *     the initialisation (#652).
  *   - GetSerial address,bytes (#byte result) returns its address argument
@@ -206,6 +209,9 @@ static struct {
     UWORD baud;
     UWORD inten;
     UBYTE bytebuf[2];                   /* temp, Dc.w: the first byte is used */
+    /* behind the original's 18 bytes: initialised (fixed (#653): the
+       original took SERPER 0 for "not initialised") */
+    UBYTE ready;
 } fs;
 
 /* !writebyte: wait for TBE, send the byte with a stop bit */
@@ -245,6 +251,11 @@ static ULONG udiv(ULONG n, ULONG d)
     return q;
 }
 
+/* a baud rate whose SERPER fits the 15 bits of the register (109 ...
+   3546895; fixed (#653): the original divided by 0 for baud 0 and took
+   every rate) */
+#define BAUD_OK(b) ((b) >= 109 && (b) <= SERCLOCK)
+
 /* the baud rate as SERPER: 3546895 / baud - 1 (SUBQ.w); fixed (#647):
    a division that works on a 68000, the original's DIVU.L is a 68020
    instruction */
@@ -264,7 +275,7 @@ void BLITZ_ROUTINE c_codeinit(void)
 /**
  * @brief FinitSerialIO (and finit): end the serial I/O, switch TBE/RBF back on.
  *
- * Nothing if not initialised (baud 0); else baud = 0 and the RBF (bit 11)
+ * Nothing if not initialised; else baud = 0 and the RBF (bit 11)
  * and TBE (bit 0) interrupts that were on at InitSerialIO (the saved
  * inten) are switched on again in INTENA.  Fixed (#651, #648): the
  * original saved the address of INTENAR ($F01C, bits 11 and 0 clear),
@@ -275,8 +286,9 @@ void BLITZ_ROUTINE c_finitserialio(void)
 {
     UWORD on = 0;
 
-    if (!fs.baud)
+    if (!fs.ready)                      /* fixed (#653): not baud */
         return;
+    fs.ready = 0;
     fs.baud = 0;
     if (fs.inten & 0x0800)
         on |= 0x0800;
@@ -322,13 +334,17 @@ void BLITZ_ROUTINE c_doserialIO2(void)
 /**
  * @brief InitSerialIO baud,numbytes,inbuf,outbuf: set up the serial port for the transfers.
  *
- * Nothing if already initialised.  Switches the TBE and RBF interrupts
+ * Nothing if already initialised or the baud rate is not between 109
+ * and 3546895 (fixed (#653): the original divided by 0 for baud 0, a rate
+ * above 3546895 gave SERPER $FFFF, one below 109 one in the 16th bit, the
+ * LONG flag).  Switches the TBE and RBF interrupts
  * off (INTENA $0801), sets SERPER = 3546895 / baud - 1 (fixed (#647): a
  * division that works on a 68000, the original's DIVU.L is a 68020
  * instruction), and stores numbytes - 1 and the buffers.
  * Fixed (#651): inten gets INTENAR's value, the original the immediate
- * $F01C (the address of INTENAR).  BUG(orig): a baud rate that gives
- * SERPER 0 (>= 1773448) leaves the library "not initialised" (#653).
+ * $F01C (the address of INTENAR).  Fixed (#653): the library is
+ * initialised also with SERPER 0 (3546895 baud), which the original took
+ * for "not initialised".
  * @param baud      d0: the baud rate
  * @param numbytes  d1: the bytes of a DoSerialIO
  * @param inbuf     d2: the receive buffer
@@ -339,7 +355,7 @@ void BLITZ_ROUTINE c_doserialIO2(void)
 ULONG BLITZ_ROUTINE c_initserialio(ULONG baud BL_REG(d0), UWORD numbytes BL_REG(d1),
                                    UBYTE *inbuf BL_REG(d2), UBYTE *outbuf BL_REG(d3))
 {
-    if (fs.baud)
+    if (fs.ready || !BAUD_OK(baud))     /* fixed (#653) */
         return 0;                       /* fixed (#650) */
     fs.inten = INTENAR;                 /* fixed (#651): the value */
     INTENA = 0x0801;                    /* TBE and RBF interrupts off */
@@ -347,6 +363,7 @@ ULONG BLITZ_ROUTINE c_initserialio(ULONG baud BL_REG(d0), UWORD numbytes BL_REG(
     setbaud(baud);
     fs.inbuf = inbuf;
     fs.outbuf = outbuf;
+    fs.ready = 1;
     return (ULONG)-1;                   /* fixed (#650) */
 }
 
@@ -375,7 +392,7 @@ void BLITZ_ROUTINE c_endserialio(void)
  */
 void BLITZ_ROUTINE c_putserial(UBYTE b BL_REG(d0))
 {
-    if (!fs.baud)
+    if (!fs.ready)                      /* fixed (#653) */
         return;
     fs.bytebuf[0] = b;
     writebyte(fs.bytebuf[0]);
@@ -391,7 +408,7 @@ void BLITZ_ROUTINE c_putserial(UBYTE b BL_REG(d0))
  */
 void BLITZ_ROUTINE c_putserial2(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
-    if (!fs.baud)
+    if (!fs.ready)                      /* fixed (#653) */
         return;
     while (n--)                         /* fixed (#646) */
         writebyte(*p++);
@@ -538,6 +555,9 @@ BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
 /**
  * @brief SetIOSpeed baudrate: a new baud rate (SERPER) if initialised.
  *
+ * Fixed (#653): nothing for a rate below 109 (the original wrote a SERPER
+ * with the LONG flag, or divided by 0), and the library is initialised
+ * also after SERPER 0.
  * The division as in InitSerialIO (fixed, #647).  Fixed (#654): it
  * divides by the word argument alone, the original by all of d0, also
  * its undefined upper word.
@@ -545,7 +565,7 @@ BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
  */
 void BLITZ_ROUTINE c_setiospeed(UWORD baud BL_REG(d0))
 {
-    if (!fs.baud)
+    if (!fs.ready || !BAUD_OK(baud))    /* fixed (#653) */
         return;
     setbaud(baud);
 }

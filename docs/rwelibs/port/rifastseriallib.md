@@ -58,11 +58,17 @@ d0/d1/a0/a1 that are not the result.
   command that works, as the other RWE fixes; test
   `rifastseriallib-initserialio-result`; `libs_emulator` cases
   `[fixed #650]` of `rwe_rifastseriallib`).
+* The library keeps a flag of its own for "initialised", behind the
+  18-byte state; the original took SERPER 0 (3546895 baud) for "not
+  initialised", so after it `PutSerial`, `SetIOSpeed` and `FinitSerialIO`
+  did nothing. `InitSerialIO` and `SetIOSpeed` refuse a baud rate outside
+  109–3546895, whose SERPER does not fit the register (`InitSerialIO`
+  returns 0); the original divided by 0 for baud 0 (a rate from a
+  settings file or menu, D-006) (#653; test `rifastseriallib-serper-zero`;
+  `libs_emulator` cases `[fixed #653]` of `rwe_rifastseriallib`).
 
 **BUG(orig)** (kept):
 
-* A baud rate that gives SERPER 0 (≥ 1773448) leaves the library "not
-  initialised" (#653).
 * Only `FinitSerialIO`, `InitSerialIO`, `PutSerial` and `SetIOSpeed`
   check the initialisation (#652).
 * `GetSerial address,bytes` (#byte result) returns its address argument

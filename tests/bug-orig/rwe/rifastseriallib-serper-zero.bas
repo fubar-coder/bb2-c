@@ -9,6 +9,7 @@
 ; divides by (DIVU.L: a division by zero exception).
 ; Correct: the library is initialised after InitSerialIO 3546895 (the
 ; reply comes); InitSerialIO refuses baud 0 (result 0).
+; @fixed #653
 ; @rwe rifastseriallib
 ; @pass serial=on
 ; @pass timeout=60
