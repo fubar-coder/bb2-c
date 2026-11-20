@@ -417,10 +417,10 @@ object has an entry in a table of its kind, and the compiler finds an
 object from its number and the size of an entry. The original computed
 this distance with a 16-bit number, which holds at most 32767. When a
 maximum is raised so far that an object lies 32 KB or more behind the
-start of its table, from Shape 1024 or from BitMap 512 on, the result
-turned negative: `Addr`, `Use`, `Free` and the object number of a command
-such as `BitMap 512,…` then addressed memory before the table instead of
-the object. Runtime error checking did not notice it, since the number
+start of its table, the result turned negative. For shapes this happens
+from Shape 1024 on, for bitmaps from BitMap 512 on. `Addr`, `Use`, `Free`
+and the object number of a command such as `BitMap 512,…` then addressed
+memory before the table instead of the object. Runtime error checking did not notice it, since the number
 itself was within the maximum.
 
 **What happened**
@@ -689,12 +689,13 @@ Issue: [A program ending with data of odd length crashed at its end (#979)](http
 The fixes below need rarer conditions. Those that make the port refuse a
 source the original accepted are shown with examples on
 [Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors" >}}).
+Each point says first what the original did, then what the port does.
 
 ### Expressions and statements
 
-* A string addition nested seven levels deep, or passed as an argument
-  of a library command from the seventh on that goes in a register, such
-  as the text of `AddBox`, got a wrong length; the length is right
+* A string addition nested seven levels deep, or passed as the seventh
+  or a later register argument of a library command, such as the text of
+  `AddBox`, got a wrong length; the length is right
   ([#971](https://github.com/fubar-coder/bb2-c/issues/971)).
 * A `~` inside a string literal started a constant expression, so
   `"a~1+2~b"` became `a3b`; inside strings `~` is an ordinary character
@@ -706,22 +707,22 @@ source the original accepted are shown with examples on
   emits nothing, a negative count gives "Illegal Constant"
   ([#37](https://github.com/fubar-coder/bb2-c/issues/37)).
 * A division or `Mod` by a constant 0, such as `a.w=5/0`, crashed the
-  compiler with "Software Failure" (Byte, Word and Float division, Word
-  `Mod`) or compiled to the largest Long number (Long and Quick division,
-  constants such as `#c=5/0`); it is the compile error "Division by Zero"
+  compiler with "Software Failure" with Byte, Word or Float division and
+  with Word `Mod`. With Long or Quick division, and in constants such as
+  `#c=5/0`, it compiled to the largest Long number. In the port, both are
+  the compile error "Division by Zero"
   ([A division by a constant 0]({{< relref "/docs/compared-with-original/new-errors#division-by-zero" >}}),
   [#1044](https://github.com/fubar-coder/bb2-c/issues/1044)).
 * A Latin-1 character other than the umlauts, such as ß or é, could not
-  reach a string, since the editor lost it; the editor keeps it as a
-  literal character
-  ([ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}})),
-  which gives its byte in a string, a `Data$` or `Dc.b` string and a
-  quoted constant, and is a "Syntax Error" outside a string ("Token Not
-  Found" in AB3 mode); in AB3 mode the Latin-1 characters in the strings
-  and comments of an AmiBlitz3 text source give the bytes AmiBlitz3
-  gives them
+  reach a string, since the editor lost it. The port's editor keeps it as
+  a literal character
+  ([ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}})).
+  Such a character gives its byte in a string, a `Data$` or `Dc.b` string
+  and a quoted constant; outside a string it is a "Syntax Error" ("Token
+  Not Found" in AB3 mode). In AB3 mode, the Latin-1 characters in the
+  strings and comments of an AmiBlitz3 text source give the bytes
+  AmiBlitz3 gives them
   ([#1018](https://github.com/fubar-coder/bb2-c/issues/1018)).
-
 * `Supervisor_`, the first AmigaOS function of exec, gave "Syntax
   Error": the compiler looked it up in the dos library, whose token
   numbers ran into exec's; it compiles
@@ -761,9 +762,8 @@ source the original accepted are shown with examples on
   allowed ([#973](https://github.com/fubar-coder/bb2-c/issues/973)).
 * A Statement or Function with three or more parameters and a local
   NewType variable got a wrong third parameter, and with five parameters a
-  wrong fifth one too, because the code that sets up the local variables
-  at the start of the procedure overwrote them; every parameter keeps its
-  value ([#1063](https://github.com/fubar-coder/bb2-c/issues/1063)).
+  wrong fifth one too. The code that sets up the local variables at the
+  start of the procedure overwrote them; every parameter keeps its value ([#1063](https://github.com/fubar-coder/bb2-c/issues/1063)).
 
 ### Paths and include files
 
@@ -831,11 +831,12 @@ source the original accepted are shown with examples on
 * On a 68010 processor, runtime errors and the debugger took the trap
   vectors from the wrong table when the system had moved it; the moved
   table is used ([#42](https://github.com/fubar-coder/bb2-c/issues/42)).
-* Without runtime error checking, a `TokeJsr` in a source, or an
-  `ALibJsr` in a library, to a command routine that has an error check
-  went through an extra stub, a `jsr` to the routine and an `rts`: 8 bytes
-  more and one more call each time, for a check that is not part of the
-  program. The call goes straight to the routine
+* `TokeJsr` in a source and `ALibJsr` in a library call the routine of a
+  library command. Without runtime error checking, such a call to a
+  command routine that has an error check went through an extra stub, a
+  `jsr` to the routine and an `rts`. Each such call cost 8 bytes and one
+  extra call, for a check that is not part of the program. In the port,
+  the call goes straight to the routine
   ([#1048](https://github.com/fubar-coder/bb2-c/issues/1048)).
 * An operation of two constants, such as `7 Mod 3`, is worked out while
   compiling. When it was the first use of a library, such as the one of
@@ -864,7 +865,7 @@ source the original accepted are shown with examples on
 
 * While compiling from TED on a screen with 3641 or more bytes per row
   (wide RTG modes), the compiler's progress bar wrote about 28 KB before
-  TED's screen memory. The compiler now reports its progress to TED, which
+  TED's screen memory. The port's compiler reports its progress to TED, which
   draws the bar itself; with the original TED, the port's compiler shows
   no bar ([#980](https://github.com/fubar-coder/bb2-c/issues/980)).
 
