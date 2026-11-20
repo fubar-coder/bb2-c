@@ -341,8 +341,7 @@ init (second run)|inten||1 [fixed #651]	$00000000
 init (second run)|kept||1	kept
 init (second run)|mode||1 [orig]	$00000100
 init (second run)|mode||1 [fixed #1159]	$00000000
-init (second run)|numbytes||1 [orig]	$00000000
-init (second run)|numbytes||1 [fixed #654]	$00000000
+init (second run)|numbytes||1	$00000000
 init (second run)|outbuf||1 [orig]	$9ABCDEF0
 init (second run)|outbuf||1 [fixed #1159]	$00000000
 init (second run)|temp||1 [orig]	$00004200
