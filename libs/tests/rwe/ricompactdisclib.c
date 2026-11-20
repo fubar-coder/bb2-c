@@ -51,7 +51,7 @@
  * (CreateMsgPort fails) and OpenCD without a request (CreateIORequest
  * fails).
  * Not covered: a real CD drive; a device name of more than 40 bytes
- * (overwrites toc ..., BUG(orig) (#576); bug-orig test
+ * (the original overwrites toc ..., refused since #576; bug-orig test
  * ricompactdisclib-opencd-name-overflow); CDTrackLength 0 (reads 64 KB
  * behind toc) and of tracks behind the last (memory globalloc did not
  * clear: differs between runs); CDPlayTrack with scsiflag on a 68000

@@ -36,11 +36,14 @@
  * device name and CDTrackMins/CDTrackSecs offsets read and write the same
  * things.
  *
+ * Fixed (#576): OpenCD name$,unit refuses a name of 40 characters or
+ *   more (0, nothing copied); the original copies it into username (40
+ *   bytes) without a limit (over toc, toclen, temptoc, qcodeinfo, ioreq
+ *   ...).
+ *
  * BUG(orig):
- *   - OpenCD name$,unit copies the name into username (40 bytes) without
- *     a limit (a longer name overwrites toc, toclen, temptoc, qcodeinfo,
- *     ioreq ...) and keeps it, the unit and scsiflag for later OpenCDs;
- *     scsiflag is only cleared by init (#576, #577).
+ *   - OpenCD name$,unit keeps the name, the unit and scsiflag for later
+ *     OpenCDs; scsiflag is only cleared by init (#577).
  *   - OpenCD while open: the old request stays open, lost.  If OpenDevice
  *     fails the request is deleted but stays in ioreq, and OpenCD returns
  *     d0 of DeleteIORequest (not 0) (#578, #575).
@@ -438,22 +441,42 @@ ULONG BLITZ_ROUTINE c_opencd(void)
     return (ULONG)-1;
 }
 
-/* OpenCD devicename$,unit: the name and unit stay for later OpenCDs */
+/* a device name that fits username with its 0 (the manual: "less than
+   forty characters") */
+static int namefits(const char *name)
+{
+    int n = 0;
+
+    while (name[n])
+        if (++n >= (int)sizeof cd.username)
+            return 0;
+    return 1;
+}
+
+/* OpenCD devicename$,unit: the name and unit stay for later OpenCDs.
+   Fixed (#576): a name of 40 characters or more is refused (0, nothing
+   copied, nothing opened); the original copies it without a limit over
+   toc, toclen, temptoc, qcodeinfo, ioreq, msgport ... */
 ULONG BLITZ_ROUTINE c_opencd2(const char *name BL_REG(d0), ULONG unit BL_REG(d1))
 {
     char *p = cd.username;
 
+    if (!namefits(name))
+        return 0;
     cd.trackname = p;
-    while ((*p++ = *name++) != 0)       /* BUG(orig) (#576): no limit */
+    while ((*p++ = *name++) != 0)
         ;
     cd.trackversion = unit;
     return c_opencd();
 }
 
-/* OpenCD devicename$,unit,scsiflag */
+/* OpenCD devicename$,unit,scsiflag (a name too long: 0, scsiflag kept,
+   fixed #576) */
 ULONG BLITZ_ROUTINE c_opencd3(const char *name BL_REG(d0), ULONG unit BL_REG(d1),
                               ULONG flag BL_REG(d2))
 {
+    if (!namefits(name))
+        return 0;
     scsiflag = flag;
     return c_opencd2(name, unit);
 }

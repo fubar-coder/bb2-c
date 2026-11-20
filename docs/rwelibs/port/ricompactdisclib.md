@@ -41,12 +41,17 @@ longs to odd addresses with volatile long accesses, like the original.
 Every entry is a thunk keeping d1/a0/a1; the original's changes of a6, d7 (CDReadTOC) and
 d1/d2 (CDTrackLength) are not reproduced.
 
+**Fixed:**
+
+* `OpenCD name$,unit[,scsiflag]` refuses a name of 40 characters or more
+  (the manual: "less than forty characters"): 0, nothing copied, nothing
+  opened. The original copies it into the 40-byte `username` without a
+  limit (over toc, toclen, temptoc, qcodeinfo, ioreq ...). (#576)
+
 **BUG(orig)** (kept):
 
-* `OpenCD name$,unit` copies the name into the 40-byte `username`
-  without a limit (a longer one overwrites toc, toclen, temptoc,
-  qcodeinfo, ioreq ...) and keeps name, unit and scsiflag for later
-  `OpenCD`s; only init clears scsiflag (and sets the name back). (#576, #577)
+* `OpenCD name$,unit` keeps name, unit and scsiflag for later
+  `OpenCD`s; only init clears scsiflag (and sets the name back). (#577)
 * `OpenCD` while open: the old request stays open, lost. If OpenDevice
   fails, the request is deleted but stays in ioreq, and `OpenCD` returns
   d0 of DeleteIORequest (200 on Kickstart 3.2), not 0. (#578, #575)

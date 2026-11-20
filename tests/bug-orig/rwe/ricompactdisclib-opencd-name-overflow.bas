@@ -8,6 +8,7 @@
 ; device, #586): "x" = 120.
 ; Correct: the long name does not touch the library's data:
 ; CDTrackPlaying returns 0 as before the call.
+; @fixed #576
 ; @rwe ricompactdisclib
 NPrint CDTrackPlaying
 r.l=OpenCD(String$("x",70),0)
