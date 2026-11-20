@@ -6164,6 +6164,110 @@ rows:
     text: "With runtime error checking `WBSpriteX` and `WBSpriteY` of a channel without a sprite stop with \"No sprite on this channel\"; the original returned words from low memory."
     page: libraries
     anchor: riwbspritelib-fixes
+  - issue: 859
+    severity: 1
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "OpenDisk"
+    text: "`OpenDisk unit#` always opens trackdisk.device; the original opened the device named in an earlier `OpenDisk`, even one that had failed."
+    page: libraries
+    anchor: opendisk-device-name
+  - issue: 857
+    severity: 2
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "DiskMotor"
+    text: "`DiskMotor` returns -1 when the library has switched the motor on and 0 when it is off; the original returned -1 at all times."
+    page: libraries
+    anchor: diskmotor-state
+  - issue: 941
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: ""
+    text: "Programs that use the floppy library start on Kickstart 1.x; the original called functions of Kickstart 2.0 and crashed at the start."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 1163
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "ReadSector, WriteSector, FormatTrack, WriteBoot, BootProg"
+    text: "On Kickstart 1.x a buffer outside chip memory goes through a chip buffer of the library; trackdisk.device there read and wrote unrelated chip memory instead."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 856
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "BootProg"
+    text: "`BootProg` stores the checksum Kickstart checks, so the disk boots; the original's checksum was wrong."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 858
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "FormatTrack, WriteBoot"
+    text: "`FormatTrack` without a count formats one track and `WriteBoot` writes the boot block; with the original the device refused both. The count stays in sectors, 11 per track."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 864
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "WriteBoot"
+    text: "`WriteBoot unit,bootdata` writes the data at `bootdata`; the original wrote from an address left in a register."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 865
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "WriteBoot"
+    text: "`WriteBoot unit` writes a bootable standard boot block; the original wrote 8 bytes of a boot block and 1016 bytes of unrelated memory."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 1154
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "MotorOff, CloseDisk"
+    text: "`MotorOff` and `CloseDisk` write the device's track buffer to the disk first; with the original the last track written was lost when the disk was taken out."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 860
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "OpenDisk"
+    text: "A device name of 57 characters or more no longer overwrites the library's data."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 861
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "OpenDisk"
+    text: "`OpenDisk` with a negative unit returns 0; the original opened the device and lost the request."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 862
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: "OpenDisk"
+    text: "`OpenDisk` of a unit that is open returns 0 and leaves it alone; the original opened it again and lost the first request."
+    page: libraries
+    anchor: ritrackdisklib-fixes
+  - issue: 863
+    severity: 5
+    topic: "System"
+    library: "ritrackdisklib"
+    command: ""
+    text: "The end of a program closes unit 3 too, and a second run starts with all units closed; the original left unit 3 open."
+    page: libraries
+    anchor: ritrackdisklib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
