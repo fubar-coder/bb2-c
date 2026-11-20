@@ -6828,6 +6828,14 @@ rows:
     text: "`FindVolume`, `DeviceName$`, `CachesOn`, `CachesOff` and `Reboot` work on Kickstart 1.x, where the cache commands return 0; the original crashed in all five."
     page: libraries
     anchor: riamosfunclib-fixes
+  - issue: 1146
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "LoadTrackerModule"
+    text: "`LoadTrackerModule` works on Kickstart 1.x and returns the AmigaDOS error code for a file it cannot open; the original crashed on 1.x and went on reading without a file."
+    page: libraries
+    anchor: rwe-other-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

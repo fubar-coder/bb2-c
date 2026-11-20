@@ -1,5 +1,5 @@
 "LoadTrackerModule":
-  text: Loads the module file `Name` into chip memory, into slot `TrackerModule#` (0 to 8). Returns -1 when the file was read, and the AmigaDOS error code after a read error.
+  text: Loads the module file `Name` into chip memory, into slot `TrackerModule#` (0 to 8). Returns -1 when the file was read, and the AmigaDOS error code when it cannot be opened, such as a directory, or after a read error; the slot then stays empty.
   notes: |
     A file that cannot be found or examined is a runtime error. With the
     debugger's checks, the slot must be empty; without them, a module in

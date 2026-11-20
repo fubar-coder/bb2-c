@@ -7047,6 +7047,14 @@ does.
 * After a read error `LoadTrackerModule` released the file's lock a
   second time; it releases it once
   ([#444](https://github.com/fubar-coder/bb2-c/issues/444)).
+* `LoadTrackerModule` opened the file with a function of Kickstart 2.0,
+  so a program crashed at it on Kickstart 1.x, and on any Kickstart it
+  went on reading when the file could not be opened, such as a
+  directory. It
+  opens the file by its name, which works on every Kickstart, and
+  reports a file that cannot be opened: the slot stays empty, and the
+  result is the AmigaDOS error code
+  ([#1146](https://github.com/fubar-coder/bb2-c/issues/1146)).
 * `DecodeModule` took a module at an address of $80000000 or above for
   one in chip memory and left it where the sound hardware cannot play
   it; it copies such a module into chip memory
