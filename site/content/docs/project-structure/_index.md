@@ -52,10 +52,14 @@ The project relies on original material in three ways:
   cmake -P cmake/fetch-originals.cmake
   ```
 
-  The tests compare the port with expected data recorded from these
-  originals, so only the runs that compare with the originals
-  themselves, the recording of expected data, a few tests and some
-  optional build targets need them; the build of the port does not.
+  The build of the port does not need them. The tests compare the port
+  with expected data recorded from these originals, so only these need
+  them:
+
+  * the runs that compare with the originals themselves;
+  * the recording of expected data;
+  * a few tests;
+  * some optional build targets.
 * **Some files of AmiBlitz3** (Apache licence) are downloaded the same way,
   for the tests of AB3 mode.
 
