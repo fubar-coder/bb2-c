@@ -9,8 +9,8 @@ unit[,deviceID]`, `CloseAHI`, `PlaySoundAHI sound[,volume[,balance]]`,
 mode requester), `AHIRequestedID`, `AHIRequestedFreq`. init creates a
 message port and an `AHIRequest` (80 bytes); OpenAHI opens ahi.device
 (version 4) with it and keeps `io_Device` as the library base for the
-requester calls (`AHI_AllocAudioRequestA`, `AHI_AudioRequestA`); finit
-(and CloseAHI) deletes request and port. CludgeSound is risoundlib's;
+requester calls (`AHI_AllocAudioRequestA`, `AHI_AudioRequestA`);
+CloseAHI closes the device, finit also deletes request and port. CludgeSound is risoundlib's;
 PlaySoundAHI plays a sound at 3579545 / its period.
 
 * **Source:** `rwelibsrc/soundlib/risoundlib2.bb` (= `.bak`), in the
@@ -68,10 +68,6 @@ in finit) is translated although it is never reached.
   never call CloseDevice, and OpenAHI's "already open" check never
   holds – a second OpenAHI opens the open request again
   (#924).
-* CloseAHI is finit: it deletes the request and the port. A later OpenAHI
-  writes `ahir_Version` to address 48 and calls OpenDevice with request 0;
-  the same if init could not make its request
-  (#927).
 * AHIOutputRequest: the `!subs` of the forms with 1, 2 and 4 arguments
   point to the wrong entries – 4 arguments go to the "AudioID" entry
   (x, y, width, height replaced by -1, the mode id is d4 as it was), 1
@@ -132,6 +128,12 @@ kind F):
   Hz becomes 22096 Hz through the period's rounding) (#926; test
   `tests/bug-orig/rwe/risoundlib2-cludgesound-rate-behind-object`,
   `libs_emulator` cases `[fixed #926]` of `rwe_risoundlib2`).
+* CloseAHI closes the device and keeps the request and the port, which
+  finit deletes; OpenAHI without a request (init could not make one)
+  returns 0, and finit makes no CheckIO without one. The original's
+  CloseAHI was finit: a later OpenAHI wrote `ahir_Version` to address 48
+  and called OpenDevice with request 0, the same without a request from
+  init (#927; test `tests/bug-orig/rwe/risoundlib2-openahi-after-closeahi`).
 
 ## Test
 

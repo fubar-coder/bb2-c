@@ -6,6 +6,7 @@
 ; it and the longs at 20 and 28 (io_Device, io_Error of a request at 0)
 ; are put back behind it.
 ; Correct: the second OpenAHI fails without writing to address 48.
+; @fixed #927
 ; @rwe risoundlib2
 ; @pass timeout=30
 DEFTYPE .l

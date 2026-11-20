@@ -12,9 +12,10 @@
  * (RWE_OWN_VARIANTS).  Notes: docs/rwelibs/port/risoundlib2.md.
  *
  * init:  CreateMsgPort, CreateIORequest (80 bytes, an AHIRequest)
- * finit: (also CloseAHI) nothing without the port or while CheckIO says
- *        the request is in use; else CloseDevice if ahidevice is set,
- *        DeleteIORequest, DeleteMsgPort, ahibase = 0
+ * finit: nothing without the port or while CheckIO says the request is
+ *        in use; else CloseAHI, DeleteIORequest, DeleteMsgPort
+ * CloseAHI: CloseDevice if ahidevice is set, ahibase = 0; port and
+ *        request stay
  * OpenAHI unit[,deviceID]: OpenDevice("ahi.device", unit, request, 0)
  *        with ahir_Version 4; -1 and ahibase = io_Device, or 0
  * PlaySoundAHI sound[,volume[,balance]] (a0 = audiolib's sound object):
@@ -37,10 +38,6 @@
  *     at once (they play nothing), finit/CloseAHI never close the device,
  *     and OpenAHI opens the request again while it is open
  *     (#924).
- *   - CloseAHI is finit: it deletes the request and the port, and a later
- *     OpenAHI uses request 0 (writes ahir_Version to address 48 and
- *     passes 0 to OpenDevice); the same without a request from init
- *     (#927).
  *   - AHIOutputRequest: the forms with 1, 2 and 4 arguments go to the
  *     wrong entries (4 arguments: x, y, width, height replaced by -1, the
  *     mode id whatever d4 holds; 1 argument: lost, d4/d5 whatever they
@@ -81,7 +78,11 @@
  * was (the original left the freed pointer, #831); the whole BODY is
  * copied with length / 2 words, an empty one or one of 131072 bytes or
  * more gives 0 (the original copied ((length - 1) & $FFFF) + 1 bytes,
- * #829).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * #829).  CloseAHI closes the device and keeps the request and the
+ * port for finit; OpenAHI without a request returns 0.  The original's
+ * CloseAHI was finit: a later OpenAHI wrote ahir_Version to address 48
+ * and passed request 0 to OpenDevice, the same without a request from
+ * init (#927).  CludgeSound writes nothing behind audiolib's 16 byte sound
  * object; the original stored the rate at +16, the high word of the next
  * object's sample pointer (behind the last object whatever follows), for
  * PlaySoundAHI, which now takes its frequency from the object's period:
@@ -281,12 +282,16 @@ static char ahiname[] = "ahi.device";
  * @brief init: create the message port and the AHI request.
  *
  * CreateMsgPort, then CreateIORequest of a struct AHIRequest (80 bytes)
- * on that port.  Both are exec V36 calls.
+ * on that port.  Both are exec V36 calls.  Port and request made before
+ * and not deleted by finit (CloseAHI keeps them, fixed: #927) stay.
  * @return d0: the request, 0 if the port or the request could not be
  *         made (a port made stays)
  */
 static ULONG BLITZ_ROUTINE c_libinit(void)
 {
+    if (ahimsgport)                     /* made and not deleted by finit:
+                                           CloseAHI keeps them (#927) */
+        return (ULONG)ahiiorequest;
     ahimsgport = CreateMsgPort();
     if (!ahimsgport)
         return 0;
@@ -298,24 +303,42 @@ static ULONG BLITZ_ROUTINE c_libinit(void)
 }
 
 /**
- * @brief finit and CloseAHI: close the device, delete the request and the port.
+ * @brief CloseAHI: close ahi.device; the request and the port stay.
  *
- * Nothing without the port, or while CheckIO says the request is in use
- * (everything stays open, BUG(orig) (#933)).  CloseDevice only if
- * ahidevice is set, which never happens (BUG(orig) (#924)); then
- * DeleteIORequest, DeleteMsgPort, ahibase = 0.  CloseAHI is this
- * routine: a later OpenAHI uses request 0 (BUG(orig) (#927)).
+ * Fixed (#927): the original's CloseAHI was finit, which deleted the
+ * request and the port, so that a later OpenAHI used request 0.  Nothing
+ * without a request, or while CheckIO says it is in use (it stays open,
+ * BUG(orig) (#933)).  CloseDevice only if ahidevice is set, which never
+ * happens (BUG(orig) (#924)); then ahibase = 0.
  */
-static void BLITZ_ROUTINE c_libfinit(void)
+static void BLITZ_ROUTINE c_closeahi(void)
 {
-    if (!ahimsgport)
+    if (!ahiiorequest)
         return;
-    if (!CheckIO((struct IORequest *)ahiiorequest))     /* in use: everything stays */
+    if (!CheckIO((struct IORequest *)ahiiorequest))     /* in use: it stays open */
         return;
     if (ahidevice) {                    /* never (BUG(orig)) */
         CloseDevice((struct IORequest *)ahiiorequest);
         ahidevice = 0;
     }
+    ahibase = NULL;
+}
+
+/**
+ * @brief finit: close the device (c_closeahi()), delete the request and the port.
+ *
+ * Nothing without the port, or while CheckIO says the request is in use
+ * (everything stays open, BUG(orig) (#933)); without a request (init
+ * could not make it) no CheckIO (fixed: #927, the original's CheckIO of
+ * address 0).  Then DeleteIORequest, DeleteMsgPort.
+ */
+static void BLITZ_ROUTINE c_libfinit(void)
+{
+    if (!ahimsgport)
+        return;
+    if (ahiiorequest && !CheckIO((struct IORequest *)ahiiorequest))
+        return;                         /* in use: everything stays */
+    c_closeahi();
     if (ahiiorequest) {
         DeleteIORequest((struct IORequest *)ahiiorequest);
         ahiiorequest = NULL;
@@ -332,9 +355,10 @@ static void BLITZ_ROUTINE c_libfinit(void)
  * ("ahi.device", unit, request, 0); on success io_Device becomes the
  * library base for the requester calls.  The device ID is stored but
  * not used.  BUG(orig): the "already open" test of ahidevice never holds,
- * a second OpenAHI opens the open request again (#924); after CloseAHI
- * (or without a request from init) the request is 0: ahir_Version goes
- * to address 48 and OpenDevice gets request 0 (#927).
+ * a second OpenAHI opens the open request again (#924).  Fixed (#927):
+ * without a request (init could not make it) the result is 0; the
+ * original wrote ahir_Version to address 48 and passed request 0 to
+ * OpenDevice (also after CloseAHI, which deleted the request).
  * @param unit  d0: the AHI unit
  * @param id    d1: the device (audio mode) ID, unused
  * @return d0: BB_TRUE if ahi.device opened, else BB_FALSE
@@ -348,7 +372,8 @@ BB_BOOL BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
     ahidevice = 0;
     deviceunit = unit;
     deviceid = id;                      /* not used */
-    /* BUG(orig) (#927): the request may be 0 */
+    if (!ahiiorequest)                  /* Fixed (#927) */
+        return BB_FALSE;
     ahiiorequest->ahir_Version = MIN_AHI_VERSION;
     r = (struct bl_regs){ .d0 = unit, .d1 = 0, .a0 = (ULONG)ahiname,
                           .a1 = (ULONG)ahiiorequest };
@@ -727,7 +752,7 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
 BLITZ_THUNK(risoundlib2_loadsounds, loadsounds_c, "d1/a0-a1");
 BLITZ_THUNK(risoundlib2_libinit, c_libinit, "d1/a0-a1");
 BLITZ_THUNK(risoundlib2_libfinit, c_libfinit, "d0-d1/a0-a1");
-BLITZ_THUNK(_CloseAHI, c_libfinit, "d0-d1/a0-a1");
+BLITZ_THUNK(_CloseAHI, c_closeahi, "d0-d1/a0-a1");
 BLITZ_THUNK(_OpenAHI, c_openahi, "d1/a0-a1");
 BLITZ_THUNK(_OpenAHI2, c_openahi2, "d1/a0-a1");
 BLITZ_THUNK(_PlaySoundAHI, c_playsound, "d1/a0-a1");
