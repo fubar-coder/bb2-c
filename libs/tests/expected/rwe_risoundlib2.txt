@@ -176,12 +176,18 @@ AHIOutputRequest|AbortIOs|no requester, 2 arguments|1	$00000000
 AHIOutputRequest|AbortIOs|no requester, 4 arguments|1	$00000000
 AHIOutputRequest|AbortIOs|no requester, 5 arguments|1	$00000000
 AHIOutputRequest|AbortIOs|no requester, 6 arguments|1	$00000000
-AHIOutputRequest|AbortIOs|no screen, 0 arguments|1	$00000000
-AHIOutputRequest|AbortIOs|no screen, 1 arguments|1	$00000000
-AHIOutputRequest|AbortIOs|no screen, 2 arguments|1	$00000000
-AHIOutputRequest|AbortIOs|no screen, 4 arguments|1	$00000000
-AHIOutputRequest|AbortIOs|no screen, 5 arguments|1	$00000000
-AHIOutputRequest|AbortIOs|no screen, 6 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no screen, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|AbortIOs|no screen, 0 arguments|1 [fixed #933]	$00000003
+AHIOutputRequest|AbortIOs|no screen, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|AbortIOs|no screen, 1 arguments|1 [fixed #933]	$00000003
+AHIOutputRequest|AbortIOs|no screen, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|AbortIOs|no screen, 2 arguments|1 [fixed #933]	$00000003
+AHIOutputRequest|AbortIOs|no screen, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|AbortIOs|no screen, 4 arguments|1 [fixed #933]	$00000003
+AHIOutputRequest|AbortIOs|no screen, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|AbortIOs|no screen, 5 arguments|1 [fixed #933]	$00000003
+AHIOutputRequest|AbortIOs|no screen, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|AbortIOs|no screen, 6 arguments|1 [fixed #933]	$00000003
 AHIOutputRequest|AbortIOs|open, 0 arguments|1	$00000000
 AHIOutputRequest|AbortIOs|open, 1 arguments|1	$00000000
 AHIOutputRequest|AbortIOs|open, 2 arguments|1	$00000000
@@ -194,18 +200,30 @@ AHIOutputRequest|AbortIOs|reopened, 2 arguments|1	$00000000
 AHIOutputRequest|AbortIOs|reopened, 4 arguments|1	$00000000
 AHIOutputRequest|AbortIOs|reopened, 5 arguments|1	$00000000
 AHIOutputRequest|AbortIOs|reopened, 6 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|cancelled, 0 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|cancelled, 1 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|cancelled, 2 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|cancelled, 4 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|cancelled, 5 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|cancelled, 6 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|closed, 0 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|closed, 1 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|closed, 2 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|closed, 4 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|closed, 5 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|closed, 6 arguments|1	$00000000
+AHIOutputRequest|BeginIOs|cancelled, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|cancelled, 0 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|cancelled, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|cancelled, 1 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|cancelled, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|cancelled, 2 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|cancelled, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|cancelled, 4 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|cancelled, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|cancelled, 5 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|cancelled, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|cancelled, 6 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|closed, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|closed, 0 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|closed, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|closed, 1 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|closed, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|closed, 2 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|closed, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|closed, 4 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|closed, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|closed, 5 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|closed, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|closed, 6 arguments|1 [fixed #924]	$0000000C
 AHIOutputRequest|BeginIOs|no device opened, 0 arguments|1	$00000000
 AHIOutputRequest|BeginIOs|no device opened, 1 arguments|1	$00000000
 AHIOutputRequest|BeginIOs|no device opened, 2 arguments|1	$00000000
@@ -218,30 +236,54 @@ AHIOutputRequest|BeginIOs|no device, 2 arguments|1	$00000000
 AHIOutputRequest|BeginIOs|no device, 4 arguments|1	$00000000
 AHIOutputRequest|BeginIOs|no device, 5 arguments|1	$00000000
 AHIOutputRequest|BeginIOs|no device, 6 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no requester, 0 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no requester, 1 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no requester, 2 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no requester, 4 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no requester, 5 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no requester, 6 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no screen, 0 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no screen, 1 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no screen, 2 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no screen, 4 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no screen, 5 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|no screen, 6 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|open, 0 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|open, 1 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|open, 2 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|open, 4 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|open, 5 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|open, 6 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|reopened, 0 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|reopened, 1 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|reopened, 2 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|reopened, 4 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|reopened, 5 arguments|1	$00000000
-AHIOutputRequest|BeginIOs|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|BeginIOs|no requester, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no requester, 0 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|no requester, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no requester, 1 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|no requester, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no requester, 2 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|no requester, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no requester, 4 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|no requester, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no requester, 5 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|no requester, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no requester, 6 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|no screen, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no screen, 0 arguments|1 [fixed #924]	$00000012
+AHIOutputRequest|BeginIOs|no screen, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no screen, 1 arguments|1 [fixed #924]	$00000012
+AHIOutputRequest|BeginIOs|no screen, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no screen, 2 arguments|1 [fixed #924]	$00000012
+AHIOutputRequest|BeginIOs|no screen, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no screen, 4 arguments|1 [fixed #924]	$00000012
+AHIOutputRequest|BeginIOs|no screen, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no screen, 5 arguments|1 [fixed #924]	$00000012
+AHIOutputRequest|BeginIOs|no screen, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|no screen, 6 arguments|1 [fixed #924]	$00000012
+AHIOutputRequest|BeginIOs|open, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|open, 0 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|open, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|open, 1 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|open, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|open, 2 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|open, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|open, 4 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|open, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|open, 5 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|open, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|open, 6 arguments|1 [fixed #924]	$00000006
+AHIOutputRequest|BeginIOs|reopened, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|reopened, 0 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|reopened, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|reopened, 1 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|reopened, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|reopened, 2 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|reopened, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|reopened, 4 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|reopened, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|reopened, 5 arguments|1 [fixed #924]	$0000000C
+AHIOutputRequest|BeginIOs|reopened, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|BeginIOs|reopened, 6 arguments|1 [fixed #924]	$0000000C
 AHIOutputRequest|ahir_Version|cancelled, 0 arguments|1	$00000004
 AHIOutputRequest|ahir_Version|cancelled, 1 arguments|1	$00000004
 AHIOutputRequest|ahir_Version|cancelled, 2 arguments|1	$00000004
@@ -296,12 +338,18 @@ AHIOutputRequest|closes|cancelled, 2 arguments|1	$00000000
 AHIOutputRequest|closes|cancelled, 4 arguments|1	$00000000
 AHIOutputRequest|closes|cancelled, 5 arguments|1	$00000000
 AHIOutputRequest|closes|cancelled, 6 arguments|1	$00000000
-AHIOutputRequest|closes|closed, 0 arguments|1	$00000000
-AHIOutputRequest|closes|closed, 1 arguments|1	$00000000
-AHIOutputRequest|closes|closed, 2 arguments|1	$00000000
-AHIOutputRequest|closes|closed, 4 arguments|1	$00000000
-AHIOutputRequest|closes|closed, 5 arguments|1	$00000000
-AHIOutputRequest|closes|closed, 6 arguments|1	$00000000
+AHIOutputRequest|closes|closed, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|closed, 0 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|closed, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|closed, 1 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|closed, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|closed, 2 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|closed, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|closed, 4 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|closed, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|closed, 5 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|closed, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|closed, 6 arguments|1 [fixed #924]	$00000001
 AHIOutputRequest|closes|no device opened, 0 arguments|1	$00000000
 AHIOutputRequest|closes|no device opened, 1 arguments|1	$00000000
 AHIOutputRequest|closes|no device opened, 2 arguments|1	$00000000
@@ -320,24 +368,36 @@ AHIOutputRequest|closes|no requester, 2 arguments|1	$00000000
 AHIOutputRequest|closes|no requester, 4 arguments|1	$00000000
 AHIOutputRequest|closes|no requester, 5 arguments|1	$00000000
 AHIOutputRequest|closes|no requester, 6 arguments|1	$00000000
-AHIOutputRequest|closes|no screen, 0 arguments|1	$00000000
-AHIOutputRequest|closes|no screen, 1 arguments|1	$00000000
-AHIOutputRequest|closes|no screen, 2 arguments|1	$00000000
-AHIOutputRequest|closes|no screen, 4 arguments|1	$00000000
-AHIOutputRequest|closes|no screen, 5 arguments|1	$00000000
-AHIOutputRequest|closes|no screen, 6 arguments|1	$00000000
+AHIOutputRequest|closes|no screen, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|no screen, 0 arguments|1 [fixed #924]	$00000003
+AHIOutputRequest|closes|no screen, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|no screen, 1 arguments|1 [fixed #924]	$00000003
+AHIOutputRequest|closes|no screen, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|no screen, 2 arguments|1 [fixed #924]	$00000003
+AHIOutputRequest|closes|no screen, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|no screen, 4 arguments|1 [fixed #924]	$00000003
+AHIOutputRequest|closes|no screen, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|no screen, 5 arguments|1 [fixed #924]	$00000003
+AHIOutputRequest|closes|no screen, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|no screen, 6 arguments|1 [fixed #924]	$00000003
 AHIOutputRequest|closes|open, 0 arguments|1	$00000000
 AHIOutputRequest|closes|open, 1 arguments|1	$00000000
 AHIOutputRequest|closes|open, 2 arguments|1	$00000000
 AHIOutputRequest|closes|open, 4 arguments|1	$00000000
 AHIOutputRequest|closes|open, 5 arguments|1	$00000000
 AHIOutputRequest|closes|open, 6 arguments|1	$00000000
-AHIOutputRequest|closes|reopened, 0 arguments|1	$00000000
-AHIOutputRequest|closes|reopened, 1 arguments|1	$00000000
-AHIOutputRequest|closes|reopened, 2 arguments|1	$00000000
-AHIOutputRequest|closes|reopened, 4 arguments|1	$00000000
-AHIOutputRequest|closes|reopened, 5 arguments|1	$00000000
-AHIOutputRequest|closes|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|closes|reopened, 0 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|reopened, 0 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|reopened, 1 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|reopened, 1 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|reopened, 2 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|reopened, 2 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|reopened, 4 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|reopened, 4 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|reopened, 5 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|reopened, 5 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|closes|reopened, 6 arguments|1 [orig]	$00000000
+AHIOutputRequest|closes|reopened, 6 arguments|1 [fixed #924]	$00000001
 AHIOutputRequest|d0|cancelled, 0 arguments|1	$00000000
 AHIOutputRequest|d0|cancelled, 1 arguments|1	$00000000
 AHIOutputRequest|d0|cancelled, 2 arguments|1	$00000000
@@ -584,12 +644,18 @@ AHIOutputRequest|opens|cancelled, 2 arguments|1	$00000001
 AHIOutputRequest|opens|cancelled, 4 arguments|1	$00000001
 AHIOutputRequest|opens|cancelled, 5 arguments|1	$00000001
 AHIOutputRequest|opens|cancelled, 6 arguments|1	$00000001
-AHIOutputRequest|opens|closed, 0 arguments|1	$00000002
-AHIOutputRequest|opens|closed, 1 arguments|1	$00000002
-AHIOutputRequest|opens|closed, 2 arguments|1	$00000002
-AHIOutputRequest|opens|closed, 4 arguments|1	$00000002
-AHIOutputRequest|opens|closed, 5 arguments|1	$00000002
-AHIOutputRequest|opens|closed, 6 arguments|1	$00000002
+AHIOutputRequest|opens|closed, 0 arguments|1 [orig]	$00000002
+AHIOutputRequest|opens|closed, 0 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|opens|closed, 1 arguments|1 [orig]	$00000002
+AHIOutputRequest|opens|closed, 1 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|opens|closed, 2 arguments|1 [orig]	$00000002
+AHIOutputRequest|opens|closed, 2 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|opens|closed, 4 arguments|1 [orig]	$00000002
+AHIOutputRequest|opens|closed, 4 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|opens|closed, 5 arguments|1 [orig]	$00000002
+AHIOutputRequest|opens|closed, 5 arguments|1 [fixed #924]	$00000001
+AHIOutputRequest|opens|closed, 6 arguments|1 [orig]	$00000002
+AHIOutputRequest|opens|closed, 6 arguments|1 [fixed #924]	$00000001
 AHIOutputRequest|opens|no device opened, 0 arguments|1	$00000000
 AHIOutputRequest|opens|no device opened, 1 arguments|1	$00000000
 AHIOutputRequest|opens|no device opened, 2 arguments|1	$00000000
@@ -608,24 +674,36 @@ AHIOutputRequest|opens|no requester, 2 arguments|1	$00000001
 AHIOutputRequest|opens|no requester, 4 arguments|1	$00000001
 AHIOutputRequest|opens|no requester, 5 arguments|1	$00000001
 AHIOutputRequest|opens|no requester, 6 arguments|1	$00000001
-AHIOutputRequest|opens|no screen, 0 arguments|1	$00000005
-AHIOutputRequest|opens|no screen, 1 arguments|1	$00000005
-AHIOutputRequest|opens|no screen, 2 arguments|1	$00000005
-AHIOutputRequest|opens|no screen, 4 arguments|1	$00000005
-AHIOutputRequest|opens|no screen, 5 arguments|1	$00000005
-AHIOutputRequest|opens|no screen, 6 arguments|1	$00000005
+AHIOutputRequest|opens|no screen, 0 arguments|1 [orig]	$00000005
+AHIOutputRequest|opens|no screen, 0 arguments|1 [fixed #924]	$00000004
+AHIOutputRequest|opens|no screen, 1 arguments|1 [orig]	$00000005
+AHIOutputRequest|opens|no screen, 1 arguments|1 [fixed #924]	$00000004
+AHIOutputRequest|opens|no screen, 2 arguments|1 [orig]	$00000005
+AHIOutputRequest|opens|no screen, 2 arguments|1 [fixed #924]	$00000004
+AHIOutputRequest|opens|no screen, 4 arguments|1 [orig]	$00000005
+AHIOutputRequest|opens|no screen, 4 arguments|1 [fixed #924]	$00000004
+AHIOutputRequest|opens|no screen, 5 arguments|1 [orig]	$00000005
+AHIOutputRequest|opens|no screen, 5 arguments|1 [fixed #924]	$00000004
+AHIOutputRequest|opens|no screen, 6 arguments|1 [orig]	$00000005
+AHIOutputRequest|opens|no screen, 6 arguments|1 [fixed #924]	$00000004
 AHIOutputRequest|opens|open, 0 arguments|1	$00000001
 AHIOutputRequest|opens|open, 1 arguments|1	$00000001
 AHIOutputRequest|opens|open, 2 arguments|1	$00000001
 AHIOutputRequest|opens|open, 4 arguments|1	$00000001
 AHIOutputRequest|opens|open, 5 arguments|1	$00000001
 AHIOutputRequest|opens|open, 6 arguments|1	$00000001
-AHIOutputRequest|opens|reopened, 0 arguments|1	$00000003
-AHIOutputRequest|opens|reopened, 1 arguments|1	$00000003
-AHIOutputRequest|opens|reopened, 2 arguments|1	$00000003
-AHIOutputRequest|opens|reopened, 4 arguments|1	$00000003
-AHIOutputRequest|opens|reopened, 5 arguments|1	$00000003
-AHIOutputRequest|opens|reopened, 6 arguments|1	$00000003
+AHIOutputRequest|opens|reopened, 0 arguments|1 [orig]	$00000003
+AHIOutputRequest|opens|reopened, 0 arguments|1 [fixed #924]	$00000002
+AHIOutputRequest|opens|reopened, 1 arguments|1 [orig]	$00000003
+AHIOutputRequest|opens|reopened, 1 arguments|1 [fixed #924]	$00000002
+AHIOutputRequest|opens|reopened, 2 arguments|1 [orig]	$00000003
+AHIOutputRequest|opens|reopened, 2 arguments|1 [fixed #924]	$00000002
+AHIOutputRequest|opens|reopened, 4 arguments|1 [orig]	$00000003
+AHIOutputRequest|opens|reopened, 4 arguments|1 [fixed #924]	$00000002
+AHIOutputRequest|opens|reopened, 5 arguments|1 [orig]	$00000003
+AHIOutputRequest|opens|reopened, 5 arguments|1 [fixed #924]	$00000002
+AHIOutputRequest|opens|reopened, 6 arguments|1 [orig]	$00000003
+AHIOutputRequest|opens|reopened, 6 arguments|1 [fixed #924]	$00000002
 AHIOutputRequest|other AHI calls|cancelled, 0 arguments|1	$00000000
 AHIOutputRequest|other AHI calls|cancelled, 1 arguments|1	$00000000
 AHIOutputRequest|other AHI calls|cancelled, 2 arguments|1	$00000000
@@ -872,12 +950,18 @@ AHIOutputRequest|unit|cancelled, 2 arguments|1	$00000000
 AHIOutputRequest|unit|cancelled, 4 arguments|1	$00000000
 AHIOutputRequest|unit|cancelled, 5 arguments|1	$00000000
 AHIOutputRequest|unit|cancelled, 6 arguments|1	$00000000
-AHIOutputRequest|unit|closed, 0 arguments|1	$00000002
-AHIOutputRequest|unit|closed, 1 arguments|1	$00000002
-AHIOutputRequest|unit|closed, 2 arguments|1	$00000002
-AHIOutputRequest|unit|closed, 4 arguments|1	$00000002
-AHIOutputRequest|unit|closed, 5 arguments|1	$00000002
-AHIOutputRequest|unit|closed, 6 arguments|1	$00000002
+AHIOutputRequest|unit|closed, 0 arguments|1 [orig]	$00000002
+AHIOutputRequest|unit|closed, 0 arguments|1 [fixed #924]	$00000000
+AHIOutputRequest|unit|closed, 1 arguments|1 [orig]	$00000002
+AHIOutputRequest|unit|closed, 1 arguments|1 [fixed #924]	$00000000
+AHIOutputRequest|unit|closed, 2 arguments|1 [orig]	$00000002
+AHIOutputRequest|unit|closed, 2 arguments|1 [fixed #924]	$00000000
+AHIOutputRequest|unit|closed, 4 arguments|1 [orig]	$00000002
+AHIOutputRequest|unit|closed, 4 arguments|1 [fixed #924]	$00000000
+AHIOutputRequest|unit|closed, 5 arguments|1 [orig]	$00000002
+AHIOutputRequest|unit|closed, 5 arguments|1 [fixed #924]	$00000000
+AHIOutputRequest|unit|closed, 6 arguments|1 [orig]	$00000002
+AHIOutputRequest|unit|closed, 6 arguments|1 [fixed #924]	$00000000
 AHIOutputRequest|unit|no device opened, 0 arguments|1	$00000001
 AHIOutputRequest|unit|no device opened, 1 arguments|1	$00000001
 AHIOutputRequest|unit|no device opened, 2 arguments|1	$00000001
@@ -1105,19 +1189,26 @@ AHIRequestedFreq|AbortIOs|no device, 2 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|no device, 4 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|no device, 5 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|no device, 6 arguments|1	$00000000
-AHIRequestedFreq|AbortIOs|no port|1	$00000000
+AHIRequestedFreq|AbortIOs|no port|1 [orig]	$00000000
+AHIRequestedFreq|AbortIOs|no port|1 [fixed #933]	$00000004
 AHIRequestedFreq|AbortIOs|no requester, 0 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|no requester, 1 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|no requester, 2 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|no requester, 4 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|no requester, 5 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|no requester, 6 arguments|1	$00000000
-AHIRequestedFreq|AbortIOs|no screen, 0 arguments|1	$00000000
-AHIRequestedFreq|AbortIOs|no screen, 1 arguments|1	$00000000
-AHIRequestedFreq|AbortIOs|no screen, 2 arguments|1	$00000000
-AHIRequestedFreq|AbortIOs|no screen, 4 arguments|1	$00000000
-AHIRequestedFreq|AbortIOs|no screen, 5 arguments|1	$00000000
-AHIRequestedFreq|AbortIOs|no screen, 6 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no screen, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|AbortIOs|no screen, 0 arguments|1 [fixed #933]	$00000003
+AHIRequestedFreq|AbortIOs|no screen, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|AbortIOs|no screen, 1 arguments|1 [fixed #933]	$00000003
+AHIRequestedFreq|AbortIOs|no screen, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|AbortIOs|no screen, 2 arguments|1 [fixed #933]	$00000003
+AHIRequestedFreq|AbortIOs|no screen, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|AbortIOs|no screen, 4 arguments|1 [fixed #933]	$00000003
+AHIRequestedFreq|AbortIOs|no screen, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|AbortIOs|no screen, 5 arguments|1 [fixed #933]	$00000003
+AHIRequestedFreq|AbortIOs|no screen, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|AbortIOs|no screen, 6 arguments|1 [fixed #933]	$00000003
 AHIRequestedFreq|AbortIOs|open|1	$00000000
 AHIRequestedFreq|AbortIOs|open, 0 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|open, 1 arguments|1	$00000000
@@ -1132,19 +1223,32 @@ AHIRequestedFreq|AbortIOs|reopened, 4 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|reopened, 5 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|reopened, 6 arguments|1	$00000000
 AHIRequestedFreq|AbortIOs|request in use|1	$00000000
-AHIRequestedFreq|BeginIOs|cancelled, 0 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|cancelled, 1 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|cancelled, 2 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|cancelled, 4 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|cancelled, 5 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|cancelled, 6 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|closed|1	$00000000
-AHIRequestedFreq|BeginIOs|closed, 0 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|closed, 1 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|closed, 2 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|closed, 4 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|closed, 5 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|BeginIOs|cancelled, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|cancelled, 0 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|cancelled, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|cancelled, 1 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|cancelled, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|cancelled, 2 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|cancelled, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|cancelled, 4 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|cancelled, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|cancelled, 5 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|cancelled, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|cancelled, 6 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|closed|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|closed|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|closed, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|closed, 0 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|closed, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|closed, 1 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|closed, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|closed, 2 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|closed, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|closed, 4 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|closed, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|closed, 5 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|closed, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|closed, 6 arguments|1 [fixed #924]	$0000000C
 AHIRequestedFreq|BeginIOs|no device|1	$00000000
 AHIRequestedFreq|BeginIOs|no device opened, 0 arguments|1	$00000000
 AHIRequestedFreq|BeginIOs|no device opened, 1 arguments|1	$00000000
@@ -1158,33 +1262,60 @@ AHIRequestedFreq|BeginIOs|no device, 2 arguments|1	$00000000
 AHIRequestedFreq|BeginIOs|no device, 4 arguments|1	$00000000
 AHIRequestedFreq|BeginIOs|no device, 5 arguments|1	$00000000
 AHIRequestedFreq|BeginIOs|no device, 6 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no port|1	$00000000
-AHIRequestedFreq|BeginIOs|no requester, 0 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no requester, 1 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no requester, 2 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no requester, 4 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no requester, 5 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no requester, 6 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no screen, 0 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no screen, 1 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no screen, 2 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no screen, 4 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no screen, 5 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|no screen, 6 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|open|1	$00000000
-AHIRequestedFreq|BeginIOs|open, 0 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|open, 1 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|open, 2 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|open, 4 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|open, 5 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|open, 6 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|reopened, 0 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|reopened, 1 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|reopened, 2 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|reopened, 4 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|reopened, 5 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|reopened, 6 arguments|1	$00000000
-AHIRequestedFreq|BeginIOs|request in use|1	$00000000
+AHIRequestedFreq|BeginIOs|no port|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no port|1 [fixed #924]	$00000013
+AHIRequestedFreq|BeginIOs|no requester, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no requester, 0 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|no requester, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no requester, 1 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|no requester, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no requester, 2 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|no requester, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no requester, 4 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|no requester, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no requester, 5 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|no requester, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no requester, 6 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|no screen, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no screen, 0 arguments|1 [fixed #924]	$00000012
+AHIRequestedFreq|BeginIOs|no screen, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no screen, 1 arguments|1 [fixed #924]	$00000012
+AHIRequestedFreq|BeginIOs|no screen, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no screen, 2 arguments|1 [fixed #924]	$00000012
+AHIRequestedFreq|BeginIOs|no screen, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no screen, 4 arguments|1 [fixed #924]	$00000012
+AHIRequestedFreq|BeginIOs|no screen, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no screen, 5 arguments|1 [fixed #924]	$00000012
+AHIRequestedFreq|BeginIOs|no screen, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|no screen, 6 arguments|1 [fixed #924]	$00000012
+AHIRequestedFreq|BeginIOs|open|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|open|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|open, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|open, 0 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|open, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|open, 1 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|open, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|open, 2 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|open, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|open, 4 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|open, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|open, 5 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|open, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|open, 6 arguments|1 [fixed #924]	$00000006
+AHIRequestedFreq|BeginIOs|reopened, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|reopened, 0 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|reopened, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|reopened, 1 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|reopened, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|reopened, 2 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|reopened, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|reopened, 4 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|reopened, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|reopened, 5 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|reopened, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|reopened, 6 arguments|1 [fixed #924]	$0000000C
+AHIRequestedFreq|BeginIOs|request in use|1 [orig]	$00000000
+AHIRequestedFreq|BeginIOs|request in use|1 [fixed #924]	$0000000C
 AHIRequestedFreq|ahir_Version|cancelled, 0 arguments|1	$00000004
 AHIRequestedFreq|ahir_Version|cancelled, 1 arguments|1	$00000004
 AHIRequestedFreq|ahir_Version|cancelled, 2 arguments|1	$00000004
@@ -1244,13 +1375,20 @@ AHIRequestedFreq|closes|cancelled, 2 arguments|1	$00000000
 AHIRequestedFreq|closes|cancelled, 4 arguments|1	$00000000
 AHIRequestedFreq|closes|cancelled, 5 arguments|1	$00000000
 AHIRequestedFreq|closes|cancelled, 6 arguments|1	$00000000
-AHIRequestedFreq|closes|closed|1	$00000000
-AHIRequestedFreq|closes|closed, 0 arguments|1	$00000000
-AHIRequestedFreq|closes|closed, 1 arguments|1	$00000000
-AHIRequestedFreq|closes|closed, 2 arguments|1	$00000000
-AHIRequestedFreq|closes|closed, 4 arguments|1	$00000000
-AHIRequestedFreq|closes|closed, 5 arguments|1	$00000000
-AHIRequestedFreq|closes|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|closes|closed|1 [orig]	$00000000
+AHIRequestedFreq|closes|closed|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|closed, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|closed, 0 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|closed, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|closed, 1 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|closed, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|closed, 2 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|closed, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|closed, 4 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|closed, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|closed, 5 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|closed, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|closed, 6 arguments|1 [fixed #924]	$00000001
 AHIRequestedFreq|closes|no device|1	$00000000
 AHIRequestedFreq|closes|no device opened, 0 arguments|1	$00000000
 AHIRequestedFreq|closes|no device opened, 1 arguments|1	$00000000
@@ -1264,19 +1402,26 @@ AHIRequestedFreq|closes|no device, 2 arguments|1	$00000000
 AHIRequestedFreq|closes|no device, 4 arguments|1	$00000000
 AHIRequestedFreq|closes|no device, 5 arguments|1	$00000000
 AHIRequestedFreq|closes|no device, 6 arguments|1	$00000000
-AHIRequestedFreq|closes|no port|1	$00000000
+AHIRequestedFreq|closes|no port|1 [orig]	$00000000
+AHIRequestedFreq|closes|no port|1 [fixed #924]	$00000004
 AHIRequestedFreq|closes|no requester, 0 arguments|1	$00000000
 AHIRequestedFreq|closes|no requester, 1 arguments|1	$00000000
 AHIRequestedFreq|closes|no requester, 2 arguments|1	$00000000
 AHIRequestedFreq|closes|no requester, 4 arguments|1	$00000000
 AHIRequestedFreq|closes|no requester, 5 arguments|1	$00000000
 AHIRequestedFreq|closes|no requester, 6 arguments|1	$00000000
-AHIRequestedFreq|closes|no screen, 0 arguments|1	$00000000
-AHIRequestedFreq|closes|no screen, 1 arguments|1	$00000000
-AHIRequestedFreq|closes|no screen, 2 arguments|1	$00000000
-AHIRequestedFreq|closes|no screen, 4 arguments|1	$00000000
-AHIRequestedFreq|closes|no screen, 5 arguments|1	$00000000
-AHIRequestedFreq|closes|no screen, 6 arguments|1	$00000000
+AHIRequestedFreq|closes|no screen, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|no screen, 0 arguments|1 [fixed #924]	$00000003
+AHIRequestedFreq|closes|no screen, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|no screen, 1 arguments|1 [fixed #924]	$00000003
+AHIRequestedFreq|closes|no screen, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|no screen, 2 arguments|1 [fixed #924]	$00000003
+AHIRequestedFreq|closes|no screen, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|no screen, 4 arguments|1 [fixed #924]	$00000003
+AHIRequestedFreq|closes|no screen, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|no screen, 5 arguments|1 [fixed #924]	$00000003
+AHIRequestedFreq|closes|no screen, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|no screen, 6 arguments|1 [fixed #924]	$00000003
 AHIRequestedFreq|closes|open|1	$00000000
 AHIRequestedFreq|closes|open, 0 arguments|1	$00000000
 AHIRequestedFreq|closes|open, 1 arguments|1	$00000000
@@ -1284,13 +1429,20 @@ AHIRequestedFreq|closes|open, 2 arguments|1	$00000000
 AHIRequestedFreq|closes|open, 4 arguments|1	$00000000
 AHIRequestedFreq|closes|open, 5 arguments|1	$00000000
 AHIRequestedFreq|closes|open, 6 arguments|1	$00000000
-AHIRequestedFreq|closes|reopened, 0 arguments|1	$00000000
-AHIRequestedFreq|closes|reopened, 1 arguments|1	$00000000
-AHIRequestedFreq|closes|reopened, 2 arguments|1	$00000000
-AHIRequestedFreq|closes|reopened, 4 arguments|1	$00000000
-AHIRequestedFreq|closes|reopened, 5 arguments|1	$00000000
-AHIRequestedFreq|closes|reopened, 6 arguments|1	$00000000
-AHIRequestedFreq|closes|request in use|1	$00000000
+AHIRequestedFreq|closes|reopened, 0 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|reopened, 0 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|reopened, 1 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|reopened, 1 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|reopened, 2 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|reopened, 2 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|reopened, 4 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|reopened, 4 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|reopened, 5 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|reopened, 5 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|reopened, 6 arguments|1 [orig]	$00000000
+AHIRequestedFreq|closes|reopened, 6 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|closes|request in use|1 [orig]	$00000000
+AHIRequestedFreq|closes|request in use|1 [fixed #924]	$00000001
 AHIRequestedFreq|d0|cancelled, 0 arguments|1	$00000000
 AHIRequestedFreq|d0|cancelled, 1 arguments|1	$00000000
 AHIRequestedFreq|d0|cancelled, 2 arguments|1	$00000000
@@ -1562,13 +1714,20 @@ AHIRequestedFreq|opens|cancelled, 2 arguments|1	$00000001
 AHIRequestedFreq|opens|cancelled, 4 arguments|1	$00000001
 AHIRequestedFreq|opens|cancelled, 5 arguments|1	$00000001
 AHIRequestedFreq|opens|cancelled, 6 arguments|1	$00000001
-AHIRequestedFreq|opens|closed|1	$00000002
-AHIRequestedFreq|opens|closed, 0 arguments|1	$00000002
-AHIRequestedFreq|opens|closed, 1 arguments|1	$00000002
-AHIRequestedFreq|opens|closed, 2 arguments|1	$00000002
-AHIRequestedFreq|opens|closed, 4 arguments|1	$00000002
-AHIRequestedFreq|opens|closed, 5 arguments|1	$00000002
-AHIRequestedFreq|opens|closed, 6 arguments|1	$00000002
+AHIRequestedFreq|opens|closed|1 [orig]	$00000002
+AHIRequestedFreq|opens|closed|1 [fixed #924]	$00000001
+AHIRequestedFreq|opens|closed, 0 arguments|1 [orig]	$00000002
+AHIRequestedFreq|opens|closed, 0 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|opens|closed, 1 arguments|1 [orig]	$00000002
+AHIRequestedFreq|opens|closed, 1 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|opens|closed, 2 arguments|1 [orig]	$00000002
+AHIRequestedFreq|opens|closed, 2 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|opens|closed, 4 arguments|1 [orig]	$00000002
+AHIRequestedFreq|opens|closed, 4 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|opens|closed, 5 arguments|1 [orig]	$00000002
+AHIRequestedFreq|opens|closed, 5 arguments|1 [fixed #924]	$00000001
+AHIRequestedFreq|opens|closed, 6 arguments|1 [orig]	$00000002
+AHIRequestedFreq|opens|closed, 6 arguments|1 [fixed #924]	$00000001
 AHIRequestedFreq|opens|no device|1	$00000000
 AHIRequestedFreq|opens|no device opened, 0 arguments|1	$00000000
 AHIRequestedFreq|opens|no device opened, 1 arguments|1	$00000000
@@ -1582,19 +1741,26 @@ AHIRequestedFreq|opens|no device, 2 arguments|1	$00000000
 AHIRequestedFreq|opens|no device, 4 arguments|1	$00000000
 AHIRequestedFreq|opens|no device, 5 arguments|1	$00000000
 AHIRequestedFreq|opens|no device, 6 arguments|1	$00000000
-AHIRequestedFreq|opens|no port|1	$00000005
+AHIRequestedFreq|opens|no port|1 [orig]	$00000005
+AHIRequestedFreq|opens|no port|1 [fixed #924]	$00000004
 AHIRequestedFreq|opens|no requester, 0 arguments|1	$00000001
 AHIRequestedFreq|opens|no requester, 1 arguments|1	$00000001
 AHIRequestedFreq|opens|no requester, 2 arguments|1	$00000001
 AHIRequestedFreq|opens|no requester, 4 arguments|1	$00000001
 AHIRequestedFreq|opens|no requester, 5 arguments|1	$00000001
 AHIRequestedFreq|opens|no requester, 6 arguments|1	$00000001
-AHIRequestedFreq|opens|no screen, 0 arguments|1	$00000005
-AHIRequestedFreq|opens|no screen, 1 arguments|1	$00000005
-AHIRequestedFreq|opens|no screen, 2 arguments|1	$00000005
-AHIRequestedFreq|opens|no screen, 4 arguments|1	$00000005
-AHIRequestedFreq|opens|no screen, 5 arguments|1	$00000005
-AHIRequestedFreq|opens|no screen, 6 arguments|1	$00000005
+AHIRequestedFreq|opens|no screen, 0 arguments|1 [orig]	$00000005
+AHIRequestedFreq|opens|no screen, 0 arguments|1 [fixed #924]	$00000004
+AHIRequestedFreq|opens|no screen, 1 arguments|1 [orig]	$00000005
+AHIRequestedFreq|opens|no screen, 1 arguments|1 [fixed #924]	$00000004
+AHIRequestedFreq|opens|no screen, 2 arguments|1 [orig]	$00000005
+AHIRequestedFreq|opens|no screen, 2 arguments|1 [fixed #924]	$00000004
+AHIRequestedFreq|opens|no screen, 4 arguments|1 [orig]	$00000005
+AHIRequestedFreq|opens|no screen, 4 arguments|1 [fixed #924]	$00000004
+AHIRequestedFreq|opens|no screen, 5 arguments|1 [orig]	$00000005
+AHIRequestedFreq|opens|no screen, 5 arguments|1 [fixed #924]	$00000004
+AHIRequestedFreq|opens|no screen, 6 arguments|1 [orig]	$00000005
+AHIRequestedFreq|opens|no screen, 6 arguments|1 [fixed #924]	$00000004
 AHIRequestedFreq|opens|open|1	$00000001
 AHIRequestedFreq|opens|open, 0 arguments|1	$00000001
 AHIRequestedFreq|opens|open, 1 arguments|1	$00000001
@@ -1602,13 +1768,20 @@ AHIRequestedFreq|opens|open, 2 arguments|1	$00000001
 AHIRequestedFreq|opens|open, 4 arguments|1	$00000001
 AHIRequestedFreq|opens|open, 5 arguments|1	$00000001
 AHIRequestedFreq|opens|open, 6 arguments|1	$00000001
-AHIRequestedFreq|opens|reopened, 0 arguments|1	$00000003
-AHIRequestedFreq|opens|reopened, 1 arguments|1	$00000003
-AHIRequestedFreq|opens|reopened, 2 arguments|1	$00000003
-AHIRequestedFreq|opens|reopened, 4 arguments|1	$00000003
-AHIRequestedFreq|opens|reopened, 5 arguments|1	$00000003
-AHIRequestedFreq|opens|reopened, 6 arguments|1	$00000003
-AHIRequestedFreq|opens|request in use|1	$00000002
+AHIRequestedFreq|opens|reopened, 0 arguments|1 [orig]	$00000003
+AHIRequestedFreq|opens|reopened, 0 arguments|1 [fixed #924]	$00000002
+AHIRequestedFreq|opens|reopened, 1 arguments|1 [orig]	$00000003
+AHIRequestedFreq|opens|reopened, 1 arguments|1 [fixed #924]	$00000002
+AHIRequestedFreq|opens|reopened, 2 arguments|1 [orig]	$00000003
+AHIRequestedFreq|opens|reopened, 2 arguments|1 [fixed #924]	$00000002
+AHIRequestedFreq|opens|reopened, 4 arguments|1 [orig]	$00000003
+AHIRequestedFreq|opens|reopened, 4 arguments|1 [fixed #924]	$00000002
+AHIRequestedFreq|opens|reopened, 5 arguments|1 [orig]	$00000003
+AHIRequestedFreq|opens|reopened, 5 arguments|1 [fixed #924]	$00000002
+AHIRequestedFreq|opens|reopened, 6 arguments|1 [orig]	$00000003
+AHIRequestedFreq|opens|reopened, 6 arguments|1 [fixed #924]	$00000002
+AHIRequestedFreq|opens|request in use|1 [orig]	$00000002
+AHIRequestedFreq|opens|request in use|1 [fixed #924]	$00000001
 AHIRequestedFreq|other AHI calls|cancelled, 0 arguments|1	$00000000
 AHIRequestedFreq|other AHI calls|cancelled, 1 arguments|1	$00000000
 AHIRequestedFreq|other AHI calls|cancelled, 2 arguments|1	$00000000
@@ -1880,13 +2053,20 @@ AHIRequestedFreq|unit|cancelled, 2 arguments|1	$00000000
 AHIRequestedFreq|unit|cancelled, 4 arguments|1	$00000000
 AHIRequestedFreq|unit|cancelled, 5 arguments|1	$00000000
 AHIRequestedFreq|unit|cancelled, 6 arguments|1	$00000000
-AHIRequestedFreq|unit|closed|1	$00000002
-AHIRequestedFreq|unit|closed, 0 arguments|1	$00000002
-AHIRequestedFreq|unit|closed, 1 arguments|1	$00000002
-AHIRequestedFreq|unit|closed, 2 arguments|1	$00000002
-AHIRequestedFreq|unit|closed, 4 arguments|1	$00000002
-AHIRequestedFreq|unit|closed, 5 arguments|1	$00000002
-AHIRequestedFreq|unit|closed, 6 arguments|1	$00000002
+AHIRequestedFreq|unit|closed|1 [orig]	$00000002
+AHIRequestedFreq|unit|closed|1 [fixed #924]	$00000000
+AHIRequestedFreq|unit|closed, 0 arguments|1 [orig]	$00000002
+AHIRequestedFreq|unit|closed, 0 arguments|1 [fixed #924]	$00000000
+AHIRequestedFreq|unit|closed, 1 arguments|1 [orig]	$00000002
+AHIRequestedFreq|unit|closed, 1 arguments|1 [fixed #924]	$00000000
+AHIRequestedFreq|unit|closed, 2 arguments|1 [orig]	$00000002
+AHIRequestedFreq|unit|closed, 2 arguments|1 [fixed #924]	$00000000
+AHIRequestedFreq|unit|closed, 4 arguments|1 [orig]	$00000002
+AHIRequestedFreq|unit|closed, 4 arguments|1 [fixed #924]	$00000000
+AHIRequestedFreq|unit|closed, 5 arguments|1 [orig]	$00000002
+AHIRequestedFreq|unit|closed, 5 arguments|1 [fixed #924]	$00000000
+AHIRequestedFreq|unit|closed, 6 arguments|1 [orig]	$00000002
+AHIRequestedFreq|unit|closed, 6 arguments|1 [fixed #924]	$00000000
 AHIRequestedFreq|unit|no device|1	$00000000
 AHIRequestedFreq|unit|no device opened, 0 arguments|1	$00000001
 AHIRequestedFreq|unit|no device opened, 1 arguments|1	$00000001
@@ -1926,7 +2106,8 @@ AHIRequestedFreq|unit|reopened, 2 arguments|1	$00000003
 AHIRequestedFreq|unit|reopened, 4 arguments|1	$00000003
 AHIRequestedFreq|unit|reopened, 5 arguments|1	$00000003
 AHIRequestedFreq|unit|reopened, 6 arguments|1	$00000003
-AHIRequestedFreq|unit|request in use|1	$00000002
+AHIRequestedFreq|unit|request in use|1 [orig]	$00000002
+AHIRequestedFreq|unit|request in use|1 [fixed #924]	$00000000
 AHIRequestedID|AHIRequestedID -1|open, 6 arguments|1	$00000001
 AHIRequestedID|AHI_AllocAudioRequestA|cancelled, 0 arguments|1	$00000007
 AHIRequestedID|AHI_AllocAudioRequestA|cancelled, 1 arguments|1	$00000008
@@ -2116,19 +2297,26 @@ AHIRequestedID|AbortIOs|no device, 2 arguments|1	$00000000
 AHIRequestedID|AbortIOs|no device, 4 arguments|1	$00000000
 AHIRequestedID|AbortIOs|no device, 5 arguments|1	$00000000
 AHIRequestedID|AbortIOs|no device, 6 arguments|1	$00000000
-AHIRequestedID|AbortIOs|no port|1	$00000000
+AHIRequestedID|AbortIOs|no port|1 [orig]	$00000000
+AHIRequestedID|AbortIOs|no port|1 [fixed #933]	$00000004
 AHIRequestedID|AbortIOs|no requester, 0 arguments|1	$00000000
 AHIRequestedID|AbortIOs|no requester, 1 arguments|1	$00000000
 AHIRequestedID|AbortIOs|no requester, 2 arguments|1	$00000000
 AHIRequestedID|AbortIOs|no requester, 4 arguments|1	$00000000
 AHIRequestedID|AbortIOs|no requester, 5 arguments|1	$00000000
 AHIRequestedID|AbortIOs|no requester, 6 arguments|1	$00000000
-AHIRequestedID|AbortIOs|no screen, 0 arguments|1	$00000000
-AHIRequestedID|AbortIOs|no screen, 1 arguments|1	$00000000
-AHIRequestedID|AbortIOs|no screen, 2 arguments|1	$00000000
-AHIRequestedID|AbortIOs|no screen, 4 arguments|1	$00000000
-AHIRequestedID|AbortIOs|no screen, 5 arguments|1	$00000000
-AHIRequestedID|AbortIOs|no screen, 6 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no screen, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|AbortIOs|no screen, 0 arguments|1 [fixed #933]	$00000003
+AHIRequestedID|AbortIOs|no screen, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|AbortIOs|no screen, 1 arguments|1 [fixed #933]	$00000003
+AHIRequestedID|AbortIOs|no screen, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|AbortIOs|no screen, 2 arguments|1 [fixed #933]	$00000003
+AHIRequestedID|AbortIOs|no screen, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|AbortIOs|no screen, 4 arguments|1 [fixed #933]	$00000003
+AHIRequestedID|AbortIOs|no screen, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|AbortIOs|no screen, 5 arguments|1 [fixed #933]	$00000003
+AHIRequestedID|AbortIOs|no screen, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|AbortIOs|no screen, 6 arguments|1 [fixed #933]	$00000003
 AHIRequestedID|AbortIOs|open|1	$00000000
 AHIRequestedID|AbortIOs|open, 0 arguments|1	$00000000
 AHIRequestedID|AbortIOs|open, 1 arguments|1	$00000000
@@ -2144,19 +2332,32 @@ AHIRequestedID|AbortIOs|reopened, 4 arguments|1	$00000000
 AHIRequestedID|AbortIOs|reopened, 5 arguments|1	$00000000
 AHIRequestedID|AbortIOs|reopened, 6 arguments|1	$00000000
 AHIRequestedID|AbortIOs|request in use|1	$00000000
-AHIRequestedID|BeginIOs|cancelled, 0 arguments|1	$00000000
-AHIRequestedID|BeginIOs|cancelled, 1 arguments|1	$00000000
-AHIRequestedID|BeginIOs|cancelled, 2 arguments|1	$00000000
-AHIRequestedID|BeginIOs|cancelled, 4 arguments|1	$00000000
-AHIRequestedID|BeginIOs|cancelled, 5 arguments|1	$00000000
-AHIRequestedID|BeginIOs|cancelled, 6 arguments|1	$00000000
-AHIRequestedID|BeginIOs|closed|1	$00000000
-AHIRequestedID|BeginIOs|closed, 0 arguments|1	$00000000
-AHIRequestedID|BeginIOs|closed, 1 arguments|1	$00000000
-AHIRequestedID|BeginIOs|closed, 2 arguments|1	$00000000
-AHIRequestedID|BeginIOs|closed, 4 arguments|1	$00000000
-AHIRequestedID|BeginIOs|closed, 5 arguments|1	$00000000
-AHIRequestedID|BeginIOs|closed, 6 arguments|1	$00000000
+AHIRequestedID|BeginIOs|cancelled, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|cancelled, 0 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|cancelled, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|cancelled, 1 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|cancelled, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|cancelled, 2 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|cancelled, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|cancelled, 4 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|cancelled, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|cancelled, 5 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|cancelled, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|cancelled, 6 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|closed|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|closed|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|closed, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|closed, 0 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|closed, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|closed, 1 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|closed, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|closed, 2 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|closed, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|closed, 4 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|closed, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|closed, 5 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|closed, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|closed, 6 arguments|1 [fixed #924]	$0000000C
 AHIRequestedID|BeginIOs|no device|1	$00000000
 AHIRequestedID|BeginIOs|no device opened, 0 arguments|1	$00000000
 AHIRequestedID|BeginIOs|no device opened, 1 arguments|1	$00000000
@@ -2170,34 +2371,62 @@ AHIRequestedID|BeginIOs|no device, 2 arguments|1	$00000000
 AHIRequestedID|BeginIOs|no device, 4 arguments|1	$00000000
 AHIRequestedID|BeginIOs|no device, 5 arguments|1	$00000000
 AHIRequestedID|BeginIOs|no device, 6 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no port|1	$00000000
-AHIRequestedID|BeginIOs|no requester, 0 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no requester, 1 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no requester, 2 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no requester, 4 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no requester, 5 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no requester, 6 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no screen, 0 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no screen, 1 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no screen, 2 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no screen, 4 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no screen, 5 arguments|1	$00000000
-AHIRequestedID|BeginIOs|no screen, 6 arguments|1	$00000000
-AHIRequestedID|BeginIOs|open|1	$00000000
-AHIRequestedID|BeginIOs|open, 0 arguments|1	$00000000
-AHIRequestedID|BeginIOs|open, 1 arguments|1	$00000000
-AHIRequestedID|BeginIOs|open, 2 arguments|1	$00000000
-AHIRequestedID|BeginIOs|open, 4 arguments|1	$00000000
-AHIRequestedID|BeginIOs|open, 5 arguments|1	$00000000
-AHIRequestedID|BeginIOs|open, 6 arguments|1	$00000000
-AHIRequestedID|BeginIOs|open, 6 arguments|2	$00000000
-AHIRequestedID|BeginIOs|reopened, 0 arguments|1	$00000000
-AHIRequestedID|BeginIOs|reopened, 1 arguments|1	$00000000
-AHIRequestedID|BeginIOs|reopened, 2 arguments|1	$00000000
-AHIRequestedID|BeginIOs|reopened, 4 arguments|1	$00000000
-AHIRequestedID|BeginIOs|reopened, 5 arguments|1	$00000000
-AHIRequestedID|BeginIOs|reopened, 6 arguments|1	$00000000
-AHIRequestedID|BeginIOs|request in use|1	$00000000
+AHIRequestedID|BeginIOs|no port|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no port|1 [fixed #924]	$00000013
+AHIRequestedID|BeginIOs|no requester, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no requester, 0 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|no requester, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no requester, 1 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|no requester, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no requester, 2 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|no requester, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no requester, 4 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|no requester, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no requester, 5 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|no requester, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no requester, 6 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|no screen, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no screen, 0 arguments|1 [fixed #924]	$00000012
+AHIRequestedID|BeginIOs|no screen, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no screen, 1 arguments|1 [fixed #924]	$00000012
+AHIRequestedID|BeginIOs|no screen, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no screen, 2 arguments|1 [fixed #924]	$00000012
+AHIRequestedID|BeginIOs|no screen, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no screen, 4 arguments|1 [fixed #924]	$00000012
+AHIRequestedID|BeginIOs|no screen, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no screen, 5 arguments|1 [fixed #924]	$00000012
+AHIRequestedID|BeginIOs|no screen, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|no screen, 6 arguments|1 [fixed #924]	$00000012
+AHIRequestedID|BeginIOs|open|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|open|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|open, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|open, 0 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|open, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|open, 1 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|open, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|open, 2 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|open, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|open, 4 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|open, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|open, 5 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|open, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|open, 6 arguments|1 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|open, 6 arguments|2 [orig]	$00000000
+AHIRequestedID|BeginIOs|open, 6 arguments|2 [fixed #924]	$00000006
+AHIRequestedID|BeginIOs|reopened, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|reopened, 0 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|reopened, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|reopened, 1 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|reopened, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|reopened, 2 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|reopened, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|reopened, 4 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|reopened, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|reopened, 5 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|reopened, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|reopened, 6 arguments|1 [fixed #924]	$0000000C
+AHIRequestedID|BeginIOs|request in use|1 [orig]	$00000000
+AHIRequestedID|BeginIOs|request in use|1 [fixed #924]	$0000000C
 AHIRequestedID|ahir_Version|cancelled, 0 arguments|1	$00000004
 AHIRequestedID|ahir_Version|cancelled, 1 arguments|1	$00000004
 AHIRequestedID|ahir_Version|cancelled, 2 arguments|1	$00000004
@@ -2258,13 +2487,20 @@ AHIRequestedID|closes|cancelled, 2 arguments|1	$00000000
 AHIRequestedID|closes|cancelled, 4 arguments|1	$00000000
 AHIRequestedID|closes|cancelled, 5 arguments|1	$00000000
 AHIRequestedID|closes|cancelled, 6 arguments|1	$00000000
-AHIRequestedID|closes|closed|1	$00000000
-AHIRequestedID|closes|closed, 0 arguments|1	$00000000
-AHIRequestedID|closes|closed, 1 arguments|1	$00000000
-AHIRequestedID|closes|closed, 2 arguments|1	$00000000
-AHIRequestedID|closes|closed, 4 arguments|1	$00000000
-AHIRequestedID|closes|closed, 5 arguments|1	$00000000
-AHIRequestedID|closes|closed, 6 arguments|1	$00000000
+AHIRequestedID|closes|closed|1 [orig]	$00000000
+AHIRequestedID|closes|closed|1 [fixed #924]	$00000001
+AHIRequestedID|closes|closed, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|closed, 0 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|closed, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|closed, 1 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|closed, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|closed, 2 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|closed, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|closed, 4 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|closed, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|closed, 5 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|closed, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|closed, 6 arguments|1 [fixed #924]	$00000001
 AHIRequestedID|closes|no device|1	$00000000
 AHIRequestedID|closes|no device opened, 0 arguments|1	$00000000
 AHIRequestedID|closes|no device opened, 1 arguments|1	$00000000
@@ -2278,19 +2514,26 @@ AHIRequestedID|closes|no device, 2 arguments|1	$00000000
 AHIRequestedID|closes|no device, 4 arguments|1	$00000000
 AHIRequestedID|closes|no device, 5 arguments|1	$00000000
 AHIRequestedID|closes|no device, 6 arguments|1	$00000000
-AHIRequestedID|closes|no port|1	$00000000
+AHIRequestedID|closes|no port|1 [orig]	$00000000
+AHIRequestedID|closes|no port|1 [fixed #924]	$00000004
 AHIRequestedID|closes|no requester, 0 arguments|1	$00000000
 AHIRequestedID|closes|no requester, 1 arguments|1	$00000000
 AHIRequestedID|closes|no requester, 2 arguments|1	$00000000
 AHIRequestedID|closes|no requester, 4 arguments|1	$00000000
 AHIRequestedID|closes|no requester, 5 arguments|1	$00000000
 AHIRequestedID|closes|no requester, 6 arguments|1	$00000000
-AHIRequestedID|closes|no screen, 0 arguments|1	$00000000
-AHIRequestedID|closes|no screen, 1 arguments|1	$00000000
-AHIRequestedID|closes|no screen, 2 arguments|1	$00000000
-AHIRequestedID|closes|no screen, 4 arguments|1	$00000000
-AHIRequestedID|closes|no screen, 5 arguments|1	$00000000
-AHIRequestedID|closes|no screen, 6 arguments|1	$00000000
+AHIRequestedID|closes|no screen, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|no screen, 0 arguments|1 [fixed #924]	$00000003
+AHIRequestedID|closes|no screen, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|no screen, 1 arguments|1 [fixed #924]	$00000003
+AHIRequestedID|closes|no screen, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|no screen, 2 arguments|1 [fixed #924]	$00000003
+AHIRequestedID|closes|no screen, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|no screen, 4 arguments|1 [fixed #924]	$00000003
+AHIRequestedID|closes|no screen, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|no screen, 5 arguments|1 [fixed #924]	$00000003
+AHIRequestedID|closes|no screen, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|no screen, 6 arguments|1 [fixed #924]	$00000003
 AHIRequestedID|closes|open|1	$00000000
 AHIRequestedID|closes|open, 0 arguments|1	$00000000
 AHIRequestedID|closes|open, 1 arguments|1	$00000000
@@ -2299,13 +2542,20 @@ AHIRequestedID|closes|open, 4 arguments|1	$00000000
 AHIRequestedID|closes|open, 5 arguments|1	$00000000
 AHIRequestedID|closes|open, 6 arguments|1	$00000000
 AHIRequestedID|closes|open, 6 arguments|2	$00000000
-AHIRequestedID|closes|reopened, 0 arguments|1	$00000000
-AHIRequestedID|closes|reopened, 1 arguments|1	$00000000
-AHIRequestedID|closes|reopened, 2 arguments|1	$00000000
-AHIRequestedID|closes|reopened, 4 arguments|1	$00000000
-AHIRequestedID|closes|reopened, 5 arguments|1	$00000000
-AHIRequestedID|closes|reopened, 6 arguments|1	$00000000
-AHIRequestedID|closes|request in use|1	$00000000
+AHIRequestedID|closes|reopened, 0 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|reopened, 0 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|reopened, 1 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|reopened, 1 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|reopened, 2 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|reopened, 2 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|reopened, 4 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|reopened, 4 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|reopened, 5 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|reopened, 5 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|reopened, 6 arguments|1 [orig]	$00000000
+AHIRequestedID|closes|reopened, 6 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|closes|request in use|1 [orig]	$00000000
+AHIRequestedID|closes|request in use|1 [fixed #924]	$00000001
 AHIRequestedID|d0|cancelled, 0 arguments|1	$FFFFFFFF
 AHIRequestedID|d0|cancelled, 1 arguments|1	$FFFFFFFF
 AHIRequestedID|d0|cancelled, 2 arguments|1	$FFFFFFFF
@@ -2359,7 +2609,8 @@ AHIRequestedID|d0|reopened, 2 arguments|1	$FFFFFFFF
 AHIRequestedID|d0|reopened, 4 arguments|1	$FFFFFFFF
 AHIRequestedID|d0|reopened, 5 arguments|1	$FFFFFFFF
 AHIRequestedID|d0|reopened, 6 arguments|1	$FFFFFFFF
-AHIRequestedID|d0|request in use|1	$FFFFFFFF
+AHIRequestedID|d0|request in use|1 [orig]	$FFFFFFFF
+AHIRequestedID|d0|request in use|1 [fixed #924]	$00000000
 AHIRequestedID|failed opens|cancelled, 0 arguments|1	$00000004
 AHIRequestedID|failed opens|cancelled, 1 arguments|1	$00000004
 AHIRequestedID|failed opens|cancelled, 2 arguments|1	$00000004
@@ -2582,13 +2833,20 @@ AHIRequestedID|opens|cancelled, 2 arguments|1	$00000001
 AHIRequestedID|opens|cancelled, 4 arguments|1	$00000001
 AHIRequestedID|opens|cancelled, 5 arguments|1	$00000001
 AHIRequestedID|opens|cancelled, 6 arguments|1	$00000001
-AHIRequestedID|opens|closed|1	$00000002
-AHIRequestedID|opens|closed, 0 arguments|1	$00000002
-AHIRequestedID|opens|closed, 1 arguments|1	$00000002
-AHIRequestedID|opens|closed, 2 arguments|1	$00000002
-AHIRequestedID|opens|closed, 4 arguments|1	$00000002
-AHIRequestedID|opens|closed, 5 arguments|1	$00000002
-AHIRequestedID|opens|closed, 6 arguments|1	$00000002
+AHIRequestedID|opens|closed|1 [orig]	$00000002
+AHIRequestedID|opens|closed|1 [fixed #924]	$00000001
+AHIRequestedID|opens|closed, 0 arguments|1 [orig]	$00000002
+AHIRequestedID|opens|closed, 0 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|opens|closed, 1 arguments|1 [orig]	$00000002
+AHIRequestedID|opens|closed, 1 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|opens|closed, 2 arguments|1 [orig]	$00000002
+AHIRequestedID|opens|closed, 2 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|opens|closed, 4 arguments|1 [orig]	$00000002
+AHIRequestedID|opens|closed, 4 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|opens|closed, 5 arguments|1 [orig]	$00000002
+AHIRequestedID|opens|closed, 5 arguments|1 [fixed #924]	$00000001
+AHIRequestedID|opens|closed, 6 arguments|1 [orig]	$00000002
+AHIRequestedID|opens|closed, 6 arguments|1 [fixed #924]	$00000001
 AHIRequestedID|opens|no device|1	$00000000
 AHIRequestedID|opens|no device opened, 0 arguments|1	$00000000
 AHIRequestedID|opens|no device opened, 1 arguments|1	$00000000
@@ -2602,19 +2860,26 @@ AHIRequestedID|opens|no device, 2 arguments|1	$00000000
 AHIRequestedID|opens|no device, 4 arguments|1	$00000000
 AHIRequestedID|opens|no device, 5 arguments|1	$00000000
 AHIRequestedID|opens|no device, 6 arguments|1	$00000000
-AHIRequestedID|opens|no port|1	$00000005
+AHIRequestedID|opens|no port|1 [orig]	$00000005
+AHIRequestedID|opens|no port|1 [fixed #924]	$00000004
 AHIRequestedID|opens|no requester, 0 arguments|1	$00000001
 AHIRequestedID|opens|no requester, 1 arguments|1	$00000001
 AHIRequestedID|opens|no requester, 2 arguments|1	$00000001
 AHIRequestedID|opens|no requester, 4 arguments|1	$00000001
 AHIRequestedID|opens|no requester, 5 arguments|1	$00000001
 AHIRequestedID|opens|no requester, 6 arguments|1	$00000001
-AHIRequestedID|opens|no screen, 0 arguments|1	$00000005
-AHIRequestedID|opens|no screen, 1 arguments|1	$00000005
-AHIRequestedID|opens|no screen, 2 arguments|1	$00000005
-AHIRequestedID|opens|no screen, 4 arguments|1	$00000005
-AHIRequestedID|opens|no screen, 5 arguments|1	$00000005
-AHIRequestedID|opens|no screen, 6 arguments|1	$00000005
+AHIRequestedID|opens|no screen, 0 arguments|1 [orig]	$00000005
+AHIRequestedID|opens|no screen, 0 arguments|1 [fixed #924]	$00000004
+AHIRequestedID|opens|no screen, 1 arguments|1 [orig]	$00000005
+AHIRequestedID|opens|no screen, 1 arguments|1 [fixed #924]	$00000004
+AHIRequestedID|opens|no screen, 2 arguments|1 [orig]	$00000005
+AHIRequestedID|opens|no screen, 2 arguments|1 [fixed #924]	$00000004
+AHIRequestedID|opens|no screen, 4 arguments|1 [orig]	$00000005
+AHIRequestedID|opens|no screen, 4 arguments|1 [fixed #924]	$00000004
+AHIRequestedID|opens|no screen, 5 arguments|1 [orig]	$00000005
+AHIRequestedID|opens|no screen, 5 arguments|1 [fixed #924]	$00000004
+AHIRequestedID|opens|no screen, 6 arguments|1 [orig]	$00000005
+AHIRequestedID|opens|no screen, 6 arguments|1 [fixed #924]	$00000004
 AHIRequestedID|opens|open|1	$00000001
 AHIRequestedID|opens|open, 0 arguments|1	$00000001
 AHIRequestedID|opens|open, 1 arguments|1	$00000001
@@ -2623,13 +2888,20 @@ AHIRequestedID|opens|open, 4 arguments|1	$00000001
 AHIRequestedID|opens|open, 5 arguments|1	$00000001
 AHIRequestedID|opens|open, 6 arguments|1	$00000001
 AHIRequestedID|opens|open, 6 arguments|2	$00000001
-AHIRequestedID|opens|reopened, 0 arguments|1	$00000003
-AHIRequestedID|opens|reopened, 1 arguments|1	$00000003
-AHIRequestedID|opens|reopened, 2 arguments|1	$00000003
-AHIRequestedID|opens|reopened, 4 arguments|1	$00000003
-AHIRequestedID|opens|reopened, 5 arguments|1	$00000003
-AHIRequestedID|opens|reopened, 6 arguments|1	$00000003
-AHIRequestedID|opens|request in use|1	$00000002
+AHIRequestedID|opens|reopened, 0 arguments|1 [orig]	$00000003
+AHIRequestedID|opens|reopened, 0 arguments|1 [fixed #924]	$00000002
+AHIRequestedID|opens|reopened, 1 arguments|1 [orig]	$00000003
+AHIRequestedID|opens|reopened, 1 arguments|1 [fixed #924]	$00000002
+AHIRequestedID|opens|reopened, 2 arguments|1 [orig]	$00000003
+AHIRequestedID|opens|reopened, 2 arguments|1 [fixed #924]	$00000002
+AHIRequestedID|opens|reopened, 4 arguments|1 [orig]	$00000003
+AHIRequestedID|opens|reopened, 4 arguments|1 [fixed #924]	$00000002
+AHIRequestedID|opens|reopened, 5 arguments|1 [orig]	$00000003
+AHIRequestedID|opens|reopened, 5 arguments|1 [fixed #924]	$00000002
+AHIRequestedID|opens|reopened, 6 arguments|1 [orig]	$00000003
+AHIRequestedID|opens|reopened, 6 arguments|1 [fixed #924]	$00000002
+AHIRequestedID|opens|request in use|1 [orig]	$00000002
+AHIRequestedID|opens|request in use|1 [fixed #924]	$00000001
 AHIRequestedID|other AHI calls|cancelled, 0 arguments|1	$00000000
 AHIRequestedID|other AHI calls|cancelled, 1 arguments|1	$00000000
 AHIRequestedID|other AHI calls|cancelled, 2 arguments|1	$00000000
@@ -2907,13 +3179,20 @@ AHIRequestedID|unit|cancelled, 2 arguments|1	$00000000
 AHIRequestedID|unit|cancelled, 4 arguments|1	$00000000
 AHIRequestedID|unit|cancelled, 5 arguments|1	$00000000
 AHIRequestedID|unit|cancelled, 6 arguments|1	$00000000
-AHIRequestedID|unit|closed|1	$00000002
-AHIRequestedID|unit|closed, 0 arguments|1	$00000002
-AHIRequestedID|unit|closed, 1 arguments|1	$00000002
-AHIRequestedID|unit|closed, 2 arguments|1	$00000002
-AHIRequestedID|unit|closed, 4 arguments|1	$00000002
-AHIRequestedID|unit|closed, 5 arguments|1	$00000002
-AHIRequestedID|unit|closed, 6 arguments|1	$00000002
+AHIRequestedID|unit|closed|1 [orig]	$00000002
+AHIRequestedID|unit|closed|1 [fixed #924]	$00000000
+AHIRequestedID|unit|closed, 0 arguments|1 [orig]	$00000002
+AHIRequestedID|unit|closed, 0 arguments|1 [fixed #924]	$00000000
+AHIRequestedID|unit|closed, 1 arguments|1 [orig]	$00000002
+AHIRequestedID|unit|closed, 1 arguments|1 [fixed #924]	$00000000
+AHIRequestedID|unit|closed, 2 arguments|1 [orig]	$00000002
+AHIRequestedID|unit|closed, 2 arguments|1 [fixed #924]	$00000000
+AHIRequestedID|unit|closed, 4 arguments|1 [orig]	$00000002
+AHIRequestedID|unit|closed, 4 arguments|1 [fixed #924]	$00000000
+AHIRequestedID|unit|closed, 5 arguments|1 [orig]	$00000002
+AHIRequestedID|unit|closed, 5 arguments|1 [fixed #924]	$00000000
+AHIRequestedID|unit|closed, 6 arguments|1 [orig]	$00000002
+AHIRequestedID|unit|closed, 6 arguments|1 [fixed #924]	$00000000
 AHIRequestedID|unit|no device|1	$00000000
 AHIRequestedID|unit|no device opened, 0 arguments|1	$00000001
 AHIRequestedID|unit|no device opened, 1 arguments|1	$00000001
@@ -2954,7 +3233,8 @@ AHIRequestedID|unit|reopened, 2 arguments|1	$00000003
 AHIRequestedID|unit|reopened, 4 arguments|1	$00000003
 AHIRequestedID|unit|reopened, 5 arguments|1	$00000003
 AHIRequestedID|unit|reopened, 6 arguments|1	$00000003
-AHIRequestedID|unit|request in use|1	$00000002
+AHIRequestedID|unit|request in use|1 [orig]	$00000002
+AHIRequestedID|unit|request in use|1 [fixed #924]	$00000000
 CloseAHI|AHI_AllocAudioRequestA|again|1	$00000012
 CloseAHI|AHI_AllocAudioRequestA|nothing open|1	$00000000
 CloseAHI|AHI_AllocAudioRequestA|open|1	$00000012
@@ -2973,23 +3253,32 @@ CloseAHI|AHI_FreeAudioRequest|request in use|1	$00000000
 CloseAHI|AbortIOs|again|1	$00000000
 CloseAHI|AbortIOs|nothing open|1	$00000000
 CloseAHI|AbortIOs|open|1	$00000000
-CloseAHI|AbortIOs|playing|1	$00000000
+CloseAHI|AbortIOs|playing|1 [orig]	$00000000
+CloseAHI|AbortIOs|playing|1 [fixed #933]	$00000003
 CloseAHI|AbortIOs|request in use|1	$00000000
-CloseAHI|BeginIOs|again|1	$00000000
+CloseAHI|BeginIOs|again|1 [orig]	$00000000
+CloseAHI|BeginIOs|again|1 [fixed #924]	$0000000C
 CloseAHI|BeginIOs|nothing open|1	$00000000
-CloseAHI|BeginIOs|open|1	$00000000
-CloseAHI|BeginIOs|playing|1	$00000000
-CloseAHI|BeginIOs|request in use|1	$00000000
+CloseAHI|BeginIOs|open|1 [orig]	$00000000
+CloseAHI|BeginIOs|open|1 [fixed #924]	$0000000C
+CloseAHI|BeginIOs|playing|1 [orig]	$00000000
+CloseAHI|BeginIOs|playing|1 [fixed #924]	$00000010
+CloseAHI|BeginIOs|request in use|1 [orig]	$00000000
+CloseAHI|BeginIOs|request in use|1 [fixed #924]	$0000000C
 CloseAHI|ahir_Version|again|1	$00000004
 CloseAHI|ahir_Version|nothing open|1	$00000000
 CloseAHI|ahir_Version|open|1	$00000004
 CloseAHI|ahir_Version|playing|1	$00000004
 CloseAHI|ahir_Version|request in use|1	$00000004
-CloseAHI|closes|again|1	$00000000
+CloseAHI|closes|again|1 [orig]	$00000000
+CloseAHI|closes|again|1 [fixed #924]	$00000001
 CloseAHI|closes|nothing open|1	$00000000
-CloseAHI|closes|open|1	$00000000
-CloseAHI|closes|playing|1	$00000000
-CloseAHI|closes|request in use|1	$00000000
+CloseAHI|closes|open|1 [orig]	$00000000
+CloseAHI|closes|open|1 [fixed #924]	$00000001
+CloseAHI|closes|playing|1 [orig]	$00000000
+CloseAHI|closes|playing|1 [fixed #924]	$00000003
+CloseAHI|closes|request in use|1 [orig]	$00000000
+CloseAHI|closes|request in use|1 [fixed #924]	$00000001
 CloseAHI|failed opens|again|1	$00000004
 CloseAHI|failed opens|nothing open|1	$00000000
 CloseAHI|failed opens|open|1	$00000004
@@ -3010,11 +3299,15 @@ CloseAHI|kept|nothing open|1	kept
 CloseAHI|kept|open|1	kept
 CloseAHI|kept|playing|1	kept
 CloseAHI|kept|request in use|1	kept
-CloseAHI|opens|again|1	$00000002
+CloseAHI|opens|again|1 [orig]	$00000002
+CloseAHI|opens|again|1 [fixed #924]	$00000001
 CloseAHI|opens|nothing open|1	$00000000
-CloseAHI|opens|open|1	$00000002
-CloseAHI|opens|playing|1	$00000004
-CloseAHI|opens|request in use|1	$00000002
+CloseAHI|opens|open|1 [orig]	$00000002
+CloseAHI|opens|open|1 [fixed #924]	$00000001
+CloseAHI|opens|playing|1 [orig]	$00000004
+CloseAHI|opens|playing|1 [fixed #924]	$00000003
+CloseAHI|opens|request in use|1 [orig]	$00000002
+CloseAHI|opens|request in use|1 [fixed #924]	$00000001
 CloseAHI|other AHI calls|again|1	$00000000
 CloseAHI|other AHI calls|nothing open|1	$00000000
 CloseAHI|other AHI calls|open|1	$00000000
@@ -3040,11 +3333,14 @@ CloseAHI|tag list|nothing open|1	bytes 68 fnv 83E79215
 CloseAHI|tag list|open|1	bytes 68 fnv 02343B5D
 CloseAHI|tag list|playing|1	bytes 68 fnv 02343B5D
 CloseAHI|tag list|request in use|1	bytes 68 fnv 02343B5D
-CloseAHI|unit|again|1	$00000002
+CloseAHI|unit|again|1 [orig]	$00000002
+CloseAHI|unit|again|1 [fixed #924]	$00000000
 CloseAHI|unit|nothing open|1	$00000000
-CloseAHI|unit|open|1	$00000002
+CloseAHI|unit|open|1 [orig]	$00000002
+CloseAHI|unit|open|1 [fixed #924]	$00000000
 CloseAHI|unit|playing|1	$00000000
-CloseAHI|unit|request in use|1	$00000002
+CloseAHI|unit|request in use|1 [orig]	$00000002
+CloseAHI|unit|request in use|1 [fixed #924]	$00000000
 CludgeSound|+14 (cL)|16000 Hz, after it|1 [orig]	$0000634C
 CludgeSound|+14 (cL)|16000 Hz, after it|1 [fixed #925]	$00000000
 CludgeSound|+14 (cL)|22050 Hz|1 [orig]	$0000634C
@@ -3475,16 +3771,21 @@ OpenAHI|AHI_FreeAudioRequest|no ahi.device unit 0|1	$00000000
 OpenAHI|AHI_FreeAudioRequest|no ahi.device unit 1|1	$00000000
 OpenAHI|AHI_FreeAudioRequest|test device unit 0|1	$00000000
 OpenAHI|AbortIOs|after init, unit 3|1	$00000000
-OpenAHI|AbortIOs|after playing, unit 0|1	$00000000
+OpenAHI|AbortIOs|after playing, unit 0|1 [orig]	$00000000
+OpenAHI|AbortIOs|after playing, unit 0|1 [fixed #933]	$00000003
 OpenAHI|AbortIOs|again, unit 2|1	$00000000
 OpenAHI|AbortIOs|for playing, unit 0|1	$00000000
 OpenAHI|AbortIOs|no ahi.device unit 0|1	$00000000
 OpenAHI|AbortIOs|no ahi.device unit 1|1	$00000000
 OpenAHI|AbortIOs|test device unit 0|1	$00000000
-OpenAHI|BeginIOs|after init, unit 3|1	$00000000
-OpenAHI|BeginIOs|after playing, unit 0|1	$00000000
-OpenAHI|BeginIOs|again, unit 2|1	$00000000
-OpenAHI|BeginIOs|for playing, unit 0|1	$00000000
+OpenAHI|BeginIOs|after init, unit 3|1 [orig]	$00000000
+OpenAHI|BeginIOs|after init, unit 3|1 [fixed #924]	$0000000C
+OpenAHI|BeginIOs|after playing, unit 0|1 [orig]	$00000000
+OpenAHI|BeginIOs|after playing, unit 0|1 [fixed #924]	$00000010
+OpenAHI|BeginIOs|again, unit 2|1 [orig]	$00000000
+OpenAHI|BeginIOs|again, unit 2|1 [fixed #924]	$00000006
+OpenAHI|BeginIOs|for playing, unit 0|1 [orig]	$00000000
+OpenAHI|BeginIOs|for playing, unit 0|1 [fixed #924]	$0000000C
 OpenAHI|BeginIOs|no ahi.device unit 0|1	$00000000
 OpenAHI|BeginIOs|no ahi.device unit 1|1	$00000000
 OpenAHI|BeginIOs|test device unit 0|1	$00000000
@@ -3496,16 +3797,20 @@ OpenAHI|ahir_Version|for playing, unit 0|1	$00000004
 OpenAHI|ahir_Version|no ahi.device unit 0|1	$00000004
 OpenAHI|ahir_Version|no ahi.device unit 1|1	$00000004
 OpenAHI|ahir_Version|test device unit 0|1	$00000004
-OpenAHI|closes|after init, unit 3|1	$00000000
-OpenAHI|closes|after playing, unit 0|1	$00000000
+OpenAHI|closes|after init, unit 3|1 [orig]	$00000000
+OpenAHI|closes|after init, unit 3|1 [fixed #924]	$00000001
+OpenAHI|closes|after playing, unit 0|1 [orig]	$00000000
+OpenAHI|closes|after playing, unit 0|1 [fixed #924]	$00000003
 OpenAHI|closes|again, unit 2|1	$00000000
-OpenAHI|closes|for playing, unit 0|1	$00000000
+OpenAHI|closes|for playing, unit 0|1 [orig]	$00000000
+OpenAHI|closes|for playing, unit 0|1 [fixed #924]	$00000002
 OpenAHI|closes|no ahi.device unit 0|1	$00000000
 OpenAHI|closes|no ahi.device unit 1|1	$00000000
 OpenAHI|closes|test device unit 0|1	$00000000
 OpenAHI|d0|after init, unit 3|1	$FFFFFFFF
 OpenAHI|d0|after playing, unit 0|1	$FFFFFFFF
-OpenAHI|d0|again, unit 2|1	$FFFFFFFF
+OpenAHI|d0|again, unit 2|1 [orig]	$FFFFFFFF
+OpenAHI|d0|again, unit 2|1 [fixed #924]	$00000000
 OpenAHI|d0|for playing, unit 0|1	$FFFFFFFF
 OpenAHI|d0|no ahi.device unit 0|1	$00000000
 OpenAHI|d0|no ahi.device unit 1|1	$00000000
@@ -3538,10 +3843,14 @@ OpenAHI|kept|for playing, unit 0|1	kept
 OpenAHI|kept|no ahi.device unit 0|1	kept
 OpenAHI|kept|no ahi.device unit 1|1	kept
 OpenAHI|kept|test device unit 0|1	kept
-OpenAHI|opens|after init, unit 3|1	$00000003
-OpenAHI|opens|after playing, unit 0|1	$00000005
-OpenAHI|opens|again, unit 2|1	$00000002
-OpenAHI|opens|for playing, unit 0|1	$00000004
+OpenAHI|opens|after init, unit 3|1 [orig]	$00000003
+OpenAHI|opens|after init, unit 3|1 [fixed #924]	$00000002
+OpenAHI|opens|after playing, unit 0|1 [orig]	$00000005
+OpenAHI|opens|after playing, unit 0|1 [fixed #924]	$00000004
+OpenAHI|opens|again, unit 2|1 [orig]	$00000002
+OpenAHI|opens|again, unit 2|1 [fixed #924]	$00000001
+OpenAHI|opens|for playing, unit 0|1 [orig]	$00000004
+OpenAHI|opens|for playing, unit 0|1 [fixed #924]	$00000003
 OpenAHI|opens|no ahi.device unit 0|1	$00000000
 OpenAHI|opens|no ahi.device unit 1|1	$00000000
 OpenAHI|opens|test device unit 0|1	$00000001
@@ -3582,7 +3891,8 @@ OpenAHI|tag list|no ahi.device unit 1|1	bytes 68 fnv 83E79215
 OpenAHI|tag list|test device unit 0|1	bytes 68 fnv 83E79215
 OpenAHI|unit|after init, unit 3|1	$00000003
 OpenAHI|unit|after playing, unit 0|1	$00000000
-OpenAHI|unit|again, unit 2|1	$00000002
+OpenAHI|unit|again, unit 2|1 [orig]	$00000002
+OpenAHI|unit|again, unit 2|1 [fixed #924]	$00000000
 OpenAHI|unit|for playing, unit 0|1	$00000000
 OpenAHI|unit|no ahi.device unit 0|1	$00000000
 OpenAHI|unit|no ahi.device unit 1|1	$00000001
@@ -3629,42 +3939,66 @@ PlayRawAHI|AHI_FreeAudioRequest|playing, raw|1	$00000000
 PlayRawAHI|AbortIOs|no device|1	$00000000
 PlayRawAHI|AbortIOs|no device|2	$00000000
 PlayRawAHI|AbortIOs|no device|3	$00000000
-PlayRawAHI|AbortIOs|no port|1	$00000000
-PlayRawAHI|AbortIOs|no port|2	$00000000
-PlayRawAHI|AbortIOs|no port|3	$00000000
+PlayRawAHI|AbortIOs|no port|1 [orig]	$00000000
+PlayRawAHI|AbortIOs|no port|1 [fixed #933]	$00000004
+PlayRawAHI|AbortIOs|no port|2 [orig]	$00000000
+PlayRawAHI|AbortIOs|no port|2 [fixed #933]	$00000004
+PlayRawAHI|AbortIOs|no port|3 [orig]	$00000000
+PlayRawAHI|AbortIOs|no port|3 [fixed #933]	$00000004
 PlayRawAHI|AbortIOs|open|1	$00000000
 PlayRawAHI|AbortIOs|open|2	$00000000
 PlayRawAHI|AbortIOs|open|3	$00000000
 PlayRawAHI|AbortIOs|open twice|1	$00000000
 PlayRawAHI|AbortIOs|open twice|2	$00000000
 PlayRawAHI|AbortIOs|open twice|3	$00000000
-PlayRawAHI|AbortIOs|playing, raw|1	$00000000
+PlayRawAHI|AbortIOs|playing, raw|1 [orig]	$00000000
+PlayRawAHI|AbortIOs|playing, raw|1 [fixed #933]	$00000002
 PlayRawAHI|BeginIOs|no device|1	$00000000
 PlayRawAHI|BeginIOs|no device|2	$00000000
 PlayRawAHI|BeginIOs|no device|3	$00000000
-PlayRawAHI|BeginIOs|no port|1	$00000000
-PlayRawAHI|BeginIOs|no port|2	$00000000
-PlayRawAHI|BeginIOs|no port|3	$00000000
-PlayRawAHI|BeginIOs|open|1	$00000000
-PlayRawAHI|BeginIOs|open|2	$00000000
-PlayRawAHI|BeginIOs|open|3	$00000000
-PlayRawAHI|BeginIOs|open twice|1	$00000000
-PlayRawAHI|BeginIOs|open twice|2	$00000000
-PlayRawAHI|BeginIOs|open twice|3	$00000000
-PlayRawAHI|BeginIOs|playing, raw|1	$00000000
+PlayRawAHI|BeginIOs|no port|1 [orig]	$00000000
+PlayRawAHI|BeginIOs|no port|1 [fixed #924]	$00000013
+PlayRawAHI|BeginIOs|no port|2 [orig]	$00000000
+PlayRawAHI|BeginIOs|no port|2 [fixed #924]	$00000013
+PlayRawAHI|BeginIOs|no port|3 [orig]	$00000000
+PlayRawAHI|BeginIOs|no port|3 [fixed #924]	$00000013
+PlayRawAHI|BeginIOs|open|1 [orig]	$00000000
+PlayRawAHI|BeginIOs|open|1 [fixed #924]	$00000002
+PlayRawAHI|BeginIOs|open|2 [orig]	$00000000
+PlayRawAHI|BeginIOs|open|2 [fixed #924]	$00000004
+PlayRawAHI|BeginIOs|open|3 [orig]	$00000000
+PlayRawAHI|BeginIOs|open|3 [fixed #924]	$00000006
+PlayRawAHI|BeginIOs|open twice|1 [orig]	$00000000
+PlayRawAHI|BeginIOs|open twice|1 [fixed #924]	$00000008
+PlayRawAHI|BeginIOs|open twice|2 [orig]	$00000000
+PlayRawAHI|BeginIOs|open twice|2 [fixed #924]	$0000000A
+PlayRawAHI|BeginIOs|open twice|3 [orig]	$00000000
+PlayRawAHI|BeginIOs|open twice|3 [fixed #924]	$0000000C
+PlayRawAHI|BeginIOs|playing, raw|1 [orig]	$00000000
+PlayRawAHI|BeginIOs|playing, raw|1 [fixed #924]	$0000000F
 PlayRawAHI|ahir_Frequency|no device|1	$00000000
 PlayRawAHI|ahir_Frequency|no device|2	$00000000
 PlayRawAHI|ahir_Frequency|no device|3	$00000000
-PlayRawAHI|ahir_Frequency|no port|1	$00000000
-PlayRawAHI|ahir_Frequency|no port|2	$00000000
-PlayRawAHI|ahir_Frequency|no port|3	$00000000
-PlayRawAHI|ahir_Frequency|open|1	$00000000
-PlayRawAHI|ahir_Frequency|open|2	$00000000
-PlayRawAHI|ahir_Frequency|open|3	$00000000
-PlayRawAHI|ahir_Frequency|open twice|1	$00000000
-PlayRawAHI|ahir_Frequency|open twice|2	$00000000
-PlayRawAHI|ahir_Frequency|open twice|3	$00000000
-PlayRawAHI|ahir_Frequency|playing, raw|1	$00000000
+PlayRawAHI|ahir_Frequency|no port|1 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|no port|1 [fixed #924]	$00003EB3
+PlayRawAHI|ahir_Frequency|no port|2 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|no port|2 [fixed #924]	$00003EB3
+PlayRawAHI|ahir_Frequency|no port|3 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|no port|3 [fixed #924]	$00003EB3
+PlayRawAHI|ahir_Frequency|open|1 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|open|1 [fixed #924]	$00005622
+PlayRawAHI|ahir_Frequency|open|2 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|open|2 [fixed #924]	$00005622
+PlayRawAHI|ahir_Frequency|open|3 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|open|3 [fixed #924]	$00005622
+PlayRawAHI|ahir_Frequency|open twice|1 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|open twice|1 [fixed #924]	$00005622
+PlayRawAHI|ahir_Frequency|open twice|2 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|open twice|2 [fixed #924]	$00005622
+PlayRawAHI|ahir_Frequency|open twice|3 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|open twice|3 [fixed #924]	$00005622
+PlayRawAHI|ahir_Frequency|playing, raw|1 [orig]	$00000000
+PlayRawAHI|ahir_Frequency|playing, raw|1 [fixed #924]	$00005622
 PlayRawAHI|ahir_Link|no device|1	$00000000
 PlayRawAHI|ahir_Link|no device|2	$00000000
 PlayRawAHI|ahir_Link|no device|3	$00000000
@@ -3681,16 +4015,26 @@ PlayRawAHI|ahir_Link|playing, raw|1	$00000000
 PlayRawAHI|ahir_Position|no device|1	$00000000
 PlayRawAHI|ahir_Position|no device|2	$00000000
 PlayRawAHI|ahir_Position|no device|3	$00000000
-PlayRawAHI|ahir_Position|no port|1	$00000000
-PlayRawAHI|ahir_Position|no port|2	$00000000
-PlayRawAHI|ahir_Position|no port|3	$00000000
-PlayRawAHI|ahir_Position|open|1	$00000000
-PlayRawAHI|ahir_Position|open|2	$00000000
-PlayRawAHI|ahir_Position|open|3	$00000000
-PlayRawAHI|ahir_Position|open twice|1	$00000000
-PlayRawAHI|ahir_Position|open twice|2	$00000000
-PlayRawAHI|ahir_Position|open twice|3	$00000000
-PlayRawAHI|ahir_Position|playing, raw|1	$00000000
+PlayRawAHI|ahir_Position|no port|1 [orig]	$00000000
+PlayRawAHI|ahir_Position|no port|1 [fixed #924]	$00008000
+PlayRawAHI|ahir_Position|no port|2 [orig]	$00000000
+PlayRawAHI|ahir_Position|no port|2 [fixed #924]	$00008000
+PlayRawAHI|ahir_Position|no port|3 [orig]	$00000000
+PlayRawAHI|ahir_Position|no port|3 [fixed #924]	$00008000
+PlayRawAHI|ahir_Position|open|1 [orig]	$00000000
+PlayRawAHI|ahir_Position|open|1 [fixed #924]	$00008000
+PlayRawAHI|ahir_Position|open|2 [orig]	$00000000
+PlayRawAHI|ahir_Position|open|2 [fixed #924]	$00008000
+PlayRawAHI|ahir_Position|open|3 [orig]	$00000000
+PlayRawAHI|ahir_Position|open|3 [fixed #924]	$00004000
+PlayRawAHI|ahir_Position|open twice|1 [orig]	$00000000
+PlayRawAHI|ahir_Position|open twice|1 [fixed #924]	$00008000
+PlayRawAHI|ahir_Position|open twice|2 [orig]	$00000000
+PlayRawAHI|ahir_Position|open twice|2 [fixed #924]	$00008000
+PlayRawAHI|ahir_Position|open twice|3 [orig]	$00000000
+PlayRawAHI|ahir_Position|open twice|3 [fixed #924]	$00004000
+PlayRawAHI|ahir_Position|playing, raw|1 [orig]	$00000000
+PlayRawAHI|ahir_Position|playing, raw|1 [fixed #924]	$00008000
 PlayRawAHI|ahir_Type|no device|1	$00000000
 PlayRawAHI|ahir_Type|no device|2	$00000000
 PlayRawAHI|ahir_Type|no device|3	$00000000
@@ -3720,29 +4064,43 @@ PlayRawAHI|ahir_Version|playing, raw|1	$00000004
 PlayRawAHI|ahir_Volume|no device|1	$00000000
 PlayRawAHI|ahir_Volume|no device|2	$00000000
 PlayRawAHI|ahir_Volume|no device|3	$00000000
-PlayRawAHI|ahir_Volume|no port|1	$00000000
-PlayRawAHI|ahir_Volume|no port|2	$00000000
-PlayRawAHI|ahir_Volume|no port|3	$00000000
-PlayRawAHI|ahir_Volume|open|1	$00000000
-PlayRawAHI|ahir_Volume|open|2	$00000000
-PlayRawAHI|ahir_Volume|open|3	$00000000
-PlayRawAHI|ahir_Volume|open twice|1	$00000000
-PlayRawAHI|ahir_Volume|open twice|2	$00000000
-PlayRawAHI|ahir_Volume|open twice|3	$00000000
-PlayRawAHI|ahir_Volume|playing, raw|1	$00000000
+PlayRawAHI|ahir_Volume|no port|1 [orig]	$00000000
+PlayRawAHI|ahir_Volume|no port|1 [fixed #924]	$00010000
+PlayRawAHI|ahir_Volume|no port|2 [orig]	$00000000
+PlayRawAHI|ahir_Volume|no port|2 [fixed #924]	$00010000
+PlayRawAHI|ahir_Volume|no port|3 [orig]	$00000000
+PlayRawAHI|ahir_Volume|no port|3 [fixed #924]	$00010000
+PlayRawAHI|ahir_Volume|open|1 [orig]	$00000000
+PlayRawAHI|ahir_Volume|open|1 [fixed #924]	$00010000
+PlayRawAHI|ahir_Volume|open|2 [orig]	$00000000
+PlayRawAHI|ahir_Volume|open|2 [fixed #924]	$00008000
+PlayRawAHI|ahir_Volume|open|3 [orig]	$00000000
+PlayRawAHI|ahir_Volume|open|3 [fixed #924]	$00008000
+PlayRawAHI|ahir_Volume|open twice|1 [orig]	$00000000
+PlayRawAHI|ahir_Volume|open twice|1 [fixed #924]	$00010000
+PlayRawAHI|ahir_Volume|open twice|2 [orig]	$00000000
+PlayRawAHI|ahir_Volume|open twice|2 [fixed #924]	$00008000
+PlayRawAHI|ahir_Volume|open twice|3 [orig]	$00000000
+PlayRawAHI|ahir_Volume|open twice|3 [fixed #924]	$00008000
+PlayRawAHI|ahir_Volume|playing, raw|1 [orig]	$00000000
+PlayRawAHI|ahir_Volume|playing, raw|1 [fixed #924]	$00010000
 PlayRawAHI|closes|no device|1	$00000000
 PlayRawAHI|closes|no device|2	$00000000
 PlayRawAHI|closes|no device|3	$00000000
-PlayRawAHI|closes|no port|1	$00000000
-PlayRawAHI|closes|no port|2	$00000000
-PlayRawAHI|closes|no port|3	$00000000
+PlayRawAHI|closes|no port|1 [orig]	$00000000
+PlayRawAHI|closes|no port|1 [fixed #924]	$00000004
+PlayRawAHI|closes|no port|2 [orig]	$00000000
+PlayRawAHI|closes|no port|2 [fixed #924]	$00000004
+PlayRawAHI|closes|no port|3 [orig]	$00000000
+PlayRawAHI|closes|no port|3 [fixed #924]	$00000004
 PlayRawAHI|closes|open|1	$00000000
 PlayRawAHI|closes|open|2	$00000000
 PlayRawAHI|closes|open|3	$00000000
 PlayRawAHI|closes|open twice|1	$00000000
 PlayRawAHI|closes|open twice|2	$00000000
 PlayRawAHI|closes|open twice|3	$00000000
-PlayRawAHI|closes|playing, raw|1	$00000000
+PlayRawAHI|closes|playing, raw|1 [orig]	$00000000
+PlayRawAHI|closes|playing, raw|1 [fixed #924]	$00000002
 PlayRawAHI|failed opens|no device|1	$00000000
 PlayRawAHI|failed opens|no device|2	$00000000
 PlayRawAHI|failed opens|no device|3	$00000000
@@ -3785,55 +4143,92 @@ PlayRawAHI|freed requester|playing, raw|1	$00000000
 PlayRawAHI|io_Command|no device|1	$00000000
 PlayRawAHI|io_Command|no device|2	$00000000
 PlayRawAHI|io_Command|no device|3	$00000000
-PlayRawAHI|io_Command|no port|1	$00000000
-PlayRawAHI|io_Command|no port|2	$00000000
-PlayRawAHI|io_Command|no port|3	$00000000
-PlayRawAHI|io_Command|open|1	$00000000
-PlayRawAHI|io_Command|open|2	$00000000
-PlayRawAHI|io_Command|open|3	$00000000
-PlayRawAHI|io_Command|open twice|1	$00000000
-PlayRawAHI|io_Command|open twice|2	$00000000
-PlayRawAHI|io_Command|open twice|3	$00000000
-PlayRawAHI|io_Command|playing, raw|1	$00000000
+PlayRawAHI|io_Command|no port|1 [orig]	$00000000
+PlayRawAHI|io_Command|no port|1 [fixed #924]	$00000003
+PlayRawAHI|io_Command|no port|2 [orig]	$00000000
+PlayRawAHI|io_Command|no port|2 [fixed #924]	$00000003
+PlayRawAHI|io_Command|no port|3 [orig]	$00000000
+PlayRawAHI|io_Command|no port|3 [fixed #924]	$00000003
+PlayRawAHI|io_Command|open|1 [orig]	$00000000
+PlayRawAHI|io_Command|open|1 [fixed #924]	$00000003
+PlayRawAHI|io_Command|open|2 [orig]	$00000000
+PlayRawAHI|io_Command|open|2 [fixed #924]	$00000003
+PlayRawAHI|io_Command|open|3 [orig]	$00000000
+PlayRawAHI|io_Command|open|3 [fixed #924]	$00000003
+PlayRawAHI|io_Command|open twice|1 [orig]	$00000000
+PlayRawAHI|io_Command|open twice|1 [fixed #924]	$00000003
+PlayRawAHI|io_Command|open twice|2 [orig]	$00000000
+PlayRawAHI|io_Command|open twice|2 [fixed #924]	$00000003
+PlayRawAHI|io_Command|open twice|3 [orig]	$00000000
+PlayRawAHI|io_Command|open twice|3 [fixed #924]	$00000003
+PlayRawAHI|io_Command|playing, raw|1 [orig]	$00000000
+PlayRawAHI|io_Command|playing, raw|1 [fixed #924]	$00000003
 PlayRawAHI|io_Data|no device|1	$00000000
 PlayRawAHI|io_Data|no device|2	$00000000
 PlayRawAHI|io_Data|no device|3	$00000000
-PlayRawAHI|io_Data|no port|1	$00000000
-PlayRawAHI|io_Data|no port|2	$00000000
-PlayRawAHI|io_Data|no port|3	$00000000
-PlayRawAHI|io_Data|open|1	$00000000
-PlayRawAHI|io_Data|open|2	$00000000
-PlayRawAHI|io_Data|open|3	$00000000
-PlayRawAHI|io_Data|open twice|1	$00000000
-PlayRawAHI|io_Data|open twice|2	$00000000
-PlayRawAHI|io_Data|open twice|3	$00000000
-PlayRawAHI|io_Data|playing, raw|1	$00000000
+PlayRawAHI|io_Data|no port|1 [orig]	$00000000
+PlayRawAHI|io_Data|no port|1 [fixed #924]	sample+$0
+PlayRawAHI|io_Data|no port|2 [orig]	$00000000
+PlayRawAHI|io_Data|no port|2 [fixed #924]	sample+$0
+PlayRawAHI|io_Data|no port|3 [orig]	$00000000
+PlayRawAHI|io_Data|no port|3 [fixed #924]	sample+$0
+PlayRawAHI|io_Data|open|1 [orig]	$00000000
+PlayRawAHI|io_Data|open|1 [fixed #924]	prog
+PlayRawAHI|io_Data|open|2 [orig]	$00000000
+PlayRawAHI|io_Data|open|2 [fixed #924]	prog
+PlayRawAHI|io_Data|open|3 [orig]	$00000000
+PlayRawAHI|io_Data|open|3 [fixed #924]	prog
+PlayRawAHI|io_Data|open twice|1 [orig]	$00000000
+PlayRawAHI|io_Data|open twice|1 [fixed #924]	prog
+PlayRawAHI|io_Data|open twice|2 [orig]	$00000000
+PlayRawAHI|io_Data|open twice|2 [fixed #924]	prog
+PlayRawAHI|io_Data|open twice|3 [orig]	$00000000
+PlayRawAHI|io_Data|open twice|3 [fixed #924]	prog
+PlayRawAHI|io_Data|playing, raw|1 [orig]	$00000000
+PlayRawAHI|io_Data|playing, raw|1 [fixed #924]	prog
 PlayRawAHI|io_Flags|no device|1	$00000000
 PlayRawAHI|io_Flags|no device|2	$00000000
 PlayRawAHI|io_Flags|no device|3	$00000000
 PlayRawAHI|io_Flags|no port|1	$00000000
 PlayRawAHI|io_Flags|no port|2	$00000000
 PlayRawAHI|io_Flags|no port|3	$00000000
-PlayRawAHI|io_Flags|open|1	$00000000
-PlayRawAHI|io_Flags|open|2	$00000000
-PlayRawAHI|io_Flags|open|3	$00000000
-PlayRawAHI|io_Flags|open twice|1	$00000000
-PlayRawAHI|io_Flags|open twice|2	$00000000
-PlayRawAHI|io_Flags|open twice|3	$00000000
-PlayRawAHI|io_Flags|playing, raw|1	$00000000
+PlayRawAHI|io_Flags|open|1 [orig]	$00000000
+PlayRawAHI|io_Flags|open|1 [fixed #924]	$00000001
+PlayRawAHI|io_Flags|open|2 [orig]	$00000000
+PlayRawAHI|io_Flags|open|2 [fixed #924]	$00000001
+PlayRawAHI|io_Flags|open|3 [orig]	$00000000
+PlayRawAHI|io_Flags|open|3 [fixed #924]	$00000001
+PlayRawAHI|io_Flags|open twice|1 [orig]	$00000000
+PlayRawAHI|io_Flags|open twice|1 [fixed #924]	$00000001
+PlayRawAHI|io_Flags|open twice|2 [orig]	$00000000
+PlayRawAHI|io_Flags|open twice|2 [fixed #924]	$00000001
+PlayRawAHI|io_Flags|open twice|3 [orig]	$00000000
+PlayRawAHI|io_Flags|open twice|3 [fixed #924]	$00000001
+PlayRawAHI|io_Flags|playing, raw|1 [orig]	$00000000
+PlayRawAHI|io_Flags|playing, raw|1 [fixed #924]	$00000001
 PlayRawAHI|io_Length|no device|1	$00000000
 PlayRawAHI|io_Length|no device|2	$00000000
 PlayRawAHI|io_Length|no device|3	$00000000
-PlayRawAHI|io_Length|no port|1	$00000000
-PlayRawAHI|io_Length|no port|2	$00000000
-PlayRawAHI|io_Length|no port|3	$00000000
-PlayRawAHI|io_Length|open|1	$00000000
-PlayRawAHI|io_Length|open|2	$00000000
-PlayRawAHI|io_Length|open|3	$00000000
-PlayRawAHI|io_Length|open twice|1	$00000000
-PlayRawAHI|io_Length|open twice|2	$00000000
-PlayRawAHI|io_Length|open twice|3	$00000000
-PlayRawAHI|io_Length|playing, raw|1	$00000000
+PlayRawAHI|io_Length|no port|1 [orig]	$00000000
+PlayRawAHI|io_Length|no port|1 [fixed #924]	$00000001
+PlayRawAHI|io_Length|no port|2 [orig]	$00000000
+PlayRawAHI|io_Length|no port|2 [fixed #924]	$00000001
+PlayRawAHI|io_Length|no port|3 [orig]	$00000000
+PlayRawAHI|io_Length|no port|3 [fixed #924]	$00000001
+PlayRawAHI|io_Length|open|1 [orig]	$00000000
+PlayRawAHI|io_Length|open|1 [fixed #924]	$000000C8
+PlayRawAHI|io_Length|open|2 [orig]	$00000000
+PlayRawAHI|io_Length|open|2 [fixed #924]	$000000C8
+PlayRawAHI|io_Length|open|3 [orig]	$00000000
+PlayRawAHI|io_Length|open|3 [fixed #924]	$000000C8
+PlayRawAHI|io_Length|open twice|1 [orig]	$00000000
+PlayRawAHI|io_Length|open twice|1 [fixed #924]	$000000C8
+PlayRawAHI|io_Length|open twice|2 [orig]	$00000000
+PlayRawAHI|io_Length|open twice|2 [fixed #924]	$000000C8
+PlayRawAHI|io_Length|open twice|3 [orig]	$00000000
+PlayRawAHI|io_Length|open twice|3 [fixed #924]	$000000C8
+PlayRawAHI|io_Length|playing, raw|1 [orig]	$00000000
+PlayRawAHI|io_Length|playing, raw|1 [fixed #924]	$000000C8
 PlayRawAHI|io_Offset|no device|1	$00000000
 PlayRawAHI|io_Offset|no device|2	$00000000
 PlayRawAHI|io_Offset|no device|3	$00000000
@@ -3873,20 +4268,28 @@ PlayRawAHI|ln_Pri|open twice|1	$00000000
 PlayRawAHI|ln_Pri|open twice|2	$00000000
 PlayRawAHI|ln_Pri|open twice|3	$00000000
 PlayRawAHI|ln_Pri|playing, raw|1	$00000000
-PlayRawAHI|nothing played|open|1	$00000001
+PlayRawAHI|nothing played|open|1 [orig]	$00000001
+PlayRawAHI|nothing played|open|1 [fixed #924]	$00000000
 PlayRawAHI|opens|no device|1	$00000000
 PlayRawAHI|opens|no device|2	$00000000
 PlayRawAHI|opens|no device|3	$00000000
-PlayRawAHI|opens|no port|1	$00000005
-PlayRawAHI|opens|no port|2	$00000005
-PlayRawAHI|opens|no port|3	$00000005
+PlayRawAHI|opens|no port|1 [orig]	$00000005
+PlayRawAHI|opens|no port|1 [fixed #924]	$00000004
+PlayRawAHI|opens|no port|2 [orig]	$00000005
+PlayRawAHI|opens|no port|2 [fixed #924]	$00000004
+PlayRawAHI|opens|no port|3 [orig]	$00000005
+PlayRawAHI|opens|no port|3 [fixed #924]	$00000004
 PlayRawAHI|opens|open|1	$00000001
 PlayRawAHI|opens|open|2	$00000001
 PlayRawAHI|opens|open|3	$00000001
-PlayRawAHI|opens|open twice|1	$00000002
-PlayRawAHI|opens|open twice|2	$00000002
-PlayRawAHI|opens|open twice|3	$00000002
-PlayRawAHI|opens|playing, raw|1	$00000004
+PlayRawAHI|opens|open twice|1 [orig]	$00000002
+PlayRawAHI|opens|open twice|1 [fixed #924]	$00000001
+PlayRawAHI|opens|open twice|2 [orig]	$00000002
+PlayRawAHI|opens|open twice|2 [fixed #924]	$00000001
+PlayRawAHI|opens|open twice|3 [orig]	$00000002
+PlayRawAHI|opens|open twice|3 [fixed #924]	$00000001
+PlayRawAHI|opens|playing, raw|1 [orig]	$00000004
+PlayRawAHI|opens|playing, raw|1 [fixed #924]	$00000003
 PlayRawAHI|other AHI calls|no device|1	$00000000
 PlayRawAHI|other AHI calls|no device|2	$00000000
 PlayRawAHI|other AHI calls|no device|3	$00000000
@@ -3962,9 +4365,12 @@ PlayRawAHI|unit|no port|3	$00000000
 PlayRawAHI|unit|open|1	$00000000
 PlayRawAHI|unit|open|2	$00000000
 PlayRawAHI|unit|open|3	$00000000
-PlayRawAHI|unit|open twice|1	$00000002
-PlayRawAHI|unit|open twice|2	$00000002
-PlayRawAHI|unit|open twice|3	$00000002
+PlayRawAHI|unit|open twice|1 [orig]	$00000002
+PlayRawAHI|unit|open twice|1 [fixed #924]	$00000000
+PlayRawAHI|unit|open twice|2 [orig]	$00000002
+PlayRawAHI|unit|open twice|2 [fixed #924]	$00000000
+PlayRawAHI|unit|open twice|3 [orig]	$00000002
+PlayRawAHI|unit|open twice|3 [fixed #924]	$00000000
 PlayRawAHI|unit|playing, raw|1	$00000000
 PlaySoundAHI|AHI_AllocAudioRequestA|after CloseAHI|1	$00000018
 PlaySoundAHI|AHI_AllocAudioRequestA|ended, first|1	$00000018
@@ -4023,63 +4429,104 @@ PlaySoundAHI|AHI_FreeAudioRequest|playing at finit|1	$00000000
 PlaySoundAHI|AHI_FreeAudioRequest|playing, first|1	$00000000
 PlaySoundAHI|AHI_FreeAudioRequest|playing, second|1	$00000000
 PlaySoundAHI|AHI_FreeAudioRequest|playing, third|1	$00000000
-PlaySoundAHI|AbortIOs|after CloseAHI|1	$00000000
-PlaySoundAHI|AbortIOs|ended, first|1	$00000000
-PlaySoundAHI|AbortIOs|ended, second|1	$00000000
+PlaySoundAHI|AbortIOs|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|AbortIOs|after CloseAHI|1 [fixed #933]	$00000003
+PlaySoundAHI|AbortIOs|ended, first|1 [orig]	$00000000
+PlaySoundAHI|AbortIOs|ended, first|1 [fixed #933]	$00000003
+PlaySoundAHI|AbortIOs|ended, second|1 [orig]	$00000000
+PlaySoundAHI|AbortIOs|ended, second|1 [fixed #933]	$00000003
 PlaySoundAHI|AbortIOs|no device|1	$00000000
 PlaySoundAHI|AbortIOs|no device|2	$00000000
 PlaySoundAHI|AbortIOs|no device|3	$00000000
-PlaySoundAHI|AbortIOs|no port|1	$00000000
-PlaySoundAHI|AbortIOs|no port|2	$00000000
-PlaySoundAHI|AbortIOs|no port|3	$00000000
+PlaySoundAHI|AbortIOs|no port|1 [orig]	$00000000
+PlaySoundAHI|AbortIOs|no port|1 [fixed #933]	$00000004
+PlaySoundAHI|AbortIOs|no port|2 [orig]	$00000000
+PlaySoundAHI|AbortIOs|no port|2 [fixed #933]	$00000004
+PlaySoundAHI|AbortIOs|no port|3 [orig]	$00000000
+PlaySoundAHI|AbortIOs|no port|3 [fixed #933]	$00000004
 PlaySoundAHI|AbortIOs|open|1	$00000000
 PlaySoundAHI|AbortIOs|open|2	$00000000
 PlaySoundAHI|AbortIOs|open|3	$00000000
 PlaySoundAHI|AbortIOs|open twice|1	$00000000
 PlaySoundAHI|AbortIOs|open twice|2	$00000000
 PlaySoundAHI|AbortIOs|open twice|3	$00000000
-PlaySoundAHI|AbortIOs|playing at finit|1	$00000000
+PlaySoundAHI|AbortIOs|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|AbortIOs|playing at finit|1 [fixed #933]	$00000003
 PlaySoundAHI|AbortIOs|playing, first|1	$00000000
-PlaySoundAHI|AbortIOs|playing, second|1	$00000000
-PlaySoundAHI|AbortIOs|playing, third|1	$00000000
-PlaySoundAHI|BeginIOs|after CloseAHI|1	$00000000
-PlaySoundAHI|BeginIOs|ended, first|1	$00000000
-PlaySoundAHI|BeginIOs|ended, second|1	$00000000
+PlaySoundAHI|AbortIOs|playing, second|1 [orig]	$00000000
+PlaySoundAHI|AbortIOs|playing, second|1 [fixed #933]	$00000001
+PlaySoundAHI|AbortIOs|playing, third|1 [orig]	$00000000
+PlaySoundAHI|AbortIOs|playing, third|1 [fixed #933]	$00000002
+PlaySoundAHI|BeginIOs|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|after CloseAHI|1 [fixed #924]	$00000010
+PlaySoundAHI|BeginIOs|ended, first|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|ended, first|1 [fixed #924]	$00000011
+PlaySoundAHI|BeginIOs|ended, second|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|ended, second|1 [fixed #924]	$00000012
 PlaySoundAHI|BeginIOs|no device|1	$00000000
 PlaySoundAHI|BeginIOs|no device|2	$00000000
 PlaySoundAHI|BeginIOs|no device|3	$00000000
-PlaySoundAHI|BeginIOs|no port|1	$00000000
-PlaySoundAHI|BeginIOs|no port|2	$00000000
-PlaySoundAHI|BeginIOs|no port|3	$00000000
-PlaySoundAHI|BeginIOs|open|1	$00000000
-PlaySoundAHI|BeginIOs|open|2	$00000000
-PlaySoundAHI|BeginIOs|open|3	$00000000
-PlaySoundAHI|BeginIOs|open twice|1	$00000000
-PlaySoundAHI|BeginIOs|open twice|2	$00000000
-PlaySoundAHI|BeginIOs|open twice|3	$00000000
-PlaySoundAHI|BeginIOs|playing at finit|1	$00000000
-PlaySoundAHI|BeginIOs|playing, first|1	$00000000
-PlaySoundAHI|BeginIOs|playing, second|1	$00000000
-PlaySoundAHI|BeginIOs|playing, third|1	$00000000
-PlaySoundAHI|ahir_Frequency|after CloseAHI|1	$00000000
-PlaySoundAHI|ahir_Frequency|ended, first|1	$00000000
-PlaySoundAHI|ahir_Frequency|ended, second|1	$00000000
+PlaySoundAHI|BeginIOs|no port|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|no port|1 [fixed #924]	$00000013
+PlaySoundAHI|BeginIOs|no port|2 [orig]	$00000000
+PlaySoundAHI|BeginIOs|no port|2 [fixed #924]	$00000013
+PlaySoundAHI|BeginIOs|no port|3 [orig]	$00000000
+PlaySoundAHI|BeginIOs|no port|3 [fixed #924]	$00000013
+PlaySoundAHI|BeginIOs|open|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|open|1 [fixed #924]	$00000001
+PlaySoundAHI|BeginIOs|open|2 [orig]	$00000000
+PlaySoundAHI|BeginIOs|open|2 [fixed #924]	$00000003
+PlaySoundAHI|BeginIOs|open|3 [orig]	$00000000
+PlaySoundAHI|BeginIOs|open|3 [fixed #924]	$00000005
+PlaySoundAHI|BeginIOs|open twice|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|open twice|1 [fixed #924]	$00000007
+PlaySoundAHI|BeginIOs|open twice|2 [orig]	$00000000
+PlaySoundAHI|BeginIOs|open twice|2 [fixed #924]	$00000009
+PlaySoundAHI|BeginIOs|open twice|3 [orig]	$00000000
+PlaySoundAHI|BeginIOs|open twice|3 [fixed #924]	$0000000B
+PlaySoundAHI|BeginIOs|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|playing at finit|1 [fixed #924]	$00000013
+PlaySoundAHI|BeginIOs|playing, first|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|playing, first|1 [fixed #924]	$0000000D
+PlaySoundAHI|BeginIOs|playing, second|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|playing, second|1 [fixed #924]	$0000000E
+PlaySoundAHI|BeginIOs|playing, third|1 [orig]	$00000000
+PlaySoundAHI|BeginIOs|playing, third|1 [fixed #924]	$00000010
+PlaySoundAHI|ahir_Frequency|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|after CloseAHI|1 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|ended, first|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|ended, first|1 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|ended, second|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|ended, second|1 [fixed #924]	$00003EB3
 PlaySoundAHI|ahir_Frequency|no device|1	$00000000
 PlaySoundAHI|ahir_Frequency|no device|2	$00000000
 PlaySoundAHI|ahir_Frequency|no device|3	$00000000
-PlaySoundAHI|ahir_Frequency|no port|1	$00000000
-PlaySoundAHI|ahir_Frequency|no port|2	$00000000
-PlaySoundAHI|ahir_Frequency|no port|3	$00000000
-PlaySoundAHI|ahir_Frequency|open|1	$00000000
-PlaySoundAHI|ahir_Frequency|open|2	$00000000
-PlaySoundAHI|ahir_Frequency|open|3	$00000000
-PlaySoundAHI|ahir_Frequency|open twice|1	$00000000
-PlaySoundAHI|ahir_Frequency|open twice|2	$00000000
-PlaySoundAHI|ahir_Frequency|open twice|3	$00000000
-PlaySoundAHI|ahir_Frequency|playing at finit|1	$00000000
-PlaySoundAHI|ahir_Frequency|playing, first|1	$00000000
-PlaySoundAHI|ahir_Frequency|playing, second|1	$00000000
-PlaySoundAHI|ahir_Frequency|playing, third|1	$00000000
+PlaySoundAHI|ahir_Frequency|no port|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|no port|1 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|no port|2 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|no port|2 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|no port|3 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|no port|3 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|open|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|open|1 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|open|2 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|open|2 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|open|3 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|open|3 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|open twice|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|open twice|1 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|open twice|2 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|open twice|2 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|open twice|3 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|open twice|3 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|playing at finit|1 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|playing, first|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|playing, first|1 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|playing, second|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|playing, second|1 [fixed #924]	$00003EB3
+PlaySoundAHI|ahir_Frequency|playing, third|1 [orig]	$00000000
+PlaySoundAHI|ahir_Frequency|playing, third|1 [fixed #924]	$00003EB3
 PlaySoundAHI|ahir_Link|after CloseAHI|1	$00000000
 PlaySoundAHI|ahir_Link|ended, first|1	$00000000
 PlaySoundAHI|ahir_Link|ended, second|1	$00000000
@@ -4099,25 +4546,41 @@ PlaySoundAHI|ahir_Link|playing at finit|1	$00000000
 PlaySoundAHI|ahir_Link|playing, first|1	$00000000
 PlaySoundAHI|ahir_Link|playing, second|1	$00000000
 PlaySoundAHI|ahir_Link|playing, third|1	$00000000
-PlaySoundAHI|ahir_Position|after CloseAHI|1	$00000000
-PlaySoundAHI|ahir_Position|ended, first|1	$00000000
-PlaySoundAHI|ahir_Position|ended, second|1	$00000000
+PlaySoundAHI|ahir_Position|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|after CloseAHI|1 [fixed #924]	$00001000
+PlaySoundAHI|ahir_Position|ended, first|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|ended, first|1 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|ended, second|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|ended, second|1 [fixed #924]	$00008000
 PlaySoundAHI|ahir_Position|no device|1	$00000000
 PlaySoundAHI|ahir_Position|no device|2	$00000000
 PlaySoundAHI|ahir_Position|no device|3	$00000000
-PlaySoundAHI|ahir_Position|no port|1	$00000000
-PlaySoundAHI|ahir_Position|no port|2	$00000000
-PlaySoundAHI|ahir_Position|no port|3	$00000000
-PlaySoundAHI|ahir_Position|open|1	$00000000
-PlaySoundAHI|ahir_Position|open|2	$00000000
-PlaySoundAHI|ahir_Position|open|3	$00000000
-PlaySoundAHI|ahir_Position|open twice|1	$00000000
-PlaySoundAHI|ahir_Position|open twice|2	$00000000
-PlaySoundAHI|ahir_Position|open twice|3	$00000000
-PlaySoundAHI|ahir_Position|playing at finit|1	$00000000
-PlaySoundAHI|ahir_Position|playing, first|1	$00000000
-PlaySoundAHI|ahir_Position|playing, second|1	$00000000
-PlaySoundAHI|ahir_Position|playing, third|1	$00000000
+PlaySoundAHI|ahir_Position|no port|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|no port|1 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|no port|2 [orig]	$00000000
+PlaySoundAHI|ahir_Position|no port|2 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|no port|3 [orig]	$00000000
+PlaySoundAHI|ahir_Position|no port|3 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|open|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|open|1 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|open|2 [orig]	$00000000
+PlaySoundAHI|ahir_Position|open|2 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|open|3 [orig]	$00000000
+PlaySoundAHI|ahir_Position|open|3 [fixed #924]	$00001000
+PlaySoundAHI|ahir_Position|open twice|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|open twice|1 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|open twice|2 [orig]	$00000000
+PlaySoundAHI|ahir_Position|open twice|2 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|open twice|3 [orig]	$00000000
+PlaySoundAHI|ahir_Position|open twice|3 [fixed #924]	$00001000
+PlaySoundAHI|ahir_Position|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|playing at finit|1 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|playing, first|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|playing, first|1 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|playing, second|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|playing, second|1 [fixed #924]	$00008000
+PlaySoundAHI|ahir_Position|playing, third|1 [orig]	$00000000
+PlaySoundAHI|ahir_Position|playing, third|1 [fixed #924]	$00001000
 PlaySoundAHI|ahir_Type|after CloseAHI|1	$00000000
 PlaySoundAHI|ahir_Type|ended, first|1	$00000000
 PlaySoundAHI|ahir_Type|ended, second|1	$00000000
@@ -4156,44 +4619,70 @@ PlaySoundAHI|ahir_Version|playing at finit|1	$00000004
 PlaySoundAHI|ahir_Version|playing, first|1	$00000004
 PlaySoundAHI|ahir_Version|playing, second|1	$00000004
 PlaySoundAHI|ahir_Version|playing, third|1	$00000004
-PlaySoundAHI|ahir_Volume|after CloseAHI|1	$00000000
-PlaySoundAHI|ahir_Volume|ended, first|1	$00000000
-PlaySoundAHI|ahir_Volume|ended, second|1	$00000000
+PlaySoundAHI|ahir_Volume|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|after CloseAHI|1 [fixed #924]	$00020000
+PlaySoundAHI|ahir_Volume|ended, first|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|ended, first|1 [fixed #924]	$00010000
+PlaySoundAHI|ahir_Volume|ended, second|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|ended, second|1 [fixed #924]	$00010000
 PlaySoundAHI|ahir_Volume|no device|1	$00000000
 PlaySoundAHI|ahir_Volume|no device|2	$00000000
 PlaySoundAHI|ahir_Volume|no device|3	$00000000
-PlaySoundAHI|ahir_Volume|no port|1	$00000000
-PlaySoundAHI|ahir_Volume|no port|2	$00000000
-PlaySoundAHI|ahir_Volume|no port|3	$00000000
-PlaySoundAHI|ahir_Volume|open|1	$00000000
-PlaySoundAHI|ahir_Volume|open|2	$00000000
-PlaySoundAHI|ahir_Volume|open|3	$00000000
-PlaySoundAHI|ahir_Volume|open twice|1	$00000000
-PlaySoundAHI|ahir_Volume|open twice|2	$00000000
-PlaySoundAHI|ahir_Volume|open twice|3	$00000000
-PlaySoundAHI|ahir_Volume|playing at finit|1	$00000000
-PlaySoundAHI|ahir_Volume|playing, first|1	$00000000
-PlaySoundAHI|ahir_Volume|playing, second|1	$00000000
-PlaySoundAHI|ahir_Volume|playing, third|1	$00000000
-PlaySoundAHI|closes|after CloseAHI|1	$00000000
-PlaySoundAHI|closes|ended, first|1	$00000000
-PlaySoundAHI|closes|ended, second|1	$00000000
+PlaySoundAHI|ahir_Volume|no port|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|no port|1 [fixed #924]	$00010000
+PlaySoundAHI|ahir_Volume|no port|2 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|no port|2 [fixed #924]	$00010000
+PlaySoundAHI|ahir_Volume|no port|3 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|no port|3 [fixed #924]	$00010000
+PlaySoundAHI|ahir_Volume|open|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|open|1 [fixed #924]	$00010000
+PlaySoundAHI|ahir_Volume|open|2 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|open|2 [fixed #924]	$00020000
+PlaySoundAHI|ahir_Volume|open|3 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|open|3 [fixed #924]	$00020000
+PlaySoundAHI|ahir_Volume|open twice|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|open twice|1 [fixed #924]	$00010000
+PlaySoundAHI|ahir_Volume|open twice|2 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|open twice|2 [fixed #924]	$00020000
+PlaySoundAHI|ahir_Volume|open twice|3 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|open twice|3 [fixed #924]	$00020000
+PlaySoundAHI|ahir_Volume|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|playing at finit|1 [fixed #924]	$00010000
+PlaySoundAHI|ahir_Volume|playing, first|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|playing, first|1 [fixed #924]	$00010000
+PlaySoundAHI|ahir_Volume|playing, second|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|playing, second|1 [fixed #924]	$00020000
+PlaySoundAHI|ahir_Volume|playing, third|1 [orig]	$00000000
+PlaySoundAHI|ahir_Volume|playing, third|1 [fixed #924]	$00020000
+PlaySoundAHI|closes|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|closes|after CloseAHI|1 [fixed #924]	$00000003
+PlaySoundAHI|closes|ended, first|1 [orig]	$00000000
+PlaySoundAHI|closes|ended, first|1 [fixed #924]	$00000003
+PlaySoundAHI|closes|ended, second|1 [orig]	$00000000
+PlaySoundAHI|closes|ended, second|1 [fixed #924]	$00000003
 PlaySoundAHI|closes|no device|1	$00000000
 PlaySoundAHI|closes|no device|2	$00000000
 PlaySoundAHI|closes|no device|3	$00000000
-PlaySoundAHI|closes|no port|1	$00000000
-PlaySoundAHI|closes|no port|2	$00000000
-PlaySoundAHI|closes|no port|3	$00000000
+PlaySoundAHI|closes|no port|1 [orig]	$00000000
+PlaySoundAHI|closes|no port|1 [fixed #924]	$00000004
+PlaySoundAHI|closes|no port|2 [orig]	$00000000
+PlaySoundAHI|closes|no port|2 [fixed #924]	$00000004
+PlaySoundAHI|closes|no port|3 [orig]	$00000000
+PlaySoundAHI|closes|no port|3 [fixed #924]	$00000004
 PlaySoundAHI|closes|open|1	$00000000
 PlaySoundAHI|closes|open|2	$00000000
 PlaySoundAHI|closes|open|3	$00000000
 PlaySoundAHI|closes|open twice|1	$00000000
 PlaySoundAHI|closes|open twice|2	$00000000
 PlaySoundAHI|closes|open twice|3	$00000000
-PlaySoundAHI|closes|playing at finit|1	$00000000
-PlaySoundAHI|closes|playing, first|1	$00000000
-PlaySoundAHI|closes|playing, second|1	$00000000
-PlaySoundAHI|closes|playing, third|1	$00000000
+PlaySoundAHI|closes|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|closes|playing at finit|1 [fixed #924]	$00000003
+PlaySoundAHI|closes|playing, first|1 [orig]	$00000000
+PlaySoundAHI|closes|playing, first|1 [fixed #924]	$00000002
+PlaySoundAHI|closes|playing, second|1 [orig]	$00000000
+PlaySoundAHI|closes|playing, second|1 [fixed #924]	$00000002
+PlaySoundAHI|closes|playing, third|1 [orig]	$00000000
+PlaySoundAHI|closes|playing, third|1 [fixed #924]	$00000002
 PlaySoundAHI|failed opens|after CloseAHI|1	$00000004
 PlaySoundAHI|failed opens|ended, first|1	$00000004
 PlaySoundAHI|failed opens|ended, second|1	$00000004
@@ -4251,44 +4740,76 @@ PlaySoundAHI|freed requester|playing at finit|1	$00000000
 PlaySoundAHI|freed requester|playing, first|1	$00000000
 PlaySoundAHI|freed requester|playing, second|1	$00000000
 PlaySoundAHI|freed requester|playing, third|1	$00000000
-PlaySoundAHI|io_Command|after CloseAHI|1	$00000000
-PlaySoundAHI|io_Command|ended, first|1	$00000000
-PlaySoundAHI|io_Command|ended, second|1	$00000000
+PlaySoundAHI|io_Command|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|io_Command|after CloseAHI|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|ended, first|1 [orig]	$00000000
+PlaySoundAHI|io_Command|ended, first|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|ended, second|1 [orig]	$00000000
+PlaySoundAHI|io_Command|ended, second|1 [fixed #924]	$00000003
 PlaySoundAHI|io_Command|no device|1	$00000000
 PlaySoundAHI|io_Command|no device|2	$00000000
 PlaySoundAHI|io_Command|no device|3	$00000000
-PlaySoundAHI|io_Command|no port|1	$00000000
-PlaySoundAHI|io_Command|no port|2	$00000000
-PlaySoundAHI|io_Command|no port|3	$00000000
-PlaySoundAHI|io_Command|open|1	$00000000
-PlaySoundAHI|io_Command|open|2	$00000000
-PlaySoundAHI|io_Command|open|3	$00000000
-PlaySoundAHI|io_Command|open twice|1	$00000000
-PlaySoundAHI|io_Command|open twice|2	$00000000
-PlaySoundAHI|io_Command|open twice|3	$00000000
-PlaySoundAHI|io_Command|playing at finit|1	$00000000
-PlaySoundAHI|io_Command|playing, first|1	$00000000
-PlaySoundAHI|io_Command|playing, second|1	$00000000
-PlaySoundAHI|io_Command|playing, third|1	$00000000
-PlaySoundAHI|io_Data|after CloseAHI|1	$00000000
-PlaySoundAHI|io_Data|ended, first|1	$00000000
-PlaySoundAHI|io_Data|ended, second|1	$00000000
+PlaySoundAHI|io_Command|no port|1 [orig]	$00000000
+PlaySoundAHI|io_Command|no port|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|no port|2 [orig]	$00000000
+PlaySoundAHI|io_Command|no port|2 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|no port|3 [orig]	$00000000
+PlaySoundAHI|io_Command|no port|3 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|open|1 [orig]	$00000000
+PlaySoundAHI|io_Command|open|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|open|2 [orig]	$00000000
+PlaySoundAHI|io_Command|open|2 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|open|3 [orig]	$00000000
+PlaySoundAHI|io_Command|open|3 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|open twice|1 [orig]	$00000000
+PlaySoundAHI|io_Command|open twice|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|open twice|2 [orig]	$00000000
+PlaySoundAHI|io_Command|open twice|2 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|open twice|3 [orig]	$00000000
+PlaySoundAHI|io_Command|open twice|3 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|io_Command|playing at finit|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|playing, first|1 [orig]	$00000000
+PlaySoundAHI|io_Command|playing, first|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|playing, second|1 [orig]	$00000000
+PlaySoundAHI|io_Command|playing, second|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Command|playing, third|1 [orig]	$00000000
+PlaySoundAHI|io_Command|playing, third|1 [fixed #924]	$00000003
+PlaySoundAHI|io_Data|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|io_Data|after CloseAHI|1 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|ended, first|1 [orig]	$00000000
+PlaySoundAHI|io_Data|ended, first|1 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|ended, second|1 [orig]	$00000000
+PlaySoundAHI|io_Data|ended, second|1 [fixed #924]	sample+$0
 PlaySoundAHI|io_Data|no device|1	$00000000
 PlaySoundAHI|io_Data|no device|2	$00000000
 PlaySoundAHI|io_Data|no device|3	$00000000
-PlaySoundAHI|io_Data|no port|1	$00000000
-PlaySoundAHI|io_Data|no port|2	$00000000
-PlaySoundAHI|io_Data|no port|3	$00000000
-PlaySoundAHI|io_Data|open|1	$00000000
-PlaySoundAHI|io_Data|open|2	$00000000
-PlaySoundAHI|io_Data|open|3	$00000000
-PlaySoundAHI|io_Data|open twice|1	$00000000
-PlaySoundAHI|io_Data|open twice|2	$00000000
-PlaySoundAHI|io_Data|open twice|3	$00000000
-PlaySoundAHI|io_Data|playing at finit|1	$00000000
-PlaySoundAHI|io_Data|playing, first|1	$00000000
-PlaySoundAHI|io_Data|playing, second|1	$00000000
-PlaySoundAHI|io_Data|playing, third|1	$00000000
+PlaySoundAHI|io_Data|no port|1 [orig]	$00000000
+PlaySoundAHI|io_Data|no port|1 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|no port|2 [orig]	$00000000
+PlaySoundAHI|io_Data|no port|2 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|no port|3 [orig]	$00000000
+PlaySoundAHI|io_Data|no port|3 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|open|1 [orig]	$00000000
+PlaySoundAHI|io_Data|open|1 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|open|2 [orig]	$00000000
+PlaySoundAHI|io_Data|open|2 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|open|3 [orig]	$00000000
+PlaySoundAHI|io_Data|open|3 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|open twice|1 [orig]	$00000000
+PlaySoundAHI|io_Data|open twice|1 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|open twice|2 [orig]	$00000000
+PlaySoundAHI|io_Data|open twice|2 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|open twice|3 [orig]	$00000000
+PlaySoundAHI|io_Data|open twice|3 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|io_Data|playing at finit|1 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|playing, first|1 [orig]	$00000000
+PlaySoundAHI|io_Data|playing, first|1 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|playing, second|1 [orig]	$00000000
+PlaySoundAHI|io_Data|playing, second|1 [fixed #924]	sample+$0
+PlaySoundAHI|io_Data|playing, third|1 [orig]	$00000000
+PlaySoundAHI|io_Data|playing, third|1 [fixed #924]	sample+$0
 PlaySoundAHI|io_Flags|after CloseAHI|1	$00000000
 PlaySoundAHI|io_Flags|ended, first|1	$00000000
 PlaySoundAHI|io_Flags|ended, second|1	$00000000
@@ -4308,25 +4829,41 @@ PlaySoundAHI|io_Flags|playing at finit|1	$00000000
 PlaySoundAHI|io_Flags|playing, first|1	$00000000
 PlaySoundAHI|io_Flags|playing, second|1	$00000000
 PlaySoundAHI|io_Flags|playing, third|1	$00000000
-PlaySoundAHI|io_Length|after CloseAHI|1	$00000000
-PlaySoundAHI|io_Length|ended, first|1	$00000000
-PlaySoundAHI|io_Length|ended, second|1	$00000000
+PlaySoundAHI|io_Length|after CloseAHI|1 [orig]	$00000000
+PlaySoundAHI|io_Length|after CloseAHI|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|ended, first|1 [orig]	$00000000
+PlaySoundAHI|io_Length|ended, first|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|ended, second|1 [orig]	$00000000
+PlaySoundAHI|io_Length|ended, second|1 [fixed #924]	$00000001
 PlaySoundAHI|io_Length|no device|1	$00000000
 PlaySoundAHI|io_Length|no device|2	$00000000
 PlaySoundAHI|io_Length|no device|3	$00000000
-PlaySoundAHI|io_Length|no port|1	$00000000
-PlaySoundAHI|io_Length|no port|2	$00000000
-PlaySoundAHI|io_Length|no port|3	$00000000
-PlaySoundAHI|io_Length|open|1	$00000000
-PlaySoundAHI|io_Length|open|2	$00000000
-PlaySoundAHI|io_Length|open|3	$00000000
-PlaySoundAHI|io_Length|open twice|1	$00000000
-PlaySoundAHI|io_Length|open twice|2	$00000000
-PlaySoundAHI|io_Length|open twice|3	$00000000
-PlaySoundAHI|io_Length|playing at finit|1	$00000000
-PlaySoundAHI|io_Length|playing, first|1	$00000000
-PlaySoundAHI|io_Length|playing, second|1	$00000000
-PlaySoundAHI|io_Length|playing, third|1	$00000000
+PlaySoundAHI|io_Length|no port|1 [orig]	$00000000
+PlaySoundAHI|io_Length|no port|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|no port|2 [orig]	$00000000
+PlaySoundAHI|io_Length|no port|2 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|no port|3 [orig]	$00000000
+PlaySoundAHI|io_Length|no port|3 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open|1 [orig]	$00000000
+PlaySoundAHI|io_Length|open|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open|2 [orig]	$00000000
+PlaySoundAHI|io_Length|open|2 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open|3 [orig]	$00000000
+PlaySoundAHI|io_Length|open|3 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open twice|1 [orig]	$00000000
+PlaySoundAHI|io_Length|open twice|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open twice|2 [orig]	$00000000
+PlaySoundAHI|io_Length|open twice|2 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open twice|3 [orig]	$00000000
+PlaySoundAHI|io_Length|open twice|3 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|playing at finit|1 [orig]	$00000000
+PlaySoundAHI|io_Length|playing at finit|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|playing, first|1 [orig]	$00000000
+PlaySoundAHI|io_Length|playing, first|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|playing, second|1 [orig]	$00000000
+PlaySoundAHI|io_Length|playing, second|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|playing, third|1 [orig]	$00000000
+PlaySoundAHI|io_Length|playing, third|1 [fixed #924]	$00000001
 PlaySoundAHI|io_Offset|after CloseAHI|1	$00000000
 PlaySoundAHI|io_Offset|ended, first|1	$00000000
 PlaySoundAHI|io_Offset|ended, second|1	$00000000
@@ -4384,25 +4921,38 @@ PlaySoundAHI|ln_Pri|playing at finit|1	$00000000
 PlaySoundAHI|ln_Pri|playing, first|1	$00000000
 PlaySoundAHI|ln_Pri|playing, second|1	$00000000
 PlaySoundAHI|ln_Pri|playing, third|1	$00000000
-PlaySoundAHI|opens|after CloseAHI|1	$00000004
-PlaySoundAHI|opens|ended, first|1	$00000005
-PlaySoundAHI|opens|ended, second|1	$00000005
+PlaySoundAHI|opens|after CloseAHI|1 [orig]	$00000004
+PlaySoundAHI|opens|after CloseAHI|1 [fixed #924]	$00000003
+PlaySoundAHI|opens|ended, first|1 [orig]	$00000005
+PlaySoundAHI|opens|ended, first|1 [fixed #924]	$00000004
+PlaySoundAHI|opens|ended, second|1 [orig]	$00000005
+PlaySoundAHI|opens|ended, second|1 [fixed #924]	$00000004
 PlaySoundAHI|opens|no device|1	$00000000
 PlaySoundAHI|opens|no device|2	$00000000
 PlaySoundAHI|opens|no device|3	$00000000
-PlaySoundAHI|opens|no port|1	$00000005
-PlaySoundAHI|opens|no port|2	$00000005
-PlaySoundAHI|opens|no port|3	$00000005
+PlaySoundAHI|opens|no port|1 [orig]	$00000005
+PlaySoundAHI|opens|no port|1 [fixed #924]	$00000004
+PlaySoundAHI|opens|no port|2 [orig]	$00000005
+PlaySoundAHI|opens|no port|2 [fixed #924]	$00000004
+PlaySoundAHI|opens|no port|3 [orig]	$00000005
+PlaySoundAHI|opens|no port|3 [fixed #924]	$00000004
 PlaySoundAHI|opens|open|1	$00000001
 PlaySoundAHI|opens|open|2	$00000001
 PlaySoundAHI|opens|open|3	$00000001
-PlaySoundAHI|opens|open twice|1	$00000002
-PlaySoundAHI|opens|open twice|2	$00000002
-PlaySoundAHI|opens|open twice|3	$00000002
-PlaySoundAHI|opens|playing at finit|1	$00000005
-PlaySoundAHI|opens|playing, first|1	$00000004
-PlaySoundAHI|opens|playing, second|1	$00000004
-PlaySoundAHI|opens|playing, third|1	$00000004
+PlaySoundAHI|opens|open twice|1 [orig]	$00000002
+PlaySoundAHI|opens|open twice|1 [fixed #924]	$00000001
+PlaySoundAHI|opens|open twice|2 [orig]	$00000002
+PlaySoundAHI|opens|open twice|2 [fixed #924]	$00000001
+PlaySoundAHI|opens|open twice|3 [orig]	$00000002
+PlaySoundAHI|opens|open twice|3 [fixed #924]	$00000001
+PlaySoundAHI|opens|playing at finit|1 [orig]	$00000005
+PlaySoundAHI|opens|playing at finit|1 [fixed #924]	$00000004
+PlaySoundAHI|opens|playing, first|1 [orig]	$00000004
+PlaySoundAHI|opens|playing, first|1 [fixed #924]	$00000003
+PlaySoundAHI|opens|playing, second|1 [orig]	$00000004
+PlaySoundAHI|opens|playing, second|1 [fixed #924]	$00000003
+PlaySoundAHI|opens|playing, third|1 [orig]	$00000004
+PlaySoundAHI|opens|playing, third|1 [fixed #924]	$00000003
 PlaySoundAHI|other AHI calls|after CloseAHI|1	$00000000
 PlaySoundAHI|other AHI calls|ended, first|1	$00000000
 PlaySoundAHI|other AHI calls|ended, second|1	$00000000
@@ -4441,8 +4991,10 @@ PlaySoundAHI|popped|playing at finit|1	$00000000
 PlaySoundAHI|popped|playing, first|1	$00000000
 PlaySoundAHI|popped|playing, second|1	$00000000
 PlaySoundAHI|popped|playing, third|1	$00000000
-PlaySoundAHI|replies in the port|ended, first|1	$00000000
-PlaySoundAHI|replies in the port|ended, second|1	$00000000
+PlaySoundAHI|replies in the port|ended, first|1 [orig]	$00000000
+PlaySoundAHI|replies in the port|ended, first|1 [fixed #933]	$00000001
+PlaySoundAHI|replies in the port|ended, second|1 [orig]	$00000000
+PlaySoundAHI|replies in the port|ended, second|1 [fixed #933]	$00000001
 PlaySoundAHI|replies in the port|playing at finit|1	$00000000
 PlaySoundAHI|replies in the port|playing, first|1	$00000000
 PlaySoundAHI|replies in the port|playing, second|1	$00000000
@@ -4516,9 +5068,12 @@ PlaySoundAHI|unit|no port|3	$00000000
 PlaySoundAHI|unit|open|1	$00000000
 PlaySoundAHI|unit|open|2	$00000000
 PlaySoundAHI|unit|open|3	$00000000
-PlaySoundAHI|unit|open twice|1	$00000002
-PlaySoundAHI|unit|open twice|2	$00000002
-PlaySoundAHI|unit|open twice|3	$00000002
+PlaySoundAHI|unit|open twice|1 [orig]	$00000002
+PlaySoundAHI|unit|open twice|1 [fixed #924]	$00000000
+PlaySoundAHI|unit|open twice|2 [orig]	$00000002
+PlaySoundAHI|unit|open twice|2 [fixed #924]	$00000000
+PlaySoundAHI|unit|open twice|3 [orig]	$00000002
+PlaySoundAHI|unit|open twice|3 [fixed #924]	$00000000
 PlaySoundAHI|unit|playing at finit|1	$00000000
 PlaySoundAHI|unit|playing, first|1	$00000000
 PlaySoundAHI|unit|playing, second|1	$00000000
@@ -4541,30 +5096,46 @@ finit|AHI_FreeAudioRequest|last|1	$00000000
 finit|AHI_FreeAudioRequest|no port|1	$00000000
 finit|AHI_FreeAudioRequest|open|1	$00000000
 finit|AHI_FreeAudioRequest|playing|1	$00000000
-finit|AbortIOs|after CloseAHI|1	$00000000
+finit|AbortIOs|after CloseAHI|1 [orig]	$00000000
+finit|AbortIOs|after CloseAHI|1 [fixed #933]	$00000003
 finit|AbortIOs|closed|1	$00000000
-finit|AbortIOs|last|1	$00000000
-finit|AbortIOs|no port|1	$00000000
+finit|AbortIOs|last|1 [orig]	$00000000
+finit|AbortIOs|last|1 [fixed #933]	$00000004
+finit|AbortIOs|no port|1 [orig]	$00000000
+finit|AbortIOs|no port|1 [fixed #933]	$00000004
 finit|AbortIOs|open|1	$00000000
-finit|AbortIOs|playing|1	$00000000
-finit|BeginIOs|after CloseAHI|1	$00000000
-finit|BeginIOs|closed|1	$00000000
-finit|BeginIOs|last|1	$00000000
-finit|BeginIOs|no port|1	$00000000
-finit|BeginIOs|open|1	$00000000
-finit|BeginIOs|playing|1	$00000000
+finit|AbortIOs|playing|1 [orig]	$00000000
+finit|AbortIOs|playing|1 [fixed #933]	$00000004
+finit|BeginIOs|after CloseAHI|1 [orig]	$00000000
+finit|BeginIOs|after CloseAHI|1 [fixed #924]	$00000010
+finit|BeginIOs|closed|1 [orig]	$00000000
+finit|BeginIOs|closed|1 [fixed #924]	$0000000C
+finit|BeginIOs|last|1 [orig]	$00000000
+finit|BeginIOs|last|1 [fixed #924]	$00000013
+finit|BeginIOs|no port|1 [orig]	$00000000
+finit|BeginIOs|no port|1 [fixed #924]	$00000013
+finit|BeginIOs|open|1 [orig]	$00000000
+finit|BeginIOs|open|1 [fixed #924]	$0000000C
+finit|BeginIOs|playing|1 [orig]	$00000000
+finit|BeginIOs|playing|1 [fixed #924]	$00000013
 finit|ahir_Version|after CloseAHI|1	$00000004
 finit|ahir_Version|closed|1	$00000004
 finit|ahir_Version|last|1	$00000004
 finit|ahir_Version|no port|1	$00000004
 finit|ahir_Version|open|1	$00000004
 finit|ahir_Version|playing|1	$00000004
-finit|closes|after CloseAHI|1	$00000000
-finit|closes|closed|1	$00000000
-finit|closes|last|1	$00000000
-finit|closes|no port|1	$00000000
-finit|closes|open|1	$00000000
-finit|closes|playing|1	$00000000
+finit|closes|after CloseAHI|1 [orig]	$00000000
+finit|closes|after CloseAHI|1 [fixed #924]	$00000003
+finit|closes|closed|1 [orig]	$00000000
+finit|closes|closed|1 [fixed #924]	$00000001
+finit|closes|last|1 [orig]	$00000000
+finit|closes|last|1 [fixed #924]	$00000004
+finit|closes|no port|1 [orig]	$00000000
+finit|closes|no port|1 [fixed #924]	$00000004
+finit|closes|open|1 [orig]	$00000000
+finit|closes|open|1 [fixed #924]	$00000002
+finit|closes|playing|1 [orig]	$00000000
+finit|closes|playing|1 [fixed #924]	$00000004
 finit|failed opens|after CloseAHI|1	$00000004
 finit|failed opens|closed|1	$00000004
 finit|failed opens|last|1	$00000004
@@ -4589,12 +5160,18 @@ finit|kept|last|1	kept
 finit|kept|no port|1	kept
 finit|kept|open|1	kept
 finit|kept|playing|1	kept
-finit|opens|after CloseAHI|1	$00000004
-finit|opens|closed|1	$00000002
-finit|opens|last|1	$00000005
-finit|opens|no port|1	$00000005
-finit|opens|open|1	$00000003
-finit|opens|playing|1	$00000005
+finit|opens|after CloseAHI|1 [orig]	$00000004
+finit|opens|after CloseAHI|1 [fixed #924]	$00000003
+finit|opens|closed|1 [orig]	$00000002
+finit|opens|closed|1 [fixed #924]	$00000001
+finit|opens|last|1 [orig]	$00000005
+finit|opens|last|1 [fixed #924]	$00000004
+finit|opens|no port|1 [orig]	$00000005
+finit|opens|no port|1 [fixed #924]	$00000004
+finit|opens|open|1 [orig]	$00000003
+finit|opens|open|1 [fixed #924]	$00000002
+finit|opens|playing|1 [orig]	$00000005
+finit|opens|playing|1 [fixed #924]	$00000004
 finit|other AHI calls|after CloseAHI|1	$00000000
 finit|other AHI calls|closed|1	$00000000
 finit|other AHI calls|last|1	$00000000
@@ -4626,7 +5203,8 @@ finit|tag list|no port|1	bytes 68 fnv 02343B5D
 finit|tag list|open|1	bytes 68 fnv 02343B5D
 finit|tag list|playing|1	bytes 68 fnv 02343B5D
 finit|unit|after CloseAHI|1	$00000000
-finit|unit|closed|1	$00000002
+finit|unit|closed|1 [orig]	$00000002
+finit|unit|closed|1 [fixed #924]	$00000000
 finit|unit|last|1	$00000000
 finit|unit|no port|1	$00000000
 finit|unit|open|1	$00000003
@@ -4654,18 +5232,26 @@ init|AHI_FreeAudioRequest|last|1	$00000000
 init|AHI_FreeAudioRequest|no port|1	$00000000
 init|AbortIOs||1	$00000000
 init|AbortIOs|after finit|1	$00000000
-init|AbortIOs|after playing|1	$00000000
+init|AbortIOs|after playing|1 [orig]	$00000000
+init|AbortIOs|after playing|1 [fixed #933]	$00000003
 init|AbortIOs|again|1	$00000000
 init|AbortIOs|for playing|1	$00000000
-init|AbortIOs|last|1	$00000000
-init|AbortIOs|no port|1	$00000000
+init|AbortIOs|last|1 [orig]	$00000000
+init|AbortIOs|last|1 [fixed #933]	$00000004
+init|AbortIOs|no port|1 [orig]	$00000000
+init|AbortIOs|no port|1 [fixed #933]	$00000004
 init|BeginIOs||1	$00000000
-init|BeginIOs|after finit|1	$00000000
-init|BeginIOs|after playing|1	$00000000
+init|BeginIOs|after finit|1 [orig]	$00000000
+init|BeginIOs|after finit|1 [fixed #924]	$0000000C
+init|BeginIOs|after playing|1 [orig]	$00000000
+init|BeginIOs|after playing|1 [fixed #924]	$00000010
 init|BeginIOs|again|1	$00000000
-init|BeginIOs|for playing|1	$00000000
-init|BeginIOs|last|1	$00000000
-init|BeginIOs|no port|1	$00000000
+init|BeginIOs|for playing|1 [orig]	$00000000
+init|BeginIOs|for playing|1 [fixed #924]	$0000000C
+init|BeginIOs|last|1 [orig]	$00000000
+init|BeginIOs|last|1 [fixed #924]	$00000013
+init|BeginIOs|no port|1 [orig]	$00000000
+init|BeginIOs|no port|1 [fixed #924]	$00000013
 init|ahir_Version||1	$00000000
 init|ahir_Version|after finit|1	$00000004
 init|ahir_Version|after playing|1	$00000004
@@ -4674,12 +5260,17 @@ init|ahir_Version|for playing|1	$00000004
 init|ahir_Version|last|1	$00000004
 init|ahir_Version|no port|1	$00000004
 init|closes||1	$00000000
-init|closes|after finit|1	$00000000
-init|closes|after playing|1	$00000000
+init|closes|after finit|1 [orig]	$00000000
+init|closes|after finit|1 [fixed #924]	$00000001
+init|closes|after playing|1 [orig]	$00000000
+init|closes|after playing|1 [fixed #924]	$00000003
 init|closes|again|1	$00000000
-init|closes|for playing|1	$00000000
-init|closes|last|1	$00000000
-init|closes|no port|1	$00000000
+init|closes|for playing|1 [orig]	$00000000
+init|closes|for playing|1 [fixed #924]	$00000002
+init|closes|last|1 [orig]	$00000000
+init|closes|last|1 [fixed #924]	$00000004
+init|closes|no port|1 [orig]	$00000000
+init|closes|no port|1 [fixed #924]	$00000004
 init|failed opens||1	$00000000
 init|failed opens|after finit|1	$00000004
 init|failed opens|after playing|1	$00000004
@@ -4709,12 +5300,17 @@ init|kept|for playing|1	kept
 init|kept|last|1	kept
 init|kept|no port|1	kept
 init|opens||1	$00000000
-init|opens|after finit|1	$00000002
-init|opens|after playing|1	$00000004
+init|opens|after finit|1 [orig]	$00000002
+init|opens|after finit|1 [fixed #924]	$00000001
+init|opens|after playing|1 [orig]	$00000004
+init|opens|after playing|1 [fixed #924]	$00000003
 init|opens|again|1	$00000000
-init|opens|for playing|1	$00000003
-init|opens|last|1	$00000005
-init|opens|no port|1	$00000005
+init|opens|for playing|1 [orig]	$00000003
+init|opens|for playing|1 [fixed #924]	$00000002
+init|opens|last|1 [orig]	$00000005
+init|opens|last|1 [fixed #924]	$00000004
+init|opens|no port|1 [orig]	$00000005
+init|opens|no port|1 [fixed #924]	$00000004
 init|other AHI calls||1	$00000000
 init|other AHI calls|after finit|1	$00000000
 init|other AHI calls|after playing|1	$00000000
@@ -4751,7 +5347,8 @@ init|tag list|for playing|1	bytes 68 fnv 02343B5D
 init|tag list|last|1	bytes 68 fnv 02343B5D
 init|tag list|no port|1	bytes 68 fnv 02343B5D
 init|unit||1	$00000000
-init|unit|after finit|1	$00000002
+init|unit|after finit|1 [orig]	$00000002
+init|unit|after finit|1 [fixed #924]	$00000000
 init|unit|after playing|1	$00000000
 init|unit|again|1	$00000000
 init|unit|for playing|1	$00000003

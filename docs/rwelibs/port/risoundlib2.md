@@ -57,17 +57,10 @@ on (OpenDevice, SendIO, DoIO, the AHI calls); memlib through
 `BLITZ_ALIBJSR`. The tag list of the requester is the original's (in its
 code) with the original's offsets, so AHIOutputRequest writes the same
 longs. The five entries of AHIOutputRequest with fewer arguments take
-the registers the original's entries keep (d2–d5) as parameters. The
-code behind the `ahidevice` check (PlaySoundAHI, PlayRawAHI, CloseDevice
-in finit) is translated although it is never reached.
+the registers the original's entries keep (d2–d5) as parameters.
 
 ## BUG(orig), kept
 
-* `ahidevice` is never set (only tested and cleared): PlaySoundAHI and
-  PlayRawAHI always return at once and play nothing, finit/CloseAHI
-  never call CloseDevice, and OpenAHI's "already open" check never
-  holds – a second OpenAHI opens the open request again
-  (#924).
 * AHIOutputRequest: the `!subs` of the forms with 1, 2 and 4 arguments
   point to the wrong entries – 4 arguments go to the "AudioID" entry
   (x, y, width, height replaced by -1, the mode id is d4 as it was), 1
@@ -88,12 +81,8 @@ in finit) is translated although it is never reached.
   requester's initial tags (always -1 and 0), not what the user chose
   (`ahiam_AudioID`, `ahiam_MixFreq` of the requester)
   (#934).
-* Never reached (behind the `ahidevice` check): PlaySoundAHI gives the
-  length in words (+6) as `io_Length` in bytes
-  (#932), and sends the one request
-  with SendIO again without waiting for the one before or taking its
-  reply from the port; finit leaves everything open while the request is
-  in use (#933).
+* PlaySoundAHI gives the length in words (+6) as `io_Length` in bytes
+  (#932).
 
 ## Fixed
 
@@ -141,6 +130,24 @@ kind F):
   there, behind exec's jump table: every program with the library
   crashed at its start (#1139; test `tests/bug-orig/rwe/risoundlib2-v36-calls`,
   a500).
+* OpenAHI sets `ahidevice` after a successful OpenDevice. The original
+  never set it (only tested and cleared): PlaySoundAHI and PlayRawAHI
+  returned at once and played nothing, CloseAHI and finit never called
+  CloseDevice, and a second OpenAHI opened the open request again; now
+  it returns 0. Every write sets `ahir_Link` to 0 and the priority to
+  0, which AHI trashes on completion ("Must be set to NULL if not used",
+  autodoc of CMD_WRITE) (#924; `libs_emulator` cases `[fixed #924]` of
+  `rwe_risoundlib2`, the fake ahi.device).
+* The sound PlaySoundAHI sent is taken back before the next PlaySoundAHI
+  or PlayRawAHI, at CloseAHI and at finit: aborted (`AbortIO`) if it
+  still plays, then `WaitIO`, which also removes its reply from the port.
+  Only a request the library sent is waited for, so it never blocks on
+  one the device never had. The original sent its one request again
+  while the device still had it, left every reply in the port and left
+  everything open at finit while the request was in use (#933;
+  `libs_emulator` cases `[fixed #933]` of `rwe_risoundlib2`).
+  PlayRawAHI uses `DoIO`: it returns when its data has been played (the
+  data may be a temporary buffer).
 
 ## Test
 

@@ -35,10 +35,6 @@
  * same offsets.
  *
  * BUG(orig):
- *   - ahidevice is never set: PlaySoundAHI and PlayRawAHI always return
- *     at once (they play nothing), finit/CloseAHI never close the device,
- *     and OpenAHI opens the request again while it is open
- *     (#924).
  *   - AHIOutputRequest: the forms with 1, 2 and 4 arguments go to the
  *     wrong entries (4 arguments: x, y, width, height replaced by -1, the
  *     mode id whatever d4 holds; 1 argument: lost, d4/d5 whatever they
@@ -54,12 +50,8 @@
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
  *     (ahiam_AudioID, ahiam_MixFreq) (#934).
- *   - Behind the ahidevice check, never reached: PlaySoundAHI takes the
- *     length in words (+6) as the length in bytes
- *     (#932) and sends the one request
- *     again (SendIO) without waiting for the one before or removing its
- *     reply from the port; finit leaves everything open while it is in
- *     use (#933).
+ *   - PlaySoundAHI takes the length in words (+6) as the length in bytes
+ *     (#932).
  *
  * Fixed (intended deviation, docs/libs/deviations.md 3a): CludgeSound
  * does not free the old sample when audiolib's "cL" mark (+14) is set
@@ -86,7 +78,16 @@
  * init (#927).  init makes port and request from exec V36 on only;
  * below (Kickstart 1.x) the commands fail.  The original called the V36
  * functions there, behind exec's jump table: every program with the
- * library crashed at its start (#1139).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * library crashed at its start (#1139).  OpenAHI sets ahidevice: the
+ * original never did, so PlaySoundAHI and PlayRawAHI never played,
+ * CloseAHI and finit never closed the device, and a second OpenAHI
+ * opened the open request again (now 0); every write sets ahir_Link and
+ * the priority, which the device trashes (#924).  The sound PlaySoundAHI
+ * sent is taken back (aborted if it still plays, WaitIO, which removes
+ * its reply from the port) before the next write, at CloseAHI and at
+ * finit; the original sent its one request again while the device had
+ * it, left the replies in the port and left everything open at finit
+ * while the request was in use (#933).  CludgeSound writes nothing behind audiolib's 16 byte sound
  * object; the original stored the rate at +16, the high word of the next
  * object's sample pointer (behind the last object whatever follows), for
  * PlaySoundAHI, which now takes its frequency from the object's period:
@@ -273,7 +274,9 @@ static APTR ahirequest;
 static ULONG deviceunit, deviceid;
 static struct MsgPort *ahimsgport;
 static struct AHIRequest *ahiiorequest;
-static ULONG ahidevice;                 /* BUG(orig): never set */
+static ULONG ahidevice;                 /* ahi.device open (fixed: #924) */
+static BOOL ahisent;                    /* a SendIO of PlaySoundAHI not taken
+                                           back yet (fixed: #933) */
 static struct Device *ahibase;
 static char ahiname[] = "ahi.device";
 
@@ -312,21 +315,40 @@ static ULONG BLITZ_ROUTINE c_libinit(void)
 }
 
 /**
- * @brief CloseAHI: close ahi.device; the request and the port stay.
+ * @brief Take back the sound PlaySoundAHI sent: abort it if it still
+ * plays, then WaitIO (which also removes its reply from the port).
+ *
+ * Fixed (#933): the original sent its one request again without waiting
+ * for the one before or removing its reply, and finit left everything
+ * open while it was in use.  Only a request this library sent with
+ * SendIO is waited for, so it never blocks on one the device never had.
+ */
+static void ahitakeback(void)
+{
+    if (!ahisent)
+        return;
+    if (!CheckIO((struct IORequest *)ahiiorequest))
+        AbortIO((struct IORequest *)ahiiorequest);
+    WaitIO((struct IORequest *)ahiiorequest);
+    ahisent = FALSE;
+}
+
+/**
+ * @brief CloseAHI: stop a running sound, close ahi.device; the request and the port stay.
  *
  * Fixed (#927): the original's CloseAHI was finit, which deleted the
  * request and the port, so that a later OpenAHI used request 0.  Nothing
- * without a request, or while CheckIO says it is in use (it stays open,
- * BUG(orig) (#933)).  CloseDevice only if ahidevice is set, which never
- * happens (BUG(orig) (#924)); then ahibase = 0.
+ * without a request.  A sound that plays is aborted (fixed: #933, the
+ * original left everything open while the request was in use);
+ * CloseDevice if ahidevice is set (fixed: #924, never set in the
+ * original); then ahibase = 0.
  */
 static void BLITZ_ROUTINE c_closeahi(void)
 {
     if (!ahiiorequest)
         return;
-    if (!CheckIO((struct IORequest *)ahiiorequest))     /* in use: it stays open */
-        return;
-    if (ahidevice) {                    /* never (BUG(orig)) */
+    ahitakeback();
+    if (ahidevice) {
         CloseDevice((struct IORequest *)ahiiorequest);
         ahidevice = 0;
     }
@@ -336,17 +358,15 @@ static void BLITZ_ROUTINE c_closeahi(void)
 /**
  * @brief finit: close the device (c_closeahi()), delete the request and the port.
  *
- * Nothing without the port, or while CheckIO says the request is in use
- * (everything stays open, BUG(orig) (#933)); without a request (init
- * could not make it) no CheckIO (fixed: #927, the original's CheckIO of
- * address 0).  Then DeleteIORequest, DeleteMsgPort.
+ * Nothing without the port; without a request (init could not make it)
+ * no CheckIO (fixed: #927, the original's CheckIO of address 0).  A sound
+ * that plays is aborted first (fixed: #933).  Then DeleteIORequest,
+ * DeleteMsgPort.
  */
 static void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!ahimsgport)
         return;
-    if (ahiiorequest && !CheckIO((struct IORequest *)ahiiorequest))
-        return;                         /* in use: everything stays */
     c_closeahi();
     if (ahiiorequest) {
         DeleteIORequest((struct IORequest *)ahiiorequest);
@@ -363,8 +383,9 @@ static void BLITZ_ROUTINE c_libfinit(void)
  * Sets ahir_Version to 4 (MIN_AHI_VERSION) and calls OpenDevice
  * ("ahi.device", unit, request, 0); on success io_Device becomes the
  * library base for the requester calls.  The device ID is stored but
- * not used.  BUG(orig): the "already open" test of ahidevice never holds,
- * a second OpenAHI opens the open request again (#924).  Fixed (#927):
+ * not used.  A second OpenAHI while it is open returns 0 (fixed: #924,
+ * the original never set ahidevice and opened the open request again).
+ * Fixed (#927):
  * without a request (init could not make it) the result is 0; the
  * original wrote ahir_Version to address 48 and passed request 0 to
  * OpenDevice (also after CloseAHI, which deleted the request).
@@ -376,9 +397,8 @@ BB_BOOL BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
 {
     struct bl_regs r;
 
-    if (ahidevice)                      /* never (BUG(orig)) */
+    if (ahidevice)                      /* already open */
         return BB_FALSE;
-    ahidevice = 0;
     deviceunit = unit;
     deviceid = id;                      /* not used */
     if (!ahiiorequest)                  /* Fixed (#927) */
@@ -389,6 +409,7 @@ BB_BOOL BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
     if (BLITZ_BASEJSR(SysBase, LVO_OpenDevice, r))
         return BB_FALSE;
     ahibase = ahiiorequest->ahir_Std.io_Device;
+    ahidevice = (ULONG)-1;              /* Fixed (#924) */
     return BB_TRUE;
 }
 
@@ -405,12 +426,13 @@ BB_BOOL BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
 /**
  * @brief PlaySoundAHI sound,volume,balance: play a sound object through ahi.device.
  *
- * Never gets past the ahidevice check, which is never set: returns 0 at
- * once and plays nothing (BUG(orig) (#924)).  Behind it: CMD_WRITE of
- * the sample as 8 bit mono (AHIST_M8S), the length in words (+6) taken
- * as bytes (BUG(orig) (#932)), the frequency 3579545 / the object's
- * period (fixed: #926); SendIO without waiting for the
- * request before or removing its reply (BUG(orig) (#933)).
+ * Without ahi.device (ahidevice, fixed: #924 - the original never set
+ * it and never played) returns 0.  Takes back the sound sent before
+ * (abort if it still plays, WaitIO; fixed: #933), then CMD_WRITE of the
+ * sample as 8 bit mono (AHIST_M8S), the length in words (+6) taken as
+ * bytes (BUG(orig) (#932)), the frequency 3579545 / the object's period
+ * (fixed: #926), ahir_Link 0 and priority 0 (set for every write: the
+ * device trashes them, fixed: #924), through SendIO.
  * @param vol  d1: the volume (Fixed 16.16, 0x10000 = full)
  * @param bal  d2: the stereo position (Fixed, 0x8000 = centre)
  * @param obj  a0: audiolib's sound object (!libs #audiolib,#ia0|#pd0)
@@ -422,10 +444,15 @@ ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
     struct AHIRequest *req = ahiiorequest;
     struct IOStdReq *io = &req->ahir_Std;
 
+    ULONG rc;
+
     if (!ahidevice)
         return 0;
+    ahitakeback();                      /* Fixed (#933) */
     io->io_Command = CMD_WRITE;
     io->io_Flags = 0;
+    io->io_Message.mn_Node.ln_Pri = 0;  /* Fixed (#924): trashed by the */
+    req->ahir_Link = NULL;              /* device, set for every write */
     io->io_Data = obj->data;
     io->io_Length = obj->len;           /* words as bytes */
     io->io_Offset = 0;
@@ -433,7 +460,10 @@ ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
     req->ahir_Volume = vol;
     req->ahir_Position = bal;
     req->ahir_Frequency = periodfreq(obj->period);  /* Fixed (#926) */
-    return reqcall(LVO_SendIO, req);    /* no wait, the reply never removed */
+    rc = reqcall(LVO_SendIO, req);
+    ahisent = TRUE;                     /* taken back by the next write,
+                                           CloseAHI or finit */
+    return rc;
 }
 
 /**
@@ -460,8 +490,11 @@ ULONG BLITZ_ROUTINE c_playsound(struct bb_sound *obj BL_REG(a0))
 /**
  * @brief PlayRawAHI address,length,frequency,volume,balance: play raw 8 bit data through ahi.device.
  *
- * Never gets past the ahidevice check (BUG(orig) (#924)): returns 0 and
- * plays nothing.  Behind it: CMD_WRITE as AHIST_M8S through DoIO.
+ * Without ahi.device (ahidevice, fixed: #924 - the original never set
+ * it and never played) returns 0.  Takes back a sound of PlaySoundAHI
+ * (fixed: #933), then CMD_WRITE as AHIST_M8S with ahir_Link 0 and
+ * priority 0 (fixed: #924) through DoIO: it returns when the data has
+ * been played (the data may be a temporary buffer).
  * @param data  d0: the sample data
  * @param len   d1: its length in bytes
  * @param freq  d2: the frequency
@@ -478,8 +511,11 @@ ULONG BLITZ_ROUTINE c_playraw2(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
 
     if (!ahidevice)
         return 0;
+    ahitakeback();                      /* Fixed (#933) */
     io->io_Command = CMD_WRITE;
     io->io_Flags = 0;
+    io->io_Message.mn_Node.ln_Pri = 0;  /* Fixed (#924) */
+    req->ahir_Link = NULL;
     io->io_Data = (APTR)data;
     io->io_Length = len;
     io->io_Offset = 0;
