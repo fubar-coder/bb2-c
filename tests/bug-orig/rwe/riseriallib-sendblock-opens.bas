@@ -7,6 +7,7 @@
 ; (each empty read followed by a VWait, at most 100).
 ; Correct: SerialSendBlock opens the port (as the source means it): the
 ; request goes out, the reply comes.
+; @fixed #792
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l

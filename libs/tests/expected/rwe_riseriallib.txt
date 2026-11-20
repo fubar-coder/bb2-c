@@ -71,11 +71,13 @@ SerialClose|vector $74|$0,$0|1	$00000000
 SerialClose|vector $74|$0,$0|2	$00000000
 SerialClose|vector $74|$0,$0|3	$00000000
 SerialFlush|CIA-B PRA|$0,$0|1	$0000005A
-SerialFlush|CIA-B PRA|$0,$0|2	$0000005A
+SerialFlush|CIA-B PRA|$0,$0|2 [orig]	$0000005A
+SerialFlush|CIA-B PRA|$0,$0|2 [fixed #792]	$0000003F
 SerialFlush|CIA-B PRA|$0,$0|3	$0000005A
 SerialFlush|CIA-B PRA|$12345678,$0|1	$0000005A
 SerialFlush|custom chip registers|$0,$0|1	bytes 512 fnv C4915FC8
-SerialFlush|custom chip registers|$0,$0|2	bytes 512 fnv C4915FC8
+SerialFlush|custom chip registers|$0,$0|2 [orig]	bytes 512 fnv C4915FC8
+SerialFlush|custom chip registers|$0,$0|2 [fixed #792]	bytes 512 fnv 6B45DB03
 SerialFlush|custom chip registers|$0,$0|3	bytes 512 fnv C4915FC8
 SerialFlush|custom chip registers|$12345678,$0|1	bytes 512 fnv C4915FC8
 SerialFlush|kept|$0,$0|1	kept
@@ -87,7 +89,8 @@ SerialFlush|popped|$0,$0|2	$00000000
 SerialFlush|popped|$0,$0|3	$00000000
 SerialFlush|popped|$12345678,$0|1	$00000000
 SerialFlush|receive ring|$0,$0|1	bytes 1028 fnv 7BC8CE93
-SerialFlush|receive ring|$0,$0|2	bytes 1028 fnv C3079AE3
+SerialFlush|receive ring|$0,$0|2 [orig]	bytes 1028 fnv C3079AE3
+SerialFlush|receive ring|$0,$0|2 [fixed #792]	bytes 1028 fnv 1EA6A18B
 SerialFlush|receive ring|$0,$0|3	bytes 1028 fnv 7A55ED45
 SerialFlush|receive ring|$12345678,$0|1	bytes 1028 fnv 077C2991
 SerialFlush|stub $64 called|$0,$0|1	$00000000
@@ -101,16 +104,18 @@ SerialFlush|stub $74 called|$12345678,$0|1	$00000000
 SerialFlush|transmit ring|$0,$0|1 [orig]	bytes 1028 fnv 8AFC7135
 SerialFlush|transmit ring|$0,$0|1 [fixed #800]	bytes 1028 fnv 12C1FC76
 SerialFlush|transmit ring|$0,$0|2 [orig]	bytes 1028 fnv 8AFC7135
-SerialFlush|transmit ring|$0,$0|2 [fixed #800]	bytes 1028 fnv 12C1FC76
+SerialFlush|transmit ring|$0,$0|2 [fixed #800]	bytes 1028 fnv 47092C82
 SerialFlush|transmit ring|$0,$0|3 [orig]	bytes 1028 fnv 86734CFB
 SerialFlush|transmit ring|$0,$0|3 [fixed #800]	bytes 1028 fnv F572B136
 SerialFlush|transmit ring|$12345678,$0|1	bytes 1028 fnv FA4CB4E0
 SerialFlush|vector $64|$0,$0|1	$00000000
-SerialFlush|vector $64|$0,$0|2	$00000000
+SerialFlush|vector $64|$0,$0|2 [orig]	$00000000
+SerialFlush|vector $64|$0,$0|2 [fixed #792]	$00000001
 SerialFlush|vector $64|$0,$0|3	$00000000
 SerialFlush|vector $64|$12345678,$0|1	$00000000
 SerialFlush|vector $74|$0,$0|1	$00000000
-SerialFlush|vector $74|$0,$0|2	$00000000
+SerialFlush|vector $74|$0,$0|2 [orig]	$00000000
+SerialFlush|vector $74|$0,$0|2 [fixed #792]	$00000001
 SerialFlush|vector $74|$0,$0|3	$00000000
 SerialFlush|vector $74|$12345678,$0|1	$00000000
 SerialGot|CIA-B PRA|d0 $00000000|1	$0000005A
@@ -173,7 +178,7 @@ SerialOpen|popped|$960,$0|1	$00000000
 SerialOpen|receive ring|$0,$0|1	bytes 1028 fnv C807C515
 SerialOpen|receive ring|$4B00,$0|1	bytes 1028 fnv 46F36E46
 SerialOpen|receive ring|$960,$0|1 [orig]	bytes 1028 fnv 8BE64881
-SerialOpen|receive ring|$960,$0|1 [fixed #793]	bytes 1028 fnv 458B010E
+SerialOpen|receive ring|$960,$0|1 [fixed #793]	bytes 1028 fnv 6921F38F
 SerialOpen|stub $64 called|$0,$0|1	$00000000
 SerialOpen|stub $64 called|$4B00,$0|1	$00000000
 SerialOpen|stub $64 called|$960,$0|1	$00000000
@@ -271,7 +276,7 @@ SerialProgress|receive ring|d0 $00000000|10	bytes 1028 fnv 2E11BE1F
 SerialProgress|receive ring|d0 $00000000|11	bytes 1028 fnv C791E482
 SerialProgress|receive ring|d0 $00000000|12	bytes 1028 fnv 44EB5DD9
 SerialProgress|receive ring|d0 $00000000|13 [orig]	bytes 1028 fnv 53E79F71
-SerialProgress|receive ring|d0 $00000000|13 [fixed #793]	bytes 1028 fnv B3518336
+SerialProgress|receive ring|d0 $00000000|13 [fixed #793]	bytes 1028 fnv 6F92BCB7
 SerialProgress|stub $64 called|d0 $00000000|1	$00000000
 SerialProgress|stub $64 called|d0 $00000000|2	$00000000
 SerialProgress|stub $64 called|d0 $00000000|3	$00000000
@@ -411,8 +416,7 @@ SerialReadString|a3|closed, again (the count goes on)|1 [orig]	$00000182
 SerialReadString|a3|closed, again (the count goes on)|1 [fixed #795]	$00000181
 SerialReadString|a3|open: returns to d0|1 [orig]	$00000183
 SerialReadString|a3|open: returns to d0|1 [fixed #795]	$00000182
-SerialReadString|bytes given again|closed|1 [orig]	$00000000
-SerialReadString|bytes given again|closed|1 [fixed #793]	$00000001
+SerialReadString|bytes given again|closed|1	$00000000
 SerialReadString|bytes given again|closed, again (the count goes on)|1	$00000000
 SerialReadString|bytes given again|open: returns to d0|1	$00000000
 SerialReadString|custom chip registers|closed|1	bytes 512 fnv C4915FC8
@@ -433,9 +437,9 @@ SerialReadString|popped|closed|1	$00000000
 SerialReadString|popped|closed, again (the count goes on)|1	$00000000
 SerialReadString|popped|open: returns to d0|1	$00000000
 SerialReadString|receive ring|closed|1 [orig]	bytes 1028 fnv 021B535A
-SerialReadString|receive ring|closed|1 [fixed #793]	bytes 1028 fnv 2141D782
+SerialReadString|receive ring|closed|1 [fixed #793]	bytes 1028 fnv B6238283
 SerialReadString|receive ring|closed, again (the count goes on)|1 [orig]	bytes 1028 fnv 53E79F71
-SerialReadString|receive ring|closed, again (the count goes on)|1 [fixed #793]	bytes 1028 fnv B3518336
+SerialReadString|receive ring|closed, again (the count goes on)|1 [fixed #793]	bytes 1028 fnv 6F92BCB7
 SerialReadString|receive ring|open: returns to d0|1	bytes 1028 fnv 378BADD3
 SerialReadString|returned|closed|1	$00000001
 SerialReadString|returned|closed, again (the count goes on)|1	$00000001
@@ -453,8 +457,7 @@ SerialReadString|stub $64 called|open: returns to d0|1	$00000000
 SerialReadString|stub $74 called|closed|1	$00000000
 SerialReadString|stub $74 called|closed, again (the count goes on)|1	$00000000
 SerialReadString|stub $74 called|open: returns to d0|1	$00000000
-SerialReadString|system's vectors unchanged by the task|closed|1 [orig]	$00000001
-SerialReadString|system's vectors unchanged by the task|closed|1 [fixed #793]	$00000000
+SerialReadString|system's vectors unchanged by the task|closed|1	$00000001
 SerialReadString|system's vectors unchanged by the task|closed, again (the count goes on)|1	$00000001
 SerialReadString|system's vectors unchanged by the task|open: returns to d0|1	$00000001
 SerialReadString|transmit ring|closed|1 [orig]	bytes 1028 fnv 8AFC7135
@@ -558,7 +561,7 @@ SerialSendBlock|receive ring|5 bytes|1	bytes 1028 fnv 077C2991
 SerialSendBlock|receive ring|after SerialOpen|1	bytes 1028 fnv 46F36E46
 SerialSendBlock|receive ring|after SerialSendString (stop flag cleared)|1	bytes 1028 fnv 077C2991
 SerialSendBlock|receive ring|after SerialSendString (stop flag still set)|1 [orig]	bytes 1028 fnv 53E79F71
-SerialSendBlock|receive ring|after SerialSendString (stop flag still set)|1 [fixed #793]	bytes 1028 fnv B3518336
+SerialSendBlock|receive ring|after SerialSendString (stop flag still set)|1 [fixed #793]	bytes 1028 fnv 6F92BCB7
 SerialSendBlock|receive ring|length -3|1	bytes 1028 fnv 077C2991
 SerialSendBlock|receive ring|length 0|1	bytes 1028 fnv 077C2991
 SerialSendBlock|receive ring|length 1|1	bytes 1028 fnv 077C2991
@@ -636,9 +639,9 @@ SerialSendString|popped|closed|1	$00000000
 SerialSendString|popped|closed, stop flag set|1	$00000000
 SerialSendString|popped|open|1	$00000000
 SerialSendString|receive ring|closed|1 [orig]	bytes 1028 fnv 53E79F71
-SerialSendString|receive ring|closed|1 [fixed #793]	bytes 1028 fnv B3518336
+SerialSendString|receive ring|closed|1 [fixed #793]	bytes 1028 fnv 6F92BCB7
 SerialSendString|receive ring|closed, stop flag set|1 [orig]	bytes 1028 fnv 53E79F71
-SerialSendString|receive ring|closed, stop flag set|1 [fixed #793]	bytes 1028 fnv B3518336
+SerialSendString|receive ring|closed, stop flag set|1 [fixed #793]	bytes 1028 fnv 6F92BCB7
 SerialSendString|receive ring|open|1	bytes 1028 fnv 077C2991
 SerialSendString|stub $64 called|closed|1	$00000000
 SerialSendString|stub $64 called|closed, stop flag set|1	$00000000
@@ -683,7 +686,7 @@ SerialStop|receive ring|$0,$0|2	bytes 1028 fnv 077C2991
 SerialStop|receive ring|$0,$0|3	bytes 1028 fnv 077C2991
 SerialStop|receive ring|$0,$0|4	bytes 1028 fnv 46F36E46
 SerialStop|receive ring|$0,$0|5 [orig]	bytes 1028 fnv 53E79F71
-SerialStop|receive ring|$0,$0|5 [fixed #793]	bytes 1028 fnv B3518336
+SerialStop|receive ring|$0,$0|5 [fixed #793]	bytes 1028 fnv 6F92BCB7
 SerialStop|stub $64 called|$0,$0|1	$00000000
 SerialStop|stub $64 called|$0,$0|2	$00000000
 SerialStop|stub $64 called|$0,$0|3	$00000000
@@ -781,7 +784,7 @@ SerialWriteLong|popped|$11223344,$0|1	$00000000
 SerialWriteLong|popped|$A1B2C3D4,$0|1	$00000000
 SerialWriteLong|receive ring|$11223344,$0|1	bytes 1028 fnv 46F36E46
 SerialWriteLong|receive ring|$A1B2C3D4,$0|1 [orig]	bytes 1028 fnv 8BE64881
-SerialWriteLong|receive ring|$A1B2C3D4,$0|1 [fixed #793]	bytes 1028 fnv B3518336
+SerialWriteLong|receive ring|$A1B2C3D4,$0|1 [fixed #793]	bytes 1028 fnv 6F92BCB7
 SerialWriteLong|stub $64 called|$11223344,$0|1	$00000000
 SerialWriteLong|stub $64 called|$A1B2C3D4,$0|1	$00000000
 SerialWriteLong|stub $74 called|$11223344,$0|1	$00000000
@@ -806,9 +809,9 @@ finit|kept|$0,$0|2	kept
 finit|popped|$0,$0|1	$00000000
 finit|popped|$0,$0|2	$00000000
 finit|receive ring|$0,$0|1 [orig]	bytes 1028 fnv 8BE64881
-finit|receive ring|$0,$0|1 [fixed #793]	bytes 1028 fnv B3518336
+finit|receive ring|$0,$0|1 [fixed #793]	bytes 1028 fnv 6F92BCB7
 finit|receive ring|$0,$0|2 [orig]	bytes 1028 fnv 8BE64881
-finit|receive ring|$0,$0|2 [fixed #793]	bytes 1028 fnv B3518336
+finit|receive ring|$0,$0|2 [fixed #793]	bytes 1028 fnv 6F92BCB7
 finit|stub $64 called|$0,$0|1	$00000000
 finit|stub $64 called|$0,$0|2	$00000000
 finit|stub $74 called|$0,$0|1	$00000000
@@ -817,11 +820,9 @@ finit|transmit ring|$0,$0|1 [orig]	bytes 1028 fnv 8EF80B83
 finit|transmit ring|$0,$0|1 [fixed #800]	bytes 1028 fnv C5EB41D4
 finit|transmit ring|$0,$0|2 [orig]	bytes 1028 fnv 8EF80B83
 finit|transmit ring|$0,$0|2 [fixed #800]	bytes 1028 fnv C5EB41D4
-finit|vector $64|$0,$0|1 [orig]	$00000000
-finit|vector $64|$0,$0|1 [fixed #793]	$00000002
+finit|vector $64|$0,$0|1	$00000000
 finit|vector $64|$0,$0|2	$00000000
-finit|vector $74|$0,$0|1 [orig]	$00000000
-finit|vector $74|$0,$0|1 [fixed #793]	$00000002
+finit|vector $74|$0,$0|1	$00000000
 finit|vector $74|$0,$0|2	$00000000
 receive interrupt|CIA-B PRA|$0800, $00|1	$0000005A
 receive interrupt|CIA-B PRA|$0800, $48|1	$0000005A

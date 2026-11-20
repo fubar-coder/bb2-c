@@ -56,11 +56,6 @@
  *     looked at) (#804), the old ones into the operands of two JMP
  *     instructions in the code without clearing the instruction cache
  *     (#791).
- *   - The open flag is a word, SerialSendBlock, SerialReceiveBlock,
- *     SerialFlush, SerialReadLong and SerialWriteLong test it as a long
- *     (with the first instruction of SerialClose behind it, $4A79: never
- *     0): the first three never open the port, the other two always call
- *     SerialOpen's code (#792).
  *   - SerialReceiveBlock first throws away what is in the buffer, then
  *     waits (#798); a length of 1 receives without end (the count goes
  *     below 0) (#799); SerialStop during it ends it by taking its return
@@ -92,6 +87,12 @@
  *   - SerialSendBlock with a length of 0 or less sends nothing (its
  *     remaining count -1, as after a whole block); the original sent the
  *     first byte before it looked at the length (#800).
+ *   - SerialSendBlock, SerialReceiveBlock and SerialFlush open the port
+ *     when it is closed, SerialReadLong and SerialWriteLong only then;
+ *     the original tested the word open flag as a long (with the first
+ *     instruction of SerialClose behind it, $4A79: never 0), so the first
+ *     three never opened the port and the other two always ran
+ *     SerialOpen's code (#792).
  *   - SerialReadString returns normally and counts the characters of
  *     every call from 0; the original reset the count only when the port
  *     was open, and there it returned to the d0 of the call (it pushed d0
@@ -455,7 +456,8 @@ ULONG BLITZ_ROUTINE c_showloc(void)
  * @brief SerialSendBlock address,length: sends a block byte by byte.
  *
  * SerialStop ends it; SerialProgress gives the remaining count.
- * BUG(orig) (#792): never opens the port.  Fixed (#800): a length of 0
+ * Opens the port when it is closed (fixed (#792): the original never
+ * did).  Fixed (#800): a length of 0
  * or less sends nothing (the remaining count -1, as after a whole
  * block); the original sent the first byte before it looked at the
  * length.
@@ -466,6 +468,8 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     LONG n = (LONG)(len - 1);
 
+    if (!openflag)                      /* fixed (#792) */
+        openserial(0);
     buffstart = addr;
     if ((LONG)len <= 0) {               /* fixed (#800) */
         bufflength = (ULONG)-1;
@@ -489,7 +493,8 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 /**
  * @brief SerialReceiveBlock address,length: receives a block byte by byte.
  *
- * BUG(orig) (#792): never opens the port; BUG(orig) (#798): first throws
+ * Opens the port when it is closed (fixed (#792): the original never
+ * did).  BUG(orig) (#798): first throws
  * away what is in the buffer, then waits; BUG(orig) (#799): a length of
  * 1 receives without end; BUG(orig) (#803): SerialStop ends it by
  * returning to the long above the return address (assembler thunk
@@ -502,6 +507,8 @@ ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     ULONG value;
 
+    if (!openflag)                      /* fixed (#792) */
+        openserial(0);
     buffstart = addr;
     bufflength = len - 1;
     while (readser() != (ULONG)-1)      /* throw away what is there */
@@ -528,10 +535,13 @@ ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 /**
  * @brief SerialFlush: reads until the receive buffer is empty.
  *
- * BUG(orig) (#792): never opens the port.
+ * Opens the port when it is closed (fixed (#792): the original never
+ * did).
  */
 void BLITZ_ROUTINE c_flushser(void)
 {
+    if (!openflag)                      /* fixed (#792) */
+        openserial(0);
     while (readser() != (ULONG)-1)
         ;
 }
@@ -605,15 +615,17 @@ ULONG BLITZ_ROUTINE c_buffpos(void)
  * @brief SerialReadLong: meant to read a long.
  *
  * BUG(orig) (#794): never returns (the loop counter is taken back from
- * the stack every time: it reads bytes without end); BUG(orig) (#792):
- * always calls SerialOpen's code.
+ * the stack every time: it reads bytes without end).  Opens the port
+ * when it is closed (fixed (#792): the original always ran SerialOpen's
+ * code).
  * @param longword  d1: what the original builds from the bytes
  */
 void BLITZ_ROUTINE c_readlong(ULONG longword BL_REG(d1))
 {
     ULONG value;
 
-    openserial(0);
+    if (!openflag)                      /* fixed (#792) */
+        openserial(0);
     for (;;) {
         while ((value = readser()) == (ULONG)-1)
             ;
@@ -626,15 +638,16 @@ void BLITZ_ROUTINE c_readlong(ULONG longword BL_REG(d1))
  * @brief SerialWriteLong longword: meant to send a long.
  *
  * BUG(orig) (#805): sends the low byte, then three times $01 (it rotates
- * the register SerialWrite changed); BUG(orig) (#792): always calls
- * SerialOpen's code.
+ * the register SerialWrite changed).  Opens the port when it is closed
+ * (fixed (#792): the original always ran SerialOpen's code).
  * @param longword  d0: the long
  */
 void BLITZ_ROUTINE c_writelong(ULONG longword BL_REG(d0))
 {
     int i;
 
-    openserial(longword);               /* d0 saved around it */
+    if (!openflag)                      /* fixed (#792) */
+        openserial(longword);
     for (i = 0; i < 4; i++) {
         longword = writeser(longword);
         longword = longword >> 8 | longword << 24; /* ROR.l #8 */

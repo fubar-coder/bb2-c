@@ -86,6 +86,16 @@ kind F):
   original sent the first byte before it looked at the length (#800;
   R10 precedent Q3: a loop of 0 passes; test `riseriallib-sendblock-zero`;
   `libs_emulator` cases `[fixed #800]` of `rwe_riseriallib`).
+* `SerialSendBlock`, `SerialReceiveBlock` and `SerialFlush` open the
+  port when it is closed (what the source means: `BSR _openserial`
+  behind the test), `SerialReadLong` and `SerialWriteLong` only then. The
+  original tested the word open flag as a long, with the first
+  instruction of `SerialClose` (`$4A79`) behind it: never 0, so the first
+  three never opened the port and the other two always ran
+  `SerialOpen`'s code (#792; test `riseriallib-sendblock-opens`;
+  `libs_emulator` cases `[fixed #792]` of `rwe_riseriallib`). New
+  behaviour for a program that called `SerialFlush` with the port
+  closed: the port is open afterwards.
 * `SerialReadString` returns normally and counts the characters of every
   call from 0 (its result is the string's length); the original reset
   the count only when the port was open, and there it returned to the d0
@@ -115,11 +125,6 @@ kind F):
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
   is (#804); the old ones go into the code (two `JMP` operands) without
   clearing the instruction cache (#791).
-* The open flag is a word; `SerialSendBlock`, `SerialReceiveBlock`,
-  `SerialFlush`, `SerialReadLong` and `SerialWriteLong` test it as a
-  long, with the first instruction of `SerialClose` (`$4A79`) behind it:
-  never 0. So the first three never open the port, the other two always
-  call `SerialOpen`'s code (opening it if it is closed) (#792).
 * `SerialReceiveBlock` throws away what is in the ring first, then
   waits (#798); a length of 1 receives without end (the count goes below
   0) (#799).
