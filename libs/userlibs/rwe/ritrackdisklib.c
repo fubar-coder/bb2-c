@@ -24,13 +24,11 @@
  * code address in !subs).
  *
  * Everything is C: exec through proto/exec.h (DoIO through BLITZ_BASEJSR,
- * the original returns all of DoIO's d0, the NDK inline only a BYTE), the
- * CIA through a volatile access.
+ * the original returns all of DoIO's d0, the NDK inline only a BYTE).
  *
- * BUG(orig):
- *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
- *     low): -1 (the byte $FF) means the motor line is high (off), the
- *     help text says "-1 if motor is on" (#857).
+ * Fixed (#857): the original's DiskMotor returned SNE of bit 7 of CIAB
+ * PRB ($BFD100), which trackdisk.device leaves 1 after every request:
+ * always -1.  The library keeps the motor state of its units itself.
  * Fixed (#858, #864): the original's FormatTrack without a count and
  * WriteBoot sent TD_FORMAT requests of 512 and 1024 bytes, which
  * trackdisk.device refuses (-4, IOERR_BADLENGTH: only whole tracks of
@@ -180,13 +178,13 @@ BLITZ_NULLSUB_AT(init, ritrackdisklib_libinit, 0, 0);
 BLITZ_LIBFIN();
 
 #define LVO_DoIO (-456)
-/* CIAB PRB: bit 7 = /MTR (custom.res ciabprb) */
-#define CIABPRB (*(volatile UBYTE *)0xbfd100)
 
-/* the library's data: the requests of units 0-3, the reply port */
+/* the library's data: the requests of units 0-3, the reply port, the
+   motor state of units 0-3 as the library knows it (#857) */
 static struct {
     struct IOStdReq *iorequests[4];
     struct MsgPort *msgport;
+    UBYTE motor[4];
 } td;
 
 /* getioreq: the request of a unit, NULL for units outside 0-3 */
@@ -289,8 +287,10 @@ static void BLITZ_ROUTINE c_libinit(void)
 {
     int u;
 
-    for (u = 0; u < 4; u++)             /* Fixed (#863): also [3] */
+    for (u = 0; u < 4; u++) {           /* Fixed (#863): also [3] */
         td.iorequests[u] = NULL;
+        td.motor[u] = 0;                /* Fixed (#857) */
+    }
     td.msgport = newport();             /* Fixed (#941): by hand, V33 */
 }
 
@@ -308,6 +308,7 @@ static void BLITZ_ROUTINE c_libinit(void)
 ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
+    ULONG r;
 
     if (!td.msgport || !(req = getioreq(unit)))
         return 0;
@@ -317,7 +318,10 @@ ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
     req->io_Command = TD_MOTOR;
     req->io_Flags = 0;
     req->io_Length = 0;
-    return doio(req);
+    r = doio(req);
+    if (!(UBYTE)r)                      /* Fixed (#857): the library's state */
+        td.motor[unit] = 0;
+    return r;
 }
 
 /**
@@ -336,6 +340,7 @@ BB_BOOL BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
     CloseDevice((struct IORequest *)req);
     freereq(req);
     putioreq(unit, NULL);
+    td.motor[unit] = 0;                 /* Fixed (#857) */
     return BB_TRUE;
 }
 
@@ -421,6 +426,7 @@ BB_BOOL BLITZ_ROUTINE c_opentrack2(LONG unit BL_REG(d0), const char *name BL_REG
 static ULONG sectorio(LONG unit, ULONG offset, APTR buffer, ULONG num, UWORD cmd)
 {
     struct IOStdReq *req;
+    ULONG r;
 
     if (!td.msgport || !(req = getioreq(unit)))
         return 0;
@@ -433,7 +439,10 @@ static ULONG sectorio(LONG unit, ULONG offset, APTR buffer, ULONG num, UWORD cmd
     req->io_Data = buffer;
     req->io_Offset = offset << 9;
     req->io_Flags = 0;
-    return doio(req);
+    r = doio(req);
+    if (!(UBYTE)r)                      /* Fixed (#857): the device switched */
+        td.motor[unit] = 1;             /* the motor on for the request */
+    return r;
 }
 
 /**
@@ -701,6 +710,7 @@ ULONG BLITZ_ROUTINE c_ioreq(LONG unit BL_REG(d0))
 ULONG BLITZ_ROUTINE c_motoron(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
+    ULONG r;
 
     if (!td.msgport || !(req = getioreq(unit)))
         return 0;
@@ -708,20 +718,33 @@ ULONG BLITZ_ROUTINE c_motoron(LONG unit BL_REG(d0))
     req->io_Command = TD_MOTOR;
     req->io_Length = 1;
     req->io_Flags = 0;
-    return doio(req);
+    r = doio(req);
+    if (!(UBYTE)r)                      /* Fixed (#857): the library's state */
+        td.motor[unit] = 1;
+    return r;
 }
 
 /**
- * @brief DiskMotor: the state of the motor line (CIAB PRB bit 7).
+ * @brief DiskMotor: -1 if the motor of a unit the library has open is on, as the library knows it.
  *
- * MOVEQ #0,d0:BTST #7,$bfd100:SNE d0.  BUG(orig) (#857): bit 7 is /MTR
- * (active low): $FF means the line is high (motor off), the help text
- * says "-1 if motor is on".
- * @return d0: $FF if bit 7 is set, else 0 (a #byte result)
+ * Fixed (#857): the state is the library's own knowledge: on after a
+ * MotorOn or a ReadSector, WriteSector, FormatTrack, WriteBoot or
+ * BootProg that worked (trackdisk.device switches the motor on for
+ * them and leaves it on), off after a MotorOff that worked and after
+ * CloseDisk.  What other programs do with the drives is not seen.  The
+ * original returned SNE of bit 7 of CIAB PRB ($BFD100, /MTR), which
+ * trackdisk.device leaves 1 after every request (it deselects the
+ * drives): always -1.
+ * @return d0: $FF (-1) if a unit's motor is on, else 0 (a #byte result)
  */
 ULONG BLITZ_ROUTINE c_diskmotor(void)
 {
-    return (CIABPRB & 0x80) ? 0xff : 0;
+    int u;
+
+    for (u = 0; u < 4; u++)
+        if (td.iorequests[u] && td.motor[u])
+            return 0xff;
+    return 0;
 }
 
 /* entries: keep d1/a0/a1 (and d0 in init/finit) */

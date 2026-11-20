@@ -284,7 +284,8 @@ DiskIO (init again: unit 3 stale)|unit|3|1 [fixed #863]	$00000003
 DiskIO (init again: unit 3 stale)|updates|3|1	$00000000
 DiskMotor|d0||1	$000000FF
 DiskMotor|kept||1	kept
-DiskMotor (motor off)|d0|0|1	$000000FF
+DiskMotor (motor off)|d0|0|1 [orig]	$000000FF
+DiskMotor (motor off)|d0|0|1 [fixed #857]	$00000000
 DiskMotor (motor off)|kept|0|1	kept
 DiskMotor (motor on)|d0|0|1	$000000FF
 DiskMotor (motor on)|kept|0|1	kept

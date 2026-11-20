@@ -7,7 +7,7 @@ trackdisk.device (or another device: `OpenDisk unit#,devicename$`;
 [,numsectors]`, `FormatTrack`, `WriteBoot` (a bootable standard boot
 block, or 1024 bytes of the program's), `BootProg` (checksum + write sectors 0-1), `MotorOn`/
 `MotorOff`, `DiskStatus` (CheckIO), `DiskIO` (the IOStdReq), `DiskMotor`
-(CIAB bit). One IOStdReq per unit (200 bytes), one reply port made by
+(the motor state as the library knows it). One IOStdReq per unit (200 bytes), one reply port made by
 init and freed by finit; both are built by hand with exec V33 functions,
 so the library runs on every Kickstart (fixed #941). Results: DoIO's d0 with
 io_Error as low byte, 0 without port/request; `DiskStatus`, `DiskIO`,
@@ -24,20 +24,14 @@ bb2-2.10 libnums.
 **C:** everything (`libs/userlibs/rwe/ritrackdisklib.c`): exec through
 `proto/exec.h`, except `DoIO`, which goes through `BLITZ_BASEJSR`
 because the original returns all of DoIO's d0 (the NDK inline returns a
-`BYTE`); `DiskMotor` reads CIAB PRB with a volatile access. The routines
+`BYTE`). The routines
 that branch into each other in the original (`_install1` →
 `_formatsector2` → `okok`, `_bootprog` → `_writesector2`) are C calls.
 Every entry is a thunk keeping d1/a0/a1 (the
 original keeps them on the paths without port or request); the
 original's changes of a6 and d4-d7 are not reproduced.
 
-**BUG(orig)** (kept):
-
-* `DiskMotor` returns -1 (the byte $FF) when CIAB PRB bit 7 (/MTR,
-  active low) is set, i.e. motor off; the help text says "-1 if motor is
-  on" (#857).
-
-**Fixed:**
+No bug of the original is kept; the fixed ones:
 
 * #941: the original's init called `CreateMsgPort`, the commands
   `CreateIORequest`/`DeleteIORequest`, finit `DeleteMsgPort` – exec V36
@@ -59,6 +53,23 @@ original's changes of a6 and d4-d7 are not reproduced.
   carry and the complement stored (the block sums to `$FFFFFFFF`). Test:
   the `libs_emulator` cases `[fixed #856]` (BootProg twice: the block,
   its checksum and sum, the data the device was given).
+* #857: the original's `DiskMotor` (help text "Returns -1 if motor is
+  on"; no unit argument, in no manual) returned `SNE` of bit 7 of CIAB
+  PRB (`$BFD100`, /MTR). trackdisk.device leaves that bit 1 after every
+  request, with the motor on and off (measured on Kickstart 1.3 and 3.1:
+  it deselects the drives): the original returned -1 always, the
+  inversion the issue proposed would return 0 always, and the motor
+  state cannot be read cleanly from the hardware. Decided (R10, the
+  answer to the DiskMotor question: option (a)): **the result is the
+  library's own knowledge**, not what other programs do with the
+  drives: a unit's motor is on after a `MotorOn` or a `ReadSector`,
+  `WriteSector`, `FormatTrack`, `WriteBoot` or `BootProg` that worked
+  (trackdisk.device switches the motor on for them and leaves it on),
+  off after a `MotorOff` that worked and after `CloseDisk`; init clears
+  the states. `DiskMotor` returns -1 if the motor of a unit the library
+  has open is on, else 0. Test: the `libs_emulator` case `[fixed #857]`
+  (DiskMotor after MotorOff on the empty DF0: 0); the disk tests after
+  MotorOn and MotorOff.
 * #858: `FormatTrack unit,track,buffer[,num]` and `WriteBoot` shared
   the sector commands' length, num × 512 bytes, with `TD_FORMAT`.
   trackdisk.device formats whole tracks only (5632 bytes = 11 sectors
