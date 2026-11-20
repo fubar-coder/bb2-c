@@ -5,6 +5,7 @@
 ; Correct: OpenDisk unit always opens trackdisk.device; unit 0 (DF0)
 ; opens also without a disk in the drive.
 ; @rwe ritrackdisklib
+; @fixed #859
 NPrint OpenDisk(0,"nosuch.device")
 NPrint OpenDisk(0)
 NPrint CloseDisk(0)

@@ -1,7 +1,8 @@
 # ritrackdisklib (TrackDisk, library 91)
 
 **What it does:** sector access to floppy units 0-3 through
-trackdisk.device (or another device: `OpenDisk unit#,devicename$`):
+trackdisk.device (or another device: `OpenDisk unit#,devicename$`;
+`OpenDisk unit#` always opens trackdisk.device):
 `OpenDisk`/`CloseDisk`, `ReadSector`/`WriteSector unit,sector,buffer
 [,numsectors]`, `FormatTrack`, `WriteBoot` (a default boot block
 `"DOS",0,-1`), `BootProg` (checksum + write sectors 0-1), `MotorOn`/
@@ -26,18 +27,12 @@ because the original returns all of DoIO's d0 (the NDK inline returns a
 `BYTE`); `DiskMotor` reads CIAB PRB with a volatile access. The routines
 that branch into each other in the original (`_install1` →
 `_formatsector2` → `okok`, `_bootprog` → `_writesector2`) are C calls.
-The data keep the original's order and sizes (58 byte name buffer,
-request table, port, default boot block), so that the overflows below
-hit the same things. Every entry is a thunk keeping d1/a0/a1 (the
+Every entry is a thunk keeping d1/a0/a1 (the
 original keeps them on the paths without port or request); the
 original's changes of a6 and d4-d7 are not reproduced.
 
 **BUG(orig)** (kept):
 
-* `OpenDisk unit,name$` copies the name into the 58-byte buffer
-  `trackname` without a limit (a longer one overwrites the request table
-  and the port) (#860) and keeps it for later `OpenDisk` without a name
-  (#859).
 * `WriteBoot unit,bootdata` overwrites bootdata (d1 = sector 0) and
   takes the buffer from d2, which is no argument (whatever the caller
   left there; the C routine takes d2 as a register parameter for the same
@@ -66,6 +61,19 @@ original's changes of a6 and d4-d7 are not reproduced.
   Tests: bug-orig `rwe/ritrackdisklib-v36-calls` (a500), the regression
   test `ritrackdisklib-floppy-key` reads a disk in DF1 on the a500,
   a500-204 and a1200 with these requests.
+* #859, #860: the original's `OpenDisk unit,name$` copied the name into
+  a buffer of 58 bytes (`"trackdisk.device"` and room behind it) without
+  a limit, so a name of 57 characters or more overwrote the request
+  table and the port (#860), and kept it there, so a later `OpenDisk
+  unit` without a name opened that device again (#859; the manual
+  documents `OpenDisk(unit#)` as trackdisk.device). The name goes to
+  `OpenDevice` as it is (a Blitz string ends with its 0), `OpenDisk
+  unit` always opens trackdisk.device; the buffer is gone. A program
+  that relied on the kept name opens trackdisk.device now. Tests:
+  bug-orig `rwe/ritrackdisklib-opendisk-name-overflow` (#860),
+  `rwe/ritrackdisklib-opendisk-kept-name` (#859), the `libs_emulator`
+  case `[fixed #859]` (OpenDisk 2 without a name after names were
+  given: trackdisk.device has no unit 2 on the test machine).
 * #861: the original's `OpenDisk` checked the unit with a signed
   compare (`CMP #3: BGT`): a negative unit passed, the table routines
   ignored it, and the request was lost (OpenDevice ok, the device stayed

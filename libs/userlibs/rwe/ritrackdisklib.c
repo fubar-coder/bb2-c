@@ -25,15 +25,9 @@
  *
  * Everything is C: exec through proto/exec.h (DoIO through BLITZ_BASEJSR,
  * the original returns all of DoIO's d0, the NDK inline only a BYTE), the
- * CIA through a volatile access.  The data (device name buffer, request
- * table, port, default boot block) keep the original's order and sizes,
- * so that a long device name overwrites the same things.
+ * CIA through a volatile access.
  *
  * BUG(orig):
- *   - OpenDisk unit,name$ copies the name into the buffer trackname (58
- *     bytes) without a limit - a longer name overwrites iorequests and
- *     msgport - (#860) and keeps it: a later OpenDisk without name uses
- *     it too (#859).
  *   - WriteBoot unit,bootdata sets d1 = 0 (sector) over bootdata and
  *     takes the buffer from d2, which is not an argument (whatever the
  *     caller left there; here a register parameter d2 for the same
@@ -49,6 +43,11 @@
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
  *     help text says "-1 if motor is on" (#857).
+ * Fixed (#859, #860): the original's OpenDisk unit,name$ copied the name
+ * into a buffer of 58 bytes without a limit (a longer name overwrote the
+ * request table and the port) and kept it there, so a later OpenDisk
+ * unit opened that device too.  The name goes to OpenDevice as it is;
+ * OpenDisk unit always opens trackdisk.device.
  * Fixed (#861): the original's OpenDisk let a negative unit pass its
  * check (CMP #3: BGT) and lost the request (the table ignores it).
  * Fixed (#862): the original's OpenDisk of a unit that is open replaced
@@ -67,7 +66,6 @@
 #include <exec/io.h>
 #include <devices/trackdisk.h>
 #include <devices/bootblock.h>
-#include <stddef.h>
 
 /* entries (thunks below) */
 void ritrackdisklib_libinit(void), ritrackdisklib_libfinit(void);
@@ -179,16 +177,15 @@ BLITZ_LIBFIN();
 /* CIAB PRB: bit 7 = /MTR (custom.res ciabprb) */
 #define CIABPRB (*(volatile UBYTE *)0xbfd100)
 
-/* the data at the end of the original, in its order */
-static struct BL_PACKED {
-    char trackname[58];             /* "trackdisk.device",0 + Dcb.l 10,0, Even */
+/* the library's data: the requests of units 0-3, the reply port, the
+   default boot block of WriteBoot unit */
+static struct {
     struct IOStdReq *iorequests[4];
     struct MsgPort *msgport;
     UBYTE defaultboot[8];           /* "DOS",0 : Dc.l -1 */
 } td = {
-    "trackdisk.device", { 0 }, 0, { 'D', 'O', 'S', 0, 0xff, 0xff, 0xff, 0xff }
+    { 0 }, 0, { 'D', 'O', 'S', 0, 0xff, 0xff, 0xff, 0xff }
 };
-_Static_assert(offsetof(__typeof__(td), iorequests) == 58, "td layout");
 
 /* getioreq: the request of a unit, NULL for units outside 0-3 */
 static struct IOStdReq *getioreq(LONG unit)
@@ -349,20 +346,13 @@ static void BLITZ_ROUTINE c_libfinit(void)
     }
 }
 
-/**
- * @brief OpenDisk unit#: open the device (trackname) for a unit with a new request.
- *
- * A new request (newreq(), 200 bytes) on the reply port, then OpenDevice of the name in trackname ("trackdisk.device", or the last
- * name given, #859).  Fixed (#862): a unit that is open is left alone,
- * the result is 0 (the original made a new request, the old one stayed
- * open and was lost).  Fixed (#861): a unit
- * outside 0-3 is refused before the request is made (the original's
- * signed CMP #3: BGT let negative units pass; the table ignored them, so
- * the request was lost or 0 was freed).
- * @param unit  d0: unit# (0-3)
- * @return d0: BB_TRUE if the device opened, else BB_FALSE
- */
-BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
+/* opendisk: OpenDisk of a unit with the device name (both forms).
+   Fixed (#862): a unit that is open is left alone, the result is 0 (the
+   original made a new request, the old one stayed open and was lost).
+   Fixed (#861): a unit outside 0-3 is refused before the request is made
+   (the original's signed CMP #3: BGT let negative units pass; the table
+   ignored them, so the request was lost or 0 was freed). */
+static BB_BOOL opendisk(LONG unit, const char *name)
 {
     struct IOStdReq *req;
 
@@ -374,7 +364,7 @@ BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
     if (!req)
         return BB_FALSE;
     putioreq(unit, req);
-    if (OpenDevice((CONST_STRPTR)td.trackname, unit, (struct IORequest *)req, 0)) {
+    if (OpenDevice((CONST_STRPTR)name, unit, (struct IORequest *)req, 0)) {
         putioreq(unit, NULL);
         freereq(req);
         return BB_FALSE;
@@ -383,23 +373,34 @@ BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
 }
 
 /**
- * @brief OpenDisk unit#,devicename$: c_opentrack() with another device name.
+ * @brief OpenDisk unit#: open trackdisk.device for a unit with a new request.
  *
- * BUG(orig): the name is copied into trackname (58 bytes) without a
- * limit - a longer name overwrites iorequests and msgport (#860) - and
- * stays for later OpenDisks without a name (#859).
+ * A new request (newreq(), 200 bytes) on the reply port, then OpenDevice
+ * of "trackdisk.device".  Fixed (#859): always trackdisk.device (the
+ * original opened the device of the last OpenDisk unit,name$).  A unit
+ * that is open, or outside 0-3, gives 0 (#862, #861).
+ * @param unit  d0: unit# (0-3)
+ * @return d0: BB_TRUE if the device opened, else BB_FALSE
+ */
+BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
+{
+    return opendisk(unit, "trackdisk.device");
+}
+
+/**
+ * @brief OpenDisk unit#,devicename$: c_opentrack() with another device.
+ *
+ * Fixed (#860, #859): the name goes to OpenDevice as it is (the original
+ * copied it into a buffer of 58 bytes without a limit, a longer name
+ * overwrote the request table and the port, and kept it for later
+ * OpenDisks without a name).
  * @param unit  d0: unit# (0-3)
  * @param name  d1: the device name
  * @return d0: as c_opentrack()
  */
 BB_BOOL BLITZ_ROUTINE c_opentrack2(LONG unit BL_REG(d0), const char *name BL_REG(d1))
 {
-    char *p = td.trackname;
-
-    while ((*p++ = *name++) != 0)       /* BUG(orig): no limit (#860) */
-        ;
-    *p = 0;
-    return c_opentrack(unit);
+    return opendisk(unit, name);
 }
 
 /* okok: the sector commands; d3 = number of sectors, d1 = first sector,

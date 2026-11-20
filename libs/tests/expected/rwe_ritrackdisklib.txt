@@ -629,7 +629,8 @@ OpenDisk|failed opens|0,rwetest.device|1	$00000000
 OpenDisk|failed opens|0,trackdisk.device|1	$00000000
 OpenDisk|failed opens|1,rwetest.device|1	$00000000
 OpenDisk|failed opens|1,rwetest.device|2	$00000000
-OpenDisk|failed opens|2,-|1	$00000002
+OpenDisk|failed opens|2,-|1 [orig]	$00000002
+OpenDisk|failed opens|2,-|1 [fixed #859]	$00000000
 OpenDisk|failed opens|2,rwetest.device|1	$00000002
 OpenDisk|failed opens|3,rwetest.device|1	$00000000
 OpenDisk|failed opens|4,rwetest.device|1	$00000000
