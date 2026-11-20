@@ -5,6 +5,7 @@
 ; reads one long.
 ; Correct (decided: the low byte first, the mirror of SerialWriteLong):
 ; the first four bytes "0123" as $33323130.
+; @fixed #794
 ; @rwe riseriallib
 ; @pass serial=on
 ; @pass timeout=30

@@ -173,14 +173,19 @@ kind F):
   fills, no Blitz program shows it; `libs_emulator` cases `[fixed #983]`
   of `rwe_riseriallib`: the 200-byte block in a task of its own with one
   transmit interrupt per tick, the bytes sent).
+* `SerialReadLong` reads four bytes, the low byte first, and returns the
+  long: the mirror of `SerialWriteLong` (R10 decision P2-4 (a)). The
+  original never returned: its loop took the counter back from the stack
+  every time and read bytes without end; and it shifted each byte in with
+  `ROL.l #8`, which gives b2 b3 b4 b1 for the bytes b1 … b4 (#794; test
+  `riseriallib-readlong`; `libs_emulator` cases `[fixed #794]` of
+  `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
   is (#804); the old ones go into the code (two `JMP` operands) without
   clearing the instruction cache (#791).
-* `SerialReadLong` never returns: its loop takes the counter back from
-  the stack every time and reads bytes without end (#794).
 * `SerialWriteLong` sends the low byte of its argument and then three
   times `$01` (it rotates the register `SerialWrite` changed) (#805).
 

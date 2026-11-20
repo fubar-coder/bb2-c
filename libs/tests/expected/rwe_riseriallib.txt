@@ -49,8 +49,10 @@ SerialClose|kept|$0,$0|3	kept
 SerialClose|popped|$0,$0|1	$00000000
 SerialClose|popped|$0,$0|2	$00000000
 SerialClose|popped|$0,$0|3	$00000000
-SerialClose|receive ring|$0,$0|1	bytes 1028 fnv AE36955A
-SerialClose|receive ring|$0,$0|2	bytes 1028 fnv AE36955A
+SerialClose|receive ring|$0,$0|1 [orig]	bytes 1028 fnv AE36955A
+SerialClose|receive ring|$0,$0|1 [fixed #794]	bytes 1028 fnv 63C35665
+SerialClose|receive ring|$0,$0|2 [orig]	bytes 1028 fnv AE36955A
+SerialClose|receive ring|$0,$0|2 [fixed #794]	bytes 1028 fnv 63C35665
 SerialClose|receive ring|$0,$0|3 [orig]	bytes 1028 fnv 7A55ED45
 SerialClose|receive ring|$0,$0|3 [fixed #1160]	bytes 1028 fnv BEBA3084
 SerialClose|stub $64 called|$0,$0|1	$00000000
@@ -406,9 +408,12 @@ SerialRead|vector $74|d0 $12345678|2	$00000000
 SerialRead|vector $74|d0 $FFFF0000|1	$00000000
 SerialReadLong|CIA-B PRA||1	$0000005A
 SerialReadLong|custom chip registers||1	bytes 512 fnv C4915FC8
-SerialReadLong|every byte read||1	$00000001
-SerialReadLong|never returns||1	$00000001
-SerialReadLong|receive ring||1	bytes 1028 fnv AE36955A
+SerialReadLong|every byte read||1 [orig]	$00000001
+SerialReadLong|every byte read||1 [fixed #794]	$00000000
+SerialReadLong|never returns||1 [orig]	$00000001
+SerialReadLong|never returns||1 [fixed #794]	$00000000
+SerialReadLong|receive ring||1 [orig]	bytes 1028 fnv AE36955A
+SerialReadLong|receive ring||1 [fixed #794]	bytes 1028 fnv 63C35665
 SerialReadLong|stub $64 called||1	$00000000
 SerialReadLong|stub $74 called||1	$00000000
 SerialReadLong|transmit ring||1 [orig]	bytes 1028 fnv 8AFC7135
@@ -870,7 +875,8 @@ receive interrupt|vector $74|$0800, $48|1	$00000000
 receive interrupt|vector $74|$0800, $FF|1	$00000000
 receive interrupt (closed)|CIA-B PRA|$0800, $99|1	$0000005A
 receive interrupt (closed)|custom chip registers|$0800, $99|1	bytes 512 fnv 0603005F
-receive interrupt (closed)|receive ring|$0800, $99|1	bytes 1028 fnv 259E4448
+receive interrupt (closed)|receive ring|$0800, $99|1 [orig]	bytes 1028 fnv 259E4448
+receive interrupt (closed)|receive ring|$0800, $99|1 [fixed #794]	bytes 1028 fnv 0F893047
 receive interrupt (closed)|stub $64 called|$0800, $99|1	$00000000
 receive interrupt (closed)|stub $74 called|$0800, $99|1	$00000000
 receive interrupt (closed)|transmit ring|$0800, $99|1 [orig]	bytes 1028 fnv 8AFC7135

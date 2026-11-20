@@ -16,7 +16,7 @@
  *   SerialSendString a$          the characters of the string (no 0)
  *   SerialReadString             bytes up to a 0
  *   SerialProgress               the remaining length of a block
- *   SerialReadLong / SerialWriteLong longword
+ *   SerialReadLong / SerialWriteLong longword, the low byte first
  *   SerialStop                   ends a block transfer
  *   SerialGot                    the number of bytes waiting
  *   SerialWait                   waits for a byte and reads it
@@ -56,8 +56,6 @@
  *     looked at) (#804), the old ones into the operands of two JMP
  *     instructions in the code without clearing the instruction cache
  *     (#791).
- *   - SerialReadLong never returns: the counter of its loop is taken
- *     back from the stack every time (it reads bytes without end) (#794).
  *   - SerialWriteLong sends the low byte of its argument and then three
  *     times $01 (it rotates the register SerialWrite changed) (#805).
  *
@@ -131,6 +129,11 @@
  *     room, so it does not wait there (the bytes overwrite, as before).
  *     A program that calls it with the interrupts disabled must not
  *     send more than 127 bytes.
+ *   - SerialReadLong reads four bytes, the low byte first (decided, R10
+ *     P2-4 (a): the mirror of SerialWriteLong), and returns the long; the
+ *     original never returned: its loop took the counter back from the
+ *     stack every time and read bytes without end, and it rotated the
+ *     long the wrong way (ROL, which gives b2 b3 b4 b1) (#794).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -639,26 +642,29 @@ ULONG BLITZ_ROUTINE c_buffpos(void)
 }
 
 /**
- * @brief SerialReadLong: meant to read a long.
+ * @brief SerialReadLong: reads a long, the low byte first.
  *
- * BUG(orig) (#794): never returns (the loop counter is taken back from
- * the stack every time: it reads bytes without end).  Opens the port
+ * Waits for four bytes; the first is the low byte (the mirror of
+ * SerialWriteLong).  Fixed (#794): the original never returned (the
+ * loop counter was taken back from the stack every time: it read bytes
+ * without end) and rotated the long the wrong way (ROL).  Opens the port
  * when it is closed (fixed (#792): the original always ran SerialOpen's
  * code).
- * @param longword  d1: what the original builds from the bytes
+ * @return d0: the long
  */
-void BLITZ_ROUTINE c_readlong(ULONG longword BL_REG(d1))
+ULONG BLITZ_ROUTINE c_readlong(void)
 {
-    ULONG value;
+    ULONG value, longword = 0;
+    int i;
 
     if (!openflag)                      /* fixed (#792) */
         openserial(0);
-    for (;;) {
+    for (i = 0; i < 4; i++) {           /* fixed (#794) */
         while ((value = readser()) == (ULONG)-1)
             ;
-        longword = (longword & 0xffffff00UL) | (value & 0xff);
-        longword = longword << 8 | longword >> 24;
+        longword = longword >> 8 | value << 24;     /* ROR.l #8 */
     }
+    return longword;
 }
 
 /**
