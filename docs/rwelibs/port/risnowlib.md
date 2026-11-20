@@ -82,10 +82,22 @@ right-first), COLOR00 is written as the original writes it.
   needs the cleared table of #1135: a first run's block is never freed
   twice.
 
+* With runtime error checking every command refuses a list number
+  outside 0–3: "Snow list number must be 0 to 3" (the original has no
+  error check area). The release code is unchanged (an invalid argument,
+  D-005): the number indexes the table of 4 × 16 bytes with `ASL.w #4`
+  and no check, so 4 and up, negative numbers and a non-zero upper word
+  read and write behind or before the table (`InitSnowDrop` writes its
+  four pointers there) (#913, test `rwe/risnowlib-listnum-unchecked`).
+  With it `LDoSnow`, `KillPoint` and `LDoSnowActivate` refuse a list
+  number without `InitSnowDrop` ("Snow list needs InitSnowDrop": its
+  entry is 0, the lists and the bitmap would be read at address 0), and
+  `KillPoint` a pixel outside the 320 pixels of a row or the rows of the
+  field's bitmap ("KillPoint outside the bitmap": the library assumes 40
+  bytes per row).
+
 ## BUG(orig), kept
 
-* No routine checks the list number (0–3; `ASL.w #4` as the index)
-  (#913).
 * The lists have no bounds: more than numpoints × 4 entries run into the
   next list and behind the block (#914).
 * A bit number above 7 from the random table indexes the lookup tables

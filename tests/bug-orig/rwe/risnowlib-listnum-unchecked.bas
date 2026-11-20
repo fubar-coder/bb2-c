@@ -10,6 +10,7 @@
 ; error checking.
 ; Correct: the error check refuses listnum 4: "Snow list number must be
 ; 0 to 3", nothing is written behind the table.
+; @fixed #913
 ; @rwe risnowlib
 ; @pass runtime_errors=on
 DEFTYPE .l

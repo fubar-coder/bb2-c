@@ -1,0 +1,14 @@
+# the intended differences of risnowlib against its reference, the
+# reference build of rwelibsrc/Snow/SnowLib3.bb (blitzlib compare,
+# docs/development.md "Intended differences")
+# #913: every command gets an error check of the list number ("Snow list
+# number must be 0 to 3"; initchk, fieldchk, killchk: LDoSnow, KillPoint
+# and LDoSnowActivate also "Snow list needs InitSnowDrop", KillPoint
+# "KillPoint outside the bitmap"); risnowlib gets an error check area for
+# them (the original has none)
+lib 195: header +$2C: code offset set in only one of them
+lib 195: entry 0 LDoSnow +$C: code offset set in only one of them
+lib 195: entry 1 InitSnowDrop +$12: code offset set in only one of them
+lib 195: entry 2 KillPoint +$E: code offset set in only one of them
+lib 195: entry 3 LDoSnowActivate +$C: code offset set in only one of them
+lib 195: relocations in the declaration part 8 != 13

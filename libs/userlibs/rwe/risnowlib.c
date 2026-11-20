@@ -37,8 +37,6 @@
  * original's order (left-first then right-first, 8 entries of 4 words).
  *
  * BUG(orig):
- *   - No routine checks the list number (0-3; 16 bytes per number
- *     indexed by ASL.w #4) (#913).
  *   - The lists have no bounds: more entries than numpoints*4 run into
  *     the next list (and behind the block) (#914).
  *   - A bit number above 7 (from the random table) indexes the lookup
@@ -66,7 +64,18 @@
  *     the pointers, and each repeated InitSnowDrop of a number lost
  *     numpoints*64+40 bytes until the end of the program (#911).  The
  *     block is the lower of the two drop lists (drop list A, at its
- *     start; LDoSnow swaps the two pointers).
+ *     start; LDoSnow swaps the two pointers);
+ *   - With runtime error checking every command refuses a list number
+ *     outside 0-3: "Snow list number must be 0 to 3" (the original has
+ *     no error check area; 16 bytes per number indexed by ASL.w #4 in a
+ *     table of 4 numbers, so 4 and up, negative numbers and a non-zero
+ *     upper word read and write behind or before the table) (#913).
+ *     With it LDoSnow, KillPoint and LDoSnowActivate refuse a list
+ *     number without InitSnowDrop ("Snow list needs InitSnowDrop": the
+ *     lists would be read at address 0), and KillPoint a pixel outside
+ *     the 320 pixels of a row or the bitmap's rows ("KillPoint outside
+ *     the bitmap": the library assumes 40 bytes per row).  The release
+ *     code is unchanged (invalid arguments, D-005).
  * Not defects: the allocation is not checked (memlib's globalloc raises
  * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
  * pixel again (always clear there: redundant, no effect); the end of
@@ -79,35 +88,37 @@
 /* entry points (thunks, below) */
 void _AsmDoSnow(void), _InitSnowDrop(void), _KillPoint(void);
 void _DoKillList(void), risnowlib_libinit(void), risnowlib_libfinit(void);
+void initchk(void), fieldchk(void), killchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {195,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_risnowlib, init, BL_NORET, finit, 0);
+/* !libheader {195,init,0,finit,0}; error field: the error check area of
+   the list number checks (fixed, #913) */
+BLITZ_LIBHEADER(LIB_risnowlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_AsmDoSnow, 0, 0);
+BLITZ_SUBS(_AsmDoSnow, fieldchk, 0);           /* check: fixed #913 */
 BLITZ_NAME("LDoSnow", "listnum,randomtable");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_WORD, BL_LONG);
 BLITZ_LIBS(LIB_bitmaplib, BL_IA3|BL_PD2);
-BLITZ_SUBS(_InitSnowDrop, 0, 0);
+BLITZ_SUBS(_InitSnowDrop, initchk, 0);         /* check: fixed #913 */
 BLITZ_NAME("InitSnowDrop", "listnum,numpoints,bitmap,bp_size");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_KillPoint, 0, 0);
+BLITZ_SUBS(_KillPoint, killchk, 0);            /* check: fixed #913 */
 BLITZ_NAME("KillPoint", "listnum,x,y");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_DoKillList, 0, 0);
+BLITZ_SUBS(_DoKillList, fieldchk, 0);          /* check: fixed #913 */
 BLITZ_NAME("LDoSnowActivate", "listnum");
 
 BLITZ_NULLSUB_AT(finit, risnowlib_libfinit, 0, 0);
@@ -174,8 +185,9 @@ static_assert(sizeof lookup == 2 * 8 * 4 * 2);
 /* ASL.w #n,d: the low word shifted, the upper word kept */
 #define ASLW(d, n) (((ULONG)(d) & 0xffff0000UL) | (UWORD)((ULONG)(d) << (n)))
 
-/* the 4 longs of a list number (ASL.w #4,d0: ADD.l d0,a2), BUG(orig):
-   not checked (#913) */
+/* the 4 longs of a list number (ASL.w #4,d0: ADD.l d0,a2); not checked
+   in the release code (the error checks refuse a number outside 0-3:
+   fixed #913) */
 static struct snowfield *entry(ULONG n)
 {
     return (struct snowfield *)((UBYTE *)lp + (LONG)ASLW(n, 4));
@@ -250,8 +262,7 @@ static UBYTE *killhead(UBYTE *p, ULONG size)
  *
  * One block (memlib globalloc, MEMF_CLEAR; not checked: memlib raises
  * Out of Memory) for drop lists A and B and kill lists 1 and 2, each
- * numpoints*16 bytes, all empty.  BUG(orig): the list number is not
- * checked (#913).  Fixed (#911): the block the number had is freed first
+ * numpoints*16 bytes, all empty.  Fixed (#911): the block the number had is freed first
  * (memlib globfree; the original lost it).  Fixed (#912): the size is a long (the original's ASL.w #2
  * made the block too small from numpoints 1024 on).  Fixed (#908): the
  * drop lists' last is set (the original left it 0).
@@ -305,8 +316,9 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
  * stops (set in plane 1, dropped).  A flake below bp_size is removed.
  * Then a new flake from the random table (the index steps by 2 modulo
  * 1024).  COLOR00 is red while it runs ($F00, then 0: a debug flash).
- * BUG(orig): the list number is not checked (#913); no bounds for the
- * lists (#914); a bit above 7 reads behind the side tables (#910).
+ * BUG(orig): no bounds for the lists (#914); a bit above 7 reads behind
+ * the side tables (#910).  The list number: initchk/fieldchk (fixed
+ * #913).
  * @param n   d0: the list number
  * @param rt  d1: the random table (index.w, then pairs offset.b, bit.b)
  */
@@ -410,8 +422,8 @@ static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWOR
  * (plane 1 set, plane 2 clear) at the two sides below and at the pixel
  * is cleared in plane 1 and added to the newer drop list; the pixel above
  * goes into the other kill list.  Checking plane 2 at the killed pixel
- * again is redundant (no defect).  BUG(orig): the list number is not
- * checked (#913); a bit above 7 (#910).  Fixed (#909): the drop list's
+ * again is redundant (no defect).  BUG(orig): a bit above 7 (#910).
+ * The list number: fieldchk (fixed #913).  Fixed (#909): the drop list's
  * last is updated (the original's stayed, so the next call overwrote
  * the entries).  Fixed (#908): before the first LDoSnow the drop list's last is
  * its first entry (InitSnowDrop sets it; the original's 0 wrote at
@@ -474,7 +486,7 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
  * @brief KillPoint(listnum,x,y): removes a "blue" pixel (plane 2).
  *
  * The pixel is cleared in all three planes and the pixel above it added
- * to the kill list.  BUG(orig) (#913): the list number is not checked.
+ * to the kill list.  The list number and the pixel: killchk (fixed #913).
  * @param n  d0: the list number
  * @param x  d1: x (a word)
  * @param y  d2: y (a word; 40 bytes per row)
@@ -512,3 +524,87 @@ BLITZ_THUNK(_InitSnowDrop, initsnowdrop_c, "d1/a0-a1");
 BLITZ_THUNK(_AsmDoSnow, asmdosnow_c, "d1/a0-a1");
 BLITZ_THUNK(_DoKillList, dokilllist_c, "d1/a0-a1");
 BLITZ_THUNK(_KillPoint, killpoint_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badlist, "Snow list number must be 0 to 3");   /* fixed, #913 */
+BLITZ_ERRCHK_MESSAGE(noinit, "Snow list needs InitSnowDrop");       /* fixed, #913 */
+BLITZ_ERRCHK_MESSAGE(outside, "KillPoint outside the bitmap");      /* fixed, #913 */
+
+/* the list number n: 0 to 3 (the whole long) */
+static void BLITZ_ERRCHK listchk(ULONG n)
+{
+    if (n >= 4)
+        BLITZ_RUNERR(badlist);
+}
+
+/* the list number n, and a field InitSnowDrop made for it */
+static void BLITZ_ERRCHK initdonechk(ULONG n)
+{
+    listchk(n);
+    if (!lp[n].drop[0])
+        BLITZ_RUNERR(noinit);
+}
+
+/**
+ * @brief The error check of InitSnowDrop (debugger only).
+ *
+ * Fixed (#913), not in the original (risnowlib had no error check area):
+ * the list number indexes the table of 4 numbers with ASL.w #4 without a
+ * check, so 4 and up (and negative numbers, a non-zero upper word) wrote
+ * the four list pointers behind or before the table.  The release code is
+ * unchanged (an invalid argument, D-005).
+ *
+ * Errors: "Snow list number must be 0 to 3".
+ * @param n  d0: the list number
+ */
+static void BLITZ_ERRCHK initchk_c(ULONG n BL_REG(d0))
+{
+    listchk(n);
+}
+
+/**
+ * @brief The error check of LDoSnow and LDoSnowActivate (debugger only).
+ *
+ * Fixed (#913), not in the original: the list number was not checked
+ * (lists and bitmap read behind the table); with it a list number
+ * without InitSnowDrop, whose entry is 0 (the lists and the bitmap read
+ * at address 0).  The release code is unchanged (D-005).
+ *
+ * Errors: "Snow list number must be 0 to 3", "Snow list needs
+ * InitSnowDrop".
+ * @param n  d0: the list number
+ */
+static void BLITZ_ERRCHK fieldchk_c(ULONG n BL_REG(d0))
+{
+    initdonechk(n);
+}
+
+/**
+ * @brief The error check of KillPoint (debugger only).
+ *
+ * Fixed (#913), not in the original: as fieldchk_c, and the pixel: x
+ * outside the 320 pixels of a row (the library assumes 40 bytes per row)
+ * or y outside the rows of the field's bitmap cleared bits and appended
+ * kill entries outside the planes.  The release code is unchanged (D-005).
+ *
+ * Errors: "Snow list number must be 0 to 3", "Snow list needs
+ * InitSnowDrop", "KillPoint outside the bitmap".
+ * @param n  d0: the list number
+ * @param x  d1: x (a word)
+ * @param y  d2: y (a word)
+ */
+static void BLITZ_ERRCHK killchk_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1), ULONG y BL_REG(d2))
+{
+    const struct BitMap *bm;
+
+    initdonechk(n);
+    bm = (const struct BitMap *)DROP(lp[n].drop[0])->bm;
+    if ((UWORD)x >= 320 || (UWORD)y >= bm->Rows)
+        BLITZ_RUNERR(outside);
+}
+
+/* the thunks of the check functions: they keep every register */
+BLITZ_ERRCHK_THUNK(initchk, initchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(fieldchk, fieldchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(killchk, killchk_c, "d0-d1/a0-a1");
