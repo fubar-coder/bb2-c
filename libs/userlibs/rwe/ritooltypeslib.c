@@ -33,10 +33,10 @@
  * ports, docs/libs/cmdlibs-port.md).
  *
  * BUG(orig):
- *   - GetIconObject reads the icon's tool types from address 0 if the
- *     icon has none (#845, closed as not planned: not observable, the
+ *   - BUG(orig) (#845), wontfix: GetIconObject reads the icon's tool
+ *     types from address 0 if the icon has none.  Not observable: the
  *     long at address 0 is 0 on Kickstart 1.3, 2.04 and 3.1, the count
- *     stops at once - test ritooltypeslib-v36-calls; an Enforcer hit only).
+ *     stops at once - test ritooltypeslib-v36-calls; an Enforcer hit only.
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
  *     FindToolValue does for its result) and leaves it there. No defect:
  *     it gives back the space of the string argument, which the compiler
@@ -376,8 +376,8 @@ static void BLITZ_ROUTINE c_libfinit(void)
  * icon's tool types are copied into the library's array (allocated for
  * their count and the terminator), which becomes the icon's do_ToolTypes.
  * Fixed (#855): the original's array had 100 entries and the copy no
- * limit.  BUG(orig): an icon without tool types is read from address 0
- * (#845, closed as not planned: not observable, the long at 0 is 0).
+ * limit.  BUG(orig) (#845), wontfix: an icon without tool types is read
+ * from address 0 (not observable, the long at 0 is 0).
  * @param name  d0: the file name (without .info)
  * @return d0: the DiskObject, 0 if an icon is open already, there is none,
  *         no memory for the array or no icon.library
@@ -396,7 +396,7 @@ ULONG BLITZ_ROUTINE c_getstructure(CONST_STRPTR name BL_REG(d0))
     if (!diskobject)
         return 0;
     from = diskobject->do_ToolTypes;
-    for (n = 0; from[n]; n++)           /* BUG(orig): no NULL check (#845, closed) */
+    for (n = 0; from[n]; n++)           /* BUG(orig) (#845), wontfix: no NULL check */
         ;
     to = newtooltypes(n + 1);
     if (!to) {

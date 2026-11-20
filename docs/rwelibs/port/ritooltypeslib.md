@@ -117,8 +117,8 @@ that are not the result.
 
 **BUG(orig)** (kept):
 
-* GetIconObject reads the icon's tool types from address 0 if the icon
-  has none (#845, closed as not planned: not observable - the long at
+* BUG(orig) (#845), wontfix: GetIconObject reads the icon's tool types
+  from address 0 if the icon has none (not observable - the long at
   address 0 is 0 on Kickstart 1.3, 2.04 and 3.1, so the count stops at
   once and the icon has no tool types, as `ritooltypeslib-v36-calls`
   shows with such an icon; it is an Enforcer hit only).
