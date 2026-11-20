@@ -36,12 +36,19 @@ Two comment markers explain where the C code is not a plain translation:
 
 The compiler's source is split the way the original source runs: each C
 file translates one stretch of the original, in order. Roughly, from the
-start: program start, menus and the connection to the editor; the
-compile loop and the dispatch of statements; statements, residents and
-the object buffer; the inline assembler and the loading of libraries;
-the parser, error messages and writing the executable; expressions and
-code generation; library calls and includes; the built-in statements in
-two parts; and the data, requesters and options. Every C file has a
+start:
+
+1. program start, menus and the connection to the editor;
+2. the compile loop and the dispatch of statements;
+3. statements, residents and the object buffer;
+4. the inline assembler and the loading of libraries;
+5. the parser, error messages and writing the executable;
+6. expressions and code generation;
+7. library calls and includes;
+8. the built-in statements, in two parts;
+9. the data, requesters and options.
+
+Every C file has a
 header that is its contract with the others.
 
 The machine code the compiler copies into programs, its *templates*, is
@@ -72,7 +79,7 @@ blitz2 and blitz2-ab3 are built from one core: the translated files above,
 compiled once. Wherever AB3 mode behaves differently, the core calls an
 *extension point*, a function with a fixed contract. blitz2 links a
 version of these functions that does nothing and leaves everything to
-Blitz Basic 2's code; blitz2-ab3 links the AB3 mode files, which handle a
+Blitz Basic 2's code. blitz2-ab3 links the AB3 mode files, which handle a
 case when the program is in AB3 mode and leave it otherwise. The build
 checks that no AB3 code is in the core itself. That is how blitz2 stays
 exactly Blitz Basic 2, and how blitz2-ab3 in BB2 mode gives the same
