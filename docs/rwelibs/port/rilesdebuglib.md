@@ -40,8 +40,10 @@ Software; the program itself is not part of the release). 33 commands:
 init opens graphics.library (any version) and sets the `%p`/`%c`
 entries; finit closes it.
 
-It is a library of ordinary commands: it has no error checks and does
-not talk to blitz2's runtime debugger (unlike `ridebuglib`, 51). The
+It is a library of ordinary commands: it does not talk to blitz2's
+runtime debugger (unlike `ridebuglib`, 51). The original has no error
+checks; the port has one, of the font printer's bitmap (#707, under
+"Fixed"). The
 program it was written for hands it the debugger's token list and the
 tokenised lines; that program is not in the release.
 
@@ -271,15 +273,28 @@ d5-d7, a0-a3 and a6 in places.
   `[fixed #709]` of the second run's plane 1 - the planes of the first
   run carry it in their `[fixed #706]` cases, whose planes #706 changed
   first).
+* The font printer (`FPrint`, `FNPrint`, `FPrintDetoke`) compares the
+  column as an unsigned word: from column 80 on nothing is printed, also
+  not the character behind FPrintDetoke's marker. The original's
+  `CMPI.b #80` with `BPL` compared the low byte on the sign of the
+  difference: columns 80-207 stopped, 208-255 printed on into the next
+  rows (and on through 0-79 after the byte wrapped), and the character
+  behind the marker was drawn without the test (an existing compare made
+  unsigned, release code). With runtime error checking the commands
+  check the used bitmap (`fprintchk`, an error check area the original
+  does not have, D-005): "Font printer needs a bitmap of 640 pixels" for
+  fewer than 80 bytes per row, "Font printer row outside the bitmap"
+  when the 8 pixel rows at the cursor (with FYOffset) do not lie in it;
+  the original never looked at the bitmap's size (#707; tests
+  `rilesdebuglib-fprint-column-wrap` and, with runtime error checking,
+  `rilesdebuglib-fprint-bitmap-check`; the `libs_emulator` cases
+  `[fixed #707]` of FLocate 210,4 and of the later planes; the column
+  $FFFF of #708 now prints nothing, its `[fixed #708]` case).
 
 ## BUG(orig)
 
 * D_HexWord at an odd source writes "XX YY" per word, without the space
   the even case writes behind each word (#715).
-* FPrint/FPrintDetoke: the column test is `CMPI.b #80` with `BPL`, so
-  columns 80-207 stop, 208-255 print (and go on to 0-79); nothing checks
-  the bitmap's size; in FPrintDetoke the marker takes a column without
-  this test (#707).
 * D_FindStringPtr never compares the long at areg5 itself (#705).
 * SearchMem: the space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.

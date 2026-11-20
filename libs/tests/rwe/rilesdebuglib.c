@@ -19,7 +19,7 @@
  * found); GetCopIns$ (MOVE to several registers, WAIT/SKIP with odd
  * position digits, with and without BFD); the font printer FLocate,
  * FPrint, FNPrint, FInverse (word 1 and $100), FYOffset, the empty
- * string, the right edge and columns from 208 on (BUG(orig) (#707)), observed on
+ * string, the right edge and columns from 208 on (#707), observed on
  * both planes; FPrintDetoke with marker types 0/1, several cio and
  * lineoffset values, tokens drawn into one or two planes, an unknown
  * token, no token list, no plane 1, the inverse word's high byte set

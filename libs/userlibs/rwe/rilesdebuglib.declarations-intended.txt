@@ -12,3 +12,13 @@ lib 49: entry 33 (nullsub) +$0: $00 != $31
 lib 49: entry 34 (nullsub) +$0: $00 != $20
 lib 49: end of the table +$8FC: $FF != $00
 lib 49: declaration part $902 != $926 bytes
+# #707: FPrint, FNPrint and FPrintDetoke get an error check (fprintchk,
+# "Font printer needs a bitmap of 640 pixels", "Font printer row outside
+# the bitmap"); rilesdebuglib gets an error check area for it (the
+# original has none)
+lib 49: header +$2C: code offset set in only one of them
+lib 49: entry 7 FPrint +$10: code offset set in only one of them
+lib 49: entry 8 FNPrint +$10: code offset set in only one of them
+lib 49: entry 20 FPrintDetoke +$12: code offset set in only one of them
+# #707: the relocations of the error field and the three checks
+lib 49: relocations in the declaration part 40 != 44

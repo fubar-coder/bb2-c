@@ -11,9 +11,10 @@
  * docs/rwelibs/port/rilesdebuglib.md.
  *
  * It is a library of ordinary commands: it does not talk to blitz2's
- * runtime debugger (no error checks, no debuglib calls).  The debugger
- * program that used it hands it its token list (SetupLESDebug) and the
- * tokenised lines of the source (FPrintDetoke, FindLineToken).
+ * runtime debugger (no debuglib calls; the original has no error checks,
+ * the font printer's check is the port's, #707).  The debugger program
+ * that used it hands it its token list (SetupLESDebug) and the tokenised
+ * lines of the source (FPrintDetoke, FindLineToken).
  *   init/finit           open/close graphics.library (any version)
  *   D_FindVolume         FindDosEntry (devices, volumes, assigns)
  *   D_GetSR, D_HexWord, D_CheckNMove[A|Word], GetHex$, GetHexAdr$,
@@ -46,9 +47,6 @@
  * BUG(orig), kept:
  *   - D_HexWord at an odd source writes "XX YY" per word, without the
  *     space behind it that the even case writes (#715).
- *   - FPrint and FPrintDetoke: the column check is a byte compare with
- *     80 tested on N (columns 80-207 stop, 208-255 print); nothing checks
- *     the bitmap's size (#707).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
@@ -125,6 +123,15 @@
  *     glyph; with inverse printing the original took the glyph offset
  *     from d0, whose low byte the inverse drawing had overwritten with
  *     the last glyph byte: another character (#709).
+ *   - FPrint, FNPrint and FPrintDetoke compare the column as an unsigned
+ *     word: from column 80 on nothing is printed, also not the character
+ *     behind FPrintDetoke's marker; the original compared the low byte on
+ *     the sign of the difference (CMPI.b #80 / BPL: columns 208-255
+ *     printed on into the next rows) and drew the character behind the
+ *     marker without the test.  With runtime error checking the bitmap's
+ *     size is checked (fprintchk): "Font printer needs a bitmap of 640
+ *     pixels", "Font printer row outside the bitmap"; the original never
+ *     looked at it (#707).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -168,14 +175,15 @@ void _setuplesdebug(void), _extractlabel(void), _outtext(void);
 void _checknmovea(void), _checknmovea2(void), _outtextpen(void);
 void _initparse(void), rilesdebuglib_nextparsearg(void), _processstring(void);
 void _addprocessptr(void), _clearprocessptrs(void), _findlinetoken(void);
-void _getdataitem(void), rilesdebuglib_libinit(void);
+void _getdataitem(void), rilesdebuglib_libinit(void), _fprintchk(void);
 void rilesdebuglib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {#riLESDEBUGlib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_riLESDEBUGlib, init, BL_NORET, finit, 0);
+/* !libheader {#riLESDEBUGlib,init,0,finit,0}; error field: the error
+   check area (fixed, #707; the original has none) */
+BLITZ_LIBHEADER(LIB_riLESDEBUGlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
@@ -225,13 +233,13 @@ BLITZ_NAME("FLocate", "x,y");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0);
-BLITZ_SUBS(_fprint, 0, 0);
+BLITZ_SUBS(_fprint, _fprintchk, 0);                    /* check: fixed #707 */
 BLITZ_NAME("FPrint", "a$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0);
-BLITZ_SUBS(_fnprint, 0, 0);
+BLITZ_SUBS(_fnprint, _fprintchk, 0);                   /* check: fixed #707 */
 BLITZ_NAME("FNPrint", "a$");
 
 BLITZ_ASTATEMENT();
@@ -306,7 +314,7 @@ BLITZ_NAME("GetCustomRegAdr", "name$");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_UA0);
-BLITZ_SUBS(_fprintdetoke, 0, 0);
+BLITZ_SUBS(_fprintdetoke, _fprintchk, 0);              /* check: fixed #707 */
 BLITZ_NAME("FPrintDetoke", "tokenised_string,cio,typ,lineoffset");
 
 BLITZ_ASTATEMENT();
@@ -896,11 +904,13 @@ static ULONG BLITZ_ROUTINE findlinetoken_c(const UBYTE *s BL_REG(d0))
 
 /* --------------------------------------------------------- the printer */
 
-/* the column test: CMPI.b #80,d6 / BPL exit - go on while the byte
-   difference is negative */
+/* the column test: the column as an unsigned word below 80 (fixed #707:
+   the original's CMPI.b #80,d6 / BPL compared the low byte on the sign of
+   the difference, so columns 208-255, and every word whose low byte is
+   one of them or below 80, printed on) */
 static int column_ok(ULONG x)
 {
-    return ((UBYTE)((UBYTE)x - 80) & 0x80) != 0;
+    return (UWORD)x < 80;
 }
 
 /* the offset of the cursor in a bitplane of 80 bytes per row */
@@ -947,11 +957,13 @@ static void BLITZ_ROUTINE fyoffset_c(UWORD off BL_REG(d0))
  * used bitmap.
  *
  * At the cursor, 8 bytes per character in rows of 80 bytes, inverted if
- * the FInverse word is set; the cursor moves on.  The column check is a
- * byte compare with 80 tested on N: columns 80-207 stop, 208-255 print;
- * nothing checks the bitmap's size (BUG(orig) (#707)).  The length is
- * counted as a long (fixed #710: the original's SUBQ.w/BMI printed nothing
- * for a string of 32769 characters or more).
+ * the FInverse word is set; the cursor moves on.  Columns of 80 and more
+ * print nothing (fixed #707: the original compared the column's low byte
+ * on the sign of the difference, columns 208-255 printed on); the
+ * bitmap's size is checked only with runtime error checking (fprintchk,
+ * fixed #707).  The length is counted as a long (fixed #710: the
+ * original's SUBQ.w/BMI printed nothing for a string of 32769 characters
+ * or more).
  * @param s     d0: the string
  * @param bm    a0: the used bitmap (!libs #bitmaplib)
  * @param args  a2: the argument stack, the string's length at -4(a2)
@@ -1043,7 +1055,8 @@ static void draw_char(struct dt *t, UWORD glyph)
  * last glyph byte).  The '>' marker is never followed by the inverse
  * space (fixed #708: the original's BSR draw_char : SBNE 'con drew it too
  * when the column count, d6 with the caller's high word, became 0).  The
- * column check is FPrint's (#707).
+ * column check is FPrint's, also for the character behind a marker
+ * (fixed #707: the original drew that one without the test).
  * @param line       d0: the tokenised line (0-terminated)
  * @param cio        d1.w: the character before which the marker goes
  * @param typ        d2.b: the marker, 0 '>', else an inverse space
@@ -1078,7 +1091,7 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
             if (chartyp)
                 goto curins;
             draw_char(&t, '>' * 8);
-            goto con;                                   /* fixed (#708) */
+            goto marked;                                /* fixed (#708) */
         curins: {
             UWORD inv = inverse;                        /* fixed (#706) */
 
@@ -1086,8 +1099,11 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
             draw_char(&t, ' ' * 8);
             inverse = inv;
         }
+        marked:
+            /* fixed (#707): the character behind the marker */
+            if (!column_ok(t.col))
+                goto out;
         }
-    con:
         c = *p++;
         if (!c)
             goto out;
@@ -1668,3 +1684,35 @@ BLITZ_THUNK(_addprocessptr, addprocessptr_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_clearprocessptrs, clearprocessptrs_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_findlinetoken, findlinetoken_c, "d1/a0-a1");
 BLITZ_THUNK(_getdataitem, getdataitem_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(narrowbitmap, "Font printer needs a bitmap of 640 pixels");  /* fixed, #707 */
+BLITZ_ERRCHK_MESSAGE(rowoutside, "Font printer row outside the bitmap");          /* fixed, #707 */
+
+/**
+ * @brief The error check of FPrint, FNPrint and FPrintDetoke (debugger
+ * only).
+ *
+ * Fixed (#707), not in the original (rilesdebuglib had no error check
+ * area): the font printer writes rows of 80 bytes, 8 rows of pixels per
+ * character, at the cursor's row plus FYOffset, and never looked at the
+ * used bitmap's size: in a narrower bitmap the characters landed in the
+ * wrong rows, and rows below the bitmap were written.  Arguments the
+ * programmer controls (D-005): the release code prints as before.
+ *
+ * Errors: "Font printer needs a bitmap of 640 pixels" for fewer than 80
+ * bytes per row; "Font printer row outside the bitmap" when the 8 pixel
+ * rows at the cursor do not all lie in the bitmap.
+ * @param bm  a0: the used bitmap (!libs #bitmaplib,#ua0)
+ */
+static void BLITZ_ERRCHK fprintchk_c(const struct BitMap *bm BL_REG(a0))
+{
+    if (bm->BytesPerRow < 80)
+        BLITZ_RUNERR(narrowbitmap);
+    if ((ULONG)(UWORD)((UWORD)(ycurs << 3) + yoffset) + 8 > bm->Rows)
+        BLITZ_RUNERR(rowoutside);
+}
+
+/* the thunks of the check functions */
+BLITZ_ERRCHK_THUNK(_fprintchk, fprintchk_c, "d0-d1/a0-a1");

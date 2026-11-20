@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+nothing printed
+rc=0

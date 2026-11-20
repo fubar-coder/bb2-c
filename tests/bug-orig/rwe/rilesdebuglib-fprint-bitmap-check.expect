@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "Font printer needs a bitmap of 640 pixels" *
+rc=0
