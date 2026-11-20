@@ -10,19 +10,25 @@
  * The commands talk to a device of this test, "rwetest.device"
  * (OpenDisk unit,"rwetest.device"): a RAM disk of 32 sectors that logs
  * every request (command, flags, length, offset, buffer, unit, a
- * checksum of the data written) and fails OpenDevice for the units 2 and
- * -2.  Every command and form is called with its inputs (other registers
- * = markers); observed are d0, the request the device saw, the buffers
- * read and written (BootProg's checksum), the device's open/close counts
- * and the kept registers.  Covered: all commands before OpenDisk (0), OpenDisk
- * of units 5, 0-3, -1, -2 (BUG(orig) #861: the request of -1 is lost), the
- * name kept for later OpenDisks, a second OpenDisk of an open unit,
- * sector commands with and without count, errors of the device
- * (positive and negative io_Error), FormatTrack's track * 11 of the low
- * word, WriteBoot unit (the default boot block, observed: its 8 bytes)
- * and WriteBoot unit,bootdata (buffer = the caller's d2, BUG(orig), #864),
- * BootProg's checksum, DiskStatus/DiskIO, CloseDisk, finit (closes units
- * 0-2, not 3: BUG(orig), #863) and init again (the stale entry of unit 3).
+ * checksum of the data written), counts CMD_UPDATE on its own and fails
+ * OpenDevice for the units 2 and -2.  Every command and form is called
+ * with its inputs (other registers = markers); observed are d0, the last
+ * request the device saw, its counts (requests, opens, closes, failed
+ * opens, updates) since the previous observation, the buffers read and
+ * written (BootProg's checksum, the sum of the boot block), the boot block
+ * on the disk after WriteBoot unit, and the kept registers.  Covered: all
+ * commands before OpenDisk (0), OpenDisk of units 5, 4, 0-3, -1, -2 (with
+ * the name given; BUG(orig) #861: the request of -1 is lost), unit 2
+ * without a name after names were given (the name kept, BUG(orig) #859),
+ * a second OpenDisk of an open unit (#862), sector commands with and
+ * without count, errors of the device (positive and negative io_Error),
+ * FormatTrack's track * 11 of the low word, WriteBoot unit (the default
+ * boot block; the device takes only its 8 bytes when the buffer lies in
+ * the library, #865), on a disk with "DOS",3 too, and WriteBoot
+ * unit,bootdata (buffer = the caller's d2, BUG(orig), #864), BootProg's
+ * checksum, DiskStatus/DiskIO, CloseDisk, finit (closes units 0-2, not
+ * 3: BUG(orig), #863; the test closes unit 3 if it is still open) and
+ * init again (the stale entry of unit 3).
  * Then a short real trackdisk.device run on the empty DF0: (OpenDisk,
  * MotorOn, DiskMotor, MotorOff, DiskMotor, ReadSector = "no disk",
  * CloseDisk).
@@ -75,7 +81,7 @@ static struct Device *dev;
 
 /* the last request */
 static struct req {
-    ULONG n, opens, closes, failed;
+    ULONG n, opens, closes, failed, updates;
     UWORD cmd;
     UBYTE flags;
     ULONG len, off, unit, sum, actual;
@@ -84,6 +90,8 @@ static struct req {
     struct MsgPort *reply;
 } last;
 static ULONG motor[4];
+/* the open requests of the device per unit (unit & 7) */
+static ULONG unitopen[8];
 static ULONG relbuf(APTR p);
 
 static LONG unitof(struct IORequest *ior)
@@ -104,6 +112,7 @@ static void dev_open(struct IORequest *ior __asm("a1"), LONG unit __asm("d0"),
     ior->io_Device = d;
     ior->io_Unit = (struct Unit *)unit;
     d->dd_Library.lib_OpenCnt++;
+    unitopen[unit & 7]++;
     last.opens++;
     last.unit = unit;
 }
@@ -111,6 +120,7 @@ static void dev_open(struct IORequest *ior __asm("a1"), LONG unit __asm("d0"),
 static ULONG dev_close(struct IORequest *ior __asm("a1"), struct Device *d __asm("a6"))
 {
     d->dd_Library.lib_OpenCnt--;
+    unitopen[unitof(ior) & 7]--;
     last.closes++;
     last.unit = unitof(ior);
     return 0;
@@ -126,6 +136,16 @@ static void dev_beginio(struct IOStdReq *ior __asm("a1"))
     struct req *l = &last;
     ULONG i;
 
+    /* CMD_UPDATE (flush the track buffer: a RAM disk has none) is
+       counted on its own and leaves the log of the last request alone */
+    if (ior->io_Command == CMD_UPDATE) {
+        l->updates++;
+        ior->io_Error = 0;
+        ior->io_Actual = 0;
+        if (!(ior->io_Flags & IOF_QUICK))
+            ReplyMsg(&ior->io_Message);
+        return;
+    }
     l->n++;
     l->cmd = ior->io_Command;
     l->flags = ior->io_Flags;
@@ -226,12 +246,18 @@ static ULONG relbuf(APTR p)
     return 0xdead0000;
 }
 
+/* the counts of the device at the last same_device() */
+static struct req seen;
+
+/* the device's counts since the last same_device(), its last request */
 static void same_device(int data)
 {
-    OBS("requests", last.n);
-    OBS("opens", last.opens);
-    OBS("closes", last.closes);
-    OBS("failed opens", last.failed);
+    OBS("requests", last.n - seen.n);
+    OBS("opens", last.opens - seen.opens);
+    OBS("closes", last.closes - seen.closes);
+    OBS("failed opens", last.failed - seen.failed);
+    OBS("updates", last.updates - seen.updates);
+    seen = last;
     OBS("command", last.cmd);
     OBS("flags", last.flags);
     OBS("length", last.len);
@@ -244,6 +270,28 @@ static void same_device(int data)
         OBS("data written", last.sum);
     OBSBYTES("disk", disk, DISKSIZE);
     OBSBYTES("read buffer", rbuf, BUFSIZE);
+}
+
+/* the boot block sum: the 256 longs added with end-around carry
+   ($FFFFFFFF for a valid checksum) */
+static ULONG bootsum(const UBYTE *b)
+{
+    const ULONG *p = (const ULONG *)b;
+    ULONG sum = 0;
+    int i;
+    for (i = 0; i < 256; i++) {
+        ULONG v = sum + p[i];
+        sum = v < sum ? v + 1 : v;
+    }
+    return sum;
+}
+
+/* the boot block on the disk after WriteBoot */
+static void disk_bootblock(void)
+{
+    OBSBYTES("disk boot block head", disk, 12);
+    OBS("disk boot block sum", bootsum(disk));
+    OBSBYTES("disk boot code", disk + 12, 1012);
 }
 
 static void fill(UBYTE *b, ULONG size, ULONG seed)
@@ -406,6 +454,7 @@ int main(int argc, char **argv)
     OBS("d0", R.d[0]);
     same_device(0);
     OBS("default boot block", memcmp(last.head, "DOS\0\377\377\377\377", 8) == 0);
+    disk_bootblock();
     /* WriteBoot unit,bootdata: the buffer is d2 */
     strcpy(VEC, "0,bootdata (d2 = buf+512)");
     DO1(WRITEBOOT, 1, R.d[0] = 0; R.d[1] = (ULONG)boot;
@@ -422,16 +471,28 @@ int main(int argc, char **argv)
         OBS("d0", R.d[0]);
         OBSBYTES("boot block", boot, 1024);
         OBS("checksum", ((ULONG *)boot)[1]);
+        OBS("boot block sum", bootsum(boot));
         same_device(1);
     }
     sector(READSECTOR, "ReadSector", 0, 0, rbuf, 0, 1, 2);
+    /* WriteBoot unit on a disk whose boot block is "DOS",3 */
+    memcpy(disk, "DOS\3", 4);
+    ROUT = "WriteBoot";
+    strcpy(VEC, "0 (disk DOS 3)");
+    DO1(WRITEBOOT, 0, R.d[0] = 0);
+    OBS("d0", R.d[0]);
+    same_device(0);
+    disk_bootblock();
 
-    /* units 1-3 (the name of the last OpenDisk stays), 2 fails */
-    opendisk(1, NULL);
+    /* units 1-3 with the name given, 2 fails; then unit 2 without a name
+       (the original keeps the last name given: rwetest.device, #859) */
+    opendisk(1, rwe);
     diskio(1);
+    opendisk(2, rwe);
+    diskio(2);
     opendisk(2, NULL);
     diskio(2);
-    opendisk(3, NULL);
+    opendisk(3, rwe);
     diskio(3);
     sector(WRITESECTOR, "WriteSector", 3, 7, buf, 2048, 1, 2);
     sector(READSECTOR, "ReadSector", 1, 7, rbuf, 0, 1, 2);
@@ -440,8 +501,8 @@ int main(int argc, char **argv)
     opendisk(1, rwe);
     diskio(1);
     /* negative units: OpenDevice ok (request lost) / failed */
-    opendisk(-1, NULL);
-    opendisk(-2, NULL);
+    opendisk(-1, rwe);
+    opendisk(-2, rwe);
     diskio(-1);
     unitcmd(MOTORON, "MotorOn", -1);
     sector(READSECTOR, "ReadSector", -1, 0, rbuf, 0, 0, 0);
@@ -477,8 +538,13 @@ int main(int argc, char **argv)
     unitcmd(DISKIO, "DiskIO (init again: unit 3 stale)", 3);
     ROUT = "finit";
     DO1(FINIT, 0, (void)0);
-    CloseDevice((struct IORequest *)reqaddr[3]);
-    DeleteIORequest((struct IORequest *)reqaddr[3]);
+    same_device(0);
+    /* the test closes unit 3 if the library left it open (#863) */
+    OBS("unit 3 still open", unitopen[3]);
+    if (unitopen[3]) {
+        CloseDevice((struct IORequest *)reqaddr[3]);
+        DeleteIORequest((struct IORequest *)reqaddr[3]);
+    }
 
     /* the real trackdisk.device on the empty DF0: */
     ROUT = "init";

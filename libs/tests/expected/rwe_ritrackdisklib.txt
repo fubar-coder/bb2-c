@@ -3,6 +3,8 @@ BootProg|actual|0,boot 0|1	$00000400
 BootProg|actual|0,boot 1|1	$00000400
 BootProg|boot block|0,boot 0|1	bytes 1024 fnv 9C843250
 BootProg|boot block|0,boot 1|1	bytes 1024 fnv E643B68F
+BootProg|boot block sum|0,boot 0|1	$DFC194BB
+BootProg|boot block sum|0,boot 1|1	$4E30032A
 BootProg|buffer|0,boot 0|1	$00030000
 BootProg|buffer|0,boot 1|1	$00030000
 BootProg|checksum|0,boot 0|1	$413F35D6
@@ -29,31 +31,34 @@ BootProg|length|0,boot 0|1	$00000400
 BootProg|length|0,boot 1|1	$00000400
 BootProg|offset|0,boot 0|1	$00000000
 BootProg|offset|0,boot 1|1	$00000000
-BootProg|opens|0,boot 0|1	$00000001
-BootProg|opens|0,boot 1|1	$00000001
+BootProg|opens|0,boot 0|1	$00000000
+BootProg|opens|0,boot 1|1	$00000000
 BootProg|read buffer|0,boot 0|1	bytes 4096 fnv 50F533C5
 BootProg|read buffer|0,boot 1|1	bytes 4096 fnv 50F533C5
-BootProg|requests|0,boot 0|1	$00000011
-BootProg|requests|0,boot 1|1	$00000012
+BootProg|requests|0,boot 0|1	$00000001
+BootProg|requests|0,boot 1|1	$00000001
 BootProg|unit|0,boot 0|1	$00000000
 BootProg|unit|0,boot 1|1	$00000000
+BootProg|updates|0,boot 0|1	$00000000
+BootProg|updates|0,boot 1|1	$00000000
 BootProg (no request)|actual|7,boot|1	$00000000
 BootProg (no request)|boot block|7,boot|1	bytes 1024 fnv 17BE158C
 BootProg (no request)|buffer|7,boot|1	$00010800
 BootProg (no request)|closes|7,boot|1	$00000000
 BootProg (no request)|command|7,boot|1	$00000009
 BootProg (no request)|d0|7,boot|1	$00000000
-BootProg (no request)|disk|7,boot|1	bytes 16384 fnv 1DF5C38F
-BootProg (no request)|failed opens|7,boot|1	$00000004
+BootProg (no request)|disk|7,boot|1	bytes 16384 fnv 39CB122F
+BootProg (no request)|failed opens|7,boot|1	$00000000
 BootProg (no request)|flags|7,boot|1	$00000001
 BootProg (no request)|head|7,boot|1	bytes 8 0000000000000000
 BootProg (no request)|kept|7,boot|1	kept
 BootProg (no request)|length|7,boot|1	$00000001
 BootProg (no request)|offset|7,boot|1	$00000E00
-BootProg (no request)|opens|7,boot|1	$00000005
+BootProg (no request)|opens|7,boot|1	$00000000
 BootProg (no request)|read buffer|7,boot|1	bytes 4096 fnv 671EA9C5
-BootProg (no request)|requests|7,boot|1	$00000016
+BootProg (no request)|requests|7,boot|1	$00000000
 BootProg (no request)|unit|7,boot|1	$FFFFFFFF
+BootProg (no request)|updates|7,boot|1	$00000000
 CloseDisk|actual|-1|1	$00000000
 CloseDisk|actual|0|1	$00000000
 CloseDisk|actual|1|1	$00000000
@@ -64,11 +69,11 @@ CloseDisk|buffer|0|1	$00000000
 CloseDisk|buffer|1|1	$00000000
 CloseDisk|buffer|1|2	$00000000
 CloseDisk|buffer|9|1	$00000000
-CloseDisk|closes|-1|1	$00000001
+CloseDisk|closes|-1|1	$00000000
 CloseDisk|closes|0|1	$00000000
 CloseDisk|closes|1|1	$00000001
-CloseDisk|closes|1|2	$00000001
-CloseDisk|closes|9|1	$00000001
+CloseDisk|closes|1|2	$00000000
+CloseDisk|closes|9|1	$00000000
 CloseDisk|command|-1|1	$00000009
 CloseDisk|command|0|1	$00000000
 CloseDisk|command|1|1	$00000009
@@ -79,16 +84,16 @@ CloseDisk|d0|0|1	$00000000
 CloseDisk|d0|1|1	$FFFFFFFF
 CloseDisk|d0|1|2	$00000000
 CloseDisk|d0|9|1	$00000000
-CloseDisk|disk|-1|1	bytes 16384 fnv 1DF5C38F
+CloseDisk|disk|-1|1	bytes 16384 fnv 39CB122F
 CloseDisk|disk|0|1	bytes 16384 fnv E35F79C5
-CloseDisk|disk|1|1	bytes 16384 fnv 1DF5C38F
-CloseDisk|disk|1|2	bytes 16384 fnv 1DF5C38F
-CloseDisk|disk|9|1	bytes 16384 fnv 1DF5C38F
-CloseDisk|failed opens|-1|1	$00000004
+CloseDisk|disk|1|1	bytes 16384 fnv 39CB122F
+CloseDisk|disk|1|2	bytes 16384 fnv 39CB122F
+CloseDisk|disk|9|1	bytes 16384 fnv 39CB122F
+CloseDisk|failed opens|-1|1	$00000000
 CloseDisk|failed opens|0|1	$00000000
-CloseDisk|failed opens|1|1	$00000004
-CloseDisk|failed opens|1|2	$00000004
-CloseDisk|failed opens|9|1	$00000004
+CloseDisk|failed opens|1|1	$00000000
+CloseDisk|failed opens|1|2	$00000000
+CloseDisk|failed opens|9|1	$00000000
 CloseDisk|flags|-1|1	$00000001
 CloseDisk|flags|0|1	$00000000
 CloseDisk|flags|1|1	$00000001
@@ -114,42 +119,48 @@ CloseDisk|offset|0|1	$00000000
 CloseDisk|offset|1|1	$00000000
 CloseDisk|offset|1|2	$00000000
 CloseDisk|offset|9|1	$00000000
-CloseDisk|opens|-1|1	$00000005
+CloseDisk|opens|-1|1	$00000000
 CloseDisk|opens|0|1	$00000000
-CloseDisk|opens|1|1	$00000005
-CloseDisk|opens|1|2	$00000005
-CloseDisk|opens|9|1	$00000005
+CloseDisk|opens|1|1	$00000000
+CloseDisk|opens|1|2	$00000000
+CloseDisk|opens|9|1	$00000000
 CloseDisk|read buffer|-1|1	bytes 4096 fnv 671EA9C5
 CloseDisk|read buffer|0|1	bytes 4096 fnv 76EFDDC5
 CloseDisk|read buffer|1|1	bytes 4096 fnv 671EA9C5
 CloseDisk|read buffer|1|2	bytes 4096 fnv 671EA9C5
 CloseDisk|read buffer|9|1	bytes 4096 fnv 671EA9C5
-CloseDisk|requests|-1|1	$00000017
+CloseDisk|requests|-1|1	$00000000
 CloseDisk|requests|0|1	$00000000
-CloseDisk|requests|1|1	$00000017
-CloseDisk|requests|1|2	$00000017
-CloseDisk|requests|9|1	$00000017
+CloseDisk|requests|1|1	$00000001
+CloseDisk|requests|1|2	$00000000
+CloseDisk|requests|9|1	$00000000
 CloseDisk|unit|-1|1	$00000001
 CloseDisk|unit|0|1	$00000000
 CloseDisk|unit|1|1	$00000001
 CloseDisk|unit|1|2	$00000001
 CloseDisk|unit|9|1	$00000001
+CloseDisk|updates|-1|1	$00000000
+CloseDisk|updates|0|1	$00000000
+CloseDisk|updates|1|1	$00000000
+CloseDisk|updates|1|2	$00000000
+CloseDisk|updates|9|1	$00000000
 CloseDisk (trackdisk)|actual|0|1	$00000000
-CloseDisk (trackdisk)|buffer|0|1	$00020000
-CloseDisk (trackdisk)|closes|0|1	$00000003
+CloseDisk (trackdisk)|buffer|0|1	$00040000
+CloseDisk (trackdisk)|closes|0|1	$00000000
 CloseDisk (trackdisk)|command|0|1	$00000009
 CloseDisk (trackdisk)|d0|0|1	$FFFFFFFF
-CloseDisk (trackdisk)|disk|0|1	bytes 16384 fnv 1DF5C38F
-CloseDisk (trackdisk)|failed opens|0|1	$00000004
+CloseDisk (trackdisk)|disk|0|1	bytes 16384 fnv 39CB122F
+CloseDisk (trackdisk)|failed opens|0|1	$00000000
 CloseDisk (trackdisk)|flags|0|1	$00000001
 CloseDisk (trackdisk)|head|0|1	bytes 8 0000000000000000
 CloseDisk (trackdisk)|kept|0|1	kept
 CloseDisk (trackdisk)|length|0|1	$00000000
 CloseDisk (trackdisk)|offset|0|1	$00000000
-CloseDisk (trackdisk)|opens|0|1	$00000005
+CloseDisk (trackdisk)|opens|0|1	$00000000
 CloseDisk (trackdisk)|read buffer|0|1	bytes 4096 fnv 671EA9C5
-CloseDisk (trackdisk)|requests|0|1	$00000018
+CloseDisk (trackdisk)|requests|0|1	$00000000
 CloseDisk (trackdisk)|unit|0|1	$00000003
+CloseDisk (trackdisk)|updates|0|1	$00000000
 DiskIO|d0 != 0|-1|1	$00000000
 DiskIO|d0 != 0|0|1	$00000000
 DiskIO|d0 != 0|0|2	$00000001
@@ -157,6 +168,7 @@ DiskIO|d0 != 0|0|3	$00000001
 DiskIO|d0 != 0|1|1	$00000001
 DiskIO|d0 != 0|1|2	$00000001
 DiskIO|d0 != 0|2|1	$00000000
+DiskIO|d0 != 0|2|2	$00000000
 DiskIO|d0 != 0|3|1	$00000001
 DiskIO|d0 != 0|3|2	$00000001
 DiskIO|io_Device|0|1	$00000001
@@ -184,6 +196,7 @@ DiskIO|kept|0|3	kept
 DiskIO|kept|1|1	kept
 DiskIO|kept|1|2	kept
 DiskIO|kept|2|1	kept
+DiskIO|kept|2|2	kept
 DiskIO|kept|3|1	kept
 DiskIO|kept|3|2	kept
 DiskIO|reply port = port of init|0|1	$00000001
@@ -193,37 +206,39 @@ DiskIO|reply port = port of init|1|2	$00000001
 DiskIO|reply port = port of init|3|1	$00000001
 DiskIO|reply port = port of init|3|2	$00000001
 DiskIO (after finit)|actual|3|1	$00000000
-DiskIO (after finit)|buffer|3|1	$00020000
-DiskIO (after finit)|closes|3|1	$00000002
+DiskIO (after finit)|buffer|3|1	$00040000
+DiskIO (after finit)|closes|3|1	$00000000
 DiskIO (after finit)|command|3|1	$00000009
 DiskIO (after finit)|d0|3|1	$00000000
-DiskIO (after finit)|disk|3|1	bytes 16384 fnv 1DF5C38F
-DiskIO (after finit)|failed opens|3|1	$00000004
+DiskIO (after finit)|disk|3|1	bytes 16384 fnv 39CB122F
+DiskIO (after finit)|failed opens|3|1	$00000000
 DiskIO (after finit)|flags|3|1	$00000001
 DiskIO (after finit)|head|3|1	bytes 8 0000000000000000
 DiskIO (after finit)|kept|3|1	kept
 DiskIO (after finit)|length|3|1	$00000000
 DiskIO (after finit)|offset|3|1	$00000000
-DiskIO (after finit)|opens|3|1	$00000005
+DiskIO (after finit)|opens|3|1	$00000000
 DiskIO (after finit)|read buffer|3|1	bytes 4096 fnv 671EA9C5
-DiskIO (after finit)|requests|3|1	$00000018
+DiskIO (after finit)|requests|3|1	$00000000
 DiskIO (after finit)|unit|3|1	$00000000
+DiskIO (after finit)|updates|3|1	$00000000
 DiskIO (init again: unit 3 stale)|actual|3|1	$00000000
-DiskIO (init again: unit 3 stale)|buffer|3|1	$00020000
-DiskIO (init again: unit 3 stale)|closes|3|1	$00000002
+DiskIO (init again: unit 3 stale)|buffer|3|1	$00040000
+DiskIO (init again: unit 3 stale)|closes|3|1	$00000000
 DiskIO (init again: unit 3 stale)|command|3|1	$00000009
 DiskIO (init again: unit 3 stale)|d0|3|1	$00000103
-DiskIO (init again: unit 3 stale)|disk|3|1	bytes 16384 fnv 1DF5C38F
-DiskIO (init again: unit 3 stale)|failed opens|3|1	$00000004
+DiskIO (init again: unit 3 stale)|disk|3|1	bytes 16384 fnv 39CB122F
+DiskIO (init again: unit 3 stale)|failed opens|3|1	$00000000
 DiskIO (init again: unit 3 stale)|flags|3|1	$00000001
 DiskIO (init again: unit 3 stale)|head|3|1	bytes 8 0000000000000000
 DiskIO (init again: unit 3 stale)|kept|3|1	kept
 DiskIO (init again: unit 3 stale)|length|3|1	$00000000
 DiskIO (init again: unit 3 stale)|offset|3|1	$00000000
-DiskIO (init again: unit 3 stale)|opens|3|1	$00000005
+DiskIO (init again: unit 3 stale)|opens|3|1	$00000000
 DiskIO (init again: unit 3 stale)|read buffer|3|1	bytes 4096 fnv 671EA9C5
-DiskIO (init again: unit 3 stale)|requests|3|1	$00000018
+DiskIO (init again: unit 3 stale)|requests|3|1	$00000000
 DiskIO (init again: unit 3 stale)|unit|3|1	$00000000
+DiskIO (init again: unit 3 stale)|updates|3|1	$00000000
 DiskMotor|d0||1	$000000FF
 DiskMotor|kept||1	kept
 DiskMotor (motor off)|d0|0|1	$000000FF
@@ -267,33 +282,37 @@ DiskStatus|offset|0|1	$00000000
 DiskStatus|offset|0|2	$00000000
 DiskStatus|offset|0|3	$00000600
 DiskStatus|opens|0|1	$00000000
-DiskStatus|opens|0|2	$00000001
-DiskStatus|opens|0|3	$00000001
+DiskStatus|opens|0|2	$00000000
+DiskStatus|opens|0|3	$00000000
 DiskStatus|read buffer|0|1	bytes 4096 fnv 76EFDDC5
 DiskStatus|read buffer|0|2	bytes 4096 fnv 76EFDDC5
 DiskStatus|read buffer|0|3	bytes 4096 fnv 5FF9152D
 DiskStatus|requests|0|1	$00000000
 DiskStatus|requests|0|2	$00000000
-DiskStatus|requests|0|3	$00000007
+DiskStatus|requests|0|3	$00000000
 DiskStatus|unit|0|1	$00000000
 DiskStatus|unit|0|2	$00000000
 DiskStatus|unit|0|3	$00000000
+DiskStatus|updates|0|1	$00000000
+DiskStatus|updates|0|2	$00000000
+DiskStatus|updates|0|3	$00000000
 DiskStatus (trackdisk)|actual|0|1	$00000000
-DiskStatus (trackdisk)|buffer|0|1	$00020000
-DiskStatus (trackdisk)|closes|0|1	$00000003
+DiskStatus (trackdisk)|buffer|0|1	$00040000
+DiskStatus (trackdisk)|closes|0|1	$00000000
 DiskStatus (trackdisk)|command|0|1	$00000009
 DiskStatus (trackdisk)|d0|0|1	$00000100
-DiskStatus (trackdisk)|disk|0|1	bytes 16384 fnv 1DF5C38F
-DiskStatus (trackdisk)|failed opens|0|1	$00000004
+DiskStatus (trackdisk)|disk|0|1	bytes 16384 fnv 39CB122F
+DiskStatus (trackdisk)|failed opens|0|1	$00000000
 DiskStatus (trackdisk)|flags|0|1	$00000001
 DiskStatus (trackdisk)|head|0|1	bytes 8 0000000000000000
 DiskStatus (trackdisk)|kept|0|1	kept
 DiskStatus (trackdisk)|length|0|1	$00000000
 DiskStatus (trackdisk)|offset|0|1	$00000000
-DiskStatus (trackdisk)|opens|0|1	$00000005
+DiskStatus (trackdisk)|opens|0|1	$00000000
 DiskStatus (trackdisk)|read buffer|0|1	bytes 4096 fnv 671EA9C5
-DiskStatus (trackdisk)|requests|0|1	$00000018
+DiskStatus (trackdisk)|requests|0|1	$00000000
 DiskStatus (trackdisk)|unit|0|1	$00000003
+DiskStatus (trackdisk)|updates|0|1	$00000000
 FormatTrack|actual|0,1,+1024,0 (form 0)|1	$00000200
 FormatTrack|actual|0,2,+0,1 (form 1)|1	$00000200
 FormatTrack|actual|0,65537,+0,2 (form 1)|1	$00000400
@@ -333,18 +352,21 @@ FormatTrack|length|0,65537,+0,2 (form 1)|1	$00000400
 FormatTrack|offset|0,1,+1024,0 (form 0)|1	$00001600
 FormatTrack|offset|0,2,+0,1 (form 1)|1	$00002C00
 FormatTrack|offset|0,65537,+0,2 (form 1)|1	$00001600
-FormatTrack|opens|0,1,+1024,0 (form 0)|1	$00000001
-FormatTrack|opens|0,2,+0,1 (form 1)|1	$00000001
-FormatTrack|opens|0,65537,+0,2 (form 1)|1	$00000001
+FormatTrack|opens|0,1,+1024,0 (form 0)|1	$00000000
+FormatTrack|opens|0,2,+0,1 (form 1)|1	$00000000
+FormatTrack|opens|0,65537,+0,2 (form 1)|1	$00000000
 FormatTrack|read buffer|0,1,+1024,0 (form 0)|1	bytes 4096 fnv 5FF9152D
 FormatTrack|read buffer|0,2,+0,1 (form 1)|1	bytes 4096 fnv 5FF9152D
 FormatTrack|read buffer|0,65537,+0,2 (form 1)|1	bytes 4096 fnv 5FF9152D
-FormatTrack|requests|0,1,+1024,0 (form 0)|1	$00000008
-FormatTrack|requests|0,2,+0,1 (form 1)|1	$0000000A
-FormatTrack|requests|0,65537,+0,2 (form 1)|1	$00000009
+FormatTrack|requests|0,1,+1024,0 (form 0)|1	$00000001
+FormatTrack|requests|0,2,+0,1 (form 1)|1	$00000001
+FormatTrack|requests|0,65537,+0,2 (form 1)|1	$00000001
 FormatTrack|unit|0,1,+1024,0 (form 0)|1	$00000000
 FormatTrack|unit|0,2,+0,1 (form 1)|1	$00000000
 FormatTrack|unit|0,65537,+0,2 (form 1)|1	$00000000
+FormatTrack|updates|0,1,+1024,0 (form 0)|1	$00000000
+FormatTrack|updates|0,2,+0,1 (form 1)|1	$00000000
+FormatTrack|updates|0,65537,+0,2 (form 1)|1	$00000000
 MotorOff|actual|0|1	$00000000
 MotorOff|actual|0|2	$00000001
 MotorOff|buffer|0|1	$00000000
@@ -370,29 +392,32 @@ MotorOff|length|0|2	$00000000
 MotorOff|offset|0|1	$00000000
 MotorOff|offset|0|2	$00000000
 MotorOff|opens|0|1	$00000000
-MotorOff|opens|0|2	$00000001
+MotorOff|opens|0|2	$00000000
 MotorOff|read buffer|0|1	bytes 4096 fnv 76EFDDC5
 MotorOff|read buffer|0|2	bytes 4096 fnv 50F533C5
 MotorOff|requests|0|1	$00000000
-MotorOff|requests|0|2	$0000000E
+MotorOff|requests|0|2	$00000001
 MotorOff|unit|0|1	$00000000
 MotorOff|unit|0|2	$00000000
+MotorOff|updates|0|1	$00000000
+MotorOff|updates|0|2	$00000000
 MotorOff (trackdisk)|actual|0|1	$00000000
-MotorOff (trackdisk)|buffer|0|1	$00020000
-MotorOff (trackdisk)|closes|0|1	$00000003
+MotorOff (trackdisk)|buffer|0|1	$00040000
+MotorOff (trackdisk)|closes|0|1	$00000000
 MotorOff (trackdisk)|command|0|1	$00000009
 MotorOff (trackdisk)|d0|0|1	$00000000
-MotorOff (trackdisk)|disk|0|1	bytes 16384 fnv 1DF5C38F
-MotorOff (trackdisk)|failed opens|0|1	$00000004
+MotorOff (trackdisk)|disk|0|1	bytes 16384 fnv 39CB122F
+MotorOff (trackdisk)|failed opens|0|1	$00000000
 MotorOff (trackdisk)|flags|0|1	$00000001
 MotorOff (trackdisk)|head|0|1	bytes 8 0000000000000000
 MotorOff (trackdisk)|kept|0|1	kept
 MotorOff (trackdisk)|length|0|1	$00000000
 MotorOff (trackdisk)|offset|0|1	$00000000
-MotorOff (trackdisk)|opens|0|1	$00000005
+MotorOff (trackdisk)|opens|0|1	$00000000
 MotorOff (trackdisk)|read buffer|0|1	bytes 4096 fnv 671EA9C5
-MotorOff (trackdisk)|requests|0|1	$00000018
+MotorOff (trackdisk)|requests|0|1	$00000000
 MotorOff (trackdisk)|unit|0|1	$00000003
+MotorOff (trackdisk)|updates|0|1	$00000000
 MotorOn|actual|-1|1	$00000000
 MotorOn|actual|0|1	$00000000
 MotorOn|actual|0|2	$00000000
@@ -418,16 +443,16 @@ MotorOn|d0|0|1	$00000000
 MotorOn|d0|0|2	$00000000
 MotorOn|d0|0|3	$00000000
 MotorOn|d0|3|1	$00000000
-MotorOn|disk|-1|1	bytes 16384 fnv 1DF5C38F
+MotorOn|disk|-1|1	bytes 16384 fnv 39CB122F
 MotorOn|disk|0|1	bytes 16384 fnv E35F79C5
 MotorOn|disk|0|2	bytes 16384 fnv BFA67BC5
 MotorOn|disk|0|3	bytes 16384 fnv BFA67BC5
-MotorOn|disk|3|1	bytes 16384 fnv 1DF5C38F
-MotorOn|failed opens|-1|1	$00000004
+MotorOn|disk|3|1	bytes 16384 fnv 39CB122F
+MotorOn|failed opens|-1|1	$00000000
 MotorOn|failed opens|0|1	$00000000
 MotorOn|failed opens|0|2	$00000000
 MotorOn|failed opens|0|3	$00000000
-MotorOn|failed opens|3|1	$00000002
+MotorOn|failed opens|3|1	$00000000
 MotorOn|flags|-1|1	$00000001
 MotorOn|flags|0|1	$00000000
 MotorOn|flags|0|2	$00000001
@@ -453,202 +478,235 @@ MotorOn|offset|0|1	$00000000
 MotorOn|offset|0|2	$00000000
 MotorOn|offset|0|3	$00000000
 MotorOn|offset|3|1	$00000E00
-MotorOn|opens|-1|1	$00000005
+MotorOn|opens|-1|1	$00000000
 MotorOn|opens|0|1	$00000000
-MotorOn|opens|0|2	$00000001
-MotorOn|opens|0|3	$00000001
-MotorOn|opens|3|1	$00000003
+MotorOn|opens|0|2	$00000000
+MotorOn|opens|0|3	$00000000
+MotorOn|opens|3|1	$00000000
 MotorOn|read buffer|-1|1	bytes 4096 fnv 671EA9C5
 MotorOn|read buffer|0|1	bytes 4096 fnv 76EFDDC5
 MotorOn|read buffer|0|2	bytes 4096 fnv 50F533C5
 MotorOn|read buffer|0|3	bytes 4096 fnv 50F533C5
 MotorOn|read buffer|3|1	bytes 4096 fnv 671EA9C5
-MotorOn|requests|-1|1	$00000016
+MotorOn|requests|-1|1	$00000000
 MotorOn|requests|0|1	$00000000
-MotorOn|requests|0|2	$0000000C
-MotorOn|requests|0|3	$0000000D
-MotorOn|requests|3|1	$00000016
+MotorOn|requests|0|2	$00000001
+MotorOn|requests|0|3	$00000001
+MotorOn|requests|3|1	$00000001
 MotorOn|unit|-1|1	$FFFFFFFF
 MotorOn|unit|0|1	$00000000
 MotorOn|unit|0|2	$00000000
 MotorOn|unit|0|3	$00000000
 MotorOn|unit|3|1	$00000003
+MotorOn|updates|-1|1	$00000000
+MotorOn|updates|0|1	$00000000
+MotorOn|updates|0|2	$00000000
+MotorOn|updates|0|3	$00000000
+MotorOn|updates|3|1	$00000000
 MotorOn (trackdisk)|actual|0|1	$00000000
-MotorOn (trackdisk)|buffer|0|1	$00020000
-MotorOn (trackdisk)|closes|0|1	$00000003
+MotorOn (trackdisk)|buffer|0|1	$00040000
+MotorOn (trackdisk)|closes|0|1	$00000000
 MotorOn (trackdisk)|command|0|1	$00000009
 MotorOn (trackdisk)|d0|0|1	$00000000
-MotorOn (trackdisk)|disk|0|1	bytes 16384 fnv 1DF5C38F
-MotorOn (trackdisk)|failed opens|0|1	$00000004
+MotorOn (trackdisk)|disk|0|1	bytes 16384 fnv 39CB122F
+MotorOn (trackdisk)|failed opens|0|1	$00000000
 MotorOn (trackdisk)|flags|0|1	$00000001
 MotorOn (trackdisk)|head|0|1	bytes 8 0000000000000000
 MotorOn (trackdisk)|kept|0|1	kept
 MotorOn (trackdisk)|length|0|1	$00000000
 MotorOn (trackdisk)|offset|0|1	$00000000
-MotorOn (trackdisk)|opens|0|1	$00000005
+MotorOn (trackdisk)|opens|0|1	$00000000
 MotorOn (trackdisk)|read buffer|0|1	bytes 4096 fnv 671EA9C5
-MotorOn (trackdisk)|requests|0|1	$00000018
+MotorOn (trackdisk)|requests|0|1	$00000000
 MotorOn (trackdisk)|unit|0|1	$00000003
-OpenDisk|actual|-1,-|1	$00000000
-OpenDisk|actual|-2,-|1	$00000000
+MotorOn (trackdisk)|updates|0|1	$00000000
+OpenDisk|actual|-1,rwetest.device|1	$00000000
+OpenDisk|actual|-2,rwetest.device|1	$00000000
 OpenDisk|actual|0,rwetest.device|1	$00000000
 OpenDisk|actual|0,trackdisk.device|1	$00000000
-OpenDisk|actual|1,-|1	$00000400
-OpenDisk|actual|1,rwetest.device|1	$00000000
+OpenDisk|actual|1,rwetest.device|1	$00000400
+OpenDisk|actual|1,rwetest.device|2	$00000000
 OpenDisk|actual|2,-|1	$00000400
-OpenDisk|actual|3,-|1	$00000400
+OpenDisk|actual|2,rwetest.device|1	$00000400
+OpenDisk|actual|3,rwetest.device|1	$00000400
 OpenDisk|actual|4,rwetest.device|1	$00000000
 OpenDisk|actual|5,-|1	$00000000
-OpenDisk|buffer|-1,-|1	$00010800
-OpenDisk|buffer|-2,-|1	$00010800
+OpenDisk|buffer|-1,rwetest.device|1	$00010800
+OpenDisk|buffer|-2,rwetest.device|1	$00010800
 OpenDisk|buffer|0,rwetest.device|1	$00000000
-OpenDisk|buffer|0,trackdisk.device|1	$00020000
-OpenDisk|buffer|1,-|1	$00020000
-OpenDisk|buffer|1,rwetest.device|1	$00010800
-OpenDisk|buffer|2,-|1	$00020000
-OpenDisk|buffer|3,-|1	$00020000
+OpenDisk|buffer|0,trackdisk.device|1	$00040000
+OpenDisk|buffer|1,rwetest.device|1	$00040000
+OpenDisk|buffer|1,rwetest.device|2	$00010800
+OpenDisk|buffer|2,-|1	$00040000
+OpenDisk|buffer|2,rwetest.device|1	$00040000
+OpenDisk|buffer|3,rwetest.device|1	$00040000
 OpenDisk|buffer|4,rwetest.device|1	$00000000
 OpenDisk|buffer|5,-|1	$00000000
-OpenDisk|closes|-1,-|1	$00000000
-OpenDisk|closes|-2,-|1	$00000000
+OpenDisk|closes|-1,rwetest.device|1	$00000000
+OpenDisk|closes|-2,rwetest.device|1	$00000000
 OpenDisk|closes|0,rwetest.device|1	$00000000
-OpenDisk|closes|0,trackdisk.device|1	$00000003
-OpenDisk|closes|1,-|1	$00000000
+OpenDisk|closes|0,trackdisk.device|1	$00000001
 OpenDisk|closes|1,rwetest.device|1	$00000000
+OpenDisk|closes|1,rwetest.device|2	$00000000
 OpenDisk|closes|2,-|1	$00000000
-OpenDisk|closes|3,-|1	$00000000
+OpenDisk|closes|2,rwetest.device|1	$00000000
+OpenDisk|closes|3,rwetest.device|1	$00000000
 OpenDisk|closes|4,rwetest.device|1	$00000000
 OpenDisk|closes|5,-|1	$00000000
-OpenDisk|command|-1,-|1	$00000009
-OpenDisk|command|-2,-|1	$00000009
+OpenDisk|command|-1,rwetest.device|1	$00000009
+OpenDisk|command|-2,rwetest.device|1	$00000009
 OpenDisk|command|0,rwetest.device|1	$00000000
 OpenDisk|command|0,trackdisk.device|1	$00000009
-OpenDisk|command|1,-|1	$00000002
-OpenDisk|command|1,rwetest.device|1	$00000009
-OpenDisk|command|2,-|1	$00000002
-OpenDisk|command|3,-|1	$00000002
+OpenDisk|command|1,rwetest.device|1	$0000000B
+OpenDisk|command|1,rwetest.device|2	$00000009
+OpenDisk|command|2,-|1	$0000000B
+OpenDisk|command|2,rwetest.device|1	$0000000B
+OpenDisk|command|3,rwetest.device|1	$0000000B
 OpenDisk|command|4,rwetest.device|1	$00000000
 OpenDisk|command|5,-|1	$00000000
-OpenDisk|d0|-1,-|1	$FFFFFFFF
-OpenDisk|d0|-2,-|1	$00000000
+OpenDisk|d0|-1,rwetest.device|1	$FFFFFFFF
+OpenDisk|d0|-2,rwetest.device|1	$00000000
 OpenDisk|d0|0,rwetest.device|1	$FFFFFFFF
 OpenDisk|d0|0,trackdisk.device|1	$FFFFFFFF
-OpenDisk|d0|1,-|1	$FFFFFFFF
 OpenDisk|d0|1,rwetest.device|1	$FFFFFFFF
+OpenDisk|d0|1,rwetest.device|2	$FFFFFFFF
 OpenDisk|d0|2,-|1	$00000000
-OpenDisk|d0|3,-|1	$FFFFFFFF
+OpenDisk|d0|2,rwetest.device|1	$00000000
+OpenDisk|d0|3,rwetest.device|1	$FFFFFFFF
 OpenDisk|d0|4,rwetest.device|1	$00000000
 OpenDisk|d0|5,-|1	$00000000
-OpenDisk|disk|-1,-|1	bytes 16384 fnv 1DF5C38F
-OpenDisk|disk|-2,-|1	bytes 16384 fnv 1DF5C38F
+OpenDisk|disk|-1,rwetest.device|1	bytes 16384 fnv 39CB122F
+OpenDisk|disk|-2,rwetest.device|1	bytes 16384 fnv 39CB122F
 OpenDisk|disk|0,rwetest.device|1	bytes 16384 fnv E35F79C5
-OpenDisk|disk|0,trackdisk.device|1	bytes 16384 fnv 1DF5C38F
-OpenDisk|disk|1,-|1	bytes 16384 fnv EEF2638F
-OpenDisk|disk|1,rwetest.device|1	bytes 16384 fnv 1DF5C38F
-OpenDisk|disk|2,-|1	bytes 16384 fnv EEF2638F
-OpenDisk|disk|3,-|1	bytes 16384 fnv EEF2638F
+OpenDisk|disk|0,trackdisk.device|1	bytes 16384 fnv 39CB122F
+OpenDisk|disk|1,rwetest.device|1	bytes 16384 fnv 8713E22F
+OpenDisk|disk|1,rwetest.device|2	bytes 16384 fnv 39CB122F
+OpenDisk|disk|2,-|1	bytes 16384 fnv 8713E22F
+OpenDisk|disk|2,rwetest.device|1	bytes 16384 fnv 8713E22F
+OpenDisk|disk|3,rwetest.device|1	bytes 16384 fnv 8713E22F
 OpenDisk|disk|4,rwetest.device|1	bytes 16384 fnv E35F79C5
 OpenDisk|disk|5,-|1	bytes 16384 fnv E35F79C5
-OpenDisk|failed opens|-1,-|1	$00000002
-OpenDisk|failed opens|-2,-|1	$00000004
+OpenDisk|failed opens|-1,rwetest.device|1	$00000000
+OpenDisk|failed opens|-2,rwetest.device|1	$00000002
 OpenDisk|failed opens|0,rwetest.device|1	$00000000
-OpenDisk|failed opens|0,trackdisk.device|1	$00000004
-OpenDisk|failed opens|1,-|1	$00000000
-OpenDisk|failed opens|1,rwetest.device|1	$00000002
+OpenDisk|failed opens|0,trackdisk.device|1	$00000000
+OpenDisk|failed opens|1,rwetest.device|1	$00000000
+OpenDisk|failed opens|1,rwetest.device|2	$00000000
 OpenDisk|failed opens|2,-|1	$00000002
-OpenDisk|failed opens|3,-|1	$00000002
+OpenDisk|failed opens|2,rwetest.device|1	$00000002
+OpenDisk|failed opens|3,rwetest.device|1	$00000000
 OpenDisk|failed opens|4,rwetest.device|1	$00000000
 OpenDisk|failed opens|5,-|1	$00000000
-OpenDisk|flags|-1,-|1	$00000001
-OpenDisk|flags|-2,-|1	$00000001
+OpenDisk|flags|-1,rwetest.device|1	$00000001
+OpenDisk|flags|-2,rwetest.device|1	$00000001
 OpenDisk|flags|0,rwetest.device|1	$00000000
 OpenDisk|flags|0,trackdisk.device|1	$00000001
-OpenDisk|flags|1,-|1	$00000001
 OpenDisk|flags|1,rwetest.device|1	$00000001
+OpenDisk|flags|1,rwetest.device|2	$00000001
 OpenDisk|flags|2,-|1	$00000001
-OpenDisk|flags|3,-|1	$00000001
+OpenDisk|flags|2,rwetest.device|1	$00000001
+OpenDisk|flags|3,rwetest.device|1	$00000001
 OpenDisk|flags|4,rwetest.device|1	$00000000
 OpenDisk|flags|5,-|1	$00000000
-OpenDisk|head|-1,-|1	bytes 8 0000000000000000
-OpenDisk|head|-2,-|1	bytes 8 0000000000000000
+OpenDisk|head|-1,rwetest.device|1	bytes 8 0000000000000000
+OpenDisk|head|-2,rwetest.device|1	bytes 8 0000000000000000
 OpenDisk|head|0,rwetest.device|1	bytes 8 0000000000000000
 OpenDisk|head|0,trackdisk.device|1	bytes 8 0000000000000000
-OpenDisk|head|1,-|1	bytes 8 0000000000000000
-OpenDisk|head|1,rwetest.device|1	bytes 8 0000000000000000
-OpenDisk|head|2,-|1	bytes 8 0000000000000000
-OpenDisk|head|3,-|1	bytes 8 0000000000000000
+OpenDisk|head|1,rwetest.device|1	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|1,rwetest.device|2	bytes 8 0000000000000000
+OpenDisk|head|2,-|1	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|2,rwetest.device|1	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|3,rwetest.device|1	bytes 8 444F5300FFFFFFFF
 OpenDisk|head|4,rwetest.device|1	bytes 8 0000000000000000
 OpenDisk|head|5,-|1	bytes 8 0000000000000000
-OpenDisk|kept|-1,-|1	kept
-OpenDisk|kept|-2,-|1	kept
+OpenDisk|kept|-1,rwetest.device|1	kept
+OpenDisk|kept|-2,rwetest.device|1	kept
 OpenDisk|kept|0,rwetest.device|1	kept
 OpenDisk|kept|0,trackdisk.device|1	kept
-OpenDisk|kept|1,-|1	kept
 OpenDisk|kept|1,rwetest.device|1	kept
+OpenDisk|kept|1,rwetest.device|2	kept
 OpenDisk|kept|2,-|1	kept
-OpenDisk|kept|3,-|1	kept
+OpenDisk|kept|2,rwetest.device|1	kept
+OpenDisk|kept|3,rwetest.device|1	kept
 OpenDisk|kept|4,rwetest.device|1	kept
 OpenDisk|kept|5,-|1	kept
-OpenDisk|length|-1,-|1	$00000001
-OpenDisk|length|-2,-|1	$00000001
+OpenDisk|length|-1,rwetest.device|1	$00000001
+OpenDisk|length|-2,rwetest.device|1	$00000001
 OpenDisk|length|0,rwetest.device|1	$00000000
 OpenDisk|length|0,trackdisk.device|1	$00000000
-OpenDisk|length|1,-|1	$00000400
-OpenDisk|length|1,rwetest.device|1	$00000001
+OpenDisk|length|1,rwetest.device|1	$00000400
+OpenDisk|length|1,rwetest.device|2	$00000001
 OpenDisk|length|2,-|1	$00000400
-OpenDisk|length|3,-|1	$00000400
+OpenDisk|length|2,rwetest.device|1	$00000400
+OpenDisk|length|3,rwetest.device|1	$00000400
 OpenDisk|length|4,rwetest.device|1	$00000000
 OpenDisk|length|5,-|1	$00000000
-OpenDisk|offset|-1,-|1	$00000E00
-OpenDisk|offset|-2,-|1	$00000E00
+OpenDisk|offset|-1,rwetest.device|1	$00000E00
+OpenDisk|offset|-2,rwetest.device|1	$00000E00
 OpenDisk|offset|0,rwetest.device|1	$00000000
 OpenDisk|offset|0,trackdisk.device|1	$00000000
-OpenDisk|offset|1,-|1	$00000000
-OpenDisk|offset|1,rwetest.device|1	$00000E00
+OpenDisk|offset|1,rwetest.device|1	$00000000
+OpenDisk|offset|1,rwetest.device|2	$00000E00
 OpenDisk|offset|2,-|1	$00000000
-OpenDisk|offset|3,-|1	$00000000
+OpenDisk|offset|2,rwetest.device|1	$00000000
+OpenDisk|offset|3,rwetest.device|1	$00000000
 OpenDisk|offset|4,rwetest.device|1	$00000000
 OpenDisk|offset|5,-|1	$00000000
-OpenDisk|opens|-1,-|1	$00000005
-OpenDisk|opens|-2,-|1	$00000005
+OpenDisk|opens|-1,rwetest.device|1	$00000001
+OpenDisk|opens|-2,rwetest.device|1	$00000000
 OpenDisk|opens|0,rwetest.device|1	$00000001
-OpenDisk|opens|0,trackdisk.device|1	$00000005
-OpenDisk|opens|1,-|1	$00000002
-OpenDisk|opens|1,rwetest.device|1	$00000004
-OpenDisk|opens|2,-|1	$00000002
-OpenDisk|opens|3,-|1	$00000003
+OpenDisk|opens|0,trackdisk.device|1	$00000000
+OpenDisk|opens|1,rwetest.device|1	$00000001
+OpenDisk|opens|1,rwetest.device|2	$00000001
+OpenDisk|opens|2,-|1	$00000000
+OpenDisk|opens|2,rwetest.device|1	$00000000
+OpenDisk|opens|3,rwetest.device|1	$00000001
 OpenDisk|opens|4,rwetest.device|1	$00000000
 OpenDisk|opens|5,-|1	$00000000
-OpenDisk|read buffer|-1,-|1	bytes 4096 fnv 671EA9C5
-OpenDisk|read buffer|-2,-|1	bytes 4096 fnv 671EA9C5
+OpenDisk|read buffer|-1,rwetest.device|1	bytes 4096 fnv 671EA9C5
+OpenDisk|read buffer|-2,rwetest.device|1	bytes 4096 fnv 671EA9C5
 OpenDisk|read buffer|0,rwetest.device|1	bytes 4096 fnv 76EFDDC5
 OpenDisk|read buffer|0,trackdisk.device|1	bytes 4096 fnv 671EA9C5
-OpenDisk|read buffer|1,-|1	bytes 4096 fnv 4CA4ED8F
-OpenDisk|read buffer|1,rwetest.device|1	bytes 4096 fnv 671EA9C5
+OpenDisk|read buffer|1,rwetest.device|1	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|1,rwetest.device|2	bytes 4096 fnv 671EA9C5
 OpenDisk|read buffer|2,-|1	bytes 4096 fnv 4CA4ED8F
-OpenDisk|read buffer|3,-|1	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|2,rwetest.device|1	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|3,rwetest.device|1	bytes 4096 fnv 4CA4ED8F
 OpenDisk|read buffer|4,rwetest.device|1	bytes 4096 fnv 76EFDDC5
 OpenDisk|read buffer|5,-|1	bytes 4096 fnv 76EFDDC5
-OpenDisk|requests|-1,-|1	$00000016
-OpenDisk|requests|-2,-|1	$00000016
+OpenDisk|requests|-1,rwetest.device|1	$00000000
+OpenDisk|requests|-2,rwetest.device|1	$00000000
 OpenDisk|requests|0,rwetest.device|1	$00000000
-OpenDisk|requests|0,trackdisk.device|1	$00000018
-OpenDisk|requests|1,-|1	$00000013
-OpenDisk|requests|1,rwetest.device|1	$00000016
-OpenDisk|requests|2,-|1	$00000013
-OpenDisk|requests|3,-|1	$00000013
+OpenDisk|requests|0,trackdisk.device|1	$00000000
+OpenDisk|requests|1,rwetest.device|1	$00000000
+OpenDisk|requests|1,rwetest.device|2	$00000000
+OpenDisk|requests|2,-|1	$00000000
+OpenDisk|requests|2,rwetest.device|1	$00000000
+OpenDisk|requests|3,rwetest.device|1	$00000000
 OpenDisk|requests|4,rwetest.device|1	$00000000
 OpenDisk|requests|5,-|1	$00000000
-OpenDisk|unit|-1,-|1	$FFFFFFFF
-OpenDisk|unit|-2,-|1	$FFFFFFFF
+OpenDisk|unit|-1,rwetest.device|1	$FFFFFFFF
+OpenDisk|unit|-2,rwetest.device|1	$FFFFFFFF
 OpenDisk|unit|0,rwetest.device|1	$00000000
 OpenDisk|unit|0,trackdisk.device|1	$00000003
-OpenDisk|unit|1,-|1	$00000001
 OpenDisk|unit|1,rwetest.device|1	$00000001
+OpenDisk|unit|1,rwetest.device|2	$00000001
 OpenDisk|unit|2,-|1	$00000001
-OpenDisk|unit|3,-|1	$00000003
+OpenDisk|unit|2,rwetest.device|1	$00000001
+OpenDisk|unit|3,rwetest.device|1	$00000003
 OpenDisk|unit|4,rwetest.device|1	$00000000
 OpenDisk|unit|5,-|1	$00000000
+OpenDisk|updates|-1,rwetest.device|1	$00000000
+OpenDisk|updates|-2,rwetest.device|1	$00000000
+OpenDisk|updates|0,rwetest.device|1	$00000000
+OpenDisk|updates|0,trackdisk.device|1	$00000000
+OpenDisk|updates|1,rwetest.device|1	$00000000
+OpenDisk|updates|1,rwetest.device|2	$00000000
+OpenDisk|updates|2,-|1	$00000000
+OpenDisk|updates|2,rwetest.device|1	$00000000
+OpenDisk|updates|3,rwetest.device|1	$00000000
+OpenDisk|updates|4,rwetest.device|1	$00000000
+OpenDisk|updates|5,-|1	$00000000
 ReadSector|actual|-1,0,+0,0 (form 0)|1	$00000000
 ReadSector|actual|0,0,+0,2 (form 1)|1	$00000400
 ReadSector|actual|0,0,+0,8 (form 1)|1	$00001000
@@ -699,7 +757,7 @@ ReadSector|d0|0,2,+100,5 (form 1)|1	$00000000
 ReadSector|d0|0,3,+0,0 (form 0)|1	$00000000
 ReadSector|d0|0,8388611,+0,0 (form 0)|1	$00000000
 ReadSector|d0|1,7,+0,2 (form 1)|1	$00000000
-ReadSector|disk|-1,0,+0,0 (form 0)|1	bytes 16384 fnv 1DF5C38F
+ReadSector|disk|-1,0,+0,0 (form 0)|1	bytes 16384 fnv 39CB122F
 ReadSector|disk|0,0,+0,2 (form 1)|1	bytes 16384 fnv EEF2638F
 ReadSector|disk|0,0,+0,8 (form 1)|1	bytes 16384 fnv BFA67BC5
 ReadSector|disk|0,1,+0,0 (form 0)|1	bytes 16384 fnv E35F79C5
@@ -708,8 +766,8 @@ ReadSector|disk|0,100,+0,0 (form 0)|1	bytes 16384 fnv EF3E5BC5
 ReadSector|disk|0,2,+100,5 (form 1)|1	bytes 16384 fnv EF3E5BC5
 ReadSector|disk|0,3,+0,0 (form 0)|1	bytes 16384 fnv EF3E5BC5
 ReadSector|disk|0,8388611,+0,0 (form 0)|1	bytes 16384 fnv EF3E5BC5
-ReadSector|disk|1,7,+0,2 (form 1)|1	bytes 16384 fnv 1DF5C38F
-ReadSector|failed opens|-1,0,+0,0 (form 0)|1	$00000004
+ReadSector|disk|1,7,+0,2 (form 1)|1	bytes 16384 fnv 39CB122F
+ReadSector|failed opens|-1,0,+0,0 (form 0)|1	$00000000
 ReadSector|failed opens|0,0,+0,2 (form 1)|1	$00000000
 ReadSector|failed opens|0,0,+0,8 (form 1)|1	$00000000
 ReadSector|failed opens|0,1,+0,0 (form 0)|1	$00000000
@@ -718,7 +776,7 @@ ReadSector|failed opens|0,100,+0,0 (form 0)|1	$00000000
 ReadSector|failed opens|0,2,+100,5 (form 1)|1	$00000000
 ReadSector|failed opens|0,3,+0,0 (form 0)|1	$00000000
 ReadSector|failed opens|0,8388611,+0,0 (form 0)|1	$00000000
-ReadSector|failed opens|1,7,+0,2 (form 1)|1	$00000002
+ReadSector|failed opens|1,7,+0,2 (form 1)|1	$00000000
 ReadSector|flags|-1,0,+0,0 (form 0)|1	$00000001
 ReadSector|flags|0,0,+0,2 (form 1)|1	$00000001
 ReadSector|flags|0,0,+0,8 (form 1)|1	$00000001
@@ -769,16 +827,16 @@ ReadSector|offset|0,2,+100,5 (form 1)|1	$00000400
 ReadSector|offset|0,3,+0,0 (form 0)|1	$00000600
 ReadSector|offset|0,8388611,+0,0 (form 0)|1	$00000600
 ReadSector|offset|1,7,+0,2 (form 1)|1	$00000E00
-ReadSector|opens|-1,0,+0,0 (form 0)|1	$00000005
-ReadSector|opens|0,0,+0,2 (form 1)|1	$00000001
-ReadSector|opens|0,0,+0,8 (form 1)|1	$00000001
+ReadSector|opens|-1,0,+0,0 (form 0)|1	$00000000
+ReadSector|opens|0,0,+0,2 (form 1)|1	$00000000
+ReadSector|opens|0,0,+0,8 (form 1)|1	$00000000
 ReadSector|opens|0,1,+0,0 (form 0)|1	$00000000
-ReadSector|opens|0,1,+0,0 (form 1)|1	$00000001
-ReadSector|opens|0,100,+0,0 (form 0)|1	$00000001
-ReadSector|opens|0,2,+100,5 (form 1)|1	$00000001
-ReadSector|opens|0,3,+0,0 (form 0)|1	$00000001
-ReadSector|opens|0,8388611,+0,0 (form 0)|1	$00000001
-ReadSector|opens|1,7,+0,2 (form 1)|1	$00000003
+ReadSector|opens|0,1,+0,0 (form 1)|1	$00000000
+ReadSector|opens|0,100,+0,0 (form 0)|1	$00000000
+ReadSector|opens|0,2,+100,5 (form 1)|1	$00000000
+ReadSector|opens|0,3,+0,0 (form 0)|1	$00000000
+ReadSector|opens|0,8388611,+0,0 (form 0)|1	$00000000
+ReadSector|opens|1,7,+0,2 (form 1)|1	$00000000
 ReadSector|read buffer|-1,0,+0,0 (form 0)|1	bytes 4096 fnv 671EA9C5
 ReadSector|read buffer|0,0,+0,2 (form 1)|1	bytes 4096 fnv 4CA4ED8F
 ReadSector|read buffer|0,0,+0,8 (form 1)|1	bytes 4096 fnv 50F533C5
@@ -789,16 +847,16 @@ ReadSector|read buffer|0,2,+100,5 (form 1)|1	bytes 4096 fnv 6F7521F5
 ReadSector|read buffer|0,3,+0,0 (form 0)|1	bytes 4096 fnv F6DB00C5
 ReadSector|read buffer|0,8388611,+0,0 (form 0)|1	bytes 4096 fnv 5FF9152D
 ReadSector|read buffer|1,7,+0,2 (form 1)|1	bytes 4096 fnv 671EA9C5
-ReadSector|requests|-1,0,+0,0 (form 0)|1	$00000016
-ReadSector|requests|0,0,+0,2 (form 1)|1	$00000013
-ReadSector|requests|0,0,+0,8 (form 1)|1	$0000000B
+ReadSector|requests|-1,0,+0,0 (form 0)|1	$00000000
+ReadSector|requests|0,0,+0,2 (form 1)|1	$00000001
+ReadSector|requests|0,0,+0,8 (form 1)|1	$00000001
 ReadSector|requests|0,1,+0,0 (form 0)|1	$00000000
-ReadSector|requests|0,1,+0,0 (form 1)|1	$00000006
-ReadSector|requests|0,100,+0,0 (form 0)|1	$00000005
-ReadSector|requests|0,2,+100,5 (form 1)|1	$00000004
-ReadSector|requests|0,3,+0,0 (form 0)|1	$00000003
-ReadSector|requests|0,8388611,+0,0 (form 0)|1	$00000007
-ReadSector|requests|1,7,+0,2 (form 1)|1	$00000015
+ReadSector|requests|0,1,+0,0 (form 1)|1	$00000001
+ReadSector|requests|0,100,+0,0 (form 0)|1	$00000001
+ReadSector|requests|0,2,+100,5 (form 1)|1	$00000001
+ReadSector|requests|0,3,+0,0 (form 0)|1	$00000001
+ReadSector|requests|0,8388611,+0,0 (form 0)|1	$00000001
+ReadSector|requests|1,7,+0,2 (form 1)|1	$00000001
 ReadSector|unit|-1,0,+0,0 (form 0)|1	$FFFFFFFF
 ReadSector|unit|0,0,+0,2 (form 1)|1	$00000000
 ReadSector|unit|0,0,+0,8 (form 1)|1	$00000000
@@ -809,58 +867,94 @@ ReadSector|unit|0,2,+100,5 (form 1)|1	$00000000
 ReadSector|unit|0,3,+0,0 (form 0)|1	$00000000
 ReadSector|unit|0,8388611,+0,0 (form 0)|1	$00000000
 ReadSector|unit|1,7,+0,2 (form 1)|1	$00000001
+ReadSector|updates|-1,0,+0,0 (form 0)|1	$00000000
+ReadSector|updates|0,0,+0,2 (form 1)|1	$00000000
+ReadSector|updates|0,0,+0,8 (form 1)|1	$00000000
+ReadSector|updates|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|updates|0,1,+0,0 (form 1)|1	$00000000
+ReadSector|updates|0,100,+0,0 (form 0)|1	$00000000
+ReadSector|updates|0,2,+100,5 (form 1)|1	$00000000
+ReadSector|updates|0,3,+0,0 (form 0)|1	$00000000
+ReadSector|updates|0,8388611,+0,0 (form 0)|1	$00000000
+ReadSector|updates|1,7,+0,2 (form 1)|1	$00000000
 ReadSector (after finit)|actual|0,0,+0,0 (form 0)|1	$00000000
-ReadSector (after finit)|buffer|0,0,+0,0 (form 0)|1	$00020000
-ReadSector (after finit)|closes|0,0,+0,0 (form 0)|1	$00000002
+ReadSector (after finit)|buffer|0,0,+0,0 (form 0)|1	$00040000
+ReadSector (after finit)|closes|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (after finit)|command|0,0,+0,0 (form 0)|1	$00000009
 ReadSector (after finit)|d0|0,0,+0,0 (form 0)|1	$00000000
-ReadSector (after finit)|disk|0,0,+0,0 (form 0)|1	bytes 16384 fnv 1DF5C38F
-ReadSector (after finit)|failed opens|0,0,+0,0 (form 0)|1	$00000004
+ReadSector (after finit)|disk|0,0,+0,0 (form 0)|1	bytes 16384 fnv 39CB122F
+ReadSector (after finit)|failed opens|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (after finit)|flags|0,0,+0,0 (form 0)|1	$00000001
 ReadSector (after finit)|head|0,0,+0,0 (form 0)|1	bytes 8 0000000000000000
 ReadSector (after finit)|kept|0,0,+0,0 (form 0)|1	kept
 ReadSector (after finit)|length|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (after finit)|offset|0,0,+0,0 (form 0)|1	$00000000
-ReadSector (after finit)|opens|0,0,+0,0 (form 0)|1	$00000005
+ReadSector (after finit)|opens|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (after finit)|read buffer|0,0,+0,0 (form 0)|1	bytes 4096 fnv 671EA9C5
-ReadSector (after finit)|requests|0,0,+0,0 (form 0)|1	$00000018
+ReadSector (after finit)|requests|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (after finit)|unit|0,0,+0,0 (form 0)|1	$00000000
+ReadSector (after finit)|updates|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (trackdisk, no disk)|d0|0,0|1	$0000001D
 ReadSector (trackdisk, no disk)|kept|0,0|1	kept
 WriteBoot|actual|0|1	$00000400
+WriteBoot|actual|0 (disk DOS 3)|1	$00000400
 WriteBoot|actual|0,bootdata (d2 = buf+512)|1	$00000400
 WriteBoot|buffer|0|1	$00040000
+WriteBoot|buffer|0 (disk DOS 3)|1	$00040000
 WriteBoot|buffer|0,bootdata (d2 = buf+512)|1	$00010200
 WriteBoot|closes|0|1	$00000000
+WriteBoot|closes|0 (disk DOS 3)|1	$00000000
 WriteBoot|closes|0,bootdata (d2 = buf+512)|1	$00000000
 WriteBoot|command|0|1	$0000000B
+WriteBoot|command|0 (disk DOS 3)|1	$0000000B
 WriteBoot|command|0,bootdata (d2 = buf+512)|1	$0000000B
 WriteBoot|d0|0|1	$00000000
+WriteBoot|d0|0 (disk DOS 3)|1	$00000000
 WriteBoot|d0|0,bootdata (d2 = buf+512)|1	$00000000
 WriteBoot|data written|0,bootdata (d2 = buf+512)|1	$4715E000
 WriteBoot|default boot block|0|1	$00000001
 WriteBoot|disk|0|1	bytes 16384 fnv 6F292DCB
+WriteBoot|disk|0 (disk DOS 3)|1	bytes 16384 fnv 8713E22F
 WriteBoot|disk|0,bootdata (d2 = buf+512)|1	bytes 16384 fnv D4DC77C5
+WriteBoot|disk boot block head|0|1	bytes 12 444F5300FFFFFFFF6D7A8794
+WriteBoot|disk boot block head|0 (disk DOS 3)|1	bytes 12 444F5300FFFFFFFF00000000
+WriteBoot|disk boot block sum|0|1	$05F6E074
+WriteBoot|disk boot block sum|0 (disk DOS 3)|1	$715531B8
+WriteBoot|disk boot code|0|1	bytes 1012 fnv E269404D
+WriteBoot|disk boot code|0 (disk DOS 3)|1	bytes 1012 fnv A33A5481
 WriteBoot|failed opens|0|1	$00000000
+WriteBoot|failed opens|0 (disk DOS 3)|1	$00000000
 WriteBoot|failed opens|0,bootdata (d2 = buf+512)|1	$00000000
 WriteBoot|flags|0|1	$00000001
+WriteBoot|flags|0 (disk DOS 3)|1	$00000001
 WriteBoot|flags|0,bootdata (d2 = buf+512)|1	$00000001
 WriteBoot|head|0|1	bytes 8 444F5300FFFFFFFF
+WriteBoot|head|0 (disk DOS 3)|1	bytes 8 444F5300FFFFFFFF
 WriteBoot|head|0,bootdata (d2 = buf+512)|1	bytes 8 4F586576838C99AA
 WriteBoot|kept|0|1	kept
+WriteBoot|kept|0 (disk DOS 3)|1	kept
 WriteBoot|kept|0,bootdata (d2 = buf+512)|1	kept
 WriteBoot|length|0|1	$00000400
+WriteBoot|length|0 (disk DOS 3)|1	$00000400
 WriteBoot|length|0,bootdata (d2 = buf+512)|1	$00000400
 WriteBoot|offset|0|1	$00000000
+WriteBoot|offset|0 (disk DOS 3)|1	$00000000
 WriteBoot|offset|0,bootdata (d2 = buf+512)|1	$00000000
-WriteBoot|opens|0|1	$00000001
-WriteBoot|opens|0,bootdata (d2 = buf+512)|1	$00000001
+WriteBoot|opens|0|1	$00000000
+WriteBoot|opens|0 (disk DOS 3)|1	$00000000
+WriteBoot|opens|0,bootdata (d2 = buf+512)|1	$00000000
 WriteBoot|read buffer|0|1	bytes 4096 fnv 50F533C5
+WriteBoot|read buffer|0 (disk DOS 3)|1	bytes 4096 fnv 4CA4ED8F
 WriteBoot|read buffer|0,bootdata (d2 = buf+512)|1	bytes 4096 fnv 50F533C5
-WriteBoot|requests|0|1	$0000000F
-WriteBoot|requests|0,bootdata (d2 = buf+512)|1	$00000010
+WriteBoot|requests|0|1	$00000001
+WriteBoot|requests|0 (disk DOS 3)|1	$00000001
+WriteBoot|requests|0,bootdata (d2 = buf+512)|1	$00000001
 WriteBoot|unit|0|1	$00000000
+WriteBoot|unit|0 (disk DOS 3)|1	$00000000
 WriteBoot|unit|0,bootdata (d2 = buf+512)|1	$00000000
+WriteBoot|updates|0|1	$00000000
+WriteBoot|updates|0 (disk DOS 3)|1	$00000000
+WriteBoot|updates|0,bootdata (d2 = buf+512)|1	$00000000
 WriteSector|actual|0,1,+0,1 (form 1)|1	$00000000
 WriteSector|actual|0,3,+0,0 (form 0)|1	$00000200
 WriteSector|actual|0,4,+512,3 (form 1)|1	$00000600
@@ -888,11 +982,11 @@ WriteSector|data written|3,7,+2048,2 (form 1)|1	$F64AE000
 WriteSector|disk|0,1,+0,1 (form 1)|1	bytes 16384 fnv E35F79C5
 WriteSector|disk|0,3,+0,0 (form 0)|1	bytes 16384 fnv 96FEDAC5
 WriteSector|disk|0,4,+512,3 (form 1)|1	bytes 16384 fnv EF3E5BC5
-WriteSector|disk|3,7,+2048,2 (form 1)|1	bytes 16384 fnv 1DF5C38F
+WriteSector|disk|3,7,+2048,2 (form 1)|1	bytes 16384 fnv 39CB122F
 WriteSector|failed opens|0,1,+0,1 (form 1)|1	$00000000
 WriteSector|failed opens|0,3,+0,0 (form 0)|1	$00000000
 WriteSector|failed opens|0,4,+512,3 (form 1)|1	$00000000
-WriteSector|failed opens|3,7,+2048,2 (form 1)|1	$00000002
+WriteSector|failed opens|3,7,+2048,2 (form 1)|1	$00000000
 WriteSector|flags|0,1,+0,1 (form 1)|1	$00000000
 WriteSector|flags|0,3,+0,0 (form 0)|1	$00000001
 WriteSector|flags|0,4,+512,3 (form 1)|1	$00000001
@@ -914,38 +1008,59 @@ WriteSector|offset|0,3,+0,0 (form 0)|1	$00000600
 WriteSector|offset|0,4,+512,3 (form 1)|1	$00000800
 WriteSector|offset|3,7,+2048,2 (form 1)|1	$00000E00
 WriteSector|opens|0,1,+0,1 (form 1)|1	$00000000
-WriteSector|opens|0,3,+0,0 (form 0)|1	$00000001
-WriteSector|opens|0,4,+512,3 (form 1)|1	$00000001
-WriteSector|opens|3,7,+2048,2 (form 1)|1	$00000003
+WriteSector|opens|0,3,+0,0 (form 0)|1	$00000000
+WriteSector|opens|0,4,+512,3 (form 1)|1	$00000000
+WriteSector|opens|3,7,+2048,2 (form 1)|1	$00000000
 WriteSector|read buffer|0,1,+0,1 (form 1)|1	bytes 4096 fnv 76EFDDC5
 WriteSector|read buffer|0,3,+0,0 (form 0)|1	bytes 4096 fnv 76EFDDC5
 WriteSector|read buffer|0,4,+512,3 (form 1)|1	bytes 4096 fnv 76EFDDC5
 WriteSector|read buffer|3,7,+2048,2 (form 1)|1	bytes 4096 fnv 4CA4ED8F
 WriteSector|requests|0,1,+0,1 (form 1)|1	$00000000
 WriteSector|requests|0,3,+0,0 (form 0)|1	$00000001
-WriteSector|requests|0,4,+512,3 (form 1)|1	$00000002
-WriteSector|requests|3,7,+2048,2 (form 1)|1	$00000014
+WriteSector|requests|0,4,+512,3 (form 1)|1	$00000001
+WriteSector|requests|3,7,+2048,2 (form 1)|1	$00000001
 WriteSector|unit|0,1,+0,1 (form 1)|1	$00000000
 WriteSector|unit|0,3,+0,0 (form 0)|1	$00000000
 WriteSector|unit|0,4,+512,3 (form 1)|1	$00000000
 WriteSector|unit|3,7,+2048,2 (form 1)|1	$00000003
+WriteSector|updates|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|updates|0,3,+0,0 (form 0)|1	$00000000
+WriteSector|updates|0,4,+512,3 (form 1)|1	$00000000
+WriteSector|updates|3,7,+2048,2 (form 1)|1	$00000000
 finit|actual||1	$00000000
-finit|buffer||1	$00020000
-finit|closes||1	$00000002
+finit|actual|3|1	$00000000
+finit|buffer||1	$00040000
+finit|buffer|3|1	$00040000
+finit|closes||1	$00000001
+finit|closes|3|1	$00000000
 finit|command||1	$00000009
-finit|disk||1	bytes 16384 fnv 1DF5C38F
-finit|failed opens||1	$00000004
+finit|command|3|1	$00000009
+finit|disk||1	bytes 16384 fnv 39CB122F
+finit|disk|3|1	bytes 16384 fnv 39CB122F
+finit|failed opens||1	$00000000
+finit|failed opens|3|1	$00000000
 finit|flags||1	$00000001
+finit|flags|3|1	$00000001
 finit|head||1	bytes 8 0000000000000000
+finit|head|3|1	bytes 8 0000000000000000
 finit|kept||1	kept
 finit|kept|0|1	kept
 finit|kept|3|1	kept
 finit|length||1	$00000000
+finit|length|3|1	$00000000
 finit|offset||1	$00000000
-finit|opens||1	$00000005
+finit|offset|3|1	$00000000
+finit|opens||1	$00000000
+finit|opens|3|1	$00000000
 finit|read buffer||1	bytes 4096 fnv 671EA9C5
-finit|requests||1	$00000018
+finit|read buffer|3|1	bytes 4096 fnv 671EA9C5
+finit|requests||1	$00000001
+finit|requests|3|1	$00000000
 finit|unit||1	$00000000
+finit|unit|3|1	$00000000
+finit|unit 3 still open|3|1	$00000001
+finit|updates||1	$00000000
+finit|updates|3|1	$00000000
 init|kept||1	kept
 init|kept|0,0,+0,0 (form 0)|1	kept
 init|kept|3|1	kept
