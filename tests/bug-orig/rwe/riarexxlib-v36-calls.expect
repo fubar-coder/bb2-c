@@ -1,0 +1,10 @@
+[run]
+before
+created -1
+public -1
+read -1
+sender RXNOSUCHPORT
+read again 0
+deleted -1
+after
+rc=0

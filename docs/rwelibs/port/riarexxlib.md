@@ -41,7 +41,7 @@ The commands have the error check `portchk` ("No message port opened!").
   received messages (32 longs) and the list of messages sent without
   waiting (31 and the end), copies the name (maxslib AllocSt), creates
   the port and adds it, unless a public port of the name exists.
-* **Sending.** A message is a 128-byte RexxMsg (AllocVec):
+* **Sending.** A message is a 128-byte RexxMsg (in AllocVec's layout):
   * ln_Name = our port's name, ln_Pri 1, the reply port = ours;
   * rm_Action = RXCOMM|RXFF_STRING, plus RXFF_RESULT for RXSendCommand;
     RXCOMM|RXFF_RESULT for RXExecuteScript, RXCOMM for RXRunScript;
@@ -271,6 +271,23 @@ kind F):
   64 messages, writes behind the block and then hangs or not depending
   on what lies there (RXDeletePort replies up to the first 0 long), so
   the outcome differs between the configurations.
+
+* **Kickstart 1.x.** The port is built by hand (blitzexec.h's
+  `bl_newport`: AllocMem, AllocSignal, FindTask, an empty message list)
+  and the block of the lists, the messages and the word buffer are
+  allocated in AllocVec's layout (`bl_allocvec`: AllocMem of the size +
+  4, the whole size in the first long), with exec V33 functions, one
+  path on every Kickstart. exec sees the sizes AllocVec would allocate
+  (the `allocfail=` keys of the bug-orig tests stay), and a message of
+  the library's may still be freed with exec's FreeVec as one of
+  AllocVec. The original called AllocVec, FreeVec, CreateMsgPort and
+  DeleteMsgPort (exec V36) without a version check and crashed at
+  RXCreatePort on Kickstart 1.x, although it opens rexxsyslib.library in
+  version 34, the ARexx of Kickstart 1.3 (#1144). The bug-orig test
+  `riarexxlib-v36-calls` (a500, a500-204, a1200) makes the port, finds it
+  by name, puts a message of its own into it, reads it and deletes the
+  port. Workbench 1.3.5 of the a500 has no ARexx (no
+  rexxsyslib.library), so nothing is sent to another program there.
 
 ## BUG(orig), kept
 

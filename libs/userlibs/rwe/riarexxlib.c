@@ -19,9 +19,10 @@
  * init opens rexxsyslib.library V34, finit closes it.  RXCreatePort makes
  * a public port and one block of 256 bytes: the list of received messages
  * (32 longs) and the list of messages sent without waiting (31 and the
- * end).  Messages are 128 byte RexxMsgs (AllocVec): ln_Name = our port's
- * name, rm_Args = the command, as one argument string or (RXTokenise on,
- * the default) split into at most 16 words with RXQuoteChar quotes.
+ * end).  Messages are 128 byte RexxMsgs (in AllocVec's layout): ln_Name =
+ * our port's name, rm_Args = the command, as one argument string or
+ * (RXTokenise on, the default) split into at most 16 words with
+ * RXQuoteChar quotes.
  * RXReadPort takes everything from the port: replies to our messages are
  * freed, messages go to the list; the first of the list becomes the
  * current message (RXGetArg, RXReplyMsg ...).  The port name and the
@@ -144,13 +145,18 @@
  *     every received message without a limit (addtolist): the 32nd
  *     overwrote the end mark, later ones ran into the sent list and past
  *     the block (#1100).
+ *   - The port is built by hand and the blocks are allocated in
+ *     AllocVec's layout with exec V33 functions, one path on every
+ *     Kickstart; the original called AllocVec, FreeVec, CreateMsgPort and
+ *     DeleteMsgPort (exec V36) without a version check and crashed at
+ *     RXCreatePort on Kickstart 1.x (#1144).
  */
 #include "blitzlib.h"
+#include "blitzexec.h"
 #include <exec/ports.h>
 #include <exec/memory.h>
 #include <rexx/storage.h>
 #define __NOLIBBASE__
-#include <proto/exec.h>
 #define DOS_BASE_NAME dosbase
 #include <proto/dos.h>
 #undef __NOLIBBASE__
@@ -328,7 +334,23 @@ BLITZ_ERRCHK_THUNK(portchk, portchk_c, "d0-d1/a0-a1");
 
 /* ---------------------------------------------------------------- data */
 
-#define SysBase (*(struct ExecBase **)4)
+/* Fixed (#1144): the blocks (the lists, the messages, the word buffer)
+   are allocated in AllocVec's layout and the port is built by hand
+   (blitzexec.h's bl_allocvec, bl_newport: exec V33 functions), one path
+   on every Kickstart; the original calls AllocVec, FreeVec, CreateMsgPort
+   and DeleteMsgPort (exec V36) without a version check and crashes at
+   RXCreatePort on Kickstart 1.x.  exec sees the sizes AllocVec would
+   allocate, and a block of the library's may be freed with exec's
+   FreeVec on V36+, as one of AllocVec. */
+static void *allocvec(ULONG size, ULONG flags)
+{
+    return bl_allocvec(size, flags);
+}
+
+static void freevec(void *block)
+{
+    bl_freevec(block);
+}
 
 static ULONG msgstring, msgtype;
 static UBYTE *msgportname;
@@ -686,7 +708,7 @@ static struct RexxMsg *makemsg(void)
 {
     struct RexxMsg *m;
 
-    m = AllocVec(128, MEMF_CLEAR);
+    m = allocvec(128, MEMF_CLEAR);
     if (!m) {                           /* fixed (#533): the original tested the flags */
         v.thismsg = NULL;
         return NULL;
@@ -701,7 +723,7 @@ static struct RexxMsg *makemsg(void)
     if (v.replyreq)
         v.waitreply = (ULONG)v.thismsg;
     else if (!addsent((ULONG)m)) {      /* fixed (#531): the list is full */
-        FreeVec(m);
+        freevec(m);
         v.thismsg = NULL;
         return NULL;
     }
@@ -798,15 +820,15 @@ static ULONG sendmessage(void)
            memory: nothing sent, 0 (D-018) */
         for (n = 0; ((const UBYTE *)msgstring)[n]; n++)
             ;
-        if (!(word = AllocVec(n + 1, MEMF_ANY)))
+        if (!(word = allocvec(n + 1, MEMF_ANY)))
             return 0;
     }
     if (!makemsg()) {                   /* fixed (#533): out of memory, 0 (D-018) */
-        FreeVec(word);
+        freevec(word);
         return 0;
     }
     makemsgargs(word);
-    FreeVec(word);
+    freevec(word);
     return sendmsg();
 }
 
@@ -956,7 +978,7 @@ static void freemsg(ULONG *item)
 
     for (n = 0; n < 16 && args[n]; n++)         /* DBRA d3 = 15 */
         deleteargstring(args[n]);
-    FreeVec(v.thismsg);
+    freevec(v.thismsg);
     deleteitem(item);
 }
 
@@ -992,7 +1014,7 @@ static void handlereply(void)
         freemsg(NULL);
         return;
     }
-    FreeVec(m);                         /* 'skip: in neither (as the original) */
+    freevec(m);                         /* 'skip: in neither (as the original) */
 }
 
 /* the message list full: take only the replies out of the port (to our
@@ -1325,7 +1347,7 @@ static void deleteport(BB_BOOL freename)
     }
     RemPort(msgport);
     if (replied)
-        DeleteMsgPort(msgport);
+        bl_freeport(msgport);
     else {
         /* a reply outstanding after 5 s: the port stays allocated */
         msgport->mp_Flags = PA_IGNORE;
@@ -1334,7 +1356,7 @@ static void deleteport(BB_BOOL freename)
     }
     msgport = NULL;
     /* fixed (#530): the original freed neither the lists nor the name */
-    FreeVec(v.messagelist);             /* the block: struct msglists */
+    freevec(v.messagelist);             /* the block: struct msglists */
     v.messagelist = v.sentlist = NULL;
     if (freename)
         freest((ULONG)msgportname);
@@ -1349,7 +1371,7 @@ static void deleteport(BB_BOOL freename)
  * the rest of the message list); then it waits up to 5 s for the replies
  * to the messages sent without waiting (RXRunCommand, RXRunScript),
  * replying 5 to messages that arrive meanwhile; then RemPort,
- * DeleteMsgPort; the block of the lists and the name are freed (fixed
+ * the port freed; the block of the lists and the name are freed (fixed
  * #530: the original freed neither).  With a reply still outstanding
  * after 5 s the port is only taken off the public list: it and the name
  * stay allocated for the late reply (fixed #1095: the original did not
@@ -1386,13 +1408,13 @@ static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *ar
         return 0;
     /* fixed (#528): the lists first, the port public last, AddPort not
        tested; the original deleted a public port without RemPort */
-    lists = AllocVec(sizeof(struct msglists), MEMF_PUBLIC | MEMF_CLEAR);
+    lists = allocvec(sizeof(struct msglists), MEMF_PUBLIC | MEMF_CLEAR);
     if (!lists)
         return 0;
     msgportname = (UBYTE *)allocst(name, args[-1]);
-    msgport = CreateMsgPort();
+    msgport = bl_newport();
     if (!msgport) {
-        FreeVec(lists);
+        freevec(lists);
         freest((ULONG)msgportname);
         msgportname = NULL;
         return 0;
@@ -1403,9 +1425,9 @@ static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *ar
     Forbid();
     if (FindPort((CONST_STRPTR)name)) {
         Permit();
-        DeleteMsgPort(msgport);
+        bl_freeport(msgport);
         msgport = NULL;
-        FreeVec(lists);
+        freevec(lists);
         freest((ULONG)msgportname);
         msgportname = NULL;
         return 0;
