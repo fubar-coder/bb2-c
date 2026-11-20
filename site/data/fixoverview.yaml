@@ -6788,6 +6788,14 @@ rows:
     text: "`SerialOpen` installs its interrupts where the vector base of a 68010 or later points; the original's were never called with a moved table."
     page: libraries
     anchor: riseriallib-fixes
+  - issue: 1140
+    severity: 5
+    topic: "Gadgets & menus"
+    library: "popupwinlib"
+    command: ""
+    text: "Programs with popup menus run on Kickstart 1.x, and the menus work there, except a sub menu that does not fit the screen; the original crashed at the start."
+    page: libraries
+    anchor: popupwinlib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

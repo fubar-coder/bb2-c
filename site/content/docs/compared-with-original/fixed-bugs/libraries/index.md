@@ -4670,6 +4670,15 @@ These fixes concern
 [popupwinlib]({{< relref "/docs/libraries/userlibs/popupwinlib" >}}),
 the popup menus of Reflective Images.
 
+* Programs that use the library run on Kickstart 1.x, and the menus work
+  there. The library builds its message port and the memory of a menu
+  level with functions that every Kickstart has, and below Kickstart 2.0
+  it opens the menu windows in the way Kickstart 1.x knows. On
+  Kickstart 1.x a sub menu whose window does not fit on the screen, at
+  its right or bottom edge, does not open, and the whole menu closes.
+  The original called functions of Kickstart 2.0, and every program with
+  the library crashed at its start
+  ([#1140](https://github.com/fubar-coder/bb2-c/issues/1140)).
 * `PopUpWindow` can be used as a function, `r=PopUpWindow(Screen#,*items)`,
   and returns the address of the item chosen, or 0 if no item was
   highlighted when the mouse button was pressed; the original was a

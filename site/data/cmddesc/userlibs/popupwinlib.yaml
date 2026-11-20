@@ -9,3 +9,7 @@
     pressed, in the menu or in one of its sub menus. Without free memory
     for a menu, or if a window cannot be opened, the whole menu closes
     at once and the function returns 0.
+
+    On Kickstart 1.x a sub menu whose window does not fit on the screen,
+    at its right or bottom edge, cannot open either, so the whole menu
+    closes there.
