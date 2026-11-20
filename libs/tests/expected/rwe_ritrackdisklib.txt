@@ -58,18 +58,22 @@ BootProg (no request)|opens|7,boot|1	$00000000
 BootProg (no request)|read buffer|7,boot|1	bytes 4096 fnv 671EA9C5
 BootProg (no request)|requests|7,boot|1	$00000000
 BootProg (no request)|unit|7,boot|1 [orig]	$FFFFFFFF
-BootProg (no request)|unit|7,boot|1 [fixed #861]	$00000001
+BootProg (no request)|unit|7,boot|1 [fixed #861]	$00000003
 BootProg (no request)|updates|7,boot|1	$00000000
 CloseDisk|actual|-1|1	$00000000
 CloseDisk|actual|0|1	$00000000
 CloseDisk|actual|1|1	$00000000
 CloseDisk|actual|1|2	$00000000
 CloseDisk|actual|9|1	$00000000
-CloseDisk|buffer|-1|1	$00000000
+CloseDisk|buffer|-1|1 [orig]	$00000000
+CloseDisk|buffer|-1|1 [fixed #862]	$00020000
 CloseDisk|buffer|0|1	$00000000
-CloseDisk|buffer|1|1	$00000000
-CloseDisk|buffer|1|2	$00000000
-CloseDisk|buffer|9|1	$00000000
+CloseDisk|buffer|1|1 [orig]	$00000000
+CloseDisk|buffer|1|1 [fixed #862]	$00020000
+CloseDisk|buffer|1|2 [orig]	$00000000
+CloseDisk|buffer|1|2 [fixed #862]	$00020000
+CloseDisk|buffer|9|1 [orig]	$00000000
+CloseDisk|buffer|9|1 [fixed #862]	$00020000
 CloseDisk|closes|-1|1	$00000000
 CloseDisk|closes|0|1	$00000000
 CloseDisk|closes|1|1	$00000001
@@ -115,11 +119,15 @@ CloseDisk|length|0|1	$00000000
 CloseDisk|length|1|1	$00000000
 CloseDisk|length|1|2	$00000000
 CloseDisk|length|9|1	$00000000
-CloseDisk|offset|-1|1	$00000000
+CloseDisk|offset|-1|1 [orig]	$00000000
+CloseDisk|offset|-1|1 [fixed #862]	$00000E00
 CloseDisk|offset|0|1	$00000000
-CloseDisk|offset|1|1	$00000000
-CloseDisk|offset|1|2	$00000000
-CloseDisk|offset|9|1	$00000000
+CloseDisk|offset|1|1 [orig]	$00000000
+CloseDisk|offset|1|1 [fixed #862]	$00000E00
+CloseDisk|offset|1|2 [orig]	$00000000
+CloseDisk|offset|1|2 [fixed #862]	$00000E00
+CloseDisk|offset|9|1 [orig]	$00000000
+CloseDisk|offset|9|1 [fixed #862]	$00000E00
 CloseDisk|opens|-1|1	$00000000
 CloseDisk|opens|0|1	$00000000
 CloseDisk|opens|1|1	$00000000
@@ -513,7 +521,7 @@ MotorOn|requests|0|2	$00000001
 MotorOn|requests|0|3	$00000001
 MotorOn|requests|3|1	$00000001
 MotorOn|unit|-1|1 [orig]	$FFFFFFFF
-MotorOn|unit|-1|1 [fixed #861]	$00000001
+MotorOn|unit|-1|1 [fixed #861]	$00000003
 MotorOn|unit|0|1	$00000000
 MotorOn|unit|0|2	$00000000
 MotorOn|unit|0|3	$00000000
@@ -596,7 +604,8 @@ OpenDisk|d0|-2,rwetest.device|1	$00000000
 OpenDisk|d0|0,rwetest.device|1	$FFFFFFFF
 OpenDisk|d0|0,trackdisk.device|1	$FFFFFFFF
 OpenDisk|d0|1,rwetest.device|1	$FFFFFFFF
-OpenDisk|d0|1,rwetest.device|2	$FFFFFFFF
+OpenDisk|d0|1,rwetest.device|2 [orig]	$FFFFFFFF
+OpenDisk|d0|1,rwetest.device|2 [fixed #862]	$00000000
 OpenDisk|d0|2,-|1	$00000000
 OpenDisk|d0|2,rwetest.device|1	$00000000
 OpenDisk|d0|3,rwetest.device|1	$FFFFFFFF
@@ -687,7 +696,8 @@ OpenDisk|opens|-2,rwetest.device|1	$00000000
 OpenDisk|opens|0,rwetest.device|1	$00000001
 OpenDisk|opens|0,trackdisk.device|1	$00000000
 OpenDisk|opens|1,rwetest.device|1	$00000001
-OpenDisk|opens|1,rwetest.device|2	$00000001
+OpenDisk|opens|1,rwetest.device|2 [orig]	$00000001
+OpenDisk|opens|1,rwetest.device|2 [fixed #862]	$00000000
 OpenDisk|opens|2,-|1	$00000000
 OpenDisk|opens|2,rwetest.device|1	$00000000
 OpenDisk|opens|3,rwetest.device|1	$00000001
@@ -716,13 +726,14 @@ OpenDisk|requests|3,rwetest.device|1	$00000000
 OpenDisk|requests|4,rwetest.device|1	$00000000
 OpenDisk|requests|5,-|1	$00000000
 OpenDisk|unit|-1,rwetest.device|1 [orig]	$FFFFFFFF
-OpenDisk|unit|-1,rwetest.device|1 [fixed #861]	$00000001
+OpenDisk|unit|-1,rwetest.device|1 [fixed #861]	$00000003
 OpenDisk|unit|-2,rwetest.device|1 [orig]	$FFFFFFFF
-OpenDisk|unit|-2,rwetest.device|1 [fixed #861]	$00000001
+OpenDisk|unit|-2,rwetest.device|1 [fixed #861]	$00000003
 OpenDisk|unit|0,rwetest.device|1	$00000000
 OpenDisk|unit|0,trackdisk.device|1	$00000003
 OpenDisk|unit|1,rwetest.device|1	$00000001
-OpenDisk|unit|1,rwetest.device|2	$00000001
+OpenDisk|unit|1,rwetest.device|2 [orig]	$00000001
+OpenDisk|unit|1,rwetest.device|2 [fixed #862]	$00000003
 OpenDisk|unit|2,-|1	$00000001
 OpenDisk|unit|2,rwetest.device|1	$00000001
 OpenDisk|unit|3,rwetest.device|1	$00000003
@@ -890,7 +901,7 @@ ReadSector|requests|0,3,+0,0 (form 0)|1	$00000001
 ReadSector|requests|0,8388611,+0,0 (form 0)|1	$00000001
 ReadSector|requests|1,7,+0,2 (form 1)|1	$00000001
 ReadSector|unit|-1,0,+0,0 (form 0)|1 [orig]	$FFFFFFFF
-ReadSector|unit|-1,0,+0,0 (form 0)|1 [fixed #861]	$00000001
+ReadSector|unit|-1,0,+0,0 (form 0)|1 [fixed #861]	$00000003
 ReadSector|unit|0,0,+0,2 (form 1)|1	$00000000
 ReadSector|unit|0,0,+0,8 (form 1)|1	$00000000
 ReadSector|unit|0,1,+0,0 (form 0)|1	$00000000

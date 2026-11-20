@@ -38,8 +38,6 @@ original's changes of a6 and d4-d7 are not reproduced.
   `trackname` without a limit (a longer one overwrites the request table
   and the port) (#860) and keeps it for later `OpenDisk` without a name
   (#859).
-* `OpenDisk` of an open unit replaces its request (the old one stays
-  open) (#862).
 * `WriteBoot unit,bootdata` overwrites bootdata (d1 = sector 0) and
   takes the buffer from d2, which is no argument (whatever the caller
   left there; the C routine takes d2 as a register parameter for the same
@@ -75,6 +73,13 @@ original's changes of a6 and d4-d7 are not reproduced.
   outside 0-3 is refused before the request is made (an unsigned
   compare); OpenDisk returns 0. Test: the `libs_emulator` cases
   `[fixed #861]` (units -1 and -2).
+* #862: the original's `OpenDisk` of a unit that was open made a new
+  request and opened the device again: the old request stayed open and
+  was lost (CloseDisk and finit closed only the new one). An open unit
+  is left alone now and `OpenDisk` returns 0 (as seriallib's
+  `OpenSerial`, #260). Tests: bug-orig `rwe/ritrackdisklib-opendisk-open-unit`
+  (`OpenDisk 0` twice on DF0: -1, 0), the `libs_emulator` cases
+  `[fixed #862]` (a second OpenDisk of unit 1).
 * #863: the original's finit closed units 0-2 only (unit 3 stayed open,
   its request leaked, and the port it names was deleted), and its init
   cleared only three table entries (a second init kept unit 3's stale

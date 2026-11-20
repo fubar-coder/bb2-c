@@ -5,6 +5,7 @@
 ; Correct: an open unit is left alone, the second OpenDisk returns 0; one
 ; CloseDisk closes the unit.
 ; @rwe ritrackdisklib
+; @fixed #862
 NPrint OpenDisk(0)
 NPrint OpenDisk(0)
 NPrint CloseDisk(0)

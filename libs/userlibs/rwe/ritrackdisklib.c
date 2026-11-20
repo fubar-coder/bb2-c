@@ -34,8 +34,6 @@
  *     bytes) without a limit - a longer name overwrites iorequests and
  *     msgport - (#860) and keeps it: a later OpenDisk without name uses
  *     it too (#859).
- *   - OpenDisk of a unit that is open replaces its request (the old one
- *     stays open, lost) (#862).
  *   - WriteBoot unit,bootdata sets d1 = 0 (sector) over bootdata and
  *     takes the buffer from d2, which is not an argument (whatever the
  *     caller left there; here a register parameter d2 for the same
@@ -53,6 +51,8 @@
  *     help text says "-1 if motor is on" (#857).
  * Fixed (#861): the original's OpenDisk let a negative unit pass its
  * check (CMP #3: BGT) and lost the request (the table ignores it).
+ * Fixed (#862): the original's OpenDisk of a unit that is open replaced
+ * its request (the old one stayed open, lost).
  * Fixed (#863): the original's finit closed units 0-2 only, not 3, and
  * its init cleared only the first three entries of iorequests.
  * Fixed (#941): the original called CreateMsgPort, CreateIORequest,
@@ -353,8 +353,9 @@ static void BLITZ_ROUTINE c_libfinit(void)
  * @brief OpenDisk unit#: open the device (trackname) for a unit with a new request.
  *
  * A new request (newreq(), 200 bytes) on the reply port, then OpenDevice of the name in trackname ("trackdisk.device", or the last
- * name given, #859).  BUG(orig): a unit that is open gets a new request,
- * the old one stays open and is lost (#862).  Fixed (#861): a unit
+ * name given, #859).  Fixed (#862): a unit that is open is left alone,
+ * the result is 0 (the original made a new request, the old one stayed
+ * open and was lost).  Fixed (#861): a unit
  * outside 0-3 is refused before the request is made (the original's
  * signed CMP #3: BGT let negative units pass; the table ignored them, so
  * the request was lost or 0 was freed).
@@ -366,6 +367,8 @@ BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
     struct IOStdReq *req;
 
     if ((ULONG)unit > 3 || !td.msgport) /* Fixed (#861): unsigned */
+        return BB_FALSE;
+    if (td.iorequests[unit])            /* Fixed (#862): open, left alone */
         return BB_FALSE;
     req = newreq();
     if (!req)
