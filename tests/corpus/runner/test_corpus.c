@@ -640,6 +640,84 @@ int main(void)
     CHECK(parse(BASE CONFIGS "expect_dir=/e\nnotes=/n.tsv\nsource=/s\n", err, sizeof err) == -1
           && strstr(err, "unknown key notes"));
 
+    /* floppy=N|SRC: parse, the emulator changes and the copy per configuration */
+    {
+        struct amiga_emulation_option ch[CORPUS_FLOPPY_CHANGES];
+        char *paths[CORPUS_FLOPPIES], dir[] = "/tmp/corpus-floppy-XXXXXX";
+        char *src, *want, *got, text[600];
+        size_t len, n, i;
+
+        CHECK(parse(BASE CONFIGS "source=/s\nfloppy=1\n", err, sizeof err) == -1
+              && strstr(err, "floppy=N|SRC"));
+        CHECK(parse(BASE CONFIGS "source=/s\nfloppy=1|\n", err, sizeof err) == -1);
+        CHECK(parse(BASE CONFIGS "source=/s\nfloppy=4|/x\n", err, sizeof err) == -1);
+        CHECK(parse(BASE CONFIGS "source=/s\nfloppy=a|/x\n", err, sizeof err) == -1);
+        CHECK(parse(BASE CONFIGS "source=/s\nfloppy=10|/x\n", err, sizeof err) == -1);
+        CHECK(parse(BASE CONFIGS "source=/s\nfloppy=1|/x\nfloppy=1|/y\n", err, sizeof err) == -1
+              && strstr(err, "once per drive"));
+        CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0);
+        CHECK(corpus_floppy_changes(&p, 0, ch, paths) == 0 && !paths[0] && !paths[1]);
+        corpus_free(&p);
+        /* DF1 only: the drive is switched on, DF0 stays empty */
+        CHECK(corpus_parse(BASE CONFIGS "source=/s\nfloppy=1|/img/a.adf\n", &p, err,
+                           sizeof err) == 0);
+        CHECK(!p.floppy[0] && !strcmp(p.floppy[1], "/img/a.adf"));
+        n = corpus_floppy_changes(&p, 1, ch, paths);
+        CHECK(n == 3 && !paths[0] && paths[1] && !strcmp(paths[1], "/w/port/emu/df1.adf"));
+        CHECK(n == 3 && !strcmp(ch[0].key, "floppy1type") && !strcmp(ch[0].value, "0")
+              && !strcmp(ch[1].key, "floppy1") && ch[1].value == paths[1]
+              && !strcmp(ch[2].key, "nr_floppies") && !strcmp(ch[2].value, "2"));
+        for (i = 0; i < CORPUS_FLOPPIES; i++)
+            free(paths[i]);
+        corpus_free(&p);
+        /* DF0 and DF3: four drives, no type for DF0 */
+        CHECK(corpus_parse(BASE CONFIGS "source=/s\nfloppy=3|/c\nfloppy=0|/d\n", &p, err,
+                           sizeof err) == 0);
+        n = corpus_floppy_changes(&p, 0, ch, paths);
+        CHECK(n == 4 && !strcmp(ch[0].key, "floppy0") && !strcmp(ch[1].key, "floppy3type")
+              && !strcmp(ch[2].key, "floppy3") && !strcmp(ch[3].key, "nr_floppies")
+              && !strcmp(ch[3].value, "4"));
+        for (i = 0; i < CORPUS_FLOPPIES; i++)
+            free(paths[i]);
+        corpus_free(&p);
+
+        /* the copy: one per configuration, in WORK/TAG/emu; the image itself stays */
+        CHECK(mkdtemp(dir) != NULL);
+        src = str_printf("%s/a.adf", dir);
+        snprintf(text, sizeof text, "work=%s/w\nreport=/r\nted=/t\nlauncher=/x\ndefaultdbug=/d\n"
+                 CONFIGS "source=/s\nfloppy=1|%s\n", dir, src);
+        CHECK(write_file(src, "DISK", 4) == 0);
+        CHECK(corpus_parse(text, &p, err, sizeof err) == 0);
+        CHECK(corpus_floppy_stage(&p, 0, err, sizeof err) == -1 && strstr(err, "df1.adf"));
+        CHECK((want = str_printf("%s/w/ref/emu", dir)) && mkdir_p(want) == 0);
+        free(want);
+        CHECK((want = str_printf("%s/w/port/emu", dir)) && mkdir_p(want) == 0);
+        free(want);
+        CHECK(corpus_floppy_stage(&p, 0, err, sizeof err) == 0);
+        CHECK(corpus_floppy_stage(&p, 1, err, sizeof err) == 0);
+        CHECK((want = corpus_floppy_path(&p, 0, 1)) != NULL);
+        got = want ? (char *)read_file(want, &len) : NULL;
+        CHECK(got && len == 4 && !memcmp(got, "DISK", 4));
+        free(got);
+        /* a write of the session reaches the copy only */
+        CHECK(write_file(want, "WRIT", 4) == 0);
+        free(want);
+        CHECK((want = corpus_floppy_path(&p, 1, 1)) != NULL);
+        got = (char *)read_file(want, &len);
+        CHECK(got && len == 4 && !memcmp(got, "DISK", 4));
+        free(got);
+        free(want);
+        got = (char *)read_file(src, &len);
+        CHECK(got && len == 4 && !memcmp(got, "DISK", 4));
+        free(got);
+        /* a missing image: the stage fails and names it */
+        CHECK(remove(src) == 0);
+        CHECK(corpus_floppy_stage(&p, 0, err, sizeof err) == -1 && strstr(err, "the floppy image") && strstr(err, "a.adf"));
+        corpus_free(&p);
+        free(src);
+        rm_tree(dir);
+    }
+
     /* the expected data, read when the pass runs; the files of the test in
        a directory of its own */
     {

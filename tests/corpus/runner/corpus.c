@@ -76,6 +76,8 @@ void corpus_free(struct corpus_pass *p)
     for (i = 0; i < p->nuae; i++)
         free(p->uae[i]);
     free(p->uae);
+    for (i = 0; i < CORPUS_FLOPPIES; i++)
+        free(p->floppy[i]);
     for (i = 0; i < p->nconfigs; i++) {
         free(p->configs[i].tag);
         free(p->configs[i].base);
@@ -411,6 +413,22 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 free(val);
                 return fail(p, err, errlen, "line %u: uae=KEY=VALUE", no);
             }
+            continue;
+        }
+        if (!strcmp(key, "floppy")) {
+            /* N|SRC: N a drive 0 to 3, once per drive, SRC not empty */
+            unsigned unit = (unsigned)(val[0] - '0');
+
+            if (val[0] < '0' || unit >= CORPUS_FLOPPIES || val[1] != '|' || !val[2]
+                || p->floppy[unit]) {
+                free(val);
+                return fail(p, err, errlen,
+                            "line %u: floppy=N|SRC (N from 0 to 3, once per drive)", no);
+            }
+            p->floppy[unit] = strdup(val + 2);
+            free(val);
+            if (!p->floppy[unit])
+                return fail(p, err, errlen, "line %u: out of memory", no);
             continue;
         }
         if (!strcmp(key, "jobline")) {
@@ -898,6 +916,66 @@ static int kick1x(const struct corpus_pass *p)
     return amiga_emulation_machine_kickstart(p->machine) < 36;
 }
 
+/* ------------------------------------------------------------ floppies */
+
+char *corpus_floppy_path(const struct corpus_pass *p, size_t c, unsigned unit)
+{
+    return str_printf("%s/%s/emu/df%u.adf", p->work, p->configs[c].tag, unit);
+}
+
+int corpus_floppy_stage(const struct corpus_pass *p, size_t c, char *err, size_t errlen)
+{
+    unsigned u;
+
+    for (u = 0; u < CORPUS_FLOPPIES; u++) {
+        char *to;
+
+        if (!p->floppy[u])
+            continue;
+        to = corpus_floppy_path(p, c, u);
+        if (!to || copy_file(p->floppy[u], to)) {
+            snprintf(err, errlen, "cannot copy the floppy image %s to %s", p->floppy[u],
+                     to ? to : "DF?");
+            free(to);
+            return -1;
+        }
+        free(to);
+    }
+    return 0;
+}
+
+size_t corpus_floppy_changes(const struct corpus_pass *p, size_t c,
+                             struct amiga_emulation_option *out, char *paths[CORPUS_FLOPPIES])
+{
+    static const char *const key[] = { "floppy0", "floppy1", "floppy2", "floppy3" };
+    static const char *const typekey[] = { "floppy0type", "floppy1type", "floppy2type",
+                                           "floppy3type" };
+    static const char *const count[] = { "1", "1", "2", "3", "4" };
+    size_t n = 0;
+    unsigned u, last = 0;
+
+    for (u = 0; u < CORPUS_FLOPPIES; u++)
+        paths[u] = NULL;
+    for (u = 0; u < CORPUS_FLOPPIES; u++) {
+        if (!p->floppy[u])
+            continue;
+        if (!(paths[u] = corpus_floppy_path(p, c, u)))
+            return (size_t)-1;
+        if (u) {
+            out[n].key = typekey[u];
+            out[n++].value = "0";
+        }
+        out[n].key = key[u];
+        out[n++].value = paths[u];
+        last = u + 1;
+    }
+    if (n) {
+        out[n].key = "nr_floppies";
+        out[n++].value = count[last];
+    }
+    return n;
+}
+
 /* the directory of configuration c: WORK/TAG/vol = CORPUS:, WORK/TAG/emu */
 static char *dir_of(const struct corpus_pass *p, size_t c, const char *sub)
 {
@@ -936,6 +1014,14 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
         || mkdir_sub(p, c, "vol/out") || mkdir_sub(p, c, "emu")) {
         fprintf(log, "corpus: %s: cannot create the directories\n", root);
         goto out;
+    }
+    {
+        char ferr[400];
+
+        if (corpus_floppy_stage(p, c, ferr, sizeof ferr)) {
+            fprintf(log, "corpus: %s\n", ferr);
+            goto out;
+        }
     }
     for (i = 0; i < sizeof files / sizeof files[0]; i++) {
         char *to;
@@ -1112,7 +1198,10 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
     };
     size_t nserial = port ? sizeof serial / sizeof serial[0] : 0;
     size_t nrtg = p->rtg ? amiga_emulation_rtg_count : 0;
-    struct amiga_emulation_option *ch = calloc(nserial + nrtg + p->nuae + 1, sizeof *ch);
+    struct amiga_emulation_option *ch =
+        calloc(nserial + nrtg + CORPUS_FLOPPY_CHANGES + p->nuae + 1, sizeof *ch);
+    char *fpaths[CORPUS_FLOPPIES] = { NULL };
+    size_t nflop = 0;
     char **keys = calloc(p->nuae + 1, sizeof *keys);
     struct amiga_emulation_params ep = { 0 };
     struct amiga_emulation *e = NULL;
@@ -1124,16 +1213,23 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
             ch[i] = serial[i];
         for (i = 0; i < nrtg; i++)
             ch[nserial + i] = amiga_emulation_rtg[i];
+        nflop = corpus_floppy_changes(p, c, ch + nserial + nrtg, fpaths);
+        if (nflop == (size_t)-1) {
+            snprintf(err, errlen, "out of memory");
+            goto done;
+        }
         for (i = 0; i < p->nuae && (keys[i] = strdup(p->uae[i])); i++) {
             char *eq = strchr(keys[i], '=');
 
             *eq = 0;
-            ch[nserial + nrtg + i].key = keys[i];
-            ch[nserial + nrtg + i].value = eq + 1;
+            ch[nserial + nrtg + nflop + i].key = keys[i];
+            ch[nserial + nrtg + nflop + i].value = eq + 1;
         }
         ep.machine = p->machine;
         ep.changes = ch;
-        ep.nchanges = nserial + nrtg + i;
+        ep.nchanges = nserial + nrtg + nflop + i;
+        /* a snapshot key would hold the copy of the image, new in every run */
+        ep.cold = nflop > 0;
         /* CORPUS: the configuration's directory, the read-only volumes */
         m[0].volume = VOLUME;
         m[0].host_dir = vol;
@@ -1164,6 +1260,9 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
         e = amiga_emulation_start(&ep, err, errlen);
     } else
         snprintf(err, errlen, "out of memory");
+done:
+    for (i = 0; i < CORPUS_FLOPPIES; i++)
+        free(fpaths[i]);
     free(arm);
     free(m);
     for (i = 0; keys && i < p->nuae; i++)

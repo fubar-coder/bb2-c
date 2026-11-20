@@ -1442,6 +1442,7 @@ the issue: `ID.bas` (the program as text; in its header comment
 `tests/corpus/runner/corpus.h`: `file=`, `dir=`, `remove=`, `wrap=`,
 `runwrap=`, `runargs=` (arguments of the program, a CLI start),
 `uae=KEY=VALUE` (a change of the emulator configuration), `jobline=`,
+`floppy=N|SRC` (a disk image in drive DFN, cold boot, below),
 `timeout=`, `runtime_errors=on`, `serial=on` (the remote end of the
 serial tests on the emulated serial port, `tests/corpus/runner/serial.h`:
 canned replies, among them `N` with a byte count and `S`, an XOFF that
@@ -1692,7 +1693,28 @@ blitz2-c starts there since #936 (linked with libnix13). A crash on Kickstart 1.
 "Software error - task held", which reqtrap answers with Cancel: a
 Guru that waits for the mouse, the session runs into its timeout.
 
-### Port regression tests
+A floppy disk: `; @pass floppy=N|SRC` puts the image SRC into drive DFN
+(0 to 3, once per drive; the other drives stay empty, the templates have
+one drive, DF0, and the key switches DF1 to DF3 on). Tests of
+ritrackdisklib use DF1 and leave DF0 empty. SRC is a generated test image,
+e.g. `@TESTDATA@/ritrackdisklib-blank.adf` from
+`rwe/ritrackdisklib-blank.adf.spec` (`tools/mktestdata`; a DD disk is 901120
+bytes, an all-zero ADF reads as 1760 valid sectors of zeros, AmigaDOS sees no
+DOS disk; marks in sectors 0, 11 and 1759). Every configuration gets its own
+writable copy `WORK/TAG/emu/dfN.adf` (the image itself stays as it is), so
+a write of the program is seen by that configuration only. A session with a
+floppy boots cold, without a snapshot: the snapshot key holds the identity
+of every medium (path, inode, time), and the copy is new in every run, so
+every session would save a state that is never used again. Consequences: a
+session takes the boot (about 3 s on the A1200 and the a500-204) and there
+is no hang check (it works in snapshot mode only), a
+test sets `timeout=`. The key comes before the `uae=` changes: `uae=floppy1wp=true`
+write protects the disk. A disk in DF0 without a boot block is skipped by the
+boot (DH0 boots). Example and check of the key:
+`regression/ritrackdisklib-floppy-key` (a500-204 and a1200; the a500 crashes
+in the library's start-up, #941); the key's parser and the copy have host
+tests with broken input (`corpus_runner`).
+
 
 **Port regression tests** (`tests/bug-orig/regression/ID.bas`, same
 files and header lines): a bug of the port, not of the original, that

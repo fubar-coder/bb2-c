@@ -137,6 +137,15 @@
  *   uae=KEY=VALUE     a change of the emulator configuration
  *                     (tools/lib/amiga_emulation/default.uae), e.g. more
  *                     memory; any number
+ *   floppy=N|SRC      the disk image SRC (e.g. @TESTDATA@/NAME.adf, made from
+ *                     NAME.adf.spec) in drive DFN (0 to 3), once per drive;
+ *                     the drives without one stay empty (a test of
+ *                     ritrackdisklib uses DF1).  Every configuration gets its
+ *                     own writable copy WORK/TAG/emu/dfN.adf and the session
+ *                     boots cold (no snapshot: its key would hold the copy of
+ *                     every run), so there is no hang check.  Applied before
+ *                     the uae= changes (floppyNwp=true: write protected).  A
+ *                     disk in DF0 without a boot block is skipped by the boot
  *   rtg=on|off        on: the RTG variant of the emulator (the uaegfx board,
  *                     the Workbench hardfile with its monitor,
  *                     amiga_emulation_rtg), e.g. for a screen taller than
@@ -222,6 +231,11 @@
 #include <stdio.h>
 #include "corpusexpect.h"
 #include "previntended.h"
+#include "amiga_emulation.h"
+
+#define CORPUS_FLOPPIES 4
+/* room for corpus_floppy_changes: floppyN and floppyNtype per drive, nr_floppies */
+#define CORPUS_FLOPPY_CHANGES (2 * CORPUS_FLOPPIES + 1)
 
 enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_EXEINFO, CORPUS_OUTPUT };
 enum corpus_record { CORPUS_RECORD_NONE, CORPUS_RECORD_CHECK, CORPUS_RECORD_WRITE };
@@ -272,8 +286,25 @@ struct corpus_pass {
     size_t ndirs, nremoves, njoblines;
     char **uae;                         /* KEY=VALUE */
     size_t nuae;
+    char *floppy[CORPUS_FLOPPIES];      /* floppy=N|SRC: the image of drive DFN, NULL = none */
 };
 
+
+/* WORK/TAG/emu/dfN.adf: the writable copy of the image of drive N of configuration c
+   (malloc'd, NULL = out of memory) */
+char *corpus_floppy_path(const struct corpus_pass *p, size_t c, unsigned unit);
+
+/* copies every floppy= image to its path (WORK/TAG/emu must exist); 0 = ok, -1 = error
+   (the message in err) */
+int corpus_floppy_stage(const struct corpus_pass *p, size_t c, char *err, size_t errlen);
+
+/* the emulator changes of configuration c for its floppy= images: floppyN = the copy,
+   floppyNtype=0 for N >= 1 (the templates have DF1 off) and nr_floppies; into out
+   (CORPUS_FLOPPY_CHANGES entries), the paths malloc'd into paths[unit] (the caller
+   frees them, also after an error).  Returns the number of entries, 0 without floppy=,
+   (size_t)-1 = out of memory.  A pass with floppy= boots cold */
+size_t corpus_floppy_changes(const struct corpus_pass *p, size_t c,
+                             struct amiga_emulation_option *out, char *paths[CORPUS_FLOPPIES]);
 /* 0 = ok, -1 = error (message in err) */
 int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errlen);
 void corpus_free(struct corpus_pass *p);
