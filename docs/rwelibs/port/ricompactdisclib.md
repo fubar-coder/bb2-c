@@ -74,11 +74,16 @@ d1/d2 (CDTrackLength) are not reproduced.
 * `OpenCD` returns 0 when OpenDevice fails, and the freed request is
   forgotten. The original keeps the deleted request in ioreq and returns
   the d0 of DeleteIORequest (200 on Kickstart 3.1). (#575)
+* `OpenCD name$,unit` opens without scsiflag; `OpenCD` without
+  arguments opens cd.device unit 0 without scsiflag (the manual:
+  "ommiting the optional parameter of this command will cause the
+  default cd.device unit 0 to be opened"). The original keeps the name,
+  the unit and scsiflag of the `OpenCD` before (only init clears scsiflag
+  and sets the name back, not the unit, so a second run from the editor
+  opens cd.device with the unit of the first). (#577)
 
 **BUG(orig)** (kept):
 
-* `OpenCD name$,unit` keeps name, unit and scsiflag for later
-  `OpenCD`s; only init clears scsiflag (and sets the name back). (#577)
 * `OpenCD` while open: the old request stays open, lost. (#578)
 * `CDStop` (also in `CloseCD`) is AbortIO only, no WaitIO; it sets
   io_Command first. (#574)

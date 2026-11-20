@@ -9,6 +9,7 @@
 ; Correct: after OpenCD name$,unit the cd.device path (uaescsi.device
 ; does not answer its TOC command: no TOC, 0 tracks); OpenCD without
 ; arguments opens cd.device unit 0 (fails here: 0).
+; @fixed #577
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
 ; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image

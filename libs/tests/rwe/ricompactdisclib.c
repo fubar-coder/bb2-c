@@ -32,7 +32,7 @@
  * CDUpdateInfo returns a0 + 5, CDTrackMins/Secs/Playing read their data
  * anyway), OpenCD of cd.device (missing in the emulator: the failure
  * path; the original returns the d0 of DeleteIORequest, fixed #575: 0), of unit 3 (OpenDevice fails),
- * the name and unit kept for OpenCD without arguments, OpenCD while open
+ * the name and unit kept for OpenCD without arguments (the original; fixed #577: cd.device unit 0), OpenCD while open
  * (BUG(orig) (#578): the old request is lost), all CD commands with their
  * arguments and io_Errors, CDReadTOC twice (the old TOC freed, the second
  * read failing), a failing summary read (the original goes on, fixed #581), a play in
@@ -45,7 +45,7 @@
  * fixed blocks 14000-15000 and io_Offset 1 before and after READ TOC,
  * with tracks inside, at the ends of and outside the TOC, CDNumTracks
  * from the SCSI TOC data, CDFirstTrack, CDLastTrack and CDTrackLength
- * from it (the original: from toc, fixed #582; BUG(orig) (#580)); the flag kept by OpenCD
+ * from it (the original: from toc, fixed #582; BUG(orig) (#580)); the flag kept by OpenCD (the original; fixed #577: cleared)
  * without arguments), CloseCD (twice), finit with a device open and
  * without port, init again, init without a message port
  * (AllocSignal fails) and OpenCD without a request (AllocMem of 200 bytes
@@ -713,7 +713,7 @@ int main(int argc, char **argv)
     CALL0(READTOC, "CDReadTOC");
     tocfuncs(1, 3);
 
-    /* OpenCD without arguments: rwecd.device unit 1 kept; the open
+    /* OpenCD without arguments: rwecd.device unit 1 kept (the original; fixed #577: cd.device unit 0, missing here); the open
        request is lost (BUG(orig) (#578)) */
     ntracks = 9;
     opencd(NULL, 0, 0, 0);
@@ -775,14 +775,14 @@ int main(int argc, char **argv)
     sprintf(VEC, "scsi 3,0");
     CALL2(PLAY, "CDPlayTrack", 3, 0);
     CALL0(CLOSECD, "CloseCD");
-    /* OpenCD without arguments: still the SCSI path */
+    /* OpenCD without arguments: still the SCSI path (the original; fixed #577: cd.device) */
     opencd(NULL, 0, 0, 0);
     ntracks = 20;
     strcpy(VEC, "scsi kept");
     CALL0(READTOC, "CDReadTOC");
     CALL0(NUMTRACKS, "CDNumTracks");
     CALL2(PLAY, "CDPlayTrack", 1, 1);
-    /* OpenCD name,unit: scsiflag stays too */
+    /* OpenCD name,unit: scsiflag stays too (the original; fixed #577: cleared) */
     opencd(rwecd, 0, 1, 0);
     CALL0(READTOC, "CDReadTOC");
     CALL0(NUMTRACKS, "CDNumTracks");

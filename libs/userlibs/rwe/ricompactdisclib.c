@@ -62,10 +62,12 @@
  * Fixed (#575): OpenCD returns 0 when OpenDevice fails and forgets the
  *   freed request; the original keeps the deleted request in ioreq and
  *   returns the d0 of DeleteIORequest (200 on Kickstart 3.1).
+ * Fixed (#577): OpenCD name$,unit clears scsiflag, OpenCD without
+ *   arguments opens cd.device unit 0 without scsiflag (the manual); the
+ *   original keeps the name, the unit and scsiflag of the OpenCD before
+ *   (only init clears scsiflag and sets the name back, not the unit).
  *
  * BUG(orig):
- *   - OpenCD name$,unit keeps the name, the unit and scsiflag for later
- *     OpenCDs; scsiflag is only cleared by init (#577).
  *   - OpenCD while open: the old request stays open, lost (#578).
  *   - CDVolume volume,fade puts the volume into io_Length and the fade into
  *     io_Offset, the reverse of cd.device's CD_ATTENUATE (#982).
@@ -498,8 +500,8 @@ static void BLITZ_ROUTINE c_libfinit(void)
     cd.flag = 0;
 }
 
-/* OpenCD: -1 if the device opened */
-ULONG BLITZ_ROUTINE c_opencd(void)
+/* the open of the three forms: -1 if the device opened */
+static ULONG doopen(void)
 {
     struct IOStdReq *req;
     struct bl_regs r;
@@ -539,11 +541,24 @@ static int namefits(const char *name)
     return 1;
 }
 
-/* OpenCD devicename$,unit: the name and unit stay for later OpenCDs.
+/* OpenCD: cd.device, unit 0 (the manual: "ommiting the optional
+   parameter of this command will cause the default cd.device unit 0 to
+   be opened").  Fixed (#577): the name, the unit and scsiflag are set
+   back; the original opens the name and unit of the OpenCD before, with
+   its scsiflag */
+ULONG BLITZ_ROUTINE c_opencd(void)
+{
+    cd.trackname = cd.devicename;
+    cd.trackversion = 0;
+    scsiflag = 0;
+    return doopen();
+}
+
+/* OpenCD devicename$,unit[,scsiflag]: the name, the unit and scsiflag.
    Fixed (#576): a name of 40 characters or more is refused (0, nothing
-   copied, nothing opened); the original copies it without a limit over
-   toc, toclen, temptoc, qcodeinfo, ioreq, msgport ... */
-ULONG BLITZ_ROUTINE c_opencd2(const char *name BL_REG(d0), ULONG unit BL_REG(d1))
+   copied, nothing opened, scsiflag kept); the original copies it without
+   a limit over toc, toclen, temptoc, qcodeinfo, ioreq, msgport ... */
+static ULONG openname(const char *name, ULONG unit, ULONG flag)
 {
     char *p = cd.username;
 
@@ -553,18 +568,22 @@ ULONG BLITZ_ROUTINE c_opencd2(const char *name BL_REG(d0), ULONG unit BL_REG(d1)
     while ((*p++ = *name++) != 0)
         ;
     cd.trackversion = unit;
-    return c_opencd();
+    scsiflag = flag;
+    return doopen();
 }
 
-/* OpenCD devicename$,unit,scsiflag (a name too long: 0, scsiflag kept,
-   fixed #576) */
+/* OpenCD devicename$,unit.  Fixed (#577): scsiflag 0; the original keeps
+   the scsiflag of an earlier OpenCD devicename$,unit,scsiflag */
+ULONG BLITZ_ROUTINE c_opencd2(const char *name BL_REG(d0), ULONG unit BL_REG(d1))
+{
+    return openname(name, unit, 0);
+}
+
+/* OpenCD devicename$,unit,scsiflag */
 ULONG BLITZ_ROUTINE c_opencd3(const char *name BL_REG(d0), ULONG unit BL_REG(d1),
                               ULONG flag BL_REG(d2))
 {
-    if (!namefits(name))
-        return 0;
-    scsiflag = flag;
-    return c_opencd2(name, unit);
+    return openname(name, unit, flag);
 }
 
 /* CDStatus: CD_INFO, the Status word */
