@@ -48,6 +48,13 @@ d1/d2 (CDTrackLength) are not reproduced.
 * `CDPlayTrack` with scsiflag writes its command block byte by byte; the
   original writes two longs and a word to odd addresses, an address
   error on a 68000. (#579)
+* `CDNumTracks`, `CDFirstTrack`, `CDLastTrack` and `CDTrackLength`
+  return 0 without a TOC; with scsiflag they use the SCSI TOC of
+  `CDReadTOC` (first and last track from its header, the length of a
+  track from the LBAs of its descriptor and the next one or the
+  lead-out, frames / 75; 0 for a track it does not hold). The original
+  reads toc without a test (address 0 before any `CDReadTOC`) and with
+  scsiflag counts only `CDNumTracks` from the SCSI TOC. (#582)
 
 **BUG(orig)** (kept):
 
@@ -60,9 +67,6 @@ d1/d2 (CDTrackLength) are not reproduced.
   io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
   15000 (test values), io_Offset = 1. (#580)
-* `CDReadTOC` with scsiflag fills only its own buffer: `CDFirstTrack`,
-  `CDLastTrack`, `CDTrackLength` still use toc (address 0 before any
-  `CDReadTOC` without scsiflag). (#582)
 * `CDReadTOC`: the summary read is not checked, nor the globalloc of the
   TOC; toclen = (last + 2) × 8 + 32 for 6-byte entries. (#581)
 * `CDTrackLength n` = start of track n+1 − start of track n in seconds

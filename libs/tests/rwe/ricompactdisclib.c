@@ -37,15 +37,15 @@
  * arguments and io_Errors, CDReadTOC twice (the old TOC freed, the second
  * read failing), a failing summary read (BUG(orig) (#581)), a play in
  * progress stopped, closed and its request used again (BUG(orig) (#574,
- * #1156)), the TOC functions before any CDReadTOC (BUG(orig) (#582): they
- * read address 0), CDTrackLength of every track 1..9 of the 9 track CD
+ * #1156)), the TOC functions before any CDReadTOC (the original reads
+ * address 0, fixed #582), CDTrackLength of every track 1..9 of the 9 track CD
  * and 40..50 of the 50 track CD (BUG(orig) (#585, #583): from track 44 the start is
  * wrong; the last track reads the entry behind it), CDTrackMins/CDTrackSecs offsets 0, 1, 4, 5, -1..-5 and the
  * high bits of d0 (BUG(orig) (#586)), the SCSI path (scsiflag: CDPlayTrack's
  * fixed blocks 14000-15000 and io_Offset 1 before and after READ TOC,
  * with tracks inside, at the ends of and outside the TOC, CDNumTracks
  * from the SCSI TOC data, CDFirstTrack, CDLastTrack and CDTrackLength
- * still from toc (BUG(orig) (#580, #582)); the flag kept by OpenCD
+ * from it (the original: from toc, fixed #582; BUG(orig) (#580)); the flag kept by OpenCD
  * without arguments), CloseCD (twice), finit with a device open and
  * without port, init again, init without a message port
  * (CreateMsgPort fails) and OpenCD without a request (CreateIORequest
@@ -764,8 +764,8 @@ int main(int argc, char **argv)
     ntracks = 9;
     opencd(NULL, 0, 0, 0);              /* the name is cd.device again */
     opencd(rwecd, 0, 1, 0);
-    /* the TOC functions before any CDReadTOC (BUG(orig) (#582): toc is
-       0, they read from address 0) */
+    /* the TOC functions before any CDReadTOC (the original: toc is
+       0, they read from address 0; fixed #582) */
     tocfuncs(1, 2);
     strcpy(VEC, "again");
     CALL0(READTOC, "CDReadTOC");

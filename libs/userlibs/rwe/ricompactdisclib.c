@@ -43,6 +43,12 @@
  * Fixed (#579): CDPlayTrack with scsiflag writes its command block byte
  *   by byte; the original writes two longs and a word to odd addresses
  *   (MOVE.l #14000,(a0)+ after a byte): an address error on a 68000.
+ * Fixed (#582): CDNumTracks, CDFirstTrack, CDLastTrack and CDTrackLength
+ *   return 0 without a TOC; with scsiflag they use the SCSI TOC of
+ *   CDReadTOC (first and last track, the lengths from the LBAs; 0 for a
+ *   track it does not hold).  The original reads toc without a test
+ *   (address 0 before a CDReadTOC) and with scsiflag counts only
+ *   CDNumTracks from the SCSI TOC.
  *
  * BUG(orig):
  *   - OpenCD name$,unit keeps the name, the unit and scsiflag for later
@@ -56,9 +62,6 @@
  *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
  *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
- *   - CDReadTOC with scsiflag reads into its own buffer only: CDFirstTrack,
- *     CDLastTrack and CDTrackLength still use toc (0 before a CDReadTOC
- *     without scsiflag: they read address 0) (#582).
  *   - CDReadTOC: the summary read is not checked; the globalloc of the
  *     TOC is not checked (DoIO then writes to address 0).  toclen =
  *     (last track + 2) * 8 + 32 for entries of 6 bytes (#581).
@@ -68,8 +71,8 @@
  *     its high byte stays in the low word that MULU.w multiplies: the
  *     start of track n is wrong.  The last track takes the entry behind
  *     it (CD_TOCMSF does not write it: the lead-out is in the summary),
- *     track 0 reads 65539 bytes behind toc.  No check that toc exists
- *     (#584, #585, #583).
+ *     track 0 reads 65539 bytes behind toc.  (Without a TOC: 0,
+ *     fixed #582.) (#584, #585, #583).
  *   - CDUpdateInfo without an open device returns the caller's a0 + 5 (#587).
  *   - CDStatus asks for 26 bytes of CD_INFO (a struct CDInfo has 34): a
  *     device that writes all of it (uaescsi.device) writes 8 bytes behind
@@ -282,6 +285,7 @@ BLITZ_LIBFIN();
 static struct SCSICmd *Cmd;
 static UBYTE *ReadTOC, *TrackDesc, *TOCData, *SCSICMD12;
 static ULONG scsiflag;
+static UBYTE scsitoc;                   /* TOCData read (fixed #582) */
 
 /* the data at the end of the original, in its order */
 static struct BL_PACKED {
@@ -389,6 +393,7 @@ static void BLITZ_ROUTINE c_libinit(void)
     TOCData = (UBYTE *)globalloc(SIZEOF_TOCDATA, MEMF_CLEAR);
     SCSICMD12 = (UBYTE *)globalloc(SIZEOF_SCSICMD12, MEMF_CLEAR);
     scsiflag = 0;
+    scsitoc = 0;
 }
 
 /* CDStop: AbortIO only (BUG(orig) (#574): no WaitIO) */
@@ -551,7 +556,9 @@ ULONG BLITZ_ROUTINE c_gettoc(void)
         c[7] = SIZEOF_TOCDATA >> 8;
         c[8] = SIZEOF_TOCDATA & 0xff;
         c[9] = 0;
-        return doscsi(ReadTOC, SIZEOF_READTOC, TOCData, SIZEOF_TOCDATA, SCSIF_READ);
+        r.d0 = doscsi(ReadTOC, SIZEOF_READTOC, TOCData, SIZEOF_TOCDATA, SCSIF_READ);
+        scsitoc = !r.d0;                /* fixed #582: the TOC functions use it */
+        return r.d0;
     }
     if (cd.toc) {
         r = (struct bl_regs){ .d0 = cd.toclen, .a1 = (ULONG)cd.toc };
@@ -577,37 +584,91 @@ ULONG BLITZ_ROUTINE c_cdvolume(ULONG vol BL_REG(d0), ULONG fade BL_REG(d1))
     return cdio(DOIO, CD_ATTENUATE, NULL, fade, vol);
 }
 
-/* CDNumTracks: last - first + 1 of toc (scsiflag: of TOCData) */
+/* the SCSI TOC (READ TOC of a CDReadTOC with scsiflag, fixed #582): the
+   descriptor of track t (t = last + 1: the lead-out, the descriptor
+   behind the last track), NULL without a TOC or for a track it does not
+   hold */
+static const UBYTE *scsidesc(ULONG t)
+{
+    ULONG len, n, i;
+
+    if (!scsitoc)
+        return NULL;
+    len = ((ULONG)TOCData[0] << 8) | TOCData[1];
+    n = len < 2 ? 0 : (len - 2) / 8;
+    if (n > (SIZEOF_TOCDATA - 4) / 8)
+        n = (SIZEOF_TOCDATA - 4) / 8;
+    if (t < TOCData[2] || t > (ULONG)TOCData[3] + 1)
+        return NULL;
+    i = t - TOCData[2];
+    if (i >= n)
+        return NULL;
+    return TOCData + 4 + 8 * i;
+}
+
+static ULONG getlong(const UBYTE *p)
+{
+    return ((ULONG)p[0] << 24) | ((ULONG)p[1] << 16) | ((ULONG)p[2] << 8) | p[3];
+}
+
+/* CDNumTracks: last - first + 1 of toc (scsiflag: of TOCData).  Fixed
+   (#582): 0 without a TOC (the original reads address 0, or the cleared
+   TOCData: 1) */
 ULONG BLITZ_ROUTINE c_cdnumtracks(void)
 {
     if (!cd.flag)
         return 0;
     if (scsiflag)
-        return (UBYTE)(TOCData[3] - TOCData[2] + 1);
+        return scsitoc ? (UBYTE)(TOCData[3] - TOCData[2] + 1) : 0;
+    if (!cd.toc)
+        return 0;
     return (UBYTE)(cd.toc[1] - cd.toc[0] + 1);
 }
 
+/* CDFirstTrack, CDLastTrack.  Fixed (#582): 0 without a TOC; with
+   scsiflag from TOCData (the original reads toc, address 0 before a
+   CDReadTOC without scsiflag) */
 ULONG BLITZ_ROUTINE c_cdfirsttrack(void)
 {
     if (!cd.flag)
         return 0;
-    return cd.toc[0];
+    if (scsiflag)
+        return scsitoc ? TOCData[2] : 0;
+    return cd.toc ? cd.toc[0] : 0;
 }
 
 ULONG BLITZ_ROUTINE c_cdlasttrack(void)
 {
     if (!cd.flag)
         return 0;
-    return cd.toc[1];
+    if (scsiflag)
+        return scsitoc ? TOCData[3] : 0;
+    return cd.toc ? cd.toc[1] : 0;
 }
 
-/* CDTrackLength track#: in seconds, see BUG(orig) above (#583-#585) */
+/* CDTrackLength track#: in seconds, see BUG(orig) above (#583-#585).
+   Fixed (#582): 0 without a TOC; with scsiflag from the LBAs of TOCData
+   (the start of the track to the start of the next one or of the
+   lead-out, in frames / 75), 0 for a track it does not hold */
 ULONG BLITZ_ROUTINE c_cdtracklength(ULONG track BL_REG(d0))
 {
     const UBYTE *p;
     ULONG off, start, end;
 
     if (!cd.flag)
+        return 0;
+    if (scsiflag) {
+        const UBYTE *d = track <= 99 ? scsidesc(track) : NULL;
+        const UBYTE *e = d && track <= TOCData[3] ? scsidesc(track + 1) : NULL;
+
+        if (!e)
+            return 0;
+        off = getlong(e + 4) - getlong(d + 4);
+        if (off >= 75UL * 65536)        /* a broken TOC: no 16-bit quotient */
+            return 0;
+        return (UWORD)bl_divu_w(off, 75);
+    }
+    if (!cd.toc)
         return 0;
     track--;
     if (!track)

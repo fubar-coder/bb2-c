@@ -961,7 +961,8 @@ CDFirstTrack|d0||2	$00000001
 CDFirstTrack|d0||3	$00000001
 CDFirstTrack|d0||4	$00000001
 CDFirstTrack|d0||5	$00000001
-CDFirstTrack|d0||6	$00000001
+CDFirstTrack|d0||6 [orig]	$00000001
+CDFirstTrack|d0||6 [fixed #582]	$00000002
 CDFirstTrack|d0||7	$00000000
 CDFirstTrack|d0||8	$00000001
 CDFirstTrack|data||1	$00000002
@@ -1311,7 +1312,8 @@ CDLastTrack|d0||2	$00000032
 CDLastTrack|d0||3	$00000032
 CDLastTrack|d0||4	$00000009
 CDLastTrack|d0||5	$00000009
-CDLastTrack|d0||6	$00000009
+CDLastTrack|d0||6 [orig]	$00000009
+CDLastTrack|d0||6 [fixed #582]	$00000007
 CDLastTrack|d0||7	$00000000
 CDLastTrack|d0||8	$00000009
 CDLastTrack|data||1	$00000002
@@ -2420,7 +2422,8 @@ CDNumTracks|d0||3	$00000032
 CDNumTracks|d0||4	$00000009
 CDNumTracks|d0||5	$00000009
 CDNumTracks|d0||6	$00000006
-CDNumTracks|d0||7	$00000001
+CDNumTracks|d0||7 [orig]	$00000001
+CDNumTracks|d0||7 [fixed #582]	$00000000
 CDNumTracks|d0||8	$00000009
 CDNumTracks|d0|rwecd.device,0 (form 1, scsiflag 0)|1	$00000011
 CDNumTracks|d0|scsi kept|1	$00000011
@@ -5811,14 +5814,16 @@ CDTrackLength|d0|1|1	$00000063
 CDTrackLength|d0|1|2	$00000063
 CDTrackLength|d0|1|3	$00000063
 CDTrackLength|d0|1|4	$00000063
-CDTrackLength|d0|1|5	$00000348
+CDTrackLength|d0|1|5 [orig]	$00000348
+CDTrackLength|d0|1|5 [fixed #582]	$00000000
 CDTrackLength|d0|1|6	$00000063
 CDTrackLength|d0|2|1	$00000086
 CDTrackLength|d0|2|2	$00000086
 CDTrackLength|d0|2|3	$00000086
 CDTrackLength|d0|2|4	$00000086
 CDTrackLength|d0|2|5	$00000086
-CDTrackLength|d0|2|6	$000036E2
+CDTrackLength|d0|2|6 [orig]	$000036E2
+CDTrackLength|d0|2|6 [fixed #582]	$00000000
 CDTrackLength|d0|2|7	$00000086
 CDTrackLength|d0|3|1	$000000AB
 CDTrackLength|d0|3|2	$000000AB

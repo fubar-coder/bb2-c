@@ -8,6 +8,7 @@
 ; and the library's CD image (two tracks of 300 and 450 sectors).
 ; Correct: 0 for all four without a TOC; with the SCSI TOC first track 1,
 ; last track 2, the lengths 4 and 6 seconds.
+; @fixed #582
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
 ; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image
