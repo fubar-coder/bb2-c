@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+InitSerialIO 0: 0
+SetIOSize 0: 0
+rc=0

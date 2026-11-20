@@ -62,6 +62,12 @@
  *   - SetIOSize stores its count - 1, as InitSerialIO does; the original
  *     stored the count as it is, so DoSerialIO after SetIOSize n
  *     transferred n + 1 bytes, one past buffers of n (#1158).
+ *   - DoSerialIO without argument transfers nothing after a count of 0
+ *     (InitSerialIO baud,0,... or SetIOSize 0); the original's DBRA loop
+ *     ran over the stored $FFFF, 65536 bytes into and out of the buffers
+ *     (#1164; SetIOSize 0 gave it since the port's fix of #1158, the
+ *     original's SetIOSize 0 gave 1 byte).  DoSerialIO n with an explicit
+ *     argument takes the count - 1 as documented and is not changed.
  *   - init sets the state as at the load (slave, not initialised, no
  *     buffers); the original's init was empty, a second run from the
  *     editor started with the state of the run before (#1159).
@@ -225,6 +231,11 @@ static struct {
     UBYTE ready;
 } fs;
 
+/* numbytes of a count of 0 (0 - 1): the word arguments of InitSerialIO
+   and SetIOSize give it for no other count (fixed (#1164): DoSerialIO
+   without argument transfers nothing) */
+#define NOBYTES 0xFFFF
+
 /* !writebyte: wait for TBE, send the byte with a stop bit */
 static void writebyte(UBYTE b)
 {
@@ -352,9 +363,15 @@ void BLITZ_ROUTINE c_doserialIO(UWORD n BL_REG(d0))
 
 /**
  * @brief DoSerialIO: c_doserialIO() with the count of InitSerialIO/SetIOSize.
+ *
+ * Nothing for a count of 0 (numbytes NOBYTES).  Fixed (#1164): the
+ * original ran its DBRA loop over $FFFF, 65536 bytes into and out of
+ * buffers sized for none.
  */
 void BLITZ_ROUTINE c_doserialIO2(void)
 {
+    if (fs.numbytes == NOBYTES)         /* fixed (#1164) */
+        return;
     c_doserialIO(fs.numbytes);
 }
 
@@ -367,7 +384,9 @@ void BLITZ_ROUTINE c_doserialIO2(void)
  * LONG flag).  Switches the TBE and RBF interrupts
  * off (INTENA $0801), sets SERPER = 3546895 / baud - 1 (fixed (#647): a
  * division that works on a 68000, the original's DIVU.L is a 68020
- * instruction), and stores numbytes - 1 and the buffers.
+ * instruction), and stores numbytes - 1 and the buffers (numbytes 0
+ * gives NOBYTES: DoSerialIO without argument transfers nothing, fixed
+ * (#1164)).
  * Fixed (#651): inten gets INTENAR's value, the original the immediate
  * $F01C (the address of INTENAR).  Fixed (#653): the library is
  * initialised also with SERPER 0 (3546895 baud), which the original took
@@ -615,7 +634,9 @@ void BLITZ_ROUTINE c_setiospeed(UWORD baud BL_REG(d0))
  *
  * Stored as count - 1 for DoSerialIO's DBRA loop, as InitSerialIO stores
  * its numbytes.  Fixed (#1158): the original stored the count as it is,
- * so DoSerialIO transferred one byte more than SetIOSize said.
+ * so DoSerialIO transferred one byte more than SetIOSize said.  A count
+ * of 0 gives NOBYTES: DoSerialIO without argument transfers nothing
+ * (fixed, #1164).
  * @param n  d0: the count
  */
 void BLITZ_ROUTINE c_setiosize(UWORD n BL_REG(d0))

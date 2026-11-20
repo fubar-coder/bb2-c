@@ -86,6 +86,19 @@ d0/d1/a0/a1 that are not the result.
   test `rifastseriallib-setiosize-count`; `libs_emulator` cases
   `[fixed #1158]` of `rwe_rifastseriallib`). A program that compensated
   with `SetIOSize n-1` now transfers one byte less.
+* `DoSerialIO` without argument transfers nothing after a count of 0
+  (`InitSerialIO baud,0,...` or `SetIOSize 0`): both store the count − 1,
+  which is `$FFFF` for 0, and the original's `DBRA` loop ran 65536 times,
+  into and out of buffers sized for no byte (#1164; R10 decision "S+A and
+  F+S open points" 3 (a); test `rifastseriallib-count-zero`). In the
+  original only `InitSerialIO` with 0 did this; its `SetIOSize 0` gave
+  one byte (the count stored as it is, #1158), the port's `SetIOSize 0`
+  since the fix of #1158. The stored value stays `$FFFF` (no other count
+  of the word arguments gives it), `DoSerialIO` without argument tests
+  for it; `DoSerialIO n` with an explicit argument takes the count − 1
+  as documented and is unchanged (`DoSerialIO 65535` still 65536 bytes).
+  The library test cannot show it (`DoSerialIO` of the original waits
+  for a byte that never comes there), the state it observes is the same.
 * init sets the state as at the load (slave, not initialised, no
   buffers, count and saved INTENAR 0); the original's init was empty, so
   a second run of a program with the library still loaded (from the
