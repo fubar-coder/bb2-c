@@ -8,6 +8,7 @@
 ; program prints "address" for a result equal to the low byte of it.
 ; Correct (the result of a command of the RWE libraries that works): -1
 ; after the block was received.
+; @fixed #649
 ; @rwe rifastseriallib
 ; @pass serial=on
 DEFTYPE .l

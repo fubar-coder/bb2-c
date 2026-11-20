@@ -56,9 +56,10 @@
  *     InitSerialIO (CheckSerial -1, GetSerial and SyncSerial 0); the
  *     original tested it only in FinitSerialIO, InitSerialIO, PutSerial
  *     and SetIOSpeed, DoSerialIO ran with the buffers 0 (#652).
+ *   - GetSerial address,bytes (#byte result) returns -1 when it received
+ *     the block, 0 when it did nothing (not initialised, 0 bytes); the
+ *     original returned the low byte of its address argument (#649).
  * BUG(orig):
- *   - GetSerial address,bytes (#byte result) returns its address argument
- *     (#649).
  *   - SyncSerial: two machines starting at the same time both become
  *     master (each takes the other's sync byte for the echo) (#655).
  * SyncGet sends the byte in bytebuf (whatever was last written there) for
@@ -458,17 +459,17 @@ ULONG BLITZ_ROUTINE c_getserial(void)
  * (#652): nothing if not initialised.
  * @param p  d0: the buffer
  * @param n  d1: the number of bytes
- * @return d0: the address argument (a #byte result, BUG(orig) (#649))
+ * @return d0: -1 when it received the block, 0 when it did nothing (a
+ *         #byte result; fixed (#649): the original returned its address
+ *         argument)
  */
 ULONG BLITZ_ROUTINE c_getserial2(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
-    UBYTE *a = p;
-
-    if (!fs.ready)                      /* fixed (#652) */
-        n = 0;
-    while (n--)                         /* fixed (#646) */
-        *a++ = readbyte();
-    return (ULONG)p;
+    if (!fs.ready || !n)                /* fixed (#652, #646) */
+        return 0;                       /* fixed (#649) */
+    while (n--)
+        *p++ = readbyte();
+    return (ULONG)-1;                   /* fixed (#649) */
 }
 
 /**

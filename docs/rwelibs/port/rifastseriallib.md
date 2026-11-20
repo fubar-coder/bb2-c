@@ -74,10 +74,14 @@ d0/d1/a0/a1 that are not the result.
   buffers 0 (reading into and sending from address 0) (#652; R10
   decision P2-2 (a); test `rifastseriallib-no-init-check`).
 
+* `GetSerial address,bytes` (#byte result) returns -1 when it received
+  the block, 0 when it did nothing (not initialised, 0 bytes); the
+  original never set d0, the result was the low byte of its address
+  argument (#649; R10 decision P2-3 (a); test
+  `rifastseriallib-getserial-result`).
+
 **BUG(orig)** (kept):
 
-* `GetSerial address,bytes` (#byte result) returns its address argument
-  (#649).
 * `SyncSerial`: two machines starting at the same time both become
   master (each takes the other's sync byte for the echo) (#655).
 
