@@ -40,6 +40,10 @@
  * place of bootdata.  FormatTrack's count stays in sectors (only
  * multiples of 11 work), the form without a count formats one track,
  * WriteBoot writes sectors 0-1 with CMD_WRITE from bootdata.
+ * Fixed (#1154): the original never sent CMD_UPDATE: trackdisk.device
+ * keeps written sectors in its track buffer until it changes the track,
+ * so the last track written was lost when the disk was taken out.
+ * MotorOff (and with it CloseDisk and finit) sends CMD_UPDATE first.
  * Fixed (#856): the original's BootProg stored the plain sum with carry
  * of the 256 longs including the old checksum long (not cleared first,
  * not complemented) and cleared the root block long after the sum.
@@ -293,10 +297,15 @@ static void BLITZ_ROUTINE c_libinit(void)
 }
 
 /**
- * @brief MotorOff unit#: switch the drive motor off (TD_MOTOR, length 0).
+ * @brief MotorOff unit#: write the track buffer to the disk (CMD_UPDATE), then switch the drive motor off (TD_MOTOR, length 0).
+ *
+ * Fixed (#1154): CMD_UPDATE first (the original only switched the motor
+ * off: the last track written stayed in trackdisk.device's buffer).
+ * Its result is not looked at; the motor goes off in any case.
+ * CloseDisk and finit switch the motor off through this routine.
  * @param unit  d0: unit# (0-3)
- * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
- *         request
+ * @return d0: DoIO's d0 of TD_MOTOR with io_Error as its low byte, 0
+ *         without port or request
  */
 ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
 {
@@ -304,6 +313,9 @@ ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
 
     if (!td.msgport || !(req = getioreq(unit)))
         return 0;
+    req->io_Command = CMD_UPDATE;       /* Fixed (#1154) */
+    req->io_Flags = 0;
+    doio(req);
     req->io_Command = TD_MOTOR;
     req->io_Flags = 0;
     req->io_Length = 0;

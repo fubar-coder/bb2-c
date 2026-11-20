@@ -117,6 +117,20 @@ original's changes of a6 and d4-d7 are not reproduced.
   fixed the init half shows only if finit did not run. Test: the
   `libs_emulator` cases `[fixed #863]` (finit with unit 3 open, init
   again).
+* #1154: the original never sent `CMD_UPDATE`. trackdisk.device keeps
+  the sectors written with `CMD_WRITE` in its track buffer and writes
+  them to the disk only when it changes the track (measured: a sector
+  written, the motor off, the unit closed, and the sector is not on the
+  image); so the last track a program wrote - for `BootProg` and
+  `WriteBoot` the boot block itself - was lost when the disk was taken
+  out, unless another opener moved the head first. `MotorOff` sends
+  `CMD_UPDATE` before `TD_MOTOR` 0, and `CloseDisk` and finit switch the
+  motor off through it; not after every write (a program writing sector
+  by sector would rewrite the track eleven times). A program that keeps
+  the unit open and the motor on until the disk is changed still loses
+  the track. Test: the `libs_emulator` cases `[fixed #1154]` (the test
+  device's count of `CMD_UPDATE` at MotorOff, CloseDisk and finit); the
+  disk tests read the written sectors from the image.
 
 **Test** (`libs/tests/rwe/ritrackdisklib.c`, snitch case "rwe
 ritrackdisklib"): each run loads one library set (the C build or the CD

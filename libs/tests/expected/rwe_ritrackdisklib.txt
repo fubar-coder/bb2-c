@@ -168,7 +168,8 @@ CloseDisk|unit|1|2	$00000001
 CloseDisk|unit|9|1	$00000001
 CloseDisk|updates|-1|1	$00000000
 CloseDisk|updates|0|1	$00000000
-CloseDisk|updates|1|1	$00000000
+CloseDisk|updates|1|1 [orig]	$00000000
+CloseDisk|updates|1|1 [fixed #1154]	$00000001
 CloseDisk|updates|1|2	$00000000
 CloseDisk|updates|9|1	$00000000
 CloseDisk (trackdisk)|actual|0|1 [orig]	$00000000
@@ -453,7 +454,8 @@ MotorOff|requests|0|2	$00000001
 MotorOff|unit|0|1	$00000000
 MotorOff|unit|0|2	$00000000
 MotorOff|updates|0|1	$00000000
-MotorOff|updates|0|2	$00000000
+MotorOff|updates|0|2 [orig]	$00000000
+MotorOff|updates|0|2 [fixed #1154]	$00000001
 MotorOff (trackdisk)|actual|0|1 [orig]	$00000000
 MotorOff (trackdisk)|actual|0|1 [fixed #863]	$00000001
 MotorOff (trackdisk)|buffer|0|1 [orig]	$00040000
@@ -1190,7 +1192,8 @@ finit|unit|3|1 [orig]	$00000000
 finit|unit|3|1 [fixed #863]	$00000003
 finit|unit 3 still open|3|1 [orig]	$00000001
 finit|unit 3 still open|3|1 [fixed #863]	$00000000
-finit|updates||1	$00000000
+finit|updates||1 [orig]	$00000000
+finit|updates||1 [fixed #1154]	$00000002
 finit|updates|3|1	$00000000
 init|kept||1	kept
 init|kept|0,0,+0,0 (form 0)|1	kept
