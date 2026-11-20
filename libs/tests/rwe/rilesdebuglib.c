@@ -32,7 +32,8 @@
  * modes); GetCustomReg for every register word $000-$1FD, $1FE and above,
  * a negative long; GetCustomRegAdr for every name, prefixes, 8 character
  * names, NOOP, an empty name; SetupLESDebug (%c) and ProcessString with
- * %p, %c, %%, an unknown %x and AddProcessPtr/ClearProcessPtrs entries;
+ * %p, %c, %%, an unknown %x, AddProcessPtr/ClearProcessPtrs entries and
+ * without a parser position (the text at address 0, set for the call);
  * ExtractLabel; D_InitParse/D_NextArg$ (empty arguments, the end, after
  * it); OutText/OutTextPen on a RastPort of the test (planes, cp_x/cp_y,
  * the pen); FindLineToken; GetDataItem (sizes -1..5, below $420,
@@ -41,7 +42,7 @@
  * Not covered: counts of 0 for D_HexWord/D_CheckNMove* (65536 entries
  * into the destination); GetCustomReg with a negative word but a positive
  * long (reads in front of the table: DIFF); more than 20 AddProcessPtr
- * entries and ProcessString with no parser position or a '%' at the end
+ * entries and ProcessString with a '%' at the end
  * (they read or write beyond the library's data); the real debugger
  * program that uses the library.
  */
@@ -716,6 +717,10 @@ static void addproc(const char *ch, const char *str)
     DO1(ENT(LIB, E_ADDPROC, 0), STRARG(ch); R.d[1] = (ULONG)str);
 }
 
+/* the long at address 0 (through a volatile pointer: not a null pointer
+   the compiler could see) */
+static volatile ULONG *volatile lowlong;
+
 static void parsing(void)
 {
     nextarg(1);                                         /* before D_InitParse */
@@ -746,6 +751,19 @@ static void parsing(void)
     strcpy(VEC, "after D_NextArg$");
     DO1(ENT(LIB, E_PROCESS, 0), RESSETUP());
     STRRES();
+    /* no parser position (after the last argument): the text at address
+       0, where "ABC" is put for the call (#719) */
+    nextarg(1);
+    {
+        ULONG old = *lowlong;
+
+        *lowlong = 0x41424300UL;
+        ROUT = "ProcessString";
+        strcpy(VEC, "no parser position");
+        DO1(ENT(LIB, E_PROCESS, 0), RESSETUP());
+        *lowlong = old;
+        STRRES();
+    }
 }
 
 /* ------------------------------------------------------- D_FindVolume */

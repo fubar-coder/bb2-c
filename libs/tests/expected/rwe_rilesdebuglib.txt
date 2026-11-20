@@ -294,6 +294,7 @@ D_NextArg$|a3|0|3	$00000004
 D_NextArg$|a3|0|4	$00000012
 D_NextArg$|a3|0|5	$00000004
 D_NextArg$|a3|0|6	$00000005
+D_NextArg$|a3|0|7	$00000005
 D_NextArg$|a3|1|1	$00000007
 D_NextArg$|a3|1|2	$00000004
 D_NextArg$|a3|1|3	$00000004
@@ -309,6 +310,7 @@ D_NextArg$|d0|0|3	$00000000
 D_NextArg$|d0|0|4	$0000000E
 D_NextArg$|d0|0|5	$00000000
 D_NextArg$|d0|0|6	$00000001
+D_NextArg$|d0|0|7	$00000001
 D_NextArg$|d0|1|1	$00000003
 D_NextArg$|d0|1|2	$00000000
 D_NextArg$|d0|1|3	$00000000
@@ -324,6 +326,7 @@ D_NextArg$|kept|0|3	kept
 D_NextArg$|kept|0|4	kept
 D_NextArg$|kept|0|5	kept
 D_NextArg$|kept|0|6	kept
+D_NextArg$|kept|0|7	kept
 D_NextArg$|kept|1|1	kept
 D_NextArg$|kept|1|2	kept
 D_NextArg$|kept|1|3	kept
@@ -339,6 +342,7 @@ D_NextArg$|out|0|3	bytes 800 fnv 34142445
 D_NextArg$|out|0|4	bytes 800 fnv 4D7B62DC
 D_NextArg$|out|0|5	bytes 800 fnv 34142445
 D_NextArg$|out|0|6	bytes 800 fnv 36492B53
+D_NextArg$|out|0|7	bytes 800 fnv 2A1F9ACA
 D_NextArg$|out|1|1	bytes 800 fnv 103F7375
 D_NextArg$|out|1|2	bytes 800 fnv 34142445
 D_NextArg$|out|1|3	bytes 800 fnv 34142445
@@ -354,6 +358,7 @@ D_NextArg$|popped|0|3	$00000000
 D_NextArg$|popped|0|4	$00000000
 D_NextArg$|popped|0|5	$00000000
 D_NextArg$|popped|0|6	$00000000
+D_NextArg$|popped|0|7	$00000000
 D_NextArg$|popped|1|1	$00000000
 D_NextArg$|popped|1|2	$00000000
 D_NextArg$|popped|1|3	$00000000
@@ -7850,30 +7855,35 @@ ProcessString|a3|"%a%b%c %d %%"|1	$00000015
 ProcessString|a3|"%x unknown %y and %%%%"|1	$00000014
 ProcessString|a3|"Hello %p, list at $%c; 100%% done"|1	$00000033
 ProcessString|a3|after D_NextArg$|1	$00000005
+ProcessString|a3|no parser position|1	$00000007
 ProcessString|d0|"%a %b %p"|1	$0000000D
 ProcessString|d0|"%a %b"|1	$00000008
 ProcessString|d0|"%a%b%c %d %%"|1	$00000011
 ProcessString|d0|"%x unknown %y and %%%%"|1	$00000010
 ProcessString|d0|"Hello %p, list at $%c; 100%% done"|1	$0000002F
 ProcessString|d0|after D_NextArg$|1	$00000001
+ProcessString|d0|no parser position|1	$00000003
 ProcessString|kept|"%a %b %p"|1	kept
 ProcessString|kept|"%a %b"|1	kept
 ProcessString|kept|"%a%b%c %d %%"|1	kept
 ProcessString|kept|"%x unknown %y and %%%%"|1	kept
 ProcessString|kept|"Hello %p, list at $%c; 100%% done"|1	kept
 ProcessString|kept|after D_NextArg$|1	kept
+ProcessString|kept|no parser position|1	kept
 ProcessString|out|"%a %b %p"|1	bytes 800 fnv 72765877
 ProcessString|out|"%a %b"|1	bytes 800 fnv 13869C7B
 ProcessString|out|"%a%b%c %d %%"|1	bytes 800 fnv D8D4FDC7
 ProcessString|out|"%x unknown %y and %%%%"|1	bytes 800 fnv A957DD7E
 ProcessString|out|"Hello %p, list at $%c; 100%% done"|1	bytes 800 fnv 30918B53
 ProcessString|out|after D_NextArg$|1	bytes 800 fnv 2A1F9ACA
+ProcessString|out|no parser position|1	bytes 800 fnv 9B6A240F
 ProcessString|popped|"%a %b %p"|1	$00000000
 ProcessString|popped|"%a %b"|1	$00000000
 ProcessString|popped|"%a%b%c %d %%"|1	$00000000
 ProcessString|popped|"%x unknown %y and %%%%"|1	$00000000
 ProcessString|popped|"Hello %p, list at $%c; 100%% done"|1	$00000000
 ProcessString|popped|after D_NextArg$|1	$00000000
+ProcessString|popped|no parser position|1	$00000000
 SearchMem|RawStatus calls|0,$0,0,1024 type 0|1	$00000000
 SearchMem|RawStatus calls|1,$0,0,1024 byte at start|1	$00000000
 SearchMem|RawStatus calls|1,$99,0,100 space bar down, short|1	$00000000

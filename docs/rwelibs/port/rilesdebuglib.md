@@ -221,10 +221,10 @@ empty string, the space bar down) with SearchMemFound and the RawStatus
 calls; FindLineToken; ExtractLabel (7 strings); D_InitParse/D_NextArg$
 (before D_InitParse, empty arguments, past the end); SetupLESDebug,
 ProcessString with `%p`, `%c`, `%%`, unknown entries, AddProcessPtr,
-ClearProcessPtrs and after a D_NextArg$; D_FindVolume (device, volume,
+ClearProcessPtrs, after a D_NextArg$ and without a parser position (the
+text at address 0, set for the call); D_FindVolume (device, volume,
 assign, missing, empty); finit. Kept registers on every call.
 
 Not covered: counts of 0 for D_HexWord/D_CheckNMove* (65536 entries into
-the destination); the DIFF cases above; ProcessString without a parser
-position or with a `%` at the end; the debugger program that used the
-library.
+the destination); the DIFF cases above; ProcessString with a `%` at the
+end; the debugger program that used the library.
