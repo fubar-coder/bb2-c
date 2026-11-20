@@ -6,6 +6,7 @@
 ; SerialClose and reads it after SerialClose (then switches it on again).
 ; Correct: SerialClose changes only the library's two interrupts (RBF,
 ; TBE); VERTB stays off.
+; @fixed #790
 ; @rwe riseriallib
 DEFTYPE .l
 SerialOpen 19200

@@ -38,9 +38,11 @@ SerialBuffer|vector $74||1	$00000000
 SerialClose|CIA-B PRA|$0,$0|1	$000000FF
 SerialClose|CIA-B PRA|$0,$0|2	$0000005A
 SerialClose|CIA-B PRA|$0,$0|3	$000000FF
-SerialClose|custom chip registers|$0,$0|1	bytes 512 fnv 5589C099
+SerialClose|custom chip registers|$0,$0|1 [orig]	bytes 512 fnv 5589C099
+SerialClose|custom chip registers|$0,$0|1 [fixed #790]	bytes 512 fnv 06627CC3
 SerialClose|custom chip registers|$0,$0|2	bytes 512 fnv C4915FC8
-SerialClose|custom chip registers|$0,$0|3	bytes 512 fnv 5589C099
+SerialClose|custom chip registers|$0,$0|3 [orig]	bytes 512 fnv 5589C099
+SerialClose|custom chip registers|$0,$0|3 [fixed #790]	bytes 512 fnv 06627CC3
 SerialClose|kept|$0,$0|1	kept
 SerialClose|kept|$0,$0|2	kept
 SerialClose|kept|$0,$0|3	kept
@@ -729,7 +731,8 @@ SerialWriteLong|vector $74|$11223344,$0|1	$00000000
 SerialWriteLong|vector $74|$A1B2C3D4,$0|1	$00000001
 finit|CIA-B PRA|$0,$0|1	$000000FF
 finit|CIA-B PRA|$0,$0|2	$0000005A
-finit|custom chip registers|$0,$0|1	bytes 512 fnv 5589C099
+finit|custom chip registers|$0,$0|1 [orig]	bytes 512 fnv 5589C099
+finit|custom chip registers|$0,$0|1 [fixed #790]	bytes 512 fnv 06627CC3
 finit|custom chip registers|$0,$0|2	bytes 512 fnv C4915FC8
 finit|kept|$0,$0|1	kept
 finit|kept|$0,$0|2	kept

@@ -56,8 +56,7 @@
  *   - The vectors are written at $64/$74 (the VBR of a 68010+ is not
  *     looked at) (#804), the old ones into the operands of two JMP
  *     instructions in the code without clearing the instruction cache
- *     (#791).  SerialClose switches all interrupts off (INTENA $7FFF) and
- *     then on only those that were on at SerialOpen (#790).
+ *     (#791).
  *   - The open flag is a word, SerialSendBlock, SerialReceiveBlock,
  *     SerialFlush, SerialReadLong and SerialWriteLong test it as a long
  *     (with the first instruction of SerialClose behind it, $4A79: never
@@ -93,9 +92,13 @@
  *     line sends, byte 129 on overwrites the unsent bytes 1, 2 ... and
  *     wrend == wbig counts as an empty ring (#983).
  *
- * Fixed (intended deviation, #795): SerialReadString stored the 0 and
- * left a3 behind it, so a string expression went on one byte too far;
- * a3 now ends on the 0.
+ * Fixed (intended deviations):
+ *   - SerialReadString stored the 0 and left a3 behind it, so a string
+ *     expression went on one byte too far; a3 now ends on the 0 (#795).
+ *   - SerialClose switches only the library's two interrupts (RBF, TBE)
+ *     off and those of them that were on at SerialOpen on again; the
+ *     original switched every interrupt off (INTENA $7FFF) and then on
+ *     those that were on at SerialOpen, with the master bit (#790).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -380,8 +383,10 @@ void BLITZ_ROUTINE c_openserial2(ULONG rate BL_REG(d0))
  * @brief SerialClose (and finit): restores the vectors, CIA-B PRA $FF and
  * the interrupts.
  *
- * BUG(orig) (#790): switches all interrupts off (INTENA $7FFF) and then
- * on only those that were on at SerialOpen.  Nothing if not open.
+ * Fixed (#790): only RBF and TBE are switched off, and those of them
+ * that were on at SerialOpen on again; the original switched every
+ * interrupt off (INTENA $7FFF) and then on those that were on at
+ * SerialOpen, with the master bit.  Nothing if not open.
  */
 void BLITZ_ROUTINE c_closeserial(void)
 {
@@ -389,9 +394,9 @@ void BLITZ_ROUTINE c_closeserial(void)
         return;
     *VEC_RBF = riser_oldint5;
     *VEC_TBE = riser_oldint1;
-    INTENA = 0x7fff;
+    INTENA = 0x0801;                    /* fixed (#790): RBF, TBE off */
     CIABPRA = 0xff;
-    INTENA = oldint | 0xc000;
+    INTENA = 0x8000 | (oldint & 0x0801);
     openflag = 0;
 }
 

@@ -8,9 +8,9 @@ port through the hardware, without serial.device:
   autovector (`$64`, TBE), keeping the old ones (they get the interrupts
   that are not the library's), sets CIA-B PRA to `$3F` (RTS/DTR),
   remembers INTENAR and switches RBF, TBE and the master bit on.
-  `SerialClose` (and finit) puts the vectors back, switches all
-  interrupts off (`INTENA $7FFF`), sets PRA to `$FF` and switches on what
-  was on at `SerialOpen`. `SerialBaud rate`: SERPER = 3546895 / rate − 1
+  `SerialClose` (and finit) puts the vectors back, switches RBF and TBE
+  off, sets PRA to `$FF` and switches on those of the two that were on
+  at `SerialOpen`. `SerialBaud rate`: SERPER = 3546895 / rate − 1
   (ldivlib).
 * The receive handler puts SERDATR's byte into a ring of 256 bytes;
   `SerialRead` takes the next one (−1 if none), `SerialWait` waits for
@@ -67,14 +67,19 @@ kind F):
 * `SerialReadString` stores up to and including the 0 and leaves a3 on
   the 0; the original left a3 behind it, so in a string expression the
   next part was written one byte too far (#795).
+* `SerialClose` (and finit) switches only the library's two interrupts
+  (RBF, TBE) off and those of them that were on at `SerialOpen` on
+  again; the original switched every interrupt off (`INTENA $7FFF`) and
+  then on those that were on at `SerialOpen`, with the master bit: an
+  interrupt switched on since was lost, one switched off since came back
+  (#790; test `riseriallib-close-intena`; `libs_emulator` cases
+  `[fixed #790]` of `rwe_riseriallib`, the INTENA written).
 
 ## BUG(orig), kept
 
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
   is (#804); the old ones go into the code (two `JMP` operands) without
-  clearing the instruction cache (#791). `SerialClose` switches every
-  interrupt off and then on only those that were on at `SerialOpen`
-  (#790).
+  clearing the instruction cache (#791).
 * The open flag is a word; `SerialSendBlock`, `SerialReceiveBlock`,
   `SerialFlush`, `SerialReadLong` and `SerialWriteLong` test it as a
   long, with the first instruction of `SerialClose` (`$4A79`) behind it:
