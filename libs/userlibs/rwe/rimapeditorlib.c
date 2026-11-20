@@ -41,9 +41,8 @@
  *     and viewx) instead of the data pointer to decide whether to free
  *     the old map: a map whose data lies at $xxxx0000 with viewx 0 is not
  *     freed (lost); the fields 24/28 are not cleared then either (#894).
- *   - MapCanDraw compares x/y signed: negative values pass and index far
- *     behind the data (#892); the stencil index is the map value as a
- *     signed word; without SetStencil the stencil is at address 0 (#893).
+ *   - MapCanDraw's stencil index is the map value as a signed word;
+ *     without SetStencil the stencil is at address 0 (#893).
  *   - MapDataGrab of bytes keeps the upper byte of the previous value in
  *     the register (MOVE.b): a byte + mapnull beyond 255 carries into the
  *     following values (#898).
@@ -61,7 +60,11 @@
  *     original kept them, so a second run of a program from the editor
  *     (the library stays loaded) had the run before's stencil (a freed
  *     array) before its SetStencil, its maxima before its ScanShapes and
- *     the rest of its string from M_NextArg$ before M_InitParse (#1133).
+ *     the rest of its string from M_NextArg$ before M_InitParse (#1133);
+ *   - MapCanDraw compares x/y with the map's (and the rub-through map's)
+ *     width and height unsigned; the original compared them signed
+ *     (BGE), so negative values passed, the map word was read far behind
+ *     the data and its address kept for MapCanDrawAddr (#892).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -432,10 +435,11 @@ BLITZ_THUNK(_setstencil, setstencil_c, "d0-d1/a0-a1");
  * there is shape# + 1 (with a rub-through map: that map's word), or the
  * stencil byte of the map's word is set; else shape# + 1 (resp. the
  * rub-through map's word).  The address of the map's word is kept at 24
- * (MapCanDrawAddr).  d0's upper word stays (ADDQ.w).  BUG(orig): x/y are
- * compared signed - negative values pass and index far behind the data
- * (#892); the stencil index is the map value as a signed word, and
- * without SetStencil the stencil is at address 0 (#893).
+ * (MapCanDrawAddr).  d0's upper word stays (ADDQ.w).  x/y are compared
+ * unsigned: fixed (#892), the original compared them signed, so negative
+ * values passed and indexed far behind the data (nothing is kept at 24
+ * for them now).  BUG(orig): the stencil index is the map value as a
+ * signed word, and without SetStencil the stencil is at address 0 (#893).
  * @param shapenum  d0: the shape number
  * @param x         d1: the map x
  * @param y         d2: the map y
@@ -450,12 +454,14 @@ static ULONG BLITZ_ROUTINE candraw_c(ULONG shapenum BL_REG(d0), UWORD x BL_REG(d
     UWORD v;
     ULONG result = shapenum;            /* d0: the shape number or the rub-through word, + 1 */
 
-    if ((WORD)x >= (WORD)map->width || (WORD)y >= (WORD)map->height)
+    /* fixed (#892): unsigned, as the address is computed (the original's
+       BGE let negative values pass) */
+    if (x >= map->width || y >= map->height)
         return 0xffffffffUL;
     rub = map->rubthrough;
     if (rub) {
         ULONG off;
-        if ((WORD)x >= (WORD)rub->width || (WORD)y >= (WORD)rub->height)
+        if (x >= rub->width || y >= rub->height)
             return 0xffffffffUL;
         off = rol1(bl_mulu_w(y, rub->width) + x);
         BL_SETW(result, *(UWORD *)(rub->data + off) - 1);

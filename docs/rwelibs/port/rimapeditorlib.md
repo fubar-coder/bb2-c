@@ -97,6 +97,11 @@ loop optimisation (no `__mulsi3`).
   its `ScanShapes`, and from `M_NextArg$` before `M_InitParse` the rest
   of the run before's string instead of "" (#1133; the libs test's
   second run).
+* `MapCanDraw` compares x/y with the width and height of the map (and of
+  the rub-through map) unsigned; the original compared them signed
+  (`BGE`), so negative values passed, the map's word was read far behind
+  the data and its address kept for `MapCanDrawAddr` (#892; test
+  `rimapeditorlib-candraw-negative-xy`).
 
 ## BUG(orig), kept
 
@@ -104,9 +109,8 @@ loop optimisation (no `__mulsi3`).
   viewx) instead of the data pointer to decide whether to free the old
   map: a map whose data lies at `$xxxx0000` with viewx 0 is not freed
   (lost); the fields 24/28 are not cleared then either (#894).
-* `MapCanDraw` compares x/y signed: negative values pass and index far
-  behind the data (#892); the stencil index is the map's word as a signed
-  word; without `SetStencil` the stencil is at address 0 (#893).
+* `MapCanDraw`'s stencil index is the map's word as a signed word;
+  without `SetStencil` the stencil is at address 0 (#893).
 * `MapDataGrab` of bytes keeps the upper byte of the previous value in
   the register (`MOVE.b`): a byte + mapnull beyond 255 carries into the
   following values (#898).

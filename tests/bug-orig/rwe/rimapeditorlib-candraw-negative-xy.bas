@@ -4,6 +4,7 @@
 ; (kept for MapCanDrawAddr) lies 131070 bytes behind the map data (the
 ; word there is only read).
 ; Correct: x = -1 is refused, no address is kept (MapCanDrawAddr 0).
+; @fixed #892
 ; @rwe rimapeditorlib
 DEFTYPE .l
 CreateMap 0,64,64,16,16,"level"
