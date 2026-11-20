@@ -55,9 +55,9 @@ The routine part is the name the test program gives the routine it
 calls. It is usually the command's name as Blitz Basic knows it
 (`FillArray`, `DisAssemble$`, `Peek`), and for the routines a library
 runs when a program starts and ends, `init` and `finit`. A program may
-add a word to tell variants apart: riarrayslib names the routine of the
-second form of `FillArray` `FillArray zero`, and other programs write `init (fails)` or
-`InstrSize (before DisAssemble$)`.
+add a word to tell variants apart: riarrayslib calls the second form of
+`FillArray` by the name `FillArray zero`, and other programs write
+`init (fails)` or `InstrSize (before DisAssemble$)`.
 
 The test of the libraries the compiler calls by itself (ldivlib and
 lmullib, which divide and multiply) names a routine by its *token*, the
