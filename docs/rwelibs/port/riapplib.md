@@ -126,6 +126,13 @@ kind F):
   original left them open (finit, which tests the flag of a successful
   init, did not close them either) and returned the deleted port, also
   when the block could not be allocated (#526).
+* init opens the three V37 libraries first and makes its message port
+  (`CreateMsgPort`, exec V36) and its block only after them: on
+  Kickstart 1.x init fails as without the libraries (the commands do
+  nothing, `AppMsgPort` is 0; RIAppLib.guide: the features need
+  Workbench 2.0). The original made the port first, behind exec's jump
+  table there: every program with the library crashed at its start
+  (#1143; test `tests/bug-orig/rwe/riapplib-v36-calls`, a500).
 * init clears the current message. Neither init nor finit cleared it in
   the original, so a second run of the program with the library still
   loaded (from the editor) started with the message the run before's

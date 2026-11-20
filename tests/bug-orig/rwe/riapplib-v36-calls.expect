@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+before
+menu 0
+event 0
+port 0
+after
+rc=0

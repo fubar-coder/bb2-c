@@ -14,8 +14,8 @@
  * rwe_declarations_riapplib), the behaviour is compared with it in the
  * emulator (libs/tests/rwe/riapplib.c).  Notes: docs/rwelibs/port/riapplib.md.
  *
- * init opens a message port, one block of 768 bytes (MEMF_CLEAR) and
- * workbench, dos and icon.library V37.  The block: 16 longs each for the
+ * init opens workbench, dos and icon.library V37, then a message port and
+ * one block of 768 bytes (MEMF_CLEAR).  The block: 16 longs each for the
  * AppMenuItems (+0), AppWindows (+64) and AppIcons (+128), the path buffer
  * of NextAppFile (+192, 512 bytes) and the DiskObjects of the App icons
  * (+704).  The ids index these tables unchecked in the release code
@@ -52,6 +52,12 @@
  * opened open, and AppMsgPort still returned the deleted port (also when
  * the block could not be allocated); init now closes them and clears the
  * port.
+ * Fixed (intended deviation, #1143): init made the message port
+ * (CreateMsgPort, exec V36) before it opened the V37 libraries: on
+ * Kickstart 1.x the call lay behind exec's jump table, and every program
+ * with the library crashed at its start.  The port is made only after the
+ * three libraries opened; on Kickstart 1.x init fails as without them
+ * (libflag 0, the commands do nothing, AppMsgPort 0).
  * Fixed (intended deviation, #518): AddAppMenu returned the AppMenuItem
  * address, not -1 (the MOVEQ #-1 behind the RTS was never reached); it
  * returns -1 now, as AddAppWindow and AddAppIcon.
@@ -278,32 +284,61 @@ BLITZ_INLINE(appeventidcmp, "move.l #0x800000,d0");
 
 /* ---------------------------------------------------------------- init */
 
+/* closelibs: close workbench, dos and icon.library as far as init opened
+   them and clear the bases (fixed, #526: the original left them open) */
+static void closelibs(void)
+{
+    if (iconbase)
+        CloseLibrary(iconbase);
+    if (dosbase)
+        CloseLibrary((struct Library *)dosbase);
+    if (wbbase)
+        CloseLibrary(wbbase);
+    wbbase = NULL;
+    dosbase = NULL;
+    iconbase = NULL;
+}
+
 /**
- * @brief init: the message port, the block (768 bytes, MEMF_CLEAR) and
- * workbench, dos and icon.library V37.
+ * @brief init: workbench, dos and icon.library V37, then the message port
+ * and the block (768 bytes, MEMF_CLEAR).
  *
  * Sets libflag -1 when all is there, 0 otherwise (the commands then do
- * nothing).  Fixed (#526): on a failure the libraries opened before are
- * closed and msgport is cleared (the original left them open and kept the
- * deleted port for AppMsgPort).  Fixed (#1099): no current message (the
- * original kept the one of the run before, which its finit had replied
- * to, for a second run from the editor).
+ * nothing).  Fixed (#1143): the port (CreateMsgPort, exec V36) is made
+ * only after the three V37 libraries opened, so on Kickstart 1.x init
+ * fails quietly (the original made the port first: behind exec's jump
+ * table, a crash at the program's start).  Fixed (#526): on a failure the
+ * libraries opened before are closed and msgport is cleared (the original
+ * left them open and kept the deleted port for AppMsgPort).  Fixed
+ * (#1099): no current message (the original kept the one of the run
+ * before, which its finit had replied to, for a second run from the
+ * editor).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     struct appblock *block;
 
     msg = NULL;                         /* fixed (#1099) */
+    msgport = NULL;
+    libflag = 0;
+    /* fixed (#1143): the V37 libraries before the V36 port */
+    wbbase = OpenLibrary((STRPTR)"workbench.library", 37);
+    dosbase = wbbase ? (struct DosLibrary *)OpenLibrary((STRPTR)"dos.library", 37) : NULL;
+    iconbase = dosbase ? OpenLibrary((STRPTR)"icon.library", 37) : NULL;
+    if (!iconbase) {
+        closelibs();                    /* fixed (#526) */
+        return;
+    }
     msgport = CreateMsgPort();
     if (!msgport) {
-        libflag = 0;
+        closelibs();
         return;
     }
     block = AllocMem(BLOCKSIZE, MEMF_CLEAR);
     if (!block) {
         DeleteMsgPort(msgport);
         msgport = NULL;                 /* fixed (#526) */
-        libflag = 0;
+        closelibs();
         return;
     }
     appmenus = block->menus;
@@ -311,23 +346,6 @@ static void BLITZ_ROUTINE libinit_c(void)
     appicons = block->icons;
     arglist = block->path;
     disklist = block->disks;
-    wbbase = OpenLibrary((STRPTR)"workbench.library", 37);
-    dosbase = wbbase ? (struct DosLibrary *)OpenLibrary((STRPTR)"dos.library", 37) : NULL;
-    iconbase = dosbase ? OpenLibrary((STRPTR)"icon.library", 37) : NULL;
-    if (!iconbase) {
-        /* fixed (#526): close what was opened, no deleted port left */
-        if (dosbase)
-            CloseLibrary((struct Library *)dosbase);
-        if (wbbase)
-            CloseLibrary(wbbase);
-        wbbase = NULL;
-        dosbase = NULL;
-        DeleteMsgPort(msgport);
-        msgport = NULL;
-        libflag = 0;
-        FreeMem(appmenus, BLOCKSIZE);
-        return;
-    }
     libflag = -1;
 }
 BLITZ_THUNK(riapplib_libinit, libinit_c, "d0-d1/a0-a1");
