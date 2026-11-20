@@ -41,16 +41,17 @@ word/long reads at the given address); the string is written to a3
 byte by byte (the original: 17 word writes, #617). The thunks keep d1/a0/a1; the
 original changes d1-d7, a0, a1 (it saves a2-a6 itself).
 
-**BUG(orig)** (kept):
-
-* A decimal 0 is not printed as "0": `DecPrint` has `LEA .l8,a0` for
-  its local label `'l8`, which blitz2 2.10 assembles as the absolute
-  address 8 (no relocation, the bus error vector): every displacement 0
-  (d16(an), brief extension, bd/od 0 or of size "null") shows the bytes
-  at address 8 up to a 0 byte (Kickstart 3.2 in the emulator: `@J(`)
-  (#614).
-
 **Fixed** (intended deviations, `docs/libs/deviations.md`, kind F):
+
+* A decimal 0 is printed as "0". The original's `DecPrint` has
+  `LEA .l8,a0` for its local label `'l8` (`"0",0`), which blitz2 2.10
+  assembles as the absolute address 8 (no relocation, the bus error
+  vector): every displacement 0 (d16(an), brief extension, bd/od 0 or of
+  size "null") showed the bytes at address 8 up to a 0 byte - nothing on
+  the emulator's Kickstart 3.1, where the vector points to ROM
+  (`move.l   (a0),d0` for `0(a0)`), other bytes where it lies in RAM
+  (`@J(` ...) (#614; test `ridisasmlib-decprint-zero-address-8`, the
+  `libs_emulator` blocks with a displacement 0).
 
 * The string is written to a3 byte by byte: the original's 17 word
   writes (`MOVE.w (a0)+,(a3)+`) were an address error on a 68000 when a3

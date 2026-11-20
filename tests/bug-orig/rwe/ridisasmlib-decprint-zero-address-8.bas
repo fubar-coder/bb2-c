@@ -5,6 +5,7 @@
 ; nothing if the vector points to ROM, other bytes if it is in RAM.  The
 ; test prints how many bytes stand between the name and "(a0)".
 ; Correct: "move.l   0(a0),d0" (a displacement 0 is "0").
+; @fixed #614
 ; @rwe ridisasmlib
 DEFTYPE .l
 Dim c.w(3)

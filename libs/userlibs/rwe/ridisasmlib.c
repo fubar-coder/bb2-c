@@ -31,14 +31,13 @@
  * is read with the original's access widths (word/long reads at the
  * given, possibly odd, address).
  *
- * BUG(orig):
- *   - A decimal 0 (a displacement 0 of d16(an), brief and full format
- *     extensions, bd/od 0 or suppressed) is not "0": DecPrint has
- *     `LEA .l8,a0` for its local label 'l8, which blitz2 2.10 assembles
- *     as the absolute address 8 - the line gets the bytes of the bus
- *     error vector up to a 0 byte (on Kickstart 3.2 in the emulator
- *     "@J(" ...) (#614).
- *
+ * Fixed (intended deviation, #614): a decimal 0 (a displacement 0 of
+ * d16(an), brief and full format extensions, bd/od 0 or suppressed) is
+ * "0".  The original's DecPrint has `LEA .l8,a0` for its local label 'l8
+ * ("0",0), which blitz2 2.10 assembles as the absolute address 8: the
+ * line got the bytes of the bus error vector up to a 0 byte (nothing on
+ * the emulator's Kickstart 3.1, where the vector points to ROM; "@J(" ...
+ * where it lies in RAM).
  * Fixed (intended deviation, #617): the original writes the string to a3
  * with 17 word writes (MOVE.w (a0)+,(a3)+), an address error on a 68000
  * when a3 is odd (after a string of odd length in an expression); the
@@ -396,9 +395,10 @@ static struct {
     char prefix[2] __attribute__((nonstring));  /* 'l6: "#","-" */
     char digits[16];                    /* 'l7 */
 } dec = { "#-", "" };
-/* DecPrint's "0": LEA .l8,a0 - the label is 'l8, blitz2 2.10 assembles
-   the absolute address 8 (no relocation): the bus error vector */
-#define DECZERO ((char *)8)
+/* DecPrint's "0" ('l8).  Fixed (#614): the original has LEA .l8,a0 for
+   it, which blitz2 2.10 assembles as the absolute address 8 (no
+   relocation): the bus error vector */
+static const char deczero[] = "0";
 static const char scaletab[] __attribute__((nonstring)) = "0248";
 static const char pdrlist[32] __attribute__((nonstring)) =
     "d0d1d2d3d4d5d6d7a0a1a2a3a4a5a6a7";
@@ -450,7 +450,7 @@ static char *hexprint(ULONG n)
 }
 
 /* DecPrint: unsigned decimal (subtracting the powers of ten) */
-static char *decprint(ULONG n)
+static const char *decprint(ULONG n)
 {
     static const ULONG pow[10] = { 1000000000, 100000000, 10000000, 1000000, 100000,
                                    10000, 1000, 100, 10, 1 };
@@ -458,7 +458,7 @@ static char *decprint(ULONG n)
     int i, started = 0;
 
     if (!n)
-        return DECZERO;                 /* BUG(orig) (#614) */
+        return deczero;                 /* Fixed (#614) */
     *p = '0';
     for (i = 0; i < 10; i++) {
         if (!started) {
@@ -477,9 +477,9 @@ static char *decprint(ULONG n)
 }
 
 /* SDecPrint: signed decimal, the "-" in front of digits ('l7) */
-static char *sdecprint(ULONG n)
+static const char *sdecprint(ULONG n)
 {
-    char *p;
+    const char *p;
 
     if ((LONG)n >= 0)
         return decprint(n);
@@ -1020,8 +1020,8 @@ static int decode(const struct disdata *e, UWORD op)
  * odd a3 on a 68000): a line shorter than 34 columns padded with spaces
  * to 34, a longer one whole (Fixed (#616): the original cut it after 34
  * columns).  InstrSize becomes the bytes the instruction took.
- * BUG(orig): a decimal 0 is the bytes at address 8 (#614).  An odd
- * address is an address error on a 68000.
+ * A decimal 0 is "0" (Fixed (#614): the original gave the bytes at
+ * address 8).  An odd address is an address error on a 68000.
  * @param addr  d0: the address of the instruction
  * @return d0: the length, 34 or more; 5 for an instruction not in the
  *         table ("?????", InstrSize 2)

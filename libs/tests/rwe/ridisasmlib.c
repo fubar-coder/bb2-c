@@ -25,7 +25,7 @@
  * original cut the string after 34 columns) and every second one of MOVE.l (pc,xn),d0 /
  * (bd,pc,xn); MOVEM's register lists (every mask for -(a7), every third
  * for (a7)+ and (a0); Fixed (#615): an empty list got a comma);
- * displacements 0 (BUG(orig) (#614): the bytes at address 8 instead of "0");
+ * displacements 0 (Fixed (#614): the original gave the bytes at address 8);
  * MOVEC with every third control register word (all 4096 codes); an odd
  * instruction address and an odd a3 (the emulator has a 68020; on a
  * 68000 both were address errors, the odd a3 Fixed (#617)); init and finit (RTS);
