@@ -9,7 +9,7 @@ track,numtracks` (SendIO), `CDStop` (AbortIO), `CDPause`, `CDRewind`/
 globalloc), `CDNumTracks`/`CDFirstTrack`/`CDLastTrack`/`CDTrackLength`
 from that TOC, `CDUpdateInfo` (CD_QCODEMSF) and `CDTrackMins`/
 `CDTrackSecs`/`CDTrackPlaying` from its Q-code. One IOStdReq
-(CreateIORequest, 200 bytes) on a port of init; the commands return 0
+(200 bytes, built by hand) on a port of init; the commands return 0
 without an open device, else DoIO's d0. With `scsiflag` <> 0
 `CDPlayTrack`, `CDReadTOC` and `CDNumTracks` use HD_SCSICMD (PLAY
 AUDIO(12), READ TOC) instead. All entries but `OpenCD`, `CloseCD`,
@@ -27,7 +27,7 @@ of that source by blitz2 2.10 (`ref/ricompactdisclib.obj`, ctest
 **C:** everything (`libs/userlibs/rwe/ricompactdisclib.c`). exec through
 `proto/exec.h`, but through `BLITZ_BASEJSR` where the original passes
 the whole d0 of the call on: DoIO, SendIO, AbortIO, OpenDevice (`TST.l
-d0`) and DeleteIORequest (OpenCD's failure result); memlib's
+d0`); memlib's
 globalloc/globfree through `BLITZ_ALIBJSR`. `CloseCD`'s `ALibJsr
 CDStop` is a C call. The data from `trackname` to `MyCDInfo` keep the
 original's order and sizes (one packed struct), so that a long device
@@ -62,14 +62,24 @@ d1/d2 (CDTrackLength) are not reproduced.
   nor the globalloc, and keeps the uncleared buffer of a failed read.
   toclen = (last + 2) × 8 + 32 for 6-byte entries, as in the
   original. (#581)
+* The reply port and the request are built by hand with exec V33
+  functions (AllocMem, AllocSignal, FindTask; FreeMem, FreeSignal), one
+  path for all Kickstarts, in the shape of ritrackdisklib's (#941): the
+  port cleared, a signal bit, `PA_SIGNAL`, the message list set up by
+  hand; the request 200 cleared bytes with `NT_REPLYMSG`, the reply port
+  and its length. The original calls CreateMsgPort (in init),
+  CreateIORequest, DeleteIORequest and DeleteMsgPort (exec V36) without a
+  version check: on Kickstart 1.x every program with the library crashes
+  before its first line. (#1138)
+* `OpenCD` returns 0 when OpenDevice fails, and the freed request is
+  forgotten. The original keeps the deleted request in ioreq and returns
+  the d0 of DeleteIORequest (200 on Kickstart 3.1). (#575)
 
 **BUG(orig)** (kept):
 
 * `OpenCD name$,unit` keeps name, unit and scsiflag for later
   `OpenCD`s; only init clears scsiflag (and sets the name back). (#577)
-* `OpenCD` while open: the old request stays open, lost. If OpenDevice
-  fails, the request is deleted but stays in ioreq, and `OpenCD` returns
-  d0 of DeleteIORequest (200 on Kickstart 3.2), not 0. (#578, #575)
+* `OpenCD` while open: the old request stays open, lost. (#578)
 * `CDStop` (also in `CloseCD`) is AbortIO only, no WaitIO; it sets
   io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
@@ -128,8 +138,8 @@ and its request used again; the TOC functions before any CDReadTOC
 (PLAY AUDIO(12) bytes before and after READ TOC, with tracks inside, at
 the ends of and outside the TOC, READ TOC, the TOC functions, the
 flag kept); CloseCD twice; finit with a device open and again; init
-again; init without a port (CreateMsgPort fails) and OpenCD without a
-request (CreateIORequest fails). Not covered: a real drive, names over
+again; init without a port (AllocSignal fails) and OpenCD without a
+request (AllocMem of 200 bytes fails). Not covered: a real drive, names over
 40 bytes (bug-orig test `ricompactdisclib-opencd-name-overflow`),
 CDTrackLength 0 or behind the last track (unwritten memory), the SCSI
 `CDPlayTrack` on a 68000 (bug-orig test

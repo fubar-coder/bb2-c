@@ -31,7 +31,7 @@
  * Covered: every command without an open device (0; BUG(orig) (#587, #586):
  * CDUpdateInfo returns a0 + 5, CDTrackMins/Secs/Playing read their data
  * anyway), OpenCD of cd.device (missing in the emulator: the failure
- * path, BUG(orig) (#575): d0 of DeleteIORequest), of unit 3 (OpenDevice fails),
+ * path; the original returns the d0 of DeleteIORequest, fixed #575: 0), of unit 3 (OpenDevice fails),
  * the name and unit kept for OpenCD without arguments, OpenCD while open
  * (BUG(orig) (#578): the old request is lost), all CD commands with their
  * arguments and io_Errors, CDReadTOC twice (the old TOC freed, the second

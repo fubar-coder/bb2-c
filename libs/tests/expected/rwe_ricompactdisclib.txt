@@ -12758,10 +12758,12 @@ OpenCD|command|rwecd.device,1 (form 1, scsiflag 0)|1	$00000000
 OpenCD|command|rwecd.device,1 (form 1, scsiflag 0)|2	$00000000
 OpenCD|command|rwecd.device,2 (form 2, scsiflag 1)|1	$00000000
 OpenCD|command|rwecd.device,3 (form 1, scsiflag 0)|1	$00000000
-OpenCD|d0|-,0 (form 0, scsiflag 0)|1	$000000C8
+OpenCD|d0|-,0 (form 0, scsiflag 0)|1 [orig]	$000000C8
+OpenCD|d0|-,0 (form 0, scsiflag 0)|1 [fixed #575]	$00000000
 OpenCD|d0|-,0 (form 0, scsiflag 0)|2	$FFFFFFFF
 OpenCD|d0|-,0 (form 0, scsiflag 0)|3	$FFFFFFFF
-OpenCD|d0|-,0 (form 0, scsiflag 0)|4	$000000C8
+OpenCD|d0|-,0 (form 0, scsiflag 0)|4 [orig]	$000000C8
+OpenCD|d0|-,0 (form 0, scsiflag 0)|4 [fixed #575]	$00000000
 OpenCD|d0|rwecd.device,0 (form 1, scsiflag 0)|1	$FFFFFFFF
 OpenCD|d0|rwecd.device,0 (form 1, scsiflag 0)|2	$FFFFFFFF
 OpenCD|d0|rwecd.device,0 (form 1, scsiflag 0)|3	$00000000
@@ -12769,7 +12771,8 @@ OpenCD|d0|rwecd.device,0 (form 1, scsiflag 0)|4	$00000000
 OpenCD|d0|rwecd.device,1 (form 1, scsiflag 0)|1	$FFFFFFFF
 OpenCD|d0|rwecd.device,1 (form 1, scsiflag 0)|2	$FFFFFFFF
 OpenCD|d0|rwecd.device,2 (form 2, scsiflag 1)|1	$FFFFFFFF
-OpenCD|d0|rwecd.device,3 (form 1, scsiflag 0)|1	$000000C8
+OpenCD|d0|rwecd.device,3 (form 1, scsiflag 0)|1 [orig]	$000000C8
+OpenCD|d0|rwecd.device,3 (form 1, scsiflag 0)|1 [fixed #575]	$00000000
 OpenCD|data|-,0 (form 0, scsiflag 0)|1	$00000000
 OpenCD|data|-,0 (form 0, scsiflag 0)|2	$00000000
 OpenCD|data|-,0 (form 0, scsiflag 0)|3	$00000000

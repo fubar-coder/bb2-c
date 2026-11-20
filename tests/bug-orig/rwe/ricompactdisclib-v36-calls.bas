@@ -7,6 +7,7 @@
 ; Correct: the program runs on Kickstart 1.3 (the library builds its port
 ; and request with exec V33 functions), OpenCD of a device that does not
 ; exist fails, and the program ends normally.
+; @fixed #1138
 ; @rwe ricompactdisclib
 ; @machine a500
 ; @pass timeout=30

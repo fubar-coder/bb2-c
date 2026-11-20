@@ -13,16 +13,17 @@
  * rwe_declarations_ricompactdisclib), the behaviour is compared with it
  * in libs/tests/rwe/ricompactdisclib.c.  Notes:
  * docs/rwelibs/port/ricompactdisclib.md.
- *   init:  device name = "cd.device", toc = 0; CreateMsgPort (if that
- *          fails: flag 0, nothing else) and five buffers through memlib's
- *          globalloc (MEMF_CLEAR): the SCSICmd (30 bytes), the READ TOC
- *          command (10), a track descriptor (8, never used), the TOC data
- *          of the SCSI path (804) and a 12 byte SCSI command; scsiflag 0
- *   finit: without port nothing; else CloseCD, DeleteMsgPort, flag 0
- *          (the buffers stay for memlib)
+ *   init:  device name = "cd.device", toc = 0; a reply port (newport; if
+ *          that fails: flag 0, nothing else) and five buffers through
+ *          memlib's globalloc (MEMF_CLEAR): the SCSICmd (30 bytes), the
+ *          READ TOC command (10), a track descriptor (8, never used), the
+ *          TOC data of the SCSI path (804) and a 12 byte SCSI command;
+ *          scsiflag 0
+ *   finit: without port nothing; else CloseCD, freeport, flag 0 (the
+ *          buffers stay for memlib)
  *
- * OpenCD [devicename$,unit[,scsiflag]]: one IOStdReq (CreateIORequest,
- * 200 bytes) on the port, OpenDevice(name, unit, 0); flag = -1 if open.
+ * OpenCD [devicename$,unit[,scsiflag]]: one IOStdReq (newreq, 200 bytes)
+ * on the port, OpenDevice(name, unit, 0); flag = -1 if open.
  * The commands check flag (0: return 0) and set io_Command, io_Data,
  * io_Offset, io_Length and io_Flags (0) of the request, then DoIO (the
  * commands return DoIO's d0, the statements leave it in d0 as well).
@@ -30,8 +31,8 @@
  * HD_SCSICMD (PLAY AUDIO(12), READ TOC) instead.
  *
  * Everything is C: exec through BLITZ_BASEJSR where the original passes
- * the whole d0 of an exec call on (DoIO, SendIO, AbortIO, OpenDevice,
- * DeleteIORequest), memlib through BLITZ_ALIBJSR.  The data from
+ * the whole d0 of an exec call on (DoIO, SendIO, AbortIO, OpenDevice),
+ * memlib through BLITZ_ALIBJSR.  The data from
  * trackname to MyCDInfo keep the original's order and sizes: a long
  * device name and CDTrackMins/CDTrackSecs offsets read and write the same
  * things.
@@ -54,13 +55,18 @@
  *   original reads the entries with an earlier summary, and keeps the
  *   uncleared buffer of a failed read.  toclen = (last track + 2) * 8 +
  *   32 for entries of 6 bytes, as in the original.
+ * Fixed (#1138): the reply port and the request are built by hand with
+ *   exec V33 functions (newport, newreq), one path for all Kickstarts;
+ *   the original calls CreateMsgPort in init (exec V36, no version
+ *   check) and crashes on Kickstart 1.x before the program's first line.
+ * Fixed (#575): OpenCD returns 0 when OpenDevice fails and forgets the
+ *   freed request; the original keeps the deleted request in ioreq and
+ *   returns the d0 of DeleteIORequest (200 on Kickstart 3.1).
  *
  * BUG(orig):
  *   - OpenCD name$,unit keeps the name, the unit and scsiflag for later
  *     OpenCDs; scsiflag is only cleared by init (#577).
- *   - OpenCD while open: the old request stays open, lost.  If OpenDevice
- *     fails the request is deleted but stays in ioreq, and OpenCD returns
- *     d0 of DeleteIORequest (not 0) (#578, #575).
+ *   - OpenCD while open: the old request stays open, lost (#578).
  *   - CDVolume volume,fade puts the volume into io_Length and the fade into
  *     io_Offset, the reverse of cd.device's CD_ATTENUATE (#982).
  *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
@@ -273,7 +279,6 @@ BLITZ_LIBFIN();
 #define LVO_DoIO            (-456)
 #define LVO_SendIO          (-462)
 #define LVO_AbortIO         (-480)
-#define LVO_DeleteIORequest (-660)
 
 #define SCSI_CMD_PLAYAUDIO12 0xa5
 #define SCSI_CMD_READTOC     0x43
@@ -376,6 +381,69 @@ static ULONG doscsi(UBYTE *command, UWORD cmdlen, APTR buf, ULONG len, UBYTE fla
     return reqcall(LVO_DoIO, req);
 }
 
+/* Fixed (#1138): the reply port and the request are built by hand with
+   exec V33 functions (AllocMem, FreeMem, AllocSignal, FreeSignal,
+   FindTask), one path for all Kickstarts, as ritrackdisklib's (#941);
+   the original calls CreateMsgPort, CreateIORequest, DeleteIORequest and
+   DeleteMsgPort (V36) without a version check and crashes in init on
+   Kickstart 1.x. */
+
+/* newport: a signal port of the calling task (as CreateMsgPort): the
+   MsgPort cleared, a signal bit, PA_SIGNAL, an empty message list; NULL
+   without memory or a free signal */
+static struct MsgPort *newport(void)
+{
+    struct MsgPort *mp = AllocMem(sizeof *mp, MEMF_PUBLIC | MEMF_CLEAR);
+    BYTE sig;
+
+    if (!mp)
+        return NULL;
+    sig = AllocSignal(-1);
+    if (sig < 0) {
+        FreeMem(mp, sizeof *mp);
+        return NULL;
+    }
+    mp->mp_Node.ln_Type = NT_MSGPORT;
+    mp->mp_Flags = PA_SIGNAL;
+    mp->mp_SigBit = sig;
+    mp->mp_SigTask = FindTask(NULL);
+    mp->mp_MsgList.lh_Head = (struct Node *)&mp->mp_MsgList.lh_Tail;
+    mp->mp_MsgList.lh_TailPred = (struct Node *)&mp->mp_MsgList.lh_Head;
+    return mp;
+}
+
+/* freeport: frees the signal bit and the port of newport() */
+static void freeport(struct MsgPort *mp)
+{
+    FreeSignal(mp->mp_SigBit);
+    FreeMem(mp, sizeof *mp);
+}
+
+#define REQSIZE 200                     /* the original's CreateIORequest size */
+
+/* newreq: a cleared request of REQSIZE bytes on the library's port with
+   mn_ReplyPort and mn_Length set (as CreateIORequest) and NT_REPLYMSG
+   (CheckIO takes a request that was never sent for done); NULL without
+   memory */
+static struct IOStdReq *newreq(void)
+{
+    struct IOStdReq *req = AllocMem(REQSIZE, MEMF_PUBLIC | MEMF_CLEAR);
+
+    if (req) {
+        req->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
+        req->io_Message.mn_ReplyPort = cd.msgport;
+        req->io_Message.mn_Length = REQSIZE;
+    }
+    return req;
+}
+
+/* freereq: frees a request of newreq(); NULL is ignored */
+static void freereq(struct IOStdReq *req)
+{
+    if (req)
+        FreeMem(req, REQSIZE);
+}
+
 static void BLITZ_ROUTINE c_libinit(void)
 {
     struct MsgPort *mp;
@@ -383,7 +451,7 @@ static void BLITZ_ROUTINE c_libinit(void)
     cd.trackname = cd.devicename;
     cd.toc = NULL;
     cd.toclen = 0;
-    mp = CreateMsgPort();
+    mp = newport();                     /* fixed #1138: built by hand */
     if (!mp) {
         cd.flag = 0;
         return;
@@ -414,7 +482,7 @@ ULONG BLITZ_ROUTINE c_closecd(void)
         return 0;
     c_stoptrack();                      /* ALibJsr CDStop */
     CloseDevice((struct IORequest *)cd.ioreq);
-    DeleteIORequest((struct IORequest *)cd.ioreq);
+    freereq(cd.ioreq);
     cd.ioreq = NULL;
     cd.flag = 0;
     return (ULONG)-1;
@@ -425,7 +493,7 @@ static void BLITZ_ROUTINE c_libfinit(void)
     if (!cd.msgport)
         return;
     c_closecd();
-    DeleteMsgPort(cd.msgport);
+    freeport(cd.msgport);
     cd.msgport = NULL;
     cd.flag = 0;
 }
@@ -438,7 +506,7 @@ ULONG BLITZ_ROUTINE c_opencd(void)
 
     if (!cd.msgport)
         return 0;
-    req = (struct IOStdReq *)CreateIORequest(cd.msgport, 200);
+    req = newreq();                     /* fixed #1138: built by hand */
     if (!req) {
         cd.flag = 0;
         return 0;
@@ -447,12 +515,13 @@ ULONG BLITZ_ROUTINE c_opencd(void)
     r = (struct bl_regs){ .d0 = cd.trackversion, .d1 = 0, .a0 = (ULONG)cd.trackname,
                           .a1 = (ULONG)req };
     if (BLITZ_BASEJSR(SysBase, LVO_OpenDevice, r)) {
-        /* BUG(orig) (#575): ioreq keeps the deleted request, the result is d0
-           of DeleteIORequest */
-        r = (struct bl_regs){ .a0 = (ULONG)cd.ioreq };
-        r.d0 = BLITZ_BASEJSR(SysBase, LVO_DeleteIORequest, r);
+        /* Fixed (#575): the request freed and forgotten, 0; the original
+           keeps the deleted request in ioreq and returns the d0 of
+           DeleteIORequest (200 on Kickstart 3.1) */
+        freereq(req);
+        cd.ioreq = NULL;
         cd.flag = 0;
-        return r.d0;
+        return 0;
     }
     cd.flag = 0xff;
     return (ULONG)-1;
