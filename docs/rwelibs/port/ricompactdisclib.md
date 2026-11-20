@@ -131,11 +131,23 @@ d1/d2 (CDTrackLength) are not reproduced.
   functions speak SCSI; `CDStop`, `CDPause` and the others send
   cd.device commands also with scsiflag (a SCSI play is a completed
   command: `CDStop` does not stop it). (#580)
+* `CDPlayTrack` sends CD_PLAYTRACK (SendIO) with a request of its own,
+  made with the library's request and given the device and unit after
+  OpenDevice; `CDStop`, `CloseCD` (and finit) and the next `CDPlayTrack`
+  abort a play that is out and take it back with WaitIO, and io_Command
+  is not written. The original sends its one request: on a real
+  cd.device the play stays in flight until the track ends, every other
+  command (`CDUpdateInfo`, `CDStatus`, `CDPause`, `CDVolume`) fills the
+  same request and sends it again, `CDStop` writes CD_PLAYTRACK into it
+  and calls AbortIO without WaitIO, and the reply stays at the port
+  (the next play links the same message again; `CloseCD` frees the
+  request while it may still be in use). (#1156, #574)
 
 **BUG(orig)** (kept):
 
-* `CDStop` (also in `CloseCD`) is AbortIO only, no WaitIO; it sets
-  io_Command first. (#574)
+* `CDPlayTrack` without scsiflag returns the d0 SendIO leaves (SendIO
+  has no result; 0 with uaescsi.device), not true or false as the manual
+  says. (#1157)
 
 **Test** (`libs/tests/rwe/ricompactdisclib.c`, snitch case "rwe
 ricompactdisclib"): each run loads one library set (the C build or the

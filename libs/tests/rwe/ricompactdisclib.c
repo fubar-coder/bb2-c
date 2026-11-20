@@ -36,8 +36,8 @@
  * (the old request is lost: the release code as the original, the error check of #578 is not called here), all CD commands with their
  * arguments and io_Errors, CDReadTOC twice (the old TOC freed, the second
  * read failing), a failing summary read (the original goes on, fixed #581), a play in
- * progress stopped, closed and its request used again (BUG(orig) (#574,
- * #1156)), the TOC functions before any CDReadTOC (the original reads
+ * progress stopped, closed and its request used again (the original; fixed #574,
+ * #1156), the TOC functions before any CDReadTOC (the original reads
  * address 0, fixed #582), CDTrackLength of every track 1..9 of the 9 track CD
  * and 40..50 of the 50 track CD (the original: from track 44 the start is
  * wrong, fixed #585; the last track reads the entry behind it, fixed #583), CDTrackMins/CDTrackSecs offsets 0, 1, 4, 5, -1..-5 and the
@@ -124,7 +124,7 @@ static void msf(UBYTE *p, ULONG secs, UBYTE frame)
 }
 
 /* replies left at the library's reply port (it never takes one off:
-   BUG(orig) #574, #1156): 1 if any; the port is emptied, so that the next
+   the original, fixed #574, #1156): 1 if any; the port is emptied, so that the next
    reply or a freed request does not break its list */
 static ULONG portreplies(void)
 {
@@ -717,9 +717,9 @@ int main(int argc, char **argv)
     commands("closed");
 
     /* a play in progress (kept until AbortIO): CDStop and CloseCD abort it
-       without WaitIO, the reply stays at the port (BUG(orig) (#574));
+       without WaitIO, the reply stays at the port (the original; fixed #574: WaitIO);
        other commands and the next play use its request while it is out
-       (BUG(orig) (#1156)) */
+       (the original; fixed #1156: a request of its own) */
     hold = 1;
     opencd(rwecd, 1, 1, 0);
     strcpy(VEC, "held 1,1");

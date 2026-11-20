@@ -3390,7 +3390,8 @@ CDPlayTrack|abort command|closed 3,2|1	$00000000
 CDPlayTrack|abort command|held 1,1|1	$00000000
 CDPlayTrack|abort command|held 2,1|1	$00000000
 CDPlayTrack|abort command|held 3,1 4,1|1	$00000000
-CDPlayTrack|abort command|held 3,1 4,1|2	$00000000
+CDPlayTrack|abort command|held 3,1 4,1|2 [orig]	$00000000
+CDPlayTrack|abort command|held 3,1 4,1|2 [fixed #1156]	$00000025
 CDPlayTrack|abort command|held 5,1 closed|1	$00000000
 CDPlayTrack|abort command|no port 3,2|1	$00000000
 CDPlayTrack|abort command|no request 3,2|1	$00000000
@@ -3410,7 +3411,8 @@ CDPlayTrack|aborts|closed 3,2|1	$00000000
 CDPlayTrack|aborts|held 1,1|1	$00000000
 CDPlayTrack|aborts|held 2,1|1	$00000000
 CDPlayTrack|aborts|held 3,1 4,1|1	$00000000
-CDPlayTrack|aborts|held 3,1 4,1|2	$00000000
+CDPlayTrack|aborts|held 3,1 4,1|2 [orig]	$00000000
+CDPlayTrack|aborts|held 3,1 4,1|2 [fixed #1156]	$00000001
 CDPlayTrack|aborts|held 5,1 closed|1	$00000000
 CDPlayTrack|aborts|no port 3,2|1	$00000000
 CDPlayTrack|aborts|no request 3,2|1	$00000000
@@ -3702,7 +3704,8 @@ CDPlayTrack|requests|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|requests|scsi kept|1 [orig]	$00000001
 CDPlayTrack|requests|scsi kept|1 [fixed #577]	$00000000
 CDPlayTrack|requests begun while the play was out|held 1,1|1	$00000000
-CDPlayTrack|requests begun while the play was out|held 3,1 4,1|1	$00000002
+CDPlayTrack|requests begun while the play was out|held 3,1 4,1|1 [orig]	$00000002
+CDPlayTrack|requests begun while the play was out|held 3,1 4,1|1 [fixed #1156]	$00000000
 CDPlayTrack|scsi_Actual|2|1	$00000000
 CDPlayTrack|scsi_Actual|closed 3,2|1	$00000000
 CDPlayTrack|scsi_Actual|held 1,1|1	$00000000
@@ -5237,7 +5240,8 @@ CDStatus|opens|no request|1	$00000000
 CDStatus|opens|not open|1	$00000000
 CDStatus|opens|open|1	$00000000
 CDStatus|opens|scsi|1	$00000000
-CDStatus|play held|held 2,1|1	$00000000
+CDStatus|play held|held 2,1|1 [orig]	$00000000
+CDStatus|play held|held 2,1|1 [fixed #1156]	$00000001
 CDStatus|popped|closed|1	$00000000
 CDStatus|popped|error|1	$00000000
 CDStatus|popped|held 2,1|1	$00000000
@@ -5256,7 +5260,8 @@ CDStatus|requests|no request|1	$00000000
 CDStatus|requests|not open|1	$00000000
 CDStatus|requests|open|1	$00000001
 CDStatus|requests|scsi|1	$00000001
-CDStatus|requests begun while the play was out|held 2,1|1	$00000001
+CDStatus|requests begun while the play was out|held 2,1|1 [orig]	$00000001
+CDStatus|requests begun while the play was out|held 2,1|1 [fixed #1156]	$00000000
 CDStatus|scsi_Actual|closed|1	$00000000
 CDStatus|scsi_Actual|error|1	$00000000
 CDStatus|scsi_Actual|held 2,1|1	$00000000
@@ -5367,10 +5372,13 @@ CDStop|abort command|no request|1	$00000000
 CDStop|abort command|no request 3,2|1	$00000000
 CDStop|abort command|not open|1	$00000000
 CDStop|abort command|not open 3,2|1	$00000000
-CDStop|abort command|open|1	$00000025
+CDStop|abort command|open|1 [orig]	$00000025
+CDStop|abort command|open|1 [fixed #574]	$00000000
 CDStop|abort command|open 3,2|1	$00000025
-CDStop|abort command|scsi|1	$00000025
-CDStop|abort command|scsi 3,2|1	$00000025
+CDStop|abort command|scsi|1 [orig]	$00000025
+CDStop|abort command|scsi|1 [fixed #574]	$00000000
+CDStop|abort command|scsi 3,2|1 [orig]	$00000025
+CDStop|abort command|scsi 3,2|1 [fixed #574]	$00000000
 CDStop|aborts|closed|1	$00000000
 CDStop|aborts|closed 3,2|1	$00000000
 CDStop|aborts|held 1,1|1	$00000001
@@ -5382,10 +5390,13 @@ CDStop|aborts|no request|1	$00000000
 CDStop|aborts|no request 3,2|1	$00000000
 CDStop|aborts|not open|1	$00000000
 CDStop|aborts|not open 3,2|1	$00000000
-CDStop|aborts|open|1	$00000001
+CDStop|aborts|open|1 [orig]	$00000001
+CDStop|aborts|open|1 [fixed #574]	$00000000
 CDStop|aborts|open 3,2|1	$00000001
-CDStop|aborts|scsi|1	$00000001
-CDStop|aborts|scsi 3,2|1	$00000001
+CDStop|aborts|scsi|1 [orig]	$00000001
+CDStop|aborts|scsi|1 [fixed #574]	$00000000
+CDStop|aborts|scsi 3,2|1 [orig]	$00000001
+CDStop|aborts|scsi 3,2|1 [fixed #574]	$00000000
 CDStop|closes|closed|1	$00000000
 CDStop|closes|closed 3,2|1	$00000000
 CDStop|closes|held 1,1|1	$00000000
@@ -5556,9 +5567,11 @@ CDStop|popped|scsi|1	$00000000
 CDStop|popped|scsi 3,2|1	$00000000
 CDStop|replies at the port|closed|1	$00000000
 CDStop|replies at the port|closed 3,2|1	$00000000
-CDStop|replies at the port|held 1,1|1	$00000001
+CDStop|replies at the port|held 1,1|1 [orig]	$00000001
+CDStop|replies at the port|held 1,1|1 [fixed #574]	$00000000
 CDStop|replies at the port|held 2,1|1	$00000000
-CDStop|replies at the port|held 3,1 4,1|1	$00000001
+CDStop|replies at the port|held 3,1 4,1|1 [orig]	$00000001
+CDStop|replies at the port|held 3,1 4,1|1 [fixed #574]	$00000000
 CDStop|replies at the port|no port|1	$00000000
 CDStop|replies at the port|no port 3,2|1	$00000000
 CDStop|replies at the port|no request|1	$00000000
@@ -5566,7 +5579,8 @@ CDStop|replies at the port|no request 3,2|1	$00000000
 CDStop|replies at the port|not open|1	$00000000
 CDStop|replies at the port|not open 3,2|1	$00000000
 CDStop|replies at the port|open|1	$00000000
-CDStop|replies at the port|open 3,2|1	$00000001
+CDStop|replies at the port|open 3,2|1 [orig]	$00000001
+CDStop|replies at the port|open 3,2|1 [fixed #574]	$00000000
 CDStop|replies at the port|scsi|1	$00000000
 CDStop|replies at the port|scsi 3,2|1	$00000000
 CDStop|requests|closed|1	$00000000
@@ -5585,8 +5599,10 @@ CDStop|requests|open 3,2|1	$00000000
 CDStop|requests|scsi|1	$00000000
 CDStop|requests|scsi 3,2|1	$00000000
 CDStop|requests begun while the play was out|held 1,1|1	$00000000
-CDStop|requests begun while the play was out|held 2,1|1	$00000001
-CDStop|requests begun while the play was out|held 3,1 4,1|1	$00000002
+CDStop|requests begun while the play was out|held 2,1|1 [orig]	$00000001
+CDStop|requests begun while the play was out|held 2,1|1 [fixed #1156]	$00000000
+CDStop|requests begun while the play was out|held 3,1 4,1|1 [orig]	$00000002
+CDStop|requests begun while the play was out|held 3,1 4,1|1 [fixed #1156]	$00000000
 CDStop|scsi_Actual|closed|1	$00000000
 CDStop|scsi_Actual|closed 3,2|1	$00000000
 CDStop|scsi_Actual|held 1,1|1	$00000000
@@ -12678,12 +12694,14 @@ CloseCD|abort command||1	$00000000
 CloseCD|abort command|3|1 [orig]	$00000025
 CloseCD|abort command|3|1 [fixed #577]	$00000000
 CloseCD|abort command|held 5,1 closed|1	$00000025
-CloseCD|abort command|scsi 3,0|1	$00000025
+CloseCD|abort command|scsi 3,0|1 [orig]	$00000025
+CloseCD|abort command|scsi 3,0|1 [fixed #574]	$00000000
 CloseCD|aborts||1	$00000000
 CloseCD|aborts|3|1 [orig]	$00000001
 CloseCD|aborts|3|1 [fixed #577]	$00000000
 CloseCD|aborts|held 5,1 closed|1	$00000001
-CloseCD|aborts|scsi 3,0|1	$00000001
+CloseCD|aborts|scsi 3,0|1 [orig]	$00000001
+CloseCD|aborts|scsi 3,0|1 [fixed #574]	$00000000
 CloseCD|closes||1	$00000000
 CloseCD|closes|3|1 [orig]	$00000001
 CloseCD|closes|3|1 [fixed #577]	$00000000
@@ -12733,13 +12751,15 @@ CloseCD|popped|held 5,1 closed|1	$00000000
 CloseCD|popped|scsi 3,0|1	$00000000
 CloseCD|replies at the port at CloseDevice||1	$00000000
 CloseCD|replies at the port at CloseDevice|3|1	$00000000
-CloseCD|replies at the port at CloseDevice|held 5,1 closed|1	$00000001
+CloseCD|replies at the port at CloseDevice|held 5,1 closed|1 [orig]	$00000001
+CloseCD|replies at the port at CloseDevice|held 5,1 closed|1 [fixed #574]	$00000000
 CloseCD|replies at the port at CloseDevice|scsi 3,0|1	$00000000
 CloseCD|requests||1	$00000000
 CloseCD|requests|3|1	$00000000
 CloseCD|requests|held 5,1 closed|1	$00000000
 CloseCD|requests|scsi 3,0|1	$00000000
-CloseCD|requests begun while the play was out|held 5,1 closed|1	$00000002
+CloseCD|requests begun while the play was out|held 5,1 closed|1 [orig]	$00000002
+CloseCD|requests begun while the play was out|held 5,1 closed|1 [fixed #1156]	$00000000
 CloseCD|scsi_Actual||1	$00000000
 CloseCD|scsi_Actual|3|1	$00000000
 CloseCD|scsi_Actual|held 5,1 closed|1	$00000000
@@ -13146,12 +13166,14 @@ OpenCD|unit|rwecd.device,3 (form 1, scsiflag 0)|1	$00000000
 finit|abort command|again|1	$00000000
 finit|abort command|no port|1	$00000000
 finit|abort command|no request|1	$00000000
-finit|abort command|open|1	$00000025
+finit|abort command|open|1 [orig]	$00000025
+finit|abort command|open|1 [fixed #574]	$00000000
 finit|abort command|played|1	$00000025
 finit|aborts|again|1	$00000000
 finit|aborts|no port|1	$00000000
 finit|aborts|no request|1	$00000000
-finit|aborts|open|1	$00000001
+finit|aborts|open|1 [orig]	$00000001
+finit|aborts|open|1 [fixed #574]	$00000000
 finit|aborts|played|1	$00000001
 finit|closes|again|1	$00000000
 finit|closes|no port|1	$00000000
@@ -13207,7 +13229,8 @@ finit|replies at the port at CloseDevice|again|1	$00000000
 finit|replies at the port at CloseDevice|no port|1	$00000000
 finit|replies at the port at CloseDevice|no request|1	$00000000
 finit|replies at the port at CloseDevice|open|1	$00000000
-finit|replies at the port at CloseDevice|played|1	$00000001
+finit|replies at the port at CloseDevice|played|1 [orig]	$00000001
+finit|replies at the port at CloseDevice|played|1 [fixed #574]	$00000000
 finit|requests|again|1	$00000000
 finit|requests|no port|1	$00000000
 finit|requests|no request|1	$00000000

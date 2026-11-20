@@ -110,10 +110,19 @@
  *   without a TOC, for a track the TOC does not hold, for 0 tracks); the
  *   original ignores its arguments, plays the author's test values
  *   (blocks 14000 to 15000) and returns DoIO's error code.
+ * Fixed (#1156, #574): CDPlayTrack sends CD_PLAYTRACK with a request of
+ *   its own (playreq, built after OpenDevice from the device and unit of
+ *   ioreq); CDStop, CloseCD and the next CDPlayTrack abort a play that is
+ *   out and take it back with WaitIO (stopplay); io_Command is not
+ *   written.  The original sends the library's one request with SendIO:
+ *   every other command fills it and sends it again while the play is
+ *   out, CDStop writes CD_PLAYTRACK into it and calls AbortIO without
+ *   WaitIO, and the reply stays at the port (the next play links the
+ *   same message again).
  *
  * BUG(orig):
- *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
- *     io_Command of the request first (#574).
+ *   - CDPlayTrack without scsiflag returns the d0 SendIO leaves (SendIO
+ *     has no result), not -1 / 0 as the manual says (#1157).
  * Registers: the original changes d0/d1/a0/a1, a6 and (CDReadTOC d7,
  * CDTrackLength d1/d2) others; the thunks keep d1/a0/a1, GCC keeps
  * d2-d7/a2-a6.
@@ -303,7 +312,6 @@ BLITZ_LIBFIN();
 #define LVO_OpenDevice      (-444)
 #define LVO_DoIO            (-456)
 #define LVO_SendIO          (-462)
-#define LVO_AbortIO         (-480)
 
 #define SCSI_CMD_PLAYAUDIO12 0xa5
 #define SCSI_CMD_READTOC     0x43
@@ -318,6 +326,10 @@ static struct SCSICmd *Cmd;
 static UBYTE *ReadTOC, *TrackDesc, *TOCData, *SCSICMD12;
 static ULONG scsiflag;
 static UBYTE scsitoc;                   /* TOCData read (fixed #582) */
+/* the request of CDPlayTrack's CD_PLAYTRACK (SendIO) and whether it is
+   out, not yet taken back with WaitIO (fixed #1156, #574) */
+static struct IOStdReq *playreq;
+static UBYTE playing;
 
 /* the data at the end of the original, in its order */
 static struct BL_PACKED {
@@ -487,15 +499,32 @@ static void BLITZ_ROUTINE c_libinit(void)
     SCSICMD12 = (UBYTE *)globalloc(SIZEOF_SCSICMD12, MEMF_CLEAR);
     scsiflag = 0;
     scsitoc = 0;
+    playreq = NULL;
+    playing = 0;
 }
 
-/* CDStop: AbortIO only (BUG(orig) (#574): no WaitIO) */
+/* stopplay: a play that is out (playing) is aborted and taken back
+   (AbortIO, WaitIO: also one the device has replied by itself) */
+static void stopplay(void)
+{
+    if (!playing)
+        return;
+    AbortIO((struct IORequest *)playreq);
+    WaitIO((struct IORequest *)playreq);
+    playing = 0;
+}
+
+/* CDStop.  Fixed (#574, #1156): the play request is aborted and taken
+   back with WaitIO, only when a play is out, and its io_Command is not
+   written; the original writes CD_PLAYTRACK into io_Command of the one
+   request and calls AbortIO without WaitIO (the reply stays at the port)
+   and returns AbortIO's d0 */
 ULONG BLITZ_ROUTINE c_stoptrack(void)
 {
     if (!cd.flag)
         return 0;
-    cd.ioreq->io_Command = CD_PLAYTRACK;
-    return reqcall(LVO_AbortIO, cd.ioreq);
+    stopplay();
+    return 0;
 }
 
 /* CloseCD: -1 if it was open */
@@ -506,7 +535,9 @@ ULONG BLITZ_ROUTINE c_closecd(void)
     c_stoptrack();                      /* ALibJsr CDStop */
     CloseDevice((struct IORequest *)cd.ioreq);
     freereq(cd.ioreq);
+    freereq(playreq);
     cd.ioreq = NULL;
+    playreq = NULL;
     cd.flag = 0;
     return (ULONG)-1;
 }
@@ -524,17 +555,34 @@ static void BLITZ_ROUTINE c_libfinit(void)
 /* the open of the three forms: -1 if the device opened */
 static ULONG doopen(void)
 {
-    struct IOStdReq *req;
+    struct IOStdReq *req, *preq;
     struct bl_regs r;
 
     if (!cd.msgport)
         return 0;
+    /* OpenCD while open (#578, refused only by the error check): the open
+       request stays lost as in the original, but the play request of
+       #1156 is the library's own: its play stopped, it is freed */
+    if (playreq) {
+        stopplay();
+        freereq(playreq);
+        playreq = NULL;
+    }
     req = newreq();                     /* fixed #1138: built by hand */
     if (!req) {
         cd.flag = 0;
         return 0;
     }
+    /* fixed #1156: a request of its own for CD_PLAYTRACK */
+    preq = newreq();
+    if (!preq) {
+        freereq(req);
+        cd.flag = 0;
+        return 0;
+    }
     cd.ioreq = req;                     /* an open one is lost (#578: refused by opencdchk) */
+    playreq = preq;
+    playing = 0;
     r = (struct bl_regs){ .d0 = cd.trackversion, .d1 = 0, .a0 = (ULONG)cd.trackname,
                           .a1 = (ULONG)req };
     if (BLITZ_BASEJSR(SysBase, LVO_OpenDevice, r)) {
@@ -542,10 +590,14 @@ static ULONG doopen(void)
            keeps the deleted request in ioreq and returns the d0 of
            DeleteIORequest (200 on Kickstart 3.1) */
         freereq(req);
+        freereq(preq);
         cd.ioreq = NULL;
+        playreq = NULL;
         cd.flag = 0;
         return 0;
     }
+    preq->io_Device = req->io_Device;
+    preq->io_Unit = req->io_Unit;
     cd.flag = 0xff;
     return (ULONG)-1;
 }
@@ -634,8 +686,26 @@ ULONG BLITZ_ROUTINE c_playtrack(ULONG track BL_REG(d0), ULONG num BL_REG(d1))
 
     if (!cd.flag)
         return 0;
-    if (!scsiflag)
-        return cdio(SENDIO, CD_PLAYTRACK, NULL, track, num);
+    if (!scsiflag) {
+        /* Fixed (#1156): CD_PLAYTRACK goes out with a request of its own
+           (a play that is out first stopped and taken back), so that the
+           other commands do not reuse a request in flight, and its reply
+           is taken off the port; the original sends the library's one
+           request, which the next command fills and sends again while the
+           play is out, and leaves its reply at the port */
+        struct IOStdReq *req = playreq;
+        ULONG d0;
+
+        stopplay();
+        req->io_Command = CD_PLAYTRACK;
+        req->io_Data = NULL;
+        req->io_Offset = track;
+        req->io_Length = num;
+        req->io_Flags = 0;
+        d0 = reqcall(LVO_SendIO, req);
+        playing = 1;
+        return d0;
+    }
     /* _playtrackscsi.  Fixed (#580): PLAY AUDIO(12) from the SCSI TOC of
        CDReadTOC: the LBA of track# and the length to the start of the
        track behind the last one played (the lead-out at the most); 0
