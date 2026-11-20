@@ -37,11 +37,23 @@ intro: |
   | $FFFC | hold and modify (HAM) | 6 |
 
   Each bit of the flags adds a part to the slice's copper instructions,
-  so a slice can also change only some registers: bit 0 high resolution,
-  1 dual playfield, 2 HAM, 3 smooth scrolling, 4 two blank lines above
-  the slice, 7 and 8 the modulos of the two playfields, 10 the data fetch
-  registers, 12 the display window, 13, 14 and 15 the registers BPLCON2,
-  BPLCON1 and BPLCON0. In a dual playfield slice, bit 15 of the number of
+  so a slice can also change only some registers:
+
+  | Bit | What it adds |
+  |---|---|
+  | 0 | high resolution |
+  | 1 | dual playfield |
+  | 2 | HAM |
+  | 3 | smooth scrolling |
+  | 4 | two blank lines above the slice |
+  | 7, 8 | the modulos of the two playfields |
+  | 10 | the data fetch registers |
+  | 12 | the display window |
+  | 13 | the register BPLCON2 |
+  | 14 | the register BPLCON1 |
+  | 15 | the register BPLCON0 |
+
+  In a dual playfield slice, bit 15 of the number of
   bitplanes makes it show only a front bitmap, bit 14 only a back
   bitmap, so that a slice further down can change one playfield and
   leave the other.

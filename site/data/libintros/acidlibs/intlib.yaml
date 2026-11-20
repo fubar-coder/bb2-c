@@ -20,9 +20,14 @@ intro: |
 
   A `SetInt` block stands at the top level of the program, like a
   `Statement` or `Function`. If a `SetInt` comes while another block is
-  still open, the compiler stops with the error of that block: "Select
-  without End Select" for a `Select`, "Repeat without Until" for a
-  `Repeat`, "SetInt without End SetInt" for another `SetInt`, "If Without
-  End If" for an `If` or a `While`, "Unterminated Procedure" inside a
-  `Statement` or `Function`, and "For Without Next" for a `For`. When
-  several blocks are open, the first kind in this list is reported.
+  still open, the compiler stops with the error of that block. When
+  several blocks are open, the first kind in this table is reported:
+
+  | Open block | Error |
+  |---|---|
+  | `Select` | "Select without End Select" |
+  | `Repeat` | "Repeat without Until" |
+  | another `SetInt` | "SetInt without End SetInt" |
+  | `If` or `While` | "If Without End If" |
+  | inside a `Statement` or `Function` | "Unterminated Procedure" |
+  | `For` | "For Without Next" |

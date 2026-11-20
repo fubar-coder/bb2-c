@@ -24,12 +24,17 @@ intro: |
   do it themselves. Messages and ArgStrings the program made are freed
   at its end.
 
-  The action codes of `SendRexxCommand` are those of ARexx: $01000000
-  (RXCOMM) runs a command or script, $02000000 (RXFUNC) calls a function
-  with the number of arguments in the low byte, and modifiers are added
-  to them, such as $00020000 (RXFF_RESULT) to ask for a result string or
-  $00040000 (RXFF_STRING) for a script given as the command string
-  itself. When something fails, such as missing memory or a missing
+  The action codes of `SendRexxCommand` are those of ARexx. A code is
+  one of the actions, with modifiers added to it, such as these:
+
+  | Code | Name | Kind | Meaning |
+  |---|---|---|---|
+  | $01000000 | RXCOMM | action | runs a command or script |
+  | $02000000 | RXFUNC | action | calls a function, with the number of arguments in the low byte |
+  | $00020000 | RXFF_RESULT | modifier | asks for a result string |
+  | $00040000 | RXFF_STRING | modifier | the script is given as the command string itself |
+
+  When something fails, such as missing memory or a missing
   ARexx port, the library shows a recoverable alert, which waits for a
   mouse button, and the command does not do its work; `CreateRexxMsg`
   then returns 4 instead of a message.

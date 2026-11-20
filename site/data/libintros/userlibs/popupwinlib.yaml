@@ -7,11 +7,15 @@ intro: |
   the right of the item. A mouse button closes all menus again.
 
   The program builds the menu itself in memory, as a list of items.
-  Each item starts with a long that points to the next item (0 for the
-  last), a long that points to its text, a string that ends in a zero
-  byte (a pointer of 0 makes the item a separator line), two words the library does
-  not use, and a long that points to the first item of its sub menu (0
-  for none).
+  Each item starts with these fields:
+
+  | Offset | Size | Contents |
+  |---|---|---|
+  | 0 | long | the address of the next item, 0 for the last |
+  | 4 | long | the address of its text, a string that ends in a zero byte; 0 makes the item a separator line |
+  | 8 | word | not used by the library |
+  | 10 | word | not used by the library |
+  | 12 | long | the address of the first item of its sub menu, 0 for none |
 
   Used as a function, `PopUpWindow` returns the address of the item
   chosen, or 0 if none was, so the program tells the items by their

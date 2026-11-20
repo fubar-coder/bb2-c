@@ -12,10 +12,16 @@ intro: |
 
   An entry is placed after the ones before it, so they are best made in
   order; making an entry again with the same number replaces it. The
-  flags of an item choose its kind: 0 an ordinary item, 1 an item that
-  toggles a check mark, 2 such an item that clears the others of its
-  menu when it is checked, 3 and 4 the same as 1 and 2 but checked at the
-  start; a larger value is taken as Intuition's item flags themselves.
+  flags of an item choose its kind; a value larger than 4 is taken as
+  Intuition's item flags themselves:
+
+  | Flags | Item |
+  |---|---|
+  | 0 | an ordinary item |
+  | 1 | an item that toggles a check mark |
+  | 2 | an item that toggles a check mark and clears the others of its menu when it is checked |
+  | 3 | as 1, but checked at the start |
+  | 4 | as 2, but checked at the start |
 
   Menu, item and subitem numbers are checked only
   with runtime error checking; without it, a wrong number reads beyond the
