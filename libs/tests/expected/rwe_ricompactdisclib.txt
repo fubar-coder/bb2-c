@@ -5162,14 +5162,19 @@ CDStatus|kept|not open|1	kept
 CDStatus|kept|open|1	kept
 CDStatus|kept|scsi|1	kept
 CDStatus|length|closed|1	$00000000
-CDStatus|length|error|1	$0000001A
-CDStatus|length|held 2,1|1	$0000001A
-CDStatus|length|io_Error 40|1	$0000001A
+CDStatus|length|error|1 [orig]	$0000001A
+CDStatus|length|error|1 [fixed #948]	$00000022
+CDStatus|length|held 2,1|1 [orig]	$0000001A
+CDStatus|length|held 2,1|1 [fixed #948]	$00000022
+CDStatus|length|io_Error 40|1 [orig]	$0000001A
+CDStatus|length|io_Error 40|1 [fixed #948]	$00000022
 CDStatus|length|no port|1	$00000000
 CDStatus|length|no request|1	$00000000
 CDStatus|length|not open|1	$00000000
-CDStatus|length|open|1	$0000001A
-CDStatus|length|scsi|1	$0000001A
+CDStatus|length|open|1 [orig]	$0000001A
+CDStatus|length|open|1 [fixed #948]	$00000022
+CDStatus|length|scsi|1 [orig]	$0000001A
+CDStatus|length|scsi|1 [fixed #948]	$00000022
 CDStatus|offset|closed|1	$00000000
 CDStatus|offset|error|1	$00000000
 CDStatus|offset|held 2,1|1	$00000000

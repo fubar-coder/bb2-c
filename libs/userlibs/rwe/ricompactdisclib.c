@@ -98,16 +98,17 @@
  * Fixed (#982): CDVolume volume,fade puts the volume into io_Offset and
  *   the fade into io_Length, as cd.device's CD_ATTENUATE wants them; the
  *   original swaps them.
+ * Fixed (#948): CDStatus asks for a whole struct CDInfo (34 bytes) into
+ *   MyCDInfo of that size; the original asks for 26 bytes into 13 words,
+ *   and a device that writes the whole struct (uaescsi.device) writes 8
+ *   bytes behind MyCDInfo, the end of the library.  (The port had 8 bytes
+ *   of room there since #946, a DIFF; it is the struct's end now.)
  *
  * BUG(orig):
  *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
  *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
  *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
- *   - CDStatus asks for 26 bytes of CD_INFO (a struct CDInfo has 34): a
- *     device that writes all of it (uaescsi.device) writes 8 bytes behind
- *     MyCDInfo, the end of the library.  DIFF: here 8 bytes of room behind
- *     mycdinfo take them (#948, #946).
  * Registers: the original changes d0/d1/a0/a1, a6 and (CDReadTOC d7,
  * CDTrackLength d1/d2) others; the thunks keep d1/a0/a1, GCC keeps
  * d2-d7/a2-a6.
@@ -327,19 +328,17 @@ static struct BL_PACKED {
     struct MsgPort *msgport;
     UBYTE flag;                         /* Even */
     UBYTE pad;
-    UWORD mycdinfo[13];                 /* .MyCDInfo, Status = [12] */
-    /* DIFF (#946): CDStatus asks for 26 bytes of CD_INFO, but a device may
-       write the whole struct CDInfo (34 bytes, uaescsi.device does): in
-       the original the 8 bytes go behind its data, the end of the library
-       (BUG(orig), #948), here into this room instead of the pointers of
-       the SCSI buffers behind cd */
-    UWORD mycdinfo_rest[4];
+    /* .MyCDInfo, Status = [12].  Fixed (#948): a whole struct CDInfo (17
+       words), asked for with its size; the original has 13 words and asks
+       for 26 bytes, and a device that writes the whole struct
+       (uaescsi.device does) writes 8 bytes behind the library */
+    UWORD mycdinfo[17];
 } cd = { cd.devicename, 0, "cd.device" };
 _Static_assert(offsetof(__typeof__(cd), toc) == 0x3a, "cd layout");
 _Static_assert(offsetof(__typeof__(cd), ioreq) == 0x5a, "cd layout");
 _Static_assert(offsetof(__typeof__(cd), mycdinfo) == 0x64, "cd layout");
-_Static_assert(offsetof(__typeof__(cd), mycdinfo_rest) == 0x64 + 26, "cd layout");
-_Static_assert(sizeof cd - offsetof(__typeof__(cd), mycdinfo) >= sizeof(struct CDInfo), "CD_INFO room");
+_Static_assert(sizeof cd.mycdinfo == sizeof(struct CDInfo), "CD_INFO size");
+_Static_assert(offsetof(struct CDInfo, Status) == 24, "CDInfo Status");
 
 static ULONG globalloc(ULONG size, ULONG flags)
 {
@@ -608,7 +607,7 @@ ULONG BLITZ_ROUTINE c_cdstatus(void)
 {
     if (!cd.flag)
         return 0;
-    cdio(DOIO, CD_INFO, cd.mycdinfo, 0, 26);
+    cdio(DOIO, CD_INFO, cd.mycdinfo, 0, sizeof cd.mycdinfo);  /* fixed #948: 34, not 26 */
     return BL_EXTL(cd.mycdinfo[12]);
 }
 

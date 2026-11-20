@@ -32,11 +32,7 @@ globalloc/globfree through `BLITZ_ALIBJSR`. `CloseCD`'s `ALibJsr
 CDStop` is a C call. The data from `trackname` to `MyCDInfo` keep the
 original's order and sizes (one packed struct), so that a long device
 name and the unlimited `CDTrackMins`/`CDTrackSecs` offsets hit the same
-bytes. DIFF (#946): behind `MyCDInfo` follow 8 bytes of room
-(`mycdinfo_rest`): a device that writes the whole 34-byte CDInfo for
-`CDStatus` (uaescsi.device) wrote them over the pointers of the SCSI
-buffers, and the next SCSI `CDReadTOC` hung; in the original they go
-behind the library (#948). Every entry is a thunk keeping d1/a0/a1; the original's changes of a6, d7 (CDReadTOC) and
+bytes; `MyCDInfo` is a whole struct CDInfo (34 bytes, #948). Every entry is a thunk keeping d1/a0/a1; the original's changes of a6, d7 (CDReadTOC) and
 d1/d2 (CDTrackLength) are not reproduced.
 
 **Fixed:**
@@ -115,6 +111,14 @@ d1/d2 (CDTrackLength) are not reproduced.
   `io_Offset` and the fade time in `io_Length` (frames), as cd.device
   wants them. The original swaps them, so `CDVolume 32767,0` asked for
   silence with a fade of 32767 frames. (#982)
+* `CDStatus` asks for a whole struct CDInfo (34 bytes) into a `MyCDInfo`
+  of that size. The original asks for 26 bytes into 13 words, and a
+  device that writes the whole struct (uaescsi.device) writes 8 bytes
+  behind `MyCDInfo`, the end of the library: on Workbench 3.1 the
+  unloading of the program stops with the alert 8100 0005. (The port had
+  8 bytes of room there since #946, which kept the pointers of its SCSI
+  buffers from being overwritten; it is the end of the struct now.)
+  (#948)
 
 **BUG(orig)** (kept):
 
@@ -122,10 +126,6 @@ d1/d2 (CDTrackLength) are not reproduced.
   io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
   15000 (test values), io_Offset = 1. (#580)
-* `CDStatus` asks for 26 bytes of CD_INFO, a struct CDInfo has 34: a
-  device that writes all of it (uaescsi.device) writes 8 bytes behind
-  `MyCDInfo`, the end of the library (here into `mycdinfo_rest`, see
-  above). (#948)
 
 **Test** (`libs/tests/rwe/ricompactdisclib.c`, snitch case "rwe
 ricompactdisclib"): each run loads one library set (the C build or the

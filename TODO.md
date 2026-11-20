@@ -674,12 +674,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   (`amiga_emulation.h:46-57`: the wait for a slot does not count; a
   first-save session's cold boot until the save has a limit of the same
   length). Observed:
-  * `regression_ricompactdisclib_scsi_after_plain`: ref session 61.8 s
-    against the 60 s of its `; @pass timeout=60`
-    (`tests/bug-orig/regression/ricompactdisclib-scsi-after-plain.bas:13`)
-    for its first-save snapshot; alone and in other runs it passed
-    (76.85 s total). The default `BUG_ORIG_TIMEOUT` is 90
-    (`tests/bug-orig/CMakeLists.txt:73`).
+  * the port regression test of #946 (ricompactdisclib, uaescsi.device):
+    ref session 61.8 s against the 60 s of its `; @pass timeout=60` for
+    its first-save snapshot; alone and in other runs it passed (76.85 s
+    total). The default `BUG_ORIG_TIMEOUT` is 90
+    (`tests/bug-orig/CMakeLists.txt:73`). The test is replaced by the
+    fixed test `rwe/ricompactdisclib-cdstatus-cdinfo-short` (#948, 30 s;
+    its first-save snapshot is the one of the library's CD image).
   * `host_emulator` (ctest `CMakeLists.txt:113-116`, 300 s plus the queue
     wait; runs the host tests with the label emulator, among them the
     snapshot test, session `p.timeout = 90`,
