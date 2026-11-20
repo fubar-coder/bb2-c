@@ -3472,17 +3472,24 @@ CDPlayTrack|command|scsi 8,1|1 [orig]	$0000001C
 CDPlayTrack|command|scsi 8,1|1 [fixed #580]	$00000000
 CDPlayTrack|command|scsi kept|1 [orig]	$0000001C
 CDPlayTrack|command|scsi kept|1 [fixed #577]	$00000000
-CDPlayTrack|d0|2|1	$00000000
+CDPlayTrack|d0|2|1 [orig]	$00000000
+CDPlayTrack|d0|2|1 [fixed #1157]	$FFFFFFFF
 CDPlayTrack|d0|closed 3,2|1	$00000000
-CDPlayTrack|d0|held 1,1|1	$00000000
-CDPlayTrack|d0|held 2,1|1	$00000000
-CDPlayTrack|d0|held 3,1 4,1|1	$00000000
-CDPlayTrack|d0|held 3,1 4,1|2	$00000000
-CDPlayTrack|d0|held 5,1 closed|1	$00000000
+CDPlayTrack|d0|held 1,1|1 [orig]	$00000000
+CDPlayTrack|d0|held 1,1|1 [fixed #1157]	$FFFFFFFF
+CDPlayTrack|d0|held 2,1|1 [orig]	$00000000
+CDPlayTrack|d0|held 2,1|1 [fixed #1157]	$FFFFFFFF
+CDPlayTrack|d0|held 3,1 4,1|1 [orig]	$00000000
+CDPlayTrack|d0|held 3,1 4,1|1 [fixed #1157]	$FFFFFFFF
+CDPlayTrack|d0|held 3,1 4,1|2 [orig]	$00000000
+CDPlayTrack|d0|held 3,1 4,1|2 [fixed #1157]	$FFFFFFFF
+CDPlayTrack|d0|held 5,1 closed|1 [orig]	$00000000
+CDPlayTrack|d0|held 5,1 closed|1 [fixed #1157]	$FFFFFFFF
 CDPlayTrack|d0|no port 3,2|1	$00000000
 CDPlayTrack|d0|no request 3,2|1	$00000000
 CDPlayTrack|d0|not open 3,2|1	$00000000
-CDPlayTrack|d0|open 3,2|1	$00000000
+CDPlayTrack|d0|open 3,2|1 [orig]	$00000000
+CDPlayTrack|d0|open 3,2|1 [fixed #1157]	$FFFFFFFF
 CDPlayTrack|d0|scsi 0,1|1	$00000000
 CDPlayTrack|d0|scsi 2,1|1 [orig]	$00000000
 CDPlayTrack|d0|scsi 2,1|1 [fixed #580]	$FFFFFFFF

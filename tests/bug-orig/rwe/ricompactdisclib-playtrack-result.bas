@@ -4,6 +4,7 @@
 ; no result: CDPlayTrack returns whatever SendIO leaves in d0.  The
 ; machine is the A1200 with uaescsi.device and the library's CD image.
 ; Correct: -1 when the play was sent.
+; @fixed #1157
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
 ; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image

@@ -353,7 +353,7 @@ done:
         ReplyMsg(&ior->io_Message);
     }
     /* d0 0: the original's CDPlayTrack returns the d0 SendIO leaves
-       (BUG(orig) (#1157)), the same in both builds only if it is defined */
+       (fixed #1157: -1 in the C build), a value of the run only if it is defined */
     return 0;
 }
 

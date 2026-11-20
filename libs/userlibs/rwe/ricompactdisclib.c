@@ -119,10 +119,9 @@
  *   out, CDStop writes CD_PLAYTRACK into it and calls AbortIO without
  *   WaitIO, and the reply stays at the port (the next play links the
  *   same message again).
- *
- * BUG(orig):
- *   - CDPlayTrack without scsiflag returns the d0 SendIO leaves (SendIO
- *     has no result), not -1 / 0 as the manual says (#1157).
+ * Fixed (#1157): CDPlayTrack without scsiflag returns -1 when the play
+ *   was sent (0 without a device); the original returns the d0 SendIO
+ *   leaves (SendIO has no result).
  * Registers: the original changes d0/d1/a0/a1, a6 and (CDReadTOC d7,
  * CDTrackLength d1/d2) others; the thunks keep d1/a0/a1, GCC keeps
  * d2-d7/a2-a6.
@@ -694,7 +693,6 @@ ULONG BLITZ_ROUTINE c_playtrack(ULONG track BL_REG(d0), ULONG num BL_REG(d1))
            request, which the next command fills and sends again while the
            play is out, and leaves its reply at the port */
         struct IOStdReq *req = playreq;
-        ULONG d0;
 
         stopplay();
         req->io_Command = CD_PLAYTRACK;
@@ -702,9 +700,12 @@ ULONG BLITZ_ROUTINE c_playtrack(ULONG track BL_REG(d0), ULONG num BL_REG(d1))
         req->io_Offset = track;
         req->io_Length = num;
         req->io_Flags = 0;
-        d0 = reqcall(LVO_SendIO, req);
+        SendIO((struct IORequest *)req);
         playing = 1;
-        return d0;
+        /* Fixed (#1157): -1, the play was sent (the manual: "A return
+           value of true means that the command succeeded"); the original
+           returns the d0 SendIO leaves, which has no result */
+        return (ULONG)-1;
     }
     /* _playtrackscsi.  Fixed (#580): PLAY AUDIO(12) from the SCSI TOC of
        CDReadTOC: the LBA of track# and the length to the start of the

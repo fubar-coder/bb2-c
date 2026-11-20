@@ -142,12 +142,13 @@ d1/d2 (CDTrackLength) are not reproduced.
   and calls AbortIO without WaitIO, and the reply stays at the port
   (the next play links the same message again; `CloseCD` frees the
   request while it may still be in use). (#1156, #574)
+* `CDPlayTrack` without scsiflag returns -1 when the play was sent (0
+  without a device; the manual: "A return value of true means that the
+  command succeeded, else false means failure"). The original returns
+  the d0 SendIO leaves, which has no result (0 with uaescsi.device).
+  (#1157)
 
-**BUG(orig)** (kept):
-
-* `CDPlayTrack` without scsiflag returns the d0 SendIO leaves (SendIO
-  has no result; 0 with uaescsi.device), not true or false as the manual
-  says. (#1157)
+No original bug of the library is open in the port.
 
 **Test** (`libs/tests/rwe/ricompactdisclib.c`, snitch case "rwe
 ricompactdisclib"): each run loads one library set (the C build or the
