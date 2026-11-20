@@ -6804,6 +6804,14 @@ rows:
     text: "`RXCreatePort` works on Kickstart 1.x; the original used functions of Kickstart 2.0 there and crashed."
     page: libraries
     anchor: riarexxlib-fixes
+  - issue: 1142
+    severity: 5
+    topic: "Files"
+    library: "ridoslib"
+    command: ""
+    text: "Programs with the DOS helpers run on Kickstart 1.x, where the notification and device list commands return 0 and the path functions work; the original crashed at the start."
+    page: libraries
+    anchor: ridoslib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

@@ -5,10 +5,15 @@ intro: |
   device list names the devices, volumes and assigns the system knows;
   `GetFileName` and `GetPathName` split a path into its two parts.
 
-  The library needs dos.library version 36 or later (Kickstart 2.0). It
-  opens it itself when the program starts, together with one message
-  port that receives all notifications; when the program ends, the
-  notifications still active are ended and the port is deleted.
+  File notification and the device list need dos.library version 36 or
+  later (Kickstart 2.0). The library opens it itself when the program
+  starts, together with one message port that receives all
+  notifications; when the program ends, the notifications still active
+  are ended and the port is deleted. On Kickstart 1.x a program with
+  the library runs, but these commands do nothing: `AddNotify`,
+  `NotifyPort`, `CheckNotify`, `WaitNotify` and `GetDeviceList` return
+  0, `NextDevice` returns "" and `DeviceEntryType` -1. `GetFileName`
+  and `GetPathName` work on every Kickstart.
 
   A notification is not a Blitz object but a slot of an internal table of
   64 entries, numbered 0 to 63, chosen by the program with `AddNotify`.

@@ -5497,6 +5497,16 @@ volumes and assigns, and splitting a path; the fix of
 [the text that follows `GetPathName` and `NextDevice`](#rwe-text-after-string-function)
 is described above.
 
+* Programs that use the library run on Kickstart 1.x. There
+  `GetFileName` and `GetPathName` work, and the commands of file
+  notification and of the device list, which need Kickstart 2.0, do
+  nothing: `AddNotify`, `NotifyPort`, `CheckNotify`, `WaitNotify` and
+  `GetDeviceList` return 0, `NextDevice` returns "" and
+  `DeviceEntryType` -1. The original called functions of Kickstart 2.0
+  at the start of the program, and every program with the library
+  crashed at its start
+  ([#1142](https://github.com/fubar-coder/bb2-c/issues/1142)).
+
 File notification:
 
 * `AddNotify` with a slot that is in use ends the notification in it
