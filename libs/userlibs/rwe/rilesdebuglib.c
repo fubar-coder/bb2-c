@@ -48,8 +48,7 @@
  *     space behind it that the even case writes (#715).
  *   - FPrint and FPrintDetoke: the column check is a byte compare with
  *     80 tested on N (columns 80-207 stop, 208-255 print); nothing checks
- *     the bitmap's size (#707).  FPrint ignores a string of 32769
- *     characters or more (SUBQ.w/BMI) (#710).
+ *     the bitmap's size (#707).
  *   - FInverse sets a word that FPrint tests as a word but FPrintDetoke
  *     as its high byte (FInverse 1 inverts FPrint only); FPrintDetoke's
  *     cursor marker sets and clears that high byte (#706).  With the high
@@ -121,6 +120,8 @@
  *     SKIP and their masks) whole; the original cleared its bit 0 too, as
  *     that of the low digit (the instruction or SKIP bit), so its odd
  *     values never showed (#711).
+ *   - FPrint counts the string's length as a long; the original's
+ *     SUBQ.w/BMI printed nothing for 32769 characters or more (#710).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -947,8 +948,9 @@ static void BLITZ_ROUTINE fyoffset_c(UWORD off BL_REG(d0))
  * At the cursor, 8 bytes per character in rows of 80 bytes, inverted if
  * the FInverse word is set; the cursor moves on.  The column check is a
  * byte compare with 80 tested on N: columns 80-207 stop, 208-255 print;
- * nothing checks the bitmap's size (BUG(orig) (#707)).  A string of 32769
- * characters or more prints nothing (SUBQ.w/BMI, #710).
+ * nothing checks the bitmap's size (BUG(orig) (#707)).  The length is
+ * counted as a long (fixed #710: the original's SUBQ.w/BMI printed nothing
+ * for a string of 32769 characters or more).
  * @param s     d0: the string
  * @param bm    a0: the used bitmap (!libs #bitmaplib)
  * @param args  a2: the argument stack, the string's length at -4(a2)
@@ -958,10 +960,10 @@ static void BLITZ_ROUTINE fprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm 
 {
     UBYTE *p = bm->Planes[0] + cursor_offset();
     UWORD x = xcurs;                                    /* d6 */
-    UWORD n = (UWORD)args[-1] - 1;                      /* d5 */
+    ULONG n = args[-1];                                 /* fixed (#710) */
     int i;
 
-    if ((WORD)n < 0 || !column_ok(x))
+    if (!n || !column_ok(x))
         goto out;
     do {
         const UBYTE *g = font_dat + ((ULONG)*s++ << 3);
@@ -976,7 +978,7 @@ static void BLITZ_ROUTINE fprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm 
         x++;
         if (!column_ok(x))
             break;
-    } while (n-- != 0);
+    } while (--n != 0);
 out:
     xcurs = x;
 }

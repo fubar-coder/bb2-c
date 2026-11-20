@@ -5,6 +5,7 @@
 ; FPrint draws into plane 0 of the used bitmap (640 pixels wide, rows of
 ; 80 bytes): the first character's 8 bytes at the cursor 0,0.
 ; Correct: FPrint prints the first 80 characters.
+; @fixed #710
 ; @rwe rilesdebuglib
 ; @pass jobline=strbuf=150000
 DEFTYPE .l

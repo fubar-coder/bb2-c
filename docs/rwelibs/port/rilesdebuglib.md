@@ -243,6 +243,11 @@ d5-d7, a0-a3 and a6 in places.
   instruction bit in the first word and the WAIT/SKIP bit in the second,
   and stays cleared (#711; test `rilesdebuglib-copins-odd-digits`; the
   `libs_emulator` cases `[fixed #711]`).
+* `FPrint` counts the string's length as a long: a string of 32769
+  characters or more prints up to the right edge like a shorter one. The
+  original took the length as a word with `SUBQ.w #1`/`BMI` and printed
+  nothing for such a string (#710; test `rilesdebuglib-fprint-long-string`;
+  the scenario of `libs_emulator` has no string that long).
 
 ## BUG(orig)
 
@@ -251,8 +256,7 @@ d5-d7, a0-a3 and a6 in places.
 * FPrint/FPrintDetoke: the column test is `CMPI.b #80` with `BPL`, so
   columns 80-207 stop, 208-255 print (and go on to 0-79); nothing checks
   the bitmap's size; in FPrintDetoke the marker takes a column without
-  this test (#707). FPrint ignores strings of 32769 characters or more
-  (`SUBQ.w #1`/`BMI`) (#710).
+  this test (#707).
 * FInverse sets a word; FPrint tests the word, FPrintDetoke its high
   byte (FInverse 1 inverts only FPrint), and FPrintDetoke's marker sets
   and clears the high byte (#706). With the high byte set and tokens
