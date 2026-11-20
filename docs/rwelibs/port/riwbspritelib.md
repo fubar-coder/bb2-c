@@ -90,11 +90,15 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   (D-005): the copy counts height − 1 and depth − 1 with `DBRA` (65536
   rows or planes); for height 0 `AllocBitMap` fails first (-1), for
   depth 0 it does not return.
+* With runtime error checking WBSpriteX and WBSpriteY refuse a channel
+  without a sprite of the library: "No sprite on this channel" (#922,
+  test `rwe/riwbspritelib-wbspritexy-no-sprite`). The release code is
+  unchanged (D-005): it returns the word at offset 6 or 8 of the entry
+  without testing it, for an empty entry the words at the addresses 6
+  and 8 (the libs test's case "WBSpriteX (no sprite)").
 
 ## BUG(orig), kept
 
-* Without a sprite WBSpriteX/Y read the words at addresses 6 and 8
-  (#922).
 * finit does not clear the library base: a second finit closes
   graphics.library again (#919).
 

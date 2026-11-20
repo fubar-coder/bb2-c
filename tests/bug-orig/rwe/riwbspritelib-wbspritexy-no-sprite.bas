@@ -7,6 +7,7 @@
 ; runtime error checking.
 ; Correct: the error check refuses WBSpriteX(5) without a sprite on
 ; channel 5: "No sprite on this channel" after "before".
+; @fixed #922
 ; @rwe riwbspritelib
 ; @pass runtime_errors=on
 NPrint "before"

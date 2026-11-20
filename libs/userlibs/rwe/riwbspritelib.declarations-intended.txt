@@ -7,6 +7,8 @@
 # riwbspritelib gets an error check area for them (the original has none)
 # #917: the checks of GetWBSprite and ChangeWBSprite also refuse a shape
 # of height 0 or depth 0 or above 8 (no difference of its own)
+# #922: the check of WBSpriteX/Y also refuses a channel without a sprite
+# (no difference of its own)
 lib 10: header +$2C: code offset set in only one of them
 lib 10: entry 0 GetWBSprite +$12: code offset set in only one of them
 lib 10: entry 1 FreeWBSprite +$C: code offset set in only one of them

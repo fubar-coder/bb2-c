@@ -62,9 +62,12 @@
  *     depth of 0 or above 8 ("Illegal Shape Depth"), an invalid object.
  *     The release code is unchanged (D-005): the copy counts height - 1
  *     and depth - 1 with DBRA (65536 rows or planes) (#917).
+ *   - With runtime error checking WBSpriteX and WBSpriteY refuse a
+ *     channel without a sprite of the library: "No sprite on this
+ *     channel".  The release code is unchanged (D-005): it reads the
+ *     words at the addresses 6 and 8 (#922).
  *
  * BUG(orig):
- *   - WBSpriteX/Y without a sprite read the words at 6 and 8 (#922).
  *   - finit does not clear the library base: a second finit closes
  *     graphics.library again (#919).
  */
@@ -481,8 +484,8 @@ static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_R
 /**
  * @brief WBSpriteX(sprite_channel): the x of the channel's sprite.
  *
- * Amiga mode only.  BUG(orig): without a sprite the word at 6 is read
- * (address 6, #922).  The channel: wbspritexychk (fixed #916).
+ * Amiga mode only.  Without a sprite the word at 6 is read (address 6;
+ * the channel and the sprite: wbspritexychk, fixed #916, #922).
  * @param ch  d0.w: the channel
  * @return d0: the low word replaced by es_SimpleSprite.x
  */
@@ -496,7 +499,7 @@ static ULONG BLITZ_ROUTINE wbspritex_c(ULONG ch BL_REG(d0))
 /**
  * @brief WBSpriteY(sprite_channel): the y of the channel's sprite.
  *
- * As WBSpriteX, the word at 8 (#922; the channel: fixed #916).
+ * As WBSpriteX, the word at 8 (wbspritexychk: fixed #916, #922).
  * @param ch  d0.w: the channel
  * @return d0: the low word replaced by es_SimpleSprite.y
  */
@@ -524,6 +527,7 @@ BLITZ_ERRCHK_MESSAGE(badgetch, "Sprite channel must be -1 to 7");    /* fixed, #
 BLITZ_ERRCHK_MESSAGE(badch, "Sprite channel must be 0 to 7");        /* fixed, #916 */
 BLITZ_ERRCHK_MESSAGE(badheight, "Illegal Shape Height");             /* fixed, #917 */
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal Shape Depth");               /* fixed, #917 */
+BLITZ_ERRCHK_MESSAGE(nosprite, "No sprite on this channel");         /* fixed, #922 */
 
 /* a channel 0 to 7 */
 static void BLITZ_ERRCHK chchk(ULONG ch)
@@ -627,12 +631,18 @@ static void BLITZ_ERRCHK changewbspritechk_c(ULONG ch BL_REG(d1),
  * Fixed (#916), not in the original: the channel (a word) indexes the
  * table without a check.  Release code unchanged (D-005).
  *
- * Errors: "Sprite channel must be 0 to 7".
+ * Fixed (#922): a channel without a sprite of the library is refused;
+ * the release code reads the word at 6 or 8 of the entry, 0, without a
+ * test (a query of a sprite that does not exist, as #686, #1131).
+ *
+ * Errors: "Sprite channel must be 0 to 7", "No sprite on this channel".
  * @param ch  d0.w: the channel
  */
 static void BLITZ_ERRCHK wbspritexychk_c(ULONG ch BL_REG(d0))
 {
     chchk((UWORD)ch);
+    if (!wd.spritepointers[(UWORD)ch])
+        BLITZ_RUNERR(nosprite);
 }
 
 /* the thunks of the check functions */
