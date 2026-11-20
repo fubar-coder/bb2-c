@@ -68,11 +68,14 @@ function also a3 (Mark Sibly's library documentation), so a plain C
 function is a valid library routine: `BLITZ_ALIAS(entry, cfunc)` makes
 it the entry of the table itself.
 
-When a routine must keep more registers than the C compiler does (an
-internal routine the compiler calls, or a command whose register a known
-library relies on), or return something in another register or in the
-condition codes, a short assembler *thunk* sits between the table and
-the C function:
+A short assembler *thunk* sits between the table and the C function
+when a routine must do more than a C function does:
+
+* keep more registers than the C compiler does, as an internal routine
+  the compiler calls, or a command whose register a known library
+  relies on;
+* return something in another register or in the condition codes.
+
 `BLITZ_THUNK(entry, cfunc, "d0-d1/a0-a1")` saves the named registers,
 calls the C function and restores them. A routine that is assembler by
 nature, because it changes the stack pointer or talks to the hardware,
