@@ -9,12 +9,14 @@
  * (ctest rwe_declarations_ritrackdisklib), the behaviour is compared with
  * it in libs/tests/rwe/ritrackdisklib.c.  Notes:
  * docs/rwelibs/port/ritrackdisklib.md.
- *   init:  CreateMsgPort (msgport, 0 if that fails: then every command
- *          returns 0)
- *   finit: CloseDisk 0, 1, 2 and DeleteMsgPort
+ *   init:  the reply port msgport, built by hand (newport(); 0 if that
+ *          fails: then every command returns 0)
+ *   finit: CloseDisk 0, 1, 2 and frees the port (freeport())
  *
- * Units 0-3: one IOStdReq (CreateIORequest, 200 bytes) per unit in
- * iorequests, all with the reply port msgport.  Sector commands: d1 =
+ * Units 0-3: one IOStdReq (200 bytes, built by hand: newreq()) per unit
+ * in iorequests, all with the reply port msgport.  Port and requests use
+ * exec V33 functions only (AllocMem, AllocSignal, FindTask), the same path
+ * on every Kickstart.  Sector commands: d1 =
  * first sector (FormatTrack: track, * 11), d3 = number of sectors
  * (default 1), length and offset = * 512; result: d0 of DoIO with
  * io_Error as its low byte (MOVE.b 31(a0),d0), 0 without port/request.
@@ -35,7 +37,7 @@
  *   - OpenDisk of a unit that is open replaces its request (the old one
  *     stays open, lost) (#862); OpenDisk with a negative unit passes the
  *     check (CMP #3: BGT), but putioreq/getioreq ignore it: the request
- *     is lost (OpenDevice ok) or DeleteIORequest gets 0 (OpenDevice
+ *     is lost (OpenDevice ok) or the free gets 0 (OpenDevice
  *     failed) (#861).
  *   - finit closes units 0-2 only, not 3; init clears only the first
  *     three entries of iorequests (#863).
@@ -54,10 +56,9 @@
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
  *     help text says "-1 if motor is on" (#857).
- *   - init calls CreateMsgPort, the commands CreateIORequest/
- *     DeleteIORequest, finit DeleteMsgPort - exec V36 - without a version
- *     check: on Kickstart 1.x every program using the library crashes at
- *     start-up (#941).
+ * Fixed (#941): the original called CreateMsgPort, CreateIORequest,
+ * DeleteIORequest and DeleteMsgPort (exec V36) without a version check:
+ * on Kickstart 1.x every program with the library crashed at start-up.
  * Registers: the original changes d0/d1/a0/a1, a6 and d4-d7 in most
  * commands, but keeps d1/a0/a1 on some paths (no port or request); the
  * thunks keep d1/a0/a1 everywhere, GCC keeps d2-d7/a2-a6.
@@ -206,6 +207,69 @@ static void putioreq(LONG unit, struct IOStdReq *req)
     td.iorequests[unit] = req;
 }
 
+/*
+ * Fixed (#941): reply port and requests built by hand with exec V33
+ * functions, one path for every Kickstart (in place of exec V36's
+ * CreateMsgPort/DeleteMsgPort and CreateIORequest/DeleteIORequest).
+ */
+
+/* newport: a signal port of the calling task (as CreateMsgPort): the
+   MsgPort cleared, a signal bit, PA_SIGNAL, an empty message list; NULL
+   without memory or a free signal */
+static struct MsgPort *newport(void)
+{
+    struct MsgPort *mp = AllocMem(sizeof *mp, MEMF_PUBLIC | MEMF_CLEAR);
+    BYTE sig;
+
+    if (!mp)
+        return NULL;
+    sig = AllocSignal(-1);
+    if (sig < 0) {
+        FreeMem(mp, sizeof *mp);
+        return NULL;
+    }
+    mp->mp_Node.ln_Type = NT_MSGPORT;
+    mp->mp_Flags = PA_SIGNAL;
+    mp->mp_SigBit = sig;
+    mp->mp_SigTask = FindTask(NULL);
+    mp->mp_MsgList.lh_Head = (struct Node *)&mp->mp_MsgList.lh_Tail;
+    mp->mp_MsgList.lh_TailPred = (struct Node *)&mp->mp_MsgList.lh_Head;
+    return mp;
+}
+
+/* freeport: frees the signal bit and the port of newport() */
+static void freeport(struct MsgPort *mp)
+{
+    FreeSignal(mp->mp_SigBit);
+    FreeMem(mp, sizeof *mp);
+}
+
+/* the size of a request, as the original's CreateIORequest(port, 200) */
+#define REQSIZE 200
+
+/* newreq: a cleared request of REQSIZE bytes on msgport with
+   mn_ReplyPort and mn_Length set (as CreateIORequest) and NT_REPLYMSG:
+   CheckIO takes a request that was never sent for done, as one of
+   CreateIORequest (DiskStatus after OpenDisk); NULL without memory */
+static struct IOStdReq *newreq(void)
+{
+    struct IOStdReq *req = AllocMem(REQSIZE, MEMF_PUBLIC | MEMF_CLEAR);
+
+    if (req) {
+        req->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
+        req->io_Message.mn_ReplyPort = td.msgport;
+        req->io_Message.mn_Length = REQSIZE;
+    }
+    return req;
+}
+
+/* freereq: frees a request of newreq(); NULL is ignored */
+static void freereq(struct IOStdReq *req)
+{
+    if (req)
+        FreeMem(req, REQSIZE);
+}
+
 /* DoIO and the result of the commands: DoIO's d0 with io_Error as the
    low byte (MOVE.b 31(a0),d0) */
 static ULONG doio(struct IOStdReq *req)
@@ -220,8 +284,7 @@ static ULONG doio(struct IOStdReq *req)
 /**
  * @brief init: clear the request table and create the reply port.
  *
- * BUG(orig): clears only entries 0-2, not 3 (#863); CreateMsgPort is
- * exec V36, called without a version check (#941).  Without a port
+ * BUG(orig): clears only entries 0-2, not 3 (#863).  Without a port
  * (msgport 0) every command returns 0.
  */
 static void BLITZ_ROUTINE c_libinit(void)
@@ -229,7 +292,7 @@ static void BLITZ_ROUTINE c_libinit(void)
     td.iorequests[0] = NULL;            /* BUG(orig): not [3] (#863) */
     td.iorequests[1] = NULL;
     td.iorequests[2] = NULL;
-    td.msgport = CreateMsgPort();       /* BUG(orig): V36, unchecked (#941) */
+    td.msgport = newport();             /* Fixed (#941): by hand, V33 */
 }
 
 /**
@@ -251,9 +314,8 @@ ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
 }
 
 /**
- * @brief CloseDisk unit#: switch the motor off, close the device, delete the request.
+ * @brief CloseDisk unit#: switch the motor off, close the device, free the request.
  *
- * DeleteIORequest is exec V36 (#941).
  * @param unit  d0: unit# (0-3)
  * @return d0: BB_TRUE if the unit was open, else BB_FALSE
  */
@@ -265,15 +327,15 @@ BB_BOOL BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
         return BB_FALSE;
     c_motoroff(unit);
     CloseDevice((struct IORequest *)req);
-    DeleteIORequest((struct IORequest *)req);   /* V36 (#941) */
+    freereq(req);
     putioreq(unit, NULL);
     return BB_TRUE;
 }
 
 /**
- * @brief finit: CloseDisk 0, 1, 2 and DeleteMsgPort.
+ * @brief finit: CloseDisk 0, 1, 2 and free the reply port.
  *
- * BUG(orig): unit 3 is not closed (#863); DeleteMsgPort is V36 (#941).
+ * BUG(orig): unit 3 is not closed (#863).
  */
 static void BLITZ_ROUTINE c_libfinit(void)
 {
@@ -281,7 +343,7 @@ static void BLITZ_ROUTINE c_libfinit(void)
     c_closedisk(1);
     c_closedisk(2);
     if (td.msgport) {
-        DeleteMsgPort(td.msgport);      /* V36 (#941) */
+        freeport(td.msgport);
         td.msgport = NULL;
     }
 }
@@ -289,12 +351,11 @@ static void BLITZ_ROUTINE c_libfinit(void)
 /**
  * @brief OpenDisk unit#: open the device (trackname) for a unit with a new request.
  *
- * CreateIORequest (200 bytes, exec V36: #941) on the reply port, then
- * OpenDevice of the name in trackname ("trackdisk.device", or the last
+ * A new request (newreq(), 200 bytes) on the reply port, then OpenDevice of the name in trackname ("trackdisk.device", or the last
  * name given, #859).  BUG(orig): a unit that is open gets a new request,
  * the old one stays open and is lost (#862); a negative unit passes the
  * check (CMP #3: BGT), but the table ignores it: the request is lost
- * (OpenDevice ok) or DeleteIORequest gets 0 (OpenDevice failed) (#861).
+ * (OpenDevice ok) or the free gets 0 (OpenDevice failed) (#861).
  * @param unit  d0: unit# (0-3)
  * @return d0: BB_TRUE if the device opened, else BB_FALSE
  */
@@ -304,14 +365,14 @@ BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
 
     if (unit > 3 || !td.msgport)
         return BB_FALSE;
-    req = (struct IOStdReq *)CreateIORequest(td.msgport, 200); /* V36 (#941) */
+    req = newreq();
     if (!req)
         return BB_FALSE;
     putioreq(unit, req);
     if (OpenDevice((CONST_STRPTR)td.trackname, unit, (struct IORequest *)req, 0)) {
         req = getioreq(unit);           /* 0 for a negative unit */
         putioreq(unit, NULL);
-        DeleteIORequest((struct IORequest *)req);   /* V36 (#941) */
+        freereq(req);                   /* 0 for a negative unit (#861) */
         return BB_FALSE;
     }
     return BB_TRUE;

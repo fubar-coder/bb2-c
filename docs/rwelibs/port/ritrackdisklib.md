@@ -6,8 +6,9 @@ trackdisk.device (or another device: `OpenDisk unit#,devicename$`):
 [,numsectors]`, `FormatTrack`, `WriteBoot` (a default boot block
 `"DOS",0,-1`), `BootProg` (checksum + write sectors 0-1), `MotorOn`/
 `MotorOff`, `DiskStatus` (CheckIO), `DiskIO` (the IOStdReq), `DiskMotor`
-(CIAB bit). One IOStdReq per unit (CreateIORequest, 200 bytes), one
-reply port created by init and deleted by finit. Results: DoIO's d0 with
+(CIAB bit). One IOStdReq per unit (200 bytes), one reply port made by
+init and freed by finit; both are built by hand with exec V33 functions,
+so the library runs on every Kickstart (fixed #941). Results: DoIO's d0 with
 io_Error as low byte, 0 without port/request; `DiskStatus`, `DiskIO`,
 `BootProg`, `DiskMotor` are Amiga mode only (odd code address in
 `!subs`).
@@ -56,10 +57,21 @@ original's changes of a6 and d4-d7 are not reproduced.
 * `DiskMotor` returns -1 (the byte $FF) when CIAB PRB bit 7 (/MTR,
   active low) is set, i.e. motor off; the help text says "-1 if motor is
   on" (#857).
-* init calls `CreateMsgPort`, the commands `CreateIORequest`/
-  `DeleteIORequest`, finit `DeleteMsgPort` – exec V36 functions – without
-  checking exec's version: on Kickstart 1.x every program that uses the
-  library crashes at start-up (#941).
+
+**Fixed:**
+
+* #941: the original's init called `CreateMsgPort`, the commands
+  `CreateIORequest`/`DeleteIORequest`, finit `DeleteMsgPort` – exec V36
+  functions – without checking exec's version: on Kickstart 1.x every
+  program that used the library crashed at start-up. The port
+  (`newport`: `AllocMem` of a cleared `MsgPort`, `AllocSignal`,
+  `FindTask(0)`, `PA_SIGNAL`, an empty message list; `freeport`) and the
+  requests (`newreq`: `AllocMem` of 200 cleared bytes, `NT_REPLYMSG`,
+  `mn_ReplyPort`, `mn_Length`; `freereq`) are built by hand, the same
+  path on every Kickstart (W7 Kickstart decision, question 1 (a)).
+  Tests: bug-orig `rwe/ritrackdisklib-v36-calls` (a500), the regression
+  test `ritrackdisklib-floppy-key` reads a disk in DF1 on the a500,
+  a500-204 and a1200 with these requests.
 
 **Test** (`libs/tests/rwe/ritrackdisklib.c`, snitch case "rwe
 ritrackdisklib"): each run loads one library set (the C build or the CD

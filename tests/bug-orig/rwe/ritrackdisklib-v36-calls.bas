@@ -3,9 +3,10 @@
 ; the offset lies behind exec's jump table: every program with the
 ; library crashes at start-up, before its first line (the session ends in
 ; a timeout).
-; Correct: the program runs on Kickstart 1.3 (the commands fail, OpenDisk
-; returns 0) and ends normally.
+; Correct: the program runs on Kickstart 1.3 (the library builds its port
+; and requests with exec V33 functions) and ends normally.
 ; @rwe ritrackdisklib
+; @fixed #941
 ; @machine a500
 ; @pass timeout=30
 NPrint "before"
