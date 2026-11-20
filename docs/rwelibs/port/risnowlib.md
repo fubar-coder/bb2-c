@@ -73,11 +73,19 @@ right-first), COLOR00 is written as the original writes it.
   to a list the first run had freed, and a snow command before
   InitSnowDrop worked on it (#1135; D-019: `libs_emulator` cases
   `[fixed #1135]` of `rwe_risnowlib`, the scenario's second run).
+* InitSnowDrop frees the block the list number had (memlib's
+  `globfree`; the block starts with drop list A, the lower of the two
+  drop list pointers, which LDoSnow swaps) before it allocates the new
+  one; the original overwrote the pointers, so every repeated
+  InitSnowDrop of a number lost numpoints × 64 + 40 bytes until the end
+  of the program (#911, test `rwe/risnowlib-initsnowdrop-no-free`). It
+  needs the cleared table of #1135: a first run's block is never freed
+  twice.
 
 ## BUG(orig), kept
 
 * No routine checks the list number (0–3; `ASL.w #4` as the index)
-  (#913); InitSnowDrop never frees an earlier block (#911).
+  (#913).
 * The lists have no bounds: more than numpoints × 4 entries run into the
   next list and behind the block (#914).
 * A bit number above 7 from the random table indexes the lookup tables

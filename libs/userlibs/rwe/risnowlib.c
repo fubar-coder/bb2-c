@@ -38,8 +38,7 @@
  *
  * BUG(orig):
  *   - No routine checks the list number (0-3; 16 bytes per number
- *     indexed by ASL.w #4) (#913); InitSnowDrop never frees an earlier
- *     block of the same number (#911).
+ *     indexed by ASL.w #4) (#913).
  *   - The lists have no bounds: more entries than numpoints*4 run into
  *     the next list (and behind the block) (#914).
  *   - A bit number above 7 (from the random table) indexes the lookup
@@ -61,7 +60,13 @@
  *     init was empty, so in a second run of a program from the editor
  *     (the library stays loaded) the table pointed to the lists the first
  *     run had freed, and a snow command before InitSnowDrop worked on
- *     them (#1135).
+ *     them (#1135);
+ *   - InitSnowDrop frees the block the list number had (memlib's
+ *     globfree) before it allocates the new one; the original overwrote
+ *     the pointers, and each repeated InitSnowDrop of a number lost
+ *     numpoints*64+40 bytes until the end of the program (#911).  The
+ *     block is the lower of the two drop lists (drop list A, at its
+ *     start; LDoSnow swaps the two pointers).
  * Not defects: the allocation is not checked (memlib's globalloc raises
  * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
  * pixel again (always clear there: redundant, no effect); the end of
@@ -246,8 +251,8 @@ static UBYTE *killhead(UBYTE *p, ULONG size)
  * One block (memlib globalloc, MEMF_CLEAR; not checked: memlib raises
  * Out of Memory) for drop lists A and B and kill lists 1 and 2, each
  * numpoints*16 bytes, all empty.  BUG(orig): the list number is not
- * checked (#913); an earlier block of the same number is not freed
- * (#911).  Fixed (#912): the size is a long (the original's ASL.w #2
+ * checked (#913).  Fixed (#911): the block the number had is freed first
+ * (memlib globfree; the original lost it).  Fixed (#912): the size is a long (the original's ASL.w #2
  * made the block too small from numpoints 1024 on).  Fixed (#908): the
  * drop lists' last is set (the original left it 0).
  * @param n       d0: the list number (0-3)
@@ -264,6 +269,13 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
     struct bl_regs r;
     UBYTE *p;
 
+    if (e->drop[0]) {                   /* fixed (#911): the old block freed */
+        r.d0 = 0;
+        r.d1 = 0;
+        r.a0 = 0;
+        r.a1 = e->drop[0] < e->drop[1] ? e->drop[0] : e->drop[1];   /* drop list A */
+        BLITZ_ALIBJSR(TOK_globfree, r);
+    }
     r.d0 = (size << 2) + 32 + 8;        /* a long: fixed (#912) */
     r.d1 = 0x10000;                     /* MEMF_CLEAR */
     r.a0 = 0;

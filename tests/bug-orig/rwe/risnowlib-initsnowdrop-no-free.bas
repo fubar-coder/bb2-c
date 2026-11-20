@@ -5,6 +5,7 @@
 ; program calls it three times and compares the free memory after the
 ; first and after the third call.
 ; Correct: the old block is freed, the free memory stays about the same.
+; @fixed #911
 ; @rwe risnowlib
 DEFTYPE .l
 BitMap 0,320,256,3
