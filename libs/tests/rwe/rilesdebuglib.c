@@ -23,7 +23,8 @@
  * both planes; FPrintDetoke with marker types 0/1, several cio and
  * lineoffset values, tokens drawn into one or two planes, an unknown
  * token, no token list, no plane 1, the inverse word's high byte set
- * (BUG(orig) (#709): the second plane's glyph), the right edge inside a token;
+ * (BUG(orig) (#709): the second plane's glyph), the right edge inside a token,
+ * the column $FFFF with the caller's d6 high word $FFFF (#708);
  * GetProgMode; SearchMem with every type (also invalid ones), found at
  * the start, inside, across the end (word/long), start = end, the string
  * search after a partial match (BUG(orig) (#723)), the empty string, the space
@@ -359,6 +360,8 @@ static void customregadr(void)
 /* -------------------------------------------------------- the printer */
 
 #define PLANESIZE (80 * 80)
+/* planes for a cursor at column $FFFF: 65535 + 7 rows of 80 + the line */
+#define BIGPLANE (80 * 832)
 static UBYTE planes[2][PLANESIZE];
 static struct BitMap bm;
 
@@ -529,6 +532,29 @@ static void fprintdetoke(void)
     detoke(l2, 2, 1, 1);
     bm.Planes[1] = planes[1];
     sameplanes();
+    /* the caller's d6 with the high word $FFFF and the column $FFFF: the
+       column counter becomes 0 behind the '>' marker (#708); the cursor
+       lies 65535 bytes into the planes, so they are larger here */
+    {
+        static struct BitMap bigbm;
+        UBYTE *big = AllocMem(2 * BIGPLANE, MEMF_ANY | MEMF_CLEAR);
+
+        check("rilesdebuglib: the large planes", big != NULL);
+        if (!big)
+            return;
+        InitBitMap(&bigbm, 2, 640, BIGPLANE / 80);
+        bigbm.Planes[0] = big;
+        bigbm.Planes[1] = big + BIGPLANE;
+        setup((ULONG)toklist, 0);
+        flocate(0xffff, 0);
+        ROUT = "FPrintDetoke";
+        strcpy(VEC, "line 8005..,0,0,0 column $FFFF, d6 $FFFFxxxx");
+        DO1(ENT(LIB, E_FPDETOKE, 0), R.d[0] = (ULONG)l3; R.d[1] = 0;
+            R.d[2] = 0xff00; R.d[3] = 0; R.d[6] = 0xffff1234UL; R.a[0] = (ULONG)&bigbm);
+        OBSBYTES("plane 0", big, BIGPLANE);
+        OBSBYTES("plane 1", big + BIGPLANE, BIGPLANE);
+        FreeMem(big, 2 * BIGPLANE);
+    }
 }
 
 /* OutText/OutTextPen on a RastPort of the test; its planes in chip memory:
