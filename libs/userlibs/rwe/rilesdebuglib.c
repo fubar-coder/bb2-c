@@ -1327,8 +1327,8 @@ static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
  * The first register among $000-$1FE whose name (up to a space, at most
  * 8 characters) the string is (fixed #713: the original matched a prefix,
  * the string could go on behind the name, and never found a name of 8
- * characters, its compare ran into the next name).  The last register, $1FE NOOP, is looked at too (fixed #702: the original
- * stopped at $1FC).
+ * characters, its compare ran into the next name).  The last register,
+ * $1FE NOOP, is looked at too (fixed #702: the original stopped at $1FC).
  * @param name  d0: the name
  * @return d0: the offset, -1 if not found (not a truth value)
  */

@@ -362,8 +362,8 @@ D_CheckNMove/A/Word (both forms, 1-5, zero bytes, below $420 and from
 $FFFFFFF0); D_FindStringPtr (found, the long at areg5, not found, 0);
 PeekMax$ (max -1..100); GetHex$/GetHexAdr$ (modes 0-4, $101, $FF02);
 GetDataItem (sizes -1..5, $7FFF, 0 and -1 - in the original 65536 and
-65535 bytes -, below $420, $80000000); GetProgMode; GetCopIns$ (14 instructions: MOVE, WAIT, SKIP,
-odd digits, BFD); GetCustomReg for $000-$1FD and 6 more (above $1FC, a
+65535 bytes -, below $420, $80000000); GetProgMode; GetCopIns$ (14
+instructions: MOVE, WAIT, SKIP, odd digits, BFD); GetCustomReg for $000-$1FD and 6 more (above $1FC, a
 negative long); GetCustomRegAdr for every name and 16 more (prefixes,
 8 characters, NOOP, lower case, empty); the font printer – positions,
 the row change, the empty string, FInverse 1 and $100, FYOffset, the
