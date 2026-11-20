@@ -149,6 +149,12 @@ and commands before their setup command).
   ("MapObject has no map data"; under #893, test
   `rimapeditorlib-candraw-no-map`; `MapDataGrab`'s release code fills
   nothing into such a map since #895, so it has no bug-orig test).
+* `MapDataAdr(x,y)` refuses a position outside the map ("Map position
+  outside the map"; x and y compared unsigned with the width and the
+  height, as `MapCanDraw` does; the inline routine has no range check:
+  x at or beyond the width gives a word of a later row, y at or beyond
+  the height an address behind the map) (under #892; test
+  `rimapeditorlib-mapdataadr-outside`).
 
 ## BUG(orig), kept
 

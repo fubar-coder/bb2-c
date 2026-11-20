@@ -6,6 +6,7 @@
 ; runtime error checking.
 ; Correct: MapDataAdr(7,7) works; the error check refuses x = 8: "Map
 ; position outside the map".
+; @fixed #892
 ; @rwe rimapeditorlib
 ; @pass runtime_errors=on
 DEFTYPE .l

@@ -79,8 +79,10 @@
  *     the stencil"); the original read the stencil at address 0 and with
  *     the value as a signed index (#893).  MapCanDraw and MapDataGrab
  *     refuse a used map without data ("MapObject has no map data", under
- *     #893).  The original has no error check area; the release code is
- *     unchanged (D-005).
+ *     #893).  MapDataAdr(x,y) refuses a position outside the map ("Map
+ *     position outside the map", under #892; the inline routine has no
+ *     range check).  The original has no error check area; the release
+ *     code is unchanged (D-005).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -115,7 +117,7 @@ void _OutTextCenter(void), _OutTextRight(void);
 void rimapeditorlib_SetWindowDraw(void), _InitParse(void);
 void rimapeditorlib_nextparsearg(void), _freemap(void);
 void rimapeditorlib_libinit(void), rimapeditorlib_libfinit(void);
-void candrawchk(void), mapgrabchk(void);
+void candrawchk(void), mapgrabchk(void), mapdataadrchk(void);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -197,7 +199,7 @@ BLITZ_LIBS(8, BL_UA3);                  /* the source's literal 8 */
 BLITZ_SUBS(_mapdataadr, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
-BLITZ_SUBS(_mapdataadr2, 0, 0);
+BLITZ_SUBS(_mapdataadr2, mapdataadrchk, 0);     /* check: fixed, under #892 */
 BLITZ_NAME("MapDataAdr", "[x,y] - returns adress of the current map");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -772,7 +774,9 @@ BLITZ_INLINE(_mapdataadr, "move.l 10(a3),d0");
 /**
  * @brief MapDataAdr(x,y): the address of a map word.
  *
- * Inline: the data + (y*width)*2 + (x*2 as a word); no range check.
+ * Inline: the data + (y*width)*2 + (x*2 as a word); no range check in
+ * the release code (a position outside the map is refused by
+ * mapdataadrchk with runtime error checking: fixed, under #892).
  * @par Result
  * d0: the address (d1 changed)
  */
@@ -1125,6 +1129,7 @@ BLITZ_THUNK(rimapeditorlib_nextparsearg, nextparsearg_c, "d1/a0-a1");
 BLITZ_ERRCHK_MESSAGE(nomap, "MapObject has no map data");          /* fixed, under #893 */
 BLITZ_ERRCHK_MESSAGE(nostencil, "MapCanDraw needs SetStencil");     /* fixed, #893 */
 BLITZ_ERRCHK_MESSAGE(badvalue, "Map value above 32767 for the stencil"); /* fixed, #893 */
+BLITZ_ERRCHK_MESSAGE(outside, "Map position outside the map");     /* fixed, under #892 */
 
 /**
  * @brief The error check of MapCanDraw (debugger only).
@@ -1191,6 +1196,30 @@ static void BLITZ_ERRCHK mapgrabchk_c(const struct mapobject *map BL_REG(a3))
         BLITZ_RUNERR(nomap);
 }
 
+/**
+ * @brief The error check of MapDataAdr(x,y) (debugger only).
+ *
+ * Fixed (under #892), not in the original: the inline routine computes
+ * the address of the map word at x,y without a range check - x at or
+ * beyond the width gives a word of a later row, a y at or beyond the
+ * height (or a negative x or y) an address behind the map.  x and y are
+ * compared unsigned with the width and height, as MapCanDraw does since
+ * #892 (a map without data has width and height 0: every position is
+ * refused).  The release code is unchanged (D-005).
+ *
+ * Errors: "Map position outside the map".
+ * @param x    d0: the map x
+ * @param y    d1: the map y
+ * @param map  a3: the used map (#ua3)
+ */
+static void BLITZ_ERRCHK mapdataadrchk_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
+                                         const struct mapobject *map BL_REG(a3))
+{
+    if (x >= map->width || y >= map->height)
+        BLITZ_RUNERR(outside);
+}
+
 /* the thunks of the check functions: they keep every register */
 BLITZ_ERRCHK_THUNK(candrawchk, candrawchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(mapgrabchk, mapgrabchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(mapdataadrchk, mapdataadrchk_c, "d0-d1/a0-a1");

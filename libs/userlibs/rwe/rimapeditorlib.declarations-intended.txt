@@ -6,7 +6,10 @@
 # "MapObject has no map data"); MapDataGrab gets one (mapgrabchk, under
 # #893: "MapObject has no map data"); rimapeditorlib gets an error check
 # area for them (the original has none)
+# under #892: MapDataAdr's x,y form gets an error check (mapdataadrchk,
+# "Map position outside the map")
 lib 8: header +$2C: code offset set in only one of them
+lib 8: entry 12 MapDataAdr +$24: code offset set in only one of them
 lib 8: entry 16 MapDataGrab +$12: code offset set in only one of them
 lib 8: entry 24 MapCanDraw +$12: code offset set in only one of them
-lib 8: relocations in the declaration part 43 != 46
+lib 8: relocations in the declaration part 43 != 47
