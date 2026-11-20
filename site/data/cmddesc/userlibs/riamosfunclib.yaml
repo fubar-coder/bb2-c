@@ -1,7 +1,13 @@
 "CachesOn":
   text: Switches on the processor caches whose bits are set in `bitmask` (the bits of exec's `CacheControl`) and returns the previous cache bits.
+  notes: |
+    On Kickstart 1.x, which has no `CacheControl`, it switches nothing
+    and returns 0.
 "Reboot":
   text: Reboots the Amiga at once (a cold reboot); it does not return.
+  notes: |
+    On Kickstart 1.x it uses the reset routine that Commodore published
+    for the Kickstarts before 2.0.
 "Lisa":
   text: The contents of the chip ID register of Denise or Lisa.
 "MakeDir":
@@ -81,6 +87,9 @@
   text: The number of the first free bank from `startbank` on, or from bank 0 without it; -1 if none is free or `startbank` is not a bank.
 "CachesOff":
   text: Switches off the processor caches whose bits are set in `bitmask` (the bits of exec's `CacheControl`) and returns the previous cache bits.
+  notes: |
+    On Kickstart 1.x, which has no `CacheControl`, it switches nothing
+    and returns 0.
 "FillMem":
   text: Fills `length` bytes from an address, or from the start of a bank, with the byte `value`, or with 0 without it. A bank not in use is left alone, and a length of 0 or below fills nothing.
 "KeyCode":

@@ -6820,6 +6820,14 @@ rows:
     text: "Programs with the App commands run on Kickstart 1.x, where the commands do nothing; the original crashed at the start."
     page: libraries
     anchor: riapplib-fixes
+  - issue: 1145
+    severity: 5
+    topic: "System"
+    library: "riamosfunclib"
+    command: "FindVolume, DeviceName$, CachesOn, CachesOff, Reboot"
+    text: "`FindVolume`, `DeviceName$`, `CachesOn`, `CachesOff` and `Reboot` work on Kickstart 1.x, where the cache commands return 0; the original crashed in all five."
+    page: libraries
+    anchor: riamosfunclib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

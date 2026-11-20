@@ -4805,6 +4805,17 @@ Directories and devices:
   handler; the original read from near address 0 and returned nonsense
   ([#494](https://github.com/fubar-coder/bb2-c/issues/494)).
 
+Kickstart 1.x:
+
+* `FindVolume`, `DeviceName$`, `CachesOn`, `CachesOff` and `Reboot`
+  work on Kickstart 1.x. `FindVolume` and `DeviceName$` read the list of
+  devices, volumes and assigns in the way Kickstart 1.x knows,
+  `CachesOn` and `CachesOff` switch nothing there and return 0, and
+  `Reboot` uses the reset routine that Commodore published for the
+  Kickstarts before 2.0. The original called functions of Kickstart 2.0
+  in all five commands and crashed there
+  ([#1145](https://github.com/fubar-coder/bb2-c/issues/1145)).
+
 ### Fixes in rianimlib {#rianimlib-fixes}
 
 These fixes concern
