@@ -111,6 +111,10 @@ d1/d2 (CDTrackLength) are not reproduced.
   open. (#578)
 * `CDUpdateInfo` returns 0 without an open device; the original returns
   the caller's a0 + 5. (#587)
+* `CDVolume volume,fade` sends CD_ATTENUATE with the volume in
+  `io_Offset` and the fade time in `io_Length` (frames), as cd.device
+  wants them. The original swaps them, so `CDVolume 32767,0` asked for
+  silence with a fade of 32767 frames. (#982)
 
 **BUG(orig)** (kept):
 
@@ -122,11 +126,6 @@ d1/d2 (CDTrackLength) are not reproduced.
   device that writes all of it (uaescsi.device) writes 8 bytes behind
   `MyCDInfo`, the end of the library (here into `mycdinfo_rest`, see
   above). (#948)
-* `CDVolume volume,fade` sends CD_ATTENUATE with the volume in `io_Length`
-  and the fade time in `io_Offset`; cd.device wants it the other way round
-  (`io_Offset` = volume, `io_Length` = fade in frames), so
-  `CDVolume 32767,0` asks for silence with a fade of 32767 frames. The
-  library test checks the swapped fields in a run of either set. (#982)
 
 **Test** (`libs/tests/rwe/ricompactdisclib.c`, snitch case "rwe
 ricompactdisclib"): each run loads one library set (the C build or the

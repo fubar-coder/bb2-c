@@ -543,7 +543,7 @@ static void tocfuncs(int from, int to)
 }
 
 /* CDVolume volume,fade: the request's command, io_Length and io_Offset are
-   cases (same_device; BUG(orig) (#982): the volume goes into io_Length and
+   cases (same_device; the original (#982, fixed): the volume goes into io_Length and
    the fade time into io_Offset, the reverse of cd.device's CD_ATTENUATE,
    io_Offset = volume, io_Length = fade in frames) */
 static void volume(ULONG vol, ULONG fade)

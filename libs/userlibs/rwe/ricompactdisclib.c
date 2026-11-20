@@ -95,9 +95,11 @@
  * Fixed (#587): CDUpdateInfo returns 0 without an open device; the
  *   original returns the caller's a0 + 5.
  *
+ * Fixed (#982): CDVolume volume,fade puts the volume into io_Offset and
+ *   the fade into io_Length, as cd.device's CD_ATTENUATE wants them; the
+ *   original swaps them.
+ *
  * BUG(orig):
- *   - CDVolume volume,fade puts the volume into io_Length and the fade into
- *     io_Offset, the reverse of cd.device's CD_ATTENUATE (#982).
  *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
  *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
@@ -692,14 +694,13 @@ ULONG BLITZ_ROUTINE c_gettoc(void)
 }
 
 /* CDVolume volume,lengthoffade: CD_ATTENUATE.
-   BUG(orig) (#982): volume goes into io_Length and the fade time into
-   io_Offset, the reverse of cd.device (io_Offset = volume, io_Length =
-   fade in frames). */
+   Fixed (#982): io_Offset = volume, io_Length = fade in frames, as
+   cd.device wants them; the original swaps the two fields */
 ULONG BLITZ_ROUTINE c_cdvolume(ULONG vol BL_REG(d0), ULONG fade BL_REG(d1))
 {
     if (!cd.flag)
         return 0;
-    return cdio(DOIO, CD_ATTENUATE, NULL, fade, vol);
+    return cdio(DOIO, CD_ATTENUATE, NULL, vol, fade);
 }
 
 /* the SCSI TOC (READ TOC of a CDReadTOC with scsiflag, fixed #582): the

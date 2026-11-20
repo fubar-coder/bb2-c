@@ -12433,10 +12433,14 @@ CDVolume|length|no request 0x7fff,0|1	$00000000
 CDVolume|length|no request 200,75|1	$00000000
 CDVolume|length|not open 0x7fff,0|1	$00000000
 CDVolume|length|not open 200,75|1	$00000000
-CDVolume|length|open 0x7fff,0|1	$00007FFF
-CDVolume|length|open 200,75|1	$000000C8
-CDVolume|length|scsi 0x7fff,0|1	$00007FFF
-CDVolume|length|scsi 200,75|1	$000000C8
+CDVolume|length|open 0x7fff,0|1 [orig]	$00007FFF
+CDVolume|length|open 0x7fff,0|1 [fixed #982]	$00000000
+CDVolume|length|open 200,75|1 [orig]	$000000C8
+CDVolume|length|open 200,75|1 [fixed #982]	$0000004B
+CDVolume|length|scsi 0x7fff,0|1 [orig]	$00007FFF
+CDVolume|length|scsi 0x7fff,0|1 [fixed #982]	$00000000
+CDVolume|length|scsi 200,75|1 [orig]	$000000C8
+CDVolume|length|scsi 200,75|1 [fixed #982]	$0000004B
 CDVolume|offset|closed 0x7fff,0|1	$00000000
 CDVolume|offset|closed 200,75|1	$00000000
 CDVolume|offset|no port 0x7fff,0|1	$00000000
@@ -12445,10 +12449,14 @@ CDVolume|offset|no request 0x7fff,0|1	$00000000
 CDVolume|offset|no request 200,75|1	$00000000
 CDVolume|offset|not open 0x7fff,0|1	$00000000
 CDVolume|offset|not open 200,75|1	$00000000
-CDVolume|offset|open 0x7fff,0|1	$00000000
-CDVolume|offset|open 200,75|1	$0000004B
-CDVolume|offset|scsi 0x7fff,0|1	$00000000
-CDVolume|offset|scsi 200,75|1	$0000004B
+CDVolume|offset|open 0x7fff,0|1 [orig]	$00000000
+CDVolume|offset|open 0x7fff,0|1 [fixed #982]	$00007FFF
+CDVolume|offset|open 200,75|1 [orig]	$0000004B
+CDVolume|offset|open 200,75|1 [fixed #982]	$000000C8
+CDVolume|offset|scsi 0x7fff,0|1 [orig]	$00000000
+CDVolume|offset|scsi 0x7fff,0|1 [fixed #982]	$00007FFF
+CDVolume|offset|scsi 200,75|1 [orig]	$0000004B
+CDVolume|offset|scsi 200,75|1 [fixed #982]	$000000C8
 CDVolume|opens|closed 0x7fff,0|1	$00000000
 CDVolume|opens|closed 200,75|1	$00000000
 CDVolume|opens|no port 0x7fff,0|1	$00000000
