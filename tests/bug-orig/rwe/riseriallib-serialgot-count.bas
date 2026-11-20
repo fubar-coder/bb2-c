@@ -4,6 +4,7 @@
 ; tests/corpus/runner/serial.h) for "0123456789ABCDEF", waits a second
 ; and prints SerialGot.
 ; Correct: the number of bytes waiting, 16.
+; @fixed #802
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l

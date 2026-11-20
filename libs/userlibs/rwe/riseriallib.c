@@ -18,7 +18,7 @@
  *   SerialProgress               the remaining length of a block
  *   SerialReadLong / SerialWriteLong longword
  *   SerialStop                   ends a block transfer
- *   SerialGot                    -1 if a byte is waiting, else 0
+ *   SerialGot                    the number of bytes waiting
  *   SerialWait                   waits for a byte and reads it
  *   finit: SerialClose
  *
@@ -59,7 +59,6 @@
  *     back from the stack every time (it reads bytes without end) (#794).
  *   - SerialWriteLong sends the low byte of its argument and then three
  *     times $01 (it rotates the register SerialWrite changed) (#805).
- *   - SerialGot returns -1/0, not a count (#802).
  *   - SerialWrite never tests whether the 128-word transmit ring is full:
  *     SerialSendBlock/SerialSendString/SerialWriteLong run on faster than the
  *     line sends, byte 129 on overwrites the unsent bytes 1, 2 ... and
@@ -120,6 +119,9 @@
  *     the original ended it through the abort code of SerialSendBlock,
  *     which popped the saved d7 - there the return address - into d7, so
  *     it returned to the long above it on the stack (#803).
+ *   - SerialGot returns the number of bytes waiting, as its help text
+ *     says ("returns num chars in serial buffer"); the original returned
+ *     -1 when a byte was waiting, else 0 (#802).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -676,14 +678,16 @@ void BLITZ_ROUTINE c_abortxfer(void)
 }
 
 /**
- * @brief SerialGot: whether a byte is waiting.
+ * @brief SerialGot: the number of bytes waiting in the receive ring.
  *
- * BUG(orig) (#802): -1/0, not the count the help text promises.
- * @return d0: $FFFF (the word -1) if a byte is waiting, else 0
+ * Fixed (#802): the count the help text promises ("returns num chars in
+ * serial buffer"); the original returned -1 when a byte was waiting,
+ * else 0.
+ * @return d0: the count, 0-255 (a word)
  */
 ULONG BLITZ_ROUTINE c_buffcount(void)
 {
-    return rd.big != rd.end ? 0xffff : 0;
+    return (UBYTE)(rd.end - rd.big);    /* fixed (#802) */
 }
 
 /**

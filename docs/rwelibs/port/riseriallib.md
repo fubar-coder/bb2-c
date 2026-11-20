@@ -14,7 +14,7 @@ port through the hardware, without serial.device:
   (ldivlib).
 * The receive handler puts SERDATR's byte into a ring of 256 bytes;
   `SerialRead` takes the next one (−1 if none), `SerialWait` waits for
-  one, `SerialGot` says whether one is there (−1/0), `SerialFlush` reads
+  one, `SerialGot` how many are there, `SerialFlush` reads
   until none is left, `SerialBuffer` is the ring's address.
 * `SerialWrite byte` puts the byte with a stop bit into a ring of 128
   words and requests TBE when the ring was empty; the transmit handler
@@ -145,6 +145,12 @@ kind F):
   address – into d7, so it returned to the long above it on the stack
   (#803; test `riseriallib-receiveblock-stop`: SerialStop from a
   `SetInt 5` routine). The assembler thunk of the original's end goes.
+* `SerialGot` returns the number of bytes waiting, as its help text says
+  ("returns num chars in serial buffer"; the documentation wins, library
+  decisions Q8/Q9); the original returned −1 when a byte was waiting,
+  else 0. A program that tested only for "not 0" works as before (#802;
+  test `riseriallib-serialgot-count`; `libs_emulator` cases
+  `[fixed #802]` of `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
@@ -155,7 +161,6 @@ kind F):
   the stack every time and reads bytes without end (#794).
 * `SerialWriteLong` sends the low byte of its argument and then three
   times `$01` (it rotates the register `SerialWrite` changed) (#805).
-* `SerialGot` returns −1/0, not a count (#802).
 * `SerialWrite` (so `SerialSendBlock`, `SerialSendString`, `SerialWriteLong`)
   never tests whether the 128-word transmit ring is full and does not wait:
   byte 129 on overwrites the words of bytes 1, 2 ... that the interrupt has

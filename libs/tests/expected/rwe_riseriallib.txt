@@ -127,7 +127,8 @@ SerialGot|custom chip registers|d0 $00000000|2	bytes 512 fnv C4915FC8
 SerialGot|custom chip registers|d0 $00000000|3	bytes 512 fnv C4915FC8
 SerialGot|custom chip registers|d0 $00000000|4	bytes 512 fnv C4915FC8
 SerialGot|d0|d0 $00000000|1	$00000000
-SerialGot|d0|d0 $00000000|2	$0000FFFF
+SerialGot|d0|d0 $00000000|2 [orig]	$0000FFFF
+SerialGot|d0|d0 $00000000|2 [fixed #802]	$00000003
 SerialGot|d0|d0 $00000000|3	$00000000
 SerialGot|d0|d0 $00000000|4	$00000000
 SerialGot|kept|d0 $00000000|1	kept
