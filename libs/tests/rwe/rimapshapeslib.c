@@ -257,7 +257,7 @@ static void freems(UWORD first, UWORD last)
 static void test_secondrun(void)
 {
     struct lib *l = getlib(&loaded, LIB);
-    ULONG g = (ULONG)group, *res, *g2;
+    ULONG g = (ULONG)group, *res, *g2, rsize = 516;
     UBYTE *p, *slot = NULL;
     int n = 0;
 
@@ -270,12 +270,17 @@ static void test_secondrun(void)
     ROUT = "finit";
     strcpy(VEC, "");
     DO1(ENT(LIB, FINIT, 0), (void)0);
-    /* AllocVec's block: its size long in front of the group */
-    res = AllocAbs(516, (APTR)(g - 4));
-    check("rimapshapeslib test: the run before's group reserved", res == (ULONG *)(g - 4));
-    if (!slot || res != (ULONG *)(g - 4))
+    /* the original's AllocVec block: its size long in front of the group;
+       the port's AllocMem block (#1141): the group alone */
+    res = AllocAbs(rsize, (APTR)(g - 4));
+    if (!res) {
+        rsize = 512;
+        res = AllocAbs(rsize, (APTR)g);
+    }
+    check("rimapshapeslib test: the run before's group reserved", res != NULL);
+    if (!slot || !res)
         return;
-    memset(res, 0, 516);
+    memset(res, 0, rsize);
     ROUT = "init";
     strcpy(VEC, "second run");
     DO1(ENT(LIB, INIT, 0), (void)0);
@@ -292,7 +297,7 @@ static void test_secondrun(void)
     ROUT = "finit";
     strcpy(VEC, "second run");
     DO1(ENT(LIB, FINIT, 0), (void)0);
-    FreeMem(res, 516);
+    FreeMem(res, rsize);
 }
 
 int main(int argc, char **argv)

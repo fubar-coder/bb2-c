@@ -22,7 +22,7 @@
  * allocates): width.w, then a struct BitMap (BytesPerRow = the shape's
  * ebwidth, Rows = height, the depth word = Flags/Depth, pad, 8 planes),
  * which is blitted with BltBitMapRastPort (minterm $C0) from 0,0.  The
- * group: a block of 512 bytes (init, AllocVec MEMF_CLEAR) of members
+ * group: a block of 512 bytes (init, AllocMem MEMF_CLEAR) of members
  * {map shape address.l, dx.w, dy.w}, ended by a 0 address.
  *
  * C behind thunks, but the three blit entries, which are the original's
@@ -39,9 +39,14 @@
  *     wrote at address 0 (#901), and in a second run of a program from
  *     the editor (the library stays loaded) into the run before's freed
  *     group, with the run before's block size (#1134).
- *   - Without the group block (init's AllocVec failed) ResetGroup writes
+ *   - init, finit and SetNumMapShapes allocate and free with AllocMem and
+ *     FreeMem (the group block 512 bytes, the map shapes 64 bytes each,
+ *     their count kept), on every Kickstart; the original used AllocVec
+ *     and FreeVec (exec V36) without a version check: on Kickstart 1.x
+ *     every program with the library crashed at start-up (#1141).
+ *   - Without the group block (init's allocation failed) ResetGroup writes
  *     nothing and returns 0, AddGroupMember and BlitGroup do nothing; the
- *     original did not check the AllocVec, and the three wrote and read
+ *     original did not check its AllocVec, and the three wrote and read
  *     the group at address 0 (#905).
  *   - BlitGroup's !libs has #graphicslib,#la6, as BlitMapShape's: the
  *     original's had the window only, so BlitGroup called
@@ -183,7 +188,8 @@ static_assert(sizeof(struct member) == 8);
 static UWORD blockwidth, blockheight;
 /* the map shapes; read by the blit entries (assembler) */
 static struct mapshape *baseshape __attribute__((used));
-/* their number, for the error checks (fixed #906; 0 without map shapes) */
+/* their number, for FreeMem (fixed #1141) and the error checks (fixed
+   #906); 0 without map shapes */
 static UWORD nummapshapes;
 static struct member *nextgroupmember;
 /* the group, 512 bytes; read by BlitGroup (assembler) */
@@ -200,7 +206,10 @@ static struct member *groupend;
 /* ---------------------------------------------------------------- init */
 
 /**
- * @brief init: the group block (512 bytes, AllocVec MEMF_PUBLIC|MEMF_CLEAR).
+ * @brief init: the group block (512 bytes, AllocMem MEMF_PUBLIC|MEMF_CLEAR).
+ *
+ * AllocMem, not the original's AllocVec (exec V36): the library runs on
+ * Kickstart 1.x (fixed #1141).
  *
  * The next-member pointer is set to the (cleared, so empty) group and the
  * block size to 0, as at the first load: fixed (#901, #1134), the original
@@ -213,7 +222,7 @@ static struct member *groupend;
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
-    groupaddr = AllocVec(512, MEMF_PUBLIC | MEMF_CLEAR);
+    groupaddr = AllocMem(512, MEMF_PUBLIC | MEMF_CLEAR);   /* fixed (#1141) */
     nextgroupmember = groupaddr;        /* fixed (#901, #1134) */
     groupend = groupaddr ? groupaddr + 63 : NULL;   /* fixed (#904) */
     blockwidth = 0;                     /* fixed (#1134): the run before's */
@@ -223,15 +232,21 @@ BLITZ_THUNK(rimapshapeslib_libinit, libinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief finit: frees the map shapes and the group block.
+ *
+ * FreeMem with the sizes the library keeps (fixed #1141: the original's
+ * FreeVec is exec V36).
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (baseshape) {
-        FreeVec(baseshape);
+        FreeMem(baseshape, (ULONG)nummapshapes << 6);  /* fixed (#1141) */
         baseshape = NULL;
     }
     nummapshapes = 0;                   /* fixed (#906) */
-    FreeVec(groupaddr);
+    if (groupaddr) {
+        FreeMem(groupaddr, 512);        /* fixed (#1141) */
+        groupaddr = NULL;
+    }
 }
 BLITZ_THUNK(rimapshapeslib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
@@ -366,20 +381,22 @@ void _remapmapshape(void)
 /**
  * @brief SetNumMapShapes num: (re)allocates num map shapes.
  *
- * The old block is freed, num * 64 bytes allocated (AllocVec
- * MEMF_PUBLIC|MEMF_CLEAR).  After a failure, or with num 0, there are no
- * map shapes: the commands then do nothing (fixed #906: the original
- * took them from address 0 on).  The number is kept for the error
- * checks (0 without a block).
+ * The old block is freed (FreeMem with the count kept), num * 64 bytes
+ * allocated (AllocMem MEMF_PUBLIC|MEMF_CLEAR; fixed #1141: the original's
+ * AllocVec and FreeVec are exec V36).  After a failure, or with num 0,
+ * there are no map shapes: the commands then do nothing (fixed #906: the
+ * original took them from address 0 on).  The number is kept for FreeMem
+ * and the error checks (0 without a block).
  * @param num  d0: the number of map shapes (a word)
  */
 static void BLITZ_ROUTINE setnummapshapes_c(UWORD num BL_REG(d0))
 {
     if (baseshape) {
-        FreeVec(baseshape);
+        FreeMem(baseshape, (ULONG)nummapshapes << 6);  /* fixed (#1141) */
         baseshape = NULL;
     }
-    baseshape = AllocVec((ULONG)num << 6, MEMF_PUBLIC | MEMF_CLEAR);
+    /* AllocMem of 0 bytes returns 0: no map shapes */
+    baseshape = AllocMem((ULONG)num << 6, MEMF_PUBLIC | MEMF_CLEAR);  /* fixed (#1141) */
     nummapshapes = baseshape ? num : 0; /* fixed (#906) */
 }
 BLITZ_THUNK(_setnummapshapes, setnummapshapes_c, "d0-d1/a0-a1");
@@ -432,7 +449,7 @@ BLITZ_THUNK(_freemapshapes, freemapshapes_c, "d0-d1/a0-a1");
  * @brief ResetGroup(blockwidth,blockheight): empties the group and sets
  * the block size for AddGroupMember.
  *
- * Without init's block (its AllocVec failed) it writes nothing and
+ * Without init's block (its allocation failed) it writes nothing and
  * returns 0 (fixed #905: the original cleared the long at address 0).
  * @param bw  d0: the block width
  * @param bh  d1: the block height

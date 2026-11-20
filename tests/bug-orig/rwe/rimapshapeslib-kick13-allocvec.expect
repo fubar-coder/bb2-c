@@ -1,0 +1,5 @@
+[run]
+before
+group ok
+map shapes ok
+rc=0

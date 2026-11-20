@@ -20,7 +20,7 @@ copied. Width 0 = empty.
   the given size, the height at most the shape's (a signed compare).
 * `RemapMapShape mapshape#,botcol,topcol` – does nothing.
 * `SetNumMapShapes num` – frees the old block and allocates num × 64
-  bytes (`AllocVec`, cleared).
+  bytes (`AllocMem`, cleared).
 * `MapShapeAddr(mapshape#)` – the map shape's address.
 * `FreeMapShapes first,last` – clears the widths from first to last
   (nothing if last < first as signed words; the addresses are then
@@ -84,7 +84,15 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   run of a program from the editor (the library stays loaded) into the
   run before's freed group, with the run before's block size (#1134; the
   libs test's second run).
-* Without the group block (init's `AllocVec` failed) `ResetGroup` writes
+* init, finit and `SetNumMapShapes` allocate and free with `AllocMem`
+  and `FreeMem`, with the sizes the library keeps (512 bytes for the
+  group block, 64 bytes per map shape with the count of the last
+  `SetNumMapShapes`); one path on every Kickstart. The original used
+  `AllocVec` and `FreeVec` (exec V36) without a version check: on
+  Kickstart 1.x every program with the library crashed at start-up,
+  before its first line (#1141; test `rwe/rimapshapeslib-kick13-allocvec`,
+  A500 with Kickstart 1.3).
+* Without the group block (init's allocation failed) `ResetGroup` writes
   nothing and returns 0, `AddGroupMember` and `BlitGroup` do nothing
   (D-018: fail silently; one test per call). The original did not check
   the `AllocVec`: `ResetGroup` cleared the long at address 0,
@@ -116,7 +124,7 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   Q5 (a): refused in the release code plus the message; tests
   `rwe/rimapshapeslib-group-no-limit`, `rwe/rimapshapeslib-group-full-check`).
 * Without map shapes – before `SetNumMapShapes`, or after one whose
-  `AllocVec` failed or that asked for 0 – `ShapeToMapShape`,
+  allocation failed or that asked for 0 – `ShapeToMapShape`,
   `BlitMapShape`, `BlitMapShapeSize`, `FreeMapShapes` and
   `AddGroupMember` do nothing and `MapShapeAddr` returns 0 (D-018: the
   failed `SetNumMapShapes` is a statement, the program cannot see it).
