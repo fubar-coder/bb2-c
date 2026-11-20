@@ -38,12 +38,13 @@
  * ExtractLabel; D_InitParse/D_NextArg$ (empty arguments, the end, after
  * it); OutText/OutTextPen on a RastPort of the test (planes, cp_x/cp_y,
  * the pen); FindLineToken; GetDataItem (sizes -1..5, below $420,
- * $80000000, size 0: 65536 bytes); D_FindVolume (a device, a volume, an
- * assign, a missing name); finit; a second run (finit, init) and the
- * state it starts with (#1169); finit.
- * Not covered: counts of 0 for D_HexWord/D_CheckNMove* (65536 entries
- * into the destination); GetCustomReg with a negative word but a positive
- * long (the original reads in front of the table, #714); more than 20
+ * $80000000, size 0: 65536 bytes in the original, #701); D_FindVolume (a
+ * device, a volume, an assign, a missing name); finit; a second run
+ * (finit, init) and the state it starts with (#1169); finit.
+ * Not covered: counts of 0 for D_HexWord/D_CheckNMove* (the original
+ * writes 65536 entries into the destination, #701); GetCustomReg with a
+ * negative word but a positive long (the original reads in front of the
+ * table, #714); more than 20
  * AddProcessPtr entries and ProcessString with a '%' at the end (they
  * read or write beyond the library's data); the real debugger
  * program that uses the library.

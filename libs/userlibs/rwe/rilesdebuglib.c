@@ -44,10 +44,6 @@
  * rilesdebuglib-font.bin, cut from AmiBlitz3's binary (archive/README.md).
  *
  * BUG(orig), kept:
- *   - D_HexWord, D_CheckNMove, D_CheckNMoveA, D_CheckNMoveWord with count
- *     0 (D_CheckNMoveWord also $8000) run 65536 times (DBRA); GetDataItem
- *     with size 0 reads 65536 bytes, with a negative size fewer (-1: 65535)
- *     (DBRA) (#701).
  *   - D_HexWord at an odd source writes "XX YY" per word, without the
  *     space behind it that the even case writes (#715).
  *   - PeekMax$ copies max+1 characters but returns the length max (a3 is
@@ -103,6 +99,13 @@
  *   - The "address below $420" checks compare unsigned; the original's
  *     compared signed, so every address from $80000000 showed "*" too
  *     (D_HexWord, D_CheckNMoveA/Word) or gave 0 (GetDataItem) (#717).
+ *   - A count of 0 makes D_HexWord, D_CheckNMove, D_CheckNMoveA and
+ *     D_CheckNMoveWord write nothing, D_CheckNMoveWord counts its bytes
+ *     as a long, and GetDataItem reads a long for every size but 1 and 2
+ *     (its help text); the original's DBRA ran 65536 times for a count
+ *     of 0 (D_CheckNMoveWord also for $8000, and counts above lost their
+ *     top bit), and GetDataItem with size 0 shifted 65536 bytes through
+ *     the result, with a negative size fewer (#701).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -559,8 +562,8 @@ static UBYTE *hexbyte(UBYTE *d, const UBYTE **s)
  *
  * "XXXX " each; at an odd source "XX YY" without the space behind
  * (BUG(orig) (#715)).  Bytes at addresses below $420 show "*" (an
- * unsigned compare, fixed #717).  No 0 is written.
- * num 0 runs 65536 times (DBRA, BUG(orig) (#701)).
+ * unsigned compare, fixed #717).  No 0 is written.  num 0 writes nothing
+ * (fixed #701: the original's DBRA ran 65536 times).
  * @param src  d0: the source address
  * @param dst  d1: the buffer
  * @param num  d2.w: the number of words
@@ -570,6 +573,8 @@ static void BLITZ_ROUTINE hexword_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_R
 {
     UWORD n = num - 1;                                  /* d6, DBRA */
 
+    if (!num)                                           /* fixed (#701) */
+        return;
     if ((ULONG)src & 1) {
         do {                                            /* 'hexwordodd */
             dst = hexbyte(dst, &src);
@@ -603,7 +608,7 @@ static void BLITZ_ROUTINE hexword_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_R
  * characters each, one byte left between them.
  *
  * The bytes are copied as they are (also 0 and below $420).  count 0
- * runs 65536 times (DBRA, BUG(orig) (#701)).
+ * copies nothing (fixed #701: the original's DBRA ran 65536 times).
  * @param s      d0: the source
  * @param d      d1: the destination (5 bytes per long)
  * @param count  d2.w: the number of longs
@@ -613,6 +618,8 @@ static void BLITZ_ROUTINE checknmove2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_R
 {
     UWORD n = count - 1;                                /* d7, DBRA */
 
+    if (!count)                                         /* fixed (#701) */
+        return;
     do {
         d[0] = s[0];
         d[1] = s[1];
@@ -652,7 +659,8 @@ static UBYTE *checkbyte(UBYTE *d, const UBYTE **s)
  * D_CheckNMove, with no 0 in the characters and "*" below $420.
  *
  * A 0 byte becomes 1; an address below $420 (unsigned compare, fixed
- * #717) gives '*'.  count 0 runs 65536 times (#701).
+ * #717) gives '*'.  count 0 writes nothing (fixed #701: the original's
+ * DBRA ran 65536 times).
  * @param s      d0: the source
  * @param d      d1: the destination (5 bytes per long)
  * @param count  d2.w: the number of longs
@@ -663,6 +671,8 @@ static void BLITZ_ROUTINE checknmovea2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_
     UWORD n = count - 1;                                /* d7, DBRA */
     int i;
 
+    if (!count)                                         /* fixed (#701) */
+        return;
     do {
         for (i = 0; i < 4; i++)
             d = checkbyte(d, &s);
@@ -684,8 +694,10 @@ static void BLITZ_ROUTINE checknmovea_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_R
  * @brief D_CheckNMoveWord source_address,dest_address,count: count words
  * as 2 characters each, no gap; no 0, "*" below $420.
  *
- * count 0 (and $8000: the byte count count*2 is a word) runs 65536 times
- * (DBRA, BUG(orig) (#701)); the address check is unsigned (fixed #717).
+ * count 0 writes nothing, and the byte count count*2 is a long (fixed
+ * #701: the original's DBRA of the word count*2-1 ran 65536 times for 0
+ * and $8000, and counts above $8000 lost their top bit); the address
+ * check is unsigned (fixed #717).
  * @param s      d0: the source
  * @param d      d1: the destination
  * @param count  d2.w: the number of words
@@ -693,11 +705,10 @@ static void BLITZ_ROUTINE checknmovea_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_R
 static void BLITZ_ROUTINE checknmoveword2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1),
                                             UWORD count BL_REG(d2))
 {
-    UWORD n = (UWORD)(count << 1) - 1;                  /* d7, DBRA */
+    ULONG n = (ULONG)count << 1;                        /* fixed (#701) */
 
-    do
+    while (n--)
         d = checkbyte(d, &s);
-    while (n-- != 0);
 }
 
 /**
@@ -820,9 +831,10 @@ static ULONG BLITZ_ROUTINE gethexadr_c(const UBYTE *addr BL_REG(d0), UBYTE mode 
 /**
  * @brief GetDataItem(address,size): the byte, word or long at an address.
  *
- * Read byte by byte (also at odd addresses); size 3 or more: a long.
- * Size 0 reads 65536 bytes, a negative size fewer (-1: 65535; DBRA from
- * the word size-1, BUG(orig) (#701)).
+ * Read byte by byte (also at odd addresses); every size but 1 and 2 is a
+ * long, as the help text says (fixed #701: the original read a long only
+ * from size 3 on, size 0 shifted 65536 bytes through the result and a
+ * negative size fewer, -1 65535, by a DBRA from the word size-1).
  * @param addr  d0: the address
  * @param size  d1.w: 1 byte, 2 word, otherwise long
  * @return d0: the value, 0 for an address below $420 (an unsigned
@@ -834,7 +846,7 @@ static ULONG BLITZ_ROUTINE getdataitem_c(const UBYTE *addr BL_REG(d0), UWORD siz
 
     if (LOWMEM(addr))
         return 0;
-    if ((WORD)size >= 3)
+    if (size != 1 && size != 2)                         /* fixed (#701) */
         size = 4;
     size--;
     do

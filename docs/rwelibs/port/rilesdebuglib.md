@@ -159,12 +159,20 @@ d5-d7, a0-a3 and a6 in places.
   memory as the low 24 bits, the ROM at $FFFFFFF0 among it (#717; test
   `rilesdebuglib-lowmem-signed` on the a500; the `libs_emulator` cases
   `[fixed #717]` of $FFFFFFF0).
+* A count of 0 makes D_HexWord, D_CheckNMove, D_CheckNMoveA and
+  D_CheckNMoveWord write nothing, D_CheckNMoveWord counts its bytes
+  (count*2) as a long, and GetDataItem reads a long for every size but 1
+  and 2, as its help text says ("otherwise long"). The original's DBRA
+  ran 65536 times for a count of 0 (327680 bytes written by D_HexWord and
+  the D_CheckNMove forms; the debugger computes the count from the
+  window's width), D_CheckNMoveWord's word byte count did the same for
+  $8000 and cut counts above it, and GetDataItem shifted 65536 bytes
+  through the result for size 0, a negative size fewer (#701; test
+  `rilesdebuglib-count-zero`; the `libs_emulator` cases `[fixed #701]` of
+  GetDataItem's sizes 0 and -1).
 
 ## BUG(orig)
 
-* Counts of 0 (D_HexWord, D_CheckNMove, D_CheckNMoveA, D_CheckNMoveWord;
-  D_CheckNMoveWord also $8000) run the DBRA 65536 times; GetDataItem with
-  size 0 reads 65536 bytes, a negative size fewer (-1: 65535) (#701).
 * D_HexWord at an odd source writes "XX YY" per word, without the space
   the even case writes behind each word (#715).
 * PeekMax$ copies max+1 characters but returns the length max (a3 one
@@ -229,8 +237,8 @@ words, even and odd source, from $41C/$41B/$41F and $FFFFFFF0);
 D_CheckNMove/A/Word (both forms, 1-5, zero bytes, below $420 and from
 $FFFFFFF0); D_FindStringPtr (found, the long at areg5, not found, 0);
 PeekMax$ (max -1..100); GetHex$/GetHexAdr$ (modes 0-4, $101, $FF02);
-GetDataItem (sizes -1..5, $7FFF, 0: 65536 bytes, -1: 65535, below $420,
-$80000000); GetProgMode; GetCopIns$ (14 instructions: MOVE, WAIT, SKIP,
+GetDataItem (sizes -1..5, $7FFF, 0 and -1 - in the original 65536 and
+65535 bytes -, below $420, $80000000); GetProgMode; GetCopIns$ (14 instructions: MOVE, WAIT, SKIP,
 odd digits, BFD); GetCustomReg for $000-$1FD and 6 more (above $1FC, a
 negative long); GetCustomRegAdr for every name and 16 more (prefixes,
 8 characters, NOOP, lower case, empty); the font printer – positions,
@@ -250,6 +258,7 @@ ClearProcessPtrs, after a D_NextArg$ and without a parser position (the
 text at address 0, set for the call); D_FindVolume (device, volume,
 assign, missing, empty); finit. Kept registers on every call.
 
-Not covered: counts of 0 for D_HexWord/D_CheckNMove* (65536 entries into
-the destination); the DIFF cases above; ProcessString with a `%` at the
-end; the debugger program that used the library.
+Not covered: counts of 0 for D_HexWord/D_CheckNMove* (the original
+writes 65536 entries into the destination, #701); the DIFF cases above;
+ProcessString with a `%` at the end; the debugger program that used the
+library.

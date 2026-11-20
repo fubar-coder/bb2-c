@@ -7681,8 +7681,10 @@ GetCustomRegAdr|popped|"dmacon"|1	$00000000
 GetDataItem|d0|$100,4|1	$00000000
 GetDataItem|d0|$41F,4|1	$00000000
 GetDataItem|d0|$80000000,4|1	$00000000
-GetDataItem|d0|sh+101,-1|1	$60616263
-GetDataItem|d0|sh+101,0|1	$61626364
+GetDataItem|d0|sh+101,-1|1 [orig]	$60616263
+GetDataItem|d0|sh+101,-1|1 [fixed #701]	$212E3B48
+GetDataItem|d0|sh+101,0|1 [orig]	$61626364
+GetDataItem|d0|sh+101,0|1 [fixed #701]	$212E3B48
 GetDataItem|d0|sh+101,1|1	$00000021
 GetDataItem|d0|sh+101,2|1	$0000212E
 GetDataItem|d0|sh+101,3|1	$212E3B48
