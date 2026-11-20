@@ -18,7 +18,8 @@
  *             port, clib); cdrun the worker (w0, w1, ...); tedab the
  *             combination (R5, C5, Cc, Rc) in the bug-orig mode (a run per
  *             session), else the session (s001, s002, ...)
- *   machine   the emulated machine (a1200, a500, a500-68010)
+ *   machine   the emulated machine (a1200, a500, a500-68010, a500-204,
+ *             a600)
  *   snapshot  what the snapshot mode did: cold (booted without one),
  *             restored, first-save (booted, saved, restored), fallback
  *             (the snapshot did not work: booted after all)

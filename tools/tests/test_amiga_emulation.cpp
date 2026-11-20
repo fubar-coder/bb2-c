@@ -809,6 +809,22 @@ TEST_CASE("amiga_emulation: configuration, script, slots and snapshot helpers", 
     CHECK(cfg && key_lines(cfg, "cpu_type") == 1 && lines_equal(cfg, "cpu_type=68010") == 1);
     CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/amiga-os-130.rom") == 1);
     free(cfg);
+    /* a500-204: the A500+ with Kickstart 2.04; the machine's changes get
+       the emulation directory as the template's lines do */
+    p.machine = "a500-204";
+    cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
+    CHECK(cfg && key_lines(cfg, "kickstart_rom_file") == 1
+          && lines_equal(cfg, "kickstart_rom_file=/emu/amiga-os-204.rom") == 1);
+    CHECK(cfg && key_lines(cfg, "hardfile2") == 1
+          && lines_equal(cfg, "hardfile2=ro,DH0:/emu/workbench-211.hdf,0,0,0,512,0,,uae0") == 1);
+    CHECK(cfg && key_lines(cfg, "uaehf0") == 1
+          && lines_equal(cfg, "uaehf0=hdf,ro,DH0:/emu/workbench-211.hdf,0,0,0,512,0,,uae0") == 1);
+    CHECK(cfg && key_lines(cfg, "chipset") == 1 && lines_equal(cfg, "chipset=ecs") == 1);
+    CHECK(cfg && key_lines(cfg, "chipset_compatible") == 1
+          && lines_equal(cfg, "chipset_compatible=A500+") == 1);
+    CHECK(cfg && lines_equal(cfg, "cpu_model=68000") == 1 && !strstr(cfg, "@EMULATION_DIR@"));
+    free(cfg);
+    p.machine = "a500-68010";
     /* a change of the test wins over the machine's */
     {
         struct amiga_emulation_option cpu[] = { { "cpu_model", "68020" } };
@@ -828,6 +844,8 @@ TEST_CASE("amiga_emulation: configuration, script, slots and snapshot helpers", 
           && amiga_emulation_machine_kickstart("a1200") == 40);
     CHECK(amiga_emulation_machine_kickstart("a500") == 34
           && amiga_emulation_machine_kickstart("a500-68010") == 34);
+    CHECK(amiga_emulation_machine_known("a500-204")
+          && amiga_emulation_machine_kickstart("a500-204") == 37);
     CHECK(amiga_emulation_machine_kickstart("a3000") == 0);
     p.machine = "a3000";
     CHECK(amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err) == nullptr

@@ -95,8 +95,11 @@ cmake --preset amiga && cmake --build --preset amiga      # builds hdftool
 cmake -DAMIGA_FOREVER=/run/media/$USER/AmigaForever -P cmake/setup-amiga-forever.cmake
 ```
 
-It sets up all machines: the a1200 and a600 (Kickstart and Workbench 3.1)
-and the a500 (Kickstart 1.3, Workbench 1.3.5).
+It sets up all machines: the a1200 and a600 (Kickstart and Workbench 3.1),
+the a500 (Kickstart 1.3, Workbench 1.3.5) and the a500-204 (Kickstart
+2.04, Workbench 2.1). After an update that adds a machine, run it once
+more: the files that are there already stay untouched, the new ones are
+added.
 
 `AMIGA_FOREVER` is the medium or installation (a directory with
 `Amiga Files/Shared`, `Shared`, or directly `rom/` and `hdf/`); it is only
@@ -106,8 +109,9 @@ read. Further options: `-DDEST=DIR` (default `amiga-emulation/`),
 
 * **Inputs:** every file used must have the size and SHA-256 of Amiga
   Forever 11 (`rom/amiga-os-310-a1200.rom`, `rom/amiga-os-310-a600.rom`,
-  `rom/amiga-os-130.rom`, `rom/rom.key`, `hdf/workbench-311.hdf`,
-  `hdf/workbench-135.hdf`); another edition is refused.
+  `rom/amiga-os-130.rom`, `rom/amiga-os-204.rom`, `rom/rom.key`,
+  `hdf/workbench-311.hdf`, `hdf/workbench-135.hdf`,
+  `hdf/workbench-211.hdf`); another edition is refused.
 * **Results:** `hdftool` works reproducibly (no host clock, a fixed
   order of the blocks), so every result has a known SHA-256 too, which the
   script checks. A result is written as `NAME.part` and renamed when it is
@@ -129,6 +133,8 @@ read. Further options: `-DDEST=DIR` (default `amiga-emulation/`),
 | `amiga-os-310-a600.rom` | Kickstart 3.1 (40.63), A500/A600/A2000, Cloanto-encrypted | 524299 | `03ec7583249c686a3f63b5b92634b12e14ce72fc27b0066a8c3cca57f869443e` |
 | `workbench-311.hdf` | Workbench 3.1 (40.42), raw partition image, DOS\3 | 6258688 | `b3963c5dafb75027ffd6a5f5a1a6572246337bfb7d0f1b31cfdb50b3ae843c01` |
 | `workbench-311-rtg.hdf` | the same with the uaegfx monitor | 6258688 | `f092de1ec92bff7854701c32bc5ad9f54f16de9264ef09dffba010816a77fba4` |
+| `amiga-os-204.rom` | Kickstart 2.04 (37.175), A500+, Cloanto-encrypted | 524299 | `e1eb7c0a322358bc454166bcef8ea04808791596fa6280df70e531dab2a5b3f1` |
+| `workbench-211.hdf` | Workbench 2.1 (38.36), RDB hardfile, partition DH0 (DOS\3, the FFS of the ROM) | 6291456 | `7018cfc8f4391fb7f20aa9161121c6a04a701aaa9d29f70248215e2fc3137f02` |
 
 What the script changes in Amiga Forever's hardfiles (both are RDB
 hardfiles with one partition `DH0`; `S:User-Startup` as in "Conditions
@@ -153,6 +159,11 @@ for the hardfiles"):
   with PRHD and three FONT chunks (Workbench, system, screen; `struct
   FontPrefs` of `prefs/font.h`), topaz 8 each, 518 bytes. IPrefs takes
   it at boot without a requester and the fonts stay as without it.
+* `workbench-211.hdf`: stays an RDB hardfile (its RDB has no file system:
+  Kickstart 2.04's FFS in the ROM mounts the `DOS\3` partition) and gets
+  a new `S/User-Startup` (the text of the 3.1 one), which its
+  `S/Startup-Sequence` already executes (before `S:AFShared-Startup` and
+  `LoadWB`).
 * `workbench-311-rtg.hdf`: as `workbench-311.hdf`, plus
   `Storage/Monitors/UAE` and `UAE.info` (Picasso96 with
   `BOARDTYPE=uaegfx`) copied to `Devs/Monitors`, so the Startup-Sequence
@@ -163,7 +174,8 @@ for the hardfiles"):
 Checked 2026-11-06 (Amiberry, `AMIGA_EMULATION_DIR` on a separate
 directory): all three Kickstarts boot their hardfile and run
 `TEST:run.script` (`Version`: 34.5/34.34, 40.68/40.42 on the a1200 and
-with RTG, 40.63/40.42 on the a600).
+with RTG, 40.63/40.42 on the a600). Checked 2026-11-20: Kickstart 2.04
+boots `workbench-211.hdf` on the a500-204 (`Version`: 37.175/38.36).
 
 ## How many emulators at once (slots)
 
@@ -274,9 +286,46 @@ setup from Amiga Forever (above) makes them.
   ENDIF
   ```
   The startup also runs Amiga Forever's `S:AFShared-Startup` (harmless
-  without the Amiga Forever host). Checked 2026-10-30: boot to the end of
-  a short script in about 14 s; `TEST:` (uae filesystem, directory mount)
-  works under Kickstart 1.3, also writing, `MakeDir`, `Copy`.
+  without the Amiga Forever host). Checked 2026-10-30: `TEST:` (uae
+  filesystem, directory mount) works under Kickstart 1.3, also writing,
+  `MakeDir`, `Copy`. Measured 2026-11-20: a cold boot to the end of a
+  short script takes about 3.6 s (the machine runs unthrottled without a
+  window), a restore from the snapshot about 0.8 s.
+
+## A500+ machine (Kickstart 2.04)
+
+The machine `a500-204` (`--machine a500-204`, pass file
+`machine=a500-204`, bug-orig header `; @machine a500-204`) is for the
+Kickstart 2.x paths of the libraries (V36 to V38, e.g. a path for
+Kickstart 1.x and 2.x beside one for V39). It is the `a500` template
+(68000, 1 MB chip, 1 MB slow memory, the RTC) as an A500+: full ECS
+(`chipset=ecs`, `chipset_compatible=A500+`), `amiga-os-204.rom`
+(Kickstart 2.04, 37.175: exec 37.132, graphics 37.35, intuition 37.318,
+the oldest V37 ROM) and `workbench-211.hdf` (Workbench 2.1, 38.36),
+read-only, both made by the setup from Amiga Forever (above; run it again
+if they are missing). The changes are the machine's row in
+`tools/lib/amiga_emulation/amiga_emulation.c` (`a500_204`), no template
+of its own.
+
+* **Startup:** `S:User-Startup` as for Workbench 3.1 (AmigaDOS 2.0
+  syntax); the runners take the 2.0 path (Kickstart 37: `$RC`, `>>`, no
+  `rcput`).
+* **What runs there** (checked 2026-11-20): the port's blitz2 with tedstub
+  and reqtrap, the reference blitz2 1.95 and the CD's 2.10, inject,
+  wbrun, the gate of corpus_req (reqclosetest, `asl.library` is on the
+  hardfile), the snapshot mode (the clock by `DATE` as on the a500).
+  `libs_tests` (libnix20) starts on Kickstart 2.04 but needs more memory
+  than the machine's 2 MB (about 8.5 MB, 7.5 MB in one block; 8 MB of
+  Zorro II fast memory are not enough). Not on Workbench 2.1: what needs 3.0 or newer
+  (`RequestChoice`, `RequestFile`, datatypes, `lowlevel.library`,
+  `nonvolatile.library`). No Kickstart 2.0 (V36) ROM is on Amiga
+  Forever's disc, so a path that differs between V36 and V37 cannot be
+  tested.
+* **Times** (measured 2026-11-20): a cold boot to the end of a short script
+  about 1.2 s, a restore from the snapshot about 0.8 s.
+
+Without the ROM or the hardfile the a500-204 part of
+`amiga_emulation_a500` is skipped.
 
 ## A600 machine (68000, Kickstart 3.1)
 

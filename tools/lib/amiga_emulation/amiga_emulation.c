@@ -53,6 +53,17 @@ static const struct amiga_emulation_option a500_68010[] = {
     { "cpu_model", "68010" },
 };
 
+/* an A500+ with Kickstart 2.04 (37.175) and Workbench 2.1 (the RDB
+   hardfile of the setup, DOS\3 from the ROM's FFS): the a500's 68000 and
+   memory, the full ECS chipset of the A500+ */
+static const struct amiga_emulation_option a500_204[] = {
+    { "kickstart_rom_file", "@EMULATION_DIR@/amiga-os-204.rom" },
+    { "chipset", "ecs" },
+    { "chipset_compatible", "A500+" },
+    { "hardfile2", "ro,DH0:@EMULATION_DIR@/workbench-211.hdf,0,0,0,512,0,,uae0" },
+    { "uaehf0", "hdf,ro,DH0:@EMULATION_DIR@/workbench-211.hdf,0,0,0,512,0,,uae0" },
+};
+
 /* the machines (amiga_emulation.h); the first is the default */
 static const struct machine {
     const char *name;
@@ -64,6 +75,7 @@ static const struct machine {
     { "a1200", default_uae, NULL, 0, 40 },
     { "a500", a500_uae, NULL, 0, 34 },
     { "a500-68010", a500_uae, a500_68010, sizeof a500_68010 / sizeof a500_68010[0], 34 },
+    { "a500-204", a500_uae, a500_204, sizeof a500_204 / sizeof a500_204[0], 37 },
     { "a600", a600_uae, NULL, 0, 40 },
 };
 
@@ -187,7 +199,7 @@ struct amiga_emulation {
     int hung;                   /* the session ended by the hang check */
     const char *amiberry;
     int visible, log_on;
-    int date_from_host;         /* the clock by DATE (Kickstart 1.3) */
+    int date_from_host;         /* the clock by DATE (the a500 template) */
     pid_t parent;
     double t0;                  /* the start, for snapshot.log */
     /* amiga_emulation_stats */
@@ -529,7 +541,7 @@ static char *config_text(const struct amiga_emulation_params *p, const char *emu
         if (!has_key(p->changes, p->nchanges, m->changes[i].key, strlen(m->changes[i].key))) {
             sb_str(&b, m->changes[i].key);
             sb_str(&b, "=");
-            sb_str(&b, m->changes[i].value);
+            sb_subst(&b, m->changes[i].value, strlen(m->changes[i].value), emulation_dir);
             sb_str(&b, "\n");
         }
     /* changed values */
@@ -1649,8 +1661,9 @@ static int snap_write_job(struct amiga_emulation *e)
     int r;
 
     if (e->date_from_host) {
-        /* Kickstart 1.3: SetClock LOAD takes about 1.8 s there, Date is
-           at once (dd-Mon-yy in English, as 1.3 reads it) */
+        /* the a500 template: SetClock LOAD takes about 1.8 s under
+           Kickstart 1.3, Date is at once (dd-Mon-yy in English, as 1.3
+           reads it; 2.04's Date reads the same, a500-204) */
         static const char mon[][4] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
         time_t t = time(NULL);

@@ -142,7 +142,9 @@
  *                     amiga_emulation_rtg), e.g. for a screen taller than
  *                     the native modes; applied before the uae= changes
  *   machine=NAME      the emulated machine (amiga_emulation.h: a1200, the
- *                     default; a500 = 68000 with Kickstart 1.3; a500-68010);
+ *                     default; a500 = 68000 with Kickstart 1.3; a500-68010;
+ *                     a500-204 = 68000 with Kickstart 2.04; a600 = 68000
+ *                     with Kickstart 3.1);
  *                     uae= changes its template.  On Kickstart 1.x the
  *                     session script is in AmigaDOS 1.3 syntax (rcput
  *                     instead of $RC and >>), there is no gate=, and the

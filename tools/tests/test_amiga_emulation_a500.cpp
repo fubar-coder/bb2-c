@@ -1,11 +1,13 @@
 /*
- * test_amiga_emulation_a500 - the 68000 machines a500, a500-68010 and
- * a600 with the emulator, one after the other: the Kickstart (1.3, 3.1 on
- * the a600) boots from the hardfile, its startup runs TEST:run.script
- * (AmigaDOS 1.3: the redirection right behind the command name), the run
- * ends with run.done; Amiberry's log names the CPU.  Exit 77 (skipped)
- * without Amiberry or the A500 data; the a600 is skipped alone without
- * its ROM (AMIGA-EMULATION-SETUP.md, "A500 machine", "A600 machine").
+ * test_amiga_emulation_a500 - the 68000 machines a500, a500-68010,
+ * a500-204 and a600 with the emulator, one after the other: the Kickstart
+ * (1.3, 2.04 on the a500-204, 3.1 on the a600) boots from the hardfile,
+ * its startup runs TEST:run.script (AmigaDOS 1.3: the redirection right
+ * behind the command name), the run ends with run.done; Amiberry's log
+ * names the CPU.  Exit 77 (skipped) without Amiberry or the A500 data; the
+ * a500-204 and the a600 are skipped alone without their ROM or hardfile
+ * (AMIGA-EMULATION-SETUP.md, "A500 machine", "A500+ machine", "A600
+ * machine").
  */
 #include <cstdio>
 #include <cstdlib>
@@ -61,7 +63,7 @@ static int run(const char *machine, const char *kickstart, const char *cpu)
     return ok;
 }
 
-TEST_CASE("amiga_emulation_a500: the A500 and A600 machines boot", "[amiga_emulation_a500]")
+TEST_CASE("amiga_emulation_a500: the A500, A500+ and A600 machines boot", "[amiga_emulation_a500]")
 {
     int r = run("a500", "Kickstart version 34.5", "CPU=68000,");
 
@@ -69,6 +71,11 @@ TEST_CASE("amiga_emulation_a500: the A500 and A600 machines boot", "[amiga_emula
         std::exit(77);          // skipped (the exit status of ctest SKIP_RETURN_CODE)
     CHECK(r == 1);
     CHECK(run("a500-68010", "Kickstart version 34.5", "CPU=68010,") == 1);
+    r = run("a500-204", "Kickstart 37.175, Workbench 38.36", "CPU=68000,");
+    if (r < 0)
+        fprintf(stderr, "test_amiga_emulation_a500: a500-204 skipped (no ROM or hardfile)\n");
+    else
+        CHECK(r == 1);
     r = run("a600", "Kickstart 40.63", "CPU=68000,");
     if (r < 0)
         fprintf(stderr, "test_amiga_emulation_a500: a600 skipped (no ROM)\n");

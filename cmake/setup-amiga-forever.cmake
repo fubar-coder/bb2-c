@@ -23,7 +23,7 @@
 #
 # Results (the configurations of the machines use them: a500.uae the 1.3
 # ones, default.uae and a600.uae the 3.1 ones, the RTG variant
-# workbench-311-rtg.hdf):
+# workbench-311-rtg.hdf, the machine a500-204 the 2.04 ones):
 #   amiga-os-130.rom        Kickstart 1.3 (34.5), encrypted
 #   rom.key                 Amiga Forever's key of the encrypted ROMs
 #   workbench-135.hdf       Workbench 1.3.5: RDB hardfile (FFS in the RDB),
@@ -37,6 +37,9 @@
 #                           added
 #   workbench-311-rtg.hdf   the same with the uaegfx monitor
 #                           (Storage/Monitors/UAE) in Devs/Monitors
+#   amiga-os-204.rom        Kickstart 2.04 (37.175) A500+, encrypted
+#   workbench-211.hdf       Workbench 2.1: RDB hardfile (DOS\3, the file
+#                           system from the ROM), S/User-Startup added
 cmake_minimum_required(VERSION 4.3)
 
 get_filename_component(root ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
@@ -73,7 +76,9 @@ set(inputs
 	"rom/amiga-os-130.rom|262155|caa4910942b8d558c9ae2284405af81db3752535192cc25f7939765c3ea2d5e0"
 	"rom/rom.key|1426|f3b3b35593fef9a677225f559f8155e2b5d97b5bbfb2ccf24ee93738124d9a71"
 	"hdf/workbench-311.hdf|6291456|cf612f71644e204ba0df6de0c64ee3bbbfafad267f2ff92cb3f22364111b02f0"
-	"hdf/workbench-135.hdf|3145728|a0297f7ddc1f7abd01400ff24b81c5c19d1a1b414f9d0bf490d8ad7d0730eb9e")
+	"hdf/workbench-135.hdf|3145728|a0297f7ddc1f7abd01400ff24b81c5c19d1a1b414f9d0bf490d8ad7d0730eb9e"
+	"rom/amiga-os-204.rom|524299|e1eb7c0a322358bc454166bcef8ea04808791596fa6280df70e531dab2a5b3f1"
+	"hdf/workbench-211.hdf|6291456|4071f2c6fbbb1d84fd5e4ee7dd2b3e8034036bd329984541c45955b58aee1556")
 foreach(i IN LISTS inputs)
 	string(REPLACE "|" ";" i "${i}")
 	list(GET i 0 path)
@@ -99,10 +104,12 @@ set(results
 	"rom.key|f3b3b35593fef9a677225f559f8155e2b5d97b5bbfb2ccf24ee93738124d9a71"
 	"workbench-311.hdf|b3963c5dafb75027ffd6a5f5a1a6572246337bfb7d0f1b31cfdb50b3ae843c01"
 	"workbench-311-rtg.hdf|f092de1ec92bff7854701c32bc5ad9f54f16de9264ef09dffba010816a77fba4"
-	"workbench-135.hdf|a7b4fd7e1509a6086baf04f14c44894af41107c3ee9093e585261154665d5c28")
+	"workbench-135.hdf|a7b4fd7e1509a6086baf04f14c44894af41107c3ee9093e585261154665d5c28"
+	"amiga-os-204.rom|e1eb7c0a322358bc454166bcef8ea04808791596fa6280df70e531dab2a5b3f1"
+	"workbench-211.hdf|7018cfc8f4391fb7f20aa9161121c6a04a701aaa9d29f70248215e2fc3137f02")
 
 # S:User-Startup: TEST:run.script if TEST: is mounted (without asking for
-# the volume), AmigaDOS 2.0+ and 1.3 syntax
+# the volume), AmigaDOS 2.0+ (Workbench 2.1 and 3.1) and 1.3 syntax
 set(user_startup_31 [=[
 Assign >NIL: TEST: EXISTS
 If NOT WARN
@@ -208,3 +215,6 @@ make_result(workbench-311-rtg.hdf edit "${shared}/hdf/workbench-311.hdf" @OUT@ -
 make_result(workbench-135.hdf edit "${shared}/hdf/workbench-135.hdf" @OUT@
 	--replace S/Startup-Sequence "${ss13_old}" "${ss13_new}"
 	--write S/User-Startup "${user_startup_13}")
+make_result(amiga-os-204.rom COPY "${shared}/rom/amiga-os-204.rom")
+make_result(workbench-211.hdf edit "${shared}/hdf/workbench-211.hdf" @OUT@
+	--write S/User-Startup "${user_startup_31}")

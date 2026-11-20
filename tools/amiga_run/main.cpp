@@ -6,7 +6,8 @@
  *             [--mount-ro VOL=DIR]... [--dir WORKDIR] [--cold] SCRIPT|-
  *
  * --machine: a1200 (the default), a500 (68000, Kickstart 1.3),
- * a500-68010 or a600 (68000, Kickstart 3.1) (amiga_emulation.h).
+ * a500-68010, a500-204 (68000, Kickstart 2.04) or a600 (68000, Kickstart
+ * 3.1) (amiga_emulation.h).
  * The script runs with TEST: = WORKDIR/test.  Without --dir the work
  * directory is temporary: the files the script wrote to TEST: are printed
  * and the directory is removed; with --dir everything stays.  Exit status
@@ -167,7 +168,8 @@ int main(int argc, char **argv)
     int status = 0;
 
     app.add_option("--machine", machine,
-                   "a1200 (default), a500 (68000, Kickstart 1.3), a500-68010, a600 (68000, Kickstart 3.1)")
+                   "a1200 (default), a500 (68000, Kickstart 1.3), a500-68010, a500-204 (68000, Kickstart 2.04), "
+                   "a600 (68000, Kickstart 3.1)")
         ->type_name("NAME")
         ->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
     app.add_flag("--rtg", "the RTG board and its options (amiga_emulation_rtg)");

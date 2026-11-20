@@ -16,7 +16,8 @@
  *
  * The configuration is the machine's template (embedded: default.uae for
  * the A1200, a500.uae for the A500 with Kickstart 1.3; a machine may change
- * keys of its template, e.g. a500-68010) with the changes of the test: a
+ * keys of its template, e.g. a500-68010, a500-204) with the changes of the
+ * test: a
  * change replaces every line of its key (value NULL removes them).
  * @EMULATION_DIR@ stands for the directory with the Kickstart ROM and the
  * hardfiles.  TEST: and the extra mounts are appended.
@@ -145,6 +146,9 @@ struct amiga_emulation_params {
     const char *machine;        /* NULL or "a1200": default.uae; "a500":
                                    a500.uae (68000, Kickstart 1.3);
                                    "a500-68010": a500.uae with a 68010;
+                                   "a500-204": a500.uae as an A500+
+                                   (68000, ECS, Kickstart 2.04 and
+                                   Workbench 2.1);
                                    "a600": a600.uae (68000, Kickstart 3.1) */
     const struct amiga_emulation_option *changes;   /* to the machine's template */
     size_t nchanges;
@@ -185,9 +189,9 @@ struct amiga_emulation_params {
 /*
  * Snapshot mode (the default; off with `cold` or AMIGA_EMULATION_SNAPSHOT=0):
  * a session with a slot starts Amiberry from a savestate of the booted
- * system instead of booting it (about 0.5 s instead of 14 s).  Amiberry
- * keeps the host paths of the directory mounts in the savestate and uses
- * those on a restore, not the configuration's; the session therefore
+ * system instead of booting it (the times: README.md, "Snapshot mode").
+ * Amiberry keeps the host paths of the directory mounts in the savestate
+ * and uses those on a restore, not the configuration's; the session therefore
  * mounts fixed paths of its slot, which are links to the real
  * directories: slot-K/test to TEST:, slot-K/mnt-I to mount I.  An extra
  * volume SNAP: (slot-K/ctl) holds the waiter and the job; a mount of the

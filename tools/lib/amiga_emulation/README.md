@@ -15,7 +15,8 @@ window, isolated (own working directory, own XDG directories, read-only
 hardfile), hence also in parallel: `amiga_emulation_start()`
 (configuration = the machine's template plus changes, script, time
 limit; machines: `a1200` = `default.uae`, `a500` = `a500.uae` with
-Kickstart 1.3, `a500-68010`),
+Kickstart 1.3, `a500-68010`, `a500-204` = `a500.uae` as an A500+ with
+Kickstart 2.04, `a600` = `a600.uae`),
 `amiga_emulation_command()` (control socket of Amiberry, e.g.
 `SCREENSHOT`, `READ_MEM`), `amiga_emulation_join()`. The script sees its
 directory as `TEST:`. By hand with `amiga_run`
@@ -107,9 +108,13 @@ one after the other.
 ## Snapshot mode
 
 A session with a slot does not boot: it starts Amiberry from a savestate
-of the booted system, taken when the system waits for its job (about
-1.2 s to the script instead of 14 s; `tools/lib/amiga_emulation`,
-`amiga_emulation.h`). `AMIGA_EMULATION_SNAPSHOT=0` in the environment
+of the booted system, taken when the system waits for its job
+(`tools/lib/amiga_emulation`, `amiga_emulation.h`). Measured 2026-11-20
+(a short script, the host under load): a cold boot to the end of the
+script takes about 3.6 s on the a500, 1.2 s on the a500-204 and 1.4 to
+2.5 s on the a1200, a restore from the snapshot 0.8 s on the a500 and the
+a500-204 and 1.0 to 1.5 s on the a1200; without a window Amiberry runs
+the machine as fast as it can. `AMIGA_EMULATION_SNAPSHOT=0` in the environment
 (or `amiga_run --cold`) turns it off: every session boots as before
 (so does `AMIGA_EMULATION_MAX=0`: without a limit there are no slots).
 

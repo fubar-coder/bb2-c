@@ -7,7 +7,8 @@
 ; loops, and every restored session continues in this loop.
 ;
 ; 68000 code and dos.library calls of V0 only (OpenLibrary version 0):
-; it runs under Kickstart 1.3 (machines a500, a500-68010) and 3.2.
+; it runs under Kickstart 1.3 (machines a500, a500-68010), 2.04 (a500-204)
+; and 3.1.
 ; Assembled in the build by vasm (-Fhunkexe), embedded into the library
 ; with #embed (tools/lib/amiga_emulation/CMakeLists.txt).
 

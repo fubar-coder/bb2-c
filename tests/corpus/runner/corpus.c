@@ -398,7 +398,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         if (!strcmp(key, "machine")) {
             if (!*val || !amiga_emulation_machine_known(val)) {
                 free(val);
-                return fail(p, err, errlen, "line %u: machine=NAME (a1200, a500, a500-68010)", no);
+                return fail(p, err, errlen, "line %u: machine=NAME (a1200, a500, a500-68010, a500-204, a600)", no);
             }
             free(p->machine);
             p->machine = val;

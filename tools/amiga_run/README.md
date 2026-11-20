@@ -21,8 +21,8 @@ POSITIONALS:
 
 OPTIONS:
   -h,     --help              Print this help message and exit
-          --machine NAME      a1200 (default), a500 (68000, Kickstart 1.3), a500-68010, a600
-                              (68000, Kickstart 3.1)
+          --machine NAME      a1200 (default), a500 (68000, Kickstart 1.3), a500-68010,
+                              a500-204 (68000, Kickstart 2.04), a600 (68000, Kickstart 3.1)
           --rtg               the RTG board and its options (amiga_emulation_rtg)
           --visible           show Amiberry's window
           --log               Amiberry's own log into WORKDIR/amiberry.log (with --dir)
@@ -48,7 +48,8 @@ missing: skipped).
 Runs the script `SCRIPT` (a file, or `-` for stdin):
 
 * `--machine NAME`: `a1200` (the default), `a500` (68000, Kickstart 1.3),
-  `a500-68010`, `a600` (68000, Kickstart 3.1);
+  `a500-68010`, `a500-204` (68000, Kickstart 2.04), `a600` (68000,
+  Kickstart 3.1);
 * `--rtg`: the Workbench hardfile with an RTG card;
 * `--visible`: the Amiberry window (debugging);
 * `--log`: Amiberry's own log into `WORKDIR/amiberry.log` (with `--dir`);
