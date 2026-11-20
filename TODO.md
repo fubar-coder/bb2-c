@@ -859,8 +859,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     buffer is gone (fixed), the test comes out FIXED;
   - [ ] `ripacklib-unpackiff-zero-planes` (#777): original timeout, port
     halts (256 plane pointers over other data);
-  - [ ] `rilesdebuglib-addprocessptr-no-limit` (#700): original done, port
-    halts;
+  - [x] `rilesdebuglib-addprocessptr-no-limit` (#700) done (2026-11-20):
+    the table holds 20 entries (fixed), the test comes out FIXED;
   - [ ] `rimisclib-ezrequest-args-unbounded` (#748, #756): original
     timeout, port halts;
   - [ ] `blitzcoplib-maxslice-zero` (#406, clib),
