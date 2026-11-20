@@ -49,9 +49,6 @@
  *   - FPrint and FPrintDetoke: the column check is a byte compare with
  *     80 tested on N (columns 80-207 stop, 208-255 print); nothing checks
  *     the bitmap's size (#707).
- *   - FPrintDetoke: with inverse printing and tokens drawn into two
- *     planes, the second plane gets the character of the last glyph byte
- *     (the inverse drawing overwrites d0's low byte) (#709).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
@@ -124,6 +121,10 @@
  *     space marker leaves it as it was; the original tested the word's
  *     high byte (FInverse 1 inverted FPrint only), and the marker set and
  *     cleared that byte, which turned FInverse $100 off (#706).
+ *   - FPrintDetoke draws a token's character into plane 1 with its own
+ *     glyph; with inverse printing the original took the glyph offset
+ *     from d0, whose low byte the inverse drawing had overwritten with
+ *     the last glyph byte: another character (#709).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1006,27 +1007,23 @@ struct dt {
 };
 
 /* the glyph at d0 (character * 8), inverted if the FInverse word is set
-   (fixed #706: the original tested its high byte); returns d0 - its low
-   byte the last glyph byte drawn inverted */
-static UWORD draw_char(struct dt *t, UWORD glyph)
+   (fixed #706: the original tested its high byte); d0 stays (fixed
+   #709: the original's inverse drawing left the last glyph byte in its
+   low byte) */
+static void draw_char(struct dt *t, UWORD glyph)
 {
     const UBYTE *g = font_dat + (WORD)glyph;
     int i;
 
     if (inverse)                                        /* fixed (#706) */
-        for (i = 0; i < 8; i++) {
-            UBYTE b = (UBYTE)~g[i];
-
-            t->plane0[i * 80] = b;
-            glyph = (glyph & 0xff00) | b;
-        }
+        for (i = 0; i < 8; i++)
+            t->plane0[i * 80] = (UBYTE)~g[i];
     else
         for (i = 0; i < 8; i++)
             t->plane0[i * 80] = g[i];
     t->plane0++;
     t->plane1++;
     t->col++;
-    return glyph;
 }
 
 /**
@@ -1041,11 +1038,12 @@ static UWORD draw_char(struct dt *t, UWORD glyph)
  * printing tests the FInverse word, and the marker leaves it as it was
  * (fixed #706: the original tested its high byte, so FInverse 1 did not
  * invert here, and the marker set and cleared that byte); with it set and
- * tokens drawn into two planes, the second plane gets the character of
- * the last glyph byte (BUG(orig) (#709)).  The '>' marker is never
- * followed by the inverse space (fixed #708: the original's BSR
- * draw_char : SBNE 'con drew it too when the column count, d6 with the
- * caller's high word, became 0).  The column check is FPrint's (#707).
+ * tokens drawn into two planes, plane 1 gets the same inverted glyphs
+ * (fixed #709: the original gave it the glyph of the character of the
+ * last glyph byte).  The '>' marker is never followed by the inverse
+ * space (fixed #708: the original's BSR draw_char : SBNE 'con drew it too
+ * when the column count, d6 with the caller's high word, became 0).  The
+ * column check is FPrint's (#707).
  * @param line       d0: the tokenised line (0-terminated)
  * @param cio        d1.w: the character before which the marker goes
  * @param typ        d2.b: the marker, 0 '>', else an inverse space
@@ -1061,7 +1059,6 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
     struct dt t;
     UWORD tocursor = cio, skip = lineoff;
     UWORD code;                                         /* d0: the token number */
-    UWORD glyph;                                        /* d0: draw_char's glyph */
     ULONG off = cursor_offset();
     const UBYTE *p = line, *name;
     UBYTE c;
@@ -1119,12 +1116,12 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
                 break;
             if ((WORD)--skip >= 0)
                 continue;
-            glyph = draw_char(&t, (UWORD)c << 3);
+            draw_char(&t, (UWORD)c << 3);
             if (!plz_tokenise)
                 continue;
             t.plane1--;                                 /* plane 1, same place */
             other = t.plane0, t.plane0 = t.plane1, t.plane1 = other;
-            draw_char(&t, glyph);
+            draw_char(&t, (UWORD)c << 3);              /* fixed (#709) */
             t.plane1--;
             other = t.plane0, t.plane0 = t.plane1, t.plane1 = other;
             BL_SETW(t.col, t.col - 1);

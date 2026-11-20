@@ -23,7 +23,7 @@
  * both planes; FPrintDetoke with marker types 0/1, several cio and
  * lineoffset values, tokens drawn into one or two planes, an unknown
  * token, no token list, no plane 1, the inverse word's high byte set
- * (BUG(orig) (#709): the second plane's glyph), the right edge inside a token,
+ * (#709: the second plane's glyph), the right edge inside a token,
  * the column $FFFF with the caller's d6 high word $FFFF (#708);
  * GetProgMode; SearchMem with every type (also invalid ones), found at
  * the start, inside, across the end (word/long), start = end, the string
@@ -514,8 +514,8 @@ static void fprintdetoke(void)
     flocate(79, 2);
     detoke(l1, 2, 0, 0);
     /* the inverse word: 1 (the original tests the high byte only, #706),
-       $100 (all
-       inverted; the second plane gets another glyph, BUG(orig) (#709)) */
+       $100 (all inverted; in the original the second plane gets another
+       glyph, #709) */
     fword(E_FINVERSE, "FInverse", 1);
     flocate(0, 3);
     detoke(l1, 3, 0, 0);

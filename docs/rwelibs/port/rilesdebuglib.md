@@ -262,6 +262,15 @@ d5-d7, a0-a3 and a6 in places.
   `rilesdebuglib-finverse-detoke`; the `libs_emulator` cases
   `[fixed #706]` of FInverse 1 with FPrintDetoke and of the printing
   behind a marker).
+* With inverse printing and SetupLESDebug's tokenise, `FPrintDetoke`
+  draws a token's character into plane 1 with its own glyph, as into
+  plane 0. The original took the glyph offset for plane 1 from d0, whose
+  low byte the inverse drawing had overwritten with the last glyph byte:
+  plane 1 got another character (#709; test
+  `rilesdebuglib-detoke-plane1-glyph`; the `libs_emulator` case
+  `[fixed #709]` of the second run's plane 1 - the planes of the first
+  run carry it in their `[fixed #706]` cases, whose planes #706 changed
+  first).
 
 ## BUG(orig)
 
@@ -271,9 +280,6 @@ d5-d7, a0-a3 and a6 in places.
   columns 80-207 stop, 208-255 print (and go on to 0-79); nothing checks
   the bitmap's size; in FPrintDetoke the marker takes a column without
   this test (#707).
-* FPrintDetoke: with inverse printing and tokens drawn into both planes, plane 1 gets the glyph of another character
-  (the inverse drawing leaves the last glyph byte in d0's low byte)
-  (#709).
 * D_FindStringPtr never compares the long at areg5 itself (#705).
 * SearchMem: the space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.
