@@ -36,9 +36,9 @@ it), the sprite table, the library name and base are one packed struct
 in the original's order, since the routines index the table without
 bounds. Two graphics calls are inline assembler: `MoveSprite` and
 `FreeSpriteData` (FreeWBSprite, a statement, returns the d0
-`FreeSpriteData` leaves). `ChangeExtSpriteA` takes its tag list in a3, a fixed register of
-the C code: the libraries' safe form of the NDK macro keeps it
-(`cmake/ndk-calls.cmake`). The shape copy has a compiler
+`FreeSpriteData` leaves). `ChangeExtSpriteA` takes its tag list in
+a3, a fixed register of the C code: the libraries' safe form of the NDK
+macro keeps it (`cmake/ndk-calls.cmake`). The shape copy has a compiler
 barrier so that GCC does not compute the end pointer with `__mulsi3`.
 
 ## Fixed
@@ -60,6 +60,10 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   (#921, W7 decision Q8, test `rwe/riwbspritelib-movewbsprite-result`);
   the original, declared with a byte result, returned the d0
   `MoveSprite` leaves (a void function).
+* ChangeWBSprite frees the new sprite data when `ChangeExtSpriteA`
+  fails (#915; `libs_emulator` cases `[fixed #915]`, the step "ChangeWBSprite
+  (change fails)" with graphics.library's function replaced); the
+  original lost them, chip memory of graphics.library until reboot.
 
 ## BUG(orig), kept
 
@@ -72,8 +76,6 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
 * The shape is copied width/16 words per row into the bitmap, without
   its `BytesPerRow` or the shape's `ebwidth` (#918), with `DBRA` counts
   (height or depth 0: 65536 rows/planes) (#917).
-* ChangeWBSprite does not free the new sprite data if
-  `ChangeExtSpriteA` fails (#915).
 * finit does not clear the library base: a second finit closes
   graphics.library again (#919).
 
@@ -95,9 +97,11 @@ on any (-1), on its own channel again (-1; the original's channel, fixed #920), 
 the pointer's channel 0, 32 wide (refused on this screen), narrow, no
 data,
 20 wide; WBSpriteX/Y; MoveWBSprite on two sprites and without one;
-ChangeWBSprite (2 and 1 planes, no sprite, narrow, no data);
+ChangeWBSprite (2 and 1 planes, no sprite, narrow, no data,
+`ChangeExtSpriteA` failing: graphics.library's function replaced for
+that call, `FreeSpriteData` counted);
 FreeWBSprite with and without a sprite; finit with sprites left.
 Checked to fail when the row count of the copy, the position of a
 changed sprite or the channel of GetWBSprite(-1) is changed. Not
 covered: channels outside 0–7, a second finit, failing `AllocBitMap`,
-`AllocSpriteDataA` or `ChangeExtSpriteA`, height or depth 0.
+`AllocSpriteDataA`, height or depth 0.

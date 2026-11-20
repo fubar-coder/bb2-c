@@ -39,6 +39,9 @@
  *   - MoveWBSprite returns -1 when it moved the sprite, 0 without one;
  *     the original returned the d0 MoveSprite leaves (declared as a byte
  *     result) (#921).
+ *   - ChangeWBSprite frees the new sprite data when ChangeExtSpriteA
+ *     fails; the original lost them (chip memory of graphics.library,
+ *     until reboot) (#915).
  *
  * BUG(orig):
  *   - No routine checks the channel: GetWBSprite stores at
@@ -51,8 +54,6 @@
  *   - The shape is copied without the bitmap's BytesPerRow, width/16
  *     words per row (the shape's ebwidth is not used either) (#918), and
  *     with DBRA counts: height or depth 0 copy 65536 rows/planes (#917).
- *   - ChangeWBSprite: if ChangeExtSpriteA fails, the new sprite data is
- *     not freed (#915).
  *   - finit does not clear the library base: a second finit closes
  *     graphics.library again (#919).
  */
@@ -409,8 +410,8 @@ static ULONG BLITZ_ROUTINE movewbsprite_c(ULONG vp BL_REG(d0), ULONG x BL_REG(d1
  * Amiga mode only.  The shape is converted as in GetWBSprite, at the
  * sprite's position; on success the old sprite data are freed and the
  * new ones replace them in the table.  BUG(orig): the channel is not
- * checked (#916); if ChangeExtSpriteA fails, the new sprite data are not
- * freed (#915).
+ * checked (#916).  Fixed (#915): if ChangeExtSpriteA fails, the new
+ * sprite data are freed (the original lost them).
  * @param vp     d0: the ViewPort
  * @param ch     d1: the channel
  * @param shape  a0: the shape (!libs #shapeslib,#ia0|#pd2)
@@ -444,6 +445,8 @@ static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_R
             FreeSpriteData((struct ExtSprite *)*(ULONG *)wd.oldpointer);
             *(ULONG *)wd.oldpointer = wd.temppointer;
             r = -1;
+        } else {
+            FreeSpriteData((struct ExtSprite *)wd.temppointer);
         }
     }
     FreeBitMap((struct BitMap *)wd.mybitmap);

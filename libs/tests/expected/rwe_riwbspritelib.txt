@@ -285,7 +285,8 @@ ChangeWBSprite (1 plane)|sprite 7 field 3|vp,5,2,0|1	$00000000
 ChangeWBSprite (1 plane)|sprite 7 field 4|vp,5,2,0|1	$00000000
 ChangeWBSprite (1 plane)|sprite 7 field 5|vp,5,2,0|1	$00000000
 ChangeWBSprite (1 plane)|sprite 7 image|vp,5,2,0|1	bytes 256 fnv E6A1D1C5
-ChangeWBSprite (change fails)|FreeSpriteData calls|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|FreeSpriteData calls|vp,2,0,0|1 [orig]	$00000000
+ChangeWBSprite (change fails)|FreeSpriteData calls|vp,2,0,0|1 [fixed #915]	$00000001
 ChangeWBSprite (change fails)|block +0|vp,2,0,0|1	$00000000
 ChangeWBSprite (change fails)|block +10|vp,2,0,0|1	$00000001
 ChangeWBSprite (change fails)|block +100|vp,2,0,0|1	$00000000
