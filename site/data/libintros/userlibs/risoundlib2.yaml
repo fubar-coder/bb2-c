@@ -1,13 +1,13 @@
 description: The second sound library by Reflective Images - CludgeSound for IFF 8SVX samples in memory, and sound output through AHI with its audio mode requester.
 intro: |
   This library is the successor of the first sound library
-  ([risoundlib]({{< relref "/docs/libraries/userlibs/risoundlib" >}})):
-  it has its `CludgeSound`, which makes a sound object of
+  ([risoundlib]({{< relref "/docs/libraries/userlibs/risoundlib" >}})).
+  It has the same `CludgeSound`, which makes a sound object of
   [audiolib]({{< relref "/docs/libraries/commands/audiolib" >}}) from an
-  IFF 8SVX sample in memory, and adds commands for AHI, the retargetable
-  audio system for the Amiga (ahi.device, version 4 or newer): opening the
-  device, playing sound objects and raw samples through it, and AHI's
-  requester for choosing an audio mode.
+  IFF 8SVX sample in memory. It adds commands for AHI, the retargetable
+  audio system for the Amiga (ahi.device, version 4 or newer): opening
+  the device, playing sound objects and raw samples through it, and
+  AHI's requester for choosing an audio mode.
 
   `OpenAHI` opens the device and must come before the other AHI
   commands; `CloseAHI` closes it again, and the end of the program does

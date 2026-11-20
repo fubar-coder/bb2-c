@@ -3,11 +3,12 @@ intro: |
   This library plays Protracker modules: files in the "M.K." format with
   31 samples and four voices. Its play routine is the Protracker 2.3A CIA
   routine by Peter "Crayon" Hanning of Mushroom Studios, released as
-  public domain, extended with a master volume (`TrackerVolume`), a
-  channel mask that keeps voices free for sound effects
-  (`ChangeTrackerMask`) and tracker events: the effect `8xx`, which
-  Protracker does not use, passes its value to the program, which can
-  wait for it or check for it to time graphics to the music.
+  public domain. The library extends it with a master volume
+  (`TrackerVolume`), a channel mask that keeps voices free for sound
+  effects (`ChangeTrackerMask`) and tracker events. A tracker event is
+  the effect `8xx`, which Protracker does not use: it passes its value
+  to the program, which can wait for it or check for it to time
+  graphics to the music.
 
   Modules live in the library's own numbered slots, 0 to 8; they are
   not Blitz objects. `LoadTrackerModule` loads a module file into chip
