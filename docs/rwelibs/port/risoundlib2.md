@@ -54,9 +54,9 @@ All C, one thunk per entry (keeps d1/a0/a1; the originals change d0, d1,
 a0, a1 and a6, AHIOutputRequest d2–d5 too). exec and ahi.device's
 vectors through `BLITZ_BASEJSR` where the original passes the whole d0
 on (OpenDevice, SendIO, DoIO, the AHI calls); memlib through
-`BLITZ_ALIBJSR`. The tag list of the requester is the original's (in its
-code) with the original's offsets, so AHIOutputRequest writes the same
-longs. The forms of AHIOutputRequest with fewer arguments are entries
+`BLITZ_ALIBJSR`, the division of PlaySoundAHI's frequency through two
+`DIVU.w` (`bl_divu_w`). The tag list of the requester is the original's
+(in its code) with the original's offsets. The forms of AHIOutputRequest with fewer arguments are entries
 that fill in the missing values and call the one of 6 arguments.
 
 ## Fixed
