@@ -2075,6 +2075,40 @@ the error "Map width above 32767". Without runtime error checking,
 
 Issue: [CreateMap with a width above 32767 gets too little data: MapDataGrab writes behind the map (#1152)](https://github.com/fubar-coder/bb2-c/issues/1152).
 
+### Snow field numbers of risnowlib {#snow-list-checks}
+
+The snow commands of
+[risnowlib]({{< relref "/docs/libraries/userlibs/risnowlib" >}}) work on
+one of 4 snow fields, numbered 0 to 3, which `InitSnowDrop` sets up on
+a bitmap. `KillPoint listnum,x,y` removes a pixel of the field's
+bitmap, which the library takes as 320 pixels wide.
+
+**What happened.** The original checked neither the number nor the
+pixel, also not with runtime error checking. A number from 4 on, or a
+negative one, read and wrote the memory behind or in front of the
+library's table of fields; `InitSnowDrop` wrote four pointers there.
+`LDoSnow`, `LDoSnowActivate` and `KillPoint` on a field without
+`InitSnowDrop` read its lists and its bitmap at address 0, and
+`KillPoint` outside the bitmap changed the memory around it.
+
+**With the port.** With runtime error checking, these are runtime
+errors:
+
+* a field number outside 0 to 3, for every snow command: "Snow list
+  number must be 0 to 3";
+* `LDoSnow`, `LDoSnowActivate` and `KillPoint` on a field without
+  `InitSnowDrop`: "Snow list needs InitSnowDrop";
+* `KillPoint` with an `x` outside 0 to 319 or a `y` outside the rows of
+  the bitmap: "KillPoint outside the bitmap".
+
+Without runtime error checking, the commands are as before.
+
+**What to change.** Use the fields 0 to 3, set each up with
+`InitSnowDrop` before the other commands use it, and keep `KillPoint`
+inside the bitmap.
+
+Issue: [The list number is not checked: listnum outside 0–3 indexes past the list table (#913)](https://github.com/fubar-coder/bb2-c/issues/913).
+
 ## Forms the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the

@@ -5972,6 +5972,70 @@ rows:
     text: "A program run again from the editor starts without the stencil, `ScanShapes` results and parse position of the run before; the original kept them, the stencil freed."
     page: libraries
     anchor: rimapeditorlib-fixes
+  - issue: 913
+    severity: 3
+    topic: "Graphics"
+    library: "risnowlib"
+    command: "InitSnowDrop, LDoSnow, LDoSnowActivate, KillPoint"
+    text: "With runtime error checking, a snow field number outside 0 to 3 stops with \"Snow list number must be 0 to 3\", as do a field without `InitSnowDrop` and `KillPoint` outside the bitmap; the original wrote outside its table."
+    page: libraries
+    anchor: risnowlib-fixes
+  - issue: 912
+    severity: 5
+    topic: "Graphics"
+    library: "risnowlib"
+    command: "InitSnowDrop"
+    text: "`InitSnowDrop` with 1024 points or more allocates enough memory for its lists; the original's block was far too small and the lists were written behind it."
+    page: libraries
+    anchor: risnowlib-fixes
+  - issue: 908
+    severity: 5
+    topic: "Graphics"
+    library: "risnowlib"
+    command: "LDoSnowActivate"
+    text: "`LDoSnowActivate` before the first `LDoSnow` of a field no longer writes to address 0."
+    page: libraries
+    anchor: risnowlib-fixes
+  - issue: 909
+    severity: 5
+    topic: "Graphics"
+    library: "risnowlib"
+    command: "LDoSnowActivate"
+    text: "A second `LDoSnowActivate` before the next `LDoSnow` keeps the flakes the first one released; the original overwrote them."
+    page: libraries
+    anchor: risnowlib-fixes
+  - issue: 911
+    severity: 5
+    topic: "System"
+    library: "risnowlib"
+    command: "InitSnowDrop"
+    text: "A repeated `InitSnowDrop` of the same field frees the old lists; the original lost their memory until the end of the program."
+    page: libraries
+    anchor: risnowlib-fixes
+  - issue: 910
+    severity: 5
+    topic: "Graphics"
+    library: "risnowlib"
+    command: "LDoSnow"
+    text: "`LDoSnow` takes the bit of a new flake modulo 8; in the original a bit above 7 made the flake jump through memory."
+    page: libraries
+    anchor: risnowlib-fixes
+  - issue: 914
+    severity: 5
+    topic: "Graphics"
+    library: "risnowlib"
+    command: "LDoSnow, LDoSnowActivate, KillPoint"
+    text: "The snow lists no longer overflow into each other: a full list takes no new flake, released flake or removed pixel."
+    page: libraries
+    anchor: risnowlib-fixes
+  - issue: 1135
+    severity: 5
+    topic: "System"
+    library: "risnowlib"
+    command: ""
+    text: "A program run again from the editor starts with no snow field set up; in the original, snow commands worked on the lists the run before had freed."
+    page: libraries
+    anchor: risnowlib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
