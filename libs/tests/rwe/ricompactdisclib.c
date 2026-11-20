@@ -48,7 +48,7 @@
  * from it (the original: from toc, fixed #582; BUG(orig) (#580)); the flag kept by OpenCD
  * without arguments), CloseCD (twice), finit with a device open and
  * without port, init again, init without a message port
- * (CreateMsgPort fails) and OpenCD without a request (CreateIORequest
+ * (AllocSignal fails) and OpenCD without a request (AllocMem of 200 bytes
  * fails).
  * Not covered: a real CD drive; a device name of more than 40 bytes
  * (the original overwrites toc ..., refused since #576; bug-orig test
@@ -381,6 +381,13 @@ static void rem_device(void)
     FreeMem((UBYTE *)dev - dev->dd_Library.lib_NegSize,
             dev->dd_Library.lib_NegSize + dev->dd_Library.lib_PosSize);
 }
+
+/* AllocSignal that fails: MOVEQ #-1,d0 : RTS */
+static const UWORD failsignal[] = { 0x70ff, 0x4e75 };
+/* AllocMem that fails for 200 bytes (a request) and passes every other
+   size on: CMP.l #200,d0 : BNE.s 1f : MOVEQ #0,d0 : RTS : 1: JMP old
+   (the address of old is set before the patch) */
+static UWORD failreq[] = { 0x0c80, 0x0000, 0x00c8, 0x6604, 0x7000, 0x4e75, 0x4ef9, 0, 0 };
 
 /* ------------------------------------------------------------ the checks */
 
@@ -798,27 +805,31 @@ int main(int argc, char **argv)
     CALL2(PLAY, "CDPlayTrack", 2, 1);   /* scsiflag 0 again */
     finit("played");
 
-    /* no request: CreateIORequest fails */
+    /* no request: AllocMem of the 200 bytes of the request fails (inside
+       CreateIORequest, or the library's own AllocMem) */
     ROUT = "init";
     DO1(ENT(LIB, INIT, 0), (void)0);
     Forbid();
-    old = SetFunction((struct Library *)SysBase, -654, (APTR)rwe_fail0);
+    old = SetFunction((struct Library *)SysBase, -198, (APTR)failreq);
+    failreq[7] = (UWORD)((ULONG)old >> 16);
+    failreq[8] = (UWORD)(ULONG)old;
     CacheClearU();
     opencd(rwecd, 0, 1, 0);
-    SetFunction((struct Library *)SysBase, -654, old);
+    SetFunction((struct Library *)SysBase, -198, old);
     CacheClearU();
     Permit();
     commands("no request");
     finit("no request");
 
-    /* no message port: CreateMsgPort fails in init */
+    /* no message port: AllocSignal fails in init (inside CreateMsgPort,
+       or the library's own AllocSignal) */
     Forbid();
-    old = SetFunction((struct Library *)SysBase, -666, (APTR)rwe_fail0);
+    old = SetFunction((struct Library *)SysBase, -330, (APTR)failsignal);
     CacheClearU();
     ROUT = "init";
     strcpy(VEC, "no port");
     DO1(ENT(LIB, INIT, 0), (void)0);
-    SetFunction((struct Library *)SysBase, -666, old);
+    SetFunction((struct Library *)SysBase, -330, old);
     CacheClearU();
     Permit();
     opencd(rwecd, 0, 1, 0);
