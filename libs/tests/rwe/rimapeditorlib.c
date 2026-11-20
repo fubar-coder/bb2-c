@@ -33,9 +33,10 @@
  * library, init runs, and the pointer, M_NextArg$ before M_InitParse (the
  * run before left the parse in the middle of "left,over") and the
  * ScanShapes results before ScanShapes are observed; then finit again.
- * Not covered: negative coordinates for MapCanDraw, sizes 0 of the DBRA
- * loops, M_InitParse of more than 255 characters (BUG(orig), #897), a map whose
- * data lies at $xxxx0000 (BUG(orig) #894: not freed).
+ * Not covered: negative coordinates for MapCanDraw (#892), sizes 0 of the
+ * DBRA loops (#895), M_InitParse of more than 255 characters (#897), a
+ * map whose data lies at $xxxx0000 (#894); bug-orig tests
+ * rwe/rimapeditorlib-* have them, except ShapeTo1616's sizes 0.
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

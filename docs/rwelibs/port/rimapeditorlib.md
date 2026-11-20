@@ -83,8 +83,8 @@ graphics calls get the original's register values with their upper
 words (x of `Move` as the caller's long, `SetAPen`'s pen with the
 rastport's upper word). The word results keep d0's upper word where the
 original does (`MOVE.w`, `ADDQ.w`). `M_InitParse`'s buffer and the
-pointer behind it are one struct, so that an overflow hits the pointer
-as in the original. `ShapeTo1616` hides its source pointer from GCC's
+pointer behind it are one struct, in the original's order.
+`ShapeTo1616` hides its source pointer from GCC's
 loop optimisation (no `__mulsi3`).
 
 ## Fixed
@@ -118,6 +118,11 @@ loop optimisation (no `__mulsi3`).
   its length modulo 256 (#899; test
   `rimapeditorlib-mapobjname-byte-length`, the libs test's name of 300
   characters).
+* `M_InitParse` copies at most 255 characters and a 0 into its 256-byte
+  buffer (a longer string is cut); the original copied without a limit,
+  so a string of 256 characters or more overwrote the pointer behind
+  the buffer, and from 260 characters the code of `M_NextArg$` behind it
+  (#897; test `rimapeditorlib-initparse-overflow`).
 
 ## BUG(orig), kept
 
@@ -127,8 +132,6 @@ loop optimisation (no `__mulsi3`).
   65536 times for a size of 0 (`FillBitplane` also for a width below 16)
   (#895); `ShapeTo1616` writes 16 words per
   plane regardless of the destination's size (#900).
-* `M_InitParse` copies without limit into its 256-byte buffer (a longer
-  string overwrites the pointer behind it) (#897).
 * finit closes graphics.library also if it did not open (#896).
 
 Original behaviour that is not a defect:

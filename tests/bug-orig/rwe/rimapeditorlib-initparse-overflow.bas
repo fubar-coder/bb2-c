@@ -7,6 +7,7 @@
 ; M_NextArg$ returns that text.
 ; Correct: M_InitParse copies at most 255 characters, the first argument
 ; is the start of the string.
+; @fixed #897
 ; @rwe rimapeditorlib
 DEFTYPE .l
 b=AllocMem_(131072,$10005)

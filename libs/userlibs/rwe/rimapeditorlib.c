@@ -43,8 +43,6 @@
  *     times for a size of 0 (FillBitplane also for a width below 16)
  *     (#895); ShapeTo1616 copies a word from every
  *     row regardless of the destination's size (#900).
- *   - M_InitParse copies without limit into its 256-byte buffer (the
- *     pointer behind it is overwritten by a longer string) (#897).
  *   - finit closes graphics.library also if it did not open (#896).
  * Fixed (intended deviations):
  *   - init clears the stencil of SetStencil, the ScanShapes results and
@@ -68,7 +66,11 @@
  *     values (#898);
  *   - MapObjName$ counts the length as a long; the original counted it
  *     as a byte (ADDQ.b), so a name of 256 characters or more came back
- *     with its length modulo 256 (#899).
+ *     with its length modulo 256 (#899);
+ *   - M_InitParse copies at most 255 characters and a 0 into its 256-byte
+ *     buffer; the original copied without a limit, so a longer string
+ *     overwrote the pointer behind the buffer (and its code behind it)
+ *     (#897).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -347,7 +349,8 @@ static struct Library *gfxbase;
 static const UBYTE *mapstencil;
 static UWORD maxwidth, maxheight, maxdepth;
 static const UWORD mypattern[2] = { 0xaaaa, 0x5555 };
-/* M_InitParse's buffer and, behind it as in the original, the pointer */
+/* M_InitParse's buffer and, behind it as in the original, the pointer
+   (M_InitParse copies 255 characters at most: fixed #897) */
 static struct {
     UBYTE parseadr[256];
     UBYTE *curadr;
@@ -1048,17 +1051,22 @@ BLITZ_THUNK(rimapeditorlib_SetWindowDraw, setwindowdraw_c, "d0-d1/a0-a1");
 /**
  * @brief M_InitParse string: the string for M_NextArg$.
  *
- * Copied (with its 0) into the 256 byte buffer.  BUG(orig) (#897): no
- * limit - a longer string overwrites the pointer behind the buffer.
+ * Copied into the 256 byte buffer, at most 255 characters and a 0:
+ * fixed (#897), the original copied without a limit, so a longer string
+ * overwrote the pointer behind the buffer (and from 260 characters the
+ * code of M_NextArg$ behind it).  A longer string is cut to its first
+ * 255 characters.
  * @param s  d0: the string
  */
 static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *d = parse.parseadr;
+    UBYTE *const end = parse.parseadr + sizeof parse.parseadr - 1;
 
     parse.curadr = d;
-    while ((*d++ = *s++) != 0)
-        ;
+    while (d != end && (*d = *s++) != 0)    /* fixed (#897): 255 at most */
+        d++;
+    *d = 0;
 }
 BLITZ_THUNK(_InitParse, initparse_c, "d0-d1/a0-a1");
 
