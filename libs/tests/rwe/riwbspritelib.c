@@ -32,11 +32,12 @@
  * #920), a shape without data (-1), 20 wide
  * (copied as 16); WBSpriteX/Y; MoveWBSprite on two sprites and without
  * one; ChangeWBSprite (new images with 2 and 1 planes, no sprite, narrow
- * shape, no data); FreeWBSprite with and without a sprite; finit with
+ * shape, no data, ChangeExtSpriteA failing: graphics.library's entry
+ * replaced for that call, FreeSpriteData counted); FreeWBSprite with and without a sprite; finit with
  * sprites left.  The results of the original are printed per step.  Not
  * covered: channels outside 0-7 (the table is indexed without checks), a
  * second finit (closes graphics.library again), failing AllocBitMap,
- * AllocSpriteDataA or ChangeExtSpriteA (the last leaks the new data),
+ * AllocSpriteDataA,
  * height or depth 0 (65536 rows/planes).
  */
 #include "rwecmp.h"
@@ -61,6 +62,7 @@ enum { GETWB, FREEWB, MOVEWB, CHANGEWB, SPRX, SPRY, FINIT, INIT };
 
 struct snap {
     ULONG d0;
+    ULONG freed;                        /* FreeSpriteData calls (one step) */
     LONG opened;
     UBYTE block[BLOCK];
     UWORD es[8][6];                     /* height, x, y, num, wordwidth, flags */
@@ -179,6 +181,38 @@ static void step(int idx, const char *name, ULONG d0, ULONG d1, ULONG d2, ULONG 
 
 #define SH(n) ((ULONG)shp[n])
 
+/* FreeSpriteData counted: graphics.library's entry (LVO -1032) replaced
+   by a stub that counts the call and goes on to the old function */
+ULONG wbs_nfreed;
+APTR wbs_oldfsd;
+void wbs_countfree(void);
+__asm__(".text\n"
+        "  .even\n"
+        "  .globl _wbs_countfree\n"
+        "_wbs_countfree:\n"
+        "  addq.l #1,_wbs_nfreed\n"
+        "  move.l _wbs_oldfsd,-(a7)\n"
+        "  rts\n");
+
+/* ChangeWBSprite with ChangeExtSpriteA (LVO -1026) failing (returning
+   0) and FreeSpriteData counted, both for this call only */
+static void changefails(const char *name, ULONG d1, ULONG a0)
+{
+    APTR oldchange;
+
+    Forbid();
+    oldchange = SetFunction(wbsgfx, -1026, (APTR)rwe_fail0);
+    wbs_oldfsd = SetFunction(wbsgfx, -1032, (APTR)wbs_countfree);
+    CacheClearU();
+    wbs_nfreed = 0;
+    step(CHANGEWB, name, vp, d1, 0, 0, a0, 0);
+    steps[nstep - 1].sn.freed = wbs_nfreed;
+    SetFunction(wbsgfx, -1032, wbs_oldfsd);
+    SetFunction(wbsgfx, -1026, oldchange);
+    CacheClearU();
+    Permit();
+}
+
 static void scenario(void)
 {
     ULONG any;
@@ -210,6 +244,7 @@ static void scenario(void)
     step(CHANGEWB, "ChangeWBSprite (narrow)", vp, 2, 4, 0, SH(NARROW), 0);
     step(CHANGEWB, "ChangeWBSprite (no data)", vp, 2, 5, 0, SH(NODATA), 0);
     step(CHANGEWB, "ChangeWBSprite (1 plane)", vp, 5, 2, 0, SH(SHD), 0);
+    changefails("ChangeWBSprite (change fails)", 2, SH(SHA));
     step(FREEWB, "FreeWBSprite", any, 0, 0, 0, 0, 0);
     step(FREEWB, "FreeWBSprite (none)", 6, 0, 0, 0, 0, 0);
     step(FINIT, "finit", 0, 0, 0, 0, 0, 0);
@@ -295,6 +330,7 @@ int main(int argc, char **argv)
     KEEPS("ChangeWBSprite (narrow)", d2-d7|a0|a2|a3);
     KEEPS("ChangeWBSprite (no data)", d1-d7|a0-a3|a6);
     KEEPS("ChangeWBSprite (1 plane)", none);
+    KEEPS("ChangeWBSprite (change fails)", none);
     KEEPS("FreeWBSprite", d2-d7|a3);
     KEEPS("FreeWBSprite (none)", d2-d7|a1-a3|a6);
     KEEPS("finit", d0-d6|a3|a6);
@@ -344,6 +380,8 @@ int main(int argc, char **argv)
         } else if (!st->dontcare)
             OBS("d0", st->sn.d0);
         OBS("graphics.library open count", st->sn.opened);
+        if (!strcmp(st->name, "ChangeWBSprite (change fails)"))
+            OBS("FreeSpriteData calls", st->sn.freed);
         for (i = 0; i < BLOCK; i += 2) {
             sprintf(buf, "block +%d", i);
             OBS(buf, *(UWORD *)(st->sn.block + i));

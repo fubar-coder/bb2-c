@@ -285,6 +285,150 @@ ChangeWBSprite (1 plane)|sprite 7 field 3|vp,5,2,0|1	$00000000
 ChangeWBSprite (1 plane)|sprite 7 field 4|vp,5,2,0|1	$00000000
 ChangeWBSprite (1 plane)|sprite 7 field 5|vp,5,2,0|1	$00000000
 ChangeWBSprite (1 plane)|sprite 7 image|vp,5,2,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (change fails)|FreeSpriteData calls|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +0|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +10|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|block +100|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +102|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +104|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +106|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +108|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +110|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +112|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +114|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +116|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +118|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|block +12|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +120|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +122|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|block +124|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +126|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +128|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +130|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +132|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +134|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|block +136|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +138|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +14|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|block +140|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +142|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +144|vp,2,0,0|1	$00006772
+ChangeWBSprite (change fails)|block +146|vp,2,0,0|1	$00006170
+ChangeWBSprite (change fails)|block +148|vp,2,0,0|1	$00006869
+ChangeWBSprite (change fails)|block +150|vp,2,0,0|1	$00006373
+ChangeWBSprite (change fails)|block +152|vp,2,0,0|1	$00002E6C
+ChangeWBSprite (change fails)|block +154|vp,2,0,0|1	$00006962
+ChangeWBSprite (change fails)|block +156|vp,2,0,0|1	$00007261
+ChangeWBSprite (change fails)|block +158|vp,2,0,0|1	$00007279
+ChangeWBSprite (change fails)|block +16|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +160|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +162|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +164|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|block +18|vp,2,0,0|1	$00000002
+ChangeWBSprite (change fails)|block +2|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|block +20|vp,2,0,0|1	$00000064
+ChangeWBSprite (change fails)|block +22|vp,2,0,0|1	$00000032
+ChangeWBSprite (change fails)|block +24|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +26|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|block +28|vp,2,0,0|1	$00000010
+ChangeWBSprite (change fails)|block +30|vp,2,0,0|1	$0000000C
+ChangeWBSprite (change fails)|block +32|vp,2,0,0|1	$00008100
+ChangeWBSprite (change fails)|block +34|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +36|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +38|vp,2,0,0|1	$00000010
+ChangeWBSprite (change fails)|block +4|vp,2,0,0|1	$00004000
+ChangeWBSprite (change fails)|block +40|vp,2,0,0|1	$00008100
+ChangeWBSprite (change fails)|block +42|vp,2,0,0|1	$00000006
+ChangeWBSprite (change fails)|block +44|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +46|vp,2,0,0|1	$0000000C
+ChangeWBSprite (change fails)|block +48|vp,2,0,0|1	$00008100
+ChangeWBSprite (change fails)|block +50|vp,2,0,0|1	$00000002
+ChangeWBSprite (change fails)|block +52|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +54|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +56|vp,2,0,0|1	$00008100
+ChangeWBSprite (change fails)|block +58|vp,2,0,0|1	$00000004
+ChangeWBSprite (change fails)|block +6|vp,2,0,0|1	$00000078
+ChangeWBSprite (change fails)|block +60|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +62|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +64|vp,2,0,0|1	$00008100
+ChangeWBSprite (change fails)|block +66|vp,2,0,0|1	$00000008
+ChangeWBSprite (change fails)|block +68|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +70|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +72|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +74|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +76|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +78|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +8|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +80|vp,2,0,0|1	$00008200
+ChangeWBSprite (change fails)|block +82|vp,2,0,0|1	$00000020
+ChangeWBSprite (change fails)|block +84|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +86|vp,2,0,0|1	$00000005
+ChangeWBSprite (change fails)|block +88|vp,2,0,0|1	$00008200
+ChangeWBSprite (change fails)|block +90|vp,2,0,0|1	$00000022
+ChangeWBSprite (change fails)|block +92|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +94|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|block +96|vp,2,0,0|1	$00008200
+ChangeWBSprite (change fails)|block +98|vp,2,0,0|1	$00000024
+ChangeWBSprite (change fails)|d0|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|graphics.library open count|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|kept|vp,2,0,0|1	kept
+ChangeWBSprite (change fails)|popped|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 0 field 0|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 0 field 1|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 0 field 2|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 0 field 3|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 0 field 4|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 0 field 5|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 0 image|vp,2,0,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (change fails)|sprite 1 field 0|vp,2,0,0|1	$0000000C
+ChangeWBSprite (change fails)|sprite 1 field 1|vp,2,0,0|1	$00000078
+ChangeWBSprite (change fails)|sprite 1 field 2|vp,2,0,0|1	$0000005A
+ChangeWBSprite (change fails)|sprite 1 field 3|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|sprite 1 field 4|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|sprite 1 field 5|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 1 image|vp,2,0,0|1	bytes 256 fnv B8E5B583
+ChangeWBSprite (change fails)|sprite 2 field 0|vp,2,0,0|1	$00000005
+ChangeWBSprite (change fails)|sprite 2 field 1|vp,2,0,0|1	$00000064
+ChangeWBSprite (change fails)|sprite 2 field 2|vp,2,0,0|1	$00000032
+ChangeWBSprite (change fails)|sprite 2 field 3|vp,2,0,0|1	$00000002
+ChangeWBSprite (change fails)|sprite 2 field 4|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|sprite 2 field 5|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 2 image|vp,2,0,0|1	bytes 256 fnv 73CEA35C
+ChangeWBSprite (change fails)|sprite 3 field 0|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 3 field 1|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 3 field 2|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 3 field 3|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 3 field 4|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 3 field 5|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 3 image|vp,2,0,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (change fails)|sprite 4 field 0|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 4 field 1|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 4 field 2|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 4 field 3|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 4 field 4|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 4 field 5|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 4 image|vp,2,0,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (change fails)|sprite 5 field 0|vp,2,0,0|1	$00000005
+ChangeWBSprite (change fails)|sprite 5 field 1|vp,2,0,0|1	$00000046
+ChangeWBSprite (change fails)|sprite 5 field 2|vp,2,0,0|1	$00000050
+ChangeWBSprite (change fails)|sprite 5 field 3|vp,2,0,0|1	$00000005
+ChangeWBSprite (change fails)|sprite 5 field 4|vp,2,0,0|1	$00000001
+ChangeWBSprite (change fails)|sprite 5 field 5|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 5 image|vp,2,0,0|1	bytes 256 fnv 98745A6F
+ChangeWBSprite (change fails)|sprite 6 field 0|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 6 field 1|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 6 field 2|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 6 field 3|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 6 field 4|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 6 field 5|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 6 image|vp,2,0,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (change fails)|sprite 7 field 0|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 7 field 1|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 7 field 2|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 7 field 3|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 7 field 4|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 7 field 5|vp,2,0,0|1	$00000000
+ChangeWBSprite (change fails)|sprite 7 image|vp,2,0,0|1	bytes 256 fnv E6A1D1C5
 ChangeWBSprite (narrow)|block +0|vp,2,4,0|1	$00000000
 ChangeWBSprite (narrow)|block +10|vp,2,4,0|1	$00000001
 ChangeWBSprite (narrow)|block +100|vp,2,4,0|1	$00000000
@@ -737,7 +881,7 @@ FreeWBSprite|block +132|1,0,0,0|1	$00000000
 FreeWBSprite|block +134|1,0,0,0|1	$00000001
 FreeWBSprite|block +136|1,0,0,0|1	$00000000
 FreeWBSprite|block +138|1,0,0,0|1	$00000000
-FreeWBSprite|block +14|1,0,0,0|1	$00000006
+FreeWBSprite|block +14|1,0,0,0|1	$00000001
 FreeWBSprite|block +140|1,0,0,0|1	$00000000
 FreeWBSprite|block +142|1,0,0,0|1	$00000000
 FreeWBSprite|block +144|1,0,0,0|1	$00006772
@@ -752,14 +896,14 @@ FreeWBSprite|block +16|1,0,0,0|1	$00000000
 FreeWBSprite|block +160|1,0,0,0|1	$00000000
 FreeWBSprite|block +162|1,0,0,0|1	$00000000
 FreeWBSprite|block +164|1,0,0,0|1	$00000001
-FreeWBSprite|block +18|1,0,0,0|1	$00000005
+FreeWBSprite|block +18|1,0,0,0|1	$00000002
 FreeWBSprite|block +2|1,0,0,0|1	$00000001
-FreeWBSprite|block +20|1,0,0,0|1	$00000046
-FreeWBSprite|block +22|1,0,0,0|1	$00000050
+FreeWBSprite|block +20|1,0,0,0|1	$00000064
+FreeWBSprite|block +22|1,0,0,0|1	$00000032
 FreeWBSprite|block +24|1,0,0,0|1	$00004000
 FreeWBSprite|block +26|1,0,0,0|1	$00000074
 FreeWBSprite|block +28|1,0,0,0|1	$00000010
-FreeWBSprite|block +30|1,0,0,0|1	$00000005
+FreeWBSprite|block +30|1,0,0,0|1	$0000000C
 FreeWBSprite|block +32|1,0,0,0|1	$00008100
 FreeWBSprite|block +34|1,0,0,0|1	$00000000
 FreeWBSprite|block +36|1,0,0,0|1	$00000000
@@ -768,14 +912,14 @@ FreeWBSprite|block +4|1,0,0,0|1	$00004000
 FreeWBSprite|block +40|1,0,0,0|1	$00008100
 FreeWBSprite|block +42|1,0,0,0|1	$00000006
 FreeWBSprite|block +44|1,0,0,0|1	$00000000
-FreeWBSprite|block +46|1,0,0,0|1	$00000005
+FreeWBSprite|block +46|1,0,0,0|1	$0000000C
 FreeWBSprite|block +48|1,0,0,0|1	$00008100
 FreeWBSprite|block +50|1,0,0,0|1	$00000002
 FreeWBSprite|block +52|1,0,0,0|1	$00000000
 FreeWBSprite|block +54|1,0,0,0|1	$00000000
 FreeWBSprite|block +56|1,0,0,0|1	$00008100
 FreeWBSprite|block +58|1,0,0,0|1	$00000004
-FreeWBSprite|block +6|1,0,0,0|1	$00000084
+FreeWBSprite|block +6|1,0,0,0|1	$00000078
 FreeWBSprite|block +60|1,0,0,0|1	$00000000
 FreeWBSprite|block +62|1,0,0,0|1	$00000000
 FreeWBSprite|block +64|1,0,0,0|1	$00008100
@@ -880,7 +1024,7 @@ FreeWBSprite (none)|block +132|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +134|6,0,0,0|1	$00000001
 FreeWBSprite (none)|block +136|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +138|6,0,0,0|1	$00000000
-FreeWBSprite (none)|block +14|6,0,0,0|1	$00000006
+FreeWBSprite (none)|block +14|6,0,0,0|1	$00000001
 FreeWBSprite (none)|block +140|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +142|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +144|6,0,0,0|1	$00006772
@@ -895,14 +1039,14 @@ FreeWBSprite (none)|block +16|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +160|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +162|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +164|6,0,0,0|1	$00000001
-FreeWBSprite (none)|block +18|6,0,0,0|1	$00000005
+FreeWBSprite (none)|block +18|6,0,0,0|1	$00000002
 FreeWBSprite (none)|block +2|6,0,0,0|1	$00000001
-FreeWBSprite (none)|block +20|6,0,0,0|1	$00000046
-FreeWBSprite (none)|block +22|6,0,0,0|1	$00000050
+FreeWBSprite (none)|block +20|6,0,0,0|1	$00000064
+FreeWBSprite (none)|block +22|6,0,0,0|1	$00000032
 FreeWBSprite (none)|block +24|6,0,0,0|1	$00004000
 FreeWBSprite (none)|block +26|6,0,0,0|1	$00000074
 FreeWBSprite (none)|block +28|6,0,0,0|1	$00000010
-FreeWBSprite (none)|block +30|6,0,0,0|1	$00000005
+FreeWBSprite (none)|block +30|6,0,0,0|1	$0000000C
 FreeWBSprite (none)|block +32|6,0,0,0|1	$00008100
 FreeWBSprite (none)|block +34|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +36|6,0,0,0|1	$00000000
@@ -911,14 +1055,14 @@ FreeWBSprite (none)|block +4|6,0,0,0|1	$00004000
 FreeWBSprite (none)|block +40|6,0,0,0|1	$00008100
 FreeWBSprite (none)|block +42|6,0,0,0|1	$00000006
 FreeWBSprite (none)|block +44|6,0,0,0|1	$00000000
-FreeWBSprite (none)|block +46|6,0,0,0|1	$00000005
+FreeWBSprite (none)|block +46|6,0,0,0|1	$0000000C
 FreeWBSprite (none)|block +48|6,0,0,0|1	$00008100
 FreeWBSprite (none)|block +50|6,0,0,0|1	$00000002
 FreeWBSprite (none)|block +52|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +54|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +56|6,0,0,0|1	$00008100
 FreeWBSprite (none)|block +58|6,0,0,0|1	$00000004
-FreeWBSprite (none)|block +6|6,0,0,0|1	$00000084
+FreeWBSprite (none)|block +6|6,0,0,0|1	$00000078
 FreeWBSprite (none)|block +60|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +62|6,0,0,0|1	$00000000
 FreeWBSprite (none)|block +64|6,0,0,0|1	$00008100
@@ -3460,7 +3604,7 @@ finit|block +132|0,0,0,0|1	$00000000
 finit|block +134|0,0,0,0|1	$00000000
 finit|block +136|0,0,0,0|1	$00000000
 finit|block +138|0,0,0,0|1	$00000000
-finit|block +14|0,0,0,0|1	$00000006
+finit|block +14|0,0,0,0|1	$00000001
 finit|block +140|0,0,0,0|1	$00000000
 finit|block +142|0,0,0,0|1	$00000000
 finit|block +144|0,0,0,0|1	$00006772
@@ -3475,14 +3619,14 @@ finit|block +16|0,0,0,0|1	$00000000
 finit|block +160|0,0,0,0|1	$00000000
 finit|block +162|0,0,0,0|1	$00000000
 finit|block +164|0,0,0,0|1	$00000001
-finit|block +18|0,0,0,0|1	$00000005
+finit|block +18|0,0,0,0|1	$00000002
 finit|block +2|0,0,0,0|1	$00000001
-finit|block +20|0,0,0,0|1	$00000046
-finit|block +22|0,0,0,0|1	$00000050
+finit|block +20|0,0,0,0|1	$00000064
+finit|block +22|0,0,0,0|1	$00000032
 finit|block +24|0,0,0,0|1	$00004000
 finit|block +26|0,0,0,0|1	$00000074
 finit|block +28|0,0,0,0|1	$00000010
-finit|block +30|0,0,0,0|1	$00000005
+finit|block +30|0,0,0,0|1	$0000000C
 finit|block +32|0,0,0,0|1	$00008100
 finit|block +34|0,0,0,0|1	$00000000
 finit|block +36|0,0,0,0|1	$00000000
@@ -3491,14 +3635,14 @@ finit|block +4|0,0,0,0|1	$00004000
 finit|block +40|0,0,0,0|1	$00008100
 finit|block +42|0,0,0,0|1	$00000006
 finit|block +44|0,0,0,0|1	$00000000
-finit|block +46|0,0,0,0|1	$00000005
+finit|block +46|0,0,0,0|1	$0000000C
 finit|block +48|0,0,0,0|1	$00008100
 finit|block +50|0,0,0,0|1	$00000002
 finit|block +52|0,0,0,0|1	$00000000
 finit|block +54|0,0,0,0|1	$00000000
 finit|block +56|0,0,0,0|1	$00008100
 finit|block +58|0,0,0,0|1	$00000004
-finit|block +6|0,0,0,0|1	$00000084
+finit|block +6|0,0,0,0|1	$00000078
 finit|block +60|0,0,0,0|1	$00000000
 finit|block +62|0,0,0,0|1	$00000000
 finit|block +64|0,0,0,0|1	$00008100
