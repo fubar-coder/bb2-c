@@ -1,30 +1,42 @@
 # capture rwe_ritrackdisklib 1
 BootProg|actual|0,boot 0|1	$00000400
 BootProg|actual|0,boot 1|1	$00000400
-BootProg|boot block|0,boot 0|1	bytes 1024 fnv 9C843250
-BootProg|boot block|0,boot 1|1	bytes 1024 fnv E643B68F
-BootProg|boot block sum|0,boot 0|1	$DFC194BB
-BootProg|boot block sum|0,boot 1|1	$4E30032A
+BootProg|boot block|0,boot 0|1 [orig]	bytes 1024 fnv 9C843250
+BootProg|boot block|0,boot 0|1 [fixed #856]	bytes 1024 fnv D641216A
+BootProg|boot block|0,boot 1|1 [orig]	bytes 1024 fnv E643B68F
+BootProg|boot block|0,boot 1|1 [fixed #856]	bytes 1024 fnv 18C3AD40
+BootProg|boot block sum|0,boot 0|1 [orig]	$DFC194BB
+BootProg|boot block sum|0,boot 0|1 [fixed #856]	$FFFFFFFF
+BootProg|boot block sum|0,boot 1|1 [orig]	$4E30032A
+BootProg|boot block sum|0,boot 1|1 [fixed #856]	$FFFFFFFF
 BootProg|buffer|0,boot 0|1	$00030000
 BootProg|buffer|0,boot 1|1	$00030000
-BootProg|checksum|0,boot 0|1	$413F35D6
-BootProg|checksum|0,boot 1|1	$DCDAD171
+BootProg|checksum|0,boot 0|1 [orig]	$413F35D6
+BootProg|checksum|0,boot 0|1 [fixed #856]	$617DA11A
+BootProg|checksum|0,boot 1|1 [orig]	$DCDAD171
+BootProg|checksum|0,boot 1|1 [fixed #856]	$8EAACE47
 BootProg|closes|0,boot 0|1	$00000000
 BootProg|closes|0,boot 1|1	$00000000
 BootProg|command|0,boot 0|1	$00000003
 BootProg|command|0,boot 1|1	$00000003
 BootProg|d0|0,boot 0|1	$00000000
 BootProg|d0|0,boot 1|1	$00000000
-BootProg|data written|0,boot 0|1	$CC0AEB29
-BootProg|data written|0,boot 1|1	$0D799D08
-BootProg|disk|0,boot 0|1	bytes 16384 fnv A2402A50
-BootProg|disk|0,boot 1|1	bytes 16384 fnv EEF2638F
+BootProg|data written|0,boot 0|1 [orig]	$CC0AEB29
+BootProg|data written|0,boot 0|1 [fixed #856]	$5862C21F
+BootProg|data written|0,boot 1|1 [orig]	$0D799D08
+BootProg|data written|0,boot 1|1 [fixed #856]	$9D1D3A5F
+BootProg|disk|0,boot 0|1 [orig]	bytes 16384 fnv A2402A50
+BootProg|disk|0,boot 0|1 [fixed #856]	bytes 16384 fnv 5B6C8D6A
+BootProg|disk|0,boot 1|1 [orig]	bytes 16384 fnv EEF2638F
+BootProg|disk|0,boot 1|1 [fixed #856]	bytes 16384 fnv 6BBA4540
 BootProg|failed opens|0,boot 0|1	$00000000
 BootProg|failed opens|0,boot 1|1	$00000000
 BootProg|flags|0,boot 0|1	$00000001
 BootProg|flags|0,boot 1|1	$00000001
-BootProg|head|0,boot 0|1	bytes 8 444F5300413F35D6
-BootProg|head|0,boot 1|1	bytes 8 444F5300DCDAD171
+BootProg|head|0,boot 0|1 [orig]	bytes 8 444F5300413F35D6
+BootProg|head|0,boot 0|1 [fixed #856]	bytes 8 444F5300617DA11A
+BootProg|head|0,boot 1|1 [orig]	bytes 8 444F5300DCDAD171
+BootProg|head|0,boot 1|1 [fixed #856]	bytes 8 444F53008EAACE47
 BootProg|kept|0,boot 0|1	kept
 BootProg|kept|0,boot 1|1	kept
 BootProg|length|0,boot 0|1	$00000400
@@ -42,7 +54,8 @@ BootProg|unit|0,boot 1|1	$00000000
 BootProg|updates|0,boot 0|1	$00000000
 BootProg|updates|0,boot 1|1	$00000000
 BootProg (no request)|actual|7,boot|1	$00000000
-BootProg (no request)|boot block|7,boot|1	bytes 1024 fnv 17BE158C
+BootProg (no request)|boot block|7,boot|1 [orig]	bytes 1024 fnv 17BE158C
+BootProg (no request)|boot block|7,boot|1 [fixed #856]	bytes 1024 fnv 18C3AD40
 BootProg (no request)|buffer|7,boot|1	$00010800
 BootProg (no request)|closes|7,boot|1	$00000000
 BootProg (no request)|command|7,boot|1	$00000009
@@ -708,11 +721,15 @@ OpenDisk|read buffer|-1,rwetest.device|1	bytes 4096 fnv 671EA9C5
 OpenDisk|read buffer|-2,rwetest.device|1	bytes 4096 fnv 671EA9C5
 OpenDisk|read buffer|0,rwetest.device|1	bytes 4096 fnv 76EFDDC5
 OpenDisk|read buffer|0,trackdisk.device|1	bytes 4096 fnv 671EA9C5
-OpenDisk|read buffer|1,rwetest.device|1	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|1,rwetest.device|1 [orig]	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|1,rwetest.device|1 [fixed #856]	bytes 4096 fnv 40942540
 OpenDisk|read buffer|1,rwetest.device|2	bytes 4096 fnv 671EA9C5
-OpenDisk|read buffer|2,-|1	bytes 4096 fnv 4CA4ED8F
-OpenDisk|read buffer|2,rwetest.device|1	bytes 4096 fnv 4CA4ED8F
-OpenDisk|read buffer|3,rwetest.device|1	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|2,-|1 [orig]	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|2,-|1 [fixed #856]	bytes 4096 fnv 40942540
+OpenDisk|read buffer|2,rwetest.device|1 [orig]	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|2,rwetest.device|1 [fixed #856]	bytes 4096 fnv 40942540
+OpenDisk|read buffer|3,rwetest.device|1 [orig]	bytes 4096 fnv 4CA4ED8F
+OpenDisk|read buffer|3,rwetest.device|1 [fixed #856]	bytes 4096 fnv 40942540
 OpenDisk|read buffer|4,rwetest.device|1	bytes 4096 fnv 76EFDDC5
 OpenDisk|read buffer|5,-|1	bytes 4096 fnv 76EFDDC5
 OpenDisk|requests|-1,rwetest.device|1	$00000000
@@ -802,7 +819,8 @@ ReadSector|d0|0,3,+0,0 (form 0)|1	$00000000
 ReadSector|d0|0,8388611,+0,0 (form 0)|1	$00000000
 ReadSector|d0|1,7,+0,2 (form 1)|1	$00000000
 ReadSector|disk|-1,0,+0,0 (form 0)|1	bytes 16384 fnv 39CB122F
-ReadSector|disk|0,0,+0,2 (form 1)|1	bytes 16384 fnv EEF2638F
+ReadSector|disk|0,0,+0,2 (form 1)|1 [orig]	bytes 16384 fnv EEF2638F
+ReadSector|disk|0,0,+0,2 (form 1)|1 [fixed #856]	bytes 16384 fnv 6BBA4540
 ReadSector|disk|0,0,+0,8 (form 1)|1	bytes 16384 fnv BFA67BC5
 ReadSector|disk|0,1,+0,0 (form 0)|1	bytes 16384 fnv E35F79C5
 ReadSector|disk|0,1,+0,0 (form 1)|1	bytes 16384 fnv EF3E5BC5
@@ -882,7 +900,8 @@ ReadSector|opens|0,3,+0,0 (form 0)|1	$00000000
 ReadSector|opens|0,8388611,+0,0 (form 0)|1	$00000000
 ReadSector|opens|1,7,+0,2 (form 1)|1	$00000000
 ReadSector|read buffer|-1,0,+0,0 (form 0)|1	bytes 4096 fnv 671EA9C5
-ReadSector|read buffer|0,0,+0,2 (form 1)|1	bytes 4096 fnv 4CA4ED8F
+ReadSector|read buffer|0,0,+0,2 (form 1)|1 [orig]	bytes 4096 fnv 4CA4ED8F
+ReadSector|read buffer|0,0,+0,2 (form 1)|1 [fixed #856]	bytes 4096 fnv 40942540
 ReadSector|read buffer|0,0,+0,8 (form 1)|1	bytes 4096 fnv 50F533C5
 ReadSector|read buffer|0,1,+0,0 (form 0)|1	bytes 4096 fnv 76EFDDC5
 ReadSector|read buffer|0,1,+0,0 (form 1)|1	bytes 4096 fnv 6F7521F5
@@ -993,7 +1012,8 @@ WriteBoot|opens|0|1	$00000000
 WriteBoot|opens|0 (disk DOS 3)|1	$00000000
 WriteBoot|opens|0,bootdata (d2 = buf+512)|1	$00000000
 WriteBoot|read buffer|0|1	bytes 4096 fnv 50F533C5
-WriteBoot|read buffer|0 (disk DOS 3)|1	bytes 4096 fnv 4CA4ED8F
+WriteBoot|read buffer|0 (disk DOS 3)|1 [orig]	bytes 4096 fnv 4CA4ED8F
+WriteBoot|read buffer|0 (disk DOS 3)|1 [fixed #856]	bytes 4096 fnv 40942540
 WriteBoot|read buffer|0,bootdata (d2 = buf+512)|1	bytes 4096 fnv 50F533C5
 WriteBoot|requests|0|1	$00000001
 WriteBoot|requests|0 (disk DOS 3)|1	$00000001
@@ -1063,7 +1083,8 @@ WriteSector|opens|3,7,+2048,2 (form 1)|1	$00000000
 WriteSector|read buffer|0,1,+0,1 (form 1)|1	bytes 4096 fnv 76EFDDC5
 WriteSector|read buffer|0,3,+0,0 (form 0)|1	bytes 4096 fnv 76EFDDC5
 WriteSector|read buffer|0,4,+512,3 (form 1)|1	bytes 4096 fnv 76EFDDC5
-WriteSector|read buffer|3,7,+2048,2 (form 1)|1	bytes 4096 fnv 4CA4ED8F
+WriteSector|read buffer|3,7,+2048,2 (form 1)|1 [orig]	bytes 4096 fnv 4CA4ED8F
+WriteSector|read buffer|3,7,+2048,2 (form 1)|1 [fixed #856]	bytes 4096 fnv 40942540
 WriteSector|requests|0,1,+0,1 (form 1)|1	$00000000
 WriteSector|requests|0,3,+0,0 (form 0)|1	$00000001
 WriteSector|requests|0,4,+512,3 (form 1)|1	$00000001

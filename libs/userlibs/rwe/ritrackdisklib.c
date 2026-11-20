@@ -36,13 +36,12 @@
  *   - FormatTrack/WriteBoot (TD_FORMAT): length = number * 512 (as for
  *     sectors), not tracks * 11 * 512; WriteBoot formats 2 "sectors"
  *     (#858).
- *   - BootProg: the boot block checksum is the plain sum with carry of
- *     the 256 longs incl. the old checksum long (not cleared first, not
- *     complemented), and the root block long (+8) is cleared after it
- *     (#856).
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
  *     help text says "-1 if motor is on" (#857).
+ * Fixed (#856): the original's BootProg stored the plain sum with carry
+ * of the 256 longs including the old checksum long (not cleared first,
+ * not complemented) and cleared the root block long after the sum.
  * Fixed (#859, #860): the original's OpenDisk unit,name$ copied the name
  * into a buffer of 58 bytes without a limit (a longer name overwrote the
  * request table and the port) and kept it there, so a later OpenDisk
@@ -542,37 +541,49 @@ ULONG BLITZ_ROUTINE c_install2(LONG unit BL_REG(d0), APTR buffer BL_REG(d2))
     return c_formatsector2(unit, 0, buffer, 2);
 }
 
-/**
- * @brief BootProg unit#,memoryaddress: make a boot block of 1024 bytes in memory bootable and write it.
- *
- * Writes "DOS",0 and the checksum, then sectors 0-1 (WriteSector).
- * BUG(orig) (#856): the checksum is the plain sum with carry of the 256
- * longs including the old checksum long (not cleared first, not
- * complemented), and the root block long (+8) is cleared after it.
- * @param unit  d0: unit# (0-3)
- * @param mem   d1: the boot block (1024 bytes)
- * @return d0: as c_writesector2(), 0 without port
- */
-ULONG BLITZ_ROUTINE c_bootprog(LONG unit BL_REG(d0), UBYTE *mem BL_REG(d1))
+/* checksum: the boot block checksum of the 1024 bytes at mem, as
+   Kickstart checks it: the checksum long cleared, the 256 longs added
+   with end-around carry, the complement stored (the sum of the block is
+   then $FFFFFFFF).  Fixed (#856). */
+static void checksum(UBYTE *mem)
 {
     struct BootBlock *bb = (struct BootBlock *)mem;
-    ULONG *p = (ULONG *)mem, sum = 0;
+    const ULONG *p = (const ULONG *)mem;
+    ULONG sum = 0;
     int i;
 
-    if (!td.msgport)
-        return 0;
-    mem[0] = 'D';                       /* bb_id, byte by byte (MOVE.b; */
-    mem[1] = 'O';                       /* as bb->bb_id GCC would merge */
-    mem[2] = 'S';                       /* them into words) */
-    mem[3] = 0;
+    bb->bb_chksum = 0;
     for (i = 0; i < 256; i++) {         /* ADD.l (a0)+,d0:BCC:ADDQ.l #1 */
         ULONG v = p[i];
         sum += v;
         if (sum < v)
             sum++;
     }
-    bb->bb_chksum = sum;                /* BUG(orig): not complemented (#856) */
-    bb->bb_dosblock = 0;                /* BUG(orig): after the sum (#856) */
+    bb->bb_chksum = ~sum;
+}
+
+/**
+ * @brief BootProg unit#,memoryaddress: make a boot block of 1024 bytes in memory bootable and write it.
+ *
+ * Writes "DOS",0, the root block long 0 and the checksum (checksum()),
+ * then sectors 0-1 (WriteSector).  Fixed (#856): the checksum of the
+ * block as Kickstart checks it (the original stored the plain sum with
+ * carry including the old checksum long, and cleared the root block long
+ * after the sum).
+ * @param unit  d0: unit# (0-3)
+ * @param mem   d1: the boot block (1024 bytes)
+ * @return d0: as c_writesector2(), 0 without port
+ */
+ULONG BLITZ_ROUTINE c_bootprog(LONG unit BL_REG(d0), UBYTE *mem BL_REG(d1))
+{
+    if (!td.msgport)
+        return 0;
+    mem[0] = 'D';                       /* bb_id, byte by byte (MOVE.b; */
+    mem[1] = 'O';                       /* as bb->bb_id GCC would merge */
+    mem[2] = 'S';                       /* them into words) */
+    mem[3] = 0;
+    ((struct BootBlock *)mem)->bb_dosblock = 0; /* Fixed (#856): before the sum */
+    checksum(mem);
     return c_writesector2(unit, 0, mem, 2);
 }
 

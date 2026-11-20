@@ -40,9 +40,6 @@ original's changes of a6 and d4-d7 are not reproduced.
   and the 1016 bytes behind it (the end of the library and beyond) (#865).
 * `FormatTrack`/`WriteBoot` (TD_FORMAT): length = number × 512 as for
   sectors, not tracks × 11 × 512 (#858).
-* `BootProg`: the checksum is the plain sum with carry of all 256 longs
-  including the old checksum (not cleared, not complemented); the root
-  block long (+8) is cleared afterwards (#856).
 * `DiskMotor` returns -1 (the byte $FF) when CIAB PRB bit 7 (/MTR,
   active low) is set, i.e. motor off; the help text says "-1 if motor is
   on" (#857).
@@ -61,6 +58,14 @@ original's changes of a6 and d4-d7 are not reproduced.
   Tests: bug-orig `rwe/ritrackdisklib-v36-calls` (a500), the regression
   test `ritrackdisklib-floppy-key` reads a disk in DF1 on the a500,
   a500-204 and a1200 with these requests.
+* #856: the original's `BootProg` stored as checksum the plain sum with
+  carry of the 256 longs, including the old checksum long (not cleared,
+  not complemented), and cleared the root block long (+8) after the sum:
+  Kickstart did not boot the block. The root block long is cleared
+  first, the checksum long cleared, the longs added with end-around
+  carry and the complement stored (the block sums to `$FFFFFFFF`). Test:
+  the `libs_emulator` cases `[fixed #856]` (BootProg twice: the block,
+  its checksum and sum, the data the device was given).
 * #859, #860: the original's `OpenDisk unit,name$` copied the name into
   a buffer of 58 bytes (`"trackdisk.device"` and room behind it) without
   a limit, so a name of 57 characters or more overwrote the request
