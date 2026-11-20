@@ -1396,7 +1396,7 @@ In the RWE userlibs:
 * [`DisAssemble$`](#disassemble-line-length) of ridisasmlib returns a
   long instruction whole instead of cutting it after 34 columns.
 
-Four more are in the lists of the RWE userlibs below:
+Five more are in the lists of the RWE userlibs below:
 
 * `FNSLoad` works without `BankLimit`
   ([Fixes in rifnslib](#rifnslib-fixes)).
@@ -1407,6 +1407,11 @@ Four more are in the lists of the RWE userlibs below:
 * A Workbench sprite made of a shape whose width is no multiple of 16
   shows the shape's left 16 pixels unsheared
   ([Fixes in riwbspritelib](#riwbspritelib-fixes)).
+* `PauseModule` of ciatrklib pauses only a module that plays, and
+  `StartTracker`, `StopTracker`, `ChangeTrackerVBlank` and freeing the
+  module end a pause: two `PauseModule` no longer continue a module that
+  `StopTracker` or the effect `F00` stopped
+  ([Other fixes](#rwe-other-fixes)).
 
 ### `CustomColors` with a `thru256flag` of 0 acted as 1 {#customcolors-thru256flag}
 
