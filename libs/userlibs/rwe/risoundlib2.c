@@ -56,7 +56,7 @@
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
  *     (ahiam_AudioID, ahiam_MixFreq) (#934).
- *   - CludgeSound: risoundlib's bugs (#831, #828, #829), and
+ *   - CludgeSound: risoundlib's bugs (#831, #829), and
  *     the rate is written at +16, behind the 16 byte sound object of
  *     audiolib (into the next object, behind the last one into whatever
  *     follows) (#926).
@@ -77,7 +77,10 @@
  * data audiolib never freed CludgeSound's copy (#925).  As in risoundlib:
  * the sample rate is samplesPerSec, the word at offset 12 of the VHDR
  * data, not the word at VHDR + the chunk length (#832); a rate of 0
- * gives the result 0 instead of a period loop that never ends (#830).
+ * gives the result 0 instead of a period loop that never ends (#830); the
+ * chunk walk skips the IFF pad byte behind a chunk of odd length and
+ * stays inside the FORM, so a file without pad bytes no longer loads
+ * (#828).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -605,23 +608,24 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
  * the VHDR, the period 3579545 / rate, finds the BODY among the first
  * seven chunks and copies it to chip memory (memlib globalloc); the
  * rate also goes to +16.  BUG(orig): the old sample is freed before the
- * checks, a failure leaves the freed pointer (#831); no pad byte in the chunk walk
- * (#828); it copies ((length - 1) & $FFFF) + 1 bytes (DBRA, #829); the rate is
+ * checks, a failure leaves the freed pointer (#831); it copies
+ * ((length - 1) & $FFFF) + 1 bytes (DBRA, #829); the rate is
  * written at +16, behind the 16 byte object (#926).  Fixed (#925): mark
  * (+14) is cleared again, as in risoundlib; Fixed (#832): the rate is
- * samplesPerSec (VHDR data + 12); Fixed (#830): rate 0 gives 0.
+ * samplesPerSec (VHDR data + 12); Fixed (#830): rate 0 gives 0; Fixed
+ * (#828): the chunk walk skips the pad bytes and stays inside the FORM.
  * @param sound  d0: sound# (its upper word goes into globfree's d0)
  * @param sram   d1: the 8SVX file in memory
  * @param saddr  a0: audiolib's sound object
  * @return d0: BB_TRUE if the sound was made, BB_FALSE if the file is no
  *         8SVX with a VHDR, its rate is 0, it has no BODY among the first
- *         seven chunks, or no chip memory
+ *         seven chunks of the FORM, or no chip memory
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                           struct bb_sound *saddr BL_REG(a0))
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
-    ULONG rate, clock, slen;
+    ULONG rate, clock, slen, formlen, off, len;
     UWORD sper, n;
     int chunk;
 
@@ -645,13 +649,24 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
         sper++;
         clock -= rate;
     }
-    iff = sram + 12;
-    for (chunk = 0; LONGAT(iff) != ID('B', 'O', 'D', 'Y'); ) {
-        iff += LONGAT(iff + 4);         /* BUG(orig): no pad byte (#828) */
-        iff += 8;
+    /* Fixed (#828): the walk skips the pad byte behind a chunk of odd
+       length and stays inside the FORM (a chunk that does not fit ends
+       it with 0) */
+    formlen = LONGAT(sram + 4);
+    off = 12;
+    for (chunk = 0; ; ) {
+        if (off > formlen)              /* the chunk header outside the FORM */
+            return BB_FALSE;
+        if (LONGAT(sram + off) == ID('B', 'O', 'D', 'Y'))
+            break;
+        len = LONGAT(sram + off + 4);
+        if (len > formlen - off)        /* the chunk outside the FORM */
+            return BB_FALSE;
+        off += 8 + len + (len & 1);
         if (++chunk > 6)
             return BB_FALSE;
     }
+    iff = sram + off;
     src = iff + 8;
     slen = LONGAT(iff + 4);
     {

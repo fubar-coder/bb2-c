@@ -26,8 +26,6 @@
  *     keeps the pointer: when CludgeSound then fails, the sound object
  *     points to freed memory (and the next CludgeSound frees it again)
  *     (#831).
- *   - The chunk walk adds length + 8 without the IFF pad byte of an odd
- *     chunk (#828).
  *   - The copy is a DBRA loop on length - 1: it copies ((length - 1) &
  *     $FFFF) + 1 bytes - 65536 for an empty BODY, only the rest modulo
  *     65536 for a longer one; the length in words is (length & $FFFF) / 2
@@ -42,6 +40,10 @@
  * original took the word at VHDR + the chunk length, which is that word
  * only for the usual length 20 (#832).  A rate of 0 gives the result 0:
  * the original's subtraction loop for the period never ended (#830).
+ * The chunk walk skips the IFF pad byte behind a chunk of odd length
+ * (the original added length + 8 and missed BODY behind it), and a chunk
+ * that does not fit into the FORM ends it with the result 0; a file
+ * without pad bytes (not valid IFF) no longer loads (#828).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -91,15 +93,14 @@ static void BLITZ_ROUTINE _libfinit(void)
  * Frees the object's old sample (memlib globfree; not DecodeSound's
  * in-place "cL" data, fixed: #945), checks "8SVX"/"VHDR"
  * at address+8/+12, takes the sample rate (samplesPerSec, fixed: #832),
- * finds the BODY chunk among
- * the first seven chunks, copies it into chip memory (memlib globalloc)
+ * finds the BODY chunk among the first seven chunks of the FORM (with the
+ * IFF pad bytes, fixed: #828), copies it into chip memory (memlib globalloc)
  * and fills the object: sample, period 3579545 / rate, length in words,
  * no loop, the "cL" mark cleared.
  * BUG(orig):
  *   - the old sample is freed before the file is checked and the object
  *     keeps the pointer: a failing call leaves it pointing to freed
  *     memory (#831);
- *   - the chunk walk has no IFF pad byte (#828);
  *   - the copy is a DBRA loop on length - 1, the length in words
  *     (length & $FFFF) / 2 (#829).
  * @param sound  d0: the sound number (globfree gets d0 with the old
@@ -107,13 +108,14 @@ static void BLITZ_ROUTINE _libfinit(void)
  * @param sram   d1: the 8SVX file
  * @param saddr  a0: the sound object (!libs #audiolib,#ia0|#pd0)
  * @return d0: BB_TRUE, BB_FALSE if it is no 8SVX/VHDR file, its rate is
- *         0 (fixed: #830), it has no BODY or the chip memory is missing
+ *         0 (fixed: #830), it has no BODY among the first seven chunks of
+ *         the FORM or the chip memory is missing
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                           struct bb_sound *saddr BL_REG(a0))
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
-    ULONG rate, clock, slen;
+    ULONG rate, clock, slen, formlen, off, len;
     UWORD sper, n;
     int chunk;
 
@@ -137,13 +139,24 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
         sper++;
         clock -= rate;
     }
-    iff = sram + 12;
-    for (chunk = 0; LONGAT(iff) != ID('B', 'O', 'D', 'Y'); ) {
-        iff += LONGAT(iff + 4);         /* BUG(orig): no pad byte (#828) */
-        iff += 8;
+    /* Fixed (#828): the walk skips the pad byte behind a chunk of odd
+       length and stays inside the FORM (a chunk that does not fit ends
+       it with 0) */
+    formlen = LONGAT(sram + 4);
+    off = 12;
+    for (chunk = 0; ; ) {
+        if (off > formlen)              /* the chunk header outside the FORM */
+            return BB_FALSE;
+        if (LONGAT(sram + off) == ID('B', 'O', 'D', 'Y'))
+            break;
+        len = LONGAT(sram + off + 4);
+        if (len > formlen - off)        /* the chunk outside the FORM */
+            return BB_FALSE;
+        off += 8 + len + (len & 1);
         if (++chunk > 6)
             return BB_FALSE;
     }
+    iff = sram + off;
     src = iff + 8;
     slen = LONGAT(iff + 4);
     {

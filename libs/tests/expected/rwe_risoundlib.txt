@@ -12,8 +12,10 @@ CludgeSound|d0|chunks before BODY|1	$FFFFFFFF
 CludgeSound|d0|no VHDR|1	$00000000
 CludgeSound|d0|not 8SVX|1	$00000000
 CludgeSound|d0|odd BODY length|1	$FFFFFFFF
-CludgeSound|d0|odd chunk with pad byte|1	$00000000
-CludgeSound|d0|odd chunk without pad byte|1	$FFFFFFFF
+CludgeSound|d0|odd chunk with pad byte|1 [orig]	$00000000
+CludgeSound|d0|odd chunk with pad byte|1 [fixed #828]	$FFFFFFFF
+CludgeSound|d0|odd chunk without pad byte|1 [orig]	$FFFFFFFF
+CludgeSound|d0|odd chunk without pad byte|1 [fixed #828]	$00000000
 CludgeSound|d0|rate 0|1 [fixed #830]	$00000000
 CludgeSound|d0|rate 1|1	$FFFFFFFF
 CludgeSound|d0|rate 16000|1	$FFFFFFFF
@@ -27,7 +29,8 @@ CludgeSound|d0|rate 8363|1	$FFFFFFFF
 CludgeSound|failed: the old pointer|BODY the 8th chunk|1	$00000001
 CludgeSound|failed: the old pointer|no VHDR|1	$00000001
 CludgeSound|failed: the old pointer|not 8SVX|1	$00000001
-CludgeSound|failed: the old pointer|odd chunk with pad byte|1	$00000001
+CludgeSound|failed: the old pointer|odd chunk with pad byte|1 [orig #828]	$00000001
+CludgeSound|failed: the old pointer|odd chunk without pad byte|1 [fixed #828]	$00000001
 CludgeSound|failed: the old pointer|rate 0|1 [fixed #830]	$00000001
 CludgeSound|file unchanged|BODY 1 byte|1	$00000001
 CludgeSound|file unchanged|BODY 131071 bytes|1	$00000001
@@ -141,9 +144,12 @@ CludgeSound|memory balance|after failures|1	$00000070
 CludgeSound|memory balance|chunks before BODY|1	$FFFFFD60
 CludgeSound|memory balance|no VHDR|1	$00000000
 CludgeSound|memory balance|not 8SVX|1	$00000000
-CludgeSound|memory balance|odd BODY length|1	$00000018
-CludgeSound|memory balance|odd chunk with pad byte|1	$FFFFFFC0
-CludgeSound|memory balance|odd chunk without pad byte|1	$00000058
+CludgeSound|memory balance|odd BODY length|1 [orig]	$00000018
+CludgeSound|memory balance|odd BODY length|1 [fixed #828]	$00000070
+CludgeSound|memory balance|odd chunk with pad byte|1 [orig]	$FFFFFFC0
+CludgeSound|memory balance|odd chunk with pad byte|1 [fixed #828]	$00000008
+CludgeSound|memory balance|odd chunk without pad byte|1 [orig]	$00000058
+CludgeSound|memory balance|odd chunk without pad byte|1 [fixed #828]	$00000000
 CludgeSound|memory balance|rate 0|1 [fixed #830]	$FFFFFFF0
 CludgeSound|memory balance|rate 1|1	$00000000
 CludgeSound|memory balance|rate 16000|1	$00000008
@@ -169,8 +175,9 @@ CludgeSound|object fields|no VHDR|1	bytes 12 014400200000000000000000
 CludgeSound|object fields|not 8SVX|1	bytes 12 014400200000000000000000
 CludgeSound|object fields|odd BODY length|1	bytes 12 037E00310000000000000000
 CludgeSound|object fields|odd chunk with pad byte|1 [orig]	bytes 12 030000190000000000000000
-CludgeSound|object fields|odd chunk with pad byte|1 [fixed #832]	bytes 12 01AC00190000000000000000
-CludgeSound|object fields|odd chunk without pad byte|1	bytes 12 01AC00260000000000000000
+CludgeSound|object fields|odd chunk with pad byte|1 [fixed #832]	bytes 12 01AC001E0000000000000000
+CludgeSound|object fields|odd chunk without pad byte|1 [orig]	bytes 12 01AC00260000000000000000
+CludgeSound|object fields|odd chunk without pad byte|1 [fixed #828]	bytes 12 01AC001E0000000000000000
 CludgeSound|object fields|rate 0|1 [fixed #830]	bytes 12 01AC00000000000000000000
 CludgeSound|object fields|rate 1|1	bytes 12 9E9901F50000000000000000
 CludgeSound|object fields|rate 16000|1	bytes 12 00DF01F40000000000000000
@@ -243,7 +250,8 @@ CludgeSound|sample data|VHDR 24 bytes|1	$00000001
 CludgeSound|sample data|after failures|1	$00000001
 CludgeSound|sample data|chunks before BODY|1	$00000001
 CludgeSound|sample data|odd BODY length|1	$00000001
-CludgeSound|sample data|odd chunk without pad byte|1	$00000001
+CludgeSound|sample data|odd chunk with pad byte|1 [fixed #828]	$00000001
+CludgeSound|sample data|odd chunk without pad byte|1 [orig #828]	$00000001
 CludgeSound|sample data|rate 1|1	$00000001
 CludgeSound|sample data|rate 16000|1	$00000001
 CludgeSound|sample data|rate 2|1	$00000001
@@ -263,7 +271,8 @@ CludgeSound|sample in chip memory|VHDR 24 bytes|1	$00000001
 CludgeSound|sample in chip memory|after failures|1	$00000001
 CludgeSound|sample in chip memory|chunks before BODY|1	$00000001
 CludgeSound|sample in chip memory|odd BODY length|1	$00000001
-CludgeSound|sample in chip memory|odd chunk without pad byte|1	$00000001
+CludgeSound|sample in chip memory|odd chunk with pad byte|1 [fixed #828]	$00000001
+CludgeSound|sample in chip memory|odd chunk without pad byte|1 [orig #828]	$00000001
 CludgeSound|sample in chip memory|rate 1|1	$00000001
 CludgeSound|sample in chip memory|rate 16000|1	$00000001
 CludgeSound|sample in chip memory|rate 2|1	$00000001
@@ -286,8 +295,10 @@ CludgeSound|words|chunks before BODY|1	$000000A6
 CludgeSound|words|no VHDR|1	$00000020
 CludgeSound|words|not 8SVX|1	$00000020
 CludgeSound|words|odd BODY length|1	$00000031
-CludgeSound|words|odd chunk with pad byte|1	$00000019
-CludgeSound|words|odd chunk without pad byte|1	$00000026
+CludgeSound|words|odd chunk with pad byte|1 [orig]	$00000019
+CludgeSound|words|odd chunk with pad byte|1 [fixed #828]	$0000001E
+CludgeSound|words|odd chunk without pad byte|1 [orig]	$00000026
+CludgeSound|words|odd chunk without pad byte|1 [fixed #828]	$0000001E
 CludgeSound|words|rate 0|1 [fixed #830]	$00000000
 CludgeSound|words|rate 1|1	$000001F5
 CludgeSound|words|rate 16000|1	$000001F4

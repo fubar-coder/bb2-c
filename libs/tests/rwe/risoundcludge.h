@@ -16,8 +16,9 @@
  * original keeps.  Covered: the period (several rates, the signed
  * subtraction loop), BODY behind further chunks (the 7th chunk found,
  * the 8th not), no "8SVX", no "VHDR", a VHDR of another length (the rate
- * read at VHDR + length, #832), an odd chunk with its pad byte (the walk
- * misses BODY, #828) and without it (found), a BODY longer than 65536
+ * read at VHDR + length by the original, #832), an odd chunk with its pad
+ * byte (the original's walk misses BODY, #828) and without it (found by
+ * the original; the port stops at the chunk that leaves the FORM), a BODY longer than 65536
  * bytes (((length - 1) & $FFFF) + 1 bytes copied, the length in words of
  * the low word, #829) up to 131071 and 131072 bytes, the old sample freed
  * on a failure and the stale pointer kept (#831), an odd BODY length.

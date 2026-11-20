@@ -5,12 +5,12 @@ audiolib sound object from an IFF 8SVX file that is already in memory
 (`!libs #audiolib,#ia0|#pd0`: a0 = the object of sound#). It frees the
 object's old sample (memlib `globfree`), checks `8SVX` at +8 and `VHDR`
 at +12, takes the sample rate, looks for the `BODY` chunk among the first
-seven chunks, copies the sample into chip memory (memlib `globalloc`,
-`MEMF_CHIP`) and fills the object: +0 the sample, +4 the period
-3579545 / rate, +6 the length in words, +8/+12/+14 = 0 (no loop). The
-result is -1, or 0 if it is no 8SVX file with a VHDR, has no BODY among
-the first seven chunks or the memory is missing. init and finit do
-nothing.
+seven chunks of the FORM, copies the sample into chip memory (memlib
+`globalloc`, `MEMF_CHIP`) and fills the object: +0 the sample, +4 the
+period 3579545 / rate, +6 the length in words, +8/+12/+14 = 0 (no loop).
+The result is -1, or 0 if it is no 8SVX file with a VHDR, its rate is 0,
+it has no BODY among the first seven chunks of the FORM or the memory is
+missing. init and finit do nothing.
 
 * **Source:** `rwelibsrc/soundlib/risoundlib.bb` (as TED shows it:
   `build/amiga/rwelibsrc/soundlib/risoundlib.bb`).
@@ -47,9 +47,6 @@ with its signed compare.
   stays in the object: a CludgeSound that fails leaves the object
   pointing to freed memory, and the next CludgeSound on it frees it again
   (memlib's "not found" error) (#831).
-* The chunk walk adds length + 8 without the pad byte of an odd chunk: a
-  correct file with an odd chunk before BODY is not found (or walks off
-  into its data); a file without the pad byte works (#828).
 * The copy is `DBRA` on length − 1: ((length − 1) & $FFFF) + 1 bytes – an
   empty BODY copies 65536 bytes into a block of 8, a BODY over 65536
   bytes only the rest; the length in words is (length & $FFFF) / 2
@@ -73,6 +70,13 @@ kind F):
   the period never ended (#830; tests
   `tests/bug-orig/rwe/risoundlib-rate-zero-hangs`,
   `risoundlib2-rate-zero-hangs`).
+* The chunk walk skips the IFF pad byte behind a chunk of odd length, and
+  a chunk that does not fit into the FORM (by the FORM's length) ends it
+  with the result 0. The original added length + 8: behind an odd chunk
+  it read id and length one byte off, missed BODY of a correct file or
+  walked off into the file's data or past it; a file without the pad
+  bytes (not valid IFF) worked, and no longer loads (#828; test
+  `tests/bug-orig/rwe/risoundlib-chunk-walk-no-pad`).
 
 ## Test
 
