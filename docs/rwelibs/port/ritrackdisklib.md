@@ -33,13 +33,8 @@ original's changes of a6 and d4-d7 are not reproduced.
 
 **BUG(orig)** (kept):
 
-* `WriteBoot unit,bootdata` overwrites bootdata (d1 = sector 0) and
-  takes the buffer from d2, which is no argument (whatever the caller
-  left there; the C routine takes d2 as a register parameter for the same
-  effect) (#864). `WriteBoot unit` writes the 8-byte default boot block
-  and the 1016 bytes behind it (the end of the library and beyond) (#865).
-* `FormatTrack`/`WriteBoot` (TD_FORMAT): length = number × 512 as for
-  sectors, not tracks × 11 × 512 (#858).
+* `WriteBoot unit` writes the 8-byte default boot block and the 1016
+  bytes behind it (the end of the library and beyond) (#865).
 * `DiskMotor` returns -1 (the byte $FF) when CIAB PRB bit 7 (/MTR,
   active low) is set, i.e. motor off; the help text says "-1 if motor is
   on" (#857).
@@ -66,6 +61,28 @@ original's changes of a6 and d4-d7 are not reproduced.
   carry and the complement stored (the block sums to `$FFFFFFFF`). Test:
   the `libs_emulator` cases `[fixed #856]` (BootProg twice: the block,
   its checksum and sum, the data the device was given).
+* #858: `FormatTrack unit,track,buffer[,num]` and `WriteBoot` shared
+  the sector commands' length, num × 512 bytes, with `TD_FORMAT`.
+  trackdisk.device formats whole tracks only (5632 bytes = 11 sectors
+  of a DD disk) and refuses every other length with -4
+  (`IOERR_BADLENGTH`; measured on Kickstart 1.3 and 3.1): `FormatTrack`
+  without a count and both forms of `WriteBoot` never wrote anything,
+  `FormatTrack …,n` worked for multiples of 11 only, and then formatted
+  n/11 tracks. Decided (R10, the user's answer to the count question:
+  option (b)): **the count of `FormatTrack` stays in sectors** (only
+  multiples of 11 work: 11 formats one track, 22 two; a program that
+  passes 11 for one track keeps working, the declaration's name
+  `numtracks` notwithstanding), the form without a count formats one
+  whole track (11 sectors: the buffer must hold 5632 bytes), and
+  `WriteBoot` writes the boot block, sectors 0-1, with `CMD_WRITE`
+  (the manual: "writes 1k of data to the bootblock"; a `TD_FORMAT` of
+  track 0 would wipe sectors 2-10). Test: the `libs_emulator` cases
+  `[fixed #858]` (length and command of FormatTrack and WriteBoot).
+* #864: the original's `WriteBoot unit,bootdata` loaded the sector 0
+  into d1 over its argument bootdata and wrote from d2, which is no
+  argument (whatever the caller left there). It writes bootdata (d1)
+  now. Test: the `libs_emulator` cases `[fixed #864]` (buffer, head and
+  data of `WriteBoot 0,bootdata`).
 * #859, #860: the original's `OpenDisk unit,name$` copied the name into
   a buffer of 58 bytes (`"trackdisk.device"` and room behind it) without
   a limit, so a name of 57 characters or more overwrote the request

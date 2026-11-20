@@ -28,17 +28,18 @@
  * CIA through a volatile access.
  *
  * BUG(orig):
- *   - WriteBoot unit,bootdata sets d1 = 0 (sector) over bootdata and
- *     takes the buffer from d2, which is not an argument (whatever the
- *     caller left there; here a register parameter d2 for the same
- *     effect) (#864).  WriteBoot unit writes the 8 byte default boot
- *     block and the 1016 bytes behind it (the end of the library) (#865).
- *   - FormatTrack/WriteBoot (TD_FORMAT): length = number * 512 (as for
- *     sectors), not tracks * 11 * 512; WriteBoot formats 2 "sectors"
- *     (#858).
+ *   - WriteBoot unit writes the 8 byte default boot block and the 1016
+ *     bytes behind it (the end of the library) (#865).
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
  *     help text says "-1 if motor is on" (#857).
+ * Fixed (#858, #864): the original's FormatTrack without a count and
+ * WriteBoot sent TD_FORMAT requests of 512 and 1024 bytes, which
+ * trackdisk.device refuses (-4, IOERR_BADLENGTH: only whole tracks of
+ * 5632 bytes); WriteBoot unit,bootdata wrote from the caller's d2 in
+ * place of bootdata.  FormatTrack's count stays in sectors (only
+ * multiples of 11 work), the form without a count formats one track,
+ * WriteBoot writes sectors 0-1 with CMD_WRITE from bootdata.
  * Fixed (#856): the original's BootProg stored the plain sum with carry
  * of the 256 longs including the old checksum long (not cleared first,
  * not complemented) and cleared the root block long after the sum.
@@ -402,6 +403,9 @@ BB_BOOL BLITZ_ROUTINE c_opentrack2(LONG unit BL_REG(d0), const char *name BL_REG
     return opendisk(unit, name);
 }
 
+/* the sectors of a track of a DD disk */
+#define NUMSECS 11
+
 /* okok: the sector commands; d3 = number of sectors, d1 = first sector,
    both * 512 */
 static ULONG sectorio(LONG unit, ULONG offset, APTR buffer, ULONG num, UWORD cmd)
@@ -481,15 +485,18 @@ ULONG BLITZ_ROUTINE c_writesector1(LONG unit BL_REG(d0), ULONG sector BL_REG(d1)
 }
 
 /**
- * @brief FormatTrack unit#,track#,buffer,numtracks: format tracks (TD_FORMAT).
+ * @brief FormatTrack unit#,track#,buffer,numsectors: format tracks (TD_FORMAT).
  *
- * The first sector is track * 11 (MULU.w: the low word of the track).
- * BUG(orig) (#858): the length is numtracks * 512 (as for sectors), not
- * numtracks * 11 * 512.
+ * The first sector is track * 11 (MULU.w: the low word of the track),
+ * the length numsectors * 512, as in the original: the count is in
+ * sectors, though the declaration calls it numtracks.  trackdisk.device
+ * formats whole tracks only (5632 bytes = 11 sectors on a DD disk) and
+ * refuses another length with -4 (IOERR_BADLENGTH): 11 formats one
+ * track, 22 two (#858, decided: the count stays in sectors).
  * @param unit    d0: unit# (0-3)
  * @param track   d1: the first track
- * @param buffer  d2: the data
- * @param num     d3: the number of tracks
+ * @param buffer  d2: the data (numsectors * 512 bytes)
+ * @param num     d3: the number of sectors (a multiple of 11)
  * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
  *         request
  */
@@ -500,45 +507,50 @@ ULONG BLITZ_ROUTINE c_formatsector2(LONG unit BL_REG(d0), ULONG track BL_REG(d1)
 }
 
 /**
- * @brief FormatTrack unit#,track#,buffer: format one track (length 512, #858).
+ * @brief FormatTrack unit#,track#,buffer: format one track.
+ *
+ * Fixed (#858): 11 sectors (5632 bytes), one track of a DD disk; the
+ * original asked for 1 sector, which trackdisk.device refuses (-4).
  * @param unit    d0: unit# (0-3)
  * @param track   d1: the track
- * @param buffer  d2: the data
+ * @param buffer  d2: the data (5632 bytes)
  * @return d0: as c_formatsector2()
  */
 ULONG BLITZ_ROUTINE c_formatsector1(LONG unit BL_REG(d0), ULONG track BL_REG(d1),
                                     APTR buffer BL_REG(d2))
 {
-    return c_formatsector2(unit, track, buffer, 1);
+    return c_formatsector2(unit, track, buffer, NUMSECS); /* Fixed (#858) */
 }
 
 /**
- * @brief WriteBoot unit#: write the default boot block with TD_FORMAT.
+ * @brief WriteBoot unit#: write the default boot block (sectors 0-1).
  *
  * BUG(orig): writes the 8 byte default block ("DOS",0, -1) and the 1016
- * bytes behind it (the end of the library) (#865), as 2 "sectors" of
- * TD_FORMAT (#858).
+ * bytes behind it (the end of the library) (#865).  Fixed (#858): with
+ * CMD_WRITE (the original's TD_FORMAT of 1024 bytes was refused).
  * @param unit  d0: unit# (0-3)
- * @return d0: as c_formatsector2()
+ * @return d0: as c_writesector2()
  */
 ULONG BLITZ_ROUTINE c_install1(LONG unit BL_REG(d0))
 {
-    return c_formatsector2(unit, 0, td.defaultboot, 2);
+    return c_writesector2(unit, 0, td.defaultboot, 2);
 }
 
 /**
- * @brief WriteBoot unit#,bootdata: write a boot block with TD_FORMAT.
+ * @brief WriteBoot unit#,bootdata: write 1024 bytes of bootdata to the boot block (sectors 0-1).
  *
- * BUG(orig) (#864): d1 = 0 (the sector) is written over bootdata, the
- * buffer is the caller's d2, which is not an argument (here a register
- * parameter for the same effect); 2 "sectors" of TD_FORMAT (#858).
+ * The block is written as it is (no checksum: BootProg makes one).
+ * Fixed (#864): from bootdata (the original set d1 = 0, the sector, over
+ * bootdata and wrote from the caller's d2, which is no argument).
+ * Fixed (#858): with CMD_WRITE (the original's TD_FORMAT of 1024 bytes
+ * was refused).
  * @param unit    d0: unit# (0-3)
- * @param buffer  d2: whatever the caller left in d2
- * @return d0: as c_formatsector2()
+ * @param buffer  d1: bootdata, 1024 bytes
+ * @return d0: as c_writesector2()
  */
-ULONG BLITZ_ROUTINE c_install2(LONG unit BL_REG(d0), APTR buffer BL_REG(d2))
+ULONG BLITZ_ROUTINE c_install2(LONG unit BL_REG(d0), APTR buffer BL_REG(d1))
 {
-    return c_formatsector2(unit, 0, buffer, 2);
+    return c_writesector2(unit, 0, buffer, 2);
 }
 
 /* checksum: the boot block checksum of the 1024 bytes at mem, as
