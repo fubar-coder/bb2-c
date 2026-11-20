@@ -10,9 +10,8 @@ mode requester), `AHIRequestedID`, `AHIRequestedFreq`. init creates a
 message port and an `AHIRequest` (80 bytes); OpenAHI opens ahi.device
 (version 4) with it and keeps `io_Device` as the library base for the
 requester calls (`AHI_AllocAudioRequestA`, `AHI_AudioRequestA`); finit
-(and CloseAHI) deletes request and port. CludgeSound is risoundlib's,
-with the sample rate also stored at +16 of the sound object (for
-PlaySoundAHI's frequency).
+(and CloseAHI) deletes request and port. CludgeSound is risoundlib's;
+PlaySoundAHI plays a sound at 3579545 / its period.
 
 * **Source:** `rwelibsrc/soundlib/risoundlib2.bb` (= `.bak`), in the
   `BB22` format (README §4.1; `bbsrc bb22`). Readable:
@@ -93,9 +92,6 @@ in finit) is translated although it is never reached.
   requester's initial tags (always -1 and 0), not what the user chose
   (`ahiam_AudioID`, `ahiam_MixFreq` of the requester)
   (#934).
-* CludgeSound: the rate goes to +16, behind audiolib's 16 byte sound object – into the next
-  object's sample pointer, behind the last into whatever follows the
-  objects (#926).
 * Never reached (behind the `ahidevice` check): PlaySoundAHI gives the
   length in words (+6) as `io_Length` in bytes
   (#932), and sends the one request
@@ -127,6 +123,15 @@ kind F):
   cleared, a failed call leaves the sound as it was (#831); the whole
   BODY is copied, an empty one or one of 131072 bytes or more gives 0
   (#829).
+* CludgeSound writes nothing behind audiolib's 16 byte sound object. The
+  original stored the sample rate at +16 for PlaySoundAHI: the high word
+  of the next object's sample pointer, behind the last object whatever
+  follows. PlaySoundAHI takes its frequency from the object's period
+  instead, 3579545 / period (two `DIVU.w`; 0 for a period of 0), which
+  works for every sound object and gives the pitch `Sound` plays (22050
+  Hz becomes 22096 Hz through the period's rounding) (#926; test
+  `tests/bug-orig/rwe/risoundlib2-cludgesound-rate-behind-object`,
+  `libs_emulator` cases `[fixed #926]` of `rwe_risoundlib2`).
 
 ## Test
 
@@ -149,8 +154,8 @@ AHIOutputRequest in all six forms with markers in d2–d5 (the tag list
 also checked for its values: the bugs above), the allocation failing,
 the requester cancelled, AHIRequestedID/Freq (-1, 0), CloseAHI (open, in
 use – CheckIO 0: nothing freed –, again), finit, init again, init
-without a message port; CludgeSound (+16 written, +14 cleared by the
-port only, #925), then risoundlib's CludgeSound cases
+without a message port; CludgeSound (+16 written by the original only,
+#926; +14 cleared by the port only, #925), then risoundlib's CludgeSound cases
 (`libs/tests/rwe/risoundcludge.h`, the same routine). Not covered: the
 real ahi.device and playing (unreachable); OpenAHI after CloseAHI or
 without a request (writes to address 48); finit without a request

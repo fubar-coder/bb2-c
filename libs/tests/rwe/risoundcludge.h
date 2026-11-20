@@ -7,8 +7,8 @@
  *
  * IFF 8SVX files are built in memory and given to CludgeSound with a
  * sound object (16 bytes + guards); no audio is played.  Observed: d0,
- * the object's period, length and loop fields and its guards (risoundlib2
- * writes the rate into the one behind, #926), the sample (copied into
+ * the object's period, length and loop fields and its guards (the original
+ * risoundlib2 writes the rate into the one behind, #926), the sample (copied into
  * chip memory: the copy has all of the BODY's bytes, the pointer is
  * checked on each set: chip memory, or the old pointer when CludgeSound
  * fails), what the call did to this task's memory balance (the old sample

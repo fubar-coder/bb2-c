@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+cludged -1
+sound 1 00000000
+rc=0

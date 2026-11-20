@@ -24,8 +24,8 @@
  *        the requester changed, AHI_AllocAudioRequestA,
  *        AHI_AudioRequestA; its result (0 when cancelled)
  * AHIRequestedID, AHIRequestedFreq: two of those tags' data
- * CludgeSound sound#,address: risoundlib's, the sample rate also stored
- *        at +16 of the object
+ * CludgeSound sound#,address: risoundlib's (the original also stored the
+ *        sample rate at +16 of the object, #926)
  *
  * All C: exec and ahi.device's library vectors through BLITZ_BASEJSR
  * where the original passes the whole d0 on, memlib through
@@ -56,9 +56,6 @@
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
  *     (ahiam_AudioID, ahiam_MixFreq) (#934).
- *   - CludgeSound: the rate is written at +16, behind the 16 byte sound object of
- *     audiolib (into the next object, behind the last one into whatever
- *     follows) (#926).
  *   - Behind the ahidevice check, never reached: PlaySoundAHI takes the
  *     length in words (+6) as the length in bytes
  *     (#932) and sends the one request
@@ -84,7 +81,11 @@
  * was (the original left the freed pointer, #831); the whole BODY is
  * copied with length / 2 words, an empty one or one of 131072 bytes or
  * more gives 0 (the original copied ((length - 1) & $FFFF) + 1 bytes,
- * #829).
+ * #829).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * object; the original stored the rate at +16, the high word of the next
+ * object's sample pointer (behind the last object whatever follows), for
+ * PlaySoundAHI, which now takes its frequency from the object's period:
+ * 3579545 / period (#926).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -205,9 +206,26 @@ BLITZ_LIBFIN();
 
 /* audiolib's sound object (16 bytes): struct bb_sound (blitzobj.h) */
 
-/* the word +16 of a sound object: the first word of the next object
-   (BUG(orig) (#926): CludgeSound's rate, read by PlaySoundAHI) */
-#define SOUNDRATE(s) (*(UWORD *)((s) + 1))
+/**
+ * @brief The playing frequency of a sound object: 3579545 / its period (+4).
+ *
+ * Fixed (#926): the original read the word +16 that CludgeSound wrote
+ * behind the object; the period works for every sound object (LoadSound,
+ * DecodeSound, InitSound, CludgeSound) and gives the pitch Sound plays.
+ * Two DIVU.w steps (a library cannot link the division of libgcc).
+ * @param period  the object's period
+ * @return the frequency in Hz, 0 for a period of 0
+ */
+static ULONG periodfreq(UWORD period)
+{
+    ULONG hi, lo;
+
+    if (!period)
+        return 0;
+    hi = bl_divu_w(3579545UL >> 16, period);               /* rem<<16 | quot */
+    lo = bl_divu_w((hi & 0xffff0000UL) | (3579545UL & 0xffff), period);
+    return (hi << 16) | (lo & 0xffff);
+}
 
 /* exec and ahi.device (AHI.res, lvo/ahi.i) */
 #define LVO_OpenDevice              (-444)
@@ -356,8 +374,8 @@ BB_BOOL BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
  * Never gets past the ahidevice check, which is never set: returns 0 at
  * once and plays nothing (BUG(orig) (#924)).  Behind it: CMD_WRITE of
  * the sample as 8 bit mono (AHIST_M8S), the length in words (+6) taken
- * as bytes (BUG(orig) (#932)), the frequency the word +16 CludgeSound
- * writes behind the object (#926); SendIO without waiting for the
+ * as bytes (BUG(orig) (#932)), the frequency 3579545 / the object's
+ * period (fixed: #926); SendIO without waiting for the
  * request before or removing its reply (BUG(orig) (#933)).
  * @param vol  d1: the volume (Fixed 16.16, 0x10000 = full)
  * @param bal  d2: the stereo position (Fixed, 0x8000 = centre)
@@ -380,7 +398,7 @@ ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
     req->ahir_Type = AHIST_M8S;
     req->ahir_Volume = vol;
     req->ahir_Position = bal;
-    req->ahir_Frequency = SOUNDRATE(obj);
+    req->ahir_Frequency = periodfreq(obj->period);  /* Fixed (#926) */
     return reqcall(LVO_SendIO, req);    /* no wait, the reply never removed */
 }
 
@@ -616,8 +634,8 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
  * first seven chunks, frees the object's old sample (memlib globfree; not
  * DecodeSound's in-place "cL" data, fixed: #945; after the checks, the
  * pointer cleared, fixed: #831) and copies the BODY to chip memory
- * (memlib globalloc); the rate also goes to +16.  BUG(orig): the rate is
- * written at +16, behind the 16 byte object (#926).  Fixed (#925): mark
+ * (memlib globalloc).  Fixed (#926): nothing is written behind the 16
+ * byte object (the original's rate at +16).  Fixed (#925): mark
  * (+14) is cleared again, as in risoundlib; Fixed (#832): the rate is
  * samplesPerSec (VHDR data + 12); Fixed (#830): rate 0 gives 0; Fixed
  * (#828): the chunk walk skips the pad bytes and stays inside the FORM;
@@ -700,7 +718,7 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     saddr->rep = NULL;                  /* no loop */
     saddr->replen = 0;
     saddr->mark = 0;                    /* Fixed (#925): as risoundlib */
-    SOUNDRATE(saddr) = (UWORD)rate;     /* BUG(orig): behind the object (#926) */
+                                        /* Fixed (#926): no rate at +16 */
     return BB_TRUE;
 }
 

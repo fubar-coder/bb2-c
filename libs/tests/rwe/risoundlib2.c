@@ -33,8 +33,8 @@
  * CloseAHI (no CloseDevice), CloseAHI while the request is in use
  * (CheckIO: nothing freed), finit, init again, init without a message
  * port (CreateMsgPort fails); CludgeSound (the rate at +16 of the object
- * (#926); +14 not cleared in the original, cleared in the port: fixed,
- * #925).
+ * in the original, not in the port (#926); +14 not cleared in the
+ * original, cleared in the port (#925)).
  * Not covered: the real ahi.device (its requester); playing (the code
  * behind the ahidevice check is never reached); OpenAHI after CloseAHI
  * or without a request (writes to address 48, OpenDevice with request
@@ -430,7 +430,7 @@ int main(int argc, char **argv)
     outreqs("no device opened");
     failopen = FALSE;
 
-    /* CludgeSound: the rate at +16 (BUG(orig) #926), +14 cleared (fixed #925) */
+    /* CludgeSound: the rate at +16 in the original (#926), +14 cleared by the port (#925) */
     cludge(8363, 100, "8363 Hz");
     cludge(22050, 33, "22050 Hz");
     cludge(16000, 2, "16000 Hz, after it");
