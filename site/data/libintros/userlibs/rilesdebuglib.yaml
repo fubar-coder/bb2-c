@@ -28,9 +28,12 @@ intro: |
     `D_FindVolume` look up other things.
 
   Many commands take addresses rather than strings and check nothing, so
-  a wrong address reads or overwrites memory. The library opens
-  graphics.library itself. All commands work in Amiga and Blitz mode
-  except `D_FindVolume`, which is Amiga mode only.
+  a wrong address reads or overwrites memory. With runtime error
+  checking, the font printer checks the used bitmap and `AddProcessPtr`
+  refuses a 21st code. The library opens graphics.library itself, and
+  every run of a program starts it with its defaults. All commands work
+  in Amiga and Blitz mode except `D_FindVolume`, which is Amiga mode
+  only.
 
   Register names and hexadecimal text:
 

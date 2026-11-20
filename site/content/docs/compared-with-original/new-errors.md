@@ -2331,6 +2331,67 @@ Issues:
 * [CDTrackLength reads unwritten or foreign memory for the last track, track 0 and tracks behind the last (#583)](https://github.com/fubar-coder/bb2-c/issues/583)
 * [CDTrackMins/CDTrackSecs offset: only the low byte is shifted, the index has no limit, the high byte stays in the result (#586)](https://github.com/fubar-coder/bb2-c/issues/586)
 
+### The bitmap of the font printer of rilesdebuglib {#font-printer-bitmap}
+
+The font printer of
+[rilesdebuglib]({{< relref "/docs/libraries/userlibs/rilesdebuglib" >}}),
+`FPrint`, `FNPrint` and `FPrintDetoke`, prints with an 8x8 font into
+the first bitplane of the used bitmap. It writes rows of 80 bytes, so
+the bitmap must be 640 pixels wide, and the cursor of `FLocate` counts
+rows of 8 pixels.
+
+**What happened.** The original never looked at the size of the bitmap.
+On a narrower bitmap the characters landed in the wrong rows, and a
+cursor row below the bitmap wrote into the memory behind it.
+
+**With the port.** With runtime error checking, the three commands
+report two errors:
+
+* a bitmap narrower than 640 pixels is the error "Font printer needs a
+  bitmap of 640 pixels";
+* a cursor whose row of 8 pixels, with the lines of `FYOffset` added,
+  does not lie inside the bitmap is the error "Font printer row outside
+  the bitmap".
+
+This program stops at `FPrint` with the first error:
+
+```
+DEFTYPE .l
+BitMap 0,320,16,1
+NPrint "before"
+FLocate 0,0
+FPrint "x"
+NPrint "printed"
+End
+```
+
+Without runtime error checking the commands print as with the original.
+
+**What to change.** Print with the font printer only on a bitmap of 640
+pixels or wider, and keep the cursor inside it.
+
+Issue: [FPrint/FPrintDetoke: the column check is a byte compare, columns 208-255 print beyond the row; the bitmap size is never checked (#707)](https://github.com/fubar-coder/bb2-c/issues/707).
+
+### More than 20 codes of `AddProcessPtr` {#addprocessptr-20-codes}
+
+`AddProcessPtr` of
+[rilesdebuglib]({{< relref "/docs/libraries/userlibs/rilesdebuglib" >}})
+adds a `%` code that `ProcessString` replaces by a text. Its table has
+room for 20 codes besides `%p` and `%c`.
+
+**What happened.** The original did not count the codes: the 21st went
+over the end of the table and over the code of the library behind it.
+
+**With the port.** The table holds at most 20 codes, and `AddProcessPtr`
+ignores further ones. With runtime error checking, a 21st code is the
+error "AddProcessPtr table holds at most 20 entries". `ClearProcessPtrs`
+empties the table, and every run of a program starts with an empty one.
+
+**What to change.** Keep to 20 codes, or call `ClearProcessPtrs` before
+adding new ones.
+
+Issue: [AddProcessPtr has no limit of 20 entries: the 21st overwrites the code behind the table (#700)](https://github.com/fubar-coder/bb2-c/issues/700).
+
 ## Forms the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the

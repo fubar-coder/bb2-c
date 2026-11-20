@@ -7702,3 +7702,203 @@ rows:
     text: "`RINextAnimFrame` decodes ANIM7 long data at every width, except the last 16 pixels of a row with an odd number of words; the original lost the right edge of widths that are no multiple of 32 and wrote far beyond the bitmap below 32 pixels."
     page: libraries
     anchor: rianimlib-fixes
+  - issue: 1167
+    severity: 1
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "D_FindVolume"
+    text: "`D_FindVolume` returns -1 if the name is there and 0 if not, as `FindVolume` does; the original returned the address of the DOS list entry after it had released the list, so a test for -1 failed."
+    page: libraries
+    anchor: d-findvolume-result
+  - issue: 704
+    severity: 2
+    topic: "Strings"
+    library: "rilesdebuglib"
+    command: "ExtractLabel"
+    text: "A space ends the label of `ExtractLabel`, as the library's source says; in the original the label ran on over spaces to the `:` or the end of the line."
+    page: libraries
+    anchor: rilesdebuglib-changes
+  - issue: 713
+    severity: 2
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "GetCustomRegAdr"
+    text: "`GetCustomRegAdr` finds a register only by its whole name, also one of 8 characters; the original matched a longer name such as `DMACONXYZ` to a shorter register and never found `DENISEID`."
+    page: libraries
+    anchor: rilesdebuglib-changes
+  - issue: 706
+    severity: 2
+    topic: "Graphics"
+    library: "rilesdebuglib"
+    command: "FInverse, FPrintDetoke"
+    text: "`FInverse 1` inverts the text of `FPrintDetoke` too, and its cursor marker no longer switches inverse printing off; the original looked only at the upper byte of the setting there."
+    page: libraries
+    anchor: rilesdebuglib-changes
+  - issue: 707
+    severity: 3
+    topic: "Graphics"
+    library: "rilesdebuglib"
+    command: "FPrint, FNPrint, FPrintDetoke"
+    text: "The font printer prints nothing from column 80 on; with runtime error checking a bitmap narrower than 640 pixels or a cursor row outside it stops with \"Font printer needs a bitmap of 640 pixels\" or \"Font printer row outside the bitmap\". The original printed the columns 208 to 255 into the next rows and never checked the bitmap."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 700
+    severity: 3
+    topic: "Strings"
+    library: "rilesdebuglib"
+    command: "AddProcessPtr"
+    text: "`AddProcessPtr` keeps at most 20 codes and ignores more; with runtime error checking a 21st stops with \"AddProcessPtr table holds at most 20 entries\". The original wrote the 21st over the code behind its table."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 701
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "D_HexWord, D_CheckNMove, D_CheckNMoveA, D_CheckNMoveWord, GetDataItem"
+    text: "`D_HexWord` and the `D_CheckNMove` commands write nothing for a count of 0, and `GetDataItem` reads a long for every size but 1 and 2; the original ran 65536 times (over 300 KB written) and read 64 KB."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 717
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "D_HexWord, D_CheckNMoveA, D_CheckNMoveWord, GetDataItem"
+    text: "Addresses from $80000000 on are no longer shown as low memory (`*`, or 0 from `GetDataItem`); the original took them for addresses below $420."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 1168
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "GetHexAdr$"
+    text: "`GetHexAdr$` reads words and longs at odd addresses on a 68000; the original stopped there with an address error."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 718
+    severity: 5
+    topic: "Strings"
+    library: "rilesdebuglib"
+    command: "PeekMax$"
+    text: "`PeekMax$` returns at most the number of characters asked for; the original wrote one more and broke the string expression behind it."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 702
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "GetCustomReg, GetCustomRegAdr"
+    text: "`GetCustomReg` and `GetCustomRegAdr` know the last register, $1FE `NOOP`; the original stopped at $1FC."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 712
+    severity: 5
+    topic: "Strings"
+    library: "rilesdebuglib"
+    command: "GetCustomReg"
+    text: "`GetCustomReg` of a register with an 8-character name returns just that name; the original added a character and broke the string expression behind it."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 714
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "GetCustomReg"
+    text: "`GetCustomReg` of an offset above the last register gives an empty name; the original read a name from in front of its table of names."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 711
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "GetCopIns$"
+    text: "`GetCopIns$` shows odd high digits of the positions and masks of `WAIT` and `SKIP` (\"(30,2C)\", not \"(20,2C)\")."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 710
+    severity: 5
+    topic: "Graphics"
+    library: "rilesdebuglib"
+    command: "FPrint"
+    text: "`FPrint` prints a string of 32769 characters or more; the original printed nothing."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 708
+    severity: 5
+    topic: "Graphics"
+    library: "rilesdebuglib"
+    command: "FPrintDetoke"
+    text: "The `>` marker of `FPrintDetoke` is never followed by an inverse space; the original drew one when its column counter ran round to 0."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 709
+    severity: 5
+    topic: "Graphics"
+    library: "rilesdebuglib"
+    command: "FPrintDetoke"
+    text: "With `FInverse` on, `FPrintDetoke` draws token names into the second bitplane with the right characters; the original drew other characters there."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 716
+    severity: 5
+    topic: "Strings"
+    library: "rilesdebuglib"
+    command: "D_InitParse"
+    text: "`D_InitParse` takes at most 255 characters; the original overwrote the memory behind its buffer."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 703
+    severity: 5
+    topic: "Strings"
+    library: "rilesdebuglib"
+    command: "ExtractLabel"
+    text: "`ExtractLabel` gives an empty label for a line without a `.`; the original searched on through the memory behind the line."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 719
+    severity: 5
+    topic: "Strings"
+    library: "rilesdebuglib"
+    command: "ProcessString"
+    text: "`ProcessString` without a parser position returns an empty string; the original read the text at address 0."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 720
+    severity: 5
+    topic: "Strings"
+    library: "rilesdebuglib"
+    command: "ProcessString"
+    text: "A `%` at the end of the text of `ProcessString` ends it; the original read on behind the text."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 721
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "SearchMem"
+    text: "`SearchMem` with an empty search string finds nothing; the original compared the bytes behind the string with memory."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 722
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "SearchMem"
+    text: "The word and long searches of `SearchMem` no longer find a value that runs past the end address."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 723
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: "SearchMem"
+    text: "The string search of `SearchMem` finds `ab` in `aab`; the original missed a match that began inside a partial match."
+    page: libraries
+    anchor: rilesdebuglib-fixes
+  - issue: 1169
+    severity: 5
+    topic: "System"
+    library: "rilesdebuglib"
+    command: ""
+    text: "A second run from the editor starts rilesdebuglib with its defaults (cursor, inverse printing, search result, token list, `AddProcessPtr` codes); the original kept those of the run before."
+    page: libraries
+    anchor: rilesdebuglib-fixes
