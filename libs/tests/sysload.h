@@ -79,6 +79,7 @@ struct lib {
     ULONG *relocs;
     ULONG nrelocs;
     UWORD num, first, last;
+    ULONG errchk;                   /* offset of the error check area, 0: none */
 };
 
 struct set {
@@ -117,6 +118,7 @@ static BOOL loadfile(struct lib *l, const char *path)
     l->num = W(l->code + 4);
     l->first = W(l->code + 14);
     l->last = W(l->code + 16);
+    l->errchk = L(l->code + 0x2c);      /* the header's error field */
     return TRUE;
 }
 
@@ -184,6 +186,7 @@ static __attribute__((unused)) UBYTE *entry_code(struct lib *l, int idx)
    sysload_stubs before load_set(). */
 struct stub { UWORD tok; APTR code; };
 static const struct stub *sysload_stubs;
+static const UWORD sysload_rts[] = { 0x4e75 };  /* RTS */
 
 static UBYTE *find_token(struct set *s, UWORD tok, int form)
 {
@@ -226,6 +229,14 @@ static BOOL link_set(struct set *s)
             ULONG *at = (ULONG *)(l->code + l->relocs[r]);
             if (*at & 0x80000000) {
                 UBYTE *to = find_token(s, (UWORD)*at, (int)((*at >> 16) & 0x3fff));
+                /* a token of a library the set does not load, called
+                   from the error check area: the compiler links that
+                   area only with runtime error checking, and then the
+                   system libraries of the checks (runerrlib) with it;
+                   here it gets an RTS (e.g. runerrlib's ctrlcend, which
+                   inputoutputlib's Ctrl-C checks call, #43) */
+                if (!to && l->errchk && l->relocs[r] >= l->errchk)
+                    to = (UBYTE *)sysload_rts;
                 if (!to) {
                     printf("%s %s: token $%04lX not found\n", s->what, l->name,
                            (ULONG)(UWORD)*at);

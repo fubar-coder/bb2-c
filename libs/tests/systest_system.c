@@ -303,7 +303,9 @@ static void runerrtest(struct set *s)
     UBYTE *code;
 
     SETUP(r.d[2] = 0x10000);
-    call("runerr init", entry_code(l, 31));
+    /* init and finit: the two nullsubs behind the tokens $C300 .. last-1
+       (31 in the original, 34 since ctrlcend $C321, #43) */
+    call("runerr init", entry_code(l, l->last - l->first));
     code = me->tc_TrapCode;
     LOG("runerr trapcode set", "runerr trapcode set %d, trapper %04x %04x", code != trap,
         W(code), W(code + 2));
@@ -367,7 +369,7 @@ static void runerrtest(struct set *s)
         VEC[0] = 0;
     }
     SETUP((void)0);
-    call("runerr finit", entry_code(l, 32));
+    call("runerr finit", entry_code(l, l->last - l->first + 1));
     LOG("runerr trapcode restored", "runerr trapcode restored %d", me->tc_TrapCode == trap);
 }
 
