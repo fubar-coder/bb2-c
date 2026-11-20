@@ -8,6 +8,7 @@
 ; Correct: only y2 = -1 marks a circle, in both modes: Zone(5,-150) is
 ; zone 7; a rectangle whose bottom edge is exactly -1 cannot be told
 ; from a circle and is refused (SetZone returns 0, nothing is stored).
+; @fixed #866
 ; @rwe rizonejoylib
 SetZoneMode -1
 ZoneInit

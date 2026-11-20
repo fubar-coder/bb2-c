@@ -112,6 +112,20 @@ All other routines are C behind `BLITZ_THUNK`.
   inside (#880, test `rwe/rizonejoylib-zonetest020-circle-word`;
   `libs_emulator` cases `[fixed #880]` of `rwe_rizonejoylib`, the grid
   of the 68020 mode).
+* Both modes take only y2 = -1 for a circle's mark (the manual's
+  ZoneTable entry: "+6: -1 <-- this is set to show that the zone is
+  circular"), and `SetZone num,x1,y1,x2,y2` refuses a rectangle whose
+  bottom edge (the larger y) is exactly -1: it returns 0 and stores
+  nothing, since such a rectangle cannot be told from a circle.
+  Rectangles with y2 <= -2 stay valid and are rectangles in both modes.
+  The original's 68020 mode took every zone with a negative y2 for a
+  circle (a rectangle above the screen was tested as a circle around its
+  corner), its 68000 mode only y2 = -1, and SetZone stored a bottom edge
+  of -1 (#866, W7 decision Q2 (a); test `rwe/rizonejoylib-circle-marker-y2`;
+  `libs_emulator` cases `[fixed #866]` of `rwe_rizonejoylib`). With #879
+  and #880 the two modes give the same results for every zone SetZone
+  makes; `ZoneMode`/`SetZoneMode` only choose the instructions (`CMP2`
+  for rectangles in the 68020 mode).
 
 ## BUG(orig)
 
@@ -129,8 +143,6 @@ All other routines are C behind `BLITZ_THUNK`.
   returns -1, not 0 (#876).
 * The circle test squares word differences; the radius squared
   is stored as a word (radius >= 256 wraps) (#867).
-  In the 68020 mode every zone with a negative y2 is a circle, in the
-  68000 mode only y2 = -1 (#866).
 * GetZoneX1/Y1/X2/Y2 compare the zone **count** with the field offset
   (0/2/4/6) instead of the zone number: no range check (a table of up to
   6 zones returns -1 for some fields), the index is a word, and without a
@@ -152,7 +164,7 @@ original. Every form, in two sessions. With table 0: init,
 SetZone (rectangles with swapped corners, a point, circles with radius 40,
 200, 300 and 1, y2 = -1, a negative y2, x1 < 0, a y range that overflows,
 a zone out of range), Zone on a 19 x 19 grid in the 68020 mode and the
-68000 mode (341 / 270 hits – the modes differ),
+68000 mode (270 hits in both; the original 341 / 270),
 ZoneTest with one zone and with ranges (clamped start, bad ranges, upper
 bits), GetZoneX1/Y1/X2/Y2, ZoneInit's three forms with bad ranges;
 NewZoneTable with bad numbers and sizes, a 300 zone table (ZoneTest from

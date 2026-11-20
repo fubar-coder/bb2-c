@@ -13,12 +13,12 @@
  * RIZONEJOYLIB.OBJ.  Notes: docs/rwelibs/port/rizonejoylib.md.
  *
  * A zone table: count.l, then per zone x1.w, x2.w, y1.w, y2.w; x1 < 0 =
- * not set (ZoneInit: all -1); a circle has y2 = -1 (68020 mode: any
- * negative y2), x2 = the radius squared (a word), (x1, y1) the centre.
- * init allocates table 0 with 256 zones (MEMF_PUBLIC), finit frees every
- * table.  The 68020 mode (ZoneMode, SetZoneMode; on by default on a
- * 68020 or better) tests rectangles with CMP2 (the original's code: only
- * called on a 68020 or better).  The 68000 mode compares words.
+ * not set (ZoneInit: all -1); a circle has y2 = -1, x2 = the radius
+ * squared (a word), (x1, y1) the centre.  init allocates table 0 with
+ * 256 zones (MEMF_PUBLIC), finit frees every table.  The 68020 mode
+ * (ZoneMode, SetZoneMode; on by default on a 68020 or better) tests
+ * rectangles with CMP2 (the original's code: only called on a 68020 or
+ * better), the 68000 mode compares words; both give the same results.
  *
  * Zone and ZoneTest are assembler entries (speed: the per-frame test of
  * a game, tests/perf bzone), the rest C.  ReadJoyPad clocks the CD32 pad's
@@ -75,6 +75,13 @@
  *     squared distance has a low word at or below the radius squared hit
  *     (radius 10: the point 256 to the side), and a radius of 182 or more
  *     (a radius squared above 32767) missed (#880).
+ *   - Both modes take only y2 = -1 for a circle's mark, and SetZone with
+ *     four coordinates refuses a rectangle whose bottom edge is -1 (0,
+ *     nothing stored); rectangles with y2 <= -2 are rectangles in both
+ *     modes.  The original's 68020 mode took every zone with a negative
+ *     y2 for a circle, its 68000 mode y2 = -1, and SetZone stored a
+ *     bottom edge of -1 (#866).  With #879 and #880 the two modes give
+ *     the same results for every zone SetZone makes.
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -453,13 +460,17 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
  *
  * The corners are ordered (EXG) so that x1 < x2 and y1 < y2.  BUG(orig):
  * without a table the result is -1 (#876).  num is compared unsigned:
- * fixed (#873), the original wrote a negative num before the table.
+ * fixed (#873), the original wrote a negative num before the table.  A
+ * rectangle whose bottom edge (the larger y) is -1 is refused: fixed
+ * (#866), y2 = -1 marks a circle, the original stored it and the zone
+ * tests took it for a circle.
  * @param n   d0: the zone number
  * @param x1  d1: a corner x
  * @param y1  d2: a corner y
  * @param x2  d3: the other corner x
  * @param y2  d4: the other corner y
  * @return d0: BB_TRUE done (also without a table), BB_FALSE out of range
+ *         or a bottom edge of -1
  */
 static BB_BOOL BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
                                        UWORD y1 BL_REG(d2), UWORD x2 BL_REG(d3),
@@ -477,6 +488,8 @@ static BB_BOOL BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
         y1 = y2;
         y2 = swap;
     }
+    if ((WORD)y2 == -1)
+        return BB_FALSE;                                /* a circle's mark: fixed (#866) */
     return doset(n, x1, y1, x2, y2);
 }
 
@@ -529,14 +542,15 @@ static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
  * a negative start stayed inside the table).  A count of 0 gives -1, as
  * in the original.
  *
- * The 68020 mode (zones020 set): every zone with a negative y2 is a
- * circle (BUG(orig) #866), a rectangle is tested with CMP2.w (x1..x2,
- * y1..y2 as bounds), a circle by its squared distance against the word
- * x2 as longs (fixed #880: the original compared them as words, CMP.w,
- * as the 68000 mode does not).  The 68000 mode: a circle has y2 = -1,
- * its squared distance is compared as a long; x1 > x, y1 > y
- * (BGT) and x2 < x, y2 < y (BLT; fixed #879, the original took the sign
- * of the word differences, BMI) leave a rectangle.  Both square the word
+ * In both modes a zone with y2 = -1 is a circle (fixed #866: the
+ * original's 68020 mode took every negative y2), tested by its squared
+ * distance against the word x2 as longs (fixed #880: the original's
+ * 68020 mode compared them as words, CMP.w).  The 68020 mode (zones020
+ * set) tests a rectangle with CMP2.w (x1..x2, y1..y2 as bounds), the
+ * 68000 mode with x1 > x, y1 > y (BGT) and x2 < x, y2 < y (BLT; fixed
+ * #879, the original took the sign of the word differences, BMI): the
+ * same results for every zone SetZone makes (x1 <= x2, y1 <= y2), so the
+ * mode only chooses the instructions.  Both square the word
  * differences x - x1, y - y1 (MULS.w; BUG(orig) #867, the radius squared
  * a word).
  */
@@ -582,8 +596,8 @@ BLITZ_ASM_BLOCK(zonetests,
 /* the 68020 mode (only on a 68020 or better: CMP2) */
 "3: tst.w   (a0)\n"                         /* x1 < 0: not set */
 "   bmi.s   4f\n"
-"   tst.w   6(a0)\n"
-"   bmi.s   8f\n"                           /* y2 < 0: a circle, BUG(orig) (#866) */
+"   cmp.w   #-1,6(a0)\n"
+"   beq.s   8f\n"                           /* y2 = -1: a circle, fixed (#866) */
 "   .long   0x02d02000\n"                   /* CMP2.w (a0),d2: x1 <= x <= x2 */
 "   bcs.s   4f\n"
 "   .long   0x02e83000\n"                   /* CMP2.w 4(a0),d3: y1 <= y <= y2 */
@@ -763,6 +777,10 @@ static ULONG BLITZ_ROUTINE zonemode_c(void)
 
 /**
  * @brief SetZoneMode mode: sets the zone test mode, only on a 68020 or better.
+ *
+ * Both modes give the same results for every zone SetZone makes (#866,
+ * #879, #880 fixed); the mode only chooses the instructions of Zone and
+ * ZoneTest (CMP2 in the 68020 mode).
  * @param mode  d0.b: the mode byte (non-zero: 68020 mode)
  */
 static void BLITZ_ROUTINE setzonemode_c(ULONG mode BL_REG(d0))
