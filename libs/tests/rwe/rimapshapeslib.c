@@ -33,7 +33,7 @@
  * member went (the run before's group, behind its two members, or the new
  * group) and its offsets; then ResetGroup and finit again.
  * Not covered: map shapes before SetNumMapShapes (address 0), depth 0,
- * more than 63 group members (BUG(orig): #906 #903 #904);
+ * more than 63 group members (the bug-orig tests of #906 #903 #904);
  * blits that leave the bitmap or have a size <= 0 (without a layer
  * nothing clips them).
  */

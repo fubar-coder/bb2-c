@@ -18,5 +18,13 @@ lib 6: entry 0 ShapeToMapShape +$10: code offset set in only one of them
 # #904: AddGroupMember gets an error check (addgroupmemberchk, "Group
 # holds at most 63 members")
 lib 6: entry 7 AddGroupMember +$E: code offset set in only one of them
-# #903, #904: the relocations of the error field and the two checks
-lib 6: relocations in the declaration part 14 != 17
+# #906: BlitMapShape, BlitMapShapeSize, MapShapeAddr and FreeMapShapes get
+# error checks ("Map shape not allocated by SetNumMapShapes";
+# BlitMapShapeSize also "BlitMapShapeSize wider than the map shape"); the
+# checks of ShapeToMapShape and AddGroupMember test the number as well
+lib 6: entry 1 BlitMapShape +$16: code offset set in only one of them
+lib 6: entry 3 BlitMapShapeSize +$18: code offset set in only one of them
+lib 6: entry 5 MapShapeAddr +$C: code offset set in only one of them
+lib 6: entry 6 FreeMapShapes +$C: code offset set in only one of them
+# #903, #904, #906: the relocations of the error field and the six checks
+lib 6: relocations in the declaration part 14 != 21

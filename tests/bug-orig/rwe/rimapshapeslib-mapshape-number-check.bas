@@ -9,6 +9,7 @@
 ; program).
 ; Correct: the error check refuses the number: "Map shape not allocated
 ; by SetNumMapShapes".
+; @fixed #906
 ; @rwe rimapshapeslib
 ; @pass runwrap=@INJECT@|pad
 ; @pass runtime_errors=on

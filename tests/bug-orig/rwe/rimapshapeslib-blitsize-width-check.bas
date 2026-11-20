@@ -6,6 +6,7 @@
 ; screen (the blit only reads behind the data).
 ; Correct: the error check refuses the width: "BlitMapShapeSize wider
 ; than the map shape".
+; @fixed #906
 ; @rwe rimapshapeslib
 ; @pass runtime_errors=on
 DEFTYPE .l

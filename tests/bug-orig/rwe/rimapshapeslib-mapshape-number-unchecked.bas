@@ -5,6 +5,7 @@
 ; the width word of map shape 0, at address 0; the long there holds a
 ; marker (put back at the end).
 ; Correct: without map shapes nothing is written (the marker stays).
+; @fixed #906
 ; @rwe rimapshapeslib
 DEFTYPE .l
 o=Peek.l(0)

@@ -71,12 +71,6 @@ the registers, upper words included: x and y (and width/height of
 are loaded with `MOVE.w` into the caller's d4/d5/d6 – in `BlitGroup` d5
 holds the member's address before, so its upper word is that address's.
 
-## BUG(orig), kept
-
-* The map shape number is not checked; before `SetNumMapShapes` (or
-  after one that failed or allocated 0 shapes) the map shapes lie at
-  address 0 (#906).
-
 ## Fixed
 
 Intended deviations, `docs/libs/deviations.md` (3a), kind F:
@@ -121,6 +115,30 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   512-byte block, each further member 8 bytes more (#904; w7-decisions
   Q5 (a): refused in the release code plus the message; tests
   `rwe/rimapshapeslib-group-no-limit`, `rwe/rimapshapeslib-group-full-check`).
+* Without map shapes – before `SetNumMapShapes`, or after one whose
+  `AllocVec` failed or that asked for 0 – `ShapeToMapShape`,
+  `BlitMapShape`, `BlitMapShapeSize`, `FreeMapShapes` and
+  `AddGroupMember` do nothing and `MapShapeAddr` returns 0 (D-018: the
+  failed `SetNumMapShapes` is a statement, the program cannot see it).
+  The original took map shape n at n × 64 from address 0:
+  `ShapeToMapShape` wrote over the ExecBase pointer, `FreeMapShapes`
+  cleared words there, the blits read a "bitmap" from low memory. One
+  test of the pointer per call; measured for `BlitMapShape` (a map
+  editor's call per tile; a bench program on the a600, not committed):
+  8931 → 8945 cycles for a 16 × 16 map shape (+0.16 %), 32 × 32 +0.07 %,
+  `BlitMapShapeSize` +0.1 % (w7-decisions Q5 (a): under the cost limit
+  of 0.33 %). With runtime error checking a map shape number not below
+  the count of the last `SetNumMapShapes` is refused, by all six
+  commands with a number (`RemapMapShape` does nothing with it): "Map
+  shape not allocated by SetNumMapShapes"; the release code does not
+  compare it (an invalid argument, D-005). Under the same issue
+  `BlitMapShapeSize` with runtime error checking refuses a width above
+  the map shape's ("BlitMapShapeSize wider than the map shape"; the
+  height it limits itself) (#906; tests
+  `rwe/rimapshapeslib-mapshape-number-unchecked`,
+  `rwe/rimapshapeslib-setnummapshapes-allocfail`,
+  `rwe/rimapshapeslib-mapshape-number-check`,
+  `rwe/rimapshapeslib-blitsize-width-check`).
 
 Not a defect: `RemapMapShape` does nothing (the `ReMap` call is
 commented out in the source – a command left unfinished, not a fault in
@@ -145,6 +163,7 @@ range, last < first, one shape, first = −1 (the word compare passes, the
 address compare not); a second `SetNumMapShapes`; init, finit; a second run with the library
 still loaded (the freed group of the run before reserved by the test):
 init, `SetNumMapShapes`, `AddGroupMember` before `ResetGroup`. Checked
-to fail with a wrong blit width in the C build. Not covered: the bugs
-above, blits that leave the bitmap or have a size ≤ 0 (without a layer
+to fail with a wrong blit width in the C build. Not covered: the map shapes
+before `SetNumMapShapes`, depth 0, more than 63 group members (the
+bug-orig tests above), blits that leave the bitmap or have a size ≤ 0 (without a layer
 nothing clips them).

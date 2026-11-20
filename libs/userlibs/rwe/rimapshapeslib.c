@@ -32,10 +32,6 @@
  * original loads with MOVE.w into the caller's d4/d5/d6 (in BlitGroup d5
  * is the member's address before).
  *
- * BUG(orig):
- *   - No check of the map shape number: before SetNumMapShapes (or after
- *     one that failed or allocated 0) the map shapes are at address 0
- *     (#906).
  * Fixed:
  *   - init sets the next-member pointer to its (cleared) group block and
  *     the block size to 0, as at the first load; the original set only
@@ -62,6 +58,16 @@
  *     refuses them: "Group holds at most 63 members" (addgroupmemberchk).
  *     The original did not count: the 64th member's end mark was written
  *     behind the 512-byte block, each further member 8 bytes more (#904).
+ *   - Without map shapes (before SetNumMapShapes, or after one that failed
+ *     or asked for 0) ShapeToMapShape, the blits, FreeMapShapes and
+ *     AddGroupMember do nothing and MapShapeAddr returns 0; the original
+ *     took the map shapes from address 0 on (ShapeToMapShape wrote over
+ *     the ExecBase pointer).  With runtime error checking a map shape
+ *     number not below the count of the last SetNumMapShapes is refused:
+ *     "Map shape not allocated by SetNumMapShapes" (the release code does
+ *     not compare it, an invalid argument, D-005), and so is a
+ *     BlitMapShapeSize wider than the map shape: "BlitMapShapeSize wider
+ *     than the map shape" (#906).
  * Not a defect: RemapMapShape does nothing (the ReMap call is commented
  * out in the source: a command left unfinished); its !libs asks for
  * "library 254, $5600" (sic).
@@ -80,6 +86,8 @@ void _blitmapshapesize(void), _setnummapshapes(void), _mapshapeaddr(void);
 void _freemapshapes(void), _addgroupmember(void), _blitgroup(void);
 void _resetgroup(void), rimapshapeslib_libinit(void);
 void rimapshapeslib_libfinit(void), _shapetomapshapechk(void), _addgroupmemberchk(void);
+void _blitmapshapechk(void), _blitmapshapesizechk(void), _mapshapeaddrchk(void);
+void _freemapshapeschk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -97,7 +105,7 @@ BLITZ_NAME("ShapeToMapShape", "source shape,dest Mapshape");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0, LIB_graphicslib, BL_LA6);
-BLITZ_SUBS(_blitmapshape, 0, 0);
+BLITZ_SUBS(_blitmapshape, _blitmapshapechk, 0);        /* check: fixed #906 */
 BLITZ_NAME("BlitMapShape", "window#,mapshape#,x,y");
 
 BLITZ_ASTATEMENT();
@@ -109,7 +117,7 @@ BLITZ_NAME("RemapMapShape", "mapshape#,botcol,topcol");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0, LIB_graphicslib, BL_LA6);
-BLITZ_SUBS(_blitmapshapesize, 0, 0);
+BLITZ_SUBS(_blitmapshapesize, _blitmapshapesizechk, 0);    /* check: fixed #906 */
 BLITZ_NAME("BlitMapShapeSize", "window#,mapshape#,x,y,width,height");
 
 BLITZ_ASTATEMENT();
@@ -121,13 +129,13 @@ BLITZ_NAME("SetNumMapShapes", "num");
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_mapshapeaddr, 0, 0);
+BLITZ_SUBS(_mapshapeaddr, _mapshapeaddrchk, 0);        /* check: fixed #906 */
 BLITZ_NAME("MapShapeAddr", "mapshape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_freemapshapes, 0, 0);
+BLITZ_SUBS(_freemapshapes, _freemapshapeschk, 0);      /* check: fixed #906 */
 BLITZ_NAME("FreeMapShapes", "first,last");
 
 BLITZ_ASTATEMENT();
@@ -175,6 +183,8 @@ static_assert(sizeof(struct member) == 8);
 static UWORD blockwidth, blockheight;
 /* the map shapes; read by the blit entries (assembler) */
 static struct mapshape *baseshape __attribute__((used));
+/* their number, for the error checks (fixed #906; 0 without map shapes) */
+static UWORD nummapshapes;
 static struct member *nextgroupmember;
 /* the group, 512 bytes; read by BlitGroup (assembler) */
 static struct member *groupaddr __attribute__((used));
@@ -220,6 +230,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
         FreeVec(baseshape);
         baseshape = NULL;
     }
+    nummapshapes = 0;                   /* fixed (#906) */
     FreeVec(groupaddr);
 }
 BLITZ_THUNK(rimapshapeslib_libfinit, libfinit_c, "d0-d1/a0-a1");
@@ -230,8 +241,10 @@ BLITZ_THUNK(rimapshapeslib_libfinit, libfinit_c, "d0-d1/a0-a1");
  * @brief ShapeToMapShape shape#,mapshape#: a map shape from a Blitz shape.
  *
  * Width, height, depth and ebwidth of the shape; the plane pointers point
- * into the shape's data (onebpmem apart, not copied).  BUG(orig): no
- * check of the map shape number (#906).  Depth 0 writes 65536 plane
+ * into the shape's data (onebpmem apart, not copied).  Without map
+ * shapes it does nothing (fixed #906: the original wrote from address 0
+ * on); the number is checked by shapetomapshapechk only (fixed #906).
+ * Depth 0 writes 65536 plane
  * pointers (DBRA), depths above 8 run into unused[] and the next map
  * shapes: an invalid object, refused by shapetomapshapechk with runtime
  * error checking (fixed #903), here unchecked.
@@ -246,6 +259,8 @@ static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const struct bb_
     WORD onebp = (WORD)sh->planesize;
     UWORD depth = sh->depth, c;
 
+    if (!baseshape)                     /* fixed (#906): no map shapes */
+        return;
     ms->width = sh->width;
     ms->bm.Rows = sh->height;
     *(UWORD *)&ms->bm.Flags = depth;    /* Flags 0, Depth */
@@ -279,13 +294,17 @@ BLITZ_THUNK(_shapetomapshape, shapetomapshape_c, "d0-d1/a0-a1");
  * minterm replace the low words of the caller's d4/d5/d6 (MOVE.w).  It
  * falls into _blitmapshape2 (a0 = the map shape, a1 = the RastPort),
  * which BlitGroup calls for each member and which ends in the JMP to
- * BltBitMapRastPort.  BUG(orig) (#906): the map shape number is not
- * checked.
+ * BltBitMapRastPort.  Without map shapes it does nothing (fixed #906:
+ * the original blitted a "map shape" from address n * 64; one test of
+ * the pointer per call); the number is checked by blitmapshapechk only
+ * (fixed #906).
  */
 BLITZ_ASM_ROUTINE(_blitmapshape,
 "   move.l  (a1),a1\n"
 "   move.l  50(a1),a1\n"                /* the window's RastPort */
-"   move.l  _baseshape(pc),a0\n"        /* GetMapShape */
+"   move.l  _baseshape(pc),d0\n"        /* GetMapShape */
+"   beq.s   0f\n"                       /* fixed (#906): no map shapes */
+"   move.l  d0,a0\n"
 "   andi.l  #0xffff,d1\n"
 "   lsl.l   #6,d1\n"
 "   add.l   d1,a0\n"
@@ -308,11 +327,14 @@ BLITZ_ASM_ROUTINE(_blitmapshape,
  * As BlitMapShape with the given width (d4) and height (d5), the height
  * at most the map shape's (CMP.w: signed words; the width is not
  * limited); nothing for an empty map shape.  The caller's longs of d2-d5
- * go to the call, the low word of d6 becomes $C0.  BUG(orig) (#906): the
- * number is not checked.
+ * go to the call, the low word of d6 becomes $C0.  Without map shapes it
+ * does nothing (fixed #906); the number and the width are checked by
+ * blitmapshapesizechk only (fixed #906).
  */
 BLITZ_ASM_ROUTINE(_blitmapshapesize,
-"   move.l  _baseshape(pc),a0\n"        /* GetMapShape */
+"   move.l  _baseshape(pc),d0\n"        /* GetMapShape */
+"   beq.s   1f\n"                       /* fixed (#906): no map shapes */
+"   move.l  d0,a0\n"
 "   andi.l  #0xffff,d1\n"
 "   lsl.l   #6,d1\n"
 "   add.l   d1,a0\n"
@@ -345,8 +367,10 @@ void _remapmapshape(void)
  * @brief SetNumMapShapes num: (re)allocates num map shapes.
  *
  * The old block is freed, num * 64 bytes allocated (AllocVec
- * MEMF_PUBLIC|MEMF_CLEAR, unchecked: after a failure, or with num 0, the
- * map shapes are at 0, BUG(orig) #906).
+ * MEMF_PUBLIC|MEMF_CLEAR).  After a failure, or with num 0, there are no
+ * map shapes: the commands then do nothing (fixed #906: the original
+ * took them from address 0 on).  The number is kept for the error
+ * checks (0 without a block).
  * @param num  d0: the number of map shapes (a word)
  */
 static void BLITZ_ROUTINE setnummapshapes_c(UWORD num BL_REG(d0))
@@ -356,16 +380,21 @@ static void BLITZ_ROUTINE setnummapshapes_c(UWORD num BL_REG(d0))
         baseshape = NULL;
     }
     baseshape = AllocVec((ULONG)num << 6, MEMF_PUBLIC | MEMF_CLEAR);
+    nummapshapes = baseshape ? num : 0; /* fixed (#906) */
 }
 BLITZ_THUNK(_setnummapshapes, setnummapshapes_c, "d0-d1/a0-a1");
 
 /**
  * @brief MapShapeAddr(mapshape#): the address of a map shape.
- * @param n  d0: the map shape number (not checked)
- * @return d0: the map shape's address
+ *
+ * Without map shapes 0 (fixed #906: the original returned n * 64).
+ * @param n  d0: the map shape number (checked by mapshapeaddrchk only)
+ * @return d0: the map shape's address, 0 without map shapes
  */
 static struct mapshape *BLITZ_ROUTINE mapshapeaddr_c(UWORD n BL_REG(d0))
 {
+    if (!baseshape)                     /* fixed (#906) */
+        return NULL;
     return MAPSHAPE(n);
 }
 BLITZ_THUNK(_mapshapeaddr, mapshapeaddr_c, "d1/a0-a1");
@@ -376,7 +405,9 @@ BLITZ_THUNK(_mapshapeaddr, mapshapeaddr_c, "d1/a0-a1");
  *
  * Nothing if last < first (signed words), else the widths of the map
  * shapes from first to last cleared (the addresses compared signed); the
- * memory stays allocated.
+ * memory stays allocated.  Without map shapes nothing (fixed #906: the
+ * original cleared words from address 0 on); the numbers are checked by
+ * freemapshapeschk only.
  * @param first  d0: the first map shape number
  * @param last   d1: the last map shape number
  */
@@ -384,7 +415,7 @@ static void BLITZ_ROUTINE freemapshapes_c(UWORD first BL_REG(d0), UWORD last BL_
 {
     struct mapshape *p, *e;
 
-    if ((WORD)last < (WORD)first)
+    if ((WORD)last < (WORD)first || !baseshape)     /* fixed (#906) */
         return;
     p = MAPSHAPE(first);
     e = MAPSHAPE(last);
@@ -428,7 +459,8 @@ BLITZ_THUNK(_resetgroup, resetgroup_c, "d1/a0-a1");
  * most 63, further ones are ignored (fixed #904: the original wrote the
  * 64th member's end mark behind the 512-byte block, and each further
  * member 8 bytes more), and none without a group block (fixed #905: the
- * end is 0 then).
+ * end is 0 then), nor without map shapes (fixed #906: the original's
+ * member pointed into low memory).
  * @param n   d0: the map shape number
  * @param dx  d1: the column in blocks
  * @param dy  d2: the row in blocks
@@ -440,6 +472,8 @@ static void BLITZ_ROUTINE addgroupmember_c(UWORD n BL_REG(d0), UWORD dx BL_REG(d
 
     if ((ULONG)p >= (ULONG)groupend)    /* fixed (#904, #905): full, or */
         return;                         /* no group block (both 0) */
+    if (!baseshape)                     /* fixed (#906): no map shapes */
+        return;
     p->ms = MAPSHAPE(n);
     p->dx = (UWORD)bl_mulu_w(dx, blockwidth);
     p->dy = (UWORD)bl_mulu_w(dy, blockheight);
@@ -490,6 +524,16 @@ BLITZ_ASM_ROUTINE(_blitgroup,
 
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal Shape Depth");          /* fixed, #903 */
 BLITZ_ERRCHK_MESSAGE(groupfull, "Group holds at most 63 members");  /* fixed, #904 */
+BLITZ_ERRCHK_MESSAGE(nomapshape, "Map shape not allocated by SetNumMapShapes");  /* fixed, #906 */
+BLITZ_ERRCHK_MESSAGE(toowide, "BlitMapShapeSize wider than the map shape");   /* fixed, #906 */
+
+/* a map shape number below the count of the last SetNumMapShapes (0
+   without map shapes) */
+static void BLITZ_ERRCHK numchk(UWORD n)
+{
+    if (n >= nummapshapes)
+        BLITZ_RUNERR(nomapshape);
+}
 
 /**
  * @brief The error check of ShapeToMapShape (debugger only).
@@ -501,12 +545,17 @@ BLITZ_ERRCHK_MESSAGE(groupfull, "Group holds at most 63 members");  /* fixed, #9
  * the unused bytes and the next map shape.  The release code is unchanged
  * (an invalid object, D-005).
  *
- * Errors: "Illegal Shape Depth" (shapeslib's text) for a depth of 0 or
- * above 8.
+ * Fixed (#906): the map shape number must be below the count of the last
+ * SetNumMapShapes (the release code does not compare it).
+ *
+ * Errors: "Map shape not allocated by SetNumMapShapes"; "Illegal Shape
+ * Depth" (shapeslib's text) for a depth of 0 or above 8.
+ * @param n   d1: the map shape number
  * @param sh  a0: the shape (!libs #shapeslib,#ia0|#pd0)
  */
-static void BLITZ_ERRCHK shapetomapshapechk_c(const struct bb_shape *sh BL_REG(a0))
+static void BLITZ_ERRCHK shapetomapshapechk_c(UWORD n BL_REG(d1), const struct bb_shape *sh BL_REG(a0))
 {
+    numchk(n);
     if (!sh->depth || sh->depth > 8)
         BLITZ_RUNERR(baddepth);
 }
@@ -519,14 +568,95 @@ static void BLITZ_ERRCHK shapetomapshapechk_c(const struct bb_shape *sh BL_REG(a
  * the check tells the programmer.  Without a group block (init's
  * allocation failed) the release code adds nothing, silently (D-018).
  *
- * Errors: "Group holds at most 63 members" when the group is full.
+ * Fixed (#906): the map shape number must be below the count of the last
+ * SetNumMapShapes.
+ *
+ * Errors: "Map shape not allocated by SetNumMapShapes"; "Group holds at
+ * most 63 members" when the group is full.
+ * @param n  d0: the map shape number
  */
-static void BLITZ_ERRCHK addgroupmemberchk_c(void)
+static void BLITZ_ERRCHK addgroupmemberchk_c(UWORD n BL_REG(d0))
 {
+    numchk(n);
     if (groupaddr && (ULONG)nextgroupmember >= (ULONG)groupend)
         BLITZ_RUNERR(groupfull);
+}
+
+/**
+ * @brief The error check of BlitMapShape (debugger only).
+ *
+ * Fixed (#906), not in the original: the map shape number must be below
+ * the count of the last SetNumMapShapes; the release code takes
+ * baseshape + number * 64 without a compare.
+ *
+ * Errors: "Map shape not allocated by SetNumMapShapes".
+ * @param n  d1: the map shape number
+ */
+static void BLITZ_ERRCHK blitmapshapechk_c(UWORD n BL_REG(d1))
+{
+    numchk(n);
+}
+
+/**
+ * @brief The error check of BlitMapShapeSize (debugger only).
+ *
+ * Fixed (#906), not in the original: the number as BlitMapShape's, and
+ * the width at most the map shape's (the release code limits the height
+ * only: a wider blit reads each row on into the next rows and the last
+ * one behind the shape's data).  An empty map shape (width 0) is not
+ * blitted and its width not checked.
+ *
+ * Errors: "Map shape not allocated by SetNumMapShapes"; "BlitMapShapeSize
+ * wider than the map shape".
+ * @param n  d1: the map shape number
+ * @param w  d4: the width
+ */
+static void BLITZ_ERRCHK blitmapshapesizechk_c(UWORD n BL_REG(d1), UWORD w BL_REG(d4))
+{
+    const struct mapshape *ms;
+
+    numchk(n);
+    ms = MAPSHAPE(n);
+    if (ms->width && (WORD)w > (WORD)ms->width)
+        BLITZ_RUNERR(toowide);
+}
+
+/**
+ * @brief The error check of MapShapeAddr (debugger only).
+ *
+ * Fixed (#906), not in the original: the number as BlitMapShape's.
+ *
+ * Errors: "Map shape not allocated by SetNumMapShapes".
+ * @param n  d0: the map shape number
+ */
+static void BLITZ_ERRCHK mapshapeaddrchk_c(UWORD n BL_REG(d0))
+{
+    numchk(n);
+}
+
+/**
+ * @brief The error check of FreeMapShapes (debugger only).
+ *
+ * Fixed (#906), not in the original: when the range is not empty (last
+ * not below first, signed words, as the release code), both numbers must
+ * be below the count of the last SetNumMapShapes.
+ *
+ * Errors: "Map shape not allocated by SetNumMapShapes".
+ * @param first  d0: the first map shape number
+ * @param last   d1: the last map shape number
+ */
+static void BLITZ_ERRCHK freemapshapeschk_c(UWORD first BL_REG(d0), UWORD last BL_REG(d1))
+{
+    if ((WORD)last < (WORD)first)
+        return;
+    numchk(first);
+    numchk(last);
 }
 
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(_shapetomapshapechk, shapetomapshapechk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_addgroupmemberchk, addgroupmemberchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_blitmapshapechk, blitmapshapechk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_blitmapshapesizechk, blitmapshapesizechk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_mapshapeaddrchk, mapshapeaddrchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_freemapshapeschk, freemapshapeschk_c, "d0-d1/a0-a1");

@@ -9,6 +9,7 @@
 ; marker (put back at the end); MapShapeAddr(5) gives 5 x 64 from 0.
 ; Correct: without map shapes nothing is written (the marker stays) and
 ; MapShapeAddr returns 0.
+; @fixed #906
 ; @rwe rimapshapeslib
 ; @pass runwrap=@INJECT@|allocfail=6400-6416/1
 DEFTYPE .l
