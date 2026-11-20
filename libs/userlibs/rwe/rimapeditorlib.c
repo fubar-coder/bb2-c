@@ -55,6 +55,13 @@
  *     pointer behind it is overwritten by a longer string) (#897).
  *   - MapObjName$ returns the length as a byte (ADDQ.b) (#899).
  *   - finit closes graphics.library also if it did not open (#896).
+ * Fixed (intended deviations):
+ *   - init clears the stencil of SetStencil, the ScanShapes results and
+ *     the parse position of M_InitParse, as at the first load; the
+ *     original kept them, so a second run of a program from the editor
+ *     (the library stays loaded) had the run before's stencil (a freed
+ *     array) before its SetStencil, its maxima before its ScanShapes and
+ *     the rest of its string from M_NextArg$ before M_InitParse (#1133).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -349,10 +356,19 @@ static inline ULONG rol1(ULONG v)
 
 /**
  * @brief init: opens graphics.library (any version).
+ *
+ * Then it clears the stencil of SetStencil, the ScanShapes results and
+ * the parse position of M_InitParse, as at the first load: fixed (#1133),
+ * the original kept those of the run before.
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     gfxbase = OpenLibrary((CONST_STRPTR)"graphics.library", 0);
+    mapstencil = NULL;                  /* fixed (#1133): the run before's */
+    maxwidth = 0;
+    maxheight = 0;
+    maxdepth = 0;
+    parse.curadr = NULL;
 }
 BLITZ_THUNK(rimapeditorlib_libinit, libinit_c, "d0-d1/a0-a1");
 

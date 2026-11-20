@@ -259,7 +259,8 @@ M_NextArg$|a3|"one"|4	$00000000
 M_NextArg$|a3|"one"|5	$00000000
 M_NextArg$|a3|"one"|6	$00000000
 M_NextArg$|a3|mode $5A010000|1	$00000000
-M_NextArg$|a3|second run|1	$00000004
+M_NextArg$|a3|second run|1 [orig]	$00000004
+M_NextArg$|a3|second run|1 [fixed #1133]	$00000000
 M_NextArg$|d0|""|1	$00000000
 M_NextArg$|d0|""|2	$00000000
 M_NextArg$|d0|""|3	$00000000
@@ -298,7 +299,8 @@ M_NextArg$|d0|"one"|4	$00000000
 M_NextArg$|d0|"one"|5	$00000000
 M_NextArg$|d0|"one"|6	$00000000
 M_NextArg$|d0|mode $5A010000|1	$00000000
-M_NextArg$|d0|second run|1	$00000004
+M_NextArg$|d0|second run|1 [orig]	$00000004
+M_NextArg$|d0|second run|1 [fixed #1133]	$00000000
 M_NextArg$|kept|""|1	kept
 M_NextArg$|kept|""|2	kept
 M_NextArg$|kept|""|3	kept
@@ -415,7 +417,8 @@ M_NextArg$|string|"one"|4	bytes 400 fnv FC2BB505
 M_NextArg$|string|"one"|5	bytes 400 fnv FC2BB505
 M_NextArg$|string|"one"|6	bytes 400 fnv FC2BB505
 M_NextArg$|string|mode $5A010000|1	bytes 400 fnv FC2BB505
-M_NextArg$|string|second run|1	bytes 400 fnv C9E775FF
+M_NextArg$|string|second run|1 [orig]	bytes 400 fnv C9E775FF
+M_NextArg$|string|second run|1 [fixed #1133]	bytes 400 fnv FC2BB505
 MapCanDraw|d0|map 0 shape 0 at 11,3|1	$FFFFFFFF
 MapCanDraw|d0|map 0 shape 0 at 4,1|1	$FFFFFFFF
 MapCanDraw|d0|map 0 shape 0 at 5,4|1	$5A000001
@@ -2745,7 +2748,8 @@ ScanMaxWidth|d0|11,12|1	$5A5A0060
 ScanMaxWidth|d0|13,2|1	$5A5A0070
 ScanMaxWidth|d0|4,6|1	$5A5A0040
 ScanMaxWidth|d0|8,8|1	$5A5A0018
-ScanMaxWidth|d0|second run|1	$5A5A0070
+ScanMaxWidth|d0|second run|1 [orig]	$5A5A0070
+ScanMaxWidth|d0|second run|1 [fixed #1133]	$5A5A0000
 ScanMaxWidth|kept|0,15|1	kept
 ScanMaxWidth|kept|0,3|1	kept
 ScanMaxWidth|kept|11,12|1	kept
@@ -2766,7 +2770,8 @@ ScanMaxdepth|d0|11,12|1	$5A5A0002
 ScanMaxdepth|d0|13,2|1	$5A5A0004
 ScanMaxdepth|d0|4,6|1	$5A5A0002
 ScanMaxdepth|d0|8,8|1	$5A5A0004
-ScanMaxdepth|d0|second run|1	$5A5A0004
+ScanMaxdepth|d0|second run|1 [orig]	$5A5A0004
+ScanMaxdepth|d0|second run|1 [fixed #1133]	$5A5A0000
 ScanMaxdepth|kept|0,15|1	kept
 ScanMaxdepth|kept|0,3|1	kept
 ScanMaxdepth|kept|11,12|1	kept
@@ -2787,7 +2792,8 @@ ScanMaxheight|d0|11,12|1	$5A5A000C
 ScanMaxheight|d0|13,2|1	$5A5A000E
 ScanMaxheight|d0|4,6|1	$5A5A001F
 ScanMaxheight|d0|8,8|1	$5A5A0005
-ScanMaxheight|d0|second run|1	$5A5A000E
+ScanMaxheight|d0|second run|1 [orig]	$5A5A000E
+ScanMaxheight|d0|second run|1 [fixed #1133]	$5A5A0000
 ScanMaxheight|kept|0,15|1	kept
 ScanMaxheight|kept|0,3|1	kept
 ScanMaxheight|kept|11,12|1	kept
@@ -2950,4 +2956,5 @@ init|kept||1	kept
 init|kept|second run|1	kept
 init|popped||1	$00000000
 init|popped|second run|1	$00000000
-init|stencil of the run before|second run|1	$00000001
+init|stencil of the run before|second run|1 [orig]	$00000001
+init|stencil of the run before|second run|1 [fixed #1133]	$00000000

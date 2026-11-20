@@ -87,6 +87,17 @@ pointer behind it are one struct, so that an overflow hits the pointer
 as in the original. `ShapeTo1616` hides its source pointer from GCC's
 loop optimisation (no `__mulsi3`).
 
+## Fixed
+
+* init clears the stencil of `SetStencil`, the results of `ScanShapes`
+  and the parse position of `M_InitParse`, as at the first load; the
+  original kept them, so a second run of a program from the editor (the
+  library stays loaded) had the stencil of the run before (a freed
+  array) before its `SetStencil`, the maxima of the run before before
+  its `ScanShapes`, and from `M_NextArg$` before `M_InitParse` the rest
+  of the run before's string instead of "" (#1133; the libs test's
+  second run).
+
 ## BUG(orig), kept
 
 * `CreateMap` tests the long at 12 (the low word of the data pointer and
