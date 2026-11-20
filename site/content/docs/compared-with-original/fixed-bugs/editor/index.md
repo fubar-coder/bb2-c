@@ -10,8 +10,8 @@ that also runs on its own as a text editor. They concern what the editor
 does with the text in memory and in the files it saves, and whether it
 starts and runs at all, not the programs that are compiled from it. The
 first sections show the ones an ordinary user can run into, each with a
-short example; the other fixes follow as a list, one sentence each with
-a link to its issue.
+short example; the other fixes follow as a list of short points, each
+with a link to its issue.
 The table on [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})
 lists all fixed bugs by what they can change in a program.
 
@@ -111,13 +111,19 @@ Issue: [JOIN of two lines longer than 128 characters together silently dropped t
 Without tokenising, as always in the editor on its own, a line holds
 plain text, and characters like ä, ö, ü, ß or é are ordinary characters
 of it (Latin-1 characters, with codes of 128 and more). The original
-mistook them for something else. COPY took the first such character of
-the block for the end of the block and stopped there, and so did BLOCK
-TO DISK in the first and the last line of the block. In the lines
-between them, BLOCK TO DISK took such a character for a keyword token
-and wrote a keyword name instead of that character and the next. PRINT did the same with every such
-character, and printed the name in bold. Since the editor on its own has
-no keywords, the name was `?????` or a garbage word read from memory.
+mistook them for something else:
+
+* COPY took the first such character of the block for the end of the
+  block and stopped there.
+* BLOCK TO DISK did the same in the first and the last line of the
+  block. In the lines between them, it took such a character for a
+  keyword token and wrote a keyword name instead of that character and
+  the next.
+* PRINT took every such character for a keyword token in the same way,
+  and printed the keyword name in bold.
+
+Since the editor on its own has no keywords, the name was `?????` or a
+garbage word read from memory.
 
 **What happened**
 
@@ -419,12 +425,15 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 ## Other fixes
 
+Each point says first what the original did, then what the port does.
+
 ### Blocks
 
 * BLOCK LOAD at a cursor column joined the text in front of the cursor
-  and the file's first line into one line of up to 256 characters, which
-  the first edit cut and which could be saved empty; when the first line
-  does not fit behind the cursor, BLOCK LOAD refuses with a beep
+  and the file's first line into one line of up to 256 characters. The
+  first edit cut that line, and it could be saved empty. In the port, when
+  the first line does not fit behind the cursor, BLOCK LOAD refuses with a
+  beep
   ([#1010](https://github.com/fubar-coder/bb2-c/issues/1010)).
 * BLOCK LOAD cut the text behind the cursor at column 128 when it was
   appended to the last loaded line, and appended leftover characters to
@@ -432,14 +441,15 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
   does not fit
   ([#1012](https://github.com/fubar-coder/bb2-c/issues/1012)).
 * Typing inside a block marked over several lines, in a source of more
-  than 128 lines, stretched the block to the end of its last line, so
-  that COPY, KILL or BLOCK TO DISK acted on more text than was marked, or
-  left the end of the block past column 127; the block keeps its end
+  than 128 lines, stretched the block to the end of its last line. COPY,
+  KILL or BLOCK TO DISK then acted on more text than was marked, or left
+  the end of the block past column 127. In the port, the block keeps its
+  end
   ([#349](https://github.com/fubar-coder/bb2-c/issues/349)).
 * BLOCK TAB without tokenising, as in the editor on its own, added an
-  invisible 0 byte to the end of every line of the block, which showed up
-  as an extra empty line after each of them when the file was saved and
-  loaded again; the lines get only their indentation
+  invisible 0 byte to the end of every line of the block. When the file
+  was saved and loaded again, it showed up as an extra empty line after
+  each of them. In the port, the lines get only their indentation
   ([#347](https://github.com/fubar-coder/bb2-c/issues/347)).
 * DELETE LINE on the only line of a one-line block removed the block but
   left the block items of the EDIT menu enabled, "Block" in the status
@@ -453,8 +463,8 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
   ([#364](https://github.com/fubar-coder/bb2-c/issues/364)).
 * A JOIN that moved the start of a block on the next line past column 127
   left an inverted "ghost block" from that line to the end of the text,
-  which the keys of KILL and BLOCK TO DISK acted on; the block is removed
-  and nothing else is marked
+  and the keys of KILL and BLOCK TO DISK acted on it. In the port, the
+  block is removed and nothing else is marked
   ([#346](https://github.com/fubar-coder/bb2-c/issues/346)).
 * JOIN with a next line that starts with a label left that label in the
   label column, pointing to memory that was already freed, so that a
@@ -471,8 +481,8 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 * A tokenised line whose text is longer than about 128 characters, as
   another program can write it, overwrote memory behind the editor's
   buffers in KILL, BLOCK TO DISK, JOIN and when "Tokenise" was switched
-  off; the text stops at the end of the buffer, and the part behind it is
-  dropped
+  off. In the port, the text stops at the end of the buffer, and the part
+  behind it is dropped
   ([#355](https://github.com/fubar-coder/bb2-c/issues/355)).
 * PRINT of a line with more than about 24 keywords overwrote memory
   behind the editor's buffers; the printed line ends with the last
@@ -492,9 +502,9 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 * A line longer than the editor's 128 columns in a file from another
   editor lost three characters where the editor split it, and BLOCK LOAD
-  stopped at such a line and ignored the rest of the file; the line is
-  split into pieces of up to 128 characters without loss, and the whole
-  file is loaded
+  stopped at such a line and ignored the rest of the file. In the port,
+  the line is split into pieces of up to 128 characters without loss, and
+  the whole file is loaded
   ([#375](https://github.com/fubar-coder/bb2-c/issues/375)).
 * In a tokenised source, a TAB behind a keyword on the same line went to
   the wrong column, because the original counted the keyword as two
@@ -516,17 +526,18 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 ### File requester
 
 The editor's file requester, as LOAD and SAVE show it, is the requester
-of `FileRequest$`, and the fixes of that requester on the page
+of `FileRequest$`. The fixes of that requester on the page
 [Libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#file-requester-fixes" >}})
-apply to the editor too: long names in the list, tall screens, the DRIVES
-list, the system libraries it left open, the directories it kept in use
-and the path gadget after CD. Two of them change what users of the
-editor see:
+apply to the editor too. They concern long names in the list, tall
+screens, the DRIVES list, the system libraries it left open, the
+directories it kept in use and the path gadget after CD. Two of them
+change what users of the editor see:
 
-* A file name of 64 or more characters, which file systems with long
-  names and the host directories of an emulator allow, or a path of 160
-  or more, was copied into the requester's fields without a limit and
-  overwrote memory, and OK then crashed the editor. The requester refuses
+* A file name of 64 or more characters, or a path of 160 or more, was
+  copied into the requester's fields without a limit and overwrote
+  memory, and OK then crashed the editor. Such names occur on file
+  systems with long names and in the host directories of an emulator.
+  The port's requester refuses
   such a name or path: it stays open, keeps its fields, and shows "Name
   too long" or "Path too long" in the title bar of the editor's screen
   ([Long file names overwrote memory]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#filerequest-long-names" >}}),
@@ -588,9 +599,9 @@ editor see:
 
 ### Low memory
 
-* When the editor's screen could not be opened again (after the options,
-  when the label column appears or goes, after a program with
-  `CloseEd`), the editor drew into freed memory and hung; it shows the
+* The editor opens its screen again after the options, when the label
+  column appears or goes, and after a program with `CloseEd`. When it
+  could not open it, it drew into freed memory and hung; it shows the
   out-of-memory alert and ends with an error
   ([#1007](https://github.com/fubar-coder/bb2-c/issues/1007)).
 * When the first line of a file being opened did not fit into memory,
@@ -619,10 +630,10 @@ editor see:
   crashed when it opened its screen; it opens the screen without the
   gradient
   ([#366](https://github.com/fubar-coder/bb2-c/issues/366)).
-* When the empty first line of a text could not be allocated, at the
-  start, with NEW or with LOAD of an empty file, the editor went on with
-  lines that were already freed; it reports out of memory, and NEW keeps
-  the old text
+* The editor allocates an empty first line at the start, with NEW and
+  with LOAD of an empty file. When it could not allocate it, it went on
+  with lines that were already freed; it reports out of memory, and NEW
+  keeps the old text
   ([#356](https://github.com/fubar-coder/bb2-c/issues/356)).
 * KILL of a block that is the whole only line, when the new empty line
   could not be allocated, left the text pointing to the freed line; the
