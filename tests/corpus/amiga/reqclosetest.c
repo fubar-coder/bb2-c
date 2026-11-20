@@ -168,9 +168,9 @@ int main(int argc, char **argv)
         Write(Output(), (APTR)usage, sizeof usage - 1);
         return 0;
     }
-    IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 39);
-    GadToolsBase = OpenLibrary("gadtools.library", 39);
-    AslBase = OpenLibrary("asl.library", 39);
+    IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 37);
+    GadToolsBase = OpenLibrary("gadtools.library", 37);
+    AslBase = OpenLibrary("asl.library", 37);
     if (!IntuitionBase || !GadToolsBase || !AslBase) {
         out("libraries missing", 0, -999, 0);
         return 20;
