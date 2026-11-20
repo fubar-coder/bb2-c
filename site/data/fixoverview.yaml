@@ -7974,3 +7974,11 @@ rows:
     text: "A runtime error inside a `SetInt` routine of an executable with runtime error checking is reported with the usual requester at the program's next statement, as the debugger does; the original hung the machine."
     page: libraries
     anchor: debugger-fixes
+  - issue: 43
+    severity: 2
+    topic: "System"
+    library: "rundebuglib"
+    command: "Print, NPrint, Edit$, Edit"
+    text: "Ctrl-C ends an executable compiled with runtime error checking at its next `Print`, `NPrint`, `Edit$` or `Edit` on the console, with `***Break` and the return code 20 as a C program; the original could not be stopped. A loop without console input or output still runs on."
+    page: libraries
+    anchor: ctrl-c-runtime-errors

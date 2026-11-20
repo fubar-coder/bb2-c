@@ -1352,6 +1352,9 @@ In the command libraries:
   ([Music players](#music-players)).
 * [Four smaller changes](#more-tape-and-keyboard-changes) concern tapes
   of mouse and keyboard events and the keyboard in Blitz mode.
+* [Ctrl-C](#ctrl-c-runtime-errors) ends an executable compiled with
+  runtime error checking at its next `Print`, `NPrint`, `Edit$` or `Edit`
+  on the console.
 
 In the RWE userlibs:
 
@@ -1530,6 +1533,71 @@ described in the lists of the other fixes below.
   such; the pointer moves as before ([Tapes and simulated input](#tapes)).
 * `BlitzKeys Off` gives the keyboard input back to the input used before
   `BlitzKeys On` ([Input](#input)).
+
+### Ctrl-C did not stop a program with runtime error checking {#ctrl-c-runtime-errors}
+
+On the Amiga, Ctrl-C in a Shell window (or the Shell command `Break`)
+sends the program that runs there a break signal. A C program reacts to
+it at its next input or output on the console: it prints `***Break` and
+ends with the return code 20.
+
+**What happened.** An executable compiled with runtime error checking
+was meant to end at Ctrl-C, but its check never saw the signal: the
+program ran on to its end. This program sends itself the break signal
+with `SetSignal_`, as Ctrl-C does, and clears it again after the next
+`NPrint`:
+
+```
+NPrint "start"
+SetSignal_ $1000,$1000
+NPrint "signalled"
+SetSignal_ 0,$1000
+NPrint "not stopped"
+End
+```
+
+**With the original**
+
+```
+start
+signalled
+not stopped
+```
+
+**With the port**
+
+```
+start
+signalled
+***Break
+```
+
+The program ends with the return code 20, which the Shell reports as
+`failed returncode 20`. It ends as at `End`, with the same clean-up of
+the libraries.
+
+The check comes once at the end of each `Print`, `NPrint`, `Edit$` and
+`Edit`, so the text of the `Print` is still written, and `Edit$` ends the
+program after it has read its line. It applies only where a C program
+would react too:
+
+* only in an executable compiled with runtime error checking, and not
+  between `RunErrsOff` and `RunErrsOn`; an executable without runtime
+  error checking is not changed;
+* only on the program's standard input and output, the console window
+  it was started from or what the Shell redirected them to; after
+  `WindowOutput`, `BitMapOutput`, `FileOutput` or one of the matching
+  input commands, the program goes on;
+* a loop that does no input or output on the console still runs on, as
+  it does in a C program.
+
+**What to change.** A program that tests for Ctrl-C itself, for example
+with `SetSignal_` to clean up in its own way, is ended at a `Print` on
+the console that comes between the signal and its test. Test for the
+signal before such output, or put the output between `RunErrsOff` and
+`RunErrsOn`.
+
+Issue: [Ctrl-C check in the TRAP #1 handler never effective (#43)](https://github.com/fubar-coder/bb2-c/issues/43).
 
 ### The file requester of `ReqFileRequest` opened with other flags {#reqfilerequest-default-flags}
 

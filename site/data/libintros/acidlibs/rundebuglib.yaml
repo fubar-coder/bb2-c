@@ -7,3 +7,8 @@ intro: |
   A runtime error inside a `SetInt` routine is shown in the same
   requester at the program's next statement, and the program ends; the
   routine is not called again in between.
+
+  Ctrl-C ends such a program at its next `Print`, `NPrint`, `Edit$` or
+  `Edit` on the console, as it ends a C program: it prints `***Break`
+  and ends with the return code 20. A loop without input or output on
+  the console is not stopped.
