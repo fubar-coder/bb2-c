@@ -56,9 +56,16 @@ pair is no valid library/register code (probably a mistyped
 
 ## C and assembler
 
-All C behind thunks (d0–d1/a0–a1 kept by the statements, d1/a0–a1 by the
-functions; the original keeps less). `RemapMapShape` is an empty C
-function. The `BltBitMapRastPort` calls get what the original passes in
+C behind thunks (d0–d1/a0–a1 kept by the statements, d1/a0–a1 by the
+functions; the original keeps less), but the three blit entries
+`BlitMapShape`, `BlitMapShapeSize` and `BlitGroup` (with the shared
+`_blitmapshape2`), which are the original's assembler (`BLITZ_ASM_ROUTINE`)
+for speed: `BlitMapShape` is a map editor's call per tile, and the C
+version took about 530 cycles more per call than the original (9461
+against 8931 for a 16 × 16 map shape of 2 planes into a window, a600);
+as assembler 8931. They change d0, d1, a0, a1 and the low words of d4–d6,
+as the original. `RemapMapShape` is an empty C function. The
+`BltBitMapRastPort` calls get what the original passes in
 the registers, upper words included: x and y (and width/height of
 `BlitMapShapeSize`) are the caller's longs; width, height and minterm
 are loaded with `MOVE.w` into the caller's d4/d5/d6 – in `BlitGroup` d5

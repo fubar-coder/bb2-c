@@ -25,8 +25,9 @@
  * group: a block of 512 bytes (init, AllocVec MEMF_CLEAR) of members
  * {map shape address.l, dx.w, dy.w}, ended by a 0 address.
  *
- * All C behind thunks; the graphics calls get the registers the original
- * passes, with their upper words: x, y (and width, height of
+ * C behind thunks, but the three blit entries, which are the original's
+ * assembler (for speed); their graphics calls get the registers the
+ * original passes, with their upper words: x, y (and width, height of
  * BlitMapShapeSize) as the caller's longs, the width/height/minterm the
  * original loads with MOVE.w into the caller's d4/d5/d6 (in BlitGroup d5
  * is the member's address before).
@@ -72,10 +73,6 @@
 #include <graphics/gfx.h>
 #include <graphics/rastport.h>
 #include <intuition/intuition.h>
-#define __NOLIBBASE__
-#define GRAPHICS_BASE_NAME gfx
-#include <proto/graphics.h>
-#undef __NOLIBBASE__
 
 /* entry points (thunks, below) */
 void _shapetomapshape(void), _blitmapshape(void), _remapmapshape(void);
@@ -176,9 +173,11 @@ struct member {
 static_assert(sizeof(struct member) == 8);
 
 static UWORD blockwidth, blockheight;
-static struct mapshape *baseshape;      /* the map shapes */
+/* the map shapes; read by the blit entries (assembler) */
+static struct mapshape *baseshape __attribute__((used));
 static struct member *nextgroupmember;
-static struct member *groupaddr;        /* the group, 512 bytes */
+/* the group, 512 bytes; read by BlitGroup (assembler) */
+static struct member *groupaddr __attribute__((used));
 /* the place of the 64th member: AddGroupMember adds none there (fixed
    #904; 0 without a group block, so that it adds none at all, #905) */
 static struct member *groupend;
@@ -261,81 +260,75 @@ static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const struct bb_
 }
 BLITZ_THUNK(_shapetomapshape, shapetomapshape_c, "d0-d1/a0-a1");
 
-/* _blitmapshape2: a map shape that is not empty (width) is blitted to
-   x,y; d4/d5/d6 get width/height/minterm in their low words */
-static void blit(struct Library *gfx, struct mapshape *ms, struct RastPort *rp, ULONG x, ULONG y,
-                 ULONG width, ULONG height, ULONG minterm)
-{
-    if (!ms->width)
-        return;
-    BL_SETW(width, ms->width);
-    BL_SETW(height, ms->bm.Rows);
-    BL_SETW(minterm, 0xc0);
-    BltBitMapRastPort(&ms->bm, 0, 0, rp, (LONG)x, (LONG)y, (LONG)width,
-                      (LONG)height, minterm);
-}
+/* The blits are assembler entries, the original's code (for speed:
+   BlitMapShape is the per-tile command of a map editor; the C version
+   behind a thunk took about 530 cycles more per call than the original,
+   9461 against 8931 for a 16 x 16 map shape of 2 planes into a window on
+   the a600).  Their register contract is the original's: d0, d1,
+   a0, a1 and the low words of d4, d5, d6 change, the rest stays
+   (graphics.library keeps d2-d7/a2-a6). */
 
 /**
  * @brief BlitMapShape window#,mapshape#,x,y: a map shape blitted into the
- * window's RastPort.
+ * window's RastPort (assembler entry).
  *
  * BltBitMapRastPort from 0,0, minterm $C0, the map shape's width and
- * height; nothing for an empty map shape (width 0).  x and y go to the
- * call as the caller's longs; width, height and minterm replace the low
- * words of the caller's d4/d5/d6.  BUG(orig) (#906): the map shape
- * number is not checked.
- * @param n        d1: the map shape number
- * @param x        d2: x
- * @param y        d3: y
- * @param width    d4: the caller's d4 (upper word)
- * @param height   d5: the caller's d5 (upper word)
- * @param minterm  d6: the caller's d6 (upper word)
- * @param win      a1: the window object
- * @param gfx      a6: graphics.library
+ * height; nothing for an empty map shape (width 0).  Registers on entry:
+ * d1 the map shape number, d2/d3 x and y (the caller's longs go to the
+ * call), a1 the window object, a6 graphics.library; width, height and
+ * minterm replace the low words of the caller's d4/d5/d6 (MOVE.w).  It
+ * falls into _blitmapshape2 (a0 = the map shape, a1 = the RastPort),
+ * which BlitGroup calls for each member and which ends in the JMP to
+ * BltBitMapRastPort.  BUG(orig) (#906): the map shape number is not
+ * checked.
  */
-static void BLITZ_ROUTINE blitmapshape_c(UWORD n BL_REG(d1), ULONG x BL_REG(d2),
-                                         ULONG y BL_REG(d3), ULONG width BL_REG(d4),
-                                         ULONG height BL_REG(d5), ULONG minterm BL_REG(d6),
-                                         struct Window **win BL_REG(a1),
-                                         struct Library *gfx BL_REG(a6))
-{
-    blit(gfx, MAPSHAPE(n), (*win)->RPort, x, y, width, height, minterm);
-}
-BLITZ_THUNK(_blitmapshape, blitmapshape_c, "d0-d1/a0-a1");
+BLITZ_ASM_ROUTINE(_blitmapshape,
+"   move.l  (a1),a1\n"
+"   move.l  50(a1),a1\n"                /* the window's RastPort */
+"   move.l  _baseshape(pc),a0\n"        /* GetMapShape */
+"   andi.l  #0xffff,d1\n"
+"   lsl.l   #6,d1\n"
+"   add.l   d1,a0\n"
+"_blitmapshape2:\n"
+"   tst.w   (a0)\n"                     /* the width: 0 = empty */
+"   beq.s   0f\n"
+"   moveq   #0,d0\n"
+"   moveq   #0,d1\n"
+"   move.w  (a0),d4\n"
+"   move.w  4(a0),d5\n"                 /* Rows */
+"   addq.w  #2,a0\n"                    /* the struct BitMap */
+"   move.w  #0xc0,d6\n"
+"   jmp     -606(a6)\n"                 /* BltBitMapRastPort */
+"0: rts");
 
 /**
  * @brief BlitMapShapeSize window#,mapshape#,x,y,width,height: a part of a
- * map shape blitted into the window's RastPort.
+ * map shape blitted into the window's RastPort (assembler entry).
  *
- * As BlitMapShape with the given width and height, the height at most
- * the map shape's (signed words; the width is not limited); nothing for
- * an empty map shape.  BUG(orig) (#906): the number is not checked.
- * @param n        d1: the map shape number
- * @param x        d2: x
- * @param y        d3: y
- * @param w        d4: the width (the caller's long)
- * @param h        d5: the height (the caller's long, low word limited)
- * @param minterm  d6: the caller's d6 (upper word; the low word $C0)
- * @param win      a1: the window object
- * @param gfx      a6: graphics.library
+ * As BlitMapShape with the given width (d4) and height (d5), the height
+ * at most the map shape's (CMP.w: signed words; the width is not
+ * limited); nothing for an empty map shape.  The caller's longs of d2-d5
+ * go to the call, the low word of d6 becomes $C0.  BUG(orig) (#906): the
+ * number is not checked.
  */
-static void BLITZ_ROUTINE blitmapshapesize_c(UWORD n BL_REG(d1), ULONG x BL_REG(d2),
-                                             ULONG y BL_REG(d3), ULONG w BL_REG(d4),
-                                             ULONG h BL_REG(d5), ULONG minterm BL_REG(d6),
-                                             struct Window **win BL_REG(a1),
-                                             struct Library *gfx BL_REG(a6))
-{
-    struct mapshape *ms = MAPSHAPE(n);
-
-    if (!ms->width)
-        return;
-    if ((WORD)h > (WORD)ms->bm.Rows)
-        BL_SETW(h, ms->bm.Rows);
-    BL_SETW(minterm, 0xc0);
-    BltBitMapRastPort(&ms->bm, 0, 0, (*win)->RPort, (LONG)x, (LONG)y,
-                      (LONG)w, (LONG)h, minterm);
-}
-BLITZ_THUNK(_blitmapshapesize, blitmapshapesize_c, "d0-d1/a0-a1");
+BLITZ_ASM_ROUTINE(_blitmapshapesize,
+"   move.l  _baseshape(pc),a0\n"        /* GetMapShape */
+"   andi.l  #0xffff,d1\n"
+"   lsl.l   #6,d1\n"
+"   add.l   d1,a0\n"
+"   tst.w   (a0)\n"
+"   beq.s   1f\n"
+"   move.l  (a1),a1\n"
+"   move.l  50(a1),a1\n"
+"   moveq   #0,d0\n"
+"   moveq   #0,d1\n"
+"   cmp.w   4(a0),d5\n"
+"   ble.s   0f\n"
+"   move.w  4(a0),d5\n"                 /* at most the map shape's height */
+"0: addq.w  #2,a0\n"
+"   move.w  #0xc0,d6\n"
+"   jmp     -606(a6)\n"
+"1: rts");
 
 /**
  * @brief RemapMapShape mapshape#,botcol,topcol: does nothing.
@@ -467,37 +460,31 @@ BLITZ_THUNK(_addgroupmember, addgroupmember_c, "d0-d1/a0-a1");
  * Without a group block it does nothing (fixed #905: the original read
  * the members from address 0).  a6 is graphics.library: fixed (#902),
  * the original's !libs had no #graphicslib, so a6 was the caller's.
- * @param x        d1: x (a word)
- * @param yin      d2: y in the low word, the caller's upper word
- * @param ybase    d3: the caller's d3 (upper word)
- * @param width    d4: the caller's d4 (upper word)
- * @param minterm  d6: the caller's d6 (upper word)
- * @param win      a1: the window object
- * @param gfx      a6: graphics.library
+ * Assembler entry, the original's code: d1 x, d2 y, a1 the window
+ * object, a6 graphics.library; a5 is kept on the stack, each member's
+ * a1/a5/d2/d3 around the call of _blitmapshape2.
  */
-static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG yin BL_REG(d2),
-                                      ULONG ybase BL_REG(d3), ULONG width BL_REG(d4),
-                                      ULONG minterm BL_REG(d6), struct Window **win BL_REG(a1),
-                                      struct Library *gfx BL_REG(a6))
-{
-    struct RastPort *rp = (*win)->RPort;
-    const struct member *p = groupaddr;
-    ULONG xbase = yin;                  /* d2 */
-    struct mapshape *ms;
-
-    if (!p)                             /* fixed (#905): no group block */
-        return;
-    BL_SETW(ybase, yin);                /* MOVE.w d2,d3 */
-    BL_SETW(xbase, x);                  /* MOVE.w d1,d2 */
-    while ((ms = p->ms) != NULL) {
-        ULONG mx = xbase, my = ybase;
-        BL_SETW(mx, xbase + p->dx);
-        BL_SETW(my, ybase + p->dy);
-        blit(gfx, ms, rp, mx, my, width, (ULONG)ms, minterm);
-        p++;
-    }
-}
-BLITZ_THUNK(_blitgroup, blitgroup_c, "d0-d1/a0-a1");
+BLITZ_ASM_ROUTINE(_blitgroup,
+"   move.l  a5,-(a7)\n"
+"   move.l  (a1),a1\n"
+"   move.l  50(a1),a1\n"                /* the window's RastPort */
+"   move.w  d2,d3\n"
+"   move.w  d1,d2\n"
+"   move.l  _groupaddr(pc),d0\n"
+"   beq.s   1f\n"                       /* fixed (#905): no group block */
+"   move.l  d0,a5\n"
+"0: move.l  (a5)+,d5\n"                 /* the member's map shape */
+"   beq.s   1f\n"
+"   move.l  d5,a0\n"
+"   movem.l a1/a5/d2-d3,-(a7)\n"
+"   add.w   (a5)+,d2\n"
+"   add.w   (a5)+,d3\n"
+"   bsr     _blitmapshape2\n"
+"   movem.l (a7)+,a1/a5/d2-d3\n"
+"   addq.l  #4,a5\n"
+"   bra.s   0b\n"
+"1: move.l  (a7)+,a5\n"
+"   rts");
 
 /* ------------------------------------------- error checks (debugger only) */
 
