@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "More than two EZRequest gadgets need Kickstart 2.0" *
+rc=0

@@ -16,7 +16,8 @@
  *   EZRequest            EasyRequestArgs on the EZOutput window (0: the
  *                        default screen); '|' in the body becomes a line
  *                        feed; with arguments (title$,body$,gadget$,
- *                        var..) they are the format arguments
+ *                        var..) they are the format arguments; below
+ *                        intuition V36 AutoRequest (fixed #1150)
  *   EZRequestArgs args.. the body is built from the arguments: %s / %ld /
  *                        %d per type, separated by the EZSeparator
  *                        character ('|': a line feed), gadget "Ok"
@@ -25,7 +26,9 @@
  *                        the next word (quotes group, "" inside quotes is
  *                        a quote), NextArgChar$ c everything up to c
  *   ProgPath$/Dir$/Name$ GetProgramDir/GetProgramName (the task name if
- *                        there is no program name)
+ *                        there is no program name); below dos V36 the
+ *                        current directory and the shell's command name
+ *                        (fixed #1150)
  *   OpenFontPrefs        reads ENV:SYS/Font.Prefs into a 16K buffer;
  *                        DefaultFontHeight/Name(type) search its FONT
  *                        chunks (fp_Type), CloseFontPrefs frees it
@@ -123,6 +126,19 @@
  * which the compiler does not take back after a function with a numeric
  * result (#846).  The call keeps a3 (the libraries' safe form of the NDK
  * macro, cmake/ndk-calls.cmake).
+ * Fixed (intended deviation, #1150): EZRequest/EZRequestArgs called
+ * EasyRequestArgs (intuition V36) and ProgPath$/ProgDir$/ProgName$
+ * GetProgramDir, GetCurrentDirName, NameFromLock and GetProgramName (dos
+ * V36) with both libraries opened in any version: on Kickstart 1.x a
+ * crash.  Below intuition V36 the library formats body and gadgets
+ * itself (RawDoFmt, safe form) and calls AutoRequest with one or two
+ * gadgets, the title not shown; more than two gadgets: no requester, 0,
+ * and with runtime error checking "More than two EZRequest gadgets need
+ * Kickstart 2.0" (ezgad3chk, ezgad2chk, ezargschk).  Below dos V36 the
+ * directory is the current directory, its path built with Examine and
+ * ParentDir, the name the shell's command name (the task name without a
+ * shell): a program started with a path from another directory gets the
+ * current directory, not its own (the user's decision of 2026-11-20).
  *
  * Original behaviour that is no defect: LtoS replaces the bytes 0-31 and
  * 128-255 by 128 (a signed compare), as its documentation says
@@ -151,6 +167,7 @@
 #include "blitzexec.h"
 #include <exec/execbase.h>
 #include <dos/dos.h>
+#include <dos/dosextens.h>
 #include <intuition/intuition.h>
 #include <prefs/font.h>
 #define __NOLIBBASE__
@@ -170,12 +187,14 @@ void _ltos(void), _ascraw(void), _rawasc(void), _openfontprefs(void);
 void _closefontprefs(void), _defaultfontheight(void), _defaultfontname(void);
 void _nextparseuntilchar(void), _binstr(void), rimisclib_libinit(void);
 void rimisclib_libfinit(void), ezargschk(void), ezreqargschk(void);
+void ezgad3chk(void), ezgad2chk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
 /* !libheader {#rimisclib,init,0,finit,0}; error field: the error check area
-   of ezargschk and ezreqargschk (fixed, #748) */
+   of ezargschk and ezreqargschk (fixed, #748), ezgad3chk and ezgad2chk
+   (fixed, #1150) */
 BLITZ_LIBHEADER(LIB_rimisclib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_NULLSUB(0, 0, 0);
@@ -203,10 +222,10 @@ BLITZ_NAME("WorkbenchHere", "");
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_STRING, BL_STRING, BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy), ezgad3chk, 0);       /* check: fixed #1150 */
 BLITZ_ARGS(BL_STRING, BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy2), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy2), ezgad2chk, 0);      /* check: fixed #1150 */
 BLITZ_ARGS(BL_STRING);
 BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy3), 0, 0);
@@ -803,8 +822,146 @@ static ULONG BLITZ_ROUTINE nextparseuntilchar_c(UBYTE ch BL_REG(d0))
 
 /* ------------------------------------------------------------ EZRequest */
 
+/* below intuition V36 (Kickstart 1.x, fixed #1150): RawDoFmt's PutChProcs
+   (the character in d0, the data in a3) - store it, or count it in the
+   long at a3; machine code as words (the RKM's form of the first) */
+static const UWORD ez_putch[] = { 0x16c0, 0x4e75 };      /* move.b d0,(a3)+ ; rts */
+static const UWORD ez_countch[] = { 0x5293, 0x4e75 };    /* addq.l #1,(a3) ; rts */
+
+static struct TextAttr topaz8 = { (STRPTR)"topaz.font", 8, FS_NORMAL, FPF_ROMFONT };
+
+/* the bytes of the argument stream a RawDoFmt format of exec V33 reads:
+   %[-][0][width][.limit][l]type; s and b a long, d u x c a word (a long
+   with l), other characters none */
+static ULONG fmtbytes(const UBYTE *f)
+{
+    ULONG n = 0;
+    UBYTE c, l;
+
+    while ((c = *f++) != 0) {
+        if (c != '%')
+            continue;
+        if (*f == '-')
+            f++;
+        while ((*f >= '0' && *f <= '9') || *f == '.')
+            f++;
+        l = *f == 'l';
+        if (l)
+            f++;
+        if (!(c = *f))
+            break;
+        f++;
+        if (c == 's' || c == 'b')
+            n += 4;
+        else if (c == 'd' || c == 'u' || c == 'x' || c == 'c')
+            n += l ? 4 : 2;
+    }
+    return n;
+}
+
+/* a format with its arguments as RawDoFmt makes it, in a block of
+   AllocMem of *size bytes (the 0 included); NULL without memory */
+static UBYTE *ezformat(const UBYTE *f, APTR args, ULONG *size)
+{
+    ULONG n = 0;
+    UBYTE *buf;
+
+    RawDoFmt((STRPTR)f, args, (APTR)ez_countch, &n);
+    buf = AllocMem(n, MEMF_ANY);
+    if (buf)
+        RawDoFmt((STRPTR)f, args, (APTR)ez_putch, buf);
+    *size = n;
+    return buf;
+}
+
+/* an IntuiText of the 1.x requester: AutoRequest's pens and offsets,
+   topaz 8 (its height known for the line spacing) */
+static UWORD ezitext(struct IntuiText *it, UBYTE *s, WORD top, struct IntuiText *next)
+{
+    it->FrontPen = AUTOFRONTPEN;
+    it->BackPen = AUTOBACKPEN;
+    it->DrawMode = AUTODRAWMODE;
+    it->LeftEdge = AUTOLEFTEDGE;
+    it->TopEdge = top;
+    it->ITextFont = &topaz8;
+    it->IText = s;
+    it->NextText = next;
+    return (UWORD)IntuiTextLength(it);
+}
+
+/* EZRequest below intuition V36 (Kickstart 1.x has no EasyRequestArgs;
+   fixed #1150, the original called it there, behind intuition's jump
+   table): body and gadgets formatted with the arguments (the gadgets with
+   those behind the body's, as EasyRequestArgs), the body's lines (line
+   feeds) as IntuiTexts, AutoRequest with one gadget (negative) or two
+   (positive | negative); the title is not shown.  The result as
+   EasyRequestArgs': 1 for the left gadget of two, 0 for the right one.
+   More than two gadgets (refused by the error check) or no memory: no
+   requester, 0. */
+static ULONG doeasy13(void)
+{
+    const UBYTE *body = (const UBYTE *)ez.es.es_TextFormat;
+    UBYTE *text, *gads, *p, *pos = NULL, *neg;
+    struct IntuiText *it;
+    ULONG tsize, gsize, lines, i, r = 0, w, h, gw, maxw = 640, maxh = 200;
+
+    if (!(text = ezformat(body, ez.args, &tsize)))
+        return 0;
+    gads = ezformat((const UBYTE *)ez.es.es_GadgetFormat,
+                    ez.args ? (UBYTE *)ez.args + fmtbytes(body) : NULL, &gsize);
+    if (!gads)
+        goto freetext;
+    neg = gads;
+    for (p = gads; *p; p++)
+        if (*p == '|') {
+            if (pos)
+                goto freegads;                          /* three or more */
+            *p = 0;
+            pos = gads;
+            neg = p + 1;
+        }
+    lines = 1;
+    for (p = text; *p; p++)
+        if (*p == 10)
+            lines++;
+    it = AllocMem((lines + 2) * sizeof *it, MEMF_ANY);
+    if (!it)
+        goto freegads;
+    w = 0;
+    p = text;
+    for (i = 0; i < lines; i++) {
+        UBYTE *s = p;
+
+        while (*p && *p != 10)
+            p++;
+        if (*p)
+            *p++ = 0;
+        gw = ezitext(&it[i], s, AUTOTOPEDGE + i * 9, i + 1 < lines ? &it[i + 1] : NULL);
+        if (gw > w)
+            w = gw;
+    }
+    gw = ezitext(&it[lines + 1], neg, AUTOTOPEDGE, NULL) + 40;
+    if (pos)
+        gw += ezitext(&it[lines], pos, AUTOTOPEDGE, NULL) + 40;
+    w = (w + 40 > gw ? w + 40 : gw) + 16;
+    h = lines * 9 + 46;
+    if (win) {
+        maxw = win->WScreen->Width;
+        maxh = win->WScreen->Height;
+    }
+    r = AutoRequest(win, it, pos ? &it[lines] : NULL, &it[lines + 1], 0, 0,
+                    w < maxw ? w : maxw, h < maxh ? h : maxh) ? 1 : 0;
+    FreeMem(it, (lines + 2) * sizeof *it);
+freegads:
+    FreeMem(gads, gsize);
+freetext:
+    FreeMem(text, tsize);
+    return r;
+}
+
 /* doeasybegin: '|' to line feeds in the body (the compiler's copy of
-   the argument), EasyRequestArgs on the EZOutput window */
+   the argument), EasyRequestArgs on the EZOutput window; below intuition
+   V36 the library's own requester (fixed #1150) */
 static ULONG doeasybegin(void)
 {
     UBYTE *p = (UBYTE *)ez.es.es_TextFormat, c;
@@ -812,6 +969,8 @@ static ULONG doeasybegin(void)
     while ((c = *p++) != 0)
         if (c == '|')
             p[-1] = 10;
+    if (intuibase->LibNode.lib_Version < 36)
+        return doeasy13();                              /* fixed (#1150) */
     return (ULONG)EasyRequestArgs(win, &ez.es, NULL, ez.args);
 }
 
@@ -1068,6 +1227,74 @@ static void BLITZ_ROUTINE doeasysep_c(const UBYTE *s BL_REG(d0))
 
 /* ------------------------------------------------------------ the paths */
 
+/* below dos V36 (fixed #1150): the path of the current directory in buf
+   (at most 254 characters and the 0, as NameFromLock's 255 bytes), built
+   from the names of its directories up to the root (Examine, ParentDir:
+   "Volume:dir/dir"); "" if it is longer, without memory for the
+   FileInfoBlock or when a call fails */
+static void dirpath13(UBYTE *buf)
+{
+    struct FileInfoBlock *fib = AllocMem(sizeof *fib, MEMF_ANY);
+    UBYTE *end = buf + 254, *p = end;
+    BPTR lock, parent;
+    const UBYTE *s;
+    ULONG n, first = 1, ok = 1;
+
+    buf[0] = 0;
+    if (!fib)
+        return;
+    lock = Lock((CONST_STRPTR)"", SHARED_LOCK);
+    *p = 0;
+    while (lock) {
+        if (!Examine(lock, fib)) {
+            ok = 0;
+            break;
+        }
+        parent = ParentDir(lock);
+        UnLock(lock);
+        lock = parent;
+        for (s = (const UBYTE *)fib->fib_FileName, n = 0; s[n]; n++)
+            ;
+        if ((ULONG)(p - buf) < n + (parent ? !first : 1)) {
+            ok = 0;                                     /* too long */
+            break;
+        }
+        if (!parent)
+            *--p = ':';
+        else if (!first)
+            *--p = '/';
+        while (n)
+            *--p = s[--n];
+        first = 0;
+    }
+    if (lock)
+        UnLock(lock);
+    if (ok)
+        for (s = p; (*buf++ = *s++) != 0;)
+            ;
+    FreeMem(fib, sizeof *fib);
+}
+
+/* below dos V36 (fixed #1150): the shell's command name (a BSTR) in buf,
+   at most 254 characters; "" without a shell or name */
+static void progname13(UBYTE *buf)
+{
+    struct Process *pr = (struct Process *)SysBase->ThisTask;
+    struct CommandLineInterface *cli;
+    const UBYTE *b;
+    ULONG n, i;
+
+    buf[0] = 0;
+    if (pr->pr_Task.tc_Node.ln_Type != NT_PROCESS
+        || !(cli = BADDR(pr->pr_CLI)) || !cli->cli_CommandName)
+        return;
+    b = BADDR(cli->cli_CommandName);
+    n = b[0] < 254 ? b[0] : 254;
+    for (i = 0; i < n; i++)
+        buf[i] = b[i + 1];
+    buf[n] = 0;
+}
+
 /**
  * @brief ProgPath$: the program's directory and name.
  *
@@ -1078,21 +1305,33 @@ static void BLITZ_ROUTINE doeasysep_c(const UBYTE *s BL_REG(d0))
  * is the name alone; fixed (#758): the original decided on the "/" by
  * the byte before the result.  "/" is added unless the directory ends
  * in ":".
+ * Below dos V36 (Kickstart 1.x has none of the four functions; fixed
+ * #1150, the original called them there, behind dos's jump table): the
+ * current directory, its path built by the library (dirpath13), and the
+ * shell's command name (cli_CommandName; without a shell the task name).
+ * A program started with a path from another directory gets the current
+ * directory there, not its own.
  * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE doprogpath_c(void)
 {
-    BPTR lock = GetProgramDir();
     const UBYTE *s;
     UBYTE *dst, c;
     ULONG n;
 
-    if (!lock)
-        GetCurrentDirName(pd.progdir, 255);
-    else
-        NameFromLock(lock, pd.progdir, 255);
     pd.rawprogname[0] = 0;
-    GetProgramName(pd.rawprogname, 255);
+    if (dosbase_->dl_lib.lib_Version < 36) {           /* fixed (#1150) */
+        dirpath13(pd.progdir);
+        progname13(pd.rawprogname);
+    } else {
+        BPTR lock = GetProgramDir();
+
+        if (!lock)
+            GetCurrentDirName(pd.progdir, 255);
+        else
+            NameFromLock(lock, pd.progdir, 255);
+        GetProgramName(pd.rawprogname, 255);
+    }
     if (!pd.rawprogname[0]) {
         s = (const UBYTE *)SysBase->ThisTask->tc_Node.ln_Name;
         dst = pd.progname;
@@ -1326,6 +1565,22 @@ BLITZ_THUNK(_defaultfontname, defaultfontname_c, "d1/a0-a1");
 /* ------------------------------------------- error checks (debugger only) */
 
 BLITZ_ERRCHK_MESSAGE(toomanyargs, "Too Many EZRequest Arguments");  /* fixed, #748 */
+BLITZ_ERRCHK_MESSAGE(toomanygads, "More than two EZRequest gadgets need Kickstart 2.0");  /* fixed, #1150 */
+
+/* below intuition V36 (fixed #1150): the library's requester has one
+   gadget or two ('|' separated); with more it shows none and returns 0 */
+static void BLITZ_ERRCHK gadchk(const UBYTE *g)
+{
+    ULONG n = 0;
+
+    if (!intuibase || intuibase->LibNode.lib_Version >= 36)
+        return;
+    while (*g)
+        if (*g++ == '|')
+            n++;
+    if (n > 1)
+        BLITZ_RUNERR(toomanygads);
+}
 
 /* the bytes the repeated arguments below sp take in the argument array
    (a string, long, Quick or Float 4, a word or byte 2), as doargs stores
@@ -1361,15 +1616,52 @@ static ULONG argbytes(const UBYTE *sp, UWORD cnt)
  * behind it.  The release code is unchanged (the number of arguments is
  * in the program's source).
  *
- * Errors: "Too Many EZRequest Arguments".
- * @param args  a2: the argument stack: the three lengths, below them the
- *              repeated arguments
- * @param reps  d7.w: the number of arguments
+ * Fixed (#1150): below intuition V36 also more than two gadgets, as
+ * ezgad3chk.
+ *
+ * Errors: "Too Many EZRequest Arguments"; "More than two EZRequest
+ * gadgets need Kickstart 2.0".
+ * @param args    a2: the argument stack: the three lengths, below them the
+ *                repeated arguments
+ * @param reps    d7.w: the number of arguments
+ * @param gadget  d2: the gadgets
  */
-static void BLITZ_ERRCHK ezargschk_c(const UBYTE *args BL_REG(a2), UWORD reps BL_REG(d7))
+static void BLITZ_ERRCHK ezargschk_c(const UBYTE *args BL_REG(a2), UWORD reps BL_REG(d7),
+                                     const UBYTE *gadget BL_REG(d2))
 {
     if (argbytes(args - 12, reps) > sizeof ez.args2)
         BLITZ_RUNERR(toomanyargs);
+    gadchk(gadget);                                     /* fixed (#1150) */
+}
+
+/**
+ * @brief The error check of EZRequest title$,body$,gadget$ (debugger
+ * only).
+ *
+ * Fixed (#1150), not in the original (it called EasyRequestArgs also on
+ * Kickstart 1.x, a crash): below intuition V36 more than two gadgets,
+ * which the library's AutoRequest cannot show (the release code shows no
+ * requester and returns 0).
+ *
+ * Errors: "More than two EZRequest gadgets need Kickstart 2.0".
+ * @param gadget  d2: the gadgets
+ */
+static void BLITZ_ERRCHK ezgad3chk_c(const UBYTE *gadget BL_REG(d2))
+{
+    gadchk(gadget);
+}
+
+/**
+ * @brief The error check of EZRequest body$,gadget$ (debugger only).
+ *
+ * As ezgad3chk (fixed #1150).
+ *
+ * Errors: "More than two EZRequest gadgets need Kickstart 2.0".
+ * @param gadget  d1: the gadgets
+ */
+static void BLITZ_ERRCHK ezgad2chk_c(const UBYTE *gadget BL_REG(d1))
+{
+    gadchk(gadget);
 }
 
 /**
@@ -1391,3 +1683,5 @@ static void BLITZ_ERRCHK ezreqargschk_c(const UBYTE *args BL_REG(a2), UWORD reps
 
 BLITZ_ERRCHK_THUNK(ezargschk, ezargschk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(ezreqargschk, ezreqargschk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(ezgad3chk, ezgad3chk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(ezgad2chk, ezgad2chk_c, "d0-d1/a0-a1");

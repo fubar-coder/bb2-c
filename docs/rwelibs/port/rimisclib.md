@@ -7,7 +7,8 @@ Steve Matty (header of the source). 24 commands:
   title$,body$,gadget$,var..` – EasyRequestArgs on the window of
   `EZOutput [win#]` (none: the default screen); `|` in the body becomes a
   line feed; the repeated arguments (`#unknown|#push`) are the format
-  arguments. Gadget default "Ok".
+  arguments. Gadget default "Ok". Below Kickstart 2.0 an AutoRequest of
+  the library's own (Fixed, below).
 * `EZRequestArgs args..` – the body is built from the arguments: `%s`,
   `%ld` (long, quick, float) or `%d` (word, byte) each, separated by the
   `EZSeparator char` character (default `|`, i.e. a line feed).
@@ -17,7 +18,9 @@ Steve Matty (header of the source). 24 commands:
   quote), `NextArgChar$ c` everything up to the next c.
 * `ProgPath$`, `ProgDir$`, `ProgName$` – GetProgramDir/NameFromLock (no
   program dir: GetCurrentDirName) and GetProgramName (none: the task
-  name), joined with `/` unless the directory ends in `:`.
+  name), joined with `/` unless the directory ends in `:`. Below
+  Kickstart 2.0 the current directory and the shell's command name
+  (Fixed, below).
 * `OpenFontPrefs` reads `ENV:SYS/Font.Prefs` into a 16 KB buffer (-1 if
   it is FORM PREF with PRHD and a FONT chunk), `DefaultFontHeight(type)`
   / `DefaultFontName(type)` search its FONT chunks for fp_Type (0 icon, 1
@@ -57,8 +60,10 @@ argument pointer and the 16 longs of arguments. The thunks keep d1/a0/a1
 (the statements that keep d0 also d0), the C code d2-d7/a2-a6; the
 original changes d0-d3, d6/d7, a0-a3 and a6 in places. The original
 has no error check area; the port has one (the header's error field)
-with the two checks of #748 (`ezargschk`, `ezreqargschk`, C behind
-`BLITZ_ERRCHK_THUNK`, they keep d0-d1/a0-a1); the declarations differ
+with the two checks of #748 (`ezargschk`, `ezreqargschk`) and the two of
+#1150 (`ezgad3chk`, `ezgad2chk`; `ezargschk` also checks the gadgets);
+they are C behind `BLITZ_ERRCHK_THUNK` and keep d0-d1/a0-a1. The
+declarations differ
 from the reference there (`rimisclib.declarations-intended.txt`).
 
 **DIFF:**
@@ -175,6 +180,39 @@ kind F):
   runtime error checking more than 64 bytes of arguments is the error
   "Too Many EZRequest Arguments" (#748). Within 64 bytes the format text
   of EZRequestArgs (160 bytes) cannot overflow.
+* EZRequest and EZRequestArgs work below Kickstart 2.0 (intuition.library
+  below V36, which has no `EasyRequestArgs`): the library formats body
+  and gadgets with the arguments itself (exec's `RawDoFmt`, the gadgets
+  with the arguments behind the body's, as `EasyRequestArgs` does),
+  makes one IntuiText per line of the body (`|` and line feeds break
+  it; topaz 8) and calls `AutoRequest` on the EZOutput window (none: the
+  Workbench screen) with one gadget (the negative one) or two (left
+  positive, right negative). The title is not shown (AutoRequest has
+  none). The result is that of `EasyRequestArgs`: 1 for the left of two
+  gadgets, 0 for the right or only one. With more than two gadgets no
+  requester appears and the result is 0; with runtime error checking it
+  is the error "More than two EZRequest gadgets need Kickstart 2.0"
+  (`ezgad3chk`, `ezgad2chk`, `ezargschk`). Without memory for the
+  texts: no requester, 0. The original called `EasyRequestArgs` there,
+  behind intuition's jump table: a crash at the first requester (#1150;
+  tests `tests/bug-orig/rwe/rimisclib-v36-ezrequest`,
+  `rimisclib-v36-ezrequest-gadgets`, a500; the user's decision of
+  2026-11-20).
+* ProgPath$, ProgDir$ and ProgName$ work below Kickstart 2.0 (dos.library
+  below V36, which has none of `GetProgramDir`, `GetCurrentDirName`,
+  `NameFromLock`, `GetProgramName`): the directory is the current
+  directory, its path built by the library from the names of its
+  directories up to the root (`Examine`, `ParentDir`: `RAM
+  DISK:pp/sub` on Kickstart 1.3; 254 characters at most, longer or a failure: empty), the
+  name the last part of the shell's command name (`cli_CommandName`;
+  without a shell the task name). Difference to Kickstart 2.0: a
+  program started with a path from another directory (`dh0:tools/prog`
+  from `dh0:`) gets the current directory as ProgDir$, not its own
+  directory; from Workbench, which makes the program's directory the
+  current one, both agree. The original called the V36 functions there,
+  behind dos's jump table: a crash (#1150; test
+  `tests/bug-orig/rwe/rimisclib-v36-progpath`, a500; the user's decision
+  of 2026-11-20).
 
 ## BUG(orig)
 
