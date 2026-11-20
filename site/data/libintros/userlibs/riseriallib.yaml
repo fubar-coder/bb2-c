@@ -6,7 +6,9 @@ intro: |
   kept in a buffer of 256 bytes until `SerialRead` or `SerialWait` takes
   them, and bytes written with `SerialWrite` go into a buffer of 128 and
   are sent in the background. `SerialClose` removes the interrupts; the
-  port is also closed when the program ends.
+  port is also closed when the program ends. The commands that send or
+  receive blocks, strings and longs open the port themselves when it is
+  closed.
 
   The port sends and receives 8 data bits with one stop bit. The baud rate
   is set with `SerialBaud` or with `SerialOpen baudrate`; the calculation
@@ -14,23 +16,17 @@ intro: |
   installed, no other program may use the serial port, and serial.device
   must not be in use.
 
-  The library is a version 1.0 and many of its commands do not work as
-  their names promise: `SerialSendString`, `SerialReadString`,
-  `SerialReadLong` and `SerialWriteLong` do not work at all, and the block
-  commands do not open the port. The single-byte commands work, with care
-  about the upper bits of the byte read (see `SerialRead`):
+  A string is sent with `SerialSendString` and the 0 byte that ends it
+  with `SerialWrite 0`, and `SerialReadString` reads it up to that 0.
+  `SerialWriteLong` and `SerialReadLong` send and read a long as four
+  bytes, the low byte first.
 
   ```blitzbasic
   SerialOpen 9600
   SerialWrite 65
   Repeat
   Until SerialGot
-  b=SerialRead AND $FF
+  b=SerialRead
   NPrint "received ",b
   SerialClose
   ```
-
-  The interrupt vectors are written at their fixed addresses in low memory;
-  on a 68010 or later processor whose vector base has been moved, the
-  library's interrupts are never called
-  ([#804](https://github.com/fubar-coder/bb2-c/issues/804)).

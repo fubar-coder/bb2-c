@@ -6,30 +6,23 @@
   text: Installs the library's receive and transmit interrupts and empties both buffers; with `baudrate`, it sets the baud rate first. A port already open keeps its interrupts and buffers; `SerialOpen baudrate` still sets the rate.
   notes: |
     Without `baudrate` the port keeps the rate it has, from `SerialBaud`
-    or from the system.
-
-    Kept from the original: the interrupt vectors are written at their
-    fixed addresses, so a moved vector base of a 68010 or later processor
-    is ignored ([#804](https://github.com/fubar-coder/bb2-c/issues/804)).
+    or from the system. On a 68010 or later processor the interrupts are
+    installed in the vector table the processor uses, also when it has
+    been moved.
 "SerialClose":
   text: Removes the library's interrupts and puts back the ones that were there before. Nothing happens if the port is not open.
   notes: |
-    Kept from the original: of all interrupts, only those that were on at
-    `SerialOpen` are switched on again; one the system switched on since
-    stays off ([#790](https://github.com/fubar-coder/bb2-c/issues/790)).
+    The library's two serial interrupts are switched off and back on if
+    they were on at `SerialOpen`; the other interrupts stay as they are.
 "SerialRead":
-  text: The next received byte from the buffer, or -1 if the buffer is empty. It does not wait.
-  notes: |
-    Kept from the original: the upper 16 bits of the result are left over
-    from before the call, so the result can be any large number instead
-    of 0 to 255, and a byte of 255 can look like -1. Test with
-    `SerialGot` first and use `SerialRead AND $FF`
-    ([#797](https://github.com/fubar-coder/bb2-c/issues/797)).
+  text: The next received byte from the buffer, 0 to 255, or -1 if the buffer is empty. It does not wait.
 "SerialWrite":
   text: Puts a byte into the transmit buffer; the library's interrupt sends it in the background.
   notes: |
-    The transmit buffer holds 128 bytes; the command does not check
-    whether it is full.
+    The transmit buffer holds 127 bytes not sent yet. When it is full and
+    the port is open, the command waits until the interrupt has sent a
+    byte; with the interrupts disabled it then waits for ever, so send no
+    more than 127 bytes there. With the port closed it does not wait.
 "SerialVersion":
   text: The version of the library, 1.
 "SerialBuffer":
@@ -37,64 +30,49 @@
 "SerialSendBlock":
   text: Sends `length` bytes from `address`, one after the other. `SerialProgress` gives the number of bytes still to send, and `SerialStop` ends the block early.
   notes: |
-    Kept from the original: the command does not open the port; call
-    `SerialOpen` first ([#792](https://github.com/fubar-coder/bb2-c/issues/792)).
-    A length of 0 or less sends one byte
-    ([#800](https://github.com/fubar-coder/bb2-c/issues/800)).
+    The command opens the port if it is closed. A length of 0 or less
+    sends nothing.
 "SerialReceiveBlock":
-  text: Waits for `length` bytes and stores them from `address` on. `SerialProgress` gives the number still to come.
+  text: Waits for `length` bytes and stores them from `address` on. `SerialProgress` gives the number still to come, and `SerialStop` ends the block after the next byte.
   notes: |
-    Kept from the original: the command does not open the port
-    ([#792](https://github.com/fubar-coder/bb2-c/issues/792)); it first
-    throws away the bytes already in the buffer
-    ([#798](https://github.com/fubar-coder/bb2-c/issues/798)); a length
-    of 1 never ends ([#799](https://github.com/fubar-coder/bb2-c/issues/799));
-    and ended with `SerialStop`, it returns to a wrong address
-    ([#803](https://github.com/fubar-coder/bb2-c/issues/803)).
+    The command opens the port if it is closed. The bytes already waiting
+    in the receive buffer are the first of the block; call `SerialFlush`
+    first to receive only bytes that arrive after the call. A length of 0
+    or less receives nothing.
 "SerialFlush":
   text: Empties the receive buffer.
   notes: |
-    Kept from the original: the command does not open the port
-    ([#792](https://github.com/fubar-coder/bb2-c/issues/792)).
+    The command opens the port if it is closed, and leaves it open.
 "SerialSendString":
-  text: Meant to send a string; it does not work.
+  text: Sends the characters of a string, without a 0 byte behind them.
   notes: |
-    Kept from the original: instead of the characters of the string, the
-    command sends the low byte of the string's address one or more times
-    ([#801](https://github.com/fubar-coder/bb2-c/issues/801)); and it
-    does not open the port ([#793](https://github.com/fubar-coder/bb2-c/issues/793)).
+    The command opens the port if it is closed. If the other machine
+    reads with `SerialReadString`, send the 0 byte that ends the string
+    with `SerialWrite 0`.
 "SerialReadString":
-  text: Meant to return the received characters up to a 0 byte; it does not work.
+  text: Waits for characters up to a 0 byte and returns them as a string, without the 0.
   notes: |
-    Kept from the original: with the port open, the command returns to a
-    wrong place
-    ([#796](https://github.com/fubar-coder/bb2-c/issues/796)), and it may
-    not stop at the 0 byte
-    ([#797](https://github.com/fubar-coder/bb2-c/issues/797)).
+    The command opens the port if it is closed. The string ends at the
+    end of the string work area (10240 bytes unless the compiler options
+    set another size); the characters that do not fit stay in the
+    receive buffer.
 "SerialProgress":
   text: The number of bytes still to send or receive of the last `SerialSendBlock` or `SerialReceiveBlock`.
 "SerialReadLong":
-  text: Meant to read a long of four bytes; it does not work.
+  text: Waits for four bytes and returns them as a long, the low byte first.
   notes: |
-    Kept from the original: the command reads bytes for ever and never
-    returns ([#794](https://github.com/fubar-coder/bb2-c/issues/794)).
+    The command opens the port if it is closed. It reads what
+    `SerialWriteLong` sends.
 "SerialWriteLong":
-  text: Meant to send a long as four bytes; it does not work.
+  text: Sends a long as four bytes, the low byte first.
   notes: |
-    Kept from the original: it sends the lowest byte of the long and then
-    three times the byte 1
-    ([#805](https://github.com/fubar-coder/bb2-c/issues/805)). It opens
-    the port if it is closed.
+    The command opens the port if it is closed.
 "SerialStop":
-  text: Ends a `SerialSendBlock` or `SerialReceiveBlock` that is running, for example from an interrupt.
+  text: Ends a `SerialSendBlock` or `SerialReceiveBlock` that is running, for example from an interrupt. Called while no block runs, it has no effect on the next one.
 "SerialGot":
-  text: Returns -1 if a received byte is waiting in the buffer, else 0.
+  text: The number of received bytes waiting in the buffer, 0 to 255.
   notes: |
-    Kept from the original: it does not return the number of bytes, as its
-    help text says ([#802](https://github.com/fubar-coder/bb2-c/issues/802)).
+    The buffer keeps up to 255 bytes; bytes that arrive while it is full
+    are lost.
 "SerialWait":
-  text: Waits until a byte has been received and returns it.
-  notes: |
-    Kept from the original: as with `SerialRead`, the upper 16 bits of the
-    result are left over from before the call; use `SerialWait AND $FF`
-    ([#797](https://github.com/fubar-coder/bb2-c/issues/797)).
+  text: Waits until a byte has been received and returns it, 0 to 255.

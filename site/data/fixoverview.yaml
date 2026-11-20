@@ -6644,6 +6644,150 @@ rows:
     text: "A program run again from the editor starts as the slave and not set up, not with the state of the run before."
     page: libraries
     anchor: rifastseriallib-fixes
+  - issue: 802
+    severity: 1
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialGot"
+    text: "`SerialGot` returns the number of bytes waiting, as its help text says; the original returned -1 when any byte was waiting."
+    page: libraries
+    anchor: serialgot-count
+  - issue: 792
+    severity: 2
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialSendBlock, SerialReceiveBlock, SerialFlush"
+    text: "`SerialSendBlock`, `SerialReceiveBlock` and `SerialFlush` open the port when it is closed, and it stays open; the original never opened it."
+    page: libraries
+    anchor: serial-block-commands
+  - issue: 798
+    severity: 2
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialReceiveBlock"
+    text: "`SerialReceiveBlock` keeps the bytes received before the call; call `SerialFlush` first for an empty buffer."
+    page: libraries
+    anchor: serial-block-commands
+  - issue: 790
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialClose"
+    text: "`SerialClose` restores only the library's serial interrupts; the original switched every other interrupt back to its state at `SerialOpen`."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 797
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialRead, SerialWait"
+    text: "`SerialRead` and `SerialWait` return just the byte, 0 to 255, or -1."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 800
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialSendBlock"
+    text: "`SerialSendBlock` with a length of 0 or less sends nothing; the original sent one byte."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 799
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialReceiveBlock"
+    text: "`SerialReceiveBlock` with a length of 1 receives one byte; the original never ended and wrote past the buffer."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 803
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialStop, SerialReceiveBlock"
+    text: "`SerialStop` during `SerialReceiveBlock` returns to the program; the original jumped to a wrong address."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 1162
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialStop, SerialSendBlock"
+    text: "A `SerialStop` with no transfer running no longer cuts the next block short."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 801
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialSendString"
+    text: "`SerialSendString` sends the string, without a 0 byte; the original sent the low byte of its address."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 793
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialSendString, SerialReadString"
+    text: "`SerialSendString` and `SerialReadString` open the port when it is closed; the original sent nothing or waited for ever."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 796
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialReadString"
+    text: "`SerialReadString` with the port open returns to the program; the original jumped to a wrong address."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 1161
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialReadString"
+    text: "`SerialReadString` stops at the end of the string work area instead of writing past it."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 794
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialReadLong"
+    text: "`SerialReadLong` returns the long, low byte first; the original read for ever."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 805
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialWriteLong"
+    text: "`SerialWriteLong` sends the four bytes of its argument, low byte first; the original sent one byte and three times 1."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 1160
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: ""
+    text: "When more than 255 bytes arrive unread, the first 255 are kept; with the original all of them were lost."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 983
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialWrite, SerialSendBlock"
+    text: "`SerialWrite` and the block commands wait for room in the transmit buffer, so long blocks arrive complete."
+    page: libraries
+    anchor: riseriallib-fixes
+  - issue: 804
+    severity: 5
+    topic: "System"
+    library: "riseriallib"
+    command: "SerialOpen"
+    text: "`SerialOpen` installs its interrupts where the vector base of a 68010 or later points; the original's were never called with a moved table."
+    page: libraries
+    anchor: riseriallib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
