@@ -33,7 +33,7 @@ struct: the 4 code bytes in front of it (`MOVEQ #34,d0 : RTS`, read by
 the condition code check of a name starting with `b*`), the 80-byte
 LineBuff, opsize/opextra/extrainstr/isdestop/docomma and the condition
 tables - a line up to 86 bytes overwrites the same words. The operand
-pointer a5 of the original is a variable, because `docomma` compares it.
+pointer a5 of the original is a variable (`opstr`).
 The instruction stream is read with the original's widths (volatile
 word/long reads at the given address); the string is written to a3
 byte by byte (the original: 17 word writes, #617). The thunks keep d1/a0/a1; the
@@ -47,10 +47,6 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
   (d16(an), brief extension, bd/od 0 or of size "null") shows the bytes
   at address 8 up to a 0 byte (Kickstart 3.2 in the emulator: `@J(`)
   (#614).
-* `docomma` is "a2 <> a5" after the source operand, but a5 is also the
-  pointer the operand routines use for numbers and register lists: a
-  source that only moves a5 (MOVEM with an empty register list) still
-  gets a comma (#615).
 * The string is cut after 34 columns; two memory indirect `<ea>`s with
   32-bit displacements make a line of 86 bytes, over the end of the
   80-byte LineBuff (opsize, opextra, extrainstr) (#616).
@@ -63,6 +59,13 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
   (`"x"+DisAssemble$(a)`) (#617; test `ridisasmlib-odd-a3-address-error`
   on the a500). The word and long reads of the code at an odd address
   stay: disassembling there means nothing.
+* The comma between the operands is set when the source operand wrote
+  something. The original's `docomma` was "a2 <> a5" after the source,
+  but a5 is also the pointer the operand routines use for numbers and
+  register lists: MOVEM with an empty register list (mask 0) as the
+  source got a comma, `movem.l  ,-(a7)` (#615; test
+  `ridisasmlib-docomma-empty-movem-list`, the `libs_emulator` blocks of
+  the masks 0 of `MOVEM -(a7)` and `MOVEM (a0)`).
 
 **Test** (`libs/tests/rwe/ridisasmlib.c`, snitch case "rwe ridisasmlib"):
 each run loads one library set (the C build or the original) and

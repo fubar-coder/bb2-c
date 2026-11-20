@@ -5,6 +5,7 @@
 ; still gets a comma: "movem.l  ,-(a7)".
 ; Correct: no comma when the source wrote nothing: "movem.l  -(a7)"; a
 ; list that is not empty keeps its comma.
+; @fixed #615
 ; @rwe ridisasmlib
 DEFTYPE .l
 Dim c.w(3)

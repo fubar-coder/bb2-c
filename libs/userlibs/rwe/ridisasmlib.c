@@ -25,9 +25,8 @@
  * Everything is C.  The data around LineBuff keep the original's order
  * and sizes (the code bytes in front of it, LineBuff, the five words, the
  * condition tables), so that a line longer than 80 bytes and the look at
- * the bytes in front of a short name hit the same things.  The original's
- * register juggling is kept where it decides something: the operand
- * pointer a5 (docomma compares it with a2 - see BUG(orig) (#615)).  The memory
+ * the bytes in front of a short name hit the same things.  The operand
+ * pointer a5 of the original is the variable opstr.  The memory
  * is read with the original's access widths (word/long reads at the
  * given, possibly odd, address).
  *
@@ -38,10 +37,6 @@
  *     as the absolute address 8 - the line gets the bytes of the bus
  *     error vector up to a 0 byte (on Kickstart 3.2 in the emulator
  *     "@J(" ...) (#614).
- *   - docomma (a comma between the operands) is "a2 <> a5" after the
- *     source operand, but a5 is also the number/register list pointer of
- *     the operand routines: a source that only moves a5 (MOVEM with an
- *     empty register list) still gets a comma (#615).
  *   - The string is cut after 34 columns: longer operands are lost; a line
  *     can grow to 86 bytes (two memory indirect <ea>s with 32 bit
  *     displacements) and overwrite opsize, opextra and extrainstr (#616).
@@ -51,6 +46,12 @@
  * when a3 is odd (after a string of odd length in an expression); the
  * port writes it byte by byte.  The instruction reads at an odd address
  * stay (the caller's address; disassembling there means nothing).
+ * Fixed (intended deviation, #615): the comma between the operands is set
+ * when the source operand wrote something (the line position against the
+ * operand start).  The original compared a2 with a5 ("MOVE.l a2,a5"
+ * before the source), but a5 is also the number and register list
+ * pointer of the operand routines: MOVEM with an empty register list
+ * (mask 0) as the source got a comma, "movem.l  ,-(a7)".
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -979,7 +980,9 @@ static int decode(const struct disdata *e, UWORD op)
         v.isdestop = 0;
         decodespecial(e->src, op);
     }
-    v.docomma = linepos != opstr;       /* BUG(orig) (#615): opstr moves too */
+    /* Fixed (#615): the line position against the operand start, not
+       against opstr (a5), which the operand routines move */
+    v.docomma = linepos != v.linebuff + 9;
     if (e->dstmask) {
         UWORD ea = lsrw(op & e->dstmask, e->dst);
 
@@ -1005,8 +1008,7 @@ static int decode(const struct disdata *e, UWORD op)
  * a3 byte by byte (Fixed (#617): the original's word writes were an
  * address error at an odd a3 on a 68000).  InstrSize becomes the bytes
  * the instruction took.  BUG(orig): a decimal 0 is the bytes at address
- * 8 (#614); a source that only moves the operand pointer gets a comma
- * (#615); longer operands are cut after 34 columns, a line can overwrite
+ * 8 (#614); longer operands are cut after 34 columns, a line can overwrite
  * the variables behind LineBuff (#616).  An odd address is an address
  * error on a 68000.
  * @param addr  d0: the address of the instruction
