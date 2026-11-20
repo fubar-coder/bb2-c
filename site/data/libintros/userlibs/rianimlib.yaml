@@ -13,17 +13,21 @@ intro: |
   frame. In these formats every frame is stored as the change against
   the frame two steps before it, so an animation is played double
   buffered: two bitmaps that both start with the first frame, and the
-  frames drawn into them in turn. `RIAnimInit` refuses a bitmap that is
-  too narrow or not deep enough for the first frame, but the height is
-  not checked, nor whether the animation fits at the chosen position:
-  make the bitmaps large enough. With runtime error checking, a position
-  outside the bitmap stops the program with the runtime error
-  "Animation position outside the bitmap". Place an ANIM7 animation at
-  an even byte of the bitmap, an `x` of 0 to 7, 16 to 23 and so on: at
-  an odd byte its frames crash a 68000, and with runtime error checking
-  `RINextAnimFrame` stops with the runtime error "Animation position on
-  an odd byte for ANIM7". A first frame stored as a delta instead of a full
-  picture is not supported.
+  frames drawn into them in turn. A first frame stored as a delta
+  instead of a full picture is not supported.
+
+  `RIAnimInit` refuses a bitmap that is too narrow or not deep enough
+  for the first frame. It checks neither the height nor whether the
+  animation fits at the chosen position, so make the bitmaps large
+  enough. With runtime error checking, a position outside the bitmap
+  stops the program with the runtime error "Animation position outside
+  the bitmap".
+
+  Place an ANIM7 animation at an even byte of the bitmap: an `x` of 0
+  to 7, 16 to 23 and so on, or an even byte offset. At an odd byte its
+  frames crash a 68000; with runtime error checking, `RINextAnimFrame`
+  stops before such a frame with the runtime error "Animation position
+  on an odd byte for ANIM7".
 
   The library steps through the animation from chunk to chunk, within
   its length, and skips the pad byte the IFF standard puts behind a

@@ -1,32 +1,44 @@
 "RIAnimInit":
-  text: Starts an animation held in memory at `address` - unpacks its first frame into the bitmap and copies its palette into the palette object. Returns -1 on success, 0 if the data is not an animation with a first frame and a bitmap header, its width is 0 or its depth 0 or above 8, a chunk in it starts at an odd address because a pad byte is missing, or the bitmap is too narrow or not deep enough for the first frame.
+  text: Starts an animation held in memory at `address` - unpacks its first frame into the bitmap and copies its palette into the palette object. Returns -1 on success and 0 on failure.
   notes: |
+    It returns 0 if:
+
+    * the data is not an animation with a first frame and a bitmap header
+    * its width is 0
+    * its depth is 0 or above 8
+    * a chunk in it starts at an odd address because a pad byte is missing
+    * the bitmap is too narrow or not deep enough for the first frame
+
+    The bitmap header must be in the first frame. After a failed call
+    there is no animation: `RIAnimFrameCount` and `RINextAnimFrame`
+    return 0.
+
     The optional position is either a byte offset into the bitplanes,
     (x/8)+y*(bytes per row), or a pixel position `x`,`y`; x is rounded
     down to a multiple of 8. The frames that `RINextAnimFrame` draws use
     the same position. With runtime error checking, an `x`,`y` outside
     the bitmap stops the program with the runtime error "Animation
     position outside the bitmap"; nothing checks that the whole
-    animation fits into the bitmap at the position. Place an ANIM7
-    animation at an even byte, an `x` of 0 to 7, 16 to 23 and so on, or
-    an even byte offset: at an odd byte its frames crash a 68000, and
-    with runtime error checking `RINextAnimFrame` stops before such a
-    frame with the runtime error "Animation position on an odd byte for
-    ANIM7". ANIM5 plays at any position.
-
-    The bitmap header must be in the first frame. After a failed call
-    there is no animation: `RIAnimFrameCount` and `RINextAnimFrame`
-    return 0.
+    animation fits into the bitmap at the position. An ANIM7 animation
+    must be placed at an even byte, as the introduction above explains;
+    ANIM5 plays at any position.
 "RINextAnimFrame":
   text: Changes the bitmap into the next frame of the animation started with `RIAnimInit`; a new palette of the frame goes into the palette object given to `RIAnimInit`. Returns -1 if a frame was drawn, 0 if not.
   notes: |
     After the last frame it goes on with the third frame if `AnimLoop` is
     on, the default, and returns 0 if it is off. Animations end with two
     loop frames that lead back to the start; without them, keep
-    `AnimLoop` off. It also returns 0 before an `RIAnimInit`, for a
-    frame of another delta format, for a frame without delta data and
-    for one whose chunks claim to be longer than the frame or whose delta
-    data points outside its chunk, or, for ANIM7, to an odd offset in it.
+    `AnimLoop` off.
+
+    It also returns 0:
+
+    * before an `RIAnimInit`
+    * for a frame of another delta format
+    * for a frame without delta data
+    * for a frame whose chunks claim to be longer than the frame
+    * for a frame whose delta data points outside its chunk, or, for
+      ANIM7, to an odd offset in it
+
     Other chunks between the frames, or before the delta data of a frame,
     are skipped. ANIM7 is played with short (word) and with long data.
     With runtime error checking, an ANIM7 frame at an odd byte position
@@ -36,15 +48,17 @@
     Not fixed: an ANIM7 animation with long data whose width is no
     multiple of 32 pixels loses its right edge, and one narrower than 32
     pixels writes far beyond the bitmap
-    ([#1115](https://github.com/fubar-coder/bb2-c/issues/1115)). Kept
-    from the original on purpose: a run or copy count of 0 in the delta
-    data counts as 256 rows; the ANIM format does not define a count of
-    0, and encoders do not write one
-    ([#508](https://github.com/fubar-coder/bb2-c/issues/508)). Also
-    kept, for speed: only the start of each plane's delta data is checked
-    against the chunk, not the runs and copies inside the columns, so a
-    corrupt animation can still read beyond its delta data and write
-    beyond the bitmap
+    ([#1115](https://github.com/fubar-coder/bb2-c/issues/1115)).
+
+    Kept from the original on purpose: a run or copy count of 0 in the
+    delta data counts as 256 rows; the ANIM format does not define a
+    count of 0, and encoders do not write one
+    ([#508](https://github.com/fubar-coder/bb2-c/issues/508)).
+
+    Also kept, for speed: only the start of each plane's delta data is
+    checked against the chunk, not the runs and copies inside the
+    columns, so a corrupt animation can still read beyond its delta data
+    and write beyond the bitmap
     ([#1120](https://github.com/fubar-coder/bb2-c/issues/1120)).
 "AnimLoop":
   text: With `On`, the default at the start of every run, `RINextAnimFrame` goes on with the third frame after the last one; with `Off` it stops there.
