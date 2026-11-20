@@ -4884,6 +4884,14 @@ Other fixes.
   of such frames as it was, and for an animation narrower than 8 pixels
   wrote far beyond the bitmap
   ([#507](https://github.com/fubar-coder/bb2-c/issues/507)).
+* `RINextAnimFrame` decodes ANIM7 animations with long data at every
+  width. The original left the right edge of frames whose width is no
+  multiple of 32 pixels as it was, and for an animation narrower than 32
+  pixels wrote far beyond the bitmap. Only the last 16 pixels of a row
+  with an odd number of words, such as a width of 33 to 48, are still
+  not updated by such frames, since the format does not say what the
+  data holds there
+  ([#1115](https://github.com/fubar-coder/bb2-c/issues/1115)).
 * `RINextAnimFrame` plays on past a chunk between two frames, such as
   an annotation. The original took it for the end of the animation and
   stopped there or started again

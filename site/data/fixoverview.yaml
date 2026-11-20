@@ -7694,3 +7694,11 @@ rows:
     text: "A program run again from the editor plays in CIA mode, also when the run before called `ChangeTrackerVBlank`; the original stayed silent there without `PlayTracker`."
     page: libraries
     anchor: rwe-other-fixes
+  - issue: 1115
+    severity: 5
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RINextAnimFrame"
+    text: "`RINextAnimFrame` decodes ANIM7 long data at every width, except the last 16 pixels of a row with an odd number of words; the original lost the right edge of widths that are no multiple of 32 and wrote far beyond the bitmap below 32 pixels."
+    page: libraries
+    anchor: rianimlib-fixes

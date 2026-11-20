@@ -45,10 +45,11 @@
     of `RIAnimInit` stops the program with the runtime error "Animation
     position on an odd byte for ANIM7".
 
-    Not fixed: an ANIM7 animation with long data whose width is no
-    multiple of 32 pixels loses its right edge, and one narrower than 32
-    pixels writes far beyond the bitmap
-    ([#1115](https://github.com/fubar-coder/bb2-c/issues/1115)).
+    ANIM7 long data covers a row 32 pixels at a time. In a row with an
+    odd number of words, such as a width of 33 to 48 pixels, its last 16
+    pixels are not updated by frames with long data, since the format
+    does not say what the data holds there. An animation up to 16 pixels
+    wide is therefore not changed by such frames.
 
     Kept from the original on purpose: a run or copy count of 0 in the
     delta data counts as 256 rows; the ANIM format does not define a
