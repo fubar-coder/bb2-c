@@ -2314,8 +2314,10 @@ MoveWBSprite|block +96|vp,64,32,2|1	$00008200
 MoveWBSprite|block +96|vp,78,5A,1|1	$00008200
 MoveWBSprite|block +98|vp,64,32,2|1	$00000024
 MoveWBSprite|block +98|vp,78,5A,1|1	$00000024
-MoveWBSprite|d0|vp,64,32,2|1	$5E590008
-MoveWBSprite|d0|vp,78,5A,1|1	$865E0004
+MoveWBSprite|d0|vp,64,32,2|1 [orig]	$5E590008
+MoveWBSprite|d0|vp,64,32,2|1 [fixed #921]	$FFFFFFFF
+MoveWBSprite|d0|vp,78,5A,1|1 [orig]	$865E0004
+MoveWBSprite|d0|vp,78,5A,1|1 [fixed #921]	$FFFFFFFF
 MoveWBSprite|graphics.library open count|vp,64,32,2|1	$00000000
 MoveWBSprite|graphics.library open count|vp,78,5A,1|1	$00000000
 MoveWBSprite|kept|vp,64,32,2|1	kept

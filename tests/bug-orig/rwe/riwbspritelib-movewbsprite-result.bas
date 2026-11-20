@@ -4,6 +4,7 @@
 ; leaves there.  The Workbench screen's ViewPort (FindScreen 0) for both
 ; calls; a sprite on channel 2, none on channel 6.
 ; Correct: -1 when the sprite was moved, 0 without a sprite.
+; @fixed #921
 ; @rwe riwbspritelib
 BitMap 0,320,64,2
 Boxf 0,0,15,15,3

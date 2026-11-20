@@ -35,8 +35,8 @@ d0–d7/a0–a2/a6). The library's variables, the tag lists (the
 it), the sprite table, the library name and base are one packed struct
 in the original's order, since the routines index the table without
 bounds. Two graphics calls are inline assembler: `MoveSprite` and
-`FreeSpriteData` (MoveWBSprite and FreeWBSprite return the d0 they
-leave). `ChangeExtSpriteA` takes its tag list in a3, a fixed register of
+`FreeSpriteData` (FreeWBSprite, a statement, returns the d0
+`FreeSpriteData` leaves). `ChangeExtSpriteA` takes its tag list in a3, a fixed register of
 the C code: the libraries' safe form of the NDK macro keeps it
 (`cmake/ndk-calls.cmake`). The shape copy has a compiler
 barrier so that GCC does not compute the end pointer with `__mulsi3`.
@@ -56,6 +56,10 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   channel if the library held a sprite there, else 0; no graphics.library
   or a narrow shape gave 0 (which cannot be told from channel 0), no
   shape data or a failing `AllocBitMap` -1.
+* MoveWBSprite returns -1 when it moved the sprite and 0 without one
+  (#921, W7 decision Q8, test `rwe/riwbspritelib-movewbsprite-result`);
+  the original, declared with a byte result, returned the d0
+  `MoveSprite` leaves (a void function).
 
 ## BUG(orig), kept
 
@@ -70,8 +74,6 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   (height or depth 0: 65536 rows/planes) (#917).
 * ChangeWBSprite does not free the new sprite data if
   `ChangeExtSpriteA` fails (#915).
-* MoveWBSprite returns the d0 `MoveSprite` leaves (declared as a byte
-  result) (#921).
 * finit does not clear the library base: a second finit closes
   graphics.library again (#919).
 

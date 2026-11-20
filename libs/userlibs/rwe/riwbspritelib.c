@@ -24,7 +24,7 @@
  * behind it (BUG(orig), #916).  A shape is copied into a bitmap of
  * AllocBitMap, which AllocSpriteDataA converts.  Assembler besides the
  * thunks: the calls of MoveSprite and FreeSpriteData (the original
- * returns the d0 they leave).
+ * returned the d0 they leave; FreeWBSprite still does, a statement).
  *
  * Fixed:
  *   - ChangeExtSprite keeps a3 (the original left it on the tag list it
@@ -36,6 +36,9 @@
  *     shape (< 16) or no graphics.library gave 0, no shape data or a
  *     failing AllocBitMap -1 (0 could not be told from channel 0)
  *     (#920).
+ *   - MoveWBSprite returns -1 when it moved the sprite, 0 without one;
+ *     the original returned the d0 MoveSprite leaves (declared as a byte
+ *     result) (#921).
  *
  * BUG(orig):
  *   - No routine checks the channel: GetWBSprite stores at
@@ -50,8 +53,6 @@
  *     with DBRA counts: height or depth 0 copy 65536 rows/planes (#917).
  *   - ChangeWBSprite: if ChangeExtSpriteA fails, the new sprite data is
  *     not freed (#915).
- *   - MoveWBSprite returns d0 as MoveSprite leaves it (declared as a
- *     byte result) (#921).
  *   - finit does not clear the library base: a second finit closes
  *     graphics.library again (#919).
  */
@@ -167,9 +168,8 @@ static_assert(sizeof wd == 166);
 /* the sprite table entry of a channel indexed as a word, d(a0,d1.w) */
 #define ENTRYW(ch) ((ULONG *)((UBYTE *)wd.spritepointers + (WORD)((UWORD)(ch) << 2)))
 
-/* MoveSprite(vp, sprite, x, y) with the registers of the original; the
-   d0 graphics.library leaves */
-static ULONG movesprite(ULONG vp, ULONG spr, ULONG x, ULONG y)
+/* MoveSprite(vp, sprite, x, y) with the registers of the original */
+static void movesprite(ULONG vp, ULONG spr, ULONG x, ULONG y)
 {
     register ULONG d0 __asm("d0") = x;
     register ULONG d1 __asm("d1") = y;
@@ -181,7 +181,6 @@ static ULONG movesprite(ULONG vp, ULONG spr, ULONG x, ULONG y)
         : "+d"(d0), "+d"(d1), "+a"(a0), "+a"(a1), "+a"(a6)
         :
         : "cc", "memory");
-    return d0;
 }
 
 /* FreeSpriteData(sprite); the d0 graphics.library leaves (FreeWBSprite's
@@ -383,13 +382,14 @@ static ULONG BLITZ_ROUTINE freesprite_c(ULONG ch BL_REG(d0))
  * channel's sprite.
  *
  * Amiga mode only; nothing without a sprite.  BUG(orig): the channel is
- * not checked (#916); the result is the d0 MoveSprite leaves, declared
- * as a byte (#921).
+ * not checked (#916).  Fixed (#921): the result is -1 when the sprite
+ * was moved (the original returned the d0 MoveSprite leaves, declared
+ * as a byte).
  * @param vp  d0: the ViewPort
  * @param x   d1: x
  * @param y   d2: y
  * @param ch  d3: the channel
- * @return d0: 0 without a sprite, else MoveSprite's d0
+ * @return d0: -1 moved, 0 without a sprite
  */
 static ULONG BLITZ_ROUTINE movewbsprite_c(ULONG vp BL_REG(d0), ULONG x BL_REG(d1),
                                           ULONG y BL_REG(d2), ULONG ch BL_REG(d3))
@@ -398,7 +398,8 @@ static ULONG BLITZ_ROUTINE movewbsprite_c(ULONG vp BL_REG(d0), ULONG x BL_REG(d1
 
     if (!spr)
         return 0;
-    return movesprite(vp, spr, x, y);
+    movesprite(vp, spr, x, y);
+    return (ULONG)-1;
 }
 
 /**
