@@ -36,8 +36,6 @@
  *     table 0 the current one (#869).  finit leaves all entries set and
  *     init clears only entry 0: a second init/finit frees the other
  *     tables again (#871).
- *   - SetZone without a table returns -1 (= done); ZoneTable without a
- *     table returns -1, not 0 (#876).
  *   - ReadJoyPad reads the joystick port for every port number but 2
  *     (#877).
  * Fixed (intended deviations):
@@ -92,6 +90,9 @@
  *     count with the field's offset (0/2/4/6) instead of the zone number:
  *     no range check, -1 for some fields of a table of up to 6 zones, a
  *     word index, and without a table it read address 0 (#870).
+ *   - Without a table (init could not allocate table 0) SetZone returns
+ *     0 (nothing set) and ZoneTable 0; the original returned -1 for both,
+ *     "done" and an address (#876, D-018).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -454,7 +455,7 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
     struct zone *z;
 
     if (!zt)
-        return BB_TRUE;                             /* _nozones: BUG(orig) #876 */
+        return BB_FALSE;                            /* no table: fixed (#876) */
     if (n >= zt->count)                                 /* unsigned: fixed (#873) */
         return BB_FALSE;
     z = zone(zt, n << 3);                               /* a long: fixed (#878) */
@@ -468,8 +469,9 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
 /**
  * @brief SetZone(num,x1,y1,x2,y2): sets a rectangular zone of the current table.
  *
- * The corners are ordered (EXG) so that x1 < x2 and y1 < y2.  BUG(orig):
- * without a table the result is -1 (#876).  num is compared unsigned:
+ * The corners are ordered (EXG) so that x1 < x2 and y1 < y2.  Without a
+ * table the result is 0: fixed (#876, the original returned -1, "done").
+ * num is compared unsigned:
  * fixed (#873), the original wrote a negative num before the table.  A
  * rectangle whose bottom edge (the larger y) is -1 is refused: fixed
  * (#866), y2 = -1 marks a circle, the original stored it and the zone
@@ -479,7 +481,7 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
  * @param y1  d2: a corner y
  * @param x2  d3: the other corner x
  * @param y2  d4: the other corner y
- * @return d0: BB_TRUE done (also without a table), BB_FALSE out of range
+ * @return d0: BB_TRUE done, BB_FALSE no table, out of range
  *         or a bottom edge of -1
  */
 static BB_BOOL BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
@@ -516,7 +518,7 @@ static BB_BOOL BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
  * @param x  d1: the centre x
  * @param y  d2: the centre y
  * @param r  d3: the radius (a word, 0-255)
- * @return d0: BB_TRUE done (also without a table), BB_FALSE out of range
+ * @return d0: BB_TRUE done, BB_FALSE no table, out of range
  *         or a radius outside 0-255
  */
 static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
@@ -673,11 +675,11 @@ BLITZ_ASM_BLOCK(zonetests,
 
 /**
  * @brief ZoneTable: the address of the current zone table.
- * @return d0: the table, -1 if none (BUG(orig) #876: not 0)
+ * @return d0: the table, 0 if none (fixed, #876: the original returned -1)
  */
 static ULONG BLITZ_ROUTINE zonetable_c(void)
 {
-    return zd.zonetable ? (ULONG)zd.zonetable : (ULONG)-1;
+    return (ULONG)zd.zonetable;                         /* 0 if none: fixed (#876) */
 }
 
 /**

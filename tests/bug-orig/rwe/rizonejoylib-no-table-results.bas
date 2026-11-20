@@ -4,6 +4,7 @@
 ; which fails the first allocation of 2052 bytes (init's table 0);
 ; ZoneTableSize 0 shows that there is no table.
 ; Correct: SetZone returns 0 (nothing was set), ZoneTable 0.
+; @fixed #876
 ; @rwe rizonejoylib
 ; The program is silent for about 11 s (more than BUG_ORIG_RUN_HANG_AFTER):
 ; @pass hang_after=30

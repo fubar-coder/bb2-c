@@ -151,6 +151,13 @@ All other routines are C behind `BLITZ_THUNK`.
   `rwe/rizonejoylib-getzone-count-offset`; `libs_emulator` cases
   `[fixed #870]` of `rwe_rizonejoylib`: the 2-zone table, the calls
   without a table).
+* Without a table (init could not allocate table 0) SetZone returns 0,
+  as the manual's "returns TRUE or FALSE to say whether or not the
+  change was made" says, and ZoneTable returns 0 (D-018: a function that
+  returns an address returns 0 on out of memory). The original returned
+  -1 for both: "done" and an address (#876, test
+  `rwe/rizonejoylib-no-table-results`; `libs_emulator` cases
+  `[fixed #876]` of `rwe_rizonejoylib`, the run without memory).
 
 ## BUG(orig)
 
@@ -164,8 +171,6 @@ All other routines are C behind `BLITZ_THUNK`.
   table 0 the current one (#869). finit leaves all entries set, init
   clears only entry 0: a second init/finit frees the other tables again
   (#871).
-* SetZone without a table returns -1 (= done); ZoneTable without a table
-  returns -1, not 0 (#876).
 * ReadJoyPad reads the joystick port for every port number but 2 (#877).
 
 Original behaviour that is no defect:
