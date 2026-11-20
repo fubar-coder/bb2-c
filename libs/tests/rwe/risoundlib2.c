@@ -28,29 +28,29 @@
  * is called with its inputs (other registers = markers); observed are d0,
  * what the device saw, the replies in the library's port and the kept
  * registers.
- * BUG(orig) IDs in brackets (libs/userlibs/rwe/risoundlib2.c).
+ * The issue numbers in brackets: the original's bug, fixed in the port
+ * (libs/userlibs/rwe/risoundlib2.c; [orig]/[fixed #N] pairs).
  * Covered: init; every command without ahi.device; OpenAHI (both forms,
- * OpenDevice failing, again while open: opened again
- * (#924)); PlaySoundAHI and PlayRawAHI (all
- * forms: they never get to the device, same bug); AHIOutputRequest in
- * all six forms (the tag list it passes, also checked for its values:
- * (#931), the mixed-up entries of 1, 2
- * and 4 arguments with the markers in d2-d5
- * (#928), no AHI_FreeAudioRequest; the
- * allocation failing, the requester cancelled); AHIRequestedID and
- * AHIRequestedFreq (-1 and 0: (#934));
- * CloseAHI (no CloseDevice), CloseAHI while the request is in use
- * (CheckIO: nothing freed), finit, init again, init without a message
- * port (CreateMsgPort fails); sounds that play on and ones that end at
- * once, CloseAHI and finit while one plays (#933), AHIOutputRequest
- * without a used screen (#929); CludgeSound (the rate at +16 of the object
- * in the original, not in the port (#926); +14 not cleared in the
- * original, cleared in the port (#925)).
- * Not covered: the real ahi.device (its requester); playing (the code
- * behind the ahidevice check is never reached); OpenAHI after CloseAHI
- * or without a request (writes to address 48, OpenDevice with request
- * 0: (#927)); finit without a request
- * (CheckIO of address 0).
+ * OpenDevice failing, again while open: opened again in the original,
+ * 0 in the port (#924)); PlaySoundAHI and PlayRawAHI (all forms; in the
+ * original they never get to the device (#924); the request's fields,
+ * the length in bytes (#932)); AHIOutputRequest in all six forms (the
+ * tag list it passes, also checked for its values (#931), the entries
+ * of 1, 2 and 4 arguments with the markers in d2-d5 (#928), the screen
+ * (#929), AHI_FreeAudioRequest (#930); the allocation failing, the
+ * requester cancelled); AHIRequestedID and AHIRequestedFreq (#934);
+ * CloseAHI (CloseDevice in the port), CloseAHI while the request is in
+ * use (CheckIO: nothing freed in the original), finit, init again, init
+ * without a message port (CreateMsgPort fails); sounds that play on and
+ * ones that end at once, CloseAHI and finit while one plays (#933),
+ * AHIOutputRequest without a used screen (#929); CludgeSound (the rate
+ * at +16 of the object in the original, not in the port (#926); +14 not
+ * cleared in the original, cleared in the port (#925)).
+ * Not covered: the real ahi.device (its requester); OpenAHI after
+ * CloseAHI or without a request (the original writes to address 48 and
+ * passes request 0 to OpenDevice (#927): the Blitz test
+ * risoundlib2-openahi-after-closeahi); finit without a request (the
+ * original's CheckIO of address 0).
  * Then the CludgeSound cases of risoundlib's test (risoundcludge.h, the
  * same routine): risoundlib's bugs, the rate written into the guard
  * behind the object (#926), the fields' +14 cleared by the port only
@@ -571,7 +571,7 @@ int main(int argc, char **argv)
     /* the test device opens */
     openahi(0, 0, 0, "test device");
     BOTH("OpenAHI opened", R.d[0] == (ULONG)-1 && last.opens == 1);
-    playcmds("open");                   /* nothing: BUG(orig) */
+    playcmds("open");                   /* the original: nothing (#924) */
     BOTH("nothing played", last.beginios == 0);
     expect = TRUE;
     outreqs("open");
@@ -586,7 +586,7 @@ int main(int argc, char **argv)
     outreqs("no requester");
     allocfail = FALSE;
     reqcmds("open");
-    /* OpenAHI again: opened again (BUG(orig)) */
+    /* OpenAHI again: opened again in the original, 0 in the port (#924) */
     openahi(1, 2, 0x20004, "again,");
     playcmds("open twice");
 
@@ -596,7 +596,8 @@ int main(int argc, char **argv)
     lifecycle(CLOSEAHI, "CloseAHI", "request in use");
     reqcmds("request in use");
     opened->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
-    /* CloseAHI: no CloseDevice (BUG(orig)), port and request gone */
+    /* CloseAHI: the original - no CloseDevice, port and request gone
+       (#924, #927) */
     lifecycle(CLOSEAHI, "CloseAHI", "open");
     reqcmds("closed");
     outreqs("closed");
