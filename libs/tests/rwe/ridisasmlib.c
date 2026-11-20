@@ -11,8 +11,8 @@
  * targets in the text are absolute, so every run gives the same text)
  * into a string area (a3, filled with $AA before every call); observed
  * after every call are d0 (34 or 5), how far a3 moved, the string area
- * (40 bytes: the string and what is behind it), InstrSize and the kept
- * registers.  The cases of the sweeps over the instruction words (about
+ * (100 bytes of its 128: the string and what is behind it; a whole line
+ * of 86 bytes fits behind the odd a3), InstrSize and the kept registers.  The cases of the sweeps over the instruction words (about
  * 3 million) are written as block cases (design D6 of the openspec change
  * libs-tests-capture: LIBS_CAP_DUMP=BLOCK:N writes the observations of
  * block N); init, the first InstrSize, the odd address and a3 and finit
@@ -41,7 +41,8 @@ enum { E_DIS, E_SIZE, E_FINIT, E_INIT };
 
 #define CODEWORDS 32
 #define CODEADDR 0x47000000UL           /* in the Zorro III RAM of default.uae */
-#define SAREA 48
+#define SAREA 128
+#define STRBYTES 100
 static UWORD *code;
 static UBYTE *sarea;
 static ULONG calls;
@@ -70,7 +71,7 @@ static void dis(ULONG off, ULONG aoff)
     DO1(ENT(LIB, E_DIS, 0), R.d[0] = (ULONG)code + off; R.a[3] = (ULONG)sarea + aoff);
     OBS("d0", R.d[0]);
     OBS("a3 moved", R.a[3] - (ULONG)sarea);
-    OBSBYTES("string", sarea, 40);
+    OBSBYTES("string", sarea, STRBYTES);
     ROUT = "InstrSize";
     DO1(ENT(LIB, E_SIZE, 0), (void)0);
     OBS("d0", R.d[0]);
