@@ -10,9 +10,10 @@ intro: |
   `MOVEC`; floating point, MMU, bit field and `CAS` instructions are not
   known.
 
-  The line of a known instruction is 34 characters long, padded with spaces: the
-  instruction name with its size and condition, in lower case, in the
-  first 9 columns, the operands from column 10 on. Addresses and
+  The line of a known instruction is at least 34 characters long, padded
+  with spaces: the instruction name with its size and condition, in lower
+  case, in the first 9 columns, the operands from column 10 on. A longer
+  line comes back whole. Addresses and
   immediate values are shown in hexadecimal (`$` and upper case digits),
   displacements as signed decimal numbers. An instruction the library
   does not know gives `?????`.

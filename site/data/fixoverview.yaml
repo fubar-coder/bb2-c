@@ -7926,3 +7926,43 @@ rows:
     text: "`DelVarTrace` sends the name where the debugger reads it; the original put it four bytes further on and deleted the wrong trace or none."
     page: libraries
     anchor: ridebuglib-fixes
+  - issue: 616
+    severity: 2
+    topic: "System"
+    library: "ridisasmlib"
+    command: "DisAssemble$"
+    text: "`DisAssemble$` returns long 68020 instructions whole instead of cut after 34 columns; shorter lines are still padded to 34. The original's longest lines also overwrote the library's variables."
+    page: libraries
+    anchor: disassemble-line-length
+  - issue: 614
+    severity: 5
+    topic: "System"
+    library: "ridisasmlib"
+    command: "DisAssemble$"
+    text: "`DisAssemble$` shows a displacement 0 as \"0\"; the original showed the bytes at address 8 instead, often nothing."
+    page: libraries
+    anchor: ridisasmlib-fixes
+  - issue: 615
+    severity: 5
+    topic: "System"
+    library: "ridisasmlib"
+    command: "DisAssemble$"
+    text: "`DisAssemble$` shows a `MOVEM` with an empty register list without the stray comma (\"movem.l  -(a7)\")."
+    page: libraries
+    anchor: ridisasmlib-fixes
+  - issue: 617
+    severity: 5
+    topic: "System"
+    library: "ridisasmlib"
+    command: "DisAssemble$"
+    text: "`DisAssemble$` no longer stops a 68000 with an address error when it follows a string of odd length in an expression."
+    page: libraries
+    anchor: ridisasmlib-fixes
+  - issue: 1170
+    severity: 5
+    topic: "System"
+    library: "ridisasmlib"
+    command: "InstrSize"
+    text: "`InstrSize` is 0 before the first `DisAssemble$` of a run, also in a second run from the editor; the original returned the size of the run before."
+    page: libraries
+    anchor: ridisasmlib-fixes

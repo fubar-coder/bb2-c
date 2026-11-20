@@ -1393,6 +1393,8 @@ In the RWE userlibs:
   [`ExtractLabel`, `GetCustomRegAdr` and `FInverse`](#rilesdebuglib-changes)
   end a label at a space, find a register only by its whole name, and
   invert the text of `FPrintDetoke` too.
+* [`DisAssemble$`](#disassemble-line-length) of ridisasmlib returns a
+  long instruction whole instead of cutting it after 34 columns.
 
 Four more are in the lists of the RWE userlibs below:
 
@@ -2122,6 +2124,53 @@ Issues:
 * [ExtractLabel does not end the label at a space: every binary has CMPI.b #0 for the source's CMPI.b #" " (compiler bug #343) (#704)](https://github.com/fubar-coder/bb2-c/issues/704)
 * [GetCustomRegAdr matches a prefix of the name and never finds a register with an 8-character name (#713)](https://github.com/fubar-coder/bb2-c/issues/713)
 * [FInverse sets a word that FPrint tests as a word but FPrintDetoke as its high byte; the cursor marker resets it (#706)](https://github.com/fubar-coder/bb2-c/issues/706)
+
+### `DisAssemble$` cut long lines after 34 columns {#disassemble-line-length}
+
+`DisAssemble$(address)` of
+[ridisasmlib]({{< relref "/docs/libraries/userlibs/ridisasmlib" >}})
+returns the instruction at an address as a line of assembler text: the
+name of the instruction in the first 9 columns, its operands behind
+them, and spaces up to a length of 34 characters.
+
+**What happened.** The original cut every line after 34 columns. Most
+lines fit, but the operands of long 68020 instructions were cut in the
+middle. The longest of them also ran over the end of the library's line
+buffer and overwrote its own variables. This program disassembles a
+`MOVE.l` with two memory indirect operands, and then an `RTS`:
+
+```
+DEFTYPE .l
+Dim c.w(12)
+c(0)=$21B0 : c(1)=$0133 : c(2)=$8000 : c(3)=$0000 : c(4)=$8000 : c(5)=$0000
+c(6)=$0133 : c(7)=$8000 : c(8)=$0000 : c(9)=$8000 : c(10)=$0000
+a$=DisAssemble$(&c(0))
+NPrint Len(a$)," [",a$,"] ",InstrSize
+c(0)=$4E75
+a$=DisAssemble$(&c(0))
+NPrint Len(a$)," [",a$,"] ",InstrSize
+End
+```
+
+**With the original**
+
+```
+34 [move.l   ([-2147483648,a0,d0.w],-2] 22
+34 [rts                               ] 2
+```
+
+**With the port**
+
+```
+80 [move.l   ([-2147483648,a0,d0.w],-2147483648),([-2147483648,a0,d0.w],-2147483648)] 22
+34 [rts                               ] 2
+```
+
+**What to change.** A line is at least 34 characters long, and a longer
+one comes back whole. A program that shows the lines in a column of 34
+characters takes `Left$(a$,34)`.
+
+Issue: [Long lines are cut after 34 columns, and a line can run over the end of the 80-byte LineBuff (#616)](https://github.com/fubar-coder/bb2-c/issues/616).
 
 ## Dates
 
@@ -5635,6 +5684,29 @@ checking.
   from the previous message as the start of the name and deleted the
   wrong trace or none
   ([#610](https://github.com/fubar-coder/bb2-c/issues/610)).
+
+### Fixes in ridisasmlib {#ridisasmlib-fixes}
+
+These fixes concern
+[ridisasmlib]({{< relref "/docs/libraries/userlibs/ridisasmlib" >}}),
+the 680x0 disassembler by Leading Edge Software. The fix of
+[long lines](#disassemble-line-length) is described above.
+
+* `DisAssemble$` shows a displacement or offset of 0 as `0`. The
+  original showed the bytes at memory address 8 instead, which are often
+  nothing, so `0(a0)` came out as `(a0)`
+  ([#614](https://github.com/fubar-coder/bb2-c/issues/614)).
+* `DisAssemble$` shows a `MOVEM` with an empty register list without a
+  stray comma, as `movem.l  -(a7)`; the original wrote
+  `movem.l  ,-(a7)`
+  ([#615](https://github.com/fubar-coder/bb2-c/issues/615)).
+* `DisAssemble$` no longer stops a 68000 with an address error when it
+  follows a string of odd length in an expression, as in
+  `"x"+DisAssemble$(a)`
+  ([#617](https://github.com/fubar-coder/bb2-c/issues/617)).
+* `InstrSize` is 0 before the first `DisAssemble$` of a run, also in a
+  second run from the editor. The original returned the size of the run
+  before ([#1170](https://github.com/fubar-coder/bb2-c/issues/1170)).
 
 ### Fixes in ridisplaylib {#ridisplaylib-fixes}
 
