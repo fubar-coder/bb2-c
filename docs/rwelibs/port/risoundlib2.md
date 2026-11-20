@@ -142,21 +142,30 @@ original.
 
 The test machine's Workbench has no ahi.device; the test puts its own
 "ahi.device" into the device list with priority 10, before one that a
-Workbench may have in `DEVS:` (whose requester would wait for the user):
-it logs Open/Close/BeginIO/
-AbortIO, copies the tag list of `AHI_AllocAudioRequestA`, checks the
-requester and tags of `AHI_AudioRequestA`, counts the other vectors, and
-can fail OpenDevice, the allocation and the requester. Observed: d0,
-what the device saw, the kept registers. Covered: every
-command with OpenDevice failing; OpenAHI (both forms, again while open),
-PlaySoundAHI/PlayRawAHI in all forms (nothing reaches the device),
-AHIOutputRequest in all six forms with markers in d2–d5 (the tag list
-also checked for its values: the bugs above), the allocation failing,
-the requester cancelled, AHIRequestedID/Freq (-1, 0), CloseAHI (open, in
-use – CheckIO 0: nothing freed –, again), finit, init again, init
-without a message port; CludgeSound (+16 written by the original only,
-#926; +14 cleared by the port only, #925), then risoundlib's CludgeSound cases
-(`libs/tests/rwe/risoundcludge.h`, the same routine). Not covered: the
-real ahi.device and playing (unreachable); OpenAHI after CloseAHI or
-without a request (writes to address 48); finit without a request
-(CheckIO of address 0).
+Workbench may have in `DEVS:` (whose requester would wait for the user).
+It logs Open/Close/AbortIO and every BeginIO with the request's fields
+(command, data, length, type, frequency, volume, position, `ahir_Link`,
+priority), completes a request at once (quick, or replied to the port)
+or keeps it while the scenario lets a sound "play on" until AbortIO, and
+marks `ahir_Link` and the priority of a completed request (AHI's
+autodoc: "the other fields are trashed"). It copies the tag list of
+`AHI_AllocAudioRequestA`, checks the requester and tags of
+`AHI_AudioRequestA` (a confirmed requester gets a choice in
+`ahiam_AudioID`/`ahiam_MixFreq`), counts `AHI_FreeAudioRequest` and the
+other vectors, and can fail OpenDevice, the allocation and the
+requester. AHIOutputRequest gets a used screen object in a0 (or 0).
+Observed: d0, what the device saw, the replies in the library's port,
+the kept registers. Covered: every command with OpenDevice failing;
+OpenAHI (both forms, again while open), PlaySoundAHI/PlayRawAHI in all
+forms, sounds that play on and ones that end at once, CloseAHI and finit
+while one plays, AHIOutputRequest in all six forms with markers in d2–d5
+(the tag list also checked for its values: the bugs above), with and
+without a used screen, the allocation failing, the requester cancelled,
+AHIRequestedID/Freq, CloseAHI (open, in use – CheckIO 0 –, again),
+finit, init again, init without a message port; CludgeSound (+16
+written by the original only, #926; +14 cleared by the port only, #925),
+then risoundlib's CludgeSound cases (`libs/tests/rwe/risoundcludge.h`,
+the same routine). Not covered: the real ahi.device; OpenAHI after
+CloseAHI or without a request (the original writes to address 48: the
+Blitz test `risoundlib2-openahi-after-closeahi`); finit without a
+request (CheckIO of address 0).

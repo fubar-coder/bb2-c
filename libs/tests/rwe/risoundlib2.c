@@ -14,11 +14,20 @@
  * failing (OpenAHI: 0; the others return 0 or do nothing), then with it
  * opening: Open, Close, BeginIO, AbortIO and the library vectors of
  * ahi.device logged - AHI_AllocAudioRequestA (-120: the tag list
- * copied) and AHI_AudioRequestA (-126: the requester, its tags), the
- * others counted; it can fail OpenDevice, AHI_AllocAudioRequestA and
- * the requester (0 = cancelled).  Every command and form is called with
- * its inputs (other registers = markers); observed are d0, what the
- * device saw and the kept registers.
+ * copied), AHI_AudioRequestA (-126: the requester, its tags; a confirmed
+ * requester gets a choice in ahiam_AudioID/ahiam_MixFreq) and
+ * AHI_FreeAudioRequest (-132), the others counted; it can fail
+ * OpenDevice, AHI_AllocAudioRequestA and the requester (0 = cancelled).
+ * BeginIO logs the request's fields (CMD_WRITE: data, length, type,
+ * frequency, volume, position, ahir_Link, priority) and completes it at
+ * once (quick, or replied to the port), or keeps it while "hold" is set
+ * (a sound that plays on) until AbortIO; a completed request gets markers
+ * in ahir_Link and the priority (AHI's autodoc: "the other fields are
+ * trashed").  AHIOutputRequest gets a used screen object of screenslib in
+ * a0 (its struct Screen a constant marker), or 0.  Every command and form
+ * is called with its inputs (other registers = markers); observed are d0,
+ * what the device saw, the replies in the library's port and the kept
+ * registers.
  * BUG(orig) IDs in brackets (libs/userlibs/rwe/risoundlib2.c).
  * Covered: init; every command without ahi.device; OpenAHI (both forms,
  * OpenDevice failing, again while open: opened again
@@ -32,7 +41,9 @@
  * AHIRequestedFreq (-1 and 0: (#934));
  * CloseAHI (no CloseDevice), CloseAHI while the request is in use
  * (CheckIO: nothing freed), finit, init again, init without a message
- * port (CreateMsgPort fails); CludgeSound (the rate at +16 of the object
+ * port (CreateMsgPort fails); sounds that play on and ones that end at
+ * once, CloseAHI and finit while one plays (#933), AHIOutputRequest
+ * without a used screen (#929); CludgeSound (the rate at +16 of the object
  * in the original, not in the port (#926); +14 not cleared in the
  * original, cleared in the port (#925)).
  * Not covered: the real ahi.device (its requester); playing (the code
@@ -51,6 +62,7 @@
 #include <exec/io.h>
 #include <exec/errors.h>
 #include <exec/memory.h>
+#include <devices/ahi.h>
 
 #define LIB "risoundlib2"
 
@@ -71,6 +83,8 @@ static struct log {
     ULONG tags[17];                     /* AHI_AllocAudioRequestA's tag list */
     ULONG reqok, reqtags;               /* AHI_AudioRequestA: a0 = the
                                            requester, a1 */
+    ULONG frees, freeok;                /* AHI_FreeAudioRequest (-132): a0
+                                           the requester */
 } last;
 static struct IORequest *opened;
 
@@ -108,17 +122,67 @@ static ULONG dev_null(void)
     return 0;
 }
 
-static void dev_beginio(struct IORequest *ior __asm("a1"))
+/* the last CMD_WRITE (or other command) BeginIO saw: the AHIRequest's
+   fields as the library set them (the data as an address, written
+   relative to the sample or the raw buffer by obs_write) */
+static struct wlog {
+    ULONG command, flags, data, length, offset, type, freq, volume, position, link;
+    ULONG pri;
+} w;
+static BOOL hold;                       /* BeginIO keeps a request that is
+                                           not quick (a sound that plays) */
+static struct IORequest *pending;       /* the request it keeps */
+
+/* "the other fields are trashed" (AHI's autodoc, CMD_WRITE): on
+   completion ahir_Link and the priority get markers */
+static void dev_trash(struct IORequest *ior)
 {
-    last.beginios++;
-    ior->io_Error = 0;
-    if (!(ior->io_Flags & IOF_QUICK))
-        ior->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
+    ((struct AHIRequest *)ior)->ahir_Link = (struct AHIRequest *)0xdead1111;
+    ior->io_Message.mn_Node.ln_Pri = 0x55;
 }
 
-static ULONG dev_abortio(void)
+static void dev_beginio(struct IORequest *ior __asm("a1"))
+{
+    struct AHIRequest *a = (struct AHIRequest *)ior;
+
+    last.beginios++;
+    w.command = a->ahir_Std.io_Command;
+    w.flags = a->ahir_Std.io_Flags;
+    w.data = (ULONG)a->ahir_Std.io_Data;
+    w.length = a->ahir_Std.io_Length;
+    w.offset = a->ahir_Std.io_Offset;
+    w.type = a->ahir_Type;
+    w.freq = a->ahir_Frequency;
+    w.volume = a->ahir_Volume;
+    w.position = a->ahir_Position;
+    w.link = (ULONG)a->ahir_Link;
+    w.pri = (UBYTE)ior->io_Message.mn_Node.ln_Pri;
+    ior->io_Error = 0;
+    if (ior->io_Flags & IOF_QUICK) {    /* done at once (DoIO) */
+        dev_trash(ior);
+        return;
+    }
+    if (hold) {                         /* plays on */
+        ior->io_Message.mn_Node.ln_Type = NT_MESSAGE;
+        pending = ior;
+        return;
+    }
+    dev_trash(ior);
+    ReplyMsg(&ior->io_Message);
+}
+
+/* a request still in the device's hands (kept by hold, or marked "in use"
+   by the scenario) is replied with IOERR_ABORTED */
+static ULONG dev_abortio(struct IORequest *ior __asm("a1"))
 {
     last.aborts++;
+    if (ior && ior->io_Message.mn_Node.ln_Type == NT_MESSAGE) {
+        if (ior == pending)
+            pending = NULL;
+        ior->io_Error = IOERR_ABORTED;
+        dev_trash(ior);
+        ReplyMsg(&ior->io_Message);
+    }
     return 0;
 }
 
@@ -138,7 +202,18 @@ static ULONG ahi_request(ULONG *req __asm("a0"), ULONG tags __asm("a1"))
     l->requests++;
     l->reqok = req == fakereq;
     l->reqtags = tags;
+    if (audioret) {                     /* the user's choice (ahiam_AudioID,
+                                           ahiam_MixFreq) */
+        fakereq[0] = 0x00230000 | l->requests;
+        fakereq[1] = 20000 + l->requests;
+    }
     return audioret;
+}
+
+static void ahi_free(ULONG *req __asm("a0"))
+{
+    last.frees++;
+    last.freeok = req == fakereq;
 }
 
 static ULONG ahi_other(void)
@@ -165,6 +240,7 @@ static BOOL add_device(void)
         devfuncs[i] = (APTR)ahi_other;
     devfuncs[120 / 6 - 1] = (APTR)ahi_alloc;
     devfuncs[126 / 6 - 1] = (APTR)ahi_request;
+    devfuncs[132 / 6 - 1] = (APTR)ahi_free;
     devfuncs[NVEC] = (APTR)-1;
     dev = (struct Device *)MakeLibrary((CONST_APTR)devfuncs, NULL, NULL, sizeof(struct Device),
                                        0);
@@ -203,11 +279,37 @@ static void same_device(void)
     OBS("requester", last.reqok);
     OBS("requester tags", last.reqtags);
     OBSBYTES("tag list", last.tags, sizeof last.tags);
+    OBS("AHI_FreeAudioRequest", last.frees);
+    OBS("freed requester", last.freeok);
+}
+
+/* the request of the last BeginIO; its data relative to the sample of
+   the sound object (`sample`) or the raw buffer of the test program */
+static void obs_write(ULONG sample)
+{
+    OBS("io_Command", w.command);
+    OBS("io_Flags", w.flags);
+    OBSPTR("io_Data", w.data, "sample", sample);
+    OBS("io_Length", w.length);
+    OBS("io_Offset", w.offset);
+    OBS("ahir_Type", w.type);
+    OBS("ahir_Frequency", w.freq);
+    OBS("ahir_Volume", w.volume);
+    OBS("ahir_Position", w.position);
+    OBS("ahir_Link", w.link);
+    OBS("ln_Pri", w.pri);
 }
 
 /* ------------------------------------------------------------ the calls */
 
-/* entry idx, form `form`, d0-d5 = the arguments (markers for the rest) */
+/* the used screen object of screenslib (a0 of AHIOutputRequest, !libs
+   #screenslib,#ua0): the struct Screen (a constant marker: the test
+   device never reads it) and the DBufInfo; scrobj = 0: no used screen */
+static ULONG fakescreen[2] = { 0x5c5c0001, 0 };
+static ULONG *scrobj = fakescreen;
+
+/* entry idx, form `form`, d0-d5 = the arguments (markers for the rest);
+   AHIOutputRequest gets scrobj in a0 */
 static void call6(int idx, int form, const char *name, const ULONG *d, int n)
 {
     ROUT = name;
@@ -215,6 +317,8 @@ static void call6(int idx, int form, const char *name, const ULONG *d, int n)
         int i_;
         for (i_ = 0; i_ < n; i_++)
             R.d[i_] = d[i_];
+        if (idx == OUTREQ)
+            R.a[0] = (ULONG)scrobj;
     });
     OBS("d0", R.d[0]);
     same_device();
@@ -242,28 +346,56 @@ static void stmt(int idx, int form, const char *name, const ULONG *d, int n)
 static UBYTE obj[48];                   /* a sound object at +8, guards */
 #define OFF 8
 
+static UBYTE rawbuf[200];               /* PlayRawAHI's data */
+
+/* PlaySoundAHI of the object at obj + OFF in form f */
+static void playsound(int f)
+{
+    static const ULONG snd[3] = { 0, 0x20000, 0x1000 };
+
+    ROUT = "PlaySoundAHI";
+    DONTCARE = 1;
+    DO1(ENT(LIB, PLAYSOUND, f), {
+        int i_;
+        for (i_ = 0; i_ <= f; i_++)
+            R.d[i_] = snd[i_];
+        R.a[0] = (ULONG)(obj + OFF);
+    });
+    DONTCARE = 0;
+    same_device();
+    obs_write(*(ULONG *)(obj + OFF));
+}
+
+/* PlayRawAHI of rawbuf in form f */
+static void playraw(int f)
+{
+    ULONG raw[5] = { (ULONG)rawbuf, sizeof rawbuf, 22050, 0x8000, 0x4000 };
+
+    stmt(PLAYRAW, f, "PlayRawAHI", raw, 3 + f);
+    obs_write(*(ULONG *)(obj + OFF));
+}
+
+/* the replies waiting in the port of the request the device saw opened
+   (call it only while the library's port exists) */
+static void obs_port(void)
+{
+    struct MsgPort *mp = opened->io_Message.mn_ReplyPort;
+    struct Node *n;
+    ULONG count = 0;
+
+    for (n = mp->mp_MsgList.lh_Head; n->ln_Succ; n = n->ln_Succ)
+        count++;
+    OBS("replies in the port", count);
+}
+
 static void playcmds(const char *what)
 {
-    static const ULONG raw[5] = { 0x1000, 200, 22050, 0x8000, 0x4000 };
-    ULONG snd[3];
     int f;
 
     sprintf(VEC, "%s", what);
     for (f = 0; f < 3; f++) {
-        ROUT = "PlaySoundAHI";
-        DONTCARE = 1;
-        snd[0] = 0;
-        snd[1] = 0x20000;
-        snd[2] = 0x1000;
-        DO1(ENT(LIB, PLAYSOUND, f), {
-            int i_;
-            for (i_ = 0; i_ <= f; i_++)
-                R.d[i_] = snd[i_];
-            R.a[0] = (ULONG)(obj + OFF);
-        });
-        DONTCARE = 0;
-        same_device();
-        stmt(PLAYRAW, f, "PlayRawAHI", raw, 3 + f);
+        playsound(f);
+        playraw(f);
     }
 }
 
@@ -477,6 +609,50 @@ int main(int argc, char **argv)
     outreqs("reopened");
     opened->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
     lifecycle(FINIT, "finit", "open");
+
+    /* sounds that play on (the device keeps the request, #933), sounds
+       that end at once (their replies in the port), CloseAHI and finit
+       while one plays; AHIOutputRequest without a used screen (#929) */
+    lifecycle(INIT, "init", "for playing");
+    openahi(0, 0, 0, "for playing,");
+    opened->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
+    hold = TRUE;
+    strcpy(VEC, "playing, first");
+    playsound(0);
+    obs_port();
+    strcpy(VEC, "playing, second");
+    playsound(1);
+    obs_port();
+    strcpy(VEC, "playing, raw");
+    playraw(0);
+    obs_port();
+    strcpy(VEC, "playing, third");
+    playsound(2);
+    obs_port();
+    lifecycle(CLOSEAHI, "CloseAHI", "playing");
+    hold = FALSE;
+    strcpy(VEC, "after CloseAHI");
+    playsound(0);
+    lifecycle(FINIT, "finit", "after CloseAHI");
+    lifecycle(INIT, "init", "after playing");
+    openahi(0, 0, 0, "after playing,");
+    opened->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
+    strcpy(VEC, "ended, first");
+    playsound(0);
+    obs_port();
+    strcpy(VEC, "ended, second");
+    playsound(0);
+    obs_port();
+    scrobj = NULL;
+    outreqs("no screen");
+    scrobj = fakescreen;
+    hold = TRUE;
+    strcpy(VEC, "playing at finit");
+    playsound(0);
+    obs_port();
+    lifecycle(FINIT, "finit", "playing");
+    hold = FALSE;
+    pending = NULL;
 
     /* init without a message port: finit does nothing */
     old = SetFunction((struct Library *)SysBase, -666, (APTR)rwe_fail0);
