@@ -8,6 +8,7 @@
 ; decoded: the first long of row 1 gets $22222222.
 ; Correct: 1024 columns; column 1023 is decoded, column 1024 is not, the
 ; first long of row 1 stays 0.
+; @fixed #1115
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-anim7-long-columns-wide.anim

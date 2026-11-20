@@ -36,11 +36,6 @@
  *     it: the RTS jumps to the caller's a1 (DIFF: the C build returns
  *     -1 as if a1 had been popped - a crash in the original, not
  *     reproducible) (#513).
- *   - ANIM7 (long data): the columns are width >> 5 (ASR.w), dropping
- *     the rest of a width that is not a multiple of 32, and a width below
- *     32 gives 65536 columns (DBRA) (#1115; what the last long column of
- *     a row with an odd number of words holds is not in the format's
- *     description).
  *   - A run or copy count of 0 is 256 (DBRA on the byte) (#508; kept on
  *     purpose: encoders never write a count of 0 - the ANIM format does
  *     not define it, the reference decoders read it as 0 rows - and a
@@ -116,6 +111,17 @@
  *     16).  The original tested the operation (always 7) instead of the
  *     bits: every ANIM7 was decoded as long data and its short code was
  *     unreachable (#504).
+ *   - ANIM7's long form has the long columns of the word-aligned row,
+ *     (width + 15) / 32, and an ANIM7 long frame of a width up to 16 (one
+ *     word) decodes no column (and returns -1); the count is computed in
+ *     RIAnimInit, one compare per ANIM7 frame.  The original took width
+ *     >> 5 (ASR.w): the rest of a width that is no multiple of 32 was
+ *     dropped (a width of 56: one of its two long columns), a width below
+ *     32 gave 65536 columns (DBRA) written far behind the bitmap, a width
+ *     of 32768 or more a negative count (#1115).  A row with an odd number
+ *     of words keeps its last word: its 16 pixels are not updated by long
+ *     frames (a limit, as the original and xanim: the format's description
+ *     does not say what the last long column of such a row holds).
  *   - RINextAnimFrame skips chunks of the ANIM that are no FORM on its
  *     way to the next frame (an ANNO between two frames); the original
  *     took such a chunk as the end of the animation (#1116).  The step
@@ -258,6 +264,9 @@ static UWORD deltacolumns;              /* a delta's columns per plane - 1 (DBRA
 /* the same per decoder (ANIM5, ANIM7 long, ANIM7 short), from RIAnimInit */
 enum { DELTA5, DELTA7, DELTA7SHORT };
 static UWORD columns[3];
+/* columns[DELTA7] of a width up to 16: no long column (fixed #1115; a
+   count is at most (65535 + 15) >> 5, 2048 columns) */
+#define NOCOLUMNS ((UWORD)0xFFFF)
 static UBYTE animdepth;
 static PLANEPTR *bitmapaddress;         /* the Planes of the bitmap object */
 static ULONG animtype7, bitplaneoffset;
@@ -534,9 +543,13 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     columns[DELTA5] = (UWORD)((((ULONG)animwidth + 15) >> 4 << 1) - 1);
     /* fixed #504: the words of the row for ANIM7's short form */
     columns[DELTA7SHORT] = (UWORD)((((ULONG)animwidth + 15) >> 4) - 1);
-    /* BUG(orig) (#1115): width >> 5 (ASR.w), a width below 32 gives
-       65536 columns */
-    columns[DELTA7] = (UWORD)(((WORD)animwidth >> 5) - 1);
+    /* fixed #1115: the long columns of the word-aligned row, rounded
+       down (the original: width >> 5 with ASR.w, dropping the rest of the
+       row, a width of 32768 or more gave a negative count, a width below
+       32 65536 columns); up to 16 pixels NOCOLUMNS, no long column.  A
+       row with an odd number of words keeps its last word (a limit, as
+       xanim: the format does not say what the last long column holds) */
+    columns[DELTA7] = (UWORD)((((ULONG)animwidth + 15) >> 5) - 1);
     animheight = bmhd->bmh_Height;
     animdepth = bmhd->bmh_Depth;
     /* fixed #509: the delta planes loop counts a byte up to the depth;
@@ -808,7 +821,10 @@ static int unpackanim(UBYTE *dlta, int kind)
     }
     deltacolumns = columns[kind];
     if (kind != DELTA5) {
-        planes7(body, kind, mod);
+        /* fixed #1115: an ANIM7 long frame of a width up to 16 has no
+           column (the short form and ANIM5 always have one) */
+        if (deltacolumns != NOCOLUMNS)
+            planes7(body, kind, mod);
         return 1;
     }
     do {                                /* depth 1-8 (fixed #509, RIAnimInit) */
@@ -886,8 +902,11 @@ static __attribute__((noinline)) UBYTE *nextform(UBYTE *chunk)
  * end of the ANIM it goes on with the third frame
  * if AnimLoop is on, else returns 0.  ANIM5 has the byte columns of the
  * word-aligned row (fixed #507), ANIM7's short form the words of the row
- * (fixed #504).  BUG(orig): the ANIM7 long columns are width >> 5,
- * dropping a rest and giving 65536 columns below 32 pixels (#1115);
+ * (fixed #504), its long form the long columns of that row, none up to
+ * 16 pixels (fixed #1115: the original took width >> 5 with ASR.w,
+ * dropping the rest of the row and giving 65536 columns below 32 pixels;
+ * the last word of a row with an odd number of words is not updated).
+ * BUG(orig):
  * a run or copy count of 0 is 256 (#508).  The depth is
  * 1 to 8 (fixed #509: RIAnimInit refuses 0 and above 8).  Other chunks between ANHD (and CMAP) and the DLTA are
  * skipped inside the frame, a CMAP among them goes through ILBMPalette; a

@@ -123,6 +123,28 @@ C code (a count of 0 is 256, #508).
   every ANIM7 was decoded as long data, garbage for short data, and its
   `UnpackAnim7Short` was unreachable (#504). An ANIM7 frame pays a test
   of the bit and a compare per plane.
+* ANIM7's long form has the long columns of the word-aligned row,
+  rounded down: (width + 15) / 32; an ANIM7 long frame of a width up to
+  16 (one word) decodes no column (RINextAnimFrame returns -1: the frame
+  is applied, a row of one word has no long column). The original took
+  width >> 5 (`ASR.w`): the rest of a width that is no multiple of 32
+  was dropped, also a long column the row has (a width of 56: 4 words, 2
+  longs, one decoded), a width below 32 gave `DBRA` -1, 65536 columns
+  read from the delta and written far behind the planes, a width of
+  32768 or more a negative count, 64512 columns for 32768 instead of
+  1024 (#1115; bug-orig tests `rianimlib-anim7-long-columns`,
+  `rianimlib-anim7-long-columns-rest` and
+  `rianimlib-anim7-long-columns-wide`). RIAnimInit computes the count; an
+  ANIM7 frame pays one compare (+43 cycles of an ANIM7 frame of the
+  benchmark `banim`, 97440.8 to 97484.2, 0.04 %).
+  **Limit (kept):** a row with an odd number of words (a width of 33 to
+  48, 65 to 80, ...) has no long column for its last word: its 16
+  pixels are not updated by ANIM7 long frames. The format's description
+  (the ANIM7 appendix of 1992) does not say what the last long column of
+  such a row holds; xanim truncates there as the original, FFmpeg
+  decodes one more column and writes the upper word of each long.
+  Truncating cannot write data the file does not hold there (user
+  decision L1 Q2 (a) of 2026-11-20).
 * RINextAnimFrame skips chunks of the ANIM that are no FORM on its way
   to the next frame (an `ANNO` between two frames); the original took
   such a chunk as the end of the animation and stopped there, or went on
@@ -188,14 +210,6 @@ bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
   pushes a1 and returns without popping it: the RTS jumps to the
   caller's a1. **DIFF:** the C build returns -1 as if a1 had been popped
   (the original crashes; not reproducible in C) (#513).
-* ANIM7, long data: the columns are width >> 5 (ASR.w) – the rest of a
-  width that is not a multiple of 32 is dropped, a width below 32 gives
-  65536 columns (DBRA) (#1115; bug-orig test
-  `rianimlib-anim7-long-columns`; what the last long column
-  of a row with an odd number of words holds is not in the format's
-  description, the ANIM7 appendix of 1992; xanim truncates as the
-  original, FFmpeg writes the upper word of the last long: not decided
-  here).
 * A run or copy count of 0 is 256 (DBRA on the byte) (#508). Kept on
   purpose (won't fix, user decision W5 Q4 of 2026-11-19): encoders never
   write a count of 0 (the ANIM format and its op 7 appendix do not define
@@ -233,4 +247,7 @@ Not covered: a frame with other chunks before its DLTA (the original
 crashes; bug-orig test `rianimlib-nextframe-no-dlta`), a chunk with the ID at
 +8 that is no FORM (the DIFF), odd chunk lengths (fixed #505; bug-orig
 test `rianimlib-chunk-pad-byte`), depth 0, run counts
-of 0, ANIM7 widths below 32 (bug-orig test `rianimlib-anim7-long-columns`).
+of 0, ANIM7 long frames of a width that is no multiple of 32 or of 32768
+and more (fixed #1115; bug-orig tests `rianimlib-anim7-long-columns`,
+`rianimlib-anim7-long-columns-rest` and
+`rianimlib-anim7-long-columns-wide`).

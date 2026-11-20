@@ -7,6 +7,7 @@
 ; is decoded: rows 2 and 3 get $FFFF.
 ; Correct (either reading of a row with an odd number of words: no long
 ; column or one): column 1 is not decoded, rows 2 and 3 stay 0.
+; @fixed #1115
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-anim7-long-columns.anim

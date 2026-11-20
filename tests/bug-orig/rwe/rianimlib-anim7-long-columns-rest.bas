@@ -8,6 +8,7 @@
 ; Correct: the long columns of the word-aligned row, 2; column 1 is
 ; decoded, the second long of row 0 gets $FFFFFFFF.  (Only the last word
 ; of a row with an odd number of words has no long column of its own.)
+; @fixed #1115
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-anim7-long-columns-rest.anim
