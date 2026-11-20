@@ -25,7 +25,7 @@ datatypes  RefreshDTObjectA         a3     poisoned
 datatypes  SaveDTObjectA            a3,a4  poisoned
 datatypes  SetDTAttrsA              a3     poisoned
 exec       AddTask                  a3     poisoned
-exec       RawDoFmt                 a3     poisoned
+exec       RawDoFmt                 a3     safe
 exec       Supervisor               a5     native
 gadtools   GT_GetGadgetAttrsA       a3     safe
 gadtools   GT_SetGadgetAttrsA       a3     safe
