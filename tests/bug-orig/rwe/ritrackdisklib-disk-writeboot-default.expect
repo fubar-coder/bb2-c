@@ -1,0 +1,9 @@
+[run]
+WriteBoot: 0
+read back: 0
+id: DOS 0
+root block: 880
+sum: -1
+boot code d0: 0
+boot code a0 = rt_Init of dos.library: -1
+rc=0

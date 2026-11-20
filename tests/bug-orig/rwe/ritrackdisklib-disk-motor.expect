@@ -1,0 +1,7 @@
+[run]
+opened: 0
+after MotorOn: -1
+after MotorOff: 0
+after ReadSector: -1
+after CloseDisk: 0
+rc=0

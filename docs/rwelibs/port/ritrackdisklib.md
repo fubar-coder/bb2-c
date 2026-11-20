@@ -192,5 +192,23 @@ DiskIO, DiskMotor, CloseDisk of open/closed/invalid units, finit with
 unit 3 open and init again (unit 3's entry). Then the real
 trackdisk.device on the empty DF0: of the emulator: OpenDisk, MotorOn,
 DiskMotor, MotorOff, DiskMotor, ReadSector (29 = no disk), DiskStatus,
-CloseDisk. Not covered: trackdisk.device with a disk (no floppy image;
-the hardfiles are read-only), a device name over 56 characters.
+CloseDisk.
+
+**Disk tests** (Blitz, `tests/bug-orig/rwe/ritrackdisklib-disk-*`, the
+floppy pass key: the blank image `ritrackdisklib-blank.adf` in DF1, DF0
+empty; on the a1200, a500-204 and a500, i.e. Kickstart 3.1, 2.04 and
+1.3): each writes, switches the motor off, drops trackdisk.device's
+track buffer through `DiskIO` (`CMD_CLEAR`, as a disk change would) and
+reads the sectors back from the disk: `-formattrack` (#858),
+`-writeboot-bootdata` (#864), `-writeboot-default` (#865: the block
+read back is checked as Strap does, and its boot code is run: d0 0, a0
+the dos.library resident's `rt_Init`), `-bootprog` (#856), `-flush`
+(#1154), `-motor` (#857); all run on the a500 with the hand-built
+requests (#941). The recorded originals (a1200) show the measured
+answers: -4 for every `TD_FORMAT` that is no multiple of a track, the
+written sector lost after MotorOff, `DiskMotor` -1 throughout. Measured
+once by hand on the a500 (Kickstart 1.3, R10): with a buffer outside
+chip memory (`$C19D90`, the a500's slow memory) `ReadSector` and
+`WriteSector` return 0 but transfer nothing: 1.3's trackdisk.device
+needs chip buffers, the library passes the program's buffer as it is
+(as the original).

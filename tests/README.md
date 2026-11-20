@@ -1711,8 +1711,8 @@ is no hang check (it works in snapshot mode only), a
 test sets `timeout=`. The key comes before the `uae=` changes: `uae=floppy1wp=true`
 write protects the disk. A disk in DF0 without a boot block is skipped by the
 boot (DH0 boots). Example and check of the key:
-`regression/ritrackdisklib-floppy-key` (a500-204 and a1200; the a500 crashes
-in the library's start-up, #941); the key's parser and the copy have host
+`regression/ritrackdisklib-floppy-key` (a500, a500-204 and a1200), and the
+disk tests `rwe/ritrackdisklib-disk-*`; the key's parser and the copy have host
 tests with broken input (`corpus_runner`).
 
 

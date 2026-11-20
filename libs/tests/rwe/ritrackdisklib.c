@@ -18,23 +18,25 @@
  * written (BootProg's checksum, the sum of the boot block), the boot block
  * on the disk after WriteBoot unit, and the kept registers.  Covered: all
  * commands before OpenDisk (0), OpenDisk of units 5, 4, 0-3, -1, -2 (with
- * the name given; BUG(orig) #861: the request of -1 is lost), unit 2
- * without a name after names were given (the name kept, BUG(orig) #859),
- * a second OpenDisk of an open unit (#862), sector commands with and
+ * the name given; the original loses the request of -1, #861), unit 2
+ * without a name after names were given (the original keeps the name,
+ * #859), a second OpenDisk of an open unit (#862), sector commands with and
  * without count, errors of the device (positive and negative io_Error),
  * FormatTrack's track * 11 of the low word, WriteBoot unit (the default
  * boot block; the device takes only its 8 bytes when the buffer lies in
  * the library, #865), on a disk with "DOS",3 too, and WriteBoot
- * unit,bootdata (buffer = the caller's d2, BUG(orig), #864), BootProg's
- * checksum, DiskStatus/DiskIO, CloseDisk, finit (closes units 0-2, not
- * 3: BUG(orig), #863; the test closes unit 3 if it is still open) and
- * init again (the stale entry of unit 3).
+ * unit,bootdata (the original's buffer = the caller's d2, #864),
+ * BootProg's checksum, DiskStatus/DiskIO, CloseDisk, finit (the
+ * original closes units 0-2, not 3, #863; the test closes unit 3 if it
+ * is still open) and init again (the original's stale entry of unit 3).
  * Then a short real trackdisk.device run on the empty DF0: (OpenDisk,
  * MotorOn, DiskMotor, MotorOff, DiskMotor, ReadSector = "no disk",
  * CloseDisk).
- * Not covered: trackdisk.device with a disk in the drive (no floppy in
- * the emulator; the hardfiles are read-only), a device name longer than
- * the 58 byte buffer (overwrites the request table, BUG(orig), #860).
+ * Not here: trackdisk.device with a disk in the drive (the Blitz tests
+ * tests/bug-orig/rwe/ritrackdisklib-disk-*, a blank image in DF1 on
+ * three Kickstarts), a device name longer than the original's 58 byte
+ * buffer (tests/bug-orig/rwe/ritrackdisklib-opendisk-name-overflow,
+ * #860).
  */
 #include "sysload.h"
 #include <exec/devices.h>
@@ -497,7 +499,7 @@ int main(int argc, char **argv)
     sector(WRITESECTOR, "WriteSector", 3, 7, buf, 2048, 1, 2);
     sector(READSECTOR, "ReadSector", 1, 7, rbuf, 0, 1, 2);
     unitcmd(MOTORON, "MotorOn", 3);
-    /* a second OpenDisk of unit 1: the old request is lost (BUG(orig), #862) */
+    /* a second OpenDisk of unit 1: the original loses the old request (#862) */
     opendisk(1, rwe);
     diskio(1);
     /* negative units: OpenDevice ok (request lost) / failed */

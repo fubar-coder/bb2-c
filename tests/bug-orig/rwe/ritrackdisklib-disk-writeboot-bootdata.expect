@@ -1,0 +1,6 @@
+[run]
+WriteBoot 1,bootdata: 0
+read back: 0
+sector 0: BOOTDATA 0
+sector 1: BOOTDATA 1
+rc=0

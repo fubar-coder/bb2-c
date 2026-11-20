@@ -1,0 +1,13 @@
+[run]
+FormatTrack 1,1,buf: 0
+FormatTrack 1,2,buf,11: 0
+FormatTrack 1,3,buf,22: 0
+WriteBoot 1,buf: 0
+sector 0: 0 A
+sector 11: 0 A
+sector 21: 0 K
+sector 22: 0 A
+sector 32: 0 K
+sector 33: 0 A
+sector 54: 0 V
+rc=0
