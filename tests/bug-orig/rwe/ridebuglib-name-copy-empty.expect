@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+set
+messages 2
++8 0
++9 b
+rc=0
