@@ -16,7 +16,8 @@ InstrSize|kept|odd address|1	kept
 InstrSize|popped|odd a3|1	$00000000
 InstrSize|popped|odd address|1	$00000000
 InstrSize (before DisAssemble$)|d0||1	$00000000
-InstrSize (before DisAssemble$)|d0|second run|1	$00000004
+InstrSize (before DisAssemble$)|d0|second run|1 [orig]	$00000004
+InstrSize (before DisAssemble$)|d0|second run|1 [fixed #1170]	$00000000
 InstrSize (before DisAssemble$)|kept||1	kept
 InstrSize (before DisAssemble$)|kept|second run|1	kept
 InstrSize (before DisAssemble$)|popped||1	$00000000

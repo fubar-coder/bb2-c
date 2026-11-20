@@ -30,7 +30,7 @@
  * instruction address and an odd a3 (the emulator has a 68020; on a
  * 68000 both were address errors, the odd a3 Fixed (#617)); init and finit (RTS);
  * a second run (init after finit, then InstrSize before the first
- * DisAssemble$: the last run's size, BUG(orig) (#1170)).
+ * DisAssemble$: 0, the original gave the last run's size, Fixed (#1170)).
  * Not covered: the 68000 address errors; the steps leave out some
  * extension words (time: about 380000 calls take 20 s).
  */

@@ -10,7 +10,8 @@
  * 2.10 (ref/ridisasmlib.obj): the declarations equal it (ctest
  * rwe_declarations_ridisasmlib), the behaviour is compared with it in
  * libs/tests/rwe/ridisasmlib.c.  Notes: docs/rwelibs/port/ridisasmlib.md.
- * The source needs no library at runtime (init and finit are RTS).
+ * The source needs no library at runtime (init and finit are RTS; the
+ * port's init clears InstrSize's size, #1170).
  *
  * DisAssemble$(address): the first instruction word is matched against
  * the 126 entries of DisData (mask, compare value, name, source and
@@ -52,6 +53,10 @@
  * before the source), but a5 is also the number and register list
  * pointer of the operand routines: MOVEM with an empty register list
  * (mask 0) as the source got a comma, "movem.l  ,-(a7)".
+ * Fixed (intended deviation, #1170): init clears the size of the last
+ * instruction.  The original's init is RTS, so a second run of the
+ * program with the library still loaded (from the editor) returned the
+ * run before's size from InstrSize before its first DisAssemble$.
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -1044,7 +1049,7 @@ ULONG BLITZ_ROUTINE c_disoneline(ULONG addr BL_REG(d0))
 
 /**
  * @brief InstrSize: the size of the last instruction disassembled.
- * @return d0: its bytes (0 before the first DisAssemble$)
+ * @return d0: its bytes (0 before the first DisAssemble$ of the run)
  */
 ULONG BLITZ_ROUTINE c_instrsize(void)
 {
@@ -1052,10 +1057,12 @@ ULONG BLITZ_ROUTINE c_instrsize(void)
 }
 
 /**
- * @brief init: nothing (RTS), the library needs no system library.
+ * @brief init: clears InstrSize's size (Fixed (#1170): the original's init
+ * is RTS); the library needs no system library.
  */
 static void BLITZ_ROUTINE libinit(void)
 {
+    disasm_add = 0;
 }
 
 /**

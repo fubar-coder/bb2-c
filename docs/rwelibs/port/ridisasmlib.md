@@ -12,7 +12,8 @@ InstrSize 2. 68000 to 68030 instructions, the 68020 addressing modes
 (brief and full extension words, memory indirect), MOVEM register lists
 ("d0-d3/a0"), MOVEC control registers. Numbers: hex (`$XXXXXXXX`, `#$XX`
 ...) for addresses and immediates, signed decimal for displacements.
-No library at runtime (init and finit are RTS).
+No library at runtime (init and finit are RTS; the port's init clears
+InstrSize's size, #1170).
 
 **Source and reference:** `rwelibsrc/Disasmlib/Disasm-library.bb2`, the
 last original version; the AmiBlitz3 `RIDisAsm.obj` is an AmiBlitz3
@@ -66,6 +67,11 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
   source got a comma, `movem.l  ,-(a7)` (#615; test
   `ridisasmlib-docomma-empty-movem-list`, the `libs_emulator` blocks of
   the masks 0 of `MOVEM -(a7)` and `MOVEM (a0)`).
+* init clears InstrSize's size: the original's init is RTS, so a second
+  run of the program with the library still loaded (from the editor)
+  got the run before's size from `InstrSize` before its first
+  `DisAssemble$` (#1170; `libs_emulator`, the second run of
+  `rwe_ridisasmlib`).
 
 **Test** (`libs/tests/rwe/ridisasmlib.c`, snitch case "rwe ridisasmlib"):
 each run loads one library set (the C build or the original) and
