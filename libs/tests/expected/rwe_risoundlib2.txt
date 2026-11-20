@@ -2415,9 +2415,11 @@ CludgeSound|+16 (rate)|8363 Hz|1	$000020AB
 CludgeSound|d0|16000 Hz, after it|1	$FFFFFFFF
 CludgeSound|d0|22050 Hz|1	$FFFFFFFF
 CludgeSound|d0|8363 Hz|1	$FFFFFFFF
+CludgeSound|d0|BODY 0 bytes|1 [fixed #829]	$00000000
 CludgeSound|d0|BODY 1 byte|1	$FFFFFFFF
 CludgeSound|d0|BODY 131071 bytes|1	$FFFFFFFF
-CludgeSound|d0|BODY 131072 bytes|1	$FFFFFFFF
+CludgeSound|d0|BODY 131072 bytes|1 [orig]	$FFFFFFFF
+CludgeSound|d0|BODY 131072 bytes|1 [fixed #829]	$00000000
 CludgeSound|d0|BODY 65536 bytes|1	$FFFFFFFF
 CludgeSound|d0|BODY 70000 bytes|1	$FFFFFFFF
 CludgeSound|d0|BODY the 7th chunk|1	$FFFFFFFF
@@ -2442,12 +2444,15 @@ CludgeSound|d0|rate 32768|1	$FFFFFFFF
 CludgeSound|d0|rate 3579|1	$FFFFFFFF
 CludgeSound|d0|rate 65535|1	$FFFFFFFF
 CludgeSound|d0|rate 8363|1	$FFFFFFFF
+CludgeSound|failed: the old pointer|BODY 0 bytes|1 [fixed #829]	$00000001
+CludgeSound|failed: the old pointer|BODY 131072 bytes|1 [fixed #829]	$00000001
 CludgeSound|failed: the old pointer|BODY the 8th chunk|1	$00000001
 CludgeSound|failed: the old pointer|no VHDR|1	$00000001
 CludgeSound|failed: the old pointer|not 8SVX|1	$00000001
 CludgeSound|failed: the old pointer|odd chunk with pad byte|1 [orig #828]	$00000001
 CludgeSound|failed: the old pointer|odd chunk without pad byte|1 [fixed #828]	$00000001
 CludgeSound|failed: the old pointer|rate 0|1 [fixed #830]	$00000001
+CludgeSound|file unchanged|BODY 0 bytes|1 [fixed #829]	$00000001
 CludgeSound|file unchanged|BODY 1 byte|1	$00000001
 CludgeSound|file unchanged|BODY 131071 bytes|1	$00000001
 CludgeSound|file unchanged|BODY 131072 bytes|1	$00000001
@@ -2476,6 +2481,7 @@ CludgeSound|file unchanged|rate 8363|1	$00000001
 CludgeSound|guards before|16000 Hz, after it|1	bytes 8 A5A5A5A5A5A5A5A5
 CludgeSound|guards before|22050 Hz|1	bytes 8 A5A5A5A5A5A5A5A5
 CludgeSound|guards before|8363 Hz|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards before|BODY 0 bytes|1 [fixed #829]	bytes 8 A5A5A5A5A5A5A5A5
 CludgeSound|guards before|BODY 1 byte|1	bytes 8 A5A5A5A5A5A5A5A5
 CludgeSound|guards before|BODY 131071 bytes|1	bytes 8 A5A5A5A5A5A5A5A5
 CludgeSound|guards before|BODY 131072 bytes|1	bytes 8 A5A5A5A5A5A5A5A5
@@ -2501,6 +2507,7 @@ CludgeSound|guards before|rate 32768|1	bytes 8 A5A5A5A5A5A5A5A5
 CludgeSound|guards before|rate 3579|1	bytes 8 A5A5A5A5A5A5A5A5
 CludgeSound|guards before|rate 65535|1	bytes 8 A5A5A5A5A5A5A5A5
 CludgeSound|guards before|rate 8363|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|BODY 0 bytes|1 [fixed #829]	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|BODY 1 byte|1	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|BODY 131071 bytes|1	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|BODY 131072 bytes|1	bytes 8 20ABA5A5A5A5A5A5
@@ -2531,6 +2538,7 @@ CludgeSound|guards behind|rate 8363|1	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|kept|16000 Hz, after it|1	kept
 CludgeSound|kept|22050 Hz|1	kept
 CludgeSound|kept|8363 Hz|1	kept
+CludgeSound|kept|BODY 0 bytes|1 [fixed #829]	kept
 CludgeSound|kept|BODY 1 byte|1	kept
 CludgeSound|kept|BODY 131071 bytes|1	kept
 CludgeSound|kept|BODY 131072 bytes|1	kept
@@ -2556,6 +2564,7 @@ CludgeSound|kept|rate 32768|1	kept
 CludgeSound|kept|rate 3579|1	kept
 CludgeSound|kept|rate 65535|1	kept
 CludgeSound|kept|rate 8363|1	kept
+CludgeSound|memory balance|BODY 0 bytes|1 [fixed #829]	$00000000
 CludgeSound|memory balance|BODY 1 byte|1	$FFFE0008
 CludgeSound|memory balance|BODY 131071 bytes|1	$00010000
 CludgeSound|memory balance|BODY 131072 bytes|1	$00000000
@@ -2585,16 +2594,17 @@ CludgeSound|memory balance|rate 32768|1	$00000000
 CludgeSound|memory balance|rate 3579|1	$00000000
 CludgeSound|memory balance|rate 65535|1	$00000000
 CludgeSound|memory balance|rate 8363|1	$000003F0
+CludgeSound|object fields|BODY 0 bytes|1 [fixed #829]	bytes 12 01AC00000000000000000000
 CludgeSound|object fields|BODY 1 byte|1 [orig]	bytes 12 01AC00000000000000007777
 CludgeSound|object fields|BODY 1 byte|1 [fixed #925]	bytes 12 01AC00000000000000000000
 CludgeSound|object fields|BODY 131071 bytes|1 [orig]	bytes 12 01AC7FFF0000000000007777
-CludgeSound|object fields|BODY 131071 bytes|1 [fixed #925]	bytes 12 01AC7FFF0000000000000000
+CludgeSound|object fields|BODY 131071 bytes|1 [fixed #925]	bytes 12 01ACFFFF0000000000000000
 CludgeSound|object fields|BODY 131072 bytes|1 [orig]	bytes 12 01AC00000000000000007777
-CludgeSound|object fields|BODY 131072 bytes|1 [fixed #925]	bytes 12 01AC00000000000000000000
+CludgeSound|object fields|BODY 131072 bytes|1 [fixed #925]	bytes 12 01ACFFFF0000000000000000
 CludgeSound|object fields|BODY 65536 bytes|1 [orig]	bytes 12 01AC00000000000000007777
-CludgeSound|object fields|BODY 65536 bytes|1 [fixed #925]	bytes 12 01AC00000000000000000000
+CludgeSound|object fields|BODY 65536 bytes|1 [fixed #925]	bytes 12 01AC80000000000000000000
 CludgeSound|object fields|BODY 70000 bytes|1 [orig]	bytes 12 01AC08B80000000000007777
-CludgeSound|object fields|BODY 70000 bytes|1 [fixed #925]	bytes 12 01AC08B80000000000000000
+CludgeSound|object fields|BODY 70000 bytes|1 [fixed #925]	bytes 12 01AC88B80000000000000000
 CludgeSound|object fields|BODY the 7th chunk|1 [orig]	bytes 12 014400200000000000007777
 CludgeSound|object fields|BODY the 7th chunk|1 [fixed #925]	bytes 12 014400200000000000000000
 CludgeSound|object fields|BODY the 8th chunk|1 [orig]	bytes 12 014400200000000000007777
@@ -2640,6 +2650,7 @@ CludgeSound|object fields and behind|22050 Hz|1 [orig]	bytes 36 00A2001000000000
 CludgeSound|object fields and behind|22050 Hz|1 [fixed #925]	bytes 36 00A2001000000000000000005622A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
 CludgeSound|object fields and behind|8363 Hz|1 [orig]	bytes 36 01AC0032000000000000634C20ABA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
 CludgeSound|object fields and behind|8363 Hz|1 [fixed #925]	bytes 36 01AC0032000000000000000020ABA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|period|BODY 0 bytes|1 [fixed #829]	$000001AC
 CludgeSound|period|BODY 1 byte|1	$000001AC
 CludgeSound|period|BODY 131071 bytes|1	$000001AC
 CludgeSound|period|BODY 131072 bytes|1	$000001AC
@@ -2670,6 +2681,7 @@ CludgeSound|period|rate 8363|1	$000001AC
 CludgeSound|popped|16000 Hz, after it|1	$00000000
 CludgeSound|popped|22050 Hz|1	$00000000
 CludgeSound|popped|8363 Hz|1	$00000000
+CludgeSound|popped|BODY 0 bytes|1 [fixed #829]	$00000000
 CludgeSound|popped|BODY 1 byte|1	$00000000
 CludgeSound|popped|BODY 131071 bytes|1	$00000000
 CludgeSound|popped|BODY 131072 bytes|1	$00000000
@@ -2699,10 +2711,12 @@ CludgeSound|sample|16000 Hz, after it|1	$00000001
 CludgeSound|sample|22050 Hz|1	$00000001
 CludgeSound|sample|8363 Hz|1	$00000001
 CludgeSound|sample data|BODY 1 byte|1	$00000001
-CludgeSound|sample data|BODY 131071 bytes|1	$00000000
-CludgeSound|sample data|BODY 131072 bytes|1	$00000000
+CludgeSound|sample data|BODY 131071 bytes|1 [orig]	$00000000
+CludgeSound|sample data|BODY 131071 bytes|1 [fixed #829]	$00000001
+CludgeSound|sample data|BODY 131072 bytes|1 [orig #829]	$00000000
 CludgeSound|sample data|BODY 65536 bytes|1	$00000001
-CludgeSound|sample data|BODY 70000 bytes|1	$00000000
+CludgeSound|sample data|BODY 70000 bytes|1 [orig]	$00000000
+CludgeSound|sample data|BODY 70000 bytes|1 [fixed #829]	$00000001
 CludgeSound|sample data|BODY the 7th chunk|1	$00000001
 CludgeSound|sample data|VHDR 24 bytes|1	$00000001
 CludgeSound|sample data|after failures|1	$00000001
@@ -2721,7 +2735,7 @@ CludgeSound|sample data|rate 65535|1	$00000001
 CludgeSound|sample data|rate 8363|1	$00000001
 CludgeSound|sample in chip memory|BODY 1 byte|1	$00000001
 CludgeSound|sample in chip memory|BODY 131071 bytes|1	$00000001
-CludgeSound|sample in chip memory|BODY 131072 bytes|1	$00000001
+CludgeSound|sample in chip memory|BODY 131072 bytes|1 [orig #829]	$00000001
 CludgeSound|sample in chip memory|BODY 65536 bytes|1	$00000001
 CludgeSound|sample in chip memory|BODY 70000 bytes|1	$00000001
 CludgeSound|sample in chip memory|BODY the 7th chunk|1	$00000001
@@ -2740,11 +2754,16 @@ CludgeSound|sample in chip memory|rate 32768|1	$00000001
 CludgeSound|sample in chip memory|rate 3579|1	$00000001
 CludgeSound|sample in chip memory|rate 65535|1	$00000001
 CludgeSound|sample in chip memory|rate 8363|1	$00000001
+CludgeSound|words|BODY 0 bytes|1 [fixed #829]	$00000000
 CludgeSound|words|BODY 1 byte|1	$00000000
-CludgeSound|words|BODY 131071 bytes|1	$00007FFF
-CludgeSound|words|BODY 131072 bytes|1	$00000000
-CludgeSound|words|BODY 65536 bytes|1	$00000000
-CludgeSound|words|BODY 70000 bytes|1	$000008B8
+CludgeSound|words|BODY 131071 bytes|1 [orig]	$00007FFF
+CludgeSound|words|BODY 131071 bytes|1 [fixed #829]	$0000FFFF
+CludgeSound|words|BODY 131072 bytes|1 [orig]	$00000000
+CludgeSound|words|BODY 131072 bytes|1 [fixed #829]	$0000FFFF
+CludgeSound|words|BODY 65536 bytes|1 [orig]	$00000000
+CludgeSound|words|BODY 65536 bytes|1 [fixed #829]	$00008000
+CludgeSound|words|BODY 70000 bytes|1 [orig]	$000008B8
+CludgeSound|words|BODY 70000 bytes|1 [fixed #829]	$000088B8
 CludgeSound|words|BODY the 7th chunk|1	$00000020
 CludgeSound|words|BODY the 8th chunk|1	$00000020
 CludgeSound|words|VHDR 24 bytes|1	$00000019

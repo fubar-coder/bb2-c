@@ -24,8 +24,8 @@
  * on a failure and the stale pointer kept by the original (#831; the
  * port leaves the old sample), an odd BODY length.
  * In the C build only (cases [fixed #N]): rate 0 (the original never
- * returns, #830).  Not covered: an empty BODY (the original copies 65536
- * bytes into an 8 byte block, #829).
+ * returns, #830) and an empty BODY (the original copies 65536 bytes into
+ * an 8 byte block, #829).
  */
 #ifndef RISOUNDCLUDGE_H
 #define RISOUNDCLUDGE_H
@@ -277,6 +277,13 @@ static void cs_cases(const char *lib, int idx)
         cs_body(100, 1);
         cs_finish();
         cs_cludge(16);
+        cs_forget();
+
+        strcpy(VEC, "BODY 0 bytes");    /* the original overwrites memory (#829) */
+        cs_begin("8SVX", "VHDR", 20, 8363);
+        cs_body(0, 1);
+        cs_finish();
+        cs_cludge(17);
         cs_forget();
     }
 

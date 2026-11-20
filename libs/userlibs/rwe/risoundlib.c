@@ -17,15 +17,10 @@
  * memory (memlib globalloc) and fills the object: +0 sample, +4 period
  * (3579545 / rate), +6 length in words, +8 .l/+12 .w/+14 .w = 0 (no
  * loop).  Result -1, or 0 when it is no 8SVX/VHDR file, its rate is 0,
- * it has no BODY or the memory is missing.
+ * it has no BODY, an empty one or one of 131072 bytes or more, or the
+ * memory is missing.
  *
  * No assembler besides the thunk.
- *
- * BUG(orig):
- *   - The copy is a DBRA loop on length - 1: it copies ((length - 1) &
- *     $FFFF) + 1 bytes - 65536 for an empty BODY, only the rest modulo
- *     65536 for a longer one; the length in words is (length & $FFFF) / 2
- *     (#829).
  *
  * Fixed (intended deviation, docs/libs/deviations.md 3a): the old sample
  * is not freed when audiolib's "cL" mark (+14) is set: after a
@@ -44,7 +39,13 @@
  * cleared with it: a call that fails on the file leaves the sound as it
  * was.  The original freed it first and kept the pointer, so a failed
  * call left the object pointing to freed memory, which the next
- * CludgeSound freed again ("Unable to Free Memory") (#831).
+ * CludgeSound freed again ("Unable to Free Memory") (#831).  The whole
+ * BODY is copied and its length in words is length / 2; an empty BODY
+ * and one of 131072 bytes or more (more than the word at +6 describes,
+ * audiolib's own limit) give the result 0.  The original copied with a
+ * DBRA loop on length - 1, ((length - 1) & $FFFF) + 1 bytes - 65536 into
+ * the block of an empty BODY, the rest modulo 65536 of a longer one - and
+ * took (length & $FFFF) / 2 as the length in words (#829).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -75,6 +76,10 @@ BLITZ_LIBFIN();
 #define LONGAT(p) (*(ULONG *)(p))
 #define WORDAT(p) (*(UWORD *)(p))
 
+/* the longest BODY: the length in words (+6 of the object) is a word, as
+   audiolib's limit for LoadSound and DecodeSound ("Sound too long") */
+#define MAXBODY 131071
+
 /* the sound object of audiolib: struct bb_sound (blitzobj.h) */
 
 /** @brief init: RTS (nothing to set up). */
@@ -96,18 +101,17 @@ static void BLITZ_ROUTINE _libfinit(void)
  * seven chunks of the FORM (with the IFF pad bytes, fixed: #828), then
  * frees the object's old sample and clears its pointer (memlib globfree;
  * not DecodeSound's in-place "cL" data, fixed: #945; after the checks,
- * fixed: #831), copies the BODY into chip memory (memlib globalloc)
- * and fills the object: sample, period 3579545 / rate, length in words,
- * no loop, the "cL" mark cleared.
- * BUG(orig): the copy is a DBRA loop on length - 1, the length in words
- * (length & $FFFF) / 2 (#829).
+ * fixed: #831), copies all of the BODY into chip memory (memlib
+ * globalloc; fixed: #829) and fills the object: sample, period
+ * 3579545 / rate, length in words, no loop, the "cL" mark cleared.
  * @param sound  d0: the sound number (globfree gets d0 with the old
  *               length in its low word)
  * @param sram   d1: the 8SVX file
  * @param saddr  a0: the sound object (!libs #audiolib,#ia0|#pd0)
  * @return d0: BB_TRUE, BB_FALSE if it is no 8SVX/VHDR file, its rate is
  *         0 (fixed: #830), it has no BODY among the first seven chunks of
- *         the FORM (the sound unchanged, fixed: #831) or the chip memory
+ *         the FORM, the BODY is empty or 131072 bytes or longer (fixed:
+ *         #829) - the sound unchanged (fixed: #831) - or the chip memory
  *         is missing (the sound then has no sample)
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
@@ -115,7 +119,7 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen, formlen, off, len;
-    UWORD sper, n;
+    UWORD sper;
     int chunk;
 
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
@@ -150,6 +154,9 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     iff = sram + off;
     src = iff + 8;
     slen = LONGAT(iff + 4);
+    if (!slen || slen > MAXBODY)        /* Fixed (#829): none, or more than
+                                           the word at +6 can describe */
+        return BB_FALSE;
     /* Fixed (#831): the old sample is freed after the checks, and the
        object no longer points to it (a failed check leaves the sound as
        it was) */
@@ -167,13 +174,11 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     }
     if (!mem)
         return BB_FALSE;
-    n = (UWORD)(slen - 1);              /* DBRA: BUG(orig) #829, see above */
-    do
+    for (len = slen; len; len--)        /* Fixed (#829): all of it */
         *dst++ = *src++;
-    while (n-- != 0);
     saddr->data = mem;
     saddr->period = sper;
-    saddr->len = (UWORD)((slen & 0xffff) >> 1);
+    saddr->len = (UWORD)(slen >> 1);
     saddr->rep = NULL;                  /* no loop */
     saddr->replen = 0;
     saddr->mark = 0;

@@ -41,13 +41,6 @@ init/finit are empty C functions. memlib is called with `BLITZ_ALIBJSR`
 original; `TOK_globalloc`). The period is the original's subtraction loop
 with its signed compare.
 
-## BUG(orig), kept
-
-* The copy is `DBRA` on length − 1: ((length − 1) & $FFFF) + 1 bytes – an
-  empty BODY copies 65536 bytes into a block of 8, a BODY over 65536
-  bytes only the rest; the length in words is (length & $FFFF) / 2
-  (#829).
-
 ## Fixed
 
 Intended deviations from the original (`docs/libs/deviations.md`,
@@ -80,6 +73,14 @@ kind F):
   pointer: the object pointed to freed memory, and the next CludgeSound
   on it freed it again (memlib's "Unable to Free Memory") (#831; test
   `tests/bug-orig/rwe/risoundlib-stale-sample-pointer`).
+* The whole BODY is copied, and the length in words is length / 2. An
+  empty BODY and one of 131072 bytes or more (more than the word at +6
+  describes; audiolib's `LoadSound` and `DecodeSound` refuse those as
+  "Sound too long") give the result 0. The original copied with `DBRA`
+  on length − 1, ((length − 1) & $FFFF) + 1 bytes – an empty BODY 65536
+  bytes into a block of 8, a BODY over 65536 bytes only the rest – and
+  took (length & $FFFF) / 2 as the length in words (#829; test
+  `tests/bug-orig/rwe/risoundlib-copy-length-word`).
 
 ## Test
 
@@ -98,5 +99,6 @@ freeing the previous sample; chunks before BODY, BODY as the 7th (found)
 and 8th chunk (not), no `8SVX`, no `VHDR`, a VHDR of 24 bytes, an odd
 chunk with and without the pad byte, odd and 1-byte BODYs, BODYs of
 65536, 70000, 131071 and 131072 bytes, the old sample freed by a failure;
-in the C build only (the original never returns): rate 0. Not covered:
-an empty BODY (see above); audiolib itself (only the object layout).
+in the C build only: rate 0 (the original never returns) and an empty
+BODY (the original overwrites memory). Not covered: audiolib itself
+(only the object layout).

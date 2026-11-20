@@ -56,8 +56,7 @@
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
  *     (ahiam_AudioID, ahiam_MixFreq) (#934).
- *   - CludgeSound: risoundlib's bug #829, and
- *     the rate is written at +16, behind the 16 byte sound object of
+ *   - CludgeSound: the rate is written at +16, behind the 16 byte sound object of
  *     audiolib (into the next object, behind the last one into whatever
  *     follows) (#926).
  *   - Behind the ahidevice check, never reached: PlaySoundAHI takes the
@@ -82,7 +81,10 @@
  * stays inside the FORM, so a file without pad bytes no longer loads
  * (#828); the old sample is freed after the checks of the file and the
  * object's pointer cleared with it, a failed call leaves the sound as it
- * was (the original left the freed pointer, #831).
+ * was (the original left the freed pointer, #831); the whole BODY is
+ * copied with length / 2 words, an empty one or one of 131072 bytes or
+ * more gives 0 (the original copied ((length - 1) & $FFFF) + 1 bytes,
+ * #829).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -196,6 +198,10 @@ BLITZ_LIBFIN();
 #define ID(a, b, c, d) ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (c) << 8 | (d))
 #define LONGAT(p) (*(ULONG *)(p))
 #define WORDAT(p) (*(UWORD *)(p))
+
+/* the longest BODY: the length in words (+6 of the object) is a word, as
+   audiolib's limit for LoadSound and DecodeSound ("Sound too long") */
+#define MAXBODY 131071
 
 /* audiolib's sound object (16 bytes): struct bb_sound (blitzobj.h) */
 
@@ -610,18 +616,20 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
  * first seven chunks, frees the object's old sample (memlib globfree; not
  * DecodeSound's in-place "cL" data, fixed: #945; after the checks, the
  * pointer cleared, fixed: #831) and copies the BODY to chip memory
- * (memlib globalloc); the rate also goes to +16.  BUG(orig): it copies
- * ((length - 1) & $FFFF) + 1 bytes (DBRA, #829); the rate is
+ * (memlib globalloc); the rate also goes to +16.  BUG(orig): the rate is
  * written at +16, behind the 16 byte object (#926).  Fixed (#925): mark
  * (+14) is cleared again, as in risoundlib; Fixed (#832): the rate is
  * samplesPerSec (VHDR data + 12); Fixed (#830): rate 0 gives 0; Fixed
- * (#828): the chunk walk skips the pad bytes and stays inside the FORM.
+ * (#828): the chunk walk skips the pad bytes and stays inside the FORM;
+ * Fixed (#829): the whole BODY is copied, an empty one or one of 131072
+ * bytes or more gives 0.
  * @param sound  d0: sound# (its upper word goes into globfree's d0)
  * @param sram   d1: the 8SVX file in memory
  * @param saddr  a0: audiolib's sound object
  * @return d0: BB_TRUE if the sound was made, BB_FALSE if the file is no
  *         8SVX with a VHDR, its rate is 0, it has no BODY among the first
- *         seven chunks of the FORM (the sound unchanged), or no chip memory
+ *         seven chunks of the FORM, the BODY is empty or 131072 bytes or
+ *         longer (the sound unchanged), or no chip memory
  *         (the sound then has no sample)
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
@@ -629,7 +637,7 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen, formlen, off, len;
-    UWORD sper, n;
+    UWORD sper;
     int chunk;
 
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
@@ -664,6 +672,9 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     iff = sram + off;
     src = iff + 8;
     slen = LONGAT(iff + 4);
+    if (!slen || slen > MAXBODY)        /* Fixed (#829): none, or more than
+                                           the word at +6 can describe */
+        return BB_FALSE;
     /* Fixed (#831): the old sample is freed after the checks, and the
        object no longer points to it (a failed check leaves the sound as
        it was) */
@@ -681,13 +692,11 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     }
     if (!mem)
         return BB_FALSE;
-    n = (UWORD)(slen - 1);              /* DBRA: BUG(orig) #829 */
-    do
+    for (len = slen; len; len--)        /* Fixed (#829): all of it */
         *dst++ = *src++;
-    while (n-- != 0);
     saddr->data = mem;
     saddr->period = sper;
-    saddr->len = (UWORD)((slen & 0xffff) >> 1);
+    saddr->len = (UWORD)(slen >> 1);
     saddr->rep = NULL;                  /* no loop */
     saddr->replen = 0;
     saddr->mark = 0;                    /* Fixed (#925): as risoundlib */
