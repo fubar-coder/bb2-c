@@ -114,7 +114,8 @@ zero-extended signal number like the originals; the NDK inline takes a
 BYTE).
 `libs/include/blitzdos.h` has `bl_finddosentry_v34` (a DOS list entry by
 name below dos.library V36, which has no `LockDosList`: the device list
-of `DosInfo`, walked while the caller holds `Forbid`; riamosfunclib).
+of `DosInfo`, walked while the caller holds `Forbid`; riamosfunclib and
+rilesdebuglib).
 What only one library needs stays in its source.
 
 ## Tools

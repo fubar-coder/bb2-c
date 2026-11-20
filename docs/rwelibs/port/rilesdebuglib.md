@@ -34,7 +34,8 @@ Software; the program itself is not part of the release). 33 commands:
 * `SearchMem(type,value,start,end)` (1 byte, 2 word, 3/5/6 long, 4
   string; the space bar aborts) with `SearchMemFound`,
   `D_FindStringPtr(areg5,lookfor)`, `FindLineToken(line)`,
-  `ExtractLabel(string)`, `D_FindVolume(name)` (FindDosEntry).
+  `ExtractLabel(string)`, `D_FindVolume(name)` (FindDosEntry; below
+  dos.library V36 a walk of the device list under `Forbid`).
 
 init opens graphics.library (any version) and sets the `%p`/`%c`
 entries; finit closes it.
@@ -109,6 +110,22 @@ d5-d7, a0-a3 and a6 in places.
   the original, other data in the C build; D_InitParse with more than 255
   characters overwrites the parser's pointer and code in the original,
   other data in the C build.
+
+## Fixed (kind F, docs/libs/deviations.md 3a)
+
+* `D_FindVolume` works on Kickstart 1.x; from dos.library V36 on it stays
+  as it was (`LockDosList`, `FindDosEntry`, `UnLockDosList`). The
+  original called those V36 functions on the program's dos.library
+  without a version check: on Kickstart 1.x the offsets lie behind the
+  jump table and the program crashed at `D_FindVolume`. Below V36 the
+  command walks the DOS device list of `DosInfo` under `Forbid`, as
+  programs did before `LockDosList` existed (devices, volumes and
+  assigns; names compared without case, as `FindDosEntry`; the helper
+  `bl_finddosentry_v34` of `libs/include/blitzdos.h`, shared with
+  riamosfunclib), and returns the entry's address after `Permit` - the
+  same kind of value as from V36 on, an entry of a list the program no
+  longer holds (#1148; test `rilesdebuglib-v36-calls` on the a500,
+  a500-204 and a1200).
 
 ## BUG(orig)
 

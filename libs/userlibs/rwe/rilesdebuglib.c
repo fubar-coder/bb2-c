@@ -112,6 +112,7 @@
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
+#include "blitzdos.h"
 #include <dos/dosextens.h>
 #include <graphics/gfx.h>
 #include <graphics/rastport.h>
@@ -480,18 +481,28 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * (Amiga mode only).
  *
  * LockDosList, FindDosEntry, UnLockDosList with LDF_READ, devices,
- * volumes and assigns.
+ * volumes and assigns.  Fixed (#1148): below dos.library V36 (no
+ * LockDosList) the device list of DosInfo is walked under Forbid; the
+ * original called the V36 functions there, a crash on Kickstart 1.x.
  * @param name    d0: the name (without the colon)
  * @param dosbase a6: dos.library (!libs #doslib)
  * @return d0: the DosList entry, 0 if not found (or LockDosList failed);
- *         the list is no longer locked
+ *         the list is no longer locked (below V36: taken after Permit)
  */
 #define FINDFLAGS (LDF_READ | LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS | LDF_ENTRY)
 static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0),
                                      struct DosLibrary *dosbase BL_REG(a6))
 {
-    struct DosList *dl = LockDosList(FINDFLAGS);
+    struct DosList *dl;
 
+    if (dosbase->dl_lib.lib_Version < 36) {     /* fixed (#1148) */
+        Forbid();
+        dl = bl_finddosentry_v34(dosbase, (const UBYTE *)name,
+                                 LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS);
+        Permit();
+        return (ULONG)dl;
+    }
+    dl = LockDosList(FINDFLAGS);
     if (!dl)
         return 0;
     dl = FindDosEntry(dl, name, FINDFLAGS);
