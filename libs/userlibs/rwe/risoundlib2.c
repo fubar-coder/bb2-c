@@ -56,7 +56,7 @@
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
  *     (ahiam_AudioID, ahiam_MixFreq) (#934).
- *   - CludgeSound: risoundlib's bugs (#831, #832, #830, #828, #829), and
+ *   - CludgeSound: risoundlib's bugs (#831, #830, #828, #829), and
  *     the rate is written at +16, behind the 16 byte sound object of
  *     audiolib (into the next object, behind the last one into whatever
  *     follows) (#926).
@@ -74,7 +74,9 @@
  * Memory") (#945).  CludgeSound clears +14 (audiolib's "cL" mark) again,
  * as risoundlib does; the original no longer did (its MOVE.w #0,14(a0)
  * became the write of the rate at +16), so after a DecodeSound of chip
- * data audiolib never freed CludgeSound's copy (#925).
+ * data audiolib never freed CludgeSound's copy (#925).  As in risoundlib:
+ * the sample rate is samplesPerSec, the word at offset 12 of the VHDR
+ * data, not the word at VHDR + the chunk length (#832).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -602,11 +604,12 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
  * the VHDR, the period 3579545 / rate, finds the BODY among the first
  * seven chunks and copies it to chip memory (memlib globalloc); the
  * rate also goes to +16.  BUG(orig): the old sample is freed before the
- * checks, a failure leaves the freed pointer (#831); the VHDR is assumed to be 20 bytes (#832); rate 0
+ * checks, a failure leaves the freed pointer (#831); rate 0
  * never ends the period loop (#830); no pad byte in the chunk walk
  * (#828); it copies ((length - 1) & $FFFF) + 1 bytes (DBRA, #829); the rate is
  * written at +16, behind the 16 byte object (#926).  Fixed (#925): mark
- * (+14) is cleared again, as in risoundlib.
+ * (+14) is cleared again, as in risoundlib; Fixed (#832): the rate is
+ * samplesPerSec (VHDR data + 12).
  * @param sound  d0: sound# (its upper word goes into globfree's d0)
  * @param sram   d1: the 8SVX file in memory
  * @param saddr  a0: audiolib's sound object
@@ -632,9 +635,8 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
         return BB_FALSE;
-    iff = sram + 12;
-    iff += LONGAT(iff + 4);             /* BUG(orig): VHDR length 20 only (#832) */
-    rate = WORDAT(iff);
+    rate = WORDAT(sram + 12 + 8 + 12);  /* Fixed (#832): samplesPerSec, not
+                                           the word at VHDR + its length */
     clock = 3579545;                    /* CMP.l d1,d0:BLT: signed */
     sper = 0;
     while ((LONG)clock >= (LONG)rate) { /* BUG(orig): rate 0 never ends (#830) */

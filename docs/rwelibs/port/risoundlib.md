@@ -47,9 +47,7 @@ with its signed compare.
   stays in the object: a CludgeSound that fails leaves the object
   pointing to freed memory, and the next CludgeSound on it frees it again
   (memlib's "not found" error) (#831).
-* The rate is the word at VHDR + the VHDR length (`ADD.l 4(a0),a0`): it is
-  `samplesPerSec` only for the usual length 20 (#832). Rate 0 never
-  returns (the subtraction loop) (#830).
+* Rate 0 never returns (the subtraction loop) (#830).
 * The chunk walk adds length + 8 without the pad byte of an odd chunk: a
   correct file with an odd chunk before BODY is not found (or walks off
   into its data); a file without the pad byte works (#828).
@@ -68,6 +66,10 @@ kind F):
   file's own BODY, which memlib never allocated; the original passed it
   to globfree, which raised "Unable to Free Memory" (TRAP #0) (#945; test
   `tests/bug-orig/rwe/risoundlib-cludgesound-frees-decoded`).
+* The rate is `samplesPerSec`, the word at offset 12 of the VHDR data.
+  The original took the word at VHDR + the VHDR length (`ADD.l
+  4(a0),a0`), which is that word only for the usual length 20 (#832;
+  test `tests/bug-orig/rwe/risoundlib-vhdr-rate-offset`).
 
 ## Test
 

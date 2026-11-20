@@ -2501,13 +2501,15 @@ CludgeSound|guards behind|BODY 65536 bytes|1	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|BODY 70000 bytes|1	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|BODY the 7th chunk|1	bytes 8 2B11A5A5A5A5A5A5
 CludgeSound|guards behind|BODY the 8th chunk|1	bytes 8 2B11A5A5A5A5A5A5
-CludgeSound|guards behind|VHDR 24 bytes|1	bytes 8 1234A5A5A5A5A5A5
+CludgeSound|guards behind|VHDR 24 bytes|1 [orig]	bytes 8 1234A5A5A5A5A5A5
+CludgeSound|guards behind|VHDR 24 bytes|1 [fixed #832]	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|after failures|1	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|chunks before BODY|1	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|no VHDR|1	bytes 8 2B11A5A5A5A5A5A5
 CludgeSound|guards behind|not 8SVX|1	bytes 8 2B11A5A5A5A5A5A5
 CludgeSound|guards behind|odd BODY length|1	bytes 8 0FA0A5A5A5A5A5A5
-CludgeSound|guards behind|odd chunk with pad byte|1	bytes 8 1234A5A5A5A5A5A5
+CludgeSound|guards behind|odd chunk with pad byte|1 [orig]	bytes 8 1234A5A5A5A5A5A5
+CludgeSound|guards behind|odd chunk with pad byte|1 [fixed #832]	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|odd chunk without pad byte|1	bytes 8 20ABA5A5A5A5A5A5
 CludgeSound|guards behind|rate 1|1	bytes 8 0001A5A5A5A5A5A5
 CludgeSound|guards behind|rate 16000|1	bytes 8 3E80A5A5A5A5A5A5
@@ -2584,7 +2586,7 @@ CludgeSound|object fields|BODY the 7th chunk|1 [fixed #925]	bytes 12 01440020000
 CludgeSound|object fields|BODY the 8th chunk|1 [orig]	bytes 12 014400200000000000007777
 CludgeSound|object fields|BODY the 8th chunk|1 [fixed #925]	bytes 12 014400200000000000000000
 CludgeSound|object fields|VHDR 24 bytes|1 [orig]	bytes 12 030000190000000000007777
-CludgeSound|object fields|VHDR 24 bytes|1 [fixed #925]	bytes 12 030000190000000000000000
+CludgeSound|object fields|VHDR 24 bytes|1 [fixed #925]	bytes 12 01AC00190000000000000000
 CludgeSound|object fields|after failures|1 [orig]	bytes 12 01AC00320000000000007777
 CludgeSound|object fields|after failures|1 [fixed #925]	bytes 12 01AC00320000000000000000
 CludgeSound|object fields|chunks before BODY|1 [orig]	bytes 12 01AC00A60000000000007777
@@ -2596,7 +2598,7 @@ CludgeSound|object fields|not 8SVX|1 [fixed #925]	bytes 12 014400200000000000000
 CludgeSound|object fields|odd BODY length|1 [orig]	bytes 12 037E00310000000000007777
 CludgeSound|object fields|odd BODY length|1 [fixed #925]	bytes 12 037E00310000000000000000
 CludgeSound|object fields|odd chunk with pad byte|1 [orig]	bytes 12 030000190000000000007777
-CludgeSound|object fields|odd chunk with pad byte|1 [fixed #925]	bytes 12 030000190000000000000000
+CludgeSound|object fields|odd chunk with pad byte|1 [fixed #925]	bytes 12 01AC00190000000000000000
 CludgeSound|object fields|odd chunk without pad byte|1 [orig]	bytes 12 01AC00260000000000007777
 CludgeSound|object fields|odd chunk without pad byte|1 [fixed #925]	bytes 12 01AC00260000000000000000
 CludgeSound|object fields|rate 1|1 [orig]	bytes 12 9E9901F50000000000007777
@@ -2630,13 +2632,15 @@ CludgeSound|period|BODY 65536 bytes|1	$000001AC
 CludgeSound|period|BODY 70000 bytes|1	$000001AC
 CludgeSound|period|BODY the 7th chunk|1	$00000144
 CludgeSound|period|BODY the 8th chunk|1	$00000144
-CludgeSound|period|VHDR 24 bytes|1	$00000300
+CludgeSound|period|VHDR 24 bytes|1 [orig]	$00000300
+CludgeSound|period|VHDR 24 bytes|1 [fixed #832]	$000001AC
 CludgeSound|period|after failures|1	$000001AC
 CludgeSound|period|chunks before BODY|1	$000001AC
 CludgeSound|period|no VHDR|1	$00000144
 CludgeSound|period|not 8SVX|1	$00000144
 CludgeSound|period|odd BODY length|1	$0000037E
-CludgeSound|period|odd chunk with pad byte|1	$00000300
+CludgeSound|period|odd chunk with pad byte|1 [orig]	$00000300
+CludgeSound|period|odd chunk with pad byte|1 [fixed #832]	$000001AC
 CludgeSound|period|odd chunk without pad byte|1	$000001AC
 CludgeSound|period|rate 1|1	$00009E99
 CludgeSound|period|rate 16000|1	$000000DF
