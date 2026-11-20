@@ -768,6 +768,13 @@ Each point says first what the original did, then what the port does.
   NewType variable got a wrong third parameter, and with five parameters a
   wrong fifth one too. The code that sets up the local variables at the
   start of the procedure overwrote them; every parameter keeps its value ([#1063](https://github.com/fubar-coder/bb2-c/issues/1063)).
+* An array field of a NewType with 65536 or more elements, such as
+  `a.b[65540]`, or with a negative count got the size of the count
+  modulo 65536, here 4 bytes, and without runtime error checking a
+  program wrote past the field. Such a field is the compile error "Type
+  too Big", as is a NewType of 32768 bytes or more
+  ([An array field of 65536 elements or more]({{< relref "/docs/compared-with-original/new-errors#newtype-field-count" >}}),
+  [#1084](https://github.com/fubar-coder/bb2-c/issues/1084)).
 
 ### Paths and include files
 

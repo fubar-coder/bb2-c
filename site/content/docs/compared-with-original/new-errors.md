@@ -495,6 +495,39 @@ the type, and break a cycle of two types with a pointer field.
 
 Issue: [A NewType field of a type defined later got a wrong size (#974)](https://github.com/fubar-coder/bb2-c/issues/974).
 
+### An array field of 65536 elements or more {#newtype-field-count}
+
+A field of a NewType can be an array of a fixed number of elements,
+written with the count in square brackets: `a.b[10]` is a field of ten
+bytes. A NewType must stay below 32768 bytes, so a larger one is the
+error "Type too Big".
+
+**What happened.** The original kept the count in 16 bits. A count of
+65536 or more, and a negative one, was taken modulo 65536: `a.b[65540]`
+became a field of 4 bytes, and the NewType passed the size check. With
+runtime error checking, an index behind the fourth element stopped the
+program; without it, a program that used those elements wrote over the
+memory behind the field:
+
+```
+NEWTYPE .t
+  a.b[65540]
+End NEWTYPE
+NPrint SizeOf .t
+End
+```
+
+The original compiled it, and it printed `4`. `a.b[-65532]` gave the
+same 4 bytes.
+
+**With the port.** Both fields are "Type too Big" (line 2).
+
+**What to change.** Such a field never had the size it asks for. Give
+the array a count that fits the NewType, or keep the data in an array
+of its own with `Dim`.
+
+Issue: [An array field's element count of 65536 or more is taken modulo 65536 without an error (#1084)](https://github.com/fubar-coder/bb2-c/issues/1084).
+
 ## Include files and paths
 
 ### Text after a quoted path {#text-after-path}

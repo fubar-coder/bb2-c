@@ -7670,3 +7670,11 @@ rows:
     text: "`Data.q -32768` stores the smallest Quick number; the original stopped the compile with \"Bad Data\"."
     page: compiler
     anchor: expressions-and-statements
+  - issue: 1084
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "NEWTYPE"
+    text: "An array field of a NewType with 65536 or more elements, or a negative count, is \"Type too Big\"; the original gave it the size of the count modulo 65536, and programs wrote past it."
+    page: compiler
+    anchor: newtypes
