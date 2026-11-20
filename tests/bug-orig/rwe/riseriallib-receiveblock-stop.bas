@@ -8,6 +8,7 @@
 ; 3000.
 ; Correct: SerialReceiveBlock returns to the program after the byte that
 ; follows the SerialStop.
+; @fixed #803
 ; @rwe riseriallib
 ; @pass serial=on
 ; @pass timeout=30

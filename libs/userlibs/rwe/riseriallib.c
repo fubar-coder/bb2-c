@@ -48,17 +48,13 @@
  * the first; the test reads the indices in front of it).
  *
  * Assembler: the interrupt handlers' entries (RTE, or on to the old
- * vector), the thunks, and the end of SerialReceiveBlock's abort (it
- * returns to a value on the stack, BUG(orig) #803).
+ * vector) and the thunks.
  *
  * BUG(orig):
  *   - The vectors are written at $64/$74 (the VBR of a 68010+ is not
  *     looked at) (#804), the old ones into the operands of two JMP
  *     instructions in the code without clearing the instruction cache
  *     (#791).
- *   - SerialStop during SerialReceiveBlock ends it by taking its return
- *     address into d7 and returning to the long above it on the stack
- *     (#803).
  *   - SerialReadLong never returns: the counter of its loop is taken
  *     back from the stack every time (it reads bytes without end) (#794).
  *   - SerialWriteLong sends the low byte of its argument and then three
@@ -120,6 +116,10 @@
  *     byte and then counted the rest down to 0, so with a length of 1 the
  *     count went below 0 and it received without end, behind the buffer
  *     (#799).
+ *   - SerialStop during SerialReceiveBlock ends it with a normal return;
+ *     the original ended it through the abort code of SerialSendBlock,
+ *     which popped the saved d7 - there the return address - into d7, so
+ *     it returned to the long above it on the stack (#803).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -511,14 +511,13 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
  * (fixed (#798): the original threw them away first; SerialFlush before
  * empties the ring).  The count is tested before every byte (fixed
  * (#799): the original stored the first byte and counted the rest down
- * to 0, so a length of 1 received without end).  BUG(orig) (#803): SerialStop ends it by
- * returning to the long above the return address (assembler thunk
- * __serreceive).
+ * to 0, so a length of 1 received without end).  SerialStop ends it
+ * after the next byte with a normal return (fixed (#803): the original
+ * popped its return address into d7 and returned to the long above it).
  * @param addr  d0: the address
  * @param len   d1: the length
- * @return d0: 1 = stopped (for the thunk), 0 = done
  */
-ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
+void BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     ULONG value;
 
@@ -533,12 +532,11 @@ ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
         *(UBYTE *)buffstart = (UBYTE)value;
         buffstart++;
         bufflength--;
-        if (quitflag) {
+        if (quitflag) {                 /* SerialStop: fixed (#803) */
             quitflag = 0;
-            return 1;
+            return;
         }
     }
-    return 0;
 }
 
 /**
@@ -761,6 +759,7 @@ BLITZ_THUNK(_writeser, c_writeser, "d0-d1/a0-a1");
 BLITZ_THUNK(info, c_info, "d1/a0-a1");
 BLITZ_THUNK(_showloc, c_showloc, "d1/a0-a1");
 BLITZ_THUNK(_sersend, c_sersend, "d0-d1/a0-a1");
+BLITZ_THUNK(_serreceive, c_serreceive, "d0-d1/a0-a1");  /* fixed (#803) */
 BLITZ_THUNK(_flushser, c_flushser, "d0-d1/a0-a1");
 BLITZ_THUNK(_sendserialstring, c_sendserialstring, "d0-d1/a0-a1");
 BLITZ_THUNK(_readserialstring, c_readserialstring, "d1/a0-a1");  /* fixed (#796) */
@@ -771,17 +770,4 @@ BLITZ_THUNK(_abortxfer, c_abortxfer, "d0-d1/a0-a1");
 BLITZ_THUNK(_buffcount, c_buffcount, "d1/a0-a1");
 BLITZ_THUNK(_buffcount2, c_buffcount2, "d1/a0-a1");
 
-/* SerialReceiveBlock: stopped, the original takes its return address
-   into d7 and returns to the long above it (BUG(orig) #803) */
-BLITZ_ASM_BLOCK(serreceive,
-"   .globl  __serreceive\n"
-"__serreceive:\n"
-"   movem.l d0-d1/a0-a1,-(sp)\n"
-"   jsr     _c_serreceive\n"
-"   tst.l   d0\n"
-"   movem.l (sp)+,d0-d1/a0-a1\n"
-"   beq.s   1f\n"
-"   move.l  (sp)+,d7\n"
-"1: rts\n"
-);
 

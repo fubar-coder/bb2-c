@@ -54,8 +54,6 @@ Assembler:
 
 * the handlers' entries: the C function says whether the interrupt was
   the library's; then `RTE`, else on to the old vector;
-* `SerialReceiveBlock`'s end after `SerialStop`: it returns to a value on
-  the stack (BUG(orig) below, #803), the same way as the original;
 * the thunks.
 
 ## Fixed
@@ -141,15 +139,18 @@ kind F):
   with a length of 1 the count went below 0 and it received without end,
   behind the buffer (#799; test `riseriallib-receiveblock-one`;
   `libs_emulator` cases `[fixed #799]` of `rwe_riseriallib`).
+* `SerialStop` during `SerialReceiveBlock` ends it after the next byte
+  with a normal return. The original ended it through the `abort` code
+  of `SerialSendBlock`, which popped the saved d7 – there the return
+  address – into d7, so it returned to the long above it on the stack
+  (#803; test `riseriallib-receiveblock-stop`: SerialStop from a
+  `SetInt 5` routine). The assembler thunk of the original's end goes.
 
 ## BUG(orig), kept
 
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
   is (#804); the old ones go into the code (two `JMP` operands) without
   clearing the instruction cache (#791).
-* `SerialStop` during `SerialReceiveBlock` ends it through the `abort` code of
-  `SerialSendBlock`, which pops the saved d7 – here the return address –
-  into d7, so it returns to the long above it on the stack (#803).
 * `SerialReadLong` never returns: its loop takes the counter back from
   the stack every time and reads bytes without end (#794).
 * `SerialWriteLong` sends the low byte of its argument and then three
