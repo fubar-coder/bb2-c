@@ -47,10 +47,15 @@ correctly.
 * **The corpus** is a set of small Blitz Basic programs. The port's
   compiler compiles each of them with the port's libraries and runs it,
   and its output must be the program's expected output. The `originals`
-  run compiles the same programs with the original compiler and the
-  original libraries, with the port's compiler and the original
-  libraries, and with the original compiler and the port's libraries:
-  every output must be the expected one. The executables of the first
+  run compiles the same programs in three more combinations:
+
+  | | Compiler | Libraries |
+  |---|---|---|
+  | 1 | original | original |
+  | 2 | port's | original |
+  | 3 | original | port's |
+
+  Every output must be the expected one. The executables of the first
   two are compared for information only: a difference is reported, but
   does not fail the run. Where a fixed bug changes a program's output,
   its expected data holds both outputs, the original's and the port's
@@ -125,9 +130,9 @@ The corpus works the same way. Each program's expected output is a file;
 when a fix changes it on purpose, the file becomes two, the original's
 output and the port's, marked with the issue. Recording
 (`corpus-expect-record`) writes the original's side from two runs that
-must agree; updating (`corpus-expect-update`) writes the port's side and
-refuses to change a program's output silently: the fix has to name the
-program and its issue.
+must agree. Updating (`corpus-expect-update`) writes the port's side; it
+refuses to change a program's output silently, so the fix has to name
+the program and its issue.
 
 So you need the CD only to record new expected data or to check it
 against the originals. Everything in `ctest --preset all` runs without
