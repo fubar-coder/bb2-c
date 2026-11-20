@@ -41,8 +41,6 @@
  *     depth 14 on the pointers run into the next map shape (#903).
  *   - Members are not counted: the 64th member's end mark is written
  *     behind the 512-byte block (#904).
- *   - BlitGroup does not load graphics.library (no #graphicslib in its
- *     !libs): it calls BltBitMapRastPort with the caller's a6 (#902).
  * Fixed:
  *   - init sets the next-member pointer to its (cleared) group block and
  *     the block size to 0, as at the first load; the original set only
@@ -54,6 +52,9 @@
  *     nothing and returns 0, AddGroupMember and BlitGroup do nothing; the
  *     original did not check the AllocVec, and the three wrote and read
  *     the group at address 0 (#905).
+ *   - BlitGroup's !libs has #graphicslib,#la6, as BlitMapShape's: the
+ *     original's had the window only, so BlitGroup called
+ *     BltBitMapRastPort through the caller's a6 (#902).
  * Not a defect: RemapMapShape does nothing (the ReMap call is commented
  * out in the source: a command left unfinished); its !libs asks for
  * "library 254, $5600" (sic).
@@ -133,7 +134,9 @@ BLITZ_NAME("AddGroupMember", "shape#,dx,dy");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0);
+/* fixed (#902): #graphicslib,#la6 as BlitMapShape (the original has the
+   window only, so a6 was the caller's) */
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(_blitgroup, 0, 0);
 BLITZ_NAME("BlitGroup", "window#,x,y");
 
@@ -447,15 +450,15 @@ BLITZ_THUNK(_addgroupmember, addgroupmember_c, "d0-d1/a0-a1");
  * d5 is the member's address when _blitmapshape2 loads the height into
  * its low word.  d2 comes in with y in its low word and becomes xbase.
  * Without a group block it does nothing (fixed #905: the original read
- * the members from address 0).  BUG(orig) (#902): a6 is the caller's, not
- * graphics.library's (no #graphicslib in the !libs).
+ * the members from address 0).  a6 is graphics.library: fixed (#902),
+ * the original's !libs had no #graphicslib, so a6 was the caller's.
  * @param x        d1: x (a word)
  * @param yin      d2: y in the low word, the caller's upper word
  * @param ybase    d3: the caller's d3 (upper word)
  * @param width    d4: the caller's d4 (upper word)
  * @param minterm  d6: the caller's d6 (upper word)
  * @param win      a1: the window object
- * @param gfx      a6: the caller's a6
+ * @param gfx      a6: graphics.library
  */
 static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG yin BL_REG(d2),
                                       ULONG ybase BL_REG(d3), ULONG width BL_REG(d4),

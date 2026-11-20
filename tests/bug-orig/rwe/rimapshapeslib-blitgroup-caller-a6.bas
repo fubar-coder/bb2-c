@@ -8,6 +8,7 @@
 ; member, a 16x16 map shape of colour 1, blitted at 20,20 of a window on
 ; the Workbench screen, whose pixel there is read before and after.
 ; Correct: BlitGroup calls graphics.library: the pixel becomes colour 1.
+; @fixed #902
 ; @rwe rimapshapeslib
 DEFTYPE .l
 BitMap 0,320,64,1

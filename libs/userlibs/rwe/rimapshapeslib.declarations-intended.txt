@@ -1,0 +1,12 @@
+# the intended differences of rimapshapeslib against its reference, the
+# reference build of rwelibsrc/MapEd/MapShape2.bb by blitz2 2.10
+# (blitzlib compare, docs/development.md "Intended differences")
+# #902: BlitGroup's !libs gets #graphicslib,#la6 (as BlitMapShape's): one
+# library/register pair more, which shifts the rest of the table by 4
+# bytes
+lib 6: entry 8 BlitGroup +$11: $00 != $FE
+lib 6: entry 9 ResetGroup +$0: $03 != $78
+lib 6: entry 10 (nullsub) +$0: $00 != $67
+lib 6: entry 11 (nullsub) +$0: $00 != $00
+lib 6: end of the table +$308: $FF != $00
+lib 6: declaration part $30E != $312 bytes

@@ -42,7 +42,9 @@ group.
 * **Reference:** the reference build of the source by blitz2 2.10
   (`refbuild`, `build/amiga/libs/userlibs/rwe/ref/rimapshapeslib.obj`); no
   binary exists (`docs/rwelibs/README.md` §3.3). Declarations equal
-  (ctest `rwe_declarations_rimapshapeslib`).
+  but for the intended differences of
+  `libs/userlibs/rwe/rimapshapeslib.declarations-intended.txt` (ctest
+  `rwe_declarations_rimapshapeslib`).
 * **C file:** `libs/userlibs/rwe/rimapshapeslib.c`; test
   `libs/tests/rwe/rimapshapeslib.c` (snitch case "rwe rimapshapeslib").
 
@@ -73,8 +75,6 @@ holds the member's address before, so its upper word is that address's.
   14 on the pointers run into the next map shape (#903).
 * The members are not counted: the end mark of the 64th member is
   written behind the 512-byte block (#904).
-* `BlitGroup` has no `#graphicslib,#la6` in its `!libs`: it calls
-  `BltBitMapRastPort` with the caller's a6 (#902).
 
 ## Fixed
 
@@ -96,6 +96,13 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   `AddGroupMember` wrote its members from 0 on (over the ExecBase
   pointer) and `BlitGroup` read the group there (#905; test
   `rwe/rimapshapeslib-init-allocvec-unchecked`, inject allocfail).
+* `BlitGroup`'s `!libs` has `#graphicslib,#la6`, as `BlitMapShape`'s and
+  `BlitMapShapeSize`'s: the compiler loads graphics.library into a6. The
+  original's named the window only, so `BlitGroup` jumped to offset −606
+  of whatever the program had left in a6 – it worked only after a
+  command that left graphics.library there (#902; test
+  `rwe/rimapshapeslib-blitgroup-caller-a6`). A declaration change: one
+  library/register pair more.
 
 Not a defect: `RemapMapShape` does nothing (the `ReMap` call is
 commented out in the source – a command left unfinished, not a fault in
