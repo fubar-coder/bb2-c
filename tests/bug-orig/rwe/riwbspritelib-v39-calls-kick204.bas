@@ -4,6 +4,7 @@
 ; crashes ("Software Failure", the session ends in a timeout).
 ; Correct: as on Kickstart 1.3 and 3.1: 2, "10 20", "-1 100 50", -1, -1,
 ; 1.
+; @fixed #1151
 ; @rwe riwbspritelib
 ; @machine a500-204
 ; @pass timeout=30

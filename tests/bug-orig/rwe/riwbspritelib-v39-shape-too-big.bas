@@ -8,6 +8,7 @@
 ; riwbspritelib-v39-shape-too-big-kick204).
 ; Correct: the error check refuses the shape: "Shape too big for a sprite
 ; below Kickstart 3.0" after "before".
+; @fixed #1151
 ; @rwe riwbspritelib
 ; @machine a500
 ; @pass runtime_errors=on

@@ -213,6 +213,22 @@ add_test(NAME libs_emulator_machine COMMAND ${CMAKE_COMMAND}
 set_tests_properties(libs_emulator_machine PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"libtest_ldivlib: set obj: [0-9]+ cases, [0-9]+ equal, 0 differ, 0 missing")
+# riwbspritelib's path below graphics.library V39 (#1151, GetSprite and a
+# SimpleSprite): the library test on the a500-204 (Kickstart 2.04, a 68020
+# with Zorro III fast memory as above), the C build only (the original
+# calls the V39 functions there and crashes), against its own expected
+# data expected-a500-204/ (every case [fixed #1151])
+add_test(NAME libs_emulator_riwbspritelib_a500_204 COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DUSERLIBS=${rwe_userlibs} -DNO_ORIGINALS=ON
+	-DLIBSET=obj -DEXPECTED=${CMAKE_CURRENT_SOURCE_DIR}/expected-a500-204 -DRESULTS=${RESULTS}
+	"-DFILTER=rwe riwbspritelib" -DMACHINE=a500-204
+	"-DUAE=cpu_type=68020$<SEMICOLON>cpu_model=68020$<SEMICOLON>cpu_24bit_addressing=false$<SEMICOLON>z3mem_size=32"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_riwbspritelib_a500_204 -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -P ${WITH_WORKDIR})
+set_tests_properties(libs_emulator_riwbspritelib_a500_204 PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
+	"rwe_riwbspritelib: set obj: [0-9]+ cases, [0-9]+ equal, 0 differ, 0 missing")
 foreach(t unknown uae)
 	set(opts -DMACHINE=a3000)
 	set(re "amiga_run: unknown machine \"a3000\"(.*\n)*.*libs_emulator: amiga_run refused the run")

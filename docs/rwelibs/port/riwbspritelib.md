@@ -1,7 +1,8 @@
 # riwbspritelib (10): sprites on the Workbench screen
 
 Reflective Images, 1994. Hardware sprites on Workbench (Intuition)
-screens through the OS 3 sprite functions of graphics.library:
+screens through the OS 3 sprite functions of graphics.library (below
+V39 through those of the `SimpleSprite`, fixed #1151):
 
 * `GetWBSprite(x,y,shape[,spritechannel])` – converts a Blitz shape
   (copied into an `AllocBitMap` bitmap, then `AllocSpriteDataA`) and
@@ -14,8 +15,9 @@ screens through the OS 3 sprite functions of graphics.library:
 * `WBSpriteX(sprite_channel)`, `WBSpriteY(sprite_channel)` – the
   position.
 
-init opens graphics.library (any version; the functions need 39), finit
-frees every sprite of the table and closes it. All routines are
+init opens graphics.library (any version) and chooses the sprite
+functions by its version, finit frees every sprite of the table and
+closes it. All routines are
 Amiga-mode only (`+1`).
 
 * **Source:** `rwelibsrc/wbspritelib/WBSprite-library2.bb` (as TED shows
@@ -90,6 +92,33 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   (D-005): the copy counts height − 1 and depth − 1 with `DBRA` (65536
   rows or planes); for height 0 `AllocBitMap` fails first (-1), for
   depth 0 it does not return.
+* Below graphics.library V39 (Kickstart 1.x and 2.x) the library has a
+  path of its own (#1151, W7 Kickstart decision (b); tests
+  `rwe/riwbspritelib-v39-calls`, `-v39-calls-kick204`,
+  `-v39-shape-too-big`, `-v39-shape-too-big-kick204`, and
+  `libs_emulator_riwbspritelib_a500_204`): GetWBSprite makes a
+  `SimpleSprite` (in the block of an `ExtSprite`, one word wide) with
+  its image in chip memory (the control words, per row the words of
+  planes 0 and 1, the end words) and takes the channel with
+  `GetSprite`; ChangeWBSprite gives the sprite a new image with
+  `ChangeSprite` (at its position) and frees the old one; FreeWBSprite
+  and finit free both blocks after `FreeSprite`. The four routines go
+  through a table of function pointers (`struct sprfuncs`) that init
+  chooses once by the version; from V39 on they are the original's.
+  MoveWBSprite, WBSpriteX and WBSpriteY are the same on both paths. A
+  sprite below V39 is 16 pixels wide (the shape's width rounded down to
+  16, as from V39 on) with 2 planes: another shape gives -1
+  (GetWBSprite) or 0 (ChangeWBSprite), with runtime error checking
+  "Shape too big for a sprite below Kickstart 3.0". As from V39 on, a
+  new sprite is not shown before MoveWBSprite or ChangeWBSprite.
+  The original opened graphics.library in any version and called its V39
+  functions behind the end of the jump table: a crash at the first
+  GetWBSprite. Measured (2026-11-20): the same `MoveSprite` units on
+  Kickstart 1.3, 2.04 and 3.1 (on the hires Workbench x halved, y as
+  is); the control words of 1.3 and 2.04 place the sprite one lores
+  pixel to the right of those of 3.1 on the a600 (graphics.library's own
+  difference); a 32-pixel shape is refused on 3.1 with ECS (a600) as on
+  the A1200's Workbench, so 16 pixels below V39 lose nothing there.
 * With runtime error checking WBSpriteX and WBSpriteY refuse a channel
   without a sprite of the library: "No sprite on this channel" (#922,
   test `rwe/riwbspritelib-wbspritexy-no-sprite`). The release code is
@@ -105,7 +134,11 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
 ## Test
 
 The library takes real hardware sprites and shows them on the
-Workbench screen, so a run loads one set only: the whole scenario runs
+Workbench screen, so a run loads one set only (on the A1200, the V39
+path; the path below V39 as `libs_emulator_riwbspritelib_a500_204`, the
+same scenario on the a500-204 with a 68020 and Zorro III memory, the C
+build only, against `libs/tests/expected-a500-204/`, every case
+`[fixed #1151]`): the whole scenario runs
 in it (finit frees every sprite); each step's registers and a snapshot
 are observed as cases and compared with the expected data
 `libs/tests/expected/rwe_riwbspritelib.txt` (recorded from the original)

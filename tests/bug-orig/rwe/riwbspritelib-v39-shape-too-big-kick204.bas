@@ -4,6 +4,7 @@
 ; than on 1.3 (Blitz's debugger: "Line 1111 Emulator").
 ; Correct: the error check refuses the 32-pixel shape: "Shape too big for
 ; a sprite below Kickstart 3.0" after "before".
+; @fixed #1151
 ; @rwe riwbspritelib
 ; @machine a500-204
 ; @pass runtime_errors=on

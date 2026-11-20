@@ -1,7 +1,8 @@
 /*
  * riwbspritelib - RWE userlib 10 (literal in the source, Reflective
  * Images, 1994): sprites on Workbench screens through the OS 3 sprite
- * functions of graphics.library -
+ * functions of graphics.library (below V39 through those of the
+ * SimpleSprite, fixed #1151) -
  *   GetWBSprite(x,y,shape[,spritechannel])   a sprite from a Blitz shape
  *                       (AllocSpriteDataA, GetExtSpriteA); the channel
  *   FreeWBSprite sprite_channel
@@ -9,8 +10,9 @@
  *   ChangeWBSprite(viewport,sprite_channel,shape#)     a new image
  *                       (ChangeExtSpriteA)
  *   WBSpriteX(sprite_channel), WBSpriteY(sprite_channel)
- * init opens graphics.library (any version; the functions need 39),
- * finit frees the sprites and closes it.
+ * init opens graphics.library (any version) and chooses the sprite
+ * functions by its version (struct sprfuncs), finit frees the sprites
+ * and closes it.
  *
  * C translation of rwelibsrc/wbspritelib/WBSprite-library2.bb;
  * reference: the reference build of that source with blitz2 2.10
@@ -57,6 +59,18 @@
  *     8-15 are the name and the base) but passes the whole register to
  *     FreeSprite; MoveWBSprite, ChangeWBSprite, WBSpriteX/Y index the
  *     table with the channel as is (#916).
+ *   - Below graphics.library V39 (Kickstart 1.x and 2.x) GetWBSprite,
+ *     ChangeWBSprite, FreeWBSprite and finit use GetSprite, ChangeSprite
+ *     and FreeSprite with a SimpleSprite and its image in chip memory
+ *     (a sprite 16 pixels wide - the width rounded down to 16 - with 2
+ *     planes); the functions are chosen once in init through a table
+ *     of function pointers (struct sprfuncs), from V39 on they are the
+ *     original's.  A shape that does not fit gives -1 (GetWBSprite) or 0
+ *     (ChangeWBSprite); with runtime error checking it is refused:
+ *     "Shape too big for a sprite below Kickstart 3.0".  The original
+ *     opened graphics.library in any version and called the V39
+ *     functions behind the end of its jump table: a crash at the first
+ *     GetWBSprite (#1151).
  *   - With runtime error checking GetWBSprite and ChangeWBSprite refuse
  *     a shape with data and a height of 0 ("Illegal Shape Height") or a
  *     depth of 0 or above 8 ("Illegal Shape Depth"), an invalid object.
@@ -74,6 +88,7 @@
 #include "blitzlib.h"
 #include "blitzobj.h"
 #include "blitzexec.h"
+#include <exec/memory.h>
 #include <graphics/gfx.h>
 #include <graphics/sprite.h>
 #include <graphics/view.h>
@@ -226,13 +241,37 @@ static LONG changeextsprite(ULONG vp, ULONG old, ULONG new, ULONG tags)
                             (struct ExtSprite *)new, (struct TagItem *)tags);
 }
 
+/* The sprite functions of one graphics.library generation, chosen once
+   in init (fixed #1151): from V39 on the ExtSprite functions of the
+   original (AllocBitMap, AllocSpriteDataA, GetExtSpriteA,
+   ChangeExtSpriteA, FreeSpriteData), below V39 GetSprite, ChangeSprite
+   and a SimpleSprite with its image in chip memory.  MoveWBSprite,
+   WBSpriteX/Y and FreeSprite are the same for both (an ExtSprite starts
+   with its SimpleSprite). */
+struct sprfuncs {
+    ULONG (*get)(void);                 /* GetWBSprite: the channel or -1 */
+    BB_BOOL (*change)(void);            /* ChangeWBSprite: -1 or 0 */
+    ULONG (*freedata)(ULONG spr);       /* a sprite's data, after FreeSprite */
+};
+
+static ULONG v39get(void), v33get(void), v33freedata(ULONG spr);
+static BB_BOOL v39change(void), v33change(void);
+
+static const struct sprfuncs v39funcs = { v39get, v39change, freespritedata };
+static const struct sprfuncs v33funcs = { v33get, v33change, v33freedata };
+static const struct sprfuncs *sf;       /* set by init */
+
 /**
- * @brief init: opens graphics.library, any version (the sprite functions
- * need 39).
+ * @brief init: opens graphics.library (any version) and chooses the
+ * sprite functions by its version: V39 and up the ExtSprite functions,
+ * below V39 those of the SimpleSprite (fixed #1151).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
-    wd.graphicslibbase = OpenLibrary((CONST_STRPTR)wd.graphicslibrary, 0);
+    struct Library *gfx = OpenLibrary((CONST_STRPTR)wd.graphicslibrary, 0);
+
+    wd.graphicslibbase = gfx;
+    sf = gfx && gfx->lib_Version >= 39 ? &v39funcs : &v33funcs;
 }
 
 /**
@@ -251,7 +290,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     for (i = 0; i < 8; i++) {
         if (wd.spritepointers[i]) {
             FreeSprite(i);
-            FreeSpriteData((struct ExtSprite *)wd.spritepointers[i]);
+            sf->freedata(wd.spritepointers[i]);
         }
         wd.spritepointers[i] = 0;
     }
@@ -353,14 +392,21 @@ static ULONG newsprite(void)
 static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
                                          LONG ch BL_REG(d3), ULONG shape BL_REG(a0))
 {
-    LONG got = -1;
-
     if (!wd.graphicslibbase || !SHAPEDATA(shape))
         return (ULONG)-1;
     wd.shapeaddr = shape;
     wd.sprx = x;
     wd.spry = y;
     wd.sprchannel = ch;
+    return sf->get();
+}
+
+/* GetWBSprite from V39 on (wd.shapeaddr, sprx, spry, sprchannel set):
+   AllocBitMap, AllocSpriteDataA, GetExtSpriteA; the channel or -1 */
+static ULONG v39get(void)
+{
+    LONG got = -1;
+
     if (shapebitmap() <= 0)
         return (ULONG)-1;
     if (newsprite()) {
@@ -403,7 +449,7 @@ static ULONG BLITZ_ROUTINE freesprite_c(ULONG ch BL_REG(d0))
     FreeSprite((WORD)ch);                               /* the whole d0 (freesprchk, #916) */
     spr = *e;
     *e = 0;
-    return freespritedata(spr);
+    return sf->freedata(spr);
 }
 
 /**
@@ -450,7 +496,6 @@ static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_R
                                               ULONG shape BL_REG(a0))
 {
     ULONG *e;
-    LONG r;
 
     if (!wd.graphicslibbase || !SHAPEDATA(shape))
         return BB_FALSE;
@@ -463,6 +508,16 @@ static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_R
     wd.sprx = ((struct ExtSprite *)*e)->es_SimpleSprite.x;
     wd.spry = ((struct ExtSprite *)*e)->es_SimpleSprite.y;
     wd.shapeaddr = shape;
+    return sf->change();
+}
+
+/* ChangeWBSprite from V39 on (wd.myviewport, oldpointer, sprx, spry,
+   shapeaddr set): AllocBitMap, AllocSpriteDataA, ChangeExtSpriteA;
+   -1 or 0 */
+static BB_BOOL v39change(void)
+{
+    LONG r;
+
     if (shapebitmap() <= 0)
         return BB_FALSE;
     r = 0;
@@ -479,6 +534,108 @@ static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_R
     }
     FreeBitMap((struct BitMap *)wd.mybitmap);
     return (BB_BOOL)r;                  /* 0 or -1 */
+}
+
+/* ----------------------------------------- below V39: the SimpleSprite */
+
+/* the bytes of a SimpleSprite image of h rows: the two control words,
+   per row the word of plane 0 and of plane 1, the two end words */
+#define V33IMG(h) (((ULONG)(h) + 2) * 4)
+
+/* the image of the shape (wd.shapeaddr) for a SimpleSprite in new chip
+   memory, or 0: below V39 a sprite is 16 pixels wide (the width rounded
+   down to 16, as from V39 on) with 2 planes; other shapes, a height of
+   0 and a failing AllocMem give 0 */
+static UWORD *v33image(void)
+{
+    const struct bb_shape *shape = (const struct bb_shape *)wd.shapeaddr;
+    UWORD h = shape->height, d = shape->depth, step = shape->ebwidth, r;
+    const UBYTE *p0 = shape->data, *p1 = p0 + (ULONG)step * h;
+    UWORD *img, *q;
+
+    if ((shape->width & 0xfff0) != 16 || !h || !d || d > 2)
+        return NULL;
+    img = AllocMem(V33IMG(h), MEMF_CHIP | MEMF_CLEAR);
+    if (!img)
+        return NULL;
+    q = img + 2;
+    for (r = 0; r < h; r++) {
+        *q++ = *(const UWORD *)p0;
+        *q++ = d > 1 ? *(const UWORD *)p1 : 0;
+        p0 += step;
+        p1 += step;
+    }
+    wd.sprwidth = 16;
+    wd.sprheight = h;
+    return img;
+}
+
+/* a sprite's data below V39: its image and the block of its
+   SimpleSprite (an ExtSprite, as from V39 on) */
+static ULONG v33freedata(ULONG spr)
+{
+    struct ExtSprite *es = (struct ExtSprite *)spr;
+
+    FreeMem(es->es_SimpleSprite.posctldata, V33IMG(es->es_SimpleSprite.height));
+    FreeMem(es, sizeof *es);
+    return 0;
+}
+
+/* GetWBSprite below V39 (wd.shapeaddr, sprx, spry, sprchannel set): a
+   SimpleSprite with the image, x, y (in the block of an ExtSprite one
+   word wide, so that the table holds the same kind of block on both
+   paths); GetSprite; the channel or -1.  As from V39 on the sprite is
+   not shown before MoveWBSprite or ChangeWBSprite. */
+static ULONG v33get(void)
+{
+    struct ExtSprite *es;
+    struct SimpleSprite *ss;
+    UWORD *img = v33image();
+    WORD got;
+
+    if (!img)
+        return (ULONG)-1;
+    es = AllocMem(sizeof *es, MEMF_PUBLIC | MEMF_CLEAR);
+    if (!es) {
+        FreeMem(img, V33IMG(wd.sprheight));
+        return (ULONG)-1;
+    }
+    es->es_wordwidth = 1;
+    ss = &es->es_SimpleSprite;
+    ss->posctldata = img;
+    ss->height = wd.sprheight;
+    ss->x = wd.sprx;
+    ss->y = wd.spry;
+    wd.temppointer = (ULONG)es;
+    got = GetSprite(ss, (WORD)wd.sprchannel);
+    if (got == -1) {
+        v33freedata((ULONG)es);
+        return (ULONG)-1;
+    }
+    if (wd.sprchannel == -1)
+        wd.sprchannel = got;
+    *ENTRYW(wd.sprchannel) = (ULONG)es;
+    return (ULONG)wd.sprchannel;
+}
+
+/* ChangeWBSprite below V39 (wd.myviewport, oldpointer, shapeaddr set):
+   the sprite keeps its SimpleSprite and gets the new image
+   (ChangeSprite, at its position), the old image is freed; -1, or 0 if
+   the shape does not fit or AllocMem fails (the sprite unchanged) */
+static BB_BOOL v33change(void)
+{
+    struct SimpleSprite *ss = *(struct SimpleSprite **)wd.oldpointer;
+    UWORD *img = v33image(), *old;
+    UWORD oldh;
+
+    if (!img)
+        return BB_FALSE;
+    old = ss->posctldata;
+    oldh = ss->height;
+    ss->height = wd.sprheight;
+    ChangeSprite((struct ViewPort *)wd.myviewport, ss, img);
+    FreeMem(old, V33IMG(oldh));
+    return (BB_BOOL)-1;
 }
 
 /**
@@ -528,6 +685,7 @@ BLITZ_ERRCHK_MESSAGE(badch, "Sprite channel must be 0 to 7");        /* fixed, #
 BLITZ_ERRCHK_MESSAGE(badheight, "Illegal Shape Height");             /* fixed, #917 */
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal Shape Depth");               /* fixed, #917 */
 BLITZ_ERRCHK_MESSAGE(nosprite, "No sprite on this channel");         /* fixed, #922 */
+BLITZ_ERRCHK_MESSAGE(toobig, "Shape too big for a sprite below Kickstart 3.0");  /* fixed, #1151 */
 
 /* a channel 0 to 7 */
 static void BLITZ_ERRCHK chchk(ULONG ch)
@@ -546,6 +704,11 @@ static void BLITZ_ERRCHK shapechk(const struct bb_shape *sh)
         BLITZ_RUNERR(badheight);
     if (!sh->depth || sh->depth > 8)
         BLITZ_RUNERR(baddepth);
+    /* below V39 (fixed #1151): 16 pixels (the width rounded down to 16),
+       2 planes */
+    if (wd.graphicslibbase && sf == &v33funcs
+        && ((sh->width & 0xfff0) > 16 || sh->depth > 2))
+        BLITZ_RUNERR(toobig);
 }
 
 /**

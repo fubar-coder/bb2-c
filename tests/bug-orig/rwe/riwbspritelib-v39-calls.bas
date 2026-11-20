@@ -12,6 +12,7 @@
 ; pixels wide, and the Workbench screens here give no wider ones),
 ; FreeWBSprite, GetWBSprite on any channel.
 ; Correct: on every Kickstart: 2, "10 20", "-1 100 50", -1, -1, 1.
+; @fixed #1151
 ; @rwe riwbspritelib
 ; @machine a500 a1200
 ; @pass timeout=30

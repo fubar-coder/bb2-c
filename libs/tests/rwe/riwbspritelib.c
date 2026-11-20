@@ -8,6 +8,13 @@
  *
  *   riwbspritelib DIR     (DIR with riwbspritelib .obj/.orig)
  *
+ * On the a500-204 (Kickstart 2.04, libs_emulator_riwbspritelib_a500_204)
+ * the same scenario runs the library's path below graphics.library V39
+ * (GetSprite and a SimpleSprite, fixed #1151), against its own expected
+ * data (libs/tests/expected-a500-204/, the C build only: the original
+ * crashes there); the step with ChangeExtSpriteA failing runs without
+ * the replaced functions (there are none below V39).
+ *
  * The library takes real hardware sprites (GetExtSpriteA) and moves them
  * on the Workbench screen's ViewPort: the whole scenario runs, finit
  * ends it by freeing every sprite; each step's registers and a snapshot
@@ -196,11 +203,17 @@ __asm__(".text\n"
         "  rts\n");
 
 /* ChangeWBSprite with ChangeExtSpriteA (LVO -1026) failing (returning
-   0) and FreeSpriteData counted, both for this call only */
+   0) and FreeSpriteData counted, both for this call only; below V39
+   (no such functions: the library's SimpleSprite path, #1151) the call
+   as it is */
 static void changefails(const char *name, ULONG d1, ULONG a0)
 {
     APTR oldchange;
 
+    if (wbsgfx->lib_Version < 39) {
+        step(CHANGEWB, name, vp, d1, 0, 0, a0, 0);
+        return;
+    }
     Forbid();
     oldchange = SetFunction(wbsgfx, -1026, (APTR)rwe_fail0);
     wbs_oldfsd = SetFunction(wbsgfx, -1032, (APTR)wbs_countfree);
@@ -335,14 +348,16 @@ int main(int argc, char **argv)
     KEEPS("FreeWBSprite", d2-d7|a3);
     KEEPS("FreeWBSprite (none)", d2-d7|a1-a3|a6);
     KEEPS("finit", d0-d6|a3|a6);
-    wbsgfx = OpenLibrary((CONST_STRPTR)"graphics.library", 39);
-    wbsint = OpenLibrary((CONST_STRPTR)"intuition.library", 39);
+    /* any graphics.library: below V39 the library's SimpleSprite path
+       (#1151; the a500-204 run); LockPubScreen needs intuition V36 */
+    wbsgfx = OpenLibrary((CONST_STRPTR)"graphics.library", 0);
+    wbsint = OpenLibrary((CONST_STRPTR)"intuition.library", 36);
     scr = wbsint ? LockPubScreen(NULL) : NULL;
     wbscreen = scr;
     blk = findblock(getlib(&loaded, LIB));
     check("riwbspritelib: data block found", blk != NULL);
     if (!wbsgfx || !scr || !blk) {
-        check("riwbspritelib: graphics, intuition 39, Workbench screen", FALSE);
+        check("riwbspritelib: graphics, intuition 36, Workbench screen", FALSE);
         if (scr)
             UnlockPubScreen(NULL, scr);
         return rwe_done(LIB);

@@ -558,7 +558,13 @@ the a500-204 and the a600), so on the a500-204 it runs with
 `UAE=cpu_type=68020;cpu_model=68020;cpu_24bit_addressing=false;z3mem_size=32`
 (a 68020 with 32 MB Zorro III fast memory, Kickstart 2.04 unchanged).
 `libs_emulator_machine` runs `libtest ldivlib` there against the expected
-data.
+data. `libs_emulator_riwbspritelib_a500_204` runs `rwe riwbspritelib`
+there, the library's path below graphics.library V39 (#1151), the C
+build only (the original crashes there), against its own expected data
+`libs/tests/expected-a500-204/rwe_riwbspritelib.txt`: every case
+`[fixed #1151]`, written from a run of the port and put in order with
+`results libs-sort` (`libs-update` writes the default machine's data
+only).
 
 **The checks have tests with broken input** (no CD): `libs_compare_*` and
 `libs_accept_*` (host: the judge on fake files: a changed value, a
