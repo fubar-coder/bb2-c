@@ -37,9 +37,6 @@
  * slower); the rest C behind thunks.  The lookup tables keep the
  * original's order (left-first then right-first, 8 entries of 4 words).
  *
- * BUG(orig):
- *   - The lists have no bounds: more entries than numpoints*4 run into
- *     the next list (and behind the block) (#914).
  * Fixed (intended deviations):
  *   - InitSnowDrop computes the size of its block as a long; the
  *     original took numpoints*16 times 4 with ASL.w #2, so from
@@ -79,7 +76,15 @@
  *     with a bit above 7 looked up its side moves bit*8 bytes into the
  *     tables of 8 rows: bits 8-15 read the right-first table behind the
  *     left-first one (the wrong neighbours), higher ones the code behind
- *     the tables (#910).  The bit operations themselves took it modulo 8.
+ *     the tables (#910).  The bit operations themselves took it modulo 8;
+ *   - The lists are bounded: a list of numpoints*16 bytes takes at most
+ *     numpoints*4-1 entries and its end mark (FULL).  LDoSnow takes no
+ *     new flake into a full list (one compare per call: every other
+ *     flake it writes replaces one it read), LDoSnowActivate leaves
+ *     stopped snow as it is when the drop list is full, KillPoint does
+ *     nothing (0) when the kill list is full; LDoSnowActivate's kill
+ *     entries are at most those it read.  The original counted nothing:
+ *     more entries ran into the next list and behind the block (#914).
  * Not defects: the random table's offsets are bytes (new flakes start
  * in the first 6.4 rows); the allocation is not checked (memlib's globalloc raises
  * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
@@ -188,6 +193,11 @@ static_assert(sizeof lookup == 2 * 8 * 4 * 2);
 
 /* ASL.w #n,d: the low word shifted, the upper word kept */
 #define ASLW(d, n) (((ULONG)(d) & 0xffff0000UL) | (UWORD)((ULONG)(d) << (n)))
+
+/* the last place of a list of `size` bytes whose entries start at
+   `entries` where one more entry and the end mark fit: a list takes at
+   most size/4 - 1 entries (fixed #914) */
+#define FULL(entries, size) ((UWORD *)((UBYTE *)(entries) + (size) - 6))
 
 /* the 4 longs of a list number (ASL.w #4,d0: ADD.l d0,a2); not checked
    in the release code (the error checks refuse a number outside 0-3:
@@ -337,8 +347,9 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
  * a4-a6 (the original a4-a6, the C thunk d1/a0/a1); changes d0, d2-d7,
  * a2, a3.
  *
- * BUG(orig): no bounds for the lists (#914).  The list number: fieldchk
- * (fixed #913).  Fixed (#910): the bit of a new flake is taken modulo 8
+ * The list number: fieldchk (fixed #913).  Fixed (#914): no new flake
+ * when the list written is full (a6: its FULL place; the original had no
+ * bound).  Fixed (#910): the bit of a new flake is taken modulo 8
  * (a bit above 7 read behind the side tables).
  * @arg d0 the list number
  * @arg d1 the random table (index.w, then pairs offset.b, bit.b)
@@ -355,6 +366,7 @@ BLITZ_ASM_ROUTINE(_AsmDoSnow,
 "   move.l  d0,4(a2)\n"
 "   move.l  d1,a5\n"
 "   move.l  d0,a0\n"
+"   move.l  (a0),d0\n"                    /* size */
 "   move.l  4(a0),a1\n"                   /* the bitmap */
 "   move.l  8(a0),d7\n"                   /* bp_size */
 "   lea     16(a0),a0\n"                  /* its entries */
@@ -362,6 +374,7 @@ BLITZ_ASM_ROUTINE(_AsmDoSnow,
 "   move.l  d2,-(sp)\n"                   /* &last of the list written */
 "   addq.l  #4,d2\n"
 "   move.l  d2,a2\n"                      /* its entries */
+"   lea     -6(a2,d0.l),a6\n"             /* FULL: fixed (#914) */
 "   move.l  12(a1),a4\n"                  /* plane 1 */
 "   move.l  8(a1),a1\n"                   /* plane 0 */
 "   moveq   #0,d4\n"
@@ -383,7 +396,9 @@ BLITZ_ASM_ROUTINE(_AsmDoSnow,
 "   move.w  d1,(a2)+\n"
 "   move.w  d2,(a2)+\n"
 "   bra.s   0b\n"
-"8: move.w  (a5),d4\n"                    /* 'addone: a new flake */
+"8: cmp.l   a6,a2\n"                      /* 'addone: a new flake */
+"   bhi.s   9f\n"                         /* not into a full list: fixed (#914) */
+"   move.w  (a5),d4\n"
 "   moveq   #0,d1\n"
 "   move.b  2(a5,d4.w),d1\n"
 "   move.w  d1,(a2)+\n"
@@ -393,7 +408,7 @@ BLITZ_ASM_ROUTINE(_AsmDoSnow,
 "   addq.w  #2,d4\n"
 "   and.w   #1023,d4\n"
 "   move.w  d4,(a5)\n"
-"   move.w  #0xabcd,(a2)\n"
+"9: move.w  #0xabcd,(a2)\n"
 "   move.l  (sp)+,a0\n"
 "   move.l  a2,(a0)\n"                    /* last */
 "   move.w  #0,0xdff180\n"
@@ -445,10 +460,14 @@ BLITZ_ASM_ROUTINE(_AsmDoSnow,
 /* ---------------------------------------------------- LDoSnowActivate */
 
 /* stopped snow (plane 1 set, plane 2 clear) at the pixel `at`/`bit`:
-   cleared and added to the drop list */
-static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWORD **drop)
+   cleared and added to the drop list, if the list is not full (its
+   FULL place `full`; fixed #914) */
+static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWORD **drop,
+                   const UWORD *full)
 {
     if (btst(plane2, at, bit) || !btst(plane1, at, bit))
+        return 0;
+    if (*drop > full)                   /* fixed (#914): the drop list is full */
         return 0;
     bclr(plane1, at, bit);
     *(*drop)++ = at;
@@ -467,7 +486,8 @@ static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWOR
  * again is redundant (no defect).  The bits of the entries are 0-7
  * (fixed #910: LDoSnow masks the random table's).  The list number: fieldchk (fixed #913).  Fixed (#909): the drop list's
  * last is updated (the original's stayed, so the next call overwrote
- * the entries).  Fixed (#908): before the first LDoSnow the drop list's last is
+ * the entries).  Fixed (#914): stopped snow stays when the drop list is
+ * full (the original had no bound).  Fixed (#908): before the first LDoSnow the drop list's last is
  * its first entry (InitSnowDrop sets it; the original's 0 wrote at
  * address 0).
  * @param n  d0: the list number
@@ -481,6 +501,7 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
     const UBYTE *look = (const UBYTE *)lookup[0];
     UWORD *drop = (UWORD *)DROP(drops)->last, *src, *dst;  /* set by InitSnowDrop:
                                                               fixed (#908) */
+    const UWORD *full = FULL(DROP(drops)->entries, DROP(drops)->size);
     ULONG count = 0;
 
     plane1 = PLANE(bm, 1);
@@ -506,10 +527,10 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
         /* the two sides below (left-first table: struct side at idx and
            idx + 4), then the pixel */
         found |= unpause(plane1, plane2, (UWORD)(at + 40 + *(const WORD *)(look + (WORD)idx)),
-                         *(const UWORD *)(look + (WORD)idx + 2), &drop);
+                         *(const UWORD *)(look + (WORD)idx + 2), &drop, full);
         found |= unpause(plane1, plane2, (UWORD)(at + 40 + *(const WORD *)(look + (WORD)idx + 4)),
-                         *(const UWORD *)(look + (WORD)idx + 6), &drop);
-        found |= unpause(plane1, plane2, at, bit, &drop);
+                         *(const UWORD *)(look + (WORD)idx + 6), &drop, full);
+        found |= unpause(plane1, plane2, at, bit, &drop, full);
         if (found) {
             *dst++ = (UWORD)(at - 40);
             *dst++ = bit;
@@ -532,7 +553,8 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
  * @param n  d0: the list number
  * @param x  d1: x (a word)
  * @param y  d2: y (a word; 40 bytes per row)
- * @return d0: BB_TRUE, BB_FALSE if the pixel was clear in plane 2
+ * @return d0: BB_TRUE, BB_FALSE if the pixel was clear in plane 2 or
+ *         the kill list is full (then nothing is done: fixed #914)
  */
 static BB_BOOL BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
                                          ULONG y BL_REG(d2))
@@ -547,6 +569,8 @@ static BB_BOOL BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
 
     if (!btst(plane2, at, bit))
         return BB_FALSE;
+    if (dst > FULL(KILL(kill)->entries, DROP(e->drop[0])->size))
+        return BB_FALSE;                /* fixed (#914): the kill list is full */
     bclr(plane2, at, bit);
     bclr(plane1, at, bit);
     bclr(plane0, at, bit);

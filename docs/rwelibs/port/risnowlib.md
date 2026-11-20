@@ -114,10 +114,18 @@ written as the original writes it.
   `rwe/risnowlib-bit-above-7-lookup`). The bit operations themselves took
   the bit modulo 8.
 
-## BUG(orig), kept
-
-* The lists have no bounds: more than numpoints × 4 entries run into the
-  next list and behind the block (#914).
+* The lists are bounded: a list of numpoints × 16 bytes takes at most
+  numpoints × 4 − 1 entries and its end mark. `LDoSnow` takes no new
+  flake into a full list (one compare per call: every other flake it
+  writes replaces one it read; about 40 cycles per call in `bsnow`,
+  0.1 %),
+  `LDoSnowActivate` leaves stopped snow as it is when the drop list is
+  full, `KillPoint` does nothing and returns 0 when the kill list is
+  full; `LDoSnowActivate` writes at most as many kill entries as it
+  reads. The original counted nothing: a field whose flakes pile up (a
+  bitmap without ground, a large bp_size) overran its drop list into the
+  next list and, from the last list, behind the block (#914, test
+  `rwe/risnowlib-lists-unbounded`).
 
 ## Original behaviour, not defects
 

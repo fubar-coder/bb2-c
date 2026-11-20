@@ -7,6 +7,7 @@
 ; list behind it (inside the block).  (The 42nd would overwrite the
 ; header of the second drop list, which the 43rd reads: a crash.)
 ; Correct: a full list takes no more entries, the kill list stays.
+; @fixed #914
 ; @rwe risnowlib
 DEFTYPE .l
 BitMap 0,320,256,3
