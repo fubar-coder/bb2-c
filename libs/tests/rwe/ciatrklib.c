@@ -29,7 +29,10 @@
  *     #448), the CIA part, the timer started and
  *     stopped, the interrupt server called by hand (the tempo command,
  *     the event), StartTracker (reinstalls), WaitTrackerEvent with a
- *     WaitTOF that runs the server, ChangeTrackerVBlank (the filter).
+ *     WaitTOF that runs the server, ChangeTrackerVBlank (the filter);
+ *     then a second run of the program with the library still loaded
+ *     (finit, init: its AddICRVector calls and the library's variables;
+ *     then ChangeTrackerVBlank again for phase B).
  *   B (VBlank, call by call): DecodeModule (chip: linked; fast
  *     memory: copied, size + 3), the information functions also on an
  *     empty slot (fixed #451 #437 #430: StartTracker returns 0,
@@ -475,7 +478,7 @@ static void fakewaittof(void)
    the system's timer A vector of ciaa (later tests hang).  The stand-ins
    record the calls; ciaa's AddICRVector fails, so the library takes the
    ciab path (timer B, free) */
-#define NICR 4
+#define NICR 8
 static struct icr { ULONG res, bit, intr; } icradd[NICR], icrrem[NICR];
 static int nadd, nrem;
 static struct Library *ciares[2];
@@ -504,6 +507,8 @@ static void fakerem(ULONG bit __asm("d0"), APTR intr __asm("a1"), struct Library
 struct ciarec {
     ULONG base, flag, addr, timerval, tempo, startbit;
     ULONG evt, pos, waited, gaveup, base2, pratoggled, stopped;
+    int nadd1, nrem1;                   /* the calls of the first run */
+    ULONG add2, base3;                  /* the second run's init */
 };
 
 static void ciaphase(UBYTE *mod)
@@ -572,6 +577,28 @@ static void ciaphase(UBYTE *mod)
         markregs(&r);
         r.d[0] = 0;
         callregs(ENT(LIB, FREE, 0), &r, 0, 0);
+
+        /* a second run of the program with the library still loaded
+           (from the editor), after a first run that used
+           ChangeTrackerVBlank: finit, init; then ChangeTrackerVBlank
+           again, so that phase B plays without the interrupt in both
+           builds */
+        c->nadd1 = nadd;
+        c->nrem1 = nrem;
+        markregs(&r);
+        callregs(ENT(LIB, FINIT, 0), &r, 0, 0);
+        markregs(&r);
+        callregs(ENT(LIB, INIT, 0), &r, 0, 0);
+        c->add2 = nadd - c->nadd1;
+        c->base3 = GL(blkC + C_CIABASE) != 0;
+        ROUT = "init (second run)";
+        strcpy(VEC, "");
+        sameG();
+        markregs(&r);
+        callregs(ENT(LIB, VBLANK, 0), &r, 0, 0);
+    } else {
+        c->nadd1 = nadd;
+        c->nrem1 = nrem;
     }
     Forbid();
     for (i = 0; i < 2; i++) {
@@ -581,8 +608,8 @@ static void ciaphase(UBYTE *mod)
     Permit();
     ROUT = "init (CIA)";
     strcpy(VEC, "");
-    OBS("AddICRVector calls", nadd);
-    for (i = 0; i < nadd && i < NICR; i++) {
+    OBS("AddICRVector calls", c->nadd1);
+    for (i = 0; i < c->nadd1 && i < NICR; i++) {
         OBS("AddICRVector resource", icradd[i].res);
         OBS("AddICRVector bit", icradd[i].bit);
         OBS("AddICRVector interrupt", icradd[i].intr);
@@ -606,12 +633,15 @@ static void ciaphase(UBYTE *mod)
     OBS("CIAAbase", c->base2);
     OBS("filter toggled", c->pratoggled);
     OBS("timer stopped", c->stopped);
-    OBS("RemICRVector calls", nrem);
-    for (i = 0; i < nrem && i < NICR; i++) {
+    OBS("RemICRVector calls", c->nrem1);
+    for (i = 0; i < c->nrem1 && i < NICR; i++) {
         OBS("RemICRVector resource", icrrem[i].res);
         OBS("RemICRVector bit", icrrem[i].bit);
         OBS("RemICRVector interrupt", icrrem[i].intr);
     }
+    ROUT = "init (second run)";
+    OBS("AddICRVector calls", c->add2);
+    OBS("CIAAbase set", c->base3);
 }
 
 /* ------------------------------------------------- F00: mt_end's a0 */
