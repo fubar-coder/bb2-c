@@ -10,7 +10,7 @@ intro: |
   `Queue` sets a queue up for a number of blits. `QBlit` draws like
   `Blit` of the blitting library, in the mode set with `QBlitMode`.
 
-  As in the original (BB2 style), only runtime error checking notices that more
+  As in the original, only runtime error checking notices that more
   blits are queued than the queue has room for
   ([#423](https://github.com/fubar-coder/bb2-c/issues/423)).
 
