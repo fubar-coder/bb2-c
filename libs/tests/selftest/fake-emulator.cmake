@@ -1,8 +1,9 @@
 # A stand-in for emulator.cmake in the test of expected.cmake
 # (expected-target.cmake): no emulator; the "program" PROGRAM is a text file,
 # written as the run's cases to WORK/test/captures/prog.txt with @PAD@
-# replaced by LIBS_PAD (0 if not set), @LIBSET@ by LIBSET and @USERLIBS@
-# by the number of entries of USERLIBS, and an empty raw block file
+# replaced by LIBS_PAD (0 if not set), @LIBSET@ by LIBSET, @USERLIBS@
+# by the number of entries of USERLIBS, @MACHINE@ by MACHINE (none if not
+# set) and @UAE@ by the entries of UAE joined with ",", and an empty raw block file
 # prog.bin beside it. A PROGRAM named skip ends the run
 # with 77 (skipped), one named fail with 1.
 cmake_minimum_required(VERSION 4.3)
@@ -21,6 +22,12 @@ string(REPLACE "@PAD@" "${LIBS_PAD}" text "${text}")
 string(REPLACE "@LIBSET@" "${LIBSET}" text "${text}")
 list(LENGTH USERLIBS userlibs)
 string(REPLACE "@USERLIBS@" "${userlibs}" text "${text}")
+if(NOT DEFINED MACHINE)
+	set(MACHINE none)
+endif()
+string(REPLACE "@MACHINE@" "${MACHINE}" text "${text}")
+list(JOIN UAE "," uae)
+string(REPLACE "@UAE@" "${uae}" text "${text}")
 file(REMOVE_RECURSE ${WORK})
 file(WRITE ${WORK}/test/captures/prog.txt "${text}")
 # a raw block file without blocks (its records need 0 bytes, which CMake

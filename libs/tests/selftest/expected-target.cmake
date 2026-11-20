@@ -6,7 +6,11 @@
 # was; an update with FIX makes the pair [orig]/[fixed #N] from the port's
 # run (LIBSET=obj); a skipped run (77) fails naming what it needs; every
 # entry of USERLIBS reaches the runs; the runs' raw block files are
-# deleted after a written record and kept after a refused one.
+# deleted after a written record and kept after a refused one; another
+# machine: MACHINE and every UAE entry reach the runs, an update with NEW
+# writes a program without expected data as [fixed #N] cases, and with
+# broken input a MACHINE not in MACHINES, NEW without a filter, NEW that
+# is no issue number and NEW of a record are refused, nothing written.
 #   cmake -DRESULTS=results -DSCRIPT=expected.cmake -DFAKE=fake-emulator.cmake
 #         -DWORK=DIR -P expected-target.cmake
 foreach(v RESULTS SCRIPT FAKE WORK)
@@ -84,4 +88,38 @@ file(REMOVE ${exp}/prog.txt)
 run(capture userlibs pass "libs-capture: [^\n]*expected up to date" "-DFILTER=[prog]"
 	"-DUSERLIBS=a.obj|a.orig\\;b.obj|b.orig\\;c.obj|c.orig")
 want_file("${head}r|userlibs||1\t\"3\"\n")
+# another machine: its own expected data, a new program from the port.
+# wrapped(VAR RE): RE in VAR, each blank also matching the line breaks
+# of a CMake error message
+function(wrapped var re)
+	string(REPLACE " " "[ \n]+" re "${re}")
+	set(${var} "${re}" PARENT_SCOPE)
+endfunction()
+set(mexp ${WORK}/expected-m1)
+# run_m1: run on the machine m1 (of m0 and m1) with two UAE changes
+function(run_m1 mode program want re)
+	run(${mode} ${program} ${want} "${re}" -DEXPECTED=${mexp} -DMACHINE=m1 "-DMACHINES=m0\\;m1"
+		"-DUAE=a=1\\;b=2" ${ARGN})
+endfunction()
+file(WRITE ${WORK}/machine "${head}r|machine||1\t\"@MACHINE@\"\nr|uae||1\t\"@UAE@\"\n"
+	"r|set||1\t\"@LIBSET@\"\n")
+string(CONCAT newfile "${head}r|machine||1 [fixed #9]\t\"m1\"\nr|set||1 [fixed #9]\t\"obj\"\n"
+	"r|uae||1 [fixed #9]\t\"a=1,b=2\"\n")
+wrapped(re "libs-update: MACHINE=m2 \\(LIBS_MACHINE\\): no machine of the libs tests \\(m0, m1;")
+run(update machine fail "${re}"
+	-DEXPECTED=${mexp} -DMACHINE=m2 "-DMACHINES=m0\\;m1" -DFILTER=[prog] -DNEW=9)
+wrapped(re "libs-update: NEW=9 \\(LIBS_UPDATE_NEW\\) needs a filter")
+run_m1(update machine fail "${re}" -DNEW=9)
+wrapped(re "libs-update: NEW=9x \\(LIBS_UPDATE_NEW\\): not an issue number")
+run_m1(update machine fail "${re}" -DFILTER=[prog] -DNEW=9x)
+run_m1(capture machine fail "expected.cmake: NEW is for MODE=update" -DFILTER=[prog] -DNEW=9)
+if(EXISTS ${mexp}/prog.txt)
+	message(FATAL_ERROR "expected-target: a refused run wrote ${mexp}/prog.txt")
+endif()
+run_m1(update machine fail "prog: no expected data" -DFILTER=[prog])
+run_m1(update machine pass "prog: new, 3 cases \\[fixed #9\\], of the port only" -DFILTER=[prog] -DNEW=9)
+file(READ ${mexp}/prog.txt got)
+if(NOT got STREQUAL newfile)
+	message(FATAL_ERROR "expected-target: ${mexp}/prog.txt is\n${got}\nnot\n${newfile}")
+endif()
 message(STATUS "expected-target: all runs as expected")

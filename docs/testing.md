@@ -236,7 +236,10 @@ speed of a library; `all` leaves it out. Details: `tests/README.md`,
      cmake --build --preset amiga --target libs-update
      ```
      `KEY` is the key as written in the expected file. Then `git diff
-     libs/tests/expected`: only the pair should appear.
+     libs/tests/expected`: only the pair should appear. The expected
+     data of another machine (`libs/tests/expected-NAME`) is written the
+     same way with `-DLIBS_MACHINE=NAME` (`tests/README.md`, "Another
+     machine").
    * a bug-orig test: add `; @fixed #N` to its header and keep its
      `ID.orig`; change `ID.expect` only if the correct behaviour was not
      described right (a header line moves the program down one line, so

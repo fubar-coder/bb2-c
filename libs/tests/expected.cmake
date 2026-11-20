@@ -4,6 +4,7 @@
 #         -DEXPECTED=DIR -DWORK=DIR [-DFILTER=snitch-filter] [-DFIX=KEY#N;...]
 #         -DAMIGA_RUN=... -DPROGRAM=libs_tests -DLIBS=DIR [-DBLITZLIB=...
 #         -DORIGINALS=... -DUSERLIBS=...] [-DTIMEOUT=SEC] [-DKEEP_BIN=ON]
+#         [-DMACHINE=NAME [-DUAE=KEY=VALUE;...] -DMACHINES=NAME;...] [-DNEW=N]
 #         -P expected.cmake
 # capture (target libs-capture, the record from the original; needs the CD,
 # the reference build of the RWE sources and Amiberry): libs_tests runs
@@ -13,9 +14,15 @@
 # update (target libs-update, from the port; no CD): one run with
 # LIBSET=obj, then results libs-update rewrites the [fixed #N] cases, and
 # every FIX entry KEY#N makes the unqualified case KEY the pair
-# KEY [orig] / KEY [fixed #N]. With FILTER only the programs that the
+# KEY [orig] / KEY [fixed #N]; NEW (an issue N, with FILTER) writes the
+# expected data of a program of the filter that has none, every case of
+# the port's run KEY [fixed #N] (results libs-update --new: a machine on
+# which the original does not run). With FILTER only the programs that the
 # filter runs and that write cases (--only), the other files stay as they
-# are. The runs stay in WORK (run1, run2 or run, as emulator.cmake leaves
+# are. MACHINE and UAE: the runs' machine and its configuration changes
+# (emulator.cmake); MACHINE must be one of MACHINES (the machines of the
+# libs tests, libs/tests/CMakeLists.txt), EXPECTED is its expected data
+# (expected-MACHINE). The runs stay in WORK (run1, run2 or run, as emulator.cmake leaves
 # them: the cases in test/captures); their raw block files (NAME.bin) are
 # deleted once the expected data is written, unless KEEP_BIN or the
 # environment variable LIBS_KEEP_BIN is set, and kept when it is not
@@ -43,6 +50,21 @@ endif()
 if(FIX AND NOT MODE STREQUAL "update")
 	message(FATAL_ERROR "expected.cmake: FIX is for MODE=update")
 endif()
+if(NEW)
+	if(NOT MODE STREQUAL "update")
+		message(FATAL_ERROR "expected.cmake: NEW is for MODE=update")
+	elseif(NOT FILTER)
+		message(FATAL_ERROR "${target}: NEW=${NEW} (LIBS_UPDATE_NEW) needs a filter"
+			" (LIBS_CAPTURE_FILTER): it writes the programs the filter runs")
+	elseif(NOT NEW MATCHES "^[1-9][0-9]*$")
+		message(FATAL_ERROR "${target}: NEW=${NEW} (LIBS_UPDATE_NEW): not an issue number")
+	endif()
+endif()
+if(DEFINED MACHINE AND NOT MACHINE IN_LIST MACHINES)
+	list(JOIN MACHINES ", " m)
+	message(FATAL_ERROR "${target}: MACHINE=${MACHINE} (LIBS_MACHINE): no machine of the libs"
+		" tests (${m}; empty: the a1200)")
+endif()
 
 set(common -DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=${PROGRAM} -DLIBS=${LIBS})
 foreach(v BLITZLIB ORIGINALS TIMEOUT FILTER)
@@ -50,10 +72,15 @@ foreach(v BLITZLIB ORIGINALS TIMEOUT FILTER)
 		list(APPEND common "-D${v}=${${v}}")
 	endif()
 endforeach()
-if(USERLIBS)
-	# one argument: its ; escaped, or the run gets the first entry only
-	string(REPLACE ";" "\\;" userlibs "${USERLIBS}")
-	list(APPEND common "-DUSERLIBS=${userlibs}")
+# one argument each: its ; escaped, or the run gets the first entry only
+foreach(v USERLIBS UAE)
+	if(${v})
+		string(REPLACE ";" "\\;" l "${${v}}")
+		list(APPEND common "-D${v}=${l}")
+	endif()
+endforeach()
+if(DEFINED MACHINE)
+	list(APPEND common -DMACHINE=${MACHINE})
 endif()
 
 # the failure message of a finished run (rc: its exit status)
@@ -128,6 +155,9 @@ else()
 	foreach(f IN LISTS FIX)
 		list(APPEND fixes --fix "${f}")
 	endforeach()
+	if(NEW)
+		list(APPEND fixes --new ${NEW})
+	endif()
 	execute_process(COMMAND ${RESULTS} libs-update ${dir} ${EXPECTED} ${only} ${fixes}
 		RESULT_VARIABLE rc)
 endif()

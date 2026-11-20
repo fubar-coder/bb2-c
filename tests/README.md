@@ -384,6 +384,7 @@ ones it adds; a malformed or ambiguous file is named with its line.
 | test the original | `ctest --preset originals -R libs_emulator_originals` (label `originals`) | Amiberry, the CD, the RWE reference build (`rwe_refbuild`) | nothing |
 | record (from the original) | `cmake --build --preset amiga --target libs-capture` | as the line above | `libs/tests/expected/` |
 | update (from the port) | `cmake --build --preset amiga --target libs-update` | Amiberry | the `[fixed #N]` cases of `libs/tests/expected/` |
+| either on another machine | the same with `-DLIBS_MACHINE=NAME` | as above | `libs/tests/expected-NAME/` |
 | fix scope | `cmake --build --preset amiga --target fix-scope` | git | nothing |
 
 `libs_emulator` and `libs_emulator_originals` only compare: they run the
@@ -449,6 +450,11 @@ lacks becomes `KEY [orig #N]` the same way. Nothing else changes but the
 order of "Expected data"; a fix whose port value equals the expected
 value, or whose key is qualified otherwise, is refused. The run's output
 stays in `build/amiga/libs/tests/libs-update/run/test/captures/`.
+`-DLIBS_UPDATE_NEW=N` (an issue; it needs `LIBS_CAPTURE_FILTER`) writes
+the expected data of a program of the filter that has none: every case
+of the port's run becomes `KEY [fixed #N]` (`results libs-update --new`;
+the data of a machine on which the original does not run, "Another
+machine"); a program that has expected data is updated as above.
 
 **A fixed original bug** is therefore two cases in the expected data,
 written by `libs-update` with `LIBS_UPDATE_FIX` in the commit of the fix
@@ -551,8 +557,11 @@ small tests below `LIBS_SELFTEST_TIMEOUT` (60 s).
 **Another machine** (`emulator.cmake` `-DMACHINE=NAME`, `-DUAE=KEY=VALUE;...`:
 `amiga_run --machine`, `--set`): the libs tests run on the a1200 by
 default; a library's path for an older Kickstart runs in a test of its
-own with `MACHINE` (and its own expected data where its cases differ from
-the default machine's). `libs_tests` is linked with libnix20 (Kickstart
+own with `MACHINE` (and its own expected data `libs/tests/expected-NAME/`
+where its cases differ from the default machine's). The machines and
+the configuration changes `libs_tests` needs on each are listed once,
+in `libs/tests/CMakeLists.txt` (`libs_machines`, `libs_uae_NAME`); the
+tests of a machine and the targets take them from there. `libs_tests` is linked with libnix20 (Kickstart
 2.0 or newer, not the a500) and needs about 8.5 MB, 7.5 MB of it in one
 block: more than a 68000 machine has ("not enough memory available" on
 the a500-204 and the a600), so on the a500-204 it runs with
@@ -563,9 +572,29 @@ data. `libs_emulator_riwbspritelib_a500_204` runs `rwe riwbspritelib`
 there, the library's path below graphics.library V39 (#1151), the C
 build only (the original crashes there), against its own expected data
 `libs/tests/expected-a500-204/rwe_riwbspritelib.txt`: every case
-`[fixed #1151]`, written from a run of the port and put in order with
-`results libs-sort` (`libs-update` writes the default machine's data
-only); `fix-scope` checks it like `libs/tests/expected/`.
+`[fixed #1151]`.
+
+The cache variable `LIBS_MACHINE` (one of `libs_machines`; empty: the
+a1200) makes `libs-capture` and `libs-update` run on that machine, with
+its configuration changes, and write its expected data
+`libs/tests/expected-NAME/` in place of `libs/tests/expected/`; every
+other option (`LIBS_CAPTURE_FILTER`, `LIBS_UPDATE_FIX`) works as on the
+a1200. The target refuses a name that is not in the list, and an
+environment variable `LIBS_MACHINE` (or `LIBS_UPDATE_NEW`), which would
+have no effect. Set it empty again afterwards.
+The data of a program whose original does not run on the machine is
+made from the port with `LIBS_UPDATE_NEW`, for example the a500-204's:
+
+```
+cmake --preset amiga -DLIBS_MACHINE=a500-204 "-DLIBS_CAPTURE_FILTER=rwe riwbspritelib" -DLIBS_UPDATE_NEW=1151
+cmake --build --preset amiga --target libs-update
+cmake --preset amiga -DLIBS_MACHINE= -DLIBS_CAPTURE_FILTER= -DLIBS_UPDATE_NEW=
+```
+
+Once the file exists, `libs-update` with `LIBS_MACHINE` (and without
+`LIBS_UPDATE_NEW`) rewrites its `[fixed #N]` cases from the port like
+those of the a1200, and `fix-scope` checks every `expected-NAME/` like
+`libs/tests/expected/`.
 
 **The checks have tests with broken input** (no CD): `libs_compare_*` and
 `libs_accept_*` (host: the judge on fake files: a changed value, a
@@ -577,7 +606,9 @@ unknown type, a bad length, places and blocks that do not fit, the
 dump, the first differing observation, `lost` inside a block),
 `libs_dump_*`, `libs_capture_format` (the case writer; block mode gives
 the lines and hashes of the text path), `libs_capture_target` (the
-record and update targets with a fake emulator run), `fix_scope_*` (the
+record and update targets with a fake emulator run; on another machine
+a name not in the list, `LIBS_UPDATE_NEW` without a filter, not a number
+or for a record), `libs_update_new_wrong` (`--new 0`), `fix_scope_*` (the
 fix-scope check; `fix_scope_target` also on the data of another machine:
 a changed, an added and a removed case), `libs_emulator_wrong` (an emulator run whose output has
 a changed case fails with that key), `libs_emulator_lost` (a datalib

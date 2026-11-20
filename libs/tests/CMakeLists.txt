@@ -83,6 +83,22 @@ string(REPLACE ";" "$<SEMICOLON>" rwe_userlibs "${rwe_userlibs}")
 # are written raw and hashed on the host, capture.h)
 set(LIBS_TESTS_TIMEOUT 900 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
 set(expected ${CMAKE_CURRENT_SOURCE_DIR}/expected)
+# the machines the libs tests run on besides the default a1200
+# (emulator.cmake MACHINE), each with the changes of its configuration
+# libs_tests needs there (UAE; tests/README.md, "Another machine") and its
+# own expected data expected-MACHINE/: the tests of a machine and the
+# targets libs-capture and libs-update (LIBS_MACHINE) take both from here
+set(libs_machines a500-204)
+set(libs_uae_a500-204 "cpu_type=68020;cpu_model=68020;cpu_24bit_addressing=false;z3mem_size=32")
+# the arguments of emulator.cmake or expected.cmake for MACHINE into OUT
+function(libs_machine_args machine out)
+	set(a -DMACHINE=${machine})
+	if(DEFINED libs_uae_${machine})
+		string(REPLACE ";" "$<SEMICOLON>" u "${libs_uae_${machine}}")
+		list(APPEND a "-DUAE=${u}")
+	endif()
+	set(${out} "${a}" PARENT_SCOPE)
+endfunction()
 math(EXPR limit "${LIBS_TESTS_TIMEOUT} + 300 + ${EMULATION_QUEUE_WAIT}")
 foreach(libset obj orig)
 	set(name libs_emulator)
@@ -123,16 +139,41 @@ endif()
 # unqualified case such a pair, or KEY [orig #N] (a case of the original
 # only) where the port lacks KEY.  LIBS_CAPTURE_FILTER (a snitch filter of
 # libs_tests, e.g. "libtest ldivlib") limits both to the programs it runs.
+# LIBS_MACHINE (one of libs_machines) runs both on that machine with its
+# UAE changes and writes its expected data expected-MACHINE/;
+# LIBS_UPDATE_NEW (an issue N) makes libs-update write the data of a
+# program of the filter that has none, every case of the port's run
+# KEY [fixed #N] (a machine on which the original does not run).
 set(LIBS_CAPTURE_FILTER "" CACHE STRING
 	"libs-capture, libs-update: only the libs_tests test cases of this snitch filter (empty: all)")
 set(LIBS_UPDATE_FIX "" CACHE STRING
 	"libs-update: KEY#N;... - the unqualified case KEY becomes the pair KEY [orig] / KEY [fixed #N] (KEY [orig #N] if the port lacks KEY)")
+list(JOIN libs_machines ", " m)
+set(LIBS_MACHINE "" CACHE STRING
+	"libs-capture, libs-update: the machine of the runs (${m}) and its expected data libs/tests/expected-MACHINE (empty: the a1200, libs/tests/expected)")
+set(LIBS_UPDATE_NEW "" CACHE STRING
+	"libs-update: N - a program of LIBS_CAPTURE_FILTER without expected data gets every case of the port's run as KEY [fixed #N]")
+set(target_expected ${expected})
+set(machine_args "")
+if(NOT LIBS_MACHINE STREQUAL "")
+	set(target_expected ${expected}-${LIBS_MACHINE})
+	libs_machine_args("${LIBS_MACHINE}" machine_args)
+endif()
+string(REPLACE ";" "$<SEMICOLON>" machines "${libs_machines}")
 foreach(mode capture update)
 	set(fix "")
-	set(what "the original (two runs) -> ${expected}")
+	set(new "")
+	set(what "the original (two runs) -> ${target_expected}")
 	if(mode STREQUAL "update")
 		string(REPLACE ";" "$<SEMICOLON>" fix "${LIBS_UPDATE_FIX}")
-		set(what "the port -> the [fixed #N] cases of ${expected}")
+		set(new "${LIBS_UPDATE_NEW}")
+		set(what "the port -> the [fixed #N] cases of ${target_expected}")
+		if(new)
+			string(APPEND what ", new programs [fixed #${new}]")
+		endif()
+	endif()
+	if(LIBS_MACHINE)
+		string(APPEND what " (machine ${LIBS_MACHINE})")
 	endif()
 	if(LIBS_CAPTURE_FILTER)
 		string(APPEND what " (filter ${LIBS_CAPTURE_FILTER})")
@@ -143,8 +184,13 @@ foreach(mode capture update)
 			-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
 		COMMAND ${CMAKE_COMMAND} -DNAME=LIBS_UPDATE_FIX "-DVALUE=${LIBS_UPDATE_FIX}"
 			-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
+		COMMAND ${CMAKE_COMMAND} -DNAME=LIBS_MACHINE "-DVALUE=${LIBS_MACHINE}"
+			-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
+		COMMAND ${CMAKE_COMMAND} -DNAME=LIBS_UPDATE_NEW "-DVALUE=${LIBS_UPDATE_NEW}"
+			-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
 		COMMAND ${CMAKE_COMMAND} -DMODE=${mode} -DEMULATOR=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake
-			-DRESULTS=${RESULTS} -DEXPECTED=${expected} -DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs-${mode}
+			-DRESULTS=${RESULTS} -DEXPECTED=${target_expected} -DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs-${mode}
+			${machine_args} "-DMACHINES=${machines}" "-DNEW=${new}"
 			-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB} -DPROGRAM=$<TARGET_FILE:libs_tests>
 			-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
 			-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS
@@ -156,9 +202,10 @@ foreach(mode capture update)
 		VERBATIM)
 	add_dependencies(libs-${mode} libs_tests acidlibs host_tools)
 endforeach()
-# the refusal of an environment variable of LIBS_CAPTURE_FILTER or
-# LIBS_UPDATE_FIX with the cache variable empty (cmake/check-cache-variable.cmake)
-foreach(v LIBS_CAPTURE_FILTER LIBS_UPDATE_FIX)
+# the refusal of an environment variable of LIBS_CAPTURE_FILTER,
+# LIBS_UPDATE_FIX, LIBS_MACHINE or LIBS_UPDATE_NEW with the cache variable
+# empty (cmake/check-cache-variable.cmake)
+foreach(v LIBS_CAPTURE_FILTER LIBS_UPDATE_FIX LIBS_MACHINE LIBS_UPDATE_NEW)
 	add_test(NAME cache_variable_env_${v} COMMAND ${CMAKE_COMMAND} -DNAME=${v}
 		-DSCRIPT=${PROJECT_SOURCE_DIR}/cmake/check-cache-variable.cmake
 		-P ${PROJECT_SOURCE_DIR}/cmake/check-cache-variable-test.cmake)
@@ -202,12 +249,12 @@ set_tests_properties(libs_emulator_wrong PROPERTIES LABELS emulator SKIP_RETURN_
 # way a library's Kickstart 2.x path is tested; and with broken input a
 # machine the emulation does not know (a3000), which amiga_run refuses
 # before any session, and a configuration change without KEY=
+libs_machine_args(a500-204 a500_204)
 add_test(NAME libs_emulator_machine COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON
 	-DLIBSET=obj -DEXPECTED=${expected} -DRESULTS=${RESULTS} "-DFILTER=libtest ldivlib"
-	-DMACHINE=a500-204
-	"-DUAE=cpu_type=68020$<SEMICOLON>cpu_model=68020$<SEMICOLON>cpu_24bit_addressing=false$<SEMICOLON>z3mem_size=32"
+	${a500_204}
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_machine -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
 	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -P ${WITH_WORKDIR})
 set_tests_properties(libs_emulator_machine PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
@@ -221,9 +268,8 @@ set_tests_properties(libs_emulator_machine PROPERTIES LABELS emulator SKIP_RETUR
 add_test(NAME libs_emulator_riwbspritelib_a500_204 COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DUSERLIBS=${rwe_userlibs} -DNO_ORIGINALS=ON
-	-DLIBSET=obj -DEXPECTED=${CMAKE_CURRENT_SOURCE_DIR}/expected-a500-204 -DRESULTS=${RESULTS}
-	"-DFILTER=rwe riwbspritelib" -DMACHINE=a500-204
-	"-DUAE=cpu_type=68020$<SEMICOLON>cpu_model=68020$<SEMICOLON>cpu_24bit_addressing=false$<SEMICOLON>z3mem_size=32"
+	-DLIBSET=obj -DEXPECTED=${expected}-a500-204 -DRESULTS=${RESULTS}
+	"-DFILTER=rwe riwbspritelib" ${a500_204}
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_riwbspritelib_a500_204 -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
 	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -P ${WITH_WORKDIR})
 set_tests_properties(libs_emulator_riwbspritelib_a500_204 PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
