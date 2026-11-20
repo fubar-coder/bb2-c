@@ -27,8 +27,8 @@
  * docs/rwelibs/README.md 2 and 3.3).  Notes: docs/rwelibs/port/
  * riseriallib.md.
  *
- * SerialOpen writes its handlers straight into the 68000 autovectors of
- * levels 5 (RBF) and 1 (TBE) at $74 and $64 (the old ones are chained
+ * SerialOpen writes its handlers straight into the autovectors of levels
+ * 5 (RBF) and 1 (TBE) at VBR + $74 and VBR + $64 (the old ones are chained
  * when the interrupt is not the library's), sets CIA-B PRA to $3F
  * (RTS/DTR), and switches RBF, TBE and the master bit on in INTENA,
  * remembering INTENAR.  The receive interrupt puts SERDATR's byte into a
@@ -52,10 +52,9 @@
  * vector) and the thunks.
  *
  * BUG(orig):
- *   - The vectors are written at $64/$74 (the VBR of a 68010+ is not
- *     looked at) (#804), the old ones into the operands of two JMP
- *     instructions in the code without clearing the instruction cache
- *     (#791).
+ *   - The old vectors go into the operands of two JMP instructions in
+ *     the code without clearing the instruction cache (#791; the C port
+ *     keeps them in variables, the handlers read them).
  *
  * Fixed (intended deviations):
  *   - SerialReadString stored the 0 and left a3 behind it, so a string
@@ -136,12 +135,18 @@
  *     first (decided, R10 P2-4 (a)); the original sent the low byte and
  *     then three times $01: it rotated the register SerialWrite had
  *     changed (the word $01xx) (#805).
+ *   - SerialOpen reads the VBR on a 68010 or better (AttnFlags AFF_68010)
+ *     and writes its handlers into the vector table there, SerialClose
+ *     puts the old ones back there; the original wrote them at $64/$74
+ *     whatever the VBR was, so with a moved table they were never called
+ *     (#804).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
  * through ldivlib, whose division by zero has a defined result.
  */
 #include "blitzlib.h"
+#include "blitzexec.h"
 
 /* entries (thunks below) */
 void _setbaud(void), _openserial(void), _openserial2(void), _closeserial(void);
@@ -294,16 +299,44 @@ volatile UBYTE *riser_ciab = (volatile UBYTE *)0xbfd000;
 #define CIABPRA    (*riser_ciab)
 #define SERCLOCK   3546895UL
 
-/* the level 1 and 5 autovectors ($64, $74): the address through an asm,
-   so that GCC does not take it for a null pointer offset */
+/* the vector base: the VBR read at SerialOpen (0 on a 68000; fixed
+   (#804): the original took 0 on every CPU) */
+static ULONG vecbase;
+
+/* the level 1 and 5 autovectors (VBR + $64, + $74): the address through
+   an asm, so that GCC does not take it for a null pointer offset */
 static volatile ULONG *vector(ULONG a)
 {
     volatile ULONG *p;
     __asm__("" : "=a"(p) : "0"(a));
     return p;
 }
-#define VEC_TBE vector(0x64)
-#define VEC_RBF vector(0x74)
+#define VEC_TBE vector(vecbase + 0x64)
+#define VEC_RBF vector(vecbase + 0x74)
+
+/* MOVEC VBR,D2 (Dc $4e7a,$2801) - only in supervisor state */
+static ULONG getvbr(void)
+{
+    register ULONG v __asm("d2");
+    __asm__ volatile(".word 0x4e7a,0x2801" : "=d"(v));   /* 68000 assembler */
+    return v;
+}
+
+/* the VBR of a 68010 or better (AttnFlags AFF_68010, bit 0: one CPU bit
+   is enough, the lesson of #42), 0 on a 68000 */
+static ULONG readvbr(void)
+{
+    ULONG v = 0;
+    APTR ssp;
+
+    if (SysBase->AttnFlags & AFF_68010) {
+        ssp = SuperState();             /* NULL: already in supervisor state */
+        v = getvbr();
+        if (ssp)
+            UserState(ssp);
+    }
+    return v;
+}
 
 static ULONG buffstart, bufflength;
 static ULONG baudrate = 2400;
@@ -372,6 +405,7 @@ static ULONG openserial(ULONG value)
     quitflag = 0;
     if (openflag)
         return value;
+    vecbase = readvbr();                /* fixed (#804) */
     riser_oldint5 = *VEC_RBF;
     riser_oldint1 = *VEC_TBE;
     *VEC_RBF = (ULONG)readint;
@@ -405,9 +439,10 @@ void BLITZ_ROUTINE c_setbaud(ULONG rate BL_REG(d0))
  * @brief SerialOpen: installs the library's receive and transmit
  * interrupts (see openserial).
  *
- * BUG(orig) (#804): the vectors at $64/$74 (the VBR is not looked at);
- * BUG(orig) (#791): the old ones go into the operands of two JMPs
- * without clearing the instruction cache.
+ * The vectors at VBR + $64/$74 (fixed (#804): the original wrote them at
+ * $64/$74 whatever the VBR of a 68010+ was).  BUG(orig) (#791): the
+ * original put the old ones into the operands of two JMPs without
+ * clearing the instruction cache (the C port keeps them in variables).
  */
 void BLITZ_ROUTINE c_openserial(void)
 {

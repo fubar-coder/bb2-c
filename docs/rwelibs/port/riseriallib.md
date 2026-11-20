@@ -4,8 +4,8 @@
 port through the hardware, without serial.device:
 
 * `SerialOpen [baudrate]` writes its receive handler into the level 5
-  autovector (`$74`, RBF) and its transmit handler into the level 1
-  autovector (`$64`, TBE), keeping the old ones (they get the interrupts
+  autovector (VBR + `$74`, RBF) and its transmit handler into the level 1
+  autovector (VBR + `$64`, TBE), keeping the old ones (they get the interrupts
   that are not the library's), sets CIA-B PRA to `$3F` (RTS/DTR),
   remembers INTENAR and switches RBF, TBE and the master bit on.
   `SerialClose` (and finit) puts the vectors back, switches RBF and TBE
@@ -186,12 +186,20 @@ kind F):
   (the word `$01xx`) instead of the argument (#805; test
   `riseriallib-writelong`; `libs_emulator` cases `[fixed #805]` of
   `rwe_riseriallib`).
+* `SerialOpen` reads the VBR on a 68010 or better (one CPU bit of
+  AttnFlags, `AFF_68010`, is enough: the lesson of #42) and writes its
+  handlers into the vector table there; `SerialClose` puts the old
+  vectors back there. The original wrote them at `$64`/`$74` whatever
+  the VBR was, so with a moved table (a 68010+ with a tool that moves
+  it) the handlers were never called (#804; library decisions Q14; test
+  `riseriallib-vbr` on the A500 with a 68010; the library test's machine
+  has VBR 0, its cases stay).
 
 ## BUG(orig), kept
 
-* The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
-  is (#804); the old ones go into the code (two `JMP` operands) without
-  clearing the instruction cache (#791).
+* The original puts the old vectors into the code (two `JMP` operands)
+  without clearing the instruction cache (#791; closed: the C port keeps
+  them in variables).
 
 No defects: `SerialProgress` gives the remaining count of the last send
 or receive block, what it is meant to give; `SerialBaud 0` divides by 0

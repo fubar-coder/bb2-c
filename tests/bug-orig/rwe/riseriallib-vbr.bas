@@ -8,6 +8,7 @@
 ; goes back to 0.  The machine is the A500 with a 68010.
 ; Correct: the handlers go into the moved table (the one at 0 stays), and
 ; SerialClose puts the old vectors back there.
+; @fixed #804
 ; @rwe riseriallib
 ; @machine a500-68010
 DEFTYPE .l
