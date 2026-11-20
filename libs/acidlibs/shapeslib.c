@@ -33,8 +33,9 @@
  *    nothing (its cookie is cleared, made again with AutoCookie On).
  *  - LoadShape: "ANIM format not supported" and "Illegal ANIM interleave
  *    value" (the first ANHD) are raised without iffclose: the file stays
- *    open, also after the program's end (iffiolib has no finit) (test
- *    shapeslib-loadshape-anim-fileopen; #1072).
+ *    open, also after the program's end (iffiolib has no finit) (tests
+ *    shapeslib-loadshape-anim-fileopen and
+ *    shapeslib-loadshape-anim-interleave-fileopen; #1072).
  *  - Not a bug (by design): DecodeShapes stops silently at the first block
  *    that does not match (the end of the sequence); memory below 2 MB
  *    ($FFE00000 clear, chip RAM) is used in place ("cL"), above it is
@@ -1089,7 +1090,8 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     if (!z)
         goto skipanim;
     /* BUG(orig) (#1072): mess7 and mess8 without iffclose, the
-       file stays open (test shapeslib-loadshape-anim-fileopen) */
+       file stays open (tests shapeslib-loadshape-anim-fileopen,
+       shapeslib-loadshape-anim-interleave-fileopen) */
     res = IJSR(TOK_iffbyte, res, st);
     if ((UBYTE)res != 5)
         BLITZ_RUNERR(mess7);
