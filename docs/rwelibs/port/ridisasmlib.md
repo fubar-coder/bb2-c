@@ -61,15 +61,16 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
 each run loads one library set (the C build or the original) and
 disassembles a code buffer at a fixed address (so PC relative targets
 are absolute and every run gives the same text) into a string area;
-observed after every call are d0, how far a3 moved, 40 bytes of the
-string area, InstrSize and the kept registers - about 380000 calls, 3
-million observations (3058392 checks, about 3 minutes in the emulator
+observed after every call are d0, how far a3 moved, 100 bytes of the
+128-byte string area, InstrSize and the kept registers - about 380000 calls, 3
+million observations (about 3 minutes in the emulator
 with the C build). The expected data
 `libs/tests/expected/rwe_ridisasmlib.txt` (recorded from the original)
-holds 770 cases: the sweeps over the instruction words are 747 block
+holds 777 cases: the sweeps over the instruction words are 747 block
 cases (a block of consecutive observations is one case with a hash,
 `LIBS_CAP_DUMP=BLOCK:N` writes its observations), init, the first
-InstrSize, the odd address, the odd a3 and finit are 23 plain cases.
+InstrSize, the odd address, the odd a3, finit and the second run are 30
+plain cases.
 Cases: InstrSize before the first call;
 every first word $0000-$FFFF with brief and again with full format
 extension words behind it; the extension words of MOVE.l
@@ -77,5 +78,6 @@ extension words behind it; the extension words of MOVE.l
 of MOVE.l (pc,xn),d0 forms (every second); MOVEM lists (every mask for
 -(a7), every third for (a7)+ and (a0)); MOVEC control register words
 (every third: all 4096 codes); an odd code address and an odd a3 (fine
-on the emulator's 68020); init and finit. Not covered: the 68000
+on the emulator's 68020); init and finit; a second run (init after
+finit, then InstrSize before the first DisAssemble$). Not covered: the 68000
 address errors.
