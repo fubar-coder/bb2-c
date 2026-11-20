@@ -39,11 +39,7 @@
  *     wrong entries (4 arguments: x, y, width, height replaced by -1, the
  *     mode id whatever d4 holds; 1 argument: lost, d4/d5 whatever they
  *     hold; 2: d2/d3 whatever they hold) (#928);
- *     the values are written at the offsets 16, 20, 24, 28 of the tag
- *     list - over the tag ids of width and height: width and the mode id
- *     become tag ids (mode id 0 = TAG_DONE ends the list), height and
- *     frequency their data, the initial audio id and frequency are never
- *     set (#931); !libs's screen (a0) is
+ *     !libs's screen (a0) is
  *     not used, AHIR_Screen stays 0 (#929);
  *     every call allocates a requester that is never freed
  *     (#930).
@@ -87,7 +83,12 @@
  * it, left the replies in the port and left everything open at finit
  * while the request was in use (#933).  PlaySoundAHI's io_Length is the
  * length in bytes, twice the object's length in words; the original gave
- * the words as bytes, half the sample (#932).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * the words as bytes, half the sample (#932).  AHIOutputRequest writes
+ * width, height, mode id and frequency into the data of their tags; the
+ * original wrote them at the offsets 16, 20, 24, 28 of the tag list,
+ * over the tag ids of width and height, so that width and mode id became
+ * tag ids (mode id 0 = TAG_DONE ended the list) and the initial audio id
+ * and frequency were never set (#931).  CludgeSound writes nothing behind audiolib's 16 byte sound
  * object; the original stored the rate at +16, the high word of the next
  * object's sample pointer (behind the last object whatever follows), for
  * PlaySoundAHI, which now takes its frequency from the object's period:
@@ -258,7 +259,8 @@ static_assert(sizeof(struct AHIRequest) == 80);
 /* ahireqtags: the requester's tags (the original's labels ahileft,
    ahitop, ahiwidth, ahiheight, ahiaudioid, ahifrequency, ahiscreen, then
    DoMixFreq and TAG_END); AHIOutputRequest writes the longs at 4, 12, 16,
-   20, 24, 28 - two of them tag ids (#931) */
+   20, 24, 28 - two of them tag ids; the port writes the data longs 4,
+   12, 20, 28, 36, 44 (#931) */
 static struct {
     struct TagItem left, top, width, height, audioid, mixfreq, screen, domixfreq;
     ULONG end;
@@ -556,20 +558,20 @@ ULONG BLITZ_ROUTINE c_playraw(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
 /**
  * @brief AHIOutputRequest x,y,width,height,modeid,frequency: AHI's audio mode requester.
  *
- * Writes the arguments into the tag list, then AHI_AllocAudioRequestA
- * and AHI_AudioRequestA (no tags).  BUG(orig): the values go to the
- * offsets 16, 20, 24, 28 of the tag list, over the tag ids of width and
- * height - width and the mode id become tag ids (mode id 0 = TAG_DONE
- * ends the list), height and frequency their data; the initial audio id
- * and frequency are never set (#931).  !libs's screen (a0) is not used,
+ * Writes the arguments into the data of the tag list's initial left
+ * edge, top edge, width, height, audio id and mix frequency (offsets 4,
+ * 12, 20, 28, 36, 44; fixed: #931, the original wrote the last four to
+ * 16, 20, 24, 28, over the tag ids of width and height), then
+ * AHI_AllocAudioRequestA and AHI_AudioRequestA (no tags).
+ * BUG(orig): !libs's screen (a0) is not used,
  * AHIR_Screen stays 0 (#929).  Every call allocates a requester that is
  * never freed (#930).
  * @param x     d0: the initial left edge
  * @param y     d1: the initial top edge
- * @param w     d2: the width (written as a tag id, #931)
- * @param h     d3: the height (written as width's data, #931)
- * @param id    d4: the mode id (written as a tag id, #931)
- * @param freq  d5: the frequency (written as height's data, #931)
+ * @param w     d2: the initial width
+ * @param h     d3: the initial height
+ * @param id    d4: the initial audio mode id
+ * @param freq  d5: the initial mixing frequency
  * @return d0: AHI_AudioRequestA's result (0 when cancelled), 0 without
  *         ahi.device or when the requester could not be allocated
  */
@@ -582,10 +584,10 @@ ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
         return 0;
     ahireqtags.left.ti_Data = x;        /* 4(a0) */
     ahireqtags.top.ti_Data = y;         /* 12(a0) */
-    ahireqtags.width.ti_Tag = w;        /* 16(a0): BUG(orig) (#931) a tag id */
-    ahireqtags.width.ti_Data = h;       /* 20(a0): BUG(orig) (#931) width's data */
-    ahireqtags.height.ti_Tag = id;      /* 24(a0): BUG(orig) (#931) a tag id */
-    ahireqtags.height.ti_Data = freq;   /* 28(a0): BUG(orig) (#931) height's data */
+    ahireqtags.width.ti_Data = w;       /* Fixed (#931): 20(a0) */
+    ahireqtags.height.ti_Data = h;      /* 28(a0) */
+    ahireqtags.audioid.ti_Data = id;    /* 36(a0) */
+    ahireqtags.mixfreq.ti_Data = freq;  /* 44(a0) */
     r = (struct bl_regs){ .a0 = (ULONG)&ahireqtags };
     ahirequest = (APTR)BLITZ_BASEJSR(ahibase, LVO_AHI_AllocAudioRequestA, r);
     if (!ahirequest)

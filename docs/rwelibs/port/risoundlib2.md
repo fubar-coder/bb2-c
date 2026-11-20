@@ -66,14 +66,7 @@ the registers the original's entries keep (d2–d5) as parameters.
   (x, y, width, height replaced by -1, the mode id is d4 as it was), 1
   argument to "AudioID, Frequency" (the argument replaced, d4/d5 as they
   were), 2 to "X,Y,WIDTH,HEIGHT" (d2/d3 as they were)
-  (#928). The values go to the offsets 4,
-  12, 16, 20, 24, 28 of the tag list: 16 and 24 are the tag ids of
-  `AHIR_InitialWidth` and `AHIR_InitialHeight` – width and the mode id
-  become tag ids (mode id 0, passed by the 0- and 2-argument forms - the
-  1- and 4-argument forms leave d4 as it is -, is `TAG_DONE` and
-  ends the list), height and frequency their data; the tags
-  `AHIR_InitialAudioID`/`AHIR_InitialMixFreq` keep -1 and 0
-  (#931). The current screen of
+  (#928). The current screen of
   `!libs {#screenslib,#ua0}` is not used (`AHIR_Screen` stays 0)
   (#929). Every call allocates a
   requester; none is ever freed (#930).
@@ -150,6 +143,14 @@ kind F):
   object's length in words (+6); the original gave the words as bytes,
   and AHI would have played the first half of every sample (#932;
   `libs_emulator` cases `[fixed #932]` of `rwe_risoundlib2`).
+* AHIOutputRequest writes x, y, width, height, mode id and frequency into
+  the data of their tags (offsets 4, 12, 20, 28, 36, 44 of the tag list).
+  The original wrote the last four to 16, 20, 24, 28: 16 and 24 are the
+  tag ids of `AHIR_InitialWidth` and `AHIR_InitialHeight` – width and the
+  mode id became tag ids (mode id 0 is `TAG_DONE` and ended the list),
+  height and frequency their data, and `AHIR_InitialAudioID`/
+  `AHIR_InitialMixFreq` kept -1 and 0 (#931; `libs_emulator` cases
+  `[fixed #931]` of `rwe_risoundlib2`).
 
 ## Test
 
