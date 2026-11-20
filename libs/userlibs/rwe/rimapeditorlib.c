@@ -39,9 +39,6 @@
  * BUG(orig):
  *   - MapCanDraw's stencil index is the map value as a signed word;
  *     without SetStencil the stencil is at address 0 (#893).
- *   - MapDataGrab of bytes keeps the upper byte of the previous value in
- *     the register (MOVE.b): a byte + mapnull beyond 255 carries into the
- *     following values (#898).
  *   - The DBRA loops (MapDataGrab, ShapeTo1616, FillBitplane) run 65536
  *     times for a size of 0 (FillBitplane also for a width below 16)
  *     (#895); ShapeTo1616 copies a word from every
@@ -65,7 +62,11 @@
  *     the data pointer and the name itself; the original tested the long
  *     at 12 (the low word of the data pointer and viewx), so a map whose
  *     data lay at $xxxx0000 with viewx 0 was not freed (lost) and the
- *     fields 24/28 were not cleared either (#894).
+ *     fields 24/28 were not cleared either (#894);
+ *   - MapDataGrab of bytes zero-extends each byte; the original loaded it
+ *     with MOVE.b into the register of the previous sum, whose upper byte
+ *     stayed: a byte + mapnull beyond 255 carried into the following
+ *     values (#898).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -797,10 +798,10 @@ BLITZ_INLINE(_mapobjheight, "move.w 2(a3),d0");
  * @brief MapDataGrab address,datasize,mapnull: fills the used map from memory.
  *
  * width*height values from address (datasize 0: bytes, else words) +
- * mapnull into the data.  BUG(orig): for bytes the upper byte of the
- * previous value stays in the register (MOVE.b): a byte + mapnull beyond
- * 255 carries into the following values (#898); width or height 0 ->
- * 65536 (DBRA, #895).
+ * mapnull into the data.  Each byte is zero-extended: fixed (#898), in
+ * the original the upper byte of the previous value stayed in the
+ * register (MOVE.b), so a byte + mapnull beyond 255 carried into the
+ * following values.  BUG(orig): width or height 0 -> 65536 (DBRA, #895).
  * @param src   d0: the address
  * @param type  d1: the data size (0 = bytes)
  * @param null  d2: mapnull, added to every value
@@ -813,14 +814,11 @@ static void BLITZ_ROUTINE mapgrab_c(const UBYTE *src BL_REG(d0), UWORD type BL_R
     UWORD rows = map->height - 1, n;
 
     if (!type) {
-        UWORD v = 0;                    /* d0.w */
         do {
             n = map->width - 1;
-            do {
-                v = (v & 0xff00) | *src++;      /* BUG(orig): MOVE.b (#898) */
-                v += null;
-                *dst++ = v;
-            } while (n-- != 0);
+            do
+                *dst++ = (UWORD)(*src++ + null);    /* fixed (#898): each byte zero-extended */
+            while (n-- != 0);
         } while (rows-- != 0);
     } else {
         do {

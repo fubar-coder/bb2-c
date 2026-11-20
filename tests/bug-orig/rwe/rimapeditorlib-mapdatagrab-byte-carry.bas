@@ -4,6 +4,7 @@
 ; the previous sum stays.  Bytes 250 and 5 with mapnull 10 give 260 and
 ; 271 ($0104, $010F): the carry of the first value goes into the second.
 ; Correct: each value is its byte + mapnull: 260 and 15.
+; @fixed #898
 ; @rwe rimapeditorlib
 DEFTYPE .l
 b=AllocMem_(2,$10000)

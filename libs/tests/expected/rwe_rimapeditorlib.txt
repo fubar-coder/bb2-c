@@ -2246,7 +2246,8 @@ MapDataGrab|map 1 last address|map 1 words mapnull 0|1	$7FFFFFFF
 MapDataGrab|map 1 name|map 1 words mapnull 0|1	$00000000
 MapDataGrab|map 1 rub-through map|map 1 words mapnull 0|1	$7FFFFFFF
 MapDataGrab|map 3 data|map 3 bytes mapnull 0|1	bytes 72 fnv ABE70438
-MapDataGrab|map 3 data|map 3 bytes mapnull 10|1	bytes 72 fnv 7F5B14A1
+MapDataGrab|map 3 data|map 3 bytes mapnull 10|1 [orig]	bytes 72 fnv 7F5B14A1
+MapDataGrab|map 3 data|map 3 bytes mapnull 10|1 [fixed #898]	bytes 72 fnv 8CDA015D
 MapDataGrab|map 3 data|map 3 words mapnull 65520|1	bytes 72 fnv 04A6BD72
 MapDataGrab|map 3 data set|map 3 bytes mapnull 0|1	$00000001
 MapDataGrab|map 3 data set|map 3 bytes mapnull 10|1	$00000001

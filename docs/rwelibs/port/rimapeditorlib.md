@@ -108,14 +108,16 @@ loop optimisation (no `__mulsi3`).
   data lay at `$xxxx0000` with viewx 0 was not freed (lost) and the
   fields 24/28 were not cleared either (#894; test
   `rimapeditorlib-createmap-tst-offset12`).
+* `MapDataGrab` of bytes zero-extends each byte; the original loaded it
+  with `MOVE.b` into the register of the previous sum, whose upper byte
+  stayed: a byte + mapnull beyond 255 carried into the following values
+  (#898; test `rimapeditorlib-mapdatagrab-byte-carry`, the libs test's
+  bytes 250–255 with mapnull 10).
 
 ## BUG(orig), kept
 
 * `MapCanDraw`'s stencil index is the map's word as a signed word;
   without `SetStencil` the stencil is at address 0 (#893).
-* `MapDataGrab` of bytes keeps the upper byte of the previous value in
-  the register (`MOVE.b`): a byte + mapnull beyond 255 carries into the
-  following values (#898).
 * The `DBRA` loops (`MapDataGrab`, `ShapeTo1616`, `FillBitplane`) run
   65536 times for a size of 0 (`FillBitplane` also for a width below 16)
   (#895); `ShapeTo1616` writes 16 words per

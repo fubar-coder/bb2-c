@@ -18,8 +18,9 @@
  * Covered: every entry; the inline routines (observed inline with their
  * length, their code called as a subroutine); CreateMap (new, again on
  * the same object: the old one freed, an empty name, AllocMem failing:
- * datasize stays 1, never read); MapDataGrab of bytes (BUG(orig) #898:
- * the carry into the next values) and words; MapCanDraw inside and outside the map, with
+ * datasize stays 1, never read); MapDataGrab of bytes (with a byte +
+ * mapnull beyond 255: the original carries it into the next values,
+ * #898) and words; MapCanDraw inside and outside the map, with
  * and without a rub-through map (smaller than the map), stencil hits;
  * ScanShapes (to highest, to an empty shape, start > highest) and the
  * maxima; ShapeTo1616 of heights < 16, 16, > 16, depths 1-4;
@@ -461,7 +462,7 @@ int main(int argc, char **argv)
     grab(3, 0, 0);
     for (k = 0; k < 40; k++)
         grabsrc[k] = 250 + k % 6;
-    grab(3, 0, 10);                     /* BUG(orig) (#898): the carry */
+    grab(3, 0, 10);                     /* the original's carry (#898) */
     for (k = 0; k < 40; k++)
         grabsrc[k] = (UBYTE)(rnd() % 30);
     grab(3, 1, 0xfff0);
