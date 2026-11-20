@@ -16,13 +16,10 @@ intro: |
   receiving first. `PutSerial`, `GetSerial`, `SyncPut` and `SyncGet`
   move single bytes or blocks.
 
-  The library needs a 68020 or later processor: on a 68000 `InitSerialIO`
-  and `SetIOSpeed` crash
-  ([#647](https://github.com/fubar-coder/bb2-c/issues/647)). Kept from
-  the original as well: `FinitSerialIO`, also at the end of the program,
-  does not switch the serial interrupts back on
-  ([#651](https://github.com/fubar-coder/bb2-c/issues/651),
-  [#648](https://github.com/fubar-coder/bb2-c/issues/648)).
+  `FinitSerialIO`, also at the end of the program, switches the serial
+  interrupts back on, so that serial.device works again. The commands
+  that use the port do nothing before `InitSerialIO`. Both machines of a
+  link should run programs built with the same library.
 
   ```blitzbasic
   Dim inb.b(63),outb.b(63)

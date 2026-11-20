@@ -6548,6 +6548,102 @@ rows:
     text: "`CDStatus` no longer lets the device write 8 bytes behind the library, which ended the program with an alert on Workbench 3.1."
     page: libraries
     anchor: ricompactdisclib-fixes
+  - issue: 1158
+    severity: 1
+    topic: "System"
+    library: "rifastseriallib"
+    command: "SetIOSize, DoSerialIO"
+    text: "`SetIOSize n` makes `DoSerialIO` transfer n bytes; the original transferred n + 1, one past buffers of n."
+    page: libraries
+    anchor: setiosize-count
+  - issue: 650
+    severity: 2
+    topic: "System"
+    library: "rifastseriallib"
+    command: "InitSerialIO"
+    text: "`InitSerialIO` returns -1 when it set the port up and 0 when it did nothing; the original returned its baud argument."
+    page: libraries
+    anchor: fastserial-results
+  - issue: 649
+    severity: 2
+    topic: "System"
+    library: "rifastseriallib"
+    command: "GetSerial"
+    text: "`GetSerial address,bytes` returns -1 when it received the block; the original returned the low byte of its address."
+    page: libraries
+    anchor: fastserial-results
+  - issue: 647
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: "InitSerialIO, SetIOSpeed"
+    text: "`InitSerialIO` and `SetIOSpeed` no longer crash on a 68000; the original used a 68020 instruction."
+    page: libraries
+    anchor: rifastseriallib-fixes
+  - issue: 646
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: "PutSerial, GetSerial, SyncPut, SyncGet"
+    text: "A block of 0 bytes transfers nothing; the original took it for 4 GB."
+    page: libraries
+    anchor: rifastseriallib-fixes
+  - issue: 654
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: "SetIOSpeed"
+    text: "`SetIOSpeed` takes the baud rate from its argument alone, not from the unused upper half of the register."
+    page: libraries
+    anchor: rifastseriallib-fixes
+  - issue: 651
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: "FinitSerialIO"
+    text: "`FinitSerialIO` and the end of the program switch the serial interrupts back on, so serial.device works again."
+    page: libraries
+    anchor: rifastseriallib-fixes
+  - issue: 648
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: "FinitSerialIO"
+    text: "`FinitSerialIO` writes the interrupt register of the chips, no longer the address $9A in low memory."
+    page: libraries
+    anchor: rifastseriallib-fixes
+  - issue: 653
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: "InitSerialIO, SetIOSpeed"
+    text: "The library is set up at every baud rate from 109 to 3546895 and refuses others; the original stayed unset from 1773448 baud and divided by zero for 0."
+    page: libraries
+    anchor: rifastseriallib-fixes
+  - issue: 652
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: "DoSerialIO, GetSerial, SyncSerial, SyncPut, SyncGet, CheckSerial"
+    text: "These commands do nothing before `InitSerialIO`; the original ran them, `DoSerialIO` with buffers at address 0."
+    page: libraries
+    anchor: rifastseriallib-fixes
+  - issue: 1164
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: "DoSerialIO, InitSerialIO, SetIOSize"
+    text: "After a count of 0 `DoSerialIO` without an argument transfers nothing; the original exchanged 65536 bytes, far past the buffers."
+    page: libraries
+    anchor: rifastseriallib-fixes
+  - issue: 1159
+    severity: 5
+    topic: "System"
+    library: "rifastseriallib"
+    command: ""
+    text: "A program run again from the editor starts as the slave and not set up, not with the state of the run before."
+    page: libraries
+    anchor: rifastseriallib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
