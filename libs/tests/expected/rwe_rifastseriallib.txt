@@ -334,14 +334,17 @@ finit|word at $9A unchanged||1	$00000001
 init|kept||1	kept
 init (second run)|INTENAR||1	$00000801
 init (second run)|baud (SERPER)||1	$00000000
-init (second run)|inbuf||1	$12345678
+init (second run)|inbuf||1 [orig]	$12345678
+init (second run)|inbuf||1 [fixed #1159]	$00000000
 init (second run)|inten||1 [orig]	$0000F01C
-init (second run)|inten||1 [fixed #651]	$0000282D
+init (second run)|inten||1 [fixed #651]	$00000000
 init (second run)|kept||1	kept
-init (second run)|mode||1	$00000100
+init (second run)|mode||1 [orig]	$00000100
+init (second run)|mode||1 [fixed #1159]	$00000000
 init (second run)|numbytes||1 [orig]	$00000000
-init (second run)|numbytes||1 [fixed #654]	$00000001
-init (second run)|outbuf||1	$9ABCDEF0
+init (second run)|numbytes||1 [fixed #654]	$00000000
+init (second run)|outbuf||1 [orig]	$9ABCDEF0
+init (second run)|outbuf||1 [fixed #1159]	$00000000
 init (second run)|temp||1 [orig]	$00004200
-init (second run)|temp||1 [fixed #654]	$00004500
+init (second run)|temp||1 [fixed #654]	$00000000
 init (second run)|word at $9A unchanged||1	$00000001

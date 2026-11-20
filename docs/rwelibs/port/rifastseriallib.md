@@ -11,7 +11,8 @@ per byte, slave the other way round, `SetSerialMode`); `PutSerial`/
 byte or -1; `SyncSerial syncbyte` decides who is master (-1) and slave
 (0); `SyncPut`/`SyncGet` blocks in lockstep; `SetIOBuffers`,
 `SetIOSpeed`, `SetIOSize`, `FlushSerialIO` (acknowledge RBF),
-`EndSerialIO` (nothing). finit = `FinitSerialIO`.
+`EndSerialIO` (nothing). init sets the state as at the load; finit =
+`FinitSerialIO`.
 
 **Source and reference:** `rwelibsrc/FASTSerial/fastseriallib3.bb`,
 reference BSS2 `RIFASTSERIALLIB.OBJ` (1920 bytes) = the blitz2 2.10
@@ -85,6 +86,12 @@ d0/d1/a0/a1 that are not the result.
   test `rifastseriallib-setiosize-count`; `libs_emulator` cases
   `[fixed #1158]` of `rwe_rifastseriallib`). A program that compensated
   with `SetIOSize n-1` now transfers one byte less.
+* init sets the state as at the load (slave, not initialised, no
+  buffers, count and saved INTENAR 0); the original's init was empty, so
+  a second run of a program with the library still loaded (from the
+  editor) started with the state of the run before, the master if the
+  first run ended as master (#1159; D-019, `libs_emulator` cases
+  `[fixed #1159]` of `rwe_rifastseriallib`, the scenario's second init).
 
 **BUG(orig)** (kept):
 
@@ -99,10 +106,10 @@ the answer, its value does not matter.
 rifastseriallib"): each run loads one library set (the C build or the CD
 original); the scenario writes its observations as cases, compared with
 the expected data `libs/tests/expected/rwe_rifastseriallib.txt` recorded
-from the original. The emulator has
-no serial connection: SERDATR always shows TBE and RBF never comes
-(Amiberry does not let a program set RBF through INTREQ either; probed),
-so what sends can run and nothing that waits for a byte. Observed: d0 of
+from the original. The scenario runs without a remote station on the
+serial port: SERDATR always shows TBE and RBF never comes (Amiberry does
+not let a program set RBF through INTREQ either; probed), so what sends
+can run and nothing that waits for a byte. Observed: d0 of
 the functions, the kept registers, INTENAR (each call is made inside
 `Disable()` with the TBE/RBF interrupts switched on, InitSerialIO must
 switch them off, the others must not touch them), the word at `$9A`, and
@@ -113,6 +120,12 @@ without a byte, FlushSerialIO, SetSerialMode, EndSerialIO,
 SetIOBuffers, SetIOSize, SetIOSpeed (also with garbage in the upper
 word), PutSerial byte and block before and after InitSerialIO,
 InitSerialIO twice and with a baud rate giving SERPER 0, FinitSerialIO,
-init/finit. Not covered: GetSerial (both forms), DoSerialIO, SyncPut,
-SyncGet, SyncSerial, CheckSerial with a byte, and the bytes on the line
-(they need a remote station).
+init/finit, and init again as at the start of a second run. Not covered
+here: GetSerial (both forms), DoSerialIO, SyncPut, SyncGet, SyncSerial,
+CheckSerial with a byte, and the bytes on the line.
+
+The bug-orig tests `tests/bug-orig/rwe/rifastseriallib-*` run Blitz
+programs with the library; those with `; @pass serial=on` talk to the
+remote end on the emulated serial port (`tests/corpus/runner/serial.h`:
+canned replies), so `GetSerial`, `CheckSerial`, `DoSerialIO` and the
+bytes on the line are covered there.

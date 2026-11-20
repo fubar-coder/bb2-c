@@ -12,7 +12,7 @@
  * rwe_declarations_rifastseriallib), the behaviour is compared with it in
  * libs/tests/rwe/rifastseriallib.c.  Notes:
  * docs/rwelibs/port/rifastseriallib.md.
- *   init:  nothing
+ *   init:  the state as at the load (fixed, #1159)
  *   finit: FinitSerialIO
  *
  * The custom chip registers are volatile accesses of the original's
@@ -62,6 +62,9 @@
  *   - SetIOSize stores its count - 1, as InitSerialIO does; the original
  *     stored the count as it is, so DoSerialIO after SetIOSize n
  *     transferred n + 1 bytes, one past buffers of n (#1158).
+ *   - init sets the state as at the load (slave, not initialised, no
+ *     buffers); the original's init was empty, a second run from the
+ *     editor started with the state of the run before (#1159).
  * BUG(orig):
  *   - SyncSerial: two machines starting at the same time both become
  *     master (each takes the other's sync byte for the echo) (#655).
@@ -272,10 +275,23 @@ static void setbaud(ULONG baud)
 }
 
 /**
- * @brief init: nothing.
+ * @brief init: the state as at the load: slave, not initialised, no
+ * buffers.
+ *
+ * Fixed (#1159): the original's init was empty, so a second run of a
+ * program with the library still loaded (from the editor) started with
+ * the mode, count, buffers and saved INTENAR of the run before (a
+ * program that never calls SetSerialMode was the master in its second
+ * run if the first ended as master).
  */
 void BLITZ_ROUTINE c_codeinit(void)
 {
+    fs.mode = fs.mode_lo = 0;
+    fs.numbytes = 0;
+    fs.inbuf = fs.outbuf = NULL;
+    fs.baud = fs.inten = 0;
+    fs.bytebuf[0] = fs.bytebuf[1] = 0;
+    fs.ready = 0;
 }
 
 /**
