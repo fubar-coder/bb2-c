@@ -11,6 +11,7 @@
 ; that InitSnowDrop returns) is read up to its end mark (at most its
 ; 400 entries).
 ; Correct: the drop list holds both released flakes.
+; @fixed #909
 ; @rwe risnowlib
 DEFTYPE .l
 BitMap 0,320,256,3

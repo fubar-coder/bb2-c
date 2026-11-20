@@ -45,8 +45,6 @@
  *   - A bit number above 7 (from the random table) indexes the lookup
  *     tables beyond their end; the offsets of the table are bytes (only
  *     the first rows) (#910).
- *   - LDoSnowActivate does not update the drop list's "last" (the next
- *     LDoSnowActivate before an LDoSnow overwrites the entries) (#909).
  * Fixed (intended deviations):
  *   - InitSnowDrop computes the size of its block as a long; the
  *     original took numpoints*16 times 4 with ASL.w #2, so from
@@ -54,7 +52,11 @@
  *     into it (#912);
  *   - InitSnowDrop sets the drop lists' "last" to their end mark, as the
  *     kill lists'; the original left it 0 until the first LDoSnow, so an
- *     LDoSnowActivate before it wrote to address 0 (#908).
+ *     LDoSnowActivate before it wrote to address 0 (#908);
+ *   - LDoSnowActivate stores the new end of the drop list into its
+ *     "last"; the original stored only the kill list's, so a second
+ *     LDoSnowActivate before the next LDoSnow overwrote the flakes the
+ *     first released (#909).
  * Not defects: the allocation is not checked (memlib's globalloc raises
  * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
  * pixel again (always clear there: redundant, no effect); the end of
@@ -375,9 +377,10 @@ static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWOR
  * (plane 1 set, plane 2 clear) at the two sides below and at the pixel
  * is cleared in plane 1 and added to the newer drop list; the pixel above
  * goes into the other kill list.  Checking plane 2 at the killed pixel
- * again is redundant (no defect).  BUG(orig): the drop list's last is not
- * updated (#909); the list number is not checked (#913); a bit above 7
- * (#910).  Fixed (#908): before the first LDoSnow the drop list's last is
+ * again is redundant (no defect).  BUG(orig): the list number is not
+ * checked (#913); a bit above 7 (#910).  Fixed (#909): the drop list's
+ * last is updated (the original's stayed, so the next call overwrote
+ * the entries).  Fixed (#908): before the first LDoSnow the drop list's last is
  * its first entry (InitSnowDrop sets it; the original's 0 wrote at
  * address 0).
  * @param n  d0: the list number
@@ -426,7 +429,8 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
         }
     }
     *dst = END;
-    *drop = END;                        /* the drop list's last not updated (#909) */
+    *drop = END;
+    DROP(drops)->last = (ULONG)drop;    /* fixed (#909): the original kept it */
     KILL(killout)->last = (ULONG)dst;
     return count;
 }

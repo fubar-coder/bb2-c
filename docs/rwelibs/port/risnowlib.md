@@ -61,6 +61,12 @@ right-first), COLOR00 is written as the original writes it.
   field (`ADDQ.l #4,a0`), so it stayed 0 until the first LDoSnow and an
   LDoSnowActivate before it appended its entries at address 0 and wrote
   `$ABCD` there (#908, test `rwe/risnowlib-activate-before-dosnow`).
+* LDoSnowActivate stores the new end of the drop list into its "last"
+  (at `'endthis`); the original stored only the kill list's, so a second
+  LDoSnowActivate before the next LDoSnow started at the old end and
+  overwrote the flakes the first had released: cleared in plane 1, they
+  vanished without falling (#909, test
+  `rwe/risnowlib-activate-last-not-updated`).
 
 ## BUG(orig), kept
 
@@ -71,7 +77,6 @@ right-first), COLOR00 is written as the original writes it.
 * A bit number above 7 from the random table indexes the lookup tables
   beyond their end; the table's offsets are bytes (the first rows only)
   (#910).
-* LDoSnowActivate does not update the drop list's "last" (#909).
 
 ## Original behaviour, not defects
 
