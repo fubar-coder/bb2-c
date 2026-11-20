@@ -9,6 +9,7 @@
 ; (the session ends in a timeout).
 ; Correct: the name is cut to the block, AddVarTrace works, the program
 ; goes on.
+; @fixed #613
 ; @rwe ridebuglib
 ; @pass runtime_errors=on
 DEFTYPE .l

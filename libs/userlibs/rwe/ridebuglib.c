@@ -25,11 +25,15 @@
  * nothing) is left out; the header's error field is the start of the C
  * error check area.
  *
+ * Fixed (#613): the name copy of AddVarTrace/DelVarTrace stops at the end
+ * of mess1 (the name and its 0 in the 252 characters); the original has
+ * no limit, a longer name overwrites what follows mess1 (in the original
+ * the check routines).
+ *
  * BUG(orig):
  *   - AddVarTrace/DelVarTrace copy the name with a loop that tests the
  *     byte AFTER the one copied: an empty name copies its 0 and then
- *     whatever follows up to the next 0.  Nothing limits the copy to the
- *     252 characters of mess1 (#612, #613).
+ *     whatever follows up to the next 0 (#612).
  *   - AddVarTrace converts the type word with an 8 byte table, indexed
  *     without a check (other types read the code behind the table; the C
  *     build reads other bytes there, DIFF) (#609).
@@ -154,12 +158,15 @@ static void BLITZ_ERRCHK send(void)
 static const UBYTE converttype[8] = { 0, 1, 2, 3, 5, 6, 0, 4 };
 
 /* the name copy of AddVarTrace/DelVarTrace: tests the byte after the one
-   copied (BUG(orig) (#612)); returns the end */
+   copied (BUG(orig) (#612)); returns the end.  Fixed (#613): it stops at
+   the last byte of mess1, which the caller's 0 takes */
 static UBYTE *BLITZ_ERRCHK copyname(UBYTE *d, const UBYTE *s)
 {
+    const UBYTE *end = mess1.chars + sizeof mess1.chars - 1;
+
     do
         *d++ = *s++;
-    while (*s);
+    while (*s && d < end);
     return d;
 }
 
@@ -170,8 +177,9 @@ static UBYTE *BLITZ_ERRCHK copyname(UBYTE *d, const UBYTE *s)
  * (converttype; 0 becomes 1), data2 = output (0 becomes 1), pad = 255,
  * size = the variable's address, then the name.
  * BUG(orig) (#609): the type indexes the 8 byte table unchecked.
- * BUG(orig) (#612, #613): the name copy tests the byte after the one
- * copied (an empty name copies on to the next 0) and has no limit.
+ * BUG(orig) (#612): the name copy tests the byte after the one copied
+ * (an empty name copies on to the next 0).  Fixed (#613): the name is cut
+ * to the 252 characters of mess1 with its 0.
  * @param var    d0: the variable's address (#varptr)
  * @param name   d1: the name string
  * @param out    d2: the output format (byte)
@@ -198,8 +206,8 @@ static void BLITZ_ERRCHK addvartrace_c(ULONG var BL_REG(d0), const UBYTE *name B
  *
  * Sends _deltrace (254) with the name.  BUG(orig) (#610): the name goes
  * to +12 instead of +8 (+1..+11 keep the previous message), its 0
- * without advancing; BUG(orig) (#612, #613): the name copy as in
- * AddVarTrace.
+ * without advancing; BUG(orig) (#612): the name copy as in AddVarTrace;
+ * fixed (#613): cut to the end of mess1.
  * @param name  d0: the variable's name
  */
 static void BLITZ_ERRCHK delvartrace_c(const UBYTE *name BL_REG(d0))
