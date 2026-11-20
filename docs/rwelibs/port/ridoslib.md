@@ -27,8 +27,14 @@ through one message port, the DOS device list and two string functions:
   argument's string space back and copy the result to its start (the
   original through a 256 byte buffer, #627).
 
-init opens dos.library V36 and creates the port; finit ends the requests
-still active, closes dos.library and deletes the port.
+init opens dos.library V36 and, when it opened, creates the port; finit
+ends the requests still active, closes dos.library and deletes the port.
+The library needs Kickstart 2.0 (notification and the locked DOS list
+exist from dos.library V36 on): below it the program runs, `AddNotify`,
+`NotifyPort`, `CheckNotify`, `WaitNotify` and `GetDeviceList` return 0,
+`NextDevice` "", `DeviceEntryType` -1, `RemNotify` and `FreeDeviceList`
+do nothing (`FreeDeviceList` leaves d0 as it was, as the original does
+without `_dosbase`); `GetFileName` and `GetPathName` work.
 
 * **Source:** `rwelibsrc/DOSLib/ridoslib2.bb` (as TED shows it:
   `build/amiga/rwelibsrc/DOSLib/ridoslib2.bb`).
@@ -114,6 +120,17 @@ kind F):
   change, mounting) waited for ever (#1081; tests
   `ridoslib-doslist-locked-at-end`, `ridoslib-getdevicelist-twice`,
   through inject's `doslist`).
+* On Kickstart 1.x a program with the library runs. The original's init
+  opened dos.library V36 and then called `CreateMsgPort` (exec V36)
+  whether or not the library opened, and `GetDeviceList` called
+  `LockDosList` (dos V36) on the program's dos.library without testing
+  `_dosbase`: on Kickstart 1.x every program with the library crashed
+  at start-up, before its first line. init now creates the port only
+  when dos.library V36 opened, and `GetDeviceList` returns 0 without
+  `_dosbase`; the other commands behave as without a port or a list
+  (above). Below Kickstart 2.0 the library offers only the two string
+  functions: it needs Kickstart 2.0 for the rest (#1142; test
+  `ridoslib-v36-calls`, a500).
 * GetFileName and GetPathName copy their result straight into the
   argument's space (it is never longer than the argument). The original
   built it in a 256 byte buffer first, without a limit: a file or path
@@ -140,9 +157,9 @@ None known.
 Like the original, and no defects: RemNotify leaves `filelens[id]` set
 (the next AddNotify of the id sets it again) and sets d4 to `$12345678`
 (a debugging leftover; d4 is no result); finit deletes the port only if
-dos.library was open (V36 is always there where init's CreateMsgPort,
-exec V36, is); NextDevice's d0 is the BSTR's length byte (the length
-of the string it copied); GetFileName writes no 0, a3 on the end of the
+dos.library was open (there is no port without it, #1142); NextDevice's
+d0 is the BSTR's length byte (the length of the string it copied);
+GetFileName writes no 0, a3 on the end of the
 characters (string results need none, the compiler adds it, see #257).
 FreeDeviceList, like GetDeviceList and
 NextDevice, goes through init's `_dosbase` (it also checks it); the C

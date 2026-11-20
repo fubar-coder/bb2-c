@@ -1,0 +1,13 @@
+[compile]
+ok
+[run]
+before
+AddNotify 0
+NotifyPort 0
+CheckNotify 0
+GetDeviceList 0
+NextDevice []
+DeviceEntryType -1
+GetFileName file
+after
+rc=0

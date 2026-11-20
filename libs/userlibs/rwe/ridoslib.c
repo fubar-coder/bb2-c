@@ -8,9 +8,11 @@
  * RIDOSLIB.OBJ (the reference build of the source equals it byte for
  * byte, docs/rwelibs/README.md 3.1).  Notes: docs/rwelibs/port/ridoslib.md.
  *
- * init opens dos.library V36 (_dosbase) and creates one message port
- * for all notifications; finit ends the notifications still active,
- * closes dos.library and deletes the port.
+ * init opens dos.library V36 (_dosbase) and, when it opened, creates one
+ * message port for all notifications; finit ends the notifications still
+ * active, closes dos.library and deletes the port.  The library needs
+ * Kickstart 2.0: below it there is neither the port nor _dosbase, and
+ * every command does nothing or returns 0 ("" for NextDevice).
  *   AddNotify id,file$   NotifyRequest (48 bytes, MEMF_CLEAR) with a copy
  *                        of the name, UserData = id, NRF_SEND_MESSAGE to
  *                        the port; kept in notifys[id] (64 entries) - -1
@@ -74,6 +76,13 @@
  * FreeDeviceList released one of two locks): every later writer of the
  * list (Assign, a disk change) waited for ever.  finit now unlocks a list
  * still locked, and GetDeviceList unlocks it before it locks again.
+ * Fixed (intended deviation, #1142): init called CreateMsgPort (exec
+ * V36) whether or not dos.library V36 opened, and GetDeviceList called
+ * LockDosList (dos V36) on the program's dos.library without testing
+ * _dosbase: on Kickstart 1.x every program with the library crashed at
+ * start-up.  init now creates the port only when dos.library V36 opened,
+ * and GetDeviceList returns 0 without _dosbase; NextDevice,
+ * DeviceEntryType and FreeDeviceList then behave as without a list.
  * Fixed (intended deviation, #627): GetFileName and GetPathName built
  * their result in a 256 byte buffer (tbuf) without a limit: a longer file
  * or path part overwrote the code behind it (the C build other data).
@@ -90,9 +99,9 @@
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
- * dos.library was open (V36 is always there where init's CreateMsgPort,
- * exec V36, is); NextDevice's d0 is the BSTR's length byte (the length
- * of the string it copied); GetFileName writes no 0, a3 on the end of
+ * dos.library was open (there is no port without it, #1142);
+ * NextDevice's d0 is the BSTR's length byte (the length of the string it
+ * copied); GetFileName writes no 0, a3 on the end of
  * the characters (string results need none, the compiler adds it, see
  * #257).  FreeDeviceList, like GetDeviceList and NextDevice, goes
  * through init's _dosbase (it also checks it); the C build uses a6, the
@@ -452,13 +461,19 @@ static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG
 /**
  * @brief init: opens dos.library V36 (_dosbase) and creates the message
  * port of all notifications.
- * @return d0: the port (init's result is not used: BL_NORET)
+ *
+ * Fixed (#1142): the port only when dos.library V36 opened (exec V36,
+ * CreateMsgPort, is there with it); the original called CreateMsgPort
+ * anyway, a crash on Kickstart 1.x.
+ * @return d0: the port, 0 below Kickstart 2.0 (init's result is not
+ *         used: BL_NORET)
  */
 static ULONG BLITZ_ROUTINE libinit_c(void)
 {
     notifycnt = 0;
     dosbase_ = (struct DosLibrary *)OpenLibrary((CONST_STRPTR)dosname, 36);
-    msgport = CreateMsgPort();
+    if (dosbase_)                                       /* fixed (#1142) */
+        msgport = CreateMsgPort();
     return (ULONG)msgport;
 }
 
@@ -504,13 +519,18 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * noted for DeviceEntryType (#622).  A list still locked by an earlier
  * GetDeviceList is unlocked first (fixed, #1081: the original locked it a
  * second time, and one FreeDeviceList released only one of the locks).
+ * Without _dosbase (below Kickstart 2.0) 0, no list (fixed, #1142: the
+ * original called LockDosList, dos V36, a crash on Kickstart 1.x).
  * @param flags  d0.w: the LDF_ flags
  * @param dos    a6: the program's dos base (!libs #doslib,#la6)
- * @return d0: BB_TRUE, BB_FALSE if LockDosList fails
+ * @return d0: BB_TRUE, BB_FALSE if LockDosList fails or there is no
+ *         _dosbase
  */
 static BB_BOOL BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
                                            struct DosLibrary *dos BL_REG(a6))
 {
+    if (!dosbase_)                                      /* fixed (#1142) */
+        return BB_FALSE;
     if (mydoslist)                                      /* fixed (#1081) */
         UnLockDosList(doslistflags);
     doslistflags = flags | LDF_READ;                    /* BSET #0 */
