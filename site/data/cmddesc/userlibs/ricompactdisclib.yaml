@@ -32,8 +32,20 @@
     If reading fails, the library keeps no table of contents, and the
     track functions return 0.
 "CDStatus":
-  text: The status of the drive, a set of bits - 1 tray closed, 2 a disc is in, 4 the disc spins, 8 table of contents read, 16 track 1 holds data, 32 playing, 64 paused, 128 searching, 256 searching backwards.
+  text: The status of the drive, a set of bits.
   notes: |
+    | Bit value | Meaning |
+    |---|---|
+    | 1 | tray closed |
+    | 2 | a disc is in |
+    | 4 | the disc spins |
+    | 8 | table of contents read |
+    | 16 | track 1 holds data |
+    | 32 | playing |
+    | 64 | paused |
+    | 128 | searching |
+    | 256 | searching backwards |
+
     Several bits can be set at once; test one with `AND`, for example
     `If CDStatus AND 32`.
 "CDStop":

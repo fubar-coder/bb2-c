@@ -1,11 +1,14 @@
 "DiskPlay":
   text: Plays an IFF 8SVX file straight from disk on the channels of the mask, without loading it as a whole, and returns when the file has been played; the program waits meanwhile. It needs much less memory than `LoadSound` and `Sound`, and the sample may be longer than 128 KB.
   notes: |
-    The buffer is two halves of `DiskBuffer` bytes of chip memory. A file
-    that cannot be opened is the error "Illegal Sound file", one without
-    a sound header "Can't Find VHDR", one that cannot be read "Error
-    Reading File"; the file is closed and the buffer freed before each of
-    these errors.
+    The buffer is two halves of `DiskBuffer` bytes of chip memory. The
+    file is closed and the buffer freed before each of these errors:
+
+    | Situation | Error |
+    |---|---|
+    | the file cannot be opened | "Illegal Sound file" |
+    | the file has no sound header | "Can't Find VHDR" |
+    | the file cannot be read | "Error Reading File" |
 "DiskBuffer":
   text: The size in bytes of each of the two halves of the chip memory buffer that `DiskPlay` streams through; the start value is 1024.
 "LoadSound":

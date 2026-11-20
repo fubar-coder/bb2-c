@@ -7,10 +7,13 @@
     "x2,y2 should be the bottom left" means the bottom right corner. The
     edges belong to the zone.
 
-    The zone is refused, and nothing is stored, for a zone number
-    beyond the table or below 0, a radius outside 0 to 255, a rectangle
-    whose bottom edge is -1, which marks a circle in the table, and when
-    there is no zone table at all.
+    The zone is refused, and nothing is stored, in these cases:
+
+    * a zone number beyond the table or below 0
+    * a radius outside 0 to 255
+    * a rectangle whose bottom edge is -1, which marks a circle in the
+      table
+    * no zone table at all
 "Zone":
   text: The number of the first zone of the current table that contains the point `x,y`, or -1 if there is none.
   notes: |

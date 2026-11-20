@@ -15,14 +15,24 @@
 "ReqFlags":
   text: Sets the flags of the file requester for all later calls of `ReqFileRequest`.
   notes: |
-    The flags are those of req.library: %1 shows `.info` files, %10 allows extended select, %100 caches directories, %1000 makes it a font
-    requester, %10000 adds the gadget that hides `.info` files, %100000 hides the show and
-    hide wildcard gadgets, %1000000 uses absolute positions, %10000000
-    purges the cache when a directory changes, %100000000 caches only
-    complete directories, %1000000000 does not sort, %10000000000 leaves
-    out the drag bar and depth gadgets, %100000000000 selects a file to
-    save, %1000000000000 files to load, %10000000000000 lets the user
-    select a directory.
+    The flags are those of req.library, one bit each:
+
+    | Bit | Value | Effect |
+    |---|---|---|
+    | 0 | `%1` | shows `.info` files |
+    | 1 | `%10` | allows extended select |
+    | 2 | `%100` | caches directories |
+    | 3 | `%1000` | makes it a font requester |
+    | 4 | `%10000` | adds the gadget that hides `.info` files |
+    | 5 | `%100000` | hides the show and hide wildcard gadgets |
+    | 6 | `%1000000` | uses absolute positions |
+    | 7 | `%10000000` | purges the cache when a directory changes |
+    | 8 | `%100000000` | caches only complete directories |
+    | 9 | `%1000000000` | does not sort |
+    | 10 | `%10000000000` | leaves out the drag bar and depth gadgets |
+    | 11 | `%100000000000` | selects a file to save |
+    | 12 | `%1000000000000` | selects files to load |
+    | 13 | `%10000000000000` | lets the user select a directory |
 
     The flags at the start are %10010100: directory caching, the gadget
     that hides `.info` files, and the purge of the cache when a directory

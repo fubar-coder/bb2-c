@@ -6,11 +6,14 @@
 "LoadBitMap":
   text: Loads an IFF ILBM picture into a bitmap that is already set up, and with `Palette#` its colours into that palette object. Amiga mode only.
   notes: |
-    A file that cannot be opened is the error "Can't Open File", or "Can't
-    Open IFF" with `Palette#`; a file without a picture header "Can't
-    Find IFF 'BMHD'", one without picture data "Can't Find IFF 'BODY'",
-    and one that ends inside the picture data "Can't Read File"; the file
-    is closed before these errors.
+    The file is closed before each of these errors:
+
+    | Situation | Error |
+    |---|---|
+    | the file cannot be opened | "Can't Open File", or "Can't Open IFF" with `Palette#` |
+    | the file has no picture header | "Can't Find IFF 'BMHD'" |
+    | the file has no picture data | "Can't Find IFF 'BODY'" |
+    | the file ends inside the picture data | "Can't Read File" |
 "ScreensBitMap":
   text: Takes the bitmap of a screen as the bitmap object and makes it the used bitmap, so that the blitting and drawing commands draw on the screen. Every screen has a bitmap, also one opened without a bitmap object.
 "ShapesBitMap":

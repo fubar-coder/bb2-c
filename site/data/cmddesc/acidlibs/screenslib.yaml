@@ -9,10 +9,18 @@
     "Can't use specified BitMap".
 
     The view mode of the long form is that of the graphics library,
-    combined with `|`: `$8000` high resolution, `$20` super high
-    resolution (together with `$8000`), `$4` interlace, `$800` HAM and
-    `$80` extra half-brite; 0 is low resolution. For example, a super high
-    resolution screen with 256 colours on an AGA Amiga:
+    combined with `|`; 0 is low resolution:
+
+    | Value | View mode |
+    |---|---|
+    | `$8000` | high resolution |
+    | `$20` | super high resolution (together with `$8000`) |
+    | `$4` | interlace |
+    | `$800` | HAM |
+    | `$80` | extra half-brite |
+
+    For example, a super high resolution screen with 256 colours on an
+    AGA Amiga:
 
     ```blitzbasic
     Screen 0,0,0,1280,256,8,$8020,"MyScreen",1,0
@@ -38,11 +46,15 @@
 "LoadScreen":
   text: Loads an IFF ILBM picture into the screen's bitmap, and with `Palette#` also its colours into that palette object; `Use Palette` then shows them on the screen.
   notes: |
-    The errors are those of `LoadBitMap`: a file that cannot be opened is
-    "Can't Open File", or "Can't Open IFF" with `Palette#`; a file
-    without a picture header "Can't Find IFF 'BMHD'", one without picture
-    data "Can't Find IFF 'BODY'", and one that ends inside the picture
-    data "Can't Read File"; the file is closed before these errors.
+    The errors are those of `LoadBitMap`, and the file is closed before
+    each of them:
+
+    | Situation | Error |
+    |---|---|
+    | the file cannot be opened | "Can't Open File", or "Can't Open IFF" with `Palette#` |
+    | the file has no picture header | "Can't Find IFF 'BMHD'" |
+    | the file has no picture data | "Can't Find IFF 'BODY'" |
+    | the file ends inside the picture data | "Can't Read File" |
 "ShowScreen":
   text: Brings the screen to the front.
 "HideScreen":

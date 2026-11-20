@@ -1,10 +1,20 @@
 "OpenSerial":
   text: Opens unit `unit#` of the serial device `device$` at the baud rate `baud`, with the flags `io_serflags`, and returns 0 if it cannot be opened, else the address of the unit's data in the library.
   notes: |
-    The flags are the sum of 1 parity on, 2 odd parity (else even), 4
-    seven wire handshake, 8 a break waits until the buffer is empty, 16
-    high speed mode, 32 shared use of the port, 64 end of file checking
-    and 128 no xON/xOFF. A unit that is already open is left as it is,
+    The flags are the sum of these values:
+
+    | Value | Effect |
+    |---|---|
+    | 1 | parity on |
+    | 2 | odd parity (else even) |
+    | 4 | seven wire handshake |
+    | 8 | a break waits until the buffer is empty |
+    | 16 | high speed mode |
+    | 32 | shared use of the port |
+    | 64 | end of file checking |
+    | 128 | no xON/xOFF |
+
+    A unit that is already open is left as it is,
     and `OpenSerial` returns 0 for it, also with shared use.
 "CloseSerial":
   text: Closes a unit opened with `OpenSerial`.

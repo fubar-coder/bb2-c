@@ -36,10 +36,13 @@
 "SpecialBlockToShape":
   text: Like `SpecialBlock`, but draws the block into the data of the shape `destshape` instead of a bitmap.
   notes: |
-    With runtime error checking, a destination shape without data is the
-    error "Destination shape MUST be pre-reserved!", one of another size
-    than the top shape "Shapes must be the same size!", and a top shape
-    that was never defined "Uninitialized Shape".
+    With runtime error checking, these are errors:
+
+    | Situation | Error |
+    |---|---|
+    | the destination shape has no data | "Destination shape MUST be pre-reserved!" |
+    | the destination shape has another size than the top shape | "Shapes must be the same size!" |
+    | the top shape was never defined | "Uninitialized Shape" |
 "BlockToShape":
   text: Copies the data of a shape into the shape `destshape` of the same size.
   notes: |
