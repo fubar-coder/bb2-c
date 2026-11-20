@@ -58,6 +58,11 @@
  * its request (the old one stayed open, lost).
  * Fixed (#863): the original's finit closed units 0-2 only, not 3, and
  * its init cleared only the first three entries of iorequests.
+ * Fixed (#1163): the original passed the program's buffer to the device
+ * as it is; on Kickstart 1.x trackdisk.device needs chip memory and moved
+ * the data of a buffer outside it from and into chip memory at the
+ * address with its upper bits dropped.  On 1.x such a buffer goes through
+ * a chip buffer of the library, one track at a time (bounceio()).
  * Fixed (#941): the original called CreateMsgPort, CreateIORequest,
  * DeleteIORequest and DeleteMsgPort (exec V36) without a version check:
  * on Kickstart 1.x every program with the library crashed at start-up.
@@ -68,6 +73,7 @@
 #include "blitzlib.h"
 #include "blitzexec.h"
 #include <exec/io.h>
+#include <exec/execbase.h>
 #include <devices/trackdisk.h>
 #include <devices/bootblock.h>
 
@@ -426,8 +432,96 @@ BB_BOOL BLITZ_ROUTINE c_opentrack2(LONG unit BL_REG(d0), const char *name BL_REG
 /* the sectors of a track of a DD disk */
 #define NUMSECS 11
 
+/* the bytes of a track of a DD disk: the size of the chip buffer of
+   bounceio() (#1163) */
+#define TRACKBYTES (NUMSECS * 512)
+
+/* trackpos: off % TRACKBYTES, the position of a byte offset in its track,
+   with two DIVU.w (a library links no __umodsi3) */
+static ULONG trackpos(ULONG off)
+{
+    ULONG sec = off >> 9, r;
+
+    r = bl_divu_w(sec >> 16, NUMSECS) >> 16;
+    r = bl_divu_w(r << 16 | (sec & 0xffff), NUMSECS) >> 16;
+    return r << 9 | (off & 511);
+}
+
+/* needsbounce: whether a request of len bytes from or into buffer goes
+   through a chip buffer of the library (Fixed, #1163): on Kickstart 1.x
+   (exec before V36) trackdisk.device moves the data by DMA and needs the
+   buffer in chip memory; it does not check it and, with the address's
+   upper bits dropped, reads the data of a write from chip memory and
+   writes those of a read into it.  From V36 on the device takes any
+   memory and the buffer goes to it as it is (as the original).  Not for
+   a length of 0 (nothing is moved) and not for a TD_FORMAT that is no
+   whole number of tracks: the device refuses it (-4) before it moves
+   anything, also for a chip buffer, and in parts its first tracks would
+   be formatted. */
+static int needsbounce(const UBYTE *buffer, ULONG len, UWORD cmd)
+{
+    if (!len || SysBase->LibNode.lib_Version >= 36)
+        return 0;
+    if (cmd == TD_FORMAT && trackpos(len))
+        return 0;
+    return !(TypeOfMem((APTR)buffer) & MEMF_CHIP) ||
+           !(TypeOfMem((APTR)(buffer + len - 1)) & MEMF_CHIP);
+}
+
+/* bounceio: the request through a chip buffer of the library (Fixed,
+   #1163): one request per track (at most TRACKBYTES, the parts end at
+   track ends: a TD_FORMAT stays whole tracks), the data copied into the
+   chip buffer before a write and out of it after a read (io_Actual
+   bytes); it stops at the first request that fails.  Afterwards the
+   request holds the caller's io_Data, io_Length and io_Offset and the
+   sum of the io_Actual, as one request would.  The chip buffer is as
+   large as the first part needs, at most one track, and is freed again;
+   without it nothing is sent and the result is TDERR_NoMem (31), as
+   WriteBoot's.
+   Result: as doio() of the last request. */
+static ULONG bounceio(struct IOStdReq *req, ULONG offset, UBYTE *buffer, ULONG len,
+                      UWORD cmd)
+{
+    ULONG size = len < TRACKBYTES ? len : TRACKBYTES, done = 0, actual = 0, r = 0;
+    UBYTE *chip = AllocMem(size, MEMF_CHIP);
+
+    if (!chip)
+        return TDERR_NoMem;
+    while (done < len) {
+        ULONG n = TRACKBYTES - trackpos(offset + done);
+
+        if (n > len - done)
+            n = len - done;
+        if (cmd != CMD_READ)
+            CopyMem(buffer + done, chip, n);
+        req->io_Command = cmd;
+        req->io_Flags = 0;
+        req->io_Error = 0;
+        req->io_Actual = 0;
+        req->io_Length = n;
+        req->io_Data = chip;
+        req->io_Offset = offset + done;
+        r = doio(req);
+        if (cmd == CMD_READ)
+            CopyMem(chip, buffer + done, req->io_Actual < n ? req->io_Actual : n);
+        actual += req->io_Actual;
+        done += n;
+        if ((UBYTE)r)
+            break;
+    }
+    FreeMem(chip, size);
+    req->io_Length = len;
+    req->io_Data = buffer;
+    req->io_Offset = offset;
+    req->io_Actual = actual;
+    return r;
+}
+
 /* okok: the sector commands; d3 = number of sectors, d1 = first sector,
-   both * 512 */
+   both * 512.  Fixed (#1163): on Kickstart 1.x a buffer outside chip
+   memory goes through bounceio() (the original passed it as it is and
+   trackdisk.device moved the data from and into chip memory at another
+   address). */
 static ULONG sectorio(LONG unit, ULONG offset, APTR buffer, ULONG num, UWORD cmd)
 {
     struct IOStdReq *req;
@@ -436,6 +530,12 @@ static ULONG sectorio(LONG unit, ULONG offset, APTR buffer, ULONG num, UWORD cmd
     if (!td.msgport || !(req = getioreq(unit)))
         return 0;
     req->io_Message.mn_ReplyPort = td.msgport;
+    if (needsbounce(buffer, num << 9, cmd)) {   /* Fixed (#1163) */
+        r = bounceio(req, offset << 9, buffer, num << 9, cmd);
+        if (!(UBYTE)r)                  /* Fixed (#857), as below */
+            td.motor[unit] = 1;
+        return r;
+    }
     req->io_Command = cmd;
     req->io_Flags = 0;
     req->io_Error = 0;

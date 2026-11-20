@@ -23,7 +23,10 @@ DoIO's d0 with the request's `io_Error` as its low byte: the byte is
 refuses, ...); they return 0 too when the unit is not open or there is
 no reply port, so 0 does not tell "done" from "not open", and
 `If ReadSector(...)` is true on an error. `WriteBoot unit` returns
-`TDERR_NoMem` (31) without chip memory for its buffer. `DiskStatus`
+`TDERR_NoMem` (31) without chip memory for its buffer, and so do the
+sector commands on Kickstart 1.x when the program's buffer is not chip
+memory and there is no chip memory for the library's track buffer
+(#1163). `DiskStatus`
 returns CheckIO's result (the request when it is done, else 0),
 `DiskIO` the unit's request (0 if it is not open), `DiskMotor` -1 or 0
 (#857).
@@ -171,6 +174,35 @@ No bug of the original is kept; the fixed ones:
   the track. Test: the `libs_emulator` cases `[fixed #1154]` (the test
   device's count of `CMD_UPDATE` at MotorOff, CloseDisk and finit); the
   disk tests read the written sectors from the image.
+* #1163: the original passed the program's buffer to the device as it
+  is (`io_Data`). Before Kickstart 2.0 trackdisk.device moves the data
+  by DMA and needs the buffer in chip memory; it does not check it and
+  drops the address's upper bits (measured on the a500, Kickstart 1.3,
+  R10: a buffer at `$C19D90`, the slow memory: `WriteSector` wrote the
+  data at `$019D90` in chip memory to the disk, `ReadSector` wrote the
+  sector there and left the buffer unchanged; both returned 0). Decided
+  (R10, the answer to the non-chip buffer question: option (a)): on
+  Kickstart 1.x (exec before V36) a buffer that is not chip memory
+  (`TypeOfMem` of its first and last byte) goes through a chip buffer
+  of the library (`bounceio`): one request per track (the parts end at
+  track ends, so a request moves at most 5632 bytes and a large count
+  needs no large buffer; `TD_FORMAT` stays whole tracks), the data
+  copied in before a write and out after a read, the first request that
+  fails ends it; afterwards the request (`DiskIO`) holds the caller's
+  buffer, length and offset and the sum of `io_Actual`. Without chip
+  memory for that buffer nothing is sent and the result is
+  `TDERR_NoMem` (31), as for `WriteBoot unit`. A length of 0 and a
+  `TD_FORMAT` that is no whole number of tracks (the device refuses it
+  with -4 before it moves anything) go to the device as they are. From
+  Kickstart 2.0 on the device takes any memory, and the buffer goes to
+  it as it is, as in the original. This covers `ReadSector`,
+  `WriteSector`, `FormatTrack`, `WriteBoot unit,bootdata` and `BootProg`
+  (`WriteBoot unit` has a chip buffer of its own). Test: bug-orig
+  `rwe/ritrackdisklib-disk-nonchip` (buffers outside chip memory on the
+  a500, a500-204 and a1200) and `rwe/ritrackdisklib-disk-nonchip-nomem`
+  (a500: all chip memory taken, `ReadSector` and `WriteSector` 31). The
+  original never reaches the bug: it crashes on Kickstart 1.x at
+  start-up (#941), so the recorded originals (a500) show that crash.
 
 **Test** (`libs/tests/rwe/ritrackdisklib.c`, snitch case "rwe
 ritrackdisklib"): each run loads one library set (the C build or the CD
@@ -203,12 +235,9 @@ reads the sectors back from the disk: `-formattrack` (#858),
 `-writeboot-bootdata` (#864), `-writeboot-default` (#865: the block
 read back is checked as Strap does, and its boot code is run: d0 0, a0
 the dos.library resident's `rt_Init`), `-bootprog` (#856), `-flush`
-(#1154), `-motor` (#857); all run on the a500 with the hand-built
-requests (#941). The recorded originals (a1200) show the measured
-answers: -4 for every `TD_FORMAT` that is no multiple of a track, the
-written sector lost after MotorOff, `DiskMotor` -1 throughout. Measured
-once by hand on the a500 (Kickstart 1.3, R10): with a buffer outside
-chip memory (`$C19D90`, the a500's slow memory) `ReadSector` and
-`WriteSector` return 0 but transfer nothing: 1.3's trackdisk.device
-needs chip buffers, the library passes the program's buffer as it is
-(as the original).
+(#1154), `-motor` (#857), `-nonchip` (#1163, buffers outside chip
+memory); all run on the a500 with the hand-built requests (#941). The
+recorded originals (a1200) show the measured answers: -4 for every
+`TD_FORMAT` that is no multiple of a track, the written sector lost
+after MotorOff, `DiskMotor` -1 throughout; that of `-nonchip` (a500,
+the only machine where the bug shows) the crash of #941.
