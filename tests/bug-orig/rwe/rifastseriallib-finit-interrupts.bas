@@ -9,6 +9,7 @@
 ; InitSerialIO, after it and after FinitSerialIO, and whether the word at
 ; $9A changed.
 ; Correct: RBF is on again after FinitSerialIO, the word at $9A stays.
+; @fixed #651
 ; @rwe rifastseriallib
 DEFTYPE .l
 u=OpenSerial("serial.device",0,9600,0)

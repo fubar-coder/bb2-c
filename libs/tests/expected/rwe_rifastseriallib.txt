@@ -5,7 +5,8 @@ CheckSerial|baud (SERPER)||1	$000000B7
 CheckSerial|d0||1	$FFFFFFFF
 CheckSerial|d0||2	$FFFFFFFF
 CheckSerial|inbuf||1	$12345678
-CheckSerial|inten||1	$0000F01C
+CheckSerial|inten||1 [orig]	$0000F01C
+CheckSerial|inten||1 [fixed #651]	$0000282D
 CheckSerial|kept||1	kept
 CheckSerial|kept||2	kept
 CheckSerial|mode||1	$0000FF00
@@ -20,7 +21,8 @@ EndSerialIO|word at $9A unchanged||1	$00000001
 FinitSerialIO|INTENAR||1	$00000801
 FinitSerialIO|baud (SERPER)||1	$00000000
 FinitSerialIO|inbuf||1	$11111111
-FinitSerialIO|inten||1	$0000F01C
+FinitSerialIO|inten||1 [orig]	$0000F01C
+FinitSerialIO|inten||1 [fixed #651]	$0000282D
 FinitSerialIO|kept||1	kept
 FinitSerialIO|mode||1	$00000000
 FinitSerialIO|numbytes||1	$00000000
@@ -30,7 +32,8 @@ FinitSerialIO|word at $9A unchanged||1	$00000001
 FinitSerialIO (again)|INTENAR||1	$00000801
 FinitSerialIO (again)|baud (SERPER)||1	$00000000
 FinitSerialIO (again)|inbuf||1	$11111111
-FinitSerialIO (again)|inten||1	$0000F01C
+FinitSerialIO (again)|inten||1 [orig]	$0000F01C
+FinitSerialIO (again)|inten||1 [fixed #651]	$0000282D
 FinitSerialIO (again)|kept||1	kept
 FinitSerialIO (again)|mode||1	$00000000
 FinitSerialIO (again)|numbytes||1	$00000000
@@ -44,7 +47,8 @@ FlushSerialIO|INTENAR||1	$00000801
 FlushSerialIO|INTENAR||2	$00000801
 FlushSerialIO|baud (SERPER)||1	$00000070
 FlushSerialIO|inbuf||1	$11111111
-FlushSerialIO|inten||1	$0000F01C
+FlushSerialIO|inten||1 [orig]	$0000F01C
+FlushSerialIO|inten||1 [fixed #651]	$0000282D
 FlushSerialIO|kept||1	kept
 FlushSerialIO|kept||2	kept
 FlushSerialIO|mode||1	$00000000
@@ -76,11 +80,16 @@ InitSerialIO|inbuf|19200,16,$12345678,$9ABCDEF0|1	$12345678
 InitSerialIO|inbuf|3546895,2,$12345678,$9ABCDEF0|1	$12345678
 InitSerialIO|inbuf|57600,300,$12345678,$9ABCDEF0|1	$12345678
 InitSerialIO|inbuf|9600,4,$1,$2|1	$12345678
-InitSerialIO|inten|115200,1,$12345678,$9ABCDEF0|1	$0000F01C
-InitSerialIO|inten|19200,16,$12345678,$9ABCDEF0|1	$0000F01C
-InitSerialIO|inten|3546895,2,$12345678,$9ABCDEF0|1	$0000F01C
-InitSerialIO|inten|57600,300,$12345678,$9ABCDEF0|1	$0000F01C
-InitSerialIO|inten|9600,4,$1,$2|1	$0000F01C
+InitSerialIO|inten|115200,1,$12345678,$9ABCDEF0|1 [orig]	$0000F01C
+InitSerialIO|inten|115200,1,$12345678,$9ABCDEF0|1 [fixed #651]	$0000282D
+InitSerialIO|inten|19200,16,$12345678,$9ABCDEF0|1 [orig]	$0000F01C
+InitSerialIO|inten|19200,16,$12345678,$9ABCDEF0|1 [fixed #651]	$0000282D
+InitSerialIO|inten|3546895,2,$12345678,$9ABCDEF0|1 [orig]	$0000F01C
+InitSerialIO|inten|3546895,2,$12345678,$9ABCDEF0|1 [fixed #651]	$0000282D
+InitSerialIO|inten|57600,300,$12345678,$9ABCDEF0|1 [orig]	$0000F01C
+InitSerialIO|inten|57600,300,$12345678,$9ABCDEF0|1 [fixed #651]	$0000282D
+InitSerialIO|inten|9600,4,$1,$2|1 [orig]	$0000F01C
+InitSerialIO|inten|9600,4,$1,$2|1 [fixed #651]	$0000282D
 InitSerialIO|kept|115200,1,$12345678,$9ABCDEF0|1	kept
 InitSerialIO|kept|19200,16,$12345678,$9ABCDEF0|1	kept
 InitSerialIO|kept|3546895,2,$12345678,$9ABCDEF0|1	kept
@@ -121,8 +130,10 @@ PutSerial address,bytes|baud (SERPER)|1 (1)|1	$000000B7
 PutSerial address,bytes|baud (SERPER)|15 (1)|1	$000000B7
 PutSerial address,bytes|inbuf|1 (1)|1	$12345678
 PutSerial address,bytes|inbuf|15 (1)|1	$12345678
-PutSerial address,bytes|inten|1 (1)|1	$0000F01C
-PutSerial address,bytes|inten|15 (1)|1	$0000F01C
+PutSerial address,bytes|inten|1 (1)|1 [orig]	$0000F01C
+PutSerial address,bytes|inten|1 (1)|1 [fixed #651]	$0000282D
+PutSerial address,bytes|inten|15 (1)|1 [orig]	$0000F01C
+PutSerial address,bytes|inten|15 (1)|1 [fixed #651]	$0000282D
 PutSerial address,bytes|kept|1 (1)|1	kept
 PutSerial address,bytes|kept|15 (1)|1	kept
 PutSerial address,bytes|kept|3 (0)|1	kept
@@ -140,7 +151,8 @@ PutSerial address,bytes|word at $9A unchanged|3 (0)|1	$00000001
 PutSerial byte|INTENAR|$A5A5A542|1	$00000801
 PutSerial byte|baud (SERPER)|$A5A5A542|1	$000000B7
 PutSerial byte|inbuf|$A5A5A542|1	$12345678
-PutSerial byte|inten|$A5A5A542|1	$0000F01C
+PutSerial byte|inten|$A5A5A542|1 [orig]	$0000F01C
+PutSerial byte|inten|$A5A5A542|1 [fixed #651]	$0000282D
 PutSerial byte|kept|$A5A5A542|1	kept
 PutSerial byte|mode|$A5A5A542|1	$0000FF00
 PutSerial byte|numbytes|$A5A5A542|1	$0000000F
@@ -150,7 +162,8 @@ PutSerial byte|word at $9A unchanged|$A5A5A542|1	$00000001
 PutSerial byte (SERPER 0)|INTENAR|$44|1	$00000801
 PutSerial byte (SERPER 0)|baud (SERPER)|$44|1	$00000000
 PutSerial byte (SERPER 0)|inbuf|$44|1	$12345678
-PutSerial byte (SERPER 0)|inten|$44|1	$0000F01C
+PutSerial byte (SERPER 0)|inten|$44|1 [orig]	$0000F01C
+PutSerial byte (SERPER 0)|inten|$44|1 [fixed #651]	$0000282D
 PutSerial byte (SERPER 0)|kept|$44|1	kept
 PutSerial byte (SERPER 0)|mode|$44|1	$00000000
 PutSerial byte (SERPER 0)|numbytes|$44|1	$00000001
@@ -161,7 +174,8 @@ PutSerial byte (after SetIOSpeed to SERPER 0)|INTENAR|$45|1	$00000801
 PutSerial byte (after SetIOSpeed to SERPER 0)|baud (SERPER)|$45|1 [orig]	$00000000
 PutSerial byte (after SetIOSpeed to SERPER 0)|baud (SERPER)|$45|1 [fixed #654]	$000001BD
 PutSerial byte (after SetIOSpeed to SERPER 0)|inbuf|$45|1	$12345678
-PutSerial byte (after SetIOSpeed to SERPER 0)|inten|$45|1	$0000F01C
+PutSerial byte (after SetIOSpeed to SERPER 0)|inten|$45|1 [orig]	$0000F01C
+PutSerial byte (after SetIOSpeed to SERPER 0)|inten|$45|1 [fixed #651]	$0000282D
 PutSerial byte (after SetIOSpeed to SERPER 0)|kept|$45|1	kept
 PutSerial byte (after SetIOSpeed to SERPER 0)|mode|$45|1	$00000000
 PutSerial byte (after SetIOSpeed to SERPER 0)|numbytes|$45|1	$0000012B
@@ -172,7 +186,8 @@ PutSerial byte (after SetIOSpeed to SERPER 0)|word at $9A unchanged|$45|1	$00000
 PutSerial byte (finished)|INTENAR|$43|1	$00000801
 PutSerial byte (finished)|baud (SERPER)|$43|1	$00000000
 PutSerial byte (finished)|inbuf|$43|1	$11111111
-PutSerial byte (finished)|inten|$43|1	$0000F01C
+PutSerial byte (finished)|inten|$43|1 [orig]	$0000F01C
+PutSerial byte (finished)|inten|$43|1 [fixed #651]	$0000282D
 PutSerial byte (finished)|kept|$43|1	kept
 PutSerial byte (finished)|mode|$43|1	$00000000
 PutSerial byte (finished)|numbytes|$43|1	$00000000
@@ -185,7 +200,8 @@ PutSerial byte (not initialised)|word at $9A unchanged|$41|1	$00000001
 SetIOBuffers|INTENAR||1	$00000801
 SetIOBuffers|baud (SERPER)||1	$00000070
 SetIOBuffers|inbuf||1	$11111111
-SetIOBuffers|inten||1	$0000F01C
+SetIOBuffers|inten||1 [orig]	$0000F01C
+SetIOBuffers|inten||1 [fixed #651]	$0000282D
 SetIOBuffers|kept||1	kept
 SetIOBuffers|mode||1	$00000000
 SetIOBuffers|numbytes||1	$00000000
@@ -196,7 +212,8 @@ SetIOSize|INTENAR|$0|1	$00000801
 SetIOSize|INTENAR|$A5A50010|1	$00000801
 SetIOSize|baud (SERPER)|$0|1	$00000070
 SetIOSize|inbuf|$0|1	$12345678
-SetIOSize|inten|$0|1	$0000F01C
+SetIOSize|inten|$0|1 [orig]	$0000F01C
+SetIOSize|inten|$0|1 [fixed #651]	$0000282D
 SetIOSize|kept|$0|1	kept
 SetIOSize|kept|$A5A50010|1	kept
 SetIOSize|mode|$0|1	$00000000
@@ -219,10 +236,14 @@ SetIOSpeed|inbuf|$361F0F|1	$12345678
 SetIOSpeed|inbuf|$7A12|1	$12345678
 SetIOSpeed|inbuf|$960|1	$12345678
 SetIOSpeed|inbuf|$A5A52580|1	$12345678
-SetIOSpeed|inten|$361F0F|1	$0000F01C
-SetIOSpeed|inten|$7A12|1	$0000F01C
-SetIOSpeed|inten|$960|1	$0000F01C
-SetIOSpeed|inten|$A5A52580|1	$0000F01C
+SetIOSpeed|inten|$361F0F|1 [orig]	$0000F01C
+SetIOSpeed|inten|$361F0F|1 [fixed #651]	$0000282D
+SetIOSpeed|inten|$7A12|1 [orig]	$0000F01C
+SetIOSpeed|inten|$7A12|1 [fixed #651]	$0000282D
+SetIOSpeed|inten|$960|1 [orig]	$0000F01C
+SetIOSpeed|inten|$960|1 [fixed #651]	$0000282D
+SetIOSpeed|inten|$A5A52580|1 [orig]	$0000F01C
+SetIOSpeed|inten|$A5A52580|1 [fixed #651]	$0000282D
 SetIOSpeed|kept|$361F0F|1	kept
 SetIOSpeed|kept|$7A12|1	kept
 SetIOSpeed|kept|$960|1	kept
@@ -258,8 +279,10 @@ SetSerialMode|baud (SERPER)|$1|1 [orig]	$0000001D
 SetSerialMode|baud (SERPER)|$1|1 [fixed #654]	$000001BD
 SetSerialMode|inbuf|$0|1	$12345678
 SetSerialMode|inbuf|$1|1	$12345678
-SetSerialMode|inten|$0|1	$0000F01C
-SetSerialMode|inten|$1|1	$0000F01C
+SetSerialMode|inten|$0|1 [orig]	$0000F01C
+SetSerialMode|inten|$0|1 [fixed #651]	$0000282D
+SetSerialMode|inten|$1|1 [orig]	$0000F01C
+SetSerialMode|inten|$1|1 [fixed #651]	$0000282D
 SetSerialMode|kept|$0|1	kept
 SetSerialMode|kept|$1|1	kept
 SetSerialMode|kept|$A5A5A5FF|1	kept
@@ -279,7 +302,8 @@ SetSerialMode|word at $9A unchanged|$A5A5A5FF|1	$00000001
 finit|INTENAR||1	$00000801
 finit|baud (SERPER)||1	$00000000
 finit|inbuf||1	$12345678
-finit|inten||1	$0000F01C
+finit|inten||1 [orig]	$0000F01C
+finit|inten||1 [fixed #651]	$0000282D
 finit|kept||1	kept
 finit|mode||1	$00000100
 finit|numbytes||1 [orig]	$00000000
@@ -292,7 +316,8 @@ init|kept||1	kept
 init (second run)|INTENAR||1	$00000801
 init (second run)|baud (SERPER)||1	$00000000
 init (second run)|inbuf||1	$12345678
-init (second run)|inten||1	$0000F01C
+init (second run)|inten||1 [orig]	$0000F01C
+init (second run)|inten||1 [fixed #651]	$0000282D
 init (second run)|kept||1	kept
 init (second run)|mode||1	$00000100
 init (second run)|numbytes||1 [orig]	$00000000

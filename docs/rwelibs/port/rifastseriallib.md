@@ -43,14 +43,18 @@ d0/d1/a0/a1 that are not the result.
 * `SetIOSpeed` divides by its #word argument alone; the original divided
   by all of d0, also its undefined upper word (#654; D-019, `libs_emulator`
   cases `[fixed #654]` of `rwe_rifastseriallib`: `SetIOSpeed $A5A52580`).
+* `InitSerialIO` saves INTENAR's value, and `FinitSerialIO` switches the
+  RBF and TBE interrupts that were on back on in INTENA. The original
+  stored the immediate `#$dff000+intenar` (the word `$F01C`, bits 11 and
+  0 clear) to `inten`, so `FinitSerialIO` never wrote and RBF and TBE
+  stayed off (#651), and its write went to the absolute address `$9A`
+  (`intena` without `custom+`) (#648) (test
+  `rifastseriallib-finit-interrupts`: RBF of serial.device on again;
+  `libs_emulator` cases `[fixed #651]` of `rwe_rifastseriallib`: the
+  saved inten).
 
 **BUG(orig)** (kept):
 
-* `InitSerialIO` stores the immediate `#$dff000+intenar` (the word
-  `$F01C`) to `inten` instead of reading INTENAR, and `FinitSerialIO`
-  writes to the absolute address `$9A` (`intena` without `custom+`). With
-  `$F01C` (bits 11 and 0 clear) `FinitSerialIO` never writes: TBE and
-  RBF stay off (#651, #648).
 * `InitSerialIO` (#long result) returns its baud argument, also when it
   does nothing because it was already initialised (#650); a baud rate that
   gives SERPER 0 (≥ 1773448) leaves the library "not initialised"

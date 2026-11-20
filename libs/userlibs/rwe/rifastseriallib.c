@@ -38,12 +38,13 @@
  *     and counted on with SUBQ.l: BNE, 2^32 bytes (#646).
  *   - SetIOSpeed divides by its #word argument alone; the original
  *     divided by all of d0, also its undefined upper word (#654).
+ *   - InitSerialIO saves INTENAR's value, and FinitSerialIO switches the
+ *     RBF and TBE interrupts that were on back on in INTENA.  The original
+ *     stored the immediate #$dff000+intenar (the word $F01C, bits 11 and 0
+ *     clear: FinitSerialIO never wrote, RBF and TBE stayed off) (#651),
+ *     and its write went to the absolute address $9A (intena without
+ *     custom+) (#648).
  * BUG(orig):
- *   - InitSerialIO stores the immediate #$dff000+intenar (the word $F01C)
- *     to inten instead of reading INTENAR, and FinitSerialIO writes to
- *     the absolute address $9A (intena without custom+).  With $F01C
- *     (bits 11 and 0 clear) FinitSerialIO never writes: TBE and RBF stay
- *     off (#651, #648).
  *   - InitSerialIO (#long result) returns its baud argument, also when it
  *     does nothing because it was already initialised (#650).  A baud rate
  *     that gives SERPER 0 (>= 1773448) leaves the library "not
@@ -189,7 +190,7 @@ BLITZ_LIBFIN();
 #define SERPER     BL_CUSTOMW(BL_CUSTOM, 0x032)
 #define INTENA     BL_CUSTOMW(BL_CUSTOM, 0x09a)
 #define INTREQ     BL_CUSTOMW(BL_CUSTOM, 0x09c)
-#define INTENAR    0x01c
+#define INTENAR    BL_CUSTOMW(BL_CUSTOM, 0x01c)
 #define TBE  0x20
 #define RBF  0x40
 #define INTF_RBF 0x0800
@@ -262,11 +263,12 @@ void BLITZ_ROUTINE c_codeinit(void)
 /**
  * @brief FinitSerialIO (and finit): end the serial I/O, switch TBE/RBF back on.
  *
- * Nothing if not initialised (baud 0); else baud = 0 and the TBE (bit 11)
- * and RBF (bit 0) bits of the saved inten are set again.  BUG(orig):
- * inten is always $F01C (#651), whose bits 11 and 0 are clear, so it
- * never writes; the write would go to the absolute address $9A, not
- * INTENA (#648).
+ * Nothing if not initialised (baud 0); else baud = 0 and the RBF (bit 11)
+ * and TBE (bit 0) interrupts that were on at InitSerialIO (the saved
+ * inten) are switched on again in INTENA.  Fixed (#651, #648): the
+ * original saved the address of INTENAR ($F01C, bits 11 and 0 clear),
+ * so it never wrote, and its write went to the absolute address $9A
+ * instead of INTENA.
  */
 void BLITZ_ROUTINE c_finitserialio(void)
 {
@@ -279,14 +281,8 @@ void BLITZ_ROUTINE c_finitserialio(void)
         on |= 0x0800;
     if (fs.inten & 0x0001)
         on |= 0x0001;
-    if (on) {
-        /* BUG(orig) (#648): MOVE.w d1,intena - the absolute address $9A (never
-           reached, inten is always $F01C); the address goes through an
-           asm so that GCC does not take it for a null pointer offset */
-        volatile UWORD *intena;
-        __asm__("" : "=a"(intena) : "0"(0x9a));
-        *intena = (UWORD)(on | 0x8000);
-    }
+    if (on)
+        INTENA = (UWORD)(on | 0x8000);  /* fixed (#648): INTENA, not $9A */
 }
 
 /**
@@ -329,9 +325,9 @@ void BLITZ_ROUTINE c_doserialIO2(void)
  * off (INTENA $0801), sets SERPER = 3546895 / baud - 1 (fixed (#647): a
  * division that works on a 68000, the original's DIVU.L is a 68020
  * instruction), and stores numbytes - 1 and the buffers.
- * BUG(orig): inten gets the immediate $F01C (the address of INTENAR), not
- * INTENAR's value (#651); a baud rate that gives SERPER 0 (>= 1773448)
- * leaves the library "not initialised" (#653).
+ * Fixed (#651): inten gets INTENAR's value, the original the immediate
+ * $F01C (the address of INTENAR).  BUG(orig): a baud rate that gives
+ * SERPER 0 (>= 1773448) leaves the library "not initialised" (#653).
  * @param baud      d0: the baud rate
  * @param numbytes  d1: the bytes of a DoSerialIO
  * @param inbuf     d2: the receive buffer
@@ -343,7 +339,7 @@ ULONG BLITZ_ROUTINE c_initserialio(ULONG baud BL_REG(d0), UWORD numbytes BL_REG(
 {
     if (fs.baud)
         return baud;
-    fs.inten = (UWORD)(0xdff000 + INTENAR);     /* BUG(orig) (#651): the address */
+    fs.inten = INTENAR;                 /* fixed (#651): the value */
     INTENA = 0x0801;                    /* TBE and RBF interrupts off */
     fs.numbytes = (UWORD)(numbytes - 1);
     setbaud(baud);
