@@ -1060,8 +1060,9 @@ amount of the background.
 Shapes File", also without runtime error checking, as for a file that
 cannot be read. The shape stays empty. The limit is that of `InitShape`
 and `GetaShape` ([Shapes too large for their size fields](#shape-too-big)):
-the size of one plane, (⌈width / 16⌉ × 2 + 2) × height bytes, must stay
-below 65536 (64 KB). A picture of 992 by 520 pixels loads.
+the size of one plane with its extra word per row,
+(⌈width / 16⌉ × 2 + 2) × height bytes, must stay below 65536 (64 KB).
+A picture of 992 by 520 pixels loads.
 
 **What to change.** Load the picture as a bitmap, or cut it into shapes
 within that limit.
@@ -1135,8 +1136,8 @@ width or height 0, whose blits ran their loops 65536 times.
 `GetaShape`, `Rotate` and `Scale` stop with "Shape too Big" when the new
 shape breaks one of these limits:
 
-* the size of one plane, (⌈width / 16⌉ × 2 + 2) × height bytes, must
-  stay below 65536 (64 KB);
+* the size of one plane with its extra word per row,
+  (⌈width / 16⌉ × 2 + 2) × height bytes, must stay below 65536 (64 KB);
 * the height must be at most 1023 rows;
 * the width must be at most 992 pixels.
 
