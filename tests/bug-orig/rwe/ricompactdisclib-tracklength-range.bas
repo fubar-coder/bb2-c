@@ -7,6 +7,7 @@
 ; error checking.  The machine is the A1200 with uaescsi.device and the
 ; library's CD image (two tracks).
 ; Correct: the error check refuses track 3 after "before".
+; @fixed #583
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
 ; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image

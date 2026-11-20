@@ -88,6 +88,15 @@ d1/d2 (CDTrackLength) are not reproduced.
   original's entry offset (n−1) × 6 exceeds 255 and its high byte stays
   in the word that `MULU.w #60` multiplies (`MOVE.b (a0),d0` replaces the
   low byte only): the start was wrong. (#585)
+* `CDTrackLength n` (start of track n+1 − start of track n in seconds,
+  minutes × 60 + seconds) of the last track ends at the lead-out of the
+  summary; the original takes the entry behind it, which CD_TOCMSF does
+  not write. With runtime error checking a track outside the TOC's first
+  to last track is refused ("Track number out of range"; the manual: "The
+  track# should be checked to make sure that it exists on the compact
+  disc"); the release code is unchanged there (track 0 reads 65539 bytes
+  behind toc, D-005). The library gets an error check area for it
+  (`ricompactdisclib.declarations-intended.txt`). (#583)
 
 **BUG(orig)** (kept):
 
@@ -96,10 +105,6 @@ d1/d2 (CDTrackLength) are not reproduced.
   io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
   15000 (test values), io_Offset = 1. (#580)
-* `CDTrackLength n` = start of track n+1 − start of track n in seconds
-  (minutes × 60 + seconds). The last track takes the entry behind
-  it, which CD_TOCMSF does not write; track 0 reads 65539 bytes behind
-  toc. (#583)
 * `CDUpdateInfo` without an open device returns the caller's a0 + 5. (#587)
 * `CDStatus` asks for 26 bytes of CD_INFO, a struct CDInfo has 34: a
   device that writes all of it (uaescsi.device) writes 8 bytes behind

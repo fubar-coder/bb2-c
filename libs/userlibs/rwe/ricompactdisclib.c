@@ -73,6 +73,12 @@
  *   44 on the entry offset (n-1)*6 is > 255, and the original's MOVE.b
  *   (a0),d0 leaves its high byte in the word MULU.w multiplies: the start
  *   of the track was wrong.
+ * Fixed (#583): CDTrackLength of the last track ends at the lead-out of
+ *   the summary; the original takes the entry behind it, which CD_TOCMSF
+ *   does not write.  With runtime error checking a track outside the
+ *   TOC's first to last track is refused ("Track number out of range");
+ *   in the release code such a track still reads entries that do not
+ *   exist (track 0: 65539 bytes behind toc), as in the original (D-005).
  *
  * BUG(orig):
  *   - OpenCD while open: the old request stays open, lost (#578).
@@ -82,11 +88,6 @@
  *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
  *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
- *   - CDTrackLength n: start of track n+1 - start of track n in seconds
- *     (minutes * 60 + seconds).  The last track takes the entry behind
- *     it (CD_TOCMSF does not write it: the lead-out is in the summary),
- *     track 0 reads 65539 bytes behind toc.  (Without a TOC: 0,
- *     fixed #582.) (#583).
  *   - CDUpdateInfo without an open device returns the caller's a0 + 5 (#587).
  *   - CDStatus asks for 26 bytes of CD_INFO (a struct CDInfo has 34): a
  *     device that writes all of it (uaescsi.device) writes 8 bytes behind
@@ -119,12 +120,14 @@ void cdrewind(void), cdfastforward(void), cdnormalspeed(void);
 void cdchangespeed(void), cdtrackmins2(void), cdtrackmins(void);
 void cdtracksecs2(void), cdtracksecs(void), cdtrackplaying(void);
 void cdmotor(void);
+void _cdtracklengthchk(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
 
 /* !libheader {#ricompactdisclib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_ricompactdisclib, init, BL_NORET, finit, 0);
+/* error field: the error check area (fixed #583; the original has none) */
+BLITZ_LIBHEADER(LIB_ricompactdisclib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS0();
@@ -201,7 +204,7 @@ BLITZ_NAME("CDLastTrack", "");
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(cdtracklength), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(cdtracklength), _cdtracklengthchk, 0);  /* check: fixed #583 */
 BLITZ_NAME("CDTrackLength", "track#");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -753,7 +756,8 @@ ULONG BLITZ_ROUTINE c_cdlasttrack(void)
     return cd.toc ? cd.toc[1] : 0;
 }
 
-/* CDTrackLength track#: in seconds, see BUG(orig) above (#583-#585).
+/* CDTrackLength track#: in seconds, start of track n+1 - start of track n
+   (minutes * 60 + seconds; fixed #583-#585, see above).
    Fixed (#582): 0 without a TOC; with scsiflag from the LBAs of TOCData
    (the start of the track to the start of the next one or of the
    lead-out, in frames / 75), 0 for a track it does not hold */
@@ -786,7 +790,13 @@ ULONG BLITZ_ROUTINE c_cdtracklength(ULONG track BL_REG(d0))
        leaves the high byte of the offset (track 44 on) in the word that
        MULU.w multiplies */
     start = (UWORD)(bl_mulu_w(p[0], 60) + p[1]);
-    end = (UWORD)(bl_mulu_w(p[6], 60) + p[7]);
+    /* Fixed (#583): the last track ends at the lead-out of the summary
+       (toc[3], toc[4]); the original reads the entry behind it, which
+       CD_TOCMSF does not write */
+    if (track + 1 == cd.toc[1])
+        end = (UWORD)(bl_mulu_w(cd.toc[3], 60) + cd.toc[4]);
+    else
+        end = (UWORD)(bl_mulu_w(p[6], 60) + p[7]);
     return end - start;
 }
 
@@ -881,6 +891,49 @@ ULONG BLITZ_ROUTINE c_cdnormalspeed(void)
 {
     return c_cdchangespeed(CDMODE_NORMAL);
 }
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(badtrack, "Track number out of range");      /* fixed, #583 */
+
+/**
+ * @brief The error check of CDTrackLength (debugger only).
+ *
+ * Fixed (#583), not in the original (ricompactdisclib had no error check
+ * area): the manual says "The track# should be checked to make sure that
+ * it exists on the compact disc"; the release code reads the TOC entries
+ * of a track that does not exist (track 0: 65539 bytes behind the TOC).
+ * With an open device and a TOC (the SCSI TOC with scsiflag) a track
+ * outside first to last track is refused; without a TOC the release code
+ * returns 0 (#582) and the check lets it.  Release code unchanged (an
+ * invalid argument, D-005).
+ *
+ * Errors: "Track number out of range".
+ * @param track  d0: the track
+ */
+static void BLITZ_ERRCHK cdtracklengthchk_c(ULONG track BL_REG(d0))
+{
+    ULONG first, lastt;
+
+    if (!cd.flag)
+        return;
+    if (scsiflag) {
+        if (!scsitoc)
+            return;
+        first = TOCData[2];
+        lastt = TOCData[3];
+    } else {
+        if (!cd.toc)
+            return;
+        first = cd.toc[0];
+        lastt = cd.toc[1];
+    }
+    if (track < first || track > lastt)
+        BLITZ_RUNERR(badtrack);
+}
+
+/* the thunks of the check functions */
+BLITZ_ERRCHK_THUNK(_cdtracklengthchk, cdtracklengthchk_c, "d0-d1/a0-a1");
 
 /* entries: keep d1/a0/a1 (and d0 in init/finit) */
 BLITZ_THUNK(ricompactdisclib_libinit, c_libinit, "d0-d1/a0-a1");
