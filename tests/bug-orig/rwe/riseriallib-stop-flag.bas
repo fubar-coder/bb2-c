@@ -6,6 +6,7 @@
 ; followed by a VWait, at most 50).
 ; Correct: every block and string command clears the flag at its start:
 ; the echo is "ABCDE".
+; @fixed #1162
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l

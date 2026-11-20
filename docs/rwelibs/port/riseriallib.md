@@ -119,6 +119,15 @@ kind F):
   `SerialReadString` waited for bytes the closed port never received
   (#793; test `riseriallib-sendstring-opens`; `libs_emulator` cases
   `[fixed #793]` of `rwe_riseriallib`).
+* `SerialSendBlock`, `SerialReceiveBlock`, `SerialSendString` and
+  `SerialReadString` clear the stop flag at their start. The original
+  left it set after a `SerialStop` outside a transfer (only opening the
+  port cleared it, and before the fix of #793 `SerialSendString` with
+  the port open): the next `SerialSendBlock` stopped after its first
+  byte, `SerialReceiveBlock` after its second; there is no init, so the
+  flag also survived into a second run (#1162; test
+  `riseriallib-stop-flag`; `libs_emulator` cases `[fixed #1162]` of
+  `rwe_riseriallib`).
 
 ## BUG(orig), kept
 

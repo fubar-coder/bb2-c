@@ -108,6 +108,11 @@
  *     cleared the stop flag): with the port closed nothing was sent, and
  *     SerialReadString waited for bytes that the closed port never
  *     received (#793).
+ *   - SerialSendBlock, SerialReceiveBlock, SerialSendString and
+ *     SerialReadString clear the stop flag at their start; the original
+ *     left it set after a SerialStop outside a transfer (only opening the
+ *     port cleared it), so the next SerialSendBlock stopped after its
+ *     first byte, SerialReceiveBlock after its second (#1162).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -468,6 +473,7 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     LONG n = (LONG)(len - 1);
 
+    quitflag = 0;                       /* fixed (#1162) */
     if (!openflag)                      /* fixed (#792) */
         openserial(0);
     buffstart = addr;
@@ -507,6 +513,7 @@ ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     ULONG value;
 
+    quitflag = 0;                       /* fixed (#1162) */
     if (!openflag)                      /* fixed (#792) */
         openserial(0);
     buffstart = addr;
@@ -565,6 +572,7 @@ void BLITZ_ROUTINE c_sendserialstring(const UBYTE *str BL_REG(d0),
 {
     ULONG n = argstack[-1];
 
+    quitflag = 0;                       /* fixed (#1162) */
     if (!openflag)                      /* fixed (#793) */
         openserial(0);
     while (n--)                         /* fixed (#801) */
@@ -588,6 +596,7 @@ ULONG BLITZ_ROUTINE c_readserialstring(void)
 {
     ULONG value;
 
+    quitflag = 0;                       /* fixed (#1162) */
     if (!openflag)                      /* fixed (#793) */
         openserial(0);
     numchars = 0;                       /* fixed (#796): every call */
@@ -656,6 +665,10 @@ void BLITZ_ROUTINE c_writelong(ULONG longword BL_REG(d0))
 
 /**
  * @brief SerialStop: ends a block transfer (sets the stop flag).
+ *
+ * The block and string commands clear the flag at their start (fixed
+ * (#1162): the original left it set after a SerialStop outside a
+ * transfer, so the next block stopped at once).
  */
 void BLITZ_ROUTINE c_abortxfer(void)
 {
