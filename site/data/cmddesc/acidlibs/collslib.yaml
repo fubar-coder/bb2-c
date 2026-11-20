@@ -26,8 +26,8 @@
   notes: |
     The order of the two channels does not matter. Sprites of the same
     pair of channels (0 and 1, 2 and 3, 4 and 5, 6 and 7) have no
-    collision of their own: with runtime error checking, two such
+    collision of their own. With runtime error checking, two such
     channels are the error "Sprite channels must be of different pairs",
-    two equal ones "Sprite channels must be different".
+    and two equal ones are the error "Sprite channels must be different".
 "PColl":
   text: True (-1) if the sprite on the channel collided with a bitmap colour that counts, as `DoColl` read it, else false (0). Blitz mode only.

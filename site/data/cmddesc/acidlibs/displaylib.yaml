@@ -25,11 +25,13 @@
     A sprite that has not been made is the error "Uninitialised Sprite",
     one that needs more channels than the list has "Not Enough Sprite
     Channels". The channels after the list's own sprites are those of
-    `CustomSprites`. The channels of a sprite must all lie in one of
-    the two banks, the list's own channels or those of `CustomSprites`,
-    since the banks show their sprites in different parts of the
-    display; a sprite that runs from one into the other is the error
-    "Not Enough Sprite Channels" too. A sprite moved completely above or
+    `CustomSprites`.
+
+    The sprite channels form two banks: the list's own channels, and
+    those of `CustomSprites`. The banks show their sprites in different
+    parts of the display, so the channels of a sprite must all lie in one
+    bank; a sprite that runs from one into the other is the error "Not
+    Enough Sprite Channels" too. A sprite moved completely above or
     below the display is switched off, on the list's own channels and on
     those of `CustomSprites` alike.
 "DisplayPalette":

@@ -5,7 +5,7 @@
 "PlayBack":
   text: Starts playing back the tape, as if the user moved the mouse and typed again; without a tape, stops the playback.
 "QuickPlay":
-  text: With `On`, tapes are played back without the pauses between the events; with `Off`, the start value, with them, which is needed when a program on the tape must wait, for example for the disk.
+  text: "`On` plays tapes back without the pauses between the events. `Off`, the start value, keeps the pauses; a tape needs them when a program on it must wait, for example for the disk."
 "PlayWait":
   text: Waits until the running playback has finished; it returns at once if no playback runs.
   notes: |
