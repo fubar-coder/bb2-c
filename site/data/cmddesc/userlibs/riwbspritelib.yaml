@@ -1,38 +1,41 @@
 "GetWBSprite":
-  text: Makes a sprite of a shape and takes the sprite channel `spritechannel` for it, or any free channel for -1. Returns the channel, or 0 or -1 if it failed.
+  text: Makes a sprite of a shape and takes the sprite channel `spritechannel` for it, or any free channel for -1. Returns the channel, 0 to 7, or -1 if it got no sprite.
   notes: |
     `x` and `y` are stored as the sprite's position; `MoveWBSprite` moves
-    it. The channel is not optional, although the help shows it so.
+    it and shows the sprite. The channel is not optional, although the
+    help shows it so.
 
-    The result is 0 if graphics.library could not be opened, if the shape
-    is narrower than 16 pixels or if the channel is taken, and -1 if the
-    shape has no data or there is no memory for a copy of it.
-
-    Kept from the original: if the channel is taken but holds an earlier
-    sprite of this library, the channel is returned as if it had worked
-    ([#920](https://github.com/fubar-coder/bb2-c/issues/920)).
+    The result is -1 if graphics.library could not be opened, if the
+    shape has no data or does not fit, if the channel is taken or if
+    there is no memory. With runtime error checking, a channel outside
+    -1 to 7, a shape of height 0 and a shape of depth 0 or more than 8
+    are runtime errors, and so is a shape too big for a sprite below
+    Kickstart 3.0.
 "FreeWBSprite":
   text: Frees the sprite of a channel and gives the channel back to the system. Nothing happens if the library has no sprite on that channel.
+  notes: |
+    With runtime error checking, a channel outside 0 to 7 is a runtime
+    error.
 "MoveWBSprite":
-  text: Moves the sprite of a channel to `x`,`y` of the ViewPort at `viewport`. Nothing happens if the library has no sprite on that channel.
+  text: Moves the sprite of a channel to `x`,`y` of the ViewPort at `viewport`. As a function it returns -1 if it moved the sprite and 0 if the library has no sprite on that channel.
   notes: |
-    Kept from the original: as a function it returns a value without
-    meaning ([#921](https://github.com/fubar-coder/bb2-c/issues/921)).
+    With runtime error checking, a channel outside 0 to 7 is a runtime
+    error.
 "ChangeWBSprite":
-  text: Gives the sprite of a channel the image of another shape, at the same position. As a function it returns -1 on success and 0 if the channel has no sprite of this library, the shape has no data or the change failed.
+  text: Gives the sprite of a channel the image of another shape, at the same position. As a function it returns -1 on success and 0 if the channel has no sprite of this library, the shape has no data or does not fit, or the change failed.
   notes: |
-    Kept from the original: when the system refuses the change, the
-    memory of the converted shape is not freed
-    ([#915](https://github.com/fubar-coder/bb2-c/issues/915)).
+    With runtime error checking, a channel outside 0 to 7 and a shape
+    of height or depth 0, of a depth above 8 or too big for a sprite
+    below Kickstart 3.0 are runtime errors.
 "WBSpriteX":
   text: The x position of the sprite of a channel.
   notes: |
-    Kept from the original: for a channel without a sprite, the result is
-    read from address 6 and means nothing
-    ([#922](https://github.com/fubar-coder/bb2-c/issues/922)).
+    With runtime error checking, a channel outside 0 to 7 or without a
+    sprite of the library is a runtime error; without it, the result
+    for such a channel means nothing.
 "WBSpriteY":
   text: The y position of the sprite of a channel.
   notes: |
-    Kept from the original: for a channel without a sprite, the result is
-    read from address 8 and means nothing
-    ([#922](https://github.com/fubar-coder/bb2-c/issues/922)).
+    With runtime error checking, a channel outside 0 to 7 or without a
+    sprite of the library is a runtime error; without it, the result
+    for such a channel means nothing.

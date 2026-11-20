@@ -2,26 +2,30 @@ description: Hardware sprites on the Workbench screen by Reflective Images - Bli
 intro: |
   This library puts hardware sprites on the Workbench screen, or any
   other Intuition screen, in a way the system allows: it uses the sprite
-  functions of graphics.library, so it needs Kickstart 3.0 or newer (the
-  library does not check the version). A
-  Blitz shape is converted into a sprite and gets one of the 8 sprite
-  channels; the commands then name the sprite by its channel, 0 to 7.
+  functions of graphics.library. A Blitz shape is converted into a
+  sprite and gets one of the 8 sprite channels; the commands then name
+  the sprite by its channel, 0 to 7. A new sprite appears when
+  `MoveWBSprite` or `ChangeWBSprite` first places it.
 
   All commands work in Amiga mode only. `MoveWBSprite` and
   `ChangeWBSprite` need the address of the screen's ViewPort, which the
   function `ViewPort` of the screens library gives. Sprites the
   program does not free are freed when it ends.
 
-  The shape is converted with a width rounded down to a multiple of 16;
-  a shape narrower than 16 pixels gives no sprite. Kept from the
-  original: the shape's rows are copied as if the width were a multiple
-  of 16, so a shape of another width comes out garbled
-  ([#918](https://github.com/fubar-coder/bb2-c/issues/918)), and a shape
-  of height or depth 0 overwrites memory
-  ([#917](https://github.com/fubar-coder/bb2-c/issues/917)). No command
-  checks the channel number: a channel outside 0 to 7 reads or writes
-  memory beside the library's sprite table
-  ([#916](https://github.com/fubar-coder/bb2-c/issues/916)).
+  The shape is converted with a width rounded down to a multiple of 16,
+  so a shape 20 pixels wide shows its left 16 pixels; a shape narrower
+  than 16 pixels gives no sprite. On Kickstart 3.0 and newer the sprite
+  functions of the system decide which shapes they accept; on the
+  Workbench screen of an A600 and of an A1200 alike, they refuse a
+  sprite 32 pixels wide.
+  On Kickstart 1.x and 2.x a sprite is 16 pixels wide with up to 3
+  colours: the shape must have 1 or 2 planes and be narrower than 32
+  pixels, and another shape gives no sprite.
+
+  With runtime error checking, the commands refuse a channel outside 0
+  to 7 (-1 to 7 for `GetWBSprite`), a shape of height 0 or of depth 0
+  or more than 8, a shape too big for a sprite below Kickstart 3.0, and
+  `WBSpriteX` and `WBSpriteY` refuse a channel without a sprite.
 
   A sprite made of a loaded shape on any free channel of the Workbench
   screen, moved to 100,50:
@@ -31,7 +35,7 @@ intro: |
   WbToScreen 0
   vp.l=ViewPort(0)
   ch=GetWBSprite(0,0,0,-1)
-  If ch>0
+  If ch>=0
     MoveWBSprite vp,100,50,ch
     MouseWait
     FreeWBSprite ch

@@ -6100,6 +6100,70 @@ rows:
     text: "A program run again from the editor starts with an empty group; the original added members to the freed group of the run before."
     page: libraries
     anchor: rimapshapeslib-fixes
+  - issue: 920
+    severity: 2
+    topic: "Graphics"
+    library: "riwbspritelib"
+    command: "GetWBSprite"
+    text: "`GetWBSprite` returns -1 whenever it gets no sprite; the original returned 0, -1 or even the channel of an older sprite."
+    page: libraries
+    anchor: wbsprite-results
+  - issue: 921
+    severity: 2
+    topic: "Graphics"
+    library: "riwbspritelib"
+    command: "MoveWBSprite"
+    text: "`MoveWBSprite` returns -1 when it moved the sprite and 0 without one; the original returned a random value."
+    page: libraries
+    anchor: wbsprite-results
+  - issue: 1151
+    severity: 5
+    topic: "Graphics"
+    library: "riwbspritelib"
+    command: ""
+    text: "The Workbench sprite commands work on Kickstart 1.x and 2.x, with sprites 16 pixels wide in up to 3 colours; the original crashed there at the first `GetWBSprite`."
+    page: libraries
+    anchor: riwbspritelib-fixes
+  - issue: 915
+    severity: 5
+    topic: "Graphics"
+    library: "riwbspritelib"
+    command: "ChangeWBSprite"
+    text: "`ChangeWBSprite` frees the new sprite image when the system refuses the change; the original lost a block of chip memory each time."
+    page: libraries
+    anchor: riwbspritelib-fixes
+  - issue: 918
+    severity: 2
+    topic: "Graphics"
+    library: "riwbspritelib"
+    command: "GetWBSprite, ChangeWBSprite"
+    text: "A sprite of a shape whose width is no multiple of 16 shows the shape's left part unsheared; the original's image was sheared."
+    page: libraries
+    anchor: riwbspritelib-fixes
+  - issue: 916
+    severity: 3
+    topic: "Graphics"
+    library: "riwbspritelib"
+    command: "GetWBSprite, FreeWBSprite, MoveWBSprite, ChangeWBSprite, WBSpriteX, WBSpriteY"
+    text: "With runtime error checking a channel outside 0 to 7 stops with \"Sprite channel must be 0 to 7\"; the original read and freed the library's own data as sprites."
+    page: libraries
+    anchor: riwbspritelib-fixes
+  - issue: 917
+    severity: 3
+    topic: "Graphics"
+    library: "riwbspritelib"
+    command: "GetWBSprite, ChangeWBSprite"
+    text: "With runtime error checking a shape of height or depth 0 stops with \"Illegal Shape Height\" or \"Illegal Shape Depth\"; the original would copy 65536 rows or planes."
+    page: libraries
+    anchor: riwbspritelib-fixes
+  - issue: 922
+    severity: 3
+    topic: "Graphics"
+    library: "riwbspritelib"
+    command: "WBSpriteX, WBSpriteY"
+    text: "With runtime error checking `WBSpriteX` and `WBSpriteY` of a channel without a sprite stop with \"No sprite on this channel\"; the original returned words from low memory."
+    page: libraries
+    anchor: riwbspritelib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
