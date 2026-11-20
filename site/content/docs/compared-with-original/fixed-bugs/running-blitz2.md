@@ -6,8 +6,9 @@ description: Fixed bugs of Blitz Basic 2 in blitz2 as a program - loading the li
 
 These bugs concern blitz2 as a program rather than the code it compiles:
 how it loads its libraries, how it starts and ends, and what the
-compiler menu of the editor does. Each is one sentence here; its issue
-has the details.
+compiler menu of the editor does. Each is a short point here, and its
+issue has the details. Each point says first what the original did,
+then, after the semicolon, what the port does.
 The table on [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})
 lists all fixed bugs by what they can change in a program.
 
@@ -35,8 +36,8 @@ from `blitz2:deflibs`, `blitz2:acidlibs` and the directories in
 ## Starting and ending
 
 * blitz2 always returned 0 to the shell, also when it could not start; it
-  returns -1 when it cannot start and 0 after a normal session, and in AB3
-  mode a compile from the command line keeps its own return codes
+  returns -1 when it cannot start and 0 after a normal session. In AB3
+  mode, a compile from the command line keeps its own return codes
   ([Compiling from the command line]({{< relref "/docs/ab3-mode/command-line" >}}),
   [#22](https://github.com/fubar-coder/bb2-c/issues/22)).
 * Without chip memory for the arrows of the options requester, blitz2
@@ -55,8 +56,8 @@ from `blitz2:deflibs`, `blitz2:acidlibs` and the directories in
   directory when it ended; the start directory is restored
   ([#21](https://github.com/fubar-coder/bb2-c/issues/21)).
 * Started from the Workbench, blitz2 could crash at its very end, for
-  example under a memory checker such as MungWall; it has ended before the
-  Workbench unloads it
+  example under a memory checker such as MungWall; blitz2 has ended
+  before the Workbench unloads it
   ([#337](https://github.com/fubar-coder/bb2-c/issues/337)).
 
 ## The editor's compiler menu
