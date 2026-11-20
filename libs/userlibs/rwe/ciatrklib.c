@@ -116,8 +116,18 @@
  * with a low byte of $FD-$FF lost the carry and the module was loaded
  * 253 bytes short.
  * Fixed (intended deviation, #444): after a Read error LoadTrackerModule
- * does not unlock the lock that OpenFromLock took over (Close has freed
- * it); the original unlocked it a second time.
+ * unlocks no lock a file handle owns; the original opened the file with
+ * OpenFromLock (the handle takes the lock over, Close frees it) and
+ * unlocked that lock a second time.
+ * Fixed (intended deviation, #1146): LoadTrackerModule opens the file by
+ * its name (Open, MODE_OLDFILE) while it holds the lock, and unlocks the
+ * lock after Close: one path on every Kickstart.  The original called
+ * OpenFromLock, a dos.library V36 function: on Kickstart 1.x a crash.  A
+ * failed open (a directory: locked and examined, not opened) frees the
+ * slot, unlocks the lock and returns IoErr(); the original passed the
+ * handle to Read untested (on the a1200 its OpenFromLock of a directory
+ * in RAM: gives the same results: regression test
+ * ciatrklib-load-open-fails).
  * Fixed (intended deviation, #443): LoadTrackerModule is declared with
  * !libs {#doslib,#la6}, so the compiler loads DOSBase into a6; the
  * original's !libs was commented out and the dos calls went through
@@ -1579,20 +1589,24 @@ static void freetrackermodule_c(ULONG num BL_REG(d0))
  * The slot is freed first; Lock, Examine (FileInfoBlock of memlib),
  * memory of the file size + 3 (fixed, #442: the original added as a
  * byte and lost the carry) from memlib's globalloc (not checked, #440: memlib ends the
- * program when it fails), OpenFromLock, Read, Close; flag 1.  The
+ * program when it fails), Open by name while the lock is held, Read,
+ * Close, UnLock; flag 1 (fixed, #1146: the original called OpenFromLock,
+ * dos V36, and crashed on Kickstart 1.x).  The
  * compiler loads DOSBase into a6 (fixed, #443: the original's !libs was
  * empty, the dos calls went through whatever a6 held).  A
  * failing Lock, FileInfoBlock or Examine is a runtime error ("Tracker:
  * File error! (Not found?)", "Tracker Library Error"), the last two
- * leave the lock allocated (#441).  A Read error frees the slot (fixed,
+ * leave the lock allocated (#441).  A failed open frees the slot and
+ * unlocks the lock (#1146: the original passed the handle to Read
+ * untested).  A Read error frees the slot (fixed,
  * #444: the original also unlocked the lock that OpenFromLock had taken
  * over, a second time after Close).  Error check
  * (_loadcheck): slots 0-8, the slot must be empty.
  * @param num   d0: the slot
  * @param name  d1: the file name
  * @param dos   a6: dos.library (!libs {#doslib,#la6})
- * @return d0: -1 when the file was read, IoErr() after a Read error (so
- *         not BB_BOOL)
+ * @return d0: -1 when the file was read, IoErr() after a failed open or
+ *         a Read error (so not BB_BOOL)
  */
 static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG num BL_REG(d0), ULONG name BL_REG(d1),
                                            struct DosLibrary *dos BL_REG(a6))
@@ -1618,20 +1632,26 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG num BL_REG(d0), ULONG name BL_R
     e->len = size + 3;                  /* Fixed (#442): not ADD.b */
     globfree(fib, 512);
     e->addr = (UBYTE *)globalloc(e->len, MEMF_CHIP);
-    hand = OpenFromLock(lock);
-    readlen = Read(hand, e->addr, e->len);
+    hand = Open((STRPTR)fname, MODE_OLDFILE);   /* fixed (#1146): not OpenFromLock */
     e->flag = 1;
+    if (!hand) {                        /* fixed (#1146): checked */
+        readerr = (ULONG)IoErr();
+        freetrackermodule_c(thismod);
+        UnLock(lock);
+        return readerr;
+    }
+    readlen = Read(hand, e->addr, e->len);
     readerr = (ULONG)readlen;
     Close(hand);
     result = readerr;
     readerr = (ULONG)-1;
     if (result == (ULONG)-1) {
-        /* Fixed (#444): no UnLock(lock), Close freed OpenFromLock's lock */
         readerr = 0;
         freetrackermodule_c(thismod);
     }
     if (readerr != (ULONG)-1)
         readerr = (ULONG)IoErr();
+    UnLock(lock);                       /* after IoErr: the lock is ours, Open took none over */
     return readerr;
 }
 

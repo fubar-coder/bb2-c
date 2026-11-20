@@ -82,10 +82,22 @@ kind F):
   $FD-$FF lost the carry ($10FE gave $1001, and only that much was read)
   (#442; library test `rwe_ciatrklib`, the cases
   `LoadTrackerModule|...|slot 5, 4350 bytes`).
-* After a Read error `LoadTrackerModule` does not unlock the lock that
-  `OpenFromLock` took over (the `Close` has freed it); the original
-  unlocked it a second time (#444; test
-  `ciatrklib-load-readerror-unlock`).
+* After a Read error `LoadTrackerModule` unlocks no lock a file handle
+  owns; the original opened the file with `OpenFromLock` (the handle takes
+  the lock over, `Close` frees it) and unlocked that lock a second time
+  (#444; test `ciatrklib-load-readerror-unlock`).
+* `LoadTrackerModule` opens the file by its name (`Open`, `MODE_OLDFILE`)
+  while it holds the lock of `Lock`/`Examine`, and unlocks the lock after
+  `Close`: one path on every Kickstart. The original called
+  `OpenFromLock`, a dos.library V36 function, on the program's
+  dos.library; on Kickstart 1.x the offset lies behind the jump table and
+  the program crashed at `LoadTrackerModule` (#1146; test
+  `ciatrklib-v36-calls` on the a500, a500-204 and a1200). The open is
+  checked: when it fails (a directory, which can be locked and examined
+  but not opened) the slot is freed, the lock unlocked and the result is
+  `IoErr()`; the original passed the handle to `Read` untested (on the
+  a1200 its `OpenFromLock` of a directory in `RAM:` gives the same
+  results; regression test `ciatrklib-load-open-fails`, a500 and a1200).
 * `LoadTrackerModule` is declared with `!libs {#doslib,#la6}`: the
   compiler loads DOSBase into a6; the original's `!libs` was commented
   out and the dos calls went through whatever a6 held (#443; test
