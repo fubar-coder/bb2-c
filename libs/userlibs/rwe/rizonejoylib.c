@@ -27,9 +27,7 @@
  * the same order, so its timing does not depend on the code around them.
  *
  * BUG(orig):
- *   - NewZoneTable initialises the CURRENT table (ZoneInit1 on
- *     _zonetable), not the new one, which keeps AllocMem's garbage
- *     (#875); if the old table of that number was freed and the AllocMem
+ *   - If NewZoneTable freed the old table of that number and the AllocMem
  *     fails, the entry keeps the freed block (#874).
  *   - FreeZoneTable always makes table 0 the current one (#869).
  *   - ReadJoyPad reads the joystick port for every port number but 2
@@ -103,6 +101,13 @@
  *     "Default status for the adaptor is on"; the original kept the
  *     status of the run before, so after JAdaptorStatus Off a second run
  *     from the editor started with the adaptor off (#1132).
+ *   - NewZoneTable clears the zones of the new table and leaves the
+ *     current table alone ("all zones are automatically reset in the new
+ *     table and ... creating a table does not make it the current
+ *     table"); a replaced current table stays current under its new
+ *     block.  The original ran ZoneInit on the current table (_zonetable)
+ *     and left AllocMem's garbage in the new one, and a replaced current
+ *     table left _zonetable on the freed block (#875).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -713,35 +718,52 @@ static ULONG BLITZ_ROUTINE zonetablesize_c(void)
     return zd.zonetable ? zd.zonetable->count : 0;
 }
 
+/* clears every zone of the table zt (x1..y2 = -1, not set) */
+static void clearzones(struct zonetable *zt)
+{
+    LONG *z = (LONG *)(zt + 1);
+    ULONG n;
+
+    for (n = zt->count; n; n--) {
+        *z++ = -1;
+        *z++ = -1;
+    }
+}
+
 /**
  * @brief NewZoneTable table#,num_zones: allocates zone table n.
  *
  * n 1..15, num_zones 2..65535; an old table of that number is freed
- * first.  BUG(orig): ZoneInit runs on the CURRENT table, the new one keeps
- * AllocMem's garbage (#875); if the AllocMem fails after the free, the
- * entry keeps the freed block (#874).  Fixed (#872): n is compared
- * unsigned, a negative n is refused (the original passed it: entry -1 is
- * _zonetable).
+ * first.  All zones of the new table are cleared and the current table
+ * stays as it is; a replaced current table stays current under its new
+ * block: fixed (#875), the original ran ZoneInit on the current table
+ * and left AllocMem's garbage in the new one.  BUG(orig): if the
+ * AllocMem fails after the free, the entry keeps the freed block (#874).
+ * Fixed (#872): n is compared unsigned, a negative n is refused (the
+ * original passed it: entry -1 is _zonetable).
  * @param n    d0: the table number
  * @param num  d1: the number of zones
  * @return d0: BB_TRUE done, BB_FALSE bad arguments or no memory
  */
 static BB_BOOL BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG(d1))
 {
-    struct zonetable **e, *mem;
+    struct zonetable **e, *old, *mem;
 
     /* n unsigned: fixed (#872) */
     if (!n || n >= 16 || MI(num, 2) || !MI(num, 65536))
         return BB_FALSE;                                /* _return0 */
     e = entry(n);
-    if (*e)
-        free_mem(*e);
+    old = *e;
+    if (old)
+        free_mem(old);
     mem = AllocMem((num << 3) + 4, MEMF_PUBLIC);
     if (!mem)
         return BB_FALSE;
     *e = mem;
     mem->count = num;
-    zoneinit1_c();                                      /* BUG(orig): _zonetable (#875) */
+    clearzones(mem);                                    /* the new table: fixed (#875) */
+    if (old && zd.zonetable == old)
+        zd.zonetable = mem;                             /* stays current: fixed (#875) */
     return BB_TRUE;
 }
 

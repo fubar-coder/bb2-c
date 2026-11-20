@@ -6,6 +6,7 @@
 ; (under Forbid, so nothing else allocates) gets that block back: table 0
 ; is cleared, and zone 1 of table 3 contains the point (15,15).
 ; Correct: table 0 keeps zone 0, all zones of table 3 are cleared.
+; @fixed #875
 ; @rwe rizonejoylib
 DEFTYPE .l
 SetZone 0,10,10,20,20

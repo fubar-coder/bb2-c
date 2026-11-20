@@ -18,7 +18,7 @@
  *     (start clamped, bad ranges), GetZoneX1/Y1/X2/Y2, ZoneInit's three
  *     forms (bad ranges too);
  *   - NewZoneTable (bad numbers and sizes; it initialises the current
- *     table, BUG(orig), #875), UseZoneTable, ZoneTableNumber, ZoneTableSize,
+ *     table in the original, #875), UseZoneTable, ZoneTableNumber, ZoneTableSize,
  *     ZoneTable, ZoneTest from zone 256 on (#881: the low byte in the original),
  *     FreeZoneTable (#868: the original leaves the freed table in its entry);
  *   - JFire, JVert, JHoriz for the ports 0..5 with the adaptor on and

@@ -180,14 +180,22 @@ All other routines are C behind `BLITZ_THUNK`.
   the program from the editor started with the adaptor off (#1132;
   D-019, `libs_emulator` case `[fixed #1132]` of `rwe_rizonejoylib`:
   JAdaptorStatus's old status in the scenario's second run).
+* NewZoneTable clears the zones of the new table and leaves the current
+  table alone, as the manual says ("all zones are automatically reset in
+  the new table and ... creating a table does not make it the current
+  table"); a replaced current table stays current under its new block.
+  The original ran `ZoneInit1` on the **current** table (`_zonetable`),
+  so every NewZoneTable cleared the zones of the table in use and left
+  AllocMem's garbage in the new one, and a replaced current table left
+  `_zonetable` on the freed block (#875, test
+  `rwe/rizonejoylib-newzonetable-inits-current`; `libs_emulator` cases
+  `[fixed #875]` of `rwe_rizonejoylib`: table 0 after NewZoneTable 3).
 
 ## BUG(orig)
 
-* NewZoneTable initialises the **current** table (`ZoneInit1` on
-  `_zonetable`), not the new one, which keeps AllocMem's garbage (#875).
-  If it replaces a table and the AllocMem fails, the entry keeps the
-  freed block; if the replaced table is the current one, `_zonetable`
-  points to freed memory, which ZoneInit1 then writes (#874).
+* If NewZoneTable replaces a table and the AllocMem fails, the entry
+  keeps the freed block; if the replaced table is the current one,
+  `_zonetable` points to freed memory (#874).
 * FreeZoneTable always makes table 0 the current one (#869).
 * ReadJoyPad reads the joystick port for every port number but 2 (#877).
 
