@@ -318,6 +318,17 @@ add_test(NAME libs_accept_lost_names COMMAND results libs-accept ${lc}/accept/lo
 set_tests_properties(libs_accept_lost_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "prog: r\\|ldiv\\|\\|1: lost d3: the original does not keep a stated register")
 
+# results libs-update --new N (the expected data of a program of the port
+# only, in detail: test_libscmp.cpp accept_dirs): an issue number 0 is
+# refused before anything is read
+add_test(NAME libs_update_new_wrong COMMAND results libs-update ${lc}/run-right ${lc}/new-exp
+	--only prog --new 0)
+set_tests_properties(libs_update_new_wrong PROPERTIES WILL_FAIL ON)
+add_test(NAME libs_update_new_wrong_names COMMAND results libs-update ${lc}/run-right ${lc}/new-exp
+	--only prog --new 0)
+set_tests_properties(libs_update_new_wrong_names PROPERTIES PASS_REGULAR_EXPRESSION
+	"libs-update: --new 0: not an issue number")
+
 # results libs-sort (the writers' order, in detail: test_libscmp_sort.cpp)
 # on a malformed file: refused with its line, nothing written
 file(WRITE ${lc}/sort/prog.txt "${lc_head}r|c||1\t$0\nr|c||1 [fixed #7]\t$5\n")

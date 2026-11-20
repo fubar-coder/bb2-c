@@ -7,7 +7,7 @@
  *
  *   results libs-compare RUN_DIR EXPECTED_DIR --set obj|orig [--only NAME]... [--other DIR]
  *   results libs-accept RUN1_DIR RUN2_DIR EXPECTED_DIR [--only NAME]...
- *   results libs-update RUN_DIR EXPECTED_DIR [--only NAME]... [--fix KEY#N]...
+ *   results libs-update RUN_DIR EXPECTED_DIR [--only NAME]... [--fix KEY#N]... [--new N]
  *   results libs-dump RUN_DIR BLOCK:N|KEY [--only NAME]...
  *   results libs-sort EXPECTED_DIR [--only NAME]...
  *
@@ -167,6 +167,7 @@ void cmd_libs_update(CLI::App &app, int &status)
     struct options {
         std::string run, expected;
         std::vector<std::string> only, fix;
+        unsigned new_issue = 0;
     };
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand("libs-update", "the [fixed #N] cases of the library tests from a run of the port");
@@ -179,6 +180,10 @@ void cmd_libs_update(CLI::App &app, int &status)
                       "\"KEY [fixed #N]\" (the port's), or \"KEY [orig #N]\" if the port lacks "
                       "KEY (also from \"KEY [orig]\" alone)")
         ->type_name("KEY#N");
+    sub->add_option("--new", o->new_issue,
+                    "a program of --only without expected data gets every case of the port's "
+                    "run as \"KEY [fixed #N]\" (a machine on which the original does not run)")
+        ->type_name("N");
     sub->footer("Every \"[fixed #N]\" case gets the port's value; nothing else changes (an "
                 "unqualified case the port gives another value is reported). A --fix must apply "
                 "in exactly one program. Nothing is written unless all is well. Exit status 0 "
@@ -189,6 +194,11 @@ void cmd_libs_update(CLI::App &app, int &status)
         std::vector<libscmp_fix> fixes(o->fix.size());
         char err[700];
 
+        if (sub->count("--new") && (!o->new_issue || o->new_issue > 999999999u)) {
+            fprintf(stderr, "%s: --new %u: not an issue number\n", name.c_str(), o->new_issue);
+            status = 2;
+            return;
+        }
         for (size_t i = 0; i < o->fix.size(); i++)
             if (libscmp_parse_fix(o->fix[i].c_str(), &fixes[i], err, sizeof err)) {
                 fprintf(stderr, "%s: %s\n", name.c_str(), err);
@@ -199,7 +209,7 @@ void cmd_libs_update(CLI::App &app, int &status)
             }
         status = prefixed(name, [&](FILE *e) {
             return libscmp_update_dirs(o->run.c_str(), o->expected.c_str(), only.data(),
-                                       only.size(), fixes.data(), fixes.size(), stdout, e);
+                                       only.size(), fixes.data(), fixes.size(), o->new_issue, stdout, e);
         });
         for (libscmp_fix &f : fixes)
             libscmp_fix_free(&f);

@@ -220,15 +220,26 @@ int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *ex
                    struct libscmp_fix *fixes, size_t nfixes, char **out, FILE *report);
 
 /**
+ * @brief libs-update --new for one program without expected data: every
+ * case of the port's run as KEY [fixed #issue] (the expected data of a
+ * machine on which the original does not run), in the order of
+ * libscmp_sorted.
+ * @return 0 = *out written (malloc'd), 1 = refused (reported), -1 = out of memory
+ */
+int libscmp_update_new(const struct libscmp_file *run, uint32_t issue, char **out, FILE *report);
+
+/**
  * @brief libs-update on directories: every program with expected data in
  * EXPECTED_DIR (or the ones only names) from RUN_DIR; each fix must apply
- * in exactly one program.  Nothing is written unless all is well; an
- * unchanged file is not rewritten.
+ * in exactly one program.  With new_issue (0: none), a program that only
+ * names and that has no expected data gets it from the run, every case
+ * [fixed #new_issue] (libscmp_update_new).  Nothing is written unless all
+ * is well; an unchanged file is not rewritten.
  * @return 0 = written, 1 = refused, 2 = error
  */
 int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *const *only,
-                        size_t nonly, struct libscmp_fix *fixes, size_t nfixes, FILE *out,
-                        FILE *err);
+                        size_t nonly, struct libscmp_fix *fixes, size_t nfixes,
+                        uint32_t new_issue, FILE *out, FILE *err);
 
 /* --- the order of the expected data ----------------------------------- */
 

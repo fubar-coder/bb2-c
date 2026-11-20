@@ -396,6 +396,29 @@ int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *ex
     return 0;
 }
 
+int libscmp_update_new(const struct libscmp_file *run, uint32_t issue, char **out, FILE *report)
+{
+    char *text = NULL;
+    size_t i, len;
+    FILE *o;
+    int r;
+
+    *out = NULL;
+    if (!(o = open_memstream(&text, &len)))
+        return -1;
+    fprintf(o, "# capture %s 1\n", run->name);
+    for (i = 0; i < run->ncases; i++) {
+        const struct libscmp_case *c = &run->cases[i];
+
+        put_case(o, run->text + c->key, c->keylen, FIXED, issue, run->text + c->val, c->vallen);
+    }
+    if ((r = close_sorted(o, &text, &len, out, report)))
+        return r;
+    fprintf(report, "%s: new, %zu cases [fixed #%lu], of the port only\n", run->name, run->ncases,
+            (unsigned long)issue);
+    return 0;
+}
+
 /* --- directories ------------------------------------------------------- */
 
 /* text into path unless it holds it already; 0 = unchanged, 1 = written,
@@ -548,8 +571,8 @@ int libscmp_accept_dirs(const char *run1_dir, const char *run2_dir, const char *
 }
 
 int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *const *only,
-                        size_t nonly, struct libscmp_fix *fixes, size_t nfixes, FILE *out,
-                        FILE *err)
+                        size_t nonly, struct libscmp_fix *fixes, size_t nfixes,
+                        uint32_t new_issue, FILE *out, FILE *err)
 {
     struct libscmp_names names = { 0 };
     struct newfile *nv = NULL;
@@ -572,9 +595,38 @@ int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *co
         if (!pr || !pe) {
             fprintf(err, "out of memory\n");
             status = 2;
-        } else if (!libscmp_exists(pe)) {
-            fprintf(err, "%s: no expected data (%s; record it with libs-capture)\n", name, pe);
+        } else if (!libscmp_exists(pe) && (!new_issue || !libscmp_exists(pr))) {
+            if (new_issue)
+                fprintf(err, "%s: no expected data (%s) and no output of the run (%s)\n", name,
+                        pe, pr);
+            else
+                fprintf(err, "%s: no expected data (%s; record it with libs-capture, or --new N "
+                        "for a program of the port only)\n", name, pe);
             status = 2;
+        } else if (!libscmp_exists(pe)) {
+            /* --new: every case of the port's run as [fixed #N] */
+            struct libscmp_file run;
+
+            if (libscmp_load_named(&run, run_dir, name, LIBSCMP_RUN, err))
+                status = 2;
+            else {
+                char *text;
+                int r = libscmp_update_new(&run, new_issue, &text, out);
+
+                if (r < 0) {
+                    fprintf(err, "out of memory\n");
+                    status = 2;
+                } else if (r) {
+                    if (!status)
+                        status = 1;
+                } else {
+                    nv[nn].path = pe;
+                    nv[nn].text = text;
+                    nn++;
+                    pe = NULL;
+                }
+            }
+            libscmp_free(&run);
         } else if (!libscmp_exists(pr)) {
             fprintf(out, "%s: expected data, but no output of the run (%s)\n", name, pr);
             if (!status)

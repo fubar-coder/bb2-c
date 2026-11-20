@@ -356,6 +356,9 @@ OPTIONS:
           --fix KEY#N         make the unqualified case KEY the pair "KEY [orig]" (the old
                               value) and "KEY [fixed #N]" (the port's), or "KEY [orig #N]" if
                               the port lacks KEY (also from "KEY [orig]" alone)
+          --new N             a program of --only without expected data gets every case of the
+                              port's run as "KEY [fixed #N]" (a machine on which the original
+                              does not run)
 
 Every "[fixed #N]" case gets the port's value; nothing else changes (an
 unqualified case the port gives another value is reported). A --fix must apply
@@ -376,7 +379,12 @@ same way; a KEY only the port's run has becomes `KEY [fixed #N]` alone. The case
 must apply in exactly one program (else `--only` names the program); one
 whose port value is the expected one, or whose key is qualified already,
 is refused. The programs are those of `EXPECTED_DIR` or the ones `--only`
-names. Nothing is written unless all is well.
+names. `--new N` makes the expected data of a program `--only` names
+that has none: every case of the port's run becomes `KEY [fixed #N]`
+(the data of a machine on which the original does not run, for example
+`libs/tests/expected-a500-204/`, issue #1151); a program that has
+expected data is updated as above, and one without expected data and
+without the run's output is an error. Nothing is written unless all is well.
 
 ### libs-dump
 

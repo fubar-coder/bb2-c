@@ -856,7 +856,7 @@ TEST_CASE("accept_dirs", "[libscmp]")
         REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
         REQUIRE(x != NULL);
-        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, 0, m, x);
         fclose(m);
         fclose(x);
         CHECK(status == 1 && strstr(report, "--fix r|x||1#4: the key is in no program's expected data or run\n")
@@ -869,7 +869,7 @@ TEST_CASE("accept_dirs", "[libscmp]")
         REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
         REQUIRE(x != NULL);
-        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, 0, m, x);
         fclose(m);
         fclose(x);
         /* a: [fixed #7] from the port's $2 ... and b's pair */
@@ -886,7 +886,7 @@ TEST_CASE("accept_dirs", "[libscmp]")
         REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
         REQUIRE(x != NULL);
-        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, 0, m, x);
         fclose(m);
         fclose(x);
         CHECK(status == 1 && strstr(report, "the key is in more than one program (name it with --only)"));
@@ -897,13 +897,58 @@ TEST_CASE("accept_dirs", "[libscmp]")
         REQUIRE(m != NULL);
         x = open_memstream(&e, &elen);
         REQUIRE(x != NULL);
-        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", only_b, 1, fx, 1, m, x);
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", only_b, 1, fx, 1, 0, m, x);
         fclose(m);
         fclose(x);
         CHECK(status == 0 && holds("libscmp-acc/exp", "a", "# capture a 1\nr|c||1\t$1\n")
               && holds("libscmp-acc/exp", "b", "# capture b 1\nr|c||1 [orig]\t$1\nr|c||1 [fixed #4]\t$5\n"));
         free(e);
         libscmp_fix_free(&fx[0]);
+    }
+    /* update --new: a program of the port only (the data of another
+       machine) gets every case as [fixed #N], in the writers' order;
+       without --new, and without the program's run, it is an error */
+    {
+        const char *only_c[] = { "c" }, *only_bc[] = { "b", "c" };
+        int status;
+
+#define UPDATE(only, n, issue) do { \
+        free(report); \
+        m = open_memstream(&report, &reportlen); \
+        x = open_memstream(&e, &elen); \
+        REQUIRE(m != NULL && x != NULL); \
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", only, n, NULL, 0, issue, m, x); \
+        fclose(m); \
+        fclose(x); \
+    } while (0)
+        UPDATE(only_c, 1, 1151);
+        CHECK(status == 2 && strstr(e, "c: no expected data (libscmp-acc/exp/c.txt) and no output "
+                                       "of the run (libscmp-acc/r1/c.txt)\n"));
+        free(e);
+        put_file("libscmp-acc/r1", "c", "# capture c 1\nr|z||1\t$2\nr|c||10\t$1\nr|c||2\t$0\n");
+        UPDATE(only_c, 1, 0);
+        CHECK(status == 2 && strstr(e, "c: no expected data (libscmp-acc/exp/c.txt; record it "
+                                       "with libs-capture, or --new N for a program of the port only)\n"));
+        CHECK(access("libscmp-acc/exp/c.txt", F_OK) != 0);
+        free(e);
+        /* b has expected data: an ordinary update beside the new c */
+        UPDATE(only_bc, 2, 1151);
+        CHECK(status == 0 && strstr(report, "c: new, 3 cases [fixed #1151], of the port only\n")
+              && strstr(report, "written: libscmp-acc/exp/c.txt\n1 files written, 1 unchanged\n"));
+        CHECK(holds("libscmp-acc/exp", "c", "# capture c 1\nr|c||2 [fixed #1151]\t$0\n"
+                    "r|c||10 [fixed #1151]\t$1\nr|z||1 [fixed #1151]\t$2\n"));
+        CHECK(holds("libscmp-acc/exp", "b", "# capture b 1\nr|c||1 [orig]\t$1\nr|c||1 [fixed #4]\t$5\n"));
+        free(e);
+        /* again: c exists now and is updated as usual */
+        put_file("libscmp-acc/r1", "c", "# capture c 1\nr|z||1\t$3\nr|c||10\t$1\nr|c||2\t$0\n");
+        UPDATE(only_c, 1, 1151);
+        CHECK(status == 0 && strstr(report, "c: r|z||1 [fixed #1151]: $3, was $2\n"));
+        CHECK(holds("libscmp-acc/exp", "c", "# capture c 1\nr|c||2 [fixed #1151]\t$0\n"
+                    "r|c||10 [fixed #1151]\t$1\nr|z||1 [fixed #1151]\t$3\n"));
+        free(e);
+#undef UPDATE
+        unlink("libscmp-acc/r1/c.txt");
+        unlink("libscmp-acc/exp/c.txt");
     }
 }
 
