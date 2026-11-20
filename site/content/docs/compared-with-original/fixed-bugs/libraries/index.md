@@ -7125,3 +7125,16 @@ does.
   it."; the original freed it and went on playing the freed memory
   ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#freetrackermodule-playing" >}}),
   [#436](https://github.com/fubar-coder/bb2-c/issues/436)).
+* `PauseModule` kept its pause whatever the program did in between.
+  After a pause, the next `PauseModule` did not pause a module started
+  again, but played a module that `StopTracker` had stopped, or the
+  freed memory of a module that `FreeTrackerModule` had freed; two
+  `PauseModule` after `StopTracker` played the stopped module again.
+  `PauseModule` pauses only a module that plays and continues only the
+  module it paused. `StartTracker`, `StopTracker`,
+  `ChangeTrackerVBlank` and freeing the paused module, also by loading
+  or decoding another module into its slot, end the pause. A program
+  that used two `PauseModule` to continue a module after `StopTracker`,
+  or after the module stopped itself with the effect `F00`, finds it
+  stopped; `StartTracker` plays it again from the beginning
+  ([#1076](https://github.com/fubar-coder/bb2-c/issues/1076)).

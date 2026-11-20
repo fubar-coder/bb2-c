@@ -7678,3 +7678,11 @@ rows:
     text: "An array field of a NewType with 65536 or more elements, or a negative count, is \"Type too Big\"; the original gave it the size of the count modulo 65536, and programs wrote past it."
     page: compiler
     anchor: newtypes
+  - issue: 1076
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "PauseModule"
+    text: "`PauseModule` pauses only a module that plays and continues only the one it paused; `StartTracker`, `StopTracker`, `ChangeTrackerVBlank` and freeing the module end the pause. The original's next `PauseModule` played a restarted, stopped or freed module, and two calls continued a stopped one."
+    page: libraries
+    anchor: rwe-other-fixes

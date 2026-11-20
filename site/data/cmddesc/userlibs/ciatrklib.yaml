@@ -60,10 +60,13 @@
 "PauseModule":
   text: Pauses the module and silences the voices; the next call continues it.
   notes: |
-    Kept from the original: `StartTracker` and `StopTracker` do not end
-    a pause. After a pause, the next `PauseModule` only continues, so a
-    module started again is not paused by it and a stopped one plays
-    again ([#1076](https://github.com/fubar-coder/bb2-c/issues/1076)).
+    Only a module that plays is paused; without one, the command does
+    nothing. A pause ends with a `StartTracker` that starts a module,
+    with `StopTracker` and `ChangeTrackerVBlank`, and when the paused
+    module is freed, by `FreeTrackerModule` or by loading or decoding
+    another module into its slot. After that, `PauseModule` works as if
+    there had been no pause. So a module that `StopTracker` or the effect
+    `F00` stopped is not continued by `PauseModule`.
 "ChangeTrackerVBlank":
   text: Switches to playing without the CIA interrupt. It stops the module and removes the interrupt; from then on the program calls `PlayTracker` 50 times a second itself.
   notes: |
