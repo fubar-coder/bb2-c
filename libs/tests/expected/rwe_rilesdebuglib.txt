@@ -61,7 +61,8 @@ D_CheckNMoveA|dest|$D3+sh,2|1	bytes 800 fnv B78ED80B
 D_CheckNMoveA|dest|$D3+sh,3|1	bytes 800 fnv 9CFB068F
 D_CheckNMoveA|dest|$D3+sh,4|1	bytes 800 fnv BBE6CFF2
 D_CheckNMoveA|dest|$D3+sh,5|1	bytes 800 fnv B4358589
-D_CheckNMoveA|dest|$FFFFFFF0,2|1	bytes 800 fnv 6A231805
+D_CheckNMoveA|dest|$FFFFFFF0,2|1 [orig]	bytes 800 fnv 6A231805
+D_CheckNMoveA|dest|$FFFFFFF0,2|1 [fixed #717]	bytes 800 fnv C126C65D
 D_CheckNMoveA|kept|$41A,3|1	kept
 D_CheckNMoveA|kept|$41E,0|1	kept
 D_CheckNMoveA|kept|$C8+sh,0|1	kept
@@ -106,7 +107,8 @@ D_CheckNMoveWord|dest|$D3+sh,2|1	bytes 800 fnv 6BB84A36
 D_CheckNMoveWord|dest|$D3+sh,3|1	bytes 800 fnv A318A84F
 D_CheckNMoveWord|dest|$D3+sh,4|1	bytes 800 fnv C0D5DAF5
 D_CheckNMoveWord|dest|$D3+sh,5|1	bytes 800 fnv 08C99A42
-D_CheckNMoveWord|dest|$FFFFFFF0,2|1	bytes 800 fnv 01B0BED5
+D_CheckNMoveWord|dest|$FFFFFFF0,2|1 [orig]	bytes 800 fnv 01B0BED5
+D_CheckNMoveWord|dest|$FFFFFFF0,2|1 [fixed #717]	bytes 800 fnv 97301AA9
 D_CheckNMoveWord|kept|$41A,3|1	kept
 D_CheckNMoveWord|kept|$41E,0|1	kept
 D_CheckNMoveWord|kept|$C8+sh,0|1	kept
@@ -229,7 +231,8 @@ D_HexWord|dest|$64+sh,5|1	bytes 800 fnv BC8E1930
 D_HexWord|dest|$64+sh,6|1	bytes 800 fnv 4E073BAF
 D_HexWord|dest|$64+sh,7|1	bytes 800 fnv 1F449E2D
 D_HexWord|dest|$64+sh,8|1	bytes 800 fnv D39EE2AC
-D_HexWord|dest|$FFFFFFF0,2|1	bytes 800 fnv 8467CF05
+D_HexWord|dest|$FFFFFFF0,2|1 [orig]	bytes 800 fnv 8467CF05
+D_HexWord|dest|$FFFFFFF0,2|1 [fixed #717]	bytes 800 fnv F67CA8E5
 D_HexWord|kept|$12D+sh,1|1	kept
 D_HexWord|kept|$12D+sh,2|1	kept
 D_HexWord|kept|$12D+sh,3|1	kept

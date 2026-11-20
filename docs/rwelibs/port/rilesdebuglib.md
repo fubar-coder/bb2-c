@@ -152,6 +152,13 @@ d5-d7, a0-a3 and a6 in places.
   (DENISEID, SPR7DATB, BLTCON0L gave BLTCON0's $040): its compare ran
   into the next name (#713; test `rilesdebuglib-getcustomregadr-prefix`;
   the `libs_emulator` cases `[fixed #713]`).
+* The "below $420" tests (D_HexWord, D_CheckNMoveA, D_CheckNMoveWord,
+  GetDataItem) compare unsigned. The original's `CMP.l`/`BLT` took every
+  address from $80000000 for low memory too: `*` in place of the bytes,
+  0 from GetDataItem - on a machine with 24 address lines the same
+  memory as the low 24 bits, the ROM at $FFFFFFF0 among it (#717; test
+  `rilesdebuglib-lowmem-signed` on the a500; the `libs_emulator` cases
+  `[fixed #717]` of $FFFFFFF0).
 
 ## BUG(orig)
 
@@ -160,8 +167,6 @@ d5-d7, a0-a3 and a6 in places.
   size 0 reads 65536 bytes, a negative size fewer (-1: 65535) (#701).
 * D_HexWord at an odd source writes "XX YY" per word, without the space
   the even case writes behind each word (#715).
-* The "below $420" tests compare signed: addresses from $80000000 show
-  `*` too (GetDataItem: 0) (#717).
 * PeekMax$ copies max+1 characters but returns the length max (a3 one
   character behind the result) (#718).
 * GetCopIns$ masks bit 0 of both digits of a horizontal position (WAIT,

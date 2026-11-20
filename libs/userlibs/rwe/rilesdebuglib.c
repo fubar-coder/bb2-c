@@ -50,9 +50,6 @@
  *     (DBRA) (#701).
  *   - D_HexWord at an odd source writes "XX YY" per word, without the
  *     space behind it that the even case writes (#715).
- *   - The "address below $420" checks compare signed: addresses from
- *     $80000000 show "*" too (D_HexWord, D_CheckNMoveA/Word) or give 0
- *     (GetDataItem) (#717).
  *   - PeekMax$ copies max+1 characters but returns the length max (a3 is
  *     one behind the result) (#718).
  *   - GetCopIns$ clears bit 0 of both nibbles of the horizontal positions
@@ -103,6 +100,9 @@
  *   - GetCustomRegAdr finds a register only by its whole name; the
  *     original matched a prefix (the string could go on behind the
  *     table's name) and never found a name of 8 characters (#713).
+ *   - The "address below $420" checks compare unsigned; the original's
+ *     compared signed, so every address from $80000000 showed "*" too
+ *     (D_HexWord, D_CheckNMoveA/Word) or gave 0 (GetDataItem) (#717).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -455,8 +455,9 @@ static const UBYTE customchipnames[256][8] = {
     "<UNUSED>", "<UNUSED>", "<UNUSED>", "<UNUSED>", "<UNUSED>", "<UNUSED>", "FMODE   ", "NOOP    ",
 };
 
-/* "address below $420" (CMP.l with $420, signed) */
-#define LOWMEM(p) ((LONG)(p) < 0x420)
+/* "address below $420", unsigned (fixed #717: the original's CMP.l/BLT
+   took every address from $80000000 for low memory too) */
+#define LOWMEM(p) ((ULONG)(p) < 0x420)
 
 /* --------------------------------------------------------- init, finit */
 
@@ -557,8 +558,8 @@ static UBYTE *hexbyte(UBYTE *d, const UBYTE **s)
  * @brief D_HexWord source,address,num: num words of memory as hex text.
  *
  * "XXXX " each; at an odd source "XX YY" without the space behind
- * (BUG(orig) (#715)).  Bytes at addresses below $420 show "*" (a signed
- * compare: from $80000000 too, BUG(orig) (#717)).  No 0 is written.
+ * (BUG(orig) (#715)).  Bytes at addresses below $420 show "*" (an
+ * unsigned compare, fixed #717).  No 0 is written.
  * num 0 runs 65536 times (DBRA, BUG(orig) (#701)).
  * @param src  d0: the source address
  * @param dst  d1: the buffer
@@ -650,8 +651,8 @@ static UBYTE *checkbyte(UBYTE *d, const UBYTE **s)
  * @brief D_CheckNMoveA source_address,dest_address,count: as
  * D_CheckNMove, with no 0 in the characters and "*" below $420.
  *
- * A 0 byte becomes 1; an address below $420 (signed compare, BUG(orig)
- * (#717)) gives '*'.  count 0 runs 65536 times (#701).
+ * A 0 byte becomes 1; an address below $420 (unsigned compare, fixed
+ * #717) gives '*'.  count 0 runs 65536 times (#701).
  * @param s      d0: the source
  * @param d      d1: the destination (5 bytes per long)
  * @param count  d2.w: the number of longs
@@ -684,7 +685,7 @@ static void BLITZ_ROUTINE checknmovea_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_R
  * as 2 characters each, no gap; no 0, "*" below $420.
  *
  * count 0 (and $8000: the byte count count*2 is a word) runs 65536 times
- * (DBRA, BUG(orig) (#701)); the address check is signed (#717).
+ * (DBRA, BUG(orig) (#701)); the address check is unsigned (fixed #717).
  * @param s      d0: the source
  * @param d      d1: the destination
  * @param count  d2.w: the number of words
@@ -824,8 +825,8 @@ static ULONG BLITZ_ROUTINE gethexadr_c(const UBYTE *addr BL_REG(d0), UBYTE mode 
  * the word size-1, BUG(orig) (#701)).
  * @param addr  d0: the address
  * @param size  d1.w: 1 byte, 2 word, otherwise long
- * @return d0: the value, 0 for an address below $420 (a signed compare:
- *         from $80000000 too, BUG(orig) (#717))
+ * @return d0: the value, 0 for an address below $420 (an unsigned
+ *         compare, fixed #717)
  */
 static ULONG BLITZ_ROUTINE getdataitem_c(const UBYTE *addr BL_REG(d0), UWORD size BL_REG(d1))
 {
