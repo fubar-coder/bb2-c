@@ -27,7 +27,7 @@
  * the column $FFFF with the caller's d6 high word $FFFF (#708);
  * GetProgMode; SearchMem with every type (also invalid ones), found at
  * the start, inside, across the end (word/long), start = end, the string
- * search after a partial match (BUG(orig) (#723)), the empty string, the space
+ * search after a partial match (#723), the empty string (#721), the space
  * bar test (RawStatus every 127 steps; abort with 1) and SearchMemFound;
  * PeekMax$ (max -1..100, the length and a3, #718); GetHex$/GetHexAdr$ (all
  * modes); GetCustomReg for every register word $000-$1FD, $1FE and above,

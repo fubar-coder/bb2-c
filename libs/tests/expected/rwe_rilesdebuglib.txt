@@ -8198,7 +8198,8 @@ SearchMem|RawStatus calls|2,$9999,0,1024 word not found|1	$00000008
 SearchMem|RawStatus calls|2,$ABCD4D54,0,1024 word, high bits|1	$00000000
 SearchMem|RawStatus calls|3,$7A81888F,0,1024 long|1	$00000001
 SearchMem|RawStatus calls|4,$1500+sh,0,1024 string|1	$00000004
-SearchMem|RawStatus calls|4,$1510+sh,0,1024 string ab|1	$00000004
+SearchMem|RawStatus calls|4,$1510+sh,0,1024 string ab|1 [orig]	$00000004
+SearchMem|RawStatus calls|4,$1510+sh,0,1024 string ab|1 [fixed #723]	$00000003
 SearchMem|RawStatus calls|4,$1510+sh,500,520 "ab" after "aab"|1	$00000000
 SearchMem|RawStatus calls|4,$1520+sh,0,1024 string xaab|1	$00000003
 SearchMem|RawStatus calls|4,$1530+sh,0,1024 empty string|1	$00000008
@@ -8326,8 +8327,10 @@ SearchMemFound|d0|2,$9999,0,1024 word not found|1	$00000000
 SearchMemFound|d0|2,$ABCD4D54,0,1024 word, high bits|1	$8000100B
 SearchMemFound|d0|3,$7A81888F,0,1024 long|1	$800010A3
 SearchMemFound|d0|4,$1500+sh,0,1024 string|1	$800011FA
-SearchMemFound|d0|4,$1510+sh,0,1024 string ab|1	$80001201
-SearchMemFound|d0|4,$1510+sh,500,520 "ab" after "aab"|1	$80001201
+SearchMemFound|d0|4,$1510+sh,0,1024 string ab|1 [orig]	$80001201
+SearchMemFound|d0|4,$1510+sh,0,1024 string ab|1 [fixed #723]	$800011F6
+SearchMemFound|d0|4,$1510+sh,500,520 "ab" after "aab"|1 [orig]	$80001201
+SearchMemFound|d0|4,$1510+sh,500,520 "ab" after "aab"|1 [fixed #723]	$800011F6
 SearchMemFound|d0|4,$1520+sh,0,1024 string xaab|1	$800011F4
 SearchMemFound|d0|4,$1530+sh,0,1024 empty string|1	$00000000
 SearchMemFound|d0|4,$1540+sh,0,1024 space bar, string|1	$00000000

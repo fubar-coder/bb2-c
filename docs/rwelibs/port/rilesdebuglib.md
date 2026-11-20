@@ -224,6 +224,12 @@ d5-d7, a0-a3 and a6 in places.
   1 or 3 behind the end (#722; test `rilesdebuglib-searchmem-across-end`;
   the `libs_emulator` cases `[fixed #722]` "word across the end" and
   "long across").
+* After a mismatch behind a partial match, `SearchMem`'s string search
+  goes on one byte behind the partial match's start. The original went
+  on behind the mismatch: `ab` was not found in `aab` (#723; test
+  `rilesdebuglib-searchmem-partial-match`; the `libs_emulator` cases
+  `[fixed #723]` "string ab" and `"ab" after "aab"`, now found at 502,
+  with one RawStatus call less).
 
 ## BUG(orig)
 
@@ -245,9 +251,8 @@ d5-d7, a0-a3 and a6 in places.
 * FPrintDetoke: after the `>` marker an inverse space follows too when
   the column counter (with the caller's high word of d6) became 0 (#708).
 * D_FindStringPtr never compares the long at areg5 itself (#705).
-* SearchMem: the string search does not go back after a partial match
-  (`ab` in `aab` is not found there) (#723); the empty string compares
-  the bytes behind its 0 (#721). The space bar test reads RawStatus
+* SearchMem: the empty string compares the bytes behind its 0 (#721).
+  The space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.
 * AddProcessPtr has no limit of 20 entries (#700).
 

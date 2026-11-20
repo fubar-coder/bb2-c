@@ -61,9 +61,8 @@
  *   - FPrintDetoke: after the '>' marker, an inverse space follows if the
  *     column count (d6 with the caller's high word) became 0 (#708).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705).
- *   - SearchMem's string search does not go back after a partial match
- *     ("ab" is not found in "aab") (#723); an empty string compares the
- *     bytes behind its 0 (#721).
+ *   - SearchMem with an empty string compares the bytes behind its 0
+ *     (#721).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
  *     other data) (#700).
@@ -117,6 +116,9 @@
  *   - SearchMem's word and long searches find a value only if it lies in
  *     front of the end; the original tested only its start against the
  *     end and compared bytes up to 1 or 3 behind it (#722).
+ *   - SearchMem's string search goes on one byte behind the start of a
+ *     partial match after a mismatch; the original went on behind the
+ *     mismatch ("ab" was not found in "aab") (#723).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1312,9 +1314,11 @@ static int space_down(void)
  * The first place in start..end-1 with the byte (type 1), word (2), long
  * (3, 5, 6) or string (4, value = its address); another type finds
  * nothing.  The space bar is tested (RawStatus) every 127 steps and
- * ends the search.  The string search does not go back after a partial
- * match ("ab" is not found in "aab", BUG(orig) (#723)); an empty string
- * compares the bytes behind its 0 (#721).  A word or long counts only if
+ * ends the search.  After a mismatch behind a partial match the string
+ * search goes on one byte behind the partial match's start (fixed #723:
+ * the original went on behind the mismatch, "ab" was not found in "aab");
+ * an empty string compares the bytes behind its 0 (BUG(orig) (#721)).
+ * A word or long counts only if
  * it lies in front of the end (fixed #722: the original compared bytes
  * up to 1 or 3 behind the end).
  * @param type   d0.b: the type
@@ -1388,6 +1392,9 @@ static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG
             p++;
             CHECKEND();
             if (*match != *p) {
+                /* fixed (#723): on one byte behind the partial match's
+                   start */
+                p -= match - s;
                 match = s;
                 continue;
             }
