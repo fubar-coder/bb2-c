@@ -6860,6 +6860,14 @@ rows:
     text: "`GetIconObject` works on Kickstart 1.x, where a file without an icon gives 0; the original crashed there."
     page: libraries
     anchor: ritooltypeslib-fixes
+  - issue: 1150
+    severity: 5
+    topic: "Windows & screens"
+    library: "rimisclib"
+    command: "EZRequest, EZRequestArgs, ProgPath$, ProgDir$, ProgName$"
+    text: "`EZRequest`, `EZRequestArgs` and the program path commands work on Kickstart 1.x, with one or two gadgets and no title in the requester and the current directory as `ProgDir$`; the original crashed there."
+    page: libraries
+    anchor: rimisclib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

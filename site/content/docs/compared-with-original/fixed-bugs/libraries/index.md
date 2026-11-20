@@ -6222,6 +6222,19 @@ are described above.
   library
   ([`EZRequest` and `EZRequestArgs` with too many arguments]({{< relref "/docs/compared-with-original/new-errors#ezrequest-too-many-arguments" >}}),
   [#748](https://github.com/fubar-coder/bb2-c/issues/748)).
+* `EZRequest`, `EZRequestArgs`, `ProgPath$`, `ProgDir$` and `ProgName$`
+  work on Kickstart 1.x. The original called functions of Kickstart 2.0
+  in them and crashed there. On Kickstart 1.x:
+  * The requester is the older system requester. It has one or two
+    gadgets and no title; the results are the same as from Kickstart 2.0
+    on. With more than two gadgets no requester appears and the result
+    is 0, and with runtime error checking the program stops with the
+    error "More than two EZRequest gadgets need Kickstart 2.0".
+  * `ProgDir$` is the current directory, and `ProgName$` is taken from
+    the command the Shell started the program with, or is the name of
+    its task without a Shell. A program started from another directory, with a path in
+    front of its name, thus gets the current directory, not its own
+    ([#1150](https://github.com/fubar-coder/bb2-c/issues/1150)).
 * `Flip$` of an empty string or of one character returns it unchanged;
   the original exchanged 65536 pairs of bytes around the string and
   overwrote memory

@@ -26,6 +26,12 @@
     h.l=12 : m.l=23
     NPrint EZRequest("Request","It is %s|The time is %ld:%ld","So|What","Sunday",h,m)
     ```
+
+    On Kickstart 1.x the requester is the older system requester: it
+    shows no title and has one or two gadgets, with the same results.
+    With more than two gadgets no requester appears and the result is 0;
+    with runtime error checking that is the error "More than two
+    EZRequest gadgets need Kickstart 2.0".
 "Flip$":
   text: The string `String$` reversed; a string of 0 or 1 characters is returned unchanged.
 "InitArgParse":
@@ -55,6 +61,12 @@
     When the program has no directory of its own, as when it is
     resident, the current directory is used, and when it has no name,
     the name of its task.
+
+    On Kickstart 1.x the directory is always the current directory, and
+    the name is taken from the command the Shell started the program
+    with, or is the name of its task without a Shell. A program started from another
+    directory, with a path in front of its name, thus gets the current
+    directory, not its own.
 "ProgDir$":
   text: The directory of the running program, as in `ProgPath$`. Amiga mode only.
 "ProgName$":
