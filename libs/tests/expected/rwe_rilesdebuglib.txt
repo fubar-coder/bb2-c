@@ -8170,7 +8170,8 @@ ProcessString|a3|"Hello %p, list at $%c; 100%% done"|1	$00000033
 ProcessString|a3|after D_NextArg$|1	$00000005
 ProcessString|a3|no parser position|1 [orig]	$00000007
 ProcessString|a3|no parser position|1 [fixed #719]	$00000004
-ProcessString|a3|second run|1	$00000012
+ProcessString|a3|second run|1 [orig]	$00000012
+ProcessString|a3|second run|1 [fixed #700]	$0000000F
 ProcessString|d0|"%a %b %p"|1	$0000000D
 ProcessString|d0|"%a %b"|1	$00000008
 ProcessString|d0|"%a%b%c %d %%"|1	$00000011
@@ -8179,7 +8180,8 @@ ProcessString|d0|"Hello %p, list at $%c; 100%% done"|1	$0000002F
 ProcessString|d0|after D_NextArg$|1	$00000001
 ProcessString|d0|no parser position|1 [orig]	$00000003
 ProcessString|d0|no parser position|1 [fixed #719]	$00000000
-ProcessString|d0|second run|1	$0000000E
+ProcessString|d0|second run|1 [orig]	$0000000E
+ProcessString|d0|second run|1 [fixed #700]	$0000000B
 ProcessString|kept|"%a %b %p"|1	kept
 ProcessString|kept|"%a %b"|1	kept
 ProcessString|kept|"%a%b%c %d %%"|1	kept
@@ -8196,7 +8198,8 @@ ProcessString|out|"Hello %p, list at $%c; 100%% done"|1	bytes 800 fnv 30918B53
 ProcessString|out|after D_NextArg$|1	bytes 800 fnv 2A1F9ACA
 ProcessString|out|no parser position|1 [orig]	bytes 800 fnv 9B6A240F
 ProcessString|out|no parser position|1 [fixed #719]	bytes 800 fnv 34142445
-ProcessString|out|second run|1	bytes 800 fnv AF79EA4B
+ProcessString|out|second run|1 [orig]	bytes 800 fnv AF79EA4B
+ProcessString|out|second run|1 [fixed #700]	bytes 800 fnv CE6A1B9A
 ProcessString|popped|"%a %b %p"|1	$00000000
 ProcessString|popped|"%a %b"|1	$00000000
 ProcessString|popped|"%a%b%c %d %%"|1	$00000000

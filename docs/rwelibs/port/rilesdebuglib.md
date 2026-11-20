@@ -106,8 +106,6 @@ d5-d7, a0-a3 and a6 in places.
 * FPrintDetoke's inverse drawing computes the inverted bytes; the
   original inverts the glyph in the font itself (`NOT.l`) and back. Same
   output.
-* AddProcessPtr's 21st entry overwrites the code of D_InitParse in
-  the original, other data in the C build.
 
 ## Fixed (kind F, docs/libs/deviations.md 3a)
 
@@ -290,6 +288,18 @@ d5-d7, a0-a3 and a6 in places.
   `rilesdebuglib-fprint-bitmap-check`; the `libs_emulator` cases
   `[fixed #707]` of FLocate 210,4 and of the later planes; the column
   $FFFF of #708 now prints nothing, its `[fixed #708]` case).
+* `AddProcessPtr`'s table holds 20 entries: a 21st is ignored, and with
+  runtime error checking refused (`addprocessptrchk`): "AddProcessPtr
+  table holds at most 20 entries". init clears the 20 entries, so that a
+  run from the editor does not start with the run before's (which would
+  count toward the limit and point into freed strings). The original had
+  no count: the 21st entry went over the table's end mark and the bytes
+  behind it, the code of D_InitParse (in the C build other data, its
+  graphics.library base) (#700, as #904: refused in the release code, a
+  message with runtime error checking; tests
+  `rilesdebuglib-addprocessptr-no-limit` and, with runtime error
+  checking, `rilesdebuglib-addprocessptr-full-check`; the `libs_emulator`
+  cases `[fixed #700]` of the second run's ProcessString).
 
 ## BUG(orig)
 
@@ -298,7 +308,6 @@ d5-d7, a0-a3 and a6 in places.
 * D_FindStringPtr never compares the long at areg5 itself (#705).
 * SearchMem: the space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.
-* AddProcessPtr has no limit of 20 entries (#700).
 
 Like the original, and no defects: ClearProcessPtrs clears only the
 first entry's character (the others stay behind it, unreachable: it

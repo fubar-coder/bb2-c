@@ -1,11 +1,10 @@
 ; rilesdebuglib-addprocessptr-no-limit (#700) - AddProcessPtr appends to
 ; the table of 20 entries without a count: the 21st goes over the end
 ; mark and the bytes behind the table (in the original the code of
-; D_InitParse, called before, not after; in the C build the library's
-; data - its graphics.library base, which finit closes: the port's
-; session ends in a timeout at the end).  ProcessString then finds the
+; D_InitParse, called before, not after).  ProcessString then finds the
 ; 21st entry ("U").
 ; Correct: the 21st entry is refused, "%U" gives nothing.
+; @fixed #700
 ; @rwe rilesdebuglib
 ; @pass timeout=30
 DEFTYPE .l

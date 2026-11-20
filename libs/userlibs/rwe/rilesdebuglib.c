@@ -48,9 +48,6 @@
  *   - D_HexWord at an odd source writes "XX YY" per word, without the
  *     space behind it that the even case writes (#715).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705).
- *   - AddProcessPtr does not stop after 20 entries (the original then
- *     overwrites the code of D_InitParse behind the table, the C build
- *     other data) (#700).
  * Fixed:
  *   - GetCustomReg tests the register word unsigned; the
  *     original tested the word signed and the long for a negative value,
@@ -132,6 +129,12 @@
  *     size is checked (fprintchk): "Font printer needs a bitmap of 640
  *     pixels", "Font printer row outside the bitmap"; the original never
  *     looked at it (#707).
+ *   - AddProcessPtr's table holds 20 entries: a 21st is ignored, and
+ *     with runtime error checking refused (addprocessptrchk): "AddProcessPtr
+ *     table holds at most 20 entries"; init clears the 20 entries.  The
+ *     original had no limit: the 21st went over the end mark and
+ *     overwrote the code of D_InitParse behind the table (the C build:
+ *     other data, its graphics.library base) (#700).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -176,6 +179,7 @@ void _checknmovea(void), _checknmovea2(void), _outtextpen(void);
 void _initparse(void), rilesdebuglib_nextparsearg(void), _processstring(void);
 void _addprocessptr(void), _clearprocessptrs(void), _findlinetoken(void);
 void _getdataitem(void), rilesdebuglib_libinit(void), _fprintchk(void);
+void _addprocessptrchk(void);
 void rilesdebuglib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
@@ -372,7 +376,7 @@ BLITZ_NAME("ProcessString", "- the text of D_InitParse with %x replaced");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_addprocessptr, 0, 0);
+BLITZ_SUBS(_addprocessptr, _addprocessptrchk, 0);      /* check: fixed #700 */
 BLITZ_NAME("AddProcessPtr", "character,string");
 
 BLITZ_ASTATEMENT();
@@ -438,8 +442,9 @@ struct ptok {
     UBYTE c, z;
     const UBYTE *p;
 } __attribute__((packed, aligned(2)));
+#define USERTOKENS 20
 static struct {
-    struct ptok fixed[2], user[20];
+    struct ptok fixed[2], user[USERTOKENS];
     UBYTE end[2];
 } __attribute__((packed, aligned(2))) stringtokens = { { { 'p', 0, NULL }, { 'c', 0, NULL } } };
 static const UBYTE progname[] = "REDDebugger";
@@ -493,12 +498,22 @@ static const UBYTE customchipnames[256][8] = {
 /**
  * @brief init: open graphics.library (any version) and set ProcessString's
  * %p ("REDDebugger") and %c (the token list address in hex) entries.
+ *
+ * AddProcessPtr's 20 entries are cleared (fixed #700: a run from the
+ * editor started with the run before's entries, which counted toward the
+ * limit and pointed into its freed strings).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
+    int i;
+
     gfxbase = (struct GfxBase *)OpenLibrary((CONST_STRPTR)"graphics.library", 0);
     stringtokens.fixed[0].p = progname;
     stringtokens.fixed[1].p = tokenaddr;
+    for (i = 0; i < USERTOKENS; i++) {                  /* fixed (#700) */
+        stringtokens.user[i].c = 0;
+        stringtokens.user[i].p = NULL;
+    }
 }
 
 /**
@@ -1615,21 +1630,26 @@ static ULONG BLITZ_ROUTINE processstring_c(void)
 /**
  * @brief AddProcessPtr character,string: a new %x entry for ProcessString.
  *
- * Behind the last entry, without a limit: after 20 entries the original
- * overwrites the code of D_InitParse behind the table, the C build other
- * data (BUG(orig) (#700)).
+ * Behind the last entry; the table holds 20, a 21st is ignored (with
+ * runtime error checking refused by addprocessptrchk) (fixed #700: the
+ * original had no limit, the 21st entry went over the end mark and
+ * overwrote the code of D_InitParse behind the table).
  * @param ch  d0: the string whose first character is x
  * @param s   d1: the string %x stands for
  */
 static void BLITZ_ROUTINE addprocessptr_c(const UBYTE *ch BL_REG(d0), const UBYTE *s BL_REG(d1))
 {
     struct ptok *e = stringtokens.user;
+    struct ptok *const full = stringtokens.user + USERTOKENS;
 
-    while (e->c)
+    while (e < full && e->c)                            /* fixed (#700) */
         e++;
+    if (e == full)
+        return;
     e->c = *ch;
     e->p = s;
-    e[1].c = 0;
+    if (e + 1 < full)                   /* the 20th: the end mark is 0 */
+        e[1].c = 0;
 }
 
 /**
@@ -1714,5 +1734,27 @@ static void BLITZ_ERRCHK fprintchk_c(const struct BitMap *bm BL_REG(a0))
         BLITZ_RUNERR(rowoutside);
 }
 
+BLITZ_ERRCHK_MESSAGE(tablefull, "AddProcessPtr table holds at most 20 entries");  /* fixed, #700 */
+
+/**
+ * @brief The error check of AddProcessPtr (debugger only).
+ *
+ * Fixed (#700), not in the original: the table has room for 20 entries;
+ * the release code ignores further ones, the check tells the programmer.
+ *
+ * Errors: "AddProcessPtr table holds at most 20 entries" when all 20 are
+ * in use.
+ */
+static void BLITZ_ERRCHK addprocessptrchk_c(void)
+{
+    int i;
+
+    for (i = 0; i < USERTOKENS; i++)
+        if (!stringtokens.user[i].c)
+            return;
+    BLITZ_RUNERR(tablefull);
+}
+
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(_fprintchk, fprintchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_addprocessptrchk, addprocessptrchk_c, "d0-d1/a0-a1");
