@@ -228,14 +228,15 @@ parameter that does not exist stops the run. The result is HTML in
 
 ### The command reference
 
-The command reference lists the libraries whose command tables are part
-of the repository: the build of such a library, with the option
-`CMDREF userlibs/<name>` of `blitz_library()`, checks that the table it
-generates from the built file equals the committed file in
-`site/data/libraries/`, and the target `cmdref_update` copies the
-generated files there. That is for libraries that become part of the
-port. A library of your own does not need it: its help texts are in the
-library file, and the editor's HELP key shows them.
+A library of your own does not need the command reference: its help
+texts are in the library file, and the editor's HELP key shows them.
+
+The command reference lists only the libraries whose command tables are
+part of the repository, the libraries that become part of the port. The
+build of such a library, with the option `CMDREF userlibs/<name>` of
+`blitz_library()`, checks that the table it generates from the built
+file equals the committed file in `site/data/libraries/`. The target
+`cmdref_update` copies the generated files there.
 
 ## Going further
 
