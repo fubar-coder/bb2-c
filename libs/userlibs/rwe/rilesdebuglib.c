@@ -45,10 +45,6 @@
  * bytes the source IncBins from "Blitz2:Debugger/Font.bin":
  * rilesdebuglib-font.bin, cut from AmiBlitz3's binary (archive/README.md).
  *
- * BUG(orig), kept:
- *   - D_HexWord at an odd source writes "XX YY" per word, without the
- *     space behind it that the even case writes (#715).
- *   - D_FindStringPtr never compares the long at areg5 itself (#705).
  * Fixed:
  *   - GetCustomReg tests the register word unsigned; the
  *     original tested the word signed and the long for a negative value,
@@ -150,7 +146,13 @@
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
  * always runs first); a %x without an entry drops x (as the source
- * intends).
+ * intends).  D_HexWord at an odd source writes "XX YY" per loop: the lone
+ * first byte, then the words at the even addresses ("12 3456 78" for the
+ * bytes 12 34 56 78), 5 characters per word as in the even case - a path
+ * of its own that keeps the memory's word boundaries (#715).
+ * D_FindStringPtr searches the 32 KB below areg5, up to areg5-2: the
+ * long at areg5 is the first of the globals above a5 (varslib's a5 is
+ * the globals' block + $8000), which its caller does not search (#705).
  *
  * DIFF: a2 and a3 stay unchanged where the original uses them as work
  * registers (FPrint: a2 = the font, a3 = the glyph; SearchMem: a2 = the
@@ -625,10 +627,11 @@ static UBYTE *hexbyte(UBYTE *d, const UBYTE **s)
 /**
  * @brief D_HexWord source,address,num: num words of memory as hex text.
  *
- * "XXXX " each; at an odd source "XX YY" without the space behind
- * (BUG(orig) (#715)).  Bytes at addresses below $420 show "*" (an
- * unsigned compare, fixed #717).  No 0 is written.  num 0 writes nothing
- * (fixed #701: the original's DBRA ran 65536 times).
+ * "XXXX " each; at an odd source "XX YY" per loop, the words at the even
+ * addresses (like the original, no defect, #715).  Bytes at addresses
+ * below $420 show "*" (an unsigned compare, fixed #717).  No 0 is
+ * written.  num 0 writes nothing (fixed #701: the original's DBRA ran
+ * 65536 times).
  * @param src  d0: the source address
  * @param dst  d1: the buffer
  * @param num  d2.w: the number of words
@@ -791,7 +794,8 @@ static void BLITZ_ROUTINE checknmoveword_c(const UBYTE *s BL_REG(d0), UBYTE *d B
  * an address.
  *
  * From areg5-32768 in steps of 2 up to areg5; the long at areg5 itself
- * is never compared (BUG(orig) (#705)).
+ * is not compared (like the original, no defect: the 32 KB below a5 are
+ * what the caller searches, #705).
  * @param areg5  d0: the end of the search
  * @param look   d1: the long to find
  * @return d0: the first address with the long, -1 if not found (not a

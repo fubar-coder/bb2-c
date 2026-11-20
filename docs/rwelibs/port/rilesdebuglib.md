@@ -326,19 +326,26 @@ d5-d7, a0-a3 and a6 in places.
   checking, `rilesdebuglib-addprocessptr-full-check`; the `libs_emulator`
   cases `[fixed #700]` of the second run's ProcessString).
 
-## BUG(orig)
+## Like the original, no defects
 
-* D_HexWord at an odd source writes "XX YY" per word, without the space
-  the even case writes behind each word (#715).
-* D_FindStringPtr never compares the long at areg5 itself (#705).
-* SearchMem: the space bar test reads RawStatus
-  every 127 steps; the abort returns 1 and keeps SearchMemFound.
-
-Like the original, and no defects: ClearProcessPtrs clears only the
-first entry's character (the others stay behind it, unreachable: it
-ends the lookup, and the next AddProcessPtr reuses it); the `%p`/`%c`
-entries are set by init and point to 0 before it (init always runs
-first); an unknown `%x` drops the x (intended by the source).
+* ClearProcessPtrs clears only the first entry's character (the others
+  stay behind it, unreachable: it ends the lookup, and the next
+  AddProcessPtr reuses it); the `%p`/`%c` entries are set by init and
+  point to 0 before it (init always runs first); an unknown `%x` drops
+  the x (intended by the source).
+* SearchMem tests the space bar (RawStatus) every 127 steps; the abort
+  returns 1 and keeps SearchMemFound.
+* D_HexWord at an odd source writes "XX YY" per loop: the lone first
+  byte, then the words at the even addresses ("12 3456 78" for the bytes
+  12 34 56 78). Each word takes 5 characters, as in the even case; the
+  odd case is a path of its own that keeps the memory's word boundaries,
+  so the debugger's memory window stays in line (#715).
+* D_FindStringPtr searches the 32 KB below areg5, up to areg5-2, and
+  does not compare the long at areg5 itself. varslib's a5 is the
+  globals' block + $8000, the variables lie from -32768(a5) upwards: the
+  debugger looks for the variable that points to a traced string in
+  that half, and the long at a5 is the first of the upper half, which
+  the routine does not search at all (#705).
 
 ## Test
 
