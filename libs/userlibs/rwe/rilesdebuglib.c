@@ -65,9 +65,7 @@
  *     ("ab" is not found in "aab") (#723); an empty string compares the
  *     bytes behind its 0 (#721).  The word/long searches compare bytes up
  *     to 1/3 behind the end (#722).
- *   - ProcessString works on the parser's current position (its "string"
- *     is no argument), reads from 0 when there is none (#719), and goes
- *     on behind a '%' at the end of the string (#720).
+ *   - ProcessString goes on behind a '%' at the end of the string (#720).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
  *     other data) (#700).
@@ -110,6 +108,11 @@
  *   - D_InitParse copies at most 255 characters and a 0 into its 256
  *     byte buffer; the original copied without a limit, over the
  *     parser's pointer and the code behind the buffer (#716).
+ *   - ProcessString gives the empty string without a parser position
+ *     (before D_InitParse, after the last D_NextArg$), as D_NextArg$; the
+ *     original read the text at address 0.  Its help text names no
+ *     argument (the original's "string" was none: the command works on
+ *     what D_InitParse stored) (#719).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -343,7 +346,8 @@ BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
 BLITZ_SUBS(_processstring, 0, 0);
-BLITZ_NAME("ProcessString", "string");
+/* fixed (#719): the help text named an argument "string" */
+BLITZ_NAME("ProcessString", "- the text of D_InitParse with %x replaced");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING, BL_LONG);
@@ -1516,14 +1520,17 @@ static ULONG BLITZ_ROUTINE nextparsearg_c(void)
 }
 
 /**
- * @brief ProcessString string: the parser's text with %x replaced.
+ * @brief ProcessString: the parser's text with %x replaced.
  *
- * The text from the parser's current position (its "string" is no
- * argument), at a3, with %x replaced by the string of entry x (%p
- * "REDDebugger", %c the token list address, then AddProcessPtr's
- * entries); %% gives a '%', a %x without an entry drops x.  Reads from
- * 0 when there is no position (BUG(orig) (#719)) and goes on behind a
- * '%' at the end of the string (#720).
+ * The text from the parser's current position (no argument: the command
+ * works on what D_InitParse stored, as its caller uses it), at a3, with
+ * %x replaced by the string of entry x (%p "REDDebugger", %c the token
+ * list address, then AddProcessPtr's entries); %% gives a '%', a %x
+ * without an entry drops x.  Without a parser position (before
+ * D_InitParse, after the last D_NextArg$) the result is empty, as
+ * D_NextArg$'s (fixed #719: the original read the text at address 0, and
+ * its help text named an argument "string").  Goes on behind a '%' at
+ * the end of the string (BUG(orig) (#720)).
  * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE processstring_c(void)
@@ -1533,6 +1540,8 @@ static ULONG BLITZ_ROUTINE processstring_c(void)
     ULONG n = 0;
     UBYTE c;
 
+    if (!a)                                             /* fixed (#719) */
+        return 0;
     for (;;) {
         c = *a++;
         if (!c)

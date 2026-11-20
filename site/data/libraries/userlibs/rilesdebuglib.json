@@ -245,7 +245,7 @@
     {
       "name": "ProcessString",
       "kind": "function",
-      "help": "string",
+      "help": "- the text of D_InitParse with %x replaced",
       "result": "string",
       "forms": [
         {"args": []}

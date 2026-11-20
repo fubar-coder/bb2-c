@@ -1,0 +1,14 @@
+# the intended differences of rilesdebuglib against its reference, the
+# reference build of rwelibsrc/LESDebuglib/LESDEBUGlib.bb by blitz2 2.10
+# (blitzlib compare, docs/development.md "Intended differences")
+# #719: ProcessString's help text names no argument (the original's
+# "string" was none); the longer text moves the entries behind it
+lib 49: entry 28 ProcessString +$2C: $73 != $2D
+lib 49: entry 29 AddProcessPtr +$0: $00 != $78
+lib 49: entry 30 ClearProcessPtrs +$0: $00 != $00
+lib 49: entry 31 FindLineToken +$0: $02 != $72
+lib 49: entry 32 GetDataItem +$0: $03 != $FF
+lib 49: entry 33 (nullsub) +$0: $00 != $31
+lib 49: entry 34 (nullsub) +$0: $00 != $20
+lib 49: end of the table +$8FC: $FF != $00
+lib 49: declaration part $902 != $926 bytes

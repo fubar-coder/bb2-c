@@ -200,6 +200,16 @@ d5-d7, a0-a3 and a6 in places.
   parser's pointer and the code behind the buffer (in the C build other
   data) (#716; test `rilesdebuglib-initparse-overflow`; the scenario of
   `libs_emulator` has no string that long).
+* `ProcessString` gives the empty string when the parser has no position
+  (before D_InitParse, after the last D_NextArg$), as D_NextArg$ does.
+  The original read the text at address 0. It works on the parser's
+  current position by design (a D_NextArg$ before it leaves less; the
+  debugger calls `D_InitParse s$ : a$=ProcessString`): its help text
+  "string" named an argument that the command never had and is now
+  "- the text of D_InitParse with %x replaced" (a declaration change,
+  `rilesdebuglib.declarations-intended.txt`) (#719; test
+  `rilesdebuglib-processstring-no-position`; the `libs_emulator` cases
+  `[fixed #719]` "no parser position").
 
 ## BUG(orig)
 
@@ -226,11 +236,7 @@ d5-d7, a0-a3 and a6 in places.
   the bytes behind its 0 (#721); word and long searches compare bytes up
   to 1 or 3 behind the end (#722). The space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.
-* ProcessString works on the parser's current position (its "string" in
-  the help text is no argument; a D_NextArg$ before it leaves less),
-  reads from address 0 when there is none (before D_InitParse, after the
-  last argument) (#719), and reads on behind a `%` at the end of the
-  text (#720).
+* ProcessString reads on behind a `%` at the end of the text (#720).
 * AddProcessPtr has no limit of 20 entries (#700).
 
 Like the original, and no defects: ClearProcessPtrs clears only the
