@@ -1369,7 +1369,8 @@ GetWBSprite (32 wide)|block +92|1E,28,2,6|1	$00000000
 GetWBSprite (32 wide)|block +94|1E,28,2,6|1	$00000000
 GetWBSprite (32 wide)|block +96|1E,28,2,6|1	$00008200
 GetWBSprite (32 wide)|block +98|1E,28,2,6|1	$00000024
-GetWBSprite (32 wide)|d0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|d0|1E,28,2,6|1 [orig]	$00000000
+GetWBSprite (32 wide)|d0|1E,28,2,6|1 [fixed #920]	$FFFFFFFF
 GetWBSprite (32 wide)|graphics.library open count|1E,28,2,6|1	$00000000
 GetWBSprite (32 wide)|kept|1E,28,2,6|1	kept
 GetWBSprite (32 wide)|popped|1E,28,2,6|1	$00000000
@@ -1655,7 +1656,8 @@ GetWBSprite (narrow)|block +92|0,0,4,5|1	$00000000
 GetWBSprite (narrow)|block +94|0,0,4,5|1	$00000000
 GetWBSprite (narrow)|block +96|0,0,4,5|1	$00008200
 GetWBSprite (narrow)|block +98|0,0,4,5|1	$00000024
-GetWBSprite (narrow)|d0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|d0|0,0,4,5|1 [orig]	$00000000
+GetWBSprite (narrow)|d0|0,0,4,5|1 [fixed #920]	$FFFFFFFF
 GetWBSprite (narrow)|graphics.library open count|0,0,4,5|1	$00000000
 GetWBSprite (narrow)|kept|0,0,4,5|1	kept
 GetWBSprite (narrow)|popped|0,0,4,5|1	$00000000
@@ -1941,7 +1943,8 @@ GetWBSprite (pointer)|block +92|0,0,3,0|1	$00000000
 GetWBSprite (pointer)|block +94|0,0,3,0|1	$00000000
 GetWBSprite (pointer)|block +96|0,0,3,0|1	$00008200
 GetWBSprite (pointer)|block +98|0,0,3,0|1	$00000024
-GetWBSprite (pointer)|d0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|d0|0,0,3,0|1 [orig]	$00000000
+GetWBSprite (pointer)|d0|0,0,3,0|1 [fixed #920]	$FFFFFFFF
 GetWBSprite (pointer)|graphics.library open count|0,0,3,0|1	$00000000
 GetWBSprite (pointer)|kept|0,0,3,0|1	kept
 GetWBSprite (pointer)|popped|0,0,3,0|1	$00000000
@@ -2084,7 +2087,8 @@ GetWBSprite (taken)|block +92|32,3C,1,2|1	$00000000
 GetWBSprite (taken)|block +94|32,3C,1,2|1	$00000000
 GetWBSprite (taken)|block +96|32,3C,1,2|1	$00008200
 GetWBSprite (taken)|block +98|32,3C,1,2|1	$00000024
-GetWBSprite (taken)|d0|32,3C,1,2|1	$00000002
+GetWBSprite (taken)|d0|32,3C,1,2|1 [orig]	$00000002
+GetWBSprite (taken)|d0|32,3C,1,2|1 [fixed #920]	$FFFFFFFF
 GetWBSprite (taken)|graphics.library open count|32,3C,1,2|1	$00000000
 GetWBSprite (taken)|kept|32,3C,1,2|1	kept
 GetWBSprite (taken)|popped|32,3C,1,2|1	$00000000

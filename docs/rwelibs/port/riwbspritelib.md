@@ -47,6 +47,15 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   `ChangeExtSpriteA` in a3 (`LEA dudtaglist(pc),a3`) and returns without
   restoring it: as a function in a string expression the rest of the
   expression was written over the library's tag list.
+* GetWBSprite returns -1 for every failure (no graphics.library, no
+  shape data, a shape narrower than 16, a failing `AllocBitMap`,
+  `AllocSpriteDataA` or `GetExtSpriteA`) and the channel 0–7 on success
+  (#920, W7 decision Q4, test `rwe/riwbspritelib-getwbsprite-fail-returns-channel`).
+  The original decided by the channel's table entry: when
+  `GetExtSpriteA` or `AllocSpriteDataA` failed, the result was still the
+  channel if the library held a sprite there, else 0; no graphics.library
+  or a narrow shape gave 0 (which cannot be told from channel 0), no
+  shape data or a failing `AllocBitMap` -1.
 
 ## BUG(orig), kept
 
@@ -56,11 +65,6 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   to `FreeSprite`; MoveWBSprite, ChangeWBSprite and WBSpriteX/Y index the
   table with the channel as is (#916) (without a sprite WBSpriteX/Y read
   the words at addresses 6 and 8, #922).
-* GetWBSprite: when `GetExtSpriteA` fails, the result is still the
-  channel if the table has a sprite there (an earlier one of the
-  library), else 0 (for channel -1 the entry before the table, the end
-  of the tag list: 0). Results: no graphics.library or a shape narrower
-  than 16: 0; no shape data or a failing `AllocBitMap`: -1 (#920).
 * The shape is copied width/16 words per row into the bitmap, without
   its `BytesPerRow` or the shape's `ebwidth` (#918), with `DBRA` counts
   (height or depth 0: 65536 rows/planes) (#917).
@@ -85,8 +89,9 @@ graphics.library's open count. Afterwards the free hardware sprites
 (`GetSprite` 1–7) must be those of the start. Shapes are built in
 memory (16, 20 and 32 wide, 1 and 2 planes, narrow, without data).
 Steps: WBSpriteX without a sprite, init, GetWBSprite on a free channel,
-on any (-1), on its own channel again (BUG(orig) #920: the channel), on the
-pointer's channel 0, 32 wide (refused on this screen), narrow, no data,
+on any (-1), on its own channel again (-1; the original's channel, fixed #920), on
+the pointer's channel 0, 32 wide (refused on this screen), narrow, no
+data,
 20 wide; WBSpriteX/Y; MoveWBSprite on two sprites and without one;
 ChangeWBSprite (2 and 1 planes, no sprite, narrow, no data);
 FreeWBSprite with and without a sprite; finit with sprites left.

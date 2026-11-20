@@ -24,8 +24,18 @@
  * behind it (BUG(orig), #916).  A shape is copied into a bitmap of
  * AllocBitMap, which AllocSpriteDataA converts.  Assembler besides the
  * thunks: the calls of MoveSprite and FreeSpriteData (the original
- * returns the d0 they leave).  Fixed (#1028): ChangeExtSprite keeps a3
- * (the original left it on the tag list it passes to ChangeExtSpriteA).
+ * returns the d0 they leave).
+ *
+ * Fixed:
+ *   - ChangeExtSprite keeps a3 (the original left it on the tag list it
+ *     passes to ChangeExtSpriteA) (#1028).
+ *   - GetWBSprite returns -1 for every failure and the channel 0-7 on
+ *     success.  The original decided by the table entry of the channel:
+ *     if GetExtSpriteA or AllocSpriteDataA failed, the result was still
+ *     the channel when the library held a sprite there, else 0; a narrow
+ *     shape (< 16) or no graphics.library gave 0, no shape data or a
+ *     failing AllocBitMap -1 (0 could not be told from channel 0)
+ *     (#920).
  *
  * BUG(orig):
  *   - No routine checks the channel: GetWBSprite stores at
@@ -35,13 +45,6 @@
  *     ChangeWBSprite, WBSpriteX/Y index the table with the channel as is
  *     (#916) (WBSpriteX/Y without a sprite read the words at 6 and 8,
  *     #922).
- *   - GetWBSprite: if GetExtSpriteA fails (channel in use), the result
- *     is still the channel when the table has a sprite there (an earlier
- *     one of the library), else 0 (for channel -1 the table's entry -1 is
- *     the end of the tag list before it: 0).  A shape without data gives
- *     -1, a narrow shape (< 16) or no graphics.library 0, a failing
- *     AllocBitMap -1, a failing AllocSpriteDataA 0 or the channel as
- *     above (#920).
  *   - The shape is copied without the bitmap's BytesPerRow, width/16
  *     words per row (the shape's ebwidth is not used either) (#918), and
  *     with DBRA counts: height or depth 0 copy 65536 rows/planes (#917).
@@ -307,36 +310,32 @@ static ULONG newsprite(void)
  * converted with AllocSpriteDataA (x, y set) and got with GetExtSpriteA
  * (channel -1: any); the sprite goes into the table.  BUG(orig): the
  * channel is not checked (#916); the copy ignores BytesPerRow and
- * ebwidth (#918) and has DBRA counts (#917); the results are mixed
- * (#920): a shape without data gives -1, a narrow shape (< 16) or no
- * graphics.library 0, a failing AllocBitMap -1; a failing
- * AllocSpriteDataA or GetExtSpriteA gives the channel if the table has
- * a sprite there, else 0.
+ * ebwidth (#918) and has DBRA counts (#917).  Fixed (#920): every
+ * failure (no graphics.library, no shape data, a shape narrower than
+ * 16, a failing AllocBitMap, AllocSpriteDataA or GetExtSpriteA) gives
+ * -1; the original decided by the channel's table entry (the channel if
+ * the library held a sprite there, else 0) and gave 0 or -1 for the
+ * others.
  * @param x      d0: x (a word)
  * @param y      d1: y (a word)
  * @param ch     d3: the channel, -1 for any
  * @param shape  a0: the shape (!libs #shapeslib,#ia0|#pd2)
- * @return d0: the channel, or the values above
+ * @return d0: the channel 0-7, -1 if no sprite was got
  */
 static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
                                          LONG ch BL_REG(d3), ULONG shape BL_REG(a0))
 {
-    int r;
+    LONG got = -1;
 
-    if (!wd.graphicslibbase)
-        return 0;
-    if (!SHAPEDATA(shape))
+    if (!wd.graphicslibbase || !SHAPEDATA(shape))
         return (ULONG)-1;
     wd.shapeaddr = shape;
     wd.sprx = x;
     wd.spry = y;
     wd.sprchannel = ch;
-    r = shapebitmap();
-    if (r <= 0)
-        return r ? (ULONG)-1 : 0;
+    if (shapebitmap() <= 0)
+        return (ULONG)-1;
     if (newsprite()) {
-        LONG got;
-
         wd.getspritetaglist[0].ti_Data = (ULONG)wd.sprchannel;    /* GSTAG_SPRITE_NUM */
         got = GetExtSpriteA((struct ExtSprite *)wd.temppointer,
                             wd.getspritetaglist);
@@ -349,8 +348,8 @@ static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
         }
     }
     FreeBitMap((struct BitMap *)wd.mybitmap);           /* 'freemybitmap */
-    if (!*ENTRYW(wd.sprchannel))
-        return 0;
+    if (got == -1)
+        return (ULONG)-1;
     return (ULONG)wd.sprchannel;
 }
 

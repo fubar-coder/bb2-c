@@ -26,9 +26,10 @@
  * in memory.  Covered: WBSpriteX without a
  * sprite (reads the word at 6, BUG(orig), #922), init, GetWBSprite on a free
  * channel, on any channel (-1), on its own channel again (GetExtSpriteA
- * fails, the channel is returned, BUG(orig), #920), on channel 0 (the mouse
- * pointer's: 0), 32 pixels wide (refused on this Workbench screen: 0),
- * with a narrow shape (0), a shape without data (-1), 20 wide
+ * fails: -1; the original returned the channel, fixed #920), on channel 0
+ * (the mouse pointer's), 32 pixels wide (refused on this Workbench
+ * screen), with a narrow shape (all three -1; the original's 0, fixed
+ * #920), a shape without data (-1), 20 wide
  * (copied as 16); WBSpriteX/Y; MoveWBSprite on two sprites and without
  * one; ChangeWBSprite (new images with 2 and 1 planes, no sprite, narrow
  * shape, no data); FreeWBSprite with and without a sprite; finit with
@@ -281,8 +282,8 @@ int main(int argc, char **argv)
     KEEPS("GetWBSprite (any)", a3);
     KEEPS("GetWBSprite (32 wide)", a3);
     KEEPS("GetWBSprite (taken)", a3);
-    KEEPS("GetWBSprite (pointer)", d0|d1|a3);
-    KEEPS("GetWBSprite (narrow)", d0-d7|a0-a3);
+    KEEPS("GetWBSprite (pointer)", d1|a3);
+    KEEPS("GetWBSprite (narrow)", d1-d7|a0-a3);
     KEEPS("GetWBSprite (no data)", d1-d7|a0-a3|a6);
     KEEPS("GetWBSprite (20 wide)", a3);
     KEEPS("WBSpriteX", d1-d7|a2|a3|a6);

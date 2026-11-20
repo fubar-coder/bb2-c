@@ -6,6 +6,7 @@
 ; than 16 pixels gives 0, which cannot be told from channel 0.
 ; Correct: the first call gets channel 2; the second call and the narrow
 ; shape fail with -1.
+; @fixed #920
 ; @rwe riwbspritelib
 BitMap 0,320,64,2
 Boxf 0,0,15,15,3
