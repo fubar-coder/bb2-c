@@ -127,6 +127,13 @@
  *   - FindVolume returns -1 when FindDosEntry finds the name and 0
  *     otherwise, as the manual documents; the original returned the
  *     DosList entry, taken after UnLockDosList (#1082).
+ *   - FindVolume, DeviceName$, CachesOn, CachesOff and Reboot work on
+ *     Kickstart 1.x; the original called LockDosList, FindDosEntry,
+ *     UnLockDosList (dos V36), CacheControl and ColdReboot (exec V36)
+ *     without a version check, a crash there.  Below V36 the DOS device
+ *     list is walked under Forbid (blitzdos.h), the cache commands return
+ *     0, Reboot runs Commodore's reset routine for Kickstarts before 2.0
+ *     (#1145).
  * Not defects: SaveExec stops at the node whose next is 0 - the list is
  * Exec-style, so that is the header's tail (lh_Tail), not an item, and
  * every item is written (an empty list, whose head is the tail, is
@@ -146,6 +153,7 @@
 #include "blitzlib.h"
 #include "blitzobj.h"
 #include "blitzexec.h"
+#include "blitzdos.h"
 #include <dos/dos.h>
 #include <dos/dosextens.h>
 #include <dos/doshunks.h>
@@ -1041,20 +1049,51 @@ static BB_BOOL BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
  *
  * Fixed (#1082): -1 for a name that is present, as the manual documents;
  * the original returned the entry's address, an entry of the list after
- * UnLockDosList.
+ * UnLockDosList.  Fixed (#1145): below dos.library V36 (no LockDosList)
+ * the device list of DosInfo is walked under Forbid; the original called
+ * the V36 functions there, a crash on Kickstart 1.x.
  * @param name  d0: the name (without ":")
  * @return d0: -1 if found, 0 if not
  */
 static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
-    struct DosList *dl = LockDosList(LDF_FINDVOLUME);
+    struct DosList *dl;
 
+    if (dos->dl_lib.lib_Version < 36) {         /* fixed (#1145) */
+        Forbid();
+        dl = bl_finddosentry_v34(dos, (const UBYTE *)name,
+                                 LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS);
+        Permit();
+        return dl ? (ULONG)-1 : 0;
+    }
+    dl = LockDosList(LDF_FINDVOLUME);
     if (!dl)
         return 0;
     dl = FindDosEntry(dl, name, LDF_FINDVOLUME);
     UnLockDosList(LDF_FINDVOLUME);
     return dl ? (ULONG)-1 : 0;                  /* fixed (#1082): not dl */
+}
+
+/* DeviceName$'s result: the name of dl's handler task with ":" and a 0
+   over the argument at a3 (blitz_string); its length, 0 for no entry or
+   an entry without a handler task (fixed, #494) */
+static ULONG devname(const struct DosList *dl)
+{
+    const UBYTE *s;
+    ULONG n = 0;
+
+    if (!dl || !dl->dol_Task || !dl->dol_Task->mp_SigTask)
+        return 0;                               /* fixed (#494): no handler */
+    s = (const UBYTE *)((struct Task *)dl->dol_Task->mp_SigTask)->tc_Node.ln_Name;
+    if (!s)
+        return 0;
+    do
+        n++;
+    while ((*blitz_string++ = *s++) != 0);
+    blitz_string[-1] = ':';
+    *blitz_string = 0;
+    return n;
 }
 
 /**
@@ -1068,7 +1107,10 @@ static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0))
  * argument that is not empty; the original tested -2(a3) also for an
  * empty one, a byte of the expression in front.  Fixed (#494): "" for
  * an entry without a handler task (or name); the original read through
- * dol_Task without a check.
+ * dol_Task without a check.  Fixed (#1145): below dos.library V36 (no
+ * LockDosList) the device list of DosInfo is walked and the name copied
+ * under Forbid; the original called the V36 functions there, a crash on
+ * Kickstart 1.x.
  * @param lens  a2: the argument stack, the argument's length at -4(a2)
  * @return d0: the length of the name, 0 ("") if not found
  */
@@ -1076,30 +1118,26 @@ static ULONG BLITZ_ROUTINE getdevname_c(const ULONG *lens BL_REG(a2))
 {
     struct DosLibrary *dos = dosbase_;
     struct DosList *dl;
-    const UBYTE *s;
     UBYTE *end = blitz_string - 2;      /* a3 */
-    ULONG n = 0;
+    ULONG n;
 
     if (lens[-1] && *end == ':')                /* fixed (#493): not for "" */
         *end = 0;
     end++;
     blitz_string = end - lens[-1];
+    if (dos->dl_lib.lib_Version < 36) {         /* fixed (#1145) */
+        Forbid();
+        dl = bl_finddosentry_v34(dos, blitz_string, LDF_DEVICES | LDF_VOLUMES);
+        n = devname(dl);
+        Permit();
+        return n;
+    }
     dl = LockDosList(LDF_READ | LDF_DEVICES | LDF_VOLUMES);
     if (!dl)
         return 0;
     dl = FindDosEntry(dl, blitz_string, LDF_DEVICES | LDF_VOLUMES);
     UnLockDosList(LDF_READ | LDF_DEVICES | LDF_VOLUMES);
-    if (!dl || !dl->dol_Task || !dl->dol_Task->mp_SigTask)
-        return 0;                               /* fixed (#494): no handler */
-    s = (const UBYTE *)((struct Task *)dl->dol_Task->mp_SigTask)->tc_Node.ln_Name;
-    if (!s)
-        return 0;
-    do
-        n++;
-    while ((*blitz_string++ = *s++) != 0);
-    blitz_string[-1] = ':';
-    *blitz_string = 0;
-    return n;
+    return devname(dl);
 }
 
 /* ------------------------------------------------------------ SaveExec */
@@ -1226,30 +1264,75 @@ static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE 
 /**
  * @brief CachesOn bitmask: switches caches on (exec
  * CacheControl(bitmask,bitmask)).
+ *
+ * Fixed (#1145): below exec V36 (no CacheControl) 0, nothing switched;
+ * the original called CacheControl there, a crash on Kickstart 1.x.
  * @param mask  d0: the CACRF_ bits
- * @return d0: the old cache bits
+ * @return d0: the old cache bits, 0 below exec V36
  */
 static ULONG BLITZ_ROUTINE cacheon_c(ULONG mask BL_REG(d0))
 {
+    if (SysBase->LibNode.lib_Version < 36)      /* fixed (#1145) */
+        return 0;
     return CacheControl(mask, mask);
 }
 
 /**
  * @brief CachesOff bitmask: switches caches off (exec
  * CacheControl(0,bitmask)).
+ *
+ * Fixed (#1145): below exec V36 (no CacheControl) 0, nothing switched;
+ * the original called CacheControl there, a crash on Kickstart 1.x.
  * @param mask  d0: the CACRF_ bits
- * @return d0: the old cache bits
+ * @return d0: the old cache bits, 0 below exec V36
  */
 static ULONG BLITZ_ROUTINE cacheoff_c(ULONG mask BL_REG(d0))
 {
+    if (SysBase->LibNode.lib_Version < 36)      /* fixed (#1145) */
+        return 0;
     return CacheControl(0, mask);
 }
 
+/* Commodore's reset for exec below V36 (no ColdReboot), from the
+   ColdReboot autodoc: in supervisor mode the start address of the
+   Kickstart ROM (its size stands at $1000000-$14, the initial PC at
+   offset 4) minus 2, the second RESET of the ROM's entry; RESET resets
+   the hardware (the ROM overlay is back at 0), the JMP that the CPU has
+   fetched with it goes there.  RESET and JMP must share a longword: of
+   the two copies the one at a longword address is taken (a library's
+   code is only word aligned in a program).  Does not return.  In
+   assembler by nature (supervisor mode, RESET). */
+void riamosfunclib_oldreboot(void) __attribute__((noreturn));
+BLITZ_ASM_ROUTINE(riamosfunclib_oldreboot,
+"   movea.l 4.w,a6\n"
+"   lea     1f(pc),a5\n"
+"   jsr     -30(a6)\n"                 /* Supervisor(a5) */
+"1: lea     0x1000000,a0\n"
+"   suba.l  -0x14(a0),a0\n"            /* the ROM's start */
+"   movea.l 4(a0),a0\n"                /* its initial PC */
+"   subq.l  #2,a0\n"                   /* the second RESET there */
+"   lea     2f(pc),a1\n"
+"   move.l  a1,d0\n"
+"   btst    #1,d0\n"
+"   beq.s   2f\n"
+"   bra.s   3f\n"
+"2: reset\n"
+"   jmp     (a0)\n"
+"   nop\n"
+"3: reset\n"                           /* 2f + 6: at a longword if 2f is not */
+"   jmp     (a0)");
+
 /**
  * @brief Reboot: a cold reboot (exec ColdReboot); does not return.
+ *
+ * Fixed (#1145): below exec V36 (no ColdReboot) Commodore's reset routine
+ * for older Kickstarts; the original called ColdReboot there, a crash on
+ * Kickstart 1.x.
  */
 static void BLITZ_ROUTINE reboot_c(void)
 {
+    if (SysBase->LibNode.lib_Version < 36)      /* fixed (#1145) */
+        riamosfunclib_oldreboot();
     ColdReboot();
 }
 

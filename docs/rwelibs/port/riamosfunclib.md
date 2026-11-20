@@ -27,12 +27,16 @@ AMOS-like helpers by RI for Ott of The Farm:
   (form 0: into a new bank, its number), `BSave(name$,address/bank[,length])`,
   `MakeDir(dir$)`, `Rename(old$,new$)`, `ChangeDir dir$`,
   `SaveExec name$,list()` (an executable from a Blitz list of NEWTYPE
-  `.hunk`: code hunks with RELOC32), `FindVolume(name)` (the DosList
-  entry), `DeviceName$(volumename$)` (the handler task's name with ":").
+  `.hunk`: code hunks with RELOC32), `FindVolume(name)` (-1 if a
+  device, volume or assign of that name is there, else 0),
+  `DeviceName$(volumename$)` (the handler task's name with ":"); both
+  lock the DOS list from dos.library V36 on and walk it under `Forbid`
+  below.
 * **Memory:** `CopyByte`/`CopyWord`/`CopyLong src,dest,n`,
   `FillMem address,length[,value]`, `MemFree` (AvailMem MEMF_PUBLIC).
 * **System / hardware:** `CachesOn`/`CachesOff bitmask` (CacheControl,
-  the old bits), `Reboot` (ColdReboot), `Lisa` (DENISEID into the low word
+  the old bits; 0 below exec V36), `Reboot` (ColdReboot; below exec V36
+  Commodore's reset routine), `Lisa` (DENISEID into the low word
   of d0), `Timer` (CIA-A TOD), `KeyCode` (CIA-A SDR), `BlitterDone`,
   `WaitBlitter`, `Min`/`Max(a,b)` (signed), `GTTagValue([tag])`
   (`$80080000` + tag, inline).
@@ -205,6 +209,28 @@ kind F):
   program no longer holds): as a truth value it worked, a comparison
   with -1 never found the volume. AmiBlitz3's RIAmosFuncLib still
   returns the address (#1082).
+* `FindVolume`, `DeviceName$`, `CachesOn`, `CachesOff` and `Reboot` work
+  on Kickstart 1.x; from V36 on they stay as they were. The original
+  called functions of Kickstart 2.0 without a version check (`LockDosList`,
+  `FindDosEntry`, `UnLockDosList` of dos.library V36; `CacheControl` and
+  `ColdReboot` of exec V36), and the library opens dos.library in any
+  version: on Kickstart 1.x a crash at any of the five commands (#1145).
+  Below dos.library V36 `FindVolume` and `DeviceName$` walk the DOS
+  device list of `DosInfo` under `Forbid`, as programs did before
+  `LockDosList` existed (names compared without case, as `FindDosEntry`;
+  `DeviceName$` copies the handler's name before `Permit`; the helper
+  `bl_finddosentry_v34` of `libs/include/blitzdos.h`, shared with
+  rilesdebuglib). Below exec V36 `CachesOn` and `CachesOff` return 0 and
+  switch nothing (a 68000 or 68010 has no caches; the caches of a 68020
+  or 68030 under Kickstart 1.x are not managed by exec there), and
+  `Reboot` runs Commodore's reset routine for Kickstarts before 2.0 (the
+  one of the `ColdReboot` autodoc: in supervisor mode `RESET` and a jump
+  to the ROM's second `RESET`, the two in one longword). Tests:
+  `riamosfunclib-v36-doslist` (a500, a500-204, a1200) and
+  `riamosfunclib-v36-caches` (a500, a500-204); `Reboot` has no automatic
+  test (a reboot ends the session): checked once by hand on the a500
+  (the emulator's log shows the reset at the routine's `RESET` in RAM,
+  then Workbench 1.3.5 boots again).
 
 ## Original behaviour that is not a defect
 
@@ -257,7 +283,10 @@ without ":", volumes, devices, unknown, empty, d0 elsewhere), SaveExec (two
 code hunks – relocations, memory flags, a length not a multiple of 4 –
 and a symbol hunk; no list; no file; an empty list), EraseAll, finit.
 
-Not covered: Reboot; counts of 0 (the original writes over all memory;
+Not covered: Reboot (below V36: checked by hand once, see "Fixed");
+the walk of the device list below dos V36 (the library test does not
+run on Kickstart 1.x; the bug-orig test `riamosfunclib-v36-doslist`
+covers it on the a500); counts of 0 (the original writes over all memory;
 the bug-orig test `riamosfunclib-count-zero`) and bank numbers outside
 the tables (the original writes outside the test's memory; the bug-orig
 test `riamosfunclib-bank-range`); BankLimit 0 or above 65536 (the

@@ -12,7 +12,7 @@ What it covers:
 - **The library headers** (`libs/include`): `blitzlib.h` with the macros
   that write a library's header and declaration table, the calling
   conventions (register parameters, a3/a4/a5) and the thunks;
-  `blitzhelp.h`, `blitzexec.h`, `blitzobj.h` (the objects of the
+  `blitzhelp.h`, `blitzexec.h`, `blitzdos.h`, `blitzobj.h` (the objects of the
   libraries), `deflib.h` of the AmigaOS call libraries and `optidec.h`
   of the RWE userlibs.
 - **The command libraries** (`libs/acidlibs`) and **the userlibs**

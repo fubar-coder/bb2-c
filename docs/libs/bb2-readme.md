@@ -111,7 +111,11 @@ command libraries (`TOK_allocst`/`TOK_freest`, `TOK_setint`/`TOK_clrint`/`TOK_vw
 `TOK_qconvertkey`, `TOK_showsprite`, `TOK_setevfilter`, `TOK_extbitmap`).
 `libs/include/blitzexec.h` has `BL_FREESIGNAL(sig)` (FreeSignal with
 zero-extended signal number like the originals; the NDK inline takes a
-BYTE). What only one library needs stays in its source.
+BYTE).
+`libs/include/blitzdos.h` has `bl_finddosentry_v34` (a DOS list entry by
+name below dos.library V36, which has no `LockDosList`: the device list
+of `DosInfo`, walked while the caller holds `Forbid`; riamosfunclib).
+What only one library needs stays in its source.
 
 ## Tools
 
