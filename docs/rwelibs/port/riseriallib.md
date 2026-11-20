@@ -82,6 +82,11 @@ kind F):
   and no wait for a byte came before (#797; test
   `riseriallib-serialread-upper-word`; `libs_emulator` cases
   `[fixed #797]` of `rwe_riseriallib`).
+* `SerialSendBlock` with a length of 0 or less sends nothing (its
+  remaining count, `SerialProgress`, −1 as after a whole block); the
+  original sent the first byte before it looked at the length (#800;
+  R10 precedent Q3: a loop of 0 passes; test `riseriallib-sendblock-zero`;
+  `libs_emulator` cases `[fixed #800]` of `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
@@ -96,7 +101,6 @@ kind F):
   `SerialSendString` and `SerialReadString` test the word the other way
   round: they call that code only when the port is open (it then only
   clears the stop flag) (#793).
-* `SerialSendBlock` with a length of 0 or less sends one byte (#800).
 * `SerialReceiveBlock` throws away what is in the ring first, then
   waits (#798); a length of 1 receives without end (the count goes below
   0) (#799).

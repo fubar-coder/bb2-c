@@ -64,7 +64,6 @@
  *     SerialOpen's code (#792).  SerialSendString and SerialReadString
  *     test the word the other way round: they call it when the port is
  *     open (it then only clears the stop flag) (#793).
- *   - SerialSendBlock with a length of 0 or less sends one byte (#800).
  *   - SerialReceiveBlock first throws away what is in the buffer, then
  *     waits (#798); a length of 1 receives without end (the count goes
  *     below 0) (#799); SerialStop during it ends it by taking its return
@@ -100,6 +99,9 @@
  *     byte $FF with $FFFF there read as -1, and SerialReadString's loop
  *     ended at a 0 only if that upper word was 0 and no wait came before
  *     (#797).
+ *   - SerialSendBlock with a length of 0 or less sends nothing (its
+ *     remaining count -1, as after a whole block); the original sent the
+ *     first byte before it looked at the length (#800).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -448,8 +450,10 @@ ULONG BLITZ_ROUTINE c_showloc(void)
  * @brief SerialSendBlock address,length: sends a block byte by byte.
  *
  * SerialStop ends it; SerialProgress gives the remaining count.
- * BUG(orig) (#792): never opens the port; BUG(orig) (#800): a length of
- * 0 or less sends one byte.
+ * BUG(orig) (#792): never opens the port.  Fixed (#800): a length of 0
+ * or less sends nothing (the remaining count -1, as after a whole
+ * block); the original sent the first byte before it looked at the
+ * length.
  * @param addr  d0: the address
  * @param len   d1: the length
  */
@@ -458,6 +462,10 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
     LONG n = (LONG)(len - 1);
 
     buffstart = addr;
+    if ((LONG)len <= 0) {               /* fixed (#800) */
+        bufflength = (ULONG)-1;
+        return;
+    }
     for (;;) {
         const UBYTE *p = (const UBYTE *)buffstart;
         buffstart++;

@@ -5,6 +5,7 @@
 ; the data bytes (request E); the echo is read with SerialRead (each
 ; empty read followed by a VWait, at most 50).
 ; Correct: the block of 0 bytes sends nothing: the echo is "RS".
+; @fixed #800
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l
