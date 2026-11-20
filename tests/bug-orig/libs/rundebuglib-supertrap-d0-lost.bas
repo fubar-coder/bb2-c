@@ -9,10 +9,12 @@
 ; SetInt 5 routine (supervisor mode); the handler of the parent keeps d0
 ; and returns.  The original gives d0 = 0, and more2 runs on behind its
 ; trap.  (Since #1069 a SetInt routine is the only place where a runtime
-; error in supervisor mode reaches rundebuglib: the vector it gives the
-; trap to is the one the routine found, and the routine is left when that
-; handler returns.)
-; Correct: the old vector gets the message ("Uninitialized Shape").
+; error in supervisor mode reaches rundebuglib.  Since #1073 rundebuglib
+; gives such an error to no old vector: it leaves the routine and shows
+; the message at the child's next statement, the parent's handler is not
+; called.)
+; Correct: the message ("Uninitialized Shape") is kept: the child's
+; requester shows it, and the child ends there.
 ; @fixed #246
 ; @configs clib
 ; @pass runtime_errors=on

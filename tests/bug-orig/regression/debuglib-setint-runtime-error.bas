@@ -9,8 +9,8 @@
 ; interrupt routine ends the program at its next statement.  The routine
 ; calls a Statement (TRAP #4/#5 in supervisor mode too) and counts; the
 ; main program waits 100 frames.  The executable (the runner's own run,
-; with an argument) only prints a line: rundebuglib stops the machine at
-; such an error.
+; with an argument) only prints a line: rundebuglib's handling of such an
+; error has its own test (rundebuglib-setint-runtime-error).
 ; Expected: the routine's runtime error at the count of 20 ends the
 ; program before it prints the count; the session goes on.
 ; @pass runtime_errors=on

@@ -1,7 +1,8 @@
 /*
- * rundebuglib - system library 64050 (no tokens): minimal runtime error
- * handling of executables that use SetErr (blitz2.s doseterr: used
- * instead of debuglib/dhandlerlib when an executable is created).
+ * rundebuglib - system library 64050 (no tokens): the runtime error
+ * handling of executables compiled with runtime error checking (blitz2.s
+ * doseterr: linked instead of debuglib/dhandlerlib when an executable is
+ * created).
  *
  * Translation of bblibsrc/rundebuglib ("shit knows"; the binary matches
  * the source).  init (codeinit) opens intuition, remembers a5 and installs
@@ -15,21 +16,25 @@
  *   TRAP #0  runtime error, d0 = message (or the codes 1-3 of blitz2's
  *            code): in user mode continue (RTE) at printerr, which shows
  *            the message in an AutoRequest and ends the program (exitslib
- *            endjmp $C800).  In supervisor mode (a SetInt routine)
- *            restore the vectors and give the trap with the message to
- *            the old vector (fixed (#246): the original called codefinit
- *            there, which changed d0 and closed intuition in the
- *            supervisor context; intuition is now closed by finit only).
- *   TRAP #1  skip the 8 bytes after the TRAP (unless ctrlc is set - it
- *            never is: BUG(orig) (#43), ctrlc is only cleared)
- *   TRAP #2  skip 6 bytes (and remember the routine, #1069)
+ *            endjmp $C800).  In supervisor mode (a SetInt routine) keep
+ *            the message, mark the routine "never again" and leave it
+ *            through its end; the next statement of user mode reports it
+ *            (fixed (#1073), as the debugger; the original gave the trap
+ *            to the old vector, exec's, which stops the machine)
+ *   TRAP #1  skip the 8 bytes after the TRAP; in user mode with a runtime
+ *            error of a SetInt routine pending continue at printerr with
+ *            its message (fixed (#1073)).  BUG(orig) (#43): the original
+ *            tests a word ctrlc here that nothing sets, Ctrl-C does not
+ *            stop the program
+ *   TRAP #2  skip 6 bytes (and remember the routine, #1069); a routine
+ *            marked "never again" is skipped to its end (#1073)
  *   TRAP #3  nothing (forget it)
  *   TRAP #4  skip 8 bytes
  *   TRAP #5  nothing
  * (the debugger's checks that the compiler emits with debug code on).
  *
  * C: codeinit, codefinit, printerr (normal user mode code that the
- * TRAP #0 handler continues at, never returns).
+ * TRAP #0 and TRAP #1 handlers continue at, never returns).
  * Assembler: the trap handlers (exception frames, RTE) and more2.
  */
 #include "blitzlib.h"
@@ -59,7 +64,10 @@ static const char intname[] = "intuition.library";
 APTR oldtc;                             /* the task's old tc_TrapCode */
 UBYTE *olda5;
 struct IntuitionBase *myint;
-UWORD ctrlc;                            /* read by mytrap1 */
+/* fixed (#1073): a runtime error of a SetInt routine waits for the next
+   statement (set by more2, read by mytrap1; the original's ctrlc, #43) */
+UWORD errpend;
+ULONG errmsg;                           /* its message (d0 of the TRAP #0) */
 /* fixed (#1069): per SetInt routine running (nested ones of different
    levels) the stack pointer at its TRAP #2 and the TRAP #2's parameter */
 ULONG intstack[2 * 8];
@@ -125,13 +133,17 @@ BLITZ_ASM_BLOCK(traps,
 "_mytrap5:\n"
 "   rte\n"
 /* TRAP #2, the start of a SetInt routine: skip its 6 bytes (the address
-   of its end, a word) - and, fixed (#1069), remember the stack pointer
-   and that address on intstack for more2; TRAP #3 drops them.  Changes
+   of its end, a word: the routine's level) - and, fixed (#1069), remember
+   the stack pointer and that address on intstack for more2; TRAP #3 drops
+   them.  Fixed (#1073): a routine marked "never again" by more2 (the word
+   negative) is skipped to its end, as debuglib's TRAP #2 does.  Changes
    a0/a1, as debuglib's TRAP #2 (the original: nothing).  The slot is
    reserved before it is written: a nested routine of the same program
    uses the next one */
 "_mytrap2:\n"
 "   move.l  2(sp),a0\n"
+"   tst.w   4(a0)\n"
+"   bmi.s   2f\n"
 "   move.l  #1f,2(sp)\n"
 "   rte\n"
 "1: move.l  _intsp,a1\n"
@@ -140,15 +152,30 @@ BLITZ_ASM_BLOCK(traps,
 "   move.l  a0,(a1)\n"
 "   addq.w  #6,a0\n"
 "   jmp     (a0)\n"
+"2: move.l  (a0),2(sp)\n"               /* its end: gouser */
+"   rte\n"
 "_mytrap3:\n"
 "   subq.l  #8,_intsp\n"
 "   rte\n"
+/* TRAP #1, every statement: skip its 8 bytes.  Fixed (#1073): errpend
+   set (a runtime error of a SetInt routine, more2) - in user mode
+   continue at printerr with the message; in supervisor mode (another
+   SetInt routine) go on.  The test costs nothing more per statement: it
+   is the original's test of ctrlc, which nothing set - BUG(orig) (#43):
+   Ctrl-C does not stop such a program (the original's doctrlc only
+   returned, without the skip) */
 "_mytrap1:\n"
-"   tst.w   _ctrlc\n"
-"   bne.s   doctrlc\n"
+"   tst.w   _errpend\n"
+"   bne.s   doerr\n"
 "   addq.l  #8,2(sp)\n"
 "   rte\n"
-"doctrlc:\n"
+"doerr:\n"
+"   btst    #5,(sp)\n"
+"   bne.s   1f\n"
+"   move.l  _errmsg,d0\n"
+"   move.l  #_printerr,2(sp)\n"
+"   rte\n"
+"1: addq.l  #8,2(sp)\n"
 "   rte\n"
 "_mytrap0:\n"
 "   btst    #5,(sp)\n"
@@ -158,39 +185,28 @@ BLITZ_ASM_BLOCK(traps,
 "super_trap:\n"                         /* can't do nothing about this! */
 "   move.l  #more2,2(sp)\n"
 "   rte\n"
-/* A runtime error in a SetInt routine (supervisor mode): the CPU's
-   vectors back as they were before the routine, and the trap to the old
-   TRAP #0 handler with d0, the message (fixed (#246): the original called
-   codefinit here, which changed d0 and closed intuition in the supervisor
-   context).  Fixed (#1069): the vectors are the ones runerrlib's gosuper
-   saved at the routine's start (6 longs at the stack pointer of its
-   TRAP #2, intstack), not the ones of the program's start; if the old
-   handler returns, the routine is left through its end (gouser puts the
-   same vectors back).  The original fell through behind the trap.
-   BUG(orig) (#1073): the old vector is exec's in practice, and exec stops the
-   machine at a trap of supervisor mode: a runtime error in a SetInt
-   routine of an executable is never reported, the machine hangs (test
-   rundebuglib-setint-runtime-error).  The debugger leaves the routine
-   and reports the error at the next statement (debuglib mytrap0) */
+/* A runtime error in a SetInt routine (supervisor mode).  Fixed (#1073),
+   as debuglib's mytrap0: the message is kept for the next statement of
+   user mode (errmsg, errpend; the first one if several routines fail),
+   the routine is marked "never again" (the word behind the address of
+   its end, see TRAP #2) and left through its end, where runerrlib's
+   gouser puts back the vectors gosuper saved (the stack pointer of its
+   TRAP #2, intstack).  The original called codefinit here and gave the
+   trap to the TRAP #0 vector the program had found, in practice exec's,
+   which stops the machine at a trap of supervisor mode: the error was
+   never reported.  (Fixed (#246): codefinit changed d0, the message, for
+   that vector and closed intuition in the supervisor context; the old
+   vector is not called any more, intuition is closed by finit only.) */
 "more2:\n"
-"   move.l  _intsp,a1\n"
+"   tst.w   _errpend\n"
+"   bne.s   1f\n"
+"   move.l  d0,_errmsg\n"
+"   st      _errpend\n"
+"1: move.l  _intsp,a1\n"
 "   move.l  -(a1),a0\n"                 /* the parameter of TRAP #2 */
+"   st      4(a0)\n"                    /* never again */
 "   move.l  -(a1),a7\n"                 /* the stack at TRAP #2: the vectors */
-"   subq.l  #8,_intsp\n"
-"   move.l  a0,-(sp)\n"
-"   move.l  d0,-(sp)\n"
-"   jsr     _blitz_tok+0x80000000+" BL_STR(TOK_getvbr) "\n"   /* a0 = VBR */
-"   lea     128(a0),a0\n"
-"   lea     8(sp),a1\n"
-"   move.l  (a1)+,(a0)+\n"
-"   move.l  (a1)+,(a0)+\n"
-"   move.l  (a1)+,(a0)+\n"
-"   move.l  (a1)+,(a0)+\n"
-"   move.l  (a1)+,(a0)+\n"
-"   move.l  (a1),(a0)\n"
-"   move.l  (sp)+,d0\n"
-"   trap    #0\n"
-"   move.l  (sp)+,a0\n"
+"   move.l  a1,_intsp\n"
 "   move.l  (a0),a0\n"                  /* the end of the routine */
 "   jmp     (a0)\n"
 );
@@ -199,10 +215,11 @@ BLITZ_ASM_BLOCK(traps,
  * @brief printerr - show a runtime error and end the program ("user
  * mode...OK to generate error").
  *
- * The TRAP #0 handler continues here in user mode.  a5 is set back to
- * the globals of the init, the message is shown in an AutoRequest
- * (64,64,640,64, both gadgets "OKAY!") and the program ends through
- * exitslib's endjmp ($C800).  Never returns.
+ * The TRAP #0 handler continues here in user mode (the TRAP #1 handler
+ * too, with the message of a SetInt routine's runtime error, #1073).  a5
+ * is set back to the globals of the init, the message is shown in an
+ * AutoRequest (64,64,640,64, both gadgets "OKAY!") and the program ends
+ * through exitslib's endjmp ($C800).  Never returns.
  *
  * Fixed (intended deviation, #6): the numeric codes 1-3 that blitz2's
  * code raises get the texts of debuglib (1 "No currently used object!":
@@ -241,14 +258,14 @@ void BLITZ_ROUTINE printerr(ULONG msg BL_REG(d0))
  * Fixed (#1069): `tasktrap` becomes the task's trap handler
  * (tc_TrapCode; the old one is kept in oldtc), the CPU's vector table is
  * not touched.  The original saved the vectors of TRAP #0..#5 (VBR from
- * runerrlib's getvbr, $C31D) and put mytrap0..mytrap5 there.  ctrlc is
- * cleared.  OldOpenLibrary is not checked.
+ * runerrlib's getvbr, $C31D) and put mytrap0..mytrap5 there.  errpend (the
+ * original's ctrlc) is cleared.  OldOpenLibrary is not checked.
  */
 static void BLITZ_ROUTINE codeinit(void)
 {
     struct Task *me = SysBase->ThisTask;
 
-    ctrlc = 0;
+    errpend = 0;
     myint = (struct IntuitionBase *)OldOpenLibrary((STRPTR)intname);
     olda5 = blitz_globals;
     intsp = intstack;

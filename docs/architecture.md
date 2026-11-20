@@ -393,8 +393,10 @@ and signals `panicmask`.
   then aborts like an error.
 * When executing, the signal wakes `menu10`; on a real PANIC the
   child process is removed with `RemTask` **without cleanup**.
-* blitz2 does not evaluate Ctrl-C. In `rundebuglib` there is a flag
-  `ctrlc` that is never set (BUG(orig), `libs/acidlibs/rundebuglib.c`).
+* blitz2 does not evaluate Ctrl-C. In `rundebuglib` the TRAP #1 handler
+  tests a word that the original never set for it (BUG(orig) (#43),
+  `libs/acidlibs/rundebuglib.c`); since #1073 the word marks a pending
+  runtime error of a SetInt routine.
 
 ### 3.9 What of this is really needed: tedstub [B]
 
