@@ -64,11 +64,20 @@ All other routines are C behind `BLITZ_THUNK`.
 * The thunks keep d1/a0/a1, the C code d2-d7/a2-a6; the original changes
   d1-d7, a0, a1 and a6 in places.
 
+## Fixed original bugs (intended deviations)
+
+* NewZoneTable, UseZoneTable and FreeZoneTable compare the table number
+  unsigned: a negative number is refused (0), as the manual's "Valid
+  zonetable numbers range from 0 to 15" says. The original compared it
+  signed (`BPL` on number - 16): `UseZoneTable -1` selected entry -1 of
+  the list, `_zonetable` itself; `FreeZoneTable -1` and `NewZoneTable -1`
+  freed the current table and left it there (#872, test
+  `rwe/rizonejoylib-negative-table-number`).
+
 ## BUG(orig)
 
 * No routine checks a zone number for < 0 (ZoneInit, SetZone write before
-  the table) (#873), nor NewZoneTable/UseZoneTable/FreeZoneTable a
-  negative table number (entry -1 is `_zonetable` itself) (#872).
+  the table) (#873).
 * NewZoneTable initialises the **current** table (`ZoneInit1` on
   `_zonetable`), not the new one, which keeps AllocMem's garbage (#875).
   If it replaces a table and the AllocMem fails, the entry keeps the
@@ -102,9 +111,6 @@ Original behaviour that is no defect:
 * JHoriz(1) "right" returns d0 unchanged: the port number 1 (upper bits
   included), which is also the result for "right".
 * ZoneTest clamps a start behind the table to the last zone.
-* NewZoneTable, UseZoneTable, FreeZoneTable test the table number with
-  `BPL` on number-16 (signed, no overflow check); negative numbers are
-  #872.
 
 ## Test
 

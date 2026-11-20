@@ -28,9 +28,7 @@
  *
  * BUG(orig):
  *   - No routine checks a zone number for < 0 (ZoneInit2, SetZone write
- *     before the table) (#873), nor NewZoneTable/UseZoneTable/
- *     FreeZoneTable a negative table number (entry -1 is _zonetable
- *     itself) (#872).
+ *     before the table) (#873).
  *   - NewZoneTable initialises the CURRENT table (ZoneInit1 on
  *     _zonetable), not the new one, which keeps AllocMem's garbage
  *     (#875); if the old table of that number was freed and the AllocMem
@@ -56,6 +54,12 @@
  *     without a table they read from address 0 (#870).
  *   - ReadJoyPad reads the joystick port for every port number but 2
  *     (#877).
+ * Fixed (intended deviations):
+ *   - NewZoneTable, UseZoneTable and FreeZoneTable compare the table
+ *     number unsigned: a negative number is refused (0).  The original
+ *     compared it signed (BPL on number - 16): UseZoneTable -1 selected
+ *     entry -1 of the list, _zonetable itself, FreeZoneTable -1 and
+ *     NewZoneTable -1 freed the current table and left it there (#872).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -249,8 +253,8 @@ struct zonetable {
 static_assert(sizeof(struct zonetable) == 4);
 
 /* endzone, _zonetable, zonetablelist, zones020, is020 in the original's
-   order: the entry -1 of the list is _zonetable (negative table numbers,
-   BUG(orig) #872).  The zone tests (assembler, below) read it as _zd. */
+   order (the entry -1 of the list is _zonetable; the table numbers are
+   compared unsigned, #872).  The zone tests (assembler) read it as _zd. */
 struct zdata {
     UWORD endzone;                                      /* Dc.w 1, unused */
     struct zonetable *zonetable;                        /* _zonetable */
@@ -636,7 +640,9 @@ static ULONG BLITZ_ROUTINE zonetablesize_c(void)
  * n 1..15, num_zones 2..65535; an old table of that number is freed
  * first.  BUG(orig): ZoneInit runs on the CURRENT table, the new one keeps
  * AllocMem's garbage (#875); if the AllocMem fails after the free, the
- * entry keeps the freed block (#874); a negative n is not refused (#872).
+ * entry keeps the freed block (#874).  Fixed (#872): n is compared
+ * unsigned, a negative n is refused (the original passed it: entry -1 is
+ * _zonetable).
  * @param n    d0: the table number
  * @param num  d1: the number of zones
  * @return d0: BB_TRUE done, BB_FALSE bad arguments or no memory
@@ -645,7 +651,8 @@ static BB_BOOL BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG
 {
     struct zonetable **e, *mem;
 
-    if (!n || !MI(n, 16) || MI(num, 2) || !MI(num, 65536))
+    /* n unsigned: fixed (#872) */
+    if (!n || n >= 16 || MI(num, 2) || !MI(num, 65536))
         return BB_FALSE;                                /* _return0 */
     e = entry(n);
     if (*e)
@@ -662,7 +669,8 @@ static BB_BOOL BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG
 /**
  * @brief UseZoneTable table#: makes table n the current one.
  *
- * BUG(orig) (#872): a negative n is not refused (entry -1 is _zonetable).
+ * Fixed (#872): n is compared unsigned, a negative n is refused (the
+ * original passed it and selected entry -1, _zonetable itself).
  * @param n  d0: the table number (< 16)
  * @return d0: BB_TRUE done, BB_FALSE n too large or no such table
  */
@@ -670,7 +678,7 @@ static BB_BOOL BLITZ_ROUTINE usezonetable_c(ULONG n BL_REG(d0))
 {
     struct zonetable **e;
 
-    if (!MI(n, 16))
+    if (n >= 16)                                        /* unsigned: fixed (#872) */
         return BB_FALSE;
     e = entry(n);
     if (!*e)
@@ -683,7 +691,8 @@ static BB_BOOL BLITZ_ROUTINE usezonetable_c(ULONG n BL_REG(d0))
  * @brief FreeZoneTable table#: frees zone table n (1..15).
  *
  * BUG(orig): the freed block stays in its entry (#868), table 0 always
- * becomes the current one (#869), a negative n is not refused (#872).
+ * becomes the current one (#869).  Fixed (#872): n is compared unsigned,
+ * a negative n is refused (the original freed the current table).
  * @param n  d0: the table number
  * @return d0: BB_TRUE done, BB_FALSE bad number or no such table
  */
@@ -691,7 +700,7 @@ static BB_BOOL BLITZ_ROUTINE freezonetable_c(ULONG n BL_REG(d0))
 {
     struct zonetable **e;
 
-    if (!n || !MI(n, 16))
+    if (!n || n >= 16)                                  /* unsigned: fixed (#872) */
         return BB_FALSE;
     e = entry(n);
     if (!*e)

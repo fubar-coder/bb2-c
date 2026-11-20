@@ -6,6 +6,7 @@
 ; NewZoneTable -1 would free the current table and leave it in its own
 ; entry: a double free at the end, not done here.)
 ; Correct: a negative table number is refused, the result is 0.
+; @fixed #872
 ; @rwe rizonejoylib
 NPrint UseZoneTable(-1)
 End
