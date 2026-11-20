@@ -27,11 +27,15 @@
  * RBF/TBE bits of the fake INTREQR and the received byte in the fake
  * SERDATR: that is also how bytes arrive.  Routines that wait for bytes
  * the test cannot give beforehand (SerialReceiveBlock throws away what
- * is there first; SerialReadLong never returns) run in a task of their
- * own at a lower priority, fed byte by byte while it waits; the test
- * removes it (RemTask) when it is done or, for SerialReadLong, when every
- * byte is read - the port is open then, so the task does not touch the
- * vectors.
+ * is there first; SerialReadLong never returns; SerialReadString, whose
+ * bytes are in the ring before the call and are given again if it waits)
+ * or for room in the transmit ring (SerialSendBlock of 200 bytes) run in
+ * a task of their own at a lower priority, fed byte by byte (or given a
+ * transmit interrupt per tick) while it waits; the test removes it
+ * (RemTask) when it is done or, for SerialReadLong, when every byte is
+ * read - the port is open then, so the task does not touch the vectors
+ * (SerialReadString checks it and puts them back).  SerialReadString
+ * gets a string work area in a0 (strings1lib's init value).
  *
  * Observed after every call: the fake registers, CIA-B PRA, the vectors,
  * the receive ring (rbig, rend, buffer - in front of SerialBuffer's
@@ -274,13 +278,18 @@ static void childentry(void)
     Wait(0);
 }
 
-static void child_start(int idx, ULONG d0, ULONG d1, ULONG arg, ULONG push)
+/* `a3`, `a0`: 0 = the marker values */
+static void child_start_a(int idx, ULONG d0, ULONG d1, ULONG a3, ULONG a0, ULONG arg, ULONG push)
 {
     memset(ch, 0, sizeof *ch);
     ch->fn = ENT(LIB, idx, 0);
     markregs(&ch->r);
     ch->r.d[0] = d0;
     ch->r.d[1] = d1;
+    if (a3)
+        ch->r.a[3] = a3;
+    if (a0)
+        ch->r.a[0] = a0;
     ch->arg = arg;
     ch->push = push;
     IN = ch->r;
@@ -294,6 +303,17 @@ static void child_start(int idx, ULONG d0, ULONG d1, ULONG arg, ULONG push)
     ch->task.tc_SPReg = ch->stack + CHSTACK;
     SetSignal(0, donesig);
     AddTask(&ch->task, (APTR)childentry, NULL);
+}
+
+static void child_start(int idx, ULONG d0, ULONG d1, ULONG arg, ULONG push)
+{
+    child_start_a(idx, d0, d1, 0, 0, arg, push);
+}
+
+/* whether the task has returned (without removing it) */
+static BOOL child_done(void)
+{
+    return (SetSignal(0, 0) & donesig) != 0;
 }
 
 /* the task's end (waiting at most 2 seconds if `wait`); TRUE if it
@@ -347,22 +367,65 @@ static void sendblock(const char *what, ULONG off, ULONG len)
     readfunc("SerialProgress", PROGRESS, 0);
 }
 
-/* 200 bytes in the 128-word transmit ring, no interrupt in between.
-   BUG(orig) (#983): _writeser never tests whether the ring is full, byte 129
-   overwrites the word of byte 1 (the oldest unsent one), and the index wrend
-   runs on; in a real run the transmit interrupt sends a byte or two meanwhile
-   and the receiver gets the end of the block, not the start.  Both builds. */
+/* one transmit interrupt; the byte it sent (the fake SERDAT) into
+   sent[], if it sent one */
+static UBYTE sent[512];
+static int nsent;
+
+static void txint(void)
+{
+    inthandler(1, 0, 0x01, 0);
+    if ((fake[0x30] || fake[0x31]) && nsent < (int)sizeof sent)
+        sent[nsent++] = fake[0x31];
+}
+
+/* 200 bytes into the 128-word transmit ring, SerialSendBlock in a task
+   of its own: while it runs, the test gives one transmit interrupt per
+   tick (the task runs only while the test task waits, at a lower
+   priority).  BUG(orig) (#983): _writeser never tests whether the ring is
+   full: the block is in the ring at once, byte 129 overwrote the word of
+   byte 1 (the oldest unsent one) and the index wrend ran on; in a real
+   run the transmit interrupt sends a byte or two meanwhile and the
+   receiver gets the end of the block, not the start.  Then the ring is
+   emptied by transmit interrupts; the bytes sent are observed. */
 static void ringfull(void)
 {
     UWORD wbig0 = *(UWORD *)wrp, wrend0 = *(UWORD *)(wrp + 2);
+    BOOL ret;
+    int i;
 
-    sendblock("200 bytes (ring wraps)", 0, 200);
+    strcpy(VEC, "200 bytes (ring wraps)");
+    ROUT = "SerialSendBlock";
+    nsent = 0;
+    hits_in();
+    child_start(SENDBLOCK, (ULONG)databuf, 200, 0, 0);
+    for (i = 0; i < 400; i++) {
+        Delay(1);
+        if (child_done())
+            break;
+        txint();
+    }
+    ret = child_end(1);
+    hits_out();
+    got64 = (ULONG)riser_stub1;
+    got74 = (ULONG)riser_stub5;
+    fillfake();
+    BOTH("returned", ret);
+    preserve();
     BOTH("200 bytes: wbig unchanged", *(UWORD *)wrp == wbig0);
     BOTH("200 bytes: wrend ran 400 on (BUG(orig), #983)",
          *(UWORD *)(wrp + 2) == (UWORD)((wrend0 + 400) & 0xff));
     /* the slot byte 1 went to holds byte 129 (0xC1), not byte 1 (0x41) */
     BOTH("200 bytes: slot of byte 1 holds byte 129 (BUG(orig), #983)",
          *(UWORD *)(wrp + 4 + wrend0) == (UWORD)(0x0100 | databuf[128]));
+    OBS("transmit interrupts while it ran", i);
+    for (i = 0; i < 300 && *(UWORD *)wrp != *(UWORD *)(wrp + 2); i++)
+        txint();
+    fillfake();
+    compare();
+    OBS("bytes sent", nsent);
+    OBSBYTES("the bytes sent", sent, nsent);
+    readfunc("SerialProgress", PROGRESS, 0);
 }
 
 /* SerialSendString: d0 = a string at a fixed low address byte, a2 =
@@ -380,20 +443,66 @@ static void sendstring(const char *what)
     BOTH("a2 not below the stack", R.a[2] <= (ULONG)&stk[3] && R.a[2] >= (ULONG)&stk[0]);
 }
 
-/* SerialReadString into databuf + 0x180 */
-static void readstring(const char *what, ULONG d0)
+/* SerialReadString into databuf + 0x180 (a3), in a task of its own: the
+   `n` bytes are in the receive ring before the call; if the routine has
+   not returned when it has read what is there (a fixed build opens a
+   closed port, which empties the ring), they are given again one by one
+   while it waits.  a0 is a string work
+   area at the same place (its block length, 128 + 8, in front of it, as
+   memlib's globalloc leaves it), the init value of strings1lib a fixed
+   build may ask for; the original does not read a0. */
+#define SBUF (databuf + 0x180)
+static BOOL settle(void);
+
+static void readstring(const char *what, ULONG d0, const UBYTE *bytes, int n)
 {
     ULONG l0 = riser_landed;
+    BOOL ret, ok, again = FALSE;
+    ULONG s64 = *vec(0x64), s74 = *vec(0x74);
+    int i;
+
     strcpy(VEC, what);
-    memset(databuf + 0x180, 0xee, 32);
-    CALL("SerialReadString", READSTR, 0,
-         R.d[0] = d0 == 1 ? (ULONG)riser_landing : d0;
-         R.a[3] = (ULONG)databuf + 0x180);
+    ROUT = "SerialReadString";
+    memset(SBUF, 0xee, 32);
+    for (i = 0; i < n; i++)
+        feed(bytes[i]);
+    fillfake();
+    hits_in();
+    child_start_a(READSTR, d0 == 1 ? (ULONG)riser_landing : d0, 0, (ULONG)SBUF,
+                  (ULONG)SBUF, 0, 0);
+    ok = settle();
+    Delay(2);
+    if (!child_done()) {
+        again = TRUE;
+        for (i = 0; i < n; i++) {
+            feed(bytes[i]);
+            fillfake();
+            ok &= settle();
+        }
+    }
+    ret = child_end(1);
+    /* a routine that opens the port in the task writes the system's
+       vectors (outside the test's stubs): they are put back, the
+       library keeps them as its old vectors */
+    BOTH("system's vectors unchanged by the task", *vec(0x64) == s64 && *vec(0x74) == s74);
+    Disable();
+    *vec(0x64) = s64;
+    *vec(0x74) = s74;
+    Enable();
+    hits_out();
+    got64 = (ULONG)riser_stub1;
+    got74 = (ULONG)riser_stub5;
+    fillfake();
+    BOTH("every byte read in time", ok);
+    BOTH("returned", ret);
+    preserve();
+    compare();
     OBS("d0", R.d[0]);
     OBS("a3", R.a[3] - (ULONG)databuf);
-    OBSBYTES("string", databuf + 0x180, 32);
-    check("riseriallib: SerialReadString returned to d0 (open) / normally",
-          riser_landed - l0 == (d0 == 1 ? 1 : 0));
+    OBSBYTES("string", SBUF, 32);
+    /* the original returns to d0 when the port is open (#796) */
+    OBS("returned to d0", riser_landed - l0);
+    OBS("bytes given again", again);
 }
 
 /* until the task has read every byte (at most a second), then one tick
@@ -532,6 +641,7 @@ int main(int argc, char **argv)
     v74 = *vec(0x74);
     for (i = 0; i < 16; i++)
         databuf[i] = (UBYTE)(0x41 + i * 7);
+    putl(SBUF - 4, 128 + 8);            /* the string work area's length */
 
     /* the receive ring: in front of SerialBuffer's address */
     strcpy(VEC, "");
@@ -611,11 +721,11 @@ int main(int argc, char **argv)
     stmt("SerialStop", STOP, 0, 0, 0);
     sendstring("open");
     sendblock("after SerialSendString (stop flag cleared)", 2, 2);
-    feed('O');
-    feed('K');
-    feed(0);
+    {
+        static const UBYTE ok[] = { 'O', 'K', 0 };
+        readstring("open: returns to d0", 1, ok, 3);
+    }
     feed('x');
-    readstring("open: returns to d0", 1);
     stmt("SerialWriteLong", WRITELONG, 0, 0x11223344, 0);
     stmt("SerialStop", STOP, 0, 0, 0);
     stmt("SerialOpen", OPEN, 1, 19200, 0);      /* open: only SERPER, the stop flag */
@@ -635,13 +745,11 @@ int main(int argc, char **argv)
     stmt("SerialFlush", FLUSH, 0, 0, 0);
 
     /* closed */
-    feed('A');
-    feed('B');
-    feed(0);
-    feed('C');
-    feed(0);
-    readstring("closed", 0);
-    readstring("closed, again (the count goes on)", 0);
+    {
+        static const UBYTE ab[] = { 'A', 'B', 0 }, c[] = { 'C', 0 };
+        readstring("closed", 0, ab, 3);
+        readstring("closed, again (the count goes on)", 0, c, 2);
+    }
     sendstring("closed");
     stmt("SerialStop", STOP, 0, 0, 0);
     sendstring("closed, stop flag set");
