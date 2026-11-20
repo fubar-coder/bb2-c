@@ -11,7 +11,8 @@
  * the variant rwe-1999-ahi, where it replaces risoundlib
  * (RWE_OWN_VARIANTS).  Notes: docs/rwelibs/port/risoundlib2.md.
  *
- * init:  CreateMsgPort, CreateIORequest (80 bytes, an AHIRequest)
+ * init:  CreateMsgPort, CreateIORequest (80 bytes, an AHIRequest), from
+ *        exec V36 on
  * finit: nothing without the port or while CheckIO says the request is
  *        in use; else CloseAHI, DeleteIORequest, DeleteMsgPort
  * CloseAHI: CloseDevice if ahidevice is set, ahibase = 0; port and
@@ -82,7 +83,10 @@
  * port for finit; OpenAHI without a request returns 0.  The original's
  * CloseAHI was finit: a later OpenAHI wrote ahir_Version to address 48
  * and passed request 0 to OpenDevice, the same without a request from
- * init (#927).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * init (#927).  init makes port and request from exec V36 on only;
+ * below (Kickstart 1.x) the commands fail.  The original called the V36
+ * functions there, behind exec's jump table: every program with the
+ * library crashed at its start (#1139).  CludgeSound writes nothing behind audiolib's 16 byte sound
  * object; the original stored the rate at +16, the high word of the next
  * object's sample pointer (behind the last object whatever follows), for
  * PlaySoundAHI, which now takes its frequency from the object's period:
@@ -282,13 +286,18 @@ static char ahiname[] = "ahi.device";
  * @brief init: create the message port and the AHI request.
  *
  * CreateMsgPort, then CreateIORequest of a struct AHIRequest (80 bytes)
- * on that port.  Both are exec V36 calls.  Port and request made before
+ * on that port.  Both are exec V36 calls: below exec V36 (Kickstart 1.x)
+ * port and request stay 0, and the commands fail (OpenAHI 0); fixed
+ * (#1139), the original called them there (offsets behind exec's jump
+ * table: a crash at the program's start).  Port and request made before
  * and not deleted by finit (CloseAHI keeps them, fixed: #927) stay.
  * @return d0: the request, 0 if the port or the request could not be
- *         made (a port made stays)
+ *         made (a port made stays) or exec is older than V36
  */
 static ULONG BLITZ_ROUTINE c_libinit(void)
 {
+    if (SysBase->LibNode.lib_Version < 36)  /* Fixed (#1139) */
+        return 0;
     if (ahimsgport)                     /* made and not deleted by finit:
                                            CloseAHI keeps them (#927) */
         return (ULONG)ahiiorequest;

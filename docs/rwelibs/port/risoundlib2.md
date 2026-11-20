@@ -134,6 +134,13 @@ kind F):
   CloseAHI was finit: a later OpenAHI wrote `ahir_Version` to address 48
   and called OpenDevice with request 0, the same without a request from
   init (#927; test `tests/bug-orig/rwe/risoundlib2-openahi-after-closeahi`).
+* init makes the message port and the request (`CreateMsgPort`,
+  `CreateIORequest`, exec V36) only from exec V36 on; on Kickstart 1.x
+  port and request stay 0 and the commands fail (OpenAHI returns 0; AHI
+  needs Kickstart 2.04 anyway). The original called the V36 functions
+  there, behind exec's jump table: every program with the library
+  crashed at its start (#1139; test `tests/bug-orig/rwe/risoundlib2-v36-calls`,
+  a500).
 
 ## Test
 
