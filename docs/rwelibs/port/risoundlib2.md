@@ -59,15 +59,6 @@ code) with the original's offsets, so AHIOutputRequest writes the same
 longs. The forms of AHIOutputRequest with fewer arguments are entries
 that fill in the missing values and call the one of 6 arguments.
 
-## BUG(orig), kept
-
-* AHIOutputRequest: every call allocates a
-  requester; none is ever freed (#930).
-* AHIRequestedID and AHIRequestedFreq return the data of the
-  requester's initial tags (always -1 and 0), not what the user chose
-  (`ahiam_AudioID`, `ahiam_MixFreq` of the requester)
-  (#934).
-
 ## Fixed
 
 Intended deviations from the original (`docs/libs/deviations.md`,
@@ -158,6 +149,15 @@ kind F):
   (then 0, AHI's default). The original never set the tag (`AHIR_Screen`
   stayed 0) (#929; `libs_emulator` cases `[fixed #929]` of
   `rwe_risoundlib2`).
+* AHIRequestedID and AHIRequestedFreq return the choice of the last
+  confirmed requester (`ahiam_AudioID`, `ahiam_MixFreq`; -1 and 0
+  before one, without ahi.device 0); the requester is freed after each
+  AHIOutputRequest (`AHI_FreeAudioRequest`), the choice copied first.
+  The original returned the data of the requester's initial tags (always
+  -1 and 0, #931) and allocated a requester per call without ever freeing
+  one. init resets the choice and the tag list, so that a second run from
+  the editor starts as the first (#934, #930; `libs_emulator` cases
+  `[fixed #934]` and `[fixed #930]` of `rwe_risoundlib2`).
 
 ## Test
 

@@ -25,7 +25,8 @@
  * AHIOutputRequest [x,y,width,height[,modeid[,frequency]]]: the tags of
  *        the requester changed, AHI_AllocAudioRequestA,
  *        AHI_AudioRequestA; its result (0 when cancelled)
- * AHIRequestedID, AHIRequestedFreq: two of those tags' data
+ * AHIRequestedID, AHIRequestedFreq: the choice of the last confirmed
+ *        requester
  * CludgeSound sound#,address: risoundlib's (the original also stored the
  *        sample rate at +16 of the object, #926)
  *
@@ -33,13 +34,6 @@
  * where the original passes the whole d0 on, memlib through
  * BLITZ_ALIBJSR.  The tag list is the original's (in its code) with the
  * same offsets.
- *
- * BUG(orig):
- *   - AHIOutputRequest: every call allocates a requester that is never freed
- *     (#930).
- *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
- *     tags (-1 and 0, never written), not the requester's selection
- *     (ahiam_AudioID, ahiam_MixFreq) (#934).
  *
  * Fixed (intended deviation, docs/libs/deviations.md 3a): CludgeSound
  * does not free the old sample when audiolib's "cL" mark (+14) is set
@@ -89,7 +83,12 @@
  * d2-d5 held (#928).  AHIOutputRequest sets AHIR_Screen to the struct
  * Screen of the used screen object (!libs #screenslib,#ua0: the
  * object's first long), so the requester opens on the program's screen;
- * the original never set it (#929).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * the original never set it (#929).  The requester is freed after each
+ * call; the original allocated one per call and never freed one (#930).
+ * AHIRequestedID and AHIRequestedFreq return the choice of the last
+ * confirmed requester (ahiam_AudioID, ahiam_MixFreq; -1 and 0 before);
+ * the original returned the data of the requester's initial tags.  init
+ * resets the choice and the tag list (#934).  CludgeSound writes nothing behind audiolib's 16 byte sound
  * object; the original stored the rate at +16, the high word of the next
  * object's sample pointer (behind the last object whatever follows), for
  * PlaySoundAHI, which now takes its frequency from the object's period:
@@ -242,6 +241,7 @@ static ULONG periodfreq(UWORD period)
 #define LVO_SendIO                  (-462)
 #define LVO_AHI_AllocAudioRequestA  (-120)
 #define LVO_AHI_AudioRequestA       (-126)
+#define LVO_AHI_FreeAudioRequest    (-132)
 
 /* the source's constants (#MIN_AHI_VERSION) and AHI.res's; the request
    is a struct AHIRequest (#ahir_... = its offsets, AHIRequest_SIZEOF = 80)
@@ -263,17 +263,22 @@ static_assert(sizeof(struct AHIRequest) == 80);
    DoMixFreq and TAG_END); AHIOutputRequest writes the longs at 4, 12, 16,
    20, 24, 28 - two of them tag ids; the port writes the data longs 4,
    12, 20, 28, 36, 44 (#931) */
-static struct {
+struct reqtags {
     struct TagItem left, top, width, height, audioid, mixfreq, screen, domixfreq;
     ULONG end;
-} ahireqtags = {
+};
+static struct reqtags ahireqtags = {
     { AHIR_INITIALLEFTEDGE, (ULONG)-1 }, { AHIR_INITIALTOPEDGE, (ULONG)-1 },
     { AHIR_INITIALWIDTH, (ULONG)-1 }, { AHIR_INITIALHEIGHT, (ULONG)-1 },
     { AHIR_INITIALAUDIOID, (ULONG)-1 }, { AHIR_INITIALMIXFREQ, 0 },
     { AHIR_SCREEN, 0 }, { AHIR_DOMIXFREQ, 1 }, TAG_END
 };
 static_assert(sizeof ahireqtags == 17 * 4);
-static APTR ahirequest;
+
+/* the user's choice in the last confirmed requester (ahiam_AudioID,
+   ahiam_MixFreq; fixed: #934): -1 and 0 before, what the original's
+   AHIRequestedID/AHIRequestedFreq always returned */
+static ULONG reqaudioid = (ULONG)-1, reqmixfreq;
 
 static ULONG deviceunit, deviceid;
 static struct MsgPort *ahimsgport;
@@ -303,6 +308,17 @@ static char ahiname[] = "ahi.device";
  */
 static ULONG BLITZ_ROUTINE c_libinit(void)
 {
+    /* Fixed (#934): a run before (from the editor) leaves nothing - the
+       tags' data as at the start (their ids never change), no choice */
+    ahireqtags.left.ti_Data = (ULONG)-1;
+    ahireqtags.top.ti_Data = (ULONG)-1;
+    ahireqtags.width.ti_Data = (ULONG)-1;
+    ahireqtags.height.ti_Data = (ULONG)-1;
+    ahireqtags.audioid.ti_Data = (ULONG)-1;
+    ahireqtags.mixfreq.ti_Data = 0;
+    ahireqtags.screen.ti_Data = 0;
+    reqaudioid = (ULONG)-1;
+    reqmixfreq = 0;
     if (SysBase->LibNode.lib_Version < 36)  /* Fixed (#1139) */
         return 0;
     if (ahimsgport)                     /* made and not deleted by finit:
@@ -567,8 +583,10 @@ ULONG BLITZ_ROUTINE c_playraw(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
  * AHIR_Screen = the struct Screen of the used screen object (its first
  * long; 0 without one: AHI's default; fixed: #929, the original never
  * set it), then AHI_AllocAudioRequestA and AHI_AudioRequestA (no tags).
- * BUG(orig): every call allocates a requester that is never freed
- * (#930).
+ * A confirmed requester's choice (ahiam_AudioID, ahiam_MixFreq) is
+ * kept for AHIRequestedID/AHIRequestedFreq (fixed: #934), and the
+ * requester is freed again (AHI_FreeAudioRequest; fixed: #930, the
+ * original allocated one per call and never freed one).
  * @param x     d0: the initial left edge
  * @param y     d1: the initial top edge
  * @param w     d2: the initial width
@@ -585,6 +603,8 @@ ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
                               const ULONG *scr BL_REG(a0))
 {
     struct bl_regs r;
+    struct AHIAudioModeRequester *req;
+    ULONG rc;
 
     if (!ahibase)
         return 0;
@@ -596,11 +616,18 @@ ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
     ahireqtags.mixfreq.ti_Data = freq;  /* 44(a0) */
     ahireqtags.screen.ti_Data = scr ? *scr : 0;     /* Fixed (#929) */
     r = (struct bl_regs){ .a0 = (ULONG)&ahireqtags };
-    ahirequest = (APTR)BLITZ_BASEJSR(ahibase, LVO_AHI_AllocAudioRequestA, r);
-    if (!ahirequest)
+    req = (struct AHIAudioModeRequester *)BLITZ_BASEJSR(ahibase, LVO_AHI_AllocAudioRequestA, r);
+    if (!req)
         return 0;
-    r = (struct bl_regs){ .a0 = (ULONG)ahirequest, .a1 = 0 };
-    return BLITZ_BASEJSR(ahibase, LVO_AHI_AudioRequestA, r);
+    r = (struct bl_regs){ .a0 = (ULONG)req, .a1 = 0 };
+    rc = BLITZ_BASEJSR(ahibase, LVO_AHI_AudioRequestA, r);
+    if (rc) {                           /* Fixed (#934): the choice */
+        reqaudioid = req->ahiam_AudioID;
+        reqmixfreq = req->ahiam_MixFreq;
+    }
+    r = (struct bl_regs){ .a0 = (ULONG)req };
+    BLITZ_BASEJSR(ahibase, LVO_AHI_FreeAudioRequest, r);   /* Fixed (#930) */
+    return rc;
 }
 
 /**
@@ -689,33 +716,31 @@ ULONG BLITZ_ROUTINE c_outreq5(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
 /**
  * @brief AHIRequestedID: the audio mode id chosen in AHIOutputRequest.
  *
- * BUG(orig) (#934): returns the data of the initial tag
- * AHIR_InitialAudioID (-1, never written), not the requester's
- * ahiam_AudioID.
- * @return d0: the tag's data, 0 without ahi.device
+ * The ahiam_AudioID of the last confirmed requester, -1 before one
+ * (fixed: #934; the original returned the data of the initial tag
+ * AHIR_InitialAudioID).
+ * @return d0: the chosen mode id, -1 before a choice, 0 without ahi.device
  */
 ULONG BLITZ_ROUTINE c_requestedid(void)
 {
     if (!ahibase)
         return 0;
-    return ahireqtags.audioid.ti_Data;  /* ahiaudioid+4: the initial value, not
-                                           the requester's ahiam_AudioID */
+    return reqaudioid;
 }
 
 /**
  * @brief AHIRequestedFreq: the mixing frequency chosen in AHIOutputRequest.
  *
- * BUG(orig) (#934): returns the data of the initial tag
- * AHIR_InitialMixFreq (0, never written), not the requester's
- * ahiam_MixFreq.
- * @return d0: the tag's data, 0 without ahi.device
+ * The ahiam_MixFreq of the last confirmed requester, 0 before one
+ * (fixed: #934; the original returned the data of the initial tag
+ * AHIR_InitialMixFreq).
+ * @return d0: the chosen frequency, 0 before a choice or without ahi.device
  */
 ULONG BLITZ_ROUTINE c_requestedfreq(void)
 {
     if (!ahibase)
         return 0;
-    return ahireqtags.mixfreq.ti_Data;  /* ahifrequency+4: the initial value,
-                                           not the requester's ahiam_MixFreq */
+    return reqmixfreq;
 }
 
 /**
