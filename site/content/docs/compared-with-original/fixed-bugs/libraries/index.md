@@ -24,40 +24,68 @@ The fixes in this part change the result of a program that ran correctly
 with the original: what it computes, draws or sends, or which way it
 takes. Check your sources for the commands they name.
 
-Two of them concern programs that were written to make up for the bug,
-drawing on bitmaps; no known example program, demo or game uses these
-commands this way, but a program of your own might. `CustomSprites` takes
-its offset in the unit it is documented with, which changes every program
-that gives it an offset other than 0. `LoadShape` stops with a runtime
-error on pictures too large to blit, which it loaded before. `ReplyRexxMsg`
-changes which ARexx replies carry a result string, and two serial port
-commands take the flags their help text names. `GetMedVolume` no longer
-silences the channel it reads, and so no longer gives 0 on the next read,
-and `Translate$` returns its phonemes without an extra 0 byte. Blitz code
-with runtime error checking that runs in supervisor mode outside a
-`SetInt` routine hangs at its first trap. One concerns tapes of mouse and
-keyboard events: a simulated event no longer ends a running recording or
-playback. The last ones are in the RWE userlibs: `BlockToShape` copies
-the whole of a shape wider than 16 pixels, `RTEZGetLong` without a
-default value no longer offers and returns the number of the call
-before, `BankLimit n` and `FindVolume` return the numbers their manual
-gives instead of an address, `PutIconObject` reports an icon it could
-not write and keeps it open, `SetToolValue` no longer replaces a
-tool type whose name only begins with the name given, `StoreNVData`
-returns True for a stored item instead of 0, `RXRunCommand` and
-`AddAppMenu` return -1 for success instead of a value the system left or
-an address, `AppEventID` returns -1 instead of 0 when there is no App
-event, a second `DataTypeCreate` or `MakeCommodity` is refused
-while the first object or commodity exists, `ILBMPalette` with an
-offset makes a palette that is too small larger instead of replacing it,
-`FillPalette` with an end colour of 0 fills up to the last colour,
-`Derez`, `DoColSplit` and `CopperAGACol` return -1 or 0, and
-`GetCCOffset` returns its offset after `CopperResetAdr`. In the floppy
-library ritrackdisklib, `OpenDisk` without a device name always opens
-trackdisk.device instead of the device of an earlier `OpenDisk`, and
-in the serial link library rifastseriallib, `SetIOSize n` makes
-`DoSerialIO` transfer n bytes instead of n + 1. `SerialGot` of
-riseriallib returns the number of bytes received instead of -1.
+In the command libraries:
+
+* [`RenderToBitmap`](#rendertobitmap-dither) with a dither bitmap and
+  [`Box`](#box-origin) draw on the right bitmap at the right place. Only a
+  program written to make up for the bug changes; no known example
+  program, demo or game does that.
+* [`CustomSprites`](#customsprites-ccoffset) takes its offset in the
+  documented unit: every program that gives it an offset other than 0
+  changes.
+* [`LoadShape`](#loadshape-blit-size) stops with a runtime error on
+  pictures too large to blit, which it loaded before.
+* [`ReplyRexxMsg`](#replyrexxmsg-result) gives the result string to other
+  ARexx replies than before.
+* [`WriteSerialString` and `ReadSerial`](#serial-flags) take the flags
+  their help text names.
+* [`GetMedVolume`](#getmedvolume-clears) no longer silences the channel it
+  reads, so the next read no longer gives 0.
+* [`Translate$`](#translate-length) returns its phonemes without an extra
+  0 byte.
+* [Blitz code with runtime error checking](#supervisor-mode-traps) that
+  runs in supervisor mode outside a `SetInt` routine hangs at its first
+  trap.
+* [A simulated event](#simulated-event-ends-tape) no longer ends a running
+  recording or playback of a tape.
+
+In the RWE userlibs:
+
+* [`BlockToShape`](#blocktoshape-width) copies the whole of a shape wider
+  than 16 pixels.
+* [`RTEZGetLong`](#rtezgetlong-previous) without a default value no longer
+  offers and returns the number of the call before.
+* [`BankLimit n`](#banklimit-result) and [`FindVolume`](#findvolume-result)
+  return the numbers their manual gives instead of an address.
+* [`PutIconObject`](#puticonobject-result) reports an icon it could not
+  write and keeps it open.
+* [`SetToolValue`](#settoolvalue-prefix) no longer replaces a tool type
+  whose name only begins with the name given.
+* [`StoreNVData`](#storenvdata-result) returns True for a stored item
+  instead of 0.
+* [`RXRunCommand`](#rxruncommand-result) and
+  [`AddAppMenu`](#addappmenu-result) return -1 for success instead of a
+  value the system left or an address.
+* [`AppEventID`](#appeventid-no-event) returns -1 instead of 0 when there
+  is no App event.
+* A second [`DataTypeCreate`](#datatypecreate-second) or
+  [`MakeCommodity`](#makecommodity-second) is refused while the first
+  object or commodity exists.
+* [`ILBMPalette`](#ilbmpalette-offset) with an offset makes a palette that
+  is too small larger instead of replacing it.
+* [`FillPalette`](#fillpalette-end-zero) with an end colour of 0 fills up
+  to the last colour.
+* [`Derez`, `DoColSplit` and `CopperAGACol`](#rwe-effect-results) return
+  -1 or 0.
+* [`GetCCOffset`](#getccoffset-resetadr) returns its offset after
+  `CopperResetAdr`.
+* [`OpenDisk`](#opendisk-device-name) of the floppy library ritrackdisklib
+  without a device name always opens trackdisk.device instead of the
+  device of an earlier `OpenDisk`.
+* [`SetIOSize n`](#setiosize-count) of the serial link library
+  rifastseriallib makes `DoSerialIO` transfer n bytes instead of n + 1.
+* [`SerialGot`](#serialgot-count) of riseriallib returns the number of
+  bytes received instead of -1.
 
 The fixes that leave a program doing its job, but change something you
 may notice, such as its sound or the events on a tape, follow in
