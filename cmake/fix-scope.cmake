@@ -7,7 +7,9 @@
 # with git archive into WORK/base (the checkout is not touched); the
 # branch's are those of the checkout (the working tree).  The issues are
 # the "Fixes #N" lines of the commits BASE..HEAD.  The directories of
-# expected data: DIRS (libs/tests/expected; tests/bug-orig, the bug-orig
+# expected data: DIRS (libs/tests/expected and the expected data of the
+# other machines of the libs tests, libs/tests/expected-MACHINE, those of
+# the base and those of the checkout; tests/bug-orig, the bug-orig
 # tests, each projected onto cases: results fix-scope --bug-orig, OpenSpec
 # change bug-orig-test-model, design D6; tests/corpus/expect, the corpus,
 # each file a case: results fix-scope --corpus, OpenSpec change
@@ -18,8 +20,6 @@ foreach(v RESULTS SOURCE BASE WORK)
 		message(FATAL_ERROR "fix-scope.cmake: -D${v}=... missing")
 	endif()
 endforeach()
-set(DIRS libs/tests/expected tests/bug-orig tests/corpus/expect)
-set(OPTS_libs/tests/expected "")
 set(OPTS_tests/bug-orig --bug-orig)
 set(OPTS_tests/corpus/expect --corpus)
 file(MAKE_DIRECTORY ${WORK})
@@ -34,6 +34,25 @@ execute_process(COMMAND git -C ${SOURCE} log --format=%B ${base}..HEAD
 if(rc)
 	message(FATAL_ERROR "fix-scope: git log ${base}..HEAD failed: ${err}")
 endif()
+
+# the expected data of the other machines (libs/tests/CMakeLists.txt,
+# libs_machines): of the base and of the checkout
+execute_process(COMMAND git -C ${SOURCE} ls-tree -d --name-only ${base} -- libs/tests/
+	OUTPUT_VARIABLE have OUTPUT_STRIP_TRAILING_WHITESPACE RESULT_VARIABLE rc ERROR_VARIABLE err)
+if(rc)
+	message(FATAL_ERROR "fix-scope: git ls-tree ${base} -- libs/tests/ failed: ${err}")
+endif()
+string(REPLACE "\n" ";" have "${have}")
+file(GLOB checkout RELATIVE ${SOURCE} LIST_DIRECTORIES true ${SOURCE}/libs/tests/expected-*)
+set(machines "")
+foreach(d IN LISTS have checkout)
+	if(d MATCHES "^libs/tests/expected-[^/]+$" AND (IS_DIRECTORY ${SOURCE}/${d} OR d IN_LIST have))
+		list(APPEND machines ${d})
+	endif()
+endforeach()
+list(REMOVE_DUPLICATES machines)
+list(SORT machines)
+set(DIRS libs/tests/expected ${machines} tests/bug-orig tests/corpus/expect)
 
 file(REMOVE_RECURSE ${WORK}/base ${WORK}/empty)
 file(MAKE_DIRECTORY ${WORK}/base ${WORK}/empty)

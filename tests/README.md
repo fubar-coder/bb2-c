@@ -455,8 +455,9 @@ written by `libs-update` with `LIBS_UPDATE_FIX` in the commit of the fix
 and reviewed with `git diff`. **No scenario dodging:** a fix does not
 change the inputs or the steps of a scenario so that it no longer meets
 the bug (spec `testing/expected-results`). **A fix changes only its own
-cases:** the target `fix-scope` compares `libs/tests/expected` and the
-bug-orig tests (`tests/bug-orig`, each projected onto cases: one per
+cases:** the target `fix-scope` compares `libs/tests/expected` (and the
+expected data of the other machines, every `libs/tests/expected-NAME` of
+the base or the checkout) and the bug-orig tests (`tests/bug-orig`, each projected onto cases: one per
 section of `ID.expect` and `ID.orig`, `[fixed #N]` with the header
 `; @fixed #N`; `tools/lib/bugorigcmp`) of the checkout with its merge
 base with `main` (`-DFIX_SCOPE_BASE=BRANCH` for another base) and
@@ -564,7 +565,7 @@ build only (the original crashes there), against its own expected data
 `libs/tests/expected-a500-204/rwe_riwbspritelib.txt`: every case
 `[fixed #1151]`, written from a run of the port and put in order with
 `results libs-sort` (`libs-update` writes the default machine's data
-only).
+only); `fix-scope` checks it like `libs/tests/expected/`.
 
 **The checks have tests with broken input** (no CD): `libs_compare_*` and
 `libs_accept_*` (host: the judge on fake files: a changed value, a
@@ -577,7 +578,8 @@ dump, the first differing observation, `lost` inside a block),
 `libs_dump_*`, `libs_capture_format` (the case writer; block mode gives
 the lines and hashes of the text path), `libs_capture_target` (the
 record and update targets with a fake emulator run), `fix_scope_*` (the
-fix-scope check), `libs_emulator_wrong` (an emulator run whose output has
+fix-scope check; `fix_scope_target` also on the data of another machine:
+a changed, an added and a removed case), `libs_emulator_wrong` (an emulator run whose output has
 a changed case fails with that key), `libs_emulator_lost` (a datalib
 whose thunks change d2: `lost d2`, the run fails),
 `libs_emulator_machine_unknown` and `libs_emulator_machine_uae` (a
