@@ -302,8 +302,13 @@ static void BLITZ_ROUTINE c_libinit(void)
  * Its result is not looked at; the motor goes off in any case.
  * CloseDisk and finit switch the motor off through this routine.
  * @param unit  d0: unit# (0-3)
- * @return d0: DoIO's d0 of TD_MOTOR with io_Error as its low byte, 0
- *         without port or request
+ * @return d0: the result of the sector and motor commands (#1155): DoIO's
+ *         d0 with io_Error as its low byte, so the byte is 0 when the
+ *         request worked and the trackdisk.device error otherwise (28 write
+ *         protected, 29 no disk, -4 a length the device refuses, ...); 0
+ *         also when the unit is not open or there is no reply port, so 0
+ *         does not tell "done" from "not open" (unlike OpenDisk, whose -1
+ *         is success)
  */
 ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
 {
@@ -453,8 +458,13 @@ static ULONG sectorio(LONG unit, ULONG offset, APTR buffer, ULONG num, UWORD cmd
  * @param sector  d1: the first sector
  * @param buffer  d2: the buffer
  * @param num     d3: the number of sectors
- * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
- *         request
+ * @return d0: the result of the sector and motor commands (#1155): DoIO's
+ *         d0 with io_Error as its low byte, so the byte is 0 when the
+ *         request worked and the trackdisk.device error otherwise (28 write
+ *         protected, 29 no disk, -4 a length the device refuses, ...); 0
+ *         also when the unit is not open or there is no reply port, so 0
+ *         does not tell "done" from "not open" (unlike OpenDisk, whose -1
+ *         is success)
  */
 ULONG BLITZ_ROUTINE c_readsector2(LONG unit BL_REG(d0), ULONG sector BL_REG(d1),
                                   APTR buffer BL_REG(d2), ULONG num BL_REG(d3))
@@ -481,8 +491,13 @@ ULONG BLITZ_ROUTINE c_readsector1(LONG unit BL_REG(d0), ULONG sector BL_REG(d1),
  * @param sector  d1: the first sector
  * @param buffer  d2: the data
  * @param num     d3: the number of sectors
- * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
- *         request
+ * @return d0: the result of the sector and motor commands (#1155): DoIO's
+ *         d0 with io_Error as its low byte, so the byte is 0 when the
+ *         request worked and the trackdisk.device error otherwise (28 write
+ *         protected, 29 no disk, -4 a length the device refuses, ...); 0
+ *         also when the unit is not open or there is no reply port, so 0
+ *         does not tell "done" from "not open" (unlike OpenDisk, whose -1
+ *         is success)
  */
 ULONG BLITZ_ROUTINE c_writesector2(LONG unit BL_REG(d0), ULONG sector BL_REG(d1),
                                    APTR buffer BL_REG(d2), ULONG num BL_REG(d3))
@@ -516,8 +531,13 @@ ULONG BLITZ_ROUTINE c_writesector1(LONG unit BL_REG(d0), ULONG sector BL_REG(d1)
  * @param track   d1: the first track
  * @param buffer  d2: the data (numsectors * 512 bytes)
  * @param num     d3: the number of sectors (a multiple of 11)
- * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
- *         request
+ * @return d0: the result of the sector and motor commands (#1155): DoIO's
+ *         d0 with io_Error as its low byte, so the byte is 0 when the
+ *         request worked and the trackdisk.device error otherwise (28 write
+ *         protected, 29 no disk, -4 a length the device refuses, ...); 0
+ *         also when the unit is not open or there is no reply port, so 0
+ *         does not tell "done" from "not open" (unlike OpenDisk, whose -1
+ *         is success)
  */
 ULONG BLITZ_ROUTINE c_formatsector2(LONG unit BL_REG(d0), ULONG track BL_REG(d1),
                                     APTR buffer BL_REG(d2), ULONG num BL_REG(d3))
@@ -704,8 +724,13 @@ ULONG BLITZ_ROUTINE c_ioreq(LONG unit BL_REG(d0))
 /**
  * @brief MotorOn unit#: switch the drive motor on (TD_MOTOR, length 1).
  * @param unit  d0: unit# (0-3)
- * @return d0: DoIO's d0 with io_Error as its low byte (a #byte result), 0
- *         without port or request
+ * @return d0: the result of the sector and motor commands (#1155): DoIO's
+ *         d0 with io_Error as its low byte, so the byte is 0 when the
+ *         request worked and the trackdisk.device error otherwise (28 write
+ *         protected, 29 no disk, -4 a length the device refuses, ...); 0
+ *         also when the unit is not open or there is no reply port, so 0
+ *         does not tell "done" from "not open" (unlike OpenDisk, whose -1
+ *         is success)
  */
 ULONG BLITZ_ROUTINE c_motoron(LONG unit BL_REG(d0))
 {

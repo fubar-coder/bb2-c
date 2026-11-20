@@ -9,10 +9,24 @@ block, or 1024 bytes of the program's), `BootProg` (checksum + write sectors 0-1
 `MotorOff`, `DiskStatus` (CheckIO), `DiskIO` (the IOStdReq), `DiskMotor`
 (the motor state as the library knows it). One IOStdReq per unit (200 bytes), one reply port made by
 init and freed by finit; both are built by hand with exec V33 functions,
-so the library runs on every Kickstart (fixed #941). Results: DoIO's d0 with
-io_Error as low byte, 0 without port/request; `DiskStatus`, `DiskIO`,
-`BootProg`, `DiskMotor` are Amiga mode only (odd code address in
-`!subs`).
+so the library runs on every Kickstart (fixed #941). `DiskStatus`,
+`DiskIO`, `BootProg`, `DiskMotor` are Amiga mode only (odd code address
+in `!subs`).
+
+**Results** (as the original's; the manuals write `success=` without
+values, #1155): `OpenDisk` and `CloseDisk` return -1 when they opened or
+closed the unit, 0 otherwise. `ReadSector`, `WriteSector`,
+`FormatTrack`, `WriteBoot`, `BootProg`, `MotorOn` and `MotorOff` return
+DoIO's d0 with the request's `io_Error` as its low byte: the byte is
+**0 when the command worked** and the trackdisk.device error otherwise
+(28 write protected, 29 no disk in the drive, -4 a length the device
+refuses, ...); they return 0 too when the unit is not open or there is
+no reply port, so 0 does not tell "done" from "not open", and
+`If ReadSector(...)` is true on an error. `WriteBoot unit` returns
+`TDERR_NoMem` (31) without chip memory for its buffer. `DiskStatus`
+returns CheckIO's result (the request when it is done, else 0),
+`DiskIO` the unit's request (0 if it is not open), `DiskMotor` -1 or 0
+(#857).
 
 **Source and reference:** `rwelibsrc/trackdisklib/trackdisk2.bb`
 (`trackdisk.bb` has the same code), reference BSS2 `RITRACKDISKLIB.OBJ`
