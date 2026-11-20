@@ -5,7 +5,7 @@
 ; bytes): behind the original's MyCDInfo that hit nothing that mattered
 ; to this test, in the C port it overwrote the pointers of the SCSI
 ; buffers, and the second CDReadTOC hung.  The machine is the A1200 with
-; uaescsi.device and the CD image of the test of #579.
+; uaescsi.device and the CD image of the library's tests.
 ; Expected (what the original does): the SCSI session goes on and plays.
 ; The program does not end: the 8 bytes behind the original's data
 ; (BUG(orig) #948) land in the memory behind the executable, and on
@@ -18,7 +18,7 @@
 ; session quick.
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
-; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib-playtrack-scsi-odd.cue,image
+; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image
 ; @pass timeout=20
 DEFTYPE .l
 r=OpenCD("uaescsi.device",0)

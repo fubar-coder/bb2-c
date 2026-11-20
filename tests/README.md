@@ -1460,7 +1460,12 @@ bytes, words, longs, texts, labels, IFF chunks with their lengths filled
 in; `tools/lib/mktestdata/mktestdata.h`) becomes
 `build/<preset>/tests/bug-orig/testdata/NAME`, passed to the program
 with `; @pass file=DEST|@TESTDATA@/NAME` (the program reads
-`CORPUS:DEST`); NAME begins with the ID of the test. A further Blitz
+`CORPUS:DEST`); NAME begins with the ID of the test. The exception is a
+CD image for `uaescsi.device` (`; @pass uae=cdimage0=@TESTDATA@/NAME.cue,image`):
+one image per library, shared by all its tests and named after the
+library (`rwe/ricompactdisclib.cue.spec` with its tracks
+`ricompactdisclib-t1.bin.spec`, `-t2.bin.spec`), so that the emulator
+keeps one snapshot configuration for them. A further Blitz
 source (e.g. the source of a resident) is a text `NAME.src`, tokenised
 like `ID.bas` to `testdata/NAME`. The expectation is the correct
 behaviour (from the documentation of the command or the issue), not

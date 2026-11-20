@@ -1,0 +1,7 @@
+[run]
+open scsi -1
+tracks scsi 2
+open -1
+tracks 0
+open default 0
+rc=0

@@ -1,0 +1,7 @@
+[run]
+open -1
+no toc 0 0 0 0
+open scsi -1
+scsi toc 2 1 2
+lengths 4 6
+rc=0

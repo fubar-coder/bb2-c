@@ -8,7 +8,7 @@
 ; @rwe ricompactdisclib
 ; @machine a600
 ; @pass uae=scsi=true
-; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib-playtrack-scsi-odd.cue,image
+; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib.cue,image
 ; @pass timeout=60
 DEFTYPE .l
 r=OpenCD("uaescsi.device",0,-1)

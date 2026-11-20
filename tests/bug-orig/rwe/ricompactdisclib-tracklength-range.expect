@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+REQUESTER: AutoRequest body "Track number out of range" *
+rc=0
