@@ -1,9 +1,10 @@
 # ridisasmlib (Disasm, library 50)
 
 **What it does:** a table driven 680x0 disassembler of Leading Edge
-Software (1994): `DisAssemble$(address)` returns one line of 34 columns
-(name with size and condition in columns 0-8, operands from column 9,
-padded with spaces, cut after 34), `InstrSize` the bytes of the last
+Software (1994): `DisAssemble$(address)` returns one line of at least 34
+columns (name with size and condition in columns 0-8, operands from
+column 9, padded with spaces to 34; the original cut it after 34, #616),
+`InstrSize` the bytes of the last
 instruction. The first instruction word is matched against 126 table
 entries (mask, compare value, name, source/destination `<ea>` mask and
 shift or a special operand code, size mask and shift, a flag for a
@@ -29,11 +30,11 @@ number `LIB_ridisasmlib` (50).
 `Dc` lines (symbolic special codes kept); its 3024 bytes equal the
 reference build's (checked once by comparing the library files; the four
 7-byte `"move",0,0,0` names get the pad byte blitz2 inserts). The data
-around LineBuff keep the original's order and sizes in one packed
-struct: the 4 code bytes in front of it (`MOVEQ #34,d0 : RTS`, read by
-the condition code check of a name starting with `b*`), the 80-byte
-LineBuff, opsize/opextra/extrainstr/isdestop/docomma and the condition
-tables - a line up to 86 bytes overwrites the same words. The operand
+around LineBuff keep the original's order in one packed struct: the 4
+code bytes in front of it (`MOVEQ #34,d0 : RTS`, read by the condition
+code check of a name starting with `b*`), LineBuff (128 bytes, the
+original's 80, #616), opsize/opextra/extrainstr/isdestop/docomma and the
+condition tables. The operand
 pointer a5 of the original is a variable (`opstr`).
 The instruction stream is read with the original's widths (volatile
 word/long reads at the given address); the string is written to a3
@@ -48,9 +49,6 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
   (d16(an), brief extension, bd/od 0 or of size "null") shows the bytes
   at address 8 up to a 0 byte (Kickstart 3.2 in the emulator: `@J(`)
   (#614).
-* The string is cut after 34 columns; two memory indirect `<ea>`s with
-  32-bit displacements make a line of 86 bytes, over the end of the
-  80-byte LineBuff (opsize, opextra, extrainstr) (#616).
 
 **Fixed** (intended deviations, `docs/libs/deviations.md`, kind F):
 
@@ -72,6 +70,15 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
   got the run before's size from `InstrSize` before its first
   `DisAssemble$` (#1170; `libs_emulator`, the second run of
   `rwe_ridisasmlib`).
+* `DisAssemble$` returns the whole line, at least 34 columns (a shorter
+  line padded with spaces as before). The original put a 0 at column 34
+  and returned the first 34 columns ("woz 39!!!" in the source), cutting
+  the operands of long 68020 instructions in the middle; its 80-byte
+  LineBuff took the longest line (86 bytes, two memory indirect `<ea>`s
+  with 32-bit displacements) only by overwriting opsize, opextra and
+  extrainstr. LineBuff has 128 bytes (#616; test
+  `ridisasmlib-line-cut-34`, the `libs_emulator` blocks with a line
+  longer than 34 columns).
 
 **Test** (`libs/tests/rwe/ridisasmlib.c`, snitch case "rwe ridisasmlib"):
 each run loads one library set (the C build or the original) and

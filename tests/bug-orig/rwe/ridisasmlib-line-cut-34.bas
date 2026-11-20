@@ -6,6 +6,7 @@
 ; library's variables behind the buffer.
 ; Correct: at least 34 columns (a short line padded with spaces), a
 ; longer line complete.
+; @fixed #616
 ; @rwe ridisasmlib
 DEFTYPE .l
 Dim c.w(12)

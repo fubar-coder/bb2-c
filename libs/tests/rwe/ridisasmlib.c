@@ -21,8 +21,8 @@
  * $0000-$FFFF, twice: with brief extension words behind it and with
  * full format ones (memory indirect, long displacements); the extension
  * words of MOVE.l (bd,a0,xn),(bd,a0,xn) (every source one, every third
- * destination one; the longest lines: 86 bytes, BUG(orig) (#616) - the string
- * is cut after 34 columns) and every second one of MOVE.l (pc,xn),d0 /
+ * destination one; the longest lines: 86 bytes, Fixed (#616) - the
+ * original cut the string after 34 columns) and every second one of MOVE.l (pc,xn),d0 /
  * (bd,pc,xn); MOVEM's register lists (every mask for -(a7), every third
  * for (a7)+ and (a0); Fixed (#615): an empty list got a comma);
  * displacements 0 (BUG(orig) (#614): the bytes at address 8 instead of "0");

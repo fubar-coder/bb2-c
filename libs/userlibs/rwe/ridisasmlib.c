@@ -18,15 +18,15 @@
  * destination <ea> mask/shift or a special code, size mask/shift); the
  * line is built in LineBuff: the name (with condition codes for "*", s/u
  * for "!" and the size) in columns 0-8, the operands from column 9; the
- * string is always the first 34 columns (spaces after the operands, cut
- * after 34), written to a3 byte by byte; InstrSize = the bytes
+ * string is the whole line, at least 34 columns (spaces after the
+ * operands), written to a3 byte by byte; InstrSize = the bytes
  * the instruction took.  An instruction not in the table gives "?????"
  * (length 5) and InstrSize 2.
  *
  * Everything is C.  The data around LineBuff keep the original's order
- * and sizes (the code bytes in front of it, LineBuff, the five words, the
- * condition tables), so that a line longer than 80 bytes and the look at
- * the bytes in front of a short name hit the same things.  The operand
+ * (the code bytes in front of it, LineBuff, the five words, the
+ * condition tables), so that the look at the bytes in front of a short
+ * name hits the same things; LineBuff is larger (#616).  The operand
  * pointer a5 of the original is the variable opstr.  The memory
  * is read with the original's access widths (word/long reads at the
  * given, possibly odd, address).
@@ -38,9 +38,6 @@
  *     as the absolute address 8 - the line gets the bytes of the bus
  *     error vector up to a 0 byte (on Kickstart 3.2 in the emulator
  *     "@J(" ...) (#614).
- *   - The string is cut after 34 columns: longer operands are lost; a line
- *     can grow to 86 bytes (two memory indirect <ea>s with 32 bit
- *     displacements) and overwrite opsize, opextra and extrainstr (#616).
  *
  * Fixed (intended deviation, #617): the original writes the string to a3
  * with 17 word writes (MOVE.w (a0)+,(a3)+), an address error on a 68000
@@ -57,6 +54,13 @@
  * instruction.  The original's init is RTS, so a second run of the
  * program with the library still loaded (from the editor) returned the
  * run before's size from InstrSize before its first DisAssemble$.
+ * Fixed (intended deviation, #616): DisAssemble$ returns the whole line,
+ * a short one padded to 34 columns as before.  The original put a 0 at
+ * column 34 and returned the first 34 columns, cutting the operands of
+ * long 68020 instructions in the middle; its 80-byte LineBuff took the
+ * longest line (86 bytes: two memory indirect <ea>s with 32 bit
+ * displacements) only by overwriting opsize, opextra and extrainstr while
+ * the destination was written.  LineBuff has LINEBUFF (128) bytes.
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -364,10 +368,13 @@ static const struct disdata disdata[] = {
 };
 
 /* LineBuff and what follows it, in the original's order; in front of it
-   the last bytes of DisOneLine (MOVEQ #34,d0 : RTS) */
+   the last bytes of DisOneLine (MOVEQ #34,d0 : RTS).  Fixed (#616):
+   LineBuff has LINEBUFF bytes, the original's 80 took the longest line
+   (86 bytes) only by overwriting opsize, opextra and extrainstr */
+#define LINEBUFF 128
 static struct BL_PACKED {
     UBYTE code[4];
-    char linebuff[80];
+    char linebuff[LINEBUFF];
     UWORD opsize, opextra, extrainstr, isdestop, docomma;
     char condtable[32] __attribute__((nonstring));
     char bcondtable[32] __attribute__((nonstring));
@@ -376,7 +383,7 @@ static struct BL_PACKED {
     "t f hilscccsneeqvcvsplmigeltgtle",
     "rasrhilscccsneeqvcvsplmigeltgtle"
 };
-_Static_assert(offsetof(__typeof__(v), opsize) == 84, "LineBuff layout");
+_Static_assert(offsetof(__typeof__(v), opsize) == 4 + LINEBUFF, "LineBuff layout");
 
 static ULONG disasm_add;
 static const UBYTE *instr;              /* a0: the instruction stream */
@@ -1000,35 +1007,35 @@ static int decode(const struct disdata *e, UWORD op)
         v.isdestop = 1;
         decodespecial(e->dst, op);
     }
-    v.linebuff[34] = 0;
     return 1;
 }
 
 /**
  * @brief DisAssemble$(address.l): the instruction at address as a line of
- * 34 columns.
+ * at least 34 columns.
  *
  * The first word is matched against DisData; the line (name and size in
- * columns 0-8, the operands from column 9, spaces behind) is written to
- * a3 byte by byte (Fixed (#617): the original's word writes were an
- * address error at an odd a3 on a 68000).  InstrSize becomes the bytes
- * the instruction took.  BUG(orig): a decimal 0 is the bytes at address
- * 8 (#614); longer operands are cut after 34 columns, a line can overwrite
- * the variables behind LineBuff (#616).  An odd address is an address
- * error on a 68000.
+ * columns 0-8, the operands from column 9) is written to a3 byte by byte
+ * (Fixed (#617): the original's word writes were an address error at an
+ * odd a3 on a 68000): a line shorter than 34 columns padded with spaces
+ * to 34, a longer one whole (Fixed (#616): the original cut it after 34
+ * columns).  InstrSize becomes the bytes the instruction took.
+ * BUG(orig): a decimal 0 is the bytes at address 8 (#614).  An odd
+ * address is an address error on a 68000.
  * @param addr  d0: the address of the instruction
- * @return d0: 34, the length; 5 for an instruction not in the table
- *         ("?????", InstrSize 2)
+ * @return d0: the length, 34 or more; 5 for an instruction not in the
+ *         table ("?????", InstrSize 2)
  */
 ULONG BLITZ_ROUTINE c_disoneline(ULONG addr BL_REG(d0))
 {
     const struct disdata *e;
     UWORD op;
+    ULONG n;
     int i;
 
     instr = (const UBYTE *)addr;
     disasm_add = addr;
-    for (i = 0; i < 80; i++)
+    for (i = 0; i < LINEBUFF; i++)
         v.linebuff[i] = ' ';
     op = rdw();
     for (e = disdata; ; e++) {
@@ -1042,9 +1049,12 @@ ULONG BLITZ_ROUTINE c_disoneline(ULONG addr BL_REG(d0))
             break;
     }
     disasm_add = (ULONG)instr - disasm_add;
-    for (i = 0; i < 34; i++)            /* Fixed (#617): byte writes */
+    n = (ULONG)(linepos - v.linebuff);  /* Fixed (#616): the whole line, */
+    if (n < 34)                         /* at least 34 columns */
+        n = 34;
+    for (i = 0; i < (int)n; i++)        /* Fixed (#617): byte writes */
         *blitz_string++ = v.linebuff[i];
-    return 34;
+    return n;
 }
 
 /**
