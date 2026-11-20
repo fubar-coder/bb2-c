@@ -34,7 +34,9 @@
  *
  * BUG(orig):
  *   - GetIconObject reads the icon's tool types from address 0 if the
- *     icon has none (#845).
+ *     icon has none (#845, closed as not planned: not observable, the
+ *     long at address 0 is 0 on Kickstart 1.3, 2.04 and 3.1, the count
+ *     stops at once - test ritooltypeslib-v36-calls; an Enforcer hit only).
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
  *     FindToolValue does for its result) and leaves it there. No defect:
  *     it gives back the space of the string argument, which the compiler
@@ -104,6 +106,11 @@
  *   PlanePick and PlaneOnOff: a shape of another depth than the icon's
  *   image had planes picked that it does not have, or planes not drawn.
  *   PlanePick is now (1 << depth) - 1 of the shape, PlaneOnOff 0.
+ * Fixed (intended deviation, #1149): GetIconObject called
+ *   GetDiskObjectNew (icon.library V36) with icon.library opened in any
+ *   version: on Kickstart 1.x (Workbench 1.x's icon.library V34) the call
+ *   lay behind the jump table, a crash.  Below V36 it calls GetDiskObject
+ *   now: a file without an icon gives 0 there, no default icon.
  * Original behaviour that is no defect: SetToolValue skips the entry's
  * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
  * the same entry).  FindToolType's bracket hit (a switched-off entry)
@@ -362,11 +369,15 @@ static void BLITZ_ROUTINE c_libfinit(void)
 /**
  * @brief GetIconObject(filename$): opens the icon of a file.
  *
- * GetDiskObjectNew; the icon's tool types are copied into the library's
- * array (allocated for their count and the terminator), which becomes the
- * icon's do_ToolTypes.  Fixed (#855): the original's array had 100
- * entries and the copy no limit.  BUG(orig): an icon without tool types
- * is read from address 0 (#845).
+ * GetDiskObjectNew from icon.library V36 on, GetDiskObject below (fixed,
+ * #1149: the original called GetDiskObjectNew there too, behind the jump
+ * table of Workbench 1.x's icon.library V34, a crash); GetDiskObjectNew
+ * gives a default icon for a file without one, GetDiskObject 0.  The
+ * icon's tool types are copied into the library's array (allocated for
+ * their count and the terminator), which becomes the icon's do_ToolTypes.
+ * Fixed (#855): the original's array had 100 entries and the copy no
+ * limit.  BUG(orig): an icon without tool types is read from address 0
+ * (#845, closed as not planned: not observable, the long at 0 is 0).
  * @param name  d0: the file name (without .info)
  * @return d0: the DiskObject, 0 if an icon is open already, there is none,
  *         no memory for the array or no icon.library
@@ -378,11 +389,14 @@ ULONG BLITZ_ROUTINE c_getstructure(CONST_STRPTR name BL_REG(d0))
 
     if (tooltype || !iconlibbase)
         return 0;
-    diskobject = GetDiskObjectNew(name);
+    if (iconlibbase->lib_Version >= 36)
+        diskobject = GetDiskObjectNew(name);
+    else                                /* Fixed (#1149) */
+        diskobject = GetDiskObject(name);
     if (!diskobject)
         return 0;
     from = diskobject->do_ToolTypes;
-    for (n = 0; from[n]; n++)           /* BUG(orig): no NULL check (#845) */
+    for (n = 0; from[n]; n++)           /* BUG(orig): no NULL check (#845, closed) */
         ;
     to = newtooltypes(n + 1);
     if (!to) {

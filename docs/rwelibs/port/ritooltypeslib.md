@@ -2,7 +2,8 @@
 
 **What it does:** the icon of a file and its tool types through
 icon.library. `GetIconObject file$` opens one icon at a time
-(GetDiskObjectNew) and points its `do_ToolTypes` to the library's own
+(GetDiskObjectNew; below icon.library V36, on Kickstart 1.x,
+GetDiskObject) and points its `do_ToolTypes` to the library's own
 array (allocated, grown by NewToolType); `FindToolValue`, `FindToolNumber`, `FindToolType
 [,bracket_check]` (also looks for `(name)`), `MatchToolValue` read it,
 `SetToolValue`/`NewToolType [,status]` replace/append entries (status 0
@@ -104,11 +105,23 @@ that are not the result.
   icon's image had planes picked that it does not have (Intuition reads
   them behind the shape's data) or planes that were not drawn (#1083;
   bug-orig test `ritooltypeslib-shapetoicon-keeps-planepick`).
+* GetIconObject reads the icon with `GetDiskObjectNew` from icon.library
+  V36 on and with `GetDiskObject` below (Workbench 1.x has icon.library
+  V34). The original called `GetDiskObjectNew` there too, behind
+  icon.library's jump table: a crash at the first GetIconObject on
+  Kickstart 1.x. The difference stays: on Kickstart 1.x a file without
+  an icon gives 0, from V36 on `GetDiskObjectNew` gives a default icon
+  for it (RIToolTypesLib.guide describes the GetDiskObject behaviour:
+  "will return either FALSE for failure") (#1149; bug-orig test
+  `ritooltypeslib-v36-calls`, a500, a500-204, a1200).
 
 **BUG(orig)** (kept):
 
 * GetIconObject reads the icon's tool types from address 0 if the icon
-  has none (#845).
+  has none (#845, closed as not planned: not observable - the long at
+  address 0 is 0 on Kickstart 1.3, 2.04 and 3.1, so the count stops at
+  once and the icon has no tool types, as `ritooltypeslib-v36-calls`
+  shows with such an icon; it is an Enforcer hit only).
 * IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
   there. This is no defect (#846, closed): it gives back the space of the
   string argument, which the compiler does not take back after a library
