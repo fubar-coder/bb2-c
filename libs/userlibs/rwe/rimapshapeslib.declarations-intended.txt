@@ -15,4 +15,8 @@ lib 6: declaration part $30E != $312 bytes
 # area for it (the original has none)
 lib 6: header +$2C: code offset set in only one of them
 lib 6: entry 0 ShapeToMapShape +$10: code offset set in only one of them
-lib 6: relocations in the declaration part 14 != 16
+# #904: AddGroupMember gets an error check (addgroupmemberchk, "Group
+# holds at most 63 members")
+lib 6: entry 7 AddGroupMember +$E: code offset set in only one of them
+# #903, #904: the relocations of the error field and the two checks
+lib 6: relocations in the declaration part 14 != 17

@@ -35,8 +35,6 @@
  *   - No check of the map shape number: before SetNumMapShapes (or after
  *     one that failed or allocated 0) the map shapes are at address 0
  *     (#906).
- *   - Members are not counted: the 64th member's end mark is written
- *     behind the 512-byte block (#904).
  * Fixed:
  *   - init sets the next-member pointer to its (cleared) group block and
  *     the block size to 0, as at the first load; the original set only
@@ -58,6 +56,11 @@
  *     65536 plane pointers (DBRA), depths 9-13 write into the unused
  *     bytes 42-63 of the 64-byte map shape, from depth 14 on the pointers
  *     run into the next map shape (#903).
+ *   - The group holds at most 63 members (504 bytes and the end mark):
+ *     AddGroupMember ignores further ones, and with runtime error checking
+ *     refuses them: "Group holds at most 63 members" (addgroupmemberchk).
+ *     The original did not count: the 64th member's end mark was written
+ *     behind the 512-byte block, each further member 8 bytes more (#904).
  * Not a defect: RemapMapShape does nothing (the ReMap call is commented
  * out in the source: a command left unfinished); its !libs asks for
  * "library 254, $5600" (sic).
@@ -79,7 +82,7 @@ void _shapetomapshape(void), _blitmapshape(void), _remapmapshape(void);
 void _blitmapshapesize(void), _setnummapshapes(void), _mapshapeaddr(void);
 void _freemapshapes(void), _addgroupmember(void), _blitgroup(void);
 void _resetgroup(void), rimapshapeslib_libinit(void);
-void rimapshapeslib_libfinit(void), _shapetomapshapechk(void);
+void rimapshapeslib_libfinit(void), _shapetomapshapechk(void), _addgroupmemberchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -133,7 +136,7 @@ BLITZ_NAME("FreeMapShapes", "first,last");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_addgroupmember, 0, 0);
+BLITZ_SUBS(_addgroupmember, _addgroupmemberchk, 0);    /* check: fixed #904 */
 BLITZ_NAME("AddGroupMember", "shape#,dx,dy");
 
 BLITZ_ASTATEMENT();
@@ -176,6 +179,9 @@ static UWORD blockwidth, blockheight;
 static struct mapshape *baseshape;      /* the map shapes */
 static struct member *nextgroupmember;
 static struct member *groupaddr;        /* the group, 512 bytes */
+/* the place of the 64th member: AddGroupMember adds none there (fixed
+   #904; 0 without a group block, so that it adds none at all, #905) */
+static struct member *groupend;
 
 /* GetMapShape: ANDI.l #$ffff:LSL.l #6:ADD.l baseshape */
 #define MAPSHAPE(n) ((struct mapshape *)((UBYTE *)baseshape + ((ULONG)(UWORD)(n) << 6)))
@@ -191,14 +197,16 @@ static struct member *groupaddr;        /* the group, 512 bytes */
  * block size to 0, as at the first load: fixed (#901, #1134), the original
  * set only the group's address, so an AddGroupMember before ResetGroup
  * wrote at 0, and in a second run from the editor into the run before's
- * freed group with its block size.  Without memory groupaddr and the
- * pointer are 0: the group commands then do nothing (fixed #905, the
- * original did not check the AllocVec).
+ * freed group with its block size.  The group's end, the place of a 64th
+ * member, is kept for AddGroupMember (fixed #904).  Without memory
+ * groupaddr, the pointer and the end are 0: the group commands then do
+ * nothing (fixed #905, the original did not check the AllocVec).
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     groupaddr = AllocVec(512, MEMF_PUBLIC | MEMF_CLEAR);
     nextgroupmember = groupaddr;        /* fixed (#901, #1134) */
+    groupend = groupaddr ? groupaddr + 63 : NULL;   /* fixed (#904) */
     blockwidth = 0;                     /* fixed (#1134): the run before's */
     blockheight = 0;
 }
@@ -423,9 +431,11 @@ BLITZ_THUNK(_resetgroup, resetgroup_c, "d1/a0-a1");
  * The member {map shape, dx*blockwidth, dy*blockheight (MULU.w, the low
  * words)}, then the end mark.  Before the first ResetGroup it adds to
  * the empty group of init (fixed #901: the original wrote at address 0).
- * Without a group block it does nothing (fixed #905).
- * BUG(orig): no limit, the 64th member's end mark is written behind the
- * 512-byte block (#904).
+ * A member is added only below the group's end (an unsigned compare): at
+ * most 63, further ones are ignored (fixed #904: the original wrote the
+ * 64th member's end mark behind the 512-byte block, and each further
+ * member 8 bytes more), and none without a group block (fixed #905: the
+ * end is 0 then).
  * @param n   d0: the map shape number
  * @param dx  d1: the column in blocks
  * @param dy  d2: the row in blocks
@@ -435,8 +445,8 @@ static void BLITZ_ROUTINE addgroupmember_c(UWORD n BL_REG(d0), UWORD dx BL_REG(d
 {
     struct member *p = nextgroupmember;
 
-    if (!p)                             /* fixed (#905): no group block */
-        return;
+    if ((ULONG)p >= (ULONG)groupend)    /* fixed (#904, #905): full, or */
+        return;                         /* no group block (both 0) */
     p->ms = MAPSHAPE(n);
     p->dx = (UWORD)bl_mulu_w(dx, blockwidth);
     p->dy = (UWORD)bl_mulu_w(dy, blockheight);
@@ -492,6 +502,7 @@ BLITZ_THUNK(_blitgroup, blitgroup_c, "d0-d1/a0-a1");
 /* ------------------------------------------- error checks (debugger only) */
 
 BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal Shape Depth");          /* fixed, #903 */
+BLITZ_ERRCHK_MESSAGE(groupfull, "Group holds at most 63 members");  /* fixed, #904 */
 
 /**
  * @brief The error check of ShapeToMapShape (debugger only).
@@ -513,5 +524,22 @@ static void BLITZ_ERRCHK shapetomapshapechk_c(const struct bb_shape *sh BL_REG(a
         BLITZ_RUNERR(baddepth);
 }
 
+/**
+ * @brief The error check of AddGroupMember (debugger only).
+ *
+ * Fixed (#904), not in the original: the group block has room for 63
+ * members and the end mark; the release code ignores further members,
+ * the check tells the programmer.  Without a group block (init's
+ * allocation failed) the release code adds nothing, silently (D-018).
+ *
+ * Errors: "Group holds at most 63 members" when the group is full.
+ */
+static void BLITZ_ERRCHK addgroupmemberchk_c(void)
+{
+    if (groupaddr && (ULONG)nextgroupmember >= (ULONG)groupend)
+        BLITZ_RUNERR(groupfull);
+}
+
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(_shapetomapshapechk, shapetomapshapechk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_addgroupmemberchk, addgroupmemberchk_c, "d0-d1/a0-a1");

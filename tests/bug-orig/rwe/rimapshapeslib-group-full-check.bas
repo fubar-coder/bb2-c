@@ -7,6 +7,7 @@
 ; mark stays in memory of the program).
 ; Correct: the error check refuses the 64th member: "Group holds at most
 ; 63 members".
+; @fixed #904
 ; @rwe rimapshapeslib
 ; @pass runwrap=@INJECT@|pad
 ; @pass runtime_errors=on

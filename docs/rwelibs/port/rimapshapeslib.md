@@ -69,8 +69,6 @@ holds the member's address before, so its upper word is that address's.
 * The map shape number is not checked; before `SetNumMapShapes` (or
   after one that failed or allocated 0 shapes) the map shapes lie at
   address 0 (#906).
-* The members are not counted: the end mark of the 64th member is
-  written behind the 512-byte block (#904).
 
 ## Fixed
 
@@ -107,6 +105,15 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   unused bytes 42–63 of the 64-byte map shape, from depth 14 on the
   pointers run into the next map shape (#903; tests
   `rwe/rimapshapeslib-depth0-dbra`, `rwe/rimapshapeslib-depth-above-8`).
+* The group holds at most 63 members (504 bytes and the end mark):
+  `AddGroupMember` adds a member only below the group's end, which init
+  keeps (an unsigned compare; the end is 0 without a group block, #905),
+  and ignores further ones; with runtime error checking it refuses them:
+  "Group holds at most 63 members" (`addgroupmemberchk`). The original
+  did not count: the end mark of the 64th member was written behind the
+  512-byte block, each further member 8 bytes more (#904; w7-decisions
+  Q5 (a): refused in the release code plus the message; tests
+  `rwe/rimapshapeslib-group-no-limit`, `rwe/rimapshapeslib-group-full-check`).
 
 Not a defect: `RemapMapShape` does nothing (the `ReMap` call is
 commented out in the source – a command left unfinished, not a fault in

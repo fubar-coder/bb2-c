@@ -8,6 +8,7 @@
 ; group's start.
 ; Correct: the group holds at most what fits into its 512 bytes, nothing
 ; is written behind the block.
+; @fixed #904
 ; @rwe rimapshapeslib
 ; @pass runwrap=@INJECT@|pad
 DEFTYPE .l
