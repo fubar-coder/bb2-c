@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+moved table: handlers
+table at 0: unchanged
+after SerialClose: both as before
+rc=0

@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+echo: RS
+rc=0
