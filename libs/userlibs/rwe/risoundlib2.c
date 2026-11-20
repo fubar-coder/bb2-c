@@ -56,7 +56,7 @@
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
  *     (ahiam_AudioID, ahiam_MixFreq) (#934).
- *   - CludgeSound: risoundlib's bugs (#831, #829), and
+ *   - CludgeSound: risoundlib's bug #829, and
  *     the rate is written at +16, behind the 16 byte sound object of
  *     audiolib (into the next object, behind the last one into whatever
  *     follows) (#926).
@@ -80,7 +80,9 @@
  * gives the result 0 instead of a period loop that never ends (#830); the
  * chunk walk skips the IFF pad byte behind a chunk of odd length and
  * stays inside the FORM, so a file without pad bytes no longer loads
- * (#828).
+ * (#828); the old sample is freed after the checks of the file and the
+ * object's pointer cleared with it, a failed call leaves the sound as it
+ * was (the original left the freed pointer, #831).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -603,12 +605,12 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
 /**
  * @brief CludgeSound sound#,address: make a sound object of an 8SVX file in memory.
  *
- * risoundlib's routine: frees the object's old sample (memlib
- * globfree; not DecodeSound's in-place "cL" data, fixed: #945), checks "8SVX" at +8 and "VHDR" at +12, takes the rate from
- * the VHDR, the period 3579545 / rate, finds the BODY among the first
- * seven chunks and copies it to chip memory (memlib globalloc); the
- * rate also goes to +16.  BUG(orig): the old sample is freed before the
- * checks, a failure leaves the freed pointer (#831); it copies
+ * risoundlib's routine: checks "8SVX" at +8 and "VHDR" at +12, takes the
+ * rate from the VHDR, the period 3579545 / rate, finds the BODY among the
+ * first seven chunks, frees the object's old sample (memlib globfree; not
+ * DecodeSound's in-place "cL" data, fixed: #945; after the checks, the
+ * pointer cleared, fixed: #831) and copies the BODY to chip memory
+ * (memlib globalloc); the rate also goes to +16.  BUG(orig): it copies
  * ((length - 1) & $FFFF) + 1 bytes (DBRA, #829); the rate is
  * written at +16, behind the 16 byte object (#926).  Fixed (#925): mark
  * (+14) is cleared again, as in risoundlib; Fixed (#832): the rate is
@@ -619,7 +621,8 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
  * @param saddr  a0: audiolib's sound object
  * @return d0: BB_TRUE if the sound was made, BB_FALSE if the file is no
  *         8SVX with a VHDR, its rate is 0, it has no BODY among the first
- *         seven chunks of the FORM, or no chip memory
+ *         seven chunks of the FORM (the sound unchanged), or no chip memory
+ *         (the sound then has no sample)
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                           struct bb_sound *saddr BL_REG(a0))
@@ -629,14 +632,6 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     UWORD sper, n;
     int chunk;
 
-    if (saddr->data && saddr->mark != BB_CLUDGE) {
-                                        /* free the old sample (BUG(orig) #831),
-                                           Fixed (#945): not DecodeSound's
-                                           in-place ("cL") data */
-        struct bl_regs r = { .a1 = (ULONG)saddr->data };
-        r.d0 = BL_SETW(sound, saddr->len);
-        BLITZ_ALIBJSR(TOK_globfree, r);
-    }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
         return BB_FALSE;
     rate = WORDAT(sram + 12 + 8 + 12);  /* Fixed (#832): samplesPerSec, not
@@ -669,6 +664,17 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     iff = sram + off;
     src = iff + 8;
     slen = LONGAT(iff + 4);
+    /* Fixed (#831): the old sample is freed after the checks, and the
+       object no longer points to it (a failed check leaves the sound as
+       it was) */
+    if (saddr->data && saddr->mark != BB_CLUDGE) {
+                                        /* Fixed (#945): not DecodeSound's
+                                           in-place ("cL") data */
+        struct bl_regs r = { .a1 = (ULONG)saddr->data };
+        r.d0 = BL_SETW(sound, saddr->len);
+        BLITZ_ALIBJSR(TOK_globfree, r);
+    }
+    saddr->data = NULL;
     {
         struct bl_regs r = { .d0 = slen, .d1 = MEMF_CHIP };
         mem = dst = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);

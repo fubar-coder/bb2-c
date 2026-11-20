@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+first -1
+second 0 words 2
+third -1
+rc=0

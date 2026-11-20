@@ -21,7 +21,8 @@
  * the original; the port stops at the chunk that leaves the FORM), a BODY longer than 65536
  * bytes (((length - 1) & $FFFF) + 1 bytes copied, the length in words of
  * the low word, #829) up to 131071 and 131072 bytes, the old sample freed
- * on a failure and the stale pointer kept (#831), an odd BODY length.
+ * on a failure and the stale pointer kept by the original (#831; the
+ * port leaves the old sample), an odd BODY length.
  * In the C build only (cases [fixed #N]): rate 0 (the original never
  * returns, #830).  Not covered: an empty BODY (the original copies 65536
  * bytes into an 8 byte block, #829).

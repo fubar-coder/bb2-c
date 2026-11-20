@@ -10,10 +10,10 @@
  * docs/rwelibs/port/risoundlib.md.
  *
  * CludgeSound sound#,address (d0, d1; a0 = the sound object, !libs
- * #audiolib,#ia0|#pd0): frees the object's old sample (memlib globfree;
- * not DecodeSound's in-place "cL" data),
- * checks "8SVX"/"VHDR" at address+8/+12, takes the sample rate, finds
- * the BODY chunk among the first seven chunks, copies it into chip
+ * #audiolib,#ia0|#pd0): checks "8SVX"/"VHDR" at address+8/+12, takes
+ * the sample rate, finds the BODY chunk among the first seven chunks,
+ * frees the object's old sample (memlib globfree; not DecodeSound's
+ * in-place "cL" data), copies the BODY into chip
  * memory (memlib globalloc) and fills the object: +0 sample, +4 period
  * (3579545 / rate), +6 length in words, +8 .l/+12 .w/+14 .w = 0 (no
  * loop).  Result -1, or 0 when it is no 8SVX/VHDR file, its rate is 0,
@@ -22,10 +22,6 @@
  * No assembler besides the thunk.
  *
  * BUG(orig):
- *   - The old sample is freed before the file is checked, but the object
- *     keeps the pointer: when CludgeSound then fails, the sound object
- *     points to freed memory (and the next CludgeSound frees it again)
- *     (#831).
  *   - The copy is a DBRA loop on length - 1: it copies ((length - 1) &
  *     $FFFF) + 1 bytes - 65536 for an empty BODY, only the rest modulo
  *     65536 for a longer one; the length in words is (length & $FFFF) / 2
@@ -43,7 +39,12 @@
  * The chunk walk skips the IFF pad byte behind a chunk of odd length
  * (the original added length + 8 and missed BODY behind it), and a chunk
  * that does not fit into the FORM ends it with the result 0; a file
- * without pad bytes (not valid IFF) no longer loads (#828).
+ * without pad bytes (not valid IFF) no longer loads (#828).  The old
+ * sample is freed after all checks of the file, and the object's pointer
+ * cleared with it: a call that fails on the file leaves the sound as it
+ * was.  The original freed it first and kept the pointer, so a failed
+ * call left the object pointing to freed memory, which the next
+ * CludgeSound freed again ("Unable to Free Memory") (#831).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -90,26 +91,24 @@ static void BLITZ_ROUTINE _libfinit(void)
  * @brief CludgeSound sound#,address: an IFF 8SVX sample in memory as an
  * audiolib sound object.
  *
- * Frees the object's old sample (memlib globfree; not DecodeSound's
- * in-place "cL" data, fixed: #945), checks "8SVX"/"VHDR"
- * at address+8/+12, takes the sample rate (samplesPerSec, fixed: #832),
- * finds the BODY chunk among the first seven chunks of the FORM (with the
- * IFF pad bytes, fixed: #828), copies it into chip memory (memlib globalloc)
+ * Checks "8SVX"/"VHDR" at address+8/+12, takes the sample rate
+ * (samplesPerSec, fixed: #832), finds the BODY chunk among the first
+ * seven chunks of the FORM (with the IFF pad bytes, fixed: #828), then
+ * frees the object's old sample and clears its pointer (memlib globfree;
+ * not DecodeSound's in-place "cL" data, fixed: #945; after the checks,
+ * fixed: #831), copies the BODY into chip memory (memlib globalloc)
  * and fills the object: sample, period 3579545 / rate, length in words,
  * no loop, the "cL" mark cleared.
- * BUG(orig):
- *   - the old sample is freed before the file is checked and the object
- *     keeps the pointer: a failing call leaves it pointing to freed
- *     memory (#831);
- *   - the copy is a DBRA loop on length - 1, the length in words
- *     (length & $FFFF) / 2 (#829).
+ * BUG(orig): the copy is a DBRA loop on length - 1, the length in words
+ * (length & $FFFF) / 2 (#829).
  * @param sound  d0: the sound number (globfree gets d0 with the old
  *               length in its low word)
  * @param sram   d1: the 8SVX file
  * @param saddr  a0: the sound object (!libs #audiolib,#ia0|#pd0)
  * @return d0: BB_TRUE, BB_FALSE if it is no 8SVX/VHDR file, its rate is
  *         0 (fixed: #830), it has no BODY among the first seven chunks of
- *         the FORM or the chip memory is missing
+ *         the FORM (the sound unchanged, fixed: #831) or the chip memory
+ *         is missing (the sound then has no sample)
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                           struct bb_sound *saddr BL_REG(a0))
@@ -119,14 +118,6 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     UWORD sper, n;
     int chunk;
 
-    if (saddr->data && saddr->mark != BB_CLUDGE) {
-                                        /* free the old sample (BUG(orig) #831),
-                                           Fixed (#945): not DecodeSound's
-                                           in-place ("cL") data */
-        struct bl_regs r = { .a1 = (ULONG)saddr->data };
-        r.d0 = BL_SETW(sound, saddr->len);
-        BLITZ_ALIBJSR(TOK_globfree, r);
-    }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
         return BB_FALSE;
     rate = WORDAT(sram + 12 + 8 + 12);  /* Fixed (#832): samplesPerSec, not
@@ -159,6 +150,17 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     iff = sram + off;
     src = iff + 8;
     slen = LONGAT(iff + 4);
+    /* Fixed (#831): the old sample is freed after the checks, and the
+       object no longer points to it (a failed check leaves the sound as
+       it was) */
+    if (saddr->data && saddr->mark != BB_CLUDGE) {
+                                        /* Fixed (#945): not DecodeSound's
+                                           in-place ("cL") data */
+        struct bl_regs r = { .a1 = (ULONG)saddr->data };
+        r.d0 = BL_SETW(sound, saddr->len);
+        BLITZ_ALIBJSR(TOK_globfree, r);
+    }
+    saddr->data = NULL;
     {
         struct bl_regs r = { .d0 = slen, .d1 = MEMF_CHIP };
         mem = dst = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);

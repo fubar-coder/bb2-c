@@ -93,7 +93,7 @@ in finit) is translated although it is never reached.
   requester's initial tags (always -1 and 0), not what the user chose
   (`ahiam_AudioID`, `ahiam_MixFreq` of the requester)
   (#934).
-* CludgeSound: risoundlib's bugs (#831, #829); the rate
+* CludgeSound: risoundlib's bug #829; the rate
   goes to +16, behind audiolib's 16 byte sound object – into the next
   object's sample pointer, behind the last into whatever follows the
   objects (#926).
@@ -124,7 +124,8 @@ kind F):
   the same routine: the rate is `samplesPerSec` (#832); a rate of 0
   gives 0 (#830; test `tests/bug-orig/rwe/risoundlib2-rate-zero-hangs`);
   the chunk walk skips the IFF pad bytes and stays inside the FORM
-  (#828).
+  (#828); the old sample is freed after the checks and its pointer
+  cleared, a failed call leaves the sound as it was (#831).
 
 ## Test
 

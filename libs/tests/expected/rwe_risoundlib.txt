@@ -138,7 +138,8 @@ CludgeSound|memory balance|BODY 131072 bytes|1	$00000000
 CludgeSound|memory balance|BODY 65536 bytes|1	$FFFFEE90
 CludgeSound|memory balance|BODY 70000 bytes|1	$00011108
 CludgeSound|memory balance|BODY the 7th chunk|1	$FFFFFEF0
-CludgeSound|memory balance|BODY the 8th chunk|1	$FFFFFFB8
+CludgeSound|memory balance|BODY the 8th chunk|1 [orig]	$FFFFFFB8
+CludgeSound|memory balance|BODY the 8th chunk|1 [fixed #831]	$00000000
 CludgeSound|memory balance|VHDR 24 bytes|1	$FFFFFFD0
 CludgeSound|memory balance|after failures|1	$00000070
 CludgeSound|memory balance|chunks before BODY|1	$FFFFFD60
@@ -150,7 +151,7 @@ CludgeSound|memory balance|odd chunk with pad byte|1 [orig]	$FFFFFFC0
 CludgeSound|memory balance|odd chunk with pad byte|1 [fixed #828]	$00000008
 CludgeSound|memory balance|odd chunk without pad byte|1 [orig]	$00000058
 CludgeSound|memory balance|odd chunk without pad byte|1 [fixed #828]	$00000000
-CludgeSound|memory balance|rate 0|1 [fixed #830]	$FFFFFFF0
+CludgeSound|memory balance|rate 0|1 [fixed #830]	$00000000
 CludgeSound|memory balance|rate 1|1	$00000000
 CludgeSound|memory balance|rate 16000|1	$00000008
 CludgeSound|memory balance|rate 2|1	$00000000

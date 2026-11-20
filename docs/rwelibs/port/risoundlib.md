@@ -2,10 +2,10 @@
 
 Reflective Images. One command: `CludgeSound sound#,address` makes an
 audiolib sound object from an IFF 8SVX file that is already in memory
-(`!libs #audiolib,#ia0|#pd0`: a0 = the object of sound#). It frees the
-object's old sample (memlib `globfree`), checks `8SVX` at +8 and `VHDR`
-at +12, takes the sample rate, looks for the `BODY` chunk among the first
-seven chunks of the FORM, copies the sample into chip memory (memlib
+(`!libs #audiolib,#ia0|#pd0`: a0 = the object of sound#). It checks
+`8SVX` at +8 and `VHDR` at +12, takes the sample rate, looks for the
+`BODY` chunk among the first seven chunks of the FORM, frees the
+object's old sample (memlib `globfree`), copies the sample into chip memory (memlib
 `globalloc`, `MEMF_CHIP`) and fills the object: +0 the sample, +4 the
 period 3579545 / rate, +6 the length in words, +8/+12/+14 = 0 (no loop).
 The result is -1, or 0 if it is no 8SVX file with a VHDR, its rate is 0,
@@ -43,10 +43,6 @@ with its signed compare.
 
 ## BUG(orig), kept
 
-* The old sample is freed before the file is checked, and the pointer
-  stays in the object: a CludgeSound that fails leaves the object
-  pointing to freed memory, and the next CludgeSound on it frees it again
-  (memlib's "not found" error) (#831).
 * The copy is `DBRA` on length − 1: ((length − 1) & $FFFF) + 1 bytes – an
   empty BODY copies 65536 bytes into a block of 8, a BODY over 65536
   bytes only the rest; the length in words is (length & $FFFF) / 2
@@ -77,6 +73,13 @@ kind F):
   walked off into the file's data or past it; a file without the pad
   bytes (not valid IFF) worked, and no longer loads (#828; test
   `tests/bug-orig/rwe/risoundlib-chunk-walk-no-pad`).
+* The old sample is freed after all checks of the file, and the
+  object's pointer is cleared with it: a CludgeSound that fails on the
+  file leaves the sound as it was (one that finds no chip memory leaves
+  it without a sample). The original freed it first and kept the
+  pointer: the object pointed to freed memory, and the next CludgeSound
+  on it freed it again (memlib's "Unable to Free Memory") (#831; test
+  `tests/bug-orig/rwe/risoundlib-stale-sample-pointer`).
 
 ## Test
 
