@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+RBF before 2048, after InitSerialIO 0, after FinitSerialIO 2048
+$9A kept
+rc=0

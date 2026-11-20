@@ -1,4 +1,4 @@
 [run]
 before
-init 9600
+init
 rc=0

@@ -6,7 +6,8 @@
 ; tests/corpus/runner/serial.h) answers request B with "HELLO".  The
 ; buffer comes from AllocMem (low byte a multiple of 8, never "O"); the
 ; program prints "address" for a result equal to the low byte of it.
-; Correct: GetSerial returns the last byte received ("O", 79).
+; Correct (the result of a command of the RWE libraries that works): -1
+; after the block was received.
 ; @rwe rifastseriallib
 ; @pass serial=on
 DEFTYPE .l

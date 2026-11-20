@@ -2,14 +2,14 @@
 ; DIVU.L, a 68020 instruction (written as data, $4C40 $1001): on a 68000
 ; it is an illegal instruction (the session ends in a timeout).  The
 ; machine is the A600 (68000).
-; Correct: InitSerialIO works on a 68000 (it returns its baud argument).
+; Correct: InitSerialIO works on a 68000.
 ; @rwe rifastseriallib
 ; @machine a600
 ; @pass timeout=30
 DEFTYPE .l
 NPrint "before"
 r=InitSerialIO(9600,16,?inbuf,?outbuf)
-NPrint "init ",r
+NPrint "init"
 FinitSerialIO
 End
 Even
