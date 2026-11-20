@@ -4,8 +4,8 @@
 trackdisk.device (or another device: `OpenDisk unit#,devicename$`;
 `OpenDisk unit#` always opens trackdisk.device):
 `OpenDisk`/`CloseDisk`, `ReadSector`/`WriteSector unit,sector,buffer
-[,numsectors]`, `FormatTrack`, `WriteBoot` (a default boot block
-`"DOS",0,-1`), `BootProg` (checksum + write sectors 0-1), `MotorOn`/
+[,numsectors]`, `FormatTrack`, `WriteBoot` (a bootable standard boot
+block, or 1024 bytes of the program's), `BootProg` (checksum + write sectors 0-1), `MotorOn`/
 `MotorOff`, `DiskStatus` (CheckIO), `DiskIO` (the IOStdReq), `DiskMotor`
 (CIAB bit). One IOStdReq per unit (200 bytes), one reply port made by
 init and freed by finit; both are built by hand with exec V33 functions,
@@ -33,8 +33,6 @@ original's changes of a6 and d4-d7 are not reproduced.
 
 **BUG(orig)** (kept):
 
-* `WriteBoot unit` writes the 8-byte default boot block and the 1016
-  bytes behind it (the end of the library and beyond) (#865).
 * `DiskMotor` returns -1 (the byte $FF) when CIAB PRB bit 7 (/MTR,
   active low) is set, i.e. motor off; the help text says "-1 if motor is
   on" (#857).
@@ -117,6 +115,23 @@ original's changes of a6 and d4-d7 are not reproduced.
   fixed the init half shows only if finit did not run. Test: the
   `libs_emulator` cases `[fixed #863]` (finit with unit 3 open, init
   again).
+* #865: the original's `WriteBoot unit` wrote its 8-byte default block
+  (`"DOS",0` and the long -1) and the 1016 bytes behind it in memory
+  (the end of the library and whatever followed): no valid checksum, a
+  root block pointer and boot code from unrelated bytes. Decided (R10,
+  the answer to the default boot block question: option (b), a bootable
+  standard boot block): `WriteBoot unit` reads sectors 0-1 of the disk
+  first and keeps the flag byte (byte 3, the file system: 0 OFS, 1 FFS,
+  …) of a boot block that starts with `"DOS"`, 0 for any other block or
+  when the read fails; it writes `"DOS"` with that byte, the checksum
+  (as BootProg's, #856), root block 880 and boot code of its own at
+  offset 12: `FindResident("dos.library")`, the resident's `rt_Init` in
+  a0 with d0 = 0, or d0 = -1 when there is none (38 bytes, the bytes and
+  their instructions in `bootcode` of the C file). The buffer is 1024
+  bytes of chip memory, freed again; without it the result is
+  `TDERR_NoMem` (31). Test: the `libs_emulator` cases `[fixed #865]`
+  (the block on the disk: head, sum `$FFFFFFFF`, boot code; on a disk
+  with `"DOS",3` the flag 3 kept); the disk tests boot it.
 * #1154: the original never sent `CMD_UPDATE`. trackdisk.device keeps
   the sectors written with `CMD_WRITE` in its track buffer and writes
   them to the disk only when it changes the track (measured: a sector

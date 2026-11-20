@@ -28,8 +28,6 @@
  * CIA through a volatile access.
  *
  * BUG(orig):
- *   - WriteBoot unit writes the 8 byte default boot block and the 1016
- *     bytes behind it (the end of the library) (#865).
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
  *     help text says "-1 if motor is on" (#857).
@@ -40,6 +38,10 @@
  * place of bootdata.  FormatTrack's count stays in sectors (only
  * multiples of 11 work), the form without a count formats one track,
  * WriteBoot writes sectors 0-1 with CMD_WRITE from bootdata.
+ * Fixed (#865): the original's WriteBoot unit wrote its 8 byte default
+ * block ("DOS",0, -1) and the 1016 bytes behind it.  It writes a bootable
+ * standard boot block now: "DOS" with the flag byte of the disk's boot
+ * block, the checksum, root block 880, boot code of its own.
  * Fixed (#1154): the original never sent CMD_UPDATE: trackdisk.device
  * keeps written sectors in its track buffer until it changes the track,
  * so the last track written was lost when the disk was taken out.
@@ -181,15 +183,11 @@ BLITZ_LIBFIN();
 /* CIAB PRB: bit 7 = /MTR (custom.res ciabprb) */
 #define CIABPRB (*(volatile UBYTE *)0xbfd100)
 
-/* the library's data: the requests of units 0-3, the reply port, the
-   default boot block of WriteBoot unit */
+/* the library's data: the requests of units 0-3, the reply port */
 static struct {
     struct IOStdReq *iorequests[4];
     struct MsgPort *msgport;
-    UBYTE defaultboot[8];           /* "DOS",0 : Dc.l -1 */
-} td = {
-    { 0 }, 0, { 'D', 'O', 'S', 0, 0xff, 0xff, 0xff, 0xff }
-};
+} td;
 
 /* getioreq: the request of a unit, NULL for units outside 0-3 */
 static struct IOStdReq *getioreq(LONG unit)
@@ -534,18 +532,74 @@ ULONG BLITZ_ROUTINE c_formatsector1(LONG unit BL_REG(d0), ULONG track BL_REG(d1)
     return c_formatsector2(unit, track, buffer, NUMSECS); /* Fixed (#858) */
 }
 
+/* the boot code of the standard boot block, written for this library
+   (Fixed, #865): Strap calls it with a6 = SysBase; it returns the
+   initialisation of the dos.library resident in a0 with d0 = 0, or
+   d0 = -1 if there is none.  At offset 12 of the block:
+       lea     dosname(pc),a1          43FA 0018
+       jsr     -96(a6)                 4EAE FFA0   FindResident
+       tst.l   d0                      4A80
+       beq.s   fail                    670A
+       movea.l d0,a0                   2040
+       movea.l 22(a0),a0               2068 0016   rt_Init
+       moveq   #0,d0                   7000
+       rts                             4E75
+   fail:
+       moveq   #-1,d0                  70FF
+       rts                             4E75
+   dosname: "dos.library",0 */
+static const UBYTE bootcode[] = {
+    0x43, 0xfa, 0x00, 0x18, 0x4e, 0xae, 0xff, 0xa0, 0x4a, 0x80, 0x67, 0x0a,
+    0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00, 0x4e, 0x75, 0x70, 0xff,
+    0x4e, 0x75, 'd', 'o', 's', '.', 'l', 'i', 'b', 'r', 'a', 'r', 'y', 0
+};
+
+/* the root block of a DD disk */
+#define ROOTBLOCK 880
+
+static void checksum(UBYTE *mem);
+
 /**
- * @brief WriteBoot unit#: write the default boot block (sectors 0-1).
+ * @brief WriteBoot unit#: write a bootable standard boot block (sectors 0-1).
  *
- * BUG(orig): writes the 8 byte default block ("DOS",0, -1) and the 1016
- * bytes behind it (the end of the library) (#865).  Fixed (#858): with
+ * Fixed (#865): reads sectors 0-1 first and keeps the flag byte of the
+ * disk's boot block (byte 3, the file system: 0 OFS, 1 FFS, ...) if it
+ * starts with "DOS", else 0; then writes "DOS" and that byte, root block
+ * 880, the boot code above and the checksum (checksum()).  The buffer is
+ * chip memory (1024 bytes, freed again).  The original wrote its 8 byte
+ * block ("DOS",0, -1) and the 1016 bytes behind it.  Fixed (#858): with
  * CMD_WRITE (the original's TD_FORMAT of 1024 bytes was refused).
  * @param unit  d0: unit# (0-3)
- * @return d0: as c_writesector2()
+ * @return d0: as c_writesector2(); 0 without port or request,
+ *         TDERR_NoMem (31) without chip memory for the buffer
  */
 ULONG BLITZ_ROUTINE c_install1(LONG unit BL_REG(d0))
 {
-    return c_writesector2(unit, 0, td.defaultboot, 2);
+    UBYTE *mem, flag = 0;
+    ULONG r;
+    int i;
+
+    if (!td.msgport || !getioreq(unit))
+        return 0;
+    mem = AllocMem(1024, MEMF_CHIP | MEMF_CLEAR);
+    if (!mem)
+        return TDERR_NoMem;
+    if (!(UBYTE)c_readsector2(unit, 0, mem, 2) &&
+        mem[0] == 'D' && mem[1] == 'O' && mem[2] == 'S')
+        flag = mem[3];
+    for (i = 0; i < 1024; i++)
+        mem[i] = 0;
+    mem[0] = 'D';
+    mem[1] = 'O';
+    mem[2] = 'S';
+    mem[3] = flag;
+    ((struct BootBlock *)mem)->bb_dosblock = ROOTBLOCK;
+    for (i = 0; i < (int)sizeof bootcode; i++)
+        mem[12 + i] = bootcode[i];
+    checksum(mem);
+    r = c_writesector2(unit, 0, mem, 2);
+    FreeMem(mem, 1024);
+    return r;
 }
 
 /**

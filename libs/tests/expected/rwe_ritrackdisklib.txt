@@ -61,7 +61,7 @@ BootProg (no request)|closes|7,boot|1	$00000000
 BootProg (no request)|command|7,boot|1	$00000009
 BootProg (no request)|d0|7,boot|1	$00000000
 BootProg (no request)|disk|7,boot|1 [orig]	bytes 16384 fnv 39CB122F
-BootProg (no request)|disk|7,boot|1 [fixed #858]	bytes 16384 fnv 693A056B
+BootProg (no request)|disk|7,boot|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 BootProg (no request)|failed opens|7,boot|1	$00000000
 BootProg (no request)|flags|7,boot|1	$00000001
 BootProg (no request)|head|7,boot|1	bytes 8 0000000000000000
@@ -104,14 +104,14 @@ CloseDisk|d0|1|1	$FFFFFFFF
 CloseDisk|d0|1|2	$00000000
 CloseDisk|d0|9|1	$00000000
 CloseDisk|disk|-1|1 [orig]	bytes 16384 fnv 39CB122F
-CloseDisk|disk|-1|1 [fixed #858]	bytes 16384 fnv 693A056B
+CloseDisk|disk|-1|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 CloseDisk|disk|0|1	bytes 16384 fnv E35F79C5
 CloseDisk|disk|1|1 [orig]	bytes 16384 fnv 39CB122F
-CloseDisk|disk|1|1 [fixed #858]	bytes 16384 fnv 693A056B
+CloseDisk|disk|1|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 CloseDisk|disk|1|2 [orig]	bytes 16384 fnv 39CB122F
-CloseDisk|disk|1|2 [fixed #858]	bytes 16384 fnv 693A056B
+CloseDisk|disk|1|2 [fixed #858]	bytes 16384 fnv 89F21BF2
 CloseDisk|disk|9|1 [orig]	bytes 16384 fnv 39CB122F
-CloseDisk|disk|9|1 [fixed #858]	bytes 16384 fnv 693A056B
+CloseDisk|disk|9|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 CloseDisk|failed opens|-1|1	$00000000
 CloseDisk|failed opens|0|1	$00000000
 CloseDisk|failed opens|1|1	$00000000
@@ -180,7 +180,7 @@ CloseDisk (trackdisk)|closes|0|1	$00000000
 CloseDisk (trackdisk)|command|0|1	$00000009
 CloseDisk (trackdisk)|d0|0|1	$FFFFFFFF
 CloseDisk (trackdisk)|disk|0|1 [orig]	bytes 16384 fnv 39CB122F
-CloseDisk (trackdisk)|disk|0|1 [fixed #858]	bytes 16384 fnv 693A056B
+CloseDisk (trackdisk)|disk|0|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 CloseDisk (trackdisk)|failed opens|0|1	$00000000
 CloseDisk (trackdisk)|flags|0|1	$00000001
 CloseDisk (trackdisk)|head|0|1	bytes 8 0000000000000000
@@ -245,7 +245,7 @@ DiskIO (after finit)|closes|3|1	$00000000
 DiskIO (after finit)|command|3|1	$00000009
 DiskIO (after finit)|d0|3|1	$00000000
 DiskIO (after finit)|disk|3|1 [orig]	bytes 16384 fnv 39CB122F
-DiskIO (after finit)|disk|3|1 [fixed #858]	bytes 16384 fnv 693A056B
+DiskIO (after finit)|disk|3|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 DiskIO (after finit)|failed opens|3|1	$00000000
 DiskIO (after finit)|flags|3|1	$00000001
 DiskIO (after finit)|head|3|1	bytes 8 0000000000000000
@@ -268,7 +268,7 @@ DiskIO (init again: unit 3 stale)|command|3|1	$00000009
 DiskIO (init again: unit 3 stale)|d0|3|1 [orig]	$00000103
 DiskIO (init again: unit 3 stale)|d0|3|1 [fixed #863]	$00000000
 DiskIO (init again: unit 3 stale)|disk|3|1 [orig]	bytes 16384 fnv 39CB122F
-DiskIO (init again: unit 3 stale)|disk|3|1 [fixed #858]	bytes 16384 fnv 693A056B
+DiskIO (init again: unit 3 stale)|disk|3|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 DiskIO (init again: unit 3 stale)|failed opens|3|1	$00000000
 DiskIO (init again: unit 3 stale)|flags|3|1	$00000001
 DiskIO (init again: unit 3 stale)|head|3|1	bytes 8 0000000000000000
@@ -347,7 +347,7 @@ DiskStatus (trackdisk)|closes|0|1	$00000000
 DiskStatus (trackdisk)|command|0|1	$00000009
 DiskStatus (trackdisk)|d0|0|1	$00000100
 DiskStatus (trackdisk)|disk|0|1 [orig]	bytes 16384 fnv 39CB122F
-DiskStatus (trackdisk)|disk|0|1 [fixed #858]	bytes 16384 fnv 693A056B
+DiskStatus (trackdisk)|disk|0|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 DiskStatus (trackdisk)|failed opens|0|1	$00000000
 DiskStatus (trackdisk)|flags|0|1	$00000001
 DiskStatus (trackdisk)|head|0|1	bytes 8 0000000000000000
@@ -464,7 +464,7 @@ MotorOff (trackdisk)|closes|0|1	$00000000
 MotorOff (trackdisk)|command|0|1	$00000009
 MotorOff (trackdisk)|d0|0|1	$00000000
 MotorOff (trackdisk)|disk|0|1 [orig]	bytes 16384 fnv 39CB122F
-MotorOff (trackdisk)|disk|0|1 [fixed #858]	bytes 16384 fnv 693A056B
+MotorOff (trackdisk)|disk|0|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 MotorOff (trackdisk)|failed opens|0|1	$00000000
 MotorOff (trackdisk)|flags|0|1	$00000001
 MotorOff (trackdisk)|head|0|1	bytes 8 0000000000000000
@@ -503,14 +503,14 @@ MotorOn|d0|0|2	$00000000
 MotorOn|d0|0|3	$00000000
 MotorOn|d0|3|1	$00000000
 MotorOn|disk|-1|1 [orig]	bytes 16384 fnv 39CB122F
-MotorOn|disk|-1|1 [fixed #858]	bytes 16384 fnv 693A056B
+MotorOn|disk|-1|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 MotorOn|disk|0|1	bytes 16384 fnv E35F79C5
 MotorOn|disk|0|2 [orig]	bytes 16384 fnv BFA67BC5
 MotorOn|disk|0|2 [fixed #858]	bytes 16384 fnv 796FE219
 MotorOn|disk|0|3 [orig]	bytes 16384 fnv BFA67BC5
 MotorOn|disk|0|3 [fixed #858]	bytes 16384 fnv 796FE219
 MotorOn|disk|3|1 [orig]	bytes 16384 fnv 39CB122F
-MotorOn|disk|3|1 [fixed #858]	bytes 16384 fnv 693A056B
+MotorOn|disk|3|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 MotorOn|failed opens|-1|1	$00000000
 MotorOn|failed opens|0|1	$00000000
 MotorOn|failed opens|0|2	$00000000
@@ -575,7 +575,7 @@ MotorOn (trackdisk)|closes|0|1	$00000000
 MotorOn (trackdisk)|command|0|1	$00000009
 MotorOn (trackdisk)|d0|0|1	$00000000
 MotorOn (trackdisk)|disk|0|1 [orig]	bytes 16384 fnv 39CB122F
-MotorOn (trackdisk)|disk|0|1 [fixed #858]	bytes 16384 fnv 693A056B
+MotorOn (trackdisk)|disk|0|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 MotorOn (trackdisk)|failed opens|0|1	$00000000
 MotorOn (trackdisk)|flags|0|1	$00000001
 MotorOn (trackdisk)|head|0|1	bytes 8 0000000000000000
@@ -605,11 +605,15 @@ OpenDisk|buffer|-2,rwetest.device|1	$00010800
 OpenDisk|buffer|0,rwetest.device|1	$00000000
 OpenDisk|buffer|0,trackdisk.device|1 [orig]	$00040000
 OpenDisk|buffer|0,trackdisk.device|1 [fixed #863]	$00010800
-OpenDisk|buffer|1,rwetest.device|1	$00040000
+OpenDisk|buffer|1,rwetest.device|1 [orig]	$00040000
+OpenDisk|buffer|1,rwetest.device|1 [fixed #865]	$DEAD0000
 OpenDisk|buffer|1,rwetest.device|2	$00010800
-OpenDisk|buffer|2,-|1	$00040000
-OpenDisk|buffer|2,rwetest.device|1	$00040000
-OpenDisk|buffer|3,rwetest.device|1	$00040000
+OpenDisk|buffer|2,-|1 [orig]	$00040000
+OpenDisk|buffer|2,-|1 [fixed #865]	$DEAD0000
+OpenDisk|buffer|2,rwetest.device|1 [orig]	$00040000
+OpenDisk|buffer|2,rwetest.device|1 [fixed #865]	$DEAD0000
+OpenDisk|buffer|3,rwetest.device|1 [orig]	$00040000
+OpenDisk|buffer|3,rwetest.device|1 [fixed #865]	$DEAD0000
 OpenDisk|buffer|4,rwetest.device|1	$00000000
 OpenDisk|buffer|5,-|1	$00000000
 OpenDisk|closes|-1,rwetest.device|1	$00000000
@@ -653,22 +657,22 @@ OpenDisk|d0|3,rwetest.device|1	$FFFFFFFF
 OpenDisk|d0|4,rwetest.device|1	$00000000
 OpenDisk|d0|5,-|1	$00000000
 OpenDisk|disk|-1,rwetest.device|1 [orig]	bytes 16384 fnv 39CB122F
-OpenDisk|disk|-1,rwetest.device|1 [fixed #858]	bytes 16384 fnv 693A056B
+OpenDisk|disk|-1,rwetest.device|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 OpenDisk|disk|-2,rwetest.device|1 [orig]	bytes 16384 fnv 39CB122F
-OpenDisk|disk|-2,rwetest.device|1 [fixed #858]	bytes 16384 fnv 693A056B
+OpenDisk|disk|-2,rwetest.device|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 OpenDisk|disk|0,rwetest.device|1	bytes 16384 fnv E35F79C5
 OpenDisk|disk|0,trackdisk.device|1 [orig]	bytes 16384 fnv 39CB122F
-OpenDisk|disk|0,trackdisk.device|1 [fixed #858]	bytes 16384 fnv 693A056B
+OpenDisk|disk|0,trackdisk.device|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 OpenDisk|disk|1,rwetest.device|1 [orig]	bytes 16384 fnv 8713E22F
-OpenDisk|disk|1,rwetest.device|1 [fixed #858]	bytes 16384 fnv B682D56B
+OpenDisk|disk|1,rwetest.device|1 [fixed #858]	bytes 16384 fnv 5E2D07F2
 OpenDisk|disk|1,rwetest.device|2 [orig]	bytes 16384 fnv 39CB122F
-OpenDisk|disk|1,rwetest.device|2 [fixed #858]	bytes 16384 fnv 693A056B
+OpenDisk|disk|1,rwetest.device|2 [fixed #858]	bytes 16384 fnv 89F21BF2
 OpenDisk|disk|2,-|1 [orig]	bytes 16384 fnv 8713E22F
-OpenDisk|disk|2,-|1 [fixed #858]	bytes 16384 fnv B682D56B
+OpenDisk|disk|2,-|1 [fixed #858]	bytes 16384 fnv 5E2D07F2
 OpenDisk|disk|2,rwetest.device|1 [orig]	bytes 16384 fnv 8713E22F
-OpenDisk|disk|2,rwetest.device|1 [fixed #858]	bytes 16384 fnv B682D56B
+OpenDisk|disk|2,rwetest.device|1 [fixed #858]	bytes 16384 fnv 5E2D07F2
 OpenDisk|disk|3,rwetest.device|1 [orig]	bytes 16384 fnv 8713E22F
-OpenDisk|disk|3,rwetest.device|1 [fixed #858]	bytes 16384 fnv B682D56B
+OpenDisk|disk|3,rwetest.device|1 [fixed #858]	bytes 16384 fnv 5E2D07F2
 OpenDisk|disk|4,rwetest.device|1	bytes 16384 fnv E35F79C5
 OpenDisk|disk|5,-|1	bytes 16384 fnv E35F79C5
 OpenDisk|failed opens|-1,rwetest.device|1	$00000000
@@ -699,11 +703,15 @@ OpenDisk|head|-1,rwetest.device|1	bytes 8 0000000000000000
 OpenDisk|head|-2,rwetest.device|1	bytes 8 0000000000000000
 OpenDisk|head|0,rwetest.device|1	bytes 8 0000000000000000
 OpenDisk|head|0,trackdisk.device|1	bytes 8 0000000000000000
-OpenDisk|head|1,rwetest.device|1	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|1,rwetest.device|1 [orig]	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|1,rwetest.device|1 [fixed #865]	bytes 8 444F5303D2A50F16
 OpenDisk|head|1,rwetest.device|2	bytes 8 0000000000000000
-OpenDisk|head|2,-|1	bytes 8 444F5300FFFFFFFF
-OpenDisk|head|2,rwetest.device|1	bytes 8 444F5300FFFFFFFF
-OpenDisk|head|3,rwetest.device|1	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|2,-|1 [orig]	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|2,-|1 [fixed #865]	bytes 8 444F5303D2A50F16
+OpenDisk|head|2,rwetest.device|1 [orig]	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|2,rwetest.device|1 [fixed #865]	bytes 8 444F5303D2A50F16
+OpenDisk|head|3,rwetest.device|1 [orig]	bytes 8 444F5300FFFFFFFF
+OpenDisk|head|3,rwetest.device|1 [fixed #865]	bytes 8 444F5303D2A50F16
 OpenDisk|head|4,rwetest.device|1	bytes 8 0000000000000000
 OpenDisk|head|5,-|1	bytes 8 0000000000000000
 OpenDisk|kept|-1,rwetest.device|1	kept
@@ -855,7 +863,7 @@ ReadSector|d0|0,3,+0,0 (form 0)|1	$00000000
 ReadSector|d0|0,8388611,+0,0 (form 0)|1	$00000000
 ReadSector|d0|1,7,+0,2 (form 1)|1	$00000000
 ReadSector|disk|-1,0,+0,0 (form 0)|1 [orig]	bytes 16384 fnv 39CB122F
-ReadSector|disk|-1,0,+0,0 (form 0)|1 [fixed #858]	bytes 16384 fnv 693A056B
+ReadSector|disk|-1,0,+0,0 (form 0)|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 ReadSector|disk|0,0,+0,2 (form 1)|1 [orig]	bytes 16384 fnv EEF2638F
 ReadSector|disk|0,0,+0,2 (form 1)|1 [fixed #856]	bytes 16384 fnv A6389A84
 ReadSector|disk|0,0,+0,8 (form 1)|1 [orig]	bytes 16384 fnv BFA67BC5
@@ -867,7 +875,7 @@ ReadSector|disk|0,2,+100,5 (form 1)|1	bytes 16384 fnv EF3E5BC5
 ReadSector|disk|0,3,+0,0 (form 0)|1	bytes 16384 fnv EF3E5BC5
 ReadSector|disk|0,8388611,+0,0 (form 0)|1	bytes 16384 fnv EF3E5BC5
 ReadSector|disk|1,7,+0,2 (form 1)|1 [orig]	bytes 16384 fnv 39CB122F
-ReadSector|disk|1,7,+0,2 (form 1)|1 [fixed #858]	bytes 16384 fnv 693A056B
+ReadSector|disk|1,7,+0,2 (form 1)|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 ReadSector|failed opens|-1,0,+0,0 (form 0)|1	$00000000
 ReadSector|failed opens|0,0,+0,2 (form 1)|1	$00000000
 ReadSector|failed opens|0,0,+0,8 (form 1)|1	$00000000
@@ -988,7 +996,7 @@ ReadSector (after finit)|closes|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (after finit)|command|0,0,+0,0 (form 0)|1	$00000009
 ReadSector (after finit)|d0|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (after finit)|disk|0,0,+0,0 (form 0)|1 [orig]	bytes 16384 fnv 39CB122F
-ReadSector (after finit)|disk|0,0,+0,0 (form 0)|1 [fixed #858]	bytes 16384 fnv 693A056B
+ReadSector (after finit)|disk|0,0,+0,0 (form 0)|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 ReadSector (after finit)|failed opens|0,0,+0,0 (form 0)|1	$00000000
 ReadSector (after finit)|flags|0,0,+0,0 (form 0)|1	$00000001
 ReadSector (after finit)|head|0,0,+0,0 (form 0)|1	bytes 8 0000000000000000
@@ -1007,8 +1015,10 @@ ReadSector (trackdisk, no disk)|kept|0,0|1	kept
 WriteBoot|actual|0|1	$00000400
 WriteBoot|actual|0 (disk DOS 3)|1	$00000400
 WriteBoot|actual|0,bootdata (d2 = buf+512)|1	$00000400
-WriteBoot|buffer|0|1	$00040000
-WriteBoot|buffer|0 (disk DOS 3)|1	$00040000
+WriteBoot|buffer|0|1 [orig]	$00040000
+WriteBoot|buffer|0|1 [fixed #865]	$DEAD0000
+WriteBoot|buffer|0 (disk DOS 3)|1 [orig]	$00040000
+WriteBoot|buffer|0 (disk DOS 3)|1 [fixed #865]	$DEAD0000
 WriteBoot|buffer|0,bootdata (d2 = buf+512)|1 [orig]	$00010200
 WriteBoot|buffer|0,bootdata (d2 = buf+512)|1 [fixed #864]	$00030000
 WriteBoot|closes|0|1	$00000000
@@ -1025,27 +1035,36 @@ WriteBoot|d0|0 (disk DOS 3)|1	$00000000
 WriteBoot|d0|0,bootdata (d2 = buf+512)|1	$00000000
 WriteBoot|data written|0,bootdata (d2 = buf+512)|1 [orig]	$4715E000
 WriteBoot|data written|0,bootdata (d2 = buf+512)|1 [fixed #864]	$8B12F8E3
-WriteBoot|default boot block|0|1	$00000001
+WriteBoot|default boot block|0|1 [orig]	$00000001
+WriteBoot|default boot block|0|1 [fixed #865]	$00000000
 WriteBoot|disk|0|1 [orig]	bytes 16384 fnv 6F292DCB
-WriteBoot|disk|0|1 [fixed #858]	bytes 16384 fnv 935039F7
+WriteBoot|disk|0|1 [fixed #858]	bytes 16384 fnv 428D0276
 WriteBoot|disk|0 (disk DOS 3)|1 [orig]	bytes 16384 fnv 8713E22F
-WriteBoot|disk|0 (disk DOS 3)|1 [fixed #858]	bytes 16384 fnv B682D56B
+WriteBoot|disk|0 (disk DOS 3)|1 [fixed #858]	bytes 16384 fnv 5E2D07F2
 WriteBoot|disk|0,bootdata (d2 = buf+512)|1 [orig]	bytes 16384 fnv D4DC77C5
 WriteBoot|disk|0,bootdata (d2 = buf+512)|1 [fixed #858]	bytes 16384 fnv 700F67E4
-WriteBoot|disk boot block head|0|1	bytes 12 444F5300FFFFFFFF6D7A8794
-WriteBoot|disk boot block head|0 (disk DOS 3)|1	bytes 12 444F5300FFFFFFFF00000000
-WriteBoot|disk boot block sum|0|1	$05F6E074
-WriteBoot|disk boot block sum|0 (disk DOS 3)|1	$715531B8
-WriteBoot|disk boot code|0|1	bytes 1012 fnv E269404D
-WriteBoot|disk boot code|0 (disk DOS 3)|1	bytes 1012 fnv A33A5481
+WriteBoot|disk boot block head|0|1 [orig]	bytes 12 444F5300FFFFFFFF6D7A8794
+WriteBoot|disk boot block head|0|1 [fixed #865]	bytes 12 444F5300D2A50F1900000370
+WriteBoot|disk boot block head|0 (disk DOS 3)|1 [orig]	bytes 12 444F5300FFFFFFFF00000000
+WriteBoot|disk boot block head|0 (disk DOS 3)|1 [fixed #865]	bytes 12 444F5303D2A50F1600000370
+WriteBoot|disk boot block sum|0|1 [orig]	$05F6E074
+WriteBoot|disk boot block sum|0|1 [fixed #865]	$FFFFFFFF
+WriteBoot|disk boot block sum|0 (disk DOS 3)|1 [orig]	$715531B8
+WriteBoot|disk boot block sum|0 (disk DOS 3)|1 [fixed #865]	$FFFFFFFF
+WriteBoot|disk boot code|0|1 [orig]	bytes 1012 fnv E269404D
+WriteBoot|disk boot code|0|1 [fixed #865]	bytes 1012 fnv D7A45602
+WriteBoot|disk boot code|0 (disk DOS 3)|1 [orig]	bytes 1012 fnv A33A5481
+WriteBoot|disk boot code|0 (disk DOS 3)|1 [fixed #865]	bytes 1012 fnv D7A45602
 WriteBoot|failed opens|0|1	$00000000
 WriteBoot|failed opens|0 (disk DOS 3)|1	$00000000
 WriteBoot|failed opens|0,bootdata (d2 = buf+512)|1	$00000000
 WriteBoot|flags|0|1	$00000001
 WriteBoot|flags|0 (disk DOS 3)|1	$00000001
 WriteBoot|flags|0,bootdata (d2 = buf+512)|1	$00000001
-WriteBoot|head|0|1	bytes 8 444F5300FFFFFFFF
-WriteBoot|head|0 (disk DOS 3)|1	bytes 8 444F5300FFFFFFFF
+WriteBoot|head|0|1 [orig]	bytes 8 444F5300FFFFFFFF
+WriteBoot|head|0|1 [fixed #865]	bytes 8 444F5300D2A50F19
+WriteBoot|head|0 (disk DOS 3)|1 [orig]	bytes 8 444F5300FFFFFFFF
+WriteBoot|head|0 (disk DOS 3)|1 [fixed #865]	bytes 8 444F5303D2A50F16
 WriteBoot|head|0,bootdata (d2 = buf+512)|1 [orig]	bytes 8 4F586576838C99AA
 WriteBoot|head|0,bootdata (d2 = buf+512)|1 [fixed #864]	bytes 8 4003B47800000490
 WriteBoot|kept|0|1	kept
@@ -1064,8 +1083,10 @@ WriteBoot|read buffer|0|1	bytes 4096 fnv 50F533C5
 WriteBoot|read buffer|0 (disk DOS 3)|1 [orig]	bytes 4096 fnv 4CA4ED8F
 WriteBoot|read buffer|0 (disk DOS 3)|1 [fixed #856]	bytes 4096 fnv 40942540
 WriteBoot|read buffer|0,bootdata (d2 = buf+512)|1	bytes 4096 fnv 50F533C5
-WriteBoot|requests|0|1	$00000001
-WriteBoot|requests|0 (disk DOS 3)|1	$00000001
+WriteBoot|requests|0|1 [orig]	$00000001
+WriteBoot|requests|0|1 [fixed #865]	$00000002
+WriteBoot|requests|0 (disk DOS 3)|1 [orig]	$00000001
+WriteBoot|requests|0 (disk DOS 3)|1 [fixed #865]	$00000002
 WriteBoot|requests|0,bootdata (d2 = buf+512)|1	$00000001
 WriteBoot|unit|0|1	$00000000
 WriteBoot|unit|0 (disk DOS 3)|1	$00000000
@@ -1101,7 +1122,7 @@ WriteSector|disk|0,1,+0,1 (form 1)|1	bytes 16384 fnv E35F79C5
 WriteSector|disk|0,3,+0,0 (form 0)|1	bytes 16384 fnv 96FEDAC5
 WriteSector|disk|0,4,+512,3 (form 1)|1	bytes 16384 fnv EF3E5BC5
 WriteSector|disk|3,7,+2048,2 (form 1)|1 [orig]	bytes 16384 fnv 39CB122F
-WriteSector|disk|3,7,+2048,2 (form 1)|1 [fixed #858]	bytes 16384 fnv 693A056B
+WriteSector|disk|3,7,+2048,2 (form 1)|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 WriteSector|failed opens|0,1,+0,1 (form 1)|1	$00000000
 WriteSector|failed opens|0,3,+0,0 (form 0)|1	$00000000
 WriteSector|failed opens|0,4,+512,3 (form 1)|1	$00000000
@@ -1161,9 +1182,9 @@ finit|closes|3|1	$00000000
 finit|command||1	$00000009
 finit|command|3|1	$00000009
 finit|disk||1 [orig]	bytes 16384 fnv 39CB122F
-finit|disk||1 [fixed #858]	bytes 16384 fnv 693A056B
+finit|disk||1 [fixed #858]	bytes 16384 fnv 89F21BF2
 finit|disk|3|1 [orig]	bytes 16384 fnv 39CB122F
-finit|disk|3|1 [fixed #858]	bytes 16384 fnv 693A056B
+finit|disk|3|1 [fixed #858]	bytes 16384 fnv 89F21BF2
 finit|failed opens||1	$00000000
 finit|failed opens|3|1	$00000000
 finit|flags||1	$00000001
