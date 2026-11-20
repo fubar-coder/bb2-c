@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+[movem.l  -(a7)                    ]
+[movem.l  d0-d1,-(a7)              ]
+rc=0
