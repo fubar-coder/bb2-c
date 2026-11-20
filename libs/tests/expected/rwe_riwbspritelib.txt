@@ -127,7 +127,8 @@ ChangeWBSprite|sprite 5 field 2|vp,2,3,0|1	$00000050
 ChangeWBSprite|sprite 5 field 3|vp,2,3,0|1	$00000005
 ChangeWBSprite|sprite 5 field 4|vp,2,3,0|1	$00000001
 ChangeWBSprite|sprite 5 field 5|vp,2,3,0|1	$00000000
-ChangeWBSprite|sprite 5 image|vp,2,3,0|1	bytes 256 fnv 66D436EC
+ChangeWBSprite|sprite 5 image|vp,2,3,0|1 [orig]	bytes 256 fnv 66D436EC
+ChangeWBSprite|sprite 5 image|vp,2,3,0|1 [fixed #918]	bytes 256 fnv 6589CFD3
 ChangeWBSprite|sprite 6 field 0|vp,2,3,0|1	$00000000
 ChangeWBSprite|sprite 6 field 1|vp,2,3,0|1	$00000000
 ChangeWBSprite|sprite 6 field 2|vp,2,3,0|1	$00000000
@@ -558,7 +559,8 @@ ChangeWBSprite (narrow)|sprite 5 field 2|vp,2,4,0|1	$00000050
 ChangeWBSprite (narrow)|sprite 5 field 3|vp,2,4,0|1	$00000005
 ChangeWBSprite (narrow)|sprite 5 field 4|vp,2,4,0|1	$00000001
 ChangeWBSprite (narrow)|sprite 5 field 5|vp,2,4,0|1	$00000000
-ChangeWBSprite (narrow)|sprite 5 image|vp,2,4,0|1	bytes 256 fnv 66D436EC
+ChangeWBSprite (narrow)|sprite 5 image|vp,2,4,0|1 [orig]	bytes 256 fnv 66D436EC
+ChangeWBSprite (narrow)|sprite 5 image|vp,2,4,0|1 [fixed #918]	bytes 256 fnv 6589CFD3
 ChangeWBSprite (narrow)|sprite 6 field 0|vp,2,4,0|1	$00000000
 ChangeWBSprite (narrow)|sprite 6 field 1|vp,2,4,0|1	$00000000
 ChangeWBSprite (narrow)|sprite 6 field 2|vp,2,4,0|1	$00000000
@@ -701,7 +703,8 @@ ChangeWBSprite (no data)|sprite 5 field 2|vp,2,5,0|1	$00000050
 ChangeWBSprite (no data)|sprite 5 field 3|vp,2,5,0|1	$00000005
 ChangeWBSprite (no data)|sprite 5 field 4|vp,2,5,0|1	$00000001
 ChangeWBSprite (no data)|sprite 5 field 5|vp,2,5,0|1	$00000000
-ChangeWBSprite (no data)|sprite 5 image|vp,2,5,0|1	bytes 256 fnv 66D436EC
+ChangeWBSprite (no data)|sprite 5 image|vp,2,5,0|1 [orig]	bytes 256 fnv 66D436EC
+ChangeWBSprite (no data)|sprite 5 image|vp,2,5,0|1 [fixed #918]	bytes 256 fnv 6589CFD3
 ChangeWBSprite (no data)|sprite 6 field 0|vp,2,5,0|1	$00000000
 ChangeWBSprite (no data)|sprite 6 field 1|vp,2,5,0|1	$00000000
 ChangeWBSprite (no data)|sprite 6 field 2|vp,2,5,0|1	$00000000
@@ -844,7 +847,8 @@ ChangeWBSprite (no sprite)|sprite 5 field 2|vp,6,1,0|1	$00000050
 ChangeWBSprite (no sprite)|sprite 5 field 3|vp,6,1,0|1	$00000005
 ChangeWBSprite (no sprite)|sprite 5 field 4|vp,6,1,0|1	$00000001
 ChangeWBSprite (no sprite)|sprite 5 field 5|vp,6,1,0|1	$00000000
-ChangeWBSprite (no sprite)|sprite 5 image|vp,6,1,0|1	bytes 256 fnv 66D436EC
+ChangeWBSprite (no sprite)|sprite 5 image|vp,6,1,0|1 [orig]	bytes 256 fnv 66D436EC
+ChangeWBSprite (no sprite)|sprite 5 image|vp,6,1,0|1 [fixed #918]	bytes 256 fnv 6589CFD3
 ChangeWBSprite (no sprite)|sprite 6 field 0|vp,6,1,0|1	$00000000
 ChangeWBSprite (no sprite)|sprite 6 field 1|vp,6,1,0|1	$00000000
 ChangeWBSprite (no sprite)|sprite 6 field 2|vp,6,1,0|1	$00000000
@@ -1416,7 +1420,8 @@ GetWBSprite (20 wide)|sprite 5 field 2|46,50,3,5|1	$00000050
 GetWBSprite (20 wide)|sprite 5 field 3|46,50,3,5|1	$00000005
 GetWBSprite (20 wide)|sprite 5 field 4|46,50,3,5|1	$00000001
 GetWBSprite (20 wide)|sprite 5 field 5|46,50,3,5|1	$00000000
-GetWBSprite (20 wide)|sprite 5 image|46,50,3,5|1	bytes 256 fnv 66D436EC
+GetWBSprite (20 wide)|sprite 5 image|46,50,3,5|1 [orig]	bytes 256 fnv 66D436EC
+GetWBSprite (20 wide)|sprite 5 image|46,50,3,5|1 [fixed #918]	bytes 256 fnv 6589CFD3
 GetWBSprite (20 wide)|sprite 6 field 0|46,50,3,5|1	$00000000
 GetWBSprite (20 wide)|sprite 6 field 1|46,50,3,5|1	$00000000
 GetWBSprite (20 wide)|sprite 6 field 2|46,50,3,5|1	$00000000
@@ -2551,8 +2556,10 @@ MoveWBSprite|sprite 5 field 4|vp,64,32,2|1	$00000001
 MoveWBSprite|sprite 5 field 4|vp,78,5A,1|1	$00000001
 MoveWBSprite|sprite 5 field 5|vp,64,32,2|1	$00000000
 MoveWBSprite|sprite 5 field 5|vp,78,5A,1|1	$00000000
-MoveWBSprite|sprite 5 image|vp,64,32,2|1	bytes 256 fnv 66D436EC
-MoveWBSprite|sprite 5 image|vp,78,5A,1|1	bytes 256 fnv 66D436EC
+MoveWBSprite|sprite 5 image|vp,64,32,2|1 [orig]	bytes 256 fnv 66D436EC
+MoveWBSprite|sprite 5 image|vp,64,32,2|1 [fixed #918]	bytes 256 fnv 6589CFD3
+MoveWBSprite|sprite 5 image|vp,78,5A,1|1 [orig]	bytes 256 fnv 66D436EC
+MoveWBSprite|sprite 5 image|vp,78,5A,1|1 [fixed #918]	bytes 256 fnv 6589CFD3
 MoveWBSprite|sprite 6 field 0|vp,64,32,2|1	$00000000
 MoveWBSprite|sprite 6 field 0|vp,78,5A,1|1	$00000000
 MoveWBSprite|sprite 6 field 1|vp,64,32,2|1	$00000000
@@ -2709,7 +2716,8 @@ MoveWBSprite (no sprite)|sprite 5 field 2|vp,1,1,6|1	$00000050
 MoveWBSprite (no sprite)|sprite 5 field 3|vp,1,1,6|1	$00000005
 MoveWBSprite (no sprite)|sprite 5 field 4|vp,1,1,6|1	$00000001
 MoveWBSprite (no sprite)|sprite 5 field 5|vp,1,1,6|1	$00000000
-MoveWBSprite (no sprite)|sprite 5 image|vp,1,1,6|1	bytes 256 fnv 66D436EC
+MoveWBSprite (no sprite)|sprite 5 image|vp,1,1,6|1 [orig]	bytes 256 fnv 66D436EC
+MoveWBSprite (no sprite)|sprite 5 image|vp,1,1,6|1 [fixed #918]	bytes 256 fnv 6589CFD3
 MoveWBSprite (no sprite)|sprite 6 field 0|vp,1,1,6|1	$00000000
 MoveWBSprite (no sprite)|sprite 6 field 1|vp,1,1,6|1	$00000000
 MoveWBSprite (no sprite)|sprite 6 field 2|vp,1,1,6|1	$00000000
@@ -3108,9 +3116,12 @@ WBSpriteX|sprite 5 field 4|2,0,0,0|2	$00000001
 WBSpriteX|sprite 5 field 5|12340002,0,0,0|1	$00000000
 WBSpriteX|sprite 5 field 5|2,0,0,0|1	$00000000
 WBSpriteX|sprite 5 field 5|2,0,0,0|2	$00000000
-WBSpriteX|sprite 5 image|12340002,0,0,0|1	bytes 256 fnv 66D436EC
-WBSpriteX|sprite 5 image|2,0,0,0|1	bytes 256 fnv 66D436EC
-WBSpriteX|sprite 5 image|2,0,0,0|2	bytes 256 fnv 66D436EC
+WBSpriteX|sprite 5 image|12340002,0,0,0|1 [orig]	bytes 256 fnv 66D436EC
+WBSpriteX|sprite 5 image|12340002,0,0,0|1 [fixed #918]	bytes 256 fnv 6589CFD3
+WBSpriteX|sprite 5 image|2,0,0,0|1 [orig]	bytes 256 fnv 66D436EC
+WBSpriteX|sprite 5 image|2,0,0,0|1 [fixed #918]	bytes 256 fnv 6589CFD3
+WBSpriteX|sprite 5 image|2,0,0,0|2 [orig]	bytes 256 fnv 66D436EC
+WBSpriteX|sprite 5 image|2,0,0,0|2 [fixed #918]	bytes 256 fnv 6589CFD3
 WBSpriteX|sprite 6 field 0|12340002,0,0,0|1	$00000000
 WBSpriteX|sprite 6 field 0|2,0,0,0|1	$00000000
 WBSpriteX|sprite 6 field 0|2,0,0,0|2	$00000000
@@ -3552,8 +3563,10 @@ WBSpriteY|sprite 5 field 4|2,0,0,0|1	$00000001
 WBSpriteY|sprite 5 field 4|FEDC0002,0,0,0|1	$00000001
 WBSpriteY|sprite 5 field 5|2,0,0,0|1	$00000000
 WBSpriteY|sprite 5 field 5|FEDC0002,0,0,0|1	$00000000
-WBSpriteY|sprite 5 image|2,0,0,0|1	bytes 256 fnv 66D436EC
-WBSpriteY|sprite 5 image|FEDC0002,0,0,0|1	bytes 256 fnv 66D436EC
+WBSpriteY|sprite 5 image|2,0,0,0|1 [orig]	bytes 256 fnv 66D436EC
+WBSpriteY|sprite 5 image|2,0,0,0|1 [fixed #918]	bytes 256 fnv 6589CFD3
+WBSpriteY|sprite 5 image|FEDC0002,0,0,0|1 [orig]	bytes 256 fnv 66D436EC
+WBSpriteY|sprite 5 image|FEDC0002,0,0,0|1 [fixed #918]	bytes 256 fnv 6589CFD3
 WBSpriteY|sprite 6 field 0|2,0,0,0|1	$00000000
 WBSpriteY|sprite 6 field 0|FEDC0002,0,0,0|1	$00000000
 WBSpriteY|sprite 6 field 1|2,0,0,0|1	$00000000

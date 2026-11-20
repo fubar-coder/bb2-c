@@ -64,6 +64,13 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   fails (#915; `libs_emulator` cases `[fixed #915]`, the step "ChangeWBSprite
   (change fails)" with graphics.library's function replaced); the
   original lost them, chip memory of graphics.library until reboot.
+* The shape is copied into the bitmap row by row with the shape's
+  `ebwidth` and the bitmap's `BytesPerRow` (#918; `libs_emulator` cases
+  `[fixed #918]`, the image of the 20-wide sprite); the sprite keeps
+  the shape's width rounded down to 16. The original copied width/16
+  words per row back to back: a shape whose width is no multiple of 16
+  has one word more per row, so its image was sheared and its next
+  planes read from inside plane 0.
 
 ## BUG(orig), kept
 
@@ -73,9 +80,8 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   to `FreeSprite`; MoveWBSprite, ChangeWBSprite and WBSpriteX/Y index the
   table with the channel as is (#916) (without a sprite WBSpriteX/Y read
   the words at addresses 6 and 8, #922).
-* The shape is copied width/16 words per row into the bitmap, without
-  its `BytesPerRow` or the shape's `ebwidth` (#918), with `DBRA` counts
-  (height or depth 0: 65536 rows/planes) (#917).
+* The shape is copied with `DBRA` counts (height or depth 0: 65536
+  rows/planes) (#917).
 * finit does not clear the library base: a second finit closes
   graphics.library again (#919).
 
@@ -93,10 +99,10 @@ graphics.library's open count. Afterwards the free hardware sprites
 (`GetSprite` 1–7) must be those of the start. Shapes are built in
 memory (16, 20 and 32 wide, 1 and 2 planes, narrow, without data).
 Steps: WBSpriteX without a sprite, init, GetWBSprite on a free channel,
-on any (-1), on its own channel again (-1; the original's channel, fixed #920), on
-the pointer's channel 0, 32 wide (refused on this screen), narrow, no
-data,
-20 wide; WBSpriteX/Y; MoveWBSprite on two sprites and without one;
+on any (-1), on its own channel again (-1; the original's channel, fixed
+#920), on the pointer's channel 0, 32 wide (refused on this screen),
+narrow, no data, 20 wide (the left 16 pixels of each row; the
+original's image sheared, fixed #918); WBSpriteX/Y; MoveWBSprite on two sprites and without one;
 ChangeWBSprite (2 and 1 planes, no sprite, narrow, no data,
 `ChangeExtSpriteA` failing: graphics.library's function replaced for
 that call, `FreeSpriteData` counted);

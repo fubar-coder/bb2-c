@@ -42,6 +42,11 @@
  *   - ChangeWBSprite frees the new sprite data when ChangeExtSpriteA
  *     fails; the original lost them (chip memory of graphics.library,
  *     until reboot) (#915).
+ *   - The shape is copied row by row with the shape's ebwidth and the
+ *     bitmap's BytesPerRow; the original copied width/16 words per row
+ *     back to back, so a shape whose width is no multiple of 16 (one word
+ *     more per row) was sheared and its next planes read from inside
+ *     plane 0 (#918).  The sprite keeps its width (rounded down to 16).
  *
  * BUG(orig):
  *   - No routine checks the channel: GetWBSprite stores at
@@ -51,9 +56,8 @@
  *     ChangeWBSprite, WBSpriteX/Y index the table with the channel as is
  *     (#916) (WBSpriteX/Y without a sprite read the words at 6 and 8,
  *     #922).
- *   - The shape is copied without the bitmap's BytesPerRow, width/16
- *     words per row (the shape's ebwidth is not used either) (#918), and
- *     with DBRA counts: height or depth 0 copy 65536 rows/planes (#917).
+ *   - The shape is copied with DBRA counts: height or depth 0 copy 65536
+ *     rows/planes (#917).
  *   - finit does not clear the library base: a second finit closes
  *     graphics.library again (#919).
  */
@@ -241,27 +245,34 @@ static void BLITZ_ROUTINE libfinit_c(void)
 }
 
 /* the shape (wd.shapeaddr) into the planes of `bm`: width/16 words per
-   row, height rows, depth planes (DBRA counts) */
+   row, the source row after row by the shape's ebwidth, the target by
+   the bitmap's BytesPerRow (fixed #918); height rows, depth planes (DBRA
+   counts) */
 static void copyshape(struct BitMap *bm)
 {
     const struct bb_shape *shape = (const struct bb_shape *)wd.shapeaddr;
     UWORD wcount = (UWORD)(((WORD)shape->width >> 4) - 1);
     UWORD hcount = (UWORD)(shape->height - 1);
     UWORD pcount = (UWORD)(shape->depth - 1);
-    const UWORD *src = (const UWORD *)shape->data;
+    UWORD sstep = shape->ebwidth, dstep = bm->BytesPerRow;
+    const UBYTE *src = shape->data;
     PLANEPTR *planes = bm->Planes;
 
     do {
-        UWORD *dst = (UWORD *)*planes++;
+        UBYTE *dst = (UBYTE *)*planes++;
         UWORD h = hcount;
 
         do {
+            const UWORD *s = (const UWORD *)src;
+            UWORD *d = (UWORD *)dst;
             UWORD w = wcount;
 
             do
-                *dst++ = *src++;
+                *d++ = *s++;
             while (w-- != 0);
-            __asm__("" : "+a"(src));    /* no __mulsi3 */
+            src += sstep;
+            dst += dstep;
+            __asm__("" : "+a"(src), "+a"(dst));     /* no __mulsi3 */
         } while (h-- != 0);
     } while (pcount-- != 0);
 }
@@ -309,8 +320,9 @@ static ULONG newsprite(void)
  * Amiga mode only.  The shape is copied into a bitmap of AllocBitMap,
  * converted with AllocSpriteDataA (x, y set) and got with GetExtSpriteA
  * (channel -1: any); the sprite goes into the table.  BUG(orig): the
- * channel is not checked (#916); the copy ignores BytesPerRow and
- * ebwidth (#918) and has DBRA counts (#917).  Fixed (#920): every
+ * channel is not checked (#916); the copy has DBRA counts (#917).
+ * Fixed (#918): the copy steps by the shape's ebwidth and the bitmap's
+ * BytesPerRow.  Fixed (#920): every
  * failure (no graphics.library, no shape data, a shape narrower than
  * 16, a failing AllocBitMap, AllocSpriteDataA or GetExtSpriteA) gives
  * -1; the original decided by the channel's table entry (the channel if

@@ -30,7 +30,8 @@
  * (the mouse pointer's), 32 pixels wide (refused on this Workbench
  * screen), with a narrow shape (all three -1; the original's 0, fixed
  * #920), a shape without data (-1), 20 wide
- * (copied as 16); WBSpriteX/Y; MoveWBSprite on two sprites and without
+ * (a 16-wide sprite of the left 16 pixels of each row; the original
+ * sheared the image, fixed #918); WBSpriteX/Y; MoveWBSprite on two sprites and without
  * one; ChangeWBSprite (new images with 2 and 1 planes, no sprite, narrow
  * shape, no data, ChangeExtSpriteA failing: graphics.library's entry
  * replaced for that call, FreeSpriteData counted); FreeWBSprite with and without a sprite; finit with
