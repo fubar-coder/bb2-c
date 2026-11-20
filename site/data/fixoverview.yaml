@@ -6836,6 +6836,14 @@ rows:
     text: "`LoadTrackerModule` works on Kickstart 1.x and returns the AmigaDOS error code for a file it cannot open; the original crashed on 1.x and went on reading without a file."
     page: libraries
     anchor: rwe-other-fixes
+  - issue: 1147
+    severity: 5
+    topic: "Files"
+    library: "ristonecrackerlib"
+    command: "STCLoad"
+    text: "`STCLoad` works on Kickstart 1.x; the original opened the file with a function of Kickstart 2.0 and crashed there."
+    page: libraries
+    anchor: stonecracker-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

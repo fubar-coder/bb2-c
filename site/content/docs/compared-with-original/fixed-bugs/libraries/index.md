@@ -6723,6 +6723,10 @@ code.
 * `STCLoad` releases the lock of the file once. The original released
   it a second time after closing the file, on every load that worked
   ([#835](https://github.com/fubar-coder/bb2-c/issues/835)).
+* `STCLoad` works on Kickstart 1.x: it opens the file by its name, which
+  works on every Kickstart. The original opened it with a function of
+  Kickstart 2.0, and a program crashed at `STCLoad` on Kickstart 1.x
+  ([#1147](https://github.com/fubar-coder/bb2-c/issues/1147)).
 * ristonecrackerlib closes dos.library at the end of the program. The
   original left it open, one more time after every run
   ([#834](https://github.com/fubar-coder/bb2-c/issues/834)).
