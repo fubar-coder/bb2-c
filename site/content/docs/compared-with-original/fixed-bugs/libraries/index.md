@@ -6776,6 +6776,11 @@ the icon commands of Reflective Images; the fixes of
 [`PutIconObject`](#puticonobject-result) and
 [`SetToolValue`](#settoolvalue-prefix) are described above.
 
+* `GetIconObject` works on Kickstart 1.x. There a file without an icon
+  gives 0, since icon.library of Kickstart 1.x has no default icons. The
+  original called a function of Kickstart 2.0 there and crashed, hung,
+  or loaded a garbage icon that crashed later
+  ([#1149](https://github.com/fubar-coder/bb2-c/issues/1149)).
 * An icon can have any number of tool types: `GetIconObject` and
   `NewToolType` make room for them, and return 0 when there is no memory
   for it. The original had room for 100 entries, and an icon with more

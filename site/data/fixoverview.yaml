@@ -6852,6 +6852,14 @@ rows:
     text: "`D_FindVolume` works on Kickstart 1.x; the original called functions of Kickstart 2.0 and crashed there."
     page: libraries
     anchor: rilesdebuglib-fixes
+  - issue: 1149
+    severity: 5
+    topic: "Files"
+    library: "ritooltypeslib"
+    command: "GetIconObject"
+    text: "`GetIconObject` works on Kickstart 1.x, where a file without an icon gives 0; the original crashed there."
+    page: libraries
+    anchor: ritooltypeslib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

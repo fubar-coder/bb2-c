@@ -3,6 +3,10 @@
   notes: |
     The icon may have any number of tool types. Without memory for the
     library's list of them, the result is 0.
+
+    From Kickstart 2.0 on, a file without an icon gets the system's
+    default icon for its kind. On Kickstart 1.x, which has no default
+    icons, such a file gives 0.
 "FindToolValue":
   text: The value of the tool type `tooltype$`, the part after the `=`. An empty string if the tool type is not found, has no value, or no icon is loaded.
   notes: |
