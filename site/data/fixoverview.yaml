@@ -1470,7 +1470,7 @@ rows:
     topic: "System"
     library: "rundebuglib"
     command: ""
-    text: "A runtime error in an interrupt routine of an executable with runtime error checking passes its message on to the handler that was there before; the original lost the message and closed intuition.library in the interrupt."
+    text: "A runtime error in an interrupt routine of an executable with runtime error checking keeps its message for the program's own requester; the original lost the message on the way to the trap handler that was there before and closed intuition.library in the interrupt."
     page: libraries
     anchor: debugger-fixes
   - issue: 247
@@ -7966,3 +7966,11 @@ rows:
     text: "`InstrSize` is 0 before the first `DisAssemble$` of a run, also in a second run from the editor; the original returned the size of the run before."
     page: libraries
     anchor: ridisasmlib-fixes
+  - issue: 1073
+    severity: 5
+    topic: "System"
+    library: "rundebuglib"
+    command: ""
+    text: "A runtime error inside a `SetInt` routine of an executable with runtime error checking is reported with the usual requester at the program's next statement, as the debugger does; the original hung the machine."
+    page: libraries
+    anchor: debugger-fixes

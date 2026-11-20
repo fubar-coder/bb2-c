@@ -4,6 +4,6 @@ intro: |
   instead of the debugger. A runtime error that no `SetErr` handler takes is shown with
   its message in a requester, and the program ends.
 
-  Kept from the original: a runtime error inside a `SetInt` routine of
-  such an executable is never reported, and the machine hangs
-  ([#1073](https://github.com/fubar-coder/bb2-c/issues/1073)).
+  A runtime error inside a `SetInt` routine is shown in the same
+  requester at the program's next statement, and the program ends; the
+  routine is not called again in between.

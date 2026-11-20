@@ -4278,11 +4278,19 @@ One more fix of this area changes what an existing program does:
   code; the caches are flushed before it starts
   ([#409](https://github.com/fubar-coder/bb2-c/issues/409)).
 * A runtime error in an interrupt routine of an executable with runtime
-  error checking lost its message on the way to the handler that was
-  there before the program started, and
-  closed `intuition.library` inside the interrupt; the handler gets the
-  message, and `intuition.library` is closed only when the program ends
+  error checking lost its message on the way to the trap handler that
+  was there before the program started, and closed `intuition.library`
+  inside the interrupt. The message is kept, and `intuition.library` is
+  closed only when the program ends. The program shows the message in
+  its own requester, as the next point says; a trap handler that a
+  program put into the vector table itself is not called
   ([#246](https://github.com/fubar-coder/bb2-c/issues/246)).
+* A runtime error inside a `SetInt` routine of an executable compiled
+  with runtime error checking is reported with the usual requester at
+  the program's next statement, as the debugger does, and the routine
+  is not called again. A program that waits, for example in `Wait_`,
+  reports it when it goes on. The original hung the machine
+  ([#1073](https://github.com/fubar-coder/bb2-c/issues/1073)).
 
 ## Runtime errors in executables {#runtime-error-texts}
 
