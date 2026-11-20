@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+inside done
+REQUESTER: AutoRequest body "Map position outside the map" *
+rc=0
