@@ -5,6 +5,7 @@
 ; machine is the A600 (68000) with uaescsi.device and a CD image
 ; (generated: two audio tracks).
 ; Correct: CDPlayTrack works on a 68000, the program prints "played".
+; @fixed #579
 ; @rwe ricompactdisclib
 ; @machine a600
 ; @pass uae=scsi=true

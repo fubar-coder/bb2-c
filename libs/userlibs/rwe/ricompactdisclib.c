@@ -40,6 +40,9 @@
  *   more (0, nothing copied); the original copies it into username (40
  *   bytes) without a limit (over toc, toclen, temptoc, qcodeinfo, ioreq
  *   ...).
+ * Fixed (#579): CDPlayTrack with scsiflag writes its command block byte
+ *   by byte; the original writes two longs and a word to odd addresses
+ *   (MOVE.l #14000,(a0)+ after a byte): an address error on a 68000.
  *
  * BUG(orig):
  *   - OpenCD name$,unit keeps the name, the unit and scsiflag for later
@@ -52,9 +55,7 @@
  *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
  *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
- *     blocks 14000 to 15000 (test values), sets io_Offset = 1, and writes
- *     the two longs to odd addresses (MOVE.l #14000,(a0)+ after a byte):
- *     an address error on a 68000 (#580, #579).
+ *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
  *   - CDReadTOC with scsiflag reads into its own buffer only: CDFirstTrack,
  *     CDLastTrack and CDTrackLength still use toc (0 before a CDReadTOC
  *     without scsiflag: they read address 0) (#582).
@@ -338,6 +339,15 @@ static ULONG cdio(int how, UWORD cmd, APTR data, ULONG offset, ULONG length)
     return reqcall(LVO_DoIO, req);
 }
 
+/* a long big-endian at any address (a SCSI command block) */
+static void putlong(UBYTE *p, ULONG v)
+{
+    p[0] = (UBYTE)(v >> 24);
+    p[1] = (UBYTE)(v >> 16);
+    p[2] = (UBYTE)(v >> 8);
+    p[3] = (UBYTE)v;
+}
+
 /* _DoSCSI: d0 command, d1 its length, d2 buffer, d3 its length, d4 flags */
 static ULONG doscsi(UBYTE *command, UWORD cmdlen, APTR buf, ULONG len, UBYTE flags)
 {
@@ -511,11 +521,13 @@ ULONG BLITZ_ROUTINE c_playtrack(ULONG track BL_REG(d0), ULONG num BL_REG(d1))
     cd.ioreq->io_Offset = 1;
     c = SCSICMD12;
     c[0] = SCSI_CMD_PLAYAUDIO12;
-    /* BUG(orig) (#579): MOVE.l to odd addresses - an address error on a 68000,
-       here as well (volatile: GCC keeps the long writes) */
-    *(volatile ULONG *)(c + 1) = 14000;
-    *(volatile ULONG *)(c + 5) = 15000;
-    *(volatile UWORD *)(c + 9) = 0;
+    /* Fixed (#579): the bytes one by one; the original writes the two
+       longs and the word with MOVE to the odd addresses 1, 5 and 9 (an
+       address error on a 68000) */
+    putlong(c + 1, 14000);
+    putlong(c + 5, 15000);
+    c[9] = 0;
+    c[10] = 0;
     c[11] = 0;
     return doscsi(SCSICMD12, SIZEOF_SCSICMD12, NULL, 0, 0);
 }

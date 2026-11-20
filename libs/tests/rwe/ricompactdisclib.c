@@ -55,8 +55,9 @@
  * ricompactdisclib-opencd-name-overflow); CDTrackLength 0 (reads 64 KB
  * behind toc) and of tracks behind the last (memory globalloc did not
  * clear: differs between runs); CDPlayTrack with scsiflag on a 68000
- * (address error: the bug-orig test ricompactdisclib-playtrack-scsi-odd
- * on the a600; this program runs on the a1200); a globalloc failing.
+ * (the original's address error, fixed #579: the bug-orig test
+ * ricompactdisclib-playtrack-scsi-odd on the a600; this program runs on
+ * the a1200); a globalloc failing.
  * The test device leaves the entries behind the last track
  * $EE (a real one would not write them: the last track's length is then
  * garbage, BUG(orig) (#583)).

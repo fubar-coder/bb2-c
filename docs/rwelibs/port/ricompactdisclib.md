@@ -36,9 +36,7 @@ bytes. DIFF (#946): behind `MyCDInfo` follow 8 bytes of room
 (`mycdinfo_rest`): a device that writes the whole 34-byte CDInfo for
 `CDStatus` (uaescsi.device) wrote them over the pointers of the SCSI
 buffers, and the next SCSI `CDReadTOC` hung; in the original they go
-behind the library (#948). `CDPlayTrack`'s SCSI path writes its two
-longs to odd addresses with volatile long accesses, like the original.
-Every entry is a thunk keeping d1/a0/a1; the original's changes of a6, d7 (CDReadTOC) and
+behind the library (#948). Every entry is a thunk keeping d1/a0/a1; the original's changes of a6, d7 (CDReadTOC) and
 d1/d2 (CDTrackLength) are not reproduced.
 
 **Fixed:**
@@ -47,6 +45,9 @@ d1/d2 (CDTrackLength) are not reproduced.
   (the manual: "less than forty characters"): 0, nothing copied, nothing
   opened. The original copies it into the 40-byte `username` without a
   limit (over toc, toclen, temptoc, qcodeinfo, ioreq ...). (#576)
+* `CDPlayTrack` with scsiflag writes its command block byte by byte; the
+  original writes two longs and a word to odd addresses, an address
+  error on a 68000. (#579)
 
 **BUG(orig)** (kept):
 
@@ -58,8 +59,7 @@ d1/d2 (CDTrackLength) are not reproduced.
 * `CDStop` (also in `CloseCD`) is AbortIO only, no WaitIO; it sets
   io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
-  15000 (test values), io_Offset = 1, and the longs are written to odd
-  addresses - an address error on a 68000. (#580, #579)
+  15000 (test values), io_Offset = 1. (#580)
 * `CDReadTOC` with scsiflag fills only its own buffer: `CDFirstTrack`,
   `CDLastTrack`, `CDTrackLength` still use toc (address 0 before any
   `CDReadTOC` without scsiflag). (#582)
