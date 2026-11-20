@@ -36,9 +36,9 @@
  *   - A block of 0 bytes (PutSerial/GetSerial address,0, SyncPut,
  *     SyncGet) transfers nothing; the original sent or received one byte
  *     and counted on with SUBQ.l: BNE, 2^32 bytes (#646).
+ *   - SetIOSpeed divides by its #word argument alone; the original
+ *     divided by all of d0, also its undefined upper word (#654).
  * BUG(orig):
- *   - SetIOSpeed divides by all of d0, also the upper word of its #word
- *     argument (#654).
  *   - InitSerialIO stores the immediate #$dff000+intenar (the word $F01C)
  *     to inten instead of reading INTENAR, and FinitSerialIO writes to
  *     the absolute address $9A (intena without custom+).  With $F01C
@@ -540,11 +540,12 @@ BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
 /**
  * @brief SetIOSpeed baudrate: a new baud rate (SERPER) if initialised.
  *
- * The division as in InitSerialIO (fixed, #647); BUG(orig) (#654): it
- * divides by all of d0, also the upper word of its #word argument.
- * @param baud  d0: the baud rate
+ * The division as in InitSerialIO (fixed, #647).  Fixed (#654): it
+ * divides by the word argument alone, the original by all of d0, also
+ * its undefined upper word.
+ * @param baud  d0.w: the baud rate
  */
-void BLITZ_ROUTINE c_setiospeed(ULONG baud BL_REG(d0))
+void BLITZ_ROUTINE c_setiospeed(UWORD baud BL_REG(d0))
 {
     if (!fs.baud)
         return;

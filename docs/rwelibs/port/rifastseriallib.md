@@ -40,10 +40,12 @@ d0/d1/a0/a1 that are not the result.
   and counted on with `SUBQ.l: BNE`, 2^32 bytes (#646; test
   `rifastseriallib-block-zero-bytes`).
 
+* `SetIOSpeed` divides by its #word argument alone; the original divided
+  by all of d0, also its undefined upper word (#654; D-019, `libs_emulator`
+  cases `[fixed #654]` of `rwe_rifastseriallib`: `SetIOSpeed $A5A52580`).
+
 **BUG(orig)** (kept):
 
-* `SetIOSpeed` divides by all of d0, also the upper word of its #word
-  argument (#654).
 * `InitSerialIO` stores the immediate `#$dff000+intenar` (the word
   `$F01C`) to `inten` instead of reading INTENAR, and `FinitSerialIO`
   writes to the absolute address `$9A` (`intena` without `custom+`). With
