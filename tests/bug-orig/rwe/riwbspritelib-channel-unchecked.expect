@@ -1,5 +1,6 @@
 [compile]
 ok
 [run]
-0
+before
+REQUESTER: AutoRequest body "Sprite channel must be -1 to 7" *
 rc=0
