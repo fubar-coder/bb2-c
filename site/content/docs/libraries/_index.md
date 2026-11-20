@@ -34,7 +34,7 @@ the libraries the build produces:
 **In the source**, every library of the port is a C file whose
 declaration part lists each command with its kind, its argument forms
 and the same help text, and whose first comment summarises what the
-library does:
+library does. See
 [the libraries of Blitz Basic 2](https://github.com/fubar-coder/bb2-c/tree/main/libs/acidlibs)
 on GitHub. The
 [API reference](https://fubar-coder.github.io/bb2-c/api/), made from the
