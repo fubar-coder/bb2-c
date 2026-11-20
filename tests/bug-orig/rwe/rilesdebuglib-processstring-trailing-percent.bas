@@ -4,6 +4,7 @@
 ; goes on behind it.  The parser's buffer first holds "ABCDEFGH", then
 ; "100%": behind its 0 follow "FGH" of the longer text.
 ; Correct: ProcessString stops at the end of the text.
+; @fixed #720
 ; @rwe rilesdebuglib
 DEFTYPE .l
 b=AllocMem_(64,$10001)

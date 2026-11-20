@@ -210,6 +210,12 @@ d5-d7, a0-a3 and a6 in places.
   `rilesdebuglib.declarations-intended.txt`) (#719; test
   `rilesdebuglib-processstring-no-position`; the `libs_emulator` cases
   `[fixed #719]` "no parser position").
+* A `%` at the end of `ProcessString`'s text ends it. The original took
+  the 0 behind the `%` as the name of an entry, found none and read on
+  behind the text (the rest of a longer text the parser's buffer held
+  before; the debugger's menu file lines can end so) (#720; test
+  `rilesdebuglib-processstring-trailing-percent`; the scenario of
+  `libs_emulator` has no such text).
 
 ## BUG(orig)
 
@@ -236,7 +242,6 @@ d5-d7, a0-a3 and a6 in places.
   the bytes behind its 0 (#721); word and long searches compare bytes up
   to 1 or 3 behind the end (#722). The space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.
-* ProcessString reads on behind a `%` at the end of the text (#720).
 * AddProcessPtr has no limit of 20 entries (#700).
 
 Like the original, and no defects: ClearProcessPtrs clears only the

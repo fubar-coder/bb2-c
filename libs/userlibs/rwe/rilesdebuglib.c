@@ -65,7 +65,6 @@
  *     ("ab" is not found in "aab") (#723); an empty string compares the
  *     bytes behind its 0 (#721).  The word/long searches compare bytes up
  *     to 1/3 behind the end (#722).
- *   - ProcessString goes on behind a '%' at the end of the string (#720).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
  *     other data) (#700).
@@ -113,6 +112,9 @@
  *     original read the text at address 0.  Its help text names no
  *     argument (the original's "string" was none: the command works on
  *     what D_InitParse stored) (#719).
+ *   - ProcessString ends at a '%' at the end of the text; the original
+ *     took the 0 behind it as an entry's name and read on behind the
+ *     text (#720).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1529,8 +1531,9 @@ static ULONG BLITZ_ROUTINE nextparsearg_c(void)
  * without an entry drops x.  Without a parser position (before
  * D_InitParse, after the last D_NextArg$) the result is empty, as
  * D_NextArg$'s (fixed #719: the original read the text at address 0, and
- * its help text named an argument "string").  Goes on behind a '%' at
- * the end of the string (BUG(orig) (#720)).
+ * its help text named an argument "string").  A '%' at the end of the
+ * text ends it (fixed #720: the original took the 0 behind it as the
+ * entry's name and went on behind the text).
  * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE processstring_c(void)
@@ -1548,6 +1551,8 @@ static ULONG BLITZ_ROUTINE processstring_c(void)
             return n;
         if (c == '%') {
             c = *a++;
+            if (!c)                                     /* fixed (#720) */
+                return n;
             if (c != '%') {                             /* 'tokloop */
                 for (e = stringtokens.fixed; e->c; e++)
                     if (e->c == c) {
