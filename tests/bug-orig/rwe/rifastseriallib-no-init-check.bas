@@ -10,6 +10,7 @@
 ; end).
 ; Correct: without InitSerialIO DoSerialIO does nothing (the marker
 ; stays).
+; @fixed #652
 ; @rwe rifastseriallib
 ; @pass serial=on
 DEFTYPE .l

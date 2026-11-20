@@ -66,11 +66,16 @@ d0/d1/a0/a1 that are not the result.
   returns 0); the original divided by 0 for baud 0 (a rate from a
   settings file or menu, D-006) (#653; test `rifastseriallib-serper-zero`;
   `libs_emulator` cases `[fixed #653]` of `rwe_rifastseriallib`).
+* Every command that works on the port returns at once without
+  `InitSerialIO`: `DoSerialIO`, `GetSerial` (both forms), `SyncSerial`,
+  `SyncPut`, `SyncGet`, `CheckSerial` (`CheckSerial` -1, `GetSerial` and
+  `SyncSerial` 0), as `PutSerial`, `SetIOSpeed` and `FinitSerialIO`
+  already did; the original ran them on the port, `DoSerialIO` with the
+  buffers 0 (reading into and sending from address 0) (#652; R10
+  decision P2-2 (a); test `rifastseriallib-no-init-check`).
 
 **BUG(orig)** (kept):
 
-* Only `FinitSerialIO`, `InitSerialIO`, `PutSerial` and `SetIOSpeed`
-  check the initialisation (#652).
 * `GetSerial address,bytes` (#byte result) returns its address argument
   (#649).
 * `SyncSerial`: two machines starting at the same time both become

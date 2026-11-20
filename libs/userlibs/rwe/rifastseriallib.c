@@ -52,9 +52,11 @@
  *     PutSerial, SetIOSpeed and FinitSerialIO did nothing.  InitSerialIO
  *     and SetIOSpeed refuse a baud rate outside 109-3546895, whose SERPER
  *     does not fit (the original divided by 0 for baud 0) (#653).
+ *   - Every command that works on the port returns at once without
+ *     InitSerialIO (CheckSerial -1, GetSerial and SyncSerial 0); the
+ *     original tested it only in FinitSerialIO, InitSerialIO, PutSerial
+ *     and SetIOSpeed, DoSerialIO ran with the buffers 0 (#652).
  * BUG(orig):
- *   - Only FinitSerialIO, InitSerialIO, PutSerial and SetIOSpeed check
- *     the initialisation (#652).
  *   - GetSerial address,bytes (#byte result) returns its address argument
  *     (#649).
  *   - SyncSerial: two machines starting at the same time both become
@@ -302,14 +304,17 @@ void BLITZ_ROUTINE c_finitserialio(void)
  * @brief DoSerialIO numbytes-1: exchange the buffers byte by byte.
  *
  * Master (SetSerialMode <> 0): writes a byte of outbuf, then reads one
- * into inbuf; slave: the other way round.  n + 1 bytes (DBRA).  Does not
- * check the initialisation (BUG(orig) (#652)).
+ * into inbuf; slave: the other way round.  n + 1 bytes (DBRA).  Nothing
+ * if not initialised (fixed (#652): the original ran with the buffers 0,
+ * reading into and sending from address 0).
  * @param n  d0: the number of bytes - 1
  */
 void BLITZ_ROUTINE c_doserialIO(UWORD n BL_REG(d0))
 {
     UBYTE *out = fs.outbuf, *in = fs.inbuf;
 
+    if (!fs.ready)                      /* fixed (#652) */
+        return;
     if (fs.mode) {                      /* master: write, then read */
         do {
             writebyte(*out++);
@@ -417,15 +422,15 @@ void BLITZ_ROUTINE c_putserial2(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 /**
  * @brief CheckSerial: the received byte, without waiting.
  *
- * If RBF is set: the byte of SERDATR, RBF acknowledged in INTREQ.  Does
- * not check the initialisation (#652).
+ * If RBF is set: the byte of SERDATR, RBF acknowledged in INTREQ.  -1
+ * if not initialised (fixed (#652)).
  * @return d0: the byte, -1 if there is none
  */
 ULONG BLITZ_ROUTINE c_checkserial(void)
 {
     UBYTE b;
 
-    if (!(SERDATR_HI & RBF))
+    if (!fs.ready || !(SERDATR_HI & RBF))       /* fixed (#652) */
         return (ULONG)-1;
     b = SERDATR_LO;
     INTREQ = INTF_RBF;
@@ -435,11 +440,13 @@ ULONG BLITZ_ROUTINE c_checkserial(void)
 /**
  * @brief GetSerial: wait for a byte and return it (through bytebuf).
  *
- * Does not check the initialisation (#652).
+ * 0 if not initialised (fixed (#652): the original waited for a byte).
  * @return d0: the byte
  */
 ULONG BLITZ_ROUTINE c_getserial(void)
 {
+    if (!fs.ready)                      /* fixed (#652) */
+        return 0;
     fs.bytebuf[0] = readbyte();
     return fs.bytebuf[0];
 }
@@ -447,8 +454,8 @@ ULONG BLITZ_ROUTINE c_getserial(void)
 /**
  * @brief GetSerial address,bytes: receive a block of bytes.
  *
- * Fixed (#646): 0 bytes receive nothing (the original: 2^32).
- * BUG(orig): no initialisation check (#652).
+ * Fixed (#646): 0 bytes receive nothing (the original: 2^32).  Fixed
+ * (#652): nothing if not initialised.
  * @param p  d0: the buffer
  * @param n  d1: the number of bytes
  * @return d0: the address argument (a #byte result, BUG(orig) (#649))
@@ -457,6 +464,8 @@ ULONG BLITZ_ROUTINE c_getserial2(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     UBYTE *a = p;
 
+    if (!fs.ready)                      /* fixed (#652) */
+        n = 0;
     while (n--)                         /* fixed (#646) */
         *a++ = readbyte();
     return (ULONG)p;
@@ -474,13 +483,15 @@ void BLITZ_ROUTINE c_flushserialio(void)
  * @brief SyncPut address,bytes: send bytes, each paced by the other side's answer.
  *
  * For every byte: send it, wait for a byte back (into bytebuf).
- * Fixed (#646): 0 bytes send nothing (the original: 2^32).
- * BUG(orig): no initialisation check (#652).
+ * Fixed (#646): 0 bytes send nothing (the original: 2^32).  Fixed
+ * (#652): nothing if not initialised.
  * @param p  d0: the data
  * @param n  d1: the number of bytes
  */
 void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
+    if (!fs.ready)                      /* fixed (#652) */
+        return;
     while (n--) {                       /* fixed (#646) */
         writebyte(*p++);
         fs.bytebuf[0] = readbyte();
@@ -492,13 +503,15 @@ void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
  *
  * For every byte received it sends the byte in bytebuf (whatever was
  * last written there: no defect, the answer only paces the sender).
- * Fixed (#646): 0 bytes receive nothing (the original: 2^32).
- * BUG(orig): no initialisation check (#652).
+ * Fixed (#646): 0 bytes receive nothing (the original: 2^32).  Fixed
+ * (#652): nothing if not initialised.
  * @param p  d0: the buffer
  * @param n  d1: the number of bytes
  */
 void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
+    if (!fs.ready)                      /* fixed (#652) */
+        return;
     while (n--) {                       /* fixed (#646) */
         *p++ = readbyte();
         writebyte(fs.bytebuf[0]);
@@ -513,6 +526,8 @@ void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
  * master: it sends the sync byte until it comes back, then sends 0 and
  * flushes.  BUG(orig) (#655): two machines starting at the same time
  * both become master (each takes the other's sync byte for the echo).
+ * BB_FALSE if not initialised (fixed (#652): the original ran on the
+ * port).
  * @param sync  d0: the sync byte
  * @return d0: BB_TRUE = master, BB_FALSE = slave (a #word result)
  */
@@ -520,6 +535,8 @@ BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
 {
     UBYTE b;
 
+    if (!fs.ready)                      /* fixed (#652) */
+        return BB_FALSE;
     fs.bytebuf[0] = sync;
     if (SERDATR_HI & RBF) {
         for (;;) {
