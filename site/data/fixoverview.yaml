@@ -6396,6 +6396,158 @@ rows:
     text: "Programs with the second sound library start on Kickstart 1.x, where the AHI commands fail; the original crashed at the start."
     page: libraries
     anchor: risoundlib2-fixes
+  - issue: 584
+    severity: 2
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDTrackLength"
+    text: "`CDTrackLength 1` is the length of track 1; the original counted the gap before it, normally 2 seconds."
+    page: libraries
+    anchor: compactdisc-results
+  - issue: 982
+    severity: 2
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDVolume"
+    text: "`CDVolume` gives the device the volume and the fade time the right way round; the original swapped them."
+    page: libraries
+    anchor: compactdisc-results
+  - issue: 577
+    severity: 2
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "OpenCD"
+    text: "`OpenCD` no longer keeps the SCSI flag of an earlier call, and without arguments opens unit 0 of cd.device as documented."
+    page: libraries
+    anchor: compactdisc-results
+  - issue: 578
+    severity: 3
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "OpenCD"
+    text: "With runtime error checking a second `OpenCD` stops with \"CD device already open\"; the original lost the device opened first."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 583
+    severity: 3
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDTrackLength"
+    text: "`CDTrackLength` of the last track is right, and with runtime error checking a track the CD lacks stops with \"Track number out of range\"."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 586
+    severity: 3
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDTrackMins, CDTrackSecs"
+    text: "With runtime error checking an offset other than 0 or 1 stops with \"Offset must be 0 or 1\"; the original read other memory."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 1138
+    severity: 5
+    topic: "System"
+    library: "ricompactdisclib"
+    command: ""
+    text: "Programs that use the CD commands start on Kickstart 1.x; the original crashed before their first line."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 575
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "OpenCD"
+    text: "`OpenCD` returns 0 when the device cannot be opened, not a leftover number."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 576
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "OpenCD"
+    text: "`OpenCD` refuses a device name of 40 characters or more instead of overwriting the library's data."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 1156
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDPlayTrack"
+    text: "The other CD commands no longer reuse the request of the track that plays."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 574
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDStop, CloseCD"
+    text: "`CDStop` and `CloseCD` wait until the device has taken the stopped play back; the original left its reply behind."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 1157
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDPlayTrack"
+    text: "`CDPlayTrack` returns -1 when the play was sent; the original returned a leftover value."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 580
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDPlayTrack"
+    text: "With the SCSI flag `CDPlayTrack` plays the tracks asked for and returns true or false; the original always played the author's test blocks."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 579
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDPlayTrack"
+    text: "With the SCSI flag `CDPlayTrack` no longer crashes a 68000 with an address error."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 581
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDReadTOC"
+    text: "`CDReadTOC` returns 0 and keeps no table when reading it fails; the original returned -1 and left garbage for the track functions."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 582
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDNumTracks, CDFirstTrack, CDLastTrack, CDTrackLength"
+    text: "The track functions return 0 before `CDReadTOC` and work with the SCSI flag; the original read address 0."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 585
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDTrackLength"
+    text: "`CDTrackLength` is right for track 44 and later."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 587
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDUpdateInfo"
+    text: "`CDUpdateInfo` returns 0 without an open device instead of a meaningless address."
+    page: libraries
+    anchor: ricompactdisclib-fixes
+  - issue: 948
+    severity: 5
+    topic: "Sound"
+    library: "ricompactdisclib"
+    command: "CDStatus"
+    text: "`CDStatus` no longer lets the device write 8 bytes behind the library, which ended the program with an alert on Workbench 3.1."
+    page: libraries
+    anchor: ricompactdisclib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

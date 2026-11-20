@@ -2220,6 +2220,45 @@ Issues: [The sprite channel is not checked: channels outside 0–7 index the tag
 [A shape with height or depth 0 is copied as 65536 rows/planes (DBRA) (#917)](https://github.com/fubar-coder/bb2-c/issues/917),
 [WBSpriteX/WBSpriteY on a channel without a sprite read the words at addresses 6 and 8 (#922)](https://github.com/fubar-coder/bb2-c/issues/922).
 
+### Devices, tracks and offsets of ricompactdisclib {#compactdisc-checks}
+
+[ricompactdisclib]({{< relref "/docs/libraries/userlibs/ricompactdisclib" >}})
+works with one CD device at a time, which `OpenCD` opens and `CloseCD`
+closes. `CDTrackLength track#` reads the length of a track from the
+table of contents of `CDReadTOC`, and `CDTrackMins` and `CDTrackSecs`
+return the position of the last `CDUpdateInfo`, from the start of the
+track with an offset of 0 or from the start of the CD with 1.
+
+**What happened.** The original had no error checks. A second `OpenCD`
+without `CloseCD` opened the new device and lost the old one, which
+stayed open until the next reboot. `CDTrackLength` of a track the CD
+does not hold, such as track 0 or one behind the last, read memory
+behind the table of contents, and `CDTrackMins` or `CDTrackSecs` with
+another offset read other memory of the library. The results meant
+nothing.
+
+**With the port.** With runtime error checking:
+
+* `OpenCD` while a device is open is the error "CD device already open:
+  CloseCD first";
+* `CDTrackLength` of a track outside the first to the last track of the
+  table of contents is the error "Track number out of range" (without
+  an open device or a table of contents it returns 0 and is no error);
+* `CDTrackMins` or `CDTrackSecs` with an offset other than 0 or 1 is
+  the error "Offset must be 0 or 1".
+
+Without runtime error checking there are no such errors, and these
+calls go wrong as with the original.
+
+**What to change.** Call `CloseCD` before opening another device, as the
+library's guide asks. Check a track number against `CDFirstTrack` and
+`CDLastTrack` before `CDTrackLength`, and give `CDTrackMins` and
+`CDTrackSecs` an offset of 0 or 1 only.
+
+Issues: [OpenCD while a device is open loses the open request (#578)](https://github.com/fubar-coder/bb2-c/issues/578),
+[CDTrackLength reads unwritten or foreign memory for the last track, track 0 and tracks behind the last (#583)](https://github.com/fubar-coder/bb2-c/issues/583),
+[CDTrackMins/CDTrackSecs offset: only the low byte is shifted, the index has no limit, the high byte stays in the result (#586)](https://github.com/fubar-coder/bb2-c/issues/586).
+
 ## Forms the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the

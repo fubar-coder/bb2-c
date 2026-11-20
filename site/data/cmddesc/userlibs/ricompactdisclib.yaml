@@ -1,75 +1,59 @@
 "OpenCD":
-  text: Opens unit 0 of cd.device, or the unit `unit` of the device `devicename`, for the other commands. As a function it returns -1 if the device was opened.
+  text: Opens unit 0 of cd.device, or the unit `unit` of the device `devicename`, for the other commands. As a function it returns -1 if the device was opened, else 0.
   notes: |
-    Kept from the original: if the device cannot be opened, the result
-    is not always 0, so compare it with -1
-    ([#575](https://github.com/fubar-coder/bb2-c/issues/575)). `OpenCD`
-    without arguments uses the device name and unit of the last `OpenCD`
-    that gave them; a `scsiflag` once given stays set for every later
-    `OpenCD` ([#577](https://github.com/fubar-coder/bb2-c/issues/577)).
-    A name
-    longer than 39 characters overwrites the library's data
-    ([#576](https://github.com/fubar-coder/bb2-c/issues/576)). Opening
-    again without `CloseCD` loses the device opened first
-    ([#578](https://github.com/fubar-coder/bb2-c/issues/578)). With a
-    `scsiflag` other than 0, `CDPlayTrack` and `CDReadTOC` use SCSI
-    commands instead and `CDNumTracks` reads the SCSI table of contents;
-    `CDPlayTrack` then ignores its arguments and writes longs to odd
-    addresses, an address error on a 68000
-    ([#580](https://github.com/fubar-coder/bb2-c/issues/580),
-    [#579](https://github.com/fubar-coder/bb2-c/issues/579)), and the
-    other track functions do not see the SCSI table of contents
-    ([#582](https://github.com/fubar-coder/bb2-c/issues/582)).
+    Each `OpenCD` uses only what it is given: without arguments it opens
+    unit 0 of cd.device, and the SCSI flag counts only for the call it is
+    given to. A device name must be shorter than 40 characters; a longer
+    one is refused with 0. Only one device can be open: call `CloseCD`
+    before opening another. With runtime error checking, `OpenCD` while
+    a device is open is a runtime error.
+
+    With a `scsiflag` other than 0, `CDPlayTrack`, `CDReadTOC` and the
+    track functions use SCSI commands, for a CD drive that does not
+    understand cd.device's commands. The other commands send cd.device's
+    commands also then, so `CDStop` does not stop a play started with
+    SCSI.
 "CloseCD":
   text: Stops playing and closes the device. Returns -1 if a device was open, else 0.
 "CDDoor":
   text: Opens the tray of the drive with 1 and closes it with 0.
 "CDPlayTrack":
-  text: Starts playing `numtracks` tracks from the track `track#` on and returns at once, while the music plays.
+  text: Starts playing `numtracks` tracks from the track `track#` on and returns at once, while the music plays. As a function it returns -1 if the play was sent, else 0.
   notes: |
-    The result as a function is of no use. Tracks are numbered from 1.
+    Tracks are numbered from 1. A play still running from the last
+    `CDPlayTrack` is stopped first. With the SCSI flag of `OpenCD` the
+    tracks are found in the table of contents of `CDReadTOC`, which must
+    come first; the result is -1 if the drive took the command, and 0
+    without a table of contents, for a track it does not hold and for 0
+    tracks.
 "CDReadTOC":
   text: Reads the table of contents of the CD, which `CDNumTracks`, `CDFirstTrack`, `CDLastTrack` and `CDTrackLength` use. Returns -1 if it worked, else 0.
+  notes: |
+    If reading fails, the library keeps no table of contents, and the
+    track functions return 0.
 "CDStatus":
   text: The status of the drive, a set of bits - 1 tray closed, 2 a disc is in, 4 the disc spins, 8 table of contents read, 16 track 1 holds data, 32 playing, 64 paused, 128 searching, 256 searching backwards.
   notes: |
     Several bits can be set at once; test one with `AND`, for example
     `If CDStatus AND 32`.
-
-    Kept from the original: a device that returns the full status record
-    writes 8 bytes more than the library asks for
-    ([#948](https://github.com/fubar-coder/bb2-c/issues/948)).
 "CDStop":
-  text: Stops the music that `CDPlayTrack` started.
-  notes: |
-    Kept from the original: the command does not wait until the device
-    has really stopped
-    ([#574](https://github.com/fubar-coder/bb2-c/issues/574)).
+  text: Stops the music that `CDPlayTrack` started and waits until the device has stopped it.
 "CDVolume":
-  text: Passes `volume` and `lengthoffade` to the device's volume fade (the CD_ATTENUATE command) and returns the device's error code.
+  text: Fades the volume to `volume`, 0 to 32767, over `lengthoffade` frames of 1/75 second, through the device's CD_ATTENUATE command, and returns the device's error code.
 "CDNumTracks":
-  text: The number of tracks on the CD, from the table of contents read with `CDReadTOC`.
+  text: The number of tracks on the CD, from the table of contents read with `CDReadTOC`; 0 before it.
 "CDFirstTrack":
-  text: The number of the first track on the CD, from the table of contents read with `CDReadTOC`.
+  text: The number of the first track on the CD, from the table of contents read with `CDReadTOC`; 0 before it.
 "CDLastTrack":
-  text: The number of the last track on the CD, from the table of contents read with `CDReadTOC`.
+  text: The number of the last track on the CD, from the table of contents read with `CDReadTOC`; 0 before it.
 "CDTrackLength":
-  text: The length of a track in seconds, from the table of contents read with `CDReadTOC`. The track must exist on the CD.
+  text: The length of a track in seconds, from its start to the start of the next track or, for the last track, to the end of the CD's music. It is 0 before `CDReadTOC`.
   notes: |
-    Kept from the original: for track 1 the result is the start of
-    track 2, not the length of track 1
-    ([#584](https://github.com/fubar-coder/bb2-c/issues/584)); from
-    track 44 on the length is wrong
-    ([#585](https://github.com/fubar-coder/bb2-c/issues/585)); and the
-    last track's length is read from memory the table does not fill,
-    track 0 and tracks behind the last read memory behind the table
-    ([#583](https://github.com/fubar-coder/bb2-c/issues/583)).
+    The track must exist on the CD: check it against `CDFirstTrack` and
+    `CDLastTrack`. With runtime error checking, another track is a
+    runtime error; without it, the result means nothing.
 "CDUpdateInfo":
-  text: Asks the drive for the track playing and its position, for `CDTrackPlaying`, `CDTrackMins` and `CDTrackSecs`. The result is the address of that information.
-  notes: |
-    Kept from the original: without an open device the result is a
-    meaningless value instead of 0
-    ([#587](https://github.com/fubar-coder/bb2-c/issues/587)).
+  text: Asks the drive for the track playing and its position, for `CDTrackPlaying`, `CDTrackMins` and `CDTrackSecs`. The result is the address of that information, 0 without an open device.
 "CDFlush":
   text: Sends the device's flush command (CD_FLUSH).
 "CDPause":
@@ -87,13 +71,13 @@
 "CDTrackMins":
   text: The minutes of the position found by the last `CDUpdateInfo` - from the start of the track, or with an `offset` of 1 from the start of the CD.
   notes: |
-    Kept from the original: offsets other than 0 and 1 read other memory
-    ([#586](https://github.com/fubar-coder/bb2-c/issues/586)).
+    With runtime error checking, an offset other than 0 or 1 is a runtime
+    error; without it, the result means nothing.
 "CDTrackSecs":
   text: The seconds of the position found by the last `CDUpdateInfo` - from the start of the track, or with an `offset` of 1 from the start of the CD.
   notes: |
-    Kept from the original: offsets other than 0 and 1 read other memory
-    ([#586](https://github.com/fubar-coder/bb2-c/issues/586)).
+    With runtime error checking, an offset other than 0 or 1 is a runtime
+    error; without it, the result means nothing.
 "CDTrackPlaying":
   text: The number of the track that was playing at the last `CDUpdateInfo`.
 "CDMotor":
