@@ -4,6 +4,7 @@
 ; the squared distance 65545 from (0,0), whose low word 9 is below 100,
 ; so it lies in the circle of radius 10.
 ; Correct: the point lies in no zone (the 68000 mode compares longs).
+; @fixed #880
 ; @rwe rizonejoylib
 SetZoneMode -1
 ZoneInit

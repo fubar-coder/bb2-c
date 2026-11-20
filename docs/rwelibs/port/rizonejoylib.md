@@ -103,6 +103,15 @@ All other routines are C behind `BLITZ_THUNK`.
   -32768 to 32767 did not contain the point (5,-1) (#879, test
   `rwe/rizonejoylib-zonetest000-bmi`; `libs_emulator` cases `[fixed #879]`
   of `rwe_rizonejoylib`, the grid of the 68000 mode).
+* The 68020 mode compares a point's squared distance from a circle's
+  centre with the radius squared as longs, as the 68000 mode does. The
+  original compared them as words (`CMP.w`): a point whose squared
+  distance has a low word at or below the radius squared hit (with
+  radius 10 the point 256 pixels to the side, `Zone(256,3)`), and a
+  radius of 182 or more (a radius squared above 32767) missed points
+  inside (#880, test `rwe/rizonejoylib-zonetest020-circle-word`;
+  `libs_emulator` cases `[fixed #880]` of `rwe_rizonejoylib`, the grid
+  of the 68020 mode).
 
 ## BUG(orig)
 
@@ -119,8 +128,7 @@ All other routines are C behind `BLITZ_THUNK`.
 * SetZone without a table returns -1 (= done); ZoneTable without a table
   returns -1, not 0 (#876).
 * The circle test squares word differences; the radius squared
-  is stored as a word (radius >= 256 wraps) (#867), and the 68020 mode
-  compares radius² and distance² as words (radius >= 182 fails) (#880).
+  is stored as a word (radius >= 256 wraps) (#867).
   In the 68020 mode every zone with a negative y2 is a circle, in the
   68000 mode only y2 = -1 (#866).
 * GetZoneX1/Y1/X2/Y2 compare the zone **count** with the field offset
