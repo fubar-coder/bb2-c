@@ -4,6 +4,7 @@
 ; 32767; for the point (5,-1) y2 - y is 32768, negative as a word, and
 ; the point is not found.
 ; Correct: the point lies in zone 1.
+; @fixed #879
 ; @rwe rizonejoylib
 SetZoneMode 0
 ZoneInit

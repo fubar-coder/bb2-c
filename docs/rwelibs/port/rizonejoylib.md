@@ -42,7 +42,7 @@ All other routines are C behind `BLITZ_THUNK`.
 * The 68020 mode tests rectangles with the original's `CMP2.w` (encoded
   as data, the library is built for the 68000; the mode is on only on a
   68020 or better); the 68000 mode keeps its own tests (`BGT` for x1/y1,
-  `BMI` on the word difference for x2/y2).
+  `BLT` for x2/y2: fixed, #879).
 * The word arithmetic of the original (`ADDQ.w` on a long counter, the
   start zone through `MOVE.b`) is kept with explicit masks, so
   out-of-range numbers address the same places; the zone offset of
@@ -97,6 +97,12 @@ All other routines are C behind `BLITZ_THUNK`.
   (#881, test `rwe/rizonejoylib-zonetest-start-byte`; `libs_emulator`
   cases `[fixed #881]` of `rwe_rizonejoylib`, ZoneTest from zone 256 on
   in table 3).
+* The 68000 mode tests x <= x2 and y <= y2 with signed compares (`BLT`).
+  The original took the sign of the word differences x2 - x, y2 - y
+  (`BMI`): wrong when a difference is beyond 32767, so a zone from y
+  -32768 to 32767 did not contain the point (5,-1) (#879, test
+  `rwe/rizonejoylib-zonetest000-bmi`; `libs_emulator` cases `[fixed #879]`
+  of `rwe_rizonejoylib`, the grid of the 68000 mode).
 
 ## BUG(orig)
 
@@ -112,9 +118,7 @@ All other routines are C behind `BLITZ_THUNK`.
   (#871).
 * SetZone without a table returns -1 (= done); ZoneTable without a table
   returns -1, not 0 (#876).
-* The 68000 test of x2/y2 uses `BMI` (the sign of x2-x), not `BLT`: wrong
-  when the difference exceeds 32767 (e.g. y1 = -32768, y2 = 32767)
-  (#879). The circle test squares word differences; the radius squared
+* The circle test squares word differences; the radius squared
   is stored as a word (radius >= 256 wraps) (#867), and the 68020 mode
   compares radius² and distance² as words (radius >= 182 fails) (#880).
   In the 68020 mode every zone with a negative y2 is a circle, in the

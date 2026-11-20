@@ -38,11 +38,9 @@
  *     tables again (#871).
  *   - SetZone without a table returns -1 (= done); ZoneTable without a
  *     table returns -1, not 0 (#876).
- *   - The 68000 test of x2/y2 uses BMI (the sign of x2-x), not BLT: wrong
- *     for differences beyond 32767 (#879).  The circle test squares word
- *     differences; the radius squared is stored as a word (radius >= 256
- *     wraps) (#867), and the 68020 mode compares the distance as a word
- *     too (#880).
+ *   - The circle test squares word differences; the radius squared is
+ *     stored as a word (radius >= 256 wraps) (#867), and the 68020 mode
+ *     compares the distance as a word too (#880).
  *   - GetZoneX1/Y1/X2/Y2 compare the zone count with the field offset
  *     (0/2/4/6) instead of the zone number: no range check (a table of up
  *     to 6 zones returns -1 for some fields), the index is a word, and
@@ -69,6 +67,9 @@
  *     (MOVE.b, the low byte, while it counts a word); its range checks
  *     are unsigned with it, a negative start is beyond the table (the
  *     last zone), a negative end refused (#881).
+ *   - The 68000 mode tests x <= x2 and y <= y2 with signed compares
+ *     (BLT); the original took the sign of the word differences x2 - x,
+ *     y2 - y (BMI), wrong when a difference is beyond 32767 (#879).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -528,9 +529,10 @@ static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
  * y1..y2 as bounds), a circle by its squared distance against the word
  * x2 as words (CMP.w, BUG(orig) #880).  The 68000 mode: a circle has
  * y2 = -1, its squared distance is compared as a long; x1 > x, y1 > y
- * (BGT) and the sign of the word differences x2 - x, y2 - y (BMI, BUG(orig)
- * #879) leave a rectangle.  Both square the word differences x - x1,
- * y - y1 (MULS.w; BUG(orig) #867, the radius squared a word).
+ * (BGT) and x2 < x, y2 < y (BLT; fixed #879, the original took the sign
+ * of the word differences, BMI) leave a rectangle.  Both square the word
+ * differences x - x1, y - y1 (MULS.w; BUG(orig) #867, the radius squared
+ * a word).
  */
 #define S_(x) BL_STR(x)
 BLITZ_ASM_BLOCK(zonetests,
@@ -606,10 +608,10 @@ BLITZ_ASM_BLOCK(zonetests,
 "   blt.s   0f\n"
 "   cmp.w   d6,d3\n"                        /* y1 > y */
 "   blt.s   0f\n"
-"   cmp.w   d2,d5\n"                        /* x2 - x: BMI, BUG(orig) (#879) */
-"   bmi.s   0f\n"
-"   cmp.w   d3,d7\n"                        /* y2 - y */
-"   bmi.s   0f\n"
+"   cmp.w   d2,d5\n"                        /* x2 < x: BLT, fixed (#879) */
+"   blt.s   0f\n"
+"   cmp.w   d3,d7\n"                        /* y2 < y */
+"   blt.s   0f\n"
 "   rts\n"
 "6: addq.l  #6,a0\n"
 "0: addq.w  #1,d0\n"

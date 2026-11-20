@@ -1773,7 +1773,8 @@ Zone|d0|000 (0,150)|1	$00000003
 Zone|d0|000 (0,199)|1	$00000003
 Zone|d0|000 (0,200)|1	$00000003
 Zone|d0|000 (0,305)|1	$000000FF
-Zone|d0|000 (0,32767)|1	$00000007
+Zone|d0|000 (0,32767)|1 [orig]	$00000007
+Zone|d0|000 (0,32767)|1 [fixed #879]	$FFFFFFFF
 Zone|d0|000 (0,400)|1	$000000FF
 Zone|d0|000 (0,50)|1	$00000003
 Zone|d0|000 (0,9)|1	$00000003
@@ -1792,7 +1793,8 @@ Zone|d0|000 (1,150)|1	$00000003
 Zone|d0|000 (1,199)|1	$00000003
 Zone|d0|000 (1,200)|1	$000000FF
 Zone|d0|000 (1,305)|1	$000000FF
-Zone|d0|000 (1,32767)|1	$00000007
+Zone|d0|000 (1,32767)|1 [orig]	$00000007
+Zone|d0|000 (1,32767)|1 [fixed #879]	$FFFFFFFF
 Zone|d0|000 (1,400)|1	$000000FF
 Zone|d0|000 (1,50)|1	$00000003
 Zone|d0|000 (1,9)|1	$00000003
@@ -1811,7 +1813,8 @@ Zone|d0|000 (10,150)|1	$00000003
 Zone|d0|000 (10,199)|1	$00000003
 Zone|d0|000 (10,200)|1	$000000FF
 Zone|d0|000 (10,305)|1	$000000FF
-Zone|d0|000 (10,32767)|1	$00000007
+Zone|d0|000 (10,32767)|1 [orig]	$00000007
+Zone|d0|000 (10,32767)|1 [fixed #879]	$FFFFFFFF
 Zone|d0|000 (10,400)|1	$000000FF
 Zone|d0|000 (10,50)|1	$00000000
 Zone|d0|000 (10,9)|1	$00000003
@@ -1930,10 +1933,14 @@ Zone|d0|000 (200,400)|1	$000000FF
 Zone|d0|000 (200,50)|1	$00000001
 Zone|d0|000 (200,9)|1	$000000FF
 Zone|d0|000 (200,99)|1	$000000FF
-Zone|d0|000 (305,-1)|1	$FFFFFFFF
-Zone|d0|000 (305,-100)|1	$FFFFFFFF
-Zone|d0|000 (305,-150)|1	$FFFFFFFF
-Zone|d0|000 (305,-32768)|1	$FFFFFFFF
+Zone|d0|000 (305,-1)|1 [orig]	$FFFFFFFF
+Zone|d0|000 (305,-1)|1 [fixed #879]	$00000009
+Zone|d0|000 (305,-100)|1 [orig]	$FFFFFFFF
+Zone|d0|000 (305,-100)|1 [fixed #879]	$00000009
+Zone|d0|000 (305,-150)|1 [orig]	$FFFFFFFF
+Zone|d0|000 (305,-150)|1 [fixed #879]	$00000009
+Zone|d0|000 (305,-32768)|1 [orig]	$FFFFFFFF
+Zone|d0|000 (305,-32768)|1 [fixed #879]	$00000009
 Zone|d0|000 (305,0)|1	$00000009
 Zone|d0|000 (305,1)|1	$00000009
 Zone|d0|000 (305,10)|1	$00000009
@@ -2020,7 +2027,8 @@ Zone|d0|000 (9,150)|1	$00000003
 Zone|d0|000 (9,199)|1	$00000003
 Zone|d0|000 (9,200)|1	$000000FF
 Zone|d0|000 (9,305)|1	$000000FF
-Zone|d0|000 (9,32767)|1	$00000007
+Zone|d0|000 (9,32767)|1 [orig]	$00000007
+Zone|d0|000 (9,32767)|1 [fixed #879]	$FFFFFFFF
 Zone|d0|000 (9,400)|1	$000000FF
 Zone|d0|000 (9,50)|1	$00000003
 Zone|d0|000 (9,9)|1	$00000003
@@ -2134,7 +2142,8 @@ Zone|d0|000 after ZoneInit (0,150)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (0,199)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (0,200)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (0,305)|1	$FFFFFFFF
-Zone|d0|000 after ZoneInit (0,32767)|1	$00000007
+Zone|d0|000 after ZoneInit (0,32767)|1 [orig]	$00000007
+Zone|d0|000 after ZoneInit (0,32767)|1 [fixed #879]	$FFFFFFFF
 Zone|d0|000 after ZoneInit (0,400)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (0,50)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (0,9)|1	$FFFFFFFF
@@ -2153,7 +2162,8 @@ Zone|d0|000 after ZoneInit (1,150)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (1,199)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (1,200)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (1,305)|1	$FFFFFFFF
-Zone|d0|000 after ZoneInit (1,32767)|1	$00000007
+Zone|d0|000 after ZoneInit (1,32767)|1 [orig]	$00000007
+Zone|d0|000 after ZoneInit (1,32767)|1 [fixed #879]	$FFFFFFFF
 Zone|d0|000 after ZoneInit (1,400)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (1,50)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (1,9)|1	$FFFFFFFF
@@ -2172,7 +2182,8 @@ Zone|d0|000 after ZoneInit (10,150)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (10,199)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (10,200)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (10,305)|1	$FFFFFFFF
-Zone|d0|000 after ZoneInit (10,32767)|1	$00000007
+Zone|d0|000 after ZoneInit (10,32767)|1 [orig]	$00000007
+Zone|d0|000 after ZoneInit (10,32767)|1 [fixed #879]	$FFFFFFFF
 Zone|d0|000 after ZoneInit (10,400)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (10,50)|1	$00000000
 Zone|d0|000 after ZoneInit (10,9)|1	$FFFFFFFF
@@ -2291,10 +2302,14 @@ Zone|d0|000 after ZoneInit (200,400)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (200,50)|1	$00000001
 Zone|d0|000 after ZoneInit (200,9)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (200,99)|1	$FFFFFFFF
-Zone|d0|000 after ZoneInit (305,-1)|1	$FFFFFFFF
-Zone|d0|000 after ZoneInit (305,-100)|1	$FFFFFFFF
-Zone|d0|000 after ZoneInit (305,-150)|1	$FFFFFFFF
-Zone|d0|000 after ZoneInit (305,-32768)|1	$FFFFFFFF
+Zone|d0|000 after ZoneInit (305,-1)|1 [orig]	$FFFFFFFF
+Zone|d0|000 after ZoneInit (305,-1)|1 [fixed #879]	$00000009
+Zone|d0|000 after ZoneInit (305,-100)|1 [orig]	$FFFFFFFF
+Zone|d0|000 after ZoneInit (305,-100)|1 [fixed #879]	$00000009
+Zone|d0|000 after ZoneInit (305,-150)|1 [orig]	$FFFFFFFF
+Zone|d0|000 after ZoneInit (305,-150)|1 [fixed #879]	$00000009
+Zone|d0|000 after ZoneInit (305,-32768)|1 [orig]	$FFFFFFFF
+Zone|d0|000 after ZoneInit (305,-32768)|1 [fixed #879]	$00000009
 Zone|d0|000 after ZoneInit (305,0)|1	$00000009
 Zone|d0|000 after ZoneInit (305,1)|1	$00000009
 Zone|d0|000 after ZoneInit (305,10)|1	$00000009
@@ -2381,7 +2396,8 @@ Zone|d0|000 after ZoneInit (9,150)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (9,199)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (9,200)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (9,305)|1	$FFFFFFFF
-Zone|d0|000 after ZoneInit (9,32767)|1	$00000007
+Zone|d0|000 after ZoneInit (9,32767)|1 [orig]	$00000007
+Zone|d0|000 after ZoneInit (9,32767)|1 [fixed #879]	$FFFFFFFF
 Zone|d0|000 after ZoneInit (9,400)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (9,50)|1	$FFFFFFFF
 Zone|d0|000 after ZoneInit (9,9)|1	$FFFFFFFF
