@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+WAIT (30,2C) MASK (FE,FF) [BFD]
+SKIP (D0,5B) MASK (FE,7F)
+rc=0

@@ -236,13 +236,18 @@ d5-d7, a0-a3 and a6 in places.
   debugger's user types the string) (#721; test
   `rilesdebuglib-searchmem-empty-string`; the `libs_emulator` cases
   `[fixed #721]` "empty string": no RawStatus call).
+* `GetCopIns$` shows the high digit of a horizontal position (WAIT, SKIP
+  and their masks) whole: $2C31,$FFFE is "WAIT (30,2C) MASK (FE,FF)
+  [BFD]". The original ANDed both digits with $E, so odd high digits
+  never showed ("(20,2C)", "(EE,FF)"); bit 0 of the low digit is the
+  instruction bit in the first word and the WAIT/SKIP bit in the second,
+  and stays cleared (#711; test `rilesdebuglib-copins-odd-digits`; the
+  `libs_emulator` cases `[fixed #711]`).
 
 ## BUG(orig)
 
 * D_HexWord at an odd source writes "XX YY" per word, without the space
   the even case writes behind each word (#715).
-* GetCopIns$ masks bit 0 of both digits of a horizontal position (WAIT,
-  SKIP and their masks): odd digits never show (#711).
 * FPrint/FPrintDetoke: the column test is `CMPI.b #80` with `BPL`, so
   columns 80-207 stop, 208-255 print (and go on to 0-79); nothing checks
   the bitmap's size; in FPrintDetoke the marker takes a column without

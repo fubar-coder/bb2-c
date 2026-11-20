@@ -46,8 +46,6 @@
  * BUG(orig), kept:
  *   - D_HexWord at an odd source writes "XX YY" per word, without the
  *     space behind it that the even case writes (#715).
- *   - GetCopIns$ clears bit 0 of both nibbles of the horizontal positions
- *     (WAIT/SKIP position and mask), so odd digits never show (#711).
  *   - FPrint and FPrintDetoke: the column check is a byte compare with
  *     80 tested on N (columns 80-207 stop, 208-255 print); nothing checks
  *     the bitmap's size (#707).  FPrint ignores a string of 32769
@@ -119,6 +117,10 @@
  *     mismatch ("ab" was not found in "aab") (#723).
  *   - SearchMem with an empty string finds nothing (0); the original
  *     compared its 0 and the bytes behind it (#721).
+ *   - GetCopIns$ shows the high digit of a horizontal position (WAIT,
+ *     SKIP and their masks) whole; the original cleared its bit 0 too, as
+ *     that of the low digit (the instruction or SKIP bit), so its odd
+ *     values never showed (#711).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1165,13 +1167,14 @@ static void BLITZ_ROUTINE outtextpen_c(struct RastPort *rp BL_REG(d0), UWORD pen
 
 /* ------------------------------------------------- copper and registers */
 
-/* "(XX,YY)" of a WAIT/SKIP word: horizontal digits without bit 0 */
+/* "(XX,YY)" of a WAIT/SKIP word: the low horizontal digit without bit 0
+   (the instruction bit, and SKIP in the mask word) */
 static void coords(UWORD w)
 {
     UBYTE h = (UBYTE)w, v = (UBYTE)(w >> 8);
 
     *blitz_string++ = '(';
-    *blitz_string++ = hexdigits[(h >> 4) & 0xe];
+    *blitz_string++ = hexdigits[h >> 4];               /* fixed (#711) */
     *blitz_string++ = hexdigits[h & 0xe];
     *blitz_string++ = ',';
     *blitz_string++ = hexdigits[v >> 4];
@@ -1189,8 +1192,9 @@ static void outs(const char *s)
  * @brief GetCopIns$(copdata): a copper instruction as text.
  *
  * "MOVE vvvv to NAME    " (the register's 8 character name) or
- * "WAIT|SKIP (xx,yy) MASK (xx,yy)[ [BFD]]"; the horizontal digits lose
- * bit 0 of both nibbles, so odd digits never show (BUG(orig) (#711)).
+ * "WAIT|SKIP (xx,yy) MASK (xx,yy)[ [BFD]]"; the low horizontal digit
+ * without bit 0, the instruction bit (fixed #711: the original cleared
+ * bit 0 of the high digit too, its odd values never showed).
  * Written at a3, no 0.
  * @param ins  d0: the instruction (two words)
  * @return d0: the length (21, 25 or 31)

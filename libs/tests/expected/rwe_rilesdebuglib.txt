@@ -3512,13 +3512,19 @@ GetCopIns$|out|$0100,$5200|1	bytes 800 fnv 8DF16044
 GetCopIns$|out|$0106,$0C40|1	bytes 800 fnv 7E649867
 GetCopIns$|out|$0180,$0FFF|1	bytes 800 fnv 1706083A
 GetCopIns$|out|$01FE,$0000|1	bytes 800 fnv C503E027
-GetCopIns$|out|$1F3F,$8000|1	bytes 800 fnv CE24E4A2
+GetCopIns$|out|$1F3F,$8000|1 [orig]	bytes 800 fnv CE24E4A2
+GetCopIns$|out|$1F3F,$8000|1 [fixed #711]	bytes 800 fnv 1F4FE1EB
 GetCopIns$|out|$2C01,$FF00|1	bytes 800 fnv DC965363
-GetCopIns$|out|$2C01,$FFFE|1	bytes 800 fnv 5ED99F7D
-GetCopIns$|out|$5BD1,$7FFE|1	bytes 800 fnv 5CE3F989
-GetCopIns$|out|$AB35,$4DEE|1	bytes 800 fnv C10CC31D
-GetCopIns$|out|$AB35,$CDEF|1	bytes 800 fnv 7C0DA326
-GetCopIns$|out|$FFDF,$FFFE|1	bytes 800 fnv 7C432910
+GetCopIns$|out|$2C01,$FFFE|1 [orig]	bytes 800 fnv 5ED99F7D
+GetCopIns$|out|$2C01,$FFFE|1 [fixed #711]	bytes 800 fnv 0A97B8E0
+GetCopIns$|out|$5BD1,$7FFE|1 [orig]	bytes 800 fnv 5CE3F989
+GetCopIns$|out|$5BD1,$7FFE|1 [fixed #711]	bytes 800 fnv 6F1BC123
+GetCopIns$|out|$AB35,$4DEE|1 [orig]	bytes 800 fnv C10CC31D
+GetCopIns$|out|$AB35,$4DEE|1 [fixed #711]	bytes 800 fnv 4C868F6C
+GetCopIns$|out|$AB35,$CDEF|1 [orig]	bytes 800 fnv 7C0DA326
+GetCopIns$|out|$AB35,$CDEF|1 [fixed #711]	bytes 800 fnv A59EA2DF
+GetCopIns$|out|$FFDF,$FFFE|1 [orig]	bytes 800 fnv 7C432910
+GetCopIns$|out|$FFDF,$FFFE|1 [fixed #711]	bytes 800 fnv F0E4A7BA
 GetCopIns$|popped|$0001,$8001|1	$00000000
 GetCopIns$|popped|$003E,$1234|1	$00000000
 GetCopIns$|popped|$00E0,$0007|1	$00000000
