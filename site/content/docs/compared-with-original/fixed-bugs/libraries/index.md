@@ -4693,621 +4693,166 @@ Directories and devices:
   handler; the original read from near address 0 and returned nonsense
   ([#494](https://github.com/fubar-coder/bb2-c/issues/494)).
 
-### Fixes in rimisclib {#rimisclib-fixes}
+### Fixes in rianimlib {#rianimlib-fixes}
 
 These fixes concern
-[rimisclib]({{< relref "/docs/libraries/userlibs/rimisclib" >}}), the
-miscellaneous commands of Reflective Images and Steve Matty; the fixes
-of [`NextArg$`](#nextarg-doubled-quote) and of
-[the text that follows a string function](#rwe-text-after-string-function)
-are described above.
+[rianimlib]({{< relref "/docs/libraries/userlibs/rianimlib" >}}), the
+library by Reflective Images that plays IFF animations (ANIM files) of
+the delta formats ANIM5 and ANIM7 from memory into bitmaps.
+`RIAnimInit` unpacks the first frame and starts the animation, and each
+`RINextAnimFrame` draws the next frame. The fix of
+[data that is not a `FORM ANIM`](#rwe-other-fixes) is listed under
+Other fixes.
 
-* `WorkbenchHere` works: it returns -1 if the title of an open screen
-  contains "Workbench", and 0 if none does. The original searched a list
-  of screens at whatever address a register of the processor held
-  ([#759](https://github.com/fubar-coder/bb2-c/issues/759)), did not stop
-  at the end of the list, so it never returned 0 and could hang
-  ([#761](https://github.com/fubar-coder/bb2-c/issues/761)), hung on a
-  title that ends with the start of "Workbench", such as "My Work"
-  ([#762](https://github.com/fubar-coder/bb2-c/issues/762)), and missed
-  "Workbench" behind another "W", as in "A Window on Workbench"
-  ([#760](https://github.com/fubar-coder/bb2-c/issues/760)).
-* Negative Quick and Float arguments of `EZRequest` and `EZRequestArgs`
-  show their whole part, -3.5 as -3, as `Int` gives it; the original
-  showed -3.5 as 65532
-  ([#750](https://github.com/fubar-coder/bb2-c/issues/750)).
-* Float arguments of `EZRequest` and `EZRequestArgs` are converted by
-  the library itself; the original called the conversion of the maths
-  library through whatever library base the program happened to hold, so
-  the value shown depended on what the program had done before
-  ([#749](https://github.com/fubar-coder/bb2-c/issues/749)).
-* `EZRequestArgs` with a shorter text than the call before shows only
-  its own; the original kept the end of the text before behind it
-  ([#747](https://github.com/fubar-coder/bb2-c/issues/747)).
-* With runtime error checking, `EZRequest` and `EZRequestArgs` with more
-  arguments than fit into their 16 longs stop with the error "Too Many
-  EZRequest Arguments"; the original wrote the rest over the code of the
-  library
-  ([`EZRequest` and `EZRequestArgs` with too many arguments]({{< relref "/docs/compared-with-original/new-errors#ezrequest-too-many-arguments" >}}),
-  [#748](https://github.com/fubar-coder/bb2-c/issues/748)).
-* `Flip$` of an empty string or of one character returns it unchanged;
-  the original exchanged 65536 pairs of bytes around the string and
-  overwrote memory
-  ([#751](https://github.com/fubar-coder/bb2-c/issues/751)).
-* `InitArgParse` copies at most 255 characters and cuts off the rest;
-  the original copied a line of any length into its 256 byte buffer and
-  overwrote the code of the library behind it
-  ([#752](https://github.com/fubar-coder/bb2-c/issues/752)).
-* `NextArgChar$` before `InitArgParse`, or after the end of the text,
-  returns "", as `NextArg$` does; the original read from memory address
-  0 on ([#754](https://github.com/fubar-coder/bb2-c/issues/754)).
-* `ProgPath$` of a program whose directory has no name that can be found
-  is the program's name alone; the original put a "/" in front of it
-  ([#758](https://github.com/fubar-coder/bb2-c/issues/758)).
-* `OpenFontPrefs` returns 0 when there is not enough memory for the
-  file; the original read the file to address 0, over the first bytes of
-  memory that the processor and the system need
-  ([#756](https://github.com/fubar-coder/bb2-c/issues/756)).
-* A second `OpenFontPrefs` frees the memory of the first; the original
-  lost 16 KB each time until the next reboot
-  ([#757](https://github.com/fubar-coder/bb2-c/issues/757)).
-* `DefaultFontHeight` and `DefaultFontName` look only at the font
-  entries of the preferences file, and return 0 or "" for a font type the
-  file does not set; the original also searched the memory behind the
-  file and could return a value from leftover data there
-  ([#745](https://github.com/fubar-coder/bb2-c/issues/745)).
-* `ASCRaw` of a code outside 0 to 113, such as the code of a key being
-  released, gives the character 0, and `RawASC` of a character that no
-  key types, or of "", gives -1. The original read the bytes before or
-  behind its table of keys and gave a meaningless character, and `RawASC` searched
-  on through memory until it found the character, or for ever
-  ([#744](https://github.com/fubar-coder/bb2-c/issues/744)).
+* `RIAnimInit` takes the bitmap header (BMHD) from the first frame only
+  and fails when that frame has none. The original searched the whole
+  animation and could take a header from a later part
+  ([#511](https://github.com/fubar-coder/bb2-c/issues/511)).
+* A failed `RIAnimInit` leaves no animation: `RIAnimFrameCount` and
+  `RINextAnimFrame` return 0. The original went on playing the
+  animation started before
+  ([#512](https://github.com/fubar-coder/bb2-c/issues/512)).
+* `RIAnimInit` returns 0 when the bitmap cannot hold the first frame,
+  because it is too narrow or not deep enough. The original reported
+  success and played the frames into that bitmap
+  ([#1106](https://github.com/fubar-coder/bb2-c/issues/1106)).
+* `RIAnimInit` refuses an animation whose header gives a depth of 0 or
+  more than 8 bitplanes. The original wrote through plane pointers from
+  behind the bitmap's
+  ([#509](https://github.com/fubar-coder/bb2-c/issues/509)).
+* With runtime error checking, `RIAnimInit` with a position `x`,`y`
+  outside the bitmap stops with the runtime error "Animation position
+  outside the bitmap". The original drew the frames far outside the
+  bitmap, as the port does without error checking
+  ([#514](https://github.com/fubar-coder/bb2-c/issues/514)).
+* `RIAnimFrameCount` counts only the frames. The original counted every
+  chunk of the animation, an annotation as well
+  ([#510](https://github.com/fubar-coder/bb2-c/issues/510)).
+* The library finds the bitmap header, the frames, their colours and
+  their delta data behind a chunk of odd length, such as an annotation
+  (ANNO); it skips the pad byte that the IFF standard puts there. The
+  original read one byte off and missed them
+  ([#505](https://github.com/fubar-coder/bb2-c/issues/505)).
+* A corrupt chunk length ends the walk through the animation instead of
+  sending it into memory that is not there; `RIAnimInit` could hang on
+  it in the original
+  ([#506](https://github.com/fubar-coder/bb2-c/issues/506)).
+* `RIAnimInit` returns 0 for an animation written without pad bytes, in
+  which a chunk behind one of odd length starts at an odd address, and
+  `RIAnimDepth`, `RIAnimWidth` and `RIAnimHeight` return 0 when this
+  happens before the bitmap header. On a 68000 the original crashed with
+  a Software Failure on such a file; a 68020 or later read it
+  ([#1119](https://github.com/fubar-coder/bb2-c/issues/1119)).
+* `RINextAnimFrame` plays a frame that has another chunk, such as a
+  DPAN, before its delta data, and returns 0 for a frame without delta
+  data. The original crashed there
+  ([#515](https://github.com/fubar-coder/bb2-c/issues/515)).
+* `RINextAnimFrame` plays ANIM7 animations stored with short (word)
+  data. The original decoded every ANIM7 as long data and drew garbage
+  ([#504](https://github.com/fubar-coder/bb2-c/issues/504)).
+* `RINextAnimFrame` decodes the last column of ANIM5 animations whose
+  width is no multiple of 16 pixels. The original left the right edge
+  of such frames as it was, and for an animation narrower than 8 pixels
+  wrote far beyond the bitmap
+  ([#507](https://github.com/fubar-coder/bb2-c/issues/507)).
+* `RINextAnimFrame` plays on past a chunk between two frames, such as
+  an annotation. The original took it for the end of the animation and
+  stopped there or started again
+  ([#1116](https://github.com/fubar-coder/bb2-c/issues/1116)).
+* `RINextAnimFrame` refuses a frame whose header or colour chunk claims
+  to be longer than the frame, and returns 0. The original read the
+  next chunk from wherever that length pointed in memory
+  ([#1117](https://github.com/fubar-coder/bb2-c/issues/1117)).
+* `RINextAnimFrame` refuses a frame whose delta data gives a plane's
+  data outside the delta chunk, and returns 0 without drawing. The
+  original read the delta data of that plane from anywhere in memory
+  and wrote it into the bitmap. The runs and copies inside a plane's
+  columns are still not checked, so that playing stays as fast as in
+  the original
+  ([#1120](https://github.com/fubar-coder/bb2-c/issues/1120)).
+* `RINextAnimFrame` refuses an ANIM7 frame whose delta data puts the
+  data of a plane at an odd offset in the delta chunk, and returns 0
+  without drawing. On a 68000 the original crashed with a Software
+  Failure on such a frame; the port refuses it on every processor
+  ([#1121](https://github.com/fubar-coder/bb2-c/issues/1121)).
+* With runtime error checking, `RINextAnimFrame` stops with the runtime
+  error "Animation position on an odd byte for ANIM7" before an ANIM7
+  frame when the position given to `RIAnimInit` puts the frame at an odd
+  byte: an `x` of 8 to 15, 24 to 31 and so on, or an odd byte offset.
+  On a 68000 the original crashed with a Software Failure there. ANIM5
+  frames play at any position, and without error checking the port
+  plays as the original
+  ([#1122](https://github.com/fubar-coder/bb2-c/issues/1122)).
+* A program run a second time from the editor starts with no animation
+  and with `AnimLoop` on. The original's `RIAnimFrameCount` and
+  `RINextAnimFrame` worked on the animation of the run before, which may
+  have been freed, and an `AnimLoop Off` stayed off
+  ([#1107](https://github.com/fubar-coder/bb2-c/issues/1107)).
 
-### Fixes in ritooltypeslib {#ritooltypeslib-fixes}
-
-These fixes concern
-[ritooltypeslib]({{< relref "/docs/libraries/userlibs/ritooltypeslib" >}}),
-the icon commands of Reflective Images; the fixes of
-[`PutIconObject`](#puticonobject-result) and
-[`SetToolValue`](#settoolvalue-prefix) are described above.
-
-* An icon can have any number of tool types: `GetIconObject` and
-  `NewToolType` make room for them, and return 0 when there is no memory
-  for it. The original had room for 100 entries, and an icon with more
-  tool types, or a 100th `NewToolType`, wrote behind the list
-  ([#855](https://github.com/fubar-coder/bb2-c/issues/855)).
-* `PutIconObject` frees the memory of the icon it has written, as
-  `FreeIconObject` does; the original kept it until the next reboot
-  ([#850](https://github.com/fubar-coder/bb2-c/issues/850)).
-* `FindToolType tooltype$` with one argument never finds a switched-off
-  `(tooltype$)`; the original also found it, and returned 1, after an
-  earlier `FindToolType` with `bracket_check` had ended before its
-  search for the brackets
-  ([#843](https://github.com/fubar-coder/bb2-c/issues/843)).
-* `FindToolType` with `bracket_check` takes a name of any length; the
-  original wrote a name of more than 253 characters behind its buffer
-  ([#842](https://github.com/fubar-coder/bb2-c/issues/842)).
-* `FindToolValue` returns the whole value, also when it holds a `)`; the
-  original cut it at the first `)`, so `PAREN=a)b` gave `a`
-  ([#844](https://github.com/fubar-coder/bb2-c/issues/844)).
-* `SetToolValue` and `NewToolType` with an empty name make the tool type
-  `=value`; the original copied the bytes behind the name into it, and
-  the tool type read back as empty
-  ([#841](https://github.com/fubar-coder/bb2-c/issues/841)).
-* `SetToolValue`, `NewToolType` and `IconDefTool` free their new string
-  and return 0 when the icon's list of memory to free cannot take it; the
-  original freed memory at address 0 instead and lost the string
-  ([#840](https://github.com/fubar-coder/bb2-c/issues/840)).
-* `SetIconType` without a loaded icon returns 0; the original returned
-  its argument, which a program took for success
-  ([#852](https://github.com/fubar-coder/bb2-c/issues/852)).
-* `IconToShape` copies only the data the shape has room for; with an
-  image whose width is a multiple of 16, the original copied one word
-  per line too many and wrote behind the shape's data
-  ([#847](https://github.com/fubar-coder/bb2-c/issues/847)).
-* `ShapeToIcon` with two shapes makes the selected image show all
-  bitplanes of the shape; the original set it up to show none of them
-  ([#854](https://github.com/fubar-coder/bb2-c/issues/854)).
-* `ShapeToIcon` makes the icon's image show the bitplanes of the shape;
-  the original kept those of the icon's old image, so a shape of another
-  depth was drawn with planes it does not have, read from the memory
-  behind it, or without some of its planes
-  ([#1083](https://github.com/fubar-coder/bb2-c/issues/1083)).
-
-### Fixes in ridoslib {#ridoslib-fixes}
+### Fixes in riapplib {#riapplib-fixes}
 
 These fixes concern
-[ridoslib]({{< relref "/docs/libraries/userlibs/ridoslib" >}}), the DOS
-helpers of Red When Excited: file notification, the list of devices,
-volumes and assigns, and splitting a path; the fix of
-[the text that follows `GetPathName` and `NextDevice`](#rwe-text-after-string-function)
-is described above.
+[riapplib]({{< relref "/docs/libraries/userlibs/riapplib" >}}), the App
+windows, App icons and App menu items of Workbench by Reflective
+Images. Each of them sends the program a message when the user drops
+files on it or chooses it; `AppEvent` fetches the message, and
+`NextAppFile`, `AppFile` and `AppLock` tell which files it holds. The
+fixes of [the result of `AddAppMenu`](#addappmenu-result), of
+[the result of `AppEventID`](#appeventid-no-event), of
+[the text that follows `NextAppFile` and `AppFile`](#rwe-text-after-string-function)
+and of [the local variables after `AddAppIcon`](#rwe-other-fixes) are
+described elsewhere on this page.
 
-File notification:
-
-* `AddNotify` with a slot that is in use ends the notification in it
-  first, as `RemNotify` does; the original lost it, so its messages kept
-  coming and it could no longer be ended
-  ([#620](https://github.com/fubar-coder/bb2-c/issues/620)).
-* `AddNotify` returns 0 when there is not enough memory; the original
-  wrote the file name or the request to address 0
-  ([#619](https://github.com/fubar-coder/bb2-c/issues/619)).
-* A notification that DOS cannot start is freed at once, and the end of
-  the program frees every notification; the original kept such a request
-  in its slot, and at the end of the program could stop freeing before
-  it ([#621](https://github.com/fubar-coder/bb2-c/issues/621)).
-* With runtime error checking, `AddNotify` and `RemNotify` with a slot
-  outside 0 to 63 stop with the error "Notify number must be 0 to 63";
-  the original wrote, ended and freed the library's data around its
-  table of slots
-  ([A notification slot outside 0 to 63]({{< relref "/docs/compared-with-original/new-errors#notify-slot-range" >}}),
-  [#626](https://github.com/fubar-coder/bb2-c/issues/626)).
-
-The device list:
-
-* The end of the program unlocks the device list if `FreeDeviceList` was
-  not called, and a second `GetDeviceList` unlocks the list before it
-  locks it again. The original left the list locked in both cases, and
-  every program that wanted to change it, such as `Assign`, a disk
-  change or mounting a device, waited for ever
-  ([#1081](https://github.com/fubar-coder/bb2-c/issues/1081)).
-* `FreeDeviceList` without a locked list does nothing; the original
-  unlocked it all the same, which made the system raise an alert and
-  left the program's later `Forbid` calls without effect
-  ([#623](https://github.com/fubar-coder/bb2-c/issues/623)).
-* `NextDevice` without a locked list returns ""; the original returned a
-  string of an unpredictable length
-  ([#625](https://github.com/fubar-coder/bb2-c/issues/625)).
-* `DeviceEntryType` after `FreeDeviceList` returns the kind of the entry
-  `NextDevice` returned last; the original read that entry from the
-  unlocked list, where it could already have been removed
-  ([#622](https://github.com/fubar-coder/bb2-c/issues/622)).
-
-Splitting a path:
-
-* `GetPathName` looks at the first character too, so `GetPathName("/abc")`
-  and `GetPathName(":x")` return "/" and ":"; the original returned ""
-  ([#624](https://github.com/fubar-coder/bb2-c/issues/624)).
-* `GetFileName` and `GetPathName` take parts of any length; the original
-  overwrote the code of the library with a part of 256 characters or
-  more ([#627](https://github.com/fubar-coder/bb2-c/issues/627)).
-* `GetFileName` and `GetPathName` work with paths of 65536 characters or
-  more; the original read only the low 16 bits of their length, so it
-  returned wrong characters and `GetPathName` looked at only part of
-  the path ([#628](https://github.com/fubar-coder/bb2-c/issues/628)).
-
-### Fixes in rievallib {#rievallib-fixes}
-
-These fixes concern
-[rievallib]({{< relref "/docs/libraries/userlibs/rievallib" >}}), the
-evaluation of integer expressions in strings by Reflective Images.
-`ConvToPostFix` converts an expression such as `2+6*3` into postfix
-form, `2 6 3 * +`, and `PFEvaluate` evaluates that form.
-
-Converting an expression:
-
-* `ConvToPostFix` looks past spaces in front of a `-`: after an
-  operator, after `(` or at the start, as in `4* -2` or ` -5`, the `-`
-  is a sign. The original looked only at the character just before it
-  and took the `-` after a space for a subtraction without a first
-  value, so `PFEvaluate` failed with error 1
-  ([#633](https://github.com/fubar-coder/bb2-c/issues/633)).
-* `ConvToPostFix` keeps a character that cannot belong to an operand,
-  so `PFEvaluate` reports it as error 4. The original dropped it
-  without an error and split the operand: `1,2` became the two values
-  `1 2`, and `12x+3` gave 15
-  ([#632](https://github.com/fubar-coder/bb2-c/issues/632)).
-* An expression that ends in `.` ends there; the original went on
-  converting the memory behind the string
-  ([#631](https://github.com/fubar-coder/bb2-c/issues/631)).
-
-Numbers and operators:
-
-* `PFEvaluate` checks the digits of a number: a character that is no
-  digit of its base is error 4. The original took every character for
-  a digit, so `12x` gave 192, `%2` 2 and `$g` 16
-  ([#634](https://github.com/fubar-coder/bb2-c/issues/634)).
-* Negative hexadecimal and binary numbers have their value: `-$10` is
-  -16 and `-%1` is -1. The original read `$` and `%` after a `-` as
-  decimal digits and gave -24410 and -2451
-  ([#643](https://github.com/fubar-coder/bb2-c/issues/643)).
-* `<` is "less than" with sign, as documented and like `>`. The
-  original's `<` meant "less than or equal" without sign, so `2 2 <`
-  was true and `-1 1 <` false
-  ([#638](https://github.com/fubar-coder/bb2-c/issues/638)).
-* `*` gives the low 32 bits of a product that does not fit into a
-  long; the original also got the low word wrong, so
-  `1000000 1000000 *` gave -727379962 instead of -727379968
-  ([#639](https://github.com/fubar-coder/bb2-c/issues/639)).
-* `^` is the integer power: `3^0` is 1, `0^5` is 0, `2^-1` is 0, and
-  exponents of any size count. The original returned the base for the
-  exponents 0 and below, 1 for the base 0, and counted only the low 16
-  bits of the exponent, so `3^65538` gave 9. 0 with a negative
-  exponent is error 3 "Divide by 0 error!"
-  ([#641](https://github.com/fubar-coder/bb2-c/issues/641)).
-* `PFEvaluate` works with any number of values pending; from 128
-  values on, the original failed every operator with error 1 "Need 2
-  arguments for expression!"
-  ([#645](https://github.com/fubar-coder/bb2-c/issues/645)).
-
-Registers and memory:
-
-* `PFEvaluate` accepts only `d0` to `d7`, `a0` to `a7` and `pc` as
-  registers, and any other name is error 4. The original took the
-  character after `a` or `d` as the number of the register without a
-  check, so `d9` or `dx` read other values of the register block, a
-  `d` at the end read on behind the string, and `d01` was `d0` and the
-  number 1 ([#642](https://github.com/fubar-coder/bb2-c/issues/642)).
-* A register inside `{}`, such as `{d0}`, reads the memory at the
-  register's value; the original mostly failed with error 5 "No close
-  bracket on indirect!"
-  ([#637](https://github.com/fubar-coder/bb2-c/issues/637)).
-* `{address}.b` and `{address}.w` read only the byte or the word, also
-  at an odd address on a 68000; the original always read a long, which
-  crashed a 68000 at an odd address
-  ([#636](https://github.com/fubar-coder/bb2-c/issues/636)).
-* A program run a second time from the editor starts without the
-  register block, the error number and the indirect address of the
-  first run. The original kept all three, so the registers were read
-  from memory freed at the end of the first run
-  ([#1087](https://github.com/fubar-coder/bb2-c/issues/1087)).
-
-Results and errors:
-
-* An expression that leaves more than one value, such as `1 2` or
-  `1 2 + 3`, is error 4 "No result value!"; the original returned the
-  last value without an error
-  ([#635](https://github.com/fubar-coder/bb2-c/issues/635)).
-* `PFEvaluate` of a string of spaces returns 0 with error 4; the
-  original returned an address in the program
-  ([#644](https://github.com/fubar-coder/bb2-c/issues/644)).
-* `PFErrorText` after a `PFEvaluate` without an error returns ""; the
-  original could return a string of 64 KB or more, depending on what a
-  register held before the call
-  ([#640](https://github.com/fubar-coder/bb2-c/issues/640)).
-
-### Fixes in rilinkedlistlib {#rilinkedlistlib-fixes}
-
-These fixes concern
-[rilinkedlistlib]({{< relref "/docs/libraries/userlibs/rilinkedlistlib" >}}),
-the five linked lists of copied variables by Steven Matty. Each item of
-a list links to the item before and the item after it, and can hold a
-copy of a variable.
-
-The links of a list:
-
-* `AddFirstListItem` links the old first item back to the new one. The
-  original wrote the new item into the old first item's link to the
-  next one, so that item lost the rest of the list, and `NextListItem`
-  from the first item went back and forth between the two
-  ([#724](https://github.com/fubar-coder/bb2-c/issues/724)).
-* `AddListItem` in the middle of a list links the item behind the new
-  one back to it; the original left that link on the old current item,
-  so `PrevListItem` from there skipped the new item
-  ([#727](https://github.com/fubar-coder/bb2-c/issues/727)).
-* `DelListItem` of the first item clears the backward link of the new
-  first item; the original cleared its forward link instead, so the list
-  ended at the new first item
-  ([#728](https://github.com/fubar-coder/bb2-c/issues/728)).
-
-New items and results:
-
-* `AddFirstListItem` returns -1 on success, as documented; the original
-  returned four times the list number, so 0, the result for a failure,
-  on list 0 ([#725](https://github.com/fubar-coder/bb2-c/issues/725)).
-* `AddFirstListItem` clears the new item; the original left whatever
-  the memory held in it, so the item seemed to hold a copy, and
-  `PrevListItem`, `GetListItem` and `DelListItem` used meaningless
-  addresses ([#726](https://github.com/fubar-coder/bb2-c/issues/726)).
-* On a list that was never started with `InitList`, the commands do
-  nothing and return 0, as documented. Only `DelListItem` checked this
-  in the original: the others read and wrote memory from address 0 on,
-  and `FirstListItem` and `LastListItem` returned -1
-  ([#733](https://github.com/fubar-coder/bb2-c/issues/733)).
-* With runtime error checking, a list number outside 0 to 4 stops with
-  the error "List number must be 0 to 4"; the original wrote into the
-  other lists and the memory behind them
-  ([A list number outside 0 to 4]({{< relref "/docs/compared-with-original/new-errors#linked-list-number-range" >}}),
-  [#732](https://github.com/fubar-coder/bb2-c/issues/732)).
-
-The copies of the items:
-
-* `DelListItem` frees the item with its copy. The original read the
-  copy's address from the wrong place and freed a wrong address: the
-  program stopped with "Unable to Free Memory", or crashed without
-  runtime error checking
-  ([#729](https://github.com/fubar-coder/bb2-c/issues/729)).
-* `SetListItem` frees the copy the item held before; the original lost
-  it until the program ended
-  ([#734](https://github.com/fubar-coder/bb2-c/issues/734)).
-* `InitList` on a list that is already there frees it first, with the
-  copies of its items; the original lost the old list until the program
-  ended ([#731](https://github.com/fubar-coder/bb2-c/issues/731)).
-* `GetListItem` copies no more bytes than the item's copy has, and the
-  rest of a larger variable stays as it is; the original filled it with
-  the bytes behind the copy
-  ([#730](https://github.com/fubar-coder/bb2-c/issues/730)).
-* The size an item keeps of its copy is right after `AddListItem`,
-  `AddLastListItem` and `SetListItem`; the original stored the size of
-  the last variable any command had looked at, or kept the old size
-  ([#735](https://github.com/fubar-coder/bb2-c/issues/735)).
-
-### Fixes in risortlib {#risortlib-fixes}
-
-These fixes concern
-[risortlib]({{< relref "/docs/libraries/userlibs/risortlib" >}}), the
-sorting of linked lists by a string field of their items by Reflective
-Images.
-
-* `StringSort` and `StringSortItem` with `SortPriorityOffset` sort the
-  list by priority. After the original had exchanged two items because
-  of their priority, it compared the following items with the wrong
-  string and the old priority, so the list came out unsorted
-  ([#826](https://github.com/fubar-coder/bb2-c/issues/826)).
-* `StringSort` and `StringSortItem` with a `sizeof.type` of 0 exchange
-  nothing and return 0; the original exchanged 65536 bytes per exchange
-  and overwrote the items behind and the memory behind the list
-  ([#827](https://github.com/fubar-coder/bb2-c/issues/827)).
-* Without `SortPriorityOffset`, the sorts no longer read a priority
-  from an odd address, which stopped a plain 68000 with an address
-  error ([#825](https://github.com/fubar-coder/bb2-c/issues/825)).
-* A program with risortlib no longer crashes at its end on Kickstart
-  1.x, which has no utility.library; the original closed the library
-  without checking that it had opened it
-  ([#824](https://github.com/fubar-coder/bb2-c/issues/824)).
-
-### Fixes in riencryptlib {#riencryptlib-fixes}
-
-These fixes concern
-[riencryptlib]({{< relref "/docs/libraries/userlibs/riencryptlib" >}}),
-the three-wheel cipher by Reflective Images.
-
-* `Decrypt` with `mode` 1 restores the data for every start position
-  and length. It works out where the wheels stopped from the length,
-  and the original did so without the carry from one wheel to the next:
-  for many start positions and lengths, a wheel came out one step off,
-  and the data stayed scrambled
-  ([#629](https://github.com/fubar-coder/bb2-c/issues/629)).
-* `Encrypt` and `Decrypt` with a length of 0 change nothing; the
-  original changed one byte, `Encrypt` the one at the address and
-  `Decrypt` the one in front of it
-  ([#630](https://github.com/fubar-coder/bb2-c/issues/630)).
-
-### Fixes in riarrayslib {#riarrayslib-fixes}
-
-This fix concerns
-[riarrayslib]({{< relref "/docs/libraries/userlibs/riarrayslib" >}}),
-the command `FillArray` by Reflective Images.
-
-* `FillArray` on an array without elements, whose size is 0, writes
-  nothing. The original stored a value first and compared with the end
-  of the array only afterwards, so it missed the end and wrote on
-  through all memory. The command, which is copied into the program at
-  each place it is used, is 4 bytes longer
-  ([#882](https://github.com/fubar-coder/bb2-c/issues/882)).
-
-### Fixes in rithreadlib {#rithreadlib-fixes}
-
-These fixes concern
-[rithreadlib]({{< relref "/docs/libraries/userlibs/rithreadlib" >}}),
-the threads of Reflective Images: parts of a program that run as DOS
-processes of their own.
-
-* Two `CreateThread` in a row start each thread with its own code,
-  registers and memory. The original handed them over in single
-  variables, which a thread read only when it began to run, so a second
-  `CreateThread` before that gave both threads the second one's code
-  and memory ([#838](https://github.com/fubar-coder/bb2-c/issues/838)).
-* At its end, the program waits until no thread runs any more. The
-  original waited only once: after all threads had ended once and new
-  ones were started, it could end while they still ran in its freed
-  code ([#837](https://github.com/fubar-coder/bb2-c/issues/837)).
-* `CreateThread` does not count a thread that could not be started for
-  lack of memory, so `ActiveThreads` stays right; with the original, the
-  program could hang at its end, waiting for that thread
-  ([#1086](https://github.com/fubar-coder/bb2-c/issues/1086)).
-* The end of the program frees the signal the library takes at its
-  start. The original kept it, so after 15 runs from the editor, or
-  from the same shell, `CreateThread` did nothing
-  ([#839](https://github.com/fubar-coder/bb2-c/issues/839)).
-
-### Fixes in riregistrylib {#riregistrylib-fixes}
-
-These fixes concern
-[riregistrylib]({{< relref "/docs/libraries/userlibs/riregistrylib" >}}),
-the interface of Red When Excited to registry.library, a settings
-database that is not available any more; the fix of
-[the text that follows its string functions](#rwe-text-after-string-function)
-is described above. `LockRegistry` locks a registry structure and makes
-it the current one, on which the other commands work; locks can be
-nested, and `UnlockRegistry` returns to the one before.
-
-* `UnlockRegistry` without a lock does nothing, and a 16th nested
-  `LockRegistry` returns 0. The original had no limit in either
-  direction: `UnlockRegistry` read and wrote below its list of locks,
-  and a 16th lock was written over the library's own data. As
-  registry.library cannot be found, `LockRegistry` locks nothing, so in
-  the original every `LockRegistry` and `UnlockRegistry` pair went one
-  entry lower, and the program crashed after a few of them
-  ([#781](https://github.com/fubar-coder/bb2-c/issues/781)).
-* `GetLibraryValue$` and `GetRegistryStringVariable` without a locked
-  structure return ""; the original read the type and the value near
-  address 0, which it did for every call without registry.library
-  ([#780](https://github.com/fubar-coder/bb2-c/issues/780)).
-* A program run again from the editor no longer works on the structure
-  the run before had unlocked at its end
-  ([#779](https://github.com/fubar-coder/bb2-c/issues/779)).
-* `SetRegistryVariable name,value$` passes the length of the string as
-  the size, `SetRegistryIntVariable` and `SetRegistryBoolVariable`
-  pass 4; the original passed whatever value the program had left in a
-  register ([#782](https://github.com/fubar-coder/bb2-c/issues/782)).
-
-### Fixes in rinonvolatilelib {#rinonvolatilelib-fixes}
-
-These fixes concern
-[rinonvolatilelib]({{< relref "/docs/libraries/userlibs/rinonvolatilelib" >}}),
-the access to the system's nonvolatile.library by Reflective Images; the
-fix of [the result of `StoreNVData`](#storenvdata-result) is described
-above.
-
-* `StoreNVData` stores an item of 655360 bytes or more with its whole
-  length; the original passed a wrong, much smaller length to the
-  system, and 655365 bytes were stored as 60 bytes without an error
-  ([#764](https://github.com/fubar-coder/bb2-c/issues/764)).
-
-### Fixes in rigtmenulib {#rigtmenulib-fixes}
-
-These fixes concern
-[rigtmenulib]({{< relref "/docs/libraries/userlibs/rigtmenulib" >}}),
-the GadTools menus by Reflective Images. A program builds its menus in
-a list with `GTMenuTitle`, `GTMenuItem` and `GTSubItem`, removes entries
-with `GTFreeMenu`, and `CreateMenuStrip` makes a menu strip of the list.
-
-* `GTMenuItem` in the form with `UserData` gives the item the
-  `mutualexclude` mask of the call; the original gave it the mask of the
-  item or sub item added before
-  ([#692](https://github.com/fubar-coder/bb2-c/issues/692)).
-* `GTFreeMenu` with an item or sub item number removes that item or sub
-  item. The original decided whether the number was given by the upper
-  half of a register that the compiled program had left as it happened
-  to be, so it could remove the whole item or the whole title instead
-  ([#691](https://github.com/fubar-coder/bb2-c/issues/691)).
-* `GTFreeMenu` of a title, and freeing a `GTMenuList` object, free the
-  title's text too; the original kept the text until the end of the
-  program, so a program that built its menus again and again lost
-  memory ([#695](https://github.com/fubar-coder/bb2-c/issues/695)).
-* A program that uses the library closes gadtools.library at its end;
-  the original left it open, once more with every run
-  ([#690](https://github.com/fubar-coder/bb2-c/issues/690)).
-* `CreateMenuStrip` on a list without titles frees the object's old
-  strip and returns 0, so a later `GTSetMenu` attaches no menus. It also
-  returns 0, with no strip, when GadTools cannot make or lay out the
-  strip. The original read a title from address 0, made a strip of what
-  it found there and returned -1, also when GadTools had failed
-  ([#689](https://github.com/fubar-coder/bb2-c/issues/689)).
-* `GTMenuItem` and `GTSubItem` keep a `shortcut$` whose text lies at an
-  address divisible by 65536; the original took it for no shortcut, and
-  the item had no key
-  ([#694](https://github.com/fubar-coder/bb2-c/issues/694)).
-* With runtime error checking, `GTFreeMenu` with a negative item number
-  stops with "Illegal Menu Item number"; the original freed the title as
-  if it were an item and damaged memory. A negative sub item number
-  removes the whole item, as in the original
-  ([#1089](https://github.com/fubar-coder/bb2-c/issues/1089)).
-
-### Fixes in rilvcallhooklib {#rilvcallhooklib-fixes}
-
-These fixes concern
-[rilvcallhooklib]({{< relref "/docs/libraries/userlibs/rilvcallhooklib" >}}),
-a render hook by Red When Excited that draws the items of a GadTools
-listview as columns of texts and bitmaps, with an optional indent drawn
-as dotted tree lines.
-
-* The tree lines of an indented item depend on its indent alone. The
-  original computed their number with the upper half of a register that
-  the caller of the hook had left, so the lines could be missing, or
-  65536 lines were drawn for an indent below 16 pixels
-  ([#737](https://github.com/fubar-coder/bb2-c/issues/737)).
-* The last tree line of an item is short when the next item ends the
-  list or has a smaller indent. The original read an unrelated word of
-  the next node instead of its indent, so the line was short or long by
-  chance, and with an odd width of the first field it crashed a 68000
-  ([#739](https://github.com/fubar-coder/bb2-c/issues/739)).
-* A right-aligned bitmap is drawn at the right edge of its field. The
-  original drew it too far to the right, by the field's horizontal
-  position, and filled the field with the background pen instead
-  ([#740](https://github.com/fubar-coder/bb2-c/issues/740)).
-* A text field whose pointer is 0 stays empty; the original showed the
-  bytes at address 0 as text
-  ([#742](https://github.com/fubar-coder/bb2-c/issues/742)).
-* After drawing an indented item, the hook puts the line pattern of the
-  RastPort back as it found it. The original set it to solid lines, or
-  left it dotted after an indent of 1 to 15 pixels, which has no tree
-  lines; later lines that the program drew on the same RastPort changed
-  with it. In a GadTools listview the hook gets a RastPort of its own,
-  and the tree lines look as before
-  ([#738](https://github.com/fubar-coder/bb2-c/issues/738)).
-
-### Fixes in rireqlib {#rireqlib-fixes}
-
-These fixes concern
-[rireqlib]({{< relref "/docs/libraries/userlibs/rireqlib" >}}), the file
-and colour requesters of req.library, a requester library that is not
-part of AmigaOS, by Steven Matty; the fixes of
-[the text that follows `ReqFileRequest`](#rwe-text-after-string-function)
-and of [its default flags](#reqfilerequest-default-flags) are described
-above.
-
-* `ReqFileRequest` returns the path of the file the user chose. The
-  original never gave the requester the library's buffers for the
-  directory, the file and the path, so it returned only what the program
-  itself had written to the path buffer at `ReqFileLoc`, or an empty
-  string ([#785](https://github.com/fubar-coder/bb2-c/issues/785)).
-* The library reserves req.library's whole file requester structure. The
-  original's was too short, so the fields that the requester keeps there
-  from call to call were written over the library's data behind it,
-  among them the addresses of its buffers and the colour requester
-  ([#1088](https://github.com/fubar-coder/bb2-c/issues/1088)).
-* A title given to `ReqFileRequest` is for that call only; a later call
-  without a title passes the library's empty title, as before the first
-  call with one. In the original such a call showed whatever text had
-  been put since in the memory where the earlier title had been. The
-  flags of `ReqFileRequest(title$,flags)` stay set for later calls, as
-  the guide documents
-  ([#789](https://github.com/fubar-coder/bb2-c/issues/789)).
-* Without req.library, `ReqFileRequest` returns an empty string and
-  `ReqColour` 65535, the same as when the user cancels; the original
-  crashed the system
-  ([#788](https://github.com/fubar-coder/bb2-c/issues/788)).
-* `ReqColour` opens the colour requester on the colour it is given,
-  together with the fix of the next point; the original ignored it and
-  started on colour 0
-  ([#786](https://github.com/fubar-coder/bb2-c/issues/786)).
-* `ReqColour` hands req.library the colour and the window of `ReqOutput`
-  at the places where req.library reads them. The original's colour
-  requester structure had another layout, so with req.library the
-  requester started on the wrong colour and, after `ReqOutput`, did not
-  open at all and returned 16387 at once
-  ([#1091](https://github.com/fubar-coder/bb2-c/issues/1091)).
-* A program run a second time from the editor gives the file requester
-  no window until it calls `ReqOutput` again, the same as the colour
-  requester. The original passed the window of the first run, which was
-  closed when that run ended
-  ([#1090](https://github.com/fubar-coder/bb2-c/issues/1090)).
-* When a program ends, the library has req.library free the directory
-  that the file requester keeps cached between calls. The original left
-  that memory allocated after every run, as much as the last directory
-  shown needed (with req.library 2.8, for example, 1560 bytes for
-  `SYS:C`). About 40 KB that req.library itself allocates for its first
-  file requester stay allocated until the system restarts; that is
-  req.library's own behaviour, with any program that uses its file
-  requester
-  ([#1092](https://github.com/fubar-coder/bb2-c/issues/1092)).
-
-### Fixes in riintuilib {#riintuilib-fixes}
-
-These fixes concern
-[riintuilib]({{< relref "/docs/libraries/userlibs/riintuilib" >}}), the
-text output on a bitmap by Reflective Images: `IPOutput` makes a `Rast`
-object the output channel, so that `Print` and `NPrint` draw on its
-bitmap.
-
-* Text printed through `IPOutput` starts at the position that `IPLocate`
-  set, and the next text goes on after it. The original drew every text
-  at the top left corner of the Rast, over the text before
-  ([#697](https://github.com/fubar-coder/bb2-c/issues/697)).
-* `NPrint` through `IPOutput` ends the line: the next text starts at the
-  left edge of the next line. The original drew a byte from low memory
-  as a character instead
-  ([#699](https://github.com/fubar-coder/bb2-c/issues/699)).
-* A text of 1024 characters or more is drawn whole. The original copied
-  it into a buffer of 1024 bytes without a limit, so it wrote over the
-  pens of the next text and, from 1028 characters on, over the library
-  ([#698](https://github.com/fubar-coder/bb2-c/issues/698)).
-* `IPColour -1,bgpen`, which leaves the foreground pen as it is, sets
-  the background pen of the Rast in use. The original left the Rast's
-  background pen unchanged and wrote the pen into memory of the program
-  instead ([#696](https://github.com/fubar-coder/bb2-c/issues/696)).
+* `NextAppFile` and `AppFile` leave Workbench's lock of the file's
+  drawer in the message. The original gave the lock back to the system,
+  so reading the same file again with `AppFile` gave a wrong path, and
+  `AppLock` returned 0
+  ([#521](https://github.com/fubar-coder/bb2-c/issues/521)).
+* `AppFile` with a number of 0 or less returns an empty string. The
+  original made a path of whatever lay in memory in front of the list of
+  files ([#520](https://github.com/fubar-coder/bb2-c/issues/520)).
+* `AppLock` returns 0 for a message without files, such as the one of
+  an App menu item chosen without icons selected. The original returned
+  a value from memory that was no lock
+  ([#522](https://github.com/fubar-coder/bb2-c/issues/522)).
+* `AppLock` returns the lock of the drawer of the file that
+  `NextAppFile` or `AppFile` read last, as the guide says, and the first
+  file's lock before either has read one. The original always returned
+  the first file's lock, so for the other files of a message it gave
+  the wrong drawer
+  ([#1103](https://github.com/fubar-coder/bb2-c/issues/1103)).
+* `DelAppWindow` of a window that is no App window returns 0, as
+  `DelAppMenu` and `DelAppIcon` do for an id without an object. The
+  original returned -1 and passed an empty App window to the system
+  ([#523](https://github.com/fubar-coder/bb2-c/issues/523)).
+* An `AddAppIcon` that fails on an id in use, after it has removed the
+  old icon, frees the image it loaded for the new one, and nothing of
+  the old icon is left. The original kept both, and `DelAppIcon` or the
+  end of the program removed the old icon a second time
+  ([#517](https://github.com/fubar-coder/bb2-c/issues/517)).
+* At the end of the program the library answers the current message and
+  every message still waiting, so Workbench gets them back. The original
+  answered the waiting ones only if `AppEvent` had fetched a message
+  last ([#525](https://github.com/fubar-coder/bb2-c/issues/525)).
+* An App window, icon or menu item with an odd id that is still there
+  at the end of the program is removed normally. On a 68000 the original
+  crashed the machine there
+  ([#524](https://github.com/fubar-coder/bb2-c/issues/524)).
+* When workbench.library, dos.library or icon.library cannot be opened,
+  the library closes the others again, and `AppMsgPort` returns 0. The
+  original left them open and returned the address of a port it had
+  deleted ([#526](https://github.com/fubar-coder/bb2-c/issues/526)).
+* A program run a second time from the editor starts without an App
+  message. The original started with the last message of the run
+  before: `AppMessage`, `AppEventType` and the other functions read it,
+  and the first `AppEvent` answered it a second time
+  ([#1099](https://github.com/fubar-coder/bb2-c/issues/1099)).
+* With runtime error checking, an id of `AddAppMenu`, `DelAppMenu`,
+  `AddAppIcon` or `DelAppIcon` outside 0 to 15 stops with the runtime
+  error "App id must be 0 to 15", and a window number of `AddAppWindow`
+  or `DelAppWindow` outside 0 to 15 with "App window number must be 0
+  to 15". Without it, such a number overwrites memory, as in the
+  original ([#1097](https://github.com/fubar-coder/bb2-c/issues/1097)).
 
 ### Fixes in riarexxlib {#riarexxlib-fixes}
 
@@ -5456,6 +5001,276 @@ Received messages:
   over the list of sent messages and the memory behind it
   ([#1100](https://github.com/fubar-coder/bb2-c/issues/1100)).
 
+### Fixes in riarrayslib {#riarrayslib-fixes}
+
+This fix concerns
+[riarrayslib]({{< relref "/docs/libraries/userlibs/riarrayslib" >}}),
+the command `FillArray` by Reflective Images.
+
+* `FillArray` on an array without elements, whose size is 0, writes
+  nothing. The original stored a value first and compared with the end
+  of the array only afterwards, so it missed the end and wrote on
+  through all memory. The command, which is copied into the program at
+  each place it is used, is 4 bytes longer
+  ([#882](https://github.com/fubar-coder/bb2-c/issues/882)).
+
+### Fixes in ribbmaplib {#ribbmaplib-fixes}
+
+These fixes concern
+[ribbmaplib]({{< relref "/docs/libraries/userlibs/ribbmaplib" >}}), the
+library by Reflective Images that reads the map and scenario files of
+the game Blitz Bombers from memory. `SetBBMapLoc` and
+`SetBBScenarioLoc` choose a file; the other commands look up its chunks.
+
+* The search for a chunk skips the pad byte that the IFF standard puts
+  behind a chunk of odd length; a file written without it stays
+  readable. The original read the next chunk one byte early: on a 68000
+  this crashed the program, on other processors the chunks behind were
+  not found ([#552](https://github.com/fubar-coder/bb2-c/issues/552)).
+* The search ends at the end of the file. The original read one chunk
+  name behind it, in the memory after the file, and took it for a chunk
+  of the file if it matched
+  ([#553](https://github.com/fubar-coder/bb2-c/issues/553)).
+* A failed `SetBBMapLoc` leaves the map chosen before as it was. The
+  original took the new address all the same, so the map functions mixed
+  the rejected file with the old map
+  ([#554](https://github.com/fubar-coder/bb2-c/issues/554)).
+* `BBMapScenarioID`, `BBMapWidth`, `BBMapHeight` and `BBMapInfo` return
+  0 for a map without an information chunk (MFRM). The original read
+  them from behind the file
+  ([#551](https://github.com/fubar-coder/bb2-c/issues/551)).
+* `BBScenarioLowCol` and `BBScenarioHighCol` return the colours 128 to
+  255 as such. The original returned them as negative numbers
+  ([#550](https://github.com/fubar-coder/bb2-c/issues/550)).
+* `BBGetPalette` counts all the colours of a palette it enlarges, so the
+  scenario's last colour is used and a second call keeps the palette.
+  The original counted one colour less
+  ([#548](https://github.com/fubar-coder/bb2-c/issues/548)).
+* `BBGetPalette` with a colour range whose first colour is above the
+  last stores nothing. The original wrote one colour, possibly behind
+  the palette's memory
+  ([#549](https://github.com/fubar-coder/bb2-c/issues/549)).
+* `BBGetPalette` reads only the colours that the scenario's COLR chunk
+  really holds. The original took the rest from the bytes behind the
+  chunk ([#1113](https://github.com/fubar-coder/bb2-c/issues/1113)).
+* With runtime error checking, `BBShadowValue` with a shadow set that
+  the scenario does not have stops with the runtime error "Shadow set
+  must lie in the SHDW chunk". The original returned bytes from behind
+  the chunk, as the port does without error checking
+  ([#1114](https://github.com/fubar-coder/bb2-c/issues/1114)).
+* A program run a second time from the editor starts without the map
+  and the scenario of the run before. The original's commands found the
+  files of the first run, which may have been freed
+  ([#1108](https://github.com/fubar-coder/bb2-c/issues/1108)).
+
+### Fixes in richunkylib {#richunkylib-fixes}
+
+These fixes concern
+[richunkylib]({{< relref "/docs/libraries/userlibs/richunkylib" >}}),
+the chunky bitmaps of Reflective Images, with one byte per pixel, and
+their conversion into planar bitmaps.
+
+* `ChunkyToPlanar` converts chunky bitmaps of other sizes, with a width
+  that is a multiple of 16 pixels, into the top left of any bitmap of 8
+  bitplanes that is at least as big, also an interleaved one. A chunky bitmap the
+  bitmap cannot take is not converted; with runtime error checking it
+  is a runtime error. The original always converted 320 x 256 pixels
+  into bitplanes 10240 bytes apart: it read behind a smaller chunky
+  bitmap and wrote behind a smaller bitmap
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#chunkytoplanar-sizes" >}}),
+  [#884](https://github.com/fubar-coder/bb2-c/issues/884)).
+* `ChunkyToPlanar` reads the depth of the bitmap alone. The original
+  read it together with the bitmap's flags: depending on the flags it
+  wrote 8 bitplanes into a bitmap with fewer, or refused a bitmap of
+  depth 8
+  ([#883](https://github.com/fubar-coder/bb2-c/issues/883)).
+* `ChunkyBitmap` frees the data a chunky bitmap already holds also when
+  it lies below address 65536. The original never freed such data, so a
+  new chunky bitmap on that object lost it; when the new memory could
+  not be allocated, the object kept the old address with a size of 0
+  ([#885](https://github.com/fubar-coder/bb2-c/issues/885)).
+* `RaycastSky` with a height of 0 or below copies nothing. The
+  original copied 65536 rows, about 20 MB of memory
+  ([#887](https://github.com/fubar-coder/bb2-c/issues/887)).
+* With runtime error checking, `RaycastSky` stops with "RaycastSky
+  outside the chunky bitmap" when the column it would write leaves the
+  chunky bitmap, and with "RaycastSky column below 0" for a negative
+  texture column. The original wrote or read outside
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#raycastsky-outside" >}}),
+  [#887](https://github.com/fubar-coder/bb2-c/issues/887)).
+* Freeing a chunky bitmap, when `ChunkyBitmap` makes it again or at the
+  end of the program, leaves the audio filter and the power LED as they
+  are. The original switched them over
+  ([#886](https://github.com/fubar-coder/bb2-c/issues/886)).
+
+### Fixes in ricommoditieslib {#ricommoditieslib-fixes}
+
+These fixes concern
+[ricommoditieslib]({{< relref "/docs/libraries/userlibs/ricommoditieslib" >}}),
+the commodities by Reflective Images. `MakeCommodity` registers the
+program as a commodity, `SetHotKey` adds hotkeys, `CommodityEvent` and
+`WaitCommodity` fetch the next message, and `HotKeyHit`,
+`ExchangeMessage` and the `Exchange` functions tell what it was. The fix
+of [a second `MakeCommodity`](#makecommodity-second) is described above.
+
+* The library answers the messages of the commodity: `CommodityEvent`
+  and `WaitCommodity` answer the message fetched before, and the end of
+  the program answers the last one and those still waiting. The
+  original never answered a message, so commodities.library could not
+  free it, and a running commodity lost about 100 bytes with every
+  hotkey and every command of Exchange
+  ([#561](https://github.com/fubar-coder/bb2-c/issues/561)).
+* `WaitCommodity` takes the next message from the port, or waits for one
+  if none is waiting. The original lost one waiting message and returned
+  the next, which it left at the port, so the next `CommodityEvent`
+  returned it a second time
+  ([#566](https://github.com/fubar-coder/bb2-c/issues/566)).
+* The `Exchange` functions return -1 only for a command of Exchange. The
+  original compared the number of any message, so a press of hotkey 15
+  counted as `ExchangeDisable`, the command 15
+  ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
+* `SetHotKey` frees the hotkey it replaces, and one that fails halfway
+  frees what it had made. The original lost the memory of every hotkey
+  it replaced, and a hotkey that failed halfway stayed in the commodity
+  ([#563](https://github.com/fubar-coder/bb2-c/issues/563)).
+* `SetHotKey` returns 0 for a hotkey description that
+  commodities.library cannot understand. The original returned -1, and
+  the hotkey never worked
+  ([#565](https://github.com/fubar-coder/bb2-c/issues/565)).
+* With runtime error checking, `SetHotKey` with a number outside 0 to
+  15 stops with the runtime error "Hotkey number must be 0 to 15".
+  Without it, such a number overwrites the library's other data, as in
+  the original, and -1 removes the commodity
+  ([#564](https://github.com/fubar-coder/bb2-c/issues/564)).
+* `SetCxStatus` does nothing when `MakeCommodity` failed. The original
+  then called commodities.library without a commodity and returned -1
+  ([#562](https://github.com/fubar-coder/bb2-c/issues/562)).
+* Without commodities.library, `MakeCommodity` returns 0. The original
+  did not check that the library had been opened and crashed
+  ([#559](https://github.com/fubar-coder/bb2-c/issues/559)).
+* At the end of the program the library frees the hotkeys together with
+  the commodity; the original left their memory allocated
+  ([#557](https://github.com/fubar-coder/bb2-c/issues/557)).
+* At the end of the program the library removes the commodity before it
+  closes commodities.library. The original closed the library first and
+  removed the commodity through it afterwards, which worked only while
+  the library stayed in memory
+  ([#556](https://github.com/fubar-coder/bb2-c/issues/556)).
+
+### Fixes in ricompactdisclib {#ricompactdisclib-fixes}
+
+These fixes concern
+[ricompactdisclib]({{< relref "/docs/libraries/userlibs/ricompactdisclib" >}}),
+the audio CD commands of Red When Excited. `CDTrackLength 1`, `CDVolume`
+and the SCSI flag of `OpenCD` are described in
+[Changes you may notice](#compactdisc-results).
+
+* Programs that use the library start on Kickstart 1.x. The library
+  builds its message port and its requests itself, with functions that
+  every Kickstart has; the original called functions of Kickstart 2.0
+  there, and every program with the library crashed before its first
+  line ([#1138](https://github.com/fubar-coder/bb2-c/issues/1138)).
+* `OpenCD` returns 0 when the device cannot be opened. The original
+  returned a number left over from freeing its request, 200 on
+  Kickstart 3.1
+  ([#575](https://github.com/fubar-coder/bb2-c/issues/575)).
+* `OpenCD devicename$,unit` refuses a device name of 40 characters or
+  more with 0, as the guide asks for a name of less than forty. The
+  original copied it into a buffer of 40 bytes and overwrote the
+  library's data
+  ([#576](https://github.com/fubar-coder/bb2-c/issues/576)).
+* With runtime error checking, `OpenCD` while a device is open stops with
+  "CD device already open: CloseCD first". The original opened the new
+  device and lost the one opened first, which stayed open
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
+  [#578](https://github.com/fubar-coder/bb2-c/issues/578)).
+* `CDPlayTrack` uses a request of its own while the music plays. In the
+  original every other command, such as `CDUpdateInfo`, `CDStatus`,
+  `CDPause` or `CDVolume`, filled and sent the request of the track that
+  was still playing
+  ([#1156](https://github.com/fubar-coder/bb2-c/issues/1156)).
+* `CDStop`, `CloseCD`, the next `CDPlayTrack` and the end of the program
+  stop a play and wait until the device has taken it back. The original
+  did not wait, and the device's reply stayed behind
+  ([#574](https://github.com/fubar-coder/bb2-c/issues/574)).
+* `CDPlayTrack` returns -1 when the play was sent and 0 without a device.
+  The original returned whatever value the system had left
+  ([#1157](https://github.com/fubar-coder/bb2-c/issues/1157)).
+* With the SCSI flag, `CDPlayTrack` plays the tracks it is asked for,
+  taken from the table of contents that `CDReadTOC` read, and returns -1
+  if the drive took the command, else 0. The original ignored its
+  arguments and always played the same blocks, test values of the
+  author ([#580](https://github.com/fubar-coder/bb2-c/issues/580)).
+* With the SCSI flag, `CDPlayTrack` no longer crashes a 68000 with an
+  address error
+  ([#579](https://github.com/fubar-coder/bb2-c/issues/579)).
+* `CDReadTOC` returns 0 and keeps no table of contents when reading it
+  fails or there is no memory for it. The original returned -1 and left
+  the track functions reading whatever the table held
+  ([#581](https://github.com/fubar-coder/bb2-c/issues/581)).
+* `CDNumTracks`, `CDFirstTrack`, `CDLastTrack` and `CDTrackLength` return
+  0 before `CDReadTOC`, and with the SCSI flag they read the SCSI table of
+  contents. The original read memory at address 0 there, and with the
+  flag only `CDNumTracks` worked
+  ([#582](https://github.com/fubar-coder/bb2-c/issues/582)).
+* `CDTrackLength` of the last track ends at the end of the CD's music,
+  and with runtime error checking a track the CD does not hold stops
+  with "Track number out of range". The original read the last track's
+  end from memory the table of contents does not fill
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
+  [#583](https://github.com/fubar-coder/bb2-c/issues/583)).
+* `CDTrackLength` is right for track 44 and the tracks after it
+  ([#585](https://github.com/fubar-coder/bb2-c/issues/585)).
+* With runtime error checking, `CDTrackMins` and `CDTrackSecs` with an
+  offset other than 0 or 1 stop with "Offset must be 0 or 1". The
+  original read other memory of the library
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
+  [#586](https://github.com/fubar-coder/bb2-c/issues/586)).
+* `CDUpdateInfo` returns 0 without an open device. The original returned
+  a meaningless address
+  ([#587](https://github.com/fubar-coder/bb2-c/issues/587)).
+* `CDStatus` asks the device for its whole status record. The original
+  asked for a shorter one, and a device that writes the whole record
+  wrote 8 bytes behind the library; on Workbench 3.1 the program then
+  ended with an alert
+  ([#948](https://github.com/fubar-coder/bb2-c/issues/948)).
+
+### Fixes in ricopperfxlib {#ricopperfxlib-fixes}
+
+These fixes concern
+[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}}),
+the copper instructions by Reflective Images for the custom space of a
+coplist. The fixes of
+[the results of `DoColSplit` and `CopperAGACol`](#rwe-effect-results)
+and of [`GetCCOffset` after `CopperResetAdr`](#getccoffset-resetadr) are
+described above.
+
+* A colour split of `DoColSplit` that starts at line 0 starts there. The
+  original first wrote the wait for line 256 that the copper needs for
+  the lines below 255, so the split appeared at line 256, or not at all
+  on a display that ends before it
+  ([#588](https://github.com/fubar-coder/bb2-c/issues/588)).
+* With runtime error checking, `DoColSplit` and `RedoColSplit` with
+  fewer than one line stop with "Colour split needs at least one line".
+  The original divided by zero for 0 lines and wrote up to 65536 lines
+  over the memory behind the custom space for a negative number
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#colsplit-numlines" >}}),
+  [#589](https://github.com/fubar-coder/bb2-c/issues/589)).
+* `CopperWait` with an `x` of 500 or more waits on the line given. The
+  original waited one line later
+  ([#591](https://github.com/fubar-coder/bb2-c/issues/591)).
+* `RedoColSplit` with a `ccoffset` of 16384 instructions or more writes
+  its colours at that place. The original wrote them 64 KB or a multiple
+  of it away, into other memory. `GetCCOffset` never returns such a
+  large offset; only a program that computes the offset itself meets it
+  ([#594](https://github.com/fubar-coder/bb2-c/issues/594)).
+* A program run a second time from the editor starts with no custom
+  space chosen and with the `ColSplitBplcon3` value 0. In the original,
+  every command before `CopperReset` wrote into the copper list of the
+  run before, which had been freed, and that run's `ColSplitBplcon3`
+  value stayed in effect
+  ([#1126](https://github.com/fubar-coder/bb2-c/issues/1126)).
+
 ### Fixes in ridatatypeslib {#ridatatypeslib-fixes}
 
 These fixes concern
@@ -5529,416 +5344,244 @@ object, `DataTypeBitmap` reads the size and depth of a picture, and
   the original left them open, once more with every run
   ([#602](https://github.com/fubar-coder/bb2-c/issues/602)).
 
-### Fixes in ricommoditieslib {#ricommoditieslib-fixes}
+### Fixes in ridisplaylib {#ridisplaylib-fixes}
 
 These fixes concern
-[ricommoditieslib]({{< relref "/docs/libraries/userlibs/ricommoditieslib" >}}),
-the commodities by Reflective Images. `MakeCommodity` registers the
-program as a commodity, `SetHotKey` adds hotkeys, `CommodityEvent` and
-`WaitCommodity` fetch the next message, and `HotKeyHit`,
-`ExchangeMessage` and the `Exchange` functions tell what it was. The fix
-of [a second `MakeCommodity`](#makecommodity-second) is described above.
+[ridisplaylib]({{< relref "/docs/libraries/userlibs/ridisplaylib" >}}),
+the unfinished start of a display library by Reflective Images. Its
+`InitView` allocates a copper list that is never shown.
 
-* The library answers the messages of the commodity: `CommodityEvent`
-  and `WaitCommodity` answer the message fetched before, and the end of
-  the program answers the last one and those still waiting. The
-  original never answered a message, so commodities.library could not
-  free it, and a running commodity lost about 100 bytes with every
-  hotkey and every command of Exchange
-  ([#561](https://github.com/fubar-coder/bb2-c/issues/561)).
-* `WaitCommodity` takes the next message from the port, or waits for one
-  if none is waiting. The original lost one waiting message and returned
-  the next, which it left at the port, so the next `CommodityEvent`
-  returned it a second time
-  ([#566](https://github.com/fubar-coder/bb2-c/issues/566)).
-* The `Exchange` functions return -1 only for a command of Exchange. The
-  original compared the number of any message, so a press of hotkey 15
-  counted as `ExchangeDisable`, the command 15
-  ([#555](https://github.com/fubar-coder/bb2-c/issues/555)).
-* `SetHotKey` frees the hotkey it replaces, and one that fails halfway
-  frees what it had made. The original lost the memory of every hotkey
-  it replaced, and a hotkey that failed halfway stayed in the commodity
-  ([#563](https://github.com/fubar-coder/bb2-c/issues/563)).
-* `SetHotKey` returns 0 for a hotkey description that
-  commodities.library cannot understand. The original returned -1, and
-  the hotkey never worked
-  ([#565](https://github.com/fubar-coder/bb2-c/issues/565)).
-* With runtime error checking, `SetHotKey` with a number outside 0 to
-  15 stops with the runtime error "Hotkey number must be 0 to 15".
-  Without it, such a number overwrites the library's other data, as in
-  the original, and -1 removes the commodity
-  ([#564](https://github.com/fubar-coder/bb2-c/issues/564)).
-* `SetCxStatus` does nothing when `MakeCommodity` failed. The original
-  then called commodities.library without a commodity and returned -1
-  ([#562](https://github.com/fubar-coder/bb2-c/issues/562)).
-* Without commodities.library, `MakeCommodity` returns 0. The original
-  did not check that the library had been opened and crashed
-  ([#559](https://github.com/fubar-coder/bb2-c/issues/559)).
-* At the end of the program the library frees the hotkeys together with
-  the commodity; the original left their memory allocated
-  ([#557](https://github.com/fubar-coder/bb2-c/issues/557)).
-* At the end of the program the library removes the commodity before it
-  closes commodities.library. The original closed the library first and
-  removed the commodity through it afterwards, which worked only while
-  the library stayed in memory
-  ([#556](https://github.com/fubar-coder/bb2-c/issues/556)).
+* `InitView` writes the moves of the display window and data fetch
+  registers into its list. The original wrote words read from fixed
+  addresses of low memory instead, and two of these addresses are odd,
+  which crashed a 68000
+  ([#889](https://github.com/fubar-coder/bb2-c/issues/889)).
+* `InitView` sizes the list by the number of colours it is given, and
+  computes the size as a long. The original used the height instead of
+  the number of colours and computed a word, so large values gave a
+  wrong or negative size
+  ([#890](https://github.com/fubar-coder/bb2-c/issues/890)).
+* Without enough chip memory, `InitView` returns 0 and writes nothing.
+  The original wrote its list to address 0, over system memory, and
+  freed address 0 at the end of the program
+  ([#888](https://github.com/fubar-coder/bb2-c/issues/888)).
+* At the end of the program the library frees the lists of all
+  `InitView` calls, also when it could not open graphics.library 39.
+  The original freed only the last list, and only with
+  graphics.library 39
+  ([#891](https://github.com/fubar-coder/bb2-c/issues/891)).
 
-### Fixes in riapplib {#riapplib-fixes}
+### Fixes in ridoslib {#ridoslib-fixes}
 
 These fixes concern
-[riapplib]({{< relref "/docs/libraries/userlibs/riapplib" >}}), the App
-windows, App icons and App menu items of Workbench by Reflective
-Images. Each of them sends the program a message when the user drops
-files on it or chooses it; `AppEvent` fetches the message, and
-`NextAppFile`, `AppFile` and `AppLock` tell which files it holds. The
-fixes of [the result of `AddAppMenu`](#addappmenu-result), of
-[the result of `AppEventID`](#appeventid-no-event), of
-[the text that follows `NextAppFile` and `AppFile`](#rwe-text-after-string-function)
-and of [the local variables after `AddAppIcon`](#rwe-other-fixes) are
-described elsewhere on this page.
+[ridoslib]({{< relref "/docs/libraries/userlibs/ridoslib" >}}), the DOS
+helpers of Red When Excited: file notification, the list of devices,
+volumes and assigns, and splitting a path; the fix of
+[the text that follows `GetPathName` and `NextDevice`](#rwe-text-after-string-function)
+is described above.
 
-* `NextAppFile` and `AppFile` leave Workbench's lock of the file's
-  drawer in the message. The original gave the lock back to the system,
-  so reading the same file again with `AppFile` gave a wrong path, and
-  `AppLock` returned 0
-  ([#521](https://github.com/fubar-coder/bb2-c/issues/521)).
-* `AppFile` with a number of 0 or less returns an empty string. The
-  original made a path of whatever lay in memory in front of the list of
-  files ([#520](https://github.com/fubar-coder/bb2-c/issues/520)).
-* `AppLock` returns 0 for a message without files, such as the one of
-  an App menu item chosen without icons selected. The original returned
-  a value from memory that was no lock
-  ([#522](https://github.com/fubar-coder/bb2-c/issues/522)).
-* `AppLock` returns the lock of the drawer of the file that
-  `NextAppFile` or `AppFile` read last, as the guide says, and the first
-  file's lock before either has read one. The original always returned
-  the first file's lock, so for the other files of a message it gave
-  the wrong drawer
-  ([#1103](https://github.com/fubar-coder/bb2-c/issues/1103)).
-* `DelAppWindow` of a window that is no App window returns 0, as
-  `DelAppMenu` and `DelAppIcon` do for an id without an object. The
-  original returned -1 and passed an empty App window to the system
-  ([#523](https://github.com/fubar-coder/bb2-c/issues/523)).
-* An `AddAppIcon` that fails on an id in use, after it has removed the
-  old icon, frees the image it loaded for the new one, and nothing of
-  the old icon is left. The original kept both, and `DelAppIcon` or the
-  end of the program removed the old icon a second time
-  ([#517](https://github.com/fubar-coder/bb2-c/issues/517)).
-* At the end of the program the library answers the current message and
-  every message still waiting, so Workbench gets them back. The original
-  answered the waiting ones only if `AppEvent` had fetched a message
-  last ([#525](https://github.com/fubar-coder/bb2-c/issues/525)).
-* An App window, icon or menu item with an odd id that is still there
-  at the end of the program is removed normally. On a 68000 the original
-  crashed the machine there
-  ([#524](https://github.com/fubar-coder/bb2-c/issues/524)).
-* When workbench.library, dos.library or icon.library cannot be opened,
-  the library closes the others again, and `AppMsgPort` returns 0. The
-  original left them open and returned the address of a port it had
-  deleted ([#526](https://github.com/fubar-coder/bb2-c/issues/526)).
-* A program run a second time from the editor starts without an App
-  message. The original started with the last message of the run
-  before: `AppMessage`, `AppEventType` and the other functions read it,
-  and the first `AppEvent` answered it a second time
-  ([#1099](https://github.com/fubar-coder/bb2-c/issues/1099)).
-* With runtime error checking, an id of `AddAppMenu`, `DelAppMenu`,
-  `AddAppIcon` or `DelAppIcon` outside 0 to 15 stops with the runtime
-  error "App id must be 0 to 15", and a window number of `AddAppWindow`
-  or `DelAppWindow` outside 0 to 15 with "App window number must be 0
-  to 15". Without it, such a number overwrites memory, as in the
-  original ([#1097](https://github.com/fubar-coder/bb2-c/issues/1097)).
+File notification:
 
-### Fixes in ripacklib {#ripacklib-fixes}
+* `AddNotify` with a slot that is in use ends the notification in it
+  first, as `RemNotify` does; the original lost it, so its messages kept
+  coming and it could no longer be ended
+  ([#620](https://github.com/fubar-coder/bb2-c/issues/620)).
+* `AddNotify` returns 0 when there is not enough memory; the original
+  wrote the file name or the request to address 0
+  ([#619](https://github.com/fubar-coder/bb2-c/issues/619)).
+* A notification that DOS cannot start is freed at once, and the end of
+  the program frees every notification; the original kept such a request
+  in its slot, and at the end of the program could stop freeing before
+  it ([#621](https://github.com/fubar-coder/bb2-c/issues/621)).
+* With runtime error checking, `AddNotify` and `RemNotify` with a slot
+  outside 0 to 63 stop with the error "Notify number must be 0 to 63";
+  the original wrote, ended and freed the library's data around its
+  table of slots
+  ([A notification slot outside 0 to 63]({{< relref "/docs/compared-with-original/new-errors#notify-slot-range" >}}),
+  [#626](https://github.com/fubar-coder/bb2-c/issues/626)).
+
+The device list:
+
+* The end of the program unlocks the device list if `FreeDeviceList` was
+  not called, and a second `GetDeviceList` unlocks the list before it
+  locks it again. The original left the list locked in both cases, and
+  every program that wanted to change it, such as `Assign`, a disk
+  change or mounting a device, waited for ever
+  ([#1081](https://github.com/fubar-coder/bb2-c/issues/1081)).
+* `FreeDeviceList` without a locked list does nothing; the original
+  unlocked it all the same, which made the system raise an alert and
+  left the program's later `Forbid` calls without effect
+  ([#623](https://github.com/fubar-coder/bb2-c/issues/623)).
+* `NextDevice` without a locked list returns ""; the original returned a
+  string of an unpredictable length
+  ([#625](https://github.com/fubar-coder/bb2-c/issues/625)).
+* `DeviceEntryType` after `FreeDeviceList` returns the kind of the entry
+  `NextDevice` returned last; the original read that entry from the
+  unlocked list, where it could already have been removed
+  ([#622](https://github.com/fubar-coder/bb2-c/issues/622)).
+
+Splitting a path:
+
+* `GetPathName` looks at the first character too, so `GetPathName("/abc")`
+  and `GetPathName(":x")` return "/" and ":"; the original returned ""
+  ([#624](https://github.com/fubar-coder/bb2-c/issues/624)).
+* `GetFileName` and `GetPathName` take parts of any length; the original
+  overwrote the code of the library with a part of 256 characters or
+  more ([#627](https://github.com/fubar-coder/bb2-c/issues/627)).
+* `GetFileName` and `GetPathName` work with paths of 65536 characters or
+  more; the original read only the low 16 bits of their length, so it
+  returned wrong characters and `GetPathName` looked at only part of
+  the path ([#628](https://github.com/fubar-coder/bb2-c/issues/628)).
+
+### Fixes in riencryptlib {#riencryptlib-fixes}
 
 These fixes concern
-[ripacklib]({{< relref "/docs/libraries/userlibs/ripacklib" >}}), the
-library by Reflective Images that unpacks IFF ILBM pictures in memory
-into bitmaps and palettes, packs and unpacks ByteRun1 data and unpacks
-Pack-Ice files. The fixes of
-[`ILBMPalette` with an offset](#ilbmpalette-offset), of
-[`LoadIFF`'s bank and result](#loadiff-bank-result) and of
-[pictures whose width is no multiple of 16](#unpackiff-row-width) are
-described above.
+[riencryptlib]({{< relref "/docs/libraries/userlibs/riencryptlib" >}}),
+the three-wheel cipher by Reflective Images.
 
-* `UnpackIFF` and `ILBMPalette` find the chunks of a picture by walking
-  the IFF file from chunk to chunk, also behind large chunks such as a
-  long annotation, and no longer take the name of a chunk inside other
-  data for the chunk itself. The original searched the raw data, only
-  within about 5 KB, and missed chunks further on
-  ([#766](https://github.com/fubar-coder/bb2-c/issues/766)).
-* `UnpackIFF` reads the compression byte of the picture: an uncompressed
-  picture is copied as it is. The original unpacked every picture as
-  ByteRun1, so an uncompressed one came out as garbage
-  ([#773](https://github.com/fubar-coder/bb2-c/issues/773)).
-* `UnpackIFF` unpacks pictures wider than 1024 pixels. The original
-  counted the bytes of a row in a byte: such pictures were not unpacked,
-  or read out of step, though the command reported success
-  ([#774](https://github.com/fubar-coder/bb2-c/issues/774)).
-* `UnpackIFF` cuts a ByteRun1 run at the end of the row. The original
-  wrote the whole run, into the next row or, in the last row, behind the
-  plane ([#776](https://github.com/fubar-coder/bb2-c/issues/776)).
-* `UnpackIFF` refuses a picture whose header gives 0 planes and returns
-  0. The original took it as 256 planes and overwrote its own code
-  ([#777](https://github.com/fubar-coder/bb2-c/issues/777)).
-* `UnpackIFF`, `LoadIFF` and `ILBMGrab` unpack pictures saved with a
-  mask, such as brushes of DPaint, correctly. The original took the mask
-  row of every line for the next plane and shifted every line from the
-  second on ([#1112](https://github.com/fubar-coder/bb2-c/issues/1112)).
-* `ILBMPalette` with an offset on a palette that has no colours yet
-  makes it as large as offset and CMAP together. The original made it as
-  large as the CMAP and still wrote the colours at the offset, from an
-  offset of 2 on behind the palette's memory
-  ([#991](https://github.com/fubar-coder/bb2-c/issues/991)).
-* `ILBMPalette` refuses a CMAP chunk without a whole colour and returns
-  0, and it sizes the palette from the whole CMAP. The original wrote
-  65536 colours for such a CMAP, and took the size of a CMAP of 64 KB or
-  more from its lower 16 bits
-  ([#1105](https://github.com/fubar-coder/bb2-c/issues/1105)).
-* `PackPBM` returns -1 for data that does not pack smaller; the
-  destination holds the bytes packed up to that point. The original then
-  went on to unpack whatever lay at the start of memory into the
-  destination
-  ([#772](https://github.com/fubar-coder/bb2-c/issues/772)).
-* `UnPackPBM` writes no byte past `destlength` and reads none past the
-  end of the packed data. The original wrote one byte past the
-  destination's length and read one byte behind the data
-  ([#778](https://github.com/fubar-coder/bb2-c/issues/778)).
-* `DeIce` with data packed with the picture option of Pack-Ice converts
-  the number of groups of 8 bytes that the data give, at most the
-  unpacked data. The original converted at least 15361 groups and so
-  wrote over 120 KB of memory below the end of the unpacked data
-  ([#767](https://github.com/fubar-coder/bb2-c/issues/767)).
+* `Decrypt` with `mode` 1 restores the data for every start position
+  and length. It works out where the wheels stopped from the length,
+  and the original did so without the carry from one wheel to the next:
+  for many start positions and lengths, a wheel came out one step off,
+  and the data stayed scrambled
+  ([#629](https://github.com/fubar-coder/bb2-c/issues/629)).
+* `Encrypt` and `Decrypt` with a length of 0 change nothing; the
+  original changed one byte, `Encrypt` the one at the address and
+  `Decrypt` the one in front of it
+  ([#630](https://github.com/fubar-coder/bb2-c/issues/630)).
 
-### Fixes in ribbmaplib {#ribbmaplib-fixes}
+### Fixes in rievallib {#rievallib-fixes}
 
 These fixes concern
-[ribbmaplib]({{< relref "/docs/libraries/userlibs/ribbmaplib" >}}), the
-library by Reflective Images that reads the map and scenario files of
-the game Blitz Bombers from memory. `SetBBMapLoc` and
-`SetBBScenarioLoc` choose a file; the other commands look up its chunks.
+[rievallib]({{< relref "/docs/libraries/userlibs/rievallib" >}}), the
+evaluation of integer expressions in strings by Reflective Images.
+`ConvToPostFix` converts an expression such as `2+6*3` into postfix
+form, `2 6 3 * +`, and `PFEvaluate` evaluates that form.
 
-* The search for a chunk skips the pad byte that the IFF standard puts
-  behind a chunk of odd length; a file written without it stays
-  readable. The original read the next chunk one byte early: on a 68000
-  this crashed the program, on other processors the chunks behind were
-  not found ([#552](https://github.com/fubar-coder/bb2-c/issues/552)).
-* The search ends at the end of the file. The original read one chunk
-  name behind it, in the memory after the file, and took it for a chunk
-  of the file if it matched
-  ([#553](https://github.com/fubar-coder/bb2-c/issues/553)).
-* A failed `SetBBMapLoc` leaves the map chosen before as it was. The
-  original took the new address all the same, so the map functions mixed
-  the rejected file with the old map
-  ([#554](https://github.com/fubar-coder/bb2-c/issues/554)).
-* `BBMapScenarioID`, `BBMapWidth`, `BBMapHeight` and `BBMapInfo` return
-  0 for a map without an information chunk (MFRM). The original read
-  them from behind the file
-  ([#551](https://github.com/fubar-coder/bb2-c/issues/551)).
-* `BBScenarioLowCol` and `BBScenarioHighCol` return the colours 128 to
-  255 as such. The original returned them as negative numbers
-  ([#550](https://github.com/fubar-coder/bb2-c/issues/550)).
-* `BBGetPalette` counts all the colours of a palette it enlarges, so the
-  scenario's last colour is used and a second call keeps the palette.
-  The original counted one colour less
-  ([#548](https://github.com/fubar-coder/bb2-c/issues/548)).
-* `BBGetPalette` with a colour range whose first colour is above the
-  last stores nothing. The original wrote one colour, possibly behind
-  the palette's memory
-  ([#549](https://github.com/fubar-coder/bb2-c/issues/549)).
-* `BBGetPalette` reads only the colours that the scenario's COLR chunk
-  really holds. The original took the rest from the bytes behind the
-  chunk ([#1113](https://github.com/fubar-coder/bb2-c/issues/1113)).
-* With runtime error checking, `BBShadowValue` with a shadow set that
-  the scenario does not have stops with the runtime error "Shadow set
-  must lie in the SHDW chunk". The original returned bytes from behind
-  the chunk, as the port does without error checking
-  ([#1114](https://github.com/fubar-coder/bb2-c/issues/1114)).
-* A program run a second time from the editor starts without the map
-  and the scenario of the run before. The original's commands found the
-  files of the first run, which may have been freed
-  ([#1108](https://github.com/fubar-coder/bb2-c/issues/1108)).
+Converting an expression:
 
-### Fixes in ristonecrackerlib and ristcdecrunchlib {#stonecracker-fixes}
+* `ConvToPostFix` looks past spaces in front of a `-`: after an
+  operator, after `(` or at the start, as in `4* -2` or ` -5`, the `-`
+  is a sign. The original looked only at the character just before it
+  and took the `-` after a space for a subtraction without a first
+  value, so `PFEvaluate` failed with error 1
+  ([#633](https://github.com/fubar-coder/bb2-c/issues/633)).
+* `ConvToPostFix` keeps a character that cannot belong to an operand,
+  so `PFEvaluate` reports it as error 4. The original dropped it
+  without an error and split the operand: `1,2` became the two values
+  `1 2`, and `12x+3` gave 15
+  ([#632](https://github.com/fubar-coder/bb2-c/issues/632)).
+* An expression that ends in `.` ends there; the original went on
+  converting the memory behind the string
+  ([#631](https://github.com/fubar-coder/bb2-c/issues/631)).
 
-These fixes concern the two libraries by Reflective Images for data
-files packed with StoneCracker 4.04:
-[ristonecrackerlib]({{< relref "/docs/libraries/userlibs/ristonecrackerlib" >}}),
-which tells the sizes of such a file and loads and unpacks one with
-`STCLoad`, and
-[ristcdecrunchlib]({{< relref "/docs/libraries/userlibs/ristcdecrunchlib" >}}),
-whose `STCDecrunch` unpacks one in memory. Both use the same unpacking
-code.
+Numbers and operators:
 
-* `STCDecrunch` and `STCLoad` write nothing below the destination for
-  damaged StoneCracker data; such data give 0. The original wrote a
-  piece of the data past the start of the destination, into the memory
-  below, and could crash the machine
-  ([#833](https://github.com/fubar-coder/bb2-c/issues/833)).
-* `STCLoad` returns 0 for a file that is not, or not wholly, a
-  StoneCracker 4.04 file, and for one it cannot read. The original
-  unpacked whatever it had read and could write anywhere in memory
-  ([#836](https://github.com/fubar-coder/bb2-c/issues/836)).
-* `STCLoad` releases the lock of the file once. The original released
-  it a second time after closing the file, on every load that worked
-  ([#835](https://github.com/fubar-coder/bb2-c/issues/835)).
-* ristonecrackerlib closes dos.library at the end of the program. The
-  original left it open, one more time after every run
-  ([#834](https://github.com/fubar-coder/bb2-c/issues/834)).
+* `PFEvaluate` checks the digits of a number: a character that is no
+  digit of its base is error 4. The original took every character for
+  a digit, so `12x` gave 192, `%2` 2 and `$g` 16
+  ([#634](https://github.com/fubar-coder/bb2-c/issues/634)).
+* Negative hexadecimal and binary numbers have their value: `-$10` is
+  -16 and `-%1` is -1. The original read `$` and `%` after a `-` as
+  decimal digits and gave -24410 and -2451
+  ([#643](https://github.com/fubar-coder/bb2-c/issues/643)).
+* `<` is "less than" with sign, as documented and like `>`. The
+  original's `<` meant "less than or equal" without sign, so `2 2 <`
+  was true and `-1 1 <` false
+  ([#638](https://github.com/fubar-coder/bb2-c/issues/638)).
+* `*` gives the low 32 bits of a product that does not fit into a
+  long; the original also got the low word wrong, so
+  `1000000 1000000 *` gave -727379962 instead of -727379968
+  ([#639](https://github.com/fubar-coder/bb2-c/issues/639)).
+* `^` is the integer power: `3^0` is 1, `0^5` is 0, `2^-1` is 0, and
+  exponents of any size count. The original returned the base for the
+  exponents 0 and below, 1 for the base 0, and counted only the low 16
+  bits of the exponent, so `3^65538` gave 9. 0 with a negative
+  exponent is error 3 "Divide by 0 error!"
+  ([#641](https://github.com/fubar-coder/bb2-c/issues/641)).
+* `PFEvaluate` works with any number of values pending; from 128
+  values on, the original failed every operator with error 1 "Need 2
+  arguments for expression!"
+  ([#645](https://github.com/fubar-coder/bb2-c/issues/645)).
 
-### Fixes in rishapeslib {#rishapeslib-fixes}
+Registers and memory:
 
-These fixes concern
-[rishapeslib]({{< relref "/docs/libraries/userlibs/rishapeslib" >}}),
-the shape helpers by Reflective Images with their own shapes file, the
-LE shapes file: `LESaveShapes` writes it, `LELoadShapes` loads it from
-disk and `LECludgeShapes` decodes one in memory; `CludgeShapes` makes
-shapes from memory in the form `SaveShapes` writes. The fix of
-[shapes linked by an earlier `LECludgeShapes`](#rwe-other-fixes) is
-listed under Other fixes.
+* `PFEvaluate` accepts only `d0` to `d7`, `a0` to `a7` and `pc` as
+  registers, and any other name is error 4. The original took the
+  character after `a` or `d` as the number of the register without a
+  check, so `d9` or `dx` read other values of the register block, a
+  `d` at the end read on behind the string, and `d01` was `d0` and the
+  number 1 ([#642](https://github.com/fubar-coder/bb2-c/issues/642)).
+* A register inside `{}`, such as `{d0}`, reads the memory at the
+  register's value; the original mostly failed with error 5 "No close
+  bracket on indirect!"
+  ([#637](https://github.com/fubar-coder/bb2-c/issues/637)).
+* `{address}.b` and `{address}.w` read only the byte or the word, also
+  at an odd address on a 68000; the original always read a long, which
+  crashed a 68000 at an odd address
+  ([#636](https://github.com/fubar-coder/bb2-c/issues/636)).
+* A program run a second time from the editor starts without the
+  register block, the error number and the indirect address of the
+  first run. The original kept all three, so the registers were read
+  from memory freed at the end of the first run
+  ([#1087](https://github.com/fubar-coder/bb2-c/issues/1087)).
 
-* `CludgeShapes` takes a shape in memory whose data size is 0 as an
-  empty shape. The original copied 64 KB for it and overwrote memory
-  ([#808](https://github.com/fubar-coder/bb2-c/issues/808)).
-* `CludgeShapes` reads the shapes behind an empty shape in memory from
-  the right place. The original skipped the empty shape by 32 bytes
-  plus the data size of the shape before it
-  ([#809](https://github.com/fubar-coder/bb2-c/issues/809)).
-* `LELoadShapes`, `LECludgeShapes` and `LEInitShape` free the cookie of
-  the shape they replace, so loading shapes again does not use up chip
-  memory ([#810](https://github.com/fubar-coder/bb2-c/issues/810)).
-* `LECludgeShapes` finds the shapes of LE files whose header chunk is
-  longer than the library's own, or whose palette chunk has a pad byte.
-  The original took fixed sizes for both and missed the shape data
-  ([#811](https://github.com/fubar-coder/bb2-c/issues/811)).
-* `LECludgeShapes` decodes LE files whose palette has an odd number of
-  colours, as `LESaveShapes` writes them, on a 68000 too; such shapes
-  are copied into chip memory instead of being used where they are. The
-  original crashed a 68000 with a Software Failure, and on a 68020 it
-  used the shapes at an odd address, where the blitter cannot draw them
-  ([#1118](https://github.com/fubar-coder/bb2-c/issues/1118)).
-* Loading LE shapes with a palette leaves the palette as it is for a
-  palette chunk shorter than one colour. The original wrote 65536
-  colours, 768 KB, over memory
-  ([#820](https://github.com/fubar-coder/bb2-c/issues/820)).
-* `LESaveShapes` writes the palette whenever one is given. The original
-  wrote it or not depending on the flags the system's write routine
-  left behind ([#814](https://github.com/fubar-coder/bb2-c/issues/814)).
-* `LESaveShapes` with a palette of 0 colours writes no palette. The
-  original copied 65536 colours and overwrote 192 KB of memory
-  ([#823](https://github.com/fubar-coder/bb2-c/issues/823)).
-* Files written by `LESaveShapes` give the right length in their IFF
-  header, so other IFF readers see the whole file. The original wrote
-  a length 8 too large, and after a save with a palette also counted
-  that palette in a later save without one
-  ([#816](https://github.com/fubar-coder/bb2-c/issues/816)).
-* `LESaveShapes` asks for 12 bytes for its shape header. The original
-  could ask for up to 4 GB, depending on what a register held before
-  ([#817](https://github.com/fubar-coder/bb2-c/issues/817)).
-* `LESaveShapes` takes the number of shapes from the lower 16 bits of
-  the shape numbers, as they are words. The original used all 32 bits:
-  `LESaveShapes 0,a` with a long variable `a` of `$50009`, shape 9 in
-  its lower 16 bits, wrote a file that claimed 327689 shapes
-  ([#815](https://github.com/fubar-coder/bb2-c/issues/815)).
-* A program run a second time from the editor starts with `LEAutoCookie`
-  on and the values of `LEMaxShapeWidth`, `LEMaxShapeHeight` and
-  `LEMaxShapeDepth` at 0. The original kept those of the run before
-  ([#1109](https://github.com/fubar-coder/bb2-c/issues/1109)).
+Results and errors:
 
-### Fixes in rianimlib {#rianimlib-fixes}
+* An expression that leaves more than one value, such as `1 2` or
+  `1 2 + 3`, is error 4 "No result value!"; the original returned the
+  last value without an error
+  ([#635](https://github.com/fubar-coder/bb2-c/issues/635)).
+* `PFEvaluate` of a string of spaces returns 0 with error 4; the
+  original returned an address in the program
+  ([#644](https://github.com/fubar-coder/bb2-c/issues/644)).
+* `PFErrorText` after a `PFEvaluate` without an error returns ""; the
+  original could return a string of 64 KB or more, depending on what a
+  register held before the call
+  ([#640](https://github.com/fubar-coder/bb2-c/issues/640)).
+
+### Fixes in rifastseriallib {#rifastseriallib-fixes}
 
 These fixes concern
-[rianimlib]({{< relref "/docs/libraries/userlibs/rianimlib" >}}), the
-library by Reflective Images that plays IFF animations (ANIM files) of
-the delta formats ANIM5 and ANIM7 from memory into bitmaps.
-`RIAnimInit` unpacks the first frame and starts the animation, and each
-`RINextAnimFrame` draws the next frame. The fix of
-[data that is not a `FORM ANIM`](#rwe-other-fixes) is listed under
-Other fixes.
+[rifastseriallib]({{< relref "/docs/libraries/userlibs/rifastseriallib" >}}),
+the fast serial links of Red When Excited. `SetIOSize` is described in
+[Changes for existing programs](#setiosize-count), the results of
+`InitSerialIO` and `GetSerial` in
+[Changes you may notice](#fastserial-results). One bug of `SyncSerial`
+stays ([Bugs not fixed yet]({{< relref "/docs/compared-with-original/bugs-not-fixed-yet" >}})).
 
-* `RIAnimInit` takes the bitmap header (BMHD) from the first frame only
-  and fails when that frame has none. The original searched the whole
-  animation and could take a header from a later part
-  ([#511](https://github.com/fubar-coder/bb2-c/issues/511)).
-* A failed `RIAnimInit` leaves no animation: `RIAnimFrameCount` and
-  `RINextAnimFrame` return 0. The original went on playing the
-  animation started before
-  ([#512](https://github.com/fubar-coder/bb2-c/issues/512)).
-* `RIAnimInit` returns 0 when the bitmap cannot hold the first frame,
-  because it is too narrow or not deep enough. The original reported
-  success and played the frames into that bitmap
-  ([#1106](https://github.com/fubar-coder/bb2-c/issues/1106)).
-* `RIAnimInit` refuses an animation whose header gives a depth of 0 or
-  more than 8 bitplanes. The original wrote through plane pointers from
-  behind the bitmap's
-  ([#509](https://github.com/fubar-coder/bb2-c/issues/509)).
-* With runtime error checking, `RIAnimInit` with a position `x`,`y`
-  outside the bitmap stops with the runtime error "Animation position
-  outside the bitmap". The original drew the frames far outside the
-  bitmap, as the port does without error checking
-  ([#514](https://github.com/fubar-coder/bb2-c/issues/514)).
-* `RIAnimFrameCount` counts only the frames. The original counted every
-  chunk of the animation, an annotation as well
-  ([#510](https://github.com/fubar-coder/bb2-c/issues/510)).
-* The library finds the bitmap header, the frames, their colours and
-  their delta data behind a chunk of odd length, such as an annotation
-  (ANNO); it skips the pad byte that the IFF standard puts there. The
-  original read one byte off and missed them
-  ([#505](https://github.com/fubar-coder/bb2-c/issues/505)).
-* A corrupt chunk length ends the walk through the animation instead of
-  sending it into memory that is not there; `RIAnimInit` could hang on
-  it in the original
-  ([#506](https://github.com/fubar-coder/bb2-c/issues/506)).
-* `RIAnimInit` returns 0 for an animation written without pad bytes, in
-  which a chunk behind one of odd length starts at an odd address, and
-  `RIAnimDepth`, `RIAnimWidth` and `RIAnimHeight` return 0 when this
-  happens before the bitmap header. On a 68000 the original crashed with
-  a Software Failure on such a file; a 68020 or later read it
-  ([#1119](https://github.com/fubar-coder/bb2-c/issues/1119)).
-* `RINextAnimFrame` plays a frame that has another chunk, such as a
-  DPAN, before its delta data, and returns 0 for a frame without delta
-  data. The original crashed there
-  ([#515](https://github.com/fubar-coder/bb2-c/issues/515)).
-* `RINextAnimFrame` plays ANIM7 animations stored with short (word)
-  data. The original decoded every ANIM7 as long data and drew garbage
-  ([#504](https://github.com/fubar-coder/bb2-c/issues/504)).
-* `RINextAnimFrame` decodes the last column of ANIM5 animations whose
-  width is no multiple of 16 pixels. The original left the right edge
-  of such frames as it was, and for an animation narrower than 8 pixels
-  wrote far beyond the bitmap
-  ([#507](https://github.com/fubar-coder/bb2-c/issues/507)).
-* `RINextAnimFrame` plays on past a chunk between two frames, such as
-  an annotation. The original took it for the end of the animation and
-  stopped there or started again
-  ([#1116](https://github.com/fubar-coder/bb2-c/issues/1116)).
-* `RINextAnimFrame` refuses a frame whose header or colour chunk claims
-  to be longer than the frame, and returns 0. The original read the
-  next chunk from wherever that length pointed in memory
-  ([#1117](https://github.com/fubar-coder/bb2-c/issues/1117)).
-* `RINextAnimFrame` refuses a frame whose delta data gives a plane's
-  data outside the delta chunk, and returns 0 without drawing. The
-  original read the delta data of that plane from anywhere in memory
-  and wrote it into the bitmap. The runs and copies inside a plane's
-  columns are still not checked, so that playing stays as fast as in
-  the original
-  ([#1120](https://github.com/fubar-coder/bb2-c/issues/1120)).
-* `RINextAnimFrame` refuses an ANIM7 frame whose delta data puts the
-  data of a plane at an odd offset in the delta chunk, and returns 0
-  without drawing. On a 68000 the original crashed with a Software
-  Failure on such a frame; the port refuses it on every processor
-  ([#1121](https://github.com/fubar-coder/bb2-c/issues/1121)).
-* With runtime error checking, `RINextAnimFrame` stops with the runtime
-  error "Animation position on an odd byte for ANIM7" before an ANIM7
-  frame when the position given to `RIAnimInit` puts the frame at an odd
-  byte: an `x` of 8 to 15, 24 to 31 and so on, or an odd byte offset.
-  On a 68000 the original crashed with a Software Failure there. ANIM5
-  frames play at any position, and without error checking the port
-  plays as the original
-  ([#1122](https://github.com/fubar-coder/bb2-c/issues/1122)).
-* A program run a second time from the editor starts with no animation
-  and with `AnimLoop` on. The original's `RIAnimFrameCount` and
-  `RINextAnimFrame` worked on the animation of the run before, which may
-  have been freed, and an `AnimLoop Off` stayed off
-  ([#1107](https://github.com/fubar-coder/bb2-c/issues/1107)).
+* `InitSerialIO` and `SetIOSpeed` work on a 68000. The original used an
+  instruction of the 68020 there and crashed
+  ([#647](https://github.com/fubar-coder/bb2-c/issues/647)).
+* A block of 0 bytes in `PutSerial`, `GetSerial`, `SyncPut` and `SyncGet`
+  transfers nothing. The original took it for 4 GB
+  ([#646](https://github.com/fubar-coder/bb2-c/issues/646)).
+* `SetIOSpeed` takes the baud rate from its argument alone. The original
+  also used the unused upper half of the register, and could set a wrong
+  rate ([#654](https://github.com/fubar-coder/bb2-c/issues/654)).
+* `FinitSerialIO`, also at the end of the program, switches the serial
+  interrupts that were on before `InitSerialIO` back on, so serial.device
+  works again afterwards. The original never switched them on, and wrote
+  to address $9A in low memory instead of the chip register
+  ([#651](https://github.com/fubar-coder/bb2-c/issues/651),
+  [#648](https://github.com/fubar-coder/bb2-c/issues/648)).
+* `InitSerialIO` sets the library up at every baud rate from 109 to
+  3546895, and `InitSerialIO` and `SetIOSpeed` refuse another rate. With
+  the original a rate of 1773448 or more left the library "not set up",
+  so the later commands did nothing, and a rate of 0 divided by zero
+  ([#653](https://github.com/fubar-coder/bb2-c/issues/653)).
+* `DoSerialIO`, `GetSerial`, `SyncSerial`, `SyncPut`, `SyncGet` and
+  `CheckSerial` do nothing before `InitSerialIO`. The original ran them
+  on the port, `DoSerialIO` with buffers at address 0
+  ([#652](https://github.com/fubar-coder/bb2-c/issues/652)).
+* After `InitSerialIO` with a count of 0 or `SetIOSize 0`, `DoSerialIO`
+  without an argument transfers nothing. The original exchanged 65536
+  bytes after `InitSerialIO` with a count of 0, far past the buffers
+  ([#1164](https://github.com/fubar-coder/bb2-c/issues/1164)).
+* A program run again from the editor starts as the slave and with the
+  library not set up. The original kept the state of the run before, so
+  a program that never calls `SetSerialMode` could be the master
+  ([#1159](https://github.com/fubar-coder/bb2-c/issues/1159)).
 
 ### Fixes in rifnslib {#rifnslib-fixes}
 
@@ -6008,6 +5651,52 @@ above.
   which had been freed
   ([#1124](https://github.com/fubar-coder/bb2-c/issues/1124)).
 
+### Fixes in rifxlib {#rifxlib-fixes}
+
+These fixes concern
+[rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}), the bitmap
+effects by Reflective Images. The fix of
+[the result of `Derez`](#rwe-effect-results) is described above.
+
+* `ClearBitmap` clears the whole area. The original left the last word
+  of each bitplane's area as it was and cleared the word in front of
+  the area instead, for an `offset` of 0 the word in front of the
+  bitplane ([#668](https://github.com/fubar-coder/bb2-c/issues/668)).
+* `ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the depth of the
+  bitmap alone. The original read it together with the bitmap's flags,
+  so a bitmap whose flags are set counted as one with hundreds of
+  bitplanes and the program crashed
+  ([#670](https://github.com/fubar-coder/bb2-c/issues/670)).
+* With runtime error checking, every command that works through the
+  bitplanes of a bitmap stops with "Illegal BitMap Depth" for a bitmap
+  of depth 0 or more than 8, `ClearBitmap` and `FadeInBitmap` with
+  "Delay must not be 0" for a delay of 0, and `ZoomyZoom` with "ZoomyZoom
+  needs a bitmap of at least 640 x 32" for a smaller one
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rwe-effects-depth" >}}),
+  [#947](https://github.com/fubar-coder/bb2-c/issues/947),
+  [#674](https://github.com/fubar-coder/bb2-c/issues/674),
+  [#669](https://github.com/fubar-coder/bb2-c/issues/669),
+  [#676](https://github.com/fubar-coder/bb2-c/issues/676)).
+* After a `Derez` or `ZoomXY` with a bitmap of depth 0, the next calls
+  count the bitplanes of their own bitmaps. In the original the count
+  stayed wrong for every later call
+  ([#675](https://github.com/fubar-coder/bb2-c/issues/675)).
+* `ZoomXY` works after a `Derez` with a value of 3 or more. In the
+  original, such a `Derez` wrote its table of masks over the first
+  instructions of `ZoomXY`: after a `Derez` of 5, `ZoomXY` cleared a
+  byte somewhere in memory and zoomed nothing
+  ([#671](https://github.com/fubar-coder/bb2-c/issues/671)).
+* With runtime error checking, `ZoomXY` before any `InitZoomXY` stops
+  with "ZoomXY needs InitZoomXY". The original zoomed a bitmap at
+  address 0 and crashed
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#zoomxy-without-initzoomxy" >}}),
+  [#1131](https://github.com/fubar-coder/bb2-c/issues/1131)).
+* A program run a second time from the editor starts without the
+  bitmaps and offsets of an `InitZoomXY`. In the original, a `ZoomXY`
+  before the run's own `InitZoomXY` zoomed with the bitmaps of the run
+  before, which may have been freed
+  ([#1127](https://github.com/fubar-coder/bb2-c/issues/1127)).
+
 ### Fixes in rigfxlib {#rigfxlib-fixes}
 
 These fixes concern
@@ -6060,225 +5749,169 @@ described above.
   freed palette
   ([#1125](https://github.com/fubar-coder/bb2-c/issues/1125)).
 
-### Fixes in rifxlib {#rifxlib-fixes}
+### Fixes in rigtmenulib {#rigtmenulib-fixes}
 
 These fixes concern
-[rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}), the bitmap
-effects by Reflective Images. The fix of
-[the result of `Derez`](#rwe-effect-results) is described above.
+[rigtmenulib]({{< relref "/docs/libraries/userlibs/rigtmenulib" >}}),
+the GadTools menus by Reflective Images. A program builds its menus in
+a list with `GTMenuTitle`, `GTMenuItem` and `GTSubItem`, removes entries
+with `GTFreeMenu`, and `CreateMenuStrip` makes a menu strip of the list.
 
-* `ClearBitmap` clears the whole area. The original left the last word
-  of each bitplane's area as it was and cleared the word in front of
-  the area instead, for an `offset` of 0 the word in front of the
-  bitplane ([#668](https://github.com/fubar-coder/bb2-c/issues/668)).
-* `ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the depth of the
-  bitmap alone. The original read it together with the bitmap's flags,
-  so a bitmap whose flags are set counted as one with hundreds of
-  bitplanes and the program crashed
-  ([#670](https://github.com/fubar-coder/bb2-c/issues/670)).
-* With runtime error checking, every command that works through the
-  bitplanes of a bitmap stops with "Illegal BitMap Depth" for a bitmap
-  of depth 0 or more than 8, `ClearBitmap` and `FadeInBitmap` with
-  "Delay must not be 0" for a delay of 0, and `ZoomyZoom` with "ZoomyZoom
-  needs a bitmap of at least 640 x 32" for a smaller one
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rwe-effects-depth" >}}),
-  [#947](https://github.com/fubar-coder/bb2-c/issues/947),
-  [#674](https://github.com/fubar-coder/bb2-c/issues/674),
-  [#669](https://github.com/fubar-coder/bb2-c/issues/669),
-  [#676](https://github.com/fubar-coder/bb2-c/issues/676)).
-* After a `Derez` or `ZoomXY` with a bitmap of depth 0, the next calls
-  count the bitplanes of their own bitmaps. In the original the count
-  stayed wrong for every later call
-  ([#675](https://github.com/fubar-coder/bb2-c/issues/675)).
-* `ZoomXY` works after a `Derez` with a value of 3 or more. In the
-  original, such a `Derez` wrote its table of masks over the first
-  instructions of `ZoomXY`: after a `Derez` of 5, `ZoomXY` cleared a
-  byte somewhere in memory and zoomed nothing
-  ([#671](https://github.com/fubar-coder/bb2-c/issues/671)).
-* With runtime error checking, `ZoomXY` before any `InitZoomXY` stops
-  with "ZoomXY needs InitZoomXY". The original zoomed a bitmap at
-  address 0 and crashed
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#zoomxy-without-initzoomxy" >}}),
-  [#1131](https://github.com/fubar-coder/bb2-c/issues/1131)).
-* A program run a second time from the editor starts without the
-  bitmaps and offsets of an `InitZoomXY`. In the original, a `ZoomXY`
-  before the run's own `InitZoomXY` zoomed with the bitmaps of the run
-  before, which may have been freed
-  ([#1127](https://github.com/fubar-coder/bb2-c/issues/1127)).
+* `GTMenuItem` in the form with `UserData` gives the item the
+  `mutualexclude` mask of the call; the original gave it the mask of the
+  item or sub item added before
+  ([#692](https://github.com/fubar-coder/bb2-c/issues/692)).
+* `GTFreeMenu` with an item or sub item number removes that item or sub
+  item. The original decided whether the number was given by the upper
+  half of a register that the compiled program had left as it happened
+  to be, so it could remove the whole item or the whole title instead
+  ([#691](https://github.com/fubar-coder/bb2-c/issues/691)).
+* `GTFreeMenu` of a title, and freeing a `GTMenuList` object, free the
+  title's text too; the original kept the text until the end of the
+  program, so a program that built its menus again and again lost
+  memory ([#695](https://github.com/fubar-coder/bb2-c/issues/695)).
+* A program that uses the library closes gadtools.library at its end;
+  the original left it open, once more with every run
+  ([#690](https://github.com/fubar-coder/bb2-c/issues/690)).
+* `CreateMenuStrip` on a list without titles frees the object's old
+  strip and returns 0, so a later `GTSetMenu` attaches no menus. It also
+  returns 0, with no strip, when GadTools cannot make or lay out the
+  strip. The original read a title from address 0, made a strip of what
+  it found there and returned -1, also when GadTools had failed
+  ([#689](https://github.com/fubar-coder/bb2-c/issues/689)).
+* `GTMenuItem` and `GTSubItem` keep a `shortcut$` whose text lies at an
+  address divisible by 65536; the original took it for no shortcut, and
+  the item had no key
+  ([#694](https://github.com/fubar-coder/bb2-c/issues/694)).
+* With runtime error checking, `GTFreeMenu` with a negative item number
+  stops with "Illegal Menu Item number"; the original freed the title as
+  if it were an item and damaged memory. A negative sub item number
+  removes the whole item, as in the original
+  ([#1089](https://github.com/fubar-coder/bb2-c/issues/1089)).
 
-### Fixes in ricopperfxlib {#ricopperfxlib-fixes}
+### Fixes in riintuilib {#riintuilib-fixes}
 
 These fixes concern
-[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}}),
-the copper instructions by Reflective Images for the custom space of a
-coplist. The fixes of
-[the results of `DoColSplit` and `CopperAGACol`](#rwe-effect-results)
-and of [`GetCCOffset` after `CopperResetAdr`](#getccoffset-resetadr) are
-described above.
+[riintuilib]({{< relref "/docs/libraries/userlibs/riintuilib" >}}), the
+text output on a bitmap by Reflective Images: `IPOutput` makes a `Rast`
+object the output channel, so that `Print` and `NPrint` draw on its
+bitmap.
 
-* A colour split of `DoColSplit` that starts at line 0 starts there. The
-  original first wrote the wait for line 256 that the copper needs for
-  the lines below 255, so the split appeared at line 256, or not at all
-  on a display that ends before it
-  ([#588](https://github.com/fubar-coder/bb2-c/issues/588)).
-* With runtime error checking, `DoColSplit` and `RedoColSplit` with
-  fewer than one line stop with "Colour split needs at least one line".
-  The original divided by zero for 0 lines and wrote up to 65536 lines
-  over the memory behind the custom space for a negative number
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#colsplit-numlines" >}}),
-  [#589](https://github.com/fubar-coder/bb2-c/issues/589)).
-* `CopperWait` with an `x` of 500 or more waits on the line given. The
-  original waited one line later
-  ([#591](https://github.com/fubar-coder/bb2-c/issues/591)).
-* `RedoColSplit` with a `ccoffset` of 16384 instructions or more writes
-  its colours at that place. The original wrote them 64 KB or a multiple
-  of it away, into other memory. `GetCCOffset` never returns such a
-  large offset; only a program that computes the offset itself meets it
-  ([#594](https://github.com/fubar-coder/bb2-c/issues/594)).
-* A program run a second time from the editor starts with no custom
-  space chosen and with the `ColSplitBplcon3` value 0. In the original,
-  every command before `CopperReset` wrote into the copper list of the
-  run before, which had been freed, and that run's `ColSplitBplcon3`
-  value stayed in effect
-  ([#1126](https://github.com/fubar-coder/bb2-c/issues/1126)).
+* Text printed through `IPOutput` starts at the position that `IPLocate`
+  set, and the next text goes on after it. The original drew every text
+  at the top left corner of the Rast, over the text before
+  ([#697](https://github.com/fubar-coder/bb2-c/issues/697)).
+* `NPrint` through `IPOutput` ends the line: the next text starts at the
+  left edge of the next line. The original drew a byte from low memory
+  as a character instead
+  ([#699](https://github.com/fubar-coder/bb2-c/issues/699)).
+* A text of 1024 characters or more is drawn whole. The original copied
+  it into a buffer of 1024 bytes without a limit, so it wrote over the
+  pens of the next text and, from 1028 characters on, over the library
+  ([#698](https://github.com/fubar-coder/bb2-c/issues/698)).
+* `IPColour -1,bgpen`, which leaves the foreground pen as it is, sets
+  the background pen of the Rast in use. The original left the Rast's
+  background pen unchanged and wrote the pen into memory of the program
+  instead ([#696](https://github.com/fubar-coder/bb2-c/issues/696)).
 
-### Fixes in ridisplaylib {#ridisplaylib-fixes}
+### Fixes in rilinkedlistlib {#rilinkedlistlib-fixes}
 
 These fixes concern
-[ridisplaylib]({{< relref "/docs/libraries/userlibs/ridisplaylib" >}}),
-the unfinished start of a display library by Reflective Images. Its
-`InitView` allocates a copper list that is never shown.
+[rilinkedlistlib]({{< relref "/docs/libraries/userlibs/rilinkedlistlib" >}}),
+the five linked lists of copied variables by Steven Matty. Each item of
+a list links to the item before and the item after it, and can hold a
+copy of a variable.
 
-* `InitView` writes the moves of the display window and data fetch
-  registers into its list. The original wrote words read from fixed
-  addresses of low memory instead, and two of these addresses are odd,
-  which crashed a 68000
-  ([#889](https://github.com/fubar-coder/bb2-c/issues/889)).
-* `InitView` sizes the list by the number of colours it is given, and
-  computes the size as a long. The original used the height instead of
-  the number of colours and computed a word, so large values gave a
-  wrong or negative size
-  ([#890](https://github.com/fubar-coder/bb2-c/issues/890)).
-* Without enough chip memory, `InitView` returns 0 and writes nothing.
-  The original wrote its list to address 0, over system memory, and
-  freed address 0 at the end of the program
-  ([#888](https://github.com/fubar-coder/bb2-c/issues/888)).
-* At the end of the program the library frees the lists of all
-  `InitView` calls, also when it could not open graphics.library 39.
-  The original freed only the last list, and only with
-  graphics.library 39
-  ([#891](https://github.com/fubar-coder/bb2-c/issues/891)).
+The links of a list:
 
-### Fixes in richunkylib {#richunkylib-fixes}
+* `AddFirstListItem` links the old first item back to the new one. The
+  original wrote the new item into the old first item's link to the
+  next one, so that item lost the rest of the list, and `NextListItem`
+  from the first item went back and forth between the two
+  ([#724](https://github.com/fubar-coder/bb2-c/issues/724)).
+* `AddListItem` in the middle of a list links the item behind the new
+  one back to it; the original left that link on the old current item,
+  so `PrevListItem` from there skipped the new item
+  ([#727](https://github.com/fubar-coder/bb2-c/issues/727)).
+* `DelListItem` of the first item clears the backward link of the new
+  first item; the original cleared its forward link instead, so the list
+  ended at the new first item
+  ([#728](https://github.com/fubar-coder/bb2-c/issues/728)).
+
+New items and results:
+
+* `AddFirstListItem` returns -1 on success, as documented; the original
+  returned four times the list number, so 0, the result for a failure,
+  on list 0 ([#725](https://github.com/fubar-coder/bb2-c/issues/725)).
+* `AddFirstListItem` clears the new item; the original left whatever
+  the memory held in it, so the item seemed to hold a copy, and
+  `PrevListItem`, `GetListItem` and `DelListItem` used meaningless
+  addresses ([#726](https://github.com/fubar-coder/bb2-c/issues/726)).
+* On a list that was never started with `InitList`, the commands do
+  nothing and return 0, as documented. Only `DelListItem` checked this
+  in the original: the others read and wrote memory from address 0 on,
+  and `FirstListItem` and `LastListItem` returned -1
+  ([#733](https://github.com/fubar-coder/bb2-c/issues/733)).
+* With runtime error checking, a list number outside 0 to 4 stops with
+  the error "List number must be 0 to 4"; the original wrote into the
+  other lists and the memory behind them
+  ([A list number outside 0 to 4]({{< relref "/docs/compared-with-original/new-errors#linked-list-number-range" >}}),
+  [#732](https://github.com/fubar-coder/bb2-c/issues/732)).
+
+The copies of the items:
+
+* `DelListItem` frees the item with its copy. The original read the
+  copy's address from the wrong place and freed a wrong address: the
+  program stopped with "Unable to Free Memory", or crashed without
+  runtime error checking
+  ([#729](https://github.com/fubar-coder/bb2-c/issues/729)).
+* `SetListItem` frees the copy the item held before; the original lost
+  it until the program ended
+  ([#734](https://github.com/fubar-coder/bb2-c/issues/734)).
+* `InitList` on a list that is already there frees it first, with the
+  copies of its items; the original lost the old list until the program
+  ended ([#731](https://github.com/fubar-coder/bb2-c/issues/731)).
+* `GetListItem` copies no more bytes than the item's copy has, and the
+  rest of a larger variable stays as it is; the original filled it with
+  the bytes behind the copy
+  ([#730](https://github.com/fubar-coder/bb2-c/issues/730)).
+* The size an item keeps of its copy is right after `AddListItem`,
+  `AddLastListItem` and `SetListItem`; the original stored the size of
+  the last variable any command had looked at, or kept the old size
+  ([#735](https://github.com/fubar-coder/bb2-c/issues/735)).
+
+### Fixes in rilvcallhooklib {#rilvcallhooklib-fixes}
 
 These fixes concern
-[richunkylib]({{< relref "/docs/libraries/userlibs/richunkylib" >}}),
-the chunky bitmaps of Reflective Images, with one byte per pixel, and
-their conversion into planar bitmaps.
+[rilvcallhooklib]({{< relref "/docs/libraries/userlibs/rilvcallhooklib" >}}),
+a render hook by Red When Excited that draws the items of a GadTools
+listview as columns of texts and bitmaps, with an optional indent drawn
+as dotted tree lines.
 
-* `ChunkyToPlanar` converts chunky bitmaps of other sizes, with a width
-  that is a multiple of 16 pixels, into the top left of any bitmap of 8
-  bitplanes that is at least as big, also an interleaved one. A chunky bitmap the
-  bitmap cannot take is not converted; with runtime error checking it
-  is a runtime error. The original always converted 320 x 256 pixels
-  into bitplanes 10240 bytes apart: it read behind a smaller chunky
-  bitmap and wrote behind a smaller bitmap
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#chunkytoplanar-sizes" >}}),
-  [#884](https://github.com/fubar-coder/bb2-c/issues/884)).
-* `ChunkyToPlanar` reads the depth of the bitmap alone. The original
-  read it together with the bitmap's flags: depending on the flags it
-  wrote 8 bitplanes into a bitmap with fewer, or refused a bitmap of
-  depth 8
-  ([#883](https://github.com/fubar-coder/bb2-c/issues/883)).
-* `ChunkyBitmap` frees the data a chunky bitmap already holds also when
-  it lies below address 65536. The original never freed such data, so a
-  new chunky bitmap on that object lost it; when the new memory could
-  not be allocated, the object kept the old address with a size of 0
-  ([#885](https://github.com/fubar-coder/bb2-c/issues/885)).
-* `RaycastSky` with a height of 0 or below copies nothing. The
-  original copied 65536 rows, about 20 MB of memory
-  ([#887](https://github.com/fubar-coder/bb2-c/issues/887)).
-* With runtime error checking, `RaycastSky` stops with "RaycastSky
-  outside the chunky bitmap" when the column it would write leaves the
-  chunky bitmap, and with "RaycastSky column below 0" for a negative
-  texture column. The original wrote or read outside
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#raycastsky-outside" >}}),
-  [#887](https://github.com/fubar-coder/bb2-c/issues/887)).
-* Freeing a chunky bitmap, when `ChunkyBitmap` makes it again or at the
-  end of the program, leaves the audio filter and the power LED as they
-  are. The original switched them over
-  ([#886](https://github.com/fubar-coder/bb2-c/issues/886)).
-
-### Fixes in rizonejoylib {#rizonejoylib-fixes}
-
-These fixes concern
-[rizonejoylib]({{< relref "/docs/libraries/userlibs/rizonejoylib" >}}),
-the zones and joystick commands by Reflective Images. The fixes of
-[`NewZoneTable`](#newzonetable-current-table), of
-[circular zones](#zone-circles) and of
-[zones above the top of the screen](#zone-negative-y) are described
-above.
-
-* `NewZoneTable`, `UseZoneTable` and `FreeZoneTable` refuse a negative
-  table number. The original took -1 for the entry in front of its list
-  of tables: `UseZoneTable -1` chose a table that was none, and
-  `FreeZoneTable -1` and `NewZoneTable -1` freed the current table and
-  went on using it
-  ([#872](https://github.com/fubar-coder/bb2-c/issues/872)).
-* `ZoneInit` and `SetZone` refuse a negative zone number. The original
-  wrote such a zone in front of the zone table, over the number of
-  zones the table holds and the memory before it
-  ([#873](https://github.com/fubar-coder/bb2-c/issues/873)).
-* `SetZone` and `ZoneInit` reach every zone of a table of more than 8192
-  zones. In the original, zone 8192 was zone 0 again, and every zone
-  above it the one 8192 below
-  ([#878](https://github.com/fubar-coder/bb2-c/issues/878)).
-* `ZoneTest` from zone 256 on tests the zones it is asked for. The
-  original took the number modulo 256 for the zone it tested and
-  reported it under the number asked for: `ZoneTest(260,5,5)` tested
-  zone 4 and returned 260. In a range, a
-  negative start zone counts as one beyond the table, the last zone,
-  and a negative end zone gives -1
-  ([#881](https://github.com/fubar-coder/bb2-c/issues/881)).
-* In the 68000 mode, `Zone` and `ZoneTest` find points in zones more
-  than 32767 pixels wide or high. The original missed them: a zone from
-  y -32768 to 32767 did not contain the point 5,-1
-  ([#879](https://github.com/fubar-coder/bb2-c/issues/879)).
-* `GetZoneX1`, `GetZoneY1`, `GetZoneX2` and `GetZoneY2` return the
-  values of a zone also in small tables, and -1 for a zone beyond the
-  table or without a table. The original did not check the zone number,
-  returned -1 for every zone from `GetZoneY1` in a table of up to 4
-  zones, from `GetZoneX2` in a table of 2 and from `GetZoneY2` in a
-  table of up to 6, and read address 0 without a table
-  ([#870](https://github.com/fubar-coder/bb2-c/issues/870)).
-* When there is no memory for zone table 0 at the start of the program,
-  `SetZone` returns 0 (False) and `ZoneTable` returns 0. The original
-  returned -1 for both, as if the zone had been set and as if -1 were
-  the address of a table
-  ([#876](https://github.com/fubar-coder/bb2-c/issues/876)).
-* `FreeZoneTable` removes the table it frees from the library's list.
-  The original left it there: `UseZoneTable` still chose the freed
-  table, and the end of the program freed it a second time, in every
-  program that used `FreeZoneTable`
-  ([#868](https://github.com/fubar-coder/bb2-c/issues/868)).
-* When `NewZoneTable` replaces a table and then gets no memory for the
-  new one, the table of that number no longer exists: the result is 0,
-  and if it was the current table, table 0 becomes the current one. The
-  original kept the freed table in its list, where `UseZoneTable` chose
-  it and the end of the program freed it again
-  ([#874](https://github.com/fubar-coder/bb2-c/issues/874)).
-* `NewZoneTable` accepts a table of one zone, as the guide allows. The
-  original refused it and took 2 to 65535 zones
-  ([#1136](https://github.com/fubar-coder/bb2-c/issues/1136)).
-* A program run a second time from the editor starts with zone table 0
-  alone. The original found the tables of the run before, which had
-  been freed: `UseZoneTable` chose them, and the end of the program
-  freed them again
-  ([#871](https://github.com/fubar-coder/bb2-c/issues/871)).
-* A program run a second time from the editor starts with the reading
-  of the four player adaptor switched on, as the guide says. After a
-  `JAdaptorStatus Off`, the original started the next run with it off
-  ([#1132](https://github.com/fubar-coder/bb2-c/issues/1132)).
+* The tree lines of an indented item depend on its indent alone. The
+  original computed their number with the upper half of a register that
+  the caller of the hook had left, so the lines could be missing, or
+  65536 lines were drawn for an indent below 16 pixels
+  ([#737](https://github.com/fubar-coder/bb2-c/issues/737)).
+* The last tree line of an item is short when the next item ends the
+  list or has a smaller indent. The original read an unrelated word of
+  the next node instead of its indent, so the line was short or long by
+  chance, and with an odd width of the first field it crashed a 68000
+  ([#739](https://github.com/fubar-coder/bb2-c/issues/739)).
+* A right-aligned bitmap is drawn at the right edge of its field. The
+  original drew it too far to the right, by the field's horizontal
+  position, and filled the field with the background pen instead
+  ([#740](https://github.com/fubar-coder/bb2-c/issues/740)).
+* A text field whose pointer is 0 stays empty; the original showed the
+  bytes at address 0 as text
+  ([#742](https://github.com/fubar-coder/bb2-c/issues/742)).
+* After drawing an indented item, the hook puts the line pattern of the
+  RastPort back as it found it. The original set it to solid lines, or
+  left it dotted after an indent of 1 to 15 pixels, which has no tree
+  lines; later lines that the program drew on the same RastPort changed
+  with it. In a GadTools listview the hook gets a RastPort of its own,
+  and the tree lines look as before
+  ([#738](https://github.com/fubar-coder/bb2-c/issues/738)).
 
 ### Fixes in rimapeditorlib {#rimapeditorlib-fixes}
 
@@ -6346,53 +5979,6 @@ the block maps and helpers of Reflective Images' map editor.
   before, and its stencil had been freed
   ([#1133](https://github.com/fubar-coder/bb2-c/issues/1133)).
 
-### Fixes in risnowlib {#risnowlib-fixes}
-
-These fixes concern
-[risnowlib]({{< relref "/docs/libraries/userlibs/risnowlib" >}}), the
-falling snow of Reflective Images.
-
-* With runtime error checking, every snow command with a field number
-  outside 0 to 3 stops with "Snow list number must be 0 to 3",
-  `LDoSnow`, `LDoSnowActivate` and `KillPoint` on a field without
-  `InitSnowDrop` with "Snow list needs InitSnowDrop", and `KillPoint`
-  outside the bitmap with "KillPoint outside the bitmap". The original
-  read and wrote outside the library's table, at address 0 or around
-  the bitmap
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#snow-list-checks" >}}),
-  [#913](https://github.com/fubar-coder/bb2-c/issues/913)).
-* `InitSnowDrop` with 1024 points or more allocates enough memory for
-  the field's lists. The original computed the size in 16 bits, got a
-  block far too small and wrote the lists behind it
-  ([#912](https://github.com/fubar-coder/bb2-c/issues/912)).
-* `LDoSnowActivate` before the first `LDoSnow` of a field works on the
-  field's lists. The original wrote its entries to address 0
-  ([#908](https://github.com/fubar-coder/bb2-c/issues/908)).
-* A second `LDoSnowActivate` before the next `LDoSnow` keeps the snow
-  the first one let fall. In the original it overwrote those flakes,
-  and they vanished without falling
-  ([#909](https://github.com/fubar-coder/bb2-c/issues/909)).
-* `InitSnowDrop` of a field that is already set up frees the field's
-  old lists. The original lost their memory until the end of the
-  program
-  ([#911](https://github.com/fubar-coder/bb2-c/issues/911)).
-* `LDoSnow` takes the bit of a new flake from the random table modulo
-  8. In the original, a flake whose bit was above 7 looked up its moves
-  in the wrong place and could jump through memory, up to 32 KB away,
-  every frame again
-  ([#910](https://github.com/fubar-coder/bb2-c/issues/910)).
-* The lists of a field take no more flakes than they have room for:
-  `LDoSnow` adds no new flake to a full list, `LDoSnowActivate` leaves
-  settled snow where it is when the list of falling snow is full, and
-  `KillPoint` does nothing and returns 0 when its list is full. In the
-  original, a field whose flakes piled up ran over into the next field's
-  lists, and the last field behind its memory
-  ([#914](https://github.com/fubar-coder/bb2-c/issues/914)).
-* A program run a second time from the editor starts with no field set
-  up. In the original, a snow command before `InitSnowDrop` worked on
-  the lists of the run before, which had been freed
-  ([#1135](https://github.com/fubar-coder/bb2-c/issues/1135)).
-
 ### Fixes in rimapshapeslib {#rimapshapeslib-fixes}
 
 These fixes concern
@@ -6441,111 +6027,437 @@ the map shapes and groups of Reflective Images' map editor.
   block size
   ([#1134](https://github.com/fubar-coder/bb2-c/issues/1134)).
 
-### Fixes in riwbspritelib {#riwbspritelib-fixes}
+### Fixes in rimisclib {#rimisclib-fixes}
 
 These fixes concern
-[riwbspritelib]({{< relref "/docs/libraries/userlibs/riwbspritelib" >}}),
-the hardware sprites of Reflective Images on the Workbench screen. The
-changed results of `GetWBSprite` and `MoveWBSprite` are described in
-[Changes you may notice](#wbsprite-results).
+[rimisclib]({{< relref "/docs/libraries/userlibs/rimisclib" >}}), the
+miscellaneous commands of Reflective Images and Steve Matty; the fixes
+of [`NextArg$`](#nextarg-doubled-quote) and of
+[the text that follows a string function](#rwe-text-after-string-function)
+are described above.
 
-* The Workbench sprite commands work on Kickstart 1.x and 2.x, with
-  sprites 16 pixels wide in up to 3 colours, made of a shape of 1 or 2
-  planes. As on Kickstart 3.0, the width of the shape is rounded down to
-  16: a shape 20 pixels wide makes a sprite, one of 32 pixels or more is
-  refused, and with runtime error checking it stops with "Shape too big
-  for a sprite below Kickstart 3.0". The original called functions of
-  Kickstart 3.0 there and crashed at the first `GetWBSprite`
-  ([#1151](https://github.com/fubar-coder/bb2-c/issues/1151)).
-* `ChangeWBSprite` frees the new sprite image when the system refuses
-  the change. The original lost a block of chip memory each time, until
-  the next reboot
-  ([#915](https://github.com/fubar-coder/bb2-c/issues/915)).
-* A sprite made of a shape whose width is no multiple of 16 shows the
-  left part of the shape, as wide as the sprite: the width of the shape
-  rounded down to a multiple of 16, so 16 pixels of a shape 20 pixels
-  wide. The original copied the rows of such a shape out of step, so
-  its image was sheared and its colours were wrong
-  ([#918](https://github.com/fubar-coder/bb2-c/issues/918)).
-* With runtime error checking, every sprite command refuses a channel
-  outside 0 to 7 (-1 to 7 for `GetWBSprite`) with "Sprite channel must
-  be 0 to 7" or "Sprite channel must be -1 to 7". The original read and
-  freed the library's own data as sprites
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
-  [#916](https://github.com/fubar-coder/bb2-c/issues/916)).
-* With runtime error checking, `GetWBSprite` and `ChangeWBSprite` refuse
-  a shape of height 0 with "Illegal Shape Height" and one of depth 0 or
-  more than 8 with "Illegal Shape Depth". The original would copy 65536
-  rows or planes
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
-  [#917](https://github.com/fubar-coder/bb2-c/issues/917)).
-* With runtime error checking, `WBSpriteX` and `WBSpriteY` of a channel
-  without a sprite stop with "No sprite on this channel". The original
-  returned words from low memory
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
-  [#922](https://github.com/fubar-coder/bb2-c/issues/922)).
+* `WorkbenchHere` works: it returns -1 if the title of an open screen
+  contains "Workbench", and 0 if none does. The original searched a list
+  of screens at whatever address a register of the processor held
+  ([#759](https://github.com/fubar-coder/bb2-c/issues/759)), did not stop
+  at the end of the list, so it never returned 0 and could hang
+  ([#761](https://github.com/fubar-coder/bb2-c/issues/761)), hung on a
+  title that ends with the start of "Workbench", such as "My Work"
+  ([#762](https://github.com/fubar-coder/bb2-c/issues/762)), and missed
+  "Workbench" behind another "W", as in "A Window on Workbench"
+  ([#760](https://github.com/fubar-coder/bb2-c/issues/760)).
+* Negative Quick and Float arguments of `EZRequest` and `EZRequestArgs`
+  show their whole part, -3.5 as -3, as `Int` gives it; the original
+  showed -3.5 as 65532
+  ([#750](https://github.com/fubar-coder/bb2-c/issues/750)).
+* Float arguments of `EZRequest` and `EZRequestArgs` are converted by
+  the library itself; the original called the conversion of the maths
+  library through whatever library base the program happened to hold, so
+  the value shown depended on what the program had done before
+  ([#749](https://github.com/fubar-coder/bb2-c/issues/749)).
+* `EZRequestArgs` with a shorter text than the call before shows only
+  its own; the original kept the end of the text before behind it
+  ([#747](https://github.com/fubar-coder/bb2-c/issues/747)).
+* With runtime error checking, `EZRequest` and `EZRequestArgs` with more
+  arguments than fit into their 16 longs stop with the error "Too Many
+  EZRequest Arguments"; the original wrote the rest over the code of the
+  library
+  ([`EZRequest` and `EZRequestArgs` with too many arguments]({{< relref "/docs/compared-with-original/new-errors#ezrequest-too-many-arguments" >}}),
+  [#748](https://github.com/fubar-coder/bb2-c/issues/748)).
+* `Flip$` of an empty string or of one character returns it unchanged;
+  the original exchanged 65536 pairs of bytes around the string and
+  overwrote memory
+  ([#751](https://github.com/fubar-coder/bb2-c/issues/751)).
+* `InitArgParse` copies at most 255 characters and cuts off the rest;
+  the original copied a line of any length into its 256 byte buffer and
+  overwrote the code of the library behind it
+  ([#752](https://github.com/fubar-coder/bb2-c/issues/752)).
+* `NextArgChar$` before `InitArgParse`, or after the end of the text,
+  returns "", as `NextArg$` does; the original read from memory address
+  0 on ([#754](https://github.com/fubar-coder/bb2-c/issues/754)).
+* `ProgPath$` of a program whose directory has no name that can be found
+  is the program's name alone; the original put a "/" in front of it
+  ([#758](https://github.com/fubar-coder/bb2-c/issues/758)).
+* `OpenFontPrefs` returns 0 when there is not enough memory for the
+  file; the original read the file to address 0, over the first bytes of
+  memory that the processor and the system need
+  ([#756](https://github.com/fubar-coder/bb2-c/issues/756)).
+* A second `OpenFontPrefs` frees the memory of the first; the original
+  lost 16 KB each time until the next reboot
+  ([#757](https://github.com/fubar-coder/bb2-c/issues/757)).
+* `DefaultFontHeight` and `DefaultFontName` look only at the font
+  entries of the preferences file, and return 0 or "" for a font type the
+  file does not set; the original also searched the memory behind the
+  file and could return a value from leftover data there
+  ([#745](https://github.com/fubar-coder/bb2-c/issues/745)).
+* `ASCRaw` of a code outside 0 to 113, such as the code of a key being
+  released, gives the character 0, and `RawASC` of a character that no
+  key types, or of "", gives -1. The original read the bytes before or
+  behind its table of keys and gave a meaningless character, and `RawASC` searched
+  on through memory until it found the character, or for ever
+  ([#744](https://github.com/fubar-coder/bb2-c/issues/744)).
 
-### Fixes in ritrackdisklib {#ritrackdisklib-fixes}
+### Fixes in rinonvolatilelib {#rinonvolatilelib-fixes}
 
 These fixes concern
-[ritrackdisklib]({{< relref "/docs/libraries/userlibs/ritrackdisklib" >}}),
-the sector access to floppy disks of Red When Excited. `OpenDisk`
-without a device name is described in
-[Changes for existing programs](#opendisk-device-name), `DiskMotor` in
-[Changes you may notice](#diskmotor-state).
+[rinonvolatilelib]({{< relref "/docs/libraries/userlibs/rinonvolatilelib" >}}),
+the access to the system's nonvolatile.library by Reflective Images; the
+fix of [the result of `StoreNVData`](#storenvdata-result) is described
+above.
 
-* Programs that use the library start on Kickstart 1.x. The library
-  builds its message port and its requests itself, with functions that
-  every Kickstart has; the original called functions of Kickstart 2.0
-  there, and every program with the library crashed at its start
-  ([#941](https://github.com/fubar-coder/bb2-c/issues/941)).
-* On Kickstart 1.x, `ReadSector`, `WriteSector`, `FormatTrack`,
-  `BootProg` and `WriteBoot unit,bootdata` move a buffer that is not in
-  chip memory through a chip memory buffer of the library, one track at
-  a time; without chip memory for it they send nothing and return 31.
-  trackdisk.device of Kickstart 1.x reaches only chip memory: given
-  another buffer, it wrote unrelated chip memory to the disk, or read
-  the sectors into it, and reported success. The original never got so
-  far, since it crashed at the start on Kickstart 1.x
-  ([#1163](https://github.com/fubar-coder/bb2-c/issues/1163)).
-* `BootProg` stores the checksum that Kickstart checks, so a disk with
-  the boot block boots. The original calculated it wrongly
-  ([#856](https://github.com/fubar-coder/bb2-c/issues/856)).
-* `FormatTrack` without a count formats one whole track, and both forms
-  of `WriteBoot` write the boot block. The original gave
-  trackdisk.device a length it refuses, so these wrote nothing. The count
-  of `FormatTrack` stays a number of sectors: only multiples of 11 work,
-  11 for each track, and the buffer holds 5632 bytes per track
-  ([#858](https://github.com/fubar-coder/bb2-c/issues/858)).
-* `WriteBoot unit,bootdata` writes the 1024 bytes at `bootdata`. The
-  original wrote from an address that happened to be in a register
-  ([#864](https://github.com/fubar-coder/bb2-c/issues/864)).
-* `WriteBoot unit` writes a bootable standard boot block and keeps the
-  file system type of the boot block on the disk. The original wrote 8
-  bytes of a boot block and 1016 bytes of whatever memory followed them
-  ([#865](https://github.com/fubar-coder/bb2-c/issues/865)).
-* `MotorOff` first writes the sectors that trackdisk.device still holds
-  in its track buffer to the disk, and `CloseDisk` and the end of the
-  program switch the motor off the same way. The device writes that
-  buffer only when it moves to another track, so with the original the
-  last track written, after `BootProg` and `WriteBoot` the boot block
-  itself, was lost when the disk was taken out. A program that keeps the
-  motor running until the disk is changed still loses it
-  ([#1154](https://github.com/fubar-coder/bb2-c/issues/1154)).
-* `OpenDisk unit#,devicename$` gives the name to the system as it is. The
-  original copied it into a buffer of the library, and a name of 57
-  characters or more overwrote the library's data
-  ([#860](https://github.com/fubar-coder/bb2-c/issues/860)).
-* `OpenDisk` with a negative unit returns 0. The original opened the
-  device and then lost the request, which stayed open
-  ([#861](https://github.com/fubar-coder/bb2-c/issues/861)).
-* `OpenDisk` of a unit that is already open returns 0 and leaves the
-  unit as it is. The original opened it a second time and lost the first
-  request, which stayed open
-  ([#862](https://github.com/fubar-coder/bb2-c/issues/862)).
-* The end of a program closes unit 3 too, and a program run again from
-  the editor starts with all four units closed. The original left unit 3
-  open ([#863](https://github.com/fubar-coder/bb2-c/issues/863)).
+* `StoreNVData` stores an item of 655360 bytes or more with its whole
+  length; the original passed a wrong, much smaller length to the
+  system, and 655365 bytes were stored as 60 bytes without an error
+  ([#764](https://github.com/fubar-coder/bb2-c/issues/764)).
+
+### Fixes in ripacklib {#ripacklib-fixes}
+
+These fixes concern
+[ripacklib]({{< relref "/docs/libraries/userlibs/ripacklib" >}}), the
+library by Reflective Images that unpacks IFF ILBM pictures in memory
+into bitmaps and palettes, packs and unpacks ByteRun1 data and unpacks
+Pack-Ice files. The fixes of
+[`ILBMPalette` with an offset](#ilbmpalette-offset), of
+[`LoadIFF`'s bank and result](#loadiff-bank-result) and of
+[pictures whose width is no multiple of 16](#unpackiff-row-width) are
+described above.
+
+* `UnpackIFF` and `ILBMPalette` find the chunks of a picture by walking
+  the IFF file from chunk to chunk, also behind large chunks such as a
+  long annotation, and no longer take the name of a chunk inside other
+  data for the chunk itself. The original searched the raw data, only
+  within about 5 KB, and missed chunks further on
+  ([#766](https://github.com/fubar-coder/bb2-c/issues/766)).
+* `UnpackIFF` reads the compression byte of the picture: an uncompressed
+  picture is copied as it is. The original unpacked every picture as
+  ByteRun1, so an uncompressed one came out as garbage
+  ([#773](https://github.com/fubar-coder/bb2-c/issues/773)).
+* `UnpackIFF` unpacks pictures wider than 1024 pixels. The original
+  counted the bytes of a row in a byte: such pictures were not unpacked,
+  or read out of step, though the command reported success
+  ([#774](https://github.com/fubar-coder/bb2-c/issues/774)).
+* `UnpackIFF` cuts a ByteRun1 run at the end of the row. The original
+  wrote the whole run, into the next row or, in the last row, behind the
+  plane ([#776](https://github.com/fubar-coder/bb2-c/issues/776)).
+* `UnpackIFF` refuses a picture whose header gives 0 planes and returns
+  0. The original took it as 256 planes and overwrote its own code
+  ([#777](https://github.com/fubar-coder/bb2-c/issues/777)).
+* `UnpackIFF`, `LoadIFF` and `ILBMGrab` unpack pictures saved with a
+  mask, such as brushes of DPaint, correctly. The original took the mask
+  row of every line for the next plane and shifted every line from the
+  second on ([#1112](https://github.com/fubar-coder/bb2-c/issues/1112)).
+* `ILBMPalette` with an offset on a palette that has no colours yet
+  makes it as large as offset and CMAP together. The original made it as
+  large as the CMAP and still wrote the colours at the offset, from an
+  offset of 2 on behind the palette's memory
+  ([#991](https://github.com/fubar-coder/bb2-c/issues/991)).
+* `ILBMPalette` refuses a CMAP chunk without a whole colour and returns
+  0, and it sizes the palette from the whole CMAP. The original wrote
+  65536 colours for such a CMAP, and took the size of a CMAP of 64 KB or
+  more from its lower 16 bits
+  ([#1105](https://github.com/fubar-coder/bb2-c/issues/1105)).
+* `PackPBM` returns -1 for data that does not pack smaller; the
+  destination holds the bytes packed up to that point. The original then
+  went on to unpack whatever lay at the start of memory into the
+  destination
+  ([#772](https://github.com/fubar-coder/bb2-c/issues/772)).
+* `UnPackPBM` writes no byte past `destlength` and reads none past the
+  end of the packed data. The original wrote one byte past the
+  destination's length and read one byte behind the data
+  ([#778](https://github.com/fubar-coder/bb2-c/issues/778)).
+* `DeIce` with data packed with the picture option of Pack-Ice converts
+  the number of groups of 8 bytes that the data give, at most the
+  unpacked data. The original converted at least 15361 groups and so
+  wrote over 120 KB of memory below the end of the unpacked data
+  ([#767](https://github.com/fubar-coder/bb2-c/issues/767)).
+
+### Fixes in riregistrylib {#riregistrylib-fixes}
+
+These fixes concern
+[riregistrylib]({{< relref "/docs/libraries/userlibs/riregistrylib" >}}),
+the interface of Red When Excited to registry.library, a settings
+database that is not available any more; the fix of
+[the text that follows its string functions](#rwe-text-after-string-function)
+is described above. `LockRegistry` locks a registry structure and makes
+it the current one, on which the other commands work; locks can be
+nested, and `UnlockRegistry` returns to the one before.
+
+* `UnlockRegistry` without a lock does nothing, and a 16th nested
+  `LockRegistry` returns 0. The original had no limit in either
+  direction: `UnlockRegistry` read and wrote below its list of locks,
+  and a 16th lock was written over the library's own data. As
+  registry.library cannot be found, `LockRegistry` locks nothing, so in
+  the original every `LockRegistry` and `UnlockRegistry` pair went one
+  entry lower, and the program crashed after a few of them
+  ([#781](https://github.com/fubar-coder/bb2-c/issues/781)).
+* `GetLibraryValue$` and `GetRegistryStringVariable` without a locked
+  structure return ""; the original read the type and the value near
+  address 0, which it did for every call without registry.library
+  ([#780](https://github.com/fubar-coder/bb2-c/issues/780)).
+* A program run again from the editor no longer works on the structure
+  the run before had unlocked at its end
+  ([#779](https://github.com/fubar-coder/bb2-c/issues/779)).
+* `SetRegistryVariable name,value$` passes the length of the string as
+  the size, `SetRegistryIntVariable` and `SetRegistryBoolVariable`
+  pass 4; the original passed whatever value the program had left in a
+  register ([#782](https://github.com/fubar-coder/bb2-c/issues/782)).
+
+### Fixes in rireqlib {#rireqlib-fixes}
+
+These fixes concern
+[rireqlib]({{< relref "/docs/libraries/userlibs/rireqlib" >}}), the file
+and colour requesters of req.library, a requester library that is not
+part of AmigaOS, by Steven Matty; the fixes of
+[the text that follows `ReqFileRequest`](#rwe-text-after-string-function)
+and of [its default flags](#reqfilerequest-default-flags) are described
+above.
+
+* `ReqFileRequest` returns the path of the file the user chose. The
+  original never gave the requester the library's buffers for the
+  directory, the file and the path, so it returned only what the program
+  itself had written to the path buffer at `ReqFileLoc`, or an empty
+  string ([#785](https://github.com/fubar-coder/bb2-c/issues/785)).
+* The library reserves req.library's whole file requester structure. The
+  original's was too short, so the fields that the requester keeps there
+  from call to call were written over the library's data behind it,
+  among them the addresses of its buffers and the colour requester
+  ([#1088](https://github.com/fubar-coder/bb2-c/issues/1088)).
+* A title given to `ReqFileRequest` is for that call only; a later call
+  without a title passes the library's empty title, as before the first
+  call with one. In the original such a call showed whatever text had
+  been put since in the memory where the earlier title had been. The
+  flags of `ReqFileRequest(title$,flags)` stay set for later calls, as
+  the guide documents
+  ([#789](https://github.com/fubar-coder/bb2-c/issues/789)).
+* Without req.library, `ReqFileRequest` returns an empty string and
+  `ReqColour` 65535, the same as when the user cancels; the original
+  crashed the system
+  ([#788](https://github.com/fubar-coder/bb2-c/issues/788)).
+* `ReqColour` opens the colour requester on the colour it is given,
+  together with the fix of the next point; the original ignored it and
+  started on colour 0
+  ([#786](https://github.com/fubar-coder/bb2-c/issues/786)).
+* `ReqColour` hands req.library the colour and the window of `ReqOutput`
+  at the places where req.library reads them. The original's colour
+  requester structure had another layout, so with req.library the
+  requester started on the wrong colour and, after `ReqOutput`, did not
+  open at all and returned 16387 at once
+  ([#1091](https://github.com/fubar-coder/bb2-c/issues/1091)).
+* A program run a second time from the editor gives the file requester
+  no window until it calls `ReqOutput` again, the same as the colour
+  requester. The original passed the window of the first run, which was
+  closed when that run ended
+  ([#1090](https://github.com/fubar-coder/bb2-c/issues/1090)).
+* When a program ends, the library has req.library free the directory
+  that the file requester keeps cached between calls. The original left
+  that memory allocated after every run, as much as the last directory
+  shown needed (with req.library 2.8, for example, 1560 bytes for
+  `SYS:C`). About 40 KB that req.library itself allocates for its first
+  file requester stay allocated until the system restarts; that is
+  req.library's own behaviour, with any program that uses its file
+  requester
+  ([#1092](https://github.com/fubar-coder/bb2-c/issues/1092)).
+
+### Fixes in riseriallib {#riseriallib-fixes}
+
+These fixes concern
+[riseriallib]({{< relref "/docs/libraries/userlibs/riseriallib" >}}),
+the serial port with interrupts of its own. `SerialGot` is described in
+[Changes for existing programs](#serialgot-count), the block commands
+in [Changes you may notice](#serial-block-commands), and text after
+`SerialReadString` in
+[Text after a string function](#rwe-text-after-string-function).
+
+* `SerialClose` switches only the library's two serial interrupts off
+  and back to their state at `SerialOpen`. The original switched every
+  interrupt off and then on those that were on at `SerialOpen`, so an
+  interrupt switched on since was lost and one switched off since came
+  back
+  ([#790](https://github.com/fubar-coder/bb2-c/issues/790)).
+* `SerialRead` and `SerialWait` return the byte alone, 0 to 255, or -1
+  for none. The original left the upper bits of the result as they were
+  before the call, so a byte could read as any large number or as -1
+  ([#797](https://github.com/fubar-coder/bb2-c/issues/797)).
+* `SerialSendBlock` with a length of 0 or less sends nothing. The
+  original sent one byte
+  ([#800](https://github.com/fubar-coder/bb2-c/issues/800)).
+* `SerialReceiveBlock` with a length of 1 receives one byte. The original
+  never ended and wrote past the buffer
+  ([#799](https://github.com/fubar-coder/bb2-c/issues/799)).
+* `SerialStop` during `SerialReceiveBlock` ends the block after the next
+  byte, and the program goes on after the command. The original returned
+  to a wrong address
+  ([#803](https://github.com/fubar-coder/bb2-c/issues/803)).
+* A `SerialStop` while no block is sent or received no longer cuts the
+  next block short. The original stopped the next `SerialSendBlock` after
+  its first byte
+  ([#1162](https://github.com/fubar-coder/bb2-c/issues/1162)).
+* `SerialSendString` sends the characters of the string, without a 0
+  byte behind them; send one with `SerialWrite 0` if the other machine
+  reads with `SerialReadString`. The original sent the low byte of the
+  string's address
+  ([#801](https://github.com/fubar-coder/bb2-c/issues/801)).
+* `SerialSendString` and `SerialReadString` open the port when it is
+  closed. The original did so only when it was open: with the port
+  closed it sent nothing, or waited for ever
+  ([#793](https://github.com/fubar-coder/bb2-c/issues/793)).
+* `SerialReadString` with the port open returns to the program. The
+  original returned to a wrong address
+  ([#796](https://github.com/fubar-coder/bb2-c/issues/796)).
+* `SerialReadString` stops at the end of the string work area, 10240
+  bytes unless the compiler options set another size, and leaves the
+  rest in the buffer. The original wrote on past it until a 0 byte came
+  ([#1161](https://github.com/fubar-coder/bb2-c/issues/1161)).
+* `SerialReadLong` reads four bytes, the low byte first, and returns the
+  long. The original never returned
+  ([#794](https://github.com/fubar-coder/bb2-c/issues/794)).
+* `SerialWriteLong` sends the four bytes of its argument, the low byte
+  first. The original sent the low byte and then three times the byte 1
+  ([#805](https://github.com/fubar-coder/bb2-c/issues/805)).
+* When more than 255 bytes arrive unread, the first 255 stay in the
+  buffer and the others are dropped. With the original the buffer then
+  counted as empty, and all of them were lost
+  ([#1160](https://github.com/fubar-coder/bb2-c/issues/1160)).
+* `SerialWrite`, and so `SerialSendBlock`, `SerialSendString` and
+  `SerialWriteLong`, waits for room while the transmit buffer is full
+  and the port is open, so a long block arrives complete. The original
+  wrote over bytes not sent yet, and a block of more than about 128 bytes
+  lost some of them
+  ([#983](https://github.com/fubar-coder/bb2-c/issues/983)).
+* `SerialOpen` installs its interrupts in the vector table the processor
+  uses, also when a 68010 or later has it moved. The original wrote them
+  at the fixed addresses in low memory, where they were then never called
+  ([#804](https://github.com/fubar-coder/bb2-c/issues/804)).
+
+### Fixes in rishapeslib {#rishapeslib-fixes}
+
+These fixes concern
+[rishapeslib]({{< relref "/docs/libraries/userlibs/rishapeslib" >}}),
+the shape helpers by Reflective Images with their own shapes file, the
+LE shapes file: `LESaveShapes` writes it, `LELoadShapes` loads it from
+disk and `LECludgeShapes` decodes one in memory; `CludgeShapes` makes
+shapes from memory in the form `SaveShapes` writes. The fix of
+[shapes linked by an earlier `LECludgeShapes`](#rwe-other-fixes) is
+listed under Other fixes.
+
+* `CludgeShapes` takes a shape in memory whose data size is 0 as an
+  empty shape. The original copied 64 KB for it and overwrote memory
+  ([#808](https://github.com/fubar-coder/bb2-c/issues/808)).
+* `CludgeShapes` reads the shapes behind an empty shape in memory from
+  the right place. The original skipped the empty shape by 32 bytes
+  plus the data size of the shape before it
+  ([#809](https://github.com/fubar-coder/bb2-c/issues/809)).
+* `LELoadShapes`, `LECludgeShapes` and `LEInitShape` free the cookie of
+  the shape they replace, so loading shapes again does not use up chip
+  memory ([#810](https://github.com/fubar-coder/bb2-c/issues/810)).
+* `LECludgeShapes` finds the shapes of LE files whose header chunk is
+  longer than the library's own, or whose palette chunk has a pad byte.
+  The original took fixed sizes for both and missed the shape data
+  ([#811](https://github.com/fubar-coder/bb2-c/issues/811)).
+* `LECludgeShapes` decodes LE files whose palette has an odd number of
+  colours, as `LESaveShapes` writes them, on a 68000 too; such shapes
+  are copied into chip memory instead of being used where they are. The
+  original crashed a 68000 with a Software Failure, and on a 68020 it
+  used the shapes at an odd address, where the blitter cannot draw them
+  ([#1118](https://github.com/fubar-coder/bb2-c/issues/1118)).
+* Loading LE shapes with a palette leaves the palette as it is for a
+  palette chunk shorter than one colour. The original wrote 65536
+  colours, 768 KB, over memory
+  ([#820](https://github.com/fubar-coder/bb2-c/issues/820)).
+* `LESaveShapes` writes the palette whenever one is given. The original
+  wrote it or not depending on the flags the system's write routine
+  left behind ([#814](https://github.com/fubar-coder/bb2-c/issues/814)).
+* `LESaveShapes` with a palette of 0 colours writes no palette. The
+  original copied 65536 colours and overwrote 192 KB of memory
+  ([#823](https://github.com/fubar-coder/bb2-c/issues/823)).
+* Files written by `LESaveShapes` give the right length in their IFF
+  header, so other IFF readers see the whole file. The original wrote
+  a length 8 too large, and after a save with a palette also counted
+  that palette in a later save without one
+  ([#816](https://github.com/fubar-coder/bb2-c/issues/816)).
+* `LESaveShapes` asks for 12 bytes for its shape header. The original
+  could ask for up to 4 GB, depending on what a register held before
+  ([#817](https://github.com/fubar-coder/bb2-c/issues/817)).
+* `LESaveShapes` takes the number of shapes from the lower 16 bits of
+  the shape numbers, as they are words. The original used all 32 bits:
+  `LESaveShapes 0,a` with a long variable `a` of `$50009`, shape 9 in
+  its lower 16 bits, wrote a file that claimed 327689 shapes
+  ([#815](https://github.com/fubar-coder/bb2-c/issues/815)).
+* A program run a second time from the editor starts with `LEAutoCookie`
+  on and the values of `LEMaxShapeWidth`, `LEMaxShapeHeight` and
+  `LEMaxShapeDepth` at 0. The original kept those of the run before
+  ([#1109](https://github.com/fubar-coder/bb2-c/issues/1109)).
+
+### Fixes in risnowlib {#risnowlib-fixes}
+
+These fixes concern
+[risnowlib]({{< relref "/docs/libraries/userlibs/risnowlib" >}}), the
+falling snow of Reflective Images.
+
+* With runtime error checking, every snow command with a field number
+  outside 0 to 3 stops with "Snow list number must be 0 to 3",
+  `LDoSnow`, `LDoSnowActivate` and `KillPoint` on a field without
+  `InitSnowDrop` with "Snow list needs InitSnowDrop", and `KillPoint`
+  outside the bitmap with "KillPoint outside the bitmap". The original
+  read and wrote outside the library's table, at address 0 or around
+  the bitmap
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#snow-list-checks" >}}),
+  [#913](https://github.com/fubar-coder/bb2-c/issues/913)).
+* `InitSnowDrop` with 1024 points or more allocates enough memory for
+  the field's lists. The original computed the size in 16 bits, got a
+  block far too small and wrote the lists behind it
+  ([#912](https://github.com/fubar-coder/bb2-c/issues/912)).
+* `LDoSnowActivate` before the first `LDoSnow` of a field works on the
+  field's lists. The original wrote its entries to address 0
+  ([#908](https://github.com/fubar-coder/bb2-c/issues/908)).
+* A second `LDoSnowActivate` before the next `LDoSnow` keeps the snow
+  the first one let fall. In the original it overwrote those flakes,
+  and they vanished without falling
+  ([#909](https://github.com/fubar-coder/bb2-c/issues/909)).
+* `InitSnowDrop` of a field that is already set up frees the field's
+  old lists. The original lost their memory until the end of the
+  program
+  ([#911](https://github.com/fubar-coder/bb2-c/issues/911)).
+* `LDoSnow` takes the bit of a new flake from the random table modulo
+  8. In the original, a flake whose bit was above 7 looked up its moves
+  in the wrong place and could jump through memory, up to 32 KB away,
+  every frame again
+  ([#910](https://github.com/fubar-coder/bb2-c/issues/910)).
+* The lists of a field take no more flakes than they have room for:
+  `LDoSnow` adds no new flake to a full list, `LDoSnowActivate` leaves
+  settled snow where it is when the list of falling snow is full, and
+  `KillPoint` does nothing and returns 0 when its list is full. In the
+  original, a field whose flakes piled up ran over into the next field's
+  lists, and the last field behind its memory
+  ([#914](https://github.com/fubar-coder/bb2-c/issues/914)).
+* A program run a second time from the editor starts with no field set
+  up. In the original, a snow command before `InitSnowDrop` worked on
+  the lists of the run before, which had been freed
+  ([#1135](https://github.com/fubar-coder/bb2-c/issues/1135)).
+
+### Fixes in risortlib {#risortlib-fixes}
+
+These fixes concern
+[risortlib]({{< relref "/docs/libraries/userlibs/risortlib" >}}), the
+sorting of linked lists by a string field of their items by Reflective
+Images.
+
+* `StringSort` and `StringSortItem` with `SortPriorityOffset` sort the
+  list by priority. After the original had exchanged two items because
+  of their priority, it compared the following items with the wrong
+  string and the old priority, so the list came out unsorted
+  ([#826](https://github.com/fubar-coder/bb2-c/issues/826)).
+* `StringSort` and `StringSortItem` with a `sizeof.type` of 0 exchange
+  nothing and return 0; the original exchanged 65536 bytes per exchange
+  and overwrote the items behind and the memory behind the list
+  ([#827](https://github.com/fubar-coder/bb2-c/issues/827)).
+* Without `SortPriorityOffset`, the sorts no longer read a priority
+  from an odd address, which stopped a plain 68000 with an address
+  error ([#825](https://github.com/fubar-coder/bb2-c/issues/825)).
+* A program with risortlib no longer crashes at its end on Kickstart
+  1.x, which has no utility.library; the original closed the library
+  without checking that it had opened it
+  ([#824](https://github.com/fubar-coder/bb2-c/issues/824)).
 
 ### Fixes in risoundlib {#risoundlib-fixes}
 
@@ -6642,197 +6554,285 @@ list [Fixes in risoundlib](#risoundlib-fixes).
   functions of Kickstart 2.0 there and crashed at the start
   ([#1139](https://github.com/fubar-coder/bb2-c/issues/1139)).
 
-### Fixes in ricompactdisclib {#ricompactdisclib-fixes}
+### Fixes in ristonecrackerlib and ristcdecrunchlib {#stonecracker-fixes}
+
+These fixes concern the two libraries by Reflective Images for data
+files packed with StoneCracker 4.04:
+[ristonecrackerlib]({{< relref "/docs/libraries/userlibs/ristonecrackerlib" >}}),
+which tells the sizes of such a file and loads and unpacks one with
+`STCLoad`, and
+[ristcdecrunchlib]({{< relref "/docs/libraries/userlibs/ristcdecrunchlib" >}}),
+whose `STCDecrunch` unpacks one in memory. Both use the same unpacking
+code.
+
+* `STCDecrunch` and `STCLoad` write nothing below the destination for
+  damaged StoneCracker data; such data give 0. The original wrote a
+  piece of the data past the start of the destination, into the memory
+  below, and could crash the machine
+  ([#833](https://github.com/fubar-coder/bb2-c/issues/833)).
+* `STCLoad` returns 0 for a file that is not, or not wholly, a
+  StoneCracker 4.04 file, and for one it cannot read. The original
+  unpacked whatever it had read and could write anywhere in memory
+  ([#836](https://github.com/fubar-coder/bb2-c/issues/836)).
+* `STCLoad` releases the lock of the file once. The original released
+  it a second time after closing the file, on every load that worked
+  ([#835](https://github.com/fubar-coder/bb2-c/issues/835)).
+* ristonecrackerlib closes dos.library at the end of the program. The
+  original left it open, one more time after every run
+  ([#834](https://github.com/fubar-coder/bb2-c/issues/834)).
+
+### Fixes in rithreadlib {#rithreadlib-fixes}
 
 These fixes concern
-[ricompactdisclib]({{< relref "/docs/libraries/userlibs/ricompactdisclib" >}}),
-the audio CD commands of Red When Excited. `CDTrackLength 1`, `CDVolume`
-and the SCSI flag of `OpenCD` are described in
-[Changes you may notice](#compactdisc-results).
+[rithreadlib]({{< relref "/docs/libraries/userlibs/rithreadlib" >}}),
+the threads of Reflective Images: parts of a program that run as DOS
+processes of their own.
+
+* Two `CreateThread` in a row start each thread with its own code,
+  registers and memory. The original handed them over in single
+  variables, which a thread read only when it began to run, so a second
+  `CreateThread` before that gave both threads the second one's code
+  and memory ([#838](https://github.com/fubar-coder/bb2-c/issues/838)).
+* At its end, the program waits until no thread runs any more. The
+  original waited only once: after all threads had ended once and new
+  ones were started, it could end while they still ran in its freed
+  code ([#837](https://github.com/fubar-coder/bb2-c/issues/837)).
+* `CreateThread` does not count a thread that could not be started for
+  lack of memory, so `ActiveThreads` stays right; with the original, the
+  program could hang at its end, waiting for that thread
+  ([#1086](https://github.com/fubar-coder/bb2-c/issues/1086)).
+* The end of the program frees the signal the library takes at its
+  start. The original kept it, so after 15 runs from the editor, or
+  from the same shell, `CreateThread` did nothing
+  ([#839](https://github.com/fubar-coder/bb2-c/issues/839)).
+
+### Fixes in ritooltypeslib {#ritooltypeslib-fixes}
+
+These fixes concern
+[ritooltypeslib]({{< relref "/docs/libraries/userlibs/ritooltypeslib" >}}),
+the icon commands of Reflective Images; the fixes of
+[`PutIconObject`](#puticonobject-result) and
+[`SetToolValue`](#settoolvalue-prefix) are described above.
+
+* An icon can have any number of tool types: `GetIconObject` and
+  `NewToolType` make room for them, and return 0 when there is no memory
+  for it. The original had room for 100 entries, and an icon with more
+  tool types, or a 100th `NewToolType`, wrote behind the list
+  ([#855](https://github.com/fubar-coder/bb2-c/issues/855)).
+* `PutIconObject` frees the memory of the icon it has written, as
+  `FreeIconObject` does; the original kept it until the next reboot
+  ([#850](https://github.com/fubar-coder/bb2-c/issues/850)).
+* `FindToolType tooltype$` with one argument never finds a switched-off
+  `(tooltype$)`; the original also found it, and returned 1, after an
+  earlier `FindToolType` with `bracket_check` had ended before its
+  search for the brackets
+  ([#843](https://github.com/fubar-coder/bb2-c/issues/843)).
+* `FindToolType` with `bracket_check` takes a name of any length; the
+  original wrote a name of more than 253 characters behind its buffer
+  ([#842](https://github.com/fubar-coder/bb2-c/issues/842)).
+* `FindToolValue` returns the whole value, also when it holds a `)`; the
+  original cut it at the first `)`, so `PAREN=a)b` gave `a`
+  ([#844](https://github.com/fubar-coder/bb2-c/issues/844)).
+* `SetToolValue` and `NewToolType` with an empty name make the tool type
+  `=value`; the original copied the bytes behind the name into it, and
+  the tool type read back as empty
+  ([#841](https://github.com/fubar-coder/bb2-c/issues/841)).
+* `SetToolValue`, `NewToolType` and `IconDefTool` free their new string
+  and return 0 when the icon's list of memory to free cannot take it; the
+  original freed memory at address 0 instead and lost the string
+  ([#840](https://github.com/fubar-coder/bb2-c/issues/840)).
+* `SetIconType` without a loaded icon returns 0; the original returned
+  its argument, which a program took for success
+  ([#852](https://github.com/fubar-coder/bb2-c/issues/852)).
+* `IconToShape` copies only the data the shape has room for; with an
+  image whose width is a multiple of 16, the original copied one word
+  per line too many and wrote behind the shape's data
+  ([#847](https://github.com/fubar-coder/bb2-c/issues/847)).
+* `ShapeToIcon` with two shapes makes the selected image show all
+  bitplanes of the shape; the original set it up to show none of them
+  ([#854](https://github.com/fubar-coder/bb2-c/issues/854)).
+* `ShapeToIcon` makes the icon's image show the bitplanes of the shape;
+  the original kept those of the icon's old image, so a shape of another
+  depth was drawn with planes it does not have, read from the memory
+  behind it, or without some of its planes
+  ([#1083](https://github.com/fubar-coder/bb2-c/issues/1083)).
+
+### Fixes in ritrackdisklib {#ritrackdisklib-fixes}
+
+These fixes concern
+[ritrackdisklib]({{< relref "/docs/libraries/userlibs/ritrackdisklib" >}}),
+the sector access to floppy disks of Red When Excited. `OpenDisk`
+without a device name is described in
+[Changes for existing programs](#opendisk-device-name), `DiskMotor` in
+[Changes you may notice](#diskmotor-state).
 
 * Programs that use the library start on Kickstart 1.x. The library
   builds its message port and its requests itself, with functions that
   every Kickstart has; the original called functions of Kickstart 2.0
-  there, and every program with the library crashed before its first
-  line ([#1138](https://github.com/fubar-coder/bb2-c/issues/1138)).
-* `OpenCD` returns 0 when the device cannot be opened. The original
-  returned a number left over from freeing its request, 200 on
-  Kickstart 3.1
-  ([#575](https://github.com/fubar-coder/bb2-c/issues/575)).
-* `OpenCD devicename$,unit` refuses a device name of 40 characters or
-  more with 0, as the guide asks for a name of less than forty. The
-  original copied it into a buffer of 40 bytes and overwrote the
-  library's data
-  ([#576](https://github.com/fubar-coder/bb2-c/issues/576)).
-* With runtime error checking, `OpenCD` while a device is open stops with
-  "CD device already open: CloseCD first". The original opened the new
-  device and lost the one opened first, which stayed open
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
-  [#578](https://github.com/fubar-coder/bb2-c/issues/578)).
-* `CDPlayTrack` uses a request of its own while the music plays. In the
-  original every other command, such as `CDUpdateInfo`, `CDStatus`,
-  `CDPause` or `CDVolume`, filled and sent the request of the track that
-  was still playing
-  ([#1156](https://github.com/fubar-coder/bb2-c/issues/1156)).
-* `CDStop`, `CloseCD`, the next `CDPlayTrack` and the end of the program
-  stop a play and wait until the device has taken it back. The original
-  did not wait, and the device's reply stayed behind
-  ([#574](https://github.com/fubar-coder/bb2-c/issues/574)).
-* `CDPlayTrack` returns -1 when the play was sent and 0 without a device.
-  The original returned whatever value the system had left
-  ([#1157](https://github.com/fubar-coder/bb2-c/issues/1157)).
-* With the SCSI flag, `CDPlayTrack` plays the tracks it is asked for,
-  taken from the table of contents that `CDReadTOC` read, and returns -1
-  if the drive took the command, else 0. The original ignored its
-  arguments and always played the same blocks, test values of the
-  author ([#580](https://github.com/fubar-coder/bb2-c/issues/580)).
-* With the SCSI flag, `CDPlayTrack` no longer crashes a 68000 with an
-  address error
-  ([#579](https://github.com/fubar-coder/bb2-c/issues/579)).
-* `CDReadTOC` returns 0 and keeps no table of contents when reading it
-  fails or there is no memory for it. The original returned -1 and left
-  the track functions reading whatever the table held
-  ([#581](https://github.com/fubar-coder/bb2-c/issues/581)).
-* `CDNumTracks`, `CDFirstTrack`, `CDLastTrack` and `CDTrackLength` return
-  0 before `CDReadTOC`, and with the SCSI flag they read the SCSI table of
-  contents. The original read memory at address 0 there, and with the
-  flag only `CDNumTracks` worked
-  ([#582](https://github.com/fubar-coder/bb2-c/issues/582)).
-* `CDTrackLength` of the last track ends at the end of the CD's music,
-  and with runtime error checking a track the CD does not hold stops
-  with "Track number out of range". The original read the last track's
-  end from memory the table of contents does not fill
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
-  [#583](https://github.com/fubar-coder/bb2-c/issues/583)).
-* `CDTrackLength` is right for track 44 and the tracks after it
-  ([#585](https://github.com/fubar-coder/bb2-c/issues/585)).
-* With runtime error checking, `CDTrackMins` and `CDTrackSecs` with an
-  offset other than 0 or 1 stop with "Offset must be 0 or 1". The
-  original read other memory of the library
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
-  [#586](https://github.com/fubar-coder/bb2-c/issues/586)).
-* `CDUpdateInfo` returns 0 without an open device. The original returned
-  a meaningless address
-  ([#587](https://github.com/fubar-coder/bb2-c/issues/587)).
-* `CDStatus` asks the device for its whole status record. The original
-  asked for a shorter one, and a device that writes the whole record
-  wrote 8 bytes behind the library; on Workbench 3.1 the program then
-  ended with an alert
-  ([#948](https://github.com/fubar-coder/bb2-c/issues/948)).
+  there, and every program with the library crashed at its start
+  ([#941](https://github.com/fubar-coder/bb2-c/issues/941)).
+* On Kickstart 1.x, `ReadSector`, `WriteSector`, `FormatTrack`,
+  `BootProg` and `WriteBoot unit,bootdata` move a buffer that is not in
+  chip memory through a chip memory buffer of the library, one track at
+  a time; without chip memory for it they send nothing and return 31.
+  trackdisk.device of Kickstart 1.x reaches only chip memory: given
+  another buffer, it wrote unrelated chip memory to the disk, or read
+  the sectors into it, and reported success. The original never got so
+  far, since it crashed at the start on Kickstart 1.x
+  ([#1163](https://github.com/fubar-coder/bb2-c/issues/1163)).
+* `BootProg` stores the checksum that Kickstart checks, so a disk with
+  the boot block boots. The original calculated it wrongly
+  ([#856](https://github.com/fubar-coder/bb2-c/issues/856)).
+* `FormatTrack` without a count formats one whole track, and both forms
+  of `WriteBoot` write the boot block. The original gave
+  trackdisk.device a length it refuses, so these wrote nothing. The count
+  of `FormatTrack` stays a number of sectors: only multiples of 11 work,
+  11 for each track, and the buffer holds 5632 bytes per track
+  ([#858](https://github.com/fubar-coder/bb2-c/issues/858)).
+* `WriteBoot unit,bootdata` writes the 1024 bytes at `bootdata`. The
+  original wrote from an address that happened to be in a register
+  ([#864](https://github.com/fubar-coder/bb2-c/issues/864)).
+* `WriteBoot unit` writes a bootable standard boot block and keeps the
+  file system type of the boot block on the disk. The original wrote 8
+  bytes of a boot block and 1016 bytes of whatever memory followed them
+  ([#865](https://github.com/fubar-coder/bb2-c/issues/865)).
+* `MotorOff` first writes the sectors that trackdisk.device still holds
+  in its track buffer to the disk, and `CloseDisk` and the end of the
+  program switch the motor off the same way. The device writes that
+  buffer only when it moves to another track, so with the original the
+  last track written, after `BootProg` and `WriteBoot` the boot block
+  itself, was lost when the disk was taken out. A program that keeps the
+  motor running until the disk is changed still loses it
+  ([#1154](https://github.com/fubar-coder/bb2-c/issues/1154)).
+* `OpenDisk unit#,devicename$` gives the name to the system as it is. The
+  original copied it into a buffer of the library, and a name of 57
+  characters or more overwrote the library's data
+  ([#860](https://github.com/fubar-coder/bb2-c/issues/860)).
+* `OpenDisk` with a negative unit returns 0. The original opened the
+  device and then lost the request, which stayed open
+  ([#861](https://github.com/fubar-coder/bb2-c/issues/861)).
+* `OpenDisk` of a unit that is already open returns 0 and leaves the
+  unit as it is. The original opened it a second time and lost the first
+  request, which stayed open
+  ([#862](https://github.com/fubar-coder/bb2-c/issues/862)).
+* The end of a program closes unit 3 too, and a program run again from
+  the editor starts with all four units closed. The original left unit 3
+  open ([#863](https://github.com/fubar-coder/bb2-c/issues/863)).
 
-### Fixes in rifastseriallib {#rifastseriallib-fixes}
+### Fixes in riwbspritelib {#riwbspritelib-fixes}
 
 These fixes concern
-[rifastseriallib]({{< relref "/docs/libraries/userlibs/rifastseriallib" >}}),
-the fast serial links of Red When Excited. `SetIOSize` is described in
-[Changes for existing programs](#setiosize-count), the results of
-`InitSerialIO` and `GetSerial` in
-[Changes you may notice](#fastserial-results). One bug of `SyncSerial`
-stays ([Bugs not fixed yet]({{< relref "/docs/compared-with-original/bugs-not-fixed-yet" >}})).
+[riwbspritelib]({{< relref "/docs/libraries/userlibs/riwbspritelib" >}}),
+the hardware sprites of Reflective Images on the Workbench screen. The
+changed results of `GetWBSprite` and `MoveWBSprite` are described in
+[Changes you may notice](#wbsprite-results).
 
-* `InitSerialIO` and `SetIOSpeed` work on a 68000. The original used an
-  instruction of the 68020 there and crashed
-  ([#647](https://github.com/fubar-coder/bb2-c/issues/647)).
-* A block of 0 bytes in `PutSerial`, `GetSerial`, `SyncPut` and `SyncGet`
-  transfers nothing. The original took it for 4 GB
-  ([#646](https://github.com/fubar-coder/bb2-c/issues/646)).
-* `SetIOSpeed` takes the baud rate from its argument alone. The original
-  also used the unused upper half of the register, and could set a wrong
-  rate ([#654](https://github.com/fubar-coder/bb2-c/issues/654)).
-* `FinitSerialIO`, also at the end of the program, switches the serial
-  interrupts that were on before `InitSerialIO` back on, so serial.device
-  works again afterwards. The original never switched them on, and wrote
-  to address $9A in low memory instead of the chip register
-  ([#651](https://github.com/fubar-coder/bb2-c/issues/651),
-  [#648](https://github.com/fubar-coder/bb2-c/issues/648)).
-* `InitSerialIO` sets the library up at every baud rate from 109 to
-  3546895, and `InitSerialIO` and `SetIOSpeed` refuse another rate. With
-  the original a rate of 1773448 or more left the library "not set up",
-  so the later commands did nothing, and a rate of 0 divided by zero
-  ([#653](https://github.com/fubar-coder/bb2-c/issues/653)).
-* `DoSerialIO`, `GetSerial`, `SyncSerial`, `SyncPut`, `SyncGet` and
-  `CheckSerial` do nothing before `InitSerialIO`. The original ran them
-  on the port, `DoSerialIO` with buffers at address 0
-  ([#652](https://github.com/fubar-coder/bb2-c/issues/652)).
-* After `InitSerialIO` with a count of 0 or `SetIOSize 0`, `DoSerialIO`
-  without an argument transfers nothing. The original exchanged 65536
-  bytes after `InitSerialIO` with a count of 0, far past the buffers
-  ([#1164](https://github.com/fubar-coder/bb2-c/issues/1164)).
-* A program run again from the editor starts as the slave and with the
-  library not set up. The original kept the state of the run before, so
-  a program that never calls `SetSerialMode` could be the master
-  ([#1159](https://github.com/fubar-coder/bb2-c/issues/1159)).
+* The Workbench sprite commands work on Kickstart 1.x and 2.x, with
+  sprites 16 pixels wide in up to 3 colours, made of a shape of 1 or 2
+  planes. As on Kickstart 3.0, the width of the shape is rounded down to
+  16: a shape 20 pixels wide makes a sprite, one of 32 pixels or more is
+  refused, and with runtime error checking it stops with "Shape too big
+  for a sprite below Kickstart 3.0". The original called functions of
+  Kickstart 3.0 there and crashed at the first `GetWBSprite`
+  ([#1151](https://github.com/fubar-coder/bb2-c/issues/1151)).
+* `ChangeWBSprite` frees the new sprite image when the system refuses
+  the change. The original lost a block of chip memory each time, until
+  the next reboot
+  ([#915](https://github.com/fubar-coder/bb2-c/issues/915)).
+* A sprite made of a shape whose width is no multiple of 16 shows the
+  left part of the shape, as wide as the sprite: the width of the shape
+  rounded down to a multiple of 16, so 16 pixels of a shape 20 pixels
+  wide. The original copied the rows of such a shape out of step, so
+  its image was sheared and its colours were wrong
+  ([#918](https://github.com/fubar-coder/bb2-c/issues/918)).
+* With runtime error checking, every sprite command refuses a channel
+  outside 0 to 7 (-1 to 7 for `GetWBSprite`) with "Sprite channel must
+  be 0 to 7" or "Sprite channel must be -1 to 7". The original read and
+  freed the library's own data as sprites
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
+  [#916](https://github.com/fubar-coder/bb2-c/issues/916)).
+* With runtime error checking, `GetWBSprite` and `ChangeWBSprite` refuse
+  a shape of height 0 with "Illegal Shape Height" and one of depth 0 or
+  more than 8 with "Illegal Shape Depth". The original would copy 65536
+  rows or planes
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
+  [#917](https://github.com/fubar-coder/bb2-c/issues/917)).
+* With runtime error checking, `WBSpriteX` and `WBSpriteY` of a channel
+  without a sprite stop with "No sprite on this channel". The original
+  returned words from low memory
+  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
+  [#922](https://github.com/fubar-coder/bb2-c/issues/922)).
 
-### Fixes in riseriallib {#riseriallib-fixes}
+### Fixes in rizonejoylib {#rizonejoylib-fixes}
 
 These fixes concern
-[riseriallib]({{< relref "/docs/libraries/userlibs/riseriallib" >}}),
-the serial port with interrupts of its own. `SerialGot` is described in
-[Changes for existing programs](#serialgot-count), the block commands
-in [Changes you may notice](#serial-block-commands), and text after
-`SerialReadString` in
-[Text after a string function](#rwe-text-after-string-function).
+[rizonejoylib]({{< relref "/docs/libraries/userlibs/rizonejoylib" >}}),
+the zones and joystick commands by Reflective Images. The fixes of
+[`NewZoneTable`](#newzonetable-current-table), of
+[circular zones](#zone-circles) and of
+[zones above the top of the screen](#zone-negative-y) are described
+above.
 
-* `SerialClose` switches only the library's two serial interrupts off
-  and back to their state at `SerialOpen`. The original switched every
-  interrupt off and then on those that were on at `SerialOpen`, so an
-  interrupt switched on since was lost and one switched off since came
-  back
-  ([#790](https://github.com/fubar-coder/bb2-c/issues/790)).
-* `SerialRead` and `SerialWait` return the byte alone, 0 to 255, or -1
-  for none. The original left the upper bits of the result as they were
-  before the call, so a byte could read as any large number or as -1
-  ([#797](https://github.com/fubar-coder/bb2-c/issues/797)).
-* `SerialSendBlock` with a length of 0 or less sends nothing. The
-  original sent one byte
-  ([#800](https://github.com/fubar-coder/bb2-c/issues/800)).
-* `SerialReceiveBlock` with a length of 1 receives one byte. The original
-  never ended and wrote past the buffer
-  ([#799](https://github.com/fubar-coder/bb2-c/issues/799)).
-* `SerialStop` during `SerialReceiveBlock` ends the block after the next
-  byte, and the program goes on after the command. The original returned
-  to a wrong address
-  ([#803](https://github.com/fubar-coder/bb2-c/issues/803)).
-* A `SerialStop` while no block is sent or received no longer cuts the
-  next block short. The original stopped the next `SerialSendBlock` after
-  its first byte
-  ([#1162](https://github.com/fubar-coder/bb2-c/issues/1162)).
-* `SerialSendString` sends the characters of the string, without a 0
-  byte behind them; send one with `SerialWrite 0` if the other machine
-  reads with `SerialReadString`. The original sent the low byte of the
-  string's address
-  ([#801](https://github.com/fubar-coder/bb2-c/issues/801)).
-* `SerialSendString` and `SerialReadString` open the port when it is
-  closed. The original did so only when it was open: with the port
-  closed it sent nothing, or waited for ever
-  ([#793](https://github.com/fubar-coder/bb2-c/issues/793)).
-* `SerialReadString` with the port open returns to the program. The
-  original returned to a wrong address
-  ([#796](https://github.com/fubar-coder/bb2-c/issues/796)).
-* `SerialReadString` stops at the end of the string work area, 10240
-  bytes unless the compiler options set another size, and leaves the
-  rest in the buffer. The original wrote on past it until a 0 byte came
-  ([#1161](https://github.com/fubar-coder/bb2-c/issues/1161)).
-* `SerialReadLong` reads four bytes, the low byte first, and returns the
-  long. The original never returned
-  ([#794](https://github.com/fubar-coder/bb2-c/issues/794)).
-* `SerialWriteLong` sends the four bytes of its argument, the low byte
-  first. The original sent the low byte and then three times the byte 1
-  ([#805](https://github.com/fubar-coder/bb2-c/issues/805)).
-* When more than 255 bytes arrive unread, the first 255 stay in the
-  buffer and the others are dropped. With the original the buffer then
-  counted as empty, and all of them were lost
-  ([#1160](https://github.com/fubar-coder/bb2-c/issues/1160)).
-* `SerialWrite`, and so `SerialSendBlock`, `SerialSendString` and
-  `SerialWriteLong`, waits for room while the transmit buffer is full
-  and the port is open, so a long block arrives complete. The original
-  wrote over bytes not sent yet, and a block of more than about 128 bytes
-  lost some of them
-  ([#983](https://github.com/fubar-coder/bb2-c/issues/983)).
-* `SerialOpen` installs its interrupts in the vector table the processor
-  uses, also when a 68010 or later has it moved. The original wrote them
-  at the fixed addresses in low memory, where they were then never called
-  ([#804](https://github.com/fubar-coder/bb2-c/issues/804)).
+* `NewZoneTable`, `UseZoneTable` and `FreeZoneTable` refuse a negative
+  table number. The original took -1 for the entry in front of its list
+  of tables: `UseZoneTable -1` chose a table that was none, and
+  `FreeZoneTable -1` and `NewZoneTable -1` freed the current table and
+  went on using it
+  ([#872](https://github.com/fubar-coder/bb2-c/issues/872)).
+* `ZoneInit` and `SetZone` refuse a negative zone number. The original
+  wrote such a zone in front of the zone table, over the number of
+  zones the table holds and the memory before it
+  ([#873](https://github.com/fubar-coder/bb2-c/issues/873)).
+* `SetZone` and `ZoneInit` reach every zone of a table of more than 8192
+  zones. In the original, zone 8192 was zone 0 again, and every zone
+  above it the one 8192 below
+  ([#878](https://github.com/fubar-coder/bb2-c/issues/878)).
+* `ZoneTest` from zone 256 on tests the zones it is asked for. The
+  original took the number modulo 256 for the zone it tested and
+  reported it under the number asked for: `ZoneTest(260,5,5)` tested
+  zone 4 and returned 260. In a range, a
+  negative start zone counts as one beyond the table, the last zone,
+  and a negative end zone gives -1
+  ([#881](https://github.com/fubar-coder/bb2-c/issues/881)).
+* In the 68000 mode, `Zone` and `ZoneTest` find points in zones more
+  than 32767 pixels wide or high. The original missed them: a zone from
+  y -32768 to 32767 did not contain the point 5,-1
+  ([#879](https://github.com/fubar-coder/bb2-c/issues/879)).
+* `GetZoneX1`, `GetZoneY1`, `GetZoneX2` and `GetZoneY2` return the
+  values of a zone also in small tables, and -1 for a zone beyond the
+  table or without a table. The original did not check the zone number,
+  returned -1 for every zone from `GetZoneY1` in a table of up to 4
+  zones, from `GetZoneX2` in a table of 2 and from `GetZoneY2` in a
+  table of up to 6, and read address 0 without a table
+  ([#870](https://github.com/fubar-coder/bb2-c/issues/870)).
+* When there is no memory for zone table 0 at the start of the program,
+  `SetZone` returns 0 (False) and `ZoneTable` returns 0. The original
+  returned -1 for both, as if the zone had been set and as if -1 were
+  the address of a table
+  ([#876](https://github.com/fubar-coder/bb2-c/issues/876)).
+* `FreeZoneTable` removes the table it frees from the library's list.
+  The original left it there: `UseZoneTable` still chose the freed
+  table, and the end of the program freed it a second time, in every
+  program that used `FreeZoneTable`
+  ([#868](https://github.com/fubar-coder/bb2-c/issues/868)).
+* When `NewZoneTable` replaces a table and then gets no memory for the
+  new one, the table of that number no longer exists: the result is 0,
+  and if it was the current table, table 0 becomes the current one. The
+  original kept the freed table in its list, where `UseZoneTable` chose
+  it and the end of the program freed it again
+  ([#874](https://github.com/fubar-coder/bb2-c/issues/874)).
+* `NewZoneTable` accepts a table of one zone, as the guide allows. The
+  original refused it and took 2 to 65535 zones
+  ([#1136](https://github.com/fubar-coder/bb2-c/issues/1136)).
+* A program run a second time from the editor starts with zone table 0
+  alone. The original found the tables of the run before, which had
+  been freed: `UseZoneTable` chose them, and the end of the program
+  freed them again
+  ([#871](https://github.com/fubar-coder/bb2-c/issues/871)).
+* A program run a second time from the editor starts with the reading
+  of the four player adaptor switched on, as the guide says. After a
+  `JAdaptorStatus Off`, the original started the next run with it off
+  ([#1132](https://github.com/fubar-coder/bb2-c/issues/1132)).
 
 ### Other fixes {#rwe-other-fixes}
 
