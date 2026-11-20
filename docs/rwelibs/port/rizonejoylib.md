@@ -165,6 +165,15 @@ All other routines are C behind `BLITZ_THUNK`.
   test `rwe/rizonejoylib-freezonetable-entry-stays`; `libs_emulator`
   cases `[fixed #868]` of `rwe_rizonejoylib`: the entry after
   FreeZoneTable 7, UseZoneTable 7 after it).
+* finit clears the list entries and the current table after it frees
+  the tables, and init clears all 16 entries, so the next run of a
+  program with the library still loaded (from the editor) starts with
+  table 0 alone. The original's finit left them set and its init
+  cleared only entry 0: the next run found the tables of the run
+  before, freed (UseZoneTable selected one), and its finit freed them
+  again (#871; D-019: no Blitz program can run twice with the library
+  loaded, `libs_emulator` cases `[fixed #871]` of `rwe_rizonejoylib`,
+  the scenario's second init).
 
 ## BUG(orig)
 
@@ -173,9 +182,7 @@ All other routines are C behind `BLITZ_THUNK`.
   If it replaces a table and the AllocMem fails, the entry keeps the
   freed block; if the replaced table is the current one, `_zonetable`
   points to freed memory, which ZoneInit1 then writes (#874).
-* FreeZoneTable always makes table 0 the current one (#869). finit leaves all entries set, init
-  clears only entry 0: a second init/finit frees the other tables again
-  (#871).
+* FreeZoneTable always makes table 0 the current one (#869).
 * ReadJoyPad reads the joystick port for every port number but 2 (#877).
 
 Original behaviour that is no defect:

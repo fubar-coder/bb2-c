@@ -31,9 +31,7 @@
  *     _zonetable), not the new one, which keeps AllocMem's garbage
  *     (#875); if the old table of that number was freed and the AllocMem
  *     fails, the entry keeps the freed block (#874).
- *   - FreeZoneTable always makes table 0 the current one (#869).  finit
- *     leaves all entries set and init clears only entry 0: a second
- *     init/finit frees the other tables again (#871).
+ *   - FreeZoneTable always makes table 0 the current one (#869).
  *   - ReadJoyPad reads the joystick port for every port number but 2
  *     (#877).
  * Fixed (intended deviations):
@@ -95,6 +93,12 @@
  *     the freed block there: finit (or NewZoneTable of the number) freed
  *     it a second time, and UseZoneTable of the number selected it
  *     (#868).
+ *   - finit clears the list entries and the current table after it
+ *     frees the tables, and init clears all 16 entries.  The original's
+ *     finit left them set and its init cleared only entry 0: the next
+ *     run of a program with the library still loaded (from the editor)
+ *     found the tables of the run before, freed, and its finit freed
+ *     them again (#871).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -340,15 +344,20 @@ static void BLITZ_ROUTINE initmem_c(void);
 /**
  * @brief finit: frees every zone table of the list.
  *
- * BUG(orig) (#871): the entries stay set.
+ * Then the entries and the current table are cleared: fixed (#871), the
+ * original left them set for the next run of a program with the library
+ * still loaded (from the editor), whose finit freed them again.
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     int i;
 
     for (i = 0; i < 16; i++)
-        if (zd.list[i])
+        if (zd.list[i]) {
             free_mem(zd.list[i]);
+            zd.list[i] = NULL;                          /* fixed (#871) */
+        }
+    zd.zonetable = NULL;
 }
 
 /* ------------------------------------------------------------ ZoneInit */
@@ -426,18 +435,22 @@ static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zonenum BL_REG(d0))
  *
  * is020 and the 68020 mode from AttnFlags (AFB_68020); table 0 (2052
  * bytes, MEMF_PUBLIC) is the current one, all zones cleared; without
- * memory there is no table.  BUG(orig) (#871): only entry 0 of the list
- * is cleared.
+ * memory there is no table.  All 16 entries of the list are cleared:
+ * fixed (#871), the original cleared only entry 0, so the next run of a
+ * program with the library still loaded found the tables of the run
+ * before, freed by its finit.
  */
 static void BLITZ_ROUTINE initmem_c(void)
 {
     UBYTE f = (SysBase->AttnFlags & AFF_68020) ? 0xff : 0;     /* SF/ST */
     struct zonetable *mem;
+    int i;
 
     zd.is020 = f;
     zd.zones020 = f;
     zd.zonetable = NULL;
-    zd.list[0] = NULL;
+    for (i = 0; i < 16; i++)
+        zd.list[i] = NULL;                              /* fixed (#871) */
     mem = AllocMem(2052, MEMF_PUBLIC);
     if (!mem)
         return;

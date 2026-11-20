@@ -1701,7 +1701,8 @@ UseZoneTable|d0|7|1	$FFFFFFFF
 UseZoneTable|d0|7 (freed)|1 [orig]	$FFFFFFFF
 UseZoneTable|d0|7 (freed)|1 [fixed #868]	$00000000
 UseZoneTable|d0|no table|1	$00000000
-UseZoneTable|d0|second run: 3 of the run before|1	$FFFFFFFF
+UseZoneTable|d0|second run: 3 of the run before|1 [orig]	$FFFFFFFF
+UseZoneTable|d0|second run: 3 of the run before|1 [fixed #871]	$00000000
 UseZoneTable|kept|0|1	kept
 UseZoneTable|kept|0 after 7 freed|1	kept
 UseZoneTable|kept|16|1	kept
@@ -5759,8 +5760,10 @@ finit|kept||1	kept
 finit|kept||2	kept
 finit|popped||1	$00000000
 finit|popped||2	$00000000
-finit|set after finit|current table|1	$00000001
-finit|set after finit|entry 0|1	$00000001
+finit|set after finit|current table|1 [orig]	$00000001
+finit|set after finit|current table|1 [fixed #871]	$00000000
+finit|set after finit|entry 0|1 [orig]	$00000001
+finit|set after finit|entry 0|1 [fixed #871]	$00000000
 finit|set after finit|entry 1|1	$00000000
 finit|set after finit|entry 10|1	$00000000
 finit|set after finit|entry 11|1	$00000000
@@ -5769,7 +5772,8 @@ finit|set after finit|entry 13|1	$00000000
 finit|set after finit|entry 14|1	$00000000
 finit|set after finit|entry 15|1	$00000000
 finit|set after finit|entry 2|1	$00000000
-finit|set after finit|entry 3|1	$00000001
+finit|set after finit|entry 3|1 [orig]	$00000001
+finit|set after finit|entry 3|1 [fixed #871]	$00000000
 finit|set after finit|entry 4|1	$00000000
 finit|set after finit|entry 5|1	$00000000
 finit|set after finit|entry 6|1	$00000000
@@ -5788,7 +5792,8 @@ init|set after init|second run entry 13|1	$00000000
 init|set after init|second run entry 14|1	$00000000
 init|set after init|second run entry 15|1	$00000000
 init|set after init|second run entry 2|1	$00000000
-init|set after init|second run entry 3|1	$00000001
+init|set after init|second run entry 3|1 [orig]	$00000001
+init|set after init|second run entry 3|1 [fixed #871]	$00000000
 init|set after init|second run entry 4|1	$00000000
 init|set after init|second run entry 5|1	$00000000
 init|set after init|second run entry 6|1	$00000000
