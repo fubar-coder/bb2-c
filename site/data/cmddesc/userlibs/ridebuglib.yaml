@@ -4,34 +4,27 @@
     The name need not be the variable's name: `"a (counter)"` reminds
     you what `a` is used for. The type of the variable is passed along
     automatically. `output` is passed on to the debugger as it is; an
-    `output` of 0 is sent as 1.
+    `output` of 0 is sent as 1. A name longer than 251 characters is cut
+    to 251.
 
-    Kept from the original:
-
-    * An empty name takes the characters behind it in memory up to the next
-      0 ([#612](https://github.com/fubar-coder/bb2-c/issues/612)).
-    * A name longer than 251 characters is not cut and overwrites the memory
-      behind the library's message
-      ([#613](https://github.com/fubar-coder/bb2-c/issues/613)).
-    * A variable whose type is not one of the basic types reaches the
-      debugger with a meaningless type
-      ([#609](https://github.com/fubar-coder/bb2-c/issues/609)).
+    Kept from the original: a variable whose type is not one of the
+    basic types reaches the debugger with a meaningless type
+    ([#609](https://github.com/fubar-coder/bb2-c/issues/609)).
 "DelVarTrace":
   text: Asks the debugger to remove the trace with the name `variable$` from its list. The name must be the one given to `AddVarTrace`, which need not be the variable's.
   notes: |
-    Kept from the original: the name reaches the debugger four bytes too
-    far on, behind bytes left from the previous instruction, so the
-    debugger may not find the trace
-    ([#610](https://github.com/fubar-coder/bb2-c/issues/610)). As with
-    `AddVarTrace`, an empty name takes the characters behind it
-    ([#612](https://github.com/fubar-coder/bb2-c/issues/612)) and a long
-    name is not cut
-    ([#613](https://github.com/fubar-coder/bb2-c/issues/613)).
+    As with `AddVarTrace`, a name longer than 251 characters is cut to
+    251.
 "VarTraceWindow":
   text: Opens the debugger's variable trace window.
 "DisAsmWindow":
   text: Opens the debugger's disassembly window at the place of this command in the program.
   notes: |
+    The command takes no address: the form `DisAsmWindow address` that
+    the RI Debug Lib guide gives does not compile. The window opens at
+    the `DisAsmWindow` statement itself, not at the command after it as
+    the guide says.
+
     Kept from the original: the search for the place of the command has
     no limit ([#611](https://github.com/fubar-coder/bb2-c/issues/611)).
 "CopperTrace":

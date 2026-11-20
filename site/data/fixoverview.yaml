@@ -7902,3 +7902,27 @@ rows:
     text: "A second run from the editor starts rilesdebuglib with its defaults (cursor, inverse printing, search result, token list, `AddProcessPtr` codes); the original kept those of the run before."
     page: libraries
     anchor: rilesdebuglib-fixes
+  - issue: 613
+    severity: 5
+    topic: "System"
+    library: "ridebuglib"
+    command: "AddVarTrace, DelVarTrace"
+    text: "`AddVarTrace` and `DelVarTrace` cut a name to the 251 characters the debugger's message holds; the original copied a longer name over the library's own code and crashed at its next command."
+    page: libraries
+    anchor: ridebuglib-fixes
+  - issue: 612
+    severity: 5
+    topic: "System"
+    library: "ridebuglib"
+    command: "AddVarTrace, DelVarTrace"
+    text: "`AddVarTrace` and `DelVarTrace` with an empty name send just the empty name; the original also copied the bytes behind it in memory into the debugger's message."
+    page: libraries
+    anchor: ridebuglib-fixes
+  - issue: 610
+    severity: 5
+    topic: "System"
+    library: "ridebuglib"
+    command: "DelVarTrace"
+    text: "`DelVarTrace` sends the name where the debugger reads it; the original put it four bytes further on and deleted the wrong trace or none."
+    page: libraries
+    anchor: ridebuglib-fixes
