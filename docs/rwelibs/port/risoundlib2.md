@@ -128,9 +128,10 @@ scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_risoundlib2.txt` recorded from the
 original.
 
-The emulator's Workbench has an ahi.device in `DEVS:` (its requester
-would wait for the user), so the test puts its own "ahi.device" into the
-device list with priority 10, before it: it logs Open/Close/BeginIO/
+The test machine's Workbench has no ahi.device; the test puts its own
+"ahi.device" into the device list with priority 10, before one that a
+Workbench may have in `DEVS:` (whose requester would wait for the user):
+it logs Open/Close/BeginIO/
 AbortIO, copies the tag list of `AHI_AllocAudioRequestA`, checks the
 requester and tags of `AHI_AudioRequestA`, counts the other vectors, and
 can fail OpenDevice, the allocation and the requester. Observed: d0,
@@ -141,8 +142,9 @@ AHIOutputRequest in all six forms with markers in d2–d5 (the tag list
 also checked for its values: the bugs above), the allocation failing,
 the requester cancelled, AHIRequestedID/Freq (-1, 0), CloseAHI (open, in
 use – CheckIO 0: nothing freed –, again), finit, init again, init
-without a message port; CludgeSound (+16 written, +14 kept). Not
-covered: the real ahi.device and playing (unreachable); OpenAHI after
-CloseAHI or without a request (writes to address 48); finit without a
-request (CheckIO of address 0); risoundlib's CludgeSound cases (the same
-code, `libs/tests/rwe/risoundlib.c`).
+without a message port; CludgeSound (+16 written, +14 cleared by the
+port only, #925), then risoundlib's CludgeSound cases
+(`libs/tests/rwe/risoundcludge.h`, the same routine). Not covered: the
+real ahi.device and playing (unreachable); OpenAHI after CloseAHI or
+without a request (writes to address 48); finit without a request
+(CheckIO of address 0).

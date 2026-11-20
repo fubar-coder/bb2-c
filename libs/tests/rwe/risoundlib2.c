@@ -8,9 +8,9 @@
  *   risoundlib2 DIR     (DIR: risoundlib2 and memlib .obj/.orig)
  *
  * The commands talk to a device of this test named "ahi.device", in the
- * device list with priority 10 (OpenDevice finds it before the
- * ahi.device the emulator's Workbench has in DEVS:, whose requester
- * would wait for the user).  First every command with its OpenDevice
+ * device list with priority 10 (the test machine's Workbench has no
+ * ahi.device; one installed in DEVS: would come after it, so its
+ * requester never waits for the user).  First every command with its OpenDevice
  * failing (OpenAHI: 0; the others return 0 or do nothing), then with it
  * opening: Open, Close, BeginIO, AbortIO and the library vectors of
  * ahi.device logged - AHI_AllocAudioRequestA (-120: the tag list
@@ -39,10 +39,14 @@
  * behind the ahidevice check is never reached); OpenAHI after CloseAHI
  * or without a request (writes to address 48, OpenDevice with request
  * 0: (#927)); finit without a request
- * (CheckIO of address 0); risoundlib's CludgeSound cases
- * (libs/tests/rwe/risoundlib.c, the same code).
+ * (CheckIO of address 0).
+ * Then the CludgeSound cases of risoundlib's test (risoundcludge.h, the
+ * same routine): risoundlib's bugs, the rate written into the guard
+ * behind the object (#926), the fields' +14 cleared by the port only
+ * (#925).
  */
 #include "rwecmp.h"
+#include "risoundcludge.h"
 #include <exec/devices.h>
 #include <exec/io.h>
 #include <exec/errors.h>
@@ -390,12 +394,12 @@ int main(int argc, char **argv)
     KEEPS("PlaySoundAHI", d0|d3-d7|a0-a3|a6);
     KEEPS("PlayRawAHI", d1|d2|d5-d7|a0-a3|a6);
     KEEPS("OpenAHI", d2-d7|a2|a3);
-    KEEPS("CludgeSound", d3-d7|a0|a2|a3|a6);
+    KEEPS("CludgeSound", d3-d7|a2|a3|a6);
     KEEPS("finit", d2-d7|a2|a3);
-    /* the test device before any OpenDevice: the Workbench of the
-       emulator has an ahi.device in DEVS: (its requester would wait for
-       the user) - this one has a higher priority, so OpenDevice always
-       finds it first */
+    /* the test device before any OpenDevice: with a higher priority than
+       an ahi.device a Workbench may have in DEVS: (whose requester would
+       wait for the user; the test machine's has none), so OpenDevice
+       always finds it first */
     if (!add_device()) {
         check("MakeLibrary ahi.device", FALSE);
         return 20;
@@ -430,6 +434,7 @@ int main(int argc, char **argv)
     cludge(8363, 100, "8363 Hz");
     cludge(22050, 33, "22050 Hz");
     cludge(16000, 2, "16000 Hz, after it");
+    cs_cases(LIB, CLUDGE);              /* risoundlib's cases */
 
     /* the test device opens */
     openahi(0, 0, 0, "test device");

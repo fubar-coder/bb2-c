@@ -74,13 +74,17 @@ kind F):
 Each run loads one library set (the C build or the original); the
 scenario writes its observations as cases, compared with the expected
 data `libs/tests/expected/rwe_risoundlib.txt` recorded from the
-original. 8SVX files are built in memory; no audio. Observed: d0, the
-object's fields and guards, the sample's bytes (the pointer itself is
-only checked to be in chip memory on success and the old pointer on
-failure), the file unchanged, the kept registers, memlib's memory all
+original. The cases are in `libs/tests/rwe/risoundcludge.h`, which
+risoundlib2's test runs as well (the same routine). 8SVX files are built
+in memory; no audio. Observed: d0, the object's fields and guards, all
+of the sample's bytes (the pointer itself is only checked to be in chip
+memory on success and the old pointer on failure), what the call did to
+the task's memory balance (the old sample freed, the new one
+allocated), the file unchanged, the kept registers, memlib's memory all
 back. Covered: nine rates (1, 2, 0x8000, 0xFFFF …), each call
 freeing the previous sample; chunks before BODY, BODY as the 7th (found)
 and 8th chunk (not), no `8SVX`, no `VHDR`, a VHDR of 24 bytes, an odd
-chunk with and without the pad byte, odd and 1-byte BODYs, BODYs of 65536
-and 70000 bytes, the stale pointer after a failure. Not covered: rate 0
-and an empty BODY (see above); audiolib itself (only the object layout).
+chunk with and without the pad byte, odd and 1-byte BODYs, BODYs of
+65536, 70000, 131071 and 131072 bytes, the old sample freed by a failure.
+Not covered: rate 0 and an empty BODY (see above); audiolib itself (only
+the object layout).
