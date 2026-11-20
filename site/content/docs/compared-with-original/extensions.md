@@ -10,9 +10,10 @@ Before this page you should know how the compiler options work
 The compiler of the BB2 C port follows one rule for everything it adds:
 an extension may only give a meaning to a source that the original
 refuses. A source that compiles with Blitz Basic 2 compiles to a program
-that does the same with the port, extensions or not. The places where
-the port's executable differs on purpose are speed: a few functions are
-compiled as inline code ([Faster Int, Frac, Len and Asc](#faster-int-frac-len-and-asc)),
+that does the same with the port, extensions or not. The port's
+executable differs on purpose in two places, both for speed: a few
+functions are compiled as inline code
+([Faster Int, Frac, Len and Asc](#faster-int-frac-len-and-asc)),
 and a branch with the size `.b` in inline assembler is a short branch
 ([Short branches in inline assembler](#short-branches-in-inline-assembler)).
 
@@ -71,11 +72,15 @@ the program is faster:
 depend on its length any more: `Len` of a string of 1000 characters took
 8261 cycles and now takes 63.
 
-Everything else is compiled with the call, as before: `Frac` inside a
-larger expression, a condition or `Print`, or with a Float or Long
-target; `Len` and `Asc` of an expression (`Len(a$+b$)`), of a function
-(`Len(Left$(a$,2))`), of a literal, of an array element or of a field of
-a NewType. In AB3 mode `Frac`, `Len` and `Asc` stay library calls too,
+Everything else is compiled with the call, as before:
+
+* `Frac` inside a larger expression, a condition or `Print`, or with a
+  Float or Long target;
+* `Len` and `Asc` of an expression (`Len(a$+b$)`), of a function
+  (`Len(Left$(a$,2))`), of a literal, of an array element or of a field
+  of a NewType.
+
+In AB3 mode `Frac`, `Len` and `Asc` stay library calls too,
 because AmiBlitz3's libraries are different; `Int` is inline there as
 well.
 
