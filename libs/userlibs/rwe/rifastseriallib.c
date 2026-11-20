@@ -33,6 +33,9 @@
  * Fixed (intended deviations):
  *   - InitSerialIO/SetIOSpeed divide in C, not with the 68020 instruction
  *     DIVU.L (above) (#647).
+ *   - A block of 0 bytes (PutSerial/GetSerial address,0, SyncPut,
+ *     SyncGet) transfers nothing; the original sent or received one byte
+ *     and counted on with SUBQ.l: BNE, 2^32 bytes (#646).
  * BUG(orig):
  *   - SetIOSpeed divides by all of d0, also the upper word of its #word
  *     argument (#654).
@@ -46,8 +49,7 @@
  *     that gives SERPER 0 (>= 1773448) leaves the library "not
  *     initialised" (#653).
  *   - Only FinitSerialIO, InitSerialIO, PutSerial and SetIOSpeed check
- *     the initialisation (#652); a block of 0 bytes (PutSerial/GetSerial
- *     address,0, SyncPut, SyncGet) is 2^32 bytes (SUBQ.l: BNE) (#646).
+ *     the initialisation (#652).
  *   - GetSerial address,bytes (#byte result) returns its address argument
  *     (#649).
  *   - SyncSerial: two machines starting at the same time both become
@@ -384,8 +386,8 @@ void BLITZ_ROUTINE c_putserial(UBYTE b BL_REG(d0))
 /**
  * @brief PutSerial address,bytes: send a block of bytes.
  *
- * Nothing if not initialised.  BUG(orig) (#646): 0 bytes are 2^32
- * (SUBQ.l: BNE).
+ * Nothing if not initialised.  Fixed (#646): 0 bytes send nothing (the
+ * original sent one byte and counted on with SUBQ.l: BNE, 2^32 bytes).
  * @param p  d0: the address of the data
  * @param n  d1: the number of bytes
  */
@@ -393,9 +395,8 @@ void BLITZ_ROUTINE c_putserial2(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     if (!fs.baud)
         return;
-    do
+    while (n--)                         /* fixed (#646) */
         writebyte(*p++);
-    while (--n != 0);
 }
 
 /**
@@ -431,7 +432,8 @@ ULONG BLITZ_ROUTINE c_getserial(void)
 /**
  * @brief GetSerial address,bytes: receive a block of bytes.
  *
- * BUG(orig): 0 bytes are 2^32 (#646); no initialisation check (#652).
+ * Fixed (#646): 0 bytes receive nothing (the original: 2^32).
+ * BUG(orig): no initialisation check (#652).
  * @param p  d0: the buffer
  * @param n  d1: the number of bytes
  * @return d0: the address argument (a #byte result, BUG(orig) (#649))
@@ -440,9 +442,8 @@ ULONG BLITZ_ROUTINE c_getserial2(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     UBYTE *a = p;
 
-    do
+    while (n--)                         /* fixed (#646) */
         *a++ = readbyte();
-    while (--n != 0);
     return (ULONG)p;
 }
 
@@ -458,16 +459,17 @@ void BLITZ_ROUTINE c_flushserialio(void)
  * @brief SyncPut address,bytes: send bytes, each paced by the other side's answer.
  *
  * For every byte: send it, wait for a byte back (into bytebuf).
- * BUG(orig): 0 bytes are 2^32 (#646); no initialisation check (#652).
+ * Fixed (#646): 0 bytes send nothing (the original: 2^32).
+ * BUG(orig): no initialisation check (#652).
  * @param p  d0: the data
  * @param n  d1: the number of bytes
  */
 void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
-    do {
+    while (n--) {                       /* fixed (#646) */
         writebyte(*p++);
         fs.bytebuf[0] = readbyte();
-    } while (--n != 0);
+    }
 }
 
 /**
@@ -475,16 +477,17 @@ void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
  *
  * For every byte received it sends the byte in bytebuf (whatever was
  * last written there: no defect, the answer only paces the sender).
- * BUG(orig): 0 bytes are 2^32 (#646); no initialisation check (#652).
+ * Fixed (#646): 0 bytes receive nothing (the original: 2^32).
+ * BUG(orig): no initialisation check (#652).
  * @param p  d0: the buffer
  * @param n  d1: the number of bytes
  */
 void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
-    do {
+    while (n--) {                       /* fixed (#646) */
         *p++ = readbyte();
         writebyte(fs.bytebuf[0]);
-    } while (--n != 0);
+    }
 }
 
 /**

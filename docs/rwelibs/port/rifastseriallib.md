@@ -35,6 +35,10 @@ d0/d1/a0/a1 that are not the result.
   CPU; the source writes `DIVU.L d0,d1`, a 68020 instruction, as data
   (`!divul {0,1}` = `Dc.w $4c40,$1001`), an illegal instruction exception
   on a 68000 (#647; test `rifastseriallib-divul-68000` on the A600).
+* A block of 0 bytes (`PutSerial`/`GetSerial` address,0, `SyncPut`,
+  `SyncGet`) transfers nothing; the original sent or received one byte
+  and counted on with `SUBQ.l: BNE`, 2^32 bytes (#646; test
+  `rifastseriallib-block-zero-bytes`).
 
 **BUG(orig)** (kept):
 
@@ -50,9 +54,7 @@ d0/d1/a0/a1 that are not the result.
   gives SERPER 0 (≥ 1773448) leaves the library "not initialised"
   (#653).
 * Only `FinitSerialIO`, `InitSerialIO`, `PutSerial` and `SetIOSpeed`
-  check the initialisation (#652); a block of 0 bytes
-  (`PutSerial`/`GetSerial` address,0, `SyncPut`, `SyncGet`) is 2^32
-  bytes (`SUBQ.l: BNE`) (#646).
+  check the initialisation (#652).
 * `GetSerial address,bytes` (#byte result) returns its address argument
   (#649).
 * `SyncSerial`: two machines starting at the same time both become

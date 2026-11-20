@@ -4,6 +4,7 @@
 ; memory from the buffer on, 4 GB at 19200 baud - the program does not
 ; come back (the session ends in a timeout).
 ; Correct: a block of 0 bytes sends nothing, the program goes on.
+; @fixed #646
 ; @rwe rifastseriallib
 ; @pass serial=on
 ; @pass timeout=30
