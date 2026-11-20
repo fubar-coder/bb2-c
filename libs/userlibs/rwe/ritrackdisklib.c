@@ -212,38 +212,22 @@ static void putioreq(LONG unit, struct IOStdReq *req)
 /*
  * Fixed (#941): reply port and requests built by hand with exec V33
  * functions, one path for every Kickstart (in place of exec V36's
- * CreateMsgPort/DeleteMsgPort and CreateIORequest/DeleteIORequest).
+ * CreateMsgPort/DeleteMsgPort and CreateIORequest/DeleteIORequest): the
+ * helpers of blitzexec.h, kept out of line (one copy each) by the
+ * wrappers below.
  */
 
-/* newport: a signal port of the calling task (as CreateMsgPort): the
-   MsgPort cleared, a signal bit, PA_SIGNAL, an empty message list; NULL
-   without memory or a free signal */
+/* newport: the reply port (bl_newport: a signal port of the calling
+   task, as CreateMsgPort); NULL without memory or a free signal */
 static struct MsgPort *newport(void)
 {
-    struct MsgPort *mp = AllocMem(sizeof *mp, MEMF_PUBLIC | MEMF_CLEAR);
-    BYTE sig;
-
-    if (!mp)
-        return NULL;
-    sig = AllocSignal(-1);
-    if (sig < 0) {
-        FreeMem(mp, sizeof *mp);
-        return NULL;
-    }
-    mp->mp_Node.ln_Type = NT_MSGPORT;
-    mp->mp_Flags = PA_SIGNAL;
-    mp->mp_SigBit = sig;
-    mp->mp_SigTask = FindTask(NULL);
-    mp->mp_MsgList.lh_Head = (struct Node *)&mp->mp_MsgList.lh_Tail;
-    mp->mp_MsgList.lh_TailPred = (struct Node *)&mp->mp_MsgList.lh_Head;
-    return mp;
+    return bl_newport();
 }
 
-/* freeport: frees the signal bit and the port of newport() */
+/* freeport: frees the port of newport() */
 static void freeport(struct MsgPort *mp)
 {
-    FreeSignal(mp->mp_SigBit);
-    FreeMem(mp, sizeof *mp);
+    bl_freeport(mp);
 }
 
 /* the size of a request, as the original's CreateIORequest(port, 200) */
@@ -252,7 +236,9 @@ static void freeport(struct MsgPort *mp)
 /* newreq: a cleared request of REQSIZE bytes on msgport with
    mn_ReplyPort and mn_Length set (as CreateIORequest) and NT_REPLYMSG:
    CheckIO takes a request that was never sent for done, as one of
-   CreateIORequest (DiskStatus after OpenDisk); NULL without memory */
+   CreateIORequest (DiskStatus after OpenDisk); NULL without memory.
+   Not blitzexec.h's bl_newreq: that one reads the port before AllocMem,
+   this one after it (other code, the library would change) */
 static struct IOStdReq *newreq(void)
 {
     struct IOStdReq *req = AllocMem(REQSIZE, MEMF_PUBLIC | MEMF_CLEAR);
