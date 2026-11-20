@@ -82,13 +82,19 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   MoveWBSprite, ChangeWBSprite and WBSpriteX/Y index the table with the
   channel as is. `GetWBSprite(10,10,0,8)` returned 8 (the "grap" of the
   name in entry 8) before #920's fix, -1 now.
+* With runtime error checking GetWBSprite and ChangeWBSprite refuse a
+  shape with data and a height of 0 ("Illegal Shape Height") or a depth
+  of 0 or above 8 ("Illegal Shape Depth"), an invalid object that
+  Blitz's shape commands do not make (#917, test
+  `rwe/riwbspritelib-copy-dbra-zero`). The release code is unchanged
+  (D-005): the copy counts height − 1 and depth − 1 with `DBRA` (65536
+  rows or planes); for height 0 `AllocBitMap` fails first (-1), for
+  depth 0 it does not return.
 
 ## BUG(orig), kept
 
 * Without a sprite WBSpriteX/Y read the words at addresses 6 and 8
   (#922).
-* The shape is copied with `DBRA` counts (height or depth 0: 65536
-  rows/planes) (#917).
 * finit does not clear the library base: a second finit closes
   graphics.library again (#919).
 
@@ -117,4 +123,4 @@ FreeWBSprite with and without a sprite; finit with sprites left.
 Checked to fail when the row count of the copy, the position of a
 changed sprite or the channel of GetWBSprite(-1) is changed. Not
 covered: channels outside 0–7, a second finit, failing `AllocBitMap`,
-`AllocSpriteDataA`, height or depth 0.
+`AllocSpriteDataA`, height or depth 0 (the error checks: Blitz tests).

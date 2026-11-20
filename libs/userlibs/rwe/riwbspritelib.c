@@ -57,11 +57,14 @@
  *     8-15 are the name and the base) but passes the whole register to
  *     FreeSprite; MoveWBSprite, ChangeWBSprite, WBSpriteX/Y index the
  *     table with the channel as is (#916).
+ *   - With runtime error checking GetWBSprite and ChangeWBSprite refuse
+ *     a shape with data and a height of 0 ("Illegal Shape Height") or a
+ *     depth of 0 or above 8 ("Illegal Shape Depth"), an invalid object.
+ *     The release code is unchanged (D-005): the copy counts height - 1
+ *     and depth - 1 with DBRA (65536 rows or planes) (#917).
  *
  * BUG(orig):
  *   - WBSpriteX/Y without a sprite read the words at 6 and 8 (#922).
- *   - The shape is copied with DBRA counts: height or depth 0 copy 65536
- *     rows/planes (#917).
  *   - finit does not clear the library base: a second finit closes
  *     graphics.library again (#919).
  */
@@ -255,7 +258,8 @@ static void BLITZ_ROUTINE libfinit_c(void)
 /* the shape (wd.shapeaddr) into the planes of `bm`: width/16 words per
    row, the source row after row by the shape's ebwidth, the target by
    the bitmap's BytesPerRow (fixed #918); height rows, depth planes (DBRA
-   counts) */
+   counts: a height or depth of 0 is refused by the error checks, fixed
+   #917) */
 static void copyshape(struct BitMap *bm)
 {
     const struct bb_shape *shape = (const struct bb_shape *)wd.shapeaddr;
@@ -327,9 +331,9 @@ static ULONG newsprite(void)
  *
  * Amiga mode only.  The shape is copied into a bitmap of AllocBitMap,
  * converted with AllocSpriteDataA (x, y set) and got with GetExtSpriteA
- * (channel -1: any); the sprite goes into the table.  BUG(orig): the
- * copy has DBRA counts (#917).  The channel: getwbspritechk (fixed
- * #916).
+ * (channel -1: any); the sprite goes into the table.  The copy has
+ * DBRA counts; the channel and the shape: getwbspritechk (fixed #916,
+ * #917).
  * Fixed (#918): the copy steps by the shape's ebwidth and the bitmap's
  * BytesPerRow.  Fixed (#920): every
  * failure (no graphics.library, no shape data, a shape narrower than
@@ -430,8 +434,8 @@ static ULONG BLITZ_ROUTINE movewbsprite_c(ULONG vp BL_REG(d0), ULONG x BL_REG(d1
  *
  * Amiga mode only.  The shape is converted as in GetWBSprite, at the
  * sprite's position; on success the old sprite data are freed and the
- * new ones replace them in the table.  The channel: changewbspritechk
- * (fixed #916).  Fixed (#915): if ChangeExtSpriteA fails, the new
+ * new ones replace them in the table.  The channel and the shape:
+ * changewbspritechk (fixed #916, #917).  Fixed (#915): if ChangeExtSpriteA fails, the new
  * sprite data are freed (the original lost them).
  * @param vp     d0: the ViewPort
  * @param ch     d1: the channel
@@ -518,12 +522,26 @@ BLITZ_THUNK(_wbspritey, wbspritey_c, "d1/a0-a1");
 
 BLITZ_ERRCHK_MESSAGE(badgetch, "Sprite channel must be -1 to 7");    /* fixed, #916 */
 BLITZ_ERRCHK_MESSAGE(badch, "Sprite channel must be 0 to 7");        /* fixed, #916 */
+BLITZ_ERRCHK_MESSAGE(badheight, "Illegal Shape Height");             /* fixed, #917 */
+BLITZ_ERRCHK_MESSAGE(baddepth, "Illegal Shape Depth");               /* fixed, #917 */
 
 /* a channel 0 to 7 */
 static void BLITZ_ERRCHK chchk(ULONG ch)
 {
     if (ch > 7)
         BLITZ_RUNERR(badch);
+}
+
+/* a shape with data: height not 0, depth 1 to 8 (one without data the
+   release code refuses itself) */
+static void BLITZ_ERRCHK shapechk(const struct bb_shape *sh)
+{
+    if (!SHAPEDATA(sh))
+        return;
+    if (!sh->height)
+        BLITZ_RUNERR(badheight);
+    if (!sh->depth || sh->depth > 8)
+        BLITZ_RUNERR(baddepth);
 }
 
 /**
@@ -534,13 +552,23 @@ static void BLITZ_ERRCHK chchk(ULONG ch)
  * check (the tag lists before it, the library name and base behind it).
  * The release code is unchanged (an invalid argument, D-005).
  *
- * Errors: "Sprite channel must be -1 to 7".
- * @param ch  d3: the channel (a long), -1 for any
+ * Fixed (#917): a shape with data and a height of 0, a depth of 0 or
+ * above 8 (an invalid object: Blitz's shape commands make none) is
+ * refused before AllocBitMap; the copy counts height - 1 and depth - 1
+ * with DBRA (65536 rows or planes; the planes read behind the 8 of the
+ * bitmap).  Release code unchanged (D-005).
+ *
+ * Errors: "Sprite channel must be -1 to 7"; "Illegal Shape Height",
+ * "Illegal Shape Depth".
+ * @param ch     d3: the channel (a long), -1 for any
+ * @param shape  a0: the shape
  */
-static void BLITZ_ERRCHK getwbspritechk_c(LONG ch BL_REG(d3))
+static void BLITZ_ERRCHK getwbspritechk_c(LONG ch BL_REG(d3),
+                                          const struct bb_shape *shape BL_REG(a0))
 {
     if (ch < -1 || ch > 7)
         BLITZ_RUNERR(badgetch);
+    shapechk(shape);
 }
 
 /**
@@ -579,12 +607,18 @@ static void BLITZ_ERRCHK movewbspritechk_c(ULONG ch BL_REG(d3))
  * Fixed (#916), not in the original: the channel (a long) indexes the
  * table without a check.  Release code unchanged (D-005).
  *
- * Errors: "Sprite channel must be 0 to 7".
- * @param ch  d1: the channel
+ * Fixed (#917): the shape as GetWBSprite's.
+ *
+ * Errors: "Sprite channel must be 0 to 7"; "Illegal Shape Height",
+ * "Illegal Shape Depth".
+ * @param ch     d1: the channel
+ * @param shape  a0: the shape
  */
-static void BLITZ_ERRCHK changewbspritechk_c(ULONG ch BL_REG(d1))
+static void BLITZ_ERRCHK changewbspritechk_c(ULONG ch BL_REG(d1),
+                                             const struct bb_shape *shape BL_REG(a0))
 {
     chchk(ch);
+    shapechk(shape);
 }
 
 /**

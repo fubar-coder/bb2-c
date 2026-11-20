@@ -8,6 +8,7 @@
 ; error check area.  Here with runtime error checking.
 ; Correct: the error check refuses the shape before AllocBitMap: "Illegal
 ; Shape Height" after "before".
+; @fixed #917
 ; @rwe riwbspritelib
 ; @pass runtime_errors=on
 BitMap 0,320,64,2
