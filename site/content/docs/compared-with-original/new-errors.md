@@ -1978,6 +1978,103 @@ of `height` rows inside the chunky bitmap.
 
 Issue: [RaycastSky with height 0 copies 65536 rows; x and column are not checked (#887)](https://github.com/fubar-coder/bb2-c/issues/887).
 
+### The maps of rimapeditorlib: stencil, data and positions {#rimapeditorlib-map-checks}
+
+`MapCanDraw(shape#,mapx,mapy)` of
+[rimapeditorlib]({{< relref "/docs/libraries/userlibs/rimapeditorlib" >}})
+tells whether a shape may be put into a cell of the current map. It
+looks up the value of the cell in the stencil, a byte array set with
+`SetStencil`. `MapDataAdr(x,y)` returns the address of a cell, and
+`MapDataGrab` fills all cells of the current map from memory.
+
+**What happened.** The original checked none of this, also not with
+runtime error checking. Before any `SetStencil`, `MapCanDraw` read the
+stencil at address 0. A cell value of 32768 or more counted as negative
+and read up to 32 KB in front of the stencil. On a map without data,
+such as one whose `CreateMap` could not get memory, `MapCanDraw` read
+at address 0. `MapDataAdr(x,y)` returned an address for any position,
+also behind the map.
+
+**With the port.** With runtime error checking, these are runtime
+errors:
+
+* `MapCanDraw` before any `SetStencil`: "MapCanDraw needs SetStencil";
+* a cell value of 32768 or more, where `MapCanDraw` looks it up in the
+  stencil: "Map value above 32767 for the stencil";
+* `MapCanDraw` or `MapDataGrab` on a map without data, after
+  `Free MapObject` or a `CreateMap` that got no memory: "MapObject has
+  no map data";
+* `MapDataAdr(x,y)` with a position outside the map: "Map position
+  outside the map".
+
+Without runtime error checking, the commands are as before, except
+that `MapDataGrab` fills nothing into a map without data.
+
+**What to change.** Call `SetStencil` before `MapCanDraw`, keep the
+cell values below 32768, and ask `MapDataAdr` only for positions
+inside the map.
+
+Issues: [MapCanDraw's stencil lookup is unchecked: without SetStencil it reads low memory; map words ≥ $8000 index before the stencil (#893)](https://github.com/fubar-coder/bb2-c/issues/893),
+[MapCanDraw compares x/y signed: negative coordinates pass and index far behind the map data (#892)](https://github.com/fubar-coder/bb2-c/issues/892).
+
+### `FillBitplane` and `ShapeTo1616` with sizes that do not fit {#rimapeditorlib-size-checks}
+
+`FillBitplane bitmap#,width,height` of
+[rimapeditorlib]({{< relref "/docs/libraries/userlibs/rimapeditorlib" >}})
+fills the top left of the first bitplane of a bitmap with a mesh,
+`width` rounded down to a multiple of 16 pixels.
+`ShapeTo1616 source,dest` copies the top left 16 by 16 pixels of every
+plane of a shape into a shape of 16 by 16 pixels.
+
+**What happened.** The original checked neither, also not with
+runtime error checking. `FillBitplane` with a width below 16 wrote
+65536 words into each row, and with a height of 0 it filled 65536
+rows. `ShapeTo1616` from a shape of height or depth 0 copied 65536
+rows or planes. It wrote 16 rows for every plane of the source into
+the destination whatever its size, so a destination with fewer planes
+or rows was overrun.
+
+**With the port.** With runtime error checking, these are runtime
+errors:
+
+* a `FillBitplane` width below 16: "FillBitplane width must be at
+  least 16";
+* a `FillBitplane` height of 0: "FillBitplane height must be at least
+  1";
+* a `ShapeTo1616` source shape of height or depth 0: "ShapeTo1616
+  source of height or depth 0";
+* a `ShapeTo1616` destination that is not 16 by 16 pixels with at least
+  the depth of the source: "ShapeTo1616 needs a 16 x 16 destination as
+  deep as the source".
+
+Without runtime error checking, the commands are as before.
+
+**What to change.** Give `FillBitplane` a width of 16 or more and a
+height of 1 or more, and give `ShapeTo1616` a destination shape of 16
+by 16 pixels with as many planes as the source.
+
+Issues: [MapDataGrab, ShapeTo1616 and FillBitplane loop 65536 times for a size of 0 (DBRA) (#895)](https://github.com/fubar-coder/bb2-c/issues/895),
+[ShapeTo1616 writes 16 words per source plane into the destination shape regardless of its size (#900)](https://github.com/fubar-coder/bb2-c/issues/900).
+
+### `CreateMap` wider than 32767 cells {#createmap-width}
+
+`CreateMap` of
+[rimapeditorlib]({{< relref "/docs/libraries/userlibs/rimapeditorlib" >}})
+makes a map of `width` by `height` cells of one word each.
+
+**What happened.** The original computed the size of a row in 16 bits,
+so a map wider than 32767 cells got far too little memory: a width of
+40000 got 14464 bytes per row instead of 80000. `MapDataGrab` then
+wrote behind the map's data, and `MapCanDraw` read there.
+
+**With the port.** With runtime error checking, a width above 32767 is
+the error "Map width above 32767". Without runtime error checking,
+`CreateMap` is as before.
+
+**What to change.** Keep maps at 32767 cells wide or less.
+
+Issue: [CreateMap with a width above 32767 gets too little data: MapDataGrab writes behind the map (#1152)](https://github.com/fubar-coder/bb2-c/issues/1152).
+
 ## Forms the original refused {#forms-the-original-refused}
 
 Most cases of this page go one way: the original compiled them and the

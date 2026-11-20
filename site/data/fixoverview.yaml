@@ -5892,6 +5892,86 @@ rows:
     text: "A program run again from the editor starts with the four player adaptor switched on, as documented; the original kept it off after `JAdaptorStatus Off`."
     page: libraries
     anchor: rizonejoylib-fixes
+  - issue: 892
+    severity: 5
+    topic: "Graphics"
+    library: "rimapeditorlib"
+    command: "MapCanDraw, MapDataAdr"
+    text: "`MapCanDraw` refuses negative positions, and with runtime error checking `MapDataAdr` outside the map stops with a runtime error; the original read and returned a word far behind the map."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 893
+    severity: 3
+    topic: "Graphics"
+    library: "rimapeditorlib"
+    command: "MapCanDraw, MapDataGrab"
+    text: "With runtime error checking, `MapCanDraw` without `SetStencil`, with a cell value of 32768 or more or on a map without data stops with \"MapCanDraw needs SetStencil\" or a similar error; the original read low memory."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 895
+    severity: 3
+    topic: "Graphics"
+    library: "rimapeditorlib"
+    command: "FillBitplane, ShapeTo1616, MapDataGrab"
+    text: "With runtime error checking, `FillBitplane` and `ShapeTo1616` with a size of 0 stop with \"FillBitplane width must be at least 16\" or a similar error, and `MapDataGrab` fills nothing into a map without data; the original wrote 65536 rows or words over memory."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 900
+    severity: 3
+    topic: "Graphics"
+    library: "rimapeditorlib"
+    command: "ShapeTo1616"
+    text: "With runtime error checking, `ShapeTo1616` into a destination that is not 16 x 16 with the source's depth stops with \"ShapeTo1616 needs a 16 x 16 destination as deep as the source\"; the original overran it."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 1152
+    severity: 3
+    topic: "Graphics"
+    library: "rimapeditorlib"
+    command: "CreateMap"
+    text: "With runtime error checking, `CreateMap` with a width above 32767 stops with \"Map width above 32767\"; the original allocated too little, and `MapDataGrab` wrote behind it."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 894
+    severity: 5
+    topic: "System"
+    library: "rimapeditorlib"
+    command: "CreateMap"
+    text: "`CreateMap` frees the map the object held wherever its data lie; the original lost a map whose data began at a multiple of 65536."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 898
+    severity: 5
+    topic: "Graphics"
+    library: "rimapeditorlib"
+    command: "MapDataGrab"
+    text: "`MapDataGrab` of bytes gives each cell its byte plus `mapnull`; the original carried a value above 255 into all following cells."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 899
+    severity: 5
+    topic: "Strings"
+    library: "rimapeditorlib"
+    command: "MapObjName$"
+    text: "`MapObjName$` returns names of 256 characters or more whole; the original returned the length modulo 256."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 897
+    severity: 5
+    topic: "Strings"
+    library: "rimapeditorlib"
+    command: "M_InitParse"
+    text: "`M_InitParse` takes at most 255 characters; the original overwrote the library's data and code with a longer text."
+    page: libraries
+    anchor: rimapeditorlib-fixes
+  - issue: 1133
+    severity: 5
+    topic: "System"
+    library: "rimapeditorlib"
+    command: "SetStencil, ScanShapes, M_NextArg$"
+    text: "A program run again from the editor starts without the stencil, `ScanShapes` results and parse position of the run before; the original kept them, the stencil freed."
+    page: libraries
+    anchor: rimapeditorlib-fixes
   - issue: 925
     severity: 5
     topic: "Sound"
