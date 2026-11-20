@@ -513,7 +513,8 @@ static void fprintdetoke(void)
     detoke(l1, 0, 1, 0);
     flocate(79, 2);
     detoke(l1, 2, 0, 0);
-    /* the inverse word: 1 (not tested by FPrintDetoke), $100 (all
+    /* the inverse word: 1 (the original tests the high byte only, #706),
+       $100 (all
        inverted; the second plane gets another glyph, BUG(orig) (#709)) */
     fword(E_FINVERSE, "FInverse", 1);
     flocate(0, 3);

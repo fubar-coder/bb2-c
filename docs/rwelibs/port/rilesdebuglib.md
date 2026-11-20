@@ -87,9 +87,9 @@ All routines are C behind `BLITZ_THUNK`; graphics and dos through the
 NDK inlines, RawStatus (blitzkeyslib, $3102) through `BLITZ_ALIBJSR`.
 FPrint reads the string length below a2; FPrintDetoke gets d6 as a
 register parameter, because the original keeps the caller's high word of
-its column counter (it matters for one flag test, see BUG(orig)). The
-word `inverse` is tested as a word by FPrint and by its high byte in
-FPrintDetoke (`INVERSE_HI`). The `%` entries are one packed array
+its column counter (it mattered for the flag test of #708, fixed). The
+word `inverse` is tested as a word by FPrint and FPrintDetoke (#706,
+fixed). The `%` entries are one packed array
 (2 fixed, 20 for AddProcessPtr, the end) like the original's
 `stringtokens`/`userstringtokens`. The thunks keep d1/a0/a1 (the
 statements also d0), the C code d2-d7/a2-a6; the original changes d0-d3,
@@ -254,6 +254,14 @@ d5-d7, a0-a3 and a6 in places.
   behind the marker (a high word of $FFFF and the column $FFFF) (#708;
   no Blitz test: a program cannot set d6, D-019; the `libs_emulator`
   case `[fixed #708]` of the column $FFFF).
+* `FPrintDetoke` tests the FInverse word, as `FPrint` does, and its
+  inverse space marker leaves the word as it was. The original tested
+  only the word's high byte there (`FInverse 1` inverted FPrint only),
+  and the marker set and cleared that byte, which turned `FInverse $100`
+  off for everything printed after it (#706; test
+  `rilesdebuglib-finverse-detoke`; the `libs_emulator` cases
+  `[fixed #706]` of FInverse 1 with FPrintDetoke and of the printing
+  behind a marker).
 
 ## BUG(orig)
 
@@ -263,10 +271,7 @@ d5-d7, a0-a3 and a6 in places.
   columns 80-207 stop, 208-255 print (and go on to 0-79); nothing checks
   the bitmap's size; in FPrintDetoke the marker takes a column without
   this test (#707).
-* FInverse sets a word; FPrint tests the word, FPrintDetoke its high
-  byte (FInverse 1 inverts only FPrint), and FPrintDetoke's marker sets
-  and clears the high byte (#706). With the high byte set and tokens
-  drawn into both planes, plane 1 gets the glyph of another character
+* FPrintDetoke: with inverse printing and tokens drawn into both planes, plane 1 gets the glyph of another character
   (the inverse drawing leaves the last glyph byte in d0's low byte)
   (#709).
 * D_FindStringPtr never compares the long at areg5 itself (#705).

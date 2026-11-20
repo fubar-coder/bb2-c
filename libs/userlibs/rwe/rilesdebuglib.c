@@ -49,12 +49,9 @@
  *   - FPrint and FPrintDetoke: the column check is a byte compare with
  *     80 tested on N (columns 80-207 stop, 208-255 print); nothing checks
  *     the bitmap's size (#707).
- *   - FInverse sets a word that FPrint tests as a word but FPrintDetoke
- *     as its high byte (FInverse 1 inverts FPrint only); FPrintDetoke's
- *     cursor marker sets and clears that high byte (#706).  With the high
- *     byte set and tokens drawn into two planes, the second plane gets
- *     the character of the last glyph byte (the inverse drawing
- *     overwrites d0's low byte) (#709).
+ *   - FPrintDetoke: with inverse printing and tokens drawn into two
+ *     planes, the second plane gets the character of the last glyph byte
+ *     (the inverse drawing overwrites d0's low byte) (#709).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
@@ -123,6 +120,10 @@
  *   - FPrintDetoke's '>' marker is never followed by the inverse space;
  *     the original drew it too when the column count (d6 with the
  *     caller's high word) became 0 (#708).
+ *   - FPrintDetoke tests the FInverse word, as FPrint, and its inverse
+ *     space marker leaves it as it was; the original tested the word's
+ *     high byte (FInverse 1 inverted FPrint only), and the marker set and
+ *     cleared that byte, which turned FInverse $100 off (#706).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -409,8 +410,6 @@ static struct GfxBase *gfxbase;
 
 /* the font printer: cursor (column, row of 8 pixels), inverse, y offset */
 static UWORD xcurs, ycurs, inverse, yoffset;
-/* the high byte of inverse (TST.b/ST/SF inverse in FPrintDetoke) */
-#define INVERSE_HI (*(UBYTE *)&inverse)
 
 /* FPrintDetoke: the token list (SetupLESDebug), its options */
 static ULONG tokens;
@@ -923,8 +922,8 @@ static void BLITZ_ROUTINE flocate_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 /**
  * @brief FInverse inversemode: inverse printing on or off.
  *
- * FPrint tests the word, FPrintDetoke only its high byte: FInverse 1
- * inverts FPrint only (BUG(orig) (#706)).
+ * FPrint and FPrintDetoke test the word (fixed #706: FPrintDetoke tested
+ * only its high byte, FInverse 1 inverted FPrint only).
  * @param on  d0.w: nonzero inverse
  */
 static void BLITZ_ROUTINE finverse_c(UWORD on BL_REG(d0))
@@ -1006,14 +1005,15 @@ struct dt {
     ULONG col;                          /* d6 */
 };
 
-/* the glyph at d0 (character * 8), inverted if the high byte of inverse is
-   set; returns d0 - its low byte the last glyph byte drawn inverted */
+/* the glyph at d0 (character * 8), inverted if the FInverse word is set
+   (fixed #706: the original tested its high byte); returns d0 - its low
+   byte the last glyph byte drawn inverted */
 static UWORD draw_char(struct dt *t, UWORD glyph)
 {
     const UBYTE *g = font_dat + (WORD)glyph;
     int i;
 
-    if (INVERSE_HI)
+    if (inverse)                                        /* fixed (#706) */
         for (i = 0; i < 8; i++) {
             UBYTE b = (UBYTE)~g[i];
 
@@ -1038,13 +1038,14 @@ static UWORD draw_char(struct dt *t, UWORD glyph)
  * ("?????" for an unknown one), also into plane 1 with SetupLESDebug's
  * tokenise; lineoffset characters skipped from the left; before the
  * character at cio a marker, '>' (typ 0) or an inverse space.  Inverse
- * printing tests the high byte of the FInverse word, the marker sets and
- * clears it (BUG(orig) (#706)); with it set and tokens drawn into two
- * planes, the second plane gets the character of the last glyph byte
- * (#709).  The '>' marker is never followed by the inverse space (fixed
- * #708: the original's BSR draw_char : SBNE 'con drew it too when the
- * column count, d6 with the caller's high word, became 0).  The column
- * check is FPrint's (#707).
+ * printing tests the FInverse word, and the marker leaves it as it was
+ * (fixed #706: the original tested its high byte, so FInverse 1 did not
+ * invert here, and the marker set and cleared that byte); with it set and
+ * tokens drawn into two planes, the second plane gets the character of
+ * the last glyph byte (BUG(orig) (#709)).  The '>' marker is never
+ * followed by the inverse space (fixed #708: the original's BSR
+ * draw_char : SBNE 'con drew it too when the column count, d6 with the
+ * caller's high word, became 0).  The column check is FPrint's (#707).
  * @param line       d0: the tokenised line (0-terminated)
  * @param cio        d1.w: the character before which the marker goes
  * @param typ        d2.b: the marker, 0 '>', else an inverse space
@@ -1081,10 +1082,13 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
                 goto curins;
             draw_char(&t, '>' * 8);
             goto con;                                   /* fixed (#708) */
-        curins:
-            INVERSE_HI = 0xff;
+        curins: {
+            UWORD inv = inverse;                        /* fixed (#706) */
+
+            inverse = 0xff00;
             draw_char(&t, ' ' * 8);
-            INVERSE_HI = 0;
+            inverse = inv;
+        }
         }
     con:
         c = *p++;

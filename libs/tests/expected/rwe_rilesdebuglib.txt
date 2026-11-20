@@ -1451,7 +1451,8 @@ FPrint|plane 0|"0123456789"|1	bytes 6400 fnv 313A8AEF
 FPrint|plane 0|"Hello"|1	bytes 6400 fnv C678D81D
 FPrint|plane 0|"\x01\x02\x03\x04\x05\x06\x07\x08\t\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !"#$%&'("|1	bytes 6400 fnv 4E36E89C
 FPrint|plane 0|"\x80\x81\xA0\xC4\xE9\xFF"|1	bytes 6400 fnv 4E36E89C
-FPrint|plane 0|"after"|1	bytes 6400 fnv 65E4230D
+FPrint|plane 0|"after"|1 [orig]	bytes 6400 fnv 65E4230D
+FPrint|plane 0|"after"|1 [fixed #706]	bytes 6400 fnv 6E46F559
 FPrint|plane 0|"from column 210 on, the byte compare let"|1	bytes 6400 fnv B230075C
 FPrint|plane 0|"inverse"|1	bytes 6400 fnv B5F84627
 FPrint|plane 0|"next row"|1	bytes 6400 fnv 5B5F2B31
@@ -1464,7 +1465,8 @@ FPrint|plane 1|"0123456789"|1	bytes 6400 fnv F4DEB1C5
 FPrint|plane 1|"Hello"|1	bytes 6400 fnv F4DEB1C5
 FPrint|plane 1|"\x01\x02\x03\x04\x05\x06\x07\x08\t\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !"#$%&'("|1	bytes 6400 fnv F4DEB1C5
 FPrint|plane 1|"\x80\x81\xA0\xC4\xE9\xFF"|1	bytes 6400 fnv F4DEB1C5
-FPrint|plane 1|"after"|1	bytes 6400 fnv C7159EC9
+FPrint|plane 1|"after"|1 [orig]	bytes 6400 fnv C7159EC9
+FPrint|plane 1|"after"|1 [fixed #706]	bytes 6400 fnv 51402A95
 FPrint|plane 1|"from column 210 on, the byte compare let"|1	bytes 6400 fnv F4DEB1C5
 FPrint|plane 1|"inverse"|1	bytes 6400 fnv F4DEB1C5
 FPrint|plane 1|"next row"|1	bytes 6400 fnv F4DEB1C5
@@ -2154,8 +2156,10 @@ FPrintDetoke|plane 0|line 6180..,100,65280,30|1	bytes 6400 fnv 1957E045
 FPrintDetoke|plane 0|line 6180..,100,65280,30|2	bytes 6400 fnv 1957E045
 FPrintDetoke|plane 0|line 6180..,100,65280,7|1	bytes 6400 fnv BB98D697
 FPrintDetoke|plane 0|line 6180..,100,65280,7|2	bytes 6400 fnv BB98D697
-FPrintDetoke|plane 0|line 6180..,2,1,1|1	bytes 6400 fnv 0135C5F1
-FPrintDetoke|plane 0|line 6180..,2,1,1|2	bytes 6400 fnv 0135C5F1
+FPrintDetoke|plane 0|line 6180..,2,1,1|1 [orig]	bytes 6400 fnv 0135C5F1
+FPrintDetoke|plane 0|line 6180..,2,1,1|1 [fixed #706]	bytes 6400 fnv 4B8D6C95
+FPrintDetoke|plane 0|line 6180..,2,1,1|2 [orig]	bytes 6400 fnv 0135C5F1
+FPrintDetoke|plane 0|line 6180..,2,1,1|2 [fixed #706]	bytes 6400 fnv 4B8D6C95
 FPrintDetoke|plane 0|line 6180..,3,257,0|1	bytes 6400 fnv 868B4D07
 FPrintDetoke|plane 0|line 6180..,3,257,0|2	bytes 6400 fnv 868B4D07
 FPrintDetoke|plane 0|line 6180..,3,257,1|1	bytes 6400 fnv 98585FB5
@@ -2237,7 +2241,8 @@ FPrintDetoke|plane 0|line 8001..,0,65280,30|1	bytes 6400 fnv E0BAD143
 FPrintDetoke|plane 0|line 8001..,0,65280,30|2	bytes 6400 fnv E0BAD143
 FPrintDetoke|plane 0|line 8001..,0,65280,7|1	bytes 6400 fnv 1FF61011
 FPrintDetoke|plane 0|line 8001..,0,65280,7|2	bytes 6400 fnv 1FF61011
-FPrintDetoke|plane 0|line 8001..,1,0,0|1	bytes 6400 fnv 3A277E11
+FPrintDetoke|plane 0|line 8001..,1,0,0|1 [orig]	bytes 6400 fnv 3A277E11
+FPrintDetoke|plane 0|line 8001..,1,0,0|1 [fixed #706]	bytes 6400 fnv 370A5FB5
 FPrintDetoke|plane 0|line 8001..,1,257,0|1	bytes 6400 fnv A667E6C5
 FPrintDetoke|plane 0|line 8001..,1,257,0|2	bytes 6400 fnv A667E6C5
 FPrintDetoke|plane 0|line 8001..,1,257,1|1	bytes 6400 fnv 42466BE5
@@ -2279,8 +2284,10 @@ FPrintDetoke|plane 0|line 8001..,100,65280,30|2	bytes 6400 fnv 69E8E085
 FPrintDetoke|plane 0|line 8001..,100,65280,7|1	bytes 6400 fnv 9232B52F
 FPrintDetoke|plane 0|line 8001..,100,65280,7|2	bytes 6400 fnv 9232B52F
 FPrintDetoke|plane 0|line 8001..,2,0,0|1	bytes 6400 fnv 9CEABAAB
-FPrintDetoke|plane 0|line 8001..,3,0,0|1	bytes 6400 fnv 5A46A7FD
-FPrintDetoke|plane 0|line 8001..,3,0,0|2	bytes 6400 fnv 3A0C9997
+FPrintDetoke|plane 0|line 8001..,3,0,0|1 [orig]	bytes 6400 fnv 5A46A7FD
+FPrintDetoke|plane 0|line 8001..,3,0,0|1 [fixed #706]	bytes 6400 fnv 970D7AA9
+FPrintDetoke|plane 0|line 8001..,3,0,0|2 [orig]	bytes 6400 fnv 3A0C9997
+FPrintDetoke|plane 0|line 8001..,3,0,0|2 [fixed #706]	bytes 6400 fnv C664DB2B
 FPrintDetoke|plane 0|line 8001..,3,257,0|1	bytes 6400 fnv DA1FA10B
 FPrintDetoke|plane 0|line 8001..,3,257,0|2	bytes 6400 fnv DA1FA10B
 FPrintDetoke|plane 0|line 8001..,3,257,1|1	bytes 6400 fnv C98ECAF5
@@ -2645,8 +2652,10 @@ FPrintDetoke|plane 1|line 6180..,100,65280,30|1	bytes 6400 fnv F4DEB1C5
 FPrintDetoke|plane 1|line 6180..,100,65280,30|2	bytes 6400 fnv 3BEE0FB5
 FPrintDetoke|plane 1|line 6180..,100,65280,7|1	bytes 6400 fnv F4DEB1C5
 FPrintDetoke|plane 1|line 6180..,100,65280,7|2	bytes 6400 fnv 501A65F1
-FPrintDetoke|plane 1|line 6180..,2,1,1|1	bytes 6400 fnv A26B5E69
-FPrintDetoke|plane 1|line 6180..,2,1,1|2	bytes 6400 fnv A26B5E69
+FPrintDetoke|plane 1|line 6180..,2,1,1|1 [orig]	bytes 6400 fnv A26B5E69
+FPrintDetoke|plane 1|line 6180..,2,1,1|1 [fixed #706]	bytes 6400 fnv 6670B035
+FPrintDetoke|plane 1|line 6180..,2,1,1|2 [orig]	bytes 6400 fnv A26B5E69
+FPrintDetoke|plane 1|line 6180..,2,1,1|2 [fixed #706]	bytes 6400 fnv 6670B035
 FPrintDetoke|plane 1|line 6180..,3,257,0|1	bytes 6400 fnv F4DEB1C5
 FPrintDetoke|plane 1|line 6180..,3,257,0|2	bytes 6400 fnv AD9F6FC5
 FPrintDetoke|plane 1|line 6180..,3,257,1|1	bytes 6400 fnv F4DEB1C5
@@ -2728,7 +2737,8 @@ FPrintDetoke|plane 1|line 8001..,0,65280,30|1	bytes 6400 fnv F4DEB1C5
 FPrintDetoke|plane 1|line 8001..,0,65280,30|2	bytes 6400 fnv 88573B95
 FPrintDetoke|plane 1|line 8001..,0,65280,7|1	bytes 6400 fnv F4DEB1C5
 FPrintDetoke|plane 1|line 8001..,0,65280,7|2	bytes 6400 fnv 84C3855B
-FPrintDetoke|plane 1|line 8001..,1,0,0|1	bytes 6400 fnv A26B5E69
+FPrintDetoke|plane 1|line 8001..,1,0,0|1 [orig]	bytes 6400 fnv A26B5E69
+FPrintDetoke|plane 1|line 8001..,1,0,0|1 [fixed #706]	bytes 6400 fnv 6670B035
 FPrintDetoke|plane 1|line 8001..,1,257,0|1	bytes 6400 fnv F4DEB1C5
 FPrintDetoke|plane 1|line 8001..,1,257,0|2	bytes 6400 fnv 89E59875
 FPrintDetoke|plane 1|line 8001..,1,257,1|1	bytes 6400 fnv F4DEB1C5
@@ -2770,8 +2780,10 @@ FPrintDetoke|plane 1|line 8001..,100,65280,30|2	bytes 6400 fnv 9B467FE5
 FPrintDetoke|plane 1|line 8001..,100,65280,7|1	bytes 6400 fnv F4DEB1C5
 FPrintDetoke|plane 1|line 8001..,100,65280,7|2	bytes 6400 fnv 12068BFB
 FPrintDetoke|plane 1|line 8001..,2,0,0|1	bytes 6400 fnv 3C755075
-FPrintDetoke|plane 1|line 8001..,3,0,0|1	bytes 6400 fnv D87E6A29
-FPrintDetoke|plane 1|line 8001..,3,0,0|2	bytes 6400 fnv C7159EC9
+FPrintDetoke|plane 1|line 8001..,3,0,0|1 [orig]	bytes 6400 fnv D87E6A29
+FPrintDetoke|plane 1|line 8001..,3,0,0|1 [fixed #706]	bytes 6400 fnv 45B0CC85
+FPrintDetoke|plane 1|line 8001..,3,0,0|2 [orig]	bytes 6400 fnv C7159EC9
+FPrintDetoke|plane 1|line 8001..,3,0,0|2 [fixed #706]	bytes 6400 fnv 51402A95
 FPrintDetoke|plane 1|line 8001..,3,257,0|1	bytes 6400 fnv F4DEB1C5
 FPrintDetoke|plane 1|line 8001..,3,257,0|2	bytes 6400 fnv 597685A5
 FPrintDetoke|plane 1|line 8001..,3,257,1|1	bytes 6400 fnv F4DEB1C5
