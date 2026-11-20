@@ -6308,6 +6308,94 @@ rows:
     text: "`CludgeSound` copies a sample of up to 128 KB completely, and an empty or longer one gives 0; the original cut samples of 64 KB or more and overwrote memory for an empty one."
     page: libraries
     anchor: risoundlib-fixes
+  - issue: 924
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "OpenAHI, CloseAHI, PlaySoundAHI, PlayRawAHI"
+    text: "`PlaySoundAHI` and `PlayRawAHI` play through AHI and `CloseAHI` closes the device; in the original they did nothing, and the device stayed open."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 927
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "OpenAHI, CloseAHI"
+    text: "`OpenAHI` works after `CloseAHI`; the original wrote to address 48 and called the device without a request."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 933
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "PlaySoundAHI, PlayRawAHI, CloseAHI"
+    text: "A new `PlaySoundAHI`, `CloseAHI` or the end of the program stops the sound that plays; the original sent the request again while AHI still held it."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 932
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "PlaySoundAHI"
+    text: "`PlaySoundAHI` plays the whole sample, not its first half."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 926
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "CludgeSound, PlaySoundAHI"
+    text: "`CludgeSound` of the second sound library no longer writes into the next sound object; `PlaySoundAHI` takes the pitch from the period."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 931
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "AHIOutputRequest"
+    text: "`AHIOutputRequest` gives the requester the position, size, mode and frequency it is called with; the original wrote them into the wrong places."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 928
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "AHIOutputRequest"
+    text: "`AHIOutputRequest` with 1, 2 or 4 arguments passes them to the requester; the original ran the code of another form."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 929
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "AHIOutputRequest"
+    text: "`AHIOutputRequest` opens AHI's requester on the screen the program uses."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 934
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "AHIRequestedID, AHIRequestedFreq"
+    text: "`AHIRequestedID` and `AHIRequestedFreq` return what the user chose in the requester; the original returned its initial values."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 930
+    severity: 5
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "AHIOutputRequest"
+    text: "`AHIOutputRequest` frees its requester again; the original made a new one for every call."
+    page: libraries
+    anchor: risoundlib2-fixes
+  - issue: 1139
+    severity: 5
+    topic: "System"
+    library: "risoundlib2"
+    command: ""
+    text: "Programs with the second sound library start on Kickstart 1.x, where the AHI commands fail; the original crashed at the start."
+    page: libraries
+    anchor: risoundlib2-fixes
   - issue: 925
     severity: 5
     topic: "Sound"

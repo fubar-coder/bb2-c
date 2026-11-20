@@ -6,69 +6,43 @@
     rate comes from the file's header, and the search for the sample data
     expects the pad byte behind a chunk of odd length.
 
-    Also kept from the original, and only in this library: the sample rate
-    is stored behind the sound object, over the start of the next one, so
-    making sound `n` damages the sample address of sound `n+1`, and for
-    the last sound object whatever follows the objects
-    ([#926](https://github.com/fubar-coder/bb2-c/issues/926)).
+    `PlaySoundAHI` plays a sound made with it, like any other sound
+    object, at the pitch of its period.
 "OpenAHI":
-  text: Opens unit `unit` of ahi.device, version 4 or newer. As a function it returns -1 on success and 0 if the device cannot be opened.
+  text: Opens unit `unit` of ahi.device, version 4 or newer. As a function it returns -1 on success, and 0 if the device cannot be opened or is already open.
   notes: |
-    Amiga mode only. `deviceID` is stored but not used.
-
-    Kept from the original: a second `OpenAHI` opens the device again
-    instead of noticing that it is open
-    ([#924](https://github.com/fubar-coder/bb2-c/issues/924)), and
-    `OpenAHI` after `CloseAHI` writes to memory address 48 and calls the
-    device with no request
-    ([#927](https://github.com/fubar-coder/bb2-c/issues/927)).
+    Amiga mode only. `deviceID` is stored but not used. After `CloseAHI`
+    the device can be opened again. On Kickstart 1.x, where AHI does not
+    run, the result is always 0.
 "CloseAHI":
-  text: Frees the I/O request and message port that the library made for AHI. The library does the same when the program ends.
+  text: Stops a sound that `PlaySoundAHI` still plays and closes ahi.device. The library does the same when the program ends.
   notes: |
-    Amiga mode only. Nothing is freed while the request is still in use.
-
-    Kept from the original: the device is not closed
-    ([#924](https://github.com/fubar-coder/bb2-c/issues/924)), and `OpenAHI`
-    cannot be used after `CloseAHI`
-    ([#927](https://github.com/fubar-coder/bb2-c/issues/927)).
+    Amiga mode only. The library's I/O request and message port stay for
+    the next `OpenAHI`; they are freed when the program ends.
 "PlaySoundAHI":
-  text: Meant to play sound object `sound` through AHI, at `volume` (default 1, full) and `balance` (default 0.5, the middle). It plays nothing.
+  text: Plays sound object `sound` through AHI, at `volume` (default 1, full) and `balance` (default 0.5, the middle), and returns at once while it plays.
   notes: |
-    Kept from the original: the command returns at once and never reaches
-    the device ([#924](https://github.com/fubar-coder/bb2-c/issues/924)).
+    The sound plays at the pitch of its period, the pitch `Sound` plays
+    it at, and with its whole sample. A sound that still plays from the
+    last `PlaySoundAHI` is stopped first. Nothing happens before
+    `OpenAHI`.
 "PlayRawAHI":
-  text: Meant to play `length` bytes of an 8 bit mono sample at `address` through AHI at `frequency` Hz, with `volume` (default 1, full) and `balance` (default 0.5, the middle). It plays nothing.
+  text: Plays `length` bytes of an 8 bit mono sample at `address` through AHI at `frequency` Hz, with `volume` (default 1, full) and `balance` (default 0.5, the middle).
   notes: |
-    Kept from the original: the command returns at once and never reaches
-    the device ([#924](https://github.com/fubar-coder/bb2-c/issues/924)).
+    The command returns when the sample has been played, so the data may
+    be freed or changed afterwards. A sound that still plays from
+    `PlaySoundAHI` is stopped first. Nothing happens before `OpenAHI`.
 "AHIOutputRequest":
   text: Shows AHI's requester for choosing an audio mode. Returns nonzero if the user chose a mode, and 0 if the user cancelled, the requester could not be made or `OpenAHI` was not called.
   notes: |
-    Amiga mode only. The arguments are meant as the requester's position
-    and size, and the mode and mixing frequency it starts with.
-
-    Kept from the original:
-
-    * The forms with 1, 2 and 4 arguments run the code of another form, so
-      their arguments are lost or taken as other values
-      ([#928](https://github.com/fubar-coder/bb2-c/issues/928)).
-    * Only `x` and `y` reach the requester as meant; width, height, mode
-      and frequency are written over the requester's settings in the
-      wrong places, and a mode of 0 ends the settings early
-      ([#931](https://github.com/fubar-coder/bb2-c/issues/931)).
-    * The requester does not open on the program's current screen
-      ([#929](https://github.com/fubar-coder/bb2-c/issues/929)).
-    * Every call makes a new requester and none is ever freed
-      ([#930](https://github.com/fubar-coder/bb2-c/issues/930)).
+    Amiga mode only. The arguments are the requester's position and size,
+    and the audio mode and mixing frequency it starts with. The form with
+    1 argument takes the mode, the one with 2 the mode and the frequency,
+    the one with 4 the position and size; the values left out are -1 for
+    the position and size and 0 for the mode and frequency. The requester
+    opens on the screen the program uses. `AHIRequestedID` and
+    `AHIRequestedFreq` return the choice.
 "AHIRequestedID":
-  text: Meant to return the audio mode the user chose in `AHIOutputRequest`. It returns -1 while AHI is open, and 0 if it is not.
-  notes: |
-    Kept from the original: the value is the mode the requester starts
-    with, never the user's choice
-    ([#934](https://github.com/fubar-coder/bb2-c/issues/934)).
+  text: The audio mode the user chose in the last `AHIOutputRequest` that was confirmed. It is -1 before a choice, and 0 if `OpenAHI` was not called.
 "AHIRequestedFreq":
-  text: Meant to return the mixing frequency the user chose in `AHIOutputRequest`. It returns 0.
-  notes: |
-    Kept from the original: the value is the frequency the requester
-    starts with, never the user's choice
-    ([#934](https://github.com/fubar-coder/bb2-c/issues/934)).
+  text: The mixing frequency the user chose in the last `AHIOutputRequest` that was confirmed. It is 0 before a choice, and if `OpenAHI` was not called.
