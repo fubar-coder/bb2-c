@@ -175,6 +175,13 @@ and commands before their setup command).
 ## BUG(orig), kept
 
 * finit closes graphics.library also if it did not open (#896).
+* `CreateMap` sizes the data as (width × 2 as a word) × height (`ASL.w`,
+  `MULU.w`): a width above 32767 loses the upper bit (40000: 14464 bytes
+  per row instead of 80000). `MapDataSize`, `MapDataAdr(x,y)` and the
+  free routine compute the same word, but `MapDataGrab` fills width ×
+  height words and `MapCanDraw` reads at x × 2 as a long, up to 64 KB
+  per row behind the data (test `rimapeditorlib-createmap-width-word`;
+  issue to be filed).
 
 Original behaviour that is not a defect:
 

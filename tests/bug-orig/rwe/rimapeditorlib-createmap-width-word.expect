@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+REQUESTER: AutoRequest body "Map width above 32767" *
+rc=0
