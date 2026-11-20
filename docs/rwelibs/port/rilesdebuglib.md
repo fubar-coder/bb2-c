@@ -132,6 +132,12 @@ d5-d7, a0-a3 and a6 in places.
   `rilesdebuglib-getcustomreg-negative-word`; the `libs_emulator` cases
   `[fixed #714]` of $FFFF0010 and $80000000, whose words name $010 and
   $000.)
+* `GetCustomReg` and `GetCustomRegAdr` take the last register of the
+  name table, $1FE `NOOP`, too (`GetCustomReg($1FE)` is "NOOP",
+  `GetCustomRegAdr("NOOP")` 510). The original ended both at $1FC
+  (`CMPI.w #$1fc`): $1FE had no name and "NOOP" was not found (#702;
+  test `rilesdebuglib-customreg-noop`; the `libs_emulator` cases
+  `[fixed #702]`, also of $1FD, an odd offset inside the range).
 
 ## BUG(orig)
 
@@ -147,8 +153,7 @@ d5-d7, a0-a3 and a6 in places.
 * GetCustomReg of a name of 8 characters copies the first character of
   the next name too and returns 8 (#712).
 * GetCustomRegAdr matches a prefix (`DMACONXYZ` gives $096), never finds
-  a name of 8 characters (the compare runs into the next name) (#713),
-  and stops before the last register ($1FE `NOOP`) (#702).
+  a name of 8 characters (the compare runs into the next name) (#713).
 * GetCopIns$ masks bit 0 of both digits of a horizontal position (WAIT,
   SKIP and their masks): odd digits never show (#711).
 * FPrint/FPrintDetoke: the column test is `CMPI.b #80` with `BPL`, so

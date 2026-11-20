@@ -58,8 +58,7 @@
  *   - GetCustomReg of a name of 8 characters copies one more character
  *     (the first of the next name) and returns 8 (#712).
  *   - GetCustomRegAdr matches a prefix (the name may go on behind the
- *     table's), never finds a name of 8 characters (#713), and never
- *     looks at the last register ($1FE NOOP) (#702).
+ *     table's) and never finds a name of 8 characters (#713).
  *   - GetCopIns$ clears bit 0 of both nibbles of the horizontal positions
  *     (WAIT/SKIP position and mask), so odd digits never show (#711).
  *   - FPrint and FPrintDetoke: the column check is a byte compare with
@@ -96,10 +95,12 @@
  *     overwrites the code of D_InitParse behind the table, the C build
  *     other data) (#700).
  * Fixed:
- *   - GetCustomReg tests the register word unsigned against $1FC; the
+ *   - GetCustomReg tests the register word unsigned; the
  *     original tested the word signed and the long for a negative value,
  *     so a negative word with d0.l not negative read in front of the name
  *     table (#714).
+ *   - GetCustomReg and GetCustomRegAdr take the last register of the
+ *     table, $1FE NOOP, too; the original ended both at $1FC (#702).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1202,11 +1203,13 @@ static ULONG BLITZ_ROUTINE getcopins_c(const UWORD *ins BL_REG(d0))
  *
  * The name up to its first space, at most 8 characters, at a3; a name
  * of 8 characters copies one more (the first of the next name) and
- * returns 8 (BUG(orig) (#712)).  The range test compares the word
- * unsigned (fixed #714: the original tested the word signed and the long
- * for negative, so a negative word with d0.l not negative read in front
- * of the name table); the high word is not looked at.
- * @param reg  d0.w: the register's offset ($000-$1FC)
+ * returns 8 (BUG(orig) (#712)).  The range is $000-$1FE (fixed #702: the
+ * original stopped at $1FC, the last register NOOP had no name); the
+ * range test compares the word unsigned (fixed #714: the original tested
+ * the word signed and the long for negative, so a negative word with d0.l
+ * not negative read in front of the name table); the high word is not
+ * looked at.
+ * @param reg  d0.w: the register's offset ($000-$1FE)
  * @return d0: the length, 0 for an offset out of range
  */
 static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
@@ -1214,7 +1217,7 @@ static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
     const UBYTE *p;
     ULONG n;
 
-    if ((UWORD)reg > 0x1fc)                             /* fixed (#714) */
+    if ((UWORD)reg > 0x1fe)                     /* fixed (#714, #702) */
         return 0;
     p = &customchipnames[0][0] + ((UWORD)reg << 2);
     for (n = 0;; n++) {
@@ -1230,10 +1233,11 @@ static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
 /**
  * @brief GetCustomRegAdr(name$): the offset of a custom chip register.
  *
- * The first register among $000-$1FC whose name (up to a space) the
+ * The first register among $000-$1FE whose name (up to a space) the
  * string starts with: a prefix match, the string may go on behind the
- * name; a name of 8 characters is never found (BUG(orig) (#713)), and
- * the last register ($1FE NOOP) is never looked at (#702).
+ * name; a name of 8 characters is never found (BUG(orig) (#713)).  The
+ * last register, $1FE NOOP, is looked at too (fixed #702: the original
+ * stopped at $1FC).
  * @param name  d0: the name
  * @return d0: the offset, -1 if not found (not a truth value)
  */
@@ -1253,7 +1257,7 @@ static ULONG BLITZ_ROUTINE getcustomregadr_c(const UBYTE *name BL_REG(d0))
         }
         t += 8;
         reg += 2;
-    } while ((WORD)reg <= 0x1fc);
+    } while ((WORD)reg <= 0x1fe);                    /* fixed (#702) */
     return (ULONG)-1;
 }
 

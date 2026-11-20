@@ -3525,7 +3525,8 @@ GetCopIns$|popped|$AB35,$4DEE|1	$00000000
 GetCopIns$|popped|$AB35,$CDEF|1	$00000000
 GetCopIns$|popped|$FFDF,$FFFE|1	$00000000
 GetCustomReg|a3|$000|1	$0000000B
-GetCustomReg|a3|$000001FE|1	$00000004
+GetCustomReg|a3|$000001FE|1 [orig]	$00000004
+GetCustomReg|a3|$000001FE|1 [fixed #702]	$00000008
 GetCustomReg|a3|$000001FF|1	$00000004
 GetCustomReg|a3|$00000200|1	$00000004
 GetCustomReg|a3|$00007FFF|1	$00000004
@@ -4037,13 +4038,15 @@ GetCustomReg|a3|$1F9|1	$0000000D
 GetCustomReg|a3|$1FA|1	$0000000D
 GetCustomReg|a3|$1FB|1	$0000000D
 GetCustomReg|a3|$1FC|1	$00000009
-GetCustomReg|a3|$1FD|1	$00000004
+GetCustomReg|a3|$1FD|1 [orig]	$00000004
+GetCustomReg|a3|$1FD|1 [fixed #702]	$00000005
 GetCustomReg|a3|$80000000|1 [orig]	$00000004
 GetCustomReg|a3|$80000000|1 [fixed #714]	$0000000B
 GetCustomReg|a3|$FFFF0010|1 [orig]	$00000004
 GetCustomReg|a3|$FFFF0010|1 [fixed #714]	$0000000B
 GetCustomReg|d0|$000|1	$00000007
-GetCustomReg|d0|$000001FE|1	$00000000
+GetCustomReg|d0|$000001FE|1 [orig]	$00000000
+GetCustomReg|d0|$000001FE|1 [fixed #702]	$00000004
 GetCustomReg|d0|$000001FF|1	$00000000
 GetCustomReg|d0|$00000200|1	$00000000
 GetCustomReg|d0|$00007FFF|1	$00000000
@@ -4555,7 +4558,8 @@ GetCustomReg|d0|$1F9|1	$00000008
 GetCustomReg|d0|$1FA|1	$00000008
 GetCustomReg|d0|$1FB|1	$00000008
 GetCustomReg|d0|$1FC|1	$00000005
-GetCustomReg|d0|$1FD|1	$00000000
+GetCustomReg|d0|$1FD|1 [orig]	$00000000
+GetCustomReg|d0|$1FD|1 [fixed #702]	$00000001
 GetCustomReg|d0|$80000000|1 [orig]	$00000000
 GetCustomReg|d0|$80000000|1 [fixed #714]	$00000007
 GetCustomReg|d0|$FFFF0010|1 [orig]	$00000000
@@ -5078,7 +5082,8 @@ GetCustomReg|kept|$80000000|1	kept
 GetCustomReg|kept|$80000000|2	kept
 GetCustomReg|kept|$FFFF0010|1	kept
 GetCustomReg|out|$000|1	bytes 800 fnv 10B56352
-GetCustomReg|out|$000001FE|1	bytes 800 fnv 34142445
+GetCustomReg|out|$000001FE|1 [orig]	bytes 800 fnv 34142445
+GetCustomReg|out|$000001FE|1 [fixed #702]	bytes 800 fnv FFC02D3D
 GetCustomReg|out|$000001FF|1	bytes 800 fnv 34142445
 GetCustomReg|out|$00000200|1	bytes 800 fnv 34142445
 GetCustomReg|out|$00007FFF|1	bytes 800 fnv 34142445
@@ -5590,7 +5595,8 @@ GetCustomReg|out|$1F9|1	bytes 800 fnv 9CAC42FC
 GetCustomReg|out|$1FA|1	bytes 800 fnv 1DD189ED
 GetCustomReg|out|$1FB|1	bytes 800 fnv A9998BB2
 GetCustomReg|out|$1FC|1	bytes 800 fnv BE31401C
-GetCustomReg|out|$1FD|1	bytes 800 fnv 34142445
+GetCustomReg|out|$1FD|1 [orig]	bytes 800 fnv 34142445
+GetCustomReg|out|$1FD|1 [fixed #702]	bytes 800 fnv E7B59A46
 GetCustomReg|out|$80000000|1 [orig]	bytes 800 fnv 34142445
 GetCustomReg|out|$80000000|1 [fixed #714]	bytes 800 fnv 10B56352
 GetCustomReg|out|$FFFF0010|1 [orig]	bytes 800 fnv 34142445
@@ -6113,7 +6119,7 @@ GetCustomReg|popped|$80000000|1	$00000000
 GetCustomReg|popped|$80000000|2	$00000000
 GetCustomReg|popped|$FFFF0010|1	$00000000
 GetCustomRegAdr|d0|""|1	$FFFFFFFF
-GetCustomRegAdr|d0|""|2	$FFFFFFFF
+GetCustomRegAdr|d0|""|2 [orig #702]	$FFFFFFFF
 GetCustomRegAdr|d0|"<UNUSED>"|1	$FFFFFFFF
 GetCustomRegAdr|d0|"<UNUSED>"|2	$FFFFFFFF
 GetCustomRegAdr|d0|"<UNUSED>"|3	$FFFFFFFF
@@ -6305,7 +6311,9 @@ GetCustomRegAdr|d0|"INTREQR"|1	$0000001E
 GetCustomRegAdr|d0|"JOY0DAT"|1	$0000000A
 GetCustomRegAdr|d0|"JOY1DAT"|1	$0000000C
 GetCustomRegAdr|d0|"JOYTEST"|1	$00000036
-GetCustomRegAdr|d0|"NOOP"|1	$FFFFFFFF
+GetCustomRegAdr|d0|"NOOP"|1 [orig]	$FFFFFFFF
+GetCustomRegAdr|d0|"NOOP"|1 [fixed #702]	$000001FE
+GetCustomRegAdr|d0|"NOOP"|2 [fixed #702]	$000001FE
 GetCustomRegAdr|d0|"POT0DAT"|1	$00000012
 GetCustomRegAdr|d0|"POT1DAT"|1	$00000014
 GetCustomRegAdr|d0|"POTGO"|1	$00000034
@@ -6385,7 +6393,7 @@ GetCustomRegAdr|d0|"VSSTRT"|1	$000001E0
 GetCustomRegAdr|d0|"VTOTAL"|1	$000001C8
 GetCustomRegAdr|d0|"dmacon"|1	$FFFFFFFF
 GetCustomRegAdr|kept|""|1	kept
-GetCustomRegAdr|kept|""|2	kept
+GetCustomRegAdr|kept|""|2 [orig #702]	kept
 GetCustomRegAdr|kept|"<UNUSED>"|1	kept
 GetCustomRegAdr|kept|"<UNUSED>"|2	kept
 GetCustomRegAdr|kept|"<UNUSED>"|3	kept
@@ -6759,6 +6767,7 @@ GetCustomRegAdr|kept|"JOY1DAT"|2	kept
 GetCustomRegAdr|kept|"JOYTEST"|1	kept
 GetCustomRegAdr|kept|"JOYTEST"|2	kept
 GetCustomRegAdr|kept|"NOOP"|1	kept
+GetCustomRegAdr|kept|"NOOP"|2 [fixed #702]	kept
 GetCustomRegAdr|kept|"POT0DAT"|1	kept
 GetCustomRegAdr|kept|"POT0DAT"|2	kept
 GetCustomRegAdr|kept|"POT1DAT"|1	kept
@@ -6912,7 +6921,7 @@ GetCustomRegAdr|kept|"VTOTAL"|1	kept
 GetCustomRegAdr|kept|"VTOTAL"|2	kept
 GetCustomRegAdr|kept|"dmacon"|1	kept
 GetCustomRegAdr|popped|""|1	$00000000
-GetCustomRegAdr|popped|""|2	$00000000
+GetCustomRegAdr|popped|""|2 [orig #702]	$00000000
 GetCustomRegAdr|popped|"<UNUSED>"|1	$00000000
 GetCustomRegAdr|popped|"<UNUSED>"|2	$00000000
 GetCustomRegAdr|popped|"<UNUSED>"|3	$00000000
@@ -7286,6 +7295,7 @@ GetCustomRegAdr|popped|"JOY1DAT"|2	$00000000
 GetCustomRegAdr|popped|"JOYTEST"|1	$00000000
 GetCustomRegAdr|popped|"JOYTEST"|2	$00000000
 GetCustomRegAdr|popped|"NOOP"|1	$00000000
+GetCustomRegAdr|popped|"NOOP"|2 [fixed #702]	$00000000
 GetCustomRegAdr|popped|"POT0DAT"|1	$00000000
 GetCustomRegAdr|popped|"POT0DAT"|2	$00000000
 GetCustomRegAdr|popped|"POT1DAT"|1	$00000000
