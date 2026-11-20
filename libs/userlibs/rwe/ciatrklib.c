@@ -189,6 +189,12 @@
  * StopTracker followed by two PauseModule no longer continues the
  * module, and a module that stopped itself (F00) cannot be continued
  * that way.
+ * Fixed (intended deviation, #1165): init clears the play type that
+ * ChangeTrackerVBlank sets; the original kept it in the library's data,
+ * so after a run that called ChangeTrackerVBlank the next run of the
+ * program from the editor installed no CIA interrupt (in init nor in
+ * StartTracker) and a program that never calls PlayTracker stayed
+ * silent.
  *
  * DIFF: none in the results.  The C build keeps a3 in FreeTrackerModule
  * (the original's LEA modtable,a3 changes the string pointer).
@@ -2064,13 +2070,17 @@ static void BLITZ_ROUTINE changetrackermask_c(ULONG mask BL_REG(d0))
  * ciab; the ICR bits 0 and 1, fixed, #450: the original read them from
  * the addresses 1 and 2),
  * slots 0-7 cleared (DBNE from 7), master volume 64, all four voices on.
+ * The play type is cleared first (fixed, #1165: the original kept it,
+ * so after a run with ChangeTrackerVBlank the next run of the program
+ * from the editor installed no CIA interrupt, here nor in StartTracker,
+ * and played nothing without PlayTracker).
  */
 static void BLITZ_ROUTINE inittrackerlib_c(void)
 {
     int i;
 
-    if (libvars.play_type != 1)
-        setciaint();                    /* the CIA interrupt */
+    libvars.play_type = 0;              /* Fixed (#1165): not kept from a run before */
+    setciaint();                        /* the CIA interrupt (the original: unless play_type 1) */
     for (i = 0; i < 8; i++) {           /* DBNE d0 from 7: slots 0-7 */
         libvars.modtable[i].addr = NULL;
         libvars.modtable[i].len = 0;

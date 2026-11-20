@@ -239,6 +239,14 @@ kind F):
   `StopTracker` followed by two `PauseModule` no longer continues the
   module, and a module that stopped itself (F00) cannot be continued
   that way. Nothing changes on the play routine's tick.
+* init clears the play type that `ChangeTrackerVBlank` sets
+  (`play_type`) before it installs the CIA interrupt. The original kept
+  it in the library's data, which stays in memory between two runs of a
+  program from the editor: after a run that called
+  `ChangeTrackerVBlank`, the next run's init and `StartTracker`
+  installed no CIA interrupt, and a program that never calls
+  `PlayTracker` stayed silent (#1165; library test `rwe_ciatrklib`, the
+  cases `init (second run)|...`).
 
 ## BUG(orig), kept
 
@@ -301,7 +309,10 @@ and after it.
   (removes and adds again), `WaitTrackerEvent` with a WaitTOF that runs
   the server, `ChangeTrackerVBlank` (CIAAbase 0, the timer stopped, the
   filter toggled in the original and kept in the C build (#449),
-  `RemICRVector` with bit 0).
+  `RemICRVector` with bit 0); then a second run of the program with the
+  library still loaded: finit and init (its `AddICRVector` calls,
+  CIAAbase, the library's variables: the original installs no
+  interrupt, #1165), and `ChangeTrackerVBlank` again for phase B.
 * Phase B (call by call): `DecodeModule` (chip; fast memory:
   the copy), the information functions also on an empty slot, the error
   checks without an error, `mt_init`'s clearing with a slot length of

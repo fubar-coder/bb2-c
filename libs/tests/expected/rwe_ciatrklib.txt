@@ -5037,9 +5037,12 @@ init (CIA)|CIAAbase set||1	$00000001
 init (CIA)|TimerFlag||1	$00000001
 init (CIA)|TimerValue||1	$001B0F87
 init (CIA)|timer started||1	$00000001
-init (second run)|AddICRVector calls||1	$00000000
-init (second run)|CIAAbase set||1	$00000000
-init (second run)|modtable||1	bytes 110 fnv B323D3FD
+init (second run)|AddICRVector calls||1 [orig]	$00000000
+init (second run)|AddICRVector calls||1 [fixed #1165]	$00000002
+init (second run)|CIAAbase set||1 [orig]	$00000000
+init (second run)|CIAAbase set||1 [fixed #1165]	$00000001
+init (second run)|modtable||1 [orig]	bytes 110 fnv B323D3FD
+init (second run)|modtable||1 [fixed #1165]	bytes 110 fnv 0DE1B1DA
 the interrupt server|PatternPos||1	$00000010
 the interrupt server|RealTempo||1	$00000040
 the interrupt server|RealTempo 64||1	$00000001
