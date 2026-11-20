@@ -1,4 +1,4 @@
-; rimapeditorlib-createmap-width-word (issue to be filed) - CreateMap
+; rimapeditorlib-createmap-width-word (#1152) - CreateMap
 ; computes the size of the data as (width * 2 as a word) * height
 ; (ASL.w, MULU.w): a width above 32767 loses the upper bit, so a map
 ; 40000 wide gets 14464 bytes per row instead of 80000.  MapDataSize and

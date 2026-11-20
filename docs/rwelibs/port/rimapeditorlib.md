@@ -181,7 +181,7 @@ and commands before their setup command).
   free routine compute the same word, but `MapDataGrab` fills width ×
   height words and `MapCanDraw` reads at x × 2 as a long, up to 64 KB
   per row behind the data (test `rimapeditorlib-createmap-width-word`;
-  issue to be filed).
+  #1152).
 
 Original behaviour that is not a defect:
 

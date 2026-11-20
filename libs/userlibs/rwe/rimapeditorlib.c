@@ -44,7 +44,7 @@
  *     the free routine compute the same word, but MapDataGrab fills
  *     width x height words and MapCanDraw reads at x * 2 as a long, up to
  *     64 KB per row behind the data (test
- *     rimapeditorlib-createmap-width-word; issue to be filed).
+ *     rimapeditorlib-createmap-width-word; #1152).
  * Fixed (intended deviations):
  *   - init clears the stencil of SetStencil, the ScanShapes results and
  *     the parse position of M_InitParse, as at the first load; the
@@ -725,7 +725,7 @@ BLITZ_THUNK(_freemap, freemap_c, "d0-d1/a0-a1");
  * words (MEMF_PUBLIC|MEMF_CLEAR), datasize 1, mapnull 0, view 0,0, the
  * name a maxslib string.  Without memory (also width or height 0) width,
  * height, bwidth, bheight are cleared (datasize stays 1: not a defect).
- * BUG(orig) (issue to be filed): the size is (width * 2 as a word) *
+ * BUG(orig) (#1152): the size is (width * 2 as a word) *
  * height, too small for a width above 32767, which the other commands
  * take whole.
  * a3 ends behind the last field written (24, or 10 if the data could not
