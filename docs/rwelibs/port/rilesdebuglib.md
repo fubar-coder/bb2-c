@@ -105,9 +105,7 @@ d5-d7, a0-a3 and a6 in places.
   original inverts the glyph in the font itself (`NOT.l`) and back. Same
   output.
 * AddProcessPtr's 21st entry overwrites the code of D_InitParse in
-  the original, other data in the C build; D_InitParse with more than 255
-  characters overwrites the parser's pointer and code in the original,
-  other data in the C build.
+  the original, other data in the C build.
 
 ## Fixed (kind F, docs/libs/deviations.md 3a)
 
@@ -196,6 +194,12 @@ d5-d7, a0-a3 and a6 in places.
   in GetCustomReg, which comes after that line, is $20) (#704; test
   `rilesdebuglib-extractlabel-space`; the `libs_emulator` cases
   `[fixed #704]` of "012345678.a b" and "012345678 more.name end").
+* `D_InitParse` copies at most 255 characters into its 256 byte buffer,
+  with a 0 behind them. The original copied without a limit: a longer
+  string - the debugger passes lines of its menu file - overwrote the
+  parser's pointer and the code behind the buffer (in the C build other
+  data) (#716; test `rilesdebuglib-initparse-overflow`; the scenario of
+  `libs_emulator` has no string that long).
 
 ## BUG(orig)
 
@@ -222,8 +226,7 @@ d5-d7, a0-a3 and a6 in places.
   the bytes behind its 0 (#721); word and long searches compare bytes up
   to 1 or 3 behind the end (#722). The space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.
-* D_InitParse copies without a limit into its 256 byte buffer (#716).
-  ProcessString works on the parser's current position (its "string" in
+* ProcessString works on the parser's current position (its "string" in
   the help text is no argument; a D_NextArg$ before it leaves less),
   reads from address 0 when there is none (before D_InitParse, after the
   last argument) (#719), and reads on behind a `%` at the end of the

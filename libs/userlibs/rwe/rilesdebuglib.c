@@ -65,8 +65,7 @@
  *     ("ab" is not found in "aab") (#723); an empty string compares the
  *     bytes behind its 0 (#721).  The word/long searches compare bytes up
  *     to 1/3 behind the end (#722).
- *   - D_InitParse copies without a limit into its 256 byte buffer (#716);
- *     ProcessString works on the parser's current position (its "string"
+ *   - ProcessString works on the parser's current position (its "string"
  *     is no argument), reads from 0 when there is none (#719), and goes
  *     on behind a '%' at the end of the string (#720).
  *   - AddProcessPtr does not stop after 20 entries (the original then
@@ -108,6 +107,9 @@
  *     alike) - compiler bug #343, triggered by the later line
  *     MOVE.w #">"*8,d0 (line 1016 of the source) - so in the original a
  *     space did not end the label (#704).
+ *   - D_InitParse copies at most 255 characters and a 0 into its 256
+ *     byte buffer; the original copied without a limit, over the
+ *     parser's pointer and the code behind the buffer (#716).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1466,8 +1468,10 @@ static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
  * @brief D_InitParse string: start parsing a string of comma separated
  * arguments.
  *
- * The string is copied into the parser's 256 byte buffer without a limit
- * (BUG(orig) (#716)); the position goes to its start.
+ * At most 255 characters of the string are copied into the parser's 256
+ * byte buffer, with a 0 behind them (fixed #716: the original copied
+ * without a limit, over the parser's pointer and code behind the
+ * buffer); the position goes to its start.
  * @param s  d0: the string
  */
 static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
@@ -1475,8 +1479,10 @@ static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
     UBYTE *d = parseadr;
 
     curadr = parseadr;
-    while ((*d++ = *s++) != 0)
-        ;
+    /* fixed (#716): at most 255 characters */
+    while (d < parseadr + sizeof parseadr - 1 && (*d = *s++) != 0)
+        d++;
+    *d = 0;
 }
 
 /**

@@ -7,6 +7,7 @@
 ; returns that text.  (Longer strings overwrite the code behind it.)
 ; Correct: D_InitParse copies at most 255 characters, the first argument
 ; is the start of the string.
+; @fixed #716
 ; @rwe rilesdebuglib
 DEFTYPE .l
 b=AllocMem_(131072,$10005)
