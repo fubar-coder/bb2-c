@@ -13,7 +13,8 @@ name.l (18, a maxslib string), changed.w (22), the last address of
 
 * `CreateMap map#,width,height,bwidth,bheight,name$` – frees the old
   map, allocates the data (`AllocMem`, cleared; the size `MULU` of the
-  word width × 2 and the height, the 65535-byte fix of the source) and
+  word width × 2 and the height, the 65535-byte fix of the source; a
+  width above 32767 is refused with runtime error checking, #1152) and
   copies the name; the map becomes the used one.
 * `MapDataAdr` / `MapDataAdr(x,y)`, `MapDataSize`, `MapObjWidth`,
   `MapObjheight`, `MapObjViewX`, `MapObjViewY`, `MapDataChanged` – the
@@ -171,17 +172,17 @@ and commands before their setup command).
   fewer planes or rows overflow it, a wider one gets the words packed as
   if it were 16 wide) (#900; test
   `rimapeditorlib-shapeto1616-dest-unchecked`).
+* `CreateMap` refuses a width above 32767 ("Map width above 32767"; the
+  release code sizes the data as (width × 2 as a word) × height
+  (`ASL.w`, `MULU.w`), so the upper bit is lost (40000: 14464 bytes per
+  row instead of 80000); `MapDataSize`, `MapDataAdr(x,y)` and the free
+  routine compute the same word, but `MapDataGrab` fills width × height
+  words and `MapCanDraw` reads at x × 2 as a long, up to 64 KB per row
+  behind the data) (#1152; test `rimapeditorlib-createmap-width-word`).
 
 ## BUG(orig), kept
 
 * finit closes graphics.library also if it did not open (#896).
-* `CreateMap` sizes the data as (width × 2 as a word) × height (`ASL.w`,
-  `MULU.w`): a width above 32767 loses the upper bit (40000: 14464 bytes
-  per row instead of 80000). `MapDataSize`, `MapDataAdr(x,y)` and the
-  free routine compute the same word, but `MapDataGrab` fills width ×
-  height words and `MapCanDraw` reads at x × 2 as a long, up to 64 KB
-  per row behind the data (test `rimapeditorlib-createmap-width-word`;
-  #1152).
 
 Original behaviour that is not a defect:
 

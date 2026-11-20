@@ -9,6 +9,7 @@
 ; error checking.
 ; Correct: the error check refuses the width of 40000: "Map width above
 ; 32767".
+; @fixed #1152
 ; @rwe rimapeditorlib
 ; @pass runtime_errors=on
 DEFTYPE .l

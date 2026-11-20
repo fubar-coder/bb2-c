@@ -38,13 +38,6 @@
  *
  * BUG(orig):
  *   - finit closes graphics.library also if it did not open (#896).
- *   - CreateMap sizes the data as (width * 2 as a word) * height (ASL.w,
- *     MULU.w): a width above 32767 loses the upper bit (40000: 14464
- *     bytes per row instead of 80000); MapDataSize, MapDataAdr(x,y) and
- *     the free routine compute the same word, but MapDataGrab fills
- *     width x height words and MapCanDraw reads at x * 2 as a long, up to
- *     64 KB per row behind the data (test
- *     rimapeditorlib-createmap-width-word; #1152).
  * Fixed (intended deviations):
  *   - init clears the stencil of SetStencil, the ScanShapes results and
  *     the parse position of M_InitParse, as at the first load; the
@@ -92,8 +85,13 @@
  *     destination that is not 16 x 16 with at least the source's depth
  *     ("ShapeTo1616 needs a 16 x 16 destination as deep as the source";
  *     it writes 16 words per plane of the source, one per row, regardless
- *     of the destination's size) (#900).  The original has no error check
- *     area; the release code is unchanged (D-005).
+ *     of the destination's size) (#900).  CreateMap refuses a width above
+ *     32767 ("Map width above 32767"): it sizes the data as (width * 2 as
+ *     a word) * height (ASL.w, MULU.w), so the upper bit was lost (40000:
+ *     14464 bytes per row instead of 80000), while MapDataGrab fills
+ *     width x height words and MapCanDraw reads at x * 2 as a long, up to
+ *     64 KB per row behind the data (#1152).  The original has no error
+ *     check area; the release code is unchanged (D-005).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -129,6 +127,7 @@ void rimapeditorlib_SetWindowDraw(void), _InitParse(void);
 void rimapeditorlib_nextparsearg(void), _freemap(void);
 void rimapeditorlib_libinit(void), rimapeditorlib_libfinit(void);
 void candrawchk(void), mapgrabchk(void), mapdataadrchk(void), to1616chk(void), fillbpchk(void);
+void newmapchk(void);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -201,7 +200,7 @@ BLITZ_NAME("FillBitplane", "bitmap#,width,height");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_STRING);
 BLITZ_LIBS(LIB_rimapeditorlib, BL_IA3|BL_PD0, LIB_rimapeditorlib, BL_LD6|BL_USEDOFF);
-BLITZ_SUBS(_newmap, 0, 0);
+BLITZ_SUBS(_newmap, newmapchk, 0);             /* check: fixed #1152 */
 BLITZ_NAME("CreateMap", "map#,width,height,bwidth,bheight,name$");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -725,9 +724,9 @@ BLITZ_THUNK(_freemap, freemap_c, "d0-d1/a0-a1");
  * words (MEMF_PUBLIC|MEMF_CLEAR), datasize 1, mapnull 0, view 0,0, the
  * name a maxslib string.  Without memory (also width or height 0) width,
  * height, bwidth, bheight are cleared (datasize stays 1: not a defect).
- * BUG(orig) (#1152): the size is (width * 2 as a word) *
- * height, too small for a width above 32767, which the other commands
- * take whole.
+ * The size is (width * 2 as a word) * height, too small for a width
+ * above 32767, which the other commands take whole: refused by newmapchk
+ * (fixed #1152; the release code keeps it).
  * a3 ends behind the last field written (24, or 10 if the data could not
  * be allocated).  The old map is freed by the free routine, which tests
  * the data and the name itself: fixed (#894), the original freed it only
@@ -1152,6 +1151,7 @@ BLITZ_ERRCHK_MESSAGE(badsrc, "ShapeTo1616 source of height or depth 0");  /* fix
 BLITZ_ERRCHK_MESSAGE(baddest, "ShapeTo1616 needs a 16 x 16 destination as deep as the source"); /* fixed, #900 */
 BLITZ_ERRCHK_MESSAGE(narrow, "FillBitplane width must be at least 16");   /* fixed, #895 */
 BLITZ_ERRCHK_MESSAGE(norows, "FillBitplane height must be at least 1");   /* fixed, #895 */
+BLITZ_ERRCHK_MESSAGE(widemap, "Map width above 32767");            /* fixed, #1152 */
 
 /**
  * @brief The error check of MapCanDraw (debugger only).
@@ -1293,9 +1293,29 @@ static void BLITZ_ERRCHK fillbpchk_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2))
         BLITZ_RUNERR(norows);
 }
 
+/**
+ * @brief The error check of CreateMap (debugger only).
+ *
+ * Fixed (#1152), not in the original: CreateMap sizes the data as (width
+ * * 2 as a word) * height, so a width above 32767 lost the upper bit (a
+ * map 40000 wide got 14464 bytes per row instead of 80000), while
+ * MapDataGrab fills width x height words and MapCanDraw reads at x * 2:
+ * up to 64 KB per row behind the data.  The width is the programmer's
+ * (D-005); the release code is unchanged.
+ *
+ * Errors: "Map width above 32767".
+ * @param w  d1: the width
+ */
+static void BLITZ_ERRCHK newmapchk_c(UWORD w BL_REG(d1))
+{
+    if (w > 32767)
+        BLITZ_RUNERR(widemap);
+}
+
 /* the thunks of the check functions: they keep every register */
 BLITZ_ERRCHK_THUNK(candrawchk, candrawchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(mapgrabchk, mapgrabchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(mapdataadrchk, mapdataadrchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(to1616chk, to1616chk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(fillbpchk, fillbpchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(newmapchk, newmapchk_c, "d0-d1/a0-a1");

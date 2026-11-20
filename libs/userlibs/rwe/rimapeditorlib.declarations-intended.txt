@@ -13,10 +13,13 @@
 # width must be at least 16", "FillBitplane height must be at least 1");
 # #900: ShapeTo1616's check also refuses its destination ("ShapeTo1616
 # needs a 16 x 16 destination as deep as the source"; no new difference)
+# #1152: CreateMap gets an error check (newmapchk, "Map width above
+# 32767")
 lib 8: header +$2C: code offset set in only one of them
 lib 8: entry 1 ShapeTo1616 +$14: code offset set in only one of them
 lib 8: entry 10 FillBitplane +$12: code offset set in only one of them
+lib 8: entry 11 CreateMap +$18: code offset set in only one of them
 lib 8: entry 12 MapDataAdr +$24: code offset set in only one of them
 lib 8: entry 16 MapDataGrab +$12: code offset set in only one of them
 lib 8: entry 24 MapCanDraw +$12: code offset set in only one of them
-lib 8: relocations in the declaration part 43 != 49
+lib 8: relocations in the declaration part 43 != 50
