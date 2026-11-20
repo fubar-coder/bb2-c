@@ -10,6 +10,7 @@
 ; counts it.  AddVarTrace b,"bb",1 then DelVarTrace "a"; the command byte
 ; and the name at +8 of each message.
 ; Correct: the DelVarTrace message has the name "a" at +8.
+; @fixed #610
 ; @rwe ridebuglib
 ; @pass runtime_errors=on
 DEFTYPE .l

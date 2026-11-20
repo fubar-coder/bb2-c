@@ -27,7 +27,7 @@ AddVarTrace|kept|type 7 name a output 0|1	kept
 AddVarTrace|kept|type 7 name counter.l output 1|1	kept
 AddVarTrace|kept|type 7 name x$ output 2|1	kept
 AddVarTrace|message|after the others|1 [orig]	bytes 260 fnv 314EDDE3
-AddVarTrace|message|after the others|1 [fixed #612]	bytes 260 fnv 900EFCA7
+AddVarTrace|message|after the others|1 [fixed #612]	bytes 260 fnv 2AD5E2ED
 AddVarTrace|message|empty name|1 [orig]	bytes 260 fnv AA7B9C8C
 AddVarTrace|message|empty name|1 [fixed #612]	bytes 260 fnv C85E19E0
 AddVarTrace|message|type 0 name a output 0|1	bytes 260 fnv 603D9090
@@ -114,19 +114,19 @@ CopperTrace|kept|object, offset 0|1	kept
 CopperTrace|kept|object, offset 4|1	kept
 CopperTrace|kept|object, offset 8|1	kept
 CopperTrace|message|address $76543210|1 [orig]	bytes 260 fnv 8500F486
-CopperTrace|message|address $76543210|1 [fixed #612]	bytes 260 fnv 7B0CD3C1
+CopperTrace|message|address $76543210|1 [fixed #612]	bytes 260 fnv 515C6FCB
 CopperTrace|message|address 0|1 [orig]	bytes 260 fnv 074123EA
-CopperTrace|message|address 0|1 [fixed #612]	bytes 260 fnv 5ED76BAD
+CopperTrace|message|address 0|1 [fixed #612]	bytes 260 fnv 665C14C7
 CopperTrace|message|object 0|1 [orig]	bytes 260 fnv 11B21EA7
-CopperTrace|message|object 0|1 [fixed #612]	bytes 260 fnv F080E020
+CopperTrace|message|object 0|1 [fixed #612]	bytes 260 fnv BCEB054E
 CopperTrace|message|object, offset -4|1 [orig]	bytes 260 fnv 11B21EA7
-CopperTrace|message|object, offset -4|1 [fixed #612]	bytes 260 fnv F080E020
+CopperTrace|message|object, offset -4|1 [fixed #612]	bytes 260 fnv BCEB054E
 CopperTrace|message|object, offset 0|1 [orig]	bytes 260 fnv 2F69939E
-CopperTrace|message|object, offset 0|1 [fixed #612]	bytes 260 fnv F519CBA9
+CopperTrace|message|object, offset 0|1 [fixed #612]	bytes 260 fnv 49498E63
 CopperTrace|message|object, offset 4|1 [orig]	bytes 260 fnv 2F69939E
-CopperTrace|message|object, offset 4|1 [fixed #612]	bytes 260 fnv F519CBA9
+CopperTrace|message|object, offset 4|1 [fixed #612]	bytes 260 fnv 49498E63
 CopperTrace|message|object, offset 8|1 [orig]	bytes 260 fnv 11B21EA7
-CopperTrace|message|object, offset 8|1 [fixed #612]	bytes 260 fnv F080E020
+CopperTrace|message|object, offset 8|1 [fixed #612]	bytes 260 fnv BCEB054E
 CopperTrace|messages|address $76543210|1	$00000020
 CopperTrace|messages|address 0|1	$0000001F
 CopperTrace|messages|object 0|1	$00000023
@@ -146,13 +146,13 @@ DelVarTrace|kept|name a|1	kept
 DelVarTrace|kept|name counter.l|1	kept
 DelVarTrace|kept|name x$|1	kept
 DelVarTrace|message|empty name|1 [orig]	bytes 260 fnv C5E59684
-DelVarTrace|message|empty name|1 [fixed #612]	bytes 260 fnv 06368AA7
+DelVarTrace|message|empty name|1 [fixed #612]	bytes 260 fnv A0FD70ED
 DelVarTrace|message|name a|1 [orig]	bytes 260 fnv 76A2D153
-DelVarTrace|message|name a|1 [fixed #612]	bytes 260 fnv 2CC6B613
+DelVarTrace|message|name a|1 [fixed #612]	bytes 260 fnv CD2DDEEC
 DelVarTrace|message|name counter.l|1 [orig]	bytes 260 fnv 2F61B59D
-DelVarTrace|message|name counter.l|1 [fixed #612]	bytes 260 fnv 87FB30D8
+DelVarTrace|message|name counter.l|1 [fixed #612]	bytes 260 fnv 3FF9266E
 DelVarTrace|message|name x$|1 [orig]	bytes 260 fnv 5D33E95A
-DelVarTrace|message|name x$|1 [fixed #612]	bytes 260 fnv AD61878F
+DelVarTrace|message|name x$|1 [fixed #612]	bytes 260 fnv FAB6DD95
 DelVarTrace|messages|empty name|1	$0000001D
 DelVarTrace|messages|name a|1	$0000001A
 DelVarTrace|messages|name counter.l|1	$0000001B
@@ -164,18 +164,18 @@ DelVarTrace|popped|name x$|1	$00000000
 DisAsmWindow|address = the TRAP||1	$00000000
 DisAsmWindow|kept||1	kept
 DisAsmWindow|message||1 [orig]	bytes 260 fnv 074123EA
-DisAsmWindow|message||1 [fixed #612]	bytes 260 fnv 5ED76BAD
+DisAsmWindow|message||1 [fixed #612]	bytes 260 fnv 665C14C7
 DisAsmWindow|messages||1	$0000001F
 DisAsmWindow|popped||1	$00000000
 MemoryWindow|kept|window 0|1	kept
 MemoryWindow|kept|window 1|1	kept
 MemoryWindow|kept|window 2|1	kept
 MemoryWindow|message|window 0|1 [orig]	bytes 260 fnv 492C10E1
-MemoryWindow|message|window 0|1 [fixed #612]	bytes 260 fnv 5C88B6BA
+MemoryWindow|message|window 0|1 [fixed #612]	bytes 260 fnv 4A579DBC
 MemoryWindow|message|window 1|1 [orig]	bytes 260 fnv 4A6E0E70
-MemoryWindow|message|window 1|1 [fixed #612]	bytes 260 fnv DCA588DB
+MemoryWindow|message|window 1|1 [fixed #612]	bytes 260 fnv FF7728B1
 MemoryWindow|message|window 2|1 [orig]	bytes 260 fnv 4A44B287
-MemoryWindow|message|window 2|1 [fixed #612]	bytes 260 fnv 7FA0D680
+MemoryWindow|message|window 2|1 [fixed #612]	bytes 260 fnv 071D592E
 MemoryWindow|messages|window 0|1	$00000029
 MemoryWindow|messages|window 1|1	$0000002A
 MemoryWindow|messages|window 2|1	$0000002B
@@ -188,15 +188,15 @@ ProcControl|kept|$FFFFFFFF|1	kept
 ProcControl|kept|toggle|1	kept
 ProcControl|kept|toggle again|1	kept
 ProcControl|message|$0|1 [orig]	bytes 260 fnv 6C78FE91
-ProcControl|message|$0|1 [fixed #612]	bytes 260 fnv D783180A
+ProcControl|message|$0|1 [fixed #612]	bytes 260 fnv 4B0C098C
 ProcControl|message|$101|1 [orig]	bytes 260 fnv 9FCCDD72
-ProcControl|message|$101|1 [fixed #612]	bytes 260 fnv BB9EBBE5
+ProcControl|message|$101|1 [fixed #612]	bytes 260 fnv 6BAB1A0F
 ProcControl|message|$FFFFFFFF|1 [orig]	bytes 260 fnv BE759DB8
-ProcControl|message|$FFFFFFFF|1 [fixed #612]	bytes 260 fnv BA92FAD3
+ProcControl|message|$FFFFFFFF|1 [fixed #612]	bytes 260 fnv 85A226B9
 ProcControl|message|toggle|1 [orig]	bytes 260 fnv AA8C6886
-ProcControl|message|toggle|1 [fixed #612]	bytes 260 fnv A09847C1
+ProcControl|message|toggle|1 [fixed #612]	bytes 260 fnv 76E7E3CB
 ProcControl|message|toggle again|1 [orig]	bytes 260 fnv AA8C6886
-ProcControl|message|toggle again|1 [fixed #612]	bytes 260 fnv A09847C1
+ProcControl|message|toggle again|1 [fixed #612]	bytes 260 fnv 76E7E3CB
 ProcControl|messages|$0|1	$00000026
 ProcControl|messages|$101|1	$00000027
 ProcControl|messages|$FFFFFFFF|1	$00000025
@@ -209,7 +209,7 @@ ProcControl|popped|toggle|1	$00000000
 ProcControl|popped|toggle again|1	$00000000
 VarTraceWindow|kept||1	kept
 VarTraceWindow|message||1 [orig]	bytes 260 fnv D370205B
-VarTraceWindow|message||1 [fixed #612]	bytes 260 fnv 6713DA8C
+VarTraceWindow|message||1 [fixed #612]	bytes 260 fnv DDEA342A
 VarTraceWindow|messages||1	$0000001E
 VarTraceWindow|popped||1	$00000000
 finit|kept||1	kept

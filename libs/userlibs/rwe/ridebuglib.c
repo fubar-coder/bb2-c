@@ -31,14 +31,15 @@
  * next 0) and stops at the end of mess1 (the name and its 0 in the 252
  * characters); the original has no limit, a longer name overwrites what
  * follows mess1 (in the original the check routines).
+ * Fixed (#610): DelVarTrace writes the name at +8, where the characters
+ * start; the original skipped 11 bytes after the command byte and wrote
+ * it at +12 (+1..+11 kept the previous message's bytes, +8..+11 the start
+ * of the previous name).
  *
  * BUG(orig):
  *   - AddVarTrace converts the type word with an 8 byte table, indexed
  *     without a check (other types read the code behind the table; the C
  *     build reads other bytes there, DIFF) (#609).
- *   - DelVarTrace writes the name at +12, not at +8 where the characters
- *     start (+1..+11 keep the previous message's bytes), and its 0 without
- *     advancing (#610).
  *   - DisAsmWindow searches backwards from the return address for a word
  *     $4E41 (TRAP #1, which the debugger's code has before the call) with
  *     no limit (#611).
@@ -204,16 +205,16 @@ static void BLITZ_ERRCHK addvartrace_c(ULONG var BL_REG(d0), const UBYTE *name B
 /**
  * @brief DelVarTrace variable$ (check): remove a trace on a named variable.
  *
- * Sends _deltrace (254) with the name.  BUG(orig) (#610): the name goes
- * to +12 instead of +8 (+1..+11 keep the previous message), its 0
- * without advancing; the name copy as in AddVarTrace (fixed (#612,
- * #613)).
+ * Sends _deltrace (254) with the name at +8.  Fixed (#610): the original
+ * wrote the name at +12 (+8..+11 kept the previous message's bytes, which
+ * the debugger read as the start of the name); the name copy as in
+ * AddVarTrace (fixed (#612, #613)).
  * @param name  d0: the variable's name
  */
 static void BLITZ_ERRCHK delvartrace_c(const UBYTE *name BL_REG(d0))
 {
     mess1.command = DC_DELTRACE;
-    *copyname(mess1.chars + 4, name) = 0;     /* +12: BUG(orig) (#610) */
+    *copyname(mess1.chars, name) = 0;         /* +8: fixed (#610) */
     send();
 }
 
