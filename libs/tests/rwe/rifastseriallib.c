@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     KEEPS("SetSerialMode", d0-d7|a0-a3|a6);
     KEEPS("SetIOSize", d0-d7|a0-a3|a6);
     KEEPS("EndSerialIO", d0-d7|a0-a3|a6);
-    KEEPS("InitSerialIO", d0|d2-d7|a0-a3|a6);
+    KEEPS("InitSerialIO", d2-d7|a0-a3|a6);     /* d0: the result, observed */
     KEEPS("PutSerial byte", d1-d7|a1-a3|a6);
     KEEPS("SetIOSpeed", d0|d2-d7|a0-a3|a6);
     KEEPS("SetIOBuffers", d0-d7|a0-a3|a6);
