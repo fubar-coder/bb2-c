@@ -122,8 +122,8 @@ STCLength|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$000
 STCLength|popped|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000000
 STCLength|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
 STCLength|popped|S403|1	$00000000
-STCLoad|UnLock calls|S404 file, UnLock counted|1 [orig]	$00000001
-STCLoad|UnLock calls|S404 file, UnLock counted|1 [fixed #835]	$00000000
+STCLoad|UnLock of the handle's lock|S404 file, UnLock counted|1 [orig]	$00000001
+STCLoad|UnLock of the handle's lock|S404 file, UnLock counted|1 [fixed #835]	$00000000
 STCLoad|buffer|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	bytes 56384 fnv 1C083637
 STCLoad|buffer|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	bytes 56384 fnv 7A41F4F6
 STCLoad|buffer|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	bytes 56384 fnv F1E0A746

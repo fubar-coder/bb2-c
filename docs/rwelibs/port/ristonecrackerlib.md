@@ -81,7 +81,8 @@ entry and never called: left out.
   (`Close` frees it). The original unlocked it once more after `Close`
   (`BSR oopsfreefib`: FreeMem + UnLock), an UnLock of a lock the file
   system had already freed (on `RAM:` without visible effect; the test
-  counts the UnLock calls: 1 in the original, 0 now) (#835).
+  counts the UnLock calls of a lock a file handle owns: 1 in the
+  original, 0 now) (#835).
 * `STCLoad` unpacks only if `Examine` succeeded, `Read` read the whole
   file, and the file is an S404 file whose packed data and trailer (12 +
   packed length + 6 bytes) lie within it; otherwise it returns 0, as the
@@ -124,8 +125,10 @@ what the test worked out, the start and the header; the three header
 functions on each file and on other data
 (0). Also a file that is no S404 file (the original unpacks it anyway, the C
 build returns 0), a missing file
-and a directory (OpenFromLock fails), the number of UnLock calls of one
-STCLoad (dos.library's UnLock patched to count them), kept registers. Not covered:
+and a directory (the open fails), the number of UnLock calls of one
+STCLoad that unlock a lock a file handle owns (dos.library's OpenFromLock
+and UnLock patched: the lock an OpenFromLock took over is noted, the
+UnLock calls of it counted), kept registers. Not covered:
 corrupt data (the bug-orig tests of `ristcdecrunchlib` cover the shared
 decruncher), a first bit count above 16 (the DIFF), a
 16-bit far offset of $8000 or more (negative as a word: reads before the

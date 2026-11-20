@@ -20,11 +20,13 @@
  * the start, literal bytes and runs on every bit position (aligned and
  * across words), the three header functions on S404 data and on other
  * data (0, the S404 check of the binary), STCLoad with a missing file and
- * with a directory (OpenFromLock fails), and with a file that is no S404
+ * with a directory (the open fails), and with a file that is no S404
  * file (the original unpacks it anyway - a harmless one: offset and lengths
- * chosen so; the C build returns 0, fixed #836); the number of UnLock calls of the test task during one
- * STCLoad of an S404 file (dos.library's UnLock patched to count them:
- * the original unlocks the lock OpenFromLock took over, fixed #835).  Not
+ * chosen so; the C build returns 0, fixed #836); the number of UnLock calls
+ * of the test task during one STCLoad of an S404 file that unlock a lock a
+ * file handle owns (dos.library's OpenFromLock and UnLock patched: the
+ * lock an OpenFromLock took over is noted, the UnLock calls of it are
+ * counted; the original unlocks it after Close, fixed #835).  Not
  * covered: corrupt data (the original writes anywhere; the bug-orig tests
  * of ristcdecrunchlib cover the shared decruncher, #833), more than 16
  * far offset bits (refused now, #833), a far offset that is
@@ -42,15 +44,32 @@
 
 static UBYTE *buf;                      /* STCLoad's buffer */
 
-/* dos.library's UnLock (-90) counts the calls of the test task and goes
-   on to the system's routine */
+/* dos.library's OpenFromLock (-378) notes the lock a successful call of
+   the test task took over; UnLock (-90) counts the test task's calls of
+   that lock and goes on to the system's routine */
 struct Task *stc_task;
 ULONG stc_nunlock;
-APTR stc_old_unlock;
-void stc_unlock(void);
+BPTR stc_ownedlock;
+APTR stc_old_unlock, stc_old_openfromlock;
+void stc_unlock(void), stc_openfromlock(void);
 __asm__(
 "   .text\n"
 "   .even\n"
+"   .globl  _stc_openfromlock\n"
+"_stc_openfromlock:\n"
+"   move.l  d1,-(sp)\n"
+"   movea.l _stc_old_openfromlock,a0\n"
+"   jsr     (a0)\n"
+"   move.l  (sp)+,d1\n"
+"   tst.l   d0\n"
+"   beq.s   1f\n"
+"   movea.l 4.w,a0\n"
+"   movea.l 276(a0),a0\n"              /* ThisTask */
+"   cmpa.l  _stc_task,a0\n"
+"   bne.s   1f\n"
+"   move.l  d1,_stc_ownedlock\n"
+"1: tst.l   d0\n"
+"   rts\n"
 "   .globl  _stc_unlock\n"
 "_stc_unlock:\n"
 "   move.l  a0,-(sp)\n"
@@ -58,6 +77,8 @@ __asm__(
 "   move.l  276(a0),a0\n"               /* ThisTask */
 "   cmp.l   _stc_task,a0\n"
 "   movea.l (sp)+,a0\n"                 /* movea: the flags stay */
+"   bne.s   1f\n"
+"   cmp.l   _stc_ownedlock,d1\n"
 "   bne.s   1f\n"
 "   addq.l  #1,_stc_nunlock\n"
 "1: move.l  _stc_old_unlock,-(sp)\n"
@@ -179,22 +200,26 @@ int main(int argc, char **argv)
         OBS("d0", R.d[0]);
     }
 
-    /* the UnLock calls of one STCLoad of an S404 file (#835: the original
-       one, of the lock OpenFromLock took over; the C build none) */
+    /* the UnLock calls of one STCLoad of an S404 file that unlock a lock a
+       file handle owns (#835: the original one, of the lock OpenFromLock
+       took over; the C build none) */
     strcpy(VEC, "S404 file, UnLock counted");
     make(300, 5, 8, 0, 0xff);
     *(ULONG *)(file + 4) = (filelen + 3) & ~3UL;
     savefile(file, filelen);
     stc_task = FindTask(NULL);
     stc_nunlock = 0;
+    stc_ownedlock = (BPTR)-1;           /* no lock: no OpenFromLock yet */
     Forbid();
     stc_old_unlock = SetFunction((struct Library *)DOSBase, -90, (APTR)stc_unlock);
+    stc_old_openfromlock = SetFunction((struct Library *)DOSBase, -378, (APTR)stc_openfromlock);
     Permit();
     load(1, 0x33);
     Forbid();
+    SetFunction((struct Library *)DOSBase, -378, stc_old_openfromlock);
     SetFunction((struct Library *)DOSBase, -90, stc_old_unlock);
     Permit();
-    OBS("UnLock calls", stc_nunlock);
+    OBS("UnLock of the handle's lock", stc_nunlock);
     DeleteFile((STRPTR)FNAME);
 
     FreeMem(buf, BUFSZ);
