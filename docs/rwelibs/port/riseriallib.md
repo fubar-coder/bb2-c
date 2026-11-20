@@ -208,8 +208,8 @@ kind F):
 ## BUG(orig), kept
 
 * The original puts the old vectors into the code (two `JMP` operands)
-  without clearing the instruction cache (#791; closed: the C port keeps
-  them in variables).
+  without clearing the instruction cache (#791, not observable in the
+  emulator; the C port keeps them in variables).
 
 No defects: `SerialProgress` gives the remaining count of the last send
 or receive block, what it is meant to give; `SerialBaud 0` divides by 0
@@ -238,16 +238,25 @@ original. Nothing reaches the machine:
 
 The handlers are called by hand through `Supervisor()` with the RBF/TBE
 bits of the fake INTREQR and the byte in the fake SERDATR – that is also
-how bytes arrive. `SerialReceiveBlock` (it throws away what is there,
-then waits) and `SerialReadLong` (never returns) run in a task of their
-own at priority −1 (it runs only while the test task waits), fed byte
-by byte: the test gives the next byte only when the task has read the
-last one (the ring indices equal, then one tick more), so the bytes
-thrown away and those received do not depend on timing. The test
-removes the task (`RemTask`) when it is done or, for `SerialReadLong`,
-when every byte is read (the port is open then, so the task does not
-touch the vectors). The stopped `SerialReceiveBlock` returns to a landing routine
-passed as the long above its return address.
+how bytes arrive. `SerialReceiveBlock`, `SerialReadLong` and
+`SerialReadString` (they wait for bytes; the original's
+`SerialReceiveBlock` throws away what is there first, its
+`SerialReadLong` never returns) run in a task of their own at priority
+−1 (it runs only while the test task waits), fed byte by byte: the test
+gives the next byte only when the task has read the last one (the ring
+indices equal, then one tick more), so the bytes thrown away and those
+received do not depend on timing. `SerialReadString`'s bytes are in the
+ring before the call and are given again if it waits (a closed port
+that it opens is emptied); it gets a string work area in a0. The
+200-byte `SerialSendBlock` runs in such a task too, with one transmit
+interrupt per tick while it waits for room in the ring (#983), then the
+ring is emptied by transmit interrupts and the bytes sent are observed.
+The test removes the task (`RemTask`) when it is done or, for the
+original's `SerialReadLong`, when every byte is read (the port is open
+then, so the task does not touch the vectors; a `SerialReadString` that
+opens the port in the task writes the system's vectors, which the test
+puts back). The original's stopped `SerialReceiveBlock` returns to a
+landing routine passed as the long above its return address.
 
 Observed after every call: the fake registers, CIA-B PRA, the vectors,
 both rings (the receive ring in front of `SerialBuffer`'s address, the
@@ -260,4 +269,15 @@ block routines, the open and closed paths of `SerialSendString`/
 
 Not covered: the stale `JMP` operands in the instruction cache (the test
 clears the cache before calling a handler), `SerialBaud 0`, a ring index
-with `$FF` in its high byte.
+with `$FF` in its high byte, a moved VBR, and (since the fix of #799) a
+`SerialStop` that reaches a running `SerialReceiveBlock`.
+
+The bug-orig tests `tests/bug-orig/rwe/riseriallib-*` run Blitz programs
+with the library, most of them with the remote end of `; @pass
+serial=on` (`tests/corpus/runner/serial.h`): the library's own handlers
+work on the emulated serial port (probed on the A1200 and the A500 with
+both sets). `riseriallib-vbr` runs on the A500 with a 68010,
+`riseriallib-receiveblock-stop` stops a block from a `SetInt 5`
+routine. On the emulated port the transmit interrupt runs right after
+every byte, so the transmit ring never fills there (#983 has the
+library test only).
