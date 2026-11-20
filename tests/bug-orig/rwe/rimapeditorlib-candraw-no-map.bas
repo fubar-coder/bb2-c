@@ -7,6 +7,7 @@
 ; runtime error checking.
 ; Correct: the error check refuses MapCanDraw on the freed map:
 ; "MapObject has no map data".
+; @fixed #893
 ; @rwe rimapeditorlib
 ; @pass runtime_errors=on
 CreateMap 0,4,4,16,16,"m"

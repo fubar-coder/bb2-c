@@ -56,7 +56,9 @@ frees data and name and clears the object.
 * **Reference:** the reference build of the source by blitz2 2.10
   (`refbuild`, `build/amiga/libs/userlibs/rwe/ref/rimapeditorlib.obj`); no
   binary exists (`docs/rwelibs/README.md` §3.3). Declarations equal
-  (ctest `rwe_declarations_rimapeditorlib`).
+  but for the error checks the port adds
+  (`rimapeditorlib.declarations-intended.txt`; ctest
+  `rwe_declarations_rimapeditorlib`).
 * **C file:** `libs/userlibs/rwe/rimapeditorlib.c`; test
   `libs/tests/rwe/rimapeditorlib.c` (snitch case "rwe rimapeditorlib").
 
@@ -129,10 +131,27 @@ loop optimisation (no `__mulsi3`).
   65536 each and wrote from address 0 over all memory (#895, the
   `MapDataGrab` part; test `rimapeditorlib-mapdatagrab-no-data`).
 
+### Error checks
+
+The original has no error check area; the port adds one. The release
+code of the checked commands is unchanged (D-005: invalid arguments
+and commands before their setup command).
+
+* `MapCanDraw` refuses a call before any `SetStencil` ("MapCanDraw
+  needs SetStencil"; the original reads the stencil at address 0) and,
+  where it looks up the stencil (a position inside the map and the
+  rub-through map whose word is not the value it compares with), a map
+  word of `$8000` or more ("Map value above 32767 for the stencil"; the
+  original uses it as a signed index, up to 32 KB before the stencil)
+  (#893; test `rimapeditorlib-candraw-no-stencil`).
+* `MapCanDraw` and `MapDataGrab` refuse a used map without data – after
+  `Free MapObject`, or a `CreateMap` that could not allocate it
+  ("MapObject has no map data"; under #893, test
+  `rimapeditorlib-candraw-no-map`; `MapDataGrab`'s release code fills
+  nothing into such a map since #895, so it has no bug-orig test).
+
 ## BUG(orig), kept
 
-* `MapCanDraw`'s stencil index is the map's word as a signed word;
-  without `SetStencil` the stencil is at address 0 (#893).
 * The `DBRA` loops of `ShapeTo1616` and `FillBitplane` run 65536 times
   for a size of 0 (`FillBitplane` also for a width below 16) (#895);
   `ShapeTo1616` writes 16 words per plane regardless of the

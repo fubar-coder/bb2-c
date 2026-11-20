@@ -8,6 +8,7 @@
 ; checking.
 ; Correct: the error check refuses MapCanDraw without a SetStencil:
 ; "MapCanDraw needs SetStencil".
+; @fixed #893
 ; @rwe rimapeditorlib
 ; @pass runtime_errors=on
 CreateMap 0,4,4,16,16,"m"

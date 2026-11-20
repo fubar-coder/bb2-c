@@ -37,8 +37,6 @@
  * fields it wrote; the string functions: behind the characters).
  *
  * BUG(orig):
- *   - MapCanDraw's stencil index is the map value as a signed word;
- *     without SetStencil the stencil is at address 0 (#893).
  *   - The DBRA loops of ShapeTo1616 and FillBitplane run 65536 times for
  *     a size of 0 (FillBitplane also for a width below 16) (#895);
  *     ShapeTo1616 copies a word from every row regardless of the
@@ -74,7 +72,15 @@
  *   - MapDataGrab fills nothing into a map without data (its CreateMap
  *     could not allocate them, D-018); the original's DBRA loops took the
  *     width and height 0 of such a map as 65536 each and wrote from
- *     address 0 over all memory (#895, the MapDataGrab part).
+ *     address 0 over all memory (#895, the MapDataGrab part);
+ *   - With runtime error checking MapCanDraw refuses a call before any
+ *     SetStencil ("MapCanDraw needs SetStencil") and a map value of $8000
+ *     or more where it looks up the stencil ("Map value above 32767 for
+ *     the stencil"); the original read the stencil at address 0 and with
+ *     the value as a signed index (#893).  MapCanDraw and MapDataGrab
+ *     refuse a used map without data ("MapObject has no map data", under
+ *     #893).  The original has no error check area; the release code is
+ *     unchanged (D-005).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -109,6 +115,7 @@ void _OutTextCenter(void), _OutTextRight(void);
 void rimapeditorlib_SetWindowDraw(void), _InitParse(void);
 void rimapeditorlib_nextparsearg(void), _freemap(void);
 void rimapeditorlib_libinit(void), rimapeditorlib_libfinit(void);
+void candrawchk(void), mapgrabchk(void);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -117,8 +124,9 @@ BLITZ_ENTRY_DECL(_free);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader {#rimapeditorlib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_rimapeditorlib, init, BL_NORET, finit, 0);
+/* !libheader {#rimapeditorlib,init,0,finit,0}; error field: the error
+   check area of the checks (fixed, #893) */
+BLITZ_LIBHEADER(LIB_rimapeditorlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_DUMTOKE(_toke, "MapObject", "");
 
@@ -213,7 +221,7 @@ BLITZ_NAME("MapObjheight", "- returns height of the current map");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
-BLITZ_SUBS(_mapgrab, 0, 0);
+BLITZ_SUBS(_mapgrab, mapgrabchk, 0);            /* check: fixed, under #893 */
 BLITZ_NAME("MapDataGrab", "address,datasize,mapnull");
 
 BLITZ_AFUNCTION(BL_STRING);
@@ -264,7 +272,7 @@ BLITZ_NAME("SetStencil", "<array> - a byte array holding stencil data");
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
-BLITZ_SUBS(_candraw, 0, 0);
+BLITZ_SUBS(_candraw, candrawchk, 0);            /* check: fixed #893 */
 BLITZ_NAME("MapCanDraw", "(shape#,mapx,mapy)");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -449,8 +457,9 @@ BLITZ_THUNK(_setstencil, setstencil_c, "d0-d1/a0-a1");
  * (MapCanDrawAddr).  d0's upper word stays (ADDQ.w).  x/y are compared
  * unsigned: fixed (#892), the original compared them signed, so negative
  * values passed and indexed far behind the data (nothing is kept at 24
- * for them now).  BUG(orig): the stencil index is the map value as a
- * signed word, and without SetStencil the stencil is at address 0 (#893).
+ * for them now).  The stencil index is the map value as a signed word,
+ * and without SetStencil the stencil is at address 0: refused by
+ * candrawchk (fixed #893; the release code keeps both).
  * @param shapenum  d0: the shape number
  * @param x         d1: the map x
  * @param y         d2: the map y
@@ -1110,3 +1119,78 @@ static ULONG BLITZ_ROUTINE nextparsearg_c(void)
     }
 }
 BLITZ_THUNK(rimapeditorlib_nextparsearg, nextparsearg_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(nomap, "MapObject has no map data");          /* fixed, under #893 */
+BLITZ_ERRCHK_MESSAGE(nostencil, "MapCanDraw needs SetStencil");     /* fixed, #893 */
+BLITZ_ERRCHK_MESSAGE(badvalue, "Map value above 32767 for the stencil"); /* fixed, #893 */
+
+/**
+ * @brief The error check of MapCanDraw (debugger only).
+ *
+ * Fixed (#893), not in the original (rimapeditorlib had no error check
+ * area): MapCanDraw looked up the map word in the stencil of SetStencil
+ * without looking whether there is one - before the first SetStencil of
+ * a run (also after init, #1133) the stencil is at address 0 and the
+ * lookup read low memory - and used the map word as a signed index, so a
+ * value of $8000 or more read up to 32 KB before the stencil.  Fixed
+ * (under #893): nor did it look whether the used map has a map (after
+ * Free MapObject, or a CreateMap that could not allocate the data, width,
+ * height and data are 0, and every position counts as outside).  The
+ * value check follows the routine: only for a position inside the map
+ * (and the rub-through map) whose word the routine looks up in the
+ * stencil.  The release code is unchanged (a command before its setup
+ * command, D-005, as #686 and #1131).
+ *
+ * Errors: "MapObject has no map data", "MapCanDraw needs SetStencil",
+ * "Map value above 32767 for the stencil".
+ * @param shapenum  d0: the shape number
+ * @param x         d1: the map x
+ * @param y         d2: the map y
+ * @param map       a3: the used map (#ua3)
+ */
+static void BLITZ_ERRCHK candrawchk_c(ULONG shapenum BL_REG(d0), UWORD x BL_REG(d1),
+                                      UWORD y BL_REG(d2),
+                                      const struct mapobject *map BL_REG(a3))
+{
+    const struct mapobject *rub = map->rubthrough;
+    UWORD want = (UWORD)shapenum, v;
+
+    if (!map->data)
+        BLITZ_RUNERR(nomap);
+    if (!mapstencil)
+        BLITZ_RUNERR(nostencil);
+    if (x >= map->width || y >= map->height)
+        return;
+    if (rub) {
+        if (x >= rub->width || y >= rub->height)
+            return;
+        want = *(const UWORD *)(rub->data + rol1(bl_mulu_w(y, rub->width) + x)) - 1;
+    }
+    v = *(const UWORD *)(map->data + rol1(bl_mulu_w(y, map->width) + x));
+    if ((UWORD)(want + 1) != v && (v & 0x8000))
+        BLITZ_RUNERR(badvalue);
+}
+
+/**
+ * @brief The error check of MapDataGrab (debugger only).
+ *
+ * Fixed (under #893), not in the original: MapDataGrab did not look
+ * whether the used map has a map; on one without data (after Free
+ * MapObject, or a CreateMap that could not allocate the data) the
+ * original wrote from address 0 over all memory, the release code fills
+ * nothing into it since #895.
+ *
+ * Errors: "MapObject has no map data".
+ * @param map  a3: the used map (#ua3)
+ */
+static void BLITZ_ERRCHK mapgrabchk_c(const struct mapobject *map BL_REG(a3))
+{
+    if (!map->data)
+        BLITZ_RUNERR(nomap);
+}
+
+/* the thunks of the check functions: they keep every register */
+BLITZ_ERRCHK_THUNK(candrawchk, candrawchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(mapgrabchk, mapgrabchk_c, "d0-d1/a0-a1");

@@ -1,0 +1,12 @@
+# the intended differences of rimapeditorlib against its reference, the
+# reference build of rwelibsrc/MapEd/MapEd_Bit2.bb (blitzlib compare,
+# docs/development.md "Intended differences")
+# #893: MapCanDraw gets an error check (candrawchk, "MapCanDraw needs
+# SetStencil", "Map value above 32767 for the stencil", and under #893
+# "MapObject has no map data"); MapDataGrab gets one (mapgrabchk, under
+# #893: "MapObject has no map data"); rimapeditorlib gets an error check
+# area for them (the original has none)
+lib 8: header +$2C: code offset set in only one of them
+lib 8: entry 16 MapDataGrab +$12: code offset set in only one of them
+lib 8: entry 24 MapCanDraw +$12: code offset set in only one of them
+lib 8: relocations in the declaration part 43 != 46
