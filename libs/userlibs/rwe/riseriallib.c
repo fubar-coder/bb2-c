@@ -13,7 +13,7 @@
  *   SerialSendBlock address,length
  *   SerialReceiveBlock address,length
  *   SerialFlush                  reads until the buffer is empty
- *   SerialSendString a$          (see BUG(orig), #793, #801)
+ *   SerialSendString a$          the characters of the string (no 0)
  *   SerialReadString             bytes up to a 0
  *   SerialProgress               the remaining length of a block
  *   SerialReadLong / SerialWriteLong longword
@@ -68,10 +68,6 @@
  *     below 0) (#799); SerialStop during it ends it by taking its return
  *     address into d7 and returning to the long above it on the stack
  *     (#803).
- *   - SerialSendString sends the low byte of the string's address (with
- *     the stop bit) once for every long it reads from the a2 stack, down
- *     to one with a low byte 0 (DIFF: a2 unchanged, as in all C ports;
- *     the original leaves it below the longs read) (#801).
  *   - SerialReadLong never returns: the counter of its loop is taken
  *     back from the stack every time (it reads bytes without end) (#794).
  *   - SerialWriteLong sends the low byte of its argument and then three
@@ -102,6 +98,11 @@
  *     every call from 0; the original reset the count only when the port
  *     was open, and there it returned to the d0 of the call (it pushed d0
  *     and never took it back) (#796).
+ *   - SerialSendString sends the characters of the string (its length
+ *     from the a2 stack, no 0 behind them; a2 unchanged, as in all C
+ *     ports); the original sent the low byte of the string's address
+ *     once for every long it read from the a2 stack, down to one with a
+ *     low byte 0 (#801).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -534,24 +535,25 @@ void BLITZ_ROUTINE c_flushser(void)
 /**
  * @brief SerialSendString a$: meant to send a string.
  *
- * BUG(orig) (#801): sends the low byte of the string's address (with the
- * stop bit) once for every long read from the a2 stack, down to one with
- * a low byte 0 (DIFF: a2 unchanged).  BUG(orig) (#793): calls SerialOpen's
- * code only when the port is open.
+ * Its characters, the length from the a2 stack (MOVE.l -4(a2): a2
+ * unchanged, as in all C ports), no 0 behind them (decided, R10 P2-4:
+ * a program that reads with SerialReadString on the other side sends
+ * the 0 itself).  Fixed (#801): the original sent the low byte of the
+ * string's address (with the stop bit) once for every long it read from
+ * the a2 stack, down to one with a low byte 0.  BUG(orig) (#793): calls
+ * SerialOpen's code only when the port is open.
  * @param str       d0: the string
- * @param argstack  a2: the argument stack
+ * @param argstack  a2: the argument stack (the length at -4)
  */
-void BLITZ_ROUTINE c_sendserialstring(ULONG str BL_REG(d0), const ULONG *argstack BL_REG(a2))
+void BLITZ_ROUTINE c_sendserialstring(const UBYTE *str BL_REG(d0),
+                                      const ULONG *argstack BL_REG(a2))
 {
-    ULONG value = str;                  /* d0: as openserial and writeser leave it (#801) */
-    ULONG l;
+    ULONG n = argstack[-1];
 
     if (openflag)
-        value = openserial(value);
-    do {
-        l = *--argstack;
-        value = writeser(value);
-    } while (l & 0xff);
+        openserial(0);
+    while (n--)                         /* fixed (#801) */
+        writeser(*str++);
 }
 
 /**

@@ -7,6 +7,7 @@
 ; followed by a VWait, at most 100).
 ; Correct: SerialSendString sends the characters of the string: the reply
 ; comes.
+; @fixed #801
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l

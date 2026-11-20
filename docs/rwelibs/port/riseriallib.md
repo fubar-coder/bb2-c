@@ -92,6 +92,16 @@ kind F):
   of the call, which it had pushed and never taken back (#796; test
   `riseriallib-readstring-open`; `libs_emulator` cases `[fixed #796]` of
   `rwe_riseriallib`). The assembler thunk of the original's end goes.
+* `SerialSendString` sends the characters of the string (its length
+  from the a2 stack, `MOVE.l -4(a2)`; a2 stays unchanged, as in all C
+  ports, `docs/libs/cmdlibs-port.md`), without a 0 behind them: a
+  program that reads with `SerialReadString` on the other side sends the
+  0 itself (`SerialWrite 0`) (R10 decision P2-4 (a)). The original read
+  a long from the a2 stack (`MOVE.l -(a2),d1`) for every byte and sent
+  the low byte of the string's address (d0) with the stop bit each
+  time, until a long with the low byte 0 (#801; test
+  `riseriallib-sendstring`; `libs_emulator` cases `[fixed #801]` of
+  `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
@@ -112,11 +122,6 @@ kind F):
   `SerialStop` during it ends it through the `abort` code of
   `SerialSendBlock`, which pops the saved d7 – here the return address –
   into d7, so it returns to the long above it on the stack (#803).
-* `SerialSendString` reads the string length from the a2 stack (`MOVE.l
-  -(a2),d1`) for every byte and sends the low byte of the string's
-  address (d0) with the stop bit each time, until a long with the low
-  byte 0 (#801). DIFF: a2 stays unchanged (as in all C ports, `docs/libs/
-  cmdlibs-port.md`); the original leaves it below the longs it read.
 * `SerialReadLong` never returns: its loop takes the counter back from
   the stack every time and reads bytes without end (#794).
 * `SerialWriteLong` sends the low byte of its argument and then three
