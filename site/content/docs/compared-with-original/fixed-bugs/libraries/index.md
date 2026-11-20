@@ -3836,6 +3836,12 @@ and the same colours.
   its picture data stopped with "Can't Read File" and left the file open
   and locked until the next reboot; the file is closed before the error
   ([#1065](https://github.com/fubar-coder/bb2-c/issues/1065)).
+* `LoadShape` of an animation that stopped after its first frame with
+  "ANIM format not supported" or "Illegal ANIM interleave value" left
+  the file open and locked until the next reboot, also when the program
+  went on with `SetErr`; the file is closed before the error, and the
+  shape keeps the first frame
+  ([#1072](https://github.com/fubar-coder/bb2-c/issues/1072)).
 
 ### Sounds
 

@@ -7654,3 +7654,11 @@ rows:
     text: "After a program caught \"Out of Memory!\" with `SetErr` and went on, later allocations work; in the original the next one overwrote the pointer to exec at address 4."
     page: libraries
     anchor: arrays-and-sorting
+  - issue: 1072
+    severity: 5
+    topic: "Files"
+    library: "shapeslib"
+    command: "LoadShape"
+    text: "`LoadShape` closes an animation file before \"ANIM format not supported\" and \"Illegal ANIM interleave value\"; the original left it open and locked until reboot."
+    page: libraries
+    anchor: iff-files

@@ -21,10 +21,9 @@
     "Illegal Shape Size". Both are errors also without runtime error
     checking.
 
-    Kept from the original: after "ANIM format not supported" and
-    "Illegal ANIM interleave value" the file stays open and locked, also
-    for a program that goes on after the error with `SetErr`
-    ([#1072](https://github.com/fubar-coder/bb2-c/issues/1072)).
+    "ANIM format not supported" and "Illegal ANIM interleave value" come
+    after the first frame is loaded. The file is closed before either
+    error, and the shape keeps the first frame.
 "InitShape":
   text: Makes an empty shape of the given width, height and depth. With runtime error checking, a depth of 0 is the error "Illegal Shape Depth".
   notes: |
