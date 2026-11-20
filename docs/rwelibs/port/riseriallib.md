@@ -128,15 +128,21 @@ kind F):
   flag also survived into a second run (#1162; test
   `riseriallib-stop-flag`; `libs_emulator` cases `[fixed #1162]` of
   `rwe_riseriallib`).
+* `SerialReceiveBlock` keeps the bytes that are in the receive ring at
+  the call: they are the first of the block. The original threw them
+  away first (an explicit loop), so bytes the other side sent before the
+  call were lost. A program that wants an empty ring calls `SerialFlush`
+  before `SerialReceiveBlock` (#798; R10 decision P2-5 (b); test
+  `riseriallib-receiveblock-kept`; `libs_emulator` cases `[fixed #798]`
+  of `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
   is (#804); the old ones go into the code (two `JMP` operands) without
   clearing the instruction cache (#791).
-* `SerialReceiveBlock` throws away what is in the ring first, then
-  waits (#798); a length of 1 receives without end (the count goes below
-  0) (#799).
+* `SerialReceiveBlock` with a length of 1 receives without end (the
+  count goes below 0) (#799).
   `SerialStop` during it ends it through the `abort` code of
   `SerialSendBlock`, which pops the saved d7 – here the return address –
   into d7, so it returns to the long above it on the stack (#803).

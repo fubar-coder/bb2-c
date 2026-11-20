@@ -235,7 +235,8 @@ SerialProgress|d0|d0 $00000000|8	$FFFFFFFF
 SerialProgress|d0|d0 $00000000|9	$FFFFFFFF
 SerialProgress|d0|d0 $00000000|10	$00000000
 SerialProgress|d0|d0 $00000000|11	$00000000
-SerialProgress|d0|d0 $00000000|12	$FFFFFFFD
+SerialProgress|d0|d0 $00000000|12 [orig]	$FFFFFFFD
+SerialProgress|d0|d0 $00000000|12 [fixed #798]	$FFFFFFF7
 SerialProgress|d0|d0 $00000000|13 [orig]	$FFFFFFFD
 SerialProgress|d0|d0 $00000000|13 [fixed #1162]	$FFFFFFFF
 SerialProgress|kept|d0 $00000000|1	kept
@@ -273,8 +274,10 @@ SerialProgress|receive ring|d0 $00000000|6	bytes 1028 fnv 077C2991
 SerialProgress|receive ring|d0 $00000000|7	bytes 1028 fnv 077C2991
 SerialProgress|receive ring|d0 $00000000|8	bytes 1028 fnv 077C2991
 SerialProgress|receive ring|d0 $00000000|9	bytes 1028 fnv 46F36E46
-SerialProgress|receive ring|d0 $00000000|10	bytes 1028 fnv 2E11BE1F
-SerialProgress|receive ring|d0 $00000000|11	bytes 1028 fnv C791E482
+SerialProgress|receive ring|d0 $00000000|10 [orig]	bytes 1028 fnv 2E11BE1F
+SerialProgress|receive ring|d0 $00000000|10 [fixed #798]	bytes 1028 fnv E22CE18D
+SerialProgress|receive ring|d0 $00000000|11 [orig]	bytes 1028 fnv C791E482
+SerialProgress|receive ring|d0 $00000000|11 [fixed #798]	bytes 1028 fnv 21D08DB6
 SerialProgress|receive ring|d0 $00000000|12	bytes 1028 fnv 44EB5DD9
 SerialProgress|receive ring|d0 $00000000|13 [orig]	bytes 1028 fnv 53E79F71
 SerialProgress|receive ring|d0 $00000000|13 [fixed #793]	bytes 1028 fnv 6F92BCB7
@@ -476,15 +479,20 @@ SerialReadString|vector $74|open: returns to d0|1	$00000000
 SerialReceiveBlock|CIA-B PRA|2 bytes|1	$0000005A
 SerialReceiveBlock|CIA-B PRA|6 bytes|1	$0000005A
 SerialReceiveBlock|CIA-B PRA|length 1, SerialStop|1	$0000005A
-SerialReceiveBlock|bytes received|2 bytes|1	bytes 64 5200EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-SerialReceiveBlock|bytes received|6 bytes|1	bytes 64 5200FF133780EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-SerialReceiveBlock|bytes received|length 1, SerialStop|1	bytes 64 5200FF13EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialReceiveBlock|bytes received|2 bytes|1 [orig]	bytes 64 5200EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialReceiveBlock|bytes received|2 bytes|1 [fixed #798]	bytes 64 3780EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialReceiveBlock|bytes received|6 bytes|1 [orig]	bytes 64 5200FF133780EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialReceiveBlock|bytes received|6 bytes|1 [fixed #798]	bytes 64 11225200FF13EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialReceiveBlock|bytes received|length 1, SerialStop|1 [orig]	bytes 64 5200FF13EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialReceiveBlock|bytes received|length 1, SerialStop|1 [fixed #798]	bytes 64 1122520011225200FF13EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 SerialReceiveBlock|custom chip registers|2 bytes|1	bytes 512 fnv C4915FC8
 SerialReceiveBlock|custom chip registers|6 bytes|1	bytes 512 fnv C4915FC8
 SerialReceiveBlock|custom chip registers|length 1, SerialStop|1	bytes 512 fnv C4915FC8
 SerialReceiveBlock|d7 (its return address)|length 1, SerialStop|1	prog
-SerialReceiveBlock|every byte read in time|2 bytes|1	$00000001
-SerialReceiveBlock|every byte read in time|6 bytes|1	$00000001
+SerialReceiveBlock|every byte read in time|2 bytes|1 [orig]	$00000001
+SerialReceiveBlock|every byte read in time|2 bytes|1 [fixed #798]	$00000000
+SerialReceiveBlock|every byte read in time|6 bytes|1 [orig]	$00000001
+SerialReceiveBlock|every byte read in time|6 bytes|1 [fixed #798]	$00000000
 SerialReceiveBlock|every byte read in time|length 1, SerialStop|1	$00000001
 SerialReceiveBlock|kept|2 bytes|1	kept
 SerialReceiveBlock|kept|6 bytes|1	kept
@@ -492,8 +500,10 @@ SerialReceiveBlock|kept|length 1, SerialStop|1	kept
 SerialReceiveBlock|popped|2 bytes|1	$00000000
 SerialReceiveBlock|popped|6 bytes|1	$00000000
 SerialReceiveBlock|popped|length 1, SerialStop|1	$00000000
-SerialReceiveBlock|receive ring|2 bytes|1	bytes 1028 fnv C791E482
-SerialReceiveBlock|receive ring|6 bytes|1	bytes 1028 fnv 2E11BE1F
+SerialReceiveBlock|receive ring|2 bytes|1 [orig]	bytes 1028 fnv C791E482
+SerialReceiveBlock|receive ring|2 bytes|1 [fixed #798]	bytes 1028 fnv 21D08DB6
+SerialReceiveBlock|receive ring|6 bytes|1 [orig]	bytes 1028 fnv 2E11BE1F
+SerialReceiveBlock|receive ring|6 bytes|1 [fixed #798]	bytes 1028 fnv E22CE18D
 SerialReceiveBlock|receive ring|length 1, SerialStop|1	bytes 1028 fnv 44EB5DD9
 SerialReceiveBlock|returned|2 bytes|1	$00000001
 SerialReceiveBlock|returned|6 bytes|1	$00000001

@@ -7,6 +7,7 @@
 ; timeout).
 ; Correct (decided: the discard loop goes, a program calls SerialFlush
 ; before if it wants an empty buffer): the block is "HELLO".
+; @fixed #798
 ; @rwe riseriallib
 ; @pass serial=on
 ; @pass timeout=30

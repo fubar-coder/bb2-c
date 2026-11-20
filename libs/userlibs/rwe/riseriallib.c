@@ -56,9 +56,9 @@
  *     looked at) (#804), the old ones into the operands of two JMP
  *     instructions in the code without clearing the instruction cache
  *     (#791).
- *   - SerialReceiveBlock first throws away what is in the buffer, then
- *     waits (#798); a length of 1 receives without end (the count goes
- *     below 0) (#799); SerialStop during it ends it by taking its return
+ *   - SerialReceiveBlock with a length of 1 receives without end (the
+ *     count goes below 0) (#799); SerialStop during it ends it by taking
+ *     its return
  *     address into d7 and returning to the long above it on the stack
  *     (#803).
  *   - SerialReadLong never returns: the counter of its loop is taken
@@ -113,6 +113,10 @@
  *     left it set after a SerialStop outside a transfer (only opening the
  *     port cleared it), so the next SerialSendBlock stopped after its
  *     first byte, SerialReceiveBlock after its second (#1162).
+ *   - SerialReceiveBlock keeps the bytes that are in the receive ring at
+ *     the call (decided, R10 P2-5 (b): a program calls SerialFlush before
+ *     it if it wants an empty ring); the original threw them away first
+ *     (#798).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -500,8 +504,9 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
  * @brief SerialReceiveBlock address,length: receives a block byte by byte.
  *
  * Opens the port when it is closed (fixed (#792): the original never
- * did).  BUG(orig) (#798): first throws
- * away what is in the buffer, then waits; BUG(orig) (#799): a length of
+ * did).  The bytes in the ring at the call are the first of the block
+ * (fixed (#798): the original threw them away first; SerialFlush before
+ * empties the ring).  BUG(orig) (#799): a length of
  * 1 receives without end; BUG(orig) (#803): SerialStop ends it by
  * returning to the long above the return address (assembler thunk
  * __serreceive).
@@ -518,8 +523,6 @@ ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
         openserial(0);
     buffstart = addr;
     bufflength = len - 1;
-    while (readser() != (ULONG)-1)      /* throw away what is there */
-        ;
     while ((value = readser()) == (ULONG)-1)
         ;
     *(UBYTE *)buffstart = (UBYTE)value;
