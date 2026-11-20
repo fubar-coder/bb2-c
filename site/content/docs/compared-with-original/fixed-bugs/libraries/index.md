@@ -7138,3 +7138,8 @@ does.
   or after the module stopped itself with the effect `F00`, finds it
   stopped; `StartTracker` plays it again from the beginning
   ([#1076](https://github.com/fubar-coder/bb2-c/issues/1076)).
+* After a run that called `ChangeTrackerVBlank`, the original started
+  the next run of the program from the editor without the CIA
+  interrupt, so a program that does not call `PlayTracker` itself
+  stayed silent. Every run starts in CIA mode
+  ([#1165](https://github.com/fubar-coder/bb2-c/issues/1165)).

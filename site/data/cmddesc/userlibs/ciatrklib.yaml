@@ -71,7 +71,8 @@
   text: Switches to playing without the CIA interrupt. It stops the module and removes the interrupt; from then on the program calls `PlayTracker` 50 times a second itself.
   notes: |
     Call it before `StartTracker`. Tempo commands of a module have no
-    effect in this mode.
+    effect in this mode. The mode lasts until the program ends: the next
+    run, also from the editor, starts in CIA mode again.
 "PlayTracker":
   text: Plays one tick of the module. After `ChangeTrackerVBlank`, call it 50 times a second, for example from a vertical blank interrupt handler (`SetInt 5`).
   notes: |
