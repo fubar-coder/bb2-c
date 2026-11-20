@@ -5,6 +5,7 @@
 ; remote end (serial=on, tests/corpus/runner/serial.h), which echoes them
 ; (request E), and reads them with SerialReadString.
 ; Correct: SerialReadString returns the string up to the 0: "OK".
+; @fixed #796
 ; @rwe riseriallib
 ; @pass serial=on
 ; @pass timeout=30

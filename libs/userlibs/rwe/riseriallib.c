@@ -48,9 +48,8 @@
  * the first; the test reads the indices in front of it).
  *
  * Assembler: the interrupt handlers' entries (RTE, or on to the old
- * vector), the thunks, and the ends of SerialReceiveBlock's abort and
- * SerialReadString with an open port (both return to a value on the
- * stack, BUG(orig) #803, #796).
+ * vector), the thunks, and the end of SerialReceiveBlock's abort (it
+ * returns to a value on the stack, BUG(orig) #803).
  *
  * BUG(orig):
  *   - The vectors are written at $64/$74 (the VBR of a 68010+ is not
@@ -73,9 +72,6 @@
  *     the stop bit) once for every long it reads from the a2 stack, down
  *     to one with a low byte 0 (DIFF: a2 unchanged, as in all C ports;
  *     the original leaves it below the longs read) (#801).
- *   - SerialReadString: the count of characters (d0 = count - 1) is reset
- *     only when the port is open, where the routine returns to the d0 of
- *     the call (it pushed it and never takes it back) (#796).
  *   - SerialReadLong never returns: the counter of its loop is taken
  *     back from the stack every time (it reads bytes without end) (#794).
  *   - SerialWriteLong sends the low byte of its argument and then three
@@ -102,6 +98,10 @@
  *   - SerialSendBlock with a length of 0 or less sends nothing (its
  *     remaining count -1, as after a whole block); the original sent the
  *     first byte before it looked at the length (#800).
+ *   - SerialReadString returns normally and counts the characters of
+ *     every call from 0; the original reset the count only when the port
+ *     was open, and there it returned to the d0 of the call (it pushed d0
+ *     and never took it back) (#796).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -558,28 +558,21 @@ void BLITZ_ROUTINE c_sendserialstring(ULONG str BL_REG(d0), const ULONG *argstac
  * @brief SerialReadString: received bytes up to a 0, at a3.
  *
  * Stores up to and including the 0, a3 ends on the 0 (fixed, #795: the
- * original left it behind the 0).  BUG(orig) (#796): the count is reset only when the port is
- * open, and then the routine returns to the d0 of the call (assembler
- * thunk __readserialstring, riser_rsreturn); fixed (#797): the loop
- * ends at a 0 (the original only if the upper word of d0 at the call was
- * 0 and no wait came before); BUG(orig) (#793): calls SerialOpen's code
- * when the port is open.
- * @param callerd0  d0: d0 at the call
- * @return d0: the count of characters - 1
+ * original left it behind the 0).  Fixed (#796): it returns normally and
+ * counts every call from 0 (the original reset the count only when the
+ * port was open, and there it returned to the d0 of the call, which it
+ * had pushed).  Fixed (#797): the loop ends at a 0 (the original only if
+ * the upper word of d0 at the call was 0 and no wait came before).
+ * BUG(orig) (#793): calls SerialOpen's code when the port is open.
+ * @return d0: the number of characters (the string's length)
  */
-volatile UBYTE riser_rsreturn;
-
-ULONG BLITZ_ROUTINE c_readserialstring(ULONG callerd0 BL_REG(d0))
+ULONG BLITZ_ROUTINE c_readserialstring(void)
 {
     ULONG value;
 
-    (void)callerd0;
-    riser_rsreturn = 0;
-    if (openflag) {
-        riser_rsreturn = 1;
+    if (openflag)
         openserial(0);
-        numchars = 0;
-    }
+    numchars = 0;                       /* fixed (#796): every call */
     do {
         while ((value = readser()) == (ULONG)-1)    /* fixed (#797) */
             ;
@@ -734,6 +727,7 @@ BLITZ_THUNK(_showloc, c_showloc, "d1/a0-a1");
 BLITZ_THUNK(_sersend, c_sersend, "d0-d1/a0-a1");
 BLITZ_THUNK(_flushser, c_flushser, "d0-d1/a0-a1");
 BLITZ_THUNK(_sendserialstring, c_sendserialstring, "d0-d1/a0-a1");
+BLITZ_THUNK(_readserialstring, c_readserialstring, "d1/a0-a1");  /* fixed (#796) */
 BLITZ_THUNK(_buffpos, c_buffpos, "d1/a0-a1");
 BLITZ_THUNK(_readlong, c_readlong, "d1/a0-a1");
 BLITZ_THUNK(_writelong, c_writelong, "d0-d1/a0-a1");
@@ -755,17 +749,3 @@ BLITZ_ASM_BLOCK(serreceive,
 "1: rts\n"
 );
 
-/* SerialReadString: with the port open the original pushed the d0 of
-   the call and returns to it (BUG(orig) #796) */
-BLITZ_ASM_BLOCK(readserialstring,
-"   .globl  __readserialstring\n"
-"__readserialstring:\n"
-"   move.l  d0,-(sp)\n"
-"   movem.l d1/a0-a1,-(sp)\n"
-"   jsr     _c_readserialstring\n"
-"   movem.l (sp)+,d1/a0-a1\n"
-"   tst.b   _riser_rsreturn\n"
-"   bne.s   1f\n"
-"   addq.l  #4,sp\n"
-"1: rts\n"
-);

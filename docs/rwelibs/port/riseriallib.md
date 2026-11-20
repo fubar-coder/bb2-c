@@ -54,9 +54,8 @@ Assembler:
 
 * the handlers' entries: the C function says whether the interrupt was
   the library's; then `RTE`, else on to the old vector;
-* `SerialReceiveBlock`'s end after `SerialStop`, and `SerialReadString`'s
-  end with the port open: both return to a value on the stack
-  (BUG(orig) below, #803, #796), the same way as the original;
+* `SerialReceiveBlock`'s end after `SerialStop`: it returns to a value on
+  the stack (BUG(orig) below, #803), the same way as the original;
 * the thunks.
 
 ## Fixed
@@ -87,6 +86,12 @@ kind F):
   original sent the first byte before it looked at the length (#800;
   R10 precedent Q3: a loop of 0 passes; test `riseriallib-sendblock-zero`;
   `libs_emulator` cases `[fixed #800]` of `rwe_riseriallib`).
+* `SerialReadString` returns normally and counts the characters of every
+  call from 0 (its result is the string's length); the original reset
+  the count only when the port was open, and there it returned to the d0
+  of the call, which it had pushed and never taken back (#796; test
+  `riseriallib-readstring-open`; `libs_emulator` cases `[fixed #796]` of
+  `rwe_riseriallib`). The assembler thunk of the original's end goes.
 
 ## BUG(orig), kept
 
@@ -112,9 +117,6 @@ kind F):
   address (d0) with the stop bit each time, until a long with the low
   byte 0 (#801). DIFF: a2 stays unchanged (as in all C ports, `docs/libs/
   cmdlibs-port.md`); the original leaves it below the longs it read.
-* `SerialReadString`: d0 is the count − 1, and the count is reset only when
-  the port is open – where the routine returns to the d0 of the call (it
-  pushed d0 and never takes it back) (#796).
 * `SerialReadLong` never returns: its loop takes the counter back from
   the stack every time and reads bytes without end (#794).
 * `SerialWriteLong` sends the low byte of its argument and then three

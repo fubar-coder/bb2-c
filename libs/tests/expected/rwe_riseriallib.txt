@@ -415,8 +415,10 @@ SerialReadString|bytes given again|open: returns to d0|1	$00000000
 SerialReadString|custom chip registers|closed|1	bytes 512 fnv C4915FC8
 SerialReadString|custom chip registers|closed, again (the count goes on)|1	bytes 512 fnv C4915FC8
 SerialReadString|custom chip registers|open: returns to d0|1	bytes 512 fnv C4915FC8
-SerialReadString|d0|closed|1	$00000005
-SerialReadString|d0|closed, again (the count goes on)|1	$00000007
+SerialReadString|d0|closed|1 [orig]	$00000005
+SerialReadString|d0|closed|1 [fixed #796]	$00000002
+SerialReadString|d0|closed, again (the count goes on)|1 [orig]	$00000007
+SerialReadString|d0|closed, again (the count goes on)|1 [fixed #796]	$00000001
 SerialReadString|d0|open: returns to d0|1	$00000002
 SerialReadString|every byte read in time|closed|1	$00000001
 SerialReadString|every byte read in time|closed, again (the count goes on)|1	$00000001
@@ -435,7 +437,8 @@ SerialReadString|returned|closed, again (the count goes on)|1	$00000001
 SerialReadString|returned|open: returns to d0|1	$00000001
 SerialReadString|returned to d0|closed|1	$00000000
 SerialReadString|returned to d0|closed, again (the count goes on)|1	$00000000
-SerialReadString|returned to d0|open: returns to d0|1	$00000001
+SerialReadString|returned to d0|open: returns to d0|1 [orig]	$00000001
+SerialReadString|returned to d0|open: returns to d0|1 [fixed #796]	$00000000
 SerialReadString|string|closed|1	bytes 32 414200EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 SerialReadString|string|closed, again (the count goes on)|1	bytes 32 4300EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 SerialReadString|string|open: returns to d0|1	bytes 32 4F4B00EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
