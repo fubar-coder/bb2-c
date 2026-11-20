@@ -177,6 +177,12 @@ d5-d7, a0-a3 and a6 in places.
   (`PeekMax$(&t$,4)+"|"` gave "abcde") (#718; test
   `rilesdebuglib-peekmax-extra-char`; the `libs_emulator` cases
   `[fixed #718]`).
+* `ExtractLabel` gives the empty string for a line without a `.` behind
+  its first 9 characters, or one shorter than 9 characters. The original
+  searched the `.` without a limit, from the 10th character on - also
+  behind a 0 among the 9 it skips - and took the label from the memory
+  behind the string (#703; test `rilesdebuglib-extractlabel-dot-unbounded`;
+  the scenario of `libs_emulator` has no such line).
 
 ## BUG(orig)
 
@@ -198,8 +204,7 @@ d5-d7, a0-a3 and a6 in places.
 * FPrintDetoke: after the `>` marker an inverse space follows too when
   the column counter (with the caller's high word of d6) became 0 (#708).
 * D_FindStringPtr never compares the long at areg5 itself (#705).
-* ExtractLabel searches the `.` from the 10th character without a limit
-  (#703), and a space does not end the label (#704): the CD's blitz2
+* In ExtractLabel a space does not end the label (#704): the CD's blitz2
   2.10 assembles the source's `CMPI.b #" ",d2` as `CMPI.b #0,d2` (in the
   reference build, in the CD's and in AmiBlitz3's binaries). This is
   compiler bug #343, fixed in blitz2-c: its compiler does not produce

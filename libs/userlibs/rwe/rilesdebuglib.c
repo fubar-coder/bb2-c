@@ -61,8 +61,7 @@
  *   - FPrintDetoke: after the '>' marker, an inverse space follows if the
  *     column count (d6 with the caller's high word) became 0 (#708).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705);
- *     ExtractLabel searches the '.' without a limit (#703), and a space
- *     does not end the label: the CD's blitz2 2.10 assembles the
+ *     a space in ExtractLabel does not end the label: the CD's blitz2 2.10 assembles the
  *     source's CMPI.b #" ",d2 as CMPI.b #0 (the reference build, the
  *     CD's and AmiBlitz3's binaries alike) - compiler bug #343, triggered
  *     by the later line MOVE.w #">"*8,d0 (line 1016 of the source; the
@@ -107,6 +106,10 @@
  *   - PeekMax$ copies at most max characters (none for a max below 1);
  *     the original tested the count after the copy: max+1 characters
  *     and the length max, a3 one behind the result (#718).
+ *   - ExtractLabel gives the empty string for a line without a '.' behind
+ *     its first 9 characters, or one shorter than 9; the original
+ *     searched the '.' without a limit, also behind a 0 among the 9
+ *     characters it skips (#703).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1426,7 +1429,9 @@ static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise B
  * @brief ExtractLabel(label_string): the label name in a line.
  *
  * From 9 characters on, the name behind the first '.' up to a 0 or ':',
- * at a3.  The '.' is searched without a limit (BUG(orig) (#703)); the
+ * at a3; a line without a '.' there (or shorter than 9 characters) gives
+ * the empty string (fixed #703: the original searched the '.' without a
+ * limit, also behind a 0 among the 9 characters it skips).  The
  * source's test for a space is assembled as CMPI.b #0 by the CD's blitz2
  * 2.10 (compiler bug #343, fixed in blitz2-c) - BUG(orig) (#704), kept as
  * in the reference build - so a space does not end the label.
@@ -1435,12 +1440,19 @@ static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise B
  */
 static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
 {
-    const UBYTE *name = s + 9;
+    const UBYTE *name = s;
     WORD n = 0;
     UBYTE c;
 
-    while (*name++ != '.')
-        ;
+    for (n = 0; n < 9; n++)                             /* fixed (#703) */
+        if (!*name++)
+            return 0;
+    do {
+        c = *name++;
+        if (!c)                                         /* fixed (#703) */
+            return 0;
+    } while (c != '.');
+    n = 0;
     for (;;) {
         c = name[n];
         if (!c || c == ':')

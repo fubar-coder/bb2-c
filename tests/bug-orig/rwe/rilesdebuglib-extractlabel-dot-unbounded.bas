@@ -3,6 +3,7 @@
 ; string: for a string without a '.' it goes on in the memory behind it.
 ; There the program put "xx.LEAK".
 ; Correct: no '.' in the string, the label is empty.
+; @fixed #703
 ; @rwe rilesdebuglib
 DEFTYPE .l
 b=AllocMem_(64,$10001)
