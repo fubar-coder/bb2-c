@@ -37,10 +37,6 @@
  * fields it wrote; the string functions: behind the characters).
  *
  * BUG(orig):
- *   - CreateMap tests the long at 12 (the low word of the data pointer
- *     and viewx) instead of the data pointer to decide whether to free
- *     the old map: a map whose data lies at $xxxx0000 with viewx 0 is not
- *     freed (lost); the fields 24/28 are not cleared then either (#894).
  *   - MapCanDraw's stencil index is the map value as a signed word;
  *     without SetStencil the stencil is at address 0 (#893).
  *   - MapDataGrab of bytes keeps the upper byte of the previous value in
@@ -64,7 +60,12 @@
  *   - MapCanDraw compares x/y with the map's (and the rub-through map's)
  *     width and height unsigned; the original compared them signed
  *     (BGE), so negative values passed, the map word was read far behind
- *     the data and its address kept for MapCanDrawAddr (#892).
+ *     the data and its address kept for MapCanDrawAddr (#892);
+ *   - CreateMap frees the old map through the free routine, which tests
+ *     the data pointer and the name itself; the original tested the long
+ *     at 12 (the low word of the data pointer and viewx), so a map whose
+ *     data lay at $xxxx0000 with viewx 0 was not freed (lost) and the
+ *     fields 24/28 were not cleared either (#894).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -689,9 +690,11 @@ BLITZ_THUNK(_freemap, freemap_c, "d0-d1/a0-a1");
  * name a maxslib string.  Without memory (also width or height 0) width,
  * height, bwidth, bheight are cleared (datasize stays 1: not a defect).
  * a3 ends behind the last field written (24, or 10 if the data could not
- * be allocated).  BUG(orig) (#894): the old map is freed only if the long
- * at 12 is set (data's low word and viewx), else it is lost and 24/28 are
- * not cleared.  DIFF: a2 unchanged (the original pops the length).
+ * be allocated).  The old map is freed by the free routine, which tests
+ * the data and the name itself: fixed (#894), the original freed it only
+ * if the long at 12 was set (data's low word and viewx), else it was lost
+ * and 24/28 were not cleared.  DIFF: a2 unchanged (the original pops the
+ * length).
  * @param w     d1: the width
  * @param h     d2: the height
  * @param bw    d3: the block width
@@ -711,9 +714,9 @@ static void BLITZ_ROUTINE newmap_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD
     UBYTE *mem;
 
     *(struct mapobject **)(blitz_globals + (WORD)used) = map;  /* MOVE.l a3,0(a5,d6) */
-    /* BUG(orig) (#894): the long at 12 - data's low word and viewx - not data */
-    if (*(ULONG *)((UBYTE *)map + offsetof(struct mapobject, data) + 2))
-        freemap(map);
+    /* fixed (#894): always, freemap tests the data and the name itself
+       (the original tested the long at 12 - data's low word and viewx) */
+    freemap(map);
     map->width = w;
     map->height = h;
     map->bwidth = bw;

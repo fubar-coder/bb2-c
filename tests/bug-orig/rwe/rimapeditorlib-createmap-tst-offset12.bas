@@ -9,6 +9,7 @@
 ; start there.  The second CreateMap's data take the lowest free place:
 ; the same address if the old map was freed.
 ; Correct: the second CreateMap frees the first map's data.
+; @fixed #894
 ; @rwe rimapeditorlib
 DEFTYPE .l
 Dim f.l(4000),s.l(4000)

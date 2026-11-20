@@ -102,13 +102,15 @@ loop optimisation (no `__mulsi3`).
   (`BGE`), so negative values passed, the map's word was read far behind
   the data and its address kept for `MapCanDrawAddr` (#892; test
   `rimapeditorlib-candraw-negative-xy`).
+* `CreateMap` frees the old map through the object's free routine, which
+  tests the data pointer and the name itself; the original tested the
+  long at 12 (the low word of the data pointer and viewx), so a map whose
+  data lay at `$xxxx0000` with viewx 0 was not freed (lost) and the
+  fields 24/28 were not cleared either (#894; test
+  `rimapeditorlib-createmap-tst-offset12`).
 
 ## BUG(orig), kept
 
-* `CreateMap` tests the long at 12 (the low word of the data pointer and
-  viewx) instead of the data pointer to decide whether to free the old
-  map: a map whose data lies at `$xxxx0000` with viewx 0 is not freed
-  (lost); the fields 24/28 are not cleared then either (#894).
 * `MapCanDraw`'s stencil index is the map's word as a signed word;
   without `SetStencil` the stencil is at address 0 (#893).
 * `MapDataGrab` of bytes keeps the upper byte of the previous value in
