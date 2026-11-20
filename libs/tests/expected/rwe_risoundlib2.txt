@@ -4210,11 +4210,11 @@ PlayRawAHI|io_Length|no device|1	$00000000
 PlayRawAHI|io_Length|no device|2	$00000000
 PlayRawAHI|io_Length|no device|3	$00000000
 PlayRawAHI|io_Length|no port|1 [orig]	$00000000
-PlayRawAHI|io_Length|no port|1 [fixed #924]	$00000001
+PlayRawAHI|io_Length|no port|1 [fixed #932]	$00000002
 PlayRawAHI|io_Length|no port|2 [orig]	$00000000
-PlayRawAHI|io_Length|no port|2 [fixed #924]	$00000001
+PlayRawAHI|io_Length|no port|2 [fixed #932]	$00000002
 PlayRawAHI|io_Length|no port|3 [orig]	$00000000
-PlayRawAHI|io_Length|no port|3 [fixed #924]	$00000001
+PlayRawAHI|io_Length|no port|3 [fixed #932]	$00000002
 PlayRawAHI|io_Length|open|1 [orig]	$00000000
 PlayRawAHI|io_Length|open|1 [fixed #924]	$000000C8
 PlayRawAHI|io_Length|open|2 [orig]	$00000000
@@ -4830,40 +4830,40 @@ PlaySoundAHI|io_Flags|playing, first|1	$00000000
 PlaySoundAHI|io_Flags|playing, second|1	$00000000
 PlaySoundAHI|io_Flags|playing, third|1	$00000000
 PlaySoundAHI|io_Length|after CloseAHI|1 [orig]	$00000000
-PlaySoundAHI|io_Length|after CloseAHI|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|after CloseAHI|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|ended, first|1 [orig]	$00000000
-PlaySoundAHI|io_Length|ended, first|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|ended, first|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|ended, second|1 [orig]	$00000000
-PlaySoundAHI|io_Length|ended, second|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|ended, second|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|no device|1	$00000000
 PlaySoundAHI|io_Length|no device|2	$00000000
 PlaySoundAHI|io_Length|no device|3	$00000000
 PlaySoundAHI|io_Length|no port|1 [orig]	$00000000
-PlaySoundAHI|io_Length|no port|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|no port|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|no port|2 [orig]	$00000000
-PlaySoundAHI|io_Length|no port|2 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|no port|2 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|no port|3 [orig]	$00000000
-PlaySoundAHI|io_Length|no port|3 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|no port|3 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|open|1 [orig]	$00000000
-PlaySoundAHI|io_Length|open|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|open|2 [orig]	$00000000
-PlaySoundAHI|io_Length|open|2 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open|2 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|open|3 [orig]	$00000000
-PlaySoundAHI|io_Length|open|3 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open|3 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|open twice|1 [orig]	$00000000
-PlaySoundAHI|io_Length|open twice|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open twice|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|open twice|2 [orig]	$00000000
-PlaySoundAHI|io_Length|open twice|2 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open twice|2 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|open twice|3 [orig]	$00000000
-PlaySoundAHI|io_Length|open twice|3 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|open twice|3 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|playing at finit|1 [orig]	$00000000
-PlaySoundAHI|io_Length|playing at finit|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|playing at finit|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|playing, first|1 [orig]	$00000000
-PlaySoundAHI|io_Length|playing, first|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|playing, first|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|playing, second|1 [orig]	$00000000
-PlaySoundAHI|io_Length|playing, second|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|playing, second|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Length|playing, third|1 [orig]	$00000000
-PlaySoundAHI|io_Length|playing, third|1 [fixed #924]	$00000001
+PlaySoundAHI|io_Length|playing, third|1 [fixed #932]	$00000002
 PlaySoundAHI|io_Offset|after CloseAHI|1	$00000000
 PlaySoundAHI|io_Offset|ended, first|1	$00000000
 PlaySoundAHI|io_Offset|ended, second|1	$00000000

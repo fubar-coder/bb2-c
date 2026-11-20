@@ -50,8 +50,6 @@
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
  *     (ahiam_AudioID, ahiam_MixFreq) (#934).
- *   - PlaySoundAHI takes the length in words (+6) as the length in bytes
- *     (#932).
  *
  * Fixed (intended deviation, docs/libs/deviations.md 3a): CludgeSound
  * does not free the old sample when audiolib's "cL" mark (+14) is set
@@ -87,7 +85,9 @@
  * its reply from the port) before the next write, at CloseAHI and at
  * finit; the original sent its one request again while the device had
  * it, left the replies in the port and left everything open at finit
- * while the request was in use (#933).  CludgeSound writes nothing behind audiolib's 16 byte sound
+ * while the request was in use (#933).  PlaySoundAHI's io_Length is the
+ * length in bytes, twice the object's length in words; the original gave
+ * the words as bytes, half the sample (#932).  CludgeSound writes nothing behind audiolib's 16 byte sound
  * object; the original stored the rate at +16, the high word of the next
  * object's sample pointer (behind the last object whatever follows), for
  * PlaySoundAHI, which now takes its frequency from the object's period:
@@ -429,8 +429,8 @@ BB_BOOL BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
  * Without ahi.device (ahidevice, fixed: #924 - the original never set
  * it and never played) returns 0.  Takes back the sound sent before
  * (abort if it still plays, WaitIO; fixed: #933), then CMD_WRITE of the
- * sample as 8 bit mono (AHIST_M8S), the length in words (+6) taken as
- * bytes (BUG(orig) (#932)), the frequency 3579545 / the object's period
+ * sample as 8 bit mono (AHIST_M8S), the length in bytes = the
+ * object's length in words (+6) x 2 (fixed: #932), the frequency 3579545 / the object's period
  * (fixed: #926), ahir_Link 0 and priority 0 (set for every write: the
  * device trashes them, fixed: #924), through SendIO.
  * @param vol  d1: the volume (Fixed 16.16, 0x10000 = full)
@@ -454,7 +454,7 @@ ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
     io->io_Message.mn_Node.ln_Pri = 0;  /* Fixed (#924): trashed by the */
     req->ahir_Link = NULL;              /* device, set for every write */
     io->io_Data = obj->data;
-    io->io_Length = obj->len;           /* words as bytes */
+    io->io_Length = (ULONG)obj->len << 1;   /* Fixed (#932): words x 2 */
     io->io_Offset = 0;
     req->ahir_Type = AHIST_M8S;
     req->ahir_Volume = vol;

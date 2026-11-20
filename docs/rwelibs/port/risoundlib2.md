@@ -81,8 +81,6 @@ the registers the original's entries keep (d2–d5) as parameters.
   requester's initial tags (always -1 and 0), not what the user chose
   (`ahiam_AudioID`, `ahiam_MixFreq` of the requester)
   (#934).
-* PlaySoundAHI gives the length in words (+6) as `io_Length` in bytes
-  (#932).
 
 ## Fixed
 
@@ -148,6 +146,10 @@ kind F):
   `libs_emulator` cases `[fixed #933]` of `rwe_risoundlib2`).
   PlayRawAHI uses `DoIO`: it returns when its data has been played (the
   data may be a temporary buffer).
+* PlaySoundAHI's `io_Length` is the length in bytes, twice the sound
+  object's length in words (+6); the original gave the words as bytes,
+  and AHI would have played the first half of every sample (#932;
+  `libs_emulator` cases `[fixed #932]` of `rwe_risoundlib2`).
 
 ## Test
 
