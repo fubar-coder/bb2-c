@@ -60,15 +60,7 @@
  *     overwrites d0's low byte) (#709).
  *   - FPrintDetoke: after the '>' marker, an inverse space follows if the
  *     column count (d6 with the caller's high word) became 0 (#708).
- *   - D_FindStringPtr never compares the long at areg5 itself (#705);
- *     a space in ExtractLabel does not end the label: the CD's blitz2 2.10 assembles the
- *     source's CMPI.b #" ",d2 as CMPI.b #0 (the reference build, the
- *     CD's and AmiBlitz3's binaries alike) - compiler bug #343, triggered
- *     by the later line MOVE.w #">"*8,d0 (line 1016 of the source; the
- *     operands are evaluated last line first, so what matters is the
- *     line's position, not the destination register) (#704).  blitz2-c
- *     has fixed #343 and does not produce that #0; the reference build
- *     is made by the CD's compiler, so the C file keeps the bug.
+ *   - D_FindStringPtr never compares the long at areg5 itself (#705).
  *   - SearchMem's string search does not go back after a partial match
  *     ("ab" is not found in "aab") (#723); an empty string compares the
  *     bytes behind its 0 (#721).  The word/long searches compare bytes up
@@ -110,6 +102,12 @@
  *     its first 9 characters, or one shorter than 9; the original
  *     searched the '.' without a limit, also behind a 0 among the 9
  *     characters it skips (#703).
+ *   - A space ends ExtractLabel's label too, as the source says
+ *     (CMPI.b #" ",d2).  The CD's blitz2 2.10 assembles that line as
+ *     CMPI.b #0 (the reference build, the CD's and AmiBlitz3's binaries
+ *     alike) - compiler bug #343, triggered by the later line
+ *     MOVE.w #">"*8,d0 (line 1016 of the source) - so in the original a
+ *     space did not end the label (#704).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1428,13 +1426,13 @@ static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise B
 /**
  * @brief ExtractLabel(label_string): the label name in a line.
  *
- * From 9 characters on, the name behind the first '.' up to a 0 or ':',
- * at a3; a line without a '.' there (or shorter than 9 characters) gives
+ * From 9 characters on, the name behind the first '.' up to a 0, ':' or
+ * space, at a3; a line without a '.' there (or shorter than 9 characters) gives
  * the empty string (fixed #703: the original searched the '.' without a
- * limit, also behind a 0 among the 9 characters it skips).  The
- * source's test for a space is assembled as CMPI.b #0 by the CD's blitz2
- * 2.10 (compiler bug #343, fixed in blitz2-c) - BUG(orig) (#704), kept as
- * in the reference build - so a space does not end the label.
+ * limit, also behind a 0 among the 9 characters it skips).  The space as
+ * the source says (fixed #704: the CD's blitz2 2.10 assembled the
+ * source's test for it as CMPI.b #0, compiler bug #343, fixed in
+ * blitz2-c; in every binary a space did not end the label).
  * @param s  d0: the line
  * @return d0: the length of the name
  */
@@ -1455,7 +1453,7 @@ static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
     n = 0;
     for (;;) {
         c = name[n];
-        if (!c || c == ':')
+        if (!c || c == ':' || c == ' ')                 /* fixed (#704) */
             break;
         n++;
     }

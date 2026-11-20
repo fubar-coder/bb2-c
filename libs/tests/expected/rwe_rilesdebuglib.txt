@@ -376,16 +376,20 @@ D_NextArg$|popped|3|1	$00000000
 D_NextArg$|popped|4|1	$00000000
 D_NextArg$|popped|5|1	$00000000
 ExtractLabel|a3|".nope.....still.found"|1	$0000000F
-ExtractLabel|a3|"012345678 more.name end"|1	$0000000C
+ExtractLabel|a3|"012345678 more.name end"|1 [orig]	$0000000C
+ExtractLabel|a3|"012345678 more.name end"|1 [fixed #704]	$00000008
 ExtractLabel|a3|"012345678.."|1	$00000005
-ExtractLabel|a3|"012345678.a b"|1	$00000007
+ExtractLabel|a3|"012345678.a b"|1 [orig]	$00000007
+ExtractLabel|a3|"012345678.a b"|1 [fixed #704]	$00000005
 ExtractLabel|a3|"012345678.label: x"|1	$00000009
 ExtractLabel|a3|"012345678.verylonglabelname"|1	$00000015
 ExtractLabel|a3|"0123456789ab.x:y"|1	$00000005
 ExtractLabel|d0|".nope.....still.found"|1	$0000000B
-ExtractLabel|d0|"012345678 more.name end"|1	$00000008
+ExtractLabel|d0|"012345678 more.name end"|1 [orig]	$00000008
+ExtractLabel|d0|"012345678 more.name end"|1 [fixed #704]	$00000004
 ExtractLabel|d0|"012345678.."|1	$00000001
-ExtractLabel|d0|"012345678.a b"|1	$00000003
+ExtractLabel|d0|"012345678.a b"|1 [orig]	$00000003
+ExtractLabel|d0|"012345678.a b"|1 [fixed #704]	$00000001
 ExtractLabel|d0|"012345678.label: x"|1	$00000005
 ExtractLabel|d0|"012345678.verylonglabelname"|1	$00000011
 ExtractLabel|d0|"0123456789ab.x:y"|1	$00000001
@@ -397,9 +401,11 @@ ExtractLabel|kept|"012345678.label: x"|1	kept
 ExtractLabel|kept|"012345678.verylonglabelname"|1	kept
 ExtractLabel|kept|"0123456789ab.x:y"|1	kept
 ExtractLabel|out|".nope.....still.found"|1	bytes 800 fnv 1D85824B
-ExtractLabel|out|"012345678 more.name end"|1	bytes 800 fnv 4965359F
+ExtractLabel|out|"012345678 more.name end"|1 [orig]	bytes 800 fnv 4965359F
+ExtractLabel|out|"012345678 more.name end"|1 [fixed #704]	bytes 800 fnv 62EE5866
 ExtractLabel|out|"012345678.."|1	bytes 800 fnv 9E4DB005
-ExtractLabel|out|"012345678.a b"|1	bytes 800 fnv 4CE8CAB4
+ExtractLabel|out|"012345678.a b"|1 [orig]	bytes 800 fnv 4CE8CAB4
+ExtractLabel|out|"012345678.a b"|1 [fixed #704]	bytes 800 fnv 0F69C482
 ExtractLabel|out|"012345678.label: x"|1	bytes 800 fnv 1B38A9F1
 ExtractLabel|out|"012345678.verylonglabelname"|1	bytes 800 fnv EC23A8EA
 ExtractLabel|out|"0123456789ab.x:y"|1	bytes 800 fnv 36492B53
