@@ -134,12 +134,14 @@ All other routines are C behind `BLITZ_THUNK`.
   squared, so radius 256 and more wrapped: 256 became a circle of radius
   0, 300 one of radius 156 (#867, test
   `rwe/rizonejoylib-circle-radius-word`; `libs_emulator` cases
-  `[fixed #867]` of `rwe_rizonejoylib`, the circle of radius 300). Kept
-  from the original: the zone tests square the word differences
-  x - x1, y - y1, so a point more than 32767 from a circle's centre (far
-  outside any screen) wraps and may hit the circle; not changed, it
-  would cost an instruction per zone in the per-frame loop (the second
-  half of #867).
+  `[fixed #867]` of `rwe_rizonejoylib`, the circle of radius 300). 
+* **BUG(orig) (#1153), wontfix:** the zone tests of `Zone` and `ZoneTest`
+  square the word differences x - x1, y - y1, so a point more than 32767
+  from a circle's centre (far outside any screen) wraps and may hit the
+  circle (`Zone(-32768,0)` finds the circle of radius 10 around
+  (32767,0)). Not changed: long differences would cost an instruction per
+  zone in the loop programs run every frame (test
+  `rwe/rizonejoylib-circle-distance-word`, stays REPRODUCED).
 * GetZoneX1/Y1/X2/Y2 return -1 without a table and for a zone at or
   beyond the table's count, as the manual says ("If the zone number
   supplied goes outside the size of the zonetable, then this command

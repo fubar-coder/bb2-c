@@ -79,12 +79,12 @@
  *   - SetZone num,x,y,radius refuses a radius outside 0-255 (0, nothing
  *     stored); the original stored the low word of the radius squared,
  *     so radius 256 and more wrapped (256: a circle of radius 0, 300:
- *     radius 156) (#867, W7 decision Q1 (a)).  Kept from the original:
- *     the zone tests square the word differences x - x1, y - y1, so a
- *     point more than 32767 from a circle's centre (far outside any
- *     screen) wraps and may hit the circle; not changed, it would cost
- *     an instruction per zone in the per-frame loop (the second half of
- *     #867).
+ *     radius 156) (#867, W7 decision Q1 (a)).
+ *   - BUG(orig) (#1153), wontfix: the zone tests square the word
+ *     differences x - x1, y - y1, so a point more than 32767 from a
+ *     circle's centre (far outside any screen) wraps and may hit the
+ *     circle; not changed, long differences would cost an instruction per
+ *     zone in the per-frame loop (test `rwe/rizonejoylib-circle-distance-word`).
  *   - GetZoneX1/Y1/X2/Y2 return -1 without a table and for a zone at or
  *     beyond the table's count (the manual: "If the zone number supplied
  *     goes outside the size of the zonetable, then this command returns
@@ -613,7 +613,8 @@ static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
  * same results for every zone SetZone makes (x1 <= x2, y1 <= y2), so the
  * mode only chooses the instructions.  Both square the word
  * differences x - x1, y - y1 (MULS.w), as the original: a point more
- * than 32767 from a circle's centre wraps (see the file's head, #867).
+ * than 32767 from a circle's centre wraps (BUG(orig) (#1153), see the
+ * file's head).
  */
 #define S_(x) BL_STR(x)
 BLITZ_ASM_BLOCK(zonetests,
