@@ -43,10 +43,15 @@
  *     then returns 0.  Reads are not checked (a known limit, optidec.h).
  *   - finit closes dos.library; the original never closed it (finit 0)
  *     (#834).
- *   - STCLoad does not unlock the lock after Close: OpenFromLock has taken
- *     it over, Close frees it.  The original unlocked it again
- *     (oopsfreefib: FreeMem + UnLock), an UnLock of a lock the file system
- *     had already freed (#835).
+ *   - STCLoad unlocks no lock a file handle owns.  The original opened
+ *     the file with OpenFromLock, which takes the lock over, and unlocked
+ *     it again after Close (oopsfreefib: FreeMem + UnLock), an UnLock of a
+ *     lock the file system had already freed (#835).
+ *   - STCLoad opens the file by its name (Open, MODE_OLDFILE) while it
+ *     holds the lock, and unlocks the lock after that: one path on every
+ *     Kickstart.  The original called OpenFromLock, a dos.library V36
+ *     function, on the dos.library it opened in any version: on Kickstart
+ *     1.x a crash (#1147).
  *   - STCLoad checks Examine, that Read read the whole file and the
  *     header ("S404", the packed data and the trailer within the file)
  *     before it unpacks, else 0.  The original checked none of it and
@@ -214,8 +219,11 @@ static ULONG BLITZ_ROUTINE stcsafelen_c(const UBYTE *a BL_REG(d0))
  * @brief STCLoad filename$,address: reads an S404 file to address (its
  * whole length) and unpacks it in place.
  *
- * The lock belongs to the file handle after OpenFromLock, Close frees it
- * (fixed #835: the original unlocked it again).  Unpacked only if Examine
+ * The file is opened by its name while the lock is held, and the lock is
+ * unlocked after that (fixed #1147: the original opened it with
+ * OpenFromLock, a dos V36 function, and crashed on Kickstart 1.x; it also
+ * unlocked the lock OpenFromLock had taken over again after Close, fixed
+ * #835).  Unpacked only if Examine
  * succeeded, Read read the whole file and it is an S404 file whose packed
  * data and trailer lie within it (fixed #836: the original checked none
  * of it).  The whole file is read whatever the buffer's size (the command
@@ -245,15 +253,14 @@ static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_
     }
     fh = 0;
     if (Examine(lock, fib))             /* fixed (#836): checked */
-        fh = OpenFromLock(lock);
+        fh = Open(name, MODE_OLDFILE);  /* fixed (#1147): not OpenFromLock */
     size = fib->fib_Size;
     FreeMem(fib, FIBSIZE);
-    if (!fh) {
-        UnLock(lock);
+    UnLock(lock);
+    if (!fh)
         return 0;
-    }
     got = Read(fh, ad, size);
-    Close(fh);                          /* fixed (#835): no UnLock, Close freed it */
+    Close(fh);
     /* fixed (#836): the whole file read, "S404", the packed data and the
        trailer (12 + packed length + 6 bytes) within it */
     if (got != size || size < (LONG)sizeof(struct s404hdr) + 2

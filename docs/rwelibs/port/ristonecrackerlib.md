@@ -77,12 +77,19 @@ entry and never called: left out.
 * finit closes dos.library. The original's finit is 0: dos.library was
   never closed, its open count one higher after every program run
   (#834).
-* `STCLoad` leaves the lock to the file handle after `OpenFromLock`
-  (`Close` frees it). The original unlocked it once more after `Close`
-  (`BSR oopsfreefib`: FreeMem + UnLock), an UnLock of a lock the file
-  system had already freed (on `RAM:` without visible effect; the test
-  counts the UnLock calls of a lock a file handle owns: 1 in the
-  original, 0 now) (#835).
+* `STCLoad` unlocks no lock a file handle owns. The original opened the
+  file with `OpenFromLock`, which takes the lock over, and unlocked it once
+  more after `Close` (`BSR oopsfreefib`: FreeMem + UnLock), an UnLock of a
+  lock the file system had already freed (on `RAM:` without visible
+  effect; the test counts the UnLock calls of a lock a file handle owns:
+  1 in the original, 0 now) (#835).
+* `STCLoad` opens the file by its name (`Open`, `MODE_OLDFILE`) while it
+  holds the lock of `Lock`/`Examine`, and unlocks that lock after the
+  open: one path on every Kickstart. The original called `OpenFromLock`,
+  a dos.library V36 function, on the dos.library it opened in any
+  version; on Kickstart 1.x the offset lies behind the jump table and the
+  program crashed at `STCLoad` (#1147; test
+  `ristonecrackerlib-v36-calls` on the a500, a500-204 and a1200).
 * `STCLoad` unpacks only if `Examine` succeeded, `Read` read the whole
   file, and the file is an S404 file whose packed data and trailer (12 +
   packed length + 6 bytes) lie within it; otherwise it returns 0, as the
