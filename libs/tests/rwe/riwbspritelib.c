@@ -13,8 +13,8 @@
  * ends it by freeing every sprite; each step's registers and a snapshot
  * are recorded and observed afterwards step by step (the ViewPort
  * address in a step's vector as "vp").  The snapshot: d0 where there is
- * a result (MoveWBSprite returns what MoveSprite leaves in d0: not
- * observed), the library's data block (found by its "graphics.library"
+ * a result (MoveWBSprite on a sprite: in the original what MoveSprite
+ * leaves in d0), the library's data block (found by its "graphics.library"
  * string: the variables, the tag lists, the sprite table as 0 / not 0;
  * pointers into the block as offsets), for every sprite in the table its
  * ExtSprite (height, x, y, num, wordwidth, flags) and image data, and
@@ -199,10 +199,10 @@ static void scenario(void)
     step(GETWB, "GetWBSprite (20 wide)", 70, 80, 3, 5, SH(SHC), 0);
     step(SPRX, "WBSpriteX", 0x12340002, 0, 0, 0, 0, 0);
     step(SPRY, "WBSpriteY", 0xfedc0002, 0, 0, 0, 0, 0);
-    step(MOVEWB, "MoveWBSprite", vp, 100, 50, 2, 0, 1);
+    step(MOVEWB, "MoveWBSprite", vp, 100, 50, 2, 0, 0);
     step(SPRX, "WBSpriteX", 2, 0, 0, 0, 0, 0);
     step(SPRY, "WBSpriteY", 2, 0, 0, 0, 0, 0);
-    step(MOVEWB, "MoveWBSprite", vp, 120, 90, any, 0, 1);
+    step(MOVEWB, "MoveWBSprite", vp, 120, 90, any, 0, 0);
     step(MOVEWB, "MoveWBSprite (no sprite)", vp, 1, 1, 6, 0, 0);
     step(CHANGEWB, "ChangeWBSprite", vp, 2, 3, 0, SH(SHD), 0);
     step(SPRX, "WBSpriteX", 2, 0, 0, 0, 0, 0);
