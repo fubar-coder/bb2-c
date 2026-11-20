@@ -61,7 +61,7 @@ All other routines are C behind `BLITZ_THUNK`.
   JHoriz(1) returns d0 unchanged for "right", like the original.
 * ZoneInit/Zone without a table: the original reads the count from
   address 0 before it notices; the C build checks first (no visible
-  difference). GetZoneX1… without a table read from address 0 in both.
+  difference). GetZoneX1… without a table: -1 (fixed, #870).
 * The thunks keep d1/a0/a1, the C code d2-d7/a2-a6; the original changes
   d1-d7, a0, a1 and a6 in places.
 
@@ -139,6 +139,18 @@ All other routines are C behind `BLITZ_THUNK`.
   outside any screen) wraps and may hit the circle; not changed, it
   would cost an instruction per zone in the per-frame loop (the second
   half of #867).
+* GetZoneX1/Y1/X2/Y2 return -1 without a table and for a zone at or
+  beyond the table's count, as the manual says ("If the zone number
+  supplied goes outside the size of the zonetable, then this command
+  returns -1"); the zone (the word argument, unsigned) is indexed as a
+  long. The original compared the zone **count** with the field's
+  offset (0/2/4/6) instead of the zone number: no range check (a zone
+  behind the table was read), -1 for X2, Y1 or Y2 of every zone of a
+  table of up to 6 zones (a table of 2: X2, Y1, Y2), a word index, and
+  without a table it read address 0 (#870, test
+  `rwe/rizonejoylib-getzone-count-offset`; `libs_emulator` cases
+  `[fixed #870]` of `rwe_rizonejoylib`: the 2-zone table, the calls
+  without a table).
 
 ## BUG(orig)
 
@@ -154,10 +166,6 @@ All other routines are C behind `BLITZ_THUNK`.
   (#871).
 * SetZone without a table returns -1 (= done); ZoneTable without a table
   returns -1, not 0 (#876).
-* GetZoneX1/Y1/X2/Y2 compare the zone **count** with the field offset
-  (0/2/4/6) instead of the zone number: no range check (a table of up to
-  6 zones returns -1 for some fields), the index is a word, and without a
-  table they read from address 0 (#870).
 * ReadJoyPad reads the joystick port for every port number but 2 (#877).
 
 Original behaviour that is no defect:

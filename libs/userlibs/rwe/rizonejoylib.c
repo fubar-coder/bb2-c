@@ -38,10 +38,6 @@
  *     tables again (#871).
  *   - SetZone without a table returns -1 (= done); ZoneTable without a
  *     table returns -1, not 0 (#876).
- *   - GetZoneX1/Y1/X2/Y2 compare the zone count with the field offset
- *     (0/2/4/6) instead of the zone number: no range check (a table of up
- *     to 6 zones returns -1 for some fields), the index is a word, and
- *     without a table they read from address 0 (#870).
  *   - ReadJoyPad reads the joystick port for every port number but 2
  *     (#877).
  * Fixed (intended deviations):
@@ -89,6 +85,13 @@
  *     screen) wraps and may hit the circle; not changed, it would cost
  *     an instruction per zone in the per-frame loop (the second half of
  *     #867).
+ *   - GetZoneX1/Y1/X2/Y2 return -1 without a table and for a zone at or
+ *     beyond the table's count (the manual: "If the zone number supplied
+ *     goes outside the size of the zonetable, then this command returns
+ *     -1"), and index the zone as a long.  The original compared the
+ *     count with the field's offset (0/2/4/6) instead of the zone number:
+ *     no range check, -1 for some fields of a table of up to 6 zones, a
+ *     word index, and without a table it read address 0 (#870).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -804,21 +807,27 @@ static void BLITZ_ROUTINE setzonemode_c(ULONG mode BL_REG(d0))
 }
 
 /* GetZoneX1/X2/Y1/Y2(zone) (d0.w): field off of the zone (its byte offset
-   in struct zone); the low word of d0 replaced (MOVE.w 0(a0,d0.w),d0) */
+   in struct zone); the low word of d0 replaced (MOVE.w), -1 without a
+   table or for a zone at or beyond the count.  Fixed (#870): the zone
+   (the word, unsigned) is checked against the count and indexed as a
+   long; the original compared the count with the field's offset (CMP.l
+   d1,d2 : BGT), so it checked no zone and returned -1 for some fields
+   of a table of up to 6 zones, indexed with a word (ASL.w, 0(a0,d0.w))
+   and read the table at address 0 without one. */
 static ULONG zoneinfo(ULONG zonenum, UWORD off)
 {
-    const struct zonetable *zt = zd.zonetable;          /* 0: reads address 0 */
+    const struct zonetable *zt = zd.zonetable;
+    ULONG n = (UWORD)zonenum;
 
-    if (!((LONG)zt->count > (LONG)off))                 /* BUG(orig): count vs offset (#870) */
+    if (!zt || n >= zt->count)
         return (ULONG)-1;
     return (zonenum & 0xffff0000UL)
-        | *(const UWORD *)((const UBYTE *)(zt + 1) + (WORD)((UWORD)(zonenum << 3) + off));
+        | *(const UWORD *)((const UBYTE *)(zt + 1) + (n << 3) + off);
 }
 
 /* GetZoneX1(zone), GetZoneX2(zone), GetZoneY1(zone), GetZoneY2(zone):
-   d0.w = the zone, d0 = the field (the low word replaced), -1 if the zone
-   count is not above the field's offset (BUG(orig) #870: no range check
-   of the zone, without a table address 0 is read) */
+   d0.w = the zone, d0 = the field (the low word replaced), -1 without a
+   table or for a zone the table does not have (fixed, #870) */
 #define ZONEINFO(f, member)                                                  \
     static ULONG BLITZ_ROUTINE f(ULONG zonenum BL_REG(d0))                   \
     {                                                                        \

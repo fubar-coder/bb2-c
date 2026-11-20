@@ -7,6 +7,7 @@
 ; there.
 ; Correct: every field of zone 1 (3 5 4 6), -1 for zone 2, which is not
 ; in the table.
+; @fixed #870
 ; @rwe rizonejoylib
 DEFTYPE .l
 r=NewZoneTable(1,2)
