@@ -27,12 +27,11 @@ saved file, a line is a sequence of bytes ended by a zero byte:
 The editor stores the German umlauts, whose character codes are above
 `$80`, as control bytes below `$20`, so they cannot be mistaken for
 tokens; the compiler turns them back into the real characters inside
-strings. Every other Latin-1 character, such as ß or é, is stored as a
+strings.
+
+Every other Latin-1 character, such as ß or é, is stored as a
 *literal character*: the byte `$90` followed by the character's code.
-It has the shape of a token of library 33, literallib, whose only
-purpose is to name these characters, so the library numbers 32 and 33
-(all tokens that start with `$90`) are reserved for them. Literal
-characters belong in strings and comments; anywhere else the compiler
+Literal characters belong in strings and comments; anywhere else the compiler
 reports an error
 ([ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}})).
 
@@ -82,6 +81,11 @@ token is `$8000 + 187 × 128 + 1 = $DD81`. `Left$` is the first command
 of library 185: `$DC81`. The editor learns these names and tokens at
 start, when blitz2 loads its libraries and adds their commands to the
 list of known names.
+
+A literal character (see above) has the shape of a token of library 33,
+literallib, whose only purpose is to name these characters. So the
+library numbers 32 and 33, whose tokens all start with `$90`, are
+reserved for them.
 
 ## Why the library numbers matter
 
