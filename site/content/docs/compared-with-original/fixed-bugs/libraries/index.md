@@ -194,16 +194,22 @@ the background per plane. The original kept only the lower 16 bits of it
 for a picture whose plane alone is just under 64 KB, so `BBlit` saved and
 restored the wrong amount. `LoadShape` refuses such a picture with the
 same runtime error, as `InitShape` and `GetaShape` refuse a shape of its
-size with runtime error checking. The size that counts is the width in
-bytes, rounded up to whole 16 pixel words and plus 2, times the height,
-and it must stay below 64 KB: a picture of 992 by 520 pixels loads, one
-of 992 by 528 is refused. Only pictures 512 to 992 pixels wide and 521
-to 1023 rows high can fall into this band; a program that loaded one and only
-blitted it with `Blit` stops here too
+size with runtime error checking.
+
+The rule for a shape is that the size of one plane with its extra word
+per row, (⌈width / 16⌉ × 2 + 2) × height bytes, must stay below 65536
+(64 KB). A
+picture of 992 by 520 pixels loads; one of 992 by 528 is refused.
+
+Only pictures 512 to 992 pixels wide and 521 to 1023 rows high can fall
+into this band. A program that loaded one and only blitted it with `Blit`
+stops here too
 ([`LoadShape` of a picture with very large planes]({{< relref "/docs/compared-with-original/new-errors#loadshape-large-plane" >}})).
 
-Issues: [The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046),
-[LoadShape and the shape creation checks use different 64 KB plane limits (#1055)](https://github.com/fubar-coder/bb2-c/issues/1055).
+Issues:
+
+* [The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046)
+* [LoadShape and the shape creation checks use different 64 KB plane limits (#1055)](https://github.com/fubar-coder/bb2-c/issues/1055)
 
 ### `ReplyRexxMsg` gave the result string to the wrong messages {#replyrexxmsg-result}
 
@@ -303,8 +309,10 @@ next command that writes to the same unit. A program that calls
 `ReadSerial` with the flag 1 to look for a byte without waiting passes 0,
 or leaves the flag out.
 
-Issues: [WriteSerialString took TrueString and DoIO both from the flag 2 (#254)](https://github.com/fubar-coder/bb2-c/issues/254),
-[ReadSerial waited with the flag 2, not 1 (#255)](https://github.com/fubar-coder/bb2-c/issues/255).
+Issues:
+
+* [WriteSerialString took TrueString and DoIO both from the flag 2 (#254)](https://github.com/fubar-coder/bb2-c/issues/254)
+* [ReadSerial waited with the flag 2, not 1 (#255)](https://github.com/fubar-coder/bb2-c/issues/255)
 
 ### `GetMedVolume` silenced the channel it read {#getmedvolume-clears}
 
@@ -554,8 +562,10 @@ range when the user confirms. It returned 0 on a cancel already.
 number entered last gives it as `DefaultValue`:
 `m=RTEZGetLong("Count","How many?",m)`.
 
-Issues: [RTEZGetLong returns the value also when the requester is cancelled (#457)](https://github.com/fubar-coder/bb2-c/issues/457),
-[RTEZGetLongRange without a default shows the previous call's number (#1078)](https://github.com/fubar-coder/bb2-c/issues/1078).
+Issues:
+
+* [RTEZGetLong returns the value also when the requester is cancelled (#457)](https://github.com/fubar-coder/bb2-c/issues/457)
+* [RTEZGetLongRange without a default shows the previous call's number (#1078)](https://github.com/fubar-coder/bb2-c/issues/1078)
 
 ### `BankLimit n` returned an address {#banklimit-result}
 
@@ -1066,13 +1076,14 @@ colours `start_col` to `end_col` of a palette object to one colour, and
 means "up to the last colour of the palette", as the library's guide
 says.
 
-**What happened.** The end colour is a word, but the original tested
-the whole register it came in for 0. What the upper half of that
-register held depended on the code the compiler had made before the
-command: with the constant 0 or a word variable that holds 0 it was not
-empty, so the command took colour 0 as the end colour and filled
-nothing, or only colour 0 for a `start_col` of 0. Only a long variable
-gave the documented result. In this program the first `FillPalette`
+**What happened.** With an end colour of 0 given as the constant 0 or
+as a word variable, the original took colour 0 as the end colour and
+filled nothing, or only colour 0 for a `start_col` of 0. Only a long
+variable gave the documented result. The reason: the end colour is a
+word, but the original tested the whole register it came in for 0.
+What the upper half of that register held depended on the code the
+compiler had made before the command, and with the constant 0 or a word
+variable it was not empty. In this program the first `FillPalette`
 sets the colours 2 to 7 of an 8-colour palette to 1, and the second
 should set them to 2:
 
@@ -1096,15 +1107,14 @@ Issue: [FillPalette/AGAFillPalette test the whole register of end for 0, but com
 
 ### `Derez`, `DoColSplit` and `CopperAGACol` returned no useful value {#rwe-effect-results}
 
-Three commands of the RWE userlibs can be used as functions:
-`Derez` of [rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}),
-which makes a picture blocky, and `DoColSplit` and `CopperAGACol` of
-[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}}),
-which write a colour split or one AGA colour into a copper list. Each of
-them returns -1 when it did its work and 0 when it did nothing: `Derez`
-with a `derez_value` of 0, `DoColSplit` and `CopperAGACol` when no
-custom space for the copper instructions was chosen with `CopperReset`
-or `CopperResetAdr`.
+Three commands of the RWE userlibs can be used as functions. Each of
+them returns -1 when it did its work and 0 when it did nothing:
+
+| Command | Library | What it does | Returns 0 |
+|---|---|---|---|
+| `Derez` | [rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}) | makes a picture blocky | with a `derez_value` of 0 |
+| `DoColSplit` | [ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}}) | writes a colour split into a copper list | when no custom space for the copper instructions was chosen with `CopperReset` or `CopperResetAdr` |
+| `CopperAGACol` | ricopperfxlib | writes one AGA colour into a copper list | as `DoColSplit` |
 
 **What happened.** The original set no result for `Derez` and
 `DoColSplit`: the program got whatever the command had left in the
@@ -1130,9 +1140,11 @@ works as before. One that used the original's values, such as the
 colour number `CopperAGACol` returned, takes them from its own
 variables.
 
-Issues: [Derez is declared with a long result but returns no defined value (#672)](https://github.com/fubar-coder/bb2-c/issues/672),
-[DoColSplit is declared with a word result but returns no defined value (#592)](https://github.com/fubar-coder/bb2-c/issues/592),
-[CopperAGACol is declared with a long result but returns 1234 or its col# argument (#590)](https://github.com/fubar-coder/bb2-c/issues/590).
+Issues:
+
+* [Derez is declared with a long result but returns no defined value (#672)](https://github.com/fubar-coder/bb2-c/issues/672)
+* [DoColSplit is declared with a word result but returns no defined value (#592)](https://github.com/fubar-coder/bb2-c/issues/592)
+* [CopperAGACol is declared with a long result but returns 1234 or its col# argument (#590)](https://github.com/fubar-coder/bb2-c/issues/590)
 
 ### `GetCCOffset` returned -1 after `CopperResetAdr` {#getccoffset-resetadr}
 
@@ -1274,44 +1286,71 @@ Issue: [SerialGot returns -1/0, not the number of bytes in the buffer its help t
 
 With the fixes in this part, a program that ran correctly with the
 original still does its job, but something differs that you may notice
-and may want to adapt. `CustomColors` with a `thru256flag` of 0 makes the
-next colour change below line 255 of the display at its own line.
-`Filter On` and `Filter Off` switch the audio filter the other way round.
-A tracker module with a pattern break in its last song position loops at
-its song length, and a MED module with more than 8 tracks no longer runs
-the commands of tracks 8 to 11, as a MED player does (in the list of
-[music players](#music-players)). Four smaller changes concern tapes of
-mouse and keyboard events and the keyboard in Blitz mode. In the RWE
-userlibs, the file requester of `ReqFileRequest` opens with the default
-flags its library means, `LoadIFF` works without `BankLimit` and returns 0
-for a picture it could not unpack, `UnpackIFF` reads pictures whose
-width is no multiple of 16 pixels, and `RXDeletePort` and the end of a
-program wait up to 5 seconds for the replies to ARexx commands sent
-without waiting ([Fixes in riarexxlib](#riarexxlib-fixes)). `FNSLength`
-returns the whole width of a text, and the FNS fonts print a character
-they have no glyph for as a space instead of ending the text there.
-In the zones of rizonejoylib, `NewZoneTable` leaves the zones of the
-current table alone, circular zones on a 68020 hit only the points
-inside them, and `SetZone` refuses a radius above 255 and a rectangle
-whose bottom edge is -1. The Workbench sprites of riwbspritelib give
-clear results: `GetWBSprite` returns -1 whenever it gets no sprite, and
-`MoveWBSprite` returns -1 when it moved one. `DiskMotor` of
-ritrackdisklib reports whether the library has switched the motor of a
-drive on, instead of -1 at all times. In the CD library
-ricompactdisclib, `CDTrackLength 1` no longer counts the gap before the
-first track, `CDVolume` no longer swaps the volume and the fade time,
-and `OpenCD` no longer keeps the SCSI flag, device and unit of an
-earlier `OpenCD`. `InitSerialIO` and `GetSerial address,bytes` of
-rifastseriallib return -1 or 0 instead of their arguments. The block
-commands of riseriallib open the serial port when it is closed, and
-`SerialReceiveBlock` keeps the bytes that arrived before it.
-Four more are in the lists below: `FNSLoad` works without `BankLimit`
-([Fixes in rifnslib](#rifnslib-fixes)), `ClearBitmap` clears the last
-word of its area ([Fixes in rifxlib](#rifxlib-fixes)), a colour split
-from line 0 starts at line 0 ([Fixes in ricopperfxlib](#ricopperfxlib-fixes)),
-and a Workbench sprite made of a shape whose width is no multiple of 16
-shows the shape's left 16 pixels unsheared
-([Fixes in riwbspritelib](#riwbspritelib-fixes)).
+and may want to adapt.
+
+In the command libraries:
+
+* [`CustomColors`](#customcolors-thru256flag) with a `thru256flag` of 0
+  makes the next colour change below line 255 of the display at its own
+  line.
+* [`Filter On` and `Filter Off`](#filter-on-off) switch the audio filter
+  the other way round.
+* [A tracker module](#tracker-break-song-end) with a pattern break in its
+  last song position loops at its song length.
+* A MED module with more than 8 tracks no longer runs the commands of
+  tracks 8 to 11, as a MED player does
+  ([Music players](#music-players)).
+* [Four smaller changes](#more-tape-and-keyboard-changes) concern tapes
+  of mouse and keyboard events and the keyboard in Blitz mode.
+
+In the RWE userlibs:
+
+* The file requester of [`ReqFileRequest`](#reqfilerequest-default-flags)
+  opens with the default flags its library means.
+* [`LoadIFF`](#loadiff-bank-result) works without `BankLimit` and returns
+  0 for a picture it could not unpack.
+* [`UnpackIFF`](#unpackiff-row-width) reads pictures whose width is no
+  multiple of 16 pixels.
+* `RXDeletePort` and the end of a program wait up to 5 seconds for the
+  replies to ARexx commands sent without waiting
+  ([Fixes in riarexxlib](#riarexxlib-fixes)).
+* [`FNSLength`](#fnslength-width) returns the whole width of a text, and
+  [the FNS fonts](#fns-missing-glyphs) print a character they have no
+  glyph for as a space instead of ending the text there.
+* In the zones of rizonejoylib,
+  [`NewZoneTable`](#newzonetable-current-table) leaves the zones of the
+  current table alone, [circular zones](#zone-circles) on a 68020 hit
+  only the points inside them, and `SetZone` refuses a
+  [radius above 255](#zone-circles) and a
+  [rectangle whose bottom edge is -1](#zone-negative-y).
+* The Workbench sprites of riwbspritelib give
+  [clear results](#wbsprite-results): `GetWBSprite` returns -1 whenever
+  it gets no sprite, and `MoveWBSprite` returns -1 when it moved one.
+* [`DiskMotor`](#diskmotor-state) of ritrackdisklib reports whether the
+  library has switched the motor of a drive on, instead of -1 at all
+  times.
+* In the CD library ricompactdisclib, `CDTrackLength 1` no longer counts
+  the gap before the first track, `CDVolume` no longer swaps the volume
+  and the fade time, and `OpenCD` no longer keeps the SCSI flag, device
+  and unit of an earlier `OpenCD`
+  ([Track lengths, volume and the SCSI flag](#compactdisc-results)).
+* [`InitSerialIO` and `GetSerial address,bytes`](#fastserial-results) of
+  rifastseriallib return -1 or 0 instead of their arguments.
+* [The block commands of riseriallib](#serial-block-commands) open the
+  serial port when it is closed, and `SerialReceiveBlock` keeps the bytes
+  that arrived before it.
+
+Four more are in the lists of the RWE userlibs below:
+
+* `FNSLoad` works without `BankLimit`
+  ([Fixes in rifnslib](#rifnslib-fixes)).
+* `ClearBitmap` clears the last word of its area
+  ([Fixes in rifxlib](#rifxlib-fixes)).
+* A colour split from line 0 starts at line 0
+  ([Fixes in ricopperfxlib](#ricopperfxlib-fixes)).
+* A Workbench sprite made of a shape whose width is no multiple of 16
+  shows the shape's left 16 pixels unsheared
+  ([Fixes in riwbspritelib](#riwbspritelib-fixes)).
 
 ### `CustomColors` with a `thru256flag` of 0 acted as 1 {#customcolors-thru256flag}
 
@@ -1494,8 +1533,10 @@ does no harm. A picture without colours (no CMAP chunk) loaded with a
 palette is unpacked into the bitmap, but `LoadIFF` returns 0; load such
 a picture without the palette.
 
-Issues: [LoadIFF needs a bank from 51 on, but RIAmosFuncLib has only 50 banks by default (#770)](https://github.com/fubar-coder/bb2-c/issues/770),
-[LoadIFF returns -1 even if UnpackIFF failed (#771)](https://github.com/fubar-coder/bb2-c/issues/771).
+Issues:
+
+* [LoadIFF needs a bank from 51 on, but RIAmosFuncLib has only 50 banks by default (#770)](https://github.com/fubar-coder/bb2-c/issues/770)
+* [LoadIFF returns -1 even if UnpackIFF failed (#771)](https://github.com/fubar-coder/bb2-c/issues/771)
 
 ### `UnpackIFF` read pictures whose width is no multiple of 16 out of step {#unpackiff-row-width}
 
@@ -1550,8 +1591,10 @@ With the original this printed `28`; with the port it prints `30`.
 result as it is. One that relied on the style of the last print gives
 `FNSLength` the style itself.
 
-Issues: [FNSLength returns the text width minus 2 (#662)](https://github.com/fubar-coder/bb2-c/issues/662),
-[FNSLength without prefs uses the prefs of the last FNSPrint instead of those of FNSPrefs (#661)](https://github.com/fubar-coder/bb2-c/issues/661).
+Issues:
+
+* [FNSLength returns the text width minus 2 (#662)](https://github.com/fubar-coder/bb2-c/issues/662)
+* [FNSLength without prefs uses the prefs of the last FNSPrint instead of those of FNSPrefs (#661)](https://github.com/fubar-coder/bb2-c/issues/661)
 
 ### Characters an FNS font has no glyph for {#fns-missing-glyphs}
 
@@ -1661,8 +1704,10 @@ circle can still hit it, as in the original
 **What to change.** Keep the radius at 255 or below; cover a larger
 area with several zones.
 
-Issues: [68020 zone test compares radius² and distance² of circles as signed words (#880)](https://github.com/fubar-coder/bb2-c/issues/880),
-[SetZone num,x,y,radius stores radius² as a word: radius 256 and above wraps (#867)](https://github.com/fubar-coder/bb2-c/issues/867).
+Issues:
+
+* [68020 zone test compares radius² and distance² of circles as signed words (#880)](https://github.com/fubar-coder/bb2-c/issues/880)
+* [SetZone num,x,y,radius stores radius² as a word: radius 256 and above wraps (#867)](https://github.com/fubar-coder/bb2-c/issues/867)
 
 ### Zones above the top of the screen {#zone-negative-y}
 
@@ -1741,8 +1786,10 @@ or more, as in `If ch>=0`, instead of for 0. A program that took 0 for
 a failure works as before, except that a sprite on channel 0 now counts
 as success.
 
-Issues: [GetWBSprite reports success (the channel) when GetExtSpriteA fails on a channel the library already holds (#920)](https://github.com/fubar-coder/bb2-c/issues/920),
-[MoveWBSprite returns whatever MoveSprite leaves in d0 (#921)](https://github.com/fubar-coder/bb2-c/issues/921).
+Issues:
+
+* [GetWBSprite reports success (the channel) when GetExtSpriteA fails on a channel the library already holds (#920)](https://github.com/fubar-coder/bb2-c/issues/920)
+* [MoveWBSprite returns whatever MoveSprite leaves in d0 (#921)](https://github.com/fubar-coder/bb2-c/issues/921)
 
 ### `DiskMotor` reported the motor as always on {#diskmotor-state}
 
@@ -1874,9 +1921,11 @@ and the device name to every `OpenCD` for another device. A program that
 took the 2 seconds off `CDTrackLength 1` itself, or swapped the arguments
 of `CDVolume` to make it work, drops that.
 
-Issues: [CDTrackLength 1 returns the start of track 2, not its distance to the start of track 1 (#584)](https://github.com/fubar-coder/bb2-c/issues/584),
-[CDVolume puts the volume into io_Length and the fade time into io_Offset, the reverse of cd.device's CD_ATTENUATE (#982)](https://github.com/fubar-coder/bb2-c/issues/982),
-[OpenCD devicename$,unit keeps the scsiflag of an earlier OpenCD (#577)](https://github.com/fubar-coder/bb2-c/issues/577).
+Issues:
+
+* [CDTrackLength 1 returns the start of track 2, not its distance to the start of track 1 (#584)](https://github.com/fubar-coder/bb2-c/issues/584)
+* [CDVolume puts the volume into io_Length and the fade time into io_Offset, the reverse of cd.device's CD_ATTENUATE (#982)](https://github.com/fubar-coder/bb2-c/issues/982)
+* [OpenCD devicename$,unit keeps the scsiflag of an earlier OpenCD (#577)](https://github.com/fubar-coder/bb2-c/issues/577)
 
 ### The results of `InitSerialIO` and `GetSerial` {#fastserial-results}
 
@@ -1916,8 +1965,10 @@ when it received the block and 0 when it did nothing, before
 the baud rate keeps the rate in a variable of its own. Test the results
 for -1 and 0.
 
-Issues: [InitSerialIO returns its baud argument, also when it does nothing (#650)](https://github.com/fubar-coder/bb2-c/issues/650),
-[GetSerial address,bytes returns the low byte of its address argument (#649)](https://github.com/fubar-coder/bb2-c/issues/649).
+Issues:
+
+* [InitSerialIO returns its baud argument, also when it does nothing (#650)](https://github.com/fubar-coder/bb2-c/issues/650)
+* [GetSerial address,bytes returns the low byte of its address argument (#649)](https://github.com/fubar-coder/bb2-c/issues/649)
 
 ### The block commands of riseriallib {#serial-block-commands}
 
@@ -1945,8 +1996,10 @@ that arrive after the call calls `SerialFlush` before
 `SerialReceiveBlock`. A program that called `SerialFlush` with the port
 closed and needs it closed afterwards calls `SerialClose`.
 
-Issues: [The word open flag is tested as a long: SerialSendBlock, SerialReceiveBlock and SerialFlush never open the port (#792)](https://github.com/fubar-coder/bb2-c/issues/792),
-[SerialReceiveBlock throws away the bytes already received (#798)](https://github.com/fubar-coder/bb2-c/issues/798).
+Issues:
+
+* [The word open flag is tested as a long: SerialSendBlock, SerialReceiveBlock and SerialFlush never open the port (#792)](https://github.com/fubar-coder/bb2-c/issues/792)
+* [SerialReceiveBlock throws away the bytes already received (#798)](https://github.com/fubar-coder/bb2-c/issues/798)
 
 ## Dates
 
@@ -2039,8 +2092,10 @@ quick 7FFFFFFF <32768> <32768>
 A negative value that rounds to 0, such as -0.00002, prints `0` as well,
 without a minus sign.
 
-Issues: [A Quick whose fraction rounds to 0 kept the point (#234)](https://github.com/fubar-coder/bb2-c/issues/234),
-[a Quick whose fraction rounds up lost the carry (#233)](https://github.com/fubar-coder/bb2-c/issues/233).
+Issues:
+
+* [A Quick whose fraction rounds to 0 kept the point (#234)](https://github.com/fubar-coder/bb2-c/issues/234)
+* [A Quick whose fraction rounds up lost the carry (#233)](https://github.com/fubar-coder/bb2-c/issues/233)
 
 ### `Format` rounded wrongly and lost the minus sign {#format}
 
@@ -2087,10 +2142,12 @@ sign takes the place in front of the number, also in front of the zeros
 of `0` places: -7 with `"000"` prints `-07`. A number that is too large
 prints the `?` and then its lowest digits.
 
-Issues: [Format lost a carry out of the first digit (#235)](https://github.com/fubar-coder/bb2-c/issues/235),
-[Format did not round numbers below 1 (#236)](https://github.com/fubar-coder/bb2-c/issues/236),
-[Format without "-" or "+" lost the sign (#237)](https://github.com/fubar-coder/bb2-c/issues/237),
-[Format with too many digits printed "?" and only spaces (#238)](https://github.com/fubar-coder/bb2-c/issues/238).
+Issues:
+
+* [Format lost a carry out of the first digit (#235)](https://github.com/fubar-coder/bb2-c/issues/235)
+* [Format did not round numbers below 1 (#236)](https://github.com/fubar-coder/bb2-c/issues/236)
+* [Format without "-" or "+" lost the sign (#237)](https://github.com/fubar-coder/bb2-c/issues/237)
+* [Format with too many digits printed "?" and only spaces (#238)](https://github.com/fubar-coder/bb2-c/issues/238)
 
 ## Text
 
@@ -2728,6 +2785,10 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
 
 ## Other fixes in the command libraries
 
+In the lists of this part, each point says first what the original did
+and then what the port does, unless the introduction of a list says
+otherwise.
+
 ### Files and banks
 
 * `OpenFile`, `ReadFile` or `WriteFile` on a file number whose file was still
@@ -2859,9 +2920,9 @@ file requester is the same code and has the same fixes, except for the
   ([#286](https://github.com/fubar-coder/bb2-c/issues/286)).
 * `Instr` with a start position of 0 or less compared the bytes before
   the string, so an empty search string was found at position 0 or at
-  the negative start (`Instr(a$,"",-5)` gave -5); a start position below
+  the negative start: `Instr(a$,"",-5)` gave -5. A start position below
   1 searches from the first character, as `Instr` without a start
-  position does, and with runtime error checking it is the error
+  position does. With runtime error checking it is the error
   "Instr Startpos MUST be greater than zero"
   ([#287](https://github.com/fubar-coder/bb2-c/issues/287)).
 * `Instr` with a start position near $7FFFFFFF went on searching in
@@ -2897,15 +2958,16 @@ file requester is the same code and has the same fixes, except for the
 * The runtime error of `Inkey$` from the default input read "Can't Input
   Character from Defualt Input"; it reads "Default"
   ([#193](https://github.com/fubar-coder/bb2-c/issues/193)).
-* `BlitzKey` gives no character for the raw key codes above 104, such as
-  the reset warning and the extra keys of some keyboards; the original
-  read a character of another key or a byte of the library's own code
+* For the raw key codes above 104, such as the reset warning and the
+  extra keys of some keyboards, `BlitzKey` read a character of another
+  key or a byte of the library's own code; it gives no character for
+  them
   ([#245](https://github.com/fubar-coder/bb2-c/issues/245)).
-* `BlitzKeys Off` gives the keyboard input back to the input used before
-  `BlitzKeys On`, unless the program chose another input in between,
-  such as with `FileInput`, which stays. The original left the input with
-  the keyboard reading of Blitz mode, and after a second `BlitzKeys On`
-  reading a line, such as with `Edit$`, hung for ever
+* `BlitzKeys Off` left the input with the keyboard reading of Blitz
+  mode, and after a second `BlitzKeys On` reading a line, such as with
+  `Edit$`, hung for ever. It gives the keyboard input back to the input
+  used before `BlitzKeys On`, unless the program chose another input in
+  between, such as with `FileInput`, which stays
   ([#408](https://github.com/fubar-coder/bb2-c/issues/408)).
 * `Inkey$` with a negative count tried about 4 billion times to read a
   character and added every character it got behind the end of the
@@ -2929,12 +2991,14 @@ file requester is the same code and has the same fixes, except for the
 
 ### Tapes and simulated input {#tapes}
 
-These are the commands that record mouse and keyboard events onto tapes
-and play them back (`Record`, `PlayBack`, `PlayWait`, `LoadTape`), and
-the ones that make such events themselves (`Type`, `AbsMouse`,
-`RelMouse`, `MouseButton`, `ClickButton`). One more fix of them changes
-what an existing program sees:
+`Record`, `PlayBack`, `PlayWait` and `LoadTape` record mouse and
+keyboard events onto tapes and play them back. `Type`, `AbsMouse`,
+`RelMouse`, `MouseButton` and `ClickButton` make such events
+themselves. One more fix of them changes what an existing program sees:
 [a simulated event ended a running `Record` or `PlayBack`](#simulated-event-ends-tape).
+
+In this list, each point says first what the port does and then what
+the original did.
 
 * `TapeTrap` without a tape number ends the redirection of the simulated
   events to a tape; the original went on trapping them and chained the
@@ -3284,11 +3348,11 @@ user interface
   ([#200](https://github.com/fubar-coder/bb2-c/issues/200); see
   [A Long or Quick division by 0]({{< relref "/docs/compared-with-original/new-errors#long-division-by-zero" >}})).
 * A multiplication of longs or quicks whose product does not fit added
-  part of the lost high bits back into the result, so `196608*30000` gave
+  part of the lost high bits back into the result. So `196608*30000` gave
   1603272705 instead of 1603272704, and the quick `300*300` came out
-  1/65536 too large (a long was off by at most 65534, a quick by at most
-  0.25); it gives the product with the bits that do not fit cut off, and a
-  product that fits is the same as before
+  1/65536 too large; a long was off by at most 65534, a quick by at most
+  0.25. The port gives the product with the bits that do not fit cut
+  off, and a product that fits is the same as before
   ([#199](https://github.com/fubar-coder/bb2-c/issues/199)); see
   [Getting the old products](#old-products).
 * `Str$` and `UStr$` of a string gave a number made from the string's
@@ -3473,14 +3537,15 @@ of them can stop an existing program:
   maximum (1025 shapes or 2049 sprites and more) loaded only the first
   object; they load the whole range
   ([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
-* Big shapes went wrong in the shape library. `LoadShape` of a picture
-  with planes of 32 KB or more wrote the planes from the second one on in
-  front of the shape's memory; they are in place. `SaveShapes`,
-  `LoadShapes`, `DecodeShapes` and `CopyShape` handled only part of a
-  shape of 64 KB or more, so a file the original saved from such a shape
-  holds only part of it; the whole shape is saved, loaded and copied. A
-  single plane of 64 KB or more does not fit the shapes format, which
-  keeps the size of a plane in 16 bits: `LoadShape` of such a picture
+* `LoadShape` of a picture with planes of 32 KB or more wrote the planes
+  from the second one on in front of the shape's memory; they are in
+  place ([#263](https://github.com/fubar-coder/bb2-c/issues/263)).
+* `SaveShapes`, `LoadShapes`, `DecodeShapes` and `CopyShape` handled only
+  part of a shape of 64 KB or more, so a file the original saved from
+  such a shape holds only part of it; the whole shape is saved, loaded
+  and copied ([#263](https://github.com/fubar-coder/bb2-c/issues/263)).
+* A single plane of 64 KB or more does not fit the shapes format, which
+  keeps the size of a plane in 16 bits. `LoadShape` of such a picture
   wrote it over the memory behind a far too small shape; such a picture
   is the runtime error "Can't Read/Write Shapes File", also without
   runtime error checking
@@ -3528,12 +3593,13 @@ of them can stop an existing program:
   the pixels of the shape only
   ([#273](https://github.com/fubar-coder/bb2-c/issues/273)).
 * `GetaSprite` with runtime error checking had the width limits of 4 and
-  16 colour shapes the wrong way round: in `SpriteMode 0` it refused a 4
-  colour shape of 65 to 128 pixels, which the 8 sprite channels can show,
-  and accepted a 16 colour one, which then failed at every `ShowSprite`
-  with "Sprite Channel Unavailable". A 4 colour shape may be 8 sprites
-  wide (128 pixels in `SpriteMode 0`), a 16 colour shape 4 (64 pixels);
-  a wider one is the error "Sprite too Wide"
+  16 colour shapes the wrong way round. In `SpriteMode 0` it refused a 4
+  colour shape of 65 to 128 pixels, which the 8 sprite channels can show.
+  It accepted a 16 colour one of that width, which then failed at every
+  `ShowSprite` with "Sprite Channel Unavailable". The port's limits are
+  8 sprites (128 pixels in `SpriteMode 0`) for a 4 colour shape and 4
+  sprites (64 pixels) for a 16 colour shape; a wider one is the error
+  "Sprite too Wide"
   ([#988](https://github.com/fubar-coder/bb2-c/issues/988)).
 * `GetaSprite` in `SpriteMode 1` or `2` of a shape whose width is not a
   multiple of the sprite width took bytes of the next row of the shape
@@ -3926,11 +3992,11 @@ These are the commands that send, answer and take apart ARexx messages.
 One more fix of them changes what an existing program sees:
 [`ReplyRexxMsg` with the result string](#replyrexxmsg-result).
 
-* `ClearRexxMsg` and `FillRexxMsg` stop after the 16 argument slots of a
-  message; the original went on into the fields behind them, so
-  `ClearRexxMsg` of a message with all slots used deleted its host and
-  extension strings, and a 17th value of `FillRexxMsg` overwrote the
-  field after the slots
+* `ClearRexxMsg` and `FillRexxMsg` went on past the 16 argument slots of
+  a message into the fields behind them, so `ClearRexxMsg` of a message
+  with all slots used deleted its host and extension strings, and a 17th
+  value of `FillRexxMsg` overwrote the field after the slots; they stop
+  after the 16 slots
   ([#49](https://github.com/fubar-coder/bb2-c/issues/49)).
 * `FillRexxMsg` ended the list at any value of 0, also at a number 0, so
   the arguments behind it were lost; only a string address of 0 ends it,
@@ -3943,10 +4009,10 @@ One more fix of them changes what an existing program sees:
   to 16 the error "Illegal Argument Number"
   ([#51](https://github.com/fubar-coder/bb2-c/issues/51);
   [`GetRexxResult` and `GetRexxCommand` with a number out of range]({{< relref "/docs/compared-with-original/new-errors#rexx-numbers" >}})).
-* `GetResultString` frees the result string of a message; the original
-  left the message pointing to the freed memory, so a second call read
-  and freed it again. The port clears the result, and a second call
-  gives the empty string
+* `GetResultString` freed the result string of a message but left the
+  message pointing to the freed memory, so a second call read and freed
+  it again. The port clears the result, and a second call gives the
+  empty string
   ([#53](https://github.com/fubar-coder/bb2-c/issues/53)).
 * `SendRexxCommand` with no ARexx running (no port "REXX") showed its
   alert and went on with the interrupts disabled, so the Amiga stopped
@@ -4137,6 +4203,9 @@ Issue: [A program hung at its start if an AmigaOS library it calls was missing (
 
 ### Other fixes {#amigaos-other-fixes}
 
+Each point says first what the original did and then what the port
+does.
+
 * A program that calls a resource, such as the battery clock or the CIA
   resources, hung at its start; the resource is opened
   ([#45](https://github.com/fubar-coder/bb2-c/issues/45)).
@@ -4152,7 +4221,9 @@ Issue: [A program hung at its start if an AmigaOS library it calls was missing (
 ## RWE userlibs
 
 These fixes concern the
-[RWE userlibs]({{< relref "/docs/libraries/userlibs" >}}).
+[RWE userlibs]({{< relref "/docs/libraries/userlibs" >}}). In the lists
+of fixes below, each point says first what the port does and then what
+the original did, unless the introduction of a list says otherwise.
 
 ### `NextArg$` did not end a quoted word after `""` {#nextarg-doubled-quote}
 
@@ -4227,7 +4298,9 @@ the text was missing. In the port the text follows the result.
 * `SerialReadString`
   ([#795](https://github.com/fubar-coder/bb2-c/issues/795))
 
-More functions left the place of the next part wrong in other ways:
+More functions left the place of the next part wrong in other ways.
+Each point says first what the original did and then what the port
+does:
 
 * Text after `RTEZSaveFile` was written over the end of the chosen path,
   or behind bytes of its arguments; it follows the path
@@ -4416,7 +4489,8 @@ The [CIA Protracker library]({{< relref "/docs/libraries/userlibs/ciatrklib" >}}
 and [ritrackerlib]({{< relref "/docs/libraries/userlibs/ritrackerlib" >}})
 play modules with the same Protracker 2.3A play routine, which had the
 same faults in both libraries. Each of the following fixes applies to
-both.
+both. Each point says first what the original did and then what the
+port does.
 
 * The first portamento up or down (`1xx`, `2xx`) that a program played
   before any fine portamento (`E1x`, `E2x`) did not slide on its first
@@ -4452,7 +4526,7 @@ both.
 * `StartTracker`, `DecodeModule` and `TrackInit` look for the module's
   highest pattern in its song positions. The original never read the
   last of the 128 positions, so a pattern used only there was not
-  counted and the samples were taken from the wrong place; and a new
+  counted and the samples were taken from the wrong place. A new
   highest pattern at the position before it made the search read on
   through 64 KB behind the module, so that the samples were looked for
   far behind it and memory there was cleared or copied. All 128
@@ -4615,8 +4689,9 @@ the popup menus of Reflective Images.
   signal, and once the program's signals were used up, the next
   `PopUpWindow` hung with the menu open
   ([#470](https://github.com/fubar-coder/bb2-c/issues/470)).
-* `PopUpWindow` switched the audio filter and the power LED over for
-  every menu with sub menus it showed; both stay as they are
+* `PopUpWindow` leaves the audio filter and the power LED as they are;
+  the original switched both over for every menu with sub menus it
+  showed
   ([#468](https://github.com/fubar-coder/bb2-c/issues/468)).
 
 ### Fixes in riamosfunclib {#riamosfunclib-fixes}
@@ -6065,15 +6140,17 @@ of [`NextArg$`](#nextarg-doubled-quote) and of
 are described above.
 
 * `WorkbenchHere` works: it returns -1 if the title of an open screen
-  contains "Workbench", and 0 if none does. The original searched a list
-  of screens at whatever address a register of the processor held
-  ([#759](https://github.com/fubar-coder/bb2-c/issues/759)), did not stop
-  at the end of the list, so it never returned 0 and could hang
-  ([#761](https://github.com/fubar-coder/bb2-c/issues/761)), hung on a
-  title that ends with the start of "Workbench", such as "My Work"
-  ([#762](https://github.com/fubar-coder/bb2-c/issues/762)), and missed
-  "Workbench" behind another "W", as in "A Window on Workbench"
-  ([#760](https://github.com/fubar-coder/bb2-c/issues/760)).
+  contains "Workbench", and 0 if none does. The original had four
+  faults:
+  * It searched a list of screens at whatever address a register of the
+    processor held
+    ([#759](https://github.com/fubar-coder/bb2-c/issues/759)).
+  * It did not stop at the end of the list, so it never returned 0 and
+    could hang ([#761](https://github.com/fubar-coder/bb2-c/issues/761)).
+  * It hung on a title that ends with the start of "Workbench", such as
+    "My Work" ([#762](https://github.com/fubar-coder/bb2-c/issues/762)).
+  * It missed "Workbench" behind another "W", as in "A Window on
+    Workbench" ([#760](https://github.com/fubar-coder/bb2-c/issues/760)).
 * Negative Quick and Float arguments of `EZRequest` and `EZRequestArgs`
   show their whole part, -3.5 as -3, as `Int` gives it; the original
   showed -3.5 as 65532
@@ -6863,6 +6940,9 @@ above.
   ([#1132](https://github.com/fubar-coder/bb2-c/issues/1132)).
 
 ### Other fixes {#rwe-other-fixes}
+
+Each point says first what the original did and then what the port
+does.
 
 * `AddAppIcon` set the base of the local variables to 0: inside a
   Statement or Function the local variables used after the command were
