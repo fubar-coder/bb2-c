@@ -59,6 +59,9 @@
  *   - GetSerial address,bytes (#byte result) returns -1 when it received
  *     the block, 0 when it did nothing (not initialised, 0 bytes); the
  *     original returned the low byte of its address argument (#649).
+ *   - SetIOSize stores its count - 1, as InitSerialIO does; the original
+ *     stored the count as it is, so DoSerialIO after SetIOSize n
+ *     transferred n + 1 bytes, one past buffers of n (#1158).
  * BUG(orig):
  *   - SyncSerial: two machines starting at the same time both become
  *     master (each takes the other's sync byte for the echo) (#655).
@@ -591,13 +594,14 @@ void BLITZ_ROUTINE c_setiospeed(UWORD baud BL_REG(d0))
 /**
  * @brief SetIOSize bytes: the count of DoSerialIO without argument.
  *
- * Stored as it is (DoSerialIO transfers count + 1 bytes); InitSerialIO
- * stores numbytes - 1.
+ * Stored as count - 1 for DoSerialIO's DBRA loop, as InitSerialIO stores
+ * its numbytes.  Fixed (#1158): the original stored the count as it is,
+ * so DoSerialIO transferred one byte more than SetIOSize said.
  * @param n  d0: the count
  */
 void BLITZ_ROUTINE c_setiosize(UWORD n BL_REG(d0))
 {
-    fs.numbytes = n;
+    fs.numbytes = (UWORD)(n - 1);       /* fixed (#1158) */
 }
 
 /**

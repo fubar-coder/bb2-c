@@ -8,6 +8,7 @@
 ; byte that never comes (the session ends in a timeout).
 ; Correct: SetIOSize 16 gives cycles of 16 bytes; the byte behind the
 ; input buffer stays 0.
+; @fixed #1158
 ; @rwe rifastseriallib
 ; @pass serial=on
 ; @pass timeout=30

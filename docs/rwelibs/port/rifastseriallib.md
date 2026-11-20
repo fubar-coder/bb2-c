@@ -79,6 +79,12 @@ d0/d1/a0/a1 that are not the result.
   original never set d0, the result was the low byte of its address
   argument (#649; R10 decision P2-3 (a); test
   `rifastseriallib-getserial-result`).
+* `SetIOSize n` stores n − 1 for `DoSerialIO`'s `DBRA` loop, as
+  `InitSerialIO` stores its numbytes; the original stored n as it is, so
+  `DoSerialIO` transferred n + 1 bytes, one past buffers of n (#1158;
+  test `rifastseriallib-setiosize-count`; `libs_emulator` cases
+  `[fixed #1158]` of `rwe_rifastseriallib`). A program that compensated
+  with `SetIOSize n-1` now transfers one byte less.
 
 **BUG(orig)** (kept):
 

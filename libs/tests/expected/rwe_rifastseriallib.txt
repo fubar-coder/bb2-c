@@ -25,7 +25,8 @@ FinitSerialIO|inten||1 [orig]	$0000F01C
 FinitSerialIO|inten||1 [fixed #651]	$0000282D
 FinitSerialIO|kept||1	kept
 FinitSerialIO|mode||1	$00000000
-FinitSerialIO|numbytes||1	$00000000
+FinitSerialIO|numbytes||1 [orig]	$00000000
+FinitSerialIO|numbytes||1 [fixed #1158]	$0000FFFF
 FinitSerialIO|outbuf||1	$22222222
 FinitSerialIO|temp||1	$00004200
 FinitSerialIO|word at $9A unchanged||1	$00000001
@@ -36,7 +37,8 @@ FinitSerialIO (again)|inten||1 [orig]	$0000F01C
 FinitSerialIO (again)|inten||1 [fixed #651]	$0000282D
 FinitSerialIO (again)|kept||1	kept
 FinitSerialIO (again)|mode||1	$00000000
-FinitSerialIO (again)|numbytes||1	$00000000
+FinitSerialIO (again)|numbytes||1 [orig]	$00000000
+FinitSerialIO (again)|numbytes||1 [fixed #1158]	$0000FFFF
 FinitSerialIO (again)|outbuf||1	$22222222
 FinitSerialIO (again)|temp||1	$00004200
 FinitSerialIO (again)|word at $9A unchanged||1	$00000001
@@ -52,7 +54,8 @@ FlushSerialIO|inten||1 [fixed #651]	$0000282D
 FlushSerialIO|kept||1	kept
 FlushSerialIO|kept||2	kept
 FlushSerialIO|mode||1	$00000000
-FlushSerialIO|numbytes||1	$00000000
+FlushSerialIO|numbytes||1 [orig]	$00000000
+FlushSerialIO|numbytes||1 [fixed #1158]	$0000FFFF
 FlushSerialIO|outbuf||1	$22222222
 FlushSerialIO|temp||1	$00004200
 FlushSerialIO|word at $9A unchanged||1	$00000001
@@ -201,7 +204,8 @@ PutSerial byte (finished)|inten|$43|1 [orig]	$0000F01C
 PutSerial byte (finished)|inten|$43|1 [fixed #651]	$0000282D
 PutSerial byte (finished)|kept|$43|1	kept
 PutSerial byte (finished)|mode|$43|1	$00000000
-PutSerial byte (finished)|numbytes|$43|1	$00000000
+PutSerial byte (finished)|numbytes|$43|1 [orig]	$00000000
+PutSerial byte (finished)|numbytes|$43|1 [fixed #1158]	$0000FFFF
 PutSerial byte (finished)|outbuf|$43|1	$22222222
 PutSerial byte (finished)|temp|$43|1	$00004200
 PutSerial byte (finished)|word at $9A unchanged|$43|1	$00000001
@@ -215,7 +219,8 @@ SetIOBuffers|inten||1 [orig]	$0000F01C
 SetIOBuffers|inten||1 [fixed #651]	$0000282D
 SetIOBuffers|kept||1	kept
 SetIOBuffers|mode||1	$00000000
-SetIOBuffers|numbytes||1	$00000000
+SetIOBuffers|numbytes||1 [orig]	$00000000
+SetIOBuffers|numbytes||1 [fixed #1158]	$0000FFFF
 SetIOBuffers|outbuf||1	$22222222
 SetIOBuffers|temp||1	$00004200
 SetIOBuffers|word at $9A unchanged||1	$00000001
@@ -228,7 +233,8 @@ SetIOSize|inten|$0|1 [fixed #651]	$0000282D
 SetIOSize|kept|$0|1	kept
 SetIOSize|kept|$A5A50010|1	kept
 SetIOSize|mode|$0|1	$00000000
-SetIOSize|numbytes|$0|1	$00000000
+SetIOSize|numbytes|$0|1 [orig]	$00000000
+SetIOSize|numbytes|$0|1 [fixed #1158]	$0000FFFF
 SetIOSize|outbuf|$0|1	$9ABCDEF0
 SetIOSize|temp|$0|1	$00004200
 SetIOSize|word at $9A unchanged|$0|1	$00000001
