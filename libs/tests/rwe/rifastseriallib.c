@@ -7,11 +7,13 @@
  *
  *   rifastseriallib DIR     (DIR: rifastseriallib.obj or .orig)
  *
- * The library drives the serial port registers directly.  The emulator
- * has no serial connection: SERDATR always shows TBE (a byte written is
- * gone at once) and RBF never comes (Amiberry does not let a program set
- * it through INTREQ either), so everything that sends can run, nothing
- * that waits for a byte can.  Observed with the inputs (other registers =
+ * The library drives the serial port registers directly.  This program
+ * runs without a remote station on the serial port: SERDATR always shows
+ * TBE (a byte written is gone at once) and RBF never comes (Amiberry does
+ * not let a program set it through INTREQ either), so everything that
+ * sends can run, nothing that waits for a byte can (the bug-orig tests
+ * tests/bug-orig/rwe/rifastseriallib-* talk to the remote end of
+ * serial=on, tests/corpus/runner/serial.h).  Observed with the inputs (other registers =
  * markers): d0 of the functions, the kept registers, INTENAR
  * (InitSerialIO switches TBE/RBF off - called with both on inside
  * Disable(); FinitSerialIO must not change it nor the word at $9A,
@@ -25,10 +27,12 @@
  * the upper word: DIVU.L by all of d0), PutSerial byte and address,bytes
  * before (nothing) and after InitSerialIO, InitSerialIO twice (the second
  * does nothing) and with a baud rate that gives SERPER 0 (stays "not
- * initialised"), FinitSerialIO, init/finit.
+ * initialised"), FinitSerialIO, init/finit, and init again as at the
+ * start of a second run with the library still loaded (the first run
+ * ends as master).
  * Not covered (they wait for a received byte, RBF): GetSerial (both
  * forms), DoSerialIO, SyncPut, SyncGet, SyncSerial, CheckSerial with a
- * byte; the bytes on the line (no remote station).
+ * byte; the bytes on the line (no remote station here).
  */
 #include "sysload.h"
 #include <hardware/custom.h>
@@ -158,6 +162,7 @@ int main(int argc, char **argv)
     if (!load_set(argv[1], names))
         return 20;
     KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("init (second run)", d0-d7|a0-a3|a6);
     KEEPS("CheckSerial", d1-d7|a0-a3|a6);
     KEEPS("FlushSerialIO", d0-d7|a0-a3|a6);
     KEEPS("FinitSerialIO (not initialised)", d0-d7|a0-a3|a6);
@@ -229,9 +234,17 @@ int main(int argc, char **argv)
     one(PUTSERIAL, "PutSerial byte (after SetIOSpeed to SERPER 0)", 0x45);
 
     initserialio(115200, 1, INBUF, OUTBUF);
+    one(SETSERIALMODE, "SetSerialMode", 1);       /* master at the end */
     ROUT = "finit";
     strcpy(VEC, "");
     DO1(FINIT, 0, (void)0);
+    same_state();
+
+    /* a second run of a program with the library still loaded (from the
+       editor): init, then the state the run starts with */
+    ROUT = "init (second run)";
+    strcpy(VEC, "");
+    DO1(INIT, 0, (void)0);
     same_state();
 
     CUSTOM.intena = 0x8000 | (ena & 0x0801);

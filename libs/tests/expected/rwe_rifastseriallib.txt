@@ -243,26 +243,46 @@ SetIOSpeed (not initialised)|INTENAR|$2580|1	$00000801
 SetIOSpeed (not initialised)|kept|$2580|1	kept
 SetIOSpeed (not initialised)|word at $9A unchanged|$2580|1	$00000001
 SetSerialMode|INTENAR|$0|1	$00000801
+SetSerialMode|INTENAR|$1|1	$00000801
 SetSerialMode|INTENAR|$A5A5A5FF|1	$00000801
 SetSerialMode|baud (SERPER)|$0|1	$00000070
+SetSerialMode|baud (SERPER)|$1|1	$0000001D
 SetSerialMode|inbuf|$0|1	$12345678
+SetSerialMode|inbuf|$1|1	$12345678
 SetSerialMode|inten|$0|1	$0000F01C
+SetSerialMode|inten|$1|1	$0000F01C
 SetSerialMode|kept|$0|1	kept
+SetSerialMode|kept|$1|1	kept
 SetSerialMode|kept|$A5A5A5FF|1	kept
 SetSerialMode|mode|$0|1	$00000000
+SetSerialMode|mode|$1|1	$00000100
 SetSerialMode|numbytes|$0|1	$0000000F
+SetSerialMode|numbytes|$1|1	$00000000
 SetSerialMode|outbuf|$0|1	$9ABCDEF0
+SetSerialMode|outbuf|$1|1	$9ABCDEF0
 SetSerialMode|temp|$0|1	$00004200
+SetSerialMode|temp|$1|1	$00004200
 SetSerialMode|word at $9A unchanged|$0|1	$00000001
+SetSerialMode|word at $9A unchanged|$1|1	$00000001
 SetSerialMode|word at $9A unchanged|$A5A5A5FF|1	$00000001
 finit|INTENAR||1	$00000801
 finit|baud (SERPER)||1	$00000000
 finit|inbuf||1	$12345678
 finit|inten||1	$0000F01C
 finit|kept||1	kept
-finit|mode||1	$00000000
+finit|mode||1	$00000100
 finit|numbytes||1	$00000000
 finit|outbuf||1	$9ABCDEF0
 finit|temp||1	$00004200
 finit|word at $9A unchanged||1	$00000001
 init|kept||1	kept
+init (second run)|INTENAR||1	$00000801
+init (second run)|baud (SERPER)||1	$00000000
+init (second run)|inbuf||1	$12345678
+init (second run)|inten||1	$0000F01C
+init (second run)|kept||1	kept
+init (second run)|mode||1	$00000100
+init (second run)|numbytes||1	$00000000
+init (second run)|outbuf||1	$9ABCDEF0
+init (second run)|temp||1	$00004200
+init (second run)|word at $9A unchanged||1	$00000001
