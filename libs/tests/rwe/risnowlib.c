@@ -31,7 +31,11 @@
  * LDoSnowActivate every 7 steps; then two pairs of KillPoint and
  * LDoSnowActivate without an LDoSnow between them, each releasing the
  * stopped snow above a blue pixel made for it (#909: the second call
- * starts at the drop list's old end); finit.  Not covered: list numbers
+ * starts at the drop list's old end); finit.  Then a second run of a
+ * program with the library still loaded (as from the editor): memlib's
+ * finit has freed the blocks, memlib's and the library's init run, and
+ * the list table is observed (#1135: the pointers of the run before, to
+ * freed blocks, as offsets into them); finit again.  Not covered: list numbers
  * outside 0-3, numpoints from 1024 on, more flakes than the lists hold,
  * bits above 7 in the random table, LDoSnowActivate before the first
  * LDoSnow (all BUG(orig), #913 #912 #914 #910 #908: memory outside the library's).
@@ -192,6 +196,37 @@ static void activatetwice(void)
     }
 }
 
+/* a call that observes nothing but the kept registers: in the second run
+   the blocks of the first are freed, their contents not observed */
+static void callbare(int idx, const char *name)
+{
+    APTR fn = ENT(LIB, idx, 0);
+    ROUT = name;
+    markregs(&R);
+    IN = R;
+    NARGS = 0;
+    CCR = callstk(fn, &R, ARGS, NARGS, &POP);
+    preserve();
+}
+
+/* the second run (#1135): the list table after init */
+static void secondrun(void)
+{
+    int f, i;
+    char buf[40];
+
+    memlib(7);
+    strcpy(VEC, "second run");
+    callbare(INIT, "init");
+    for (f = 0; f < NFIELD + 2; f++)
+        for (i = 0; i < 4; i++) {
+            sprintf(buf, "list table %d.%d", f, i);
+            OBS(buf, rel(lp[4 * f + i], f < NFIELD ? f : 0));
+        }
+    callbare(FINIT, "finit");
+    memlib(8);
+}
+
 int main(int argc, char **argv)
 {
     static const char *names[] = { "memlib", LIB, NULL };
@@ -290,6 +325,7 @@ int main(int argc, char **argv)
     strcpy(VEC, "");
     call1(FINIT, "finit", 0, 0, 0, 0);
     memlib(8);
+    secondrun();
     FreeMem(area, AREA);
     FreeMem(bm, sizeof(struct BitMap));
     FreeMem(rt, RTSZ);

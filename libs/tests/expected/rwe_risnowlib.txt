@@ -5196,6 +5196,7 @@ finit|block 0||1 [orig]	bytes 19240 fnv C75F1B28
 finit|block 0||1 [fixed #909]	bytes 19240 fnv D4E34AE2
 finit|block 1||1	bytes 2600 fnv 84F5C514
 finit|kept||1	kept
+finit|kept|second run|1	kept
 finit|list table 0.0||1	$40000000
 finit|list table 0.1||1	$400012D0
 finit|list table 0.2||1	$400025A0
@@ -5206,9 +5207,28 @@ finit|list table 1.2||1	$40000520
 finit|list table 1.3||1	$400007A4
 finit|planes||1	bytes 6784 fnv 379174C1
 finit|popped||1	$00000000
+finit|popped|second run|1	$00000000
 finit|random table||1	bytes 1028 fnv BAF03EE2
 init|COLOR00||1	$00001234
 init|kept||1	kept
+init|kept|second run|1	kept
+init|list table 0.0|second run|1	$40000000
+init|list table 0.1|second run|1	$400012D0
+init|list table 0.2|second run|1	$400025A0
+init|list table 0.3|second run|1	$40003864
+init|list table 1.0|second run|1	$40000290
+init|list table 1.1|second run|1	$40000000
+init|list table 1.2|second run|1	$40000520
+init|list table 1.3|second run|1	$400007A4
+init|list table 2.0|second run|1	$00000000
+init|list table 2.1|second run|1	$00000000
+init|list table 2.2|second run|1	$00000000
+init|list table 2.3|second run|1	$00000000
+init|list table 3.0|second run|1	$00000000
+init|list table 3.1|second run|1	$00000000
+init|list table 3.2|second run|1	$00000000
+init|list table 3.3|second run|1	$00000000
 init|planes||1	bytes 6784 fnv 17A28DA8
 init|popped||1	$00000000
+init|popped|second run|1	$00000000
 init|random table||1	bytes 1028 fnv 3C9379EA

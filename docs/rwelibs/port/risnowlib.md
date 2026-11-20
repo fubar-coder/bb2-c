@@ -107,7 +107,10 @@ on field 0 and 47 on field 1 (the table index wraps at 1024), 120
 KillPoints (blue and clear pixels, row 0) and 20 LDoSnowActivates,
 then two pairs of KillPoint and LDoSnowActivate without an LDoSnow
 between them, each releasing the stopped snow above a blue pixel made
-for it (#909).
+for it (#909). Then a second run of a program with the library still
+loaded (as from the editor): memlib's finit has freed the blocks,
+memlib's and the library's init run and the list table is observed
+(#1135).
 Checked to fail when the alternation, the stop in plane 1, the removal
 at the bottom, the second side or one of the LDoSnowActivate tests is
 changed. Not covered: the BUG(orig) cases above that write outside the
