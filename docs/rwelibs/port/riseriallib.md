@@ -12,7 +12,8 @@ port through the hardware, without serial.device:
   off, sets PRA to `$FF` and switches on those of the two that were on
   at `SerialOpen`. `SerialBaud rate`: SERPER = 3546895 / rate − 1
   (ldivlib).
-* The receive handler puts SERDATR's byte into a ring of 256 bytes;
+* The receive handler puts SERDATR's byte into a ring of 256 bytes (255
+  of them used: a byte that does not fit is dropped);
   `SerialRead` takes the next one (−1 if none), `SerialWait` waits for
   one, `SerialGot` how many are there, `SerialFlush` reads
   until none is left, `SerialBuffer` is the ring's address.
@@ -151,6 +152,13 @@ kind F):
   else 0. A program that tested only for "not 0" works as before (#802;
   test `riseriallib-serialgot-count`; `libs_emulator` cases
   `[fixed #802]` of `rwe_riseriallib`).
+* The receive handler drops a byte that does not fit into the ring (255
+  bytes unread); the original stored every byte, so with 256 unread
+  bytes `rend` met `rbig` and the ring counted as empty: all of them were
+  lost (the mirror of #983 on the receiving side) (#1160; one compare
+  per received byte; test `riseriallib-receive-ring-full`; `libs_emulator`
+  cases `[fixed #1160]` of `rwe_riseriallib`, the 300 bytes of "receive
+  ring wrapped").
 
 ## BUG(orig), kept
 

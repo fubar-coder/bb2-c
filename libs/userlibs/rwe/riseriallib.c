@@ -32,7 +32,8 @@
  * when the interrupt is not the library's), sets CIA-B PRA to $3F
  * (RTS/DTR), and switches RBF, TBE and the master bit on in INTENA,
  * remembering INTENAR.  The receive interrupt puts SERDATR's byte into a
- * ring of 256 bytes (rend), SerialRead takes it (rbig); SerialWrite puts
+ * ring of 256 bytes (rend; 255 of them used: a byte that does not fit is
+ * dropped), SerialRead takes it (rbig); SerialWrite puts
  * the byte with a stop bit into a ring of 128 words (wrend) and raises
  * TBE when the ring was empty, the transmit interrupt sends one word
  * (wbig) when SERDATR shows TBE.  The rings are the first 256 bytes of
@@ -122,6 +123,10 @@
  *   - SerialGot returns the number of bytes waiting, as its help text
  *     says ("returns num chars in serial buffer"); the original returned
  *     -1 when a byte was waiting, else 0 (#802).
+ *   - The receive interrupt drops a byte that does not fit into the ring
+ *     (255 unread bytes); the original stored every byte, so with 256
+ *     unread bytes rend met rbig and the ring counted as empty: all of
+ *     them were lost (#1160).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -703,14 +708,23 @@ ULONG BLITZ_ROUTINE c_buffcount2(void)
 
 /**
  * @brief The receive interrupt (level 5): SERDATR's byte into the ring.
+ *
+ * Fixed (#1160): a byte that does not fit (255 unread bytes) is dropped;
+ * the original stored every byte, so with 256 unread ones rend met rbig
+ * and the ring counted as empty.
  * @return d0: 1 = RBF handled (RTE), 0 = not ours (on to the old vector)
  */
 ULONG BLITZ_ROUTINE c_readint(void)
 {
+    UBYTE b;
+
     if (!(INTREQR_HI & 0x08))
         return 0;
-    rd.buf[(WORD)rd.end] = SERDATR_LO;
-    BUMP(rd.end, 1);
+    b = SERDATR_LO;
+    if ((UBYTE)(rd.end + 1) != (UBYTE)rd.big) {     /* fixed (#1160) */
+        rd.buf[(WORD)rd.end] = b;
+        BUMP(rd.end, 1);
+    }
     INTREQ = 0x0800;
     return 1;
 }

@@ -6,6 +6,7 @@
 ; two seconds without reading, then reads what is there.
 ; Correct: the ring keeps the first 255 bytes (a byte that does not fit
 ; is dropped): 255 bytes from "0" on.
+; @fixed #1160
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l

@@ -51,7 +51,8 @@ SerialClose|popped|$0,$0|2	$00000000
 SerialClose|popped|$0,$0|3	$00000000
 SerialClose|receive ring|$0,$0|1	bytes 1028 fnv AE36955A
 SerialClose|receive ring|$0,$0|2	bytes 1028 fnv AE36955A
-SerialClose|receive ring|$0,$0|3	bytes 1028 fnv 7A55ED45
+SerialClose|receive ring|$0,$0|3 [orig]	bytes 1028 fnv 7A55ED45
+SerialClose|receive ring|$0,$0|3 [fixed #1160]	bytes 1028 fnv BEBA3084
 SerialClose|stub $64 called|$0,$0|1	$00000000
 SerialClose|stub $64 called|$0,$0|2	$00000000
 SerialClose|stub $64 called|$0,$0|3	$00000000
@@ -91,7 +92,8 @@ SerialFlush|popped|$12345678,$0|1	$00000000
 SerialFlush|receive ring|$0,$0|1	bytes 1028 fnv 7BC8CE93
 SerialFlush|receive ring|$0,$0|2 [orig]	bytes 1028 fnv C3079AE3
 SerialFlush|receive ring|$0,$0|2 [fixed #792]	bytes 1028 fnv 1EA6A18B
-SerialFlush|receive ring|$0,$0|3	bytes 1028 fnv 7A55ED45
+SerialFlush|receive ring|$0,$0|3 [orig]	bytes 1028 fnv 7A55ED45
+SerialFlush|receive ring|$0,$0|3 [fixed #1160]	bytes 1028 fnv BEBA3084
 SerialFlush|receive ring|$12345678,$0|1	bytes 1028 fnv 077C2991
 SerialFlush|stub $64 called|$0,$0|1	$00000000
 SerialFlush|stub $64 called|$0,$0|2	$00000000
@@ -885,7 +887,8 @@ receive ring wrapped|CIA-B PRA|$960,$0|1	$0000005A
 receive ring wrapped|custom chip registers|$960,$0|1	bytes 512 fnv C4915FC8
 receive ring wrapped|kept|$960,$0|1	kept
 receive ring wrapped|popped|$960,$0|1	$00000000
-receive ring wrapped|receive ring|$960,$0|1	bytes 1028 fnv C811D601
+receive ring wrapped|receive ring|$960,$0|1 [orig]	bytes 1028 fnv C811D601
+receive ring wrapped|receive ring|$960,$0|1 [fixed #1160]	bytes 1028 fnv 9B240D61
 receive ring wrapped|stub $64 called|$960,$0|1	$00000000
 receive ring wrapped|stub $74 called|$960,$0|1	$00000000
 receive ring wrapped|transmit ring|$960,$0|1 [orig]	bytes 1028 fnv 86734CFB
