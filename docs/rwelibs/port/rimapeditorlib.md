@@ -164,11 +164,16 @@ and commands before their setup command).
   ("ShapeTo1616 source of height or depth 0"; the release code copies
   65536 rows or planes into the destination; an invalid shape object,
   Blitz's own commands make none) (#895).
+* `ShapeTo1616` refuses a destination that is not 16 × 16 with at least
+  the source's depth ("ShapeTo1616 needs a 16 x 16 destination as deep
+  as the source"; the release code writes 16 words per plane of the
+  source, one per row, into the destination's data whatever its size:
+  fewer planes or rows overflow it, a wider one gets the words packed as
+  if it were 16 wide) (#900; test
+  `rimapeditorlib-shapeto1616-dest-unchecked`).
 
 ## BUG(orig), kept
 
-* `ShapeTo1616` writes 16 words per plane regardless of the
-  destination's size (#900).
 * finit closes graphics.library also if it did not open (#896).
 
 Original behaviour that is not a defect:

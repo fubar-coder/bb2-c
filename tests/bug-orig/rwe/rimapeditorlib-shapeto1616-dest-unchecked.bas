@@ -12,6 +12,7 @@
 ; Correct: the ShapeTo1616 into a destination of depth 2 works; the
 ; error check refuses the destination of depth 1: "ShapeTo1616 needs a
 ; 16 x 16 destination as deep as the source", nothing is written.
+; @fixed #900
 ; @rwe rimapeditorlib
 ; @pass runtime_errors=on
 DEFTYPE .l

@@ -10,7 +10,9 @@
 # "Map position outside the map")
 # #895: ShapeTo1616 gets an error check (to1616chk, "ShapeTo1616 source
 # of height or depth 0"), FillBitplane one (fillbpchk, "FillBitplane
-# width must be at least 16", "FillBitplane height must be at least 1")
+# width must be at least 16", "FillBitplane height must be at least 1");
+# #900: ShapeTo1616's check also refuses its destination ("ShapeTo1616
+# needs a 16 x 16 destination as deep as the source"; no new difference)
 lib 8: header +$2C: code offset set in only one of them
 lib 8: entry 1 ShapeTo1616 +$14: code offset set in only one of them
 lib 8: entry 10 FillBitplane +$12: code offset set in only one of them

@@ -37,8 +37,6 @@
  * fields it wrote; the string functions: behind the characters).
  *
  * BUG(orig):
- *   - ShapeTo1616 copies a word from every row regardless of the
- *     destination's size (#900).
  *   - finit closes graphics.library also if it did not open (#896).
  * Fixed (intended deviations):
  *   - init clears the stencil of SetStencil, the ScanShapes results and
@@ -83,8 +81,12 @@
  *     depth 0 ("ShapeTo1616 source of height or depth 0"), FillBitplane a
  *     width below 16 and a height of 0 ("FillBitplane width must be at
  *     least 16", "FillBitplane height must be at least 1"); their DBRA
- *     loops ran 65536 times for them (#895).  The original has no error
- *     check area; the release code is unchanged (D-005).
+ *     loops ran 65536 times for them (#895).  ShapeTo1616 refuses a
+ *     destination that is not 16 x 16 with at least the source's depth
+ *     ("ShapeTo1616 needs a 16 x 16 destination as deep as the source";
+ *     it writes 16 words per plane of the source, one per row, regardless
+ *     of the destination's size) (#900).  The original has no error check
+ *     area; the release code is unchanged (D-005).
  * Not defects: CreateMap of a map that cannot be allocated (also width
  * or height 0) clears width, height, bwidth, bheight but leaves datasize
  * 1 (nothing reads it then); the comment "strip leading spaces" of
@@ -580,8 +582,10 @@ BLITZ_THUNK(_scanmaxdepth, scanmaxdepth_c, "d1/a0-a1");
  * The first word of every row of every plane of src into dest's data,
  * 16 rows per plane (missing rows 0, more rows skipped).  Height or depth
  * 0 -> 65536 (DBRA): refused by to1616chk (fixed #895; the release code
- * keeps it).  BUG(orig): a word of every row is copied regardless of the
- * destination's size (#900).
+ * keeps it).  16 words per plane are written regardless of the
+ * destination's size: a destination that is not 16 x 16 with at least
+ * the source's depth is refused by to1616chk (fixed #900; the release
+ * code keeps it).
  * @param src  a0: the source shape (#ia0|#pd0)
  * @param dst  a1: the destination shape (#ia1|#pd1)
  */
@@ -1135,6 +1139,7 @@ BLITZ_ERRCHK_MESSAGE(nostencil, "MapCanDraw needs SetStencil");     /* fixed, #8
 BLITZ_ERRCHK_MESSAGE(badvalue, "Map value above 32767 for the stencil"); /* fixed, #893 */
 BLITZ_ERRCHK_MESSAGE(outside, "Map position outside the map");     /* fixed, under #892 */
 BLITZ_ERRCHK_MESSAGE(badsrc, "ShapeTo1616 source of height or depth 0");  /* fixed, #895 */
+BLITZ_ERRCHK_MESSAGE(baddest, "ShapeTo1616 needs a 16 x 16 destination as deep as the source"); /* fixed, #900 */
 BLITZ_ERRCHK_MESSAGE(narrow, "FillBitplane width must be at least 16");   /* fixed, #895 */
 BLITZ_ERRCHK_MESSAGE(norows, "FillBitplane height must be at least 1");   /* fixed, #895 */
 
@@ -1233,16 +1238,27 @@ static void BLITZ_ERRCHK mapdataadrchk_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
  * shape lower than 16) its height were taken - 1 as DBRA counts without
  * a test for 0: depth 0 copied 65536 planes, height 0 65536 rows into the
  * destination.  An invalid shape object (Blitz's own commands make none
- * of depth or height 0); the release code is unchanged (the depth-0
- * decision of R2, as #429 and #947).
+ * of depth or height 0); the release code is unchanged (as #429 and
+ * #947).  Fixed (#900): nor was the destination looked at - ShapeTo1616
+ * writes 16 words per plane of the source, one per row, into its data,
+ * so a destination with fewer planes or rows overflowed (another
+ * shape's data or memory list headers behind it) and a wider one got the
+ * words packed as if it were 16 wide.  The destination is the
+ * programmer's (D-005); the release code is unchanged.
  *
- * Errors: "ShapeTo1616 source of height or depth 0".
+ * Errors: "ShapeTo1616 source of height or depth 0", "ShapeTo1616 needs
+ * a 16 x 16 destination as deep as the source" (width or height not 16,
+ * or fewer planes than the source).
  * @param src  a0: the source shape
+ * @param dst  a1: the destination shape
  */
-static void BLITZ_ERRCHK to1616chk_c(const struct bb_shape *src BL_REG(a0))
+static void BLITZ_ERRCHK to1616chk_c(const struct bb_shape *src BL_REG(a0),
+                                     const struct bb_shape *dst BL_REG(a1))
 {
     if (!src->height || !src->depth)
         BLITZ_RUNERR(badsrc);
+    if (dst->width != 16 || dst->height != 16 || dst->depth < src->depth)
+        BLITZ_RUNERR(baddest);
 }
 
 /**
