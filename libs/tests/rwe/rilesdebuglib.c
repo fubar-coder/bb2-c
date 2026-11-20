@@ -39,7 +39,8 @@
  * it); OutText/OutTextPen on a RastPort of the test (planes, cp_x/cp_y,
  * the pen); FindLineToken; GetDataItem (sizes -1..5, below $420,
  * $80000000, size 0: 65536 bytes); D_FindVolume (a device, a volume, an
- * assign, a missing name); finit.
+ * assign, a missing name); finit; a second run (finit, init) and the
+ * state it starts with (#1169); finit.
  * Not covered: counts of 0 for D_HexWord/D_CheckNMove* (65536 entries
  * into the destination); GetCustomReg with a negative word but a positive
  * long (reads in front of the table: DIFF); more than 20 AddProcessPtr
@@ -822,6 +823,53 @@ static void findvolume(void)
     }
 }
 
+/* ------------------------------------------------------- a second run */
+
+/* the library stays loaded between two runs of a program from the
+   editor: finit, then init again, and the state the second run starts
+   with (#1169) - the process entries, FInverse, FYOffset, the cursor,
+   SearchMemFound, the token list and tokenise */
+static void secondrun(void)
+{
+    static const UBYTE line[] = "\x80\x01 a";
+
+    /* the first run's state: a search that found, an entry, inverse
+       printing, an offset, a cursor and a token list with tokenise */
+    search1(1, 0x99, SH(A_SEARCH), SH(A_SEARCH + 1024), "before the second run");
+    addproc("q", "<Q>");
+    setup((ULONG)toklist, 1);
+    fword(E_FINVERSE, "FInverse", 0x100);
+    fword(E_FYOFFSET, "FYOffset", 3);
+    flocate(5, 2);
+    ROUT = "finit";
+    strcpy(VEC, "before the second run");
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
+    ROUT = "init";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
+
+    ROUT = "SearchMemFound";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, E_SEARCHFOUND, 0), (void)0);
+    OBS("d0", SHREL(R.d[0]));
+    initparse("second run %q");
+    ROUT = "ProcessString";
+    strcpy(VEC, "second run");
+    DO1(ENT(LIB, E_PROCESS, 0), RESSETUP());
+    STRRES();
+    clearplanes();
+    ROUT = "FPrint";
+    strcpy(VEC, "second run, at the cursor");
+    DO1(ENT(LIB, E_FPRINT, 0), STRARG("x"); R.a[0] = (ULONG)&bm);
+    sameplanes();
+    clearplanes();
+    ROUT = "FPrintDetoke";
+    strcpy(VEC, "second run, at the cursor");
+    DO1(ENT(LIB, E_FPDETOKE, 0), R.d[0] = (ULONG)line; R.d[1] = 100;
+        R.d[2] = 0xff00; R.d[3] = 0; R.a[0] = (ULONG)&bm);
+    sameplanes();
+}
+
 /* --------------------------------------------------------------- main */
 
 int main(int argc, char **argv)
@@ -916,6 +964,7 @@ int main(int argc, char **argv)
     extractlabel();
     parsing();
     findvolume();
+    secondrun();
 
     ROUT = "finit";
     strcpy(VEC, "");
