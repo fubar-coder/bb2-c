@@ -7,20 +7,27 @@
  *
  *   ricompactdisclib DIR     (DIR: ricompactdisclib and memlib .obj/.orig)
  *
- * There is no CD drive in the emulator: the commands talk to a device of
- * this test, "rwecd.device" (OpenCD "rwecd.device",unit[,scsiflag]), that
- * plays a CD with 9, 50 or 20 tracks: it answers CD_INFO (the Status word),
- * CD_TOCMSF (summary and track entries, entries behind the last track
- * filled with $EE), CD_QCODEMSF (a changing position), HD_SCSICMD (READ
- * TOC: the header of the TOC data) and accepts every other command; it
- * logs every request (command, flags, length, offset, data pointer, the
- * SCSICmd and its command bytes), the opens, closes and AbortIOs, fails
- * OpenDevice for unit 3 and returns an io_Error when the test asks for
- * one.  memlib is loaded with the library (globalloc of init and
- * CDReadTOC).  Every command and form is called (other registers =
- * markers); observed are d0, the requests the device saw, the data the
- * commands return (the Q-code bytes behind CDUpdateInfo's address) and
- * the kept registers.
+ * The commands talk to a device of this test, "rwecd.device" (OpenCD
+ * "rwecd.device",unit[,scsiflag]): the emulator's uaescsi.device answers
+ * the SCSI path but not cd.device's TOC and Q-code commands, and it
+ * completes every play at once.  rwecd.device plays a CD with 9, 50 or 20
+ * tracks: it answers CD_INFO (the Status word), CD_TOCMSF (summary and
+ * track entries, entries behind the last track filled with $EE),
+ * CD_QCODEMSF (a changing position), HD_SCSICMD (READ TOC: the header
+ * and the track descriptors with their LBA, tracks 2 to ntracks - 2 and
+ * the lead-out) and accepts every other command; a request sent with
+ * SendIO (CDPlayTrack) is replied at once, or in hold mode (a play in
+ * progress) kept until AbortIO.  It logs every request (command, flags,
+ * length, offset, data pointer, the SCSICmd and its command bytes), the
+ * opens, closes and AbortIOs, the requests begun while the held play was
+ * out and the replies left at the library's port (looked at after CDStop,
+ * at CloseDevice, then the port is emptied), fails OpenDevice for unit 3
+ * and returns an io_Error when the test asks for one (also for one
+ * request only, with nothing written).  memlib is loaded with the library
+ * (globalloc of init and CDReadTOC).  Every command and form is called
+ * (other registers = markers); observed are d0, the requests the device
+ * saw, the data the commands return (the Q-code bytes behind
+ * CDUpdateInfo's address) and the kept registers.
  * Covered: every command without an open device (0; BUG(orig) (#587, #586):
  * CDUpdateInfo returns a0 + 5, CDTrackMins/Secs/Playing read their data
  * anyway), OpenCD of cd.device (missing in the emulator: the failure
@@ -28,23 +35,29 @@
  * the name and unit kept for OpenCD without arguments, OpenCD while open
  * (BUG(orig) (#578): the old request is lost), all CD commands with their
  * arguments and io_Errors, CDReadTOC twice (the old TOC freed, the second
- * read failing), CDTrackLength of every track 1..9 of the 9 track CD
+ * read failing), a failing summary read (BUG(orig) (#581)), a play in
+ * progress stopped, closed and its request used again (BUG(orig) (#574,
+ * #1156)), the TOC functions before any CDReadTOC (BUG(orig) (#582): they
+ * read address 0), CDTrackLength of every track 1..9 of the 9 track CD
  * and 40..50 of the 50 track CD (BUG(orig) (#585, #583): from track 44 the start is
  * wrong; the last track reads the entry behind it), CDTrackMins/CDTrackSecs offsets 0, 1, 4, 5, -1..-5 and the
  * high bits of d0 (BUG(orig) (#586)), the SCSI path (scsiflag: CDPlayTrack's
- * fixed blocks 14000-15000 and io_Offset 1, READ TOC, CDNumTracks from
- * the SCSI TOC data, CDFirstTrack still from toc; the flag kept by OpenCD
+ * fixed blocks 14000-15000 and io_Offset 1 before and after READ TOC,
+ * with tracks inside, at the ends of and outside the TOC, CDNumTracks
+ * from the SCSI TOC data, CDFirstTrack, CDLastTrack and CDTrackLength
+ * still from toc (BUG(orig) (#580, #582)); the flag kept by OpenCD
  * without arguments), CloseCD (twice), finit with a device open and
  * without port, init again, init without a message port
  * (CreateMsgPort fails) and OpenCD without a request (CreateIORequest
  * fails).
- * Not covered: a real CD drive (none in the emulator); a device name of
- * more than 40 bytes (overwrites toc ..., BUG(orig) (#576)); CDTrackLength 0
- * (reads 64 KB behind toc) and of tracks behind the last (memory
- * globalloc did not clear: differs between runs); the TOC functions
- * before any CDReadTOC (they read address 0); CDPlayTrack with scsiflag
- * on a 68000 (address error; the emulator has a 68020); a globalloc
- * failing.  The test device leaves the entries behind the last track
+ * Not covered: a real CD drive; a device name of more than 40 bytes
+ * (overwrites toc ..., BUG(orig) (#576); bug-orig test
+ * ricompactdisclib-opencd-name-overflow); CDTrackLength 0 (reads 64 KB
+ * behind toc) and of tracks behind the last (memory globalloc did not
+ * clear: differs between runs); CDPlayTrack with scsiflag on a 68000
+ * (address error: the bug-orig test ricompactdisclib-playtrack-scsi-odd
+ * on the a600; this program runs on the a1200); a globalloc failing.
+ * The test device leaves the entries behind the last track
  * $EE (a real one would not write them: the last track's length is then
  * garbage, BUG(orig) (#583)).
  */
@@ -69,10 +82,16 @@ static int ntracks = 9;                 /* the CD in the drive */
 static UWORD cdstatus = CDSTSF_CLOSED | CDSTSF_DISK | CDSTSF_TOC;
 static UWORD errcmd;                    /* io_Error errval for command errcmd */
 static BYTE errval;
-static ULONG qtick;                     /* CD_QCODEMSF: the position moves */
+static int erronce;                     /* errcmd for one request only, without data */
+static int hold;                        /* CD_PLAYTRACK (SendIO) kept until AbortIO */
+static struct IOStdReq *held;           /* the play kept */
+static struct MsgPort *rport;           /* the reply port of the library's requests */
+static ULONG qtick;                    /* CD_QCODEMSF: the position moves */
 
 static struct log {
     ULONG n, opens, closes, failed, aborts;
+    ULONG inflight;                     /* requests begun while the held play was out */
+    ULONG atclose;                      /* CloseDevice with replies left at the port */
     UWORD cmd, abortcmd;
     UBYTE flags;
     ULONG len, off, unit;
@@ -103,6 +122,27 @@ static void msf(UBYTE *p, ULONG secs, UBYTE frame)
     p[3] = frame;
 }
 
+/* replies left at the library's reply port (it never takes one off:
+   BUG(orig) #574, #1156): 1 if any; the port is emptied, so that the next
+   reply or a freed request does not break its list */
+static ULONG portreplies(void)
+{
+    ULONG n = 0;
+
+    if (!rport)
+        return 0;
+    Forbid();
+    if (!IsListEmpty(&rport->mp_MsgList)) {
+        struct List *l = &rport->mp_MsgList;
+        n = 1;
+        l->lh_Head = (struct Node *)&l->lh_Tail;
+        l->lh_Tail = NULL;
+        l->lh_TailPred = (struct Node *)&l->lh_Head;
+    }
+    Permit();
+    return n;
+}
+
 static void dev_open(struct IORequest *ior __asm("a1"), LONG unit __asm("d0"),
                      ULONG flags __asm("d1"), struct Device *d __asm("a6"))
 {
@@ -131,6 +171,10 @@ static ULONG dev_close(struct IORequest *ior __asm("a1"), struct Device *d __asm
     int i;
     d->dd_Library.lib_OpenCnt--;
     last.closes++;
+    if (ior == (struct IORequest *)held)
+        held = NULL;
+    if (ior->io_Message.mn_ReplyPort == rport && portreplies())
+        last.atclose = 1;
     last.unit = (ULONG)ior->io_Unit;
     for (i = 0; i < MAXOPEN; i++)
         if (opened[i] == ior)
@@ -147,7 +191,26 @@ static ULONG dev_abortio(struct IORequest *ior __asm("a1"))
 {
     last.aborts++;
     last.abortcmd = ior->io_Command;
+    if (ior == (struct IORequest *)held) {
+        held = NULL;
+        ior->io_Error = IOERR_ABORTED;
+        ReplyMsg(&ior->io_Message);
+    }
     return 0;
+}
+
+/* the start of track t in frames (SCSI READ TOC: its LBA) */
+static ULONG tracklba(int t)
+{
+    return (trackstart(t) - 2) * 75 + (ULONG)t * 3;
+}
+
+static void putlong(UBYTE *p, ULONG v)
+{
+    p[0] = (UBYTE)(v >> 24);
+    p[1] = (UBYTE)(v >> 16);
+    p[2] = (UBYTE)(v >> 8);
+    p[3] = (UBYTE)v;
 }
 
 static void scsicmd(struct IOStdReq *ior)
@@ -172,16 +235,29 @@ static void scsicmd(struct IOStdReq *ior)
     c->scsi_Status = 0;
     c->scsi_CmdActual = c->scsi_CmdLength;
     if (c->scsi_Command[0] == 0x43 && data && c->scsi_Length >= 4) {
-        /* READ TOC: the header (data length, first and last track) */
+        /* READ TOC: the header (data length, first track 2, last track
+           ntracks - 2), then a descriptor of 8 bytes (track, LBA) per
+           track and the lead-out ($AA), as far as scsi_Length takes them */
+        int first = 2, lastt = ntracks - 2, t;
+        ULONG len = 4;
+
         data[0] = 0;
-        data[1] = (UBYTE)(2 + 8 * (ntracks - 1));
-        data[2] = 2;
-        data[3] = (UBYTE)(ntracks - 2);
-        c->scsi_Actual = 4;
+        data[1] = (UBYTE)(2 + 8 * (lastt - first + 2));
+        data[2] = (UBYTE)first;
+        data[3] = (UBYTE)lastt;
+        for (t = first; t <= lastt + 1 && len + 8 <= c->scsi_Length; t++, len += 8) {
+            UBYTE *d = data + len;
+            d[0] = 0;
+            d[1] = 0x10;
+            d[2] = (UBYTE)(t > lastt ? 0xaa : t);
+            d[3] = 0;
+            putlong(d + 4, tracklba(t));
+        }
+        c->scsi_Actual = len;
     }
 }
 
-static void dev_beginio(struct IOStdReq *ior __asm("a1"))
+static ULONG dev_beginio(struct IOStdReq *ior __asm("a1"))
 {
     struct log *l = &last;
     UBYTE *p = ior->io_Data;
@@ -194,8 +270,21 @@ static void dev_beginio(struct IOStdReq *ior __asm("a1"))
     l->off = ior->io_Offset;
     l->data = ior->io_Data;
     l->unit = (ULONG)ior->io_Unit;
+    rport = ior->io_Message.mn_ReplyPort;
+    if (held && ior == held) {
+        /* the held play's request used again while it is out (#1156) */
+        l->inflight++;
+        held = NULL;
+    }
     ior->io_Error = 0;
     ior->io_Actual = 0;
+    if (ior->io_Command == errcmd && erronce) {
+        /* one failing request, nothing written */
+        ior->io_Error = errval;
+        errcmd = 0;
+        erronce = 0;
+        goto done;
+    }
     switch (ior->io_Command) {
     case CD_INFO:
         for (i = 0; i < ior->io_Length && i < 26; i++)
@@ -241,11 +330,25 @@ static void dev_beginio(struct IOStdReq *ior __asm("a1"))
     }
     if (ior->io_Command == errcmd)
         ior->io_Error = errval;
-    /* SendIO (CDPlayTrack): done at once, but not replied - nobody
-       waits for it, and a reply would stay in the library's port (the
-       next one would link the same message again) */
-    if (!(ior->io_Flags & IOF_QUICK))
-        ior->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
+done:
+    /* SendIO (CDPlayTrack): kept until AbortIO in hold mode (a play in
+       progress), else done at once and replied (a reply the library does
+       not take stays at its port: portreplies) */
+    if (!(ior->io_Flags & IOF_QUICK)) {
+        ior->io_Message.mn_Node.ln_Type = NT_MESSAGE;
+        if (hold && ior->io_Command == CD_PLAYTRACK) {
+            if (held) {
+                held->io_Error = IOERR_ABORTED;
+                ReplyMsg(&held->io_Message);
+            }
+            held = ior;
+            return 0;
+        }
+        ReplyMsg(&ior->io_Message);
+    }
+    /* d0 0: the original's CDPlayTrack returns the d0 SendIO leaves
+       (BUG(orig) (#1157)), the same in both builds only if it is defined */
+    return 0;
 }
 
 static const APTR devfuncs[] = { (APTR)dev_open, (APTR)dev_close, (APTR)dev_null,
@@ -313,6 +416,25 @@ static void same_device(void)
     OBSBYTES("scsi_Command", last.scmd, 12);
 }
 
+/* CloseCD, finit: replies left at the port when the device was closed */
+static void closereplies(void)
+{
+    OBS("replies at the port at CloseDevice", last.atclose);
+    last.atclose = 0;
+}
+
+/* finit: the port is gone (no reply port to look at until the next
+   request) */
+static void finit(const char *what)
+{
+    ROUT = "finit";
+    strcpy(VEC, what);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+    same_device();
+    closereplies();
+    rport = NULL;
+}
+
 /* a call of entry idx, form `form`, d0/d1/d2 = arguments; d0 compared */
 static void call(int idx, int form, const char *name, ULONG d0, ULONG d1, ULONG d2)
 {
@@ -320,6 +442,10 @@ static void call(int idx, int form, const char *name, ULONG d0, ULONG d1, ULONG 
     DO1(ENT(LIB, idx, form), R.d[0] = d0; R.d[1] = d1; R.d[2] = d2);
     OBS("d0", R.d[0]);
     same_device();
+    if (idx == STOP)
+        OBS("replies at the port", portreplies());
+    if (idx == CLOSECD)
+        closereplies();
 }
 
 #define CALL0(idx, name) call(idx, 0, name, MARK(0), MARK(1), MARK(2))
@@ -330,6 +456,13 @@ static void opencd(const char *name, ULONG unit, int form, ULONG flag)
 {
     sprintf(VEC, "%s,%lu (form %d, scsiflag %lu)", name ? name : "-", unit, form, flag);
     call(OPENCD, form, "OpenCD", (ULONG)name, unit, flag);
+}
+
+/* the play of hold mode: still out, and the requests begun while it was */
+static void playstate(void)
+{
+    OBS("play held", held != NULL);
+    OBS("requests begun while the play was out", last.inflight);
 }
 
 /* CDUpdateInfo: d0 = the Q-code + 5 in the library (else a0 + 5) */
@@ -442,7 +575,7 @@ int main(int argc, char **argv)
     KEEPS("CDReadTOC", d5|d6|a2|a3);
     KEEPS("CDStatus", d2-d7|a2|a3);
     KEEPS("CDFlush", d1-d7|a0|a2|a3);
-    KEEPS("CDStop", d1-d7|a0|a2|a3);
+    KEEPS("CDStop", d2-d7|a2|a3);
     KEEPS("CDRewind", d1-d7|a0|a2|a3);
     KEEPS("CDFastForward", d1-d7|a0|a2|a3);
     KEEPS("CDNormalSpeed", d1-d7|a0|a2|a3);
@@ -536,6 +669,16 @@ int main(int argc, char **argv)
     CALL0(READTOC, "CDReadTOC");
     errcmd = 0;
     CALL0(STATUS, "CDStatus");
+    /* only the summary read fails (nothing written): the entries are read
+       with the last track of the summary before (BUG(orig) (#581)) */
+    ntracks = 9;
+    cdstatus = CDSTSF_CLOSED | CDSTSF_DISK | CDSTSF_TOC;
+    errcmd = CD_TOCMSF;
+    errval = CDERR_NotSpecified;
+    erronce = 1;
+    strcpy(VEC, "summary error");
+    CALL0(READTOC, "CDReadTOC");
+    tocfuncs(1, 3);
 
     /* OpenCD without arguments: rwecd.device unit 1 kept; the open
        request is lost (BUG(orig) (#578)) */
@@ -547,16 +690,57 @@ int main(int argc, char **argv)
     CALL0(CLOSECD, "CloseCD (again)");
     commands("closed");
 
-    /* scsiflag: the SCSI path */
+    /* a play in progress (kept until AbortIO): CDStop and CloseCD abort it
+       without WaitIO, the reply stays at the port (BUG(orig) (#574));
+       other commands and the next play use its request while it is out
+       (BUG(orig) (#1156)) */
+    hold = 1;
+    opencd(rwecd, 1, 1, 0);
+    strcpy(VEC, "held 1,1");
+    CALL2(PLAY, "CDPlayTrack", 1, 1);
+    playstate();
+    CALL0(STOP, "CDStop");
+    playstate();
+    strcpy(VEC, "held 2,1");
+    CALL2(PLAY, "CDPlayTrack", 2, 1);
+    CALL0(STATUS, "CDStatus");
+    playstate();
+    CALL0(STOP, "CDStop");
+    playstate();
+    strcpy(VEC, "held 3,1 4,1");
+    CALL2(PLAY, "CDPlayTrack", 3, 1);
+    CALL2(PLAY, "CDPlayTrack", 4, 1);
+    playstate();
+    CALL0(STOP, "CDStop");
+    playstate();
+    strcpy(VEC, "held 5,1 closed");
+    CALL2(PLAY, "CDPlayTrack", 5, 1);
+    CALL0(CLOSECD, "CloseCD");
+    playstate();
+    hold = 0;
+
+    /* scsiflag: the SCSI path; CDPlayTrack before CDReadTOC (in
+       commands), then after it: the first, the last, more tracks than
+       there are, track 0 (behind the first) and behind the last */
     opencd(rwecd, 2, 2, 1);
     commands("scsi");
     strcpy(VEC, "scsi");
     CALL0(READTOC, "CDReadTOC");
-    CALL0(NUMTRACKS, "CDNumTracks");
-    CALL0(FIRST, "CDFirstTrack");
-    CALL0(LAST, "CDLastTrack");
+    tocfuncs(2, 7);
     sprintf(VEC, "scsi 5,1");
     CALL2(PLAY, "CDPlayTrack", 5, 1);
+    sprintf(VEC, "scsi 2,1");
+    CALL2(PLAY, "CDPlayTrack", 2, 1);
+    sprintf(VEC, "scsi 7,1");
+    CALL2(PLAY, "CDPlayTrack", 7, 1);
+    sprintf(VEC, "scsi 6,5");
+    CALL2(PLAY, "CDPlayTrack", 6, 5);
+    sprintf(VEC, "scsi 0,1");
+    CALL2(PLAY, "CDPlayTrack", 0, 1);
+    sprintf(VEC, "scsi 8,1");
+    CALL2(PLAY, "CDPlayTrack", 8, 1);
+    sprintf(VEC, "scsi 3,0");
+    CALL2(PLAY, "CDPlayTrack", 3, 0);
     CALL0(CLOSECD, "CloseCD");
     /* OpenCD without arguments: still the SCSI path */
     opencd(NULL, 0, 0, 0);
@@ -571,25 +755,22 @@ int main(int argc, char **argv)
     CALL0(NUMTRACKS, "CDNumTracks");
 
     /* finit with the device open, again without port, init again */
-    strcpy(VEC, "open");
-    ROUT = "finit";
-    DO1(ENT(LIB, FINIT, 0), (void)0);
-    same_device();
-    strcpy(VEC, "again");
-    DO1(ENT(LIB, FINIT, 0), (void)0);
-    same_device();
+    finit("open");
+    finit("again");
     ROUT = "init";
     strcpy(VEC, "again");
     DO1(ENT(LIB, INIT, 0), (void)0);
     ntracks = 9;
     opencd(NULL, 0, 0, 0);              /* the name is cd.device again */
     opencd(rwecd, 0, 1, 0);
+    /* the TOC functions before any CDReadTOC (BUG(orig) (#582): toc is
+       0, they read from address 0) */
+    tocfuncs(1, 2);
+    strcpy(VEC, "again");
     CALL0(READTOC, "CDReadTOC");
     tocfuncs(1, 2);
     CALL2(PLAY, "CDPlayTrack", 2, 1);   /* scsiflag 0 again */
-    ROUT = "finit";
-    DO1(ENT(LIB, FINIT, 0), (void)0);
-    same_device();
+    finit("played");
 
     /* no request: CreateIORequest fails */
     ROUT = "init";
@@ -602,8 +783,7 @@ int main(int argc, char **argv)
     CacheClearU();
     Permit();
     commands("no request");
-    ROUT = "finit";
-    DO1(ENT(LIB, FINIT, 0), (void)0);
+    finit("no request");
 
     /* no message port: CreateMsgPort fails in init */
     Forbid();
@@ -617,9 +797,7 @@ int main(int argc, char **argv)
     Permit();
     opencd(rwecd, 0, 1, 0);
     commands("no port");
-    ROUT = "finit";
-    strcpy(VEC, "no port");
-    DO1(ENT(LIB, FINIT, 0), (void)0);
+    finit("no port");
 
     printf("rwecd.device: %lu requests, %lu opens, %lu failed, %lu aborts\n", last.n,
            last.opens, last.failed, last.aborts);

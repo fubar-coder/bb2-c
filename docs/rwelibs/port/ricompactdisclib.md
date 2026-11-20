@@ -88,25 +88,36 @@ original) with memlib; the scenario writes its observations as cases,
 compared with the expected data
 `libs/tests/expected/rwe_ricompactdisclib.txt` recorded from the
 original. The library talks to a device of the test, `rwecd.device`
-(MakeLibrary + AddDevice) - there is no CD drive in the emulator. It
+(MakeLibrary + AddDevice): the emulator's `uaescsi.device` answers the
+SCSI path, but not cd.device's CD_TOCMSF and CD_QCODEMSF, and it ends
+every play at once (measured 2026-11-20). It
 plays a CD of 9, 50 or 20 tracks (CD_INFO with a Status word, CD_TOCMSF
 summary and entries, a moving CD_QCODEMSF position, HD_SCSICMD READ TOC
-header), logs every request (command, flags, length, offset, where the
-data pointer points, the SCSICmd and its command bytes), opens, closes
-and AbortIOs, refuses unit 3 and sets an io_Error on request. Observed
+header and track descriptors), replies a play (SendIO) at once or, in
+hold mode, keeps it until AbortIO, logs every request (command, flags,
+length, offset, where the data pointer points, the SCSICmd and its
+command bytes), opens, closes and AbortIOs, the requests begun while a
+held play is out and the replies left at the library's port, refuses
+unit 3 and sets an io_Error on request (also for one request only).
+Observed
 are d0, the requests, the Q-code bytes behind `CDUpdateInfo`'s address
 and the kept registers; at the end all memory must be back (a check of
 the program's own). Cases:
 every command without a device; OpenCD of cd.device (not in the
 emulator: the failure path), of unit 3, with the name kept, while open
 and in all three forms; all CD commands with on/off values 0-3 and -1;
-io_Errors of CD_EJECT, CD_INFO, CD_TOCMSF; CDReadTOC repeated (old TOC
-freed); CDTrackLength 1-9 and 40-50 (the track 44 bug); offsets 0, 1,
+io_Errors of CD_EJECT, CD_INFO, CD_TOCMSF, a failing summary read only;
+CDReadTOC repeated (old TOC freed); a play in progress stopped, closed
+and its request used again; the TOC functions before any CDReadTOC
+(address 0); CDTrackLength 1-9 and 40-50 (the track 44 bug); offsets 0, 1,
 4, 5, −1..−5 and set high bits for CDTrackMins/Secs; the SCSI path
-(PLAY AUDIO(12) bytes, READ TOC, CDNumTracks from the SCSI data, the
+(PLAY AUDIO(12) bytes before and after READ TOC, with tracks inside, at
+the ends of and outside the TOC, READ TOC, the TOC functions, the
 flag kept); CloseCD twice; finit with a device open and again; init
 again; init without a port (CreateMsgPort fails) and OpenCD without a
 request (CreateIORequest fails). Not covered: a real drive, names over
-40 bytes, CDTrackLength 0 or behind the last track (unwritten memory),
-the TOC functions before any CDReadTOC (address 0), the SCSI
-`CDPlayTrack` on a 68000 (the emulator has a 68020), globalloc failing.
+40 bytes (bug-orig test `ricompactdisclib-opencd-name-overflow`),
+CDTrackLength 0 or behind the last track (unwritten memory), the SCSI
+`CDPlayTrack` on a 68000 (bug-orig test
+`ricompactdisclib-playtrack-scsi-odd` on the a600; the library test runs
+on the a1200), globalloc failing.
