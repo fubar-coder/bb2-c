@@ -20,12 +20,12 @@
  *   - NewZoneTable (bad numbers and sizes; it initialises the current
  *     table, BUG(orig), #875), UseZoneTable, ZoneTableNumber, ZoneTableSize,
  *     ZoneTable, ZoneTest from zone 256 on (#881: the low byte in the original),
- *     FreeZoneTable (the entry stays set, BUG(orig), #868);
+ *     FreeZoneTable (#868: the original leaves the freed table in its entry);
  *   - JFire, JVert, JHoriz for the ports 0..5 with the adaptor on and
  *     off, JAdaptorStatus, AllFire with and without bits, ReadJoyPad for
  *     ports 0, 1, 2 - with nobody at the joysticks the hardware gives the
  *     same values to both builds.
- * Freed tables stay in the library's list (BUG(orig), #868 #871); the test finds the
+ * In the original freed tables stay in the library's list (#868 #871); the test finds the
  * list in each build's data and clears those entries, so that a later
  * finit does not free them twice.  The second init (without memory) is
  * the next run of a program with the library still loaded: what finit
@@ -380,7 +380,7 @@ int main(int argc, char **argv)
     CALLV(E_ZTNUM, 0, "ZoneTableNumber", (void)0);
     strcpy(VEC, "0 after 7 freed");
     CALLV(E_USEZT, 0, "UseZoneTable", R.d[0] = 0);
-    zlist[7] = 0;                          /* not freed twice by finit */
+    zlist[7] = 0;                          /* the original: not freed twice by finit */
 
     joysticks();
 

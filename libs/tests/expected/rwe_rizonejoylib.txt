@@ -208,7 +208,8 @@ FreeZoneTable|d0|16|1	$00000000
 FreeZoneTable|d0|5|1	$00000000
 FreeZoneTable|d0|7 (current)|1	$FFFFFFFF
 FreeZoneTable|d0|no table|1	$00000000
-FreeZoneTable|entry 7 still set|7 (current)|1	$00000001
+FreeZoneTable|entry 7 still set|7 (current)|1 [orig]	$00000001
+FreeZoneTable|entry 7 still set|7 (current)|1 [fixed #868]	$00000000
 FreeZoneTable|kept|0|1	kept
 FreeZoneTable|kept|16|1	kept
 FreeZoneTable|kept|5|1	kept
@@ -1697,7 +1698,8 @@ UseZoneTable|d0|16|1	$00000000
 UseZoneTable|d0|3|1	$FFFFFFFF
 UseZoneTable|d0|5 (empty)|1	$00000000
 UseZoneTable|d0|7|1	$FFFFFFFF
-UseZoneTable|d0|7 (freed)|1	$FFFFFFFF
+UseZoneTable|d0|7 (freed)|1 [orig]	$FFFFFFFF
+UseZoneTable|d0|7 (freed)|1 [fixed #868]	$00000000
 UseZoneTable|d0|no table|1	$00000000
 UseZoneTable|d0|second run: 3 of the run before|1	$FFFFFFFF
 UseZoneTable|kept|0|1	kept
@@ -5342,7 +5344,8 @@ ZoneTable|zonetablelist found||1	$00000001
 ZoneTableNumber|d0||1	$00000000
 ZoneTableNumber|d0|3|1	$00000003
 ZoneTableNumber|d0|7 (current)|1	$00000000
-ZoneTableNumber|d0|7 (freed)|1	$00000007
+ZoneTableNumber|d0|7 (freed)|1 [orig]	$00000007
+ZoneTableNumber|d0|7 (freed)|1 [fixed #868]	$00000000
 ZoneTableNumber|d0|no table|1	$FFFFFFFF
 ZoneTableNumber|d0|zone $12340003|1	$00000000
 ZoneTableNumber|kept||1	kept

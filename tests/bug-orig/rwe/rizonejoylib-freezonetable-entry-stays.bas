@@ -7,6 +7,7 @@
 ; again (FreeMem put the memory list's header there), so that finit frees
 ; it once and with the right size.
 ; Correct: the entry is cleared, UseZoneTable 1 returns 0.
+; @fixed #868
 ; @rwe rizonejoylib
 DEFTYPE .l
 r=NewZoneTable(1,10)

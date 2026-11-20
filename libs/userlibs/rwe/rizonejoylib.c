@@ -31,11 +31,9 @@
  *     _zonetable), not the new one, which keeps AllocMem's garbage
  *     (#875); if the old table of that number was freed and the AllocMem
  *     fails, the entry keeps the freed block (#874).
- *   - FreeZoneTable leaves the freed block in its entry (finit and a
- *     NewZoneTable of that number free it again) (#868) and always makes
- *     table 0 the current one (#869).  finit leaves all entries set and
- *     init clears only entry 0: a second init/finit frees the other
- *     tables again (#871).
+ *   - FreeZoneTable always makes table 0 the current one (#869).  finit
+ *     leaves all entries set and init clears only entry 0: a second
+ *     init/finit frees the other tables again (#871).
  *   - ReadJoyPad reads the joystick port for every port number but 2
  *     (#877).
  * Fixed (intended deviations):
@@ -93,6 +91,10 @@
  *   - Without a table (init could not allocate table 0) SetZone returns
  *     0 (nothing set) and ZoneTable 0; the original returned -1 for both,
  *     "done" and an address (#876, D-018).
+ *   - FreeZoneTable clears the table's list entry.  The original left
+ *     the freed block there: finit (or NewZoneTable of the number) freed
+ *     it a second time, and UseZoneTable of the number selected it
+ *     (#868).
  * Original behaviour that is no defect: JHoriz(1) "right" returns d0
  * unchanged (the port number 1, which is also the result for "right").
  */
@@ -338,8 +340,7 @@ static void BLITZ_ROUTINE initmem_c(void);
 /**
  * @brief finit: frees every zone table of the list.
  *
- * BUG(orig) (#871): the entries stay set (and #868: FreeZoneTable leaves
- * its freed block there, freed here again).
+ * BUG(orig) (#871): the entries stay set.
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -747,8 +748,9 @@ static BB_BOOL BLITZ_ROUTINE usezonetable_c(ULONG n BL_REG(d0))
 /**
  * @brief FreeZoneTable table#: frees zone table n (1..15).
  *
- * BUG(orig): the freed block stays in its entry (#868), table 0 always
- * becomes the current one (#869).  Fixed (#872): n is compared unsigned,
+ * The entry is cleared: fixed (#868), the original left the freed block
+ * there.  BUG(orig): table 0 always becomes the current one (#869).
+ * Fixed (#872): n is compared unsigned,
  * a negative n is refused (the original freed the current table).
  * @param n  d0: the table number
  * @return d0: BB_TRUE done, BB_FALSE bad number or no such table
@@ -762,7 +764,8 @@ static BB_BOOL BLITZ_ROUTINE freezonetable_c(ULONG n BL_REG(d0))
     e = entry(n);
     if (!*e)
         return BB_FALSE;
-    free_mem(*e);                                       /* BUG(orig): stays (#868) */
+    free_mem(*e);
+    *e = NULL;                                          /* fixed (#868) */
     zd.zonetable = zd.list[0];
     return BB_TRUE;
 }
