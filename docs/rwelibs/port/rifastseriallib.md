@@ -18,8 +18,7 @@ reference BSS2 `RIFASTSERIALLIB.OBJ` (1920 bytes) = the blitz2 2.10
 build of the source. The C build has the same declarations
 (`rwe_declarations_rifastseriallib`); the code is not byte-identical.
 
-**C:** everything except one instruction
-(`libs/userlibs/rwe/rifastseriallib.c`). The custom chip registers are
+**C:** everything (`libs/userlibs/rwe/rifastseriallib.c`). The custom chip registers are
 volatile accesses of the original's width (the TBE/RBF tests read the
 high byte of SERDATR like `BTST #5/#6,$dff018`, the data its low byte;
 SERDAT, SERPER, INTENA, INTREQ are words); the source's macros
@@ -30,18 +29,17 @@ keeps the original's order and sizes, including `mode` and `temp` as the
 first byte of a word. Every entry is a thunk that keeps those of
 d0/d1/a0/a1 that are not the result.
 
-**Assembler:** `DIVU.L d0,d1` in InitSerialIO/SetIOSpeed. The source
-writes this 68020 instruction as data (`!divul {0,1}` = `Dc.w
-$4c40,$1001`); the library is built for the 68000, where C would divide
-with a libgcc routine that works on every CPU, while the original takes
-an illegal instruction exception on a 68000 (BUG(orig) (#647), kept). So
-it is the same `.word` in a small inline asm.
+**Fixed** (intended deviations, `docs/libs/deviations.md` 3a, kind F):
+
+* `InitSerialIO`/`SetIOSpeed` divide in C (bit by bit), which works on every
+  CPU; the source writes `DIVU.L d0,d1`, a 68020 instruction, as data
+  (`!divul {0,1}` = `Dc.w $4c40,$1001`), an illegal instruction exception
+  on a 68000 (#647; test `rifastseriallib-divul-68000` on the A600).
 
 **BUG(orig)** (kept):
 
-* `InitSerialIO`/`SetIOSpeed` use DIVU.L, a 68020 instruction (above);
-  `SetIOSpeed` divides by all of d0, also the upper word of its #word
-  argument (#647, #654).
+* `SetIOSpeed` divides by all of d0, also the upper word of its #word
+  argument (#654).
 * `InitSerialIO` stores the immediate `#$dff000+intenar` (the word
   `$F01C`) to `inten` instead of reading INTENAR, and `FinitSerialIO`
   writes to the absolute address `$9A` (`intena` without `custom+`). With

@@ -3,6 +3,7 @@
 ; it is an illegal instruction (the session ends in a timeout).  The
 ; machine is the A600 (68000).
 ; Correct: InitSerialIO works on a 68000.
+; @fixed #647
 ; @rwe rifastseriallib
 ; @machine a600
 ; @pass timeout=30

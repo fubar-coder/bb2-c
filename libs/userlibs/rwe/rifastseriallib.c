@@ -20,21 +20,22 @@
  * $dff018), the data the low byte ($dff019), SERDAT/SERPER/INTENA/INTREQ
  * are written as words.  The macros !writebyte/!readbyte of the source
  * are the functions writebyte/readbyte.
- * Assembler only for DIVU.L (InitSerialIO/SetIOSpeed): the source writes
- * the 68020 instruction as data (!divul {0,1} = Dc.w $4c40,$1001, DIVU.L
- * d0,d1); a 68000 build of C would divide with a libgcc call that works
- * on every CPU, the original takes an illegal instruction exception on a
- * 68000 (BUG(orig) (#647), kept).
+ * No assembler but the thunks.  The source divides with DIVU.L d0,d1, a
+ * 68020 instruction written as data (!divul {0,1} = Dc.w $4c40,$1001):
+ * an illegal instruction exception on a 68000.  Fixed (#647): a C
+ * division bit by bit (udiv), which works on every CPU.
  *
  * State: mode (SetSerialMode writes the first byte of the word, TST.b
  * reads it), numbytes (DoSerialIO's count - 1), inbuf/outbuf, baud (the
  * SERPER value, 0 = not initialised), inten, bytebuf (temp: one byte
  * buffer, the first byte of a word).
  *
+ * Fixed (intended deviations):
+ *   - InitSerialIO/SetIOSpeed divide in C, not with the 68020 instruction
+ *     DIVU.L (above) (#647).
  * BUG(orig):
- *   - InitSerialIO/SetIOSpeed use DIVU.L, a 68020 instruction (above);
- *     SetIOSpeed divides by all of d0, also the upper word of its #word
- *     argument (#647, #654).
+ *   - SetIOSpeed divides by all of d0, also the upper word of its #word
+ *     argument (#654).
  *   - InitSerialIO stores the immediate #$dff000+intenar (the word $F01C)
  *     to inten instead of reading INTENAR, and FinitSerialIO writes to
  *     the absolute address $9A (intena without custom+).  With $F01C
@@ -203,16 +204,6 @@ static struct {
     UBYTE bytebuf[2];                   /* temp, Dc.w: the first byte is used */
 } fs;
 
-/* !divul {0,1}: DIVU.L d0,d1 (68020) - see the head comment */
-static ULONG divul(ULONG divisor, ULONG dividend)
-{
-    register ULONG d0 __asm("d0") = divisor;
-    register ULONG d1 __asm("d1") = dividend;
-
-    __asm__ volatile(".word 0x4c40,0x1001" : "+d"(d1) : "d"(d0) : "cc");
-    return d1;
-}
-
 /* !writebyte: wait for TBE, send the byte with a stop bit */
 static void writebyte(UBYTE b)
 {
@@ -233,10 +224,29 @@ static UBYTE readbyte(void)
     return b;
 }
 
-/* the baud rate as SERPER: 3546895 / baud - 1 (SUBQ.w) */
+/* n / d, unsigned, bit by bit on every CPU (the library links no
+   division routine; not a hot path: once per InitSerialIO/SetIOSpeed) */
+static ULONG udiv(ULONG n, ULONG d)
+{
+    ULONG q = 0, r = 0;
+    int i;
+
+    for (i = 31; i >= 0; i--) {
+        r = r << 1 | (n >> i & 1);
+        if (r >= d) {
+            r -= d;
+            q |= 1UL << i;
+        }
+    }
+    return q;
+}
+
+/* the baud rate as SERPER: 3546895 / baud - 1 (SUBQ.w); fixed (#647):
+   a division that works on a 68000, the original's DIVU.L is a 68020
+   instruction */
 static void setbaud(ULONG baud)
 {
-    fs.baud = (UWORD)(divul(baud, SERCLOCK) - 1);
+    fs.baud = (UWORD)(udiv(SERCLOCK, baud) - 1);
     SERPER = fs.baud;
 }
 
@@ -314,9 +324,9 @@ void BLITZ_ROUTINE c_doserialIO2(void)
  * @brief InitSerialIO baud,numbytes,inbuf,outbuf: set up the serial port for the transfers.
  *
  * Nothing if already initialised.  Switches the TBE and RBF interrupts
- * off (INTENA $0801), sets SERPER = 3546895 / baud - 1 with DIVU.L, a
- * 68020 instruction: an illegal instruction exception on a 68000
- * (BUG(orig) (#647)), and stores numbytes - 1 and the buffers.
+ * off (INTENA $0801), sets SERPER = 3546895 / baud - 1 (fixed (#647): a
+ * division that works on a 68000, the original's DIVU.L is a 68020
+ * instruction), and stores numbytes - 1 and the buffers.
  * BUG(orig): inten gets the immediate $F01C (the address of INTENAR), not
  * INTENAR's value (#651); a baud rate that gives SERPER 0 (>= 1773448)
  * leaves the library "not initialised" (#653).
@@ -527,8 +537,8 @@ BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
 /**
  * @brief SetIOSpeed baudrate: a new baud rate (SERPER) if initialised.
  *
- * DIVU.L as in InitSerialIO (68020, #647); BUG(orig) (#654): it divides
- * by all of d0, also the upper word of its #word argument.
+ * The division as in InitSerialIO (fixed, #647); BUG(orig) (#654): it
+ * divides by all of d0, also the upper word of its #word argument.
  * @param baud  d0: the baud rate
  */
 void BLITZ_ROUTINE c_setiospeed(ULONG baud BL_REG(d0))
