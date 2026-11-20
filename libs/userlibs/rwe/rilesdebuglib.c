@@ -56,9 +56,7 @@
  *   - PeekMax$ copies max+1 characters but returns the length max (a3 is
  *     one behind the result) (#718).
  *   - GetCustomReg of a name of 8 characters copies one more character
- *     (the first of the next name) and returns 8 (#712); a negative
- *     register word (d0.l not negative) reads in front of the name table
- *     (#714).
+ *     (the first of the next name) and returns 8 (#712).
  *   - GetCustomRegAdr matches a prefix (the name may go on behind the
  *     table's), never finds a name of 8 characters (#713), and never
  *     looks at the last register ($1FE NOOP) (#702).
@@ -97,6 +95,11 @@
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
  *     other data) (#700).
+ * Fixed:
+ *   - GetCustomReg tests the register word unsigned against $1FC; the
+ *     original tested the word signed and the long for a negative value,
+ *     so a negative word with d0.l not negative read in front of the name
+ *     table (#714).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1199,9 +1202,10 @@ static ULONG BLITZ_ROUTINE getcopins_c(const UWORD *ins BL_REG(d0))
  *
  * The name up to its first space, at most 8 characters, at a3; a name
  * of 8 characters copies one more (the first of the next name) and
- * returns 8 (BUG(orig) (#712)).  The range test checks the word above
- * $1FC but the long for negative: a negative word with d0.l not negative
- * reads in front of the name table (#714).
+ * returns 8 (BUG(orig) (#712)).  The range test compares the word
+ * unsigned (fixed #714: the original tested the word signed and the long
+ * for negative, so a negative word with d0.l not negative read in front
+ * of the name table); the high word is not looked at.
  * @param reg  d0.w: the register's offset ($000-$1FC)
  * @return d0: the length, 0 for an offset out of range
  */
@@ -1210,9 +1214,9 @@ static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
     const UBYTE *p;
     ULONG n;
 
-    if ((WORD)reg > 0x1fc || (LONG)reg < 0)
+    if ((UWORD)reg > 0x1fc)                             /* fixed (#714) */
         return 0;
-    p = &customchipnames[0][0] + (WORD)(reg << 2);
+    p = &customchipnames[0][0] + ((UWORD)reg << 2);
     for (n = 0;; n++) {
         if (*p == ' ')
             break;

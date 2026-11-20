@@ -4038,8 +4038,10 @@ GetCustomReg|a3|$1FA|1	$0000000D
 GetCustomReg|a3|$1FB|1	$0000000D
 GetCustomReg|a3|$1FC|1	$00000009
 GetCustomReg|a3|$1FD|1	$00000004
-GetCustomReg|a3|$80000000|1	$00000004
-GetCustomReg|a3|$FFFF0010|1	$00000004
+GetCustomReg|a3|$80000000|1 [orig]	$00000004
+GetCustomReg|a3|$80000000|1 [fixed #714]	$0000000B
+GetCustomReg|a3|$FFFF0010|1 [orig]	$00000004
+GetCustomReg|a3|$FFFF0010|1 [fixed #714]	$0000000B
 GetCustomReg|d0|$000|1	$00000007
 GetCustomReg|d0|$000001FE|1	$00000000
 GetCustomReg|d0|$000001FF|1	$00000000
@@ -4554,8 +4556,10 @@ GetCustomReg|d0|$1FA|1	$00000008
 GetCustomReg|d0|$1FB|1	$00000008
 GetCustomReg|d0|$1FC|1	$00000005
 GetCustomReg|d0|$1FD|1	$00000000
-GetCustomReg|d0|$80000000|1	$00000000
-GetCustomReg|d0|$FFFF0010|1	$00000000
+GetCustomReg|d0|$80000000|1 [orig]	$00000000
+GetCustomReg|d0|$80000000|1 [fixed #714]	$00000007
+GetCustomReg|d0|$FFFF0010|1 [orig]	$00000000
+GetCustomReg|d0|$FFFF0010|1 [fixed #714]	$00000007
 GetCustomReg|kept|$000|1	kept
 GetCustomReg|kept|$000001FE|1	kept
 GetCustomReg|kept|$000001FF|1	kept
@@ -5587,8 +5591,10 @@ GetCustomReg|out|$1FA|1	bytes 800 fnv 1DD189ED
 GetCustomReg|out|$1FB|1	bytes 800 fnv A9998BB2
 GetCustomReg|out|$1FC|1	bytes 800 fnv BE31401C
 GetCustomReg|out|$1FD|1	bytes 800 fnv 34142445
-GetCustomReg|out|$80000000|1	bytes 800 fnv 34142445
-GetCustomReg|out|$FFFF0010|1	bytes 800 fnv 34142445
+GetCustomReg|out|$80000000|1 [orig]	bytes 800 fnv 34142445
+GetCustomReg|out|$80000000|1 [fixed #714]	bytes 800 fnv 10B56352
+GetCustomReg|out|$FFFF0010|1 [orig]	bytes 800 fnv 34142445
+GetCustomReg|out|$FFFF0010|1 [fixed #714]	bytes 800 fnv 16D60EA3
 GetCustomReg|popped|$000|1	$00000000
 GetCustomReg|popped|$000001FE|1	$00000000
 GetCustomReg|popped|$000001FF|1	$00000000

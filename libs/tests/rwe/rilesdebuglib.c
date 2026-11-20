@@ -43,9 +43,9 @@
  * state it starts with (#1169); finit.
  * Not covered: counts of 0 for D_HexWord/D_CheckNMove* (65536 entries
  * into the destination); GetCustomReg with a negative word but a positive
- * long (reads in front of the table: DIFF); more than 20 AddProcessPtr
- * entries and ProcessString with a '%' at the end
- * (they read or write beyond the library's data); the real debugger
+ * long (the original reads in front of the table, #714); more than 20
+ * AddProcessPtr entries and ProcessString with a '%' at the end (they
+ * read or write beyond the library's data); the real debugger
  * program that uses the library.
  */
 #include "rwecmp.h"

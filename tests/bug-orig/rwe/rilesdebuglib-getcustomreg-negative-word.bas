@@ -5,6 +5,7 @@
 ; is copied from there (code or data, up to a space or 9 characters).
 ; The long $0000FFF0 reads 64 bytes in front of the table.
 ; Correct: the register $FFF0 does not exist, the name is empty.
+; @fixed #714
 ; @rwe rilesdebuglib
 DEFTYPE .l
 x=$FFF0

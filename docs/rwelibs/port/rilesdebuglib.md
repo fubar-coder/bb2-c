@@ -104,9 +104,7 @@ d5-d7, a0-a3 and a6 in places.
 * FPrintDetoke's inverse drawing computes the inverted bytes; the
   original inverts the glyph in the font itself (`NOT.l`) and back. Same
   output.
-* GetCustomReg of a negative word with a positive long reads in front of
-  the name table: the original the code of GetCopIns$, the C build other
-  data. AddProcessPtr's 21st entry overwrites the code of D_InitParse in
+* AddProcessPtr's 21st entry overwrites the code of D_InitParse in
   the original, other data in the C build; D_InitParse with more than 255
   characters overwrites the parser's pointer and code in the original,
   other data in the C build.
@@ -126,6 +124,14 @@ d5-d7, a0-a3 and a6 in places.
   same kind of value as from V36 on, an entry of a list the program no
   longer holds (#1148; test `rilesdebuglib-v36-calls` on the a500,
   a500-204 and a1200).
+* `GetCustomReg` compares the register word unsigned with $1FC and looks
+  at the word only. The original compared the word signed and tested the
+  whole long for a negative value: a word of $8000 or more with d0.l not
+  negative passed, and the name was copied from up to 32 KB in front of
+  the name table (the code of GetCopIns$ in the original). (#714; test
+  `rilesdebuglib-getcustomreg-negative-word`; the `libs_emulator` cases
+  `[fixed #714]` of $FFFF0010 and $80000000, whose words name $010 and
+  $000.)
 
 ## BUG(orig)
 
@@ -139,8 +145,7 @@ d5-d7, a0-a3 and a6 in places.
 * PeekMax$ copies max+1 characters but returns the length max (a3 one
   character behind the result) (#718).
 * GetCustomReg of a name of 8 characters copies the first character of
-  the next name too and returns 8 (#712); a negative register word with
-  a positive long reads in front of the name table (#714).
+  the next name too and returns 8 (#712).
 * GetCustomRegAdr matches a prefix (`DMACONXYZ` gives $096), never finds
   a name of 8 characters (the compare runs into the next name) (#713),
   and stops before the last register ($1FE `NOOP`) (#702).
