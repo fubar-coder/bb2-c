@@ -92,6 +92,8 @@
  *   CloseCD first"; the manual asks for CloseCD between them).  The
  *   release code is the original's: the open request is lost and stays
  *   open (D-005).
+ * Fixed (#587): CDUpdateInfo returns 0 without an open device; the
+ *   original returns the caller's a0 + 5.
  *
  * BUG(orig):
  *   - CDVolume volume,fade puts the volume into io_Length and the fade into
@@ -100,7 +102,6 @@
  *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
  *     blocks 14000 to 15000 (test values) and sets io_Offset = 1 (#580).
- *   - CDUpdateInfo without an open device returns the caller's a0 + 5 (#587).
  *   - CDStatus asks for 26 bytes of CD_INFO (a struct CDInfo has 34): a
  *     device that writes all of it (uaescsi.device) writes 8 bytes behind
  *     MyCDInfo, the end of the library.  DIFF: here 8 bytes of room behind
@@ -808,12 +809,12 @@ ULONG BLITZ_ROUTINE c_cdtracklength(ULONG track BL_REG(d0))
 }
 
 /* CDUpdateInfo (doinfo: CD_QCODEMSF into qcodeinfo): the address of the track position's minutes;
-   BUG(orig) (#587): without device the caller's a0 + 5
-   (prev = a0 on entry) */
-ULONG BLITZ_ROUTINE c_cdtracktime(ULONG prev BL_REG(a0))
+   Fixed (#587): 0 without a device; the original returns the caller's a0 + 5
+   (its a0 is loaded only after the test of flag) */
+ULONG BLITZ_ROUTINE c_cdtracktime(void)
 {
     if (!cd.flag)
-        return prev + 5;
+        return 0;
     cdio(DOIO, CD_QCODEMSF, cd.qcodeinfo, 0, 0);
     return (ULONG)cd.qcodeinfo + 5;
 }

@@ -109,6 +109,8 @@ d1/d2 (CDTrackLength) are not reproduced.
   manual: "you must call CloseCD between calls to OpenCD"). The release
   code is the original's (D-005): the open request is lost and stays
   open. (#578)
+* `CDUpdateInfo` returns 0 without an open device; the original returns
+  the caller's a0 + 5. (#587)
 
 **BUG(orig)** (kept):
 
@@ -116,7 +118,6 @@ d1/d2 (CDTrackLength) are not reproduced.
   io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
   15000 (test values), io_Offset = 1. (#580)
-* `CDUpdateInfo` without an open device returns the caller's a0 + 5. (#587)
 * `CDStatus` asks for 26 bytes of CD_INFO, a struct CDInfo has 34: a
   device that writes all of it (uaescsi.device) writes 8 bytes behind
   `MyCDInfo`, the end of the library (here into `mycdinfo_rest`, see

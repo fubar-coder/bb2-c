@@ -28,9 +28,9 @@
  * (other registers = markers); observed are d0, the requests the device
  * saw, the data the commands return (the Q-code bytes behind
  * CDUpdateInfo's address) and the kept registers.
- * Covered: every command without an open device (0; BUG(orig) (#587):
- * CDUpdateInfo returns a0 + 5, CDTrackMins/Secs/Playing read their data
- * anyway), OpenCD of cd.device (missing in the emulator: the failure
+ * Covered: every command without an open device (0; CDUpdateInfo in the
+ * original a0 + 5, fixed #587: 0; CDTrackMins/Secs/Playing read their
+ * data anyway), OpenCD of cd.device (missing in the emulator: the failure
  * path; the original returns the d0 of DeleteIORequest, fixed #575: 0), of unit 3 (OpenDevice fails),
  * the name and unit kept for OpenCD without arguments (the original; fixed #577: cd.device unit 0), OpenCD while open
  * (the old request is lost: the release code as the original, the error check of #578 is not called here), all CD commands with their

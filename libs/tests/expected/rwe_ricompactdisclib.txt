@@ -12133,16 +12133,24 @@ CDUpdateInfo|command|no request 0x7fff,0|1	$00000000
 CDUpdateInfo|command|not open 0x7fff,0|1	$00000000
 CDUpdateInfo|command|open 0x7fff,0|1	$0000002A
 CDUpdateInfo|command|scsi 0x7fff,0|1	$0000002A
-CDUpdateInfo|d0|closed 0x7fff,0|1	$5A081239
-CDUpdateInfo|d0|no port 0x7fff,0|1	$5A081239
-CDUpdateInfo|d0|no request 0x7fff,0|1	$5A081239
-CDUpdateInfo|d0|not open 0x7fff,0|1	$5A081239
+CDUpdateInfo|d0|closed 0x7fff,0|1 [orig]	$5A081239
+CDUpdateInfo|d0|closed 0x7fff,0|1 [fixed #587]	$00000000
+CDUpdateInfo|d0|no port 0x7fff,0|1 [orig]	$5A081239
+CDUpdateInfo|d0|no port 0x7fff,0|1 [fixed #587]	$00000000
+CDUpdateInfo|d0|no request 0x7fff,0|1 [orig]	$5A081239
+CDUpdateInfo|d0|no request 0x7fff,0|1 [fixed #587]	$00000000
+CDUpdateInfo|d0|not open 0x7fff,0|1 [orig]	$5A081239
+CDUpdateInfo|d0|not open 0x7fff,0|1 [fixed #587]	$00000000
 CDUpdateInfo|d0 in the library|$ABCD0001|1	$00000001
 CDUpdateInfo|d0 in the library|9|1	$00000001
-CDUpdateInfo|d0 in the library|closed 0x7fff,0|1	$00000002
-CDUpdateInfo|d0 in the library|no port 0x7fff,0|1	$00000002
-CDUpdateInfo|d0 in the library|no request 0x7fff,0|1	$00000002
-CDUpdateInfo|d0 in the library|not open 0x7fff,0|1	$00000002
+CDUpdateInfo|d0 in the library|closed 0x7fff,0|1 [orig]	$00000002
+CDUpdateInfo|d0 in the library|closed 0x7fff,0|1 [fixed #587]	$00000000
+CDUpdateInfo|d0 in the library|no port 0x7fff,0|1 [orig]	$00000002
+CDUpdateInfo|d0 in the library|no port 0x7fff,0|1 [fixed #587]	$00000000
+CDUpdateInfo|d0 in the library|no request 0x7fff,0|1 [orig]	$00000002
+CDUpdateInfo|d0 in the library|no request 0x7fff,0|1 [fixed #587]	$00000000
+CDUpdateInfo|d0 in the library|not open 0x7fff,0|1 [orig]	$00000002
+CDUpdateInfo|d0 in the library|not open 0x7fff,0|1 [fixed #587]	$00000000
 CDUpdateInfo|d0 in the library|open 0x7fff,0|1	$00000001
 CDUpdateInfo|d0 in the library|scsi 0x7fff,0|1	$00000001
 CDUpdateInfo|data|$ABCD0001|1	$00000001
