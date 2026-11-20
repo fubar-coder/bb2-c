@@ -3,44 +3,63 @@ InitSnowDrop|COLOR00|0,300|1	$00001234
 InitSnowDrop|COLOR00|0,300|2	$00001234
 InitSnowDrop|COLOR00|1,40|1	$00001234
 InitSnowDrop|COLOR00|1,40|2	$00001234
+InitSnowDrop|COLOR00|again 1,40|1	$00001234
 InitSnowDrop|block 0|0,300|1 [orig]	bytes 19240 fnv CC715340
 InitSnowDrop|block 0|0,300|1 [fixed #908]	bytes 19240 fnv D647DB7E
 InitSnowDrop|block 0|1,40|1 [orig]	bytes 19240 fnv CC715340
 InitSnowDrop|block 0|1,40|1 [fixed #908]	bytes 19240 fnv D647DB7E
 InitSnowDrop|block 0|1,40|2 [orig]	bytes 19240 fnv CC715340
 InitSnowDrop|block 0|1,40|2 [fixed #908]	bytes 19240 fnv D647DB7E
+InitSnowDrop|block 0|again 1,40|1 [orig]	bytes 19240 fnv C75F1B28
+InitSnowDrop|block 0|again 1,40|1 [fixed #909]	bytes 19240 fnv D4E34AE2
 InitSnowDrop|block 1|1,40|1 [orig]	bytes 2600 fnv 4E10A7D7
 InitSnowDrop|block 1|1,40|1 [fixed #908]	bytes 2600 fnv 69E1F581
+InitSnowDrop|block 1|again 1,40|1 [orig]	bytes 2600 fnv 4E10A7D7
+InitSnowDrop|block 1|again 1,40|1 [fixed #908]	bytes 2600 fnv 69E1F581
 InitSnowDrop|d0 = the list table|0,300|1	$00000001
 InitSnowDrop|d0 = the list table|1,40|1	$00000001
+InitSnowDrop|d0 = the list table|again 1,40|1	$00000001
 InitSnowDrop|kept|0,300|1	kept
 InitSnowDrop|kept|1,40|1	kept
+InitSnowDrop|kept|again 1,40|1	kept
 InitSnowDrop|list table 0.0|0,300|1	$40000000
 InitSnowDrop|list table 0.0|1,40|1	$40000000
 InitSnowDrop|list table 0.0|1,40|2	$40000000
+InitSnowDrop|list table 0.0|again 1,40|1	$40000000
 InitSnowDrop|list table 0.1|0,300|1	$400012D0
 InitSnowDrop|list table 0.1|1,40|1	$400012D0
 InitSnowDrop|list table 0.1|1,40|2	$400012D0
+InitSnowDrop|list table 0.1|again 1,40|1	$400012D0
 InitSnowDrop|list table 0.2|0,300|1	$400025A0
 InitSnowDrop|list table 0.2|1,40|1	$400025A0
 InitSnowDrop|list table 0.2|1,40|2	$400025A0
+InitSnowDrop|list table 0.2|again 1,40|1	$400025A0
 InitSnowDrop|list table 0.3|0,300|1	$40003864
 InitSnowDrop|list table 0.3|1,40|1	$40003864
 InitSnowDrop|list table 0.3|1,40|2	$40003864
+InitSnowDrop|list table 0.3|again 1,40|1	$40003864
 InitSnowDrop|list table 1.0|1,40|1	$40000000
+InitSnowDrop|list table 1.0|again 1,40|1	$40000000
 InitSnowDrop|list table 1.1|1,40|1	$40000290
+InitSnowDrop|list table 1.1|again 1,40|1	$40000290
 InitSnowDrop|list table 1.2|1,40|1	$40000520
+InitSnowDrop|list table 1.2|again 1,40|1	$40000520
 InitSnowDrop|list table 1.3|1,40|1	$400007A4
+InitSnowDrop|list table 1.3|again 1,40|1	$400007A4
+InitSnowDrop|memory kept|again 1,40|1	$00000A30
 InitSnowDrop|planes|0,300|1	bytes 6784 fnv 17A28DA8
 InitSnowDrop|planes|0,300|2	bytes 6784 fnv 17A28DA8
 InitSnowDrop|planes|1,40|1	bytes 6784 fnv 17A28DA8
 InitSnowDrop|planes|1,40|2	bytes 6784 fnv 17A28DA8
+InitSnowDrop|planes|again 1,40|1	bytes 6784 fnv 379174C1
 InitSnowDrop|popped|0,300|1	$00000000
 InitSnowDrop|popped|1,40|1	$00000000
+InitSnowDrop|popped|again 1,40|1	$00000000
 InitSnowDrop|random table|0,300|1	bytes 1028 fnv 3C9379EA
 InitSnowDrop|random table|0,300|2	bytes 1028 fnv 3C9379EA
 InitSnowDrop|random table|1,40|1	bytes 1028 fnv 3C9379EA
 InitSnowDrop|random table|1,40|2	bytes 1028 fnv 3C9379EA
+InitSnowDrop|random table|again 1,40|1	bytes 1028 fnv BAF03EE2
 KillPoint|COLOR00|0,29|1	$00001234
 KillPoint|COLOR00|10,5|1	$00001234
 KillPoint|COLOR00|100,20|1	$00001234
@@ -5194,15 +5213,16 @@ LDoSnowActivate|random table|twice 1|1	bytes 1028 fnv BAF03EE2
 finit|COLOR00||1	$00001234
 finit|block 0||1 [orig]	bytes 19240 fnv C75F1B28
 finit|block 0||1 [fixed #909]	bytes 19240 fnv D4E34AE2
-finit|block 1||1	bytes 2600 fnv 84F5C514
+finit|block 1||1 [orig]	bytes 2600 fnv 4E10A7D7
+finit|block 1||1 [fixed #908]	bytes 2600 fnv 69E1F581
 finit|kept||1	kept
 finit|kept|second run|1	kept
 finit|list table 0.0||1	$40000000
 finit|list table 0.1||1	$400012D0
 finit|list table 0.2||1	$400025A0
 finit|list table 0.3||1	$40003864
-finit|list table 1.0||1	$40000290
-finit|list table 1.1||1	$40000000
+finit|list table 1.0||1	$40000000
+finit|list table 1.1||1	$40000290
 finit|list table 1.2||1	$40000520
 finit|list table 1.3||1	$400007A4
 finit|planes||1	bytes 6784 fnv 379174C1
@@ -5220,9 +5240,9 @@ init|list table 0.2|second run|1 [orig]	$400025A0
 init|list table 0.2|second run|1 [fixed #1135]	$00000000
 init|list table 0.3|second run|1 [orig]	$40003864
 init|list table 0.3|second run|1 [fixed #1135]	$00000000
-init|list table 1.0|second run|1 [orig]	$40000290
+init|list table 1.0|second run|1 [orig]	$40000000
 init|list table 1.0|second run|1 [fixed #1135]	$00000000
-init|list table 1.1|second run|1 [orig]	$40000000
+init|list table 1.1|second run|1 [orig]	$40000290
 init|list table 1.1|second run|1 [fixed #1135]	$00000000
 init|list table 1.2|second run|1 [orig]	$40000520
 init|list table 1.2|second run|1 [fixed #1135]	$00000000

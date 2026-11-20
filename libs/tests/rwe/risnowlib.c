@@ -31,7 +31,9 @@
  * LDoSnowActivate every 7 steps; then two pairs of KillPoint and
  * LDoSnowActivate without an LDoSnow between them, each releasing the
  * stopped snow above a blue pixel made for it (#909: the second call
- * starts at the drop list's old end); finit.  Then a second run of a
+ * starts at the drop list's old end); InitSnowDrop again for list
+ * number 1 (#911: the memory the old block keeps, by AvailMem before
+ * and after); finit.  Then a second run of a
  * program with the library still loaded (as from the editor): memlib's
  * finit has freed the blocks, memlib's and the library's init run, and
  * the list table is observed (#1135: the pointers of the run before, to
@@ -196,6 +198,34 @@ static void activatetwice(void)
     }
 }
 
+/* InitSnowDrop again for field 1 (#911): the memory it keeps (AvailMem
+   before and after: the old block if it is not freed), then the new
+   block observed; the old one is not looked at */
+static void initagain(void)
+{
+    APTR fn = ENT(LIB, INITSNOWDROP, 0);
+    ULONG before;
+
+    ROUT = "InitSnowDrop";
+    sprintf(VEC, "again 1,%lu", num[1]);
+    markregs(&R);
+    R.d[0] = 1;
+    R.d[1] = num[1];
+    R.d[3] = PL;
+    R.a[3] = (ULONG)bm;
+    IN = R;
+    NARGS = 0;
+    Forbid();
+    before = AvailMem(MEMF_ANY);
+    CCR = callstk(fn, &R, ARGS, NARGS, &POP);
+    OBS("memory kept", before - AvailMem(MEMF_ANY));
+    Permit();
+    preserve();
+    BOTH("d0 = the list table", R.d[0] == (ULONG)lp);
+    base[1] = (UBYTE *)lp[4];
+    compare();
+}
+
 /* a call that observes nothing but the kept registers: in the second run
    the blocks of the first are freed, their contents not observed */
 static void callbare(int idx, const char *name)
@@ -322,6 +352,7 @@ int main(int argc, char **argv)
         }
     }
     activatetwice();
+    initagain();
     strcpy(VEC, "");
     call1(FINIT, "finit", 0, 0, 0, 0);
     memlib(8);
