@@ -135,15 +135,19 @@ kind F):
   before `SerialReceiveBlock` (#798; R10 decision P2-5 (b); test
   `riseriallib-receiveblock-kept`; `libs_emulator` cases `[fixed #798]`
   of `rwe_riseriallib`).
+* `SerialReceiveBlock` tests the count before every byte: a length of 1
+  receives one byte, a length of 0 or less none (R10 precedent Q3). The
+  original stored the first byte and then counted the rest down to 0, so
+  with a length of 1 the count went below 0 and it received without end,
+  behind the buffer (#799; test `riseriallib-receiveblock-one`;
+  `libs_emulator` cases `[fixed #799]` of `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
   is (#804); the old ones go into the code (two `JMP` operands) without
   clearing the instruction cache (#791).
-* `SerialReceiveBlock` with a length of 1 receives without end (the
-  count goes below 0) (#799).
-  `SerialStop` during it ends it through the `abort` code of
+* `SerialStop` during `SerialReceiveBlock` ends it through the `abort` code of
   `SerialSendBlock`, which pops the saved d7 – here the return address –
   into d7, so it returns to the long above it on the stack (#803).
 * `SerialReadLong` never returns: its loop takes the counter back from

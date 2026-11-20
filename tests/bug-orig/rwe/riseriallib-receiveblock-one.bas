@@ -5,6 +5,7 @@
 ; tests/corpus/runner/serial.h) for "Z" and receives a block of 1 into a
 ; cleared buffer.
 ; Correct: one byte "Z", the byte behind the buffer stays 0.
+; @fixed #799
 ; @rwe riseriallib
 ; @pass serial=on
 ; @pass timeout=30
