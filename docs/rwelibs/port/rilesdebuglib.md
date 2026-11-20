@@ -34,7 +34,7 @@ Software; the program itself is not part of the release). 33 commands:
 * `SearchMem(type,value,start,end)` (1 byte, 2 word, 3/5/6 long, 4
   string; the space bar aborts) with `SearchMemFound`,
   `D_FindStringPtr(areg5,lookfor)`, `FindLineToken(line)`,
-  `ExtractLabel(string)`, `D_FindVolume(name)` (FindDosEntry; below
+  `ExtractLabel(string)`, `D_FindVolume(name)` (-1 or 0; FindDosEntry, below
   dos.library V36 a walk of the device list under `Forbid`).
 
 init opens graphics.library (any version) and sets the `%p`/`%c`
@@ -118,10 +118,17 @@ d5-d7, a0-a3 and a6 in places.
   programs did before `LockDosList` existed (devices, volumes and
   assigns; names compared without case, as `FindDosEntry`; the helper
   `bl_finddosentry_v34` of `libs/include/blitzdos.h`, shared with
-  riamosfunclib), and returns the entry's address after `Permit` - the
-  same kind of value as from V36 on, an entry of a list the program no
-  longer holds (#1148; test `rilesdebuglib-v36-calls` on the a500,
-  a500-204 and a1200).
+  riamosfunclib), and returns its value after `Permit`, the same as from
+  V36 on (#1148; test `rilesdebuglib-v36-calls` on the a500, a500-204
+  and a1200).
+* `D_FindVolume` returns -1 if the name is there, else 0, on both
+  paths, as riamosfunclib's `FindVolume` (#1082). The original returned
+  the entry `FindDosEntry` had found, after `UnLockDosList` (below V36:
+  after `Permit`) - an entry of a list the program no longer held; the
+  only known user, the debugger, takes it as a truth value
+  (`If D_FindVolume("ENV")`) (#1167; test
+  `rilesdebuglib-findvolume-value` on the a1200 and a500; the
+  `libs_emulator` cases `[fixed #1167]`).
 * `GetCustomReg` compares the register word unsigned with $1FC and looks
   at the word only. The original compared the word signed and tested the
   whole long for a negative value: a word of $8000 or more with d0.l not

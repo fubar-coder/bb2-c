@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+RAM: -1
+missing: 0
+rc=0

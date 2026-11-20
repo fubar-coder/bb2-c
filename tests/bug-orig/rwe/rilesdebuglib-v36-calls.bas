@@ -5,7 +5,7 @@
 ; crashes at D_FindVolume (the session ends in a timeout).
 ; Correct: on Kickstart 1.x the command walks the DOS device list under
 ; Forbid (from V36 on it stays as it is): the device RAM, "ram" (names
-; compare without case) and the assign SYS are found (an entry, not 0),
+; compare without case) and the assign SYS are found (not 0),
 ; a missing name is 0.
 ; @fixed #1148
 ; @rwe rilesdebuglib

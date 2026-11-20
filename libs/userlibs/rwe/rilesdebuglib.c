@@ -135,6 +135,9 @@
  *     original had no limit: the 21st went over the end mark and
  *     overwrote the code of D_InitParse behind the table (the C build:
  *     other data, its graphics.library base) (#700).
+ *   - D_FindVolume returns -1 if the name is there, else 0, as
+ *     riamosfunclib's FindVolume; the original returned the entry it had
+ *     found after unlocking the list (#1167).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -537,8 +540,10 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * original called the V36 functions there, a crash on Kickstart 1.x.
  * @param name    d0: the name (without the colon)
  * @param dosbase a6: dos.library (!libs #doslib)
- * @return d0: the DosList entry, 0 if not found (or LockDosList failed);
- *         the list is no longer locked (below V36: taken after Permit)
+ * @return d0: -1 if the name is there, 0 if not (or LockDosList failed)
+ *         (fixed #1167: the original returned the entry it found, after
+ *         the unlock - below V36 after Permit - an entry of a list the
+ *         program no longer held), as riamosfunclib's FindVolume
  */
 #define FINDFLAGS (LDF_READ | LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS | LDF_ENTRY)
 static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0),
@@ -551,14 +556,14 @@ static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0),
         dl = bl_finddosentry_v34(dosbase, (const UBYTE *)name,
                                  LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS);
         Permit();
-        return (ULONG)dl;
+        return dl ? BB_TRUE : 0;                /* fixed (#1167) */
     }
     dl = LockDosList(FINDFLAGS);
     if (!dl)
         return 0;
     dl = FindDosEntry(dl, name, FINDFLAGS);
     UnLockDosList(FINDFLAGS);
-    return (ULONG)dl;
+    return dl ? BB_TRUE : 0;                    /* fixed (#1167) */
 }
 
 /* -------------------------------------------- registers and memory as text */
