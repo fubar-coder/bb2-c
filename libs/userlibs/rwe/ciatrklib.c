@@ -40,9 +40,6 @@
  *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
- *   - PauseModule toggles its own state, which StartTracker and
- *     StopTracker leave as it is: after a pause the next PauseModule
- *     only enables playing (test ciatrklib-pause-state-kept; #1076).
  * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
  * declared #byte).  By design (#446): ModuleToChip does nothing and
  * returns its argument; the documentation of the library says so (the
@@ -180,6 +177,18 @@
  * compared the module's LENGTH with the sample addresses (CMP.l a2,a4)
  * and practically never cleared them (every such sample ended in a loop
  * of its first two bytes, a buzz or a DC level).
+ * Fixed (intended deviation, #1076): PauseModule pauses only a module
+ * that plays (mt_Enable) and continues only the module it paused;
+ * StartTracker, StopTracker, ChangeTrackerVBlank and freeing the paused
+ * module's slot (FreeTrackerModule, and LoadTrackerModule or
+ * DecodeModule into that slot) end the pause.  The original toggled its
+ * own state whatever happened in between: after a pause, the next call
+ * did not pause a module started again, and played a stopped module or
+ * the module of a freed slot (the freed memory) again; two calls after a
+ * StopTracker played the stopped module again.  Accepted with the fix:
+ * StopTracker followed by two PauseModule no longer continues the
+ * module, and a module that stopped itself (F00) cannot be continued
+ * that way.
  *
  * DIFF: none in the results.  The C build keeps a3 in FreeTrackerModule
  * (the original's LEA modtable,a3 changes the string pointer).
@@ -1566,15 +1575,20 @@ static void change_volume_levels(void)
 
 /* ---------------------------------------------------------- the module */
 
-/* _freetrackermodule (FreeTrackerModule, and LoadTrackerModule before
-   loading): an empty slot stays as it is; memory of a loaded or copied
-   module (flag 1, 2) is freed, the slot cleared */
+/* _freetrackermodule (FreeTrackerModule, and LoadTrackerModule and
+   DecodeModule before loading): an empty slot stays as it is; memory of
+   a loaded or copied module (flag 1, 2) is freed, the slot cleared.
+   The slot of the module the play routine has (mt_data) ends a pause of
+   PauseModule (fixed, #1076: the original's next PauseModule played the
+   freed slot's module, or the freed memory) */
 static void freetrackermodule_c(ULONG num BL_REG(d0))
 {
     struct modent *e = slot(num);
 
     if (!e->addr)
         return;
+    if (e->addr == ciapart.mt_data)
+        libvars.pause_status = 0;       /* Fixed (#1076) */
     if (e->flag)
         globfree((ULONG)e->addr, e->len);
     e->addr = NULL;
@@ -1844,16 +1858,21 @@ static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG num BL_REG(d0))
         setciaint();
     mt_init(e->len);
     playdata.Enable = 0xff;
+    libvars.pause_status = 0;           /* Fixed (#1076): ends a pause */
     return BB_TRUE;
 }
 
 /**
  * @brief StopTracker: stop playing (mt_end: volumes 0, audio DMA off).
+ *
+ * Ends a pause of PauseModule (fixed, #1076: the original left it, the
+ * next PauseModule played the stopped module again).
  */
 static void BLITZ_ROUTINE stoptracker_c(void)
 {
     mt_end();
     playdata.Enable = 0;
+    libvars.pause_status = 0;           /* Fixed (#1076) */
 }
 
 /**
@@ -1956,15 +1975,23 @@ static ULONG BLITZ_ROUTINE getmoduleposition_c(ULONG old BL_REG(d0))
 /**
  * @brief PauseModule: pause or continue the playing module.
  *
- * Toggles: the first call stops (mt_end), the next enables playing
- * again.  BUG(orig) (#1076): StartTracker and StopTracker leave the state as it
- * is: after a pause the next PauseModule only enables playing (a module
- * started again is not paused, a stopped one plays again) (test
- * ciatrklib-pause-state-kept).
+ * Toggles: a module that plays (mt_Enable) is stopped (mt_end), the
+ * module this call paused plays on at the next call.  Fixed (#1076):
+ * StartTracker, StopTracker, ChangeTrackerVBlank and freeing the paused
+ * module's slot end the pause, and without a module that plays the
+ * call does nothing; the original toggled its state whatever happened
+ * in between, so after a pause the next PauseModule only enabled
+ * playing (a module started again was not paused, a stopped one or the
+ * module of a freed slot played again), and two calls played a
+ * stopped module again (tests ciatrklib-pause-state-kept,
+ * ciatrklib-pause-after-stop).  Accepted: a module that stopped itself
+ * (F00) is not continued by two PauseModule any more.
  */
 static void BLITZ_ROUTINE pausemodule_c(void)
 {
     if (libvars.pause_status == 0) {
+        if (!playdata.Enable)
+            return;                     /* Fixed (#1076): only a module that plays */
         libvars.pause_status = 1;
         mt_end();
     } else if (libvars.pause_status == 1) {
@@ -1978,12 +2005,14 @@ static void BLITZ_ROUTINE pausemodule_c(void)
  *
  * Stops playing (mt_end) and removes the CIA interrupt (ResetCIAInt);
  * from then on the program calls PlayTracker
- * itself and StartTracker installs no interrupt.
+ * itself and StartTracker installs no interrupt.  Ends a pause of
+ * PauseModule (fixed, #1076).
  */
 static void BLITZ_ROUTINE change_playtype_c(void)
 {
     libvars.play_type = 1;
     mt_end();
+    libvars.pause_status = 0;           /* Fixed (#1076) */
     resetciaint();
 }
 

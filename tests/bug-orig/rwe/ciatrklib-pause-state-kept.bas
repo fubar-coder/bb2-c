@@ -10,6 +10,7 @@
 ; StartTracker, PauseModule, then 100 ticks.
 ; Correct: the second PauseModule pauses the module: the song position
 ; stays.
+; @fixed #1076
 ; @rwe ciatrklib
 ; @pass file=p.mod|@TESTDATA@/ciatrklib-free-while-playing.mod
 DEFTYPE .l

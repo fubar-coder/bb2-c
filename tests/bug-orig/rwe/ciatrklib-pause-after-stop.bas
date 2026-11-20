@@ -22,6 +22,7 @@
 ; Correct: PauseModule pauses only a module that plays and continues
 ; only one it paused itself; StopTracker and FreeTrackerModule end the
 ; pause.  In every case the song position stays.
+; @fixed #1076
 ; @rwe ciatrklib
 ; @pass file=p.mod|@TESTDATA@/ciatrklib-free-while-playing.mod
 DEFTYPE .l

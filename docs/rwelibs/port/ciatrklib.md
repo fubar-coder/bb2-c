@@ -225,6 +225,20 @@ kind F):
   every period lookup (`n_finetune` × 72) of a byte above 15 read behind
   the play routine's data – its own code (#476; bug-orig test
   `pt23a-finetune-above-15-ciatrklib`).
+* `PauseModule` pauses only a module that plays (`mt_Enable` set) and
+  continues only the module it paused itself; `StartTracker`,
+  `StopTracker`, `ChangeTrackerVBlank` and freeing the paused module's
+  slot (`FreeTrackerModule`, also `LoadTrackerModule` or `DecodeModule`
+  into that slot) end the pause. The original toggled its own state
+  (`pause_status`) whatever happened in between: after a pause, the
+  next `PauseModule` did not pause a module started again, and played a
+  stopped module or the module of a freed slot (the freed memory)
+  again; two calls after a `StopTracker` played the stopped module
+  again (#1076; tests `ciatrklib-pause-state-kept`,
+  `ciatrklib-pause-after-stop`). Two consequences are accepted:
+  `StopTracker` followed by two `PauseModule` no longer continues the
+  module, and a module that stopped itself (F00) cannot be continued
+  that way. Nothing changes on the play routine's tick.
 
 ## BUG(orig), kept
 
@@ -241,11 +255,6 @@ kind F):
   returns its argument; the library's documentation says "the command
   has no function" (since 1.02a `DecodeModule` copies a module to chip
   memory, and the command only still tokenises for old programs).
-* `PauseModule` toggles its own state (`pause_status`), which
-  `StartTracker` and `StopTracker` leave as it is: after a pause, the
-  next `PauseModule` only enables playing, so a module started again is
-  not paused and a stopped one plays again (test
-  `ciatrklib-pause-state-kept`, REPRODUCED; #1076).
 
 ## DIFF and not reproducible
 
