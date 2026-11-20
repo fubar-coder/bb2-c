@@ -15,13 +15,19 @@ libraries, and builds them as userlibs.
 
 ## What they are
 
-The collection covers a wide range: AmigaOS features such as App windows
-and icons, commodities, DOS notification, data types, ARexx and the
-requesters of reqtools; graphics such as copper effects, chunky buffers,
-shapes, displays, bitmap fonts and animations; sound and music players;
-data tools such as sorting, linked lists, packing, crunching and
-encryption; and helpers for debugging. Each library is a C file whose
-first comment says what it provides and where it comes from:
+The collection covers a wide range:
+
+* AmigaOS features such as App windows and icons, commodities, DOS
+  notification, data types, ARexx and the requesters of reqtools;
+* graphics such as copper effects, chunky buffers, shapes, displays,
+  bitmap fonts and animations;
+* sound and music players;
+* data tools such as sorting, linked lists, packing, crunching and
+  encryption;
+* helpers for debugging.
+
+Each library is a C file whose first comment says what it provides and
+where it comes from. See
 [the RWE userlibs](https://github.com/fubar-coder/bb2-c/tree/main/libs/userlibs/rwe)
 on GitHub.
 
