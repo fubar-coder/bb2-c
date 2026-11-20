@@ -29,7 +29,7 @@
  * the start, inside, across the end (word/long), start = end, the string
  * search after a partial match (BUG(orig) (#723)), the empty string, the space
  * bar test (RawStatus every 127 steps; abort with 1) and SearchMemFound;
- * PeekMax$ (max -1..100, BUG(orig) (#718) length); GetHex$/GetHexAdr$ (all
+ * PeekMax$ (max -1..100, the length and a3, #718); GetHex$/GetHexAdr$ (all
  * modes); GetCustomReg for every register word $000-$1FD, $1FE and above,
  * a negative long; GetCustomRegAdr for every name, prefixes, 8 character
  * names, NOOP, an empty name; SetupLESDebug (%c) and ProcessString with

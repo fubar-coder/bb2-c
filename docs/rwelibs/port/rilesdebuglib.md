@@ -170,13 +170,18 @@ d5-d7, a0-a3 and a6 in places.
   through the result for size 0, a negative size fewer (#701; test
   `rilesdebuglib-count-zero`; the `libs_emulator` cases `[fixed #701]` of
   GetDataItem's sizes 0 and -1).
+* `PeekMax$(address,max)` copies at most max characters, none for a max
+  below 1. The original tested the count after the copy: it wrote max+1
+  characters and returned the length max, a3 one behind the result, so
+  a string expression behind it lost its next part
+  (`PeekMax$(&t$,4)+"|"` gave "abcde") (#718; test
+  `rilesdebuglib-peekmax-extra-char`; the `libs_emulator` cases
+  `[fixed #718]`).
 
 ## BUG(orig)
 
 * D_HexWord at an odd source writes "XX YY" per word, without the space
   the even case writes behind each word (#715).
-* PeekMax$ copies max+1 characters but returns the length max (a3 one
-  character behind the result) (#718).
 * GetCopIns$ masks bit 0 of both digits of a horizontal position (WAIT,
   SKIP and their masks): odd digits never show (#711).
 * FPrint/FPrintDetoke: the column test is `CMPI.b #80` with `BPL`, so

@@ -46,8 +46,6 @@
  * BUG(orig), kept:
  *   - D_HexWord at an odd source writes "XX YY" per word, without the
  *     space behind it that the even case writes (#715).
- *   - PeekMax$ copies max+1 characters but returns the length max (a3 is
- *     one behind the result) (#718).
  *   - GetCopIns$ clears bit 0 of both nibbles of the horizontal positions
  *     (WAIT/SKIP position and mask), so odd digits never show (#711).
  *   - FPrint and FPrintDetoke: the column check is a byte compare with
@@ -106,6 +104,9 @@
  *     of 0 (D_CheckNMoveWord also for $8000, and counts above lost their
  *     top bit), and GetDataItem with size 0 shifted 65536 bytes through
  *     the result, with a negative size fewer (#701).
+ *   - PeekMax$ copies at most max characters (none for a max below 1);
+ *     the original tested the count after the copy: max+1 characters
+ *     and the length max, a3 one behind the result (#718).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -748,26 +749,22 @@ static ULONG BLITZ_ROUTINE findstringptr_c(const UBYTE *areg5 BL_REG(d0), ULONG 
  * @brief PeekMax$(address,max_chars): the string at an address, at most
  * max_chars characters.
  *
- * The characters up to the 0 go to a3; at most max+1 are written, the
- * length then counts one less (a3 one behind the result, BUG(orig)
- * (#718)).  No check of low addresses.
+ * The characters up to the 0, at most max, go to a3; a max below 1 gives
+ * the empty string (fixed #718: the original tested the count after the
+ * copy, wrote max+1 characters and returned the length max, a3 one
+ * behind the result).  No check of low addresses.
  * @param s    d0: the address
  * @param max  d1.w: the maximum number of characters
- * @return d0: the length (counted as a word)
+ * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE peekmax_c(const UBYTE *s BL_REG(d0), UWORD max BL_REG(d1))
 {
-    ULONG n = 0xffff;
+    ULONG n = 0;
     UBYTE c;
 
-    for (;;) {
-        BL_SETW(n, n + 1);
-        c = *s++;
-        if (!c)
-            break;
+    while ((LONG)n < (WORD)max && (c = *s++) != 0) {   /* fixed (#718) */
         *blitz_string++ = c;
-        if ((WORD)--max < 0)
-            break;
+        n++;
     }
     return n;
 }

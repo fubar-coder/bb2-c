@@ -8081,14 +8081,20 @@ OutTextPen|kept|3|1	kept
 OutTextPen|popped|1|1	$00000000
 OutTextPen|popped|2|1	$00000000
 OutTextPen|popped|3|1	$00000000
-PeekMax$|a3|-1|1	$00000005
-PeekMax$|a3|0|1	$00000005
-PeekMax$|a3|1|1	$00000006
+PeekMax$|a3|-1|1 [orig]	$00000005
+PeekMax$|a3|-1|1 [fixed #718]	$00000004
+PeekMax$|a3|0|1 [orig]	$00000005
+PeekMax$|a3|0|1 [fixed #718]	$00000004
+PeekMax$|a3|1|1 [orig]	$00000006
+PeekMax$|a3|1|1 [fixed #718]	$00000005
 PeekMax$|a3|100|1	$00000010
-PeekMax$|a3|11|1	$00000010
+PeekMax$|a3|11|1 [orig]	$00000010
+PeekMax$|a3|11|1 [fixed #718]	$0000000F
 PeekMax$|a3|12|1	$00000010
-PeekMax$|a3|2|1	$00000007
-PeekMax$|a3|5|1	$0000000A
+PeekMax$|a3|2|1 [orig]	$00000007
+PeekMax$|a3|2|1 [fixed #718]	$00000006
+PeekMax$|a3|5|1 [orig]	$0000000A
+PeekMax$|a3|5|1 [fixed #718]	$00000009
 PeekMax$|d0|-1|1	$00000000
 PeekMax$|d0|0|1	$00000000
 PeekMax$|d0|1|1	$00000001
@@ -8105,14 +8111,20 @@ PeekMax$|kept|11|1	kept
 PeekMax$|kept|12|1	kept
 PeekMax$|kept|2|1	kept
 PeekMax$|kept|5|1	kept
-PeekMax$|out|-1|1	bytes 800 fnv B847D87B
-PeekMax$|out|0|1	bytes 800 fnv B847D87B
-PeekMax$|out|1|1	bytes 800 fnv 0018017A
+PeekMax$|out|-1|1 [orig]	bytes 800 fnv B847D87B
+PeekMax$|out|-1|1 [fixed #718]	bytes 800 fnv 34142445
+PeekMax$|out|0|1 [orig]	bytes 800 fnv B847D87B
+PeekMax$|out|0|1 [fixed #718]	bytes 800 fnv 34142445
+PeekMax$|out|1|1 [orig]	bytes 800 fnv 0018017A
+PeekMax$|out|1|1 [fixed #718]	bytes 800 fnv B847D87B
 PeekMax$|out|100|1	bytes 800 fnv 787149C7
-PeekMax$|out|11|1	bytes 800 fnv 787149C7
+PeekMax$|out|11|1 [orig]	bytes 800 fnv 787149C7
+PeekMax$|out|11|1 [fixed #718]	bytes 800 fnv 70D07225
 PeekMax$|out|12|1	bytes 800 fnv 787149C7
-PeekMax$|out|2|1	bytes 800 fnv 0F707A2D
-PeekMax$|out|5|1	bytes 800 fnv 57C0810C
+PeekMax$|out|2|1 [orig]	bytes 800 fnv 0F707A2D
+PeekMax$|out|2|1 [fixed #718]	bytes 800 fnv 0018017A
+PeekMax$|out|5|1 [orig]	bytes 800 fnv 57C0810C
+PeekMax$|out|5|1 [fixed #718]	bytes 800 fnv 4866E82D
 PeekMax$|popped|-1|1	$00000000
 PeekMax$|popped|0|1	$00000000
 PeekMax$|popped|1|1	$00000000
