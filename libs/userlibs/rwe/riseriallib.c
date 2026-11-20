@@ -60,10 +60,6 @@
  *     back from the stack every time (it reads bytes without end) (#794).
  *   - SerialWriteLong sends the low byte of its argument and then three
  *     times $01 (it rotates the register SerialWrite changed) (#805).
- *   - SerialWrite never tests whether the 128-word transmit ring is full:
- *     SerialSendBlock/SerialSendString/SerialWriteLong run on faster than the
- *     line sends, byte 129 on overwrites the unsent bytes 1, 2 ... and
- *     wrend == wbig counts as an empty ring (#983).
  *
  * Fixed (intended deviations):
  *   - SerialReadString stored the 0 and left a3 behind it, so a string
@@ -127,6 +123,14 @@
  *     (255 unread bytes); the original stored every byte, so with 256
  *     unread bytes rend met rbig and the ring counted as empty: all of
  *     them were lost (#1160).
+ *   - SerialWrite (so SerialSendBlock, SerialSendString, SerialWriteLong)
+ *     waits for room while the transmit ring is full (127 unsent words)
+ *     and the port is open; the original never tested it: byte 129 on
+ *     overwrote the unsent bytes 1, 2 ... and wrend == wbig counted as an
+ *     empty ring (#983).  With the port closed nothing would ever make
+ *     room, so it does not wait there (the bytes overwrite, as before).
+ *     A program that calls it with the interrupts disabled must not
+ *     send more than 127 bytes.
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -335,10 +339,17 @@ static ULONG readser(void)
 }
 
 /* SerialWrite (_writeser): the word $01xx into the ring; TBE requested
-   when the ring was empty.  Returns d0 as the original leaves it. */
+   when the ring was empty.  Fixed (#983): while the port is open it
+   waits for room (the transmit interrupt frees a word per byte sent);
+   the original never tested whether the ring was full.  Returns d0 as
+   the original leaves it. */
 static ULONG writeser(ULONG value)
 {
-    UWORD e = wr.end;
+    UWORD e;
+
+    while (openflag && (UBYTE)(wr.end + 2) == (UBYTE)wr.big)
+        ;                               /* fixed (#983): the ring is full */
+    e = wr.end;
 
     value = (value & 0xffff0000UL) | 0x0100 | (value & 0xff);
     *(UWORD *)(wr.buf + (WORD)e) = (UWORD)value;

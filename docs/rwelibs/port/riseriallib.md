@@ -159,6 +159,20 @@ kind F):
   per received byte; test `riseriallib-receive-ring-full`; `libs_emulator`
   cases `[fixed #1160]` of `rwe_riseriallib`, the 300 bytes of "receive
   ring wrapped").
+* `SerialWrite` (so `SerialSendBlock`, `SerialSendString`,
+  `SerialWriteLong`) waits for room while the transmit ring is full (127
+  unsent words) and the port is open: the transmit interrupt frees a
+  word for every byte sent. The original never tested it: byte 129 on
+  overwrote the words of bytes 1, 2 ... the interrupt had not sent yet,
+  and `wrend == wbig` counted as an empty ring, so a block of more than
+  about 128 bytes lost what was in between. With the port closed nothing
+  would make room, so it does not wait there (as before, the ring
+  overwrites); a program that sends with the interrupts disabled must
+  not send more than 127 bytes (#983; D-019: on the emulated serial port
+  the transmit interrupt runs right after each byte, the ring never
+  fills, no Blitz program shows it; `libs_emulator` cases `[fixed #983]`
+  of `rwe_riseriallib`: the 200-byte block in a task of its own with one
+  transmit interrupt per tick, the bytes sent).
 
 ## BUG(orig), kept
 
@@ -169,13 +183,6 @@ kind F):
   the stack every time and reads bytes without end (#794).
 * `SerialWriteLong` sends the low byte of its argument and then three
   times `$01` (it rotates the register `SerialWrite` changed) (#805).
-* `SerialWrite` (so `SerialSendBlock`, `SerialSendString`, `SerialWriteLong`)
-  never tests whether the 128-word transmit ring is full and does not wait:
-  byte 129 on overwrites the words of bytes 1, 2 ... that the interrupt has
-  not sent yet, and `wrend == wbig` counts as an empty ring. A block of
-  more than about 128 bytes loses what is in between. The library test
-  sends 200 bytes without an interrupt and checks `wrend`, `wbig` and that
-  the slot of byte 1 holds byte 129, in a run of either set. (#983)
 
 No defects: `SerialProgress` gives the remaining count of the last send
 or receive block, what it is meant to give; `SerialBaud 0` divides by 0

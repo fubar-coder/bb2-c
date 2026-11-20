@@ -534,7 +534,8 @@ SerialReceiveBlock|vector $74|2 bytes|1	$00000000
 SerialReceiveBlock|vector $74|6 bytes|1	$00000000
 SerialReceiveBlock|vector $74|length 1, SerialStop|1	$00000000
 SerialSendBlock|200 bytes: slot of byte 1 holds byte 129 (BUG(orig), #983)|200 bytes (ring wraps)|1	$00000001
-SerialSendBlock|200 bytes: wbig unchanged|200 bytes (ring wraps)|1	$00000001
+SerialSendBlock|200 bytes: wbig unchanged|200 bytes (ring wraps)|1 [orig]	$00000001
+SerialSendBlock|200 bytes: wbig unchanged|200 bytes (ring wraps)|1 [fixed #983]	$00000000
 SerialSendBlock|200 bytes: wrend ran 400 on (BUG(orig), #983)|200 bytes (ring wraps)|1	$00000001
 SerialSendBlock|CIA-B PRA|200 bytes (ring wraps)|1	$0000005A
 SerialSendBlock|CIA-B PRA|5 bytes|1	$0000005A
@@ -546,7 +547,7 @@ SerialSendBlock|CIA-B PRA|length 0|1	$0000005A
 SerialSendBlock|CIA-B PRA|length 1|1	$0000005A
 SerialSendBlock|CIA-B PRA|stopped|1	$0000005A
 SerialSendBlock|bytes sent|200 bytes (ring wraps)|1 [orig]	$00000051
-SerialSendBlock|bytes sent|200 bytes (ring wraps)|1 [fixed #800]	$00000053
+SerialSendBlock|bytes sent|200 bytes (ring wraps)|1 [fixed #800]	$000000D3
 SerialSendBlock|custom chip registers|200 bytes (ring wraps)|1	bytes 512 fnv C4915FC8
 SerialSendBlock|custom chip registers|5 bytes|1	bytes 512 fnv 307A2C13
 SerialSendBlock|custom chip registers|after SerialOpen|1	bytes 512 fnv C4915FC8
@@ -604,8 +605,9 @@ SerialSendBlock|stub $74 called|length 0|1	$00000000
 SerialSendBlock|stub $74 called|length 1|1	$00000000
 SerialSendBlock|stub $74 called|stopped|1	$00000000
 SerialSendBlock|the bytes sent|200 bytes (ring wraps)|1 [orig]	bytes 81 fnv F9E3D9DF
-SerialSendBlock|the bytes sent|200 bytes (ring wraps)|1 [fixed #800]	bytes 83 fnv E206A277
-SerialSendBlock|transmit interrupts while it ran|200 bytes (ring wraps)|1	$00000000
+SerialSendBlock|the bytes sent|200 bytes (ring wraps)|1 [fixed #800]	bytes 211 fnv 2ABFA5CF
+SerialSendBlock|transmit interrupts while it ran|200 bytes (ring wraps)|1 [orig]	$00000000
+SerialSendBlock|transmit interrupts while it ran|200 bytes (ring wraps)|1 [fixed #983]	$00000054
 SerialSendBlock|transmit ring|200 bytes (ring wraps)|1 [orig]	bytes 1028 fnv 01594EE5
 SerialSendBlock|transmit ring|200 bytes (ring wraps)|1 [fixed #800]	bytes 1028 fnv 80742345
 SerialSendBlock|transmit ring|5 bytes|1	bytes 1028 fnv A7249C3C
