@@ -28,7 +28,9 @@
  * displacements 0 (BUG(orig) (#614): the bytes at address 8 instead of "0");
  * MOVEC with every third control register word (all 4096 codes); an odd
  * instruction address and an odd a3 (the emulator has a 68020; on a
- * 68000 both are address errors, BUG(orig) (#617)); init and finit (RTS).
+ * 68000 both are address errors, BUG(orig) (#617)); init and finit (RTS);
+ * a second run (init after finit, then InstrSize before the first
+ * DisAssemble$: the last run's size, BUG(orig) (#1170)).
  * Not covered: the 68000 address errors; the steps leave out some
  * extension words (time: about 380000 calls take 20 s).
  */
@@ -191,6 +193,17 @@ int main(int argc, char **argv)
     dis(0, 1);
 
     strcpy(VEC, "");
+    ROUT = "finit";
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
+
+    /* a second run with the library still loaded (from the editor):
+       init, then InstrSize before the first DisAssemble$ */
+    strcpy(VEC, "second run");
+    ROUT = "init";
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
+    ROUT = "InstrSize (before DisAssemble$)";
+    DO1(ENT(LIB, E_SIZE, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "finit";
     DO1(ENT(LIB, E_FINIT, 0), (void)0);
 

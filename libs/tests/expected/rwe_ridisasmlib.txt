@@ -16,12 +16,19 @@ InstrSize|kept|odd address|1	kept
 InstrSize|popped|odd a3|1	$00000000
 InstrSize|popped|odd address|1	$00000000
 InstrSize (before DisAssemble$)|d0||1	$00000000
+InstrSize (before DisAssemble$)|d0|second run|1	$00000004
 InstrSize (before DisAssemble$)|kept||1	kept
+InstrSize (before DisAssemble$)|kept|second run|1	kept
 InstrSize (before DisAssemble$)|popped||1	$00000000
+InstrSize (before DisAssemble$)|popped|second run|1	$00000000
 finit|kept||1	kept
+finit|kept|second run|1	kept
 finit|popped||1	$00000000
+finit|popped|second run|1	$00000000
 init|kept||1	kept
+init|kept|second run|1	kept
 init|popped||1	$00000000
+init|popped|second run|1	$00000000
 BLOCK:1	4096 84CC3B05 first=DisAssemble$|kept|0000 8A26 7FF3 9ABC |1
 BLOCK:2	4096 84EB51EB first=DisAssemble$|kept|0200 8A26 7FF3 9ABC |4097
 BLOCK:3	4096 9D450789 first=DisAssemble$|kept|0400 8A26 7FF3 9ABC |8193
