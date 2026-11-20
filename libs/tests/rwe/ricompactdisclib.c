@@ -391,13 +391,18 @@ static ULONG where(APTR p)
     return 2;
 }
 
+/* the counts since the observation before: a fix that adds or saves a
+   request changes the cases of its own calls only */
 static void same_device(void)
 {
-    OBS("requests", last.n);
-    OBS("opens", last.opens);
-    OBS("closes", last.closes);
-    OBS("failed opens", last.failed);
-    OBS("aborts", last.aborts);
+    static struct log seen;
+
+    OBS("requests", last.n - seen.n);
+    OBS("opens", last.opens - seen.opens);
+    OBS("closes", last.closes - seen.closes);
+    OBS("failed opens", last.failed - seen.failed);
+    OBS("aborts", last.aborts - seen.aborts);
+    seen = last;
     OBS("abort command", last.abortcmd);
     OBS("command", last.cmd);
     OBS("flags", last.flags);
