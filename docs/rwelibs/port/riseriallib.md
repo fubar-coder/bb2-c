@@ -74,6 +74,14 @@ kind F):
   interrupt switched on since was lost, one switched off since came back
   (#790; test `riseriallib-close-intena`; `libs_emulator` cases
   `[fixed #790]` of `rwe_riseriallib`, the INTENA written).
+* `SerialRead`/`SerialWait` return the byte alone (0–255, −1 if none);
+  the original replaced only the low word of d0 (`MOVE.w rbig,d0`, then
+  the byte): the upper word of d0 at the call stayed in the result
+  (`#long`), a byte `$FF` with `$FFFF` there read as "empty" (−1), and
+  `SerialReadString`'s loop ended at a 0 only if that upper word was 0
+  and no wait for a byte came before (#797; test
+  `riseriallib-serialread-upper-word`; `libs_emulator` cases
+  `[fixed #797]` of `rwe_riseriallib`).
 
 ## BUG(orig), kept
 
@@ -88,9 +96,6 @@ kind F):
   `SerialSendString` and `SerialReadString` test the word the other way
   round: they call that code only when the port is open (it then only
   clears the stop flag) (#793).
-* `SerialRead`/`SerialWait` return the byte with the upper word of d0 at
-  the call (`#long`); a byte `$FF` with `$FFFF` there and a ring index
-  with `$FF` in its high byte reads as "empty" (−1) (#797).
 * `SerialSendBlock` with a length of 0 or less sends one byte (#800).
 * `SerialReceiveBlock` throws away what is in the ring first, then
   waits (#798); a length of 1 receives without end (the count goes below
@@ -105,9 +110,7 @@ kind F):
   cmdlibs-port.md`); the original leaves it below the longs it read.
 * `SerialReadString`: d0 is the count − 1, and the count is reset only when
   the port is open – where the routine returns to the d0 of the call (it
-  pushed d0 and never takes it back) (#796). The loop ends at a 0 only if
-  the upper word of d0 at the call is 0 and no wait for a byte (−1) came
-  before (#797).
+  pushed d0 and never takes it back) (#796).
 * `SerialReadLong` never returns: its loop takes the counter back from
   the stack every time and reads bytes without end (#794).
 * `SerialWriteLong` sends the low byte of its argument and then three

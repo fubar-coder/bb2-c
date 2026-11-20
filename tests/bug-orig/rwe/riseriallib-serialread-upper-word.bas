@@ -5,6 +5,7 @@
 ; tests/corpus/runner/serial.h) for "Z", waits for it and calls
 ; SerialRead with $1234 in the upper word of d0.
 ; Correct: SerialRead returns the byte alone: 90.
+; @fixed #797
 ; @rwe riseriallib
 ; @pass serial=on
 DEFTYPE .l

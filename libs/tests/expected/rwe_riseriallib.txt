@@ -333,8 +333,10 @@ SerialRead|custom chip registers|d0 $12345678|2	bytes 512 fnv C4915FC8
 SerialRead|custom chip registers|d0 $FFFF0000|1	bytes 512 fnv C4915FC8
 SerialRead|d0|d0 $00000000|1	$FFFFFFFF
 SerialRead|d0|d0 $12345678|1	$FFFFFFFF
-SerialRead|d0|d0 $12345678|2	$12340048
-SerialRead|d0|d0 $FFFF0000|1	$FFFF0000
+SerialRead|d0|d0 $12345678|2 [orig]	$12340048
+SerialRead|d0|d0 $12345678|2 [fixed #797]	$00000048
+SerialRead|d0|d0 $FFFF0000|1 [orig]	$FFFF0000
+SerialRead|d0|d0 $FFFF0000|1 [fixed #797]	$00000000
 SerialRead|kept|d0 $00000000|1	kept
 SerialRead|kept|d0 $12345678|1	kept
 SerialRead|kept|d0 $12345678|2	kept
