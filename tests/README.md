@@ -1592,14 +1592,30 @@ directory). The libraries of one test must have the same variant
 acidlibs give to polylib: its tests need a ref with other acidlibs,
 not done yet).
 
-### A bug on a 68000/68010 or Kickstart 1.x
+### A bug on a 68000/68010 or Kickstart 1.x or 2.x
 
-*A bug that only shows on a 68000/68010 or Kickstart 1.x*: the header
-line `; @machine NAME` (pass key `machine=`) runs every configuration
-on that machine, `a500` (68000, Kickstart 1.3, Workbench 1.3.5) or
-`a500-68010` (`AMIGA-EMULATION-SETUP.md`, "A500 machine"); compiler
-and program run there, as on the A1200 (e.g. `libs/multi-68010-vbr`,
-#42; `rwe/risortlib-finit-closelibrary-unchecked`, #824). On
+*A bug that only shows on a 68000/68010 or Kickstart 1.x or 2.x*: the
+header line `; @machine NAME` (pass key `machine=`) runs every
+configuration on that machine, `a500` (68000, Kickstart 1.3, Workbench
+1.3.5), `a500-68010` (`AMIGA-EMULATION-SETUP.md`, "A500 machine"),
+`a500-204` (68000, Kickstart 2.04, Workbench 2.1; "A500+ machine") or
+`a600` (68000, Kickstart 3.1); compiler and program run there, as on
+the A1200 (e.g. `libs/multi-68010-vbr`, #42;
+`rwe/risortlib-finit-closelibrary-unchecked`, #824). Several names,
+`; @machine a500 a500-204 a1200`, run the same test on each machine: one
+ctest per machine, `NAME_MACHINE` (`-` as `_`, e.g.
+`bug_orig_ID_a500_204`), each with its own pass file and work directory
+`ID-MACHINE`, all judged against the one `ID.expect`; the recorded
+original (`ID.orig`, its compare test `bug_orig_record_ID_MACHINE` and
+the recording runs) is that of the first machine, so a test whose
+original behaves differently per machine needs a file per machine
+instead (`tests/bug-orig/machines.cmake`; its test `bug_orig_machines`
+with broken input: a bad name, a name twice, no name; and the self test
+`regression_selftest_machines_a1200`/`_a500_204`). On Kickstart 2.x
+(`a500-204`) everything of the A1200 runs: the session script in 2.0
+syntax, the gate of corpus_req, `@INJECT@`, `@WBRUN@`, the snapshot
+mode, the reference blitz2 1.95 and the CD's 2.10 (checked 2026-11-20);
+not what needs Workbench 3.0 or newer. On
 Kickstart 1.x the session script is in AmigaDOS 1.3 syntax (the
 redirection right behind the command name; no `$RC` and no `>>`:
 `rcput` - `tests/corpus/amiga/rcput.c` - appends the `rc=N` of the

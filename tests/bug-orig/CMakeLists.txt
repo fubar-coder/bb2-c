@@ -17,17 +17,26 @@
 #                      ; @configs TAG...    the configurations judged
 #                                           (port clib, default both;
 #                                           regression/: clib)
-#                      ; @machine NAME      the emulated machine (pass
+#                      ; @machine NAME...   the emulated machine (pass
 #                                           file machine=, corpus.h:
 #                                           a1200 default, a500 = 68000
 #                                           with Kickstart 1.3,
-#                                           a500-68010, a600 = 68000
-#                                           with Kickstart 3.1); on Kickstart
-#                                           1.x the compiler and the
-#                                           program run there too (no
+#                                           a500-68010, a500-204 = 68000
+#                                           with Kickstart 2.04, a600 =
+#                                           68000 with Kickstart 3.1); on
+#                                           Kickstart 1.x the compiler and
+#                                           the program run there too (no
 #                                           gate, no @INJECT@/@WBRUN@:
 #                                           they need V36; tests/README.md,
-#                                           "bug-orig tests")
+#                                           "bug-orig tests").  Several
+#                                           names: one test per machine
+#                                           (machines.cmake), ctest
+#                                           NAME_MACHINE (- as _), work
+#                                           directory ID-MACHINE; the
+#                                           recorded original (ID.orig,
+#                                           its compare test and the
+#                                           recording runs) is that of
+#                                           the first machine
 #                      ; @rwe NAME...       RWE userlibs (libs/userlibs/
 #                                           rwe/NAME.c) in blitz2:userlibs/
 #                                           rwe/: ref (blitz2 2.10 of the
@@ -108,6 +117,7 @@
 # NAME is unique over all areas and begins with the ID of the test that
 # uses it (e.g. libs/ID.8svx.spec).
 add_subdirectory(amiga)
+include(${CMAKE_CURRENT_SOURCE_DIR}/machines.cmake)
 
 set(BUG_ORIG_TIMEOUT 90 CACHE STRING "bug-orig: time limit of one emulator session (seconds)")
 set(BUG_ORIG_HANG_AFTER 6 CACHE STRING "bug-orig: seconds of silence after which the session of a recorded original that hangs ends (0: only the time limit)")
@@ -166,6 +176,8 @@ function(bug_orig_test bas name)
 	set(tagged_clib "")
 	set(configs_given OFF)
 	set(hang_after_own "")
+	set(machines "")
+	set(machines_given OFF)
 	set(session_limit ${BUG_ORIG_TIMEOUT})
 	set(orig_by "the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries")
 	# the header lines begin with ';' - the list separator: replaced first.
@@ -187,8 +199,12 @@ function(bug_orig_test bas name)
 			set(configs_given ON)
 		elseif(h MATCHES "^<semicolon> @hang-after ([0-9]+)$")
 			set(hang_after_own ${CMAKE_MATCH_1})
-		elseif(h MATCHES "^<semicolon> @machine ([a-z0-9-]+)$")
-			string(APPEND extra "machine=${CMAKE_MATCH_1}\n")
+		elseif(h MATCHES "^<semicolon> @machine (.+)$")
+			if(machines_given)
+				message(FATAL_ERROR "bug-orig: ${bas}: @machine twice")
+			endif()
+			bug_orig_machines(${bas} "${CMAKE_MATCH_1}" machines)
+			set(machines_given ON)
 		elseif(h MATCHES "^<semicolon> @rwe (.+)$")
 			separate_arguments(rwe UNIX_COMMAND "${CMAKE_MATCH_1}")
 		elseif(h MATCHES "^<semicolon> @pass ([a-z_]+=.*)$")
@@ -295,7 +311,33 @@ function(bug_orig_test bas name)
 		VERBATIM)
 	set(bug_orig_sources ${bug_orig_sources} ${src} PARENT_SCOPE)
 
-	set(work ${CMAKE_CURRENT_BINARY_DIR}/${id})
+	# the passes and the tests: one set per machine (@machine with several
+	# names), else one
+	list(LENGTH machines nmachines)
+	if(nmachines LESS_EQUAL 1)
+		set(machine_line "")
+		if(machines)
+			set(machine_line "machine=${machines}\n")
+		endif()
+		bug_orig_passes(${name} ${id} "${machine_line}" ON)
+		return()
+	endif()
+	set(first ON)
+	foreach(m IN LISTS machines)
+		string(REPLACE "-" "_" msuffix "${m}")
+		bug_orig_passes(${name}_${msuffix} ${id}-${m} "machine=${m}\n" ${first})
+		set(first OFF)
+	endforeach()
+endfunction()
+
+# bug_orig_passes(NAME WID MACHINE_LINE RECORD): the pass files and the ctests of
+# one machine of bug_orig_test (whose variables it sees): ctest NAME, work
+# directory WID, MACHINE_LINE (machine=NAME or empty) added to the pass;
+# RECORD: also the compare test of the recorded original and the recording
+# runs (the first machine)
+function(bug_orig_passes name wid machine_line record)
+	string(APPEND extra "${machine_line}")
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${wid})
 	# the pass file in parts: the keys of every pass (@WORK@ its work
 	# directory), the reference, the judged configurations, the rest
 	set(head "# ${name}: generated by tests/bug-orig/CMakeLists.txt from ${bas}\n")
@@ -387,7 +429,7 @@ function(bug_orig_test bas name)
 	# observation into the build directory; the second with another memory
 	# layout, a larger Stack), for every test of the original's bugs, open or
 	# fixed (not for a port regression test or a self test)
-	if(NOT arg_REGRESSION AND NOT DEFINED arg_WANT)
+	if(record AND NOT arg_REGRESSION AND NOT DEFINED arg_WANT)
 		foreach(k 1 2)
 			string(REPLACE "@WORK@" "${work}-rec${k}" ptext "${rtext}")
 			string(APPEND ptext "record=write\nrecord_to=${work}-rec${k}.orig\n")
@@ -418,7 +460,7 @@ function(bug_orig_test bas name)
 	# originals), needs the CD and, for RWE libraries, the reference build.
 	# CHANGED_ORIG: the pass ID-changed.pass of the same against another
 	# recorded original (broken input)
-	if(NOT arg_REGRESSION)
+	if(record AND NOT arg_REGRESSION)
 		set(fixtures ${ref_fixtures})
 		string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
 		math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
@@ -574,6 +616,19 @@ set_tests_properties(bug_orig_wildcard_noreason PROPERTIES PASS_REGULAR_EXPRESSI
 # (exit status 1, REGRESSED)
 bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/regression-selftest-wrong.bas
 	regression_selftest_wrong REGRESSION WANT 1)
+# a test on several machines (@machine a1200 a500-204, machines.cmake): one
+# ctest per machine, each must pass; bug_orig_machines checks their pass
+# files and the header line with broken input (a bad name, a name twice,
+# no name)
+bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/regression-selftest-machines.bas
+	regression_selftest_machines REGRESSION WANT 0)
+add_test(NAME bug_orig_machines COMMAND ${CMAKE_COMMAND}
+	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/machines.cmake
+	"-DPASSES=${CMAKE_CURRENT_BINARY_DIR}/regression-selftest-machines-a1200.pass$<SEMICOLON>${CMAKE_CURRENT_BINARY_DIR}/regression-selftest-machines-a500-204.pass"
+	"-DMACHINES=a1200$<SEMICOLON>a500-204"
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/selftest/machines-test.cmake)
+set_tests_properties(bug_orig_machines PROPERTIES
+	PASS_REGULAR_EXPRESSION "machines-test: all checks as expected")
 
 # inject's fill= option (inject-fill.cmake), and the check itself: a wrong
 # expect file must fail
