@@ -2,7 +2,7 @@
 [session]
 done
 [compile]
-error 10 Bad Data
+error 11 Bad Data
 [run]
 [blitz2]
 rc=0
@@ -14,5 +14,5 @@ JOB	j000	CORPUS:src/compiler-data-quick-min.bb2
 XTRA	j000	defaults
 ezfreq "Name of Executable to create" -> CORPUS:out/compiler-data-quick-min
 openreq "***** COMPILING *****"
-RESULT	j000	error	10	Bad Data	Data.q -32768
+RESULT	j000	error	11	Bad Data	Data.q -32768
 BATCH	end

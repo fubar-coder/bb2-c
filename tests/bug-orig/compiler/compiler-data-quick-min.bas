@@ -3,6 +3,7 @@
 ; a Quick; its type becomes a long, and Data.q refuses it as bad data
 ; (consttype2 .qint).  In an expression, q=-32768, the value is right.
 ; Correct: Data.q -32768 is the Quick -32768 ($80000000).
+; @fixed #1074
 Dim buf.l(1) : m.l=&buf(0)
 Read q.q
 Poke.q m,q : NPrint Hex$(Peek.l(m))

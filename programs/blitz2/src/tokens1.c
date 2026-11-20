@@ -703,6 +703,18 @@ void dodata(UWORD c)
                 } else if (want == T_BYTE) {    /* .notw */
                     if (type != T_WORD || raw >= 256)
                         baddaterr();
+                } else if (want == T_QUICK) {
+                    /* Fixed (#1074): fetchdata reads the '-' itself and
+                       sizes the integer 32768, which does not fit a Quick
+                       and comes back as the long 32768 negated: the
+                       original refused "Data.q -32768" as bad data.  That
+                       value is the Quick -32768 ($80000000) now; every
+                       other long stays bad data, also "Data.q 32768"
+                       (test compiler-data-quick-min) */
+                    if (type != T_LONG || raw != 32768 ||
+                        val != 0xffff8000UL)
+                        baddaterr();
+                    val = 0x80000000UL;
                 } else {
                     baddaterr();                /* .notb */
                 }
