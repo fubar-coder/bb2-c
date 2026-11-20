@@ -216,6 +216,14 @@ d5-d7, a0-a3 and a6 in places.
   before; the debugger's menu file lines can end so) (#720; test
   `rilesdebuglib-processstring-trailing-percent`; the scenario of
   `libs_emulator` has no such text).
+* `SearchMem`'s word and long searches (types 2, 3, 5, 6) find a value
+  only if it lies in front of the end address (the end moved by 1 or 3
+  once in front of the loop; a range shorter than the value finds
+  nothing). The original tested only the value's start against the end
+  and found a word or long that went on behind it, comparing bytes up to
+  1 or 3 behind the end (#722; test `rilesdebuglib-searchmem-across-end`;
+  the `libs_emulator` cases `[fixed #722]` "word across the end" and
+  "long across").
 
 ## BUG(orig)
 
@@ -239,8 +247,7 @@ d5-d7, a0-a3 and a6 in places.
 * D_FindStringPtr never compares the long at areg5 itself (#705).
 * SearchMem: the string search does not go back after a partial match
   (`ab` in `aab` is not found there) (#723); the empty string compares
-  the bytes behind its 0 (#721); word and long searches compare bytes up
-  to 1 or 3 behind the end (#722). The space bar test reads RawStatus
+  the bytes behind its 0 (#721). The space bar test reads RawStatus
   every 127 steps; the abort returns 1 and keeps SearchMemFound.
 * AddProcessPtr has no limit of 20 entries (#700).
 

@@ -63,8 +63,7 @@
  *   - D_FindStringPtr never compares the long at areg5 itself (#705).
  *   - SearchMem's string search does not go back after a partial match
  *     ("ab" is not found in "aab") (#723); an empty string compares the
- *     bytes behind its 0 (#721).  The word/long searches compare bytes up
- *     to 1/3 behind the end (#722).
+ *     bytes behind its 0 (#721).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
  *     other data) (#700).
@@ -115,6 +114,9 @@
  *   - ProcessString ends at a '%' at the end of the text; the original
  *     took the 0 behind it as an entry's name and read on behind the
  *     text (#720).
+ *   - SearchMem's word and long searches find a value only if it lies in
+ *     front of the end; the original tested only its start against the
+ *     end and compared bytes up to 1 or 3 behind it (#722).
  * Like the original, no defects: ClearProcessPtrs only clears the first
  * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
  * %p and %c entries are set by init and point to 0 before it (init
@@ -1312,8 +1314,9 @@ static int space_down(void)
  * nothing.  The space bar is tested (RawStatus) every 127 steps and
  * ends the search.  The string search does not go back after a partial
  * match ("ab" is not found in "aab", BUG(orig) (#723)); an empty string
- * compares the bytes behind its 0 (#721).  The word and long searches
- * compare bytes up to 1/3 behind the end (#722).
+ * compares the bytes behind its 0 (#721).  A word or long counts only if
+ * it lies in front of the end (fixed #722: the original compared bytes
+ * up to 1 or 3 behind the end).
  * @param type   d0.b: the type
  * @param value  d1: the value, or the string's address
  * @param p      d2: the start
@@ -1350,6 +1353,10 @@ static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG
             p++;
         }
     case 2:
+        /* fixed (#722): the word must lie in front of the end */
+        if ((ULONG)(end - p) < 2)
+            goto notfound;
+        end -= 1;
         w = p[0];
         for (;;) {
             CHECKEND();
@@ -1361,7 +1368,11 @@ static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG
     case 3:
     case 5:
     case 6:
-        l = (ULONG)p[0] << 16 | (ULONG)p[1] << 8 | p[2];
+        /* fixed (#722): the long must lie in front of the end */
+        if ((ULONG)(end - p) < 4)
+            goto notfound;
+        end -= 3;
+        l =(ULONG)p[0] << 16 | (ULONG)p[1] << 8 | p[2];
         for (;;) {
             CHECKEND();
             l = l << 8 | p[3];

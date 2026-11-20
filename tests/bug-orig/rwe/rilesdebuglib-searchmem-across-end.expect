@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+word: 0
+long: 0
+word inside: -1
+rc=0
