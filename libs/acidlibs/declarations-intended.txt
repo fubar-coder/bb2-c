@@ -10,7 +10,8 @@ lib 138: relocations in the declaration part 130 != 131
 # #1031: Inkey$(n) gets an error check (inkeychk) in the error check area,
 # the original had none
 lib 186: entry 1 Inkey$ +$1C: code offset set in only one of them
-lib 186: relocations in the declaration part 11 != 12
+# (with the Ctrl-C checks of #43 below: four relocations more)
+lib 186: relocations in the declaration part 11 != 16
 # #393, #74: CludgeBitMap gets an error check (cludgechk) in the error
 # check area, the original had none
 lib 160: entry 6 CludgeBitMap +$18: code offset set in only one of them
@@ -196,3 +197,26 @@ lib 90: declaration part $3CE != $3D2 bytes
 lib 82: header +$2C: code offset set in only one of them
 lib 82: entry 4 JumpMed +$C: code offset set in only one of them
 lib 82: relocations in the declaration part 21 != 23
+# #43: Ctrl-C ends a program with runtime error checking at its next
+# input or output on the console.  Print, NPrint (printlib) and the forms
+# of Edit$ and Edit (editlib) get a check after the routine (printctrlc,
+# editctrlc); inputoutputlib gets the two nullsubs ctrlcout and ctrlcin
+# (entries 12 and 13, in the error check area) in front of its init;
+# runerrlib gets the token $C321 ctrlcend ($C31F and $C320 stay empty)
+lib 186: entry 0 Edit$ +$14: code offset set in only one of them
+lib 186: entry 2 Edit +$14: code offset set in only one of them
+lib 164: entry 11 (nullsub) +$7: $FC != $00
+lib 164: end of the table +$180: $FF != $00
+lib 164: 12 entries != 14
+lib 164: declaration part $186 != $1AE bytes
+lib 164: relocations in the declaration part 16 != 18
+lib 187: entry 0 Print +$18: code offset set in only one of them
+lib 187: entry 1 NPrint +$18: code offset set in only one of them
+lib 187: relocations in the declaration part 10 != 12
+lib 65500: header +$11: $1F != $22
+lib 65500: entry 31 ($C31F) (nullsub) +$C: code offset set in only one of them
+lib 65500: entry 32 ($C320) (nullsub) +$C: code offset set in only one of them
+lib 65500: end of the table +$2D0: $FF != $00
+lib 65500: 33 entries != 36
+lib 65500: declaration part $2D6 != $312 bytes
+lib 65500: relocations in the declaration part 30 != 31

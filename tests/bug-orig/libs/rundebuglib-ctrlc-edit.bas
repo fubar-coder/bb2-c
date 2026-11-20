@@ -9,6 +9,7 @@
 ; stopped".
 ; Correct (as a C program that reads its standard input): Edit$ ends
 ; the child with "***Break"; the second child, for Edit, too.
+; @fixed #43
 ; @configs clib
 ; @pass runtime_errors=on
 ; @pass timeout=60

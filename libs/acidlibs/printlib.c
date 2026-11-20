@@ -87,14 +87,16 @@
  * (string result of Str$/UStr$).
  *
  * Error check (debugger only): formatchk - Format string longer than 32
- * characters -> "Format String too long".
+ * characters -> "Format String too long".  Fixed (intended deviation,
+ * #43): printctrlc after Print and NPrint, Ctrl-C on the console ends
+ * the program (inputoutputlib ctrlcout; not in the original).
  */
 #include "blitzlib.h"
 #include <stddef.h>
 
 /* entry points (aliases / thunks / C routines, defined below) */
 void doformat(void), dofloatmode(void), printlib_codeinit(void);
-void formatchk(void);
+void formatchk(void), printctrlc(void);
 void BLITZ_ROUTINE doprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2));
 void BLITZ_ROUTINE donprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2));
 ULONG BLITZ_ROUTINE dostrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2));
@@ -108,13 +110,13 @@ BLITZ_LIBHEADER(LIB_printlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 BLITZ_ASTATEMENT();
 BLITZ_REPARGS(0, 1, BL_UNKNOWN);
 BLITZ_LIBS(LIB_ffplib, BL_LA6);
-BLITZ_SUBS(doprint, 0, 0);
+BLITZ_SUBS(doprint, 0, printctrlc);
 BLITZ_NAME("Print", "Expression[,Expression...]");
 
 BLITZ_ASTATEMENT();
 BLITZ_REPARGS(0, 1, BL_UNKNOWN);
 BLITZ_LIBS(LIB_ffplib, BL_LA6);
-BLITZ_SUBS(donprint, 0, 0);
+BLITZ_SUBS(donprint, 0, printctrlc);
 BLITZ_NAME("NPrint", "Expression[,Expression...]");
 
 BLITZ_AFUNCTION(BL_STRING);
@@ -1120,3 +1122,12 @@ static void BLITZ_ERRCHK formatchk_c(const ULONG *lens BL_REG(a2))
         BLITZ_RUNERR(mess1);
 }
 BLITZ_ERRCHK_THUNK(formatchk, formatchk_c, "d0-d1/a0-a1");
+
+/* printctrlc - fixed (#43), not in the original: the check after Print
+   and NPrint, once per statement.  Ctrl-C received and the output on the
+   console ends the program ("***Break", return code 20: inputoutputlib's
+   ctrlcout, which keeps every register) */
+BLITZ_ERRCHK_ASM(printctrlc,
+"   .globl  _printctrlc\n"
+"_printctrlc:\n"
+"   jmp     _blitz_tok+" BL_ASMTOK(LIB_inputoutputlib, 12));

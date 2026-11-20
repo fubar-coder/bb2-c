@@ -23,9 +23,12 @@
  *            to the old vector, exec's, which stops the machine)
  *   TRAP #1  skip the 8 bytes after the TRAP; in user mode with a runtime
  *            error of a SetInt routine pending continue at printerr with
- *            its message (fixed (#1073)).  BUG(orig) (#43): the original
- *            tests a word ctrlc here that nothing sets, Ctrl-C does not
- *            stop the program
+ *            its message (fixed (#1073)).  The original tests a word
+ *            ctrlc here that nothing sets, so Ctrl-C did not stop the
+ *            program; fixed (#43) in another place: Ctrl-C ends the
+ *            program at its next input or output on the console
+ *            (printlib's and editlib's error checks, inputoutputlib
+ *            ctrlcout/ctrlcin), not per statement
  *   TRAP #2  skip 6 bytes (and remember the routine, #1069); a routine
  *            marked "never again" is skipped to its end (#1073)
  *   TRAP #3  nothing (forget it)
@@ -161,9 +164,10 @@ BLITZ_ASM_BLOCK(traps,
    set (a runtime error of a SetInt routine, more2) - in user mode
    continue at printerr with the message; in supervisor mode (another
    SetInt routine) go on.  The test costs nothing more per statement: it
-   is the original's test of ctrlc, which nothing set - BUG(orig) (#43):
-   Ctrl-C does not stop such a program (the original's doctrlc only
-   returned, without the skip) */
+   is the original's test of ctrlc, which nothing set (the original's
+   doctrlc only returned, without the skip).  Fixed (#43): Ctrl-C ends
+   the program at its next console input or output, not here (see the
+   head comment) */
 "_mytrap1:\n"
 "   tst.w   _errpend\n"
 "   bne.s   doerr\n"

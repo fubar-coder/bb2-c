@@ -394,9 +394,14 @@ and signals `panicmask`.
 * When executing, the signal wakes `menu10`; on a real PANIC the
   child process is removed with `RemTask` **without cleanup**.
 * blitz2 does not evaluate Ctrl-C. In `rundebuglib` the TRAP #1 handler
-  tests a word that the original never set for it (BUG(orig) (#43),
-  `libs/acidlibs/rundebuglib.c`); since #1073 the word marks a pending
-  runtime error of a SetInt routine.
+  tests a word that the original never set for it
+  (`libs/acidlibs/rundebuglib.c`); since #1073 the word marks a pending
+  runtime error of a SetInt routine. Fixed (#43): with runtime error
+  checking, Ctrl-C ends a program at its next Print, NPrint, Edit$ or
+  Edit on the console (the default channel) with "***Break" and the
+  return code 20, through checks in the error check areas of printlib,
+  editlib and inputoutputlib and runerrlib's `ctrlcend`
+  (`docs/libs/deviations.md`).
 
 ### 3.9 What of this is really needed: tedstub [B]
 

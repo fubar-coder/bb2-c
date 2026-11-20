@@ -6,6 +6,7 @@
 ; signal and prints "not stopped".
 ; Correct (as a C program on the console): the Print after the signal
 ; ends the program with "***Break" and the return code 20.
+; @fixed #43
 ; @configs clib
 ; @pass runtime_errors=on
 NPrint "start"

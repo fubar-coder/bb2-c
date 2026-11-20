@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+start
+signalled
+not stopped
+rc=0

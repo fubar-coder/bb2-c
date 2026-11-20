@@ -223,6 +223,8 @@ BL_ALWAYS_INLINE ULONG bl_blitoff(const UWORD *bpr, WORD x, WORD y)
 #define TOK_globalloc  0xc002   /* memlib: like localloc, global list */
 #define TOK_globfree   0xc003   /* memlib: a1 = mem, global list */
 #define TOK_getvbr     0xc31d   /* runerrlib: a0 = VBR */
+#define TOK_ctrlcend   0xc321   /* runerrlib: end after Ctrl-C, return code 20
+                                   (error check code only, #43) */
 #define TOK_endjmp     0xc800   /* exitslib: End */
 #define TOK_lmultiply  0xca01   /* lmullib: d0 = d0 * d1 */
 #define TOK_ldivide    0xcb01   /* ldivlib: d0 = d0 / d1 */
@@ -246,6 +248,9 @@ BL_ALWAYS_INLINE ULONG bl_blitoff(const UWORD *bpr, WORD x, WORD y)
 #define TOK_iooutsingle   ((LIB_inputoutputlib << 7) + 7)  /* d0 = character */
 #define TOK_iooutstring1  ((LIB_inputoutputlib << 7) + 8)  /* a0 = characters, d0 = length */
 #define TOK_iooutstring2  ((LIB_inputoutputlib << 7) + 9)  /* a0 = string with 0 */
+#define TOK_ioctrlcout  ((LIB_inputoutputlib << 7) + 12) /* Ctrl-C check of the output
+                                                         (error check code only, #43) */
+#define TOK_ioctrlcin   ((LIB_inputoutputlib << 7) + 13) /* ... of the input (#43) */
 #define TOK_ustr   ((LIB_printlib << 7) + 6)   /* printlib UStr$: d0 = value, a2 = type */
 #define TOK_val    ((LIB_vallib << 7) + 1)     /* vallib Val: d0 = string, a2 = length */
 #define TOK_exists  ((LIB_fileiolib << 7) + 21)      /* fileiolib Exists: d1 = name,

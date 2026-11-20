@@ -58,7 +58,9 @@
  *
  * Error checks (debugger only): Edit$/Edit with 0 characters -> "Can't
  * Edit 0 Characters!", Edit with more than 80 -> "Can only Edit up to 80
- * characters".
+ * characters".  Fixed (intended deviation, #43): editctrlc after Edit$
+ * and Edit, Ctrl-C with the input from the console ends the program
+ * (inputoutputlib ctrlcin; not in the original).
  */
 #include "blitzlib.h"
 
@@ -72,7 +74,7 @@ ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6)
 ULONG BLITZ_ROUTINE doedit(ULONG def BL_REG(d0), ULONG n BL_REG(d1),
                            const void *caller_a6 BL_REG(a6));
 void editchk1(void), editchk2(void), editchkz(void), editchk(void);
-void inkeychk(void);
+void inkeychk(void), editctrlc(void);
 
 /* !libheader{#editlib,0,0,0,errors} */
 BLITZ_LIBHEADER(LIB_editlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
@@ -80,10 +82,10 @@ BLITZ_LIBHEADER(LIB_editlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(doeditstr2, editchk1, 0);
+BLITZ_SUBS(doeditstr2, editchk1, editctrlc);
 BLITZ_ARGS(BL_STRING, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(doeditstr, editchk2, 0);
+BLITZ_SUBS(doeditstr, editchk2, editctrlc);
 BLITZ_NAME("Edit$", "([DefaultString$,]Characters)");
 
 BLITZ_AFUNCTION(BL_STRING);
@@ -98,10 +100,10 @@ BLITZ_NAME("Inkey$", "[(Characters)]");
 BLITZ_AFUNCTION(BL_FLOAT);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(doedit2, editchkz, 0);
+BLITZ_SUBS(doedit2, editchkz, editctrlc);
 BLITZ_ARGS(BL_FLOAT, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(doedit, editchk, 0);
+BLITZ_SUBS(doedit, editchk, editctrlc);
 BLITZ_NAME("Edit", "([DefaultValue,]Characters)");
 
 BLITZ_LIBFIN();
@@ -388,3 +390,12 @@ BLITZ_ERRCHK_THUNK(editchk2, editchk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(editchk, editchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(editchkz, editchkz_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(inkeychk, inkeychk_c, "d0-d1/a0-a1");
+
+/* editctrlc - fixed (#43), not in the original: the check after Edit$
+   and Edit, once per call.  Ctrl-C received and the input from the
+   console ends the program ("***Break", return code 20: inputoutputlib's
+   ctrlcin, which keeps every register, the result in d0 and a3 too) */
+BLITZ_ERRCHK_ASM(editctrlc,
+"   .globl  _editctrlc\n"
+"_editctrlc:\n"
+"   jmp     _blitz_tok+" BL_ASMTOK(LIB_inputoutputlib, 13));

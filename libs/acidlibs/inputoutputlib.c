@@ -21,6 +21,9 @@
  *      +7 dooutsingle            JSR (outcode)
  *      +8 dooutstring1           JSR -4(outcode)
  *      +9 dooutstring2           JSR -8(outcode)
+ *      +12 ctrlcout, +13 ctrlcin the Ctrl-C checks of printlib and
+ *                                editlib (fixed, #43; in the error check
+ *                                area, called only from error check code)
  * The five dispatchers stay assembler (the original instructions): they
  * hand ALL registers unchanged to the foreign handler, with a6 = the
  * handler address, and return whatever the handler returns; only a6 is
@@ -62,8 +65,12 @@
  * count for 0, but init's push counts too, so the first pop right after
  * the start passed the check (and set the handler to 0); here a count of
  * 1 or less is the error.  Release code unchanged.
+ * Fixed (intended deviation, #43): ctrlcout/ctrlcin, the Ctrl-C checks
+ * at the end of this file (not in the original).
  */
 #include "blitzlib.h"
+#include "blitzexec.h"
+#include <dos/dos.h>                    /* SIGBREAKF_CTRL_C */
 #define __NOLIBBASE__
 #include <proto/dos.h>
 #undef __NOLIBBASE__
@@ -73,7 +80,7 @@ void dodefin(void), dodefout(void), dosetin(void), dosetout(void);
 void dogetsingle(void), dogetstring(void), dooutsingle(void);
 void dooutstring1(void), dooutstring2(void), dopopinput(void);
 void dopopoutput(void), inputoutputlib_codeinit(void), popinputcheck(void);
-void popoutputcheck(void);
+void popoutputcheck(void), ctrlcout(void), ctrlcin(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -111,6 +118,11 @@ BLITZ_ARGS0();
 BLITZ_LIBS0();
 BLITZ_SUBS(dopopoutput, popoutputcheck, 0);
 BLITZ_NAME("PopOutput", "");
+
+/* fixed (#43): the Ctrl-C checks of printlib and editlib (error check
+   area only: called only from error check code) */
+BLITZ_NULLSUB(ctrlcout, 0, 0);
+BLITZ_NULLSUB(ctrlcin, 0, 0);
 
 BLITZ_NULLSUB_AT(init, inputoutputlib_codeinit, 0, 0, LIB_doslib, BL_LA6);
 
@@ -378,3 +390,51 @@ static void BLITZ_ERRCHK popoutputcheck_c(void)
 /* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(popinputcheck, popinputcheck_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(popoutputcheck, popoutputcheck_c, "d0-d1/a0-a1");
+
+/* Fixed (#43): Ctrl-C ends a program with runtime error checking at its
+   next input or output on the console (the default channels).  printlib
+   (Print, NPrint) and editlib (Edit$, Edit) call these two from their
+   checks after the routine, once per call: ctrlcout for the output
+   channel, ctrlcin for the input channel.  Without the signal bit
+   (SIGBREAKF_CTRL_C in the task's tc_SigRecvd, read without an OS call)
+   or with another handler current (a window, a bitmap, a file ...)
+   nothing happens.  Otherwise the signal is cleared, "***Break" and a
+   newline go to the console (dos Output(), as a C program's
+   __chkabort; not without one) and runerrlib's ctrlcend ends the program
+   with return code 20, its finits running as at End.  The original had a
+   test of a word ctrlc per statement in rundebuglib's TRAP #1 handler
+   that nothing set: such a program could not be stopped.  Every
+   register is kept (they come behind a routine that returns d0, a3). */
+BLITZ_ERRCHK_ASM(breaktext,
+"_breaktext:\n"
+"   .ascii  \"***Break\"\n"
+"   .byte   10\n"
+"   .even");
+
+static void BLITZ_ERRCHK ctrlc_c(const void *code, void (*def)(void))
+{
+    extern const char breaktext[];
+    struct bl_regs r = { 0, 0, 0, 0 };
+
+    if (!(SysBase->ThisTask->tc_SigRecvd & SIGBREAKF_CTRL_C))
+        return;
+    if (code != (const void *)def)
+        return;
+    SetSignal(0, SIGBREAKF_CTRL_C);
+    if (outputh)
+        Write(outputh, (APTR)breaktext, 9);
+    BLITZ_ALIBJSR(TOK_ctrlcend, r);     /* does not return */
+}
+
+static void BLITZ_ERRCHK ctrlcout_c(void)
+{
+    ctrlc_c(iochan_out.code, defout);
+}
+
+static void BLITZ_ERRCHK ctrlcin_c(void)
+{
+    ctrlc_c(iochan_in.code, defin);
+}
+
+BLITZ_ERRCHK_THUNK(ctrlcout, ctrlcout_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(ctrlcin, ctrlcin_c, "d0-d1/a0-a1");

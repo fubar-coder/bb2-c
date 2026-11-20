@@ -1,5 +1,5 @@
 /*
- * runerrlib - system library 65500 ($C300-$C31E): runtime error checks of
+ * runerrlib - system library 65500 ($C300-$C321): runtime error checks of
  * programs compiled with the debugger ("heavy trap level shit"), plus
  * GetVBR/GetCPU.
  *
@@ -30,7 +30,10 @@
  *   trapper                exception handler (RTE)
  *   gosuper, gouser        the trap vectors of a SetInt routine on the
  *                          stack (fixed, #1069)
- *   the error chain        `MOVE.l #msg,d0:TRAP #0` (arrerr/maxerr are
+ *   ctrlcend ($C321)       the end after Ctrl-C with return code 20 on
+ *                          the program's stack (fixed, #43; not in the
+ *                          original)
+ *   the error chain       `MOVE.l #msg,d0:TRAP #0` (arrerr/maxerr are
  *                          tokens themselves, the asm checks branch here)
  * Their data (cpu_ ... oldtrap, the messages) is in the assembler block,
  * so the PC relative accesses are the original's.
@@ -46,14 +49,14 @@ void sarraychk(void), aarraychk(void), datachk(void), bmodechk(void);
 void amodechk(void), casechkw(void), casechkl(void), currentchk(void);
 void ltobover(void), wtobover(void), ltowover(void), qtobover(void);
 void ftobover(void), ftowover(void), ftolover(void), getvbr(void);
-void getcpu(void), runerrlib_codeinit(void);
+void getcpu(void), runerrlib_codeinit(void), ctrlcend(void);
 static void codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !syslibheader{#runerrlib,$c300,$c31f,init,0,finit,0} */
-BLITZ_SYSLIBHEADER7(LIB_runerrlib, 0xc300, 0xc31f, init, BL_NORET, finit, 0);
+/* !syslibheader{#runerrlib,$c300,$c322,init,0,finit,0} */
+BLITZ_SYSLIBHEADER7(LIB_runerrlib, 0xc300, 0xc322, init, BL_NORET, finit, 0);
 BLITZ_NULLSUB(finalscheck, 0, 0);               /* $C300 */
 BLITZ_NULLSUB(0, 0, 0);                         /* $C301 */
 BLITZ_NULLSUB(0, 0, 0);                         /* $C302 */
@@ -85,6 +88,11 @@ BLITZ_NULLSUB(ftowover, 0, 0, LIB_ffplib, BL_LA6);      /* $C31B */
 BLITZ_NULLSUB(ftolover, 0, 0, LIB_ffplib, BL_LA6);      /* $C31C */
 BLITZ_NULLSUB(getvbr, 0, 0);                    /* $C31D */
 BLITZ_NULLSUB(getcpu, 0, 0);                    /* $C31E */
+/* fixed (#43): ctrlcend; $C31F and $C320 stay free (AmiBlitz3's
+   runerrlib has its updatestack and checkpointer there) */
+BLITZ_NULLSUB(0, 0, 0);                         /* $C31F */
+BLITZ_NULLSUB(0, 0, 0);                         /* $C320 */
+BLITZ_NULLSUB(ctrlcend, 0, 0);                  /* $C321 */
 BLITZ_NULLSUB_AT(init, runerrlib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 BLITZ_LIBFIN();
@@ -591,6 +599,36 @@ BLITZ_THUNK_POST(getvbr, getvbr_c, "d0-d1/a1", "move.l d0,a0");
  */
 static UWORD BLITZ_ROUTINE getcpu_c(void) { return cpu_; }
 BLITZ_THUNK_POST(getcpu, getcpu_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+
+/**
+ * @brief ctrlcend ($C321) - end the program with return code 20 (fixed,
+ * #43: Ctrl-C at an input or output on the console).
+ *
+ * Called by inputoutputlib's Ctrl-C checks, which only error check code
+ * calls.  The program's return address (the long above the stack of its
+ * main code: ostack + 4, the level finalscheck compares) is replaced by
+ * `rc20`, then exitslib's endjmp ends the program as End does: the finits
+ * run and the end code's `moveq #0,d0:rts` returns to rc20, which sets
+ * the return code 20 (that of a C program after Ctrl-C) and goes on to
+ * the caller.  Without a change of the end code every program has, which
+ * would change every executable.  Assembler: it works on the program's
+ * stack.  Does not return.
+ */
+BLITZ_ASM_BLOCK(ctrlcend,
+"   .globl  _ctrlcend\n"
+"_ctrlcend:\n"
+"   move.l  _ostack(pc),a0\n"
+"   addq.l  #4,a0\n"
+"   lea     ctrlcret(pc),a1\n"
+"   move.l  (a0),(a1)\n"
+"   lea     rc20(pc),a1\n"
+"   move.l  a1,(a0)\n"
+"   jmp     _blitz_tok+0x8000c800\n"    /* endjmp */
+"rc20:\n"
+"   move.l  ctrlcret(pc),-(sp)\n"
+"   moveq   #20,d0\n"
+"   rts\n"
+"ctrlcret: .long 0\n");
 
 /**
  * @brief Library init: stack limits, trap handler, CPU and VBR.
