@@ -265,6 +265,11 @@ static ULONG dev_beginio(struct IOStdReq *ior __asm("a1"))
     ULONG i;
 
     l->n++;
+    /* the SCSICmd fields of this request only (scsicmd) */
+    l->slen = l->sactual = 0;
+    l->scmdlen = l->scmdactual = l->ssenselen = l->ssenseactual = 0;
+    l->sflags = l->sdata = l->ssense = 0;
+    memset(l->scmd, 0, sizeof l->scmd);
     l->cmd = ior->io_Command;
     l->flags = ior->io_Flags;
     l->len = ior->io_Length;
@@ -396,30 +401,45 @@ static ULONG where(APTR p)
 static void same_device(void)
 {
     static struct log seen;
+    struct log l = last;
 
-    OBS("requests", last.n - seen.n);
-    OBS("opens", last.opens - seen.opens);
-    OBS("closes", last.closes - seen.closes);
-    OBS("failed opens", last.failed - seen.failed);
-    OBS("aborts", last.aborts - seen.aborts);
+    /* the request and the abort of this call: 0 without one (not the
+       fields of an earlier call's request) */
+    if (l.n == seen.n) {
+        l.cmd = 0;
+        l.flags = 0;
+        l.len = l.off = 0;
+        l.data = NULL;
+        l.slen = l.sactual = 0;
+        l.scmdlen = l.scmdactual = l.ssenselen = l.ssenseactual = 0;
+        l.sflags = l.sdata = l.ssense = 0;
+        memset(l.scmd, 0, sizeof l.scmd);
+    }
+    if (l.aborts == seen.aborts)
+        l.abortcmd = 0;
+    OBS("requests", l.n - seen.n);
+    OBS("opens", l.opens - seen.opens);
+    OBS("closes", l.closes - seen.closes);
+    OBS("failed opens", l.failed - seen.failed);
+    OBS("aborts", l.aborts - seen.aborts);
     seen = last;
-    OBS("abort command", last.abortcmd);
-    OBS("command", last.cmd);
-    OBS("flags", last.flags);
-    OBS("length", last.len);
-    OBS("offset", last.off);
-    OBS("unit", last.unit);
-    OBS("data", where(last.data));
-    OBS("scsi_Length", last.slen);
-    OBS("scsi_Actual", last.sactual);
-    OBS("scsi_CmdLength", last.scmdlen);
-    OBS("scsi_CmdActual", last.scmdactual);
-    OBS("scsi_SenseLength", last.ssenselen);
-    OBS("scsi_SenseActual", last.ssenseactual);
-    OBS("scsi_Flags", last.sflags);
-    OBS("scsi_Data", last.sdata);
-    OBS("scsi_SenseData", last.ssense);
-    OBSBYTES("scsi_Command", last.scmd, 12);
+    OBS("abort command", l.abortcmd);
+    OBS("command", l.cmd);
+    OBS("flags", l.flags);
+    OBS("length", l.len);
+    OBS("offset", l.off);
+    OBS("unit", l.unit);
+    OBS("data", where(l.data));
+    OBS("scsi_Length", l.slen);
+    OBS("scsi_Actual", l.sactual);
+    OBS("scsi_CmdLength", l.scmdlen);
+    OBS("scsi_CmdActual", l.scmdactual);
+    OBS("scsi_SenseLength", l.ssenselen);
+    OBS("scsi_SenseActual", l.ssenseactual);
+    OBS("scsi_Flags", l.sflags);
+    OBS("scsi_Data", l.sdata);
+    OBS("scsi_SenseData", l.ssense);
+    OBSBYTES("scsi_Command", l.scmd, 12);
 }
 
 /* CloseCD, finit: replies left at the port when the device was closed */
@@ -580,17 +600,17 @@ int main(int argc, char **argv)
     KEEPS("CloseCD", d2-d7|a2|a3);
     KEEPS("CDReadTOC", d5|d6|a2|a3);
     KEEPS("CDStatus", d2-d7|a2|a3);
-    KEEPS("CDFlush", d1-d7|a0|a2|a3);
+    KEEPS("CDFlush", d2-d7|a2|a3);
     KEEPS("CDStop", d2-d7|a2|a3);
-    KEEPS("CDRewind", d1-d7|a0|a2|a3);
-    KEEPS("CDFastForward", d1-d7|a0|a2|a3);
-    KEEPS("CDNormalSpeed", d1-d7|a0|a2|a3);
-    KEEPS("CDDoor", d1-d7|a0|a2|a3);
-    KEEPS("CDPause", d1-d7|a0|a2|a3);
-    KEEPS("CDMotor", d1-d7|a0|a2|a3);
-    KEEPS("CDSpeed", d1-d7|a0|a2|a3);
+    KEEPS("CDRewind", d2-d7|a2|a3);
+    KEEPS("CDFastForward", d2-d7|a2|a3);
+    KEEPS("CDNormalSpeed", d2-d7|a2|a3);
+    KEEPS("CDDoor", d2-d7|a2|a3);
+    KEEPS("CDPause", d2-d7|a2|a3);
+    KEEPS("CDMotor", d2-d7|a2|a3);
+    KEEPS("CDSpeed", d2-d7|a2|a3);
     KEEPS("CDPlayTrack", d5-d7|a2|a3);
-    KEEPS("CDVolume", d1-d7|a0|a2|a3);
+    KEEPS("CDVolume", d2-d7|a2|a3);
     KEEPS("CDUpdateInfo", d2-d7|a2|a3);
     KEEPS("CDTrackMins", d1-d7|a1-a3|a6);
     KEEPS("CDTrackSecs", d1-d7|a1-a3|a6);
