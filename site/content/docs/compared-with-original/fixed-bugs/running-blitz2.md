@@ -26,6 +26,10 @@ from `blitz2:deflibs`, `blitz2:acidlibs` and the directories in
 * A library file whose relocation data could not be read was used anyway
   and patched at random places; it is left out
   ([#993](https://github.com/fubar-coder/bb2-c/issues/993)).
+* A library file whose relocation data holds no entries, which only a
+  hand-made file has, counted as out of memory: blitz2 stopped at its
+  start, or crashed under the editor; it is loaded as a library without
+  relocations ([#1175](https://github.com/fubar-coder/bb2-c/issues/1175)).
 * When blitz2 could not examine `blitz2:deflibs` or `blitz2:acidlibs`, it
   loaded the file with the length of the file examined before; the file
   counts as missing ([#27](https://github.com/fubar-coder/bb2-c/issues/27)).

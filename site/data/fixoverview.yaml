@@ -8006,3 +8006,11 @@ rows:
     text: "Ctrl-C ends an executable compiled with runtime error checking at its next `Print`, `NPrint`, `Edit$` or `Edit` on the console, with `***Break` and the return code 20 as a C program; the original could not be stopped. A loop without console input or output still runs on."
     page: libraries
     anchor: ctrl-c-runtime-errors
+  - issue: 1175
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A library file whose relocation data holds no entries is loaded as a library without relocations; the original took it as out of memory and stopped at its start, or crashed under the editor."
+    page: running-blitz2
+    anchor: loading-the-libraries
