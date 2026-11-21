@@ -7,70 +7,8 @@ ok
 sent 40
 inject: rc=0
 inject: track: 81 allocations left, 1171 bytes
-inject:   10 bytes, flags $10001
-inject:   10 bytes, flags $10001
-inject:   10 bytes, flags $10001
-inject:   10 bytes, flags $10001
-inject:   10 bytes, flags $10001
-inject:   10 bytes, flags $10001
-inject:   10 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   11 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   12 bytes, flags $10001
-inject:   260 bytes, flags $10001
+# varies: the leftover allocations are listed in the order of their addresses (the first 64 only)
+...
 rc=0
 [blitz2]
 rc=0
