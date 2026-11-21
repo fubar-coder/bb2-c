@@ -527,6 +527,7 @@ if(PREV_REQUESTED)
 		set(CD_PASS_EXTRA "test=${name}\ncurrent=${CMAKE_CURRENT_BINARY_DIR}/corpus_${v}.tsv\nreport=${work}.txt\n${PREV_INTENDED_LINES}")
 		cd_pass(${name} ${prev_blitz2} ${work}.tsv)
 		set(CD_PASS_EXTRA)
+		prev_register(${name})
 		add_test(NAME ${name} COMMAND ${CORPUSRUN} cd ${work}.pass)
 		set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
 			FIXTURES_REQUIRED corpus_${v}_table)
@@ -826,3 +827,26 @@ add_test(NAME compiler_selftest_noprevlibs_prev COMMAND ${CMAKE_COMMAND} -DRUNNE
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/want-report.cmake)
 set_tests_properties(compiler_selftest_noprevlibs_prev PROPERTIES LABELS emulator
 	SKIP_RETURN_CODE 77 TIMEOUT ${CORPUS_TIMEOUT})
+
+# prev_check_entries (cmake/prev-check-entries.cmake: the test part of a PREV_INTENDED entry must be
+# a corpus pass, ted_ab or a registered comparison) with broken input: a mistyped name and the name
+# of a test that is left out (bug_orig_compiler_maxs_libjsr_prev is not registered) are refused and
+# named; registered names and the old kinds pass
+set(prev_entries_registered "compiler_prev;bug_orig_compiler_x_prev;ab3_cli_prev")
+function(prev_entries_test kind entries regex)
+	add_test(NAME prev_entries_${kind} COMMAND ${CMAKE_COMMAND} "-DENTRIES=${entries}"
+		"-DREGISTERED=${prev_entries_registered}"
+		-P ${PROJECT_SOURCE_DIR}/cmake/prev-check-entries-test.cmake)
+	if(regex)
+		set_tests_properties(prev_entries_${kind} PROPERTIES PASS_REGULAR_EXPRESSION "${regex}"
+			FAIL_REGULAR_EXPRESSION "all entries name a registered test")
+	else()
+		set_tests_properties(prev_entries_${kind} PROPERTIES
+			PASS_REGULAR_EXPRESSION "all entries name a registered test")
+	endif()
+endfunction()
+prev_entries_test(ok "compiler_prev:a;bug_orig_compiler_x_prev:b;corpus:t01_int;ted_ab:open;libs/x.obj" "")
+prev_entries_test(typo "compiler_prevv:a" "entry \"compiler_prevv:a\": no test \"compiler_prevv\"")
+prev_entries_test(excluded "bug_orig_compiler_maxs_libjsr_prev:x"
+	"entry \"bug_orig_compiler_maxs_libjsr_prev:x\": no test")
+prev_entries_test(site "site_examples_rnu:x" "entry \"site_examples_rnu:x\": no test")

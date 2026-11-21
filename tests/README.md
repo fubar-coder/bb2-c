@@ -1762,7 +1762,12 @@ pass it differs in (`corpus` and `corpus_runerr` run the same sources),
 and a source that is not in the pass (a typo) is stale. Entries without a
 colon are library files, others are checked for their syntax by every
 runner (an unknown test, an empty name, a pair that is no `C5-P5` or
-`Cc-Pc` are errors).
+`Cc-Pc` are errors). For the tests of the compile-only comparisons the
+configure step checks the name as well: the test part of an entry must be a
+corpus pass, `ted_ab` or a comparison that is made (`prev_register` in
+`cmake/prev.cmake`; a mistyped name or a test that is left out, like
+`bug_orig_compiler_maxs_libjsr_prev`, is a CMake error naming the entry;
+tests `prev_entries_*`).
 `PREV_INTENDED` is passed to the runners as `intended=ENTRY` lines of
 their pass files; a `ted_ab` run with `TED_AB_FILTER` does not call a
 case it did not run stale. In the reports a difference reads

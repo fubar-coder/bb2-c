@@ -659,6 +659,7 @@ function(ab3_cli name config cases)
 		string(REGEX REPLACE "^ab3_cli_" "ab3_cli_prev_" prev_name ${name})
 		set(prev_intended "${PREV_INTENDED}")
 		string(REPLACE ";" "$<SEMICOLON>" prev_intended "${prev_intended}")
+		prev_register(ab3_cli_prev)
 		add_test(NAME ${prev_name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
 			-DRESULTS=${RESULTS} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
 			-DCASES=${work}.cases -DBLITZ2_DIR=${BLITZ2_DIR} -DPREV_BLITZ2_DIR=${PREV_BLITZ2_DIR}
