@@ -1,0 +1,88 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+01 r.l=(q>1) 0
+02 r.l=(q=1) -1
+03 r.l=(q>1.4) 0
+04 r.l=(1.4<q) -1
+05 r.l=(1<q) 0
+06 Hex$(q>1) 00000000
+07 Hex$(q=1) FFFFFFFF
+08 q>l true
+09 l<q false
+10 x.w=(q>1) -1
+11 x.w=(q=1) 0
+12 f.q=(q>1) -1
+13 r.l=(q=1.5) 0
+14 r.l=(q<>1) 0
+15 r.l=(q>=2) 0
+16 r.l=(q<2) -1
+17 r.l=(q<=1) -1
+18 r.l=(q>=1) -1
+19 r.l=(q<=2) -1
+20 r.l=(n<-1) -1
+21 r.l=(n>-2) 0
+22 r.l=(n=-1) 0
+23 r.l=(n<-2) 0
+24 r.l=(n>-1) 0
+25 r.l=(n<=-2) -1
+26 r.l=(n>=-2) -1
+27 r.l=(b>q) -1
+28 r.l=(q<b) -1
+29 r.l=(q>b) 0
+30 r.l=(b=q) 0
+31 r.l=(bn<q) -1
+32 r.l=(bn>n) 0
+33 r.l=(q<>b) -1
+34 b>q true
+35 q<b false
+36 bn>q false
+37 r.l=(q>w) 0
+38 r.l=(w<q) 0
+39 r.l=(w=q) -1
+40 r.l=(q<y) -1
+41 r.l=(y>q) -1
+42 r.l=(y=q) -1
+43 r.l=(q>y) 0
+44 r.l=(fq{1.5}>1) 0
+45 r.l=(fq{1.5}=1) -1
+46 r.l=(1<fq{1.5}) 0
+47 r.l=(aq(1)>1) 0
+48 r.l=(aq(1)=1) -1
+49 r.l=(l<aq(1)) 0
+50 r.l=l+(q>1) 1
+51 r.l=l+(q=1) 0
+52 r.l=(q>1) OR (q<1) 0
+53 r.l=(q>1) AND (q<2) 0
+54 r.l=(q=1) OR (q>2) -1
+55 r.l=(q>1) AND (q>2) 0
+56 r.l=(g>2) -1
+57 r.l=(g=3) -1
+58 r.l=(g<3) 0
+59 r.l=(g=2) 0
+60 r.l=(3=g) -1
+61 r.l=(a=$90) 0
+62 r.l=($90=a) 0
+63 r.l=(a<>144) -1
+64 r.l=(a<200) -1
+65 r.l=(a$=b$) -1
+66 r.l=(a$<>b$) 0
+67 r.l=(a$=y) 0
+99 limit #1180 r.l=(q*2>3) 0
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-quick-compare.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-quick-compare
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
