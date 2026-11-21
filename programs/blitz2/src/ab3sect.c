@@ -240,7 +240,12 @@ BOOL ext_savefile(void)
     put(fh, HUNK_CODE);
     put(fh, sz);
     mywrite(fh, (APTR)(pcat + noinits), (LONG)codelen);
-    mywrite(fh, (APTR)codeend, (LONG)((taillen + 3) & ~3UL));
+    /* Fixed (#1184): the tail ends at the end of the object buffer, which
+       is rounded to words only; its pad comes from a zero, not from
+       behind the buffer (codelen and the chip data are whole longs) */
+    mywrite(fh, (APTR)codeend, (LONG)taillen);
+    if (taillen & 3)
+        mywrite(fh, &zero, (LONG)(4 - (taillen & 3)));
     relocs(fh, 0, nhunks, lo, lt, n);
     put(fh, HUNK_END);
     if (bsshunk) {
