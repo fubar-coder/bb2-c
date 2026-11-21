@@ -2,7 +2,7 @@
 
 ## 1. Codec
 
-- [ ] 1.1 The writer and the reader of result entries in `shared/basictest/` (every entry kind of the spec, the encodings, the format version; the writer without allocation and division, into a caller's buffer); verify: host tests (snitch, one program per test file) of a round trip of every entry kind and of each refused input (unknown entry, wrong field count, malformed value, unknown version) naming the line, with and without `-DHOST_SANITIZE=ON`
+- [x] 1.1 The writer and the reader of result entries in `shared/basictest/` (every entry kind of the spec, the encodings, the format version; the writer without allocation and division, into a caller's buffer); verify: host tests (snitch, one program per test file) of a round trip of every entry kind and of each refused input (unknown entry, wrong field count, malformed value, unknown version) naming the line, with and without `-DHOST_SANITIZE=ON`
 - [ ] 1.2 A build check that compiles the writer in the library environment of `cmake/BlitzLibrary.cmake`, with a test with deliberately broken input (a writer that calls a division helper); verify: the check fails on the broken input and passes on the codec; a clean rebuild has no warnings
 
 ## 2. Macro text and documentation

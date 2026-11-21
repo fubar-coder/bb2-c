@@ -138,6 +138,14 @@ target_compile_options(test_tokenizer PRIVATE -Wall -Wextra)
 set_target_properties(test_tokenizer PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME tokenizer COMMAND test_tokenizer)
 
+# the codec of the Blitz test library's result file (shared/basictest,
+# lib_basictest)
+add_executable(test_basictest test_basictest.cpp)
+target_link_libraries(test_basictest PRIVATE lib_basictest snitch::snitch)
+target_compile_options(test_basictest PRIVATE -Wall -Wextra)
+set_target_properties(test_basictest PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME basictest COMMAND test_basictest)
+
 # the check of SNAP:waitjob (static_assert in amiga_emulation.c) with
 # waiters assembled the wrong way
 add_test(NAME amiga_emulation_waiter_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}

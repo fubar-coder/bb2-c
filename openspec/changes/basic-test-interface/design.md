@@ -61,3 +61,20 @@ refused by an old reader instead of being misread.
   a change of this spec in its own change, both sides adapted; the codec's
   tests catch a format drift at once.
 - [`shared/` code in the library environment] → the build check of D1.
+
+## Findings of the implementation
+
+- **The block field.** The spec's entry list gives `block` as `init`,
+  `case NAME` or `final`, and its scenario shows `block` `case a` as two
+  fields. The codec writes and reads `case NAME` as one field (the word,
+  a blank, the name as a string value): `block` has two fields for every
+  block. A case name never holds a blank or a TAB.
+- **One form per value.** The reader takes every value only in the form
+  the writer gives it: `K` and the version without sign and leading zero
+  and within 32 bits, a long value with upper-case hex digits, `\xHH` with
+  upper-case digits and only for a byte that does not stand as it is
+  (`\x41` is refused), `ok`/`fail` and `broken` as written, a case name
+  not empty. A line ends at its LF; a CR in it is part of the last field.
+- **What the writer refuses.** It returns 0 (no line) for a buffer too
+  small, an unknown kind or block and a case without a name; the library
+  decides what it writes then.

@@ -26,6 +26,8 @@
 #              the host
 #   tokenizer  source text to tokenised lines (shared/tokenizer: AmiBlitz3's
 #              rules), compiled for the host
+#   basictest  the result file of the Blitz test library (shared/basictest:
+#              writer and reader of its entries), compiled for the host
 #   teststats  the @stat line of the test runners' emulator sessions
 #              (lib_statline) and statistics of test runs from ctest's
 #              JUnit files: durations, flaky results, time limits, COST
@@ -91,6 +93,7 @@ add_subdirectory(bbdetok)
 add_subdirectory(xtra)
 add_subdirectory(ab3job)
 add_subdirectory(tokenizer)
+add_subdirectory(basictest)
 add_subdirectory(teststats)
 add_subdirectory(outmatch)
 add_subdirectory(covmap)

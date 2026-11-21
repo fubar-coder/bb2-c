@@ -44,6 +44,10 @@ shared/tokenizer/            source text to tokenised lines with a rule
                              embedded headers, its 250-character lines
                              (C99, no libc; compiled by each user: ab3cli,
                              the host tools)
+shared/basictest/            the result file of the Blitz test library:
+                             writer and reader of its entries (C99, no
+                             libc, no libgcc; the writer compiled by the
+                             test library, both by the host tools)
 host/                        the host side: everything built with the
                              native compiler (tools, host tests), as
                              ExternalProject (build/<preset>/host)
@@ -100,6 +104,7 @@ tools/                       host tools (overview: tools/README.md):
                              xtra (shared/xtra compiled for the host),
                              ab3job (shared/ab3job for the host),
                              tokenizer (shared/tokenizer for the host),
+                             basictest (shared/basictest for the host),
                              teststats (the @stat line of the emulator
                              sessions, statistics of JUnit files),
                              hdf (AmigaDOS hardfiles: RDB or raw
