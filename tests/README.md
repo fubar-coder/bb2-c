@@ -19,6 +19,7 @@ Setting up the emulator (ROMs, hardfiles, slot limit):
 slots and snapshot mode: `tools/lib/amiga_emulation/README.md`.
 
 Contents: [The test model](#the-test-model) ·
+[Blitz test sources](#blitz-test-sources-and-the-result-file) ·
 [Original material and presets](#original-material-and-presets) ·
 [host](#host-tests) · [emulator](#emulator-tests) · [prev build](#the-prev-build) ·
 [bug-orig](#bug-orig-tests) ·
@@ -50,6 +51,169 @@ is to write it from the port (`libs-update`, like `corpus-expect-update`).
 What a record writes is the **recorded original**; the expectation is
 never called "the reference": `ref` means the original program (the
 corpus configuration `ref`, `ted_ref`, `blitz2_ref`).
+
+## Blitz test sources and the result file
+
+A Blitz test source judges itself: its cases check values with macros,
+and the test library writes one entry per check to a result file that the
+runner reads. This section is the contract between the source, the
+runner's preprocessor and driver, the test library and the result file
+(spec `testing/basic-test-interface`). `shared/basictest/` holds the codec
+of the result file (`basictest.h`: writer and reader, compiled by the test
+library and by the host tools as `lib_basictest`) and the macro text of the
+drivers (`macros.bas`); the test library and the runner are written
+against them (changes `basic-testlib`, `basic-test-runner`).
+
+### The source form
+
+A source marks its blocks with macros, each on a line of its own (only a
+comment may follow it on the line):
+
+| Block | Macros | |
+|---|---|---|
+| batch init | `!TestBatchInit` … `!EndTestBatchInit` | at most one, before the first case |
+| case | `!TestCase{NAME}` … `!EndTestCase` | one or more; `NAME` starts with a letter, holds no `__` and is no token |
+| batch end | `!TestBatchEnd` … `!EndTestBatchEnd` | at most one, after the last case |
+
+It checks with these macros; each takes a name as an extra last argument,
+a string literal, under which the check is reported:
+
+| Macro | Ok if |
+|---|---|
+| `!Check{COND}` | `COND` is not 0 |
+| `!CheckEq{ACTUAL,EXPECTED}` | the two long values are equal |
+| `!CheckStrEq{ACTUAL$,EXPECTED$}` | the two strings are equal |
+| `!Require{COND}` | a precondition: `COND` is not 0; else the block ends at once |
+| `!ExpectError{"MESSAGE"}` | announces the runtime error the program expects next |
+
+```
+!TestBatchInit
+  w.l=16
+  !Require{w=16,"set up"}
+!EndTestBatchInit
+
+!TestCase{shape_size}
+  !CheckEq{w,16,"width"}
+  !Check{w>0}
+!EndTestCase
+
+!TestCase{tab_string}               ; a comment is allowed here
+  a$="a"+Chr$(9)+"b"
+  !CheckStrEq{a$,"ab","tab"}
+  Dim a(5)
+  !ExpectError{"Array Subscript out of Range"}
+  a(9)=1
+!EndTestCase
+```
+
+### The preprocessed form
+
+The runner's preprocessor gives every check, precondition and announcement
+a number `K`, counted from 0 over the whole source in source order, writes
+it as the first argument and removes the name and the message. It keeps
+the table of `K`, the namespace (case, procedure, `init`, `end`), the name,
+the line and the checked expression for the report; nothing of that text
+reaches the program:
+
+| Source | Preprocessed |
+|---|---|
+| `!Check{COND}` | `!Check{K,COND}` |
+| `!CheckEq{ACTUAL,EXPECTED}` | `!CheckEq{K,ACTUAL,EXPECTED}` |
+| `!CheckStrEq{ACTUAL$,EXPECTED$}` | `!CheckStrEq{K,ACTUAL$,EXPECTED$}` |
+| `!Require{COND}` | `!Require{K,COND}` |
+| `!ExpectError{"MESSAGE"}` | `!ExpectError{K}` |
+
+The example above becomes:
+
+```
+!TestBatchInit
+  w.l=16
+  !Require{0,w=16}
+!EndTestBatchInit
+
+!TestCase{shape_size}
+  !CheckEq{1,w,16}
+  !Check{2,w>0}
+!EndTestCase
+
+!TestCase{tab_string}               ; a comment is allowed here
+  a$="a"+Chr$(9)+"b"
+  !CheckStrEq{3,a$,"ab"}
+  Dim a(5)
+  !ExpectError{4}
+  a(9)=1
+!EndTestCase
+```
+
+### The driver and the library
+
+The driver the runner writes holds the macro text
+(`shared/basictest/macros.bas`), calls `TLBegin` with the name of the
+result file, jumps over the preprocessed text of the source, and then calls
+with `Gosub` the batch init (only if the source has one and a case is
+selected), each selected case in source order and the batch end (only if
+the source has one), and ends. In the macro text a case is a subroutine
+`tc_NAME`: its opening macro refers with `Dc.l` to the label `tc_end_N`
+its closing macro defines, so a case without its closing macro does not
+compile, and it returns at once when `TLCase` gives 0. The batch init and
+end have the fixed labels `tc__init`, `tc__init_end`, `tc__final` and
+`tc__final_end`; labels with `__` belong to the driver.
+
+| Routine | Called by | |
+|---|---|---|
+| `TLBegin path$` | the driver | opens the result file |
+| `TLInit`, `TLFinal`, `TLCase(name$)` | the block macros | 1, or 0 on the second return after a failed precondition |
+| `TLBlockEnd` | the closing block macros | |
+| `TLCheck K,expected,actual` | `!Check`, `!CheckEq` | `!Check{K,COND}` is `TLCheck K,-1,(COND)<>0` |
+| `TLCheckStr K,expected$,actual$` | `!CheckStrEq` | |
+| `TLRequire K,cond` | `!Require` | |
+| `TLExpectError K` | `!ExpectError` | |
+| (finit) | the end of the program | writes `incomplete` if a block is open, then `end` |
+
+### The result file
+
+One entry per line, fields separated by TAB, each line ended by LF. `K` is
+decimal (no sign, no leading zero, up to 4294967295); a long value is `$`
+and 8 upper-case hex digits; a string value holds the bytes `$20` to `$7E`
+other than `\` as they are and every other byte as `\xHH` (upper-case hex
+digits), so the string "a" TAB "b" reads `a\x09b`. An entry belongs to the
+block of the last `block` entry before it.
+
+| Entry | Fields after the name | |
+|---|---|---|
+| `begin` | the format version, `1` | the first entry |
+| `block` | `init`, `case NAME` (one field) or `final` | a block starts |
+| `check` | `K`, `ok` or `fail`, expected, actual (long values) | |
+| `checkstr` | `K`, `ok` or `fail`, expected, actual (string values) | |
+| `require` | `K`, `broken` | only a failed precondition |
+| `expect-error` | `K` | |
+| `blockend` | | the block ended |
+| `broken` | a reason (string value) | |
+| `incomplete` | | the program ended inside a block |
+| `end` | | the last entry |
+
+The reader (`basictest_read`) refuses an unknown entry, a wrong number of
+fields, a malformed value (also one not in the form the writer gives it,
+such as lower-case hex or `\x41`) and an unknown format version, naming
+the line. The example with both cases selected, when `a$` is not `"ab"`
+and `a(9)=1` ends the program with the announced runtime error, gives (TAB
+between the fields; the host test `basictest_readme` reads every line of
+the blocks marked `basictest-result` back with the codec):
+
+```basictest-result
+begin	1
+block	init
+blockend
+block	case shape_size
+check	1	ok	$00000010	$00000010
+check	2	ok	$FFFFFFFF	$FFFFFFFF
+blockend
+block	case tab_string
+checkstr	3	fail	ab	a\x09b
+expect-error	4
+incomplete
+end
+```
 
 ## Original material and presets
 

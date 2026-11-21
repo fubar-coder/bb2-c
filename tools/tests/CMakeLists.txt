@@ -153,6 +153,14 @@ target_compile_definitions(test_basictest_macros PRIVATE
 target_compile_options(test_basictest_macros PRIVATE -Wall -Wextra)
 set_target_properties(test_basictest_macros PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME basictest_macros COMMAND test_basictest_macros)
+# the result file examples of tests/README.md (lib_basictest)
+add_executable(test_basictest_readme test_basictest_readme.cpp)
+target_link_libraries(test_basictest_readme PRIVATE lib_basictest snitch::snitch)
+target_compile_definitions(test_basictest_readme PRIVATE
+	BASICTEST_README="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/README.md")
+target_compile_options(test_basictest_readme PRIVATE -Wall -Wextra)
+set_target_properties(test_basictest_readme PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME basictest_readme COMMAND test_basictest_readme)
 
 # the check of SNAP:waitjob (static_assert in amiga_emulation.c) with
 # waiters assembled the wrong way
