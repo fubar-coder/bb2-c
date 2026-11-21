@@ -7,7 +7,7 @@ labels select within them.
 |---|---|---|
 | `native` | the host tests of the native profile (for IDEs: `build/native`) | native compiler |
 | `host` | tools with broken inputs, host tests, declaration comparisons (against committed data), token lists (seconds) | native compiler |
-| `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the fixed bug-orig tests (`; @fixed #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
+| `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the Blitz examples of the website (`site_examples_run`, `site_examples_compile`, ...; "Site examples"), the fixed bug-orig tests (`; @fixed #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
 | `all` | `host` and `emulator`, the acceptance run: it starts no session of an original; without the CD it skips only `corpus_cd` and `corpus_cd_ab3` | Amiberry, native compiler; the CD for the skipped ones |
 | `oracle` | `ab3_cli_ref_1` … `ab3_cli_ref_N` and their broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
@@ -851,6 +851,61 @@ byte as it is. `blitz2_cd_reference` (label `originals`) checks the
 committed table that way without writing it: the run of the original,
 `results cd-reference` into the build directory, and the result must be
 the committed table byte for byte.
+
+### Site examples
+
+The website shows Blitz Basic programs in fenced ` ```blitzbasic ` blocks
+(`site/content`, and the introductions and command descriptions of the
+library pages in `site/data`). `tests/site-examples/` compiles every one
+of them with blitz2-c and runs those that can be run. The manifest
+`tests/site-examples/examples.txt` lists **every block once**, by its file
+and its number in the file (`NAME MODE FILE#N [rwe=LIB...] [REASON]`,
+[`siteexamples`](../tools/siteexamples/README.md)):
+
+* `run`: compiled and run in the emulator (the launcher `reqtrap`
+  answers requesters), the output with the `rc=N` line compared with
+  `tests/site-examples/expect/GROUP/NAME.out`.
+* `compile`: compiled only; the REASON says why it is not run (it opens
+  a screen or a window, waits for input, needs a file, a device, a
+  library or a display the test machine does not have, installs an
+  interrupt, is a fragment that needs the program around it, or its
+  output varies or depends on the system). There is no other way to leave
+  an example out: a block of the site without an entry, an entry without
+  a block (the example changed its number or went away) and a block
+  listed twice fail the build step that writes the sources
+  (`siteexamples extract`) and the host test `site_examples_manifest`,
+  which also prints the counts (`siteexamples: N examples, R run, C
+  compiled only`).
+* `rwe=LIB`: the RWE userlibs the example needs (`libs/userlibs/rwe/LIB.c`).
+  Examples of one variant of those libraries (`rwe-1999`, `rwe-1999-eval`,
+  `rwe-1999-ahi`: `libs/userlibs/rwe/CMakeLists.txt`) form a group of their
+  own: its pass uses the variant's acidlibs and deflibs, the userlibs in
+  `blitz2:userlibs/rwe` and a token list that has their commands; the
+  other examples are the group `default`.
+
+The build step tokenises the sources like TED (`tedsrc tok`) and the
+passes run them, one emulator session each: `site_examples_run` and
+`site_examples_compile` (and `_rwe_1999`, `_rwe_1999_eval`,
+`_rwe_1999_ahi` for the groups that have examples of the kind), label
+`emulator`, no CD needed. The run passes are a corpus pass with
+`expect_dir=` (clib; with a prev build also prev, whose executables must
+equal clib's; not for the groups with userlibs); the compile passes use
+the runner's `run=off` with `must_compile=on` (`corpusrun pass`: a source
+the compiler refuses fails the pass, the report names the error and its
+line), one configuration is enough. The expected files are written by
+`cmake --build --preset amiga --target site-examples-expect-update` (the
+port's output; a changed output is refused by the runner, a new example
+gets its file; review with `git diff tests/site-examples/expect`), never
+by a test. An example whose output varies from run to run
+(`Rnd`, the date, addresses, the system) is `compile`.
+
+Checks with deliberately broken input: `siteexamples_tool` and
+`siteexamples` (host: a block without an entry, an entry without a block,
+a block listed twice, an unclosed fence, malformed manifest lines),
+`site_examples_run_broken` (a run example with a wrong expected file must
+fail with the first line that differs), `site_examples_compile_broken` (a
+source that does not compile must fail a compile pass), `corpus_runner`
+(the key `must_compile`).
 
 ### TED A/B
 

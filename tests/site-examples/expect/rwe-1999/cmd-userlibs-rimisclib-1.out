@@ -1,0 +1,4 @@
+REQUESTER: EasyRequest title "Request" text "It is %s
+The time is %ld:%ld" gadgets "So|What" -> answered 0
+0
+rc=0

@@ -1,0 +1,100 @@
+# The Blitz Basic examples of the website (tools/siteexamples/README.md).
+# NAME MODE FILE#N [rwe=LIB...] [REASON]: run = compiled and run, the output
+# compared with expect/GROUP/NAME.out; compile = compiled only, with the reason.
+page-project-structure-library-test-cases-1 run content/docs/project-structure/library-test-cases.md#1 rwe=riarrayslib
+cmd-acidlibs-displaylib-1 compile data/cmddesc/acidlibs/displaylib.yaml#1 needs hardware or a device the test machine does not have (a display)
+cmd-acidlibs-gtlib-1 run data/cmddesc/acidlibs/gtlib.yaml#1
+cmd-acidlibs-gtlib-2 compile data/cmddesc/acidlibs/gtlib.yaml#2 opens a screen or a window
+cmd-acidlibs-screenslib-1 compile data/cmddesc/acidlibs/screenslib.yaml#1 opens a screen or a window
+cmd-userlibs-ridebuglib-1 compile data/cmddesc/userlibs/ridebuglib.yaml#1 rwe=ridebuglib a fragment: it needs the program around it (the copper list of a display)
+cmd-userlibs-rimisclib-1 run data/cmddesc/userlibs/rimisclib.yaml#1 rwe=rimisclib
+2dlib-1 compile data/libintros/acidlibs/2dlib.yaml#1 a fragment: it needs the program around it (a bitmap and a display)
+2dlib-2 compile data/libintros/acidlibs/2dlib.yaml#2 a fragment: it needs the program around it (a bitmap and a display)
+animlib-1 compile data/libintros/acidlibs/animlib.yaml#1 needs a file the test machine does not have (walk.anim)
+arexxlib-1 compile data/libintros/acidlibs/arexxlib.yaml#1 needs ARexx, which the test machine does not have
+asllib-1 compile data/libintros/acidlibs/asllib.yaml#1 opens a screen or a window (a file requester)
+audiolib-1 compile data/libintros/acidlibs/audiolib.yaml#1 needs a file the test machine does not have (bang.8svx) and audio
+banklib-1 compile data/libintros/acidlibs/banklib.yaml#1 needs a file the test machine does not have (level1.dat)
+blitzcoplib-1 compile data/libintros/acidlibs/blitzcoplib.yaml#1 opens a screen or a window
+blitzkeyslib-1 compile data/libintros/acidlibs/blitzkeyslib.yaml#1 opens a screen or a window and waits for the mouse, the joystick or the keyboard
+blitzoslib-1 compile data/libintros/acidlibs/blitzoslib.yaml#1 opens a screen or a window and waits for the mouse, the joystick or the keyboard
+brexxlib-1 compile data/libintros/acidlibs/brexxlib.yaml#1 opens a screen or a window and waits for the mouse, the joystick or the keyboard
+cliargslib-1 run data/libintros/acidlibs/cliargslib.yaml#1
+collslib-1 compile data/libintros/acidlibs/collslib.yaml#1 opens a screen or a window
+crunchlib-1 compile data/libintros/acidlibs/crunchlib.yaml#1 a fragment: it needs the program around it (a bank holding data)
+datelib-1 compile data/libintros/acidlibs/datelib.yaml#1 its output differs from run to run (the date)
+displaylib-1 compile data/libintros/acidlibs/displaylib.yaml#1 opens a screen or a window and needs a file (picture.iff)
+editlib-1 compile data/libintros/acidlibs/editlib.yaml#1 waits for the mouse, the joystick or the keyboard (Edit$ reads a line)
+environlib-1 compile data/libintros/acidlibs/environlib.yaml#1 its output depends on the system (the Workbench screen, the exec version)
+errtraplib-1 run data/libintros/acidlibs/errtraplib.yaml#1
+fadelib-1 compile data/libintros/acidlibs/fadelib.yaml#1 opens a screen or a window
+fadelib-2 compile data/libintros/acidlibs/fadelib.yaml#2 opens a screen or a window
+fileiolib-1 run data/libintros/acidlibs/fileiolib.yaml#1
+fontlib-1 compile data/libintros/acidlibs/fontlib.yaml#1 opens a screen or a window
+freqlib-1 compile data/libintros/acidlibs/freqlib.yaml#1 opens a screen or a window (a file requester)
+gameiolib-1 compile data/libintros/acidlibs/gameiolib.yaml#1 waits for the mouse, the joystick or the keyboard
+gtlib-1 compile data/libintros/acidlibs/gtlib.yaml#1 opens a screen or a window
+iffmakelib-1 compile data/libintros/acidlibs/iffmakelib.yaml#1 a fragment: it needs the program around it (a bitmap)
+ilbmifflib-1 compile data/libintros/acidlibs/ilbmifflib.yaml#1 needs a file the test machine does not have (pic.iff)
+inputoutputlib-1 run data/libintros/acidlibs/inputoutputlib.yaml#1
+intlib-1 compile data/libintros/acidlibs/intlib.yaml#1 installs an interrupt the program never removes
+intuifontlib-1 compile data/libintros/acidlibs/intuifontlib.yaml#1 opens a screen or a window and needs a font the test machine does not have
+linklistlib-1 compile data/libintros/acidlibs/linklistlib.yaml#1 its output is random numbers (Rnd)
+medlib-1 compile data/libintros/acidlibs/medlib.yaml#1 needs a file the test machine does not have (song.med) and audio
+memacclib-1 run data/libintros/acidlibs/memacclib.yaml#1
+mouselib-1 compile data/libintros/acidlibs/mouselib.yaml#1 opens a screen or a window and waits for the mouse, the joystick or the keyboard
+palettelib-1 compile data/libintros/acidlibs/palettelib.yaml#1 a fragment: it needs the program around it (a display)
+polylib-1 compile data/libintros/acidlibs/polylib.yaml#1 opens a screen or a window
+scrolllib-1 compile data/libintros/acidlibs/scrolllib.yaml#1 a fragment: it needs the program around it (a bitmap)
+seriallib-1 compile data/libintros/acidlibs/seriallib.yaml#1 needs hardware or a device the test machine does not have (the serial port)
+shapetrixlib-1 compile data/libintros/acidlibs/shapetrixlib.yaml#1 needs a file the test machine does not have (ship.iff)
+sortlib-1 run data/libintros/acidlibs/sortlib.yaml#1
+speaklib-1 compile data/libintros/acidlibs/speaklib.yaml#1 speaks (audio) and waits for the mouse, the joystick or the keyboard
+spriteslib-1 compile data/libintros/acidlibs/spriteslib.yaml#1 opens a screen or a window
+stencillib-1 compile data/libintros/acidlibs/stencillib.yaml#1 a fragment: it needs the program around it (bitmaps)
+trackerlib-1 compile data/libintros/acidlibs/trackerlib.yaml#1 needs a file the test machine does not have (mod.tune) and audio
+utillib-1 run data/libintros/acidlibs/utillib.yaml#1
+doslib-1 run data/libintros/deflibs/doslib.yaml#1
+execlib-1 run data/libintros/deflibs/execlib.yaml#1
+ciatrklib-1 compile data/libintros/userlibs/ciatrklib.yaml#1 rwe=ciatrklib needs a file the test machine does not have (mod.tune) and audio
+neilsreqtoolslib-1 compile data/libintros/userlibs/neilsreqtoolslib.yaml#1 rwe=neilsreqtoolslib needs a library the test machine does not have (reqtools.library)
+riamosfunclib-1 compile data/libintros/userlibs/riamosfunclib.yaml#1 rwe=riamosfunclib its output depends on the system disk (it reads the startup-sequence)
+rianimlib-1 compile data/libintros/userlibs/rianimlib.yaml#1 rwe=rianimlib a fragment: it needs the program around it (an animation the program has loaded)
+riapplib-1 compile data/libintros/userlibs/riapplib.yaml#1 rwe=riapplib opens a screen or a window and waits for the mouse, the joystick or the keyboard
+riarexxlib-1 compile data/libintros/userlibs/riarexxlib.yaml#1 rwe=riarexxlib needs ARexx, which the test machine does not have
+riarrayslib-1 run data/libintros/userlibs/riarrayslib.yaml#1 rwe=riarrayslib
+ribbmaplib-1 compile data/libintros/userlibs/ribbmaplib.yaml#1 rwe=ribbmaplib a fragment: it needs the program around it (a loaded scenario)
+richunkylib-1 compile data/libintros/userlibs/richunkylib.yaml#1 rwe=richunkylib a fragment: it needs the program around it (a display)
+ricommoditieslib-1 compile data/libintros/userlibs/ricommoditieslib.yaml#1 rwe=ricommoditieslib needs a library the test machine does not have (commodities.library) and waits for the mouse, the joystick or the keyboard
+ricompactdisclib-1 compile data/libintros/userlibs/ricompactdisclib.yaml#1 rwe=ricompactdisclib needs hardware or a device the test machine does not have (a CD drive)
+ricopperfxlib-1 compile data/libintros/userlibs/ricopperfxlib.yaml#1 rwe=ricopperfxlib a fragment: it needs the program around it (a copper list of a display)
+ridatatypeslib-1 compile data/libintros/userlibs/ridatatypeslib.yaml#1 rwe=ridatatypeslib needs a file the test machine does not have (picture.iff)
+ridebuglib-1 compile data/libintros/userlibs/ridebuglib.yaml#1 rwe=ridebuglib opens a screen or a window
+ridisasmlib-1 compile data/libintros/userlibs/ridisasmlib.yaml#1 rwe=ridisasmlib its output shows addresses that depend on the memory layout
+ridoslib-1 compile data/libintros/userlibs/ridoslib.yaml#1 rwe=ridoslib its output depends on the system disk (it lists the devices)
+riencryptlib-1 run data/libintros/userlibs/riencryptlib.yaml#1 rwe=riencryptlib
+rievallib-1 run data/libintros/userlibs/rievallib.yaml#1 rwe=rievallib
+rifastseriallib-1 compile data/libintros/userlibs/rifastseriallib.yaml#1 rwe=rifastseriallib needs hardware or a device the test machine does not have (the serial port)
+rifnslib-1 compile data/libintros/userlibs/rifnslib.yaml#1 rwe=rifnslib opens a screen or a window
+rifxlib-1 compile data/libintros/userlibs/rifxlib.yaml#1 rwe=rifxlib opens a screen or a window and needs a file (picture.iff)
+rigfxlib-1 compile data/libintros/userlibs/rigfxlib.yaml#1 rwe=rigfxlib needs a file the test machine does not have (picture.iff)
+rigtmenulib-1 compile data/libintros/userlibs/rigtmenulib.yaml#1 rwe=rigtmenulib opens a screen or a window and waits for the mouse, the joystick or the keyboard
+riintuilib-1 compile data/libintros/userlibs/riintuilib.yaml#1 rwe=riintuilib opens a screen or a window
+rilesdebuglib-1 compile data/libintros/userlibs/rilesdebuglib.yaml#1 rwe=rilesdebuglib needs hardware or a device the test machine does not have (it reads custom chip registers)
+rilinkedlistlib-1 run data/libintros/userlibs/rilinkedlistlib.yaml#1 rwe=rilinkedlistlib
+rimapeditorlib-1 compile data/libintros/userlibs/rimapeditorlib.yaml#1 rwe=rimapeditorlib a fragment: it needs the program around it (a map and its shapes)
+rimapshapeslib-1 compile data/libintros/userlibs/rimapshapeslib.yaml#1 rwe=rimapshapeslib a fragment: it needs the program around it (shapes and a display)
+rimisclib-1 run data/libintros/userlibs/rimisclib.yaml#1 rwe=rimisclib
+rinonvolatilelib-1 compile data/libintros/userlibs/rinonvolatilelib.yaml#1 rwe=rinonvolatilelib needs hardware or a device the test machine does not have (nonvolatile memory)
+ripacklib-1 compile data/libintros/userlibs/ripacklib.yaml#1 rwe=ripacklib needs a file the test machine does not have (picture.iff)
+riseriallib-1 compile data/libintros/userlibs/riseriallib.yaml#1 rwe=riseriallib needs hardware or a device the test machine does not have (the serial port)
+rishapeslib-1 compile data/libintros/userlibs/rishapeslib.yaml#1 rwe=rishapeslib needs a file the test machine does not have (ship.shapes)
+risortlib-1 run data/libintros/userlibs/risortlib.yaml#1 rwe=risortlib
+risoundlib-1 compile data/libintros/userlibs/risoundlib.yaml#1 rwe=risoundlib needs a file the test machine does not have (sound.8svx) and audio
+risoundlib2-1 compile data/libintros/userlibs/risoundlib2.yaml#1 rwe=risoundlib2 needs a file the test machine does not have (sound.8svx) and AHI
+rithreadlib-1 run data/libintros/userlibs/rithreadlib.yaml#1 rwe=rithreadlib
+ritooltypeslib-1 run data/libintros/userlibs/ritooltypeslib.yaml#1 rwe=ritooltypeslib
+ritrackdisklib-1 compile data/libintros/userlibs/ritrackdisklib.yaml#1 rwe=ritrackdisklib needs hardware or a device the test machine does not have (the floppy drive)
+ritrackerlib-1 compile data/libintros/userlibs/ritrackerlib.yaml#1 rwe=ritrackerlib needs a file the test machine does not have (mod.tune) and audio
+riwbspritelib-1 compile data/libintros/userlibs/riwbspritelib.yaml#1 rwe=riwbspritelib opens a screen or a window and waits for the mouse, the joystick or the keyboard
+rizonejoylib-1 run data/libintros/userlibs/rizonejoylib.yaml#1 rwe=rizonejoylib
