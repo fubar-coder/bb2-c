@@ -9,6 +9,9 @@
  *                                     directories named run-... of the test runs): the
  *                                     library files of acidlibs, deflibs,
  *                                     their variants and the userlibs
+ * (A directory named run-... is skipped at any depth below libs/ and variants/, not only in
+ * the tests' directories libs/tests/: a future library directory with such a name would
+ * silently drop out of the comparison.)
  * (paths relative to the build directory, '/' separated).  Every one the
  * previous build has must exist in the current build with the same bytes;
  * a file only the current build has (a new library) is counted, not

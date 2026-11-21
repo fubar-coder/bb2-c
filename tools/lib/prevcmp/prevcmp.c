@@ -57,7 +57,8 @@ static int ends_with(const char *s, const char *tail)
 }
 
 /* every *.obj below root/rel (not in a directory CMakeFiles or a run directory run-*, the work
-   directory of a test run, which holds copies of libraries) into l, as
+   directory of a test run, which holds copies of libraries; at any depth, so a library
+   directory of that name would drop out) into l, as
    paths relative to root; 0 = ok, -1 = out of memory or a path too long;
    a directory that is not there is empty */
 static int walk(const char *root, const char *rel, struct list *l)
