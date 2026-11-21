@@ -2,8 +2,9 @@
 # launcher (reqtrap, reqclose, inject): the output and the return code of one
 # run, judged against WANT_RC and REGEX.
 #   cmake -DAMIGA_RUN=... -DLAUNCHER=PATH -DPROGRAM=PATH [-DPROGRAM_ARGS=ARGS]
-#         -DWANT_RC=N "-DREGEX=..." -DWORK=DIR -P reqtrap-test.cmake
-# The command is "LAUNCHER PROGRAM ARGS" with both copied to TEST:.  For a
+#         [-DLAUNCHER_ARGS=OPTIONS] -DWANT_RC=N "-DREGEX=..." -DWORK=DIR
+#         -P reqtrap-test.cmake
+# The command is "LAUNCHER LAUNCHER_ARGS PROGRAM ARGS" with both copied to TEST:.  For a
 # longer command: -DFILES=PATH|PATH... (copied) -DCMDLINE=... in which <NAME>
 # stands for TEST:NAME of a copied file.  -DWANT_TIMEOUT=1: the run is
 # meant not to end (a hang is what a broken twin shows): amiga_run ends it
@@ -17,7 +18,7 @@ if(NOT DEFINED FILES)
 	set(FILES "${LAUNCHER}|${PROGRAM}")
 	get_filename_component(l ${LAUNCHER} NAME)
 	get_filename_component(p ${PROGRAM} NAME)
-	set(CMDLINE "<${l}> <${p}> ${PROGRAM_ARGS}")
+	set(CMDLINE "<${l}> ${LAUNCHER_ARGS} <${p}> ${PROGRAM_ARGS}")
 endif()
 string(REPLACE "|" ";" files "${FILES}")
 foreach(f ${files})

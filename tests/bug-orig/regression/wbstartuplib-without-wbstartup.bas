@@ -9,7 +9,9 @@
 ; (error 87000004, a dead end, gadgets "Suspend" and "Reboot").  The
 ; Kickstart 3.1 ROM does that for any program that leaves the message
 ; there (also a C program, also the original compiler's executable).
-; reqtrap (the launcher) records the requester and answers "Suspend", the
+; reqtrap (the launcher, with its option -harden, set below by launcherargs:
+; without it the requester gets the answer "Reboot", which halts the
+; machine) records the requester and answers "Suspend", the
 ; process stays suspended; wbrun waits 5 s for the reply, says that none
 ; came and that the process still runs, and waits; the run ends by the hang
 ; check of the runner (session timeout).  The session of this test is its
@@ -18,6 +20,7 @@
 ; The expectation records what the port does today; the program is wrong
 ; (the manual says so), this is no bug.
 ; @pass runwrap=@WBRUNT@
+; @pass launcherargs=-harden
 DEFTYPE .l
 l=Lock_("SYS:",-2)
 If l Then UnLock_ l

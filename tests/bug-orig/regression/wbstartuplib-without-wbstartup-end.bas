@@ -8,7 +8,8 @@
 ; current directory and a home directory lock), and its wait for the reply
 ; takes the WBStartup message for it: the requester "Software Failure"
 ; (error 87000004; gadgets "Suspend" and "Reboot").  reqtrap (the
-; launcher) records it and answers "Suspend"; wbrun, whose exit hook has
+; launcher, with its option -harden, set below by launcherargs) records it
+; and answers "Suspend"; wbrun, whose exit hook has
 ; run by then, says "no reply, the process ended".  The manual's "will
 ; promptly crash" (BLITZ2_MANUAL, R-9) shows for such a program too, only
 ; after its end.  Not checked: whether a process of the real Workbench has
@@ -17,4 +18,5 @@
 ; other test sees it.
 ; The expectation records what the port does today.
 ; @pass runwrap=@WBRUNT@
+; @pass launcherargs=-harden
 End

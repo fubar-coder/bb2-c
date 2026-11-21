@@ -16,7 +16,15 @@
  *   - A patch called under Forbid (exec's Alert) must not wait for a
  *     packet at all.
  *
- * The text is therefore collected in memory (struct cw_msg on the
+ * This is an option (reqtrap -harden, inject ctxwrite); without it the
+ * tools behave as before: no writer process (nothing is allocated before
+ * the program, the memory layout of a run is that of the program alone),
+ * every handler writes in the caller's context at once (cw_add writes,
+ * cw_begin and cw_end do nothing, no guard: a re-entry is recorded as
+ * often as it happens), and only the small message header is on the
+ * caller's stack.  With the option:
+ *
+ * The text is collected in memory (struct cw_msg on the
  * caller's stack) and written by a process of this program, the writer:
  * the caller sends the message to the writer's port and waits for the
  * reply with exec calls only (its own signal bit, no DOS call).  The
@@ -25,12 +33,13 @@
  * caller.  The writer has priority 1 (ahead of a program at priority 0
  * that goes on after the call).
  *
- * A task that is already inside a call of the patch (a re-entry) and the
+ * A task that is already inside a call of the patch (a re-entry; the
+ * guard needs the writer's message, so it is part of the option) and the
  * writer itself record nothing (the answer is given at once); the number
  * of these is counted, cw_stop() reports it.  Without the writer
- * (Kickstart before 2.0 has no CreateNewProc: reqtrap there runs the
- * command in its own process and no WBStartup message exists) the text is
- * written by the caller as before.
+ * (no option, or Kickstart before 2.0, which has no CreateNewProc: reqtrap
+ * there runs the command in its own process and no WBStartup message
+ * exists) the text is written by the caller.
  *
  * The program includes <exec/...>, <dos/dostags.h>, <proto/exec.h>,
  * <proto/dos.h> and <string.h> first.
@@ -42,6 +51,8 @@
 #define CW_TASKS 8              /* tasks inside a call at the same time */
 #define CW_NAME "ctxwrite writer"
 
+/* the message of a handler, on the caller's stack (CW_MSG: alloca; without
+   the writer the text buffer is not reserved, cw_add writes at once) */
 struct cw_msg {
     struct Message m;
     ULONG len;                  /* -1: stop the writer */
@@ -57,6 +68,16 @@ static BPTR cw_out;
 #define CW_DEPTH_CAP 2
 static volatile LONG cw_depth;
 #endif
+
+/* the text is buffered with the writer, and in the broken twin (one Write per
+   line in the caller, as the old handlers made it in the tests) */
+#ifdef CW_DIRECT
+#define CW_BUFFERED() 1
+#else
+#define CW_BUFFERED() (cw_wport != 0)
+#endif
+#define CW_MSG(m) struct cw_msg *m = __builtin_alloca(CW_BUFFERED() ? sizeof(struct cw_msg) \
+                                                      : sizeof(struct cw_msg) - CW_MAX)
 
 static void cw_writer(void)
 {
@@ -129,6 +150,10 @@ static int cw_begin(struct cw_msg *m)
 static void cw_add(struct cw_msg *m, const char *s)
 {
     if (!s) return;             /* as the earlier put(): a NULL text is nothing */
+    if (!CW_BUFFERED()) {       /* no writer: written at once */
+        if (*s) Write(cw_out, (APTR)s, strlen(s));
+        return;
+    }
     for (; *s && m->len < CW_MAX - 4; s++) m->text[m->len++] = *s;
     if (*s) {                   /* cut */
         m->text[m->len++] = '.'; m->text[m->len++] = '.'; m->text[m->len++] = '.';
@@ -145,8 +170,8 @@ static void cw_end(struct cw_msg *m)
     int i;
 
     if (!cw_wport) {
-        if (m->len) Write(cw_out, m->text, m->len);
 #ifdef CW_DIRECT
+        if (m->len) Write(cw_out, m->text, m->len);
         cw_depth--;
 #endif
         return;

@@ -167,6 +167,9 @@ int main(void)
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nrunargs=a.txt b\n", &p, err, sizeof err) == 0);
     CHECK(!strcmp(p.runargs, "a.txt b") && !p.runwrap);
     corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nlauncherargs=-harden\n", &p, err, sizeof err) == 0);
+    CHECK(!strcmp(p.launcherargs, "-harden") && !p.runargs);
+    corpus_free(&p);
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nuae=z3mem_size=512\nuae=a=\n", &p, err, sizeof err) == 0);
     CHECK(p.nuae == 2 && !strcmp(p.uae[0], "z3mem_size=512") && !strcmp(p.uae[1], "a="));
     corpus_free(&p);
@@ -191,6 +194,8 @@ int main(void)
     CHECK(parse(BASE CONFIGS "source=/s\nwrap=|x\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nrunwrap=|x\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nrunargs=\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nlauncherargs=\n", err, sizeof err) == -1
+          && strstr(err, "launcherargs"));
     CHECK(parse(BASE CONFIGS "source=/s\nuae=z3mem_size\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nuae==1\n", err, sizeof err) == -1);
     /* the machine: a known one, the last line wins; none = the default */
@@ -437,6 +442,19 @@ int main(void)
         CHECK(t && !strcmp(t, want13));
         free(t);
         corpus_free(&p);
+        /* launcherargs: behind the launcher, before runwrap (both scripts) */
+        CHECK(corpus_parse(BASE CONFIGS "source=/s/t01.bb2\nlauncherargs=-harden\nrunwrap=/r|sig\n"
+                           "rcput=/rc\n", &p, err, sizeof err) == 0);
+        t = corpus_script(&p);
+        CHECK(t && strstr(t, "CORPUS:run -harden CORPUS:runwrap sig CORPUS:out/t01 >CORPUS:out/t01.run"));
+        free(t);
+        corpus_free(&p);
+        CHECK(corpus_parse(BASE CONFIGS "source=/s/t01.bb2\nlauncherargs=-harden\nrcput=/rc\n"
+                           "machine=a500\n", &p, err, sizeof err) == 0);
+        t = corpus_script(&p);
+        CHECK(t && strstr(t, "CORPUS:run >CORPUS:out/t01.run -harden CORPUS:out/t01"));
+        free(t);
+        corpus_free(&p);
         CHECK(corpus_parse(BASE CONFIGS "source=/s/t01.bb2\nrcput=/rc\nmachine=a500-68010\n", &p,
                            err, sizeof err) == 0);
         t = corpus_script(&p);
@@ -482,6 +500,7 @@ int main(void)
         CHECK(parse(NORUN "serial=on\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         CHECK(parse(NORUN "runwrap=/r\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         CHECK(parse(NORUN "runargs=x\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        CHECK(parse(NORUN "launcherargs=-harden\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         CHECK(parse(NORUN "expect=/e\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         /* must_compile=on: only with run=off */
         CHECK(corpus_parse(NORUN "must_compile=on\n", &p, err, sizeof err) == 0 && p.must_compile);

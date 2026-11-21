@@ -22,9 +22,7 @@
  *   alerts                 DisplayAlert returns FALSE at once (as if the
  *                          right mouse button was pressed: a recoverable
  *                          alert does not wait), its text is written
- *                          (by a writer process, not by the task that
- *                          raises the alert: ctxwrite.h)
- *   alertlog              exec's Alert, called by the process (not from
+ *   alertlog               exec's Alert, called by the process (not from
  *                          an interrupt or by another task), is recorded
  *                          and not shown: a recoverable alert returns at
  *                          once (exec raises such alerts itself, e.g.
@@ -36,7 +34,14 @@
  *                          by its time limit: returning from it is
  *                          undefined, the real one reboots).  Alerts of
  *                          other tasks go through
- *   wbfrontfail            WBenchToFront returns FALSE (as with the
+ *   ctxwrite               with alerts or alertlog: the lines of the alert
+ *                          handlers are written by a writer process of
+ *                          inject, not by the task that raises the alert
+ *                          (no DOS call in its context, a re-entry of a
+ *                          task is not recorded and counted: ctxwrite.h).
+ *                          Without it the handlers write in the caller's
+ *                          context and no process is started
+ *   wbfrontfail           WBenchToFront returns FALSE (as with the
  *                          Workbench closed)
  *   openwindowfail=N[/COUNT]
  *                          the N-th OpenWindow of the process (also
@@ -294,7 +299,7 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 /* -------------------------------------------------------------- options */
 
-static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
+static int o_ctxwrite, o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
 static int o_openwindowfail, o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill, o_datestamp;
 static int o_doslist;
 static int o_guardseg, o_freefill;
@@ -943,26 +948,26 @@ ULONG write_pre(ULONG fh)
    lines of 0-terminated text with a continuation byte) */
 ULONG alert_pre(const UBYTE *s)
 {
-    struct cw_msg m;
+    CW_MSG(m);
 
     if (!o_alerts || !ours())
         return 0;
     alerts_done++;
     /* in the context of the task that raises the alert: no DOS call here
        (ctxwrite.h), the line is written by the writer process */
-    if (cw_begin(&m)) {
-        cw_add(&m, "inject: alert:");
+    if (cw_begin(m)) {
+        cw_add(m, "inject: alert:");
         while (s) {
             s += 3;
-            cw_add(&m, " ");
-            cw_add(&m, (const char *)s);
+            cw_add(m, " ");
+            cw_add(m, (const char *)s);
             s += strlen((const char *)s) + 1;
             if (!*s)
                 break;
             s++;
         }
-        cw_add(&m, "\n");
-        cw_end(&m);
+        cw_add(m, "\n");
+        cw_end(m);
     }
     return 1;
 }
@@ -975,7 +980,7 @@ static ULONG al_num[MAXALERT], al_count;
 ULONG execalert_pre(ULONG num)
 {
     static char line[80];
-    struct cw_msg m;
+    CW_MSG(m);
 
     /* SetSR(0, 0) reads SR: the S bit is set when an interrupt or a trap
        handler runs while the process is the current task */
@@ -986,9 +991,9 @@ ULONG execalert_pre(ULONG num)
     al_count++;
     if (num & AT_DeadEnd) {
         sprintf(line, "inject: alert %08lx (dead end: COMMAND stopped)\n", num);
-        if (cw_begin(&m)) {             /* no DOS call here: ctxwrite.h */
-            cw_add(&m, line);
-            cw_end(&m);
+        if (cw_begin(m)) {              /* ctxwrite.h */
+            cw_add(m, line);
+            cw_end(m);
         }
         Wait(0);                        /* for ever */
     }
@@ -1588,6 +1593,8 @@ static int option(const char *a)
         return o_alerts = 1;
     if (!strcmp(a, "alertlog"))
         return o_alertlog = 1;
+    if (!strcmp(a, "ctxwrite"))
+        return o_ctxwrite = 1;
     if (!strcmp(a, "ownedunlock"))
         return o_ownedunlock = 1;
     if (!strcmp(a, "wbfrontfail"))
@@ -1949,7 +1956,7 @@ static const char usage[] =
     "usage: inject [OPTION...] COMMAND [ARGS]\n"
     "  run COMMAND in this process with faults injected (bug-orig tests)\n"
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
-    "    writefail=NAME/N alerts alertlog wbfrontfail openwindowfail=N[/COUNT] examinefail=NAME ownedunlock\n"
+    "    writefail=NAME/N alerts alertlog ctxwrite wbfrontfail openwindowfail=N[/COUNT] examinefail=NAME ownedunlock\n"
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
     "    track pad guard guardseg fill=XX freefill=XX datestamp=YYYY-MM-DD\n"
     "    opencount=NAME cd[=PATH] libs=PATH inuse=PATH click=TITLE/TEXT doslocked\n"
@@ -1984,7 +1991,7 @@ int main(int argc, char **argv)
         }
     if (i >= argc) {
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP]]\n"
-            "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [alertlog]\n"
+            "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [alertlog] [ctxwrite]\n"
             "              [wbfrontfail] [openwindowfail=N[/COUNT]] [handles] [nullnode=NUM/NAME]\n"
             "              [examinefail=NAME] [ownedunlock] [openlibfail=NAME] [opendevfail=NAME]\n"
             "              [createprocfail] [track] [pad] [guard] [guardseg] [fill=XX]\n"
@@ -2043,8 +2050,9 @@ int main(int argc, char **argv)
         put("inject: cannot start the driver\n");
         return 20;
     }
-    /* the alert handlers write through the writer process (ctxwrite.h) */
-    if ((o_alerts || o_alertlog) && !cw_start(out, 1)) {
+    /* ctxwrite: the alert handlers write through the writer process
+       (ctxwrite.h); else the task that raises the alert writes */
+    if ((o_alerts || o_alertlog) && !cw_start(out, o_ctxwrite)) {
         put("inject: cannot start the writer\n");
         return 20;
     }

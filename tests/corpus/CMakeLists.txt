@@ -647,7 +647,9 @@ set_tests_properties(patchblock patchblock_broken PROPERTIES LABELS emulator
 
 # reqtraptest (tests/corpus/amiga/reqtraptest.c): a task raises the DOS
 # requester "Software Failure" (a message nobody took in its process port)
-# inside reqtrap's patch; the handler must make no DOS call there.  One
+# inside reqtrap's patch; the handler must make no DOS call there (reqtrap
+# -harden: the option of the writer process and the answer Suspend, the tests
+# pass it as LAUNCHER_ARGS; without it reqtrap writes in the caller).  One
 # requester line, answered "Suspend" (1), then the program's line.
 # reqtrap_stray_broken: the same through reqtrapdirect (the old handlers, the
 # caller writes, 2 levels at most) shows the requester line twice and the
@@ -661,14 +663,14 @@ foreach(spec reqtrap_stray:reqtrap reqclose_stray:reqclose)
 	list(GET parts 1 launcher)
 	add_test(NAME ${tname} COMMAND ${CMAKE_COMMAND}
 		-DAMIGA_RUN=${AMIGA_RUN} -DLAUNCHER=$<TARGET_FILE:${launcher}>
-		-DPROGRAM=$<TARGET_FILE:reqtraptest> -DWANT_RC=0 "-DREGEX=${reqtrap_one}"
+		-DPROGRAM=$<TARGET_FILE:reqtraptest> -DLAUNCHER_ARGS=-harden -DWANT_RC=0 "-DREGEX=${reqtrap_one}"
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${tname}
 		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/reqtrap-test.cmake -P ${WITH_WORKDIR})
 endforeach()
 # the broken twin: the same check must not match (several requester lines)
 add_test(NAME reqtrap_stray_broken COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DLAUNCHER=$<TARGET_FILE:reqtrapdirect>
-	-DPROGRAM=$<TARGET_FILE:reqtraptest> -DWANT_RC=0
+	-DPROGRAM=$<TARGET_FILE:reqtraptest> -DLAUNCHER_ARGS=-harden -DWANT_RC=0
 	"-DREGEX=REQUESTER: [^>]*-> answered 1\nREQUESTER: [^>]*-> answered 1\nreqtraptest: the helper is stopped inside Lock\nreqtrap: 1 requesters not recorded"
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/reqtrap_stray_broken
 	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/reqtrap-test.cmake -P ${WITH_WORKDIR})

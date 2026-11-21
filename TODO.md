@@ -647,7 +647,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     process, which raised it again. The handlers (reqtrap, and inject's
     alert patches) now make no DOS call in the context of the requesting
     task (`tests/corpus/amiga/ctxwrite.h`: a writer process), reqtrap
-    answers that requester with "Suspend". Tests `reqtrap_stray`,
+    answers that requester with "Suspend"; both are an option (`reqtrap
+    -harden`, `inject ctxwrite`), by default the tools behave as before.
+    Tests `reqtrap_stray`,
     `reqclose_stray`, `inject_alert_stray` and their broken twins; the two
     `regression/wbstartuplib-without-wbstartup*` tests check the requester.
   - *Runner features:* done: program arguments (`runargs=`, #107),

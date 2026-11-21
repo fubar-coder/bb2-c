@@ -4,18 +4,23 @@
  * (prefix "REQUESTER:") and the call returns at once with the rightmost
  * (negative) answer, so that nothing in a batch run waits for a click.
  *
- * usage: reqtrap COMMAND [ARGS]     (run through SystemTags, same stdout)
+ * usage: reqtrap [-harden] COMMAND [ARGS]  (run through SystemTags, same stdout)
  * The patch stays only while the command runs; it is system-wide, so run
  * nothing else in parallel.
  *
  * The handlers run in the context of the task that raises the requester,
  * which can be inside DOS (a program started the Workbench way that did
- * not take its WBStartup message gets "Software Failure" from DOS): they
- * make no DOS call, the text goes to a writer process of reqtrap
- * (ctxwrite.h).  That requester (a dead end, gadgets "Suspend" and
- * "Reboot") is answered with "Suspend" (1), not with the rightmost
- * gadget, "Reboot", which halts the machine; every other requester gets
- * the rightmost answer.
+ * not take its WBStartup message gets "Software Failure" from DOS).
+ * By default every handler writes its line in that context and answers
+ * 0 (the rightmost gadget; for AutoRequest FALSE), nothing is allocated
+ * before the command runs.  With the option -harden (first argument) the
+ * handlers make no DOS call: the text goes to a writer process of reqtrap
+ * (ctxwrite.h: a task already inside a handler records nothing, counted),
+ * and the requester "Software Failure" (a dead end, gadgets "Suspend" and
+ * "Reboot") is answered with "Suspend" (1), not with "Reboot", which
+ * halts the machine.  The writer takes about 4.5 KB from the memory of the
+ * run, which is why the option is for the tests that need it
+ * (tests/README.md, "The handlers of reqtrap").
  *
  * Kickstart 1.x (dos.library before V36: no SystemTags, no
  * EasyRequestArgs, no CacheClearU): only AutoRequest is patched, and
@@ -51,6 +56,7 @@
 struct IntuitionBase *IntuitionBase;
 static struct pbhead *pb_auto, *pb_easy;
 static BPTR out;
+static int harden;                      /* -harden: see the header */
 
 static void put(const char *s) { if (s) Write(out, (APTR)s, strlen(s)); }
 
@@ -88,14 +94,14 @@ ULONG call_seg_sp;
    no DOS call there (ctxwrite.h), the text goes to the writer process. */
 void auto_c(struct IntuiText *body, struct IntuiText *pos, struct IntuiText *neg)
 {
-    struct cw_msg m;
+    CW_MSG(m);
 
-    if (!cw_begin(&m)) return;
-    cw_add(&m, "REQUESTER: AutoRequest body"); puttexts(&m, body);
-    cw_add(&m, " pos"); puttexts(&m, pos);
-    cw_add(&m, " neg"); puttexts(&m, neg);
-    cw_add(&m, " -> answered FALSE\n");
-    cw_end(&m);
+    if (!cw_begin(m)) return;
+    cw_add(m, "REQUESTER: AutoRequest body"); puttexts(m, body);
+    cw_add(m, " pos"); puttexts(m, pos);
+    cw_add(m, " neg"); puttexts(m, neg);
+    cw_add(m, " -> answered FALSE\n");
+    cw_end(m);
 }
 
 /* The answer: 0 (the rightmost gadget, the negative one); the requester
@@ -104,27 +110,28 @@ void auto_c(struct IntuiText *body, struct IntuiText *pos, struct IntuiText *neg
    emulated machine, "Suspend" stops only the process. */
 LONG easy_c(struct EasyStruct *es)
 {
-    struct cw_msg m;
-    LONG answer = es->es_Title && !strcmp((const char *)es->es_Title, "Software Failure") ? 1 : 0;
+    CW_MSG(m);
+    LONG answer = harden && es->es_Title && !strcmp((const char *)es->es_Title, "Software Failure") ? 1 : 0;
 
-    if (!cw_begin(&m)) return answer;
-    cw_add(&m, "REQUESTER: EasyRequest title \""); cw_add(&m, (const char *)es->es_Title);
-    cw_add(&m, "\" text \""); cw_add(&m, (const char *)es->es_TextFormat);
-    cw_add(&m, "\" gadgets \""); cw_add(&m, (const char *)es->es_GadgetFormat);
-    cw_add(&m, answer ? "\" -> answered 1\n" : "\" -> answered 0\n");
-    cw_end(&m);
+    if (!cw_begin(m)) return answer;
+    cw_add(m, "REQUESTER: EasyRequest title \""); cw_add(m, (const char *)es->es_Title);
+    cw_add(m, "\" text \""); cw_add(m, (const char *)es->es_TextFormat);
+    cw_add(m, "\" gadgets \""); cw_add(m, (const char *)es->es_GadgetFormat);
+    cw_add(m, answer ? "\" -> answered 1\n" : "\" -> answered 0\n");
+    cw_end(m);
     return answer;
 }
 
 #ifdef REQCLOSE
 static const char usage[] =
-    "usage: reqclose COMMAND [ARGS]\n"
+    "usage: reqclose [-harden] COMMAND [ARGS]\n"
     "  as reqtrap, and modal requesters answered as ENV:REQCLOSE says\n";
 #else
 static const char usage[] =
-    "usage: reqtrap COMMAND [ARGS]\n"
+    "usage: reqtrap [-harden] COMMAND [ARGS]\n"
     "  run COMMAND with AutoRequest/EasyRequestArgs answered at once (texts\n"
-    "  to stdout, prefix REQUESTER:)\n";
+    "  to stdout, prefix REQUESTER:); -harden: the texts are written by a\n"
+    "  writer process, \"Software Failure\" is answered with Suspend\n";
 #endif
 
 /* Kickstart 1.x: the command cmd (args behind the first blank, a newline
@@ -178,6 +185,11 @@ int main(int argc, char **argv)
         Write(Output(), (APTR)usage, sizeof usage - 1);
         return 0;
     }
+    if (argc > 1 && !strcmp(argv[1], "-harden")) {
+        harden = 1;
+        argc--;
+        argv++;
+    }
     if (argc < 2) return 20;
     cmd[0] = 0;
     for (i = 1; i < argc; i++) {
@@ -190,7 +202,7 @@ int main(int argc, char **argv)
     IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", v36 ? 36 : 33);
     if (!IntuitionBase) return 20;
     v36 = v36 && IntuitionBase->LibNode.lib_Version >= 36;
-    if (!cw_start(out, v36)) {
+    if (!cw_start(out, v36 && harden)) {
         CloseLibrary((struct Library *)IntuitionBase);
         return 20;
     }

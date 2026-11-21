@@ -47,7 +47,7 @@
  *   launcher=PATH     starts every program: reqtrap or reqclose (not
  *                     needed with run=off)
  *   run=on|off        off: the programs are only compiled, not run (no
- *                     launcher, gate, serial, runwrap, runargs, expect);
+ *                     launcher, gate, serial, runwrap, runargs, launcherargs, expect);
  *                     every configuration must give the reference's
  *                     compile result (tedstub's RESULT line: ok and the
  *                     size, or the error with line and message), and with
@@ -137,6 +137,8 @@
  *                     CORPUS:out/NAME), e.g. inject without free signals
  *   runargs=ARGS      arguments for every program (CORPUS:out/NAME ARGS,
  *                     a CLI start with arguments)
+ *   launcherargs=ARGS options of the launcher (CORPUS:run ARGS ...): reqtrap
+ *                     -harden, tests/README.md "The handlers of reqtrap"
  *   jobline=LINE      a line appended to tedstub's job list (behind the
  *                     job= lines), any number
  *   uae=KEY=VALUE     a change of the emulator configuration
@@ -259,7 +261,8 @@ struct corpus_config {
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug;
     char *publish, *run_dir;            /* publish=, run_dir= (rundir.h) */
-    char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
+    char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *launcherargs;
+    char *machine, *rcput;
     char *orig, *orig_by;               /* orig=, orig_by= (bug-orig tests) */
     char *test;                         /* test=: the ctest name (PREV_INTENDED entries) */
     char *expect_dir;                   /* expect_dir=: the expected outputs */

@@ -1518,7 +1518,8 @@ an area directory (`compiler/`, `libs/` ...), named after the bug ID of
 the issue: `ID.bas` (the program as text; in its header comment
 `; @pass KEY=VALUE` for extra lines of the pass file, see
 `tests/corpus/runner/corpus.h`: `file=`, `dir=`, `remove=`, `wrap=`,
-`runwrap=`, `runargs=` (arguments of the program, a CLI start),
+`runwrap=`, `runargs=` (arguments of the program, a CLI start), `launcherargs=` (options
+of the launcher: `-harden`, below),
 `uae=KEY=VALUE` (a change of the emulator configuration), `jobline=`,
 `floppy=N|SRC` (a disk image in drive DFN, cold boot, below),
 `timeout=`, `runtime_errors=on`, `serial=on` (the remote end of the
@@ -1776,7 +1777,26 @@ blitz2-c starts there since #936 (linked with libnix13). A crash on Kickstart 1.
 "Software error - task held", which reqtrap answers with Cancel: a
 Guru that waits for the mouse, the session runs into its timeout.
 
-**The handlers of reqtrap** (`tests/corpus/amiga/ctxwrite.h`). A handler
+**The handlers of reqtrap** (`tests/corpus/amiga/ctxwrite.h`). The
+hardening below is an option: `reqtrap -harden COMMAND ...` (the first
+argument; `reqclose` the same) and `inject ctxwrite alerts ...`
+(with `alerts` or `alertlog`). Without it the tools behave as they did
+before the hardening: no writer process (nothing is allocated before the
+program runs, so the memory layout of a run is that of the program alone,
+which the recorded originals depend on), every handler writes its line in
+the context of the caller and every requester gets the rightmost answer
+(0; `AutoRequest` FALSE), also "Software Failure" ("Reboot", which halts
+the machine); the guard against a re-entry works only with the writer (it
+needs the writer's message, so it is part of the option). The corpus
+runner passes the launcher option with the pass key `launcherargs=-harden`
+(`CORPUS:run -harden ...`; the two `regression/wbstartuplib-without-wbstartup*`
+tests set it with `; @pass launcherargs=-harden`), `reqtrap-test.cmake` with
+`-DLAUNCHER_ARGS=-harden`. Use it for a test that starts a program the
+Workbench way without WBStartup (wbrun) or that needs the requester
+"Software Failure" answered; a test without it sees the old output and
+layout.
+
+With the option: a handler
 runs in the context of the task that raises the requester, and that can
 be inside DOS: a program that leaves its WBStartup message in its process
 port gets the requester "Software Failure" from the packet wait of its
@@ -1798,13 +1818,15 @@ requesters get, halts the machine, "Suspend" stops only the process.
 DOS calls in its own process, never in the context of the program).
 `inject` had handlers of the same kind, the alert patches (`alerts`:
 DisplayAlert answered at once, `alertlog`: the dead-end alert of exec): they
-write through the same writer, started only with one of these options (a
-line `inject: N alerts not recorded ...` at the end if any was skipped);
+write through the same writer, started only with the option `ctxwrite` (a
+line `inject: N alerts not recorded ...` at the end if any was skipped;
+without it they write in the caller, as before);
 its other patches only count and write at the end. The writer takes the
 signal SIGB_SINGLE when the task has no free signal left (`signals`).
 Tests (label `emulator`, `reqtraptest`: a helper process with an unreplied
 message in its port calls `Lock`): `reqtrap_stray` and `reqclose_stray` (one
-`REQUESTER:` line, answered 1, then the helper is stopped inside `Lock`),
+`REQUESTER:` line, answered 1, then the helper is stopped inside `Lock`; all
+with `-harden`),
 `reqtrap_stray_broken` (`reqtrapdirect`: reqtrap built with `-DCW_DIRECT`,
 the old handlers, the caller writes, at most 2 levels deep: the line comes
 twice and the count of the one not recorded, what the check for one line

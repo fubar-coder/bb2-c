@@ -45,6 +45,7 @@ void corpus_free(struct corpus_pass *p)
     free(p->runwrap);
     free(p->runwrap_args);
     free(p->runargs);
+    free(p->launcherargs);
     free(p->machine);
     free(p->rcput);
     free(p->orig);
@@ -451,6 +452,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             p->runargs = val;
             continue;
         }
+        if (!strcmp(key, "launcherargs")) {
+            if (!*val) {
+                free(val);
+                return fail(p, err, errlen, "line %u: launcherargs=ARGS", no);
+            }
+            free(p->launcherargs);
+            p->launcherargs = val;
+            continue;
+        }
         if (!strcmp(key, "wrap") || !strcmp(key, "runwrap")) {
             const char *s = val;
             char *path = field(&s), *args = *val && strchr(val, '|') ? strdup(s) : NULL;
@@ -479,8 +489,9 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     if (p->must_compile && p->run)
         return fail(p, err, errlen, "must_compile=on needs run=off");
     /* compile only: nothing that belongs to the runs */
-    if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->expect))
-        return fail(p, err, errlen, "run=off: no launcher, gate, serial, runwrap, runargs, "
+    if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->launcherargs
+                      || p->expect))
+        return fail(p, err, errlen, "run=off: no launcher, gate, serial, runwrap, runargs, launcherargs, "
                     "expect");
     /* a fixed bug-orig test and an expect test have no reference, every
        other pass one first */
@@ -1136,9 +1147,10 @@ static char *script13(const struct corpus_pass *p)
         char *n = corpus_name(p->sources[i]);
 
         text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
-                "  " VOLUME ":run >" VOLUME ":out/%s.run %s%s%s" VOLUME ":out/%s%s%s\n"
+                "  " VOLUME ":run >" VOLUME ":out/%s.run %s%s%s%s%s" VOLUME ":out/%s%s%s\n"
                 "  " VOLUME ":rcput " VOLUME ":out/%s.run\n"
-                "EndIf\n", n, n, p->runwrap ? VOLUME ":runwrap " : "",
+                "EndIf\n", n, n, p->launcherargs ? p->launcherargs : "",
+                p->launcherargs ? " " : "", p->runwrap ? VOLUME ":runwrap " : "",
                 p->runwrap_args ? p->runwrap_args : "", p->runwrap_args ? " " : "", n,
                 p->runargs ? " " : "", p->runargs ? p->runargs : "", n);
         free(n);
@@ -1173,9 +1185,10 @@ char *corpus_script(const struct corpus_pass *p)
         char *n = corpus_name(p->sources[i]);
 
         text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
-                "  " VOLUME ":run %s%s%s" VOLUME ":out/%s%s%s >" VOLUME ":out/%s.run\n"
+                "  " VOLUME ":run %s%s%s%s%s" VOLUME ":out/%s%s%s >" VOLUME ":out/%s.run\n"
                 "  Echo \"rc=$RC\" >>" VOLUME ":out/%s.run\n"
-                "EndIf\n", n, p->runwrap ? VOLUME ":runwrap " : "",
+                "EndIf\n", n, p->launcherargs ? p->launcherargs : "",
+                p->launcherargs ? " " : "", p->runwrap ? VOLUME ":runwrap " : "",
                 p->runwrap_args ? p->runwrap_args : "", p->runwrap_args ? " " : "", n,
                 p->runargs ? " " : "", p->runargs ? p->runargs : "", n, n);
         free(n);
