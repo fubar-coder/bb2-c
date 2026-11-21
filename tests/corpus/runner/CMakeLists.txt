@@ -10,7 +10,7 @@ set_target_properties(lib_runner_util PROPERTIES C_STANDARD 23)
 add_library(lib_corpus STATIC corpus.c serial.c bugorig.c)
 target_include_directories(lib_corpus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(Threads REQUIRED)
-target_link_libraries(lib_corpus PUBLIC lib_runner_util lib_amiga_emulation lib_statline lib_previntended lib_corpusexpect
+target_link_libraries(lib_corpus PUBLIC lib_runner_util lib_amiga_emulation lib_statline lib_previntended lib_prevcmp lib_corpusexpect
 	lib_bugorigcmp Threads::Threads)
 target_compile_options(lib_corpus PRIVATE -Wall -Wextra)
 set_target_properties(lib_corpus PROPERTIES C_STANDARD 23)
@@ -46,6 +46,7 @@ add_test(NAME cdrun_cache COMMAND test_cdcache)
 # results compared, executables only reported
 add_library(lib_cdcmp STATIC cdcmp.c)
 target_include_directories(lib_cdcmp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lib_cdcmp PUBLIC lib_previntended)
 target_compile_options(lib_cdcmp PRIVATE -Wall -Wextra)
 set_target_properties(lib_cdcmp PROPERTIES C_STANDARD 23)
 add_executable(test_cdcmp test_cdcmp.c)

@@ -190,3 +190,40 @@ TEST_CASE("prevcmp: build directories in a temporary directory", "[prevcmp]")
             fprintf(stderr, "cannot remove %s\n", base);
     }
 }
+
+// the executables of two compiles of the same source: the parameter blocks of the traps hold
+// addresses of the compiler's memory and are masked (prevcmp_mask_traps), anything else that
+// differs, or another length, is a difference
+TEST_CASE("prevcmp: executables, the trap blocks masked", "[prevcmp]")
+{
+    // code, trap #4 with its block, code, trap #1 with its block, code
+    uint8_t a[] = { 0x60, 0x00, 0x4E, 0x44, 1, 2, 3, 4, 5, 6, 7, 8, 0x4E, 0x71,
+                    0x4E, 0x41, 9, 9, 9, 9, 9, 9, 9, 9, 0x4E, 0x75 };
+    uint8_t b[sizeof a];
+    size_t first = 99;
+
+    memcpy(b, a, sizeof a);
+    CHECK(prevcmp_exe_same(a, sizeof a, b, sizeof b, &first));
+    // another block behind the traps only: the same
+    b[5] = 0xAA;
+    b[17] = 0xBB;
+    CHECK(prevcmp_exe_same(a, sizeof a, b, sizeof b, &first));
+    // another code byte: the offset of the first difference
+    b[13] = 0x70;
+    CHECK(!prevcmp_exe_same(a, sizeof a, b, sizeof b, &first));
+    CHECK(first == 13);
+    // another length
+    memcpy(b, a, sizeof a);
+    CHECK(!prevcmp_exe_same(a, sizeof a, b, sizeof b - 1, &first));
+    CHECK(first == sizeof a - 1);
+    // the trap word itself is no block: a changed 4E41 differs
+    b[sizeof b - 1] = a[sizeof a - 1];
+    b[15] = 0x42;
+    CHECK(!prevcmp_exe_same(a, sizeof a, b, sizeof b, &first));
+    CHECK(first == 15);
+    // masking in place: all blocks zero, the search goes on behind a zeroed block
+    prevcmp_mask_traps(a, sizeof a);
+    CHECK(a[4] == 0 && a[11] == 0 && a[16] == 0 && a[23] == 0 && a[24] == 0x4E);
+    // empty executables are the same
+    CHECK(prevcmp_exe_same(a, 0, b, 0, NULL));
+}

@@ -7,14 +7,19 @@ static const char *const tests[] = { "corpus", "corpus_runerr", "corpus_req", "c
                                      "corpus_serial_runerr", "ted_ab" };
 static const char *const pairs[] = { "C5-P5", "Cc-Pc" };
 
+/* the names ending in _prev (the compile-only comparisons: corpus_cd_prev,
+   compiler_prev, bug_orig_ID_prev, ab3_cli_prev ...) and the passes of the
+   site examples are tests too */
 int prevint_known_test(const char *test)
 {
-    size_t i;
+    size_t i, n = strlen(test);
 
     for (i = 0; i < sizeof tests / sizeof tests[0]; i++)
         if (!strcmp(test, tests[i]))
             return 1;
-    return 0;
+    if (!strncmp(test, "site_examples_", 14))
+        return 1;
+    return n > 5 && !strcmp(test + n - 5, "_prev");
 }
 
 static int bad(char *err, size_t errlen, const char *entry, const char *why)
@@ -23,13 +28,14 @@ static int bad(char *err, size_t errlen, const char *entry, const char *why)
     return -1;
 }
 
-/* a name: not empty, printable, none of the separators */
-static int name_ok(const char *s)
+/* a name: not empty, printable, none of the separators; a path (the CD's
+   sources) has slashes */
+static int name_ok(const char *s, int path)
 {
     size_t i, n = strlen(s);
 
     for (i = 0; i < n; i++)
-        if ((unsigned char)s[i] <= ' ' || strchr(":;|/\\=", s[i]))
+        if ((unsigned char)s[i] <= ' ' || strchr(path ? ":;|\\=" : ":;|/\\=", s[i]))
             return 0;
     return n > 0;
 }
@@ -55,8 +61,8 @@ int prevint_add(struct prevint *pi, const char *entry, char *err, size_t errlen)
         why = "out of memory";
     else if (!prevint_known_test(x.test))
         why = "unknown test (corpus, corpus_runerr, corpus_req, corpus_serial, "
-              "corpus_serial_runerr or ted_ab)";
-    else if (!name_ok(x.name))
+              "corpus_serial_runerr, ted_ab, site_examples_* or one ending in _prev)";
+    else if (!name_ok(x.name, !strncmp(x.test, "corpus_cd", 9)))
         why = "the source or case name is empty or has a character of : ; | / \\ = or a blank";
     else if (x.pair && strcmp(x.test, "ted_ab"))
         why = "only ted_ab entries have a pair";

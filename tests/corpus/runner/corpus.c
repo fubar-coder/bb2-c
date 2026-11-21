@@ -14,6 +14,7 @@
 #include "bugorig.h"
 #include "bugorigcmp.h"
 #include "corpus.h"
+#include "prevcmp.h"
 #include "serial.h"
 #include "rundir.h"
 #include "runwork.h"
@@ -907,19 +908,7 @@ char *corpus_name(const char *source)
 
 void corpus_mask_traps(uint8_t *data, size_t len)
 {
-    size_t i = 0;
-    int pass;
-
-    /* first all trap #1, then all trap #4, each search going on behind the
-       zeroed block (as bb2's mask_trap1) */
-    for (pass = 0; pass < 2; pass++)
-        for (i = 0; i + 10 <= len; ) {
-            if (data[i] == 0x4E && data[i + 1] == (pass ? 0x44 : 0x41)) {
-                memset(data + i + 2, 0, 8);
-                i += 10;
-            } else
-                i++;
-        }
+    prevcmp_mask_traps(data, len);
 }
 
 /* ------------------------------------------------------------- files */

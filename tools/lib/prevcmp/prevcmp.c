@@ -211,3 +211,46 @@ out:
     list_free(&cf);
     return rc;
 }
+
+void prevcmp_mask_traps(uint8_t *data, size_t len)
+{
+    size_t i;
+    int pass;
+
+    /* first all trap #1, then all trap #4, each search going on behind the zeroed block */
+    for (pass = 0; pass < 2; pass++)
+        for (i = 0; i + 10 <= len;) {
+            if (data[i] == 0x4E && data[i + 1] == (pass ? 0x44 : 0x41)) {
+                memset(data + i + 2, 0, 8);
+                i += 10;
+            } else
+                i++;
+        }
+}
+
+int prevcmp_exe_same(const uint8_t *a, size_t alen, const uint8_t *b, size_t blen, size_t *first)
+{
+    uint8_t *x = malloc(alen ? alen : 1), *y = malloc(blen ? blen : 1);
+    size_t i, n = alen < blen ? alen : blen;
+    int same = 0;
+
+    if (!x || !y) {
+        free(x);
+        free(y);
+        if (first)
+            *first = 0;
+        return 0;
+    }
+    memcpy(x, a, alen);
+    memcpy(y, b, blen);
+    prevcmp_mask_traps(x, alen);
+    prevcmp_mask_traps(y, blen);
+    for (i = 0; i < n && x[i] == y[i]; i++)
+        ;
+    same = i == n && alen == blen;
+    if (!same && first)
+        *first = i;
+    free(x);
+    free(y);
+    return same;
+}

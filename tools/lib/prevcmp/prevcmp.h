@@ -20,6 +20,7 @@
 #define PREVCMP_H
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #ifdef __cplusplus
@@ -47,6 +48,21 @@ struct prevcmp_options {
 int prevcmp(const char *cur, const char *prev, const struct prevcmp_options *o, FILE *out,
             char *err, size_t errlen);
 
+/**
+ * @brief Zero the parameter blocks of the traps in an executable: the 8 bytes behind each
+ *        `4E41` (trap #1), then behind each `4E44` (trap #4), the search going on behind a
+ *        zeroed block.  The blocks of a program with runtime error checking or debugging hold
+ *        addresses of the compiler's memory (the line item of the editor), which depend on
+ *        the memory layout of the session.
+ */
+void prevcmp_mask_traps(uint8_t *data, size_t len);
+
+/**
+ * @brief Two executables the same, the trap blocks masked (prevcmp_mask_traps)?
+ * @param first  the offset of the first difference, if they differ (may be NULL)
+ * @return 1 = the same, 0 = they differ (another length too)
+ */
+int prevcmp_exe_same(const uint8_t *a, size_t alen, const uint8_t *b, size_t blen, size_t *first);
 
 #ifdef __cplusplus
 }
