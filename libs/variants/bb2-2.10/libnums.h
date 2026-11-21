@@ -189,5 +189,11 @@
    docs/token-table.md); 32 stays free.  The RWE variants keep RIDosLib as
    33 and have no literallib (rwe-1999/libnums.h) */
 #define LIB_literallib              33
+/* testlib (not in libnums.bb): the Blitz test library of the tests
+   (libs/userlibs/testlib), no part of acidlibs or deflibs.  81 is free
+   in every variant, in the CD's number lists and in AmiBlitz3's lists and
+   library files (docs/libs/variants.md, "Reserved numbers"); the RWE
+   variants include this header and keep it */
+#define LIB_testlib                 81
 
 #endif

@@ -35,6 +35,14 @@ only if no other library numbered 33 is loaded before it - blitz2 and
 TED take the first library of a number, and userlibs are loaded last, so
 RIDosLib of the CD must not be in `blitz2:userlibs/` with it.
 
+Library **81** is reserved for the Blitz test library `testlib`
+(`libs/userlibs/testlib`, `LIB_testlib` in `bb2-2.10/libnums.h`, which
+the other variants include; openspec change `basic-testlib`, design
+D11). It is free in every variant, in the CD's number lists
+(`LIBNUMS.BB`, `BUM9B`/`BUM10A` `LIBNUMS.BB2`), in AmiBlitz3's lists
+(`libnums.ab3`, `sorted_libnums.ab3`) and in every library file under
+`archive/`.
+
 **Userlibs** of a variant: `libs/userlibs/DIR/NAME.c` →
 `build/amiga/variants/VARIANT/userlibs/DIR/NAME.obj` (for
 `blitz2:userlibs/DIR/`). `libs/userlibs/rwe/`: the libraries of Red When
