@@ -1736,7 +1736,9 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     corpus) and the console output of every case must be the same. The
     tests with broken input are `ab3_cli_prev_same`, `_differs` (prev's
     `blitz2-ab3` is another program), `_intended` and `_stale`
-    (`cli-prev-test.cmake`, no prev build needed).
+    (`cli-prev-test.cmake`, no prev build needed); `ab3_prev_entries_ok` and
+    `_unknown` check the configure-time test of an `ab3_cli_prev:CASE` entry
+    (`check-prev-cases.cmake`).
 
 A fix changes results on purpose: its commit names them (CLAUDE.md), the
 differences that report must be exactly those, and `-DPREV_INTENDED`

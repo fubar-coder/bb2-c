@@ -772,16 +772,24 @@ endfunction()
 ab3_cli_blocks(ab3_cli exe "${cli_exe_cases}" cli_exe_tests SAME ${cli_exe_same} HUNKS "${cli_exe_hunks}")
 # a PREV_INTENDED entry ab3_cli_prev:CASE names a case of ab3_cli (a block judges only its own
 # cases, so a typo would never be stale)
+include(${CMAKE_CURRENT_SOURCE_DIR}/check-prev-cases.cmake)
 if(PREV_REQUESTED)
-	foreach(e IN LISTS PREV_INTENDED)
-		if(e MATCHES "^ab3_cli_prev:(.+)$")
-			if(NOT "${cli_exe_cases}" MATCHES "(^|\n)${CMAKE_MATCH_1}\\|")
-				message(FATAL_ERROR "PREV_INTENDED entry \"${e}\": ${CMAKE_MATCH_1} is no case of ab3_cli")
-			endif()
-		endif()
-	endforeach()
+	ab3_check_prev_entries("${PREV_INTENDED}" "${cli_exe_cases}")
 endif()
-ab3_cli_blocks(ab3_cli_ref ref "${cli_ref_cases}" cli_ref_tests SAME ${cli_ref_same} HUNKS "${cli_ref_hunks}")
+# the check with broken input: a name that is no case is refused and named
+foreach(t ok|ab3_cli_prev:atoi unknown|ab3_cli_prev:no_such_case)
+	string(REPLACE "|" ";" t "${t}")
+	list(GET t 0 kind)
+	list(GET t 1 entry)
+	add_test(NAME ab3_prev_entries_${kind} COMMAND ${CMAKE_COMMAND} "-DENTRIES=${entry}"
+		"-DCASES=atoi|Blitz3|atoi.ab3||x\ntrim|Blitz3|trim.ab3||y\n"
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/check-prev-cases.cmake)
+endforeach()
+set_tests_properties(ab3_prev_entries_ok PROPERTIES
+	PASS_REGULAR_EXPRESSION "all entries name a case")
+set_tests_properties(ab3_prev_entries_unknown PROPERTIES
+	PASS_REGULAR_EXPRESSION "entry \"ab3_cli_prev:no_such_case\": no_such_case is no case of[ \n]+ab3_cli"
+	FAIL_REGULAR_EXPRESSION "all entries name a case")
 # the check itself: a wrong expect file must fail, in both configurations
 # (broken.expect: atoi's output with one digit changed)
 set(broken "atoi|Blitz3|atoi.ab3||${cli_dir}/broken.expect\n")
