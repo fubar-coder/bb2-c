@@ -207,6 +207,10 @@ TEST_CASE("testmatrix: keys that cannot be axes", "[testmatrix]")
     refused(t, ":3: timout is no run setting and cannot be an axis");
     t.write("tests.toml", "root = true\n[matrix]\nrwe = [\"a\", \"b\"]\n");
     refused(t, ":3: rwe is a list setting and cannot be an axis");
+    t.write("tests.toml", "root = true\n[matrix]\nfiles = [\"a|b\"]\n");
+    refused(t, ":3: files is a list setting and cannot be an axis");
+    t.write("tests.toml", "root = true\n[matrix]\ncost = [\"1\"]\n");
+    refused(t, ":3: cost is no run setting and cannot be an axis");
     // a list value outside the matrix table is no axis: the list setting
     // takes it as its value, a scalar setting refuses it
     t.write("tests.toml", "root = true\nlibs = [\"cd\", \"clib\"]\n");

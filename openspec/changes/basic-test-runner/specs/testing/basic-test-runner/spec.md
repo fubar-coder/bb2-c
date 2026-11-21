@@ -85,11 +85,13 @@ the matrix and the list of cells.
 - **WHEN** the effective configuration of a test is printed whose time limit comes from its directory's file
 - **THEN** the time limit is shown with that file and line
 
-### Requirement: Any run setting can be an axis
+### Requirement: Any run setting with a single value can be an axis
 A configuration SHALL name its axes explicitly in a matrix table: each axis
-is a run setting with a list of values. A list value outside the matrix
-table SHALL NOT be an axis. Keys that are not run settings (fixed issue,
-assertions) SHALL NOT be axes.
+is a run setting whose value is a single value, with a list of values. A
+list value outside the matrix table SHALL NOT be an axis. Keys that are not
+run settings (fixed issue, assertions), run settings whose value is a list
+(files, user libraries, emulator changes) and the keys of the registered
+test (labels, cost, fixtures) SHALL NOT be axes.
 
 #### Scenario: Runtime error checking as an axis
 - **WHEN** a test's matrix makes runtime error checking an axis with off and on
@@ -97,6 +99,10 @@ assertions) SHALL NOT be axes.
 
 #### Scenario: Assertions as an axis
 - **WHEN** a matrix table names the assertions
+- **THEN** the runner fails naming the key
+
+#### Scenario: A list setting as an axis
+- **WHEN** a matrix table names the files to stage or the labels
 - **THEN** the runner fails naming the key
 
 ### Requirement: Cells are the product of the axes
@@ -179,12 +185,34 @@ its first entry if none failed.
 - **THEN** the check's verdict is fail and its actual value is 7
 
 ### Requirement: A more specific assertion replaces
-For one query, the assertion of the nearest file and of the most specific
-cell selector SHALL apply alone; assertions SHALL NOT be added up.
+For one query, one assertion SHALL apply alone; assertions SHALL NOT be
+added up. The nearest file SHALL win first, and among the assertions of
+that file the one with the most specific cell selector (the most terms).
+Two different assertions of the same rank for a cell SHALL be an error
+naming both.
 
 #### Scenario: A test expects another exit code
 - **WHEN** the root file asserts exit code 0 and a test's own file asserts exit code 20
 - **THEN** the test's cells are judged against 20 only
+
+#### Scenario: The nearest file before the selector
+- **WHEN** the root file asserts exit code 5 for the cells with the CD's libraries and a test's own file asserts exit code 20 for all cells
+- **THEN** the test's cells with the CD's libraries are judged against 20
+
+#### Scenario: Two selectors of the same rank
+- **WHEN** one file asserts exit code 1 for the CD's libraries and exit code 2 for the original 1.95 compiler
+- **THEN** judging the cell with both fails naming the two assertions
+
+### Requirement: Deviations are assertions of the test's own file
+The declared deviations of the original SHALL be assertions in a table
+`deviations."SELECTOR"` of the test's own file, the selector naming the
+cells with the original's faulty part. In those cells a deviation SHALL
+replace the assertion of its query; the further keys of the table (such as
+the actual value of the failing check) SHALL be its validators.
+
+#### Scenario: A failing check with its validator
+- **WHEN** a test's own file declares for the cells with the CD's libraries that check `width` of case `a` fails and its actual value is 0
+- **THEN** such a cell passes only if that check fails with the actual value 0
 
 ### Requirement: The default assertions
 Unless the configuration says otherwise, a case SHALL pass only if every
@@ -220,6 +248,19 @@ configuration; the step SHALL depend on every configuration file it read.
 - **WHEN** a test's matrix has no cell with original material
 - **THEN** only the test of the other side is registered for each case
 
+### Requirement: Time limit and source of a registered test
+The time limit of a registered test SHALL be the sum of the time limits of
+the cells of its side, and the test SHALL name its source by its absolute
+path.
+
+#### Scenario: Two cells on a side
+- **WHEN** the side with original material of a case has two cells with a time limit of 60 seconds each
+- **THEN** its registered test has a time limit of 120 seconds plus the build's margin
+
+#### Scenario: A source given by a relative path
+- **WHEN** the build step is given a test source by a path relative to its directory
+- **THEN** the registered test names the source by its absolute path
+
 ### Requirement: Names of the registered tests
 A registered test SHALL be named `PREFIX_ID__CASE`, and `PREFIX_ID__CASE_originals`
 for the side with original material, using only lower-case letters, digits
@@ -253,6 +294,29 @@ test) and SHALL fail naming file, line and case.
 
 #### Scenario: An extra end of a case
 - **WHEN** a source has an end macro without a case before it
+- **THEN** the build fails naming the file and the line
+
+### Requirement: Ambiguous names and hidden code are refused
+The registration step SHALL refuse, naming file and line: the same check
+name twice in one namespace; a procedure that holds checks and has the name
+of a case or of `init` or `end`; a case named `init` or `end` beside a
+batch init or batch end; and, outside the blocks, a call of one of the
+test's own macros and an `INCLUDE` or `XINCLUDE`.
+
+#### Scenario: A check name twice
+- **WHEN** case `a` holds two checks named `n`
+- **THEN** the build fails naming the file and the line of the second
+
+#### Scenario: A procedure named like a case
+- **WHEN** a source defines `Statement a{}` holding a check and has a case `a`
+- **THEN** the build fails naming the file and the line of the check
+
+#### Scenario: A case named init
+- **WHEN** a source with a batch init has a case `init`
+- **THEN** the build fails naming the file and the line of the case
+
+#### Scenario: An include outside the blocks
+- **WHEN** a source has `INCLUDE "x.bb2"` or a call of its own macro outside the blocks
 - **THEN** the build fails naming the file and the line
 
 ### Requirement: The runner groups cells

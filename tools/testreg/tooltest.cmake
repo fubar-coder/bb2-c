@@ -80,6 +80,18 @@ foreach(want "${WORK}/tests.cmake:" "${s}/libs/shape-frames.test.bas" "${s}/libs
 	endif()
 endforeach()
 
+# a source given by a relative path: the test names it by its absolute path
+execute_process(COMMAND ${TESTREG} --prefix p_ --output ${WORK}/rel.cmake ${env} --command run
+	libs/sub/fixed-one.test.bas WORKING_DIRECTORY ${s} RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)
+if(NOT rc EQUAL 0)
+	message(FATAL_ERROR "a relative source: exit ${rc}\n${out}")
+endif()
+file(READ ${WORK}/rel.cmake inc)
+string(FIND "${inc}" "[==[--source]==] [==[${s}/libs/sub/fixed-one.test.bas]==]" at)
+if(at LESS 0)
+	message(FATAL_ERROR "a relative source is not named by its absolute path:\n${inc}")
+endif()
+
 # broken input
 file(WRITE ${s}/other/form.test.bas "!TestCase{a}\nx=1\n!TestCase{b}:y=5\n!EndTestCase\n")
 refused("other/form.test.bas:3: the case a \\(line 1\\) has no !EndTestCase" ${s}/other/form.test.bas)

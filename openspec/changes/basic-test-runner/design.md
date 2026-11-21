@@ -176,6 +176,17 @@ Phase 1 (tasks 1.1-1.4, 2.1, 3.2, 4.1), `tools/lib/testtoml`,
 `tools/lib/testconf`; the grammar in `tests/README.md`, "The run
 configuration".
 
+Decided by the user (`task-decisions.md`, 2026-11-21, "basic-test-runner:
+findings of implementer B"), and written into the spec delta: only run
+settings with a single value are axes; the nearest file first, then the
+most specific selector in it; deviations as assertions in
+`[deviations."SELECTOR"]` of the test's own file, its further keys the
+validators; the extra refusals of the form check and the preprocessor
+(below); `TIMEOUT` the sum of a side's cell time limits and absolute
+source paths in the include file; the compiler values `port`, `orig195`,
+`orig210`. The `findit` question (a byte with bit 7 hiding the next one)
+goes to a spike of its own; the preprocessor keeps the compiler's rule.
+
 - **Keys.** The run settings mirror the header directives and pass keys
   of today (`compiler`, `libs`, `machine`, `runtime-errors`, `rwe`,
   `timeout`, `hang-after`, `stack`, `serial`, `rtg`, `pad`, `wrap`,
@@ -197,8 +208,8 @@ configuration".
   specific selector of that file (the number of its terms); two different
   assertions of the same rank are an error. A deviation of the cell beats
   every assertion. The spec says "the nearest file and the most specific
-  cell selector"; the order between the two is this implementation's
-  reading (a test's own statement beats a directory's cell-specific one).
+  cell selector"; the order between the two, proposed by the implementation,
+  is decided (a test's own statement beats a directory's cell-specific one).
 - **Deviations** are assertions in `[deviations."SELECTOR"]` of the test's
   own file; the selector names the cells with the faulty part, the further
   entries of the table (an actual value) are the validators. `fixed-orig`
