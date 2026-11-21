@@ -150,11 +150,26 @@ once. They need:
   they run a script from the test's own directory, and they are mounted
   read-only, so that several sessions can share them.
 
-The repository's
+The setup script of
+[Running it in an emulator]({{< relref "/docs/introduction/emulator" >}})
+makes all of them from Amiga Forever 11. Run without a directory of your
+own for the results, it writes into `amiga-emulation/`, for every machine
+the tests use:
+
+```
+cmake -DAMIGA_FOREVER=/run/media/$USER/AmigaForever -P cmake/setup-amiga-forever.cmake
+```
+
+It needs the build first, for its tool that prepares the hardfiles. It
+accepts only the files of Amiga Forever 11 and checks every file it
+writes. Files that are already there and correct stay untouched, so it
+can be run again after an update that adds a machine.
+
+Besides the default machine, an A1200 with Kickstart and Workbench 3.1,
+there are older ones, down to a 68000 with Kickstart 1.3, for bugs that
+only show there. The repository's
 [guide to the emulator setup](https://github.com/fubar-coder/bb2-c/blob/main/AMIGA-EMULATION-SETUP.md)
-lists the files, the machines the tests use and the conditions the images
-must meet. Besides the default machine there are older ones, with a 68000
-and Kickstart 1.3, for bugs that only show there.
+lists the files, the machines and the conditions the images must meet.
 
 The number of emulators running at the same time is limited over the
 whole machine, for all test runs together. The guide explains how to
