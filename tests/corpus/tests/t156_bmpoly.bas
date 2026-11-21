@@ -36,11 +36,19 @@ setp{a+160,"40,50,5,40,10,10,60,15"}
 BitMap 0,160,64,3
 BitMap 1,160,64,3
 BitMap 2,160,32,3
+; The dither form of the original steps through the dither bitmap by the
+; wrong plane distance and reads far behind its planes, whatever lies
+; there.  So bitmap 2's three planes (640 bytes apart) are made the front
+; of one 6400-byte block (the plane of bitmap 3), filled with a known
+; pattern: what the original reads behind bitmap 2 is defined (bitmap 2
+; gets its own planes back before the end, so that they are freed).
+BitMap 3,160,320,1
+b3=Addr BitMap(3)
+pl=Peek.l(b3+8)
+For k=0 To 20*320-1 : Poke.b pl+k,(k*7+(k/640)*29+k/5) : Next
 b=Addr BitMap(2)
-For i=0 To 2
-  pl=Peek.l(b+8+i*4)
-  For k=0 To 20*32-1 : Poke.b pl+k,(k*7+i*29+k/5) : Next
-Next
+Dim op.l(2)
+For i=0 To 2 : op(i)=Peek.l(b+8+i*4) : Poke.l b+8+i*4,pl+i*640 : Next
 Use BitMap 0
 VWait
 BLITZ
@@ -64,4 +72,5 @@ VWait 2
 AMIGA
 Print "render" : bsum{0}
 Print "render 2" : bsum{2}
+For i=0 To 2 : Poke.l b+8+i*4,op(i) : Next   ; give bitmap 2 its own planes back
 End
