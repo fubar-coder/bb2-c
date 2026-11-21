@@ -90,9 +90,10 @@ a problem (see below).
   rule is deliberate; it is recorded as a potential problem, since a
   program that uses fractions in such an expression gets another result
   than its source suggests, depending on the order of the operands.
-* **Array indexes** are a separate issue: the same source gives another
-  element depending on a compiler option (`b(1,q*10)` is element 15 with
-  runtime error checking off; with it on the index is a Long and the
-  element would be 10, derived from the code and not measured).
+* **Array indexes** are original bug #1179: a later index is evaluated as
+  a Word without runtime error checking and as a Long with it, so the same
+  source gives another element depending on that option (`b(1,q*10)` is
+  element 15 with the checking off and element 10 with it on, measured
+  with 1.95, 2.10 and the port).
 
 The comment at `programs/blitz2/src/eval.c:2893` points here.

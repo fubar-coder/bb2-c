@@ -169,7 +169,10 @@ variable (`rw.w=(q>1)` gives -1).
 
 The first index of an array is always computed as a Long, so a Quick in
 it loses its fraction: `a(q*10)` with `q=1.5` is element 10, not 15. A
-separate issue covers this case.
+later index is computed differently with and without runtime error
+checking, a known original bug
+([#1179](https://github.com/fubar-coder/bb2-c/issues/1179)); until it is
+fixed, compute such an index into a Word or Long variable first.
 
 ## The layout of the executable
 
