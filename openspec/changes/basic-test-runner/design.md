@@ -167,4 +167,43 @@ and `tests/bug-orig/CMakeLists.txt`.
 ## Open Questions
 
 - The exact selector syntax for cells in table names
-  (`[asserts."libs=cd"]` is the working form).
+  (`[asserts."libs=cd"]` is the working form; implemented as
+  `KEY=VALUE[,KEY=VALUE...]` with `case=NAME`, see "Findings").
+
+## Findings of the implementation
+
+Phase 1 (tasks 1.1-1.4, 2.1, 3.2, 4.1), `tools/lib/testtoml`,
+`tools/lib/testconf`; the grammar in `tests/README.md`, "The run
+configuration".
+
+- **Keys.** The run settings mirror the header directives and pass keys
+  of today (`compiler`, `libs`, `machine`, `runtime-errors`, `rwe`,
+  `timeout`, `hang-after`, `stack`, `serial`, `rtg`, `pad`, `wrap`,
+  `runwrap`, `runargs`, `launcherargs`, `files`, `dirs`, `remove`,
+  `mount`, `floppy`, `uae`, `jobline`); `labels`, `cost` and `fixtures`
+  describe the registered ctest test. `compiler` has the values `port`,
+  `orig` (1.95) and `cd` (2.10); the defaults are `port`, `clib`, `a1200`
+  and `off`. Task 3.1 maps the settings to the pass file and may rename
+  or add keys.
+- **Axes.** A list setting cannot be an axis (the subset has no lists of
+  lists), nor can `labels`, `cost`, `fixtures` (one ctest test per case
+  and side, not per cell). A key that a nearer file sets and a farther one
+  makes an axis is no axis, and the other way round; both in one file is
+  an error. Cells are named by their values in the fixed order of the
+  keys, `,` between them; a test without axes has the cell `default`.
+- **Replacement.** For a query the nearest file wins first, then the most
+  specific selector of that file (the number of its terms); two different
+  assertions of the same rank are an error. A deviation of the cell beats
+  every assertion. The spec says "the nearest file and the most specific
+  cell selector"; the order between the two is this implementation's
+  reading (a test's own statement beats a directory's cell-specific one).
+- **Deviations** are assertions in `[deviations."SELECTOR"]` of the test's
+  own file; the selector names the cells with the faulty part, the further
+  entries of the table (an actual value) are the validators. `fixed-orig`
+  without a deviation and `fixed` with one are refused (from
+  `bug-orig-basic-tests`, implemented here because the configuration
+  holds both).
+- **Check queries** are `check.NAMESPACE.NAME[.expected|.actual]`; the
+  judge splits `NAME` from the suffix against the names of the table, so a
+  name may contain a `.`. A case selector term `case=NAME` restricts an
+  assertion to one case.

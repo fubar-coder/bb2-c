@@ -280,6 +280,149 @@ const char *tc_cell_value(const struct tc_config *conf, const struct tc_matrix *
 int tc_selector_matches(const struct tc_selector *sel, const struct tc_config *conf,
                         const struct tc_matrix *m, size_t cell, const char *case_name);
 
+/* ------------------------------------------------------------ assertions
+ *
+ * An assertion is a key QUERY = "PREDICATE" of the table `asserts` (all
+ * cells) or `asserts."SELECTOR"` (the cells the selector matches), or of
+ * the table `deviations."SELECTOR"` of a test's own file (the deviations
+ * the original's faulty part causes in the cells the selector matches).
+ * The grammar is in tests/README.md, "Assertions"; tc_query_parse and
+ * tc_pred_parse implement it.
+ *
+ * Replacement per query (tc_assertions_for): for one query of a cell and
+ * case only one assertion applies.  A deviation (when the cell is judged
+ * with the deviations) beats every assertion; among deviations the most
+ * specific selector wins.  Among assertions the nearest file wins, and in
+ * it the most specific selector; then the default assertions
+ * (tc_defaults).  Two different assertions of the same rank for the same
+ * query are an error naming both.
+ */
+
+/** @brief The queries. */
+enum tc_qkind {
+    TC_Q_RC,                    /* rc: the exit code of the program */
+    TC_Q_REQUESTER,             /* requester: the requesters shown, but the
+                                   runtime errors the case announced */
+    TC_Q_COMPILE,               /* compile: ok, error LINE MESSAGE, none */
+    TC_Q_COMPILE_LOG,           /* compile.log: the compiler's log */
+    TC_Q_OUTPUT,                /* output: the printed output */
+    TC_Q_SERIAL,                /* serial: the bytes sent over the serial port */
+    TC_Q_INJECT,                /* inject: the report of inject */
+    TC_Q_SESSION,               /* session: done, timeout, halt */
+    TC_Q_END_CASE,              /* end.case: the end entry of the case */
+    TC_Q_END_RUN,               /* end.run: the end entry of the run */
+    TC_Q_CHECK                  /* check.NS.NAME[.expected|.actual] */
+};
+
+/** @brief A parsed query. */
+struct tc_query {
+    int kind;                   /* enum tc_qkind */
+    char *ns;                   /* TC_Q_CHECK: the namespace */
+    char *rest;                 /* TC_Q_CHECK: NAME, NAME.expected or
+                                   NAME.actual (the judge splits it against
+                                   the names of the checks) */
+};
+
+/** @brief The operators of a predicate. */
+enum tc_pop {
+    TC_P_EQ, TC_P_NE, TC_P_LT, TC_P_LE, TC_P_GT, TC_P_GE,
+    TC_P_CONTAINS, TC_P_NOT_CONTAINS, TC_P_MATCHES,
+    TC_P_EXISTS, TC_P_NOT_EXISTS,
+    TC_P_COUNT                  /* count CMP N: cmp one of TC_P_EQ..TC_P_GE */
+};
+
+/** @brief The kind of a predicate's value. */
+enum tc_pvtype {
+    TC_PV_NONE,                 /* exists, not exists */
+    TC_PV_INT,                  /* -12, 16, $FFFFFFFF (32 bits, signed) */
+    TC_PV_STR,                  /* "text" */
+    TC_PV_WORD                  /* ok, fail, not-run, done, timeout, halt, none */
+};
+
+/** @brief A parsed predicate. */
+struct tc_pred {
+    int op;                     /* enum tc_pop */
+    int cmp;                    /* TC_P_COUNT: the comparison */
+    int vtype;                  /* enum tc_pvtype */
+    long long num;              /* TC_PV_INT */
+    char *str;                  /* TC_PV_STR, TC_PV_WORD */
+};
+
+/**
+ * @brief Parse a query.
+ * @return 0 = ok, -1 = refused (msg), -2 = out of memory
+ */
+int tc_query_parse(const char *text, struct tc_query *q, char *msg, size_t msglen);
+void tc_query_free(struct tc_query *q);
+
+/**
+ * @brief Parse a predicate for a query of kind qkind (the operators and
+ *        values the query allows).
+ * @return 0 = ok, -1 = refused (msg), -2 = out of memory
+ */
+int tc_pred_parse(const char *text, int qkind, struct tc_pred *p, char *msg, size_t msglen);
+void tc_pred_free(struct tc_pred *p);
+
+/** @brief The name of an operator ("==", "contains", "count", ...). */
+const char *tc_pop_name(int op);
+
+/** @brief One applying assertion. */
+struct tc_assertion {
+    const char *query;          /* the query's text */
+    const char *pred;           /* the predicate's text */
+    struct tc_query q;
+    struct tc_pred p;
+    const char *sel;            /* the selector, NULL: all cells */
+    struct tc_origin at;        /* file "(default)" for a default */
+    int deviation;              /* a declared deviation */
+};
+
+/** @brief The assertions of a cell and case (tc_assertions_free). */
+struct tc_assertions {
+    struct tc_assertion *a;
+    size_t n;
+};
+
+/** @brief How a cell is judged. */
+enum tc_judge_mode {
+    TC_PLAIN,                   /* the assertions only */
+    TC_DEVIATED,                /* with the deviations whose selector
+                                   matches the cell */
+    TC_DEVIATED_ANY             /* with the deviations as if their axis
+                                   terms matched (the cells without the
+                                   faulty part of an open bug) */
+};
+
+/**
+ * @brief The default assertions: the queries and predicates that apply
+ *        when no file names the query (rc == 0, requester count == 0,
+ *        end.case exists, end.run exists); *n their number.  Every check
+ *        with entries must have passed unless an assertion names it (the
+ *        judge's default, not in this list).
+ */
+struct tc_default {
+    const char *query, *pred;
+};
+const struct tc_default *tc_defaults(size_t *n);
+
+/**
+ * @brief The assertions that apply to cell of m for case case_name, one
+ *        per query, defaults included.
+ * @return 0 = ok, -1 = two different assertions of the same rank (err),
+ *         -2 = out of memory
+ */
+int tc_assertions_for(const struct tc_config *conf, const struct tc_matrix *m, size_t cell,
+                      const char *case_name, int mode, struct tc_assertions *out,
+                      char *err, size_t errlen);
+void tc_assertions_free(struct tc_assertions *a);
+
+/**
+ * @brief Whether cell holds the original's faulty part for case_name: a
+ *        selector of the table deviations matches it.
+ */
+int tc_cell_faulty(const struct tc_config *conf, const struct tc_matrix *m, size_t cell,
+                   const char *case_name);
+
 #ifdef __cplusplus
 }
 #endif

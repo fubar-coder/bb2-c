@@ -28,5 +28,8 @@ int tc_axis_check(const char *file, unsigned line, const char *key, const struct
 /* testmatrix.c: an axis against a setting of the same key (the nearer
    file wins, one file both: error), the exclude selectors */
 int tc_matrix_merge(struct tc_config *c, char *err, size_t errlen);
+/* testassert.c: the selectors, queries and predicates of the tables
+   asserts and deviations; fixed-orig and fixed against the deviations */
+int tc_assert_validate(const struct tc_config *c, char *err, size_t errlen);
 
 #endif

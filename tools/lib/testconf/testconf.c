@@ -814,6 +814,8 @@ int tc_resolve(const char *source, const struct tc_env *env, struct tc_config *c
                s->at.line, c->id);
         goto out;
     }
+    if (tc_assert_validate(c, err, errlen))
+        goto out;
     r = 0;
     goto out;
 oom:

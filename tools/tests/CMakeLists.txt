@@ -14,13 +14,21 @@ endforeach()
 
 # the matrix of the run configuration of the Blitz tests (lib/testconf;
 # testconf is in the list above): snitch programs
-foreach(t testmatrix)
+foreach(t testmatrix testassert)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_testconf snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
 	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
+# the examples of tests/README.md, "The run configuration"
+add_executable(test_testconf_readme test_testconf_readme.cpp)
+target_link_libraries(test_testconf_readme PRIVATE lib_testconf snitch::snitch)
+target_compile_definitions(test_testconf_readme PRIVATE
+	TESTCONF_README="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/README.md")
+target_compile_options(test_testconf_readme PRIVATE -Wall -Wextra)
+set_target_properties(test_testconf_readme PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME testconf_readme COMMAND test_testconf_readme)
 
 # the judge of the library tests (lib/libscmp; libscmp), the raw block
 # observations (NAME.bin; libscmp_bin) and the order of the expected data's

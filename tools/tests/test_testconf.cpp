@@ -100,7 +100,8 @@ TEST_CASE("testconf: the hierarchy", "[testconf]")
     t.write("tests.toml", "root = true\nrwe = [\"a\", \"b\"]\ntimeout = 60\nlabels = [\"x\"]\n"
                           "[asserts]\nrc = \"== 0\"\nrequester = \"count == 0\"\n");
     t.write("libs/tests.toml", "# narrower\nrwe = [\"c\"]\n[asserts]\noutput = \"contains \\\"ok\\\"\"\n");
-    t.write("libs/sub/x.test.toml", "fixed-orig = 12\n[asserts]\nrc = \"== 20\"\n");
+    t.write("libs/sub/x.test.toml", "fixed-orig = 12\n[asserts]\nrc = \"== 20\"\n"
+                                    "[deviations.\"libs=cd\"]\n\"check.a.b\" = \"== fail\"\n");
     t.write("libs/sub/x.test.bas", "");
 
     REQUIRE(resolve(t, "libs/sub/x.test.bas", &c, &e) == 0);

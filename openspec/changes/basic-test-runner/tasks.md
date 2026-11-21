@@ -5,7 +5,7 @@
 - [x] 1.1 Parser of the strict TOML subset in `tools/lib` (one key per line; string, integer, boolean, one-line list of strings; table headers; comments; file and line of every key); verify: host tests with valid files and with deliberately broken input (each refused construct names file and line), with and without `-DHOST_SANITIZE=ON`
 - [x] 1.2 Resolution of the hierarchy (`tests.toml` up to `root = true`, `ID.test.toml`; nearest wins per key, tables merge, lists replace; keys of a single test refused in directory files; unknown keys; relative paths; placeholders from the build's environment file); verify: host tests per rule, each with broken input
 - [x] 1.3 Matrix and cells (explicit matrix table, run settings only, product minus exclusions, cell names, the side "needs original material"); verify: host tests including a key that is no run setting
-- [ ] 1.4 The grammar of queries, predicates and cell selectors, written down in `tests/README.md`, and the replacement per query; verify: host tests of every query and predicate, and of a more specific assertion replacing the default
+- [x] 1.4 The grammar of queries, predicates and cell selectors, written down in `tests/README.md`, and the replacement per query; verify: host tests of every query and predicate, and of a more specific assertion replacing the default
 
 ## 2. Preprocessor and driver
 
