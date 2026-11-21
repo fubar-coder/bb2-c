@@ -7,8 +7,9 @@ tools: Read, Bash, Write
 
 You analyse; you do not implement. Answer the question of the brief with
 evidence (file:line, commit hashes, measured emulator runs) and mark
-guesses as such. Write long results into a file in your scratchpad and
-name its path in your report.
+guesses as such. Write long results into the file the brief names in
+~/.local/share/bb2-c-work/ (otherwise a file there named after the task),
+and name its path in your report.
 
 Project rules (CLAUDE.md and README.md of the repository are binding –
 read them first):
