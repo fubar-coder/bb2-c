@@ -16,6 +16,7 @@ For working with the repository:
 | [testing.md](testing.md) | how the tests work, for people: the model, the suites, walkthroughs, glossary |
 | [structure.md](structure.md) | the directory structure of the repository in full |
 | [blitz2/extensions.md](blitz2/extensions.md) | what `blitz2` accepts beyond Blitz Basic 2 |
+| [blitz2/expression-types.md](blitz2/expression-types.md) | the type of an expression in `blitz2`: the type so far, promotion, the cut of a Quick to Long |
 | [external-bugs/](external-bugs/README.md) | bugs found in third-party tools (Doxygen, ...), with reproductions and what they mean here |
 | [libs/variants.md](libs/variants.md) | variants of the libraries, userlibs of a variant, the reference build of the RWE sources |
 | [libs/readable-sources.md](libs/readable-sources.md) | the library sources as TED shows them (`bblibsrc`, `tedsrc detok`, `bbsrc bb22`, `xtra`); other tokenised sources as text (`bbsrc detok`) |

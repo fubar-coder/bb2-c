@@ -2890,6 +2890,7 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
     /* .notabyte */
     if (!oldtype)                   /* type not set yet... it is now! */
         goto done;
+    /* A Quick is cut to Long at once: see issue #1178; comparisons: #1177. */
     if (oldtype == T_LONG && *type == T_QUICK)
         goto conv2;
     if (oldtype <= *type)           /* .nob */
