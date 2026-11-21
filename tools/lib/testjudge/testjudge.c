@@ -177,7 +177,8 @@ static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct ru
             }
             break;
         case BASICTEST_BLOCKEND:
-            if (block < 0)
+            /* after broken (block end without a block) the library goes on */
+            if (block < 0 && !r->broken)
                 return msg(msgs, "the result file: a blockend outside a block in line %u", line) ? -1 : TJ_ERROR;
             if (cur_is_case)
                 r->case_ended = 1;
@@ -197,7 +198,8 @@ static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct ru
             r->broken = 1;
             break;
         default:
-            if (block < 0)
+            /* after broken (check outside a block) the library goes on */
+            if (block < 0 && !r->broken)
                 return msg(msgs, "the result file: an entry outside a block in line %u", line) ? -1 : TJ_ERROR;
         }
         en->block = block;
@@ -212,6 +214,56 @@ static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct ru
 static void long_text(char *out, size_t size, uint32_t v)
 {
     snprintf(out, size, "%ld ($%08lX)", (long)(int32_t)v, (unsigned long)v);
+}
+
+/* a quick (16.16 fixed point) in decimal, exactly, with its bits */
+static void quick_text(char *out, size_t size, uint32_t v)
+{
+    int32_t q = (int32_t)v;
+    uint64_t a = q < 0 ? (uint64_t)(-(int64_t)q) : (uint64_t)q;
+    uint64_t frac = a & 0xFFFF;
+    size_t o = (size_t)snprintf(out, size, "%s%llu", q < 0 ? "-" : "", (unsigned long long)(a >> 16));
+
+    if (frac && o + 1 < size)
+        out[o++] = '.';
+    while (frac && o + 1 < size) {
+        frac *= 10;
+        out[o++] = (char)('0' + (frac >> 16));
+        frac &= 0xFFFF;
+    }
+    if (o < size)
+        snprintf(out + o, size - o, " ($%08lX)", (unsigned long)v);
+}
+
+/* a Motorola FFP float (mantissa 31-8, sign 7, exponent 6-0 excess 64) in
+   decimal, with its bits */
+static void ffp_text(char *out, size_t size, uint32_t v)
+{
+    double m = (double)(v >> 8), x = 0;
+
+    if (v >> 8) {
+        int e = (int)(v & 0x7F) - 64 - 24;
+
+        x = m;
+        for (; e > 0; e--)
+            x *= 2;
+        for (; e < 0; e++)
+            x /= 2;
+        if (v & 0x80)
+            x = -x;
+    }
+    snprintf(out, size, "%.7g ($%08lX)", x, (unsigned long)v);
+}
+
+/* a value of a check entry of the long kinds, by its kind */
+static void value_text(char *out, size_t size, int kind, uint32_t v)
+{
+    if (kind == BASICTEST_CHECKQ)
+        quick_text(out, size, v);
+    else if (kind == BASICTEST_CHECKFLT)
+        ffp_text(out, size, v);
+    else
+        long_text(out, size, v);
 }
 
 /* the name or the number of a check, for the report */
@@ -236,11 +288,18 @@ static int report_check(const struct tj_test *t, const struct chk *k, struct tj_
 
         str_text(es, sizeof es, &x->expected_str);
         str_text(as, sizeof as, &x->actual_str);
-        snprintf(e, sizeof e, "\"%s\"", es);
-        snprintf(a, sizeof a, "\"%s\"", as);
+        snprintf(e, sizeof e, "\"%s\"%s", es, x->cut ? " (cut)" : "");
+        snprintf(a, sizeof a, "\"%s\"%s", as, x->cut ? " (cut)" : "");
     } else {
-        long_text(e, sizeof e, x->expected);
-        long_text(a, sizeof a, x->actual);
+        value_text(e, sizeof e, x->kind, x->expected);
+        value_text(a, sizeof a, x->kind, x->actual);
+    }
+    if (x->kind == BASICTEST_CHECKFLT) {
+        char d[60];
+
+        ffp_text(d, sizeof d, x->delta);
+        return msg(msgs, "%scheck %s (%s:%u) failed: %s: expected %s, actual %s, delta %s%s", why, id, t->file,
+                   c->line, c->expr ? c->expr : "", e, a, d, k->nent > 1 ? " (its first failed entry)" : "");
     }
     if (c->kind == TP_CHECK)
         return msg(msgs, "%scheck %s (%s:%u) failed: %s is 0%s", why, id, t->file, c->line, c->expr,
@@ -440,14 +499,14 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
             snprintf(got, sizeof got, "not run");
             break;
         }
-        if (x->e.kind == BASICTEST_CHECK) {
+        if (x->e.kind == BASICTEST_CHECK || x->e.kind == BASICTEST_CHECKQ || x->e.kind == BASICTEST_CHECKFLT) {
             uint32_t v = field == 1 ? x->e.expected : x->e.actual;
 
             if (p->vtype != TC_PV_INT)
                 return msg(msgs, "%s:%u: %s: the value of this check is a long, compare it with an integer",
                            a->at.file, a->at.line, a->query) ? -1 : TJ_ERROR;
             ok = cmp_int(p->op, (int32_t)v, p->num);
-            long_text(got, sizeof got, v);
+            value_text(got, sizeof got, x->e.kind, v);
         } else if (x->e.kind == BASICTEST_CHECKSTR) {
             const struct basictest_str *s = field == 1 ? &x->e.expected_str : &x->e.actual_str;
             char *v = strndup((const char *)s->data, s->length);
@@ -460,9 +519,14 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
                 return msg(msgs, "%s:%u: %s: the value of this check is a string", a->at.file, a->at.line,
                            a->query) ? -1 : TJ_ERROR;
             }
+            if (x->e.cut && (p->op == TC_P_EQ || p->op == TC_P_NE)) {
+                free(v);
+                return msg(msgs, "%s:%u: %s: the value was cut to fit the line; compare it with contains or "
+                           "matches", a->at.file, a->at.line, a->query) ? -1 : TJ_ERROR;
+            }
             ok = strlen(v) == s->length && text_pred(p, v);
             str_text(shown, sizeof shown, s);
-            snprintf(got, sizeof got, "\"%s\"", shown);
+            snprintf(got, sizeof got, "\"%s\"%s", shown, x->e.cut ? " (cut)" : "");
             free(v);
         } else {
             return msg(msgs, "%s:%u: %s: this check has no values", a->at.file, a->at.line, a->query) ? -1
@@ -519,11 +583,12 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
                 goto oom;
             continue;
         }
-        if (en->e.kind != BASICTEST_CHECK && en->e.kind != BASICTEST_CHECKSTR && en->e.kind != BASICTEST_REQUIRE
+        if (en->e.kind != BASICTEST_CHECK && en->e.kind != BASICTEST_CHECKSTR && en->e.kind != BASICTEST_CHECKQ
+            && en->e.kind != BASICTEST_CHECKFLT && en->e.kind != BASICTEST_REQUIRE
             && en->e.kind != BASICTEST_EXPECT_ERROR)
             continue;
         /* the blocks of the run: the batch init, the judged case, the batch end */
-        if (en->block == BASICTEST_BLOCK_CASE && !en->in_case)
+        if (en->block < 0 || (en->block == BASICTEST_BLOCK_CASE && !en->in_case))
             continue;
         if (!(c = tp_by_k(t->src, en->e.k))) {
             res = TJ_ERROR;
@@ -534,7 +599,7 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
         }
         {
             static const int want[] = { BASICTEST_CHECK, BASICTEST_CHECK, BASICTEST_CHECKSTR, BASICTEST_REQUIRE,
-                                        BASICTEST_EXPECT_ERROR };
+                                        BASICTEST_EXPECT_ERROR, BASICTEST_CHECKQ, BASICTEST_CHECKFLT };
 
             if (want[c->kind] != en->e.kind) {
                 res = TJ_ERROR;

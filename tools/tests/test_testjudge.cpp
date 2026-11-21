@@ -51,7 +51,8 @@ struct fixture {
     tc_matrix m = {};
     tj_test t = {};
 
-    fixture(const std::string &dir_toml, const std::string &own_toml = "", const char *case_name = "frames_maximum")
+    fixture(const std::string &dir_toml, const std::string &own_toml = "", const char *case_name = "frames_maximum",
+            const char *text = source)
     {
         std::string tmp = (fs::temp_directory_path() / "testjudge-XXXXXX").string();
 
@@ -60,12 +61,12 @@ struct fixture {
         std::ofstream(root / "tests.toml") << "root = true\n" << dir_toml;
         if (!own_toml.empty())
             std::ofstream(root / "x.test.toml") << own_toml;
-        std::ofstream(root / "x.test.bas") << source;
+        std::ofstream(root / "x.test.bas") << text;
         tp_params p = {};
         p.file = "x.test.bas";
         p.test_id = "x";
-        REQUIRE(tp_process(source, sizeof source - 1, &p, &src) == 0);
-        REQUIRE(src.nchecks == 10);
+        REQUIRE(tp_process(text, strlen(text), &p, &src) == 0);
+        REQUIRE((text != source || src.nchecks == 10));
         std::string e = "top = \"" + root.string() + "\"\n";
         REQUIRE(tc_env_parse("env.toml", e.c_str(), &env, err, sizeof err) == 0);
         if (tc_resolve((root / "x.test.bas").c_str(), &env, &conf, err, sizeof err))
@@ -132,7 +133,7 @@ static const std::string good = head
                                   "check|4|ok|$FFFFFFFF|$FFFFFFFF\n"
                                   "check|5|ok|$00000001|$00000001\n"
                                   "check|5|ok|$00000001|$00000001\n"
-                                  "checkstr|6|ok|ab|ab\n"
+                                  "checkstr|6|ok|ab|ab|-\n"
                                 + tail;
 
 static std::string join(const tj_msgs &m)
@@ -188,9 +189,13 @@ TEST_CASE("testjudge: a failed check and its report", "[testjudge]")
     CHECK(judge(f, q, m) == TJ_FAIL);
     CHECK(has(m, "check frames_maximum len (x.test.bas:10) failed: Len(\"abc\")=3 is 0"));
     // a string check
-    obs s(head + "checkstr|6|fail|ab|a\\x09b\n" + tail);
+    obs s(head + "checkstr|6|fail|ab|a\\x09b|-\n" + tail);
     CHECK(judge(f, s, m) == TJ_FAIL);
     CHECK(has(m, "check frames_maximum str (x.test.bas:12) failed: a$: expected \"ab\", actual \"a\\x09b\""));
+    // values the library shortened to fit the line
+    obs cut(head + "checkstr|6|fail|abc|abd|cut\n" + tail);
+    CHECK(judge(f, cut, m) == TJ_FAIL);
+    CHECK(has(m, "a$: expected \"abc\" (cut), actual \"abd\" (cut)"));
     // a check without a name is reported by its number in the namespace
     obs n(head + "check|8|fail|$00000002|$00000003\n" + tail);
     CHECK(judge(f, n, m) == TJ_FAIL);
@@ -243,9 +248,18 @@ TEST_CASE("testjudge: queries of checks", "[testjudge]")
     {
         fixture f("[asserts]\n\"check.frames_maximum.width\" = \"== not-run\"\n"
                   "\"check.frames_maximum.str.actual\" = \"contains \\\"b\\\"\"\n");
-        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xb\n" + tail), m) == TJ_PASS);
-        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xy\n" + tail), m) == TJ_FAIL);
+        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xb|-\n" + tail), m) == TJ_PASS);
+        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xy|-\n" + tail), m) == TJ_FAIL);
         CHECK(has(m, "does not hold: \"xy\""));
+        // a cut value: contains still works and the report says it was cut
+        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xb|cut\n" + tail), m) == TJ_PASS);
+        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xy|cut\n" + tail), m) == TJ_FAIL);
+        CHECK(has(m, "does not hold: \"xy\" (cut)"));
+        // == cannot be decided on a cut value
+        fixture g("[asserts]\n\"check.frames_maximum.str.actual\" = \"== \\\"xy\\\"\"\n");
+        CHECK(judge(g, obs(head + "checkstr|6|fail|ab|xy|cut\n" + tail), m) == TJ_ERROR);
+        CHECK(has(m, "the value was cut to fit the line; compare it with contains or matches"));
+        CHECK(judge(g, obs(head + "checkstr|6|fail|ab|xy|-\n" + tail), m) == TJ_PASS);
     }
     {
         // a value of a check that did not run
@@ -424,7 +438,7 @@ TEST_CASE("testjudge: malformed result files", "[testjudge]")
     // numbers and kinds the table does not have
     CHECK(judge(f, obs(head + "check|42|ok|$00000010|$00000010\n" + tail), m) == TJ_ERROR);
     CHECK(has(m, "line 5 names check 42, which the source does not have"));
-    CHECK(judge(f, obs(head + "checkstr|3|ok|a|a\n" + tail), m) == TJ_ERROR);
+    CHECK(judge(f, obs(head + "checkstr|3|ok|a|a|-\n" + tail), m) == TJ_ERROR);
     CHECK(has(m, "line 5 is no entry of check 3 (!CheckEq, x.test.bas:9)"));
     // a case that was not selected, the case twice
     CHECK(judge(f, obs(good.substr(0, good.size() - 4) + "block|case|other\nblockend\nend\n"), m) == TJ_FAIL);
@@ -540,4 +554,74 @@ TEST_CASE("testjudge: a declared crash", "[testjudge]")
     obs bad(head + "check|3|fail|$00000010|$00000000\n");
     CHECK(verdict(g, bad, obs(good), m) == TJ_V_FAILED);
     CHECK(has(m, "check frames_maximum width (x.test.bas:9) failed"));
+}
+
+// ------------------------------------------------------------ typed checks
+
+static const char typed_source[] =
+    "!TestCase{t}\n"                                        // 1
+    "  !CheckQEq{q,1.5,\"q\"}\n"                            // 2 K0
+    "  !CheckFltNear{f,2.5,0.01,\"f\"}\n"                   // 3 K1
+    "!EndTestCase\n";
+
+static const std::string thead = "begin|1\nblock|case|t\n";
+
+TEST_CASE("testjudge: quick and float checks", "[testjudge]")
+{
+    fixture f("", "", "t", typed_source);
+    std::string m;
+
+    CHECK(judge(f, obs(thead + "checkq|0|ok|$00018000|$00018000\ncheckflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n"
+                       + tail), m) == TJ_PASS);
+    // the report shows the quick and the FFP values in decimal, the float's delta too
+    CHECK(judge(f, obs(thead + "checkq|0|fail|$00018000|$FFFFC000\n" + tail), m) == TJ_FAIL);
+    CHECK(has(m, "check t q (x.test.bas:2) failed: q: expected 1.5 ($00018000), actual -0.25 ($FFFFC000)"));
+    CHECK(judge(f, obs(thead + "checkflt|1|fail|$A0000042|$C00000C1|$A3D70A3A\n" + tail), m) == TJ_FAIL);
+    CHECK(has(m, "check t f (x.test.bas:3) failed: f: expected 2.5 ($A0000042), actual -1.5 ($C00000C1), "
+                 "delta 0.01 ($A3D70A3A)"));
+    CHECK(judge(f, obs(thead + "checkflt|1|fail|$A0000042|$A6666642|$A3D70A3A\n" + tail), m) == TJ_FAIL);
+    CHECK(has(m, "actual 2.6 ($A6666642)"));
+    CHECK(judge(f, obs(thead + "checkflt|1|fail|$A0000042|$00000000|$A3D70A3A\n" + tail), m) == TJ_FAIL);
+    CHECK(has(m, "actual 0 ($00000000)"));
+    // the entry kind must fit the macro
+    CHECK(judge(f, obs(thead + "check|0|ok|$00018000|$00018000\n" + tail), m) == TJ_ERROR);
+    CHECK(has(m, "line 3 is no entry of check 0 (!CheckQEq, x.test.bas:2)"));
+    // queries of the verdict and the values (their bits)
+    fixture g("[asserts]\n\"check.t.q\" = \"== fail\"\n\"check.t.q.actual\" = \"== $FFFFC000\"\n"
+              "\"check.t.f.expected\" = \"== $A0000042\"\n",
+              "", "t", typed_source);
+    CHECK(judge(g, obs(thead + "checkq|0|fail|$00018000|$FFFFC000\ncheckflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n"
+                       + tail), m) == TJ_PASS);
+    CHECK(judge(g, obs(thead + "checkq|0|fail|$00018000|$00010000\ncheckflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n"
+                       + tail), m) == TJ_FAIL);
+    CHECK(has(m, "assertion check.t.q.actual == $FFFFC000"));
+    CHECK(has(m, "does not hold: 1 ($00010000)"));
+    fixture h("[asserts]\n\"check.t.f.actual\" = \"contains \\\"2\\\"\"\n", "", "t", typed_source);
+    CHECK(judge(h, obs(thead + "checkflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n" + tail), m) == TJ_ERROR);
+    CHECK(has(m, "the value of this check is a long, compare it with an integer"));
+}
+
+// ------------------------------------------------------------ calls out of order
+
+TEST_CASE("testjudge: calls out of order", "[testjudge]")
+{
+    fixture f("", "", "t", typed_source);
+    std::string m;
+
+    // the library reports a check outside a block, then writes the check
+    CHECK(judge(f, obs(thead + "blockend\nbroken|check outside a block\ncheckq|0|ok|$00018000|$00018000\nend\n"), m)
+          == TJ_BROKEN);
+    CHECK(has(m, "the test library reports its state broken (line 4): check outside a block"));
+    CHECK(judge(f, obs(thead + "blockend\nbroken|block end without a block\nblockend\nend\n"), m) == TJ_BROKEN);
+    // without the broken entry such a line is a malformed file
+    CHECK(judge(f, obs(thead + "blockend\ncheckq|0|ok|$00018000|$00018000\nend\n"), m) == TJ_ERROR);
+    // a failed precondition of the batch init repeated in the case
+    fixture i("", "", "frames_maximum");
+    CHECK(judge(i, obs("begin|1\nblock|init\nrequire|1|broken\nblockend\nblock|case|frames_maximum\n"
+                       "require|1|broken\nblockend\nend\n"), m) == TJ_BROKEN);
+    // a failed check of the batch init repeated in the case
+    CHECK(judge(i, obs("begin|1\nblock|init\ncheck|2|fail|$00000001|$00000002\nblockend\nblock|case|frames_maximum\n"
+                       "check|2|fail|$00000001|$00000002\nblockend\nend\n"), m) == TJ_FAIL);
+    CHECK(has(m, "check init initcheck (x.test.bas:6) failed: 1: expected 1 ($00000001), actual 2 ($00000002) "
+                 "(its first failed entry)"));
 }

@@ -4,7 +4,8 @@
  * testing/basic-test-interface, "The preprocessed form").
  *
  * It finds the calls of the check macros (`!Check`, `!CheckEq`,
- * `!CheckStrEq`, `!Require`, `!ExpectError`) the way the compiler finds
+ * `!CheckStrEq`, `!CheckQEq`, `!CheckFltNear`, `!Require`, `!ExpectError`)
+ * the way the compiler finds
  * macro calls (blitz2's expandmax: a `!` outside strings and comments,
  * the macro name, blanks, `{`), splits their arguments by the compiler's
  * rules (findit, programs/blitz2/src/compile.c: a `,` or `}` outside
@@ -57,7 +58,9 @@ enum tp_kind {
     TP_CHECKEQ,                 /* !CheckEq{ACTUAL,EXPECTED} */
     TP_CHECKSTREQ,              /* !CheckStrEq{ACTUAL$,EXPECTED$} */
     TP_REQUIRE,                 /* !Require{COND} */
-    TP_EXPECTERROR              /* !ExpectError{"MESSAGE"} */
+    TP_EXPECTERROR,             /* !ExpectError{"MESSAGE"} */
+    TP_CHECKQEQ,                /* !CheckQEq{ACTUAL,EXPECTED} (quick values) */
+    TP_CHECKFLTNEAR             /* !CheckFltNear{ACTUAL,EXPECTED,DELTA} (floats) */
 };
 
 /** @brief The kinds of namespaces. */
@@ -79,7 +82,9 @@ struct tp_check {
     unsigned line;
     char *expr;                 /* COND or ACTUAL as written (trimmed); NULL
                                    for !ExpectError */
-    char *expected;             /* EXPECTED (CheckEq, CheckStrEq), else NULL */
+    char *expected;             /* EXPECTED (CheckEq, CheckStrEq, CheckQEq,
+                                   CheckFltNear), else NULL */
+    char *delta;                /* DELTA (CheckFltNear), else NULL */
     char *message;              /* the message of !ExpectError, else NULL */
 };
 

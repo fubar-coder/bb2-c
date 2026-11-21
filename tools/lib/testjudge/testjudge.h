@@ -12,7 +12,12 @@
  * end.case exists, end.run exists) and every check with entries in the
  * blocks of the run (the batch init, the case, the batch end) passed,
  * unless an assertion names the check.  A failed precondition (`require`)
- * or a `broken` entry makes the cell broken.  An announced runtime error
+ * or a `broken` entry makes the cell broken; an entry the library wrote
+ * outside a block after a `broken` one (a call out of order) belongs to
+ * no block.  The checks are `check`, `checkq` (quick values, reported in
+ * decimal), `checkflt` (FFP floats, reported in decimal with the delta)
+ * and `checkstr` (a value cut to fit the line is marked "(cut)"); a
+ * query of a value compares the 32 bits of the long kinds.  An announced runtime error
  * (`expect-error`) must be matched by a requester shown after the
  * announcement whose text holds its message; the matched requesters do
  * not count for the query `requester`, and a case whose last entry is a

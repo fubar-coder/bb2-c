@@ -197,15 +197,16 @@ int tp_block_macro(const char *l, size_t s, size_t e, size_t len, const char **n
 
 /* ------------------------------------------------------------ the preprocessor */
 
-static const char *const kind_names[] = { "Check", "CheckEq", "CheckStrEq", "Require", "ExpectError" };
+static const char *const kind_names[] = { "Check", "CheckEq", "CheckStrEq", "Require", "ExpectError",
+                                          "CheckQEq", "CheckFltNear" };
 
 const char *tp_kind_name(int kind)
 {
-    return kind >= 0 && kind <= TP_EXPECTERROR ? kind_names[kind] : "?";
+    return kind >= 0 && kind <= TP_CHECKFLTNEAR ? kind_names[kind] : "?";
 }
 
 /* the number of arguments of a kind without the name */
-static const int nargs[] = { 1, 2, 2, 1, 1 };
+static const int nargs[] = { 1, 2, 2, 1, 1, 2, 3 };
 
 struct buf {
     char *p;
@@ -267,7 +268,7 @@ static int err(struct ctx *c, const char *fmt, ...)
 /* the check kind of the name l[s..e), -1 none */
 static int check_kind(const char *l, size_t s, size_t e)
 {
-    for (int i = 0; i <= TP_EXPECTERROR; i++)
+    for (int i = 0; i <= TP_CHECKFLTNEAR; i++)
         if (strlen(kind_names[i]) == e - s && !memcmp(l + s, kind_names[i], e - s))
             return i;
     return -1;
@@ -388,8 +389,10 @@ static int one_call(struct ctx *c, const char *l, size_t len, size_t bang, size_
         }
     } else {
         chk.expr = trimmed(l, a[0].start, a[0].end);
-        if (want == 2)
+        if (want >= 2)
             chk.expected = trimmed(l, a[1].start, a[1].end);
+        if (want == 3)
+            chk.delta = trimmed(l, a[2].start, a[2].end);
     }
 
     /* the namespace */
@@ -456,6 +459,7 @@ drop:
     free(chk.name);
     free(chk.expr);
     free(chk.expected);
+    free(chk.delta);
     free(chk.message);
     return -1;
 }
@@ -681,6 +685,7 @@ void tp_free(struct tp_source *s)
         free(s->checks[i].name);
         free(s->checks[i].expr);
         free(s->checks[i].expected);
+        free(s->checks[i].delta);
         free(s->checks[i].message);
     }
     free(s->checks);
