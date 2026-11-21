@@ -112,7 +112,7 @@ Not in this change:
   and `DARTS_WIRE`.
 - `cmake/fetch-originals.cmake`: more AmiBlitz3 files.
 - Docs: `docs/ab3/variant.md` (measured share, G5 section, "Differences"),
-  `docs/libs/deviations.md` (the #940 row), `TODO.md`.
+  `docs/blitz2/deviations.md` (the #940 row), `TODO.md`.
 - Site: `ab3-compared/not-supported.md` and the pages on AB3 types and
   assembler; `compared-with-original/new-errors.md` and
   `fixed-bugs/compiler.md` (the #940 entries).

@@ -350,7 +350,7 @@ The CPU's trap vectors stay the system's: exec hands a trap of user mode to
 the task's trap handler. A SetInt routine runs in supervisor mode, where
 exec does not: `runerrlib`'s gosuper at its start points the TRAP #0–#5
 vectors at stubs that do what exec does, gouser at its end puts them back
-(#1069, `docs/libs/deviations.md`).
+(#1069, `docs/blitz2/deviations.md`).
 
 For this the compiler generates:
 

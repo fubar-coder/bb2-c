@@ -72,7 +72,7 @@ Range: `calcstatic` (6740) .. `brchkcode` (8449). `pokedata1*` (6714-6738) belon
     by its decimal value; the byte 1 returns a5 to after the closing '~'.) On error inside,
     cmake stays -1 (cleared at compile init line 2489).
   - '~', 1, 2 are tested even inside quotes: a '~' inside a string literal starts a constant
-    maker (BUG(orig) #966; the port takes it as an ordinary character, `docs/libs/deviations.md`).
+    maker (BUG(orig) #966; the port takes it as an ordinary character, `docs/blitz2/deviations.md`).
 - `getcharb (7147)` : raw fetch. d0 = 0-extended byte from (a5)+; 0 -> return 0; byte<0 ->
   token: d0 = (b<<8)|next byte (2 bytes consumed, $80xx..$ffxx); '"' (34) -> tail `swapquote`
   (toggle quoteflag, return 34); ';' with quoteflag==0 -> comment: skip to and past the NUL,
