@@ -267,3 +267,13 @@ task 3.1, not in parallel with it.
   compare values whose long conversion keeps the order (or the author
   compares `Int(q*100)` and the like); a rule for `tests/README.md`
   (task 4.2).
+- **The check of the macro names** (task 3.2) runs in the step that
+  copies the macro text next to the library
+  (`variants/bb2-2.10/userlibs/testlib/macros.bas`, the CMake variable
+  `TESTLIB_MACROS`; the library is `TESTLIB_OBJ`): the result of the
+  build is the checked text, and the runner (task 4.1) can take both from
+  there. It compares without case with 7 token lists (12318 tokens:
+  `blitz2` with the default sets and userlibs, `blitz2-ab3`'s AmiBlitz3
+  list, the three RWE variants with their userlibs, the two test
+  variants), and in the ctest `basictest_macros_tokens_ab3` with
+  AmiBlitz3 v3.14.0's 4653 tokens; no macro is a token.

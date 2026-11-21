@@ -325,6 +325,19 @@ again):
   writer fails the build. ctest
   `basictest_writer_check_broken` (a writer that divides:
   `__udivsi3`, `__umodsi3`), `basictest_writer_check_good`.
+* the macro text of the Blitz test drivers
+  (`shared/basictest/macros.bas`), in the step that copies it next to the
+  test library (`variants/bb2-2.10/userlibs/testlib/macros.bas`,
+  `libs/userlibs/testlib/CMakeLists.txt`,
+  `shared/basictest/check-macros.cmake`): no macro is named like a token
+  (compared without case; such a macro is a "Syntax Error" in the
+  driver) of any library set of the build - `blitz2` with the default
+  `acidlibs`, `deflibs` and userlibs, `blitz2-ab3`'s AmiBlitz3 list, and
+  every variant with its `acidlibs`, `deflibs` and RWE userlibs. ctest
+  `basictest_macros_tokens_broken` (macros named `NPrint` and
+  `loadshape`), and `basictest_macros_tokens_ab3` (label `originals`,
+  skipped without the fetched files): AmiBlitz3 v3.14.0's compiler and
+  BigLibs.
 * the command reference of the website (`blitzlib cmdref`, in the same
   step as link and strip of every library file of acidlibs and deflibs of
   the default variant and of every RWE userlib): the command table the

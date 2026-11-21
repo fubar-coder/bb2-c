@@ -3,7 +3,9 @@
 # shared/tokenizer: every user compiles the files itself with its own
 # options - the host tools writer and reader (tools/lib/basictest), this
 # directory the writer as a library compiles it.  macros.bas is the macro
-# text of the test drivers.  The test library and the runner that use them
+# text of the test drivers; libs/userlibs/testlib copies it next to the
+# test library in the step that checks its macro names against the tokens
+# (check-macros.cmake).  The test library and the runner that use them
 # are the changes basic-testlib and basic-test-runner.
 #
 # basictest_writer_blitzlib is the writer compiled in the environment of a

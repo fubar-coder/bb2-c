@@ -1,0 +1,91 @@
+# cmake -DBBSRC=... -DMACROS=macros.bas "-DSETS=SET^SET..." [-DOUT=FILE]
+#       [-DSKIP_MISSING=ON] -P check-macros.cmake
+# - is no macro of the macro text MACROS named like a token?  A macro named
+# like a token is a "Syntax Error" in the driver (spec testing/basic-
+# testlib, design D10).  Each SET is COMPILER[@LAST]|LIB|LIB...: the token
+# list bbsrc tokens makes of the compiler (of several lists in it the one
+# ending with $LAST) and the library files; a macro name equal to a token
+# name, compared without case, fails the check, naming macro, token and
+# compiler.  With OUT the text is copied there if it passes (the build
+# step of the checked macro text, libs/userlibs/testlib/CMakeLists.txt).
+# SKIP_MISSING: exit 77 (skipped) if a file of a set is missing (the
+# AmiBlitz3 lists of the fetched originals).
+cmake_minimum_required(VERSION 4.3)
+
+foreach(v BBSRC MACROS SETS)
+	if("${${v}}" STREQUAL "")
+		message(FATAL_ERROR "check-macros: -D${v}=... missing")
+	endif()
+endforeach()
+if(OUT)
+	file(REMOVE ${OUT})     # a failed check leaves no text behind
+endif()
+file(STRINGS ${MACROS} lines REGEX "^Macro[ \t]+")
+set(macros)
+foreach(l IN LISTS lines)
+	string(REGEX REPLACE "^Macro[ \t]+([^ \t;]*).*" "\\1" name "${l}")
+	if(NOT name MATCHES "^[A-Za-z_][A-Za-z0-9_]*$")
+		message(FATAL_ERROR "check-macros: ${MACROS}: \"${l}\" names no macro")
+	endif()
+	list(APPEND macros ${name})
+endforeach()
+if(NOT macros)
+	message(FATAL_ERROR "check-macros: ${MACROS} defines no macro")
+endif()
+
+string(REPLACE "^" ";" sets "${SETS}")
+set(clashes)
+set(nsets 0)
+set(ntokens 0)
+foreach(set IN LISTS sets)
+	string(REPLACE "|" ";" files "${set}")
+	list(POP_FRONT files compiler)
+	set(last)
+	if(compiler MATCHES "^(.*)@([0-9A-Fa-f]+)$")
+		set(compiler ${CMAKE_MATCH_1})
+		set(last --last ${CMAKE_MATCH_2})
+	endif()
+	foreach(f IN LISTS compiler files)
+		if(NOT EXISTS ${f})
+			if(SKIP_MISSING)
+				message(STATUS "no ${f}: skipped")
+				cmake_language(EXIT 77)
+			endif()
+			message(FATAL_ERROR "check-macros: no ${f}")
+		endif()
+	endforeach()
+	execute_process(COMMAND ${BBSRC} tokens ${last} ${compiler} ${files}
+		RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE err)
+	if(rc)
+		message(FATAL_ERROR "check-macros: bbsrc tokens ${compiler}: exit ${rc} ${err}")
+	endif()
+	string(REGEX MATCHALL "\n" n "${out}")
+	list(LENGTH n n)
+	math(EXPR ntokens "${ntokens} + ${n}")
+	math(EXPR nsets "${nsets} + 1")
+	# "XXXX name" per line; the names compared without case
+	set(out "\n${out}\n")
+	string(TOLOWER "${out}" lower)
+	foreach(m IN LISTS macros)
+		string(TOLOWER "${m}" lm)
+		string(REGEX MATCH "\n[0-9a-f]+ ${lm}\n" hit "${lower}")
+		if(hit)
+			string(FIND "${lower}" "${hit}" at)
+			math(EXPR at "${at} + 1")
+			string(LENGTH "${hit}" len)
+			math(EXPR len "${len} - 2")
+			string(SUBSTRING "${out}" ${at} ${len} token)
+			list(APPEND clashes "macro ${m} is the token ${token} of ${compiler}")
+		endif()
+	endforeach()
+endforeach()
+if(clashes)
+	list(REMOVE_DUPLICATES clashes)
+	list(JOIN clashes "; " clashes)
+	message(FATAL_ERROR "check-macros: ${MACROS}: ${clashes}")
+endif()
+list(LENGTH macros nm)
+message(STATUS "check-macros: ${nm} macros of ${MACROS}, no token of ${nsets} token lists (${ntokens} tokens)")
+if(OUT)
+	file(COPY_FILE ${MACROS} ${OUT})
+endif()

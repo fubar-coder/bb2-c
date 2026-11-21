@@ -212,6 +212,7 @@ foreach(l IN LISTS RWE_LIBS)
 	# for other directories (tests/bug-orig: ; @rwe NAME): the C build, the
 	# reference, its fixture (empty: none) and the variant's directory
 	set_property(GLOBAL PROPERTY RWE_LIB_${name} "${obj}|${reffile}|${fixture}|${v}|${vout}")
+	set_property(GLOBAL APPEND PROPERTY RWE_LIB_NAMES ${name})
 	set(intended)
 	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.declarations-intended.txt)
 		set(intended ${CMAKE_CURRENT_SOURCE_DIR}/${name}.declarations-intended.txt)
