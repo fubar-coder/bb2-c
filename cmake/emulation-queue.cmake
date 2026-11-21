@@ -19,9 +19,15 @@ set(EMULATION_QUEUE_WAIT 7200 CACHE STRING
 # and the waiter) still matches, and a new save removes the stale one of
 # the same configuration.  To remove them by hand: amiga_run
 # --purge-snapshots BUILDDIR.  Call it at the end of the project's
-# top-level CMakeLists.txt, after all add_test: every test with the label
-# emulator gets the owner.
+# top-level CMakeLists.txt, after all add_test: every test that runs
+# Amiberry gets the owner: the labels emulator, originals and oracle (the
+# comparisons with the originals and with AmiBlitz3 run the emulator
+# under another label; the variable does no harm in the tests of the
+# label originals that run none).  Without it a session restores the
+# snapshot of the owner "none", which every build directory and worktree
+# shares.  cmake/emulation-owner-test.cmake checks it.
 function(emulation_snapshot_owner owner)
+	set(emulator_labels emulator originals oracle)
 	set(dirs ${CMAKE_SOURCE_DIR})
 	while(dirs)
 		list(POP_FRONT dirs dir)
@@ -30,7 +36,13 @@ function(emulation_snapshot_owner owner)
 		get_property(tests DIRECTORY ${dir} PROPERTY TESTS)
 		foreach(t IN LISTS tests)
 			get_property(labels TEST ${t} DIRECTORY ${dir} PROPERTY LABELS)
-			if("emulator" IN_LIST labels)
+			set(uses FALSE)
+			foreach(l IN LISTS emulator_labels)
+				if(l IN_LIST labels)
+					set(uses TRUE)
+				endif()
+			endforeach()
+			if(uses)
 				set_property(TEST ${t} DIRECTORY ${dir} APPEND PROPERTY
 					ENVIRONMENT AMIGA_EMULATION_OWNER=${owner})
 			endif()

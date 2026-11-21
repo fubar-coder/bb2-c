@@ -1,0 +1,97 @@
+# emulation-owner-test.cmake - checks emulation_snapshot_owner
+# (cmake/emulation-queue.cmake): every test that runs Amiberry gets
+# AMIGA_EMULATION_OWNER in its environment, and a test that does not
+# gets none.  Configures a project in WORK with tests of every label that
+# uses the emulator (emulator, originals, oracle; one of them in a
+# subdirectory) and two that do not, lists them with ctest
+# --show-only=json-v1 and reads their environments.
+#
+#   cmake -DQUEUE=emulation-queue.cmake [-DBROKEN=ON] -DWORK=DIR
+#         -P emulation-owner-test.cmake
+# BROKEN=ON (the test of the check): the project does not call the
+# function, so no test gets the owner, which must fail.
+foreach(v QUEUE WORK)
+	if(NOT ${v})
+		message(FATAL_ERROR "emulation-owner-test.cmake: ${v} missing")
+	endif()
+endforeach()
+set(owner /the/owner)
+set(call "emulation_snapshot_owner(${owner})")
+if(BROKEN)
+	set(call "")
+endif()
+file(MAKE_DIRECTORY ${WORK}/src/sub)
+file(WRITE ${WORK}/src/sub/CMakeLists.txt [=[
+add_test(NAME t_sub_originals COMMAND ${CMAKE_COMMAND} -E true)
+set_tests_properties(t_sub_originals PROPERTIES LABELS "originals")
+]=])
+file(WRITE ${WORK}/src/CMakeLists.txt "
+cmake_minimum_required(VERSION 3.20)
+project(owner NONE)
+enable_testing()
+include(${QUEUE})
+foreach(t t_emulator t_originals t_oracle t_perf t_plain t_site)
+	add_test(NAME \${t} COMMAND \${CMAKE_COMMAND} -E true)
+endforeach()
+set_tests_properties(t_emulator PROPERTIES LABELS emulator)
+set_tests_properties(t_originals PROPERTIES LABELS originals)
+set_tests_properties(t_oracle PROPERTIES LABELS oracle)
+set_tests_properties(t_perf PROPERTIES LABELS \"perf;emulator\")
+set_tests_properties(t_site PROPERTIES LABELS site)
+add_subdirectory(sub)
+${call}
+")
+execute_process(COMMAND ${CMAKE_COMMAND} -S ${WORK}/src -B ${WORK}/bin
+	RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)
+if(rc)
+	message(FATAL_ERROR "emulation-owner-test: configure failed:\n${out}")
+endif()
+execute_process(COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${WORK}/bin --show-only=json-v1
+	RESULT_VARIABLE rc OUTPUT_VARIABLE json ERROR_VARIABLE out)
+if(rc)
+	message(FATAL_ERROR "emulation-owner-test: ctest failed:\n${out}")
+endif()
+
+set(want_owner t_emulator t_originals t_oracle t_perf t_sub_originals)
+set(want_none t_plain t_site)
+string(JSON n LENGTH "${json}" tests)
+set(failed FALSE)
+set(seen "")
+math(EXPR last "${n} - 1")
+foreach(i RANGE ${last})
+	string(JSON name GET "${json}" tests ${i} name)
+	list(APPEND seen ${name})
+	set(has FALSE)
+	string(JSON np LENGTH "${json}" tests ${i} properties)
+	math(EXPR plast "${np} - 1")
+	foreach(p RANGE ${plast})
+		string(JSON pname GET "${json}" tests ${i} properties ${p} name)
+		if(pname STREQUAL "ENVIRONMENT")
+			string(JSON ne LENGTH "${json}" tests ${i} properties ${p} value)
+			math(EXPR elast "${ne} - 1")
+			foreach(e RANGE ${elast})
+				string(JSON env GET "${json}" tests ${i} properties ${p} value ${e})
+				if(env STREQUAL "AMIGA_EMULATION_OWNER=${owner}")
+					set(has TRUE)
+				endif()
+			endforeach()
+		endif()
+	endforeach()
+	if(name IN_LIST want_owner AND NOT has)
+		message(SEND_ERROR "emulation-owner-test: ${name} has no AMIGA_EMULATION_OWNER")
+		set(failed TRUE)
+	elseif(name IN_LIST want_none AND has)
+		message(SEND_ERROR "emulation-owner-test: ${name} has AMIGA_EMULATION_OWNER but runs no emulator")
+		set(failed TRUE)
+	endif()
+endforeach()
+foreach(t IN LISTS want_owner want_none)
+	if(NOT t IN_LIST seen)
+		message(SEND_ERROR "emulation-owner-test: test ${t} not listed")
+		set(failed TRUE)
+	endif()
+endforeach()
+if(failed)
+	message(FATAL_ERROR "emulation-owner-test: failed")
+endif()
+message("emulation-owner-test: OK")
