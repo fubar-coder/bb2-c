@@ -893,7 +893,7 @@ void doinc2(UWORD namelen)
     n = (struct include *)addhere2((struct node *)&firstinc, NAMEOFF_INC, namelen);
     n->nbuf = 0;
     n->buf = NULL;
-    n->buf = doallocmem(INCLEN, MEMF_PUBLIC);
+    n->buf = doallocerr(INCLEN, MEMF_PUBLIC);
     n->ptr = n->buf;
     srcptr = n->buf;
     n->fh = Open((CONST_STRPTR)namebuff, MODE_OLDFILE);
@@ -1054,12 +1054,14 @@ void domacro(UWORD c)
        more, and a text still that long after .mclean is refused here. */
     if (n > MACTEXTMAX)
         macbigerr();
-    m->textlen = (UWORD)n;                      /* .cdone */
-    if (m->textlen) {   /* text stays NULL when empty (never read then) */
-        /* cleared like the nodes (#970) */
-        m->text = doallocmem(n, MEMF_PUBLIC | MEMF_CLEAR);
-        memcpy(m->text, macrobuff, m->textlen);
+    if (n) {            /* text stays NULL when empty (never read then) */
+        /* cleared like the nodes (#970); textlen only with the text, so
+           that freemacs does not free a text that out of memory left
+           NULL (#369) */
+        m->text = doallocerr(n, MEMF_PUBLIC | MEMF_CLEAR);
+        memcpy(m->text, macrobuff, n);
     }
+    m->textlen = (UWORD)n;                      /* .cdone */
     getchar3();                                 /* .skip2 */
 }
 
@@ -1109,7 +1111,7 @@ void doif2(UWORD kind, WORD negate)
         pokewd(thetst3[0]);
     }
     pokel(negate ? tl(negbr) : tl(posbr));      /* .gotst2 */
-    n = doallocmem(sizeof(struct ifnode), MEMF_PUBLIC);
+    n = doallocerr(sizeof(struct ifnode), MEMF_PUBLIC);
     n->next = firstif;
     firstif = n;
     n->startpc = start;
@@ -1235,7 +1237,7 @@ static void fillbra(struct selnode *s)
         return;
     /* OK, we're after a case thingy. add a BRA */
     pokewd(0x6000);                             /* BRA */
-    b = doallocmem(sizeof(struct addrnode), MEMF_PUBLIC);
+    b = doallocerr(sizeof(struct addrnode), MEMF_PUBLIC);
     b->next = s->bras;
     s->bras = b;
     b->addr = pc;
@@ -1349,7 +1351,7 @@ void doselect(UWORD c)
         pokecode(selpushs, selpushsf);
         tokejsr(astring);
     }
-    s = doallocmem(sizeof(struct selnode), MEMF_PUBLIC);    /* .doneit */
+    s = doallocerr(sizeof(struct selnode), MEMF_PUBLIC);    /* .doneit */
     s->next = firstsel;
     firstsel = s;
     s->bras = NULL;

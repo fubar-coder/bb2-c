@@ -500,6 +500,12 @@ static WORD begin(void)
     makelibs();
     loadlibs();
     makeiallox();
+    /* Fixed (#369, the allocation case of #1008): out of memory here
+       gives the notice and the start goes on - without the library that
+       could not be loaded, or without object buffers, which the first
+       compile allocates again (blitz2.s jumped through TED's extalloc to
+       outmem, which continues with a7 = 0 before TED's main loop) */
+    nomemshow();
     pointeron();
     /* click cancel of version requester... */
     do {
@@ -863,6 +869,23 @@ void ed_progress(UWORD bar, UWORD column)
     ed_call(CD_PROGRESS, &r);
 }
 
+/* comdata+106.. (TED-C, not in blitz2.s, #369): the out of memory
+   addition; the original TED has its own variables there, so only with
+   both marks */
+ULONG ed_memcount(void)
+{
+    if (CD_L(CD_PROGMARK) != CD_PROGMAGIC || CD_L(CD_MEMMARK) != CD_MEMMAGIC)
+        return 0;
+    return CD_L(CD_MEMCOUNT);
+}
+
+/* comdata+114: TED's out of memory alert, returns */
+void ed_nomem(void)
+{
+    struct m68kregs r = {{0}};
+    ed_call(CD_NOMEM, &r);
+}
+
 /* ================================================== menu handler */
 
 /* blitz2.s:1498 menu - called by the editor (menu_stub): d6 = item,
@@ -874,6 +897,7 @@ void menu_c(struct m68kregs *r)
     linenumat = -1;
     menuret = -1;
     menuadds[(UWORD)r->d[6]]();
+    nomemshow();                        /* fixed (#369) */
     /* asm: move menuret,d0 (word, upper half of d0 untouched) */
     r->d[0] = (r->d[0] & 0xffff0000UL) | (UWORD)menuret;
 }
@@ -1223,6 +1247,12 @@ BOOL makeblitzlibs(void)
         if (strlen((const char *)fib->fib_FileName) >= sizeof node->name)
             continue;
         node = doallocmem(sizeof(struct libsnode), MEMF_PUBLIC);
+        if (!node) {
+            /* Fixed (#369): out of memory ends the list here, with the
+               notice (the libraries of the entries so far are loaded) */
+            nomemnote();
+            break;
+        }
         /* insert sorted (case insensitive); &libslist acts as a node */
         link = &libslist;
         for (;;) {                      /* .insloop */

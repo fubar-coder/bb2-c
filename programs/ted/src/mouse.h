@@ -64,7 +64,8 @@ void showmice(void);
 void printmem(void);
 /* outmem (ted.s:3038): hooks.h */
 /* ted.s:3049 extalloc (comdata+88): AllocMem(size (asm d0), flags (d1));
-   failure: closereq + outmem (longjmp out of the compiler, survey-03 I.7) */
+   failure: closereq + outmem (longjmp out of the compiler, survey-03 I.7).
+   Only the original compiler calls it: blitz2-c allocates itself (#369) */
 APTR extalloc(ULONG size, ULONG flags);
 /* ted.s:3057 doalert: DisplayAlert(RECOVERY_ALERT, alertstuff, 40) */
 void doalert(void);

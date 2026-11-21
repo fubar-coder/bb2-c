@@ -522,7 +522,7 @@ void pushdo(void)
     pushat = 0;                     /* no save buffer (pushput, #14) */
     if (pushclen == 0 || nomemleft)
         return;
-    pushat = (ULONG)doallocmem(len, MEMF_PUBLIC);
+    pushat = (ULONG)doallocerr(len, MEMF_PUBLIC);
     dst = pushat;                   /* destination */
     src = pushpc;                   /* source */
     pc = src;

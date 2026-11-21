@@ -206,7 +206,7 @@ void eos_(UWORD c)
         badpenderr();
     pokewd(0x4ef9);
     addoff();
-    n = doallocmem(8, MEMF_PUBLIC);
+    n = doallocerr(8, MEMF_PUBLIC);
     n->next = firstpend;
     firstpend = n;
     n->addr = pc;
@@ -535,6 +535,17 @@ void droplocals(void)
     struct alllocal *al = doallocmem(12, MEMF_PUBLIC);
     struct var *locals, *globs;
 
+    if (!al) {
+        /* Fixed (#369): out of memory.  The lists are freed here, so that
+           err, which calls droplocals too, finds none and does not come
+           back (the error of an err that called droplocals becomes out of
+           memory) */
+        freevars(firstlocal);
+        freevars(firstglob);
+        firstlocal = NULL;
+        firstglob = NULL;
+        nomemerr();
+    }
     al->next = alllocals;
     alllocals = al;
     locals = firstlocal;
@@ -831,7 +842,7 @@ void typemode(UWORD c)
 
         if (reaches(ftype, thistype))
             illtypeerr();
-        e = doallocmem(sizeof *e, MEMF_PUBLIC);
+        e = doallocerr(sizeof *e, MEMF_PUBLIC);
         e->next = NULL;
         e->owner = thistype;
         e->field = f;

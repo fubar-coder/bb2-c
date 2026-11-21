@@ -120,8 +120,9 @@ void extmenu(UWORD code)
 
     if (!menurout)
         return;                                 /* .skip */
-    /* lsr #4,d6; a5 = firstitem, d7 = numlines (glue.c).  blitz2 may call
-       extalloc -> outmem: longjmp over its frames (BUG(orig) #369). */
+    /* lsr #4,d6; a5 = firstitem, d7 = numlines (glue.c).  The original
+       compiler may call extalloc -> outmem: longjmp over its frames (as
+       ted.s; blitz2-c allocates itself and cleans up, fixed #369). */
     line = call_menurout((UWORD)(code >> 4));
     showme();
     /* move.l thisitem,a4: gotolined0 starts from thisitem */

@@ -795,7 +795,9 @@ APTR extalloc(ULONG size, ULONG flags)
 
     if (p)
         return p;
-    /* survey-03 I.7: leaves the compiler in the middle of its run */
+    /* survey-03 I.7: leaves the compiler in the middle of its run - kept
+       for the original compiler, which does not test the result;
+       blitz2-c allocates itself (fixed #369) */
     closereq();
     outmem();
 }

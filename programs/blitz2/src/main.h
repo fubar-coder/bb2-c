@@ -193,6 +193,13 @@ extern WORD returncode;               /* 1285 */
 #define CD_PROGMARK  98   /* L: CD_PROGMAGIC if the editor has 102 */
 #define CD_PROGRESS  102  /* L: the progress call (ed_progress) */
 #define CD_PROGMAGIC 0x54454470UL   /* 'TEDp' */
+/* TED-C only, behind the progress call (#369, docs/ted/comdata.md):
+   valid if CD_PROGMARK and CD_MEMMARK hold their magic; CD_MEMCOUNT
+   entries follow from CD_MEMENTRY on */
+#define CD_MEMMARK   106  /* L: CD_MEMMAGIC */
+#define CD_MEMMAGIC  0x5445446dUL   /* 'TEDm' */
+#define CD_MEMCOUNT  110  /* L: number of entries from 114 on */
+#define CD_NOMEM     114  /* entry 0: TED's out of memory alert (ed_nomem) */
 
 /* typed wrappers, all via callregs(); asm register usage in comments */
 void  ed_screenclose(void);                 /* -8  close editor screen */
@@ -220,7 +227,13 @@ void  ed_progress(UWORD bar, UWORD column); /* 102 d0 bar (0 main, 1-3 include
                                                    level), d1 byte column: toggle
                                                    that cell of the progress bar;
                                                    only if CD_PROGMARK (#980) */
-/* comdata+88 extalloc: doallocmem() in stmts.h */
+/* number of the entries of the out of memory addition (CD_MEMCOUNT), 0
+   for an editor without it (the original TED, the command line's frame) */
+ULONG ed_memcount(void);
+#define ed_hasnomem() (ed_memcount() >= 1)
+void  ed_nomem(void);                       /* 114 TED's out of memory alert;
+                                                   only if ed_hasnomem() (#369) */
+/* comdata+88 extalloc: not called by blitz2-c (doallocmem, stmts.h, #369) */
 
 /* data handed to the editor (exact byte layout, see structs.h) */
 /* 283 first token; list ends at toktnum33.  The nodes are members of one

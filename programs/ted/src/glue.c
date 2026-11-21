@@ -152,6 +152,7 @@ void pointeron_c(struct m68kregs *r);
 void sleepon_c(struct m68kregs *r);
 void extalloc_c(struct m68kregs *r);
 void progress_c(struct m68kregs *r);
+void nomem_c(struct m68kregs *r);
 
 void screenclose_c(struct m68kregs *r) { (void)r; screenclose(); }        /* -8 */
 void screenopen2_c(struct m68kregs *r) { (void)r; screenopen2(); }        /* -4 */
@@ -214,6 +215,9 @@ void progress_c(struct m68kregs *r)                                       /* 102
 {
     progress((UWORD)r->d[0], (UWORD)r->d[1]);   /* d0.w bar, d1.w column */
 }
+/* 114 (#369): the out of memory alert for a compiler that allocates
+   itself and cleans up on its own (blitz2-c); returns */
+void nomem_c(struct m68kregs *r) { (void)r; doalert(); }                  /* 114 */
 
 REGSTUB(screenclose);
 REGSTUB(screenopen2);
@@ -236,6 +240,7 @@ REGSTUB(pointeron);
 REGSTUB(sleepon);
 REGSTUB(extalloc);
 REGSTUB(progress);
+REGSTUB(nomem);
 
 /* ------------------------------------------------ callbacks into blitz2 */
 

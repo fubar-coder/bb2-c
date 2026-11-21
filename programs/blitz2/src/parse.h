@@ -79,6 +79,22 @@ NORETURN void err(const char *msg);
 extern jmp_buf *errjmp;
 extern const char *errmsg;
 
+/* Out of memory (fixed #369: blitz2.s allocated through the editor's
+   extalloc, which jumped back into TED's main loop over the compiler's
+   frames).  nomemerr: the compile error nomemtext, err's exit and
+   cleanup; with TED-C (ed_hasnomem) err shows no error requester but
+   makes TED's notice pending.  nomemnote: a failure outside an error
+   frame (the object buffers, the libraries) makes the notice pending.
+   nomemshow, where blitz2 returns to the editor (menu_c, loadxtra_c, the
+   start): the pending notice - TED-C's out of memory alert (ed_nomem),
+   another editor (TED 1.1, the command line's frame) gets the error
+   nomemtext (ed_error). */
+extern const char nomemtext[];
+extern BOOL nomempending;
+NORETURN void nomemerr(void);
+void nomemnote(void);
+void nomemshow(void);
+
 /* Warnings (change compiler-warnings, design D1/D2).  Every warning has a
    number, bit n of a warning set; the names are those of shared/ab3job
    (ab3job.h AB3JOB_W_*, the same numbers: ab3main.c checks them). */

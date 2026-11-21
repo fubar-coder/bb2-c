@@ -1509,6 +1509,7 @@ done2:
     makeiallox();
     makemacbuff();                      /* fixed (#336) */
     loadres();
+    nomemshow();                        /* fixed (#369) */
 }
 
 /* blitz2.s:15412 savextra - editor callback: r->d[7] file handle */

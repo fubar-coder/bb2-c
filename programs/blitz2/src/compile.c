@@ -188,6 +188,11 @@ void compile(void)
         freeemup();
         return;
     }
+    /* Fixed (#369): without object buffers (a failed allocation at the
+       start, of an .xtra or of the Compiler Options) they are allocated
+       again with the sizes set; if that fails too, out of memory */
+    if (!objlen && !makeiallox())
+        nomemerr();
     concomsp = concomstack;
     /* racing stripe stuff... */
     {
@@ -468,8 +473,13 @@ void expandmax(void)
         }
         numarg = narg;
 
-        myoline = myline;
-        myline = doallocmem(macrolen, MEMF_PUBLIC);
+        {
+            /* out of memory: myline stays the buffer freembuff frees */
+            UBYTE *buf = doallocerr(macrolen, MEMF_PUBLIC);     /* #369 */
+
+            myoline = myline;
+            myline = buf;
+        }
         out = myline;
         end = out + macrolen;   /* end of macro buffer (asm a6) */
 

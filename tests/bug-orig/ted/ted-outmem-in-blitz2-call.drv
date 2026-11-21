@@ -10,6 +10,7 @@
 ; blitz2 ends the first compile through its own cleanup (the include is
 ; closed), the second compile creates the executable and blitz2 ends
 ; normally.
+; @fixed #369 Cc
 ; @file inc.bb2 "\x80\x0d m\x00a$=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\x00\x80\x02 \x80\x0d\x00"
 ; @file bo.bas "Include \"TEDRUN:work/inc.bb2\"\n!m\nNPrint a$\n"
 ; @source F bo.bas

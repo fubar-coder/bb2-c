@@ -194,19 +194,30 @@ void doexchange(UWORD c)
         pokecode(swapl, swaplf);
 }
 
-/* blitz2.s:3379 doallocmem - editor's extalloc (comdata+88):
-   jsr AllocMem(a6); on failure the editor closes its requester and
-   longjmps to its own out-of-memory handler (never returns 0). */
+/* blitz2.s:3379 doallocmem.  Fixed (#369): blitz2.s allocates through
+   the editor's extalloc (comdata+88), which never returns 0: on failure
+   TED closes its requester and jumps back into its main loop, over the
+   compiler's frames (the compile is abandoned without its cleanup; before
+   TED's main loop, at blitz2's start, it crashes, #1008).  The port's
+   compiler allocates itself, as AmiBlitz3's does, and returns 0 on out
+   of memory (D-018); TED's extalloc stays for the original compiler.
+   AllocMem of 0 bytes returns 0 too: that is no failure (the callers
+   test the size). */
 APTR doallocmem(ULONG size, ULONG flags)
 {
-    struct m68kregs r;
+    return AllocMem(size, flags);
+}
 
-    memset(&r, 0, sizeof r);
-    r.d[0] = size;
-    r.d[1] = flags;
-    r.a[6] = (ULONG)SysBase;
-    callregs(CD_FN(88), &r);
-    return (APTR)r.d[0];
+/* doallocmem for a site under an error frame (a compile, direct mode,
+   the calculator): out of memory is the compile error nomemerr, which
+   takes the compiler's own error exit (parse.h).  Fixed (#369). */
+APTR doallocerr(ULONG size, ULONG flags)
+{
+    APTR p = doallocmem(size, flags);
+
+    if (!p && size)
+        nomemerr();
+    return p;
 }
 
 /* blitz2.s:3383 dowbstartup */
@@ -332,7 +343,7 @@ void dorepeat(UWORD c)
 
     (void)c;
     replineat = linenumat;
-    r = doallocmem(8, MEMF_PUBLIC);
+    r = doallocerr(8, MEMF_PUBLIC);
     r->next = firstrep;
     firstrep = r;
     r->pc = pc;
@@ -705,8 +716,15 @@ BOOL makeallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size)
     data2size = (data2size + 1) & ~1UL;
     total = pcsize + libsize + data1size + data2size;
     at = (ULONG)doallocmem(total, MEMF_PUBLIC | MEMF_CLEAR);
-    if (!at)
+    if (!at) {
+        /* Fixed (#369): no buffers, and no pointer left on the freed
+           block (blitz2.s cannot get here: extalloc does not return 0;
+           a compile wrote into the freed block after a failed Compiler
+           Options change).  The sizes stay as the user set them; the
+           next compile allocates them again (compile). */
+        pcat = libat = data1at = data2at = allat = 0;
         return FALSE;
+    }
     objlen = total;
     maxpc = pcsize;
     maxlib = libsize;
@@ -724,10 +742,14 @@ BOOL makeallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size)
     return TRUE;
 }
 
-/* blitz2.s:3982 makeiallox - initial allox */
+/* blitz2.s:3982 makeiallox - initial allox.  Out of memory: the notice
+   (nomemnote) and FALSE. */
 BOOL makeiallox(void)
 {
-    return makeallox(maxpc, maxlib, maxdata1, maxdata2);  /* falls through */
+    if (makeallox(maxpc, maxlib, maxdata1, maxdata2))  /* falls through */
+        return TRUE;
+    nomemnote();
+    return FALSE;
 }
 
 /* blitz2.s:3969 newallox */
@@ -735,9 +757,11 @@ BOOL newallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size)
 {
     if (makeallox(pcsize, libsize, data1size, data2size))
         return TRUE;
-    /* falls back to the initial sizes and reports their result, so TRUE
-       does not mean the new sizes were allocated; not reachable (#32,
-       closed: TED's extalloc never returns 0) */
+    /* BUG(orig) (#32): falls back to the initial sizes and reports their
+       result, so TRUE does not mean the new sizes were allocated: the
+       "+150%" button compiles again with the same sizes, overflows again
+       and shows the same requester (reachable since doallocmem returns
+       0, #369) */
     return makeiallox();
 }
 

@@ -100,6 +100,13 @@ struct mydata {
        m_progress only if m_progmark holds TED_PROGMARK. */
     ULONG m_progmark;           /* 98  TED_PROGMARK (data) */
     APTR m_progress;            /* 102 progress     d0 bar, d1 column */
+    /* TED-C only, behind the progress call (#369): the out of memory
+       addition.  A TED-C before it has other data at 106, so a compiler
+       uses it only if m_progmark and m_memmark hold their marks;
+       m_memcount entries follow from 114 on (docs/ted/comdata.md). */
+    ULONG m_memmark;            /* 106 TED_MEMMARK (data) */
+    ULONG m_memcount;           /* 110 number of entries from 114 (data) */
+    APTR m_nomem;               /* 114 nomem        the out of memory alert */
 };
 OFFS(mydata, m_openreq, 8);     /* comdata+0 */
 OFFS(mydata, m_combitmap, 8 + 36);
@@ -113,11 +120,17 @@ OFFS(mydata, m_bmapmul, 8 + 92);
 OFFS(mydata, m_req_window, 8 + 94);
 OFFS(mydata, m_progmark, 8 + 98);
 OFFS(mydata, m_progress, 8 + 102);
-SIZE(mydata, 8 + 106);
+OFFS(mydata, m_memmark, 8 + 106);
+OFFS(mydata, m_memcount, 8 + 110);
+OFFS(mydata, m_nomem, 8 + 114);
+SIZE(mydata, 8 + 118);
 
 /* 'TEDp': the original TED's word at comdata+98 (topskip) is below 256,
    so its long there never has this value */
 #define TED_PROGMARK 0x54454470UL
+/* 'TEDm': the out of memory addition (m_memmark) */
+#define TED_MEMMARK 0x5445446dUL
+#define TED_MEMCOUNT 1
 
 extern struct mydata mydata;            /* ted.s:6027 (input.c) */
 #define comdata     ((APTR)((UBYTE *)&mydata + 8))      /* ted.s:6030 */

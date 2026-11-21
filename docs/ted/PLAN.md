@@ -176,7 +176,7 @@ embedded hunks, is ported). Stubs to be newly written:
 | comdata entry points (−8…+88) | register convention per service (survey-06 C, survey-03/04/05 B): `REGSTUB` pattern from blitz2-c, returns d0/d6/d7/a0 and Z/N; every stub loads TED's a4 (`GLUE_LOAD_A4`) |
 | Callbacks to blitz2 | `menurout` (d6/a5/d7 → d0), `loadxtra`/`savextra` (d7 = fh, a6 = DOSBase), `cleanup` → `callregs()` |
 | VBlank server `myroutine` | `is_Code` convention, load a4, return Z=1 (`moveq #0,d0`), shared variables `volatile` |
-| `outmem` | `a7 = memstack; jmp memcont` → `longjmp` to the `setjmp` in `mainedit`. Must also work from within blitz2 (`extalloc`, `openreq`): the jump discards blitz2 frames (also blitz2-c frames and their a4) – original behaviour, BUG(orig). `memstack == 0` before the first loop → original crashes; C: avoiding the same crash is `DIFF:` (alert + exit), decision in phase A |
+| `outmem` | `a7 = memstack; jmp memcont` → `longjmp` to the `setjmp` in `mainedit`. Must also work from within blitz2 (`extalloc`, `openreq`): the jump discards blitz2 frames (of blitz2-c only through `openreq`: it allocates itself, #369) – original behaviour, BUG(orig). `memstack == 0` before the first loop → original crashes; C: avoiding the same crash is `DIFF:` (alert + exit), decision in phase A |
 
 Direct hardware accesses (blitter `$DFF000`, bitplanes, `COLOR00`) are possible in
 C with `<hardware/custom.h>` (`volatile struct Custom *custom`) – no

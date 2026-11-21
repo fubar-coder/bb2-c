@@ -2742,7 +2742,7 @@ struct label *makealab2(UWORD len, UWORD *c)
         l->procnum = linenumat;     /* context - NB(orig): line, not procnum */
     }
     /* .makeit: create an oustanding reference to this label! */
-    r = doallocmem(12, MEMF_PUBLIC);
+    r = doallocerr(12, MEMF_PUBLIC);
     r->next = l->refs;
     l->refs = r;
     r->addr = pc + 2;

@@ -27,7 +27,9 @@ struct mydata mydata = {
     NULL, NULL,                         /* mywindow2, 84 */
     extalloc_stub,
     0, NULL,                            /* bmapmul, req_window */
-    TED_PROGMARK, progress_stub         /* TED-C: the progress call (#980) */
+    TED_PROGMARK, progress_stub,        /* TED-C: the progress call (#980) */
+    TED_MEMMARK, TED_MEMCOUNT,          /* TED-C: the out of memory addition */
+    nomem_stub                          /* (#369) */
 };
 struct Window *mywindow;                /* ted.s:6154 */
 struct RastPort *myrast;                /* ted.s:6155 */

@@ -75,6 +75,8 @@ struct comdata_s {
     APTR req_window;    /* 94 window, +86 = UserPort */
     ULONG progmark;     /* 98 TED-C: 'TEDp' = the progress call is there */
     APTR progress;      /* 102 TED-C: d0 bar, d1 column (#980) */
+    ULONG memmark;      /* 106 TED-C: 'TEDm' = the out of memory addition;
+                           0: blitz2-c reports out of memory as an error (#369) */
 };
 #define PROGMARK 0x54454470UL           /* 'TEDp' */
 #define CDOFF(m) (offsetof(struct comdata_s, m) - 8)
@@ -90,6 +92,7 @@ static_assert(CDOFF(bmapmul) == 92, "bmapmul");
 static_assert(CDOFF(req_window) == 94, "req_window");
 static_assert(CDOFF(progmark) == 98, "progmark");
 static_assert(CDOFF(progress) == 102, "progress");
+static_assert(CDOFF(memmark) == 106, "memmark");
 static_assert(offsetof(struct Window, UserPort) == 86, "UserPort");
 static_assert(offsetof(struct Window, Width) == 8, "Width");
 static_assert(offsetof(struct edstruct, colon) == 24, "edstruct");
@@ -103,7 +106,8 @@ static struct comdata_s cd = {
     tokone_stub, openio_stub, closeio_stub, actgad_stub,
     pointeron_stub, sleepon_stub,
     0, 0, extalloc_stub, 0, 0,
-    0, progress_stub                    /* not announced: edstub_set_progress */
+    0, progress_stub,                   /* not announced: edstub_set_progress */
+    0                                   /* no out of memory addition */
 };
 
 static UWORD colors[32], halfcolors[32];
@@ -556,7 +560,8 @@ void ezfreq_c(struct regs *r)
     LOG_END;
 }
 
-/* extalloc: AllocMem; on failure log and abort (ted: outmem) */
+/* extalloc: AllocMem; on failure log and abort (ted: outmem).  Only the
+   original compiler calls it: blitz2-c allocates itself (#369) */
 void extalloc_c(struct regs *r)
 {
     ULONG size = r->d[0], flags = r->d[1];

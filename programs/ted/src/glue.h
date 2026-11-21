@@ -93,14 +93,16 @@ extern void screenclose_stub(void), screenopen2_stub(void), openreq_stub(void),
     refgads_stub(void), getinput2_stub(void), colors_stub(void),
     halfcolors_stub(void), tokone_stub(void), openio_stub(void),
     closeio_stub(void), actgad_stub(void), pointeron_stub(void),
-    sleepon_stub(void), extalloc_stub(void), progress_stub(void);
+    sleepon_stub(void), extalloc_stub(void), progress_stub(void),
+    nomem_stub(void);
 
 /* ------------------------------------------------ callbacks into blitz2 */
 
 /* ted.s:1542 extmenu: jsr (menurout) with d6.w = item, a5 = firstitem,
    d7.w = numlines (a4 = thisitem as in the asm); returns d0.w (-1 nothing,
-   -2 showall, else a line).  May not return at all: blitz2's menu can call
-   extalloc -> outmem (longjmp over blitz2's frames, BUG(orig) #369). */
+   -2 showall, else a line).  With the original compiler it may not return
+   at all: its menu can call extalloc -> outmem (longjmp over its frames;
+   blitz2-c allocates itself, fixed #369). */
 WORD call_menurout(UWORD item);
 /* ted.s:2771 doclean: jsr (cleanup), all registers saved */
 void call_cleanup(void);

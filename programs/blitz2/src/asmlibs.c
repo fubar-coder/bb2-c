@@ -474,7 +474,7 @@ void chkword(LONG val)
 void insasm(const struct asment *e, ULONG addr, UWORD mode)
 {
     UWORD size = offsetof(struct asmnode, text) + asmlen;
-    struct asmnode *n = doallocmem(size, MEMF_PUBLIC);
+    struct asmnode *n = doallocerr(size, MEMF_PUBLIC);
     UBYTE *s, *d;
 
     n->line = linenumat;
@@ -1180,14 +1180,14 @@ UBYTE *maketjsr(ULONG addr, UWORD tok, UWORD form, struct blitzlib **libp)
         if (t->token == tok && t->form == form)
             break;
     if (!t) {                           /* None done yet...make one up! */
-        t = doallocmem(12, MEMF_PUBLIC);
+        t = doallocerr(12, MEMF_PUBLIC);
         t->next = tokeslist;
         tokeslist = t;
         t->token = tok;
         t->form = form;
         t->offs = NULL;
     }
-    o = doallocmem(8, MEMF_PUBLIC);
+    o = doallocerr(8, MEMF_PUBLIC);
     o->addr = addr;
     o->next = t->offs;
     t->offs = o;
@@ -1276,6 +1276,13 @@ APTR loadlibgroup(ULONG len, STRPTR name, struct node **tail)
     if (!fh)
         return NULL;
     buf = doallocmem(len, MEMF_PUBLIC);
+    if (!buf) {
+        /* Fixed (#369): out of memory - the group is left out, with the
+           notice, as a group that cannot be opened (len > 0 here) */
+        Close(fh);
+        nomemnote();
+        return NULL;
+    }
     Read(fh, buf, len);
     Close(fh);
 
@@ -1412,6 +1419,15 @@ void loadalib(STRPTR name, struct node **tail)
     }
     size = L_(optstuff + 28) << 2;      /* long words to read */
     l = doallocmem(size, MEMF_PUBLIC);
+    if (!l) {
+        /* Fixed (#369): out of memory leaves the library out, with the
+           notice; a structure of 0 long words is left out silently, as
+           one that cannot be read */
+        if (size)
+            nomemnote();
+        Close(fh);
+        return;
+    }
     if ((ULONG)Read(fh, l, size) != size) { /* read in struct */
         FreeMem(l, size);
         Close(fh);
@@ -1434,8 +1450,15 @@ void loadalib(STRPTR name, struct node **tail)
         /* Fixed (#993): reloc data that cannot be read completely leave
            the library out, as a short header or structure (#3); blitz2.s
            does not check this Read and relocates with what the new
-           allocation held */
-        if ((ULONG)Read(fh, l->relocs, rsize) != rsize) {
+           allocation held.  Fixed (#369): so does out of memory, with
+           the notice; a count of 0 is no failure (no relocs, nothing
+           read, nothing freed: nrelocs 0) */
+        if (!l->relocs && rsize) {
+            nomemnote();
+            prev->next = prevnext;
+            *tail = prev;
+            FreeMem(l, size);
+        } else if ((ULONG)Read(fh, l->relocs, rsize) != rsize) {
             FreeMem(l->relocs, rsize);
             prev->next = prevnext;
             *tail = prev;

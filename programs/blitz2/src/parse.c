@@ -333,7 +333,7 @@ void addoff(void)
 /* blitz2.s:7006 addoff2 - add d2 to linked list of all offsets */
 void addoff2(ULONG off)
 {
-    struct offnode *n = doallocmem(8, 1);
+    struct offnode *n = doallocerr(8, 1);
     numoffs++;
     n->next = firstoff;
     firstoff = n;
@@ -559,13 +559,42 @@ void err(const char *msg)
             endstop();
         }
         ext_errpos();
-        ed_error(msg);                      /* comdata+12, a0 = msg */
+        if (msg == nomemtext)               /* fixed (#369) */
+            nomempending = ed_hasnomem();   /* TED-C's notice after the
+                                               cleanup, else the error now */
+        if (!nomempending || msg != nomemtext)
+            ed_error(msg);                  /* comdata+12, a0 = msg */
     }
     /* .quiet: d0 = msg */
     errmsg = msg;
     if (!errjmp)                            /* DIFF: see parse.h */
         exit(RETURN_FAIL);
     longjmp(*errjmp, 1);                    /* a7 = errstack, jmp (errcont) */
+}
+
+/* out of memory (fixed #369, parse.h) */
+const char nomemtext[] = "Out of Memory";
+BOOL nomempending;
+
+void nomemerr(void)
+{
+    err(nomemtext);
+}
+
+void nomemnote(void)
+{
+    nomempending = TRUE;
+}
+
+void nomemshow(void)
+{
+    if (!nomempending)
+        return;
+    nomempending = FALSE;
+    if (ed_hasnomem())
+        ed_nomem();
+    else
+        ed_error(nomemtext);
 }
 
 /* warnings (parse.h; change compiler-warnings, design D1/D2) */
@@ -894,7 +923,7 @@ struct node *addhere(struct node *link, UWORD nameoff, UWORD len)
        allocates it with MEMF_PUBLIC only, and the fields nobody sets keep
        what the memory held - a constant's data and procnum went into the
        resident file like that (Create Resident, resconsts) */
-    n = doallocmem(size, MEMF_PUBLIC | MEMF_CLEAR);
+    n = doallocerr(size, MEMF_PUBLIC | MEMF_CLEAR);
     link->next = n;
     n->next = NULL;                         /* clear next */
     p = (UBYTE *)n + nameoff - 1;

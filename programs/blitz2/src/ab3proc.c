@@ -210,7 +210,7 @@ void ext_procdef(struct proc *p)
     definfo = NULL;
     if (progmode != XTRA_MODE_AB3)
         return;
-    i = doallocmem(sizeof *i, MEMF_PUBLIC);
+    i = doallocerr(sizeof *i, MEMF_PUBLIC);
     i->proc = p;
     i->rettype = defrettype;
     i->firstopt = NOOPT;

@@ -43,10 +43,13 @@ blitz2" = what the call sites in `blitz2.s` read afterwards.
 | 72 | `pointeron` 209 | – | saves a0-a1/d0-d3/a6 | – (blitz2 1490 `jmp`) | REGSTUB | OK |
 | 76 | `sleepon` 223 | – | saves a0-a1/d0-d3/a6; path "already active" destroys a0/d0 via `makemenus` | – (1494) | REGSTUB | **B** (line `sleepon` in deviations.md) |
 | 80/84 | data `mywindow2`, (gadget address) | | | | structs.h | OK |
-| 88 | `extalloc` 3049 | d0 size, d1 flags, **a6 of the caller** (`jsr allocmem(a6)`) | d0 = memory, Z=0; failure: `closereq` + `outmem` (does not return) | d0 (`doallocmem` 3379 = `jmp`) | REGSTUB, `extalloc(d0, d1)` with `AllocMem` via SysBase | OK (blitz2 calls with a6 = exec; a different a6 would hit a different library in the original – not reachable) |
+| 88 | `extalloc` 3049 | d0 size, d1 flags, **a6 of the caller** (`jsr allocmem(a6)`) | d0 = memory, Z=0; failure: `closereq` + `outmem` (does not return) | d0 (`doallocmem` 3379 = `jmp`); blitz2-c does not call it (allocates itself, #369) | REGSTUB, `extalloc(d0, d1)` with `AllocMem` via SysBase | OK (blitz2 calls with a6 = exec; a different a6 would hit a different library in the original – not reachable) |
 | 92/94 | data `bmapmul`, `req_window` | | | 1939, 2546 | `struct mydata` | OK |
 | 98 | TED-C only: data `m_progmark` = `'TEDp'` ($54454470) | | (original TED: its own words `topskip`, `botskip`) | – (the original reads no offset ≥ 98) | `struct mydata`, `TED_PROGMARK` (structs.h) | new (#980) |
 | 102 | TED-C only: `progress` (screen.c) | d0.w bar (0 main, 1-3 include level), d1.w byte column | – | blitz2-c `nextline` via `ed_progress` (compile.c), only if 98 holds the marker (checked once per compile) | REGSTUB, `progress(d0, d1)` | new (#980) |
+| 106 | TED-C only: data `m_memmark` = `'TEDm'` ($5445446d) | | (original TED: its own variables; a TED-C before #369: other data) | – | `struct mydata`, `TED_MEMMARK` (structs.h) | new (#369) |
+| 110 | TED-C only: data `m_memcount`, the number of entries from 114 on (1) | | | – | `struct mydata`, `TED_MEMCOUNT` | new (#369) |
+| 114 | TED-C only: `nomem` (glue.c) | – | – | blitz2-c `nomemshow` via `ed_nomem` (parse.c, main.c), only with both markers and a count ≥ 1 | REGSTUB, `doalert()` | new (#369) |
 
 **The progress call (TED-C, #980).** The original compiler draws its
 progress bar (the "racing stripe") itself: it XORs bytes of plane 0
@@ -75,6 +78,32 @@ it shows no bar. The edstub (`shared/edstub`) has the two fields too;
 with guards with `bitmap=BMAPMUL|GUARD` (test
 `compiler-racing-stripe-wide`). Offsets asserted in
 `programs/ted/src/structs.h` and `shared/edstub/edstub.c`.
+
+**The out of memory addition (TED-C, #369).** The original compiler
+allocates through `extalloc` (88), which never returns 0: on failure
+TED closes its requester and jumps to `outmem`, over the compiler's
+frames, into its main loop (#369; before the main loop with a7 = 0,
+#1008). blitz2-c allocates with `AllocMem` itself and takes its own
+error exit; the notice of the failure is TED's alert, which it asks for
+through a TED-C-only entry behind the progress call: at 106 the marker
+`'TEDm'` ($5445446d), at 110 the number of entries that follow (a long),
+from 114 on the entries, one long each:
+
+| Entry | Offset | Call | |
+|---|---|---|---|
+| 0 | 114 | `nomem` | shows TED's out of memory alert ("Not enough memory for operation!", `doalert`) and returns; registers kept (REGSTUB) |
+
+A compiler uses an entry only if 98 holds `'TEDp'` (so the editor is
+TED-C), 106 holds `'TEDm'` (a TED-C of #980 has other data there) and
+the count at 110 covers the entry; an addition appends an entry and
+raises the count. blitz2-c (`CD_MEMMARK`, `CD_MEMCOUNT`, `CD_NOMEM`,
+`ed_memcount` in `programs/blitz2/src/main.h`, `main.c`) shows the
+notice after its cleanup, where it returns to the editor (`nomemshow`:
+`menu_c`, `loadxtra_c`, its start); without the addition (the original
+TED, the edstub, which has 106 = 0) it reports out of memory as the
+error "Out of Memory" (`ed_error`). TED-C keeps `extalloc` with its
+behaviour for the original compiler, which does not test its result
+(20 of the 21 sites of blitz2 2.10).
 
 Residual risk for phase 3: the stub preserves registers that the original
 destroys. At the call sites above (every `comdata` site in `blitz2.s`,

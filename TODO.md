@@ -555,9 +555,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   - [ ] #361: the only-line path of `freeupa5` is not reached with the
     keyboard (a block covers a line to its end only with a line behind
     it); needs a mouse block to column 127 in teddrive.
-  - [ ] #369: a blitz2 allocation through `extalloc` that fails only
-    during Compile (size and count of the start-up allocations to be
-    found), with a temporary fix on both sides.
+  - [x] #369 done (2026-11-21): `ted-outmem-in-blitz2-call` (a macro
+    text in an include whose allocation fails during Compile; inject
+    `allocfail` by its size), fixed in the port's pair (`@fixed #369 Cc`).
   - [ ] #366: not reproducible on the reference (re-checked 2026-10-31
     with `alertlog`: no alert, no crash).
   - [ ] #655: deferred (needs two machines).

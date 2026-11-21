@@ -109,8 +109,8 @@ extern void (*edstub_error_hook)(const char *msg);
 /** @brief tokone: tokenise the line (default: logged, line left as is). */
 extern void (*edstub_tokone_hook)(UBYTE *line);
 /** @brief Before the frame aborts inside main (compiler waits for input
- *         forever, extalloc failed): the program can log its result and
- *         free its data. */
+ *         forever, extalloc of the original compiler failed): the program
+ *         can log its result and free its data. */
 extern void (*edstub_abort_hook)(const char *why);
 /** @brief openio/closeio (ted.s: the console window of a program run from
  *         the editor): called in the program's process, runtheprog, before

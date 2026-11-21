@@ -92,9 +92,13 @@ void popselect(struct selnode *s);      /* drop a Select's stack (doendsel 13061
 
 /* ------------------------------------------------------------- misc */
 
-/* comdata+88 (editor extalloc = AllocMem, called via callregs with
-   a6=SysBase).  Never returns NULL: on failure the editor longjmps away. */
+/* AllocMem; NULL on out of memory (fixed #369: blitz2.s called the
+   editor's extalloc, comdata+88, which never returns NULL).  A size of 0
+   gives NULL too, which is no failure. */
 APTR doallocmem(ULONG size, ULONG flags);
+/* doallocmem under an error frame: out of memory is nomemerr (parse.h),
+   the compile error that does not return. */
+APTR doallocerr(ULONG size, ULONG flags);
 
 /* Exchange operand: asm d2.b type, d0 next char.  Emits lea x(a5),a2 for
    simple vars.  Returns the next char, *type = type byte (4 for pointers). */
@@ -121,7 +125,9 @@ char *makelong(char *buf, ULONG v);
 /* ------------------------------------------------------------- allox */
 
 /* All return asm NE: TRUE = buffers allocated (newallox also TRUE if only the
-   fallback to the initial sizes worked - not reachable, #32). */
+   fallback to the initial sizes worked, BUG(orig) #32).  After FALSE of
+   makeallox there are no buffers (objlen 0, the pointers 0); makeiallox
+   also makes the out of memory notice pending (nomemnote, parse.h). */
 BOOL alloxinc(void);                    /* max sizes * 1.5 */
 BOOL alloxadj(void);                    /* sizes actually used */
 BOOL newallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size);
