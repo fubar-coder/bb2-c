@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+01 k AND m>l 20
+02 k+m+l 24
+rc=0

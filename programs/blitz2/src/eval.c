@@ -1556,7 +1556,12 @@ void ritefromd0(void)
 /* ============================================================== elements */
 
 /* blitz2.s:9643 getelement - out of registers (regat >= 7): use d6 and
-   keep the old d6 on the stack */
+   keep the old d6 on the stack.  BUG(orig) (#1185): only regat 7 works.  The right
+   operand of an operator whose left operand is in d7 (eight nested
+   levels: c+(d+(e+(h+(i+(j+(k AND m>l)))))) is fetched at regat 8: it goes
+   into d7 over the left operand, d7 then gets the old d6, and the operator
+   takes D(regat+1) with a register field of 8, which is a0 (cmp.l a0,d7,
+   and.l a0,d7): a wrong result (test compiler-operand-beyond-d7). */
 static UWORD getelement(UWORD *type)
 {
     UWORD opcode, c;
