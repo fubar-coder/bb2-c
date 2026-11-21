@@ -8022,3 +8022,11 @@ rows:
     text: "The last word of the code in an executable is zero when the code has an odd number of words; the original took it from behind its own memory, so under a memory checker the same source gave different executables."
     page: compiler
     anchor: the-executable
+  - issue: 1177
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "=, <>, <, >, <=, >="
+    text: "The operands of a comparison are compared with their own values, a Long against a Quick exactly; the original cut a Quick to a whole number when the result went to a Long (`q>1` false for `q=1.5`, `q>l` and `l<q` disagreeing) and compared two Longs as Quick or Float values under a Quick or Float destination (100000001 equal to 100000000)."
+    page: compiler
+    anchor: quick-compare

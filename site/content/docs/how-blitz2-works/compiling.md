@@ -164,7 +164,7 @@ of a comparison are compared with their own values, a Long against a
 Quick exactly, and only the result takes the type of the destination.
 The example prints -1 and both lines. The same holds for a Quick or Float
 destination, where the original compared whole numbers as Quick or Float
-values (`rq.q=(l>1)` was 0 for `l.l=65537`).
+values (`rq.q=(l>1)` gives 0 there for `l.l=65537`).
 
 Two cases are not fixed yet, because the compiler emits the code of the
 left operand before it sees the comparison: a left operand that is an
@@ -173,7 +173,7 @@ fraction ([#1183](https://github.com/fubar-coder/bb2-c/issues/1183)), and
 a large whole-number constant on the left in a Float context
 (`rf.f=(100000001>l)`) is still compared as a Float. Put such an
 operand on the right side of the comparison, or compute it into a
-variable first. And the right operand is now computed in its own types:
+variable first. The right operand is computed in its own types:
 `If base<i*4+base` with a default-typed (Quick) `i` computes `i*4` as a
 Quick, which overflows from `i=8192` on; give `i` the type Long there.
 
