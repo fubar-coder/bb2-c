@@ -835,6 +835,14 @@ Each point says first what the original did, then what the port does.
 * Pad bytes, from `Even`, from the alignment of data and code and from
   `Ds`, held random values; they are zero
   ([#969](https://github.com/fubar-coder/bb2-c/issues/969)).
+* When the code of a program had an odd number of words, CREATE
+  EXECUTABLE filled the last word of the code with 2 bytes from behind the
+  compiler's own memory. On a plain system these bytes are 0, so you would
+  only have noticed it under a memory checker or a similar tool that fills
+  the memory behind each allocation: the same source then gave a different
+  executable from compile to compile. The program ran the same either way.
+  The compiler writes this word as zero, also in AB3 mode
+  ([#1184](https://github.com/fubar-coder/bb2-c/issues/1184)).
 * On a 68010 processor, runtime errors and the debugger took the trap
   vectors from the wrong table when the system had moved it; the moved
   table is used ([#42](https://github.com/fubar-coder/bb2-c/issues/42)).

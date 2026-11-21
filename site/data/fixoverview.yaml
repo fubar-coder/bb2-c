@@ -8014,3 +8014,11 @@ rows:
     text: "A library file whose relocation data holds no entries is loaded as a library without relocations; the original took it as out of memory and stopped at its start, or crashed under the editor."
     page: running-blitz2
     anchor: loading-the-libraries
+  - issue: 1184
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "The last word of the code in an executable is zero when the code has an odd number of words; the original took it from behind its own memory, so under a memory checker the same source gave different executables."
+    page: compiler
+    anchor: the-executable
