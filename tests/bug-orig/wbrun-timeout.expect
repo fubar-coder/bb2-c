@@ -1,0 +1,32 @@
+[plain, no timeout]
+wbrun: current dir at end: start
+rc=0
+[reply]
+wbrun: current dir at end: start
+rc=0
+[silent]
+wbrun: no reply, the process ended
+rc=0
+[no project]
+wbrun: no reply, the process ended
+rc=0
+[late, in time]
+wbrun: current dir at end: start
+rc=0
+[late, too late]
+wbrun: no reply within 1 s, the process did not end
+wbrun: the process ended later, after replying
+rc=0
+[slow]
+wbrun: no reply within 1 s, the process did not end
+wbrun: the process ended later, without a reply
+rc=0
+[timeout 0]
+wbrun: timeout=SEC needs 1 to 60
+rc=20
+[timeout 61]
+wbrun: timeout=SEC needs 1 to 60
+rc=20
+[timeout x]
+wbrun: timeout=SEC needs 1 to 60
+rc=20

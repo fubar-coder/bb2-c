@@ -1401,7 +1401,14 @@ not set. `wbrun` starts the compiler
 (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
 Workbench and reports the current directory at the end, how often the
 process opened minus closed dos.library and files left in use; with
-`freeseg` it overwrites and frees the seglist right after the reply, as
+`timeout=SEC` it waits at most SEC seconds for the reply and says
+whether a tool that did not answer ended or still runs (self test
+`wbrun_timeout` with `wbtool`, a tool that answers late or never;
+`wbrunt` is `wbrun` with a default of 5 s, `launcher=@WBRUNT@` starts every
+program of a test like that: `regression/wbstartuplib-without-wbstartup`
+and `-end`, a program without WBStartup: a DOS call never returns, without
+it the process ends);
+with `freeseg` it overwrites and frees the seglist right after the reply, as
 a memory checker would (a Blitz program
 needs the command WBStartup, as from the real Workbench; what it
 prints is lost), `userlib.c` is a library for

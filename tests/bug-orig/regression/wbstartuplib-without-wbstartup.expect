@@ -1,0 +1,6 @@
+[session]
+timeout
+[compile]
+ok
+[run]
+wbrun: no reply within 5 s, the process did not end

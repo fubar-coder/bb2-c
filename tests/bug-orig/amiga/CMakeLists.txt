@@ -28,4 +28,17 @@ target_compile_options(segwrite PRIVATE -Wall -Wno-pointer-sign -ffreestanding -
 	-fno-tree-loop-distribute-patterns -fno-toplevel-reorder -fomit-frame-pointer)
 target_link_options(segwrite PRIVATE -nostartfiles -nostdlib)
 set_target_properties(segwrite PROPERTIES SUFFIX "")
+#   wbrunt   wbrun with a default timeout of 5 s (launcher= of a test: every program is started
+#            the Workbench way)
+add_executable(wbrunt wbrun.c)
+target_compile_definitions(wbrunt PRIVATE WBRUN_DEFAULT_TIMEOUT=5)
+target_compile_options(wbrunt PRIVATE -Wall -Wno-pointer-sign)
+set_target_properties(wbrunt PROPERTIES SUFFIX "")
+#   wbtool   takes the WBStartup message and replies late or never (self test of wbrun
+#            timeout=); no C startup
+add_executable(wbtool wbtool.c)
+target_compile_options(wbtool PRIVATE -Wall -Wno-pointer-sign -ffreestanding -fno-builtin
+	-fno-toplevel-reorder -fomit-frame-pointer)
+target_link_options(wbtool PRIVATE -nostartfiles -nostdlib)
+set_target_properties(wbtool PROPERTIES SUFFIX "")
 blitz_library(bugorig_userlib userlib.c)

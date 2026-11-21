@@ -98,6 +98,8 @@
 #   wrap=@INJECT@|..., for the programs with runwrap=@INJECT@|...),
 #   WBRUN (amiga/wbrun.c: started like from the Workbench, wrap=@WBRUN@ or
 #   runwrap=@WBRUN@),
+#   WBRUNT (wbrun with a default timeout of 5 s: launcher=@WBRUNT@ starts
+#   every program of the test the Workbench way),
 #   REQLIB (the real req.library 2.8 of Aminet, archive/aminet/ReqLib28;
 #   file=libs/req.library|@REQLIB@ with runwrap=@INJECT@|libs=CORPUS:libs,
 #   skipped without it),
@@ -135,6 +137,7 @@ set(REQLIB ${PROJECT_SOURCE_DIR}/archive/aminet/ReqLib28/req.library)
 set(ANCIENT ${PROJECT_SOURCE_DIR}/archive/ancient/github-1491a35a)
 set(INJECT $<TARGET_FILE:inject>)
 set(WBRUN $<TARGET_FILE:wbrun>)
+set(WBRUNT $<TARGET_FILE:wbrunt>)
 set(TESTDATA ${CMAKE_CURRENT_BINARY_DIR}/testdata)
 # the configurations of a test run at the same time as the corpus passes
 # do (CORPUS_PARALLEL, tests/corpus/CMakeLists.txt)
@@ -679,6 +682,22 @@ inject_openwindow(inject_openwindow_broken
 	${CMAKE_CURRENT_SOURCE_DIR}/inject-openwindow.broken.expect)
 set_tests_properties(inject_openwindow_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+16:[ \n]+\"window[ \n]+2:[ \n]+ok\",[ \n]+output[ \n]+line[ \n]+16:[ \n]+\"window[ \n]+2:[ \n]+FAILED")
+
+# wbrun's timeout= option (wbrun-timeout.cmake), and the check itself: an
+# expect file that has the wrong process end later must fail
+function(wbrun_timeout name expect)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DRESULTS=${RESULTS} -DWBRUN=${WBRUN} -DWBTOOL=$<TARGET_FILE:wbtool>
+		-DEXPECT=${expect} -DWORK=${work}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/wbrun-timeout.cmake)
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT 240)
+endfunction()
+wbrun_timeout(wbrun_timeout ${CMAKE_CURRENT_SOURCE_DIR}/wbrun-timeout.expect)
+wbrun_timeout(wbrun_timeout_broken ${CMAKE_CURRENT_SOURCE_DIR}/wbrun-timeout.broken.expect)
+set_tests_properties(wbrun_timeout_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+22:[ \n]+\"wbrun:[ \n]+the[ \n]+process[ \n]+ended[ \n]+later,[ \n]+after[ \n]+replying\",[ \n]+output[ \n]+line[ \n]+22:[ \n]+\"wbrun:[ \n]+the[ \n]+process[ \n]+ended[ \n]+later,[ \n]+without")
 
 # inject's guardseg option (inject-guardseg.cmake), and the check itself: an
 # expect file without the write behind the program's hunk must fail

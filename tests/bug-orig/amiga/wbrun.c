@@ -5,8 +5,8 @@
  * tool and the projects as WBArgs (lock of the directory + name), wait
  * for the reply.
  *
- * usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [inuse=PATH]...
- *              TOOL [PROJECT...]
+ * usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [timeout=SEC]
+ *              [inuse=PATH]... TOOL [PROJECT...]
  *   noprojects   start the tool alone, without the PROJECTs (for a
  *                wrapper whose caller always passes one)
  *   freeseg      like the Workbench (priority 1, the tool 0) with a memory
@@ -21,11 +21,21 @@
  *                OldOpenLibrary, CloseLibrary patched while it runs;
  *                other tasks do not count - lib_OpenCnt would, e.g. a
  *                background tool of the Workbench closing its own)
+ *   timeout=SEC  wait at most SEC seconds (1 to 60) for the reply, for a tool
+ *                that may not answer the message: when it has not come, wbrun
+ *                says whether the process ended or still runs, waits for its
+ *                end (a process that crashed or hangs keeps wbrun here) and
+ *                stops there; without timeout= it waits for ever.  A reply
+ *                that comes in time goes on as usual, with no extra line
+ *                (built with -DWBRUN_DEFAULT_TIMEOUT=N, as wbrunt, N is the
+ *                default: wbrunt as the launcher of a corpus test starts every
+ *                program the Workbench way and does not wait for ever)
  *   inuse=PATH   after the end: is PATH still in use (an exclusive Lock
  *                fails with ERROR_OBJECT_IN_USE, e.g. a file left open)
  * The tool has to answer the WBStartup message (a Blitz program only
  * does with the command WBStartup; without it, the manual says, it
- * crashes when run from the Workbench), otherwise wbrun waits for ever.
+ * crashes when run from the Workbench), otherwise wbrun waits for ever
+ * (or for timeout=).
  *
  * Behind the end it writes what the options ask for (lines "wbrun: ..."):
  *   current dir at end: start | tool dir | project dir N | other
@@ -36,6 +46,11 @@
  *   dos.library open count +N   opened minus closed by the process
  *   seglist overwritten and freed after the reply   with freeseg
  *   the process did not end     with freeseg (then nothing else)
+ *   no reply, the process ended          with timeout=: the process ended
+ *                without having replied (then nothing else)
+ *   no reply within N s, the process did not end   with timeout=: it neither
+ *                replied nor ended, then one more line: the process ended
+ *                later, after replying | without a reply (then nothing else)
  *   in use: PATH | not in use: PATH | missing: PATH   for every inuse=
  *
  * Like the Workbench the process has no input and output handles (0):
@@ -57,6 +72,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef WBRUN_DEFAULT_TIMEOUT
+#define WBRUN_DEFAULT_TIMEOUT 0
+#endif
 #define MAXARGS 8
 #define MAXINUSE 8
 
@@ -221,7 +239,7 @@ static int split(const char *path, struct WBArg *a)
 }
 
 static const char usage[] =
-    "usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [inuse=PATH]...\n"
+    "usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [timeout=SEC] [inuse=PATH]...\n"
     "             TOOL [PROJECT...]\n"
     "  start TOOL like the Workbench does (no CLI, a WBStartup message)\n";
 
@@ -235,12 +253,13 @@ int main(int argc, char **argv)
     struct WBStartup msg;
     struct Process *pr;
     BPTR seg;
-    int i, k, ninuse = 0, noprojects = 0, o_cd = 0, o_dos = 0, o_free = 0;
+    int i, k, ninuse = 0, noprojects = 0, o_cd = 0, o_dos = 0, o_free = 0, o_time = WBRUN_DEFAULT_TIMEOUT;
 
     if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
         Write(Output(), (APTR)usage, sizeof usage - 1);
         return 0;
     }
+    SetSignal(0, SIGBREAKF_CTRL_F);     /* a command runs in the Shell's process: no stale one */
     out = Output();
     parent = FindTask(NULL);
     for (i = 1; i < argc; i++)
@@ -252,14 +271,24 @@ int main(int argc, char **argv)
             o_cd = 1;
         else if (!strcmp(argv[i], "dosopen"))
             o_dos = 1;
-        else if (!strncmp(argv[i], "inuse=", 6) && ninuse < MAXINUSE)
+        else if (!strncmp(argv[i], "timeout=", 8)) {
+            const char *t = argv[i] + 8;
+
+            o_time = 0;
+            while (*t >= '0' && *t <= '9' && o_time <= 60)
+                o_time = o_time * 10 + *t++ - '0';
+            if (*t || o_time < 1 || o_time > 60) {
+                put("wbrun: timeout=SEC needs 1 to 60\n");
+                return 20;
+            }
+        } else if (!strncmp(argv[i], "inuse=", 6) && ninuse < MAXINUSE)
             inuse[ninuse++] = argv[i] + 6;
         else
             break;
     if (i < argc && noprojects)
         argc = i + 1;
     if (i >= argc || argc - i > MAXARGS || (o_free && o_dos)) {
-        put("usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [inuse=PATH]...\n"
+        put("usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [timeout=SEC] [inuse=PATH]...\n"
             "             TOOL [PROJECT...]   (freeseg not with dosopen)\n");
         return 20;
     }
@@ -306,8 +335,44 @@ int main(int argc, char **argv)
     /* the reply comes under Forbid (the startup code); the process has
        ended when this task runs again - unless the startup code calls
        Permit before it returns */
-    WaitPort(port);
-    GetMsg(port);
+    if (o_time) {
+        int replied = 0;
+
+        for (k = 0; k < o_time * 10; k++) {
+            if (GetMsg(port)) {
+                replied = 1;
+                break;
+            }
+            if (SetSignal(0, 0) & SIGBREAKF_CTRL_F)
+                break;
+            Delay(5);
+        }
+        if (!replied && !GetMsg(port)) {
+            /* the exit hook of the process lives in this program: wbrun
+               stays until the process has ended, however late (a process
+               that crashed or hangs keeps it here: the session's time
+               limit ends it) */
+            if (SetSignal(0, 0) & SIGBREAKF_CTRL_F) {
+                put("wbrun: no reply, the process ended\n");
+                SetSignal(0, SIGBREAKF_CTRL_F);
+            } else {
+                sprintf(line, "wbrun: no reply within %d s, the process did not end\n", o_time);
+                put(line);
+                Wait(SIGBREAKF_CTRL_F);
+                put(GetMsg(port) ? "wbrun: the process ended later, after replying\n"
+                                 : "wbrun: the process ended later, without a reply\n");
+            }
+            Delay(5);                   /* DOS has removed the process */
+            for (k = 0; k < nargs; k++)
+                UnLock(args[k].wa_Lock);
+            UnLoadSeg(seg);
+            DeleteMsgPort(port);
+            return 0;
+        }
+    } else {
+        WaitPort(port);
+        GetMsg(port);
+    }
     if (o_free) {
         ULONG s, a, end;
 
