@@ -656,6 +656,10 @@ Macro Buffer, a source can define macros longer than the default allows;
 the first source compiles. With a smaller Macro Buffer, a macro longer
 than the set size gives "Macro too Big" at the line where its text passes
 the size. A macro text of more than 65535 bytes is always "Macro too Big".
+The buffer gets its new size when a source is loaded or the COMPILER
+OPTIONS are closed. If there is not enough memory for it, the compiler
+reports out of memory and keeps the old buffer with its size; the next
+change of the options tries again.
 
 **What to change.** A source saved with the default size is not affected.
 If one of yours fails with "Macro too Big", set its Macro Buffer back to
