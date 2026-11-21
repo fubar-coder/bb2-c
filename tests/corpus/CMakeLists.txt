@@ -446,6 +446,7 @@ function(cd_pass name blitz2 output)
 	if(ARGN)
 		string(APPEND text "reference=${ARGN}\nreport=${work}.txt\n")
 	endif()
+	string(APPEND text "${CD_PASS_EXTRA}")
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 endfunction()
 
@@ -505,6 +506,58 @@ set_tests_properties(corpus_cd PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TI
 cd_pass(corpus_cd_ab3 $<TARGET_FILE:blitz2-ab3> ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.tsv ${CD_TABLE})
 add_test(NAME corpus_cd_ab3 COMMAND ${CORPUSRUN} cd ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.pass)
 set_tests_properties(corpus_cd_ab3 PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+
+# With a prev build (BLITZ2_PREV, cmake/prev.cmake) the same sources are compiled by the
+# previous commit's compiler with the same (the CD's) libraries: corpus_cd_prev and
+# corpus_cd_ab3_prev (label emulator, tests/README.md "The prev build") compare their
+# table row by row, every field - the size and the hash of the executable too - with the
+# one corpus_cd / corpus_cd_ab3 wrote (pass key current=).  A difference fails unless
+# PREV_INTENDED names the source (corpus_cd_prev:PATH).  The table they compare with is
+# the result of the test they follow (fixtures corpus_cd_table, corpus_cd_ab3_table: a
+# run of corpus_cd_prev alone runs corpus_cd first); the two pairs run at the same time.
+if(PREV_REQUESTED)
+	foreach(v cd cd_ab3)
+		if(v STREQUAL "cd")
+			set(prev_blitz2 ${PREV_BLITZ2_DIR}/blitz2)
+		else()
+			set(prev_blitz2 ${PREV_BLITZ2_DIR}/blitz2-ab3)
+		endif()
+		set(name corpus_${v}_prev)
+		set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+		set(CD_PASS_EXTRA "test=${name}\ncurrent=${CMAKE_CURRENT_BINARY_DIR}/corpus_${v}.tsv\nreport=${work}.txt\n${PREV_INTENDED_LINES}")
+		cd_pass(${name} ${prev_blitz2} ${work}.tsv)
+		set(CD_PASS_EXTRA)
+		add_test(NAME ${name} COMMAND ${CORPUSRUN} cd ${work}.pass)
+		set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
+			FIXTURES_REQUIRED corpus_${v}_table)
+		set_tests_properties(corpus_${v} PROPERTIES FIXTURES_SETUP corpus_${v}_table)
+	endforeach()
+endif()
+
+# corpus_cd_prev_check (label emulator, needs the CD; no prev build needed): the comparison
+# with the prev build on broken input - tables made from this build's own compile of one CD
+# source (cd-prev-check.cmake: the same table, a changed hash, a listed difference, a stale
+# entry, a row in one table only)
+set(cdprev_source BLITZ2_PDDISK_1/ZOMBIES/ZOMBIES.BB2)
+set(cdprev_work ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_prev_check)
+foreach(kind base ok bad intended stale missing)
+	set(CD_PASS_EXTRA "source=${cdprev_source}|${cdprev_work}/${kind}.exe\n")
+	if(NOT kind STREQUAL "base")
+		string(APPEND CD_PASS_EXTRA "test=corpus_cd_prev_check_prev\ncurrent=${cdprev_work}/cur-${kind}.tsv\n"
+			"report=${cdprev_work}/${kind}.txt\n")
+	endif()
+	if(kind STREQUAL "intended" OR kind STREQUAL "stale")
+		string(APPEND CD_PASS_EXTRA "intended=corpus_cd_prev_check_prev:${cdprev_source}\n")
+	endif()
+	cd_pass(cd-prevcheck-${kind} $<TARGET_FILE:blitz2> ${cdprev_work}/${kind}.tsv)
+endforeach()
+set(CD_PASS_EXTRA)
+add_test(NAME corpus_cd_prev_check COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
+	-DWORK=${cdprev_work} -DPASSES=${CMAKE_CURRENT_BINARY_DIR} -DSOURCE=${cdprev_source}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/cd-prev-check.cmake)
+math(EXPR limit "6 * 120 + 120 + 6 * ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(corpus_cd_prev_check PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "cd-prev-check: all runs as expected")
 
 # ---------------------------------- the expected data with broken input
 # Every check of the expected data (tools/lib/corpusexpect) needs a test on

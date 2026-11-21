@@ -177,3 +177,80 @@ int cdcmp_compare(const char *refname, const char *outname, const char *ref, con
     *report = rep.p;
     return rc;
 }
+
+int cdcmp_prev(const char *testname, const char *curname, const char *prevname, const char *cur,
+               const char *prev, struct prevint *intended, char **report, struct cdcmp_stats *st)
+{
+    static const char *const fields[] = { "result", "line", "message", "size", "sha256_masked" };
+    struct table a, b;
+    struct text rep = { 0 }, list = { 0 };
+    size_t i, bad, cursor = 0, errors = 0, intended_n = 0;
+    const char *stale;
+
+    memset(st, 0, sizeof *st);
+    if ((bad = parse(cur, &a)) != 0) {
+        text_add(&rep, "%s: line %zu: not %d tab separated fields\n", curname, bad, NFIELDS);
+        free_table(&a);
+        *report = rep.p;
+        return 2;
+    }
+    if ((bad = parse(prev, &b)) != 0) {
+        text_add(&rep, "%s: line %zu: not %d tab separated fields\n", prevname, bad, NFIELDS);
+        free_table(&a);
+        free_table(&b);
+        *report = rep.p;
+        return 2;
+    }
+    text_add(&rep, "== %s (prev build) against %s\n", prevname, curname);
+    st->sources = a.n;
+    for (i = 0; i < a.n + b.n; i++) {
+        const struct row *x = i < a.n ? &a.rows[i] : &b.rows[i - a.n];
+        const struct row *y = i < a.n ? find(&b, x->f[F_PATH]) : find(&a, x->f[F_PATH]);
+        int differs = 0, v, f;
+        struct text what = { 0 };
+
+        if (i >= a.n && y)
+            continue;               /* a row of prev that cur has: judged above */
+        if (!y) {
+            st->missing++;
+            differs = 1;
+            text_add(&what, " %s", i < a.n ? "not in the prev table" : "only in the prev table");
+        } else {
+            for (f = F_RESULT; f <= F_SHA; f++)
+                if (strcmp(x->f[f], y->f[f])) {
+                    differs = 1;
+                    text_add(&what, " %s %.40s -> %.40s;", fields[f - F_RESULT], y->f[f],
+                             x->f[f]);
+                }
+        }
+        v = prevint_judge(intended, testname, x->f[F_PATH], NULL, differs);
+        if (v == PREVINT_SAME) {
+            st->equal++;
+        } else {
+            st->different++;
+            text_add(&rep, "   %s: DIFFERS (prev -> now):%s%s\n", x->f[F_PATH], what.p ? what.p : "",
+                     v == PREVINT_INTENDED ? " (intended)" : "");
+            text_add(&list, "%s%s:%s", list.n ? ";" : "", testname, x->f[F_PATH]);
+            if (v == PREVINT_INTENDED)
+                intended_n++;
+            else
+                errors++;
+        }
+        free(what.p);
+    }
+    while ((stale = prevint_stale(intended, testname, 0, &cursor)) != NULL) {
+        text_add(&rep, "STALE %s: intended, but prev does not differ in it (or the source is not "
+                       "in this table)\n", stale);
+        errors++;
+    }
+    if (list.n)
+        text_add(&rep, "prev differs in: PREV_INTENDED=\"%s\"\n", list.p);
+    text_add(&rep, "%zu sources, %zu the same as prev, %zu different (%zu intended), %zu not in "
+                   "both tables\n", st->sources, st->equal, st->different, intended_n,
+             st->missing);
+    free(list.p);
+    free_table(&a);
+    free_table(&b);
+    *report = rep.p;
+    return errors ? 1 : 0;
+}
