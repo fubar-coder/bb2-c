@@ -15,7 +15,7 @@
 
 ## 3. Macros
 
-- [ ] 3.1 The macro text of `shared/basictest/macros.bas` (from `basic-test-interface`) with the library: every macro in a hand-written driver of the form of the interface spec; verify: a program with every macro compiles with 1.95, 2.10 and the port with the same entries, and a comparison gives -1 for true in all three (the mapping of `!Check{K,COND}` onto `TLCheck K,-1,(COND)<>0` depends on it)
+- [x] 3.1 The macro text of `shared/basictest/macros.bas` (from `basic-test-interface`) with the library: every macro in a hand-written driver of the form of the interface spec; verify: a program with every macro compiles with 1.95, 2.10 and the port with the same entries, and a comparison gives -1 for true in all three (the mapping of `!Check{K,COND}` onto `TLCheck K,-1,(COND)<>0` depends on it)
 - [ ] 3.2 A build check of the macro names against the token lists of all library sets of the build, and against AmiBlitz3's list when the originals are fetched (label `originals`), with a test with deliberately broken input (a macro named like a token); verify: the check fails on the broken input and passes on the real text
 
 ## 4. Staging and documentation

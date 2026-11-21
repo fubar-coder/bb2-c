@@ -250,3 +250,20 @@ task 3.1, not in parallel with it.
   sets. The test programs are not in the repository: they need the
   runner's driver (task 4.1 stages the library); they are kept with the
   report (`~/.local/share/bb2-c-work/tr-testlib-impl/`, `m7`, `m8`).
+- **The macro text with the library** (task 3.1): a driver with every
+  macro of `shared/basictest/macros.bas` (batch init and end, six cases,
+  every check macro, `Require` holding and failing, `ExpectError`, a
+  check in a procedure called by two cases, string checks with a 0 byte,
+  TAB and `\`) compiles and gives the same result file with 1.95, 2.10,
+  the port and both library sets (`tr-testlib-impl/m1`).
+- **A condition is evaluated as a long** (task 3.1, the same in 1.95,
+  2.10, the port and with both library sets): a comparison gives -1 for
+  true and 0 for false (long, word, byte and string operands), so
+  the `!Check` mapping holds. But the operands of a comparison take the
+  type of where the result goes: in `TLCheck K,-1,(COND)<>0` and in
+  `r.l=(q>1)` a quick or float operand is converted to a long first, so
+  `!Check{K,q>1}` with `q.q=1.5` fails (1>1), and `!Check{K,q>1.4}` too,
+  while `If q>1` is true. A check of a quick or float condition has to
+  compare values whose long conversion keeps the order (or the author
+  compares `Int(q*100)` and the like); a rule for `tests/README.md`
+  (task 4.2).
