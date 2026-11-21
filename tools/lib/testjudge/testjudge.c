@@ -177,7 +177,8 @@ static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct ru
             }
             break;
         case BASICTEST_BLOCKEND:
-            if (block < 0)
+            /* after broken (block end without a block) the library goes on */
+            if (block < 0 && !r->broken)
                 return msg(msgs, "the result file: a blockend outside a block in line %u", line) ? -1 : TJ_ERROR;
             if (cur_is_case)
                 r->case_ended = 1;
@@ -197,7 +198,8 @@ static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct ru
             r->broken = 1;
             break;
         default:
-            if (block < 0)
+            /* after broken (check outside a block) the library goes on */
+            if (block < 0 && !r->broken)
                 return msg(msgs, "the result file: an entry outside a block in line %u", line) ? -1 : TJ_ERROR;
         }
         en->block = block;
@@ -586,7 +588,7 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
             && en->e.kind != BASICTEST_EXPECT_ERROR)
             continue;
         /* the blocks of the run: the batch init, the judged case, the batch end */
-        if (en->block == BASICTEST_BLOCK_CASE && !en->in_case)
+        if (en->block < 0 || (en->block == BASICTEST_BLOCK_CASE && !en->in_case))
             continue;
         if (!(c = tp_by_k(t->src, en->e.k))) {
             res = TJ_ERROR;

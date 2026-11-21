@@ -600,3 +600,28 @@ TEST_CASE("testjudge: quick and float checks", "[testjudge]")
     CHECK(judge(h, obs(thead + "checkflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n" + tail), m) == TJ_ERROR);
     CHECK(has(m, "the value of this check is a long, compare it with an integer"));
 }
+
+// ------------------------------------------------------------ calls out of order
+
+TEST_CASE("testjudge: calls out of order", "[testjudge]")
+{
+    fixture f("", "", "t", typed_source);
+    std::string m;
+
+    // the library reports a check outside a block, then writes the check
+    CHECK(judge(f, obs(thead + "blockend\nbroken|check outside a block\ncheckq|0|ok|$00018000|$00018000\nend\n"), m)
+          == TJ_BROKEN);
+    CHECK(has(m, "the test library reports its state broken (line 4): check outside a block"));
+    CHECK(judge(f, obs(thead + "blockend\nbroken|block end without a block\nblockend\nend\n"), m) == TJ_BROKEN);
+    // without the broken entry such a line is a malformed file
+    CHECK(judge(f, obs(thead + "blockend\ncheckq|0|ok|$00018000|$00018000\nend\n"), m) == TJ_ERROR);
+    // a failed precondition of the batch init repeated in the case
+    fixture i("", "", "frames_maximum");
+    CHECK(judge(i, obs("begin|1\nblock|init\nrequire|1|broken\nblockend\nblock|case|frames_maximum\n"
+                       "require|1|broken\nblockend\nend\n"), m) == TJ_BROKEN);
+    // a failed check of the batch init repeated in the case
+    CHECK(judge(i, obs("begin|1\nblock|init\ncheck|2|fail|$00000001|$00000002\nblockend\nblock|case|frames_maximum\n"
+                       "check|2|fail|$00000001|$00000002\nblockend\nend\n"), m) == TJ_FAIL);
+    CHECK(has(m, "check init initcheck (x.test.bas:6) failed: 1: expected 1 ($00000001), actual 2 ($00000002) "
+                 "(its first failed entry)"));
+}
