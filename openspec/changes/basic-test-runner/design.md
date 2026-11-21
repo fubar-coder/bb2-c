@@ -94,9 +94,10 @@ driver on request, as it prints the effective configuration.
 
 **D6a The preprocessor** (user: "dann können wir den Runner auch als
 Präprozessor verwenden"; numbering: "Wenn das stabil funktioniert, dann
-OK"). Three tasks and no more: it numbers the checks per namespace (case,
-procedure, `init`, `end`) and writes the number into the call; it keeps the
-table of namespace, number, name, line and expression text for the report
+OK"). Three tasks and no more: it numbers the checks over the whole source
+and writes the number into the call; it keeps the table of namespace (case,
+procedure, `init`, `end`), number in the namespace, name, line and
+expression text for the report
 (the text never enters the program, so quotes, length and the memory
 layout are no concern); it replaces a fixed list of placeholders and
 refuses unknown ones. It splits macro arguments by the compiler's rules
@@ -132,6 +133,17 @@ in `tools/lib` stays small. "Zu Beginn": the subset may be widened later.
 cells with the original's faulty part (user: "**optionaler** nachfolgender
 Validator ... Test-ID und Check-ID"); the declaration itself is the basic
 validation.
+
+## Interface
+
+The contract with the test library is the spec
+`testing/basic-test-interface` (change `basic-test-interface`, archived
+before this change starts). The preprocessor, the driver generator and the
+judge are written against it; the judge reads result files with the codec
+of `shared/basictest/`, the driver copies its macro text. The staging of
+the library (`basic-testlib` task 4.1) belongs to this change's
+implementation, after task 3.1, because both change `tests/corpus/runner`
+and `tests/bug-orig/CMakeLists.txt`.
 
 ## Risks / Trade-offs
 

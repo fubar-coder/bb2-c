@@ -63,3 +63,5 @@ must show outside the program. User decisions of 2026-11-21 (chat,
   glob and the include of the registration next to the existing tests.
 - `tests/README.md`, `docs/testing.md`.
 - No result of the compilers or libraries changes.
+- Depends on `basic-test-interface` (the contract with the test library),
+  which is done first.

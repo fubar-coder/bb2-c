@@ -162,6 +162,17 @@ free in the four variants, the CD's number lists, every AmiBlitz3 list and
 every library binary under `archive/` (task 1.4; 115 is the other free
 one).
 
+## Interface
+
+The source form, the preprocessed form, the macro text, the library
+routines, the order of the driver and the result file are the spec
+`testing/basic-test-interface` (change `basic-test-interface`, archived
+before this change starts). The library writes its entries with the codec
+of `shared/basictest/` and uses the macro text there. The staging of the
+library in `tests/corpus/runner` and `tests/bug-orig/CMakeLists.txt`
+(task 4.1) is done by the implementation of `basic-test-runner` after its
+task 3.1, not in parallel with it.
+
 ## Risks / Trade-offs
 
 - [The library changes what it tests: opening the file and writing
@@ -180,7 +191,3 @@ one).
 - [The preprocessor misreads a check call] → host tests against the
   compiler's argument rules; the fallback of D4.
 
-## Open Questions
-
-- The exact format of a result entry (spike 2: one tab-separated line per
-  entry, one `Write`).

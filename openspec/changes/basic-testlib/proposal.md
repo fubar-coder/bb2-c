@@ -44,7 +44,9 @@ works with the original compilers as well as with the port.
 
 ### Modified Capabilities
 
-None. The driver, the configuration and the judging are
+None. The contract with the runner is `testing/basic-test-interface`
+(change `basic-test-interface`, done first). The driver, the configuration
+and the judging are
 `testing/basic-test-runner` (change `basic-test-runner`); the bug-orig
 tests move to the model in change `bug-orig-basic-tests`.
 

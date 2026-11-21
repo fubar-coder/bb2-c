@@ -103,7 +103,7 @@ with the error the run shows.
 
 #### Scenario: The error comes as announced
 - **WHEN** a case announces "Shape too Big" and the next statement raises that runtime error
-- **THEN** the result file holds the announcement as the last entry of the case and an entry that the run ended by a runtime error
+- **THEN** the result file holds the announcement as the last entry of the case, then the incomplete entry and the end of the run
 
 ### Requirement: Results go to a file of their own
 The library SHALL write its results only to the file the driver names,
@@ -127,9 +127,10 @@ end.
 
 ### Requirement: The end of a case and of the run are marked
 The library SHALL write an end entry when a case ends, and an end entry for
-the run when the program ends; an end by a runtime error SHALL be marked as
-such. A case without its end entry SHALL mean that the case did not run to
-its end.
+the run when the program ends; when the program ends while a block is open
+(a runtime error, `End` in a case), it SHALL write an incomplete entry
+before the end of the run. A case without its end entry SHALL mean that the
+case did not run to its end.
 
 #### Scenario: End inside a case
 - **WHEN** a case executes `End` after its first check

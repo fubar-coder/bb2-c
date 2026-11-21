@@ -128,10 +128,10 @@ batch end. The runner SHALL print the driver on request.
 - **THEN** the runner reports `ID.test.bas:12`
 
 ### Requirement: The preprocessor numbers the checks
-The runner SHALL number the checks of a test source per namespace in source
-order and put each number into its call, and SHALL keep for every check its
-namespace, number, name, source line and the text of its checked expression,
-outside the program. The report of a failed check SHALL show its name or
+The runner SHALL give every check of a test source a number in source order
+and put it into the check's call, and SHALL keep for every check its
+namespace, its number in the namespace, name, source line and the text of
+its checked expression, outside the program. The report of a failed check SHALL show its name or
 number, its source line, the expression text, and the expected and actual
 values.
 

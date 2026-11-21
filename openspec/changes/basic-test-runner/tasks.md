@@ -11,13 +11,15 @@
 
 - [ ] 2.1 The preprocessor in `tools/lib`: check calls found and their arguments split by the compiler's rules (`findit`), numbering per namespace (case, procedure, `init`, `end`), the table (namespace, number, name, line, expression text), the fixed placeholders; verify: host tests on the cases of spike 1 (strings, braces, nested macros, a check as macro argument), with broken input for an unknown placeholder
 - [ ] 2.2 The stability condition of the numbering (user: "Wenn das stabil funktioniert"): the same table for repeated runs and the numbers in the result files of 1.95, 2.10 and the port match it; verify: an emulator test with a source of several cases, procedures, a loop and `CNIF`; if it fails, switch to the constant counter (`basic-testlib` D4) and record it in design.md
-- [ ] 2.3 The driver generator (macros of the library, copied text, jump over it, start with the result file's name, batch init only if a case is selected, `Gosub` per selected case, batch end) and the map of driver lines to `ID.test.bas` lines; verify: host tests of the generated text, and an emulator test where a compile error in the test is reported as `ID.test.bas:LINE`
+- [ ] 2.3 The driver generator (the macro text of `shared/basictest/macros.bas`, copied text, jump over it, start with the result file's name, batch init only if a case is selected, `Gosub` per selected case, batch end) and the map of driver lines to `ID.test.bas` lines; verify: host tests of the generated text, and an emulator test where a compile error in the test is reported as `ID.test.bas:LINE`
 
 ## 3. Judging in `corpusrun`
 
 - [ ] 3.1 A subcommand of `corpusrun` that runs one case of a test in the cells of one side from the environment file, the resolved configuration and the driver; verify: a test of the model with a passing case runs with `port` and `clib` in one session
-- [ ] 3.2 Judging: verdicts of checks (several entries), preconditions, end entries of case and run, announced runtime errors against the requesters, the default assertions, declared deviations with validators and "not run" behind a declared crash; verify: host tests of the judge on recorded result files and observations, each rule with broken input
+- [ ] 3.2 Judging, reading result files with the codec of `shared/basictest/`: verdicts of checks (several entries), preconditions, end entries of case and run, announced runtime errors against the requesters, the default assertions, declared deviations with validators and "not run" behind a declared crash; verify: host tests of the judge on recorded result files and observations, each rule with broken input
 - [ ] 3.3 Diagnostics: the effective configuration with origins, and the generated driver; verify: a host test of the printed configuration of a three-level hierarchy
+
+- [ ] 3.4 Stage the test library for every configuration (`basic-testlib` task 4.1, done here after 3.1); verify: as `basic-testlib` 4.1, and that task ticked there
 
 ## 4. Registration and selection
 
