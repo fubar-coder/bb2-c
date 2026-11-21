@@ -77,7 +77,10 @@
 #   testtoml   the strict TOML subset of the run configuration of the Blitz
 #              tests (tests.toml, ID.test.toml)
 #   testconf   the run configuration of a Blitz test: the files up to
-#              root = true, their keys and the merge
+#              root = true, their keys and the merge, the matrix, the
+#              assertions
+#   testpp     the preprocessor of the Blitz test sources (ID.test.bas): the
+#              checks numbered, their table, the placeholders
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -118,3 +121,4 @@ add_subdirectory(epcheck)
 add_subdirectory(siteexamples)
 add_subdirectory(testtoml)
 add_subdirectory(testconf)
+add_subdirectory(testpp)

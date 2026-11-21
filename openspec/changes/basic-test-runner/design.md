@@ -207,3 +207,15 @@ configuration".
   judge splits `NAME` from the suffix against the names of the table, so a
   name may contain a `.`. A case selector term `case=NAME` restricts an
   assertion to one case.
+- **Preprocessor** (`tools/lib/testpp`). It finds a call as `expandmax`
+  does (a `!` outside strings and comments, the name, blanks, `{`) and
+  splits the arguments as `findit` does, including its rule that a byte
+  with bit 7 set takes the next byte with it: a Latin-1 character right
+  before the closing quote of a string argument hides the quote from the
+  compiler and from the preprocessor alike (refused as a line without
+  its `}`). It also refuses the same check name twice in a namespace (a
+  query could not tell them apart) and a procedure with checks named
+  like a case or `init`/`end` (its namespace would be ambiguous). The
+  placeholders are `@LINE@`, `@CASE@`, `@TEST@` and `@TESTDATA@` (its
+  value a parameter of the run), replaced in code and strings, not in
+  comments; the table keeps the text as written.
