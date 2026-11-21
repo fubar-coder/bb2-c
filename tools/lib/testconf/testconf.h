@@ -67,6 +67,8 @@ struct tc_keydef {
                                    from 0) of the string or of every list
                                    element that is a path */
     const char *doc;            /* one line for the documentation */
+    const char *defval;         /* the value of a cell when no file sets the
+                                   key, NULL: none */
 };
 
 /** @brief The keys of the top table, in their fixed order; *n their number. */
@@ -184,6 +186,99 @@ const struct tc_setting *tc_get(const struct tc_config *conf, const char *key);
  */
 int tc_placeholders(const struct tc_env *env, const char *text, char **out,
                     char *err, size_t errlen);
+
+/* ------------------------------------------------------------ the matrix
+ *
+ * The axes of a test are the keys of its effective table `matrix`: each a
+ * run setting (not a list setting) with a non-empty list of values, given
+ * as strings (an integer setting's values as decimal strings).  A key that
+ * a file sets in the top table and a nearer one makes an axis is an axis,
+ * and the other way round a setting; both in the same file is an error.
+ * The cells are the product of the values of the axes, in the order of
+ * tc_keys(), minus the cells an `exclude` selector matches.  A cell is
+ * named by its axis values, "," between them ("orig,cd,on"); the only cell
+ * of a test without axes is "default".  A cell needs original material
+ * (the side "originals") if its compiler is not port or its libraries are
+ * the CD's.
+ *
+ * A cell selector is TERM[,TERM...] without blanks, a TERM KEY=VALUE: KEY
+ * a run setting that is no list setting, VALUE one of its values; in an
+ * assertion's selector also case=NAME.  A cell matches a selector if its
+ * value of every KEY (its axis value, else the effective setting, else the
+ * key's default) is VALUE; case=NAME matches the case NAME only.  The more
+ * terms, the more specific.
+ */
+
+/** @brief A term of a cell selector. */
+struct tc_term {
+    const struct tc_keydef *def;    /* NULL: case=NAME */
+    char *value;
+};
+
+/** @brief A parsed cell selector. */
+struct tc_selector {
+    struct tc_term *t;
+    size_t n;
+};
+
+/**
+ * @brief Parse a cell selector.
+ * @param allow_case  1: case=NAME allowed (assertions), 0: not (exclude)
+ * @param msg         the reason of a refusal, without file and line
+ * @return 0 = ok, -1 = refused (msg), -2 = out of memory
+ */
+int tc_selector_parse(const char *text, int allow_case, struct tc_selector *sel,
+                      char *msg, size_t msglen);
+
+/** @brief Free a selector (zeroed). */
+void tc_selector_free(struct tc_selector *sel);
+
+/** @brief An axis. */
+struct tc_axis {
+    const struct tc_keydef *def;
+    char **values;              /* point into the configuration */
+    size_t nvalues;
+    struct tc_origin at;
+};
+
+/** @brief A cell. */
+struct tc_cell {
+    char *name;
+    const char **values;        /* one per axis */
+    int originals;              /* needs original material */
+};
+
+/** @brief The axes and cells of a test. */
+struct tc_matrix {
+    struct tc_axis *axes;
+    size_t naxes;
+    struct tc_cell *cells;
+    size_t ncells;
+};
+
+/**
+ * @brief The axes and cells of a resolved configuration.
+ * @return 0 = ok, -1 = error (err: an exclusion naming no run setting, no
+ *         cell left, with file and line)
+ */
+int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err, size_t errlen);
+
+/** @brief Free a matrix (zeroed). */
+void tc_matrix_free(struct tc_matrix *m);
+
+/**
+ * @brief The value of a key in a cell: its axis value, else the effective
+ *        setting (an integer in decimal), else the key's default, else "".
+ * @param buf  room for an integer's text (24 bytes)
+ */
+const char *tc_cell_value(const struct tc_config *conf, const struct tc_matrix *m, size_t cell,
+                          const struct tc_keydef *def, char buf[24]);
+
+/**
+ * @brief Whether cell (of case case_name, NULL: no case) matches sel.
+ */
+int tc_selector_matches(const struct tc_selector *sel, const struct tc_config *conf,
+                        const struct tc_matrix *m, size_t cell, const char *case_name);
 
 #ifdef __cplusplus
 }

@@ -18,63 +18,63 @@
    axes of a cell's name */
 static const struct tc_keydef keys[] = {
     { "compiler", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "port|orig|cd", 0, -1,
-      "the compiler: port (blitz2-c), orig (blitz2 1.95, the build of blitz2.s), cd (the CD's blitz2 2.10)" },
+      "the compiler: port (blitz2-c), orig (blitz2 1.95, the build of blitz2.s), cd (the CD's blitz2 2.10)", "port" },
     { "libs", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "cd|clib", 0, -1,
-      "the libraries: cd (the CD's acidlibs and deflibs), clib (the C libraries)" },
+      "the libraries: cd (the CD's acidlibs and deflibs), clib (the C libraries)", "clib" },
     { "machine", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
-      "the emulated machine (a1200, a500, a500-68010, a500-204, a600)" },
+      "the emulated machine (a1200, a500, a500-68010, a500-204, a600)", "a1200" },
     { "runtime-errors", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "off|on", 0, -1,
-      "runtime error checking of the compiled program" },
+      "runtime error checking of the compiled program", "off" },
     { "rwe", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
-      "the RWE user libraries the program needs" },
+      "the RWE user libraries the program needs", NULL },
     { "timeout", TC_V_INT, TC_IN_BOTH, TC_RUN, NULL, 1, -1,
-      "the time limit of an emulator session (seconds)" },
+      "the time limit of an emulator session (seconds)", NULL },
     { "hang-after", TC_V_INT, TC_IN_BOTH, TC_RUN, NULL, 1, -1,
-      "a session silent for this many seconds ends as a hang" },
+      "a session silent for this many seconds ends as a hang", NULL },
     { "stack", TC_V_INT, TC_IN_BOTH, TC_RUN, NULL, 1, -1,
-      "the stack of the compiler and the program (bytes)" },
+      "the stack of the compiler and the program (bytes)", NULL },
     { "serial", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "off|on", 0, -1,
-      "the remote end of the serial tests on the emulated serial port" },
+      "the remote end of the serial tests on the emulated serial port", "off" },
     { "rtg", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "off|on", 0, -1,
-      "the RTG variant of the emulator" },
+      "the RTG variant of the emulator", "off" },
     { "pad", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "off|on", 0, -1,
-      "inject's pad: zeroed bytes behind every allocation of the program" },
+      "inject's pad: zeroed bytes behind every allocation of the program", "off" },
     { "wrap", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, 0,
-      "PATH[|ARGS]: the compiler is started through PATH" },
+      "PATH[|ARGS]: the compiler is started through PATH", NULL },
     { "runwrap", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, 0,
-      "PATH[|ARGS]: the program is started through PATH" },
+      "PATH[|ARGS]: the program is started through PATH", NULL },
     { "runargs", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
-      "the arguments of the program" },
+      "the arguments of the program", NULL },
     { "launcherargs", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
-      "the options of the launcher" },
+      "the options of the launcher", NULL },
     { "files", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, 1,
-      "DEST|SRC[|TAG]: files staged as CORPUS:DEST" },
+      "DEST|SRC[|TAG]: files staged as CORPUS:DEST", NULL },
     { "dirs", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
-      "empty directories CORPUS:DEST" },
+      "empty directories CORPUS:DEST", NULL },
     { "remove", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
-      "CORPUS:DEST removed after staging" },
+      "CORPUS:DEST removed after staging", NULL },
     { "mount", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, 1,
-      "NAME|DIR: read-only volumes of the program" },
+      "NAME|DIR: read-only volumes of the program", NULL },
     { "floppy", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, 1,
-      "N|SRC: the disk image SRC in drive DFN" },
+      "N|SRC: the disk image SRC in drive DFN", NULL },
     { "uae", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
-      "KEY=VALUE: changes of the emulator configuration" },
+      "KEY=VALUE: changes of the emulator configuration", NULL },
     { "jobline", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
-      "lines of tedstub's job list" },
+      "lines of tedstub's job list", NULL },
     { "labels", TC_V_LIST, TC_IN_BOTH, TC_REG, NULL, 0, -1,
-      "further ctest labels of the registered tests" },
+      "further ctest labels of the registered tests", NULL },
     { "cost", TC_V_INT, TC_IN_BOTH, TC_REG, NULL, 0, -1,
-      "the ctest COST of the registered tests" },
+      "the ctest COST of the registered tests", NULL },
     { "fixtures", TC_V_LIST, TC_IN_BOTH, TC_REG, NULL, 0, -1,
-      "the ctest fixtures the registered tests require" },
+      "the ctest fixtures the registered tests require", NULL },
     { "exclude", TC_V_LIST, TC_IN_BOTH, 0, NULL, 0, -1,
-      "cell selectors: the combinations of axis values that are no cell" },
+      "cell selectors: the combinations of axis values that are no cell", NULL },
     { "root", TC_V_BOOL, TC_IN_DIR, 0, NULL, 0, -1,
-      "the search for configuration files stops at this file" },
+      "the search for configuration files stops at this file", NULL },
     { "fixed-orig", TC_V_INT, TC_IN_TEST, 0, NULL, 1, -1,
-      "the issue that fixed the original bug the test shows" },
+      "the issue that fixed the original bug the test shows", NULL },
     { "fixed", TC_V_INT, TC_IN_TEST, 0, NULL, 1, -1,
-      "the issue that fixed a bug that is not in the original" },
+      "the issue that fixed a bug that is not in the original", NULL },
 };
 
 const struct tc_keydef *tc_keys(size_t *n)
@@ -495,7 +495,12 @@ static int check_file(const struct cfile *f, char *err, size_t errlen)
             return tc_err(err, errlen,
                           "%s:%u: a deviation needs the cell selector of the cells with the original's "
                           "faulty part ([deviations.\"SELECTOR\"])", d->file, e->line);
-        if (e->value.type != TT_STRING && strcmp(e->table[0], "matrix"))
+        if (!strcmp(e->table[0], "matrix")) {
+            if (tc_axis_check(d->file, e->line, e->key, &e->value, err, errlen))
+                return -1;
+            continue;
+        }
+        if (e->value.type != TT_STRING)
             return tc_err(err, errlen, "%s:%u: the assertion %s must be a string", d->file, e->line, e->key);
     }
     return 0;
@@ -800,7 +805,7 @@ int tc_resolve(const char *source, const struct tc_env *env, struct tc_config *c
                source, top ? top : "/");
         goto out;
     }
-    if (merge(c, files, nfiles, env, err, errlen))
+    if (merge(c, files, nfiles, env, err, errlen) || tc_matrix_merge(c, err, errlen))
         goto out;
     if (tc_get(c, "fixed") && tc_get(c, "fixed-orig")) {
         const struct tc_setting *s = tc_get(c, "fixed");

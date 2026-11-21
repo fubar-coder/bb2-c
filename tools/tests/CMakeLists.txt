@@ -12,6 +12,16 @@ foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
+# the matrix of the run configuration of the Blitz tests (lib/testconf;
+# testconf is in the list above): snitch programs
+foreach(t testmatrix)
+	add_executable(test_${t} test_${t}.cpp)
+	target_link_libraries(test_${t} PRIVATE lib_testconf snitch::snitch)
+	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
+	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+	add_test(NAME ${t} COMMAND test_${t})
+endforeach()
+
 # the judge of the library tests (lib/libscmp; libscmp), the raw block
 # observations (NAME.bin; libscmp_bin) and the order of the expected data's
 # writers (libscmp_sorted; libscmp_sort): snitch programs
