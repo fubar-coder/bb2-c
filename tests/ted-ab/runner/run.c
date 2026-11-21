@@ -109,7 +109,10 @@
  *                      BROKEN, 4 = DIFFERS (the worst of them: 3 before 4
  *                      before 1), 2 = error
  *   fixed=1            with bugorig=1: the scripts are fixed tests (; @fixed
- *                      #NNN, no pair); every combination is judged by the
+ *                      #NNN, no pair; with "Cc" after the number only the
+ *                      combination Cc may be named: the other combinations
+ *                      are run without fixed=1, as open bugs); every
+ *                      combination is judged by the
  *                      script's expectations alone: FIXED (exit status 0)
  *                      or REGRESSED (1, the report names the bug); the
  *                      original TED does not run.  orig= (the recorded
@@ -1849,7 +1852,13 @@ int tedab_start(const char *prog, const char *passfile, int lint)
         if (P.fixed && !tests[i].fixed_bug) {
             printf("%s: fixed=1, but the script has no @fixed #NNN\n", tests[i].name);
             bad++;
-        } else if (!P.fixed && tests[i].fixed_bug) {
+        } else if (P.fixed && tests[i].fixed_port && (ncombo_order != 1
+                                                       || combo_order[0] != TEDAB_CC)) {
+            printf("%s: @fixed #%u Cc: fixed in the port's combination Cc only; a fixed=1 pass "
+                   "judges only Cc (C5 keeps the bug: it is run like an open test, against "
+                   "orig=)\n", tests[i].name, tests[i].fixed_bug);
+            bad++;
+        } else if (!P.fixed && tests[i].fixed_bug && !tests[i].fixed_port) {
             printf("%s: @fixed #%u: a fixed test is run with fixed=1 (an open bug has no "
                    "@fixed)\n", tests[i].name, tests[i].fixed_bug);
             bad++;

@@ -1840,6 +1840,27 @@ BROKEN; host); the
 verdicts in the host test `tedab_bugorig_verdict` ("fixed bug-orig test"
 case of `tests/ted-ab/host/test_tedab.cpp`).
 
+**A TED bug-orig test fixed in the port's pair only** (`; @fixed #N Cc`:
+the word `Cc` after the number): for a bug whose fix is in blitz2-c, so
+that TED-C under the CD's blitz2 2.10 (C5) cannot have it and keeps the
+bug. The Cc test is the one above (`bug_orig_ID`, label `emulator`, pass
+key `fixed=1` with the combination Cc alone: FIXED or REGRESSED by the
+script's expectations). `bug_orig_ID_originals` (label `originals`) is no
+fixed run: it runs C5 like an open test, judged against `ID.orig`, and
+passes when that is REPRODUCED (exit status 1, checked by `want.cmake`
+with `WANT=1`); a C5 that shows the expected behaviour (FIXED, 0) or
+another observation (DIFFERS, 4) fails it, which says the original has
+changed or `ID.orig` is stale. Only `Cc` may follow the number (a pair, a
+word twice, `C5` are refused by the lint and the runner); a `fixed=1`
+pass that names C5 over such a script ends with exit status 2 before any
+session. Self tests: `bug_orig_ted_fixed_port_selftest_fixed` and
+`..._regressed` (Cc FIXED, REGRESSED; the `_originals` run of the second
+REPRODUCED, that of the first FIXED, so that the real test's check fails:
+`returned 0, expected 1`), `bug_orig_ted_fixed_port_c5` (before any
+session), the lint scripts `e-port-twice`, `f-port-c5`, `g-port-ok` of
+`selftest/ted-fixed-wrong/`, and the parse cases of the host test "fixed
+bug-orig test: @fixed #N without a pair" (`test_tedab`).
+
 ### Order of the bug-orig tests
 
 **Order of the bug-orig tests:** ctest with several jobs runs the

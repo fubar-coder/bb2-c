@@ -368,9 +368,11 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
                 return -1;
             }
             if (bugorig) {
-                if (nw != 1) {
+                if (nw != 1 && !(nw == 2 && !strcmp(w[1], "Cc"))) {
                     snprintf(err, errlen, "%s line %u: @fixed #NNN (no pair: a bug-orig script "
-                                          "is judged by its expectations alone)", name, no);
+                                          "is judged by its expectations alone; only the word "
+                                          "Cc may follow, for a fix of the port's compiler)",
+                             name, no);
                     return -1;
                 }
                 if (t->fixed_bug) {
@@ -378,6 +380,7 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
                     return -1;
                 }
                 t->fixed_bug = (unsigned)issue;
+                t->fixed_port = nw == 2;
                 continue;
             }
             for (k = 1; k < nw; k++) {

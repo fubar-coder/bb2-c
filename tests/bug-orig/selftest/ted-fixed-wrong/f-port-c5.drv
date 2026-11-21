@@ -1,0 +1,6 @@
+; broken on purpose: only Cc may follow @fixed #N, not C5
+; @source none
+; @nofiles
+; @fixed #123 C5
+timeout 10
+wait exit

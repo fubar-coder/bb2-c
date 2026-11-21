@@ -981,6 +981,7 @@ TEST_CASE("fixed bug-orig test: @fixed #N without a pair", "[bugorig][fixed]")
 {
     // tests/bug-orig/ted: the mode flag of tedab_test_parse_mode (bugorig 1)
     const char *head = "; @source none\n; @nofiles\n";
+    int port = -1;
     auto parse = [&](const char *directive, int bugorig, unsigned *bug = nullptr) {
         std::string s = std::string(head) + directive + "\n";
         tedab_test t;
@@ -989,6 +990,7 @@ TEST_CASE("fixed bug-orig test: @fixed #N without a pair", "[bugorig][fixed]")
 
         if (bug)
             *bug = t.fixed_bug;
+        port = t.fixed_port;
         tedab_test_free(&t);
         return rc ? std::string(err) : std::string();
     };
@@ -1008,6 +1010,17 @@ TEST_CASE("fixed bug-orig test: @fixed #N without a pair", "[bugorig][fixed]")
     CHECK(parse("; @fixed", 1).find("@fixed #NNN (no pair") != std::string::npos);
     CHECK(parse("; @fixed #012", 1).find("@fixed #NNN (no pair") != std::string::npos);
     CHECK(parse("; @fixed #0", 1).find("@fixed #NNN (no pair") != std::string::npos);
+    // the port-only form: Cc after the number (the fix is in blitz2-c)
+    CHECK(parse("; @fixed #123", 1, &bug).empty());
+    CHECK(port == 0);
+    CHECK(parse("; @fixed #123 Cc", 1, &bug).empty());
+    CHECK(bug == 123u);
+    CHECK(port == 1);
+    CHECK(parse("; @fixed #123 C5", 1).find("only the word Cc may follow") != std::string::npos);
+    CHECK(parse("; @fixed #123 Cc Cc", 1).find("only the word Cc may follow") != std::string::npos);
+    CHECK(parse("; @fixed #123 cc", 1).find("only the word Cc may follow") != std::string::npos);
+    CHECK(parse("; @fixed #123 Cc-Pc", 1).find("only the word Cc may follow") != std::string::npos);
+    CHECK(parse("; @fixed #123 Cc", 0).find("Cc is no compared pair") != std::string::npos);
 
     // the verdict from the expectations alone: no recorded original
     const char *bad = "  - expect: blk.txt differs from the expected contents (data)\n";

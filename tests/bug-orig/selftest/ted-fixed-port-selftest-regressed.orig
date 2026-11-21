@@ -1,0 +1,5 @@
+# the recorded original of the port-only fixed self test ted-fixed-port-selftest-regressed (written by hand: bug #99999 is not a bug of the original)
+[state]
+OK
+[problems]
+  - expect: stdout lacks "rc=7"

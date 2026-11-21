@@ -722,6 +722,9 @@ endif()
 # emulator and all) runs Cc, TED-C under blitz2-c with the libraries of the
 # build (libs=), and needs no CD; bug_orig_ID_originals (label originals)
 # runs C5, TED-C under the CD's blitz2 2.10 with the CD's libraries.
+# A fixed test "@fixed #N Cc" is fixed in the port's pair only (the fix is in
+# blitz2-c): bug_orig_ID as above, bug_orig_ID_originals runs C5 like an
+# open test against ID.orig and wants REPRODUCED.
 # The scripts without the emulator: ctest bug_orig_ted_lint (host).
 set(ted_scripts ${CMAKE_CURRENT_SOURCE_DIR}/ted)
 # the two runs of a test in parallel, unless CORPUS_PARALLEL says 1
@@ -753,7 +756,7 @@ function(bug_orig_ted_pass scripts id name work combos extra)
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 endfunction()
 function(bug_orig_ted_test scripts id name)
-	cmake_parse_arguments(PARSE_ARGV 3 arg "" "WANT" "")
+	cmake_parse_arguments(PARSE_ARGV 3 arg "" "WANT;WANT_ORIGINALS" "")
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${id})
 	# a fixed test: the directive "@fixed #N" alone (the runner refuses a pair)
 	file(READ ${scripts}/${id}.drv drv_text)
@@ -761,13 +764,25 @@ function(bug_orig_ted_test scripts id name)
 	set(orig_keys "orig=${scripts}/${id}.orig\norig_by=TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)\n")
 	# the gates were checked once for the whole ctest run (the fixture ted_gates)
 	set(gates_key "gates_from=ted_gates\n")
-	if(drv_text MATCHES "(^|\n)<semicolon> @fixed #[1-9][0-9]*[ \t\r]*(\n|$)")
+	# "@fixed #N Cc": fixed in the port's combination only (the fix is in
+	# blitz2-c; C5 keeps the bug, it is run like an open test)
+	set(port_only FALSE)
+	if(drv_text MATCHES "(^|\n)<semicolon> @fixed #[1-9][0-9]*[ \t]+Cc[ \t\r]*(\n|$)")
+		set(port_only TRUE)
+	endif()
+	if(drv_text MATCHES "(^|\n)<semicolon> @fixed #[1-9][0-9]*([ \t]+Cc)?[ \t\r]*(\n|$)")
 		set(fixed_test TRUE)
 		# Cc with the build's libraries (all), C5 with the CD's (originals)
 		bug_orig_ted_pass(${scripts} ${id} ${name} ${work} Cc
 			"fixed=1\norig=${scripts}/${id}.orig\nlibs=${BLITZ2_DIR}\n${gates_key}")
-		bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_originals C5
-			"fixed=1\norig=${scripts}/${id}.orig\n${gates_key}")
+		if(port_only)
+			# C5: the recorded original's observation again (REPRODUCED)
+			bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_originals R5,C5
+				"${orig_keys}${gates_key}")
+		else()
+			bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_originals C5
+				"fixed=1\norig=${scripts}/${id}.orig\n${gates_key}")
+		endif()
 	else()
 		set(fixed_test FALSE)
 		bug_orig_ted_pass(${scripts} ${id} ${name} ${work} R5,C5 "${orig_keys}${gates_key}")
@@ -812,8 +827,12 @@ function(bug_orig_ted_test scripts id name)
 	set(cost ${BUG_ORIG_TIMEOUT})
 	if(DEFINED arg_WANT)
 		foreach(suffix "" _originals)
+			set(want ${arg_WANT})
+			if(port_only AND suffix STREQUAL "_originals")
+				set(want ${arg_WANT_ORIGINALS})
+			endif()
 			add_test(NAME ${name}${suffix} COMMAND ${CMAKE_COMMAND} -DRUNNER=${TEDAB} -DSUB=run
-				-DPASS=${work}${suffix}.pass -DWANT=${arg_WANT}
+				-DPASS=${work}${suffix}.pass -DWANT=${want}
 				-P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 			set_tests_properties(${name}${suffix} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 				TIMEOUT ${limit} COST ${cost})
@@ -830,7 +849,14 @@ function(bug_orig_ted_test scripts id name)
 		add_test(NAME ${name} COMMAND ${TEDAB} run ${work}.pass)
 		set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 			TIMEOUT ${limit} COST ${cost})
-		add_test(NAME ${name}_originals COMMAND ${TEDAB} run ${work}_originals.pass)
+		if(port_only)
+			# REPRODUCED (1): the original compiler still has the bug
+			add_test(NAME ${name}_originals COMMAND ${CMAKE_COMMAND} -DRUNNER=${TEDAB} -DSUB=run
+				-DPASS=${work}_originals.pass -DWANT=1
+				-P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
+		else()
+			add_test(NAME ${name}_originals COMMAND ${TEDAB} run ${work}_originals.pass)
+		endif()
 		set_tests_properties(${name}_originals PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 			TIMEOUT ${limit} COST ${cost})
 	else()
@@ -920,6 +946,24 @@ bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-fixed-selftest-fixed
 	bug_orig_ted_fixed_selftest_fixed WANT 0)
 bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-fixed-selftest-regressed
 	bug_orig_ted_fixed_selftest_regressed WANT 1)
+# the port-only form (@fixed #N Cc, the fix is in blitz2-c): Cc is judged by
+# the expectations as above; C5 like an open test against the recorded
+# original: the same observation is REPRODUCED (1, what a real test wants:
+# the bug the original compiler keeps), one that shows the expected
+# behaviour where the original shows the bug is FIXED (0): the real test's
+# check (WANT 1) must fail on it, naming the status
+bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-fixed-port-selftest-fixed
+	bug_orig_ted_fixed_port_selftest_fixed WANT 0 WANT_ORIGINALS 1)
+bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-fixed-port-selftest-regressed
+	bug_orig_ted_fixed_port_selftest_regressed WANT 1 WANT_ORIGINALS 1)
+set_tests_properties(bug_orig_ted_fixed_port_selftest_fixed PROPERTIES
+	PASS_REGULAR_EXPRESSION "Cc: FIXED #99999")
+set_tests_properties(bug_orig_ted_fixed_port_selftest_regressed PROPERTIES
+	PASS_REGULAR_EXPRESSION "Cc: REGRESSED: bug #99999 is fixed")
+set_tests_properties(bug_orig_ted_fixed_port_selftest_fixed_originals PROPERTIES
+	PASS_REGULAR_EXPRESSION "returned 0, expected 1")
+set_tests_properties(bug_orig_ted_fixed_port_selftest_regressed_originals PROPERTIES
+	PASS_REGULAR_EXPRESSION "bug-orig C5 against the recorded original: REPRODUCED")
 # the regular expressions per combination: Cc in all, C5 in originals
 foreach(suffix combo IN ZIP_LISTS "<none>;_originals" "Cc;C5")
 	if(suffix STREQUAL "<none>")
@@ -999,6 +1043,11 @@ file(WRITE ${pass} "${text}")
 add_test(NAME bug_orig_ted_fixed_equal_broken COMMAND ${CMAKE_COMMAND} -DRUNNER=${TEDAB} -DSUB=run
 	-DPASS=${pass} -DWANT=3 -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 set_tests_properties(bug_orig_ted_fixed_equal_broken PROPERTIES PASS_REGULAR_EXPRESSION "BROKEN TEST")
+# the port-only form (@fixed #N Cc) with a fixed=1 pass that names C5: the
+# fixed pass judges Cc alone
+bug_orig_ted_pass_test(bug_orig_ted_fixed_port_c5 ted-fixed-port-selftest-fixed
+	"bugorig=1\nfixed=1\n"
+	"@fixed #99999 Cc: fixed in the port's combination Cc only; a fixed=1 pass judges only Cc")
 bug_orig_ted_pass_test(bug_orig_ted_fixed_no_bugorig ted-fixed-selftest-fixed
 	"fixed=1\n" "fixed=1 belongs to bugorig=1")
 bug_orig_ted_pass_test(bug_orig_ted_no_orig_no_fixed ted-fixed-selftest-fixed
@@ -1020,7 +1069,7 @@ string(CONCAT text
 file(WRITE ${lint} "${text}")
 add_test(NAME bug_orig_ted_fixed_wrong_lint COMMAND ${TEDAB} lint ${lint})
 set_tests_properties(bug_orig_ted_fixed_wrong_lint PROPERTIES PASS_REGULAR_EXPRESSION
-	"^a-pair line 4: @fixed #NNN \\(no pair[^\n]*\nb-twice line 5: @fixed twice\nc-noissue line 4: @fixed #NNN \\(no pair[^\n]*\ntedab lint: 1 tests, 3 problems\n$")
+	"^a-pair line 4: @fixed #NNN \\(no pair[^\n]*\nb-twice line 5: @fixed twice\nc-noissue line 4: @fixed #NNN \\(no pair[^\n]*\ne-port-twice line 4: @fixed #NNN \\(no pair[^\n]*Cc may follow[^\n]*\nf-port-c5 line 4: @fixed #NNN \\(no pair[^\n]*Cc may follow[^\n]*\ntedab lint: 2 tests, 5 problems\n$")
 
 # The recorded originals (ID.orig) written by the target bug-orig-record
 # (record.cmake; not ALL, not a test, reviewed with git diff tests/bug-orig):

@@ -51,6 +51,11 @@
  *   ; @fixed #NNN          (only in tests/bug-orig/ted, no pair) TED bug NNN is
  *                        fixed: the script is judged by its expectations
  *                        alone (FIXED, or REGRESSED), no recorded original
+ *   ; @fixed #NNN Cc       (only in tests/bug-orig/ted) the same, fixed in the
+ *                        port's combination only: the fix is in blitz2-c, TED-C
+ *                        under the original compiler (C5) keeps the bug.  Cc
+ *                        is judged by the expectations (FIXED, REGRESSED), C5
+ *                        like an open bug against the recorded original
  *   ; @fixed #NNN PAIR...  TED bug NNN (the issue) is fixed: the named pairs
  *                        (R5-C5, Rc-Cc, R5-Rc, C5-Cc, C5-P5, Cc-Pc; both combinations in
  *                        @combos) must differ, FIXED; a named pair that is
@@ -143,6 +148,8 @@ struct tedab_test {
     unsigned fixed[TEDAB_NPAIRS]; /* @fixed: the issue per tedab_pairs index, 0 =
                                    the pair must be the same */
     unsigned fixed_bug;         /* bug-orig: @fixed #NNN without a pair, 0 = an open bug */
+    int fixed_port;             /* bug-orig: @fixed #NNN Cc, fixed in the port's combination
+                                   only (C5 keeps the bug) */
     char *command;              /* @command, NULL = blitz2:blitz2 [FILE] */
     struct tedab_file *files;   /* @file */
     size_t nfiles;
