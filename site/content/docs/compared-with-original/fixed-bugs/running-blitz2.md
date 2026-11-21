@@ -1,12 +1,13 @@
 ---
 title: Running blitz2
 weight: 2
-description: Fixed bugs of Blitz Basic 2 in blitz2 as a program - loading the libraries, starting and ending, and the editor's compiler menu.
+description: Fixed bugs of Blitz Basic 2 in blitz2 as a program - loading the libraries, starting and ending, out of memory during a compile, and the editor's compiler menu.
 ---
 
 These bugs concern blitz2 as a program rather than the code it compiles:
-how it loads its libraries, how it starts and ends, and what the
-compiler menu of the editor does. Each is a short point here, and its
+how it loads its libraries, how it starts and ends, what it does when
+memory runs out during a compile, and what the compiler menu of the
+editor does. Each is a short point here, and its
 issue has the details. Each point says first what the original did,
 then, after the semicolon, what the port does.
 The table on [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})
@@ -59,6 +60,32 @@ from `blitz2:deflibs`, `blitz2:acidlibs` and the directories in
   example under a memory checker such as MungWall; blitz2 has ended
   before the Workbench unloads it
   ([#337](https://github.com/fubar-coder/bb2-c/issues/337)).
+
+## Out of memory during a compile
+
+When memory runs out during a compile from the editor, the compiler of
+the port stops as it does at a compile error: it closes the include
+files, frees the memory of the compile, and returns to the editor, which
+then shows its alert "Not enough memory for operation!". The next compile
+starts afresh. When the port's compiler runs under the editor of Blitz Basic 2,
+or from the Shell, it reports the error "Out of Memory" instead.
+
+* The original compiler got its memory from the editor, which on failure
+  showed its alert and jumped straight back into its own main loop: the
+  compile was abandoned in the middle, its include files stayed open, its
+  memory was lost, and the next compile did not come back. A failed
+  change of the buffer sizes in COMPILER OPTIONS left the compiler with
+  buffers that had been freed; the compile ends through the compiler's
+  own cleanup, as described above
+  ([#369](https://github.com/fubar-coder/bb2-c/issues/369)).
+* When the object buffer runs full, the requester "Not Enough Object
+  Memory Available!" offers INCREASE 150% - RECOMPILE. If the larger
+  buffers could not be allocated, the original's code went back to the
+  old sizes and compiled again with them, so the same requester came
+  back until CANCEL COMPILE, with no word about the memory (the original
+  itself never got that far, because the editor abandoned the compile
+  first); the compile ends with the alert or error described above
+  ([#32](https://github.com/fubar-coder/bb2-c/issues/32)).
 
 ## The editor's compiler menu
 

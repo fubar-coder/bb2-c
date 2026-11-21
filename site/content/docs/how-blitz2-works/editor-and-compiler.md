@@ -70,6 +70,22 @@ the editor shows the message, and the cursor goes to the line with the
 error. After you fix it, the next compile finds the next error, if there
 is one.
 
+## When memory runs out
+
+The compiler allocates the memory it needs for a compile itself. When an
+allocation fails, the compile ends as it does at an error: the compiler
+closes its include files, frees what it had allocated and returns to the
+editor, which shows its alert "Not enough memory for operation!". Under
+the editor of Blitz Basic 2, and from the Shell, the compiler shows the
+error "Out of Memory" instead.
+
+The compiler of Blitz Basic 2 does not allocate this memory itself: it
+gets it from the editor.
+The port's editor still offers it this service, so the original compiler
+runs under it as before: when the memory runs out, the editor shows its
+alert and ends the compile at once, without the compiler's cleanup
+([Running blitz2]({{< relref "/docs/compared-with-original/fixed-bugs/running-blitz2#out-of-memory-during-a-compile" >}})).
+
 ## Running a program from the editor
 
 COMPILE AND RUN and RUN start the compiled program as a process of its

@@ -241,6 +241,14 @@ rows:
     text: "A `UsePath` path of 128 characters or more is \"Path too Long\"; the original overwrote the compiler's own code."
     page: compiler
     anchor: paths-and-include-files
+  - issue: 32
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "INCREASE 150% - RECOMPILE"
+    text: "When the larger buffers of INCREASE 150% - RECOMPILE cannot be allocated, the compile ends with the out of memory notice; the original's code compiled again with the old sizes and showed the same requester again and again, a case the original itself never reached."
+    page: running-blitz2
+    anchor: out-of-memory-during-a-compile
   - issue: 34
     severity: 5
     topic: "Compiler"
@@ -2322,6 +2330,14 @@ rows:
     text: "`CLI` with the Workbench screen closed runs the shell and closes its console window afterwards; the original did not run it and left the window open."
     page: editor
     anchor: starting-and-ending
+  - issue: 369
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Out of memory during a compile from the editor ends the compile through the compiler's own cleanup, with include files closed and memory freed, and the editor shows its alert; the original abandoned the compile in the middle, and the next compile did not come back."
+    page: running-blitz2
+    anchor: out-of-memory-during-a-compile
   - issue: 370
     severity: 5
     topic: "Editor"
