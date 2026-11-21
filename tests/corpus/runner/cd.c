@@ -8,7 +8,8 @@
  * The body (corpusrun_cd, cd.h); the subcommand is declared in cmd_cd.cpp.
  *
  * The pass file, lines KEY=VALUE, '#' comments:
- *   work=DIR           work directory (emptied first)
+ *   work=DIR           work directory: every run works in DIR/run-XXXXXX (runwork.h); a run that
+ *                      passes leaves nothing, a failed one stays and is named
  *   output=PATH        the table to write
  *   reference=PATH     optional: compare with this table (report=PATH)
  *   report=PATH        the comparison (also to stdout)
@@ -80,6 +81,7 @@
 #include "cdcmp.h"
 #include "previntended.h"
 #include "statline_emulation.h"
+#include "runwork.h"
 #include "util.h"
 
 #define VOLUME "CORPUS"         /* the worker's directory */
@@ -973,7 +975,6 @@ static int run(FILE *log)
     unf = calloc(njobs + 1, sizeof *unf);
     if (!list || !unf)
         goto out;
-    rm_tree(P.work);
     for (w = 0; w < nworkers; w++)
         if (stage_worker(w, log))
             goto out;
@@ -1099,7 +1100,21 @@ int corpusrun_cd(const char *prog, const char *passfile)
         }
     }
     free(text);
-    rc = run(stdout);
+    /* a run directory of its own below work= (runwork.h): two runs of the pass at the same time
+       do not share their files, a run that passes leaves nothing, a failed one stays and is named */
+    {
+        struct runwork rw = { NULL, NULL, -1 };
+        char *base = P.work, rerr[300];
+
+        if (runwork_open(&rw, base, rerr, sizeof rerr)) {
+            fprintf(stderr, "%s: %s\n", me, rerr);
+            return 2;
+        }
+        P.work = rw.dir;
+        rc = run(stdout);
+        P.work = base;
+        rc = runwork_finish(&rw, rc != 77, rc, NULL, NULL, stdout, me);
+    }
     if (!rc && cached && cdcache_write(P.cache, digest, cache_outs, ncache_outs))
         printf("%s: cannot write %s (the next run will not be skipped)\n", me, P.cache);
     return rc;

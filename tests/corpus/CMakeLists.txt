@@ -555,7 +555,8 @@ endforeach()
 set(CD_PASS_EXTRA)
 add_test(NAME corpus_cd_prev_check COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
 	-DWORK=${cdprev_work} -DPASSES=${CMAKE_CURRENT_BINARY_DIR} -DSOURCE=${cdprev_source}
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/cd-prev-check.cmake)
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/cd-prev-check.cmake
+	-P ${WITH_WORKDIR})
 math(EXPR limit "6 * 120 + 120 + 6 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(corpus_cd_prev_check PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "cd-prev-check: all runs as expected")
