@@ -6,8 +6,10 @@
 // the next entry or at the end, the attribution of a procedure's check
 // to the running block, preconditions in a case and in the batch init, a
 // failed check in the batch init, the end of a run with a block open,
-// calls out of order and a damaged state.  Every line written is read
-// back with the codec's reader.
+// calls out of order, a damaged state, and the typed checks (quick, and
+// float within a delta, here compared as doubles from the FFP bits).
+// Every line written is read back with the codec's reader.
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -20,9 +22,22 @@ extern "C" {
 
 namespace {
 
-// what tl_os_write got, one string per call, and whether it may write
+// what tl_os_write got, one string per call, whether it may write, and
+// whether the floats can be compared (mathffp.library open)
 std::vector<std::string> writes;
 int can_write = 1;
+int can_compare = 1;
+
+// a Motorola FFP number: 24 bits of mantissa, the sign in bit 7, the
+// exponent (excess 64) in bits 0-6; 0 is all zero bits
+double ffp(uint32_t v)
+{
+    if (!v)
+        return 0;
+    double m = std::ldexp(double(v >> 8), -24);
+    double r = std::ldexp(m, int(v & 0x7F) - 64);
+    return v & 0x80 ? -r : r;
+}
 
 std::string all()
 {
@@ -39,6 +54,7 @@ struct run {
     {
         writes.clear();
         can_write = 1;
+        can_compare = 1;
     }
 };
 
@@ -98,6 +114,13 @@ extern "C" void tl_os_write(const uint8_t *data, size_t length)
 extern "C" int tl_os_can_write(void)
 {
     return can_write;
+}
+
+extern "C" int tl_os_fltnear(uint32_t expected, uint32_t actual, uint32_t delta)
+{
+    if (!can_compare)
+        return -1;
+    return std::fabs(ffp(actual) - ffp(expected)) <= ffp(delta);
 }
 
 TEST_CASE("a run: init, two cases, final, the end", "[tlcore]")
@@ -186,6 +209,8 @@ TEST_CASE("a string check too long for a line keeps its verdict", "[tlcore]")
     CHECK(writes[3].rfind("checkstr\t8\tfail\t\\x01", 0) == 0);
     CHECK(writes[2].size() <= TL_LINE);
     CHECK(writes[3].size() <= TL_LINE);
+    CHECK(writes[2].ends_with("\tcut\n"));
+    CHECK(writes[3].ends_with("\tcut\n"));
     kinds(all());
 }
 
@@ -472,5 +497,84 @@ TEST_CASE("a damaged state found in Blitz mode is reported at the end", "[tlcore
     CHECK(all() == "begin\t1\n"
                    "block\tcase\ta\n"
                    "broken\tstate damaged\n"
+                   "end\n");
+}
+
+TEST_CASE("the FFP numbers of the tests", "[tlcore]")
+{
+    CHECK(ffp(0xA0000042u) == 2.5);
+    CHECK(ffp(0xC0000045u) == 24.0);
+    CHECK(ffp(0x80000041u) == 1.0);
+    CHECK(ffp(0x800000C1u) == -1.0);
+    CHECK(std::fabs(ffp(0xA3D70A3Au) - 0.01) < 1e-8);
+}
+
+TEST_CASE("quick checks: the bits equal", "[tlcore]")
+{
+    run r;
+    tl_begin(&r.st);
+    block_case(r.st, "q");
+    tl_checkq(&r.st, 0, 0x00018000u, 0x00018000u);  // 1.5, 1.5
+    tl_checkq(&r.st, 1, 0x00018000u, 0x00010000u);  // 1.5, 1.0
+    tl_checkq(&r.st, 2, 0xFFFF8000u, 0xFFFF8000u);  // -0.5
+    CHECK(writes.at(2) == "checkq\t0\tok\t$00018000\t$00018000\n");
+    CHECK(writes.at(3) == "checkq\t1\tfail\t$00018000\t$00010000\n");
+    CHECK(writes.at(4) == "checkq\t2\tok\t$FFFF8000\t$FFFF8000\n");
+    kinds(all());
+}
+
+TEST_CASE("float checks: within and outside the delta", "[tlcore]")
+{
+    run r;
+    tl_begin(&r.st);
+    block_case(r.st, "f");
+    const uint32_t f25 = 0xA0000042u, f24 = 0xC0000045u, d001 = 0xA3D70A3Au, f1 = 0x80000041u;
+    tl_checkflt(&r.st, 0, f25, f25, d001);          // equal
+    tl_checkflt(&r.st, 1, f24, f25, d001);          // 24 against 2.5
+    tl_checkflt(&r.st, 2, f25, 0x00000000u, f25);   // |0-2.5| = 2.5 <= 2.5
+    tl_checkflt(&r.st, 3, f1, 0x800000C1u, f1);     // |-1-1| = 2 > 1
+    tl_checkflt(&r.st, 4, f1, f1, 0);               // delta 0, equal
+    CHECK(writes.at(2) == "checkflt\t0\tok\t$A0000042\t$A0000042\t$A3D70A3A\n");
+    CHECK(writes.at(3) == "checkflt\t1\tfail\t$C0000045\t$A0000042\t$A3D70A3A\n");
+    CHECK(writes.at(4) == "checkflt\t2\tok\t$A0000042\t$00000000\t$A0000042\n");
+    CHECK(writes.at(5) == "checkflt\t3\tfail\t$80000041\t$800000C1\t$80000041\n");
+    CHECK(writes.at(6) == "checkflt\t4\tok\t$80000041\t$80000041\t$00000000\n");
+    kinds(all());
+}
+
+TEST_CASE("float checks without mathffp.library fail as broken", "[tlcore]")
+{
+    run r;
+    tl_begin(&r.st);
+    block_case(r.st, "f");
+    can_compare = 0;
+    tl_checkflt(&r.st, 0, 0xA0000042u, 0xA0000042u, 0xA3D70A3Au);
+    CHECK(writes.at(2) == "broken\tfloat compare not available\n");
+    CHECK(writes.at(3) == "checkflt\t0\tfail\t$A0000042\t$A0000042\t$A3D70A3A\n");
+}
+
+TEST_CASE("typed checks: no compare before the start, init failures repeated", "[tlcore]")
+{
+    run r;
+    can_compare = 0;
+    tl_checkflt(&r.st, 0, 1, 1, 1);                 // before tl_begin: nothing
+    CHECK(writes.empty());
+    can_compare = 1;
+    tl_begin(&r.st);
+    block(r.st, BASICTEST_BLOCK_INIT);
+    tl_checkq(&r.st, 1, 0x00018000u, 0x00010000u);
+    tl_checkflt(&r.st, 2, 0xA0000042u, 0xC0000045u, 0xA3D70A3Au);
+    tl_blockend(&r.st);
+    block_case(r.st, "a");
+    tl_blockend(&r.st);
+    tl_finit(&r.st);
+    CHECK(all() == "begin\t1\n"
+                   "block\tinit\n"
+                   "checkq\t1\tfail\t$00018000\t$00010000\n"
+                   "checkflt\t2\tfail\t$A0000042\t$C0000045\t$A3D70A3A\n"
+                   "blockend\n"
+                   "block\tcase\ta\n"
+                   "checkq\t1\tfail\t$00018000\t$00010000\n"
+                   "blockend\n"
                    "end\n");
 }

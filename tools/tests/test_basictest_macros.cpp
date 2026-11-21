@@ -68,7 +68,8 @@ TEST_CASE("macros.bas defines the macros of the spec and no other", "[basictest]
     std::set<std::string> want = { "TestBatchInit", "EndTestBatchInit", "TestCase",
                                    "EndTestCase",   "TestBatchEnd",     "EndTestBatchEnd",
                                    "Check",         "CheckEq",          "CheckStrEq",
-                                   "Require",       "ExpectError" };
+                                   "CheckQEq",      "CheckFltNear",     "Require",
+                                   "ExpectError" };
     std::set<std::string> have;
     for (const auto &[name, b] : macros()) {
         have.insert(name);
@@ -89,6 +90,8 @@ TEST_CASE("macros.bas: the text of every macro", "[basictest]")
         { "Check", { "TLCheck `1,-1,(`2)<>0" } },
         { "CheckEq", { "TLCheck `1,`3,`2" } },
         { "CheckStrEq", { "TLCheckStr `1,`3,`2" } },
+        { "CheckQEq", { "TLCheckQ `1,`3,`2" } },
+        { "CheckFltNear", { "TLCheckFlt `1,`3,`2,`4" } },
         { "Require", { "TLRequire `1,`2" } },
         { "ExpectError", { "TLExpectError `1" } },
     };
@@ -137,6 +140,12 @@ TEST_CASE("macros.bas: the checks call the library with K first", "[basictest]")
     // !CheckStrEq{K,ACTUAL$,EXPECTED$} -> TLCheckStr K,expected$,actual$
     a = args(m["CheckStrEq"].at(0), "TLCheckStr");
     CHECK(a == std::vector<std::string>{ "`1", "`3", "`2" });
+    // !CheckQEq{K,ACTUAL,EXPECTED} -> TLCheckQ K,expected.q,actual.q
+    a = args(m["CheckQEq"].at(0), "TLCheckQ");
+    CHECK(a == std::vector<std::string>{ "`1", "`3", "`2" });
+    // !CheckFltNear{K,ACTUAL,EXPECTED,DELTA} -> TLCheckFlt K,expected.f,actual.f,delta.f
+    a = args(m["CheckFltNear"].at(0), "TLCheckFlt");
+    CHECK(a == std::vector<std::string>{ "`1", "`3", "`2", "`4" });
     // !Check{K,COND} -> TLCheck K,-1,(COND)<>0: ok if COND is not 0
     a = args(m["Check"].at(0), "TLCheck");
     CHECK(a == std::vector<std::string>{ "`1", "-1", "(`2)<>0" });
@@ -146,7 +155,8 @@ TEST_CASE("macros.bas: the checks call the library with K first", "[basictest]")
     // !ExpectError{K} -> TLExpectError K
     a = args(m["ExpectError"].at(0), "TLExpectError");
     CHECK(a == std::vector<std::string>{ "`1" });
-    for (const char *name : { "Check", "CheckEq", "CheckStrEq", "Require", "ExpectError" })
+    for (const char *name : { "Check", "CheckEq", "CheckStrEq", "CheckQEq", "CheckFltNear",
+                              "Require", "ExpectError" })
         CHECK(m[name].size() == 1u);
 }
 

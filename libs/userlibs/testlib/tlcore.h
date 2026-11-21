@@ -14,6 +14,9 @@
  *   tl_os_can_write()     1 if an entry may be written now, 0 if it must
  *                         be kept (the program is in Blitz mode, or has
  *                         multitasking or interrupts off)
+ *   tl_os_fltnear(e,a,d)  1 if the FFP floats e and a differ by at most d,
+ *                         0 if not, -1 if they cannot be compared (on the
+ *                         Amiga: mathffp.library is not open)
  *
  * What the functions write (the entries of basictest.h):
  *
@@ -26,7 +29,12 @@
  *                     case is broken and does not run); for the batch
  *                     end after such an init nothing (it does not run)
  *   tl_blockend       blockend
- *   tl_check(str)     check / checkstr K ok|fail EXP ACT
+ *   tl_check(str)     check / checkstr K ok|fail EXP ACT (checkstr: and
+ *                     - or cut)
+ *   tl_checkq         checkq K ok|fail EXP ACT (the quicks' bits)
+ *   tl_checkflt       checkflt K ok|fail EXP ACT DELTA (FFP bits); if the
+ *                     floats cannot be compared: `broken float compare
+ *                     not available` and the check as fail
  *   tl_require        require K broken and blockend, if the condition is 0
  *   tl_expect_error   expect-error K
  *   tl_finit          incomplete (a block is open), end
@@ -42,7 +50,8 @@
  * be, or by tl_finit, which always writes.  Entries that do not fit are
  * lost; `broken entries lost while kept` follows the kept ones then.  A
  * string check whose line does not fit into TL_LINE bytes has its two
- * values cut until it fits (the verdict is that of the whole strings).
+ * values cut until it fits and its last field `cut` (the verdict is that
+ * of the whole strings).
  */
 #ifndef TLCORE_H
 #define TLCORE_H
@@ -88,6 +97,7 @@ struct tl_state {
 /* defined by the user of the functions (testlib.c, the host tests) */
 void tl_os_write(const uint8_t *data, size_t length);
 int tl_os_can_write(void);
+int tl_os_fltnear(uint32_t expected, uint32_t actual, uint32_t delta);
 
 /** @brief Clears the state and writes `begin`. */
 void tl_begin(struct tl_state *st);
@@ -105,6 +115,13 @@ void tl_blockend(struct tl_state *st);
 
 /** @brief A check of two longs: ok if they are equal. */
 void tl_check(struct tl_state *st, uint32_t k, uint32_t expected, uint32_t actual);
+
+/** @brief A check of two quicks (their 32 bits): ok if they are equal. */
+void tl_checkq(struct tl_state *st, uint32_t k, uint32_t expected, uint32_t actual);
+
+/** @brief A check of two FFP floats: ok if |actual-expected| <= delta. */
+void tl_checkflt(struct tl_state *st, uint32_t k, uint32_t expected, uint32_t actual,
+                 uint32_t delta);
 
 /** @brief A check of two strings (bytes): ok if they are equal. */
 void tl_checkstr(struct tl_state *st, uint32_t k, const uint8_t *expected, size_t expected_length,

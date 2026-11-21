@@ -41,6 +41,12 @@ End Macro
 Macro CheckStrEq
   TLCheckStr `1,`3,`2
 End Macro
+Macro CheckQEq
+  TLCheckQ `1,`3,`2
+End Macro
+Macro CheckFltNear
+  TLCheckFlt `1,`3,`2,`4
+End Macro
 Macro Require
   TLRequire `1,`2
 End Macro

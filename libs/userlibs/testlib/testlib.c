@@ -9,6 +9,9 @@
  *   r=TLCase(name$)            opens a case: 1 if it runs
  *   TLBlockEnd                 closes the open block
  *   TLCheck K,expected,actual  a check of two longs
+ *   TLCheckQ K,exp.q,act.q     a check of two quicks (exactly)
+ *   TLCheckFlt K,e.f,a.f,d.f   a check of two floats: |a-e| <= d, with
+ *                              mathffp.library
  *   TLCheckStr K,exp$,act$     a check of two strings
  *   TLRequire K,condition      a precondition: if it is 0 the open
  *                              block's TLInit/TLCase/TLFinal call returns
@@ -28,7 +31,8 @@
  * registers of the register rule (the C routines by the calling
  * convention; TLInit, TLCase and TLFinal are assembler entries that save
  * the caller's registers for the second return, which restores them).
- * dos.library is opened by TLBegin and closed by the finit.
+ * dos.library and mathffp.library are opened by TLBegin and closed by the
+ * finit, so no routine calls a library before the start.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -42,6 +46,7 @@
 
 void TLBegin(void), TLInit(void), TLFinal(void), TLCase(void), TLBlockEnd(void);
 void TLCheck(void), TLCheckStr(void), TLRequire(void), TLExpectError(void);
+void TLCheckQ(void), TLCheckFlt(void);
 static void BLITZ_ROUTINE codefinit(void);
 BLITZ_ENTRY_DECL(finit);
 
@@ -101,6 +106,18 @@ BLITZ_LIBS0();
 BLITZ_SUBS(TLExpectError, 0, 0);
 BLITZ_NAME("TLExpectError", "K: an expected runtime error follows");
 
+BLITZ_ASTATEMENT();
+BLITZ_ARGS(BL_LONG, BL_QUICK, BL_QUICK);
+BLITZ_LIBS0();
+BLITZ_SUBS(TLCheckQ, 0, 0);
+BLITZ_NAME("TLCheckQ", "K,expected.q,actual.q");
+
+BLITZ_ASTATEMENT();
+BLITZ_ARGS(BL_LONG, BL_FLOAT, BL_FLOAT, BL_FLOAT);
+BLITZ_LIBS0();
+BLITZ_SUBS(TLCheckFlt, 0, 0);
+BLITZ_NAME("TLCheckFlt", "K,expected.f,actual.f,delta.f: ok if |actual-expected|<=delta");
+
 BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 
 BLITZ_LIBFIN();
@@ -114,6 +131,7 @@ ULONG tl_ctx[13];
 
 static struct tl_state tl_st;
 static struct Library *tl_dosbase;
+static struct Library *tl_ffpbase;      /* mathffp.library */
 /* the result file and its complement: a file handle a wild write changed
    is not used */
 static BPTR tl_fh, tl_fhcheck;
@@ -134,10 +152,24 @@ int tl_os_can_write(void)
     return SysBase->TDNestCnt < 0 && SysBase->IDNestCnt < 0;
 }
 
+/* |actual-expected| <= delta with mathffp.library: SPSub (d0 = d0 - d1),
+   SPAbs, and the sign of delta - |actual-expected| (bit 7 of an FFP
+   number; 0 is all zero bits) */
+int tl_os_fltnear(uint32_t expected, uint32_t actual, uint32_t delta)
+{
+    ULONG diff;
+
+    if (!tl_ffpbase)
+        return -1;
+    diff = BLITZ_SYSJSR2(tl_ffpbase, LVO_SPSub, actual, expected);
+    diff = BLITZ_SYSJSR1(tl_ffpbase, LVO_SPAbs, diff);
+    return !(BLITZ_SYSJSR2(tl_ffpbase, LVO_SPSub, delta, diff) & 0x80);
+}
+
 /* ------------------------------------------------------------- routines */
 
 /**
- * @brief TLBegin path$: opens dos.library and the result file path$
+ * @brief TLBegin path$: opens dos.library, mathffp.library and the result file path$
  *   (MODE_NEWFILE), writes `begin`.  A second TLBegin writes `broken` and
  *   changes nothing.
  * @param path  d0: the path's characters
@@ -164,6 +196,8 @@ static void BLITZ_ROUTINE tlbegin_c(const UBYTE *path BL_REG(d0), const ULONG *l
         tl_fh = Open((CONST_STRPTR)name, MODE_NEWFILE);
         tl_fhcheck = ~tl_fh;
     }
+    if (!tl_ffpbase)
+        tl_ffpbase = OpenLibrary((CONST_STRPTR)"mathffp.library", 0);
     tl_begin(&tl_st);
 }
 BLITZ_ALIAS(TLBegin, tlbegin_c);
@@ -199,6 +233,20 @@ static void BLITZ_ROUTINE tlcheck_c(ULONG k BL_REG(d0), ULONG expected BL_REG(d1
     tl_check(&tl_st, k, expected, actual);
 }
 BLITZ_ALIAS(TLCheck, tlcheck_c);
+
+static void BLITZ_ROUTINE tlcheckq_c(ULONG k BL_REG(d0), ULONG expected BL_REG(d1),
+                                     ULONG actual BL_REG(d2))
+{
+    tl_checkq(&tl_st, k, expected, actual);
+}
+BLITZ_ALIAS(TLCheckQ, tlcheckq_c);
+
+static void BLITZ_ROUTINE tlcheckflt_c(ULONG k BL_REG(d0), ULONG expected BL_REG(d1),
+                                       ULONG actual BL_REG(d2), ULONG delta BL_REG(d3))
+{
+    tl_checkflt(&tl_st, k, expected, actual, delta);
+}
+BLITZ_ALIAS(TLCheckFlt, tlcheckflt_c);
 
 /**
  * @brief TLCheckStr K,expected$,actual$.
@@ -248,7 +296,7 @@ BLITZ_ASM_ROUTINE(tl_resume,
 "   moveq   #0,d0\n"
 "   jmp     (a0)");
 
-/* finit: the last entries, the file closed, dos.library closed */
+/* finit: the last entries, the file closed, the libraries closed */
 static void BLITZ_ROUTINE codefinit(void)
 {
     tl_finit(&tl_st);
@@ -257,6 +305,9 @@ static void BLITZ_ROUTINE codefinit(void)
             Close(tl_fh);
         CloseLibrary(tl_dosbase);
     }
+    if (tl_ffpbase)
+        CloseLibrary(tl_ffpbase);
     tl_fh = tl_fhcheck = 0;
     tl_dosbase = 0;
+    tl_ffpbase = 0;
 }

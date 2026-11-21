@@ -115,6 +115,7 @@ static size_t emit(struct tl_state *st, struct basictest_entry *e, int force)
         size_t cut = e->expected_str.length > e->actual_str.length ? e->expected_str.length
                                                                    : e->actual_str.length;
 
+        e->cut = 1;
         while (!n && cut) {
             cut >>= 1;
             if (e->expected_str.length > cut)
@@ -248,6 +249,46 @@ void tl_check(struct tl_state *st, uint32_t k, uint32_t expected, uint32_t actua
     e.ok = expected == actual;
     e.expected = expected;
     e.actual = actual;
+    if (e.ok)
+        emit(st, &e, 0);
+    else
+        init_check(st, emit(st, &e, 0));
+}
+
+void tl_checkq(struct tl_state *st, uint32_t k, uint32_t expected, uint32_t actual)
+{
+    struct basictest_entry e = entry(BASICTEST_CHECKQ);
+
+    if (!alive(st))
+        return;
+    inside(st);
+    e.k = k;
+    e.ok = expected == actual;
+    e.expected = expected;
+    e.actual = actual;
+    if (e.ok)
+        emit(st, &e, 0);
+    else
+        init_check(st, emit(st, &e, 0));
+}
+
+void tl_checkflt(struct tl_state *st, uint32_t k, uint32_t expected, uint32_t actual,
+                 uint32_t delta)
+{
+    struct basictest_entry e = entry(BASICTEST_CHECKFLT);
+    int near;
+
+    if (!alive(st))
+        return;
+    inside(st);
+    near = tl_os_fltnear(expected, actual, delta);
+    if (near < 0)
+        broken(st, "float compare not available");
+    e.k = k;
+    e.ok = near > 0;
+    e.expected = expected;
+    e.actual = actual;
+    e.delta = delta;
     if (e.ok)
         emit(st, &e, 0);
     else
