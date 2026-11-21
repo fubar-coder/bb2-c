@@ -127,6 +127,34 @@ int tp_process(const char *text, size_t len, const struct tp_params *par, struct
 /** @brief Free a result (zeroed). */
 void tp_free(struct tp_source *src);
 
+/**
+ * @brief Check the form of a source (spec testing/basic-testlib, "A test
+ *        source holds declarations and blocks"; the registration's check,
+ *        change basic-test-runner D7) and add every violation to
+ *        src->errors (after tp_process, whose messages stay):
+ *
+ *   - a block macro stands on a line of its own; only blanks and a
+ *     comment may follow it;
+ *   - the blocks pair in source order: at most one batch init, before the
+ *     first case; one or more cases; at most one batch end, after the
+ *     last case; every opening macro has its closing macro before the
+ *     next opening one (a missing or extra end names the case at fault);
+ *   - conditional compilation (CNIF, CSIF, CELSE, CEND) does not cut a
+ *     block, and no loop, Select or block If crosses its start or end;
+ *   - outside the blocks only declarations: constants (#NAME=...),
+ *     Macro, Statement and Function definitions, NEWTYPE, DEFTYPE, the
+ *     directives CNIF, CSIF, CELSE, CEND, CERR, OPTIMIZE, Syntax,
+ *     WBStartup, NoCli, CloseEd, labels and the data statements Data, Dc,
+ *     Dcb, Even, IncBin;
+ *   - a case name matches [a-z][a-z0-9_]*, holds no "__", does not end in
+ *     "_originals", is no token of par->tokens (case ignored) and is
+ *     unique in the source; a case named init or end beside a batch init
+ *     or batch end is refused, its namespace would be ambiguous.
+ *
+ * @return the number of messages in src->errors, -1 = out of memory
+ */
+int tp_check_form(const char *text, size_t len, const struct tp_params *par, struct tp_source *src);
+
 /** @brief The macro name of a kind ("CheckEq"). */
 const char *tp_kind_name(int kind);
 

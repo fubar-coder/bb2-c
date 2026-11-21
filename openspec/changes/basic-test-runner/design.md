@@ -238,3 +238,21 @@ configuration".
   the faulty part as if the selector matched), and fails when such a cell
   passes without them. Exit values as `corpusrun`'s bug-orig mode: 0
   passed, 1 reproduced, 2 error, 3 broken, 4 failed.
+- **Form check** (`tools/lib/testpp`, `tp_check_form`). Besides the rules
+  of the spec it refuses, as code outside the blocks, a call of one of
+  the test's own macros and `INCLUDE`/`XINCLUDE` there (their text is not
+  known to the check, and an included file would hide checks from the
+  numbering); the declarations allowed outside are listed in `testpp.h`.
+  A loop, `Select`, block `If` or `SetErr` must not cross a block's start
+  or end. A case named `init` or `end` beside a batch init or batch end is
+  refused (its namespace would be that of the batch block).
+- **Registration** (`tools/lib/testreg`, `tools/testreg`). A test runs
+  `COMMAND... --source ABSOLUTE-SOURCE --case CASE --side port|originals`
+  (the subcommand is task 3.1's); its `TIMEOUT` is the sum of the cells'
+  time limits of its side plus an extra (the runner groups cells into
+  sessions, the bound holds for any grouping), `SKIP_RETURN_CODE 77` as
+  the other emulator tests. The depfile names every file read; a file
+  that does not exist yet cannot be in it, so task 4.2 must glob the
+  configuration files (`tests.toml`, `*.test.toml`) with
+  `CONFIGURE_DEPENDS` too, or a new `ID.test.toml` next to an existing
+  source is not seen until the next configure.

@@ -83,6 +83,8 @@
 #              checks numbered, their table, the placeholders
 #   testjudge  the judge of the Blitz tests of that model: a cell of a case
 #              from its result file and observations, the verdict of a case
+#   testreg    the registration of those tests at build time: one ctest test
+#              per case and side, the ctest include file (tools/testreg)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -125,3 +127,4 @@ add_subdirectory(testtoml)
 add_subdirectory(testconf)
 add_subdirectory(testpp)
 add_subdirectory(testjudge)
+add_subdirectory(testreg)
