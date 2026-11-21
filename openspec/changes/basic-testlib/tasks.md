@@ -11,7 +11,7 @@
 
 - [x] 2.1 Reserve library number 81 in every `libs/variants/*/libnums.h` and the documentation of the library numbers; verify: the number check of the build and `blitzlib check` pass in a clean rebuild without warnings
 - [x] 2.2 Write the library in `libs/userlibs/` (start with the result file's name, block functions, checks with namespace and number, string check, precondition with the return through the block call, announcement of a runtime error, case end, finit with `incomplete`/`end`, buffering in Blitz mode and under Forbid, attribution of procedure checks to the running case), starting from the prototype of `spike/testlib`, writing its entries with the codec of `shared/basictest/` (`testing/basic-test-interface`); verify: host tests of the C logic (entry format, verdicts, buffering, attribution) pass with and without `-DHOST_SANITIZE=ON`
-- [ ] 2.3 Register test of the routines (the register contract plus `d2`-`d7`/`a2`) and a test that free memory is unchanged around a check; verify: both run in the emulator with `port` and `clib`
+- [x] 2.3 Register test of the routines (the register contract plus `d2`-`d7`/`a2`) and a test that free memory is unchanged around a check; verify: both run in the emulator with `port` and `clib`
 
 ## 3. Macros
 

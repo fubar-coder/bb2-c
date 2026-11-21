@@ -174,10 +174,11 @@ The library is `libs/userlibs/testlib` (user library 81, built as
 `variants/bb2-2.10/userlibs/testlib/testlib.obj`; its logic `tlcore.c`
 has the host test `testlib_core`). Between `TLBegin` and the end of the
 run it allocates and frees nothing, and every routine keeps `d2`-`d7`
-and `a2`-`a6` besides the registers of the register rule. Write the
-result file to a volume whose handler takes no memory of the Amiga for
-it (`CORPUS:out/`, `TEST:`), not to `RAM:`, or the free memory changes
-with every entry. What it writes besides the entries the routines name:
+and `a2`-`a6` besides the registers of the register rule (the free
+memory is the same before and after each routine with the result file
+on `CORPUS:out/`; a handler that keeps the file in the Amiga's memory
+may take some as it grows). What it writes besides the entries the
+routines name:
 
 * A failed precondition writes `require K broken` and `blockend`: the
   library closes the block and its call returns a second time.

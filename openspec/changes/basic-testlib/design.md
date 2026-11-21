@@ -232,3 +232,21 @@ task 3.1, not in parallel with it.
   file, in its code hunk.
 - **dos.library** is opened by `TLBegin` (with the result file) and closed
   by the finit, so the library needs no `!libs` entry of doslib.
+- **Free memory** (task 2.3): measured unchanged around every routine (also a
+  failed check, the kept path, a failed `Require` with its second return,
+  the batch init and end) with the result file on `CORPUS:out/`, the
+  runner's host directory, and also on `RAM:` for the 30 entries of the
+  test. The handler's own memory is not the library's: a handler that
+  keeps the file in the Amiga's memory takes some as the file grows (not
+  measured beyond that test); the runner writes to `CORPUS:out/`.
+- **Registers** (task 2.3): a Blitz program takes each routine's address
+  from the `JSR` of a call that never runs and calls it from assembler
+  with markers in `d3`-`d7`, `a3`, `a6` (`d2`, `a2`: markers, or the
+  argument and the string length stack), the program's `a4`/`a5`:
+  `d2`-`d7` and `a2`-`a6` are unchanged after every routine, also after a
+  check under `Forbid` (the kept path), and the second return of `TLCase`
+  after a failed `TLRequire` gives `d0` = 0 and the registers of the
+  `TLCase` call. The same with 1.95, 2.10, the port and both library
+  sets. The test programs are not in the repository: they need the
+  runner's driver (task 4.1 stages the library); they are kept with the
+  report (`~/.local/share/bb2-c-work/tr-testlib-impl/`, `m7`, `m8`).
