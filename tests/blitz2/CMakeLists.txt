@@ -14,6 +14,9 @@
 #   ID.inc      (optional) an include as text, tokenised the same way and
 #               staged as CORPUS:src/ID.inc
 # ctest blitz2_ID (- as _), label emulator, skipped (77) without Amiberry.
+# With a prev build (tests/README.md "The prev build") the source is also compiled by the
+# previous commit's compiler, its executable must be the same (compiler_prev, or
+# blitz2_ID_prev for a test with an include or runtime error checking).
 # The intrinsics (intrinsic-*.bas) check the compiled code themselves: the
 # program counts the JSR instructions (opcode $4EB9, every library call)
 # between two labels around the statement and prints the count, so the
@@ -92,6 +95,11 @@ ${incfile}")
 	math(EXPR limit "${BLITZ2_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
+	# with a prev build: the executable of the previous commit's compiler must be the same
+	# (cmake/prev.cmake prev_compile_test; not for the self tests)
+	if(NOT selftest)
+		prev_compile_test(${name} ${src} RUNTIME_ERRORS ${runtime_errors} EXTRA_VAR incfile)
+	endif()
 	set(blitz2_test_sources ${blitz2_test_sources} ${srcs} PARENT_SCOPE)
 endfunction()
 
@@ -116,3 +124,6 @@ foreach(bas IN LISTS selftests)
 	endif()
 endforeach()
 add_custom_target(blitz2_test_sources ALL DEPENDS ${blitz2_test_sources})
+# the sources of the compiler that need nothing special, compiled by the prev build (the
+# compiler's bug-orig tests, tests/bug-orig, were added before)
+prev_compile_plain_pass()
