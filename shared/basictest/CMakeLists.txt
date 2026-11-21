@@ -1,18 +1,18 @@
 # basictest - the codec of the Blitz test library's result file
 # (basictest.h, spec testing/basic-test-interface), shared like
 # shared/tokenizer: every user compiles the files itself with its own
-# options - the test library the writer, the host tools writer and reader
-# (tools/lib/basictest).  macros.bas is the macro text the runner puts into
-# every driver.
+# options - the host tools writer and reader (tools/lib/basictest), this
+# directory the writer as a library compiles it.  macros.bas is the macro
+# text of the test drivers.  The test library and the runner that use them
+# are the changes basic-testlib and basic-test-runner.
 #
 # basictest_writer_blitzlib is the writer compiled in the environment of a
 # Blitz library (cmake/BlitzLibrary.cmake: the variant's and the shadow
 # headers, BLITZLIB_OPTIONS_BEFORE, the size profile, BLITZLIB_OPTIONS_AFTER),
-# the form the test library links.  In its build step (POST_BUILD) the
+# the form the test library is to link.  In its build step (POST_BUILD) the
 # archive must not refer to a symbol it does not define (check-writer.cmake):
 # a library has no libc and no libgcc, so a division, a 32-bit multiply or
-# a memcpy the compiler emits fails the build here, before the library
-# exists.  ctest basictest_writer_check_broken: a writer that divides;
+# a memcpy the compiler emits in the writer fails the build.  ctest basictest_writer_check_broken: a writer that divides;
 # basictest_writer_check_good: the check on the archive itself.
 set(BASICTEST_CHECK ${CMAKE_CURRENT_SOURCE_DIR}/check-writer.cmake)
 

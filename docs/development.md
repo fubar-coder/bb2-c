@@ -321,8 +321,8 @@ again):
   (`basictest_writer_blitzlib`, POST_BUILD,
   `shared/basictest/check-writer.cmake`): the archive refers to no symbol
   it does not define (`nm -u`). A library has no libc and no libgcc, so a
-  division, a 32-bit multiply or a `memcpy` the compiler emits fails the
-  build before the test library exists. ctest
+  division, a 32-bit multiply or a `memcpy` the compiler emits in the
+  writer fails the build. ctest
   `basictest_writer_check_broken` (a writer that divides:
   `__udivsi3`, `__umodsi3`), `basictest_writer_check_good`.
 * the command reference of the website (`blitzlib cmdref`, in the same

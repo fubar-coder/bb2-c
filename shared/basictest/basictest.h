@@ -25,9 +25,10 @@
  * hex digits).
  *
  * Shared code like shared/tokenizer: every user compiles the files itself
- * with its own options - the test library the writer (basictest_write.c)
- * with the Blitz library conventions (cmake/BlitzLibrary.cmake), the host
- * tools both (tools/lib/basictest).  C99 on the freestanding headers: no
+ * with its own options - the host tools both (tools/lib/basictest), the
+ * build the writer (basictest_write.c) with the Blitz library conventions
+ * (cmake/BlitzLibrary.cmake), the form the test library of the change
+ * basic-testlib is to link.  C99 on the freestanding headers: no
  * libc, no libgcc (no 32-bit multiply, divide or modulo on the 68000), no
  * writable static data, no allocation - the caller gives the memory.  The
  * build compiles the writer in the library environment and refuses it if
