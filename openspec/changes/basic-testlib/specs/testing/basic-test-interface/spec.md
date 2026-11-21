@@ -101,13 +101,16 @@ it.
 ## ADDED Requirements
 
 ### Requirement: A condition is evaluated as a long
-The condition of `!Check` and `!Require` SHALL be evaluated as a long: the
-operands of a comparison in it are converted to long first. A quick value
-SHALL be checked with `!CheckQEq`, a float value with `!CheckFltNear`.
+The condition of `!Check` and `!Require` SHALL be evaluated in a Long
+context: a Quick variable or function value in it that is fetched while
+the type so far is Long (the Long parameter, or a Long left operand) is
+cut to a Long at once; Floats and literals with a fraction are not cut. A
+quick value SHALL be checked with `!CheckQEq`, a float value with
+`!CheckFltNear`.
 
 #### Scenario: A quick condition in a plain check
 - **WHEN** a source with `q.q=1.5` holds `!Check{q>1}`
-- **THEN** the check fails, since `q` is converted to the long 1 before the comparison; `!CheckQEq{q,1.5}` passes
+- **THEN** the check fails, since `q` is cut to the long 1 before the comparison; `!CheckQEq{q,1.5}` passes
 
 ### Requirement: Preconditions and failed checks of the batch init
 A failed precondition SHALL write its `require` entry and `blockend`: the

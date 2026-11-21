@@ -88,11 +88,14 @@ a string literal, under which the check is reported:
 | `!Require{COND}` | a precondition: `COND` is not 0; else the block ends at once |
 | `!ExpectError{"MESSAGE"}` | announces the runtime error the program expects next |
 
-`COND` of `!Check` and `!Require` is evaluated as a long: the operands of
-a comparison in it are converted to long first, so with `q.q=1.5`
-`!Check{q>1}` fails (1>1). Check a quick value with `!CheckQEq` and a
-float value with `!CheckFltNear`; their routines take quick and float
-parameters, so their values are evaluated in that type.
+`COND` of `!Check` and `!Require` is evaluated in a Long context: a Quick
+variable or function value fetched while the type so far is Long (the
+Long parameter, or a Long left operand) is cut to a Long at once; Floats
+and literals with a fraction are not cut. So with `q.q=1.5`
+`!Check{q>1}` fails (1>1), as `If l<q` with `l.l=1` is false. Check a
+quick value with `!CheckQEq` and a float value with `!CheckFltNear`;
+their routines take quick and float parameters, so their values are
+evaluated in that type.
 
 ```
 !TestBatchInit

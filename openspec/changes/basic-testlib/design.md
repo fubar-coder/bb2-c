@@ -230,8 +230,10 @@ task 3.1, not in parallel with it.
   not fit has both values cut (halved until it fits), its verdict is that
   of the whole strings. The state is about 2.1 KB of the library's 7.5 KB
   file, in its code hunk.
-- **dos.library** is opened by `TLBegin` (with the result file) and closed
-  by the finit, so the library needs no `!libs` entry of doslib.
+- **dos.library** and **mathffp.library** (for `TLCheckFlt`) are opened
+  by `TLBegin` (with the result file) and closed by the finit, so the
+  library needs no `!libs` entry and no routine calls a library before
+  the start.
 - **Free memory** (task 2.3): measured unchanged around every routine (also a
   failed check, the kept path, a failed `Require` with its second return,
   the batch init and end) with the result file on `CORPUS:out/`, the
@@ -256,17 +258,43 @@ task 3.1, not in parallel with it.
   check in a procedure called by two cases, string checks with a 0 byte,
   TAB and `\`) compiles and gives the same result file with 1.95, 2.10,
   the port and both library sets (`tr-testlib-impl/m1`).
-- **A condition is evaluated as a long** (task 3.1, the same in 1.95,
-  2.10, the port and with both library sets): a comparison gives -1 for
-  true and 0 for false (long, word, byte and string operands), so
-  the `!Check` mapping holds. But the operands of a comparison take the
-  type of where the result goes: in `TLCheck K,-1,(COND)<>0` and in
-  `r.l=(q>1)` a quick or float operand is converted to a long first, so
-  `!Check{K,q>1}` with `q.q=1.5` fails (1>1), and `!Check{K,q>1.4}` too,
-  while `If q>1` is true. A check of a quick or float condition has to
-  compare values whose long conversion keeps the order (or the author
-  compares `Int(q*100)` and the like); a rule for `tests/README.md`
-  (task 4.2).
+- **A Quick operand in a Long context is cut** (task 3.1, the same in
+  1.95, 2.10, the port and with both library sets): a comparison gives -1
+  for true and 0 for false (long, word, byte and string operands), so
+  the `!Check` mapping holds. But in `TLCheck K,-1,(COND)<>0`, as in
+  `r.l=(q>1)`, the condition is in a Long context: `!Check{K,q>1}` with
+  `q.q=1.5` fails (1>1), and `!Check{K,q>1.4}` too, while `If q>1` is
+  true. The rule, measured by the analyst
+  (`~/.local/share/bb2-c-work/tr-compare-type-report.md`; `varcont`,
+  `blitz2.s:10491-10498`, `programs/blitz2/src/eval.c:2893`): a Quick
+  variable or function value fetched while the type so far is Long (a
+  Long destination or parameter, or a Long left operand) is cut to Long
+  at once; Floats and literals with a fraction are not cut (so `If l<q`
+  with `l.l=1` is false too). Whether that is an original bug is open
+  with the user; the compiler is unchanged.
+- **Typed checks** (decided 2026-11-21, `task-decisions.md`, entry
+  "basic-testlib: typed checks, findings of implementer A"; tasks
+  5.1-5.3): `!CheckQEq{ACTUAL,EXPECTED}`
+  (quick, exact; `TLCheckQ`, entry `checkq`) and
+  `!CheckFltNear{ACTUAL,EXPECTED,DELTA}` (float, ok if
+  |ACTUAL-EXPECTED| <= DELTA; `TLCheckFlt` with mathffp.library's `SPSub`
+  and `SPAbs`, entry `checkflt`); the entries hold the raw 32 bits (the
+  16.16 quick, the FFP float), so no conversion happens in the library.
+  The parameter types of the routines set the evaluation type of the
+  macro's arguments. `!Check` stays as it is.
+- **Author rule** (for `tests/README.md` and task 4.2): the condition of
+  `!Check` and `!Require` is a Long context, so a Quick operand is cut;
+  check a quick value with `!CheckQEq` and a float value with
+  `!CheckFltNear`, never a quick or float comparison with `!Check`.
+- **The six findings above are accepted** (decided 2026-11-21,
+  `task-decisions.md`, the same entry), with one
+  addition: `checkstr` gets a last field, `-` for complete values or
+  `cut` for values shortened to fit the 512-byte line. The findings that
+  are behaviour are now in the spec: the delta of
+  `testing/basic-test-interface` in this change (preconditions and the
+  batch init, entries of calls out of order, quick and float values and
+  the length of a line) and `testing/basic-testlib` ("Kept entries are
+  bounded").
 - **The check of the macro names** (task 3.2) runs in the step that
   copies the macro text next to the library
   (`variants/bb2-2.10/userlibs/testlib/macros.bas`, the CMake variable
