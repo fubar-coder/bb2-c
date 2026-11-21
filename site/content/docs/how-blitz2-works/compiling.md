@@ -77,6 +77,50 @@ with **Runtime Error Debugger** on and once with it off, and compare the
 two file sizes in the Shell with `List`.
 {{< /callout >}}
 
+## The layout of the executable
+
+An executable of blitz2 has exactly one hunk, a code hunk, with
+everything in it: your program, the libraries and the data. It is the
+compiler's block of memory written out as it is, part after part, so its
+layout follows the buffers of the compiler options:
+
+```mermaid
+flowchart TB
+  subgraph H["The code hunk"]
+    direction TB
+    subgraph P["Program: Object Buffer"]
+      direction TB
+      J["1. call of the start routines"]
+      Y["3. your program"]
+      E["4. the end routines,<br/>back to AmigaOS"]
+      I["2. the start routines"]
+      J ~~~ Y ~~~ E ~~~ I
+    end
+    L["the library code<br/>Libs Buffer"]
+    S["the system data<br/>System Buffer"]
+    D["the Data values<br/>Data Buffer"]
+    P ~~~ L ~~~ S ~~~ D
+  end
+```
+
+The libraries lie in the order of their first use; the system data
+holds the string literals and tables, and the last part the values of
+the `Data` statements. The numbers give the order in which the parts of
+the program part run. The program starts
+at the top of the hunk with a call of the start routines, which come
+back to your first line. When your program ends, at its last line or at
+an `End` anywhere, it goes on with the end routines, which return to
+AmigaOS. If no library in the program has a start routine, the call is
+left out and the hunk starts with your first line.
+
+Around the hunk the file has what AmigaOS needs to load it: the header
+in front, and behind the code the table of every place that holds an
+address, which AmigaOS corrects when it loads the program. With the
+option **Create Debug Info for Executable Files** on, the names of the
+labels follow as symbols for a debugger. In AB3 mode the directives
+`BSS` and `Chip` can add a hunk of their own each
+([Directives]({{< relref "/docs/ab3-compared/directives" >}})).
+
 ## One pass, one block, one hunk
 
 {{% details title="The inner layout, for library authors" closed="true" %}}
@@ -102,23 +146,7 @@ can start the program right in the block, and why writing an executable
 is simple: the compiler turns each listed address into an offset from the
 start and writes the list as the relocation table of the file.
 
-**One code hunk.** The executable has exactly one hunk, a code hunk, with
-everything in it:
-
-```
-start of the hunk
-  jsr to the start routines
-  your program
-  End: jump to the end routines
-  the end routines of all libraries, then return to AmigaOS
-  the start routines of all libraries
-  the library code, in the order of first use
-  the system data (string literals)
-  the data of the Data statements
-end of the hunk
-```
-
-There is no data or BSS hunk. Variables and the string work area are
+**One code hunk.** There is no data or BSS hunk. Variables and the string work area are
 allocated when the program starts: the first start routine to run is the
 one of the variables library, which allocates the memory for all global
 variables and points register a5 into it. Global variables are then
