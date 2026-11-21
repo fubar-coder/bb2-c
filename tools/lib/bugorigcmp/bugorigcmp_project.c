@@ -59,8 +59,11 @@ static size_t trimmed(const char *p, size_t *full)
     return n;
 }
 
-/* the issue of the line "; @fixed #N" of source: N, 0 = none, -2 = broken */
-static long fixed_issue(const char *source, const char *path, char *err, size_t errlen)
+/* the issue of the line "; @fixed #N" of source: N, 0 = none, -2 = broken.
+   A TED script may name the pair Cc behind it: "; @fixed #N Cc" (fixed
+   in the port's pair only, tests/README.md) */
+static long fixed_issue(const char *source, int ted, const char *path, char *err,
+                        size_t errlen)
 {
     static const char tag[] = "; @fixed";
     const char *p = source;
@@ -78,6 +81,8 @@ static long fixed_issue(const char *source, const char *path, char *err, size_t 
             if (k + 2 < n && p[k] == ' ' && p[k + 1] == '#' && p[k + 2] >= '1' && p[k + 2] <= '9')
                 for (k += 2; k < n && p[k] >= '0' && p[k] <= '9' && v < 100000000; k++)
                     v = 10 * v + (p[k] - '0');
+            if (ted && k + 3 == n && !memcmp(p + k, " Cc", 3))
+                k = n;
             if (!v || k != n) {
                 snprintf(err, errlen, "%s:%u: not \"; @fixed #N\"", path, no);
                 return -2;
@@ -139,7 +144,7 @@ int bugorigcmp_project_test(FILE *out, const char *id, const char *source, int t
         return -2;
     }
     snprintf(sp, sizeof sp, "%s.%s", path, ted ? "drv" : "bas");
-    if ((issue = fixed_issue(source, sp, err, errlen)) < 0)
+    if ((issue = fixed_issue(source, ted, sp, err, errlen)) < 0)
         return -2;
     if (ted) {
         char *x = ted_expects(source);

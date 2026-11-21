@@ -185,6 +185,17 @@ TEST_CASE("bugorigcmp: project", "[bugorigcmp]")
     CHECK(r == -2 && strstr(err, "area/x.bas has no x.expect"));
     free(project("x", "; @fixed 7\n", 0, expect_txt, NULL, &r));
     CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    /* a TED script fixed in the port's pair only ("; @fixed #N Cc"); only
+       Cc, and only in a TED script */
+    t = project("ted-x", "; @fixed #12 Cc\n; @expect stdout \"rc=0\"\nwait exit\n", 1, NULL,
+                "# TED 1.1\n[state]\nOK\n[problems]\nstdout: rc=5\n", &r);
+    CHECK(r == 0);
+    CHECK(t && strstr(t, "ted-x|expect||1 [fixed #12]\t"));
+    free(t);
+    free(project("ted-x", "; @fixed #12 C5\nwait exit\n", 1, NULL, "[state]\nOK\n", &r));
+    CHECK(r == -2 && strstr(err, "area/x.drv:1: not \"; @fixed #N\""));
+    free(project("x", "; @fixed #7 Cc\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
     free(project("x", "; @fixed #7\n; @fixed #8\n", 0, expect_txt, NULL, &r));
     CHECK(r == -2 && strstr(err, "area/x.bas:2: @fixed twice"));
     free(project("x", blitz_src, 0, "junk\n", NULL, &r));
