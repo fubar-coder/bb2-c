@@ -185,10 +185,24 @@ and must answer it when it ends. wbstartuplib's start routine takes that
 message, makes the program's drawer the current directory and collects
 the icons given with the program; its end routine answers the message.
 No other library takes the message, so a program without
-wbstartuplib leaves it unanswered. What happens then is not tested for
-the port: the Blitz Basic 2 manual warns that such a program "will
-promptly crash" when it is started from the Workbench. A program that uses one of the commands of
-cliargslib has the library anyway and needs no `WBStartup`.
+wbstartuplib leaves it unanswered. The Blitz Basic 2 manual warns that
+such a program "will promptly crash" when it is started from the
+Workbench.
+
+What the port's programs do was observed in the emulator, an Amiga 1200
+with Kickstart 3.1, with the program started the way the Workbench
+starts one; a real Workbench was not tested. There the result depends
+on what the program does:
+
+* A program that calls no DOS function ends normally. It does not crash,
+  and the Workbench's message stays unanswered.
+* A program that calls a DOS function which has to wait for an answer
+  from the file system, such as `Lock_`, never returns from that call.
+  The program hangs and does not end.
+
+So every program that may be started from the Workbench needs
+`WBStartup`. A program that uses one of the commands of cliargslib has
+the library anyway and needs no `WBStartup`.
 
 wbstartuplib's start routine returns a long value, the address of the
 argument list. The program keeps it in a global variable, so the
