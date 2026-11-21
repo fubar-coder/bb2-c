@@ -653,6 +653,24 @@ function(ab3_cli name config cases)
 	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
+	# with a prev build: the block's cases compiled by the previous commit's blitz2-ab3 as well,
+	# the executables and the compiler's output must be the same (cli-prev.cmake, ab3_cli_prev_N)
+	if(PREV_REQUESTED AND config STREQUAL "exe" AND name MATCHES "^ab3_cli_[0-9]+$")
+		string(REGEX REPLACE "^ab3_cli_" "ab3_cli_prev_" prev_name ${name})
+		set(prev_intended "${PREV_INTENDED}")
+		string(REPLACE ";" "$<SEMICOLON>" prev_intended "${prev_intended}")
+		add_test(NAME ${prev_name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+			-DRESULTS=${RESULTS} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
+			-DCASES=${work}.cases -DBLITZ2_DIR=${BLITZ2_DIR} -DPREV_BLITZ2_DIR=${PREV_BLITZ2_DIR}
+			-DAB3=${AB3_V314} -DSOURCES=${sources}
+			-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj
+			-DWORK=${work}-prev -DTIMEOUT=${AB3_CLI_TIMEOUT} "-DINTENDED=${prev_intended}"
+			-P ${CMAKE_CURRENT_SOURCE_DIR}/cli-prev.cmake)
+		# two sessions at the same time
+		math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+		set_tests_properties(${prev_name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+			TIMEOUT ${limit})
+	endif()
 endfunction()
 # ab3_cli_blocks(NAME CONFIG CASES OUT [SAME LIST] [HUNKS |NAME=LAYOUT...]): the
 # cases of CASES split into blocks of at most AB3_CLI_BLOCK cases, spread
@@ -751,12 +769,40 @@ function(ab3_cli_blocks name config cases out)
 	set(${out} ${tests} PARENT_SCOPE)
 endfunction()
 ab3_cli_blocks(ab3_cli exe "${cli_exe_cases}" cli_exe_tests SAME ${cli_exe_same} HUNKS "${cli_exe_hunks}")
+# a PREV_INTENDED entry ab3_cli_prev:CASE names a case of ab3_cli (a block judges only its own
+# cases, so a typo would never be stale)
+if(PREV_REQUESTED)
+	foreach(e IN LISTS PREV_INTENDED)
+		if(e MATCHES "^ab3_cli_prev:(.+)$")
+			if(NOT "${cli_exe_cases}" MATCHES "(^|\n)${CMAKE_MATCH_1}\\|")
+				message(FATAL_ERROR "PREV_INTENDED entry \"${e}\": ${CMAKE_MATCH_1} is no case of ab3_cli")
+			endif()
+		endif()
+	endforeach()
+endif()
 ab3_cli_blocks(ab3_cli_ref ref "${cli_ref_cases}" cli_ref_tests SAME ${cli_ref_same} HUNKS "${cli_ref_hunks}")
 # the check itself: a wrong expect file must fail, in both configurations
 # (broken.expect: atoi's output with one digit changed)
 set(broken "atoi|Blitz3|atoi.ab3||${cli_dir}/broken.expect\n")
 ab3_cli(ab3_cli_broken exe "${broken}")
 ab3_cli(ab3_cli_ref_broken ref "${broken}")
+# cli-prev.cmake with broken input on one case (atoi; cli-prev-test.cmake): no prev build needed.
+# same: nothing differs; differs: prev's blitz2-ab3 is another program, the case fails and the
+# entry to quote is named; intended: the same difference listed; stale: nothing differs and the
+# case is listed
+foreach(mode same differs intended stale)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/ab3_cli_prev_${mode})
+	file(WRITE ${work}.cases "atoi|Blitz3|atoi.ab3||${cli_dir}/atoi.expect\n")
+	set(sources ${cli_sources} ${cli_made} ${ab3_dev_sources})
+	string(REPLACE ";" "$<SEMICOLON>" sources "${sources}")
+	add_test(NAME ab3_cli_prev_${mode} COMMAND ${CMAKE_COMMAND} -DMODE=${mode} -DAMIGA_RUN=${AMIGA_RUN}
+		-DRESULTS=${RESULTS} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
+		-DCASES=${work}.cases -DBLITZ2_DIR=${BLITZ2_DIR} -DAB3=${AB3_V314} -DSOURCES=${sources}
+		-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj -DWORK=${work}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/cli-prev-test.cmake)
+	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+	set_tests_properties(ab3_cli_prev_${mode} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+endforeach()
 foreach(t ab3_cli_broken ab3_cli_ref_broken)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
 		"FAIL atoi: results match: [^\n]*expect line 14: \"12325\", output line [0-9]+: \"12324\"")
