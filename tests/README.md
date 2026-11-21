@@ -1451,7 +1451,7 @@ cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`, `bchunky`, `bmapshapes`, `bsnow`, `bzone`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`, `bchunky`, `bmapshapes`, `bsnow`, `bzone`, `bcmp`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -1529,6 +1529,11 @@ cycle values do not depend on the host's load or on what else runs
   rectangles and 4 circles in its first 16 of 256 zones, a point in none
   of them, in a rectangle and in a circle, and `ZoneTest` of the 16 zones
   and of one zone; the A500's 68000 runs the library's 68000 mode.
+  `bcmp` measures no library but the code blitz2 writes for comparisons
+  with a default-typed (Quick) variable (a Long against a Quick in both
+  orders, `If n/2=Int(n/2)`, a constant on the right, a `While`
+  condition; #1177): its targets are the values of the original's code,
+  measured with the prev build (`budgets.txt`), not by `perf-original`.
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the

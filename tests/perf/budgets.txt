@@ -369,6 +369,14 @@
 # circle1miss 458.6/460.6 (the compare with the count saves the SUBQ);
 # zonemiss 12154.1/12153.1, zonerect 284.6/284.1, zonecircle
 # 1921.2/1921.1 unchanged; the five ZoneTest budgets lowered.
+# bcmp (new with the fix of #1177, 2026-11-21) measures no library but the
+# code blitz2 writes for a comparison with a default-typed (Quick)
+# variable; its TARGET is the value of the original's code (the prev build,
+# whose code for these comparisons is the CD's 2.10), with values for which
+# both take the same branch. Two runs: ltq 108.5/108.5 (original 107.0),
+# qgtl 111.0/111.0 (105.0), leqq 115.0/115.0 (107.0), inteq 1162.0/1162.0
+# (1150.0), qgtconst 95.0/95.0 (90.5), lgtconst 91.0/91.0 (91.0),
+# whilelq 20.5/20.5 (16.5).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -395,6 +403,14 @@ bchunky.raycast10             583      561.7  RaycastSky 0,100,10,37,tx (height 
 bchunky.raycast100           4141     4090.7  RaycastSky 0,100,100,37,tx (height 100)
 bchunky.raycast200           8100     8006.7  RaycastSky 0,100,200,37,tx (height 200)
 bchunky.c2p320            6304549  6366624.2  ChunkyToPlanar 0,0 (320 x 256 chunky into 320 x 256 x 8, contiguous planes)
+bcmp.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
+bcmp.ltq                      113      107.0  If cnt<x Then c=1 (Long < Quick)
+bcmp.qgtl                     116      105.0  If x>cnt Then c=1 (Quick > Long)
+bcmp.leqq                     120      107.0  If cq=y Then c=1 (Long = Quick, no fraction)
+bcmp.inteq                   1177     1150.0  If n/2=Int(n/2) Then c=1 (n=8)
+bcmp.qgtconst                  99       90.5  If x>1 Then c=1
+bcmp.lgtconst                  95       91.0  If l>1 Then c=1 (Long > constant)
+bcmp.whilelq                   24       16.5  While cnt<w : cnt+1 : Wend (per pass)
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
