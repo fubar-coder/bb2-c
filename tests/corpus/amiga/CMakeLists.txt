@@ -22,10 +22,15 @@ add_executable(reqclose reqtrap.c)
 target_compile_definitions(reqclose PRIVATE REQCLOSE)
 add_executable(reqclosetest reqclosetest.c)
 add_executable(rcput rcput.c)
-foreach(t reqtrap reqclose reqclosetest rcput)
+# patchblocktest: proves patchblock.h (the patches reqtrap and teddrive
+# use), run by the tests patchblock and patchblock_broken
+add_executable(patchblocktest patchblocktest.c)
+foreach(t reqtrap reqclose reqclosetest rcput patchblocktest)
 	target_compile_options(${t} PRIVATE -Wall -Wno-pointer-sign)
 	set_target_properties(${t} PROPERTIES SUFFIX "")
 endforeach()
+set_source_files_properties(reqtrap.c patchblocktest.c PROPERTIES
+	OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/patchblock.h)
 foreach(t reqtrap rcput)
 	# libnix13 in front of the default libnix20: what it has comes from it
 	# (-mcrt=nix13 would select it alone, but cannot go with -noixemul of

@@ -14,9 +14,10 @@
  *
  * While the command runs, intuition's CloseWindow is patched (a window
  * opened at the address of a closed one counts as new) and dos's Open
- * (did TED open the file argument as it is, #340).  The patches are
- * removed at the end; a call still inside CloseWindow then returns into
- * teddrive, which waits 0.2 s before it ends (not a guarantee, TODO.md).
+ * (did TED open the file argument as it is, #340).  The stubs of the
+ * patches and their data are in a block that is never freed
+ * (patchblock.h); the patches are removed at the end, and a call still
+ * inside one is waited for.
  *
  * Run it under reqtrap (tests/corpus/amiga), which answers AutoRequest and
  * EasyRequestArgs at once (DOS requesters, alerts):
@@ -226,29 +227,16 @@ static int td_nw, td_seq;
 /* CloseWindow is patched while the command runs: the closed windows go to
    a ring, so that a new window at the address of a closed one (with the
    same title pointer - blitz2's requesters all have "") is seen as new.
-   td_ncl counts the closes; entry k is td_cl[k % TD_NCL]. */
-#define TD_NCL 16
-struct Window *td_cl[TD_NCL];
-volatile ULONG td_ncl;
-APTR td_oldclose;
+   The ring is in the block of the stub (patchblock.h): td_close->ncl counts
+   the closes; entry k is td_close->ring[k % TD_NCL]. */
+#define PB_CLOSE
+#define PB_OPEN
+#include "patchblock.h"
+#define TD_NCL PB_NRING
+static struct pbclose *td_close;
+static struct pbhead *td_open;
+#define td_ncl (td_close->ncl)
 static ULONG td_sawcl;          /* closes handled by td_scan */
-__asm__(
-"   .text\n"
-"   .even\n"
-"_td_closepatch:\n"            /* CloseWindow(a0 window): first closed, then */
-"   move.l  a0,-(sp)\n"           /* entered (td_scan must not find it in */
-"   move.l  _td_oldclose,a1\n"    /* the list any more) */
-"   jsr     (a1)\n"
-"   move.l  (sp)+,a0\n"
-"   move.l  _td_ncl,d0\n"
-"   and.w   #15,d0\n"
-"   lsl.w   #2,d0\n"
-"   lea     _td_cl,a1\n"
-"   move.l  a0,0(a1,d0.w)\n"
-"   addq.l  #1,_td_ncl\n"
-"   rts\n"
-);
-void td_closepatch(void);
 
 /* Open is patched too: did TED open the file argument as it is, or split
    wrongly by a0toname (#340: it compares the caller's d0, blitz2's LoadSeg
@@ -257,20 +245,6 @@ void td_closepatch(void);
 static const char *td_farg;     /* the last argument, NULL: none */
 static char td_fsplit[256];     /* its wrong split */
 volatile int td_fseen;          /* 1: opened as it is, 2: split wrongly */
-APTR td_oldopen;
-__asm__(
-"   .text\n"
-"   .even\n"
-"_td_openpatch:\n"             /* Open(d1 name, d2 mode) */
-"   movem.l d0-d1/a0-a1,-(sp)\n"
-"   move.l  d1,-(sp)\n"
-"   jsr     _td_openc\n"
-"   addq.l  #4,sp\n"
-"   movem.l (sp)+,d0-d1/a0-a1\n"
-"   move.l  _td_oldopen,-(sp)\n"
-"   rts\n"
-);
-void td_openpatch(void);
 void td_openc(const char *name)
 {
     if (!td_farg || !name) return;
@@ -365,7 +339,7 @@ static void td_scan(void)
         if (n - td_sawcl > TD_NCL) td_sawcl = n - TD_NCL;
         for (k = td_sawcl; k != n; k++)
             for (i = 0; i < td_nw; i++)
-                if (td_w[i].w == td_cl[k % TD_NCL] && td_w[i].since <= k)
+                if (td_w[i].w == td_close->ring[k % TD_NCL] && td_w[i].since <= k)
                     td_w[i].title = (UBYTE *)-1;    /* closed: below */
         td_sawcl = n;
     }
@@ -1357,31 +1331,37 @@ int main(int argc, char **argv)
     for (s = IntuitionBase->FirstScreen; s && td_noldscr < TD_MAXSCR; s = s->NextScreen)
         td_oldscr[td_noldscr++] = s;
     UnlockIBase(lock);
+    td_close = (struct pbclose *)PB_INSTALL((struct Library *)IntuitionBase, -72, close,
+                                            sizeof(struct pbclose), 0);
+    td_open = PB_INSTALL((struct Library *)DOSBase, -30, open, sizeof(struct pbhead), td_openc);
+    if (!td_close || !td_open) {
+        if (td_open) PB_REMOVE(td_open, (struct Library *)DOSBase, -30, open, 1);
+        if (td_close) PB_REMOVE(&td_close->h, (struct Library *)IntuitionBase, -72, close, 1);
+        td_log("FATAL: no stubs for the patches", 0);
+        td_writefile("result", "FAIL step 0 no stubs for the patches\n");
+        return 20;
+    }
     td_parent = FindTask(NULL);
     td_donesig = AllocSignal(-1);
     if (td_donesig < 0
         || !CreateNewProcTags(NP_Entry, (ULONG)td_main, NP_Name, (ULONG)"teddrive",
                               NP_Priority, 1, NP_StackSize, 16384, TAG_END)) {
+        PB_REMOVE(td_open, (struct Library *)DOSBase, -30, open, 1);
+        PB_REMOVE(&td_close->h, (struct Library *)IntuitionBase, -72, close, 1);
         td_log("FATAL: no driver process", 0);
         td_writefile("result", "FAIL step 0 no driver process\n");
         return 20;
     }
-    Forbid();
-    td_oldclose = SetFunction((struct Library *)IntuitionBase, -72, (APTR)td_closepatch);
-    td_oldopen = SetFunction((struct Library *)DOSBase, -30, (APTR)td_openpatch);
-    CacheClearU();
-    Permit();
     rc = SystemTags((CONST_STRPTR)td_cmd, SYS_Input, Input(), SYS_Output, out, SYS_Asynch, FALSE,
                     NP_CloseInput, FALSE, NP_CloseOutput, FALSE, TAG_END);
     td_rc = rc;
     td_exited = 1;
     Wait(1UL << td_donesig);        /* the driver ends (all its waits are bounded) */
-    Forbid();
-    SetFunction((struct Library *)IntuitionBase, -72, td_oldclose);
-    SetFunction((struct Library *)DOSBase, -30, td_oldopen);
-    CacheClearU();
-    Permit();
-    Delay(10);                      /* a CloseWindow still inside returns to us */
+    /* a call still inside a stub (a CloseWindow, a handler) is waited for;
+       the stubs and the ring stay in their block */
+    if (PB_REMOVE(&td_close->h, (struct Library *)IntuitionBase, -72, close, 1)
+        || PB_REMOVE(td_open, (struct Library *)DOSBase, -30, open, 1))
+        td_log("WARNING: a call is still inside a patch", 0);
     FreeSignal(td_donesig);
     td_log("teddrive end", 0);
     CloseLibrary(KeymapBase);

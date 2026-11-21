@@ -626,3 +626,21 @@ corpus_expect_selftest(corpus_originals_exe_differs 0
 corpus_expect_selftest(corpus_originals_exe_differs_output 1
 	"ref: OUTPUT DIFFERS; port: exe differs \\(informational: [0-9a-f]+, [0-9a-f]+\\), OUTPUT DIFFERS\n[^\n]*wrong-out/t01_int.out line 1[^\n]*\n[^\n]*wrong-out/t01_int.out line 1[^\n]*\n1 checks, 1 with differences"
 	wrong-out ref-port-clib originals)
+
+# patchblocktest (tests/corpus/amiga/patchblock.h, the patches of reqtrap and
+# teddrive): a patch removed while another task is still inside it; the
+# removal waits for that task.  patchblock_broken: the same with a removal
+# that does not wait (the argument nowait) must be reported as wrong
+math(EXPR limit "120 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME patchblock COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:patchblocktest> -DWANT_RC=0
+	"-DREGEX=inside: expected - count 1\n[^\n]*removed: expected - count 0\n[^\n]*helper: expected\n[^\n]*ring: expected\n[^\n]*vector: expected\n[^\n]*patchblocktest: OK"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/patchblock
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/patchblock-test.cmake -P ${WITH_WORKDIR})
+add_test(NAME patchblock_broken COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:patchblocktest> -DARGS=nowait -DWANT_RC=5
+	"-DREGEX=removed: MISMATCH - count 1\n[^\n]*helper: expected\n[^\n]*ring: expected\n[^\n]*vector: expected\n[^\n]*patchblocktest: FAIL"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/patchblock_broken
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/patchblock-test.cmake -P ${WITH_WORKDIR})
+set_tests_properties(patchblock patchblock_broken PROPERTIES LABELS emulator
+	SKIP_RETURN_CODE 77 TIMEOUT ${limit})

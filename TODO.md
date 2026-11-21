@@ -624,14 +624,17 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     window opened at the address of a closed one as new (66fa3db).
     Orphaned Amiberry processes of a crashed runner: fixed with
     PR_SET_PDEATHSIG (1651778).
-  - *Deferred (user decision 2026-10-29):* removing a patch is racy.
-    teddrive's CloseWindow patch calls the original with `jsr`: a task
-    still inside it when teddrive removes the patch and ends returns into
-    freed code; the Delay of 0.2 s only narrows that. Also with a `jmp`
-    patch (teddrive's Open, reqtrap's AutoRequest/EasyRequestArgs) a task
-    interrupted between the library vector and the stub runs into freed
-    code. Fix: stub and its data in an AllocMem block that is never freed
-    (about 100 bytes per run), teddrive reads the data through a pointer.
+  - *Solved (2026-11-21, #339):* removing a patch was racy: teddrive's
+    CloseWindow patch called the original with `jsr`, and a task still
+    inside it when teddrive removed the patch and ended returned into
+    freed code; also with a `jmp` patch (teddrive's Open, reqtrap's
+    AutoRequest/EasyRequestArgs) a task interrupted between the library
+    vector and the stub ran into freed code. Now the stubs and their data
+    are in an AllocMem block that is never freed (about 100 bytes per
+    run; `tests/corpus/amiga/patchblock.h`), teddrive reads the ring of
+    closed windows through a pointer, every call counts itself in and the
+    removal waits for the calls inside (tests `patchblock`,
+    `patchblock_broken`).
   - *Runner features:* done: program arguments (`runargs=`, #107),
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,

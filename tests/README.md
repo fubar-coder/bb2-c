@@ -1699,6 +1699,22 @@ blitz2-c starts there since #936 (linked with libnix13). A crash on Kickstart 1.
 "Software error - task held", which reqtrap answers with Cancel: a
 Guru that waits for the mouse, the session runs into its timeout.
 
+**The patches of reqtrap and teddrive** (`tests/corpus/amiga/patchblock.h`,
+one source for both). Both patch system functions for the time of a run
+(AutoRequest and EasyRequestArgs; CloseWindow and dos Open), and a task
+that is inside a patch when it is removed must not run into the freed
+memory of the tool. The stub of every patch and the data it uses (the
+ring of closed windows teddrive reads) are therefore copied into an
+`AllocMem` block that is never freed (about 100 bytes per run); every call
+counts itself in before it looks at the stub's `active` flag, and the
+removal clears `active`, restores the vector and waits (up to 10 s) for the
+calls still inside; later calls jump to the original function. Tests:
+`patchblock` (label `emulator`, `patchblocktest`: a helper process of a
+higher priority is inside a patched `Delay` while the main process removes
+the patch; the removal must wait for it, and the helper returns into the
+stub) and `patchblock_broken` (the same with a removal that does not wait:
+the check "removed" must fail, exit status 5).
+
 A floppy disk: `; @pass floppy=N|SRC` puts the image SRC into drive DFN
 (0 to 3, once per drive; the other drives stay empty, the templates have
 one drive, DF0, and the key switches DF1 to DF3 on). Tests of

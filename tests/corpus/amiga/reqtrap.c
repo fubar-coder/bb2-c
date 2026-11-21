@@ -33,8 +33,13 @@
 #include <proto/intuition.h>
 #include <string.h>
 
+/* the patches: stubs in a block that is never freed (patchblock.h) */
+#define PB_AUTO
+#define PB_EASY
+#include "patchblock.h"
+
 struct IntuitionBase *IntuitionBase;
-static APTR old_auto, old_easy;
+static struct pbhead *pb_auto, *pb_easy;
 static BPTR out;
 
 static void put(const char *s) { if (s) Write(out, (APTR)s, strlen(s)); }
@@ -47,33 +52,6 @@ static void puttexts(struct IntuiText *t)
 {
     for (; t; t = t->NextText) { put(" \""); put((const char *)t->IText); put("\""); }
 }
-
-/* AutoRequest(a0 win, a1 body, a2 pos, a3 neg, d0, d1, d2 w, d3 h) */
-__asm__(
-"   .text\n"
-"   .even\n"
-"_auto_patch:\n"
-"   movem.l d0-d1/a0-a1,-(sp)\n"
-"   move.l  a3,-(sp)\n"
-"   move.l  a2,-(sp)\n"
-"   move.l  a1,-(sp)\n"
-"   jsr     _auto_c\n"
-"   lea     12(sp),sp\n"
-"   movem.l (sp)+,d0-d1/a0-a1\n"
-"   moveq   #0,d0\n"                    /* FALSE = negative gadget */
-"   rts\n"
-/* EasyRequestArgs(a0 win, a1 easy, a2 idcmp, a3 args) */
-"   .even\n"
-"_easy_patch:\n"
-"   movem.l d1/a0-a1,-(sp)\n"
-"   move.l  a1,-(sp)\n"
-"   jsr     _easy_c\n"
-"   addq.l  #4,sp\n"
-"   movem.l (sp)+,d1/a0-a1\n"
-"   moveq   #0,d0\n"                    /* 0 = rightmost gadget */
-"   rts\n"
-);
-void auto_patch(void), easy_patch(void);
 
 /* LONG call_seg(APTR entry, const char *args, LONG len, ULONG stack): a
    command's entry as the 1.3 CLI calls it - d0 = len, a0 = args, the
@@ -186,13 +164,15 @@ int main(int argc, char **argv)
     IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", v36 ? 36 : 33);
     if (!IntuitionBase) return 20;
     v36 = v36 && IntuitionBase->LibNode.lib_Version >= 36;
-    Forbid();
-    old_auto = SetFunction((struct Library *)IntuitionBase, -348, (APTR)auto_patch);
-    if (v36) {
-        old_easy = SetFunction((struct Library *)IntuitionBase, -588, (APTR)easy_patch);
-        CacheClearU();
+    pb_auto = PB_INSTALL((struct Library *)IntuitionBase, -348, auto, sizeof(struct pbhead), auto_c);
+    if (v36)
+        pb_easy = PB_INSTALL((struct Library *)IntuitionBase, -588, easy, sizeof(struct pbhead), easy_c);
+    if (!pb_auto || (v36 && !pb_easy)) {
+        if (pb_easy) PB_REMOVE(pb_easy, (struct Library *)IntuitionBase, -588, easy, 1);
+        if (pb_auto) PB_REMOVE(pb_auto, (struct Library *)IntuitionBase, -348, auto, 1);
+        CloseLibrary((struct Library *)IntuitionBase);
+        return 20;
     }
-    Permit();
 #ifdef REQCLOSE
     rc_start(cmd);
 #endif
@@ -204,13 +184,9 @@ int main(int argc, char **argv)
 #ifdef REQCLOSE
     rc_end();
 #endif
-    Forbid();
-    SetFunction((struct Library *)IntuitionBase, -348, old_auto);
-    if (v36) {
-        SetFunction((struct Library *)IntuitionBase, -588, old_easy);
-        CacheClearU();
-    }
-    Permit();
+    /* a call still inside a stub is waited for (patchblock.h) */
+    PB_REMOVE(pb_auto, (struct Library *)IntuitionBase, -348, auto, 1);
+    if (v36) PB_REMOVE(pb_easy, (struct Library *)IntuitionBase, -588, easy, 1);
     CloseLibrary((struct Library *)IntuitionBase);
     return rc < 0 ? 20 : rc;
 }

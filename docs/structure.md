@@ -66,7 +66,9 @@ tests/ted-ab/                TED A/B: original TED against TED-C in the
                              screen dumps, runner/README.md); host/: tests
 tests/corpus/                corpus: blitz2-c against blitz2 2.10 in the
                              emulator; amiga/: tedstub (blitz2:ted for
-                             batch runs), reqtrap, reqclose, reqclosetest
+                             batch runs), reqtrap, reqclose, reqclosetest,
+                             patchblocktest (patchblock.h: the patches of
+                             reqtrap and teddrive)
                              tests*/: the test programs (plain text, .bas),
                              runner/: corpusrun (host: one pass, the CD
                              through a compiler; runner/README.md)
