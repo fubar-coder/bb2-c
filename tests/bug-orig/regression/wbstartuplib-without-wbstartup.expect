@@ -3,4 +3,7 @@ timeout
 [compile]
 ok
 [run]
+REQUESTER: EasyRequest title "Software Failure" text "%s
+%s%lx).
+%s" gadgets "Suspend|Reboot" -> answered 1
 wbrun: no reply within 5 s, the process did not end

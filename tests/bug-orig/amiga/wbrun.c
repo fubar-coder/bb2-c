@@ -35,7 +35,11 @@
  * The tool has to answer the WBStartup message (a Blitz program only
  * does with the command WBStartup; without it, the manual says, it
  * crashes when run from the Workbench), otherwise wbrun waits for ever
- * (or for timeout=).
+ * (or for timeout=).  A tool that leaves the message in its port is
+ * stopped by DOS with the requester "Software Failure" (error 87000004):
+ * at its first DOS call that waits for a packet, or, if it makes none, at
+ * its exit (DOS frees a lock then).  It is no hang of wbrun: the requester
+ * waits for a click (a launcher answers it: reqtrap, "Suspend").
  *
  * Behind the end it writes what the options ask for (lines "wbrun: ..."):
  *   current dir at end: start | tool dir | project dir N | other
@@ -46,8 +50,14 @@
  *   dos.library open count +N   opened minus closed by the process
  *   seglist overwritten and freed after the reply   with freeseg
  *   the process did not end     with freeseg (then nothing else)
- *   no reply, the process ended          with timeout=: the process ended
- *                without having replied (then nothing else)
+ *   no reply, the process ended          with timeout=: the process's code
+ *                ended (its exit hook ran) without a reply (then nothing
+ *                else).  That says nothing about what DOS does with such a
+ *                process afterwards: it frees a lock at the exit and raises
+ *                the requester "Software Failure" (error 87000004) there
+ *                (a launcher such as reqtrap records it, answers "Suspend",
+ *                and the process stays suspended).  wbrun waits 0.2 s before
+ *                it writes the line, so that a requester comes first
  *   no reply within N s, the process did not end   with timeout=: it neither
  *                replied nor ended, then one more line: the process ended
  *                later, after replying | without a reply (then nothing else)
@@ -353,6 +363,9 @@ int main(int argc, char **argv)
                that crashed or hangs keeps it here: the session's time
                limit ends it) */
             if (SetSignal(0, 0) & SIGBREAKF_CTRL_F) {
+                /* the process goes on after its exit hook: DOS frees its
+                   lock, and a requester from that comes before this line */
+                Delay(10);
                 put("wbrun: no reply, the process ended\n");
                 SetSignal(0, SIGBREAKF_CTRL_F);
             } else {

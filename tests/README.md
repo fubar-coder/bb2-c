@@ -1459,10 +1459,18 @@ process opened minus closed dos.library and files left in use; with
 `timeout=SEC` it waits at most SEC seconds for the reply and says
 whether a tool that did not answer ended or still runs (self test
 `wbrun_timeout` with `wbtool`, a tool that answers late or never;
-`wbrunt` is `wbrun` with a default of 5 s, `launcher=@WBRUNT@` starts every
+`wbrunt` is `wbrun` with a default of 5 s, `runwrap=@WBRUNT@` starts the
 program of a test like that: `regression/wbstartuplib-without-wbstartup`
-and `-end`, a program without WBStartup: a DOS call never returns, without
-it the process ends);
+and `-end`, a program without WBStartup. The Kickstart 3.1 ROM stops such
+a program with the requester "Software Failure" (error 87000004, gadgets
+"Suspend" and "Reboot"): at its first DOS call that waits for a packet
+(the first test, `Lock_`: wbrun then waits for the end, the session ends by
+the hang check), or, if it makes none, at its exit, when DOS frees a lock
+(the second test: wbrun says "no reply, the process ended", the exit hook
+has run, and the requester comes before that line). The launcher `reqtrap`
+records the requester and answers "Suspend"; both tests expect that line.
+Every test is its own emulator session, the suspended process and the
+requester are gone with it);
 with `freeseg` it overwrites and frees the seglist right after the reply, as
 a memory checker would (a Blitz program
 needs the command WBStartup, as from the real Workbench; what it
