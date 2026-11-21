@@ -129,6 +129,16 @@ UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
 /* Fixed (#978), no asm counterpart: pc after the code of the last byte
    value varcont fetched (with its conversion), for eval5 */
 static ULONG bytevalend = 0;
+/* Fixed (#1177), no asm counterpart: the last conversion varcont emitted
+   (code at..end, the element's own type from, the wanted type to, the
+   relocation list and lasta6 before it, the evaldepth of the element), for
+   the left operand of a comparison in eval5 */
+static struct {
+    ULONG at, end;
+    struct offnode *off;
+    WORD a6;
+    UWORD from, to, depth;
+} conv;
 /* the intrinsics (no asm counterpart, see intrinsics[]): the number of
    elements getelement2 has begun, and where the right side of the last
    assignment began (intrinsic_let: its evaldepth and the number of its
@@ -150,6 +160,8 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op);
 static BOOL intrinsic_quick(UWORD type);
 static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op);
 static UWORD doop(struct opentry *op, UWORD type);
+static ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend);
+static UWORD compareop(struct opentry *op, UWORD left, UWORD right);
 static void divzerochk(const struct opentry *op, UWORD type);
 static void pushprec(struct opentry *op, UWORD prec);
 static struct opentry *popprec(UWORD *prec);
@@ -877,12 +889,23 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         UWORD left, nprec;
         struct opentry *nop, *cur;
         struct forthent *fs;
-        BOOL cmp, lbyte, lconst;
+        BOOL cmp, cmpop, lbyte, lconst;
         ULONG rstart;
 
         if (!(prec > precsp[-1].prec))  /* cmp -(a1),d1 / bhi .higher */
             return prec;
         /* .higher */
+        /* Fixed (#1177): the operands of a comparison are compared with
+           their own values, not in the type the expression is wanted in
+           (the original handed that type to both, and varcont cut a Quick
+           under a Long: r.l=(q>1) was 0 for q=1.5).  A left operand of one
+           element gets its own type back (cmpownleft), the right operand
+           starts at type 0, compareop compares the two.  A left operand in
+           d7 keeps the original's code: its right operand is beyond the
+           registers (BUG(orig) (#1185) at getelement). */
+        cmpop = *op >= opeq && *op <= opge && regat < 7;
+        if (cmpop && lend)
+            lend = cmpownleft(type, lstart, lend);
         /* Fixed (#978): an equality comparison (= or <>) of a byte value
            with a constant from 128 to 255 (each operand one element)
            takes the constant as the byte it stands for, sign-extended as
@@ -896,6 +919,8 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         pushprec(*op, prec);
         left = *type;
         regat++;
+        if (cmpop)
+            *type = 0;              /* Fixed (#1177) */
         nprec = eval5(type, c, &nop);
         regat--;
         if (cmp && lbyte && isbyteconst(rstart, pc))
@@ -903,11 +928,15 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         else if (cmp && lconst && bytevalend == pc && bytevalend > rstart)
             byteconstext(lstart);
         lstart = lend = 0;          /* the left operand is a result now */
-        if (left)
-            convtypef(left, *type); /* could possibly fuck regat+1 ! */
         cur = popprec(&prec);       /* .skip */
-        divzerochk(cur, *type);
-        *type = doop(cur, *type);
+        if (cmpop)
+            *type = compareop(cur, left, *type);
+        else {
+            if (left)
+                convtypef(left, *type); /* could possibly fuck regat+1 ! */
+            divzerochk(cur, *type);
+            *type = doop(cur, *type);
+        }
         /* O.K., lets check the forth stack to see if last two operators
            are constants!  if so, we can JSR the routine to optimize into a
            constant! */
@@ -1105,6 +1134,111 @@ static UWORD doltcmp2(UWORD opcode) { cmpit(opcode); return doltcmp(); }
 static UWORD dolecmp2(UWORD opcode) { cmpit(opcode); return dolecmp(); }
 static UWORD dogtcmp2(UWORD opcode) { cmpit(opcode); return dogtcmp(); }
 static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
+
+/* Fixed (#1177), no asm counterpart: the left operand lstart..lend of a
+   comparison, when it is one element (a variable, field, array element,
+   function value) whose code ends in a conversion varcont made to the
+   wanted type, gets its own type back: the conversion is dropped (with its
+   relocations, as constfold frees them, and lasta6 as before it) when it
+   changes how the value is held - Quick to Long (the cut), a whole number
+   to Quick, a whole number or a Quick to Float.  Byte/Word to Long is exact
+   and stays.  Not covered (#1183): a compound left
+   operand (q*2) and -q, whose code goes on after the conversion.  Returns
+   the new end of the operand. */
+static __attribute__((noinline))
+ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend)
+{
+    struct offnode **link = &firstoff, *node;
+    UWORD from = conv.from, to = conv.to;
+
+    if (conv.end != lend || conv.at <= lstart || conv.depth != evaldepth)
+        return lend;
+    if (!((from == T_QUICK && to == T_LONG)
+          || (from >= T_BYTE && from <= T_LONG && to == T_QUICK)
+          || (from >= T_BYTE && from <= T_QUICK && to == T_FLOAT)))
+        return lend;
+    while ((node = *link) != conv.off && node) {
+        if (node->offset >= conv.at - pcat) {
+            *link = node->next;
+            numoffs--;
+            FreeMem(node, 8);
+        } else
+            link = &node->next;
+    }
+    pc = conv.at;
+    lasta6 = conv.a6;
+    if (bytevalend == lend)
+        bytevalend = pc;            /* a byte keeps its ext.w (#978) */
+    conv.end = 0;
+    *type = from;
+    return pc;
+}
+
+/* Fixed (#1177), no asm counterpart: D(regat) OP D(regat+1), one a Long,
+   the other a Quick (raw 16.16), compared exactly: the Long against
+   floor(q) (the high word, sign-extended), the fraction (the low word)
+   deciding on equality - (l:0) against (floor(q):frac) as 48 bits.  The
+   original converted the Long to Quick (its low word only) or cut the
+   Quick.  The Quick's register is used up; the boolean in D(regat) as a
+   Word, as cpoke leaves it. */
+static UWORD cmplq(struct opentry *op, UWORD left)
+{
+    UWORD rl = regat + 1, rq = regat, sc;
+
+    if (left == T_LONG) {
+        rl = regat;
+        rq = regat + 1;
+    } else if (op == oplt)          /* q OP l is l OP' q */
+        op = opgt;
+    else if (op == opgt)
+        op = oplt;
+    else if (op == ople)
+        op = opge;
+    else if (op == opge)
+        op = ople;
+    if (op == oplt || op == opge) {
+        pokewd(0x4440 | rq);                    /* neg.w Dq: X = frac<>0 */
+        pokewd(0x4840 | rq);                    /* swap Dq */
+        pokewd(0x48c0 | rq);                    /* ext.l Dq: floor(q) */
+        pokewd(0x9180 | (rl << 9) | rq);        /* subx.l Dq,Dl: N^V = l<q */
+        sc = op == oplt ? *mslt : *msge;
+    } else if (op == opgt || op == ople) {
+        pokewd(0x4840 | rq);                    /* swap Dq */
+        pokewd(0x48c0 | rq);                    /* ext.l Dq */
+        pokewd(0xb080 | (rl << 9) | rq);        /* cmp.l Dq,Dl */
+        sc = op == opgt ? *msgt : *msle;
+    } else {
+        pokewd(0x4a40 | rq);                    /* tst.w Dq: a fraction */
+        pokewd(0x6606);                         /* bne.s Scc: not equal */
+        pokewd(0x4840 | rq);                    /* swap Dq */
+        pokewd(0x48c0 | rq);                    /* ext.l Dq */
+        pokewd(0xb080 | (rl << 9) | rq);        /* cmp.l Dq,Dl */
+        sc = op == opeq ? *mseq : *msne;
+    }
+    return cpoke(sc);
+}
+
+/* Fixed (#1177), no asm counterpart: the comparison of a left operand of
+   type left in D(regat) with a right one of its own type right in
+   D(regat+1).  A Long and a Quick are compared exactly (cmplq); otherwise
+   the lower of the two is converted up (the right one here, the left one by
+   convtypef as eval5 did) and the handler of the common type compares. */
+static __attribute__((noinline))
+UWORD compareop(struct opentry *op, UWORD left, UWORD right)
+{
+    if ((left == T_LONG && right == T_QUICK)
+        || (left == T_QUICK && right == T_LONG))
+        return cmplq(op, left);
+    if (left && right < left) {
+        regat++;
+        convtype(right, left);
+        regat--;
+        right = left;
+    }
+    if (left)
+        convtypef(left, right);     /* could possibly fuck regat+1 ! */
+    return doop(op, right);
+}
 
 /* blitz2.s:9189-9226 byte/word/long compares */
 UWORD doeqb(UWORD t) { (void)t; return doeqcmp2(*cmp0); }
@@ -1556,8 +1690,8 @@ void ritefromd0(void)
 /* ============================================================== elements */
 
 /* blitz2.s:9643 getelement - out of registers (regat >= 7): use d6 and
-   keep the old d6 on the stack.  BUG(orig) (#1185): only regat 7 works.  The right
-   operand of an operator whose left operand is in d7 (eight nested
+   keep the old d6 on the stack.  BUG(orig) (#1185): only regat 7 works.
+   The right operand of an operator whose left operand is in d7 (eight nested
    levels: c+(d+(e+(h+(i+(j+(k AND m>l)))))) is fetched at regat 8: it goes
    into d7 over the left operand, d7 then gets the old d6, and the operator
    takes D(regat+1) with a register field of 8, which is a0 (cmp.l a0,d7,
@@ -1568,7 +1702,10 @@ static UWORD getelement(UWORD *type)
 
     if (regat < 7)
         return getelement2(type);
-    opcode = *type < 3 ? 0x3f06 : 0x2f06; /* move.x d6,-(a7) */
+    /* Fixed (#1177): no wanted type yet (the right operand of a
+       comparison) saves the long; the element may be a Long or Quick and
+       a move.w would bring back only the low word of the old d6 */
+    opcode = *type && *type < 3 ? 0x3f06 : 0x2f06;  /* move.x d6,-(a7) */
     pokewd(opcode);
     regat--;
     c = getelement2(type);
@@ -1655,6 +1792,7 @@ static UWORD getelement2(UWORD *type)
     BOOL neg = negnext;             /* Fixed (#1070) */
 
     negnext = FALSE;
+    conv.end = 0;                   /* Fixed (#1177): no conversion yet */
     elemcount++;                    /* for the intrinsics */
     if (c & 0x8000)
         ext_evalvalue(0, 0);        /* a token: a value without a type */
@@ -2895,13 +3033,23 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
     /* .notabyte */
     if (!oldtype)                   /* type not set yet... it is now! */
         goto done;
-    /* A Quick is cut to Long at once: see issue #1178; comparisons: #1177. */
+    /* A Quick is cut to Long at once: see issue #1178.  Fixed (#1177)
+       for the left operand of a comparison: eval5 drops the conversion
+       recorded in conv (cmpownleft); the right operand is fetched without
+       a wanted type. */
     if (oldtype == T_LONG && *type == T_QUICK)
         goto conv2;
     if (oldtype <= *type)           /* .nob */
         goto done;
 conv2:
+    conv.at = pc;
+    conv.off = firstoff;
+    conv.a6 = lasta6;
+    conv.from = *type;
+    conv.depth = evaldepth;
     convtype(*type, oldtype);       /* bump up new type to old.... */
+    conv.end = pc;
+    conv.to = oldtype;
     *type = oldtype;
 done:
     if (byte)

@@ -148,22 +148,34 @@ AmiBlitz3, and the BB2 C port keeps it
 
 ### Comparisons
 
-The same cut happens to the operands of a comparison, and there it gives
-a wrong answer:
+In the original compiler the same cut happens to the operands of a
+comparison, and there it gives a wrong answer:
 
 ```
 q=1.5 : l.l=1
-r.l=(q>1)    : NPrint r     ; 0, but q>1 is true (-1)
+r.l=(q>1)    : NPrint r     ; 0 in the original, but q>1 is true (-1)
 If q>l Then NPrint "q>l"    ; printed
-If l<q Then NPrint "l<q"    ; not printed: the Long l comes first
+If l<q Then NPrint "l<q"    ; not printed in the original: the Long l comes first
 ```
 
-This is a known bug of the original compiler, and it is being fixed
+The BB2 C port fixes this
 ([#1177](https://github.com/fubar-coder/bb2-c/issues/1177)): the operands
-of a comparison will be compared with their own values, and only the
-result will take the type of the destination. Until then, compare in an
-`If` with the Quick on the left, or assign the result to a Word or Quick
-variable (`rw.w=(q>1)` gives -1).
+of a comparison are compared with their own values, a Long against a
+Quick exactly, and only the result takes the type of the destination.
+The example prints -1 and both lines. The same holds for a Quick or Float
+destination, where the original compared whole numbers as Quick or Float
+values (`rq.q=(l>1)` was 0 for `l.l=65537`).
+
+Two cases are not fixed yet, because the compiler emits the code of the
+left operand before it sees the comparison: a left operand that is an
+expression, such as `r.l=(q*2>2)` or `r.l=(-q<-1)`, still loses the
+fraction ([#1183](https://github.com/fubar-coder/bb2-c/issues/1183)), and
+a large whole-number constant on the left in a Float context
+(`rf.f=(100000001>l)`) is still compared as a Float. Put such an
+operand on the right side of the comparison, or compute it into a
+variable first. And the right operand is now computed in its own types:
+`If base<i*4+base` with a default-typed (Quick) `i` computes `i*4` as a
+Quick, which overflows from `i=8192` on; give `i` the type Long there.
 
 ### Array indexes
 

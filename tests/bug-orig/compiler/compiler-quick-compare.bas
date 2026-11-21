@@ -4,16 +4,23 @@
 ; varcont): with q=1.5 and a Long destination q>1 compares 1 with 1 (0),
 ; q=1 is true (-1), Hex$(q>1) is 00000000 (the parameter is a Long), and
 ; q>l differs from l<q.  A Long against a Quick is also compared after the
-; Long is converted to Quick (range +-32768).
+; Long is converted to Quick (range +-32768).  Under a Float or Quick
+; destination or parameter two whole numbers are converted too: the Longs
+; 100000001 and 100000000 are the same FFP value, 65537 as a Quick is 1,
+; and a Quick 32767.99998 ($7FFFFFFF) and the Long 32768 are both 32768.0.
 ; Correct: the operands are compared with their own values (the manual:
 ; the comparison operators "generate a boolean result"), the boolean is
 ; -1 or 0 in every destination and the order of the operands does not
 ; matter; a Long and a Quick are compared exactly (the whole part
-; decides, on equality the fraction).  A compound left operand such as
+; decides, on equality the fraction), and two whole numbers are compared
+; as whole numbers in every context.  A compound left operand such as
 ; q*2>3 is the open bug of compiler-compare-compound-left (#1183).
 ; @fixed #1177
 Function.q fq{a.q}
   Function Return a
+End Function
+Function.f tf{x.f}
+  Function Return x
 End Function
 Dim aq.q(3) : aq(1)=1.5
 q.q=1.5 : n.q=-1.5 : g.q=3 : l.l=1 : r.l=0
@@ -88,4 +95,33 @@ a$="x" : b$="x"
 r=(a$=b$) : NPrint "65 r.l=(a$=b$) ",r
 r=(a$<>b$) : NPrint "66 r.l=(a$<>b$) ",r
 r=(a$="y") : NPrint "67 r.l=(a$=y) ",r
+l2.l=100000001 : l3.l=100000000 : lw.l=65537 : rf.f=0 : rq.q=0
+rf=(l2=l3) : NPrint "68 rf.f=(l2=l3) ",rf
+rf=(l2<>l3) : NPrint "69 rf.f=(l2<>l3) ",rf
+rf=(l2>l3) : NPrint "70 rf.f=(l2>l3) ",rf
+rf=(l2<=l3) : NPrint "71 rf.f=(l2<=l3) ",rf
+rf=(l3=l2) : NPrint "72 rf.f=(l3=l2) ",rf
+rf=(l3<l2) : NPrint "73 rf.f=(l3<l2) ",rf
+rf=(l3>=l2) : NPrint "74 rf.f=(l3>=l2) ",rf
+rf=(l2>100000000) : NPrint "75 rf.f=(l2>100000000) ",rf
+rf=(l2=100000000) : NPrint "76 rf.f=(l2=100000000) ",rf
+rf=tf{l2>l3} : NPrint "77 rf.f=tf{l2>l3} ",rf
+rf=tf{l2=l3} : NPrint "78 rf.f=tf{l2=l3} ",rf
+rf=Cos(l2=l3) : NPrint "79 rf.f=Cos(l2=l3) ",rf
+rq=(lw>1) : NPrint "80 rq.q=(lw>1) ",rq
+rq=(lw=1) : NPrint "81 rq.q=(lw=1) ",rq
+rq=(1<lw) : NPrint "82 rq.q=(1<lw) ",rq
+rq=(lw=l) : NPrint "83 rq.q=(lw=l) ",rq
+rq=(a=$90) : NPrint "84 rq.q=(a=$90) ",rq
+rf=(q>1) : NPrint "85 rf.f=(q>1) ",rf
+c.l=1 : d.l=2 : e.l=3 : h.l=4 : i.l=5 : j.l=6 : k.l=7
+r=c+(d+(e+(h+(i+(j+(k+(q>l))))))) : NPrint "86 deep q>l ",r
+r=c+(d+(e+(h+(i+(j+(k+(l<q))))))) : NPrint "87 deep l<q ",r
+qx.q=0 : Poke.l &qx,$7FFFFFFF : lx.l=32768
+rf=(qx<lx) : NPrint "88 rf.f=(qx<lx) ",rf
+rf=(qx=lx) : NPrint "89 rf.f=(qx=lx) ",rf
+rf=(lx>qx) : NPrint "90 rf.f=(lx>qx) ",rf
+rf=(lx=qx) : NPrint "91 rf.f=(lx=qx) ",rf
+rf=(qx>=lx) : NPrint "92 rf.f=(qx>=lx) ",rf
+rf=(lx<=qx) : NPrint "93 rf.f=(lx<=qx) ",rf
 End
