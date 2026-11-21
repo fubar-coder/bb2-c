@@ -827,7 +827,7 @@ void doxinclude(UWORD c)
 }
 
 /* blitz2.s:12772 doincbin.
-   Fixed (intended deviation, #38): the original leaves the lock behind
+   Fixed (#38, intended deviation): the original leaves the lock behind
    for a directory (the type test comes before the UnLock), the file open
    on a read error (readerr before the Close) and does not check Examine
    (an old content of macrobuff counts as the FileInfoBlock).  Here the
@@ -862,7 +862,7 @@ void doincbin(UWORD c)
     } else {
         r = Read(fh, (APTR)pc, size);
         if (r == -1) {
-            Close(fh);                          /* fixed (#38): the original keeps it open */
+            Close(fh);                          /* Fixed (#38): the original keeps it open */
             readerr();
         }
         pc += r;

@@ -243,7 +243,7 @@ void savefile(void)
 
     mywrite(fh, (APTR)(pcat + noinits), (objlen - noinits + 3) & 0xfffffffc);
 
-    /* Fixed (intended deviation, #943): the original writes all
+    /* Fixed (#943, intended deviation): the original writes all
        relocations as one group of the HUNK_RELOC32 block; with more than
        65535 AmigaOS 3.2's LoadSeg refuses the executable (Kickstart 1.3
        loads it).  Here groups of at most 65535 offsets (count, hunk 0,
@@ -559,7 +559,7 @@ void err(const char *msg)
             endstop();
         }
         ext_errpos();
-        if (msg == nomemtext)               /* fixed (#369) */
+        if (msg == nomemtext)               /* Fixed (#369) */
             nomempending = ed_hasnomem();   /* TED-C's notice after the
                                                cleanup, else the error now */
         if (!nomempending || msg != nomemtext)
@@ -919,7 +919,7 @@ struct node *addhere(struct node *link, UWORD nameoff, UWORD len)
     if (dirmode)
         illdirerr();
     size = nameoff + len + 1;
-    /* Fixed (intended deviation, #970): the node is cleared; the original
+    /* Fixed (#970, intended deviation): the node is cleared; the original
        allocates it with MEMF_PUBLIC only, and the fields nobody sets keep
        what the memory held - a constant's data and procnum went into the
        resident file like that (Create Resident, resconsts) */
