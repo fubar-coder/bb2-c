@@ -51,160 +51,85 @@ CheckNotify|popped|only 9 left|2	$00000000
 CheckNotify|popped|the rest|1	$00000000
 CheckNotify|popped|the rest|2	$00000000
 DeviceEntryType|d0|before init|1	$FFFFFFFF
-DeviceEntryType|d0|flags $1C entry 0|1	$00000001
-DeviceEntryType|d0|flags $1C entry 1|1	$00000001
-DeviceEntryType|d0|flags $1C entry 10|1	$00000000
-DeviceEntryType|d0|flags $1C entry 11|1	$00000000
-DeviceEntryType|d0|flags $1C entry 12|1	$00000000
-DeviceEntryType|d0|flags $1C entry 13|1	$00000000
-DeviceEntryType|d0|flags $1C entry 14|1	$00000000
-DeviceEntryType|d0|flags $1C entry 15|1	$00000001
-DeviceEntryType|d0|flags $1C entry 16|1	$00000001
-DeviceEntryType|d0|flags $1C entry 17|1	$00000000
-DeviceEntryType|d0|flags $1C entry 18|1	$00000001
-DeviceEntryType|d0|flags $1C entry 19|1	$00000001
-DeviceEntryType|d0|flags $1C entry 2|1	$00000001
-DeviceEntryType|d0|flags $1C entry 20|1	$00000001
-DeviceEntryType|d0|flags $1C entry 21|1	$00000002
-DeviceEntryType|d0|flags $1C entry 22|1	$00000002
-DeviceEntryType|d0|flags $1C entry 23|1	$00000003
-DeviceEntryType|d0|flags $1C entry 24|1	$00000000
-DeviceEntryType|d0|flags $1C entry 25|1	$00000001
-DeviceEntryType|d0|flags $1C entry 26|1	$00000001
-DeviceEntryType|d0|flags $1C entry 27|1	$00000001
-DeviceEntryType|d0|flags $1C entry 28|1	$00000001
-DeviceEntryType|d0|flags $1C entry 29|1	$00000001
-DeviceEntryType|d0|flags $1C entry 3|1	$00000001
-DeviceEntryType|d0|flags $1C entry 30|1	$00000001
-DeviceEntryType|d0|flags $1C entry 31|1	$00000002
-DeviceEntryType|d0|flags $1C entry 32|1	$00000002
-DeviceEntryType|d0|flags $1C entry 33|1	$FFFFFFFF
-DeviceEntryType|d0|flags $1C entry 4|1	$00000000
-DeviceEntryType|d0|flags $1C entry 5|1	$00000000
-DeviceEntryType|d0|flags $1C entry 6|1	$00000000
-DeviceEntryType|d0|flags $1C entry 7|1	$00000000
-DeviceEntryType|d0|flags $1C entry 8|1	$00000000
-DeviceEntryType|d0|flags $1C entry 9|1	$00000000
-DeviceEntryType|d0|flags $4 entry 0|1	$00000000
-DeviceEntryType|d0|flags $4 entry 1|1	$00000000
-DeviceEntryType|d0|flags $8 entry 0|1	$00000002
-DeviceEntryType|d0|flags $8 entry 1|1	$00000002
-DeviceEntryType|d0|flags $8 entry 2|1	$00000002
-DeviceEntryType|d0|flags $8 entry 3|1	$00000002
-DeviceEntryType|d0|flags $8 entry 4|1	$FFFFFFFF
+DeviceEntryType|d0|flags $1C HELP|1	$00000003
+DeviceEntryType|d0|flags $1C KEYMAPS|1	$00000001
+DeviceEntryType|d0|flags $1C LOCALE|1	$00000001
+DeviceEntryType|d0|flags $1C PIPE|1	$00000000
+DeviceEntryType|d0|flags $1C RAM|1	$00000000
+DeviceEntryType|d0|flags $1C Ram Disk|1	$00000002
+DeviceEntryType|d0|flags $1C SPEAK|1	$00000000
+DeviceEntryType|d0|flags $1C T|1	$00000001
+DeviceEntryType|d0|flags $1C TEST|1	$00000002
+DeviceEntryType|d0|flags $1C Workbench3.1|1	$00000002
+DeviceEntryType|d0|flags $1C end|1	$FFFFFFFF
+DeviceEntryType|d0|flags $1C stop Ram Disk|1	$00000002
+DeviceEntryType|d0|flags $8 Ram Disk|1	$00000002
+DeviceEntryType|d0|flags $8 TEST|1	$00000002
+DeviceEntryType|d0|flags $8 Workbench3.1|1	$00000002
+DeviceEntryType|d0|flags $8 end|1	$FFFFFFFF
 DeviceEntryType|kept|before init|1	kept
-DeviceEntryType|kept|flags $1C entry 0|1	kept
-DeviceEntryType|kept|flags $1C entry 1|1	kept
-DeviceEntryType|kept|flags $1C entry 10|1	kept
-DeviceEntryType|kept|flags $1C entry 11|1	kept
-DeviceEntryType|kept|flags $1C entry 12|1	kept
-DeviceEntryType|kept|flags $1C entry 13|1	kept
-DeviceEntryType|kept|flags $1C entry 14|1	kept
-DeviceEntryType|kept|flags $1C entry 15|1	kept
-DeviceEntryType|kept|flags $1C entry 16|1	kept
-DeviceEntryType|kept|flags $1C entry 17|1	kept
-DeviceEntryType|kept|flags $1C entry 18|1	kept
-DeviceEntryType|kept|flags $1C entry 19|1	kept
-DeviceEntryType|kept|flags $1C entry 2|1	kept
-DeviceEntryType|kept|flags $1C entry 20|1	kept
-DeviceEntryType|kept|flags $1C entry 21|1	kept
-DeviceEntryType|kept|flags $1C entry 22|1	kept
-DeviceEntryType|kept|flags $1C entry 23|1	kept
-DeviceEntryType|kept|flags $1C entry 24|1	kept
-DeviceEntryType|kept|flags $1C entry 25|1	kept
-DeviceEntryType|kept|flags $1C entry 26|1	kept
-DeviceEntryType|kept|flags $1C entry 27|1	kept
-DeviceEntryType|kept|flags $1C entry 28|1	kept
-DeviceEntryType|kept|flags $1C entry 29|1	kept
-DeviceEntryType|kept|flags $1C entry 3|1	kept
-DeviceEntryType|kept|flags $1C entry 30|1	kept
-DeviceEntryType|kept|flags $1C entry 31|1	kept
-DeviceEntryType|kept|flags $1C entry 32|1	kept
-DeviceEntryType|kept|flags $1C entry 33|1	kept
-DeviceEntryType|kept|flags $1C entry 4|1	kept
-DeviceEntryType|kept|flags $1C entry 5|1	kept
-DeviceEntryType|kept|flags $1C entry 6|1	kept
-DeviceEntryType|kept|flags $1C entry 7|1	kept
-DeviceEntryType|kept|flags $1C entry 8|1	kept
-DeviceEntryType|kept|flags $1C entry 9|1	kept
-DeviceEntryType|kept|flags $4 entry 0|1	kept
-DeviceEntryType|kept|flags $4 entry 1|1	kept
-DeviceEntryType|kept|flags $8 entry 0|1	kept
-DeviceEntryType|kept|flags $8 entry 1|1	kept
-DeviceEntryType|kept|flags $8 entry 2|1	kept
-DeviceEntryType|kept|flags $8 entry 3|1	kept
-DeviceEntryType|kept|flags $8 entry 4|1	kept
+DeviceEntryType|kept|flags $1C HELP|1	kept
+DeviceEntryType|kept|flags $1C KEYMAPS|1	kept
+DeviceEntryType|kept|flags $1C LOCALE|1	kept
+DeviceEntryType|kept|flags $1C PIPE|1	kept
+DeviceEntryType|kept|flags $1C RAM|1	kept
+DeviceEntryType|kept|flags $1C Ram Disk|1	kept
+DeviceEntryType|kept|flags $1C SPEAK|1	kept
+DeviceEntryType|kept|flags $1C T|1	kept
+DeviceEntryType|kept|flags $1C TEST|1	kept
+DeviceEntryType|kept|flags $1C Workbench3.1|1	kept
+DeviceEntryType|kept|flags $1C end|1	kept
+DeviceEntryType|kept|flags $1C stop Ram Disk|1	kept
+DeviceEntryType|kept|flags $8 Ram Disk|1	kept
+DeviceEntryType|kept|flags $8 TEST|1	kept
+DeviceEntryType|kept|flags $8 Workbench3.1|1	kept
+DeviceEntryType|kept|flags $8 end|1	kept
 DeviceEntryType|popped|before init|1	$00000000
-DeviceEntryType|popped|flags $1C entry 0|1	$00000000
-DeviceEntryType|popped|flags $1C entry 1|1	$00000000
-DeviceEntryType|popped|flags $1C entry 10|1	$00000000
-DeviceEntryType|popped|flags $1C entry 11|1	$00000000
-DeviceEntryType|popped|flags $1C entry 12|1	$00000000
-DeviceEntryType|popped|flags $1C entry 13|1	$00000000
-DeviceEntryType|popped|flags $1C entry 14|1	$00000000
-DeviceEntryType|popped|flags $1C entry 15|1	$00000000
-DeviceEntryType|popped|flags $1C entry 16|1	$00000000
-DeviceEntryType|popped|flags $1C entry 17|1	$00000000
-DeviceEntryType|popped|flags $1C entry 18|1	$00000000
-DeviceEntryType|popped|flags $1C entry 19|1	$00000000
-DeviceEntryType|popped|flags $1C entry 2|1	$00000000
-DeviceEntryType|popped|flags $1C entry 20|1	$00000000
-DeviceEntryType|popped|flags $1C entry 21|1	$00000000
-DeviceEntryType|popped|flags $1C entry 22|1	$00000000
-DeviceEntryType|popped|flags $1C entry 23|1	$00000000
-DeviceEntryType|popped|flags $1C entry 24|1	$00000000
-DeviceEntryType|popped|flags $1C entry 25|1	$00000000
-DeviceEntryType|popped|flags $1C entry 26|1	$00000000
-DeviceEntryType|popped|flags $1C entry 27|1	$00000000
-DeviceEntryType|popped|flags $1C entry 28|1	$00000000
-DeviceEntryType|popped|flags $1C entry 29|1	$00000000
-DeviceEntryType|popped|flags $1C entry 3|1	$00000000
-DeviceEntryType|popped|flags $1C entry 30|1	$00000000
-DeviceEntryType|popped|flags $1C entry 31|1	$00000000
-DeviceEntryType|popped|flags $1C entry 32|1	$00000000
-DeviceEntryType|popped|flags $1C entry 33|1	$00000000
-DeviceEntryType|popped|flags $1C entry 4|1	$00000000
-DeviceEntryType|popped|flags $1C entry 5|1	$00000000
-DeviceEntryType|popped|flags $1C entry 6|1	$00000000
-DeviceEntryType|popped|flags $1C entry 7|1	$00000000
-DeviceEntryType|popped|flags $1C entry 8|1	$00000000
-DeviceEntryType|popped|flags $1C entry 9|1	$00000000
-DeviceEntryType|popped|flags $4 entry 0|1	$00000000
-DeviceEntryType|popped|flags $4 entry 1|1	$00000000
-DeviceEntryType|popped|flags $8 entry 0|1	$00000000
-DeviceEntryType|popped|flags $8 entry 1|1	$00000000
-DeviceEntryType|popped|flags $8 entry 2|1	$00000000
-DeviceEntryType|popped|flags $8 entry 3|1	$00000000
-DeviceEntryType|popped|flags $8 entry 4|1	$00000000
-DeviceEntryType (unlocked)|d0|flags $1C entry 33|1	$FFFFFFFF
-DeviceEntryType (unlocked)|d0|flags $4 entry 1|1	$00000000
-DeviceEntryType (unlocked)|d0|flags $8 entry 4|1	$FFFFFFFF
-DeviceEntryType (unlocked)|kept|flags $1C entry 33|1	kept
-DeviceEntryType (unlocked)|kept|flags $4 entry 1|1	kept
-DeviceEntryType (unlocked)|kept|flags $8 entry 4|1	kept
-DeviceEntryType (unlocked)|popped|flags $1C entry 33|1	$00000000
-DeviceEntryType (unlocked)|popped|flags $4 entry 1|1	$00000000
-DeviceEntryType (unlocked)|popped|flags $8 entry 4|1	$00000000
+DeviceEntryType|popped|flags $1C HELP|1	$00000000
+DeviceEntryType|popped|flags $1C KEYMAPS|1	$00000000
+DeviceEntryType|popped|flags $1C LOCALE|1	$00000000
+DeviceEntryType|popped|flags $1C PIPE|1	$00000000
+DeviceEntryType|popped|flags $1C RAM|1	$00000000
+DeviceEntryType|popped|flags $1C Ram Disk|1	$00000000
+DeviceEntryType|popped|flags $1C SPEAK|1	$00000000
+DeviceEntryType|popped|flags $1C T|1	$00000000
+DeviceEntryType|popped|flags $1C TEST|1	$00000000
+DeviceEntryType|popped|flags $1C Workbench3.1|1	$00000000
+DeviceEntryType|popped|flags $1C end|1	$00000000
+DeviceEntryType|popped|flags $1C stop Ram Disk|1	$00000000
+DeviceEntryType|popped|flags $8 Ram Disk|1	$00000000
+DeviceEntryType|popped|flags $8 TEST|1	$00000000
+DeviceEntryType|popped|flags $8 Workbench3.1|1	$00000000
+DeviceEntryType|popped|flags $8 end|1	$00000000
+DeviceEntryType (unlocked)|d0|flags $1C end|1	$FFFFFFFF
+DeviceEntryType (unlocked)|d0|flags $1C stop Ram Disk|1	$00000002
+DeviceEntryType (unlocked)|d0|flags $8 end|1	$FFFFFFFF
+DeviceEntryType (unlocked)|kept|flags $1C end|1	kept
+DeviceEntryType (unlocked)|kept|flags $1C stop Ram Disk|1	kept
+DeviceEntryType (unlocked)|kept|flags $8 end|1	kept
+DeviceEntryType (unlocked)|popped|flags $1C end|1	$00000000
+DeviceEntryType (unlocked)|popped|flags $1C stop Ram Disk|1	$00000000
+DeviceEntryType (unlocked)|popped|flags $8 end|1	$00000000
 FreeDeviceList|d0|before init|1	$5A001234
-FreeDeviceList|d0|flags $1C entry 33|1	$FFFFFFFF
-FreeDeviceList|d0|flags $4 entry 1|1	$FFFFFFFF
-FreeDeviceList|d0|flags $8 entry 4|1	$FFFFFFFF
+FreeDeviceList|d0|flags $1C end|1	$FFFFFFFF
+FreeDeviceList|d0|flags $1C stop Ram Disk|1	$FFFFFFFF
+FreeDeviceList|d0|flags $8 end|1	$FFFFFFFF
 FreeDeviceList|kept|before init|1	kept
-FreeDeviceList|kept|flags $1C entry 33|1	kept
-FreeDeviceList|kept|flags $4 entry 1|1	kept
-FreeDeviceList|kept|flags $8 entry 4|1	kept
+FreeDeviceList|kept|flags $1C end|1	kept
+FreeDeviceList|kept|flags $1C stop Ram Disk|1	kept
+FreeDeviceList|kept|flags $8 end|1	kept
 FreeDeviceList|popped|before init|1	$00000000
-FreeDeviceList|popped|flags $1C entry 33|1	$00000000
-FreeDeviceList|popped|flags $4 entry 1|1	$00000000
-FreeDeviceList|popped|flags $8 entry 4|1	$00000000
+FreeDeviceList|popped|flags $1C end|1	$00000000
+FreeDeviceList|popped|flags $1C stop Ram Disk|1	$00000000
+FreeDeviceList|popped|flags $8 end|1	$00000000
 GetDeviceList|d0|flags $1C|1	$FFFFFFFF
-GetDeviceList|d0|flags $4|1	$FFFFFFFF
+GetDeviceList|d0|flags $1C|2	$FFFFFFFF
 GetDeviceList|d0|flags $8|1	$FFFFFFFF
 GetDeviceList|kept|flags $1C|1	kept
-GetDeviceList|kept|flags $4|1	kept
+GetDeviceList|kept|flags $1C|2	kept
 GetDeviceList|kept|flags $8|1	kept
 GetDeviceList|popped|flags $1C|1	$00000000
-GetDeviceList|popped|flags $4|1	$00000000
+GetDeviceList|popped|flags $1C|2	$00000000
 GetDeviceList|popped|flags $8|1	$00000000
 GetFileName|a3|""|1	$00000014
 GetFileName|a3|"/"|1	$00000014
@@ -434,269 +359,119 @@ GetPathName|popped|"name with spaces/and more"|1	$00000000
 GetPathName|popped|"ram:t/"|1	$00000000
 GetPathName|popped|"x:y:z"|1	$00000000
 NextDevice|a3|before init|1	$00000000
-NextDevice|a3|flags $1C entry 0|1 [orig]	$00000006
-NextDevice|a3|flags $1C entry 0|1 [fixed #618]	$00000005
-NextDevice|a3|flags $1C entry 1|1 [orig]	$00000006
-NextDevice|a3|flags $1C entry 1|1 [fixed #618]	$00000005
-NextDevice|a3|flags $1C entry 10|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 10|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 11|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 11|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 12|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 12|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 13|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 13|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 14|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 14|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 15|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 15|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 16|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 16|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 17|1 [orig]	$00000009
-NextDevice|a3|flags $1C entry 17|1 [fixed #618]	$00000008
-NextDevice|a3|flags $1C entry 18|1 [orig]	$00000009
-NextDevice|a3|flags $1C entry 18|1 [fixed #618]	$00000008
-NextDevice|a3|flags $1C entry 19|1 [orig]	$00000009
-NextDevice|a3|flags $1C entry 19|1 [fixed #618]	$00000008
-NextDevice|a3|flags $1C entry 2|1 [orig]	$00000006
-NextDevice|a3|flags $1C entry 2|1 [fixed #618]	$00000005
-NextDevice|a3|flags $1C entry 20|1 [orig]	$00000009
-NextDevice|a3|flags $1C entry 20|1 [fixed #618]	$00000008
-NextDevice|a3|flags $1C entry 21|1 [orig]	$00000009
-NextDevice|a3|flags $1C entry 21|1 [fixed #618]	$00000008
-NextDevice|a3|flags $1C entry 22|1 [orig]	$00000009
-NextDevice|a3|flags $1C entry 22|1 [fixed #618]	$00000008
-NextDevice|a3|flags $1C entry 23|1 [orig]	$00000009
-NextDevice|a3|flags $1C entry 23|1 [fixed #618]	$00000008
-NextDevice|a3|flags $1C entry 24|1 [orig]	$0000000A
-NextDevice|a3|flags $1C entry 24|1 [fixed #618]	$00000009
-NextDevice|a3|flags $1C entry 25|1 [orig]	$0000000A
-NextDevice|a3|flags $1C entry 25|1 [fixed #618]	$00000009
-NextDevice|a3|flags $1C entry 26|1 [orig]	$0000000A
-NextDevice|a3|flags $1C entry 26|1 [fixed #618]	$00000009
-NextDevice|a3|flags $1C entry 27|1 [orig]	$0000000B
-NextDevice|a3|flags $1C entry 27|1 [fixed #618]	$0000000A
-NextDevice|a3|flags $1C entry 28|1 [orig]	$0000000B
-NextDevice|a3|flags $1C entry 28|1 [fixed #618]	$0000000A
-NextDevice|a3|flags $1C entry 29|1 [orig]	$0000000C
-NextDevice|a3|flags $1C entry 29|1 [fixed #618]	$0000000B
-NextDevice|a3|flags $1C entry 3|1 [orig]	$00000006
-NextDevice|a3|flags $1C entry 3|1 [fixed #618]	$00000005
-NextDevice|a3|flags $1C entry 30|1 [orig]	$0000000D
-NextDevice|a3|flags $1C entry 30|1 [fixed #618]	$0000000C
-NextDevice|a3|flags $1C entry 31|1 [orig]	$0000000D
-NextDevice|a3|flags $1C entry 31|1 [fixed #618]	$0000000C
-NextDevice|a3|flags $1C entry 32|1 [orig]	$00000011
-NextDevice|a3|flags $1C entry 32|1 [fixed #618]	$00000010
-NextDevice|a3|flags $1C entry 33|1	$00000004
-NextDevice|a3|flags $1C entry 4|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 4|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 5|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 5|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 6|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 6|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 7|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 7|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 8|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 8|1 [fixed #618]	$00000007
-NextDevice|a3|flags $1C entry 9|1 [orig]	$00000008
-NextDevice|a3|flags $1C entry 9|1 [fixed #618]	$00000007
-NextDevice|a3|flags $4 entry 0|1 [orig]	$00000008
-NextDevice|a3|flags $4 entry 0|1 [fixed #618]	$00000007
-NextDevice|a3|flags $4 entry 1|1 [orig]	$00000008
-NextDevice|a3|flags $4 entry 1|1 [fixed #618]	$00000007
-NextDevice|a3|flags $8 entry 0|1 [orig]	$00000009
-NextDevice|a3|flags $8 entry 0|1 [fixed #618]	$00000008
-NextDevice|a3|flags $8 entry 1|1 [orig]	$00000009
-NextDevice|a3|flags $8 entry 1|1 [fixed #618]	$00000008
-NextDevice|a3|flags $8 entry 2|1 [orig]	$0000000D
-NextDevice|a3|flags $8 entry 2|1 [fixed #618]	$0000000C
-NextDevice|a3|flags $8 entry 3|1 [orig]	$00000011
-NextDevice|a3|flags $8 entry 3|1 [fixed #618]	$00000010
-NextDevice|a3|flags $8 entry 4|1	$00000004
+NextDevice|a3|flags $1C HELP|1 [orig]	$00000009
+NextDevice|a3|flags $1C HELP|1 [fixed #618]	$00000008
+NextDevice|a3|flags $1C KEYMAPS|1 [orig]	$0000000C
+NextDevice|a3|flags $1C KEYMAPS|1 [fixed #618]	$0000000B
+NextDevice|a3|flags $1C LOCALE|1 [orig]	$0000000B
+NextDevice|a3|flags $1C LOCALE|1 [fixed #618]	$0000000A
+NextDevice|a3|flags $1C PIPE|1 [orig]	$00000009
+NextDevice|a3|flags $1C PIPE|1 [fixed #618]	$00000008
+NextDevice|a3|flags $1C RAM|1 [orig]	$00000008
+NextDevice|a3|flags $1C RAM|1 [fixed #618]	$00000007
+NextDevice|a3|flags $1C Ram Disk|1 [orig]	$0000000D
+NextDevice|a3|flags $1C Ram Disk|1 [fixed #618]	$0000000C
+NextDevice|a3|flags $1C SPEAK|1 [orig]	$0000000A
+NextDevice|a3|flags $1C SPEAK|1 [fixed #618]	$00000009
+NextDevice|a3|flags $1C T|1 [orig]	$00000006
+NextDevice|a3|flags $1C T|1 [fixed #618]	$00000005
+NextDevice|a3|flags $1C TEST|1 [orig]	$00000009
+NextDevice|a3|flags $1C TEST|1 [fixed #618]	$00000008
+NextDevice|a3|flags $1C Workbench3.1|1 [orig]	$00000011
+NextDevice|a3|flags $1C Workbench3.1|1 [fixed #618]	$00000010
+NextDevice|a3|flags $1C end|1	$00000004
+NextDevice|a3|flags $1C stop Ram Disk|1 [orig]	$0000000D
+NextDevice|a3|flags $1C stop Ram Disk|1 [fixed #618]	$0000000C
+NextDevice|a3|flags $8 Ram Disk|1 [orig]	$0000000D
+NextDevice|a3|flags $8 Ram Disk|1 [fixed #618]	$0000000C
+NextDevice|a3|flags $8 TEST|1 [orig]	$00000009
+NextDevice|a3|flags $8 TEST|1 [fixed #618]	$00000008
+NextDevice|a3|flags $8 Workbench3.1|1 [orig]	$00000011
+NextDevice|a3|flags $8 Workbench3.1|1 [fixed #618]	$00000010
+NextDevice|a3|flags $8 end|1	$00000004
 NextDevice|d0|before init|1 [orig]	$5A001234
 NextDevice|d0|before init|1 [fixed #625]	$00000000
-NextDevice|d0|flags $1C entry 0|1	$00000001
-NextDevice|d0|flags $1C entry 1|1	$00000001
-NextDevice|d0|flags $1C entry 10|1	$00000003
-NextDevice|d0|flags $1C entry 11|1	$00000003
-NextDevice|d0|flags $1C entry 12|1	$00000003
-NextDevice|d0|flags $1C entry 13|1	$00000003
-NextDevice|d0|flags $1C entry 14|1	$00000003
-NextDevice|d0|flags $1C entry 15|1	$00000003
-NextDevice|d0|flags $1C entry 16|1	$00000003
-NextDevice|d0|flags $1C entry 17|1	$00000004
-NextDevice|d0|flags $1C entry 18|1	$00000004
-NextDevice|d0|flags $1C entry 19|1	$00000004
-NextDevice|d0|flags $1C entry 2|1	$00000001
-NextDevice|d0|flags $1C entry 20|1	$00000004
-NextDevice|d0|flags $1C entry 21|1	$00000004
-NextDevice|d0|flags $1C entry 22|1	$00000004
-NextDevice|d0|flags $1C entry 23|1	$00000004
-NextDevice|d0|flags $1C entry 24|1	$00000005
-NextDevice|d0|flags $1C entry 25|1	$00000005
-NextDevice|d0|flags $1C entry 26|1	$00000005
-NextDevice|d0|flags $1C entry 27|1	$00000006
-NextDevice|d0|flags $1C entry 28|1	$00000006
-NextDevice|d0|flags $1C entry 29|1	$00000007
-NextDevice|d0|flags $1C entry 3|1	$00000001
-NextDevice|d0|flags $1C entry 30|1	$00000008
-NextDevice|d0|flags $1C entry 31|1	$00000008
-NextDevice|d0|flags $1C entry 32|1	$0000000C
-NextDevice|d0|flags $1C entry 33|1	$00000000
-NextDevice|d0|flags $1C entry 4|1	$00000003
-NextDevice|d0|flags $1C entry 5|1	$00000003
-NextDevice|d0|flags $1C entry 6|1	$00000003
-NextDevice|d0|flags $1C entry 7|1	$00000003
-NextDevice|d0|flags $1C entry 8|1	$00000003
-NextDevice|d0|flags $1C entry 9|1	$00000003
-NextDevice|d0|flags $4 entry 0|1	$00000003
-NextDevice|d0|flags $4 entry 1|1	$00000003
-NextDevice|d0|flags $8 entry 0|1	$00000004
-NextDevice|d0|flags $8 entry 1|1	$00000004
-NextDevice|d0|flags $8 entry 2|1	$00000008
-NextDevice|d0|flags $8 entry 3|1	$0000000C
-NextDevice|d0|flags $8 entry 4|1	$00000000
+NextDevice|d0|flags $1C HELP|1	$00000004
+NextDevice|d0|flags $1C KEYMAPS|1	$00000007
+NextDevice|d0|flags $1C LOCALE|1	$00000006
+NextDevice|d0|flags $1C PIPE|1	$00000004
+NextDevice|d0|flags $1C RAM|1	$00000003
+NextDevice|d0|flags $1C Ram Disk|1	$00000008
+NextDevice|d0|flags $1C SPEAK|1	$00000005
+NextDevice|d0|flags $1C T|1	$00000001
+NextDevice|d0|flags $1C TEST|1	$00000004
+NextDevice|d0|flags $1C Workbench3.1|1	$0000000C
+NextDevice|d0|flags $1C end|1	$00000000
+NextDevice|d0|flags $1C stop Ram Disk|1	$00000008
+NextDevice|d0|flags $8 Ram Disk|1	$00000008
+NextDevice|d0|flags $8 TEST|1	$00000004
+NextDevice|d0|flags $8 Workbench3.1|1	$0000000C
+NextDevice|d0|flags $8 end|1	$00000000
 NextDevice|kept|before init|1	kept
-NextDevice|kept|flags $1C entry 0|1	kept
-NextDevice|kept|flags $1C entry 1|1	kept
-NextDevice|kept|flags $1C entry 10|1	kept
-NextDevice|kept|flags $1C entry 11|1	kept
-NextDevice|kept|flags $1C entry 12|1	kept
-NextDevice|kept|flags $1C entry 13|1	kept
-NextDevice|kept|flags $1C entry 14|1	kept
-NextDevice|kept|flags $1C entry 15|1	kept
-NextDevice|kept|flags $1C entry 16|1	kept
-NextDevice|kept|flags $1C entry 17|1	kept
-NextDevice|kept|flags $1C entry 18|1	kept
-NextDevice|kept|flags $1C entry 19|1	kept
-NextDevice|kept|flags $1C entry 2|1	kept
-NextDevice|kept|flags $1C entry 20|1	kept
-NextDevice|kept|flags $1C entry 21|1	kept
-NextDevice|kept|flags $1C entry 22|1	kept
-NextDevice|kept|flags $1C entry 23|1	kept
-NextDevice|kept|flags $1C entry 24|1	kept
-NextDevice|kept|flags $1C entry 25|1	kept
-NextDevice|kept|flags $1C entry 26|1	kept
-NextDevice|kept|flags $1C entry 27|1	kept
-NextDevice|kept|flags $1C entry 28|1	kept
-NextDevice|kept|flags $1C entry 29|1	kept
-NextDevice|kept|flags $1C entry 3|1	kept
-NextDevice|kept|flags $1C entry 30|1	kept
-NextDevice|kept|flags $1C entry 31|1	kept
-NextDevice|kept|flags $1C entry 32|1	kept
-NextDevice|kept|flags $1C entry 33|1	kept
-NextDevice|kept|flags $1C entry 4|1	kept
-NextDevice|kept|flags $1C entry 5|1	kept
-NextDevice|kept|flags $1C entry 6|1	kept
-NextDevice|kept|flags $1C entry 7|1	kept
-NextDevice|kept|flags $1C entry 8|1	kept
-NextDevice|kept|flags $1C entry 9|1	kept
-NextDevice|kept|flags $4 entry 0|1	kept
-NextDevice|kept|flags $4 entry 1|1	kept
-NextDevice|kept|flags $8 entry 0|1	kept
-NextDevice|kept|flags $8 entry 1|1	kept
-NextDevice|kept|flags $8 entry 2|1	kept
-NextDevice|kept|flags $8 entry 3|1	kept
-NextDevice|kept|flags $8 entry 4|1	kept
-NextDevice|out|flags $1C entry 0|1	bytes 300 fnv DE76584D
-NextDevice|out|flags $1C entry 1|1	bytes 300 fnv DE76584D
-NextDevice|out|flags $1C entry 10|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 11|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 12|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 13|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 14|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 15|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 16|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 17|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $1C entry 18|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $1C entry 19|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $1C entry 2|1	bytes 300 fnv DE76584D
-NextDevice|out|flags $1C entry 20|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $1C entry 21|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $1C entry 22|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $1C entry 23|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $1C entry 24|1	bytes 300 fnv 7C1BA66D
-NextDevice|out|flags $1C entry 25|1	bytes 300 fnv 7C1BA66D
-NextDevice|out|flags $1C entry 26|1	bytes 300 fnv 7C1BA66D
-NextDevice|out|flags $1C entry 27|1	bytes 300 fnv F61B469B
-NextDevice|out|flags $1C entry 28|1	bytes 300 fnv F61B469B
-NextDevice|out|flags $1C entry 29|1	bytes 300 fnv 06AADFBD
-NextDevice|out|flags $1C entry 3|1	bytes 300 fnv DE76584D
-NextDevice|out|flags $1C entry 30|1	bytes 300 fnv 0A54E9DB
-NextDevice|out|flags $1C entry 31|1	bytes 300 fnv 0A54E9DB
-NextDevice|out|flags $1C entry 32|1	bytes 300 fnv 76A001FB
-NextDevice|out|flags $1C entry 33|1	bytes 300 fnv 1BC9DCB5
-NextDevice|out|flags $1C entry 4|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 5|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 6|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 7|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 8|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $1C entry 9|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $4 entry 0|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $4 entry 1|1	bytes 300 fnv CB4CA41D
-NextDevice|out|flags $8 entry 0|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $8 entry 1|1	bytes 300 fnv 94812A7B
-NextDevice|out|flags $8 entry 2|1	bytes 300 fnv 0A54E9DB
-NextDevice|out|flags $8 entry 3|1	bytes 300 fnv 76A001FB
-NextDevice|out|flags $8 entry 4|1	bytes 300 fnv 1BC9DCB5
+NextDevice|kept|flags $1C HELP|1	kept
+NextDevice|kept|flags $1C KEYMAPS|1	kept
+NextDevice|kept|flags $1C LOCALE|1	kept
+NextDevice|kept|flags $1C PIPE|1	kept
+NextDevice|kept|flags $1C RAM|1	kept
+NextDevice|kept|flags $1C Ram Disk|1	kept
+NextDevice|kept|flags $1C SPEAK|1	kept
+NextDevice|kept|flags $1C T|1	kept
+NextDevice|kept|flags $1C TEST|1	kept
+NextDevice|kept|flags $1C Workbench3.1|1	kept
+NextDevice|kept|flags $1C end|1	kept
+NextDevice|kept|flags $1C stop Ram Disk|1	kept
+NextDevice|kept|flags $8 Ram Disk|1	kept
+NextDevice|kept|flags $8 TEST|1	kept
+NextDevice|kept|flags $8 Workbench3.1|1	kept
+NextDevice|kept|flags $8 end|1	kept
+NextDevice|out|flags $1C HELP|1	bytes 300 fnv 9FD7CA1C
+NextDevice|out|flags $1C KEYMAPS|1	bytes 300 fnv 72D9F839
+NextDevice|out|flags $1C LOCALE|1	bytes 300 fnv ED2E9891
+NextDevice|out|flags $1C PIPE|1	bytes 300 fnv FBC07EF7
+NextDevice|out|flags $1C RAM|1	bytes 300 fnv ED0A0219
+NextDevice|out|flags $1C Ram Disk|1	bytes 300 fnv 052BE3EE
+NextDevice|out|flags $1C SPEAK|1	bytes 300 fnv CB2F6593
+NextDevice|out|flags $1C T|1	bytes 300 fnv E3EB5CA1
+NextDevice|out|flags $1C TEST|1	bytes 300 fnv 769F73AB
+NextDevice|out|flags $1C Workbench3.1|1	bytes 300 fnv 46D92768
+NextDevice|out|flags $1C end|1	bytes 300 fnv 1BC9DCB5
+NextDevice|out|flags $1C stop Ram Disk|1	bytes 300 fnv 052BE3EE
+NextDevice|out|flags $8 Ram Disk|1	bytes 300 fnv 052BE3EE
+NextDevice|out|flags $8 TEST|1	bytes 300 fnv 769F73AB
+NextDevice|out|flags $8 Workbench3.1|1	bytes 300 fnv 46D92768
+NextDevice|out|flags $8 end|1	bytes 300 fnv 1BC9DCB5
 NextDevice|popped|before init|1	$00000000
-NextDevice|popped|flags $1C entry 0|1	$00000000
-NextDevice|popped|flags $1C entry 1|1	$00000000
-NextDevice|popped|flags $1C entry 10|1	$00000000
-NextDevice|popped|flags $1C entry 11|1	$00000000
-NextDevice|popped|flags $1C entry 12|1	$00000000
-NextDevice|popped|flags $1C entry 13|1	$00000000
-NextDevice|popped|flags $1C entry 14|1	$00000000
-NextDevice|popped|flags $1C entry 15|1	$00000000
-NextDevice|popped|flags $1C entry 16|1	$00000000
-NextDevice|popped|flags $1C entry 17|1	$00000000
-NextDevice|popped|flags $1C entry 18|1	$00000000
-NextDevice|popped|flags $1C entry 19|1	$00000000
-NextDevice|popped|flags $1C entry 2|1	$00000000
-NextDevice|popped|flags $1C entry 20|1	$00000000
-NextDevice|popped|flags $1C entry 21|1	$00000000
-NextDevice|popped|flags $1C entry 22|1	$00000000
-NextDevice|popped|flags $1C entry 23|1	$00000000
-NextDevice|popped|flags $1C entry 24|1	$00000000
-NextDevice|popped|flags $1C entry 25|1	$00000000
-NextDevice|popped|flags $1C entry 26|1	$00000000
-NextDevice|popped|flags $1C entry 27|1	$00000000
-NextDevice|popped|flags $1C entry 28|1	$00000000
-NextDevice|popped|flags $1C entry 29|1	$00000000
-NextDevice|popped|flags $1C entry 3|1	$00000000
-NextDevice|popped|flags $1C entry 30|1	$00000000
-NextDevice|popped|flags $1C entry 31|1	$00000000
-NextDevice|popped|flags $1C entry 32|1	$00000000
-NextDevice|popped|flags $1C entry 33|1	$00000000
-NextDevice|popped|flags $1C entry 4|1	$00000000
-NextDevice|popped|flags $1C entry 5|1	$00000000
-NextDevice|popped|flags $1C entry 6|1	$00000000
-NextDevice|popped|flags $1C entry 7|1	$00000000
-NextDevice|popped|flags $1C entry 8|1	$00000000
-NextDevice|popped|flags $1C entry 9|1	$00000000
-NextDevice|popped|flags $4 entry 0|1	$00000000
-NextDevice|popped|flags $4 entry 1|1	$00000000
-NextDevice|popped|flags $8 entry 0|1	$00000000
-NextDevice|popped|flags $8 entry 1|1	$00000000
-NextDevice|popped|flags $8 entry 2|1	$00000000
-NextDevice|popped|flags $8 entry 3|1	$00000000
-NextDevice|popped|flags $8 entry 4|1	$00000000
-NextDevice (unlocked)|a3|flags $1C entry 33|1	$00000004
-NextDevice (unlocked)|a3|flags $4 entry 1|1	$00000004
-NextDevice (unlocked)|a3|flags $8 entry 4|1	$00000004
-NextDevice (unlocked)|d0 unchanged|flags $1C entry 33|1 [orig]	$00000001
-NextDevice (unlocked)|d0 unchanged|flags $1C entry 33|1 [fixed #625]	$00000000
-NextDevice (unlocked)|d0 unchanged|flags $4 entry 1|1 [orig]	$00000001
-NextDevice (unlocked)|d0 unchanged|flags $4 entry 1|1 [fixed #625]	$00000000
-NextDevice (unlocked)|d0 unchanged|flags $8 entry 4|1 [orig]	$00000001
-NextDevice (unlocked)|d0 unchanged|flags $8 entry 4|1 [fixed #625]	$00000000
-NextDevice (unlocked)|kept|flags $1C entry 33|1	kept
-NextDevice (unlocked)|kept|flags $4 entry 1|1	kept
-NextDevice (unlocked)|kept|flags $8 entry 4|1	kept
-NextDevice (unlocked)|popped|flags $1C entry 33|1	$00000000
-NextDevice (unlocked)|popped|flags $4 entry 1|1	$00000000
-NextDevice (unlocked)|popped|flags $8 entry 4|1	$00000000
+NextDevice|popped|flags $1C HELP|1	$00000000
+NextDevice|popped|flags $1C KEYMAPS|1	$00000000
+NextDevice|popped|flags $1C LOCALE|1	$00000000
+NextDevice|popped|flags $1C PIPE|1	$00000000
+NextDevice|popped|flags $1C RAM|1	$00000000
+NextDevice|popped|flags $1C Ram Disk|1	$00000000
+NextDevice|popped|flags $1C SPEAK|1	$00000000
+NextDevice|popped|flags $1C T|1	$00000000
+NextDevice|popped|flags $1C TEST|1	$00000000
+NextDevice|popped|flags $1C Workbench3.1|1	$00000000
+NextDevice|popped|flags $1C end|1	$00000000
+NextDevice|popped|flags $1C stop Ram Disk|1	$00000000
+NextDevice|popped|flags $8 Ram Disk|1	$00000000
+NextDevice|popped|flags $8 TEST|1	$00000000
+NextDevice|popped|flags $8 Workbench3.1|1	$00000000
+NextDevice|popped|flags $8 end|1	$00000000
+NextDevice (unlocked)|a3|flags $1C end|1	$00000004
+NextDevice (unlocked)|a3|flags $1C stop Ram Disk|1	$00000004
+NextDevice (unlocked)|a3|flags $8 end|1	$00000004
+NextDevice (unlocked)|d0 unchanged|flags $1C end|1 [orig]	$00000001
+NextDevice (unlocked)|d0 unchanged|flags $1C end|1 [fixed #625]	$00000000
+NextDevice (unlocked)|d0 unchanged|flags $1C stop Ram Disk|1 [orig]	$00000001
+NextDevice (unlocked)|d0 unchanged|flags $1C stop Ram Disk|1 [fixed #625]	$00000000
+NextDevice (unlocked)|d0 unchanged|flags $8 end|1 [orig]	$00000001
+NextDevice (unlocked)|d0 unchanged|flags $8 end|1 [fixed #625]	$00000000
+NextDevice (unlocked)|kept|flags $1C end|1	kept
+NextDevice (unlocked)|kept|flags $1C stop Ram Disk|1	kept
+NextDevice (unlocked)|kept|flags $8 end|1	kept
+NextDevice (unlocked)|popped|flags $1C end|1	$00000000
+NextDevice (unlocked)|popped|flags $1C stop Ram Disk|1	$00000000
+NextDevice (unlocked)|popped|flags $8 end|1	$00000000
 NotifyPort|d0|before init|1	$00000000
 NotifyPort|d0 = init's port||1	$00000001
 NotifyPort|kept||1	kept

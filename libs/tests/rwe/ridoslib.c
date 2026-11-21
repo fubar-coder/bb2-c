@@ -14,11 +14,12 @@
  * 5, 9 and 40: CheckNotify until empty after
  * every write, WaitNotify, RemNotify twice and with id -1, a failing
  * StartNotify on a missing device, one request left for finit);
- * GetDeviceList (devices, volumes, assigns) and NextDevice to the end (the
- * entries recorded sorted by name length and type: the list order varies)
- * with DeviceEntryType after each, NextDevice/DeviceEntryType after
- * FreeDeviceList (the type of the last entry, #622); finit (ends the requests left;
- * the failed request was freed by AddNotify, #621).
+ * GetDeviceList (devices, volumes, assigns) and NextDevice to the end with
+ * DeviceEntryType after each (the entries of a short table of known names
+ * are cases with the name in the key; the list of a session varies),
+ * NextDevice/DeviceEntryType after FreeDeviceList (the type of the last
+ * entry, #622: stopped at the volume Ram Disk); finit (ends the requests
+ * left; the failed request was freed by AddNotify, #621).
  * Not covered: ids outside 0..63 (they write outside the tables), file or path
  * parts longer than 255 characters (the original writes over its code, #627).
  */
@@ -129,145 +130,141 @@ static int drain(const char *what)
     return n;
 }
 
-/* One entry of the device list as NextDevice and DeviceEntryType report it:
-   the name length (d0), a3, the type and the buffer with the name bytes
-   masked.  The order of the list depends on what the session has mounted
-   and when, so devlist() records the entries sorted. */
-#define MAXENT 64
-struct dent {
-    ULONG len, a3, type;
-    UBYTE out[sizeof out];
+/* The device list of a session depends on what the session has mounted
+   (a session restored from a snapshot has the device DH2 and the volume
+   SNAP more than a cold one, and the order varies).  So only the entries
+   of a short table of names every session has become cases, each with its
+   name in the key; they cover the name lengths the library needs (1, 3, 4,
+   5, 6, 7, 8, 12) and the types 0-3 (DeviceEntryType: 0 device, 1 assign,
+   2 volume, 3 an assign that is not bound).  Any other entry is only
+   checked in the program. */
+static struct known {
+    const char *name;
+    ULONG type, flag;
+    int hit;
+} known[] = {
+    { "RAM", 0, LDF_DEVICES }, { "PIPE", 0, LDF_DEVICES },
+    { "SPEAK", 0, LDF_DEVICES },
+    { "T", 1, LDF_ASSIGNS }, { "LOCALE", 1, LDF_ASSIGNS },
+    { "KEYMAPS", 1, LDF_ASSIGNS },
+    { "TEST", 2, LDF_VOLUMES }, { "Ram Disk", 2, LDF_VOLUMES },
+    { "Workbench3.1", 2, LDF_VOLUMES },
+    { "HELP", 3, LDF_ASSIGNS },
+};
+#define NKNOWN (sizeof known / sizeof known[0])
+
+/* the entry of the table with this name and type that is not hit yet and
+   whose list `flags` walks */
+static struct known *known_find(const char *name, ULONG type, ULONG flags)
+{
+    unsigned i;
+    for (i = 0; i < NKNOWN; i++)
+        if (!known[i].hit && known[i].type == type && (known[i].flag & flags)
+            && !strcmp(known[i].name, name))
+            return &known[i];
+    return NULL;
+}
+
+/* the cases of one NextDevice / DeviceEntryType pair of the walk (the
+   registers of the two calls as they were saved) */
+struct step {
+    struct regs nin, nr, tin, tr;
+    ULONG npop, tpop;
 };
 
-static void dent_get(struct dent *e)
+static void step_cases(const struct step *s)
 {
-    ULONG i;
-    e->len = R.d[0];
-    e->a3 = R.a[3] - (ULONG)out;
-    memcpy(e->out, out, sizeof out);
-    for (i = 0; i < e->len && 4 + i < sizeof e->out; i++)
-        e->out[4 + i] = 'x';
+    ROUT = "NextDevice";
+    IN = s->nin; R = s->nr; POP = s->npop;
+    preserve();
+    OBS("d0", s->nr.d[0]);
+    OBS("a3", s->nr.a[3] - (ULONG)out);
+    OBSBYTES("out", out, sizeof out);
+    ROUT = "DeviceEntryType";
+    IN = s->tin; R = s->tr; POP = s->tpop;
+    preserve();
+    OBS("d0", s->tr.d[0]);
 }
 
-/* by name length, then type */
-static int dent_less(const struct dent *a, const struct dent *b)
+/* Walk the list of `flags` with GetDeviceList and NextDevice /
+   DeviceEntryType to its end, or (stop != NULL) up to the entry named
+   `stop` and FreeDeviceList in the middle (#622: the type of the last
+   entry).  The entries of the table (all of them, or only the stop
+   entry), the end of the list and the calls after the walk are cases
+   (key "flags $X NAME", "flags $X end" or "flags $X stop NAME"); every
+   other entry is only checked. */
+static void devlist(ULONG flags, const char *stop)
 {
-    return a->len != b->len ? a->len < b->len : a->type < b->type;
-}
+    char name[256], msg[96];
+    unsigned i;
+    int k, other = 0, stopped = 0;
+    ULONG entries = 0;
 
-static void dent_sort(struct dent *e, int n)
-{
-    int i, j;
-    struct dent t;
-    for (i = 1; i < n; i++) {
-        t = e[i];
-        for (j = i; j > 0 && dent_less(&t, &e[j - 1]); j--)
-            e[j] = e[j - 1];
-        e[j] = t;
-    }
-}
-
-static int dent_same(const struct dent *a, const struct dent *b)
-{
-    return a->len == b->len && a->a3 == b->a3 && a->type == b->type
-           && !memcmp(a->out, b->out, sizeof a->out);
-}
-
-static struct dent scan[MAXENT], seen[MAXENT];
-
-/* the entries of the list without a case (lock, NextDevice and
-   DeviceEntryType to the end, free), sorted; the terminating entry
-   (name length 0) is not among them */
-static int devscan(ULONG flags)
-{
-    int n = 0;
-    markregs(&R);
-    R.d[0] = flags;
-    R.a[6] = (ULONG)dos;
-    callstk(ENT(LIB, E_LOCK, 0), &R, ARGS, 0, &POP);
-    for (;;) {
-        markregs(&R);
-        memset(out, 0xee, sizeof out);
-        R.a[3] = (ULONG)out + 4;
-        R.a[6] = (ULONG)dos;
-        callstk(ENT(LIB, E_NEXT, 0), &R, ARGS, 0, &POP);
-        if (!R.d[0] || n == MAXENT)
-            break;
-        dent_get(&scan[n]);
-        markregs(&R);
-        callstk(ENT(LIB, E_TYPE, 0), &R, ARGS, 0, &POP);
-        scan[n].type = R.d[0];
-        n++;
-    }
-    markregs(&R);
-    R.a[6] = (ULONG)dos;
-    callstk(ENT(LIB, E_FREE, 0), &R, ARGS, 0, &POP);
-    dent_sort(scan, n);
-    return n;
-}
-
-/* The order of the list depends on when the volumes and assigns were
-   mounted in the session.  So the entries are collected first (devscan),
-   sorted by name length, then type, and only then recorded as entry 0 ..
-   N: NextDevice (d0 = the name length, a3, the buffer with the name
-   masked) and DeviceEntryType.  The walk itself (the kept and popped
-   cases, FreeDeviceList, the calls after it) is as it was; a walk that
-   stops at `stop` records the first stop+1 sorted entries, and every
-   entry it saw must be one of the collected ones. */
-static void devlist(ULONG flags, int stop)
-{
-    int k, last, j, m = 0, total, ok;
-    int used[MAXENT] = { 0 };
-    struct dent cur, end;
-    ULONG names = 0;
-
-    total = devscan(flags);
-    memset(&end, 0, sizeof end);
+    for (i = 0; i < NKNOWN; i++)
+        known[i].hit = 0;
     ROUT = "GetDeviceList";
     sprintf(VEC, "flags $%lX", flags);
     DO1(ENT(LIB, E_LOCK, 0), R.d[0] = flags; R.a[6] = (ULONG)dos);
     OBS("d0", R.d[0]);
-    for (k = 0; k < 200; k++) {
-        ROUT = "NextDevice";
-        sprintf(VEC, "flags $%lX entry %d", flags, k);
-        DO1(ENT(LIB, E_NEXT, 0), memset(out, 0xee, sizeof out);
-            R.a[3] = (ULONG)out + 4; R.a[6] = (ULONG)dos);
-        dent_get(&cur);
-        if (cur.len)
-            names++;
-        ROUT = "DeviceEntryType";
-        DO1(ENT(LIB, E_TYPE, 0), (void)0);
-        cur.type = R.d[0];
-        if (!cur.len)
-            end = cur;
-        else if (m < MAXENT)
-            seen[m++] = cur;
-        if (!cur.len || k == stop)
+    for (k = 0; k < 200 && !stopped; k++) {
+        struct step s;
+        ULONG len, type;
+        struct known *kn;
+
+        markregs(&R);
+        memset(out, 0xee, sizeof out);
+        R.a[3] = (ULONG)out + 4;
+        R.a[6] = (ULONG)dos;
+        IN = R;
+        callstk(ENT(LIB, E_NEXT, 0), &R, ARGS, 0, &POP);
+        s.nin = IN; s.nr = R; s.npop = POP;
+        markregs(&R);
+        IN = R;
+        callstk(ENT(LIB, E_TYPE, 0), &R, ARGS, 0, &POP);
+        s.tin = IN; s.tr = R; s.tpop = POP;
+        len = s.nr.d[0];
+        type = s.tr.d[0];
+        if (!len) {                       /* the end of the list */
+            sprintf(VEC, "flags $%lX end", flags);
+            step_cases(&s);
             break;
+        }
+        entries++;
+        for (i = 0; i < sizeof name - 1 && i < len && 4 + i < sizeof out; i++)
+            name[i] = out[4 + i];
+        name[i] = 0;
+        check("ridoslib: d0 is the length of the name", i == len && !out[4 + len]);
+        check("ridoslib: the entry type is 0..3", type <= 3);
+        kn = known_find(name, type, flags);
+        if (kn) {
+            kn->hit = 1;
+            if (!stop || !strcmp(stop, name)) {
+                sprintf(VEC, stop ? "flags $%lX stop %s" : "flags $%lX %s", flags,
+                        name);
+                step_cases(&s);
+                stopped = stop != NULL;
+            }
+        } else {
+            other++;
+            printf("ridoslib: flags $%lX: not in the table: %s type %lu\n", flags,
+                   name, (unsigned long)type);
+        }
     }
-    last = k;
-    check("ridoslib: NextDevice found entries", names > 0);
-    printf("ridoslib: flags $%lX: %lu entries\n", flags, names);
-    check("ridoslib: the walk and the scan agree on the entries",
-          stop < 0 ? names == (ULONG)total : names <= (ULONG)total);
-    for (k = 0; k < m; k++) {
-        ok = 0;
-        for (j = 0; j < total && !ok; j++)
-            if (!used[j] && dent_same(&scan[j], &seen[k]))
-                used[j] = ok = 1;
-        check("ridoslib: an entry of the walk is one of the scan", ok);
-    }
-    for (k = 0; k <= last; k++) {
-        const struct dent *e = k < total ? &scan[k] : &end;
-        sprintf(VEC, "flags $%lX entry %d", flags, k);
-        ROUT = "NextDevice";
-        OBS("d0", e->len);
-        OBS("a3", e->a3);
-        OBSBYTES("out", e->out, sizeof e->out);
-        ROUT = "DeviceEntryType";
-        OBS("d0", e->type);
-    }
-    sprintf(VEC, "flags $%lX entry %d", flags, last);
+    check("ridoslib: NextDevice found entries", entries > 0);
+    printf("ridoslib: flags $%lX: %lu entries, %d not in the table\n", flags,
+           (unsigned long)entries, other);
+    if (stop)
+        check("ridoslib: the stop entry is in the list", stopped);
+    else
+        for (i = 0; i < NKNOWN; i++)
+            if (known[i].flag & flags) {
+                sprintf(msg, "ridoslib: %s not in the list", known[i].name);
+                check(msg, known[i].hit);
+            }
+    if (stop)
+        sprintf(VEC, "flags $%lX stop %s", flags, stop);
+    else
+        sprintf(VEC, "flags $%lX end", flags);
     ROUT = "FreeDeviceList";
     DO1(ENT(LIB, E_FREE, 0), R.a[6] = (ULONG)dos);
     OBS("d0", R.d[0]);
@@ -402,9 +399,9 @@ int main(int argc, char **argv)
     check("ridoslib: messages for 40", drain("only 40 left") > 0);
 
     /* the device list */
-    devlist(LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS, -1);
-    devlist(LDF_VOLUMES, -1);
-    devlist(LDF_DEVICES, 1);
+    devlist(LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS, NULL);
+    devlist(LDF_VOLUMES, NULL);
+    devlist(LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS, "Ram Disk");
 
     /* finit ends request 40; the failed request 2 was freed by AddNotify
        (#621) */
