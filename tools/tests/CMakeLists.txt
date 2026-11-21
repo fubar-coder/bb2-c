@@ -3,13 +3,38 @@
 foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata bblines
 		bbdetok statline outmatch oracletable prevcmp previntended epcheck
 		blitzlib blitztokens checkdata bb22 blitzres tedfont cmdref cdtable bugorigcmp
-		teststats covmap covsel hdf corpusexpect perfbudget amiga_emulation siteexamples)
+		teststats covmap covsel hdf corpusexpect perfbudget amiga_emulation siteexamples
+		testtoml testconf testpp testjudge)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
 	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
+
+# the matrix of the run configuration of the Blitz tests (lib/testconf;
+# testconf is in the list above): snitch programs
+foreach(t testmatrix testassert)
+	add_executable(test_${t} test_${t}.cpp)
+	target_link_libraries(test_${t} PRIVATE lib_testconf snitch::snitch)
+	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
+	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+	add_test(NAME ${t} COMMAND test_${t})
+endforeach()
+# the form of the Blitz test sources (lib/testpp, testform.c)
+add_executable(test_testform test_testform.cpp)
+target_link_libraries(test_testform PRIVATE lib_testpp snitch::snitch)
+target_compile_options(test_testform PRIVATE -Wall -Wextra)
+set_target_properties(test_testform PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME testform COMMAND test_testform)
+# the examples of tests/README.md, "The run configuration"
+add_executable(test_testconf_readme test_testconf_readme.cpp)
+target_link_libraries(test_testconf_readme PRIVATE lib_testconf snitch::snitch)
+target_compile_definitions(test_testconf_readme PRIVATE
+	TESTCONF_README="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/README.md")
+target_compile_options(test_testconf_readme PRIVATE -Wall -Wextra)
+set_target_properties(test_testconf_readme PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME testconf_readme COMMAND test_testconf_readme)
 
 # the judge of the library tests (lib/libscmp; libscmp), the raw block
 # observations (NAME.bin; libscmp_bin) and the order of the expected data's

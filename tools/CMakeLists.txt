@@ -20,5 +20,6 @@ add_subdirectory(bbsrc)
 add_subdirectory(hdftool)
 add_subdirectory(tedfont)
 add_subdirectory(siteexamples)
+add_subdirectory(testreg)
 
 add_subdirectory(tests)

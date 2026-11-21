@@ -275,6 +275,175 @@ incomplete
 end
 ```
 
+### The run configuration
+
+How a test of the model runs and what the run must show besides its
+checks is its run configuration (change `basic-test-runner`; the logic in
+`tools/lib/testconf`, the format in `tools/lib/testtoml`). It is the merge
+of the test's own `ID.test.toml` (optional, next to `ID.test.bas`) and the
+`tests.toml` files of its directory and the directories above it, up to
+and including the first one with `root = true`; without such a file the
+test is refused. The nearest file wins per key, the tables (`matrix`,
+`asserts`, `asserts."SELECTOR"`) merge per key, and a list value
+replaces, never extends. A relative path in a path setting (`files`,
+`mount`, `floppy`: the field after the first `|`; `wrap`, `runwrap`: the
+field before it) is relative to the directory of the file that sets it;
+an absolute path or one with a `:` (an Amiga path) stays as it is. A
+placeholder `@NAME@` (`NAME` is `[A-Z][A-Z0-9_]*`) in a string or list
+element of a setting or an axis is replaced from the build's environment
+file; an unknown one is an error naming file, line and placeholder.
+
+The files are a strict subset of TOML (valid TOML, line by line): one
+`KEY = VALUE` per line (a bare key `[A-Za-z0-9_-]+` or a quoted one, no
+dotted keys), values a string (`"..."` with the escapes `\"`, `\\`, `\t`,
+`\n`, `\r`, or `'...'` without escapes), a decimal integer, `true` or
+`false`, or a list of strings on one line; table headers `[NAME]` and
+`[NAME."SELECTOR"]`; comments from `#`. Everything else of TOML
+(multi-line strings, floats, dates, inline tables, arrays of tables, other
+escapes) is refused with file and line.
+
+| Key | Value | |
+|---|---|---|
+| `compiler` | `port`, `orig195`, `orig210` | blitz2-c (default), blitz2 1.95 (the build of `blitz2.s`), the CD's blitz2 2.10 |
+| `libs` | `cd`, `clib` | the CD's libraries, the C libraries (default) |
+| `machine` | string | the emulated machine (default `a1200`) |
+| `runtime-errors` | `off`, `on` | runtime error checking (default `off`) |
+| `rwe` | list | the RWE user libraries the program needs |
+| `timeout`, `hang-after` | integer | time limit of a session, silence that ends it as a hang (seconds) |
+| `stack` | integer | the stack of the compiler and the program |
+| `serial`, `rtg`, `pad` | `off`, `on` | the serial peer, the RTG emulator, inject's `pad` (default `off`) |
+| `wrap`, `runwrap` | `PATH[\|ARGS]` | the compiler, the program started through PATH |
+| `runargs`, `launcherargs` | string | arguments of the program, options of the launcher |
+| `files` | list of `DEST\|SRC[\|TAG]` | files staged as `CORPUS:DEST` |
+| `dirs`, `remove` | list | empty directories, files removed after staging |
+| `mount`, `floppy` | list of `NAME\|DIR`, `N\|SRC` | read-only volumes, disk images |
+| `uae`, `jobline` | list | changes of the emulator configuration, lines of tedstub's job list |
+| `labels`, `fixtures` | list | further ctest labels, the ctest fixtures required |
+| `cost` | integer | the ctest `COST` |
+| `exclude` | list of selectors | the combinations of axis values that are no cell |
+| `root` | boolean | only in a `tests.toml`: the search stops here |
+| `fixed-orig`, `fixed` | integer | only in an `ID.test.toml`: the issue of the fix of an original bug, of another bug; not both |
+
+The keys from `compiler` to `jobline` are the **run settings**; `labels`,
+`cost` and `fixtures` describe the registered ctest test, which is one per
+case and side, not per cell. A key the runner does not know is an error
+naming file, line and key, and so is a key of a single test (`fixed-orig`,
+`fixed`, the tables `deviations`) in a `tests.toml` or `root` in an
+`ID.test.toml`. `fixed-orig` needs a declared deviation, `fixed` must have
+none.
+
+**The matrix.** The table `matrix` names the axes: each key a run
+setting that is no list, each value a non-empty list of its values as
+strings (an integer as `"60"`). A list value outside this table is no
+axis; any other key in it is an error naming the key. The cells are the
+product of the axes minus the cells that an `exclude` selector matches; a
+cell is named by its values in the order of the table above, `,` between
+them (`orig195,cd`), and the only cell of a test without axes is `default`.
+If a nearer file sets a key that a farther one makes an axis, it is no
+axis (and the other way round); both in one file is an error. A cell needs
+original material if its compiler is not `port` or its libraries are the
+CD's; such cells are the side `originals` of a case.
+
+```toml
+# tests/bug-orig/libs/tests.toml
+root = true
+timeout = 90
+exclude = ["compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]          # three cells: port,cd  port,clib  orig195,cd
+```
+
+**Cell selectors** name cells by the values of their settings:
+`TERM[,TERM...]` without blanks, a `TERM` is `KEY=VALUE` with `KEY` a run
+setting that is no list and `VALUE` one of its values; in the selector of
+an assertion `case=NAME` also restricts it to the case `NAME`. A cell
+matches if its value of every `KEY` (the axis value, else the setting,
+else the default of the table above) is `VALUE`. The more terms, the more
+specific the selector.
+
+#### Assertions
+
+An assertion judges what the program cannot state itself: a key `QUERY =
+"PREDICATE"` in the table `asserts` (all cells) or `asserts."SELECTOR"`
+(the cells the selector matches). The grammar:
+
+```
+query      = "rc" | "requester" | "compile" | "compile.log" | "output"
+           | "serial" | "inject" | "session" | "end.case" | "end.run"
+           | "check." NAMESPACE "." NAME [ ".expected" | ".actual" ]
+predicate  = CMP value | ["not "] "contains" string | "matches" string
+           | ["not "] "exists" | "count" CMP integer
+CMP        = "==" | "!=" | "<" | "<=" | ">" | ">="
+value      = integer | string | word
+integer    = ["-"] digits | "$" 1*8 hex-digits     ; "$": 32 bits, signed
+string     = '"' { char | '\"' | '\\' } '"'
+word       = "ok" | "fail" | "not-run" | "done" | "timeout" | "halt" | "none"
+```
+
+Blanks may stand around the operator and the value. `NAMESPACE` is the
+case, the procedure, `init` or `end` a check stands in, `NAME` the check's
+name (a check that a configuration names must have one).
+
+| Query | What | Predicates |
+|---|---|---|
+| `rc` | the exit code of the program | `CMP integer`, `exists` |
+| `requester` | the requesters shown, but the runtime errors the case announced | `contains`, `matches`, `exists`, `count` |
+| `compile` | `ok`, `error LINE MESSAGE` or `none` | `==`/`!=` with `ok`, `none` or a string, `contains`, `matches` |
+| `compile.log`, `output`, `serial`, `inject` | the compiler's log, the printed output, the serial data, inject's report | `==`/`!=` string, `contains`, `matches`, `exists` (not empty) |
+| `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
+| `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
+| `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries | `==`/`!=` with `ok`, `fail`, `not-run` |
+| `check.NS.NAME.expected`, `.actual` | the expected, the actual value of its first failed entry, else of its first | `CMP integer` (long values), `==`/`!=` string, `contains`, `matches` (strings) |
+
+`contains` holds if the text (a requester, for `requester`) holds the
+string; `matches` if a line of it matches the pattern of `outmatch` (`*`
+any characters, `#` a decimal number, `\c` the character `c`).
+
+**One assertion per query.** For a query only one assertion applies to a
+cell: that of the nearest file, and in it that of the most specific
+selector; assertions are never added up. Two different ones of the same
+rank are an error naming both. Without one, the defaults apply:
+
+```toml
+[asserts]
+rc = "== 0"
+requester = "count == 0"
+"end.case" = "exists"          # a query with a "." is a quoted key
+"end.run" = "exists"
+```
+
+and every check with entries must have passed, unless an assertion names
+it. A test that expects another exit code sets `rc = "== 20"` in its own
+file and keeps the other defaults.
+
+**Deviations of the original.** A test of an original bug declares in its
+`ID.test.toml` what the original's faulty part changes, as assertions in
+the table `deviations."SELECTOR"`, the selector naming the cells with the
+faulty part (`libs=cd` for a library bug, `compiler=orig195` for a compiler
+bug). In those cells a deviation replaces the assertion of its query;
+further deviations of the same table (the actual value of the failing
+check) are its validators.
+
+```toml
+# tests/bug-orig/libs/shapeslib-frames-maximum.test.toml
+fixed-orig = 265
+
+[deviations."libs=cd"]
+"check.frames_maximum.width" = "== fail"
+"check.frames_maximum.width.actual" = "== 0"
+```
+
+**The environment file** of a build (written by CMake) gives the
+placeholders and the directory where the search for `root = true` stops:
+
+```toml
+top = "/path/of/the/repository"
+[placeholders]
+TESTDATA = "/path/of/the/test/data"
+```
+
 ## Original material and presets
 
 Some tests need original material that is not in the repository (the CD,

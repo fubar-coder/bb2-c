@@ -74,6 +74,17 @@
 #              a6 kept, no call or jump into them, not folded (objdump text)
 #   siteexamples  the Blitz Basic examples of the website (fenced blocks) and
 #              their manifest (tests/site-examples)
+#   testtoml   the strict TOML subset of the run configuration of the Blitz
+#              tests (tests.toml, ID.test.toml)
+#   testconf   the run configuration of a Blitz test: the files up to
+#              root = true, their keys and the merge, the matrix, the
+#              assertions
+#   testpp     the preprocessor of the Blitz test sources (ID.test.bas): the
+#              checks numbered, their table, the placeholders
+#   testjudge  the judge of the Blitz tests of that model: a cell of a case
+#              from its result file and observations, the verdict of a case
+#   testreg    the registration of those tests at build time: one ctest test
+#              per case and side, the ctest include file (tools/testreg)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -112,3 +123,8 @@ add_subdirectory(tedfont)
 add_subdirectory(perfbudget)
 add_subdirectory(epcheck)
 add_subdirectory(siteexamples)
+add_subdirectory(testtoml)
+add_subdirectory(testconf)
+add_subdirectory(testpp)
+add_subdirectory(testjudge)
+add_subdirectory(testreg)

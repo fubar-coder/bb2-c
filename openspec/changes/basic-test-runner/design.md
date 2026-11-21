@@ -167,4 +167,108 @@ and `tests/bug-orig/CMakeLists.txt`.
 ## Open Questions
 
 - The exact selector syntax for cells in table names
-  (`[asserts."libs=cd"]` is the working form).
+  (`[asserts."libs=cd"]` is the working form; implemented as
+  `KEY=VALUE[,KEY=VALUE...]` with `case=NAME`, see "Findings").
+
+## Findings of the implementation
+
+Phase 1 (tasks 1.1-1.4, 2.1, 3.2, 4.1), `tools/lib/testtoml`,
+`tools/lib/testconf`; the grammar in `tests/README.md`, "The run
+configuration".
+
+Decided by the user (`task-decisions.md`, 2026-11-21, "basic-test-runner:
+findings of implementer B"), and written into the spec delta: only run
+settings with a single value are axes; the nearest file first, then the
+most specific selector in it; deviations as assertions in
+`[deviations."SELECTOR"]` of the test's own file, its further keys the
+validators; the extra refusals of the form check and the preprocessor
+(below); `TIMEOUT` the sum of a side's cell time limits and absolute
+source paths in the include file; the compiler values `port`, `orig195`,
+`orig210`. The `findit` question (a byte with bit 7 hiding the next one)
+was answered by a spike (`tr-findit-report.md`): TED stores a Latin-1
+character of a string as one byte below $20 or as the pair $90 cc, so the
+rule holds for the tokenised source only; the preprocessor reads the text
+source, where a byte >= $80 is one character (user decision 2026-11-21,
+`task-decisions.md`).
+
+- **Keys.** The run settings mirror the header directives and pass keys
+  of today (`compiler`, `libs`, `machine`, `runtime-errors`, `rwe`,
+  `timeout`, `hang-after`, `stack`, `serial`, `rtg`, `pad`, `wrap`,
+  `runwrap`, `runargs`, `launcherargs`, `files`, `dirs`, `remove`,
+  `mount`, `floppy`, `uae`, `jobline`); `labels`, `cost` and `fixtures`
+  describe the registered ctest test. `compiler` has the values `port`,
+  `orig195` (the build of `blitz2.s` 1.95) and `orig210` (the CD's 2.10),
+  `libs` `cd` and `clib`; the defaults are `port`, `clib`, `a1200`
+  and `off` (decided: `task-decisions.md`, 2026-11-21, "basic-test-runner:
+  findings of implementer B"). Task 3.1 maps the settings to the pass file
+  and may add keys.
+- **Axes.** A list setting cannot be an axis (the subset has no lists of
+  lists), nor can `labels`, `cost`, `fixtures` (one ctest test per case
+  and side, not per cell). A key that a nearer file sets and a farther one
+  makes an axis is no axis, and the other way round; both in one file is
+  an error. Cells are named by their values in the fixed order of the
+  keys, `,` between them; a test without axes has the cell `default`.
+- **Replacement.** For a query the nearest file wins first, then the most
+  specific selector of that file (the number of its terms); two different
+  assertions of the same rank are an error. A deviation of the cell beats
+  every assertion. The spec says "the nearest file and the most specific
+  cell selector"; the order between the two, proposed by the implementation,
+  is decided (a test's own statement beats a directory's cell-specific one).
+- **Deviations** are assertions in `[deviations."SELECTOR"]` of the test's
+  own file; the selector names the cells with the faulty part, the further
+  entries of the table (an actual value) are the validators. `fixed-orig`
+  without a deviation and `fixed` with one are refused (from
+  `bug-orig-basic-tests`, implemented here because the configuration
+  holds both).
+- **Check queries** are `check.NAMESPACE.NAME[.expected|.actual]`; the
+  judge splits `NAME` from the suffix against the names of the table, so a
+  name may contain a `.`. A case selector term `case=NAME` restricts an
+  assertion to one case.
+- **Preprocessor** (`tools/lib/testpp`). It finds a call as `expandmax`
+  does (a `!` outside strings and comments, the name, blanks, `{`) and
+  splits the arguments as `findit` does; `findit`'s rule that a byte with
+  bit 7 set takes the next byte with it belongs to the tokenised source
+  and does not apply to the text source (a byte >= $80 is one Latin-1
+  character there, see above). It also refuses the same check name twice in a namespace (a
+  query could not tell them apart) and a procedure with checks named
+  like a case or `init`/`end` (its namespace would be ambiguous). The
+  placeholders are `@LINE@`, `@CASE@`, `@TEST@` and `@TESTDATA@` (its
+  value a parameter of the run), replaced in code and strings, not in
+  comments; the table keeps the text as written.
+- **Judge** (`tools/lib/testjudge`). The observations other than the
+  result file are data (`struct tj_obs`) that task 3.1 fills from the
+  session: session end, compile result and log, exit code, output, serial
+  data, inject's report, and the requesters, each with the number of
+  result file lines written before it was shown (so a requester can be
+  matched with an announcement before it). A requester matches an
+  announcement if its text holds the message. A case whose last entry is
+  a matched announcement has ended as expected: `end.case` holds and the
+  default `rc == 0` does not apply (an assertion of `rc` still does).
+  A check without entries is `not-run` and fails no default, which gives
+  "not run behind a declared crash". An assertion that names a check
+  (by verdict or value) takes it out of the default "every check passed".
+  The verdict of a case over a side's cells follows `bug-orig-basic-tests`:
+  without deviations every cell passes; with `fixed-orig` the faulty cells
+  pass with their deviations and the others without; an open bug is
+  REPRODUCED when every cell passes with the deviations (the cells without
+  the faulty part as if the selector matched), and fails when such a cell
+  passes without them. Exit values as `corpusrun`'s bug-orig mode: 0
+  passed, 1 reproduced, 2 error, 3 broken, 4 failed.
+- **Form check** (`tools/lib/testpp`, `tp_check_form`). Besides the rules
+  of the spec it refuses, as code outside the blocks, a call of one of
+  the test's own macros and `INCLUDE`/`XINCLUDE` there (their text is not
+  known to the check, and an included file would hide checks from the
+  numbering); the declarations allowed outside are listed in `testpp.h`.
+  A loop, `Select`, block `If` or `SetErr` must not cross a block's start
+  or end. A case named `init` or `end` beside a batch init or batch end is
+  refused (its namespace would be that of the batch block).
+- **Registration** (`tools/lib/testreg`, `tools/testreg`). A test runs
+  `COMMAND... --source ABSOLUTE-SOURCE --case CASE --side port|originals`
+  (the subcommand is task 3.1's); its `TIMEOUT` is the sum of the cells'
+  time limits of its side plus an extra (the runner groups cells into
+  sessions, the bound holds for any grouping), `SKIP_RETURN_CODE 77` as
+  the other emulator tests. The depfile names every file read; a file
+  that does not exist yet cannot be in it, so task 4.2 must glob the
+  configuration files (`tests.toml`, `*.test.toml`) with
+  `CONFIGURE_DEPENDS` too, or a new `ID.test.toml` next to an existing
+  source is not seen until the next configure.

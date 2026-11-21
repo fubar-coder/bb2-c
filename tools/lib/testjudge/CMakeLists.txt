@@ -1,0 +1,4 @@
+add_library(lib_testjudge STATIC testjudge.c)
+set_target_properties(lib_testjudge PROPERTIES OUTPUT_NAME testjudge)
+target_include_directories(lib_testjudge PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lib_testjudge PUBLIC lib_testconf lib_testpp lib_basictest lib_outmatch)
