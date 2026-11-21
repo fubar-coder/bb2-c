@@ -5,7 +5,8 @@ done
 ok
 [run]
 before
-REQUESTER: AutoRequest body "GURU! - ILLEGAL Instruction" pos "OKAY!" neg "OKAY!" -> answered FALSE
+# varies: the original crashes (Guru, illegal instruction) and what it writes then is memory garbage: the requester line, a stray character or nothing
+...
 rc=0
 [blitz2]
 rc=0
