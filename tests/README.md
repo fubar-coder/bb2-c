@@ -170,6 +170,39 @@ end have the fixed labels `tc__init`, `tc__init_end`, `tc__final` and
 | `TLExpectError K` | `!ExpectError` | |
 | (finit) | the end of the program | writes `incomplete` if a block is open, then `end` |
 
+The library is `libs/userlibs/testlib` (user library 81, built as
+`variants/bb2-2.10/userlibs/testlib/testlib.obj`; its logic `tlcore.c`
+has the host test `testlib_core`). Between `TLBegin` and the end of the
+run it allocates and frees nothing, and every routine keeps `d2`-`d7`
+and `a2`-`a6` besides the registers of the register rule. Write the
+result file to a volume whose handler takes no memory of the Amiga for
+it (`CORPUS:out/`, `TEST:`), not to `RAM:`, or the free memory changes
+with every entry. What it writes besides the entries the routines name:
+
+* A failed precondition writes `require K broken` and `blockend`: the
+  library closes the block and its call returns a second time.
+* A failed precondition in the batch init breaks every case: each case
+  the driver calls gets `block case NAME`, the precondition's `require`
+  entry again and `blockend`, and does not run; the batch end does not
+  run and writes nothing.
+* A failed check in the batch init fails every case: each case gets the
+  first failed check of the init again, after its `block` entry, and
+  runs.
+* In Blitz mode, under `Forbid` or `Disable` (exec's `TDNestCnt` or
+  `IDNestCnt` 0 or more) the entries are kept, up to 1024 bytes, and
+  written before the next entry made in Amiga mode or by the finit;
+  entries that do not fit are lost and followed by `broken entries lost
+  while kept`. In Amiga mode each entry is one dos `Write` at once.
+* A `checkstr` entry longer than 512 bytes has its two values cut until
+  it fits; its verdict is that of the whole strings.
+* A call out of order writes `broken` with the reason before its own
+  entry: `block inside a block`, `check outside a block`, `block end
+  without a block`, `batch init after a block`, `case after the batch
+  end`, `second batch end`, `begin inside the run`; a case without a
+  name or with one too long for a line is written as `?`, followed by
+  `case without a name` or `case name too long`. A state whose guard words a wild write changed writes `broken
+  state damaged` once; after that only the finit writes, its `end`.
+
 ### The result file
 
 One entry per line, fields separated by TAB, each line ended by LF. `K` is

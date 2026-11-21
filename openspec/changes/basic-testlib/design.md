@@ -191,3 +191,44 @@ task 3.1, not in parallel with it.
 - [The preprocessor misreads a check call] → host tests against the
   compiler's argument rules; the fallback of D4.
 
+
+## Findings of the implementation
+
+- **Where the spec is silent, the library decides** (task 2.2; host test
+  `testlib_core`, the emulator runs of `tr-testlib-impl-report.md`):
+  - A failed `Require` writes `require K broken` and then `blockend`:
+    the library closes the block itself, the block's call returns a
+    second time and the macro returns, so no block stays open for the
+    finit.
+  - A failed `Require` in the batch init: every case the driver calls
+    gets `block case NAME`, the init's `require K broken` again and
+    `blockend`, and does not run (`TLCase` gives 0). The batch end does
+    not run and writes nothing (as the prototype: the init's data may
+    be half made).
+  - A failed check in the batch init: every case gets the first failed
+    check of the init again (its line, after the case's `block` entry)
+    and runs. So a case's own block holds what fails it; `K` names the
+    init's check in the runner's table, as a procedure's check is
+    attributed to the running case by the order of the entries.
+  - Calls out of order write `broken REASON` before their own entry (a
+    block inside a block, a check outside a block, a block end without
+    one, the batch init after a block, a case after the batch end, a
+    second batch end, a second `TLBegin`, a case without a name or with
+    one too long for a line). Guard words around the state: a damaged
+    state writes `broken state damaged` once, then only the finit's
+    `end`; the file handle is kept with its complement and not used if
+    they disagree.
+- **Kept entries**: while exec's `TDNestCnt` or `IDNestCnt` is 0 or more
+  (Blitz mode, `Forbid`, `Disable`) the entries go to a buffer of 1024
+  bytes and are written before the next entry made in Amiga mode, or by
+  the finit, which writes in any mode. Entries that do not fit are lost,
+  and `broken entries lost while kept` follows the kept ones. Measured
+  (white box, the state's pending bytes): kept after `BLITZ`, under
+  `Forbid` and `Disable`, written by the first check after `QAMIGA`,
+  `Permit` or `Enable`, none pending after an entry in Amiga mode.
+- **Limits**: an entry is at most 512 bytes; a `checkstr` line that does
+  not fit has both values cut (halved until it fits), its verdict is that
+  of the whole strings. The state is about 2.1 KB of the library's 7.5 KB
+  file, in its code hunk.
+- **dos.library** is opened by `TLBegin` (with the result file) and closed
+  by the finit, so the library needs no `!libs` entry of doslib.

@@ -41,7 +41,10 @@ the other variants include; openspec change `basic-testlib`, design
 D11). It is free in every variant, in the CD's number lists
 (`LIBNUMS.BB`, `BUM9B`/`BUM10A` `LIBNUMS.BB2`), in AmiBlitz3's lists
 (`libnums.ab3`, `sorted_libnums.ab3`) and in every library file under
-`archive/`.
+`archive/`. The test library is test infrastructure, no part of
+`acidlibs` or `deflibs`: the userlib
+`variants/bb2-2.10/userlibs/testlib/testlib.obj`, checked in its build
+step against the default `acidlibs` and `deflibs`.
 
 **Userlibs** of a variant: `libs/userlibs/DIR/NAME.c` →
 `build/amiga/variants/VARIANT/userlibs/DIR/NAME.obj` (for

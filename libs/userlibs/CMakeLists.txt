@@ -5,3 +5,4 @@
 # variant twice); a ctest checks the whole set.
 add_subdirectory(rwe)
 add_subdirectory(literal)
+add_subdirectory(testlib)

@@ -94,6 +94,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tests/host ted-test
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/blitz2/tests/host blitz2-tests-host)
 # host tests of the library test framework (libs/tests/capture.c)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../libs/tests/host libs-tests-host)
+# host tests of the Blitz test library's logic (libs/userlibs/testlib)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../libs/userlibs/testlib/tests/host testlib-tests-host)
 # the tool on the TED core: tedsrc (tokenising like TED, for the corpus; a
 # source as TED shows it: the readable library sources)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tools/tedsrc ted-tools/tedsrc)

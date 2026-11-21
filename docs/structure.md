@@ -16,7 +16,8 @@ libs/variants/               the variants of the libraries (NAME/libnums.h:
                              the library numbers; bb2-2.10 the default)
 libs/userlibs/               userlibs of a variant (rwe/: Red When Excited,
                              variant rwe-1999; rievallib: rwe-1999-eval,
-                             risoundlib2: rwe-1999-ahi)
+                             risoundlib2: rwe-1999-ahi; testlib/: the Blitz
+                             test library, 81, with host tests of its logic)
 libs/blitzlib.ld             linker script: one code hunk, header at offset 0
 libs/acidlibs/               one C file per library
 libs/deflibs/                one C file per AmigaOS library
