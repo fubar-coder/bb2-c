@@ -74,6 +74,8 @@
 #              a6 kept, no call or jump into them, not folded (objdump text)
 #   siteexamples  the Blitz Basic examples of the website (fenced blocks) and
 #              their manifest (tests/site-examples)
+#   testtoml   the strict TOML subset of the run configuration of the Blitz
+#              tests (tests.toml, ID.test.toml)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -112,3 +114,4 @@ add_subdirectory(tedfont)
 add_subdirectory(perfbudget)
 add_subdirectory(epcheck)
 add_subdirectory(siteexamples)
+add_subdirectory(testtoml)
