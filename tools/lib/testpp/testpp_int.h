@@ -33,7 +33,7 @@ size_t tp_blanks(const char *l, size_t p, size_t e);
 /*
  * The arguments of a macro call: l[open] is the '{'.  The compiler's
  * findit: an argument ends at ',' or '}' outside strings and outside
- * ( { nesting; a byte with bit 7 set takes the next byte with it.
+ * ( { nesting (in the text source a byte >= $80 is one character).
  * Writes up to max [start, end) pairs (raw, not trimmed) to args;
  * *close = the offset of the '}'.  Returns the number of arguments, -1 if
  * the line ends before the '}'.

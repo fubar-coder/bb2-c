@@ -185,7 +185,11 @@ validators; the extra refusals of the form check and the preprocessor
 (below); `TIMEOUT` the sum of a side's cell time limits and absolute
 source paths in the include file; the compiler values `port`, `orig195`,
 `orig210`. The `findit` question (a byte with bit 7 hiding the next one)
-goes to a spike of its own; the preprocessor keeps the compiler's rule.
+was answered by a spike (`tr-findit-report.md`): TED stores a Latin-1
+character of a string as one byte below $20 or as the pair $90 cc, so the
+rule holds for the tokenised source only; the preprocessor reads the text
+source, where a byte >= $80 is one character (user decision 2026-11-21,
+`task-decisions.md`).
 
 - **Keys.** The run settings mirror the header directives and pass keys
   of today (`compiler`, `libs`, `machine`, `runtime-errors`, `rwe`,
@@ -222,11 +226,10 @@ goes to a spike of its own; the preprocessor keeps the compiler's rule.
   assertion to one case.
 - **Preprocessor** (`tools/lib/testpp`). It finds a call as `expandmax`
   does (a `!` outside strings and comments, the name, blanks, `{`) and
-  splits the arguments as `findit` does, including its rule that a byte
-  with bit 7 set takes the next byte with it: a Latin-1 character right
-  before the closing quote of a string argument hides the quote from the
-  compiler and from the preprocessor alike (refused as a line without
-  its `}`). It also refuses the same check name twice in a namespace (a
+  splits the arguments as `findit` does; `findit`'s rule that a byte with
+  bit 7 set takes the next byte with it belongs to the tokenised source
+  and does not apply to the text source (a byte >= $80 is one Latin-1
+  character there, see above). It also refuses the same check name twice in a namespace (a
   query could not tell them apart) and a procedure with checks named
   like a case or `init`/`end` (its namespace would be ambiguous). The
   placeholders are `@LINE@`, `@CASE@`, `@TEST@` and `@TESTDATA@` (its

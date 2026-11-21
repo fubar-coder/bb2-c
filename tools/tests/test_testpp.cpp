@@ -197,12 +197,20 @@ TEST_CASE("testpp: the arguments by the compiler's rules", "[testpp]")
         CHECK(p.rc == 0);
         CHECK(p.s.nchecks == 0);
     }
-    // a byte with bit 7 set takes the next byte with it (findit), also the
-    // quote that should end a string
+    // the source is text: a byte >= $80 is one Latin-1 character (findit's
+    // pair rule belongs to the tokenised source): an umlaut as the last
+    // byte of a string argument, "ß,ß" as one argument, an umlaut in the
+    // comment behind a call
+    CHECK(one("!CheckStrEq{a$,\"x\xe4\"}") == "!CheckStrEq{0,a$,\"x\xe4\"}");
+    CHECK(one("!CheckStrEq{a$,\"\xdf,\xdf\",\"sz\"}") == "!CheckStrEq{0,a$,\"\xdf,\xdf\"}");
+    CHECK(one("!CheckEq{\xe4,1} ; Gr\xfc\xdf" "e \xe4") == "!CheckEq{0,\xe4,1} ; Gr\xfc\xdf" "e \xe4");
+    CHECK(one("!Check{a$=\"\xe4\"}:!Check{b}") == "!Check{0,a$=\"\xe4\"}:!Check{1,b}");
     {
-        pp p("!TestCase{a}\n!CheckStrEq{a$,\"x\xe4\"}\n!EndTestCase\n");
-        CHECK(p.rc == 1);
-        CHECK(p.errors() == "x.test.bas:2: !CheckStrEq: the line ends before the closing }\n");
+        pp p("!TestCase{a}\n!CheckStrEq{a$,\"\xdf,\xdf\",\"sz\"}\n!EndTestCase\n");
+        REQUIRE(p.rc == 0);
+        REQUIRE(p.s.nchecks == 1);
+        CHECK(!strcmp(p.s.checks[0].expected, "\"\xdf,\xdf\""));
+        CHECK(!strcmp(p.s.checks[0].name, "sz"));
     }
     CHECK(one("!CheckStrEq{a$,\"\xc3\xa4\"}") == "!CheckStrEq{0,a$,\"\xc3\xa4\"}");
     // a CR before the LF stays

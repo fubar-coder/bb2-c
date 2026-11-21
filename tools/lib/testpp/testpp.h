@@ -8,8 +8,7 @@
  * macro calls (blitz2's expandmax: a `!` outside strings and comments,
  * the macro name, blanks, `{`), splits their arguments by the compiler's
  * rules (findit, programs/blitz2/src/compile.c: a `,` or `}` outside
- * strings and outside `(` `{` nesting ends an argument; a byte with bit 7
- * set takes the next byte with it), and
+ * strings and outside `(` `{` nesting ends an argument), and
  *
  *   - numbers them with K, from 0 over the whole source in source order,
  *     and writes K as the first argument, removing the name and the
@@ -36,6 +35,12 @@
  *
  * The preprocessed text has the lines of the source, so a compile error
  * of the driver keeps its line.
+ *
+ * The source is text: a byte >= $80 is one Latin-1 character.  findit's
+ * rule that such a byte takes the next one with it is a rule of the
+ * tokenised source (a token is two bytes; TED stores a Latin-1 character
+ * in a string as one byte below $20 or as the pair $90 cc), so it does
+ * not apply here.
  */
 #ifndef TESTPP_H
 #define TESTPP_H

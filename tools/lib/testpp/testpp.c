@@ -98,7 +98,7 @@ size_t tp_statements(const char *l, size_t len, struct tp_stmt *st, size_t max, 
             nest++;
         else if (c == ')' || c == '}')
             nest--;
-        p += (c & 0x80) ? 2 : 1;
+        p++;
     }
 }
 
@@ -129,10 +129,6 @@ int tp_args(const char *l, size_t len, size_t open, struct tp_stmt *args, int ma
         if (p >= len)
             return -1;
         c = (unsigned char)l[p++];
-        if (c & 0x80) {
-            p++;
-            continue;
-        }
         if (c == '"') {
             quote = !quote;
             continue;
@@ -635,10 +631,6 @@ static void one_line(struct ctx *c, const char *l, size_t len, struct buf *out)
         if (p >= len)
             break;
         ch = (unsigned char)l[p];
-        if (ch & 0x80) {
-            p += 2;
-            continue;
-        }
         if (ch == '"') {
             quote = !quote;
             p++;
