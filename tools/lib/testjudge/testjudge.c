@@ -236,8 +236,8 @@ static int report_check(const struct tj_test *t, const struct chk *k, struct tj_
 
         str_text(es, sizeof es, &x->expected_str);
         str_text(as, sizeof as, &x->actual_str);
-        snprintf(e, sizeof e, "\"%s\"", es);
-        snprintf(a, sizeof a, "\"%s\"", as);
+        snprintf(e, sizeof e, "\"%s\"%s", es, x->cut ? " (cut)" : "");
+        snprintf(a, sizeof a, "\"%s\"%s", as, x->cut ? " (cut)" : "");
     } else {
         long_text(e, sizeof e, x->expected);
         long_text(a, sizeof a, x->actual);
@@ -460,9 +460,14 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
                 return msg(msgs, "%s:%u: %s: the value of this check is a string", a->at.file, a->at.line,
                            a->query) ? -1 : TJ_ERROR;
             }
+            if (x->e.cut && (p->op == TC_P_EQ || p->op == TC_P_NE)) {
+                free(v);
+                return msg(msgs, "%s:%u: %s: the value was cut to fit the line; compare it with contains or "
+                           "matches", a->at.file, a->at.line, a->query) ? -1 : TJ_ERROR;
+            }
             ok = strlen(v) == s->length && text_pred(p, v);
             str_text(shown, sizeof shown, s);
-            snprintf(got, sizeof got, "\"%s\"", shown);
+            snprintf(got, sizeof got, "\"%s\"%s", shown, x->e.cut ? " (cut)" : "");
             free(v);
         } else {
             return msg(msgs, "%s:%u: %s: this check has no values", a->at.file, a->at.line, a->query) ? -1

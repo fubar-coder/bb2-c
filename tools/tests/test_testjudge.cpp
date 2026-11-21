@@ -132,7 +132,7 @@ static const std::string good = head
                                   "check|4|ok|$FFFFFFFF|$FFFFFFFF\n"
                                   "check|5|ok|$00000001|$00000001\n"
                                   "check|5|ok|$00000001|$00000001\n"
-                                  "checkstr|6|ok|ab|ab\n"
+                                  "checkstr|6|ok|ab|ab|-\n"
                                 + tail;
 
 static std::string join(const tj_msgs &m)
@@ -188,9 +188,13 @@ TEST_CASE("testjudge: a failed check and its report", "[testjudge]")
     CHECK(judge(f, q, m) == TJ_FAIL);
     CHECK(has(m, "check frames_maximum len (x.test.bas:10) failed: Len(\"abc\")=3 is 0"));
     // a string check
-    obs s(head + "checkstr|6|fail|ab|a\\x09b\n" + tail);
+    obs s(head + "checkstr|6|fail|ab|a\\x09b|-\n" + tail);
     CHECK(judge(f, s, m) == TJ_FAIL);
     CHECK(has(m, "check frames_maximum str (x.test.bas:12) failed: a$: expected \"ab\", actual \"a\\x09b\""));
+    // values the library shortened to fit the line
+    obs cut(head + "checkstr|6|fail|abc|abd|cut\n" + tail);
+    CHECK(judge(f, cut, m) == TJ_FAIL);
+    CHECK(has(m, "a$: expected \"abc\" (cut), actual \"abd\" (cut)"));
     // a check without a name is reported by its number in the namespace
     obs n(head + "check|8|fail|$00000002|$00000003\n" + tail);
     CHECK(judge(f, n, m) == TJ_FAIL);
@@ -243,9 +247,18 @@ TEST_CASE("testjudge: queries of checks", "[testjudge]")
     {
         fixture f("[asserts]\n\"check.frames_maximum.width\" = \"== not-run\"\n"
                   "\"check.frames_maximum.str.actual\" = \"contains \\\"b\\\"\"\n");
-        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xb\n" + tail), m) == TJ_PASS);
-        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xy\n" + tail), m) == TJ_FAIL);
+        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xb|-\n" + tail), m) == TJ_PASS);
+        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xy|-\n" + tail), m) == TJ_FAIL);
         CHECK(has(m, "does not hold: \"xy\""));
+        // a cut value: contains still works and the report says it was cut
+        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xb|cut\n" + tail), m) == TJ_PASS);
+        CHECK(judge(f, obs(head + "checkstr|6|fail|ab|xy|cut\n" + tail), m) == TJ_FAIL);
+        CHECK(has(m, "does not hold: \"xy\" (cut)"));
+        // == cannot be decided on a cut value
+        fixture g("[asserts]\n\"check.frames_maximum.str.actual\" = \"== \\\"xy\\\"\"\n");
+        CHECK(judge(g, obs(head + "checkstr|6|fail|ab|xy|cut\n" + tail), m) == TJ_ERROR);
+        CHECK(has(m, "the value was cut to fit the line; compare it with contains or matches"));
+        CHECK(judge(g, obs(head + "checkstr|6|fail|ab|xy|-\n" + tail), m) == TJ_PASS);
     }
     {
         // a value of a check that did not run
@@ -424,7 +437,7 @@ TEST_CASE("testjudge: malformed result files", "[testjudge]")
     // numbers and kinds the table does not have
     CHECK(judge(f, obs(head + "check|42|ok|$00000010|$00000010\n" + tail), m) == TJ_ERROR);
     CHECK(has(m, "line 5 names check 42, which the source does not have"));
-    CHECK(judge(f, obs(head + "checkstr|3|ok|a|a\n" + tail), m) == TJ_ERROR);
+    CHECK(judge(f, obs(head + "checkstr|3|ok|a|a|-\n" + tail), m) == TJ_ERROR);
     CHECK(has(m, "line 5 is no entry of check 3 (!CheckEq, x.test.bas:9)"));
     // a case that was not selected, the case twice
     CHECK(judge(f, obs(good.substr(0, good.size() - 4) + "block|case|other\nblockend\nend\n"), m) == TJ_FAIL);
