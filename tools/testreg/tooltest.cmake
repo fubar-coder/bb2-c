@@ -12,8 +12,8 @@ set(s ${WORK}/sample)
 file(MAKE_DIRECTORY ${s}/libs/sub ${s}/other)
 file(WRITE ${WORK}/env.toml "top = \"${s}\"\n[placeholders]\nTESTDATA = \"/td\"\n")
 file(WRITE ${WORK}/tokens.txt "8001 NEWTYPE\n8002 End\n\n# a comment\nC001 Free\n")
-file(WRITE ${s}/tests.toml "root = true\ntimeout = 60\nexclude = [\"compiler=orig,libs=clib\"]\n"
-	"[matrix]\ncompiler = [\"port\", \"orig\"]\nlibs = [\"cd\", \"clib\"]\n")
+file(WRITE ${s}/tests.toml "root = true\ntimeout = 60\nexclude = [\"compiler=orig195,libs=clib\"]\n"
+	"[matrix]\ncompiler = [\"port\", \"orig195\"]\nlibs = [\"cd\", \"clib\"]\n")
 file(WRITE ${s}/libs/tests.toml "labels = [\"libs\"]\ncost = 3\nfixtures = [\"testdata\"]\n")
 # an open bug: case behind has a declared deviation, case plain has none
 file(WRITE ${s}/libs/shape-frames.test.bas

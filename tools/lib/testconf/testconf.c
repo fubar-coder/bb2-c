@@ -17,8 +17,8 @@
 /* the keys of the top table, in the order of the documentation and of the
    axes of a cell's name */
 static const struct tc_keydef keys[] = {
-    { "compiler", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "port|orig|cd", 0, -1,
-      "the compiler: port (blitz2-c), orig (blitz2 1.95, the build of blitz2.s), cd (the CD's blitz2 2.10)", "port" },
+    { "compiler", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "port|orig195|orig210", 0, -1,
+      "the compiler: port (blitz2-c), orig195 (blitz2 1.95, the build of blitz2.s), orig210 (the CD's blitz2 2.10)", "port" },
     { "libs", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "cd|clib", 0, -1,
       "the libraries: cd (the CD's acidlibs and deflibs), clib (the C libraries)", "clib" },
     { "machine", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, -1,

@@ -196,7 +196,7 @@ int tc_placeholders(const struct tc_env *env, const char *text, char **out,
  * and the other way round a setting; both in the same file is an error.
  * The cells are the product of the values of the axes, in the order of
  * tc_keys(), minus the cells an `exclude` selector matches.  A cell is
- * named by its axis values, "," between them ("orig,cd,on"); the only cell
+ * named by its axis values, "," between them ("orig195,cd,on"); the only cell
  * of a test without axes is "default".  A cell needs original material
  * (the side "originals") if its compiler is not port or its libraries are
  * the CD's.

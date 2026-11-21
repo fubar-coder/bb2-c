@@ -182,9 +182,11 @@ configuration".
   `runwrap`, `runargs`, `launcherargs`, `files`, `dirs`, `remove`,
   `mount`, `floppy`, `uae`, `jobline`); `labels`, `cost` and `fixtures`
   describe the registered ctest test. `compiler` has the values `port`,
-  `orig` (1.95) and `cd` (2.10); the defaults are `port`, `clib`, `a1200`
-  and `off`. Task 3.1 maps the settings to the pass file and may rename
-  or add keys.
+  `orig195` (the build of `blitz2.s` 1.95) and `orig210` (the CD's 2.10),
+  `libs` `cd` and `clib`; the defaults are `port`, `clib`, `a1200`
+  and `off` (decided: `task-decisions.md`, 2026-11-21, "basic-test-runner:
+  findings of implementer B"). Task 3.1 maps the settings to the pass file
+  and may add keys.
 - **Axes.** A list setting cannot be an axis (the subset has no lists of
   lists), nor can `labels`, `cost`, `fixtures` (one ctest test per case
   and side, not per cell). A key that a nearer file sets and a farther one

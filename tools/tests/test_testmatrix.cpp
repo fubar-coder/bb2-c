@@ -122,18 +122,18 @@ TEST_CASE("testmatrix: an excluded combination", "[testmatrix]")
     tree t;
 
     // the file's order of the axes does not matter: the order of the keys
-    t.write("tests.toml", "root = true\nexclude = [\"compiler=orig,libs=clib\"]\n"
-                          "[matrix]\nlibs = [\"cd\", \"clib\"]\ncompiler = [\"port\", \"orig\"]\n");
+    t.write("tests.toml", "root = true\nexclude = [\"compiler=orig195,libs=clib\"]\n"
+                          "[matrix]\nlibs = [\"cd\", \"clib\"]\ncompiler = [\"port\", \"orig195\"]\n");
     built b(t);
     REQUIRE(b.rc == 0);
     REQUIRE(b.m.naxes == 2);
     CHECK(b.m.axes[0].def == tc_key("compiler"));
-    CHECK(b.names() == names{ "port,cd", "port,clib", "orig,cd" });
+    CHECK(b.names() == names{ "port,cd", "port,clib", "orig195,cd" });
     CHECK(b.m.cells[0].originals == 1);
     CHECK(b.m.cells[1].originals == 0);
     CHECK(b.m.cells[2].originals == 1);
     char buf[24];
-    CHECK(!strcmp(tc_cell_value(&b.c, &b.m, 2, tc_key("compiler"), buf), "orig"));
+    CHECK(!strcmp(tc_cell_value(&b.c, &b.m, 2, tc_key("compiler"), buf), "orig195"));
     CHECK(!strcmp(tc_cell_value(&b.c, &b.m, 2, tc_key("machine"), buf), "a1200"));
     CHECK(!strcmp(tc_cell_value(&b.c, &b.m, 2, tc_key("runargs"), buf), ""));
 }
@@ -143,11 +143,11 @@ TEST_CASE("testmatrix: three axes and an integer axis", "[testmatrix]")
     tree t;
 
     t.write("tests.toml", "root = true\ntimeout = 30\n[matrix]\nmachine = [\"a1200\", \"a500\"]\n"
-                          "compiler = [\"port\", \"cd\"]\nstack = [\"4096\", \"20000\"]\n");
+                          "compiler = [\"port\", \"orig210\"]\nstack = [\"4096\", \"20000\"]\n");
     built b(t);
     REQUIRE(b.rc == 0);
     CHECK(b.names() == names{ "port,a1200,4096", "port,a1200,20000", "port,a500,4096", "port,a500,20000",
-                              "cd,a1200,4096", "cd,a1200,20000", "cd,a500,4096", "cd,a500,20000" });
+                              "orig210,a1200,4096", "orig210,a1200,20000", "orig210,a500,4096", "orig210,a500,20000" });
     CHECK(b.m.cells[0].originals == 0);
     CHECK(b.m.cells[4].originals == 1);
     char buf[24];
@@ -179,12 +179,12 @@ TEST_CASE("testmatrix: axes against settings", "[testmatrix]")
         CHECK(tc_get(&b.c, "libs") == nullptr);
     }
     // a nearer file narrows an axis (the table merges per key)
-    t.write("tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\ncompiler = [\"port\", \"orig\"]\n");
+    t.write("tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\ncompiler = [\"port\", \"orig195\"]\n");
     t.write("x.test.toml", "[matrix]\nlibs = [\"clib\"]\n");
     {
         built b(t);
         REQUIRE(b.rc == 0);
-        CHECK(b.names() == names{ "port,clib", "orig,clib" });
+        CHECK(b.names() == names{ "port,clib", "orig195,clib" });
     }
     // both in one file
     t.write("x.test.toml", "libs = \"cd\"\n[matrix]\nlibs = [\"clib\"]\n");
@@ -259,7 +259,7 @@ TEST_CASE("testmatrix: cell selectors", "[testmatrix]")
     tc_selector s;
     char msg[300];
 
-    REQUIRE(tc_selector_parse("libs=cd,compiler=orig,case=frames_max", 1, &s, msg, sizeof msg) == 0);
+    REQUIRE(tc_selector_parse("libs=cd,compiler=orig195,case=frames_max", 1, &s, msg, sizeof msg) == 0);
     REQUIRE(s.n == 3);
     CHECK(s.t[0].def == tc_key("libs"));
     CHECK(!strcmp(s.t[0].value, "cd"));
@@ -283,10 +283,10 @@ TEST_CASE("testmatrix: cell selectors", "[testmatrix]")
     // matching cells
     tree t;
     t.write("tests.toml", "root = true\nmachine = \"a500\"\n[matrix]\nlibs = [\"cd\", \"clib\"]\n"
-                          "compiler = [\"port\", \"orig\"]\n");
+                          "compiler = [\"port\", \"orig195\"]\n");
     built b(t);
     REQUIRE(b.rc == 0);
-    REQUIRE(b.names() == names{ "port,cd", "port,clib", "orig,cd", "orig,clib" });
+    REQUIRE(b.names() == names{ "port,cd", "port,clib", "orig195,cd", "orig195,clib" });
     auto match = [&](const char *sel, const char *cs) {
         std::string r;
         tc_selector x;
@@ -298,7 +298,7 @@ TEST_CASE("testmatrix: cell selectors", "[testmatrix]")
         return r;
     };
     CHECK(match("libs=cd", "a") == "1010");
-    CHECK(match("libs=cd,compiler=orig", "a") == "0010");
+    CHECK(match("libs=cd,compiler=orig195", "a") == "0010");
     CHECK(match("machine=a500", "a") == "1111");
     CHECK(match("machine=a1200", "a") == "0000");
     CHECK(match("runtime-errors=off", "a") == "1111");    // the default

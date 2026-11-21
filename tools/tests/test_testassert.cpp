@@ -333,7 +333,7 @@ TEST_CASE("testassert: a more specific assertion replaces", "[testassert]")
               == "rc == 20 @0; output contains \"ok\" @1; requester count == 0; end.case exists; end.run exists");
     }
     // in one file the most specific selector wins; a case selector counts
-    t.write("tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\ncompiler = [\"port\", \"orig\"]\n"
+    t.write("tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\ncompiler = [\"port\", \"orig195\"]\n"
                           "[asserts]\nrc = \"== 0\"\n[asserts.\"libs=cd\"]\nrc = \"== 5\"\n"
                           "[asserts.\"libs=cd,case=b\"]\nrc = \"== 6\"\n");
     t.write("x.test.toml", "");
@@ -353,23 +353,23 @@ TEST_CASE("testassert: a more specific assertion replaces", "[testassert]")
         CHECK(b.asserts("port,cd", "b").rfind("rc == 20 @0;", 0) == 0);
     }
     // two selectors of the same rank for one cell: an error naming both
-    t.write("x.test.toml", "[asserts.\"libs=cd\"]\nrc = \"== 1\"\n[asserts.\"compiler=orig\"]\nrc = \"== 2\"\n");
+    t.write("x.test.toml", "[asserts.\"libs=cd\"]\nrc = \"== 1\"\n[asserts.\"compiler=orig195\"]\nrc = \"== 2\"\n");
     {
         built b(t);
         REQUIRE(b.rc == 0);
         CHECK(b.asserts("port,cd", "a").rfind("rc == 1 @0;", 0) == 0);
-        CHECK(b.asserts("orig,clib", "a").rfind("rc == 2 @0;", 0) == 0);
-        std::string e = b.asserts("orig,cd", "a");
+        CHECK(b.asserts("orig195,clib", "a").rfind("rc == 2 @0;", 0) == 0);
+        std::string e = b.asserts("orig195,cd", "a");
         CHECK(e.find("error: ") == 0);
-        CHECK(e.find(": rc: two assertions apply to cell orig,cd alike (") != std::string::npos);
+        CHECK(e.find(": rc: two assertions apply to cell orig195,cd alike (") != std::string::npos);
         CHECK(e.find(t.path("x.test.toml") + ":2)") != std::string::npos);
     }
     // the same predicate twice is no conflict
-    t.write("x.test.toml", "[asserts.\"libs=cd\"]\nrc = \"== 1\"\n[asserts.\"compiler=orig\"]\nrc = \"== 1\"\n");
+    t.write("x.test.toml", "[asserts.\"libs=cd\"]\nrc = \"== 1\"\n[asserts.\"compiler=orig195\"]\nrc = \"== 1\"\n");
     {
         built b(t);
         REQUIRE(b.rc == 0);
-        CHECK(b.asserts("orig,cd", "a").rfind("rc == 1 @0;", 0) == 0);
+        CHECK(b.asserts("orig195,cd", "a").rfind("rc == 1 @0;", 0) == 0);
     }
 }
 

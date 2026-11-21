@@ -244,7 +244,7 @@ escapes) is refused with file and line.
 
 | Key | Value | |
 |---|---|---|
-| `compiler` | `port`, `orig`, `cd` | blitz2-c (default), blitz2 1.95 (the build of `blitz2.s`), the CD's blitz2 2.10 |
+| `compiler` | `port`, `orig195`, `orig210` | blitz2-c (default), blitz2 1.95 (the build of `blitz2.s`), the CD's blitz2 2.10 |
 | `libs` | `cd`, `clib` | the CD's libraries, the C libraries (default) |
 | `machine` | string | the emulated machine (default `a1200`) |
 | `runtime-errors` | `off`, `on` | runtime error checking (default `off`) |
@@ -278,7 +278,7 @@ strings (an integer as `"60"`). A list value outside this table is no
 axis; any other key in it is an error naming the key. The cells are the
 product of the axes minus the cells that an `exclude` selector matches; a
 cell is named by its values in the order of the table above, `,` between
-them (`orig,cd`), and the only cell of a test without axes is `default`.
+them (`orig195,cd`), and the only cell of a test without axes is `default`.
 If a nearer file sets a key that a farther one makes an axis, it is no
 axis (and the other way round); both in one file is an error. A cell needs
 original material if its compiler is not `port` or its libraries are the
@@ -288,11 +288,11 @@ CD's; such cells are the side `originals` of a case.
 # tests/bug-orig/libs/tests.toml
 root = true
 timeout = 90
-exclude = ["compiler=orig,libs=clib"]
+exclude = ["compiler=orig195,libs=clib"]
 
 [matrix]
-compiler = ["port", "orig"]
-libs = ["cd", "clib"]          # three cells: port,cd  port,clib  orig,cd
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]          # three cells: port,cd  port,clib  orig195,cd
 ```
 
 **Cell selectors** name cells by the values of their settings:
@@ -361,7 +361,7 @@ file and keeps the other defaults.
 **Deviations of the original.** A test of an original bug declares in its
 `ID.test.toml` what the original's faulty part changes, as assertions in
 the table `deviations."SELECTOR"`, the selector naming the cells with the
-faulty part (`libs=cd` for a library bug, `compiler=orig` for a compiler
+faulty part (`libs=cd` for a library bug, `compiler=orig195` for a compiler
 bug). In those cells a deviation replaces the assertion of its query;
 further deviations of the same table (the actual value of the failing
 check) are its validators.

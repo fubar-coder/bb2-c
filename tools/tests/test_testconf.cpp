@@ -243,6 +243,8 @@ TEST_CASE("testconf: unknown keys and wrong values", "[testconf]")
     refused(t, "x.test.bas", { ":2: timeout must be at least 1, not 0" });
     t.write("tests.toml", "root = true\nlibs = \"clibs\"\n");
     refused(t, "x.test.bas", { ":2: libs must be one of cd|clib, not \"clibs\"" });
+    t.write("tests.toml", "root = true\ncompiler = \"orig\"\n");
+    refused(t, "x.test.bas", { ":2: compiler must be one of port|orig195|orig210, not \"orig\"" });
     t.write("tests.toml", "root = true\nrwe = \"a\"\n");
     refused(t, "x.test.bas", { ":2: rwe must be a list of strings, not a string" });
     t.write("tests.toml", "root = 1\n");
