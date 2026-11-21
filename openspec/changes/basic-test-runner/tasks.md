@@ -16,7 +16,7 @@
 ## 3. Judging in `corpusrun`
 
 - [ ] 3.1 A subcommand of `corpusrun` that runs one case of a test in the cells of one side from the environment file, the resolved configuration and the driver; verify: a test of the model with a passing case runs with `port` and `clib` in one session
-- [ ] 3.2 Judging, reading result files with the codec of `shared/basictest/`: verdicts of checks (several entries), preconditions, end entries of case and run, announced runtime errors against the requesters, the default assertions, declared deviations with validators and "not run" behind a declared crash; verify: host tests of the judge on recorded result files and observations, each rule with broken input
+- [x] 3.2 Judging, reading result files with the codec of `shared/basictest/`: verdicts of checks (several entries), preconditions, end entries of case and run, announced runtime errors against the requesters, the default assertions, declared deviations with validators and "not run" behind a declared crash; verify: host tests of the judge on recorded result files and observations, each rule with broken input
 - [ ] 3.3 Diagnostics: the effective configuration with origins, and the generated driver; verify: a host test of the printed configuration of a three-level hierarchy
 
 - [ ] 3.4 Stage the test library for every configuration (`basic-testlib` task 4.1, done here after 3.1); verify: as `basic-testlib` 4.1, and that task ticked there

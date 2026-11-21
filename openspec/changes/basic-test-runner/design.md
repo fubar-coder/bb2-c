@@ -219,3 +219,22 @@ configuration".
   placeholders are `@LINE@`, `@CASE@`, `@TEST@` and `@TESTDATA@` (its
   value a parameter of the run), replaced in code and strings, not in
   comments; the table keeps the text as written.
+- **Judge** (`tools/lib/testjudge`). The observations other than the
+  result file are data (`struct tj_obs`) that task 3.1 fills from the
+  session: session end, compile result and log, exit code, output, serial
+  data, inject's report, and the requesters, each with the number of
+  result file lines written before it was shown (so a requester can be
+  matched with an announcement before it). A requester matches an
+  announcement if its text holds the message. A case whose last entry is
+  a matched announcement has ended as expected: `end.case` holds and the
+  default `rc == 0` does not apply (an assertion of `rc` still does).
+  A check without entries is `not-run` and fails no default, which gives
+  "not run behind a declared crash". An assertion that names a check
+  (by verdict or value) takes it out of the default "every check passed".
+  The verdict of a case over a side's cells follows `bug-orig-basic-tests`:
+  without deviations every cell passes; with `fixed-orig` the faulty cells
+  pass with their deviations and the others without; an open bug is
+  REPRODUCED when every cell passes with the deviations (the cells without
+  the faulty part as if the selector matched), and fails when such a cell
+  passes without them. Exit values as `corpusrun`'s bug-orig mode: 0
+  passed, 1 reproduced, 2 error, 3 broken, 4 failed.
