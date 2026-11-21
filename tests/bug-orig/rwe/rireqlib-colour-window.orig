@@ -4,7 +4,8 @@ done
 [compile]
 ok
 [run]
-colour 16387
+# varies: the value the failed requester returns depends on the address of the window
+colour *
 inject: rc=0
 inject: click */__Ok__: no window
 rc=0
