@@ -235,7 +235,7 @@ task 3.1, not in parallel with it.
 - **Free memory** (task 2.3): measured unchanged around every routine (also a
   failed check, the kept path, a failed `Require` with its second return,
   the batch init and end) with the result file on `CORPUS:out/`, the
-  runner's host directory, and also on `RAM:` for the 30 entries of the
+  runner's host directory, and also on `RAM:` for the 39 entries of the
   test. The handler's own memory is not the library's: a handler that
   keeps the file in the Amiga's memory takes some as the file grows (not
   measured beyond that test); the runner writes to `CORPUS:out/`.
