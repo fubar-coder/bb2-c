@@ -11,6 +11,29 @@ The files you built are Amiga programs. This page sets up an emulated
 Amiga for them: Amiberry with Kickstart and Workbench from Amiga Forever,
 the build's `blitz2` directory as a drive, and the first start of blitz2.
 
+The emulated Amiga sees the build directly: Amiberry offers a directory
+of the Linux host as a drive, and an assign in the Shell gives it the
+name `blitz2:`, under which blitz2 looks for its editor and libraries.
+
+```mermaid
+flowchart LR
+  subgraph H["Linux host"]
+    direction TB
+    B["The build<br/>build/amiga/blitz2/"]
+    F["Amiga Forever<br/>Kickstart ROM, Workbench"]
+  end
+  subgraph E["Amiberry: the emulated A1200"]
+    direction TB
+    W["Kickstart ROM,<br/>first drive: the Workbench"]
+    D["Second drive<br/>the volume BB2C:"]
+    A["Shell<br/>Assign blitz2: BB2C:"]
+    S["blitz2:blitz2<br/>loads blitz2:ted,<br/>blitz2:acidlibs, blitz2:deflibs"]
+    D --> A --> S
+  end
+  F -- "copied by the setup script" --> W
+  B -- "the directory as a drive" --> D
+```
+
 {{% details title="Amiga terms used on this site" closed="true" %}}
 
 * **Kickstart** is the part of AmigaOS in the Amiga's ROM; an emulator

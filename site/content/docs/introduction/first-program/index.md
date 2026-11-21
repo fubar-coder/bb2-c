@@ -144,10 +144,32 @@ break a line on purpose and read the error.
 
 ## Learning the language
 
-This site does not teach Blitz Basic itself; the original manual of Blitz
-Basic 2 is not part of the project. The commands of the libraries and
-their arguments can be looked up with the HELP key and in the
-[Libraries]({{< relref "/docs/libraries" >}}) chapter. The constant
-`#__debug`, which tells a program whether it was compiled with runtime
-error checking, is the one addition of the port to the language
+This site does not teach Blitz Basic itself. The book for that is the
+Blitz Basic 2 manual by Acid Software, written for version 2.1, the
+version the port is made from. Its first part is a course: the editor
+and its menus, the first programs with `Print`, variables and loops,
+types, arrays and lists, procedures, error checking and the debugger,
+the Blitz objects (screens, windows, shapes and the others), Blitz mode
+for games, and advanced topics such as macros, resident files and
+inline assembler, followed by complete example programs. Its second
+part is a reference of the commands of `acidlibs`, chapter by chapter.
+
+The manual is a plain text file, `BLITZ2_MANUAL`, on the CD "Ultimate
+Blitz Basic 2.1", which the
+[Internet Archive](https://archive.org/details/ultimate-blitz-basic-v2_1)
+keeps.
+
+Three things differ for the port. The manual's installation from floppy
+disks is replaced by the build and the drive of this chapter. The port
+fixes many bugs of the original, and a few sources that the original
+compiled are refused; both are described in
+[Differences from the original]({{< relref "/docs/compared-with-original" >}}).
+And the constant `#__debug`, which tells a program whether it was
+compiled with runtime error checking, is the one addition of the port to
+the language
 ([Extensions]({{< relref "/docs/compared-with-original/extensions" >}})).
+
+For the commands, their arguments and the libraries the manual does not
+cover, use the HELP key and the
+[Libraries]({{< relref "/docs/libraries" >}}) chapter: its pages are
+written for the port and checked against its libraries.
