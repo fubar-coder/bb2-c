@@ -6,8 +6,10 @@
 // the next entry or at the end, the attribution of a procedure's check
 // to the running block, preconditions in a case and in the batch init, a
 // failed check in the batch init, the end of a run with a block open,
-// calls out of order, a damaged state, and the typed checks (quick, and
-// float within a delta, here compared as doubles from the FFP bits).
+// calls out of order, a damaged state, the length and CRC32 of the whole
+// strings of a string check (also of cut values), and the typed checks
+// (quick, and float within a delta, here compared as doubles from the FFP
+// bits).
 // Every line written is read back with the codec's reader.
 #include <cmath>
 #include <cstdint>
@@ -76,6 +78,36 @@ int block(tl_state &st, int b)
 void checkstr(tl_state &st, uint32_t k, const std::string &e, const std::string &a)
 {
     tl_checkstr(&st, k, u(e.data()), e.size(), u(a.data()), a.size());
+}
+
+uint32_t crc(const std::string &s)
+{
+    return basictest_crc32(u(s.data()), s.size());
+}
+
+// one written line read back with the codec (the entry's strings point
+// into line)
+struct read_entry {
+    std::string line;
+    basictest_entry e{};
+    std::string text_expected, text_actual;
+};
+
+read_entry entry_of(const std::string &written)
+{
+    read_entry r;
+    REQUIRE(written.ends_with("\n"));
+    r.line = written.substr(0, written.size() - 1);
+    basictest_error err{};
+    int rc = basictest_read(reinterpret_cast<uint8_t *>(r.line.data()), r.line.size(), 1, &r.e, &err);
+    if (rc != BASICTEST_OK) {
+        char msg[200];
+        basictest_error_text(&err, msg, sizeof msg);
+        FAIL(msg);
+    }
+    r.text_expected.assign(reinterpret_cast<const char *>(r.e.expected_str.data), r.e.expected_str.length);
+    r.text_actual.assign(reinterpret_cast<const char *>(r.e.actual_str.data), r.e.actual_str.length);
+    return r;
 }
 
 // every line of the file, read with the codec; the kind of each
@@ -150,7 +182,7 @@ TEST_CASE("a run: init, two cases, final, the end", "[tlcore]")
                    "check\t2\tok\t$FFFFFFFF\t$FFFFFFFF\n"
                    "blockend\n"
                    "block\tcase\tb_2\n"
-                   "checkstr\t3\tok\tab\tab\t-\n"
+                   "checkstr\t3\tok\tab\t2\t$9E83486D\tab\t2\t$9E83486D\t-\n"
                    "expect-error\t4\n"
                    "blockend\n"
                    "block\tfinal\n"
@@ -187,11 +219,11 @@ TEST_CASE("the verdicts of the checks", "[tlcore]")
     checkstr(r.st, 6, "x\ty\\", "x\ty\\");
     CHECK(writes.at(2) == "check\t0\tfail\t$FFFFFFFF\t$00000001\n");
     CHECK(writes.at(3) == "check\t1\tok\t$80000000\t$80000000\n");
-    CHECK(writes.at(4) == "checkstr\t2\tfail\tabc\tab\t-\n");
-    CHECK(writes.at(5) == "checkstr\t3\tok\t\t\t-\n");
-    CHECK(writes.at(6) == "checkstr\t4\tfail\ta\\x00b\ta\\x00c\t-\n");
-    CHECK(writes.at(7) == "checkstr\t5\tok\ta\\x00b\ta\\x00b\t-\n");
-    CHECK(writes.at(8) == "checkstr\t6\tok\tx\\x09y\\x5C\tx\\x09y\\x5C\t-\n");
+    CHECK(writes.at(4) == "checkstr\t2\tfail\tabc\t3\t$352441C2\tab\t2\t$9E83486D\t-\n");
+    CHECK(writes.at(5) == "checkstr\t3\tok\t\t0\t$00000000\t\t0\t$00000000\t-\n");
+    CHECK(writes.at(6) == "checkstr\t4\tfail\ta\\x00b\t3\t$15E87871\ta\\x00c\t3\t$62EF48E7\t-\n");
+    CHECK(writes.at(7) == "checkstr\t5\tok\ta\\x00b\t3\t$15E87871\ta\\x00b\t3\t$15E87871\t-\n");
+    CHECK(writes.at(8) == "checkstr\t6\tok\tx\\x09y\\x5C\t4\t$1C3EB380\tx\\x09y\\x5C\t4\t$1C3EB380\t-\n");
     kinds(all());
 }
 
@@ -211,6 +243,63 @@ TEST_CASE("a string check too long for a line keeps its verdict", "[tlcore]")
     CHECK(writes[3].size() <= TL_LINE);
     CHECK(writes[2].ends_with("\tcut\n"));
     CHECK(writes[3].ends_with("\tcut\n"));
+    kinds(all());
+    // the lengths and CRC32s of the whole strings: equal values, equal CRC32s
+    auto e7 = entry_of(writes[2]), e8 = entry_of(writes[3]);
+    CHECK(e7.e.expected_length == 3000u);
+    CHECK(e7.e.actual_length == 3000u);
+    CHECK(e7.e.expected_crc == crc(a));
+    CHECK(e7.e.actual_crc == crc(a));
+    CHECK(e8.e.actual_crc == crc(b));
+    CHECK(e8.e.expected_crc != e8.e.actual_crc);
+}
+
+TEST_CASE("string checks: the length and CRC32 of the whole strings", "[tlcore]")
+{
+    run r;
+    tl_begin(&r.st);
+    block_case(r.st, "crc");
+    // the spec's short string check: nothing cut
+    checkstr(r.st, 5, "123456789", "12345678");
+    CHECK(writes.at(2) == "checkstr\t5\tfail\t123456789\t9\t$CBF43926\t12345678\t8\t$9AE0DAAF\t-\n");
+
+    // a pair of 400 bytes that differ in the last byte: both cut, each with
+    // its whole length and CRC32, the start of each as its value
+    std::string x(400, 'x'), y = x;
+    y.back() = 'y';
+    checkstr(r.st, 6, x, y);
+    auto c = entry_of(writes.at(3));
+    CHECK(c.e.ok == 0);
+    CHECK(c.e.cut == 1);
+    CHECK(writes.at(3).size() <= TL_LINE);
+    CHECK(c.e.expected_length == 400u);
+    CHECK(c.e.actual_length == 400u);
+    CHECK(c.e.expected_crc == crc(x));
+    CHECK(c.e.actual_crc == crc(y));
+    CHECK(c.e.expected_crc != c.e.actual_crc);
+    CHECK(c.e.expected_str.length < 400u);
+    CHECK(c.e.actual_str.length < 400u);
+    CHECK(c.text_expected == x.substr(0, c.e.expected_str.length));
+    CHECK(c.text_actual == y.substr(0, c.e.actual_str.length));
+
+    // equal values of 400 bytes: ok, equal CRC32s
+    checkstr(r.st, 7, x, x);
+    auto d = entry_of(writes.at(4));
+    CHECK(d.e.ok == 1);
+    CHECK(d.e.cut == 1);
+    CHECK(d.e.expected_crc == d.e.actual_crc);
+    CHECK(d.e.expected_crc == crc(x));
+
+    // a long value and a short one: only the long one is cut, the short
+    // one stays whole with its CRC32
+    checkstr(r.st, 8, std::string(600, 'a'), "ab");
+    auto s = entry_of(writes.at(5));
+    CHECK(s.e.cut == 1);
+    CHECK(s.e.expected_str.length < 600u);
+    CHECK(s.e.expected_length == 600u);
+    CHECK(s.text_actual == "ab");
+    CHECK(s.e.actual_length == 2u);
+    CHECK(s.e.actual_crc == 0x9E83486Du);
     kinds(all());
 }
 
@@ -357,15 +446,15 @@ TEST_CASE("a failed check of the batch init fails every case", "[tlcore]")
     CHECK(all() == "begin\t1\n"
                    "block\tinit\n"
                    "check\t0\tok\t$00000001\t$00000001\n"
-                   "checkstr\t1\tfail\tx\ty\t-\n"
+                   "checkstr\t1\tfail\tx\t1\t$8CDC1683\ty\t1\t$FBDB2615\t-\n"
                    "check\t2\tfail\t$00000003\t$00000004\n"
                    "blockend\n"
                    "block\tcase\ta\n"
-                   "checkstr\t1\tfail\tx\ty\t-\n"
+                   "checkstr\t1\tfail\tx\t1\t$8CDC1683\ty\t1\t$FBDB2615\t-\n"
                    "check\t3\tok\t$00000005\t$00000005\n"
                    "blockend\n"
                    "block\tcase\tb\n"
-                   "checkstr\t1\tfail\tx\ty\t-\n"
+                   "checkstr\t1\tfail\tx\t1\t$8CDC1683\ty\t1\t$FBDB2615\t-\n"
                    "blockend\n"
                    "block\tfinal\n"
                    "blockend\n"

@@ -67,9 +67,10 @@ then `end`.
 
 ### Requirement: Lines of the result file
 The result file SHALL hold one entry per line, fields separated by TAB, each
-line ended by LF. `K` SHALL be decimal; a long value SHALL be `$` and 8
-upper-case hex digits; a string value SHALL hold the bytes `$20` to `$7E` other than `\` as they are and every
-other byte as `\xHH`. Each value SHALL have this one form only: `K` and the
+line ended by LF. `K` and a length SHALL be decimal; a long value and a
+CRC32 SHALL be `$` and 8 upper-case hex digits; a string value SHALL hold
+the bytes `$20` to `$7E` other than `\` as they are and every other byte
+as `\xHH`. Each value SHALL have this one form only: `K`, a length and the
 version without sign and leading zero, hex digits upper-case, `\xHH` only
 for a byte that does not stand as it is.
 
@@ -78,17 +79,17 @@ for a byte that does not stand as it is.
 - **THEN** its field reads `a\x09b`
 
 #### Scenario: A value in another form
-- **WHEN** the reader gets `K` as `03`, a long value as `$0000001a` or a string value holding `\x41`
+- **WHEN** the reader gets `K` as `03`, a long value as `$0000001a`, a string value holding `\x41`, a length as `+3` or a CRC32 as `$cbf43926`
 - **THEN** it refuses the value as malformed, naming the line
 
 ### Requirement: Entries of the result file
 The entries SHALL be: `begin` (format version `1`), `block` (`init` or
 `final`, or `case` and the name as a field of its own), `check` (`K`, `ok`
 or `fail`, expected, actual), `checkq`, `checkflt`, `checkstr` (`K`, `ok`
-or `fail`, expected, actual, `-` or `cut`), `require` (`K`, `broken`; only a failed
-one), `expect-error` (`K`), `blockend`, `broken` (a reason), `incomplete`,
-`end`. An entry SHALL belong to the block of the last `block` entry before
-it.
+or `fail`, expected, length, CRC32, actual, length, CRC32, `-` or `cut`),
+`require` (`K`, `broken`; only a failed one), `expect-error` (`K`),
+`blockend`, `broken` (a reason), `incomplete`, `end`. An entry SHALL
+belong to the block of the last `block` entry before it.
 
 #### Scenario: A failed check in a case
 - **WHEN** case `a` fails check 3 with expected 16 and actual 0
@@ -147,7 +148,8 @@ A quick or float value SHALL be written as its 32 bits in the form of a
 long value: the quick as the long of its 16.16 fixed point, the float as
 its Motorola FFP number. A line SHALL be at most 512 bytes with its LF; a
 `checkstr` entry whose values do not fit SHALL have them shortened and the
-last field `cut`, and its verdict SHALL be that of the whole strings.
+last field `cut`, and its verdict, lengths and CRC32s SHALL be those of the
+whole strings.
 
 #### Scenario: A quick value
 - **WHEN** a quick check records the actual value 1.5
@@ -155,7 +157,7 @@ last field `cut`, and its verdict SHALL be that of the whole strings.
 
 #### Scenario: A string check too long for a line
 - **WHEN** a string check compares two equal strings of 3000 bytes
-- **THEN** its entry is `checkstr` `K` `ok` with both values shortened and the last field `cut`, at most 512 bytes
+- **THEN** its entry is `checkstr` `K` `ok` with both values shortened, both lengths `3000`, two equal CRC32s and the last field `cut`, at most 512 bytes
 
 ### Requirement: Entries of calls out of order
 A call of a routine out of order SHALL write `broken` with its reason
@@ -169,3 +171,33 @@ damaged` once and after it only `end`.
 #### Scenario: A check outside a block
 - **WHEN** a check runs after the case's `blockend` and before the next `block`
 - **THEN** the file holds `broken` `check outside a block` and then the check's entry
+
+### Requirement: Length and CRC32 of a string value
+Each string value of a `checkstr` entry SHALL be followed by the length of
+the whole string in bytes and the CRC32 of the whole string, whether the
+value is cut or not. The CRC32 SHALL be the standard CRC-32 of IEEE 802.3
+(as in zlib and PNG): the polynomial $04C11DB7 used reflected ($EDB88320),
+input and output reflected, the register set to $FFFFFFFF before the first
+byte and the result XORed with $FFFFFFFF; it is $CBF43926 for the nine
+bytes `123456789` and $00000000 for the empty string.
+
+#### Scenario: A short string check
+- **WHEN** check 5 compares the expected value "123456789" with the actual value "12345678"
+- **THEN** its entry is `checkstr` `5` `fail` `123456789` `9` `$CBF43926` `12345678` `8` `$9AE0DAAF` `-`
+
+### Requirement: A cut string value
+A string value SHALL be cut if it is shorter than its length; it is then
+the start of the whole string. The last field of a `checkstr` entry SHALL
+be `cut` if one of its values is cut, and `-` if none is. The reader SHALL
+refuse as malformed, naming the line, a value longer than its length, a
+value that is not cut whose CRC32 is not that of its bytes, an entry with
+the last field `-` and a cut value, and one with the last field `cut` and
+no cut value.
+
+#### Scenario: A cut value with its whole length
+- **WHEN** a string check compares two different strings of 400 bytes
+- **THEN** its entry holds the start of each, the length `400` and the CRC32 of each whole string, and the last field `cut`
+
+#### Scenario: A wrong CRC32 of a complete value
+- **WHEN** the reader gets a `checkstr` entry whose last field is `-` and whose expected value `ab` has the length 2 and a CRC32 other than that of `ab`
+- **THEN** it refuses the value as malformed, naming the line

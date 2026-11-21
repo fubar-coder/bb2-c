@@ -184,6 +184,27 @@ its first entry if none failed.
 - **WHEN** a check in a loop passes twice and fails in the third run with actual value 7
 - **THEN** the check's verdict is fail and its actual value is 7
 
+### Requirement: Queries of a string value
+A query `==` or `!=` of a value of a string check SHALL compare the
+length and CRC32 of the whole value, as the result file gives them
+(`testing/basic-test-interface`), with those the runner computes for the
+assertion's string, whether the value was cut or not. `contains` and
+`matches` SHALL be allowed only on a value that is not cut; on a cut value
+they SHALL be a configuration error naming the assertion. The report SHALL
+show a cut value as its start with `(cut)` and its length.
+
+#### Scenario: A cut value compared with ==
+- **WHEN** an assertion requires that the actual value of a string check is a string of 400 bytes, and the result file holds the start of it with the length 400 and its CRC32
+- **THEN** the assertion holds
+
+#### Scenario: A wrong CRC32 in the result file
+- **WHEN** the result file gives the actual value `ab` cut from a string of length 3 with a CRC32 other than that of the assertion's string `abc`
+- **THEN** the assertion `== "abc"` does not hold, and the report shows `"ab" (cut, length 3)`
+
+#### Scenario: contains on a cut value
+- **WHEN** an assertion requires that a cut value contains "x"
+- **THEN** the cell cannot be judged, and the report names the assertion and that the value was cut
+
 ### Requirement: A more specific assertion replaces
 For one query, one assertion SHALL apply alone; assertions SHALL NOT be
 added up. The nearest file SHALL win first, and among the assertions of

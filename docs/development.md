@@ -316,13 +316,14 @@ again):
   `BLITZ_ENTRYPOINT` carries `no_icf`). ctest
   `blitzlib_entrypoints_broken_a6`, `_call`, `_folded` and
   `blitzlib_entrypoints_good` (`cmake/entrypoint/`).
-* the writer of the Blitz test library's result file
-  (`shared/basictest/basictest_write.c`), compiled like a library's code
+* the writer of the Blitz test library's result file and the CRC32 of its
+  string values (`shared/basictest/basictest_write.c`, `basictest_crc.c`),
+  compiled like a library's code
   (`basictest_writer_blitzlib`, POST_BUILD,
   `shared/basictest/check-writer.cmake`): the archive refers to no symbol
   it does not define (`nm -u`). A library has no libc and no libgcc, so a
   division, a 32-bit multiply or a `memcpy` the compiler emits in the
-  writer fails the build. ctest
+  writer or the CRC32 fails the build. ctest
   `basictest_writer_check_broken` (a writer that divides:
   `__udivsi3`, `__umodsi3`), `basictest_writer_check_good`.
 * the macro text of the Blitz test drivers

@@ -134,7 +134,15 @@ size_t basictest_write(const struct basictest_entry *e, uint8_t *buf, size_t siz
         } else {
             putstr(&o, &e->expected_str);
             tab(&o);
+            putdecimal(&o, e->expected_length);
+            tab(&o);
+            putlong(&o, e->expected_crc);
+            tab(&o);
             putstr(&o, &e->actual_str);
+            tab(&o);
+            putdecimal(&o, e->actual_length);
+            tab(&o);
+            putlong(&o, e->actual_crc);
             puts_(&o, e->cut ? "\tcut" : "\t-");
         }
         break;

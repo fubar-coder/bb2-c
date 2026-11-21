@@ -29,3 +29,10 @@
 - [x] 5.2 The codec (`shared/basictest/`): `checkq`, `checkflt` and the field of `checkstr`, writer and reader; verify: host tests with round trip and broken input, the README example and its test
 - [x] 5.3 The library: `TLCheckQ`, `TLCheckFlt` (mathffp.library opened by `TLBegin`), the cut field, the macros `CheckQEq`, `CheckFltNear`; verify: host tests of the logic, an emulator run with 1.95, 2.10, the port and both library sets (a quick 1.5 against 1.5 and 1.0, floats within and outside the delta, a cut string)
 - [x] 5.4 design.md records the decisions and the author rule for `!Check`; verify: the text
+
+## 6. Length and CRC32 of string values (decided 2026-11-21, task-decisions.md "String values: length and CRC32")
+
+- [x] 6.1 The delta of `testing/basic-test-interface` in this change: each string value of `checkstr` followed by the length and the CRC32 of the whole string (the field order, the encodings, the standard CRC-32 of IEEE 802.3), what a cut value is and what the reader refuses; verify: `openspec validate basic-testlib --strict`
+- [x] 6.2 The codec (`shared/basictest/`): `basictest_crc32` usable by the library and the host (no allocation, no division, no libgcc), writer and reader with the new fields; verify: host tests with known CRC vectors (`123456789` gives `$CBF43926`), round trips and broken input, with and without `-DHOST_SANITIZE=ON`, the build check of the writer, the README example and its test
+- [x] 6.3 The library: `TLCheckStr` computes length and CRC32 over the whole strings before the values are cut; verify: host tests of the logic, an emulator run with 1.95, 2.10, the port and both library sets (a short string, a pair of 400 bytes that is cut, equal values with equal CRC32s)
+- [x] 6.4 design.md records the decision; verify: the text

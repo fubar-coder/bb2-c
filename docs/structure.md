@@ -46,9 +46,10 @@ shared/tokenizer/            source text to tokenised lines with a rule
                              (C99, no libc; compiled by each user: ab3cli,
                              the host tools)
 shared/basictest/            the result file of the Blitz test library:
-                             writer and reader of its entries (C99, no
-                             libc, no libgcc; the writer compiled by the
-                             test library, both by the host tools); the
+                             writer and reader of its entries, the CRC32
+                             of its string values (C99, no libc, no
+                             libgcc; writer and CRC32 compiled by the
+                             test library, all by the host tools); the
                              macro text of the test drivers (macros.bas)
 host/                        the host side: everything built with the
                              native compiler (tools, host tests), as

@@ -2,11 +2,13 @@
  * basictest_read.c - the reader of the result file's entries
  * (basictest.h): one line into a struct basictest_entry, strictly - every
  * value in the one form the writer gives it, so that writer and reader
- * cannot drift apart unnoticed.  Freestanding like the writer.
+ * cannot drift apart unnoticed, and the length and CRC32 of a string
+ * value agreeing with it (a complete value has its CRC32, a cut one is
+ * shorter than its length).  Freestanding like the writer.
  */
 #include "basictest.h"
 
-#define MAXFIELDS 6
+#define MAXFIELDS 10
 
 struct field {
     uint8_t *data;
@@ -25,7 +27,7 @@ static const struct {
     { "check", BASICTEST_CHECK, 5 },
     { "checkq", BASICTEST_CHECKQ, 5 },
     { "checkflt", BASICTEST_CHECKFLT, 6 },
-    { "checkstr", BASICTEST_CHECKSTR, 6 },
+    { "checkstr", BASICTEST_CHECKSTR, 10 },
     { "require", BASICTEST_REQUIRE, 3 },
     { "expect-error", BASICTEST_EXPECT_ERROR, 2 },
     { "blockend", BASICTEST_BLOCKEND, 1 },
@@ -131,6 +133,50 @@ static int strval(uint8_t *s, size_t n, struct basictest_str *v)
     return 1;
 }
 
+/*
+ * One string value of checkstr with its length and CRC32: the fields at
+ * f (value, length, CRC32).  0 if they are well-formed and agree (the
+ * value no longer than its length, a complete value with its CRC32), else
+ * the field at fault counted from f, 1 to 3; *cut is set if the value is
+ * cut.
+ */
+static unsigned string_value(struct field *f, struct basictest_str *v, uint32_t *length,
+                             uint32_t *crc, int *cut)
+{
+    if (!strval(f[0].data, f[0].length, v))
+        return 1;
+    if (!decimal(f[1].data, f[1].length, length))
+        return 2;
+    if (!longval(&f[2], crc))
+        return 3;
+    if (v->length > *length)
+        return 2;
+    *cut = v->length < *length;
+    if (!*cut && basictest_crc32(v->data, v->length) != *crc)
+        return 3;
+    return 0;
+}
+
+/* the values of checkstr (fields 4 to 10); 0 or the field at fault */
+static int string_values(struct field *f, struct basictest_entry *e)
+{
+    int ecut = 0, acut = 0;
+    unsigned at;
+
+    if ((at = string_value(f + 3, &e->expected_str, &e->expected_length, &e->expected_crc, &ecut)))
+        return (int)(3 + at);
+    if ((at = string_value(f + 6, &e->actual_str, &e->actual_length, &e->actual_crc, &acut)))
+        return (int)(6 + at);
+    if (is(&f[9], "cut"))
+        e->cut = 1;
+    else if (!is(&f[9], "-"))
+        return 10;
+    /* `cut` with a cut value, `-` with none */
+    if (e->cut != (ecut || acut))
+        return 10;
+    return 0;
+}
+
 static int fail(struct basictest_error *err, int code, unsigned field)
 {
     if (err) {
@@ -182,6 +228,7 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
     e->k = 0;
     e->ok = 0;
     e->expected = e->actual = e->delta = 0;
+    e->expected_length = e->expected_crc = e->actual_length = e->actual_crc = 0;
     e->cut = 0;
     e->expected_str = e->actual_str = e->reason = e->name;
 
@@ -226,14 +273,10 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
             if (e->kind == BASICTEST_CHECKFLT && !longval(&f[5], &e->delta))
                 return fail(err, BASICTEST_E_VALUE, 6);
         } else {
-            if (!strval(f[3].data, f[3].length, &e->expected_str))
-                return fail(err, BASICTEST_E_VALUE, 4);
-            if (!strval(f[4].data, f[4].length, &e->actual_str))
-                return fail(err, BASICTEST_E_VALUE, 5);
-            if (is(&f[5], "cut"))
-                e->cut = 1;
-            else if (!is(&f[5], "-"))
-                return fail(err, BASICTEST_E_VALUE, 6);
+            int code = string_values(f, e);
+
+            if (code)
+                return fail(err, BASICTEST_E_VALUE, (unsigned)code);
         }
         break;
     case BASICTEST_REQUIRE:
