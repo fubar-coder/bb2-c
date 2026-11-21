@@ -1,0 +1,50 @@
+; compiler-newallox-fallback (#32): the button "INCREASE 150% -
+; RECOMPILE" of the requester "Not Enough Object Memory Available!"
+; (alloxinc -> newallox): when the larger buffers cannot be allocated,
+; newallox falls back to the previous sizes and reports that as
+; success, so the compile runs again with the same sizes, overflows
+; again and shows the same requester, without a word about the memory.
+; blitz2 under inject (alerts answered), a source whose code (20000
+; statements through nested macros) overflows the default Object Buffer
+; (16384 bytes); the allocation of the larger buffers (86016 bytes,
+; MEMF_PUBLIC|MEMF_CLEAR) fails once.  COMPILE AND RUN (CREATE
+; EXECUTABLE would make the buffers fit, Make Smallest), INCREASE 150%;
+; COMPILE AND RUN again, CANCEL COMPILE; QUIT.  Correct: the out of
+; memory alert after INCREASE, the compile ends, the second compile shows
+; the requester again (the sizes are those before), blitz2 ends
+; normally.  The original jumps out of the compile through TED's
+; extalloc (#369) and its second compile does not come back.
+; @fixed #32 Cc
+; @file bo.bas "Macro a\na=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1\nEnd Macro\n"
+; @file bo.bas "Macro b\n!a:!a:!a:!a:!a:!a:!a:!a:!a:!a\nEnd Macro\n"
+; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"
+; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"
+; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"
+; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"
+; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"
+; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"
+; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"
+; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts allocfail=86016-86016/f=10001/1 blitz2:blitz2 @FILE@
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+; @expect stdout "inject: rc=0"
+timeout 20
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+timeout 60
+menu 4 0  ; @ignore compilewindow
+wait req "INCREASE 150% - RECOMPILE"
+gad 1
+timeout 20
+wait screen
+timeout 60
+menu 4 0  ; @ignore compilewindow
+wait req "INCREASE 150% - RECOMPILE"
+gad 3
+timeout 20
+wait screen
+menu 0 9
+wait exit

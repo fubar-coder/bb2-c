@@ -757,12 +757,15 @@ BOOL newallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size)
 {
     if (makeallox(pcsize, libsize, data1size, data2size))
         return TRUE;
-    /* BUG(orig) (#32): falls back to the initial sizes and reports their
-       result, so TRUE does not mean the new sizes were allocated: the
-       "+150%" button compiles again with the same sizes, overflows again
-       and shows the same requester (reachable since doallocmem returns
-       0, #369) */
-    return makeiallox();
+    /* Fixed (#32): falls back to the sizes before (maxpc..maxdata2, which
+       makeallox sets only on success) and reports FALSE with the out of
+       memory notice.  blitz2.s returns the fallback's result: the
+       "+150%" button compiled again with the same sizes, overflowed
+       again and showed the same requester, without a word about the
+       memory (reachable since doallocmem returns 0, #369) */
+    makeiallox();
+    nomemnote();
+    return FALSE;
 }
 
 /* blitz2.s:3936 alloxinc - increment allocs by 150% */

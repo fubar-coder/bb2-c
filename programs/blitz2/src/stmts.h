@@ -124,10 +124,12 @@ char *makelong(char *buf, ULONG v);
 
 /* ------------------------------------------------------------- allox */
 
-/* All return asm NE: TRUE = buffers allocated (newallox also TRUE if only the
-   fallback to the initial sizes worked, BUG(orig) #32).  After FALSE of
-   makeallox there are no buffers (objlen 0, the pointers 0); makeiallox
-   also makes the out of memory notice pending (nomemnote, parse.h). */
+/* All return asm NE: TRUE = buffers allocated with the sizes asked for.
+   After FALSE of makeallox there are no buffers (objlen 0, the pointers
+   0); makeiallox also makes the out of memory notice pending (nomemnote,
+   parse.h); newallox then has the buffers of the sizes before if they
+   could be allocated again, and the notice pending (fixed #32: blitz2.s
+   returned TRUE after that fallback). */
 BOOL alloxinc(void);                    /* max sizes * 1.5 */
 BOOL alloxadj(void);                    /* sizes actually used */
 BOOL newallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size);
