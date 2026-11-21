@@ -221,7 +221,11 @@ TEST_CASE("testjudge: a failed check and its report", "[testjudge]")
     // values the library shortened to fit the line
     obs cut(head + cs(6, false, "abcde", "abdef", 3, 3) + tail);
     CHECK(judge(f, cut, m) == TJ_FAIL);
-    CHECK(has(m, "a$: expected \"abc\" (cut), actual \"abd\" (cut)"));
+    CHECK(has(m, "a$: expected \"abc\" (cut, length 5), actual \"abd\" (cut, length 5)"));
+    // one value cut, the other whole
+    obs one(head + cs(6, false, "abcde", "xy", 3) + tail);
+    CHECK(judge(f, one, m) == TJ_FAIL);
+    CHECK(has(m, "a$: expected \"abc\" (cut, length 5), actual \"xy\""));
     // a check without a name is reported by its number in the namespace
     obs n(head + "check|8|fail|$00000002|$00000003\n" + tail);
     CHECK(judge(f, n, m) == TJ_FAIL);
@@ -277,15 +281,59 @@ TEST_CASE("testjudge: queries of checks", "[testjudge]")
         CHECK(judge(f, obs(head + cs(6, false, "ab", "xb") + tail), m) == TJ_PASS);
         CHECK(judge(f, obs(head + cs(6, false, "ab", "xy") + tail), m) == TJ_FAIL);
         CHECK(has(m, "does not hold: \"xy\""));
-        // a cut value: contains still works and the report says it was cut
-        CHECK(judge(f, obs(head + cs(6, false, "ab", "xbz", 2, 2) + tail), m) == TJ_PASS);
-        CHECK(judge(f, obs(head + cs(6, false, "ab", "xyz", 2, 2) + tail), m) == TJ_FAIL);
-        CHECK(has(m, "does not hold: \"xy\" (cut)"));
-        // == cannot be decided on a cut value
-        fixture g("[asserts]\n\"check.frames_maximum.str.actual\" = \"== \\\"xy\\\"\"\n");
-        CHECK(judge(g, obs(head + cs(6, false, "ab", "xyz", 2, 2) + tail), m) == TJ_ERROR);
-        CHECK(has(m, "the value was cut to fit the line; compare it with contains or matches"));
-        CHECK(judge(g, obs(head + cs(6, false, "ab", "xy") + tail), m) == TJ_PASS);
+        // contains on a cut value is a configuration error naming the assertion
+        m.clear();
+        CHECK(judge(f, obs(head + cs(6, false, "ab", "xbz", 2, 2) + tail), m) == TJ_ERROR);
+        CHECK(has(m, "tests.toml:4: check.frames_maximum.str.actual: the value was cut to fit the line "
+                     "(length 3); compare it with == or !="));
+        // also when the other value of the entry is the cut one: the actual
+        // value is whole, so contains holds
+        CHECK(judge(f, obs(head + cs(6, false, "abc", "xb", 1) + tail), m) == TJ_PASS);
+        fixture n("[asserts]\n\"check.frames_maximum.str.actual\" = \"matches \\\"x*\\\"\"\n");
+        CHECK(judge(n, obs(head + cs(6, false, "ab", "xbz", 2, 2) + tail), m) == TJ_ERROR);
+        CHECK(judge(n, obs(head + cs(6, false, "ab", "xbz") + tail), m) == TJ_PASS);
+    }
+    {
+        // == and != by the length and CRC32 of the whole value
+        fixture g("[asserts]\n\"check.frames_maximum.str.actual\" = \"== \\\"xyz\\\"\"\n");
+        CHECK(judge(g, obs(head + cs(6, false, "ab", "xyz") + tail), m) == TJ_PASS);
+        CHECK(judge(g, obs(head + cs(6, false, "ab", "xyz", 2, 2) + tail), m) == TJ_PASS);
+        m.clear();
+        CHECK(judge(g, obs(head + cs(6, false, "ab", "xyw", 2, 2) + tail), m) == TJ_FAIL);
+        CHECK(has(m, "does not hold: \"xy\" (cut, length 3)"));
+        CHECK(judge(g, obs(head + cs(6, false, "ab", "xy") + tail), m) == TJ_FAIL);
+        CHECK(judge(g, obs(head + cs(6, false, "ab", "xyzz", 3, 3) + tail), m) == TJ_FAIL);
+        // broken input: a cut value whose CRC32 is not that of the string
+        // (the spec's scenario) does not pass ==
+        m.clear();
+        CHECK(judge(g, obs(head + "checkstr|6|fail|ab|2|$9E83486D|xy|3|$00000000|cut\n" + tail), m) == TJ_FAIL);
+        CHECK(has(m, "does not hold: \"xy\" (cut, length 3)"));
+        // the right CRC32 of "xyz" in the same line passes
+        char right[120];
+        snprintf(right, sizeof right, "checkstr|6|fail|ab|2|$9E83486D|xy|3|$%08X|cut\n",
+                 unsigned(basictest_crc32(reinterpret_cast<const uint8_t *>("xyz"), 3)));
+        CHECK(judge(g, obs(head + right + tail), m) == TJ_PASS);
+        // a whole value with a wrong CRC32: the reader refuses the file
+        m.clear();
+        CHECK(judge(g, obs(head + "checkstr|6|fail|ab|2|$9E83486D|xyz|3|$00000000|-\n" + tail), m) == TJ_ERROR);
+        CHECK(has(m, "line 5: checkstr: malformed value in field 9"));
+        // !=
+        fixture h("[asserts]\n\"check.frames_maximum.str.actual\" = \"!= \\\"xyz\\\"\"\n");
+        CHECK(judge(h, obs(head + cs(6, false, "ab", "xyz", 2, 2) + tail), m) == TJ_FAIL);
+        CHECK(judge(h, obs(head + cs(6, false, "ab", "xyw", 2, 2) + tail), m) == TJ_PASS);
+        CHECK(judge(h, obs(head + cs(6, false, "ab", "xy") + tail), m) == TJ_PASS);
+        // the expected value, and the empty string
+        fixture e("[asserts]\n\"check.frames_maximum.str.expected\" = \"== \\\"\\\"\"\n");
+        CHECK(judge(e, obs(head + cs(6, false, "", "xy") + tail), m) == TJ_PASS);
+        CHECK(judge(e, obs(head + cs(6, false, "a", "xy") + tail), m) == TJ_FAIL);
+        // a string of 400 bytes against a value cut to its first 100
+        std::string x400(400, 'x'), y400 = x400;
+        y400.back() = 'y';
+        fixture l("[asserts]\n\"check.frames_maximum.str.actual\" = \"== \\\"" + x400 + "\\\"\"\n");
+        CHECK(judge(l, obs(head + cs(6, false, "ab", x400, std::string::npos, 100) + tail), m) == TJ_PASS);
+        m.clear();
+        CHECK(judge(l, obs(head + cs(6, false, "ab", y400, std::string::npos, 100) + tail), m) == TJ_FAIL);
+        CHECK(has(m, "(cut, length 400)"));
     }
     {
         // a value of a check that did not run

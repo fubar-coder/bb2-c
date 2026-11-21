@@ -243,7 +243,9 @@ reflected, `$EDB88320`; input and output reflected; the register
 `$FFFFFFFF` at the start, the result XORed with `$FFFFFFFF`): `$CBF43926`
 for `123456789`, `$00000000` for the empty string (`basictest_crc32` in
 `shared/basictest/basictest_crc.c`). A value shorter than its length is
-cut: it is the start of the string.
+cut: it is the start of the string. The runner decides `==` and `!=` on a
+string value by length and CRC32, so they hold for cut values as well;
+`contains` and `matches` take only values that are not cut.
 
 | Entry | Fields after the name | |
 |---|---|---|
@@ -407,7 +409,7 @@ name (a check that a configuration names must have one).
 | `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
 | `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
 | `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries | `==`/`!=` with `ok`, `fail`, `not-run` |
-| `check.NS.NAME.expected`, `.actual` | the expected, the actual value of its first failed entry, else of its first | `CMP integer` (long values; the 32 bits of a quick or FFP float value, `$00018000` for the quick 1.5), `==`/`!=` string, `contains`, `matches` (strings; a value the library cut to fit the line only `contains` and `matches`) |
+| `check.NS.NAME.expected`, `.actual` | the expected, the actual value of its first failed entry, else of its first | `CMP integer` (long values; the 32 bits of a quick or FFP float value, `$00018000` for the quick 1.5), `==`/`!=` string (decided by the length and CRC32 of the whole value, also of a cut one), `contains`, `matches` (strings; only on a value the library did not cut to fit the line: on a cut one the cell cannot be judged); a cut value is reported as its start with `(cut, length N)` |
 
 `contains` holds if the text (a requester, for `requester`) holds the
 string; `matches` if a line of it matches the pattern of `outmatch` (`*`

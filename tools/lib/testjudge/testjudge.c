@@ -99,6 +99,22 @@ static void str_text(char *out, size_t size, const struct basictest_str *s)
     out[o] = 0;
 }
 
+/*
+ * A string value for the report: "TEXT", and for a value the library cut
+ * to fit the line (shorter than the length of the whole string) "START"
+ * (cut, length N).
+ */
+static void strval_text(char *out, size_t size, const struct basictest_str *s, uint32_t length)
+{
+    char t[150];
+
+    str_text(t, sizeof t, s);
+    if (s->length < length)
+        snprintf(out, size, "\"%s\" (cut, length %lu)", t, (unsigned long)length);
+    else
+        snprintf(out, size, "\"%s\"", t);
+}
+
 static int same_name(const struct basictest_str *s, const char *name)
 {
     return s->length == strlen(name) && !memcmp(s->data, name, s->length);
@@ -284,12 +300,8 @@ static int report_check(const struct tj_test *t, const struct chk *k, struct tj_
 
     check_id(id, sizeof id, c);
     if (x->kind == BASICTEST_CHECKSTR) {
-        char es[150], as[150];
-
-        str_text(es, sizeof es, &x->expected_str);
-        str_text(as, sizeof as, &x->actual_str);
-        snprintf(e, sizeof e, "\"%s\"%s", es, x->cut ? " (cut)" : "");
-        snprintf(a, sizeof a, "\"%s\"%s", as, x->cut ? " (cut)" : "");
+        strval_text(e, sizeof e, &x->expected_str, x->expected_length);
+        strval_text(a, sizeof a, &x->actual_str, x->actual_length);
     } else {
         value_text(e, sizeof e, x->kind, x->expected);
         value_text(a, sizeof a, x->kind, x->actual);
@@ -509,25 +521,32 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
             value_text(got, sizeof got, x->e.kind, v);
         } else if (x->e.kind == BASICTEST_CHECKSTR) {
             const struct basictest_str *s = field == 1 ? &x->e.expected_str : &x->e.actual_str;
-            char *v = strndup((const char *)s->data, s->length);
-            char shown[200];
+            uint32_t length = field == 1 ? x->e.expected_length : x->e.actual_length;
+            uint32_t crc = field == 1 ? x->e.expected_crc : x->e.actual_crc;
 
-            if (!v)
-                return -1;
-            if (p->vtype != TC_PV_STR) {
-                free(v);
+            if (p->vtype != TC_PV_STR)
                 return msg(msgs, "%s:%u: %s: the value of this check is a string", a->at.file, a->at.line,
                            a->query) ? -1 : TJ_ERROR;
-            }
-            if (x->e.cut && (p->op == TC_P_EQ || p->op == TC_P_NE)) {
+            if (p->op == TC_P_EQ || p->op == TC_P_NE) {
+                /* by the length and the CRC32 of the whole value, which the
+                   result file gives also for a value it cut */
+                size_t n = strlen(p->str);
+                int same = n == length && basictest_crc32((const uint8_t *)p->str, n) == crc;
+
+                ok = (p->op == TC_P_EQ) == same;
+            } else {
+                char *v;
+
+                if (s->length < length)
+                    return msg(msgs, "%s:%u: %s: the value was cut to fit the line (length %lu); compare it "
+                               "with == or !=", a->at.file, a->at.line, a->query, (unsigned long)length) ? -1
+                                                                                                    : TJ_ERROR;
+                if (!(v = strndup((const char *)s->data, s->length)))
+                    return -1;
+                ok = strlen(v) == s->length && text_pred(p, v);
                 free(v);
-                return msg(msgs, "%s:%u: %s: the value was cut to fit the line; compare it with contains or "
-                           "matches", a->at.file, a->at.line, a->query) ? -1 : TJ_ERROR;
             }
-            ok = strlen(v) == s->length && text_pred(p, v);
-            str_text(shown, sizeof shown, s);
-            snprintf(got, sizeof got, "\"%s\"%s", shown, x->e.cut ? " (cut)" : "");
-            free(v);
+            strval_text(got, sizeof got, s, length);
         } else {
             return msg(msgs, "%s:%u: %s: this check has no values", a->at.file, a->at.line, a->query) ? -1
                                                                                                     : TJ_ERROR;

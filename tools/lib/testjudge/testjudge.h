@@ -16,9 +16,12 @@
  * outside a block after a `broken` one (a call out of order) belongs to
  * no block.  The checks are `check`, `checkq` (quick values, reported in
  * decimal), `checkflt` (FFP floats, reported in decimal with the delta)
- * and `checkstr` (a value cut to fit the line is marked "(cut)"); a
- * query of a value compares the 32 bits of the long kinds.  An announced runtime error
- * (`expect-error`) must be matched by a requester shown after the
+ * and `checkstr` (a value cut to fit the line is reported as its start
+ * with "(cut, length N)"); a query of a value compares the 32 bits of the
+ * long kinds; `==` and `!=` on a string value compare the length and the
+ * CRC32 of the whole value (also of a cut one) with those of the
+ * assertion's string, and `contains` and `matches` on a cut value cannot
+ * be judged (TJ_ERROR).  An announced runtime error (`expect-error`) must be matched by a requester shown after the
  * announcement whose text holds its message; the matched requesters do
  * not count for the query `requester`, and a case whose last entry is a
  * matched announcement has ended as expected (end.case holds, the default
