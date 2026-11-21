@@ -1019,6 +1019,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   userlibs in `RWE_EMULATOR_LIBS`; with a test in `libs_capture_target`.
   `libs-capture` passes the same `-DUSERLIBS` but runs the originals, so
   its result does not depend on the `.obj`.
+- [ ] **Stringify of macro parameters** (idea of the user, 2026-11-21, not
+  decided): a bb2-c extension that puts the readable text of a macro
+  parameter into a string, tokens as their names. Today `` "`1" `` keeps
+  only the second byte of a token, and the original and the port differ
+  there (`programs/blitz2/src/parse.c:362`, its `DIFF` comment calls the
+  case unreachable; an issue is to be opened). The test
+  library of change `basic-testlib` could show the expression of a failed
+  check with it, but only in tests that do not run against the original
+  compilers, which do not know the extension.
 
 ## 3 Only once §1 is done
 
