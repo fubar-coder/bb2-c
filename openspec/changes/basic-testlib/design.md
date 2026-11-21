@@ -305,3 +305,30 @@ task 3.1, not in parallel with it.
   list, the three RWE variants with their userlibs, the two test
   variants), and in the ctest `basictest_macros_tokens_ab3` with
   AmiBlitz3 v3.14.0's 4653 tokens; no macro is a token.
+- **Length and CRC32 of string values** (decided 2026-11-21,
+  `task-decisions.md`, entry "String values: length and CRC32": "ok zu
+  hash-variante für string-werte"; tasks 6.1-6.4). Each string value of
+  `checkstr` is followed by the length (decimal, the form of `K`) and the
+  CRC32 (`$` and 8 upper-case hex digits) of the whole string, cut or
+  not: `checkstr K ok|fail EXP$ ELEN ECRC ACT$ ALEN ACRC -|cut`, the
+  values grouped with their own fields and the cut field last as before.
+  The CRC32 is the standard CRC-32 of IEEE 802.3 (zlib, PNG; the
+  polynomial `$EDB88320` reflected, `$FFFFFFFF` at the start and XORed
+  at the end); `basictest_crc32` (`shared/basictest/basictest_crc.c`)
+  takes four bits a step through a table of 16 longs (64 bytes of code
+  hunk, two lookups a byte, shifts and XOR only), between the 1 KB table
+  and the bitwise form; the writer's build check covers it.
+  `TLCheckStr` computes both over the whole strings before `emit` cuts
+  the values; the library grew by about 300 bytes. A value is cut if it
+  is shorter than its length; the last field says whether one of the
+  two is (the halving cuts only values longer than the bound, so a short
+  value next to a long one stays whole). The reader refuses a value
+  longer than its length, a complete value whose CRC32 is not that of
+  its bytes, `-` with a cut value and `cut` without one. The emulator run
+  (`~/.local/share/bb2-c-work/tr-strhash/`, driver `s1`: "123456789"
+  against "12345678", the empty string, a 400-byte pair that differs in
+  the last byte, equal 400-byte values) gives the same result file with
+  1.95, 2.10, the port and both library sets, with the CRC32s of zlib's
+  `crc32` (`$CBF43926`, `$9AE0DAAF`, `$6ECB3F72`, `$19CC0FE4`) and the
+  400-byte values cut to 200 bytes. How the runner uses them:
+  `basic-test-runner` design.md, "String values by length and CRC32".

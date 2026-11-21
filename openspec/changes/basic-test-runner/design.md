@@ -272,3 +272,22 @@ source, where a byte >= $80 is one character (user decision 2026-11-21,
   configuration files (`tests.toml`, `*.test.toml`) with
   `CONFIGURE_DEPENDS` too, or a new `ID.test.toml` next to an existing
   source is not seen until the next configure.
+- **String values by length and CRC32** (decided 2026-11-21,
+  `task-decisions.md`, entry "String values: length and CRC32": "ok zu
+  hash-variante für string-werte"; scope basic-testlib and
+  basic-test-runner). Each string value of a `checkstr` entry carries the
+  length and the CRC32 of the whole string (the delta of
+  `testing/basic-test-interface` in `basic-testlib`). The judge decides
+  `==` and `!=` on a string value by that length and CRC32 against those
+  of the assertion's string (`basictest_crc32` of `shared/basictest`),
+  also for a cut value; this replaces the earlier rule that `==`/`!=` on
+  a cut value cannot be judged. `contains` and `matches` take only a
+  value that is not cut, and on a cut one the cell cannot be judged
+  (TJ_ERROR naming the assertion). Whether a value is cut is decided per
+  value (shorter than its length), not by the entry's last field: in an
+  entry with one long and one short value only the long one is cut, and
+  `contains` still works on the other. The report shows a cut value as
+  `"START" (cut, length N)`. A complete value whose CRC32 does not match
+  its bytes is refused by the reader, so `==` cannot pass on a forged or
+  damaged line; for a cut value the reader cannot check the CRC32, and a
+  wrong one makes `==` fail.
