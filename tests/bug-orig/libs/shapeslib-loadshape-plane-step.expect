@@ -1,6 +1,7 @@
 [compile]
 ok
 [run]
+data block at window+8
 plane 0 00000011 plane 1 0000005A
-inject: rc=0
+guard 000000AA x 40000
 rc=0

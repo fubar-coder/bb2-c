@@ -6,16 +6,21 @@
 ; written before the data block.
 ; Here: an ILBM of 640x420 with 2 planes (33600 bytes per plane, the step
 ; 33520), uncompressed, built in memory and written to RAM:; the first
-; byte of row 0 of plane 1 is $5A, of plane 0 $11.  The program runs
-; through inject with guard (runwrap=): a pattern behind every AllocMem,
-; checked at FreeMem and at the end.  After LoadShape the first bytes of
-; the two planes of the shape (+14 data, +22 bytes per plane).
-; Correct: plane 0 starts with $11, plane 1 with $5A, nothing is written
-; outside an allocation.  The original writes plane 1 before the data
-; block.
+; byte of row 0 of plane 1 is $5A, of plane 0 $11.
+; Setup: the program takes every chip block of 70000 bytes or more and
+; gives back only a window of 300000 bytes inside the largest one, with
+; 40000 bytes (the guard area) before it, all of them set to $AA; the data
+; block of the shape can only lie in the window, and what the original
+; writes before it lies in the guard area.  Act: LoadShape.  Verify: the
+; place of the data block in the window, the first byte of the two planes,
+; the guard area in full as runs of equal bytes (value x length).
+; Correct: plane 0 starts with $11, plane 1 with $5A, the guard area is
+; 40000 bytes of $AA.  The original writes plane 1 (33600 bytes: $5A,
+; then zeros) from 31936 bytes before the data block on: the guard area
+; changes from there to its end and the first rows of plane 0 are
+; overwritten with zeros.
 ; @fixed #263
 ; @configs clib
-; @pass runwrap=@INJECT@|guard
 DEFTYPE .l
 Statement pb{v.l}
   SHARED m,p
@@ -42,10 +47,46 @@ If WriteFile(0,"RAM:bo263s.iff")
   CloseFile 0
 EndIf
 FreeMem m,n+256
+; setup: all large chip blocks, the window and the guard area before it
+Dim blk.l(40),sz.l(40)
+nb=0
+s=AvailMem_($20002)
+While s>=70000 AND nb<40
+  b=AllocMem_(s,2)
+  If b=0
+    s=0
+  Else
+    blk(nb)=b : sz(nb)=s : nb=nb+1
+    s=AvailMem_($20002)
+  EndIf
+Wend
+c=blk(0)
+g=40000 : w=300000
+For i=0 To g+w-4 Step 4
+  Poke.l c+i,$AAAAAAAA
+Next
+FreeMem_ c+g,w
+; act
 LoadShape 0,"RAM:bo263s.iff"
 KillFile "RAM:bo263s.iff"
+; verify
 a=Addr Shape(0)
 d=Peek.l(a+14)
+NPrint "data block at window+",d-(c+g)
 NPrint "plane 0 ",Hex$(Peek.b(d) AND 255)," plane 1 ",Hex$(Peek.b(d+(Peek.w(a+22) AND $FFFF)) AND 255)
+v=Peek.b(c) AND 255 : n=0
+For i=0 To g-1
+  x=Peek.b(c+i) AND 255
+  If x=v
+    n=n+1
+  Else
+    NPrint "guard ",Hex$(v)," x ",n
+    v=x : n=1
+  EndIf
+Next
+NPrint "guard ",Hex$(v)," x ",n
 Free Shape 0
+FreeMem_ c,g
+FreeMem_ c+g+w,sz(0)-g-w
+For i=1 To nb-1 : FreeMem_ blk(i),sz(i) : Next
 End
