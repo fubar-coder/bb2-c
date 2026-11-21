@@ -1366,7 +1366,7 @@ static void handleconst(void)
     c = reget();
     /* without '=' (a line "#c") a new constant is 0: the node is cleared
        (addhere, #970); in the original it holds what the memory held
-       (BUG(orig), #972, intended deviation; AmiBlitz3 gives 0 as well).
+       (Fixed (#972, intended deviation; AmiBlitz3 gives 0 as well)).
        A later "#c" for a constant with a value keeps the value. */
     if (c == '=')
         l->pc = evalconst2(NULL, NULL);       /* .asscon */

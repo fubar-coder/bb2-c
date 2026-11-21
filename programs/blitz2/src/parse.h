@@ -318,7 +318,7 @@ struct var      *findvar(struct node *link, UWORD len, struct node **last);  /* 
 /* blitz2.s:7746 findlast - last node of the list at link (link if empty) */
 struct node *findlast(struct node *link);
 /* blitz2.s:7761 addhere - new node of nameoff+len+1 bytes (doallocmem,
-   MEMF_PUBLIC|MEMF_CLEAR: fixed, #970) with next=0, size byte, namebuff
+   MEMF_PUBLIC|MEMF_CLEAR: Fixed (#970)) with next=0, size byte, namebuff
    copied;
    stored into link->next (rest of a list after link is dropped - asm).
    dirmode -> illdirerr.  Returns the node (asm a2; d2=size = node len). */

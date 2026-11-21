@@ -619,7 +619,7 @@ void dosetint(UWORD c)
     setint2(-1);        /* type - need new string space */
 }
 
-/* Fixed (intended deviation, #958): an amigalib with a parameter in a4 or
+/* Fixed (#958, intended deviation): an amigalib with a parameter in a4 or
    a5 (exec Supervisor_, graphics LockLayerRom_ ..., workbench
    AddAppIconA_).  The original pops the parameters into their registers
    before libbase (move.l off(a5),a6) and does not save a4/a5: with a5 the
@@ -676,7 +676,7 @@ void stamigalib(UWORD c, UBYTE *sub)
     libjsr[1] = lvo;            /* patched in place, as the asm */
     libbase[1] = libvar;
     if (a45)
-        pokel(L_(libbase));     /* fixed (#958): a6 before a5 is popped */
+        pokel(L_(libbase));     /* Fixed (#958): a6 before a5 is popped */
     p = regs;
     if (--npars < 0)
         getchar3();     /* no pars - get : */
@@ -697,7 +697,7 @@ void stamigalib(UWORD c, UBYTE *sub)
         pokel(L_(libbase));
     pokel(L_(libjsr));
     if (a45)
-        pokel(0x4cdf3000UL);    /* fixed (#958): movem.l (a7)+,a4/a5 */
+        pokel(0x4cdf3000UL);    /* Fixed (#958): movem.l (a7)+,a4/a5 */
 }
 
 /* ================================================================ allox */
@@ -912,7 +912,7 @@ static void resoff(struct reswriter *w)
 }
 
 /* Write SIZE bytes from P and, if SIZE is odd, a 0 behind them: the
-   items of a resident are word aligned.  Fixed (intended deviation, #970):
+   items of a resident are word aligned.  Fixed (#970, intended deviation):
    the original writes the length rounded up to even from the item, for an
    odd one the byte behind its allocation (addhere allocates exactly the
    node length, domacro exactly the length of the text), which nothing
@@ -938,7 +938,7 @@ static void writeitem(struct reswriter *w, struct node *item, UWORD off)
         item->next = (struct node *)(w->pos + len);
     }
     w->pos += len;
-    writepadded(w, item, size);         /* fixed (#970) */
+    writepadded(w, item, size);         /* Fixed (#970) */
     item->next = save;
 }
 
@@ -1010,7 +1010,7 @@ static void resmacs(struct reswriter *w)
             m->next = (struct macro *)w->pos;
             addoff2(start);
         }
-        writepadded(w, m, m->len);              /* fixed (#970) */
+        writepadded(w, m, m->len);              /* Fixed (#970) */
         if (tlen)
             writepadded(w, savetext, m->textlen);
         m->text = savetext;
@@ -1036,7 +1036,7 @@ static void restypes(struct reswriter *w)
         addoff2(w->pos + 4);
         len = ((ULONG)t->len + 1) & ~1UL;
         w->pos += len;
-        /* Fixed (intended deviation, #970): next is written as 0; the
+        /* Fixed (#970, intended deviation): next is written as 0; the
            original writes the pointer to the next type in its memory
            (fixtypes links the types itself) */
         savenext = t->next;
@@ -1071,12 +1071,12 @@ static void resconsts(struct reswriter *w)
            constant).  For the last constant, if non-constant labels
            follow it, next points past the section (as in the original;
            such residents exist, AmiBlitz3's all.res too): fixconsts ends
-           the list (fixed, #34) */
+           the list (Fixed (#34)) */
         if (l->next) {
             l->next = (struct label *)w->pos;
             addoff2(start);
         }
-        writepadded(w, l, l->len);              /* fixed (#970) */
+        writepadded(w, l, l->len);              /* Fixed (#970) */
         l->next = save;
     }
 }
@@ -1136,7 +1136,7 @@ void menu5(void)
 }
 
 /* blitz2.s:4483 fixconsts.
-   Fixed (intended deviation, #34): the next of the last constant is set to
+   Fixed (#34, intended deviation): the next of the last constant is set to
    0, as AmiBlitz3's fixconsts does (CLR.l (a2) ;bugfix for object,
    AmiBlitz/AmiBlitz3@ea8c25c7).  The original left it as loaded; in a
    resident whose last constant is followed by other labels (resconsts)
@@ -1156,7 +1156,7 @@ UBYTE *fixconsts(UBYTE *p)
         item = (struct node *)p;
         p = (UBYTE *)item->next;
     } while (count-- != 0);
-    item->next = NULL;          /* fixed (#34) */
+    item->next = NULL;          /* Fixed (#34) */
     lastrescon = (struct label *)item;
     p = (UBYTE *)item;
     p += (WORD)(((UWORD)B_(p + 18) + 1) & ~1);
@@ -1498,7 +1498,7 @@ void runerropts(void)
     save[5] = optreq2ga6.Flags;
     save[6] = optreq2ga7.Flags;
     warnopt_text();
-    if (!ed_openreq(&optreq2))  /* fixed (#1008): could not, TED's alert */
+    if (!ed_openreq(&optreq2))  /* Fixed (#1008): could not, TED's alert */
         return;
     for (;;) {
         if (!ed_getinput(&id))          /* getinput */

@@ -80,7 +80,7 @@ variant. Fixes that match our issues:
 ## Taken over (2026-10-31)
 
 Fixed in this repository's default variant, BB2-compatibly (kind F in
-`docs/libs/deviations.md`, each with a bug-orig test that comes out
+`docs/blitz2/deviations.md` (compiler) and `docs/libs/deviations.md`, each with a bug-orig test that comes out
 FIXED): compiler #38, #42, #943, #958; deflibs #44, #45 (not fixed in
 AmiBlitz3), #959; acidlibs #59, #120, #148, #168, #169, #173, #174,
 #224, #250, #317, #318, #320, #322, #327. Left open: #175 (which gadget

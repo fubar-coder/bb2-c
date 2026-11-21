@@ -15,7 +15,7 @@ See `proposal.md` for the survey and the scope. State of the code:
   `illsizeerr` ("Illegal Assembler Instruction Size").
 - The #940 rule is in `tokens2.c` (`doend3`, `stateret`, `funcret`,
   commit `712dda50`); it is core behaviour of both modes, recorded in
-  `docs/libs/deviations.md` (kind F), the bug-orig tests
+  `docs/blitz2/deviations.md` (kind F), the bug-orig tests
   `compiler-procend-kind*`, the CD table rows of `DARTS_POLY`/`DARTS_WIRE`
   and the two site pages (`new-errors.md`, `fixed-bugs/compiler.md`). No
   OpenSpec spec states it.
@@ -154,7 +154,7 @@ BB2 mode must not gain `.d`: it stays "Type Not Found"
   - the bug-orig tests `compiler-procend-kind*` that expect "Illegal End
     Procedure" for a numeric Function get the new expectation; one test
     keeps the string Function error;
-  - `docs/libs/deviations.md` (row #940, kind F) is reworded; the draft of
+  - `docs/blitz2/deviations.md` (row #940, kind F) is reworded; the draft of
     the issue comment for the coordinator names the narrowing of the fix;
   - the site pages `compared-with-original/new-errors.md` (section "End of
     procedure") and `fixed-bugs/compiler.md` need an update: the CD

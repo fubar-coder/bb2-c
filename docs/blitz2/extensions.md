@@ -106,7 +106,7 @@ is unchanged.
 
 In AB3 mode the branches stay word branches whatever their size, as in
 AmiBlitz3 v3.14.0 (`.s` is `.b` there too; #1068,
-`docs/libs/deviations.md`).
+`docs/blitz2/deviations.md`).
 
 `Bcc.b` changes the executable of a source that the original compiles:
 the branch is 2 bytes shorter. Of the CD's sources only

@@ -112,7 +112,7 @@ first) macbigerr cbraerr eselerr defaerr caseerr unterr1 unterr2.
 - `doeven8 (12605)` : pc=(pc+7)&~7.
 - `doeven (12610)` = `alignpc (12611)` : pc=(pc+1)&~1. Also used by asmit (5072), dodcb,
   dodc. doeven4/doeven8/alignpc move pc only, the skipped pad bytes keep what the object
-  buffer held (BUG(orig) #969; the port writes them as 0, `docs/libs/deviations.md`).
+  buffer held (BUG(orig) #969; the port writes them as 0, `docs/blitz2/deviations.md`).
 - `datasize (12615)` : data (C).
 - `pdt (12617)` : if debugga: d0 = $4400|datasize.b ('D',type) ; tail `bra pokedata2`.
   else rts. Clobbers d0.

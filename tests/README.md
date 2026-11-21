@@ -1226,7 +1226,7 @@ cmake --build --preset amiga --target blitz2-cd-reference   # about 35 s
 
 A row whose note begins with an issue number (`#940: … (2.10: error 383)`)
 is a note row: it holds the port's compile result for an intended
-deviation (`docs/libs/deviations.md`, kind F: an error the original does
+deviation (`docs/blitz2/deviations.md`, kind F: an error the original does
 not give, another error line, a source the port refuses), and the note
 names the reference's result: `(2.10: error LINE)` where the original
 compiler refused the source at line LINE (the result and line fields of
