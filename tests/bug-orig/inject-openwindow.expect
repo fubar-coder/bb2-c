@@ -1,0 +1,73 @@
+[plain]
+window 1: ok
+window 2: ok
+window 3: ok
+window 4: ok
+[1]
+window 1: FAILED
+window 2: ok
+window 3: ok
+window 4: ok
+inject: openwindowfail: 4 windows asked for, 1 failed
+inject: rc=0
+rc=0
+[2]
+window 1: ok
+window 2: FAILED
+window 3: ok
+window 4: ok
+inject: openwindowfail: 4 windows asked for, 1 failed
+inject: rc=0
+rc=0
+[4]
+window 1: ok
+window 2: ok
+window 3: ok
+window 4: FAILED
+inject: openwindowfail: 4 windows asked for, 1 failed
+inject: rc=0
+rc=0
+[2/2]
+window 1: ok
+window 2: FAILED
+window 3: FAILED
+window 4: ok
+inject: openwindowfail: 4 windows asked for, 2 failed
+inject: rc=0
+rc=0
+[3/9]
+window 1: ok
+window 2: ok
+window 3: FAILED
+window 4: FAILED
+inject: openwindowfail: 4 windows asked for, 2 failed
+inject: rc=0
+rc=0
+[5]
+window 1: ok
+window 2: ok
+window 3: ok
+window 4: ok
+inject: openwindowfail: 4 windows asked for, 0 failed
+inject: rc=0
+rc=0
+[0]
+inject: bad option openwindowfail=0
+rc=20
+[2/0]
+inject: bad option openwindowfail=2/0
+rc=20
+[x]
+inject: bad option openwindowfail=x
+rc=20
+[2/x]
+inject: bad option openwindowfail=2/x
+rc=20
+[2/1x]
+inject: bad option openwindowfail=2/1x
+rc=20
+[after]
+window 1: ok
+window 2: ok
+window 3: ok
+window 4: ok

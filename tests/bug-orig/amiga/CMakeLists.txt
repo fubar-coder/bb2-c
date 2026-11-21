@@ -17,6 +17,10 @@ set_target_properties(memfill PROPERTIES SUFFIX "")
 add_executable(dsdays dsdays.c)
 target_compile_options(dsdays PRIVATE -Wall -Wno-pointer-sign)
 set_target_properties(dsdays PROPERTIES SUFFIX "")
+#   winopen  opens windows and says which failed (self test of inject openwindowfail=)
+add_executable(winopen winopen.c)
+target_compile_options(winopen PRIVATE -Wall -Wno-pointer-sign)
+set_target_properties(winopen PROPERTIES SUFFIX "")
 #   segwrite writes behind its own hunk (self test of inject guardseg); no C
 #            startup, its entry is the first code of the hunk
 add_executable(segwrite segwrite.c)

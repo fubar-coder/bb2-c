@@ -36,6 +36,13 @@
  *                          other tasks go through
  *   wbfrontfail            WBenchToFront returns FALSE (as with the
  *                          Workbench closed)
+ *   openwindowfail=N[/COUNT]
+ *                          the N-th OpenWindow of the process (also
+ *                          OpenWindowTagList; a call made inside another
+ *                          one counts once) returns 0, as without memory
+ *                          or room for the window; then the following
+ *                          ones, COUNT in all (default 1).  The windows
+ *                          asked for are reported, to find N
  *   datestamp=YYYY-MM-DD   dos.library's DateStamp returns that date (days
  *                          since 1978-01-01, minute 0, tick 0) to COMMAND:
  *                          what a program takes as the system date
@@ -244,6 +251,8 @@
 #define LVO_DISPLAYALERT (-90)
 #define LVO_ALERT    (-108)
 #define LVO_WBENCHTOFRONT (-342)
+#define LVO_OPENWINDOW (-204)
+#define LVO_OPENWINDOWTAGLIST (-606)
 #define LVO_LOCK     (-84)
 #define LVO_UNLOCK   (-90)
 #define LVO_EXAMINE  (-102)
@@ -270,7 +279,7 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 /* -------------------------------------------------------------- options */
 
 static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
-static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill, o_datestamp;
+static int o_openwindowfail, o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill, o_datestamp;
 static int o_doslist;
 static int o_guardseg, o_freefill;
 static UBYTE fill_byte, freefill_byte;
@@ -278,6 +287,7 @@ static ULONG ds_days, ds_done;
 static ULONG nn_num;
 static char nn_name[40];
 static ULONG wbf_done;
+static ULONG ow_n, ow_count = 1, ow_seen, ow_done, ow_depth;
 static ULONG af_min, af_max, af_chip, af_count, af_done, af_skip, af_seen, af_flags;
 static int af_flags_set;
 static char rf_name[108], wf_name[108], ef_name[108], olf_name[108], odf_name[108];
@@ -291,7 +301,8 @@ APTR old_cacheclearu, old_cachecleare;
 void cacheclearu_patch(void), cachecleare_patch(void);
 APTR old_write, old_alert, old_opendev, old_wbfront;
 void write_patch(void), alert_patch(void), opendev_patch(void), wbfront_patch(void);
-APTR old_execalert, old_openfromlock, old_datestamp;
+APTR old_execalert, old_openfromlock, old_datestamp, old_openwindow, old_openwindowtl;
+void openwindow_patch(void), openwindowtl_patch(void);
 void datestamp_patch(void);
 void execalert_patch(void), openfromlock_patch(void);
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
@@ -419,6 +430,29 @@ __asm__(
 "   move.l  _old_wbfront,-(sp)\n"
 "   rts\n"
 "10: moveq  #0,d0\n"
+"   rts\n"
+/* OpenWindow(a0) / OpenWindowTagList(a0, a1): openwindow_pre() != 0 -> 0,
+   else the original (d1 holds its address) and openwindow_post() */
+"   .even\n"
+"_openwindow_patch:\n"
+"   move.l  _old_openwindow,d1\n"
+"   bra.s   12f\n"
+"   .even\n"
+"_openwindowtl_patch:\n"
+"   move.l  _old_openwindowtl,d1\n"
+"12: movem.l d0-d1/a0-a1,-(sp)\n"
+"   jsr     _openwindow_pre\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   13f\n"
+"   pea     14f\n"
+"   move.l  d1,-(sp)\n"
+"   rts\n"
+"14: movem.l d0-d1/a0-a1,-(sp)\n"
+"   jsr     _openwindow_post\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   rts\n"
+"13: moveq   #0,d0\n"
 "   rts\n"
 /* DateStamp(d1 date): datestamp_pre(date) != 0 -> date filled in, d0 = d1 */
 "   .even\n"
@@ -932,6 +966,30 @@ ULONG wbfront_pre(void)
         return 0;
     wbf_done++;
     return 1;
+}
+
+/* OpenWindow/OpenWindowTagList: counted (not the call inside another of
+   them); the N-th, COUNT in all, fails.  Every call that is passed on
+   raises ow_depth until openwindow_post */
+ULONG openwindow_pre(void)
+{
+    if (!o_openwindowfail || !ours())
+        return 0;
+    if (!ow_depth++) {
+        ow_seen++;
+        if (ow_seen >= ow_n && ow_seen < ow_n + ow_count) {
+            ow_depth--;
+            ow_done++;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void openwindow_post(void)
+{
+    if (o_openwindowfail && ours() && ow_depth)
+        ow_depth--;
 }
 
 ULONG datestamp_pre(struct DateStamp *ds)
@@ -1495,6 +1553,14 @@ static int option(const char *a)
         return o_ownedunlock = 1;
     if (!strcmp(a, "wbfrontfail"))
         return o_wbfrontfail = 1;
+    if (!strncmp(a, "openwindowfail=", 15)) {
+        s = a + 15;
+        if (!number(&s, &ow_n) || !ow_n)
+            return -1;
+        if (*s == '/' && (s++, !number(&s, &ow_count) || !ow_count))
+            return -1;
+        return *s ? -1 : (o_openwindowfail = 1);
+    }
     if (!strncmp(a, "datestamp=", 10)) {
         static const unsigned char mdays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
         ULONG y, m, d, md, i;
@@ -1666,11 +1732,24 @@ static void patch(int on)
         if (o_wbfrontfail)
             old_wbfront = SetFunction((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT,
                                       (APTR)wbfront_patch);
+        if (o_openwindowfail) {
+            old_openwindow = SetFunction((struct Library *)IntuitionBase, LVO_OPENWINDOW,
+                                         (APTR)openwindow_patch);
+            if (IntuitionBase->LibNode.lib_Version >= 36)
+                old_openwindowtl = SetFunction((struct Library *)IntuitionBase,
+                                               LVO_OPENWINDOWTAGLIST, (APTR)openwindowtl_patch);
+        }
         if (o_datestamp)
             old_datestamp = SetFunction(dos, LVO_DATESTAMP, (APTR)datestamp_patch);
     } else {
         if (o_datestamp)
             SetFunction(dos, LVO_DATESTAMP, old_datestamp);
+        if (o_openwindowfail) {
+            SetFunction((struct Library *)IntuitionBase, LVO_OPENWINDOW, old_openwindow);
+            if (IntuitionBase->LibNode.lib_Version >= 36)
+                SetFunction((struct Library *)IntuitionBase, LVO_OPENWINDOWTAGLIST,
+                            old_openwindowtl);
+        }
         SetFunction(ex, LVO_CACHECLEARU, old_cacheclearu);
         SetFunction(ex, LVO_CACHECLEARE, old_cachecleare);
         SetFunction(dos, LVO_WRITE, old_write);
@@ -1797,7 +1876,7 @@ static const char usage[] =
     "usage: inject [OPTION...] COMMAND [ARGS]\n"
     "  run COMMAND in this process with faults injected (bug-orig tests)\n"
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
-    "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME ownedunlock\n"
+    "    writefail=NAME/N alerts alertlog wbfrontfail openwindowfail=N[/COUNT] examinefail=NAME ownedunlock\n"
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
     "    track pad guard guardseg fill=XX freefill=XX datestamp=YYYY-MM-DD\n"
     "    opencount=NAME cd[=PATH] libs=PATH inuse=PATH click=TITLE/TEXT doslocked\n"
@@ -1832,7 +1911,7 @@ int main(int argc, char **argv)
     if (i >= argc) {
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP]]\n"
             "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [alertlog]\n"
-            "              [wbfrontfail] [handles] [nullnode=NUM/NAME]\n"
+            "              [wbfrontfail] [openwindowfail=N[/COUNT]] [handles] [nullnode=NUM/NAME]\n"
             "              [examinefail=NAME] [ownedunlock] [openlibfail=NAME] [opendevfail=NAME]\n"
             "              [createprocfail] [track] [pad] [guard] [guardseg] [fill=XX]\n"
             "              [freefill=XX]\n"
@@ -1862,7 +1941,7 @@ int main(int argc, char **argv)
         put("\n");
         return 20;
     }
-    if (nclick || nkeys || o_alerts || o_wbfrontfail) {
+    if (nclick || nkeys || o_alerts || o_wbfrontfail || o_openwindowfail) {
         IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 36);
         if (!IntuitionBase)
             return 20;
@@ -2011,6 +2090,11 @@ int main(int argc, char **argv)
     }
     if (o_wbfrontfail) {
         sprintf(line, "inject: wbfrontfail: %lu calls failed\n", wbf_done);
+        put(line);
+    }
+    if (o_openwindowfail) {
+        sprintf(line, "inject: openwindowfail: %lu windows asked for, %lu failed\n", ow_seen,
+                ow_done);
         put(line);
     }
     if (o_datestamp) {

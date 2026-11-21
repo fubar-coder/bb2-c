@@ -663,6 +663,23 @@ inject_datestamp(inject_datestamp_broken
 set_tests_properties(inject_datestamp_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+24:[ \n]+\"days=17828[ \n]+minute=0[ \n]+tick=0\",[ \n]+output[ \n]+line[ \n]+24:[ \n]+\"days=17829")
 
+# inject's openwindowfail= option (inject-openwindow.cmake), and the check
+# itself: an expect file with the wrong window failing must fail
+function(inject_openwindow name expect)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DRESULTS=${RESULTS} -DINJECT=${INJECT} -DWINOPEN=$<TARGET_FILE:winopen>
+		-DEXPECT=${expect} -DWORK=${work}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/inject-openwindow.cmake)
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT 240)
+endfunction()
+inject_openwindow(inject_openwindow ${CMAKE_CURRENT_SOURCE_DIR}/inject-openwindow.expect)
+inject_openwindow(inject_openwindow_broken
+	${CMAKE_CURRENT_SOURCE_DIR}/inject-openwindow.broken.expect)
+set_tests_properties(inject_openwindow_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+16:[ \n]+\"window[ \n]+2:[ \n]+ok\",[ \n]+output[ \n]+line[ \n]+16:[ \n]+\"window[ \n]+2:[ \n]+FAILED")
+
 # inject's guardseg option (inject-guardseg.cmake), and the check itself: an
 # expect file without the write behind the program's hunk must fail
 function(inject_guardseg name expect)
