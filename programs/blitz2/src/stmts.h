@@ -137,7 +137,8 @@ BOOL makeiallox(void);                  /* maxpc/maxlib/maxdata1/maxdata2 */
 BOOL makeallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size);
 void freeallox(void);
 /* macrobuff for the Macro Buffer option (macrolen), fixed (#336): FALSE
-   if it could not be allocated (the old buffer stays) */
+   if it could not be allocated (the old buffer stays) and the out of
+   memory notice pending (nomemnote, fixed #1176) */
 BOOL makemacbuff(void);
 
 /* ---------------------------------------------------- menus / residents */

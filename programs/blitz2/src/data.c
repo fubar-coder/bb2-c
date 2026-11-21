@@ -1508,7 +1508,7 @@ done2:
     for (i = 0; i < MOSTRES; i++)
         resbuff[i].seg = 0;
     makeiallox();
-    makemacbuff();                      /* fixed (#336) */
+    makemacbuff();                      /* fixed (#336; #1176: the notice) */
     loadres();
     nomemshow();                        /* fixed (#369) */
 }
@@ -1650,7 +1650,7 @@ void optsdone(UWORD gadget, WORD allchg, WORD reschg)
 {
     if (allchg) {
         makeiallox();
-        makemacbuff();                  /* fixed (#336) */
+        makemacbuff();                  /* fixed (#336; #1176: the notice) */
     }
     if (reschg)
         loadres();

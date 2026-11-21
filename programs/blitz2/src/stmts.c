@@ -811,7 +811,12 @@ void freeallox(void)
    macrolen; at least MACROMIN bytes are allocated, because doincbin's
    FileInfoBlock and the parameters of a macro call (unchecked, #4) use
    the buffer too, as with the original's fixed 8192.  If the new buffer
-   cannot be allocated the old one and its limit stay. */
+   cannot be allocated the old one and its limit stay, macrolen keeps the
+   user's value, and the out of memory notice is made pending (fixed
+   #1176: it failed silently; nomemnote, shown where blitz2 returns to the
+   editor: loadxtra_c, menu_c for optsdone).  The next change of the
+   options tries again; at the start there is no old buffer and blitz2
+   gives up. */
 #define MACROMIN 8192                   /* blitz2.s optreqsg5's default */
 
 BOOL makemacbuff(void)
@@ -823,8 +828,10 @@ BOOL makemacbuff(void)
     if (macrobuff && len == (ULONG)(macrobufff - macrobuff))
         return TRUE;
     buf = AllocMem(size, MEMF_PUBLIC);
-    if (!buf)
+    if (!buf) {
+        nomemnote();
         return FALSE;
+    }
     if (macrobuff)
         FreeMem(macrobuff, macrobuffsize);
     macrobuff = buf;
