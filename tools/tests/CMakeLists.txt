@@ -145,6 +145,14 @@ target_link_libraries(test_basictest PRIVATE lib_basictest snitch::snitch)
 target_compile_options(test_basictest PRIVATE -Wall -Wextra)
 set_target_properties(test_basictest PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME basictest COMMAND test_basictest)
+# the macro text of the drivers (shared/basictest/macros.bas)
+add_executable(test_basictest_macros test_basictest_macros.cpp)
+target_link_libraries(test_basictest_macros PRIVATE snitch::snitch)
+target_compile_definitions(test_basictest_macros PRIVATE
+	BASICTEST_MACROS="${CMAKE_CURRENT_SOURCE_DIR}/../../shared/basictest/macros.bas")
+target_compile_options(test_basictest_macros PRIVATE -Wall -Wextra)
+set_target_properties(test_basictest_macros PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME basictest_macros COMMAND test_basictest_macros)
 
 # the check of SNAP:waitjob (static_assert in amiga_emulation.c) with
 # waiters assembled the wrong way

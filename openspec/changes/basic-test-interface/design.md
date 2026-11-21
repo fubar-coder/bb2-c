@@ -78,3 +78,16 @@ refused by an old reader instead of being misread.
 - **What the writer refuses.** It returns 0 (no line) for a buffer too
   small, an unknown kind or block and a case without a name; the library
   decides what it writes then.
+- **The macro text.** The spec names the macros, their arguments, the
+  labels and the routines but gives no text; `shared/basictest/macros.bas`
+  is the case form of `basic-testlib` D3 with `TLBlockEnd` (the spec's
+  routine; D3 still writes `TLCaseEnd`), the batch init and end in the
+  same form with their fixed labels (`Dc.l tc__init_end` ... `.tc__init_end`,
+  `If TLInit=0 Then Return`; the same for `tc__final`), and the checks
+  `TLCheck K,EXPECTED,ACTUAL` (`!CheckEq`), `TLCheckStr K,EXPECTED$,ACTUAL$`
+  (`!CheckStrEq`), `TLRequire K,COND`, `TLExpectError K`. The spec lists
+  no routine for `!Check{K,COND}` ("ok if not 0"); the text maps it onto
+  `TLCheck K,-1,(COND)<>0`, so a failed condition is recorded as expected
+  `$FFFFFFFF`, actual `$00000000`. This rests on a comparison giving -1
+  for true in 1.95, 2.10 and the port, which the emulator tests of
+  `basic-testlib` have to confirm.

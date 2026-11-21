@@ -7,7 +7,7 @@
 
 ## 2. Macro text and documentation
 
-- [ ] 2.1 The macro text `shared/basictest/macros.bas` as in the spec (blocks with the `Dc.l` end reference, fixed labels of init and end, check macros with `K` first); verify: a host test that the text defines every macro of the spec with the argument order of the spec
+- [x] 2.1 The macro text `shared/basictest/macros.bas` as in the spec (blocks with the `Dc.l` end reference, fixed labels of init and end, check macros with `K` first); verify: a host test that the text defines every macro of the spec with the argument order of the spec
 - [ ] 2.2 The format, the source form and the preprocessed form in `tests/README.md`; verify: the examples of the text are read back by the codec in a host test
 
 ## Workflow follow-up
