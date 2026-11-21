@@ -1,6 +1,8 @@
 # TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
 [state]
-HALT
+# varies: the editor goes on with the freed text; how the crash ends depends on the host timing (halted CPU at SAVE, reboot at SAVE, or SAVE works and the reboot follows at QUIT)
+*
 [problems]
   - expect: stdout lacks "inject: allocfail: 1 allocations failed"
-  - expect: new.bas missing
+# varies: SAVE crashes (new.bas missing) or writes the freed text (new.bas differs from the expected contents)
+  - expect: new.bas *
