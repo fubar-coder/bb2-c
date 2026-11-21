@@ -54,6 +54,9 @@
  *                     exe the same executable - also for a source the
  *                     reference does not compile (blitz2-ab3 against
  *                     blitz2, tests/ab3)
+ *   mask_traps=on    the trap #1 / #4 parameter blocks of the executables are zeroed before they
+ *                     are compared, as with runtime_errors=on (a compile whose options turn
+ *                     runtime error checking on without the pass saying so)
  *   must_compile=on   with run=off: a source the reference does not compile
  *                     fails the pass (the report says "must compile" and
  *                     the compiler's result): a pass that only checks that
@@ -278,6 +281,7 @@ struct corpus_pass {
     int layout_stack;                   /* layout=stack */
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     int rtg;                            /* rtg=on: amiga_emulation_rtg */
+    int mask_traps;                     /* mask_traps=on: the trap blocks of the executables are masked as with runtime_errors */
     int must_compile;                   /* must_compile=on (run=off): a source that does not compile fails */
     unsigned timeout, parallel, stack, hang_after;   /* hang_after: 0 = not given */
     int hang_from_run;                  /* hang_from=run: the silence counts from the first run */

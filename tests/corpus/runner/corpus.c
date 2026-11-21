@@ -211,7 +211,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             continue;
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
-            || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "must_compile")
+            || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps")
             || !strcmp(key, "timeout") || !strcmp(key, "parallel")
             || !strcmp(key, "stack") || !strcmp(key, "fixed") || !strcmp(key, "hang_after")) {
             char *e;
@@ -219,7 +219,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
 
             if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")
                 || !strcmp(key, "regression") || !strcmp(key, "run") || !strcmp(key, "rtg")
-                || !strcmp(key, "must_compile")) {
+                || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
                     return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
@@ -228,7 +228,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                   : !strcmp(key, "serial") ? &p->serial
                   : !strcmp(key, "run") ? &p->run
                   : !strcmp(key, "rtg") ? &p->rtg
-                  : !strcmp(key, "must_compile") ? &p->must_compile : &p->regression)
+                  : !strcmp(key, "must_compile") ? &p->must_compile
+                  : !strcmp(key, "mask_traps") ? &p->mask_traps : &p->regression)
                     = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
                 free(val);
@@ -1341,7 +1342,7 @@ static void load_outcome(const struct corpus_pass *p, size_t c, size_t i, const 
         o->run = read_file(run, &o->runlen);
     if (serial && p->serial)
         o->serial = read_file(serial, &o->seriallen);
-    if (o->exe && p->runtime_errors)
+    if (o->exe && (p->runtime_errors || p->mask_traps))
         corpus_mask_traps(o->exe, o->exelen);
     o->result = result_of(log, i);
     free(n);

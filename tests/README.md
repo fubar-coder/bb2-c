@@ -1714,9 +1714,12 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     test `NAME_prev` (`bug_orig_ID_prev`, `regression_ID_prev`,
     `blitz2_ID_prev`: `cmake/prev.cmake`, `prev_compile_test`), configured
     by the same keys as the test itself (the lines for a program run are
-    left out). Not compared, with the reason in the CMake file: tests with a
-    Compile/Run job (`jobline=run=...`: what the compiler leaves in its
-    buffer is addresses of the running program),
+    left out). A test with a Compile/Run job (`jobline=run=...`) compiles
+    with runtime error checking on (blitz2's start options; its defaults
+    cannot be saved) although its pass does not say so: its pass gets
+    `mask_traps=on`, the trap blocks of the executables are zeroed before
+    the comparison as with runtime error checking. Not compared, with the
+    reason in the CMake file:
     `compiler-maxs-libjsr` (#335: addresses of the compiler's memory in the
     executable) and three tests where the compiler gives up before the job
     (no result: `compiler-optreqprep-allocmem`, `compiler-wb-info-progfile`,
