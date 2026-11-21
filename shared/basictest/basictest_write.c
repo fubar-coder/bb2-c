@@ -108,7 +108,7 @@ size_t basictest_write(const struct basictest_entry *e, uint8_t *buf, size_t siz
         } else if (e->block == BASICTEST_BLOCK_FINAL) {
             puts_(&o, "final");
         } else if (e->block == BASICTEST_BLOCK_CASE && e->name.length) {
-            puts_(&o, "case ");
+            puts_(&o, "case\t");
             putstr(&o, &e->name);
         } else {
             return 0;

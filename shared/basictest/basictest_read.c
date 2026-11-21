@@ -13,14 +13,15 @@ struct field {
     size_t length;
 };
 
-/* the entry names, their kinds and their numbers of fields (with the name) */
+/* the entry names, their kinds and their numbers of fields (with the
+   name); block: 2 for init and final, 3 for a case (checked below) */
 static const struct {
     const char *name;
     int kind;
     unsigned fields;
 } kinds[] = {
     { "begin", BASICTEST_BEGIN, 2 },
-    { "block", BASICTEST_BLOCK, 2 },
+    { "block", BASICTEST_BLOCK, 0 },
     { "check", BASICTEST_CHECK, 5 },
     { "checkstr", BASICTEST_CHECKSTR, 5 },
     { "require", BASICTEST_REQUIRE, 3 },
@@ -141,7 +142,7 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
                    struct basictest_entry *e, struct basictest_error *err)
 {
     struct field f[MAXFIELDS];
-    unsigned nf = 0, i, ki;
+    unsigned nf = 0, ki;
     size_t at = 0, start = 0;
 
     if (err) {
@@ -168,7 +169,7 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
             break;
     if (ki == sizeof kinds / sizeof kinds[0])
         return fail(err, BASICTEST_E_KIND, 1);
-    if (nf != kinds[ki].fields)
+    if (kinds[ki].fields ? nf != kinds[ki].fields : nf != 2 && nf != 3)
         return fail(err, BASICTEST_E_FIELDS, 0);
 
     e->kind = kinds[ki].kind;
@@ -189,20 +190,20 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
             return fail(err, BASICTEST_E_VERSION, 2);
         break;
     case BASICTEST_BLOCK:
-        if (is(&f[1], "init")) {
+        if (is(&f[1], "init"))
             e->block = BASICTEST_BLOCK_INIT;
-        } else if (is(&f[1], "final")) {
+        else if (is(&f[1], "final"))
             e->block = BASICTEST_BLOCK_FINAL;
-        } else {
-            static const char cs[] = "case ";
-
-            for (i = 0; i < 5 && i < f[1].length && f[1].data[i] == (uint8_t)cs[i]; i++)
-                ;
-            if (i < 5 || f[1].length == 5
-                || !strval(f[1].data + 5, f[1].length - 5, &e->name))
-                return fail(err, BASICTEST_E_VALUE, 2);
+        else if (is(&f[1], "case"))
             e->block = BASICTEST_BLOCK_CASE;
-        }
+        else
+            return fail(err, BASICTEST_E_VALUE, 2);
+        /* a case has a name, init and final have none */
+        if (nf != (e->block == BASICTEST_BLOCK_CASE ? 3u : 2u))
+            return fail(err, BASICTEST_E_FIELDS, 0);
+        if (e->block == BASICTEST_BLOCK_CASE
+            && (f[2].length == 0 || !strval(f[2].data, f[2].length, &e->name)))
+            return fail(err, BASICTEST_E_VALUE, 3);
         break;
     case BASICTEST_CHECK:
     case BASICTEST_CHECKSTR:

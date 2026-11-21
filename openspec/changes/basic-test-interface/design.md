@@ -64,11 +64,11 @@ refused by an old reader instead of being misread.
 
 ## Findings of the implementation
 
-- **The block field.** The spec's entry list gives `block` as `init`,
-  `case NAME` or `final`, and its scenario shows `block` `case a` as two
-  fields. The codec writes and reads `case NAME` as one field (the word,
-  a blank, the name as a string value): `block` has two fields for every
-  block. A case name never holds a blank or a TAB.
+- **The block fields** (decided 2026-11-21, task-decisions.md: "Zwei
+  Felder"). `block` TAB `init`, `block` TAB `final`, and `block` TAB
+  `case` TAB the name as a string value. The reader refuses a `case`
+  without a name or with an empty one, and an `init` or `final` with a
+  name, as a wrong number of fields.
 - **One form per value.** The reader takes every value only in the form
   the writer gives it: `K` and the version without sign and leading zero
   and within 32 bits, a long value with upper-case hex digits, `\xHH` with

@@ -8,8 +8,8 @@
  *
  *   begin        VERSION                  the format version (1)
  *   block        init | case NAME | final the block the next entries
- *                                         belong to (one field; NAME a
- *                                         string value)
+ *                                         belong to (NAME a string value,
+ *                                         a field of its own)
  *   check        K ok|fail EXP ACT        a check of two longs
  *   checkstr     K ok|fail EXP$ ACT$      a check of two strings
  *   require      K broken                 a failed precondition

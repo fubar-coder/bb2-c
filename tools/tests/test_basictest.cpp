@@ -104,11 +104,19 @@ TEST_CASE("block: init, case NAME, final", "[basictest]")
     std::string name = "anim_frames_2";
     e.block = BASICTEST_BLOCK_CASE;
     e.name = str(name);
-    CHECK(write(e) == "block\tcase anim_frames_2\n");
+    CHECK(write(e) == "block\tcase\tanim_frames_2\n");
     r = roundtrip(e);
     REQUIRE(r.rc == BASICTEST_OK);
     CHECK(r.e.block == BASICTEST_BLOCK_CASE);
     CHECK(text(r.e.name) == name);
+
+    // a name the library got from a program: encoded, still one field
+    std::string odd = "a b\tc";
+    e.name = str(odd);
+    CHECK(write(e) == "block\tcase\ta b\\x09c\n");
+    r = roundtrip(e);
+    REQUIRE(r.rc == BASICTEST_OK);
+    CHECK(text(r.e.name) == odd);
 }
 
 TEST_CASE("check: the spec's failed check 3 of case a", "[basictest]")
@@ -278,6 +286,8 @@ TEST_CASE("reader: a wrong number of fields names the line", "[basictest]")
 {
     const char *lines[] = {
         "begin",       "begin\t1\t1",  "block",        "block\tinit\tx",
+        // a case without a name, init and final with one, a case with two
+        "block\tcase", "block\tinit\t", "block\tfinal\ta", "block\tcase\ta\tb",
         "check\t1\tok\t$00000000",     "check\t1\tok\t$00000000\t$00000000\t$00000000",
         "checkstr\t1\tok\ta",          "checkstr\t1\tok\ta\tb\tc",
         "require\t1",  "require\t1\tbroken\tx",  "expect-error", "expect-error\t1\t2",
@@ -332,12 +342,15 @@ TEST_CASE("reader: a malformed value names the line and the field", "[basictest]
         { "require\tx\tbroken", 2 },
         { "expect-error\t1x", 2 },
         { "broken\tbad\\", 2 },
-        { "block\tcase", 2 },
+        { "block\tcase\t", 3 },                  // an empty name
+        { "block\tcase a", 2 },                  // name and word in one field
         { "block\tcase ", 2 },
-        { "block\tcase\ta", 0 },                  // three fields: see below
         { "block\tcase_a", 2 },
         { "block\tInit", 2 },
-        { "block\tcase a\\x5c", 2 },
+        { "block\tCase\ta", 2 },
+        { "block\t\ta", 2 },
+        { "block\tcase\ta\\x5c", 3 },
+        { "block\tcase\ta b\x01", 3 },
         { "begin\t", 2 },
         { "begin\t01", 2 },
         { "begin\tone", 2 },
@@ -345,10 +358,6 @@ TEST_CASE("reader: a malformed value names the line and the field", "[basictest]
     for (const auto &c : cases) {
         auto r = read(c.line, 21);
         CAPTURE(c.line);
-        if (c.field == 0) {
-            CHECK(r.rc == BASICTEST_E_FIELDS);
-            continue;
-        }
         CHECK(r.rc == BASICTEST_E_VALUE);
         CHECK(r.err.line == 21u);
         CHECK(r.err.field == c.field);

@@ -182,7 +182,7 @@ block of the last `block` entry before it.
 | Entry | Fields after the name | |
 |---|---|---|
 | `begin` | the format version, `1` | the first entry |
-| `block` | `init`, `case NAME` (one field) or `final` | a block starts |
+| `block` | `init`, `final`, or `case` and the name (a string value) | a block starts |
 | `check` | `K`, `ok` or `fail`, expected, actual (long values) | |
 | `checkstr` | `K`, `ok` or `fail`, expected, actual (string values) | |
 | `require` | `K`, `broken` | only a failed precondition |
@@ -204,11 +204,11 @@ the blocks marked `basictest-result` back with the codec):
 begin	1
 block	init
 blockend
-block	case shape_size
+block	case	shape_size
 check	1	ok	$00000010	$00000010
 check	2	ok	$FFFFFFFF	$FFFFFFFF
 blockend
-block	case tab_string
+block	case	tab_string
 checkstr	3	fail	ab	a\x09b
 expect-error	4
 incomplete
