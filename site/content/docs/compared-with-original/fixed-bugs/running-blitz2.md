@@ -58,11 +58,13 @@ from `blitz2:deflibs`, `blitz2:acidlibs` and the directories in
   editor to load its own icon as a program; the editor starts with no
   program ([#20](https://github.com/fubar-coder/bb2-c/issues/20)).
 * Started from the Workbench, blitz2 did not go back to its start
-  directory when it ended; the start directory is restored
+  directory when it ended; the startup code of the port's C library
+  (libnix) restores the start directory when blitz2 ends
   ([#21](https://github.com/fubar-coder/bb2-c/issues/21)).
 * Started from the Workbench, blitz2 could crash at its very end, for
-  example under a memory checker such as MungWall; blitz2 has ended
-  before the Workbench unloads it
+  example under a memory checker such as MungWall; the startup code of
+  the port's C library (libnix) answers the Workbench so that blitz2 has
+  ended before the Workbench unloads it
   ([#337](https://github.com/fubar-coder/bb2-c/issues/337)).
 
 ## Out of memory during a compile

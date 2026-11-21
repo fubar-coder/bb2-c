@@ -166,7 +166,7 @@ rows:
     topic: "Compiler"
     library: "Compiler"
     command: ""
-    text: "Started from the Workbench, blitz2 goes back to its start directory when it ends; the original did not."
+    text: "Started from the Workbench, blitz2 goes back to its start directory when it ends, through the startup code of the port's C library (libnix); the original did not."
     page: running-blitz2
     anchor: starting-and-ending
   - issue: 22
@@ -2119,7 +2119,7 @@ rows:
     topic: "Compiler"
     library: "Compiler"
     command: ""
-    text: "Started from the Workbench, blitz2 has ended before the Workbench unloads it; the original could crash at its very end, for example under MungWall."
+    text: "Started from the Workbench, blitz2 has ended before the Workbench unloads it, through the startup code of the port's C library (libnix); the original could crash at its very end, for example under MungWall."
     page: running-blitz2
     anchor: starting-and-ending
   - issue: 340
@@ -7263,12 +7263,12 @@ rows:
     anchor: object-numbers-above-32k
   - issue: 999
     severity: 5
-    topic: "Compiler"
-    library: "Compiler"
+    topic: "Graphics"
+    library: "shapeslib, spriteslib"
     command: "LoadShapes, DecodeShapes, LoadSprites"
-    text: "`LoadShapes`, `DecodeShapes` and `LoadSprites` load the whole range with a raised object maximum; the original loaded only the first objects."
-    page: compiler
-    anchor: object-numbers-above-32k
+    text: "`LoadShapes`, `DecodeShapes` and `LoadSprites` load the whole range with a raised object maximum; the original loaded only the first object."
+    page: libraries
+    anchor: shapes-and-sprites
   - issue: 1000
     severity: 5
     topic: "Graphics"
@@ -7608,12 +7608,12 @@ rows:
     anchor: music-players
   - issue: 1063
     severity: 5
-    topic: "Compiler"
+    topic: "Data structures"
     library: "staticslib"
     command: "Statement, Function"
     text: "A procedure with three or more parameters and a local NewType variable keeps all its parameters; the original overwrote the third, and with five parameters the fifth."
-    page: compiler
-    anchor: newtypes
+    page: libraries
+    anchor: statements-and-functions
   - issue: 1045
     severity: 5
     topic: "Graphics"
