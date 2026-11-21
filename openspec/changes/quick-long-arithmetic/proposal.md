@@ -8,7 +8,7 @@ Issue #1178 first recorded this as a potential problem; the user has since class
 
 ## Dependency
 
-This change depends on the change for #1177 (comparisons), which is done first: both need the Quick not cut at fetch and the operand types at the operator. No parallel work (user decision, `task-decisions.md` 2026-11-21).
+This change depends on the change for #1177 (comparisons), which is done first: both need the operand types at the operator; the cut of a Quick at fetch (`varcont`) is removed by this change, not by #1177 (user decision 2026-11-21, `quick-compare-types` decision 2: #1177 only drops the cut for the left operand of a comparison). No parallel work (user decision, `task-decisions.md` 2026-11-21).
 
 ## What Changes
 

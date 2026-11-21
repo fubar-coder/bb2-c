@@ -54,10 +54,37 @@ The type so far is Long when
 
 ## A comparison starts again
 
-A comparison gives a Word (`cpoke`, `eval.c:1087-1093`), so the operands
-after it start again: in `If l=5 OR q*2>3` the `q*2` is computed in Quick.
-The type so far before the comparison still reaches its operands, which is
-a problem (see below).
+A comparison gives a Word (`cpoke`), so the operands after it start again:
+in `If l=5 OR q*2>3` the `q*2` is computed in Quick.
+
+In the port the operands of a comparison (`=`, `<>`, `<`, `<=`, `>`, `>=`)
+are compared with their own values (fix of #1177; the original handed the
+type so far to both): the right operand starts with no type, a left
+operand that is one element (a variable, field, array element, function
+value) gets its own type back, and only the boolean is converted to the
+type of the context. A Long or Word against a Quick is compared exactly:
+the whole number against the whole part of the Quick, on equality the
+fraction decides; a Long is not converted to Quick (range +-32768). So
+`r.l=(q>1)` is -1 for `q=1.5`, `q>l` and `l<q` agree, `rq.q=(lw>1)` with
+`lw.l=65537` is -1, and two Longs under a Float destination are compared
+as Longs (`rf.f=(l2=l3)` is 0 for 100000001 and 100000000, which are the
+same FFP value).
+
+Limits until the expression tree (#1180):
+
+* a left operand that is an expression keeps the type so far: in
+  `r.l=(q*2>2)` the `q` is still cut (0), and so is `-q` in
+  `r.l=(-q<-1)` (#1183);
+* a Long constant on the left under a Float context is still an FFP value:
+  `rf.f=(100000001>l3)` is 0;
+* the right operand is computed in its own types: in `If base<i*4+base`
+  (`base.l=$40000`, a default-typed `i=20000`) `i*4` is a Quick and
+  overflows (false; the original computed it in Long, true), and a
+  constant with a fraction on the right is a Float (`If q>1.4` is a Float
+  comparison);
+* a comparison that is the right operand of another operator lowers that
+  operator's left operand to Word (`rl.l=lw AND (l1=l1)`): issue #1182,
+  not part of this fix.
 
 ## Measured examples
 
@@ -78,14 +105,18 @@ a problem (see below).
 | `If q*2+l>12` | true | true |
 | `a(q*10)` (first index) | element 10 | element 15 |
 | `Mid$("abcdefghij",q*2,1)` | b | c |
-| `r.l=(q>1)` | 0 | -1 |
+| `r.l=(q>1)` | 0 (the port: -1, #1177) | -1 |
+| `If q>b` (`b.l=65537`) | true (the port: false, #1177) | false |
 
 ## Where this is a problem
 
-* **Comparisons** are original bug #1177 (to be fixed): the operands of a
-  comparison are to be compared with their own values, and only the boolean
-  takes the type of the context. Today `r.l=(q>1)` is 0 and `r.l=(q=1)` is
-  -1 for `q=1.5`, and `q>l` differs from `l<q`.
+* **Comparisons** were original bug #1177, fixed in the port (above, "A
+  comparison starts again", with its limits): in the original
+  `r.l=(q>1)` is 0 and `r.l=(q=1)` is -1 for `q=1.5`, `q>l` differs from
+  `l<q`, a Long against a Quick keeps only its low word
+  (`If q>b` is true for `b.l=65537`), and two Longs beyond 2^24 under a
+  Float destination or parameter, or two Longs beyond 16 bits under a
+  Quick destination, can compare as equal.
 * **Arithmetic** is issue #1178: the current behaviour is kept, because the
   rule is deliberate; it is recorded as a potential problem, since a
   program that uses fractions in such an expression gets another result

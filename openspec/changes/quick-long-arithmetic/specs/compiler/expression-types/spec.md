@@ -34,7 +34,7 @@ The compiler SHALL round down only when an operation gives a Byte, Word or Long,
 - **THEN** `r` is 13
 
 ### Requirement: The expected type flows as before
-The type the expression is wanted in (the destination, the parameter type, Long for an array index), a Long operand to the left, and the types Word+Word, Word*Word and a shift give SHALL decide the type of the operations as before; a constant SHALL take that type. The order dependence of the previous compiler SHALL stay: `x.w=w+v+q*2` and `x.w=q*2+w+v` MAY still compute in different types. Only the cut of a Quick when it is fetched goes away.
+The type the expression is wanted in (the destination, the parameter type, Long for an array index), a Long operand to the left, and the types Word+Word, Word*Word and a shift give SHALL decide the type of the operations as before; a constant SHALL take that type. The order dependence of the previous compiler SHALL stay: `x.w=w+v+q*2` and `x.w=q*2+w+v` MAY still compute in different types. Only the cut of a Quick when it is fetched goes away. The operands of a comparison are the exception: they do not take the type (requirement "The operands of a comparison are compared with their own values", change `quick-compare-types`, #1177).
 
 #### Scenario: Word and Long contexts
 - **WHEN** a program prints `NPrint 1+1+1+q` and `NPrint w+v+q` with `q=1.5`, `w=3`, `v=4`

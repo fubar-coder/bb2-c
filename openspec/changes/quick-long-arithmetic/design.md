@@ -71,7 +71,7 @@ blitz2 and blitz2-ab3 link one core (`programs/blitz2/CMakeLists.txt`), AmiBlitz
 From `~/.local/share/bb2-c-work/task-decisions.md`, "quick-long-arithmetic: first open questions" and the following lines.
 
 1. **AB3 mode** gets the same rule: blitz2 and blitz2-ab3 share the core, so no mode test. A deviation row in `docs/ab3/variant.md` (AmiBlitz3 v3.14.0 keeps the old rule); the oracle tests in `tests/ab3` that the change affects are marked.
-2. **#1177 is a change of its own and is done before this one.** This change depends on it (the "no cut at fetch" edit and the operand types at the operator come with it); no parallel work.
+2. **#1177 is a change of its own and is done before this one.** This change depends on it (the operand types at the comparison come with it; the "no cut at fetch" edit in `varcont` is this change's, #1177 drops the cut only for the left operand of a comparison: `quick-compare-types`, decision 2); no parallel work.
 3. **Routines** are new entries in `lmullib` and `ldivlib` (variant (a) of decision 3 above), with an entry in `docs/libs/deviations.md`: a program compiled by the port needs the port's libraries, not the original's.
 4. **Classification:** #1178 is fixed as an original bug with the full fix workflow (labels `bug-orig` and `wrong-result` are on the issue; a bug-orig test with `; @fixed #1178` or the equivalent; the website's fixed-bugs entry and the overview row are the coordinator's; severity 1). `tests/blitz2/quick-arith-long.bas` gets the new expected values.
 5. **Division** Long/Quick rounds like BB2's Long division, towards zero (as the spike measures), so a whole-number Quick gives today's result; the test pins it. Addition, subtraction and multiplication round down (floor). So `10 / -1.5` is -6.
