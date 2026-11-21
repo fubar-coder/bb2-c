@@ -52,6 +52,54 @@ The type so far is Long when
 * a whole-number constant that does not fit a Quick stands in a Quick
   expression (it becomes a Long, `consttype2`, `libcall.c:420-470`).
 
+## Converting to a whole number: Float and Quick differ
+
+A Float is converted to a Byte, Word or Long by the mathffp routine
+`SPFix`, which truncates towards zero: -1.5 gives -1, 1.75 gives 1, -0.5
+gives 0. This holds for an assignment, a Long or Word parameter, `Hex$`,
+an array index, the position of `Mid$` and `Int(f)`. Float arithmetic is
+done in Float and only the result is converted (`r.l=f*2` with `f=-1.5` is
+-3). A Float to a Quick truncates towards zero too (-1.5 is `$FFFE8000`,
+-0.00001 is 0).
+
+A Quick converted to a whole number is rounded down (towards minus
+infinity; inline `clr.w`/`swap`, so -1.5 gives -2), whereas `Int(q)`
+truncates towards zero.
+
+Measured with `f.f=-1.5` or `q.q=-1.5` (V in the table), `l.l=3`, `sl{}`
+and `sw{}` printing a Long and a Word parameter; blitz2 2.10, 1.95 and the
+port with the CD's libraries give the same values, with runtime error
+checking off and on:
+
+| Expression | Float -1.5 | Quick -1.5 |
+|---|---|---|
+| `r.l=V` | -1 | -2 |
+| `r.l=-V` | 1 | 2 |
+| `x.w=V` / `b.b=V` | -1 | -2 |
+| `x.w=-V` | 1 | 1 |
+| `r.l=V*2` | -3 | -4 |
+| `r.l=V/2` | 0 | -1 |
+| `r.l=l*V` | -4 | -6 |
+| `r.l=l/V` | -2 | -1 |
+| `r.l=l+V` | 1 | 1 |
+| `r.l=Int(V)` | -1 | -1 |
+| `Hex$(V)` | FFFFFFFF | FFFFFFFE |
+| `sl{V}` / `sw{V}` | -1 | -2 |
+| `r.l=a(V+3)` (`a(i)=10*i`) | 10 | 10 |
+
+Sources: `eval.c:443-477` (`floattobyte`, `floattoword`, `floattolong`,
+`floattoquick`; `blitz2.s:8652-8680`) and `eval.c:404-421`
+(`quicktob2`, `quicktoword`, `quicktolong`; `blitz2.s:8624-8634`);
+`Int` in `libs/acidlibs/vallib.c:517-541`. `x.w=-V` agrees because the
+Quick is negated as a Quick and 1.5 rounds down to 1. The two types differ
+a second time through the cut of a Quick operand in a Long context
+(above), which a Float does not have: `r.l=V*2` with 1.5 gives 3 for a
+Float and 2 for a Quick.
+
+Planned in #1178: a Quick division rounds towards zero, and every other
+Quick result and conversion rounds down. This is not the current
+behaviour.
+
 ## A comparison starts again
 
 A comparison gives a Word (`cpoke`), so the operands after it start again:

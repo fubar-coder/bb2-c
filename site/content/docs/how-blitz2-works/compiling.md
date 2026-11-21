@@ -134,6 +134,10 @@ x.w=q*2+w+v : NPrint x   ; 10: the same sum, computed in Quick
 So the order of the operands matters. A Float is never cut: in a Long
 computation it makes the type Float, and `r.l=2.0*q` gives 3.
 
+A Float and a Quick also round differently when they end up in a whole
+number: a Float is cut towards zero (-1.5 gives -1), a Quick is rounded
+down (-1.5 gives -2).
+
 To get the exact result, do one of these:
 
 * compute in a Quick or Float variable first: `t=q*2 : r.l=t` gives 3,
