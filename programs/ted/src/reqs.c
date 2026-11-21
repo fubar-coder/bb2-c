@@ -182,19 +182,29 @@ BOOL erase2(void)
     return TRUE;                                /* cmp d6,d6 */
 }
 
-/* ted.s:3511 error (comdata+12): waits for gadget 1, always returns */
+/* ted.s:3511 error (comdata+12): waits for gadget 1; a requester that
+   cannot be opened is out of memory (openreq: outmem, as ted.s) */
 void error(const char *msg)
+{
+    if (!errortry(msg))
+        outmem();
+}
+
+/* error with openreqtry: FALSE when the requester cannot be opened */
+BOOL errortry(const char *msg)
 {
     LONG event;
     UWORD id;
 
     errorpnt = (UBYTE *)msg;
-    openreq(&errorreq);
+    if (!openreqtry(&errorreq))
+        return FALSE;
     for (;;) {                                  /* .loop */
         event = getinput(&id);
         if ((WORD)event == -1 && id == 1)
             break;
     }
+    return TRUE;
 }
 
 /* ----------------------------------------- file requester bridge */
@@ -243,12 +253,14 @@ UBYTE *ezfreq(char *path, char *name, const char *title)
 /* ----------------------------------------- requesters as windows */
 
 /* ted.s:3580 openreq - open a requester.  The comment "return 0 if
-   couldn't open it" is wrong: OpenWindow failing -> outmem (survey-04
-   I.14).  The gadgets are moved by +6/+12 once, marked in the high word
-   of UserData of the first gadget - permanently, also for blitz2's own
-   requesters (decision O6, survey-04 I.15).  A requester
-   without gadgets reads address 40 (I.14). */
-void openreq(struct Requester *rq)
+   couldn't open it" is wrong for the original: OpenWindow failing ->
+   outmem (survey-04 I.14); openreqtry is the part up to the window and
+   returns FALSE when it cannot be opened (nothing pushed then).  The
+   gadgets are moved by +6/+12 once, marked in the high word of UserData
+   of the first gadget - permanently, also for blitz2's own requesters
+   (decision O6, survey-04 I.15).  A requester without gadgets reads
+   address 40 (I.14). */
+BOOL openreqtry(struct Requester *rq)
 {
     struct Gadget *gad;
     struct RastPort *rp;
@@ -258,7 +270,7 @@ void openreq(struct Requester *rq)
     reqwindow.Width = (WORD)(rq->Width + 12);   /* move.l 8(a0),reqwindow+4 */
     reqwindow.Height = (WORD)(rq->Height + 15);
     /* lsr: unsigned - a requester wider/higher than the screen gives a
-       huge position, OpenWindow fails -> outmem */
+       huge position, OpenWindow fails */
     reqwindow.LeftEdge = (WORD)((UWORD)((UWORD)(edcols << 3) - reqwindow.Width) >> 1);
     reqwindow.TopEdge = (WORD)((UWORD)((UWORD)newscreen.Height - reqwindow.Height) >> 1);
     gad = rq->ReqGadget;
@@ -275,7 +287,7 @@ void openreq(struct Requester *rq)
     req_screen = myscreen;
     win = OpenWindow(&reqwindow);
     if (!win)
-        outmem();
+        return FALSE;
     req_old2 = req_old;
     req_old = req_window;
     req_window = win;
@@ -283,6 +295,15 @@ void openreq(struct Requester *rq)
     PrintIText(rp, ((struct Requester *)req)->ReqText, 6, 12);
     DrawBorder(rp, ((struct Requester *)req)->ReqBorder, 6, 12);
     pointeron();                                /* bra pointeron */
+    return TRUE;
+}
+
+/* openreq for TED's own requesters and the original compiler: a window
+   that cannot be opened is out of memory (outmem, as ted.s) */
+void openreq(struct Requester *rq)
+{
+    if (!openreqtry(rq))
+        outmem();
 }
 
 /* drain a message port (closereq/flushmw .loop) */

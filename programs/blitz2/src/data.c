@@ -1307,7 +1307,8 @@ void menu6(void)
     struct type *type;
 
     allofem(&tl);
-    ed_openreq(&typereq);
+    if (!ed_openreq(&typereq))  /* fixed (#1008): could not, TED's alert */
+        return;
     for (;;) {                                          /* .loop */
         ed_actgad(&typereqga2);
         if (!ed_getinput(&gadget))
@@ -1573,7 +1574,8 @@ void menu4c(void)
 
     makemax(maxat);
     makeres();
-    ed_openreq(&optreq);
+    if (!ed_openreq(&optreq))   /* fixed (#1008): could not, TED's alert */
+        return;
     for (;;) {
         gad = ed_getinput(&gadget);
 igot:
@@ -1790,7 +1792,10 @@ void menu7(void)
     olderr = errjmp;
     errjmp = &jb;
     calcreqla15[0] = 0;
-    ed_openreq(&calcreq);
+    if (!ed_openreq(&calcreq)) { /* fixed (#1008): could not, TED's alert */
+        errjmp = olderr;
+        return;
+    }
     if (setjmp(jb)) {
         /* .calcerr (errcont, a7 = errstack) */
         libat = calclibat;
@@ -1893,7 +1898,8 @@ void menu9(void)
     WORD gadget;
 
     memcpy(namebuff, argreqla8, 128);
-    ed_openreq(&argreq);
+    if (!ed_openreq(&argreq))   /* fixed (#1008): could not, TED's alert */
+        return;
     ed_actgad(&argreqga1);
     for (;;) {
         if (!ed_getinput(&gadget))

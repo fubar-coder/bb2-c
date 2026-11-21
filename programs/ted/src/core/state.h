@@ -83,8 +83,9 @@ extern UWORD inverse;           /* 6094 0/$FFFF: print inverted (byte mask) */
 
 /* 6095 memstack: asm a7 of the dispatch in mainedit, target of outmem
    (`move.l memstack,a7 / bra memcont`).  C: the setjmp buffer of mainedit,
-   or of the start file's load (outside_run, fixed #370); NULL before
-   (the original then sets a7 = 0: memcont_nostack, BUG(orig) (#1008)). */
+   or of the start file's load (outside_run, fixed #370); NULL before:
+   the comdata entries then return the failure to the compiler instead
+   of outmem (fixed #1008: the original set a7 = 0). */
 extern jmp_buf *memstack;
 extern tedfh filehand;          /* 6096 0 open file, closed by outmem */
 extern UWORD memalt;            /* 6097 0 memory changed -> printmem */

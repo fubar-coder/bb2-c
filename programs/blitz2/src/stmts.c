@@ -1491,7 +1491,8 @@ void runerropts(void)
     save[5] = optreq2ga6.Flags;
     save[6] = optreq2ga7.Flags;
     warnopt_text();
-    ed_openreq(&optreq2);
+    if (!ed_openreq(&optreq2))  /* fixed (#1008): could not, TED's alert */
+        return;
     for (;;) {
         if (!ed_getinput(&id))          /* getinput */
             continue;

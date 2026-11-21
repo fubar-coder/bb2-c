@@ -193,8 +193,9 @@ directly; the layout must therefore be byte-exact.
 | 92/94 | data | bytes per bitplane row, requester window (its UserPort signal for STOP, 3.8) |
 | 98 | data (TED-C only) | the marker `'TEDp'` ($54454470): the entry 102 is there. The original TED has its own words here (`topskip` < 256, `botskip`), never equal to the marker |
 | 102 | `progress` (TED-C only) | toggle a cell of the progress bar: d0.w = bar (0 main, 1-3 include level), d1.w = byte column; TED-C draws it in plane 0, pixel rows `bar` and 9 − bar, only while its screen is open ([ted/comdata.md](ted/comdata.md), #980). Called only if 98 holds the marker |
-| 106/110 | data (TED-C only) | the marker `'TEDm'` ($5445446d) and the number of the entries from 114 on: the out of memory addition ([ted/comdata.md](ted/comdata.md), #369). Used only if 98 holds its marker too |
+| 106/110 | data (TED-C only) | the marker `'TEDm'` ($5445446d) and the number of the entries from 114 on: the out of memory addition ([ted/comdata.md](ted/comdata.md), #369, #1008). Used only if 98 holds its marker too |
 | 114 | `nomem` (TED-C only) | TED's out of memory alert, returns: blitz2-c's notice after its own cleanup |
+| 118 | `reqfail` (TED-C only) | the compiler takes a requester window that cannot be opened: `openreq` returns d0 = 0 and `error` returns, after TED's alert (#1008) |
 
 ### 3.3 The menu callback `menu` [S]
 

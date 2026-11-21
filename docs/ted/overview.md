@@ -127,10 +127,11 @@ Exceptions (interleaved): `return` (scroll with temporarily changed
 ## 4 Risks
 
 1. **`outmem` as longjmp across blitz2** (comdata `extalloc`,
-   `openreq`): discards compiler frames (blitz2-c no longer calls `extalloc`:
-   it allocates itself, #369; through `openreq` also those of blitz2-c, incl. its
-   `errjmp` chain). Before the first main loop `memstack = 0` → crash.
-   Must be solved in C exactly like this (or deliberately as a `DIFF`).
+   `openreq`): discards the frames of the original compiler (blitz2-c
+   allocates itself, #369, and announces that it takes a requester that
+   cannot be opened, #1008). Before the first main loop `memstack = 0`:
+   the original crashes; TED-C's comdata entries show the alert and return
+   the failure there (#1008).
 2. **Register interface to two compilers**: TED-C must run with blitz2 1.95
    (asm, vasm build) **and** blitz2-c; every stub loads its own a4
    (`-fbaserel`), callbacks to blitz2 via `callregs`.

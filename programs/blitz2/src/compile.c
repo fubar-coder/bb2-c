@@ -249,7 +249,8 @@ l_makesmall:
     dopass();
 l_nosmall:
     if (nomemleft) {
-        ed_openreq(&nomemreq);  /* open the requester */
+        if (!ed_openreq(&nomemreq))    /* open the requester */
+            goto l_anerr;       /* fixed (#1008): could not, TED's alert */
         for (;;) {
             WORD gadget = 0;
             if (!ed_getinput(&gadget))  /* getinput: d7 != -1 */
@@ -751,7 +752,13 @@ void openstopreq(const char *strs)
     dst = stopreqla11;
     while ((*dst++ = *src++) != 0)
         ;
-    ed_openreq(&stopreq);       /* open requester */
+    if (!ed_openreq(&stopreq)) {   /* open requester */
+        /* Fixed (#1008): could not (TED's alert): no STOP, no exception;
+           endstop has nothing to close */
+        clrreq = ~clrreq;
+        stopit = 0;
+        return;
+    }
     stopit = 0;
 
     us->tc_ExceptCode = (APTR)stopcode_stub;

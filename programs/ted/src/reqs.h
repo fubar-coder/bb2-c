@@ -67,6 +67,11 @@ extern ULONG reqstruct[4];
    DrawBorder, pointeron.  OpenWindow failure -> outmem (never returns
    0, survey-04 I.14). */
 void openreq(struct Requester *rq);
+/* openreq without outmem: FALSE when the window cannot be opened
+   (nothing pushed).  With errortry (error without outmem) for the comdata
+   entries of a compiler that takes the failure (glue.c, fixed #1008). */
+BOOL openreqtry(struct Requester *rq);
+BOOL errortry(const char *msg);
 /* ted.s:3643 closereq (comdata+4): close req_window (if any), pop the
    stack, flushmw; always makemenus */
 void closereq(void);

@@ -795,6 +795,13 @@ APTR extalloc(ULONG size, ULONG flags)
 
     if (p)
         return p;
+    if (!memstack) {
+        /* Fixed (#1008): before TED's main loop (the compiler's start)
+           outmem has no frame to go to (the asm continued with a7 = 0):
+           the alert, and 0 to the compiler, whose requester stays open */
+        doalert();
+        return NULL;
+    }
     /* survey-03 I.7: leaves the compiler in the middle of its run - kept
        for the original compiler, which does not test the result;
        blitz2-c allocates itself (fixed #369) */
@@ -831,13 +838,14 @@ NORETURN void outmem(void)
     /* move.l memstack,a7 / bra memcont: longjmp to the setjmp in
        mainedit (DIFF in docs/ted/deviations.md: outmem/memcont).
        memstack is 0 before the first dispatch.  The start file's load has
-       its own frame (main.c, fixed #370).  BUG(orig) (#1008) (O1, survey-03
-       I.6): what blitz2 calls before TED's main loop (extalloc from its
-       start-up allocations, openreq of its version requester) still finds
-       memstack == 0 - the asm continues memcont with a7 = 0 and crashes;
-       the glue does exactly that (memcont_nostack, glue.c).  A fix needs
-       extalloc's contract change of #369. */
+       its own frame (main.c, fixed #370).  Fixed (#1008, O1, survey-03
+       I.6): what the compiler calls before TED's main loop (extalloc,
+       openreq, error) does not come here with memstack == 0 - the
+       comdata entries show the alert and return the failure (glue.c,
+       extalloc); the asm continued memcont with a7 = 0 and crashed.  No
+       other caller runs before the main loop; should one, TED ends
+       (tedfail) instead of jumping through 0. */
     if (!memstack)
-        memcont_nostack();
+        tedfail();
     longjmp(*memstack, 1);
 }

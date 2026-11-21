@@ -107,6 +107,7 @@ struct mydata {
     ULONG m_memmark;            /* 106 TED_MEMMARK (data) */
     ULONG m_memcount;           /* 110 number of entries from 114 (data) */
     APTR m_nomem;               /* 114 nomem        the out of memory alert */
+    APTR m_reqfail;             /* 118 reqfail      a requester may fail (#1008) */
 };
 OFFS(mydata, m_openreq, 8);     /* comdata+0 */
 OFFS(mydata, m_combitmap, 8 + 36);
@@ -123,14 +124,15 @@ OFFS(mydata, m_progress, 8 + 102);
 OFFS(mydata, m_memmark, 8 + 106);
 OFFS(mydata, m_memcount, 8 + 110);
 OFFS(mydata, m_nomem, 8 + 114);
-SIZE(mydata, 8 + 118);
+OFFS(mydata, m_reqfail, 8 + 118);
+SIZE(mydata, 8 + 122);
 
 /* 'TEDp': the original TED's word at comdata+98 (topskip) is below 256,
    so its long there never has this value */
 #define TED_PROGMARK 0x54454470UL
 /* 'TEDm': the out of memory addition (m_memmark) */
 #define TED_MEMMARK 0x5445446dUL
-#define TED_MEMCOUNT 1
+#define TED_MEMCOUNT 2
 
 extern struct mydata mydata;            /* ted.s:6027 (input.c) */
 #define comdata     ((APTR)((UBYTE *)&mydata + 8))      /* ted.s:6030 */

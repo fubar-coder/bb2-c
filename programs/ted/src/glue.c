@@ -78,35 +78,6 @@ __asm__(
 "   rts\n"
 );
 
-/* -------------------------------------------- outmem, memstack == 0 */
-
-/* NORETURN void memcont_nostack(void) - see glue.h.  BUG(orig) (#1008) (O1,
-   survey-03 I.6): before the first dispatch of mainedit memstack is 0;
-   the asm continues memcont with a7 = 0.  Left only for blitz2's calls
-   of TED services before TED's main loop (the start file's load has a
-   frame of its own, fixed #370).  Reproduced instruction by
-   instruction; only the called routines are the C versions (their own
-   stack use differs from the asm, so the exact crash point may too). */
-__asm__(
-"   .text\n"
-"   .even\n"
-"   .globl  _memcont_nostack\n"
-"_memcont_nostack:\n"
-GLUE_LOAD_A4
-"   suba.l  a7,a7\n"                /* move.l memstack(pc),a7 (= 0) */
-"   move.w  " GLUE_VAR("memalt") ",d0\n"   /* memcont */
-"   beq.s   1f\n"
-"   jsr     _printmem\n"
-"1: move.w  " GLUE_VAR("mousealt") ",d0\n"
-"   beq.s   2f\n"
-"   jsr     _showmice\n"
-"2: move.b  (a7)+,d0\n"            /* the flag byte: address 0 (a7 += 2) */
-"   tst.b   d0\n"
-"   beq.s   3f\n"
-"   jsr     _showvprop\n"
-"3: jmp     _mainedit\n"            /* bra mainedit */
-);
-
 /* --------------------------------------------------- comdata entries */
 
 /* REGSTUB(name): `name_stub` saves d0-d7/a0-a6, loads TED's a4, calls
@@ -153,12 +124,36 @@ void sleepon_c(struct m68kregs *r);
 void extalloc_c(struct m68kregs *r);
 void progress_c(struct m68kregs *r);
 void nomem_c(struct m68kregs *r);
+void reqfail_c(struct m68kregs *r);
+
+/* Fixed (#1008): a requester window of openreq or error that cannot be
+   opened.  For a compiler that announced it takes the failure (reqfail,
+   comdata+118: blitz2-c), and before TED's main loop (memstack 0, the
+   compiler's start, where outmem has no frame: the asm continued with
+   a7 = 0), the out of memory alert, and openreq returns d0 = 0;
+   otherwise outmem as ted.s (the original compiler during TED's main
+   loop: a longjmp over its frames). */
+static BOOL reqcanfail;
+
+static void reqfailed(void)
+{
+    if (!reqcanfail && memstack)
+        outmem();
+    doalert();
+}
 
 void screenclose_c(struct m68kregs *r) { (void)r; screenclose(); }        /* -8 */
 void screenopen2_c(struct m68kregs *r) { (void)r; screenopen2(); }        /* -4 */
 void openreq_c(struct m68kregs *r)                                        /* 0 */
 {
-    openreq((struct Requester *)r->a[0]);
+    if (openreqtry((struct Requester *)r->a[0])) {
+        if (reqcanfail)
+            r->d[0] = (ULONG)req_window;    /* else d0 of the caller, as
+                                               the original's is undefined */
+        return;
+    }
+    reqfailed();
+    r->d[0] = 0;
 }
 void closereq_c(struct m68kregs *r) { (void)r; closereq(); }              /* 4 */
 void getinput_c(struct m68kregs *r)                                       /* 8 */
@@ -169,7 +164,11 @@ void getinput_c(struct m68kregs *r)                                       /* 8 *
     SETW(r->d[6], id);
     r->d[0] = (ULONG)-1;        /* asm: d0 = -1, Z=0 */
 }
-void error_c(struct m68kregs *r) { error((const char *)r->a[0]); }        /* 12 */
+void error_c(struct m68kregs *r)                                          /* 12 */
+{
+    if (!errortry((const char *)r->a[0]))
+        reqfailed();
+}
 void detokallz_c(struct m68kregs *r) { (void)r; detokallz(); }            /* 16 */
 void tokall_c(struct m68kregs *r) { (void)r; tokall(); }                  /* 20 */
 void ezfreq_c(struct m68kregs *r)                                         /* 24 */
@@ -218,6 +217,9 @@ void progress_c(struct m68kregs *r)                                       /* 102
 /* 114 (#369): the out of memory alert for a compiler that allocates
    itself and cleans up on its own (blitz2-c); returns */
 void nomem_c(struct m68kregs *r) { (void)r; doalert(); }                  /* 114 */
+/* 118 (#1008): the compiler takes a requester that cannot be opened
+   (openreq returns d0 = 0, error returns, after the alert); called once */
+void reqfail_c(struct m68kregs *r) { (void)r; reqcanfail = TRUE; }        /* 118 */
 
 REGSTUB(screenclose);
 REGSTUB(screenopen2);
@@ -241,6 +243,7 @@ REGSTUB(sleepon);
 REGSTUB(extalloc);
 REGSTUB(progress);
 REGSTUB(nomem);
+REGSTUB(reqfail);
 
 /* ------------------------------------------------ callbacks into blitz2 */
 

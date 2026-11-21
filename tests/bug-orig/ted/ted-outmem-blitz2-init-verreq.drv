@@ -1,0 +1,30 @@
+; ted-outmem-blitz2-init-verreq (#1008): the requester case - blitz2
+; opens its version requester through TED's openreq before TED's main
+; loop; a window that cannot be opened is out of memory there (outmem,
+; which continues with memstack = 0, a7 = 0).  blitz2 under inject
+; (alerts answered), the OpenWindow of the version requester (the 2nd
+; window of the process) fails; then CREATE EXECUTABLE, QUIT.  Correct:
+; the alert "Not enough memory for operation!", the start goes on without
+; the version requester, the compile creates the executable and blitz2
+; ends normally; the original continues with a7 = 0 and crashes, blitz2
+; 2.10 under TED-C waits for the version requester's gadget (hangs).  The
+; first two waits are longer than the session (90 s): a hang ends as the
+; crash does, a session timeout.
+; @fixed #1008 Cc
+; @file bo.bas "NPrint \"hello\"\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts openwindowfail=2 blitz2:blitz2 @FILE@
+; @expect stdout " windows asked for, 1 failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+; @expect stdout "inject: rc=0"
+; @expect exists bo
+timeout 120
+wait screen
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "bo" "TEDRUN:work"  ; @ignore compilewindow
+timeout 10
+wait screen
+menu 0 9
+wait exit

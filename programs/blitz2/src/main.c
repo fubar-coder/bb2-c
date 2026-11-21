@@ -446,6 +446,7 @@ static WORD begin(void)
     struct token *tok;
     APTR edmain;
     WORD gadget;
+    BOOL veropen;                       /* the version requester (#1008) */
     UWORD count = 0;
 
     /* find out how many system tokens exist */
@@ -493,7 +494,13 @@ static WORD begin(void)
     /* @1405 */
     returncode = 0;
     IntuitionBase = (struct IntuitionBase *)CD_L(CD_EXTINT);
-    ed_openreq(&verreq);
+    /* Fixed (#1008): with TED-C the compiler takes a requester that
+       cannot be opened (ed_openreq returns FALSE after TED's alert); the
+       original's openreq jumped to outmem, before TED's main loop with
+       a7 = 0 */
+    if (ed_memcount() >= 2)
+        ed_reqfail();
+    veropen = ed_openreq(&verreq);
     /* @1411 */
     sleepon();
     linenumat = -1;
@@ -507,10 +514,9 @@ static WORD begin(void)
        outmem, which continues with a7 = 0 before TED's main loop) */
     nomemshow();
     pointeron();
-    /* click cancel of version requester... */
-    do {
+    /* click cancel of version requester (if it is open, #1008)... */
+    while (veropen && (!ed_getinput(&gadget) || gadget != 1))
         ;
-    } while (!ed_getinput(&gadget) || gadget != 1);
     /* grab a panic bit (failure of AllocSignal not checked, as in the
        original: not observable, #18 closed) */
     panicbit = (ULONG)(LONG)AllocSignal(-1);
@@ -737,13 +743,18 @@ void ed_screenopen2(void)
     ed_call(-4, &r);
 }
 
-/* comdata+0 openreq: a0 = requester template; d0 = 0 if not opened */
-ULONG ed_openreq(struct Requester *req)
+/* comdata+0 openreq: a0 = requester template.  FALSE: the window could
+   not be opened and TED has shown its alert - only after ed_reqfail
+   (TED-C, #1008); otherwise openreq does not return on failure (outmem)
+   and leaves d0 undefined, so TRUE */
+static BOOL reqfailon;
+
+BOOL ed_openreq(struct Requester *req)
 {
     struct m68kregs r = {{0}};
     r.a[0] = (ULONG)req;
     ed_call(0, &r);
-    return r.d[0];
+    return !reqfailon || r.d[0] != 0;
 }
 
 /* comdata+4 closereq */
@@ -884,6 +895,15 @@ void ed_nomem(void)
 {
     struct m68kregs r = {{0}};
     ed_call(CD_NOMEM, &r);
+}
+
+/* comdata+118: from now on a requester window that cannot be opened is
+   TED's alert and a return (ed_openreq FALSE), not outmem (#1008) */
+void ed_reqfail(void)
+{
+    struct m68kregs r = {{0}};
+    ed_call(CD_REQFAIL, &r);
+    reqfailon = TRUE;
 }
 
 /* ================================================== menu handler */

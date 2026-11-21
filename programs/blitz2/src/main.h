@@ -200,11 +200,13 @@ extern WORD returncode;               /* 1285 */
 #define CD_MEMMAGIC  0x5445446dUL   /* 'TEDm' */
 #define CD_MEMCOUNT  110  /* L: number of entries from 114 on */
 #define CD_NOMEM     114  /* entry 0: TED's out of memory alert (ed_nomem) */
+#define CD_REQFAIL   118  /* entry 1: requesters may fail (ed_reqfail, #1008) */
 
 /* typed wrappers, all via callregs(); asm register usage in comments */
 void  ed_screenclose(void);                 /* -8  close editor screen */
 void  ed_screenopen2(void);                 /* -4  reopen it */
-ULONG ed_openreq(struct Requester *req);    /* 0   a0=req template; d0=0 fail */
+BOOL  ed_openreq(struct Requester *req);    /* 0   a0=req template; FALSE: not opened
+                                                   (only after ed_reqfail, #1008) */
 void  ed_closereq(void);                    /* 4 */
 BOOL  ed_getinput(WORD *gadget);            /* 8   wait; TRUE if d7==-1 (gadget),
                                                    *gadget = GadgetID (d6, or menu code) */
@@ -233,6 +235,10 @@ ULONG ed_memcount(void);
 #define ed_hasnomem() (ed_memcount() >= 1)
 void  ed_nomem(void);                       /* 114 TED's out of memory alert;
                                                    only if ed_hasnomem() (#369) */
+void  ed_reqfail(void);                     /* 118 a requester that cannot be opened:
+                                                   the alert, openreq returns d0 = 0,
+                                                   error returns; only if
+                                                   ed_memcount() >= 2 (#1008) */
 /* comdata+88 extalloc: not called by blitz2-c (doallocmem, stmts.h, #369) */
 
 /* data handed to the editor (exact byte layout, see structs.h) */

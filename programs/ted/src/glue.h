@@ -18,10 +18,8 @@
    with the frame. */
 #ifdef __baserel__
 #define GLUE_LOAD_A4 "   lea     ___a4_init,a4\n"
-#define GLUE_VAR(x)  "_" x ":W(a4)"     /* a global of TED in asm */
 #else
 #define GLUE_LOAD_A4 ""
-#define GLUE_VAR(x)  "_" x
 #endif
 
 /* ------------------------------------------------------- register frames */
@@ -47,16 +45,6 @@ UWORD callregs(APTR fn, struct m68kregs *r);
    divisor = 0 - the real instruction.  Also declared in core/fileio.h (the
    host build defines it there in C). */
 ULONG divu_w(ULONG dividend, UWORD divisor);
-
-/* ted.s:3046 outmem with memstack == 0 (glue.c): `move.l memstack,a7 /
-   bra memcont` literally - a7 = 0, then memcont (printmem if memalt,
-   showmice if mousealt, `move.b (a7)+,d0` = the byte at address 0,
-   showvprop if != 0) and `bra mainedit`.  Crashes like the original (the
-   first return pops its address from the top of the address space).
-   Called by outmem (mouse.c) only when memstack is NULL (open point O1):
-   blitz2's calls of extalloc/openreq before TED's main loop, BUG(orig)
-   (#1008). */
-NORETURN void memcont_nostack(void);
 
 /* ------------------------------------------------ hunk start (glue_start.c) */
 
@@ -94,7 +82,7 @@ extern void screenclose_stub(void), screenopen2_stub(void), openreq_stub(void),
     halfcolors_stub(void), tokone_stub(void), openio_stub(void),
     closeio_stub(void), actgad_stub(void), pointeron_stub(void),
     sleepon_stub(void), extalloc_stub(void), progress_stub(void),
-    nomem_stub(void);
+    nomem_stub(void), reqfail_stub(void);
 
 /* ------------------------------------------------ callbacks into blitz2 */
 

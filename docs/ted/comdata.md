@@ -24,10 +24,10 @@ blitz2" = what the call sites in `blitz2.s` read afterwards.
 |---|---|---|---|---|---|---|
 | −8 | `screenclose` 4895 | – | d0/d1/a0/a1/a6 destroyed | nothing (1609) | REGSTUB, `screenclose()` | OK |
 | −4 | `screenopen2` 4661 | – | d0… destroyed (screenopen result discarded) | nothing (1664) | REGSTUB, `screenopen2()` | OK |
-| 0 | `openreq` 3580 | a0 = requester template | tail `bra pointeron`: d0 = leftover of `DrawBorder` (undefined; failure → `outmem`, never returns with 0), a6 = IntuitionBase | nothing (1973, 2538, 4586, 15170, 15489, 15747, 15987) | REGSTUB, `openreq(a0)`; d0 = d0 of the caller | OK (d0 has no defined value in the original; blitz2-c `ed_openreq` reads d0 – never checked there) |
+| 0 | `openreq` 3580 | a0 = requester template | tail `bra pointeron`: d0 = leftover of `DrawBorder` (undefined; failure → `outmem`, never returns with 0), a6 = IntuitionBase | nothing (1973, 2538, 4586, 15170, 15489, 15747, 15987) | REGSTUB, `openreqtry(a0)`; d0 = d0 of the caller; after `reqfail` (118) d0 = the window, 0 when it cannot be opened (the alert, no `outmem`); before TED's main loop (memstack 0) the same failure for every compiler | OK (d0 has no defined value in the original; blitz2-c `ed_openreq` reads d0 only after `reqfail`); fixed #1008 (failure before the main loop: `outmem` with a7 = 0) |
 | 4 | `closereq` 3643 | – | saves d0-d1/a0-a2/a6 itself | nothing (2471) | REGSTUB | OK |
 | 8 | `getinput` 5845 | – | d7.l = event (−1 gadget, −2 menu, −3/−4 mouse, key), d6.w = gadget ID/menu number (upper word stays), Z=0; a6 = exec, a0-a2/d0/d1 destroyed | d6.w, d7.w (`cmp #-1,d7`, `cmp #1,d6`) | REGSTUB, `getinput(&d6)`: d7 whole, d6 via `SETW`, d0 = −1 (Z=0) | OK |
-| 12 | `error` 3511 | a0 = text | d7 saved; d6 = 1, otherwise destroyed | nothing (7667 saves d7/a6 itself) | REGSTUB, `error(a0)` | OK |
+| 12 | `error` 3511 | a0 = text | d7 saved; d6 = 1, otherwise destroyed | nothing (7667 saves d7/a6 itself) | REGSTUB, `errortry(a0)`; a requester that cannot be opened: as `openreq` (after `reqfail` or before the main loop the alert and a return) | OK; fixed #1008 |
 | 16 | `detokallz` 2670 | – | destroyed | – (v1.95 does not call) | REGSTUB | OK |
 | 20 | `tokall` 2648 | – | destroyed | – | REGSTUB | OK |
 | 24 | `ezfreq` 3502 | a0 path, a1 name, a2 title | d0 = name/0, Z=1 on 0 (requester ends with `move.l`), **a3 = `reqstruct+12`** (address; filerequest+36 saves d1-a6) | Z (`beq`), d0 (1526, 1564, 4127) | REGSTUB (`tst.l d0` = same Z), `ezfreq()` | **corrected**: a3 was the *contents* of `reqstruct[3]`, now the address |
@@ -43,13 +43,14 @@ blitz2" = what the call sites in `blitz2.s` read afterwards.
 | 72 | `pointeron` 209 | – | saves a0-a1/d0-d3/a6 | – (blitz2 1490 `jmp`) | REGSTUB | OK |
 | 76 | `sleepon` 223 | – | saves a0-a1/d0-d3/a6; path "already active" destroys a0/d0 via `makemenus` | – (1494) | REGSTUB | **B** (line `sleepon` in deviations.md) |
 | 80/84 | data `mywindow2`, (gadget address) | | | | structs.h | OK |
-| 88 | `extalloc` 3049 | d0 size, d1 flags, **a6 of the caller** (`jsr allocmem(a6)`) | d0 = memory, Z=0; failure: `closereq` + `outmem` (does not return) | d0 (`doallocmem` 3379 = `jmp`); blitz2-c does not call it (allocates itself, #369) | REGSTUB, `extalloc(d0, d1)` with `AllocMem` via SysBase | OK (blitz2 calls with a6 = exec; a different a6 would hit a different library in the original – not reachable) |
+| 88 | `extalloc` 3049 | d0 size, d1 flags, **a6 of the caller** (`jsr allocmem(a6)`) | d0 = memory, Z=0; failure: `closereq` + `outmem` (does not return) | d0 (`doallocmem` 3379 = `jmp`); blitz2-c does not call it (allocates itself, #369); before TED's main loop (memstack 0) a failure is the alert and d0 = 0, the requester stays open (fixed #1008) | REGSTUB, `extalloc(d0, d1)` with `AllocMem` via SysBase | OK (blitz2 calls with a6 = exec; a different a6 would hit a different library in the original – not reachable) |
 | 92/94 | data `bmapmul`, `req_window` | | | 1939, 2546 | `struct mydata` | OK |
 | 98 | TED-C only: data `m_progmark` = `'TEDp'` ($54454470) | | (original TED: its own words `topskip`, `botskip`) | – (the original reads no offset ≥ 98) | `struct mydata`, `TED_PROGMARK` (structs.h) | new (#980) |
 | 102 | TED-C only: `progress` (screen.c) | d0.w bar (0 main, 1-3 include level), d1.w byte column | – | blitz2-c `nextline` via `ed_progress` (compile.c), only if 98 holds the marker (checked once per compile) | REGSTUB, `progress(d0, d1)` | new (#980) |
 | 106 | TED-C only: data `m_memmark` = `'TEDm'` ($5445446d) | | (original TED: its own variables; a TED-C before #369: other data) | – | `struct mydata`, `TED_MEMMARK` (structs.h) | new (#369) |
-| 110 | TED-C only: data `m_memcount`, the number of entries from 114 on (1) | | | – | `struct mydata`, `TED_MEMCOUNT` | new (#369) |
+| 110 | TED-C only: data `m_memcount`, the number of entries from 114 on (2) | | | – | `struct mydata`, `TED_MEMCOUNT` | new (#369) |
 | 114 | TED-C only: `nomem` (glue.c) | – | – | blitz2-c `nomemshow` via `ed_nomem` (parse.c, main.c), only with both markers and a count ≥ 1 | REGSTUB, `doalert()` | new (#369) |
+| 118 | TED-C only: `reqfail` (glue.c) | – | – | blitz2-c at its start via `ed_reqfail` (main.c), only with a count ≥ 2 | REGSTUB: from now on `openreq` and `error` take a window that cannot be opened as described at 0 and 12 | new (#1008) |
 
 **The progress call (TED-C, #980).** The original compiler draws its
 progress bar (the "racing stripe") itself: it XORs bytes of plane 0
@@ -92,12 +93,13 @@ from 114 on the entries, one long each:
 | Entry | Offset | Call | |
 |---|---|---|---|
 | 0 | 114 | `nomem` | shows TED's out of memory alert ("Not enough memory for operation!", `doalert`) and returns; registers kept (REGSTUB) |
+| 1 | 118 | `reqfail` | the compiler takes a requester that cannot be opened: from this call on `openreq` (0) returns d0 = the window, 0 after TED's alert when it cannot be opened, and `error` (12) returns after the alert; without the call (the original compiler) both go to `outmem` as in ted.s, except before TED's main loop, where `memstack` is 0 and `outmem` has no frame: there `openreq`, `error` and `extalloc` (88: returns 0, the requester stays open) show the alert and return the failure for every compiler (#1008) |
 
 A compiler uses an entry only if 98 holds `'TEDp'` (so the editor is
 TED-C), 106 holds `'TEDm'` (a TED-C of #980 has other data there) and
 the count at 110 covers the entry; an addition appends an entry and
-raises the count. blitz2-c (`CD_MEMMARK`, `CD_MEMCOUNT`, `CD_NOMEM`,
-`ed_memcount` in `programs/blitz2/src/main.h`, `main.c`) shows the
+raises the count. blitz2-c (`CD_MEMMARK`, `CD_MEMCOUNT`, `CD_NOMEM`, `CD_REQFAIL`,
+`ed_memcount`, `ed_reqfail` in `programs/blitz2/src/main.h`, `main.c`) announces `reqfail` at its start and shows the
 notice after its cleanup, where it returns to the editor (`nomemshow`:
 `menu_c`, `loadxtra_c`, its start); without the addition (the original
 TED, the edstub, which has 106 = 0) it reports out of memory as the
