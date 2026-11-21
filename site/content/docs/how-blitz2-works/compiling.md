@@ -1,7 +1,7 @@
 ---
 title: From source to executable
 weight: 4
-description: Why a small program becomes an executable of several kilobytes, what Make Smallest Code does, and what runtime error checking adds.
+description: Why a small program becomes an executable of several kilobytes, what Make Smallest Code does, what runtime error checking adds, and in which type an expression is computed.
 ---
 
 Before this page you should know the kinds of libraries ([Libraries:
@@ -9,8 +9,9 @@ acidlibs, deflibs, userlibs]({{< relref "/docs/how-blitz2-works/libraries" >}}))
 
 This page follows a program through the compiler. It starts with what you
 can see from the outside, the size of the executable and the effect of
-the options, and ends with the inner layout, for readers who write
-libraries.
+the options, then shows how the compiler chooses the type in which an
+expression is computed, and ends with the inner layout, for readers who
+write libraries.
 
 ## Why a small program is several kilobytes
 
@@ -76,6 +77,99 @@ Try it: compile the program above with CREATE EXECUTABLE twice, once
 with **Runtime Error Debugger** on and once with it off, and compare the
 two file sizes in the Shell with `List`.
 {{< /callout >}}
+
+## The type of an expression
+
+Blitz Basic 2 has five number types: Byte (`.b`), Word (`.w`), Long
+(`.l`), Quick (`.q`) and Float (`.f`). Quick is a fixed-point number with
+a fraction and a range of about ±32768, and it is the default type: a
+variable without a type suffix is a Quick. The compiler decides for every
+expression in which of these types it is computed, and the answer is not
+always the one the source suggests.
+
+### Where the computation starts
+
+The compiler reads an expression from left to right and keeps one type,
+the type so far. It starts with the type the result is wanted in: the
+type of the variable in an assignment, or the type of the parameter the
+expression is passed to. `If`, `While` and `Print` want no particular
+type, so there the expression starts without one. Each value then raises
+the type so far if its own type is higher, in the order Byte, Word, Long,
+Quick, Float; a lower value is converted up.
+
+The type so far also becomes Long when a Long operand stands to the left,
+and after an addition or multiplication of two Words, whose result is a
+Long. A small whole number such as `1` counts as a Byte, and two Bytes
+added give a Word.
+
+### A Quick in a Long computation loses its fraction
+
+There is one exception to "the higher type wins": when the type so far is
+Long and a Quick value comes in, the Quick does not make the computation a
+Quick one. It is converted to a Long at once, and its fraction is cut off
+(towards minus infinity, so -1.5 becomes -2). Only then is the operation
+done.
+
+The reason is the default type. A line such as
+
+```
+adr.l=base+i*4
+```
+
+with a Long `base` and a variable `i` without a suffix would otherwise be
+computed in Quick, and an address does not fit into the range of a Quick.
+With the exception it is computed in Long, as intended.
+
+The price is that a fraction can disappear before the arithmetic happens:
+
+```
+q=1.5 : w.w=3 : v.w=4
+r.l=q*2     : NPrint r   ; 2, not 3: q is cut to 1 first
+NPrint 1+1+1+q           ; 4, not 4.5: 1+1+1 gives a Long
+NPrint 1+1+q             ; 3.5: 1+1 is still a Word
+x.w=w+v+q*2 : NPrint x   ; 9: w+v gives a Long, q is cut
+x.w=q*2+w+v : NPrint x   ; 10: the same sum, computed in Quick
+```
+
+So the order of the operands matters. A Float is never cut: in a Long
+computation it makes the type Float, and `r.l=2.0*q` gives 3.
+
+To get the exact result, do one of these:
+
+* compute in a Quick or Float variable first: `t=q*2 : r.l=t` gives 3,
+* or start the expression with a Float literal: `r.l=2.0*q`.
+
+Putting the Quick operands first helps only where the destination is not
+a Long, as in the Word example above.
+
+This rule for arithmetic is the behaviour of Blitz Basic 2 and of
+AmiBlitz3, and the BB2 C port keeps it
+([#1178](https://github.com/fubar-coder/bb2-c/issues/1178)).
+
+### Comparisons
+
+The same cut happens to the operands of a comparison, and there it gives
+a wrong answer:
+
+```
+q=1.5 : l.l=1
+r.l=(q>1)    : NPrint r     ; 0, but q>1 is true (-1)
+If q>l Then NPrint "q>l"    ; printed
+If l<q Then NPrint "l<q"    ; not printed: the Long l comes first
+```
+
+This is a known bug of the original compiler, and it is being fixed
+([#1177](https://github.com/fubar-coder/bb2-c/issues/1177)): the operands
+of a comparison will be compared with their own values, and only the
+result will take the type of the destination. Until then, compare in an
+`If` with the Quick on the left, or assign the result to a Word or Quick
+variable (`rw.w=(q>1)` gives -1).
+
+### Array indexes
+
+The first index of an array is always computed as a Long, so a Quick in
+it loses its fraction: `a(q*10)` with `q=1.5` is element 10, not 15. A
+separate issue covers this case.
 
 ## The layout of the executable
 
