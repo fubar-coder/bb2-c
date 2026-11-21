@@ -58,11 +58,16 @@ macro defines (`N` the macros' use counter).
 The batch init and the batch end SHALL use the fixed labels `tc__init`,
 `tc__init_end`, `tc__final` and `tc__final_end`; labels with `__` SHALL
 belong to the driver. The check macros SHALL call the library routines
-with `K` as the first argument.
+with `K` as the first argument; `!Check{K,COND}` SHALL call
+`TLCheck K,-1,(COND)<>0`.
 
 #### Scenario: A case named like a driver label
 - **WHEN** a case would be named `_init`
 - **THEN** it is refused, since a case name starts with a letter and holds no `__`
+
+#### Scenario: A failed condition
+- **WHEN** `!Check{K,COND}` runs with `COND` 0
+- **THEN** its `check` entry is `fail` with expected `$FFFFFFFF` and actual `$00000000`
 
 ### Requirement: The library routines
 The library SHALL provide `TLBegin path$` (opens the result file),
@@ -90,22 +95,33 @@ the source has one), and end.
 The result file SHALL hold one entry per line, fields separated by TAB, each
 line ended by LF. `K` SHALL be decimal; a long value SHALL be `$` and 8
 upper-case hex digits; a string value SHALL hold the bytes `$20` to `$7E`
-other than `\` as they are and every other byte as `\xHH`.
+other than `\` as they are and every other byte as `\xHH`. Each value
+SHALL have this one form only: `K` and the version without sign and leading
+zero, hex digits upper-case, `\xHH` only for a byte that does not stand as
+it is.
 
 #### Scenario: A string with a tab
 - **WHEN** a string check records the actual value "a" TAB "b"
 - **THEN** its field reads `a\x09b`
 
+#### Scenario: A value in another form
+- **WHEN** the reader gets `K` as `03`, a long value as `$0000001a` or a string value holding `\x41`
+- **THEN** it refuses the value as malformed, naming the line
+
 ### Requirement: Entries of the result file
-The entries SHALL be: `begin` (format version `1`), `block` (`init`,
-`case NAME` or `final`), `check` and `checkstr` (`K`, `ok` or `fail`,
+The entries SHALL be: `begin` (format version `1`), `block` (`init` or
+`final`, or `case` and the name as a field of its own), `check` and `checkstr` (`K`, `ok` or `fail`,
 expected, actual), `require` (`K`, `broken`; only a failed one), `expect-error`
 (`K`), `blockend`, `broken` (a reason), `incomplete`, `end`. An entry SHALL
 belong to the block of the last `block` entry before it.
 
 #### Scenario: A failed check in a case
 - **WHEN** case `a` fails check 3 with expected 16 and actual 0
-- **THEN** the file holds `block` `case a` and later `check` `3` `fail` `$00000010` `$00000000`
+- **THEN** the file holds `block` `case` `a` and later `check` `3` `fail` `$00000010` `$00000000`
+
+#### Scenario: A block entry with the wrong fields
+- **WHEN** the reader gets `block` `case` without a name, or `block` `init` with one
+- **THEN** it refuses the line as a wrong number of fields, naming the line
 
 ### Requirement: One codec for writer and reader
 Writing and reading of entries SHALL be one module, compiled by the test

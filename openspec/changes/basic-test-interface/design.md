@@ -69,7 +69,8 @@ refused by an old reader instead of being misread.
   `case` TAB the name as a string value. The reader refuses a `case`
   without a name or with an empty one, and an `init` or `final` with a
   name, as a wrong number of fields.
-- **One form per value.** The reader takes every value only in the form
+- **One form per value** (decided 2026-11-21: "Strikt behalten"; in the
+  spec's requirement "Lines of the result file"). The reader takes every value only in the form
   the writer gives it: `K` and the version without sign and leading zero
   and within 32 bits, a long value with upper-case hex digits, `\xHH` with
   upper-case digits and only for a byte that does not stand as it is
@@ -80,14 +81,14 @@ refused by an old reader instead of being misread.
   decides what it writes then.
 - **The macro text.** The spec names the macros, their arguments, the
   labels and the routines but gives no text; `shared/basictest/macros.bas`
-  is the case form of `basic-testlib` D3 with `TLBlockEnd` (the spec's
-  routine; D3 still writes `TLCaseEnd`), the batch init and end in the
+  is the case form of `basic-testlib` D3 with the spec's `TLBlockEnd`, the batch init and end in the
   same form with their fixed labels (`Dc.l tc__init_end` ... `.tc__init_end`,
   `If TLInit=0 Then Return`; the same for `tc__final`), and the checks
   `TLCheck K,EXPECTED,ACTUAL` (`!CheckEq`), `TLCheckStr K,EXPECTED$,ACTUAL$`
-  (`!CheckStrEq`), `TLRequire K,COND`, `TLExpectError K`. The spec lists
-  no routine for `!Check{K,COND}` ("ok if not 0"); the text maps it onto
+  (`!CheckStrEq`), `TLRequire K,COND`, `TLExpectError K`.
+- **`!Check{K,COND}`** (decided 2026-11-21: "Abbildung behalten"; in the
+  spec's requirement "The driver's labels and the check macros"): it calls
   `TLCheck K,-1,(COND)<>0`, so a failed condition is recorded as expected
   `$FFFFFFFF`, actual `$00000000`. This rests on a comparison giving -1
-  for true in 1.95, 2.10 and the port, which the emulator tests of
-  `basic-testlib` have to confirm.
+  for true in 1.95, 2.10 and the port, which task 3.1 of `basic-testlib`
+  confirms.
