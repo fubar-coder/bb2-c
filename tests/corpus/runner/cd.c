@@ -199,7 +199,7 @@ static int parse(const char *text, char *err, size_t errlen)
             continue;
         }
         if (!strcmp(key, "intended")) {
-            char msg[300];
+            char msg[200];
             int r = prevint_add(&P.intended, val, msg, sizeof msg);
 
             free(val);
