@@ -61,7 +61,9 @@ Runs the script `SCRIPT` (a file, or `-` for stdin):
 * `--mount VOL=DIR`, `--mount-ro VOL=DIR`: a host directory as the volume
   `VOL:`, writable or read-only;
 * `--dir WORKDIR`: the work directory (`TEST:` is `WORKDIR/test`); it
-  stays. Without it the work directory is temporary: the files the
+  stays. WORKDIR itself must exist (only the directories below it are
+  made): without it the run ends with "cannot create the work directory"
+  and the exit status 77, which ctest reads as skipped. Without it the work directory is temporary: the files the
   script wrote to `TEST:` are printed and the directory is removed;
 * `--cold`: boot, do not start from a snapshot.
 
