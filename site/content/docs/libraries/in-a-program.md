@@ -185,20 +185,20 @@ and must answer it when it ends. wbstartuplib's start routine takes that
 message, makes the program's drawer the current directory and collects
 the icons given with the program; its end routine answers the message.
 No other library takes the message, so a program without
-wbstartuplib leaves it unanswered. The Blitz Basic 2 manual warns that
-such a program "will promptly crash" when it is started from the
-Workbench.
+wbstartuplib leaves it in the program's message port. The Blitz Basic 2
+manual warns that such a program "will promptly crash" when it is
+started from the Workbench, and that is what happens.
 
-What the port's programs do was observed in the emulator, an Amiga 1200
-with Kickstart 3.1, with the program started the way the Workbench
-starts one; a real Workbench was not tested. There the result depends
-on what the program does:
-
-* A program that calls no DOS function ends normally. It does not crash,
-  and the Workbench's message stays unanswered.
-* A program that calls a DOS function which has to wait for an answer
-  from the file system, such as `Lock_`, never returns from that call.
-  The program hangs and does not end.
+This was observed in the emulator, an Amiga 1200 with Kickstart 3.1,
+with the program started the way the Workbench starts one. The system
+stops such a program with a "Software Failure" requester that reads
+"Program failed (error #87000004)" and offers Suspend and Reboot. It
+comes at the program's first DOS call that needs the file system, such
+as `Lock_`, or, if the program makes no such call, when it ends. Programs
+of the original compiler behave the same, and so does a program that is
+not written in Blitz Basic: it is what the system does with any program
+that leaves the Workbench's message unanswered. Kickstart 1.3 and 2.04
+and a real Workbench were not tried.
 
 So every program that may be started from the Workbench needs
 `WBStartup`. A program that uses one of the commands of cliargslib has
