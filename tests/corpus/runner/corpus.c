@@ -209,13 +209,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             continue;
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
-            || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
+            || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "must_compile")
+            || !strcmp(key, "timeout") || !strcmp(key, "parallel")
             || !strcmp(key, "stack") || !strcmp(key, "fixed") || !strcmp(key, "hang_after")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
             if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")
-                || !strcmp(key, "regression") || !strcmp(key, "run") || !strcmp(key, "rtg")) {
+                || !strcmp(key, "regression") || !strcmp(key, "run") || !strcmp(key, "rtg")
+                || !strcmp(key, "must_compile")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
                     return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
@@ -223,7 +225,9 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 *(!strcmp(key, "runtime_errors") ? &p->runtime_errors
                   : !strcmp(key, "serial") ? &p->serial
                   : !strcmp(key, "run") ? &p->run
-                  : !strcmp(key, "rtg") ? &p->rtg : &p->regression) = !strcmp(val, "on");
+                  : !strcmp(key, "rtg") ? &p->rtg
+                  : !strcmp(key, "must_compile") ? &p->must_compile : &p->regression)
+                    = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
                 free(val);
                 return fail(p, err, errlen, "line %u: %s needs a number > 0", no, key);
@@ -472,6 +476,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         return fail(p, err, errlen, "work, report, ted and launcher are needed");
     if (p->hang_from_run && (!p->hang_after || !p->run))
         return fail(p, err, errlen, "hang_from=run needs hang_after= and runs (not run=off)");
+    if (p->must_compile && p->run)
+        return fail(p, err, errlen, "must_compile=on needs run=off");
     /* compile only: nothing that belongs to the runs */
     if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->expect))
         return fail(p, err, errlen, "run=off: no launcher, gate, serial, runwrap, runargs, "
@@ -492,9 +498,9 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         return fail(p, err, errlen, "orig= needs expect=");
     else if (p->nconfigs && p->configs[0].expect != CORPUS_REF)
         return fail(p, err, errlen, "the first configuration is the reference (EXPECT ref)");
-    else if ((p->nconfigs < 2 && !p->expect_dir) || !p->nconfigs || !p->nsources)
+    else if ((p->nconfigs < 2 && !p->expect_dir && !p->must_compile) || !p->nconfigs || !p->nsources)
         return fail(p, err, errlen, "a reference, another configuration and sources are needed "
-                    "(with expect_dir= the reference alone is enough)");
+                    "(with expect_dir= or must_compile=on the reference alone is enough)");
     /* a bug-orig test is judged against the recorded original */
     if (p->expect && !p->fixed && !p->regression && !p->orig)
         return fail(p, err, errlen, "a bug-orig test (expect= without fixed= and "
@@ -2115,6 +2121,11 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                 vbad[0] = 1;
             } else
                 text_add(&rep, " %s", ref.exe ? "compiles" : "does not compile");
+            if (p->must_compile && !noresult && !ref.exe) {
+                text_add(&rep, " (must compile: %s)", ref.result);
+                diff = 1;
+                vbad[0] = 1;
+            }
             for (c = 1; c < p->nconfigs; c++) {
                 const struct corpus_config *cf = &p->configs[c];
                 struct outcome bo;

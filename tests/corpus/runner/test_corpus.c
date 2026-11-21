@@ -483,6 +483,22 @@ int main(void)
         CHECK(parse(NORUN "runwrap=/r\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         CHECK(parse(NORUN "runargs=x\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         CHECK(parse(NORUN "expect=/e\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        /* must_compile=on: only with run=off */
+        CHECK(corpus_parse(NORUN "must_compile=on\n", &p, err, sizeof err) == 0 && p.must_compile);
+        corpus_free(&p);
+        CHECK(corpus_parse(NORUN, &p, err, sizeof err) == 0 && !p.must_compile);
+        corpus_free(&p);
+        CHECK(parse(BASE CONFIGS "source=/s\nmust_compile=on\n", err, sizeof err) == -1
+              && strstr(err, "must_compile=on needs run=off"));
+        CHECK(parse(NORUN "must_compile=1\n", err, sizeof err) == -1
+              && strstr(err, "must_compile=on or must_compile=off"));
+        /* the reference alone is enough for must_compile=on, not without */
+        CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nrun=off\nmust_compile=on\nconfig=ref|ref|/a|/b|/c\nsource=/s\n",
+                           &p, err, sizeof err) == 0);
+        corpus_free(&p);
+        CHECK(parse("work=/w\nreport=/r\nted=/t\nrun=off\nconfig=ref|ref|/a|/b|/c\nsource=/s\n", err,
+                    sizeof err) == -1
+              && strstr(err, "must_compile=on the reference alone"));
         /* the key serial_same_as is gone (the committed .serial files are compared) */
         CHECK(parse(NORUN "serial_same_as=/o\n", err, sizeof err) == -1 && strstr(err, "unknown key"));
         /* publish= and run_dir= */
