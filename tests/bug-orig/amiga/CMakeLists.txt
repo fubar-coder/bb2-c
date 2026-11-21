@@ -8,7 +8,14 @@ target_compile_options(inject PRIVATE -Wall -Wno-pointer-sign)
 set_target_properties(inject PROPERTIES SUFFIX "")
 # its patches run from a block of memory that is never freed (patchblock.h of tests/corpus)
 set_source_files_properties(inject.c PROPERTIES
-	OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../corpus/amiga/patchblock.h)
+	OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../../corpus/amiga/patchblock.h;${CMAKE_CURRENT_SOURCE_DIR}/../../corpus/amiga/ctxwrite.h")
+# injectdirect: inject with the old alert handlers (a DOS call in the context
+# of the task that raises the alert, no writer), the broken input of the test
+# inject_alert_stray_broken (ctxwrite.h)
+add_executable(injectdirect inject.c)
+target_compile_definitions(injectdirect PRIVATE CW_DIRECT)
+target_compile_options(injectdirect PRIVATE -Wall -Wno-pointer-sign)
+set_target_properties(injectdirect PROPERTIES SUFFIX "")
 add_executable(wbrun wbrun.c)
 target_compile_options(wbrun PRIVATE -Wall -Wno-pointer-sign)
 set_target_properties(wbrun PROPERTIES SUFFIX "")

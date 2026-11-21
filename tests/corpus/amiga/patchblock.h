@@ -31,7 +31,8 @@
  * header: PB_OPEN (dos Open: handler(d1 name), then the old function),
  * PB_CLOSE (intuition CloseWindow: the closed windows go to a ring in the
  * block), PB_AUTO (AutoRequest: handler(body, pos, neg), returns FALSE),
- * PB_EASY (EasyRequestArgs: handler(easystruct), returns 0),
+ * PB_EASY (EasyRequestArgs: handler(easystruct) returns the answer: 0 =
+ * the rightmost gadget, 1 = the leftmost, ...),
  * PB_THRU (any function: the program's own stub, see below).
  */
 #ifndef PATCHBLOCK_H
@@ -161,8 +162,8 @@ PB_ASM_HEAD(easy, "")
 "   addq.l  #4,sp\n"
 "   lea     _pb_easy_tmpl(pc),a0\n"
 "   subq.l  #1,(a0)\n"
+"   move.l  d0,(sp)\n"              /* the handler's answer: the saved d0 */
 "   movem.l (sp)+,d0-d1/a0-a1\n"
-"   moveq   #0,d0\n"                /* 0 = rightmost gadget */
 "   rts\n"
 "1: subq.l  #1,(a0)\n"
 "   movem.l (sp)+,d0-d1/a0-a1\n"

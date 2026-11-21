@@ -8,6 +8,15 @@
  * The patch stays only while the command runs; it is system-wide, so run
  * nothing else in parallel.
  *
+ * The handlers run in the context of the task that raises the requester,
+ * which can be inside DOS (a program started the Workbench way that did
+ * not take its WBStartup message gets "Software Failure" from DOS): they
+ * make no DOS call, the text goes to a writer process of reqtrap
+ * (ctxwrite.h).  That requester (a dead end, gadgets "Suspend" and
+ * "Reboot") is answered with "Suspend" (1), not with the rightmost
+ * gadget, "Reboot", which halts the machine; every other requester gets
+ * the rightmost answer.
+ *
  * Kickstart 1.x (dos.library before V36: no SystemTags, no
  * EasyRequestArgs, no CacheClearU): only AutoRequest is patched, and
  * COMMAND (a path, no search path) is loaded with LoadSeg and called in
@@ -37,6 +46,7 @@
 #define PB_AUTO
 #define PB_EASY
 #include "patchblock.h"
+#include "ctxwrite.h"
 
 struct IntuitionBase *IntuitionBase;
 static struct pbhead *pb_auto, *pb_easy;
@@ -48,9 +58,9 @@ static void put(const char *s) { if (s) Write(out, (APTR)s, strlen(s)); }
 #include "reqclose.h"
 #endif
 
-static void puttexts(struct IntuiText *t)
+static void puttexts(struct cw_msg *m, struct IntuiText *t)
 {
-    for (; t; t = t->NextText) { put(" \""); put((const char *)t->IText); put("\""); }
+    for (; t; t = t->NextText) { cw_add(m, " \""); cw_add(m, (const char *)t->IText); cw_add(m, "\""); }
 }
 
 /* LONG call_seg(APTR entry, const char *args, LONG len, ULONG stack): a
@@ -74,20 +84,36 @@ __asm__(
 LONG call_seg(APTR entry, const char *args, LONG len, ULONG stack);
 ULONG call_seg_sp;
 
+/* The handlers run in the context of the task that raises the requester:
+   no DOS call there (ctxwrite.h), the text goes to the writer process. */
 void auto_c(struct IntuiText *body, struct IntuiText *pos, struct IntuiText *neg)
 {
-    put("REQUESTER: AutoRequest body"); puttexts(body);
-    put(" pos"); puttexts(pos);
-    put(" neg"); puttexts(neg);
-    put(" -> answered FALSE\n");
+    struct cw_msg m;
+
+    if (!cw_begin(&m)) return;
+    cw_add(&m, "REQUESTER: AutoRequest body"); puttexts(&m, body);
+    cw_add(&m, " pos"); puttexts(&m, pos);
+    cw_add(&m, " neg"); puttexts(&m, neg);
+    cw_add(&m, " -> answered FALSE\n");
+    cw_end(&m);
 }
 
-void easy_c(struct EasyStruct *es)
+/* The answer: 0 (the rightmost gadget, the negative one); the requester
+   "Software Failure" of DOS (error 87000004, a dead end, gadgets "Suspend"
+   and "Reboot") is answered with 1 = "Suspend": "Reboot" halts the
+   emulated machine, "Suspend" stops only the process. */
+LONG easy_c(struct EasyStruct *es)
 {
-    put("REQUESTER: EasyRequest title \""); put((const char *)es->es_Title);
-    put("\" text \""); put((const char *)es->es_TextFormat);
-    put("\" gadgets \""); put((const char *)es->es_GadgetFormat);
-    put("\" -> answered 0\n");
+    struct cw_msg m;
+    LONG answer = es->es_Title && !strcmp((const char *)es->es_Title, "Software Failure") ? 1 : 0;
+
+    if (!cw_begin(&m)) return answer;
+    cw_add(&m, "REQUESTER: EasyRequest title \""); cw_add(&m, (const char *)es->es_Title);
+    cw_add(&m, "\" text \""); cw_add(&m, (const char *)es->es_TextFormat);
+    cw_add(&m, "\" gadgets \""); cw_add(&m, (const char *)es->es_GadgetFormat);
+    cw_add(&m, answer ? "\" -> answered 1\n" : "\" -> answered 0\n");
+    cw_end(&m);
+    return answer;
 }
 
 #ifdef REQCLOSE
@@ -164,12 +190,17 @@ int main(int argc, char **argv)
     IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", v36 ? 36 : 33);
     if (!IntuitionBase) return 20;
     v36 = v36 && IntuitionBase->LibNode.lib_Version >= 36;
+    if (!cw_start(out, v36)) {
+        CloseLibrary((struct Library *)IntuitionBase);
+        return 20;
+    }
     pb_auto = PB_INSTALL((struct Library *)IntuitionBase, -348, auto, sizeof(struct pbhead), auto_c);
     if (v36)
         pb_easy = PB_INSTALL((struct Library *)IntuitionBase, -588, easy, sizeof(struct pbhead), easy_c);
     if (!pb_auto || (v36 && !pb_easy)) {
         if (pb_easy) PB_REMOVE(pb_easy, (struct Library *)IntuitionBase, -588, easy, 1);
         if (pb_auto) PB_REMOVE(pb_auto, (struct Library *)IntuitionBase, -348, auto, 1);
+        cw_stop();
         CloseLibrary((struct Library *)IntuitionBase);
         return 20;
     }
@@ -187,6 +218,17 @@ int main(int argc, char **argv)
     /* a call still inside a stub is waited for (patchblock.h) */
     PB_REMOVE(pb_auto, (struct Library *)IntuitionBase, -348, auto, 1);
     if (v36) PB_REMOVE(pb_easy, (struct Library *)IntuitionBase, -588, easy, 1);
+    cw_stop();
+    if (cw_skipped) {
+        char n[12], *p = n + 11;
+        ULONG u = cw_skipped;
+
+        *p = 0;
+        do { *--p = '0' + u % 10; u /= 10; } while (u);
+        put("reqtrap: ");
+        put(p);
+        put(" requesters not recorded (a task already inside one)\n");
+    }
     CloseLibrary((struct Library *)IntuitionBase);
     return rc < 0 ? 20 : rc;
 }

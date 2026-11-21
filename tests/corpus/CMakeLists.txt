@@ -644,3 +644,33 @@ add_test(NAME patchblock_broken COMMAND ${CMAKE_COMMAND}
 	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/patchblock-test.cmake -P ${WITH_WORKDIR})
 set_tests_properties(patchblock patchblock_broken PROPERTIES LABELS emulator
 	SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+
+# reqtraptest (tests/corpus/amiga/reqtraptest.c): a task raises the DOS
+# requester "Software Failure" (a message nobody took in its process port)
+# inside reqtrap's patch; the handler must make no DOS call there.  One
+# requester line, answered "Suspend" (1), then the program's line.
+# reqtrap_stray_broken: the same through reqtrapdirect (the old handlers, the
+# caller writes, 2 levels at most) shows the requester line twice and the
+# count of the one not recorded; the regex of the right behaviour (one line)
+# does not match that output.  reqclose_stray: the same through reqclose.
+set(reqtrap_one "^REQUESTER: EasyRequest title \"Software Failure\" text \"[^\"]*\" gadgets \"Suspend\\|Reboot\" -> answered 1\nreqtraptest: the helper is stopped inside Lock\nrc=0\n")
+math(EXPR limit "120 + ${EMULATION_QUEUE_WAIT}")
+foreach(spec reqtrap_stray:reqtrap reqclose_stray:reqclose)
+	string(REPLACE ":" ";" parts ${spec})
+	list(GET parts 0 tname)
+	list(GET parts 1 launcher)
+	add_test(NAME ${tname} COMMAND ${CMAKE_COMMAND}
+		-DAMIGA_RUN=${AMIGA_RUN} -DLAUNCHER=$<TARGET_FILE:${launcher}>
+		-DPROGRAM=$<TARGET_FILE:reqtraptest> -DWANT_RC=0 "-DREGEX=${reqtrap_one}"
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${tname}
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/reqtrap-test.cmake -P ${WITH_WORKDIR})
+endforeach()
+# the broken twin: the same check must not match (several requester lines)
+add_test(NAME reqtrap_stray_broken COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DLAUNCHER=$<TARGET_FILE:reqtrapdirect>
+	-DPROGRAM=$<TARGET_FILE:reqtraptest> -DWANT_RC=0
+	"-DREGEX=REQUESTER: [^>]*-> answered 1\nREQUESTER: [^>]*-> answered 1\nreqtraptest: the helper is stopped inside Lock\nreqtrap: 1 requesters not recorded"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/reqtrap_stray_broken
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/reqtrap-test.cmake -P ${WITH_WORKDIR})
+set_tests_properties(reqtrap_stray reqclose_stray reqtrap_stray_broken PROPERTIES
+	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})

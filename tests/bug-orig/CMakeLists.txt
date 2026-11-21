@@ -732,6 +732,30 @@ inject_race(inject_race_broken racehold=nowait)
 set_tests_properties(inject_race_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+4:[ \n]+\"inject:[ \n]+racehold:[ \n]+0[ \n]+calls[ \n]+inside[ \n]+after[ \n]+the[ \n]+removal\",[ \n]+output[ \n]+line[ \n]+4:[ \n]+\"inject:[ \n]+racehold:[ \n]+1[ \n]+calls")
 
+# inject_alert_stray: the alert patch of inject (`alerts`) makes no DOS call in
+# the context of the task that raises the alert (tests/corpus/amiga/ctxwrite.h):
+# reqtraptest, run as COMMAND in inject's process, has an unreplied message in
+# its process port and calls DisplayAlert; a Write in the patch would raise the
+# DOS requester "Software Failure" there.  The line of the alert comes first,
+# then the program's, no requester.  inject_alert_stray_broken: the same with
+# injectdirect (the old patch writes in the caller): the requester comes (reqtrap
+# records it and answers "Suspend"), the task stays suspended, the run ends by
+# its time limit, the program's line is missing.
+add_test(NAME inject_alert_stray COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+	"-DFILES=$<TARGET_FILE:reqtrap>|$<TARGET_FILE:inject>|$<TARGET_FILE:reqtraptest>"
+	"-DCMDLINE=<reqtrap> <inject> alerts <reqtraptest> alert" -DWANT_RC=0
+	"-DREGEX=^inject: alert: Test alert\nreqtraptest: DisplayAlert returned FALSE\n(inject: [^\n]*\n)*inject: rc=0\n"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/inject_alert_stray
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/../corpus/reqtrap-test.cmake -P ${WITH_WORKDIR})
+add_test(NAME inject_alert_stray_broken COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+	"-DFILES=$<TARGET_FILE:reqtrap>|$<TARGET_FILE:injectdirect>|$<TARGET_FILE:reqtraptest>"
+	"-DCMDLINE=<reqtrap> <injectdirect> alerts <reqtraptest> alert" -DWANT_TIMEOUT=1 -DTIMEOUT=20
+	"-DREGEX=^inject: alert: Test alert\nREQUESTER: EasyRequest title \"Software Failure\"[^>]*-> answered 1\n$"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/inject_alert_stray_broken
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/../corpus/reqtrap-test.cmake -P ${WITH_WORKDIR})
+set_tests_properties(inject_alert_stray inject_alert_stray_broken PROPERTIES
+	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT 240)
+
 add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
 # for the equivalence of blitz2-ab3 (tests/ab3)
 set_property(GLOBAL PROPERTY BUG_ORIG_SOURCES ${bug_orig_sources})

@@ -1761,6 +1761,45 @@ blitz2-c starts there since #936 (linked with libnix13). A crash on Kickstart 1.
 "Software error - task held", which reqtrap answers with Cancel: a
 Guru that waits for the mouse, the session runs into its timeout.
 
+**The handlers of reqtrap** (`tests/corpus/amiga/ctxwrite.h`). A handler
+runs in the context of the task that raises the requester, and that can
+be inside DOS: a program that leaves its WBStartup message in its process
+port gets the requester "Software Failure" from the packet wait of its
+next DOS call (or of its exit), and every DOS call of the handler (a
+`Write`) takes that message for a late reply again and raises the
+requester again, every level costing about 360 bytes of stack, until the
+CPU halts. The handlers therefore make no DOS call: they collect the
+line in memory and send it to the writer, a process of reqtrap
+(priority 1), with a message and wait for the reply with exec calls only,
+so that the order of the lines against the output of the program stays
+(the writer is not started on Kickstart 1.x, where the command runs in
+reqtrap's own process and the handler writes itself). A task that is
+already inside a handler, and the writer itself, record nothing and are
+counted (`reqtrap: N requesters not recorded (a task already inside
+one)` at the end). The requester "Software Failure" is answered with
+"Suspend" (`-> answered 1`): "Reboot", the rightmost gadget the other
+requesters get, halts the machine, "Suspend" stops only the process.
+`reqclose` is the same program (checked: its closer process makes its
+DOS calls in its own process, never in the context of the program).
+`inject` had handlers of the same kind, the alert patches (`alerts`:
+DisplayAlert answered at once, `alertlog`: the dead-end alert of exec): they
+write through the same writer, started only with one of these options (a
+line `inject: N alerts not recorded ...` at the end if any was skipped);
+its other patches only count and write at the end. The writer takes the
+signal SIGB_SINGLE when the task has no free signal left (`signals`).
+Tests (label `emulator`, `reqtraptest`: a helper process with an unreplied
+message in its port calls `Lock`): `reqtrap_stray` and `reqclose_stray` (one
+`REQUESTER:` line, answered 1, then the helper is stopped inside `Lock`),
+`reqtrap_stray_broken` (`reqtrapdirect`: reqtrap built with `-DCW_DIRECT`,
+the old handlers, the caller writes, at most 2 levels deep: the line comes
+twice and the count of the one not recorded, what the check for one line
+must not accept); `inject_alert_stray` (`reqtraptest alert` as the COMMAND
+of inject, which has the unreplied message in its own port while it calls
+DisplayAlert: the line of the alert, then the program's, no requester) and
+`inject_alert_stray_broken` (`injectdirect`, the old patch: the alert line,
+then the requester that reqtrap answers with "Suspend", the process stays
+suspended, the run ends by its time limit of 20 s, which that test expects).
+
 **The patches of reqtrap and teddrive** (`tests/corpus/amiga/patchblock.h`,
 one source for both). Both patch system functions for the time of a run
 (AutoRequest and EasyRequestArgs; CloseWindow and dos Open), and a task

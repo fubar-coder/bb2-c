@@ -638,6 +638,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     The same for the patches of `tests/bug-orig/amiga/inject.c`
     (2026-11-21): trampolines in the block, the removal waits (tests
     `inject_race`, `inject_race_broken`).
+  - *Solved (2026-11-21, R12):* a program started the Workbench way without
+    `WBStartup` (wbrun) flooded `reqtrap` with requesters or halted the
+    CPU: DOS raises "Software Failure" (error 87000004) from the packet
+    wait of the process, and reqtrap's handler wrote with `Write` in that
+    process, which raised it again. The handlers (reqtrap, and inject's
+    alert patches) now make no DOS call in the context of the requesting
+    task (`tests/corpus/amiga/ctxwrite.h`: a writer process), reqtrap
+    answers that requester with "Suspend". Tests `reqtrap_stray`,
+    `reqclose_stray`, `inject_alert_stray` and their broken twins; the two
+    `regression/wbstartuplib-without-wbstartup*` tests check the requester.
   - *Runner features:* done: program arguments (`runargs=`, #107),
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,

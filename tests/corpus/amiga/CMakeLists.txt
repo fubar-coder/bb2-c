@@ -25,13 +25,19 @@ add_executable(rcput rcput.c)
 # patchblocktest: proves patchblock.h (the patches reqtrap and teddrive
 # use), run by the tests patchblock and patchblock_broken
 add_executable(patchblocktest patchblocktest.c)
-foreach(t reqtrap reqclose reqclosetest rcput patchblocktest)
+# reqtraptest: proves the handlers of reqtrap (no DOS call in the context of
+# the task that raises the requester, ctxwrite.h); reqtrapdirect: reqtrap with
+# the old handlers (the caller writes), the broken input of the test
+add_executable(reqtraptest reqtraptest.c)
+add_executable(reqtrapdirect reqtrap.c)
+target_compile_definitions(reqtrapdirect PRIVATE CW_DIRECT)
+foreach(t reqtrap reqclose reqclosetest rcput patchblocktest reqtraptest reqtrapdirect)
 	target_compile_options(${t} PRIVATE -Wall -Wno-pointer-sign)
 	set_target_properties(${t} PROPERTIES SUFFIX "")
 endforeach()
 set_source_files_properties(reqtrap.c patchblocktest.c PROPERTIES
-	OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/patchblock.h)
-foreach(t reqtrap rcput)
+	OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/patchblock.h;${CMAKE_CURRENT_SOURCE_DIR}/ctxwrite.h")
+foreach(t reqtrap rcput reqtrapdirect)
 	# libnix13 in front of the default libnix20: what it has comes from it
 	# (-mcrt=nix13 would select it alone, but cannot go with -noixemul of
 	# the toolchain's flags)

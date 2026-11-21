@@ -22,7 +22,9 @@
  *   alerts                 DisplayAlert returns FALSE at once (as if the
  *                          right mouse button was pressed: a recoverable
  *                          alert does not wait), its text is written
- *   alertlog               exec's Alert, called by the process (not from
+ *                          (by a writer process, not by the task that
+ *                          raises the alert: ctxwrite.h)
+ *   alertlog              exec's Alert, called by the process (not from
  *                          an interrupt or by another task), is recorded
  *                          and not shown: a recoverable alert returns at
  *                          once (exec raises such alerts itself, e.g.
@@ -254,6 +256,7 @@
 
 #define PB_THRU
 #include "../../corpus/amiga/patchblock.h"
+#include "../../corpus/amiga/ctxwrite.h"
 
 #define LVO_ALLOCMEM (-198)
 #define LVO_FREEMEM  (-210)
@@ -940,20 +943,27 @@ ULONG write_pre(ULONG fh)
    lines of 0-terminated text with a continuation byte) */
 ULONG alert_pre(const UBYTE *s)
 {
+    struct cw_msg m;
+
     if (!o_alerts || !ours())
         return 0;
     alerts_done++;
-    put("inject: alert:");
-    while (s) {
-        s += 3;
-        put(" ");
-        put((const char *)s);
-        s += strlen((const char *)s) + 1;
-        if (!*s)
-            break;
-        s++;
+    /* in the context of the task that raises the alert: no DOS call here
+       (ctxwrite.h), the line is written by the writer process */
+    if (cw_begin(&m)) {
+        cw_add(&m, "inject: alert:");
+        while (s) {
+            s += 3;
+            cw_add(&m, " ");
+            cw_add(&m, (const char *)s);
+            s += strlen((const char *)s) + 1;
+            if (!*s)
+                break;
+            s++;
+        }
+        cw_add(&m, "\n");
+        cw_end(&m);
     }
-    put("\n");
     return 1;
 }
 
@@ -965,6 +975,7 @@ static ULONG al_num[MAXALERT], al_count;
 ULONG execalert_pre(ULONG num)
 {
     static char line[80];
+    struct cw_msg m;
 
     /* SetSR(0, 0) reads SR: the S bit is set when an interrupt or a trap
        handler runs while the process is the current task */
@@ -975,7 +986,10 @@ ULONG execalert_pre(ULONG num)
     al_count++;
     if (num & AT_DeadEnd) {
         sprintf(line, "inject: alert %08lx (dead end: COMMAND stopped)\n", num);
-        put(line);
+        if (cw_begin(&m)) {             /* no DOS call here: ctxwrite.h */
+            cw_add(&m, line);
+            cw_end(&m);
+        }
         Wait(0);                        /* for ever */
     }
     return 1;
@@ -2029,6 +2043,11 @@ int main(int argc, char **argv)
         put("inject: cannot start the driver\n");
         return 20;
     }
+    /* the alert handlers write through the writer process (ctxwrite.h) */
+    if ((o_alerts || o_alertlog) && !cw_start(out, 1)) {
+        put("inject: cannot start the writer\n");
+        return 20;
+    }
     if (o_cd) {
         cd_lock = cd_path[0] ? Lock(cd_path, SHARED_LOCK)
             : DupLock(((struct Process *)me)->pr_CurrentDir);
@@ -2186,6 +2205,12 @@ int main(int argc, char **argv)
     }
     if (o_createprocfail) {
         sprintf(line, "inject: createprocfail: %lu processes not created\n", cpf_done);
+        put(line);
+    }
+    cw_stop();
+    if (cw_skipped) {
+        sprintf(line, "inject: %lu alerts not recorded (a task already inside one)\n",
+                (unsigned long)cw_skipped);
         put(line);
     }
     sprintf(line, "inject: rc=%ld\n", rc);
