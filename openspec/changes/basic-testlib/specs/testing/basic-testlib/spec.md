@@ -125,6 +125,15 @@ end.
 - **WHEN** a check runs after `BLITZ` and the program returns to Amiga mode with `QAMIGA`
 - **THEN** the entry is in the result file after the return, in order
 
+### Requirement: Kept entries are bounded
+Up to 1024 bytes of entries SHALL be kept while they cannot be written;
+entries that do not fit SHALL be lost and followed by `broken` `entries
+lost while kept` when the kept ones are written.
+
+#### Scenario: Too many entries in Blitz mode
+- **WHEN** a program makes 100 checks in Blitz mode and returns to Amiga mode
+- **THEN** the result file holds the first of them, then `broken` `entries lost while kept`, then the next entry
+
 ### Requirement: The end of a case and of the run are marked
 The library SHALL write an end entry when a case ends, and an end entry for
 the run when the program ends; when the program ends while a block is open

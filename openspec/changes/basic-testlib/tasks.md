@@ -22,3 +22,10 @@
 
 - [ ] 4.1 (done by the implementation of `basic-test-runner`, after its task 3.1; design.md "Interface") Stage the library for every configuration of the runner (1.95: `blitz2:DIR/` and `blitz2:userlibs/DIR/`; 2.10 and the port: `blitz2:userlibs/DIR/`); verify: a test with one passing and one failing check gives the expected result files with `ref`, the RWE reference, `port` and `clib`
 - [ ] 4.2 Document how a test source is written (blocks, names, checks in cases, procedures, init and end, preconditions, the rule for register- and string-buffer-dependent acts) in `tests/README.md` and `docs/testing.md`; verify: the examples in the text compile as a test of the build
+
+## 5. Typed checks and the findings in the interface (decided 2026-11-21, task-decisions.md "basic-testlib: typed checks, findings of implementer A")
+
+- [x] 5.1 The delta of `testing/basic-test-interface` in this change: `!CheckQEq`, `!CheckFltNear`, their preprocessed forms, `TLCheckQ`, `TLCheckFlt`, the entries `checkq`, `checkflt`, the last field of `checkstr` (`-`/`cut`), the rule that a condition is a long, and the findings of design.md that are behaviour (preconditions and the batch init, entries of calls out of order, limits); verify: `openspec validate basic-testlib --strict`
+- [ ] 5.2 The codec (`shared/basictest/`): `checkq`, `checkflt` and the field of `checkstr`, writer and reader; verify: host tests with round trip and broken input, the README example and its test
+- [ ] 5.3 The library: `TLCheckQ`, `TLCheckFlt` (mathffp.library opened by `TLBegin`), the cut field, the macros `CheckQEq`, `CheckFltNear`; verify: host tests of the logic, an emulator run with 1.95, 2.10, the port and both library sets (a quick 1.5 against 1.5 and 1.0, floats within and outside the delta, a cut string)
+- [ ] 5.4 design.md records the decisions and the author rule for `!Check`; verify: the text
