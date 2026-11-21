@@ -5,8 +5,8 @@
  * tool and the projects as WBArgs (lock of the directory + name), wait
  * for the reply.
  *
- * usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [timeout=SEC]
- *              [inuse=PATH]... TOOL [PROJECT...]
+ * usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [racehold[=nowait]]
+ *              [timeout=SEC] [inuse=PATH]... TOOL [PROJECT...]
  *   noprojects   start the tool alone, without the PROJECTs (for a
  *                wrapper whose caller always passes one)
  *   freeseg      like the Workbench (priority 1, the tool 0) with a memory
@@ -20,7 +20,17 @@
  *                how often it closed it (exec's OpenLibrary,
  *                OldOpenLibrary, CloseLibrary patched while it runs;
  *                other tasks do not count - lib_OpenCnt would, e.g. a
- *                background tool of the Workbench closing its own)
+ *                background tool of the Workbench closing its own).  The
+ *                patches run from a block of memory that is never freed
+ *                (patchblock.h) and the removal waits until no task is
+ *                inside them any more
+ *   racehold[=nowait]  self test of that removal (wbrun_race), with dosopen:
+ *                when the tool has ended, a helper process is held inside a
+ *                patch while the patches are removed; wbrun reports
+ *                "racehold: ..." lines: a task was inside, the calls still
+ *                inside after the removal, whether the task returned.  With
+ *                =nowait the removal does not wait: the broken input of the
+ *                test
  *   timeout=SEC  wait at most SEC seconds (1 to 60) for the reply, for a tool
  *                that may not answer the message: when it has not come, wbrun
  *                says whether the process ended or still runs, waits for its
@@ -82,6 +92,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#define PB_THRU
+#include "../../corpus/amiga/patchblock.h"
+
 #ifndef WBRUN_DEFAULT_TIMEOUT
 #define WBRUN_DEFAULT_TIMEOUT 0
 #endif
@@ -139,8 +152,19 @@ void enter_old_c(void)
         in_old = 1;
 }
 
+/* racehold: a helper process that is held inside a patch (opened_c) */
+static struct Task *race_task;
+static volatile int race_in, race_done;
+
 void opened_c(ULONG base, ULONG old)
 {
+    if (race_task && SysBase->ThisTask == race_task) {
+        if (!race_in) {
+            race_in = 1;                /* stay inside the stub */
+            Delay(50);
+        }
+        return;
+    }
     if (!ours())
         return;
     if (old)
@@ -199,19 +223,79 @@ __asm__(
 "   move.l  _old_close,-(sp)\n"
 "   rts\n");
 
-static void patch(int on)
+/* The patches run from a block of memory that is never freed (patchblock.h,
+   PB_THRU): the block counts the calls inside the stubs above, the removal
+   restores the vectors and then waits until no task is inside any more (a
+   task of another process may be inside OpenLibrary or CloseLibrary, which
+   are patched system-wide, when wbrun ends and its code is freed).  After
+   the removal the block passes every call on to the old function without
+   touching the program. */
+#define MAXPB 3
+static struct pbhead *pb_blk[MAXPB];
+static struct Library *pb_lib[MAXPB];
+static WORD pb_lvo[MAXPB];
+static int pb_n;
+static int pb_failed;
+
+/* patch vector lvo of exec with stub; the old function (0 if there is no
+   memory for the block: that patch is then missing, reported at the end) */
+static APTR pset(WORD lvo, APTR stub)
 {
     struct Library *e = (struct Library *)SysBase;
+    struct pbhead *b;
 
-    if (on) {
-        old_open = SetFunction(e, -552, (APTR)open_patch);
-        old_oldopen = SetFunction(e, -408, (APTR)oldopen_patch);
-        old_close = SetFunction(e, -414, (APTR)close_patch);
-    } else {
-        SetFunction(e, -552, old_open);
-        SetFunction(e, -408, old_oldopen);
-        SetFunction(e, -414, old_close);
+    if (pb_n >= MAXPB || !(b = PB_INSTALL(e, lvo, thru, 16, stub))) {
+        pb_failed = 1;
+        return NULL;
     }
+    pb_blk[pb_n] = b;
+    pb_lib[pb_n] = e;
+    pb_lvo[pb_n++] = lvo;
+    return b->old;
+}
+
+/* remove all patches (newest first) and wait for the calls inside: up to
+   10 s; wait = 0 only for the self test racehold=nowait.  Returns the
+   number of calls still inside. */
+static LONG punset(int wait)
+{
+    LONG left;
+    int i, n;
+
+    Forbid();
+    for (i = pb_n - 1; i >= 0; i--)
+        PB_REMOVE(pb_blk[i], pb_lib[i], pb_lvo[i], thru, 0);
+    Permit();
+    for (n = 0;; n++) {
+        for (left = 0, i = 0; i < pb_n; i++)
+            left += pb_blk[i]->count;
+        if (!left || !wait || n >= 500)
+            break;
+        Delay(1);
+    }
+    pb_n = 0;
+    return left;
+}
+
+static void patch(void)
+{
+    old_open = pset(-552, (APTR)open_patch);
+    old_oldopen = pset(-408, (APTR)oldopen_patch);
+    old_close = pset(-414, (APTR)close_patch);
+}
+
+/* racehold: a helper process (priority 1: it runs at once) opens
+   dos.library and is held inside the patch (opened_c) while the patches
+   are removed */
+static void race_helper(void)
+{
+    struct Library *l;
+
+    race_task = FindTask(NULL);         /* before its first call of a patch */
+    l = OpenLibrary("dos.library", 0);
+    if (l)
+        CloseLibrary(l);
+    race_done = 1;
 }
 
 void exit_stub(void);
@@ -249,7 +333,8 @@ static int split(const char *path, struct WBArg *a)
 }
 
 static const char usage[] =
-    "usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [timeout=SEC] [inuse=PATH]...\n"
+    "usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [racehold[=nowait]] [timeout=SEC]\n"
+    "             [inuse=PATH]...\n"
     "             TOOL [PROJECT...]\n"
     "  start TOOL like the Workbench does (no CLI, a WBStartup message)\n";
 
@@ -262,8 +347,9 @@ int main(int argc, char **argv)
     struct MsgPort *port;
     struct WBStartup msg;
     struct Process *pr;
+    struct Process *racep = NULL;
     BPTR seg;
-    int i, k, ninuse = 0, noprojects = 0, o_cd = 0, o_dos = 0, o_free = 0, o_time = WBRUN_DEFAULT_TIMEOUT;
+    int i, k, ninuse = 0, noprojects = 0, o_cd = 0, o_dos = 0, o_free = 0, o_race = 0, o_time = WBRUN_DEFAULT_TIMEOUT;
 
     if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
         Write(Output(), (APTR)usage, sizeof usage - 1);
@@ -281,6 +367,8 @@ int main(int argc, char **argv)
             o_cd = 1;
         else if (!strcmp(argv[i], "dosopen"))
             o_dos = 1;
+        else if (!strcmp(argv[i], "racehold") || !strcmp(argv[i], "racehold=nowait"))
+            o_dos = o_race = argv[i][8] ? 2 : 1;
         else if (!strncmp(argv[i], "timeout=", 8)) {
             const char *t = argv[i] + 8;
 
@@ -298,8 +386,8 @@ int main(int argc, char **argv)
     if (i < argc && noprojects)
         argc = i + 1;
     if (i >= argc || argc - i > MAXARGS || (o_free && o_dos)) {
-        put("usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [timeout=SEC] [inuse=PATH]...\n"
-            "             TOOL [PROJECT...]   (freeseg not with dosopen)\n");
+        put("usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [racehold[=nowait]] [timeout=SEC]\n"
+            "             [inuse=PATH]... TOOL [PROJECT...]   (freeseg not with dosopen)\n");
         return 20;
     }
     if (!(seg = LoadSeg(argv[i]))) {
@@ -317,9 +405,7 @@ int main(int argc, char **argv)
         return 20;
     startdir = DupLock(((struct Process *)FindTask(NULL))->pr_CurrentDir);
     if (o_dos) {
-        Forbid();
-        patch(1);
-        Permit();
+        patch();
     }
     pr = CreateNewProcTags(NP_Seglist, seg, NP_FreeSeglist, FALSE,
                            NP_Name, args[0].wa_Name, NP_StackSize, stack, NP_Priority, 0,
@@ -406,9 +492,32 @@ int main(int argc, char **argv)
         Wait(SIGBREAKF_CTRL_F);         /* the exit hook ran */
     Delay(5);                           /* DOS has removed the process */
     if (o_dos) {
-        Forbid();
-        patch(0);
-        Permit();
+        LONG left;
+
+        if (o_race) {
+            racep = CreateNewProcTags(NP_Entry, (ULONG)race_helper, NP_Name,
+                                      (ULONG)"wbrun race helper", NP_Priority, 1,
+                                      NP_StackSize, 4096, TAG_DONE);
+            for (k = 0; racep && !race_in && k < 100; k++)
+                Delay(1);
+        }
+        left = punset(o_race != 2);
+        if (left && !o_race) {
+            sprintf(line, "wbrun: %ld calls still inside a patch after 10 s\n", (long)left);
+            put(line);
+        }
+        if (o_race) {
+            for (k = 0; racep && !race_done && k < 500; k++)
+                Delay(1);
+            put(race_in ? "wbrun: racehold: a task was inside a patch\n"
+                : "wbrun: racehold: no task inside a patch\n");
+            sprintf(line, "wbrun: racehold: %ld calls inside after the removal\n", (long)left);
+            put(line);
+            put(race_done ? "wbrun: racehold: the task returned\n"
+                : "wbrun: racehold: the task did not return\n");
+        }
+        if (pb_failed)
+            put("wbrun: no memory for a patch\n");
     }
 
     if (!o_cd)

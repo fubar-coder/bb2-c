@@ -1,7 +1,7 @@
 /*
  * patchblock.h - system-wide SetFunction patches that can be removed
- * safely, for the test tools reqtrap and teddrive (one source, as
- * reqclose.h).
+ * safely, for the test tools reqtrap, teddrive, inject and wbrun (one source,
+ * as reqclose.h).
  *
  * Removing a patch while another task is inside it is a race: a `jsr`
  * patch (CloseWindow) returns into the stub, a `jmp` patch (Open,

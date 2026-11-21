@@ -1455,7 +1455,14 @@ fails an OpenLibrary of the name `graphics.library|track`, and `track` is
 not set. `wbrun` starts the compiler
 (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
 Workbench and reports the current directory at the end, how often the
-process opened minus closed dos.library and files left in use; with
+process opened minus closed dos.library (`dosopen`: exec's OpenLibrary,
+OldOpenLibrary and CloseLibrary are patched while it runs; the patches are
+trampolines of `patchblock.h` in a block that is never freed, and the
+removal waits for the tasks inside; self test `wbrun_race`: the option
+`racehold` holds a helper process inside a patch while the patches are
+removed, 0 calls inside after the removal; `wbrun_race_broken`:
+`racehold=nowait` removes without waiting, the check must fail with 1 call
+inside) and files left in use; with
 `timeout=SEC` it waits at most SEC seconds for the reply and says
 whether a tool that did not answer ended or still runs (self test
 `wbrun_timeout` with `wbtool`, a tool that answers late or never;

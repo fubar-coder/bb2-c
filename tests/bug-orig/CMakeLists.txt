@@ -699,6 +699,23 @@ wbrun_timeout(wbrun_timeout_broken ${CMAKE_CURRENT_SOURCE_DIR}/wbrun-timeout.bro
 set_tests_properties(wbrun_timeout_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+22:[ \n]+\"wbrun:[ \n]+the[ \n]+process[ \n]+ended[ \n]+later,[ \n]+after[ \n]+replying\",[ \n]+output[ \n]+line[ \n]+22:[ \n]+\"wbrun:[ \n]+the[ \n]+process[ \n]+ended[ \n]+later,[ \n]+without")
 
+# wbrun's patch removal (wbrun-race.cmake): a helper process is held inside a
+# patch of dosopen when the patches are removed; the removal waits for it.  The
+# twin with racehold=nowait (removal without waiting) must fail the check.
+function(wbrun_race name race)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DRESULTS=${RESULTS} -DWBRUN=${WBRUN} -DWBTOOL=$<TARGET_FILE:wbtool>
+		-DEXPECT=${CMAKE_CURRENT_SOURCE_DIR}/wbrun-race.expect -DRACE=${race}
+		-DWORK=${work} -P ${CMAKE_CURRENT_SOURCE_DIR}/wbrun-race.cmake)
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT 240)
+endfunction()
+wbrun_race(wbrun_race racehold)
+wbrun_race(wbrun_race_broken racehold=nowait)
+set_tests_properties(wbrun_race_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+2:[ \n]+\"wbrun:[ \n]+racehold:[ \n]+0[ \n]+calls[ \n]+inside[ \n]+after[ \n]+the[ \n]+removal\",[ \n]+output[ \n]+line[ \n]+2:[ \n]+\"wbrun:[ \n]+racehold:[ \n]+1[ \n]+calls")
+
 # inject's guardseg option (inject-guardseg.cmake), and the check itself: an
 # expect file without the write behind the program's hunk must fail
 function(inject_guardseg name expect)

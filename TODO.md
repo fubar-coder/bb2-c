@@ -638,6 +638,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     The same for the patches of `tests/bug-orig/amiga/inject.c`
     (2026-11-21): trampolines in the block, the removal waits (tests
     `inject_race`, `inject_race_broken`).
+    The same for the `dosopen` patches of `tests/bug-orig/amiga/wbrun.c`
+    (2026-11-21; tests `wbrun_race`, `wbrun_race_broken`).
   - *Solved (2026-11-21, R12):* a program started the Workbench way without
     `WBStartup` (wbrun) flooded `reqtrap` with requesters or halted the
     CPU: DOS raises "Software Failure" (error 87000004) from the packet

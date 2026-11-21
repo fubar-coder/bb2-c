@@ -68,7 +68,8 @@ tests/corpus/                corpus: blitz2-c against blitz2 2.10 in the
                              emulator; amiga/: tedstub (blitz2:ted for
                              batch runs), reqtrap, reqclose, reqclosetest,
                              patchblocktest (patchblock.h: the patches of
-                             reqtrap, teddrive and bug-orig inject), reqtraptest
+                             reqtrap, teddrive, bug-orig inject and wbrun),
+                             reqtraptest
                              (ctxwrite.h: handlers that make no DOS call in
                              the context of the requesting task)
                              tests*/: the test programs (plain text, .bas),
