@@ -1,0 +1,7 @@
+# TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
+[state]
+TIMEOUT (FAIL step 16 timeout)
+[problems]
+  - expect: stdout lacks "inject: allocfail: 1 allocations failed"
+  - expect: stdout lacks "inject: not in use: TEDRUN:work/inc.bb2"
+  - expect: stdout lacks "inject: rc=0"

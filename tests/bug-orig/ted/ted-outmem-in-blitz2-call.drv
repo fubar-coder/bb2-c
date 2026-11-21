@@ -1,0 +1,39 @@
+; ted-outmem-in-blitz2-call (#369): blitz2 allocates through TED's
+; extalloc; when an allocation fails during a compile, outmem shows the
+; alert and jumps back into TED's main loop, over blitz2's frames: the
+; compile is abandoned without blitz2's cleanup (its open includes stay
+; open).  blitz2 under inject (alerts answered), a source that includes
+; inc.bb2 (tokenised) with a macro of a 205-byte text, whose allocation
+; fails once (any flags: the port clears the block, #970); CREATE
+; EXECUTABLE twice, QUIT.
+; Correct: the alert "Not enough memory for operation!" (TED's notice),
+; blitz2 ends the first compile through its own cleanup (the include is
+; closed), the second compile creates the executable and blitz2 ends
+; normally.
+; @file inc.bb2 "\x80\x0d m\x00a$=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\x00\x80\x02 \x80\x0d\x00"
+; @file bo.bas "Include \"TEDRUN:work/inc.bb2\"\n!m\nNPrint a$\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts allocfail=205-205/1 inuse=TEDRUN:work/inc.bb2 blitz2:blitz2 @FILE@
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+; @expect stdout "inject: not in use: TEDRUN:work/inc.bb2"
+; @expect stdout "inject: rc=0"
+; @expect exists bo
+timeout 20
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "bo" "TEDRUN:work"  ; @ignore compilewindow
+timeout 10
+wait screen
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "bo" "TEDRUN:work"  ; @ignore compilewindow
+timeout 10
+wait screen
+menu 0 9
+wait exit
