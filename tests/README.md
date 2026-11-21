@@ -395,7 +395,7 @@ name (a check that a configuration names must have one).
 | `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
 | `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
 | `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries | `==`/`!=` with `ok`, `fail`, `not-run` |
-| `check.NS.NAME.expected`, `.actual` | the expected, the actual value of its first failed entry, else of its first | `CMP integer` (long values), `==`/`!=` string, `contains`, `matches` (strings; a value the library cut to fit the line only `contains` and `matches`) |
+| `check.NS.NAME.expected`, `.actual` | the expected, the actual value of its first failed entry, else of its first | `CMP integer` (long values; the 32 bits of a quick or FFP float value, `$00018000` for the quick 1.5), `==`/`!=` string, `contains`, `matches` (strings; a value the library cut to fit the line only `contains` and `matches`) |
 
 `contains` holds if the text (a requester, for `requester`) holds the
 string; `matches` if a line of it matches the pattern of `outmatch` (`*`

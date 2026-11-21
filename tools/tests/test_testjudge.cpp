@@ -51,7 +51,8 @@ struct fixture {
     tc_matrix m = {};
     tj_test t = {};
 
-    fixture(const std::string &dir_toml, const std::string &own_toml = "", const char *case_name = "frames_maximum")
+    fixture(const std::string &dir_toml, const std::string &own_toml = "", const char *case_name = "frames_maximum",
+            const char *text = source)
     {
         std::string tmp = (fs::temp_directory_path() / "testjudge-XXXXXX").string();
 
@@ -60,12 +61,12 @@ struct fixture {
         std::ofstream(root / "tests.toml") << "root = true\n" << dir_toml;
         if (!own_toml.empty())
             std::ofstream(root / "x.test.toml") << own_toml;
-        std::ofstream(root / "x.test.bas") << source;
+        std::ofstream(root / "x.test.bas") << text;
         tp_params p = {};
         p.file = "x.test.bas";
         p.test_id = "x";
-        REQUIRE(tp_process(source, sizeof source - 1, &p, &src) == 0);
-        REQUIRE(src.nchecks == 10);
+        REQUIRE(tp_process(text, strlen(text), &p, &src) == 0);
+        REQUIRE((text != source || src.nchecks == 10));
         std::string e = "top = \"" + root.string() + "\"\n";
         REQUIRE(tc_env_parse("env.toml", e.c_str(), &env, err, sizeof err) == 0);
         if (tc_resolve((root / "x.test.bas").c_str(), &env, &conf, err, sizeof err))
@@ -553,4 +554,49 @@ TEST_CASE("testjudge: a declared crash", "[testjudge]")
     obs bad(head + "check|3|fail|$00000010|$00000000\n");
     CHECK(verdict(g, bad, obs(good), m) == TJ_V_FAILED);
     CHECK(has(m, "check frames_maximum width (x.test.bas:9) failed"));
+}
+
+// ------------------------------------------------------------ typed checks
+
+static const char typed_source[] =
+    "!TestCase{t}\n"                                        // 1
+    "  !CheckQEq{q,1.5,\"q\"}\n"                            // 2 K0
+    "  !CheckFltNear{f,2.5,0.01,\"f\"}\n"                   // 3 K1
+    "!EndTestCase\n";
+
+static const std::string thead = "begin|1\nblock|case|t\n";
+
+TEST_CASE("testjudge: quick and float checks", "[testjudge]")
+{
+    fixture f("", "", "t", typed_source);
+    std::string m;
+
+    CHECK(judge(f, obs(thead + "checkq|0|ok|$00018000|$00018000\ncheckflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n"
+                       + tail), m) == TJ_PASS);
+    // the report shows the quick and the FFP values in decimal, the float's delta too
+    CHECK(judge(f, obs(thead + "checkq|0|fail|$00018000|$FFFFC000\n" + tail), m) == TJ_FAIL);
+    CHECK(has(m, "check t q (x.test.bas:2) failed: q: expected 1.5 ($00018000), actual -0.25 ($FFFFC000)"));
+    CHECK(judge(f, obs(thead + "checkflt|1|fail|$A0000042|$C00000C1|$A3D70A3A\n" + tail), m) == TJ_FAIL);
+    CHECK(has(m, "check t f (x.test.bas:3) failed: f: expected 2.5 ($A0000042), actual -1.5 ($C00000C1), "
+                 "delta 0.01 ($A3D70A3A)"));
+    CHECK(judge(f, obs(thead + "checkflt|1|fail|$A0000042|$A6666642|$A3D70A3A\n" + tail), m) == TJ_FAIL);
+    CHECK(has(m, "actual 2.6 ($A6666642)"));
+    CHECK(judge(f, obs(thead + "checkflt|1|fail|$A0000042|$00000000|$A3D70A3A\n" + tail), m) == TJ_FAIL);
+    CHECK(has(m, "actual 0 ($00000000)"));
+    // the entry kind must fit the macro
+    CHECK(judge(f, obs(thead + "check|0|ok|$00018000|$00018000\n" + tail), m) == TJ_ERROR);
+    CHECK(has(m, "line 3 is no entry of check 0 (!CheckQEq, x.test.bas:2)"));
+    // queries of the verdict and the values (their bits)
+    fixture g("[asserts]\n\"check.t.q\" = \"== fail\"\n\"check.t.q.actual\" = \"== $FFFFC000\"\n"
+              "\"check.t.f.expected\" = \"== $A0000042\"\n",
+              "", "t", typed_source);
+    CHECK(judge(g, obs(thead + "checkq|0|fail|$00018000|$FFFFC000\ncheckflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n"
+                       + tail), m) == TJ_PASS);
+    CHECK(judge(g, obs(thead + "checkq|0|fail|$00018000|$00010000\ncheckflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n"
+                       + tail), m) == TJ_FAIL);
+    CHECK(has(m, "assertion check.t.q.actual == $FFFFC000"));
+    CHECK(has(m, "does not hold: 1 ($00010000)"));
+    fixture h("[asserts]\n\"check.t.f.actual\" = \"contains \\\"2\\\"\"\n", "", "t", typed_source);
+    CHECK(judge(h, obs(thead + "checkflt|1|ok|$A0000042|$A0000042|$A3D70A3A\n" + tail), m) == TJ_ERROR);
+    CHECK(has(m, "the value of this check is a long, compare it with an integer"));
 }
