@@ -863,9 +863,31 @@ static void skip_missing_expect(struct corpus_pass *p, FILE *log)
     }
 }
 
+/* the configuration prev (exe:BASE) of a build whose compiler exists but whose libraries or
+   userlibs for this pass do not (a commit that adds a variant or a userlib: the previous commit
+   has no such file): 1 = its files are all there */
+static int prev_files_ok(const struct corpus_pass *p, size_t c)
+{
+    size_t i;
+
+    for (i = 0; i < p->nfiles; i++)
+        if (p->file_tag[i] && !strcmp(p->file_tag[i], p->configs[c].tag) && access(p->file_src[i], R_OK))
+            return 0;
+    return config_files(p, c);
+}
+
 void corpus_skip_missing(struct corpus_pass *p, FILE *log)
 {
     size_t c;
+
+    /* prev without its libraries: not judged (a missing compiler is a skipped run, as before) */
+    for (c = p->nconfigs; c-- > 1;)
+        if (p->configs[c].base && !strcmp(p->configs[c].tag, "prev") && p->nconfigs > 1
+            && !access(p->configs[c].blitz2, R_OK) && !prev_files_ok(p, c)) {
+            if (log)
+                fprintf(log, "corpus: prev: libraries or userlibs of the previous commit are missing - not judged\n");
+            drop_config(p, c);
+        }
 
     if (p->expect_dir && !p->orig && !p->expect && !p->update && !p->observe_to) {
         skip_missing_expect(p, log);
