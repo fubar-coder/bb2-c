@@ -1,0 +1,28 @@
+; ted-outmem-blitz2-init (#1008): out of memory in blitz2's start-up
+; calls of TED's services, before TED's main loop: outmem continues with
+; memstack, which is 0 there (a7 = 0).  blitz2 under inject (alerts
+; answered), the allocation of the initial object buffers (makeiallox:
+; the four default sizes, 57344 bytes, MEMF_PUBLIC|MEMF_CLEAR) fails
+; once; then CREATE EXECUTABLE, QUIT.  Correct: the alert "Not enough
+; memory for operation!", the start goes on (version requester), the
+; compile allocates the buffers and creates the executable, blitz2 ends
+; normally; the original continues with a7 = 0 and crashes.
+; @file bo.bas "NPrint \"hello\"\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts allocfail=57344-57344/f=10001/1 blitz2:blitz2 @FILE@
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+; @expect stdout "inject: rc=0"
+; @expect exists bo
+timeout 20
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "bo" "TEDRUN:work"  ; @ignore compilewindow
+timeout 10
+wait screen
+menu 0 9
+wait exit
