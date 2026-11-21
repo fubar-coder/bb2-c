@@ -3323,6 +3323,15 @@ the original did.
   2000000000 came before -2000000000; it sorts every key in ascending
   order ([#201](https://github.com/fubar-coder/bb2-c/issues/201)).
 
+### Statements and Functions
+
+* A Statement or Function with three or more parameters and a local
+  NewType variable got a wrong third parameter, and with five parameters a
+  wrong fifth one too: the library routine that sets up the local
+  variables at the start of the procedure overwrote them; every parameter
+  keeps its value
+  ([#1063](https://github.com/fubar-coder/bb2-c/issues/1063)).
+
 ### GadTools
 
 * All `GTShape` gadgets showed the images of the last one, and GadTools'

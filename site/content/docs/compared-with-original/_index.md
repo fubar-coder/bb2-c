@@ -69,7 +69,8 @@ outside.
 The pages of this chapter describe the differences a program can notice.
 The complete lists, including the internal ones, are kept for developers
 in the repository: the
-[deviations of the compiler and the libraries](https://github.com/fubar-coder/bb2-c/blob/main/docs/libs/deviations.md)
+[deviations of the compiler](https://github.com/fubar-coder/bb2-c/blob/main/docs/blitz2/deviations.md),
+the [deviations of the libraries](https://github.com/fubar-coder/bb2-c/blob/main/docs/libs/deviations.md)
 and the
 [deviations of the editor](https://github.com/fubar-coder/bb2-c/blob/main/docs/ted/deviations.md).
 Every fixed bug has an issue on GitHub with the details and the test

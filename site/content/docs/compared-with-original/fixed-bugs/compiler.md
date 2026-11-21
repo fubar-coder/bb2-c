@@ -463,9 +463,9 @@ maximum it gives the right number
 **What to change**
 
 Nothing. `LoadShapes`, `DecodeShapes` and `LoadSprites`, which load a
-whole range of objects up to the maximum, load the whole range with such
-a maximum as well
-([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
+whole range of objects up to the maximum, had the same fault in their
+libraries; they load the whole range with such a maximum as well
+([Shapes and sprites]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#shapes-and-sprites" >}})).
 
 Issues: [Objects past 32 KB of their table were addressed before the table (#939)](https://github.com/fubar-coder/bb2-c/issues/939),
 [Used Object returned a wrong number from 64 KB of its table on (#998)](https://github.com/fubar-coder/bb2-c/issues/998).
@@ -764,10 +764,6 @@ Each point says first what the original did, then what the port does.
 * A NewType that contained a field of its own type got a random size; the
   compiler reports "Illegal Type", and a pointer to the own type stays
   allowed ([#973](https://github.com/fubar-coder/bb2-c/issues/973)).
-* A Statement or Function with three or more parameters and a local
-  NewType variable got a wrong third parameter, and with five parameters a
-  wrong fifth one too. The code that sets up the local variables at the
-  start of the procedure overwrote them; every parameter keeps its value ([#1063](https://github.com/fubar-coder/bb2-c/issues/1063)).
 * An array field of a NewType with 65536 or more elements, such as
   `a.b[65540]`, or with a negative count got the size of the count
   modulo 65536, here 4 bytes, and without runtime error checking a
