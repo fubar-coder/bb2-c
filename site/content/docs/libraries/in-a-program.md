@@ -4,19 +4,17 @@ weight: 4
 description: When blitz2 copies a library into a program, what pulls in libraries without commands, and when the start and end routines of the libraries run.
 ---
 
+Before this page you should know the kinds of libraries ([Libraries:
+acidlibs, deflibs, userlibs]({{< relref "/docs/how-blitz2-works/libraries" >}}))
+and what a token is
+([Tokenised sources]({{< relref "/docs/how-blitz2-works/tokens" >}})).
+
 The command reference lists what each library offers. This page explains
 what happens to a library when you compile a program: when its code is
 copied into the program, what brings in a library you never name, and
 when its code runs. The running example is the library for the start
 from the Workbench, which has no commands and is still part of many
 programs.
-
-The basics are on other pages: the kinds of libraries in
-[Libraries: acidlibs, deflibs, userlibs]({{< relref "/docs/how-blitz2-works/libraries" >}}),
-the tokens in
-[Tokenised sources]({{< relref "/docs/how-blitz2-works/tokens" >}}),
-and the parts of a library file in
-[Anatomy of a Blitz library]({{< relref "/docs/blitz2-internals/library-anatomy" >}}).
 
 ## Compile time and run time
 
@@ -186,9 +184,10 @@ A program started from the Workbench gets a message from the Workbench
 and must answer it when it ends. wbstartuplib's start routine takes that
 message, makes the program's drawer the current directory and collects
 the icons given with the program; its end routine answers the message.
-A program without wbstartuplib leaves the message unanswered; the
-original documentation warns that such a program crashes when it is
-started from the Workbench. A program that uses one of the commands of
+No other library takes the message, so a program without
+wbstartuplib leaves it unanswered. What happens then is not tested for
+the port: the Blitz Basic 2 manual warns that such a program "will
+promptly crash" when it is started from the Workbench. A program that uses one of the commands of
 cliargslib has the library anyway and needs no `WBStartup`.
 
 wbstartuplib's start routine returns a long value, the address of the
@@ -280,5 +279,5 @@ AmiBlitz3's.
   show how to declare a start routine, an end routine and the libraries
   a command needs in a library of your own.
 
-The warning about programs without `WBStartup` is from the Blitz Basic 2
-documentation by Acid Software.
+The warning about programs without `WBStartup` is quoted from the Blitz
+Basic 2 manual by Acid Software.
