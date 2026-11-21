@@ -774,6 +774,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     block programs take about 2.5 and 3 minutes of the emulator run);
   * `LIBS_CAP_DUMP` (the bytes of a case or block) has no option in
     `libs/tests/emulator.cmake`.
+- [ ] **libs_emulator misses the restore grace under load**: in both
+  `ctest --preset all` runs of 2026-11-21 the session of `libs_emulator`
+  did not start from its snapshot within the 15 s grace
+  (`snapshot.log`: "restore failed (no start): kept, boot cold") and
+  paid the wait plus a cold boot; alone it restores. Its `TEST:` holds
+  142 files (326 MB). A cold session also lacks the device `DH2` and the
+  volume `SNAP` of the snapshot mode (`tools/lib/amiga_emulation`,
+  "Snapshot mode"), which made `rwe_ridoslib` fail until it compared the
+  device list by known names. Cause not examined yet.
 - [ ] **rwe_residents_cd compares bytes**: since #970 Create Resident of
   blitz2-c writes 0 into the bytes the loaders do not read (pad bytes,
   a constant's data and procnum, pointer remains), so its residents are
