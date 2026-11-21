@@ -9,11 +9,8 @@
 ; the comparison operators "generate a boolean result"), the boolean is
 ; -1 or 0 in every destination and the order of the operands does not
 ; matter; a Long and a Quick are compared exactly (the whole part
-; decides, on equality the fraction).
-; The last line shows the decided limit: a compound left operand
-; (q*2>3) is still cut inside the expression until the expression tree
-; (#1180); its value 0 is not the mathematical one (-1) and is expected
-; here, so the line changes with #1180.
+; decides, on equality the fraction).  A compound left operand such as
+; q*2>3 is the open bug of compiler-compare-compound-left (#1183).
 ; @fixed #1177
 Function.q fq{a.q}
   Function Return a
@@ -91,5 +88,4 @@ a$="x" : b$="x"
 r=(a$=b$) : NPrint "65 r.l=(a$=b$) ",r
 r=(a$<>b$) : NPrint "66 r.l=(a$<>b$) ",r
 r=(a$="y") : NPrint "67 r.l=(a$=y) ",r
-r=(q*2>3) : NPrint "99 limit #1180 r.l=(q*2>3) ",r
 End

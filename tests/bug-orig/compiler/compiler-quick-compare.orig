@@ -71,7 +71,6 @@ ok
 65 r.l=(a$=b$) -1
 66 r.l=(a$<>b$) 0
 67 r.l=(a$=y) 0
-99 limit #1180 r.l=(q*2>3) 0
 rc=0
 [blitz2]
 rc=0
