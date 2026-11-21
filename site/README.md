@@ -215,3 +215,26 @@ podman run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_16_1 Doxy
 
   Types are `info`, `warning`, `error` and `important`.
 * Raw HTML in Markdown is switched off; use shortcodes.
+
+## Blitz Basic examples
+
+Every fenced ` ```blitzbasic ` block, in the pages (`content/`) and in the
+data of the library pages (`data/`), is compiled by the tests, and run
+where it can be. The manifest `tests/site-examples/examples.txt` lists
+each block once, by its file and its number in that file (counted from 1):
+`run` (compiled and run, the output compared with
+`tests/site-examples/expect/GROUP/NAME.out`) or `compile` (compiled only,
+with the reason why it is not run). A block without an entry, an entry
+without its block (the example went away or changed its number, as when
+a block is inserted before it) or a block listed twice fails the CMake
+build, so add, renumber or remove the entries together with the blocks.
+A code block in another language, or one without a language, is not
+checked. To check the manifest, from the repository root, with the host
+tool built by the CMake build:
+
+```
+siteexamples check site tests/site-examples/examples.txt
+```
+
+The format of the manifest and the expected output of a new `run`
+example: `tests/README.md`, "Site examples".
