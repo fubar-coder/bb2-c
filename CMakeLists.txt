@@ -162,6 +162,20 @@ endforeach()
 set_tests_properties(ccache_embed_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "stale[ \n]+cache[ \n]+hit:[ \n]+the[ \n]+object[ \n]+did[ \n]+not[ \n]+change")  # CMake wraps long messages
 
+# every test that runs Amiberry gets its snapshot owner (cmake/emulation-queue.cmake);
+# the broken project calls no function, which must fail
+foreach(t emulation_owner emulation_owner_broken)
+	set(broken)
+	if(t MATCHES "_broken$")
+		set(broken -DBROKEN=ON -DWANT_FAIL=ON)
+	endif()
+	add_test(NAME ${t} COMMAND ${CMAKE_COMMAND} -DQUEUE=${PROJECT_SOURCE_DIR}/cmake/emulation-queue.cmake
+		${broken} -DWORK=${CMAKE_BINARY_DIR}/${t}
+		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/emulation-owner-test.cmake -P ${WITH_WORKDIR})
+endforeach()
+set_tests_properties(emulation_owner_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "t_emulator[ \n]+has[ \n]+no[ \n]+AMIGA_EMULATION_OWNER")
+
 # the libraries' shadow headers of the NDK (cmake/ndk-calls.cmake): a
 # source with one varargs form gets only that wrapper, with the NDK's code
 # (cmake/ndk-test.cmake); without the shadow headers (the broken input)
