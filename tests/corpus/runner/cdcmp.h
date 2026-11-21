@@ -32,4 +32,23 @@ struct cdcmp_stats {
 int cdcmp_compare(const char *refname, const char *outname, const char *ref, const char *out,
                   char **report, struct cdcmp_stats *st);
 
+
+#include "previntended.h"
+
+/*
+ * The comparison of the table of the previous commit's compiler (prev) with
+ * that of this build's (cur) for the same sources (the CD, with the same
+ * libraries): every field of a row - result, line, message, size, the hash
+ * of the executable with the trap blocks zeroed - must be the same, and a
+ * row must be in both.  A row that differs is judged against the intended
+ * list (previntended.h, TEST = the ctest name testname, NAME = the path of
+ * the source): listed, it is reported "(intended)", not listed it is an
+ * error; a listed row that does not differ is stale (an error too).  The
+ * report (malloc'd) ends, if some row differed, with the line
+ * `prev differs in: PREV_INTENDED="..."`.  0 = no difference that is not
+ * intended and no stale entry, 1 = one, 2 = a table is malformed.
+ */
+int cdcmp_prev(const char *testname, const char *curname, const char *prevname, const char *cur,
+               const char *prev, struct prevint *intended, char **report, struct cdcmp_stats *st);
+
 #endif

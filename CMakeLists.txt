@@ -284,6 +284,12 @@ add_subdirectory(tests/ab3)
 add_subdirectory(tests/ted-ab)
 add_subdirectory(site/tests)
 
+# every PREV_INTENDED entry names a test that compares with the prev build
+if(PREV_REQUESTED)
+	get_property(prev_tests GLOBAL PROPERTY PREV_TESTS)
+	prev_check_entries("${PREV_INTENDED}" "${prev_tests}")
+endif()
+
 # the Blitz sources of the libraries, readable: build/<preset>/bblibsrc/
 include(programs/ted/tools/tedsrc/bblibsrc.cmake)
 # the source snapshots of archive/sources/ as text: build/<preset>/archive-text/

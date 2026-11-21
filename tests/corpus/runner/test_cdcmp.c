@@ -95,5 +95,69 @@ int main(void)
     CHECK(rc == 2 && strstr(rep, "out.tsv: line 2: not 8 tab separated fields"));
     free(rep);
 
+    /* the comparison with the previous commit (cdcmp_prev): every field,
+       the executable too, must be the same */
+    {
+        struct prevint pi = { 0 };
+        char msg[300];
+        const char *same = REF;
+        const char *exe = HEAD
+            "A/ONE.BB2\tok\t\t\t96\t" H2 "\town\t\n"
+            "A/TWO.BB2\terror\t7\tSyntax Error\t\t\town\t\n"
+            "A/THREE.BB2\tok\t\t\t300\t" H1 "\town\t#940: a note\n";
+
+        /* the same: no difference */
+        rc = cdcmp_prev("corpus_cd_prev", "cur.tsv", "prev.tsv", REF, same, &pi, &rep, &st);
+        CHECK(rc == 0 && st.sources == 3 && st.equal == 3 && !st.different);
+        CHECK(strstr(rep, "3 sources, 3 the same as prev, 0 different (0 intended), 0 not in both"));
+        CHECK(!strstr(rep, "prev differs in"));
+        free(rep);
+        /* another executable (size and hash): a difference, unlike in the
+           comparison with the original; unlisted it fails and names the entry */
+        rc = cdcmp_prev("corpus_cd_prev", "cur.tsv", "prev.tsv", REF, exe, &pi, &rep, &st);
+        CHECK(rc == 1 && st.different == 1
+              && strstr(rep, "A/ONE.BB2: DIFFERS (prev -> now): size 96 -> 100; sha256_masked "
+                          "2222222222222222222222222222222222222222 -> "
+                          "1111111111111111111111111111111111111111;"));
+        CHECK(!strstr(rep, "(intended)")
+              && strstr(rep, "prev differs in: PREV_INTENDED=\"corpus_cd_prev:A/ONE.BB2\""));
+        free(rep);
+        /* listed: intended, passes (the row is reported) */
+        CHECK(prevint_add(&pi, "corpus_cd_prev:A/ONE.BB2", msg, sizeof msg) == 0);
+        rc = cdcmp_prev("corpus_cd_prev", "cur.tsv", "prev.tsv", REF, exe, &pi, &rep, &st);
+        CHECK(rc == 0 && strstr(rep, "(intended)") && strstr(rep, "1 different (1 intended)"));
+        free(rep);
+        prevint_free(&pi);
+        CHECK(prevint_add(&pi, "corpus_cd_prev:A/ONE.BB2", msg, sizeof msg) == 0);
+        /* listed, but the same: stale */
+        rc = cdcmp_prev("corpus_cd_prev", "cur.tsv", "prev.tsv", REF, same, &pi, &rep, &st);
+        CHECK(rc == 1 && strstr(rep, "STALE corpus_cd_prev:A/ONE.BB2"));
+        free(rep);
+        /* the entry of another test does not count; a row that is in one table
+           only is a difference, a result that changed too */
+        rc = cdcmp_prev("corpus_cd_ab3_prev", "cur.tsv", "prev.tsv", REF, HEAD
+                        "A/ONE.BB2\terror\t3\tSyntax Error\t\t\town\t\n"
+                        "A/TWO.BB2\terror\t7\tSyntax Error\t\t\town\t\n"
+                        "A/FIVE.BB2\tok\t\t\t1\t" H1 "\town\t\n", &pi, &rep, &st);
+        CHECK(rc == 1 && st.missing == 2 && st.different == 3);
+        CHECK(strstr(rep, "A/ONE.BB2: DIFFERS (prev -> now): result error -> ok;")
+              && strstr(rep, "A/THREE.BB2: DIFFERS (prev -> now): not in the prev table")
+              && strstr(rep, "A/FIVE.BB2: DIFFERS (prev -> now): only in the prev table"));
+        free(rep);
+        prevint_free(&pi);
+        /* ON: every difference is intended */
+        CHECK(prevint_add(&pi, "ON", msg, sizeof msg) == 0);
+        rc = cdcmp_prev("corpus_cd_prev", "cur.tsv", "prev.tsv", REF, exe, &pi, &rep, &st);
+        CHECK(rc == 0 && st.different == 1);
+        free(rep);
+        prevint_free(&pi);
+        /* a malformed table */
+        rc = cdcmp_prev("corpus_cd_prev", "cur.tsv", "prev.tsv", REF, HEAD "A/ONE.BB2\tok\n", &pi, &rep,
+                        &st);
+        CHECK(rc == 2 && strstr(rep, "prev.tsv: line 2: not 8 tab separated fields"));
+        free(rep);
+        prevint_free(&pi);
+    }
+
     return failures ? 1 : 0;
 }

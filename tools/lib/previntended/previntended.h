@@ -12,6 +12,13 @@
  *   ted_ab:CASE        the test CASE of ted_ab: the pairs C5-P5 and Cc-Pc
  *                      may differ (at least one must)
  *   ted_ab:CASE:PAIR   only that pair (C5-P5 or Cc-Pc) may differ
+ *   TEST:NAME          also for the compile-only comparisons with the prev build:
+ *                      corpus_cd_prev / corpus_cd_ab3_prev (NAME = the path of the
+ *                      source on the CD), compiler_prev (the tests/blitz2 and
+ *                      compiler bug-orig sources without special needs),
+ *                      bug_orig_ID_prev, regression_ID_prev, blitz2_ID_prev,
+ *                      ab3_cli_prev (NAME = the case), and the site examples'
+ *                      passes site_examples_* (NAME = the example)
  *
  * (An entry without a colon is a library file path, prevcmp's.)  The rule
  * is that of the library files: a listed comparison must differ (a stale

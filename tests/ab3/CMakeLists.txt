@@ -635,7 +635,14 @@ endif()
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
-	cmake_parse_arguments(a "" "HUNKS" "SAME" ${ARGN})
+	cmake_parse_arguments(a "WANT_FAIL" "HUNKS" "SAME" ${ARGN})
+	# WANT_FAIL: the test is about a case that must fail (its output is matched): with-workdir.cmake
+	# removes the directory of that failure
+	if(a_WANT_FAIL)
+		set(a_WANT_FAIL -DWANT_FAIL=ON)
+	else()
+		set(a_WANT_FAIL "")
+	endif()
 	string(REGEX REPLACE "^\\|" "" hunks "${a_HUNKS}")
 	list(JOIN a_SAME "," same)
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
@@ -649,10 +656,29 @@ function(ab3_cli name config cases)
 		-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj
 		-DWORK=${work} -DTIMEOUT=${AB3_CLI_TIMEOUT}
 		-DSAME=${same} -DHUNKCHECK=${HUNKCHECK} "-DHUNKS=${hunks}"
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/cli.cmake)
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/cli.cmake ${a_WANT_FAIL} -P ${WITH_WORKDIR})
 	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
+	# with a prev build: the block's cases compiled by the previous commit's blitz2-ab3 as well,
+	# the executables and the compiler's output must be the same (cli-prev.cmake, ab3_cli_prev_N)
+	if(PREV_REQUESTED AND config STREQUAL "exe" AND name MATCHES "^ab3_cli_[0-9]+$")
+		string(REGEX REPLACE "^ab3_cli_" "ab3_cli_prev_" prev_name ${name})
+		set(prev_intended "${PREV_INTENDED}")
+		string(REPLACE ";" "$<SEMICOLON>" prev_intended "${prev_intended}")
+		prev_register(ab3_cli_prev)
+		add_test(NAME ${prev_name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+			-DRESULTS=${RESULTS} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
+			-DCASES=${work}.cases -DBLITZ2_DIR=${BLITZ2_DIR} -DPREV_BLITZ2_DIR=${PREV_BLITZ2_DIR}
+			-DAB3=${AB3_V314} -DSOURCES=${sources}
+			-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj
+			-DWORK=${work}-prev -DTIMEOUT=${AB3_CLI_TIMEOUT} "-DINTENDED=${prev_intended}"
+			-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/cli-prev.cmake -P ${WITH_WORKDIR})
+		# two sessions at the same time
+		math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+		set_tests_properties(${prev_name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+			TIMEOUT ${limit})
+	endif()
 endfunction()
 # ab3_cli_blocks(NAME CONFIG CASES OUT [SAME LIST] [HUNKS |NAME=LAYOUT...]): the
 # cases of CASES split into blocks of at most AB3_CLI_BLOCK cases, spread
@@ -751,12 +777,48 @@ function(ab3_cli_blocks name config cases out)
 	set(${out} ${tests} PARENT_SCOPE)
 endfunction()
 ab3_cli_blocks(ab3_cli exe "${cli_exe_cases}" cli_exe_tests SAME ${cli_exe_same} HUNKS "${cli_exe_hunks}")
-ab3_cli_blocks(ab3_cli_ref ref "${cli_ref_cases}" cli_ref_tests SAME ${cli_ref_same} HUNKS "${cli_ref_hunks}")
+# a PREV_INTENDED entry ab3_cli_prev:CASE names a case of ab3_cli (a block judges only its own
+# cases, so a typo would never be stale)
+include(${CMAKE_CURRENT_SOURCE_DIR}/check-prev-cases.cmake)
+if(PREV_REQUESTED)
+	ab3_check_prev_entries("${PREV_INTENDED}" "${cli_exe_cases}")
+endif()
+# the check with broken input: a name that is no case is refused and named
+foreach(t ok|ab3_cli_prev:atoi unknown|ab3_cli_prev:no_such_case)
+	string(REPLACE "|" ";" t "${t}")
+	list(GET t 0 kind)
+	list(GET t 1 entry)
+	add_test(NAME ab3_prev_entries_${kind} COMMAND ${CMAKE_COMMAND} "-DENTRIES=${entry}"
+		"-DCASES=atoi|Blitz3|atoi.ab3||x\ntrim|Blitz3|trim.ab3||y\n"
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/check-prev-cases.cmake)
+endforeach()
+set_tests_properties(ab3_prev_entries_ok PROPERTIES
+	PASS_REGULAR_EXPRESSION "all entries name a case")
+set_tests_properties(ab3_prev_entries_unknown PROPERTIES
+	PASS_REGULAR_EXPRESSION "entry \"ab3_cli_prev:no_such_case\": no_such_case is no case of[ \n]+ab3_cli"
+	FAIL_REGULAR_EXPRESSION "all entries name a case")
 # the check itself: a wrong expect file must fail, in both configurations
 # (broken.expect: atoi's output with one digit changed)
 set(broken "atoi|Blitz3|atoi.ab3||${cli_dir}/broken.expect\n")
-ab3_cli(ab3_cli_broken exe "${broken}")
-ab3_cli(ab3_cli_ref_broken ref "${broken}")
+ab3_cli(ab3_cli_broken exe "${broken}" WANT_FAIL)
+ab3_cli(ab3_cli_ref_broken ref "${broken}" WANT_FAIL)
+# cli-prev.cmake with broken input on one case (atoi; cli-prev-test.cmake): no prev build needed.
+# same: nothing differs; differs: prev's blitz2-ab3 is another program, the case fails and the
+# entry to quote is named; intended: the same difference listed; stale: nothing differs and the
+# case is listed
+foreach(mode same differs intended stale)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/ab3_cli_prev_${mode})
+	file(WRITE ${work}.cases "atoi|Blitz3|atoi.ab3||${cli_dir}/atoi.expect\n")
+	set(sources ${cli_sources} ${cli_made} ${ab3_dev_sources})
+	string(REPLACE ";" "$<SEMICOLON>" sources "${sources}")
+	add_test(NAME ab3_cli_prev_${mode} COMMAND ${CMAKE_COMMAND} -DMODE=${mode} -DAMIGA_RUN=${AMIGA_RUN}
+		-DRESULTS=${RESULTS} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
+		-DCASES=${work}.cases -DBLITZ2_DIR=${BLITZ2_DIR} -DAB3=${AB3_V314} -DSOURCES=${sources}
+		-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj -DWORK=${work}
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/cli-prev-test.cmake -P ${WITH_WORKDIR})
+	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+	set_tests_properties(ab3_cli_prev_${mode} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+endforeach()
 foreach(t ab3_cli_broken ab3_cli_ref_broken)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
 		"FAIL atoi: results match: [^\n]*expect line 14: \"12325\", output line [0-9]+: \"12324\"")
@@ -764,8 +826,8 @@ endforeach()
 # the same for DATESTAMP/RUN_DATESTAMP: date_stamp with the date of another day
 # in the expect file (date_stamp.broken.expect)
 set(broken_date "date_stamp|Blitz3|date_stamp.ab3||${cli_dir}/date_stamp.broken.expect|datestamp=2026-10-25|rundatestamp=2026-10-25\n")
-ab3_cli(ab3_cli_broken_date exe "${broken_date}")
-ab3_cli(ab3_cli_ref_broken_date ref "${broken_date}")
+ab3_cli(ab3_cli_broken_date exe "${broken_date}" WANT_FAIL)
+ab3_cli(ab3_cli_ref_broken_date ref "${broken_date}" WANT_FAIL)
 foreach(t ab3_cli_broken_date ab3_cli_ref_broken_date)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
 		"FAIL date_stamp: results match: [^\n]*expect line [0-9]+: \"date: 26/10/2026\", output line [0-9]+: \"date: 25/10/2026\"")

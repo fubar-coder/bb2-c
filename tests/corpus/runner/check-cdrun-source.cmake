@@ -3,6 +3,8 @@
 # tokenised source and dummy compiler files:
 #   a source= that is not on the CD   -> exit 2, named, OUT removed
 #   source= without OUT               -> exit 2 (pass file error)
+#   current=, test=, intended= (the comparison with the prev build) in a wrong combination
+#                                     -> exit 2
 #   cmake -DCORPUSRUN=... -DWORK=... -P check-cdrun-source.cmake
 file(REMOVE_RECURSE ${WORK})
 file(MAKE_DIRECTORY ${WORK}/cd/sub ${WORK}/out)
@@ -37,3 +39,26 @@ message("${out}")
 if(NOT rc EQUAL 2 OR NOT out MATCHES "source=REL\\|OUT")
 	message(FATAL_ERROR "source= without OUT: exit ${rc}, expected 2 and the message")
 endif()
+
+# the comparison with the previous commit (current=, test=, intended=) with broken pass
+# files: each is an error (exit 2) before any session
+function(expect_error name text regex)
+	pass(${name} "${text}")
+	execute_process(COMMAND ${CORPUSRUN} cd ${WORK}/${name}.pass RESULT_VARIABLE rc
+		OUTPUT_VARIABLE out ERROR_VARIABLE out)
+	message("${out}")
+	if(NOT rc EQUAL 2 OR NOT out MATCHES "${regex}")
+		message(FATAL_ERROR "${name}: exit ${rc}, expected 2 and \"${regex}\"")
+	endif()
+endfunction()
+expect_error(cur_notest "current=${WORK}/cur.tsv\nreport=${WORK}/r.txt\n"
+	"current= and test= belong together")
+expect_error(test_nocur "test=corpus_cd_prev\n" "current= and test= belong together")
+expect_error(intended_nocur "intended=corpus_cd_prev:A/B.BB\n" "intended= needs them")
+expect_error(cur_noreport "current=${WORK}/cur.tsv\ntest=corpus_cd_prev\n" "report with reference or current")
+expect_error(cur_and_ref "current=${WORK}/cur.tsv\ntest=corpus_cd_prev\nreport=${WORK}/r.txt\nreference=${WORK}/ref.tsv\n"
+	"reference= and current= exclude each other")
+expect_error(intended_unknown "current=${WORK}/cur.tsv\ntest=corpus_cd_prev\nreport=${WORK}/r.txt\nintended=nosuch:A\n"
+	"unknown test")
+expect_error(intended_library "current=${WORK}/cur.tsv\ntest=corpus_cd_prev\nreport=${WORK}/r.txt\nintended=libs/x.obj\n"
+	"is not for the CD")

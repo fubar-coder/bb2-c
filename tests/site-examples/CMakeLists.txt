@@ -125,8 +125,9 @@ set_tests_properties(site_examples_manifest PROPERTIES
 	PASS_REGULAR_EXPRESSION "siteexamples: [0-9]+ examples, [0-9]+ run, [0-9]+ compiled only")
 
 # site_examples_pass(KIND GROUP): the pass file and ctest of the run or
-# compile examples of a group (the prev build only for the default group:
-# the userlibs of the variants are not built there)
+# compile examples of a group (with a prev build also by the previous commit's compiler
+# and libraries: the variant's libraries and userlibs of the prev build are the same
+# paths below its build directory)
 function(site_examples_pass kind group)
 	if(group STREQUAL "default")
 		set(name site_examples_${kind})
@@ -147,20 +148,26 @@ function(site_examples_pass kind group)
 	endif()
 	string(APPEND text
 		"config=clib|ref|$<TARGET_FILE:blitz2>|${vout}/deflibs|${vout}/acidlibs\n")
-	if(PREV_REQUESTED AND group STREQUAL "default")
+	if(PREV_REQUESTED)
+		string(REPLACE "${CMAKE_BINARY_DIR}" "${PREV_DIR}" prev_vout "${vout}")
 		string(APPEND text
-			"config=prev|exe:clib|${PREV_BLITZ2_DIR}/blitz2|${PREV_BLITZ2_DIR}/deflibs|"
-			"${PREV_BLITZ2_DIR}/acidlibs\n${PREV_INTENDED_LINES}")
+			"config=prev|exe:clib|${PREV_BLITZ2_DIR}/blitz2|${prev_vout}/deflibs|"
+			"${prev_vout}/acidlibs\n${PREV_INTENDED_LINES}")
 		set(configs 2)
 	endif()
 	foreach(obj IN LISTS se_objs_${group})
 		get_filename_component(f ${obj} NAME)
 		string(APPEND text "file=blitz2/userlibs/rwe/${f}|${obj}|clib\n")
+		if(PREV_REQUESTED)
+			string(REPLACE "${CMAKE_BINARY_DIR}" "${PREV_DIR}" prev_obj "${obj}")
+			string(APPEND text "file=blitz2/userlibs/rwe/${f}|${prev_obj}|prev\n")
+		endif()
 	endforeach()
 	foreach(n IN LISTS se_${kind}_${group})
 		string(APPEND text "source=${SE_SRC}/${group}/${n}.bb2\n")
 	endforeach()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
+	prev_register(${name})
 	add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 	math(EXPR limit "${CORPUS_TIMEOUT} * ${configs} + 120 + ${configs} * ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})

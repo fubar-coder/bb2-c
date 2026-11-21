@@ -23,6 +23,7 @@ int main(int argc, char **argv)
     app.require_subcommand(1);
     cmd_match(app, status);
     cmd_prev(app, status);
+    cmd_exe_same(app, status);
     cmd_cd_update(app, status);
     cmd_cd_reference(app, status);
     cmd_ted_oracle(app, status);

@@ -446,6 +446,7 @@ function(cd_pass name blitz2 output)
 	if(ARGN)
 		string(APPEND text "reference=${ARGN}\nreport=${work}.txt\n")
 	endif()
+	string(APPEND text "${CD_PASS_EXTRA}")
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 endfunction()
 
@@ -505,6 +506,60 @@ set_tests_properties(corpus_cd PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TI
 cd_pass(corpus_cd_ab3 $<TARGET_FILE:blitz2-ab3> ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.tsv ${CD_TABLE})
 add_test(NAME corpus_cd_ab3 COMMAND ${CORPUSRUN} cd ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.pass)
 set_tests_properties(corpus_cd_ab3 PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+
+# With a prev build (BLITZ2_PREV, cmake/prev.cmake) the same sources are compiled by the
+# previous commit's compiler with the same (the CD's) libraries: corpus_cd_prev and
+# corpus_cd_ab3_prev (label emulator, tests/README.md "The prev build") compare their
+# table row by row, every field - the size and the hash of the executable too - with the
+# one corpus_cd / corpus_cd_ab3 wrote (pass key current=).  A difference fails unless
+# PREV_INTENDED names the source (corpus_cd_prev:PATH).  The table they compare with is
+# the result of the test they follow (fixtures corpus_cd_table, corpus_cd_ab3_table: a
+# run of corpus_cd_prev alone runs corpus_cd first); the two pairs run at the same time.
+if(PREV_REQUESTED)
+	foreach(v cd cd_ab3)
+		if(v STREQUAL "cd")
+			set(prev_blitz2 ${PREV_BLITZ2_DIR}/blitz2)
+		else()
+			set(prev_blitz2 ${PREV_BLITZ2_DIR}/blitz2-ab3)
+		endif()
+		set(name corpus_${v}_prev)
+		set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+		set(CD_PASS_EXTRA "test=${name}\ncurrent=${CMAKE_CURRENT_BINARY_DIR}/corpus_${v}.tsv\nreport=${work}.txt\n${PREV_INTENDED_LINES}")
+		cd_pass(${name} ${prev_blitz2} ${work}.tsv)
+		set(CD_PASS_EXTRA)
+		prev_register(${name})
+		add_test(NAME ${name} COMMAND ${CORPUSRUN} cd ${work}.pass)
+		set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
+			FIXTURES_REQUIRED corpus_${v}_table)
+		set_tests_properties(corpus_${v} PROPERTIES FIXTURES_SETUP corpus_${v}_table)
+	endforeach()
+endif()
+
+# corpus_cd_prev_check (label emulator, needs the CD; no prev build needed): the comparison
+# with the prev build on broken input - tables made from this build's own compile of one CD
+# source (cd-prev-check.cmake: the same table, a changed hash, a listed difference, a stale
+# entry, a row in one table only)
+set(cdprev_source BLITZ2_PDDISK_1/ZOMBIES/ZOMBIES.BB2)
+set(cdprev_work ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_prev_check)
+foreach(kind base ok bad intended stale missing)
+	set(CD_PASS_EXTRA "source=${cdprev_source}|${cdprev_work}/${kind}.exe\n")
+	if(NOT kind STREQUAL "base")
+		string(APPEND CD_PASS_EXTRA "test=corpus_cd_prev_check_prev\ncurrent=${cdprev_work}/cur-${kind}.tsv\n"
+			"report=${cdprev_work}/${kind}.txt\n")
+	endif()
+	if(kind STREQUAL "intended" OR kind STREQUAL "stale")
+		string(APPEND CD_PASS_EXTRA "intended=corpus_cd_prev_check_prev:${cdprev_source}\n")
+	endif()
+	cd_pass(cd-prevcheck-${kind} $<TARGET_FILE:blitz2> ${cdprev_work}/${kind}.tsv)
+endforeach()
+set(CD_PASS_EXTRA)
+add_test(NAME corpus_cd_prev_check COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
+	-DWORK=${cdprev_work} -DPASSES=${CMAKE_CURRENT_BINARY_DIR} -DSOURCE=${cdprev_source}
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/cd-prev-check.cmake
+	-P ${WITH_WORKDIR})
+math(EXPR limit "6 * 120 + 120 + 6 * ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(corpus_cd_prev_check PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "cd-prev-check: all runs as expected")
 
 # ---------------------------------- the expected data with broken input
 # Every check of the expected data (tools/lib/corpusexpect) needs a test on
@@ -700,3 +755,99 @@ add_test(NAME reqtrap_stray_broken COMMAND ${CMAKE_COMMAND}
 	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/reqtrap-test.cmake -P ${WITH_WORKDIR})
 set_tests_properties(reqtrap_stray reqclose_stray reqtrap_stray_broken PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+
+# ----------------------- the compile-only comparison with prev, with broken input
+# The passes compiler_prev, bug_orig_ID_prev, blitz2_ID_prev, site_examples_compile
+# (cmake/prev.cmake, tests/site-examples) are corpus passes with run=off, the
+# configurations clib and prev (exe:clib) and PREV_INTENDED.  These run the same kind of
+# pass in a build without a prev build, on the source literal-include of tests/blitz2: its
+# include file is the same for both configurations, or another file (the corpus program
+# t02_float) for prev, which gives another compile result.  The check must find the
+# difference where there is one and none where there is none:
+#   compiler_selftest_same_prev     the same include: passes, nothing differs
+#   compiler_selftest_differs_prev  another include: fails (exit 1) and names the
+#                                   source and the line to quote in the commit message
+#   compiler_selftest_intended_prev the difference is listed (PREV_INTENDED): passes,
+#                                   reported "(intended)"
+#   compiler_selftest_stale_prev    the same include and the source listed: fails, STALE
+#   compiler_selftest_unlisted_prev another source listed (a typo, never judged): fails,
+#                                   the difference unlisted and the entry STALE
+function(compiler_prev_selftest name want regex intended include)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	set(src ${CMAKE_BINARY_DIR}/tests/blitz2/src)
+	if(include STREQUAL "other")
+		set(prev_inc ${CORPUS_SRC}/tests/t02_float.bb2)
+	else()
+		set(prev_inc ${src}/literal-include.inc)
+	endif()
+	string(CONCAT text "# ${name}: generated by tests/corpus/CMakeLists.txt\ntest=${name}\nwork=${work}\n"
+		"report=${work}.txt\nruntime_errors=off\ntimeout=${CORPUS_TIMEOUT}\nparallel=${CORPUS_PARALLEL}\n"
+		"ted=$<TARGET_FILE:tedstub>\nrun=off\n"
+		"config=clib|ref|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
+		"config=prev|exe:clib|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
+		"file=src/literal-include.inc|${src}/literal-include.inc|clib\n"
+		"file=src/literal-include.inc|${prev_inc}|prev\n"
+		"source=${src}/literal-include.bb2\n")
+	if(intended)
+		string(APPEND text "intended=${intended}\n")
+	endif()
+	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN} -DPASS=${work}.pass
+		-DWANT=${want} "-DREGEX=${regex}" -P ${CMAKE_CURRENT_SOURCE_DIR}/want-report.cmake)
+	math(EXPR limit "${CORPUS_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+endfunction()
+compiler_prev_selftest(compiler_selftest_same_prev 0
+	"literal-include[^\n]*prev: result same, exe identical\n1 checks, 0 with differences" "" same)
+compiler_prev_selftest(compiler_selftest_differs_prev 1
+	"literal-include[^\n]*prev: [^\n]*DIFFERS[^\n]*\nprev differs in: PREV_INTENDED=\"compiler_selftest_differs_prev:literal-include\"\n1 checks, 1 with differences"
+	"" other)
+compiler_prev_selftest(compiler_selftest_intended_prev 0
+	"literal-include[^\n]*prev: [^\n]*DIFFERS[^\n]*\\(intended\\)\nprev differs in: PREV_INTENDED=\"compiler_selftest_intended_prev:literal-include\"\n1 checks, 0 with differences"
+	"compiler_selftest_intended_prev:literal-include" other)
+compiler_prev_selftest(compiler_selftest_stale_prev 1
+	"STALE compiler_selftest_stale_prev:literal-include: intended, but prev does not differ"
+	"compiler_selftest_stale_prev:literal-include" same)
+compiler_prev_selftest(compiler_selftest_unlisted_prev 1
+	"literal-include[^\n]*DIFFERS[^\n]*\nSTALE compiler_selftest_unlisted_prev:no-such-source: intended[^\n]*\nprev differs in: PREV_INTENDED=\"compiler_selftest_unlisted_prev:literal-include\""
+	"compiler_selftest_unlisted_prev:no-such-source" other)
+
+# the previous commit has no libraries for this pass (a commit that adds a variant or a userlib
+# the example needs): prev is not judged and the pass goes on with clib (the report says so)
+set(work ${CMAKE_CURRENT_BINARY_DIR}/compiler_selftest_noprevlibs_prev)
+string(CONCAT text "# compiler_selftest_noprevlibs_prev: generated by tests/corpus/CMakeLists.txt\n"
+	"test=compiler_selftest_noprevlibs_prev\nwork=${work}\nreport=${work}.txt\nruntime_errors=off\n"
+	"timeout=${CORPUS_TIMEOUT}\nparallel=${CORPUS_PARALLEL}\nted=$<TARGET_FILE:tedstub>\nrun=off\n"
+	"config=clib|ref|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
+	"config=prev|exe:clib|$<TARGET_FILE:blitz2>|${work}-none/deflibs|${work}-none/acidlibs\n"
+	"source=${CORPUS_SRC}/tests/t02_float.bb2\n")
+file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
+add_test(NAME compiler_selftest_noprevlibs_prev COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN}
+	-DPASS=${work}.pass -DWANT=0
+	"-DREGEX=corpus: prev: libraries or userlibs of the previous commit are missing - not judged\n"
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/want-report.cmake)
+set_tests_properties(compiler_selftest_noprevlibs_prev PROPERTIES LABELS emulator
+	SKIP_RETURN_CODE 77 TIMEOUT ${CORPUS_TIMEOUT})
+
+# prev_check_entries (cmake/prev-check-entries.cmake: the test part of a PREV_INTENDED entry must be
+# a corpus pass, ted_ab or a registered comparison) with broken input: a mistyped name and the name
+# of a test that is left out (bug_orig_compiler_maxs_libjsr_prev is not registered) are refused and
+# named; registered names and the old kinds pass
+set(prev_entries_registered "compiler_prev;bug_orig_compiler_x_prev;ab3_cli_prev")
+function(prev_entries_test kind entries regex)
+	add_test(NAME prev_entries_${kind} COMMAND ${CMAKE_COMMAND} "-DENTRIES=${entries}"
+		"-DREGISTERED=${prev_entries_registered}"
+		-P ${PROJECT_SOURCE_DIR}/cmake/prev-check-entries-test.cmake)
+	if(regex)
+		set_tests_properties(prev_entries_${kind} PROPERTIES PASS_REGULAR_EXPRESSION "${regex}"
+			FAIL_REGULAR_EXPRESSION "all entries name a registered test")
+	else()
+		set_tests_properties(prev_entries_${kind} PROPERTIES
+			PASS_REGULAR_EXPRESSION "all entries name a registered test")
+	endif()
+endfunction()
+prev_entries_test(ok "compiler_prev:a;bug_orig_compiler_x_prev:b;corpus:t01_int;ted_ab:open;libs/x.obj" "")
+prev_entries_test(typo "compiler_prevv:a" "entry \"compiler_prevv:a\": no test \"compiler_prevv\"")
+prev_entries_test(excluded "bug_orig_compiler_maxs_libjsr_prev:x"
+	"entry \"bug_orig_compiler_maxs_libjsr_prev:x\": no test")
+prev_entries_test(site "site_examples_rnu:x" "entry \"site_examples_rnu:x\": no test")

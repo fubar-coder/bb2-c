@@ -8,7 +8,8 @@
  * The body (corpusrun_cd, cd.h); the subcommand is declared in cmd_cd.cpp.
  *
  * The pass file, lines KEY=VALUE, '#' comments:
- *   work=DIR           work directory (emptied first)
+ *   work=DIR           work directory: every run works in DIR/run-XXXXXX (runwork.h); a run that
+ *                      passes leaves nothing, a failed one stays and is named
  *   output=PATH        the table to write
  *   reference=PATH     optional: compare with this table (report=PATH)
  *   report=PATH        the comparison (also to stdout)
@@ -78,7 +79,9 @@
 #include "corpus.h"
 #include "sha256.h"
 #include "cdcmp.h"
+#include "previntended.h"
 #include "statline_emulation.h"
+#include "runwork.h"
 #include "util.h"
 
 #define VOLUME "CORPUS"         /* the worker's directory */
@@ -88,7 +91,8 @@
 static const char *me;          /* "corpusrun cd", the prefix of the messages */
 
 struct pass {
-    char *work, *output, *reference, *report, *cd, *tokens;
+    char *work, *output, *reference, *current, *test, *report, *cd, *tokens;
+    struct prevint intended;
     char *blitz2, *deflibs, *acidlibs, *defaultdbug, *ted, *cache;
     char **assign_name, **assign_dir;
     size_t nassigns;
@@ -165,6 +169,8 @@ static int parse(const char *text, char *err, size_t errlen)
         if (!strcmp(key, "work")) dst = &P.work;
         else if (!strcmp(key, "output")) dst = &P.output;
         else if (!strcmp(key, "reference")) dst = &P.reference;
+        else if (!strcmp(key, "current")) dst = &P.current;
+        else if (!strcmp(key, "test")) dst = &P.test;
         else if (!strcmp(key, "report")) dst = &P.report;
         else if (!strcmp(key, "cd")) dst = &P.cd;
         else if (!strcmp(key, "tokens")) dst = &P.tokens;
@@ -192,6 +198,18 @@ static int parse(const char *text, char *err, size_t errlen)
             *(!strcmp(key, "timeout") ? &P.timeout : !strcmp(key, "parallel") ? &P.parallel
               : !strcmp(key, "stack") ? &P.stack : &P.limit) = (unsigned)u;
             free(val);
+            continue;
+        }
+        if (!strcmp(key, "intended")) {
+            char msg[200];
+            int r = prevint_add(&P.intended, val, msg, sizeof msg);
+
+            free(val);
+            if (r) {
+                snprintf(err, errlen, "line %u: intended=%s", no,
+                         r < 0 ? msg : "TEST:PATH or ON (a library path is not for the CD)");
+                return -1;
+            }
             continue;
         }
         if (!strcmp(key, "assign")) {
@@ -232,9 +250,17 @@ static int parse(const char *text, char *err, size_t errlen)
         return -1;
     }
     if (!P.work || !P.output || !P.cd || !P.tokens || !P.blitz2 || !P.deflibs || !P.acidlibs
-        || !P.defaultdbug || !P.ted || (P.reference && !P.report)) {
+        || !P.defaultdbug || !P.ted || ((P.reference || P.current) && !P.report)) {
         snprintf(err, errlen, "work, output, cd, tokens, blitz2, deflibs, acidlibs, "
-                              "defaultdbug, ted are needed (report with reference)");
+                              "defaultdbug, ted are needed (report with reference or current)");
+        return -1;
+    }
+    if (P.reference && P.current) {
+        snprintf(err, errlen, "reference= and current= exclude each other");
+        return -1;
+    }
+    if ((P.current != NULL) != (P.test != NULL) || ((P.intended.n || P.intended.all) && !P.current)) {
+        snprintf(err, errlen, "current= and test= belong together; intended= needs them");
         return -1;
     }
     return 0;
@@ -714,15 +740,17 @@ static char *table(void)
 static int compare(const char *mine, FILE *log)
 {
     size_t len;
-    char *ta = (char *)read_file(P.reference, &len), *report = NULL;
+    const char *refpath = P.current ? P.current : P.reference;
+    char *ta = (char *)read_file(refpath, &len), *report = NULL;
     struct cdcmp_stats st;
     int rc;
 
     if (!ta) {
-        fprintf(log, "%s: cannot read %s\n", me, P.reference);
+        fprintf(log, "%s: cannot read %s\n", me, refpath);
         return 2;
     }
-    rc = cdcmp_compare(P.reference, P.output, ta, mine, &report, &st);
+    rc = P.current ? cdcmp_prev(P.test, P.current, P.output, ta, mine, &P.intended, &report, &st)
+                   : cdcmp_compare(P.reference, P.output, ta, mine, &report, &st);
     free(ta);
     if (rc == 2) {
         fprintf(log, "%s: %s", me, report ? report : "malformed table\n");
@@ -947,7 +975,6 @@ static int run(FILE *log)
     unf = calloc(njobs + 1, sizeof *unf);
     if (!list || !unf)
         goto out;
-    rm_tree(P.work);
     for (w = 0; w < nworkers; w++)
         if (stage_worker(w, log))
             goto out;
@@ -1021,7 +1048,7 @@ static int run(FILE *log)
             fprintf(log, " %s %zu", kinds[i], counts[i]);
         fprintf(log, "\n");
     }
-    rc = P.reference ? compare(t, log) : 0;
+    rc = P.reference || P.current ? compare(t, log) : 0;
     free(t);
     if (P.nsources && rc != 2 && copy_sources(log))
         rc = 1;
@@ -1073,7 +1100,21 @@ int corpusrun_cd(const char *prog, const char *passfile)
         }
     }
     free(text);
-    rc = run(stdout);
+    /* a run directory of its own below work= (runwork.h): two runs of the pass at the same time
+       do not share their files, a run that passes leaves nothing, a failed one stays and is named */
+    {
+        struct runwork rw = { NULL, NULL, -1 };
+        char *base = P.work, rerr[300];
+
+        if (runwork_open(&rw, base, rerr, sizeof rerr)) {
+            fprintf(stderr, "%s: %s\n", me, rerr);
+            return 2;
+        }
+        P.work = rw.dir;
+        rc = run(stdout);
+        P.work = base;
+        rc = runwork_finish(&rw, rc != 77, rc, NULL, NULL, stdout, me);
+    }
     if (!rc && cached && cdcache_write(P.cache, digest, cache_outs, ncache_outs))
         printf("%s: cannot write %s (the next run will not be skipped)\n", me, P.cache);
     return rc;

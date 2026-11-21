@@ -14,6 +14,7 @@
 #include "bugorig.h"
 #include "bugorigcmp.h"
 #include "corpus.h"
+#include "prevcmp.h"
 #include "serial.h"
 #include "rundir.h"
 #include "runwork.h"
@@ -210,7 +211,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             continue;
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
-            || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "must_compile")
+            || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps")
             || !strcmp(key, "timeout") || !strcmp(key, "parallel")
             || !strcmp(key, "stack") || !strcmp(key, "fixed") || !strcmp(key, "hang_after")) {
             char *e;
@@ -218,7 +219,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
 
             if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")
                 || !strcmp(key, "regression") || !strcmp(key, "run") || !strcmp(key, "rtg")
-                || !strcmp(key, "must_compile")) {
+                || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
                     return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
@@ -227,7 +228,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                   : !strcmp(key, "serial") ? &p->serial
                   : !strcmp(key, "run") ? &p->run
                   : !strcmp(key, "rtg") ? &p->rtg
-                  : !strcmp(key, "must_compile") ? &p->must_compile : &p->regression)
+                  : !strcmp(key, "must_compile") ? &p->must_compile
+                  : !strcmp(key, "mask_traps") ? &p->mask_traps : &p->regression)
                     = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
                 free(val);
@@ -862,9 +864,31 @@ static void skip_missing_expect(struct corpus_pass *p, FILE *log)
     }
 }
 
+/* the configuration prev (exe:BASE) of a build whose compiler exists but whose libraries or
+   userlibs for this pass do not (a commit that adds a variant or a userlib: the previous commit
+   has no such file): 1 = its files are all there */
+static int prev_files_ok(const struct corpus_pass *p, size_t c)
+{
+    size_t i;
+
+    for (i = 0; i < p->nfiles; i++)
+        if (p->file_tag[i] && !strcmp(p->file_tag[i], p->configs[c].tag) && access(p->file_src[i], R_OK))
+            return 0;
+    return config_files(p, c);
+}
+
 void corpus_skip_missing(struct corpus_pass *p, FILE *log)
 {
     size_t c;
+
+    /* prev without its libraries: not judged (a missing compiler is a skipped run, as before) */
+    for (c = p->nconfigs; c-- > 1;)
+        if (p->configs[c].base && !strcmp(p->configs[c].tag, "prev") && p->nconfigs > 1
+            && !access(p->configs[c].blitz2, R_OK) && !prev_files_ok(p, c)) {
+            if (log)
+                fprintf(log, "corpus: prev: libraries or userlibs of the previous commit are missing - not judged\n");
+            drop_config(p, c);
+        }
 
     if (p->expect_dir && !p->orig && !p->expect && !p->update && !p->observe_to) {
         skip_missing_expect(p, log);
@@ -907,19 +931,7 @@ char *corpus_name(const char *source)
 
 void corpus_mask_traps(uint8_t *data, size_t len)
 {
-    size_t i = 0;
-    int pass;
-
-    /* first all trap #1, then all trap #4, each search going on behind the
-       zeroed block (as bb2's mask_trap1) */
-    for (pass = 0; pass < 2; pass++)
-        for (i = 0; i + 10 <= len; ) {
-            if (data[i] == 0x4E && data[i + 1] == (pass ? 0x44 : 0x41)) {
-                memset(data + i + 2, 0, 8);
-                i += 10;
-            } else
-                i++;
-        }
+    prevcmp_mask_traps(data, len);
 }
 
 /* ------------------------------------------------------------- files */
@@ -1330,7 +1342,7 @@ static void load_outcome(const struct corpus_pass *p, size_t c, size_t i, const 
         o->run = read_file(run, &o->runlen);
     if (serial && p->serial)
         o->serial = read_file(serial, &o->seriallen);
-    if (o->exe && p->runtime_errors)
+    if (o->exe && (p->runtime_errors || p->mask_traps))
         corpus_mask_traps(o->exe, o->exelen);
     o->result = result_of(log, i);
     free(n);

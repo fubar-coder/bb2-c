@@ -3,6 +3,7 @@
 Judges a result against its expectation or the previous result: the
 output of a test run against an expect file (`match`), the library files
 of the build against those of the build of the previous commit (`prev`),
+two executables of the same source with their trap blocks masked (`exe-same`),
 the CD result table `tests/data/blitz2-cd.tsv` written from a fresh
 run of the CD (`cd-update`, `cd-reference`), and the oracle data of the
 TED tests `tests/data/ted-oracle.sha256` written from a fresh run of the
@@ -40,6 +41,8 @@ SUBCOMMANDS:
   match                       the text OUTPUT against the expect file EXPECT, line by line
   prev                        the library files of a build directory against those of the prev
                               build
+  exe-same                    two executables of the same source, the parameter blocks of their
+                              traps masked
   cd-update                   the CD result table from the port's fresh run
   cd-reference                the CD result table from the original's fresh run
   ted-oracle                  the oracle data of the TED tests from the original TED's fresh
@@ -127,6 +130,31 @@ colon (`corpus:NAME`, `ted_ab:CASE` ..., `PREV_INTENDED` of
 its syntax and otherwise ignored. Prints a `DIFFERS PATH`, `MISSING PATH`
 or `STALE PATH` line per finding and the summary line of the library
 (`prevcmp: N library files, ...`).
+
+### exe-same
+
+```
+Usage: results exe-same [OPTIONS] A B
+
+two executables of the same source, the parameter blocks of their traps masked
+
+POSITIONALS:
+  A TEXT REQUIRED             the first executable
+  B TEXT REQUIRED             the second executable
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+The 8 bytes behind each trap #1 (4E41) and trap #4 (4E44) of a program with
+runtime error checking or debugging hold addresses of the compiler's memory and
+are zeroed in both before the comparison. Exit status 0 the same, 1 they differ
+(the offset of the first difference on stderr), 2 a file cannot be read.
+```
+
+Compares two executables of the same source (the compile of this build and of the prev build:
+`tests/ab3/cli-prev.cmake`) byte by byte after the parameter blocks of their traps are zeroed
+(`prevcmp_mask_traps`, the same masking as the corpus and the CD table). Another length or another
+byte elsewhere is a difference; the offset of the first one goes to stderr.
 
 ### cd-update, cd-reference
 

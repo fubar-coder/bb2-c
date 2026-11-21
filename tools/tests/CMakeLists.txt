@@ -271,6 +271,26 @@ add_test(NAME prevcmp_malformed_entry_names COMMAND results prev --intended corp
 set_tests_properties(prevcmp_malformed_entry_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "PREV_INTENDED entry \"corpuss:t01\": unknown test")
 
+# results exe-same: "NA" is the trap #1 word (4E41), so a text file stands for an executable.
+# The same code with other trap blocks is the same; other code, another length or a file
+# that is not there is not
+set(exesame ${CMAKE_CURRENT_BINARY_DIR}/exesame)
+file(WRITE ${exesame}/a.exe "xxNA12345678yy")
+file(WRITE ${exesame}/b.exe "xxNA87654321yy")
+file(WRITE ${exesame}/code.exe "xxNA12345678yz")
+file(WRITE ${exesame}/short.exe "xxNA12345678y")
+add_test(NAME exesame_trap_block COMMAND results exe-same ${exesame}/a.exe ${exesame}/b.exe)
+add_test(NAME exesame_code COMMAND results exe-same ${exesame}/a.exe ${exesame}/code.exe)
+set_tests_properties(exesame_code PROPERTIES WILL_FAIL ON)
+add_test(NAME exesame_code_offset COMMAND results exe-same ${exesame}/a.exe ${exesame}/code.exe)
+set_tests_properties(exesame_code_offset PROPERTIES
+	PASS_REGULAR_EXPRESSION "\\(14 and 14 bytes\\), first at offset 13")
+add_test(NAME exesame_length COMMAND results exe-same ${exesame}/a.exe ${exesame}/short.exe)
+set_tests_properties(exesame_length PROPERTIES WILL_FAIL ON)
+add_test(NAME exesame_missing COMMAND results exe-same ${exesame}/a.exe ${exesame}/none.exe)
+set_tests_properties(exesame_missing PROPERTIES
+	PASS_REGULAR_EXPRESSION "cannot read [^\n]*none.exe")
+
 # results libs-compare (the judge of the library tests, lib/libscmp) on
 # fake runs and expected data made here: the right run passes, each broken
 # run or expected file fails with its message (the logic in detail:

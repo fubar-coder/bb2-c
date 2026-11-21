@@ -156,6 +156,15 @@ file(CONFIGURE OUTPUT ${tokens} CONTENT "${t1}${t2}" @ONLY)
 include(${CMAKE_CURRENT_SOURCE_DIR}/check-fixed-orig.cmake)
 bug_orig_fixed_orig_check(${CMAKE_CURRENT_SOURCE_DIR})
 
+# not compared with the prev build (cmake/prev.cmake): the executable depends on the memory
+# layout of the compiler (the same list as the ab3 equivalence, tests/ab3/CMakeLists.txt):
+#   compiler-maxs-libjsr  the unresolved JSRs inside linked library code (#335) put addresses
+#                         of the compiler's memory into the executable
+#   compiler-optreqprep-allocmem, compiler-wb-info-progfile, compiler-wbexit-returncode
+#                         the compiler gives up before the job, there is no result (no RESULT
+#                         line) to compare
+set(prev_not_compared compiler-maxs-libjsr compiler-optreqprep-allocmem
+	compiler-wb-info-progfile compiler-wbexit-returncode)
 # bug_orig_test(BAS NAME [WANT RC]): tokenise, pass file, ctest NAME.
 # WANT: the test passes if corpusrun returns RC (the self test).
 set(bug_orig_sources)
@@ -428,6 +437,16 @@ function(bug_orig_passes name wid machine_line record)
 	endif()
 	string(REPLACE "@WORK@" "${work}" ptext "${text}")
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${ptext}")
+	# with a prev build: a test whose subject is the compiler (the area compiler/ and the
+	# compiler's port regression tests) also has its source compiled by the previous
+	# commit's compiler, the executable must be the same (cmake/prev.cmake; the first
+	# machine only; not RWE sources, whose variant libraries differ, and not a self test)
+	get_filename_component(prev_area ${dir} NAME)
+	if(record AND NOT rwe AND NOT DEFINED arg_WANT AND NOT id IN_LIST prev_not_compared
+		AND (prev_area STREQUAL "compiler" OR (arg_REGRESSION AND id MATCHES "^compiler-")))
+		set(prev_extra "${extra}${tagged_clib}${mount_part}")
+		prev_compile_test(${name} ${src} EXTRA_VAR prev_extra)
+	endif()
 	# the recording runs of the target bug-orig-record (record=write, the
 	# observation into the build directory; the second with another memory
 	# layout, a larger Stack), for every test of the original's bugs, open or

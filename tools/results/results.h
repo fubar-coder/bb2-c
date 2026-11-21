@@ -19,6 +19,7 @@ int prefixed(const std::string &name, const std::function<int(FILE *)> &fn);
 
 void cmd_match(CLI::App &app, int &status);
 void cmd_prev(CLI::App &app, int &status);
+void cmd_exe_same(CLI::App &app, int &status);
 void cmd_cd_update(CLI::App &app, int &status);
 void cmd_cd_reference(CLI::App &app, int &status);
 void cmd_ted_oracle(CLI::App &app, int &status);

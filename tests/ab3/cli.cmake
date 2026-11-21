@@ -2,7 +2,7 @@
 #   cmake -DAMIGA_RUN=... -DRESULTS=... -DREQTRAP=... -DCONFIG=exe|ref
 #         -DCASES=FILE -DBLITZ2_DIR=DIR -DAB3=DIR -DSOURCES=FILE;...
 #         -DUSERLIB=OBJ -DINJECT=TOOL -DWORK=DIR [-DTIMEOUT=SEC] [-DSAME=A=B,...]
-#         [-DHUNKCHECK=TOOL -DHUNKS=NAME=LAYOUT|...] -P cli.cmake
+#         [-DHUNKCHECK=TOOL -DHUNKS=NAME=LAYOUT|...] [-DCOMPILE_ONLY=ON] -P cli.cmake
 # One emulator session compiles every case of CASES and runs the program
 # through reqtrap (tests/corpus/amiga: a requester is printed and answered
 # at once, nothing waits for a click):
@@ -41,6 +41,9 @@
 # layout of the executable of a case (hunkcheck layout LAYOUT).
 # Configuration ref runs Amiberry without the JIT (see below).  If the session
 # does not end, the message names amiga_run's status and the running case.
+# COMPILE_ONLY=ON (cli-prev.cmake, the comparison with the prev build): no case is run and
+# none is checked, the session only compiles; exit status 0 if it ended.  The files are
+# TEST:out/NAME.txt ([compile] section) and NAME.exe below WORK/test.
 # Exit status 0 if every case matches; 77 (skipped) without the emulator
 # or the fetched AmiBlitz3 files.
 cmake_minimum_required(VERSION 4.3)
@@ -158,6 +161,9 @@ foreach(c IN LISTS cases)
 			set(run "  Echo \"not run\" >>${out}\n")
 		endif()
 	endif()
+	if(COMPILE_ONLY)
+		set(run "  Echo \"not run\" >>${out}\n")
+	endif()
 	if(CONFIG STREQUAL "ref")
 		set(cmd "Blitz3:Amiblitz3 >>${out} -s ${source} -e RAM:${name}")
 	else()
@@ -183,9 +189,13 @@ set(run_options)
 if(CONFIG STREQUAL "ref")
 	set(run_options --set cachesize=0)
 endif()
+set(quiet)
+if(COMPILE_ONLY)
+	set(quiet OUTPUT_QUIET)
+endif()
 execute_process(COMMAND ${AMIGA_RUN} --timeout ${TIMEOUT} ${run_options} --dir ${WORK}
 		${WORK}/run.script
-	RESULT_VARIABLE rc ERROR_VARIABLE run_msg)
+	RESULT_VARIABLE rc ERROR_VARIABLE run_msg ${quiet})
 if(rc EQUAL 77)
 	cmake_language(EXIT 77)
 endif()
@@ -216,6 +226,13 @@ if(rc)
 	endforeach()
 	message(STATUS "cli.cmake: the emulator session did not end (${WORK}): "
 		"amiga_run exit ${rc}: ${run_msg}; running case: ${running}")
+endif()
+
+if(COMPILE_ONLY)
+	if(rc)
+		message(FATAL_ERROR "cli.cmake: the compile session did not end (${WORK}): amiga_run exit ${rc}")
+	endif()
+	cmake_language(EXIT 0)
 endif()
 
 # the comparison
