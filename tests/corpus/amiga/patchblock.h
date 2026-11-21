@@ -190,7 +190,10 @@ PB_DECLARE(easy);
    called function (all of inject's do: they end in the old function or
    an rts).  Once `active` is clear it jumps to the old function without
    touching the program.  All registers are kept (a0 is saved on the
-   stack around the count); only the condition codes change. */
+   stack around the count), and so are the condition codes the old
+   function or the stub returned with: a caller may branch on them
+   without a test (ciatrklib does after Examine).  Without the patch
+   (`active` clear) the old function returns to the caller itself. */
 __asm__(
 PB_ASM_HEAD(thru, "")
 "   move.l  a0,-(sp)\n"
@@ -202,10 +205,15 @@ PB_ASM_HEAD(thru, "")
 "   pea     2f(pc)\n"
 "   move.l  _pb_thru_tmpl+12(pc),-(sp)\n"
 "   rts\n"
-"2: move.l  a0,-(sp)\n"
-"   lea     _pb_thru_tmpl(pc),a0\n"
-"   subq.l  #1,(a0)\n"
-"   move.l  (sp)+,a0\n"
+"2: pea     (a6)\n"                /* the flags of the function are kept: */
+"   movem.l d0,-(sp)\n"            /* nothing up to GetCC changes them */
+"   movea.l 4.w,a6\n"
+"   jsr     -528(a6)\n"            /* exec GetCC() */
+"   lea     _pb_thru_tmpl(pc),a6\n"
+"   subq.l  #1,(a6)\n"
+"   move.w  d0,ccr\n"              /* the flags the function returned */
+"   movem.l (sp)+,d0\n"
+"   movea.l (sp)+,a6\n"
 "   rts\n"
 "1: subq.l  #1,(a0)\n"
 "   move.l  (sp)+,a0\n"

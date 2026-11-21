@@ -645,6 +645,30 @@ add_test(NAME patchblock_broken COMMAND ${CMAKE_COMMAND}
 set_tests_properties(patchblock patchblock_broken PROPERTIES LABELS emulator
 	SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 
+# patchflagstest (tests/corpus/amiga/patchflagstest.c): a PB_THRU patch hands
+# back the condition codes of its stub (a caller branches on them without a
+# test, as ciatrklib does after Examine), on the 68020 (a1200) and the 68000
+# (a500: Kickstart 1.3, a500-204: Kickstart 2.04).  patchflagstest_*_broken:
+# the same with the old return path of the trampoline (argument old), which
+# ends in the flags of its count: the flags lines with Z clear must fail
+set(patchflags_ok "flags 00: expected\n[^\n]*flags 01: expected\n[^\n]*flags 02: expected\n[^\n]*flags 04: expected\n[^\n]*flags 08: expected\n[^\n]*flags 0F: expected\n[^\n]*regs: expected\n[^\n]*removed: expected\n[^\n]*patchflagstest: OK")
+set(patchflags_bad "flags 00: MISMATCH\n[^\n]*flags 01: MISMATCH\n[^\n]*flags 02: MISMATCH\n[^\n]*flags 04: expected\n[^\n]*flags 08: MISMATCH\n[^\n]*flags 0F: MISMATCH\n[^\n]*regs: expected\n[^\n]*removed: expected\n[^\n]*patchflagstest: FAIL")
+foreach(m a1200 a500 a500-204)
+	string(REPLACE "-" "_" mn ${m})
+	add_test(NAME patchflags_${mn} COMMAND ${CMAKE_COMMAND}
+		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:patchflagstest> -DRCPUT=$<TARGET_FILE:rcput> -DMACHINE=${m} -DWANT_RC=0
+		"-DREGEX=${patchflags_ok}"
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/patchflags_${mn}
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/patchblock-test.cmake -P ${WITH_WORKDIR})
+	add_test(NAME patchflags_${mn}_broken COMMAND ${CMAKE_COMMAND}
+		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:patchflagstest> -DARGS=old -DRCPUT=$<TARGET_FILE:rcput> -DMACHINE=${m} -DWANT_RC=5
+		"-DREGEX=${patchflags_bad}"
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/patchflags_${mn}_broken
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/patchblock-test.cmake -P ${WITH_WORKDIR})
+	set_tests_properties(patchflags_${mn} patchflags_${mn}_broken PROPERTIES LABELS emulator
+		SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+endforeach()
+
 # reqtraptest (tests/corpus/amiga/reqtraptest.c): a task raises the DOS
 # requester "Software Failure" (a message nobody took in its process port)
 # inside reqtrap's patch; the handler must make no DOS call there (reqtrap
