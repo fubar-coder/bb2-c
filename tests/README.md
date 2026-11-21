@@ -1821,7 +1821,11 @@ one source for both). Both patch system functions for the time of a run
 that is inside a patch when it is removed must not run into the freed
 memory of the tool. The stub of every patch and the data it uses (the
 ring of closed windows teddrive reads) are therefore copied into an
-`AllocMem` block that is never freed (about 100 bytes per run); every call
+`AllocMem` block that is never freed (about 100 bytes per run) in chip
+memory: the programs under the tool take public (fast or slow) memory, and
+a block there would shift every address of the program, with the cycle
+counts of the perf tests (cycle-exact) and the garbage and the allocation
+order that recorded original bugs depend on; every call
 counts itself in before it looks at the stub's `active` flag, and the
 removal clears `active`, restores the vector and waits (up to 10 s) for the
 calls still inside; later calls jump to the original function. Tests:

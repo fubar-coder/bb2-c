@@ -10,7 +10,13 @@
  * ends, so such a task would run into freed code.  Here the stub and the
  * data it uses live in an AllocMem block that is never freed (about
  * 100 bytes per run; the stub is position independent and the template in
- * the program's text is copied there):
+ * the program's text is copied there).  The block is chip memory, not
+ * the public memory (fast or slow) that the programs under the tool use:
+ * a block there shifts every address of the program, and with them the
+ * cycle counts of the perf tests (cycle-exact; code and data in memory
+ * that shares the DMA slots run up to 20 % slower) and what the recorded
+ * original bugs depend on (the order of the allocations, garbage read
+ * from memory):
  *
  *   +0  count    calls inside the stub (a task that entered it)
  *   +4  active   1 while the handler is to be called
@@ -222,7 +228,7 @@ static struct pbhead *pb_install(struct Library *lib, WORD lvo, const UBYTE *tmp
     struct pbhead *b;
 
     if ((ULONG)(entry - tmpl) != datasz) return NULL;
-    b = AllocMem(end - tmpl, MEMF_PUBLIC | MEMF_CLEAR);     /* never freed */
+    b = AllocMem(end - tmpl, MEMF_CHIP | MEMF_PUBLIC | MEMF_CLEAR);   /* never freed */
     if (!b) return NULL;
     CopyMem((APTR)tmpl, b, end - tmpl);
     b->active = 1;
