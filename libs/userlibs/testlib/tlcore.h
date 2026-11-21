@@ -29,8 +29,9 @@
  *                     case is broken and does not run); for the batch
  *                     end after such an init nothing (it does not run)
  *   tl_blockend       blockend
- *   tl_check(str)     check / checkstr K ok|fail EXP ACT (checkstr: and
- *                     - or cut)
+ *   tl_check(str)     check / checkstr K ok|fail EXP ACT (checkstr: each
+ *                     value with the length and the CRC32 of the whole
+ *                     string, and - or cut)
  *   tl_checkq         checkq K ok|fail EXP ACT (the quicks' bits)
  *   tl_checkflt       checkflt K ok|fail EXP ACT DELTA (FFP bits); if the
  *                     floats cannot be compared: `broken float compare
@@ -50,8 +51,8 @@
  * be, or by tl_finit, which always writes.  Entries that do not fit are
  * lost; `broken entries lost while kept` follows the kept ones then.  A
  * string check whose line does not fit into TL_LINE bytes has its two
- * values cut until it fits and its last field `cut` (the verdict is that
- * of the whole strings).
+ * values cut until it fits and its last field `cut` (the verdict, the
+ * lengths and the CRC32s are those of the whole strings).
  */
 #ifndef TLCORE_H
 #define TLCORE_H

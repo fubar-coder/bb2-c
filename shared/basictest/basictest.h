@@ -14,9 +14,12 @@
  *   checkq       K ok|fail EXP ACT        a check of two quicks (their bits)
  *   checkflt     K ok|fail EXP ACT DELTA  a check of two floats within a
  *                                         delta (their FFP bits)
- *   checkstr     K ok|fail EXP$ ACT$ CUT  a check of two strings; CUT `-`
- *                                         (complete) or `cut` (the values
- *                                         shortened to fit the line)
+ *   checkstr     K ok|fail EXP$ ELEN ECRC ACT$ ALEN ACRC CUT
+ *                                         a check of two strings, each
+ *                                         followed by the length and the
+ *                                         CRC32 of the whole string; CUT
+ *                                         `-` (both complete) or `cut` (a
+ *                                         value shortened to fit the line)
  *   require      K broken                 a failed precondition
  *   expect-error K                        an announced runtime error
  *   blockend                              the end of the block
@@ -24,22 +27,26 @@
  *   incomplete                            the finit found a block open
  *   end                                   the finit
  *
- * K is decimal (0 to 4294967295, no sign, no leading zero), a long value
- * (also the 32 bits of a quick or an FFP float)
+ * K and a length are decimal (0 to 4294967295, no sign, no leading zero),
+ * a long value (also the 32 bits of a quick or an FFP float) and a CRC32
  * `$` and 8 upper-case hex digits, a string value the bytes $20 to $7E
  * other than `\` as they are and every other byte as `\xHH` (upper-case
- * hex digits).
+ * hex digits).  A string value is cut if it is shorter than its length
+ * (it is the start of the string then); the reader refuses a value longer
+ * than its length, a complete value whose CRC32 is not that of its bytes,
+ * CUT `-` with a cut value and CUT `cut` without one.  The CRC32 is the
+ * standard CRC-32 of IEEE 802.3 (basictest_crc32).
  *
  * Shared code like shared/tokenizer: every user compiles the files itself
- * with its own options - the host tools both (tools/lib/basictest), the
- * build the writer (basictest_write.c) with the Blitz library conventions
- * (cmake/BlitzLibrary.cmake), the form the test library of the change
- * basic-testlib is to link.  C99 on the freestanding headers: no
- * libc, no libgcc (no 32-bit multiply, divide or modulo on the 68000), no
- * writable static data, no allocation - the caller gives the memory.  The
- * build compiles the writer in the library environment and refuses it if
- * it refers to any symbol it does not define (shared/basictest/
- * CMakeLists.txt).
+ * with its own options - the host tools all (tools/lib/basictest), the
+ * build the writer and the CRC32 (basictest_write.c, basictest_crc.c) with
+ * the Blitz library conventions (cmake/BlitzLibrary.cmake), the form the
+ * test library (libs/userlibs/testlib) links.  C99 on the freestanding
+ * headers: no libc, no libgcc (no 32-bit multiply, divide or modulo on
+ * the 68000), no writable static data, no allocation - the caller gives
+ * the memory.  The build compiles writer and CRC32 in the library
+ * environment and refuses them if they refer to any symbol they do not
+ * define (shared/basictest/CMakeLists.txt).
  */
 #ifndef BASICTEST_H
 #define BASICTEST_H
@@ -90,7 +97,8 @@ struct basictest_str {
  *   check         k, ok, expected, actual
  *   checkq        k, ok, expected, actual (the quicks' bits)
  *   checkflt      k, ok, expected, actual, delta (the floats' FFP bits)
- *   checkstr      k, ok, expected_str, actual_str, cut
+ *   checkstr      k, ok, expected_str, expected_length, expected_crc,
+ *                 actual_str, actual_length, actual_crc, cut
  *   require       k (always broken)
  *   expect-error  k
  *   broken        reason
@@ -105,7 +113,9 @@ struct basictest_entry {
     uint32_t expected, actual;  /* the bits of the longs */
     uint32_t delta;             /* checkflt: the FFP bits of the delta */
     struct basictest_str expected_str, actual_str;
-    int cut;                    /* checkstr: 1 the values were shortened */
+    uint32_t expected_length, expected_crc;   /* checkstr: of the whole */
+    uint32_t actual_length, actual_crc;       /*  strings, cut or not */
+    int cut;                    /* checkstr: 1 a value was shortened */
     struct basictest_str reason;
 };
 
@@ -123,6 +133,13 @@ size_t basictest_write(const struct basictest_entry *e, uint8_t *buf, size_t siz
  * @return the number of digits.
  */
 size_t basictest_decimal(uint32_t v, uint8_t *buf);
+
+/**
+ * @brief The CRC32 of a string value: the standard CRC-32 of IEEE 802.3
+ *   (zlib, PNG; the polynomial $EDB88320 reflected, $FFFFFFFF at the
+ *   start and XORed at the end); $CBF43926 for "123456789", 0 for none.
+ */
+uint32_t basictest_crc32(const uint8_t *data, size_t length);
 
 /** @brief Why the reader refused a line (BASICTEST_OK = 0). */
 enum basictest_err {

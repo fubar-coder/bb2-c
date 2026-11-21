@@ -1,8 +1,9 @@
 # cmake -DNM=NM -DLIB=ARCHIVE -P check-writer.cmake - does the writer of
-# the result file (basictest_write.c), compiled with the Blitz library
-# conventions, stand on its own?  A Blitz library has no libc and no
-# libgcc: a symbol the archive refers to but does not define (a division
-# helper such as __udivsi3, memcpy, ...) fails the check, naming it.
+# the result file (basictest_write.c, with the CRC32 of basictest_crc.c),
+# compiled with the Blitz library conventions, stand on its own?  A Blitz
+# library has no libc and no libgcc: a symbol the archive refers to but
+# does not define (a division helper such as __udivsi3, memcpy, ...) fails
+# the check, naming it.
 # Runs after the archive is built (POST_BUILD, CMakeLists.txt); the ctest
 # basictest_writer_check_broken gives it a writer that divides.
 cmake_minimum_required(VERSION 4.3)

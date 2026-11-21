@@ -1,20 +1,22 @@
 # basictest - the codec of the Blitz test library's result file
 # (basictest.h, spec testing/basic-test-interface), shared like
 # shared/tokenizer: every user compiles the files itself with its own
-# options - the host tools writer and reader (tools/lib/basictest), this
-# directory the writer as a library compiles it.  macros.bas is the macro
+# options - the host tools writer, reader and CRC32 (tools/lib/basictest),
+# this directory the writer and the CRC32 as a library compiles them.  macros.bas is the macro
 # text of the test drivers; libs/userlibs/testlib copies it next to the
 # test library in the step that checks its macro names against the tokens
 # (check-macros.cmake).  The test library and the runner that use them
 # are the changes basic-testlib and basic-test-runner.
 #
-# basictest_writer_blitzlib is the writer compiled in the environment of a
+# basictest_writer_blitzlib is the writer with the CRC32 of the string
+# values (basictest_crc.c) compiled in the environment of a
 # Blitz library (cmake/BlitzLibrary.cmake: the variant's and the shadow
 # headers, BLITZLIB_OPTIONS_BEFORE, the size profile, BLITZLIB_OPTIONS_AFTER),
 # the form the test library is to link.  In its build step (POST_BUILD) the
 # archive must not refer to a symbol it does not define (check-writer.cmake):
 # a library has no libc and no libgcc, so a division, a 32-bit multiply or
-# a memcpy the compiler emits in the writer fails the build.  ctest basictest_writer_check_broken: a writer that divides;
+# a memcpy the compiler emits in the writer or the CRC32 fails the build.
+# ctest basictest_writer_check_broken: a writer that divides;
 # basictest_writer_check_good: the check on the archive itself.
 set(BASICTEST_CHECK ${CMAKE_CURRENT_SOURCE_DIR}/check-writer.cmake)
 
@@ -28,7 +30,7 @@ function(basictest_blitzlib_object name)
 	set_target_properties(${name} PROPERTIES C_STANDARD 99 C_EXTENSIONS OFF)
 endfunction()
 
-basictest_blitzlib_object(basictest_writer_blitzlib basictest_write.c)
+basictest_blitzlib_object(basictest_writer_blitzlib basictest_write.c basictest_crc.c)
 add_custom_command(TARGET basictest_writer_blitzlib POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DLIB=$<TARGET_FILE:basictest_writer_blitzlib>
 		-P ${BASICTEST_CHECK}

@@ -11,6 +11,7 @@ set(TESTLIB_OBJ ${BLITZ_VARIANTS_DIR}/${BLITZ_DEFAULT_VARIANT}/userlibs/testlib/
 blitz_library(userlib-testlib VARIANT ${BLITZ_DEFAULT_VARIANT_DIR} OBJ ${TESTLIB_OBJ}
 	${CMAKE_CURRENT_SOURCE_DIR}/testlib.c ${CMAKE_CURRENT_SOURCE_DIR}/tlcore.c
 	${PROJECT_SOURCE_DIR}/shared/basictest/basictest_write.c
+	${PROJECT_SOURCE_DIR}/shared/basictest/basictest_crc.c
 	CHECK ${BLITZ2_DIR}/deflibs ${BLITZ2_DIR}/acidlibs)
 target_include_directories(userlib-testlib PRIVATE ${PROJECT_SOURCE_DIR}/shared/basictest
 	${CMAKE_CURRENT_SOURCE_DIR})

@@ -216,8 +216,8 @@ routines name:
   entries that do not fit are lost and followed by `broken entries lost
   while kept`. In Amiga mode each entry is one dos `Write` at once.
 * A `checkstr` entry longer than 512 bytes has its two values cut until
-  it fits and the last field `cut`; its verdict is that of the whole
-  strings.
+  it fits and the last field `cut`; its verdict, and the length and CRC32
+  each value carries, are those of the whole strings.
 * A call out of order writes `broken` with the reason before its own
   entry: `block inside a block`, `check outside a block`, `block end
   without a block`, `batch init after a block`, `case after the batch
@@ -228,12 +228,22 @@ routines name:
 
 ### The result file
 
-One entry per line, fields separated by TAB, each line ended by LF. `K` is
-decimal (no sign, no leading zero, up to 4294967295); a long value is `$`
-and 8 upper-case hex digits; a string value holds the bytes `$20` to `$7E`
-other than `\` as they are and every other byte as `\xHH` (upper-case hex
-digits), so the string "a" TAB "b" reads `a\x09b`. An entry belongs to the
-block of the last `block` entry before it.
+One entry per line, fields separated by TAB, each line ended by LF. `K`
+and a length are decimal (no sign, no leading zero, up to 4294967295); a
+long value and a CRC32 are `$` and 8 upper-case hex digits; a string value
+holds the bytes `$20` to `$7E` other than `\` as they are and every other
+byte as `\xHH` (upper-case hex digits), so the string "a" TAB "b" reads
+`a\x09b`. An entry belongs to the block of the last `block` entry before
+it.
+
+Each string value of `checkstr` is followed by the length of the whole
+string and its CRC32, whether the value was cut or not: the standard
+CRC-32 of IEEE 802.3, as in zlib and PNG (the polynomial `$04C11DB7`
+reflected, `$EDB88320`; input and output reflected; the register
+`$FFFFFFFF` at the start, the result XORed with `$FFFFFFFF`): `$CBF43926`
+for `123456789`, `$00000000` for the empty string (`basictest_crc32` in
+`shared/basictest/basictest_crc.c`). A value shorter than its length is
+cut: it is the start of the string.
 
 | Entry | Fields after the name | |
 |---|---|---|
@@ -242,7 +252,7 @@ block of the last `block` entry before it.
 | `check` | `K`, `ok` or `fail`, expected, actual (long values) | |
 | `checkq` | `K`, `ok` or `fail`, expected, actual (the 32 bits of the quicks, as long values) | |
 | `checkflt` | `K`, `ok` or `fail`, expected, actual, delta (the FFP bits of the floats) | |
-| `checkstr` | `K`, `ok` or `fail`, expected, actual (string values), `-` or `cut` | `cut`: the values were shortened so that the line fits 512 bytes |
+| `checkstr` | `K`, `ok` or `fail`, expected, its length, its CRC32, actual, its length, its CRC32, `-` or `cut` | `cut`: a value was shortened so that the line fits 512 bytes |
 | `require` | `K`, `broken` | only a failed precondition |
 | `expect-error` | `K` | |
 | `blockend` | | the block ended |
@@ -252,9 +262,11 @@ block of the last `block` entry before it.
 
 The reader (`basictest_read`) refuses an unknown entry, a wrong number of
 fields, a malformed value (also one not in the form the writer gives it,
-such as lower-case hex or `\x41`) and an unknown format version, naming
-the line. The example with both cases selected, when `a$` is not `"ab"`
-and `a(9)=1` ends the program with the announced runtime error, gives (TAB
+such as lower-case hex or `\x41`; a string value longer than its length,
+a complete one whose CRC32 is not that of its bytes, `-` with a cut value
+and `cut` without one) and an unknown format version, naming the line.
+The example with both cases selected, when `a$` is not `"ab"` and
+`a(9)=1` ends the program with the announced runtime error, gives (TAB
 between the fields; the host test `basictest_readme` reads every line of
 the blocks marked `basictest-result` back with the codec):
 
@@ -269,7 +281,7 @@ checkq	3	ok	$00008000	$00008000
 checkflt	4	ok	$C0000045	$C0000045	$A3D70A3A
 blockend
 block	case	tab_string
-checkstr	5	fail	ab	a\x09b	-
+checkstr	5	fail	ab	2	$9E83486D	a\x09b	3	$C42AC338	-
 expect-error	6
 incomplete
 end

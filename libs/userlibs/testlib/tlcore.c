@@ -312,6 +312,11 @@ void tl_checkstr(struct tl_state *st, uint32_t k, const uint8_t *expected, size_
     e.expected_str.length = expected_length;
     e.actual_str.data = actual;
     e.actual_str.length = actual_length;
+    /* of the whole strings: emit may cut the values, not these */
+    e.expected_length = (uint32_t)expected_length;
+    e.expected_crc = basictest_crc32(expected, expected_length);
+    e.actual_length = (uint32_t)actual_length;
+    e.actual_crc = basictest_crc32(actual, actual_length);
     if (e.ok)
         emit(st, &e, 0);
     else

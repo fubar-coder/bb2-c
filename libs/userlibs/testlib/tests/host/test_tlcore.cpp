@@ -150,7 +150,7 @@ TEST_CASE("a run: init, two cases, final, the end", "[tlcore]")
                    "check\t2\tok\t$FFFFFFFF\t$FFFFFFFF\n"
                    "blockend\n"
                    "block\tcase\tb_2\n"
-                   "checkstr\t3\tok\tab\tab\t-\n"
+                   "checkstr\t3\tok\tab\t2\t$9E83486D\tab\t2\t$9E83486D\t-\n"
                    "expect-error\t4\n"
                    "blockend\n"
                    "block\tfinal\n"
@@ -187,11 +187,11 @@ TEST_CASE("the verdicts of the checks", "[tlcore]")
     checkstr(r.st, 6, "x\ty\\", "x\ty\\");
     CHECK(writes.at(2) == "check\t0\tfail\t$FFFFFFFF\t$00000001\n");
     CHECK(writes.at(3) == "check\t1\tok\t$80000000\t$80000000\n");
-    CHECK(writes.at(4) == "checkstr\t2\tfail\tabc\tab\t-\n");
-    CHECK(writes.at(5) == "checkstr\t3\tok\t\t\t-\n");
-    CHECK(writes.at(6) == "checkstr\t4\tfail\ta\\x00b\ta\\x00c\t-\n");
-    CHECK(writes.at(7) == "checkstr\t5\tok\ta\\x00b\ta\\x00b\t-\n");
-    CHECK(writes.at(8) == "checkstr\t6\tok\tx\\x09y\\x5C\tx\\x09y\\x5C\t-\n");
+    CHECK(writes.at(4) == "checkstr\t2\tfail\tabc\t3\t$352441C2\tab\t2\t$9E83486D\t-\n");
+    CHECK(writes.at(5) == "checkstr\t3\tok\t\t0\t$00000000\t\t0\t$00000000\t-\n");
+    CHECK(writes.at(6) == "checkstr\t4\tfail\ta\\x00b\t3\t$15E87871\ta\\x00c\t3\t$62EF48E7\t-\n");
+    CHECK(writes.at(7) == "checkstr\t5\tok\ta\\x00b\t3\t$15E87871\ta\\x00b\t3\t$15E87871\t-\n");
+    CHECK(writes.at(8) == "checkstr\t6\tok\tx\\x09y\\x5C\t4\t$1C3EB380\tx\\x09y\\x5C\t4\t$1C3EB380\t-\n");
     kinds(all());
 }
 
@@ -357,15 +357,15 @@ TEST_CASE("a failed check of the batch init fails every case", "[tlcore]")
     CHECK(all() == "begin\t1\n"
                    "block\tinit\n"
                    "check\t0\tok\t$00000001\t$00000001\n"
-                   "checkstr\t1\tfail\tx\ty\t-\n"
+                   "checkstr\t1\tfail\tx\t1\t$8CDC1683\ty\t1\t$FBDB2615\t-\n"
                    "check\t2\tfail\t$00000003\t$00000004\n"
                    "blockend\n"
                    "block\tcase\ta\n"
-                   "checkstr\t1\tfail\tx\ty\t-\n"
+                   "checkstr\t1\tfail\tx\t1\t$8CDC1683\ty\t1\t$FBDB2615\t-\n"
                    "check\t3\tok\t$00000005\t$00000005\n"
                    "blockend\n"
                    "block\tcase\tb\n"
-                   "checkstr\t1\tfail\tx\ty\t-\n"
+                   "checkstr\t1\tfail\tx\t1\t$8CDC1683\ty\t1\t$FBDB2615\t-\n"
                    "blockend\n"
                    "block\tfinal\n"
                    "blockend\n"
