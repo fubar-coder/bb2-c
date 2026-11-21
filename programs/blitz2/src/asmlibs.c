@@ -1451,8 +1451,10 @@ void loadalib(STRPTR name, struct node **tail)
            the library out, as a short header or structure (#3); blitz2.s
            does not check this Read and relocates with what the new
            allocation held.  Fixed (#369): so does out of memory, with
-           the notice; a count of 0 is no failure (no relocs, nothing
-           read, nothing freed: nrelocs 0) */
+           the notice.  Fixed (#1175): a count of 0 is no failure (no
+           relocs, nothing read, nothing freed: nrelocs 0); blitz2.s
+           allocates 0 bytes through the editor's extalloc, which takes
+           AllocMem's 0 as out of memory */
         if (!l->relocs && rsize) {
             nomemnote();
             prev->next = prevnext;
