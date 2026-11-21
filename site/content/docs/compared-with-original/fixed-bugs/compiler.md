@@ -149,6 +149,70 @@ is true for every byte.
 
 Issue: [A byte variable compared with a constant from 128 to 255 never matches (#978)](https://github.com/fubar-coder/bb2-c/issues/978).
 
+### A comparison with a Quick, or of large Longs {#quick-compare}
+
+The compiler evaluates an expression in the type it is wanted in: the
+type of the destination or parameter, or the type of the left operand
+so far. The original passed that type on to both operands of a
+comparison. A Quick (a number with a fraction, from -32768 to
+32767.99998) wanted as a Long lost its fraction before it was compared,
+so `q>1` was false for `q=1.5` when the result went to a Long. A Long
+compared with a Quick was converted to a Quick first and kept only its
+low 16 bits, and so were two Longs in a Quick context. In a Float
+context, such as a Float destination, two Longs were compared as Float
+values, which hold only about seven digits, so Longs above 16777216 that
+differ slightly compared as equal.
+
+**What happened**
+
+```
+q.q=1.5 : l.l=1
+r.l=(q>1) : NPrint r
+r.l=(q=1) : NPrint r
+If q>l Then NPrint "q>l"
+If l<q Then NPrint "l<q"
+l2.l=100000001 : l3.l=100000000
+rf.f=(l2=l3) : NPrint rf
+End
+```
+
+The original prints
+
+```
+0
+-1
+q>l
+-1
+```
+
+so it finds 1.5 equal to 1, `l<q` false although `q>l` is true, and
+100000001 equal to 100000000.
+
+**With the port**
+
+The operands of a comparison are compared with their own values, and
+only the result, -1 for true or 0 for false, takes the type of the
+destination. A Long against a Quick is compared exactly, without a
+conversion. The program prints
+
+```
+-1
+0
+q>l
+l<q
+0
+```
+
+Comparisons with a Float operand, of two Quicks, of whole numbers in a
+whole-number context and of strings give the same results as in the original.
+A few cases are not fixed yet: a left operand that is itself a
+calculation, such as `q*2>2` or `-q<-1`, and a large whole-number
+constant on the left in a Float context. Put such an operand on the
+right side or compute it into a variable first; the details are in
+[From source to executable]({{< relref "/docs/how-blitz2-works/compiling#comparisons" >}}).
+
+Issue: [A comparison with a Quick operand is done in Long when the context or the left operand is Long (#1177)](https://github.com/fubar-coder/bb2-c/issues/1177).
+
 ## Arrays and NewTypes
 
 ### Arrays with 256-byte elements {#arrays-256}
