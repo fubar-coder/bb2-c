@@ -164,13 +164,22 @@ TEST_CASE("checkstr: the spec's string with a tab, and every byte", "[basictest]
     e.ok = 0;
     e.expected_str = str(exp);
     e.actual_str = str(act);
-    CHECK(write(e) == "checkstr\t12\tfail\tab\ta\\x09b\n");
+    CHECK(write(e) == "checkstr\t12\tfail\tab\ta\\x09b\t-\n");
     auto r = roundtrip(e);
     REQUIRE(r.rc == BASICTEST_OK);
     CHECK(r.e.kind == BASICTEST_CHECKSTR);
     CHECK(r.e.k == 12u);
     CHECK(text(r.e.expected_str) == exp);
     CHECK(text(r.e.actual_str) == act);
+    CHECK(r.e.cut == 0);
+
+    // values shortened to fit the line
+    e.cut = 1;
+    CHECK(write(e) == "checkstr\t12\tfail\tab\ta\\x09b\tcut\n");
+    r = roundtrip(e);
+    REQUIRE(r.rc == BASICTEST_OK);
+    CHECK(r.e.cut == 1);
+    e.cut = 0;
 
     std::string all;
     for (int c = 0; c < 256; c++)
@@ -184,11 +193,47 @@ TEST_CASE("checkstr: the spec's string with a tab, and every byte", "[basictest]
     CHECK(l.find(" !\"#") != std::string::npos);
     CHECK(l.find("[\\x5C]") != std::string::npos);
     CHECK(l.find("}~\\x7F\\x80") != std::string::npos);
-    CHECK(l.find("\\xFF\t\n") != std::string::npos);
+    CHECK(l.find("\\xFF\t\t-\n") != std::string::npos);
     r = roundtrip(e);
     REQUIRE(r.rc == BASICTEST_OK);
     CHECK(text(r.e.expected_str) == all);
     CHECK(r.e.actual_str.length == 0u);
+}
+
+TEST_CASE("checkq: the bits of two quicks", "[basictest]")
+{
+    auto e = entry(BASICTEST_CHECKQ);
+    e.k = 7;
+    e.ok = 0;
+    e.expected = 0x00018000u;                   // 1.5
+    e.actual = 0x00010000u;                     // 1.0
+    CHECK(write(e) == "checkq\t7\tfail\t$00018000\t$00010000\n");
+    auto r = roundtrip(e);
+    REQUIRE(r.rc == BASICTEST_OK);
+    CHECK(r.e.kind == BASICTEST_CHECKQ);
+    CHECK(r.e.k == 7u);
+    CHECK(r.e.ok == 0);
+    CHECK(r.e.expected == 0x00018000u);
+    CHECK(r.e.actual == 0x00010000u);
+}
+
+TEST_CASE("checkflt: the FFP bits of two floats and the delta", "[basictest]")
+{
+    auto e = entry(BASICTEST_CHECKFLT);
+    e.k = 4294967295u;
+    e.ok = 1;
+    e.expected = 0xA0000042u;                   // 2.5
+    e.actual = 0xA0000042u;
+    e.delta = 0xA3D70A3Au;                      // 0.01
+    CHECK(write(e) == "checkflt\t4294967295\tok\t$A0000042\t$A0000042\t$A3D70A3A\n");
+    auto r = roundtrip(e);
+    REQUIRE(r.rc == BASICTEST_OK);
+    CHECK(r.e.kind == BASICTEST_CHECKFLT);
+    CHECK(r.e.k == 4294967295u);
+    CHECK(r.e.ok == 1);
+    CHECK(r.e.expected == 0xA0000042u);
+    CHECK(r.e.actual == 0xA0000042u);
+    CHECK(r.e.delta == 0xA3D70A3Au);
 }
 
 TEST_CASE("require, expect-error, blockend, broken, incomplete, end", "[basictest]")
@@ -240,7 +285,7 @@ TEST_CASE("writer: a buffer too small, an unknown kind, a case without name", "[
     e.k = 123;
     e.expected_str = str(exp);
     e.actual_str = str(act);
-    std::string want = "checkstr\t123\tfail\tx\\x09y\t\\x5C\n";
+    std::string want = "checkstr\t123\tfail\tx\\x09y\t\\x5C\t-\n";
     REQUIRE(write(e) == want);
     for (size_t size = 0; size <= want.size(); size++) {
         std::vector<uint8_t> buf(size + 8, 0xAA);
@@ -255,7 +300,7 @@ TEST_CASE("writer: a buffer too small, an unknown kind, a case without name", "[
     }
 
     std::vector<uint8_t> buf(64);
-    e = entry(BASICTEST_END + 1);
+    e = entry(BASICTEST_CHECKFLT + 1);
     CHECK(basictest_write(&e, buf.data(), buf.size()) == 0u);
     e = entry(-1);
     CHECK(basictest_write(&e, buf.data(), buf.size()) == 0u);
@@ -289,7 +334,11 @@ TEST_CASE("reader: a wrong number of fields names the line", "[basictest]")
         // a case without a name, init and final with one, a case with two
         "block\tcase", "block\tinit\t", "block\tfinal\ta", "block\tcase\ta\tb",
         "check\t1\tok\t$00000000",     "check\t1\tok\t$00000000\t$00000000\t$00000000",
-        "checkstr\t1\tok\ta",          "checkstr\t1\tok\ta\tb\tc",
+        "checkstr\t1\tok\ta",          "checkstr\t1\tok\ta\tb",
+        "checkstr\t1\tok\ta\tb\t-\tc",
+        "checkq\t1\tok\t$00000000",    "checkq\t1\tok\t$00000000\t$00000000\t$00000000",
+        "checkflt\t1\tok\t$00000000\t$00000000",
+        "checkflt\t1\tok\t$00000000\t$00000000\t$00000000\t$00000000",
         "require\t1",  "require\t1\tbroken\tx",  "expect-error", "expect-error\t1\t2",
         "blockend\tx", "broken",       "broken\ta\tb", "incomplete\t", "end\t",
         "check\t1\tok\t$00000000\t$00000000\t\t\t\t",
@@ -329,15 +378,24 @@ TEST_CASE("reader: a malformed value names the line and the field", "[basictest]
         { "check\t4294967296\tok\t$00000010\t$00000010", 2 },
         { "check\t9999999999\tok\t$00000010\t$00000010", 2 },
         { "check\t12345678901\tok\t$00000010\t$00000010", 2 },
-        { "checkstr\t1\tok\ta\\x9\tb", 4 },
-        { "checkstr\t1\tok\ta\\x09\tb\\", 5 },
-        { "checkstr\t1\tok\ta\\t\tb", 4 },
-        { "checkstr\t1\tok\ta\\x0d\tb", 4 },
-        { "checkstr\t1\tok\ta\\x41\tb", 4 },      // A stands as it is
-        { "checkstr\t1\tok\ta\tb\\x20", 5 },      // so does the blank
-        { "checkstr\t1\tok\ta\tb\r", 5 },
-        { "checkstr\t1\tok\ta\x7F\tb", 4 },
-        { "checkstr\t1\tok\ta\xC4\tb", 4 },
+        { "checkstr\t1\tok\ta\\x9\tb\t-", 4 },
+        { "checkstr\t1\tok\ta\\x09\tb\\\t-", 5 },
+        { "checkstr\t1\tok\ta\\t\tb\t-", 4 },
+        { "checkstr\t1\tok\ta\\x0d\tb\t-", 4 },
+        { "checkstr\t1\tok\ta\\x41\tb\t-", 4 },      // A stands as it is
+        { "checkstr\t1\tok\ta\tb\\x20\t-", 5 },      // so does the blank
+        { "checkstr\t1\tok\ta\tb\r\t-", 5 },
+        { "checkstr\t1\tok\ta\x7F\tb\t-", 4 },
+        { "checkstr\t1\tok\ta\xC4\tb\t-", 4 },
+        { "checkstr\t1\tok\ta\tb\t", 6 },
+        { "checkstr\t1\tok\ta\tb\tCUT", 6 },
+        { "checkstr\t1\tok\ta\tb\t--", 6 },
+        { "checkq\t1\tok\t$0001800\t$00018000", 4 },
+        { "checkq\t1\tok\t$00018000\t$0001800g", 5 },
+        { "checkq\t1\tmaybe\t$00018000\t$00018000", 3 },
+        { "checkflt\t1\tok\t$A0000042\t$A0000042\t$a0000042", 6 },
+        { "checkflt\t1\tok\t$A0000042\t$A000004\t$A0000042", 5 },
+        { "checkflt\t01\tok\t$A0000042\t$A0000042\t$A0000042", 2 },
         { "require\t1\tok", 3 },
         { "require\tx\tbroken", 2 },
         { "expect-error\t1x", 2 },

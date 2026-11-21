@@ -11,7 +11,12 @@
  *                                         belong to (NAME a string value,
  *                                         a field of its own)
  *   check        K ok|fail EXP ACT        a check of two longs
- *   checkstr     K ok|fail EXP$ ACT$      a check of two strings
+ *   checkq       K ok|fail EXP ACT        a check of two quicks (their bits)
+ *   checkflt     K ok|fail EXP ACT DELTA  a check of two floats within a
+ *                                         delta (their FFP bits)
+ *   checkstr     K ok|fail EXP$ ACT$ CUT  a check of two strings; CUT `-`
+ *                                         (complete) or `cut` (the values
+ *                                         shortened to fit the line)
  *   require      K broken                 a failed precondition
  *   expect-error K                        an announced runtime error
  *   blockend                              the end of the block
@@ -20,6 +25,7 @@
  *   end                                   the finit
  *
  * K is decimal (0 to 4294967295, no sign, no leading zero), a long value
+ * (also the 32 bits of a quick or an FFP float)
  * `$` and 8 upper-case hex digits, a string value the bytes $20 to $7E
  * other than `\` as they are and every other byte as `\xHH` (upper-case
  * hex digits).
@@ -59,7 +65,9 @@ enum basictest_kind {
     BASICTEST_BLOCKEND,
     BASICTEST_BROKEN,
     BASICTEST_INCOMPLETE,
-    BASICTEST_END
+    BASICTEST_END,
+    BASICTEST_CHECKQ,
+    BASICTEST_CHECKFLT
 };
 
 /** @brief The blocks of a `block` entry. */
@@ -80,7 +88,9 @@ struct basictest_str {
  *   begin         version
  *   block         block, name (BASICTEST_BLOCK_CASE)
  *   check         k, ok, expected, actual
- *   checkstr      k, ok, expected_str, actual_str
+ *   checkq        k, ok, expected, actual (the quicks' bits)
+ *   checkflt      k, ok, expected, actual, delta (the floats' FFP bits)
+ *   checkstr      k, ok, expected_str, actual_str, cut
  *   require       k (always broken)
  *   expect-error  k
  *   broken        reason
@@ -93,7 +103,9 @@ struct basictest_entry {
     uint32_t k;
     int ok;                     /* 1 ok, 0 fail */
     uint32_t expected, actual;  /* the bits of the longs */
+    uint32_t delta;             /* checkflt: the FFP bits of the delta */
     struct basictest_str expected_str, actual_str;
+    int cut;                    /* checkstr: 1 the values were shortened */
     struct basictest_str reason;
 };
 

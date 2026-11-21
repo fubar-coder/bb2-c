@@ -127,7 +127,7 @@ TEST_CASE("a run: init, two cases, final, the end", "[tlcore]")
                    "check\t2\tok\t$FFFFFFFF\t$FFFFFFFF\n"
                    "blockend\n"
                    "block\tcase\tb_2\n"
-                   "checkstr\t3\tok\tab\tab\n"
+                   "checkstr\t3\tok\tab\tab\t-\n"
                    "expect-error\t4\n"
                    "blockend\n"
                    "block\tfinal\n"
@@ -164,11 +164,11 @@ TEST_CASE("the verdicts of the checks", "[tlcore]")
     checkstr(r.st, 6, "x\ty\\", "x\ty\\");
     CHECK(writes.at(2) == "check\t0\tfail\t$FFFFFFFF\t$00000001\n");
     CHECK(writes.at(3) == "check\t1\tok\t$80000000\t$80000000\n");
-    CHECK(writes.at(4) == "checkstr\t2\tfail\tabc\tab\n");
-    CHECK(writes.at(5) == "checkstr\t3\tok\t\t\n");
-    CHECK(writes.at(6) == "checkstr\t4\tfail\ta\\x00b\ta\\x00c\n");
-    CHECK(writes.at(7) == "checkstr\t5\tok\ta\\x00b\ta\\x00b\n");
-    CHECK(writes.at(8) == "checkstr\t6\tok\tx\\x09y\\x5C\tx\\x09y\\x5C\n");
+    CHECK(writes.at(4) == "checkstr\t2\tfail\tabc\tab\t-\n");
+    CHECK(writes.at(5) == "checkstr\t3\tok\t\t\t-\n");
+    CHECK(writes.at(6) == "checkstr\t4\tfail\ta\\x00b\ta\\x00c\t-\n");
+    CHECK(writes.at(7) == "checkstr\t5\tok\ta\\x00b\ta\\x00b\t-\n");
+    CHECK(writes.at(8) == "checkstr\t6\tok\tx\\x09y\\x5C\tx\\x09y\\x5C\t-\n");
     kinds(all());
 }
 
@@ -332,15 +332,15 @@ TEST_CASE("a failed check of the batch init fails every case", "[tlcore]")
     CHECK(all() == "begin\t1\n"
                    "block\tinit\n"
                    "check\t0\tok\t$00000001\t$00000001\n"
-                   "checkstr\t1\tfail\tx\ty\n"
+                   "checkstr\t1\tfail\tx\ty\t-\n"
                    "check\t2\tfail\t$00000003\t$00000004\n"
                    "blockend\n"
                    "block\tcase\ta\n"
-                   "checkstr\t1\tfail\tx\ty\n"
+                   "checkstr\t1\tfail\tx\ty\t-\n"
                    "check\t3\tok\t$00000005\t$00000005\n"
                    "blockend\n"
                    "block\tcase\tb\n"
-                   "checkstr\t1\tfail\tx\ty\n"
+                   "checkstr\t1\tfail\tx\ty\t-\n"
                    "blockend\n"
                    "block\tfinal\n"
                    "blockend\n"

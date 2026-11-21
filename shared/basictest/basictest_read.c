@@ -6,7 +6,7 @@
  */
 #include "basictest.h"
 
-#define MAXFIELDS 5
+#define MAXFIELDS 6
 
 struct field {
     uint8_t *data;
@@ -23,7 +23,9 @@ static const struct {
     { "begin", BASICTEST_BEGIN, 2 },
     { "block", BASICTEST_BLOCK, 0 },
     { "check", BASICTEST_CHECK, 5 },
-    { "checkstr", BASICTEST_CHECKSTR, 5 },
+    { "checkq", BASICTEST_CHECKQ, 5 },
+    { "checkflt", BASICTEST_CHECKFLT, 6 },
+    { "checkstr", BASICTEST_CHECKSTR, 6 },
     { "require", BASICTEST_REQUIRE, 3 },
     { "expect-error", BASICTEST_EXPECT_ERROR, 2 },
     { "blockend", BASICTEST_BLOCKEND, 1 },
@@ -179,7 +181,8 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
     e->name.length = 0;
     e->k = 0;
     e->ok = 0;
-    e->expected = e->actual = 0;
+    e->expected = e->actual = e->delta = 0;
+    e->cut = 0;
     e->expected_str = e->actual_str = e->reason = e->name;
 
     switch (e->kind) {
@@ -206,6 +209,8 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
             return fail(err, BASICTEST_E_VALUE, 3);
         break;
     case BASICTEST_CHECK:
+    case BASICTEST_CHECKQ:
+    case BASICTEST_CHECKFLT:
     case BASICTEST_CHECKSTR:
         if (!decimal(f[1].data, f[1].length, &e->k))
             return fail(err, BASICTEST_E_VALUE, 2);
@@ -213,16 +218,22 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
             e->ok = 1;
         else if (!is(&f[2], "fail"))
             return fail(err, BASICTEST_E_VALUE, 3);
-        if (e->kind == BASICTEST_CHECK) {
+        if (e->kind != BASICTEST_CHECKSTR) {
             if (!longval(&f[3], &e->expected))
                 return fail(err, BASICTEST_E_VALUE, 4);
             if (!longval(&f[4], &e->actual))
                 return fail(err, BASICTEST_E_VALUE, 5);
+            if (e->kind == BASICTEST_CHECKFLT && !longval(&f[5], &e->delta))
+                return fail(err, BASICTEST_E_VALUE, 6);
         } else {
             if (!strval(f[3].data, f[3].length, &e->expected_str))
                 return fail(err, BASICTEST_E_VALUE, 4);
             if (!strval(f[4].data, f[4].length, &e->actual_str))
                 return fail(err, BASICTEST_E_VALUE, 5);
+            if (is(&f[5], "cut"))
+                e->cut = 1;
+            else if (!is(&f[5], "-"))
+                return fail(err, BASICTEST_E_VALUE, 6);
         }
         break;
     case BASICTEST_REQUIRE:

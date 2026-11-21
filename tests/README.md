@@ -82,9 +82,17 @@ a string literal, under which the check is reported:
 |---|---|
 | `!Check{COND}` | `COND` is not 0 |
 | `!CheckEq{ACTUAL,EXPECTED}` | the two long values are equal |
+| `!CheckQEq{ACTUAL,EXPECTED}` | the two quick values are equal |
+| `!CheckFltNear{ACTUAL,EXPECTED,DELTA}` | the two float values differ by at most `DELTA` |
 | `!CheckStrEq{ACTUAL$,EXPECTED$}` | the two strings are equal |
 | `!Require{COND}` | a precondition: `COND` is not 0; else the block ends at once |
 | `!ExpectError{"MESSAGE"}` | announces the runtime error the program expects next |
+
+`COND` of `!Check` and `!Require` is evaluated as a long: the operands of
+a comparison in it are converted to long first, so with `q.q=1.5`
+`!Check{q>1}` fails (1>1). Check a quick value with `!CheckQEq` and a
+float value with `!CheckFltNear`; their routines take quick and float
+parameters, so their values are evaluated in that type.
 
 ```
 !TestBatchInit
@@ -95,6 +103,9 @@ a string literal, under which the check is reported:
 !TestCase{shape_size}
   !CheckEq{w,16,"width"}
   !Check{w>0}
+  q.q=w/32
+  !CheckQEq{q,0.5}
+  !CheckFltNear{w*1.5,24,0.01}
 !EndTestCase
 
 !TestCase{tab_string}               ; a comment is allowed here
@@ -119,6 +130,8 @@ reaches the program:
 |---|---|
 | `!Check{COND}` | `!Check{K,COND}` |
 | `!CheckEq{ACTUAL,EXPECTED}` | `!CheckEq{K,ACTUAL,EXPECTED}` |
+| `!CheckQEq{ACTUAL,EXPECTED}` | `!CheckQEq{K,ACTUAL,EXPECTED}` |
+| `!CheckFltNear{ACTUAL,EXPECTED,DELTA}` | `!CheckFltNear{K,ACTUAL,EXPECTED,DELTA}` |
 | `!CheckStrEq{ACTUAL$,EXPECTED$}` | `!CheckStrEq{K,ACTUAL$,EXPECTED$}` |
 | `!Require{COND}` | `!Require{K,COND}` |
 | `!ExpectError{"MESSAGE"}` | `!ExpectError{K}` |
@@ -134,13 +147,16 @@ The example above becomes:
 !TestCase{shape_size}
   !CheckEq{1,w,16}
   !Check{2,w>0}
+  q.q=w/32
+  !CheckQEq{3,q,0.5}
+  !CheckFltNear{4,w*1.5,24,0.01}
 !EndTestCase
 
 !TestCase{tab_string}               ; a comment is allowed here
   a$="a"+Chr$(9)+"b"
-  !CheckStrEq{3,a$,"ab"}
+  !CheckStrEq{5,a$,"ab"}
   Dim a(5)
-  !ExpectError{4}
+  !ExpectError{6}
   a(9)=1
 !EndTestCase
 ```
@@ -165,6 +181,8 @@ end have the fixed labels `tc__init`, `tc__init_end`, `tc__final` and
 | `TLInit`, `TLFinal`, `TLCase(name$)` | the block macros | 1, or 0 on the second return after a failed precondition |
 | `TLBlockEnd` | the closing block macros | |
 | `TLCheck K,expected,actual` | `!Check`, `!CheckEq` | `!Check{K,COND}` is `TLCheck K,-1,(COND)<>0` |
+| `TLCheckQ K,expected.q,actual.q` | `!CheckQEq` | |
+| `TLCheckFlt K,expected.f,actual.f,delta.f` | `!CheckFltNear` | compared with mathffp.library, which `TLBegin` opens |
 | `TLCheckStr K,expected$,actual$` | `!CheckStrEq` | |
 | `TLRequire K,cond` | `!Require` | |
 | `TLExpectError K` | `!ExpectError` | |
@@ -195,7 +213,8 @@ routines name:
   entries that do not fit are lost and followed by `broken entries lost
   while kept`. In Amiga mode each entry is one dos `Write` at once.
 * A `checkstr` entry longer than 512 bytes has its two values cut until
-  it fits; its verdict is that of the whole strings.
+  it fits and the last field `cut`; its verdict is that of the whole
+  strings.
 * A call out of order writes `broken` with the reason before its own
   entry: `block inside a block`, `check outside a block`, `block end
   without a block`, `batch init after a block`, `case after the batch
@@ -218,7 +237,9 @@ block of the last `block` entry before it.
 | `begin` | the format version, `1` | the first entry |
 | `block` | `init`, `final`, or `case` and the name (a string value) | a block starts |
 | `check` | `K`, `ok` or `fail`, expected, actual (long values) | |
-| `checkstr` | `K`, `ok` or `fail`, expected, actual (string values) | |
+| `checkq` | `K`, `ok` or `fail`, expected, actual (the 32 bits of the quicks, as long values) | |
+| `checkflt` | `K`, `ok` or `fail`, expected, actual, delta (the FFP bits of the floats) | |
+| `checkstr` | `K`, `ok` or `fail`, expected, actual (string values), `-` or `cut` | `cut`: the values were shortened so that the line fits 512 bytes |
 | `require` | `K`, `broken` | only a failed precondition |
 | `expect-error` | `K` | |
 | `blockend` | | the block ended |
@@ -241,10 +262,12 @@ blockend
 block	case	shape_size
 check	1	ok	$00000010	$00000010
 check	2	ok	$FFFFFFFF	$FFFFFFFF
+checkq	3	ok	$00008000	$00008000
+checkflt	4	ok	$C0000045	$C0000045	$A3D70A3A
 blockend
 block	case	tab_string
-checkstr	3	fail	ab	a\x09b
-expect-error	4
+checkstr	5	fail	ab	a\x09b	-
+expect-error	6
 incomplete
 end
 ```

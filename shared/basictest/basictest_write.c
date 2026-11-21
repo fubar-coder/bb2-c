@@ -115,18 +115,27 @@ size_t basictest_write(const struct basictest_entry *e, uint8_t *buf, size_t siz
         }
         break;
     case BASICTEST_CHECK:
+    case BASICTEST_CHECKQ:
+    case BASICTEST_CHECKFLT:
     case BASICTEST_CHECKSTR:
-        puts_(&o, e->kind == BASICTEST_CHECK ? "check\t" : "checkstr\t");
+        puts_(&o, e->kind == BASICTEST_CHECK ? "check\t"
+                  : e->kind == BASICTEST_CHECKQ ? "checkq\t"
+                  : e->kind == BASICTEST_CHECKFLT ? "checkflt\t" : "checkstr\t");
         putdecimal(&o, e->k);
         puts_(&o, e->ok ? "\tok\t" : "\tfail\t");
-        if (e->kind == BASICTEST_CHECK) {
+        if (e->kind != BASICTEST_CHECKSTR) {
             putlong(&o, e->expected);
             tab(&o);
             putlong(&o, e->actual);
+            if (e->kind == BASICTEST_CHECKFLT) {
+                tab(&o);
+                putlong(&o, e->delta);
+            }
         } else {
             putstr(&o, &e->expected_str);
             tab(&o);
             putstr(&o, &e->actual_str);
+            puts_(&o, e->cut ? "\tcut" : "\t-");
         }
         break;
     case BASICTEST_REQUIRE:
