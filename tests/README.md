@@ -1687,7 +1687,7 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
   with `run=off` and without an expectation (what the program does is the
   test's own check). The compile-only passes have `exe:clib` as the corpus
   and use no emulator time for running. Every one works in a run directory
-  of its own (`corpusrun pass` and now `corpusrun cd`: `work=/run-XXXXXX`;
+  of its own (`corpusrun pass` and `corpusrun cd`: `work=/run-XXXXXX`;
   `ab3_cli*` and `corpus_cd_prev_check` through `cmake/with-workdir.cmake`):
   two runs at the same time do not share files, a run that passes leaves
   nothing, a failed one stays and is named:
