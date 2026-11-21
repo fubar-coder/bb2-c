@@ -31,3 +31,9 @@
 
 - [ ] 5.1 `tests/README.md` and `docs/testing.md`: the model, the files, the configuration keys, the assertions, the diagnostics; verify: the examples of the text are tests of the build
 - [ ] 5.2 Move the seven `tests/blitz2/*-runerrs.bas` twins and their partners into one `ID.test.bas` each with runtime error checking as an axis, as the first real use; verify: `ctest --preset all` passes and the old pairs are gone
+
+## 6. String values by length and CRC32 (decided 2026-11-21, task-decisions.md "String values: length and CRC32")
+
+- [x] 6.1 The requirement "Queries of a string value" in the delta of `testing/basic-test-runner`: `==`/`!=` by length and CRC32, `contains`/`matches` only on values that are not cut, the report of a cut value; verify: `openspec validate basic-test-runner --strict`
+- [ ] 6.2 The judge (`tools/lib/testjudge`) and the documented query rules: `==`/`!=` on a string value by length and CRC32 (also on cut values), `contains`/`matches` on a cut value a configuration error, the report with `(cut)` and the length; verify: host tests with broken input (a wrong CRC32 in a result file does not pass `==`), with and without `-DHOST_SANITIZE=ON`
+- [ ] 6.3 design.md records the decision; verify: the text
