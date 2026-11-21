@@ -3,7 +3,7 @@
 foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata bblines
 		bbdetok statline outmatch oracletable prevcmp previntended epcheck
 		blitzlib blitztokens checkdata bb22 blitzres tedfont cmdref cdtable bugorigcmp
-		teststats covmap covsel hdf corpusexpect perfbudget amiga_emulation)
+		teststats covmap covsel hdf corpusexpect perfbudget amiga_emulation siteexamples)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)

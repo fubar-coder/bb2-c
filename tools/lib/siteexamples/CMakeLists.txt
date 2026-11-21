@@ -1,0 +1,3 @@
+add_library(lib_siteexamples STATIC siteexamples.c)
+set_target_properties(lib_siteexamples PROPERTIES OUTPUT_NAME siteexamples)
+target_include_directories(lib_siteexamples PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

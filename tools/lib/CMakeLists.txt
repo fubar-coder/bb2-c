@@ -70,6 +70,8 @@
 #              call from the programs' output
 #   epcheck    the __entrypoint routines of a library (BLITZ_ENTRYPOINT):
 #              a6 kept, no call or jump into them, not folded (objdump text)
+#   siteexamples  the Blitz Basic examples of the website (fenced blocks) and
+#              their manifest (tests/site-examples)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -106,3 +108,4 @@ add_subdirectory(cli)
 add_subdirectory(tedfont)
 add_subdirectory(perfbudget)
 add_subdirectory(epcheck)
+add_subdirectory(siteexamples)

@@ -18,6 +18,7 @@ its logic.
 | [`mktestdata`](mktestdata/README.md) | binary test data (8SVX, ILBM, modules, `.xtra`, fixed layouts) from a text description |
 | [`hdftool`](hdftool/README.md) | AmigaDOS hardfiles (RDB or raw partition, OFS/FFS): read and adapt; sets up the Workbench hardfiles from Amiga Forever |
 | [`tedfont`](tedfont/README.md) | TED-C's screen fonts of 256 glyphs: TED 1.1's font files and the glyph text sources joined, and the check of that build step |
+| [`siteexamples`](siteexamples/README.md) | the Blitz Basic examples of the website: every fenced block has an entry in a manifest (run or compiled only, with the reason) and is written as a source for the emulator tests |
 | [`amiga_run`](amiga_run/README.md) | an AmigaDOS script in Amiberry, without a window and isolated (front end of `lib/amiga_emulation`) |
 
 Three tools live with the component they belong to:
