@@ -6,6 +6,9 @@
 add_executable(inject inject.c)
 target_compile_options(inject PRIVATE -Wall -Wno-pointer-sign)
 set_target_properties(inject PROPERTIES SUFFIX "")
+# its patches run from a block of memory that is never freed (patchblock.h of tests/corpus)
+set_source_files_properties(inject.c PROPERTIES
+	OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../corpus/amiga/patchblock.h)
 add_executable(wbrun wbrun.c)
 target_compile_options(wbrun PRIVATE -Wall -Wno-pointer-sign)
 set_target_properties(wbrun PROPERTIES SUFFIX "")

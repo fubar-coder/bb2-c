@@ -1777,6 +1777,20 @@ the patch; the removal must wait for it, and the helper returns into the
 stub) and `patchblock_broken` (the same with a removal that does not wait:
 the check "removed" must fail, exit status 5).
 
+`inject` (`tests/bug-orig/amiga/inject.c`) uses the same mechanism for its
+about 20 patches, among them the system-wide AllocMem, FreeMem and
+OpenLibrary: its stubs decide in C and stay in the program, so each patch
+gets a trampoline of `patchblock.h` (`PB_THRU`) in a block that is never
+freed. While the patch is active the trampoline counts the call and calls
+inject's stub as a function; once it is removed it jumps to the old
+function and touches nothing of the program. The removal restores all
+vectors (newest first) and then waits up to 10 s for the calls inside
+(`inject: N calls still inside a patch after 10 s` otherwise). Self test:
+the option `racehold` holds a helper process inside a patch (`Read`) when
+the patches are removed; `inject_race` (the removal waits: 0 calls inside
+after it, the helper returns) and `inject_race_broken` (`racehold=nowait`,
+no waiting: the check must fail with 1 call inside).
+
 A floppy disk: `; @pass floppy=N|SRC` puts the image SRC into drive DFN
 (0 to 3, once per drive; the other drives stay empty, the templates have
 one drive, DF0, and the key switches DF1 to DF3 on). Tests of

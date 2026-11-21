@@ -198,6 +198,16 @@
  *                          behind it sees several events at controlled
  *                          times in one call (input.device's IND_WRITEEVENT
  *                          writes one event per call, with the real time)
+ * racehold[=nowait]        self test of the patch removal (inject_race): when
+ *                          COMMAND has ended, a helper process is held
+ *                          inside a patch (Read) while the patches are
+ *                          removed.  The removal waits for it (the
+ *                          patches run from a block of memory that is
+ *                          never freed, patchblock.h) and inject reports
+ *                          "racehold: ..." lines: a task was inside, the
+ *                          calls still inside after the removal, whether
+ *                          the task returned.  With =nowait the removal
+ *                          does not wait: the broken input of the test
  * COMMAND is loaded with LoadSeg and run with RunCommand in this process
  * (the signals and the recorded allocations are the process's); the
  * patches are system-wide but act only for this process.  Behind COMMAND
@@ -242,6 +252,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#define PB_THRU
+#include "../../corpus/amiga/patchblock.h"
+
 #define LVO_ALLOCMEM (-198)
 #define LVO_FREEMEM  (-210)
 #define LVO_OPEN     (-30)
@@ -282,6 +295,9 @@ static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_
 static int o_openwindowfail, o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill, o_datestamp;
 static int o_doslist;
 static int o_guardseg, o_freefill;
+static int o_racehold, o_racenowait;     /* self test: a task inside a patch at removal */
+static struct Task *race_task;
+static volatile int race_in, race_done;
 static UBYTE fill_byte, freefill_byte;
 static ULONG ds_days, ds_done;
 static ULONG nn_num;
@@ -885,6 +901,11 @@ ULONG read_pre(ULONG fh)
 {
     int i;
 
+    if (race_task && SysBase->ThisTask == race_task) {
+        race_in = 1;                    /* racehold: stay inside the stub */
+        Delay(50);
+        return 0;
+    }
     if (!rf_name[0] || !ours() || !fh)
         return 0;
     for (i = 0; i < NAMED; i++)
@@ -1476,6 +1497,10 @@ static int option(const char *a)
         return o_pad = o_guard = 1;
     if (!strcmp(a, "guardseg"))
         return o_pad = o_guard = o_guardseg = 1;
+    if (!strcmp(a, "racehold") || !strcmp(a, "racehold=nowait")) {
+        o_racenowait = a[8] != 0;
+        return o_racehold = 1;
+    }
     if (!strcmp(a, "createprocfail"))
         return o_createprocfail = 1;
     if (!strncmp(a, "fill=", 5) || !strncmp(a, "freefill=", 9)) {
@@ -1698,85 +1723,103 @@ static int option(const char *a)
     return 0;
 }
 
+/* The patches run from a block of memory that is never freed (patchblock.h,
+   PB_THRU): the block counts the calls inside the stubs of this program,
+   the removal restores the vectors and then waits until no task is inside
+   any more (a task of another process may be inside AllocMem, FreeMem or
+   OpenLibrary, which are patched system-wide, when COMMAND ends and the
+   program's code is freed).  After the removal the block passes every call
+   on to the old function without touching the program. */
+#define MAXPB 24
+static struct pbhead *pb_blk[MAXPB];
+static struct Library *pb_lib[MAXPB];
+static WORD pb_lvo[MAXPB];
+static int pb_n;
+static int pb_failed;
+
+/* patch vector lvo of lib with stub; the old function (0 if there is no
+   memory for the block: that patch is then missing, reported at the end) */
+static APTR pset(struct Library *lib, WORD lvo, APTR stub)
+{
+    struct pbhead *b;
+
+    if (pb_n >= MAXPB || !(b = PB_INSTALL(lib, lvo, thru, 16, stub))) {
+        pb_failed = 1;
+        return NULL;
+    }
+    pb_blk[pb_n] = b;
+    pb_lib[pb_n] = lib;
+    pb_lvo[pb_n++] = lvo;
+    return b->old;
+}
+
+/* remove all patches (newest first) and wait for the calls inside: up to
+   10 s; wait = 0 only for the self test racehold=nowait.  Returns the
+   number of calls still inside. */
+static LONG punset(int wait)
+{
+    LONG left;
+    int i, n;
+
+    Forbid();
+    for (i = pb_n - 1; i >= 0; i--)
+        PB_REMOVE(pb_blk[i], pb_lib[i], pb_lvo[i], thru, 0);
+    CacheClearU();
+    Permit();
+    for (n = 0;; n++) {
+        for (left = 0, i = 0; i < pb_n; i++)
+            left += pb_blk[i]->count;
+        if (!left || !wait || n >= 500)
+            break;
+        Delay(1);
+    }
+    pb_n = 0;
+    return left;
+}
+
 static void patch(int on)
 {
     struct Library *dos = (struct Library *)DOSBase, *ex = (struct Library *)SysBase;
 
+    if (!on)
+        return;
     Forbid();
-    if (on) {
-        old_allocmem = SetFunction(ex, LVO_ALLOCMEM, (APTR)allocmem_patch);
-        old_freemem = SetFunction(ex, LVO_FREEMEM, (APTR)freemem_patch);
-        old_open = SetFunction(dos, LVO_OPEN, (APTR)open_patch);
-        old_read = SetFunction(dos, LVO_READ, (APTR)read_patch);
-        old_lock = SetFunction(dos, LVO_LOCK, (APTR)lock_patch);
-        old_examine = SetFunction(dos, LVO_EXAMINE, (APTR)examine_patch);
-        old_oldopenlib = SetFunction(ex, LVO_OLDOPENLIBRARY, (APTR)oldopenlib_patch);
-        old_openlib = SetFunction(ex, LVO_OPENLIBRARY, (APTR)openlib_patch);
-        old_createproc = SetFunction(dos, LVO_CREATEPROC, (APTR)createproc_patch);
-        old_closelib = SetFunction(ex, LVO_CLOSELIBRARY, (APTR)closelib_patch);
-        old_unlock = SetFunction(dos, LVO_UNLOCK, (APTR)unlock_patch);
-        old_cacheclearu = SetFunction(ex, LVO_CACHECLEARU, (APTR)cacheclearu_patch);
-        old_cachecleare = SetFunction(ex, LVO_CACHECLEARE, (APTR)cachecleare_patch);
-        old_write = SetFunction(dos, LVO_WRITE, (APTR)write_patch);
-        old_opendev = SetFunction(ex, LVO_OPENDEVICE, (APTR)opendev_patch);
-        old_openfromlock = SetFunction(dos, LVO_OPENFROMLOCK, (APTR)openfromlock_patch);
-        if (o_freesignal)
-            old_freesignal = SetFunction(ex, LVO_FREESIGNAL, (APTR)freesignal_patch);
-        if (o_closedevice)
-            old_closedevice = SetFunction(ex, LVO_CLOSEDEVICE, (APTR)closedevice_patch);
-        if (o_alerts)
-            old_alert = SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT,
-                                    (APTR)alert_patch);
-        if (o_alertlog)
-            old_execalert = SetFunction(ex, LVO_ALERT, (APTR)execalert_patch);
-        if (o_wbfrontfail)
-            old_wbfront = SetFunction((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT,
-                                      (APTR)wbfront_patch);
-        if (o_openwindowfail) {
-            old_openwindow = SetFunction((struct Library *)IntuitionBase, LVO_OPENWINDOW,
-                                         (APTR)openwindow_patch);
-            if (IntuitionBase->LibNode.lib_Version >= 36)
-                old_openwindowtl = SetFunction((struct Library *)IntuitionBase,
-                                               LVO_OPENWINDOWTAGLIST, (APTR)openwindowtl_patch);
-        }
-        if (o_datestamp)
-            old_datestamp = SetFunction(dos, LVO_DATESTAMP, (APTR)datestamp_patch);
-    } else {
-        if (o_datestamp)
-            SetFunction(dos, LVO_DATESTAMP, old_datestamp);
-        if (o_openwindowfail) {
-            SetFunction((struct Library *)IntuitionBase, LVO_OPENWINDOW, old_openwindow);
-            if (IntuitionBase->LibNode.lib_Version >= 36)
-                SetFunction((struct Library *)IntuitionBase, LVO_OPENWINDOWTAGLIST,
-                            old_openwindowtl);
-        }
-        SetFunction(ex, LVO_CACHECLEARU, old_cacheclearu);
-        SetFunction(ex, LVO_CACHECLEARE, old_cachecleare);
-        SetFunction(dos, LVO_WRITE, old_write);
-        SetFunction(ex, LVO_OPENDEVICE, old_opendev);
-        SetFunction(dos, LVO_OPENFROMLOCK, old_openfromlock);
-        if (o_closedevice)
-            SetFunction(ex, LVO_CLOSEDEVICE, old_closedevice);
-        if (o_freesignal)
-            SetFunction(ex, LVO_FREESIGNAL, old_freesignal);
-        if (o_alerts)
-            SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT, old_alert);
-        if (o_wbfrontfail)
-            SetFunction((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT, old_wbfront);
-        if (o_alertlog)
-            SetFunction(ex, LVO_ALERT, old_execalert);
-        SetFunction(ex, LVO_CLOSELIBRARY, old_closelib);
-        SetFunction(dos, LVO_UNLOCK, old_unlock);
-        SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
-        SetFunction(ex, LVO_FREEMEM, old_freemem);
-        SetFunction(dos, LVO_OPEN, old_open);
-        SetFunction(dos, LVO_READ, old_read);
-        SetFunction(dos, LVO_LOCK, old_lock);
-        SetFunction(dos, LVO_EXAMINE, old_examine);
-        SetFunction(ex, LVO_OLDOPENLIBRARY, old_oldopenlib);
-        SetFunction(ex, LVO_OPENLIBRARY, old_openlib);
-        SetFunction(dos, LVO_CREATEPROC, old_createproc);
+    old_allocmem = pset(ex, LVO_ALLOCMEM, (APTR)allocmem_patch);
+    old_freemem = pset(ex, LVO_FREEMEM, (APTR)freemem_patch);
+    old_open = pset(dos, LVO_OPEN, (APTR)open_patch);
+    old_read = pset(dos, LVO_READ, (APTR)read_patch);
+    old_lock = pset(dos, LVO_LOCK, (APTR)lock_patch);
+    old_examine = pset(dos, LVO_EXAMINE, (APTR)examine_patch);
+    old_oldopenlib = pset(ex, LVO_OLDOPENLIBRARY, (APTR)oldopenlib_patch);
+    old_openlib = pset(ex, LVO_OPENLIBRARY, (APTR)openlib_patch);
+    old_createproc = pset(dos, LVO_CREATEPROC, (APTR)createproc_patch);
+    old_closelib = pset(ex, LVO_CLOSELIBRARY, (APTR)closelib_patch);
+    old_unlock = pset(dos, LVO_UNLOCK, (APTR)unlock_patch);
+    old_cacheclearu = pset(ex, LVO_CACHECLEARU, (APTR)cacheclearu_patch);
+    old_cachecleare = pset(ex, LVO_CACHECLEARE, (APTR)cachecleare_patch);
+    old_write = pset(dos, LVO_WRITE, (APTR)write_patch);
+    old_opendev = pset(ex, LVO_OPENDEVICE, (APTR)opendev_patch);
+    old_openfromlock = pset(dos, LVO_OPENFROMLOCK, (APTR)openfromlock_patch);
+    if (o_freesignal)
+        old_freesignal = pset(ex, LVO_FREESIGNAL, (APTR)freesignal_patch);
+    if (o_closedevice)
+        old_closedevice = pset(ex, LVO_CLOSEDEVICE, (APTR)closedevice_patch);
+    if (o_alerts)
+        old_alert = pset((struct Library *)IntuitionBase, LVO_DISPLAYALERT, (APTR)alert_patch);
+    if (o_alertlog)
+        old_execalert = pset(ex, LVO_ALERT, (APTR)execalert_patch);
+    if (o_wbfrontfail)
+        old_wbfront = pset((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT,
+                           (APTR)wbfront_patch);
+    if (o_openwindowfail) {
+        old_openwindow = pset((struct Library *)IntuitionBase, LVO_OPENWINDOW,
+                              (APTR)openwindow_patch);
+        if (IntuitionBase->LibNode.lib_Version >= 36)
+            old_openwindowtl = pset((struct Library *)IntuitionBase, LVO_OPENWINDOWTAGLIST,
+                                    (APTR)openwindowtl_patch);
     }
+    if (o_datestamp)
+        old_datestamp = pset(dos, LVO_DATESTAMP, (APTR)datestamp_patch);
     CacheClearU();
     Permit();
 }
@@ -1787,14 +1830,14 @@ static void patchmem(int on)
 {
     struct Library *ex = (struct Library *)SysBase;
 
-    Forbid();
-    if (on) {
-        old_allocmem = SetFunction(ex, LVO_ALLOCMEM, (APTR)allocmem_patch);
-        old_freemem = SetFunction(ex, LVO_FREEMEM, (APTR)freemem_patch);
-    } else {
-        SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
-        SetFunction(ex, LVO_FREEMEM, old_freemem);
+    if (!on) {
+        in_seg = active = 0;
+        punset(1);
+        return;
     }
+    Forbid();
+    old_allocmem = pset(ex, LVO_ALLOCMEM, (APTR)allocmem_patch);
+    old_freemem = pset(ex, LVO_FREEMEM, (APTR)freemem_patch);
     in_seg = active = on;
     CacheClearU();
     Permit();
@@ -1872,6 +1915,22 @@ static void report_track(void)
     }
 }
 
+/* racehold: a helper process (priority 1: it runs at once) calls Read and
+   is held inside the patch (read_pre) while COMMAND's patches are removed */
+static void race_helper(void)
+{
+    BPTR f;
+    UBYTE c;
+
+    race_task = FindTask(NULL);         /* before its first call of a patch */
+    f = Open("NIL:", MODE_OLDFILE);
+    if (f) {
+        Read(f, &c, 1);
+        Close(f);
+    }
+    race_done = 1;
+}
+
 static const char usage[] =
     "usage: inject [OPTION...] COMMAND [ARGS]\n"
     "  run COMMAND in this process with faults injected (bug-orig tests)\n"
@@ -1880,7 +1939,7 @@ static const char usage[] =
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
     "    track pad guard guardseg fill=XX freefill=XX datestamp=YYYY-MM-DD\n"
     "    opencount=NAME cd[=PATH] libs=PATH inuse=PATH click=TITLE/TEXT doslocked\n"
-    "    undobuf cacheflush=NAME freesignal closedevice doslist\n"
+    "    undobuf cacheflush=NAME freesignal closedevice doslist racehold[=nowait]\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
 
 int main(int argc, char **argv)
@@ -1892,7 +1951,8 @@ int main(int argc, char **argv)
     struct MsgPort *iport = NULL;
     struct IOStdReq *io = NULL;
     BPTR seg, old_cd = 0;
-    LONG rc;
+    LONG rc, left = 0;
+    struct Process *racep = NULL;
     int i, k, r = 0;
 
     if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
@@ -1917,7 +1977,7 @@ int main(int argc, char **argv)
             "              [freefill=XX]\n"
             "              [datestamp=YYYY-MM-DD]\n"
             "              [opencount=NAME]... [cd[=PATH]] [libs=PATH] [inuse=PATH]...\n"
-            "              [freesignal] [closedevice] [doslist]\n"
+            "              [freesignal] [closedevice] [doslist] [racehold[=nowait]]\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
         return 20;
@@ -2017,7 +2077,18 @@ int main(int argc, char **argv)
     active = 1;
     rc = RunCommand(seg, stack, args, strlen(args));
     active = 0;
-    patch(0);
+    if (o_racehold) {
+        racep = CreateNewProcTags(NP_Entry, (ULONG)race_helper, NP_Name,
+                                  (ULONG)"inject race helper", NP_Priority, 1,
+                                  NP_StackSize, 4096, TAG_DONE);
+        for (k = 0; racep && !race_in && k < 100; k++)
+            Delay(1);
+    }
+    left = punset(!o_racenowait);
+    if (left && !o_racehold) {
+        sprintf(line, "inject: %ld calls still inside a patch after 10 s\n", (long)left);
+        put(line);
+    }
     if (nn_name[0])
         __asm__ volatile("move.l %0,0.w" : : "d"(nn_old) : "memory");
     {
@@ -2119,6 +2190,18 @@ int main(int argc, char **argv)
     }
     sprintf(line, "inject: rc=%ld\n", rc);
     put(line);
+    if (o_racehold) {
+        for (k = 0; racep && !race_done && k < 500; k++)
+            Delay(1);
+        put(race_in ? "inject: racehold: a task was inside a patch\n"
+            : "inject: racehold: no task inside a patch\n");
+        sprintf(line, "inject: racehold: %ld calls inside after the removal\n", (long)left);
+        put(line);
+        put(race_done ? "inject: racehold: the task returned\n"
+            : "inject: racehold: the task did not return\n");
+    }
+    if (pb_failed)
+        put("inject: no memory for a patch\n");
     if (o_handles)
         put(h_kept ? "inject: handles: kept\n" : "inject: handles: changed\n");
     if (o_track)

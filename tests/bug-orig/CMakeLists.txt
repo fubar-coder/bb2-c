@@ -715,6 +715,23 @@ inject_guardseg(inject_guardseg_broken ${CMAKE_CURRENT_SOURCE_DIR}/inject-guards
 set_tests_properties(inject_guardseg_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+10:[ \n]+\"rc=0\",[ \n]+output[ \n]+line[ \n]+10:[ \n]+\"inject:[ \n]+guard:[ \n]+written[ \n]+behind")
 
+# inject's patch removal (inject-race.cmake): a helper process is held inside
+# a patch when the patches are removed; the removal waits for it.  The twin
+# with racehold=nowait (removal without waiting) must fail the check.
+function(inject_race name race)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DRESULTS=${RESULTS} -DINJECT=${INJECT} -DSEGWRITE=$<TARGET_FILE:segwrite>
+		-DEXPECT=${CMAKE_CURRENT_SOURCE_DIR}/inject-race.expect -DRACE=${race}
+		-DWORK=${work} -P ${CMAKE_CURRENT_SOURCE_DIR}/inject-race.cmake)
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT 240)
+endfunction()
+inject_race(inject_race racehold)
+inject_race(inject_race_broken racehold=nowait)
+set_tests_properties(inject_race_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+4:[ \n]+\"inject:[ \n]+racehold:[ \n]+0[ \n]+calls[ \n]+inside[ \n]+after[ \n]+the[ \n]+removal\",[ \n]+output[ \n]+line[ \n]+4:[ \n]+\"inject:[ \n]+racehold:[ \n]+1[ \n]+calls")
+
 add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
 # for the equivalence of blitz2-ab3 (tests/ab3)
 set_property(GLOBAL PROPERTY BUG_ORIG_SOURCES ${bug_orig_sources})

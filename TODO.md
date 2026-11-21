@@ -635,6 +635,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     closed windows through a pointer, every call counts itself in and the
     removal waits for the calls inside (tests `patchblock`,
     `patchblock_broken`).
+    The same for the patches of `tests/bug-orig/amiga/inject.c`
+    (2026-11-21): trampolines in the block, the removal waits (tests
+    `inject_race`, `inject_race_broken`).
   - *Runner features:* done: program arguments (`runargs=`, #107),
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,

@@ -31,7 +31,8 @@
  * header: PB_OPEN (dos Open: handler(d1 name), then the old function),
  * PB_CLOSE (intuition CloseWindow: the closed windows go to a ring in the
  * block), PB_AUTO (AutoRequest: handler(body, pos, neg), returns FALSE),
- * PB_EASY (EasyRequestArgs: handler(easystruct), returns 0).
+ * PB_EASY (EasyRequestArgs: handler(easystruct), returns 0),
+ * PB_THRU (any function: the program's own stub, see below).
  */
 #ifndef PATCHBLOCK_H
 #define PATCHBLOCK_H
@@ -170,6 +171,42 @@ PB_ASM_HEAD(easy, "")
 "_pb_easy_end:\n"
 );
 PB_DECLARE(easy);
+#endif
+
+#ifdef PB_THRU
+/* A patch whose real code stays in the program (the stub of inject: it
+   decides in C, calls the old function with the registers it got): the
+   block holds only this trampoline.  While `active` it calls the stub of
+   the program (head field `handler`) with its own return address on the
+   stack, so the old function's return comes back here and the call is
+   counted until it has left the stub's code; the stub must behave as a
+   called function (all of inject's do: they end in the old function or
+   an rts).  Once `active` is clear it jumps to the old function without
+   touching the program.  All registers are kept (a0 is saved on the
+   stack around the count); only the condition codes change. */
+__asm__(
+PB_ASM_HEAD(thru, "")
+"   move.l  a0,-(sp)\n"
+"   lea     _pb_thru_tmpl(pc),a0\n"
+"   addq.l  #1,(a0)\n"
+"   tst.l   4(a0)\n"
+"   beq.s   1f\n"
+"   move.l  (sp)+,a0\n"
+"   pea     2f(pc)\n"
+"   move.l  _pb_thru_tmpl+12(pc),-(sp)\n"
+"   rts\n"
+"2: move.l  a0,-(sp)\n"
+"   lea     _pb_thru_tmpl(pc),a0\n"
+"   subq.l  #1,(a0)\n"
+"   move.l  (sp)+,a0\n"
+"   rts\n"
+"1: subq.l  #1,(a0)\n"
+"   move.l  (sp)+,a0\n"
+"   move.l  _pb_thru_tmpl+8(pc),-(sp)\n"
+"   rts\n"
+"_pb_thru_end:\n"
+);
+PB_DECLARE(thru);
 #endif
 
 /* The patch of vector lvo of lib from the template NAME: the block (never
