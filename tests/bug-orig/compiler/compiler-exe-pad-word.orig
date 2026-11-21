@@ -1,0 +1,48 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+read 4 sizes 1
+pad 1
+same p0 1 p1 0
+rc=0
+[blitz2]
+inject: rc=0
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-exe-pad-word.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-exe-pad-word
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+JOB	j001	CORPUS:p0.bb2
+XTRA	j001	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/p0a
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j001	ok
+JOB	j002	CORPUS:p1.bb2
+XTRA	j002	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/p1a
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j002	ok
+JOB	j003	CORPUS:p0.bb2
+XTRA	j003	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/p0b
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j003	ok
+JOB	j004	CORPUS:p1.bb2
+XTRA	j004	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/p1b
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j004	ok
+BATCH	end

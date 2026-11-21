@@ -241,7 +241,18 @@ void savefile(void)
     *tstsize2 = longs;
     mywrite(fh, tsthead, 32);
 
-    mywrite(fh, (APTR)(pcat + noinits), (objlen - noinits + 3) & 0xfffffffc);
+    /* Fixed (#1184, intended deviation): the original writes the code
+       rounded up to a long straight from the object buffer
+       (blitz2.s:6843-6850), which makeallox rounds to words only: with an odd
+       number of code words the pad word came from the 2 bytes behind the
+       buffer.  Here the code, then the pad from a zero. */
+    {
+        ULONG len = objlen - noinits;
+
+        mywrite(fh, (APTR)(pcat + noinits), len);
+        if (len & 3)
+            mywrite(fh, &zero, 4 - (len & 3));
+    }
 
     /* Fixed (#943, intended deviation): the original writes all
        relocations as one group of the HUNK_RELOC32 block; with more than
