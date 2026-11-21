@@ -84,7 +84,7 @@ Macro TestCase                      ; !TestCase{NAME}
   If TLCase("`1")=0 Then Return     ; last statement of the macro
 End Macro
 Macro EndTestCase
-  TLCaseEnd : Return
+  TLBlockEnd : Return
   .tc_end_`@
 End Macro
 ```
