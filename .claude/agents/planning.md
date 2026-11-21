@@ -49,7 +49,7 @@ Answer each question in this form:
     present; give it with its reason, marked as yours, not the user's.
     It is recorded in the change's design.md if the brief names the
     change and allows it, and listed in your report for the
-    open-questions file; the coordinator writes that file.
+    coordinator-decisions file; the coordinator writes that file.
   * "Decide" (step 2 or the matrix): you do not decide. Return the
     question for the user with the options, your recommendation and the
     rating; a contradiction is named, not resolved (rule 2). With E1,
