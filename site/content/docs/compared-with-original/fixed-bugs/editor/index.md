@@ -599,6 +599,23 @@ change what users of the editor see:
 
 ### Low memory
 
+* While blitz2 starts under the editor, it allocates its buffers and
+  opens its version requester. When an allocation failed or the requester
+  window could not be opened, the editor jumped into its own main loop
+  before that loop was running, and the system crashed; the editor shows
+  its out-of-memory alert, and blitz2 goes on starting, without the
+  version requester or without its buffers, which the first compile
+  allocates again. The original compiler under the port's editor also
+  goes on when its buffers cannot be allocated
+  ([#1008](https://github.com/fubar-coder/bb2-c/issues/1008)).
+* After the start, a requester of the compiler that could not be opened made the
+  editor show its alert and abandon the compiler in the middle of its
+  work; for the port's compiler, the editor shows the alert and the
+  compiler goes on without the requester: a compile runs without its
+  STOP requester, "Not Enough Object Memory Available!" ends the
+  compile, and COMPILER OPTIONS, VIEW NEWTYPES, CALCULATOR and CLI
+  ARGUMENT do nothing
+  ([#1008](https://github.com/fubar-coder/bb2-c/issues/1008)).
 * The editor opens its screen again after the options, when the label
   column appears or goes, and after a program with `CloseEd`. When it
   could not open it, it drew into freed memory and hung; it shows the

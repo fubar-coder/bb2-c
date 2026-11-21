@@ -7333,6 +7333,14 @@ rows:
     text: "When the editor's screen cannot be reopened, the editor shows the out-of-memory alert and ends with an error; the original drew into freed memory and hung."
     page: editor
     anchor: low-memory
+  - issue: 1008
+    severity: 5
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "When memory runs out or a requester cannot be opened while blitz2 starts under the editor, the editor shows its out-of-memory alert and blitz2 goes on starting; the original crashed the system."
+    page: editor
+    anchor: low-memory
   - issue: 1009
     severity: 5
     topic: "Editor"
