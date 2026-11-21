@@ -156,6 +156,47 @@ Limits until the expression tree (#1180):
 | `r.l=(q>1)` | 0 (the port: -1, #1177) | -1 |
 | `If q>b` (`b.l=65537`) | true (the port: false, #1177) | false |
 
+## Array size and index limits
+
+A dimension of an array holds at most 65535 elements, the highest index
+is 65534; the number of dimensions and the total size are limited only by
+4 GB (#58). The manual states no limit. The original has these limits and
+the port keeps them: a `Dim` or an index outside them is a programming
+error, and the check for it exists (runtime error checking). Measured with
+2.10 and 1.95 of the CD, and the port, with the CD's and the C libraries:
+the four give the same results, except for `Dim a(65535)` with checking
+(below).
+
+* **`Dim`** (`dimwit`, `blitz2.s:14571-14610`; port
+  `tokens2.c:1449-1480`) multiplies the size so far by the count of each
+  dimension with `arrmult` (`bblibsrc/arrayslib:38-39`; port
+  `libs/acidlibs/arrayslib.c:162-176`), which does `ADDQ #1,d1` and two
+  `MULU d1`: the count is a word. Without checking, `Dim a.l(70000)` gets
+  17860 bytes (4465 elements, 70001 mod 65536), `Dim a.l(65535)` gets 0
+  bytes and no error is shown; nothing keeps the program from writing
+  behind the block. With checking, `arrchk` (`blitz2.s:14591`) refuses
+  65536 and more at the `Dim` with "Array Dimension out of Range"
+  (`bblibsrc/runerrlib:162`); 65535 is refused only by the port's C
+  library (`libs/acidlibs/runerrlib.c:451-454`, #1037), the CD's library
+  passes it and the first access is "Array Subscript out of Range".
+* **Index** (`calcvar`, `blitz2.s:8214-8290`; port `parse.c:1340-1385`):
+  the first index is multiplied with the element size by `muld1`
+  (`blitz2.s:11106-11137`; port `libcall.c:603-630`): a shift for a power
+  of two (the whole Long counts, so an index of 65536 and more addresses
+  behind the array), `mulu` otherwise (only the low word counts: the index
+  wraps modulo 65536 into the array). A later index is multiplied by
+  `makelmul` (`blitz2.s:8084-8166`; port `parse.c:1280-1295`): `mulu` of
+  the low word of the index, unsigned, so it wraps modulo 65536 too.
+  Indexes 32768 to 65534 are valid in every dimension (written and read
+  back, measured). With checking every index is compared with the size of
+  its dimension (`zarrchk`, `blitz2.s:8077`) and an index of 65536 or more
+  is "Array Subscript out of Range" (`arrszchk`, `blitz2.s:8234`).
+* A Word variable with 32768 to 65535 in it is negative as a first index of
+  an array of a power-of-two element size (a wrong address without
+  checking, "Array Subscript out of Range" with it), and the right element
+  as a later index or with another element size (without checking); its
+  value is outside the type's range, so this is a programming error too.
+
 ## Where this is a problem
 
 * **Comparisons** were original bug #1177, fixed in the port (above, "A

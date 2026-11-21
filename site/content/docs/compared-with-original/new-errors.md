@@ -928,6 +928,15 @@ is the error "Array Dimension out of Range" too.
 **What to change.** Make the highest index 65534 or less, or spread the
 elements over two dimensions.
 
+The manual states no limit, but the original has one, and the port keeps
+it: `Dim` counts a dimension's elements in a word. Without runtime error
+checking a larger `Dim` is not refused but silently too small
+(`Dim a.l(70000)` gets 17860 bytes, 4465 elements, in the original and in
+the port), and an index of 65536 or more reaches outside the array or
+wraps into it. Such a size or index is a programming error; turn runtime
+error checking on to find it ("Array Dimension out of Range", "Array
+Subscript out of Range").
+
 Issue: [Dim a(65535) gave an array of no elements (#1037)](https://github.com/fubar-coder/bb2-c/issues/1037).
 
 ### `WSize` beyond the size limits of a window {#wsize-limits}
