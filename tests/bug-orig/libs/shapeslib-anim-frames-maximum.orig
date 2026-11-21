@@ -4,8 +4,10 @@ done
 [compile]
 ok
 [run]
-behind changed
+# varies: the shape objects written behind the table hold addresses (allocations of the frames)
+behind 00100004000100020102000000000001*
 shape 99 16 01
+inject: rc=0
 rc=0
 [blitz2]
 rc=0

@@ -7,13 +7,17 @@
 ; Here: the 3-frame ANIM of shapeslib-anim-xor (op 5, interleave 1)
 ; built in memory, written to RAM: and loaded into shape 99, the last of
 ; the default maximum of 100.  The 64 bytes behind the shape table
-; (Addr Shape(99)+32) are kept before the load and compared after it,
-; then put back (so the end of the program does not meet the frames).
-; Correct: the load stops at the last shape object, the 64 bytes behind
-; it are unchanged ("behind unchanged"); shape 99 is frame 0.  The
-; original writes frames 1 and 2 behind the table ("behind changed").
+; (Addr Shape(99)+32, two shape objects; inject pad makes them a padding
+; of the table's block) are set to zero, then LoadShape runs, then the
+; 64 bytes are printed as a hex string and set to zero again (so the end
+; of the program does not meet the frames).
+; Correct: the load stops at the last shape object, the 64 bytes stay
+; zero; shape 99 is frame 0.  The original writes frames 1 and 2 behind
+; the table: shape objects, whose first words are not zero (the rest are
+; addresses).
 ; @fixed #265
 ; @configs clib
+; @pass runwrap=@INJECT@|pad
 DEFTYPE .l
 Statement pb{v.l}
   SHARED m,p
@@ -56,15 +60,11 @@ If WriteFile(0,"RAM:bo265.anim")
   CloseFile 0
 EndIf
 b=Addr Shape(99)+32
-Dim k.l(15)
-For i=0 To 15 : k(i)=Peek.l(b+i*4) : Next
+For i=0 To 15 : Poke.l b+i*4,0 : Next
 LoadShape 99,"RAM:bo265.anim"
-c=0
-For i=0 To 15
-  If Peek.l(b+i*4)<>k(i) Then c=c+1
-  Poke.l b+i*4,k(i)
-Next
-If c=0 Then NPrint "behind unchanged" Else NPrint "behind changed"
+a$=""
+For i=0 To 15 : a$=a$+Right$("0000000"+Hex$(Peek.l(b+i*4)),8) : Poke.l b+i*4,0 : Next
+NPrint "behind ",a$
 NPrint "shape 99 ",ShapeWidth(99)," ",Right$(Hex$(Peek.b(Peek.l(Addr Shape(99)+14)) AND 255),2)
 KillFile "RAM:bo265.anim"
 FreeMem m,1024
