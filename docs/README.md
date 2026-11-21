@@ -34,7 +34,7 @@ The analysis of the originals and the notes on the translation:
 | Directory or file | Content |
 |---|---|
 | [architecture.md](architecture.md), [documentation.md](documentation.md), [formats.md](formats.md), [token-table.md](token-table.md) | the overall architecture, the documentation of the originals, file formats, the token table |
-| [blitz2/](blitz2/) | compiler: surveys, reviews, conventions, changes |
+| [blitz2/](blitz2/) | compiler: surveys, reviews, conventions, changes, [deviations](blitz2/deviations.md) |
 | [ted/](ted/) | editor: plans, deviations, conventions |
 | [libs/](libs/) | libraries: deviations, declaration notes, conventions |
 | [ab3/](ab3/README.md) | what AmiBlitz3 changed relative to BB2 2.10, and the AB3 mode |
