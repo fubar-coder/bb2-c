@@ -7383,12 +7383,12 @@ rows:
     anchor: print-umlauts
   - issue: 1018
     severity: 4
-    topic: "Compiler"
-    library: "Compiler"
+    topic: "Editor"
+    library: "TED, literallib"
     command: ""
     text: "Accented Latin-1 letters such as ß or é compile in strings and comments, elsewhere they are \"Syntax Error\"; the original editor lost them."
-    page: compiler
-    anchor: expressions-and-statements
+    page: editor
+    anchor: latin1-in-strings
   - issue: 1026
     severity: 5
     topic: "Files"
