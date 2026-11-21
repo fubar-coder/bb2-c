@@ -56,7 +56,8 @@ static int ends_with(const char *s, const char *tail)
     return l >= t && !strcmp(s + l - t, tail);
 }
 
-/* every *.obj below root/rel (not in a directory CMakeFiles) into l, as
+/* every *.obj below root/rel (not in a directory CMakeFiles or a run directory run-*, the work
+   directory of a test run, which holds copies of libraries) into l, as
    paths relative to root; 0 = ok, -1 = out of memory or a path too long;
    a directory that is not there is empty */
 static int walk(const char *root, const char *rel, struct list *l)
@@ -75,7 +76,7 @@ static int walk(const char *root, const char *rel, struct list *l)
         struct stat st;
 
         if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")
-            || !strcmp(de->d_name, "CMakeFiles"))
+            || !strcmp(de->d_name, "CMakeFiles") || !strncmp(de->d_name, "run-", 4))
             continue;
         if (snprintf(sub, sizeof sub, "%s/%s", rel, de->d_name) >= (int)sizeof sub
             || snprintf(path, sizeof path, "%s/%s", root, sub) >= (int)sizeof path) {

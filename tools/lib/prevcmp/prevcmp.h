@@ -5,7 +5,8 @@
  *
  * The library files of a build directory are
  *   blitz2/acidlibs, blitz2/deflibs   the joined library files
- *   every *.obj below libs/ and variants/ (outside CMakeFiles/): the
+ *   every *.obj below libs/ and variants/ (outside CMakeFiles/ and the run
+ *                                     directories named run-... of the test runs): the
  *                                     library files of acidlibs, deflibs,
  *                                     their variants and the userlibs
  * (paths relative to the build directory, '/' separated).  Every one the

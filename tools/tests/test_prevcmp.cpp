@@ -77,6 +77,9 @@ static void test_same(void)
     struct prevcmp_options o = {};
     char rep[2000];
 
+    /* the copies of libraries in the run directory of a test run (libs/tests/NAME/run-X/) are not
+       results of the build: not counted as new (4160 of them were in a long-used build directory) */
+    put_file("cur", "libs/tests/libs_emulator/run-a1b2c3/test/2dlib.obj", "a copy");
     /* the objects in CMakeFiles/, a .linked file and the compilers are not
        library files: 5 files compared */
     CHECK(run(&o, rep, sizeof rep) == 0);
