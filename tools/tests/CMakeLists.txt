@@ -21,6 +21,9 @@ foreach(t testmatrix testassert)
 	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
+# the preprocessor's test also holds the example of tests/README.md
+target_compile_definitions(test_testpp PRIVATE
+	TESTPP_README="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/README.md")
 # the form of the Blitz test sources (lib/testpp, testform.c)
 add_executable(test_testform test_testform.cpp)
 target_link_libraries(test_testform PRIVATE lib_testpp snitch::snitch)

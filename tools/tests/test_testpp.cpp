@@ -129,6 +129,63 @@ TEST_CASE("testpp: the example of tests/README.md", "[testpp]")
     CHECK(!strcmp(tp_kind_name(TP_CHECKSTREQ), "CheckStrEq"));
 }
 
+// the fenced block after the first line holding `after` in text
+static std::string block_after(const std::string &text, const std::string &after)
+{
+    size_t at = text.find(after);
+
+    REQUIRE(at != std::string::npos);
+    size_t s = text.find("```\n", at);
+    REQUIRE(s != std::string::npos);
+    s += 4;
+    size_t e = text.find("```\n", s);
+    REQUIRE(e != std::string::npos);
+    return text.substr(s, e - s);
+}
+
+TEST_CASE("testpp: the example of tests/README.md, from the file", "[testpp]")
+{
+    FILE *f = fopen(TESTPP_README, "rb");
+    std::string text;
+    char buf[4096];
+    size_t n;
+
+    REQUIRE(f != nullptr);
+    while ((n = fread(buf, 1, sizeof buf, f)) > 0)
+        text.append(buf, n);
+    fclose(f);
+    std::string source = block_after(text, "### The source form");
+    std::string want = block_after(text, "The example above becomes:");
+    pp p(source);
+    REQUIRE(p.rc == 0);
+    CHECK(p.text() == want);
+}
+
+TEST_CASE("testpp: quick and float checks", "[testpp]")
+{
+    pp p("!TestCase{a}\n"
+         "  !CheckQEq{q,0.5,\"half\"}\n"
+         "  !CheckFltNear{w*1.5,24,0.01}\n"
+         "  !CheckFltNear{Sin(x),f{1,2},0.001,\"sin\"}\n"
+         "!EndTestCase\n");
+    REQUIRE(p.rc == 0);
+    CHECK(p.text()
+          == "!TestCase{a}\n"
+             "  !CheckQEq{0,q,0.5}\n"
+             "  !CheckFltNear{1,w*1.5,24,0.01}\n"
+             "  !CheckFltNear{2,Sin(x),f{1,2},0.001}\n"
+             "!EndTestCase\n");
+    REQUIRE(p.s.nchecks == 3);
+    const tp_check *c = p.s.checks;
+    CHECK((c[0].kind == TP_CHECKQEQ && c[0].number == 0 && !strcmp(c[0].name, "half")));
+    CHECK((!strcmp(c[0].expr, "q") && !strcmp(c[0].expected, "0.5") && c[0].delta == nullptr));
+    CHECK((c[1].kind == TP_CHECKFLTNEAR && c[1].name == nullptr));
+    CHECK((!strcmp(c[1].expr, "w*1.5") && !strcmp(c[1].expected, "24") && !strcmp(c[1].delta, "0.01")));
+    CHECK((!strcmp(c[2].expected, "f{1,2}") && !strcmp(c[2].delta, "0.001") && !strcmp(c[2].name, "sin")));
+    CHECK(!strcmp(tp_kind_name(TP_CHECKFLTNEAR), "CheckFltNear"));
+    CHECK(p.text().find("half") == std::string::npos);
+}
+
 TEST_CASE("testpp: numbers over two cases, namespaces", "[testpp]")
 {
     pp p("Statement helper{v}\n"
@@ -293,6 +350,9 @@ TEST_CASE("testpp: refused calls", "[testpp]")
     refused(a + "!CheckEq{a}" + e, "x.test.bas:2: !CheckEq takes 2 arguments and an optional name, 1 given");
     refused(a + "!CheckEq{a,1,\"n\",4}" + e, "x.test.bas:2: !CheckEq takes 2 arguments and an optional name, 4 given");
     refused(a + "!Check{a,b,c}" + e, "x.test.bas:2: !Check takes 1 argument and an optional name, 3 given");
+    refused(a + "!CheckQEq{q}" + e, "x.test.bas:2: !CheckQEq takes 2 arguments and an optional name, 1 given");
+    refused(a + "!CheckFltNear{f,2.5}" + e, "x.test.bas:2: !CheckFltNear takes 3 arguments and an optional name, 2 given");
+    refused(a + "!CheckFltNear{f,2.5,0.1,n$}" + e, "x.test.bas:2: the name of !CheckFltNear must be a string literal");
     refused(a + "!Check{a,b}" + e, "x.test.bas:2: the name of !Check must be a string literal");
     refused(a + "!CheckStrEq{a$,b$,n$}" + e, "x.test.bas:2: the name of !CheckStrEq must be a string literal");
     refused(a + "!CheckEq{a,1,\"x\"+\"y\"}" + e, "x.test.bas:2: the name of !CheckEq must be a string literal");
