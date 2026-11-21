@@ -128,7 +128,7 @@ static int cw_begin(struct cw_msg *m)
 
 static void cw_add(struct cw_msg *m, const char *s)
 {
-    if (!s) s = "(null)";
+    if (!s) return;             /* as the earlier put(): a NULL text is nothing */
     for (; *s && m->len < CW_MAX - 4; s++) m->text[m->len++] = *s;
     if (*s) {                   /* cut */
         m->text[m->len++] = '.'; m->text[m->len++] = '.'; m->text[m->len++] = '.';
