@@ -1650,12 +1650,14 @@ from the checkout.
 What is compared (without a prev build `prev_results` is skipped, not
 passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
 `build/<preset>/prev/` from an earlier prev build is ignored, tests
-`prev_stale` and `prev_stale_broken`, `cmake/prev-stale-test.cmake`; and the corpus and `ted_ab` run without their prev parts):
+`prev_stale` and `prev_stale_broken`, `cmake/prev-stale-test.cmake`; and the corpus, `ted_ab` and the others below run without their prev parts):
 
 * `prev_results` (host test, `results prev`,
   [`tools/results`](../tools/results/README.md)): `blitz2/acidlibs`,
   `blitz2/deflibs` and every library file (`libs/**.obj`,
-  `variants/**.obj`: acidlibs, deflibs, their variants, the userlibs)
+  `variants/**.obj`: acidlibs, deflibs, their variants, the userlibs; not
+  the copies in `CMakeFiles` or in the run directories `run-*` of test
+  runs)
   byte by byte. A difference fails and names the file. A file the
   commit adds is counted, not judged. Intended differences (a fix names
   them in its commit): `-DPREV_INTENDED=ON` lets every file differ, or
@@ -1679,10 +1681,63 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
   `Cc-Pc`, reported like the others). A change of what TED does shows
   there. (The pair `C5-P5`, P5 the previous commit's TED with blitz2
   2.10, runs only where a pass names P5 in its combinations.)
+* the sources of the compiler tests, compiled (not run) by the previous
+  commit's compiler as well: its executable, or its error, must be the one
+  this build's compiler gives, like the corpus's `prev` configuration but
+  with `run=off` and without an expectation (what the program does is the
+  test's own check). The compile-only passes have `exe:clib` as the corpus
+  and use no emulator time for running:
+  * `corpus_cd_prev`, `corpus_cd_ab3_prev`: the 724 sources of the CD
+    (`corpus_cd`, `corpus_cd_ab3`) compiled with the previous commit's
+    `blitz2` / `blitz2-ab3` and the CD's libraries; their table is
+    compared row by row with the one `corpus_cd` / `corpus_cd_ab3` wrote
+    (`corpusrun cd`, pass key `current=`; `cdcmp_prev` in `tests/corpus/runner/cdcmp.h`): result,
+    line, message, size and the hash of the executable with the trap
+    blocks zeroed, unlike the comparison with the original, where the
+    executable is information only. They run after the test they compare
+    with (fixtures `corpus_cd_table`, `corpus_cd_ab3_table`) and need the
+    CD and Amiberry. `corpus_cd_prev_check` (CD and Amiberry, no prev
+    build) is their test with broken input: tables made from one source
+    (the same, a changed hash, a listed difference, a stale entry, a row in
+    one table only) and `cdrun_source` the malformed pass keys.
+  * `site_examples_run`, `site_examples_compile` and their variant groups
+    (`site_examples_run_rwe_1999` ...): the prev configuration is in every
+    group, with the variant's libraries and userlibs below the prev build
+    directory.
+  * `compiler_prev`: every source of `tests/blitz2` and every
+    compiler bug-orig test (`tests/bug-orig/compiler`, the compiler's port
+    regression tests `regression/compiler-*`) that needs nothing special
+    in its pass (no `@pass` lines for the compile, no runtime error
+    checking) in one pass: one session per configuration for all of them.
+    A test that has them (a userlib or `inject` wrapper, joblines, other
+    machines, an include, runtime error checking) has its own pass and
+    test `NAME_prev` (`bug_orig_ID_prev`, `regression_ID_prev`,
+    `blitz2_ID_prev`: `cmake/prev.cmake`, `prev_compile_test`), configured
+    by the same keys as the test itself (the lines for a program run are
+    left out). Not compared, with the reason in the CMake file: tests with a
+    Compile/Run job (`jobline=run=...`: what the compiler leaves in its
+    buffer is addresses of the running program),
+    `compiler-maxs-libjsr` (#335: addresses of the compiler's memory in the
+    executable) and three tests where the compiler gives up before the job
+    (no result: `compiler-optreqprep-allocmem`, `compiler-wb-info-progfile`,
+    `compiler-wbexit-returncode`); the tests with `@rwe` userlibs are left out (their variants' libraries).
+    `compiler_selftest_*_prev` (no prev build needed) are their tests with
+    broken input: a source whose include differs between `clib` and `prev` fails
+    and names the source and the line to quote; the same one passes; a
+    listed difference passes as `(intended)`; a stale entry and an entry
+    for a source that is not in the pass fail.
+  * `ab3_cli_prev_N`: the cases of the block `ab3_cli_N` compiled by the
+    previous commit's `blitz2-ab3` (`tests/ab3/cli-prev.cmake`, `cli.cmake`
+    with `COMPILE_ONLY`; two emulator sessions at the same time): the
+    executables (`results exe-same`: the trap blocks zeroed, as in the
+    corpus) and the console output of every case must be the same. The
+    tests with broken input are `ab3_cli_prev_same`, `_differs` (prev's
+    `blitz2-ab3` is another program), `_intended` and `_stale`
+    (`cli-prev-test.cmake`, no prev build needed).
 
 A fix changes results on purpose: its commit names them (CLAUDE.md), the
 differences that report must be exactly those, and `-DPREV_INTENDED`
-names them for the three comparisons with one rule: a listed difference
+names them for all of these comparisons with one rule: a listed difference
 must really exist (a stale entry fails), an unlisted difference fails, and
 `ON` allows every one. The entries (`;`-separated, no blanks):
 
@@ -1693,6 +1748,10 @@ must really exist (a stale entry fails), an unlisted difference fails, and
 | `corpus_runerr:NAME`, `corpus_req:NAME`, `corpus_serial:NAME`, `corpus_serial_runerr:NAME` | the same for the other corpus passes |
 | `ted_ab:CASE` | the `ted_ab` case `CASE`: the pairs `C5-P5` and `Cc-Pc` may differ, at least one must |
 | `ted_ab:CASE:C5-P5`, `ted_ab:CASE:Cc-Pc` | only that pair |
+| `corpus_cd_prev:PATH`, `corpus_cd_ab3_prev:PATH` | the CD source `PATH` (below `ultimate-blitz-basic-2.1`, as in `tests/data/blitz2-cd.tsv`): its row may differ from the one of `corpus_cd` / `corpus_cd_ab3` in any field |
+| `compiler_prev:ID`, `bug_orig_ID_prev:ID`, `regression_ID_prev:ID`, `blitz2_ID_prev:ID` | the compiler test source `ID` in that compile-only pass (`compiler_prev` for the tests without special needs, else the test's own pass `NAME_prev`): the executable or the compile result of `prev` may differ from `clib`'s |
+| `site_examples_run:NAME`, `site_examples_compile:NAME`, `site_examples_run_rwe_1999:NAME` ... | the site example `NAME` in that pass (the ctest name of the pass, `_` for `-` in the group) |
+| `ab3_cli_prev:CASE` | the case `CASE` of `ab3_cli` (any block; a name that is no case is refused when CMake configures) |
 
 The part before the first colon is the ctest name of the test, so an
 entry says which comparison it is for: the same source is listed once per
@@ -1700,7 +1759,7 @@ pass it differs in (`corpus` and `corpus_runerr` run the same sources),
 and a source that is not in the pass (a typo) is stale. Entries without a
 colon are library files, others are checked for their syntax by every
 runner (an unknown test, an empty name, a pair that is no `C5-P5` or
-`Cc-Pc` are errors). `corpus_cd` and `corpus_cd_ab3` have no prev part.
+`Cc-Pc` are errors).
 `PREV_INTENDED` is passed to the runners as `intended=ENTRY` lines of
 their pass files; a `ted_ab` run with `TED_AB_FILTER` does not call a
 case it did not run stale. In the reports a difference reads

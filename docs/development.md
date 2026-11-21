@@ -245,17 +245,21 @@ names (CLAUDE.md "Acceptance"). The build of the previous commit, the
 ```
 cmake --preset amiga -DBLITZ2_PREV=ON   # once; HEAD~1, or a revision, or a build directory
 cmake --build --preset amiga            # builds build/amiga/prev/ from git archive (the checkout stays untouched)
-ctest --preset all                      # prev_results, corpus (config prev), ted_ab (P5, Pc)
+ctest --preset all                      # prev_results, corpus (config prev), ted_ab (P5, Pc), the CD, the compiler tests, ab3_cli, the site examples
 ```
 
 `prev_results` compares `acidlibs`, `deflibs` and every library file
 byte by byte. The corpus compares the executables of the previous
-compiler with those of the current one, and `ted_ab` runs the previous
+compiler with those of the current one, the same for the CD's sources
+(`corpus_cd_prev`, `corpus_cd_ab3_prev`), the sources of `tests/blitz2` and
+of the compiler's bug-orig tests (`compiler_prev`, `bug_orig_ID_prev`, ...),
+the cases of `ab3_cli` (`ab3_cli_prev_N`) and the site examples, and `ted_ab` runs the previous
 TED. `-DPREV_INTENDED=ON` or a list names the differences a fix changes,
 each of which must really differ: a library path
 (`libs/acidlibs/2dlib.obj`), `corpus:NAME` (also `corpus_runerr:NAME` and
 the other corpus passes) for a corpus source, `ted_ab:CASE[:C5-P5|:Cc-Pc]`
-for a TED A/B case, e.g.
+for a TED A/B case, `corpus_cd_prev:PATH` for a CD source, `compiler_prev:ID` /
+`bug_orig_ID_prev:ID` for a compiler test, `ab3_cli_prev:CASE`, `site_examples_run:NAME`, e.g.
 `-DPREV_INTENDED="libs/acidlibs/2dlib.obj;corpus:t01_int;corpus_runerr:t01_int"`.
 A run that finds differences prints the list to quote in the commit
 message (`prev differs in: PREV_INTENDED="..."`). Options, what is compared and how the
