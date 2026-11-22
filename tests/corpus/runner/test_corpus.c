@@ -504,7 +504,9 @@ int main(void)
         CHECK(parse(NORUN "expect=/e\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         /* mask_traps=on / off, anything else is an error */
         CHECK(corpus_parse(NORUN "mask_traps=on\n", &p, err, sizeof err) == 0 && p.mask_traps);
+        corpus_free(&p);
         CHECK(corpus_parse(NORUN "mask_traps=off\n", &p, err, sizeof err) == 0 && !p.mask_traps);
+        corpus_free(&p);
         CHECK(corpus_parse(NORUN "mask_traps=1\n", &p, err, sizeof err) == -1
               && strstr(err, "mask_traps=on or mask_traps=off"));
         /* must_compile=on: only with run=off */
