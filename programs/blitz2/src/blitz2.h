@@ -18,6 +18,7 @@
 #define NORETURN __attribute__((noreturn))
 
 #include "structs.h"
+#include "tokcode.h"    /* the token numbers and codes (toklist.h) */
 #include "glue.h"
 #include "ext.h"      /* the extension points (ext_bb2.c, ab3*.c) */
 

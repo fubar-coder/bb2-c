@@ -977,8 +977,8 @@ void domacro(UWORD c)
                 continue;
             for (endifs = ext_macrolineend(); endifs; endifs--) {
                 macputb(&mb, ':');              /* AB3 mode: ": End If" */
-                macputw(&mb, 0x8002);
-                macputw(&mb, 0x800b);
+                macputw(&mb, TOK_END);
+                macputw(&mb, TOK_IF);
             }
             macputb(&mb, ':');                  /* .notend2 (58) */
             continue;
@@ -991,11 +991,11 @@ void domacro(UWORD c)
             macputb(&mb, c);                    /* .notend2 */
             continue;
         }
-        if (c == 0x800d) {                      /* Macro */
+        if (c == TOK_MACRO) {
             coolnest++;
-        } else if (c == 0x8002) {               /* End */
+        } else if (c == TOK_END) {
             c = getchar3();
-            if (c == 0x800d && --coolnest < 0)
+            if (c == TOK_MACRO && --coolnest < 0)
                 break;                          /* .macdone */
             /* .notem.  A plain char after End is put as a word
                ($00,char; the 0 ends the statement), spaces/comments after End are lost.
@@ -1019,8 +1019,8 @@ void domacro(UWORD c)
                with ": End If").  AmiBlitz3 also stores only End before
                its statement End noa7 (doend2, 22682), which the port
                does not have. */
-            ext_macrotoken(0x8002, c);
-            macputw(&mb, 0x8002);
+            ext_macrotoken(TOK_END, c);
+            macputw(&mb, TOK_END);
             if (c == 0 || c == ':') {
                 bakup();                        /* .gather reads c again */
                 continue;

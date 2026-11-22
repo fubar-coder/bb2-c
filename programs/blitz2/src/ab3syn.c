@@ -152,7 +152,9 @@ static void labelend(void)
 BOOL ext_namelabel(UWORD c)
 {
     static const UBYTE allowtab[] = {
-        0x7d, 0x7c, 0x44, 0x45, 0xb9, 0x89, 0xce, 0xcf, 0xd0, 0xcd
+        (UBYTE)TOK_ASM_LSR, (UBYTE)TOK_ASM_LSL, (UBYTE)TOK_ASM_ASL, (UBYTE)TOK_ASM_ASR,
+        (UBYTE)TOK_MOD, (UBYTE)TOK_ASM_NOT, (UBYTE)TOK_BITSET, (UBYTE)TOK_BITCLR,
+        (UBYTE)TOK_BITCHG, (UBYTE)TOK_BITTST
     };
     unsigned i;
 
@@ -362,7 +364,7 @@ static BOOL ismacroline(const UBYTE *p)
 {
     while (*p == ' ')
         p++;
-    return p[0] == 0x80 && p[1] == 0x0d;        /* Macro ($800D) */
+    return TOKAT(p, TOK_MACRO);
 }
 
 /* is there an End Macro outside strings between p and the "@@" at at?
@@ -376,10 +378,10 @@ static BOOL isendmacro(const UBYTE *p, const UBYTE *at)
 
     for (; p < at; p++) {
         if (*p & 0x80) {
-            if (!instr && p[0] == 0x80 && p[1] == 0x02) {   /* End */
+            if (!instr && TOKAT(p, TOK_END)) {
                 for (q = p + 2; *q == ' '; q++)
                     ;
-                if (q[0] == 0x80 && q[1] == 0x0d)           /* Macro */
+                if (TOKAT(q, TOK_MACRO))
                     return TRUE;
             }
             p++;
@@ -474,9 +476,9 @@ void ext_macrotoken(UWORD c, UWORD next)
 {
     if (progmode != XTRA_MODE_AB3 || quoteflag)
         return;
-    if (c == 0x8021)                            /* Then */
+    if (c == TOK_THEN)
         macthens++;
-    else if (macthens && ((c == 0x8002 && next == 0x800b) || c == 0x80c0))
+    else if (macthens && ((c == TOK_END && next == TOK_IF) || c == TOK_ENDIF))
         macthens--;                             /* End If, EndIf */
 }
 

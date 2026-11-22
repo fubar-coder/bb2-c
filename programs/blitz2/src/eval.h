@@ -26,28 +26,6 @@
 #include <exec/types.h>
 #include "structs.h"
 
-/* token numbers (asm: fnum equ 60, tnum = end of asm mnemonic tokens = 179,
-   verified in build/blitz2.lst) - identical redefinitions elsewhere are ok */
-#ifndef fnum
-#define fnum 60
-#endif
-#ifndef tnum
-#define tnum 179
-#endif
-
-/* asm-mnemonic tokens used as word operators in `operators` / getelement2.
-   asm: (opX-opabcd)/$1c+$8000+fnum (asmmac index); verified against
-   build/blitz2.lst: AND $8042, OR $808A, EOR $8073, LSL $807C, ASL $8044,
-   LSR $807D, NOT $8089 (9728) */
-#define tok_opand (0x8000 + fnum + 6)    /* AND */
-#define tok_opasl (0x8000 + fnum + 8)    /* ASL */
-#define tok_opasr (0x8000 + fnum + 9)    /* ASR */
-#define tok_opeor (0x8000 + fnum + 55)   /* EOR */
-#define tok_oplsl (0x8000 + fnum + 64)   /* LSL */
-#define tok_oplsr (0x8000 + fnum + 65)   /* LSR */
-#define tok_opnot (0x8000 + fnum + 77)   /* NOT */
-#define tok_opor  (0x8000 + fnum + 78)   /* OR  */
-
 /* ===================================================== object code emitters
    All write at `pc` (global ULONG, address in the object buffer).  If
    pc >= libat nothing is written, nomemleft = -1, pc still advances.  If

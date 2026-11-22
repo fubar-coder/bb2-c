@@ -11,11 +11,11 @@
 /* AmiBlitz3's list (toklist.h): the same nodes as blitz2's (main.c
    tokimg) with AmiBlitz3's names (M picks b3), blitz2's last one followed
    by AmiBlitz3's new ones */
-#define TK(id, next, num, name, help)       TKMEMBER(id, name, help)
-#define TA(id, nx, n, name, ...)            TAMEMBER(id, name)
-#define TKLAST(id, num, name, help)         TKMEMBER(id, name, help)
-#define TK3(id, next, num, name, help)      TKMEMBER(id, name, help)
-#define TK3LAST(id, num, name, help)        TKMEMBER(id, name, help)
+#define TK(id, next, num, sym, name, help)  TKMEMBER(id, name, help)
+#define TA(id, nx, n, sym, name, ...)       TAMEMBER(id, name)
+#define TKLAST(id, num, sym, name, help)    TKMEMBER(id, name, help)
+#define TK3(id, next, num, sym, name, help) TKMEMBER(id, name, help)
+#define TK3LAST(id, num, sym, name, help)   TKMEMBER(id, name, help)
 #define M(b2, b3) b3
 
 struct tokimage_ab3 {
@@ -27,11 +27,11 @@ struct tokimage_ab3 {
 #undef TKLAST
 #undef TK3
 #undef TK3LAST
-#define TK(id, next, num, name, help)       { NX(next), num, name "\0" help },
-#define TA(id, next, num, name, ...)        { NX(next), num, name "\0" "", { __VA_ARGS__ } },
-#define TKLAST(id, num, name, help)         { NX(toktnum34), num, name "\0" help },
-#define TK3(id, next, num, name, help)      { NX(next), num, name "\0" help },
-#define TK3LAST(id, num, name, help)        { NULL, num, name "\0" help },
+#define TK(id, next, num, sym, name, help)  { NX(next), num, name "\0" help },
+#define TA(id, next, num, sym, name, ...)   { NX(next), num, name "\0" "", { __VA_ARGS__ } },
+#define TKLAST(id, num, sym, name, help)    { NX(toktnum34), num, name "\0" help },
+#define TK3(id, next, num, sym, name, help) { NX(next), num, name "\0" help },
+#define TK3LAST(id, num, sym, name, help)   { NULL, num, name "\0" help },
 #define IMG tokimg_ab3
 
 static struct tokimage_ab3 tokimg_ab3 = {
@@ -66,7 +66,7 @@ void ext_newtoken(UWORD tok)
     char *d = msg + sizeof "Not supported: " - 1;
     const char *s;
 
-    if (progmode != XTRA_MODE_AB3 || tok < tnum + 33 || tok > tnum + 40)
+    if (progmode != XTRA_MODE_AB3 || tok < TOKNUM(TOK_USELASTPATH) || tok > TOKNUM(TOK_OPTIMIZE))
         return;
     for (t = &tokens; t && t->num != tok; t = t->next)
         ;

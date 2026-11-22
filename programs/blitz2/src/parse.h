@@ -26,7 +26,7 @@ extern UBYTE *srcptr;
 
 /* asm Z=1 after getchar3 / reget / gchar2 (and routines ending in
    `bra reget`): end of statement.  TRUE if c==0, or (quoteflag==0 and
-   (c==':' or c==0x8022 [Else token])).  Valid right after the call (uses the
+   (c==':' or c==TOK_ELSE)).  Valid right after the call (uses the
    current quoteflag, like the asm). */
 BOOL eos(UWORD c);
 

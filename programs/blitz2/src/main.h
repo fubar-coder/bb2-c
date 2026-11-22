@@ -148,16 +148,6 @@
    (ext.h), 247-55 in BB2 mode */
 #define mathq       ext_mathq
 
-/* token numbering: 1..59 built-ins, fnum..tnum-1 asm mnemonics (118 + EndAsm),
-   tnum..tnum+32 the second built-in block (tnum+3 "Ern" removed) */
-#define lnum 60
-#ifndef fnum
-#define fnum 60
-#endif
-#ifndef tnum
-#define tnum 179
-#endif
-
 /* ============================================ startup (wbheader / main) */
 
 /* main() replaces wbheader + begin.  Stack size logic kept: from CLI the
