@@ -1043,7 +1043,7 @@ int caserun(const struct caserun_opts *o, FILE *log)
         size_t *idx = calloc(ncells, sizeof *idx);
         struct tj_obs *to = calloc(ncells, sizeof *to);
         struct tj_msgs msgs = { 0 };
-        struct tj_test t = { file, &src, &conf, &m, o->case_name };
+        struct tj_test t = { file, &src, &conf, &m, o->case_name, o->require_deviation };
         int v;
 
         if (!idx || !to) {
@@ -1070,13 +1070,6 @@ int caserun(const struct caserun_opts *o, FILE *log)
             if (obs[i].where)
                 fprintf(log, "cell %s: compile error: %s\n", m.cells[cells[i].idx].name, obs[i].where);
         v = tj_verdict(&t, idx, to, ncells, &msgs);
-        if (v >= 0 && o->require_deviation && !conf.ndeviations) {
-            if (v != TJ_V_ERROR)
-                v = TJ_V_BROKEN;
-            fprintf(log, "%s: the test declares no deviation of the original, so it does not show its bug "
-                         "(a bug-orig test needs [deviations.\"SELECTOR\"] in %s.test.toml)\n",
-                    file, conf.id);
-        }
         for (size_t i = 0; i < msgs.n; i++)
             fprintf(log, "%s\n", msgs.v[i]);
         tj_msgs_free(&msgs);

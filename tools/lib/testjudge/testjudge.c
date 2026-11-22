@@ -828,6 +828,13 @@ int tj_verdict(const struct tj_test *t, const size_t *cells, const struct tj_obs
     }
     if (any_error)
         return TJ_V_ERROR;
+    if (t->require_deviation && !t->conf->ndeviations) {
+        if (msg(msgs, "%s: the test declares no deviation of the original, so it does not show its bug "
+                      "(a bug-orig test needs [deviations.\"SELECTOR\"] in %s.test.toml)",
+                t->file, t->conf->id))
+            return -1;
+        return TJ_V_BROKEN;
+    }
     if (any_broken)
         return TJ_V_BROKEN;
     if (any_fail)

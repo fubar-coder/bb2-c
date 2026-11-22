@@ -112,3 +112,23 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   lost] → it is the environment, not the tested behaviour; the runner's
   report keeps the log of every run.
 - [Long move] → old and new tests run side by side; nothing forces a date.
+
+## Findings of the implementation
+
+- **Task 1.2, where the rules are**: the judging of the declared
+  deviations in the cells with the faulty part and the open-bug rule for
+  the other cells are `tj_verdict` (`tools/lib/testjudge`, host test
+  `testjudge`: "a fixed original bug", "an open original bug", "a declared
+  crash"); the labels per case are the registration's (`tools/testreg`,
+  `testreg_tool`: `bug-orig;emulator` for a case with a declared deviation
+  of an open test, `emulator` for its other cases and for a fixed test,
+  `originals` for the side with original material); the errors of
+  `fixed-orig`/`fixed` are the configuration's (`tools/lib/testconf`,
+  `testconf` and `testassert`: both keys, `fixed-orig` without a
+  deviation, `fixed` with one, either in a `tests.toml`). A bug-orig test
+  without a declared deviation is BROKEN in `tj_verdict` when the runner
+  says it is a bug-orig test (`tj_test.require_deviation`, `corpusrun case
+  --require-deviation`, which the registration of `tests/bug-orig` passes
+  for every area but `regression/`); host test `testjudge` ("a bug-orig
+  test without a declared deviation") and the emulator self test
+  `bug_orig_selftest_model_no_deviation`.

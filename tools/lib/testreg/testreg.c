@@ -404,7 +404,7 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
         goto out;
     sprintf(abs, "%s/%s", conf.dir, par.file);
     for (size_t c = 0; c < src.ncases; c++) {
-        struct tj_test jt = { par.file, &src, &conf, &m, src.cases[c].name };
+        struct tj_test jt = { par.file, &src, &conf, &m, src.cases[c].name, 0 };
         int dev = tj_case_has_deviation(&jt);
 
         if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, 0, o, dev)
