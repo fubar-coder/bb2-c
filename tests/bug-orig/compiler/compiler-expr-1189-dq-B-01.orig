@@ -60,6 +60,14 @@ dq-pow-cl-f-B FFFFFFFF
 dq-pow-cl-cb-B FFFFFFFF
 dq-pow-cl-cw-B FFFFFFFF
 dq-pow-cl-cl-B FFFFFFFF
+dq-pow-cf-b-B 00035FFF
+dq-pow-cf-w-B 00035FFF
+dq-pow-cf-l-B 00035FFF
+dq-pow-cf-q-B 00035FFF
+dq-pow-cf-f-B 00035FFF
+dq-pow-cf-cb-B 00035FFF
+dq-pow-cf-cw-B 00035FFF
+dq-pow-cf-cl-B 00035FFF
 rc=0
 [blitz2]
 rc=0

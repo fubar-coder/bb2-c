@@ -57,4 +57,12 @@ db-pow-cw-f-B -64
 db-pow-cw-cb-B -64
 db-pow-cw-cw-B -64
 db-pow-cw-cl-B -64
+db-pow-cl-b-B 1
+db-pow-cl-w-B 1
+db-pow-cl-l-B 1
+db-pow-cl-q-B 1
+db-pow-cl-f-B 1
+db-pow-cl-cb-B 1
+db-pow-cl-cw-B 1
+db-pow-cl-cl-B 1
 rc=0

@@ -28,7 +28,7 @@ endif()
 foreach(want
 		"tests/corpus/tests-exprmatrix/dl-A-agree-01.bas: differs from the generator's output"
 		"tests/corpus/expect/corpus_exprmatrix/zz-extra-01.out: not written by the generator"
-		"tests/corpus/tests-exprmatrix/dl-A-agree-02.bas: missing")
+		"tests/corpus/tests-exprmatrix/dw-A-agree-01.bas: missing")
 	string(FIND "${out}" "${want}" at)
 	if(at LESS 0)
 		string(APPEND bad "no line \"${want}\"\n")

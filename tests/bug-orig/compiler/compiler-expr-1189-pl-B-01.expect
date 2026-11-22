@@ -57,4 +57,12 @@ pl-pow-cl-f-B -2147483647
 pl-pow-cl-cb-B -2147483647
 pl-pow-cl-cw-B -2147483647
 pl-pow-cl-cl-B -2147483647
+pl-pow-cf-b-B -3
+pl-pow-cf-w-B -3
+pl-pow-cf-l-B -3
+pl-pow-cf-q-B -3
+pl-pow-cf-f-B -3
+pl-pow-cf-cb-B -3
+pl-pow-cf-cw-B -3
+pl-pow-cf-cl-B -3
 rc=0

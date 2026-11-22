@@ -57,4 +57,12 @@ dl-pow-cl-f-B -2147483647
 dl-pow-cl-cb-B -2147483647
 dl-pow-cl-cw-B -2147483647
 dl-pow-cl-cl-B -2147483647
+dl-pow-cf-b-B -3
+dl-pow-cf-w-B -3
+dl-pow-cf-l-B -3
+dl-pow-cf-q-B -3
+dl-pow-cf-f-B -3
+dl-pow-cf-cb-B -3
+dl-pow-cf-cw-B -3
+dl-pow-cf-cl-B -3
 rc=0

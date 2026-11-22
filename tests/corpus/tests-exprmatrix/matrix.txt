@@ -1,6 +1,6 @@
 # The expression matrix (OpenSpec change expression-type-matrix): its description,
 # read by exprmatrix expect (tools/exprmatrix/README.md; the target expr-matrix-update).
-cells-per-source 56
+cells-per-source 2000
 # value sets of design decision 8; I and J: the index cells (values inside a Dim of 300 where the kind allows)
 values A b=3 w=1000 l=100000 q=1.5 f=2.5 s=AB cb=3 cw=1000 cl=100000 cf=1.5
 counts A b=2 w=2 l=2 q=2 f=2 cb=2 cw=2 cl=2 cf=2.5

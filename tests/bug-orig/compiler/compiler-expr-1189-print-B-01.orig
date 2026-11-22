@@ -60,6 +60,22 @@ print-pow-cw-f-B 1E+9
 print-pow-cw-cb-B 1E+9
 print-pow-cw-cw-B 1E+9
 print-pow-cw-cl-B 1E+9
+print-pow-cl-b-B 1.000001E+15
+print-pow-cl-w-B 1.000001E+15
+print-pow-cl-l-B 1.000001E+15
+print-pow-cl-q-B 1.000001E+15
+print-pow-cl-f-B 1.000001E+15
+print-pow-cl-cb-B 1.000001E+15
+print-pow-cl-cw-B 1.000001E+15
+print-pow-cl-cl-B 1.000001E+15
+print-pow-cf-b-B 3.374999
+print-pow-cf-w-B 3.374999
+print-pow-cf-l-B 3.374999
+print-pow-cf-q-B 3.374999
+print-pow-cf-f-B 3.374999
+print-pow-cf-cb-B 3.374999
+print-pow-cf-cw-B 3.374999
+print-pow-cf-cl-B 3.374999
 rc=0
 [blitz2]
 rc=0
