@@ -26,7 +26,7 @@ Before `quick-long-arithmetic` (#1178) starts (user decision 2026-11-22, "Order 
 
 ## 4. Checks
 
-- [ ] 4.1 `ctest --preset host`; the targeted tests of 3.2, 3.3, 3.5; a clean rebuild without warnings; the prev comparison shows no changed result (rule 3: no `PREV_INTENDED`); verify: the commands pass, the prev report lists no difference.
+- [x] 4.1 `ctest --preset host`; the targeted tests of 3.2, 3.3, 3.5; a clean rebuild without warnings; the prev comparison shows no changed result (rule 3: no `PREV_INTENDED`); verify: the commands pass, the prev report lists no difference.
 
 ## 5. Documents
 
