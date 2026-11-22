@@ -8030,6 +8030,14 @@ rows:
     text: "The operands of a comparison are compared with their own values, a Long against a Quick exactly; the original cut a Quick to a whole number when the result went to a Long (`q>1` false for `q=1.5`, `q>l` and `l<q` disagreeing) and compared two Longs as Quick or Float values under a Quick or Float destination (100000001 equal to 100000000)."
     page: compiler
     anchor: quick-compare
+  - issue: 1178
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "+, -, *, /"
+    text: "A Quick in a Long computation keeps its fraction: the operation is computed with it and rounded to a whole number, down for `+`, `-`, `*` and a minus sign, towards zero for `/`; the original cut the Quick to a whole number first (`r.l=q*2` 2 for `q=1.5`, `r.l=l/q` 10 for `l=10`, `NPrint q*100000` 100000). `Int(q)` gives the old result."
+    page: compiler
+    anchor: quick-long-arithmetic
   - issue: 1185
     severity: 4
     topic: "Compiler"
