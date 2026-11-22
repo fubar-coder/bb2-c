@@ -1,3 +1,11 @@
+dl-or-q-q-B -2
+dl-or-q-cb-B -1
+dl-or-q-cw-B -2
+dl-or-q-cl-B -2
+dl-or-cb-q-B -1
+dl-or-cw-q-B -2
+dl-or-cl-q-B -2
+dl-eor-b-q-B 3
 dl-eor-w-q-B 998
 dl-eor-l-q-B 99998
 dl-eor-q-b-B 3
@@ -46,12 +54,4 @@ dl-asl-q-q-B -16
 dl-asl-q-cb-B -16
 dl-asl-q-cw-B -16
 dl-asl-q-cl-B -16
-dl-asl-cb-q-B -24
-dl-asl-cw-q-B -8000
-dl-asl-cl-q-B -800000
-dl-asr-b-q-B -1
-dl-asr-w-q-B -125
-dl-asr-l-q-B -12500
-dl-asr-q-b-B -1
-dl-asr-q-w-B -1
 rc=0

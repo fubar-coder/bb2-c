@@ -1,4 +1,4 @@
-; if-B-fix1187-02 - expression matrix: context if, value set B, 18 cells
+; if-B-fix1187-02 - expression matrix: context if, value set B, 27 cells
 ; fixed cells of #1187 (a Float condition tests d1, what the code before
 ; left there, not the value): if-B-fix1187-02.orig.out the original's
 ; value, if-B-fix1187-02.fixed-1187.out the port's
@@ -6,8 +6,15 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3 : nf.f=3
+If -1000 ^ nb Then NPrint "if-pow-cw-b-B T" Else NPrint "if-pow-cw-b-B F"
+If -1000 ^ nw Then NPrint "if-pow-cw-w-B T" Else NPrint "if-pow-cw-w-B F"
+If -1000 ^ nl Then NPrint "if-pow-cw-l-B T" Else NPrint "if-pow-cw-l-B F"
+If -1000 ^ nq Then NPrint "if-pow-cw-q-B T" Else NPrint "if-pow-cw-q-B F"
+If -1000 ^ nf Then NPrint "if-pow-cw-f-B T" Else NPrint "if-pow-cw-f-B F"
+If -1000 ^ 3 Then NPrint "if-pow-cw-cb-B T" Else NPrint "if-pow-cw-cb-B F"
 If -1000 ^ 3 Then NPrint "if-pow-cw-cw-B T" Else NPrint "if-pow-cw-cw-B F"
 If -1000 ^ 3 Then NPrint "if-pow-cw-cl-B T" Else NPrint "if-pow-cw-cl-B F"
+If -1000 ^ 3.5 Then NPrint "if-pow-cw-cf-B T" Else NPrint "if-pow-cw-cf-B F"
 If -100000 ^ nb Then NPrint "if-pow-cl-b-B T" Else NPrint "if-pow-cl-b-B F"
 If -100000 ^ nw Then NPrint "if-pow-cl-w-B T" Else NPrint "if-pow-cl-w-B F"
 If -100000 ^ nl Then NPrint "if-pow-cl-l-B T" Else NPrint "if-pow-cl-l-B F"
@@ -16,6 +23,7 @@ If -100000 ^ nf Then NPrint "if-pow-cl-f-B T" Else NPrint "if-pow-cl-f-B F"
 If -100000 ^ 3 Then NPrint "if-pow-cl-cb-B T" Else NPrint "if-pow-cl-cb-B F"
 If -100000 ^ 3 Then NPrint "if-pow-cl-cw-B T" Else NPrint "if-pow-cl-cw-B F"
 If -100000 ^ 3 Then NPrint "if-pow-cl-cl-B T" Else NPrint "if-pow-cl-cl-B F"
+If -100000 ^ 3.5 Then NPrint "if-pow-cl-cf-B T" Else NPrint "if-pow-cl-cf-B F"
 If -1.5 ^ nb Then NPrint "if-pow-cf-b-B T" Else NPrint "if-pow-cf-b-B F"
 If -1.5 ^ nw Then NPrint "if-pow-cf-w-B T" Else NPrint "if-pow-cf-w-B F"
 If -1.5 ^ nl Then NPrint "if-pow-cf-l-B T" Else NPrint "if-pow-cf-l-B F"
@@ -24,4 +32,5 @@ If -1.5 ^ nf Then NPrint "if-pow-cf-f-B T" Else NPrint "if-pow-cf-f-B F"
 If -1.5 ^ 3 Then NPrint "if-pow-cf-cb-B T" Else NPrint "if-pow-cf-cb-B F"
 If -1.5 ^ 3 Then NPrint "if-pow-cf-cw-B T" Else NPrint "if-pow-cf-cw-B F"
 If -1.5 ^ 3 Then NPrint "if-pow-cf-cl-B T" Else NPrint "if-pow-cf-cl-B F"
+If -1.5 ^ 3.5 Then NPrint "if-pow-cf-cf-B T" Else NPrint "if-pow-cf-cf-B F"
 End

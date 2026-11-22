@@ -1,3 +1,5 @@
+if-mul-w-b-A T
+if-mul-w-w-A T
 if-mul-w-l-A T
 if-mul-w-q-A T
 if-mul-w-f-A T
@@ -37,6 +39,7 @@ if-mul-cb-f-A T
 if-mul-cb-cb-A T
 if-mul-cb-cw-A T
 if-mul-cb-cl-A T
+if-mul-cb-cf-A T
 if-mul-cw-b-A T
 if-mul-cw-w-A T
 if-mul-cw-l-A T
@@ -51,7 +54,4 @@ if-mul-cl-q-A T
 if-mul-cl-f-A T
 if-mul-cl-cb-A T
 if-mul-cl-cw-A T
-if-mul-cf-b-A T
-if-mul-cf-w-A T
-if-mul-cf-l-A T
 rc=0

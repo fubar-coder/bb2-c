@@ -27,6 +27,14 @@ pl-mod-cf-cb-B -4
 pl-mod-cf-cw-B -1001
 pl-mod-cf-cl-B -100001
 pl-mod-cf-cf-B 0
+pl-pow-b-cf-B 46
+pl-pow-w-cf-B 2147483647
+pl-pow-l-cf-B 2147483647
+pl-pow-f-cf-B 24
+pl-pow-cb-cf-B 46
+pl-pow-cw-cf-B 2147483647
+pl-pow-cl-cf-B 2147483647
+pl-pow-cf-cf-B 4
 pl-and-b-q-B -4
 pl-and-w-q-B -1000
 pl-and-l-q-B -100000
@@ -46,12 +54,4 @@ pl-or-l-q-B -2
 pl-or-q-b-B -1
 pl-or-q-w-B -2
 pl-or-q-l-B -2
-pl-or-q-q-B -2
-pl-or-q-cb-B -1
-pl-or-q-cw-B -2
-pl-or-q-cl-B -2
-pl-or-cb-q-B -1
-pl-or-cw-q-B -2
-pl-or-cl-q-B -2
-pl-eor-b-q-B 3
 rc=0

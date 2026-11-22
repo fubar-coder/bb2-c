@@ -6,6 +6,7 @@
 ; do not edit
 vb.b=3 : vw.w=1000 : vl.l=100000 : vq.q=1.5
 rq.q=0
+rq=vb OR vl : NPrint "dq-or-b-l-A ",Hex$(Peek.l(&rq))
 rq=vb OR vq : NPrint "dq-or-b-q-A ",Hex$(Peek.l(&rq))
 rq=vb OR 100000 : NPrint "dq-or-b-cl-A ",Hex$(Peek.l(&rq))
 rq=vb OR 1.5 : NPrint "dq-or-b-cf-A ",Hex$(Peek.l(&rq))
@@ -61,5 +62,4 @@ rq=vw EOR vq : NPrint "dq-eor-w-q-A ",Hex$(Peek.l(&rq))
 rq=vw EOR 100000 : NPrint "dq-eor-w-cl-A ",Hex$(Peek.l(&rq))
 rq=vw EOR 1.5 : NPrint "dq-eor-w-cf-A ",Hex$(Peek.l(&rq))
 rq=vl EOR vb : NPrint "dq-eor-l-b-A ",Hex$(Peek.l(&rq))
-rq=vl EOR vw : NPrint "dq-eor-l-w-A ",Hex$(Peek.l(&rq))
 End

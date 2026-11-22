@@ -1,3 +1,11 @@
+i2-or-cl-q-J !runtime
+i2-eor-b-q-J 49
+i2-eor-w-q-J 289
+i2-eor-l-q-J 449
+i2-eor-q-b-J 49
+i2-eor-q-w-J 289
+i2-eor-q-l-J 449
+i2-eor-q-q-J 1
 i2-eor-q-cb-J 49
 i2-eor-q-cw-J 3169
 i2-eor-q-cl-J !runtime
@@ -18,12 +26,4 @@ i2-lsl-cb-q-J !runtime
 i2-lsl-cw-q-J !runtime
 i2-lsl-cl-q-J !runtime
 i2-lsr-b-q-J !runtime
-i2-lsr-w-q-J !runtime
-i2-lsr-l-q-J !runtime
-i2-lsr-q-b-J !runtime
-i2-lsr-q-w-J !runtime
-i2-lsr-q-l-J !runtime
-i2-lsr-q-q-J !runtime
-i2-lsr-q-cb-J !runtime
-i2-lsr-q-cw-J !runtime
 rc=0

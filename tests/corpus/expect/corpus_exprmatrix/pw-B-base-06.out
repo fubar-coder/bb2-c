@@ -1,3 +1,12 @@
+pw-lsl-l-cw-B -13568
+pw-lsl-l-cl-B -13568
+pw-lsl-q-b-B -12
+pw-lsl-q-w-B -12
+pw-lsl-q-l-B -12
+pw-lsl-q-q-B -12
+pw-lsl-q-cb-B -12
+pw-lsl-q-cw-B -12
+pw-lsl-q-cl-B -12
 pw-lsl-q-cf-B -12
 pw-lsl-cb-q-B -24
 pw-lsl-cw-q-B -8000
@@ -45,13 +54,4 @@ pw-lsr-cb-cb-B -1
 pw-lsr-cb-cw-B -1
 pw-lsr-cb-cl-B -1
 pw-lsr-cw-b-B -125
-pw-lsr-cw-w-B -125
-pw-lsr-cw-l-B -125
-pw-lsr-cw-q-B 8067
-pw-lsr-cw-cb-B -125
-pw-lsr-cw-cw-B -125
-pw-lsr-cw-cl-B -125
-pw-lsr-cl-b-B -12500
-pw-lsr-cl-w-B -12500
-pw-lsr-cl-l-B -12500
 rc=0

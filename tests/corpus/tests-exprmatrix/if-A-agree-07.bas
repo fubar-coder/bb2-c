@@ -5,6 +5,10 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 vb.b=3 : vw.w=1000 : vl.l=100000
+If vb AND vw Then NPrint "if-and-b-w-A T" Else NPrint "if-and-b-w-A F"
+If vb AND vl Then NPrint "if-and-b-l-A T" Else NPrint "if-and-b-l-A F"
+If vb AND 3 Then NPrint "if-and-b-cb-A T" Else NPrint "if-and-b-cb-A F"
+If vb AND 1000 Then NPrint "if-and-b-cw-A T" Else NPrint "if-and-b-cw-A F"
 If vb AND 100000 Then NPrint "if-and-b-cl-A T" Else NPrint "if-and-b-cl-A F"
 If vw AND vb Then NPrint "if-and-w-b-A T" Else NPrint "if-and-w-b-A F"
 If vw AND vw Then NPrint "if-and-w-w-A T" Else NPrint "if-and-w-w-A F"
@@ -57,8 +61,4 @@ If vl OR 100000 Then NPrint "if-or-l-cl-A T" Else NPrint "if-or-l-cl-A F"
 If 3 OR vb Then NPrint "if-or-cb-b-A T" Else NPrint "if-or-cb-b-A F"
 If 3 OR vw Then NPrint "if-or-cb-w-A T" Else NPrint "if-or-cb-w-A F"
 If 3 OR vl Then NPrint "if-or-cb-l-A T" Else NPrint "if-or-cb-l-A F"
-If 3 OR 3 Then NPrint "if-or-cb-cb-A T" Else NPrint "if-or-cb-cb-A F"
-If 3 OR 1000 Then NPrint "if-or-cb-cw-A T" Else NPrint "if-or-cb-cw-A F"
-If 3 OR 100000 Then NPrint "if-or-cb-cl-A T" Else NPrint "if-or-cb-cl-A F"
-If 1000 OR vb Then NPrint "if-or-cw-b-A T" Else NPrint "if-or-cw-b-A F"
 End

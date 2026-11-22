@@ -21,6 +21,12 @@ db-mod-cf-w-B 23
 db-mod-cf-l-B 95
 db-mod-cf-f-B -3
 db-mod-cf-cl-B 95
+db-pow-w-cf-B -1
+db-pow-l-cf-B -1
+db-pow-q-cf-B 4
+db-pow-f-cf-B 24
+db-pow-cw-cf-B -1
+db-pow-cl-cf-B -1
 db-and-b-w-B 24
 db-and-b-l-B 96
 db-and-b-q-B -4
@@ -48,10 +54,4 @@ db-and-q-cb-B -4
 db-and-q-cw-B 24
 db-and-q-cl-B 96
 db-and-q-cf-B -2
-db-and-cb-w-B 24
-db-and-cb-l-B 96
-db-and-cb-q-B -4
-db-and-cb-cw-B 24
-db-and-cb-cl-B 96
-db-and-cw-b-B 24
 rc=0

@@ -33,6 +33,13 @@ NPrint "print-mod-cf-cb-B ",-1.5 MOD -3
 NPrint "print-mod-cf-cw-B ",-1.5 MOD -1000
 NPrint "print-mod-cf-cl-B ",-1.5 MOD -100000
 NPrint "print-mod-cf-cf-B ",-1.5 MOD -1.5
+NPrint "print-pow-w-cf-B ",vw ^ 3.5
+NPrint "print-pow-l-cf-B ",vl ^ 3.5
+NPrint "print-pow-q-cf-B ",vq ^ 3.5
+NPrint "print-pow-f-cf-B ",vf ^ 3.5
+NPrint "print-pow-cw-cf-B ",-1000 ^ 3.5
+NPrint "print-pow-cl-cf-B ",-100000 ^ 3.5
+NPrint "print-pow-cf-cf-B ",-1.5 ^ 3.5
 NPrint "print-and-b-q-B ",vb AND vq
 NPrint "print-and-w-q-B ",vw AND vq
 NPrint "print-and-l-q-B ",vl AND vq
@@ -54,11 +61,4 @@ NPrint "print-or-q-b-B ",vq OR vb
 NPrint "print-or-q-w-B ",vq OR vw
 NPrint "print-or-q-l-B ",vq OR vl
 NPrint "print-or-q-q-B ",vq OR vq
-NPrint "print-or-q-cb-B ",vq OR -3
-NPrint "print-or-q-cw-B ",vq OR -1000
-NPrint "print-or-q-cl-B ",vq OR -100000
-NPrint "print-or-q-cf-B ",vq OR -1.5
-NPrint "print-or-cb-q-B ",-3 OR vq
-NPrint "print-or-cw-q-B ",-1000 OR vq
-NPrint "print-or-cl-q-B ",-100000 OR vq
 End

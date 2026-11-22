@@ -29,6 +29,9 @@ db-div-b-cf-B 3
 db-div-cb-cf-B 3
 db-div-cf-q-B 0
 db-mod-cf-q-B -3
+db-pow-b-cf-B 27
+db-pow-cb-cf-B 27
+db-pow-cf-cf-B 1
 rc=0
 [blitz2]
 rc=0

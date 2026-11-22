@@ -29,6 +29,7 @@ Print "pq-pow-l-f-A " : pq{vl ^ nf}
 Print "pq-pow-l-cb-A " : pq{vl ^ 2}
 Print "pq-pow-l-cw-A " : pq{vl ^ 2}
 Print "pq-pow-l-cl-A " : pq{vl ^ 2}
+Print "pq-pow-l-cf-A " : pq{vl ^ 2.5}
 Print "pq-pow-q-b-A " : pq{vq ^ nb}
 Print "pq-pow-q-w-A " : pq{vq ^ nw}
 Print "pq-pow-q-l-A " : pq{vq ^ nl}
@@ -66,5 +67,4 @@ Print "pq-pow-cw-cw-A " : pq{1000 ^ 2}
 Print "pq-pow-cw-cl-A " : pq{1000 ^ 2}
 Print "pq-pow-cw-cf-A " : pq{1000 ^ 2.5}
 Print "pq-pow-cl-b-A " : pq{100000 ^ nb}
-Print "pq-pow-cl-w-A " : pq{100000 ^ nw}
 End

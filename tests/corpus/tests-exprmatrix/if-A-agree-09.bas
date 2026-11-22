@@ -6,6 +6,10 @@
 ; do not edit
 vb.b=3 : vw.w=1000 : vl.l=100000
 nb.b=2 : nw.w=2 : nl.l=2
+If vb LSL 2 Then NPrint "if-lsl-b-cl-A T" Else NPrint "if-lsl-b-cl-A F"
+If vw LSL nb Then NPrint "if-lsl-w-b-A T" Else NPrint "if-lsl-w-b-A F"
+If vw LSL nw Then NPrint "if-lsl-w-w-A T" Else NPrint "if-lsl-w-w-A F"
+If vw LSL nl Then NPrint "if-lsl-w-l-A T" Else NPrint "if-lsl-w-l-A F"
 If vw LSL 2 Then NPrint "if-lsl-w-cb-A T" Else NPrint "if-lsl-w-cb-A F"
 If vw LSL 2 Then NPrint "if-lsl-w-cw-A T" Else NPrint "if-lsl-w-cw-A F"
 If vw LSL 2 Then NPrint "if-lsl-w-cl-A T" Else NPrint "if-lsl-w-cl-A F"
@@ -58,8 +62,4 @@ If 3 LSR 2 Then NPrint "if-lsr-cb-cb-A T" Else NPrint "if-lsr-cb-cb-A F"
 If 3 LSR 2 Then NPrint "if-lsr-cb-cw-A T" Else NPrint "if-lsr-cb-cw-A F"
 If 3 LSR 2 Then NPrint "if-lsr-cb-cl-A T" Else NPrint "if-lsr-cb-cl-A F"
 If 1000 LSR nb Then NPrint "if-lsr-cw-b-A T" Else NPrint "if-lsr-cw-b-A F"
-If 1000 LSR nw Then NPrint "if-lsr-cw-w-A T" Else NPrint "if-lsr-cw-w-A F"
-If 1000 LSR nl Then NPrint "if-lsr-cw-l-A T" Else NPrint "if-lsr-cw-l-A F"
-If 1000 LSR 2 Then NPrint "if-lsr-cw-cb-A T" Else NPrint "if-lsr-cw-cb-A F"
-If 1000 LSR 2 Then NPrint "if-lsr-cw-cw-A T" Else NPrint "if-lsr-cw-cw-A F"
 End

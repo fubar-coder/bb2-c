@@ -5,6 +5,10 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 vb.b=3 : vw.w=1000 : vl.l=100000 : vq.q=1.5 : vf.f=2.5
+If 3 / 100000 Then NPrint "if-div-cb-cl-A T" Else NPrint "if-div-cb-cl-A F"
+If 3 / 1.5 Then NPrint "if-div-cb-cf-A T" Else NPrint "if-div-cb-cf-A F"
+If 1000 / vb Then NPrint "if-div-cw-b-A T" Else NPrint "if-div-cw-b-A F"
+If 1000 / vw Then NPrint "if-div-cw-w-A T" Else NPrint "if-div-cw-w-A F"
 If 1000 / vl Then NPrint "if-div-cw-l-A T" Else NPrint "if-div-cw-l-A F"
 If 1000 / vq Then NPrint "if-div-cw-q-A T" Else NPrint "if-div-cw-q-A F"
 If 1000 / vf Then NPrint "if-div-cw-f-A T" Else NPrint "if-div-cw-f-A F"
@@ -57,8 +61,4 @@ If 100000 MOD 3 Then NPrint "if-mod-cl-cb-A T" Else NPrint "if-mod-cl-cb-A F"
 If 100000 MOD 1000 Then NPrint "if-mod-cl-cw-A T" Else NPrint "if-mod-cl-cw-A F"
 If 100000 MOD 100000 Then NPrint "if-mod-cl-cl-A T" Else NPrint "if-mod-cl-cl-A F"
 If vb AND vb Then NPrint "if-and-b-b-A T" Else NPrint "if-and-b-b-A F"
-If vb AND vw Then NPrint "if-and-b-w-A T" Else NPrint "if-and-b-w-A F"
-If vb AND vl Then NPrint "if-and-b-l-A T" Else NPrint "if-and-b-l-A F"
-If vb AND 3 Then NPrint "if-and-b-cb-A T" Else NPrint "if-and-b-cb-A F"
-If vb AND 1000 Then NPrint "if-and-b-cw-A T" Else NPrint "if-and-b-cw-A F"
 End

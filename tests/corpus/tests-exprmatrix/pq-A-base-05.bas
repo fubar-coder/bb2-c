@@ -11,6 +11,7 @@ Statement pq{x.q}
   SHARED tq
   tq=x : NPrint Hex$(Peek.l(&tq))
 End Statement
+Print "pq-pow-cl-w-A " : pq{100000 ^ nw}
 Print "pq-pow-cl-l-A " : pq{100000 ^ nl}
 Print "pq-pow-cl-q-A " : pq{100000 ^ nq}
 Print "pq-pow-cl-f-A " : pq{100000 ^ nf}
@@ -66,5 +67,4 @@ Print "pq-and-cf-cb-A " : pq{1.5 AND 3}
 Print "pq-and-cf-cw-A " : pq{1.5 AND 1000}
 Print "pq-and-cf-cl-A " : pq{1.5 AND 100000}
 Print "pq-and-cf-cf-A " : pq{1.5 AND 1.5}
-Print "pq-or-b-l-A " : pq{vb OR vl}
 End

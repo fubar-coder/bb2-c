@@ -1,3 +1,9 @@
+db-eor-w-b-B -27
+db-eor-w-l-B 120
+db-eor-w-q-B -26
+db-eor-w-cb-B -27
+db-eor-w-cl-B 120
+db-eor-l-b-B -99
 db-eor-l-w-B 120
 db-eor-l-q-B -98
 db-eor-l-cb-B -99
@@ -48,10 +54,4 @@ db-lsl-q-l-B -12
 db-lsl-q-q-B -12
 db-lsl-q-cb-B -12
 db-lsl-q-cw-B -12
-db-lsl-q-cl-B -12
-db-lsl-q-cf-B -12
-db-lsl-cb-q-B -24
-db-lsl-cw-b-B -64
-db-lsl-cw-w-B -64
-db-lsl-cw-l-B -64
 rc=0

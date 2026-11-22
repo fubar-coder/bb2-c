@@ -11,6 +11,14 @@ Statement pq{x.q}
   SHARED tq
   tq=x : NPrint Hex$(Peek.l(&tq))
 End Statement
+Print "pq-asl-q-cb-B " : pq{vq ASL 3}
+Print "pq-asl-q-cw-B " : pq{vq ASL 3}
+Print "pq-asl-q-cl-B " : pq{vq ASL 3}
+Print "pq-asl-q-cf-B " : pq{vq ASL 3.5}
+Print "pq-asl-cb-q-B " : pq{-3 ASL nq}
+Print "pq-asl-cb-cf-B " : pq{-3 ASL 3.5}
+Print "pq-asl-cw-q-B " : pq{-1000 ASL nq}
+Print "pq-asl-cw-cf-B " : pq{-1000 ASL 3.5}
 Print "pq-asl-cl-b-B " : pq{-100000 ASL nb}
 Print "pq-asl-cl-w-B " : pq{-100000 ASL nw}
 Print "pq-asl-cl-l-B " : pq{-100000 ASL nl}
@@ -59,12 +67,4 @@ Print "pq-asr-cf-cb-B " : pq{-1.5 ASR 3}
 Print "pq-asr-cf-cw-B " : pq{-1.5 ASR 3}
 Print "pq-asr-cf-cl-B " : pq{-1.5 ASR 3}
 Print "pq-asr-cf-cf-B " : pq{-1.5 ASR 3.5}
-Print "pq-mod-cb-cb-B " : pq{-3 MOD -3}
-Print "pq-mod-cb-cw-B " : pq{-3 MOD -1000}
-Print "pq-mod-cb-cf-B " : pq{-3 MOD -1.5}
-Print "pq-mod-cw-cb-B " : pq{-1000 MOD -3}
-Print "pq-mod-cw-cw-B " : pq{-1000 MOD -1000}
-Print "pq-mod-cw-cf-B " : pq{-1000 MOD -1.5}
-Print "pq-mod-cf-cb-B " : pq{-1.5 MOD -3}
-Print "pq-mod-cf-cw-B " : pq{-1.5 MOD -1000}
 End

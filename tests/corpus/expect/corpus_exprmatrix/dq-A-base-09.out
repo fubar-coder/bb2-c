@@ -1,3 +1,4 @@
+dq-asl-l-b-A 1A800000
 dq-asl-l-w-A 1A800000
 dq-asl-l-l-A 1A800000
 dq-asl-l-q-A 1A800000
@@ -53,5 +54,4 @@ dq-asr-q-cw-A 00006000
 dq-asr-q-cl-A 00006000
 dq-asr-q-cf-A 00006000
 dq-asr-cb-q-A 0000C000
-dq-asr-cb-cf-A 0000C000
 rc=0

@@ -1,3 +1,11 @@
+pl-or-q-q-B -2
+pl-or-q-cb-B -1
+pl-or-q-cw-B -2
+pl-or-q-cl-B -2
+pl-or-cb-q-B -1
+pl-or-cw-q-B -2
+pl-or-cl-q-B -2
+pl-eor-b-q-B 3
 pl-eor-w-q-B 998
 pl-eor-l-q-B 99998
 pl-eor-q-b-B 3
@@ -46,12 +54,4 @@ pl-asl-q-q-B -16
 pl-asl-q-cb-B -16
 pl-asl-q-cw-B -16
 pl-asl-q-cl-B -16
-pl-asl-cb-q-B -24
-pl-asl-cw-q-B -8000
-pl-asl-cl-q-B -800000
-pl-asr-b-q-B -1
-pl-asr-w-q-B -125
-pl-asr-l-q-B -12500
-pl-asr-q-b-B -1
-pl-asr-q-w-B -1
 rc=0

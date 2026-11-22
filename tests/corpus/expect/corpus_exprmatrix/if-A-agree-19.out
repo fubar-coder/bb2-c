@@ -1,3 +1,7 @@
+if-ge-l-w-A T
+if-ge-l-l-A T
+if-ge-l-q-A T
+if-ge-l-f-A T
 if-ge-l-cb-A T
 if-ge-l-cw-A T
 if-ge-l-cl-A T
@@ -50,8 +54,4 @@ if-ge-cf-b-A F
 if-ge-cf-w-A F
 if-ge-cf-l-A F
 if-ge-cf-q-A T
-if-ge-cf-f-A F
-if-ge-cf-cb-A F
-if-ge-cf-cw-A F
-if-ge-cf-cl-A F
 rc=0

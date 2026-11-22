@@ -35,6 +35,7 @@ dl-div-cb-q-B 1
 dl-div-cw-q-B 500
 dl-div-cl-q-B 50000
 dl-mod-q-f-B 0
+dl-pow-q-cf-B 11
 rc=0
 [blitz2]
 rc=0

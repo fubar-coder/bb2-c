@@ -6,6 +6,14 @@
 ; do not edit
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 rq.q=0
+rq=-3 AND vq : NPrint "dq-and-cb-q-B ",Hex$(Peek.l(&rq))
+rq=-3 AND -100000 : NPrint "dq-and-cb-cl-B ",Hex$(Peek.l(&rq))
+rq=-3 AND -1.5 : NPrint "dq-and-cb-cf-B ",Hex$(Peek.l(&rq))
+rq=-1000 AND vl : NPrint "dq-and-cw-l-B ",Hex$(Peek.l(&rq))
+rq=-1000 AND vq : NPrint "dq-and-cw-q-B ",Hex$(Peek.l(&rq))
+rq=-1000 AND -100000 : NPrint "dq-and-cw-cl-B ",Hex$(Peek.l(&rq))
+rq=-1000 AND -1.5 : NPrint "dq-and-cw-cf-B ",Hex$(Peek.l(&rq))
+rq=-100000 AND vb : NPrint "dq-and-cl-b-B ",Hex$(Peek.l(&rq))
 rq=-100000 AND vw : NPrint "dq-and-cl-w-B ",Hex$(Peek.l(&rq))
 rq=-100000 AND vl : NPrint "dq-and-cl-l-B ",Hex$(Peek.l(&rq))
 rq=-100000 AND vq : NPrint "dq-and-cl-q-B ",Hex$(Peek.l(&rq))
@@ -54,12 +62,4 @@ rq=-100000 OR -100000 : NPrint "dq-or-cl-cl-B ",Hex$(Peek.l(&rq))
 rq=-1.5 OR vb : NPrint "dq-or-cf-b-B ",Hex$(Peek.l(&rq))
 rq=-1.5 OR vw : NPrint "dq-or-cf-w-B ",Hex$(Peek.l(&rq))
 rq=-1.5 OR vl : NPrint "dq-or-cf-l-B ",Hex$(Peek.l(&rq))
-rq=-1.5 OR vq : NPrint "dq-or-cf-q-B ",Hex$(Peek.l(&rq))
-rq=-1.5 OR -3 : NPrint "dq-or-cf-cb-B ",Hex$(Peek.l(&rq))
-rq=-1.5 OR -1000 : NPrint "dq-or-cf-cw-B ",Hex$(Peek.l(&rq))
-rq=-1.5 OR -100000 : NPrint "dq-or-cf-cl-B ",Hex$(Peek.l(&rq))
-rq=-1.5 OR -1.5 : NPrint "dq-or-cf-cf-B ",Hex$(Peek.l(&rq))
-rq=vb EOR vl : NPrint "dq-eor-b-l-B ",Hex$(Peek.l(&rq))
-rq=vb EOR vq : NPrint "dq-eor-b-q-B ",Hex$(Peek.l(&rq))
-rq=vb EOR -100000 : NPrint "dq-eor-b-cl-B ",Hex$(Peek.l(&rq))
 End

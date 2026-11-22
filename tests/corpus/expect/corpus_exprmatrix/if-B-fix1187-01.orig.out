@@ -8,6 +8,7 @@ if-pow-b-f-B F
 if-pow-b-cb-B F
 if-pow-b-cw-B F
 if-pow-b-cl-B F
+if-pow-b-cf-B F
 if-pow-w-b-B F
 if-pow-w-w-B F
 if-pow-w-l-B F
@@ -16,6 +17,7 @@ if-pow-w-f-B F
 if-pow-w-cb-B F
 if-pow-w-cw-B F
 if-pow-w-cl-B F
+if-pow-w-cf-B F
 if-pow-l-b-B F
 if-pow-l-w-B F
 if-pow-l-l-B F
@@ -24,6 +26,7 @@ if-pow-l-f-B F
 if-pow-l-cb-B F
 if-pow-l-cw-B F
 if-pow-l-cl-B F
+if-pow-l-cf-B F
 if-pow-q-b-B F
 if-pow-q-w-B F
 if-pow-q-l-B F
@@ -32,6 +35,7 @@ if-pow-q-f-B F
 if-pow-q-cb-B F
 if-pow-q-cw-B F
 if-pow-q-cl-B F
+if-pow-q-cf-B F
 if-pow-f-b-B F
 if-pow-f-w-B F
 if-pow-f-l-B F
@@ -40,6 +44,7 @@ if-pow-f-f-B F
 if-pow-f-cb-B F
 if-pow-f-cw-B F
 if-pow-f-cl-B F
+if-pow-f-cf-B F
 if-pow-cb-b-B F
 if-pow-cb-w-B F
 if-pow-cb-l-B F
@@ -48,10 +53,5 @@ if-pow-cb-f-B F
 if-pow-cb-cb-B F
 if-pow-cb-cw-B F
 if-pow-cb-cl-B F
-if-pow-cw-b-B F
-if-pow-cw-w-B F
-if-pow-cw-l-B F
-if-pow-cw-q-B F
-if-pow-cw-f-B F
-if-pow-cw-cb-B F
+if-pow-cb-cf-B F
 rc=0

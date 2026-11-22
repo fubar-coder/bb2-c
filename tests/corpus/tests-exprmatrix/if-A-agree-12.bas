@@ -5,6 +5,10 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 vb.b=3 : vw.w=1000 : vl.l=100000 : vq.q=1.5 : vf.f=2.5
+If vq = vl Then NPrint "if-eq-q-l-A T" Else NPrint "if-eq-q-l-A F"
+If vq = vq Then NPrint "if-eq-q-q-A T" Else NPrint "if-eq-q-q-A F"
+If vq = vf Then NPrint "if-eq-q-f-A T" Else NPrint "if-eq-q-f-A F"
+If vq = 3 Then NPrint "if-eq-q-cb-A T" Else NPrint "if-eq-q-cb-A F"
 If vq = 1000 Then NPrint "if-eq-q-cw-A T" Else NPrint "if-eq-q-cw-A F"
 If vq = 100000 Then NPrint "if-eq-q-cl-A T" Else NPrint "if-eq-q-cl-A F"
 If vq = 1.5 Then NPrint "if-eq-q-cf-A T" Else NPrint "if-eq-q-cf-A F"
@@ -57,8 +61,4 @@ If vb <> vb Then NPrint "if-ne-b-b-A T" Else NPrint "if-ne-b-b-A F"
 If vb <> vw Then NPrint "if-ne-b-w-A T" Else NPrint "if-ne-b-w-A F"
 If vb <> vl Then NPrint "if-ne-b-l-A T" Else NPrint "if-ne-b-l-A F"
 If vb <> vq Then NPrint "if-ne-b-q-A T" Else NPrint "if-ne-b-q-A F"
-If vb <> vf Then NPrint "if-ne-b-f-A T" Else NPrint "if-ne-b-f-A F"
-If vb <> 3 Then NPrint "if-ne-b-cb-A T" Else NPrint "if-ne-b-cb-A F"
-If vb <> 1000 Then NPrint "if-ne-b-cw-A T" Else NPrint "if-ne-b-cw-A F"
-If vb <> 100000 Then NPrint "if-ne-b-cl-A T" Else NPrint "if-ne-b-cl-A F"
 End

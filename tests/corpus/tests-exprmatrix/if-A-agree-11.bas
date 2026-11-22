@@ -6,6 +6,10 @@
 ; do not edit
 vb.b=3 : vw.w=1000 : vl.l=100000 : vq.q=1.5 : vf.f=2.5
 nb.b=2 : nw.w=2 : nl.l=2
+If vw ASR 2 Then NPrint "if-asr-w-cb-A T" Else NPrint "if-asr-w-cb-A F"
+If vw ASR 2 Then NPrint "if-asr-w-cw-A T" Else NPrint "if-asr-w-cw-A F"
+If vw ASR 2 Then NPrint "if-asr-w-cl-A T" Else NPrint "if-asr-w-cl-A F"
+If vl ASR nb Then NPrint "if-asr-l-b-A T" Else NPrint "if-asr-l-b-A F"
 If vl ASR nw Then NPrint "if-asr-l-w-A T" Else NPrint "if-asr-l-w-A F"
 If vl ASR nl Then NPrint "if-asr-l-l-A T" Else NPrint "if-asr-l-l-A F"
 If vl ASR 2 Then NPrint "if-asr-l-cb-A T" Else NPrint "if-asr-l-cb-A F"
@@ -58,8 +62,4 @@ If vl = 100000 Then NPrint "if-eq-l-cl-A T" Else NPrint "if-eq-l-cl-A F"
 If vl = 1.5 Then NPrint "if-eq-l-cf-A T" Else NPrint "if-eq-l-cf-A F"
 If vq = vb Then NPrint "if-eq-q-b-A T" Else NPrint "if-eq-q-b-A F"
 If vq = vw Then NPrint "if-eq-q-w-A T" Else NPrint "if-eq-q-w-A F"
-If vq = vl Then NPrint "if-eq-q-l-A T" Else NPrint "if-eq-q-l-A F"
-If vq = vq Then NPrint "if-eq-q-q-A T" Else NPrint "if-eq-q-q-A F"
-If vq = vf Then NPrint "if-eq-q-f-A T" Else NPrint "if-eq-q-f-A F"
-If vq = 3 Then NPrint "if-eq-q-cb-A T" Else NPrint "if-eq-q-cb-A F"
 End

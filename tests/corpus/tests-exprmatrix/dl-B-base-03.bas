@@ -7,6 +7,14 @@
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 rl.l=0
+rl=vq OR vq : NPrint "dl-or-q-q-B ",rl
+rl=vq OR -3 : NPrint "dl-or-q-cb-B ",rl
+rl=vq OR -1000 : NPrint "dl-or-q-cw-B ",rl
+rl=vq OR -100000 : NPrint "dl-or-q-cl-B ",rl
+rl=-3 OR vq : NPrint "dl-or-cb-q-B ",rl
+rl=-1000 OR vq : NPrint "dl-or-cw-q-B ",rl
+rl=-100000 OR vq : NPrint "dl-or-cl-q-B ",rl
+rl=vb EOR vq : NPrint "dl-eor-b-q-B ",rl
 rl=vw EOR vq : NPrint "dl-eor-w-q-B ",rl
 rl=vl EOR vq : NPrint "dl-eor-l-q-B ",rl
 rl=vq EOR vb : NPrint "dl-eor-q-b-B ",rl
@@ -55,12 +63,4 @@ rl=vq ASL nq : NPrint "dl-asl-q-q-B ",rl
 rl=vq ASL 3 : NPrint "dl-asl-q-cb-B ",rl
 rl=vq ASL 3 : NPrint "dl-asl-q-cw-B ",rl
 rl=vq ASL 3 : NPrint "dl-asl-q-cl-B ",rl
-rl=-3 ASL nq : NPrint "dl-asl-cb-q-B ",rl
-rl=-1000 ASL nq : NPrint "dl-asl-cw-q-B ",rl
-rl=-100000 ASL nq : NPrint "dl-asl-cl-q-B ",rl
-rl=vb ASR nq : NPrint "dl-asr-b-q-B ",rl
-rl=vw ASR nq : NPrint "dl-asr-w-q-B ",rl
-rl=vl ASR nq : NPrint "dl-asr-l-q-B ",rl
-rl=vq ASR nb : NPrint "dl-asr-q-b-B ",rl
-rl=vq ASR nw : NPrint "dl-asr-q-w-B ",rl
 End

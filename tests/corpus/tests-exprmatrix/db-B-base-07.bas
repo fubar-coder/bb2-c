@@ -7,6 +7,12 @@
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 rb.b=0
+rb=vw EOR vb : NPrint "db-eor-w-b-B ",rb
+rb=vw EOR vl : NPrint "db-eor-w-l-B ",rb
+rb=vw EOR vq : NPrint "db-eor-w-q-B ",rb
+rb=vw EOR -3 : NPrint "db-eor-w-cb-B ",rb
+rb=vw EOR -100000 : NPrint "db-eor-w-cl-B ",rb
+rb=vl EOR vb : NPrint "db-eor-l-b-B ",rb
 rb=vl EOR vw : NPrint "db-eor-l-w-B ",rb
 rb=vl EOR vq : NPrint "db-eor-l-q-B ",rb
 rb=vl EOR -3 : NPrint "db-eor-l-cb-B ",rb
@@ -57,10 +63,4 @@ rb=vq LSL nl : NPrint "db-lsl-q-l-B ",rb
 rb=vq LSL nq : NPrint "db-lsl-q-q-B ",rb
 rb=vq LSL 3 : NPrint "db-lsl-q-cb-B ",rb
 rb=vq LSL 3 : NPrint "db-lsl-q-cw-B ",rb
-rb=vq LSL 3 : NPrint "db-lsl-q-cl-B ",rb
-rb=vq LSL 3.5 : NPrint "db-lsl-q-cf-B ",rb
-rb=-3 LSL nq : NPrint "db-lsl-cb-q-B ",rb
-rb=-1000 LSL nb : NPrint "db-lsl-cw-b-B ",rb
-rb=-1000 LSL nw : NPrint "db-lsl-cw-w-B ",rb
-rb=-1000 LSL nl : NPrint "db-lsl-cw-l-B ",rb
 End

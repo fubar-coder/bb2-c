@@ -25,6 +25,8 @@ Print "pq-mod-cf-l-B " : pq{-1.5 MOD vl}
 Print "pq-mod-cf-q-B " : pq{-1.5 MOD vq}
 Print "pq-mod-cf-f-B " : pq{-1.5 MOD vf}
 Print "pq-mod-cf-cl-B " : pq{-1.5 MOD -100000}
+Print "pq-pow-b-cf-B " : pq{vb ^ 3.5}
+Print "pq-pow-w-cf-B " : pq{vw ^ 3.5}
 Print "pq-pow-l-b-B " : pq{vl ^ nb}
 Print "pq-pow-l-w-B " : pq{vl ^ nw}
 Print "pq-pow-l-l-B " : pq{vl ^ nl}
@@ -34,6 +36,12 @@ Print "pq-pow-l-cb-B " : pq{vl ^ 3}
 Print "pq-pow-l-cw-B " : pq{vl ^ 3}
 Print "pq-pow-l-cl-B " : pq{vl ^ 3}
 Print "pq-pow-l-cf-B " : pq{vl ^ 3.5}
+Print "pq-pow-q-cf-B " : pq{vq ^ 3.5}
+Print "pq-pow-f-cf-B " : pq{vf ^ 3.5}
+Print "pq-pow-cb-cf-B " : pq{-3 ^ 3.5}
+Print "pq-pow-cw-cf-B " : pq{-1000 ^ 3.5}
+Print "pq-pow-cl-cf-B " : pq{-100000 ^ 3.5}
+Print "pq-pow-cf-cf-B " : pq{-1.5 ^ 3.5}
 Print "pq-and-b-l-B " : pq{vb AND vl}
 Print "pq-and-b-q-B " : pq{vb AND vq}
 Print "pq-and-b-cl-B " : pq{vb AND -100000}
@@ -59,12 +67,4 @@ Print "pq-and-q-cw-B " : pq{vq AND -1000}
 Print "pq-and-q-cl-B " : pq{vq AND -100000}
 Print "pq-and-q-cf-B " : pq{vq AND -1.5}
 Print "pq-and-cb-l-B " : pq{-3 AND vl}
-Print "pq-and-cb-q-B " : pq{-3 AND vq}
-Print "pq-and-cb-cl-B " : pq{-3 AND -100000}
-Print "pq-and-cb-cf-B " : pq{-3 AND -1.5}
-Print "pq-and-cw-l-B " : pq{-1000 AND vl}
-Print "pq-and-cw-q-B " : pq{-1000 AND vq}
-Print "pq-and-cw-cl-B " : pq{-1000 AND -100000}
-Print "pq-and-cw-cf-B " : pq{-1000 AND -1.5}
-Print "pq-and-cl-b-B " : pq{-100000 AND vb}
 End

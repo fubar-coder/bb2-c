@@ -5,6 +5,9 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 vb.b=3 : vw.w=1000 : vl.l=100000 : vq.q=1.5 : vf.f=2.5
+If 1.5 * vb Then NPrint "if-mul-cf-b-A T" Else NPrint "if-mul-cf-b-A F"
+If 1.5 * vw Then NPrint "if-mul-cf-w-A T" Else NPrint "if-mul-cf-w-A F"
+If 1.5 * vl Then NPrint "if-mul-cf-l-A T" Else NPrint "if-mul-cf-l-A F"
 If 1.5 * vq Then NPrint "if-mul-cf-q-A T" Else NPrint "if-mul-cf-q-A F"
 If 1.5 * vf Then NPrint "if-mul-cf-f-A T" Else NPrint "if-mul-cf-f-A F"
 If vb / vb Then NPrint "if-div-b-b-A T" Else NPrint "if-div-b-b-A F"
@@ -58,7 +61,4 @@ If 3 / vq Then NPrint "if-div-cb-q-A T" Else NPrint "if-div-cb-q-A F"
 If 3 / vf Then NPrint "if-div-cb-f-A T" Else NPrint "if-div-cb-f-A F"
 If 3 / 3 Then NPrint "if-div-cb-cb-A T" Else NPrint "if-div-cb-cb-A F"
 If 3 / 1000 Then NPrint "if-div-cb-cw-A T" Else NPrint "if-div-cb-cw-A F"
-If 3 / 100000 Then NPrint "if-div-cb-cl-A T" Else NPrint "if-div-cb-cl-A F"
-If 1000 / vb Then NPrint "if-div-cw-b-A T" Else NPrint "if-div-cw-b-A F"
-If 1000 / vw Then NPrint "if-div-cw-w-A T" Else NPrint "if-div-cw-w-A F"
 End

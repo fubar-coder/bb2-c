@@ -11,6 +11,7 @@ Statement pq{x.q}
   SHARED tq
   tq=x : NPrint Hex$(Peek.l(&tq))
 End Statement
+Print "pq-eor-l-w-A " : pq{vl EOR vw}
 Print "pq-eor-l-l-A " : pq{vl EOR vl}
 Print "pq-eor-l-q-A " : pq{vl EOR vq}
 Print "pq-eor-l-cb-A " : pq{vl EOR 3}
@@ -66,5 +67,4 @@ Print "pq-lsl-q-cb-A " : pq{vq LSL 2}
 Print "pq-lsl-q-cw-A " : pq{vq LSL 2}
 Print "pq-lsl-q-cl-A " : pq{vq LSL 2}
 Print "pq-lsl-q-cf-A " : pq{vq LSL 2.5}
-Print "pq-lsl-cb-q-A " : pq{3 LSL nq}
 End

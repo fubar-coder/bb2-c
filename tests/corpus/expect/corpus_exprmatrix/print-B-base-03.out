@@ -1,3 +1,10 @@
+print-or-q-cb-B -.5
+print-or-q-cw-B -1.5
+print-or-q-cl-B -2
+print-or-q-cf-B -1.5
+print-or-cb-q-B -.5
+print-or-cw-q-B -1.5
+print-or-cl-q-B -2
 print-eor-b-b-B 0
 print-eor-b-q-B 3.5
 print-eor-b-cb-B 0
@@ -47,11 +54,4 @@ print-lsr-cl-q-B 536858412
 print-asl-b-q-B -24
 print-asl-w-q-B -8000
 print-asl-l-q-B -800000
-print-asl-q-b-B -12
-print-asl-q-w-B -12
-print-asl-q-l-B -12
-print-asl-q-q-B -12
-print-asl-q-cb-B -12
-print-asl-q-cw-B -12
-print-asl-q-cl-B -12
 rc=0

@@ -1,3 +1,9 @@
+db-and-cb-w-B 24
+db-and-cb-l-B 96
+db-and-cb-q-B -4
+db-and-cb-cw-B 24
+db-and-cb-cl-B 96
+db-and-cw-b-B 24
 db-and-cw-w-B 24
 db-and-cw-l-B 0
 db-and-cw-q-B 24
@@ -48,10 +54,4 @@ db-eor-b-q-B 3
 db-eor-b-cb-B 0
 db-eor-b-cw-B -27
 db-eor-b-cl-B -99
-db-eor-w-b-B -27
-db-eor-w-l-B 120
-db-eor-w-q-B -26
-db-eor-w-cb-B -27
-db-eor-w-cl-B 120
-db-eor-l-b-B -99
 rc=0

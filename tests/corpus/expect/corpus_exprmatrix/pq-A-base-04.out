@@ -16,6 +16,7 @@ pq-pow-l-f-A E5400000
 pq-pow-l-cb-A E5400000
 pq-pow-l-cw-A E5400000
 pq-pow-l-cl-A E5400000
+pq-pow-l-cf-A FFFFFFFF
 pq-pow-q-b-A 00023FFF
 pq-pow-q-w-A 00023FFF
 pq-pow-q-l-A 00023FFF
@@ -53,5 +54,4 @@ pq-pow-cw-cw-A 423FA000
 pq-pow-cw-cl-A 423FA000
 pq-pow-cw-cf-A 867C0000
 pq-pow-cl-b-A FFFFFFFF
-pq-pow-cl-w-A FFFFFFFF
 rc=0

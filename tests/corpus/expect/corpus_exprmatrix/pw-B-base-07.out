@@ -1,3 +1,12 @@
+pw-lsr-cw-w-B -125
+pw-lsr-cw-l-B -125
+pw-lsr-cw-q-B 8067
+pw-lsr-cw-cb-B -125
+pw-lsr-cw-cw-B -125
+pw-lsr-cw-cl-B -125
+pw-lsr-cl-b-B -12500
+pw-lsr-cl-w-B -12500
+pw-lsr-cl-l-B -12500
 pw-lsr-cl-q-B -12500
 pw-lsr-cl-cb-B -12500
 pw-lsr-cl-cw-B -12500
@@ -45,5 +54,4 @@ pw-asr-cl-q-B -12500
 pw-mod-cb-cb-B 0
 pw-mod-cb-cw-B -1003
 pw-mod-cw-cb-B -4
-pw-mod-cw-cw-B 0
 rc=0

@@ -1358,8 +1358,9 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
                 /* EM_R_1189 (issue #1189, the same entry: "the negative-base
                    cells belong to #1189"): a whole exponent gives the signed
                    power, SPPow's magnitude with the sign of an odd power; a
-                   fractional exponent has no rule yet (the issue: "to be
-                   decided"): a question */
+                   fractional exponent keeps the original's value as its
+                   baseline ("Matrix: last Q-F and Q-E cells", 2026-11-22:
+                   "Baseline wie heute (Recommended)") */
                 if (!rat_isint(y1))
                     e->flags |= EM_F_POWNEG;
                 else if (rat_whole(y1) & 1) {

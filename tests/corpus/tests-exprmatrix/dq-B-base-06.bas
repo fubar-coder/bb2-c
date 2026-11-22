@@ -5,8 +5,16 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
-nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
+nb.b=3 : nw.w=3 : nq.q=3
 rq.q=0
+rq=-1.5 OR vq : NPrint "dq-or-cf-q-B ",Hex$(Peek.l(&rq))
+rq=-1.5 OR -3 : NPrint "dq-or-cf-cb-B ",Hex$(Peek.l(&rq))
+rq=-1.5 OR -1000 : NPrint "dq-or-cf-cw-B ",Hex$(Peek.l(&rq))
+rq=-1.5 OR -100000 : NPrint "dq-or-cf-cl-B ",Hex$(Peek.l(&rq))
+rq=-1.5 OR -1.5 : NPrint "dq-or-cf-cf-B ",Hex$(Peek.l(&rq))
+rq=vb EOR vl : NPrint "dq-eor-b-l-B ",Hex$(Peek.l(&rq))
+rq=vb EOR vq : NPrint "dq-eor-b-q-B ",Hex$(Peek.l(&rq))
+rq=vb EOR -100000 : NPrint "dq-eor-b-cl-B ",Hex$(Peek.l(&rq))
 rq=vb EOR -1.5 : NPrint "dq-eor-b-cf-B ",Hex$(Peek.l(&rq))
 rq=vw EOR vl : NPrint "dq-eor-w-l-B ",Hex$(Peek.l(&rq))
 rq=vw EOR vq : NPrint "dq-eor-w-q-B ",Hex$(Peek.l(&rq))
@@ -55,12 +63,4 @@ rq=vw LSL nq : NPrint "dq-lsl-w-q-B ",Hex$(Peek.l(&rq))
 rq=vw LSL 3.5 : NPrint "dq-lsl-w-cf-B ",Hex$(Peek.l(&rq))
 rq=vl LSL nb : NPrint "dq-lsl-l-b-B ",Hex$(Peek.l(&rq))
 rq=vl LSL nw : NPrint "dq-lsl-l-w-B ",Hex$(Peek.l(&rq))
-rq=vl LSL nl : NPrint "dq-lsl-l-l-B ",Hex$(Peek.l(&rq))
-rq=vl LSL nq : NPrint "dq-lsl-l-q-B ",Hex$(Peek.l(&rq))
-rq=vl LSL 3 : NPrint "dq-lsl-l-cb-B ",Hex$(Peek.l(&rq))
-rq=vl LSL 3 : NPrint "dq-lsl-l-cw-B ",Hex$(Peek.l(&rq))
-rq=vl LSL 3 : NPrint "dq-lsl-l-cl-B ",Hex$(Peek.l(&rq))
-rq=vl LSL 3.5 : NPrint "dq-lsl-l-cf-B ",Hex$(Peek.l(&rq))
-rq=vq LSL nb : NPrint "dq-lsl-q-b-B ",Hex$(Peek.l(&rq))
-rq=vq LSL nw : NPrint "dq-lsl-q-w-B ",Hex$(Peek.l(&rq))
 End

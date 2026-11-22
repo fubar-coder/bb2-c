@@ -1,3 +1,7 @@
+if-ne-b-f-A T
+if-ne-b-cb-A F
+if-ne-b-cw-A T
+if-ne-b-cl-A T
 if-ne-b-cf-A T
 if-ne-w-b-A T
 if-ne-w-w-A F
@@ -50,8 +54,4 @@ if-ne-cw-l-A T
 if-ne-cw-q-A T
 if-ne-cw-f-A T
 if-ne-cw-cb-A T
-if-ne-cw-cw-A F
-if-ne-cw-cl-A T
-if-ne-cw-cf-A T
-if-ne-cl-b-A T
 rc=0

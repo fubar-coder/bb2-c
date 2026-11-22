@@ -1,3 +1,11 @@
+dq-lsl-l-l-B CB000000
+dq-lsl-l-q-B CB000000
+dq-lsl-l-cb-B CB000000
+dq-lsl-l-cw-B CB000000
+dq-lsl-l-cl-B CB000000
+dq-lsl-l-cf-B CB000000
+dq-lsl-q-b-B FFF40000
+dq-lsl-q-w-B FFF40000
 dq-lsl-q-l-B FFF40000
 dq-lsl-q-q-B FFF40000
 dq-lsl-q-cb-B FFF40000
@@ -46,12 +54,4 @@ dq-lsr-l-q-B 0F2C0000
 dq-lsr-l-cb-B 0F2C0000
 dq-lsr-l-cw-B 0F2C0000
 dq-lsr-l-cl-B 0F2C0000
-dq-lsr-l-cf-B 0F2C0000
-dq-lsr-q-b-B 1FFFD000
-dq-lsr-q-w-B 1FFFD000
-dq-lsr-q-l-B 1FFFD000
-dq-lsr-q-q-B 1FFFD000
-dq-lsr-q-cb-B 1FFFD000
-dq-lsr-q-cw-B 1FFFD000
-dq-lsr-q-cl-B 1FFFD000
 rc=0

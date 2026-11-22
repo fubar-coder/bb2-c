@@ -1,3 +1,12 @@
+pw-and-cl-cl-B 31072
+pw-or-b-q-B -1
+pw-or-w-q-B -2
+pw-or-l-l-B 31072
+pw-or-l-q-B -2
+pw-or-l-cl-B 31072
+pw-or-q-b-B -1
+pw-or-q-w-B -2
+pw-or-q-l-B -2
 pw-or-q-q-B -2
 pw-or-q-cb-B -1
 pw-or-q-cw-B -2
@@ -45,13 +54,4 @@ pw-lsl-l-w-B -13568
 pw-lsl-l-l-B -13568
 pw-lsl-l-q-B -13568
 pw-lsl-l-cb-B -13568
-pw-lsl-l-cw-B -13568
-pw-lsl-l-cl-B -13568
-pw-lsl-q-b-B -12
-pw-lsl-q-w-B -12
-pw-lsl-q-l-B -12
-pw-lsl-q-q-B -12
-pw-lsl-q-cb-B -12
-pw-lsl-q-cw-B -12
-pw-lsl-q-cl-B -12
 rc=0

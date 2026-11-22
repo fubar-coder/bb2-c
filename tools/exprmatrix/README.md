@@ -248,24 +248,27 @@ the original's measured value as a baseline.
 `note`, tab separated. The class is `agree`, `baseline`, `fixed-N`,
 `open-N` (`N` the issues whose fixed rules change the value, `+` between
 them), `port`, `new`, `question` (with its class `Q-B` the two orders
-differ, `Q-E` `^` without a known expected value, `Q-F` AmiBlitz3
-differs and no issue explains it) or `noncompile`. The expected value is
+differ, `Q-E` `^` whose operands a fix changes, so that its value is
+not measured, `Q-F` 2.10 differs from 1.95 and no issue explains it) or
+`noncompile`. The expected value is
 the fixed rules' value, or 1.95's where the model cannot compute a Float
 power that both rule sets compute alike (negated for an odd power of a
 negative base, #1189).
 
 `baseline` (the original's measured value): a cell no recorded rule
 covers - an overflow, a bit operator or shift with a Quick or Float, `MOD`
-with negative or fractional operands, `^` - that no fix changes; its
+with negative or fractional operands, `^` (also a negative base with a
+fractional exponent: #1189 fixes only whole odd exponents) - that no fix
+changes; its
 expected value is the original's measured value, a regression check so
 that a fix changes these cells only where it is meant to (the expected
 values are regenerated after the fix), not a decision that the value is
 right (`task-decisions.md`, "Matrix questions Q-A, Q-C, Q-D, Q-E",
-2026-11-22, and the user's correction there). A cell an issue's fix
-changes is `fixed-N` or `open-N` whatever its value class. Where
-AmiBlitz3 differs from 1.95, an issue that changes the cell decides it
-(its AmiBlitz3 value goes to `docs/ab3/variant.md`); a cell no issue
-explains is a question (`Q-F`).
+2026-11-22, the user's correction there, and "Matrix: last Q-F and Q-E
+cells"). A cell an issue's fix changes is `fixed-N` or `open-N` whatever
+its value class. Where AmiBlitz3 differs from 1.95, the recorded rules
+decide, also where no issue explains the cell (its AmiBlitz3 value goes
+to `docs/ab3/variant.md`).
 
 The questions file has one section per question class with the count,
 the issues of its cells, the options and three example cells with the

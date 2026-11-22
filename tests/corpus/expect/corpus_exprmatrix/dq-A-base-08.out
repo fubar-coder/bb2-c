@@ -1,3 +1,4 @@
+dq-lsl-cb-q-A 000C0000
 dq-lsl-cb-cf-A 000C0000
 dq-lsl-cw-q-A 0FA00000
 dq-lsl-cw-cf-A 0FA00000
@@ -53,5 +54,4 @@ dq-asl-b-q-A 000C0000
 dq-asl-b-cf-A 000C0000
 dq-asl-w-q-A 0FA00000
 dq-asl-w-cf-A 0FA00000
-dq-asl-l-b-A 1A800000
 rc=0

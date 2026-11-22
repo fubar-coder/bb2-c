@@ -6,7 +6,7 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 vb.b=-3 : vw.w=-20 : vl.l=-30 : vq.q=-1.5 : vf.f=-2.5
-nb.b=3 : nw.w=3 : nl.l=3
+nb.b=3 : nw.w=3
 Dim ja.l(1,300)
 For ii.l=0 To 300 : ja(1,ii)=ii*16+1 : Next
 SetErr : NPrint "i2-mod-cw-l-J !runtime" : Goto mx1 : End SetErr
@@ -84,13 +84,13 @@ mx24:
 SetErr : NPrint "i2-mod-cf-cf-J !runtime" : Goto mx25 : End SetErr
 NPrint "i2-mod-cf-cf-J ",ja(1,-1.5 MOD -1.5)
 mx25:
-SetErr : NPrint "i2-pow-w-b-J !runtime" : Goto mx26 : End SetErr
-NPrint "i2-pow-w-b-J ",ja(1,vw ^ nb)
+SetErr : NPrint "i2-pow-b-cf-J !runtime" : Goto mx26 : End SetErr
+NPrint "i2-pow-b-cf-J ",ja(1,vb ^ 3.5)
 mx26:
-SetErr : NPrint "i2-pow-w-w-J !runtime" : Goto mx27 : End SetErr
-NPrint "i2-pow-w-w-J ",ja(1,vw ^ nw)
+SetErr : NPrint "i2-pow-w-b-J !runtime" : Goto mx27 : End SetErr
+NPrint "i2-pow-w-b-J ",ja(1,vw ^ nb)
 mx27:
-SetErr : NPrint "i2-pow-w-l-J !runtime" : Goto mx28 : End SetErr
-NPrint "i2-pow-w-l-J ",ja(1,vw ^ nl)
+SetErr : NPrint "i2-pow-w-w-J !runtime" : Goto mx28 : End SetErr
+NPrint "i2-pow-w-w-J ",ja(1,vw ^ nw)
 mx28:
 End

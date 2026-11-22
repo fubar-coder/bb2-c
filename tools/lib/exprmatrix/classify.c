@@ -330,7 +330,7 @@ static int is_1049(const struct em_cell *c, const struct em_matrix *m)
 static const char *const qnames[] = {
     ['B'] = "Q-B the two operand orders give different values after variant C",
     ['E'] = "Q-E ^ (power) without a known expected value",
-    ['F'] = "Q-F AmiBlitz3 differs and no issue explains it",
+    ['F'] = "Q-F 2.10 differs from 1.95 and no issue explains it",
 };
 
 /* a measured value v of cell c, negated in the type of the cell's context
@@ -427,9 +427,14 @@ static void classify_cell(const struct em_matrix *m, struct cls *k)
        "Correction by the user" there) */
     if (f & (EM_F_OVF | EM_F_BITQ | EM_F_MODNF | EM_F_POWINT))
         k->base = 1;
+    /* a negative base with a fractional exponent: the original's measured
+       value as the baseline, #1189 fixes only whole odd exponents
+       ("Matrix: last Q-F and Q-E cells", task-decisions.md 2026-11-22:
+       "Baseline wie heute (Recommended)"; whether these become a runtime
+       error stays open in #1189) */
     if (f & EM_F_POWNEG)
-        k->q = 'E';             /* #1189 with a fractional exponent: no rule yet */
-    else if (k->fixed.text[0] == '?' || (idx && k->fixed_on.text[0] == '?')) {
+        k->base = 1;
+    if (k->fixed.text[0] == '?' || (idx && k->fixed_on.text[0] == '?')) {
         /* ^ with a Quick or Float result: SPPow is not modelled; the same
            Float operation in both rule sets takes the original's measured
            value as its baseline, with the sign of an odd power where #1189
@@ -442,13 +447,14 @@ static void classify_cell(const struct em_matrix *m, struct cls *k)
         } else
             k->q = 'E';
     }
-    /* AmiBlitz3 differing from 1.95: the recorded rules decide where an
-       issue explains the cell, AmiBlitz3's value is named in
-       docs/ab3/variant.md ("Matrix questions", Q-F, 2026-11-22: "Unsere
-       Regeln, AB3 dokumentiert (Recommended)"); the cells no issue
-       explains are shown to the user one by one */
-    if ((r->has[EM_AB3] && strcmp(r->v[EM_AB3], "!noncompile") && strcmp(r->v[EM_AB3], r->v[EM_C195]))
-        || strcmp(r->v[EM_C210], r->v[EM_C195])
+    /* AmiBlitz3 differing from 1.95: the recorded rules decide, AmiBlitz3's
+       value is named in docs/ab3/variant.md ("Matrix questions", Q-F,
+       2026-11-22: "Unsere Regeln, AB3 dokumentiert (Recommended)", and for
+       the cells no issue explains "Matrix: last Q-F and Q-E cells",
+       2026-11-22: "Wie die anderen 92 (Recommended)").  2.10 differing
+       from 1.95 where no issue explains it stays a question (no such cell
+       was measured) */
+    if (strcmp(r->v[EM_C210], r->v[EM_C195])
         || (idx && r->has[EM_C210_ON] && strcmp(r->v[EM_C210_ON], r->v[EM_C195_ON]))) {
         if (!k->q && !k->issues[0])
             k->q = 'F';
@@ -572,20 +578,14 @@ static const char *const qtext[] = {
             "Options: (a) variant C's value of each order is the expected one until #1180, the tree's value "
             "recorded for #1180 (recommended, as for #1178 Q1); (b) the cells are left out until #1180; "
             "(c) an issue of its own.\n",
-    ['E'] = "^ (power) where the expected value is not known: a negative base with a fractional exponent "
-            "(#1189: \"a negative base with a fractional exponent has no real result and is to be decided "
-            "(an error, or as today)\"), or a power whose operands a fix changes (#1178, #1188), so that "
-            "SPPow's result is not measured (the model does not compute SPPow). Left out of the committed "
-            "tests.\n\n"
-            "Options: (a) left out until #1189 decides the fractional exponent and the fixes of #1178 and "
-            "#1188 are measured (recommended); (b) the original's value as the baseline of the negative "
-            "base; (c) an error at run time.\n",
-    ['F'] = "AmiBlitz3 gives another value than 1.95 and the port, and no issue of the model's columns "
-            "explains the cell (the cells an issue explains follow the recorded rules, AmiBlitz3's value "
-            "named in docs/ab3/variant.md). Left out of the committed tests until answered.\n\n"
-            "Options: (a) the recorded rules decide, AmiBlitz3's difference is named in "
-            "docs/ab3/variant.md; (b) the cells are left out of the AmiBlitz3 cases only; (c) left out "
-            "of all tests.\n",
+    ['E'] = "^ (power) whose operands a fix changes (#1178, #1188), so that SPPow's result is not "
+            "measured (the model does not compute SPPow). Left out of the committed tests.\n\n"
+            "Options: (a) left out until the fixes of #1178 and #1188 are measured (recommended); (b) the "
+            "power of the fixed operands computed by the model.\n",
+    ['F'] = "2.10 gives another value than 1.95, and no issue of the model's columns explains the cell "
+            "(where AmiBlitz3 differs, the recorded rules decide and its value is named in "
+            "docs/ab3/variant.md). Left out of the committed tests until answered.\n\n"
+            "Options: (a) 1.95's value as the baseline; (b) 2.10's value; (c) left out of all tests.\n",
 };
 
 /* the class of every row of t (the cells, then Q-B); *ks_out the rows'

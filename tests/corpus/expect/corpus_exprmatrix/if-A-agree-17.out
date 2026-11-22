@@ -1,3 +1,7 @@
+if-le-cl-cb-A F
+if-le-cl-cw-A F
+if-le-cl-cl-A T
+if-le-cl-cf-A F
 if-le-cf-b-A T
 if-le-cf-w-A T
 if-le-cf-l-A T
@@ -50,8 +54,4 @@ if-gt-f-f-A F
 if-gt-f-cb-A F
 if-gt-f-cw-A F
 if-gt-f-cl-A F
-if-gt-f-cf-A T
-if-gt-cb-b-A F
-if-gt-cb-w-A F
-if-gt-cb-l-A F
 rc=0

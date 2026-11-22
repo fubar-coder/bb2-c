@@ -10,6 +10,14 @@ Statement pq{x.q}
   SHARED tq
   tq=x : NPrint Hex$(Peek.l(&tq))
 End Statement
+Print "pq-and-cb-q-B " : pq{-3 AND vq}
+Print "pq-and-cb-cl-B " : pq{-3 AND -100000}
+Print "pq-and-cb-cf-B " : pq{-3 AND -1.5}
+Print "pq-and-cw-l-B " : pq{-1000 AND vl}
+Print "pq-and-cw-q-B " : pq{-1000 AND vq}
+Print "pq-and-cw-cl-B " : pq{-1000 AND -100000}
+Print "pq-and-cw-cf-B " : pq{-1000 AND -1.5}
+Print "pq-and-cl-b-B " : pq{-100000 AND vb}
 Print "pq-and-cl-w-B " : pq{-100000 AND vw}
 Print "pq-and-cl-l-B " : pq{-100000 AND vl}
 Print "pq-and-cl-q-B " : pq{-100000 AND vq}
@@ -58,12 +66,4 @@ Print "pq-or-cl-cl-B " : pq{-100000 OR -100000}
 Print "pq-or-cf-b-B " : pq{-1.5 OR vb}
 Print "pq-or-cf-w-B " : pq{-1.5 OR vw}
 Print "pq-or-cf-l-B " : pq{-1.5 OR vl}
-Print "pq-or-cf-q-B " : pq{-1.5 OR vq}
-Print "pq-or-cf-cb-B " : pq{-1.5 OR -3}
-Print "pq-or-cf-cw-B " : pq{-1.5 OR -1000}
-Print "pq-or-cf-cl-B " : pq{-1.5 OR -100000}
-Print "pq-or-cf-cf-B " : pq{-1.5 OR -1.5}
-Print "pq-eor-b-l-B " : pq{vb EOR vl}
-Print "pq-eor-b-q-B " : pq{vb EOR vq}
-Print "pq-eor-b-cl-B " : pq{vb EOR -100000}
 End

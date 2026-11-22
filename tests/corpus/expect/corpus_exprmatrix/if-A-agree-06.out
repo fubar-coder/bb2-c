@@ -1,3 +1,7 @@
+if-div-cb-cl-A F
+if-div-cb-cf-A T
+if-div-cw-b-A T
+if-div-cw-w-A T
 if-div-cw-l-A F
 if-div-cw-q-A T
 if-div-cw-f-A T
@@ -50,8 +54,4 @@ if-mod-cl-cb-A T
 if-mod-cl-cw-A F
 if-mod-cl-cl-A F
 if-and-b-b-A T
-if-and-b-w-A F
-if-and-b-l-A F
-if-and-b-cb-A T
-if-and-b-cw-A F
 rc=0

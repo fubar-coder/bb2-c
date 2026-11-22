@@ -9,6 +9,15 @@ nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 Statement pw{x.w}
   NPrint x
 End Statement
+Print "pw-and-cl-cl-B " : pw{-100000 AND -100000}
+Print "pw-or-b-q-B " : pw{vb OR vq}
+Print "pw-or-w-q-B " : pw{vw OR vq}
+Print "pw-or-l-l-B " : pw{vl OR vl}
+Print "pw-or-l-q-B " : pw{vl OR vq}
+Print "pw-or-l-cl-B " : pw{vl OR -100000}
+Print "pw-or-q-b-B " : pw{vq OR vb}
+Print "pw-or-q-w-B " : pw{vq OR vw}
+Print "pw-or-q-l-B " : pw{vq OR vl}
 Print "pw-or-q-q-B " : pw{vq OR vq}
 Print "pw-or-q-cb-B " : pw{vq OR -3}
 Print "pw-or-q-cw-B " : pw{vq OR -1000}
@@ -56,13 +65,4 @@ Print "pw-lsl-l-w-B " : pw{vl LSL nw}
 Print "pw-lsl-l-l-B " : pw{vl LSL nl}
 Print "pw-lsl-l-q-B " : pw{vl LSL nq}
 Print "pw-lsl-l-cb-B " : pw{vl LSL 3}
-Print "pw-lsl-l-cw-B " : pw{vl LSL 3}
-Print "pw-lsl-l-cl-B " : pw{vl LSL 3}
-Print "pw-lsl-q-b-B " : pw{vq LSL nb}
-Print "pw-lsl-q-w-B " : pw{vq LSL nw}
-Print "pw-lsl-q-l-B " : pw{vq LSL nl}
-Print "pw-lsl-q-q-B " : pw{vq LSL nq}
-Print "pw-lsl-q-cb-B " : pw{vq LSL 3}
-Print "pw-lsl-q-cw-B " : pw{vq LSL 3}
-Print "pw-lsl-q-cl-B " : pw{vq LSL 3}
 End

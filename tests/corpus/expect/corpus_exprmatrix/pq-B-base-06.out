@@ -1,3 +1,11 @@
+pq-or-cf-q-B FFFE8000
+pq-or-cf-cb-B FFFF8000
+pq-or-cf-cw-B FFFE8000
+pq-or-cf-cl-B FFFE0000
+pq-or-cf-cf-B FFFE8000
+pq-eor-b-l-B 869D0000
+pq-eor-b-q-B 00038000
+pq-eor-b-cl-B 869D0000
 pq-eor-b-cf-B 00038000
 pq-eor-w-l-B 85780000
 pq-eor-w-q-B 03E68000
@@ -46,12 +54,4 @@ pq-lsl-w-q-B E0C00000
 pq-lsl-w-cf-B E0C00000
 pq-lsl-l-b-B CB000000
 pq-lsl-l-w-B CB000000
-pq-lsl-l-l-B CB000000
-pq-lsl-l-q-B CB000000
-pq-lsl-l-cb-B CB000000
-pq-lsl-l-cw-B CB000000
-pq-lsl-l-cl-B CB000000
-pq-lsl-l-cf-B CB000000
-pq-lsl-q-b-B FFF40000
-pq-lsl-q-w-B FFF40000
 rc=0

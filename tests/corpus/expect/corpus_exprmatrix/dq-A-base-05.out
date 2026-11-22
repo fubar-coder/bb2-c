@@ -1,3 +1,4 @@
+dq-pow-cl-w-A FFFFFFFF
 dq-pow-cl-l-A FFFFFFFF
 dq-pow-cl-q-A FFFFFFFF
 dq-pow-cl-f-A FFFFFFFF
@@ -53,5 +54,4 @@ dq-and-cf-cb-A 00010000
 dq-and-cf-cw-A 00000000
 dq-and-cf-cl-A 00000000
 dq-and-cf-cf-A 00018000
-dq-or-b-l-A 86A30000
 rc=0

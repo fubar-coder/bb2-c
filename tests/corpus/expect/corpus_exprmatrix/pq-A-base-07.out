@@ -1,3 +1,4 @@
+pq-eor-l-w-A 85480000
 pq-eor-l-l-A 00000000
 pq-eor-l-q-A 86A18000
 pq-eor-l-cb-A 86A30000
@@ -53,5 +54,4 @@ pq-lsl-q-cb-A 00060000
 pq-lsl-q-cw-A 00060000
 pq-lsl-q-cl-A 00060000
 pq-lsl-q-cf-A 00060000
-pq-lsl-cb-q-A 000C0000
 rc=0
