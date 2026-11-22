@@ -76,10 +76,10 @@ pages next to the one you write.
 Every change is built and looked at before you commit it:
 
 1. Build it in the pinned image, with no errors and no warnings:
-   `podman run --rm -v $PWD:/src -w /src docker.io/hugomods/hugo:exts-0.154.5 hugo --gc --minify --source site --baseURL https://fubar-coder.github.io/bb2-c/ -d /tmp/site-out`
-   Run it from the repository root, so that `enableGitInfo` finds the
-   repository. Use the full image name, since short names do not
-   resolve here.
+   `podman run --rm -v $PWD/site:/src docker.io/hugomods/hugo:exts-0.154.5 hugo --gc --minify -d /tmp/site-out`
+   The base URL comes from `site/hugo.yaml`; git is not needed (only the
+   CI build adds the git dates). Use the full image name, since short
+   names do not resolve here.
 2. Check the links in the output: no href starts with `/` without
    `/bb2-c/`, and every internal target exists.
 3. Look at the result. Use the user's running preview at
