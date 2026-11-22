@@ -1,7 +1,7 @@
 ---
 title: The language
 weight: 4
-description: A reference of the Blitz Basic 2 language as the compiler of the BB2 C port accepts it - lines and names, types, expressions, program flow, procedures and directives.
+description: A reference of the Blitz Basic 2 language as the compiler of the BB2 C port accepts it - lines and names, types, expressions, program flow, procedures, directives, the inline assembler and Blitz objects.
 prev: /docs/how-blitz2-works/residents
 next: /docs/language/types
 ---
@@ -19,8 +19,9 @@ so and links the page that explains the difference.
 Blitz Basic 2 has two kinds of words. A few dozen *built-in words* belong
 to the compiler itself: the statements of program flow (`If`, `While`,
 `For`, `Select`, `Goto`), the declarations (`Dim`, `NEWTYPE`, `DEFTYPE`,
-`Statement`, `Function`), the directives (`INCLUDE`, `CNIF`, `Macro`) and
-the mnemonics of the inline assembler. This chapter describes them.
+`Statement`, `Function`), the directives (`INCLUDE`, `CNIF`, `Macro`),
+the words for Blitz objects (`Use`, `Free`) and the mnemonics of the
+inline assembler. This chapter describes them.
 
 Every other command comes from a library, even such basic ones as
 `Print`, `Left$` or `AddItem`. Those are listed with their forms in the
@@ -83,9 +84,11 @@ label. A jump names the full name: `Goto main'skip`.
   {{< card link="types" title="Types, variables and constants" subtitle="The number types and strings, type suffixes and the default type, number literals, constants, Data and Read." >}}
   {{< card link="newtypes-arrays-lists" title="NewTypes, arrays and lists" subtitle="Types of your own, pointers, arrays of any type, and list arrays." >}}
   {{< card link="expressions" title="Expressions and operators" subtitle="Operands, the operators and their order, comparisons, and the type in which an expression is computed." >}}
-  {{< card link="program-flow" title="Program flow" subtitle="If, the loops, Select, Goto and Gosub, leaving a loop early, interrupts and error handlers." >}}
+  {{< card link="program-flow" title="Program flow" subtitle="If, the loops, Select, Goto and Gosub, leaving a loop early, waiting, interrupts and error handlers." >}}
   {{< card link="procedures" title="Procedures" subtitle="Statements and functions with parameters, local and shared variables." >}}
   {{< card link="directives" title="Directives and macros" subtitle="Include files, conditional compiling, macros, and the settings a source can make itself." >}}
+  {{< card link="inline-assembler" title="Inline assembler" subtitle="68000 instructions in a program, GetReg and PutReg, operands, labels, Dc, Ds and Dcb, and calls of library routines." >}}
+  {{< card link="objects" title="Blitz objects" subtitle="Screens, windows, bitmaps and the other numbered objects: Use, Free, Used, Addr, Maximum." >}}
 {{< /cards >}}
 
 Parts of this chapter are based on the Blitz Basic 2 manual by Acid

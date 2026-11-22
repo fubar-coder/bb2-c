@@ -1,7 +1,7 @@
 ---
 title: Program flow
 weight: 4
-description: If, While, Repeat, For and Select, Goto and Gosub with labels, leaving a loop with Pop, ending a program, interrupts and error handlers.
+description: If, While, Repeat, For and Select, Goto and Gosub with labels, leaving a loop with Pop, waiting with MouseWait and VWait, ending a program, interrupts and error handlers.
 ---
 
 Before this page you should know how expressions give truth values
@@ -162,6 +162,22 @@ The word `End` is also the first half of the endings `End If`,
 `Stop` interrupts the program in the debugger, as a breakpoint; it needs
 runtime error checking, without it the compiler reports "Debugger must
 be enabled for STOP" ([Runtime error checking and the debugger]({{< relref "/docs/how-blitz2-works/editor-and-compiler#runtime-error-checking-and-the-debugger" >}})).
+A program stopped this way is continued from the debugger. `Cont` is a
+word the editor knows, but the compiler refuses it everywhere with "Cont
+not Currently Available".
+
+## Waiting: MouseWait and VWait
+
+`MouseWait` waits until the left mouse button is pressed; if it is
+already held down, the program goes straight on. It checks the button
+again and again and keeps the processor busy all the time, so other
+programs run slowly while it waits. It is meant for tests, to look at
+the output before the program ends.
+
+`VWait` waits for the next vertical blank, the moment between two frames
+of the display; `VWait n` waits for n of them. It is used to change the
+display in step with the picture, for smooth animation. `VWait 0` is not
+a short wait: it waits for 65536 frames, more than 20 minutes.
 
 ## Interrupts: SetInt
 
