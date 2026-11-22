@@ -146,6 +146,15 @@ Task 1.3 (the measurement of cut F; report and cell table in `~/.local/share/bb2
 * The Byte destination `MOD` crash is #1049 (closed, fixed in the port): a folded constant `MOD` (Byte, Word or Quick) as the first use of modlib drops modlib's relocations, and a later Long or Float `MOD` of the same program jumps into the compiler's freed buffer in 1.95 and 2.10 (`tr-byte-mod-crash.md`). For the committed generator (task 3.1): a source puts its Long and Float `MOD` cells before its first foldable constant `MOD`, or the originals' runs of that source crash.
 * The 12 string cells of the index contexts (block `fs`) were measured with checking off only; the six of them outside the array (`= <= >=`, index -1) printed memory.
 
+Tasks 2.1-2.3 (`tools/lib/exprmatrix/model.c`, `classify.c`; report `~/.local/share/bb2-c-work/expr-matrix/classify-report.md`):
+
+* The model follows the code blitz2 emits for a cell (registers, the type so far, `varcont`, `consttype2`, the operator handlers with their m68k semantics) and the library routines it calls, from their sources: lmullib, ldivlib (the restoring loop as it runs), modlib, floatquicklib and printlib of the CD (with #199, #233, #234 unfixed) and of the C libraries, and an emulation of Motorola FFP (round half up after truncating to 32 bits) for mathffp. With it the original's rules give 1.95's value in every cell that compiles (0 mismatches; also the refusals and the runtime errors), and the port's rules (#1177 without #1186) the port's measured values with both library sets (0 mismatches).
+* Not modelled (`?`): mathtrans SPPow (`^`) where its bits matter, and the original's `If` on a Float, which tests d1 (#1187); 2,024 values. A Float power that both rule sets compute from the same operands takes 1.95's value as expected (decision 7, step 2).
+* SPPow drops the sign of a negative base: `(-2.5)^3` gives 15.625 (`rl=vf^nw` 15 in set B, in 2.10, 1.95, the port and AmiBlitz3). A possible original bug; its cells are in question class Q-E.
+* The fix of #1188 as its test states it (the fraction constant stays a Float under a Byte type) makes `rb=1.5 AND vb`, the shifts and `rb=NOT 1.5` a compile error, as under a Word type today; those cells are in Q-C.
+* #1179 changes few cells: a later index under a Word type computes a Quick with its fraction, and in range the Word and the Long index agree, so its effect is the cut of the checked build, attributed to #1178. The 28 cells it changes are bit operators with a Quick under the later index (`ja(1,vq LSL nb)`: shifted as a Quick under a Word type, cut first under a Long; `vq AND 1.5` refused under a Long type): all in Q-C.
+* Q-B (the two orders differ after variant C) has no cell: every pair whose orders differ is an overflow (Q-A) on one side, mostly a Long converted to a Quick.
+
 ## Open Questions
 
 None that can wait; the Decide question of decision 2(a) comes after task 1.2 and before task 1.3, the question classes of decision 7 before group 3.
