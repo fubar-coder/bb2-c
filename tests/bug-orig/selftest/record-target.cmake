@@ -4,7 +4,9 @@
 # differs in a section (refused: "test not deterministic", its ID.orig
 # unchanged, the target fails), test c is left out by the filter (its
 # ID.orig untouched), test d's second run fails (the target fails, nothing
-# written); a second run limited to a finds it unchanged and passes.
+# written), test m is a test of the BASIC test model (m.test.bas: neither
+# run nor written, though its fake runs agree); a second run limited to a
+# finds it unchanged and passes, one limited to m finds no test to record.
 #   cmake -DRESULTS=results -DSCRIPT=record.cmake -DWORK=DIR -P record-target.cmake
 foreach(v RESULTS SCRIPT WORK)
 	if(NOT DEFINED ${v})
@@ -22,12 +24,15 @@ file(WRITE ${WORK}/fake/b.run2 "${note}[session]\ndone\n[run]\nptr=$2000\nrc=0\n
 file(WRITE ${WORK}/fake/c.run1 "${obs}")
 file(WRITE ${WORK}/fake/c.run2 "${obs}")
 file(WRITE ${WORK}/fake/d.run1 "${obs}")
+file(WRITE ${WORK}/fake/m.run1 "${obs}")
+file(WRITE ${WORK}/fake/m.run2 "${obs}")
+file(WRITE ${WORK}/tree/m.test.bas "!TestCase{c}\n!EndTestCase\n")
 set(old "${note}[session]\ntimeout\n")
 foreach(t b c d)
 	file(WRITE ${WORK}/tree/${t}.orig "${old}")
 endforeach()
 set(list "")
-foreach(t a b c d)
+foreach(t a b c d m)
 	string(APPEND list "${t}|blitz|-|-|${WORK}/${t}.rec1|${WORK}/${t}.rec2|${WORK}/tree/${t}.orig\n")
 endforeach()
 file(WRITE ${WORK}/list "${list}")
@@ -49,11 +54,15 @@ function(holds t want)
 	endif()
 endfunction()
 
-run("a,b,d" FALSE "a: recorded [^\n]*a\\.orig\n.*test not deterministic: b\n.*d: run 2 failed.*refused: b. failed: d")
+run("a,b,d,m" FALSE "m: a test of the BASIC test model \\(m\\.test\\.bas\\): nothing to record\n.*3 tests.*a: recorded [^\n]*a\\.orig\n.*test not deterministic: b\n.*d: run 2 failed.*refused: b. failed: d")
 holds(a "${obs}")
 holds(b "${old}")
 holds(c "${old}")
 holds(d "${old}")
+if(EXISTS ${WORK}/tree/m.orig OR EXISTS ${WORK}/m.rec1)
+	message(FATAL_ERROR "the test of the BASIC test model m was run or written")
+endif()
+run("m" FALSE "m: a test of the BASIC test model.*no test matches the filter")
 run("a" TRUE "1 tests, 2 at a time\n.*a: [^\n]*a\\.orig unchanged")
 run("x*" FALSE "no test matches the filter")
 message(STATUS "record-target: all runs as expected")

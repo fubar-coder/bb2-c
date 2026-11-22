@@ -2159,8 +2159,11 @@ expectation grows by one.
 observation of the original, committed, so that the tests need no session
 of it; in the terms of the shared test model (`docs/testing.md`) the
 `[orig]` value of the test, `ID.expect` the expected value (the
-`[fixed #N]` value once the bug is fixed). Every bug-orig test has one,
-open or fixed; port regression tests have none. Format: the sections of
+`[fixed #N]` value once the bug is fixed). Every bug-orig test of the
+old form has one, open or fixed; port regression tests have none, and
+neither has a test of the BASIC test model (`ID.test.bas`), whose
+expectation is in its source and configuration: `bug-orig-record` never
+runs or writes one. Format: the sections of
 the observation as above (`[session]`, `[compile]`, `[run]`, `[blitz2]`,
 `[log]`), raw, with a first line `# NOTE` that says which original it is
 (blitz2 1.95 built from `blitz2.s`, or the CD's 2.10 for `; @rwe`

@@ -145,3 +145,10 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   Host test `bugorigcmp` with the scenarios of the spec (only the fixed
   issue; an expected value changed in another test and in the own one; a
   deviation changed, an assertion added; `fixed = N`) and broken input.
+- **Task 1.4, bug-orig-record**: the list of the target holds only the
+  tests of the old form (`bug_orig_test()` writes it; the glob of the old
+  form leaves out `*.test.bas`), and `record.cmake` also skips an entry
+  whose directory has `ID.test.bas`, with the message "a test of the
+  BASIC test model: nothing to record" (`bug_orig_record_target`: one test
+  of each form; the model test's runs are not started, its `ID.orig` not
+  written).
