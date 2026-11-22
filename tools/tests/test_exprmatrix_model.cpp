@@ -27,7 +27,7 @@ static const char *const DESC =
     "values N q=1.5 l=65537 cb=1\n"
     "values A b=3 w=1000 l=100000 q=1.5 f=2.5 cb=3 cw=1000 cl=100000 cf=1.5\n"
     "counts A b=2 w=2 l=2 q=2 f=2 cb=2 cw=2 cl=2 cf=2.5\n"
-    "values B b=-3 f=-2.5 w=-20 cf=-1.5\n"
+    "values B b=-3 f=-2.5 w=-20 l=-100000 cf=-1.5\n"
     "counts B b=3 w=2 cf=3.5\n"
     "values J f=-2.5\n"
     "counts J b=3\n"
@@ -45,6 +45,7 @@ static const char *const DESC =
     "cell A db + cf cf\ncell A dw + cf cf\ncell A db = cf cf\ncell A if - f\ncell A if + b f\n"
     "cell A dq * w w\ncell A print / q l\ncell A db AND cf b\n"
     "cell B dl ^ f b\ncell B df ^ f b\ncell B dl ^ b w\ncell B dl ^ f cf\ncell J i1 ^ f b\ncell A if ^ b b\n"
+    "cell B dl ^ l b\ncell B dw ^ l b\n"
     // the question classes
     "cell A dl * l l\ncell A dq AND q w\ncell A dl MOD l q\ncell A dl ^ w cb\ncell A dl AND f b\n";
 
@@ -200,6 +201,12 @@ TEST_CASE("exprmatrix model: the fixed bugs and the libraries", "[exprmatrix]")
     CHECK((f & EM_F_POWNEG));
     md.value("dl-pow-f-cf-B", ORIG, 0, &f);
     CHECK(!(f & EM_F_POWNEG));
+    // ... and a power outside the Long range saturates, not symmetrically:
+    // 100000^3 is $7FFFFFFF, -(100000^3) $80000000 (0 as a Word or Byte)
+    CHECK(md.value("dl-pow-l-b-B", ORIG) == "2147483647");
+    CHECK(md.value("dl-pow-l-b-B", FIXED) == "-2147483648");
+    CHECK(md.value("dw-pow-l-b-B", ORIG) == "-1");
+    CHECK(md.value("dw-pow-l-b-B", FIXED) == "0");
     // ... and a negative power is outside the array
     CHECK(md.value("i1-pow-f-b-J", ORIG, 1) == "241");
     CHECK(md.value("i1-pow-f-b-J", FIXED, 1) == "!runtime");

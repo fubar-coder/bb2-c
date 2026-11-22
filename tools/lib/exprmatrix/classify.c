@@ -336,7 +336,8 @@ static const char *const qnames[] = {
 /* a measured value v of cell c, negated in the type of the cell's context
    when neg (EM_R_1189: the sign of an odd power applied to what SPPow
    gives; every conversion after it is symmetric: SPFix towards zero,
-   floattoquick, Print's sign) */
+   floattoquick, Print's sign; SPFix's saturation outside the Long range
+   is not, and the model knows those cells itself, model.c pow_whole) */
 static void negated(const struct em_cell *c, const char *v, int neg, char *out, size_t n)
 {
     if (!neg || v[0] == '!' || !strcmp(v, "T") || !strcmp(v, "F")) {
