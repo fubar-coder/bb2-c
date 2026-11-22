@@ -1037,6 +1037,18 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   library of change `basic-testlib` could show the expression of a failed
   check with it, but only in tests that do not run against the original
   compilers, which do not know the extension.
+- [ ] **Setting up an agent's git worktree** (seen 2026-11-22, to be
+  decided later): a fresh worktree has none of the main checkout's data, so
+  every agent first links `archive/{cd,aminet,amiblitz3,bernd,ancient}`,
+  `.cache` and the files of `amiga-emulation/` by hand, each time in another
+  form, often chained with `git status`. Claude Code's worktree guard
+  refuses such chains ("names git in a form too complex to verify that it
+  stays inside the worktree"); the agent then splits the command and
+  retries. Options: a Claude Code hook that creates the links when a
+  worktree is made (hooks are exempt from rule 6, nothing may depend on
+  them); a CMake option that points the build at the main checkout's data
+  (`-DBB2C_DATA_ROOT=...`, with tests); or a fixed list of single commands
+  in the agent definitions.
 
 ## 3 Only once §1 is done
 
