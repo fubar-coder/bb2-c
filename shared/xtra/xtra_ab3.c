@@ -576,10 +576,10 @@ static int value(struct out *o, int k, const struct xtra *x, const struct xtra_b
 
     switch (k) {
     case XTRA_K_EXEPATH: case XTRA_K_EXEFILE: case XTRA_K_CLIARGS: case XTRA_K_LABELSEARCH:
-        s = xtra_text(x, b,
-                      k == XTRA_K_EXEPATH ? XTRA_F_EXE_PATH
-                      : k == XTRA_K_EXEFILE ? XTRA_F_EXE_NAME
-                      : k == XTRA_K_CLIARGS ? XTRA_F_CLI : XTRA_F_LABEL_SEARCH, &n);
+        s = xtra_get_text(x, b,
+                          k == XTRA_K_EXEPATH ? XTRA_F_EXE_PATH
+                          : k == XTRA_K_EXEFILE ? XTRA_F_EXE_NAME
+                          : k == XTRA_K_CLIARGS ? XTRA_F_CLI : XTRA_F_LABEL_SEARCH, &n);
         if (!s)
             return XTRA_E_BASE;
         ch(o, '"');
@@ -592,7 +592,7 @@ static int value(struct out *o, int k, const struct xtra *x, const struct xtra_b
         ch(o, '"');
         comma = 0;                      /* the text so far ends with ',' */
         for (i = 0; i < XTRA_NRES; i++) {
-            if (!(s = xtra_text(x, b, XTRA_F_RES0 + i, &n)))
+            if (!(s = xtra_get_text(x, b, XTRA_F_RES0 + i, &n)))
                 return XTRA_E_BASE;
             if (i && !comma) {
                 ch(o, ',');
@@ -655,8 +655,8 @@ static int same_text(const struct xtra *x, const struct xtra *y, const struct xt
     const uint8_t *s, *t;
     size_t n, m, i;
 
-    s = xtra_text(x, b, f, &n);
-    t = xtra_text(y, b, f, &m);
+    s = xtra_get_text(x, b, f, &n);
+    t = xtra_get_text(y, b, f, &m);
     if (!s || !t || n != m)
         return 0;
     for (i = 0; i < n; i++)

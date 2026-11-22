@@ -130,7 +130,7 @@ static void text(const char *label, const struct loaded *l, int f)
     const uint8_t *p, *raw;
     size_t n, i, cap = xtra_text_cap(f);
 
-    p = xtra_text(&l->x, &l->b, f, &n);
+    p = xtra_get_text(&l->x, &l->b, f, &n);
     printf("%-17s\"", label);
     for (i = 0; p && i < n; i++)
         if (p[i] >= 0x20 && p[i] < 0x7F && p[i] != '"' && p[i] != '\\')
@@ -183,7 +183,7 @@ static void dump(const struct loaded *l)
     for (i = 0; i < XTRA_NRES; i++) {
         char label[20];
         size_t n;
-        xtra_text(v, &l->b, XTRA_F_RES0 + (int)i, &n);
+        xtra_get_text(v, &l->b, XTRA_F_RES0 + (int)i, &n);
         if (!n && !v->res_ptr[i])
             continue;
         snprintf(label, sizeof label, "resident %u", i);
@@ -245,8 +245,8 @@ static int same_ab3(const struct xtra *p, const struct xtra_base *pb, const stru
     int f;
 
     for (f = 0; f < XTRA_F_COUNT; f++) {
-        s = xtra_text(p, pb, f, &sn);
-        t = xtra_text(q, qb, f, &tn);
+        s = xtra_get_text(p, pb, f, &sn);
+        t = xtra_get_text(q, qb, f, &tn);
         if (!s || !t || sn != tn || memcmp(s, t, sn))
             return 0;
     }

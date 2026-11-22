@@ -202,7 +202,7 @@ struct amiga_emulation {
     int date_from_host;         /* the clock by DATE (the a500 template) */
     pid_t parent;
     double t0;                  /* the start, for snapshot.log */
-    /* amiga_emulation_stats */
+    /* amiga_emulation_get_stats */
     double slot_from, slot_got, end_at;
     enum amiga_emulation_snapshot_use snap_use;
     char *machine;
@@ -2748,7 +2748,7 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
     return e->status;
 }
 
-void amiga_emulation_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s)
+void amiga_emulation_get_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s)
 {
     double end = e->joined ? e->end_at
                  : e->sh && atomic_load(&e->sh->finished) ? from_us(atomic_load(&e->sh->end))

@@ -98,7 +98,7 @@ TEST_CASE("xtra_load: TED and text sources with and without .xtra", "[xtra]")
         CHECK(x.type == t);
         CHECK(x.hdr == 0);
         CHECK(x.source == XTRA_SRC_BLITZ2);
-        const uint8_t *p = xtra_text(&x, &base, XTRA_F_EXE_NAME, &n);
+        const uint8_t *p = xtra_get_text(&x, &base, XTRA_F_EXE_NAME, &n);
         REQUIRE(p != nullptr);
         CHECK(std::string(reinterpret_cast<const char *>(p), n) == "test");
         CHECK(x.max.n == 1);

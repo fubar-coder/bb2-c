@@ -168,11 +168,11 @@ TEST_CASE("geometry", "[teddump]")
     struct teddump_geometry g;
 
     REQUIRE(parse(build(ted_screen()), d));
-    teddump_geometry(&d.d, 8, &g);
+    teddump_get_geometry(&d.d, 8, &g);
     CHECK(g.edrows == 60);
     CHECK(g.status == 12 + 480 + 9);
     REQUIRE(parse(build(blank(2, 27 + 6 * 80), W, 27 + 6 * 80), d6));
-    teddump_geometry(&d6.d, 6, &g);
+    teddump_get_geometry(&d6.d, 6, &g);
     CHECK(g.edrows == 80);
 }
 

@@ -189,7 +189,7 @@ void teddump_digest(const struct teddump *d, char hex[65])
     sha256_hex(&s, hex);
 }
 
-void teddump_geometry(const struct teddump *d, int fh, struct teddump_geometry *g)
+void teddump_get_geometry(const struct teddump *d, int fh, struct teddump_geometry *g)
 {
     long free_rows = d->height - TEDDUMP_TOPSKIP - TEDDUMP_BOTSKIP - 1 - fh;
 
@@ -364,7 +364,7 @@ char *teddump_text(const struct teddump *d, const struct teddump_fonts *f, int f
         return NULL;
     }
     decoder_init(dec, f, fh);
-    teddump_geometry(d, fh, &g);
+    teddump_get_geometry(d, fh, &g);
     text_add(&t, "# %ldx%ldx%ld mode $%08lX title \"%s\" edrows %ld font %d\n", d->width,
              d->height, d->depth, (unsigned long)d->modeid & 0xFFFFFFFFul, d->title, g.edrows, fh);
     for (i = 0; i < d->nwindows; i++) {
@@ -430,7 +430,7 @@ static uint8_t *masked(const struct teddump *d, int fh, int no_mask)
         return NULL;
     for (p = 0; p < d->depth; p++)
         memcpy(m + (size_t)p * size, d->planes[p], size);
-    teddump_geometry(d, fh, &g);
+    teddump_get_geometry(d, fh, &g);
     if (!no_mask && g.status >= 0 && g.status + fh <= d->rows
         && d->rowbytes >= TEDDUMP_FREE_COL + TEDDUMP_FREE_LEN)
         for (p = 0; p < d->depth; p++)

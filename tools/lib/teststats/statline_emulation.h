@@ -36,7 +36,7 @@ static inline void statline_session(struct statline *s, const char *work, const 
     struct amiga_emulation_stats st;
     const char *base = work ? strrchr(work, '/') : NULL;
 
-    amiga_emulation_stats(e, &st);
+    amiga_emulation_get_stats(e, &st);
     statline_init(s);
     statline_set(s->test, sizeof s->test, base && base[1] ? base + 1 : work);
     statline_set(s->config, sizeof s->config, config);

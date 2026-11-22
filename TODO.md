@@ -1090,7 +1090,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   header (`x->hdr` bytes) while it uses the views. `loadxtra_c` then
   copies into the gadgets (`icon` → `optreqga9`, `sw[]` →
   `optreqga10–16`/`optreq2ga1–7`, `buf[]` → `optreqsg1–6`, residents
-  (`xtra_text`) → `resbuff` with `seg = 0`, exe path/name → `xpathname`,
+  (`xtra_get_text`) → `resbuff` with `seg = 0`, exe path/name → `xpathname`,
   CLI argument → `argreqla8`, the maxima (iterator) →
   `findlibnoerr`/`LIBMAX_COUNT`, vers 0 → `xtra_apply_vers0`; keep the
   `ezerr` `BUG(orig)`); `savextra_c` the other way round

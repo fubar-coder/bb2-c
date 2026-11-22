@@ -42,7 +42,7 @@
  * supervisor's end and takes its result (a page shared with it), so a
  * runner that joins its sessions in start order no longer delays the
  * others: a session waiting for its join has already ended, and its time
- * limit and times (amiga_emulation_stats) end with it.
+ * limit and times (amiga_emulation_get_stats) end with it.
  * amiga_emulation_free of a session not joined stops it (SIGTERM to the
  * supervisor, SIGKILL after 5 s).  On Linux, the supervisor dies
  * (SIGKILL) when the process that started it ends without
@@ -171,7 +171,7 @@ struct amiga_emulation_params {
                                    in snapshot mode (a cold boot is silent);
                                    then the session ends with the state timeout, as
                                    at the limit (the screenshot and timeout.txt
-                                   too), amiga_emulation_stats says hung.  For
+                                   too), amiga_emulation_get_stats says hung.  For
                                    a job that is expected to hang (a bug of the
                                    original): a hang that nothing but the time
                                    limit ends would take the whole limit */
@@ -315,7 +315,7 @@ struct amiga_emulation_stats {
     enum amiga_emulation_status status;     /* of the join; FAILED before it */
     int hung;                   /* the hang check (params.hang_after) ended it */
 };
-void amiga_emulation_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s);
+void amiga_emulation_get_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s);
 /* "cold", "restored", "first-save", "fallback" */
 const char *amiga_emulation_snapshot_use_name(enum amiga_emulation_snapshot_use u);
 

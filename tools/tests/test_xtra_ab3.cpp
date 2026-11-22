@@ -32,7 +32,7 @@ int read(const std::string &s, struct xtra_error *err = nullptr)
 std::string text(int f, const struct xtra *v = &x, const struct xtra_base *b = &base)
 {
     size_t n = 99;
-    const uint8_t *p = xtra_text(v, b, f, &n);
+    const uint8_t *p = xtra_get_text(v, b, f, &n);
 
     REQUIRE(p != nullptr);
     return std::string(reinterpret_cast<const char *>(p), n);

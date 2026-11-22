@@ -77,7 +77,7 @@ static void show(const char *name, struct amiga_emulation *e)
     struct amiga_emulation_stats st;
     char *log = read_text(amiga_emulation_work_dir(e), "snapshot.log");
 
-    amiga_emulation_stats(e, &st);
+    amiga_emulation_get_stats(e, &st);
     fprintf(stderr, "test_amiga_emulation_join_order: %s: %s %s session %.2f timed %.2f\n%s", name,
             amiga_emulation_snapshot_use_name(st.snapshot), amiga_emulation_status_name(st.status),
             st.session, st.timed, log ? log : "");
@@ -135,13 +135,13 @@ TEST_CASE("amiga_emulation_join_order: sessions joined in start order", "[amiga_
     /* the first: its job hangs, the limit ends it */
     CHECK(amiga_emulation_join(a) == AMIGA_EMULATION_TIMEOUT);
     joined_a = now() - t0;
-    amiga_emulation_stats(a, &st);
+    amiga_emulation_get_stats(a, &st);
     CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FIRST_SAVE);
     CHECK(st.timed >= LIMIT && st.timed < LIMIT + 5);
 
     /* the second has run its job meanwhile, within its limit */
     CHECK(amiga_emulation_join(b) == AMIGA_EMULATION_DONE);
-    amiga_emulation_stats(b, &st);
+    amiga_emulation_get_stats(b, &st);
     CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FIRST_SAVE && st.status == AMIGA_EMULATION_DONE);
     CHECK(st.timed > 0 && st.timed < LIMIT);
     CHECK(st.session > 0 && st.session < joined_a - 5);

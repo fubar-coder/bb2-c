@@ -77,7 +77,7 @@ int load(const bytes &b, struct xtra_error *err = nullptr)
 std::string text(int f, const struct xtra_base *b = &base)
 {
     size_t n = 99;
-    const uint8_t *p = xtra_text(&x, b, f, &n);
+    const uint8_t *p = xtra_get_text(&x, b, f, &n);
 
     REQUIRE(p != nullptr);
     return std::string(reinterpret_cast<const char *>(p), n);
@@ -168,7 +168,7 @@ TEST_CASE("vers 1: every field, texts as views, the pairs in file order", "[xtra
     CHECK(text(XTRA_F_LABEL_SEARCH) == "");
     // views, no copies: the bytes are the file's
     size_t n;
-    CHECK(xtra_text(&x, &base, XTRA_F_EXE_NAME, &n) == b.data() + 790);
+    CHECK(xtra_get_text(&x, &base, XTRA_F_EXE_NAME, &n) == b.data() + 790);
     CHECK(x.text[XTRA_F_EXE_NAME].in == XTRA_IN_XTRA);
     CHECK(x.text[XTRA_F_EXE_NAME].off == 790);
     auto m = maxima();
@@ -329,7 +329,7 @@ TEST_CASE("set_text: refused texts", "[xtra][broken]")
     CHECK(text(XTRA_F_CLI) == "");
     CHECK(xtra_text_cap(XTRA_F_COUNT) == 0);
     size_t n = 99;
-    CHECK(xtra_text(&x, nullptr, XTRA_F_COUNT, &n) == nullptr);
+    CHECK(xtra_get_text(&x, nullptr, XTRA_F_COUNT, &n) == nullptr);
     CHECK(n == 0);
 }
 
@@ -356,7 +356,7 @@ TEST_CASE("writer: broken structure, missing base, too small buffer", "[xtra][br
     struct xtra_base none = {nullptr, nullptr};
     CHECK(xtra_write_blitz2(&x, &none, out, sizeof(out), &len, nullptr, &err) == XTRA_E_BASE);
     size_t n = 99;
-    CHECK(xtra_text(&x, &none, XTRA_F_EXE_NAME, &n) == nullptr);
+    CHECK(xtra_get_text(&x, &none, XTRA_F_EXE_NAME, &n) == nullptr);
     CHECK(n == 0);
     b = file(1, 1);
     REQUIRE(load(b) == XTRA_OK);
