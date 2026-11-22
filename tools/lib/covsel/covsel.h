@@ -28,6 +28,11 @@
  *                    own rule (a measured source: the tests of all its
  *                    functions; glue or an unknown file: all); a file no
  *                    object depends on: all
+ *       model        the tests of the BASIC test model that read the file:
+ *                    for ID.test.bas and ID.test.toml the tests whose
+ *                    command names the source with --source, for a
+ *                    tests.toml those whose source is in its directory
+ *                    or below
  *       label:L      the tests with ctest label L
  *       name:PATTERN the tests whose name matches PATTERN
  *   - the tests: ctest --show-only=json-v1 of the build, and of its host

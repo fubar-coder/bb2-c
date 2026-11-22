@@ -25,7 +25,7 @@
 
 - [x] 4.1 The build-time registration tool: sources and configurations read, the source form checked (blocks paired in source order with the case at fault named, no `CNIF`/`CEND` cutting a block, only a comment after the case macros, order, no code outside the blocks, case names against the token lists, no check in a test's macro), names `PREFIX_ID__CASE` / `_originals`, labels, time limit, cost and fixtures from the configuration, empty sides not registered, the ctest include file; the build step depends on every file it read; verify: host tests per rule with broken input, and `ctest -N` lists the tests of a sample directory after the build
 - [x] 4.2 The glob of `*.test.bas` in `tests/bug-orig/CMakeLists.txt` and `tests/blitz2/CMakeLists.txt` next to the existing tests; verify: a configure and build with one test of the model and the old tests unchanged in `ctest -N`
-- [ ] 4.3 The test selection: configuration files and test sources select their tests (`tools/testinfo/rules.txt`); verify: the selection tests of `testing/test-selection` with a changed `tests.toml`
+- [x] 4.3 The test selection: configuration files and test sources select their tests (`tools/testinfo/rules.txt`); verify: the selection tests of `testing/test-selection` with a changed `tests.toml`
 
 ## 5. Documentation and integration
 

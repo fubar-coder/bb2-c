@@ -2894,6 +2894,11 @@ rules for what a change of a file selects are in
 * a header of the compilers: each source whose object depends on it
   counts as changed as a whole, by its own rule (a measured source: the
   tests of all its functions; glue, which is not measured: all tests);
+* a source of the BASIC test model (`ID.test.bas`) or its own
+  `ID.test.toml`: the tests of its cases; a `tests.toml`: the tests of
+  the model whose source is in its directory or below (`tests/tests.toml`,
+  the root: all of them) - by the `--source` of the tests' commands
+  (selector `model`);
 * a test source or expect file: the tests of the suites that read it (by
   name or label); a host test source: the host tests; the Amiga helper
   programs of the suites (`tests/*/amiga/`), which several suites use:

@@ -8,7 +8,7 @@
 #include <string.h>
 #include "json.h"
 
-enum { SEL_ALL = 1, SEL_NONE = 2, SEL_COVERAGE = 4, SEL_HEADER = 8 };
+enum { SEL_ALL = 1, SEL_NONE = 2, SEL_COVERAGE = 4, SEL_HEADER = 8, SEL_MODEL = 16 };
 
 struct ids {
     int *v;
@@ -35,6 +35,8 @@ struct test {
     int name, runner;           /* ids in tests */
     char **labels;
     size_t nlabels;
+    char *source;               /* the value of --source in its command (a test of
+                                   the BASIC test model), NULL: none */
 };
 
 struct range {
@@ -142,8 +144,10 @@ void covsel_free(struct covsel *s)
         free_strings(s->rules[i].names, s->rules[i].nnames);
     }
     free(s->rules);
-    for (i = 0; i < s->nctests; i++)
+    for (i = 0; i < s->nctests; i++) {
         free_strings(s->ctests[i].labels, s->ctests[i].nlabels);
+        free(s->ctests[i].source);
+    }
     free(s->ctests);
     for (i = 0; i < s->nchanges; i++) {
         free(s->changes[i].path);
@@ -501,6 +505,8 @@ int covsel_read_rules(struct covsel *s, const char *text, char *err, size_t errs
                 r->flags |= SEL_COVERAGE;
             else if (wl == 6 && !memcmp(w, "header", 6))
                 r->flags |= SEL_HEADER;
+            else if (wl == 5 && !memcmp(w, "model", 5))
+                r->flags |= SEL_MODEL;
             else if (wl > 6 && !memcmp(w, "label:", 6)) {
                 if (push_string(&r->labels, &r->nlabels, w + 6, wl - 6))
                     return OOM();
@@ -521,7 +527,7 @@ int covsel_read_rules(struct covsel *s, const char *text, char *err, size_t errs
 /* ---- the tests ---- */
 
 static int add_ctest(struct covsel *s, const char *name, const char *runner, const struct json *labels,
-                     char *err, size_t errsz)
+                     const char *source, char *err, size_t errsz)
 {
     struct test *t = grow(s->ctests, s->nctests, sizeof *t);
     size_t i;
@@ -537,7 +543,21 @@ static int add_ctest(struct covsel *s, const char *name, const char *runner, con
         if (labels->items[i].type == JSON_STRING
             && push_string(&t->labels, &t->nlabels, labels->items[i].string, strlen(labels->items[i].string)))
             return OOM();
+    if (source && !(t->source = strdup(source)))
+        return OOM();
     return 0;
+}
+
+/* the value of --source in the command of a test, NULL: none */
+static const char *source_of(const struct json *t)
+{
+    const struct json *cmd = json_get(t, "command");
+
+    for (size_t k = 0; cmd && cmd->type == JSON_ARRAY && k + 1 < cmd->n; k++)
+        if (cmd->items[k].type == JSON_STRING && !strcmp(cmd->items[k].string, "--source")
+            && cmd->items[k + 1].type == JSON_STRING)
+            return cmd->items[k + 1].string;
+    return NULL;
 }
 
 int covsel_read_tests(struct covsel *s, const char *json, int host, char *err, size_t errsz)
@@ -575,7 +595,7 @@ int covsel_read_tests(struct covsel *s, const char *json, int host, char *err, s
             if (labels->items[k].type == JSON_STRING && !strcmp(labels->items[k].string, "emulator"))
                 emulator = 1;
         if (!host) {
-            r = add_ctest(s, name, name, labels, err, errsz);
+            r = add_ctest(s, name, name, labels, source_of(t), err, errsz);
             continue;
         }
         if (!(mapname = malloc(strlen(name) + 6))) {
@@ -584,7 +604,7 @@ int covsel_read_tests(struct covsel *s, const char *json, int host, char *err, s
         }
         strcpy(mapname, "host/");
         strcat(mapname, name);
-        r = add_ctest(s, mapname, emulator ? "host_emulator" : "host", labels, err, errsz);
+        r = add_ctest(s, mapname, emulator ? "host_emulator" : "host", labels, source_of(t), err, errsz);
         free(mapname);
     }
     json_free(doc);
@@ -953,6 +973,45 @@ static int select_header(struct covsel *s, const struct change *c, FILE *log, in
     return nobj > 0;
 }
 
+/* the tests of the BASIC test model a changed file is read by (selector
+   model): a source ID.test.bas the tests whose command names it with
+   --source, its ID.test.toml the same, a tests.toml the tests whose source
+   is in its directory or below.  0 = done, -1 = out of memory */
+static int select_model(struct covsel *s, const struct change *c, FILE *log, const struct rule *r)
+{
+    size_t pl = strlen(c->path), rl = strlen(s->root), n = 0;
+    char *abs = malloc(rl + pl + 16);
+    const char *base = strrchr(c->path, '/');
+    int dir = 0;
+
+    if (!abs)
+        return -1;
+    base = base ? base + 1 : c->path;
+    while (rl > 1 && s->root[rl - 1] == '/')
+        rl--;
+    memcpy(abs, s->root, rl);
+    abs[rl] = '/';
+    memcpy(abs + rl + 1, c->path, pl + 1);
+    if (!strcmp(base, "tests.toml")) {
+        /* the directory, with its '/' */
+        abs[rl + 1 + (size_t)(base - c->path)] = 0;
+        dir = 1;
+    } else if (pl > 10 && !strcmp(c->path + pl - 10, ".test.toml"))
+        strcpy(abs + rl + 1 + pl - 10, ".test.bas");
+    for (size_t l = 0; l < s->nctests; l++) {
+        const char *src = s->ctests[l].source;
+
+        if (src && (dir ? !strncmp(src, abs, strlen(abs)) : !strcmp(src, abs))) {
+            s->selected[s->ctests[l].runner] = 1;
+            n++;
+        }
+    }
+    say(log, "%s: rule %d (%s): the tests of the BASIC test model that read it: %zu test(s)\n", c->path,
+        r->line, r->pattern, n);
+    free(abs);
+    return 0;
+}
+
 /* the tests a change selects by its rule */
 static int select_change(struct covsel *s, const struct change *c, FILE *log, int depth)
 {
@@ -992,6 +1051,12 @@ static int select_change(struct covsel *s, const struct change *c, FILE *log, in
             say(log, "%s: all tests\n", c->path);
             select_all(s);
         }
+    }
+    if (r->flags & SEL_MODEL) {
+        int found = select_model(s, c, log, r);
+
+        if (found < 0)
+            return -1;
     }
     for (k = 0; k < r->nlabels; k++) {
         size_t n = 0;

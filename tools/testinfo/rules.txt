@@ -4,8 +4,9 @@
 # rule counts; a file no rule matches selects all tests.  Selectors: all,
 # none, coverage (the tests of the changed functions, by the map), header
 # (each source that includes the file counts as changed as a whole, by
-# its own rule), label:LABEL, name:PATTERN (ctest names; host tests are
-# host/NAME).  Never fewer tests than a change can affect: when in doubt,
+# its own rule), model (the tests of the BASIC test model that read the
+# file, by the --source of their commands), label:LABEL, name:PATTERN
+# (ctest names; host tests are host/NAME).  Never fewer tests than a change can affect: when in doubt,
 # all.
 
 # documentation: no test reads it
@@ -63,6 +64,15 @@ tools/testinfo/**               name:host/*
 tools/lib/exprmatrix/**         name:host/*
 tools/exprmatrix/**             name:host/*
 tools/**                        all
+
+# the tests of the BASIC test model (ID.test.bas, ID.test.toml, tests.toml;
+# openspec change basic-test-runner): a source and its own configuration
+# select the tests of its cases, a directory's tests.toml the tests whose
+# source is in its directory or below (tests/tests.toml, the root: all of
+# them); by the --source of their commands
+**/*.test.bas                   model
+**/*.test.toml                  model
+tests/**/tests.toml             model
 
 # test sources and expect files: the tests of the suites that read them
 # (the corpus and bug-orig sources also by ab3_bb2_equivalence, the TED
