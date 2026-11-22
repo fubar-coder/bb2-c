@@ -895,15 +895,25 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         if (!(prec > precsp[-1].prec))  /* cmp -(a1),d1 / bhi .higher */
             return prec;
         /* .higher */
+        /* Fixed (#1185): the right operand of an operator whose left
+           operand is in d7 would need a register beyond d7 (the 7th and
+           later arguments of a statement are evaluated in d6, so
+           Cmd a1,..,a6,x+y*z is enough, or eight nested levels).  The
+           original fetched it into d7 over the left operand and took the
+           operand from "d8", a register field that reads a0 or changes
+           the opcode: a wrong value, a crash of the program, or of the
+           compiler when constant folding ran that code.  The expression
+           stack's error instead, before any code of the operator
+           or its right operand. */
+        if (regat >= 7)
+            conmemerr();
         /* Fixed (#1177): the operands of a comparison are compared with
            their own values, not in the type the expression is wanted in
            (the original handed that type to both, and varcont cut a Quick
            under a Long: r.l=(q>1) was 0 for q=1.5).  A left operand of one
            element gets its own type back (cmpownleft), the right operand
-           starts at type 0, compareop compares the two.  A left operand in
-           d7 keeps the original's code: its right operand is beyond the
-           registers (BUG(orig) (#1185) at getelement). */
-        cmpop = *op >= opeq && *op <= opge && regat < 7;
+           starts at type 0, compareop compares the two. */
+        cmpop = *op >= opeq && *op <= opge;
         if (cmpop && lend)
             lend = cmpownleft(type, lstart, lend);
         /* Fixed (#978): an equality comparison (= or <>) of a byte value
@@ -1690,12 +1700,8 @@ void ritefromd0(void)
 /* ============================================================== elements */
 
 /* blitz2.s:9643 getelement - out of registers (regat >= 7): use d6 and
-   keep the old d6 on the stack.  BUG(orig) (#1185): only regat 7 works.
-   The right operand of an operator whose left operand is in d7 (eight nested
-   levels: c+(d+(e+(h+(i+(j+(k AND m>l)))))) is fetched at regat 8: it goes
-   into d7 over the left operand, d7 then gets the old d6, and the operator
-   takes D(regat+1) with a register field of 8, which is a0 (cmp.l a0,d7,
-   and.l a0,d7): a wrong result (test compiler-operand-beyond-d7). */
+   keep the old d6 on the stack.  Only regat 7 comes here: eval5 refuses an
+   operand beyond d7 (Fixed (#1185)). */
 static UWORD getelement(UWORD *type)
 {
     UWORD opcode, c;
