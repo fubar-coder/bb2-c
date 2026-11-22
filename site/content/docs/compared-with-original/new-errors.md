@@ -165,6 +165,46 @@ instead of the division by 0.
 
 Issue: [A division or Mod by a constant 0 crashed the compiler (#1044)](https://github.com/fubar-coder/bb2-c/issues/1044).
 
+### An operator too deep in an expression {#expression-too-complex}
+
+**What happened.** The compiler works out an expression in the
+processor's eight data registers, one register for each level: when a
+tighter operator such as `*`, or a part in brackets, has to be computed
+first, the value on its left keeps its register and the rest goes into
+the next one. The arguments of a statement or function from the 7th on
+already start in the 7th register. An operator there whose right operand
+binds tighter, such as `a+b*c`, needs a ninth register for `b*c`, and so
+does such an operator inside six levels of brackets. The original did
+not check this. It computed `b*c` over `a`, and the addition took its
+second value from an address register:
+
+```
+a.l=1 : b.l=5 : c.l=6
+NPrint RectsHit(20,0,10,10,0,0,b*c+a,10)
+NPrint RectsHit(20,0,10,10,0,0,a+b*c,10)
+End
+```
+
+printed `-1` and `0`: the two rectangles overlap, but the second call got
+a wrong width. With Word variables, such as `aw+bw*cw`, the compiled
+program crashed with "Software Failure", and with constants, such as
+`1+5*6`, the compiler itself crashed while compiling. Statements with
+many arguments, such as `InitCopList 0,44,256,$13,8,32,a+b*c`, meet it
+most easily. None of the programs on the Blitz Basic 2 CD contains such
+an expression.
+
+**With the port.** Such an operator is the compile error "Expression too
+Complex" at its line (line 3 here). An expression that stays within the
+eight registers compiles as before: a chain of operators of one
+precedence (`a+b+c`), the tighter operator first (`b*c+a`), or brackets
+around the right part (`a+(b*c)`).
+
+**What to change.** Write the tighter operation first, `b*c+a`, or put
+it in brackets, `a+(b*c)`. Inside many levels of brackets, compute a
+part into a variable first.
+
+Issue: [An operator whose right operand needs a ninth register took a wrong value (#1185)](https://github.com/fubar-coder/bb2-c/issues/1185).
+
 ## Characters
 
 ### An accented letter outside a string {#latin1-outside-string}

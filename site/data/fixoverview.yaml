@@ -8030,3 +8030,11 @@ rows:
     text: "The operands of a comparison are compared with their own values, a Long against a Quick exactly; the original cut a Quick to a whole number when the result went to a Long (`q>1` false for `q=1.5`, `q>l` and `l<q` disagreeing) and compared two Longs as Quick or Float values under a Quick or Float destination (100000001 equal to 100000000)."
     page: compiler
     anchor: quick-compare
+  - issue: 1185
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "An operator whose right operand needs a ninth register, such as `a+b*c` as the 7th or a later argument of a statement or function, is the compile error \"Expression too Complex\" (write `b*c+a` or `a+(b*c)`); the original computed a wrong value or crashed the program or the compiler."
+    page: compiler
+    anchor: expressions-and-statements
