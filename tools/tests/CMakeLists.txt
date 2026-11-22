@@ -12,9 +12,9 @@ foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
-# the expression matrix's model (lib/exprmatrix; exprmatrix is
+# the expression matrix's model and classes (lib/exprmatrix; exprmatrix is
 # in the list above): snitch programs
-foreach(t exprmatrix_model)
+foreach(t exprmatrix_model exprmatrix_classify)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_exprmatrix snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)

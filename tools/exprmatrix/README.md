@@ -4,11 +4,13 @@ The expression matrix of blitz2 (OpenSpec change `expression-type-matrix`,
 spec `testing/expression-matrix`): every cell - a context, an operator,
 the operand kinds in order and a value set - is one line of a generated
 Blitz source that prints the cell's key and its value. `generate` writes
-the sources from a description of the matrix. The logic is
-`tools/lib/exprmatrix` (`exprmatrix.h`: the description and the sources
-in `exprmatrix.c`, the model of the expected values in `model.c`),
-tested by `tools/tests/test_exprmatrix.cpp` and
-`test_exprmatrix_model.cpp`.
+the sources from a description of the matrix; `classify` gives every
+measured cell its class from the model of the expected values (design
+decisions 6 and 7 of the change). The logic is `tools/lib/exprmatrix`
+(`exprmatrix.h`: the description and the sources in `exprmatrix.c`, the
+model in `model.c`, the classes in `classify.c`), tested by
+`tools/tests/test_exprmatrix.cpp`, `test_exprmatrix_model.cpp` and
+`test_exprmatrix_classify.cpp`.
 
 ## Usage
 
@@ -23,6 +25,7 @@ OPTIONS:
 
 SUBCOMMANDS:
   generate                    the Blitz sources of the cells from the description
+  classify                    the class of every measured cell, and the questions
 ```
 
 ### generate
@@ -53,6 +56,35 @@ source per block, value set and context, split into sources of at most
 `N` cells (`--cells`, else the description's `cells-per-source`). A
 malformed description writes nothing: every error is reported, each
 once.
+
+### classify
+
+```
+Usage: exprmatrix classify [OPTIONS] DESC TABLE
+
+the class of every measured cell, and the questions
+
+POSITIONALS:
+  DESC FILE REQUIRED          the description of the matrix
+  TABLE FILE REQUIRED         the measured cell table
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -o,     --out CELLS REQUIRED 
+                              the cell table with a class per cell (written)
+  -q,     --questions FILE    the questions, one per class (written)
+
+Prints the counts per class and question class and the cells where the model
+differs from the measurement (the original's rules against 1.95, the port's
+against the port). Exit status 0, 1 a file cannot be read or written or is
+malformed (one message per error), 2 usage error.
+```
+
+`classify` reads the description `DESC` the cells were generated from
+and the measured cell table `TABLE`, computes every cell by the model
+(below) and writes the cell table `CELLS` and, with `-q`, the questions.
+Every cell of the description must be measured once; a broken table
+writes nothing.
 
 ## Inputs and outputs
 
@@ -135,6 +167,19 @@ shift and of `^` is the count of its kind.
 
 On stdout: `NAME CELLS` per source, then `TOTAL cells in N sources`.
 
+### The measured cell table (classify)
+
+One line per cell, tab separated: `key`, `source`, then the values of
+`c210` (the CD's 2.10), `c195` (blitz2 1.95, the build of `blitz2.s`),
+`portcd` (the port with the CD's libraries), `clib` (the port with its C
+libraries), `ab3` (AmiBlitz3 v3.14.0), all with runtime error checking
+off, and `c210_on`, `c195_on`, `portcd_on`, `clib_on` with it on (empty
+for a cell that is no index cell). A first line starting with `key` is
+skipped. A value is what the cell printed, or `!noncompile[:MESSAGE]`
+(refused), `!runtime[:MESSAGE]` (a runtime error), `!outside` (left out:
+outside the array in the checked build), `!garbage[:VALUE]` (no element
+printed); the measurement of task 1.3 writes this form.
+
 ### The model
 
 `em_model` computes a cell as the code blitz2 emits for it: the type so
@@ -152,23 +197,45 @@ those values are `?`. Beside the value the model raises the flags of the
 question classes (overflow, bit operators with a Quick or Float, `MOD`
 with negative or fractional operands, `^`).
 
+### The cell table and the questions (classify)
+
+`CELLS`: a header line, then per cell `key`, `class`, `issues`,
+`question`, `expected`, `expected_on`, `c210`, `c195`, `ab3`, `clib`,
+`note`, tab separated. The class is `agree`, `fixed-N`, `open-N`
+(`N` the issues whose fixed rules change the value, `+` between them),
+`port`, `new`, `question` (with its class `Q-A` overflow, `Q-B` the two
+orders differ, `Q-C` bit operators, `Q-D` `MOD`, `Q-E` `^`, `Q-F` the
+originals disagree) or `noncompile`. The expected value is the fixed
+rules' value, or 1.95's where the model cannot compute a Float power
+that both rule sets compute alike.
+
+The questions file has one section per question class with the count,
+the issues of its cells, the options and three example cells with the
+values of 2.10, 1.95, AmiBlitz3 and the port.
+
+On stdout: `cells N`, `class NAME N` per class, `question Q-X N`, the
+number of values not modelled, and the cells where the original's rules
+differ from 1.95 and where the port's rules differ from the port's
+measurement (`mismatches ... N`, then one line per cell).
+
 ## Exit codes
 
-* 0 the sources are written;
-* 1 the description cannot be read or is malformed (messages on stderr,
-  nothing written), a source name is too long, or a source cannot be
-  written;
+* 0 the sources (`generate`) or the tables (`classify`) are written;
+* 1 the description or the measured table cannot be read or is
+  malformed (messages on stderr, nothing written), a source name is too
+  long, or a file cannot be written;
 * 2 usage error (no or an unknown subcommand or option, a missing
   argument, `--cells` outside 1 to 100000).
 
-Messages go to stderr as `exprmatrix generate: [FILE: ]message`, the
-errors of a description as `FILE:LINE: message`.
+Messages go to stderr as `exprmatrix SUBCOMMAND: [FILE: ]message`, the
+errors of a description or a table as `FILE:LINE: message`.
 
 ## Callers
 
 * Tests: `help_exprmatrix`, `readme_exprmatrix`
   (`tools/exprmatrix/CMakeLists.txt`); the library: `exprmatrix`,
-  `exprmatrix_model` (`tools/tests/`).
+  `exprmatrix_model`, `exprmatrix_classify` (`tools/tests/`).
+* Task 2.3 of the change: `classify` on the measurement of task 1.3.
 
 ## Example
 

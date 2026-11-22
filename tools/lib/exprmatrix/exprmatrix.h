@@ -188,6 +188,56 @@ struct em_value {
  */
 void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules, int checked, struct em_value *out);
 
+/*
+ * The measured cell table (classify.c): one line per cell, tab separated,
+ * "key source" and the values of the nine columns below (the header line
+ * "key\t..." skipped); a value is a printed value or !noncompile[:MESSAGE],
+ * !runtime[:MESSAGE], !outside, !garbage[:VALUE]; the checked columns are
+ * empty for a cell that is no index cell.
+ */
+enum {
+    EM_C210, EM_C195, EM_PORTCD, EM_CLIB, EM_AB3,
+    EM_C210_ON, EM_C195_ON, EM_PORTCD_ON, EM_CLIB_ON, EM_NCOLS
+};
+
+struct em_row {
+    char *key;
+    int line;
+    char v[EM_NCOLS][EM_TEXT_MAX];      /* normalised as em_model gives values */
+    int has[EM_NCOLS];
+};
+
+struct em_table {
+    struct em_row *rows;
+    size_t n;
+};
+
+const char *em_col_name(int col);
+
+/* Returns 0; 1 with one line per error in *errors (malloc'd): a line
+   without the 11 fields, a bad value; -1 out of memory. */
+int em_table_parse(const char *text, size_t len, const char *file, struct em_table *t, char **errors);
+void em_table_free(struct em_table *t);
+
+/* the result of em_classify (malloc'd texts) */
+struct em_classified {
+    char *table;                /* the cell table with a class per cell (TSV) */
+    char *questions;            /* expr-matrix-questions.md */
+    char *report;               /* counts per class and question, the model's mismatches */
+    size_t mismatches;          /* original rules against 1.95 */
+    size_t port_mismatches;     /* the port's rules against the port's measurement */
+};
+
+/*
+ * Classifies every cell of table t (design decision 6): agree, fixed-N,
+ * open-N, port, new, question (with its class Q-A ... Q-F), noncompile.
+ * Returns 0; 1 with the errors in *errors (a key that is no cell, a cell
+ * measured twice or not at all, an index cell without its checked
+ * values); -1 out of memory.
+ */
+int em_classify(const struct em_matrix *m, const struct em_table *t, struct em_classified *out, char **errors);
+void em_classified_free(struct em_classified *c);
+
 #ifdef __cplusplus
 }
 #endif

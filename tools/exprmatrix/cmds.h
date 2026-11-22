@@ -8,5 +8,6 @@
 #include "cli.hpp"
 
 void cmd_generate(CLI::App &app, int &status);
+void cmd_classify(CLI::App &app, int &status);
 
 #endif
