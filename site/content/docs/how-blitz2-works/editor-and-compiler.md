@@ -36,7 +36,9 @@ When blitz2 starts, these things happen in order:
    ends.
 
 The editor can also be started alone, as `blitz2:ted`. It is then a plain
-text editor without the COMPILER menu.
+text editor without the COMPILER menu. The editor itself, its menus,
+keys and options, is described in the chapter
+[The editor]({{< relref "/docs/editor" >}}).
 
 ## The COMPILER menu
 

@@ -16,7 +16,8 @@ on the port itself.
   ([Building the BB2 C port]({{< relref "/docs/introduction/building" >}}),
   [Running it in an emulator]({{< relref "/docs/introduction/emulator" >}}),
   [Your first program]({{< relref "/docs/introduction/first-program" >}})),
-  then read [How blitz2 works]({{< relref "/docs/how-blitz2-works" >}})
+  then read [The editor]({{< relref "/docs/editor" >}}),
+  [How blitz2 works]({{< relref "/docs/how-blitz2-works" >}})
   and [Differences from the original]({{< relref "/docs/compared-with-original" >}}).
 * **You want to work on the port.** After the Introduction, read
   [Project structure]({{< relref "/docs/project-structure" >}}) and its
@@ -37,6 +38,7 @@ on the port itself.
 
 {{< cards >}}
   {{< card link="introduction" title="Introduction" subtitle="What the BB2 C port is, how to build it and how to try it in an emulator." >}}
+  {{< card link="editor" title="The editor" subtitle="TED, the editor of Blitz Basic 2: typing, blocks, search and replace, files, options, keys and menus." >}}
   {{< card link="how-blitz2-works" title="How blitz2 works" subtitle="A program on its way from source text to an executable." >}}
   {{< card link="libraries" title="Libraries" subtitle="What the libraries provide, and how to look up a command." >}}
   {{< card link="compared-with-original" title="Differences from the original" subtitle="Where the port differs from Blitz Basic 2: the fixed bugs, the bugs not fixed yet and the extensions." >}}

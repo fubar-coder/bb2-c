@@ -2,7 +2,7 @@
 title: Your first program
 weight: 3
 description: Type a Blitz Basic program in the editor, run it, save it, make an executable of it, and compile a text file from the Shell.
-next: /docs/how-blitz2-works
+next: /docs/editor
 ---
 
 Before this page you should have blitz2 running in the emulator, with its
@@ -21,7 +21,9 @@ below the cursor line; it does not split the line at the cursor. When you
 leave a line, the editor turns its keywords and commands into tokens and
 shows them in another colour
 ([Tokenised sources]({{< relref "/docs/how-blitz2-works/tokens" >}})
-explains why).
+explains why). All keys, blocks, search and the other menus of the
+editor are described in the chapter
+[The editor]({{< relref "/docs/editor" >}}).
 
 Type this program:
 
@@ -97,6 +99,9 @@ The PROJECT menu has the file commands:
 Saving a source also writes a second file next to it, with `.xtra`
 appended to its name. It holds the compiler options of this source
 ([Residents and the .xtra file]({{< relref "/docs/how-blitz2-works/residents" >}})).
+SAVE keeps the previous version of the source as a `.bak` file and can
+write an icon as well
+([What SAVE writes]({{< relref "/docs/editor/files#what-save-writes" >}})).
 
 ## Making an executable
 
