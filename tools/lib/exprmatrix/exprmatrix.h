@@ -1,0 +1,147 @@
+/*
+ * exprmatrix.h - the expression matrix of blitz2 (OpenSpec change
+ * expression-type-matrix, spec testing/expression-matrix): the description
+ * of the matrix read from a text, its cells (context x operator x operand
+ * kinds in order x value set, each with a unique key), and the Blitz
+ * sources that print one keyed line per cell (design decision 8), split
+ * into sources of at most N cells.
+ *
+ * The description (tools/exprmatrix/README.md, "The description"), one
+ * directive per line, '#' starts a comment, words separated by blanks:
+ *
+ *   cells-per-source N          at most N cells per source (default 100)
+ *   dim N                       the last element of the index arrays (300)
+ *   values SET KIND=VALUE...    the operand values of the value set SET
+ *   counts SET KIND=VALUE...    the right operand of the shifts and ^ in SET
+ *   block NAME                  starts a block (an operator group)
+ *   contexts CTX...             the block's contexts
+ *   binary OP...                its operators of two operands
+ *   unary OP...                 its operators of one operand
+ *   kinds KIND...               its operand kinds (both sides)
+ *   sets SET...                 its value sets
+ *   cell SET CTX OP KIND [KIND] one cell of the block, given by itself
+ *
+ * A block makes the product of its sets, contexts, operators and kinds
+ * (two operands: every ordered pair of its kinds), and its cell lines.
+ * The product leaves out the combinations BASIC has no meaning for: a
+ * string with a number, a string under an operator other than + and the
+ * comparisons, a string + outside Print, a string under a unary operator;
+ * a cell line with one of them is an error.
+ *
+ * Kinds: b w l q f (Byte, Word, Long, Quick, Float variables), s (a
+ * string variable), cb cw cl (constants of Byte, Word and Long size), cf
+ * (a constant with a fraction).  Operators: + - * / MOD ^ AND OR EOR LSL
+ * LSR ASL ASR = <> < <= > >= (binary), - NOT (unary); words in any case.
+ * Contexts: db dw dl dq df (destination Byte to Float), pl pw pq pf (a
+ * parameter Long, Word, Quick, Float), if, i1 (the first array index), i2
+ * (a later index), print.
+ *
+ * A key is CTX-OP-KIND[-KIND]-SET with OP one of add sub mul div mod pow
+ * and or eor lsl lsr asl asr eq ne lt le gt ge (binary), neg not (unary):
+ * "dl-mul-q-l-A" is r.l=q*l with the values of set A.  A key made twice is
+ * an error.  A source holds the cells of one block, set and context, in
+ * the order of the description; its name is BLOCK-CTX-SET-NN (NN from
+ * 01), at most EM_NAME_MAX characters.
+ */
+#ifndef EXPRMATRIX_H
+#define EXPRMATRIX_H
+
+#include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+enum em_kind { EM_B, EM_W, EM_L, EM_Q, EM_F, EM_S, EM_CB, EM_CW, EM_CL, EM_CF, EM_NKINDS };
+
+enum em_op {
+    EM_ADD, EM_SUB, EM_MUL, EM_DIV, EM_MOD, EM_POW, EM_AND, EM_OR, EM_EOR,
+    EM_LSL, EM_LSR, EM_ASL, EM_ASR, EM_EQ, EM_NE, EM_LT, EM_LE, EM_GT, EM_GE,
+    EM_NEG, EM_NOT, EM_NOPS
+};
+
+enum em_ctx {
+    EM_DB, EM_DW, EM_DL, EM_DQ, EM_DF, EM_PL, EM_PW, EM_PQ, EM_PF,
+    EM_IF, EM_I1, EM_I2, EM_PRINT, EM_NCTX
+};
+
+enum {
+    EM_NAME_MAX = 25,           /* a source name, without ".bas" (AmigaDOS: 30 with ".exe" and more) */
+    EM_KEY_MAX = 40,            /* a key, with its 0 */
+    EM_PER_SOURCE_DEFAULT = 100,
+    EM_DIM_DEFAULT = 300
+};
+
+/* a value set: the text of each kind's value and count (NULL: not given) */
+struct em_set {
+    char *name;
+    int line;
+    char *value[EM_NKINDS];
+    char *count[EM_NKINDS];
+};
+
+struct em_cell {
+    enum em_ctx ctx;
+    enum em_op op;
+    enum em_kind left;
+    int right;                  /* enum em_kind, -1 for a unary operator */
+    size_t set;                 /* index into em_matrix.sets */
+    size_t block;               /* index into em_matrix.blocks */
+    int line;                   /* the line of the block or the cell line */
+    char key[EM_KEY_MAX];
+};
+
+struct em_block {
+    char *name;
+    int line;
+};
+
+struct em_matrix {
+    struct em_set *sets;
+    size_t nsets;
+    struct em_block *blocks;
+    size_t nblocks;
+    struct em_cell *cells;
+    size_t ncells;
+    long per_source;
+    long dim;
+};
+
+/* a generated Blitz source (text, LF line ends) */
+struct em_source {
+    char *name;                 /* BLOCK-CTX-SET-NN, without ".bas" */
+    char *text;
+    size_t ncells;
+};
+
+/* the names of the description and the keys */
+const char *em_kind_name(enum em_kind k);
+const char *em_op_name(enum em_op o);         /* the key part: add, ..., neg, not */
+const char *em_op_text(enum em_op o);         /* the Blitz text: +, MOD, NOT, ... */
+const char *em_ctx_name(enum em_ctx c);
+int em_op_is_unary(enum em_op o);
+int em_op_is_compare(enum em_op o);
+
+/*
+ * Reads the description (len bytes of text; file names the messages:
+ * "FILE:LINE: message") into *m.  Returns 0; 1 with one line per error in
+ * *errors (malloc'd, the caller frees it) and *m empty; -1 out of memory.
+ */
+int em_parse(const char *text, size_t len, const char *file, struct em_matrix *m, char **errors);
+void em_free(struct em_matrix *m);
+
+/*
+ * The sources of the matrix, at most per_source cells each (<= 0: the
+ * description's cells-per-source); desc is the description's name for the
+ * header of each source.  Returns 0; 1 with the errors in *errors (a source
+ * name too long); -1 out of memory.
+ */
+int em_generate(const struct em_matrix *m, const char *desc, long per_source, struct em_source **out,
+                size_t *nout, char **errors);
+void em_sources_free(struct em_source *s, size_t n);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -1,0 +1,7 @@
+# exprmatrix: the expression matrix of blitz2 (README.md)
+set(EXPRMATRIX_SUBCOMMANDS generate)
+add_executable(exprmatrix main.cpp cmd_generate.cpp)
+target_link_libraries(exprmatrix PRIVATE lib_cli lib_exprmatrix)
+set_target_properties(exprmatrix PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+host_help_test(exprmatrix ${EXPRMATRIX_SUBCOMMANDS})
+host_readme_test(exprmatrix README.md ${EXPRMATRIX_SUBCOMMANDS})
