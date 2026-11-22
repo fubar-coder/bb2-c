@@ -30,10 +30,18 @@
 ## 5. Documentation and integration
 
 - [x] 5.1 `tests/README.md` and `docs/testing.md`: the model, the files, the configuration keys, the assertions, the diagnostics; verify: the examples of the text are tests of the build
-- [ ] 5.2 Move the seven `tests/blitz2/*-runerrs.bas` twins and their partners into one `ID.test.bas` each with runtime error checking as an axis, as the first real use; verify: `ctest --preset all` passes and the old pairs are gone
+- [ ] 5.2 Move the `tests/blitz2/*-runerrs.bas` twins and their partners (eight pairs) into one `ID.test.bas` each with runtime error checking as an axis, as the first real use, and `array-index-div0-runerrs` (no twin) to one with runtime error checking on; their prev comparison is that of section 7 (after 7.4); verify: each keeps its verdict, the old pairs are gone, `ctest --preset all` passes (the coordinator's run)
 
 ## 6. String values by length and CRC32 (decided 2026-11-21, ~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md "String values: length and CRC32")
 
 - [x] 6.1 The requirement "Queries of a string value" in the delta of `testing/basic-test-runner`: `==`/`!=` by length and CRC32, `contains`/`matches` only on values that are not cut, the report of a cut value; verify: `openspec validate basic-test-runner --strict`
 - [x] 6.2 The judge (`tools/lib/testjudge`) and the documented query rules: `==`/`!=` on a string value by length and CRC32 (also on cut values), `contains`/`matches` on a cut value a configuration error, the report with `(cut)` and the length; verify: host tests with broken input (a wrong CRC32 in a result file does not pass `==`), with and without `-DHOST_SANITIZE=ON`
 - [x] 6.3 design.md records the decision; verify: the text
+
+## 7. Prev comparison of the tests of the model (decided 2026-11-23, ~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md "Test rework step 1: prev comparison of model tests; extension key")
+
+- [ ] 7.1 The requirement "The tests of the BASIC test model are compared with the prev build" in a delta of `testing/previous-commit`, and D10 in design.md; verify: `openspec validate basic-test-runner --strict`
+- [ ] 7.2 The driver of all cases of a source, written by the build step of its directory (`corpusrun case --write-driver`: the preprocessing, driver and tokenising of a run, every case selected); verify: a host test of the driver text with every case called, and a source whose driver cannot be written fails the build step
+- [ ] 7.3 The comparison (`corpusrun case --prev`): one corpus pass with `run=off`, `clib` and `prev|exe:clib` per value of `runtime-errors` among the cells without original material, named `ID` and `ID-runerrs`, the PREV_INTENDED entries `PREFIX_ID_prev:NAME`; an entry of the test that names no compile of it is stale; a test with RWE user libraries refused; verify: host tests of the passes and of the entries with broken input (a stale and an unknown name, `rwe`)
+- [ ] 7.4 The registration (`cmake/prev.cmake`, `basic_test_register(... PREV REGEX)`): the sources of `tests/blitz2` and the compiler's bug-orig and regression sources, the names in `prev_check_entries`; verify: emulator self tests without a prev build (the same compiler passes; a prev compiler that differs fails naming the compile; an intended name passes; a stale and an unknown name fail), and with `-DBLITZ2_PREV` every `blitz2_ID_prev` of the model passes
+- [ ] 7.5 `tests/README.md` ("The prev build") and the header of `cmake/prev.cmake` name the new comparison and its entries; verify: the text

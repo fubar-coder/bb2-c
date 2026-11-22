@@ -61,21 +61,38 @@ open test SHALL carry the label `bug-orig`; its other cases SHALL carry
 - **WHEN** the C libraries' cell of an open test passes all its checks
 - **THEN** the case fails naming the test as passing without a fixed issue
 
-### Requirement: The fixed issue is one key of two kinds
+### Requirement: The fixed issue is one key of three kinds
 A fix of an original bug SHALL set `fixed-orig = N` in the test's own
 configuration; a fix of another bug that a test of this model shows SHALL
-set `fixed = N`. A test SHALL have at most one of the two. `fixed-orig`
-without a declared deviation, and `fixed` with one, SHALL be errors naming
-the test. The checks and the declared deviations SHALL stay unchanged by
-the fix; the test's cases SHALL then carry the label `emulator`.
+set `fixed = N`; the test of an extension of the port SHALL set
+`extension = N`. A test SHALL have at most one of the three. `fixed-orig`
+or `extension` without a declared deviation, and `fixed` with one, SHALL
+be errors naming the test. The checks and the declared deviations SHALL
+stay unchanged by the fix; the test's cases SHALL then carry the label
+`emulator`.
 
 #### Scenario: The fix commit
 - **WHEN** the original bug of a moved test is fixed
 - **THEN** the test's configuration gains `fixed-orig = N` and nothing else of the test changes
 
-#### Scenario: Both keys
-- **WHEN** a test's configuration sets `fixed-orig` and `fixed`
+#### Scenario: Two of the keys
+- **WHEN** a test's configuration sets two of `fixed-orig`, `fixed` and `extension`
 - **THEN** the runner fails naming the test
+
+#### Scenario: An extension without a deviation
+- **WHEN** a test sets `extension = N` and declares no deviation
+- **THEN** the runner fails naming the test
+
+### Requirement: The test of an extension
+The test of an extension of the port (issue N: behaviour the original does
+not have, where the original refuses or does something else) SHALL
+declare as its deviations what the original does instead, for the cells
+with the original's part, and SHALL be judged like a test with
+`fixed-orig`.
+
+#### Scenario: The test of an extension
+- **WHEN** a test sets `extension = N` and declares for the cells with the CD's libraries the failing checks of the original
+- **THEN** those cells pass with the declared deviations, the cells with the C libraries pass without them, and its cases carry the label `emulator`
 
 ## MODIFIED Requirements
 

@@ -96,6 +96,22 @@ compile-only tests) get `; @fixed-orig #N` (user: "Ja, zum Abschluss"),
 and the texts above lose the old-form clause accordingly; that wording is
 shown to the user again before it is written.
 
+**D5a The test of an extension** (user, 2026-11-23: "Schlüssel
+`extension = N` (Recommended)", `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
+"Test rework step 1: prev comparison of model tests; extension key"). An
+extension of the port is neither an original bug nor another bug: the
+original refuses or does something else (`shapeslib-loadshape-anim-interleave`,
+#1166: "Illegal ANIM interleave value"), the port adds behaviour. Its test
+sets `extension = N`: the deviations are required and declare what the
+original does instead, for the cells with the original's part (`libs=cd`
+for a library); the test is judged and labelled like one with
+`fixed-orig` (the cells with that part pass with the deviations, the
+others without; `emulator`), and fix-scope's case of the key is
+`ID|extension||1 [fixed #N]`. At most one of `fixed-orig`, `fixed` and
+`extension`. It replaces the marker `; @fixed #N/port` of the old form.
+The wording for CLAUDE.md rule 4 and the agent files is shown to the user
+before it is written (CLAUDE.md rule 1).
+
 **D6 A pilot round**: the five tests of round R12's I4 (`shapeslib-*`),
 whose form is already setup / act / verify; spike 2 moved two of them.
 

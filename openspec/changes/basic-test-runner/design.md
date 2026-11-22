@@ -134,6 +134,42 @@ cells with the original's faulty part (user: "**optionaler** nachfolgender
 Validator ... Test-ID und Check-ID"); the declaration itself is the basic
 validation.
 
+**D10 The prev comparison of the tests of the model** (user, 2026-11-23:
+"Wenn wir den prev-Vergleich brauchen, dann Option 1 \"Erst prev-Vergleich
+bauen\"", `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
+"Test rework step 1: prev comparison of model tests; extension key";
+CLAUDE.md rule 3). A test of the old form in `tests/blitz2`, and a bug-orig
+test whose subject is the compiler, has its source compiled by the previous
+commit's compiler too (`compiler_prev`, `blitz2_ID_prev`,
+`bug_orig_ID_prev`), so that a change of the executable with the same
+output is seen; a test of the model keeps that:
+
+- The build step of a directory writes the driver of all cases of each
+  source (every case selected; the preprocessing, driver and tokenising
+  of a run: `corpusrun case --write-driver`) into the build directory, so
+  a source whose driver cannot be written fails the build.
+- `cmake/prev.cmake` registers, with a prev build, one test
+  `PREFIX_ID_prev` per source (`-` of the id as `_`, the prefix of its
+  tests; `prev_register`, so `prev_check_entries` knows the name at
+  configure time): the sources of `tests/blitz2` and the bug-orig sources
+  of the area `compiler/` and the regression sources `compiler-*`, as in
+  the old form. It runs `corpusrun case --prev`.
+- That resolves the configuration and compiles the driver once per value
+  of `runtime-errors` among the cells without original material (blitz2-c
+  with the C libraries), with the other compile settings of the first such
+  cell: a pass of `corpus.h` with `run=off`, the configuration `clib` (the
+  cell's compiler and libraries) and `prev|exe:clib` (the prev build's
+  blitz2 and libraries), the test library of this build staged for both,
+  as `prev_compile_test` does for the old form. Only `runtime-errors`
+  makes another compile: the other run settings (machine, time limit,
+  files) do not change the executable.
+- The name of a compile is `ID` without runtime error checking and
+  `ID-runerrs` with it (the source names of the old twins), so an entry of
+  PREV_INTENDED is `PREFIX_ID_prev:ID` or `PREFIX_ID_prev:ID-runerrs`. An
+  entry of the test that names no compile of it fails as stale, as an
+  entry that names a compile without a difference does.
+- A test with RWE user libraries is refused (the old form compared none).
+
 ## Interface
 
 The contract with the test library is the spec
