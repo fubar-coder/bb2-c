@@ -436,6 +436,12 @@ static ULONG consttype2(UWORD *type, ULONG val)
     }
 
 byte:
+    /* BUG(orig) (#1188): a literal with a fraction is cut to a whole
+       number here (makeint), where .word, .long and .float keep the
+       fraction (as a Quick or a Float), so the operation is computed with
+       the whole number: rb.b=(1.5+1.5) is 2 and rb.b=(0.5*4) 0, under a
+       Word 3 and 2 (test compiler-byte-fraction-const).  An assignment of
+       the constant alone (rb.b=1.5: 1) gives what the conversion would. */
     if (!makeint(&val))
         goto numdofloat;
     litcut = numfloat != 0;         /* #1186: a literal cut */
