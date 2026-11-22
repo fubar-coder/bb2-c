@@ -1,0 +1,76 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+pq-pow-b-b-B 001B0000
+pq-pow-b-w-B 001B0000
+pq-pow-b-l-B 001B0000
+pq-pow-b-q-B 001B0000
+pq-pow-b-f-B 001B0000
+pq-pow-b-cb-B 001B0000
+pq-pow-b-cw-B 001B0000
+pq-pow-b-cl-B 001B0000
+pq-pow-w-b-B CB400000
+pq-pow-w-w-B CB400000
+pq-pow-w-l-B CB400000
+pq-pow-w-q-B CB400000
+pq-pow-w-f-B CB400000
+pq-pow-w-cb-B CB400000
+pq-pow-w-cw-B CB400000
+pq-pow-w-cl-B CB400000
+pq-pow-q-b-B 00035FFF
+pq-pow-q-w-B 00035FFF
+pq-pow-q-l-B 00035FFF
+pq-pow-q-q-B 00035FFF
+pq-pow-q-f-B 00035FFF
+pq-pow-q-cb-B 00035FFF
+pq-pow-q-cw-B 00035FFF
+pq-pow-q-cl-B 00035FFF
+pq-pow-f-b-B 000F9FFF
+pq-pow-f-w-B 000F9FFF
+pq-pow-f-l-B 000F9FFF
+pq-pow-f-q-B 000F9FFF
+pq-pow-f-f-B 000F9FFF
+pq-pow-f-cb-B 000F9FFF
+pq-pow-f-cw-B 000F9FFF
+pq-pow-f-cl-B 000F9FFF
+pq-pow-cb-b-B 001B0000
+pq-pow-cb-w-B 001B0000
+pq-pow-cb-l-B 001B0000
+pq-pow-cb-q-B 001B0000
+pq-pow-cb-f-B 001B0000
+pq-pow-cb-cb-B 001B0000
+pq-pow-cb-cw-B 001B0000
+pq-pow-cb-cl-B 001B0000
+pq-pow-cw-b-B CB400000
+pq-pow-cw-w-B CB400000
+pq-pow-cw-l-B CB400000
+pq-pow-cw-q-B CB400000
+pq-pow-cw-f-B CB400000
+pq-pow-cw-cb-B CB400000
+pq-pow-cw-cw-B CB400000
+pq-pow-cw-cl-B CB400000
+pq-pow-cl-b-B FFFFFFFF
+pq-pow-cl-w-B FFFFFFFF
+pq-pow-cl-l-B FFFFFFFF
+pq-pow-cl-q-B FFFFFFFF
+pq-pow-cl-f-B FFFFFFFF
+pq-pow-cl-cb-B FFFFFFFF
+pq-pow-cl-cw-B FFFFFFFF
+pq-pow-cl-cl-B FFFFFFFF
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-expr-1189-pq-B-01.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-expr-1189-pq-B-01
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

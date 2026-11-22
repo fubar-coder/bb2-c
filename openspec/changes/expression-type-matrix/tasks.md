@@ -17,12 +17,12 @@ Before `quick-long-arithmetic` (#1178) starts (user decision 2026-11-22, "Order 
 
 ## 3. Test files (after the answers to decision 2 and the question classes)
 
-- [ ] 3.1 `expect` and the target `expr-matrix-update`: write the sources and expected files into the source tree (corpus pass sources and `.out` files, `.orig.out`/`.fixed-N.out` pairs for fixed cells, bug-orig `compiler-expr-*.bas`/`.expect` with the header naming `BUG(orig) (#N)` and the cells); host test `exprmatrix_committed` and its broken-input test (a changed committed file); verify: `ctest --preset host`, `git diff` shows only generated files.
-- [ ] 3.2 The corpus pass `corpus_exprmatrix` (and `corpus_exprmatrix_runerr` for the index cells) in `tests/corpus/CMakeLists.txt`; verify: `ctest --preset all -R corpus_exprmatrix` passes, and `ctest --preset originals -R corpus_exprmatrix` passes against 2.10.
-- [ ] 3.3 Record the `.orig` files of the bug-orig tests: `cmake --preset amiga -DBUG_ORIG_RECORD_FILTER=compiler-expr-*` and `--target bug-orig-record`; verify: `ctest --preset bug-orig -R bug_orig_compiler_expr` gives REPRODUCED for every single-issue test (DIFFERS for none), and `ctest --preset originals -R bug_orig_record_compiler_expr` passes.
-- [ ] 3.4 Check each open test's expectation with a temporary patch where one exists (the branch of `quick-long-arithmetic`'s spike, if available), otherwise by the model only; verify: the report names which tests were checked FIXED with a patch.
+- [x] 3.1 `expect` and the target `expr-matrix-update`: write the sources and expected files into the source tree (corpus pass sources and `.out` files, `.orig.out`/`.fixed-N.out` pairs for fixed cells, bug-orig `compiler-expr-*.bas`/`.expect` with the header naming `BUG(orig) (#N)` and the cells); host test `exprmatrix_committed` and its broken-input test (a changed committed file); verify: `ctest --preset host`, `git diff` shows only generated files.
+- [x] 3.2 The corpus pass `corpus_exprmatrix` (and `corpus_exprmatrix_runerr` for the index cells) in `tests/corpus/CMakeLists.txt`; verify: `ctest --preset all -R corpus_exprmatrix` passes, and `ctest --preset originals -R corpus_exprmatrix` passes against 2.10.
+- [x] 3.3 Record the `.orig` files of the bug-orig tests: `cmake --preset amiga -DBUG_ORIG_RECORD_FILTER=compiler-expr-*` and `--target bug-orig-record`; verify: `ctest --preset bug-orig -R bug_orig_compiler_expr` gives REPRODUCED for every single-issue test (DIFFERS for none), and `ctest --preset originals -R bug_orig_record_compiler_expr` passes.
+- [x] 3.4 Check each open test's expectation with a temporary patch where one exists (the branch of `quick-long-arithmetic`'s spike, if available), otherwise by the model only; verify: the report names which tests were checked FIXED with a patch.
 - [ ] 3.5 AmiBlitz3: `ab3_cli_case(... REF REF_EXPECT ...)` for the agreement and fixed sources, `REF_EXPECT` from AmiBlitz3's measured output; rows in `docs/ab3/variant.md` for the cells where AmiBlitz3 differs; verify: `ctest --preset oracle` and `ctest --preset all -R '^ab3_cli'` pass.
-- [ ] 3.6 Selection: `tools/testinfo/rules.txt` maps the description, the generated files and `tools/lib/exprmatrix` to the new tests; verify: the selection test of `testing/test-selection` with a changed description file.
+- [x] 3.6 Selection: `tools/testinfo/rules.txt` maps the description, the generated files and `tools/lib/exprmatrix` to the new tests; verify: the selection test of `testing/test-selection` with a changed description file.
 
 ## 4. Checks
 

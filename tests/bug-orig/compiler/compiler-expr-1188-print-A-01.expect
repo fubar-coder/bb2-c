@@ -1,0 +1,12 @@
+[compile]
+ok
+[run]
+print-add-b-cf-A 4.5
+print-add-cb-cf-A 4.5
+print-sub-b-cf-A 1.5
+print-sub-cb-cf-A 1.5
+print-mul-b-cf-A 4.5
+print-mul-cb-cf-A 4.5
+print-div-b-cf-A 2
+print-div-cb-cf-A 2
+rc=0

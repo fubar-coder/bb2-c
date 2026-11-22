@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+i2-pow-cf-f-J !runtime
+i2-pow-cf-cb-J !runtime
+i2-pow-cf-cw-J !runtime
+i2-pow-cf-cl-J !runtime
+rc=0

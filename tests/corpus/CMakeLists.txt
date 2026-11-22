@@ -18,7 +18,7 @@ add_subdirectory(amiga)
 set(CORPUS_SRC ${CMAKE_CURRENT_BINARY_DIR}/src)
 set(TED_TOKENS ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(corpus_tokenised)
-foreach(dir tests tests-runerr tests-req tests-serial)
+foreach(dir tests tests-runerr tests-req tests-serial tests-exprmatrix)
 	file(GLOB bas CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*.bas)
 	set(corpus_${dir})
 	foreach(b IN LISTS bas)
@@ -142,9 +142,18 @@ set(CORPUS_EXPECT ${CMAKE_CURRENT_SOURCE_DIR}/expect)
 #                   cleanup test removes it after its last reader
 #   DATA            generated files staged as CORPUS:data/NAME (the data
 #                   the programs load, above)
+#   EXPECT          the directory of expect/ (default NAME), also one that
+#                   several passes share
+#   NO_EXPECT_TARGETS  not written by corpus-expect-update and
+#                   corpus-expect-record (the expression matrix: its files
+#                   are the generator's, expr-matrix-update)
 function(corpus_pass name)
-	cmake_parse_arguments(PARSE_ARGV 1 arg "RUNTIME_ERRORS;SERIAL;FIXTURE" "LAUNCHER;GATE"
-		"SOURCES;DATA")
+	cmake_parse_arguments(PARSE_ARGV 1 arg "RUNTIME_ERRORS;SERIAL;FIXTURE;NO_EXPECT_TARGETS"
+		"LAUNCHER;GATE;EXPECT" "SOURCES;DATA")
+	set(expect_name ${name})
+	if(arg_EXPECT)
+		set(expect_name ${arg_EXPECT})
+	endif()
 	set(runtime_errors off)
 	set(serial off)
 	if(arg_RUNTIME_ERRORS)
@@ -201,7 +210,7 @@ function(corpus_pass name)
 		# the expected data (expect/PASS): every configuration's output must
 		# be the file that applies to it (targets corpus-expect-record and
 		# corpus-expect-update)
-		string(APPEND text "expect_dir=${CORPUS_EXPECT}/${name}\n")
+		string(APPEND text "expect_dir=${CORPUS_EXPECT}/${expect_name}\n")
 		foreach(f IN LISTS arg_DATA)
 			get_filename_component(n ${f} NAME)
 			string(APPEND text "file=data/${n}|${f}\n")
@@ -226,8 +235,10 @@ function(corpus_pass name)
 	endforeach()
 	# the targets corpus-expect-update and corpus-expect-record: the pass,
 	# its pass files
-	set_property(GLOBAL APPEND PROPERTY CORPUS_EXPECT_PASSES
-		"${name}|${passfile_all}|${passfile_originals}")
+	if(NOT arg_NO_EXPECT_TARGETS)
+		set_property(GLOBAL APPEND PROPERTY CORPUS_EXPECT_PASSES
+			"${name}|${passfile_all}|${passfile_originals}")
+	endif()
 endfunction()
 
 # without runtime error checking: the programs of tests/
@@ -277,6 +288,38 @@ add_test(NAME corpus_serial_expect_same_broken COMMAND ${CMAKE_COMMAND} -E compa
 	${CORPUS_EXPECT}/corpus_serial/t64_serialrx.serial
 	${CORPUS_EXPECT}/corpus_serial_runerr/t64_serialrx.out)
 set_tests_properties(corpus_serial_expect_same_broken PROPERTIES WILL_FAIL TRUE)
+
+# The expression matrix (OpenSpec change expression-type-matrix,
+# tools/exprmatrix): its agreement, baseline and fixed cells, generated
+# into tests-exprmatrix/ with their expected files in
+# expect/corpus_exprmatrix and expect/corpus_exprmatrix_runerr by the
+# target expr-matrix-update (below; the host test exprmatrix_committed
+# compares them with a fresh generation).  Every source is a pass of its
+# own, so that each runs in an emulator session of its own (a program can
+# disturb the next one in a session: the measurement's findings);
+# corpus_exprmatrix_NAME without runtime error checking, the checked
+# index sources (NAME-c-..., a cell outside the array is the runtime
+# error, caught by SetErr) corpus_exprmatrix_runerr_NAME with it.  The
+# expected files are the generator's, not those of corpus-expect-update.
+foreach(s IN LISTS corpus_tests-exprmatrix)
+	get_filename_component(n ${s} NAME_WE)
+	string(REPLACE "-" "_" t ${n})
+	if(n MATCHES "^i[12]-[A-Za-z0-9]+-c-")
+		corpus_pass(corpus_exprmatrix_runerr_${t} RUNTIME_ERRORS EXPECT corpus_exprmatrix_runerr
+			NO_EXPECT_TARGETS LAUNCHER reqtrap SOURCES ${s})
+	else()
+		corpus_pass(corpus_exprmatrix_${t} EXPECT corpus_exprmatrix NO_EXPECT_TARGETS LAUNCHER reqtrap
+			SOURCES ${s})
+	endif()
+endforeach()
+set(exprmatrix_dir ${CMAKE_CURRENT_SOURCE_DIR}/tests-exprmatrix)
+add_custom_target(expr-matrix-update
+	COMMAND ${EXPRMATRIX} expect ${exprmatrix_dir}/matrix.txt ${exprmatrix_dir}/measured.tsv
+		-o ${PROJECT_SOURCE_DIR}
+	DEPENDS host_tools
+	USES_TERMINAL
+	COMMENT "The expression matrix's tests from tests/corpus/tests-exprmatrix -> the source tree"
+	VERBATIM)
 
 # The expected data (expect/PASS) are written by two targets (not ALL, not
 # tests; reviewed with git diff tests/corpus/expect; tests/README.md,

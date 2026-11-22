@@ -1,0 +1,45 @@
+[compile]
+ok
+[run]
+pl-neg-q-A -2
+pl-add-q-q-A 3
+pl-add-q-f-A 4
+pl-add-q-cf-A 3
+pl-sub-b-q-A 1
+pl-sub-w-q-A 998
+pl-sub-l-q-A 99998
+pl-sub-cb-q-A 1
+pl-sub-cw-q-A 998
+pl-sub-cl-q-A 99998
+pl-mul-b-q-A 4
+pl-mul-w-q-A 1500
+pl-mul-l-q-A 150000
+pl-mul-q-b-A 4
+pl-mul-q-w-A 1500
+pl-mul-q-l-A 150000
+pl-mul-q-q-A 2
+pl-mul-q-f-A 3
+pl-mul-q-cb-A 4
+pl-mul-q-cw-A 1500
+pl-mul-q-cl-A 150000
+pl-mul-q-cf-A 2
+pl-mul-cb-q-A 4
+pl-mul-cw-q-A 1500
+pl-mul-cl-q-A 150000
+pl-div-b-q-A 2
+pl-div-w-q-A 666
+pl-div-l-q-A 66666
+pl-div-q-cf-A 1
+pl-div-cb-q-A 2
+pl-div-cw-q-A 666
+pl-div-cl-q-A 66666
+pl-pow-q-b-A 2
+pl-pow-q-w-A 2
+pl-pow-q-l-A 2
+pl-pow-q-q-A 2
+pl-pow-q-f-A 2
+pl-pow-q-cb-A 2
+pl-pow-q-cw-A 2
+pl-pow-q-cl-A 2
+pl-pow-q-cf-A 2
+rc=0

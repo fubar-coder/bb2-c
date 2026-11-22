@@ -1,0 +1,22 @@
+db-asr-q-cb-B -1
+db-asr-q-cw-B -1
+db-asr-q-cl-B -1
+db-asr-q-cf-B -1
+db-asr-cb-q-B -1
+db-asr-cw-q-B -125
+db-asr-cl-b-B 44
+db-asr-cl-w-B 44
+db-asr-cl-l-B 44
+db-asr-cl-q-B 44
+db-asr-cl-cb-B 44
+db-asr-cl-cw-B 44
+db-asr-cl-cl-B 44
+db-mod-cb-cb-B 0
+db-mod-cb-cw-B 21
+db-mod-cb-cf-B 0
+db-mod-cw-cb-B -4
+db-mod-cw-cw-B 0
+db-mod-cf-cb-B -4
+db-mod-cf-cw-B 23
+db-mod-cf-cf-B 0
+rc=0

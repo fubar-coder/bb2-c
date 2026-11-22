@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+dq-sub-cl-q-A 869E0000
+dq-mul-q-cl-A 49F00000
+dq-mul-cl-q-A 49F00000
+dq-mul-cf-cl-A 49F00000
+dq-div-cl-q-A 046A0000
+rc=0

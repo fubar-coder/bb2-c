@@ -1,0 +1,12 @@
+[compile]
+ok
+[run]
+pq-pow-cf-b-B FFFCA001
+pq-pow-cf-w-B FFFCA001
+pq-pow-cf-l-B FFFCA001
+pq-pow-cf-q-B FFFCA001
+pq-pow-cf-f-B FFFCA001
+pq-pow-cf-cb-B FFFCA001
+pq-pow-cf-cw-B FFFCA001
+pq-pow-cf-cl-B FFFCA001
+rc=0
