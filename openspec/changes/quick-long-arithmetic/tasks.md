@@ -38,7 +38,7 @@ Starts after the type-matrix test change `expression-type-matrix` is merged (ord
 - [x] 4.1 `docs/blitz2/expression-types.md`: the exception section, the type-so-far list, the Float/Quick table and the paragraph "Planned in #1178" (the rule now), the measured examples (before/after), the #1177 limits ("Limits until the expression tree": the `r.l=(q*2>2)` example and the `-q` limit), and **"Where this is a problem"**, whose arithmetic item still says #1178 keeps the current behaviour (now: original bug #1178, fixed in the port); `survey-06.md:155` if its sentence changes.
 - [x] 4.2 `docs/blitz2/deviations.md`: the kind-F entry for #1178 and the #1177 row's limits (design decision 7); compilerlib in `docs/libs/bb2-readme.md` and `docs/structure.md` (design decision 8); `docs/ab3/variant.md` (a row: AmiBlitz3 keeps the old rule).
 - [x] 4.3 The site: the section "The type of an expression" in `site/content/docs/how-blitz2-works/compiling.md` (it says the port keeps the rule, `:147-151`); the fixed-bugs entry (`fixed-bugs/compiler.md`) and the row in `site/data/fixoverview.yaml` (coordinator's step; the agent proposes severity and topic).
-- [ ] 4.4 Issue #1178: a comment with the decided rule and the measured comparison (coordinator, D-008).
+- [x] 4.4 Issue #1178: a comment with the decided rule and the measured comparison (coordinator, D-008).
 - [x] 4.5 The requirement "Known limits of the left operand until the expression tree" (`compiler/expression-types`, from `quick-compare-types`): its scenario `r.l=(q*2>2)` gives -1 after this change and the `-q` limit goes; a MODIFIED delta in this change once `quick-compare-types` is archived (its spec then exists in `openspec/specs/`), or the archive order set by the coordinator.
 
 ## 5. Commit and report

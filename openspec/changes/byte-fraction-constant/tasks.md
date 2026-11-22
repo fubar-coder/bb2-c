@@ -18,7 +18,7 @@ Starts after `compare-right-operand` (#1182) is merged and after task 3.5 of `ex
 - [x] 3.1 `ctest --preset host` (also `-DHOST_SANITIZE=ON` if `tools/` changed); `ctest --preset all -R corpus_exprmatrix`; `corpus`, `corpus_runerr`. Verify: pass.
 - [x] 3.2 The CD corpus (BB2 and AB3 mode): no new compile error; a CD source that is now refused (decision 5, a Byte constant context) is reported before the merge. Verify: the corpus test or the report.
 - [x] 3.3 Prev comparison: the changed executables (fractional literals under Byte), listed and counted into `PREV_INTENDED` and the commit message. Verify: `ctest --preset all -R prev` with `-DPREV_INTENDED`.
-- [ ] 3.4 `tools/results fix-scope` against `main`: only #1188's cases (the matrix's #1188 cells, `compiler-byte-fraction-const`) and the named two-issue test. Verify: the tool's report.
+- [x] 3.4 `tools/results fix-scope` against `main`: only #1188's cases (the matrix's #1188 cells, `compiler-byte-fraction-const`) and the named two-issue test. Verify: the tool's report.
 - [x] 3.5 Clean rebuild without warnings. Verify: the build log.
 
 ## 4. Documents
@@ -27,7 +27,7 @@ Starts after `compare-right-operand` (#1182) is merged and after task 3.5 of `ex
 
 ## 5. Commit and report
 
-- [ ] 5.1 One fix commit: code, tests, `Fixed (#1188)`, the regenerated matrix files, the documents, the changed results (`PREV_INTENDED`), `Fixes #1188`. Report: severity 1 proposed, topic Compiler; the CD count. Verify: `git show --stat`; the coordinator's fix-scope run.
+- [x] 5.1 One fix commit: code, tests, `Fixed (#1188)`, the regenerated matrix files, the documents, the changed results (`PREV_INTENDED`), `Fixes #1188`. Report: severity 1 proposed, topic Compiler; the CD count. Verify: `git show --stat`; the coordinator's fix-scope run.
 
 ## Workflow follow-up
 

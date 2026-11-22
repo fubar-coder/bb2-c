@@ -21,7 +21,7 @@ Starts after `quick-long-arithmetic`, `compare-right-operand` and `byte-fraction
 - [x] 3.2 Cost: a line for `^` (positive and negative base) in `tests/perf/bench` and `budgets.txt` with the CD library's target (`perf-original`); no existing budget rises. Verify: `ctest --preset perf`; the report gives the cycles per call for both bases and says whether the positive-base path costs more than the noise (D-007).
 - [x] 3.3 Prev comparison: the `mathtranslib` library file and every executable with `^`, listed into `PREV_INTENDED` and the commit message. Verify: `ctest --preset all -R prev` with `-DPREV_INTENDED`.
 - [x] 3.4 AB3 mode unchanged: `ctest --preset all -R '^ab3_cli'` and the AB3-mode CD corpus give the same executables (AB3 mode calls library 44). Verify: the prev comparison lists no AB3-mode result.
-- [ ] 3.5 `tools/results fix-scope` against `main`: only #1189's cases. Clean rebuild without warnings. Verify: the tool's report; the build log.
+- [x] 3.5 `tools/results fix-scope` against `main`: only #1189's cases. Clean rebuild without warnings. Verify: the tool's report; the build log.
 
 ## 4. Documents
 
@@ -29,7 +29,7 @@ Starts after `quick-long-arithmetic`, `compare-right-operand` and `byte-fraction
 
 ## 5. Commit and report
 
-- [ ] 5.1 One fix commit: the routine, the tests, the regenerated matrix files, the capture pairs, the budget line, the documents, `Fixed (#1189)`, the changed results (`PREV_INTENDED`), `Fixes #1189`. Report: severity 1 proposed, topic "Numbers & dates"; open question 2 restated for the issue. Verify: `git show --stat`; the coordinator's fix-scope run.
+- [x] 5.1 One fix commit: the routine, the tests, the regenerated matrix files, the capture pairs, the budget line, the documents, `Fixed (#1189)`, the changed results (`PREV_INTENDED`), `Fixes #1189`. Report: severity 1 proposed, topic "Numbers & dates"; open question 2 restated for the issue. Verify: `git show --stat`; the coordinator's fix-scope run.
 
 ## Workflow follow-up
 
