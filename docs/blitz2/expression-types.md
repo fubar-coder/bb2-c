@@ -173,10 +173,39 @@ Limits until the expression tree (#1180):
   (`base.l=$40000`, a default-typed `i=20000`) `i*4` is a Quick and
   overflows (false; the original computed it in Long, true), and a
   constant with a fraction on the right is a Float (`If q>1.4` is a Float
-  comparison);
-* a comparison that is the right operand of another operator lowers that
-  operator's left operand to Word (`rl.l=lw AND (l1=l1)`): issue #1182,
-  not part of this fix.
+  comparison).
+
+A comparison that is the right operand of another operator (`lw AND
+(l1=l1)`, also bound by precedence as in `lw AND l1=l1`, in brackets,
+nested, after `NOT` or a minus) gives its boolean, a Word, to that
+operator. The original then converted the operator's left operand down
+to Word before the operation (`convtypef`, `blitz2.s:8998`): a Long lost
+its high word, a Float or a Quick its fraction. In the port (fix of
+#1182) the boolean (-1 or 0), or a value computed from it, is converted
+up to the left operand's type and the operation is done in that type; a
+Byte or Word left operand, a comparison on the left and one passed
+through a function are as before. With `lw.l=65537`, `lb.l=100000`,
+`fh.f=0.5`, `q.q=1.5`, `qh.q=0.5`, `l1.l=1`:
+
+| Expression | Original | Port |
+|---|---|---|
+| `rl.l=lw AND (l1=l1)` | 1 | 65537 |
+| `rl.l=lb+(l1=l1)` | -31073 | 99999 |
+| `If $10000 AND (l1=l1)` | false | true |
+| `rf.f=fh+(l1=l1)` | -1 | -0.5 |
+| `rq.q=q+(l1=l1)` | 0 | 0.5 |
+| `If qh OR (l1<>l1)` | false | true |
+| `rl.l=q*(l1=l1)` | -1 | -2 (#1178: rounded down) |
+| `rf.f=fh AND (l1=l1)` | 0 | "Illegal Operator for Type" |
+
+`If flag AND x=5` with a default-typed (Quick) `flag` has the same truth
+value as in the original for every `flag`: the boolean becomes the Quick
+-1.0 and the `AND` keeps the whole part of `flag`. A Float has no `AND`,
+`OR`, `EOR` or shift, so a Float left operand of one of them with a
+comparison on the right is refused, as any Float there. A Long right
+operand computed from a comparison under a Quick left one
+(`q+(l1=l1)*100000`) keeps the late cut of the Quick (#1178): the Long
+may lie beyond the Quick range.
 
 ## Measured examples
 

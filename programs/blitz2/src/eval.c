@@ -146,6 +146,15 @@ static struct {
    the original's value stays (rawcut: shifts, logic operators, Mod, Not,
    the end of the expression) */
 static BOOL rawq = FALSE;
+/* Fixed (#1182), no asm counterpart: the type of D(regat) was lowered by
+   a comparison: the value is a comparison's boolean (a Word, as cpoke
+   leaves it), or computed from one, in a type below the type so far.
+   compareop's result sets it; getelement2 clears it; a bracket, Not and
+   a minus keep the one of their operand; any other operator gives it to
+   its result if one of its operands has it (eval5), a nested evaluation
+   (maineval2: a function argument, an array index) starts and ends
+   without it */
+static BOOL cmpres = FALSE;
 /* Fixed (#1179), no asm counterpart: the next maineval2 evaluates a later
    array index (idxnext, set by arrevalchk), the current one does
    (laterindex, saved by maineval2: a nested evaluation, a function
@@ -797,6 +806,7 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     WORD s_pushflag, s_sbgot, s_unknown;
     UWORD asked, t, c;
     BOOL s_rawq = rawq;
+    BOOL s_cmpres = cmpres;
     BOOL s_laterindex = laterindex;
 
     laterindex = idxnext;           /* Fixed (#1179) */
@@ -820,6 +830,7 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
         rawcutdepth = evaldepth;
     }
     rawq = s_rawq;
+    cmpres = s_cmpres;              /* Fixed (#1182) */
     evaldepth--;
     if (asked && !unknown) {        /* type asked for */
         convtype(t, asked);         /* exg d2,d3 / convtype */
@@ -991,6 +1002,7 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
     UWORD prec = eval2(type, c, op);
     ULONG lend = pc;
     BOOL lraw = rawq;               /* Fixed (#1178): the left operand raw */
+    BOOL lcmp = cmpres;             /* Fixed (#1182): the left one lowered */
 
     /* Fixed (#1178): a raw Quick whose consumer (the next operator if it
        binds tighter than the pending one, else the pending one) is a
@@ -1004,11 +1016,12 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         UWORD left, nprec;
         struct opentry *nop, *cur;
         struct forthent *fs;
-        BOOL cmp, cmpop, lbyte, lconst, rraw;
+        BOOL cmp, cmpop, lbyte, lconst, rraw, rcmp;
         ULONG rstart;
 
         if (!(prec > precsp[-1].prec)) { /* cmp -(a1),d1 / bhi .higher */
             rawq = lraw;
+            cmpres = lcmp;
             return prec;
         }
         /* .higher */
@@ -1054,6 +1067,7 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         nprec = eval5(type, c, &nop);
         rraw = rawq;
         rawq = FALSE;
+        rcmp = cmpres;
         regat--;
         if (cmp && lbyte && isbyteconst(rstart, pc))
             byteconstext(rstart);
@@ -1061,6 +1075,24 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
             byteconstext(lstart);
         lstart = lend = 0;          /* the left operand is a result now */
         cur = popprec(&prec);       /* .skip */
+        /* Fixed (#1182): a right operand that a comparison lowered below
+           the left operand's type (the comparison's boolean, a Word, or a
+           value computed from it) is converted up to the left one's type
+           and the operation done in that type.  The original converted
+           the left operand down (convtypef below, blitz2.s:8998): with
+           lw=65537 rl.l=lw AND (l1=l1) gave 1, with fh=0.5
+           rf.f=fh+(l1=l1) -1.  A Float left of AND, OR, EOR or a shift
+           is refused now, as any Float there.  Not a Long under a Quick
+           left (the late cut of #1178 stays): a Long may lie beyond the
+           Quick range. */
+        if (!cmpop && rcmp && left >= T_LONG && left <= T_ADDR && *type
+            && *type < left && !(left == T_QUICK && *type >= T_LONG)) {
+            regat++;
+            convtype(*type, left);
+            regat--;
+            *type = left;
+            rcmp = FALSE;
+        }
         if (cmpop) {
             if (rraw)               /* not reached: the right starts at 0 */
                 rawcut(regat + 1);
@@ -1078,6 +1110,7 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
             wordop = FALSE;
         }
         lraw = FALSE;
+        lcmp = cmpop || lcmp || rcmp;   /* Fixed (#1182) */
         forthsp[-2].wordval = 0;    /* Fixed (#1179): a result */
         /* O.K., lets check the forth stack to see if last two operators
            are constants!  if so, we can JSR the routine to optimize into a
@@ -2085,6 +2118,7 @@ static UWORD getelement2(UWORD *type)
 
     negnext = FALSE;
     rawq = FALSE;                   /* Fixed (#1178): not a raw Quick yet */
+    cmpres = FALSE;                 /* Fixed (#1182): not lowered yet */
     conv.end = 0;                   /* Fixed (#1177): no conversion yet */
     elemcount++;                    /* for the intrinsics */
     if (c & 0x8000)
