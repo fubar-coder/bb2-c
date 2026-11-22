@@ -24,7 +24,9 @@
  * the area with scrolllib Scroll into it; the planes become the shape's
  * data.  LoadShape reads an ILBM through ilbmifflib (ilbminit,
  * ilbmgetbyte) and iffiolib; after the first frame every "ANHD" (ANIM op
- * 5, interleave 1) gives a delta frame in the NEXT shape object.
+ * 5) gives a delta frame in the NEXT shape object, made from the frame its
+ * interleave names (n frames back, 0 = 2; before the first frame: the
+ * first frame).
  *
  * BUG(orig), kept:
  *  - LoadShape: "BODY" is not checked (the decoder reads whatever
@@ -93,8 +95,9 @@
  *  - LoadShape raised "ANIM format not supported" and "Illegal ANIM
  *    interleave value" (the first ANHD) without iffclose: the file stayed
  *    open, also after the program's end (iffiolib has no finit), and
- *    locked until reboot.  Here it is closed before both errors; the
- *    first frame stays loaded in the shape, as in the original. (#1072)
+ *    locked until reboot.  Here it is closed before the first; the
+ *    second is gone (#1166, below); the first frame stays loaded in the
+ *    shape, as in the original. (#1072)
  *  - LoadShape of an ANIM read the XOR bit (ANHD bits & 2) only from the
  *    first ANHD and applied every later frame with it; here each frame
  *    takes the bit of its own ANHD. (#266)
@@ -119,6 +122,16 @@
  *    +24 that BBlit saves per plane and adds to its buffer pointer): a
  *    picture whose plane was just under 64K but whose +24 was not loaded
  *    with a wrong +24.  Here LoadShape tests +24 as the checks do. (#1055)
+ *
+ * Extension (user decision 2026-11-20, docs/libs/deviations.md):
+ *  - LoadShape of an ANIM took only the interleave 1 (each delta modifies
+ *    the frame before it) and stopped on any other value with "Illegal
+ *    ANIM interleave value" (the file closed since #1072).  Here every
+ *    value is taken as the ANIM specification defines it: the delta
+ *    modifies the frame n frames back, 0 = 2 (double buffering, the
+ *    default most ANIM5 files carry); a frame with fewer frames before it
+ *    is made from the first frame.  Each frame takes the interleave of
+ *    its own ANHD; the message is gone. (#1166)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -354,7 +367,6 @@ static const char mess14[] = "Illegal Shape Depth";
    text of the error check's mess13, here in the normal code) */
 static const char mess15[] = "Illegal Shape Size";
 static const char mess7[] = "ANIM format not supported";
-static const char mess8[] = "Illegal ANIM interleave value";
 
 /** @brief Library init: AutoCookie on. */
 static void BLITZ_ROUTINE codeinit_c(void)
@@ -993,6 +1005,7 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     UBYTE *st;
     UBYTE *dst;                                 /* a2: the shape data write pointer */
     struct bb_shape *next;                         /* a2: the next frame's shape */
+    UWORD back;                                 /* the ANHD interleave: frames back */
     UWORD bpr, rows, depth;
     UWORD planesize;                            /* d7 */
     ULONG pstep;                                /* d7: row end to the next plane
@@ -1089,8 +1102,8 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     res = IJSRZ(TOK_ifffind, 0x414e4844, st, &z); /* "ANHD" */
     if (!z)
         goto skipanim;
-    /* fixed #1072: the file is closed before mess7 and mess8 (the
-       original left it open); the first frame stays loaded */
+    /* fixed #1072: the file is closed before mess7 (the original left it
+       open); the first frame stays loaded */
     res = IJSR(TOK_iffbyte, res, st);
     if ((UBYTE)res != 5) {
         IJSR(TOK_iffclose, 0, st);
@@ -1098,10 +1111,11 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     }
     res = IJSR(TOK_iffskip, 17, st);
     res = IJSR(TOK_iffbyte, res, st);
-    if ((UBYTE)res != 1) {
-        IJSR(TOK_iffclose, 0, st);
-        BLITZ_RUNERR(mess8);
-    }
+    /* #1166: the interleave, how many frames back the delta modifies (0 =
+       2, double buffering; the ANIM specification); the original took
+       only 1 and stopped on any other value with "Illegal ANIM interleave
+       value" */
+    back = (UBYTE)res;
     res = IJSR(TOK_iffbyte, res, st);
     res = IJSR(TOK_ifflong, res, st);
     xordelta = (UWORD)res & 2;
@@ -1113,7 +1127,14 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
         if (frame >= last)                      /* fixed #265: no object left */
             break;
         next = frame + 1;
-        copyshape2(frame, next);
+        /* #1166: the frame `back` frames before this one (0 = 2); before
+           the first frame there is only the first frame (all buffers of a
+           player start with it) */
+        {
+            UWORD n = back ? back : 2;
+
+            copyshape2((ULONG)(next - first) > n ? next - n : first, next);
+        }
         frame = next;
         frame->cookie = NULL;
         res = IJSR(TOK_ifffind, 0x444c5441, st); /* "DLTA" */
@@ -1206,9 +1227,13 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
         if (!z)
             break;
         /* fixed #266: the XOR bit of this frame's ANHD (the original read
-           only the first ANHD's): operation, 17 bytes, interleave and
-           pad skipped, then the bits */
-        res = IJSR(TOK_iffskip, 20, st);
+           only the first ANHD's): operation and 17 bytes skipped, the
+           interleave (#1166: also of this frame), pad skipped, then the
+           bits */
+        res = IJSR(TOK_iffskip, 18, st);
+        res = IJSR(TOK_iffbyte, res, st);
+        back = (UBYTE)res;
+        res = IJSR(TOK_iffbyte, res, st);
         res = IJSR(TOK_ifflong, res, st);
         xordelta = (UWORD)res & 2;
     } while (1);
@@ -1221,10 +1246,14 @@ skipanim:
  *
  * Through ilbmifflib (ilbminit, ilbmgetbyte) and iffiolib; data in CHIP
  * memory (not checked), cookie with AutoCookie on.  After the first frame
- * every "ANHD" (ANIM op 5, interleave 1) gives a delta frame in the NEXT
- * shape object (a copy of the previous frame with the DLTA applied, XOR
- * or set per the bits of its ANHD; the operation and the interleave are
- * checked in the first ANHD).
+ * every "ANHD" (ANIM op 5) gives a delta frame in the NEXT shape object (a
+ * copy of the frame its interleave names with the DLTA applied, XOR or
+ * set per the bits of its ANHD; the operation is checked in the first
+ * ANHD).
+ * Extension (#1166): the interleave of each ANHD is taken as the ANIM
+ * specification defines it, n frames back (0 = 2, double buffering); a
+ * frame with fewer frames before it is made from the first frame.  The
+ * original took only 1 ("Illegal ANIM interleave value").
  * Fixed (#266): each frame takes the XOR bit of its own ANHD; the
  * original read only the first ANHD's.
  * Fixed (#265): the frames stop at the last shape object (the rest of the
@@ -1240,9 +1269,9 @@ skipanim:
  * BUG(orig): "BODY" is not checked, the decoder reads whatever follows
  * (#264).
  * Errors (in the normal code, their texts in the error area): "Can't open
- * Shapes File", "ANIM format not supported" (op <> 5), "Illegal ANIM
- * interleave value" (<> 1; both close the file first and keep the first
- * frame loaded, fixed #1072: the original left the file open),
+ * Shapes File", "ANIM format not supported" (op <> 5 in the first ANHD;
+ * it closes the file first and keeps the first frame loaded, fixed #1072:
+ * the original left the file open),
  * "Can't Read/Write Shapes File" (a plane with
  * the extra word of every row of 64K or more, fixed #263, #1055; more
  * than 1023 rows or 62 words, fixed #1046), "Illegal Shape Depth" (0 planes, fixed #1052: the original

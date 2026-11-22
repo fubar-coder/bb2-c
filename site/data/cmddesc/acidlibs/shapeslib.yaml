@@ -2,9 +2,11 @@
   text: Loads an IFF ILBM picture as a shape, and with `Palette#` its colours into that palette object. An IFF ANIM file gives its first frame in this shape and each further frame in the next shape number.
   notes: |
     Only ANIM files of the usual compression (method 5) are read; others
-    give "ANIM format not supported". The frames go into the shape
-    numbers up to the highest one; the rest of the animation is not
-    loaded.
+    give "ANIM format not supported". Each frame is made from the frame
+    its header names: two frames back, as most ANIM files have it (double
+    buffering), or the one before it, or any number of frames back. The
+    frames go into the shape numbers up to the highest one; the rest of
+    the animation is not loaded.
 
     A picture that does not fit a shape is the error "Can't Read/Write
     Shapes File", also without runtime error checking. The limits are
@@ -21,9 +23,9 @@
     "Illegal Shape Size". Both are errors also without runtime error
     checking.
 
-    "ANIM format not supported" and "Illegal ANIM interleave value" come
-    after the first frame is loaded. The file is closed before either
-    error, and the shape keeps the first frame.
+    "ANIM format not supported" comes after the first frame is loaded.
+    The file is closed before the error, and the shape keeps the first
+    frame.
 "InitShape":
   text: Makes an empty shape of the given width, height and depth. With runtime error checking, a depth of 0 is the error "Illegal Shape Depth".
   notes: |
