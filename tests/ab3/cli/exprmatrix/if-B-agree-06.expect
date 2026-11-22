@@ -1,0 +1,34 @@
+[compile]
+rc=0
+[run]
+if-div-cb-cl-B F
+if-div-cw-b-B T
+if-div-cw-w-B T
+if-div-cw-l-B F
+if-div-cw-q-B T
+if-div-cw-f-B T
+if-div-cw-cb-B T
+if-div-cw-cw-B T
+if-div-cw-cl-B F
+if-div-cl-b-B T
+if-div-cl-w-B T
+if-div-cl-l-B T
+if-div-cl-q-B T
+if-div-cl-f-B T
+if-div-cl-cb-B T
+if-div-cl-cw-B T
+if-div-cl-cl-B T
+if-div-cf-b-B T
+if-div-cf-w-B T
+if-div-cf-l-B T
+if-div-cf-q-B T
+if-div-cf-f-B T
+if-and-cb-cb-B T
+if-and-cb-cw-B T
+if-and-cb-cl-B T
+if-and-cw-b-B T
+if-and-cw-w-B T
+if-and-cw-cb-B T
+if-and-cw-cw-B T
+if-and-cw-cl-B T
+rc=0

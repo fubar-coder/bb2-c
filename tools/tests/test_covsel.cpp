@@ -398,6 +398,8 @@ static const char matrix_tests[] =
     TEST("bug_orig_compiler_expr_1178_dl_A_01", "\"emulator\", \"bug-orig\"") ","
     TEST("bug_orig_x", "\"emulator\", \"bug-orig\"") ","
     TEST("regression_compiler_expr_refused_and_F_I", "\"emulator\"") ","
+    TEST("ab3_cli", "\"emulator\"") ","
+    TEST("ab3_cli_ref", "\"oracle\"") ","
     TEST("host", "") ","
     "{\"name\": \"newtest\", \"properties\": []}]}";
 static const char matrix_host_tests[] =
@@ -414,8 +416,13 @@ TEST_CASE("covsel: the expression matrix", "[covsel]")
     cur_host_tests = matrix_host_tests;
     r = select_for(real_rules, diff1("tests/corpus/tests-exprmatrix/matrix.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL,
                    0);
-    CHECK(std::string(r) == std::string("bug_orig_compiler_expr_1178_dl_A_01 corpus_exprmatrix_dl_A_agree_01 host newtest "
-                     "regression_compiler_expr_refused_and_F_I"));
+    CHECK(std::string(r) == std::string("ab3_cli ab3_cli_ref bug_orig_compiler_expr_1178_dl_A_01 "
+                                        "corpus_exprmatrix_dl_A_agree_01 host newtest "
+                                        "regression_compiler_expr_refused_and_F_I"));
+    // an AmiBlitz3 case of the matrix: the blocks and the check
+    r = select_for(real_rules, diff1("tests/ab3/cli/exprmatrix/dl-A-agree-01.ab3", "@@ -3 +3 @@", "-a\n+b\n"),
+                   NULL, 0);
+    CHECK(std::string(r) == std::string("ab3_cli ab3_cli_ref host newtest"));
     r = select_for(real_rules, diff1("tests/corpus/expect/corpus_exprmatrix/dl-A-agree-01.out", "@@ -3 +3 @@",
                                      "-a\n+b\n"), NULL, 0);
     CHECK(std::string(r) == std::string("corpus_exprmatrix_dl_A_agree_01 host newtest"));

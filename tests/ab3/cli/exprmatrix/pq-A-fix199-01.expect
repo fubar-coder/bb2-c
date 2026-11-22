@@ -1,0 +1,17 @@
+[compile]
+rc=0
+[run]
+pq-mul-b-l-A 93DFFFFF
+pq-mul-w-w-A 4240000F
+pq-mul-w-l-A E0FFFE26
+pq-mul-w-cw-A 4240000F
+pq-mul-l-b-A 93DFFFFF
+pq-mul-l-w-A E0FFFE26
+pq-mul-l-l-A E400398B
+pq-mul-l-cb-A 93DFFFFF
+pq-mul-l-cw-A E0FFFE26
+pq-mul-cb-l-A 93DFFFFF
+pq-mul-cw-w-A 4240000F
+pq-mul-cw-l-A E0FFFE26
+pq-mul-cw-cw-A 4240000F
+rc=0

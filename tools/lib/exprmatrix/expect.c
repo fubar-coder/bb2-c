@@ -20,6 +20,15 @@
  * cells-per-source; its foldable constant MOD cells come last (#1049: a
  * folded constant MOD as modlib's first use drops its relocations, and a
  * Long or Float MOD after it crashes the originals).
+ *
+ * The agreement and fixed sources of a destination, parameter, If or Print
+ * context and the unchecked index sources are also AmiBlitz3 cases (task
+ * 3.5, design decision 9): NAME.ab3, the same text without the cells
+ * AmiBlitz3 refuses, NAME.expect the output of blitz2-ab3 in AB3 mode (the
+ * port's compiler, one core, with AmiBlitz3's libraries, which have the
+ * CD's #199 and #234: the port's value with the CD's libraries) and
+ * NAME.ref.expect AmiBlitz3's measured output where it differs, listed in
+ * cases.cmake for tests/ab3.
  */
 #include <stdarg.h>
 #include <stdio.h>
@@ -76,7 +85,9 @@ static void put(struct buf *b, const char *fmt, ...)
 #define DIR_EXPR "tests/corpus/expect/corpus_exprmatrix_runerr/"
 #define DIR_BUG "tests/bug-orig/compiler/"
 #define DIR_REG "tests/bug-orig/regression/"
+#define DIR_AB3 "tests/ab3/cli/exprmatrix/"
 #define LEFT_OUT DIR_SRC "left-out.txt"
+#define AB3_CASES DIR_AB3 "cases.cmake"
 
 static int ends(const char *s, const char *suffix)
 {
@@ -108,6 +119,8 @@ int em_expect_owns(const char *path)
                && (ends(r, ".bas") || ends(r, ".expect"));
     if (under(path, DIR_REG, &r))
         return !strncmp(r, "compiler-expr-refused-", 22) && (ends(r, ".bas") || ends(r, ".expect"));
+    if (under(path, DIR_AB3, &r))
+        return r[0] != '.';
     return 0;
 }
 
@@ -276,6 +289,8 @@ enum kind_of {
 struct ent {
     const struct em_cell *c;
     char o[EM_TEXT_MAX], e[EM_TEXT_MAX];
+    char a[EM_TEXT_MAX];        /* AmiBlitz3's value (unchecked only; "" in mode c) */
+    char pc[EM_TEXT_MAX];       /* the port's value with the CD's libraries */
 };
 
 struct group {
@@ -360,7 +375,8 @@ static struct group *group_of(struct groups *gs, enum kind_of kind, char mode, c
     return g;
 }
 
-static void group_add(struct groups *gs, struct group *g, const struct em_cell *c, const char *o, const char *e)
+static void group_add(struct groups *gs, struct group *g, const struct em_cell *c, const char *o, const char *e,
+                      const char *a, const char *pc)
 {
     if (!g)
         return;
@@ -378,6 +394,8 @@ static void group_add(struct groups *gs, struct group *g, const struct em_cell *
     g->e[g->n].c = c;
     snprintf(g->e[g->n].o, EM_TEXT_MAX, "%s", o);
     snprintf(g->e[g->n].e, EM_TEXT_MAX, "%s", e);
+    snprintf(g->e[g->n].a, EM_TEXT_MAX, "%s", a);
+    snprintf(g->e[g->n].pc, EM_TEXT_MAX, "%s", pc);
     g->n++;
 }
 
@@ -467,6 +485,8 @@ struct ctx {
     size_t nerr;
     size_t counts[8];           /* cells per kind_of, and left out (4) */
     size_t files_kind[4];
+    struct buf ab3;             /* the AmiBlitz3 cases (cases.cmake) */
+    size_t ab3_cases, ab3_cells, ab3_refused, ab3_d1, ab3_ref, ab3_differ;
 };
 
 /* the cells of a group in the order they are written: the folded
@@ -546,6 +566,100 @@ static char *source_of(const struct em_matrix *m, const struct em_cell *const *c
     return src;
 }
 
+/* an If cell that AmiBlitz3 folds to a Float constant: arithmetic or a
+   unary minus of constants, one with a fraction (AmiBlitz3 keeps it, as the
+   fix of #1188).  Its condition is a Float, which AmiBlitz3 tests in d1
+   without loading it there (#1187), and a folded constant leaves d1 as the
+   line before left it: the value depends on the cells before it in the
+   source (measured: if-div-cb-cf-A F in the measurement, T in its corpus
+   source), so it is no value of the cell */
+static int ab3_d1(const struct em_cell *c)
+{
+    if (c->ctx != EM_IF || (c->op > EM_POW && c->op != EM_NEG))
+        return 0;
+    return is_const(c->left) && (c->right < 0 || is_const(c->right)) && (c->left == EM_CF || c->right == EM_CF);
+}
+
+/* the AmiBlitz3 case of the corpus source name (task 3.5): the cells
+   AmiBlitz3 compiles and prints, the output of blitz2-ab3 in AB3 mode
+   (the port's values with the CD's libraries: AB3 mode links AmiBlitz3's
+   libraries, measured with the same values in the cells of #199 and
+   #234) and, where AmiBlitz3's measured values differ, its own expected
+   file; compiled with -r (runtime error checking off, as the corpus
+   source: AB3 mode's own default is on) */
+static void emit_ab3(struct ctx *x, struct group *g, const char *name, const struct ent *e, size_t n)
+{
+    const struct em_matrix *m = x->m;
+    const struct em_cell **cells = malloc((n ? n : 1) * sizeof *cells);
+    struct buf head = { 0 }, ex = { 0 }, ref = { 0 };
+    size_t k = 0, refused = 0, differ = 0, d1 = 0;
+    char *src;
+
+    if (!cells) {
+        x->out.oom = 1;
+        return;
+    }
+    put(&ex, "[compile]\nrc=0\n[run]\n");
+    put(&ref, "[compile]\nrc=0\n[run]\n");
+    for (size_t i = 0; i < n; i++) {
+        /* refused by AmiBlitz3 ("Illegal operator for this type"): left
+           out of its variant, as the measurement did */
+        if (e[i].a[0] == '!' || !e[i].a[0]) {
+            refused++;
+            continue;
+        }
+        if (ab3_d1(e[i].c)) {
+            d1++;
+            continue;
+        }
+        cells[k++] = e[i].c;
+        put(&ex, "%s %s\n", e[i].c->key, e[i].pc);
+        put(&ref, "%s %s\n", e[i].c->key, e[i].a);
+        if (strcmp(e[i].a, e[i].pc))
+            differ++;
+    }
+    put(&ex, "rc=0\n");
+    put(&ref, "rc=0\n");
+    if (k) {
+        put(&head, "; %s - expression matrix, AmiBlitz3 case of tests/corpus/tests-exprmatrix/%s.bas: %zu of its "
+                   "%zu cells", name, name, k, n);
+        if (refused)
+            put(&head, ", the %zu AmiBlitz3 refuses left out", refused);
+        if (d1)
+            put(&head, ", %zu If on a folded Float constant left out (AmiBlitz3 tests d1, #1187)", d1);
+        put(&head, "\n; %s.expect: the output of blitz2-ab3 -r in AB3 mode (the port's compiler with AmiBlitz3's "
+                   "libraries)", name);
+        if (differ)
+            put(&head, "; %s.ref.expect: AmiBlitz3's measured output, %zu cells differ (docs/ab3/variant.md)",
+                name, differ);
+        put(&head, "\n; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n",
+            x->desc);
+        src = source_of(m, cells, k, &head, 0, NULL);
+        add_file(&x->out, str_printf(DIR_AB3 "%s.ab3", name), src);
+        add_file(&x->out, str_printf(DIR_AB3 "%s.expect", name), text_of(&ex));
+        if (differ) {
+            add_file(&x->out, str_printf(DIR_AB3 "%s.ref.expect", name), text_of(&ref));
+            put(&x->ab3, "ab3_cli_case(%s %s.ab3 DIR exprmatrix ARGS -r REF REF_EXPECT %s.ref.expect)\n", name,
+                name, name);
+            x->ab3_ref++;
+        } else {
+            free(ref.s);
+            put(&x->ab3, "ab3_cli_case(%s %s.ab3 DIR exprmatrix ARGS -r REF)\n", name, name);
+        }
+        x->ab3_cases++;
+        x->ab3_cells += k;
+        x->ab3_differ += differ;
+    } else {
+        free(ex.s);
+        free(ref.s);
+    }
+    x->ab3_refused += refused;
+    x->ab3_d1 += d1;
+    (void)g;
+    free(head.s);
+    free(cells);
+}
+
 static void emit_corpus(struct ctx *x, struct group *g, const char *name, struct ent *e, size_t n)
 {
     const struct em_matrix *m = x->m;
@@ -589,6 +703,8 @@ static void emit_corpus(struct ctx *x, struct group *g, const char *name, struct
         add_file(&x->out, str_printf("%s%s.fixed-%s.out", dir, name, g->issues), text_of(&f));
     }
     x->files_kind[K_CORPUS]++;
+    if (g->mode != 'c' && strcmp(g->tag, "base"))
+        emit_ab3(x, g, name, e, n);
 }
 
 /* the header of a bug-orig test of issues */
@@ -699,7 +815,8 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
     const struct em_cell *c = k->cell;
     char mode = !is_index(c) ? 'v' : chk ? 'c' : 'u';
     const char *o = r->v[chk ? EM_C195_ON : EM_C195], *p = r->v[chk ? EM_CLIB_ON : EM_CLIB],
-               *pc = r->v[chk ? EM_PORTCD_ON : EM_PORTCD], *e = chk ? k->exp_on : k->exp;
+               *pc = r->v[chk ? EM_PORTCD_ON : EM_PORTCD], *e = chk ? k->exp_on : k->exp,
+               *ab = chk || !r->has[EM_AB3] ? "" : r->v[EM_AB3];
     char tag[48];
     struct group *g;
 
@@ -714,13 +831,13 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
             snprintf(tag, sizeof tag, "%s-%c-%c", em_op_name(c->op), kind_class(c->left),
                      c->right >= 0 ? kind_class(c->right) : 'x');
             g = group_of(gs, K_REFUSED, mode, c, tag, "");
-            group_add(gs, g, c, o, e);
+            group_add(gs, g, c, o, e, "", "");
             x->counts[K_REFUSED]++;
         } else if (!strcmp(p, o) && !strcmp(pc, o) && k->issues[0]) {
             snprintf(tag, sizeof tag, "%s-%c-%c", em_op_name(c->op), kind_class(c->left),
                      c->right >= 0 ? kind_class(c->right) : 'x');
             g = group_of(gs, K_OPEN_REFUSED, mode, c, tag, k->issues);
-            group_add(gs, g, c, o, e);
+            group_add(gs, g, c, o, e, "", "");
             x->counts[K_OPEN_REFUSED]++;
         } else
             left_out(x, c, mode, "refused after a fix, but the port differs");
@@ -734,18 +851,18 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
     }
     if (!strcmp(o, e) && !strcmp(p, e) && !strcmp(pc, e)) {
         g = group_of(gs, K_CORPUS, mode, c, k->base ? "base" : "agree", "");
-        group_add(gs, g, c, o, e);
+        group_add(gs, g, c, o, e, ab, pc);
         x->counts[K_CORPUS]++;
     } else if (strcmp(o, e) && !strcmp(p, e) && k->issues[0] && !strchr(k->issues, '+')
                && (!strcmp(pc, e) || !strcmp(pc, o))) {
         snprintf(tag, sizeof tag, "fixed-%s", k->issues);
         g = group_of(gs, K_CORPUS, mode, c, tag, k->issues);
-        group_add(gs, g, c, o, e);
+        group_add(gs, g, c, o, e, ab, pc);
         x->counts[K_CORPUS]++;
     } else if (strcmp(o, e) && !strcmp(p, o) && !strcmp(pc, o) && k->issues[0]) {
         snprintf(tag, sizeof tag, "open-%s", k->issues);
         g = group_of(gs, K_OPEN, mode, c, tag, k->issues);
-        group_add(gs, g, c, o, e);
+        group_add(gs, g, c, o, e, "", "");
         x->counts[K_OPEN]++;
     } else {
         char why[320];
@@ -783,8 +900,8 @@ static void emit_group(struct ctx *x, struct group *g)
     order(m, g);
     /* a checked source (SetErr per cell) holds half as many: the port's
        compile of 51 of the checked i2 shift cells of value set J with
-       their SetErr lines does not end (1.95 and 2.10 compile all 56; a
-       port defect found by task 3.2, design.md) */
+       their SetErr lines does not end (1.95 and 2.10 compile all 56; the
+       port defect #1190, found by task 3.2, design.md) */
     if (g->mode == 'c' && per > 1)
         per /= 2;
     for (size_t first = 0, part = 1; first < g->n; first += per, part++) {
@@ -944,7 +1061,11 @@ int em_expect(const struct em_matrix *m, const char *desc, const struct em_table
              str_printf("# the cells of the matrix left out of the committed tests, with the reason\n"
                         "# generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n%s",
                         desc, x.left.s ? x.left.s : ""));
-    if (x.out.oom || x.left.oom || x.rep.oom)
+    add_file(&x.out, strdup(AB3_CASES),
+             str_printf("# the AmiBlitz3 cases of the expression matrix (tests/ab3/CMakeLists.txt)\n"
+                        "# generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n%s",
+                        desc, x.ab3.s ? x.ab3.s : ""));
+    if (x.out.oom || x.left.oom || x.rep.oom || x.ab3.oom)
         goto out;
     qsort(x.out.f, x.out.n, sizeof *x.out.f, by_path);
     put(&x.rep, "cells in corpus sources %zu (%zu sources)\n", x.counts[K_CORPUS], x.files_kind[K_CORPUS]);
@@ -952,6 +1073,9 @@ int em_expect(const struct em_matrix *m, const char *desc, const struct em_table
     put(&x.rep, "refused cells %zu (%zu representatives)\n", x.counts[K_REFUSED], x.files_kind[K_REFUSED]);
     put(&x.rep, "cells refused after a fix %zu (%zu representatives, bug-orig tests)\n", x.counts[K_OPEN_REFUSED],
         x.files_kind[K_OPEN_REFUSED]);
+    put(&x.rep, "AmiBlitz3 cases %zu (%zu cells; left out: %zu refused by AmiBlitz3, %zu If on a folded Float "
+        "constant; %zu cases with REF_EXPECT, %zu cells differ)\n", x.ab3_cases, x.ab3_cells, x.ab3_refused,
+        x.ab3_d1, x.ab3_ref, x.ab3_differ);
     put(&x.rep, "left out %zu\nfiles %zu\n", x.counts[4], x.out.n);
     if (x.rep.oom)
         goto out;
@@ -976,6 +1100,7 @@ out:
     free(t.rows);
     em_files_free(x.out.f, x.out.n);
     free(x.left.s);
+    free(x.ab3.s);
     free(x.rep.s);
     free(x.err.s);
     return rc;

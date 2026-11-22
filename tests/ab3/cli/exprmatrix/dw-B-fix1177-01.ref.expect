@@ -1,0 +1,8 @@
+[compile]
+rc=0
+[run]
+dw-lt-q-l-B -1
+dw-le-q-l-B -1
+dw-gt-q-l-B 0
+dw-ge-q-l-B 0
+rc=0

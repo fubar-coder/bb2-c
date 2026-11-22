@@ -51,6 +51,7 @@ static bool write_file(const std::string &path, const char *text)
 static const char *const dirs[] = {
     "tests/corpus/tests-exprmatrix",  "tests/corpus/expect/corpus_exprmatrix",
     "tests/corpus/expect/corpus_exprmatrix_runerr", "tests/bug-orig/compiler", "tests/bug-orig/regression",
+    "tests/ab3/cli/exprmatrix",
 };
 
 static int run(const std::string &me, const std::string &desc, const std::string &measured,
