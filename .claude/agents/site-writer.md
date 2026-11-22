@@ -105,6 +105,9 @@ Every change is built and looked at before you commit it:
   notification, or watch its output with the Monitor tool (load it with
   ToolSearch `select:Monitor`). Do not end your turn while anything you
   started still runs.
+* When a guard or a permission check refuses a command, stop and report
+  the refused command and its purpose to the coordinator; do not work
+  around it (no scripts or other routes to run the same command).
 * Keep scratch files in the session's scratch area or
   your worktree, not in `site/`. Never commit `site/public/` or
   `site/resources/`.
