@@ -1,6 +1,6 @@
 ---
 title: Differences from the original
-weight: 4
+weight: 5
 description: Where the BB2 C port behaves differently from Blitz Basic 2.10, and how to find out for yourself.
 prev: /docs/libraries
 next: /docs/compared-with-original/important-fixes

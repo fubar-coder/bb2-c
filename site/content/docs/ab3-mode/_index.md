@@ -1,6 +1,6 @@
 ---
 title: AB3 mode
-weight: 5
+weight: 6
 description: blitz2-ab3, the compiler with a second mode that compiles AmiBlitz3 sources with AmiBlitz3's own libraries.
 prev: /docs/compared-with-original/comparing
 next: /docs/ab3-mode/setup

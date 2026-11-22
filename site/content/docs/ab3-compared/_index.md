@@ -1,6 +1,6 @@
 ---
 title: AB3 compared with blitz2
-weight: 6
+weight: 7
 description: What changes when blitz2-ab3 compiles a source in AB3 mode, what is not supported yet, and where it differs from AmiBlitz3 itself.
 prev: /docs/ab3-mode/command-line
 next: /docs/ab3-compared/language

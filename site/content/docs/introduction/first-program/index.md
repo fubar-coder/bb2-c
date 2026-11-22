@@ -2,7 +2,7 @@
 title: Your first program
 weight: 3
 description: Type a Blitz Basic program in the editor, run it, save it, make an executable of it, and compile a text file from the Shell.
-next: /docs/how-blitz2-works
+next: /docs/editor
 ---
 
 Before this page you should have blitz2 running in the emulator, with its
