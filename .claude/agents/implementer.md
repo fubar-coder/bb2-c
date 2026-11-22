@@ -21,6 +21,8 @@ read them first):
   tool (load it with ToolSearch `select:Monitor`). Do not end your turn
   while anything you started still runs: background jobs of a finished
   agent are orphaned and hold emulator slots.
+* Processes: never kill by name or pattern (no `pkill`/`killall`); only
+  PIDs you started and recorded, after checking their command line.
 * Results, acceptance and original-bug fixes: CLAUDE.md rules 3-5 and
   `docs/development.md`, "Fixing an original bug". Clean build without
   warnings and `ctest --preset host` for every commit; the other tests

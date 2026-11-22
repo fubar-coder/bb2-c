@@ -25,6 +25,8 @@ read them first):
   tool (load it with ToolSearch `select:Monitor`). Do not end your turn
   while anything you started still runs: background jobs of a finished
   agent are orphaned and hold emulator slots.
+* Processes: never kill by name or pattern (no `pkill`/`killall`); only
+  PIDs you started and recorded, after checking their command line.
 * Do not change, commit or push anything in the repository; external
   repositories (AmiBlitz3, amiblitz3-code-git) are read-only – use
   `git -C … show/log`, never checkout or reset.

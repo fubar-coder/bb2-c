@@ -23,6 +23,8 @@ read them first):
   tool (load it with ToolSearch `select:Monitor`). Do not end your turn
   while anything you started still runs: background jobs of a finished
   agent are orphaned and hold emulator slots.
+* Processes: never kill by name or pattern (no `pkill`/`killall`); only
+  PIDs you started and recorded, after checking their command line.
 * Every check needs a test on deliberately broken input (e.g. a wrong
   expect file must fail). Emulator tests: label `emulator`, return 77
   when Amiberry or the data are missing; tests write only to

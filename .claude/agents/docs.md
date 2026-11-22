@@ -31,6 +31,8 @@ read them first):
   tool (load it with ToolSearch `select:Monitor`). Do not end your turn
   while anything you started still runs: background jobs of a finished
   agent are orphaned and hold emulator slots.
+* Processes: never kill by name or pattern (no `pkill`/`killall`); only
+  PIDs you started and recorded, after checking their command line.
 * GitHub: draft issue texts into files and report them; the coordinator
   files, edits and closes issues.
 * Git: one topic per commit, stage only its files, trailer
