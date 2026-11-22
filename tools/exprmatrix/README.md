@@ -5,8 +5,10 @@ spec `testing/expression-matrix`): every cell - a context, an operator,
 the operand kinds in order and a value set - is one line of a generated
 Blitz source that prints the cell's key and its value. `generate` writes
 the sources from a description of the matrix. The logic is
-`tools/lib/exprmatrix` (`exprmatrix.h`), tested by
-`tools/tests/test_exprmatrix.cpp`.
+`tools/lib/exprmatrix` (`exprmatrix.h`: the description and the sources
+in `exprmatrix.c`, the model of the expected values in `model.c`),
+tested by `tools/tests/test_exprmatrix.cpp` and
+`test_exprmatrix_model.cpp`.
 
 ## Usage
 
@@ -133,6 +135,23 @@ shift and of `^` is the count of its kind.
 
 On stdout: `NAME CELLS` per source, then `TOTAL cells in N sources`.
 
+### The model
+
+`em_model` computes a cell as the code blitz2 emits for it: the type so
+far, `varcont`, `consttype2` and the operator handlers of `eval.c` with
+the m68k semantics of each instruction, the library routines of the
+CD's libraries and of the port's C libraries (`lmullib`, `ldivlib`,
+`modlib`, `floatquicklib`, `printlib`), and Motorola FFP for mathffp.
+Rule sets (flags in `exprmatrix.h`): the original's (`EM_RULES_ORIG`),
+the port as measured (`EM_RULES_PORT`, `EM_RULES_PORTCD`) and the fixed
+rules (`EM_RULES_FIXED`: #1177, #1186, #1178 variant C, #1179, #1187,
+#1188, the C libraries); each rule in `model.c` names its entry in
+`task-decisions.md`. Not modelled: mathtrans SPPow (`^`) where its bits
+matter, and the original's `If` on a Float, which tests d1 (#1187);
+those values are `?`. Beside the value the model raises the flags of the
+question classes (overflow, bit operators with a Quick or Float, `MOD`
+with negative or fractional operands, `^`).
+
 ## Exit codes
 
 * 0 the sources are written;
@@ -148,8 +167,8 @@ errors of a description as `FILE:LINE: message`.
 ## Callers
 
 * Tests: `help_exprmatrix`, `readme_exprmatrix`
-  (`tools/exprmatrix/CMakeLists.txt`); the library: `exprmatrix`
-  (`tools/tests/test_exprmatrix.cpp`).
+  (`tools/exprmatrix/CMakeLists.txt`); the library: `exprmatrix`,
+  `exprmatrix_model` (`tools/tests/`).
 
 ## Example
 
