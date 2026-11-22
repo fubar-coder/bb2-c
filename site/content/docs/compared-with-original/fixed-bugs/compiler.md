@@ -213,6 +213,57 @@ right side or compute it into a variable first; the details are in
 
 Issue: [A comparison with a Quick operand is done in Long when the context or the left operand is Long (#1177)](https://github.com/fubar-coder/bb2-c/issues/1177).
 
+### A Float value as a condition {#float-condition}
+
+`If`, `While` and `Until` accept any value as their condition: it is
+true when the value is not 0. For a Float condition, such as `If f`,
+`If 0.5`, `If f*g` or `If Abs(f)`, the original called the
+floating-point test routine without handing it the value. The routine
+tested whatever an earlier statement had left in a processor register
+instead, so the branch did not depend on the condition at all. With one
+operator, as in `If f-f`, it tested the right operand.
+
+**What happened**
+
+```
+a.l=5 : b.l=0 : c.l=7
+f.f=1.5 : z.f=0
+x.l=a+b : If f Then NPrint "f true" Else NPrint "f false"
+x=a+c : If z Then NPrint "z true" Else NPrint "z false"
+End
+```
+
+Here `x=a+b` leaves 0 behind and `x=a+c` leaves 7, so the original
+prints
+
+```
+f false
+z true
+```
+
+A `While z` with `z=0` could run without end, a `While f` not run
+at all. After a command of a library, the result depended on what that
+command left behind: after an `NPrint` of a string, every Float
+condition was true with the libraries of the Blitz Basic 2 CD and false
+with the port's libraries.
+
+**With the port**
+
+A Float condition tests its own value, like a condition of any other
+type. The program prints
+
+```
+f true
+z false
+```
+
+Comparisons such as `If f<>0` and conditions on a Quick or a whole
+number were right in the original and are unchanged, so `If f<>0` is
+the form to use for a program that must also run with the original.
+AB3 mode has the same fix; AmiBlitz3 itself keeps the bug.
+
+Issue: [`If`, `While` and `Until` on a Float value test the register d1 instead of the value (#1187)](https://github.com/fubar-coder/bb2-c/issues/1187).
+
 ## Arrays and NewTypes
 
 ### Arrays with 256-byte elements {#arrays-256}
