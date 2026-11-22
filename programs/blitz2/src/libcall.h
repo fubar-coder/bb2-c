@@ -69,6 +69,18 @@ ULONG fetchnum2(ULONG num, UWORD *type, BOOL data);
    (move.w/.l #x,Dn, type w, l or q) and its value is 128..255. */
 BOOL isbyteconst(ULONG from, ULONG to);
 
+/* Fixed (#1179), no asm counterpart: TRUE if the code from `from` to `to`
+   is exactly the integer constant the fetch routines emitted last as a
+   Long (move.l #x,Dn, 6 bytes; told by the positions, so a pass without
+   stored code decides the same), for the narrowing of a later array
+   index (eval.c, arrevalchk) */
+BOOL islongconst(ULONG from, ULONG to);
+
+/* Fixed (#1179), no asm counterpart: islongconst, and the value is
+   0..32767: a Word value for the inline Word * and / of a later array
+   index (eval.c). */
+BOOL iswordconst(ULONG from, ULONG to);
+
 /* Fixed (#978): rewrite the constant isbyteconst accepted at `at` as the
    sign-extended byte (128..255 -> -128..-1, of the same type). */
 void byteconstext(ULONG at);

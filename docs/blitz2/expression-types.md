@@ -24,8 +24,7 @@ The type so far starts as the type the expression is wanted in:
 |---|---|
 | right side of an assignment | the type of the destination (`r.l=...`: Long) |
 | a parameter of a command or function | the type of the parameter (`Poke.l`, the position and length of `Mid$`, the colour of `Boxf`, every parameter of an OS call `Name_`: Long) |
-| the first index of an array | Long, always |
-| a later index of an array | Long with runtime error checking on, Word with it off |
+| an index of an array, the first and every later one | Long, always (a later index in the original: Long with runtime error checking on, Word with it off, #1179) |
 | `If`, `While`, `Until`, `Print` | none: the first value sets it |
 
 ## The exception: a Quick is cut to Long (the original)
@@ -238,7 +237,8 @@ the four give the same results, except for `Dim a(65535)` with checking
   behind the array), `mulu` otherwise (only the low word counts: the index
   wraps modulo 65536 into the array). A later index is multiplied by
   `makelmul` (`blitz2.s:8084-8166`; port `parse.c:1280-1295`): `mulu` of
-  the low word of the index, unsigned, so it wraps modulo 65536 too.
+  the low word of the index, unsigned, so it wraps modulo 65536 too (the
+  port evaluates a later index as a Long, #1179, and keeps this).
   Indexes 32768 to 65534 are valid in every dimension (written and read
   back, measured). With checking every index is compared with the size of
   its dimension (`zarrchk`, `blitz2.s:8077`) and an index of 65536 or more
@@ -265,11 +265,44 @@ the four give the same results, except for `Dim a(65535)` with checking
   result than its source suggests, depending on the order of the
   operands. The port keeps the order of the type so far (#1180 is to make
   it independent of the order).
-* **Array indexes** are original bug #1179: a later index is evaluated as
-  a Word without runtime error checking and as a Long with it, so the same
-  source gives another element depending on that option (`b(1,q*10)` is
-  element 15 with the checking off and element 10 with it on, measured
-  with 1.95, 2.10 and the port).
+* **Array indexes** were original bug #1179, fixed in the port (spec
+  `compiler/expression-types`): in the original a later index (the second
+  and every further one) is evaluated as a Word without runtime error
+  checking and as a Long with it (`arrevalchk`, `blitz2.s:8809-8811`), so
+  with a Quick operand the same source uses another element depending on
+  that option, and the checked build does not report the element the
+  unchecked build uses: with a default-typed `y=200` `g(1,y*200/2)` is
+  element 52768 unchecked (`y*200` overflows the Quick range) and 20000
+  checked, `b(1,q ASL 4)` with `q=1.5` element 24 against 16 (measured
+  with 1.95, 2.10 and the port before the fix). In the port every index is
+  evaluated as a Long by the rules of a Long evaluation (above, #1178),
+  with and without the checking: both builds use element 20000 and 16,
+  and `b(1,q*10)` is element 15 in both. A shift or bit operator of a
+  Quick and a constant with a fraction in a later index (`ja(1,vq AND
+  1.5)`) is now refused without the checking too, with "Illegal Operator
+  for Type", as the first index and the checked build refuse it.
+  Without the checking the size check stays off: an index above 65535
+  still uses its low word (`g(1,l4*2)` with 80000 is element 14464).
+  The code: without the checking only the low word of a later index is
+  read (`makelmul`), so the upper word is not built: a constant index is
+  loaded with `move.w`, and the final sign extension of an index that is
+  one Byte, Word or Quick element is left out; `a(i,j)`, `b(i,j,k)` and
+  `a(5,7)` keep the original's code byte for byte. A `*` or `/` of two
+  Word values (Byte or Word variables and function values, constants 0 to
+  32767) is computed inline in both builds (`muls.w`; `divs.w` with a
+  fall-back that gives 32768 for -32768 / -1) instead of calling `lmullib`
+  or `ldivlib`. The cost, A500 cycles per access against the original's
+  unchecked code (`tests/blitz2/array-index-code` pins the code): an
+  index of one element 0, one with `+`, `AND` or a shift +4 to +13, a
+  Word `*` +9, a Word `/` +19 (the fall-back), a Quick `*` +117 to +143
+  (the exact Long multiplication of #1178, which the first index already
+  pays; #1191 is to make it faster); with the checking a Word `*` is 140
+  and a Word `/` about 400 cycles faster. A Word division by 0 in a later
+  index stops in the CPU's division trap without the checking (as the
+  original's Word division there), where a Long division gives the
+  largest number (`ldivlib`, #200); with the checking it stops with
+  "Division by Zero" in both (`tests/blitz2/array-index-div0-runerrs`).
 
-The comments `Fixed (#1178)` in `programs/blitz2/src/eval.c` (`varcont`,
-`mixedop`) point here.
+The comments `Fixed (#1178)` and `Fixed (#1179)` in
+`programs/blitz2/src/eval.c` (`varcont`, `mixedop`, `arrevalchk`) point
+here.

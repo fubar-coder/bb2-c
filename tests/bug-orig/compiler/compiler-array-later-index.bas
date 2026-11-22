@@ -14,7 +14,8 @@
 ; its low word without the checking.
 ; Each line prints the index of the element the access uses, taken from
 ; its address (g and h: Dim .b(1,60000) and .b(60000,1)), or the value
-; stored in it (c, n, v: element j holds j).
+; stored in it (c(1,j,k) holds j*100+k, n(1,j) and v(1,j) hold j).
+; @fixed #1179
 Function.q fq{x.q}
   Function Return x
 End Function

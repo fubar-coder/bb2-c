@@ -44,7 +44,7 @@ Without runtime error checking the compiler SHALL NOT check the range of an inde
 - **THEN** it stops with "Array Subscript out of Range"
 
 ### Requirement: The index code of a plain later index does not grow
-Without runtime error checking, a later index that is one Byte, Word, Quick or Long variable or a constant SHALL compile to code of the same size as before this change, and a later index whose `*` or `/` has two Byte or Word operands (variables or constants up to 32767) SHALL call no library routine for it, in both builds. Its value SHALL be the Long operation's value, also for a Word -32768 divided by -1.
+Without runtime error checking, a later index that is one Byte, Word, Quick or Long variable or a constant SHALL compile to code of the same size as before this change, and a later index whose `*` or `/` has two Byte or Word operands (variables or constants up to 32767) SHALL call no library routine for it, in both builds. Its value SHALL be the Long operation's value, also for a Word -32768 divided by -1. A divisor 0 SHALL trap in the CPU as a Word division does: with runtime error checking the program stops with "Division by Zero", as the Long division reports it; without it the trap is not caught, as before.
 
 #### Scenario: Two Word variables
 - **WHEN** a program compiled without runtime error checking reads `a(iw,jw)` with Word variables
@@ -57,3 +57,7 @@ Without runtime error checking, a later index that is one Byte, Word, Quick or L
 #### Scenario: Word division overflow
 - **WHEN** a program with runtime error checking and `Dim g.b(1,40000)` reads `g(1,wv/wm)` with `wv.w=-32768` and `wm.w=-1`
 - **THEN** it reads `g(1,32768)` without a runtime error, as before
+
+#### Scenario: Word division by 0 with the checking
+- **WHEN** a program with runtime error checking and `Dim g.b(1,100)` reads `g(1,wv/wz)` with `wv.w=5` and `wz.w=0`
+- **THEN** it stops with "Division by Zero", as before
