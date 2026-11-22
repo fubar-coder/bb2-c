@@ -25,6 +25,7 @@ function(blitz2_compile target)
 		-fomit-frame-pointer
 		-fno-strict-aliasing                # raw W_()/L_() accesses to patched templates and loaded images
 		-Wall -Wno-pointer-sign -Wno-parentheses)
+	own_warnings(${target})
 	if(BLITZ2_BASEREL)
 		target_compile_options(${target} PRIVATE -fbaserel)
 	endif()
