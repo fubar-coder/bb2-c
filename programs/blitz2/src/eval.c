@@ -626,7 +626,15 @@ void sbtolong(void)
 
 /* =================================================== array index eval */
 
-/* blitz2.s:8809 arrevalchk - falls through into arrszchk */
+/* blitz2.s:8809 arrevalchk - falls through into arrszchk
+   BUG(orig) (#1179): without runtime error checking a later index (the
+   second and every further one, calcvar) is evaluated as a Word, the
+   first index and the checked build evaluate it as a Long: with a Quick
+   operand the two compute differently (y=200: g(1,y*200/2) reads
+   element 52768 unchecked, 20000 checked; q=1.5: b(1,q ASL 4) 24 against
+   16), so the checked build does not report the element the unchecked
+   build uses. Test: tests/bug-orig/compiler/compiler-array-later-index
+   and the expression matrix's compiler-expr-1179-* tests. */
 UWORD arrevalchk(void)
 {
     UWORD c;

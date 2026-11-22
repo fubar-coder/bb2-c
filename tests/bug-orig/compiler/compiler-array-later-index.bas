@@ -1,0 +1,55 @@
+; compiler-array-later-index (#1179) - a later array index, the cases the
+; expression matrix does not hold (its index cells read a Dim of 300 with
+; two dimensions): three dimensions, a NEWTYPE element array, a store, a
+; Quick function value, a Float, a Quick calculation beyond the Quick
+; range, large whole-number indexes, Word * and / beyond 32767.
+; BUG(orig) (#1179): without runtime error checking a later index (the
+; second and every further one) is evaluated as a Word, the first index
+; and the checked build evaluate it as a Long: with y=200 g(1,y*200/2)
+; computes y*200 in the Quick range (40000 overflows) and reads element
+; 52768, b(1,q ASL 4) with q=1.5 shifts the Quick and reads element 24.
+; Correct: every index is evaluated as a Long, with and without runtime
+; error checking (spec compiler/expression-types): g(1,20000), b(1,16),
+; the same element as the checked build. An index beyond 65535 still uses
+; its low word without the checking.
+; Each line prints the index of the element the access uses, taken from
+; its address (g and h: Dim .b(1,60000) and .b(60000,1)), or the value
+; stored in it (c, n, v: element j holds j).
+Function.q fq{x.q}
+  Function Return x
+End Function
+NEWTYPE .tn
+  v.l
+End NEWTYPE
+Dim g.b(1,60000),h.b(60000,1)
+Dim c.l(1,20,20),v.l(1,20),n.tn(1,20)
+For j.l=0 To 20
+  v(1,j)=j : n(1,j)\v=j
+  For k.l=0 To 20 : c(1,j,k)=j*100+k : Next
+Next
+g0.l=&g(0,0) : h0.l=&h(0,0) : o.l=0
+q.q=1.5 : y=200 : f.f=1.5 : w.w=3 : wb.w=4
+l.l=40000 : wv.w=20000 : lb.l=100000 : l4.l=40000
+jw.w=300 : kw.w=200 : wn.w=-32768 : wm.w=-1
+o=&g(1,y*200/2)-g0 : NPrint "01 g(1,y*200/2) ",(o-1)/2
+o=&g(1,y*300/2)-g0 : NPrint "02 g(1,y*300/2) ",(o-1)/2
+o=&h(y*200/2,1)-h0 : NPrint "03 h(y*200/2,1) ",o-60001
+o=&g(1,q ASL 4)-g0 : NPrint "04 g(1,q ASL 4) ",(o-1)/2
+o=&g(1,q*2+w+wb)-g0 : NPrint "05 g(1,q*2+w+wb) ",(o-1)/2
+NPrint "06 c(1,q*10,5) ",c(1,q*10,5)
+NPrint "07 c(1,5,q*10) ",c(1,5,q*10)
+NPrint "08 n(1,q*10) ",n(1,q*10)\v
+v(1,q*10)=99 : NPrint "09 v(1,q*10)=99 ",v(1,15)," ",v(1,10)
+o=&g(1,fq{1.5}*10)-g0 : NPrint "10 g(1,fq{1.5}*10) ",(o-1)/2
+o=&g(1,f*10)-g0 : NPrint "11 g(1,f*10) ",(o-1)/2
+o=&g(1,40000)-g0 : NPrint "12 g(1,40000) ",(o-1)/2
+o=&g(1,l)-g0 : NPrint "13 g(1,l) ",(o-1)/2
+o=&g(1,wv*2)-g0 : NPrint "14 g(1,wv*2) ",(o-1)/2
+o=&g(1,wv*3)-g0 : NPrint "15 g(1,wv*3) ",(o-1)/2
+o=&g(1,lb/2)-g0 : NPrint "16 g(1,lb/2) ",(o-1)/2
+o=&g(1,jw*kw)-g0 : NPrint "17 g(1,jw*kw) ",(o-1)/2
+o=&g(1,wn/wm)-g0 : NPrint "18 g(1,wn/wm) ",(o-1)/2
+o=&g(1,jw*kw/2)-g0 : NPrint "19 g(1,jw*kw/2) ",(o-1)/2
+o=&g(1,wn/wm/2)-g0 : NPrint "20 g(1,wn/wm/2) ",(o-1)/2
+o=&g(1,l4*2)-g0 : NPrint "21 g(1,l4*2) ",(o-1)/2
+End
