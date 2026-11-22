@@ -444,6 +444,9 @@ ab3_cli_case(quick_long_arith quick_long_arith.ab3 REF REF_EXPECT quick_long_ari
 ab3_cli_case(byte_fraction_const byte_fraction_const.ab3 REF)
 ab3_cli_case(byte_fraction_bitop byte_fraction_bitop.ab3 REF)
 ab3_cli_case(byte_fraction_whole byte_fraction_whole.ab3 REF REF_EXPECT byte_fraction_whole.ref.expect)
+# ^ with a negative base (#1189): AB3 mode keeps AmiBlitz3's library 44,
+# which drops the sign as AmiBlitz3 v3.14.0 does (docs/ab3/variant.md)
+ab3_cli_case(pow_negative_base pow_negative_base.ab3 REF)
 # the character literals @"..." (change ab3-mode-g3, spec
 # ab3-compat/strings): byte, word and long targets, in memory and in a
 # file; the errors (too many characters, without new syntax, in BB2 mode,

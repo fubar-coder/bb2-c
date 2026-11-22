@@ -192,7 +192,8 @@ asm_check(dhandlerlib 1
 	codefinit:20a:dhandlerlib_codefinit:21)
 
 # memacclib: Call (JMP with every register passed through).  The inline
-# routines of mathtranslib are compared byte by byte in the emulator tests
-# (still in bb2: systest_cmdlibs).
+# routines of mathtranslib (and the first bytes of its ^ routine, #1189)
+# are compared byte by byte in the emulator tests (still in bb2:
+# systest_cmdlibs).
 asm_check(memacclib 180
 	docall:186:memacclib_docall:2)

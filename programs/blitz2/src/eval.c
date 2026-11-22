@@ -1760,9 +1760,13 @@ UWORD dotimesf(UWORD t)
 }
 
 /* blitz2.s:9428 dopow - both to float, then the math lib.
-   BUG(orig) (#1189): the call is mathtrans SPPow (mathtranslib dopow,
-   jsr -90(a6)), which drops the sign of a negative base: (-2.5)^3 gives
-   15.625, also for a whole-number odd exponent. */
+   Fixed (#1189) in the library: the original's call is the inline
+   mathtrans SPPow (mathtranslib dopow, jsr -90(a6)), which drops the sign
+   of a negative base: (-2.5)^3 gave 15.625, also for a whole-number odd
+   exponent.  mathtranslib's dopow is now a routine that keeps the sign of
+   a whole odd power; the compiler's code is the same (a call of the
+   library entry with a6 loaded).  AB3 mode calls AmiBlitz3's library 44
+   (mathq), which keeps the original's value. */
 UWORD dopow(UWORD t)
 {
     convtypef(t, T_FLOAT);          /* now a float */

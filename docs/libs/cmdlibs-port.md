@@ -213,8 +213,18 @@ the stack): 1 byte, 2 word, 5 float (mathffp `SPCmp`, a6 = ffplib),
 ## 192 mathtranslib (ACos … HTan, `^` on Float)
 
 Binary = source; the valid lib number is the second definition
-`#mathtranslib=192` in libnums.bb. All 14 routines are inline `JSR lvo(a6)`
-with a6 = mathtrans base (init value).
+`#mathtranslib=192` in libnums.bb. The 13 functions are inline `JSR lvo(a6)`
+with a6 = mathtrans base (init value); the `^` operator (`dopow`) is an
+assembler routine around SPPow.
+
+* **Fixed (#1189, intended deviation):** the original's `^` is the inline
+  `JSR -90(a6)` (SPPow), which gives |x|^y for a negative base, also for a
+  whole odd exponent (`(-2.5)^3` gave 15.625). The routine jumps to SPPow
+  for a base that is not negative and otherwise calls it with |x| and sets
+  the sign of the result for a whole odd exponent (from the FFP bits); a
+  fractional exponent keeps |x|^y. Every program with `^` calls the routine
+  (24 cycles more per call for a positive base, `bmath.fpow`); test
+  `compiler-pow-negative-base`.
 
 * **Fixed (#202, intended deviation):** the original's init tries
   `OldOpenLibrary("mathtrans.library")` endlessly if the library is missing,

@@ -11,6 +11,7 @@
 ; exponent is a whole odd number and positive when it is a whole even one
 ; (the manual: "LHS to the power of RHS").  A negative base with a
 ; fractional exponent is tests/bug-orig/regression/compiler-pow-fraction-exponent.
+; @fixed #1189
 vm.w=-2 : vf.f=-2.5 : vo.w=-1 : vh.f=-0.5
 nw.w=3 : ef.f=3 : eq.q=3 : nl.l=0
 rf.f=0 : rl.l=0
