@@ -8038,3 +8038,11 @@ rows:
     text: "An operator whose right operand needs a ninth register, such as `a+b*c` as the 7th or a later argument of a statement or function, is the compile error \"Expression too Complex\" (write `b*c+a` or `a+(b*c)`); the original computed a wrong value or crashed the program or the compiler."
     page: compiler
     anchor: expressions-and-statements
+  - issue: 1187
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "If, While, Until"
+    text: "A Float condition (`If f`, `While f*g`, `Until Abs(f)`) tests its own value; the original tested what an earlier statement had left in a register, so `If f` could be false for `f=1.5`, `While z` could run without end for `z=0`, and a condition's result depended on the commands before it. Comparisons such as `If f<>0` are unchanged."
+    page: compiler
+    anchor: float-condition
