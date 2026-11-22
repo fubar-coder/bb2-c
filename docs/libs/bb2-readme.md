@@ -293,7 +293,7 @@ that no library set has: `mixmult` (`$D600`, floor(l*q)), `qqmult`
 (`$D601`, floor(q*p)) and `lqdiv` (`$D602`, trunc(l/q), with its error
 check), the arithmetic of a Quick under a Long type so far
 (`docs/blitz2/expression-types.md`). Like every library it is copied into
-a program only when the program uses one of its routines (190 bytes, 198
+a program only when the program uses one of its routines (354 bytes, 362
 with runtime error checking). Register contract as longmult and longdiv:
 d0/d1 in, d0 out, d1 changed, d2-d7 and a0-a6 kept.
 

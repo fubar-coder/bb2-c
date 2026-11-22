@@ -41,9 +41,23 @@ BLITZ_LIBFIN();
  * a Quick (16.16, either order): bits 16..47 of the signed 64 bit product;
  * qqmult: d0.l = floor(d0 * d1 / 2^32), both Quicks: bits 32..63.
  *
- * The 64 bit product of the magnitudes from four MULU (lo*lo, the two
- * cross products added as 33 bits, hi*hi), negated in 64 bits when the
- * signs differ, so that the bits taken are those of the floor.
+ * A factor written as h * 65536 + l (h signed, l unsigned 0..65535).  The
+ * paths of mixmult (#1191), the first that fits:
+ * - one factor a signed word m (a Long -32768..32767, `i*4`), the other
+ *   n: m * h(n) + floor(m * l(n) / 65536) with two MULS; with l(n) = 0
+ *   (a whole Quick) m * h(n), one MULS.  m * l(n) fits in 32 bits (MULS
+ *   takes an l(n) >= $8000 as l(n) - 65536: + m afterwards).
+ * - one factor with l = 0 (a whole Quick), the other n: n * h modulo 2^32
+ *   with two MULU.
+ * - else floor(a*b / 65536) = h(a)*h(b) * 65536 + h(a)*l(b) + l(a)*h(b)
+ *   + floor(l(a)*l(b) / 65536) modulo 2^32 with four MULU: a negative
+ *   h(a) or h(b) as an unsigned word is 65536 too large, which takes
+ *   l(b) or l(a) from the high word of the sum.
+ * qqmult: a factor with l = 0, p = h * 65536, makes floor(q * p / 2^32)
+ * floor(q * h / 65536), mixmult's signed-word path (both whole: one
+ * MULS); else the 64 bit product of the magnitudes from four MULU (lo*lo,
+ * the two cross products added as 33 bits, hi*hi), negated in 64 bits
+ * when the signs differ, so that the bits taken are those of the floor;
  * $80000000 counts as the magnitude 2^31.
  *
  * @arg d0 a, the first factor
@@ -52,8 +66,113 @@ BLITZ_LIBFIN();
  * d0: the product rounded down
  */
 BLITZ_ASM_BLOCK(mixmult,
+        "   .globl  _mixmult\n"
+        "_mixmult:\n"
+        "   move.l  d2,-(sp)\n"
+        "   move.w  d1,d2\n"
+        "   ext.l   d2\n"
+        "   cmp.l   d1,d2\n"
+        "   beq.s   .Lword\n"               /* b a signed word */
+        "   move.w  d0,d2\n"
+        "   ext.l   d2\n"
+        "   cmp.l   d0,d2\n"
+        "   bne.s   .Llong\n"
+        "   exg     d0,d1\n"                /* a a signed word */
+        /* d0 = floor(n * m / 65536), d0 = n, d1.w = m (signed) */
+        ".Lword:\n"
+        "   tst.w   d0\n"
+        "   bne.s   .Lfrac\n"
+        "   swap    d0\n"
+        "   muls.w  d1,d0\n"                /* l(n) = 0: h(n) * m */
+        "   move.l  (sp)+,d2\n"
+        "   rts\n"
+        ".Lfrac:\n"
+        "   move.l  d0,d2\n"
+        "   muls.w  d1,d0\n"                /* l(n) * m (l(n) signed) */
+        "   swap    d2\n"                   /* N: l(n) >= $8000 */
+        "   bmi.s   1f\n"
+        "   muls.w  d1,d2\n"                /* h(n) * m */
+        "   swap    d0\n"
+        "   ext.l   d0\n"                   /* floor(l(n) * m / 65536) */
+        "   add.l   d2,d0\n"
+        "   move.l  (sp)+,d2\n"
+        "   rts\n"
+        "1: muls.w  d1,d2\n"
+        "   swap    d0\n"
+        "   add.w   d1,d0\n"                /* + m: MULS took l(n) - 65536 */
+        "   ext.l   d0\n"
+        "   add.l   d2,d0\n"
+        "   move.l  (sp)+,d2\n"
+        "   rts\n"
+        ".Llong:\n"
+        "   tst.w   d1\n"
+        "   beq.s   .Lwhole\n"
+        "   tst.w   d0\n"
+        "   bne.s   .Lfour\n"
+        "   exg     d0,d1\n"
+        /* d0 = n * h modulo 2^32, d0 = n, d1 = [h : 0] */
+        ".Lwhole:\n"
+        "   swap    d1\n"
+        "   move.l  d0,d2\n"
+        "   swap    d2\n"
+        "   mulu.w  d1,d2\n"                /* h(n) * h, its low word */
+        "   tst.w   d1\n"
+        "   bpl.s   1f\n"
+        "   sub.w   d0,d2\n"                /* h < 0: - l(n) */
+        "1: mulu.w  d1,d0\n"                /* l(n) * h */
+        "   swap    d0\n"
+        "   add.w   d2,d0\n"
+        "   swap    d0\n"
+        "   move.l  (sp)+,d2\n"
+        "   rts\n"
+        ".Lfour:\n"
+        "   move.l  d3,-(sp)\n"
+        "   move.l  d0,d2\n"
+        "   swap    d2\n"
+        "   move.w  d2,d3\n"
+        "   mulu.w  d1,d3\n"                /* h(a) * l(b) */
+        "   swap    d1\n"
+        "   mulu.w  d1,d2\n"                /* h(a) * h(b), its low word */
+        "   tst.l   d0\n"
+        "   bpl.s   1f\n"
+        "   swap    d1\n"
+        "   sub.w   d1,d2\n"                /* h(a) < 0: - l(b) */
+        "   swap    d1\n"
+        "1: tst.w   d1\n"
+        "   bpl.s   2f\n"
+        "   sub.w   d0,d2\n"                /* h(b) < 0: - l(a) */
+        "2: swap    d2\n"
+        "   clr.w   d2\n"
+        "   add.l   d2,d3\n"
+        "   move.w  d0,d2\n"
+        "   mulu.w  d1,d2\n"                /* l(a) * h(b) */
+        "   add.l   d2,d3\n"
+        "   swap    d1\n"
+        "   mulu.w  d1,d0\n"                /* l(a) * l(b) */
+        "   clr.w   d0\n"
+        "   swap    d0\n"
+        "   add.l   d3,d0\n"
+        "   move.l  (sp)+,d3\n"
+        "   move.l  (sp)+,d2\n"
+        "   rts\n"
+        "   .globl  _qqmult\n"
+        "_qqmult:\n"
+        "   tst.w   d1\n"
+        "   beq.s   1f\n"
+        "   tst.w   d0\n"
+        "   bne.s   .Lqq64\n"
+        "   exg     d0,d1\n"
+        "1: swap    d1\n"                   /* p whole: floor(q * h(p) / 65536) */
+        "   tst.w   d0\n"
+        "   bne.s   2f\n"
+        "   swap    d0\n"
+        "   muls.w  d1,d0\n"                /* both whole: h(q) * h(p) */
+        "   rts\n"
+        "2: move.l  d2,-(sp)\n"
+        "   bra.w   .Lfrac\n"
         /* d3:d2 = a * b (signed 64 bits), d4/d5 used */
-        ".Lmul64:\n"
+        ".Lqq64:\n"
+        "   movem.l d2-d5,-(sp)\n"
         "   move.l  d0,d5\n"
         "   eor.l   d1,d5\n"                /* bit 31: the sign of the product */
         "   tst.l   d0\n"
@@ -85,22 +204,7 @@ BLITZ_ASM_BLOCK(mixmult,
         "   bpl.s   4f\n"
         "   neg.l   d2\n"
         "   negx.l  d3\n"
-        "4: rts\n"
-        "   .globl  _mixmult\n"
-        "_mixmult:\n"
-        "   movem.l d2-d5,-(sp)\n"
-        "   bsr.s   .Lmul64\n"
-        "   swap    d2\n"
-        "   swap    d3\n"
-        "   move.w  d2,d3\n"                /* bits 16..47 */
-        "   move.l  d3,d0\n"
-        "   movem.l (sp)+,d2-d5\n"
-        "   rts\n"
-        "   .globl  _qqmult\n"
-        "_qqmult:\n"
-        "   movem.l d2-d5,-(sp)\n"
-        "   bsr.s   .Lmul64\n"
-        "   move.l  d3,d0\n"                /* bits 32..63 */
+        "4: move.l  d3,d0\n"                /* bits 32..63 */
         "   movem.l (sp)+,d2-d5\n"
         "   rts");
 

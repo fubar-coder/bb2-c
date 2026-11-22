@@ -323,9 +323,10 @@ the four give the same results, except for `Dim a(65535)` with checking
   or `ldivlib`. The cost, A500 cycles per access against the original's
   unchecked code (`tests/blitz2/array-index-code` pins the code): an
   index of one element 0, one with `+`, `AND` or a shift +4 to +13, a
-  Word `*` +9, a Word `/` +19 (the fall-back), a Quick `*` +117 to +143
-  (the exact Long multiplication of #1178, which the first index already
-  pays; #1191 is to make it faster); with the checking a Word `*` is 140
+  Word `*` +9, a Word `/` +19 (the fall-back), a Quick `*` about 180 to
+  220 cycles faster (the exact Long multiplication of #1178, which takes
+  one or two `MULS` when a factor is a word or a whole Quick, #1191:
+  `c=a(iq,jq*4+kq)`, `c=a(iq,jq*kq)`); with the checking a Word `*` is 140
   and a Word `/` about 400 cycles faster. A Word division by 0 in a later
   index stops in the CPU's division trap without the checking (as the
   original's Word division there), where a Long division gives the

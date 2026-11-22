@@ -1,9 +1,9 @@
 ; bmath - perf benchmark: arithmetic, Mod, Quick/Float conversion, a procedure, Rnd, Sgn, Abs, Int, Frac, QLimit, Peek, Poke
 ; (Int and Frac of a positive and of a negative Quick; Sgn and Abs of a Quick and
 ; Peek of a constant address, the candidates of compiler-intrinsics)
-; (mixmul, lqdiv, lqdivw: a Quick under a Long type so far, compilerlib, #1178)
+; (mixmul to mixmulh, qqmul to qqmulc, lqdiv, lqdivw: a Quick under a Long type so far, compilerlib, #1178, #1191)
 DEFTYPE .l
-Dim t(50)
+Dim t(56)
 a=123456 : b=789 : c=0 : a2=123456789 : b2=70000 : a4=100 : b4=20
 q1.q=12.5 : q2.q=3.25 : q3.q=0
 q4.q=1000.5 : q5.q=1.0000153 : q6.q=-12.25 : a3=123456789 : b3=65536
@@ -275,6 +275,36 @@ For i=1 To 2000
 c=a4/q7
 Next
 Gosub tod : t(50)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=b4*q2
+Next
+Gosub tod : t(51)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=q7*4
+Next
+Gosub tod : t(52)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=a*q7
+Next
+Gosub tod : t(53)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=q1*q2
+Next
+Gosub tod : t(54)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=q1*q7
+Next
+Gosub tod : t(55)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=q7*q7
+Next
+Gosub tod : t(56)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
@@ -328,6 +358,12 @@ NPrint "peekc ",t(47)," 2000 1"
 NPrint "mixmul ",t(48)," 2000 1"
 NPrint "lqdiv ",t(49)," 2000 1"
 NPrint "lqdivw ",t(50)," 2000 1"
+NPrint "mixmulw ",t(51)," 2000 1"
+NPrint "mixmulc ",t(52)," 2000 1"
+NPrint "mixmulh ",t(53)," 2000 1"
+NPrint "qqmul ",t(54)," 2000 1"
+NPrint "qqmulw ",t(55)," 2000 1"
+NPrint "qqmulc ",t(56)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

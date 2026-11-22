@@ -136,6 +136,12 @@
 # longmult and longdiv (bmath.lmul, bmath.ldiv), another operation.
 # bmath.lmul and the new bmath.lmuls from two runs of longmult in assembler
 # (libs-performance task 13.30, 2026-11-16): 284.6 and 184.6 to 184.7.
+# bmath.mixmul from two runs of mixmult with its fast paths (#1191, 2026-11-22):
+# 474.6 and 475.1 (before: 524.5 with the prev build of 3eda1f14a); the new
+# bmath.mixmulw to bmath.qqmulc from the same two runs: 304.6 both, 190.7 and
+# 190.1, 298.6 both, 504.1 both, 280.6 both, 164.7 and 164.6 (the prev build:
+# 526.0, 512.5, 520.0, 512.0, 508.5, 507.0); no target (another operation in
+# the original, as bmath.mixmul).
 # bmath.qmul from two runs of quickmult in assembler (task 13.31, 2026-11-16):
 # 386.8 both.
 # bgfx.blit16p1, bgfx.blit16p6, bgfx.clipblitc, bgfx.blitex and
@@ -527,9 +533,15 @@ bmath.fracn                    85     3679.0  q3=Frac(q6) (q6=-12.25)
 bmath.sgnq                    200      206.6  c=Sgn(q1)
 bmath.absq                   3643     3618.6  q3=Abs(q6) (q6=-12.25)
 bmath.peekc                   126      124.6  c=Peek.l(4)
-bmath.mixmul                  535          -  c=a*q2 (a Long times a Quick under a Long: compilerlib mixmult, #1178)
+bmath.mixmul                  483          -  c=a*q2 (a Long times a Quick under a Long: compilerlib mixmult, four MULU, #1178, #1191)
 bmath.lqdiv                  2325          -  c=a4/q2 (a4=100, q2=3.25: compilerlib lqdiv, 32 steps)
 bmath.lqdivw                  583          -  c=a4/q7 (q7=3.0: lqdiv's two DIVU)
+bmath.mixmulw                 311          -  c=b4*q2 (b4=20: mixmult, a factor a signed word, two MULS)
+bmath.mixmulc                 196          -  c=q7*4 (q7=3.0: mixmult, a signed word times a whole Quick, one MULS)
+bmath.mixmulh                 305          -  c=a*q7 (a=123456, q7=3.0: mixmult, a whole Quick, two MULU)
+bmath.qqmul                   513          -  c=q1*q2 (two Quicks with a fraction: compilerlib qqmult, the 64 bit product)
+bmath.qqmulw                  287          -  c=q1*q7 (q7=3.0: qqmult, a whole Quick, two MULS)
+bmath.qqmulc                  170          -  c=q7*q7 (qqmult, two whole Quicks, one MULS)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
 bmath.qwrap                   112      109.0  q3=QWrap(q1,0,10)
 bmath.peekb                   126      129.0  c=Peek.b(p)
