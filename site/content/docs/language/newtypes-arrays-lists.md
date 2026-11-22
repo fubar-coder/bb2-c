@@ -124,6 +124,13 @@ NewType that matches the structure, `*exec.ExecBase=Peek.l(4)` reads
 the fields of exec's base. The pointer `*p` is a variable of its own,
 next to a plain `p`.
 
+A NewType field written `@name` instead of `*name` is a BCPL pointer (a
+BPTR, as AmigaDOS uses them): it holds the address divided by 4, and a
+path through it multiplies the value by 4. The form is meant for fields:
+a variable written `@name` cannot be read in an expression, the compiler
+reports "Syntax Error"
+([#1199](https://github.com/fubar-coder/bb2-c/issues/1199)).
+
 ## Arrays
 
 `Dim` creates an array. Its type comes from the suffix of the name, or
