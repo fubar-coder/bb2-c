@@ -69,9 +69,13 @@ With runtime error checking on and the switch given, a console call that gets th
 - **WHEN** the same program prints on the console between `Runerrsoff` and `Runerrson` with Ctrl-C set
 - **THEN** it ends with `***Break` and return code 20
 
-### Requirement: AB3 mode ignores the switch with a note
-For a source in AB3 mode `blitz2-ab3` SHALL print a note that `-ctrlcbreak` is ignored and SHALL compile the source as without the switch.
+### Requirement: AB3 mode and libraries without the check ignore the switch with a note
+For a source in AB3 mode, and for a BB2-mode compile whose inputoutputlib lacks the Ctrl-C check entries, `blitz2-ab3` SHALL print one plain line that `-ctrlcbreak` is ignored and SHALL compile the source as without the switch, with the return code it has without the switch.
 
 #### Scenario: AB3-mode source
 - **WHEN** `blitz2-ab3 -s PROG.ab3 -e EXE -ctrlcbreak` is run
-- **THEN** it prints the note, writes EXE, and EXE equals the executable compiled without `-ctrlcbreak`
+- **THEN** it prints the note, writes EXE, EXE equals the executable compiled without `-ctrlcbreak`, and the return code is the one without the switch (0 for a clean compile)
+
+#### Scenario: Library set without the entries
+- **WHEN** a BB2-mode source is compiled with `-ctrlcbreak` and a library set whose inputoutputlib has no Ctrl-C check entries
+- **THEN** it prints the note and writes the executable it writes without the switch, with the same return code
