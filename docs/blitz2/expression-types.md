@@ -109,8 +109,10 @@ In the port the operands of a comparison (`=`, `<>`, `<`, `<=`, `>`, `>=`)
 are compared with their own values (fix of #1177; the original handed the
 type so far to both): the right operand starts with no type, a left
 operand that is one element (a variable, field, array element, function
-value) gets its own type back, and only the boolean is converted to the
-type of the context. A Long or Word against a Quick is compared exactly:
+value) gets its own type back, so does a constant with a fraction on the
+left (a Float, also under a Byte destination, where the type so far
+would cut it to a whole number: `rb.b=(1.5<1.9)` is -1, #1186), and only
+the boolean is converted to the type of the context. A Long or Word against a Quick is compared exactly:
 the whole number against the whole part of the Quick, on equality the
 fraction decides; a Long is not converted to Quick (range +-32768). So
 `r.l=(q>1)` is -1 for `q=1.5`, `q>l` and `l<q` agree, `rq.q=(lw>1)` with

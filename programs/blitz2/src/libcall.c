@@ -42,6 +42,14 @@ static WORD numfloat;   /* asm d6: 0 int, != 0 float */
    #x,Dn from constat to constend; 0: none), for isbyteconst */
 static ULONG constat, constend;
 
+/* No asm counterpart (#1186, a port defect of the #1177 fix): a decimal
+   literal with a point or an exponent that the byte sizing of consttype2
+   made a whole number (litcut, set by consttype2), and where fetchnum3
+   emitted it last (litat..litend, 0: none) with its FFP value litffp and
+   the whole number litint, for fraclitfloat */
+static BOOL litcut;
+static ULONG litat, litend, litffp, litint;
+
 /* Fixed (#1070): the literal consttype2 sizes next is negated (litneg in
    libcall.h); consttype2 takes it and clears it */
 BOOL litneg;
@@ -255,6 +263,7 @@ static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data)
 {
     ULONG at = pc;
 
+    litat = 0;                      /* #1186 */
     if (data)
         return val;
     /* Fixed (#978): remember where the last integer constant is */
@@ -280,7 +289,45 @@ static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data)
     }
     if (constat)
         constend = pc;
+    if (litcut) {                   /* #1186 */
+        litat = at;
+        litend = pc;
+        litffp = numval;
+        litint = val;
+    }
     return reget();
+}
+
+BOOL fraclitfloat(ULONG from, ULONG *to, UWORD reg, UWORD *type)
+{
+    ULONG end = litend, ffp = litffp;
+
+    if (!litat || litat != from || *to > libat)
+        return FALSE;
+    if (litend - litat == 4 ? W_(from + 2) != (UWORD)litint
+        : (W_(from + 2) != (UWORD)(litint >> 16)
+           || W_(from + 4) != (UWORD)litint))
+        return FALSE;               /* not the literal's code any more */
+    for (; end < *to; end += 2) {
+        if (W_(end) != (0x4440 | reg))  /* neg.w Dreg */
+            return FALSE;
+        if (ffp)
+            ffp ^= 0x80;            /* the FFP sign bit */
+    }
+    if (end != *to)
+        return FALSE;
+    pc = from;
+    pokewd((UWORD)(reg << 9) | 0x203c); /* move.l #ffp,Dreg */
+    pokel(ffp);
+    litat = constat = 0;
+    *type = T_FLOAT;
+    *to = pc;
+    return TRUE;
+}
+
+void fraclitdrop(void)
+{
+    litat = 0;
 }
 
 BOOL isbyteconst(ULONG from, ULONG to)
@@ -362,6 +409,7 @@ static ULONG consttype2(UWORD *type, ULONG val)
     BOOL neg = litneg;
 
     litneg = FALSE;
+    litcut = FALSE;                 /* #1186 */
 
     if (newtype == 0) {
         /* Let's set type */
@@ -388,8 +436,15 @@ static ULONG consttype2(UWORD *type, ULONG val)
     }
 
 byte:
+    /* BUG(orig) (#1188): a literal with a fraction is cut to a whole
+       number here (makeint), where .word, .long and .float keep the
+       fraction (as a Quick or a Float), so the operation is computed with
+       the whole number: rb.b=(1.5+1.5) is 2 and rb.b=(0.5*4) 0, under a
+       Word 3 and 2 (test compiler-byte-fraction-const).  An assignment of
+       the constant alone (rb.b=1.5: 1) gives what the conversion would. */
     if (!makeint(&val))
         goto numdofloat;
+    litcut = numfloat != 0;         /* #1186: a literal cut */
     if ((LONG)val <= 127 && (LONG)val >= -128)
         goto done;                  /* .dobword */
 over1:

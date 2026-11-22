@@ -856,6 +856,7 @@ static __attribute__((noinline)) void constfold(UWORD type)
         pokewd(opcode);
         pokel(value);
     }
+    fraclitdrop();                  /* #1186 */
     /* .mode - clean up offset stack.  Fixed (#1049): only the offsets
        inside the folded code (fs[-2].pc up to foldend) are freed.  The
        original freed every offset added since the fold began, also the
@@ -1152,15 +1153,19 @@ static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
    relocations, as constfold frees them, and lasta6 as before it) when it
    changes how the value is held - Quick to Long (the cut), a whole number
    to Quick, a whole number or a Quick to Float.  Byte/Word to Long is exact
-   and stays.  Not covered (#1183): a compound left
-   operand (q*2) and -q, whose code goes on after the conversion.  Returns
-   the new end of the operand. */
+   and stays.  #1186 (port): a decimal literal with a point (also
+   negated) that the wanted Byte cut to a whole number is a Float again
+   (fraclitfloat): rb.b=(1.5=1.5) compared 1 with 1.5.  Not covered
+   (#1183): a compound left operand (q*2) and -q, whose code goes on after
+   the conversion.  Returns the new end of the operand. */
 static __attribute__((noinline))
 ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend)
 {
     struct offnode **link = &firstoff, *node;
     UWORD from = conv.from, to = conv.to;
 
+    if (fraclitfloat(lstart, &lend, regat, type))
+        return lend;
     if (conv.end != lend || conv.at <= lstart || conv.depth != evaldepth)
         return lend;
     if (!((from == T_QUICK && to == T_LONG)
