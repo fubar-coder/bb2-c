@@ -737,7 +737,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     made no progress; at the end the CPU was running in ROM in supervisor
     mode (PC $F81472). Not slowness under load (its sessions take
     1.6-1.7 s): it hangs now and then after its output. Cause not
-    analysed.
+    analysed. The original's record test
+    (`bug_orig_record_rigtmenulib_createmenustrip_unchecked`) shows it
+    too: the session ends by a halt or a timeout instead of `done`,
+    depending on the snapshot (the original builds the strip from
+    address 0, #689); the recording was made tolerant
+    (`[session]` `*`, `[run]` `...` behind the six lines, each behind a
+    `# varies:` line).
   * originals `bug_orig_record_palettelib_stopcycle_cycon` (2026-11-18,
     W1 acceptance): the original's session ended by its limit at 121.8 s
     of 120 (DIFFERS "(the end)"); alone it passed in 41 s.

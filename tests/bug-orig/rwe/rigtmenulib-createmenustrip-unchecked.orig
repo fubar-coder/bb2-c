@@ -1,6 +1,7 @@
 # the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
 [session]
-done
+# varies: the original CreateMenuStrip builds a strip from address 0 (#689, port description libs/userlibs/rwe/rigtmenulib.c:368, :420, docs/libs/deviations.md:580); whether End then returns, halts the CPU or hangs depends on memory that differs between boots and snapshots
+*
 [compile]
 ok
 [run]
@@ -10,7 +11,8 @@ before
 -1
 a strip
 a menu
-rc=0
+# varies: the rest of the run depends on the same memory (#689): the original returns (rc=0) or halts or hangs after the output
+...
 [blitz2]
 rc=0
 [log]
