@@ -24456,6 +24456,27 @@ mathtranslib inline|prefix+len|entry 6|1	$A0000004
 mathtranslib inline|prefix+len|entry 7|1	$A0000004
 mathtranslib inline|prefix+len|entry 8|1	$A0000004
 mathtranslib inline|prefix+len|entry 9|1	$A0000004
+mathtranslib pow|d0|x $800000C1 y $FFFFFF58|1	$80000041
+mathtranslib pow|d0|x $A0000042 y $C0000042|1	$F9FFFB44
+mathtranslib pow|d0|x $A00000C2 y $00000000|1	$80000041
+mathtranslib pow|d0|x $A00000C2 y $80000042|1	$C7FFFB43
+mathtranslib pow|d0|x $A00000C2 y $800000C1|1	$CCCCCE3F
+mathtranslib pow|d0|x $A00000C2 y $C0000042|1	$F9FFFB44
+mathtranslib pow|d0|x $A00000C2 y $E0000042|1	$C5A46945
+mathtranslib pow|kept|x $800000C1 y $FFFFFF58|1	kept
+mathtranslib pow|kept|x $A0000042 y $C0000042|1	kept
+mathtranslib pow|kept|x $A00000C2 y $00000000|1	kept
+mathtranslib pow|kept|x $A00000C2 y $80000042|1	kept
+mathtranslib pow|kept|x $A00000C2 y $800000C1|1	kept
+mathtranslib pow|kept|x $A00000C2 y $C0000042|1	kept
+mathtranslib pow|kept|x $A00000C2 y $E0000042|1	kept
+mathtranslib pow|popped|x $800000C1 y $FFFFFF58|1	$00000000
+mathtranslib pow|popped|x $A0000042 y $C0000042|1	$00000000
+mathtranslib pow|popped|x $A00000C2 y $00000000|1	$00000000
+mathtranslib pow|popped|x $A00000C2 y $80000042|1	$00000000
+mathtranslib pow|popped|x $A00000C2 y $800000C1|1	$00000000
+mathtranslib pow|popped|x $A00000C2 y $C0000042|1	$00000000
+mathtranslib pow|popped|x $A00000C2 y $E0000042|1	$00000000
 memlib finit|kept||1	kept
 memlib finit|kept|audiolib|1	kept
 memlib finit|popped||1	$00000000

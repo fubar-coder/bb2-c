@@ -55,3 +55,9 @@ Not built. If the user later wants a runtime error, D-005 puts it in the error c
 * Decision 2, the parity test from the FFP bits rather than `SPFix`/`SPFlt` round trips (no extra library calls, no overflow of `SPFix` for large exponents): L1 / I1 / E2 → Monitor.
 * Decision 4: L1 / I1 / E2 → Monitor.
 * Order after `byte-fraction-constant`: that change's design decision 6 (L1 / I4 / E2 → Plan).
+
+## Findings (implementation)
+
+* **The matrix tests after the regrouping** (one source per group of cells, merged before this change): `compiler-expr-1189-*` are 12 tests now, not 24 (the 744 cells unchanged); with the 4 `compiler-expr-1178-1189-*` and `compiler-expr-1188-1189-db-B-01` 17 tests. On main a56d8be9f: the 12 REPRODUCED, the 5 two-issue tests DIFFERS (task 1.1).
+* **Decision 2, the bound e = 24:** "e >= 24: whole and even" is off by one. With e = exponent - 64 the value is M * 2^(e-24), so for e = 24 it is M itself, a whole number that is odd when bit 0 of M is set (16777215 = 2^24-1, FFP `$FFFFFF58`); whole and even holds from e = 25 on (2^24 and above). The rest of the rule ("whole if the low 24-e bits are 0, odd if bit 24-e is set") covers e = 24 as written. The routine and the tests take 0 < e <= 24 as the range of the bit test; the bug-orig test has `(-1)^16777215` (-1), `(-1)^16777216` (1) and `(-1)^8388609` (-1), the capture `-1 ^ 16777215`.
+* **The library capture of the call** (task 1.3): the original's inline entry has no RTS, so the test calls it as the compiler does, its code copied with an RTS behind it; an entry that is not inline is called directly. Recorded with the original (`libs-capture`, filter `[cmd]`, machine a500-204): SPPow gives the same value for -2.5 and 2.5 (`$F9FFFB44`), `$C5A46945` for -2.5^3.5, 1 for -1^16777215. The contract stated (`KEEPS("mathtranslib pow", d2-d7|a2-a6)`): the SPPow call's, a6 stays the mathtrans base.

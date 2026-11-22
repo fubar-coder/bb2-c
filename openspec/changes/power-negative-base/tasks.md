@@ -4,9 +4,9 @@ Starts after `quick-long-arithmetic`, `compare-right-operand` and `byte-fraction
 
 ## 1. Tests first (red)
 
-- [ ] 1.1 The red tests exist and are REPRODUCED on main: the matrix's `compiler-expr-1189-*` (24); `compiler-expr-1178-1189-*` (4) and `compiler-expr-1188-1189-db-B-01` are DIFFERS (one of their two fixes is in). Verify: `ctest --preset bug-orig -R compiler_expr_.*1189`.
-- [ ] 1.2 The bug-orig test `tests/bug-orig/compiler/compiler-pow-negative-base` (header `BUG(orig) (#1189)`) with the cases of design decision 3 that the matrix lacks, and the regression test `regression/compiler-pow-fraction-exponent` for a negative base with a fractional exponent (today's value, must not change). Verify: `.orig` recorded (`-DBUG_ORIG_RECORD_FILTER=compiler-pow-negative-base`, `--target bug-orig-record`); REPRODUCED; the regression test passes on main.
-- [ ] 1.3 The library capture: a call case of `mathtranslib`'s `^` entry with a negative base and an odd, an even and a fractional exponent in `libs/tests/systest_cmdlibs.c`; recorded with the original (`[orig]`). Verify: `libs_tests` pass on main with the new cases.
+- [x] 1.1 The red tests exist and are REPRODUCED on main: the matrix's `compiler-expr-1189-*` (24); `compiler-expr-1178-1189-*` (4) and `compiler-expr-1188-1189-db-B-01` are DIFFERS (one of their two fixes is in). Verify: `ctest --preset bug-orig -R compiler_expr_.*1189`.
+- [x] 1.2 The bug-orig test `tests/bug-orig/compiler/compiler-pow-negative-base` (header `BUG(orig) (#1189)`) with the cases of design decision 3 that the matrix lacks, and the regression test `regression/compiler-pow-fraction-exponent` for a negative base with a fractional exponent (today's value, must not change). Verify: `.orig` recorded (`-DBUG_ORIG_RECORD_FILTER=compiler-pow-negative-base`, `--target bug-orig-record`); REPRODUCED; the regression test passes on main.
+- [x] 1.3 The library capture: a call case of `mathtranslib`'s `^` entry with a negative base and an odd, an even and a fractional exponent in `libs/tests/systest_cmdlibs.c`; recorded with the original (`[orig]`). Verify: `libs_tests` pass on main with the new cases.
 
 ## 2. Implementation
 
