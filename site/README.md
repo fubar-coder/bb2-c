@@ -18,25 +18,20 @@ source of facts, but is not included here; the pages are new texts.
 
 ```
 podman run --rm -p 1313:1313 -v $PWD/site:/src docker.io/hugomods/hugo:exts-0.154.5 \
-    hugo server --bind 0.0.0.0 --poll 700ms --enableGitInfo=false
+    hugo server --bind 0.0.0.0 --poll 700ms
 ```
 
-`--enableGitInfo=false` is needed because only `site/` is mounted and the
-container then sees no repository (the CI build has one). To keep the
-"last modified" dates in the preview, mount the repository root and add
-`--source site`. Git is used for nothing else (`enableGitInfo` in
-`hugo.yaml`; `editURL` is off). In a git worktree `.git` is a file that
-points into the main checkout's `.git/worktrees/`, so the root alone is
-not a repository in the container: mount the main checkout's `.git` at
-the same path as well and mark the root as a safe directory
-(`git config --global --add safe.directory ...` in the container), or
-keep `--enableGitInfo=false`. Add `:Z` to the volume on SELinux hosts.
+Only `site/` is mounted; the build needs no git. The "last modified"
+dates of the pages (their meta tags) come from git and are added only by
+the CI build (`--enableGitInfo` in `.github/workflows/pages.yml`;
+`enableGitInfo: false` in `hugo.yaml`, `editURL` is off). Add `:Z` to the
+volume on SELinux hosts.
 
-A one-off build, as CI does it, into `site/public/`:
+A one-off build into `site/public/` (CI adds `--enableGitInfo`):
 
 ```
 podman run --rm -v $PWD/site:/src docker.io/hugomods/hugo:exts-0.154.5 \
-    hugo --gc --minify --enableGitInfo=false --baseURL https://fubar-coder.github.io/bb2-c/
+    hugo --gc --minify
 ```
 
 The build must finish without errors or warnings.
