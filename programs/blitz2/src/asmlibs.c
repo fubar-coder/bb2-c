@@ -1263,12 +1263,14 @@ UBYTE *findtoke(UWORD tok, struct blitzlib **libp)
     return sub;
 }
 
+static void linklibgroup(UBYTE *buf, struct node **tail);
+
 /* blitz2.s:6322 loadlibgroup - load a group of libraries!
    d0=len, d1=name; return d0=address */
 APTR loadlibgroup(ULONG len, STRPTR name, struct node **tail)
 {
     BPTR fh;
-    UBYTE *buf, *p;
+    UBYTE *buf;
 
     if (!len)
         return NULL;
@@ -1285,8 +1287,17 @@ APTR loadlibgroup(ULONG len, STRPTR name, struct node **tail)
     }
     Read(fh, buf, len);
     Close(fh);
+    linklibgroup(buf, tail);
+    return buf;
+}
 
-    p = buf;
+/* the libraries of a BigLib image buf (each file: its length, then the
+   hunk contents; a length 0 ends it) linked in after *tail (part of
+   blitz2.s:6322 loadlibgroup) */
+static void linklibgroup(UBYTE *buf, struct node **tail)
+{
+    UBYTE *p = buf;
+
     for (;;) {
         ULONG filelen = L_(p);
         ULONG size;
@@ -1309,14 +1320,26 @@ APTR loadlibgroup(ULONG len, STRPTR name, struct node **tail)
         s->nrelocs = L_(r - 8);         /* number of relocs. */
         s->relocs = (ULONG *)r;         /* pointer to relocs. */
     }
-    return buf;
 }
+
+/* Fixed (#1178), no asm counterpart: the compiler's own library
+   compilerlib (libs/compilerlib: library 64030, the routines of a Quick
+   under a Long type so far), a BigLib image in the program.  Writable:
+   fixlibs and uselib3 write their links and fields into it as into a
+   loaded one; linked again by every loadlibs, never freed. */
+static UBYTE compilerlibs[] __attribute__((aligned(4))) = {
+#embed "compilerlib.big"
+    , 0, 0, 0, 0
+};
 
 /* blitz2.s:6374 loadlibs - use libslist to load in used libs dir contents */
 void loadlibs(void)
 {
     struct node *tail = (struct node *)&firstlib;
 
+    /* Fixed (#1178): compilerlib first, in both modes, so that its
+       tokens are found whatever library set follows */
+    linklibgroup(compilerlibs, &tail);
     if (!ext_loadlibs(&tail)) {
         acidlibsat = loadlibgroup(acidlibs, acidname, &tail);
         deflibsat = loadlibgroup(deflibs, defname, &tail);

@@ -40,6 +40,11 @@ endfunction()
 # handled), blitz2-ab3 with the AB3 modules src/ab3*.c.
 add_library(blitz2_core OBJECT ${chunk_sources} ${glue_sources})
 blitz2_compile(blitz2_core)
+# the compiler's own library (libs/compilerlib, #1178), embedded in
+# asmlibs.c (#embed "compilerlib.big")
+target_compile_options(blitz2_core PRIVATE --embed-dir=${COMPILERLIB_DIR})
+add_dependencies(blitz2_core compilerlib_big)
+set_property(SOURCE src/asmlibs.c APPEND PROPERTY OBJECT_DEPENDS ${COMPILERLIB_DIR}/compilerlib.big)
 if(BLITZ2_COVERAGE)
 	cov_exclude(${glue_sources})        # their entry stubs load a4
 endif()

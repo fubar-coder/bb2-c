@@ -138,7 +138,9 @@ const char *capdir()
     return buf;
 }
 
-int run_libtest(const char *lib)
+// port_only: a library with no original (compilerlib), run in the C set
+// only
+int run_libtest(const char *lib, bool port_only = false)
 {
     static char file[300], name[40];
     run_env env;
@@ -146,6 +148,8 @@ int run_libtest(const char *lib)
         bl_test_check("libtest: LIBSET is not set (obj or orig)", 0);
         return 20;
     }
+    if (port_only && std::strcmp(bl_libset, "obj"))
+        return 0;
     std::snprintf(file, sizeof file, "%s/%s.%s", progdir(), lib, bl_libset);
     std::snprintf(name, sizeof name, "libtest_%s", lib);
     char *argv[] = {(char *)"libtest", file, (char *)capdir(), name, nullptr};
@@ -173,6 +177,9 @@ int run_systest(const char *name, int (*fn)(int, char **))
 
 TEST_CASE("libtest ldivlib", "[libtest]") { CHECK(run_libtest("ldivlib") == 0); }
 TEST_CASE("libtest lmullib", "[libtest]") { CHECK(run_libtest("lmullib") == 0); }
+// compilerlib (#1178): the compiler's own library has no original; the C
+// set only (its cases are KEY [fixed #1178])
+TEST_CASE("libtest compilerlib", "[libtest]") { CHECK(run_libtest("compilerlib", true) == 0); }
 
 TEST_CASE("systest: memlib datalib chipbaselib strings1lib staticslib varslib exitslib clrlib banklib", "[sys]")
 {

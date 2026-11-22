@@ -40,6 +40,7 @@ struct lib {
     int n;                      /* routines found */
     APTR code[MAXR];            /* routine address per entry/form */
     char what[MAXR][24];
+    ULONG lost[MAXR];           /* compilerlib: the registers changed */
 };
 
 static UWORD W(const UBYTE *p) { return (UWORD)(p[0] << 8 | p[1]); }
@@ -147,12 +148,36 @@ static ULONG rnd(void)
     }
 }
 
+/* compilerlib (#1178): the registers d2-d7, a0-a3 and a6 get marks before
+   each call, and the ones a call changed are collected in lost (bit 0-7
+   d0-d7, 8-14 a0-a6): its contract is longmult's and longdiv's */
+static int marks;
+static ULONG lost;
+
 static ULONG call(APTR fn, ULONG d0, ULONG d1)
 {
-    struct regs r = {{0}};
+    struct regs r = {{0}}, in;
+    int k;
+
+    if (marks) {
+        for (k = 2; k < 8; k++)
+            r.d[k] = 0x5a5a0000UL | k;
+        for (k = 0; k < 7; k++)
+            if (k < 4 || k == 6)
+                r.a[k] = 0xa5a50000UL | k;
+    }
     r.d[0] = d0;
     r.d[1] = d1;
+    in = r;
     callregs(fn, &r, 0, 0);
+    if (marks) {
+        for (k = 2; k < 8; k++)
+            if (r.d[k] != in.d[k])
+                lost |= 1UL << k;
+        for (k = 0; k < 7; k++)
+            if (r.a[k] != in.a[k])
+                lost |= 1UL << (8 + k);
+    }
     return r.d[0];
 }
 
@@ -170,6 +195,7 @@ int main(int argc, char **argv)
     if (!load(&a, argv[1]))
         return 20;
     seed = 0x1234567;           /* the same inputs in every run */
+    marks = W(a.base + 0x0e) == 0xd600;
     cap_begin(argv[2], argv[3]);
     cap_num("routine count", NULL, a.n);
     cap_blocks(1);
@@ -178,6 +204,7 @@ int main(int argc, char **argv)
         unsigned x, y;
         ULONG d0, d1;
         cap_routine(a.what[i]);
+        lost = 0;
         for (x = 0; x < NEDGES * NEDGES + rounds; x++) {
             if (x < NEDGES * NEDGES) {
                 y = x / NEDGES;
@@ -193,9 +220,17 @@ int main(int argc, char **argv)
             tests++;
         }
         printf("%-12s %ld tests\n", a.what[i], tests);
+        if (marks)
+            a.lost[i] = lost;
     }
     cap_blocks(0);
-    if (W(a.base + 0x0e) == 0xcb00) {   /* ldivlib: its paths' limits */
+    if (marks)                          /* compilerlib: the kept registers */
+        for (i = 0; i < a.n; i++) {
+            cap_routine(a.what[i]);
+            cap_num("lost registers", NULL, a.lost[i]);
+        }
+    /* ldivlib: its paths' limits; compilerlib (#1178) the same inputs */
+    if (W(a.base + 0x0e) == 0xcb00 || marks) {
         for (i = 0; i < a.n; i++) {
             unsigned x, y, sg;
             cap_routine(a.what[i]);
