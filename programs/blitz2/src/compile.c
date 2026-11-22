@@ -17,8 +17,6 @@
 /* the asm reads `debugga` with move.b/tst.b (= the high byte, set by sne) */
 #define DEBUGON ((debugga & 0xff00) != 0)
 
-#define ELSETOK (0x8000 + 34)
-
 /* ================================================================ data */
 
 /* blitz2.s:1913 funcs - marker label, no code */
@@ -1001,7 +999,7 @@ void doline(void)
         c = reget();
         if (!eos(c))
             illeolerr();
-        if (c == ELSETOK) {
+        if (c == TOK_ELSE) {
             doelse2(c);
             continue;
         }
@@ -1248,7 +1246,7 @@ static void handleascii(UWORD c)
 /* blitz2.s:2986 handleeol */
 static void handleeol(UWORD c)
 {
-    if (c == ELSETOK) {
+    if (c == TOK_ELSE) {
         handletoken(c);
         return;
     }
@@ -1418,10 +1416,13 @@ static void handletoken(UWORD c)
     ext_newtoken(tok);
     if (tok >= tnum) {
         tok -= tnum - fnum;
-        if (tok == fnum + 15 || tok == fnum + 10)
+        if (tok == TOKNUM(TOK_SYSJSR) - (tnum - fnum) ||
+            tok == TOKNUM(TOK_PUTREG) - (tnum - fnum))
             undodebug();
-    } else if (tok == 56 || tok == 57 || tok == 13 || tok == 18 || tok == 19 ||
-               tok == 26 || (tok <= 42 && tok >= 35)) {
+    } else if (tok == TOKNUM(TOK_ALIBJSR) || tok == TOKNUM(TOK_TOKEJSR) ||
+               tok == TOKNUM(TOK_MACRO) || tok == TOKNUM(TOK_XINCLUDE) ||
+               tok == TOKNUM(TOK_INCLUDE) || tok == TOKNUM(TOK_DATA) ||
+               (tok <= TOKNUM(TOK_INCBIN) && tok >= TOKNUM(TOK_EVEN4))) {
         /* things which don't want error checking... */
         undodebug();
     }

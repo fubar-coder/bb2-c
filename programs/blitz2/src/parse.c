@@ -394,7 +394,7 @@ BOOL eos(UWORD c)
         return TRUE;
     if (quoteflag)
         return FALSE;
-    return c == 0x8000 + 34 || c == ':';    /* else token, ':' */
+    return c == TOK_ELSE || c == ':';
 }
 
 /* blitz2.s:7042 getchar */
@@ -410,24 +410,24 @@ UWORD getchar_(void)
         if (c == 0)
             return 0;
         if (c & 0x8000) {
-            if (c == 0x801c) {              /* .cnif */
+            if (c == TOK_CNIF) {            /* .cnif */
                 ciflineat = linenumat;
                 if (!comflag) { connest++; continue; }     /* .incnest */
                 docnif(getchar3());
                 continue;
             }
-            if (c == 0x801d) {              /* .csif */
+            if (c == TOK_CSIF) {            /* .csif */
                 ciflineat = linenumat;
                 if (!comflag) { connest++; continue; }
                 docsif(getchar3());
                 continue;
             }
-            if (c == 0x801e) {              /* .celse */
+            if (c == TOK_CELSE) {           /* .celse */
                 if (connest == 0)
                     comflag = ~comflag;
                 continue;
             }
-            if (c == 0x801f) {              /* .cend */
+            if (c == TOK_CEND) {            /* .cend */
                 if (--connest >= 0)
                     continue;
                 connest++;

@@ -54,11 +54,11 @@ extern struct WBStartup *_WBenchMsg;
 
 /* the nodes (toklist.h): a struct member per node, then its initialiser;
    IMG is the image being defined, the names are blitz2's (M picks b2) */
-#define TK(id, next, num, name, help)       TKMEMBER(id, name, help)
-#define TA(id, nx, n, name, ...)            TAMEMBER(id, name)
-#define TKLAST(id, num, name, help)         TKMEMBER(id, name, help)
-#define TK3(id, next, num, name, help)
-#define TK3LAST(id, num, name, help)
+#define TK(id, next, num, sym, name, help)  TKMEMBER(id, name, help)
+#define TA(id, nx, n, sym, name, ...)       TAMEMBER(id, name)
+#define TKLAST(id, num, sym, name, help)    TKMEMBER(id, name, help)
+#define TK3(id, next, num, sym, name, help)
+#define TK3LAST(id, num, sym, name, help)
 #define M(b2, b3) b2
 
 struct tokimage {
@@ -68,9 +68,9 @@ struct tokimage {
 #undef TK
 #undef TA
 #undef TKLAST
-#define TK(id, next, num, name, help)       { NX(next), num, name "\0" help },
-#define TA(id, next, num, name, ...)        { NX(next), num, name "\0" "", { __VA_ARGS__ } },
-#define TKLAST(id, num, name, help)         { NULL, num, name "\0" help },
+#define TK(id, next, num, sym, name, help)  { NX(next), num, name "\0" help },
+#define TA(id, next, num, sym, name, ...)   { NX(next), num, name "\0" "", { __VA_ARGS__ } },
+#define TKLAST(id, num, sym, name, help)    { NULL, num, name "\0" help },
 #define IMG tokimg
 
 struct tokimage tokimg = {              /* asm label: tokens = first node */

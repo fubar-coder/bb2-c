@@ -1660,14 +1660,14 @@ struct opentry operators[] = {
     { '/', { dodivb, dodivw, dodivl, dodivq, dodivf, 0, 0 }, 4000 },
     { '&', { doandb, doandw, doandl, doandl, 0, 0, 0 }, 5000 },       /* AND */
     { '|', { doorb, doorw, doorl, doorl, 0, 0, 0 }, 5000 },           /* OR */
-    { tok_opand, { doandb, doandw, doandl, doandl, 0, 0, 0 }, 1000 }, /* AND */
-    { tok_opor, { doorb, doorw, doorl, doorl, 0, 0, 0 }, 1000 },      /* OR */
-    { tok_opeor, { doeorb, doeorw, doeorl, doeorl, 0, 0, 0 }, 1000 }, /* EOR */
-    { tok_oplsl, { dolslb, dolslw, dolsll, dolsll, 0, 0, 0 }, 6000 }, /* LSL */
-    { tok_opasl, { dolslb, dolslw, dolsll, dolsll, 0, 0, 0 }, 6000 }, /* ASL */
-    { tok_oplsr, { dolsrb, dolsrw, dolsrl, dolsrl, 0, 0, 0 }, 6000 }, /* LSR */
-    { tok_opasr, { doasrb, doasrw, doasrl, doasrl, 0, 0, 0 }, 6000 }, /* ASR */
-    { 0x8006 + tnum, { domodb, domodw, domodl, domodq, domodf, 0, 0 }, 5000 }, /* Mod */
+    { TOK_ASM_AND, { doandb, doandw, doandl, doandl, 0, 0, 0 }, 1000 }, /* AND */
+    { TOK_ASM_OR, { doorb, doorw, doorl, doorl, 0, 0, 0 }, 1000 },      /* OR */
+    { TOK_ASM_EOR, { doeorb, doeorw, doeorl, doeorl, 0, 0, 0 }, 1000 }, /* EOR */
+    { TOK_ASM_LSL, { dolslb, dolslw, dolsll, dolsll, 0, 0, 0 }, 6000 }, /* LSL */
+    { TOK_ASM_ASL, { dolslb, dolslw, dolsll, dolsll, 0, 0, 0 }, 6000 }, /* ASL */
+    { TOK_ASM_LSR, { dolsrb, dolsrw, dolsrl, dolsrl, 0, 0, 0 }, 6000 }, /* LSR */
+    { TOK_ASM_ASR, { doasrb, doasrw, doasrl, doasrl, 0, 0, 0 }, 6000 }, /* ASR */
+    { TOK_MOD, { domodb, domodw, domodl, domodq, domodf, 0, 0 }, 5000 },
     { '^', { dopow, dopow, dopow, dopow, dopow, 0, 0 }, 7000 },
     /* [15] opeq */ { '=', { doeqb, doeqw, doeql, doeql, doeqf, doeql, doeqs }, 2000 },
     /* [16] opne */ { 0x3c3e, { doneb, donew, donel, donel, donef, donel, dones }, 2000 },
@@ -1675,10 +1675,10 @@ struct opentry operators[] = {
     /* [18] ople */ { 0x3c3d, { doleb, dolew, dolel, dolel, dolef, dolel, doles }, 2000 },
     /* [19] opgt */ { '>', { dogtb, dogtw, dogtl, dogtl, dogtf, dogtl, dogts }, 2000 },
     /* [20] opge */ { 0x3e3d, { dogeb, dogew, dogel, dogel, dogef, dogel, doges }, 2000 },
-    { 0x8000 + 26 + tnum, { bittst, bittst, bittst, bittst, 0, 0, 0 }, 8000 },
-    { 0x8000 + 27 + tnum, { bitset, bitset, bitset, bitset, 0, 0, 0 }, 8000 },
-    { 0x8000 + 28 + tnum, { bitclr, bitclr, bitclr, bitclr, 0, 0, 0 }, 8000 },
-    { 0x8000 + 29 + tnum, { bitchg, bitchg, bitchg, bitchg, 0, 0, 0 }, 8000 },
+    { TOK_BITTST, { bittst, bittst, bittst, bittst, 0, 0, 0 }, 8000 },
+    { TOK_BITSET, { bitset, bitset, bitset, bitset, 0, 0, 0 }, 8000 },
+    { TOK_BITCLR, { bitclr, bitclr, bitclr, bitclr, 0, 0, 0 }, 8000 },
+    { TOK_BITCHG, { bitchg, bitchg, bitchg, bitchg, 0, 0, 0 }, 8000 },
     { 0, { 0 }, 0 },
 };
 
@@ -1816,7 +1816,7 @@ static UWORD getelement2(UWORD *type)
         negnext = !neg;
         return negate(type);
     }
-    if (c == tok_opnot)
+    if (c == TOK_ASM_NOT)
         return notit(type);
 
     f = forthsp;
@@ -1844,13 +1844,13 @@ static UWORD getelement2(UWORD *type)
         return (UWORD)fetchhex(type, FALSE);
     if (c == '%')
         return (UWORD)fetchbin(type, FALSE);
-    if (c == 0x8000 + 47)
+    if (c == TOK_SIZEOF)
         return fetchsize(type);
-    if (c == 0x8007 + tnum)
+    if (c == TOK_PI)
         return fetchpi(type);
-    if (c == 0x8000 + tnum + 18)
+    if (c == TOK_ON)
         return fetchon(type);
-    if (c == 0x8000 + tnum + 19)
+    if (c == TOK_OFF)
         return fetchoff(type);
 
     if (constmode) {
@@ -2752,13 +2752,13 @@ static UWORD function(UWORD c, UWORD *type)
     if (c <= 0x8000 + tnum)
         syntaxerr();
     /* .overasm */
-    if (c == 0x8003 + tnum)
+    if (c == TOK_ERN)
         return doern(c, type);
-    if (c == 0x8005 + tnum)
+    if (c == TOK_ADDR)
         return doaddr(type);
-    if (c == 0x8011 + tnum)
+    if (c == TOK_MAXIMUM)
         return domaximum(type);
-    if (c == 0x801e + tnum)
+    if (c == TOK_USED)
         return doused(type);
     ext_newtoken(c & 0x7fff);
     old = *type;                    /* remember old type! */

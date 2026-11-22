@@ -87,7 +87,7 @@ BOOL ext_token(UWORD c)
     if (progmode != XTRA_MODE_AB3)
         return FALSE;
     switch (c) {
-    case 0x8014:                        /* SYNTAX n (BB2's Jimi slot) */
+    case TOK_SYNTAX:                    /* SYNTAX n (BB2's Jimi slot) */
         /* AmiBlitz3.ab3:26884 do_SYNTAX: the one character behind the
            token; its declaration and type checks are G8, they change no
            code.  No code of its own, as AmiBlitz3: no debug trap. */
@@ -95,22 +95,22 @@ BOOL ext_token(UWORD c)
         if (!eos(getchar3()))
             getchar3();
         return TRUE;
-    case 0x80ad:                        /* BSS (blitz2's TAS slot) */
-    case 0x807f:                        /* Chip (blitz2's MOVEP slot) */
+    case TOK_ASM_TAS:                   /* BSS (blitz2's TAS slot) */
+    case TOK_ASM_MOVEP:                 /* Chip (blitz2's MOVEP slot) */
         undodebug();
-        if (c == 0x80ad)
+        if (c == TOK_ASM_TAS)
             ab3_bss();
         else
             ab3_chip();
         getchar3();
         return TRUE;
-    case 0x8000 + tnum + 32:            /* RunErrsOff */
+    case TOK_RUNERRSOFF:
         dorunerrsoff3();
         return TRUE;
-    case 0x8000 + tnum + 38:            /* LastRunErrsMode, $80D9 */
+    case TOK_LASTRUNERRSMODE:
         dolastrunerrs();
         return TRUE;
-    case 0x8000 + tnum + 40:            /* OPTIMIZE, $80DB */
+    case TOK_OPTIMIZE:
         getchar3();
         dooptimize();
         return TRUE;

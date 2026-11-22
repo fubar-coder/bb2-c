@@ -437,7 +437,7 @@ fail.
 (the translation of blitz2.s: `main.c`, `compile.c`, `stmts.c`,
 `asmlibs.c`, `parse.c`, `eval.c`, `libcall.c`, `tokens1.c`,
 `tokens2.c`, `data.c`, each with its header, `blitz2.h`, `structs.h`,
-the token list `toklist.h` with `tokimg.h`) and the glue (`glue.c`,
+the token list `toklist.h` with `tokimg.h` and `tokcode.h`) and the glue (`glue.c`,
 `glue_direct.c`, `glue.h`) are compiled **once**, without any define,
 as the CMake object library `blitz2_core`, and both programs link it. Where AB3 mode
 differs, the chunk code calls an **extension point**: a plain function

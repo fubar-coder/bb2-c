@@ -135,8 +135,8 @@ void doongo(UWORD c)
 
     (void)c;
     c = bakeval(&t);
-    if (c != 0x8005) {
-        if (c != 0x8006)
+    if (c != TOK_GOTO) {
+        if (c != TOK_GOSUB)
             syntaxerr();
         code = ongosubcode; codeend = ongosubcodef;
         skipoff = 26;       /* gc2skip-ongosubcode */
@@ -265,7 +265,7 @@ static void normret(void)
 /* blitz2.s:13494 dostate */
 void dostate(UWORD c)
 {
-    if (c == 0x8007) {
+    if (c == TOK_RETURN) {
         stateret(c);
         return;
     }
@@ -277,7 +277,7 @@ void dofunc(UWORD c)
 {
     UWORD mode;
 
-    if (c == 0x8007) {
+    if (c == TOK_RETURN) {
         funcret(c);
         return;
     }
@@ -773,7 +773,7 @@ void typemode(UWORD c)
     ULONG size, offset;
     BOOL pending;
 
-    if (c == 0x8002) {
+    if (c == TOK_END) {
         doend2();
         return;
     }
@@ -997,7 +997,7 @@ void doend(UWORD c)
 /* blitz2.s:13882 doend .doend3 */
 static void doend3(UWORD c)
 {
-    if (c == 0x8001) {                  /* End NewType */
+    if (c == TOK_NEWTYPE) {             /* End NewType */
         if (linemode)
             modeerr();
         typelen = (typelen + 1) & ~1;
@@ -1009,11 +1009,11 @@ static void doend3(UWORD c)
         getchar3();
         return;
     }
-    if (c == 0x800b) {                  /* End If */
+    if (c == TOK_IF) {                  /* End If */
         mydoendif();
         return;
     }
-    if (c == 0x800c) {                  /* End While */
+    if (c == TOK_WHILE) {               /* End While */
         dowend2();
         return;
     }
@@ -1021,13 +1021,13 @@ static void doend3(UWORD c)
        against the open procedure (procmode): a string Function ended with
        End Statement popped its return address as the length.  The End of
        the other kind is "Illegal End Procedure", as outside a procedure. */
-    if (c == 0x8008) {                  /* End Statement */
+    if (c == TOK_STATEMENT) {           /* End Statement */
         if (procmode > 0)               /* inside a Function */
             badpenderr();
         endstate();
         return;
     }
-    if (c == 0x8009) {                  /* End Function */
+    if (c == TOK_FUNCTION) {            /* End Function */
         if (procmode <= 0)              /* a Statement or no procedure */
             badpenderr();
         pokewd(0x7000);                 /* moveq #0,d0 */
@@ -1036,7 +1036,7 @@ static void doend3(UWORD c)
         endstate();
         return;
     }
-    if (c == 0x8000 + 48) {             /* End SetInt */
+    if (c == TOK_SETINT) {              /* End SetInt */
         if (procmode)
             interr3();
         if (debugga) {
@@ -1061,11 +1061,11 @@ static void doend3(UWORD c)
         getchar3();
         return;
     }
-    if (c == 0x800e) {                  /* end select? */
+    if (c == TOK_SELECT) {              /* end select? */
         doendsel(c);
         return;
     }
-    if (c == 0x8001 + tnum) {           /* End SetErr */
+    if (c == TOK_SETERR) {              /* End SetErr */
         doendseterr(c);
         return;
     }
@@ -1181,7 +1181,7 @@ void dofor(UWORD c)
         pokel(tl(forset));
     }
     c = dolet2(c, namelen, &vartype, &offset);
-    if (c != 0x8018)
+    if (c != TOK_TO)
         syntaxerr();
     if (commode)
         syntaxerr();
@@ -1198,7 +1198,7 @@ void dofor(UWORD c)
     c = eval(&t);           /* get fin */
     op = vartype >= 3 ? pushd0l[0] : pushd0wd[0];
     pokewd(op);             /* push fin on stack */
-    if (c == 0x8019) {
+    if (c == TOK_STEP) {
         t = vartype;
         eval(&t);           /* get step */
     } else if (vartype < 4)
@@ -1405,7 +1405,7 @@ static void dodim2(UWORD c)
 
     for (;;) {
         listadd = 0;
-        if (c == 0x8000 + tnum) {
+        if (c == TOK_LIST) {
             listadd = 8;    /* it's a list */
             uselib(65530);  /* use memlib */
             c = getchar3();

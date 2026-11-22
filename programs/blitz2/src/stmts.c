@@ -316,20 +316,20 @@ void popselect2(void)
 /* blitz2.s:3386 dopop */
 void dopop(UWORD c)
 {
-    if (c == 0x8006) {                  /* Gosub */
+    if (c == TOK_GOSUB) {
         popreturn();
         return;
     }
-    if (c == 0x8000 + 22) {             /* For */
+    if (c == TOK_FOR) {
         popnext2();
         return;
     }
-    if (c == 0x8000 + 14) {             /* Select */
+    if (c == TOK_SELECT) {
         popselect2();
         return;
     }
-    if (c == 0x8000 + 11 || c == 0x8000 + 12 || c == 0x8000 + 20 ||
-        c == 0x8000 + tnum + 8) {       /* If, While, tok 20, Repeat */
+    if (c == TOK_IF || c == TOK_WHILE || c == TOK_SYNTAX ||
+        c == TOK_REPEAT) {              /* If, While, Jimi (SYNTAX), Repeat */
         getchar3();
         return;
     }
