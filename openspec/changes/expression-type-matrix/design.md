@@ -138,6 +138,12 @@ Task 1.1 (`tools/exprmatrix`, `tools/lib/exprmatrix`; the format in `tools/exprm
 * A comparison in a destination is written in brackets (`rl=(a < b)`, as `compiler-quick-compare` does) so that the first `=` is the assignment; everywhere else the expression stands as it is. A Quick or Float parameter is copied by its statement to a global of the same type (`SHARED`), whose raw bits are printed; the key is printed before the call (`Print "KEY " : pq{...}`).
 * A constant's size is checked against its kind (`cb` -128..127, `cw` of Word but not Byte size, `cl` beyond Word, `cf` with a `.`). The counts (the right operand of the shifts and `^`, decision 8: 2 or 3) are not checked for size: a count 2 of kind `cw` or `cl` is a Byte-size constant, the same cell as `cb`.
 
+Task 1.3 (the measurement of cut F; report and cell table in `~/.local/share/bb2-c-work/expr-matrix/`):
+
+* 2.10 and 1.95 agree in every cell; the port differs from 1.95 only in comparisons (#1177, #1186); the C libraries differ from the CD's in `If` on a Float expression, Quick products beyond the Quick range and #234; AmiBlitz3 refuses 546 cells more and differs in 131.
+* A program can be disturbed by the programs before it in the same emulator session (a Byte destination `MOD` ended with "Software Failure" only there; unchecked index reads beyond the array): the measurement ran each source in a session of its own. The committed tests (group 3) have to take this into account (one program per corpus pass session is not the corpus runner's model; to be decided with the test form of task 3.1).
+* AmiBlitz3's checked mode could not be measured: without its debugger module (`Defaultdbug`) `RuntimeDebug = 1` checks nothing.
+
 ## Open Questions
 
 None that can wait; the Decide question of decision 2(a) comes after task 1.2 and before task 1.3, the question classes of decision 7 before group 3.
