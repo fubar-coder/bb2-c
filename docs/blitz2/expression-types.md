@@ -138,6 +138,13 @@ Limits until the expression tree (#1180):
 
 ## Measured examples
 
+The measured source of the rules on this page is the expression matrix
+([`tests/README.md`](../../tests/README.md), "The expression matrix";
+[`tools/exprmatrix`](../../tools/exprmatrix/README.md)): every
+expression of two operands (or one) in every context, measured with
+2.10, 1.95, the port and AmiBlitz3, with its expected value and its test.
+The examples below have more operands than its cells:
+
 `q.q=1.5`, `h.q=0.5`, `l.l=10`, `w.w=3`, `v.w=4`:
 
 | Expression | Result | Mathematical value |
