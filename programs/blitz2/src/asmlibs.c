@@ -1029,20 +1029,20 @@ void fixjsrs(void)
 }
 
 /* .putcode of tokecode: generate a stub at pc */
-static ULONG putcode_cute(struct blitzlib *lib, UBYTE *sub)
+static ULONG putcode_cute(struct blitzlib *bl, UBYTE *sub)
 {
     ULONG old = pc;
     lasta6 = -1;
-    cutejsr(lib, sub);
+    cutejsr(bl, sub);
     pokewd(0x4e75);
     return old;
 }
 
-static ULONG putcode_lsub(struct blitzlib *lib, ULONG suboff)
+static ULONG putcode_lsub(struct blitzlib *bl, ULONG suboff)
 {
     ULONG old = pc;
     lasta6 = -1;
-    makelibsub(lib, suboff);
+    makelibsub(bl, suboff);
     pokewd(0x4e75);
     return old;
 }
@@ -1069,8 +1069,8 @@ static ULONG tokechx(const UBYTE *before)
    return d7, address to jsr! */
 ULONG tokecode(UWORD tok, UWORD form)
 {
-    struct blitzlib *lib;
-    UBYTE *sub = findtoke(tok, &lib);
+    struct blitzlib *bl;
+    UBYTE *sub = findtoke(tok, &bl);
     WORD formsleft;
     ULONG off;
 
@@ -1106,12 +1106,12 @@ ULONG tokecode(UWORD tok, UWORD form)
     if (B_(sub + 9) & 1)
         goto go4it;                     /* ditto... */
     off = L_(sub + 6);                  /* sub offset */
-    if ((W_((UBYTE *)lib + off) & 0xf000) == 0xa000)
+    if ((W_((UBYTE *)bl + off) & 0xf000) == 0xa000)
         goto go4it;
 penis:
-    return off - lib->maxinfo + lib->outaddr;
+    return off - bl->maxinfo + bl->outaddr;
 go4it:
-    return putcode_cute(lib, sub);
+    return putcode_cute(bl, sub);
 
 simple:
     if (formsleft)
@@ -1123,10 +1123,10 @@ simple:
     if (B_(sub + 15) & 1)
         goto be4it;
     off = L_(sub + 12);
-    if ((W_((UBYTE *)lib + off) & 0xf000) != 0xa000)
+    if ((W_((UBYTE *)bl + off) & 0xf000) != 0xa000)
         goto penis;
 be4it:
-    return putcode_lsub(lib, (ULONG)(sub - (UBYTE *)lib));
+    return putcode_lsub(bl, (ULONG)(sub - (UBYTE *)bl));
 }
 
 /* blitz2.s:6138 freetlist */

@@ -204,20 +204,20 @@ void objlongcode(UWORD dn, UWORD shifts)
    offset is a long where objlong says so (Fixed (#939)). */
 static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
 {
-    struct blitzlib *lib;
+    struct blitzlib *bl;
     UBYTE *e;
     UWORD type, opcode;
     WORD shifts;
 
     if (!(c & 0x8000))
         syntaxerr();
-    findtoke(c & 0x7fff, &lib);
-    if (LIBMAX_SHIFT(lib) == 0)
+    findtoke(c & 0x7fff, &bl);
+    if (LIBMAX_SHIFT(bl) == 0)
         freeerr();
     type = T_WORD;
     eval(&type);
-    *libp = lib;
-    e = LIBMAX_E(lib);
+    *libp = bl;
+    e = LIBMAX_E(bl);
     if (debugga) {
         /* check maximum overflow */
         pokewd(0xb07c | (regat << 9));         /* cmp #x,dn */
@@ -247,43 +247,43 @@ static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
 /* blitz2.s:12196 getmaxel (for Addr, which does not need the lib) */
 UBYTE *getmaxel(UWORD c)
 {
-    struct blitzlib *lib;
+    struct blitzlib *bl;
 
-    return getmaxlib(c, &lib);
+    return getmaxlib(c, &bl);
 }
 
 /* blitz2.s:12262 maxjsr - asm: Z flag of the caller's move.l d1 */
-static void maxjsr(struct blitzlib *lib, ULONG sub)
+static void maxjsr(struct blitzlib *bl, ULONG sub)
 {
     if (!sub)
         nosuperr();
-    makelibsub(lib, sub);
+    makelibsub(bl, sub);
 }
 
 /* blitz2.s:12253 dofree - Fixed (#939): a long object offset, see objlong */
 void dofree(UWORD c)
 {
-    struct blitzlib *lib;
-    UBYTE *e = getmaxlib(c, &lib);
+    struct blitzlib *bl;
+    UBYTE *e = getmaxlib(c, &bl);
 
     free_[1] = *(UWORD *)(e - 6);               /* patched in place */
     free_[2] = objlong(e) ? 0xD7C0 : 0xD6C0;    /* add.l / add d0,a3 */
     pokecode(free_, freef);
-    maxjsr(lib, *(ULONG *)(e - 10));
+    maxjsr(bl, *(ULONG *)(e - 10));
 }
 
 /* blitz2.s:12266 douse - Fixed (#939): a long object offset, see objlong */
 void douse(UWORD c)
 {
-    struct blitzlib *lib;
-    UBYTE *e = getmaxlib(c, &lib);
+    struct blitzlib *bl;
+    UBYTE *e = getmaxlib(c, &bl);
 
     use[1] = *(UWORD *)(e - 6);                 /* patched in place */
     use[2] = objlong(e) ? 0xD7C0 : 0xD6C0;      /* add.l / add d0,a3 */
     usef[-1] = *(UWORD *)(e - 6);
     usef[-1] += 4;
     pokecode(use, usef);
-    maxjsr(lib, *(ULONG *)(e - 14));
+    maxjsr(bl, *(ULONG *)(e - 14));
 }
 
 /* ================================================================== Else */
