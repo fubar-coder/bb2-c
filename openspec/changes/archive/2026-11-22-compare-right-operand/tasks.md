@@ -23,11 +23,11 @@ Starts after `quick-long-arithmetic` (#1178) and the change of #1179 are merged 
 
 ## 4. Documents
 
-- [ ] 4.1 `docs/blitz2/expression-types.md` (the #1182 sentence, `:136`, becomes the fixed rule with before/after), `docs/blitz2/deviations.md` (kind-F row for #1182; the #1177 row's "Not part of it: #1182" goes), `docs/ab3/variant.md` (a row if 1.3 found the bug in AmiBlitz3). Verify: the coordinator's review; links resolve.
+- [x] 4.1 `docs/blitz2/expression-types.md` (the #1182 sentence, `:136`, becomes the fixed rule with before/after), `docs/blitz2/deviations.md` (kind-F row for #1182; the #1177 row's "Not part of it: #1182" goes), `docs/ab3/variant.md` (a row if 1.3 found the bug in AmiBlitz3). Verify: the coordinator's review; links resolve.
 
 ## 5. Commit and report
 
-- [ ] 5.1 One fix commit: code, the tests with `; @fixed #1182`, `Fixed (#1182)`, the documents, the changed results named (`PREV_INTENDED`), `Fixes #1182`. Report: severity 1 proposed (Changes results), topic Compiler; the CD count of changed executables and outputs (for D-023). Verify: `git show --stat`; the coordinator's fix-scope run.
+- [x] 5.1 One fix commit: code, the tests with `; @fixed #1182`, `Fixed (#1182)`, the documents, the changed results named (`PREV_INTENDED`), `Fixes #1182`. Report: severity 1 proposed (Changes results), topic Compiler; the CD count of changed executables and outputs (for D-023). Verify: `git show --stat`; the coordinator's fix-scope run.
 
 ## Workflow follow-up
 

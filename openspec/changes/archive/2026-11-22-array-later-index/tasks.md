@@ -37,4 +37,4 @@
 
 ## Workflow follow-up
 
-- Coordinator: label `fixed-in-port`, the fixed-bugs entry, the `new-errors.md` entry and the overview row; a comment on #1179 (D-008, D-022: after #1178 `b(1,q*10)` is element 15 in both builds, not 10 as the issue text says); `all`/`bug-orig`/`originals` after the merge (D-010); the archive order with the other changes of `compiler/expression-types`.
+- [x] Coordinator (done 2026-11-22): label `fixed-in-port`, the fixed-bugs entry, the `new-errors.md` entry and the overview row; a comment on #1179 (D-008, D-022: after #1178 `b(1,q*10)` is element 15 in both builds, not 10 as the issue text says); `all`/`bug-orig`/`originals` after the merge (D-010); the archive order with the other changes of `compiler/expression-types`.
