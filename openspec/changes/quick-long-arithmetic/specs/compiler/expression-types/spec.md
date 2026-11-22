@@ -38,7 +38,7 @@ Unary minus of a Quick under a whole-number type so far SHALL negate the value w
 - **THEN** it gets -2 and -1
 
 ### Requirement: A Long operand that sets the type itself
-When a Quick is followed by a Long operand that makes the type so far Long by itself (a constant beyond the Quick range, `&var`, `?label`) and no type was set before, `*` and `/` SHALL be computed with the Quick's fraction as in "A Quick operand is computed with its fraction"; `+`, `-` and the other operators SHALL be a Long operation on the Quick rounded down, as before. `Int(q)` gives the previous result for `*` and `/`.
+When a Quick is followed by a Long operand that makes the type so far Long by itself (a constant beyond the Quick range, `&var`, `?label`) and no type was set before or the type so far is Quick (a Quick destination), `*` and `/` SHALL be computed with the Quick's fraction as in "A Quick operand is computed with its fraction"; `+`, `-` and the other operators SHALL be a Long operation on the Quick rounded down, as before. `Int(q)` gives the previous result for `*` and `/`.
 
 #### Scenario: Multiplication by a large constant
 - **WHEN** a program prints `NPrint q*100000` and `NPrint Int(q)*100000` with `q=1.5`
@@ -47,6 +47,10 @@ When a Quick is followed by a Long operand that makes the type so far Long by it
 #### Scenario: Address operand
 - **WHEN** a program prints `NPrint q+&l-&l` with `q=1.5`
 - **THEN** it prints 1, as before
+
+#### Scenario: Quick destination
+- **WHEN** a program evaluates `t.q=q*40000` with `q=1.5`
+- **THEN** `t` is -5536, 60000 beyond the Quick range wrapped (the original: -25536)
 
 ### Requirement: Float operands and powers take the fraction
 A Quick that meets a Float operand or `^` under a whole-number type so far SHALL be converted to Float with its fraction; the Float result SHALL be converted to the whole-number type towards zero as before.
