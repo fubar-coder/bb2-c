@@ -73,6 +73,21 @@ BOOL isbyteconst(ULONG from, ULONG to);
    sign-extended byte (128..255 -> -128..-1, of the same type). */
 void byteconstext(ULONG at);
 
+/* No asm counterpart (#1186, a port defect of the #1177 fix): if the
+   code from `from` to `*to` is the decimal literal with a point or an
+   exponent that the fetch routines emitted last as a whole number (the
+   byte sizing of consttype2 cuts it: 1.5 under a Byte is move.w #1),
+   followed only by neg.w Dreg, it is emitted again at `from` as the Float
+   it is (move.l #ffp,Dreg, negated once for every neg.w), *type = Float,
+   *to = the new end of the code, and TRUE is returned; else FALSE with
+   nothing changed.  For the left operand of a comparison (eval5), which
+   is compared with its own value (#1177). */
+BOOL fraclitfloat(ULONG from, ULONG *to, UWORD reg, UWORD *type);
+
+/* #1186: the code of the last literal was replaced (the constant
+   fold of eval5): fraclitfloat no longer takes it. */
+void fraclitdrop(void);
+
 /* Fixed (#1070), no asm counterpart: TRUE if the decimal literal fetched
    next is negated (a '-' in front of it in an expression, an odd number of
    them, or a negative Data value); consttype2 takes it and clears it.  A
