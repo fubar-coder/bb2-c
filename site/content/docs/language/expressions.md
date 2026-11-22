@@ -156,12 +156,14 @@ r.l=2147483647/2*2   ; 2147483646, a Long computation
 Two parts of the rule need care. In a Long computation, a Quick does not
 make the computation Quick: `adr.l=base+i*4` with a Quick `i` is computed
 as a Long, as an address must be, and each operation with the Quick is
-rounded to a whole number. And a constant with a fraction after a first
-whole number is cut while the type so far is still Byte, a bug of the
-original that is not fixed yet
-([#1188](https://github.com/fubar-coder/bb2-c/issues/1188)): `NPrint
-1+0.5` prints 1, `NPrint 0.5+1` prints 1.5. Start such an expression with
-the value with the fraction, or write `1.0`.
+rounded to a whole number. And a constant with a fraction keeps it while
+the type so far is Byte, as it does under a Word: `NPrint 3+1.5` prints
+4.5, and with `vb.b=2`, `rb.b=1.5*vb` gives 3. The original cut the
+constant to a whole number there and printed 4 and gave 2
+([#1188](https://github.com/fubar-coder/bb2-c/issues/1188)). Such a
+constant is a Float, so `AND`, `OR`, `EOR`, `NOT` and the shifts refuse
+it. A whole-valued constant written with a point, such as `2.0`, stays a
+whole number under a Byte.
 
 The page
 [From source to executable]({{< relref "/docs/how-blitz2-works/compiling#the-type-of-an-expression" >}})

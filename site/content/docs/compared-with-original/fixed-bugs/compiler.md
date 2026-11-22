@@ -939,6 +939,20 @@ Each point says first what the original did, then what the port does.
   left of one of them with a comparison on the right is a compile error
   ([A Float with `AND`, `OR`, `EOR` or a shift and a comparison]({{< relref "/docs/compared-with-original/new-errors#float-bit-operator-comparison" >}}),
   [#1182](https://github.com/fubar-coder/bb2-c/issues/1182)).
+* When the type so far was Byte (a Byte destination, parameter, field or
+  array element), the original cut a constant with a fraction to a whole
+  number before the operation, where under a Word it stays a Float: with
+  `vb.b=2`, `rb.b=(1.5*vb)` gave 2 and `rb.b=(1.5+1.5)` 2, where a Word
+  destination gives 3 and 3. One source on the Blitz Basic 2 CD has
+  `cprotect.b=swordhit*.8`, which computed `swordhit*0`. The port keeps
+  the fraction, computes the operation in Float and converts the result
+  to the Byte at the end, rounded towards zero: both give 3, as under a
+  Word. A whole-valued constant written with a point, such as `2.0`, and
+  a value of `Data.b` (`Data.b 1.5` is 1) give the original's results.
+  Such a constant is a Float, so `AND`, `OR`, `EOR`, `NOT` or a shift
+  with it is a compile error
+  ([`AND`, `OR`, `EOR`, `NOT` or a shift with a constant with a fraction under a Byte]({{< relref "/docs/compared-with-original/new-errors#byte-fraction-operator" >}}),
+  [#1188](https://github.com/fubar-coder/bb2-c/issues/1188)).
 
 ### Names, labels and constants
 
