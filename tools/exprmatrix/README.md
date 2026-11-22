@@ -307,9 +307,11 @@ source holds the cells of one context,
 value set, mode and class, at most `cells-per-source`; its folded
 constant `MOD` cells (both operands constants, a Byte, Word or Quick
 operation by the original's rules) come last (#1049); a checked source
-holds at most half of `cells-per-source` (the port's compile of a
-source with many `SetErr` handlers under runtime error checking does not
-end, #1190).
+holds at most half of `cells-per-source` (set for #1190, a crash of
+the compiler's constant fold when the first pass fills the object buffer
+exactly at a fold, which a source with many `SetErr` handlers under
+runtime error checking met; fixed: 56 checked cells compile, and raising
+the limit regenerates every checked source).
 
 The agreement and fixed sources of a destination, parameter, `If` or
 `Print` context and the unchecked index sources are also AmiBlitz3 cases

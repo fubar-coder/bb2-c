@@ -974,10 +974,12 @@ static void emit_group(struct ctx *x, struct group *g)
         return;
     }
     order(m, g);
-    /* a checked source (SetErr per cell) holds half as many: the port's
-       compile of 51 of the checked i2 shift cells of value set J with
-       their SetErr lines does not end (1.95 and 2.10 compile all 56; the
-       port defect #1190, found by task 3.2, design.md) */
+    /* a checked source (SetErr per cell) holds half as many: set for
+       #1190 (found by task 3.2, design.md), the compiler's constant fold
+       crashing when the first pass fills the object buffer exactly at a
+       fold, met by 51 of the checked i2 shift cells of value set J with
+       their SetErr lines; fixed, 56 checked cells compile: raising the
+       limit regenerates every checked source */
     if (g->mode == 'c' && per > 1)
         per /= 2;
     for (size_t first = 0, part = 1; first < g->n; first += per, part++) {

@@ -843,6 +843,17 @@ static __attribute__((noinline)) void constfold(UWORD type)
     /* Set up MOVE.l regat,d0 */
     pokewd(0x2000 | regat);
     pokewd(0x4e75);                         /* rts */
+    /* Fixed (#1190): the fold is skipped when the two words did not fit
+       (the operands ended at the end of the object buffer or 2 bytes
+       before it).  The original (blitz2.s:9017) looked at nomemleft
+       only before the pokes and ran the code without its rts, into
+       whatever lies behind the buffer (the first library copied into
+       the library area): a hang or a crash of the compiler.  The pass is
+       thrown away anyway ("Not Enough Object Memory", or the compile
+       again with the buffer sized to bigpc); pc stays behind the two
+       words, the operands' code and offsets are left as they are. */
+    if (nomemleft)
+        return;
     foldend = pc;                           /* end of the folded code */
     /* Fixed (#343): only the word lasta6 is restored.  The original's long
        move (blitz2.s:9025) also restored quoteflag as getelement2 saved it
