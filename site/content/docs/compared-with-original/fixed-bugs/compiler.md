@@ -777,6 +777,14 @@ Each point says first what the original did, then what the port does.
   the compile error "Division by Zero"
   ([A division by a constant 0]({{< relref "/docs/compared-with-original/new-errors#division-by-zero" >}}),
   [#1044](https://github.com/fubar-coder/bb2-c/issues/1044)).
+* An operator whose right operand needed a ninth register, such as
+  `a+b*c` as the 7th or a later argument of a statement or function, was
+  compiled for a register that does not exist: a wrong value, a crash of
+  the program with Word operands, or a crash of the compiler with
+  constants. In the port, it is the compile error "Expression too
+  Complex"; write `b*c+a` or `a+(b*c)` instead
+  ([An operator too deep in an expression]({{< relref "/docs/compared-with-original/new-errors#expression-too-complex" >}}),
+  [#1185](https://github.com/fubar-coder/bb2-c/issues/1185)).
 * A Latin-1 character other than the umlauts, such as ß or é, could not
   reach a string, since the editor lost it. The port's editor keeps it as
   a literal character
