@@ -8062,3 +8062,11 @@ rows:
     text: "A constant operation whose code ends exactly at the end of the object buffer does not crash or hang the compiler; the original ran on into the memory behind the buffer."
     page: compiler
     anchor: the-compilers-memory
+  - issue: 1179
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "An array index after the first one is computed as a Long also without runtime error checking, so both builds use the same element; the original computed it as a Word there (`g(1,y*200/2)` element 52768 for `y=200` instead of 20000, `b(1,q ASL 4)` 24 instead of 16 for `q=1.5`). `ja(1,vq AND 1.5)` is refused with \"Illegal Operator for Type\" also without the checking."
+    page: compiler
+    anchor: expressions-and-statements

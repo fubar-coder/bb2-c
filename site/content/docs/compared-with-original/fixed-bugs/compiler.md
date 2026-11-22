@@ -914,6 +914,18 @@ Each point says first what the original did, then what the port does.
   "Bad Data", although `q=-32768` worked; it stores -32768, also when
   written `Data.q -$8000`. `Data.q 32768` stays "Bad Data"
   ([#1074](https://github.com/fubar-coder/bb2-c/issues/1074)).
+* An array index after the first one was computed as a Word without
+  runtime error checking and as a Long with it, so the two builds of a
+  program could use different elements: with `y=200`, `g(1,y*200/2)` was
+  element 52768 without the checking and 20000 with it, and with
+  `q=1.5`, `b(1,q ASL 4)` was element 24 against 16. Every index is
+  computed as a Long in both builds, and simple indexes such as `a(i,j)`
+  or `a(5,7)` compile to the same code as in the original
+  ([Array indexes]({{< relref "/docs/how-blitz2-works/compiling#array-indexes" >}}),
+  [#1179](https://github.com/fubar-coder/bb2-c/issues/1179)). Without the
+  checking, `AND`, `OR`, `EOR` or a shift of a Quick and a constant with a
+  fraction in such an index is a compile error
+  ([`AND`, `OR`, `EOR` or a shift in a later array index]({{< relref "/docs/compared-with-original/new-errors#later-index-operator" >}})).
 
 ### Names, labels and constants
 

@@ -196,7 +196,7 @@ another element than the checked program
 ([#1179](https://github.com/fubar-coder/bb2-c/issues/1179)): with
 `y=200`, `g(1,y*200/2)` was element 52768 instead of 20000. In the port
 both use the same element. Without runtime error checking an index is
-not checked, as before: one above 65535 still wraps around.
+not checked, as in the original: one above 65535 wraps around.
 
 ## The layout of the executable
 
