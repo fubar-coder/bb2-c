@@ -11,12 +11,13 @@ caller hopes.
 
 Read first: CLAUDE.md (rules 1 and 2 above all), README.md and
 `docs/development.md`, the specs in `openspec/specs/` for the area of
-the question, `~/.local/share/bb2-c-work/decisions.md` with its section
-"Decision process (D-011)" (the steps and the rating catalog) and the
-per-area files its last section lists, for the area of the question;
-`task-decisions.md`; the decisions file of the current round if the
-brief names one. For a question about an OpenSpec change also its
-proposal, design and tasks. For planning work also `tests/README.md`.
+the question, `~/.local/share/bb2-c-work/decisions.md`, the decision process
+(D-011) in `decision-process.md` (the steps) and `decision-catalog.md`
+(the rating catalog) there, and the per-area files the last section of
+`decisions.md` lists, for the area of the question; `task-decisions.md`
+with its archive `task-decisions-archive.md`; the decisions file of the
+current round if the brief names one. For a question about an OpenSpec
+change also its proposal, design and tasks. For planning work also `tests/README.md`.
 
 Answer each question in this form:
 
