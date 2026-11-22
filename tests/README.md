@@ -1865,6 +1865,7 @@ must really exist (a stale entry fails), an unlisted difference fails, and
 | `corpus_cd_prev:PATH`, `corpus_cd_ab3_prev:PATH` | the CD source `PATH` (below `ultimate-blitz-basic-2.1`, as in `tests/data/blitz2-cd.tsv`): its row may differ from the one of `corpus_cd` / `corpus_cd_ab3` in any field |
 | `compiler_prev:ID`, `bug_orig_ID_prev:ID`, `regression_ID_prev:ID`, `blitz2_ID_prev:ID` | the compiler test source `ID` in that compile-only pass (`compiler_prev` for the tests without special needs, else the test's own pass `NAME_prev`): the executable or the compile result of `prev` may differ from `clib`'s |
 | `site_examples_run:NAME`, `site_examples_compile:NAME`, `site_examples_run_rwe_1999:NAME` ... | the site example `NAME` in that pass (the ctest name of the pass, `_` for `-` in the group) |
+| `corpus_exprmatrix_NAME:SOURCE`, `corpus_exprmatrix_runerr_NAME:SOURCE` | the source of a corpus pass of the expression matrix (one pass per source, e.g. `corpus_exprmatrix_dl_A_agree_01:dl-A-agree-01`): its `prev` configuration may differ from `clib` |
 | `ab3_cli_prev:CASE` | the case `CASE` of `ab3_cli` (any block; a name that is no case is refused when CMake configures) |
 
 The part before the first colon is the ctest name of the test, so an

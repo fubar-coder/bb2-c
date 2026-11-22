@@ -18,7 +18,9 @@
  *                      compiler bug-orig sources without special needs),
  *                      bug_orig_ID_prev, regression_ID_prev, blitz2_ID_prev,
  *                      ab3_cli_prev (NAME = the case), and the site examples'
- *                      passes site_examples_* (NAME = the example)
+ *                      passes site_examples_* (NAME = the example), the
+ *                      expression matrix's corpus passes corpus_exprmatrix_*
+ *                      (NAME = the source)
  *
  * (An entry without a colon is a library file path, prevcmp's.)  The rule
  * is that of the library files: a listed comparison must differ (a stale
