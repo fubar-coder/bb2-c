@@ -7683,7 +7683,7 @@ rows:
     topic: "Files"
     library: "shapeslib"
     command: "LoadShape"
-    text: "`LoadShape` closes an animation file before \"ANIM format not supported\" and \"Illegal ANIM interleave value\"; the original left it open and locked until reboot."
+    text: "`LoadShape` closes an animation file before \"ANIM format not supported\"; the original left it open and locked until reboot."
     page: libraries
     anchor: iff-files
   - issue: 1074
