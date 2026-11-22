@@ -81,6 +81,7 @@ set(BLITZRES ${HOST_TOOLS_DIR}/blitzres/blitzres)               # resident files
 set(RESULTS ${HOST_TOOLS_DIR}/results/results)                  # results against expectations, the prev build
 set(SITEEXAMPLES ${HOST_TOOLS_DIR}/siteexamples/siteexamples)    # the site's Blitz examples against their manifest
 set(EXPRMATRIX ${HOST_TOOLS_DIR}/exprmatrix/exprmatrix)         # the expression matrix
+set(TESTREG ${HOST_TOOLS_DIR}/testreg/testreg)                  # the tests of the BASIC test model at build time
 set(TEDSRC ${HOST_DIR}/ted-tools/tedsrc/tedsrc)                 # tokenise like TED, show as TED
 set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # corpus passes and the CD in Amiberry
 set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
@@ -110,10 +111,11 @@ ExternalProject_Add(host_tools
 		"-DCMAKE_CXX_COMPILER_LAUNCHER:STRING=${BB2C_HOST_LAUNCHER}"
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BLITZLIB} ${BBSRC} ${REFCHECK} ${HUNKCHECK} ${TEDFONT} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${RESULTS} ${SITEEXAMPLES} ${EXPRMATRIX} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BLITZLIB} ${BBSRC} ${REFCHECK} ${HUNKCHECK} ${TEDFONT} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${RESULTS} ${SITEEXAMPLES} ${EXPRMATRIX} ${TESTREG} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 include(cmake/prev.cmake)                # the build of the previous commit, on request
+include(cmake/basic-test-model.cmake)    # the Blitz tests that judge themselves (ID.test.bas)
 
 # ctest: the host side's tests (tools with broken inputs, host tests of
 # the components) and the checks that are not part of a build step.  Label
@@ -299,6 +301,9 @@ add_subdirectory(tests/blitz2)
 add_subdirectory(tests/ab3)
 add_subdirectory(tests/ted-ab)
 add_subdirectory(site/tests)
+# the environment file and the token list of the tests of the BASIC test model
+# (after the directories that define the programs and libraries it names)
+basic_test_model_env()
 
 # every PREV_INTENDED entry names a test that compares with the prev build
 if(PREV_REQUESTED)

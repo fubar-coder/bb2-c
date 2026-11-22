@@ -567,6 +567,8 @@ foreach(s IN LISTS srcs)
 endforeach()
 
 file(GLOB tests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*/*.bas)
+# the tests of the BASIC test model (AREA/ID.test.bas) are registered by their own step (below)
+list(FILTER tests EXCLUDE REGEX "\\.test\\.bas$")
 foreach(bas IN LISTS tests)
 	get_filename_component(dir ${bas} DIRECTORY)
 	get_filename_component(area ${dir} NAME)
@@ -583,6 +585,13 @@ foreach(bas IN LISTS tests)
 		bug_orig_test(${bas} ${name})
 	endif()
 endforeach()
+# the tests of the BASIC test model (AREA/ID.test.bas, cmake/basic-test-model.cmake),
+# registered by the build: ctest bug_orig_ID__CASE (and _originals for the cells with
+# original material); a test without a declared deviation of the original is broken.
+# Those of regression/ are port regression tests: regression_ID__CASE
+basic_test_register(bug_orig_ ${CMAKE_CURRENT_SOURCE_DIR} "*/*.test.bas" EXCLUDE "^(regression|selftest)/"
+	REQUIRE_DEVIATION)
+basic_test_register(regression_ ${CMAKE_CURRENT_SOURCE_DIR} "regression/*.test.bas")
 
 # the self test: an expectation equal to what the original does must be
 # reported as broken (exit status 3), not as a reproduced bug
@@ -618,6 +627,14 @@ endfunction()
 bug_orig_orig_test(bug_orig_orig_missing 2 ${orig_selftest}/nonexistent.orig)
 bug_orig_orig_test(bug_orig_orig_garbage 2 ${orig_selftest}/garbage.orig)
 bug_orig_orig_test(bug_orig_orig_broken 3 ${orig_selftest}/bug-orig-selftest-broken.orig)
+# a bug-orig test of the BASIC test model without a declared deviation is broken
+# although its checks pass (selftest/model-no-deviation.test.bas): it would not show its bug
+math(EXPR limit "${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME bug_orig_selftest_model_no_deviation COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+	--require-deviation --source ${orig_selftest}/model-no-deviation.test.bas --case a)
+set_tests_properties(bug_orig_selftest_model_no_deviation PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
+	"declares no deviation of the original.*model-no-deviation\\.test\\.bas: case a: BROKEN")
 # the same for a fixed test (fixed=, its recorded original kept): one that
 # meets the expectation is a broken test (3)
 set(pass ${CMAKE_CURRENT_BINARY_DIR}/bug_orig_fixed_equal_broken.pass)
