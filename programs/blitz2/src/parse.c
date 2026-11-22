@@ -1276,7 +1276,11 @@ static WORD addd0a0(WORD off)
 /* blitz2.s:8082 makeamul / 8084 makelmul - make long multiply for array
    calc.  DIFF: the asm read the dimension offset from its caller's stack
    frame (4(a7)); here it is the parameter `off`.
-   code: do a x(a5).l * d1 + d0.l  with d1 = D(regat), d0 = D(regat-1) */
+   code: do a x(a5).l * d1 + d0.l  with d1 = D(regat), d0 = D(regat-1)
+   Only the low word of the later index D(regat) is read (mulu): without
+   runtime error checking arrevalchk (eval.c, #1179) relies on it and does
+   not build the upper word; a change that reads the whole Long (indexes
+   above 65535) must change arrevalchk too. */
 static void makelmul(WORD off)
 {
     UWORD r = regat;

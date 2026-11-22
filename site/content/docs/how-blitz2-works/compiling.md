@@ -187,13 +187,16 @@ Quick, which overflows from `i=8192` on; give `i` the type Long there.
 
 ### Array indexes
 
-The first index of an array is always computed as a Long, so a Quick in
-it is rounded as in a Long computation: `a(q*10)` with `q=1.5` is element
-15 in the port (the original cut `q` first: element 10). A
-later index is computed differently with and without runtime error
-checking, a known original bug
-([#1179](https://github.com/fubar-coder/bb2-c/issues/1179)); until it is
-fixed, compute such an index into a Word or Long variable first.
+Every index of an array, the first and every later one, is computed as
+a Long, so a Quick in it is rounded as in a Long computation: `a(q*10)`
+and `b(1,q*10)` with `q=1.5` are element 15 in the port (the original cut
+`q` first in the first index: element 10). In the original a later index
+was computed as a Word without runtime error checking, so it could use
+another element than the checked program
+([#1179](https://github.com/fubar-coder/bb2-c/issues/1179)): with
+`y=200`, `g(1,y*200/2)` was element 52768 instead of 20000. In the port
+both use the same element. Without runtime error checking an index is
+not checked, as before: one above 65535 still wraps around.
 
 ## The layout of the executable
 

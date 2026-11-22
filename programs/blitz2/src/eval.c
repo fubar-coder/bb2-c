@@ -146,6 +146,20 @@ static struct {
    the original's value stays (rawcut: shifts, logic operators, Mod, Not,
    the end of the expression) */
 static BOOL rawq = FALSE;
+/* Fixed (#1179), no asm counterpart: the next maineval2 evaluates a later
+   array index (idxnext, set by arrevalchk), the current one does
+   (laterindex, saved by maineval2: a nested evaluation, a function
+   argument or the index of an index, starts without it), and the
+   operator doop runs has two Word values (wordop, eval5: both
+   forthent.wordval): dotimesl and dodivl compute it inline */
+static BOOL idxnext = FALSE;
+static BOOL laterindex = FALSE;
+static BOOL wordop = FALSE;
+/* Fixed (#1179), no asm counterpart: pc after the rounding of a raw Quick
+   that ended an evaluation (maineval2), and that evaluation's evaldepth:
+   its last instruction is the ext.l arrevalchk drops */
+static ULONG rawcutend = 0;
+static UWORD rawcutdepth = 0;
 /* the intrinsics (no asm counterpart, see intrinsics[]): the number of
    elements getelement2 has begun, and where the right side of the last
    assignment began (intrinsic_let: its evaldepth and the number of its
@@ -626,15 +640,51 @@ void sbtolong(void)
 
 /* =================================================== array index eval */
 
-/* blitz2.s:8809 arrevalchk - falls through into arrszchk */
+/* blitz2.s:8809 arrevalchk - falls through into arrszchk
+   Fixed (#1179): a later index (the second and every further one,
+   calcvar) is evaluated as a Long with and without runtime error
+   checking, as the first index.  The original evaluated it as a Word
+   without the checking (sharreval): with a Quick operand the two builds
+   computed differently (y=200: g(1,y*200/2) read element 52768 unchecked,
+   20000 checked; q=1.5: b(1,q ASL 4) 24 against 16), so the checked build
+   did not report the element the unchecked build used, and q AND 1.5 was
+   refused only by the checked build ("Illegal Operator for Type").  A
+   Word * or / of two Word values is computed inline (laterindex: dotimesl,
+   dodivl), in both builds.
+   The size check (arrszchk) stays the checked build's.  Without it only
+   the low word of a later index is read (makelmul, parse.c: mulu.w), so
+   the upper word is not built: a constant index is loaded with move.w,
+   and the final ext.l of an index that is one Byte, Word or Quick element
+   (its conversion to Long at this evaldepth) is left out - the code of
+   a(i,j), b(i,j,k), a(5,7) stays the original's byte for byte.  A change
+   of makelmul that reads the whole Long (indexes above 65535) must drop
+   this narrowing. */
 UWORD arrevalchk(void)
 {
+    ULONG at = pc;
+    struct offnode *off = firstoff;
     UWORD c;
 
-    if (!(debugga >> 8))
-        return sharreval();
+    idxnext = TRUE;
     c = arreval();
-    arrszchk();
+    if (debugga >> 8) {
+        arrszchk();
+        return c;
+    }
+    /* decided by the positions the code was emitted at, not by reading
+       it: a pass whose code is not stored (nomemleft) gets the same size */
+    if (firstoff == off && islongconst(at, pc)) {
+        if (!nomemleft) {           /* move.l #x,Dn -> move.w #x,Dn */
+            W_(at) |= 0x1000;
+            W_(at + 2) = W_(at + 4);
+        }
+        pc = at + 4;
+    } else if ((conv.end == pc && conv.to == T_LONG && conv.depth == evaldepth + 1
+                && (conv.from == T_BYTE || conv.from == T_WORD || conv.from == T_QUICK))
+               || (rawcutend == pc && rawcutdepth == evaldepth + 1)) {
+        pc -= 2;                    /* the element's ext.l */
+        conv.end = rawcutend = 0;
+    }
     return c;
 }
 
@@ -747,7 +797,10 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     WORD s_pushflag, s_sbgot, s_unknown;
     UWORD asked, t, c;
     BOOL s_rawq = rawq;
+    BOOL s_laterindex = laterindex;
 
+    laterindex = idxnext;           /* Fixed (#1179) */
+    idxnext = FALSE;
     thisstuse = stackuse;
     s_pushflag = pushflag;
     pushflag = push;
@@ -761,8 +814,11 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     evaldepth++;
     rawq = FALSE;
     c = eval3(&t);
-    if (rawq)                       /* Fixed (#1178): a raw Quick, floor */
+    if (rawq) {                     /* Fixed (#1178): a raw Quick, floor */
         quicktolong();
+        rawcutend = pc;             /* Fixed (#1179), for arrevalchk */
+        rawcutdepth = evaldepth;
+    }
     rawq = s_rawq;
     evaldepth--;
     if (asked && !unknown) {        /* type asked for */
@@ -800,6 +856,7 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     }
     pushflag = s_pushflag;                          /* .skip */
     thisstuse = s_thisstuse;
+    laterindex = s_laterindex;
     *type = t;
     return c;
 }
@@ -1016,9 +1073,12 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
             if (left)
                 convtypef(left, *type); /* could possibly fuck regat+1 ! */
             divzerochk(cur, *type);
+            wordop = laterindex && forthsp[-2].wordval && forthsp[-1].wordval;
             *type = doop(cur, *type);
+            wordop = FALSE;
         }
         lraw = FALSE;
+        forthsp[-2].wordval = 0;    /* Fixed (#1179): a result */
         /* O.K., lets check the forth stack to see if last two operators
            are constants!  if so, we can JSR the routine to optimize into a
            constant! */
@@ -1633,6 +1693,13 @@ UWORD dotimesq(UWORD t)
 /* blitz2.s:9413 dotimesl - falls through into domylib */
 UWORD dotimesl(UWORD t)
 {
+    /* Fixed (#1179): two Word values in a later index (wordop, eval5):
+       muls.w D(regat+1),D(regat), the exact 32-bit product, instead of
+       lmullib */
+    if (wordop) {
+        doplus2(0xc1c0);
+        return t;
+    }
     domylib(longmult);
     return t;
 }
@@ -1731,7 +1798,26 @@ UWORD dodivw(UWORD t)
 }
 
 /* blitz2.s:9483 dodivl */
-UWORD dodivl(UWORD t) { domylib(longdiv); return t; }
+UWORD dodivl(UWORD t)
+{
+    /* Fixed (#1179): two Word values in a later index (wordop, eval5):
+       divs.w instead of ldivlib.  The quotient of two sign-extended Words
+       fits in a Word except -32768 / -1 (V set, the dividend unchanged),
+       whose Long quotient 32768 is the dividend negated:
+       divs.w D(regat+1),D(regat) / bvc.s +4 / neg.l D(regat) / bra.s +2 /
+       ext.l D(regat).  A divisor 0 traps in the CPU as the Word division
+       does (with the debugger "Division by Zero", as ldivlib's divchk). */
+    if (wordop) {
+        doplus2(0x81c0);
+        pokewd(0x6804);
+        pokewd(0x4480 | regat);
+        pokewd(0x6002);
+        pokewd(0x48c0 | regat);
+        return t;
+    }
+    domylib(longdiv);
+    return t;
+}
 /* blitz2.s:9485 dodivq */
 UWORD dodivq(UWORD t) { domylib(quickdiv); return t; }
 /* blitz2.s:9487 dodivf */
@@ -2007,10 +2093,15 @@ static UWORD getelement2(UWORD *type)
         return bracket(type);
     if (c == '-') {
         negnext = !neg;
-        return negate(type);
+        c = negate(type);
+        forthsp[-1].wordval = 0;    /* Fixed (#1179): -(-32768) */
+        return c;
     }
-    if (c == TOK_ASM_NOT)
-        return notit(type);
+    if (c == TOK_ASM_NOT) {
+        c = notit(type);
+        forthsp[-1].wordval = 0;    /* Fixed (#1179): a result */
+        return c;
+    }
 
     f = forthsp;
     if (f >= &forthstack[32])       /* cmp.l #forthsp,a1 */
@@ -2020,23 +2111,32 @@ static UWORD getelement2(UWORD *type)
     f->firstoff = firstoff;
     f->lasta6q = L_(lasta6qf);
     f->lasta6w = lasta6;
-    f->zero = 0;
+    f->wordval = 0;
     f->constgot = 0;
     forthsp = f + 1;
 
     /* First, we have stuff which won't fuck constgot */
     litneg = neg;
-    if (tstnum(c))
-        return (UWORD)fetchnum(c, type, FALSE);
+    /* Fixed (#1179): an integer literal or #constant 0..32767 is a Word
+       value (iswordconst) */
+    if (tstnum(c)) {
+        c = (UWORD)fetchnum(c, type, FALSE);
+        f->wordval = iswordconst(f->pc, pc);
+        return c;
+    }
     if (c == '.')
         return (UWORD)fetchfrac(c, type, FALSE);
     litneg = FALSE;
-    if (c == '#')
-        return fetchconst(type);
-    if (c == '$')
-        return (UWORD)fetchhex(type, FALSE);
-    if (c == '%')
-        return (UWORD)fetchbin(type, FALSE);
+    if (c == '#' || c == '$' || c == '%') {
+        if (c == '#')
+            c = fetchconst(type);
+        else if (c == '$')
+            c = (UWORD)fetchhex(type, FALSE);
+        else
+            c = (UWORD)fetchbin(type, FALSE);
+        f->wordval = iswordconst(f->pc, pc);
+        return c;
+    }
     if (c == TOK_SIZEOF)
         return fetchsize(type);
     if (c == TOK_PI)
@@ -3230,6 +3330,9 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
 {
     BOOL byte = *type == T_BYTE;
 
+    /* Fixed (#1179): a Byte or Word value (for eval5's inline Word * and
+       / of a later index) */
+    forthsp[-1].wordval = byte || *type == T_WORD;
     /* Fixed (#978): a byte value is fetched sign-extended ($90 ->
        $FF90), while consttype2 takes a constant from 128 to 255 as a
        positive word ($0090): the original's compare of "a.b=$90" with

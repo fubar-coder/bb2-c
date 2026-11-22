@@ -41,6 +41,8 @@ static WORD numfloat;   /* asm d6: 0 int, != 0 float */
 /* Fixed (#978): the integer constant fetchnum3 emitted last (move.w/.l
    #x,Dn from constat to constend; 0: none), for isbyteconst */
 static ULONG constat, constend;
+/* Fixed (#1179): its value (as emitted), for iswordconst */
+static ULONG constval;
 
 /* No asm counterpart (#1186, a port defect of the #1177 fix): a decimal
    literal with a point or an exponent that the byte sizing of consttype2
@@ -270,6 +272,7 @@ static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data)
     constat = constend = 0;
     if (!numfloat && *type != T_FLOAT)
         constat = at;
+    constval = val;
     switch (*type) {
     case T_BYTE:
     case T_WORD:
@@ -344,6 +347,18 @@ BOOL isbyteconst(ULONG from, ULONG to)
             v >>= 16;                           /* q: x.0 */
     }
     return v >= 128 && v <= 255;
+}
+
+BOOL islongconst(ULONG from, ULONG to)
+{
+    /* by the positions, not the code: the same in a pass whose code is
+       not stored (nomemleft) */
+    return constat && constat == from && constend == to && to - from == 6;
+}
+
+BOOL iswordconst(ULONG from, ULONG to)
+{
+    return islongconst(from, to) && constval <= 32767;
 }
 
 void byteconstext(ULONG at)
