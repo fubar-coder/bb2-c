@@ -846,3 +846,43 @@ void em_classified_free(struct em_classified *c)
     free(c->report);
     memset(c, 0, sizeof *c);
 }
+
+int em_classes(const struct em_matrix *m, const struct em_table *t, struct em_class **out, char **errors)
+{
+    const struct em_cell **idx = NULL;
+    struct cls *ks = NULL;
+    struct em_class *c;
+    int rc;
+
+    *out = NULL;
+    rc = run_classes(m, t, &ks, &idx, errors);
+    if (rc)
+        return rc;
+    c = calloc(t->n ? t->n : 1, sizeof *c);
+    if (!c) {
+        free(idx);
+        free(ks);
+        return -1;
+    }
+    for (size_t i = 0; i < t->n; i++) {
+        c[i].cell = ks[i].cell;
+        memcpy(c[i].cls, ks[i].cls, sizeof c[i].cls);
+        memcpy(c[i].issues, ks[i].issues, sizeof c[i].issues);
+        c[i].q = ks[i].q;
+        c[i].base = ks[i].base;
+        c[i].chk = ks[i].chk;
+        memcpy(c[i].exp, ks[i].exp, sizeof c[i].exp);
+        memcpy(c[i].exp_on, ks[i].exp_on, sizeof c[i].exp_on);
+        if (!strcmp(ks[i].cls, "noncompile")) {
+            /* refused by 1.95: the fixed rules' value (refused too, or
+               what a fix makes of it) */
+            memcpy(c[i].exp, ks[i].fixed.text, sizeof c[i].exp);
+            if (ks[i].chk)
+                memcpy(c[i].exp_on, ks[i].fixed_on.text, sizeof c[i].exp_on);
+        }
+    }
+    free(idx);
+    free(ks);
+    *out = c;
+    return 0;
+}
