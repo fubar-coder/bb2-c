@@ -1,6 +1,6 @@
 # Tasks
 
-**Order** (recorded; proposal, "Dependency and order"): starts after `quick-long-arithmetic` (#1178) is merged, including its generator change for a fix (its task 1.2, T1); before `compare-right-operand` (#1182), whose tasks.md header names this change ("Starts after `quick-long-arithmetic` (#1178) and the change of #1179 are merged"), and before `byte-fraction-constant`, `power-negative-base` and the tree (`expr-tree-*`). Not in parallel with any change that edits `programs/blitz2/src/eval.c` (also `compiler-function-optimizer`, design decision 8). Open question 1 (AB3 mode) is answered before task 2.1 (worked with: both modes).
+**Order** (recorded; proposal, "Dependency and order"): starts after `quick-long-arithmetic` (#1178) is merged, including its generator change for a fix (its task 1.2, T1); before `compare-right-operand` (#1182), whose tasks.md header names this change ("Starts after `quick-long-arithmetic` (#1178) and the change of #1179 are merged"), and before `byte-fraction-constant`, `power-negative-base` and the tree (`expr-tree-*`). Not in parallel with any change that edits `programs/blitz2/src/eval.c` (also `compiler-function-optimizer`, design decision 8). AB3 mode: both modes, the user's answer (proposal, "Decisions of the user", 1).
 
 **Regression test:** the expression matrix (`expression-type-matrix`, `tools/exprmatrix`); fixed matrix cells stay in their bug-orig tests with `; @fixed #1179` (T1, 2026-11-22, "Last answers of the session"). Fix workflow: CLAUDE.md rule 4, `docs/development.md` "Fixing an original bug": the bug-orig tests REPRODUCED before the fix, FIXED after it.
 
@@ -12,7 +12,7 @@
 
 ## 2. Implementation
 
-- [ ] 2.1 `arrevalchk`: `arreval` in both builds, `arrszchk` only with `debugga >> 8` (design decision 1); the AB3-mode condition only if open question 1 is answered "BB2 mode only". Verify: 1.1 and 1.2 give FIXED after `; @fixed #1179` (task 2.5); the matrix's checked `i2` sources unchanged.
+- [ ] 2.1 `arrevalchk`: `arreval` in both builds, `arrszchk` only with `debugga >> 8` (design decision 1) (both modes, no AB3-mode condition: proposal, "Decisions of the user", 1). Verify: 1.1 and 1.2 give FIXED after `; @fixed #1179` (task 2.5); the matrix's checked `i2` sources unchanged.
 - [ ] 2.2 The Word-value mark and the inline forms (design decisions 2 and 3): the mark per `forthstack` entry (`varcont`, `getelement2`, cleared by operator results and unary minus), the later-index flag in `maineval2` (saved and restored), `dotimesl` -> `muls.w`, `dodivl` -> `divs.w` with the overflow fall-back (`bvs` -> `neg.l`, else `ext.l`), in both builds, only in a later index. Verify: the hand-written test's `jw*kw` and `wv/wm` lines; the code test of 2.4 shows no JSR for the Word forms.
 - [ ] 2.3 The unchecked narrowing (design decision 4): `move.l #n,Dn` -> `move.w #n,Dn` checked by opcode; the final `ext.l` of a one-element Byte/Word/Quick index dropped when it is the element's conversion at this depth; on top of #1178 the end conversion of a raw Quick found as well. Comments at `arrevalchk` and at `makelmul` (`parse.c:1279`) that each relies on the other (only the low word of a later index is read without the checking). Verify: the code test of 2.4: `a(iw,jw)`, `a(5,7)`, `b(iw,jw,kw)`, `a(iq,jq)` have today's byte counts.
 - [ ] 2.4 The code test `tests/blitz2/array-index-code` and `array-index-code-runerrs` (design decision 5: `?b-?a` byte counts and JSR counts per form; header comment naming #1179). Its `.expect` from the port after 2.1-2.3; the byte counts of the forms A0 keeps checked against a run of the same source with the port of `main` before this change (equal). Verify: `ctest --preset all -R 'blitz2_array-index-code'` passes; the comparison with `main` listed in the report.
@@ -28,7 +28,7 @@
 
 ## 4. Documents
 
-- [ ] 4.1 `docs/blitz2/expression-types.md` (the item "Array indexes", `:222`: the fixed rule with before/after), `docs/blitz2/deviations.md` (kind-F row for #1179: the values, the new refusal, the A0 code), `docs/ab3/variant.md` (the row on array indexes, point 3, from task 1.3 and the answer to open question 1), `site/content/docs/how-blitz2-works/compiling.md` (section "Array indexes": the later index as the first, the workaround sentence goes). Verify: the coordinator's review; links resolve.
+- [ ] 4.1 `docs/blitz2/expression-types.md` (the item "Array indexes", `:222`: the fixed rule with before/after), `docs/blitz2/deviations.md` (kind-F row for #1179: the values, the new refusal, the A0 code), `docs/ab3/variant.md` (the row on array indexes, point 3, from task 1.3 and the user's decision 1: both modes), `site/content/docs/how-blitz2-works/compiling.md` (section "Array indexes": the later index as the first, the workaround sentence goes). Verify: the coordinator's review; links resolve.
 
 ## 5. Commit and report
 

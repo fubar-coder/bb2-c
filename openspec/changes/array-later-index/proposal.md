@@ -28,7 +28,7 @@ The variants and their measured cost: `~/.local/share/bb2-c-work/tr-1179-variant
   * without the checking: a later index whose Word and Long evaluations differ after #1178: a Quick calculation beyond the Quick range (`g(1,y*200/2)` becomes `g(1,20000)`), a shift or bit operator with a Quick (`b(1,q ASL 4)` becomes `b(1,16)`, the matrix's 14 cells of `compiler-expr-1179-i2-I-u-01`), and a bit operator or shift with a fraction constant, which becomes the compile error "Illegal Operator for Type" that the checked build and the first index give today (the matrix's 7 tests `compiler-expr-1179-refused-*`; on the CD no source changes its compile result, variants file);
   * the executables of programs compiled without the checking whose later index has an operator with Byte, Word or Quick operands (+2 to +8 bytes; the CD: 1 executable of the 496 that compile, `CAFFEINEFREE.BB`, +8, measured on main before #1178 and counted again in task 3.3), and of programs with a Word `*` or `/` in a later index in either build (no CD source has one);
   * programs compiled with the checking keep their values.
-- **Documentation:** `docs/blitz2/expression-types.md` (the item "Array indexes", `:222`), `docs/blitz2/deviations.md` (kind-F row), the site section "Array indexes" (`site/content/docs/how-blitz2-works/compiling.md:184`), `docs/ab3/variant.md` (the row on array indexes, point 3, if AB3 mode gets the fix: open question 1), a `BUG(orig) (#1179)` comment at `arrevalchk` with the red tests, `Fixed (#1179)` with the fix.
+- **Documentation:** `docs/blitz2/expression-types.md` (the item "Array indexes", `:222`), `docs/blitz2/deviations.md` (kind-F row), the site section "Array indexes" (`site/content/docs/how-blitz2-works/compiling.md:184`), `docs/ab3/variant.md` (the row on array indexes, point 3, AB3 mode gets the fix: decision 1 of the user), a `BUG(orig) (#1179)` comment at `arrevalchk` with the red tests, `Fixed (#1179)` with the fix.
 
 ## Not in scope
 
@@ -39,9 +39,10 @@ The variants and their measured cost: `~/.local/share/bb2-c-work/tr-1179-variant
 - Further index savings that the expression tree allows (an unchecked index made only of `+ - AND OR` and left shifts needs no extension at all: variants file, "Prototype notes"); `MOD` and results known to fit in a Word are not marked as Word values.
 - Quick arithmetic (#1178), comparisons as right operand (#1182), order independence (#1180).
 
-## Open questions
+## Decisions of the user (2026-11-22)
 
-1. **AB3 mode** (`blitz2-ab3`, the same `eval.c`): the fix in both modes (recommended), as decided for #1178 ("Neue Regel auch in AB3 (Recommended)", 2026-11-21, "quick-long-arithmetic: first open questions"), or BB2 mode only. That answer was given for #1178; for this case it is the user's (worked with: both modes; AmiBlitz3 v3.14.0 itself evaluates a later index as a Word without the checking unless its 68020+ option is set: a row in `docs/ab3/variant.md`).
+1. **AB3 mode** (`blitz2-ab3`, the same `eval.c`; answered with the options shown, scope: this case; `~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers"): "Beide Modi (Recommended)" -> one code path, the fix in BB2 and AB3 mode; AmiBlitz3 v3.14.0 itself evaluates a later index as a Word without the checking unless its 68020+ option is set: a row in `docs/ab3/variant.md`.
+2. **The new compile error** in a later index without the checking (`ja(1,vq AND 1.5)`, the shifts with a fraction constant; same entry): "Ja, mit new-errors.md (Recommended)" -> it comes with the fix, with an entry in `new-errors.md`.
 
 ## Capabilities
 

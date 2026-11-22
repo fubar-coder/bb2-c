@@ -46,9 +46,9 @@ Without the checking, after `arreval` of a later index: if the emitted code is e
 The cost table was measured before #1178. A Quick operand in a later index is computed by #1178's Long rules after both changes (for example `q*4` with a Quick and a constant: the new mixed routine of `lmullib` instead of today's Quick multiplication in the Word evaluation), which the variants file could not measure ("Open"). Task 3.2 measures the forms of the cost table again on top of #1178 with the analyst's benchmark (`tr-1179-variants-cost/bench/abench.bas`, `abytes.bas`). D-007 ("ask when unsure"): if a form gets slower than today's unchecked code by more than the A0 table's +16 cycles (the `m(x+21 AND 255,y+j AND 63)` row), the numbers go to the coordinator for the user before the fix commit (task 3.2 stops there).
 `Point: Quick multiplications in a later index get slower after #1178 + #1179 than today's unchecked Word evaluation — L2 Possible / I1 Low (speed alone) / E1 Assumption → Monitor` (mine); the gate of task 3.2 raises the evidence, and D-007 puts the result to the user if it is a slow-down.
 
-### 7. AB3 mode (open question 1)
+### 7. AB3 mode (decided by the user: both modes)
 
-One core: without a mode condition the fix applies in AB3 mode too. AmiBlitz3 v3.14.0 evaluates a later index as a Word without the checking unless its 68020+ option (`optimize_integer`) is set (read from the source, not run; `docs/ab3/variant.md`, row on array indexes, point 3). Whether #1178's AB3 answer is used here is the user's (D-011 step 2). Worked with: both modes; task 4.1 writes the row.
+One core: without a mode condition the fix applies in AB3 mode too. AmiBlitz3 v3.14.0 evaluates a later index as a Word without the checking unless its 68020+ option (`optimize_integer`) is set (read from the source, not run; `docs/ab3/variant.md`, row on array indexes, point 3). The user's answer (proposal, "Decisions of the user", 1): both modes; task 4.1 writes the row.
 
 ### 8. Overlap with other open changes
 
@@ -76,4 +76,4 @@ By precedent (no rating): direction A and no release check ("#1179, CRC findings
 
 ## Open Questions
 
-* AB3 mode (proposal, open question 1): answered before task 2.1; it changes only whether a mode condition is added and which `docs/ab3/variant.md` text is written.
+* None. AB3 mode is answered (proposal, "Decisions of the user", 1: both modes, no mode condition).
