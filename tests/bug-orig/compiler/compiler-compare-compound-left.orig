@@ -4,9 +4,9 @@ done
 [compile]
 ok
 [run]
-01 r.l=(q*2>2.5) 0
-02 r.l=(q+q>2) 0
-03 r.l=(q*2=3) 0
+01 r.l=(q*2>2.4) 0
+02 r.l=(q+q>2.4) 0
+03 r.l=(q*2=2.5) 0
 rc=0
 [blitz2]
 rc=0
