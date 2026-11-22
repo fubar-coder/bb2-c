@@ -33,13 +33,20 @@ foreach(t testmatrix testassert)
 endforeach()
 # the preprocessor's test also holds the example of tests/README.md
 target_compile_definitions(test_testpp PRIVATE
-	TESTPP_README="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/README.md")
+	TESTPP_README="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/README.md"
+	TESTPP_NUMBERING="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/blitz2/model-numbering.test.bas")
 # the form of the Blitz test sources (lib/testpp, testform.c)
 add_executable(test_testform test_testform.cpp)
 target_link_libraries(test_testform PRIVATE lib_testpp snitch::snitch)
 target_compile_options(test_testform PRIVATE -Wall -Wextra)
 set_target_properties(test_testform PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME testform COMMAND test_testform)
+# the driver of a run (lib/testpp, testdriver.c)
+add_executable(test_testdriver test_testdriver.cpp)
+target_link_libraries(test_testdriver PRIVATE lib_testpp snitch::snitch)
+target_compile_options(test_testdriver PRIVATE -Wall -Wextra)
+set_target_properties(test_testdriver PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME testdriver COMMAND test_testdriver)
 # the examples of tests/README.md, "The run configuration"
 add_executable(test_testconf_readme test_testconf_readme.cpp)
 target_link_libraries(test_testconf_readme PRIVATE lib_testconf snitch::snitch)

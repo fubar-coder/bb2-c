@@ -11,7 +11,9 @@
 #
 # LIST: one line per test, ID|KIND|PASS1|PASS2|RUN1|RUN2|ORIG (KIND blitz
 # or ted; PASSk the pass files of the two runs, RUNk the observations they
-# write, ORIG the test's ID.orig).  FILTER: only these tests (IDs or globs
+# write, ORIG the test's ID.orig).  A test of the BASIC test model (an
+# ID.test.bas in ORIG's directory) is never run or written: its
+# expectation is in its source and configuration.  FILTER: only these tests (IDs or globs
 # with * and ?, separated by , or ;); the others are neither run nor
 # touched.  PARALLEL: tests recorded at the same time (both runs of each at
 # once; the emulator slots limit the sessions).  FAKE: no runner, the runs
@@ -78,6 +80,15 @@ foreach(e IN LISTS entries)
 				set(take TRUE)
 			endif()
 		endforeach()
+	endif()
+	# a test of the BASIC test model (ID.test.bas next to where its ID.orig
+	# would be) has no recorded original: its expectation is in its source
+	# and configuration (openspec change bug-orig-basic-tests)
+	list(GET f 6 orig)
+	get_filename_component(odir "${orig}" DIRECTORY)
+	if(take AND EXISTS ${odir}/${id}.test.bas)
+		message(STATUS "${id}: a test of the BASIC test model (${id}.test.bas): nothing to record")
+		set(take FALSE)
 	endif()
 	if(take)
 		list(APPEND selected "${e}")

@@ -1,0 +1,37 @@
+# model-numbering.test.bas: the three compilers with the CD's libraries, the
+# port with the C libraries; every check's expected value by its name (a
+# check an assertion names is out of the default "every check passed", so
+# its verdict is asserted too)
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+libs = ["cd", "clib"]
+
+[asserts]
+"check.init.base" = "== ok"
+"check.init.base.expected" = "== 10"
+"check.end.final" = "== ok"
+"check.end.final.expected" = "== 1000"
+
+[asserts."case=first"]
+"check.first.one" = "== ok"
+"check.first.one.expected" = "== 101"
+"check.first.loop" = "== ok"
+"check.first.loop.expected" = "== 111"
+"check.first.twice" = "== ok"
+"check.first.twice.expected" = "== 4"
+"check.twice.inner" = "== ok"
+"check.twice.inner.expected" = "== 202"
+"check.count_up.arg" = "== ok"
+"check.count_up.arg.expected" = "== 5"
+"check.first.str" = "== ok"
+"check.first.str.expected" = "== \"ab\""
+
+[asserts."case=second"]
+"check.second.two" = "== ok"
+"check.second.two.expected" = "== 102"
+"check.second.skipped" = "== not-run"
+"check.count_up.arg" = "== ok"
+"check.count_up.arg.expected" = "== 7"
+"check.second.base_kept" = "== ok"

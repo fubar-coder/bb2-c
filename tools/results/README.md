@@ -546,6 +546,16 @@ OpenSpec change `bug-orig-test-model`, design D6): one per section of
 is `ID|SECTION||1 [fixed #N]` and the recorded original the pair
 `ID|SECTION|orig|1 [orig]` / `[fixed #N]`. Adding the header and editing
 `ID.expect` are then cases of issue N; a malformed test fails (2).
+A test of the BASIC test model (`AREA/ID.test.bas` with its
+`ID.test.toml`; OpenSpec change `bug-orig-basic-tests`) is projected onto
+one case per check of the source (`ID|check.NS.NAME||1`, valued by its
+macro and arguments), one per key of its `ID.test.toml`
+(`ID|toml:TABLE.KEY||1`) and, for `fixed-orig = N` or `fixed = N`, the
+case `ID|fixed-orig||1 [fixed #N]`; the `tests.toml` of the tree and of
+its areas give `AREA/tests.toml|toml:TABLE.KEY||1`. Setting
+`fixed-orig = N` is then the only case of issue N; a changed check,
+assertion, deviation or setting of any test is reported with the test,
+the namespace and the check or key.
 With `--corpus` the two directories are the expected data of the corpus
 (`tests/corpus/expect`, one directory per pass; `tools/lib/corpusexpect`,
 OpenSpec change `corpus-test-model`, design D5): each file is the case

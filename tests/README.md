@@ -88,14 +88,17 @@ a string literal, under which the check is reported:
 | `!Require{COND}` | a precondition: `COND` is not 0; else the block ends at once |
 | `!ExpectError{"MESSAGE"}` | announces the runtime error the program expects next |
 
-`COND` of `!Check` and `!Require` is evaluated in a Long context: a Quick
-variable or function value fetched while the type so far is Long (the
-Long parameter, or a Long left operand) is cut to a Long at once; Floats
-and literals with a fraction are not cut. So with `q.q=1.5`
-`!Check{q>1}` fails (1>1), as `If l<q` with `l.l=1` is false. Check a
-quick value with `!CheckQEq` and a float value with `!CheckFltNear`;
-their routines take quick and float parameters, so their values are
-evaluated in that type.
+`COND` of `!Check` and `!Require` is evaluated in a Long context. With
+the original compilers a Quick variable or function value fetched while
+the type so far is Long (the Long parameter, or a Long left operand) is
+cut to a Long at once (#1177; Floats and literals with a fraction are not
+cut): with `q.q=1.5` `!Check{q>1}` fails there (1>1), as `If l<q` with
+`l.l=1` is false; the port compares a single operand with its own value
+since the fix of #1177, but a compound left operand still in the type of
+the context (#1183, [Writing a test source](#writing-a-test-source)).
+Check a quick value with `!CheckQEq` and a float value with
+`!CheckFltNear`; their routines take quick and float parameters, so
+their values are evaluated in that type.
 
 ```
 !TestBatchInit
@@ -449,14 +452,202 @@ fixed-orig = 265
 "check.frames_maximum.width.actual" = "== 0"
 ```
 
-**The environment file** of a build (written by CMake) gives the
-placeholders and the directory where the search for `root = true` stops:
+**The environment file** of a build (written by CMake,
+`cmake/basic-test-model.cmake`: `build/amiga/tests/model-env.toml`) gives
+the placeholders and the directory where the search for `root = true`
+stops, and in its table `runner` what only the runner uses (the
+compilers, the library sets, the programs of a session, the test library
+and its macro text, the tokeniser, the RWE user libraries, the work
+directory and the defaults of `timeout` and the hang check; the keys:
+`tests/corpus/runner/caserun.h`):
 
 ```toml
 top = "/path/of/the/repository"
 [placeholders]
 TESTDATA = "/path/of/the/test/data"
+[runner]
+timeout = "90"
 ```
+
+## Tests that judge themselves
+
+A Blitz test of the **BASIC test model** (changes `basic-testlib`,
+`basic-test-runner`; for the bug-orig tests `bug-orig-basic-tests`) is a
+source `ID.test.bas` whose program checks the correct behaviour itself
+with the test library, and its run configuration. It has no `ID.expect`
+and no recorded original: what a run must show is in the source (the
+checks and their expected values) and in the configuration (the
+assertions, and for an original bug the declared deviations of the
+cells with the faulty part). This section is the guide for writing one;
+the contract is in [Blitz test sources and the result
+file](#blitz-test-sources-and-the-result-file), the keys in [The run
+configuration](#the-run-configuration).
+
+### Files and names
+
+| File | |
+|---|---|
+| `DIR/ID.test.bas` | the source: declarations and blocks (below); `ID` lower-case kebab-case |
+| `DIR/ID.test.toml` | its own configuration (optional): the run settings, the matrix, the assertions; `fixed-orig`/`fixed` and the deviations only here |
+| `DIR/tests.toml` | a directory's configuration, inherited by the tests below it |
+| `tests/tests.toml` | the root (`root = true`): the search for configuration files stops here |
+
+The tests of `tests/bug-orig/AREA/` and `tests/blitz2/` are found by
+their file names: adding `ID.test.bas` touches no CMake file. The build
+step of the directory (`tools/testreg`, `cmake/basic-test-model.cmake`)
+reads every source and configuration, checks them (the form of the
+source, every key, the queries against the checks of the source) and
+registers one ctest test per case and side: `PREFIX_ID__CASE` for the
+cells without original material (the port with the C libraries; label
+`emulator`, and `bug-orig` too for a case with a declared deviation of an
+open bug), `PREFIX_ID__CASE_originals` for the cells with it (an
+original compiler or the CD's libraries; label `originals`). `PREFIX` is
+`bug_orig_` (`tests/bug-orig`, `regression/` `regression_`) or `blitz2_`;
+`-` of the id becomes `_`. The list is complete after the build, as with
+`gtest_discover_tests`: `ctest -N` before it does not show a new test.
+A changed source or configuration file registers again in the next
+build. A bug-orig test (all areas but `regression/`) must declare a
+deviation of the original; without one it is BROKEN.
+
+### Writing a test source
+
+A source holds declarations and blocks, nothing else (the build refuses
+the rest, naming file and line):
+
+* **Blocks**, each macro on a line of its own (a comment may follow):
+  at most one batch init, one or more cases, at most one batch end, in
+  this order. A case is a subroutine the driver calls (`Gosub`), so
+  `SetErr`, `SetInt`, local `Dim List`s and labels work in it; a loop,
+  `Select` or block `If` must not cross the start or end of a block, and
+  neither may `CNIF`/`CEND` (a whole block may stand inside one).
+* **Outside the blocks** only declarations: constants (`#NAME=...`),
+  `Macro`, `Statement` and `Function` definitions, `NEWTYPE`, `DEFTYPE`,
+  the directives `CNIF`, `CSIF`, `CELSE`, `CEND`, `CERR`, `OPTIMIZE`,
+  `Syntax`, `WBStartup`, `NoCli`, `CloseEd`, labels and the data
+  statements (`Data`, `Dc`, `Dcb`, `Even`, `IncBin`). A helper is a
+  procedure or a subroutine inside a case, never a `Gosub` target outside
+  the blocks; `INCLUDE`/`XINCLUDE` and calls of the source's own macros
+  are refused there (their text would hide checks from the numbering).
+* **Names**: a case name is `[a-z][a-z0-9_]*`, holds no `__`, does not
+  end in `_originals` and is no token of any library set (case ignored;
+  `on`, `add` or `count` are tokens). A check that a configuration names
+  needs a name (the last argument, a string literal); a name is unique in
+  its namespace (the case, the procedure, `init`, `end`).
+* **What runs**: the driver calls the batch init only if a case is
+  selected, then the case of the test, then the batch end. Cases share
+  the program's globals (they are subroutines of one program), so each
+  case sets up what it uses; the batch init only provides data the cases
+  read. A check in a procedure belongs to the case that runs it; a
+  procedure with checks must not be named like a case, `init` or `end`.
+* **Preconditions and checks**: `!Require{COND}` is the setup (a failed
+  one ends the block at once: the case is BROKEN, the tested behaviour
+  was not reached; in the batch init it breaks every case); `!Check...`
+  is the tested behaviour (a failed one fails the case). An expected
+  runtime error is announced with `!ExpectError{"MESSAGE"}` right before
+  the statement that raises it (the configuration needs
+  `runtime-errors = "on"`); the runner matches it with a requester whose
+  text holds the message, and the case may end there.
+* **Types**: `!CheckEq` compares longs, `!CheckQEq` quicks (exactly),
+  `!CheckFltNear` floats within a delta, `!CheckStrEq` strings. The
+  condition of `!Check` and `!Require` is a long; with the original
+  compilers a Quick operand in it is cut to a long (#1177, fixed in the
+  port), so a test that runs with them checks a quick value with
+  `!CheckQEq` and a float value with `!CheckFltNear`, never a quick or
+  float comparison with `!Check`.
+* **Acts that depend on a register or the string buffer**: set it in the
+  statement right before the act, with no check between the two (the
+  library keeps `d2`-`d7` and `a2`-`a6`, but not what the compiler leaves
+  in other registers or in the string buffer).
+* **Placeholders**: `@LINE@` (the source line), `@CASE@` (the case the
+  line stands in), `@TEST@` (the id) and `@TESTDATA@` (`CORPUS:data`,
+  where `files = ["data/NAME|@TESTDATA@/NAME"]` stages test data) are
+  replaced in code and strings, not in comments; any other `@NAME@` is
+  refused.
+
+Known limits of the compiler that a test meets (open issues):
+
+* **#1183**: a comparison whose left operand is compound (`q*2>2.4`,
+  `q+q>2.4` with a Quick `q`) is computed in the type of its context,
+  so a Quick inside it is cut while the type so far is Long: in
+  `!Check{q*2>2.4}` (the Long condition) and in `r.l=(q*2>2.4)` alike.
+  Assign the compound operand to a Quick variable first
+  (`t.q=q*2 : !Check{t>2.4}`), or check the value (`!CheckQEq{q*2,2.5}`).
+* **#1197**: `MOD` with a negative dividend and a negative divisor gives
+  a remainder outside the divisor's range (`-7 MOD -3` is -4); with a
+  positive divisor the remainder is 0..b-1 (`-7 MOD 3` is 2).
+
+### An example
+
+The build runs this example (ctest `blitz2_model_readme_example`: the two
+blocks written as `readme-example.test.bas` and its `.test.toml`, every
+case on the port side; `tests/blitz2/readme-model-example.cmake`):
+
+```basic-test
+; readme-example: a batch init, two cases and a procedure that checks
+Statement check_width{w.l}
+  !CheckEq{w,16,"width"}
+End Statement
+
+!TestBatchInit
+  w.l=16
+  !Require{w=16,"set_up"}
+!EndTestBatchInit
+
+!TestCase{sizes}
+  check_width{w}
+  q.q=w/32
+  !CheckQEq{q,0.5,"half"}
+  !CheckFltNear{w*1.5,24,0.01,"float"}
+  a$="a"+Chr$(9)+"b"
+  !CheckStrEq{a$,"a"+Chr$(9)+"b","tab"}
+!EndTestCase
+
+!TestCase{out_of_range}               ; the runtime error is the correct result
+  Dim a(5)
+  !ExpectError{"Array Subscript out of Range"}
+  a(9)=1
+!EndTestCase
+```
+
+```basic-test-toml
+# readme-example.test.toml: runtime error checking for !ExpectError, and
+# the cells with the CD's libraries (the side originals) and the C libraries
+runtime-errors = "on"
+
+[matrix]
+libs = ["cd", "clib"]
+```
+
+In `tests/blitz2/` this would be the ctest tests `blitz2_readme_example__sizes`,
+`blitz2_readme_example__sizes_originals`, `blitz2_readme_example__out_of_range`
+and `blitz2_readme_example__out_of_range_originals`.
+
+### Running and reading a test
+
+`ctest -R ID__` runs the tests of a source; one test runs the cells of
+its side in as few emulator sessions as possible (`corpusrun case`,
+`tests/corpus/runner/README.md`). The report names every cell that did
+not pass, each failed check with its case, name, `ID.test.bas:LINE`,
+expression and the expected and actual value, every assertion that does
+not hold with the file and line it comes from, a compile error at its
+line of `ID.test.bas`, and the verdict (exit status 0 passed, 1
+reproduced, 2 error, 3 broken, 4 failed, 77 skipped). The run's files
+(the driver, each cell's `CORPUS:` with the compiler's log and the
+result file `out/test.res`) stay in `build/amiga/tests/model-runs/` when
+the case did not pass. Two diagnostics run nothing:
+
+```
+build/amiga/host/corpus-runner/corpusrun case --env build/amiga/tests/model-env.toml \
+    --source tests/blitz2/model-numbering.test.bas --print-config
+build/amiga/host/corpus-runner/corpusrun case --env build/amiga/tests/model-env.toml \
+    --source tests/blitz2/model-numbering.test.bas --case first --print-driver
+```
+
+The first prints the effective configuration: every key with its value
+and the file and line it comes from, the assertions and deviations, the
+defaults, the axes and the cells with their side. The second prints the
+driver of a case (the macro text, `TLBegin`, the preprocessed source,
+the calls).
 
 ## Original material and presets
 
@@ -2159,8 +2350,11 @@ expectation grows by one.
 observation of the original, committed, so that the tests need no session
 of it; in the terms of the shared test model (`docs/testing.md`) the
 `[orig]` value of the test, `ID.expect` the expected value (the
-`[fixed #N]` value once the bug is fixed). Every bug-orig test has one,
-open or fixed; port regression tests have none. Format: the sections of
+`[fixed #N]` value once the bug is fixed). Every bug-orig test of the
+old form has one, open or fixed; port regression tests have none, and
+neither has a test of the BASIC test model (`ID.test.bas`), whose
+expectation is in its source and configuration: `bug-orig-record` never
+runs or writes one. Format: the sections of
 the observation as above (`[session]`, `[compile]`, `[run]`, `[blitz2]`,
 `[log]`), raw, with a first line `# NOTE` that says which original it is
 (blitz2 1.95 built from `blitz2.s`, or the CD's 2.10 for `; @rwe`
@@ -2894,6 +3088,11 @@ rules for what a change of a file selects are in
 * a header of the compilers: each source whose object depends on it
   counts as changed as a whole, by its own rule (a measured source: the
   tests of all its functions; glue, which is not measured: all tests);
+* a source of the BASIC test model (`ID.test.bas`) or its own
+  `ID.test.toml`: the tests of its cases; a `tests.toml`: the tests of
+  the model whose source is in its directory or below (`tests/tests.toml`,
+  the root: all of them) - by the `--source` of the tests' commands
+  (selector `model`);
 * a test source or expect file: the tests of the suites that read it (by
   name or label); a host test source: the host tests; the Amiga helper
   programs of the suites (`tests/*/amiga/`), which several suites use:

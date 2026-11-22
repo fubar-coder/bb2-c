@@ -343,6 +343,23 @@ TEST_CASE("testconf: the environment file", "[testconf]")
     tc_env_free(&e);
     CHECK(tc_env_parse("env.toml", "top = 1\n", &e, err, sizeof err) == -1);
     tc_env_free(&e);
+    // the table of the runner: strings under any key, not placeholders
+    CHECK(tc_env_parse("env.toml", "[runner]\nblitz2 = \"/b/blitz2\"\nclib-acidlibs = \"/b/a\"\n", &e, err,
+                       sizeof err)
+          == 0);
+    CHECK(e.nph == 0);
+    REQUIRE(e.nrun == 2);
+    CHECK(!strcmp(tc_env_runner(&e, "blitz2"), "/b/blitz2"));
+    CHECK(!strcmp(tc_env_runner(&e, "clib-acidlibs"), "/b/a"));
+    CHECK(tc_env_runner(&e, "ted") == nullptr);
+    CHECK(tc_env_runner(nullptr, "ted") == nullptr);
+    tc_env_free(&e);
+    CHECK(tc_env_parse("env.toml", "[runner]\ntimeout = 90\n", &e, err, sizeof err) == -1);
+    CHECK(!strcmp(err, "env.toml:2: the runner's timeout must be a string"));
+    tc_env_free(&e);
+    CHECK(tc_env_parse("env.toml", "[runner.x]\n", &e, err, sizeof err) == -1);
+    CHECK(!strcmp(err, "env.toml:1: unknown table in the environment file"));
+    tc_env_free(&e);
     CHECK(tc_env_load("/nonexistent/env.toml", &e, err, sizeof err) == -1);
     CHECK(strstr(err, "/nonexistent/env.toml: cannot read") != nullptr);
     tc_env_free(&e);

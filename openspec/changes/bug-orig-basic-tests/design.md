@@ -112,3 +112,43 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   lost] → it is the environment, not the tested behaviour; the runner's
   report keeps the log of every run.
 - [Long move] → old and new tests run side by side; nothing forces a date.
+
+## Findings of the implementation
+
+- **Task 1.2, where the rules are**: the judging of the declared
+  deviations in the cells with the faulty part and the open-bug rule for
+  the other cells are `tj_verdict` (`tools/lib/testjudge`, host test
+  `testjudge`: "a fixed original bug", "an open original bug", "a declared
+  crash"); the labels per case are the registration's (`tools/testreg`,
+  `testreg_tool`: `bug-orig;emulator` for a case with a declared deviation
+  of an open test, `emulator` for its other cases and for a fixed test,
+  `originals` for the side with original material); the errors of
+  `fixed-orig`/`fixed` are the configuration's (`tools/lib/testconf`,
+  `testconf` and `testassert`: both keys, `fixed-orig` without a
+  deviation, `fixed` with one, either in a `tests.toml`). A bug-orig test
+  without a declared deviation is BROKEN in `tj_verdict` when the runner
+  says it is a bug-orig test (`tj_test.require_deviation`, `corpusrun case
+  --require-deviation`, which the registration of `tests/bug-orig` passes
+  for every area but `regression/`); host test `testjudge` ("a bug-orig
+  test without a declared deviation") and the emulator self test
+  `bug_orig_selftest_model_no_deviation`.
+- **Task 1.3, fix-scope** (`tools/lib/bugorigcmp`, `bugorigcmp_model.c`):
+  a test of the model is projected onto one case per check of its source
+  (`ID|check.NS.NAME||1`, `NAME` or `#N` for a check without a name, its
+  value the macro and its arguments, not its line or number, so a line
+  added above a check is no change), one per key of its `ID.test.toml`
+  (`ID|toml:TABLE.KEY||1`) and the case `ID|fixed-orig||1 [fixed #N]` (or
+  `fixed`), which is the only case the fix of issue N adds. The
+  `tests.toml` of `tests/bug-orig` and of its areas are cases too
+  (`AREA/tests.toml|toml:...`); the root `tests/tests.toml` is outside the
+  tree that fix-scope reads (open: it holds only `root = true` today).
+  Host test `bugorigcmp` with the scenarios of the spec (only the fixed
+  issue; an expected value changed in another test and in the own one; a
+  deviation changed, an assertion added; `fixed = N`) and broken input.
+- **Task 1.4, bug-orig-record**: the list of the target holds only the
+  tests of the old form (`bug_orig_test()` writes it; the glob of the old
+  form leaves out `*.test.bas`), and `record.cmake` also skips an entry
+  whose directory has `ID.test.bas`, with the message "a test of the
+  BASIC test model: nothing to record" (`bug_orig_record_target`: one test
+  of each form; the model test's runs are not started, its `ID.orig` not
+  written).

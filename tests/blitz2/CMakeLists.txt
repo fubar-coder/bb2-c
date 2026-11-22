@@ -104,12 +104,15 @@ ${incfile}")
 endfunction()
 
 file(GLOB tests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.bas)
+# the tests of the BASIC test model (ID.test.bas) are registered by their own step (below)
+list(FILTER tests EXCLUDE REGEX "\\.test\\.bas$")
 foreach(bas IN LISTS tests)
 	get_filename_component(id ${bas} NAME_WE)
 	string(REPLACE "-" "_" name "blitz2_${id}")
 	blitz2_test(${bas} ${CMAKE_CURRENT_SOURCE_DIR} ${name} OFF)
 endforeach()
 file(GLOB selftests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/selftest/*.bas)
+list(FILTER selftests EXCLUDE REGEX "\\.test\\.bas$")
 foreach(bas IN LISTS selftests)
 	get_filename_component(id ${bas} NAME_WE)
 	string(REPLACE "-" "_" name "blitz2_selftest_${id}")
@@ -124,6 +127,26 @@ foreach(bas IN LISTS selftests)
 	endif()
 endforeach()
 add_custom_target(blitz2_test_sources ALL DEPENDS ${blitz2_test_sources})
+# the tests of the BASIC test model (ID.test.bas, cmake/basic-test-model.cmake): ctest
+# blitz2_ID__CASE (and _originals for the cells with original material), registered by the build
+basic_test_register(blitz2_ ${CMAKE_CURRENT_SOURCE_DIR} "*.test.bas")
+# the self test of the model: a text that does not compile on purpose is reported at its
+# line of the test source (selftest/model-compile-error.test.bas, line 7), not at the line
+# of the driver
+math(EXPR limit "${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME blitz2_selftest_model_compile_error COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+	--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-compile-error.test.bas --case broken)
+set_tests_properties(blitz2_selftest_model_compile_error PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
+	"compile error: model-compile-error\\.test\\.bas:7: [^\n]*\n.*model-compile-error\\.test\\.bas: case broken: FAILED")
+# the example of tests/README.md, "Tests that judge themselves": its source and configuration
+# run as a test of the model, every case on the port side (readme-model-example.cmake)
+add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md
+	-DCORPUSRUN=${CORPUSRUN} -DENV=${BASIC_TEST_ENV} -DWORK=${CMAKE_CURRENT_BINARY_DIR}/readme-model-example
+	-DSIDE=port -P ${CMAKE_CURRENT_SOURCE_DIR}/readme-model-example.cmake)
+math(EXPR limit "2 * (${BASIC_TEST_TIMEOUT} + 60) + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(blitz2_model_readme_example PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "readme-model-example: every case passed")
 # the sources of the compiler that need nothing special, compiled by the prev build (the
 # compiler's bug-orig tests, tests/bug-orig, were added before)
 prev_compile_plain_pass()

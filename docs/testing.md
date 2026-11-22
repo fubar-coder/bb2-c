@@ -165,6 +165,38 @@ The comparison with the previous commit (`prev`) stays byte exact.
 How they differ from the model: TED A/B and the oracle use their own
 forms.
 
+### Tests that judge themselves
+
+A Blitz test can also check its result itself. Its source
+`ID.test.bas` has named cases with checks of the correct behaviour,
+`!CheckEq{ShapeWidth(1),16,"width"}`; a small test library writes one
+line per check to a result file, and the runner reads it. There is no
+expected file and no recorded original: the expected values are in the
+source, the rest (exit code, requesters, printed output) in assertions of
+the run configuration `ID.test.toml` and the `tests.toml` files above it.
+The configuration also says how the test runs (compiler, libraries,
+runtime error checking, files), and any of these settings can be an axis:
+`libs = ["cd", "clib"]` runs the same source with the CD's and with the C
+libraries. Each such combination is a cell; the cells of a case with
+original material (an original compiler or the CD's libraries) are one
+ctest test, `PREFIX_ID__CASE_originals`, the others another,
+`PREFIX_ID__CASE`, and the build registers them from the files.
+
+For an original bug the configuration declares what the original's
+faulty part changes, in the cells that have it:
+
+```toml
+[deviations."libs=cd"]
+"check.frames_maximum.width" = "== fail"
+"check.frames_maximum.width.actual" = "== 0"
+```
+
+Until the bug is fixed every cell must show exactly that (REPRODUCED);
+the fix adds `fixed-orig = N` and nothing else, and then only the cells
+with the CD's libraries may deviate. How to write such a test, run it
+and read its report: [../tests/README.md, "Tests that judge
+themselves"](../tests/README.md#tests-that-judge-themselves).
+
 ## Presets and the CD
 
 `ctest --preset NAME` selects tests; a preset says where they run.

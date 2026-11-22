@@ -556,6 +556,28 @@ TEST_CASE("testjudge: a test without deviations", "[testjudge]")
     CHECK(verdict(f, obs("x\n"), obs(good), m) == TJ_V_ERROR);
 }
 
+// a bug-orig test (require_deviation) must declare a deviation, else it is
+// broken: open or fixed, whatever its cells show (bug-orig-basic-tests 1.2)
+TEST_CASE("testjudge: a bug-orig test without a declared deviation", "[testjudge]")
+{
+    fixture f(matrix);
+    std::string m;
+
+    f.t.require_deviation = 1;
+    CHECK(verdict(f, obs(good), obs(good), m) == TJ_V_BROKEN);
+    CHECK(has(m, "x.test.bas: the test declares no deviation of the original, so it does not show its bug"));
+    CHECK(verdict(f, obs(good), obs(width_fails), m) == TJ_V_BROKEN);
+    // a cell that cannot be judged stays an error
+    CHECK(verdict(f, obs("x\n"), obs(good), m) == TJ_V_ERROR);
+    // with a deviation the rule does not apply
+    fixture d(matrix, declared);
+    d.t.require_deviation = 1;
+    CHECK(verdict(d, obs(width_fails), obs(width_fails), m) == TJ_V_REPRODUCED);
+    fixture x(matrix, "fixed-orig = 265\n" + declared);
+    x.t.require_deviation = 1;
+    CHECK(verdict(x, obs(width_fails), obs(good), m) == TJ_V_PASSED);
+}
+
 TEST_CASE("testjudge: a fixed original bug", "[testjudge]")
 {
     fixture f(matrix, "fixed-orig = 265\n" + declared);

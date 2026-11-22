@@ -80,7 +80,8 @@
 #              root = true, their keys and the merge, the matrix, the
 #              assertions
 #   testpp     the preprocessor of the Blitz test sources (ID.test.bas): the
-#              checks numbered, their table, the placeholders
+#              checks numbered, their table, the placeholders, the form
+#              check, and the driver of a run with the map of its lines
 #   testjudge  the judge of the Blitz tests of that model: a cell of a case
 #              from its result file and observations, the verdict of a case
 #   testreg    the registration of those tests at build time: one ctest test

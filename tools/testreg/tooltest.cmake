@@ -80,6 +80,27 @@ foreach(want "${WORK}/tests.cmake:" "${s}/libs/shape-frames.test.bas" "${s}/libs
 	endif()
 endforeach()
 
+# --cell-fixture: the side with a cell of the selector requires the fixture
+# (shape-frames' originals side has orig195,cd; fixed-one has no cell of it)
+run(0 --prefix bug_orig_ --output ${WORK}/fx.cmake ${env} --command run
+	--cell-fixture "compiler=orig195|originals_refbuild" --cell-fixture "libs=clib|clib_fixture"
+	${s}/libs/shape-frames.test.bas ${s}/libs/sub/fixed-one.test.bas)
+file(READ ${WORK}/fx.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+foreach(want
+		"set_tests_properties( bug_orig_shape_frames__behind_originals PROPERTIES LABELS originals;libs TIMEOUT 120 SKIP_RETURN_CODE 77 COST 3 FIXTURES_REQUIRED testdata;originals_refbuild)"
+		"set_tests_properties( bug_orig_shape_frames__behind PROPERTIES LABELS bug-orig;emulator;libs TIMEOUT 60 SKIP_RETURN_CODE 77 COST 3 FIXTURES_REQUIRED testdata;clib_fixture)"
+		"set_tests_properties( bug_orig_fixed_one__a PROPERTIES LABELS emulator;libs TIMEOUT 20 SKIP_RETURN_CODE 77 COST 3 FIXTURES_REQUIRED testdata;clib_fixture)")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0)
+		message(FATAL_ERROR "--cell-fixture: the include file lacks\n  ${want}\nin\n${inc}")
+	endif()
+endforeach()
+refused("--cell-fixture compiler=orig195 is not SELECTOR\\|FIXTURE" --cell-fixture "compiler=orig195"
+	${s}/libs/sub/fixed-one.test.bas)
+refused("--cell-fixture nokey=1\\|f: " --cell-fixture "nokey=1|f" ${s}/libs/sub/fixed-one.test.bas)
+
 # a source given by a relative path: the test names it by its absolute path
 execute_process(COMMAND ${TESTREG} --prefix p_ --output ${WORK}/rel.cmake ${env} --command run
 	libs/sub/fixed-one.test.bas WORKING_DIRECTORY ${s} RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)

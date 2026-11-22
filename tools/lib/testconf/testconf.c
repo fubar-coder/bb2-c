@@ -136,6 +136,11 @@ void tc_env_free(struct tc_env *env)
         free(env->ph[i].value);
     }
     free(env->ph);
+    for (size_t i = 0; i < env->nrun; i++) {
+        free(env->run[i].name);
+        free(env->run[i].value);
+    }
+    free(env->run);
     free(env->top);
     free(env->file);
     memset(env, 0, sizeof *env);
@@ -189,16 +194,43 @@ int tc_env_parse(const char *file, const char *text, struct tc_env *env, char *e
             env->nph++;
             if (!ph[env->nph - 1].name || !ph[env->nph - 1].value)
                 r = -2;
+        } else if (e->ntable == 1 && !strcmp(e->table[0], "runner")) {
+            struct tc_placeholder *rv;
+
+            if (e->value.type != TT_STRING) {
+                r = tc_err(err, errlen, "%s:%u: the runner's %s must be a string", file, e->line, e->key);
+                break;
+            }
+            rv = realloc(env->run, (env->nrun + 1) * sizeof *rv);
+            if (!rv) {
+                r = -2;
+                break;
+            }
+            env->run = rv;
+            rv[env->nrun].name = tc_strdup(e->key);
+            rv[env->nrun].value = tc_strdup(e->value.str);
+            env->nrun++;
+            if (!rv[env->nrun - 1].name || !rv[env->nrun - 1].value)
+                r = -2;
         } else
             r = tc_err(err, errlen, "%s:%u: unknown key %s in the environment file", file, e->line, e->key);
     }
     for (size_t i = 0; r == 0 && i < d.ntables; i++)
-        if (d.tables[i].npath != 1 || strcmp(d.tables[i].path[0], "placeholders"))
+        if (d.tables[i].npath != 1
+            || (strcmp(d.tables[i].path[0], "placeholders") && strcmp(d.tables[i].path[0], "runner")))
             r = tc_err(err, errlen, "%s:%u: unknown table in the environment file", file, d.tables[i].line);
     tt_free(&d);
     if (r == -2)
         tc_err(err, errlen, "%s: out of memory", file);
     return r ? -1 : 0;
+}
+
+const char *tc_env_runner(const struct tc_env *env, const char *key)
+{
+    for (size_t i = 0; env && i < env->nrun; i++)
+        if (!strcmp(env->run[i].name, key))
+            return env->run[i].value;
+    return NULL;
 }
 
 int tc_read_file(const char *file, char **text, size_t *len)

@@ -1,0 +1,7 @@
+# The root of the run configuration of the Blitz tests of the BASIC test model
+# (ID.test.bas; tests/README.md, "The run configuration"): the search for the
+# configuration files of a test goes up from its directory to this file.
+# Without a setting a test has the defaults of the keys: the port
+# (compiler = "port") with the C libraries (libs = "clib") on the A1200,
+# without runtime error checking, and the build's time limit of a session.
+root = true

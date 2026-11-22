@@ -20,8 +20,8 @@
 
 ## 4. Staging and documentation
 
-- [ ] 4.1 (done by the implementation of `basic-test-runner`, after its task 3.1; design.md "Interface") Stage the library for every configuration of the runner (1.95: `blitz2:DIR/` and `blitz2:userlibs/DIR/`; 2.10 and the port: `blitz2:userlibs/DIR/`); verify: a test with one passing and one failing check gives the expected result files with `ref`, the RWE reference, `port` and `clib`
-- [ ] 4.2 Document how a test source is written (blocks, names, checks in cases, procedures, init and end, preconditions, the rule for register- and string-buffer-dependent acts) in `tests/README.md` and `docs/testing.md`; verify: the examples in the text compile as a test of the build
+- [x] 4.1 (done by the implementation of `basic-test-runner`, after its task 3.1; design.md "Interface") Stage the library for every configuration of the runner (1.95: `blitz2:DIR/` and `blitz2:userlibs/DIR/`; 2.10 and the port: `blitz2:userlibs/DIR/`); verify: a test with one passing and one failing check gives the expected result files with `ref`, the RWE reference, `port` and `clib`
+- [x] 4.2 Document how a test source is written (blocks, names, checks in cases, procedures, init and end, preconditions, the rule for register- and string-buffer-dependent acts) in `tests/README.md` and `docs/testing.md`; verify: the examples in the text compile as a test of the build
 
 ## 5. Typed checks and the findings in the interface (decided 2026-11-21, ~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md "basic-testlib: typed checks, findings of implementer A")
 

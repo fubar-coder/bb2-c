@@ -53,6 +53,13 @@ static const char *const traces[][2] = {
     { "corpus_exprmatrix_dl_A_agree_01", "TN:corpus_exprmatrix_dl_A_agree_01\n" EVAL("1", "0") },
     { "bug_orig_compiler_expr_1178_dl_A_01", "TN:bug_orig_compiler_expr_1178_dl_A_01\n" EVAL("1", "0") },
     { "regression_compiler_expr_refused_and_F_I", "TN:regression_compiler_expr_refused_and_F_I\n" EVAL("1", "0") },
+    /* the tests of the BASIC test model (covsel: the tests of the BASIC test model) */
+    { "bug_orig_shape_a__c", "TN:bug_orig_shape_a__c\n" EVAL("1", "0") },
+    { "bug_orig_shape_a__c_originals", "TN:bug_orig_shape_a__c_originals\n" EVAL("1", "0") },
+    { "bug_orig_shape_b__c", "TN:bug_orig_shape_b__c\n" EVAL("1", "0") },
+    { "bug_orig_comp_c__c", "TN:bug_orig_comp_c__c\n" EVAL("1", "0") },
+    { "blitz2_model_x__c", "TN:blitz2_model_x__c\n" EVAL("1", "0") },
+    { "bug_orig_old", "TN:bug_orig_old\n" EVAL("1", "0") },
     /* a test outside the emulator named by the map (a file of its own) */
     { "declarations_x", "TN:declarations_x\n"
       "SF:" ROOT "/programs/blitz2/src/other.c\nFN:1,9,other\nFNDA:1,other\nend_of_record\n" },
@@ -364,6 +371,55 @@ TEST_CASE("covsel: real rules", "[covsel]")
     r = select_for(real_rules, diff1("tools/lib/amiga_emulation/CMakeLists.txt", "@@ -3 +3 @@", "-a\n+b\n"),
                    NULL, 0);
     CHECK(!strcmp(r, ALL));
+}
+
+/* the tests of the BASIC test model (openspec change basic-test-runner,
+   requirement "Configuration files select their tests"): a source selects
+   the tests of its cases, its ID.test.toml too, a tests.toml every test of
+   the model whose source is in its directory or below; by the --source of
+   their commands */
+#define MTEST(name, src) "{\"name\": \"" name "\", \"command\": [\"/b/corpusrun\", \"case\", \"--env\", " \
+    "\"/b/env.toml\", \"--source\", \"" ROOT "/" src "\", \"--case\", \"c\"], \"properties\": " \
+    "[{\"name\": \"LABELS\", \"value\": [\"emulator\"]}]}"
+static const char model_tests[] =
+    "{\"kind\": \"ctestInfo\", \"version\": {\"major\": 1, \"minor\": 0}, \"tests\": ["
+    MTEST("bug_orig_shape_a__c", "tests/bug-orig/libs/shape-a.test.bas") ","
+    MTEST("bug_orig_shape_a__c_originals", "tests/bug-orig/libs/shape-a.test.bas") ","
+    MTEST("bug_orig_shape_b__c", "tests/bug-orig/libs/sub/shape-b.test.bas") ","
+    MTEST("bug_orig_comp_c__c", "tests/bug-orig/compiler/comp-c.test.bas") ","
+    MTEST("blitz2_model_x__c", "tests/blitz2/model-x.test.bas") ","
+    TEST("bug_orig_old", "\"emulator\", \"bug-orig\"") ","
+    TEST("corpus", "\"emulator\"") "]}";
+
+TEST_CASE("covsel: the tests of the BASIC test model", "[covsel]")
+{
+    char *r;
+
+    cur_tests = model_tests;
+    /* a directory's tests.toml: the tests below it, no other */
+    r = select_for(real_rules, diff1("tests/bug-orig/libs/tests.toml", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "bug_orig_shape_a__c bug_orig_shape_a__c_originals bug_orig_shape_b__c"));
+    r = select_for(real_rules, diff1("tests/bug-orig/libs/sub/tests.toml", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "bug_orig_shape_b__c"));
+    /* the root: every test of the model */
+    r = select_for(real_rules, diff1("tests/tests.toml", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "blitz2_model_x__c bug_orig_comp_c__c bug_orig_shape_a__c bug_orig_shape_a__c_originals "
+                     "bug_orig_shape_b__c"));
+    /* a source and its own configuration: the tests of its cases */
+    r = select_for(real_rules, diff1("tests/bug-orig/libs/shape-a.test.bas", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "bug_orig_shape_a__c bug_orig_shape_a__c_originals"));
+    r = select_for(real_rules, diff1("tests/bug-orig/libs/shape-a.test.toml", "@@ -3 +3 @@", "-a\n+b\n"), NULL,
+                   0);
+    CHECK(!strcmp(r, "bug_orig_shape_a__c bug_orig_shape_a__c_originals"));
+    r = select_for(real_rules, diff1("tests/blitz2/model-x.test.toml", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "blitz2_model_x__c"));
+    /* a new test: its own (not yet registered) tests come with the build; no other */
+    r = select_for(real_rules, diff1("tests/bug-orig/libs/new.test.bas", "@@ -0,0 +1 @@", "+a\n"), NULL, 0);
+    CHECK(!strcmp(r, ""));
+    /* an old-form test of the directory still selects as before */
+    r = select_for(real_rules, diff1("tests/bug-orig/libs/old.bas", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(strstr(r, "bug_orig_old") && strstr(r, "bug_orig_shape_a__c"));
+    cur_tests = tests;
 }
 
 /* the oracle tests run when tests/ab3 changes: its sources, expect files,

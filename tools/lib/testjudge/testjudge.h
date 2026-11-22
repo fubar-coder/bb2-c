@@ -37,7 +37,9 @@
  *     with the deviations, the cells without the faulty part as if their
  *     selector matched (REPRODUCED); such a cell that passes without the
  *     deviations fails, since the bug is gone without a fixed issue.
- * A broken cell makes the case BROKEN, never REPRODUCED.
+ * A broken cell makes the case BROKEN, never REPRODUCED.  A bug-orig test
+ * (tj_test.require_deviation) that declares no deviation at all is BROKEN,
+ * open or fixed, unless a cell cannot be judged (ERROR).
  */
 #ifndef TESTJUDGE_H
 #define TESTJUDGE_H
@@ -103,6 +105,9 @@ struct tj_test {
     const struct tc_config *conf;
     const struct tc_matrix *m;
     const char *case_name;
+    int require_deviation;      /* a bug-orig test: one without any declared
+                                   deviation is broken (it would not show its
+                                   bug), whatever its cells show */
 };
 
 /**

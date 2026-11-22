@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <snitch/snitch.hpp>
 extern "C" {
 #include "bugorigcmp.h"
@@ -287,6 +288,129 @@ TEST_CASE("bugorigcmp: scope", "[bugorigcmp]")
     /* a fixed test's original recorded again: the [orig] case of issue 7 */
     CHECK(scope(fixed_src, expect_txt, orig_txt, fixed_src, expect_txt,
                 "[session]\ndone\n[run]\n2\nrc=0\n", 7, &rep) == 0);
+    free(rep);
+}
+
+/* fix-scope of tests of the BASIC test model (bug-orig-basic-tests task
+   1.3, spec testing/bug-fix-workflow "fix-scope covers the tests that judge
+   themselves"): the projections of two tests x and y, base and branch */
+static const char model_src[] = "!TestCase{a}\n  !CheckEq{w,16,\"width\"}\n  !Check{h>0}\n!EndTestCase\n";
+static const char model_toml[] = "[deviations.\"libs=cd\"]\n\"check.a.width\" = \"== fail\"\n";
+
+static size_t scope_model(const char *bx_src, const char *bx_toml, const char *rx_src, const char *rx_toml,
+                          const char *ry_src, uint32_t issue, char **report)
+{
+    struct libscmp_file b, r;
+    struct libscmp_issues is = {};
+    char *tb, *tr, *rep = NULL;
+    size_t lb, lr, nrep = 99, nch, lrep;
+    FILE *f;
+    int x;
+
+    memset(&b, 0, sizeof b);
+    memset(&r, 0, sizeof r);
+    f = open_memstream(&tb, &lb);
+    REQUIRE(f != NULL);
+    fprintf(f, "# capture bug-orig 1\n");
+    CHECK(bugorigcmp_project_model(f, "x", bx_src, bx_toml, "a/x", err, sizeof err) == 0);
+    CHECK(bugorigcmp_project_model(f, "y", model_src, model_toml, "a/y", err, sizeof err) == 0);
+    fclose(f);
+    f = open_memstream(&tr, &lr);
+    REQUIRE(f != NULL);
+    fprintf(f, "# capture bug-orig 1\n");
+    CHECK(bugorigcmp_project_model(f, "x", rx_src, rx_toml, "a/x", err, sizeof err) == 0);
+    CHECK(bugorigcmp_project_model(f, "y", ry_src, model_toml, "a/y", err, sizeof err) == 0);
+    fclose(f);
+    x = libscmp_parse(&b, tb, lb, "base", LIBSCMP_EXPECTED, err, sizeof err);
+    CHECK(x == 0);
+    x |= libscmp_parse(&r, tr, lr, "branch", LIBSCMP_EXPECTED, err, sizeof err);
+    CHECK(x == 0);
+    if (issue)
+        libscmp_issues_add(&is, issue);
+    f = open_memstream(&rep, &lrep);
+    REQUIRE(f != NULL);
+    if (!x)
+        nrep = libscmp_fix_scope(&b, &r, &is, f, &nch);
+    fclose(f);
+    *report = rep;
+    libscmp_free(&b);
+    libscmp_free(&r);
+    libscmp_issues_free(&is);
+    free(tb);
+    free(tr);
+    return nrep;
+}
+
+TEST_CASE("bugorigcmp: the cases of a test of the BASIC test model", "[bugorigcmp]")
+{
+    char *t;
+    size_t len;
+    FILE *f = open_memstream(&t, &len);
+
+    REQUIRE(f != NULL);
+    CHECK(bugorigcmp_project_model(f, "x", model_src, "fixed-orig = 7\ntimeout = 60\n[deviations.\"libs=cd\"]\n"
+                                   "\"check.a.width\" = \"== fail\"\n", "a/x", err, sizeof err) == 0);
+    fclose(f);
+    CHECK(!strcmp(t, "x|check.a.width||1\t\"CheckEq{w,16}\"\n"
+                     "x|check.a.#1||1\t\"Check{h>0}\"\n"
+                     "x|fixed-orig||1 [fixed #7]\tfixed-orig 7\n"
+                     "x|toml:timeout||1\t\"60\"\n"
+                     "x|toml:deviations.libs=cd.check.a.width||1\t\"\\x22== fail\\x22\"\n"));
+    free(t);
+    /* a directory's tests.toml */
+    f = open_memstream(&t, &len);
+    REQUIRE(f != NULL);
+    CHECK(bugorigcmp_project_conf(f, "libs/tests.toml", "root = true\nlabels = [\"libs\", \"x\"]\n",
+                                  "t/libs/tests.toml", err, sizeof err) == 0);
+    fclose(f);
+    CHECK(!strcmp(t, "libs/tests.toml|toml:root||1\t\"true\"\n"
+                     "libs/tests.toml|toml:labels||1\t\"[\\x22libs\\x22, \\x22x\\x22]\"\n"));
+    free(t);
+    /* broken input: a source the preprocessor refuses, a file that is not the subset */
+    f = open_memstream(&t, &len);
+    REQUIRE(f != NULL);
+    CHECK(bugorigcmp_project_model(f, "x", "!TestCase{a}\n!Check{@FOO@}\n!EndTestCase\n", NULL, "a/x", err,
+                                   sizeof err) == -2);
+    CHECK(strstr(err, "a/x.test.bas:2:") != NULL);
+    CHECK(bugorigcmp_project_model(f, "x", model_src, "timeout = 1.5\n", "a/x", err, sizeof err) == -2);
+    CHECK(strstr(err, "a/x.test.toml:1:") != NULL);
+    CHECK(bugorigcmp_project_conf(f, "tests.toml", "[x\n", "t/tests.toml", err, sizeof err) == -2);
+    fclose(f);
+    free(t);
+}
+
+TEST_CASE("bugorigcmp: scope of tests of the BASIC test model", "[bugorigcmp]")
+{
+    char *rep;
+
+    /* only the fixed issue: fixed-orig = 7 added, nothing else */
+    std::string fixed = std::string("fixed-orig = 7\n") + model_toml;
+    CHECK(scope_model(model_src, model_toml, model_src, fixed.c_str(), model_src, 7, &rep) == 0);
+    free(rep);
+    /* without the issue named it is reported */
+    CHECK(scope_model(model_src, model_toml, model_src, fixed.c_str(), model_src, 0, &rep) == 1);
+    CHECK(strstr(rep, "x|fixed-orig||1 [fixed #7]: added") != NULL);
+    free(rep);
+    /* the fix also changes the expected value of a check in another test */
+    const char other[] = "!TestCase{a}\n  !CheckEq{w,32,\"width\"}\n  !Check{h>0}\n!EndTestCase\n";
+    CHECK(scope_model(model_src, model_toml, model_src, fixed.c_str(), other, 7, &rep) == 1);
+    CHECK(strstr(rep, "y|check.a.width||1: changed (\"CheckEq{w,16}\" -> \"CheckEq{w,32}\")") != NULL);
+    free(rep);
+    /* ... or in its own test: the checks stay as they are */
+    CHECK(scope_model(model_src, model_toml, other, fixed.c_str(), model_src, 7, &rep) == 1);
+    CHECK(strstr(rep, "x|check.a.width||1: changed") != NULL);
+    free(rep);
+    /* a changed declaration of a deviation, an added assertion */
+    std::string dev = std::string("fixed-orig = 7\n[deviations.\"libs=cd\"]\n\"check.a.width\" = \"== ok\"\n");
+    CHECK(scope_model(model_src, model_toml, model_src, dev.c_str(), model_src, 7, &rep) == 1);
+    CHECK(strstr(rep, "x|toml:deviations.libs=cd.check.a.width||1: changed") != NULL);
+    free(rep);
+    std::string as = fixed + "[asserts]\nrc = \"== 5\"\n";
+    CHECK(scope_model(model_src, model_toml, model_src, as.c_str(), model_src, 7, &rep) == 1);
+    CHECK(strstr(rep, "x|toml:asserts.rc||1: added") != NULL);
+    free(rep);
+    /* fixed = N for a bug that is not in the original: the same */
+    CHECK(scope_model(model_src, NULL, model_src, "fixed = 9\n", model_src, 9, &rep) == 0);
     free(rep);
 }
 

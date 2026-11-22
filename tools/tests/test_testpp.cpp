@@ -161,6 +161,47 @@ TEST_CASE("testpp: the example of tests/README.md, from the file", "[testpp]")
     CHECK(p.text() == want);
 }
 
+// the source of the emulator test of the numbering (basic-test-runner task
+// 2.2): the same table on every run, the numbers in source order over the
+// namespaces of procedures, init, cases and end
+TEST_CASE("testpp: the table of tests/blitz2/model-numbering.test.bas is stable", "[testpp]")
+{
+    FILE *f = fopen(TESTPP_NUMBERING, "rb");
+    std::string text;
+    char buf[4096];
+    size_t n;
+
+    REQUIRE(f != nullptr);
+    while ((n = fread(buf, 1, sizeof buf, f)) > 0)
+        text.append(buf, n);
+    fclose(f);
+    pp a(text), b(text);
+    REQUIRE(a.rc == 0);
+    REQUIRE(b.rc == 0);
+    CHECK(a.text() == b.text());
+    REQUIRE(a.s.nchecks == b.s.nchecks);
+    static const char *const want[][2] = {
+        { "count_up", "arg" }, { "twice", "inner" }, { "init", "base" },   { "first", "one" },
+        { "first", "loop" },   { "first", "twice" }, { "first", "str" },   { "second", "two" },
+        { "second", "skipped" }, { "second", "base_kept" }, { "end", "final" },
+    };
+    REQUIRE(a.s.nchecks == sizeof want / sizeof want[0]);
+    for (size_t i = 0; i < a.s.nchecks; i++) {
+        const tp_check &x = a.s.checks[i], &y = b.s.checks[i];
+
+        INFO(i);
+        CHECK(x.k == i);
+        CHECK(std::string(x.ns) == want[i][0]);
+        CHECK(std::string(x.name) == want[i][1]);
+        CHECK(x.k == y.k);
+        CHECK(x.number == y.number);
+        CHECK(x.line == y.line);
+        CHECK(std::string(x.ns) == y.ns);
+        CHECK(std::string(x.name) == y.name);
+        CHECK(std::string(x.expr) == y.expr);
+    }
+}
+
 TEST_CASE("testpp: quick and float checks", "[testpp]")
 {
     pp p("!TestCase{a}\n"

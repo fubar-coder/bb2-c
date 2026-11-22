@@ -29,6 +29,7 @@ static int parse(const char *text, char *err, size_t len)
 
 #define BASE "work=/w\nreport=/r\nted=/t\nlauncher=/x\ndefaultdbug=/d\n"
 #define CONFIGS "config=ref|ref|/a|/b|/c\nconfig=port|exe|/a2|/b|/c\n"
+#define NORUN0 "work=/w\nreport=/r\nted=/t\ndefaultdbug=/d\nrun=off\n"
 
 int main(void)
 {
@@ -461,6 +462,52 @@ int main(void)
         CHECK(t && !strcmp(t, want13plain) && !strstr(t, "$RC") && !strstr(t, ">>"));
         free(t);
         corpus_free(&p);
+        /* the halves of corpusrun case (caserun.h): the compile and the runs,
+           the one followed by the other is the script (Kickstart 2 and 1.3, with
+           a gate, compile only) */
+        {
+            static const char *const passes[] = {
+                BASE CONFIGS "source=/s/t01.bb2\nwrap=/w|fail=3\nrunwrap=/r|sig\nrunargs=a b\nrcput=/rc\n",
+                BASE CONFIGS "source=/s/t01.bb2\nwrap=/w|fail=3\nrunwrap=/r|sig\nrunargs=a b\nrcput=/rc\n"
+                             "machine=a500\n",
+                BASE CONFIGS "source=/s/t01.bb2\nsource=/s/t02.bb2\ngate=/g\n",
+                NORUN0 CONFIGS "source=/s/t01.bb2\n",
+            };
+
+            for (size_t k = 0; k < sizeof passes / sizeof passes[0]; k++) {
+                char *c, *r, *both;
+
+                CHECK(corpus_parse(passes[k], &p, err, sizeof err) == 0);
+                t = corpus_script(&p);
+                c = corpus_script_compile(&p);
+                r = corpus_script_run(&p);
+                both = c && r ? str_printf("%s%s", c, r) : NULL;
+                CHECK(t && both && !strcmp(t, both));
+                CHECK(c && strstr(c, "blitz2:blitz2") && !strstr(c, "CORPUS:run"));
+                CHECK(r && !strstr(r, "blitz2:blitz2"));
+                CHECK(r && (p.run ? strstr(r, "CORPUS:run") != NULL : !*r));
+                free(t);
+                free(c);
+                free(r);
+                free(both);
+                corpus_free(&p);
+            }
+        }
+        /* cell=on: one configuration and one source, nothing that judges */
+        CHECK(corpus_parse("cell=on\nwork=/w\nreport=/r\nted=/t\nlauncher=/l\n"
+                           "config=c0|ref|/b|/d|/a\nsource=/s/test.bb2\n", &p, err, sizeof err) == 0);
+        CHECK(p.cell && p.nconfigs == 1);
+        corpus_free(&p);
+        CHECK(parse("cell=on\nwork=/w\nreport=/r\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\n", err,
+                    sizeof err) == -1 && strstr(err, "cell=on: one configuration and one source"));
+        CHECK(parse("cell=on\nwork=/w\nreport=/r\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\n"
+                    "config=c1|output|/b|/d|/a\nsource=/s/test.bb2\n", err, sizeof err) == -1
+              && strstr(err, "cell=on"));
+        CHECK(parse("cell=on\nwork=/w\nreport=/r\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\n"
+                    "source=/s/test.bb2\nexpect=/e\n", err, sizeof err) == -1 && strstr(err, "cell=on"));
+        CHECK(parse("cell=on\nwork=/w\nreport=/r\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\n"
+                    "source=/s/test.bb2\nmachine=a500\n", err, sizeof err) == -1 && strstr(err, "rcput"));
+        CHECK(parse("cell=maybe\n", err, sizeof err) == -1 && strstr(err, "cell=on or cell=off"));
     }
 
     /* compile only (run=off): no launcher, nothing of the runs, the script
