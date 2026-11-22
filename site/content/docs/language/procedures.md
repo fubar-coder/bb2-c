@@ -114,7 +114,8 @@ the compile error "Label reference out of context".
 
 ## Procedures in assembler
 
-A procedure can consist of inline assembler. The parameters arrive in the
+A procedure can consist of
+[inline assembler]({{< relref "inline-assembler" >}}). The parameters arrive in the
 data registers d0 to d5, in their order; a function returns the value in
 d0. `AsmExit` leaves such a procedure, in place of `Statement Return` or
 `Function Return`:

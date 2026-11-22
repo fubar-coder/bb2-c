@@ -2,7 +2,6 @@
 title: Directives and macros
 weight: 6
 description: Include files and binary data, conditional compiling with CNIF and CSIF, macros with parameters, constant text with ~, and the statements that set how a program is compiled and started.
-next: /docs/libraries
 ---
 
 Before this page you should know constants
