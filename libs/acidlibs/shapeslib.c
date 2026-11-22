@@ -30,8 +30,15 @@
  *
  * BUG(orig), kept:
  *  - LoadShape: "BODY" is not checked (the decoder reads whatever
- *    follows) (#264).  Not a bug: only `depth`
- *    DLTA pointers are read (one per plane); the copied frame shares
+ *    follows) (#264).
+ *  - LoadShape of an ANIM: the ops of a DLTA column (skip rows, unique
+ *    bytes, a run) are not bounded by the frame's height: an op past the
+ *    last row writes into the next plane, from the last plane on behind
+ *    the shape's data; a missing or short DLTA is read as $FF bytes
+ *    (iffbyte at the end of the file), 255 ops of up to 127 rows per
+ *    column (#1193; test shapeslib-anim-delta-bounds).
+ *  - Not a bug: only `depth` DLTA pointers are read (one per plane); the
+ *    copied frame shares
  *    nothing (its cookie is cleared, made again with AutoCookie On).
  *  - Not a bug (by design): DecodeShapes stops silently at the first block
  *    that does not match (the end of the sequence); memory below 2 MB
@@ -1145,7 +1152,9 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
             res = IJSR(TOK_ifflong, res, st);
             *optr++ = res;
         } while (planes-- != 0);
-        /* do planes... */
+        /* do planes...  BUG(orig) (#1193): the ops are not bounded
+           by the frame's height (they run into the next plane or behind
+           the data) */
         planes = frame->depth - 1;
         off = planeoffs;
         dst = frame->data;
