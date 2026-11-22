@@ -291,3 +291,79 @@ source, where a byte >= $80 is one character (user decision 2026-11-21,
   its bytes is refused by the reader, so `==` cannot pass on a forged or
   damaged line; for a cut value the reader cannot check the CRC32, and a
   wrong one makes `==` fail.
+
+## Findings of phase 2
+
+Tasks 2.2-3.4 and 4.2 (`corpusrun case`, `tests/corpus/runner/caserun.h`;
+the driver `tools/lib/testpp/testdriver.h`; the build step
+`cmake/basic-test-model.cmake`).
+
+- **The numbering is stable** (task 2.2): `tests/blitz2/model-numbering.test.bas`
+  has checks in a procedure called by both cases, in a function, in a
+  loop, in the batch init and end, a case behind `CNIF` and a check in a
+  `CNIF` block that is not compiled; every check expects a value of its
+  own and its `ID.test.toml` asserts each check's expected value by its
+  name, so an entry that the table gave to another check fails. It passes
+  with blitz2 1.95, the CD's 2.10 and the port with the CD's libraries
+  (one session) and with the port and the C libraries; the host test
+  `testpp` gets the same table from the source on every run. The constant
+  counter of `basic-testlib` D4 is not needed.
+- **The driver** (task 2.3) is the order of the interface spec with the
+  jump label `tc__skip`; a selected case the source lacks is called after
+  the others, so the compile fails with "Label not Found" on its call,
+  which the report names ("the driver's call of case NAME"). A compile
+  error in the copied text is reported as `ID.test.bas:LINE`
+  (`blitz2_selftest_model_compile_error`).
+- **Sessions** (task 3.1): the cells of a side whose machine, RTG, time
+  limit and hang setting agree share one session (the lists are the same
+  in every cell, since no list is an axis); a cell with `serial = "on"`
+  has a session of its own (the remote end belongs to one program). Each
+  cell is staged as a pass of `corpus.h` with the new key `cell=on`, its
+  directory is the volume `CELLk:` and `Assign CORPUS: CELLk:` selects it,
+  so the paths of today's tests (`CORPUS:src/`, `CORPUS:out/`,
+  `CORPUS:data/`, job lines) stay valid; all compiles run first, then the
+  programs, so the hang check counts from the first program run as today.
+  A session that ends early gives its end (`timeout`, `halt`) to the first
+  cell whose compile or run did not finish; the cells behind it run again
+  in a new session. Measured: two cells (runtime error checking off and
+  on) in 1.1 s, three cells (1.95, 2.10, port with the CD's libraries) in
+  1.0-1.1 s per restored session.
+- **Conflict in the wording of task 3.1**: its check reads "a test of the
+  model with a passing case runs with `port` and `clib` in one session".
+  In the old bug-orig terms `port` is blitz2-c with the CD's libraries and
+  `clib` blitz2-c with the C libraries; in this model the first is a cell
+  of the side `originals` and the second of the side `port`, which are
+  two registered tests (D7, decided), so they never share a session. The
+  check was done with two cells of each side in one session (above);
+  named in the report.
+- **What the runner takes from where**: the program is `CORPUS:out/test`
+  (a fixed short name: AmigaDOS names, not the test id), the result file
+  `CORPUS:out/test.res`; `@TESTDATA@` in a source stands for
+  `CORPUS:data` (the test data a configuration stages with
+  `files = ["data/NAME|@TESTDATA@/NAME"]`). The cells with original
+  material get the CD's `DEFAULTDBUG`, the port side none (the old fixed
+  tests ran without it too). `files` takes a cell selector as its third
+  field (the old `TAG`). `pad = "on"` starts the program through inject
+  with `pad` and cannot be combined with a `runwrap` (an error). The RWE
+  user libraries come from the environment (`rwe-NAME`): the C build for
+  blitz2-c and 1.95, the reference for 2.10, the variant's libraries for
+  the C libraries, and a token list made per run with `bbsrc tokens`.
+- **Requesters**: reqtrap writes them into the program's output, which
+  does not say how many result file lines were written before; the runner
+  gives every requester `after` = all lines, so an announcement anywhere
+  before the end matches it. A requester shown before its announcement is
+  not told apart (open: reqtrap would have to mark the result file's
+  position).
+- **inject's report** is not captured yet (the query `inject` fails as
+  "not captured"); the moves of the tests that use it (U2) need it.
+- **Fixtures**: the registration adds `originals_refbuild` to the side
+  with a cell of `compiler=orig195` (`testreg --cell-fixture`); the
+  fixture of an RWE reference build (`rwe_refbuild`) is not added yet
+  (open for the rounds U5-U7: a `fixtures` key of the directory names it
+  for both sides today).
+- **Staging of the test library** (task 3.4, `basic-testlib` 4.1):
+  `blitz2:userlibs/testlib/testlib.obj` for every compiler, for 1.95 also
+  `blitz2:testlib/testlib.obj`. A test with a passing and a failing check
+  gives the expected entries with 1.95, 2.10 with an RWE user library (its
+  reference), the port with the CD's libraries and the port with the RWE
+  variant's C libraries.
