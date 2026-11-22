@@ -394,6 +394,8 @@ static void put_file(const char *dir, const char *name, const char *text)
         fclose(f);
 }
 
+static enum libscmp_set dirs_set = LIBSCMP_OBJ;
+
 static int cmp_dirs(const char *only1, const char *only2, char **errtext)
 {
     const char *only[2] = { only1, only2 };
@@ -407,7 +409,7 @@ static int cmp_dirs(const char *only1, const char *only2, char **errtext)
     REQUIRE(m != NULL);
     e = open_memstream(errtext, &errlen);
     REQUIRE(e != NULL);
-    s = libscmp_compare_dirs("libscmp-dirs/run", "libscmp-dirs/exp", LIBSCMP_OBJ, only, nonly, m, e);
+    s = libscmp_compare_dirs("libscmp-dirs/run", "libscmp-dirs/exp", dirs_set, only, nonly, m, e);
     fclose(m);
     fclose(e);
     return s;
@@ -462,6 +464,23 @@ TEST_CASE("dirs", "[libscmp]")
     CHECK(cmp_dirs("d", "a", &e) == 2 && strstr(e, "libscmp-dirs/exp/d.txt:3: duplicate key r|c|v|1")
           && strstr(report, "a: set obj: 1 cases, 1 equal"));
     free(e);
+    /* set orig: expected data of [fixed #N] cases only and no run (a library of the port
+       only) is not judged; set obj judges it, and so does a case that applies to orig */
+    put_file("libscmp-dirs/exp", "d", "# capture d 1\nr|c|v|1 [fixed #7]\t$0\n");
+    unlink("libscmp-dirs/run/d.txt");
+    CHECK(cmp_dirs("d", NULL, &e) == 1 && strstr(report, "d: no output of the run"));
+    free(e);
+    dirs_set = LIBSCMP_ORIG;
+    CHECK(cmp_dirs("d", NULL, &e) == 0 && strstr(report, "d: only [fixed #N] cases, no original to run: not judged")
+          && strstr(report, "libs-compare: 1 programs, 0 equal, 0 differ, 1 not judged (set orig)\n"));
+    free(e);
+    put_file("libscmp-dirs/exp", "d", "# capture d 1\nr|c|v|1 [fixed #7]\t$0\nr|c|v|2 [orig]\t$0\n");
+    CHECK(cmp_dirs("d", NULL, &e) == 1 && strstr(report, "d: no output of the run"));
+    free(e);
+    put_file("libscmp-dirs/exp", "d", "# capture d 1\nr|c|v|1\t$0\n");
+    CHECK(cmp_dirs("d", NULL, &e) == 1 && strstr(report, "d: no output of the run"));
+    free(e);
+    dirs_set = LIBSCMP_OBJ;
     /* a directory that cannot be read */
     {
         size_t elen;
