@@ -645,7 +645,7 @@ BOOL amigaa4a5(const UBYTE *regs)
    Fixed (#958): parameters in a4/a5, see amigaa4a5. */
 void stamigalib(UWORD c, UBYTE *sub)
 {
-    struct blitzlib *lib;
+    struct blitzlib *bl;
     WORD libvar;
     UWORD lvo, type, w;
     UBYTE *regs, *p, reg;
@@ -653,8 +653,8 @@ void stamigalib(UWORD c, UBYTE *sub)
     BOOL a45;
 
     (void)c;
-    lib = uselib(W_(sub + 6));          /* get lib for base address */
-    libvar = lib->varoff;               /* libbase reg */
+    bl = uselib(W_(sub + 6));           /* get lib for base address */
+    libvar = bl->varoff;                /* libbase reg */
     lvo = W_(sub + 8);                  /* get offset for lib */
     regs = sub + 10;
     a45 = amigaa4a5(regs);

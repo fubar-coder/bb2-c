@@ -174,5 +174,4 @@ the common warnings of `cmake/warnings.cmake` on top of its own `-Wall`:
 `own_warnings(TARGET)` next to its `target_compile_options`, or
 `${OWN_WARNINGS}` where the options are a list (`BLITZLIB_OPTIONS_AFTER`,
 `EDSTUB_COMPILE_OPTIONS`) or a directory's (`tools/`). That is plain
-`-Wshadow`; third-party code (snitch, CLI11) does not get it, nor do
-blitz2's targets yet (`programs/blitz2`).
+`-Wshadow`; third-party code (snitch, CLI11) does not get it.

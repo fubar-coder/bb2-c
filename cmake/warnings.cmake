@@ -11,10 +11,6 @@
 #                             EDSTUB_COMPILE_OPTIONS) or set for a whole
 #                             directory (tools/CMakeLists.txt)
 #
-# programs/blitz2 does not call it yet (its locals and parameters named
-# like the globals `lib` and `zero` still warn); it is switched on by
-# own_warnings() for its targets next to their -Wall.
-#
 # Included by the top-level CMakeLists.txt and by host/CMakeLists.txt.
 set(OWN_WARNINGS -Wshadow)
 

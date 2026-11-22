@@ -164,16 +164,16 @@ struct blitzlib *tokejsr2(UWORD token);
    bit 4, so the a6 check there is unreachable (no library needs it).
    Original: doajsr2's global `inline` length is cleared when a nested
    makebtst (debug mode check) recurses into doajsr2 (at worst jsr instead of inline). */
-struct blitzlib *makelibsub(struct blitzlib *lib, ULONG off);
+struct blitzlib *makelibsub(struct blitzlib *bl, ULONG off);
 
 /* blitz2.s:11444 userjsr - like makelibsub, `params` = sub entry starting
    with a word whose low byte is the number of parameter format bytes to
    skip (then word aligned) */
-struct blitzlib *userjsr(struct blitzlib *lib, UBYTE *params);
+struct blitzlib *userjsr(struct blitzlib *bl, UBYTE *params);
 
 /* blitz2.s:11459 cutejsr - like makelibsub, `sub` = the sub's register
    list directly (asm a3).  Also used as a callback by chunk 04 (6100). */
-struct blitzlib *cutejsr(struct blitzlib *lib, UBYTE *sub);
+struct blitzlib *cutejsr(struct blitzlib *bl, UBYTE *sub);
 
 /* blitz2.s:11619 getbbase - a5 offset of the runtime blitzmode flag word;
    allocates it (word aligned, 2 bytes at varoff) when blitzoff == -1 */

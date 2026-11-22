@@ -1338,7 +1338,7 @@ void divzerochk(const struct opentry *op, UWORD type)
     struct m68kregs r;
     ULONG at = pc, big = bigpc, value;
     WORD s_nomemleft = nomemleft;
-    BOOL zero;
+    BOOL divzero;
 
     if ((op != opdiv && op != opmod) || type < T_BYTE || type > T_FLOAT)
         return;                     /* doop refuses the other types */
@@ -1361,12 +1361,12 @@ void divzerochk(const struct opentry *op, UWORD type)
     pc = at;
     bigpc = big;
     if (type < T_LONG)
-        zero = (UWORD)value == 0;
+        divzero = (UWORD)value == 0;
     else if (type == T_FLOAT)
-        zero = (value >> 8) == 0;
+        divzero = (value >> 8) == 0;
     else
-        zero = value == 0;
-    if (zero)
+        divzero = value == 0;
+    if (divzero)
         divzeroerr();
 }
 
@@ -2459,14 +2459,14 @@ static UWORD doern(UWORD c, UWORD *type)
 static struct blitzlib *fetchit(void)
 {
     UWORD c = getchar3();
-    struct blitzlib *lib;
+    struct blitzlib *bl;
 
     if (!(c & 0x8000))
         syntaxerr();
-    findtoke(c & 0x7fff, &lib);
-    if (!LIBMAX_SHIFT(lib))         /* tst -2(a2,d0.l) */
+    findtoke(c & 0x7fff, &bl);
+    if (!LIBMAX_SHIFT(bl))          /* tst -2(a2,d0.l) */
         freeerr();
-    return lib;
+    return bl;
 }
 
 /* blitz2.s:10169/10585 .loopsw: bit-reverse a movem mask (lsl #1,d3 / roxr #1,d1 x16) */
@@ -2491,10 +2491,10 @@ static UWORD revmask(UWORD mask)
    (all defaults) the code is unchanged. */
 static UWORD doused(UWORD *type)
 {
-    struct blitzlib *lib = fetchit();
-    UWORD shift = LIBMAX_SHIFT(lib);
+    struct blitzlib *bl = fetchit();
+    UWORD shift = LIBMAX_SHIFT(bl);
     UWORD *start, *end, maxoff;
-    UWORD lsr = objlong(LIBMAX_E(lib)) ? 0xE088 : 0xE048; /* lsr.l / lsr.w #8,d0 */
+    UWORD lsr = objlong(LIBMAX_E(bl)) ? 0xE088 : 0xE048; /* lsr.l / lsr.w #8,d0 */
 
     if (shift < 9) {
         /* shift 1-8 */
@@ -2511,7 +2511,7 @@ static UWORD doused(UWORD *type)
         ucodediv2[-1] = lsr;
         *ucodediv2 = lsr | (UWORD)(((shift - 8) & 7) << 9);
     }
-    maxoff = LIBMAX_VAROFF(lib);    /* .skip2 */
+    maxoff = LIBMAX_VAROFF(bl);     /* .skip2 */
     start[(ucodeskip - usedcode) + 1] = maxoff;
     start[1] = maxoff + 4;
     if (regat)
@@ -2528,8 +2528,8 @@ static UWORD doused(UWORD *type)
 /* blitz2.s:10042 domaximum - number of maximums, eg a=Maximum Shape */
 static UWORD domaximum(UWORD *type)
 {
-    struct blitzlib *lib = fetchit();
-    ULONG count = (UWORD)LIBMAX_COUNT(lib);
+    struct blitzlib *bl = fetchit();
+    ULONG count = (UWORD)LIBMAX_COUNT(bl);
 
     getchar3();
     return (UWORD)fetchnum2(count, type, FALSE);
@@ -3001,7 +3001,7 @@ BOOL intrinsic_code(void)
    string expression.
    tok: the library token (function), for the intrinsics: an entry of
    intrinsics[] is armed for the argument (no asm counterpart). */
-static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
+static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *bl,
                          UBYTE *sub, UWORD tok, UWORD *type)
 {
     UWORD rettype, mask, c, np, sregat, sstate;
@@ -3046,9 +3046,9 @@ static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
         if (intrstrvar(in, &c))
             intrstate = INTR_DONE;
         else
-            c = dolibtoke(np, lib, sub);
+            c = dolibtoke(np, bl, sub);
     } else
-        c = dolibtoke(np, lib, sub);    /* .no2 */
+        c = dolibtoke(np, bl, sub);     /* .no2 */
     if (intrstate == INTR_DONE)
         rettype = in->restype;      /* compiled inline */
     intrcur = scur;
@@ -3074,7 +3074,7 @@ static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
 /* blitz2.s:10087 function - do a function */
 static UWORD function(UWORD c, UWORD *type)
 {
-    struct blitzlib *lib;
+    struct blitzlib *bl;
     UBYTE *sub;
     UWORD old, fl;
 
@@ -3091,13 +3091,13 @@ static UWORD function(UWORD c, UWORD *type)
         return doused(type);
     ext_newtoken(c & 0x7fff);
     old = *type;                    /* remember old type! */
-    sub = findtoke(c & 0x7fff, &lib);
+    sub = findtoke(c & 0x7fff, &bl);
     fl = W_(sub);
     if (!(fl & 2))
         syntaxerr();
     if (fl & 4)
         return amigalib(old, sub, type);
-    return libfunction(old, fl, lib, sub, c & 0x7fff, type);
+    return libfunction(old, fl, bl, sub, c & 0x7fff, type);
 }
 
 /* blitz2.s:10279 pokemovem */

@@ -142,10 +142,10 @@ struct blitzlib *usevars(void);
    returns the lib (asm a1); recursive. */
 struct blitzlib *uselib(UWORD libnum);
 /* 5841 uselib for a known lib (libnum = lib->libnum, asm d1) */
-struct blitzlib *uselib3(struct blitzlib *lib, UWORD libnum);
+struct blitzlib *uselib3(struct blitzlib *l, UWORD libnum);
 /* 6237 use every lib of the dependency list at lib+off+6 except self.
    off == 0: nothing (asm: Z flag from the caller's move.l) */
-void uselib2(struct blitzlib *lib, ULONG off, UWORD self);
+void uselib2(struct blitzlib *l, ULONG off, UWORD self);
 /* 6003 create code and fill in offsets for all token jsrs (end of compile) */
 void fixjsrs(void);
 /* 6047 token tok, form number form (bit14 = Blitz form): returns the host
@@ -156,7 +156,7 @@ ULONG tokecode(UWORD tok, UWORD form);
 void freetlist(void);
 /* 6158 token-jsr relocs of lib: relocs = first token-jsr reloc entry,
    count = entries left from there */
-void handlejsrs(struct blitzlib *lib, const ULONG *relocs, ULONG count);
+void handlejsrs(struct blitzlib *l, const ULONG *relocs, ULONG count);
 /* 6189 remember a token jsr: addr = host address of the long to patch,
    tok = token, form = form number (bit14 = Blitz).  Ends with findtoke
    (lib gets used).  returns sub (asm a3), *libp = lib (a2) if non-NULL.

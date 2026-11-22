@@ -734,40 +734,40 @@ static void makevsize(void)
 }
 
 /* blitz2.s:11288 findhilib - find highest lib# under *libnum, set *libnum to
-   this lib number.  asm: ne if found (a2 = lib), eq if not. */
+   this bl number.  asm: ne if found (a2 = bl), eq if not. */
 static BOOL findhilib(UWORD *libnum, struct blitzlib **found)
 {
     UWORD best = 0;
-    struct blitzlib *lib;
+    struct blitzlib *bl;
 
-    for (lib = firstlib; lib; lib = lib->next) {
-        UWORD n = (UWORD)lib->libnum;
+    for (bl = firstlib; bl; bl = bl->next) {
+        UWORD n = (UWORD)bl->libnum;
         if (*libnum <= n)
             continue;
         if (best >= n)
             continue;
         best = n;
-        *found = lib;
+        *found = bl;
     }
     *libnum = best;
     return best != 0;
 }
 
 /* blitz2.s:11307 findlolib - find lowest lib# above *libnum, set *libnum to
-   this lib number.  asm: ne if found, eq if not. */
+   this bl number.  asm: ne if found, eq if not. */
 static BOOL findlolib(UWORD *libnum, struct blitzlib **found)
 {
     UWORD best = 0xffff;
-    struct blitzlib *lib;
+    struct blitzlib *bl;
 
-    for (lib = firstlib; lib; lib = lib->next) {
-        UWORD n = (UWORD)lib->libnum;
+    for (bl = firstlib; bl; bl = bl->next) {
+        UWORD n = (UWORD)bl->libnum;
         if (*libnum >= n)
             continue;
         if (best <= n)
             continue;
         best = n;
-        *found = lib;
+        *found = bl;
     }
     *libnum = best;
     return best != 0xffff;
@@ -778,14 +778,14 @@ void makeinits(void)
 {
     ULONG start = pc;
     UWORD libnum = 0xffff, n;
-    struct blitzlib *lib = NULL;
+    struct blitzlib *bl = NULL;
 
-    while (findhilib(&libnum, &lib)) {
-        if (!(lib->flags & LIBF_USED))
+    while (findhilib(&libnum, &bl)) {
+        if (!(bl->flags & LIBF_USED))
             continue;
-        if (lib->initsub == 0)
+        if (bl->initsub == 0)
             continue;
-        n = (UWORD)lib->libnum;
+        n = (UWORD)bl->libnum;
         if (n == allocvars) {
             makevsize();
         } else if (n == debuglib) {
@@ -808,18 +808,18 @@ void makeinits(void)
         }
         /* .more */
         lasta6 = -1;
-        makelibsub(lib, lib->initsub);
-        if ((UWORD)lib->libnum == allocvars && intdata1) {
+        makelibsub(bl, bl->initsub);
+        if ((UWORD)bl->libnum == allocvars && intdata1) {
             pokewd(putidata1[0]);
             addoff();
             pokel(intdata1);
         }
         /* .notvar2 */
-        if (lib->varkind == 0)
+        if (bl->varkind == 0)
             continue;
-        pokewd(lib->varkind < 0 ? 0x3b40 : 0x2b40); /* move.w/.l d0,x(a5) */
-        pokewd((UWORD)lib->varoff);
-        if ((UWORD)lib->libnum != 65530)
+        pokewd(bl->varkind < 0 ? 0x3b40 : 0x2b40); /* move.w/.l d0,x(a5) */
+        pokewd((UWORD)bl->varoff);
+        if ((UWORD)bl->libnum != 65530)
             continue;
         if (numstatic) {
             datastart(staticdata, (UWORD)numstatic);
@@ -858,19 +858,19 @@ UWORD prepd1[] = {
 void makefinits(void)
 {
     UWORD libnum = 0, n, size, sh;
-    struct blitzlib *lib = NULL;
+    struct blitzlib *bl = NULL;
     UBYTE *e, *regs;
     ULONG loop;
 
     varoff = (varoff + 1) & ~1;
-    while (findlolib(&libnum, &lib)) {
-        if (!(lib->flags & LIBF_USED))
+    while (findlolib(&libnum, &bl)) {
+        if (!(bl->flags & LIBF_USED))
             continue;
         /* .skipvar */
-        e = LIBMAX_E(lib);
+        e = LIBMAX_E(bl);
         if (W_(e - 2)) {
             /* A max lib, possible multiple frees! */
-            regs = (UBYTE *)lib + 6 + L_(e - 10);
+            regs = (UBYTE *)bl + 6 + L_(e - 10);
             /* .plop: skip the reg pairs, 0 terminated */
             for (;;) {
                 UWORD w = W_(regs);
@@ -887,7 +887,7 @@ void makefinits(void)
                 loop = pc;
                 sh = W_(e - 2) & 63;                /* lsl d2,d1 (mod 64) */
                 size = sh < 16 ? (UWORD)(1 << sh) : 0;
-                makelibsub(lib, L_(e - 10));
+                makelibsub(bl, L_(e - 10));
                 pokewd(freemax3[0]);                /* lea x(a3),a3 */
                 pokewd(size);
                 pokel(tl(freemax2));                /* subq #1,(a7) / bne.w */
@@ -896,17 +896,17 @@ void makefinits(void)
             }
         }
         /* .nomax */
-        if (lib->finitsub == 0)
+        if (bl->finitsub == 0)
             continue;
         /* check special cases! */
-        n = (UWORD)lib->libnum;
+        n = (UWORD)bl->libnum;
         if (n == allocvars)
             makevsize();
         else if (n == 65235)
             makessize();
         /* .more */
         lasta6 = -1;
-        makelibsub(lib, lib->finitsub);
+        makelibsub(bl, bl->finitsub);
     }
 }
 
@@ -937,54 +937,54 @@ struct blitzlib *tokejsr2(UWORD token)
 /* blitz2.s:11434 tokejsr - make a jsr (or simple reg get) from d1 */
 struct blitzlib *tokejsr(UWORD token)
 {
-    struct blitzlib *lib;
-    UBYTE *sub = findtoke(token, &lib);
+    struct blitzlib *bl;
+    UBYTE *sub = findtoke(token, &bl);
 
-    return makelibsub(lib, (ULONG)(sub - (UBYTE *)lib));
+    return makelibsub(bl, (ULONG)(sub - (UBYTE *)bl));
 }
 
 /* blitz2.s:11464 libisat - lib of the call being generated.  DIFF: not a
    global any more; makelibsub/userjsr/cutejsr pass it down to doajsr2 as
-   the parameter `lib` (the asm pushed and restored the global around
+   the parameter `bl` (the asm pushed and restored the global around
    every nested call, so the value seen is the same). */
 
-static void makelsub3(struct blitzlib *lib, UBYTE *sub);
+static void makelsub3(struct blitzlib *bl, UBYTE *sub);
 
 /* blitz2.s:11444 userjsr - a2 = lib base, a1 = start of #parameters */
-struct blitzlib *userjsr(struct blitzlib *lib, UBYTE *params)
+struct blitzlib *userjsr(struct blitzlib *bl, UBYTE *params)
 {
     UBYTE *sub;
 
     sub = params + 2 + (W_(params) & 255);
     sub = (UBYTE *)(((ULONG)sub + 1) & ~1UL);
     /* makelsub2 */
-    makelsub3(lib, sub);
-    return lib;
+    makelsub3(bl, sub);
+    return bl;
 }
 
 /* blitz2.s:11459 cutejsr */
-struct blitzlib *cutejsr(struct blitzlib *lib, UBYTE *sub)
+struct blitzlib *cutejsr(struct blitzlib *bl, UBYTE *sub)
 {
-    makelsub3(lib, sub);            /* makelsub2 */
-    return lib;
+    makelsub3(bl, sub);             /* makelsub2 */
+    return bl;
 }
 
 /* blitz2.s:11466 makelibsub - lib in a2, sub offset in d1.
    blitz2.s:11471 makelsub2 (pops the caller-pushed libisat) is the
    save/restore around makelsub3 here and in userjsr/cutejsr. */
-struct blitzlib *makelibsub(struct blitzlib *lib, ULONG off)
+struct blitzlib *makelibsub(struct blitzlib *bl, ULONG off)
 {
-    makelsub3(lib, (UBYTE *)lib + 6 + off);
-    return lib;
+    makelsub3(bl, (UBYTE *)bl + 6 + off);
+    return bl;
 }
 
 static UBYTE *fetchregs(UBYTE *p);
-static void doajsrrout(struct blitzlib *lib, ULONG off);
-static void doajsr(struct blitzlib *lib, ULONG off);
+static void doajsrrout(struct blitzlib *bl, ULONG off);
+static void doajsr(struct blitzlib *bl, ULONG off);
 static void makebtst(UWORD tok);
 
 /* blitz2.s:11474 makelsub3 */
-static void makelsub3(struct blitzlib *lib, UBYTE *sub)
+static void makelsub3(struct blitzlib *bl, UBYTE *sub)
 {
     ULONG before, rout, after;
 
@@ -1001,12 +1001,12 @@ static void makelsub3(struct blitzlib *lib, UBYTE *sub)
                 before &= ~1UL;     /* .skiptt2 */
             }
             /* .skiptt */
-            doajsr(lib, before);
+            doajsr(bl, before);
             rout = L_(sub);
             sub += 4;
-            doajsrrout(lib, rout);
+            doajsrrout(bl, rout);
             after = L_(sub);        /* error check after the routine */
-            doajsr(lib, after);
+            doajsr(bl, after);
             return;                 /* .more */
         }
     }
@@ -1017,12 +1017,12 @@ static void makelsub3(struct blitzlib *lib, UBYTE *sub)
             blitzerr();
     }
     /* .penis */
-    doajsrrout(lib, L_(sub + 4));
+    doajsrrout(bl, L_(sub + 4));
 }
 
 /* blitz2.s:11518 doajsrrout - Here, we suss out bit 0 to see if this can
    only happen in Amiga mode. */
-static void doajsrrout(struct blitzlib *lib, ULONG off)
+static void doajsrrout(struct blitzlib *bl, ULONG off)
 {
     if (off & 1) {
         if (blitzmode < 0)
@@ -1031,16 +1031,16 @@ static void doajsrrout(struct blitzlib *lib, ULONG off)
             makebtst(inamiga);
         off &= ~1UL;                /* .doajsr2 */
     }
-    doajsr(lib, off);
+    doajsr(bl, off);
 }
 
-static void doajsr2(struct blitzlib *lib, ULONG off);
+static void doajsr2(struct blitzlib *bl, ULONG off);
 
 /* blitz2.s:11535 doajsr - asm: Z flag from the caller's tst.l/move.l d1 */
-static void doajsr(struct blitzlib *lib, ULONG off)
+static void doajsr(struct blitzlib *bl, ULONG off)
 {
     if (off)
-        doajsr2(lib, off);
+        doajsr2(bl, off);
 }
 
 /* blitz2.s:11635 inline - inline code length (asm name: inline).  Kept
@@ -1050,7 +1050,7 @@ static void doajsr(struct blitzlib *lib, ULONG off)
 static UWORD inline_;
 
 /* blitz2.s:11541 doajsr2 - d1 is an offset from start of lib (libisat) */
-static void doajsr2(struct blitzlib *lib, ULONG off)
+static void doajsr2(struct blitzlib *bl, ULONG off)
 {
     UBYTE *p;
     UBYTE b;
@@ -1058,11 +1058,11 @@ static void doajsr2(struct blitzlib *lib, ULONG off)
     if (cfetchmode) {
         /* constant evaluation: jsr straight into the lib in memory */
         pokewd(0x4eb9);
-        pokel((ULONG)lib + off);
+        pokel((ULONG)bl + off);
         return;
     }
     /* .nfetch */
-    p = (UBYTE *)lib + off;
+    p = (UBYTE *)bl + off;
     inline_ = 0;
     for (;;) {                      /* .cute */
         if (*p++ != 0xa0)
@@ -1083,7 +1083,7 @@ static void doajsr2(struct blitzlib *lib, ULONG off)
                 makebtst(inblitz);
             /* .nobrerr */
             off = L_(p);
-            p = (UBYTE *)lib + off;
+            p = (UBYTE *)bl + off;
         } else {
             /* .inamiga */
             if (DEBUGGA_B)
@@ -1103,7 +1103,7 @@ static void doajsr2(struct blitzlib *lib, ULONG off)
     /* .notin */
     pokewd(0x4eb9);
     addoff();
-    pokel(off - lib->maxinfo + lib->outaddr);
+    pokel(off - bl->maxinfo + bl->outaddr);
 }
 
 /* blitz2.s:11608 makebtst - emit tst.w blitzflag(a5) + jsr check tok */
@@ -1162,7 +1162,7 @@ static UWORD theretest[] = {
 static UWORD makeregop(UWORD reg);
 
 /* blitz2.s:11680 toreg .sendmd - move.w #(maxinfo word + add),reg */
-static void sendmd(struct blitzlib *lib, UWORD regspec, LONG off, UWORD add)
+static void sendmd(struct blitzlib *bl, UWORD regspec, LONG off, UWORD add)
 {
     UWORD reg = regspec >> 8;
     UWORD op = 0x303c;              /* move.w #x,dn */
@@ -1177,13 +1177,13 @@ static void sendmd(struct blitzlib *lib, UWORD regspec, LONG off, UWORD add)
     /* .skipad */
     op |= (reg & 7) << 9;
     pokewd(op);
-    pokewd(W_((UBYTE *)lib + lib->maxinfo + off) + add);
+    pokewd(W_((UBYTE *)bl + bl->maxinfo + off) + add);
 }
 
 /* blitz2.s:11647 toreg - libnum=lib num, regspec.b=reg num */
 static void toreg(UWORD libnum, UWORD regspec)
 {
-    struct blitzlib *lib;
+    struct blitzlib *bl;
     UBYTE *e;
     UWORD reg, maxoff, dn, op;
     WORD sh;
@@ -1203,17 +1203,17 @@ static void toreg(UWORD libnum, UWORD regspec)
         }
     }
     /* .yeah */
-    lib = uselib(libnum);
+    bl = uselib(libnum);
     reg = regspec >> 8;
     switch ((UBYTE)regspec) {
     case 0:
         goto norm;
     case 4:
-        sendmd(lib, regspec, -6, 4);
+        sendmd(bl, regspec, -6, 4);
         return;
     case 3:
         /* O.K., we are going to send the current maximum settings. */
-        sendmd(lib, regspec, -4, 0);
+        sendmd(bl, regspec, -4, 0);
         return;
     }
 
@@ -1221,13 +1221,13 @@ static void toreg(UWORD libnum, UWORD regspec)
     if (reg == 0x16)
         lasta6 = -1;
     /* .isnta6 */
-    maxoff = (UWORD)LIBMAX_VAROFF(lib);
+    maxoff = (UWORD)LIBMAX_VAROFF(bl);
     pokewd(makeregop(reg));
     if ((BYTE)regspec < 0) {
         /* <0 - the rest is a register spec.
            this reg is used to calc a max item (must be dn) */
         pokewd(maxoff);             /* move.l x(a5),dn */
-        e = LIBMAX_E(lib);
+        e = LIBMAX_E(bl);
         dn = regspec & 7;
         if (DEBUGGA_B) {
             pokewd((UWORD)(dn << 9) | 0xb07c);      /* cmp #x,dn */
@@ -1276,20 +1276,20 @@ static void toreg(UWORD libnum, UWORD regspec)
 
 norm:
     if ((UBYTE)reg == 0x16) {
-        if ((UWORD)lib->varoff == (UWORD)lasta6)
+        if ((UWORD)bl->varoff == (UWORD)lasta6)
             return;                 /* .sk */
-        lasta6 = lib->varoff;
+        lasta6 = bl->varoff;
     }
     /* .nota6 */
     op = makeregop(reg);
-    if (lib->varkind < 0) {
+    if (bl->varkind < 0) {
         if (op == stackop[0])
             stackuse -= 2;
         op |= 0x1000;               /* .notst: move.w */
     }
     /* .long */
     pokewd(op);
-    pokewd((UWORD)lib->varoff);
+    pokewd((UWORD)bl->varoff);
 }
 
 /* blitz2.s:11829-11839 lsldn / maxchk / maxdo / stackopuse / stackop */
