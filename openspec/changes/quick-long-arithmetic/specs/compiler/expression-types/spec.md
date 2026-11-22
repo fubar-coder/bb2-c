@@ -56,7 +56,7 @@ A Quick that meets a Float operand or `^` under a whole-number type so far SHALL
 - **THEN** it gets 2 and 2
 
 ### Requirement: Other operators take the Quick rounded down
-Shifts, `AND`, `OR`, `EOR`, `MOD` and `Not` with a Quick operand under a whole-number type so far SHALL take the Quick rounded down, as before.
+Shifts, `AND`, `OR`, `EOR`, `Not` and `MOD` with a whole-number divisor, with a Quick operand under a whole-number type so far, SHALL take the Quick rounded down, as before; `MOD` with a Float divisor takes the Quick with its fraction ("Float operands and powers take the fraction").
 
 #### Scenario: Shift and mask
 - **WHEN** a program evaluates `r.l=q ASL 4` and `r.l=t AND 3` with `q=1.5`, `t=-1.5`
@@ -94,6 +94,10 @@ blitz2 and blitz2-ab3 (AB3 mode) SHALL apply the same rule; AmiBlitz3 v3.14.0 ke
 #### Scenario: AB3 mode
 - **WHEN** an AB3 source evaluates `r.l=q*2` with `q=1.5`
 - **THEN** `r` is 3
+
+#### Scenario: Any library set
+- **WHEN** the port compiles `r.l=l*q`, `r.l=q*p` or `r.l=l/q` with its own libraries, with the CD's libraries, or in AB3 mode with AmiBlitz3's libraries
+- **THEN** the program compiles and gives the same results: the routines of these operations come with the compiler (its internal library), not from the library set
 
 ### Requirement: A mixed product beyond 32 bits wraps
 A Long times a Quick whose result does not fit a Long SHALL give the result modulo 2^32, as the Long multiplication does.

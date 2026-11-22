@@ -196,10 +196,10 @@ TEST_CASE("exprmatrix expect: the AmiBlitz3 cases", "[exprmatrix]")
 // fixed after the matrix stay in their bug-orig tests, with @fixed
 TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
 {
-    gen now(std::string(HEAD) + POW);
-    gen one(std::string(HEAD) + POW, EM_RULES_PORTNOW | EM_R_1178);
-    gen two(std::string(HEAD) + POW, EM_RULES_PORTNOW | EM_R_1178 | EM_R_1189);
-    gen ref(std::string(HEAD) + POW, EM_RULES_PORTNOW | EM_R_1188);
+    gen now(std::string(HEAD) + POW, EM_RULES_MATRIX);
+    gen one(std::string(HEAD) + POW, EM_RULES_MATRIX | EM_R_1178);
+    gen two(std::string(HEAD) + POW, EM_RULES_MATRIX | EM_R_1178 | EM_R_1189);
+    gen ref(std::string(HEAD) + POW, EM_RULES_MATRIX | EM_R_1188);
     const std::string t = BUG + "compiler-expr-1178-dl-A-01", tq = BUG + "compiler-expr-1178-1189-dl-B-01",
                       tc = BUG + "compiler-expr-1178-i1-I-c-01";
 
@@ -207,7 +207,7 @@ TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
     REQUIRE(one.rc == 0);
     REQUIRE(two.rc == 0);
     REQUIRE(ref.rc == 0);
-    // the port of this commit: no test is marked
+    // the port when the matrix was committed: no test is marked
     for (const auto &[path, text] : now.files)
         CHECK(text.find("@fixed") == std::string::npos);
     // one issue fixed: the same test with @fixed, the same expectation;

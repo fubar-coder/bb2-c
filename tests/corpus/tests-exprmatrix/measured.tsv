@@ -575,14 +575,14 @@ dl-pow-l-cb-B	-	2147483647	2147483647	2147483647	2147483647	2147483647
 dl-pow-l-cw-B	-	2147483647	2147483647	2147483647	2147483647	2147483647				
 dl-pow-l-cl-B	-	2147483647	2147483647	2147483647	2147483647	2147483647				
 dl-pow-l-cf-B	-	2147483647	2147483647	2147483647	2147483647	2147483647				
-dl-pow-q-b-B	-	8	8	8	8	8				
-dl-pow-q-w-B	-	8	8	8	8	8				
-dl-pow-q-l-B	-	8	8	8	8	8				
-dl-pow-q-q-B	-	8	8	8	8	8				
-dl-pow-q-f-B	-	8	8	8	8	8				
-dl-pow-q-cb-B	-	8	8	8	8	8				
-dl-pow-q-cw-B	-	8	8	8	8	8				
-dl-pow-q-cl-B	-	8	8	8	8	8				
+dl-pow-q-b-B	-	8	8	3	3	8				
+dl-pow-q-w-B	-	8	8	3	3	8				
+dl-pow-q-l-B	-	8	8	3	3	8				
+dl-pow-q-q-B	-	8	8	3	3	8				
+dl-pow-q-f-B	-	8	8	3	3	8				
+dl-pow-q-cb-B	-	8	8	3	3	8				
+dl-pow-q-cw-B	-	8	8	3	3	8				
+dl-pow-q-cl-B	-	8	8	3	3	8				
 dl-pow-cb-b-B	-	27	27	27	27	27				
 dl-pow-cb-w-B	-	27	27	27	27	27				
 dl-pow-cb-l-B	-	27	27	27	27	27				
@@ -1900,14 +1900,14 @@ pl-pow-l-cb-B	-	2147483647	2147483647	2147483647	2147483647	2147483647
 pl-pow-l-cw-B	-	2147483647	2147483647	2147483647	2147483647	2147483647				
 pl-pow-l-cl-B	-	2147483647	2147483647	2147483647	2147483647	2147483647				
 pl-pow-l-cf-B	-	2147483647	2147483647	2147483647	2147483647	2147483647				
-pl-pow-q-b-B	-	8	8	8	8	8				
-pl-pow-q-w-B	-	8	8	8	8	8				
-pl-pow-q-l-B	-	8	8	8	8	8				
-pl-pow-q-q-B	-	8	8	8	8	8				
-pl-pow-q-f-B	-	8	8	8	8	8				
-pl-pow-q-cb-B	-	8	8	8	8	8				
-pl-pow-q-cw-B	-	8	8	8	8	8				
-pl-pow-q-cl-B	-	8	8	8	8	8				
+pl-pow-q-b-B	-	8	8	3	3	8				
+pl-pow-q-w-B	-	8	8	3	3	8				
+pl-pow-q-l-B	-	8	8	3	3	8				
+pl-pow-q-q-B	-	8	8	3	3	8				
+pl-pow-q-f-B	-	8	8	3	3	8				
+pl-pow-q-cb-B	-	8	8	3	3	8				
+pl-pow-q-cw-B	-	8	8	3	3	8				
+pl-pow-q-cl-B	-	8	8	3	3	8				
 pl-pow-cb-b-B	-	27	27	27	27	27				
 pl-pow-cb-w-B	-	27	27	27	27	27				
 pl-pow-cb-l-B	-	27	27	27	27	27				
@@ -2492,14 +2492,14 @@ i1-pow-l-cb-J	-	!outside	!outside	!outside	!outside	!outside	!runtime	!runtime	!
 i1-pow-l-cw-J	-	!outside	!outside	!outside	!outside	!outside	!runtime	!runtime	!runtime	!runtime
 i1-pow-l-cl-J	-	!outside	!outside	!outside	!outside	!outside	!runtime	!runtime	!runtime	!runtime
 i1-pow-l-cf-J	-	!outside	!outside	!outside	!outside	!outside	!runtime	!runtime	!runtime	!runtime
-i1-pow-q-b-J	-	129	129	129	129	129	129	129	129	129
-i1-pow-q-w-J	-	129	129	129	129	129	129	129	129	129
-i1-pow-q-l-J	-	129	129	129	129	129	129	129	129	129
-i1-pow-q-q-J	-	129	129	129	129	129	129	129	129	129
-i1-pow-q-f-J	-	129	129	129	129	129	129	129	129	129
-i1-pow-q-cb-J	-	129	129	129	129	129	129	129	129	129
-i1-pow-q-cw-J	-	129	129	129	129	129	129	129	129	129
-i1-pow-q-cl-J	-	129	129	129	129	129	129	129	129	129
+i1-pow-q-b-J	-	129	129	49	49	129	129	129	49	49
+i1-pow-q-w-J	-	129	129	49	49	129	129	129	49	49
+i1-pow-q-l-J	-	129	129	49	49	129	129	129	49	49
+i1-pow-q-q-J	-	129	129	49	49	129	129	129	49	49
+i1-pow-q-f-J	-	129	129	49	49	129	129	129	49	49
+i1-pow-q-cb-J	-	129	129	49	49	129	129	129	49	49
+i1-pow-q-cw-J	-	129	129	49	49	129	129	129	49	49
+i1-pow-q-cl-J	-	129	129	49	49	129	129	129	49	49
 i1-pow-cb-b-J	-	433	433	433	433	433	433	433	433	433
 i1-pow-cb-w-J	-	433	433	433	433	433	433	433	433	433
 i1-pow-cb-l-J	-	433	433	433	433	433	433	433	433	433
@@ -2612,14 +2612,14 @@ i2-pow-l-cb-J	-	!outside	!outside	!outside	!outside	!outside	!runtime	!runtime	!
 i2-pow-l-cw-J	-	!outside	!outside	!outside	!outside	!outside	!runtime	!runtime	!runtime	!runtime
 i2-pow-l-cl-J	-	!outside	!outside	!outside	!outside	!outside	!runtime	!runtime	!runtime	!runtime
 i2-pow-l-cf-J	-	!outside	!outside	!outside	!outside	!outside	!runtime	!runtime	!runtime	!runtime
-i2-pow-q-b-J	-	49	49	49	49	49	129	129	129	129
-i2-pow-q-w-J	-	49	49	49	49	49	129	129	129	129
-i2-pow-q-l-J	-	49	49	49	49	49	129	129	129	129
-i2-pow-q-q-J	-	49	49	49	49	49	129	129	129	129
-i2-pow-q-f-J	-	49	49	49	49	49	129	129	129	129
-i2-pow-q-cb-J	-	49	49	49	49	49	129	129	129	129
-i2-pow-q-cw-J	-	49	49	49	49	49	129	129	129	129
-i2-pow-q-cl-J	-	49	49	49	49	49	129	129	129	129
+i2-pow-q-b-J	-	49	49	49	49	49	129	129	49	49
+i2-pow-q-w-J	-	49	49	49	49	49	129	129	49	49
+i2-pow-q-l-J	-	49	49	49	49	49	129	129	49	49
+i2-pow-q-q-J	-	49	49	49	49	49	129	129	49	49
+i2-pow-q-f-J	-	49	49	49	49	49	129	129	49	49
+i2-pow-q-cb-J	-	49	49	49	49	49	129	129	49	49
+i2-pow-q-cw-J	-	49	49	49	49	49	129	129	49	49
+i2-pow-q-cl-J	-	49	49	49	49	49	129	129	49	49
 i2-pow-cb-b-J	-	433	433	433	433	433	433	433	433	433
 i2-pow-cb-w-J	-	433	433	433	433	433	433	433	433	433
 i2-pow-cb-l-J	-	433	433	433	433	433	433	433	433	433

@@ -139,6 +139,13 @@ static struct {
     WORD a6;
     UWORD from, to, depth;
 } conv;
+/* Fixed (#1178), no asm counterpart: D(regat) holds a raw Quick (16.16)
+   while the type so far is Long.  varcont sets it instead of cutting the
+   Quick to a whole number at fetch; every consumer of the value takes
+   the Quick with its fraction (eval5, mixedop) or rounds it down where
+   the original's value stays (rawcut: shifts, logic operators, Mod, Not,
+   the end of the expression) */
+static BOOL rawq = FALSE;
 /* the intrinsics (no asm counterpart, see intrinsics[]): the number of
    elements getelement2 has begun, and where the right side of the last
    assignment began (intrinsic_let: its evaldepth and the number of its
@@ -160,6 +167,8 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op);
 static BOOL intrinsic_quick(UWORD type);
 static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op);
 static UWORD doop(struct opentry *op, UWORD type);
+static UWORD mixedop(struct opentry *op, BOOL lq, BOOL rq, UWORD left, UWORD type);
+static void doplus2(UWORD opcode);
 static ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend);
 static UWORD compareop(struct opentry *op, UWORD left, UWORD right);
 static void divzerochk(const struct opentry *op, UWORD type);
@@ -737,6 +746,7 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     WORD s_thisstuse = thisstuse;
     WORD s_pushflag, s_sbgot, s_unknown;
     UWORD asked, t, c;
+    BOOL s_rawq = rawq;
 
     thisstuse = stackuse;
     s_pushflag = pushflag;
@@ -749,7 +759,11 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     asked = *type;
     t = asked;
     evaldepth++;
+    rawq = FALSE;
     c = eval3(&t);
+    if (rawq)                       /* Fixed (#1178): a raw Quick, floor */
+        quicktolong();
+    rawq = s_rawq;
     evaldepth--;
     if (asked && !unknown) {        /* type asked for */
         convtype(t, asked);         /* exg d2,d3 / convtype */
@@ -877,6 +891,29 @@ static __attribute__((noinline)) void constfold(UWORD type)
     }
 }
 
+/* Fixed (#1178), no asm counterpart: the raw Quick in D(reg) rounded
+   down to a Long (quicktolong, the code varcont emitted for the cut) */
+static void rawcut(UWORD reg)
+{
+    UWORD s = regat;
+
+    regat = reg;
+    quicktolong();
+    regat = s;
+}
+
+/* Fixed (#1178), no asm counterpart: op takes a raw Quick rounded down,
+   as the original's cut gave it, whatever its other operand: a shift,
+   AND, OR, EOR, a bit operator (not + - * / ^ Mod, not a comparison, not
+   the end; Mod takes the fraction when its right operand is a Float) */
+static BOOL rawcutop(const struct opentry *op)
+{
+    if (!op || (op >= opeq && op <= opge))
+        return FALSE;
+    return op->op != '+' && op->op != '-' && op->op != '*' && op->op != '/' && op->op != '^'
+           && op->op != TOK_MOD;
+}
+
 /* blitz2.s:8983 eval5 - precedence climbing.  Returns the precedence of
    the pending operator (asm d1, 0 = none), *op = that operator (a0),
    *c = current char (d0). */
@@ -885,16 +922,27 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
     ULONG lstart = pc;              /* the left operand: lstart..lend */
     UWORD prec = eval2(type, c, op);
     ULONG lend = pc;
+    BOOL lraw = rawq;               /* Fixed (#1178): the left operand raw */
 
+    /* Fixed (#1178): a raw Quick whose consumer (the next operator if it
+       binds tighter than the pending one, else the pending one) is a
+       shift, a logic operator, Mod or a bit operator is rounded down here,
+       where varcont cut it: today's value and code */
+    if (lraw && rawcutop(prec > precsp[-1].prec ? *op : precsp[-1].op)) {
+        quicktolong();
+        lraw = FALSE;
+    }
     for (;;) {
         UWORD left, nprec;
         struct opentry *nop, *cur;
         struct forthent *fs;
-        BOOL cmp, cmpop, lbyte, lconst;
+        BOOL cmp, cmpop, lbyte, lconst, rraw;
         ULONG rstart;
 
-        if (!(prec > precsp[-1].prec))  /* cmp -(a1),d1 / bhi .higher */
+        if (!(prec > precsp[-1].prec)) { /* cmp -(a1),d1 / bhi .higher */
+            rawq = lraw;
             return prec;
+        }
         /* .higher */
         /* Fixed (#1185): the right operand of an operator whose left
            operand is in d7 would need a register beyond d7 (the 7th and
@@ -915,7 +963,10 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
            element gets its own type back (cmpownleft), the right operand
            starts at type 0, compareop compares the two. */
         cmpop = *op >= opeq && *op <= opge;
-        if (cmpop && lend)
+        if (cmpop && lraw) {
+            *type = T_QUICK;        /* Fixed (#1178): the left is a Quick */
+            lraw = FALSE;
+        } else if (cmpop && lend)
             lend = cmpownleft(type, lstart, lend);
         /* Fixed (#978): an equality comparison (= or <>) of a byte value
            with a constant from 128 to 255 (each operand one element)
@@ -933,6 +984,8 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         if (cmpop)
             *type = 0;              /* Fixed (#1177) */
         nprec = eval5(type, c, &nop);
+        rraw = rawq;
+        rawq = FALSE;
         regat--;
         if (cmp && lbyte && isbyteconst(rstart, pc))
             byteconstext(rstart);
@@ -940,14 +993,21 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
             byteconstext(lstart);
         lstart = lend = 0;          /* the left operand is a result now */
         cur = popprec(&prec);       /* .skip */
-        if (cmpop)
+        if (cmpop) {
+            if (rraw)               /* not reached: the right starts at 0 */
+                rawcut(regat + 1);
             *type = compareop(cur, left, *type);
+        } else if (lraw || rraw
+                   || (left == T_QUICK && *type == T_LONG
+                       && (cur->op == '*' || cur->op == '/')))
+            *type = mixedop(cur, lraw || left == T_QUICK, rraw, left, *type);
         else {
             if (left)
                 convtypef(left, *type); /* could possibly fuck regat+1 ! */
             divzerochk(cur, *type);
             *type = doop(cur, *type);
         }
+        lraw = FALSE;
         /* O.K., lets check the forth stack to see if last two operators
            are constants!  if so, we can JSR the routine to optimize into a
            constant! */
@@ -1033,6 +1093,122 @@ static UWORD doop(struct opentry *op, UWORD type)
     if (!h)
         illoperr();
     return h(type);                 /* jmp (a0) */
+}
+
+/* Fixed (#1178), no asm counterpart: the operator op on D(regat) (left)
+   and D(regat+1) (right) when one of them is a raw Quick (lq, rq) under a
+   Long type so far, or the left one a Quick that a Long right operand
+   (a constant beyond the Quick range, &var, ?label) made Long, under * or
+   / (lq with left T_QUICK).  The original cut the Quick to a whole number
+   when it fetched it (varcont, blitz2.s:10491-10498) or after the right
+   operand (convtypef, the late cut): r.l=q*2 with q=1.5 gave 2.  Here the
+   operation takes the fraction and gives a Long, rounded at the operator
+   (quick-long-arithmetic, design decision 3): + - * down, / towards zero
+   as BB2's divisions.  A Float type so far (the right side made it one)
+   takes the Quick with its fraction (quicktofloat), ^ both operands with
+   theirs; the other operators take the Quick rounded down, as before.
+   type: the type so far after the right operand.  Returns the result's
+   type. */
+static __attribute__((noinline))
+UWORD mixedop(struct opentry *op, BOOL lq, BOOL rq, UWORD left, UWORD type)
+{
+    UWORD r = regat;
+
+    if (type != T_LONG) {
+        /* a Float (or another) type so far set by the right side: the
+           right operand is of that type already */
+        if (rq)
+            rawcut(r + 1);
+        if (lq)
+            convtypef(T_QUICK, type);
+        else if (left)
+            convtypef(left, type);
+        divzerochk(op, type);
+        return doop(op, type);
+    }
+    if (op->op == '^') {
+        convtypef(lq ? T_QUICK : T_LONG, T_FLOAT);
+        regat++;
+        convtype(rq ? T_QUICK : T_LONG, T_FLOAT);
+        regat--;
+        return dopow(T_FLOAT);
+    }
+    switch (op->op) {
+    case '+':
+        if (lq && rq) {
+            /* floor(q+p) = floor(q) + floor(p) + the carry of the
+               fractions, without a 32 bit raw sum (20000.0+20000.0) */
+            doplus2(0xd040);                    /* add.w Dp,Dq: X = carry */
+            pokewd(0x4840 | r);                 /* swap Dq */
+            pokewd(0x4840 | (r + 1));           /* swap Dp */
+            pokewd(0x48c0 | r);                 /* ext.l Dq */
+            pokewd(0x48c0 | (r + 1));           /* ext.l Dp */
+            doplus2(0xd180);                    /* addx.l Dp,Dq */
+            return T_LONG;
+        }
+        /* l+q, q+l: floor(l+q) = l + floor(q) */
+        rawcut(lq ? r : r + 1);
+        doplus2(0xd080);                        /* add.l */
+        return T_LONG;
+    case '-':
+        if (lq && rq) {
+            /* floor(q-p) = floor(q) - floor(p) - the borrow of the
+               fractions */
+            doplus2(0x9040);                    /* sub.w Dp,Dq: X = borrow */
+            pokewd(0x4840 | r);
+            pokewd(0x4840 | (r + 1));
+            pokewd(0x48c0 | r);
+            pokewd(0x48c0 | (r + 1));
+            doplus2(0x9180);                    /* subx.l Dp,Dq */
+            return T_LONG;
+        }
+        if (rq) {
+            /* l-q: floor(l-q) = l - ceil(q) = l - floor(q) - (frac <> 0),
+               as cmplq takes it (exact also for -32768.0) */
+            pokewd(0x4440 | (r + 1));           /* neg.w Dq: X = frac<>0 */
+            pokewd(0x4840 | (r + 1));           /* swap Dq */
+            pokewd(0x48c0 | (r + 1));           /* ext.l Dq: floor(q) */
+            doplus2(0x9180);                    /* subx.l Dq,Dl */
+            return T_LONG;
+        }
+        rawcut(r);                              /* q-l: floor(q) - l */
+        doplus2(0x9080);                        /* sub.l */
+        return T_LONG;
+    case '*':
+        /* floor(l*q): bits 16..47 of the 64 bit product; floor(q*p): bits
+           32..63 (lmullib, the port's entries) */
+        nocando();
+        domylib(lq && rq ? qqmult : mixmult);
+        return T_LONG;
+    case '/':
+        nocando();
+        if (rq && !lq) {
+            domylib(lqdiv);                     /* trunc((l<<16)/q) */
+            return T_LONG;
+        }
+        domylib(longdiv);       /* q/h: trunc(qraw/hraw); q/l: qraw/l */
+        if (!rq) {
+            /* q/l: the raw quotient (towards zero) to a whole number
+               towards zero */
+            pokewd(0x4a80 | r);                 /* tst.l Dn */
+            pokewd(0x6a06);                     /* bpl.s *+8 */
+            pokewd(0x0680 | r);                 /* addi.l #$FFFF,Dn */
+            pokel(0x0000ffff);
+            pokewd(0x4840 | r);                 /* swap Dn */
+            pokewd(0x48c0 | r);                 /* ext.l Dn */
+        }
+        return T_LONG;
+    default:
+        /* Mod with a whole-number divisor (a Float one took the Float
+           path above), a shift or a logic operator (rawcutop cut a left
+           operand at fetch already): the Quick rounded down, as before */
+        if (lq)
+            rawcut(r);
+        if (rq)
+            rawcut(r + 1);
+        divzerochk(op, T_LONG);
+        return doop(op, T_LONG);
+    }
 }
 
 /* Fixed (#1044): not in blitz2.s - a division or Mod by a constant 0.
@@ -1151,13 +1327,15 @@ static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
    function value) whose code ends in a conversion varcont made to the
    wanted type, gets its own type back: the conversion is dropped (with its
    relocations, as constfold frees them, and lasta6 as before it) when it
-   changes how the value is held - Quick to Long (the cut), a whole number
-   to Quick, a whole number or a Quick to Float.  Byte/Word to Long is exact
-   and stays.  #1186 (port): a decimal literal with a point (also
-   negated) that the wanted Byte cut to a whole number is a Float again
-   (fraclitfloat): rb.b=(1.5=1.5) compared 1 with 1.5.  Not covered
-   (#1183): a compound left operand (q*2) and -q, whose code goes on after
-   the conversion.  Returns the new end of the operand. */
+   changes how the value is held - a whole number to Quick, a whole number
+   or a Quick to Float.  Byte/Word to Long is exact and stays.  A Quick
+   under a Long is not cut any more (#1178): eval5 takes a raw left
+   operand as a Quick, also -q.  #1186 (port): a decimal literal with a
+   point (also negated) that the wanted Byte cut to a whole number is a
+   Float again (fraclitfloat): rb.b=(1.5=1.5) compared 1 with 1.5.  Not
+   covered (#1183): a compound left operand (q*2), computed in the wanted
+   type before the comparison operator is read.  Returns the new end of
+   the operand. */
 static __attribute__((noinline))
 ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend)
 {
@@ -1168,8 +1346,7 @@ ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend)
         return lend;
     if (conv.end != lend || conv.at <= lstart || conv.depth != evaldepth)
         return lend;
-    if (!((from == T_QUICK && to == T_LONG)
-          || (from >= T_BYTE && from <= T_LONG && to == T_QUICK)
+    if (!((from >= T_BYTE && from <= T_LONG && to == T_QUICK)
           || (from >= T_BYTE && from <= T_QUICK && to == T_FLOAT)))
         return lend;
     while ((node = *link) != conv.off && node) {
@@ -1769,6 +1946,10 @@ static UWORD notit(UWORD *type)
     UWORD c = eval4(type);
     UWORD opcode;
 
+    if (rawq) {                     /* Fixed (#1178): Not of floor(q) */
+        quicktolong();
+        rawq = FALSE;
+    }
     if (*type >= 5)
         illoperr();
     opcode = regat | 0x4640;        /* not.w */
@@ -1806,6 +1987,7 @@ static UWORD getelement2(UWORD *type)
     BOOL neg = negnext;             /* Fixed (#1070) */
 
     negnext = FALSE;
+    rawq = FALSE;                   /* Fixed (#1178): not a raw Quick yet */
     conv.end = 0;                   /* Fixed (#1177): no conversion yet */
     elemcount++;                    /* for the intrinsics */
     if (c & 0x8000)
@@ -3047,15 +3229,20 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
     /* .notabyte */
     if (!oldtype)                   /* type not set yet... it is now! */
         goto done;
-    /* A Quick is cut to Long at once: see issue #1178.  Fixed (#1177)
-       for the left operand of a comparison: eval5 drops the conversion
-       recorded in conv (cmpownleft); the right operand is fetched without
-       a wanted type. */
-    if (oldtype == T_LONG && *type == T_QUICK)
-        goto conv2;
+    /* Fixed (#1178): a Quick under a Long type so far is not cut to a
+       whole number here (the original's goto conv2, blitz2.s:10491-10498:
+       r.l=q*2 with q=1.5 gave 2).  It stays a raw 16.16 value, the type
+       so far stays Long and rawq says so: the operator computes with the
+       fraction and rounds (eval5, mixedop: + - * down, / towards zero),
+       a comparison takes it as a Quick (#1177), a shift, logic operator,
+       Mod, Not and the end of the expression round it down as before. */
+    if (oldtype == T_LONG && *type == T_QUICK) {
+        *type = T_LONG;
+        rawq = TRUE;
+        goto done;
+    }
     if (oldtype <= *type)           /* .nob */
         goto done;
-conv2:
     conv.at = pc;
     conv.off = firstoff;
     conv.a6 = lasta6;

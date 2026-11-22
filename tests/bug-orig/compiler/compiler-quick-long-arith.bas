@@ -9,6 +9,7 @@
 ; operator, down for + - * and negation, towards zero for /; a Float
 ; operand or ^ takes the Quick with its fraction (spec
 ; compiler/expression-types).
+; @fixed #1178
 Function.q fq{x.q}
   Function Return x
 End Function

@@ -1,14 +1,16 @@
 ; @runerrs off
-; Pins the CURRENT behaviour of a Quick operand in Long arithmetic, the
-; rule of issue #1178: an expression is evaluated from left to right with
-; one "type so far" (the type it is wanted in, e.g. the destination); a
-; Quick fetched while that type is Long is converted to Long at once and
-; its fraction is cut off, so r.l=q*2 gives 2, not 3, and w+v+q gives 8
-; (Word+Word is a Long).  This is not a fix and not the mathematically
-; correct result: the rule is deliberate (blitz2 1.95 gives the same
-; lines); a change of the rule shows in this test.
-; Arithmetic only: comparisons are #1177 (their fix changes them), array
-; indexes are left out.
+; Pins the rule of a Quick operand in Long arithmetic, fixed in #1178 (spec
+; compiler/expression-types): an expression is evaluated from left to
+; right with one "type so far" (the type it is wanted in, e.g. the
+; destination).  A Quick fetched while that type is Long keeps its
+; fraction; each operation is computed with it and rounded at the
+; operator, down for + - * and negation, towards zero for /: r.l=q*2 gives
+; 3, r.l=l-q 8, r.l=q/h 3.  A Long constant that makes the type Long
+; itself takes the fraction under * and / (35, 36).  The type so far
+; flows as before: w+v+q gives 8 (Word+Word is a Long; an interim value
+; until the expression tree, #1180), shifts round the Quick down (09).
+; blitz2 1.95 cut the Quick at fetch (r.l=q*2 gave 2).
+; Arithmetic only: comparisons are #1177, array indexes are left out.
 Function.q fq{a.q}
   Function Return a
 End Function

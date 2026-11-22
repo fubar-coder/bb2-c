@@ -130,6 +130,11 @@
 #define seterr      0xd201
 #define clrerr      0xd202
 #define errfail     0xd205
+/* the port's (#1178): compilerlib, library 64030, embedded in the
+   compiler (libs/compilerlib) */
+#define mixmult     0xd600     /* floor(l*q) */
+#define qqmult      0xd601     /* floor(q*p) */
+#define lqdiv       0xd602     /* trunc(l/q) */
 
 #define loclabch    39         /* "'" local label char */
 #ifndef inclen

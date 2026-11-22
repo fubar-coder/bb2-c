@@ -434,6 +434,9 @@ ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
 ab3_cli_case(jsr jsr.ab3 REF)
 # a constant without a value is 0 (#972; the same in AmiBlitz3)
 ab3_cli_case(const_novalue const_novalue.ab3 REF)
+# a Quick under a Long type so far (#1178): the port's rule in AB3 mode,
+# AmiBlitz3 keeps the cut (docs/ab3/variant.md)
+ab3_cli_case(quick_long_arith quick_long_arith.ab3 REF REF_EXPECT quick_long_arith.ref.expect)
 # the character literals @"..." (change ab3-mode-g3, spec
 # ab3-compat/strings): byte, word and long targets, in memory and in a
 # file; the errors (too many characters, without new syntax, in BB2 mode,
