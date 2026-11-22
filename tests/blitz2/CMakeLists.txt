@@ -139,6 +139,14 @@ add_test(NAME blitz2_selftest_model_compile_error COMMAND ${CORPUSRUN} case --en
 set_tests_properties(blitz2_selftest_model_compile_error PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
 	"compile error: model-compile-error\\.test\\.bas:7: [^\n]*\n.*model-compile-error\\.test\\.bas: case broken: FAILED")
+# the example of tests/README.md, "Tests that judge themselves": its source and configuration
+# run as a test of the model, every case on the port side (readme-model-example.cmake)
+add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md
+	-DCORPUSRUN=${CORPUSRUN} -DENV=${BASIC_TEST_ENV} -DWORK=${CMAKE_CURRENT_BINARY_DIR}/readme-model-example
+	-DSIDE=port -P ${CMAKE_CURRENT_SOURCE_DIR}/readme-model-example.cmake)
+math(EXPR limit "2 * (${BASIC_TEST_TIMEOUT} + 60) + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(blitz2_model_readme_example PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "readme-model-example: every case passed")
 # the sources of the compiler that need nothing special, compiled by the prev build (the
 # compiler's bug-orig tests, tests/bug-orig, were added before)
 prev_compile_plain_pass()
