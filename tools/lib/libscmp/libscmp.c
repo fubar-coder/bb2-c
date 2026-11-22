@@ -731,6 +731,28 @@ int libscmp_load_named(struct libscmp_file *f, const char *dir, const char *name
     return r;
 }
 
+/* 1 if the expected data of name has cases and none of them applies to the
+   original (all [fixed #N]); unreadable or malformed files: 0 (judged as before) */
+static int libscmp_expected_only_fixed(const char *exp_dir, const char *name)
+{
+    struct libscmp_file f;
+    FILE *null = fopen("/dev/null", "w");
+    size_t i;
+    int r = 0;
+
+    if (null && !libscmp_load_named(&f, exp_dir, name, LIBSCMP_EXPECTED, null) && f.nentries) {
+        r = 1;
+        for (i = 0; i < f.nentries; i++)
+            if (libscmp_applies(&f.entries[i], LIBSCMP_ORIG) >= 0)
+                r = 0;
+    }
+    if (null) {
+        libscmp_free(&f);
+        fclose(null);
+    }
+    return r;
+}
+
 int libscmp_compare_dirs(const char *run_dir, const char *exp_dir, enum libscmp_set set,
                          const char *const *only, size_t nonly, FILE *out, FILE *err)
 {
@@ -766,6 +788,11 @@ int libscmp_compare_dirs_other(const char *run_dir, const char *exp_dir, const c
         if (!hr && !he) {
             fprintf(err, "%s: no output (%s) and no expected data (%s)\n", name, rp, ep);
             status = 2;
+            nbad++;
+        } else if (!hr && set == LIBSCMP_ORIG && libscmp_expected_only_fixed(exp_dir, name)) {
+            /* a library of the port only (compilerlib): no run of the original,
+               nothing expected of it */
+            fprintf(out, "%s: only [fixed #N] cases, no original to run: not judged (set orig)\n", name);
             nbad++;
         } else if (!hr || !he) {
             fprintf(out, hr ? "%s: no expected data (%s)\n" : "%s: no output of the run (%s)\n",

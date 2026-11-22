@@ -299,7 +299,10 @@ qualifier, a block with its observation range), a case the run lacks
 `NAME: ... N more`, then the program's summary line and at the end
 `libs-compare: N programs, ...`. The programs are those with a file in
 either directory, or the ones `--only` names (the others are not looked
-at); a program with a file in only one directory fails. A malformed file
+at); a program with a file in only one directory fails, except for `--set orig`
+and expected data that has cases and only `[fixed #N]` ones with no run (a
+library of the port only, e.g. compilerlib): it is counted as not judged, no
+finding. A malformed file
 (a line not of the format, a duplicate key, a key both unqualified and
 qualified, a key with `[orig]` and `[orig #N]` or with `[orig #N]` and
 `[fixed #N]`, two qualifiers, an issue number missing or not decimal from
