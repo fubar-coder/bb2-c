@@ -1738,13 +1738,16 @@ current build (the one its configure fetched into `_deps/snitch-src`, or
 the `FETCHCONTENT_SOURCE_DIR_SNITCH` it was given) if the commit pins the
 same snitch (the `URL_HASH` in `cmake/Snitch.cmake`). Its configure gets it
 as `FETCHCONTENT_SOURCE_DIR_SNITCH`, which the top-level `CMakeLists.txt`
-passes on to its host ExternalProject; for commits that do not pass it on
-yet, `prev/ab3c/build/amiga-release/_deps/snitch-src` links to it, where
-`cmake/Snitch.cmake` looks for a copy ab3c downloaded. A commit that pins
-another snitch downloads its own; the build says so
-(`prev: ... pins snitch SHA256=...`). snitch is the build's only
-`FetchContent` dependency; the originals (`archive/cd`, ...) are linked
-from the checkout.
+passes on to its host ExternalProject. Older commits do not pass it on
+and their `cmake/Snitch.cmake` looks for it at
+`../../ab3c/build/amiga-release/_deps/snitch-src` relative to its own
+directory, so `prev/ab3c/build/amiga-release/_deps/snitch-src` links to
+it. A commit that pins another snitch downloads its own; the build says
+so (`prev: ... pins snitch SHA256=...`). CLI11 (`cmake/CLI11.cmake`) is
+passed on the same way. snitch and CLI11 are the build's only
+`FetchContent` dependencies; every build other than a prev build
+downloads them into its own `_deps`. The originals (`archive/cd`, ...)
+are linked from the checkout.
 
 What is compared (without a prev build `prev_results` is skipped, not
 passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover

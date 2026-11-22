@@ -60,10 +60,11 @@ string(REPLACE "|" ";" CONFIGURE_ARGS "${CONFIGURE_ARGS}")
 # pinned to SNITCH_PIN) if the commit pins the same SHA256 in its
 # cmake/Snitch.cmake.  Its top-level configure gets it as
 # FETCHCONTENT_SOURCE_DIR_SNITCH (and passes it on to its host
-# ExternalProject); for the host ExternalProject of a commit that does not
-# pass it on yet, DIR/ab3c/build/amiga-release/_deps/snitch-src links to it:
-# Snitch.cmake takes a snitch that ab3c downloaded from there (relative to
-# DIR/src).  With another pin, the commit downloads its own.
+# ExternalProject).  Older commits do not pass it on to their host
+# ExternalProject; their cmake/Snitch.cmake looks for a snitch at
+# ../../ab3c/build/amiga-release/_deps/snitch-src relative to its own
+# directory, so DIR/ab3c/build/amiga-release/_deps/snitch-src links to it.
+# With another pin, the commit downloads its own.
 set(snitch_link ${PREV_DIR}/ab3c/build/amiga-release/_deps/snitch-src)
 set(prev_pin "")
 if(EXISTS ${PREV_DIR}/src/cmake/Snitch.cmake)
