@@ -30,7 +30,7 @@ Before `quick-long-arithmetic` (#1178) starts (user decision 2026-11-22, "Order 
 
 ## 5. Documents
 
-- [ ] 5.1 `tests/README.md`: the matrix (the pass, the bug-orig tests, the classes, DIFFERS between two fixes, the update target, the questions file); `tools/exprmatrix/README.md`; `docs/blitz2/expression-types.md`: a pointer to the matrix as the measured source of its tables; verify: the coordinator's review, links resolve.
+- [x] 5.1 `tests/README.md`: the matrix (the pass, the bug-orig tests, the classes, DIFFERS between two fixes, the update target, the questions file); `tools/exprmatrix/README.md`; `docs/blitz2/expression-types.md`: a pointer to the matrix as the measured source of its tables; verify: the coordinator's review, links resolve.
 
 ## 6. Commit and follow-up
 
