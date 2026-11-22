@@ -1,0 +1,12 @@
+[compile]
+ok
+[run]
+i2-pow-q-b-J !runtime
+i2-pow-q-w-J !runtime
+i2-pow-q-l-J !runtime
+i2-pow-q-q-J !runtime
+i2-pow-q-f-J !runtime
+i2-pow-q-cb-J !runtime
+i2-pow-q-cw-J !runtime
+i2-pow-q-cl-J !runtime
+rc=0

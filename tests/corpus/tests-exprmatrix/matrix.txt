@@ -1,0 +1,30 @@
+# The expression matrix (OpenSpec change expression-type-matrix): its description,
+# read by exprmatrix expect (tools/exprmatrix/README.md; the target expr-matrix-update).
+cells-per-source 56
+# value sets of design decision 8; I and J: the index cells (values inside a Dim of 300 where the kind allows)
+values A b=3 w=1000 l=100000 q=1.5 f=2.5 s=AB cb=3 cw=1000 cl=100000 cf=1.5
+counts A b=2 w=2 l=2 q=2 f=2 cb=2 cw=2 cl=2 cf=2.5
+values B b=-3 w=-1000 l=-100000 q=-1.5 f=-2.5 cb=-3 cw=-1000 cl=-100000 cf=-1.5
+counts B b=3 w=3 l=3 q=3 f=3 cb=3 cw=3 cl=3 cf=3.5
+values I b=3 w=20 l=30 q=1.5 f=2.5 cb=3 cw=200 cl=40000 cf=1.5
+counts I b=2 w=2 l=2 q=2 f=2 cb=2 cw=2 cl=2 cf=2.5
+values J b=-3 w=-20 l=-30 q=-1.5 f=-2.5 cb=-3 cw=-200 cl=-40000 cf=-1.5
+counts J b=3 w=3 l=3 q=3 f=3 cb=3 cw=3 cl=3 cf=3.5
+# option F: the full product, value sets A and B (index contexts: I and J)
+block f
+contexts db dw dl dq df pl pw pq pf if print
+binary + - * / MOD ^ AND OR EOR LSL LSR ASL ASR = <> < <= > >=
+unary - NOT
+kinds b w l q f cb cw cl cf
+sets A B
+block fi
+contexts i1 i2
+binary + - * / MOD ^ AND OR EOR LSL LSR ASL ASR = <> < <= > >=
+unary - NOT
+kinds b w l q f cb cw cl cf
+sets I J
+block fs
+contexts db dw dl dq df pl pw pq pf if i1 i2 print
+binary + = <> < <= > >=
+kinds s
+sets A

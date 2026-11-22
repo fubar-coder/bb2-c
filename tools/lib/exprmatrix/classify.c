@@ -6,6 +6,7 @@
  * decision 7) and a report of the model's check against 1.95 (task 2.3).
  */
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -221,6 +222,7 @@ static const struct {
     { EM_R_1179, "1179" },
     { EM_R_1187, "1187" },
     { EM_R_1188, "1188" },
+    { EM_R_1189, "1189" },
     { 0, "lib" },               /* the C libraries: EM_R_CDLIB off */
 };
 enum { NSTEPS = sizeof steps / sizeof steps[0] };
@@ -228,13 +230,14 @@ enum { NSTEPS = sizeof steps / sizeof steps[0] };
 struct cls {
     const struct em_cell *cell;
     const struct em_row *row;
-    char cls[48];               /* agree, fixed-N, open-N, port, new, question, noncompile */
+    char cls[48];               /* agree, baseline, fixed-N, open-N, port, new, question, noncompile */
     char issues[32];            /* "1177+1178" */
     char q;                     /* the question class: 'A'... (0: none) */
     char exp[EM_TEXT_MAX], exp_on[EM_TEXT_MAX];
     char note[256];
     struct em_value orig, orig_on, fixed, fixed_on;
     int chk;                    /* an index cell measured with checking too */
+    int base;                   /* the expected value is the original's measured one (a baseline) */
 };
 
 static int is_index(const struct em_cell *c)
@@ -245,7 +248,7 @@ static int is_index(const struct em_cell *c)
 /* a model value equals a measured one ("?": not known, equal to anything) */
 static int same(const char *model, const char *meas)
 {
-    return !strcmp(model, "?") || !strcmp(model, meas);
+    return model[0] == '?' || !strcmp(model, meas);
 }
 
 /* the same for a cell: an index cell without its checked values printed
@@ -275,6 +278,21 @@ static void both(const struct em_matrix *m, const struct em_cell *c, int idx, un
         snprintf(out, n, "%s|%s", u.text, k.text);
     } else
         snprintf(out, n, "%s", u.text);
+}
+
+/* the same with the operands of an unknown power (a step that changes
+   what ^ is computed from changes the value) */
+static void both_sig(const struct em_matrix *m, const struct em_cell *c, int idx, unsigned rules, char *out,
+                     size_t n)
+{
+    struct em_value u;
+    size_t l;
+
+    both(m, c, idx, rules, out, n);
+    value(m, c, rules, 0, &u);
+    l = strlen(out);
+    if (u.text[0] == '?' && l < n)
+        snprintf(out + l, n - l, ":%llx", u.sig);
 }
 
 static int by_key(const void *a, const void *b)
@@ -310,13 +328,44 @@ static int is_1049(const struct em_cell *c, const struct em_matrix *m)
 }
 
 static const char *const qnames[] = {
-    ['A'] = "Q-A overflow of a whole-number or Quick result or conversion",
     ['B'] = "Q-B the two operand orders give different values after variant C",
-    ['C'] = "Q-C AND, OR, EOR, NOT and the shifts with a Quick or Float operand",
-    ['D'] = "Q-D MOD with negative or fractional operands",
-    ['E'] = "Q-E ^ (power)",
-    ['F'] = "Q-F 2.10, 1.95 and AmiBlitz3 disagree",
+    ['E'] = "Q-E ^ (power) without a known expected value",
+    ['F'] = "Q-F AmiBlitz3 differs and no issue explains it",
 };
+
+/* a measured value v of cell c, negated in the type of the cell's context
+   when neg (EM_R_1189: the sign of an odd power applied to what SPPow
+   gives; every conversion after it is symmetric: SPFix towards zero,
+   floattoquick, Print's sign) */
+static void negated(const struct em_cell *c, const char *v, int neg, char *out, size_t n)
+{
+    if (!neg || v[0] == '!' || !strcmp(v, "T") || !strcmp(v, "F")) {
+        snprintf(out, n, "%s", v);
+        return;
+    }
+    switch (c->ctx) {
+    case EM_DQ: case EM_PQ:
+        snprintf(out, n, "%08X", (unsigned)(-(uint32_t)strtoul(v, NULL, 16)));
+        break;
+    case EM_DF: case EM_PF: {
+        uint32_t x = (uint32_t)strtoul(v, NULL, 16);
+
+        snprintf(out, n, "%08X", (unsigned)((x & 0xff) ? x ^ 0x80 : x));
+        break;
+    }
+    case EM_PRINT:
+        if (v[0] == '-')
+            snprintf(out, n, "%s", v + 1);
+        else if (!strcmp(v, "0"))
+            snprintf(out, n, "%s", v);
+        else
+            snprintf(out, n, "-%s", v);
+        break;
+    case EM_DB: snprintf(out, n, "%d", (int)(int8_t)-(int8_t)atoi(v)); break;
+    case EM_DW: case EM_PW: snprintf(out, n, "%d", (int)(int16_t)-(int16_t)atoi(v)); break;
+    default: snprintf(out, n, "%ld", (long)(int32_t)-(uint32_t)strtol(v, NULL, 10)); break;
+    }
+}
 
 static void classify_cell(const struct em_matrix *m, struct cls *k)
 {
@@ -348,10 +397,10 @@ static void classify_cell(const struct em_matrix *m, struct cls *k)
         snprintf(k->note, sizeof k->note, "outside the array; not measured with checking");
     }
     /* the issues: the steps that change the value */
-    both(m, c, idx, rules, vals[0], sizeof vals[0]);
+    both_sig(m, c, idx, rules, vals[0], sizeof vals[0]);
     for (int i = 0; i < NSTEPS; i++) {
         rules = steps[i].rules ? rules | steps[i].rules : rules & ~(unsigned)EM_R_CDLIB;
-        both(m, c, idx, rules, vals[i + 1], sizeof vals[i + 1]);
+        both_sig(m, c, idx, rules, vals[i + 1], sizeof vals[i + 1]);
         if (strcmp(vals[i + 1], vals[i])) {
             const char *is = steps[i].issue;
 
@@ -368,30 +417,40 @@ static void classify_cell(const struct em_matrix *m, struct cls *k)
     f = k->fixed.flags | (idx ? k->fixed_on.flags : 0);
     if (is_1049(c, m) && (c->right == EM_L || c->right == EM_F || c->right == EM_CL || c->left == EM_L || c->left == EM_F || c->left == EM_CL))
         snprintf(k->note, sizeof k->note, "#1049 (fixed in the port): a Long/Float MOD after a folded constant MOD of the same source jumps into the compiler's freed buffer in 1.95 and 2.10");
-    /* the expected value from the rules, or a question */
-    if (f & (EM_F_POWINT | EM_F_POWNEG))
-        k->q = 'E';
-    else if (f & EM_F_MODNF)
-        k->q = 'D';
-    else if (f & EM_F_BITQ)
-        k->q = 'C';
-    else if (f & EM_F_OVF)
-        k->q = 'A';
-    else if (!strcmp(k->fixed.text, "?") || (idx && !strcmp(k->fixed_on.text, "?"))) {
-        /* ^ with a Quick or Float operand: SPPow is not modelled; the same
-           Float operation in both rule sets takes the original's value
-           (design decision 7, step 2) */
+    /* the expected value: from the recorded rules where they cover the
+       cell; the original's measured value as the cell's baseline where
+       they do not (overflow, bit operators with a Quick or Float, MOD with
+       negative or fractional operands, ^): a regression check, so that a
+       fix changes these cells only where it is meant to, regenerated after
+       the fix; not a decision that the value is right ("Matrix questions
+       Q-A, Q-C, Q-D, Q-E", task-decisions.md 2026-11-22, and the
+       "Correction by the user" there) */
+    if (f & (EM_F_OVF | EM_F_BITQ | EM_F_MODNF | EM_F_POWINT))
+        k->base = 1;
+    if (f & EM_F_POWNEG)
+        k->q = 'E';             /* #1189 with a fractional exponent: no rule yet */
+    else if (k->fixed.text[0] == '?' || (idx && k->fixed_on.text[0] == '?')) {
+        /* ^ with a Quick or Float result: SPPow is not modelled; the same
+           Float operation in both rule sets takes the original's measured
+           value as its baseline, with the sign of an odd power where #1189
+           applies ("?-") */
         if (k->orig.sig == k->fixed.sig && (!idx || k->orig_on.sig == k->fixed_on.sig)) {
-            snprintf(k->exp, sizeof k->exp, "%.47s", r->v[EM_C195]);
+            negated(c, r->v[EM_C195], !strcmp(k->fixed.text, "?-"), k->exp, sizeof k->exp);
             if (idx)
-                snprintf(k->exp_on, sizeof k->exp_on, "%.47s", r->v[EM_C195_ON]);
+                negated(c, r->v[EM_C195_ON], !strcmp(k->fixed_on.text, "?-"), k->exp_on, sizeof k->exp_on);
+            k->base = 1;
         } else
             k->q = 'E';
     }
+    /* AmiBlitz3 differing from 1.95: the recorded rules decide where an
+       issue explains the cell, AmiBlitz3's value is named in
+       docs/ab3/variant.md ("Matrix questions", Q-F, 2026-11-22: "Unsere
+       Regeln, AB3 dokumentiert (Recommended)"); the cells no issue
+       explains are shown to the user one by one */
     if ((r->has[EM_AB3] && strcmp(r->v[EM_AB3], "!noncompile") && strcmp(r->v[EM_AB3], r->v[EM_C195]))
         || strcmp(r->v[EM_C210], r->v[EM_C195])
         || (idx && r->has[EM_C210_ON] && strcmp(r->v[EM_C210_ON], r->v[EM_C195_ON]))) {
-        if (!k->q)
+        if (!k->q && !k->issues[0])
             k->q = 'F';
     }
     if (k->q) {
@@ -419,7 +478,7 @@ static void classify_cell(const struct em_matrix *m, struct cls *k)
     }
     if (!strcmp(o, exp)) {
         if (!strcmp(port, exp) && !strcmp(portcd, exp))
-            strcpy(k->cls, "agree");
+            strcpy(k->cls, k->base ? "baseline" : "agree");
         else {
             char pm[2 * EM_TEXT_MAX + 2];
 
@@ -503,13 +562,9 @@ static void examples(struct buf *q, const struct cls *ks, size_t n, char cls, si
     }
 }
 
+/* the questions still open; the classes Q-A, Q-C and Q-D are baselines
+   since the answers of 2026-11-22 (classify_cell) */
 static const char *const qtext[] = {
-    ['A'] = "The exact result does not fit the type the operation or the destination has (Word, Long or "
-            "Quick overflow, a Long converted to a Quick or a Word, a Float beyond the Long range). No "
-            "recorded rule covers an overflow except the mixed Long/Quick product (\"Wie longmult\").\n\n"
-            "Options: (a) the original's value is the expected one (wrap or saturation as today), the cells "
-            "are tested as agreement cells (recommended: no rule changes the overflow, D-003); (b) the cells "
-            "are left out of the committed tests; (c) an issue of its own.\n",
     ['B'] = "The two operand orders of a commutative operator (or a mirrored comparison) give different "
             "expected values after variant C (\"Reihenfolge wie heute reicht\"; the goal \"base+q*4 muss das "
             "gleiche ergeben wie q*4+base\" is the expression tree's, #1180). The one recorded datum is for "
@@ -517,44 +572,37 @@ static const char *const qtext[] = {
             "Options: (a) variant C's value of each order is the expected one until #1180, the tree's value "
             "recorded for #1180 (recommended, as for #1178 Q1); (b) the cells are left out until #1180; "
             "(c) an issue of its own.\n",
-    ['C'] = "AND, OR, EOR, NOT or a shift with a Quick or Float operand (a Float is refused; a Quick is cut "
-            "to a whole number under a Long type so far, or its raw 16.16 bits are used under a Quick "
-            "type). Under a Byte type the fix of #1188 (the fraction constant stays a Float) makes "
-            "`rb=1.5 AND vb` and `rb=NOT 1.5` a compile error, as they are under Word today (the cells "
-            "of #1188 below).\n\n"
-            "Options: (a) the original's value is the expected one; after #1188's fix its cells are "
-            "refused cells (recommended: design decision 3 of quick-long-arithmetic keeps today's value "
-            "for these operators); (b) the operation on the whole part only; (c) left out.\n",
-    ['D'] = "MOD with a negative or a fractional operand: the sign of the result follows the divisor "
-            "(modlib adds the divisor to a negative remainder), and a Float or Quick operand is cut first "
-            "(a Float towards zero, a Quick down).\n\n"
-            "Options: (a) the original's value is the expected one (recommended); (b) the remainder with "
-            "the sign of the dividend; (c) left out.\n",
-    ['E'] = "^ (power) is computed by mathtrans SPPow in Float for every type: a whole-number result "
-            "comes out below the exact value (`1000^2` gives 999999 in a Long destination), the sign of a "
-            "negative base is dropped (`(-2.5)^3` gives 15, not -15, in a Long destination: a possible "
-            "original bug), and the model cannot compute SPPow's bits.\n\n"
-            "Options: (a) the original's value is the expected one, the negative base an issue of its own "
-            "(recommended); (b) the exact power for whole-number operands and the sign of an odd power; "
-            "(c) left out.\n",
-    ['F'] = "AmiBlitz3 gives another value than 1.95 (2.10 and 1.95 agree in every cell). Most of these "
-            "cells are explained by an issue of the model's columns (#1188: AmiBlitz3 keeps a fraction "
-            "constant under a Byte type; #1187: a Float condition, d1).\n\n"
-            "Options: (a) the recorded rules decide, AmiBlitz3's difference is named in docs/ab3/variant.md "
-            "(recommended); (b) the cells are left out of the AmiBlitz3 cases only; (c) left out of all "
-            "tests.\n",
+    ['E'] = "^ (power) where the expected value is not known: a negative base with a fractional exponent "
+            "(#1189: \"a negative base with a fractional exponent has no real result and is to be decided "
+            "(an error, or as today)\"), or a power whose operands a fix changes (#1178, #1188), so that "
+            "SPPow's result is not measured (the model does not compute SPPow). Left out of the committed "
+            "tests.\n\n"
+            "Options: (a) left out until #1189 decides the fractional exponent and the fixes of #1178 and "
+            "#1188 are measured (recommended); (b) the original's value as the baseline of the negative "
+            "base; (c) an error at run time.\n",
+    ['F'] = "AmiBlitz3 gives another value than 1.95 and the port, and no issue of the model's columns "
+            "explains the cell (the cells an issue explains follow the recorded rules, AmiBlitz3's value "
+            "named in docs/ab3/variant.md). Left out of the committed tests until answered.\n\n"
+            "Options: (a) the recorded rules decide, AmiBlitz3's difference is named in "
+            "docs/ab3/variant.md; (b) the cells are left out of the AmiBlitz3 cases only; (c) left out "
+            "of all tests.\n",
 };
 
-int em_classify(const struct em_matrix *m, const struct em_table *t, struct em_classified *out, char **errors)
+/* the class of every row of t (the cells, then Q-B); *ks_out the rows'
+   classes, *idx_out the cells by key (both malloc'd); 0, 1 with the
+   errors in *errors, -1 out of memory */
+static int run_classes(const struct em_matrix *m, const struct em_table *t, struct cls **ks_out,
+                       const struct em_cell ***idx_out, char **errors)
 {
     const struct em_cell **idx = NULL;
     struct cls *ks = NULL;
-    struct buf tab = { 0 }, q = { 0 }, rep = { 0 }, err = { 0 };
-    size_t nerr = 0, counts_q[128] = { 0 };
+    struct buf err = { 0 };
+    size_t nerr = 0;
     char *seen = NULL;
 
-    memset(out, 0, sizeof *out);
     *errors = NULL;
+    *ks_out = NULL;
+    *idx_out = NULL;
     idx = malloc((m->ncells ? m->ncells : 1) * sizeof *idx);
     ks = calloc(t->n ? t->n : 1, sizeof *ks);
     seen = calloc(m->ncells ? m->ncells : 1, 1);
@@ -590,12 +638,15 @@ int em_classify(const struct em_matrix *m, const struct em_table *t, struct em_c
             put(&err, "%s: not measured\n", m->cells[i].key);
             nerr++;
         }
+    free(seen);
+    seen = NULL;
     if (nerr) {
         free(idx);
         free(ks);
-        free(seen);
-        if (err.oom)
-            goto oom2;
+        if (err.oom) {
+            free(err.s);
+            return -1;
+        }
         *errors = err.s;
         return 1;
     }
@@ -622,6 +673,10 @@ int em_classify(const struct em_matrix *m, const struct em_table *t, struct em_c
             o = byc[mc - m->cells];
             if (!o || !strcmp(o->cls, "noncompile") || (o->q && o->q != 'B'))
                 continue;
+            /* a baseline cell on either side: the original's order
+               dependence is part of its baseline */
+            if (k->base || o->base)
+                continue;
             if (strcmp(k->exp, o->exp) || strcmp(k->exp_on, o->exp_on)) {
                 k->q = o->q = 'B';
                 strcpy(k->cls, "question");
@@ -630,6 +685,30 @@ int em_classify(const struct em_matrix *m, const struct em_table *t, struct em_c
         }
         free(byc);
     }
+    free(err.s);
+    *ks_out = ks;
+    *idx_out = idx;
+    return 0;
+oom:
+    free(idx);
+    free(ks);
+    free(seen);
+    free(err.s);
+    return -1;
+}
+
+int em_classify(const struct em_matrix *m, const struct em_table *t, struct em_classified *out, char **errors)
+{
+    const struct em_cell **idx = NULL;
+    struct cls *ks = NULL;
+    struct buf tab = { 0 }, q = { 0 }, rep = { 0 };
+    size_t counts_q[128] = { 0 };
+    int rc;
+
+    memset(out, 0, sizeof *out);
+    rc = run_classes(m, t, &ks, &idx, errors);
+    if (rc)
+        return rc;
     /* the table, the counts, the model's check against 1.95 */
     put(&tab, "key\tclass\tissues\tquestion\texpected\texpected_on\tc210\tc195\tab3\tclib\tnote\n");
     {
@@ -750,18 +829,13 @@ int em_classify(const struct em_matrix *m, const struct em_table *t, struct em_c
     out->report = rep.s;
     free(idx);
     free(ks);
-    free(seen);
-    free(err.s);
     return 0;
 oom:
     free(idx);
     free(ks);
-    free(seen);
-oom2:
     free(tab.s);
     free(q.s);
     free(rep.s);
-    free(err.s);
     return -1;
 }
 
@@ -771,4 +845,44 @@ void em_classified_free(struct em_classified *c)
     free(c->questions);
     free(c->report);
     memset(c, 0, sizeof *c);
+}
+
+int em_classes(const struct em_matrix *m, const struct em_table *t, struct em_class **out, char **errors)
+{
+    const struct em_cell **idx = NULL;
+    struct cls *ks = NULL;
+    struct em_class *c;
+    int rc;
+
+    *out = NULL;
+    rc = run_classes(m, t, &ks, &idx, errors);
+    if (rc)
+        return rc;
+    c = calloc(t->n ? t->n : 1, sizeof *c);
+    if (!c) {
+        free(idx);
+        free(ks);
+        return -1;
+    }
+    for (size_t i = 0; i < t->n; i++) {
+        c[i].cell = ks[i].cell;
+        memcpy(c[i].cls, ks[i].cls, sizeof c[i].cls);
+        memcpy(c[i].issues, ks[i].issues, sizeof c[i].issues);
+        c[i].q = ks[i].q;
+        c[i].base = ks[i].base;
+        c[i].chk = ks[i].chk;
+        memcpy(c[i].exp, ks[i].exp, sizeof c[i].exp);
+        memcpy(c[i].exp_on, ks[i].exp_on, sizeof c[i].exp_on);
+        if (!strcmp(ks[i].cls, "noncompile")) {
+            /* refused by 1.95: the fixed rules' value (refused too, or
+               what a fix makes of it) */
+            memcpy(c[i].exp, ks[i].fixed.text, sizeof c[i].exp);
+            if (ks[i].chk)
+                memcpy(c[i].exp_on, ks[i].fixed_on.text, sizeof c[i].exp_on);
+        }
+    }
+    free(idx);
+    free(ks);
+    *out = c;
+    return 0;
 }

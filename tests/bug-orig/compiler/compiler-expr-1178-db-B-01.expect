@@ -1,0 +1,11 @@
+[compile]
+ok
+[run]
+db-sub-l-q-B 97
+db-sub-cl-q-B 97
+db-mul-l-q-B -16
+db-mul-q-cl-B -16
+db-mul-cl-q-B -16
+db-div-l-q-B 106
+db-div-cl-q-B 106
+rc=0

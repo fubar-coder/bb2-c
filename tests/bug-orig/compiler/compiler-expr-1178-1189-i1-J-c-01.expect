@@ -1,0 +1,12 @@
+[compile]
+ok
+[run]
+i1-pow-q-b-J !runtime
+i1-pow-q-w-J !runtime
+i1-pow-q-l-J !runtime
+i1-pow-q-q-J !runtime
+i1-pow-q-f-J !runtime
+i1-pow-q-cb-J !runtime
+i1-pow-q-cw-J !runtime
+i1-pow-q-cl-J !runtime
+rc=0

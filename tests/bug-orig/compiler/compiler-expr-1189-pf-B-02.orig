@@ -1,0 +1,36 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+pf-pow-cl-b-B E35FBC72
+pf-pow-cl-w-B E35FBC72
+pf-pow-cl-l-B E35FBC72
+pf-pow-cl-q-B E35FBC72
+pf-pow-cl-f-B E35FBC72
+pf-pow-cl-cb-B E35FBC72
+pf-pow-cl-cw-B E35FBC72
+pf-pow-cl-cl-B E35FBC72
+pf-pow-cf-b-B D7FFFF42
+pf-pow-cf-w-B D7FFFF42
+pf-pow-cf-l-B D7FFFF42
+pf-pow-cf-q-B D7FFFF42
+pf-pow-cf-f-B D7FFFF42
+pf-pow-cf-cb-B D7FFFF42
+pf-pow-cf-cw-B D7FFFF42
+pf-pow-cf-cl-B D7FFFF42
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-expr-1189-pf-B-02.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-expr-1189-pf-B-02
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

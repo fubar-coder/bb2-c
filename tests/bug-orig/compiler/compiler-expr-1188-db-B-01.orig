@@ -1,0 +1,45 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+db-add-cf-f-B -3
+db-add-cf-cf-B -2
+db-sub-b-cf-B -2
+db-sub-cb-cf-B -2
+db-sub-cf-b-B 2
+db-sub-cf-w-B -25
+db-sub-cf-l-B -97
+db-sub-cf-cb-B 2
+db-sub-cf-cw-B -25
+db-sub-cf-cl-B -97
+db-mul-b-cf-B 3
+db-mul-cb-cf-B 3
+db-mul-cf-b-B 3
+db-mul-cf-w-B -24
+db-mul-cf-l-B -96
+db-mul-cf-q-B 1
+db-mul-cf-f-B 2
+db-mul-cf-cb-B 3
+db-mul-cf-cw-B -24
+db-mul-cf-cl-B -96
+db-mul-cf-cf-B 1
+db-div-b-cf-B 3
+db-div-cb-cf-B 3
+db-div-cf-q-B 0
+db-mod-cf-q-B -3
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-expr-1188-db-B-01.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-expr-1188-db-B-01
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

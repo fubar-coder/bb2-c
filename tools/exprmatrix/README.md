@@ -6,9 +6,11 @@ the operand kinds in order and a value set - is one line of a generated
 Blitz source that prints the cell's key and its value. `generate` writes
 the sources from a description of the matrix; `classify` gives every
 measured cell its class from the model of the expected values (design
-decisions 6 and 7 of the change). The logic is `tools/lib/exprmatrix`
+decisions 6 and 7 of the change); `expect` writes the committed tests of
+the matrix (task 3.1). The logic is `tools/lib/exprmatrix`
 (`exprmatrix.h`: the description and the sources in `exprmatrix.c`, the
-model in `model.c`, the classes in `classify.c`), tested by
+model in `model.c`, the classes in `classify.c`, the committed tests in
+`expect.c`), tested by
 `tools/tests/test_exprmatrix.cpp`, `test_exprmatrix_model.cpp` and
 `test_exprmatrix_classify.cpp`.
 
@@ -26,6 +28,7 @@ OPTIONS:
 SUBCOMMANDS:
   generate                    the Blitz sources of the cells from the description
   classify                    the class of every measured cell, and the questions
+  expect                      the committed tests of the matrix, written or checked
 ```
 
 ### generate
@@ -73,6 +76,7 @@ OPTIONS:
   -o,     --out CELLS REQUIRED 
                               the cell table with a class per cell (written)
   -q,     --questions FILE    the questions, one per class (written)
+  -m,     --measured FILE     the rows of the table that exprmatrix expect needs (written)
 
 Prints the counts per class and question class and the cells where the model
 differs from the measurement (the original's rules against 1.95, the port's
@@ -82,9 +86,47 @@ malformed (one message per error), 2 usage error.
 
 `classify` reads the description `DESC` the cells were generated from
 and the measured cell table `TABLE`, computes every cell by the model
-(below) and writes the cell table `CELLS` and, with `-q`, the questions.
-Every cell of the description must be measured once; a broken table
-writes nothing.
+(below) and writes the cell table `CELLS` and, with `-q`, the questions;
+with `-m` the rows of the table that `expect` needs (the measured values
+below). Every cell of the description must be measured once; a broken
+table writes nothing.
+
+### expect
+
+```
+Usage: exprmatrix expect [OPTIONS] DESC MEASURED
+
+the committed tests of the matrix, written or checked
+
+POSITIONALS:
+  DESC FILE REQUIRED          the description of the matrix
+  MEASURED FILE REQUIRED      the measured values the model does not know (classify -m)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -o,     --root ROOT REQUIRED
+                              the root of the source tree
+          --check             compare the files under ROOT with the generator's output, write
+                              nothing
+
+Writes the files under ROOT (and removes those of its own the generator no
+longer writes) and prints the counts; with --check prints every file that
+differs, is missing or is not the generator's. Exit status 0, 1 a file cannot be
+read or written, the input is malformed or (--check) a file differs, 2 usage
+error.
+```
+
+`expect` reads the description `DESC` and the measured values
+`MEASURED`, classifies every cell by the model (the port is the port of
+this commit, `EM_RULES_PORTNOW`; the measured values only where the model
+does not know a value) and writes the committed tests below under the
+source tree `ROOT`, removing the files of its own it no longer writes. A
+file is written only if its content changes. The target
+`expr-matrix-update` (`tests/corpus/CMakeLists.txt`) runs it on the
+committed description `tests/corpus/tests-exprmatrix/matrix.txt` and
+`measured.tsv` there; the host test `exprmatrix_committed` runs it with
+`--check` (and `exprmatrix_committed_broken` on a copy with an edited and
+an extra file, which must be named).
 
 ## Inputs and outputs
 
@@ -190,24 +232,40 @@ CD's libraries and of the port's C libraries (`lmullib`, `ldivlib`,
 Rule sets (flags in `exprmatrix.h`): the original's (`EM_RULES_ORIG`),
 the port as measured (`EM_RULES_PORT`, `EM_RULES_PORTCD`) and the fixed
 rules (`EM_RULES_FIXED`: #1177, #1186, #1178 variant C, #1179, #1187,
-#1188, the C libraries); each rule in `model.c` names its entry in
-`task-decisions.md`. Not modelled: mathtrans SPPow (`^`) where its bits
-matter, and the original's `If` on a Float, which tests d1 (#1187);
-those values are `?`. Beside the value the model raises the flags of the
-question classes (overflow, bit operators with a Quick or Float, `MOD`
-with negative or fractional operands, `^`).
+#1188, #1189, the C libraries); each rule in `model.c` names its entry
+in `task-decisions.md`. Not modelled: mathtrans SPPow (`^`) where its
+bits matter, and the original's `If` on a Float, which tests d1 (#1187);
+those values are `?` (`?-`: the negation of the original's SPPow result,
+#1189). Beside the value the model raises the flags of the cells no
+recorded rule covers (overflow, bit operators with a Quick or Float,
+`MOD` with negative or fractional operands, `^`): their expected value is
+the original's measured value as a baseline.
 
 ### The cell table and the questions (classify)
 
 `CELLS`: a header line, then per cell `key`, `class`, `issues`,
 `question`, `expected`, `expected_on`, `c210`, `c195`, `ab3`, `clib`,
-`note`, tab separated. The class is `agree`, `fixed-N`, `open-N`
-(`N` the issues whose fixed rules change the value, `+` between them),
-`port`, `new`, `question` (with its class `Q-A` overflow, `Q-B` the two
-orders differ, `Q-C` bit operators, `Q-D` `MOD`, `Q-E` `^`, `Q-F` the
-originals disagree) or `noncompile`. The expected value is the fixed
-rules' value, or 1.95's where the model cannot compute a Float power
-that both rule sets compute alike.
+`note`, tab separated. The class is `agree`, `baseline`, `fixed-N`,
+`open-N` (`N` the issues whose fixed rules change the value, `+` between
+them), `port`, `new`, `question` (with its class `Q-B` the two orders
+differ, `Q-E` `^` without a known expected value, `Q-F` AmiBlitz3
+differs and no issue explains it) or `noncompile`. The expected value is
+the fixed rules' value, or 1.95's where the model cannot compute a Float
+power that both rule sets compute alike (negated for an odd power of a
+negative base, #1189).
+
+`baseline` (the original's measured value): a cell no recorded rule
+covers - an overflow, a bit operator or shift with a Quick or Float, `MOD`
+with negative or fractional operands, `^` - that no fix changes; its
+expected value is the original's measured value, a regression check so
+that a fix changes these cells only where it is meant to (the expected
+values are regenerated after the fix), not a decision that the value is
+right (`task-decisions.md`, "Matrix questions Q-A, Q-C, Q-D, Q-E",
+2026-11-22, and the user's correction there). A cell an issue's fix
+changes is `fixed-N` or `open-N` whatever its value class. Where
+AmiBlitz3 differs from 1.95, an issue that changes the cell decides it
+(its AmiBlitz3 value goes to `docs/ab3/variant.md`); a cell no issue
+explains is a question (`Q-F`).
 
 The questions file has one section per question class with the count,
 the issues of its cells, the options and three example cells with the
@@ -218,12 +276,48 @@ number of values not modelled, and the cells where the original's rules
 differ from 1.95 and where the port's rules differ from the port's
 measurement (`mismatches ... N`, then one line per cell).
 
+### The committed tests (expect)
+
+A cell is looked at in its modes: once for a destination, parameter,
+`If` or `Print` context; for an index cell unchecked (only where every
+compiler reads an element: design decision 8) and checked (runtime error
+checking on; a cell outside the array prints `KEY !runtime` from a
+`SetErr` handler in front of it, which goes on behind the cell). In a
+mode, the original's value, the expected value and the port's value
+(with both library sets) give its class there: all equal `agree` (or
+`baseline`, the original's measured value where no recorded rule
+covers the cell), the original differing and the port giving the
+expected value `fixed-N`, the port giving the original's value `open-N`;
+anything else is left out. A source holds the cells of one context,
+value set, mode and class, at most `cells-per-source`; its folded
+constant `MOD` cells (both operands constants, a Byte, Word or Quick
+operation by the original's rules) come last (#1049); a checked source
+holds at most half of `cells-per-source` (a port defect, `expect.c`).
+
+| File | What |
+|---|---|
+| `tests/corpus/tests-exprmatrix/CTX-SET[-u\|-c]-TAG-NN.bas` | a corpus source of agreement (`agree`), baseline (`base`) or fixed cells (`fixN`); `-u`/`-c` an index source unchecked/checked |
+| `tests/corpus/expect/corpus_exprmatrix[_runerr]/NAME.out` | its expected output; for fixed cells the pair `NAME.orig.out` / `NAME.fixed-N.out` (an index source whose mode has no differing cell: `NAME.out`) |
+| `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u\|-c]-NN.bas`, `.expect` | a bug-orig test of open cells (`ISSUES` `1178`, or `1178-1189` for a cell that needs two fixes: DIFFERS between them); the header names `BUG(orig) (#N)` and the cells; the `.orig` is recorded by `bug-orig-record`, not written here |
+| `tests/bug-orig/compiler/compiler-expr-ISSUES-refused-OP-L-R[-c].bas`, `.expect` | a cell the original compiles and a fix refuses: one representative per operator and operand classes (`I` a whole number, `Q`, `F`, `C` a constant with a fraction, `S`, `x` none) |
+| `tests/bug-orig/regression/compiler-expr-refused-OP-L-R[-c].bas`, `.expect` | a cell the originals and the port refuse ("Illegal Operator for Type"): one representative per operator and operand classes; `-c` refused only with runtime error checking |
+| `tests/corpus/tests-exprmatrix/left-out.txt` | the cells left out, with the reason (a question, a port that differs) |
+
+The measured values (`measured.tsv`, written by `classify -m`): the rows
+of the measured table of task 1.3 where the model does not know a value
+by one of the rule sets the classes need (a Float power, the original's
+`If` on a Float) or where AmiBlitz3 differs from 1.95; the format of the
+measured cell table, the source column `-`.
+
 ## Exit codes
 
-* 0 the sources (`generate`) or the tables (`classify`) are written;
+* 0 the sources (`generate`), the tables (`classify`) or the tests
+  (`expect`) are written, or (`expect --check`) every file is the
+  generator's;
 * 1 the description or the measured table cannot be read or is
   malformed (messages on stderr, nothing written), a source name is too
-  long, or a file cannot be written;
+  long, a file cannot be written, or (`expect --check`) a file differs,
+  is missing or is not the generator's;
 * 2 usage error (no or an unknown subcommand or option, a missing
   argument, `--cells` outside 1 to 100000).
 
@@ -232,10 +326,13 @@ errors of a description or a table as `FILE:LINE: message`.
 
 ## Callers
 
-* Tests: `help_exprmatrix`, `readme_exprmatrix`
-  (`tools/exprmatrix/CMakeLists.txt`); the library: `exprmatrix`,
-  `exprmatrix_model`, `exprmatrix_classify` (`tools/tests/`).
-* Task 2.3 of the change: `classify` on the measurement of task 1.3.
+* Tests: `help_exprmatrix`, `readme_exprmatrix`, `exprmatrix_committed`,
+  `exprmatrix_committed_broken` (`tools/exprmatrix/CMakeLists.txt`); the
+  library: `exprmatrix`, `exprmatrix_model`, `exprmatrix_classify`,
+  `exprmatrix_expect` (`tools/tests/`).
+* The target `expr-matrix-update` (`expect`, `tests/corpus/CMakeLists.txt`).
+* Tasks 2.3 and 2.4 of the change: `classify` on the measurement of task
+  1.3 (`-m` wrote `tests/corpus/tests-exprmatrix/measured.tsv`).
 
 ## Example
 

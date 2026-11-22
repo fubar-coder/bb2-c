@@ -1,0 +1,11 @@
+[compile]
+ok
+[run]
+dw-sub-l-q-A -31074
+dw-sub-cl-q-A -31074
+dw-mul-l-q-A 18928
+dw-mul-q-cl-A 18928
+dw-mul-cl-q-A 18928
+dw-div-l-q-A 1130
+dw-div-cl-q-A 1130
+rc=0

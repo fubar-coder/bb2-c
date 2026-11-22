@@ -43,7 +43,7 @@ static bool write_file(const std::string &path, const char *text)
 }
 
 static int run(const std::string &me, const std::string &desc, const std::string &table, const std::string &out,
-               const std::string &questions)
+               const std::string &questions, const std::string &measured)
 {
     std::string dtext, ttext;
     struct em_matrix m;
@@ -78,14 +78,17 @@ static int run(const std::string &me, const std::string &desc, const std::string
         return 1;
     }
     r = em_classify(&m, &t, &c, &errors);
+    char *meas = r == 0 && !measured.empty() ? em_measured(&m, &t) : nullptr;
     em_table_free(&t);
     em_free(&m);
-    if (r) {
-        if (r < 0)
+    if (r || (!measured.empty() && !meas)) {
+        if (r <= 0)
             std::fprintf(stderr, "%s: out of memory\n", me.c_str());
         else
             std::fprintf(stderr, "%s: %s: %s", me.c_str(), table.c_str(), errors);
         std::free(errors);
+        if (!r)
+            em_classified_free(&c);
         return 1;
     }
     bool ok = true;
@@ -95,7 +98,11 @@ static int run(const std::string &me, const std::string &desc, const std::string
     } else if (!questions.empty() && !write_file(questions, c.questions)) {
         std::fprintf(stderr, "%s: %s: %s\n", me.c_str(), questions.c_str(), std::strerror(errno));
         ok = false;
+    } else if (meas && !write_file(measured, meas)) {
+        std::fprintf(stderr, "%s: %s: %s\n", me.c_str(), measured.c_str(), std::strerror(errno));
+        ok = false;
     }
+    std::free(meas);
     if (ok)
         std::fputs(c.report, stdout);
     em_classified_free(&c);
@@ -105,7 +112,7 @@ static int run(const std::string &me, const std::string &desc, const std::string
 void cmd_classify(CLI::App &app, int &status)
 {
     struct options {
-        std::string desc, table, out, questions;
+        std::string desc, table, out, questions, measured;
     };
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand("classify", "the class of every measured cell, and the questions");
@@ -117,9 +124,12 @@ void cmd_classify(CLI::App &app, int &status)
         ->type_name("CELLS");
     sub->add_option("-q,--questions", o->questions, "the questions, one per class (written)")
         ->type_name("FILE");
+    sub->add_option("-m,--measured", o->measured,
+                    "the rows of the table that exprmatrix expect needs (written)")
+        ->type_name("FILE");
     sub->footer("Prints the counts per class and question class and the cells where the model differs "
                 "from the measurement (the original's rules against 1.95, the port's against the port). "
                 "Exit status 0, 1 a file cannot be read or written or is malformed (one message per "
                 "error), 2 usage error.");
-    sub->callback([sub, o, &status] { status = run(cli::name(*sub), o->desc, o->table, o->out, o->questions); });
+    sub->callback([sub, o, &status] { status = run(cli::name(*sub), o->desc, o->table, o->out, o->questions, o->measured); });
 }

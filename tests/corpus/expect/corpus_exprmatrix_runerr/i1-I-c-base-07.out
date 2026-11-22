@@ -1,0 +1,21 @@
+i1-asl-q-q-I 65
+i1-asl-q-cb-I 65
+i1-asl-q-cw-I 65
+i1-asl-q-cl-I 65
+i1-asl-cb-q-I 193
+i1-asl-cw-q-I !runtime
+i1-asl-cl-q-I !runtime
+i1-asr-b-q-I 1
+i1-asr-w-q-I 81
+i1-asr-l-q-I 113
+i1-asr-q-b-I 1
+i1-asr-q-w-I 1
+i1-asr-q-l-I 1
+i1-asr-q-q-I 1
+i1-asr-q-cb-I 1
+i1-asr-q-cw-I 1
+i1-asr-q-cl-I 1
+i1-asr-cb-q-I 1
+i1-asr-cw-q-I 801
+i1-asr-cl-q-I !runtime
+rc=0

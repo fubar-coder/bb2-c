@@ -1,0 +1,76 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+dw-pow-b-b-B 27
+dw-pow-b-w-B 27
+dw-pow-b-l-B 27
+dw-pow-b-q-B 27
+dw-pow-b-f-B 27
+dw-pow-b-cb-B 27
+dw-pow-b-cw-B 27
+dw-pow-b-cl-B 27
+dw-pow-w-b-B -13504
+dw-pow-w-w-B -13504
+dw-pow-w-l-B -13504
+dw-pow-w-q-B -13504
+dw-pow-w-f-B -13504
+dw-pow-w-cb-B -13504
+dw-pow-w-cw-B -13504
+dw-pow-w-cl-B -13504
+dw-pow-l-b-B -1
+dw-pow-l-w-B -1
+dw-pow-l-l-B -1
+dw-pow-l-q-B -1
+dw-pow-l-f-B -1
+dw-pow-l-cb-B -1
+dw-pow-l-cw-B -1
+dw-pow-l-cl-B -1
+dw-pow-q-b-B 3
+dw-pow-q-w-B 3
+dw-pow-q-l-B 3
+dw-pow-q-q-B 3
+dw-pow-q-f-B 3
+dw-pow-q-cb-B 3
+dw-pow-q-cw-B 3
+dw-pow-q-cl-B 3
+dw-pow-f-b-B 15
+dw-pow-f-w-B 15
+dw-pow-f-l-B 15
+dw-pow-f-q-B 15
+dw-pow-f-f-B 15
+dw-pow-f-cb-B 15
+dw-pow-f-cw-B 15
+dw-pow-f-cl-B 15
+dw-pow-cb-b-B 27
+dw-pow-cb-w-B 27
+dw-pow-cb-l-B 27
+dw-pow-cb-q-B 27
+dw-pow-cb-f-B 27
+dw-pow-cb-cb-B 27
+dw-pow-cb-cw-B 27
+dw-pow-cb-cl-B 27
+dw-pow-cw-b-B -13504
+dw-pow-cw-w-B -13504
+dw-pow-cw-l-B -13504
+dw-pow-cw-q-B -13504
+dw-pow-cw-f-B -13504
+dw-pow-cw-cb-B -13504
+dw-pow-cw-cw-B -13504
+dw-pow-cw-cl-B -13504
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-expr-1189-dw-B-01.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-expr-1189-dw-B-01
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

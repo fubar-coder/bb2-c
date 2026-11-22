@@ -1229,6 +1229,8 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
         id = ideal_op(op, a->id, b->id, rt);
         break;
     case EM_MOD:
+        if (t == TL || t == TF)
+            e->flags |= EM_F_MODLF;    /* not folded as a constant (nocando) */
         if (t <= TW)
             x = lib_modw(x, y);
         else if (t == TL)
@@ -1333,21 +1335,38 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
         e->powsig = (uint64_t)a->v << 32 | b->v;
         /* SPPow of the two Float values as they are (a fraction constant
            cut under a Byte type stays cut); measured: the sign of the base
-           is dropped ((-2.5)^3 gives 15.6), so a negative base is a
-           question (Q-E) */
+           is dropped ((-2.5)^3 gives 15.6, BUG(orig) (#1189)).  Where no
+           issue changes it, the original's measured value is the cell's
+           baseline, also SPPow's precision (1000^2 gives 999999): a
+           regression check, not a decision that the value is right
+           ("Matrix questions Q-A, Q-C, Q-D, Q-E", task-decisions.md,
+           2026-11-22, Q-E: "Original, Vorzeichen per #1189 (Recommended)",
+           and the "Correction by the user" there) */
         {
             struct rat x1 = ffp_rat(a->v), y1 = ffp_rat(b->v);
+            int neg = rat_sign(x1) < 0;
 
-            if (rat_sign(x1) < 0) {
-                e->flags |= EM_F_POWNEG;
+            if (neg)
                 x1 = rat_op(rat_int(0), x1, '-');
-            }
             if (rat_isint(y1) && x1.ok && rat_whole(y1) >= 0 && rat_whole(y1) <= 8) {
                 id = rat_int(1);
                 for (int64_t i = 0; i < rat_whole(y1); i++)
                     id = rat_op(id, x1, '*');
             } else
                 id = rat_dbl(pow(x1.x, y1.x));
+            if (neg && (e->rules & EM_R_1189)) {
+                /* EM_R_1189 (issue #1189, the same entry: "the negative-base
+                   cells belong to #1189"): a whole exponent gives the signed
+                   power, SPPow's magnitude with the sign of an odd power; a
+                   fractional exponent has no rule yet (the issue: "to be
+                   decided"): a question */
+                if (!rat_isint(y1))
+                    e->flags |= EM_F_POWNEG;
+                else if (rat_whole(y1) & 1) {
+                    id = rat_op(rat_int(0), id, '-');
+                    e->flags |= EM_F_POWSIGN;
+                }
+            }
         }
         e->pow = id;
         e->powknown = 1;
@@ -1615,6 +1634,12 @@ static int index_value(struct ev *e, const struct em_set *s, const struct em_cel
         int64_t v = 0;
 
         *known = pow_whole(e, asked, &v);
+        if (!*known && (e->flags & EM_F_POWSIGN) && e->pow.x < -1.0001) {
+            /* EM_R_1189: a negative power below -1 is outside the array
+               whatever SPPow's last bits are */
+            *known = 1;
+            v = -1;
+        }
         r.v = (uint32_t)v;
     }
     *idx = asked == TW ? (int64_t)(uint16_t)r.v : (int64_t)(int32_t)r.v;
@@ -1689,8 +1714,16 @@ void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules
     if (e.flags & EM_F_POW) {
         int64_t v = 0;
 
+        if (c->ctx == EM_IF && (rules & EM_R_1187) && e.powknown && fabs(e.pow.x) > 1e-30) {
+            /* EM_R_1187: the Float condition tests the power's value, which
+               is not 0 whatever SPPow's last bits are */
+            strcpy(out->text, "T");
+            return;
+        }
+        if (c->ctx == EM_IF && !(rules & EM_R_1187))
+            out->flags |= EM_F_D1;      /* BUG(orig) (#1187): what d1 holds */
         if (!pow_whole(&e, asked, &v)) {
-            strcpy(out->text, "?");
+            strcpy(out->text, e.flags & EM_F_POWSIGN ? "?-" : "?");
             return;
         }
         r.v = (uint32_t)v;

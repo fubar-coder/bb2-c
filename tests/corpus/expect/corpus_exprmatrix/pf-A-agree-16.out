@@ -1,0 +1,22 @@
+pf-ge-cl-q-A 800000C1
+pf-ge-cl-f-A 800000C1
+pf-ge-cl-cb-A 800000C1
+pf-ge-cl-cw-A 800000C1
+pf-ge-cl-cl-A 800000C1
+pf-ge-cl-cf-A 800000C1
+pf-ge-cf-b-A 00000000
+pf-ge-cf-w-A 00000000
+pf-ge-cf-l-A 00000000
+pf-ge-cf-q-A 800000C1
+pf-ge-cf-f-A 00000000
+pf-ge-cf-cb-A 00000000
+pf-ge-cf-cw-A 00000000
+pf-ge-cf-cl-A 00000000
+pf-ge-cf-cf-A 800000C1
+pf-eq-s-s-A 800000C1
+pf-ne-s-s-A 00000000
+pf-lt-s-s-A 00000000
+pf-le-s-s-A 800000C1
+pf-gt-s-s-A 00000000
+pf-ge-s-s-A 800000C1
+rc=0

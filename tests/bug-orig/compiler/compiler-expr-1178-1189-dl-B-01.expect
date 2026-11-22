@@ -1,0 +1,12 @@
+[compile]
+ok
+[run]
+dl-pow-q-b-B -3
+dl-pow-q-w-B -3
+dl-pow-q-l-B -3
+dl-pow-q-q-B -3
+dl-pow-q-f-B -3
+dl-pow-q-cb-B -3
+dl-pow-q-cw-B -3
+dl-pow-q-cl-B -3
+rc=0

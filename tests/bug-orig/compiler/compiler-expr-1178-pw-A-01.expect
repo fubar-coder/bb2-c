@@ -1,0 +1,11 @@
+[compile]
+ok
+[run]
+pw-sub-l-q-A -31074
+pw-sub-cl-q-A -31074
+pw-mul-l-q-A 18928
+pw-mul-q-cl-A 18928
+pw-mul-cl-q-A 18928
+pw-div-l-q-A 1130
+pw-div-cl-q-A 1130
+rc=0

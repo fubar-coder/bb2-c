@@ -1,0 +1,22 @@
+[compile]
+ok
+[run]
+i1-neg-q-J 17
+i1-sub-q-f-J 17
+i1-mul-b-q-J 65
+i1-mul-w-q-J 481
+i1-mul-l-q-J 721
+i1-mul-q-b-J 65
+i1-mul-q-w-J 481
+i1-mul-q-l-J 721
+i1-mul-q-q-J 33
+i1-mul-q-f-J 49
+i1-mul-q-cb-J 65
+i1-mul-q-cf-J 33
+i1-mul-cb-q-J 65
+i1-div-b-q-J 33
+i1-div-w-q-J 209
+i1-div-l-q-J 321
+i1-div-cb-q-J 33
+i1-div-cw-q-J 2129
+rc=0

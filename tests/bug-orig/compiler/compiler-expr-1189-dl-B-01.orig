@@ -1,0 +1,76 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+dl-pow-b-b-B 27
+dl-pow-b-w-B 27
+dl-pow-b-l-B 27
+dl-pow-b-q-B 27
+dl-pow-b-f-B 27
+dl-pow-b-cb-B 27
+dl-pow-b-cw-B 27
+dl-pow-b-cl-B 27
+dl-pow-w-b-B 1000000320
+dl-pow-w-w-B 1000000320
+dl-pow-w-l-B 1000000320
+dl-pow-w-q-B 1000000320
+dl-pow-w-f-B 1000000320
+dl-pow-w-cb-B 1000000320
+dl-pow-w-cw-B 1000000320
+dl-pow-w-cl-B 1000000320
+dl-pow-l-b-B 2147483647
+dl-pow-l-w-B 2147483647
+dl-pow-l-l-B 2147483647
+dl-pow-l-q-B 2147483647
+dl-pow-l-f-B 2147483647
+dl-pow-l-cb-B 2147483647
+dl-pow-l-cw-B 2147483647
+dl-pow-l-cl-B 2147483647
+dl-pow-f-b-B 15
+dl-pow-f-w-B 15
+dl-pow-f-l-B 15
+dl-pow-f-q-B 15
+dl-pow-f-f-B 15
+dl-pow-f-cb-B 15
+dl-pow-f-cw-B 15
+dl-pow-f-cl-B 15
+dl-pow-cb-b-B 27
+dl-pow-cb-w-B 27
+dl-pow-cb-l-B 27
+dl-pow-cb-q-B 27
+dl-pow-cb-f-B 27
+dl-pow-cb-cb-B 27
+dl-pow-cb-cw-B 27
+dl-pow-cb-cl-B 27
+dl-pow-cw-b-B 1000000320
+dl-pow-cw-w-B 1000000320
+dl-pow-cw-l-B 1000000320
+dl-pow-cw-q-B 1000000320
+dl-pow-cw-f-B 1000000320
+dl-pow-cw-cb-B 1000000320
+dl-pow-cw-cw-B 1000000320
+dl-pow-cw-cl-B 1000000320
+dl-pow-cl-b-B 2147483647
+dl-pow-cl-w-B 2147483647
+dl-pow-cl-l-B 2147483647
+dl-pow-cl-q-B 2147483647
+dl-pow-cl-f-B 2147483647
+dl-pow-cl-cb-B 2147483647
+dl-pow-cl-cw-B 2147483647
+dl-pow-cl-cl-B 2147483647
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-expr-1189-dl-B-01.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-expr-1189-dl-B-01
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

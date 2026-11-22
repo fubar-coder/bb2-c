@@ -1,0 +1,76 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+df-pow-b-b-B D8000345
+df-pow-b-w-B D8000345
+df-pow-b-l-B D8000345
+df-pow-b-q-B D8000345
+df-pow-b-f-B D8000345
+df-pow-b-cb-B D8000345
+df-pow-b-cw-B D8000345
+df-pow-b-cl-B D8000345
+df-pow-w-b-B EE6B2D5E
+df-pow-w-w-B EE6B2D5E
+df-pow-w-l-B EE6B2D5E
+df-pow-w-q-B EE6B2D5E
+df-pow-w-f-B EE6B2D5E
+df-pow-w-cb-B EE6B2D5E
+df-pow-w-cw-B EE6B2D5E
+df-pow-w-cl-B EE6B2D5E
+df-pow-l-b-B E35FBC72
+df-pow-l-w-B E35FBC72
+df-pow-l-l-B E35FBC72
+df-pow-l-q-B E35FBC72
+df-pow-l-f-B E35FBC72
+df-pow-l-cb-B E35FBC72
+df-pow-l-cw-B E35FBC72
+df-pow-l-cl-B E35FBC72
+df-pow-q-b-B D7FFFF42
+df-pow-q-w-B D7FFFF42
+df-pow-q-l-B D7FFFF42
+df-pow-q-q-B D7FFFF42
+df-pow-q-f-B D7FFFF42
+df-pow-q-cb-B D7FFFF42
+df-pow-q-cw-B D7FFFF42
+df-pow-q-cl-B D7FFFF42
+df-pow-f-b-B F9FFFB44
+df-pow-f-w-B F9FFFB44
+df-pow-f-l-B F9FFFB44
+df-pow-f-q-B F9FFFB44
+df-pow-f-f-B F9FFFB44
+df-pow-f-cb-B F9FFFB44
+df-pow-f-cw-B F9FFFB44
+df-pow-f-cl-B F9FFFB44
+df-pow-cb-b-B D8000345
+df-pow-cb-w-B D8000345
+df-pow-cb-l-B D8000345
+df-pow-cb-q-B D8000345
+df-pow-cb-f-B D8000345
+df-pow-cb-cb-B D8000345
+df-pow-cb-cw-B D8000345
+df-pow-cb-cl-B D8000345
+df-pow-cw-b-B EE6B2D5E
+df-pow-cw-w-B EE6B2D5E
+df-pow-cw-l-B EE6B2D5E
+df-pow-cw-q-B EE6B2D5E
+df-pow-cw-f-B EE6B2D5E
+df-pow-cw-cb-B EE6B2D5E
+df-pow-cw-cw-B EE6B2D5E
+df-pow-cw-cl-B EE6B2D5E
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-expr-1189-df-B-01.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-expr-1189-df-B-01
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

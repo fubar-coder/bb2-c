@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+i2-sub-l-q-I 449
+i2-mul-l-q-I 721
+i2-div-l-q-I 321
+rc=0

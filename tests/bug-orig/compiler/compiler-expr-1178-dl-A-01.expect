@@ -1,0 +1,45 @@
+[compile]
+ok
+[run]
+dl-neg-q-A -2
+dl-add-q-q-A 3
+dl-add-q-f-A 4
+dl-add-q-cf-A 3
+dl-sub-b-q-A 1
+dl-sub-w-q-A 998
+dl-sub-l-q-A 99998
+dl-sub-cb-q-A 1
+dl-sub-cw-q-A 998
+dl-sub-cl-q-A 99998
+dl-mul-b-q-A 4
+dl-mul-w-q-A 1500
+dl-mul-l-q-A 150000
+dl-mul-q-b-A 4
+dl-mul-q-w-A 1500
+dl-mul-q-l-A 150000
+dl-mul-q-q-A 2
+dl-mul-q-f-A 3
+dl-mul-q-cb-A 4
+dl-mul-q-cw-A 1500
+dl-mul-q-cl-A 150000
+dl-mul-q-cf-A 2
+dl-mul-cb-q-A 4
+dl-mul-cw-q-A 1500
+dl-mul-cl-q-A 150000
+dl-div-b-q-A 2
+dl-div-w-q-A 666
+dl-div-l-q-A 66666
+dl-div-q-cf-A 1
+dl-div-cb-q-A 2
+dl-div-cw-q-A 666
+dl-div-cl-q-A 66666
+dl-pow-q-b-A 2
+dl-pow-q-w-A 2
+dl-pow-q-l-A 2
+dl-pow-q-q-A 2
+dl-pow-q-f-A 2
+dl-pow-q-cb-A 2
+dl-pow-q-cw-A 2
+dl-pow-q-cl-A 2
+dl-pow-q-cf-A 2
+rc=0

@@ -1,0 +1,61 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+dl-neg-q-A -1
+dl-add-q-q-A 2
+dl-add-q-f-A 3
+dl-add-q-cf-A 2
+dl-sub-b-q-A 2
+dl-sub-w-q-A 999
+dl-sub-l-q-A 99999
+dl-sub-cb-q-A 2
+dl-sub-cw-q-A 999
+dl-sub-cl-q-A 99999
+dl-mul-b-q-A 3
+dl-mul-w-q-A 1000
+dl-mul-l-q-A 100000
+dl-mul-q-b-A 3
+dl-mul-q-w-A 1000
+dl-mul-q-l-A 100000
+dl-mul-q-q-A 1
+dl-mul-q-f-A 2
+dl-mul-q-cb-A 3
+dl-mul-q-cw-A 1000
+dl-mul-q-cl-A 100000
+dl-mul-q-cf-A 1
+dl-mul-cb-q-A 3
+dl-mul-cw-q-A 1000
+dl-mul-cl-q-A 100000
+dl-div-b-q-A 3
+dl-div-w-q-A 1000
+dl-div-l-q-A 100000
+dl-div-q-cf-A 0
+dl-div-cb-q-A 3
+dl-div-cw-q-A 1000
+dl-div-cl-q-A 100000
+dl-pow-q-b-A 1
+dl-pow-q-w-A 1
+dl-pow-q-l-A 1
+dl-pow-q-q-A 1
+dl-pow-q-f-A 1
+dl-pow-q-cb-A 1
+dl-pow-q-cw-A 1
+dl-pow-q-cl-A 1
+dl-pow-q-cf-A 1
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-expr-1178-dl-A-01.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-expr-1178-dl-A-01
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

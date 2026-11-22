@@ -1,0 +1,12 @@
+[compile]
+ok
+[run]
+db-pow-cf-b-B -3
+db-pow-cf-w-B -3
+db-pow-cf-l-B -3
+db-pow-cf-q-B -3
+db-pow-cf-f-B -3
+db-pow-cf-cb-B -3
+db-pow-cf-cw-B -3
+db-pow-cf-cl-B -3
+rc=0
