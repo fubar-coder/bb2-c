@@ -45,7 +45,7 @@ User decision (2026-11-22, `task-decisions.md`, "Matrix: last Q-F and Q-E cells"
 
 ## Impact
 
-- `libs/acidlibs/mathtranslib.c` (the `^` entry from `BLITZ_INLINE` to a routine), `programs/blitz2/src/eval.c` (comment at `dopow`; with P2 the emitted code).
+- `libs/acidlibs/mathtranslib.c` (the `^` entry from `BLITZ_INLINE` to a routine), `programs/blitz2/src/eval.c` (the comment at `dopow`).
 - Tests: the matrix's `compiler-expr-1189-*` (24), `compiler-expr-1178-1189-*` (4), `compiler-expr-1188-1189-db-B-01`; a hand-written bug-orig test `compiler-pow-negative-base` for the cases the matrix lacks; `libs/tests/systest_cmdlibs.c` (`mathtranslib inline` entry 0: `[orig]`/`[fixed #1189]`, and a call case); `tests/perf` (a line for `^`); the prev comparison.
 - Docs as listed; site entry and overview row (coordinator; topic "Numbers & dates" as the issue proposes).
 - Related: #1178, #1188.
