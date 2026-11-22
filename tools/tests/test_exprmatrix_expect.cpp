@@ -4,7 +4,9 @@
 // two issues' values, a refused one, one refused after a fix, an index
 // cell unchecked and checked) gives the files with their names, headers
 // and expected outputs, and the AmiBlitz3 cases of the agreement and
-// fixed sources; a value the model does not know needs its measured row;
+// fixed sources; the cells of an issue fixed after the matrix stay in their
+// bug-orig tests with @fixed (T1); a value the model does not know needs
+// its measured row;
 // the generator's own files are recognised by their path.
 #include <cstdio>
 #include <cstdlib>
@@ -26,11 +28,13 @@ static const char *const DESC =
     "block t\n"
     "cell A dl + w l\ncell A dl * l l\ncell A db < q l\ncell A dl * l q\ncell A db AND cf b\n"
     "cell A dl AND f b\ncell I i1 * q w\ncell B dl ^ f b\ncell B df ^ f b\ncell A db MOD cb cb\n"
-    "cell A db MOD cb cl\ncell A dl MOD cl cb\ncell A dl MOD l cb\n";
+    "cell A db MOD cb cl\ncell A dl MOD cl cb\ncell A dl MOD l cb\ncell B dl ^ q b\n";
 
 static const char *const HEAD = "key\tsource\tc210\tc195\tportcd\tclib\tab3\tc210_on\tc195_on\tportcd_on\tclib_on\n";
-// the Float power the model does not compute: 1.95's bits of (-2.5)^3
-static const char *const POW = "df-pow-f-b-B\t-\tF9FFFB44\tF9FFFB44\tF9FFFB44\tF9FFFB44\tF9FFFB44\t\t\t\t\n";
+// the Float powers the model does not compute: 1.95's bits of (-2.5)^3, and
+// the whole number of (-1.5)^3 (a Quick base, #1178 and #1189)
+static const char *const POW = "df-pow-f-b-B\t-\tF9FFFB44\tF9FFFB44\tF9FFFB44\tF9FFFB44\tF9FFFB44\t\t\t\t\n"
+                               "dl-pow-q-b-B\t-\t8\t8\t8\t8\t8\t\t\t\t\n";
 
 struct gen {
     struct em_matrix m;
@@ -38,7 +42,7 @@ struct gen {
     std::string report, errors;
     int rc = -9;
 
-    explicit gen(const std::string &measured)
+    explicit gen(const std::string &measured, unsigned port = EM_RULES_PORTNOW)
     {
         char *e = nullptr, *rep = nullptr;
         struct em_table t;
@@ -55,7 +59,7 @@ struct gen {
             std::free(e);
             return;
         }
-        rc = em_expect(&m, "m.txt", &t, &f, &n, &rep, &e);
+        rc = em_expect_port(&m, "m.txt", &t, port, &f, &n, &rep, &e);
         for (size_t i = 0; i < n; i++)
             files[f[i].path] = f[i].text;
         if (rep)
@@ -186,6 +190,50 @@ TEST_CASE("exprmatrix expect: the AmiBlitz3 cases", "[exprmatrix]")
         CHECK(c.find("dl-A-base-01") == std::string::npos);
     }
     CHECK(g.report.find("AmiBlitz3 cases ") != std::string::npos);
+}
+
+// T1 (quick-long-arithmetic, design decision 13): the cells of an issue
+// fixed after the matrix stay in their bug-orig tests, with @fixed
+TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
+{
+    gen now(std::string(HEAD) + POW);
+    gen one(std::string(HEAD) + POW, EM_RULES_PORTNOW | EM_R_1178);
+    gen two(std::string(HEAD) + POW, EM_RULES_PORTNOW | EM_R_1178 | EM_R_1189);
+    gen ref(std::string(HEAD) + POW, EM_RULES_PORTNOW | EM_R_1188);
+    const std::string t = BUG + "compiler-expr-1178-dl-A-01", tq = BUG + "compiler-expr-1178-1189-dl-B-01",
+                      tc = BUG + "compiler-expr-1178-i1-I-c-01";
+
+    REQUIRE(now.rc == 0);
+    REQUIRE(one.rc == 0);
+    REQUIRE(two.rc == 0);
+    REQUIRE(ref.rc == 0);
+    // the port of this commit: no test is marked
+    for (const auto &[path, text] : now.files)
+        CHECK(text.find("@fixed") == std::string::npos);
+    // one issue fixed: the same test with @fixed, the same expectation;
+    // no corpus pair of it
+    CHECK(one.has(t + ".bas", "do not edit\n; @fixed #1178\n"));
+    CHECK(one.file(t + ".expect") == now.file(t + ".expect"));
+    {
+        std::string a = one.file(t + ".bas"), b = now.file(t + ".bas");
+        size_t at = a.find("; @fixed #1178\n");
+        REQUIRE(at != std::string::npos);
+        CHECK(a.erase(at, 15) == b);
+    }
+    CHECK(one.has(tc + ".bas", "; @fixed #1178\n; @pass runtime_errors=on\n"));
+    CHECK(one.files.size() == now.files.size());
+    for (const auto &[path, text] : one.files)
+        CHECK(path.find("fix1178") == std::string::npos);
+    // a test of two issues, one fixed: kept, not marked (DIFFERS)
+    CHECK(one.file(tq + ".expect") == now.file(tq + ".expect"));
+    CHECK(!one.has(tq + ".bas", "@fixed"));
+    // both fixed: marked by the last of them
+    CHECK(two.has(tq + ".bas", "; @fixed #1189\n"));
+    CHECK(two.has(t + ".bas", "; @fixed #1178\n"));
+    // a cell refused after the fix (the line of the error one further down,
+    // behind the @fixed line)
+    CHECK(ref.has(BUG + "compiler-expr-1188-refused-and-C-I.bas", "; @fixed #1188\n"));
+    CHECK(ref.has(BUG + "compiler-expr-1188-refused-and-C-I.expect", " Illegal Operator for Type\n"));
 }
 
 TEST_CASE("exprmatrix expect: a value the model does not know", "[exprmatrix]")
