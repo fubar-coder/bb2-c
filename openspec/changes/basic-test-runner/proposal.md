@@ -12,7 +12,7 @@ parses at configure time and turns into a pass file for `corpusrun`.
 the test library of change `basic-testlib` the programs judge
 themselves; what is left to describe is how a test runs and what the run
 must show outside the program. User decisions of 2026-11-21 (chat,
-`task-decisions.md`).
+`~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`).
 
 ## What Changes
 

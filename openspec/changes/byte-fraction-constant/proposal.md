@@ -30,7 +30,7 @@ Under a Byte type so far a decimal literal with a fraction is cut to a whole num
 
 ## Decisions of the user (2026-11-22)
 
-Answered with the options shown (`~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Last answers of the session"; `~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers"):
+Answered with the options shown (`~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`, entry "2026-11-22 Last answers of the session"; `~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers"):
 
 1. **Bit operators with the fixed literal** (`rb=1.5 AND vb`, `NOT 1.5`, the shifts): "Ablehnen wie unter Word (Recommended)" -> "Illegal Operator for Type", as under Word; the cut is not kept for these operators. (The answer to the matrix question Q-C stays a baseline, not the basis of this.)
 2. **AB3 mode:** "Beide Modi (Recommended)" -> one core, the fix in BB2 and AB3 mode (matches AmiBlitz3).

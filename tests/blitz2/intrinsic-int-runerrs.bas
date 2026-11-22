@@ -19,7 +19,7 @@ End Function
 Dim buf.l(2) : m.l=&buf(0)
 DEFTYPE .q
 c.l=0 : q2.q=0
-; the values of the decision (r5-decisions.md: truncated towards zero,
+; the values of the decision (~/.local/share/bb2-c-work/decisions/archive/2026-11-16-r5/decisions.md: truncated towards zero,
 ; recorded from the original) and of the spec; 32767.99998 from its bits
 ; ($7FFFFFFF: the literal is rounded to 32768 and wraps to -32768)
 q=3.5 : c=Int(q) : NPrint "3.5 ",c

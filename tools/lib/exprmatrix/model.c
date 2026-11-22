@@ -24,7 +24,7 @@
  * Float is truncated to a whole number), and the model raises a flag
  * (EM_F_*) where the computed value is not the ideal one or where a
  * question class of design decision 7 applies.  Each rule of the fixed
- * set names its entry in task-decisions.md (heading, date).
+ * set names its entry in ~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md (heading, date).
  */
 #include <math.h>
 #include <stdint.h>
@@ -981,7 +981,7 @@ byte:
         /* BUG(orig) (#1188): the Byte path cuts a fraction literal
            (makeint); EM_R_1188: it keeps the fraction as the Word path does
            (compiler-byte-fraction-const: "the constant keeps its fraction in
-           every context"; task-coordinator-decisions.md 2026-11-22 "#1186
+           every context"; ~/.local/share/bb2-c-work/decisions/rounds/quick/coordinator-decisions.md 2026-11-22 "#1186
            fixed; #1188 found") */
         if (e->rules & EM_R_1188)
             goto dofloat;
@@ -1339,7 +1339,7 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
            issue changes it, the original's measured value is the cell's
            baseline, also SPPow's precision (1000^2 gives 999999): a
            regression check, not a decision that the value is right
-           ("Matrix questions Q-A, Q-C, Q-D, Q-E", task-decisions.md,
+           ("Matrix questions Q-A, Q-C, Q-D, Q-E", ~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md,
            2026-11-22, Q-E: "Original, Vorzeichen per #1189 (Recommended)",
            and the "Correction by the user" there) */
         {
@@ -1750,7 +1750,7 @@ void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules
                 strcpy(out->text, "?");
                 return;
             }
-            /* EM_R_1187 (fixed, task-coordinator-decisions.md 2026-11-22
+            /* EM_R_1187 (fixed, ~/.local/share/bb2-c-work/decisions/rounds/quick/coordinator-decisions.md 2026-11-22
                "Float conditions test d1"): the value is tested */
             t = !ffp_zero(r.v);
             break;

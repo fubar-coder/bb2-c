@@ -176,7 +176,7 @@ Phase 1 (tasks 1.1-1.4, 2.1, 3.2, 4.1), `tools/lib/testtoml`,
 `tools/lib/testconf`; the grammar in `tests/README.md`, "The run
 configuration".
 
-Decided by the user (`task-decisions.md`, 2026-11-21, "basic-test-runner:
+Decided by the user (`~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, 2026-11-21, "basic-test-runner:
 findings of implementer B"), and written into the spec delta: only run
 settings with a single value are axes; the nearest file first, then the
 most specific selector in it; deviations as assertions in
@@ -189,7 +189,7 @@ was answered by a spike (`tr-findit-report.md`): TED stores a Latin-1
 character of a string as one byte below $20 or as the pair $90 cc, so the
 rule holds for the tokenised source only; the preprocessor reads the text
 source, where a byte >= $80 is one character (user decision 2026-11-21,
-`task-decisions.md`).
+`~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`).
 
 - **Keys.** The run settings mirror the header directives and pass keys
   of today (`compiler`, `libs`, `machine`, `runtime-errors`, `rwe`,
@@ -199,7 +199,7 @@ source, where a byte >= $80 is one character (user decision 2026-11-21,
   describe the registered ctest test. `compiler` has the values `port`,
   `orig195` (the build of `blitz2.s` 1.95) and `orig210` (the CD's 2.10),
   `libs` `cd` and `clib`; the defaults are `port`, `clib`, `a1200`
-  and `off` (decided: `task-decisions.md`, 2026-11-21, "basic-test-runner:
+  and `off` (decided: `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, 2026-11-21, "basic-test-runner:
   findings of implementer B"). Task 3.1 maps the settings to the pass file
   and may add keys.
 - **Axes.** A list setting cannot be an axis (the subset has no lists of
@@ -273,7 +273,7 @@ source, where a byte >= $80 is one character (user decision 2026-11-21,
   `CONFIGURE_DEPENDS` too, or a new `ID.test.toml` next to an existing
   source is not seen until the next configure.
 - **String values by length and CRC32** (decided 2026-11-21,
-  `task-decisions.md`, entry "String values: length and CRC32": "ok zu
+  `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, entry "String values: length and CRC32": "ok zu
   hash-variante für string-werte"; scope basic-testlib and
   basic-test-runner). Each string value of a `checkstr` entry carries the
   length and the CRC32 of the whole string (the delta of

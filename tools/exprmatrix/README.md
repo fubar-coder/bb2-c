@@ -233,7 +233,7 @@ Rule sets (flags in `exprmatrix.h`): the original's (`EM_RULES_ORIG`),
 the port as measured (`EM_RULES_PORT`, `EM_RULES_PORTCD`) and the fixed
 rules (`EM_RULES_FIXED`: #1177, #1186, #1178 variant C, #1179, #1187,
 #1188, #1189, the C libraries); each rule in `model.c` names its entry
-in `task-decisions.md`. Not modelled: mathtrans SPPow (`^`) where its
+in `~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`. Not modelled: mathtrans SPPow (`^`) where its
 bits matter, and the original's `If` on a Float, which tests d1 (#1187);
 those values are `?` (`?-`: the negation of the original's SPPow result,
 #1189). Beside the value the model raises the flags of the cells no
@@ -263,7 +263,7 @@ changes; its
 expected value is the original's measured value, a regression check so
 that a fix changes these cells only where it is meant to (the expected
 values are regenerated after the fix), not a decision that the value is
-right (`task-decisions.md`, "Matrix questions Q-A, Q-C, Q-D, Q-E",
+right (`~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`, "Matrix questions Q-A, Q-C, Q-D, Q-E",
 2026-11-22, the user's correction there, and "Matrix: last Q-F and Q-E
 cells"). A cell an issue's fix changes is `fixed-N` or `open-N` whatever
 its value class. Where AmiBlitz3 differs from 1.95, the recorded rules

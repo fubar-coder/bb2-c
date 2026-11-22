@@ -272,7 +272,7 @@ task 3.1, not in parallel with it.
   at once; Floats and literals with a fraction are not cut (so `If l<q`
   with `l.l=1` is false too). Whether that is an original bug is open
   with the user; the compiler is unchanged.
-- **Typed checks** (decided 2026-11-21, `task-decisions.md`, entry
+- **Typed checks** (decided 2026-11-21, `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, entry
   "basic-testlib: typed checks, findings of implementer A"; tasks
   5.1-5.3): `!CheckQEq{ACTUAL,EXPECTED}`
   (quick, exact; `TLCheckQ`, entry `checkq`) and
@@ -287,7 +287,7 @@ task 3.1, not in parallel with it.
   check a quick value with `!CheckQEq` and a float value with
   `!CheckFltNear`, never a quick or float comparison with `!Check`.
 - **The six findings above are accepted** (decided 2026-11-21,
-  `task-decisions.md`, the same entry), with one
+  `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, the same entry), with one
   addition: `checkstr` gets a last field, `-` for complete values or
   `cut` for values shortened to fit the 512-byte line. The findings that
   are behaviour are now in the spec: the delta of
@@ -306,7 +306,7 @@ task 3.1, not in parallel with it.
   variants), and in the ctest `basictest_macros_tokens_ab3` with
   AmiBlitz3 v3.14.0's 4653 tokens; no macro is a token.
 - **Length and CRC32 of string values** (decided 2026-11-21,
-  `task-decisions.md`, entry "String values: length and CRC32": "ok zu
+  `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, entry "String values: length and CRC32": "ok zu
   hash-variante für string-werte"; tasks 6.1-6.4). Each string value of
   `checkstr` is followed by the length (decimal, the form of `K`) and the
   CRC32 (`$` and 8 upper-case hex digits) of the whole string, cut or

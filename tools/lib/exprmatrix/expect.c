@@ -18,7 +18,7 @@
  * else left out (a port defect, reported).  The cells of an issue fixed
  * after the matrix was committed (its rule outside EM_RULES_MATRIX: #1178
  * and later) stay in their bug-orig tests when the fix comes (option T1 of
- * quick-long-arithmetic, design decision 13; task-decisions.md 2026-11-22,
+ * quick-long-arithmetic, design decision 13; ~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md 2026-11-22,
  * "T1 for all fixes"): o != e = p gives the open test again, with
  * "; @fixed #N" in its header; a cell of two such issues of which one is
  * fixed stays in its test without @fixed (DIFFERS until the second fix).

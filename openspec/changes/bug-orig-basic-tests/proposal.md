@@ -10,7 +10,7 @@ wildcards. The `.orig` files are recorded on the CD with two memory
 layouts and must be re-recorded whenever a test changes. With the test
 library (`basic-testlib`) and the runner model (`basic-test-runner`) the
 expectation is in the program and the original's deviation is declared.
-User decisions of 2026-11-21 (chat, `task-decisions.md`): `.expect` and
+User decisions of 2026-11-21 (chat, `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`): `.expect` and
 `.orig` go away, "ein Erfolg ist ein Erfolg".
 
 ## What Changes

@@ -6,7 +6,7 @@ The first index of an array is always evaluated as a Long (`arreval`, `blitz2.s:
 
 Recorded decisions:
 
-* Direction (2026-11-21, `task-decisions.md`, "#1179, CRC findings, trailers, merge"): "Keine Prüfung im Release (Recommended)" (direction A: every index a Long, the checked build keeps arrszchk; benchmark before the fix). NEWTYPE arrays: fixed size by a constant (BLITZ2_MANUAL:1747-1752), not part of the fix.
+* Direction (2026-11-21, `~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`, "#1179, CRC findings, trailers, merge"): "Keine Prüfung im Release (Recommended)" (direction A: every index a Long, the checked build keeps arrszchk; benchmark before the fix). NEWTYPE arrays: fixed size by a constant (BLITZ2_MANUAL:1747-1752), not part of the fix.
 * Variant (2026-11-22, "Last answers of the session"): "A0 (Recommended)" -> direction A plus inline Word mul/div in a later index and no upper word in the unchecked build (tr-1179-variants-cost.md); B1/B2 not taken. Replaces the proposed variants.
 * Matrix cells (same entry): "\"Ja für alle\" - zumindest solange bis die Test-Infrastruktur fertig umgebaut ist" -> fixed matrix cells stay in their bug-orig tests with `; @fixed #N` for every fix, until the test infrastructure (runner phase 2, bug-orig-basic-tests) is rebuilt.
 
@@ -41,7 +41,7 @@ The variants and their measured cost: `~/.local/share/bb2-c-work/tr-1179-variant
 
 ## Decisions of the user (2026-11-22)
 
-1. **AB3 mode** (`blitz2-ab3`, the same `eval.c`; answered with the options shown, scope: this case; `~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers"): "Beide Modi (Recommended)" -> one code path, the fix in BB2 and AB3 mode; AmiBlitz3 v3.14.0 itself evaluates a later index as a Word without the checking unless its 68020+ option is set: a row in `docs/ab3/variant.md`.
+1. **AB3 mode** (`blitz2-ab3`, the same `eval.c`; answered with the options shown, scope: this case; `~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers"): "Beide Modi (Recommended)" -> one code path, the fix in BB2 and AB3 mode; AmiBlitz3 v3.14.0 itself evaluates a later index as a Word without the checking unless its 68020+ option is set: a row in `docs/ab3/variant.md`.
 2. **The new compile error** in a later index without the checking (`ja(1,vq AND 1.5)`, the shifts with a fraction constant; same entry): "Ja, mit new-errors.md (Recommended)" -> it comes with the fix, with an entry in `new-errors.md`.
 
 ## Capabilities

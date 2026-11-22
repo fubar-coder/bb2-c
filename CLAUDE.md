@@ -10,13 +10,14 @@ Start here: `README.md` (building), `docs/structure.md`,
 original bug), `tests/README.md` (tests and presets). Open items:
 `TODO.md` (`- [ ] **Title** …` open, `- [x] **Title** done (date): …`;
 no strikethrough). The user's decisions:
-`~/.local/share/bb2-c-work/decisions.md`; the decision process (D-011):
-`decision-process.md` and `decision-catalog.md` there, read whole when a
-question is open. Read the files of the user's answers (`decisions.md`,
-`task-decisions*.md`, a round's or an area's decisions file) by entry:
-grep the headings (`grep -n '^## '`) or, in a file without them, the
-issue number or a keyword (`grep -n '#1008'`), then read only the
-entries that bear on the case.
+`~/.local/share/bb2-c-work/decisions/` (a local git repository; layout in
+its `README.md`; working data (reports, logs, spikes, drafts) never goes
+into it): `decisions.md` (D-NNN); the decision process (D-011):
+`process.md` and `catalog.md` there, read whole when a question is open.
+Read the files of the user's answers (`decisions.md`, `areas/`, `tasks/`,
+`rounds/`, `archive/`) by entry: grep the headings (`grep -rn '^## '`) or,
+in a file without them, the issue number or a keyword
+(`grep -rn '#1008'`), then read only the entries that bear on the case.
 
 ## Building and testing
 
@@ -44,10 +45,10 @@ and presets".
 1. **The user's statements.** An answer to a concrete question with the
    options shown is a decision; record every such answer with the quote,
    date and scope. It goes to `decisions.md` only if it is to serve as
-   precedent for other, future tasks; otherwise to the round's decisions
-   file, or outside a round to `task-decisions.md` (both in
-   `~/.local/share/bb2-c-work/`). A rule you derive from a side remark,
-   a counter-question or a guess ("vermutlich") is *proposed*: apply it
+   precedent for other, future tasks; otherwise to the round's
+   `rounds/NAME/decisions.md`, or outside a round to `tasks/decisions.md`
+   (both in `~/.local/share/bb2-c-work/decisions/`). A rule you derive
+   from a side remark, a counter-question or a guess ("vermutlich") is *proposed*: apply it
    only to the case it was said for and ask before using it elsewhere;
    collect proposals and show them together. Do not write such a rule
    into CLAUDE.md, an agent definition or memory without the user's OK

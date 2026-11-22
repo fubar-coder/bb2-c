@@ -39,7 +39,7 @@ See proposal.md, "Why". Measured on 2026-11-21 in `tests/bug-orig`:
 ## Decisions
 
 **D1 Rounds by area, as the fix rounds** (user: "OK so", plan in
-`~/.local/share/bb2-c-work/tr-rounds-plan.md`): P pilot (5), U1 libraries
+`~/.local/share/bb2-c-work/decisions/rounds/tr/plan.md`): P pilot (5), U1 libraries
 graphics (~150), U2 libraries system/IO/text (~135), U3 libraries sound and
 compute (~45), U4 compiler with a program run, regression, selftest (~100),
 U5-U7 RWE user libraries in three groups (~170 each). A tester agent per group moves its tests in a

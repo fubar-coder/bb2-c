@@ -8,7 +8,7 @@ observations, and the verdict is the diff of that output against
 exist only in the header comments ("Here: ... Correct: ..."), the expected
 values live outside the program, and outputs that hold addresses need
 wildcards and recordings in two memory layouts. User decisions of
-2026-11-21 (chat, `task-decisions.md`): the test programs judge themselves
+2026-11-21 (chat, `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`): the test programs judge themselves
 through a test library, in setup / act / verify form, and the library
 works with the original compilers as well as with the port.
 

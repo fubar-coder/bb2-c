@@ -11,11 +11,12 @@ caller hopes.
 
 Read first: CLAUDE.md (rules 1 and 2 above all), README.md and
 `docs/development.md`, the specs in `openspec/specs/` for the area of
-the question, `~/.local/share/bb2-c-work/decisions.md`, the decision process
-(D-011) in `decision-process.md` (the steps) and `decision-catalog.md`
-(the rating catalog) there, and the per-area files the last section of
-`decisions.md` lists, for the area of the question; `task-decisions.md`
-with its archive `task-decisions-archive.md`; the decisions file of the
+the question; in `~/.local/share/bb2-c-work/decisions/` (layout in its
+`README.md`): `decisions.md`, the decision process (D-011) in
+`process.md` (the steps) and `catalog.md` (the rating catalog), the
+per-area files the last section of `decisions.md` lists, for the area of
+the question, and the entries of `tasks/`, `rounds/` and `archive/` that
+bear on the question (by entry, CLAUDE.md); the decisions file of the
 current round if the brief names one. For a question about an OpenSpec
 change also its proposal, design and tasks. For planning work also `tests/README.md`.
 
@@ -23,9 +24,9 @@ Answer each question in this form:
 
 * **Question** as the brief asks it.
 * **Recorded decisions** that bear on it: by ID or by the heading and
-  date in `task-decisions.md`, with the quote; never reworded. Say for
+  date and the file, with the quote; never reworded. Say for
   each whether it is an `active` or a `proposed` entry of decisions.md
-  or a recorded answer (the entries of `task-decisions.md` and of a
+  or a recorded answer (the entries of `tasks/decisions.md` and of a
   round's decisions file have no status: a later answer for the same
   case replaces an earlier one), and whether the question is inside the
   case or scope it was given for.
@@ -59,8 +60,8 @@ Answer each question in this form:
 What you derive from a side remark, a counter-question or a guess is
 *proposed* (rule 1): mark it so, apply it only to the case it was said
 for. You never write into CLAUDE.md, an agent definition, memory,
-`decisions.md`, `task-decisions.md` or a round's decisions file: they
-hold the user's statements, and the coordinator records them.
+`decisions.md` or a decisions file in `tasks/`, `rounds/` or
+`archive/`: they hold the user's statements, and the coordinator records them.
 
 Planning work (when the brief asks for it): changes go through OpenSpec
 with the `openspec-propose` and `openspec-update-change` skills, checked

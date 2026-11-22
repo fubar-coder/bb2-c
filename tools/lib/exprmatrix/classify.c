@@ -423,13 +423,13 @@ static void classify_cell(const struct em_matrix *m, struct cls *k)
        negative or fractional operands, ^): a regression check, so that a
        fix changes these cells only where it is meant to, regenerated after
        the fix; not a decision that the value is right ("Matrix questions
-       Q-A, Q-C, Q-D, Q-E", task-decisions.md 2026-11-22, and the
+       Q-A, Q-C, Q-D, Q-E", ~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md 2026-11-22, and the
        "Correction by the user" there) */
     if (f & (EM_F_OVF | EM_F_BITQ | EM_F_MODNF | EM_F_POWINT))
         k->base = 1;
     /* a negative base with a fractional exponent: the original's measured
        value as the baseline, #1189 fixes only whole odd exponents
-       ("Matrix: last Q-F and Q-E cells", task-decisions.md 2026-11-22:
+       ("Matrix: last Q-F and Q-E cells", ~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md 2026-11-22:
        "Baseline wie heute (Recommended)"; whether these become a runtime
        error stays open in #1189) */
     if (f & EM_F_POWNEG)

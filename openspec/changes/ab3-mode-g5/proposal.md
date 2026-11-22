@@ -24,9 +24,9 @@ The earlier plan (G5, then G7, then G6) does not follow from the
 measurement: the old G5 items open 3 of the 38 programs, while `.d`
 without the FPU bit, the 68020 assembler and #940 together open 11.
 Nothing in the repository keeps the measurement, so it cannot show
-progress or a regression. User decisions of 2026-11-16 (the file
-`ab3-g5-decisions.md` of the coordinator's work directory) fix the scope
-and the order below.
+progress or a regression. User decisions of 2026-11-16
+(`~/.local/share/bb2-c-work/decisions/rounds/ab3-g5/decisions.md`) fix
+the scope and the order below.
 
 ## What Changes
 

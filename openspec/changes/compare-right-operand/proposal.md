@@ -4,7 +4,7 @@
 
 When a comparison is the right operand of an operator, blitz2 lowers the type so far to Word (the type of the comparison's boolean, `cpoke`, `programs/blitz2/src/eval.c:1128`) and then converts the **left** operand down to Word before the operation (`eval5`, `convtypef(left, *type)`, `eval.c:947`; `blitz2.s:8998`). A Long loses its high word, a Float or Quick is cut: `rl.l=lw AND (l1=l1)` gives 1 for `lw=65537`, `rl.l=lb+(l1=l1)` -31073 for `lb=100000`, `rf.f=fh+(l1=l1)` -1 for `fh=0.5`, `If $10000 AND (l1=l1)` is false. blitz2 1.95, the CD's 2.10 and the port do the same, with runtime error checking off and on; no error is raised (issue #1182, measured in `~/.local/share/bb2-c-work/tr-1177-float-context.md` section 5, 30 cases `fc4`).
 
-User decision (2026-11-21, `task-decisions.md`, "#1177 Float constant left; new bugs as issues"): "Issue, eigener Fix später" — a new issue (bug-orig, compiler, wrong-result) and a fix as a change of its own after #1177 and #1178.
+User decision (2026-11-21, `~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`, "#1177 Float constant left; new bugs as issues"): "Issue, eigener Fix später" — a new issue (bug-orig, compiler, wrong-result) and a fix as a change of its own after #1177 and #1178.
 
 ## Dependency and order
 
@@ -29,7 +29,7 @@ User decision (2026-11-21, `task-decisions.md`, "#1177 Float constant left; new 
 
 ## Decisions of the user (2026-11-22)
 
-Both answered with the options shown, scope: this case (`~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Last answers of the session"; `~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers"):
+Both answered with the options shown, scope: this case (`~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`, entry "2026-11-22 Last answers of the session"; `~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers"):
 
 1. **A Float left operand of `AND`/`OR`/`EOR`/a shift with a comparison on the right** (`rf.f=fh AND (l1=l1)`): "Ablehnen wie unter Word (Recommended)" -> refused as any Float there ("Illegal Operator for Type"); the old conversion is not kept for these operators. The CD count (task 3.2) is still reported.
 2. **AB3 mode:** "Beide Modi (Recommended)" -> one core, the fix in BB2 and AB3 mode (not resting on the answer "Neue Regel auch in AB3 (Recommended)" given for #1178).

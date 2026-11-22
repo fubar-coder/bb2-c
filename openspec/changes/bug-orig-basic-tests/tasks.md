@@ -2,7 +2,7 @@
 
 ## 1. Preparation
 
-- [x] 1.1 Show the user the wording of the fix workflow with `fixed-orig`/`fixed` for CLAUDE.md, `.claude/agents/tester.md`, `.claude/agents/implementer.md`, `docs/development.md` and `tests/README.md` (CLAUDE.md rule 1); verify: the user's OK recorded in `task-decisions.md`
+- [x] 1.1 Show the user the wording of the fix workflow with `fixed-orig`/`fixed` for CLAUDE.md, `.claude/agents/tester.md`, `.claude/agents/implementer.md`, `docs/development.md` and `tests/README.md` (CLAUDE.md rule 1); verify: the user's OK recorded in `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`
 - [ ] 1.2 Judging of declared deviations for the cells with the faulty part, the open-bug rule for the other cells, labels per case, the errors of `fixed-orig`/`fixed`, a test without a declared deviation as BROKEN; verify: host tests of each rule with broken input
 - [ ] 1.3 fix-scope for tests of the model (`tools/results fix-scope`): setting `fixed-orig = N` / `fixed = N` passes for issue N, other changes of checks, assertions or declarations are reported; verify: the scenarios of `testing/bug-fix-workflow` as host tests
 - [ ] 1.4 `bug-orig-record` skips tests of the model; verify: a test of the target with one test of each form
@@ -14,7 +14,7 @@
 
 ## 3. Rounds by area
 
-- [x] 3.1 Plan the rounds; verify: `~/.local/share/bb2-c-work/tr-rounds-plan.md`, accepted by the user ("OK so", `task-decisions.md`)
+- [x] 3.1 Plan the rounds; verify: `~/.local/share/bb2-c-work/decisions/rounds/tr/plan.md`, accepted by the user ("OK so", `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`)
 - [ ] 3.2 Round U1, libraries graphics (~150 tests); verify: each moved test keeps its verdict on both sides, fix-scope run by the agents, `all`, `bug-orig` and `originals` run once by the coordinator after the merge
 - [ ] 3.3 Round U2, libraries system/IO/text (~135 tests); verify: as 3.2
 - [ ] 3.4 Round U3, libraries sound and compute (~45 tests); verify: as 3.2

@@ -84,12 +84,14 @@
  *   and the terminator went into the memory behind it.  The array is now
  *   allocated for the icon's count and the terminator and NewToolType
  *   makes it larger when it is full (the user's decision of 2026-11-17,
- *   w1-decisions.md); without memory GetIconObject/NewToolType return 0
- *   and change nothing.  It is freed with the icon.
+ *   ~/.local/share/bb2-c-work/decisions/archive/2026-11-18-w1/decisions.md);
+ *   without memory GetIconObject/NewToolType return 0 and change nothing.
+ *   It is freed with the icon.
  * Fixed (intended deviation, #851): PutIconObject ignored PutDiskObject's
  *   result, returned -1 and closed the icon also when writing failed; it
  *   returns 0 then and the icon stays open (the user's decision of
- *   2026-11-17, w1-decisions.md).
+ *   2026-11-17,
+ *   ~/.local/share/bb2-c-work/decisions/archive/2026-11-18-w1/decisions.md).
  * Fixed (intended deviation, #850): PutIconObject forgot the written icon
  *   without FreeDiskObject (its memory was lost); it frees it now.
  * Fixed (intended deviation, #847): IconToShape allocated (width + 15)
