@@ -233,6 +233,34 @@ its line (line 4 here) in both builds.
 
 Issue: [A later array index is evaluated as a Word without runtime error checking and as a Long with it (#1179)](https://github.com/fubar-coder/bb2-c/issues/1179).
 
+### A Float with `AND`, `OR`, `EOR` or a shift and a comparison {#float-bit-operator-comparison}
+
+**What happened.** When the right operand of an operator was a
+comparison, the original converted the left operand down to a Word
+first. A Float left of `AND`, `OR`, `EOR` or a shift was cut to a whole
+number that way, so
+
+```
+l1.l=1 : fh.f=0.5 : rf.f=0
+rf=fh AND (l1=l1) : NPrint rf
+End
+```
+
+compiled and printed `0`.
+
+**With the port.** The comparison's result is converted to the left
+operand's type instead
+([Fixed bugs: expressions and statements]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#expressions-and-statements" >}})).
+A Float has none of these operators, so line 2 is the compile error
+"Illegal Operator for Type", as a Float left of them is with any other
+right operand.
+
+**What to change.** Convert the Float to a whole number first, such as
+`Int(fh) AND (l1=l1)`, which gives the original's result, or use a Long
+variable.
+
+Issue: [A comparison as the right operand converts the left operand down to Word: a Long loses its high word, a Float or Quick is cut (#1182)](https://github.com/fubar-coder/bb2-c/issues/1182).
+
 ## Characters
 
 ### An accented letter outside a string {#latin1-outside-string}

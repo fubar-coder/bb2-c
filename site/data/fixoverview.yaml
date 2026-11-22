@@ -8070,3 +8070,11 @@ rows:
     text: "An array index after the first one is computed as a Long also without runtime error checking, so both builds use the same element; the original computed it as a Word there (`g(1,y*200/2)` element 52768 for `y=200` instead of 20000, `b(1,q ASL 4)` 24 instead of 16 for `q=1.5`). `ja(1,vq AND 1.5)` is refused with \"Illegal Operator for Type\" also without the checking."
     page: compiler
     anchor: expressions-and-statements
+  - issue: 1182
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "The result of a comparison as the right operand of an operator is converted to the left operand's type, so a Long keeps its high word and a Quick or Float its fraction; the original converted the left operand down to Word (`If $10000 AND (a=b)` false, `If q OR (a<>b)` false for `q=0.5`, `lb+(a=b)` -31073 for `lb=100000`). `rf=fh AND (a=b)` with a Float `fh` is refused with \"Illegal Operator for Type\"."
+    page: compiler
+    anchor: expressions-and-statements
