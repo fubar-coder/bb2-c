@@ -1435,8 +1435,10 @@ static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
    or a Quick to Float.  Byte/Word to Long is exact and stays.  A Quick
    under a Long is not cut any more (#1178): eval5 takes a raw left
    operand as a Quick, also -q.  #1186 (port): a decimal literal with a
-   point (also negated) that the wanted Byte cut to a whole number is a
-   Float again (fraclitfloat): rb.b=(1.5=1.5) compared 1 with 1.5.  Not
+   point (also negated) that the wanted Byte made a whole number is a
+   Float again (fraclitfloat): before the fix of #1188 rb.b=(1.5=1.5)
+   compared 1 with 1.5; since then only a whole-valued literal (1.0) is
+   such a literal, and the re-emission keeps its code as it was.  Not
    covered (#1183): a compound left operand (q*2), computed in the wanted
    type before the comparison operator is read.  Returns the new end of
    the operand. */

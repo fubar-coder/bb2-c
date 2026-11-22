@@ -1,0 +1,11 @@
+; a whole-valued literal with a point under a Byte type so far (#1188):
+; the port keeps it the whole number it is (vb+2.0 an add of 2, vb AND 2.0
+; compiles) and Data.b 1.5 gives 1, as the original; AmiBlitz3 v3.14.0
+; makes every literal with a point a Float there, as under a Word type
+; so far: it refuses vb AND 2.0 and Data.b 1.5 (docs/ab3/variant.md)
+vb.b=2 : rb.b=0
+rb=vb+2.0 : NPrint rb
+rb=vb AND 2.0 : NPrint rb
+Read rb : NPrint rb
+End
+Data.b 1.5

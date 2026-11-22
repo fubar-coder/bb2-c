@@ -46,9 +46,10 @@ static ULONG constval;
 
 /* No asm counterpart (#1186, a port defect of the #1177 fix): a decimal
    literal with a point or an exponent that the byte sizing of consttype2
-   made a whole number (litcut, set by consttype2), and where fetchnum3
-   emitted it last (litat..litend, 0: none) with its FFP value litffp and
-   the whole number litint, for fraclitfloat */
+   made a whole number (litcut, set by consttype2; since the fix of #1188
+   only a whole-valued one, 2.0 or 1e2), and where fetchnum3 emitted it
+   last (litat..litend, 0: none) with its FFP value litffp and the whole
+   number litint, for fraclitfloat */
 static BOOL litcut;
 static ULONG litat, litend, litffp, litint;
 
@@ -58,7 +59,7 @@ BOOL litneg;
 
 
 static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data);
-static ULONG consttype2(UWORD *type, ULONG val);
+static ULONG consttype2(UWORD *type, ULONG val, BOOL data);
 static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac);
 static void dothee(void);
 static UWORD fetchdec(UWORD c, ULONG *divisorp);
@@ -134,7 +135,7 @@ ULONG fetchnum(UWORD c, UWORD *type, BOOL data)
     numval = ffpcall(SPFlt, numval, 0, NULL);     /* int to ffp */
     dothee();
     c = reget();
-    val = consttype2(type, c);
+    val = consttype2(type, c, data);
     return fetchnum3(val, type, data);
 }
 
@@ -178,7 +179,7 @@ static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac)
         dothee();                   /* E Something! */
 pskip2:
     c = reget();
-    val = consttype2(type, c);
+    val = consttype2(type, c, data);
     return fetchnum3(val, type, data);
 }
 
@@ -398,7 +399,7 @@ ULONG fetchnum2(ULONG num, UWORD *type, BOOL data)
     numval = num;
     numfloat = 0;
     /* d0 only matters on consttype2's float paths (numfloat != 0) */
-    val = consttype2(type, lastchar);
+    val = consttype2(type, lastchar, data);
     return fetchnum3(val, type, data);
 }
 
@@ -409,14 +410,16 @@ ULONG constotype(UWORD *type)
     UWORD c;
 
     evalconst(&c, NULL);
-    return consttype2(type, c);
+    return consttype2(type, c, FALSE);
 }
 
 /* blitz2.s:10913 consttype2 - size the constant numval (int if numfloat == 0,
    else FFP) to *type (0 = decide).  Returns the value (asm d0); *type =
    final type.  `val` = the asm d0 on entry (normally the current char);
-   every path that uses it loads it with makeint first (#12). */
-static ULONG consttype2(UWORD *type, ULONG val)
+   every path that uses it loads it with makeint first (#12).  data: the
+   constant is a Data value (fetchdata; asm dfetch), for the Byte sizing
+   (#1188). */
+static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
 {
     UWORD newtype = *type;
     UWORD whole;
@@ -451,15 +454,21 @@ static ULONG consttype2(UWORD *type, ULONG val)
     }
 
 byte:
-    /* BUG(orig) (#1188): a literal with a fraction is cut to a whole
-       number here (makeint), where .word, .long and .float keep the
-       fraction (as a Quick or a Float), so the operation is computed with
-       the whole number: rb.b=(1.5+1.5) is 2 and rb.b=(0.5*4) 0, under a
-       Word 3 and 2 (test compiler-byte-fraction-const).  An assignment of
-       the constant alone (rb.b=1.5: 1) gives what the conversion would. */
     if (!makeint(&val))
         goto numdofloat;
-    litcut = numfloat != 0;         /* #1186: a literal cut */
+    /* Fixed (#1188): a literal with a non-zero fraction is a Float
+       constant, as under .word, so the operation is computed in Float and
+       its result converted to the Byte at the end (towards zero):
+       rb.b=(1.5+1.5) is 3 and rb.b=(0.5*4) 2, as under a Word.  The
+       original cut it to a whole number here (makeint) before the
+       operation (2 and 0).  A whole-valued literal with a point or an
+       exponent (2.0, 1e2) stays the whole number, unlike .word: the value
+       is the same without Float code (rb.b=vb AND 2.0 compiles).  A Data
+       value keeps the cut (Data.b 1.5 is 1; under .word "Bad Data"). */
+    if (numfloat && !data
+        && ffpcall(SPSub, numval, ffpcall(SPFlt, val, 0, NULL), NULL))
+        goto numdofloat;
+    litcut = numfloat != 0;         /* #1186: a whole-valued literal */
     if ((LONG)val <= 127 && (LONG)val >= -128)
         goto done;                  /* .dobword */
 over1:

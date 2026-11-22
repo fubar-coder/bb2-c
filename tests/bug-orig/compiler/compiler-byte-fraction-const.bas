@@ -11,6 +11,7 @@
 ; operation is computed with it and only the result takes the type of the
 ; destination, as under Word.  A comparison is not affected in the port:
 ; its left operand is a Float again (#1186) and its right one has no type.
+; @fixed #1188
 NEWTYPE.nb
   f.b
 End NEWTYPE

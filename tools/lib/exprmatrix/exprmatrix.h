@@ -170,7 +170,7 @@ enum {
 #define EM_RULES_ORIG EM_R_CDLIB
 #define EM_RULES_PORTCD (EM_R_CDLIB | EM_R_1177)    /* the port as measured, CD's libraries */
 #define EM_RULES_PORT EM_R_1177                     /* the port as measured, C libraries */
-#define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187)  /* the port of this commit, C libraries */
+#define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188)  /* the port of this commit, C libraries */
 /* the port's rules when the matrix was committed: the cells of an issue
    fixed later (a rule outside this set) stay in their bug-orig tests, which
    get "; @fixed #N" (expect.c, option T1) */

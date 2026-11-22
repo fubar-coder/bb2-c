@@ -6,8 +6,9 @@ the manual, and it has consequences when a Quick (a number with a fraction
 in 16.16 format) meets a Long. This page describes what the original
 compiler does, measured with blitz2 1.95 and the CD's libraries with
 runtime error checking off (AmiBlitz3 v3.14.0 has the same code), and
-where the port differs: comparisons (#1177) and the arithmetic of a
-Quick under a Long (#1178), both original bugs fixed in the port.
+where the port differs: comparisons (#1177), the arithmetic of a
+Quick under a Long (#1178), the later array index (#1179) and a constant
+with a fraction under a Byte (#1188), original bugs fixed in the port.
 
 ## The types and the "type so far"
 
@@ -92,6 +93,48 @@ The type so far is Long when
 * a whole-number constant that does not fit a Quick stands in a Quick
   expression (it becomes a Long, `consttype2`, `libcall.c:420-470`).
 
+## A constant with a fraction under a Byte type so far (#1188)
+
+A decimal constant is sized by the type so far when it is read
+(`consttype2`, `programs/blitz2/src/libcall.c`). Under a Word, Long or
+Float type so far a constant with a fraction stays a Float (under a Quick
+a Quick), so the operation is computed with the fraction. In the original
+the Byte path cut it to a whole number at once (`makeint`,
+`blitz2.s:10938`), before the operation: `rb.b=(1.5+1.5)` gave 2,
+`rb=(0.5*4)` 0, `rb=(1.5*vb)` 2 for `vb=2`, where a Word destination gives
+3, 2 and 3. The same in every Byte context: a Byte parameter of a
+statement or function, a Byte field, a Byte array element.
+
+In the port (original bug #1188, fixed; spec `compiler/expression-types`)
+a constant with a non-zero fraction under a Byte type so far is a Float
+constant, as under a Word: the operation is computed in Float and the
+result converted to the Byte at the end (towards zero, as every Float):
+
+| Expression (`vb.b=2`) | Original | Port | Under a Word |
+|---|---|---|---|
+| `rb.b=(1.5+1.5)` | 2 | 3 | 3 |
+| `rb=(0.5*4)` | 0 | 2 | 2 |
+| `rb=(1.5*vb)` | 2 | 3 | 3 |
+| `rb=(-1.5*vb)` | -2 | -3 | -3 |
+| `rb=(1.25e1*2)` | 24 | 25 | 25 |
+| `rb=1.5`, `rb=-1.5` | 1, -1 | 1, -1 | 1, -1 |
+
+Where the port differs from a Word type so far:
+
+* a constant written with a point or an exponent whose value is whole
+  (`2.0`, `1e2`, `1.5e1`) stays the whole number it is under a Byte, as in
+  the original (under a Word it is a Float): `rb.b=vb+2.0` is a Byte
+  addition and `rb.b=vb AND 2.0` compiles;
+* `Data.b` keeps the cut: `Data.b 1.5` gives 1 (`Data.w 1.5` is "Bad
+  Data").
+
+A constant with a fraction is a Float, so an operator without a Float
+form refuses it, as under a Word: `rb.b=1.5 AND vb`, `OR`, `EOR`, the
+shifts and `rb.b=NOT 1.5` give "Illegal Operator for Type" (the original
+computed them with the cut constant). AmiBlitz3 v3.14.0 keeps the fraction
+as the port does; it makes a whole-valued constant with a point a Float as
+well and refuses `vb AND 2.0` and `Data.b 1.5` (`docs/ab3/variant.md`).
+
 ## Converting to a whole number: Float and Quick differ
 
 A Float is converted to a Byte, Word or Long by the mathffp routine
@@ -149,9 +192,10 @@ In the port the operands of a comparison (`=`, `<>`, `<`, `<=`, `>`, `>=`)
 are compared with their own values (fix of #1177; the original handed the
 type so far to both): the right operand starts with no type, a left
 operand that is one element (a variable, field, array element, function
-value) gets its own type back, so does a constant with a fraction on the
-left (a Float, also under a Byte destination, where the type so far
-would cut it to a whole number: `rb.b=(1.5<1.9)` is -1, #1186), and only
+value) gets its own type back, so does a constant with a point on the
+left (a Float, also under a Byte destination: `rb.b=(1.5<1.9)` is -1,
+#1186; since #1188 a constant with a fraction is a Float under a Byte
+anyway, a whole-valued one such as `1.0` is made a Float here), and only
 the boolean is converted to the type of the context. A Long or Word against a Quick is compared exactly:
 the whole number against the whole part of the Quick, on equality the
 fraction decides; a Long is not converted to Quick (range +-32768). So
@@ -332,7 +376,13 @@ the four give the same results, except for `Dim a(65535)` with checking
   original's Word division there), where a Long division gives the
   largest number (`ldivlib`, #200); with the checking it stops with
   "Division by Zero" in both (`tests/blitz2/array-index-div0-runerrs`).
+* **Constants with a fraction under a Byte** were original bug #1188,
+  fixed in the port (above, "A constant with a fraction under a Byte type
+  so far"): in the original `rb.b=(1.5*vb)` computes `1*vb`, so a Byte
+  destination, parameter, field or array element gives another result
+  than the same expression under a Word.
 
 The comments `Fixed (#1178)` and `Fixed (#1179)` in
-`programs/blitz2/src/eval.c` (`varcont`, `mixedop`, `arrevalchk`) point
+`programs/blitz2/src/eval.c` (`varcont`, `mixedop`, `arrevalchk`) and
+`Fixed (#1188)` in `programs/blitz2/src/libcall.c` (`consttype2`) point
 here.

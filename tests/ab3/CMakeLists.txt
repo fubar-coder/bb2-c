@@ -437,6 +437,13 @@ ab3_cli_case(const_novalue const_novalue.ab3 REF)
 # a Quick under a Long type so far (#1178): the port's rule in AB3 mode,
 # AmiBlitz3 keeps the cut (docs/ab3/variant.md)
 ab3_cli_case(quick_long_arith quick_long_arith.ab3 REF REF_EXPECT quick_long_arith.ref.expect)
+# a constant with a fraction under a Byte type so far (#1188): it keeps
+# its fraction, as in AmiBlitz3; with a bit operator refused in both; a
+# whole-valued literal with a point stays whole and Data.b 1.5 is 1, where
+# AmiBlitz3 makes it a Float (docs/ab3/variant.md)
+ab3_cli_case(byte_fraction_const byte_fraction_const.ab3 REF)
+ab3_cli_case(byte_fraction_bitop byte_fraction_bitop.ab3 REF)
+ab3_cli_case(byte_fraction_whole byte_fraction_whole.ab3 REF REF_EXPECT byte_fraction_whole.ref.expect)
 # the character literals @"..." (change ab3-mode-g3, spec
 # ab3-compat/strings): byte, word and long targets, in memory and in a
 # file; the errors (too many characters, without new syntax, in BB2 mode,

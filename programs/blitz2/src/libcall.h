@@ -88,7 +88,9 @@ void byteconstext(ULONG at);
 /* No asm counterpart (#1186, a port defect of the #1177 fix): if the
    code from `from` to `*to` is the decimal literal with a point or an
    exponent that the fetch routines emitted last as a whole number (the
-   byte sizing of consttype2 cuts it: 1.5 under a Byte is move.w #1),
+   byte sizing of consttype2: since the fix of #1188 only a whole-valued
+   one, 2.0 under a Byte is move.w #2; a literal with a fraction is a
+   Float there),
    followed only by neg.w Dreg, it is emitted again at `from` as the Float
    it is (move.l #ffp,Dreg, negated once for every neg.w), *type = Float,
    *to = the new end of the code, and TRUE is returned; else FALSE with
