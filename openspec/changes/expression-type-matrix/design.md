@@ -128,6 +128,15 @@ None of these is planned to run at the same time except `quick-long-arithmetic`,
 
 Additive. Rollback: remove the pass, the cases and the generated files; nothing else depends on them until `quick-long-arithmetic` uses them.
 
+## Findings
+
+Task 1.1 (`tools/exprmatrix`, `tools/lib/exprmatrix`; the format in `tools/exprmatrix/README.md`):
+
+* The description names value sets (`values`, `counts`) and blocks (an operator group: contexts, operators, kinds, sets, or single `cell` lines); a block is the product of its parts, both orders of every pair of its kinds. A source holds one block, set and context, at most N cells (`cells-per-source`, `--cells`); class (decision 2b) is not known before `classify`, so it is not yet a split criterion.
+* The combinations BASIC gives no meaning (a string with a number, a string under an operator other than `+` and the comparisons, a string `+` outside `print`, a string under a unary operator) are left out of the product; as a single `cell` line they are an error. Every other combination is generated, also those a compiler refuses ("Illegal Operator for Type"): which they are is measured (task 1.3), not assumed.
+* A comparison in a destination is written in brackets (`rl=(a < b)`, as `compiler-quick-compare` does) so that the first `=` is the assignment; everywhere else the expression stands as it is. A Quick or Float parameter is copied by its statement to a global of the same type (`SHARED`), whose raw bits are printed; the key is printed before the call (`Print "KEY " : pq{...}`).
+* A constant's size is checked against its kind (`cb` -128..127, `cw` of Word but not Byte size, `cl` beyond Word, `cf` with a `.`). The counts (the right operand of the shifts and `^`, decision 8: 2 or 3) are not checked for size: a count 2 of kind `cw` or `cl` is a Byte-size constant, the same cell as `cb`.
+
 ## Open Questions
 
 None that can wait; the Decide question of decision 2(a) comes after task 1.2 and before task 1.3, the question classes of decision 7 before group 3.

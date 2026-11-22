@@ -85,6 +85,8 @@
 #              from its result file and observations, the verdict of a case
 #   testreg    the registration of those tests at build time: one ctest test
 #              per case and side, the ctest include file (tools/testreg)
+#   exprmatrix the expression matrix of blitz2: its description, its keyed
+#              cells and their Blitz sources (tools/exprmatrix)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -128,3 +130,4 @@ add_subdirectory(testconf)
 add_subdirectory(testpp)
 add_subdirectory(testjudge)
 add_subdirectory(testreg)
+add_subdirectory(exprmatrix)
