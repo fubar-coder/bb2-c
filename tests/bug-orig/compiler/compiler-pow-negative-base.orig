@@ -1,0 +1,39 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+01 vm^2 4
+02 vm^3 8
+03 vm^-1 .5
+04 vm^-2 .25
+05 vm^-3 .125
+06 vf^ef(.f 3) 15.62499
+07 vf^eq(.q 3) 15.62499
+08 vf^nw 15.62499
+09 rl.l=vf^nw 15
+10 vm^0 1
+11 vm^1 2
+12 vh^3 .125
+13 vo^16777215 1
+14 vo^16777216 1
+15 vo^8388609 1
+16 (-1.5)^3 3.374999
+17 -3^nw 27
+18 2.5^nw 15.62499
+19 -(2.5^nw) -15.62499
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-pow-negative-base.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-pow-negative-base
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

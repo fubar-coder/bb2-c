@@ -135,6 +135,40 @@ computed them with the cut constant). AmiBlitz3 v3.14.0 keeps the fraction
 as the port does; it makes a whole-valued constant with a point a Float as
 well and refuses `vb AND 2.0` and `Data.b 1.5` (`docs/ab3/variant.md`).
 
+## The power with a negative base (#1189)
+
+`^` converts both operands to Float and calls the first entry of the
+math library (`dopow`, `programs/blitz2/src/eval.c`; BB2 mode library 192,
+`mathtranslib`), whatever their types; the result is a Float. In the
+original that entry is the inline call of mathtrans `SPPow`, which gives
+|x|^y for a negative base: the sign was lost also for a whole odd
+exponent. `rl.l=vf^nw` with `vf=-2.5`, `nw=3` gave 15, `rf.f=vf^nw`
+15.625, `(-1.5)^3` 3.374999 (blitz2 1.95, 2.10, AmiBlitz3 v3.14.0).
+
+In the port (original bug #1189, fixed; spec `compiler/expression-types`)
+the entry is a routine (`libs/acidlibs/mathtranslib.c`): a base that is
+not negative goes to `SPPow` as before; a negative one goes to it as |x|,
+and the result is negative when the exponent's Float value is a whole odd
+number. The magnitude is `SPPow`'s, with its precision (`3^2` is
+9.000001, `1000^2` 999999: not in scope).
+
+| Expression (`vf.f=-2.5`, `vm.w=-2`, `nw.w=3`) | Original | Port |
+|---|---|---|
+| `rf.f=vf^nw`, also with a Float or Quick 3 | 15.62499 | -15.62499 |
+| `rl.l=vf^nw` | 15 | -15 |
+| `rf=vm^2`, `vm^-2` | 4, .25 | 4, .25 |
+| `rf=vm^-1`, `vm^-3` | .5, .125 | -.5, -.125 |
+| `rf=vm^0` | 1 | 1 |
+| `rf=(-1)^16777215` (the largest whole odd Float) | 1 | -1 |
+| `rl.l=(-3)^3.5`, `rf=(-3)^1.5` | 46, 5.196152 | 46, 5.196152 |
+
+A fractional exponent has no real power with a negative base; it keeps
+the original's |x|^y (whether it becomes a runtime error is an open
+question of #1189). A power outside the Long range converts to the
+saturated value: `rl.l=vl^3` with `vl=-100000` is -2147483648, 0 as a
+Word. AB3 mode takes `^` from AmiBlitz3's library 44 and keeps its value,
+the original's (`docs/ab3/variant.md`).
+
 ## Converting to a whole number: Float and Quick differ
 
 A Float is converted to a Byte, Word or Long by the mathffp routine
@@ -381,8 +415,13 @@ the four give the same results, except for `Dim a(65535)` with checking
   so far"): in the original `rb.b=(1.5*vb)` computes `1*vb`, so a Byte
   destination, parameter, field or array element gives another result
   than the same expression under a Word.
+* **The power with a negative base** was original bug #1189, fixed in
+  the port (above, "The power with a negative base"): in the original
+  `(-2.5)^3` is 15.625, so an odd power of a negative number has the
+  wrong sign.
 
 The comments `Fixed (#1178)` and `Fixed (#1179)` in
 `programs/blitz2/src/eval.c` (`varcont`, `mixedop`, `arrevalchk`) and
-`Fixed (#1188)` in `programs/blitz2/src/libcall.c` (`consttype2`) point
-here.
+`Fixed (#1188)` in `programs/blitz2/src/libcall.c` (`consttype2`) and
+`Fixed (#1189)` in `programs/blitz2/src/eval.c` (`dopow`) and
+`libs/acidlibs/mathtranslib.c` point here.

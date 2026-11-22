@@ -317,7 +317,7 @@ checked twice:
 |---:|---|---|---|---|---|
 | 180 | memacclib | Poke Peek Peeks$ Call | identical | t09, `[cmd]` | `Call` (JMP with all registers) |
 | 110 | sortlib | Sort SortUp SortDown | identical | t10, `[cmd]` | CCR of mathffp `SPCmp` → -1/0/1 |
-| 192 | mathtranslib | ACos … HTan, `^` (Float) | identical | t11, `[cmd]` | inline routines `JSR lvo(a6)` |
+| 192 | mathtranslib | ACos … HTan, `^` (Float) | identical | t11, `[cmd]` | inline routines `JSR lvo(a6)`; `^` a routine around SPPow (#1189) |
 | 194 | utillib | CreateMsgPort DeleteMsgPort Wait TaskName$ | identical | t12, `[cmd]` | – |
 | 193 | environlib | WBWidth … WBExtViewMode, cr_vbr | identical | t13, `[cmd]` | `MOVEC VBR` |
 | 78 | datelib | SystemDate Date$ NumDays DateFormat Days … Secs | identical | t30 | DIVU/DIVS as an instruction (overflow behaviour) |

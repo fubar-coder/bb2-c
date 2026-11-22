@@ -10,11 +10,13 @@
  *           it cannot be opened (TST.l d0:BEQ initloop).
  *   finit:  close it if the base is not 0 (a1 = the base, !libs
  *           #mathtranslib,#la1).
- *   functions: every one is an inline routine (`Dc $a000,len`): the
- *           compiler copies `JSR lvo(a6)` to the call, a6 = the base
- *           (!libs #mathtranslib,#la6), d0 = argument, d1 = exponent for
- *           dopow (SPPow).  Inline code is assembler by nature
- *           (BLITZ_INLINE); the original has no RTS behind it.
+ *   functions: the transcendental functions are inline routines
+ *           (`Dc $a000,len`): the compiler copies `JSR lvo(a6)` to the
+ *           call, a6 = the base (!libs #mathtranslib,#la6), d0 = argument.
+ *           Inline code is assembler by nature (BLITZ_INLINE); the
+ *           original has no RTS behind it.  Fixed (#1189): the ^ operator
+ *           (dopow, d0 = x, d1 = y) is a routine around SPPow, no longer
+ *           the inline SPPow call, which drops the sign of a negative base.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -101,10 +103,30 @@ static void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
 
 /**
  * @brief The ^ operator for floats (the first nullsub, called by the
- * compiler) - x^y with SPPow.
+ * compiler) - x^y with SPPow, the sign of a negative base kept.
  *
- * Inline code (`Dc $a000,len`): the compiler copies the `JSR -90(a6)` to
- * the call.
+ * Fixed (#1189): the original is the inline `JSR -90(a6)` (SPPow), which
+ * gives |x|^y for a negative x, also for a whole odd exponent: (-2.5)^3
+ * gave 15.625.  Now a base that is not negative jumps to SPPow as before;
+ * a negative one is passed to SPPow as |x|, and the result is negative
+ * when y is a whole odd number: (-2.5)^3 is -15.625, (-2)^2 4, (-2)^-1
+ * -0.5.  A result 0 stays 0.  With a fractional exponent there is no real
+ * power and the value stays |x|^y, as in the original (whether that
+ * becomes a runtime error is open in #1189).
+ *
+ * Whole and odd from the FFP bits: the mantissa M in bits 31-8
+ * (normalised), the sign in bit 7, the exponent in bits 6-0 (excess 64),
+ * the value M * 2^(e-24) with e = exponent - 64.  e <= 0: 0 or below 1
+ * in magnitude; e > 24: whole and even; otherwise y is a whole odd number
+ * if bit 24-e of M is set and the 24-e bits below it are 0 (e = 24: the
+ * value is M itself, 16777215 the largest odd one).  `LSL.l e` of the
+ * mantissa (the low byte cleared) shifts bit 24-e of M into C and leaves
+ * the bits below it, the fraction: C set and the rest 0.
+ *
+ * Assembler by nature: the tail jump into SPPow with the caller's
+ * registers (the inline call it replaces, the cost of the common case
+ * one test) and the bit test on the condition codes of the shift.  The
+ * registers: those of the SPPow call (d0/d1/a0/a1 changed, a6 kept).
  *
  * @arg d0 x, the base (FFP).
  * @arg d1 y, the exponent (FFP).
@@ -112,7 +134,33 @@ static void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
  * @par Result
  * d0: x^y (FFP).
  */
-BLITZ_INLINE(dopow,   "jsr -90(a6)");                   /* SPPow: d0^d1 */
+BLITZ_ASM_ROUTINE(dopow,
+        "   tst.b   d0\n"
+        "   bmi.s   1f\n"
+        "   jmp     -90(a6)\n"                 /* SPPow: x not negative */
+        "1: and.b   #0x7f,d0\n"                /* |x| */
+        "   move.l  d1,-(sp)\n"
+        "   jsr     -90(a6)\n"                 /* SPPow: |x|^y */
+        "   move.l  (sp)+,d1\n"
+        "   tst.l   d0\n"
+        "   beq.s   2f\n"                      /* 0 stays 0 */
+        "   move.l  d0,a0\n"
+        "   moveq   #0x7f,d0\n"
+        "   and.b   d1,d0\n"
+        "   sub.w   #64,d0\n"                  /* e */
+        "   ble.s   3f\n"                      /* below 1: not whole odd */
+        "   cmp.w   #24,d0\n"
+        "   bgt.s   3f\n"                      /* from 2^24: even */
+        "   clr.b   d1\n"                      /* the mantissa */
+        "   lsl.l   d0,d1\n"                   /* C: bit 24-e of M */
+        "   bcc.s   3f\n"                      /* even */
+        "   tst.l   d1\n"
+        "   bne.s   3f\n"                      /* a fraction */
+        "   move.l  a0,d0\n"
+        "   or.b    #0x80,d0\n"                /* odd: negative */
+        "2: rts\n"
+        "3: move.l  a0,d0\n"
+        "   rts");
 
 /**
  * @brief ACos, ASin, ATan, Cos, HCos, Exp, Log, Log10, Sin, HSin, Sqr,

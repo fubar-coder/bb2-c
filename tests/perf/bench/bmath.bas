@@ -2,13 +2,14 @@
 ; (Int and Frac of a positive and of a negative Quick; Sgn and Abs of a Quick and
 ; Peek of a constant address, the candidates of compiler-intrinsics)
 ; (mixmul to mixmulh, qqmul to qqmulc, lqdiv, lqdivw: a Quick under a Long type so far, compilerlib, #1178, #1191)
+; (fpow, fpown: ^ with a positive and a negative base, mathtranslib, #1189)
 DEFTYPE .l
-Dim t(56)
+Dim t(58)
 a=123456 : b=789 : c=0 : a2=123456789 : b2=70000 : a4=100 : b4=20
 q1.q=12.5 : q2.q=3.25 : q3.q=0
 q4.q=1000.5 : q5.q=1.0000153 : q6.q=-12.25 : a3=123456789 : b3=65536
 q7.q=3
-f1.f=12.5 : f2.f=3.25 : f3.f=0
+f1.f=12.5 : f2.f=3.25 : f3.f=0 : f4.f=-2.5 : f5.f=3
 w1.w=1234 : w2.w=57 : w3.w=0
 Statement plocal{x.l}
 y.l=x+1 : z.l=y
@@ -305,6 +306,16 @@ For i=1 To 2000
 c=q7*q7
 Next
 Gosub tod : t(56)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 500
+f3=f1^f2
+Next
+Gosub tod : t(57)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 500
+f3=f4^f5
+Next
+Gosub tod : t(58)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
@@ -364,6 +375,8 @@ NPrint "mixmulh ",t(53)," 2000 1"
 NPrint "qqmul ",t(54)," 2000 1"
 NPrint "qqmulw ",t(55)," 2000 1"
 NPrint "qqmulc ",t(56)," 2000 1"
+NPrint "fpow ",t(57)," 500 1"
+NPrint "fpown ",t(58)," 500 1"
 End
 tod:
 th=Peek.b($bfd700)&255

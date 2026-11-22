@@ -1603,13 +1603,20 @@ static void print_typed(struct ev *e, char *out, const struct reg *r)
 }
 
 /* a pow result converted to a whole number: known when the ideal is far
-   enough from a step (SPPow's error is below 1e-6) */
+   enough from a step (SPPow's error is below 1e-6), or far enough outside
+   the Long range for SPFix to saturate whatever SPPow's last bits are:
+   $7FFFFFFF above, $80000000 below (not symmetric: -(100000^3) is
+   -2147483648 as a Long and 0 as a Word, EM_R_1189) */
 static int pow_whole(struct ev *e, int asked, int64_t *v)
 {
     double x = e->pow.x;
 
     if (!e->powknown || asked == TF || asked == TQ || asked == 0)
         return 0;
+    if (fabs(x) > 2147483648.0 * (1 + 1e-4)) {
+        *v = x < 0 ? INT32_MIN : INT32_MAX;
+        return 1;
+    }
     if (fabs(x - round(x)) < 1e-4 * (fabs(x) > 1 ? fabs(x) : 1))
         return 0;
     if (fabs(x) > 2147483647.0) {

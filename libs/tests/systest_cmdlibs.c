@@ -339,6 +339,39 @@ static void test_mathtranslib(void)
         OBS("prefix+len", L(E("mathtranslib", i)));
         OBS("code", L(E("mathtranslib", i) + 4));
     }
+    /* the ^ operator (entry 0) called as the compiler calls it: the code of
+       an inline entry copied with an RTS behind it (the original's has
+       none), any other entry called; a6 = the base of init, d0 = x, d1 =
+       y (FFP).  A negative base with an odd, an even, a negative odd, a
+       zero and a fractional exponent, the largest whole odd Float
+       16777215 (no fraction bits), and a positive base. */
+    ROUT = "mathtranslib pow";
+    {
+        static const ULONG xy[][2] = {
+            { 0xa00000c2, 0xc0000042 },     /* -2.5 ^ 3 */
+            { 0xa00000c2, 0x80000042 },     /* -2.5 ^ 2 */
+            { 0xa00000c2, 0x800000c1 },     /* -2.5 ^ -1 */
+            { 0xa00000c2, 0x00000000 },     /* -2.5 ^ 0 */
+            { 0xa00000c2, 0xe0000042 },     /* -2.5 ^ 3.5 */
+            { 0x800000c1, 0xffffff58 },     /* -1 ^ 16777215 */
+            { 0xa0000042, 0xc0000042 },     /* 2.5 ^ 3 */
+        };
+        static UWORD powcode[16];
+        UBYTE *pe = E("mathtranslib", 0);
+        APTR pow = pe;
+
+        if (W(pe) == 0xa000 && W(pe + 2) <= sizeof powcode - 2) {
+            memcpy(powcode, pe + 4, W(pe + 2));
+            powcode[W(pe + 2) / 2] = 0x4e75;
+            CacheClearU();
+            pow = powcode;
+        }
+        for (i = 0; i < (int)(sizeof xy / sizeof xy[0]); i++) {
+            sprintf(VEC, "x $%08lX y $%08lX", xy[i][0], xy[i][1]);
+            DO1(pow, R.d[0] = xy[i][0]; R.d[1] = xy[i][1]; R.a[6] = base);
+            OBS("d0", R.d[0]);
+        }
+    }
     /* the test holds mathtrans.library open itself: neither finit's
        CloseLibrary is the last one, which on Workbench 3.1 (mathtrans.library
        37.1 from LIBS:) goes another way through the library's Close and
@@ -1992,6 +2025,10 @@ int main(int argc, char **argv)
     KEEPS_STATEMENT("Sort", none);
     KEEPS("mathtranslib init", d2-d7|a2|a3);
     KEEPS("mathtranslib finit", d2-d7|a1-a3);
+    /* the ^ operator: the contract of the SPPow call the compiler copied
+       inline (a library call by the AmigaOS convention); a6 stays the
+       mathtrans base for the code after it */
+    KEEPS("mathtranslib pow", d2-d7|a2-a6);
     KEEPS("environlib init", d3-d7|a2|a3);
     /* exceptions: the CD program WBDEMO.BB2 holds a0/a1 across WBWidth,
        WBHeight and WBDepth */
