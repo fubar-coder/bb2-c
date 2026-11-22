@@ -1,8 +1,8 @@
 ---
 title: Libraries
-weight: 4
+weight: 5
 description: What the libraries of Blitz Basic 2 provide, how to look up a command, and how to call AmigaOS directly.
-prev: /docs/how-blitz2-works/residents
+prev: /docs/language/directives
 next: /docs/compared-with-original
 ---
 
