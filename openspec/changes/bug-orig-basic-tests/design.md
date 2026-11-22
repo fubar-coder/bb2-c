@@ -132,3 +132,16 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   for every area but `regression/`); host test `testjudge` ("a bug-orig
   test without a declared deviation") and the emulator self test
   `bug_orig_selftest_model_no_deviation`.
+- **Task 1.3, fix-scope** (`tools/lib/bugorigcmp`, `bugorigcmp_model.c`):
+  a test of the model is projected onto one case per check of its source
+  (`ID|check.NS.NAME||1`, `NAME` or `#N` for a check without a name, its
+  value the macro and its arguments, not its line or number, so a line
+  added above a check is no change), one per key of its `ID.test.toml`
+  (`ID|toml:TABLE.KEY||1`) and the case `ID|fixed-orig||1 [fixed #N]` (or
+  `fixed`), which is the only case the fix of issue N adds. The
+  `tests.toml` of `tests/bug-orig` and of its areas are cases too
+  (`AREA/tests.toml|toml:...`); the root `tests/tests.toml` is outside the
+  tree that fix-scope reads (open: it holds only `root = true` today).
+  Host test `bugorigcmp` with the scenarios of the spec (only the fixed
+  issue; an expected value changed in another test and in the own one; a
+  deviation changed, an assertion added; `fixed = N`) and broken input.

@@ -152,11 +152,45 @@ int bugorigcmp_project_test(FILE *out, const char *id, const char *source, int t
                             const char *expect, const char *orig, const char *path, char *err,
                             size_t errlen);
 
+/* A test of the BASIC test model (ROOT/AREA/ID.test.bas, openspec change
+ * bug-orig-basic-tests; its expectation is in its source and configuration,
+ * not recorded) is projected onto the cases
+ *     ID|check.NS.NAME||1       a check of the source (NS its namespace,
+ *                               NAME its name or #N, its number in NS),
+ *                               valued by its macro and arguments
+ *     ID|toml:TABLE.KEY||1      a key of ID.test.toml (the table path before
+ *                               it, a selector as written), valued by its
+ *                               value
+ *     ID|fixed-orig||1 [fixed #N]   the key fixed-orig = N (fixed = N: the
+ *                               case ID|fixed||1 [fixed #N])
+ * and a directory's tests.toml (ROOT/tests.toml, ROOT/AREA/tests.toml) onto
+ * the cases AREA/tests.toml|toml:TABLE.KEY||1 (tests.toml|... for ROOT's).
+ * So the fix that sets fixed-orig = N adds a case of issue N and nothing
+ * else; a changed check, assertion, deviation or setting of any test is a
+ * changed unqualified case, reported (spec testing/bug-fix-workflow). */
+
+/**
+ * @brief The cases of a test of the BASIC test model.
+ * @param id      the test's ID (of ID.test.bas)
+ * @param source  the text of ID.test.bas
+ * @param own     the text of ID.test.toml, or NULL (none)
+ * @param path    the test's directory and ID in messages (DIR/ID)
+ * @return 0 = ok, -1 = out of memory, -2 = malformed (err: the source that
+ *         the preprocessor refuses, the file that is not the TOML subset)
+ */
+int bugorigcmp_project_model(FILE *out, const char *id, const char *source, const char *own, const char *path,
+                             char *err, size_t errlen);
+
+/** @brief The cases of a directory's tests.toml (name: AREA/tests.toml); as above. */
+int bugorigcmp_project_conf(FILE *out, const char *name, const char *text, const char *path, char *err,
+                            size_t errlen);
+
 /**
  * @brief The case file of every test below root (ROOT/AREA/ID.bas with
- * ID.expect, ROOT/AREA/ID.drv; ID.orig beside them; not ROOT/selftest),
- * in the order of the IDs, header "# capture bug-orig 1".  A root that
- * does not exist has no tests.
+ * ID.expect, ROOT/AREA/ID.drv; ID.orig beside them; ROOT/AREA/ID.test.bas
+ * with its ID.test.toml, the tests.toml of ROOT and of its areas; not
+ * ROOT/selftest), in the order of the IDs, header "# capture bug-orig 1".
+ * A root that does not exist has no tests.
  * @param text  the file (malloc'd, 0-terminated), *len its length
  * @return 0 = ok, -1 = out of memory, -2 = malformed or unreadable (err)
  */

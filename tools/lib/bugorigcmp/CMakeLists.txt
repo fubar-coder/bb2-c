@@ -1,4 +1,4 @@
-add_library(lib_bugorigcmp STATIC bugorigcmp.c bugorigcmp_project.c bugorigcmp_accept.c)
+add_library(lib_bugorigcmp STATIC bugorigcmp.c bugorigcmp_project.c bugorigcmp_accept.c bugorigcmp_model.c)
 set_target_properties(lib_bugorigcmp PROPERTIES OUTPUT_NAME bugorigcmp)
 target_include_directories(lib_bugorigcmp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(lib_bugorigcmp PUBLIC lib_libscmp)
+target_link_libraries(lib_bugorigcmp PUBLIC lib_libscmp lib_testpp lib_testtoml)

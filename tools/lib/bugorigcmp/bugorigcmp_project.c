@@ -213,6 +213,8 @@ int bugorigcmp_project_test(FILE *out, const char *id, const char *source, int t
 struct test {
     char *id, *dir;
     int ted;
+    int model;                  /* 1: ID.test.bas (the BASIC test model), 2: a
+                                   directory's tests.toml (id: AREA/tests.toml) */
 };
 
 static int by_id(const void *a, const void *b)
@@ -295,9 +297,11 @@ static int list_tests(const char *root, struct test **tests, size_t *ntests, cha
         while (!r && (fe = readdir(a))) {
             size_t len = strlen(fe->d_name);
             int ted = len > 4 && !strcmp(fe->d_name + len - 4, ".drv");
+            int model = len > 9 && !strcmp(fe->d_name + len - 9, ".test.bas") ? 1
+                        : !strcmp(fe->d_name, "tests.toml") ? 2 : 0;
             struct test *nt;
 
-            if (!ted && !(len > 4 && !strcmp(fe->d_name + len - 4, ".bas")))
+            if (!ted && !model && !(len > 4 && !strcmp(fe->d_name + len - 4, ".bas")))
                 continue;
             if (!(nt = realloc(t, (n + 1) * sizeof *t))) {
                 r = -1;
@@ -305,7 +309,8 @@ static int list_tests(const char *root, struct test **tests, size_t *ntests, cha
             }
             t = nt;
             t[n].ted = ted;
-            t[n].id = strndup(fe->d_name, len - 4);
+            t[n].model = model;
+            t[n].id = model == 2 ? join(de->d_name, "tests.toml", "") : strndup(fe->d_name, len - (model ? 9 : 4));
             t[n].dir = strdup(dir);
             if (!t[n].id || !t[n].dir) {
                 free(t[n].id);
@@ -350,7 +355,49 @@ int bugorigcmp_project_tree(const char *root, char **text, size_t *len, char *er
         return -1;
     }
     fprintf(out, "# capture bug-orig 1\n");
+    /* the tree's own tests.toml (a directory of the configuration's hierarchy) */
+    {
+        char *rp = join(root, "tests.toml", ""), *rt = NULL;
+        int miss = 0;
+
+        if (!rp)
+            r = -1;
+        else if (!(rt = read_text(rp, &miss)) && !miss) {
+            snprintf(err, errlen, "%s: cannot read it", rp);
+            r = -2;
+        } else if (rt)
+            r = bugorigcmp_project_conf(out, "tests.toml", rt, rp, err, errlen);
+        free(rt);
+        free(rp);
+    }
     for (i = 0; !r && i < n; i++) {
+        if (t[i].model) {
+            char *src = t[i].model == 2 ? join(t[i].dir, "tests.toml", "") : join(t[i].dir, t[i].id, ".test.bas");
+            char *own = t[i].model == 1 ? join(t[i].dir, t[i].id, ".test.toml") : NULL;
+            char *base = join(t[i].dir, t[i].id, "");
+            char *s = NULL, *o = NULL;
+            int miss;
+
+            if (!src || !base || (t[i].model == 1 && !own)) {
+                snprintf(err, errlen, "out of memory");
+                r = -1;
+            } else if (!(s = read_text(src, &miss))) {
+                snprintf(err, errlen, "%s: cannot read it", src);
+                r = -2;
+            } else if (t[i].model == 2)
+                r = bugorigcmp_project_conf(out, t[i].id, s, src, err, errlen);
+            else if (!(o = read_text(own, &miss)) && !miss) {
+                snprintf(err, errlen, "%s: cannot read it", own);
+                r = -2;
+            } else
+                r = bugorigcmp_project_model(out, t[i].id, s, o, base, err, errlen);
+            free(s);
+            free(o);
+            free(src);
+            free(own);
+            free(base);
+            continue;
+        }
         char *base = join(t[i].dir, t[i].id, ""), *src = join(t[i].dir, t[i].id, t[i].ted ? ".drv" : ".bas");
         char *ep = join(t[i].dir, t[i].id, ".expect"), *op = join(t[i].dir, t[i].id, ".orig");
         char *s = NULL, *e = NULL, *o = NULL;
