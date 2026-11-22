@@ -777,6 +777,7 @@ function(ab3_cli_blocks name config cases out)
 	set(${out} ${tests} PARENT_SCOPE)
 endfunction()
 ab3_cli_blocks(ab3_cli exe "${cli_exe_cases}" cli_exe_tests SAME ${cli_exe_same} HUNKS "${cli_exe_hunks}")
+ab3_cli_blocks(ab3_cli_ref ref "${cli_ref_cases}" cli_ref_tests SAME ${cli_ref_same} HUNKS "${cli_ref_hunks}")
 # a PREV_INTENDED entry ab3_cli_prev:CASE names a case of ab3_cli (a block judges only its own
 # cases, so a typo would never be stale)
 include(${CMAKE_CURRENT_SOURCE_DIR}/check-prev-cases.cmake)
