@@ -26,7 +26,10 @@ original material, else `bug-orig` and `emulator` for a case with a
 declared deviation of an open bug, `emulator` for the others, then the
 configuration's `labels`), `TIMEOUT` (the sum of the cells' `timeout`,
 else `--timeout-default`, plus `--timeout-extra`), `SKIP_RETURN_CODE 77`,
-`COST` and `FIXTURES_REQUIRED` from `cost` and `fixtures`. The depfile
+`COST` and `FIXTURES_REQUIRED` from `cost` and `fixtures`, and the
+fixture of each `--cell-fixture SELECTOR|FIXTURE` whose selector matches
+a cell of the side (the build uses `compiler=orig195|originals_refbuild`:
+the build of `blitz2.s`, not built by default). The depfile
 names every file the tool read (the sources, the configuration files, the
 environment file, the token lists), so the build step reruns when one of
 them changes. A depfile cannot name a file that does not exist yet: a
@@ -59,6 +62,8 @@ OPTIONS:
           --env FILE          the environment file of the build (placeholders, top)
           --depfile FILE      the depfile: every file read
           --tokens FILE       a token list (HEX NAME lines); case names must be no token
+          --cell-fixture SPEC SELECTOR|FIXTURE: a test whose side has a cell the selector
+                              matches requires the fixture (any number)
           --timeout-default SEC:POSITIVE
                               the time limit of a cell without timeout (default 90)
           --timeout-extra SEC:NONNEGATIVE
@@ -69,7 +74,7 @@ checks; the depfile is written in any case. Exit status 0 ok, 1 a check failed
 or a file cannot be read or written, 2 usage error.
 ```
 
-The wiring into `tests/bug-orig/CMakeLists.txt` and
-`tests/blitz2/CMakeLists.txt` (the glob of `*.test.bas`, the build step,
-the include) and the subcommand of `corpusrun` that the command names are
-later tasks of the change (4.2, 3.1).
+The build runs it per directory through `basic_test_register()`
+(`cmake/basic-test-model.cmake`, called by `tests/bug-orig/CMakeLists.txt`
+and `tests/blitz2/CMakeLists.txt`) with the command `corpusrun case --env
+ENV` (`tests/corpus/runner/caserun.h`).

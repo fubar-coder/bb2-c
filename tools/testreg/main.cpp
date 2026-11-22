@@ -3,7 +3,8 @@
  * (tools/lib/testreg/testreg.h, README.md here):
  *
  *   testreg --prefix P --output FILE [--env FILE] [--depfile FILE]
- *           [--tokens FILE]... [--timeout-default SEC] [--timeout-extra SEC]
+ *           [--tokens FILE]... [--cell-fixture SELECTOR|FIXTURE]...
+ *           [--timeout-default SEC] [--timeout-extra SEC]
  *           --command WORD [--command WORD]... SOURCE...
  *
  * Reads every source and its configuration, checks them, and writes the
@@ -24,7 +25,8 @@ namespace fs = std::filesystem;
 
 static int run(const std::string &prefix, const std::string &output, const std::string &envfile,
                const std::string &depfile, const std::vector<std::string> &tokfiles, long long tdef, long long textra,
-               const std::vector<std::string> &command, const std::vector<std::string> &sources)
+               const std::vector<std::string> &command, const std::vector<std::string> &cellfix,
+               const std::vector<std::string> &sources)
 {
     tc_env env = {};
     treg_strs tokens = {};
@@ -50,6 +52,16 @@ static int run(const std::string &prefix, const std::string &output, const std::
     o.ntokens = tokens.n;
     o.timeout_default = tdef;
     o.timeout_extra = textra;
+    std::vector<const char *> cf;
+    for (const std::string &c : cellfix) {
+        if (treg_cell_fixture_ok(c.c_str(), err, sizeof err)) {
+            fprintf(stderr, "testreg: --cell-fixture %s\n", err);
+            rc = 1;
+        }
+        cf.push_back(c.c_str());
+    }
+    o.cell_fixtures = cf.data();
+    o.ncell_fixtures = cf.size();
     for (const std::string &s : sources)
         if (treg_add_source(s.c_str(), &o, &r) < 0) {
             fprintf(stderr, "testreg: out of memory\n");
@@ -124,7 +136,7 @@ int main(int argc, char **argv)
                  "from the sources and their run configurations.",
                  "testreg"};
     std::string prefix, output, envfile, depfile;
-    std::vector<std::string> tokfiles, command, sources;
+    std::vector<std::string> tokfiles, command, cellfix, sources;
     long long tdef = 90, textra = 0;
     int status = 0;
 
@@ -149,6 +161,13 @@ int main(int argc, char **argv)
         ->allow_extra_args(false)
         ->multi_option_policy(CLI::MultiOptionPolicy::TakeAll)
         ->type_name("FILE");
+    app.add_option("--cell-fixture", cellfix,
+                   "SELECTOR|FIXTURE: a test whose side has a cell the selector matches requires the fixture "
+                   "(any number)")
+        ->expected(1)
+        ->allow_extra_args(false)
+        ->multi_option_policy(CLI::MultiOptionPolicy::TakeAll)
+        ->type_name("SPEC");
     app.add_option("--timeout-default", tdef, "the time limit of a cell without timeout (default 90)")
         ->check(CLI::PositiveNumber)
         ->type_name("SEC");
@@ -159,7 +178,7 @@ int main(int argc, char **argv)
                "the depfile is written in any case. Exit status 0 ok, 1 a check failed or a file cannot be read "
                "or written, 2 usage error.");
     app.callback([&] {
-        status = run(prefix, output, envfile, depfile, tokfiles, tdef, textra, command, sources);
+        status = run(prefix, output, envfile, depfile, tokfiles, tdef, textra, command, cellfix, sources);
     });
     return cli::run(app, argc, argv, status);
 }

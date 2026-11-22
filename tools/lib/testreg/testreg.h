@@ -17,7 +17,9 @@
  * with a declared deviation of an open bug (no fixed-orig) and "emulator"
  * for the others, then the configuration's `labels`; the time limit is
  * the sum of the cells' `timeout` (else the default) plus an extra; the
- * cost and the fixtures are the configuration's `cost` and `fixtures`.
+ * cost and the fixtures are the configuration's `cost` and `fixtures`,
+ * and the fixtures of the build that a cell of the side needs (the
+ * option cell_fixtures: the build of blitz2.s for compiler=orig195).
  */
 #ifndef TESTREG_H
 #define TESTREG_H
@@ -77,7 +79,15 @@ struct treg_opts {
     size_t ntokens;
     long long timeout_default;  /* a cell without timeout */
     long long timeout_extra;    /* added to the sum */
+    const char *const *cell_fixtures;   /* "SELECTOR|FIXTURE": a test whose side
+                                           has a cell the selector matches
+                                           requires FIXTURE (the build of
+                                           blitz2.s for compiler=orig195) */
+    size_t ncell_fixtures;
 };
+
+/** @brief Whether spec is SELECTOR|FIXTURE with a valid cell selector (err: why not). */
+int treg_cell_fixture_ok(const char *spec, char *err, size_t errlen);
 
 /**
  * @brief Register the tests of one source; its errors go to r->errors.

@@ -272,6 +272,28 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
         for (size_t i = 0; i < s->value.nlist; i++)
             if (push(&t.fixtures, s->value.list[i]))
                 goto oom;
+    /* the fixtures of the build that some cells need (the build of blitz2.s
+       for orig195) */
+    for (size_t i = 0; i < o->ncell_fixtures; i++) {
+        const char *spec = o->cell_fixtures[i], *bar = strchr(spec, '|');
+        struct tc_selector sel;
+        char msg[300], *selt;
+        int any = 0, rc;
+
+        if (!bar || !(selt = strndup(spec, (size_t)(bar - spec))))
+            continue;           /* checked by treg_cell_fixture_ok */
+        rc = tc_selector_parse(selt, 0, &sel, msg, sizeof msg);
+        free(selt);
+        if (rc == -2)
+            goto oom;
+        if (rc)
+            continue;
+        for (size_t c = 0; c < m->ncells && !any; c++)
+            any = m->cells[c].originals == originals && tc_selector_matches(&sel, conf, m, c, NULL);
+        tc_selector_free(&sel);
+        if (any && !has(&t.fixtures, bar + 1) && push(&t.fixtures, bar + 1))
+            goto oom;
+    }
     {
         struct treg_test *v = realloc(r->t, (r->n + 1) * sizeof *v);
 
@@ -289,6 +311,31 @@ oom:
     treg_strs_free(&t.fixtures);
     treg_strs_free(&t.cells);
     return -1;
+}
+
+int treg_cell_fixture_ok(const char *spec, char *err, size_t errlen)
+{
+    const char *bar = strchr(spec, '|');
+    struct tc_selector sel;
+    char msg[300], *selt;
+    int rc;
+
+    if (!bar || bar == spec || !bar[1] || strchr(bar + 1, '|')) {
+        snprintf(err, errlen, "%s is not SELECTOR|FIXTURE", spec);
+        return -1;
+    }
+    if (!(selt = strndup(spec, (size_t)(bar - spec)))) {
+        snprintf(err, errlen, "out of memory");
+        return -1;
+    }
+    rc = tc_selector_parse(selt, 0, &sel, msg, sizeof msg);
+    free(selt);
+    if (rc) {
+        snprintf(err, errlen, "%s: %s", spec, rc == -2 ? "out of memory" : msg);
+        return -1;
+    }
+    tc_selector_free(&sel);
+    return 0;
 }
 
 int treg_add_source(const char *source, const struct treg_opts *o, struct treg_result *r)
