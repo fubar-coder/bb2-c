@@ -8054,3 +8054,11 @@ rows:
     text: "A Float condition (`If f`, `While f*g`, `Until Abs(f)`) tests its own value; the original tested what an earlier statement had left in a register, so `If f` could be false for `f=1.5`, `While z` could run without end for `z=0`, and a condition's result depended on the commands before it. Comparisons such as `If f<>0` are unchanged."
     page: compiler
     anchor: float-condition
+  - issue: 1190
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A constant operation whose code ends exactly at the end of the object buffer does not crash or hang the compiler; the original ran on into the memory behind the buffer."
+    page: compiler
+    anchor: the-compilers-memory
