@@ -83,7 +83,7 @@ Some details of the operators:
   With a negative divisor and a positive dividend the remainder is
   positive: `7 MOD -3` is 1. With both negative it is outside the
   divisor's range, `-7 MOD -3` is -4, a bug of the original that the
-  port will fix to give -1
+  port has too
   ([#1197](https://github.com/fubar-coder/bb2-c/issues/1197)). Of a
   Quick or a Float the remainder is a whole number: `7.5 MOD 2` is 1.
 * `^` always computes in Float, also with whole numbers, and the result
