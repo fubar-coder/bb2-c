@@ -8,8 +8,7 @@
 ; result does not depend on the library set.  Correct: a Float condition
 ; is true when the value is not 0, whatever is in d1, like the other
 ; types.  Comparisons and Quick conditions are tested with tst and stay
-; right (q-0.5 is a Float expression in the port since #1177: the
-; constant with a fraction is a Float; in the original a Quick).
+; right (q-0.5 is a Quick condition, in the original and in the port).
 ; @fixed #1187
 a.l=5 : b.l=0 : c.l=7 : e.l=0 : x.l=0 : n.l=0
 f.f=1.5 : z.f=0 : m.f=-2.5 : q.q=0.5 : qz.q=0
