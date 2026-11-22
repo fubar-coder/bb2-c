@@ -1908,6 +1908,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
     int *vbad = calloc(p->nconfigs, sizeof *vbad);             /* the verdict "differs" */
     char *text = corpus_script(p), err[300];
     struct text rep = { 0 }, prevdiff = { 0 };   /* prevdiff: the entries of the prev differences */
+    int prev_session_lost = 0;                   /* the session of prev ended without a result */
     size_t c, i, next = 0, done = 0, announced = 0;   /* announced: sessions logged */
     unsigned waiting_port = 0;  /* the port of resp[next] */
     long bad = 0;
@@ -2117,8 +2118,14 @@ int corpus_run(struct corpus_pass *p, FILE *log)
         if (st[c] != AMIGA_EMULATION_DONE) {
             text_add(&rep, "session %s: %s (%s/%s/emu)\n", p->configs[c].tag,
                 amiga_emulation_status_name(st[c]), p->work, p->configs[c].tag);
-            bad++;
             vbad[c] = 1;
+            /* the session of prev that ends without a result (timeout, crash) is a
+               difference of the sources without result, judged against PREV_INTENDED
+               below (prev_session_lost); every other session fails the pass */
+            if (p->test && !strcmp(p->configs[c].tag, "prev"))
+                prev_session_lost = 1;
+            else
+                bad++;
         }
     if (p->gate)
         for (c = 0; c < p->nconfigs; c++)
@@ -2280,6 +2287,12 @@ int corpus_run(struct corpus_pass *p, FILE *log)
         bad += diff;
         free_outcome(&ref);
         free(name);
+    }
+    /* a lost session of prev without any source that differs (every result was there
+       or the same): nothing names it, the pass fails */
+    if (prev_session_lost && !prevdiff.n) {
+        text_add(&rep, "session prev ended without a result, but no source differs\n");
+        bad++;
     }
     /* a stale entry: listed, but prev does not differ */
     if (p->test) {

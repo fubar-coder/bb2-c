@@ -1738,6 +1738,14 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     and names the source and the line to quote; the same one passes; a
     listed difference passes as `(intended)`; a stale entry and an entry
     for a source that is not in the pass fail.
+    A prev session that ends without a result (timeout, crash of the previous
+    compiler) does not fail the pass by itself: the sources without a result
+    differ like any other and are judged against `PREV_INTENDED` (named: passes,
+    `(intended)`; unnamed: fails; a named source with a result stays STALE); a
+    lost session without any differing source fails. The other sessions still fail
+    the pass, and every configuration keeps its own session, so a crash hangs
+    nothing else. Tests with broken input: `compiler_selftest_lost_intended_prev`
+    and `_unnamed_prev` (prev's compiler is `hangstub`, a program that never ends).
   * `ab3_cli_prev_N`: the cases of the block `ab3_cli_N` compiled by the
     previous commit's `blitz2-ab3` (`tests/ab3/cli-prev.cmake`, `cli.cmake`
     with `COMPILE_ONLY`; two emulator sessions at the same time): the
