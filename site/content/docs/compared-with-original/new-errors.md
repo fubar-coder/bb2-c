@@ -205,6 +205,34 @@ part into a variable first.
 
 Issue: [An operator whose right operand needs a ninth register took a wrong value (#1185)](https://github.com/fubar-coder/bb2-c/issues/1185).
 
+### `AND`, `OR`, `EOR` or a shift in a later array index {#later-index-operator}
+
+**What happened.** Without runtime error checking, the original computed
+an array index after the first one as a Word. There it accepted `AND`,
+`OR`, `EOR` or a shift of a Quick and a constant with a fraction, which
+the first index and the checked build refused:
+
+```
+vq.q=1.5
+Dim ja.l(1,300)
+For ii.l=0 To 300 : ja(1,ii)=ii*16+1 : Next
+NPrint ja(1,vq AND 1.5)
+End
+```
+
+compiled without the checking and printed `17`.
+
+**With the port.** Every index is computed as a Long, with and without
+runtime error checking
+([Fixed bugs: expressions and statements]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#expressions-and-statements" >}})),
+so such an operator is the compile error "Illegal Operator for Type" at
+its line (line 4 here) in both builds.
+
+**What to change.** Write the constant as a whole number, such as
+`vq AND 1`.
+
+Issue: [A later array index is evaluated as a Word without runtime error checking and as a Long with it (#1179)](https://github.com/fubar-coder/bb2-c/issues/1179).
+
 ## Characters
 
 ### An accented letter outside a string {#latin1-outside-string}
