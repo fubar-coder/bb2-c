@@ -87,7 +87,14 @@ Some details of the operators:
   ([#1197](https://github.com/fubar-coder/bb2-c/issues/1197)). Of a
   Quick or a Float the remainder is a whole number: `7.5 MOD 2` is 1.
 * `^` always computes in Float, also with whole numbers, and the result
-  is not always exact: `3^2` is 9.000001.
+  is not always exact: `3^2` is 9.000001. A negative base with a whole
+  odd exponent gives a negative result, `(-2)^3` is -8, and with a whole
+  even exponent a positive one. With a fraction in the exponent a
+  negative base has no real power, and `^` gives the power of the
+  absolute value: `(-2)^0.5` is 1.414213, as `2^0.5`. The original
+  dropped the sign also for an odd exponent, and so does AB3 mode, which
+  uses AmiBlitz3's libraries
+  ([Fixed bugs in the libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#power-negative-base" >}})).
 * The shifts and the bit operators work on whole numbers and Quicks; a
   Float operand is the compile error "Illegal Operator for Type". The
   same holds for `&`, `|`, `AND`, `OR`, `EOR` and `NOT`. `LSR` fills with
