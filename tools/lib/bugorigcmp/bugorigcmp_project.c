@@ -61,7 +61,9 @@ static size_t trimmed(const char *p, size_t *full)
 
 /* the issue of the line "; @fixed #N" of source: N, 0 = none, -2 = broken.
    A TED script may name the pair Cc behind it: "; @fixed #N Cc" (fixed
-   in the port's pair only, tests/README.md) */
+   in the port's pair only, tests/README.md); a Blitz source "/port" right
+   behind the number: "; @fixed #N/port" (an extension, not an original
+   bug; the same as "; @fixed #N" for now, tests/README.md) */
 static long fixed_issue(const char *source, int ted, const char *path, char *err,
                         size_t errlen)
 {
@@ -82,6 +84,8 @@ static long fixed_issue(const char *source, int ted, const char *path, char *err
                 for (k += 2; k < n && p[k] >= '0' && p[k] <= '9' && v < 100000000; k++)
                     v = 10 * v + (p[k] - '0');
             if (ted && k + 3 == n && !memcmp(p + k, " Cc", 3))
+                k = n;
+            if (!ted && v && k + 5 == n && !memcmp(p + k, "/port", 5))
                 k = n;
             if (!v || k != n) {
                 snprintf(err, errlen, "%s:%u: not \"; @fixed #N\"", path, no);
