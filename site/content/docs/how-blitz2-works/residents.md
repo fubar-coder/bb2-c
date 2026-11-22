@@ -2,7 +2,7 @@
 title: Residents and the .xtra file
 weight: 5
 description: The companion file that keeps the compiler options of a source, and residents, files of precompiled types, macros and constants.
-next: /docs/libraries
+next: /docs/language
 ---
 
 Before this page you should know how the editor and the compiler work
