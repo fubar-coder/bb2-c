@@ -152,12 +152,13 @@ enum {
     EM_R_1178 = 1 << 3,         /* Quick arithmetic by variant C (#1178) */
     EM_R_1179 = 1 << 4,         /* every array index a Long (#1179) */
     EM_R_1187 = 1 << 5,         /* a Float condition tests the value (#1187) */
-    EM_R_1188 = 1 << 6          /* a fraction constant keeps its fraction under a Byte type (#1188) */
+    EM_R_1188 = 1 << 6,         /* a fraction constant keeps its fraction under a Byte type (#1188) */
+    EM_R_1189 = 1 << 7          /* ^ with a negative base and a whole exponent keeps the sign (#1189) */
 };
 #define EM_RULES_ORIG EM_R_CDLIB
 #define EM_RULES_PORTCD (EM_R_CDLIB | EM_R_1177)    /* the port as measured, CD's libraries */
 #define EM_RULES_PORT EM_R_1177                     /* the port as measured, C libraries */
-#define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188)
+#define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189)
 
 /* what keeps a value from being exact or known (the question classes of
    design decision 7) */
@@ -168,14 +169,16 @@ enum {
     EM_F_BITQ = 1 << 3,         /* Q-C: AND OR EOR NOT or a shift with a Quick or Float operand */
     EM_F_MODNF = 1 << 4,        /* Q-D: MOD with negative or fractional operands */
     EM_F_POWINT = 1 << 5,       /* Q-E: ^ with whole-number types */
-    EM_F_POWNEG = 1 << 6        /* Q-E: ^ with a negative base (SPPow drops its sign) */
+    EM_F_POWNEG = 1 << 6,       /* Q-E: ^ with a negative base and a fractional exponent (#1189: no rule) */
+    EM_F_POWSIGN = 1 << 7       /* EM_R_1189: the sign of an odd power applied to what SPPow gives */
 };
 
 enum { EM_TEXT_MAX = 48 };
 
 /* the value of a cell as the measurement records it: the printed value,
    "T"/"F", "!noncompile", "!runtime", "!outside", "!garbage", or "?"
-   (not known: EM_F_D1, EM_F_POW) */
+   (not known: EM_F_D1, EM_F_POW); "?-" is not known either, but the
+   negation of what the original's SPPow gives (EM_F_POWSIGN, #1189) */
 struct em_value {
     char text[EM_TEXT_MAX];
     unsigned flags;
@@ -229,8 +232,10 @@ struct em_classified {
 };
 
 /*
- * Classifies every cell of table t (design decision 6): agree, fixed-N,
- * open-N, port, new, question (with its class Q-A ... Q-F), noncompile.
+ * Classifies every cell of table t (design decision 6): agree, baseline
+ * (the original's measured value where no recorded rule covers the
+ * cell), fixed-N, open-N, port, new, question (with its class Q-B, Q-E or
+ * Q-F), noncompile.
  * Returns 0; 1 with the errors in *errors (a key that is no cell, a cell
  * measured twice or not at all, an index cell without its checked
  * values); -1 out of memory.

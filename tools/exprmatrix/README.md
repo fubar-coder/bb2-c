@@ -190,24 +190,40 @@ CD's libraries and of the port's C libraries (`lmullib`, `ldivlib`,
 Rule sets (flags in `exprmatrix.h`): the original's (`EM_RULES_ORIG`),
 the port as measured (`EM_RULES_PORT`, `EM_RULES_PORTCD`) and the fixed
 rules (`EM_RULES_FIXED`: #1177, #1186, #1178 variant C, #1179, #1187,
-#1188, the C libraries); each rule in `model.c` names its entry in
-`task-decisions.md`. Not modelled: mathtrans SPPow (`^`) where its bits
-matter, and the original's `If` on a Float, which tests d1 (#1187);
-those values are `?`. Beside the value the model raises the flags of the
-question classes (overflow, bit operators with a Quick or Float, `MOD`
-with negative or fractional operands, `^`).
+#1188, #1189, the C libraries); each rule in `model.c` names its entry
+in `task-decisions.md`. Not modelled: mathtrans SPPow (`^`) where its
+bits matter, and the original's `If` on a Float, which tests d1 (#1187);
+those values are `?` (`?-`: the negation of the original's SPPow result,
+#1189). Beside the value the model raises the flags of the cells no
+recorded rule covers (overflow, bit operators with a Quick or Float,
+`MOD` with negative or fractional operands, `^`): their expected value is
+the original's measured value as a baseline.
 
 ### The cell table and the questions (classify)
 
 `CELLS`: a header line, then per cell `key`, `class`, `issues`,
 `question`, `expected`, `expected_on`, `c210`, `c195`, `ab3`, `clib`,
-`note`, tab separated. The class is `agree`, `fixed-N`, `open-N`
-(`N` the issues whose fixed rules change the value, `+` between them),
-`port`, `new`, `question` (with its class `Q-A` overflow, `Q-B` the two
-orders differ, `Q-C` bit operators, `Q-D` `MOD`, `Q-E` `^`, `Q-F` the
-originals disagree) or `noncompile`. The expected value is the fixed
-rules' value, or 1.95's where the model cannot compute a Float power
-that both rule sets compute alike.
+`note`, tab separated. The class is `agree`, `baseline`, `fixed-N`,
+`open-N` (`N` the issues whose fixed rules change the value, `+` between
+them), `port`, `new`, `question` (with its class `Q-B` the two orders
+differ, `Q-E` `^` without a known expected value, `Q-F` AmiBlitz3
+differs and no issue explains it) or `noncompile`. The expected value is
+the fixed rules' value, or 1.95's where the model cannot compute a Float
+power that both rule sets compute alike (negated for an odd power of a
+negative base, #1189).
+
+`baseline` (the original's measured value): a cell no recorded rule
+covers - an overflow, a bit operator or shift with a Quick or Float, `MOD`
+with negative or fractional operands, `^` - that no fix changes; its
+expected value is the original's measured value, a regression check so
+that a fix changes these cells only where it is meant to (the expected
+values are regenerated after the fix), not a decision that the value is
+right (`task-decisions.md`, "Matrix questions Q-A, Q-C, Q-D, Q-E",
+2026-11-22, and the user's correction there). A cell an issue's fix
+changes is `fixed-N` or `open-N` whatever its value class. Where
+AmiBlitz3 differs from 1.95, an issue that changes the cell decides it
+(its AmiBlitz3 value goes to `docs/ab3/variant.md`); a cell no issue
+explains is a question (`Q-F`).
 
 The questions file has one section per question class with the count,
 the issues of its cells, the options and three example cells with the
