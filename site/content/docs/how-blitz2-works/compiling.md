@@ -122,14 +122,15 @@ then is the operation done, and a fraction disappears before the
 arithmetic happens. The BB2 C port fixes this
 ([#1178](https://github.com/fubar-coder/bb2-c/issues/1178)): the
 operation is computed with the fraction and gives a whole number, rounded
-down for `+`, `-` and `*` and towards zero for `/`, as Blitz Basic's
-divisions do:
+down for `+`, `-`, `*` and a minus sign and towards zero for `/`, as
+Blitz Basic's divisions do:
 
 ```
 q=1.5 : l.l=10 : w.w=3 : v.w=4
 r.l=q*2     : NPrint r   ; 3 (the original: 2, q is cut to 1 first)
 r.l=l-q     : NPrint r   ; 8, 8.5 rounded down (the original: 9)
 r.l=l/q     : NPrint r   ; 6, 6.67 towards zero (the original: 10)
+r.l=-q*2    : NPrint r   ; -3 (the original: -2)
 x.w=w+v+q*2 : NPrint x   ; 10 (the original: 9)
 x.w=q*2+w+v : NPrint x   ; 10
 NPrint 1+1+1+q           ; 4, not 4.5: 1+1+1 gives a Long

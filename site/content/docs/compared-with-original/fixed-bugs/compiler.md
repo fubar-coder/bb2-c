@@ -206,12 +206,68 @@ l<q
 Comparisons with a Float operand, of two Quicks, of whole numbers in a
 whole-number context and of strings give the same results as in the original.
 A few cases are not fixed yet: a left operand that is itself a
-calculation, such as `q*2>2` or `-q<-1`, and a large whole-number
+calculation whose fraction is rounded away, such as `q*2>2.4` with
+`q=1.25`, and a large whole-number
 constant on the left in a Float context. Put such an operand on the
 right side or compute it into a variable first; the details are in
 [From source to executable]({{< relref "/docs/how-blitz2-works/compiling#comparisons" >}}).
 
 Issue: [A comparison with a Quick operand is done in Long when the context or the left operand is Long (#1177)](https://github.com/fubar-coder/bb2-c/issues/1177).
+
+### A Quick in a Long computation {#quick-long-arithmetic}
+
+When a computation is done in Long, because the destination or a
+parameter is a Long or a Long operand stands to the left, a Quick that
+comes in keeps the computation a Long one. The original cut the Quick to
+a whole number at once (rounded down, so 1.5 became 1 and -1.5 became
+-2) and only then did the operation, so the fraction was lost before the
+arithmetic: `r.l=q*2` gave 2 for `q=1.5`, and a division by a Quick
+below 1 could become a division by 0.
+
+**What happened**
+
+```blitzbasic
+q.q=1.5 : l.l=10
+r.l=q*2 : NPrint r
+r.l=l-q : NPrint r
+r.l=l/q : NPrint r
+r.l=-q*2 : NPrint r
+NPrint q*100000
+End
+```
+
+The original prints
+
+```
+2
+9
+10
+-2
+100000
+```
+
+**With the port**
+
+The operation is computed with the fraction, and its result is a whole
+number: rounded down for `+`, `-`, `*` and a minus sign, towards zero
+for `/`. The program prints
+
+```
+3
+8
+6
+-3
+150000
+```
+
+A Quick without a fraction gives the same results as in the original.
+Shifts and the logic operators (`AND`, `OR`, `EOR`, `Not`) still take the
+Quick rounded down. A program that relies on the old result writes
+`Int(q)`: `r.l=Int(q)*2` gives 2. The computation still follows the type
+so far, so `NPrint 1+1+1+q` prints 4, not 4.5; the details are in
+[From source to executable]({{< relref "/docs/how-blitz2-works/compiling#a-quick-in-a-long-computation" >}}).
+
+Issue: [Arithmetic with a Quick operand is done in Long when the context or the left operand is Long: the fraction is cut before the operation (#1178)](https://github.com/fubar-coder/bb2-c/issues/1178).
 
 ### A Float value as a condition {#float-condition}
 
