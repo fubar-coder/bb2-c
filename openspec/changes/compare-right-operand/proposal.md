@@ -16,7 +16,7 @@ User decision (2026-11-21, `task-decisions.md`, "#1177 Float constant left; new 
 
 - **The boolean of a comparison is converted up to the left operand's type**, not the left operand down to Word: the left operand keeps its type and value, the operation is done in the left operand's type. `rl.l=lw AND (l1=l1)` gives 65537, `rl.l=lb+(l1=l1)` 99999, `rf.f=fh+(l1=l1)` -0.5, `rq.q=q+(l1=l1)` 0.5, `If $10000 AND (l1=l1)` is true. This holds with the comparison in brackets, bound by precedence (`lw AND l1=l1`), nested in a bracket with other operators (`fh+(0+(l1=l1))`), and after `NOT` or unary minus of the comparison.
 - **Unchanged:** a comparison as the left operand (`(l1=l1)+lb`, already right), a comparison passed through a function, a Byte or Word left operand (the boolean is already a Word), the late conversion of a Quick by a Long right operand (#1178, decision 4 of `quick-long-arithmetic`).
-- **A new compile error where the left operand is a Float and the operator has no Float form** (`AND`, `OR`, `EOR`, the shifts): `rf.f=fh AND (l1=l1)` is refused with "Illegal Operator for Type", as `rf.f=fh AND w` is today (open question 1).
+- **A new compile error where the left operand is a Float and the operator has no Float form** (`AND`, `OR`, `EOR`, the shifts): `rf.f=fh AND (l1=l1)` is refused with "Illegal Operator for Type", as `rf.f=fh AND w` is today (decided, see "Decisions of the user").
 - **Results change** (rule 3, named with `PREV_INTENDED`): the executables of every program with a Long, Quick or Float left operand of an operator whose right operand is a comparison; this includes the common `If flag AND x=5` with a default-typed (Quick) `flag`, whose truth value does not change for `AND` (design, decision 3). Program outputs change where the left value has more than 16 bits, a fraction, or (`OR`, `EOR`) a fraction below 1.
 - **Documentation:** `docs/blitz2/expression-types.md` (the #1182 sentence, `:136`), the kind-F entry in `docs/blitz2/deviations.md` (and the #1177 row's "Not part of it: #1182"), `docs/ab3/variant.md` if AmiBlitz3 keeps the old behaviour (task 1.3), the `BUG(orig) (#1182)` comment at `eval5` (added with the red test) becomes `Fixed (#1182)`.
 
@@ -27,20 +27,22 @@ User decision (2026-11-21, `task-decisions.md`, "#1177 Float constant left; new 
 - The expression matrix: it holds two-operand cells only and has no #1182 cell; the matrix is not extended (its proposal excludes three operands).
 - Array indexes (#1179), Quick arithmetic (#1178).
 
-## Open questions
+## Decisions of the user (2026-11-22)
 
-1. **A Float left operand of `AND`/`OR`/`EOR`/a shift with a comparison on the right** (`rf.f=fh AND (l1=l1)`): refused as any Float there (recommended), or the old conversion kept for these operators (the left operand cut to Word, as today). The user's (asked together with `byte-fraction-constant`'s question 1; worked with: refused).
-2. **AB3 mode:** the fix in both modes, as decided for #1178 ("Neue Regel auch in AB3 (Recommended)") — that answer was given for #1178; for this case the user's (worked with: both modes).
+Both answered with the options shown, scope: this case (`~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Last answers of the session"; `~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers"):
+
+1. **A Float left operand of `AND`/`OR`/`EOR`/a shift with a comparison on the right** (`rf.f=fh AND (l1=l1)`): "Ablehnen wie unter Word (Recommended)" -> refused as any Float there ("Illegal Operator for Type"); the old conversion is not kept for these operators. The CD count (task 3.2) is still reported.
+2. **AB3 mode:** "Beide Modi (Recommended)" -> one core, the fix in BB2 and AB3 mode (not resting on the answer "Neue Regel auch in AB3 (Recommended)" given for #1178).
 
 ## Capabilities
 
 ### New Capabilities
 
-- `compiler/expression-types`: a comparison as the right operand of an operator. (The capability is also added by `quick-compare-types` and `quick-long-arithmetic`; whichever change is archived first creates the spec, the later ones add to it.)
+(none: `compiler/expression-types` exists in `openspec/specs/` since `quick-compare-types` was archived)
 
 ### Modified Capabilities
 
-(none in `openspec/specs/`)
+- `compiler/expression-types`: a comparison as the right operand of an operator (the delta adds requirements; their names are not in the spec yet).
 
 ## Impact
 

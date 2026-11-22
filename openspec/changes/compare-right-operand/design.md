@@ -36,13 +36,13 @@ Choice (mine, planning): B1. Rating: `Point: the flag misses a path that yields 
 
 After `quick-long-arithmetic`, a Quick fetched under a Long type so far is held raw with `*type` Long and `rawq` set. With a comparison on the right (`rl.l=q+(l1=l1)`), `left` is Long (raw): the boolean is converted to Long and #1178's mixed path computes `floor(q + -1)` = 0 for `q=1.5`. So this change needs no case of its own for a raw left operand; the test has the case (task 1.1), its expected value by #1178's rounding rule.
 
-### 5. Float left operand of a bit operator (open question 1)
+### 5. Float left operand of a bit operator (decided by the user)
 
-With decision 1, `rf.f=fh AND (l1=l1)` reaches `doop(AND, Float)`, which has no handler: "Illegal Operator for Type", as `rf.f=fh AND w` is today. The alternative is to keep the old down-conversion for these operators when the left is a Float (a special case that keeps a wrong value). Recommended: refused. `Point: a Float left of AND/OR/EOR/a shift with a comparison on the right becomes a compile error — L2 Possible / I3 Observable / E2 Reasoned → Decide` (the evidence rises with task 1.2: the CD corpus compiled with the fix shows whether any CD source has the form).
+With decision 1, `rf.f=fh AND (l1=l1)` reaches `doop(AND, Float)`, which has no handler: "Illegal Operator for Type", as `rf.f=fh AND w` is today. The alternative, keeping the old down-conversion for these operators when the left is a Float (a special case that keeps a wrong value), is not taken. Decision (the user, 2026-11-22, "Last answers of the session"): "Ablehnen wie unter Word (Recommended)". `Point: a Float left of AND/OR/EOR/a shift with a comparison on the right becomes a compile error — L2 Possible / I3 Observable / E2 Reasoned → decided by the user` (task 3.2: the CD corpus compiled with the fix shows whether any CD source has the form; reported before the merge).
 
-### 6. AB3 mode (open question 2)
+### 6. AB3 mode (decided by the user)
 
-One core, no mode condition planned. Whether AmiBlitz3 has the same bug is measured in task 1.3; if it has, `docs/ab3/variant.md` gets a row (as #1177). Using #1178's AB3 answer for this case is the user's (D-011 step 2: a recorded answer for another case).
+One core, no mode condition. Decision (the user, 2026-11-22, "Coordinator session (handoff-2026-11-22-quick.md), answers", D2): "Beide Modi (Recommended)" -> the fix in BB2 and AB3 mode. Whether AmiBlitz3 has the same bug is measured in task 1.3; if it has, `docs/ab3/variant.md` gets a row (as #1177).
 
 ### 7. Cost (D-007)
 

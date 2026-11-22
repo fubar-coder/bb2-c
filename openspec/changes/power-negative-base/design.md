@@ -12,7 +12,7 @@
 
 ## Decisions
 
-### 1. The fix in the library routine (P1; open question 1)
+### 1. The fix in the library routine (P1; decided by the user)
 
 `mathtranslib`'s `^` entry becomes a routine with the register contract of its neighbours (`libs/register-contract`; d0 = x, d1 = y, a6 = mathtrans base, result d0):
 
@@ -21,7 +21,7 @@
 
 Passing |x| does not depend on what a given mathtrans version does with a negative base, and gives today's value wherever the sign does not change (fractional exponent: |x|^y, the baseline).
 
-Alternative P2: the compiler emits the same logic inline around the call, in both modes (30-40 bytes per `^`, an extra code form the tree must replay, and in AB3 mode a result that differs from AmiBlitz3's library 44). P1 keeps the fix where the call to `SPPow` is, one copy per program, and leaves AB3 mode with the library it is specified to use. The choice is the user's (#1178's AB3 answer bears on it, D-011 step 2): `Point: P1, BB2 mode only; AB3 mode keeps AmiBlitz3's sign error — L2 Possible / I3 Observable / E2 Reasoned → Decide`.
+Alternative P2: the compiler emits the same logic inline around the call, in both modes (30-40 bytes per `^`, an extra code form the tree must replay, and in AB3 mode a result that differs from AmiBlitz3's library 44). P1 keeps the fix where the call to `SPPow` is, one copy per program, and leaves AB3 mode with the library it is specified to use. Decision (the user, 2026-11-22, "Coordinator session (handoff-2026-11-22-quick.md), answers", D3): "P1 Library 192 (Recommended)" -> BB2 mode only; AB3 mode keeps AmiBlitz3's library 44 result, named in `docs/ab3/variant.md`. `Point: P1, BB2 mode only; AB3 mode keeps AmiBlitz3's sign error — L2 Possible / I3 Observable / E2 Reasoned → decided by the user`.
 
 ### 2. Whole and odd from the FFP bits
 
@@ -39,7 +39,7 @@ The matrix's open tests are the red tests: `compiler-expr-1189-*` (24, value set
 
 Every executable with `^` changes (inline `jsr -90(a6)` becomes a call of the routine), and the library file of `mathtranslib`. Outputs change only for a negative base with a whole odd exponent. The prev comparison names them.
 
-### 6. The fractional exponent (open question 2)
+### 6. The fractional exponent (open question 2, still open)
 
 Not built. If the user later wants a runtime error, D-005 puts it in the error check area (a programming error) unless D-006 applies (data from outside); that would be a change of its own. The proposal and the issue keep the question open.
 
@@ -48,7 +48,7 @@ Not built. If the user later wants a runtime error, D-005 puts it in the error c
 * [The FFP parity test is wrong near e = 24 or for denormal-looking bit patterns] → the bug-orig test's edge cases (decision 3); FFP has no denormals, every non-zero value is normalised.
 * [An inline entry turned into a routine changes how the compiler links the library] → the library build's checks (`blitzlib check`) and the capture test; if the library format cannot have it at the same token, the implementer stops and reports (I2, this change re-planned).
 * [The matrix's model predicts SPPow's magnitude negated, the routine computes it from |x|] → the same value: SPPow returns |x|^y for x and -x alike (measured with 2.10, 1.95, the port and AmiBlitz3; `classify-report.md`); the matrix tests check it.
-* [AB3 mode keeps the bug] → named in `docs/ab3/variant.md` (open question 1).
+* [AB3 mode keeps the bug] → named in `docs/ab3/variant.md` (decided: P1).
 
 ## Planning choices (mine, not the user's)
 
