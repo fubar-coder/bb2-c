@@ -1,0 +1,28 @@
+; a constant with a fraction under a Byte type so far (#1188): it keeps
+; its fraction, the operation is computed in Float and the result
+; converted to the Byte at the end, as under a Word type so far; the same
+; in AmiBlitz3 v3.14.0 (the whole-valued literals: byte_fraction_whole).
+NEWTYPE.nb
+  f.b
+End NEWTYPE
+Statement sb{x.b}
+  NPrint x
+End Statement
+Function.b fb{x.b}
+  Function Return x
+End Function
+vb.b=2 : rb.b=0
+Dim ab.b(2) : nv.nb\f=0
+rb=(1.5+1.5) : NPrint rb
+rb=(0.5*4) : NPrint rb
+rb=(1.5*vb) : NPrint rb
+rb=(2.5*2) : NPrint rb
+rb=(-1.5*vb) : NPrint rb
+rb=(1.25e1*2) : NPrint rb
+rb=1.5 : NPrint rb
+rb=-1.5 : NPrint rb
+sb{1.5*vb}
+rb=fb{1.5*vb} : NPrint rb
+nv\f=(1.5+1.5) : NPrint nv\f
+ab(1)=(1.5*vb) : NPrint ab(1)
+End

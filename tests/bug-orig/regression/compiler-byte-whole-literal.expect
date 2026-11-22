@@ -1,0 +1,10 @@
+[compile]
+ok
+[run]
+01 rb.b=vb+2.0 5
+02 rb.b=vb AND 2.0 2
+03 rb.b=vb+1.5e1 18
+04 rb.b=vb ASL 1.0 6
+05 Data.b 1.5 1
+06 Data.b -1.5 -1
+rc=0
