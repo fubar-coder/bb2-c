@@ -926,6 +926,19 @@ Each point says first what the original did, then what the port does.
   checking, `AND`, `OR`, `EOR` or a shift of a Quick and a constant with a
   fraction in such an index is a compile error
   ([`AND`, `OR`, `EOR` or a shift in a later array index]({{< relref "/docs/compared-with-original/new-errors#later-index-operator" >}})).
+* A comparison as the right operand of an operator, such as
+  `lw AND (a=b)` or `lw AND a=b`, gives a Word (-1 or 0), and the original
+  converted the operator's left operand down to Word before the
+  operation: a Long lost its high word, a Quick or Float its fraction.
+  `If $10000 AND (a=b)` was false although `a=b` was true, `If q OR (a<>b)`
+  was false for `q=0.5`, and with `lb.l=100000`, `lb+(a=b)` gave -31073.
+  The port converts the comparison's result to the left operand's type
+  and computes the operation in that type: both conditions are true and
+  the sum is 99999. A Byte or Word left operand gives the same result as
+  in the original. A Float has no `AND`, `OR`, `EOR` or shift, so a Float
+  left of one of them with a comparison on the right is a compile error
+  ([A Float with `AND`, `OR`, `EOR` or a shift and a comparison]({{< relref "/docs/compared-with-original/new-errors#float-bit-operator-comparison" >}}),
+  [#1182](https://github.com/fubar-coder/bb2-c/issues/1182)).
 
 ### Names, labels and constants
 
