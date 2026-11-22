@@ -118,13 +118,24 @@ struct tc_placeholder {
  *            top = "/path/of/the/repository"
  *            [placeholders]
  *            TESTDATA = "/path/of/the/test/data"
+ *            [runner]
+ *            blitz2 = "/path/of/the/build/blitz2/blitz2"
+ *
+ *        The table `runner` holds the paths and values only the runner
+ *        uses (corpusrun case, tests/corpus/runner/caserun.h), strings
+ *        named by any key; the configuration never sees them.
  */
 struct tc_env {
     char *file;
     char *top;                  /* NULL: the search goes up to "/" */
     struct tc_placeholder *ph;
     size_t nph;
+    struct tc_placeholder *run; /* the table runner: key and value */
+    size_t nrun;
 };
+
+/** @brief The value of key in the table runner of env, or NULL. */
+const char *tc_env_runner(const struct tc_env *env, const char *key);
 
 /** @brief The resolved configuration of one test. */
 struct tc_config {

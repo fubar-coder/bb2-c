@@ -17,5 +17,6 @@ int main(int argc, char **argv)
     cmd_pass(app, status);
     cmd_cd(app, status);
     cmd_drop(app, status);
+    cmd_case(app, status);
     return cli::run(app, argc, argv, status);
 }

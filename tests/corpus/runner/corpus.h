@@ -229,6 +229,13 @@
  *                     before, see there).  Exit status 0 = every
  *                     configuration FIXED, 1 = one REGRESSED (it does not
  *                     show the expected behaviour)
+ *   cell=on           a cell of a test of the BASIC test model (caserun.h):
+ *                     exactly one configuration (its EXPECT ref) and one
+ *                     source; the pass is only staged (corpus_stage) and its
+ *                     script halves put into a session with other cells by
+ *                     corpusrun case, never run by corpus_run, which judges
+ *                     nothing of it.  Not with expect=, expect_dir=, orig=,
+ *                     fixed=, regression=on, record=, gate=, publish=
  * With runtime error checking the 8 byte parameter blocks behind trap #1
  * and trap #4 are zeroed before comparing (the memory address of the
  * editor's line item, depends on the memory layout).
@@ -283,6 +290,7 @@ struct corpus_pass {
     int rtg;                            /* rtg=on: amiga_emulation_rtg */
     int mask_traps;                     /* mask_traps=on: the trap blocks of the executables are masked as with runtime_errors */
     int must_compile;                   /* must_compile=on (run=off): a source that does not compile fails */
+    int cell;                           /* cell=on: a cell of the BASIC test model (caserun.h) */
     unsigned timeout, parallel, stack, hang_after;   /* hang_after: 0 = not given */
     int hang_from_run;                  /* hang_from=run: the silence counts from the first run */
     unsigned long long min_free;        /* min_free=: MiB, 0 = no check */
@@ -410,6 +418,36 @@ void corpus_mask_traps(uint8_t *data, size_t len);
    launcher, rc=N behind the outputs; AmigaDOS 1.3 syntax on a Kickstart
    1.x machine */
 char *corpus_script(const struct corpus_pass *p);
+
+/* the two halves of corpus_script (malloc'd, NULL if out of memory): the
+   compile with tedstub's job list, and the runs of the programs; corpus_script
+   is the one followed by the other.  The runner of the tests of the BASIC test
+   model (caserun.h) puts the halves of several passes into one session */
+char *corpus_script_compile(const struct corpus_pass *p);
+char *corpus_script_run(const struct corpus_pass *p);
+
+/* stages configuration c: WORK/TAG/vol (CORPUS: with blitz2/, src/, out/,
+   the job list and the files of the pass) and WORK/TAG/emu; 0 = ok, -1 =
+   error (the message in log) */
+int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log);
+
+/* a writable volume of a session */
+struct corpus_volume {
+    const char *volume;                 /* without colon */
+    const char *host_dir;
+};
+
+/* starts the emulator session of configuration c with the script text:
+   the machine, the emulator changes (uae=, rtg=, floppy=, with port != 0
+   the serial port as a TCP server on 127.0.0.1:port), the mounts, the time
+   limit and the hang check of the pass, the work directory WORK/TAG/emu.
+   vols NULL: CORPUS: is WORK/TAG/vol; else the nvols volumes given are the
+   writable ones (the hang check of hang_from=run arms on the first program's
+   output in the first of them, OUT/NAME.run).  NULL = not started (err;
+   amiga_emulation_no_slot() tells a missing slot) */
+struct amiga_emulation *corpus_session_start(const struct corpus_pass *p, size_t c, const char *text,
+                                             unsigned port, const struct corpus_volume *vols,
+                                             size_t nvols, char *err, size_t errlen);
 
 /* runs the pass: 0 = no differences, 1 = differences (report), 77 = the
    emulator or a file of the pass is missing (skipped), 2 = error; with

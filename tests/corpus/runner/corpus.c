@@ -212,14 +212,14 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
             || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps")
-            || !strcmp(key, "timeout") || !strcmp(key, "parallel")
+            || !strcmp(key, "cell") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
             || !strcmp(key, "stack") || !strcmp(key, "fixed") || !strcmp(key, "hang_after")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
             if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")
                 || !strcmp(key, "regression") || !strcmp(key, "run") || !strcmp(key, "rtg")
-                || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps")) {
+                || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps") || !strcmp(key, "cell")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
                     return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
@@ -229,6 +229,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                   : !strcmp(key, "run") ? &p->run
                   : !strcmp(key, "rtg") ? &p->rtg
                   : !strcmp(key, "must_compile") ? &p->must_compile
+                  : !strcmp(key, "cell") ? &p->cell
                   : !strcmp(key, "mask_traps") ? &p->mask_traps : &p->regression)
                     = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
@@ -495,6 +496,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                       || p->expect))
         return fail(p, err, errlen, "run=off: no launcher, gate, serial, runwrap, runargs, launcherargs, "
                     "expect");
+    /* a cell of the BASIC test model: one configuration and one source, no
+       judging of the pass's own */
+    if (p->cell) {
+        if (p->nconfigs != 1 || p->nsources != 1 || p->expect || p->expect_dir || p->orig || p->fixed
+            || p->regression || p->record || p->gate || p->publish)
+            return fail(p, err, errlen, "cell=on: one configuration and one source, no expect=, "
+                        "expect_dir=, orig=, fixed=, regression=, record=, gate=, publish=");
+        goto common;
+    }
     /* a fixed bug-orig test and an expect test have no reference, every
        other pass one first */
     if (p->fixed && p->regression)
@@ -536,6 +546,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         return fail(p, err, errlen, "expect_dir=DIR: not with run=off or expect=");
     if (p->expect && p->nsources != 1)
         return fail(p, err, errlen, "expect= needs exactly one source");
+common:
     /* Kickstart 1.x: no $RC (rcput instead), no gate (reqclosetest needs V36) */
     if (amiga_emulation_machine_kickstart(p->machine) < 36 && (!p->rcput || p->gate))
         return fail(p, err, errlen, "machine=%s (Kickstart 1.x) needs rcput= and no gate=",
@@ -1021,7 +1032,7 @@ static int mkdir_sub(const struct corpus_pass *p, size_t c, const char *sub)
     return r;
 }
 
-static int stage(const struct corpus_pass *p, size_t c, FILE *log)
+int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
 {
     const struct corpus_config *cf = &p->configs[c];
     char *root = str_printf("%s/%s", p->work, cf->tag), *vol = dir_of(p, c, "vol");
@@ -1141,24 +1152,27 @@ out:
 /* AmigaDOS 1.3 (Kickstart 1.x, tools/lib/amiga_emulation/README.md "Machine
    a500"): the redirection right behind the command name, no $RC and no >> -
    rcput appends rc=N; no gate (corpus_parse) */
-static char *script13(const struct corpus_pass *p)
+static void compile13(const struct corpus_pass *p, struct text *s)
 {
-    struct text s = { 0 };
-    size_t i;
-
-    text_add(&s, "Assign blitz2: " VOLUME ":blitz2\n"
+    text_add(s, "Assign blitz2: " VOLUME ":blitz2\n"
             "Stack %u\n", p->stack);
     if (p->wrap)
-        text_add(&s, VOLUME ":wrap >" VOLUME ":out/blitz2.out %s%sblitz2:blitz2 " VOLUME ":jobs\n",
+        text_add(s, VOLUME ":wrap >" VOLUME ":out/blitz2.out %s%sblitz2:blitz2 " VOLUME ":jobs\n",
             p->wrap_args ? p->wrap_args : "", p->wrap_args ? " " : "");
     else
-        text_add(&s, "blitz2:blitz2 >" VOLUME ":out/blitz2.out " VOLUME ":jobs\n");
-    text_add(&s, VOLUME ":rcput " VOLUME ":out/blitz2.out\n"
+        text_add(s, "blitz2:blitz2 >" VOLUME ":out/blitz2.out " VOLUME ":jobs\n");
+    text_add(s, VOLUME ":rcput " VOLUME ":out/blitz2.out\n"
             "Assign blitz2:\n");
+}
+
+static void run13(const struct corpus_pass *p, struct text *s)
+{
+    size_t i;
+
     for (i = 0; p->run && i < p->nsources; i++) {
         char *n = corpus_name(p->sources[i]);
 
-        text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
+        text_add(s, "If EXISTS " VOLUME ":out/%s\n"
                 "  " VOLUME ":run >" VOLUME ":out/%s.run %s%s%s%s%s" VOLUME ":out/%s%s%s\n"
                 "  " VOLUME ":rcput " VOLUME ":out/%s.run\n"
                 "EndIf\n", n, n, p->launcherargs ? p->launcherargs : "",
@@ -1167,28 +1181,35 @@ static char *script13(const struct corpus_pass *p)
                 p->runargs ? " " : "", p->runargs ? p->runargs : "", n);
         free(n);
     }
-    if (s.bad) {
-        free(s.p);
-        return NULL;
-    }
-    return s.p;
 }
 
-char *corpus_script(const struct corpus_pass *p)
+/* the compile: the job list through blitz2 (and wrap=), rc=N behind its output */
+static void compile_part(const struct corpus_pass *p, struct text *s)
 {
-    struct text s = { 0 };
-    size_t i;
-
-    if (kick1x(p))
-        return script13(p);
-    text_add(&s, "Assign blitz2: " VOLUME ":blitz2\n"
+    if (kick1x(p)) {
+        compile13(p, s);
+        return;
+    }
+    text_add(s, "Assign blitz2: " VOLUME ":blitz2\n"
             "Stack %u\n"
             "%s%s%sblitz2:blitz2 " VOLUME ":jobs >" VOLUME ":out/blitz2.out\n"
             "Echo \"rc=$RC\" >>" VOLUME ":out/blitz2.out\n"
             "Assign blitz2:\n", p->stack, p->wrap ? VOLUME ":wrap " : "",
             p->wrap_args ? p->wrap_args : "", p->wrap_args ? " " : "");
+}
+
+/* the runs: every program through the launcher (behind the gate), rc=N behind
+   its output */
+static void run_part(const struct corpus_pass *p, struct text *s)
+{
+    size_t i;
+
+    if (kick1x(p)) {
+        run13(p, s);
+        return;
+    }
     if (p->gate)
-        text_add(&s, "SetEnv REQCLOSELOG " VOLUME ":out/reqclose.log\n"
+        text_add(s, "SetEnv REQCLOSELOG " VOLUME ":out/reqclose.log\n"
                 VOLUME ":run " VOLUME ":gate >" VOLUME ":out/gate.run\n"
                 "Set gate $RC\n"
                 "Echo \"rc=$gate\" >>" VOLUME ":out/gate.run\n"
@@ -1196,7 +1217,7 @@ char *corpus_script(const struct corpus_pass *p)
     for (i = 0; p->run && i < p->nsources; i++) {
         char *n = corpus_name(p->sources[i]);
 
-        text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
+        text_add(s, "If EXISTS " VOLUME ":out/%s\n"
                 "  " VOLUME ":run %s%s%s%s%s" VOLUME ":out/%s%s%s >" VOLUME ":out/%s.run\n"
                 "  Echo \"rc=$RC\" >>" VOLUME ":out/%s.run\n"
                 "EndIf\n", n, p->launcherargs ? p->launcherargs : "",
@@ -1206,23 +1227,49 @@ char *corpus_script(const struct corpus_pass *p)
         free(n);
     }
     if (p->gate)
-        text_add(&s, "EndIf\nUnSetEnv REQCLOSELOG\n");
+        text_add(s, "EndIf\nUnSetEnv REQCLOSELOG\n");
+}
+
+static char *script_of(const struct corpus_pass *p, int compile, int run)
+{
+    struct text s = { 0 };
+
+    if (compile)
+        compile_part(p, &s);
+    if (run)
+        run_part(p, &s);
     if (s.bad) {
         free(s.p);
         return NULL;
     }
-    return s.p;
+    return s.p ? s.p : strdup("");
+}
+
+char *corpus_script(const struct corpus_pass *p)
+{
+    return script_of(p, 1, 1);
+}
+
+char *corpus_script_compile(const struct corpus_pass *p)
+{
+    return script_of(p, 1, 0);
+}
+
+char *corpus_script_run(const struct corpus_pass *p)
+{
+    return script_of(p, 0, 1);
 }
 
 /* ------------------------------------------------------------ running */
 
-/* port != 0: the serial port is a TCP server on 127.0.0.1:port */
-static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, const char *text,
-                                     unsigned port, char *err, size_t errlen)
+struct amiga_emulation *corpus_session_start(const struct corpus_pass *p, size_t c, const char *text,
+                                             unsigned port, const struct corpus_volume *vols,
+                                             size_t nvols, char *err, size_t errlen)
 {
-    char *vol = dir_of(p, c, "vol"), *emu = dir_of(p, c, "emu");
+    char *vol = vols ? strdup(vols[0].host_dir) : dir_of(p, c, "vol"), *emu = dir_of(p, c, "emu");
     char *tcp = str_printf("TCP://127.0.0.1:%u", port);
-    struct amiga_emulation_mount *m = calloc(p->nmounts + 1, sizeof *m);
+    size_t nown = vols ? nvols : 1;     /* the writable volumes */
+    struct amiga_emulation_mount *m = calloc(p->nmounts + nown, sizeof *m);
     struct amiga_emulation_option serial[] = {
         { "serial_port", tcp }, { "serial_on_demand", "false" },
         { "serial_direct", "false" }, { "serial_hardware_ctsrts", "false" },
@@ -1261,16 +1308,25 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
         ep.nchanges = nserial + nrtg + nflop + i;
         /* a snapshot key would hold the copy of the image, new in every run */
         ep.cold = nflop > 0;
-        /* CORPUS: the configuration's directory, the read-only volumes */
-        m[0].volume = VOLUME;
-        m[0].host_dir = vol;
-        m[0].writable = 1;
+        /* CORPUS: the configuration's directory (or the volumes given), the
+           read-only volumes */
+        if (vols)
+            for (i = 0; i < nvols; i++) {
+                m[i].volume = vols[i].volume;
+                m[i].host_dir = vols[i].host_dir;
+                m[i].writable = 1;
+            }
+        else {
+            m[0].volume = VOLUME;
+            m[0].host_dir = vol;
+            m[0].writable = 1;
+        }
         for (i = 0; i < p->nmounts; i++) {
-            m[i + 1].volume = p->mount_name[i];
-            m[i + 1].host_dir = p->mount_dir[i];
+            m[i + nown].volume = p->mount_name[i];
+            m[i + nown].host_dir = p->mount_dir[i];
         }
         ep.mounts = m;
-        ep.nmounts = p->nmounts + 1;
+        ep.nmounts = p->nmounts + nown;
         ep.script = text;
         ep.timeout = p->timeout;
         ep.hang_after = p->hang_after;
@@ -1304,6 +1360,13 @@ done:
     free(vol);
     free(emu);
     return e;
+}
+
+/* port != 0: the serial port is a TCP server on 127.0.0.1:port */
+static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, const char *text,
+                                     unsigned port, char *err, size_t errlen)
+{
+    return corpus_session_start(p, c, text, port, NULL, 0, err, errlen);
 }
 
 /* ------------------------------------------------------------ results */
@@ -2006,7 +2069,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
         goto out;
     }
     for (c = 0; c < p->nconfigs; c++)
-        if (stage(p, c, log))
+        if (corpus_stage(p, c, log))
             goto out;
     /* at most `parallel` sessions at a time, started in order, each
        collected as soon as it has ended; with serial=on each one with its

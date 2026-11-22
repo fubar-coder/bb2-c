@@ -12,7 +12,9 @@ results, optionally compared with a reference table). The logic is in
 `rundir.h`: the run directory where a test hands data to another),
 tested by `test_corpus.c`, `test_bugorig.c`, `test_cdcache.c`,
 `test_runwork.c` and `test_rundir.c` here (ctest `corpus_runner`,
-`bugorig_verdict`, `cdrun_cache`, `runner_runwork`, `runner_rundir`).
+`bugorig_verdict`, `cdrun_cache`, `runner_runwork`, `runner_rundir`);
+`case`, one case of a test of the BASIC test model, is `lib_caserun`
+(`caserun.h`, tested by `test_caserun.c`, ctest `corpusrun_caserun`).
 
 ## Usage
 
@@ -31,6 +33,8 @@ SUBCOMMANDS:
                               table of the results
   drop                        remove the data a pass published for other tests (the cleanup of
                               a ctest fixture)
+  case                        one case of a Blitz test of the BASIC test model (ID.test.bas) in
+                              Amiberry: the cells of one side compiled, run and judged
 
 The exit status of pass in a bug-orig pass is the worst verdict: 0 FIXED, 1
 REPRODUCED, 3 BROKEN, 4 DIFFERS.
@@ -180,6 +184,57 @@ marked it. The run directory is the environment variable
 `BB2C_TEST_RUN`, else `--run-dir` (the default directory of the build,
 which is removed again with `Testing/runs` if empty).
 
+### case
+
+```
+Usage: corpusrun case [OPTIONS]
+
+one case of a Blitz test of the BASIC test model (ID.test.bas) in Amiberry: the
+cells of one side compiled, run and judged
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --env FILE REQUIRED the environment file of the build (tests/model-env.toml)
+          --source FILE REQUIRED 
+                              the test source ID.test.bas
+          --case CASE         the case (not with --print-config)
+          --side SIDE:{port,originals} 
+                              the cells without original material (port, the default) or with
+                              it (originals: the original compilers, the CD's libraries)
+          --require-deviation a bug-orig test: a test that declares no deviation of the
+                              original is broken
+          --print-config      print the effective configuration (every key with its value and
+                              origin, the axes, the cells) and run nothing
+          --print-driver      print the driver of the case and run nothing
+
+The cells of a side that share the session settings run in one emulator session.
+Exit status: 0 passed, 1 reproduced (an open bug shows as declared), 2 error (a
+configuration, source or result that cannot be judged; usage), 3 broken, 4
+failed, 77 skipped (no emulator, or a file of the side is missing).
+```
+
+Runs one case of a test of the BASIC test model (`ID.test.bas` and its
+run configuration; `tests/README.md`, "Tests that judge themselves") in
+the cells of one side and judges them (`caserun.h`; the logic of the
+configuration, the preprocessor, the driver and the judge is in
+`tools/lib/testconf`, `testpp`, `testjudge`). The ctest tests the build
+registers (`tools/testreg`, `cmake/basic-test-model.cmake`) call it as
+`corpusrun case --env ENV [--require-deviation] --source SOURCE --case
+CASE --side SIDE`. It preprocesses the source, writes the driver with
+the result file `CORPUS:out/test.res` and tokenises it (`tedsrc tok`),
+writes a pass of `corpus.h` per cell (pass key `cell=on`) and stages it,
+and runs the cells whose session settings agree in one emulator session:
+each cell's directory is the volume `CELLk:`, `Assign CORPUS: CELLk:`
+selects it, the compiles of all cells come first, then the runs. A
+session that ends early gives its end to the first cell that did not
+finish; the cells behind it run again. The report names each failed
+check with its case, name, source line, expression and values, a compile
+error with `ID.test.bas:LINE`, and the verdict; the run directory below
+the environment's `work` stays when the case did not pass.
+`--print-config` prints the effective configuration (every key with its
+value and the file and line it comes from, the axes, the cells and their
+side), `--print-driver` the driver; neither starts a session.
+
 ## Inputs and outputs
 
 The pass files are written by CMake, lines `KEY=VALUE` and `#` comments;
@@ -202,6 +257,9 @@ line, message, size, masked SHA-256, xtra, note
   `expect_dir=` or without `TAG`, a malformed directory); `--observe` 0
   observed, 2 the session failed.
 * `drop`: 0 removed or kept or nothing to remove, 1 a fixture could not be removed.
+* `case`: the verdict of the case: 0 passed, 1 reproduced (an open bug
+  shows as declared), 2 error, 3 broken, 4 failed, 77 skipped (no
+  emulator, or a file of the side is missing).
 * `cd`: 0 written (and no difference), 1 differences or a `source=` that
   does not compile, 77 the emulator or a file is missing (skipped),
   2 error.
@@ -223,6 +281,8 @@ of `cd` (sessions, skipped runs) go to stdout with the same prefix.
   `blitz2-cd-reference`, `blitz2-cd-update` (`tests/corpus/CMakeLists.txt`);
   the test `rwe_refbuild` (`libs/userlibs/rwe/refbuild.cmake`); the test
   `cdrun_source` (`check-cdrun-source.cmake` here, without emulator).
+* `case`: the tests of the BASIC test model (`PREFIX_ID__CASE`,
+  `PREFIX_ID__CASE_originals`; `cmake/basic-test-model.cmake`).
 * `drop`: the tests `corpus_cleanup`, `corpus_originals_cleanup`
   (fixture cleanups, `tests/corpus/CMakeLists.txt`).
 * Tests: `help_corpusrun`, `readme_corpusrun`.
