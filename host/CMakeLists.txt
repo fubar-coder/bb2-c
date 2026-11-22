@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 4.3)
 # (build/<preset>/host).
 project(blitzbasic2_host LANGUAGES C CXX)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/emulation-queue.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/warnings.cmake)   # own_warnings()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # for clangd (host side in .clangd)
 # no C++20 modules: without the dependency scan of every C++20 source
 # (CMake's default; its -fmodules-ts compilations ccache does not cache)

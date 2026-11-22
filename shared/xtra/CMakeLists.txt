@@ -8,3 +8,4 @@ add_library(xtra_m68k OBJECT xtra.c xtra_ab3.c xtra_mode.c)
 set_target_properties(xtra_m68k PROPERTIES C_STANDARD 99 C_EXTENSIONS OFF)
 target_compile_options(xtra_m68k PRIVATE -fbaserel -fomit-frame-pointer -ffreestanding
 	-Wall -Wextra -pedantic)
+own_warnings(xtra_m68k)

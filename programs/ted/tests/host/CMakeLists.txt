@@ -24,6 +24,7 @@ target_compile_definitions(tedcore_host PUBLIC TED_HOST)
 target_include_directories(tedcore_host PUBLIC ${TED_DIR}/src/core)
 add_dependencies(tedcore_host ted_fonts)       # host/CMakeLists.txt
 target_compile_options(tedcore_host PRIVATE -Wall -Wno-pointer-sign -Wno-parentheses)
+own_warnings(tedcore_host)
 set_target_properties(tedcore_host PROPERTIES C_STANDARD 23 C_EXTENSIONS ON)
 # res.c: the original resources and TED-C's fonts (host/CMakeLists.txt)
 set_source_files_properties(${TED_DIR}/src/core/res.c PROPERTIES
@@ -34,6 +35,7 @@ add_library(tedhost STATIC stubs.c toklist.c tokref.c)
 target_include_directories(tedhost PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(tedhost PUBLIC tedcore_host lib_blitztokens)
 target_compile_options(tedhost PRIVATE -Wall)
+own_warnings(tedhost)
 set_target_properties(tedhost PROPERTIES C_STANDARD 23 C_EXTENSIONS ON)
 
 file(GLOB tests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test_*.cpp)
@@ -50,6 +52,7 @@ foreach(t IN LISTS tests)
 		TED_ARCHIVE_DIR="${REPO_DIR}/archive/sources/ted-1.1"
 		TED_CD_DIR="${REPO_DIR}/archive/cd/ultimate-blitz-basic-2.1")
 	target_compile_options(ted_${name} PRIVATE -Wall)
+	own_warnings(ted_${name})
 	set_target_properties(ted_${name} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 	add_test(NAME ted_core_${short} COMMAND ted_${name})
 	set_tests_properties(ted_core_${short} PROPERTIES LABELS ted SKIP_REGULAR_EXPRESSION "test cases skipped")

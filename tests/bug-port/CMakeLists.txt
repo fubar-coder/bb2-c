@@ -23,6 +23,7 @@
 add_executable(lsclear amiga/lsclear.c)
 target_compile_options(lsclear PRIVATE -Wall -Wno-pointer-sign -ffreestanding -fno-builtin
 	-fomit-frame-pointer)
+own_warnings(lsclear)
 target_link_options(lsclear PRIVATE -nostartfiles -nostdlib)
 set_target_properties(lsclear PROPERTIES SUFFIX "")
 

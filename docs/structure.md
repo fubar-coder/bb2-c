@@ -6,6 +6,8 @@ archive/                     unchanged originals (sources, reference data),
                              see archive/README.md
 cmake/m68k-amigaos.cmake     toolchain (the only one)
 cmake/BlitzLibrary.cmake     blitz_library(), biglib_join()
+cmake/warnings.cmake         own_warnings(): the warnings of the own targets
+                             on top of their -Wall (-Wshadow)
 programs/blitz2/             compiler (src/: sections of blitz2.s + glue)
 programs/ted/                editor (src/: Amiga part, src/core/: OS-free
                              core)
@@ -166,3 +168,11 @@ with the profile `speed` of `blitz_library(OPTIMIZE ...)` in
 `-fbaserel` (a4 = base of their global data). That is why
 `libs/acidlibs` (freqlib) and `programs/ted` each compile the shared file
 requester themselves; each side provides its own `filereq_env.h` for it.
+
+Every target of the project's own code, C and C++, m68k and host, gets
+the common warnings of `cmake/warnings.cmake` on top of its own `-Wall`:
+`own_warnings(TARGET)` next to its `target_compile_options`, or
+`${OWN_WARNINGS}` where the options are a list (`BLITZLIB_OPTIONS_AFTER`,
+`EDSTUB_COMPILE_OPTIONS`) or a directory's (`tools/`). That is plain
+`-Wshadow`; third-party code (snitch, CLI11) does not get it, nor do
+blitz2's targets yet (`programs/blitz2`).

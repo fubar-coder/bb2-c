@@ -11,6 +11,7 @@ add_library(lib_teddump STATIC teddump.c)
 target_include_directories(lib_teddump PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(lib_teddump PUBLIC lib_runner_util lib_sha256)
 target_compile_options(lib_teddump PRIVATE -Wall -Wextra)
+own_warnings(lib_teddump)
 set_target_properties(lib_teddump PROPERTIES C_STANDARD 23)
 
 add_library(lib_tedab STATIC tedab.c)
@@ -19,6 +20,7 @@ target_include_directories(lib_tedab PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(lib_tedab PUBLIC lib_teddump lib_runner_util lib_sha256 lib_previntended
 	lib_bugorigcmp)
 target_compile_options(lib_tedab PRIVATE -Wall -Wextra -Wno-unused-function)
+own_warnings(lib_tedab)
 set_target_properties(lib_tedab PROPERTIES C_STANDARD 23)
 
 set(TEDAB_SUBCOMMANDS run lint info text cmp)
@@ -27,6 +29,7 @@ target_link_libraries(tedab PRIVATE lib_cli lib_tedab lib_amiga_emulation lib_st
 target_compile_definitions(tedab PRIVATE TED_FONTS_DIR="${TED_FONTS_DIR}")
 add_dependencies(tedab ted_fonts)
 target_compile_options(tedab PRIVATE -Wall -Wextra)
+own_warnings(tedab)
 set_target_properties(tedab PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 host_help_test(tedab ${TEDAB_SUBCOMMANDS})
 host_readme_test(tedab README.md ${TEDAB_SUBCOMMANDS})

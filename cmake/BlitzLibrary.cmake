@@ -95,7 +95,7 @@ set(BLITZLIB_OPTIONS_BEFORE
 	-ffreestanding -fno-tree-loop-distribute-patterns)   # no libc: no memset/memcpy calls
 set(BLITZLIB_OPTIONS_AFTER
 	-fno-strict-aliasing
-	-Wall -Wno-pointer-sign)
+	-Wall -Wno-pointer-sign ${OWN_WARNINGS})
 
 # the variant of the libraries built to blitz2/acidlibs and deflibs (and
 # checked against the CD): libs/variants/NAME/libnums.h

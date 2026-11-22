@@ -66,6 +66,7 @@ add_library(tedcore STATIC ${core_sources} src/core/res.c)
 target_include_directories(tedcore PUBLIC src/core)
 add_dependencies(tedcore ted_fonts)
 target_compile_options(tedcore PRIVATE -Wall -Wno-pointer-sign -Wno-parentheses)
+own_warnings(tedcore)
 
 set(amiga_sources)
 foreach(m IN LISTS TED_AMIGA_MODULES)
@@ -84,6 +85,7 @@ target_include_directories(tedobj PRIVATE src src/core ${FILEREQ_DIR})
 target_compile_options(tedobj PRIVATE
 	-fomit-frame-pointer -fno-strict-aliasing
 	-Wall -Wno-pointer-sign -Wno-parentheses)
+own_warnings(tedobj)
 option(TED_BASEREL "address globals relative to a4 (-fbaserel)" ON)
 if(TED_BASEREL)
 	target_compile_options(tedcore PRIVATE -fbaserel)

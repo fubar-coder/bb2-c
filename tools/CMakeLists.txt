@@ -4,7 +4,7 @@
 #   tests/   tests of lib/ with inputs built in memory
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-add_compile_options(-Wall -Wextra)
+add_compile_options(-Wall -Wextra ${OWN_WARNINGS})
 
 add_subdirectory(lib)
 add_subdirectory(blitzlib)
