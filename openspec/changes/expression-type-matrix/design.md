@@ -142,7 +142,9 @@ Task 1.3 (the measurement of cut F; report and cell table in `~/.local/share/bb2
 
 * 2.10 and 1.95 agree in every cell; the port differs from 1.95 only in comparisons (#1177, #1186); the C libraries differ from the CD's in `If` on a Float expression, Quick products beyond the Quick range and #234; AmiBlitz3 refuses 546 cells more and differs in 131.
 * A program can be disturbed by the programs before it in the same emulator session (a Byte destination `MOD` ended with "Software Failure" only there; unchecked index reads beyond the array): the measurement ran each source in a session of its own. The committed tests (group 3) have to take this into account (one program per corpus pass session is not the corpus runner's model; to be decided with the test form of task 3.1).
-* AmiBlitz3's checked mode could not be measured: without its debugger module (`Defaultdbug`) `RuntimeDebug = 1` checks nothing.
+* AmiBlitz3's checked mode could not be measured: without its debugger module (`Defaultdbug`) `RuntimeDebug = 1` checks nothing. A limit of the matrix: AmiBlitz3's index cells are measured unchecked only, over 1.95's in-range set (spec, "Every cell is measured").
+* The Byte destination `MOD` crash is #1049 (closed, fixed in the port): a folded constant `MOD` (Byte, Word or Quick) as the first use of modlib drops modlib's relocations, and a later Long or Float `MOD` of the same program jumps into the compiler's freed buffer in 1.95 and 2.10 (`tr-byte-mod-crash.md`). For the committed generator (task 3.1): a source puts its Long and Float `MOD` cells before its first foldable constant `MOD`, or the originals' runs of that source crash.
+* The 12 string cells of the index contexts (block `fs`) were measured with checking off only; the six of them outside the array (`= <= >=`, index -1) printed memory.
 
 ## Open Questions
 
