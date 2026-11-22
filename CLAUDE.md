@@ -10,7 +10,13 @@ Start here: `README.md` (building), `docs/structure.md`,
 original bug), `tests/README.md` (tests and presets). Open items:
 `TODO.md` (`- [ ] **Title** …` open, `- [x] **Title** done (date): …`;
 no strikethrough). The user's decisions:
-`~/.local/share/bb2-c-work/decisions.md`.
+`~/.local/share/bb2-c-work/decisions.md`; the decision process (D-011):
+`decision-process.md` and `decision-catalog.md` there, read whole when a
+question is open. Read the files of the user's answers (`decisions.md`,
+`task-decisions*.md`, a round's or an area's decisions file) by entry:
+grep the headings (`grep -n '^## '`) or, in a file without them, the
+issue number or a keyword (`grep -n '#1008'`), then read only the
+entries that bear on the case.
 
 ## Building and testing
 
