@@ -165,7 +165,7 @@ differ slightly compared as equal.
 
 **What happened**
 
-```
+```blitzbasic
 q.q=1.5 : l.l=1
 r.l=(q>1) : NPrint r
 r.l=(q=1) : NPrint r
@@ -225,7 +225,7 @@ operator, as in `If f-f`, it tested the right operand.
 
 **What happened**
 
-```
+```blitzbasic
 a.l=5 : b.l=0 : c.l=7
 f.f=1.5 : z.f=0
 x.l=a+b : If f Then NPrint "f true" Else NPrint "f false"
