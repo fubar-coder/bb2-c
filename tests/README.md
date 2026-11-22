@@ -2307,6 +2307,17 @@ and `all`, not in `bug-orig`, and it is declared directly, not in the
 order of the bug-orig tests (it passes, ctest learns its cost).
 `ctest --preset all -N` lists it, `ctest --preset bug-orig -N` does not.
 
+**An extension of the port** (`; @fixed #NNN/port` in the header of
+`ID.bas`, NNN the issue of the extension; user decision 2026-11-22):
+a test of behaviour the port adds where the original refuses or
+differs, not of an original bug (the first: #1166, ANIM interleaves
+that the original refuses). For
+now it is the same as `; @fixed #NNN` (pass key `fixed=NNN`, `ID.orig`
+recorded, FIXED, the `[fixed #NNN]` case of fix-scope); `/port` only
+marks it, right behind the number (`bugorigcmp` refuses anything else
+there, `test_bugorigcmp`). The rework of the tests gives extensions a
+form of their own and replaces the marker.
+
 ### A bug of an RWE userlib
 
 *A bug of an RWE userlib* (`libs/userlibs/rwe/NAME.c`): the same, in

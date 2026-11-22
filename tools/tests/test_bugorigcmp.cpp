@@ -196,6 +196,22 @@ TEST_CASE("bugorigcmp: project", "[bugorigcmp]")
     CHECK(r == -2 && strstr(err, "area/x.drv:1: not \"; @fixed #N\""));
     free(project("x", "; @fixed #7 Cc\n", 0, expect_txt, NULL, &r));
     CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    /* an extension ("; @fixed #N/port"): as "; @fixed #N"; only "/port",
+       only right behind the number, only in a Blitz source */
+    t = project("x", "; a test\n; @fixed #7/port\nPrint 1\n", 0, expect_txt, orig_txt, &r);
+    CHECK(r == 0);
+    CHECK(t && strstr(t, "x|run||1 [fixed #7]\t") && strstr(t, "x|run|orig|1 [orig]\t"));
+    free(t);
+    free(project("x", "; @fixed #7/portx\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    free(project("x", "; @fixed #7/\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    free(project("x", "; @fixed #7 /port\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    free(project("x", "; @fixed #/port\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    free(project("ted-x", "; @fixed #12/port\nwait exit\n", 1, NULL, "[state]\nOK\n", &r));
+    CHECK(r == -2 && strstr(err, "area/x.drv:1: not \"; @fixed #N\""));
     free(project("x", "; @fixed #7\n; @fixed #8\n", 0, expect_txt, NULL, &r));
     CHECK(r == -2 && strstr(err, "area/x.bas:2: @fixed twice"));
     free(project("x", blitz_src, 0, "junk\n", NULL, &r));

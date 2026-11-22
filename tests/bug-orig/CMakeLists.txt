@@ -60,6 +60,9 @@
 #                      ; @fixed #NNN        the bug is fixed in the port
 #                                           (issue NNN): a fixed test,
 #                                           see below
+#                      ; @fixed #NNN/port   the same for an extension of the
+#                                           port (issue NNN), not an original
+#                                           bug (tests/README.md)
 #   AREA/ID.expect   the correct behaviour (sections, bugorig.h)
 #   AREA/ID.orig     the recorded observation of the original (every test
 #                    of a bug of the original, open or fixed; not for a
@@ -201,7 +204,7 @@ function(bug_orig_test bas name)
 	string(REGEX MATCHALL "(^|\n)<semicolon> @[^\n]*" header "${content}")
 	foreach(h IN LISTS header)
 		string(STRIP "${h}" h)
-		if(h MATCHES "^<semicolon> @fixed #([1-9][0-9]*)$")
+		if(h MATCHES "^<semicolon> @fixed #([1-9][0-9]*)(/port)?$")
 			if(fixed)
 				message(FATAL_ERROR "bug-orig: ${bas}: @fixed twice")
 			endif()
