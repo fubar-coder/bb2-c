@@ -1,0 +1,30 @@
+[compile]
+ok
+[run]
+01 f T
+02 z F
+03 m T
+04 0.5 T
+05 0.0 F
+06 1.5-1.5 F
+07 1.5+1.5 T
+08 f+z T
+09 f-f F
+10 z*f F
+11 Abs(z) F
+12 Abs(m) T
+13 -f T
+14 block f T
+15 block z F
+16 f<>0 T
+17 z<>0 F
+18 z=0 T
+19 f=z F
+20 q T
+21 qz F
+22 q-0.5 F
+23 While f rounds 3
+24 While z rounds 0
+25 Until f rounds 3
+26 Until z rounds 4
+rc=0

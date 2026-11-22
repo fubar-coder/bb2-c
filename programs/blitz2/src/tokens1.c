@@ -53,7 +53,7 @@ UWORD thetst1[] = {
     0x4A40,                            /* +2   thetst2 tst.w d0 */
     0x4A80,                            /* +4   thetst3 tst.l d0 */
     0x4A9F,                            /* +6   thetst4 tst.l (a7)+ ;Any Length? */
-    0x4EAE, 0xFFD0,                    /* +8   thetst5 jsr -48(a6) */
+    0x4EAE, 0xFFD0,                    /* +8   thetst5 jsr -48(a6) (SPTst: d1) */
     0x6700, 0xFFFE,                    /* +12  posbr beq posbr */
     0x6600, 0xFFFE,                    /* +16  negbr bne negbr */
 };
@@ -1099,7 +1099,12 @@ void doif2(UWORD kind, WORD negate)
     type = 0;
     bakevalu(&type);                            /* Get True/False Expression! */
     if (type == T_FLOAT) {                      /* .float */
+        /* Fixed (#1187): mathffp SPTst tests d1, not d0; blitz2.s:13299
+           emits only the base and the call, so the branch followed what
+           the code before left in d1.  Now the value is copied to d1
+           first (move.l d0,d1, as vallib's Sgn since #301). */
         tokejsr(getffpbase);
+        pokewd(0x2200);                         /* move.l d0,d1 */
         pokel(tl(thetst5));
     } else if (type == T_BYTE) {
         pokewd(thetst1[0]);
