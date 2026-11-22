@@ -183,7 +183,8 @@ enum {
     EM_F_MODNF = 1 << 4,        /* Q-D: MOD with negative or fractional operands */
     EM_F_POWINT = 1 << 5,       /* Q-E: ^ with whole-number types */
     EM_F_POWNEG = 1 << 6,       /* Q-E: ^ with a negative base and a fractional exponent (#1189: no rule) */
-    EM_F_POWSIGN = 1 << 7       /* EM_R_1189: the sign of an odd power applied to what SPPow gives */
+    EM_F_POWSIGN = 1 << 7,      /* EM_R_1189: the sign of an odd power applied to what SPPow gives */
+    EM_F_MODLF = 1 << 8         /* a MOD in Long or Float (domodl, domodf: not folded; #1049) */
 };
 
 enum { EM_TEXT_MAX = 48 };

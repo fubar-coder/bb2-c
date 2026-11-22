@@ -290,7 +290,9 @@ covers the cell), the original differing and the port giving the
 expected value `fixed-N`, the port giving the original's value `open-N`;
 anything else is left out. A source holds the cells of one context,
 value set, mode and class, at most `cells-per-source`; its folded
-constant `MOD` cells (both operands constants) come last (#1049).
+constant `MOD` cells (both operands constants, a Byte, Word or Quick
+operation by the original's rules) come last (#1049); a checked source
+holds at most half of `cells-per-source` (a port defect, `expect.c`).
 
 | File | What |
 |---|---|

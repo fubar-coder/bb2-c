@@ -1229,6 +1229,8 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
         id = ideal_op(op, a->id, b->id, rt);
         break;
     case EM_MOD:
+        if (t == TL || t == TF)
+            e->flags |= EM_F_MODLF;    /* not folded as a constant (nocando) */
         if (t <= TW)
             x = lib_modw(x, y);
         else if (t == TL)

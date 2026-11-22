@@ -307,10 +307,18 @@ static int is_const(int k)
     return k == EM_CB || k == EM_CW || k == EM_CL || k == EM_CF;
 }
 
-/* a MOD the compiler folds: both operands constants (#1049: they go last) */
-static int folded_mod(const struct em_cell *c)
+/* a MOD the original folds: both operands constants and the operation
+   Byte, Word or Quick (a Long or Float MOD is not folded).  #1049: such a
+   MOD as the first use of modlib drops modlib's relocations and a Long or
+   Float MOD after it crashes the originals, so these go last */
+static int folded_mod(const struct em_matrix *m, const struct em_cell *c, int checked)
 {
-    return c->op == EM_MOD && is_const(c->left) && c->right >= 0 && is_const(c->right);
+    struct em_value v;
+
+    if (c->op != EM_MOD || !is_const(c->left) || c->right < 0 || !is_const(c->right))
+        return 0;
+    em_model(m, c, EM_RULES_ORIG, checked, &v);
+    return !(v.flags & EM_F_MODLF);
 }
 
 struct groups {
@@ -463,7 +471,7 @@ struct ctx {
 
 /* the cells of a group in the order they are written: the folded
    constant MOD cells last */
-static void order(struct group *g)
+static void order(const struct em_matrix *m, struct group *g)
 {
     size_t k = 0;
     struct ent *tmp = malloc((g->n ? g->n : 1) * sizeof *tmp);
@@ -472,7 +480,7 @@ static void order(struct group *g)
         return;
     for (int pass = 0; pass < 2; pass++)
         for (size_t i = 0; i < g->n; i++)
-            if (folded_mod(g->e[i].c) == pass)
+            if (folded_mod(m, g->e[i].c, g->mode == 'c') == pass)
                 tmp[k++] = g->e[i];
     memcpy(g->e, tmp, g->n * sizeof *tmp);
     free(tmp);
@@ -763,7 +771,7 @@ static void emit_group(struct ctx *x, struct group *g)
     if (g->mode != 'v')
         snprintf(ms, sizeof ms, "-%c", g->mode);
     if (g->kind == K_REFUSED || g->kind == K_OPEN_REFUSED) {
-        char id[96];
+        char id[160];
 
         if (g->kind == K_REFUSED)
             snprintf(id, sizeof id, "compiler-expr-refused-%s%s", g->tag, g->mode == 'c' ? "-c" : "");
@@ -772,7 +780,7 @@ static void emit_group(struct ctx *x, struct group *g)
         emit_refused(x, g, id, &g->e[0]);
         return;
     }
-    order(g);
+    order(m, g);
     /* a checked source (SetErr per cell) holds half as many: the port's
        compile of 51 of the checked i2 shift cells of value set J with
        their SetErr lines does not end (1.95 and 2.10 compile all 56; a
@@ -781,7 +789,7 @@ static void emit_group(struct ctx *x, struct group *g)
         per /= 2;
     for (size_t first = 0, part = 1; first < g->n; first += per, part++) {
         size_t k = g->n - first < per ? g->n - first : per;
-        char name[96];
+        char name[160];
 
         if (g->kind == K_CORPUS) {
             const char *t = !strncmp(g->tag, "fixed-", 6) ? "fix" : g->tag;
@@ -901,7 +909,18 @@ int em_expect(const struct em_matrix *m, const char *desc, const struct em_table
     rc = -1;
     for (size_t i = 0; i < t.n; i++) {
         const struct em_class *kk = &k[i];
+        struct em_value ov;
 
+        /* BUG(orig) (#1187): the original's If on a Float tests d1, and
+           what d1 holds depends on the libraries (measured: the port before
+           the fix gave another value with the C libraries than with the
+           CD's); the original's value is no value for the comparison with
+           2.10 and the C libraries (orig-clib) */
+        em_model(m, kk->cell, EM_RULES_ORIG, 0, &ov);
+        if ((ov.flags & EM_F_D1) && mrow[i] && strcmp(mrow[i]->v[EM_CLIB], mrow[i]->v[EM_PORTCD])) {
+            left_out(&x, kk->cell, 'v', "the original's value depends on the libraries (d1, #1187)");
+            continue;
+        }
         if (!strcmp(kk->cls, "question")) {
             char why[64];
 

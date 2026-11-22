@@ -24,8 +24,8 @@ static const char *const DESC =
     "values I b=3 w=20 l=30 q=1.5 f=2.5 cb=3 cw=200 cl=40000 cf=1.5\n"
     "block t\n"
     "cell A dl + w l\ncell A dl * l l\ncell A db < q l\ncell A dl * l q\ncell A db AND cf b\n"
-    "cell A dl AND f b\ncell I i1 * q w\ncell B dl ^ f b\ncell B df ^ f b\ncell A dl MOD cl cb\n"
-    "cell A dl MOD l cb\n";
+    "cell A dl AND f b\ncell I i1 * q w\ncell B dl ^ f b\ncell B df ^ f b\ncell A db MOD cb cb\n"
+    "cell A db MOD cb cl\ncell A dl MOD cl cb\ncell A dl MOD l cb\n";
 
 static const char *const HEAD = "key\tsource\tc210\tc195\tportcd\tclib\tab3\tc210_on\tc195_on\tportcd_on\tclib_on\n";
 // the Float power the model does not compute: 1.95's bits of (-2.5)^3
@@ -89,14 +89,16 @@ TEST_CASE("exprmatrix expect: the files of every kind", "[exprmatrix]")
 
     REQUIRE(g.rc == 0);
     // agreement and baseline cells: corpus sources with one expected file
-    CHECK(g.file(EXP + "dl-A-agree-01.out") == "dl-add-w-l-A 101000\ndl-mod-l-cb-A 1\ndl-mod-cl-cb-A 1\nrc=0\n");
+    CHECK(g.file(EXP + "dl-A-agree-01.out") == "dl-add-w-l-A 101000\ndl-mod-cl-cb-A 1\ndl-mod-l-cb-A 1\nrc=0\n");
     CHECK(g.has(SRC + "dl-A-agree-01.bas", "; agreement cells"));
     CHECK(g.has(EXP + "dl-A-base-01.out", "dl-mul-l-l-A 1410065408\n"));
     CHECK(g.has(SRC + "dl-A-base-01.bas", "; baseline cells (the original's measured value)"));
-    // the folded constant MOD after the Long one (#1049)
+    // the folded constant MOD (a Byte one) after the Long one (#1049); a
+    // Long constant MOD is not folded and keeps its place
     {
-        std::string b = g.file(SRC + "dl-A-agree-01.bas");
-        CHECK(b.find("dl-mod-l-cb-A") < b.find("dl-mod-cl-cb-A"));
+        std::string b = g.file(SRC + "db-A-agree-01.bas");
+        CHECK(b.find("db-mod-cb-cb-A") != std::string::npos);
+        CHECK(b.find("db-mod-cb-cl-A") < b.find("db-mod-cb-cb-A"));
     }
     // a fixed cell (#1177 in the port): the pair
     CHECK(g.file(EXP + "db-A-fix1177-01.orig.out") == "db-lt-q-l-A 0\nrc=0\n");
