@@ -2297,11 +2297,11 @@ int corpus_run(struct corpus_pass *p, FILE *log)
     /* a stale entry: listed, but prev does not differ */
     if (p->test) {
         size_t cur = 0;
-        const char *e;
+        const char *stale;
 
-        while ((e = prevint_stale(&p->intended, p->test, 0, &cur)) != NULL) {
+        while ((stale = prevint_stale(&p->intended, p->test, 0, &cur)) != NULL) {
             text_add(&rep, "STALE %s: intended, but prev does not differ in it (or the source "
-                           "is not in this pass)\n", e);
+                           "is not in this pass)\n", stale);
             bad++;
             for (c = 0; c < p->nconfigs; c++)
                 if (!strcmp(p->configs[c].tag, "prev"))

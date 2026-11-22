@@ -232,7 +232,7 @@ TEST_CASE("checkdata: checks", "[checkdata]")
         struct hunk_symbol syms[] = { { "_abcd", 5, 0 } };
         struct hunk h = { HUNK_DATA, cd, 4, 0, NULL, NULL, 1, syms, 0, 0 };
         struct loadfile c = { NULL, 0, NULL, 1, 1, &h };
-        char err[200], msg[400];
+        char err[200], report[400];
         FILE *out = tmpfile();
         REQUIRE(out != NULL);
 
@@ -240,8 +240,8 @@ TEST_CASE("checkdata: checks", "[checkdata]")
         CHECK(!checkdata_ref_parse("abcd\t5\t4142434400\n", 18, &r, err, sizeof err));
         CHECK(checkdata_run(&t, &r, &c, NULL, 0, out) == 1);
         rewind(out);
-        msg[fread(msg, 1, sizeof msg - 1, out)] = 0;
-        CHECK(strstr(msg, "FAIL    _abcd          abcd/4: not in the reference data (table line 1)")
+        report[fread(report, 1, sizeof report - 1, out)] = 0;
+        CHECK(strstr(report, "FAIL    _abcd          abcd/4: not in the reference data (table line 1)")
               != NULL);
         fclose(out);
         checkdata_ref_free(&r);

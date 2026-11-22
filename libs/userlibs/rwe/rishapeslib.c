@@ -643,7 +643,7 @@ BLITZ_THUNK(_loadshapestoaddress, loadshapestoaddress_c, "d1/a0-a1");
 /* the derived fields of a shape whose width, height and depth are set:
    +6 bytes per row, +8 blit size, +22/+24 plane bytes, +28; `all` = the
    bytes of all planes for +28 (LEInitShape computes +26 first) */
-static void shapesizes(UBYTE *shape, int init)
+static void shapesizes(UBYTE *shape, int all)
 {
     UWORD rowbytes, rowwords;           /* d0 */
     UWORD height, height2;              /* d0: the height, 2 * height */
@@ -656,7 +656,7 @@ static void shapesizes(UBYTE *shape, int init)
     height = SHW(shape, height);
     planebytes = (UWORD)bl_mulu_w(SHW(shape, ebwidth), height);
     SHW(shape, planesize) = planebytes;
-    if (init)
+    if (all)
         SHW(shape, size) = (UWORD)bl_mulu_w(planebytes, SHW(shape, depth));
     height2 = (UWORD)(height << 1);
     SHW(shape, xplanesize) = (UWORD)(planebytes + height2);

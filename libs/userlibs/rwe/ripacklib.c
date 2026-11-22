@@ -658,7 +658,7 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
 {
     const UBYTE *chunk = NULL, *body = NULL;
     const struct BitMapHeader *hd;
-    ULONG left = 5120;
+    ULONG bmhdleft = 5120;                      /* the BMHD search countdown */
     UWORD rowbytes;                             /* d7: the BMHD byte width */
     UWORD bodyleft;                             /* d7: the BODY search countdown */
     UWORD line;
@@ -677,7 +677,7 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
         chunk = src;
         while (LG(chunk) != ID('B', 'M', 'H', 'D')) {
             chunk += 2;
-            if ((left -= 2) == 0)
+            if ((bmhdleft -= 2) == 0)
                 return BB_FALSE;
         }
     }

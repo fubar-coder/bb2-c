@@ -399,12 +399,12 @@ static void write_defaults(char *name, int residents)
         Write(fh, &strbuf, 4);
     }
     for (i = 0; residents && i < nres; i++) {   /* the resident list: the names */
-        char name[RESNAME];
+        char resname[RESNAME];
 
-        memset(name, 0, sizeof name);
-        edstub_strcpy(name, res_file[i], sizeof name);
+        memset(resname, 0, sizeof resname);
+        edstub_strcpy(resname, res_file[i], sizeof resname);
         Seek(fh, RESBUFF + 68 * i, OFFSET_BEGINNING);
-        Write(fh, name, sizeof name);
+        Write(fh, resname, sizeof resname);
     }
     if (nmax) {                         /* behind the maximums of savextra */
         Seek(fh, 0, OFFSET_END);
@@ -987,9 +987,9 @@ void edstub_main(const char *arg)
 
             menu_job(id, item, answer);
         } else if ((v = value(p, "run="))) {
-            char *id = field(&v), *src = field(&v), *con = field(&v), *panic = field(&v);
+            char *id = field(&v), *src = field(&v), *console = field(&v), *panic = field(&v);
 
-            run_job(id, src, con, panic);
+            run_job(id, src, console, panic);
         } else if ((v = value(p, "progress=")))
             edstub_set_progress(edstub_streq(v, "on"));
     edstub_log("BATCH\tend");

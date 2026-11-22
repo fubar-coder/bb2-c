@@ -300,7 +300,7 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
     /* texts with bytes that are not printable ASCII: escaped, and read
        back to the same bytes (the text written again is the same) */
     {
-        struct variant v = base;
+        struct variant esc = base;
         buf a;
         uint32_t ra[1] = { 0x30 + 10 };
         struct hunk ha;
@@ -309,8 +309,8 @@ TEST_CASE("blitzlib_compare: checks", "[blitzlib_compare]")
         char text[2000], again[2000], err[200];
         size_t n;
 
-        v.name = "\\\xe4\x01" "A";
-        a = build(&v);
+        esc.name = "\\\xe4\x01" "A";
+        a = build(&esc);
         ha = (struct hunk){ HUNK_CODE, a.data(), (uint32_t)a.size(), 1, ra, NULL, 0, NULL, 0, 0 };
         CHECK(blitzlib_decls_write(&ha, t, err, sizeof err) == 0);
         rewind(t);

@@ -1801,7 +1801,7 @@ BL_ALWAYS_INLINE UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p,
         }
         if (right ? x < 0 : x > last) {         /* roff/loff */
             const struct point *from = p - dir;
-            WORD dx = from->x - x;
+            WORD fdx = from->x - x;
 
             /* Fixed (#1033): a vertical edge beyond the clip width has no
                crossing to cut at (the side starts on it: the start handling
@@ -1809,8 +1809,8 @@ BL_ALWAYS_INLINE UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p,
                such an edge on x = -1 or x = width, #1034); the original
                divides by its dx of 0.  Its lines stay: the drawing loop
                stops at the first, whose x is beyond the clip width. */
-            if (dx)
-                e[-1].lines -= muldiv(right ? x : x - last, from->y - y, dx);
+            if (fdx)
+                e[-1].lines -= muldiv(right ? x : x - last, from->y - y, fdx);
             break;
         }
         p += dir;

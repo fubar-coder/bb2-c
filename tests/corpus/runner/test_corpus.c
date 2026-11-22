@@ -687,7 +687,7 @@ int main(void)
         struct amiga_emulation_option ch[CORPUS_FLOPPY_CHANGES];
         char *paths[CORPUS_FLOPPIES], dir[] = "/tmp/corpus-floppy-XXXXXX";
         char *src, *want, *got, text[600];
-        size_t len, n, i;
+        size_t len, nch, i;
 
         CHECK(parse(BASE CONFIGS "source=/s\nfloppy=1\n", err, sizeof err) == -1
               && strstr(err, "floppy=N|SRC"));
@@ -704,9 +704,9 @@ int main(void)
         CHECK(corpus_parse(BASE CONFIGS "source=/s\nfloppy=1|/img/a.adf\n", &p, err,
                            sizeof err) == 0);
         CHECK(!p.floppy[0] && !strcmp(p.floppy[1], "/img/a.adf"));
-        n = corpus_floppy_changes(&p, 1, ch, paths);
-        CHECK(n == 3 && !paths[0] && paths[1] && !strcmp(paths[1], "/w/port/emu/df1.adf"));
-        CHECK(n == 3 && !strcmp(ch[0].key, "floppy1type") && !strcmp(ch[0].value, "0")
+        nch = corpus_floppy_changes(&p, 1, ch, paths);
+        CHECK(nch == 3 && !paths[0] && paths[1] && !strcmp(paths[1], "/w/port/emu/df1.adf"));
+        CHECK(nch == 3 && !strcmp(ch[0].key, "floppy1type") && !strcmp(ch[0].value, "0")
               && !strcmp(ch[1].key, "floppy1") && ch[1].value == paths[1]
               && !strcmp(ch[2].key, "nr_floppies") && !strcmp(ch[2].value, "2"));
         for (i = 0; i < CORPUS_FLOPPIES; i++)
@@ -715,8 +715,8 @@ int main(void)
         /* DF0 and DF3: four drives, no type for DF0 */
         CHECK(corpus_parse(BASE CONFIGS "source=/s\nfloppy=3|/c\nfloppy=0|/d\n", &p, err,
                            sizeof err) == 0);
-        n = corpus_floppy_changes(&p, 0, ch, paths);
-        CHECK(n == 4 && !strcmp(ch[0].key, "floppy0") && !strcmp(ch[1].key, "floppy3type")
+        nch = corpus_floppy_changes(&p, 0, ch, paths);
+        CHECK(nch == 4 && !strcmp(ch[0].key, "floppy0") && !strcmp(ch[1].key, "floppy3type")
               && !strcmp(ch[2].key, "floppy3") && !strcmp(ch[3].key, "nr_floppies")
               && !strcmp(ch[3].value, "4"));
         for (i = 0; i < CORPUS_FLOPPIES; i++)

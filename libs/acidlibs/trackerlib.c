@@ -279,17 +279,17 @@ static void mt_init(ULONG len)
        note: 120 ms on a 68000 for 64 patterns) */
     if (len > offsetof(struct modhead, patterns)) {
         UBYTE *note = (UBYTE *)info + offsetof(struct modhead, patterns);
-        ULONG n = (len - offsetof(struct modhead, patterns)) >> 2;
+        ULONG notes = (len - offsetof(struct modhead, patterns)) >> 2;
 
-        if (n > (maxpat + 1) << 8)
-            n = (maxpat + 1) << 8;
+        if (notes > (maxpat + 1) << 8)
+            notes = (maxpat + 1) << 8;
         do {
             if (*note >= 0x20) {
                 note[0] &= 0x0f;
                 note[2] &= 0x0f;
             }
             note += 4;
-        } while (--n);
+        } while (--notes);
     }
     for (i = 0; i < 31; i++) {                  /* mt_lop3 */
         *(ULONG *)sdata = 0;

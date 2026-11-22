@@ -253,15 +253,15 @@ int blitzlib_decls_parse(const char *text, size_t len, struct blitzlib_decls *d,
         }
         if (!strncmp(p, "library\t", 8)) {
             unsigned long num, relocs;
-            char *q;
+            char *endp;
 
             if (h && finish(h, libline, err, errlen))
                 goto fail;
-            num = strtoul(p + 8, &q, 10);
-            if (*q != '\t' || q == p + 8 || num > 0xFFFF)
+            num = strtoul(p + 8, &endp, 10);
+            if (*endp != '\t' || endp == p + 8 || num > 0xFFFF)
                 goto syntax;
-            relocs = strtoul(q + 1, &q, 10);
-            if (q != eol || relocs > 100000)
+            relocs = strtoul(endp + 1, &endp, 10);
+            if (endp != eol || relocs > 100000)
                 goto syntax;
             if (d->n == cap) {
                 struct hunk *n = realloc(d->hunks, (cap + 16) * sizeof *n);

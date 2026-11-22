@@ -85,8 +85,13 @@ const struct jtentry menutable[] = {
     { 255, 0, NULL }
 };
 
-/* dbf loop counter: body runs n+1 times (n = $FFFF: 65536 times) */
-#define DBF(n, body) do { UWORD dbf_ = (n); do { body; } while (dbf_-- != 0); } while (0)
+/* dbf loop counter: body runs n+1 times (n = $FFFF: 65536 times); each
+   use has a counter of its own (dbf_0, dbf_1, ...), so a nested DBF does
+   not shadow the outer one's */
+#define DBF_CAT2(a, b) a##b
+#define DBF_CAT(a, b) DBF_CAT2(a, b)
+#define DBF_N(n, body, c) do { UWORD c = (n); do { body; } while (c-- != 0); } while (0)
+#define DBF(n, body) DBF_N(n, body, DBF_CAT(dbf_, __COUNTER__))
 
 /* ted.s:5253 cursor */
 void cursor(void)
