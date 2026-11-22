@@ -1,0 +1,18 @@
+[compile]
+ok
+[run]
+01 b*c+a -1
+02 a+(b*c) -1
+03 a+b+c+d -1
+04 d-a+a -1
+05 bw*cw+aw -1
+06 5*6+1 -1
+07 8th b*c+a -1
+08 6th a+b*c -1
+09 m>l 20
+10 k+m+l 25
+11 m*l+k 26
+12 k+(m AND l) 22
+13 1+2+3 27
+14 k-(m-l) 19
+rc=0
