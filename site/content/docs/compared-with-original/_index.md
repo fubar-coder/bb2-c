@@ -40,7 +40,8 @@ against the original yourself.
   original, but only where the original refused the source. A source that
   the original compiled is never given a new meaning. It also compiles
   `Int`, `Frac`, `Len` and `Asc` faster where it can, with the same
-  results.
+  results. `LoadShape` loads animations that the original stopped with
+  an error.
 * **Inside the port.** The C code differs from the original assembler code
   in many details that no program can see. These are listed for developers
   and are not part of this chapter.
@@ -80,7 +81,7 @@ that shows the fix; the pages link them.
   {{< card link="important-fixes" title="Important Fixes & Breaking Changes" subtitle="All fixed bugs in one table, by what they can change in an existing program." >}}
   {{< card link="fixed-bugs" title="Fixed original bugs" subtitle="The bugs of Blitz Basic 2 that the port fixes, and which programs notice." >}}
   {{< card link="new-errors" title="Sources that compile differently" subtitle="Sources the original accepted that the port refuses or compiles to something else, and new runtime errors." >}}
-  {{< card link="extensions" title="Extensions" subtitle="What the compiler accepts beyond Blitz Basic 2." >}}
+  {{< card link="extensions" title="Extensions" subtitle="What the compiler and the libraries accept beyond Blitz Basic 2." >}}
   {{< card link="bugs-not-fixed-yet" title="Bugs not fixed yet" subtitle="The known bugs of the original that the port still shows, and how they are tracked and tested." >}}
   {{< card link="comparing" title="Comparing with the original yourself" subtitle="Compile your own program with both compilers and compare the results." >}}
 {{< /cards >}}
