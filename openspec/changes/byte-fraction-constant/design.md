@@ -33,9 +33,9 @@ Choice (mine, planning): F2. It changes no executable and no speed where the val
 
 After decision 1, `litcut` is set only for a whole-valued literal (decision 2), where re-emitting it as a Float or leaving it as a whole number gives the same comparison result. Options: remove `litcut`/`litat`/`fraclitfloat` and their call in `cmpownleft` (less code; `rb.b=(2.0=vf)` changes its bytes), or keep them (no byte change). Choice (mine): the implementer removes them if the prev comparison shows no changed executable outside this change's named ones, else keeps them and says why. `Point: removing the #1186 helpers changes the code of a whole-valued literal left of a comparison under Byte — L1 Unlikely / I1 Low / E2 Reasoned → Monitor`. `regression/compiler-compare-fraction-const` (#1186's test) must pass unchanged either way.
 
-### 5. Bit operators (open question 1)
+### 5. Bit operators (decided by the user)
 
-With decision 1 the literal is a Float and `doop` has no Float handler for `AND`, `OR`, `EOR`, the shifts, `NOT`: "Illegal Operator for Type", as `rw.w=1.5 AND vw` is today; the matrix's 29 `compiler-expr-1188-refused-*` tests expect this. The alternative keeps the cut for these operators: it needs the next operator at the time the literal is read, which `consttype2` does not know (a look-ahead, or a re-emission like #1186's: a sixth patching mechanism the tree must replay). Recommended: refused. `Point: rb=1.5 AND vb, the shifts and NOT 1.5 become compile errors under Byte — L2 Possible / I3 Observable / E2 Reasoned → Decide`. The evidence rises with task 3.2 (whether a CD source has the form).
+With decision 1 the literal is a Float and `doop` has no Float handler for `AND`, `OR`, `EOR`, the shifts, `NOT`: "Illegal Operator for Type", as `rw.w=1.5 AND vw` is today; the matrix's 29 `compiler-expr-1188-refused-*` tests expect this. The alternative keeps the cut for these operators: it needs the next operator at the time the literal is read, which `consttype2` does not know (a look-ahead, or a re-emission like #1186's: a sixth patching mechanism the tree must replay). Decision (the user, 2026-11-22, "Last answers of the session"): "Ablehnen wie unter Word (Recommended)". `Point: rb=1.5 AND vb, the shifts and NOT 1.5 become compile errors under Byte — L2 Possible / I3 Observable / E2 Reasoned → decided by the user`. Task 3.2 counts the CD sources with the form.
 
 ### 6. Order with #1189 (planning choice)
 
@@ -43,11 +43,11 @@ With decision 1 the literal is a Float and `doop` has no Float handler for `AND`
 
 ### 7. The matrix at the fix
 
-`EM_R_1188` goes into `EM_RULES_PORTNOW`; `expr-matrix-update` regenerates. Where the fixed cells go (open question 3) is the answer to `quick-long-arithmetic`'s question 1; this change follows it. The 16 Q-A cells #1188 changes (Byte overflow after a Float computation) and the 11 Q-E and 1 Q-D cells are baseline cells changed by this fix: named in the commit.
+`EM_R_1188` goes into `EM_RULES_PORTNOW`; `expr-matrix-update` regenerates. Where the fixed cells go is decided (the user, 2026-11-22, "Last answers of the session": "Ja für alle" - zumindest solange bis die Test-Infrastruktur fertig umgebaut ist, T1): they stay in their bug-orig tests with `; @fixed #1188`. The 16 Q-A cells #1188 changes (Byte overflow after a Float computation) and the 11 Q-E and 1 Q-D cells are baseline cells changed by this fix: named in the commit.
 
-### 8. AB3 mode (open question 2)
+### 8. AB3 mode (decided by the user)
 
-One core; the fix applies in AB3 mode without a condition and removes a difference from AmiBlitz3 (its Q-F rows in `docs/ab3/variant.md` written by the matrix's task 3.5 go). Using #1178's AB3 answer here is the user's (D-011 step 2).
+One core; the fix applies in AB3 mode without a condition and removes a difference from AmiBlitz3 (its Q-F rows in `docs/ab3/variant.md` written by the matrix's task 3.5 go). Decision (the user, 2026-11-22, "Coordinator session (handoff-2026-11-22-quick.md), answers", D2): "Beide Modi (Recommended)".
 
 ### 9. Cost (D-007)
 

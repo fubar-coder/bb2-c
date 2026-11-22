@@ -15,9 +15,9 @@ User decision (2026-11-22, `task-decisions.md`, "Matrix: last Q-F and Q-E cells"
 
 - **A negative base with a whole-number exponent gives the signed power:** |x|^y from `SPPow`, negated when the exponent is odd. `(-2.5)^3` -15.625, `(-2)^2` 4, `(-2)^-1` -0.5. Whole means the exponent's Float value has no fraction (a Byte, Word, Long exponent; a Quick or Float with a whole value). The magnitude stays `SPPow`'s (its precision, `1000^2` 999999, is not in scope).
 - **A negative base with a fractional exponent stays as today** (|x|^y; the recorded baseline); whether it becomes a runtime error is open (question 2).
-- **Where:** the library routine of `^` in BB2's math library 192 (`mathtranslib`): today an inline `jsr -90(a6)`, after the fix a routine that passes |x| to `SPPow` and sets the sign for an odd exponent (design, decision 1; open question 1).
+- **Where:** the library routine of `^` in BB2's math library 192 (`mathtranslib`): today an inline `jsr -90(a6)`, after the fix a routine that passes |x| to `SPPow` and sets the sign for an odd exponent (design, decision 1; decided, see "Decisions of the user").
 - **Results change** (rule 3, `PREV_INTENDED`): the library file of `mathtranslib`; the executable of every program with `^` (the inline call becomes a call of the routine); outputs of programs with a negative base and a whole odd exponent; the matrix's #1189 cells (744 cells in 24 tests, and the two-issue tests); the library capture case of `mathtranslib`'s first entry.
-- **AB3 mode** uses AmiBlitz3's library 44 for `^` (`ab3-compat/libraries`, "The float power uses AB3's math library"), so the fix of decision 1 does not reach AB3 mode: AB3 mode keeps AmiBlitz3's result (open question 1).
+- **AB3 mode** uses AmiBlitz3's library 44 for `^` (`ab3-compat/libraries`, "The float power uses AB3's math library"), so the fix of decision 1 does not reach AB3 mode: AB3 mode keeps AmiBlitz3's result (decided, see "Decisions of the user").
 - **Documentation:** the kind-F entry in `docs/libs/deviations.md`, `docs/blitz2/expression-types.md` (`^`), `docs/ab3/variant.md` (AmiBlitz3 has the bug; AB3 mode keeps it), the `BUG(orig) (#1189)` comment at `dopow` (`eval.c:1473`) becomes `Fixed (#1189)` with a pointer to the routine.
 
 ## Not in scope
@@ -27,21 +27,21 @@ User decision (2026-11-22, `task-decisions.md`, "Matrix: last Q-F and Q-E cells"
 - `0^y`, overflow, `^` of a Quick beyond what #1178 sets.
 - AmiBlitz3's library 44.
 
-## Open questions
+## Decisions of the user (2026-11-22) and the open question
 
-1. **Where the fix lives, and AB3 mode:** (P1, recommended) the library routine of library 192: BB2 mode only, AB3 mode keeps AmiBlitz3's library result; (P2) code that the compiler emits around the call in both modes (about 30-40 bytes per `^`, AB3 mode then deviates from AmiBlitz3's library 44, named in `docs/ab3/variant.md`). #1178's "Neue Regel auch in AB3" was given for #1178; the choice here is the user's. Worked with: P1.
-2. **A negative base with a fractional exponent** (no real result): stays as today (the recorded baseline), or later a runtime error ("in #1189 open"); if an error, by D-005 in the error check area only, or (D-006) in release code if the operands typically come from outside. Not built in this change; worked with: as today.
-3. **Where the matrix's #1189 cells live after the fix:** as `quick-long-arithmetic`'s open question 1 (T1/T2/T3). Worked with: the answer given for #1178, if the user gives it for every matrix issue.
+1. **Where the fix lives, and AB3 mode** (answered with the options shown, scope: this case; `~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Coordinator session (handoff-2026-11-22-quick.md), answers", D3): "P1 Library 192 (Recommended)" -> a routine in mathtranslib instead of the inline `jsr -90(a6)`; BB2 mode only; AB3 mode keeps AmiBlitz3's library 44 result, named in `docs/ab3/variant.md`. P2 (code emitted around the call in both modes, about 30-40 bytes per `^`) is not taken.
+2. **A negative base with a fractional exponent** (no real result): stays as today (the recorded baseline), or later a runtime error ("in #1189 open"); if an error, by D-005 in the error check area only, or (D-006) in release code if the operands typically come from outside. **Still open**, as written: not built in this change; worked with: as today.
+3. **Where the matrix's #1189 cells live after the fix** (`~/.local/share/bb2-c-work/task-decisions.md`, entry "2026-11-22 Last answers of the session"): T1 -- "Ja für alle" - zumindest solange bis die Test-Infrastruktur fertig umgebaut ist -> the fixed cells stay in their bug-orig tests with `; @fixed #1189`, until the test infrastructure (runner phase 2, bug-orig-basic-tests) is rebuilt.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `compiler/expression-types`: the power operator with a negative base. (Created by whichever of `quick-compare-types`, `quick-long-arithmetic`, `compare-right-operand`, `byte-fraction-constant` and this change is archived first.)
+(none: `compiler/expression-types` exists in `openspec/specs/` since `quick-compare-types` was archived)
 
 ### Modified Capabilities
 
-(none in `openspec/specs/`; `ab3-compat/libraries` is unchanged: AB3 mode keeps library 44)
+- `compiler/expression-types`: the power operator with a negative base (the delta adds requirements; their names are not in the spec yet). `ab3-compat/libraries` is unchanged: AB3 mode keeps library 44.
 
 ## Impact
 

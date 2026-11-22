@@ -1,6 +1,6 @@
 # Tasks
 
-Starts after `compare-right-operand` (#1182) is merged, after task 3.5 of `expression-type-matrix` and after the answer to `quick-long-arithmetic`'s open question 1; before `power-negative-base`. Open questions 1-3 of the proposal answered before task 2.1 (worked with: refused; both modes; the #1178 answer).
+Starts after `compare-right-operand` (#1182) is merged and after task 3.5 of `expression-type-matrix`; before `power-negative-base`. The three questions of the proposal are answered ("Decisions of the user", 2026-11-22: "Ablehnen wie unter Word (Recommended)", i.e. refused; "Beide Modi (Recommended)"; matrix cells T1, "Ja für alle" - zumindest solange bis die Test-Infrastruktur fertig umgebaut ist); task 2.1 builds on them.
 
 ## 1. Tests first (red)
 
@@ -11,7 +11,7 @@ Starts after `compare-right-operand` (#1182) is merged, after task 3.5 of `expre
 - [ ] 2.1 `consttype2` `.byte`: a literal with a non-zero fraction under a Byte type so far to `numdofloat` (design decisions 1, 2); not for data (decision 3: the `data` flag passed in). Verify: the tests of 1.1 FIXED after `; @fixed #1188`; `regression/compiler-compare-fraction-const`, `compiler-quick-compare`, the new regression test pass.
 - [ ] 2.2 The #1186 helpers (design decision 4): removed, or kept with the reason in the report. Verify: `regression/compiler-compare-fraction-const` unchanged and passing; prev comparison of 3.3.
 - [ ] 2.3 `BUG(orig) (#1188)` in `consttype2` becomes `Fixed (#1188)` with the rule (and the whole-valued exception); `; @fixed #1188` in `compiler-byte-fraction-const`. Verify: `ctest --preset bug-orig -R compiler_byte_fraction_const` FIXED.
-- [ ] 2.4 The matrix: `EM_R_1188` into `EM_RULES_PORTNOW` (`tools/lib/exprmatrix/exprmatrix.h`), `--target expr-matrix-update`, the fixed cells in the form of open question 3. Verify: `git diff` shows only #1188's cells (and `compiler-expr-1188-1189-db-B-01` named as DIFFERS until #1189); `ctest --preset host -R exprmatrix`; `ctest --preset bug-orig -R compiler_expr_1188` FIXED (the two-issue test DIFFERS).
+- [ ] 2.4 The matrix: `EM_R_1188` into `EM_RULES_PORTNOW` (`tools/lib/exprmatrix/exprmatrix.h`), `--target expr-matrix-update`, the fixed cells stay in their bug-orig tests with `; @fixed #1188` (decided: T1). Verify: `git diff` shows only #1188's cells (and `compiler-expr-1188-1189-db-B-01` named as DIFFERS until #1189); `ctest --preset host -R exprmatrix`; `ctest --preset bug-orig -R compiler_expr_1188` FIXED (the two-issue test DIFFERS).
 
 ## 3. Checks
 

@@ -1,6 +1,6 @@
 # Tasks
 
-Starts after `quick-long-arithmetic`, `compare-right-operand` and `byte-fraction-constant` are merged. Open questions 1 and 3 of the proposal answered before task 2.1 (worked with: P1; the #1178 answer); question 2 stays open (nothing built for it).
+Starts after `quick-long-arithmetic`, `compare-right-operand` and `byte-fraction-constant` are merged. Questions 1 and 3 of the proposal are answered ("Decisions of the user", 2026-11-22: "P1 Library 192 (Recommended)"; matrix cells T1, "Ja für alle" - zumindest solange bis die Test-Infrastruktur fertig umgebaut ist); task 2.1 builds on them. Question 2 (fractional exponent) stays open as written (nothing built for it).
 
 ## 1. Tests first (red)
 
@@ -13,7 +13,7 @@ Starts after `quick-long-arithmetic`, `compare-right-operand` and `byte-fraction
 - [ ] 2.1 `mathtranslib`'s `^` entry as a routine (design decisions 1, 2), with the register contract of `libs/register-contract`; `blitzlib check` clean. Verify: the library builds without warnings; 1.1 and 1.2 FIXED after `; @fixed #1189`; the two-issue tests FIXED.
 - [ ] 2.2 The capture's `mathtranslib inline` entry 0 and the call cases of 1.3: `[orig]`/`[fixed #1189]` pairs (`libs-update`). Verify: `libs_tests` pass; `tools/results fix-scope` lists only these keys for the libraries.
 - [ ] 2.3 `BUG(orig) (#1189)` at `dopow` (`eval.c:1473`) becomes `Fixed (#1189)` naming the routine; a `Fixed (#1189)` comment at the routine. Verify: `grep -n 1189 programs/blitz2/src/eval.c libs/acidlibs/mathtranslib.c`.
-- [ ] 2.4 The matrix: `EM_R_1189` into `EM_RULES_PORTNOW`, `--target expr-matrix-update`, the fixed cells in the form of open question 3. Verify: `git diff` shows only #1189's cells; `ctest --preset host -R exprmatrix`; `ctest --preset bug-orig -R compiler_expr_.*1189` FIXED.
+- [ ] 2.4 The matrix: `EM_R_1189` into `EM_RULES_PORTNOW`, `--target expr-matrix-update`, the fixed cells stay in their bug-orig tests with `; @fixed #1189` (decided: T1). Verify: `git diff` shows only #1189's cells; `ctest --preset host -R exprmatrix`; `ctest --preset bug-orig -R compiler_expr_.*1189` FIXED.
 
 ## 3. Checks
 
