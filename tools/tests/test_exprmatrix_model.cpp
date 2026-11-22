@@ -44,7 +44,7 @@ static const char *const DESC =
     // the fixed bugs and the libraries
     "cell A db + cf cf\ncell A dw + cf cf\ncell A db = cf cf\ncell A if - f\ncell A if + b f\n"
     "cell A dq * w w\ncell A print / q l\ncell A db AND cf b\n"
-    "cell B dl ^ f b\ncell B df ^ f b\ncell B dl ^ b w\ncell B dl ^ f cf\ncell J i1 ^ f b\n"
+    "cell B dl ^ f b\ncell B df ^ f b\ncell B dl ^ b w\ncell B dl ^ f cf\ncell J i1 ^ f b\ncell A if ^ b b\n"
     // the question classes
     "cell A dl * l l\ncell A dq AND q w\ncell A dl MOD l q\ncell A dl ^ w cb\ncell A dl AND f b\n";
 
@@ -203,6 +203,11 @@ TEST_CASE("exprmatrix model: the fixed bugs and the libraries", "[exprmatrix]")
     // ... and a negative power is outside the array
     CHECK(md.value("i1-pow-f-b-J", ORIG, 1) == "241");
     CHECK(md.value("i1-pow-f-b-J", FIXED, 1) == "!runtime");
+    // #1187 and a power: the original's If tests d1, the fixed one the
+    // power's value, which is not 0
+    CHECK(md.value("if-pow-b-b-A", ORIG, 0, &f) == "?");
+    CHECK((f & EM_F_D1));
+    CHECK(md.value("if-pow-b-b-A", FIXED) == "T");
 }
 
 TEST_CASE("exprmatrix model: the flags of the question classes", "[exprmatrix]")

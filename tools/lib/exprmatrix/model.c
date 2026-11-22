@@ -1712,6 +1712,14 @@ void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules
     if (e.flags & EM_F_POW) {
         int64_t v = 0;
 
+        if (c->ctx == EM_IF && (rules & EM_R_1187) && e.powknown && fabs(e.pow.x) > 1e-30) {
+            /* EM_R_1187: the Float condition tests the power's value, which
+               is not 0 whatever SPPow's last bits are */
+            strcpy(out->text, "T");
+            return;
+        }
+        if (c->ctx == EM_IF && !(rules & EM_R_1187))
+            out->flags |= EM_F_D1;      /* BUG(orig) (#1187): what d1 holds */
         if (!pow_whole(&e, asked, &v)) {
             strcpy(out->text, e.flags & EM_F_POWSIGN ? "?-" : "?");
             return;
