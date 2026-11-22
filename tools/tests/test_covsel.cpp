@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <snitch/snitch.hpp>
 extern "C" {
 #include "covsel.h"
@@ -48,6 +49,10 @@ static const char *const traces[][2] = {
     { "ab3_cli_ref", "TN:ab3_cli_ref\n" EVAL("4", "1") },
     { "ab3_cli_ref_broken", "TN:ab3_cli_ref_broken\n" EVAL("4", "1") },
     { "newtest", "TN:newtest\n" EVAL("0", "0") },
+    /* the tests of the expression matrix (covsel: the expression matrix) */
+    { "corpus_exprmatrix_dl_A_agree_01", "TN:corpus_exprmatrix_dl_A_agree_01\n" EVAL("1", "0") },
+    { "bug_orig_compiler_expr_1178_dl_A_01", "TN:bug_orig_compiler_expr_1178_dl_A_01\n" EVAL("1", "0") },
+    { "regression_compiler_expr_refused_and_F_I", "TN:regression_compiler_expr_refused_and_F_I\n" EVAL("1", "0") },
     /* a test outside the emulator named by the map (a file of its own) */
     { "declarations_x", "TN:declarations_x\n"
       "SF:" ROOT "/programs/blitz2/src/other.c\nFN:1,9,other\nFNDA:1,other\nend_of_record\n" },
@@ -94,6 +99,7 @@ static const char host_tests[] =
     "{\"kind\": \"ctestInfo\", \"tests\": ["
     TEST("ted_core_tokit", "\"ted\"") ","
     TEST("amiga_emulation_run", "\"emulator\"") "]}";
+static const char *cur_host_tests = host_tests;
 
 static const char rules[] =
     "# comment\n"
@@ -141,7 +147,7 @@ static char *select_for(const char *rules_text, const char *diff, const char *ne
         return out;
     CHECK(!covsel_read_rules(s, rules_text, err, sizeof err));
     CHECK(!covsel_read_tests(s, cur_tests, 0, err, sizeof err));
-    CHECK(!covsel_read_tests(s, host_tests, 1, err, sizeof err));
+    CHECK(!covsel_read_tests(s, cur_host_tests, 1, err, sizeof err));
     CHECK(!covsel_read_deps(s, deps, err, sizeof err));
     CHECK(!covsel_read_diff(s, diff, err, sizeof err));
     if (newfile)
@@ -380,6 +386,43 @@ TEST_CASE("covsel: oracle", "[covsel]")
     r = select_for(real_rules, diff1("tests/corpus/tests/x.bas", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "corpus newtest"));
     cur_tests = tests;
+}
+
+/* the expression matrix (tools/exprmatrix): the description selects its
+   tests and the check of the committed files, the generator the host
+   tests only */
+static const char matrix_tests[] =
+    "{\"kind\": \"ctestInfo\", \"version\": {\"major\": 1, \"minor\": 0}, \"tests\": ["
+    TEST("corpus", "\"emulator\"") ","
+    TEST("corpus_exprmatrix_dl_A_agree_01", "\"emulator\"") ","
+    TEST("bug_orig_compiler_expr_1178_dl_A_01", "\"emulator\", \"bug-orig\"") ","
+    TEST("bug_orig_x", "\"emulator\", \"bug-orig\"") ","
+    TEST("regression_compiler_expr_refused_and_F_I", "\"emulator\"") ","
+    TEST("host", "") ","
+    "{\"name\": \"newtest\", \"properties\": []}]}";
+static const char matrix_host_tests[] =
+    "{\"kind\": \"ctestInfo\", \"tests\": ["
+    TEST("exprmatrix_committed", "") ","
+    TEST("ted_core_tokit", "\"ted\"") "]}";
+
+TEST_CASE("covsel: the expression matrix", "[covsel]")
+{
+    char *r;
+    const char *ht = cur_host_tests;
+
+    cur_tests = matrix_tests;
+    cur_host_tests = matrix_host_tests;
+    r = select_for(real_rules, diff1("tests/corpus/tests-exprmatrix/matrix.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL,
+                   0);
+    CHECK(std::string(r) == std::string("bug_orig_compiler_expr_1178_dl_A_01 corpus_exprmatrix_dl_A_agree_01 host newtest "
+                     "regression_compiler_expr_refused_and_F_I"));
+    r = select_for(real_rules, diff1("tests/corpus/expect/corpus_exprmatrix/dl-A-agree-01.out", "@@ -3 +3 @@",
+                                     "-a\n+b\n"), NULL, 0);
+    CHECK(std::string(r) == std::string("corpus_exprmatrix_dl_A_agree_01 host newtest"));
+    r = select_for(real_rules, diff1("tools/lib/exprmatrix/model.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(std::string(r) == std::string("host newtest"));
+    cur_tests = tests;
+    cur_host_tests = ht;
 }
 
 TEST_CASE("covsel: broken", "[covsel]")
