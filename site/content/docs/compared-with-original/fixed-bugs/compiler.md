@@ -1071,3 +1071,12 @@ Each point says first what the original did, then what the port does.
 * A compile error in some assignments or in `Select` lost a little
   memory; the buffer is freed at the end of every pass
   ([#994](https://github.com/fubar-coder/bb2-c/issues/994)).
+* An operation of two constants, such as `3 LSL 2`, is worked out while
+  compiling, by running the code just compiled for it. When that code
+  ended exactly at the end of the object buffer, the compiler ran on into
+  the memory behind the buffer and crashed or hung. The compiler skips
+  the operation when the buffer is full and handles the full buffer as
+  always: the requester "Not Enough Object Memory Available!", or with
+  **Make Smallest Code** a second pass with a buffer of the right size
+  ([Make Smallest Code]({{< relref "/docs/how-blitz2-works/compiling#make-smallest-code" >}}),
+  [#1190](https://github.com/fubar-coder/bb2-c/issues/1190)).
