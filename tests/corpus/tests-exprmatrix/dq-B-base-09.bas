@@ -7,6 +7,14 @@
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 rq.q=0
+rq=vq ASL 3 : NPrint "dq-asl-q-cb-B ",Hex$(Peek.l(&rq))
+rq=vq ASL 3 : NPrint "dq-asl-q-cw-B ",Hex$(Peek.l(&rq))
+rq=vq ASL 3 : NPrint "dq-asl-q-cl-B ",Hex$(Peek.l(&rq))
+rq=vq ASL 3.5 : NPrint "dq-asl-q-cf-B ",Hex$(Peek.l(&rq))
+rq=-3 ASL nq : NPrint "dq-asl-cb-q-B ",Hex$(Peek.l(&rq))
+rq=-3 ASL 3.5 : NPrint "dq-asl-cb-cf-B ",Hex$(Peek.l(&rq))
+rq=-1000 ASL nq : NPrint "dq-asl-cw-q-B ",Hex$(Peek.l(&rq))
+rq=-1000 ASL 3.5 : NPrint "dq-asl-cw-cf-B ",Hex$(Peek.l(&rq))
 rq=-100000 ASL nb : NPrint "dq-asl-cl-b-B ",Hex$(Peek.l(&rq))
 rq=-100000 ASL nw : NPrint "dq-asl-cl-w-B ",Hex$(Peek.l(&rq))
 rq=-100000 ASL nl : NPrint "dq-asl-cl-l-B ",Hex$(Peek.l(&rq))
@@ -55,12 +63,4 @@ rq=-1.5 ASR 3 : NPrint "dq-asr-cf-cb-B ",Hex$(Peek.l(&rq))
 rq=-1.5 ASR 3 : NPrint "dq-asr-cf-cw-B ",Hex$(Peek.l(&rq))
 rq=-1.5 ASR 3 : NPrint "dq-asr-cf-cl-B ",Hex$(Peek.l(&rq))
 rq=-1.5 ASR 3.5 : NPrint "dq-asr-cf-cf-B ",Hex$(Peek.l(&rq))
-rq=-3 MOD -3 : NPrint "dq-mod-cb-cb-B ",Hex$(Peek.l(&rq))
-rq=-3 MOD -1000 : NPrint "dq-mod-cb-cw-B ",Hex$(Peek.l(&rq))
-rq=-3 MOD -1.5 : NPrint "dq-mod-cb-cf-B ",Hex$(Peek.l(&rq))
-rq=-1000 MOD -3 : NPrint "dq-mod-cw-cb-B ",Hex$(Peek.l(&rq))
-rq=-1000 MOD -1000 : NPrint "dq-mod-cw-cw-B ",Hex$(Peek.l(&rq))
-rq=-1000 MOD -1.5 : NPrint "dq-mod-cw-cf-B ",Hex$(Peek.l(&rq))
-rq=-1.5 MOD -3 : NPrint "dq-mod-cf-cb-B ",Hex$(Peek.l(&rq))
-rq=-1.5 MOD -1000 : NPrint "dq-mod-cf-cw-B ",Hex$(Peek.l(&rq))
 End

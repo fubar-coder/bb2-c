@@ -6,6 +6,13 @@
 ; do not edit
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
+NPrint "print-or-q-cb-B ",vq OR -3
+NPrint "print-or-q-cw-B ",vq OR -1000
+NPrint "print-or-q-cl-B ",vq OR -100000
+NPrint "print-or-q-cf-B ",vq OR -1.5
+NPrint "print-or-cb-q-B ",-3 OR vq
+NPrint "print-or-cw-q-B ",-1000 OR vq
+NPrint "print-or-cl-q-B ",-100000 OR vq
 NPrint "print-eor-b-b-B ",vb EOR vb
 NPrint "print-eor-b-q-B ",vb EOR vq
 NPrint "print-eor-b-cb-B ",vb EOR -3
@@ -55,11 +62,4 @@ NPrint "print-lsr-cl-q-B ",-100000 LSR nq
 NPrint "print-asl-b-q-B ",vb ASL nq
 NPrint "print-asl-w-q-B ",vw ASL nq
 NPrint "print-asl-l-q-B ",vl ASL nq
-NPrint "print-asl-q-b-B ",vq ASL nb
-NPrint "print-asl-q-w-B ",vq ASL nw
-NPrint "print-asl-q-l-B ",vq ASL nl
-NPrint "print-asl-q-q-B ",vq ASL nq
-NPrint "print-asl-q-cb-B ",vq ASL 3
-NPrint "print-asl-q-cw-B ",vq ASL 3
-NPrint "print-asl-q-cl-B ",vq ASL 3
 End

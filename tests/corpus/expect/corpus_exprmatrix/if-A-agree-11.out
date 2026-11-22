@@ -1,3 +1,7 @@
+if-asr-w-cb-A T
+if-asr-w-cw-A T
+if-asr-w-cl-A T
+if-asr-l-b-A T
 if-asr-l-w-A T
 if-asr-l-l-A T
 if-asr-l-cb-A T
@@ -50,8 +54,4 @@ if-eq-l-cl-A T
 if-eq-l-cf-A F
 if-eq-q-b-A F
 if-eq-q-w-A F
-if-eq-q-l-A F
-if-eq-q-q-A T
-if-eq-q-f-A F
-if-eq-q-cb-A F
 rc=0

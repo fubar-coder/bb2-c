@@ -9,6 +9,14 @@ nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 Statement pl{x.l}
   NPrint x
 End Statement
+Print "pl-or-q-q-B " : pl{vq OR vq}
+Print "pl-or-q-cb-B " : pl{vq OR -3}
+Print "pl-or-q-cw-B " : pl{vq OR -1000}
+Print "pl-or-q-cl-B " : pl{vq OR -100000}
+Print "pl-or-cb-q-B " : pl{-3 OR vq}
+Print "pl-or-cw-q-B " : pl{-1000 OR vq}
+Print "pl-or-cl-q-B " : pl{-100000 OR vq}
+Print "pl-eor-b-q-B " : pl{vb EOR vq}
 Print "pl-eor-w-q-B " : pl{vw EOR vq}
 Print "pl-eor-l-q-B " : pl{vl EOR vq}
 Print "pl-eor-q-b-B " : pl{vq EOR vb}
@@ -57,12 +65,4 @@ Print "pl-asl-q-q-B " : pl{vq ASL nq}
 Print "pl-asl-q-cb-B " : pl{vq ASL 3}
 Print "pl-asl-q-cw-B " : pl{vq ASL 3}
 Print "pl-asl-q-cl-B " : pl{vq ASL 3}
-Print "pl-asl-cb-q-B " : pl{-3 ASL nq}
-Print "pl-asl-cw-q-B " : pl{-1000 ASL nq}
-Print "pl-asl-cl-q-B " : pl{-100000 ASL nq}
-Print "pl-asr-b-q-B " : pl{vb ASR nq}
-Print "pl-asr-w-q-B " : pl{vw ASR nq}
-Print "pl-asr-l-q-B " : pl{vl ASR nq}
-Print "pl-asr-q-b-B " : pl{vq ASR nb}
-Print "pl-asr-q-w-B " : pl{vq ASR nw}
 End

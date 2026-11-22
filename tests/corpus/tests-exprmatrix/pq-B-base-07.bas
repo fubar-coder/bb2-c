@@ -11,6 +11,14 @@ Statement pq{x.q}
   SHARED tq
   tq=x : NPrint Hex$(Peek.l(&tq))
 End Statement
+Print "pq-lsl-l-l-B " : pq{vl LSL nl}
+Print "pq-lsl-l-q-B " : pq{vl LSL nq}
+Print "pq-lsl-l-cb-B " : pq{vl LSL 3}
+Print "pq-lsl-l-cw-B " : pq{vl LSL 3}
+Print "pq-lsl-l-cl-B " : pq{vl LSL 3}
+Print "pq-lsl-l-cf-B " : pq{vl LSL 3.5}
+Print "pq-lsl-q-b-B " : pq{vq LSL nb}
+Print "pq-lsl-q-w-B " : pq{vq LSL nw}
 Print "pq-lsl-q-l-B " : pq{vq LSL nl}
 Print "pq-lsl-q-q-B " : pq{vq LSL nq}
 Print "pq-lsl-q-cb-B " : pq{vq LSL 3}
@@ -59,12 +67,4 @@ Print "pq-lsr-l-q-B " : pq{vl LSR nq}
 Print "pq-lsr-l-cb-B " : pq{vl LSR 3}
 Print "pq-lsr-l-cw-B " : pq{vl LSR 3}
 Print "pq-lsr-l-cl-B " : pq{vl LSR 3}
-Print "pq-lsr-l-cf-B " : pq{vl LSR 3.5}
-Print "pq-lsr-q-b-B " : pq{vq LSR nb}
-Print "pq-lsr-q-w-B " : pq{vq LSR nw}
-Print "pq-lsr-q-l-B " : pq{vq LSR nl}
-Print "pq-lsr-q-q-B " : pq{vq LSR nq}
-Print "pq-lsr-q-cb-B " : pq{vq LSR 3}
-Print "pq-lsr-q-cw-B " : pq{vq LSR 3}
-Print "pq-lsr-q-cl-B " : pq{vq LSR 3}
 End

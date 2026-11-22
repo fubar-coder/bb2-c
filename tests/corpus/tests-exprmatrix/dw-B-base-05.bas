@@ -7,6 +7,15 @@
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 rw.w=0
+rw=-100000 AND -100000 : NPrint "dw-and-cl-cl-B ",rw
+rw=vb OR vq : NPrint "dw-or-b-q-B ",rw
+rw=vw OR vq : NPrint "dw-or-w-q-B ",rw
+rw=vl OR vl : NPrint "dw-or-l-l-B ",rw
+rw=vl OR vq : NPrint "dw-or-l-q-B ",rw
+rw=vl OR -100000 : NPrint "dw-or-l-cl-B ",rw
+rw=vq OR vb : NPrint "dw-or-q-b-B ",rw
+rw=vq OR vw : NPrint "dw-or-q-w-B ",rw
+rw=vq OR vl : NPrint "dw-or-q-l-B ",rw
 rw=vq OR vq : NPrint "dw-or-q-q-B ",rw
 rw=vq OR -3 : NPrint "dw-or-q-cb-B ",rw
 rw=vq OR -1000 : NPrint "dw-or-q-cw-B ",rw
@@ -54,13 +63,4 @@ rw=vl LSL nw : NPrint "dw-lsl-l-w-B ",rw
 rw=vl LSL nl : NPrint "dw-lsl-l-l-B ",rw
 rw=vl LSL nq : NPrint "dw-lsl-l-q-B ",rw
 rw=vl LSL 3 : NPrint "dw-lsl-l-cb-B ",rw
-rw=vl LSL 3 : NPrint "dw-lsl-l-cw-B ",rw
-rw=vl LSL 3 : NPrint "dw-lsl-l-cl-B ",rw
-rw=vq LSL nb : NPrint "dw-lsl-q-b-B ",rw
-rw=vq LSL nw : NPrint "dw-lsl-q-w-B ",rw
-rw=vq LSL nl : NPrint "dw-lsl-q-l-B ",rw
-rw=vq LSL nq : NPrint "dw-lsl-q-q-B ",rw
-rw=vq LSL 3 : NPrint "dw-lsl-q-cb-B ",rw
-rw=vq LSL 3 : NPrint "dw-lsl-q-cw-B ",rw
-rw=vq LSL 3 : NPrint "dw-lsl-q-cl-B ",rw
 End

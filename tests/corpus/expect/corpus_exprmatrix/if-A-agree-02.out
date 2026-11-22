@@ -7,6 +7,7 @@ if-add-cb-f-A T
 if-add-cb-cb-A T
 if-add-cb-cw-A T
 if-add-cb-cl-A T
+if-add-cb-cf-A T
 if-add-cw-b-A T
 if-add-cw-w-A T
 if-add-cw-l-A T
@@ -53,5 +54,4 @@ if-sub-l-q-A T
 if-sub-l-f-A T
 if-sub-l-cb-A T
 if-sub-l-cw-A T
-if-sub-l-cl-A F
 rc=0

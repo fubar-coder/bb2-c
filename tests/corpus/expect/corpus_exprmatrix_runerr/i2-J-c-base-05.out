@@ -1,3 +1,11 @@
+i2-pow-cl-cl-J !runtime
+i2-pow-cl-cf-J !runtime
+i2-pow-cf-cf-J 65
+i2-and-b-q-J !runtime
+i2-and-w-q-J !runtime
+i2-and-l-q-J !runtime
+i2-and-q-b-J !runtime
+i2-and-q-w-J !runtime
 i2-and-q-l-J !runtime
 i2-and-q-q-J !runtime
 i2-and-q-cb-J !runtime
@@ -18,12 +26,4 @@ i2-or-q-cw-J !runtime
 i2-or-q-cl-J !runtime
 i2-or-cb-q-J !runtime
 i2-or-cw-q-J !runtime
-i2-or-cl-q-J !runtime
-i2-eor-b-q-J 49
-i2-eor-w-q-J 289
-i2-eor-l-q-J 449
-i2-eor-q-b-J 49
-i2-eor-q-w-J 289
-i2-eor-q-l-J 449
-i2-eor-q-q-J 1
 rc=0

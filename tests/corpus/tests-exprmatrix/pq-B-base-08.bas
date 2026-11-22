@@ -11,6 +11,14 @@ Statement pq{x.q}
   SHARED tq
   tq=x : NPrint Hex$(Peek.l(&tq))
 End Statement
+Print "pq-lsr-l-cf-B " : pq{vl LSR 3.5}
+Print "pq-lsr-q-b-B " : pq{vq LSR nb}
+Print "pq-lsr-q-w-B " : pq{vq LSR nw}
+Print "pq-lsr-q-l-B " : pq{vq LSR nl}
+Print "pq-lsr-q-q-B " : pq{vq LSR nq}
+Print "pq-lsr-q-cb-B " : pq{vq LSR 3}
+Print "pq-lsr-q-cw-B " : pq{vq LSR 3}
+Print "pq-lsr-q-cl-B " : pq{vq LSR 3}
 Print "pq-lsr-q-cf-B " : pq{vq LSR 3.5}
 Print "pq-lsr-cb-b-B " : pq{-3 LSR nb}
 Print "pq-lsr-cb-w-B " : pq{-3 LSR nw}
@@ -59,12 +67,4 @@ Print "pq-asl-q-b-B " : pq{vq ASL nb}
 Print "pq-asl-q-w-B " : pq{vq ASL nw}
 Print "pq-asl-q-l-B " : pq{vq ASL nl}
 Print "pq-asl-q-q-B " : pq{vq ASL nq}
-Print "pq-asl-q-cb-B " : pq{vq ASL 3}
-Print "pq-asl-q-cw-B " : pq{vq ASL 3}
-Print "pq-asl-q-cl-B " : pq{vq ASL 3}
-Print "pq-asl-q-cf-B " : pq{vq ASL 3.5}
-Print "pq-asl-cb-q-B " : pq{-3 ASL nq}
-Print "pq-asl-cb-cf-B " : pq{-3 ASL 3.5}
-Print "pq-asl-cw-q-B " : pq{-1000 ASL nq}
-Print "pq-asl-cw-cf-B " : pq{-1000 ASL 3.5}
 End

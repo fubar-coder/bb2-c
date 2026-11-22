@@ -1,3 +1,12 @@
+dw-and-cl-cl-B 31072
+dw-or-b-q-B -1
+dw-or-w-q-B -2
+dw-or-l-l-B 31072
+dw-or-l-q-B -2
+dw-or-l-cl-B 31072
+dw-or-q-b-B -1
+dw-or-q-w-B -2
+dw-or-q-l-B -2
 dw-or-q-q-B -2
 dw-or-q-cb-B -1
 dw-or-q-cw-B -2
@@ -45,13 +54,4 @@ dw-lsl-l-w-B -13568
 dw-lsl-l-l-B -13568
 dw-lsl-l-q-B -13568
 dw-lsl-l-cb-B -13568
-dw-lsl-l-cw-B -13568
-dw-lsl-l-cl-B -13568
-dw-lsl-q-b-B -12
-dw-lsl-q-w-B -12
-dw-lsl-q-l-B -12
-dw-lsl-q-q-B -12
-dw-lsl-q-cb-B -12
-dw-lsl-q-cw-B -12
-dw-lsl-q-cl-B -12
 rc=0

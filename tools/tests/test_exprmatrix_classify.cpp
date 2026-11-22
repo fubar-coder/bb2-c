@@ -22,11 +22,13 @@ static const char *const DESC =
     "cell A dl + w l\ncell A db < q l\ncell A dl * l q\ncell A db = cf cf\ncell A if - f\n"
     "cell A dl * l l\ncell A dl AND f b\ncell A dl + b b\ncell A db + cf q\ncell I i1 * q w\n"
     "cell A dl MOD l q\ncell A dl ^ w cb\ncell A dl AND q w\n"
-    "cell A if + cb cf\ncell B dl ^ b b\ncell B df ^ f b\ncell B dl ^ w cf\n";
+    "cell A if + cb cf\ncell B dl ^ b b\ncell B df ^ f b\ncell B dl ^ w cf\ncell A print ^ cb cf\n"
+    "cell A dl - l w\n";
 
 static const char *const HEAD = "key\tsource\tc210\tc195\tportcd\tclib\tab3\tc210_on\tc195_on\tportcd_on\tclib_on\n";
 
-// the measured rows (task 1.3; dl-add-b-b-A made up: 7 instead of 6)
+// the measured rows (task 1.3; made up: dl-add-b-b-A 7 instead of 6, dl-sub-l-w-A
+// 2.10 against 1.95)
 static const char *const ROWS =
     "dl-add-w-l-A\tt-01\t101000\t101000\t101000\t101000\t101000\t\t\t\t\n"
     "db-lt-q-l-A\tt-01\t0\t0\t-1\t-1\t0\t\t\t\t\n"
@@ -46,7 +48,9 @@ static const char *const ROWS =
     "if-add-cb-cf-A\tt-01\tT\tT\tT\tT\tF\t\t\t\t\n"
     "dl-pow-b-b-B\tt-01\t27\t27\t27\t27\t27\t\t\t\t\n"
     "df-pow-f-b-B\tt-01\tF9FFFB44\tF9FFFB44\tF9FFFB44\tF9FFFB44\tF9FFFB44\t\t\t\t\n"
-    "dl-pow-w-cf-B\tt-01\t2147483647\t2147483647\t2147483647\t2147483647\t2147483647\t\t\t\t\n";
+    "dl-pow-w-cf-B\tt-01\t2147483647\t2147483647\t2147483647\t2147483647\t2147483647\t\t\t\t\n"
+    "print-pow-cb-cf-A\tt-01\t9.000001\t9.000001\t9.000001\t9.000001\t15.58845\t\t\t\t\n"
+    "dl-sub-l-w-A\tt-01\t99001\t99000\t99000\t99000\t99000\t\t\t\t\n";
 
 struct run {
     struct em_matrix m;
@@ -117,29 +121,33 @@ TEST_CASE("exprmatrix classify: every class", "[exprmatrix]")
     CHECK(r.cls_of("dl-and-q-w-A") == "baseline");
     CHECK(r.cls_of("dl-mod-l-q-A") == "baseline");
     CHECK(r.cls_of("dl-pow-w-cb-A") == "baseline");
-    // AmiBlitz3 differs: an issue explains it (the rules decide), or not
+    // AmiBlitz3 differs: the rules decide, also where no issue explains
+    // it; 2.10 differing from 1.95 without an issue is a question
     CHECK(r.cls_of("db-add-cf-q-A") == "open-1188");
-    CHECK(r.cls_of("if-add-cb-cf-A") == "question Q-F");
+    CHECK(r.cls_of("if-add-cb-cf-A") == "agree");
+    CHECK(r.cls_of("dl-sub-l-w-A") == "question Q-F");
     // #1189: the sign of an odd power, also from the measured Float bits;
-    // a fractional exponent has no rule
+    // a fractional exponent keeps the original's value as its baseline;
+    // a power whose operands a fix changes (#1188) is a question
     CHECK(r.cls_of("dl-pow-b-b-B") == "open-1189");
     CHECK(r.cls_of("df-pow-f-b-B") == "open-1189");
     CHECK(std::string(r.c.table).find("\ndf-pow-f-b-B\topen-1189\t1189\t\tF9FFFBC4\t") != std::string::npos);
-    CHECK(r.cls_of("dl-pow-w-cf-B") == "question Q-E");
+    CHECK(r.cls_of("dl-pow-w-cf-B") == "baseline");
+    CHECK(r.cls_of("print-pow-cb-cf-A") == "question Q-E");
     CHECK(r.cls_of("dl-and-f-b-A") == "noncompile");
     CHECK(r.cls_of("dl-add-b-b-A") == "new");
     CHECK(r.cls_of("i1-mul-q-w-I") == "open-1178");
     // the made-up cell is the one mismatch of the original's rules
     CHECK(r.c.mismatches == 1);
     CHECK(std::string(r.c.report).find("dl-add-b-b-A\tmodel 6\t1.95 7") != std::string::npos);
-    CHECK(std::string(r.c.report).find("class agree 1\n") != std::string::npos);
+    CHECK(std::string(r.c.report).find("class agree 2\n") != std::string::npos);
     // the questions: one section per class, with its examples
     std::string q = r.c.questions;
     CHECK(q.find("## Q-A ") == std::string::npos);
     CHECK(q.find("## Q-E ") != std::string::npos);
     CHECK(q.find("## Q-F ") != std::string::npos);
     CHECK(q.find("## Q-B ") == std::string::npos);
-    CHECK(q.find("| `if-add-cb-cf-A` | T | T | F | T |") != std::string::npos);
+    CHECK(q.find("| `dl-sub-l-w-A` | 99001 | 99000 | 99000 | 99000 |") != std::string::npos);
 }
 
 TEST_CASE("exprmatrix classify: broken tables", "[exprmatrix]")
@@ -148,7 +156,7 @@ TEST_CASE("exprmatrix classify: broken tables", "[exprmatrix]")
     {
         run r(std::string(HEAD) + ROWS + "dl-add-w-w-A\tt-01\t2000\n");
         CHECK(r.parse == 1);
-        CHECK(r.errors.find("cells.tsv:19: 3 fields, wanted 11") != std::string::npos);
+        CHECK(r.errors.find("cells.tsv:21: 3 fields, wanted 11") != std::string::npos);
     }
     // a value no compiler prints
     {

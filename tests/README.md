@@ -1259,6 +1259,98 @@ committed table that way without writing it: the run of the original,
 `results cd-reference` into the build directory, and the result must be
 the committed table byte for byte.
 
+### The expression matrix
+
+The expression matrix (OpenSpec change `expression-type-matrix`, spec
+`testing/expression-matrix`; the generator
+[`tools/exprmatrix`](../tools/exprmatrix/README.md)) tests the type rules
+of `docs/blitz2/expression-types.md` cell by cell: a cell is a context
+(a Byte, Word, Long, Quick or Float destination, a Long, Word, Quick or
+Float parameter, `If`, the first or a later array index, `Print`), an
+operator, the operand kinds in order (five variables, four constants,
+a string) and a value set (A: inside every range with a positive
+fraction, B: negative and beyond the Word and Quick ranges); every cell
+is one line of a generated source that prints its key and its value.
+The description `tests/corpus/tests-exprmatrix/matrix.txt` makes 40,561
+cells. Each was measured with 2.10, 1.95, the port with the CD's and with
+its C libraries and AmiBlitz3 v3.14.0; the expected value comes from the
+model of `tools/lib/exprmatrix/model.c` (the original's rules and the
+rules with the fixes, each rule naming its entry in the user's
+decisions), the measured values it does not compute (a Float power, the
+original's `If` on a Float, AmiBlitz3's values where they differ) from
+`tests/corpus/tests-exprmatrix/measured.tsv`.
+
+**The classes.** A cell is looked at once (index cells twice: unchecked,
+only where every compiler reads an element of the array, and with runtime
+error checking, where a cell outside the array is the runtime error
+"Array Subscript out of Range"). Where the original, the expected value
+and the port agree the cell is an **agreement** cell (a recorded rule or
+the exact result gives the value) or a **baseline** cell: no recorded
+rule covers it (an overflow, a bit operator or shift with a Quick or
+Float, `MOD` with negative or fractional operands, `^`), so the
+original's measured value is kept as a regression check - a fix changes
+these cells only where it is meant to, and after the fix the expected
+values are regenerated; it is not a decision that the value is right. A
+cell whose value an issue's fix changes is **fixed-N** (the port gives
+the expected value) or **open-N** (the port still gives the original's);
+**noncompile** cells are refused by the originals and the port.
+
+**The tests**, all written by the generator:
+
+* the corpus passes `corpus_exprmatrix_NAME` (unchecked) and
+  `corpus_exprmatrix_runerr_NAME` (the checked index cells, with a
+  `SetErr` handler in front of every cell, so a runtime error prints
+  `KEY !runtime` and the program goes on): one source of one context,
+  value set, mode and class (`tests/corpus/tests-exprmatrix/CTX-SET[-u|-c]-agree|base|fixN-NN.bas`,
+  at most 56 cells, 28 in a checked source: #1190, the port's compile of a
+  source with many `SetErr` handlers under checking does not end), each
+  a pass and an emulator session of its own (a program can disturb the
+  next one in a session); the expected files are
+  `expect/corpus_exprmatrix[_runerr]/NAME.out`, for fixed cells the pair
+  `NAME.orig.out` / `NAME.fixed-N.out` ([Corpus](#corpus)); the
+  `_originals` runs check them against 2.10;
+* the bug-orig tests of the open cells,
+  `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u|-c]-NN`, whose
+  header names `BUG(orig) (#N)` and the cells, with `ID.orig` recorded
+  from 1.95 ([Recorded originals](#recorded-originals)); they come out
+  REPRODUCED until the fix, whose commit adds `; @fixed #N`
+  ([Fixed tests](#fixed-tests)). A test of cells that need two fixes
+  (`compiler-expr-1178-1189-...`) comes out **DIFFERS between the two
+  fixes** - after the first the port neither reproduces 1.95 nor meets the
+  expectation - which is no regression; its header says so, and the
+  commit of the second fix marks it fixed;
+* one test per operator and operand classes for the refused cells
+  (`tests/bug-orig/regression/compiler-expr-refused-OP-L-R`) and for the
+  cells a fix will refuse (`compiler-expr-N-refused-OP-L-R`, bug-orig);
+* the AmiBlitz3 cases of the agreement and fixed sources without runtime
+  error checking (`tests/ab3/cli/exprmatrix/`, in `ab3_cli_N` and the
+  oracle's `ab3_cli_ref_N`): the sources as `.ab3` without the cells
+  AmiBlitz3 refuses (and the `If` cells on a folded Float constant, where
+  AmiBlitz3's d1 depends on the line before), compiled with `-r`; their
+  expectation is the output of blitz2-ab3 in AB3 mode (the port's
+  compiler with AmiBlitz3's libraries), AmiBlitz3's measured output is
+  `REF_EXPECT` where it differs (`docs/ab3/variant.md`, "Differences to
+  AmiBlitz3's compiler").
+
+**Left out** (`tests/corpus/tests-exprmatrix/left-out.txt`, with the
+reason): cells without an expected value (a question to the user: a
+power whose operands a fix changes, so that its value is not measured),
+`If` cells on a Float whose original value is what d1 holds and depends
+on the libraries (#1187), and cells where the port differs.
+
+**Updating.** The generated files are committed;
+`cmake --build --preset amiga --target expr-matrix-update` writes them
+from the description and `measured.tsv` (after a change of the
+description, the model or a fix's rules; review with `git diff`), and
+the host test `exprmatrix_committed` fails when a committed file is not
+the generator's (`exprmatrix_committed_broken`: an edited and an extra
+file are named). A changed bug-orig test needs its `ID.orig` recorded
+again (`-DBUG_ORIG_RECORD_FILTER=ID`, `bug-orig-record`). A new
+measurement goes through `exprmatrix classify`: `-m` writes
+`measured.tsv`, `-q` the questions file (one question per class of
+cells no recorded rule covers, with example cells, for the user; not
+committed).
+
 ### Site examples
 
 The website shows Blitz Basic programs in fenced ` ```blitzbasic ` blocks

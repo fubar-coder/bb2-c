@@ -1,0 +1,53 @@
+[compile]
+rc=0
+[run]
+if-neg-cb-B T
+if-neg-cw-B T
+if-neg-cl-B T
+if-not-cb-B T
+if-not-cw-B T
+if-not-cl-B T
+if-add-b-b-B T
+if-add-b-w-B T
+if-add-b-l-B T
+if-add-b-q-B T
+if-add-b-f-B T
+if-add-b-cb-B T
+if-add-b-cw-B T
+if-add-b-cl-B T
+if-add-b-cf-B T
+if-add-w-b-B T
+if-add-w-w-B T
+if-add-w-l-B T
+if-add-w-q-B T
+if-add-w-f-B T
+if-add-w-cb-B T
+if-add-w-cw-B T
+if-add-w-cl-B T
+if-add-w-cf-B T
+if-add-l-b-B T
+if-add-l-w-B T
+if-add-l-l-B T
+if-add-l-q-B T
+if-add-l-f-B T
+if-add-l-cb-B T
+if-add-l-cw-B T
+if-add-l-cl-B T
+if-add-l-cf-B T
+if-add-q-b-B T
+if-add-q-w-B T
+if-add-q-q-B T
+if-add-q-f-B T
+if-add-q-cb-B T
+if-add-q-cw-B T
+if-add-q-cl-B T
+if-add-q-cf-B T
+if-add-f-b-B T
+if-add-f-w-B T
+if-add-f-l-B T
+if-add-f-q-B T
+if-add-f-f-B T
+if-add-f-cb-B T
+if-add-f-cw-B T
+if-add-f-cl-B T
+rc=0

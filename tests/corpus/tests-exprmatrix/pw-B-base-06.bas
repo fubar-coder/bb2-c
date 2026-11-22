@@ -9,6 +9,15 @@ nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 Statement pw{x.w}
   NPrint x
 End Statement
+Print "pw-lsl-l-cw-B " : pw{vl LSL 3}
+Print "pw-lsl-l-cl-B " : pw{vl LSL 3}
+Print "pw-lsl-q-b-B " : pw{vq LSL nb}
+Print "pw-lsl-q-w-B " : pw{vq LSL nw}
+Print "pw-lsl-q-l-B " : pw{vq LSL nl}
+Print "pw-lsl-q-q-B " : pw{vq LSL nq}
+Print "pw-lsl-q-cb-B " : pw{vq LSL 3}
+Print "pw-lsl-q-cw-B " : pw{vq LSL 3}
+Print "pw-lsl-q-cl-B " : pw{vq LSL 3}
 Print "pw-lsl-q-cf-B " : pw{vq LSL 3.5}
 Print "pw-lsl-cb-q-B " : pw{-3 LSL nq}
 Print "pw-lsl-cw-q-B " : pw{-1000 LSL nq}
@@ -56,13 +65,4 @@ Print "pw-lsr-cb-cb-B " : pw{-3 LSR 3}
 Print "pw-lsr-cb-cw-B " : pw{-3 LSR 3}
 Print "pw-lsr-cb-cl-B " : pw{-3 LSR 3}
 Print "pw-lsr-cw-b-B " : pw{-1000 LSR nb}
-Print "pw-lsr-cw-w-B " : pw{-1000 LSR nw}
-Print "pw-lsr-cw-l-B " : pw{-1000 LSR nl}
-Print "pw-lsr-cw-q-B " : pw{-1000 LSR nq}
-Print "pw-lsr-cw-cb-B " : pw{-1000 LSR 3}
-Print "pw-lsr-cw-cw-B " : pw{-1000 LSR 3}
-Print "pw-lsr-cw-cl-B " : pw{-1000 LSR 3}
-Print "pw-lsr-cl-b-B " : pw{-100000 LSR nb}
-Print "pw-lsr-cl-w-B " : pw{-100000 LSR nw}
-Print "pw-lsr-cl-l-B " : pw{-100000 LSR nl}
 End

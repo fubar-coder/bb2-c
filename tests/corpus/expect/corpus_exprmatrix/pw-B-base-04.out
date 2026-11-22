@@ -12,6 +12,15 @@ pw-mod-cf-cb-B -4
 pw-mod-cf-cw-B -1001
 pw-mod-cf-cl-B 31071
 pw-mod-cf-cf-B 0
+pw-pow-b-cf-B 46
+pw-pow-w-cf-B -1
+pw-pow-l-cf-B -1
+pw-pow-q-cf-B 4
+pw-pow-f-cf-B 24
+pw-pow-cb-cf-B 46
+pw-pow-cw-cf-B -1
+pw-pow-cl-cf-B -1
+pw-pow-cf-cf-B 4
 pw-and-b-l-B 31072
 pw-and-b-q-B -4
 pw-and-b-cl-B 31072
@@ -45,13 +54,4 @@ pw-and-cl-l-B 31072
 pw-and-cl-q-B 31072
 pw-and-cl-cb-B 31072
 pw-and-cl-cw-B 30720
-pw-and-cl-cl-B 31072
-pw-or-b-q-B -1
-pw-or-w-q-B -2
-pw-or-l-l-B 31072
-pw-or-l-q-B -2
-pw-or-l-cl-B 31072
-pw-or-q-b-B -1
-pw-or-q-w-B -2
-pw-or-q-l-B -2
 rc=0

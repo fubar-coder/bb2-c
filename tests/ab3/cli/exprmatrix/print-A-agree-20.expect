@@ -1,0 +1,33 @@
+[compile]
+rc=0
+[run]
+print-ge-cl-b-A -1
+print-ge-cl-w-A -1
+print-ge-cl-l-A -1
+print-ge-cl-q-A -1
+print-ge-cl-f-A -1
+print-ge-cl-cb-A -1
+print-ge-cl-cw-A -1
+print-ge-cl-cl-A -1
+print-ge-cl-cf-A -1
+print-ge-cf-b-A 0
+print-ge-cf-w-A 0
+print-ge-cf-l-A 0
+print-ge-cf-q-A -1
+print-ge-cf-f-A 0
+print-ge-cf-cb-A 0
+print-ge-cf-cw-A 0
+print-ge-cf-cl-A 0
+print-ge-cf-cf-A -1
+print-add-s-s-A ABAB
+print-eq-s-s-A -1
+print-ne-s-s-A 0
+print-lt-s-s-A 0
+print-le-s-s-A -1
+print-gt-s-s-A 0
+print-ge-s-s-A -1
+print-mod-cb-cb-A 0
+print-mod-cb-cw-A 3
+print-mod-cw-cb-A 1
+print-mod-cw-cw-A 0
+rc=0

@@ -1,3 +1,4 @@
+dq-or-b-l-A 86A30000
 dq-or-b-q-A 00038000
 dq-or-b-cl-A 86A30000
 dq-or-b-cf-A 00038000
@@ -53,5 +54,4 @@ dq-eor-w-q-A 03E98000
 dq-eor-w-cl-A 85480000
 dq-eor-w-cf-A 03E98000
 dq-eor-l-b-A 86A30000
-dq-eor-l-w-A 85480000
 rc=0

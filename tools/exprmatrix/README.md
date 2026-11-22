@@ -248,24 +248,27 @@ the original's measured value as a baseline.
 `note`, tab separated. The class is `agree`, `baseline`, `fixed-N`,
 `open-N` (`N` the issues whose fixed rules change the value, `+` between
 them), `port`, `new`, `question` (with its class `Q-B` the two orders
-differ, `Q-E` `^` without a known expected value, `Q-F` AmiBlitz3
-differs and no issue explains it) or `noncompile`. The expected value is
+differ, `Q-E` `^` whose operands a fix changes, so that its value is
+not measured, `Q-F` 2.10 differs from 1.95 and no issue explains it) or
+`noncompile`. The expected value is
 the fixed rules' value, or 1.95's where the model cannot compute a Float
 power that both rule sets compute alike (negated for an odd power of a
 negative base, #1189).
 
 `baseline` (the original's measured value): a cell no recorded rule
 covers - an overflow, a bit operator or shift with a Quick or Float, `MOD`
-with negative or fractional operands, `^` - that no fix changes; its
+with negative or fractional operands, `^` (also a negative base with a
+fractional exponent: #1189 fixes only whole odd exponents) - that no fix
+changes; its
 expected value is the original's measured value, a regression check so
 that a fix changes these cells only where it is meant to (the expected
 values are regenerated after the fix), not a decision that the value is
 right (`task-decisions.md`, "Matrix questions Q-A, Q-C, Q-D, Q-E",
-2026-11-22, and the user's correction there). A cell an issue's fix
-changes is `fixed-N` or `open-N` whatever its value class. Where
-AmiBlitz3 differs from 1.95, an issue that changes the cell decides it
-(its AmiBlitz3 value goes to `docs/ab3/variant.md`); a cell no issue
-explains is a question (`Q-F`).
+2026-11-22, the user's correction there, and "Matrix: last Q-F and Q-E
+cells"). A cell an issue's fix changes is `fixed-N` or `open-N` whatever
+its value class. Where AmiBlitz3 differs from 1.95, the recorded rules
+decide, also where no issue explains the cell (its AmiBlitz3 value goes
+to `docs/ab3/variant.md`).
 
 The questions file has one section per question class with the count,
 the issues of its cells, the options and three example cells with the
@@ -292,7 +295,26 @@ anything else is left out. A source holds the cells of one context,
 value set, mode and class, at most `cells-per-source`; its folded
 constant `MOD` cells (both operands constants, a Byte, Word or Quick
 operation by the original's rules) come last (#1049); a checked source
-holds at most half of `cells-per-source` (a port defect, `expect.c`).
+holds at most half of `cells-per-source` (the port's compile of a
+source with many `SetErr` handlers under runtime error checking does not
+end, #1190).
+
+The agreement and fixed sources of a destination, parameter, `If` or
+`Print` context and the unchecked index sources are also AmiBlitz3 cases
+(`tests/ab3`, design decision 9 of the change): the same text as `.ab3`
+without the cells AmiBlitz3 refuses (its measured `!noncompile`) and
+without the `If` cells AmiBlitz3 folds to a Float constant (arithmetic
+or a unary minus of constants, one with a fraction: AmiBlitz3 tests d1
+there, #1187, and a folded constant leaves d1 as the line before left
+it, so the value depends on the source). The case is compiled with `-r`
+(runtime error checking off, as the corpus source; AB3 mode's own default
+is on, which makes a later index a Long). Its expected output is that of
+blitz2-ab3 in AB3 mode, the port's compiler with AmiBlitz3's libraries:
+the port's value with the CD's libraries (AmiBlitz3's libraries have the
+CD's #199 and #234); AmiBlitz3's own expected output is its measured
+values where one differs. The baseline
+and checked sources have no case (AmiBlitz3's checked mode was not
+measured).
 
 | File | What |
 |---|---|
@@ -302,6 +324,8 @@ holds at most half of `cells-per-source` (a port defect, `expect.c`).
 | `tests/bug-orig/compiler/compiler-expr-ISSUES-refused-OP-L-R[-c].bas`, `.expect` | a cell the original compiles and a fix refuses: one representative per operator and operand classes (`I` a whole number, `Q`, `F`, `C` a constant with a fraction, `S`, `x` none) |
 | `tests/bug-orig/regression/compiler-expr-refused-OP-L-R[-c].bas`, `.expect` | a cell the originals and the port refuse ("Illegal Operator for Type"): one representative per operator and operand classes; `-c` refused only with runtime error checking |
 | `tests/corpus/tests-exprmatrix/left-out.txt` | the cells left out, with the reason (a question, a port that differs) |
+| `tests/ab3/cli/exprmatrix/NAME.ab3`, `NAME.expect`, `NAME.ref.expect` | the AmiBlitz3 case of a corpus source: its source, the port's output (`ab3_cli_N`) and, where AmiBlitz3 differs, AmiBlitz3's (`ab3_cli_ref_N`, `REF_EXPECT`) |
+| `tests/ab3/cli/exprmatrix/cases.cmake` | the `ab3_cli_case` lines of the cases, included by `tests/ab3/CMakeLists.txt` |
 
 The measured values (`measured.tsv`, written by `classify -m`): the rows
 of the measured table of task 1.3 where the model does not know a value
@@ -331,6 +355,7 @@ errors of a description or a table as `FILE:LINE: message`.
   library: `exprmatrix`, `exprmatrix_model`, `exprmatrix_classify`,
   `exprmatrix_expect` (`tools/tests/`).
 * The target `expr-matrix-update` (`expect`, `tests/corpus/CMakeLists.txt`).
+* `tests/ab3/CMakeLists.txt` includes the generated `cases.cmake`.
 * Tasks 2.3 and 2.4 of the change: `classify` on the measurement of task
   1.3 (`-m` wrote `tests/corpus/tests-exprmatrix/measured.tsv`).
 

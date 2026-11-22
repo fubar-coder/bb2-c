@@ -1,0 +1,19 @@
+[compile]
+rc=0
+[run]
+if-ge-cf-f-A F
+if-ge-cf-cb-A F
+if-ge-cf-cw-A F
+if-ge-cf-cl-A F
+if-ge-cf-cf-A T
+if-eq-s-s-A T
+if-ne-s-s-A F
+if-lt-s-s-A F
+if-le-s-s-A T
+if-gt-s-s-A F
+if-ge-s-s-A T
+if-mod-cb-cb-A F
+if-mod-cb-cw-A T
+if-mod-cw-cb-A T
+if-mod-cw-cw-A F
+rc=0

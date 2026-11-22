@@ -5,6 +5,10 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 vb.b=3 : vw.w=1000 : vl.l=100000 : vq.q=1.5 : vf.f=2.5
+If vb <> vf Then NPrint "if-ne-b-f-A T" Else NPrint "if-ne-b-f-A F"
+If vb <> 3 Then NPrint "if-ne-b-cb-A T" Else NPrint "if-ne-b-cb-A F"
+If vb <> 1000 Then NPrint "if-ne-b-cw-A T" Else NPrint "if-ne-b-cw-A F"
+If vb <> 100000 Then NPrint "if-ne-b-cl-A T" Else NPrint "if-ne-b-cl-A F"
 If vb <> 1.5 Then NPrint "if-ne-b-cf-A T" Else NPrint "if-ne-b-cf-A F"
 If vw <> vb Then NPrint "if-ne-w-b-A T" Else NPrint "if-ne-w-b-A F"
 If vw <> vw Then NPrint "if-ne-w-w-A T" Else NPrint "if-ne-w-w-A F"
@@ -57,8 +61,4 @@ If 1000 <> vl Then NPrint "if-ne-cw-l-A T" Else NPrint "if-ne-cw-l-A F"
 If 1000 <> vq Then NPrint "if-ne-cw-q-A T" Else NPrint "if-ne-cw-q-A F"
 If 1000 <> vf Then NPrint "if-ne-cw-f-A T" Else NPrint "if-ne-cw-f-A F"
 If 1000 <> 3 Then NPrint "if-ne-cw-cb-A T" Else NPrint "if-ne-cw-cb-A F"
-If 1000 <> 1000 Then NPrint "if-ne-cw-cw-A T" Else NPrint "if-ne-cw-cw-A F"
-If 1000 <> 100000 Then NPrint "if-ne-cw-cl-A T" Else NPrint "if-ne-cw-cl-A F"
-If 1000 <> 1.5 Then NPrint "if-ne-cw-cf-A T" Else NPrint "if-ne-cw-cf-A F"
-If 100000 <> vb Then NPrint "if-ne-cl-b-A T" Else NPrint "if-ne-cl-b-A F"
 End

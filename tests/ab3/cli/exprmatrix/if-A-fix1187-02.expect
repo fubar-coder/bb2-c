@@ -1,0 +1,25 @@
+[compile]
+rc=0
+[run]
+if-pow-cw-b-A T
+if-pow-cw-w-A T
+if-pow-cw-l-A T
+if-pow-cw-q-A T
+if-pow-cw-f-A T
+if-pow-cw-cb-A T
+if-pow-cw-cw-A T
+if-pow-cw-cl-A T
+if-pow-cl-b-A T
+if-pow-cl-w-A T
+if-pow-cl-l-A T
+if-pow-cl-q-A T
+if-pow-cl-f-A T
+if-pow-cl-cb-A T
+if-pow-cl-cw-A T
+if-pow-cl-cl-A T
+if-pow-cf-b-A T
+if-pow-cf-w-A T
+if-pow-cf-l-A T
+if-pow-cf-q-A T
+if-pow-cf-f-A T
+rc=0

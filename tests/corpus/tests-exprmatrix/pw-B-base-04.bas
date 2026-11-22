@@ -22,6 +22,15 @@ Print "pw-mod-cf-cb-B " : pw{-1.5 MOD -3}
 Print "pw-mod-cf-cw-B " : pw{-1.5 MOD -1000}
 Print "pw-mod-cf-cl-B " : pw{-1.5 MOD -100000}
 Print "pw-mod-cf-cf-B " : pw{-1.5 MOD -1.5}
+Print "pw-pow-b-cf-B " : pw{vb ^ 3.5}
+Print "pw-pow-w-cf-B " : pw{vw ^ 3.5}
+Print "pw-pow-l-cf-B " : pw{vl ^ 3.5}
+Print "pw-pow-q-cf-B " : pw{vq ^ 3.5}
+Print "pw-pow-f-cf-B " : pw{vf ^ 3.5}
+Print "pw-pow-cb-cf-B " : pw{-3 ^ 3.5}
+Print "pw-pow-cw-cf-B " : pw{-1000 ^ 3.5}
+Print "pw-pow-cl-cf-B " : pw{-100000 ^ 3.5}
+Print "pw-pow-cf-cf-B " : pw{-1.5 ^ 3.5}
 Print "pw-and-b-l-B " : pw{vb AND vl}
 Print "pw-and-b-q-B " : pw{vb AND vq}
 Print "pw-and-b-cl-B " : pw{vb AND -100000}
@@ -55,13 +64,4 @@ Print "pw-and-cl-l-B " : pw{-100000 AND vl}
 Print "pw-and-cl-q-B " : pw{-100000 AND vq}
 Print "pw-and-cl-cb-B " : pw{-100000 AND -3}
 Print "pw-and-cl-cw-B " : pw{-100000 AND -1000}
-Print "pw-and-cl-cl-B " : pw{-100000 AND -100000}
-Print "pw-or-b-q-B " : pw{vb OR vq}
-Print "pw-or-w-q-B " : pw{vw OR vq}
-Print "pw-or-l-l-B " : pw{vl OR vl}
-Print "pw-or-l-q-B " : pw{vl OR vq}
-Print "pw-or-l-cl-B " : pw{vl OR -100000}
-Print "pw-or-q-b-B " : pw{vq OR vb}
-Print "pw-or-q-w-B " : pw{vq OR vw}
-Print "pw-or-q-l-B " : pw{vq OR vl}
 End

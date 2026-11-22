@@ -1,3 +1,7 @@
+if-or-cb-cb-A T
+if-or-cb-cw-A T
+if-or-cb-cl-A T
+if-or-cw-b-A T
 if-or-cw-w-A T
 if-or-cw-l-A T
 if-or-cw-cb-A T
@@ -50,8 +54,4 @@ if-lsl-b-w-A T
 if-lsl-b-l-A T
 if-lsl-b-cb-A T
 if-lsl-b-cw-A T
-if-lsl-b-cl-A T
-if-lsl-w-b-A T
-if-lsl-w-w-A T
-if-lsl-w-l-A T
 rc=0

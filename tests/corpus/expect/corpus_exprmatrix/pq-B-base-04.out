@@ -12,6 +12,8 @@ pq-mod-cf-l-B 795E0000
 pq-mod-cf-q-B 00000000
 pq-mod-cf-f-B FFFD0000
 pq-mod-cf-cl-B 795E0000
+pq-pow-b-cf-B 002EC3EF
+pq-pow-w-cf-B FFFFFFFF
 pq-pow-l-b-B FFFFFFFF
 pq-pow-l-w-B FFFFFFFF
 pq-pow-l-l-B FFFFFFFF
@@ -21,6 +23,12 @@ pq-pow-l-cb-B FFFFFFFF
 pq-pow-l-cw-B FFFFFFFF
 pq-pow-l-cl-B FFFFFFFF
 pq-pow-l-cf-B FFFFFFFF
+pq-pow-q-cf-B 0004222E
+pq-pow-f-cf-B 0018B48D
+pq-pow-cb-cf-B 002EC3EF
+pq-pow-cw-cf-B FFFFFFFF
+pq-pow-cl-cf-B FFFFFFFF
+pq-pow-cf-cf-B 0004222E
 pq-and-b-l-B 79600000
 pq-and-b-q-B FFFC0000
 pq-and-b-cl-B 79600000
@@ -46,12 +54,4 @@ pq-and-q-cw-B FC180000
 pq-and-q-cl-B 79600000
 pq-and-q-cf-B FFFE8000
 pq-and-cb-l-B 79600000
-pq-and-cb-q-B FFFC0000
-pq-and-cb-cl-B 79600000
-pq-and-cb-cf-B FFFC0000
-pq-and-cw-l-B 78000000
-pq-and-cw-q-B FC180000
-pq-and-cw-cl-B 78000000
-pq-and-cw-cf-B FC180000
-pq-and-cl-b-B 79600000
 rc=0

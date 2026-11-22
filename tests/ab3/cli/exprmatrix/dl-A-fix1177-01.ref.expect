@@ -1,0 +1,8 @@
+[compile]
+rc=0
+[run]
+dl-eq-q-cf-A 0
+dl-ne-q-cf-A -1
+dl-lt-q-cf-A -1
+dl-ge-q-cf-A 0
+rc=0

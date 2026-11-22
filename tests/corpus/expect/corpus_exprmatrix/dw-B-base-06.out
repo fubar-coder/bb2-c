@@ -1,3 +1,12 @@
+dw-lsl-l-cw-B -13568
+dw-lsl-l-cl-B -13568
+dw-lsl-q-b-B -12
+dw-lsl-q-w-B -12
+dw-lsl-q-l-B -12
+dw-lsl-q-q-B -12
+dw-lsl-q-cb-B -12
+dw-lsl-q-cw-B -12
+dw-lsl-q-cl-B -12
 dw-lsl-q-cf-B -12
 dw-lsl-cb-q-B -24
 dw-lsl-cw-q-B -8000
@@ -45,13 +54,4 @@ dw-lsr-cb-cb-B -1
 dw-lsr-cb-cw-B -1
 dw-lsr-cb-cl-B -1
 dw-lsr-cw-b-B -125
-dw-lsr-cw-w-B -125
-dw-lsr-cw-l-B -125
-dw-lsr-cw-q-B 8067
-dw-lsr-cw-cb-B -125
-dw-lsr-cw-cw-B -125
-dw-lsr-cw-cl-B -125
-dw-lsr-cl-b-B -12500
-dw-lsr-cl-w-B -12500
-dw-lsr-cl-l-B -12500
 rc=0

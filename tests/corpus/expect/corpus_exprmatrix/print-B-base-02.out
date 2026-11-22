@@ -26,6 +26,13 @@ print-mod-cf-cb-B -4
 print-mod-cf-cw-B -1001
 print-mod-cf-cl-B -100001
 print-mod-cf-cf-B 0
+print-pow-w-cf-B 3.162273E+10
+print-pow-l-cf-B 3.162272E+17
+print-pow-q-cf-B 4.133514
+print-pow-f-cf-B 24.70527
+print-pow-cw-cf-B 3.162273E+10
+print-pow-cl-cf-B 3.162272E+17
+print-pow-cf-cf-B 4.133514
 print-and-b-q-B -4
 print-and-w-q-B -1000
 print-and-l-q-B -100000
@@ -47,11 +54,4 @@ print-or-q-b-B -.5
 print-or-q-w-B -1.5
 print-or-q-l-B -1.5
 print-or-q-q-B -1.5
-print-or-q-cb-B -.5
-print-or-q-cw-B -1.5
-print-or-q-cl-B -2
-print-or-q-cf-B -1.5
-print-or-cb-q-B -.5
-print-or-cw-q-B -1.5
-print-or-cl-q-B -2
 rc=0

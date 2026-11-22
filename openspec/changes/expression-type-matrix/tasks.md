@@ -21,12 +21,12 @@ Before `quick-long-arithmetic` (#1178) starts (user decision 2026-11-22, "Order 
 - [x] 3.2 The corpus pass `corpus_exprmatrix` (and `corpus_exprmatrix_runerr` for the index cells) in `tests/corpus/CMakeLists.txt`; verify: `ctest --preset all -R corpus_exprmatrix` passes, and `ctest --preset originals -R corpus_exprmatrix` passes against 2.10.
 - [x] 3.3 Record the `.orig` files of the bug-orig tests: `cmake --preset amiga -DBUG_ORIG_RECORD_FILTER=compiler-expr-*` and `--target bug-orig-record`; verify: `ctest --preset bug-orig -R bug_orig_compiler_expr` gives REPRODUCED for every single-issue test (DIFFERS for none), and `ctest --preset originals -R bug_orig_record_compiler_expr` passes.
 - [x] 3.4 Check each open test's expectation with a temporary patch where one exists (the branch of `quick-long-arithmetic`'s spike, if available), otherwise by the model only; verify: the report names which tests were checked FIXED with a patch.
-- [ ] 3.5 AmiBlitz3: `ab3_cli_case(... REF REF_EXPECT ...)` for the agreement and fixed sources, `REF_EXPECT` from AmiBlitz3's measured output; rows in `docs/ab3/variant.md` for the cells where AmiBlitz3 differs; verify: `ctest --preset oracle` and `ctest --preset all -R '^ab3_cli'` pass.
+- [x] 3.5 AmiBlitz3: `ab3_cli_case(... REF REF_EXPECT ...)` for the agreement and fixed sources, `REF_EXPECT` from AmiBlitz3's measured output; rows in `docs/ab3/variant.md` for the cells where AmiBlitz3 differs; verify: `ctest --preset oracle` and `ctest --preset all -R '^ab3_cli'` pass.
 - [x] 3.6 Selection: `tools/testinfo/rules.txt` maps the description, the generated files and `tools/lib/exprmatrix` to the new tests; verify: the selection test of `testing/test-selection` with a changed description file.
 
 ## 4. Checks
 
-- [ ] 4.1 `ctest --preset host`; the targeted tests of 3.2, 3.3, 3.5; a clean rebuild without warnings; the prev comparison shows no changed result (rule 3: no `PREV_INTENDED`); verify: the commands pass, the prev report lists no difference.
+- [x] 4.1 `ctest --preset host`; the targeted tests of 3.2, 3.3, 3.5; a clean rebuild without warnings; the prev comparison shows no changed result (rule 3: no `PREV_INTENDED`); verify: the commands pass, the prev report lists no difference.
 
 ## 5. Documents
 

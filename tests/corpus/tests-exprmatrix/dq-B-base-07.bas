@@ -7,6 +7,14 @@
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 rq.q=0
+rq=vl LSL nl : NPrint "dq-lsl-l-l-B ",Hex$(Peek.l(&rq))
+rq=vl LSL nq : NPrint "dq-lsl-l-q-B ",Hex$(Peek.l(&rq))
+rq=vl LSL 3 : NPrint "dq-lsl-l-cb-B ",Hex$(Peek.l(&rq))
+rq=vl LSL 3 : NPrint "dq-lsl-l-cw-B ",Hex$(Peek.l(&rq))
+rq=vl LSL 3 : NPrint "dq-lsl-l-cl-B ",Hex$(Peek.l(&rq))
+rq=vl LSL 3.5 : NPrint "dq-lsl-l-cf-B ",Hex$(Peek.l(&rq))
+rq=vq LSL nb : NPrint "dq-lsl-q-b-B ",Hex$(Peek.l(&rq))
+rq=vq LSL nw : NPrint "dq-lsl-q-w-B ",Hex$(Peek.l(&rq))
 rq=vq LSL nl : NPrint "dq-lsl-q-l-B ",Hex$(Peek.l(&rq))
 rq=vq LSL nq : NPrint "dq-lsl-q-q-B ",Hex$(Peek.l(&rq))
 rq=vq LSL 3 : NPrint "dq-lsl-q-cb-B ",Hex$(Peek.l(&rq))
@@ -55,12 +63,4 @@ rq=vl LSR nq : NPrint "dq-lsr-l-q-B ",Hex$(Peek.l(&rq))
 rq=vl LSR 3 : NPrint "dq-lsr-l-cb-B ",Hex$(Peek.l(&rq))
 rq=vl LSR 3 : NPrint "dq-lsr-l-cw-B ",Hex$(Peek.l(&rq))
 rq=vl LSR 3 : NPrint "dq-lsr-l-cl-B ",Hex$(Peek.l(&rq))
-rq=vl LSR 3.5 : NPrint "dq-lsr-l-cf-B ",Hex$(Peek.l(&rq))
-rq=vq LSR nb : NPrint "dq-lsr-q-b-B ",Hex$(Peek.l(&rq))
-rq=vq LSR nw : NPrint "dq-lsr-q-w-B ",Hex$(Peek.l(&rq))
-rq=vq LSR nl : NPrint "dq-lsr-q-l-B ",Hex$(Peek.l(&rq))
-rq=vq LSR nq : NPrint "dq-lsr-q-q-B ",Hex$(Peek.l(&rq))
-rq=vq LSR 3 : NPrint "dq-lsr-q-cb-B ",Hex$(Peek.l(&rq))
-rq=vq LSR 3 : NPrint "dq-lsr-q-cw-B ",Hex$(Peek.l(&rq))
-rq=vq LSR 3 : NPrint "dq-lsr-q-cl-B ",Hex$(Peek.l(&rq))
 End

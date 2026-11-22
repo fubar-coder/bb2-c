@@ -1,3 +1,6 @@
+if-mul-cf-b-A T
+if-mul-cf-w-A T
+if-mul-cf-l-A T
 if-mul-cf-q-A T
 if-mul-cf-f-A T
 if-div-b-b-A T
@@ -51,7 +54,4 @@ if-div-cb-q-A T
 if-div-cb-f-A T
 if-div-cb-cb-A T
 if-div-cb-cw-A F
-if-div-cb-cl-A F
-if-div-cw-b-A T
-if-div-cw-w-A T
 rc=0

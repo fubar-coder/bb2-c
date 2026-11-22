@@ -7,6 +7,14 @@
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 rq.q=0
+rq=vl LSR 3.5 : NPrint "dq-lsr-l-cf-B ",Hex$(Peek.l(&rq))
+rq=vq LSR nb : NPrint "dq-lsr-q-b-B ",Hex$(Peek.l(&rq))
+rq=vq LSR nw : NPrint "dq-lsr-q-w-B ",Hex$(Peek.l(&rq))
+rq=vq LSR nl : NPrint "dq-lsr-q-l-B ",Hex$(Peek.l(&rq))
+rq=vq LSR nq : NPrint "dq-lsr-q-q-B ",Hex$(Peek.l(&rq))
+rq=vq LSR 3 : NPrint "dq-lsr-q-cb-B ",Hex$(Peek.l(&rq))
+rq=vq LSR 3 : NPrint "dq-lsr-q-cw-B ",Hex$(Peek.l(&rq))
+rq=vq LSR 3 : NPrint "dq-lsr-q-cl-B ",Hex$(Peek.l(&rq))
 rq=vq LSR 3.5 : NPrint "dq-lsr-q-cf-B ",Hex$(Peek.l(&rq))
 rq=-3 LSR nb : NPrint "dq-lsr-cb-b-B ",Hex$(Peek.l(&rq))
 rq=-3 LSR nw : NPrint "dq-lsr-cb-w-B ",Hex$(Peek.l(&rq))
@@ -55,12 +63,4 @@ rq=vq ASL nb : NPrint "dq-asl-q-b-B ",Hex$(Peek.l(&rq))
 rq=vq ASL nw : NPrint "dq-asl-q-w-B ",Hex$(Peek.l(&rq))
 rq=vq ASL nl : NPrint "dq-asl-q-l-B ",Hex$(Peek.l(&rq))
 rq=vq ASL nq : NPrint "dq-asl-q-q-B ",Hex$(Peek.l(&rq))
-rq=vq ASL 3 : NPrint "dq-asl-q-cb-B ",Hex$(Peek.l(&rq))
-rq=vq ASL 3 : NPrint "dq-asl-q-cw-B ",Hex$(Peek.l(&rq))
-rq=vq ASL 3 : NPrint "dq-asl-q-cl-B ",Hex$(Peek.l(&rq))
-rq=vq ASL 3.5 : NPrint "dq-asl-q-cf-B ",Hex$(Peek.l(&rq))
-rq=-3 ASL nq : NPrint "dq-asl-cb-q-B ",Hex$(Peek.l(&rq))
-rq=-3 ASL 3.5 : NPrint "dq-asl-cb-cf-B ",Hex$(Peek.l(&rq))
-rq=-1000 ASL nq : NPrint "dq-asl-cw-q-B ",Hex$(Peek.l(&rq))
-rq=-1000 ASL 3.5 : NPrint "dq-asl-cw-cf-B ",Hex$(Peek.l(&rq))
 End

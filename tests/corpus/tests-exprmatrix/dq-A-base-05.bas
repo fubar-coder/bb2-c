@@ -7,6 +7,7 @@
 vb.b=3 : vw.w=1000 : vl.l=100000 : vq.q=1.5
 nb.b=2 : nw.w=2 : nl.l=2 : nq.q=2 : nf.f=2
 rq.q=0
+rq=100000 ^ nw : NPrint "dq-pow-cl-w-A ",Hex$(Peek.l(&rq))
 rq=100000 ^ nl : NPrint "dq-pow-cl-l-A ",Hex$(Peek.l(&rq))
 rq=100000 ^ nq : NPrint "dq-pow-cl-q-A ",Hex$(Peek.l(&rq))
 rq=100000 ^ nf : NPrint "dq-pow-cl-f-A ",Hex$(Peek.l(&rq))
@@ -62,5 +63,4 @@ rq=1.5 AND 3 : NPrint "dq-and-cf-cb-A ",Hex$(Peek.l(&rq))
 rq=1.5 AND 1000 : NPrint "dq-and-cf-cw-A ",Hex$(Peek.l(&rq))
 rq=1.5 AND 100000 : NPrint "dq-and-cf-cl-A ",Hex$(Peek.l(&rq))
 rq=1.5 AND 1.5 : NPrint "dq-and-cf-cf-A ",Hex$(Peek.l(&rq))
-rq=vb OR vl : NPrint "dq-or-b-l-A ",Hex$(Peek.l(&rq))
 End

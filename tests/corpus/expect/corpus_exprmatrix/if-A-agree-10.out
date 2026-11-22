@@ -1,3 +1,7 @@
+if-lsr-cw-w-A T
+if-lsr-cw-l-A T
+if-lsr-cw-cb-A T
+if-lsr-cw-cw-A T
 if-lsr-cw-cl-A T
 if-lsr-cl-b-A T
 if-lsr-cl-w-A T
@@ -50,8 +54,4 @@ if-asr-b-cl-A F
 if-asr-w-b-A T
 if-asr-w-w-A T
 if-asr-w-l-A T
-if-asr-w-cb-A T
-if-asr-w-cw-A T
-if-asr-w-cl-A T
-if-asr-l-b-A T
 rc=0

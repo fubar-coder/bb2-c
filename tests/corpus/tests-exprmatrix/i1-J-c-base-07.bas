@@ -9,88 +9,88 @@ vb.b=-3 : vw.w=-20 : vl.l=-30 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 Dim ia.l(300)
 For ii.l=0 To 300 : ia(ii)=ii*16+1 : Next
-SetErr : NPrint "i1-lsr-q-cl-J !runtime" : Goto mx1 : End SetErr
-NPrint "i1-lsr-q-cl-J ",ia(vq LSR 3)
+SetErr : NPrint "i1-lsr-w-q-J !runtime" : Goto mx1 : End SetErr
+NPrint "i1-lsr-w-q-J ",ia(vw LSR nq)
 mx1:
-SetErr : NPrint "i1-lsr-cb-q-J !runtime" : Goto mx2 : End SetErr
-NPrint "i1-lsr-cb-q-J ",ia(-3 LSR nq)
+SetErr : NPrint "i1-lsr-l-q-J !runtime" : Goto mx2 : End SetErr
+NPrint "i1-lsr-l-q-J ",ia(vl LSR nq)
 mx2:
-SetErr : NPrint "i1-lsr-cw-q-J !runtime" : Goto mx3 : End SetErr
-NPrint "i1-lsr-cw-q-J ",ia(-200 LSR nq)
+SetErr : NPrint "i1-lsr-q-b-J !runtime" : Goto mx3 : End SetErr
+NPrint "i1-lsr-q-b-J ",ia(vq LSR nb)
 mx3:
-SetErr : NPrint "i1-lsr-cl-q-J !runtime" : Goto mx4 : End SetErr
-NPrint "i1-lsr-cl-q-J ",ia(-40000 LSR nq)
+SetErr : NPrint "i1-lsr-q-w-J !runtime" : Goto mx4 : End SetErr
+NPrint "i1-lsr-q-w-J ",ia(vq LSR nw)
 mx4:
-SetErr : NPrint "i1-asl-b-q-J !runtime" : Goto mx5 : End SetErr
-NPrint "i1-asl-b-q-J ",ia(vb ASL nq)
+SetErr : NPrint "i1-lsr-q-l-J !runtime" : Goto mx5 : End SetErr
+NPrint "i1-lsr-q-l-J ",ia(vq LSR nl)
 mx5:
-SetErr : NPrint "i1-asl-w-q-J !runtime" : Goto mx6 : End SetErr
-NPrint "i1-asl-w-q-J ",ia(vw ASL nq)
+SetErr : NPrint "i1-lsr-q-q-J !runtime" : Goto mx6 : End SetErr
+NPrint "i1-lsr-q-q-J ",ia(vq LSR nq)
 mx6:
-SetErr : NPrint "i1-asl-l-q-J !runtime" : Goto mx7 : End SetErr
-NPrint "i1-asl-l-q-J ",ia(vl ASL nq)
+SetErr : NPrint "i1-lsr-q-cb-J !runtime" : Goto mx7 : End SetErr
+NPrint "i1-lsr-q-cb-J ",ia(vq LSR 3)
 mx7:
-SetErr : NPrint "i1-asl-q-b-J !runtime" : Goto mx8 : End SetErr
-NPrint "i1-asl-q-b-J ",ia(vq ASL nb)
+SetErr : NPrint "i1-lsr-q-cw-J !runtime" : Goto mx8 : End SetErr
+NPrint "i1-lsr-q-cw-J ",ia(vq LSR 3)
 mx8:
-SetErr : NPrint "i1-asl-q-w-J !runtime" : Goto mx9 : End SetErr
-NPrint "i1-asl-q-w-J ",ia(vq ASL nw)
+SetErr : NPrint "i1-lsr-q-cl-J !runtime" : Goto mx9 : End SetErr
+NPrint "i1-lsr-q-cl-J ",ia(vq LSR 3)
 mx9:
-SetErr : NPrint "i1-asl-q-l-J !runtime" : Goto mx10 : End SetErr
-NPrint "i1-asl-q-l-J ",ia(vq ASL nl)
+SetErr : NPrint "i1-lsr-cb-q-J !runtime" : Goto mx10 : End SetErr
+NPrint "i1-lsr-cb-q-J ",ia(-3 LSR nq)
 mx10:
-SetErr : NPrint "i1-asl-q-q-J !runtime" : Goto mx11 : End SetErr
-NPrint "i1-asl-q-q-J ",ia(vq ASL nq)
+SetErr : NPrint "i1-lsr-cw-q-J !runtime" : Goto mx11 : End SetErr
+NPrint "i1-lsr-cw-q-J ",ia(-200 LSR nq)
 mx11:
-SetErr : NPrint "i1-asl-q-cb-J !runtime" : Goto mx12 : End SetErr
-NPrint "i1-asl-q-cb-J ",ia(vq ASL 3)
+SetErr : NPrint "i1-lsr-cl-q-J !runtime" : Goto mx12 : End SetErr
+NPrint "i1-lsr-cl-q-J ",ia(-40000 LSR nq)
 mx12:
-SetErr : NPrint "i1-asl-q-cw-J !runtime" : Goto mx13 : End SetErr
-NPrint "i1-asl-q-cw-J ",ia(vq ASL 3)
+SetErr : NPrint "i1-asl-b-q-J !runtime" : Goto mx13 : End SetErr
+NPrint "i1-asl-b-q-J ",ia(vb ASL nq)
 mx13:
-SetErr : NPrint "i1-asl-q-cl-J !runtime" : Goto mx14 : End SetErr
-NPrint "i1-asl-q-cl-J ",ia(vq ASL 3)
+SetErr : NPrint "i1-asl-w-q-J !runtime" : Goto mx14 : End SetErr
+NPrint "i1-asl-w-q-J ",ia(vw ASL nq)
 mx14:
-SetErr : NPrint "i1-asl-cb-q-J !runtime" : Goto mx15 : End SetErr
-NPrint "i1-asl-cb-q-J ",ia(-3 ASL nq)
+SetErr : NPrint "i1-asl-l-q-J !runtime" : Goto mx15 : End SetErr
+NPrint "i1-asl-l-q-J ",ia(vl ASL nq)
 mx15:
-SetErr : NPrint "i1-asl-cw-q-J !runtime" : Goto mx16 : End SetErr
-NPrint "i1-asl-cw-q-J ",ia(-200 ASL nq)
+SetErr : NPrint "i1-asl-q-b-J !runtime" : Goto mx16 : End SetErr
+NPrint "i1-asl-q-b-J ",ia(vq ASL nb)
 mx16:
-SetErr : NPrint "i1-asl-cl-q-J !runtime" : Goto mx17 : End SetErr
-NPrint "i1-asl-cl-q-J ",ia(-40000 ASL nq)
+SetErr : NPrint "i1-asl-q-w-J !runtime" : Goto mx17 : End SetErr
+NPrint "i1-asl-q-w-J ",ia(vq ASL nw)
 mx17:
-SetErr : NPrint "i1-asr-b-q-J !runtime" : Goto mx18 : End SetErr
-NPrint "i1-asr-b-q-J ",ia(vb ASR nq)
+SetErr : NPrint "i1-asl-q-l-J !runtime" : Goto mx18 : End SetErr
+NPrint "i1-asl-q-l-J ",ia(vq ASL nl)
 mx18:
-SetErr : NPrint "i1-asr-w-q-J !runtime" : Goto mx19 : End SetErr
-NPrint "i1-asr-w-q-J ",ia(vw ASR nq)
+SetErr : NPrint "i1-asl-q-q-J !runtime" : Goto mx19 : End SetErr
+NPrint "i1-asl-q-q-J ",ia(vq ASL nq)
 mx19:
-SetErr : NPrint "i1-asr-l-q-J !runtime" : Goto mx20 : End SetErr
-NPrint "i1-asr-l-q-J ",ia(vl ASR nq)
+SetErr : NPrint "i1-asl-q-cb-J !runtime" : Goto mx20 : End SetErr
+NPrint "i1-asl-q-cb-J ",ia(vq ASL 3)
 mx20:
-SetErr : NPrint "i1-asr-q-b-J !runtime" : Goto mx21 : End SetErr
-NPrint "i1-asr-q-b-J ",ia(vq ASR nb)
+SetErr : NPrint "i1-asl-q-cw-J !runtime" : Goto mx21 : End SetErr
+NPrint "i1-asl-q-cw-J ",ia(vq ASL 3)
 mx21:
-SetErr : NPrint "i1-asr-q-w-J !runtime" : Goto mx22 : End SetErr
-NPrint "i1-asr-q-w-J ",ia(vq ASR nw)
+SetErr : NPrint "i1-asl-q-cl-J !runtime" : Goto mx22 : End SetErr
+NPrint "i1-asl-q-cl-J ",ia(vq ASL 3)
 mx22:
-SetErr : NPrint "i1-asr-q-l-J !runtime" : Goto mx23 : End SetErr
-NPrint "i1-asr-q-l-J ",ia(vq ASR nl)
+SetErr : NPrint "i1-asl-cb-q-J !runtime" : Goto mx23 : End SetErr
+NPrint "i1-asl-cb-q-J ",ia(-3 ASL nq)
 mx23:
-SetErr : NPrint "i1-asr-q-q-J !runtime" : Goto mx24 : End SetErr
-NPrint "i1-asr-q-q-J ",ia(vq ASR nq)
+SetErr : NPrint "i1-asl-cw-q-J !runtime" : Goto mx24 : End SetErr
+NPrint "i1-asl-cw-q-J ",ia(-200 ASL nq)
 mx24:
-SetErr : NPrint "i1-asr-q-cb-J !runtime" : Goto mx25 : End SetErr
-NPrint "i1-asr-q-cb-J ",ia(vq ASR 3)
+SetErr : NPrint "i1-asl-cl-q-J !runtime" : Goto mx25 : End SetErr
+NPrint "i1-asl-cl-q-J ",ia(-40000 ASL nq)
 mx25:
-SetErr : NPrint "i1-asr-q-cw-J !runtime" : Goto mx26 : End SetErr
-NPrint "i1-asr-q-cw-J ",ia(vq ASR 3)
+SetErr : NPrint "i1-asr-b-q-J !runtime" : Goto mx26 : End SetErr
+NPrint "i1-asr-b-q-J ",ia(vb ASR nq)
 mx26:
-SetErr : NPrint "i1-asr-q-cl-J !runtime" : Goto mx27 : End SetErr
-NPrint "i1-asr-q-cl-J ",ia(vq ASR 3)
+SetErr : NPrint "i1-asr-w-q-J !runtime" : Goto mx27 : End SetErr
+NPrint "i1-asr-w-q-J ",ia(vw ASR nq)
 mx27:
-SetErr : NPrint "i1-asr-cb-q-J !runtime" : Goto mx28 : End SetErr
-NPrint "i1-asr-cb-q-J ",ia(-3 ASR nq)
+SetErr : NPrint "i1-asr-l-q-J !runtime" : Goto mx28 : End SetErr
+NPrint "i1-asr-l-q-J ",ia(vl ASR nq)
 mx28:
 End

@@ -6,6 +6,12 @@
 ; do not edit
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 rb.b=0
+rb=-3 AND vw : NPrint "db-and-cb-w-B ",rb
+rb=-3 AND vl : NPrint "db-and-cb-l-B ",rb
+rb=-3 AND vq : NPrint "db-and-cb-q-B ",rb
+rb=-3 AND -1000 : NPrint "db-and-cb-cw-B ",rb
+rb=-3 AND -100000 : NPrint "db-and-cb-cl-B ",rb
+rb=-1000 AND vb : NPrint "db-and-cw-b-B ",rb
 rb=-1000 AND vw : NPrint "db-and-cw-w-B ",rb
 rb=-1000 AND vl : NPrint "db-and-cw-l-B ",rb
 rb=-1000 AND vq : NPrint "db-and-cw-q-B ",rb
@@ -56,10 +62,4 @@ rb=vb EOR vq : NPrint "db-eor-b-q-B ",rb
 rb=vb EOR -3 : NPrint "db-eor-b-cb-B ",rb
 rb=vb EOR -1000 : NPrint "db-eor-b-cw-B ",rb
 rb=vb EOR -100000 : NPrint "db-eor-b-cl-B ",rb
-rb=vw EOR vb : NPrint "db-eor-w-b-B ",rb
-rb=vw EOR vl : NPrint "db-eor-w-l-B ",rb
-rb=vw EOR vq : NPrint "db-eor-w-q-B ",rb
-rb=vw EOR -3 : NPrint "db-eor-w-cb-B ",rb
-rb=vw EOR -100000 : NPrint "db-eor-w-cl-B ",rb
-rb=vl EOR vb : NPrint "db-eor-l-b-B ",rb
 End

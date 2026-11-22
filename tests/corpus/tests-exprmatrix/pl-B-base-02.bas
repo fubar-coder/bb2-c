@@ -37,6 +37,14 @@ Print "pl-mod-cf-cb-B " : pl{-1.5 MOD -3}
 Print "pl-mod-cf-cw-B " : pl{-1.5 MOD -1000}
 Print "pl-mod-cf-cl-B " : pl{-1.5 MOD -100000}
 Print "pl-mod-cf-cf-B " : pl{-1.5 MOD -1.5}
+Print "pl-pow-b-cf-B " : pl{vb ^ 3.5}
+Print "pl-pow-w-cf-B " : pl{vw ^ 3.5}
+Print "pl-pow-l-cf-B " : pl{vl ^ 3.5}
+Print "pl-pow-f-cf-B " : pl{vf ^ 3.5}
+Print "pl-pow-cb-cf-B " : pl{-3 ^ 3.5}
+Print "pl-pow-cw-cf-B " : pl{-1000 ^ 3.5}
+Print "pl-pow-cl-cf-B " : pl{-100000 ^ 3.5}
+Print "pl-pow-cf-cf-B " : pl{-1.5 ^ 3.5}
 Print "pl-and-b-q-B " : pl{vb AND vq}
 Print "pl-and-w-q-B " : pl{vw AND vq}
 Print "pl-and-l-q-B " : pl{vl AND vq}
@@ -56,12 +64,4 @@ Print "pl-or-l-q-B " : pl{vl OR vq}
 Print "pl-or-q-b-B " : pl{vq OR vb}
 Print "pl-or-q-w-B " : pl{vq OR vw}
 Print "pl-or-q-l-B " : pl{vq OR vl}
-Print "pl-or-q-q-B " : pl{vq OR vq}
-Print "pl-or-q-cb-B " : pl{vq OR -3}
-Print "pl-or-q-cw-B " : pl{vq OR -1000}
-Print "pl-or-q-cl-B " : pl{vq OR -100000}
-Print "pl-or-cb-q-B " : pl{-3 OR vq}
-Print "pl-or-cw-q-B " : pl{-1000 OR vq}
-Print "pl-or-cl-q-B " : pl{-100000 OR vq}
-Print "pl-eor-b-q-B " : pl{vb EOR vq}
 End

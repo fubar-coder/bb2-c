@@ -1,0 +1,40 @@
+[compile]
+rc=0
+[run]
+if-asl-cw-cb-B T
+if-asl-cw-cw-B T
+if-asl-cw-cl-B T
+if-asl-cl-cb-B T
+if-asl-cl-cw-B T
+if-asl-cl-cl-B T
+if-asr-b-b-B T
+if-asr-b-w-B T
+if-asr-b-l-B T
+if-asr-b-cb-B T
+if-asr-b-cw-B T
+if-asr-b-cl-B T
+if-asr-w-b-B T
+if-asr-w-w-B T
+if-asr-w-l-B T
+if-asr-w-cb-B T
+if-asr-w-cw-B T
+if-asr-w-cl-B T
+if-asr-cb-cb-B T
+if-asr-cb-cw-B T
+if-asr-cb-cl-B T
+if-asr-cw-cb-B T
+if-asr-cw-cw-B T
+if-asr-cw-cl-B T
+if-asr-cl-cb-B T
+if-asr-cl-cw-B T
+if-asr-cl-cl-B T
+if-eq-b-b-B T
+if-eq-b-w-B F
+if-eq-b-l-B F
+if-eq-b-q-B F
+if-eq-b-f-B F
+if-eq-b-cb-B T
+if-eq-b-cw-B F
+if-eq-b-cl-B F
+if-eq-b-cf-B F
+rc=0

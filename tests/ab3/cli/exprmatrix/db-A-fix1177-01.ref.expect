@@ -1,0 +1,12 @@
+[compile]
+rc=0
+[run]
+db-eq-cf-q-A -1
+db-ne-cf-q-A 0
+db-lt-q-l-A 0
+db-lt-cf-q-A 0
+db-le-q-l-A 0
+db-gt-q-l-A -1
+db-ge-q-l-A -1
+db-ge-cf-q-A -1
+rc=0

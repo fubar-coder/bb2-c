@@ -1,3 +1,11 @@
+i1-lsr-w-q-J !runtime
+i1-lsr-l-q-J !runtime
+i1-lsr-q-b-J !runtime
+i1-lsr-q-w-J !runtime
+i1-lsr-q-l-J !runtime
+i1-lsr-q-q-J !runtime
+i1-lsr-q-cb-J !runtime
+i1-lsr-q-cw-J !runtime
 i1-lsr-q-cl-J !runtime
 i1-lsr-cb-q-J !runtime
 i1-lsr-cw-q-J !runtime
@@ -18,12 +26,4 @@ i1-asl-cl-q-J !runtime
 i1-asr-b-q-J !runtime
 i1-asr-w-q-J !runtime
 i1-asr-l-q-J !runtime
-i1-asr-q-b-J !runtime
-i1-asr-q-w-J !runtime
-i1-asr-q-l-J !runtime
-i1-asr-q-q-J !runtime
-i1-asr-q-cb-J !runtime
-i1-asr-q-cw-J !runtime
-i1-asr-q-cl-J !runtime
-i1-asr-cb-q-J !runtime
 rc=0

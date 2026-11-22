@@ -7,6 +7,15 @@
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
 nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
 rw.w=0
+rw=vl LSL 3 : NPrint "dw-lsl-l-cw-B ",rw
+rw=vl LSL 3 : NPrint "dw-lsl-l-cl-B ",rw
+rw=vq LSL nb : NPrint "dw-lsl-q-b-B ",rw
+rw=vq LSL nw : NPrint "dw-lsl-q-w-B ",rw
+rw=vq LSL nl : NPrint "dw-lsl-q-l-B ",rw
+rw=vq LSL nq : NPrint "dw-lsl-q-q-B ",rw
+rw=vq LSL 3 : NPrint "dw-lsl-q-cb-B ",rw
+rw=vq LSL 3 : NPrint "dw-lsl-q-cw-B ",rw
+rw=vq LSL 3 : NPrint "dw-lsl-q-cl-B ",rw
 rw=vq LSL 3.5 : NPrint "dw-lsl-q-cf-B ",rw
 rw=-3 LSL nq : NPrint "dw-lsl-cb-q-B ",rw
 rw=-1000 LSL nq : NPrint "dw-lsl-cw-q-B ",rw
@@ -54,13 +63,4 @@ rw=-3 LSR 3 : NPrint "dw-lsr-cb-cb-B ",rw
 rw=-3 LSR 3 : NPrint "dw-lsr-cb-cw-B ",rw
 rw=-3 LSR 3 : NPrint "dw-lsr-cb-cl-B ",rw
 rw=-1000 LSR nb : NPrint "dw-lsr-cw-b-B ",rw
-rw=-1000 LSR nw : NPrint "dw-lsr-cw-w-B ",rw
-rw=-1000 LSR nl : NPrint "dw-lsr-cw-l-B ",rw
-rw=-1000 LSR nq : NPrint "dw-lsr-cw-q-B ",rw
-rw=-1000 LSR 3 : NPrint "dw-lsr-cw-cb-B ",rw
-rw=-1000 LSR 3 : NPrint "dw-lsr-cw-cw-B ",rw
-rw=-1000 LSR 3 : NPrint "dw-lsr-cw-cl-B ",rw
-rw=-100000 LSR nb : NPrint "dw-lsr-cl-b-B ",rw
-rw=-100000 LSR nw : NPrint "dw-lsr-cl-w-B ",rw
-rw=-100000 LSR nl : NPrint "dw-lsr-cl-l-B ",rw
 End

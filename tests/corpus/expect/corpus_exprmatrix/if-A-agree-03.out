@@ -1,3 +1,4 @@
+if-sub-l-cl-A F
 if-sub-l-cf-A T
 if-sub-q-b-A T
 if-sub-q-w-A T
@@ -23,6 +24,7 @@ if-sub-cb-f-A T
 if-sub-cb-cb-A F
 if-sub-cb-cw-A T
 if-sub-cb-cl-A T
+if-sub-cb-cf-A T
 if-sub-cw-b-A T
 if-sub-cw-w-A F
 if-sub-cw-l-A T
@@ -52,6 +54,4 @@ if-mul-b-cb-A T
 if-mul-b-cw-A T
 if-mul-b-cl-A T
 if-mul-b-cf-A T
-if-mul-w-b-A T
-if-mul-w-w-A T
 rc=0

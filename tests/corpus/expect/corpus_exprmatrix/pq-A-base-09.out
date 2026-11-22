@@ -1,3 +1,4 @@
+pq-asl-l-b-A 1A800000
 pq-asl-l-w-A 1A800000
 pq-asl-l-l-A 1A800000
 pq-asl-l-q-A 1A800000
@@ -53,5 +54,4 @@ pq-asr-q-cw-A 00006000
 pq-asr-q-cl-A 00006000
 pq-asr-q-cf-A 00006000
 pq-asr-cb-q-A 0000C000
-pq-asr-cb-cf-A 0000C000
 rc=0

@@ -1,3 +1,11 @@
+dq-asl-q-cb-B FFF40000
+dq-asl-q-cw-B FFF40000
+dq-asl-q-cl-B FFF40000
+dq-asl-q-cf-B FFF40000
+dq-asl-cb-q-B FFE80000
+dq-asl-cb-cf-B FFE80000
+dq-asl-cw-q-B E0C00000
+dq-asl-cw-cf-B E0C00000
 dq-asl-cl-b-B CB000000
 dq-asl-cl-w-B CB000000
 dq-asl-cl-l-B CB000000
@@ -46,12 +54,4 @@ dq-asr-cf-cb-B FFFFD000
 dq-asr-cf-cw-B FFFFD000
 dq-asr-cf-cl-B FFFFD000
 dq-asr-cf-cf-B FFFFD000
-dq-mod-cb-cb-B 00000000
-dq-mod-cb-cw-B FC150000
-dq-mod-cb-cf-B FFFD0000
-dq-mod-cw-cb-B FFFC0000
-dq-mod-cw-cw-B 00000000
-dq-mod-cw-cf-B 00000000
-dq-mod-cf-cb-B FFFB0000
-dq-mod-cf-cw-B FC160000
 rc=0

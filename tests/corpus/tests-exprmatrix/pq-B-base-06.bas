@@ -5,12 +5,20 @@
 ; tests/corpus/tests-exprmatrix/matrix.txt (tools/exprmatrix/README.md);
 ; do not edit
 vb.b=-3 : vw.w=-1000 : vl.l=-100000 : vq.q=-1.5
-nb.b=3 : nw.w=3 : nl.l=3 : nq.q=3
+nb.b=3 : nw.w=3 : nq.q=3
 tq.q=0
 Statement pq{x.q}
   SHARED tq
   tq=x : NPrint Hex$(Peek.l(&tq))
 End Statement
+Print "pq-or-cf-q-B " : pq{-1.5 OR vq}
+Print "pq-or-cf-cb-B " : pq{-1.5 OR -3}
+Print "pq-or-cf-cw-B " : pq{-1.5 OR -1000}
+Print "pq-or-cf-cl-B " : pq{-1.5 OR -100000}
+Print "pq-or-cf-cf-B " : pq{-1.5 OR -1.5}
+Print "pq-eor-b-l-B " : pq{vb EOR vl}
+Print "pq-eor-b-q-B " : pq{vb EOR vq}
+Print "pq-eor-b-cl-B " : pq{vb EOR -100000}
 Print "pq-eor-b-cf-B " : pq{vb EOR -1.5}
 Print "pq-eor-w-l-B " : pq{vw EOR vl}
 Print "pq-eor-w-q-B " : pq{vw EOR vq}
@@ -59,12 +67,4 @@ Print "pq-lsl-w-q-B " : pq{vw LSL nq}
 Print "pq-lsl-w-cf-B " : pq{vw LSL 3.5}
 Print "pq-lsl-l-b-B " : pq{vl LSL nb}
 Print "pq-lsl-l-w-B " : pq{vl LSL nw}
-Print "pq-lsl-l-l-B " : pq{vl LSL nl}
-Print "pq-lsl-l-q-B " : pq{vl LSL nq}
-Print "pq-lsl-l-cb-B " : pq{vl LSL 3}
-Print "pq-lsl-l-cw-B " : pq{vl LSL 3}
-Print "pq-lsl-l-cl-B " : pq{vl LSL 3}
-Print "pq-lsl-l-cf-B " : pq{vl LSL 3.5}
-Print "pq-lsl-q-b-B " : pq{vq LSL nb}
-Print "pq-lsl-q-w-B " : pq{vq LSL nw}
 End

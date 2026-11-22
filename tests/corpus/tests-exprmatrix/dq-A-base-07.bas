@@ -7,6 +7,7 @@
 vb.b=3 : vw.w=1000 : vl.l=100000 : vq.q=1.5
 nb.b=2 : nw.w=2 : nl.l=2 : nq.q=2
 rq.q=0
+rq=vl EOR vw : NPrint "dq-eor-l-w-A ",Hex$(Peek.l(&rq))
 rq=vl EOR vl : NPrint "dq-eor-l-l-A ",Hex$(Peek.l(&rq))
 rq=vl EOR vq : NPrint "dq-eor-l-q-A ",Hex$(Peek.l(&rq))
 rq=vl EOR 3 : NPrint "dq-eor-l-cb-A ",Hex$(Peek.l(&rq))
@@ -62,5 +63,4 @@ rq=vq LSL 2 : NPrint "dq-lsl-q-cb-A ",Hex$(Peek.l(&rq))
 rq=vq LSL 2 : NPrint "dq-lsl-q-cw-A ",Hex$(Peek.l(&rq))
 rq=vq LSL 2 : NPrint "dq-lsl-q-cl-A ",Hex$(Peek.l(&rq))
 rq=vq LSL 2.5 : NPrint "dq-lsl-q-cf-A ",Hex$(Peek.l(&rq))
-rq=3 LSL nq : NPrint "dq-lsl-cb-q-A ",Hex$(Peek.l(&rq))
 End
