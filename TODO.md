@@ -1049,18 +1049,18 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   them); a CMake option that points the build at the main checkout's data
   (`-DBB2C_DATA_ROOT=...`, with tests); or a fixed list of single commands
   in the agent definitions.
-- [ ] **TED and ab3cli as libraries (idea of the user, 2026-11-22, not
-  decided)**: two readings.
+- [ ] **TED and ab3cli as libraries (idea of the user, 2026-11-22; an idea
+  only, not planned)**: two readings.
   - On the Amiga: TED (and ab3cli) as a `.library` with a jump table, so
     that other programs can tokenise or detokenise without starting the
     editor. Today blitz2 loads TED and calls offset 4 of its first hunk
-    (`outside`, `programs/ted/CMakeLists.txt`); that interface must stay.
-    Needs a library base, reentrant code instead of TED's global state,
+    (`outside`, `programs/ted/CMakeLists.txt`); that interface would have
+    to stay. It would need a library base, reentrant code instead of TED's global state,
     and no libgcc/libnix helpers or an opened UtilityBase.
   - On the host: the tokenizer/detokenizer of TED and the core of ab3cli
     as a host library (static in `tools/lib`, or a `.so`), used natively by
     host tests, `corpusrun` and `tools/exprmatrix` without the emulator.
-    Needs the computing part separated from the Amiga calls, as
+    It would need the computing part separated from the Amiga calls, as
     `shared/` does for some files; `tedsrc tok` is a start.
 
 ## 3 Only once §1 is done
