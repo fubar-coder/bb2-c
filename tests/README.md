@@ -1302,8 +1302,10 @@ the expected value) or **open-N** (the port still gives the original's);
   `SetErr` handler in front of every cell, so a runtime error prints
   `KEY !runtime` and the program goes on): one source of one context,
   value set, mode and class (`tests/corpus/tests-exprmatrix/CTX-SET[-u|-c]-agree|base|fixN-NN.bas`,
-  at most 56 cells, 28 in a checked source: #1190, the port's compile of a
-  source with many `SetErr` handlers under checking does not end), each
+  at most 56 cells, 28 in a checked source: set for #1190, a crash of the
+  compiler's constant fold at a full object buffer, which such a source
+  met; fixed, the limit stays until the checked sources are generated
+  again), each
   a pass and an emulator session of its own (a program can disturb the
   next one in a session); the expected files are
   `expect/corpus_exprmatrix[_runerr]/NAME.out`, for fixed cells the pair
