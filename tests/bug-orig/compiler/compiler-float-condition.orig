@@ -1,0 +1,46 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+01 f F
+02 z T
+03 m F
+04 0.5 F
+05 0.0 T
+06 1.5-1.5 T
+07 1.5+1.5 F
+08 f+z F
+09 f-f T
+10 z*f T
+11 Abs(z) T
+12 Abs(m) T
+13 -f F
+14 block f F
+15 block z T
+16 f<>0 T
+17 z<>0 F
+18 z=0 T
+19 f=z F
+20 q T
+21 qz F
+22 q-0.5 F
+23 While f rounds 0
+24 While z rounds 3
+25 Until f rounds 5
+26 Until z rounds 1
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-float-condition.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-float-condition
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
