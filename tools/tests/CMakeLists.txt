@@ -12,6 +12,16 @@ foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
+# the expression matrix's model and classes (lib/exprmatrix; exprmatrix is
+# in the list above): snitch programs
+foreach(t exprmatrix_model exprmatrix_classify)
+	add_executable(test_${t} test_${t}.cpp)
+	target_link_libraries(test_${t} PRIVATE lib_exprmatrix snitch::snitch)
+	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
+	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+	add_test(NAME ${t} COMMAND test_${t})
+endforeach()
+
 # the matrix of the run configuration of the Blitz tests (lib/testconf;
 # testconf is in the list above): snitch programs
 foreach(t testmatrix testassert)

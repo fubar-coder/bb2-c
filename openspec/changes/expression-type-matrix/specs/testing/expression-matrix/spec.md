@@ -27,11 +27,25 @@ A cell SHALL have a unique key that names its context, operator, operand kinds i
 - **THEN** the program prints one line that starts with that cell's key and holds the value of `r.l=q*l`
 
 ### Requirement: Every cell is measured with the originals and the port
-Every cell SHALL be measured with the CD's blitz2 2.10, blitz2 1.95 built from `blitz2.s`, AmiBlitz3 v3.14.0, and the port with the CD's libraries and with the C libraries, before its expected value is set; the array index cells with runtime error checking off and on. A cell that does not compile with an original SHALL be recorded as such and left out of the test sources.
+Every cell SHALL be measured with the CD's blitz2 2.10, blitz2 1.95 built from `blitz2.s`, AmiBlitz3 v3.14.0, and the port with the CD's libraries and with the C libraries, before its expected value is set. A cell that does not compile with an original SHALL be recorded as such and left out of the test sources.
 
 #### Scenario: The originals disagree
 - **WHEN** 2.10, 1.95 and AmiBlitz3 do not give the same value for a cell
 - **THEN** the cell is reported with the three values and gets no expected value until the user decides
+
+### Requirement: Index cells outside the array only with checking
+An array index cell SHALL be measured with runtime error checking on, and with it off only where the checked build of that compiler reads an element of the array; an index cell outside the array SHALL be measured and tested only with checking on.
+
+#### Scenario: An index outside the array
+- **WHEN** an index cell's expression gives an index below 0 or beyond the `Dim` in the checked build
+- **THEN** the cell's measured and expected result is the runtime error "Array Subscript out of Range" with checking on, and the cell is in no source run with checking off
+
+### Requirement: AmiBlitz3's index cells without checking
+AmiBlitz3's index cells SHALL be measured with runtime error checking off only, over the cells that 1.95's checked build reads inside the array: AmiBlitz3's checked mode needs its debugger module and checks no index without it.
+
+#### Scenario: AmiBlitz3 and an index cell
+- **WHEN** an index cell is inside the array in 1.95's checked build
+- **THEN** AmiBlitz3's value of the cell is measured with checking off, and no checked value of AmiBlitz3 is recorded
 
 ### Requirement: The expected value comes from a recorded rule
 The expected value of a cell SHALL come from a recorded decision of the user that covers the operation, and each rule of the model SHALL name its entry by heading and date or ID. Where no decision covers it, the expected value SHALL be the original's value if that is the exact result of the operation in the type the original computes it in, converted to the context as the original converts.

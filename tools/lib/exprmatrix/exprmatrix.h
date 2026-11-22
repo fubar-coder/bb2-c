@@ -140,6 +140,104 @@ int em_generate(const struct em_matrix *m, const char *desc, long per_source, st
                 size_t *nout, char **errors);
 void em_sources_free(struct em_source *s, size_t n);
 
+/*
+ * The model (model.c, design decision 7): the value a cell prints by a set
+ * of rules.  The rules are flags; the original's set is EM_RULES_ORIG
+ * (blitz2 1.95 with the CD's libraries), the fixed one EM_RULES_FIXED.
+ */
+enum {
+    EM_R_CDLIB = 1 << 0,        /* the CD's libraries (else the port's C libraries, #199 #233 #234 fixed) */
+    EM_R_1177 = 1 << 1,         /* comparisons with their own values (#1177) */
+    EM_R_1186 = 1 << 2,         /* the cut fraction literal left of a comparison is a Float (#1186) */
+    EM_R_1178 = 1 << 3,         /* Quick arithmetic by variant C (#1178) */
+    EM_R_1179 = 1 << 4,         /* every array index a Long (#1179) */
+    EM_R_1187 = 1 << 5,         /* a Float condition tests the value (#1187) */
+    EM_R_1188 = 1 << 6          /* a fraction constant keeps its fraction under a Byte type (#1188) */
+};
+#define EM_RULES_ORIG EM_R_CDLIB
+#define EM_RULES_PORTCD (EM_R_CDLIB | EM_R_1177)    /* the port as measured, CD's libraries */
+#define EM_RULES_PORT EM_R_1177                     /* the port as measured, C libraries */
+#define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188)
+
+/* what keeps a value from being exact or known (the question classes of
+   design decision 7) */
+enum {
+    EM_F_D1 = 1 << 0,           /* a Float condition of the original: what d1 holds (#1187) */
+    EM_F_POW = 1 << 1,          /* ^ (mathtrans SPPow, not modelled) */
+    EM_F_OVF = 1 << 2,          /* Q-A: an overflow of a result or a conversion */
+    EM_F_BITQ = 1 << 3,         /* Q-C: AND OR EOR NOT or a shift with a Quick or Float operand */
+    EM_F_MODNF = 1 << 4,        /* Q-D: MOD with negative or fractional operands */
+    EM_F_POWINT = 1 << 5,       /* Q-E: ^ with whole-number types */
+    EM_F_POWNEG = 1 << 6        /* Q-E: ^ with a negative base (SPPow drops its sign) */
+};
+
+enum { EM_TEXT_MAX = 48 };
+
+/* the value of a cell as the measurement records it: the printed value,
+   "T"/"F", "!noncompile", "!runtime", "!outside", "!garbage", or "?"
+   (not known: EM_F_D1, EM_F_POW) */
+struct em_value {
+    char text[EM_TEXT_MAX];
+    unsigned flags;
+    unsigned long long sig;     /* EM_F_POW: the bits of the two Float operands of ^ */
+};
+
+/*
+ * The value of cell c by the rules; checked: runtime error checking on (an
+ * index cell's value with it, else without, design decision 8).
+ */
+void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules, int checked, struct em_value *out);
+
+/*
+ * The measured cell table (classify.c): one line per cell, tab separated,
+ * "key source" and the values of the nine columns below (the header line
+ * "key\t..." skipped); a value is a printed value or !noncompile[:MESSAGE],
+ * !runtime[:MESSAGE], !outside, !garbage[:VALUE]; the checked columns are
+ * empty for a cell that is no index cell.
+ */
+enum {
+    EM_C210, EM_C195, EM_PORTCD, EM_CLIB, EM_AB3,
+    EM_C210_ON, EM_C195_ON, EM_PORTCD_ON, EM_CLIB_ON, EM_NCOLS
+};
+
+struct em_row {
+    char *key;
+    int line;
+    char v[EM_NCOLS][EM_TEXT_MAX];      /* normalised as em_model gives values */
+    int has[EM_NCOLS];
+};
+
+struct em_table {
+    struct em_row *rows;
+    size_t n;
+};
+
+const char *em_col_name(int col);
+
+/* Returns 0; 1 with one line per error in *errors (malloc'd): a line
+   without the 11 fields, a bad value; -1 out of memory. */
+int em_table_parse(const char *text, size_t len, const char *file, struct em_table *t, char **errors);
+void em_table_free(struct em_table *t);
+
+/* the result of em_classify (malloc'd texts) */
+struct em_classified {
+    char *table;                /* the cell table with a class per cell (TSV) */
+    char *questions;            /* expr-matrix-questions.md */
+    char *report;               /* counts per class and question, the model's mismatches */
+    size_t mismatches;          /* original rules against 1.95 */
+    size_t port_mismatches;     /* the port's rules against the port's measurement */
+};
+
+/*
+ * Classifies every cell of table t (design decision 6): agree, fixed-N,
+ * open-N, port, new, question (with its class Q-A ... Q-F), noncompile.
+ * Returns 0; 1 with the errors in *errors (a key that is no cell, a cell
+ * measured twice or not at all, an index cell without its checked
+ * values); -1 out of memory.
+ */
+int em_classify(const struct em_matrix *m, const struct em_table *t, struct em_classified *out, char **errors);
+void em_classified_free(struct em_classified *c);
+
 #ifdef __cplusplus
 }
 #endif
