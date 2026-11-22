@@ -1,7 +1,0 @@
-print-asr-q-cl-A .375
-print-asr-q-cf-A .375
-print-asr-cb-q-A .75
-print-asr-cw-q-A 250
-print-asr-cl-q-A 25000
-print-mod-cb-cf-A 0
-rc=0

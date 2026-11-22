@@ -974,14 +974,6 @@ static void emit_group(struct ctx *x, struct group *g)
         return;
     }
     order(m, g);
-    /* a checked source (SetErr per cell) holds half as many: set for
-       #1190 (found by task 3.2, design.md), the compiler's constant fold
-       crashing when the first pass fills the object buffer exactly at a
-       fold, met by 51 of the checked i2 shift cells of value set J with
-       their SetErr lines; fixed, 56 checked cells compile: raising the
-       limit regenerates every checked source */
-    if (g->mode == 'c' && per > 1)
-        per /= 2;
     for (size_t first = 0, part = 1; first < g->n; first += per, part++) {
         size_t k = g->n - first < per ? g->n - first : per;
         char name[160];
