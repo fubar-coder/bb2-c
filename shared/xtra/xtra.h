@@ -133,7 +133,7 @@ struct xtra_base {
     const uint8_t *header;
 };
 
-/** @brief The text fields (xtra_text, xtra_set_text). */
+/** @brief The text fields (xtra_get_text, xtra_set_text). */
 enum xtra_field {
     XTRA_F_EXE_PATH,            /* .xtra 598, AB3 ExePath (< 192 bytes) */
     XTRA_F_EXE_NAME,            /* .xtra 790, AB3 ExeFile (< 192) */
@@ -234,7 +234,7 @@ struct xtra_ab3 {
 /** @brief The settings.
 
     The numbers are members to read and set directly; the texts through
-    xtra_text/xtra_set_text, the maxima through the iterator and
+    xtra_get_text/xtra_set_text, the maxima through the iterator and
     xtra_set_maxima. */
 struct xtra {
     uint8_t type;               /* enum xtra_type (xtra_load) */
@@ -443,7 +443,7 @@ void xtra_apply_vers0(struct xtra *x);
  *         *len 0) for a field number out of range or a view whose base b
  *         does not give
  */
-const uint8_t *xtra_text(const struct xtra *x, const struct xtra_base *b, int field, size_t *len);
+const uint8_t *xtra_get_text(const struct xtra *x, const struct xtra_base *b, int field, size_t *len);
 
 /**
  * @brief The bytes of a text field in a Blitz 2 .xtra (with the 0): a text

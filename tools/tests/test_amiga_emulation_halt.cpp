@@ -103,7 +103,7 @@ TEST_CASE("amiga_emulation_halt: a halted CPU ends the session", "[amiga_emulati
         std::exit(77);          // skipped (the exit status of ctest SKIP_RETURN_CODE)
     }
     CHECK(amiga_emulation_join(e) == AMIGA_EMULATION_HALT);
-    amiga_emulation_stats(e, &st);
+    amiga_emulation_get_stats(e, &st);
     /* the halt about a second after the job's start, three answers */
     CHECK(st.status == AMIGA_EMULATION_HALT && st.timed < 30);
     CHECK(file_exists_in(amiga_emulation_test_dir(e), "before.txt"));

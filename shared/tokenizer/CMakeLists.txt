@@ -8,3 +8,4 @@ add_library(tokenizer_m68k OBJECT tokenizer.c)
 set_target_properties(tokenizer_m68k PROPERTIES C_STANDARD 99 C_EXTENSIONS OFF)
 target_compile_options(tokenizer_m68k PRIVATE -fbaserel -fomit-frame-pointer -ffreestanding
 	-Wall -Wextra -pedantic)
+own_warnings(tokenizer_m68k)

@@ -178,7 +178,7 @@ size_t xtra_text_cap(int field)
     return 0;
 }
 
-const uint8_t *xtra_text(const struct xtra *x, const struct xtra_base *b, int field, size_t *len)
+const uint8_t *xtra_get_text(const struct xtra *x, const struct xtra_base *b, int field, size_t *len)
 {
     const struct xtra_text *t;
     const uint8_t *base = NULL;
@@ -531,7 +531,7 @@ static int put_text(const struct xtra *x, const struct xtra_base *b, int f, uint
         copy(out, b->xtra + x->text[f].off, cap);
         return XTRA_OK;
     }
-    if (!(s = xtra_text(x, b, f, &n)))
+    if (!(s = xtra_get_text(x, b, f, &n)))
         return XTRA_E_BASE;
     if (n >= cap)
         return XTRA_E_LONG;

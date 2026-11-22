@@ -37,6 +37,7 @@ add_executable(reqtrapdirect reqtrap.c)
 target_compile_definitions(reqtrapdirect PRIVATE CW_DIRECT)
 foreach(t reqtrap reqclose reqclosetest rcput hangstub patchblocktest patchflagstest reqtraptest reqtrapdirect)
 	target_compile_options(${t} PRIVATE -Wall -Wno-pointer-sign)
+	own_warnings(${t})
 	set_target_properties(${t} PROPERTIES SUFFIX "")
 endforeach()
 set_source_files_properties(reqtrap.c patchblocktest.c patchflagstest.c PROPERTIES

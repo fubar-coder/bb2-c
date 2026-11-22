@@ -118,7 +118,7 @@ static int slot_clean(void)
 
 /* one session in base/NAME (emu: the emulation directory, NULL: the
    default); the snapshot.log into *log; 1 = the results are right
-   (amiga_emulation_stats too: snapshot use `use`), -1 = cannot start */
+   (amiga_emulation_get_stats too: snapshot use `use`), -1 = cannot start */
 static int session(const char *name, const char *emu, int cold, enum amiga_emulation_snapshot_use use,
                    char **log, double *secs)
 {
@@ -158,7 +158,7 @@ static int session(const char *name, const char *emu, int cold, enum amiga_emula
     }
     ok = amiga_emulation_join(e) == AMIGA_EMULATION_DONE;
     *secs = now() - *secs;
-    amiga_emulation_stats(e, &st);
+    amiga_emulation_get_stats(e, &st);
     if (st.snapshot != use || st.status != AMIGA_EMULATION_DONE || st.timeout != 90
         || strcmp(st.machine, "a1200") || st.wait < 0 || st.session <= 0
         || st.session > *secs + 0.01 || st.timed <= 0 || st.timed > st.session + 0.01) {

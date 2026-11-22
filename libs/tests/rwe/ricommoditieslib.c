@@ -427,15 +427,15 @@ static void scenario(void)
         struct NewBroker nb = { .nb_Version = NB_VERSION, .nb_Name = (STRPTR)bname,
                                 .nb_Title = (STRPTR)"test", .nb_Descr = (STRPTR)"name taken",
                                 .nb_Unique = NBU_UNIQUE };
-        CxObj *own = CxBroker(&nb, NULL);
+        CxObj *taker = CxBroker(&nb, NULL);
 
-        rec("own broker", own != NULL);
+        rec("own broker", taker != NULL);
         rec("MakeCommodity (name taken)",
             cx(E_MAKE, 3, (ULONG)bname, (ULONG)btitle, (ULONG)bdescr));
         rec("CommodityMsgPort != 0 (name taken)", CX0(E_PORT) != 0);
         rec("SetCxStatus -1 (port, no broker)", cx(E_STATUS, 1, (ULONG)-1, 0, 0));
         rec("SetCxStatus 0 (port, no broker)", cx(E_STATUS, 1, 0, 0, 0));
-        DeleteCxObj(own);
+        DeleteCxObj(taker);
     }
 
     /* the broker */

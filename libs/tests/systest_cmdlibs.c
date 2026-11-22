@@ -223,27 +223,27 @@ static ULONG int2ffp(LONG v)
     return (m & 0xffffff00UL) | sign | (0x40 + e);
 }
 
-/* sort n elements of `type` in arr (asize bytes, the strings in pool);
+/* sort n elements of `type` in buf (asize bytes, the strings in pool);
    pattern 0 random, 1 ascending, 2 descending, 3 four values, 4 all
    equal (the order of equal strings shows which slots the sort swaps) */
-static void sort_in(UWORD type, int n, int down, int pattern, UBYTE *arr, size_t asize,
-                    UBYTE (*strpool)[16], size_t poolsize)
+static void sort_in(UWORD type, int n, int down, int pattern, UBYTE *buf, size_t asize,
+                    UBYTE (*pool)[16], size_t poolsize)
 {
     int size = type == 1 ? 1 : type == 2 ? 2 : 4;
     int i;
 
     for (i = 0; i < (int)asize; i++)
-        arr[i] = (UBYTE)(0xA5 ^ i);             /* a guard behind the array */
+        buf[i] = (UBYTE)(0xA5 ^ i);             /* a guard behind the array */
     for (i = 0; i < n; i++) {
         ULONG v = pattern == 0 ? rnd() : pattern == 1 ? (ULONG)i : pattern == 2 ? (ULONG)(n - i)
                   : pattern == 3 ? (rnd() & 3) : 0x00ab2305UL;
-        UBYTE *p = arr + i * size;
+        UBYTE *p = buf + i * size;
         switch (type) {
         case 1: *p = (UBYTE)v; break;
         case 2: *(UWORD *)p = (UWORD)v; break;
         case 5: *(ULONG *)p = int2ffp((LONG)(v & 0xffff) - 30000); break;
         case 7: {
-            UBYTE *q = strpool[i] + 4;
+            UBYTE *q = pool[i] + 4;
             int len = v & 7;
             int k;
             for (k = 0; k < len; k++)
@@ -258,8 +258,8 @@ static void sort_in(UWORD type, int n, int down, int pattern, UBYTE *arr, size_t
     }
     sprintf(VEC, "type %u n %d %s pattern %d", type, n, down ? "down" : "up", pattern);
     DO1(E("sortlib", down ? 2 : 1), (void)0);
-    DO1(E("sortlib", 0), R.d[0] = (ULONG)arr;
-        sortframe[1] = type; sortframe[2] = (ULONG)(arr + n * size);
+    DO1(E("sortlib", 0), R.d[0] = (ULONG)buf;
+        sortframe[1] = type; sortframe[2] = (ULONG)(buf + n * size);
         R.a[2] = (ULONG)&sortframe[3];   /* -4 high, -6 type.w */
         R.a[6] = ffpbase);
     if (type == 7) {
@@ -267,12 +267,12 @@ static void sort_in(UWORD type, int n, int down, int pattern, UBYTE *arr, size_t
            string it points to ($FF: no string of the pool) */
         UBYTE ord[NBIG];
         for (i = 0; i < n; i++) {
-            ULONG off = *(ULONG *)(arr + i * 4) - (ULONG)strpool;
+            ULONG off = *(ULONG *)(buf + i * 4) - (ULONG)pool;
             ord[i] = off < poolsize && off % 16 == 4 ? (UBYTE)(off / 16) : 0xff;
         }
         OBSBYTES("order", ord, n);
     } else
-        OBSBYTES("array", arr, asize);
+        OBSBYTES("array", buf, asize);
 }
 
 static void sort_one(UWORD type, int n, int down, int pattern)

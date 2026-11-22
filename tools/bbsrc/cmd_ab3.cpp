@@ -51,7 +51,7 @@ static unsigned char *read_all(const char *path, size_t *len)
 }
 
 static struct tokenizer_entry *e;     /* the memory of the tokeniser */
-static uint16_t *b;
+static uint16_t *tokbuf;              /* its token buffer */
 
 /* the token list into t; the names point into list (kept) */
 static int load_tokens(struct tokenizer *t, unsigned char *list, size_t len, const char *path)
@@ -61,8 +61,9 @@ static int load_tokens(struct tokenizer *t, unsigned char *list, size_t len, con
     for (size_t i = 0; i < len; i++)
         n += list[i] == '\n';
     e = (struct tokenizer_entry *)calloc(n + 1, sizeof *e);
-    b = (uint16_t *)calloc(65536, sizeof *b);
-    if (!e || !b || tokenizer_init(t, TOKENIZER_RULES_AB3, e, (uint32_t)n + 1, b, 65536)) {
+    tokbuf = (uint16_t *)calloc(65536, sizeof *tokbuf);
+    if (!e || !tokbuf
+        || tokenizer_init(t, TOKENIZER_RULES_AB3, e, (uint32_t)n + 1, tokbuf, 65536)) {
         fprintf(stderr, "%s: out of memory\n", me);
         return -1;
     }
@@ -218,7 +219,7 @@ done:
     free(out);
     free(theirs);
     free(e);
-    free(b);
+    free(tokbuf);
     return rc;
 }
 

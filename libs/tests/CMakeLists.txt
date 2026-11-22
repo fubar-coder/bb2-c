@@ -54,6 +54,7 @@ file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rwe_tests.inc CONTENT "${rwe_i
 # host/), compiled here for the m68k and linked into libs_tests
 add_library(libs_capture OBJECT capture.c capture_amiga.c)
 target_compile_options(libs_capture PRIVATE -Wall -Wextra -fomit-frame-pointer)
+own_warnings(libs_capture)
 
 add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c selftest_keeps.c selftest_mem.c ${c_sources}
 	${rwe_tests})
@@ -62,6 +63,7 @@ set_source_files_properties(bugorig.c selftest_keeps.c selftest_mem.c PROPERTIES
 set_target_properties(libs_tests PROPERTIES SUFFIX "" CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 target_compile_options(libs_tests PRIVATE -Wall -fomit-frame-pointer
 	$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-rtti>)
+own_warnings(libs_tests)
 # each C test program's main becomes NAME_main; checks go to snitch
 foreach(t IN LISTS c_tests)
 	set_source_files_properties(${t}.c PROPERTIES COMPILE_DEFINITIONS "main=${t}_main;BL_SNITCH")

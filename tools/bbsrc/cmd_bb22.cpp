@@ -39,8 +39,8 @@ static uint8_t *read_file(const char *path, size_t *len)
     return d;
 }
 
-/* bb22 (OUT given) and bb22-info (OUT NULL) */
-static int bb22(const char *me, const char *in, const char *out)
+/* bbsrc bb22 (OUT given) and bbsrc bb22-info (OUT NULL) */
+static int run_bb22(const char *me, const char *in, const char *out)
 {
     struct bb22 b;
     char err[200];
@@ -96,7 +96,7 @@ void cmd_bb22(CLI::App &app, int &status)
     sub->callback([sub, o, &status] {
         const std::string name = cli::name(*sub);
 
-        status = bb22(name.c_str(), o->in.c_str(), o->out.c_str());
+        status = run_bb22(name.c_str(), o->in.c_str(), o->out.c_str());
     });
 }
 
@@ -111,6 +111,6 @@ void cmd_bb22_info(CLI::App &app, int &status)
     sub->callback([sub, in, &status] {
         const std::string name = cli::name(*sub);
 
-        status = bb22(name.c_str(), in->c_str(), NULL);
+        status = run_bb22(name.c_str(), in->c_str(), NULL);
     });
 }

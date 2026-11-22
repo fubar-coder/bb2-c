@@ -130,7 +130,7 @@ static int run(const char *script, unsigned hang_after, const char *arm, unsigne
         return 77;
     }
     CHECK(amiga_emulation_join(e) == want);
-    amiga_emulation_stats(e, &st);
+    amiga_emulation_get_stats(e, &st);
     if (st.snapshot == AMIGA_EMULATION_SNAP_COLD || st.snapshot == AMIGA_EMULATION_SNAP_FALLBACK) {
         fprintf(stderr, "skipped: no snapshot mode, the hang check does not apply\n");
         amiga_emulation_free(e);

@@ -68,7 +68,7 @@ second from the start of the job (a hash of path, kind, size and
 modification time of every entry), and a job whose signature has not
 changed for `hang_after` seconds ends the session like the time limit does:
 the machine is paused, then the state `timeout`, the screenshot,
-`timeout.txt` (with the line `hang:`) and `amiga_emulation_stats(...).hung`.
+`timeout.txt` (with the line `hang:`) and `amiga_emulation_get_stats(...).hung`.
 A hang writes nothing: an endless loop, a wait that never ends, a
 dead-end alert (Software Failure) that stays about 10 s before the machine
 reboots and runs the job again, so the files are those a run to the limit

@@ -1427,9 +1427,9 @@ static void driver_clicks(void)
         Delay(n ? 10 : 25);
         if (o_undobuf) {
             static APTR now[MAXSTR];
-            int m = undobufs(click[n].title, now);
+            int nbufs = undobufs(click[n].title, now);
 
-            if (n && m >= 0)
+            if (n && nbufs >= 0)
                 click[n - 1].undo = memcmp(now, undo_before, sizeof now) ? UB_CHANGED : UB_KEPT;
             memcpy(undo_before, now, sizeof now);
         }
@@ -2246,17 +2246,17 @@ int main(int argc, char **argv)
         put(line);
     }
     if (o_guard) {
-        ULONG i, j, t;
+        ULONG g, j, t;
 
-        for (i = 0; i < SLOTS; i++)
-            if (slot[i].addr > TOMB)
-                guard_check(slot[i].addr, slot[i].size, slot[i].pad);
-        for (i = 1; i < nguard; i++)
-            for (j = i; j > 0 && guard_size[j - 1] > guard_size[j]; j--)
+        for (g = 0; g < SLOTS; g++)
+            if (slot[g].addr > TOMB)
+                guard_check(slot[g].addr, slot[g].size, slot[g].pad);
+        for (g = 1; g < nguard; g++)
+            for (j = g; j > 0 && guard_size[j - 1] > guard_size[j]; j--)
                 t = guard_size[j], guard_size[j] = guard_size[j - 1], guard_size[j - 1] = t;
-        for (i = 0; i < nguard; i++) {
+        for (g = 0; g < nguard; g++) {
             sprintf(line, "inject: guard: written behind an allocation of %lu bytes\n",
-                    guard_size[i]);
+                    guard_size[g]);
             put(line);
         }
     }

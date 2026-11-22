@@ -7,7 +7,7 @@
 # EDSTUB_LINK_OPTIONS.  No C runtime: -nostdlib, no libgcc.
 set(EDSTUB_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 set(EDSTUB_COMPILE_OPTIONS -fomit-frame-pointer -fno-builtin -ffreestanding
-	-Wall -Wno-pointer-sign)
+	-Wall -Wno-pointer-sign ${OWN_WARNINGS})
 set(EDSTUB_COMPILE_OPTIONS ${EDSTUB_COMPILE_OPTIONS} PARENT_SCOPE)
 set(EDSTUB_LINK_OPTIONS -nostdlib -nostartfiles PARENT_SCOPE)
 add_library(edstub OBJECT start.c edstub.c)

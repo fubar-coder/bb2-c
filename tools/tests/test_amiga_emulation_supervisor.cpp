@@ -317,7 +317,7 @@ static void show(const char *name, struct amiga_emulation *e)
     struct amiga_emulation_stats st;
     char *log = snap_log(e);
 
-    amiga_emulation_stats(e, &st);
+    amiga_emulation_get_stats(e, &st);
     fprintf(stderr, "test_amiga_emulation_supervisor: %s: %s %s session %.2f timed %.2f\n%s", name,
             amiga_emulation_snapshot_use_name(st.snapshot), amiga_emulation_status_name(st.status),
             st.session, st.timed, log ? log : "");
@@ -388,10 +388,10 @@ static void join_order(void)
     CHECK(amiga_emulation_join(a) == AMIGA_EMULATION_TIMEOUT);
     joined_a = now() - t0;
     CHECK(joined_a > 3);
-    amiga_emulation_stats(a, &st);
+    amiga_emulation_get_stats(a, &st);
     CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FIRST_SAVE && st.timed >= 3 && st.timed < 4.5);
     CHECK(amiga_emulation_join(b) == AMIGA_EMULATION_DONE);
-    amiga_emulation_stats(b, &st);
+    amiga_emulation_get_stats(b, &st);
     CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FIRST_SAVE && st.status == AMIGA_EMULATION_DONE);
     /* b ended long before the caller joined it */
     CHECK(st.session > 0 && st.session < joined_a - 1);
@@ -441,7 +441,7 @@ static void restore_and_fallback(void)
 
     CHECK(e && amiga_emulation_join(e) == AMIGA_EMULATION_DONE);
     if (e) {
-        amiga_emulation_stats(e, &st);
+        amiga_emulation_get_stats(e, &st);
         CHECK(st.snapshot == AMIGA_EMULATION_SNAP_RESTORED);
     }
     amiga_emulation_free(e);
@@ -451,7 +451,7 @@ static void restore_and_fallback(void)
     if (e) {
         char *log = snap_log(e);
 
-        amiga_emulation_stats(e, &st);
+        amiga_emulation_get_stats(e, &st);
         CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FIRST_SAVE);
         CHECK(log && strstr(log, "not a savestate, removed") && strstr(log, "job started"));
         free(log);
@@ -464,7 +464,7 @@ static void restore_and_fallback(void)
     if (e) {
         char *log = snap_log(e);
 
-        amiga_emulation_stats(e, &st);
+        amiga_emulation_get_stats(e, &st);
         CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FALLBACK);
         CHECK(log && strstr(log, "restore failed (Amiberry ended)")
               && strstr(log, "dropped, boot cold"));
@@ -722,7 +722,7 @@ static void cold(void)
         CHECK(amiga_emulation_join(a) == AMIGA_EMULATION_TIMEOUT);
         joined_a = now() - t0;
         CHECK(amiga_emulation_join(b) == AMIGA_EMULATION_DONE);
-        amiga_emulation_stats(b, &st);
+        amiga_emulation_get_stats(b, &st);
         CHECK(st.snapshot == AMIGA_EMULATION_SNAP_COLD);
         CHECK(st.session > 0 && st.session < joined_a - 0.5 && st.timed <= st.session);
     }
@@ -749,7 +749,7 @@ static void halt(void)
     if (!a || !b)
         goto out;
     CHECK(amiga_emulation_join(a) == AMIGA_EMULATION_HALT);
-    amiga_emulation_stats(a, &st);
+    amiga_emulation_get_stats(a, &st);
     CHECK(st.status == AMIGA_EMULATION_HALT && st.timed > 1.5 && st.timed < 10);
     snprintf(path, sizeof path, "%s/timeout.txt", amiga_emulation_work_dir(a));
     s = read_text(path);
@@ -760,7 +760,7 @@ static void halt(void)
     CHECK(s && strstr(s, "job started") && strstr(s, "CPU halted"));
     free(s);
     CHECK(amiga_emulation_join(b) == AMIGA_EMULATION_TIMEOUT);
-    amiga_emulation_stats(b, &st);
+    amiga_emulation_get_stats(b, &st);
     CHECK(st.timed >= 6);
     snprintf(path, sizeof path, "%s/timeout.txt", amiga_emulation_work_dir(b));
     s = read_text(path);
@@ -779,7 +779,7 @@ out:
     a = start("HALT", 30);
     CHECK(a && amiga_emulation_join(a) == AMIGA_EMULATION_HALT);
     if (a) {
-        amiga_emulation_stats(a, &st);
+        amiga_emulation_get_stats(a, &st);
         CHECK(st.snapshot == AMIGA_EMULATION_SNAP_COLD && st.timed < 10);
     }
     amiga_emulation_free(a);

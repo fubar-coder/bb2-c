@@ -21,6 +21,7 @@ target_include_directories(ab3cli PRIVATE src ${EDSTUB_DIR} ${xtra_dir}
 target_compile_definitions(ab3cli PRIVATE EDSTUB_INIT=1)
 target_compile_options(ab3cli PRIVATE -fomit-frame-pointer -fno-strict-aliasing -ffreestanding
 	-fno-builtin -Wall -Wno-pointer-sign -Wno-parentheses)
+own_warnings(ab3cli)
 target_link_options(ab3cli PRIVATE ${EDSTUB_LINK_OPTIONS}
 	$<$<CONFIG:Release,MinSizeRel>:-s> -Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/ab3cli.map)
 # only the core modules that are used (not --whole-archive as TED)

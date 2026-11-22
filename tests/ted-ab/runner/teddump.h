@@ -66,7 +66,7 @@ void teddump_digest(const struct teddump *d, char hex[65]);
 struct teddump_geometry {
     long edrows, cols, top, status;
 };
-void teddump_geometry(const struct teddump *d, int fh, struct teddump_geometry *g);
+void teddump_get_geometry(const struct teddump *d, int fh, struct teddump_geometry *g);
 
 /* the decoded screen as text (malloc'd, NULL = out of memory or depth <
    2): a "#" line with geometry and title, one per window, then per editor

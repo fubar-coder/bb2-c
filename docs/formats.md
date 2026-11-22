@@ -145,7 +145,7 @@ extensions); no product links it yet. Design of 2026-10-30 (rework):
   file) or into the source header (`XTRA_IN_HEADER`). Offsets, not
   pointers: the caller may move the bytes (e.g. `realloc` after
   tokenising) and passes their current place as `struct xtra_base
-  {xtra, header}` to `xtra_text`, the maxima iterator and the writers.
+  {xtra, header}` to `xtra_get_text`, the maxima iterator and the writers.
   The numbers (icon, switches, buffers, resident pointers, editor part,
   AmiBlitz3's numbers) are parsed into members.
 * **The header to keep.** `x->hdr` is the size of the source header:

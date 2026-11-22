@@ -25,6 +25,7 @@ endif()
 
 project(blitzbasic2 VERSION 1.95 LANGUAGES C CXX)
 include(cmake/emulation-queue.cmake)
+include(cmake/warnings.cmake)          # own_warnings()
 include(cmake/bug-orig-order.cmake)
 include(cmake/test-cost.cmake)
 
