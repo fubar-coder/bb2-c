@@ -8,22 +8,62 @@ type, and which parts of the typing stay as in the original.
 ## ADDED Requirements
 
 ### Requirement: A Quick operand is computed with its fraction
-When an arithmetic operator (`+`, `-`, `*`, `/`) has a Quick operand and the other operand or the type so far is a Byte, Word or Long, the compiler SHALL compute the operation with the Quick's value, fraction included, and SHALL round the result once, at the end of the operation, when it must give a whole-number type: down for `+`, `-` and `*`, towards zero for `/` as BB2's Long division does. It SHALL NOT cut the Quick when it is fetched.
+When `+`, `-`, `*` or `/` has a Quick operand and the other operand or the type so far is a Byte, Word or Long, the compiler SHALL compute it with the Quick's fraction and give a whole number, rounded at the operator: down for `+`, `-`, `*`, towards zero for `/`. This SHALL hold also for two Quicks under a whole-number type so far. The Quick SHALL NOT be cut when it is fetched.
 
 #### Scenario: Long destination
-- **WHEN** a program evaluates `r.l=q*2`, `r.l=l-q`, `r.l=l*q`, `r.l=q/h`, `r.l=l+q` with `q=1.5`, `h=0.5`, `l=10`
-- **THEN** it gets 3, 8, 15, 3 and 11
+- **WHEN** a program evaluates `r.l=q*2`, `r.l=l-q`, `r.l=l*q`, `r.l=q/h`, `r.l=l+q`, `r.l=q+p` with `q=1.5`, `h=0.5`, `p=2.75`, `l=10`
+- **THEN** it gets 3, 8, 15, 3, 11 and 4
 
 #### Scenario: Negative values
 - **WHEN** a program evaluates `r.l=n*2`, `r.l=l*n`, `r.l=m/n` and `r.l=l/n` with `n=-1.5`, `l=10`, `m=9`
 - **THEN** it gets -3, -15, -6 and -6 (the inexact quotient rounds towards zero)
 
-#### Scenario: Whole-number Quick
-- **WHEN** the Quick operand has no fraction (`q=3.0`)
-- **THEN** every result of an arithmetic operator equals the result of the previous compiler, as long as no intermediate value overflows
+#### Scenario: Division towards zero in every form
+- **WHEN** a program evaluates `r.l=k/q` (`k=-10`, `q=1.5`), `r.l=n/l` (`n=-1.5`, `l=10`), `r.l=g/h` (`g=-3.0`, `h=2.0`) and `r.l=g/l`
+- **THEN** it gets -6, 0, -1 and 0
 
-### Requirement: Rounding happens once per operation, to a whole-number type
-The compiler SHALL round down only when an operation gives a Byte, Word or Long, or when the value is stored in or passed as a whole-number type. A Quick OP Quick, or a Quick expression stored in a Quick, SHALL keep the fraction. A Float operand SHALL make the operation a Float as before. A chain SHALL be rounded after each operation that gives a whole-number type, not computed exactly: `r.l=l+q+p` with `l=10`, `q=1.5`, `p=2.75` gives 13 (exactly 14).
+#### Scenario: Whole-number Quick
+- **WHEN** the Quick operands have no fraction (`q=3.0`, `q=-3.0` with `l=10`; `q=20000.0` and `p=20000.0` in `r.l=q+p`; `q=300.0` and `p=200.0` in `r.l=q*p`)
+- **THEN** every result of an arithmetic operator equals the result of the previous compiler (40000 and 60000 for the last two), as long as no Long result overflows
+
+### Requirement: Negation and conversion round down
+Unary minus of a Quick under a whole-number type so far SHALL negate the value with its fraction and round it down; the conversion of a Quick to a Byte, Word or Long (an assignment, a parameter, the end of an expression) SHALL round down as before. `Int(q)` SHALL truncate towards zero as before.
+
+#### Scenario: Negation
+- **WHEN** a program evaluates `r.l=-q`, `r.l=0-q`, `x.w=-q` and `r.l=-q*2` with `q=1.5`
+- **THEN** it gets -2, -2, -2 and -3
+
+#### Scenario: Conversion
+- **WHEN** a program evaluates `r.l=n` and `r.l=Int(n)` with `n=-1.5`
+- **THEN** it gets -2 and -1
+
+### Requirement: A Long operand that sets the type itself
+When a Quick is followed by a Long operand that makes the type so far Long by itself (a constant beyond the Quick range, `&var`, `?label`) and no type was set before, `*` and `/` SHALL be computed with the Quick's fraction as in "A Quick operand is computed with its fraction"; `+`, `-` and the other operators SHALL be a Long operation on the Quick rounded down, as before. `Int(q)` gives the previous result for `*` and `/`.
+
+#### Scenario: Multiplication by a large constant
+- **WHEN** a program prints `NPrint q*100000` and `NPrint Int(q)*100000` with `q=1.5`
+- **THEN** it prints 150000 and 100000
+
+#### Scenario: Address operand
+- **WHEN** a program prints `NPrint q+&l-&l` with `q=1.5`
+- **THEN** it prints 1, as before
+
+### Requirement: Float operands and powers take the fraction
+A Quick that meets a Float operand or `^` under a whole-number type so far SHALL be converted to Float with its fraction; the Float result SHALL be converted to the whole-number type towards zero as before.
+
+#### Scenario: Float and power
+- **WHEN** a program evaluates `r.l=q+f` and `r.l=q^2` with `q=1.5`, `f=0.5`
+- **THEN** it gets 2 and 2
+
+### Requirement: Other operators take the Quick rounded down
+Shifts, `AND`, `OR`, `EOR`, `MOD` and `Not` with a Quick operand under a whole-number type so far SHALL take the Quick rounded down, as before.
+
+#### Scenario: Shift and mask
+- **WHEN** a program evaluates `r.l=q ASL 4` and `r.l=t AND 3` with `q=1.5`, `t=-1.5`
+- **THEN** it gets 16 and 2, as before
+
+### Requirement: Rounding happens once per operation
+A Quick OP Quick, or a Quick expression stored in a Quick, under a Quick type so far SHALL keep the fraction. Under a whole-number type so far a chain SHALL be rounded after each operation, not computed exactly: `r.l=l+q+p` with `l=10`, `q=1.5`, `p=2.75` gives 13 (exactly 14).
 
 #### Scenario: Quick destination keeps the fraction
 - **WHEN** a program evaluates `t.q=w+v+q` with `w=3`, `v=4`, `q=1.5`
@@ -34,11 +74,15 @@ The compiler SHALL round down only when an operation gives a Byte, Word or Long,
 - **THEN** `r` is 13
 
 ### Requirement: The expected type flows as before
-The type the expression is wanted in (the destination, the parameter type, Long for an array index), a Long operand to the left, and the types Word+Word, Word*Word and a shift give SHALL decide the type of the operations as before; a constant SHALL take that type. The order dependence of the previous compiler SHALL stay: `x.w=w+v+q*2` and `x.w=q*2+w+v` MAY still compute in different types. Only the cut of a Quick when it is fetched goes away. The operands of a comparison are the exception: they do not take the type (requirement "The operands of a comparison are compared with their own values", change `quick-compare-types`, #1177).
+The wanted type (destination, parameter, Long for an array index), a Long operand to the left, and the types Word+Word, Word*Word and a shift give SHALL decide the type of the operations as before; a constant SHALL take that type. The order dependence SHALL stay where the type so far differs. Only the cut at fetch goes away. The operands of a comparison do not take the type (#1177, `quick-compare-types`).
 
 #### Scenario: Word and Long contexts
-- **WHEN** a program prints `NPrint 1+1+1+q` and `NPrint w+v+q` with `q=1.5`, `w=3`, `v=4`
-- **THEN** it prints 4.5 and 8.5
+- **WHEN** a program prints `NPrint 1+1+1+q`, `NPrint w+v+q` and `NPrint q+w+v` with `q=1.5`, `w=3`, `v=4`
+- **THEN** it prints 4, 8 and 8.5 (Word+Word is a Long; an interim value until the expression tree, #1180)
+
+#### Scenario: Order cases
+- **WHEN** a program evaluates `x.w=w+v+q*2` and `x.w=q*2+w+v` with `q=1.5`, `w=3`, `v=4`
+- **THEN** both give 10 (before: 9 and 10)
 
 #### Scenario: Address idiom
 - **WHEN** a program evaluates `adr.l=base+i*4` with `i` a default-typed variable holding 20000 and `base` a Long
@@ -56,10 +100,10 @@ A Long times a Quick whose result does not fit a Long SHALL give the result modu
 
 #### Scenario: Overflow
 - **WHEN** a program evaluates `r.l=l*q` with `l=100000`, `q=30000.5`
-- **THEN** `r` is the exact product modulo 2^32
+- **THEN** `r` is the exact product, rounded down, modulo 2^32
 
 ### Requirement: No other result changes
-A program that has no Quick operand in an arithmetic expression, and a program whose Quick operands in such expressions hold whole numbers, SHALL give the same results as before the change. Comparisons (#1177) and array indexes (#1179) are not changed by this requirement.
+A program that has no Quick operand in an arithmetic expression under a whole-number type so far, and a program whose Quick operands in such expressions hold whole numbers, SHALL give the same results as before the change. Comparisons (#1177) and array indexes (#1179) are not changed by this requirement, except that a compound left operand of a comparison is computed by these rules (#1183 limit).
 
 #### Scenario: Sources unchanged
 - **WHEN** the corpus and the CD's sources that compile are compiled and run before and after

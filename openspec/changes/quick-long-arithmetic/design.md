@@ -2,89 +2,146 @@
 
 ## Context
 
-`eval5` (`programs/blitz2/src/eval.c:870-928`) reads one element, emits its code at once and decides every type from one value, the type so far. `varcont` (`eval.c:2882-2912`) makes the cut: `if (oldtype == T_LONG && *type == T_QUICK) goto conv2;` converts the Quick to Long at fetch. Operators are chosen by `doop(op, type)` through `op->h[type-1]` (`eval.c:986`); both operands are already of the type so far when it runs (`convtypef(left, *type)` at `eval.c:906`). Before the fix `eval5` therefore never sees a Quick operand under a Long type so far.
+`eval5` (`programs/blitz2/src/eval.c:881-958`, line numbers of main 03fa9fd75) reads one element, emits its code at once and decides every type from one value, the type so far. `varcont` (`eval.c:3036-3052`) makes the cut: `if (oldtype == T_LONG && *type == T_QUICK) goto conv2;` converts the Quick to Long at fetch. Operators are chosen by `doop(op, type)` through `op->h[type-1]`; both operands are already of the type so far when it runs (`convtypef(left, *type)` at `eval.c:936`). So `eval5` never sees a Quick operand under a Long type so far.
 
-Decided (2026-11-21, `task-decisions.md`, "#1178 direction: variant C"; recomputation in the issue comment and `tr-quick-arith-variants-report.md`): variant C, order dependence as today, order independence later by an expression tree. The tree analysis (`tr-expr-tree-report.md`, sections 3-4, by the coordinator's note) finds that variant C, #1177 and #1179 do not need the tree, because `eval5` knows both operand types when it calls `doop`, and proposes doing these fixes first in today's evaluator ("step 0"), with an executable-level prev comparison over more sources. This change is that step for #1178. It depends on the change for #1177, which is done first (user decision 2).
+#1177 is merged (fe1d7b357): comparisons go through `compareop(op, left, right)` (`eval.c:1227`), the right operand of a comparison starts at type 0, and `cmpownleft` (`eval.c:1149`) takes back the conversion `varcont` recorded in `conv` for a one-element left operand. The cut itself is still in place; removing it is this change's (user decision 2).
+
+Decided (2026-11-21, `task-decisions.md`, "#1178 direction: variant C"): variant C, order dependence as today, order independence later by the expression tree (#1180). Order of the work (2026-11-22, "Order of the Quick work; matrix test"): the type-matrix test change, then this change, then #1179, #1182, the tree. The spike (task 1.1, `tr-1178-spike-report.md`, line numbers of 7ff47a161) gives the mechanism and the consumers; `tr-1178-rounding-count.md` and `tr-float-rounding.md` are the measurements behind the rounding decision; `docs/blitz2/expression-types.md`, "Converting to a whole number: Float and Quick differ", has the measured Float/Quick table.
 
 ## Decisions
 
 ### 1. Capability `compiler/expression-types`, new
 
-The behaviour is about the compiler's typing of arithmetic, not an inline library call (`compiler/intrinsics`) and not AB3 mode's type rules (`ab3-compat/type-rules`, 3 requirements; a rule shared by both modes does not belong in an `ab3-compat` capability). #1177 and #1179 (comparisons, array indexes) can add requirements to the same capability when they are planned, and the later tree can modify them. Alternative: no new capability, but then the rule has no home.
+The behaviour is about the compiler's typing of arithmetic, not an inline library call (`compiler/intrinsics`) and not AB3 mode's type rules (`ab3-compat/type-rules`; a rule shared by both modes does not belong in an `ab3-compat` capability). `quick-compare-types` adds its comparison requirements to the same capability; whichever change is archived first creates the spec. The later tree can modify them.
 
-### 2. Mechanism: the operand types reach the operator (no tree)
+### 2. Mechanism: a raw-Quick flag per operand (spike, E3)
 
-`varcont` stops cutting: a Quick fetched under a Long type so far stays a Quick in its register; the type so far stays Long. So `eval5` needs the operand types of both sides: the left type is `left` (`eval.c:905`), the right type is what the recursive `eval5` returns in `*type`. The change is confined to the one case that is cut today (`oldtype == T_LONG && type == T_QUICK`); every other pair keeps its code. Where the pair is (Long-or-Word, Quick) or (Quick, Long-or-Word) and the type so far is Long or Word, a new path emits the mixed operation and returns the whole-number type (Long). That is the only new code path; per the model, expressions without a cut today (6474 other expressions with a Quick operand) are not touched.
+From the spike (section 2; a prototype with the flag and today's values passed `blitz2_*`, `corpus`, `corpus_runerr`, `blitz2_cd_reference` and 40 consumer cases):
 
-Per operator, left or right being the Quick (`q` raw 16.16, `l` whole):
+* `varcont`: instead of `goto conv2`, keep `*type = T_LONG` and set `rawq` ("D(regat) holds a raw Quick, the type so far is Long"). Every element starts with `rawq = FALSE` (`getelement2`, next to `negnext = FALSE`, `eval.c:1794`), so constants, `&`, `?`, strings and AB3 elements are never raw.
+* `eval5`: `lraw = rawq` after `eval2`, `rraw = rawq` after the recursion; at `doop` the operand types are (`lraw ? Quick : left`, `rraw ? Quick : *type`). After the operator the flag is FALSE (every operation under a whole-number type so far gives a whole number, decision 3); at each `return prec`, `rawq = lraw`. Brackets need nothing (`bracket` returns with `rawq` as the inner `eval5` left it).
+* `maineval2`: converts a raw Quick (floor) before `convtype(t, asked)`, and also when `unknown` is set. Every caller and every parameter goes through it.
+* The spill around d6 (`getelement`) chooses `.l` for a raw Quick (its `*type` is Long): correct as it is.
 
-| Operator | Code | Note |
+The consumers that must know the flag (spike, section 3):
+
+| Consumer | With a raw operand |
+|---|---|
+| `+ - * /` (`doop`) | the mixed path of decision 3 |
+| the late conversion `convtypef(left, *type)` (`eval.c:936`) | a raw left and a Float right: `quicktofloat`, not `longtofloat` (the raw value would be 65536 times too large); a Quick left and a Long right with no type so far (the late cut): decision 4 |
+| `dopow` (`eval.c:1458`) | `quicktofloat` from the raw value (decision 5) |
+| shifts (`shpoke`), `AND`, `OR`, `EOR`, `MOD` | cut before the handler: today's value (the spec changes only `+ - * /`) |
+| comparisons (`compareop`) | the left type is Quick; compared exactly (#1177's code); replaces the Quick-to-Long case of `cmpownleft` (decision 7) |
+| `notit` (`eval.c:1753`) | cut before the `not`: today's value |
+| `negate` (`eval.c:1723`) | negate the raw value and keep the flag (decision 3: floor(-q)) |
+| the end of the expression (`maineval2`) | floor, as the conversion today |
+
+Of the five patching mechanisms of `tr-expr-tree-report.md` 1.5 only the byte-constant patch (#978) is next to the new code and does not interfere (the mixed code is emitted after the `byteconstext` check); constant folding, `divzerochk`, `pushstart`/`pushput`, the look-ahead and `undodebug` do not interfere (spike, E3 for the prototype).
+
+### 3. The operations and their rounding (user decisions 5, 8, 9)
+
+Rounding (2026-11-21, "#1178 rounding rule decided": "Zwischenlösung: / gegen Null (Recommended)"): a division rounds towards zero; `+ - *`, negation and the conversion of a Quick to Long, Word or Byte round down. Every operation under a whole-number type so far gives a whole number at the operator (variant C, "each operation computed with the fraction and rounded down when it must give a whole-number type"; the model of the 358/18/0 count rounds per operation, `tr-quick-arith-variants/sim.py`, class `VarC`).
+
+`q`, `p`, `h` raw 16.16, `l` whole (a Word is extended to Long first, as `convtype` does); type so far Long:
+
+| Operation | Result | Code |
 |---|---|---|
-| `l+q` | `l + (q>>16)` as today (swap, add) | no new cost; floor(q) as today |
-| `l-q` | `l - ceil(q)`: add $FFFF, swap, sub | 2-3 more instructions |
+| `l+q`, `q+l` | `floor(l+q)` = `l + floor(q)` | as today (swap, extend, add) |
+| `l-q` | `floor(l-q)` = `l - ceil(q)` | 2-3 more instructions (add $FFFF before the swap, or negate then floor; the edge value -32768.0 to be handled) |
 | `q-l` | `floor(q) - l` | as today |
-| `l*q`, `q*l` | `(l*qraw)>>16`, 64-bit intermediate | new library routine |
-| `l/q` | `(l<<16)/qraw`, 48-bit dividend | new library routine |
-| `q/l` | `qraw/l` rounded down: a Quick divided by a whole number gives a Quick quotient, floored | existing long division of the raw value, then `swap`/floor; to be checked against the model |
+| `l*q`, `q*l` | `floor(l*q)`: `(l*qraw)>>16`, 64-bit intermediate | new library routine |
+| `l/q` | `trunc(l/q)`: `(l<<16)/qraw` truncated, 48/32 bits on the magnitudes | new library routine; **not** a Quick quotient followed by `quicktolong`, which floors (`10/-1.5` would give -7, decided is -6; spike section 1) and inherits the loop's 1-ulp rounding up |
+| `q/l` | `trunc(q/l)`: the raw value divided by `l` (Long division, towards zero), then the fraction dropped towards zero | existing `longdiv`, then truncating (not `quicktolong`): `-2.0/10` gives 0 as today, `-1.5/10` gives 0 |
+| `q+p`, `q-p` | `floor(q±p)`, computed without a 32-bit raw intermediate (no Quick overflow: `20000.0+20000.0` gives 40000 as today) | inline |
+| `q*p` | `floor(q*p)`: the high long of the 64-bit product of the raw values | new library routine (a second entry or a variant of the `l*q` one) |
+| `q/h` | `trunc(q/h)`: `qraw/hraw`, Long division towards zero (the scale cancels) | existing `longdiv`; `r.l=q/h` with -3.0 and 2.0 gives -1 (2026-11-21, "#1178 c") |
+| `-q` | `floor(-q)` (raw negation, the flag stays) | `neg.l`; `r.l=-q` and `r.l=0-q` with 1.5 give -2, `r.l=-q*2` gives -3 |
+| shift, `AND`, `OR`, `EOR`, `MOD`, `Not` | `floor(q)` first, as today | today's code |
 
-`Word` instead of `Long` is converted to Long first (as `convtype` does). A Quick on both sides stays Quick (not a cut case). Constant folding: the folded code runs in the compiler's process (`eval.c:870-928`, `constfold`); the new library calls are `nocando` (`eval.c:1336`) like today's multiply and divide, so the mixed operation is never folded; a constant has no fraction under a Long type so far, so a mixed constant pair does not occur (`1.5*2` is a Float constant today).
+A Quick on both sides under a Quick type so far stays a Quick (not a cut case). Constant folding: a raw Quick only comes from `varcont`, whose elements are marked non-constant, so a mixed operation is never folded and `divzerochk` never runs on it (spike); `nocando` for the new library calls is harmless.
 
-A spike is the first task: whether the right-operand type is reliable at `doop`'s call (a parenthesised or function operand, `eval2`'s unary minus, `Not`, the functions' own conversions), and which of the five patching mechanisms of the report (section 1.5) interfere (`convtypef` of the left operand after the right one was emitted, register `regat`).
+Overflow of the final Long wraps modulo 2^32 as `longmult` does (user decision 7).
 
-### 3. Library routines: where, and compatibility
+### 4. A Long operand that sets the type itself (user decision 10)
 
-A Long times a Quick needs a 64-bit intermediate and `l<<16` does not fit 32 bits; neither can be done with today's `qmultiply`/`qdivide` ($CA00, $CB00, `main.h:106-109`) when `l` is beyond +-32767. Candidates:
+`q*100000` with no type so far (`NPrint`, `If`): `q` sets Quick, the constant does not fit a Quick and turns the type Long, and `convtypef(Quick, Long)` at `eval.c:936` floors `q` late. Likewise `&var` and `?label`, which set Long without looking at the type so far. Decided (2026-11-21, "#1178 d refined"): "Bei "+" oder "-" ist die Long-Nutzung korrekt, Bei "*" oder "/" brauchen wir für optimale Genauigkeit die neuen Routinen. Wer das alte Verhalten will, soll die Quick-Variable in ein Int(q) kapseln." So at `eval.c:936`, with a Quick left and a Long right: `*` and `/` take the mixed path of decision 3 (`q*100000` with 1.5 gives 150000, today 100000); `+`, `-` and the other operators keep the late `convtypef` (for a whole `L`, `floor(q)±L` equals `floor(q±L)`: the decided "as today" and the rounding rule agree). A Long that comes first (`&var-q`, `100000-q`) makes the type so far Long before `q` is fetched: that is the `varcont` case of decision 3 ("&var ist wie ein Long"), so `100000-q` with 1.5 gives 99998.
 
-* **(a) new entries in the system libraries `lmullib`/`ldivlib`** (`$CA02`, `$CB02`; the headers end at `$CA02`/`$CB02`, `libs/acidlibs/lmullib.c:21`, `ldivlib.c:20`). Fast, the library files change (named for prev), but a program compiled by the port needs the port's libraries (the original's `lmullib` has no such entry).
-* **(b) inline code** for the product (three MULU) and the division: no library change, longer code, slower, still needs a division loop.
-* **(c) a new system library** with its own number.
+### 5. A Float operand and `^`
 
-Choice: (a), because the compiler already calls these libraries for Long and Quick `*` and `/` and the budgets exist for them. Decided: (a), user decision 3.
+A raw Quick that meets a Float (`r.l=q+f`, `r.l=l+q*f` with the Float inside the right side) or `^` is converted with `quicktofloat`, fraction included: variant C does not cut at fetch, and the model computes these exactly. The Float result is converted to the whole-number type by `SPFix` (towards zero, unchanged). `r.l=q+f` with `q=1.5`, `f=0.5` gives 2 (today 1); `r.l=q^2` gives 2 (today 1).
 
-### 4. Rounding rules to settle in the spike, then pinned in the test
+### 6. Where the conversion code goes: the proposal to keep the cut (planning choice)
 
-* Conversion Quick to Long is floor today (`-1.5` gives -2); `Int(q)` truncates toward zero (spec `compiler/intrinsics`). Variant C rounds `+ - *` down: `floor`; division towards zero (below).
-* Long division `longdiv` works on magnitudes (`ldivlib.c:1-30`, "a restoring shift/subtract division on the magnitudes") and so rounds toward zero. `l/q` with a negative inexact quotient (`10 / -1.5` = -6.67) gives -6. Decided (user decision 5): division rounds towards zero like BB2's Long division; the spike measures it and the test pins it. A whole-number Quick then gives today's result.
-* Overflow of the final Long wraps modulo 2^32 as `longmult` does today (user decision 7).
+The earlier planning agent proposed (`planning-order-tree-vs-fixes.md`, "Remarks", proposed, E2) to keep the cut at today's position where the consuming operator floors anyway (`+`, shifts, logic, comparisons) and to defer it only for `-`, `*`, `/`, Quick OP Quick and unary minus, so that fewer executables change. Options:
 
-### 5. Results and comparison
+* **K1 (the spike's mechanism):** the flag everywhere; the cut is emitted by the consumer. For a raw right operand the consumer's cut comes right after the right operand's code, at the place `varcont` emitted it: the same bytes where the value does not change (`l+q`, `a(q)`, `r.l=q`). For a raw left operand the cut comes after the right operand's code: other bytes, same values (`a(i+1)` with a default-typed `i`, `r.l=q AND $fff0`).
+* **K2 (the proposal as written):** cut at fetch when the consumer is `+`, a shift, a logic operator. Wrong for `+` with a raw left operand: the right operand is not known at fetch, and `q+p` under Long must give `floor(q+p)` (4 for 1.5 and 2.75), not `floor(q)+floor(p)` (3). Rejected.
+* **K3 = K1 plus the safe part of K2:** cut at fetch when the element's consumer, known when `eval2` returns (the next operator if it binds tighter than the pending one, else the pending one), is a shift, `AND`, `OR`, `EOR` or `MOD` (today's value in every case). `+` with a raw left operand stays deferred.
+* **K4:** a look-ahead over the source for the right operand's type (like `countpees`), so that `a(i+1)` keeps its bytes: a sixth patching-like mechanism that the tree must replay; rejected for its cost.
 
-Changed executables: those that contain a Long or Word and a Quick in one arithmetic expression where the cut applied (the 376 places in the CD's sources, more in the corpus: counted by comparing before and after), plus the library files `lmullib.obj`/`ldivlib.obj` (and the disk libraries of the build: `acidlibs`, `deflibs`, `libs/variants`, whichever carry them). Named in the commit message with `PREV_INTENDED`, with the list generated by the prev comparison. The expected value of a program output that changes is the 18 places whose result differs today; for the others the outputs are unchanged and the test of that is the corpus run (`corpus`, `corpus_runerr`, the CD corpus `blitz2-cd.tsv`), also by a comparison of the executables (step 0 of the tree report: an executable-level prev comparison with more sources).
+Choice (mine, planning): **K3.** Values are the same in K1, K3 and K4; K3 keeps the bytes for a left Quick of a shift or a logic operator at a few lines' cost, K4 would keep more bytes but adds a mechanism that tree steps 1-4 must reproduce. The left `+`/`-` cases (`a(i+1)`, `r.l=q+1`) change their code order in every option except K4; the prev comparison (task 3.3) counts them. If the count turns out large and the user wants fewer changed executables, K4 is the option to come back to. Rating in "Planning choices".
 
-### 6. Cost check
+### 7. Consequences for #1177's fix
 
-Runtime cost: `l+q` unchanged, `l-q` a few instructions more, `*` and `/` a library call as `longmult`/`longdiv` today but with a 64-bit step. The library benchmark (`ctest --preset perf`, `tests/perf/bench`, `budgets.txt`, spec `testing/performance-budgets`; D-007: a library change is checked against the benchmark) gets lines for the new entries, measured against the existing `lmullib`/`ldivlib` lines and the original's `TARGET`; an existing line must not rise. A budget that goes up is a decision named in the commit. The compile-time cost (the new branch in `eval5`) is measured by the compile time of the corpus (no bench exists; not expected to matter).
+* `cmpownleft`'s Quick-to-Long case (`from == T_QUICK && to == T_LONG`) has no conversion to take back any more; the raw flag gives the left type Quick directly. The case is removed (or kept consistent with the flag); `compiler-quick-compare` (#1177's test) must stay FIXED.
+* A compound left operand under a Long type so far is still computed in that type (#1183), but its operations now round per decision 3: `r.l=(q*2>2)` with 1.5 gives -1 (3 > 2; `quick-compare-types` spec scenario: 0 "as before"), and `-q` on the left keeps the raw value (`r.l=(-q<-1)` gives -1, the correct value). The #1183 limit remains for an operation whose fraction is rounded away (`r.l=(q*2>2.4)` with 1.25: 2 > 2.4, 0; correct -1).
+* `tests/bug-orig/compiler/compiler-compare-compound-left` (#1183) uses `q=1.5`, where `q*2` and `q+q` are whole: with this change all three lines give the expected -1 and the bug-orig test would come out FIXED without #1183 being fixed. Its inputs change to values whose fraction survives (for instance `q=1.25` with `q*2>2.4`, `q+q>2.4`, `q*2=2.5`), `.expect` and `.orig` (recorded from the CD's compiler, `bug-orig-record`) follow; it stays REPRODUCED. Named in the commit (rule 3: an intended change of a test).
+* The #1177 limit texts (`docs/blitz2/expression-types.md` "Limits until the expression tree", the #1177 row of `docs/blitz2/deviations.md`, the requirement "Known limits of the left operand until the expression tree" of `quick-compare-types`) get the new examples; the `-q` limit goes.
 
-### 7. AB3 mode
+### 8. Library routines: where, and compatibility (user decision 3)
 
-blitz2 and blitz2-ab3 link one core (`programs/blitz2/CMakeLists.txt`), AmiBlitz3 v3.14.0 has the same code as the original (`expression-types.md`) and keeps the old rule. Decided (user decision 1): the new rule applies in AB3 mode too, no mode condition; `docs/ab3/variant.md` gets a deviation row, and the affected oracle tests in `tests/ab3` are marked.
+`l*q`, `q*p` need a 64-bit intermediate and `l/q` a 48-bit dividend; today's `qmultiply`/`qdivide` cannot do it beyond +-32767. Decided: new entries in the system libraries `lmullib`/`ldivlib` (the headers end at `$CA02`/`$CB02`, `libs/acidlibs/lmullib.c`, `ldivlib.c`), with the register contract of the neighbours, an entry in `docs/libs/deviations.md`: a program compiled by the port needs the port's libraries. `q/l` and `q/h` use the existing `longdiv` (decision 3).
 
-### 8. Documentation, deviation, site
+### 9. Results and comparison
 
-* `docs/blitz2/expression-types.md`: the rule (the exception section, the "type so far" list, the measured table with a "Before"/"After" column, "Where this is a problem": arithmetic becomes "fixed in the port, #1178"; the comment at `eval.c:2893` is rewritten to `Fixed (#1178)`).
-* A deviation entry: the coordinator names `docs/*/deviations.md`, but only `docs/libs/deviations.md` and `docs/ted/deviations.md` exist; fixed compiler bugs are recorded in code comments (`Fixed (#N)`), `site/content/docs/compared-with-original/fixed-bugs/compiler.md` and `site/data/fixoverview.yaml` (e.g. #978 at `compiler.md:150`). `docs/blitz2/deviations.md` is created by a separate task; this change adds its kind-F entry there (user decision 6). The new library routines go to `docs/libs/deviations.md` (decision 3).
-* `docs/ab3/variant.md` ("Differences to AmiBlitz3's compiler"): a row: the port differs from AmiBlitz3 v3.14.0, which keeps the old rule (user decision 1).
-* The site section "The type of an expression" (`site/content/docs/how-blitz2-works/compiling.md:147`) and the fixed-bugs page entry; the overview row and label are the coordinator's step.
+Changed executables: those in which a Quick is fetched under a Long type so far and its consumer is not a shift or a logic operator (decision 6), those with a late cut by a Long constant, `&var` or `?label` under `*` or `/`, and the library files `lmullib`/`ldivlib` (and whichever disk libraries of the build carry them). Named in the commit message with `PREV_INTENDED`, with the list from the prev comparison. Changed program outputs: the 18 places of the issue, the negation, `^` and Float cases of decisions 3-5 where a fraction is present (counted in task 3.3; the model's 358/18/0 predates the rounding decision and did not model negation and `^`). The corpus runs (`corpus`, `corpus_runerr`, the CD corpus `blitz2-cd.tsv`) and an executable-level comparison over more sources check the rest.
 
-## Decisions of the user (2026-11-21)
+### 10. Cost check
 
-From `~/.local/share/bb2-c-work/task-decisions.md`, "quick-long-arithmetic: first open questions" and the following lines.
+Runtime: `l+q` unchanged, `l-q` a few instructions more, `*` and `/` a library call as today but with a 64-bit step. The library benchmark (`ctest --preset perf`, `tests/perf/budgets.txt`, D-007) gets lines for the new entries, measured against the existing `lmullib`/`ldivlib` lines and the original's target; an existing line must not rise. Compile time: measured by the corpus (not expected to matter).
 
-1. **AB3 mode** gets the same rule: blitz2 and blitz2-ab3 share the core, so no mode test. A deviation row in `docs/ab3/variant.md` (AmiBlitz3 v3.14.0 keeps the old rule); the oracle tests in `tests/ab3` that the change affects are marked.
-2. **#1177 is a change of its own and is done before this one.** This change depends on it (the operand types at the comparison come with it; the "no cut at fetch" edit in `varcont` is this change's, #1177 drops the cut only for the left operand of a comparison: `quick-compare-types`, decision 2); no parallel work.
-3. **Routines** are new entries in `lmullib` and `ldivlib` (variant (a) of decision 3 above), with an entry in `docs/libs/deviations.md`: a program compiled by the port needs the port's libraries, not the original's.
-4. **Classification:** #1178 is fixed as an original bug with the full fix workflow (labels `bug-orig` and `wrong-result` are on the issue; a bug-orig test with `; @fixed #1178` or the equivalent; the website's fixed-bugs entry and the overview row are the coordinator's; severity 1). `tests/blitz2/quick-arith-long.bas` gets the new expected values.
-5. **Division** Long/Quick rounds like BB2's Long division, towards zero (as the spike measures), so a whole-number Quick gives today's result; the test pins it. Addition, subtraction and multiplication round down (floor). So `10 / -1.5` is -6.
-6. **Deviation entry:** the kind-F entry goes into `docs/blitz2/deviations.md`, which another task creates; this change adds the entry there (it starts after that file exists).
-7. **Overflow** of a mixed product beyond 32 bits wraps as `longmult` does.
+### 11. AB3 mode (user decision 1)
 
-## Open questions
+blitz2 and blitz2-ab3 link one core; the new rule applies in AB3 mode too, no mode condition; `docs/ab3/variant.md` gets a deviation row, the affected oracle tests in `tests/ab3` are marked.
 
-None left from the first round. The spike (task 1.1) may raise new ones (the right operand's type at `doop`, the division rounding it measures).
+### 12. Documentation, deviation, site
+
+* `docs/blitz2/expression-types.md`: the exception section, the "type so far" list, the Float/Quick table (a Quick column after the fix), the paragraph "Planned in #1178" (becomes the rule), the measured examples with "Before"/"After", the #1177 limits (decision 7), and "Where this is a problem": arithmetic becomes "original bug #1178, fixed in the port" (the section still says #1178 keeps the current behaviour). The comment at `eval.c:3036` becomes `Fixed (#1178)`.
+* `docs/blitz2/deviations.md` (exists): the kind-F entry for #1178 and the changed #1177 limits; `docs/libs/deviations.md` for the new library entries; `docs/ab3/variant.md`: AmiBlitz3 v3.14.0 keeps the old rule.
+* The site section "The type of an expression" (`site/content/docs/how-blitz2-works/compiling.md:147-151`, which says the port keeps the rule) and the fixed-bugs entry; the overview row and label are the coordinator's step.
+
+## Decisions of the user
+
+From `~/.local/share/bb2-c-work/task-decisions.md`.
+
+1. **AB3 mode** (2026-11-21, "quick-long-arithmetic: first open questions"): "Neue Regel auch in AB3 (Recommended)".
+2. **#1177 first, the cut removed here**: "Zwei, #1177 zuerst (Recommended)"; "varcont: "quick-long-arithmetic (Recommended)"" (2026-11-21, "quick-compare-types (#1177): open questions"). #1177 is merged (fe1d7b357).
+3. **Routines**: "Neue Einträge in lmullib/ldivlib (Recommended)".
+4. **Classification**: "Ja, als Original-Bug fixen (Recommended)" (labels `bug-orig`, `wrong-result`, the fix workflow in full, severity 1); `tests/blitz2/quick-arith-long.bas` gets the new expected values.
+5. **Division** Long/Quick: "Wie BB2s Long-Division (Recommended)": towards zero (measured, spike section 1), so `10 / -1.5` is -6.
+6. **Deviation entry** in `docs/blitz2/deviations.md` ("docs/blitz2/deviations.md anlegen (Recommended)", then "Abschnitt 5 dorthin verschieben (Recommended)"); the file exists.
+7. **Overflow** of a mixed product: "Wie longmult (Recommended)".
+8. **Rounding** (2026-11-21, "#1178 rounding rule decided"): "Zwischenlösung: / gegen Null (Recommended)": division towards zero, everything else (`+ - *`, negation, the conversion Quick to Long/Word/Byte) floor; replaces the earlier answers and the answer to case e: with `q=1.5`, `r.l=-q` and `r.l=0-q` give -2.
+9. **Quick/Quick division under a Long type so far** (2026-11-21, "#1178 c"): follows the division rule; `r.l=q/h` with -3.0/2.0 gives -1.
+10. **A Long operand that sets the type** (2026-11-21, "#1178 d refined"): `+`/`-` as a Long operation as today, `*`/`/` with the new routines, the old behaviour by `Int(q)`.
+11. **Order** (2026-11-22, "Order of the Quick work; matrix test"): "A: Fixes zuerst (Recommended)"; the matrix test "Ja, vor #1178 (Recommended)", the regression test of #1178 and the tree.
+12. **Word+Word then `+ q` without a destination** (2026-11-22, "#1178 Q1"): "Zu #1178: Wichtig ist nur, dass nach dem Expression Tree dort 4.5 rauskommt": 4 and 8 in this change (interim, section "Interim value handed to the expression tree").
+
+## Planning choices (mine, not the user's)
+
+* Decision 6, K3: `Point: keep the conversion at fetch only where the consumer is a shift or a logic operator; left +/- operands change their code order — L2 Possible / I2 Medium / E2 Reasoned → Plan`.
+* Decision 3, Quick OP Quick under a Long type so far gives a whole number at the operator, computed without a Quick intermediate: `Point: per-operation rounding for q+p, q*p as for l+q (variant C, its model, case c) — L1 Unlikely / I3 Observable / E2 Reasoned → Plan`. The alternative of the spike's section 4 (a raw Quick result, cut at the end) lets `q+p` and `q*p` overflow the Quick range where today's Long computation does not: whole-number Quicks would change their results unintended (I5 Critical; not recommended).
+* Decision 7, new inputs for `compiler-compare-compound-left`: `Point: #1183's bug-orig test would turn FIXED by this change — L3 Likely / I1 Low / E2 Reasoned → Monitor` (a task covers it anyway, 1.4).
+* Decision 3, `l/q`, `q/l`, `q/h` computed directly as truncated quotients: by the spike (E3), the consequence of decision 5; prescribed, no rating.
+
+## Interim value handed to the expression tree
+
+**A Long type so far without a destination** (2026-11-22, `task-decisions.md`, "#1178 Q1": "Zu #1178: Wichtig ist nur, dass nach dem Expression Tree dort 4.5 rauskommt"): in this change Word+Word makes the type so far Long, so `+ q` gives a Long by decision 3: `NPrint 1+1+1+q` gives 4 and `NPrint w+v+q` gives 8 (`q=1.5`, `w=3`, `v=4`; today's values), while `NPrint q+w+v` stays 8.5. This is an interim value. A requirement handed to the expression tree (#1180), not part of this change: after the tree, `NPrint 1+1+1+q` with `q=1.5` gives 4.5 (no destination asks for a whole number).
 
 ## Risks
 
-* The right-operand type may not be known where code was moved or patched (the report's five mechanisms); the spike decides whether the change stays inside `eval5`.
-* Code size: `l-q` and the new calls make the compiled expressions longer; short branches in generated code are not affected (the code is generated, not hand-placed), but the executables' sizes change.
-* The function-optimizer change (`compiler-function-optimizer`) touches `afunction` in the same file; the two changes must not be implemented in parallel (coordinator's note).
-* The later expression tree (`tr-expr-tree-report.md`) replaces `eval5`'s typing; this change's tests (values, not code) carry over, the executables are compared at the byte level only against this change's output.
+* The flag must reach every consumer; a missed one floors the wrong way or uses the raw value as a Long (65536 times too large). The spike's prototype found the list above by 40 consumer cases; the matrix test is the guard.
+* `l-q` as `l - ceil(q)`: the edge Quick values (-32768.0, raw values near the top) need care in the inline code.
+* Code size: the new calls and `l-q` make compiled expressions longer; executables' sizes change.
+* The function-optimizer change (`compiler-function-optimizer`) touches the same file; not in parallel.
+* The tree (#1180) must reproduce this change's bytes in its steps 1-4; K3 adds one rule (cut at fetch for a shift or logic consumer) to replay.
