@@ -7683,7 +7683,7 @@ rows:
     topic: "Files"
     library: "shapeslib"
     command: "LoadShape"
-    text: "`LoadShape` closes an animation file before \"ANIM format not supported\" and \"Illegal ANIM interleave value\"; the original left it open and locked until reboot."
+    text: "`LoadShape` closes an animation file before \"ANIM format not supported\"; the original left it open and locked until reboot."
     page: libraries
     anchor: iff-files
   - issue: 1074
@@ -8076,5 +8076,13 @@ rows:
     library: "Compiler"
     command: ""
     text: "The result of a comparison as the right operand of an operator is converted to the left operand's type, so a Long keeps its high word and a Quick or Float its fraction; the original converted the left operand down to Word (`If $10000 AND (a=b)` false, `If q OR (a<>b)` false for `q=0.5`, `lb+(a=b)` -31073 for `lb=100000`). `rf=fh AND (a=b)` with a Float `fh` is refused with \"Illegal Operator for Type\"."
+    page: compiler
+    anchor: expressions-and-statements
+  - issue: 1188
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A constant with a fraction keeps it when the type so far is Byte (a Byte destination, parameter, field or array element), as under a Word; the original cut it to a whole number before the operation (`rb.b=(1.5*vb)` 2 instead of 3 for `vb=2`, `cprotect.b=swordhit*.8` computed `swordhit*0`). `2.0` and `Data.b 1.5` keep the original's results; `rb=1.5 AND vb` is refused with \"Illegal Operator for Type\"."
     page: compiler
     anchor: expressions-and-statements

@@ -1,7 +1,7 @@
 ---
 title: Extensions
 weight: 4
-description: What the compiler of the BB2 C port accepts beyond Blitz Basic 2, the rule that keeps old sources unchanged, and the four functions it compiles faster.
+description: What the compiler of the BB2 C port accepts beyond Blitz Basic 2, the rule that keeps old sources unchanged, the four functions it compiles faster, and the animations LoadShape loads.
 ---
 
 Before this page you should know how the compiler options work
@@ -16,6 +16,10 @@ functions are compiled as inline code
 ([Faster Int, Frac, Len and Asc](#faster-int-frac-len-and-asc)),
 and a branch with the size `.b` in inline assembler is a short branch
 ([Short branches in inline assembler](#short-branches-in-inline-assembler)).
+
+The libraries add to Blitz Basic 2 in the same way: `LoadShape` loads
+animations that the original stopped with a runtime error
+([Animations of every interleave in LoadShape](#animations-of-every-interleave-in-loadshape)).
 
 ## #__debug: is runtime error checking on?
 
@@ -128,6 +132,30 @@ uses `Bcc.b`; all its branches are in range.
 
 In [AB3 mode]({{< relref "/docs/ab3-mode" >}}) the branches stay word
 branches whatever their size, as in AmiBlitz3.
+
+## Animations of every interleave in LoadShape
+
+An IFF ANIM file stores each frame as the differences from an earlier
+frame, and the header of each frame says which one: its *interleave*. An
+interleave of 1 means the frame before it, a number n means n frames
+back, and 0, the default of the ANIM specification, means two frames
+back. Most ANIM files use 0, because players show them with two
+alternating screens (double buffering).
+
+The original `LoadShape` takes only the interleave 1. Any other value
+stops the loading after the first frame with the runtime error "Illegal
+ANIM interleave value". The port's `LoadShape` takes every value as the
+specification defines it, frame by frame, so such an animation loads
+completely, each frame into its own shape. A frame with fewer frames
+before it than its interleave asks for, such as the second frame of an
+animation with the interleave 0, is made from the first frame, as a
+player starts both screens with it. An animation with the interleave 1
+loads as before.
+
+The command reference describes `LoadShape` with its limits
+([shapeslib]({{< relref "/docs/libraries/commands/shapeslib#loadshape" >}})).
+In [AB3 mode]({{< relref "/docs/ab3-mode" >}}) a program uses
+AmiBlitz3's libraries, and with them AmiBlitz3's `LoadShape`.
 
 ## Warnings
 

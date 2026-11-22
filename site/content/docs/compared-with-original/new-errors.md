@@ -261,6 +261,34 @@ variable.
 
 Issue: [A comparison as the right operand converts the left operand down to Word: a Long loses its high word, a Float or Quick is cut (#1182)](https://github.com/fubar-coder/bb2-c/issues/1182).
 
+### `AND`, `OR`, `EOR`, `NOT` or a shift with a constant with a fraction under a Byte {#byte-fraction-operator}
+
+**What happened.** When the type so far was Byte (a Byte destination,
+parameter, field or array element), the original cut a constant with a
+fraction to a whole number before the operation, so it accepted a bit
+operator or a shift with it:
+
+```
+vb.b=3 : rb.b=0
+rb=1.5 AND vb : NPrint rb
+End
+```
+
+compiled and printed `1` (1 AND 3).
+
+**With the port.** The constant keeps its fraction under a Byte as under
+a Word
+([Fixed bugs: expressions and statements]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#expressions-and-statements" >}})),
+so it is a Float, and `AND`, `OR`, `EOR`, `NOT` and the shifts refuse it
+with the compile error "Illegal Operator for Type" at its line (line 2
+here), as under a Word. A whole-valued constant with a point, as in
+`vb AND 2.0`, still compiles.
+
+**What to change.** Write the constant as a whole number, such as
+`1 AND vb`, which gives the original's result.
+
+Issue: [Under a Byte destination a constant with a fraction is cut before the operation (#1188)](https://github.com/fubar-coder/bb2-c/issues/1188).
+
 ## Characters
 
 ### An accented letter outside a string {#latin1-outside-string}

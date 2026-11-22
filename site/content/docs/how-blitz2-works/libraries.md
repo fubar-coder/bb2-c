@@ -49,8 +49,10 @@ the library files.
 `NPrint` come from one, `Left$` and `Mid$` from another, screens, shapes,
 sound and files from others. Some of them manage *objects*, such as
 screens, windows or shapes, numbered in your program; for those the
-compiler options have **Object Maximums**, the highest number your program
-may use.
+compiler options have **Object Maximums**, the number of objects of each
+kind your program may use: with a maximum of 10, the objects are numbered
+0 to 9
+([The maximum of a kind]({{< relref "/docs/language/objects#the-maximum-of-a-kind" >}})).
 
 **Runtime libraries** have no commands. They hold code the compiler calls
 by itself: setting up the variables, managing memory, copying and

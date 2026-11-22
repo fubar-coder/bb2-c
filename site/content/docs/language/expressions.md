@@ -77,8 +77,15 @@ Some details of the operators:
   error "Division by Zero".
 * `MOD` gives the remainder of the division. With a positive divisor it
   is between 0 and the divisor less 1, also for a negative dividend:
-  `10 MOD 3` is 1, `-7 MOD 3` is 2. Of a Quick or a Float the remainder
-  is a whole number: `7.5 MOD 2` is 1.
+  `10 MOD 3` is 1, `-7 MOD 3` is 2. So with a negative dividend it does
+  not match `/`, which rounds towards zero: `-7/3` is -2, and -2*3+2 is
+  not -7 ([#1198](https://github.com/fubar-coder/bb2-c/issues/1198)).
+  With a negative divisor and a positive dividend the remainder is
+  positive: `7 MOD -3` is 1. With both negative it is outside the
+  divisor's range, `-7 MOD -3` is -4, a bug of the original that the
+  port has too
+  ([#1197](https://github.com/fubar-coder/bb2-c/issues/1197)). Of a
+  Quick or a Float the remainder is a whole number: `7.5 MOD 2` is 1.
 * `^` always computes in Float, also with whole numbers, and the result
   is not always exact: `3^2` is 9.000001.
 * The shifts and the bit operators work on whole numbers and Quicks; a
@@ -156,12 +163,14 @@ r.l=2147483647/2*2   ; 2147483646, a Long computation
 Two parts of the rule need care. In a Long computation, a Quick does not
 make the computation Quick: `adr.l=base+i*4` with a Quick `i` is computed
 as a Long, as an address must be, and each operation with the Quick is
-rounded to a whole number. And a constant with a fraction after a first
-whole number is cut while the type so far is still Byte, a bug of the
-original that is not fixed yet
-([#1188](https://github.com/fubar-coder/bb2-c/issues/1188)): `NPrint
-1+0.5` prints 1, `NPrint 0.5+1` prints 1.5. Start such an expression with
-the value with the fraction, or write `1.0`.
+rounded to a whole number. And a constant with a fraction keeps it while
+the type so far is Byte, as it does under a Word: `NPrint 3+1.5` prints
+4.5, and with `vb.b=2`, `rb.b=1.5*vb` gives 3. The original cut the
+constant to a whole number there and printed 4 and gave 2
+([#1188](https://github.com/fubar-coder/bb2-c/issues/1188)). Such a
+constant is a Float, so `AND`, `OR`, `EOR`, `NOT` and the shifts refuse
+it. A whole-valued constant written with a point, such as `2.0`, stays a
+whole number under a Byte.
 
 The page
 [From source to executable]({{< relref "/docs/how-blitz2-works/compiling#the-type-of-an-expression" >}})
