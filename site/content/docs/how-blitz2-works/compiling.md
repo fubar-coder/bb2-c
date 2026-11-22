@@ -102,15 +102,11 @@ and after an addition or multiplication of two Words, whose result is a
 Long. A small whole number such as `1` counts as a Byte, and two Bytes
 added give a Word.
 
-### A Quick in a Long computation loses its fraction
+### A Quick in a Long computation
 
 There is one exception to "the higher type wins": when the type so far is
 Long and a Quick value comes in, the Quick does not make the computation a
-Quick one. It is converted to a Long at once, and its fraction is cut off
-(towards minus infinity, so -1.5 becomes -2). Only then is the operation
-done.
-
-The reason is the default type. A line such as
+Quick one. The reason is the default type. A line such as
 
 ```
 adr.l=base+i*4
@@ -120,35 +116,41 @@ with a Long `base` and a variable `i` without a suffix would otherwise be
 computed in Quick, and an address does not fit into the range of a Quick.
 With the exception it is computed in Long, as intended.
 
-The price is that a fraction can disappear before the arithmetic happens:
+In the original compiler the Quick is converted to a Long at once and its
+fraction is cut off (towards minus infinity, so -1.5 becomes -2); only
+then is the operation done, and a fraction disappears before the
+arithmetic happens. The BB2 C port fixes this
+([#1178](https://github.com/fubar-coder/bb2-c/issues/1178)): the
+operation is computed with the fraction and gives a whole number, rounded
+down for `+`, `-` and `*` and towards zero for `/`, as Blitz Basic's
+divisions do:
 
 ```
-q=1.5 : w.w=3 : v.w=4
-r.l=q*2     : NPrint r   ; 2, not 3: q is cut to 1 first
+q=1.5 : l.l=10 : w.w=3 : v.w=4
+r.l=q*2     : NPrint r   ; 3 (the original: 2, q is cut to 1 first)
+r.l=l-q     : NPrint r   ; 8, 8.5 rounded down (the original: 9)
+r.l=l/q     : NPrint r   ; 6, 6.67 towards zero (the original: 10)
+x.w=w+v+q*2 : NPrint x   ; 10 (the original: 9)
+x.w=q*2+w+v : NPrint x   ; 10
 NPrint 1+1+1+q           ; 4, not 4.5: 1+1+1 gives a Long
 NPrint 1+1+q             ; 3.5: 1+1 is still a Word
-x.w=w+v+q*2 : NPrint x   ; 9: w+v gives a Long, q is cut
-x.w=q*2+w+v : NPrint x   ; 10: the same sum, computed in Quick
 ```
 
-So the order of the operands matters. A Float is never cut: in a Long
-computation it makes the type Float, and `r.l=2.0*q` gives 3.
+The computation still follows the type so far, so the last two lines
+differ: a sum that starts with whole numbers is a Long, and adding the
+Quick to it gives a whole number. Shifts and the logic operators (`AND`,
+`OR`, `EOR`, `Not`) take the Quick rounded down, as in the original. A
+program that relies on the old result writes `Int(q)`: `r.l=Int(q)*2`
+gives 2.
 
-A Float and a Quick also round differently when they end up in a whole
-number: a Float is cut towards zero (-1.5 gives -1), a Quick is rounded
-down (-1.5 gives -2).
+A Float is never rounded on the way: in a Long computation it makes the
+type Float, and `r.l=2.0*q` gives 3. A Float and a Quick round
+differently when they end up in a whole number: a Float is cut towards
+zero (-1.5 gives -1), a Quick is rounded down (-1.5 gives -2).
 
-To get the exact result, do one of these:
-
-* compute in a Quick or Float variable first: `t=q*2 : r.l=t` gives 3,
-* or start the expression with a Float literal: `r.l=2.0*q`.
-
-Putting the Quick operands first helps only where the destination is not
-a Long, as in the Word example above.
-
-This rule for arithmetic is the behaviour of Blitz Basic 2 and of
-AmiBlitz3, and the BB2 C port keeps it
-([#1178](https://github.com/fubar-coder/bb2-c/issues/1178)).
+To get the exact result with a fraction, compute in a Quick or Float
+variable first (`t=q*2 : r.l=t`), or start the expression with a Float
+literal (`r.l=2.0*q`). AmiBlitz3 keeps the original's rule.
 
 ### Comparisons
 
@@ -172,8 +174,9 @@ values (`rq.q=(l>1)` gives 0 there for `l.l=65537`).
 
 Two cases are not fixed yet, because the compiler emits the code of the
 left operand before it sees the comparison: a left operand that is an
-expression, such as `r.l=(q*2>2)` or `r.l=(-q<-1)`, still loses the
-fraction ([#1183](https://github.com/fubar-coder/bb2-c/issues/1183)), and
+expression, such as `r.l=(q*2>2.4)` with `q=1.25`, is computed as a whole
+number first (2.5 is rounded down to 2, so the comparison is false;
+[#1183](https://github.com/fubar-coder/bb2-c/issues/1183)), and
 a large whole-number constant on the left in a Float context
 (`rf.f=(100000001>l)`) is still compared as a Float. Put such an
 operand on the right side of the comparison, or compute it into a
@@ -184,7 +187,8 @@ Quick, which overflows from `i=8192` on; give `i` the type Long there.
 ### Array indexes
 
 The first index of an array is always computed as a Long, so a Quick in
-it loses its fraction: `a(q*10)` with `q=1.5` is element 10, not 15. A
+it is rounded as in a Long computation: `a(q*10)` with `q=1.5` is element
+15 in the port (the original cut `q` first: element 10). A
 later index is computed differently with and without runtime error
 checking, a known original bug
 ([#1179](https://github.com/fubar-coder/bb2-c/issues/1179)); until it is

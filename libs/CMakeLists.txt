@@ -58,6 +58,7 @@ endfunction()
 add_subdirectory(acidlibs)
 add_subdirectory(deflibs)
 add_subdirectory(userlibs)
+add_subdirectory(compilerlib)
 
 # the command reference of the website: the command tables the library
 # build steps generate (blitz_library CMDREF) are the committed ones of

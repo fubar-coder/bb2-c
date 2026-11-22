@@ -108,9 +108,13 @@ TEST_CASE("previntended: malformed", "[previntended]")
     CHECK(add(&pi, "site_examples_run:ex1") == 0);
     CHECK(add(&pi, "site_examples_compile_rwe_1999:ex2") == 0);
     CHECK(add(&pi, "ab3_cli_prev:case1") == 0);
+    CHECK(add(&pi, "corpus_exprmatrix_dl_A_agree_01:dl-A-agree-01") == 0);
+    CHECK(add(&pi, "corpus_exprmatrix_runerr_i1_I_c_agree_01:i1-I-c-agree-01") == 0);
+    CHECK(add_err("corpus_exprmatrix:x", "unknown test"));
     CHECK(prevint_judge(&pi, "corpus_cd_prev", "BB2/DIR/X.BB2", NULL, 1) == PREVINT_INTENDED);
     CHECK(prevint_judge(&pi, "corpus_cd_prev", "BB2/DIR/Y.BB2", NULL, 1) == PREVINT_DIFFERS);
-    CHECK(pi.n == 7);
+    CHECK(prevint_judge(&pi, "corpus_exprmatrix_dl_A_agree_01", "dl-A-agree-01", NULL, 1) == PREVINT_INTENDED);
+    CHECK(pi.n == 9);
     prevint_free(&pi);
     CHECK(add_err("corpus:alpha:C5-P5", "only ted_ab"));
     CHECK(add_err("ted_ab:x:C5-C5", "the pair is"));

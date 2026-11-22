@@ -21,6 +21,9 @@ libs/userlibs/               userlibs of a variant (rwe/: Red When Excited,
 libs/blitzlib.ld             linker script: one code hunk, header at offset 0
 libs/acidlibs/               one C file per library
 libs/deflibs/                one C file per AmigaOS library
+libs/compilerlib/            compilerlib (library 64030): routines of the
+                             generated code no library set has (#1178),
+                             embedded in blitz2 (asmlibs.c loadlibs)
 libs/tests/                  libs_tests: the libraries against their
                              originals in the emulator (m68k, snitch);
                              variants/: the test variants, check.cmake

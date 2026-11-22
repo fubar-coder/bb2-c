@@ -145,6 +145,7 @@ the test logic itself is C:
 | Test case (tag) | File | Libraries | Checks |
 |---|---|---|---|
 | `libtest ldivlib`/`lmullib` `[libtest]` | `libtest.c` | ldivlib, lmullib | 20 729 cases per routine |
+| `libtest compilerlib` `[libtest]` | `libtest.c` | compilerlib (the C set only: no original; cases `[fixed #1178]`) | 20 729 cases per routine, the limits of ldivlib's inputs, the kept registers |
 | `[sys]` | `systest.c` | memlib, datalib, chipbaselib, strings1lib, staticslib, varslib, exitslib, clrlib | 48 |
 | `[mathstr]` | `systest_mathstr.c` | strings2lib, ffplib, strcomplib, floatquicklib, modlib, maxlenlib | 56 864 |
 | `[runtime]` | `systest_runtime.c` | arrayslib, maxslib, errtraplib, rundebuglib | 113 |
@@ -277,6 +278,24 @@ with `MULS.L`; the AmiBlitz3 mode of `blitz2-ab3` loads that library;
 library of its userlibs directory replace a loaded library of the same
 number (`AmiBlitz/AmiBlitz3@7ab0350b`, test `ab3_cli` case `userlib`, also
 run with AmiBlitz3's compiler).
+
+### compilerlib: the compiler's own library (#1178)
+
+`libs/compilerlib/compilerlib.c`, system library 64030 with the tokens
+`$D600`-`$D602` (free in the port's, the CD's and AmiBlitz3's library
+sets; `blitzlib numbers` checks it against acidlibs and deflibs), is not
+part of `blitz2:acidlibs`: it is a BigLib of its own
+(`build/amiga/libs/compilerlib/compilerlib.big`) that `blitz2` and
+`blitz2-ab3` embed (`#embed` in `programs/blitz2/src/asmlibs.c`) and link
+first in their library list at every `loadlibs`, in BB2 and AB3 mode,
+whatever library set they load. It holds the routines of generated code
+that no library set has: `mixmult` (`$D600`, floor(l*q)), `qqmult`
+(`$D601`, floor(q*p)) and `lqdiv` (`$D602`, trunc(l/q), with its error
+check), the arithmetic of a Quick under a Long type so far
+(`docs/blitz2/expression-types.md`). Like every library it is copied into
+a program only when the program uses one of its routines (190 bytes, 198
+with runtime error checking). Register contract as longmult and longdiv:
+d0/d1 in, d0 out, d1 changed, d2-d7 and a0-a6 kept.
 
 ## State: command libraries (acidlibs)
 

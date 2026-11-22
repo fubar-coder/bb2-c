@@ -307,9 +307,11 @@ foreach(s IN LISTS corpus_tests-exprmatrix)
 	if(n MATCHES "^i[12]-[A-Za-z0-9]+-c-")
 		corpus_pass(corpus_exprmatrix_runerr_${t} RUNTIME_ERRORS EXPECT corpus_exprmatrix_runerr
 			NO_EXPECT_TARGETS LAUNCHER reqtrap SOURCES ${s})
+		prev_register(corpus_exprmatrix_runerr_${t})
 	else()
 		corpus_pass(corpus_exprmatrix_${t} EXPECT corpus_exprmatrix NO_EXPECT_TARGETS LAUNCHER reqtrap
 			SOURCES ${s})
+		prev_register(corpus_exprmatrix_${t})
 	endif()
 endforeach()
 set(exprmatrix_dir ${CMAKE_CURRENT_SOURCE_DIR}/tests-exprmatrix)

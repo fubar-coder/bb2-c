@@ -1,0 +1,53 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+01 r.l=l/n -5
+02 r.l=m/n -4
+03 r.l=k/q -10
+04 r.l=n/l 0
+05 r.l=n/2 -1
+06 r.l=g/h -1
+07 r.l=l/q 10
+08 r.l=k/n 5
+09 r.l=l/x -3
+10 r.l=-q*2 -2
+11 r.l=0-q -1
+12 r.l=a+b 40000
+13 r.l=c*d 60000
+14 q*100000 100000
+15 q/100000 0
+16 q+&l-&l 1
+17 Int(q)*100000 100000
+18 r.l=l+q*f 12
+19 r.l=l+q^2 11
+20 r.l=big*z -1294967296
+21 r.l=(q+p)*l 30
+22 r.l=l*(q+p) 30
+23 r.l=l-(q) 9
+24 r.l=aq(1)*2 2
+25 r.l=s\v*2 2
+26 r.l=fq{1.5}*2 2
+27 adr.l=base+i*4 81000
+28 x.w=w+v+q*2 9
+29 x.w=q*2+w+v 10
+30 r.l=l+q+p 13
+31 r.l=l-n 12
+32 r.l=l-e 32778
+33 r.l=q-l -9
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-quick-long-arith.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-quick-long-arith
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

@@ -130,6 +130,10 @@
 # 10794.6, 10794.0 on main 61969ba7 + this change (before: bstr.pstr 11331.0
 # and bstr.fstr 12021.0, the budgets 11680 and 12379), 0.7 % and 0.1 %
 # above the original in the same session.
+# bmath.mixmul, bmath.lqdiv and bmath.lqdivw (new, quick-long-arithmetic, #1178)
+# from two runs of the fix on main 130748bee (2026-11-22): 526.6 and 526.1,
+# 2298.7 both, 573.6 both. No target: the original cut the Quick and called
+# longmult and longdiv (bmath.lmul, bmath.ldiv), another operation.
 # bmath.lmul and the new bmath.lmuls from two runs of longmult in assembler
 # (libs-performance task 13.30, 2026-11-16): 284.6 and 184.6 to 184.7.
 # bmath.qmul from two runs of quickmult in assembler (task 13.31, 2026-11-16):
@@ -523,6 +527,9 @@ bmath.fracn                    85     3679.0  q3=Frac(q6) (q6=-12.25)
 bmath.sgnq                    200      206.6  c=Sgn(q1)
 bmath.absq                   3643     3618.6  q3=Abs(q6) (q6=-12.25)
 bmath.peekc                   126      124.6  c=Peek.l(4)
+bmath.mixmul                  535          -  c=a*q2 (a Long times a Quick under a Long: compilerlib mixmult, #1178)
+bmath.lqdiv                  2325          -  c=a4/q2 (a4=100, q2=3.25: compilerlib lqdiv, 32 steps)
+bmath.lqdivw                  583          -  c=a4/q7 (q7=3.0: lqdiv's two DIVU)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
 bmath.qwrap                   112      109.0  q3=QWrap(q1,0,10)
 bmath.peekb                   126      129.0  c=Peek.b(p)

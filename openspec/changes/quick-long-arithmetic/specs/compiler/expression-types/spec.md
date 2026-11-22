@@ -56,7 +56,7 @@ A Quick that meets a Float operand or `^` under a whole-number type so far SHALL
 - **THEN** it gets 2 and 2
 
 ### Requirement: Other operators take the Quick rounded down
-Shifts, `AND`, `OR`, `EOR`, `MOD` and `Not` with a Quick operand under a whole-number type so far SHALL take the Quick rounded down, as before.
+Shifts, `AND`, `OR`, `EOR`, `Not` and `MOD` with a whole-number divisor, with a Quick operand under a whole-number type so far, SHALL take the Quick rounded down, as before; `MOD` with a Float divisor takes the Quick with its fraction ("Float operands and powers take the fraction").
 
 #### Scenario: Shift and mask
 - **WHEN** a program evaluates `r.l=q ASL 4` and `r.l=t AND 3` with `q=1.5`, `t=-1.5`
@@ -95,6 +95,10 @@ blitz2 and blitz2-ab3 (AB3 mode) SHALL apply the same rule; AmiBlitz3 v3.14.0 ke
 - **WHEN** an AB3 source evaluates `r.l=q*2` with `q=1.5`
 - **THEN** `r` is 3
 
+#### Scenario: Any library set
+- **WHEN** the port compiles `r.l=l*q`, `r.l=q*p` or `r.l=l/q` with its own libraries, with the CD's libraries, or in AB3 mode with AmiBlitz3's libraries
+- **THEN** the program compiles and gives the same results: the routines of these operations come with the compiler (its internal library), not from the library set
+
 ### Requirement: A mixed product beyond 32 bits wraps
 A Long times a Quick whose result does not fit a Long SHALL give the result modulo 2^32, as the Long multiplication does.
 
@@ -108,3 +112,20 @@ A program that has no Quick operand in an arithmetic expression under a whole-nu
 #### Scenario: Sources unchanged
 - **WHEN** the corpus and the CD's sources that compile are compiled and run before and after
 - **THEN** the outputs are the same except for the places whose result differs today, listed with the change; every other executable that differs is named for the comparison with the previous commit
+
+## MODIFIED Requirements
+
+### Requirement: Known limits of the left operand until the expression tree
+Until the expression tree (#1180), a left operand of a comparison that is an expression (`q*2`, `q+q`) SHALL still be evaluated in the type the expression is wanted in (#1183), by the rules of "A Quick operand is computed with its fraction" (rounded at the operator), and a Long constant on the left under a Float context SHALL still be compared as a Float. A negated Quick on the left (`-q`) SHALL keep its fraction.
+
+#### Scenario: Compound left operand
+- **WHEN** a program evaluates `r.l=(q*2>2)` with `q=1.5` and `r.l=(q*2>2.4)` with `q=1.25` (the left operand is an expression)
+- **THEN** it gives -1 (3 > 2) and 0 (the operation rounds 2.5 down to 2); `rw.w=(q*2>2.4)` gives -1
+
+#### Scenario: Negated left operand
+- **WHEN** a program evaluates `r.l=(-q<-1)` with `q=1.5`
+- **THEN** it gives -1
+
+#### Scenario: Long constant on the left under Float
+- **WHEN** a program evaluates `rf.f=(100000001>l3)` with `l3.l=100000000`
+- **THEN** it gives 0 as before (both are the same FFP value)

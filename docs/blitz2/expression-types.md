@@ -3,9 +3,11 @@
 `blitz2` (like the original compiler, `blitz2.s`) gives an expression one
 type while it compiles it from left to right. The rule is not described in
 the manual, and it has consequences when a Quick (a number with a fraction
-in 16.16 format) meets a Long. This page describes what the compiler does
-today, measured with blitz2 1.95 and the CD's libraries with runtime error
-checking off (AmiBlitz3 v3.14.0 has the same code).
+in 16.16 format) meets a Long. This page describes what the original
+compiler does, measured with blitz2 1.95 and the CD's libraries with
+runtime error checking off (AmiBlitz3 v3.14.0 has the same code), and
+where the port differs: comparisons (#1177) and the arithmetic of a
+Quick under a Long (#1178), both original bugs fixed in the port.
 
 ## The types and the "type so far"
 
@@ -26,19 +28,58 @@ The type so far starts as the type the expression is wanted in:
 | a later index of an array | Long with runtime error checking on, Word with it off |
 | `If`, `While`, `Until`, `Print` | none: the first value sets it |
 
-## The exception: a Quick is cut to Long
+## The exception: a Quick is cut to Long (the original)
 
-If the type so far is Long and the value is a Quick, the Quick is converted
-to Long at once and its fraction is cut off
-(`varcont`, `blitz2.s:10491-10498`; `programs/blitz2/src/eval.c:2894`).
-Without it the Quick (4) would win over the Long (3), and the Long operands
-would be computed in Quick with a range of +-32768: `adr.l=base+i*4` with a
-default-typed `i` would break for addresses.
+In the original, if the type so far is Long and the value is a Quick, the
+Quick is converted to Long at once and its fraction is cut off
+(`varcont`, `blitz2.s:10491-10498`). Without it the Quick (4) would win
+over the Long (3), and the Long operands would be computed in Quick with a
+range of +-32768: `adr.l=base+i*4` with a default-typed `i` would break
+for addresses.
 
 The cut is towards minus infinity (`-1.5` becomes `-2`). It applies to a
 Quick variable and to the value of a Quick function. Floats and constants
 with a fraction are not cut: in a Long context they make the type so far
-Float.
+Float. The operation is then done with the whole number, so `r.l=q*2`
+gives 2 for `q=1.5`, and the result depends on the order of the operands.
+
+## The port: a Quick keeps its fraction (#1178)
+
+In the port (original bug #1178, fixed; spec `compiler/expression-types`)
+the Quick is not cut when it is fetched: the type so far stays Long, the
+Quick stays a 16.16 value in its register (`varcont`, the flag `rawq` in
+`programs/blitz2/src/eval.c`), and the operator that takes it computes
+with the fraction and gives a whole number, rounded at the operator:
+
+| Operation under a Long type so far | Result |
+|---|---|
+| `+`, `-` (`l+q`, `l-q`, `q-l`, `q+p`) | rounded down: `r.l=l-q` with `l=10`, `q=1.5` is 8 |
+| `*` (`l*q`, `q*p`) | rounded down, the product modulo 2^32 beyond 32 bits as the Long product: `r.l=q*2` is 3 |
+| `/` (`l/q`, `q/l`, `q/h`) | towards zero, as BB2's Long, Word and Quick divisions: `r.l=l/n` with `n=-1.5` is -6, `r.l=g/h` with -3.0 and 2.0 is -1 |
+| unary minus | the Quick negated with its fraction, rounded down where it is converted: `r.l=-q` is -2, `r.l=-q*2` is -3 |
+| `^`, an operand that makes the type Float | the Quick with its fraction converted to Float, the Float result to the whole number towards zero (`SPFix`): `r.l=q+f` with `f=0.5` is 2 |
+| shifts, `AND`, `OR`, `EOR`, `Not`, the bit operators | the Quick rounded down first, as in the original |
+| `MOD` | the Quick rounded down first with a whole-number divisor, with its fraction when the divisor is a Float |
+| the end of the expression (an assignment, a parameter) | rounded down, as in the original |
+
+A Long operand that makes the type Long itself after a Quick (a constant
+beyond the Quick range, `&var`, `?label`) is a Long operation on the
+Quick rounded down for `+`, `-` and the other operators, as in the
+original, and takes the fraction for `*` and `/`: `NPrint q*100000` gives
+150000 (the original 100000), `NPrint q+&l-&l` gives 1; `Int(q)` gives the
+original's result. For a Quick without a fraction every result is the
+original's (as long as no Long overflows). The type so far flows as in the
+original, so the order still matters where it differs: `NPrint 1+1+1+q`
+gives 4 and `NPrint w+v+q` 8 (Word+Word is a Long), `NPrint q+w+v` 8.5;
+the expression tree (#1180) is to give 4.5 there.
+
+The products and the division `l/q` need more than 32 bits (`l*q`: bits
+16..47 of the 64 bit product; `l/q`: `l` shifted by 16 bits divided by the
+Quick): they are three routines of the port's internal library
+`compilerlib` (library 64030, `libs/compilerlib`), which `blitz2` brings
+itself and links in both modes whatever library set it loads; a program
+without such an operation gets nothing of it. `q/l` and `q/h` use the
+library set's `longdiv`.
 
 The type so far is Long when
 
@@ -69,36 +110,36 @@ truncates towards zero.
 Measured with `f.f=-1.5` or `q.q=-1.5` (V in the table), `l.l=3`, `sl{}`
 and `sw{}` printing a Long and a Word parameter; blitz2 2.10, 1.95 and the
 port with the CD's libraries give the same values, with runtime error
-checking off and on:
+checking off and on. The last column is the port after #1178, by its rule
+(above; the cases with an operator are checked by the expression matrix
+and `compiler-quick-long-arith`):
 
-| Expression | Float -1.5 | Quick -1.5 |
-|---|---|---|
-| `r.l=V` | -1 | -2 |
-| `r.l=-V` | 1 | 2 |
-| `x.w=V` / `b.b=V` | -1 | -2 |
-| `x.w=-V` | 1 | 1 |
-| `r.l=V*2` | -3 | -4 |
-| `r.l=V/2` | 0 | -1 |
-| `r.l=l*V` | -4 | -6 |
-| `r.l=l/V` | -2 | -1 |
-| `r.l=l+V` | 1 | 1 |
-| `r.l=Int(V)` | -1 | -1 |
-| `Hex$(V)` | FFFFFFFF | FFFFFFFE |
-| `sl{V}` / `sw{V}` | -1 | -2 |
-| `r.l=a(V+3)` (`a(i)=10*i`) | 10 | 10 |
+| Expression | Float -1.5 | Quick -1.5 | Quick -1.5, port |
+|---|---|---|---|
+| `r.l=V` | -1 | -2 | -2 |
+| `r.l=-V` | 1 | 2 | 1 |
+| `x.w=V` / `b.b=V` | -1 | -2 | -2 |
+| `x.w=-V` | 1 | 1 | 1 |
+| `r.l=V*2` | -3 | -4 | -3 |
+| `r.l=V/2` | 0 | -1 | 0 |
+| `r.l=l*V` | -4 | -6 | -5 |
+| `r.l=l/V` | -2 | -1 | -2 |
+| `r.l=l+V` | 1 | 1 | 1 |
+| `r.l=Int(V)` | -1 | -1 | -1 |
+| `Hex$(V)` | FFFFFFFF | FFFFFFFE | FFFFFFFE |
+| `sl{V}` / `sw{V}` | -1 | -2 | -2 |
+| `r.l=a(V+3)` (`a(i)=10*i`) | 10 | 10 | 10 |
 
 Sources: `eval.c:443-477` (`floattobyte`, `floattoword`, `floattolong`,
 `floattoquick`; `blitz2.s:8652-8680`) and `eval.c:404-421`
 (`quicktob2`, `quicktoword`, `quicktolong`; `blitz2.s:8624-8634`);
 `Int` in `libs/acidlibs/vallib.c:517-541`. `x.w=-V` agrees because the
-Quick is negated as a Quick and 1.5 rounds down to 1. The two types differ
-a second time through the cut of a Quick operand in a Long context
-(above), which a Float does not have: `r.l=V*2` with 1.5 gives 3 for a
-Float and 2 for a Quick.
-
-Planned in #1178: a Quick division rounds towards zero, and every other
-Quick result and conversion rounds down. This is not the current
-behaviour.
+Quick is negated as a Quick and 1.5 rounds down to 1. In the original
+the two types differ a second time through the cut of a Quick operand in a
+Long context (above), which a Float does not have: `r.l=V*2` with 1.5
+gives 3 for a Float and 2 for a Quick. In the port (#1178) a Quick
+division rounds towards zero and every other Quick result and conversion
+rounds down; the Float rounds towards zero.
 
 ## A comparison starts again
 
@@ -122,9 +163,11 @@ same FFP value).
 
 Limits until the expression tree (#1180):
 
-* a left operand that is an expression keeps the type so far: in
-  `r.l=(q*2>2)` the `q` is still cut (0), and so is `-q` in
-  `r.l=(-q<-1)` (#1183);
+* a left operand that is an expression keeps the type so far (#1183): it
+  is computed in it with the rounding of #1178, so `r.l=(q*2>2)` is -1
+  for `q=1.5` (3 > 2), but `r.l=(q*2>2.4)` is 0 for `q=1.25` (2.5 is
+  rounded down to 2); a negated Quick keeps its fraction
+  (`r.l=(-q<-1)` is -1);
 * a Long constant on the left under a Float context is still an FFP value:
   `rf.f=(100000001>l3)` is 0;
 * the right operand is computed in its own types: in `If base<i*4+base`
@@ -147,23 +190,23 @@ The examples below have more operands than its cells:
 
 `q.q=1.5`, `h.q=0.5`, `l.l=10`, `w.w=3`, `v.w=4`:
 
-| Expression | Result | Mathematical value |
-|---|---|---|
-| `r.l=q*2` | 2 | 3 |
-| `r.l=l-q` | 9 | 8 |
-| `r.l=q/h` | 2147483647 (`h` is cut to 0) | 3 |
-| `r.l=2.0*q` | 3 | 3 (a Float is not cut) |
-| `t.q=q*2 : r.l=t` | 3 | 3 (the Quick is stored first) |
-| `NPrint 1+1+q` | 3.5 | 3.5 |
-| `NPrint 1+1+1+q` | 4 | 4.5 (Word+Word is a Long) |
-| `x.w=w+v+q*2` | 9 | 10 |
-| `x.w=q*2+w+v` | 10 | 10 (the order matters) |
-| `If l+q*2>12` | false | true |
-| `If q*2+l>12` | true | true |
-| `a(q*10)` (first index) | element 10 | element 15 |
-| `Mid$("abcdefghij",q*2,1)` | b | c |
-| `r.l=(q>1)` | 0 (the port: -1, #1177) | -1 |
-| `If q>b` (`b.l=65537`) | true (the port: false, #1177) | false |
+| Expression | Original | Port | Mathematical value |
+|---|---|---|---|
+| `r.l=q*2` | 2 | 3 | 3 |
+| `r.l=l-q` | 9 | 8 | 8.5 |
+| `r.l=q/h` | 2147483647 (`h` is cut to 0) | 3 | 3 |
+| `r.l=2.0*q` | 3 | 3 | 3 (a Float is not cut) |
+| `t.q=q*2 : r.l=t` | 3 | 3 | 3 (the Quick is stored first) |
+| `NPrint 1+1+q` | 3.5 | 3.5 | 3.5 |
+| `NPrint 1+1+1+q` | 4 | 4 | 4.5 (Word+Word is a Long) |
+| `x.w=w+v+q*2` | 9 | 10 | 10 |
+| `x.w=q*2+w+v` | 10 | 10 | 10 |
+| `If l+q*2>12` | false | true | true |
+| `If q*2+l>12` | true | true | true |
+| `a(q*10)` (first index) | element 10 | element 15 | element 15 |
+| `Mid$("abcdefghij",q*2,1)` | b | c | c |
+| `r.l=(q>1)` | 0 | -1 (#1177) | -1 |
+| `If q>b` (`b.l=65537`) | true | false (#1177) | false |
 
 ## Array size and index limits
 
@@ -215,14 +258,18 @@ the four give the same results, except for `Dim a(65535)` with checking
   (`If q>b` is true for `b.l=65537`), and two Longs beyond 2^24 under a
   Float destination or parameter, or two Longs beyond 16 bits under a
   Quick destination, can compare as equal.
-* **Arithmetic** is issue #1178: the current behaviour is kept, because the
-  rule is deliberate; it is recorded as a potential problem, since a
-  program that uses fractions in such an expression gets another result
-  than its source suggests, depending on the order of the operands.
+* **Arithmetic** was original bug #1178, fixed in the port (above, "The
+  port: a Quick keeps its fraction"): in the original a Quick fetched
+  under a Long type so far is cut to a whole number before the operation,
+  so a program that uses fractions in such an expression gets another
+  result than its source suggests, depending on the order of the
+  operands. The port keeps the order of the type so far (#1180 is to make
+  it independent of the order).
 * **Array indexes** are original bug #1179: a later index is evaluated as
   a Word without runtime error checking and as a Long with it, so the same
   source gives another element depending on that option (`b(1,q*10)` is
   element 15 with the checking off and element 10 with it on, measured
   with 1.95, 2.10 and the port).
 
-The comment at `programs/blitz2/src/eval.c:2893` points here.
+The comments `Fixed (#1178)` in `programs/blitz2/src/eval.c` (`varcont`,
+`mixedop`) point here.

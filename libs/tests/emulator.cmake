@@ -7,7 +7,8 @@
 #         [-DOBJ_VARIANTS=FILE;...] [-DCAP_DUMP=KEY|BLOCK:N -DRESULTS=results]
 #         [-DKEEP_BIN=ON] [-DMACHINE=NAME] [-DUAE=KEY=VALUE;...] -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
-# with the same number from ORIGINALS as NAME.orig; USERLIBS: further
+# with the same number from ORIGINALS as NAME.orig (and DIR/../compilerlib/
+# compilerlib.obj, the compiler's own library, without one); USERLIBS: further
 # library files OBJ (C build, as NAME.obj) with their original ORIG (as
 # NAME.orig), e.g. the RWE userlibs.  OBJ_VARIANTS: library files
 # DIR2/NAME.obj that take the place of DIR/NAME.obj (a broken build, the
@@ -113,6 +114,11 @@ foreach(obj IN LISTS objs)
 		endif()
 	endif()
 endforeach()
+# compilerlib (#1178, libs/compilerlib next to DIR): the compiler's own
+# library, no original anywhere; the programs call it in the C set only
+if(EXISTS ${LIBS}/../compilerlib/compilerlib.obj)
+	file(COPY_FILE ${LIBS}/../compilerlib/compilerlib.obj ${test}/compilerlib.obj)
+endif()
 foreach(v IN LISTS OBJ_VARIANTS)
 	get_filename_component(name ${v} NAME_WE)
 	if(NOT EXISTS ${test}/${name}.obj)
