@@ -1,0 +1,15 @@
+# compiler-createproc-fail.test.bas: the compiler runs through inject, which
+# makes the CreateProc of blitz2 fail; tedstub's job r001 runs the driver
+# with COMPILE/RUN and logs the requesters still open behind it (the
+# driver itself runs from the shell as in any cell). The original leaves
+# the stop requester open
+fixed-orig = 25
+wrap = "@INJECT@|createprocfail"
+jobline = ["run=r001|@DRIVER@|RAM:con"]
+
+[asserts]
+"compile.log" = "contains \"REQUESTERS\tr001\t0\n\""
+"compile.inject" = "contains \"inject: createprocfail: 1 processes not created\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "contains \"REQUESTERS\tr001\t1\n\""

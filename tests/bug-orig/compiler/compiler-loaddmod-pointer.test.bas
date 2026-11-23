@@ -6,8 +6,6 @@
 ; (LoadSeg) and keeps it, so any load file is a module here: the build's
 ; wbrun (amiga/wbrun.c), not the CD's DEFAULTDBUG.
 ; Correct: the pointer is normal again after the menu item.
-; @fixed-orig #23
-; @pass remove=blitz2/defaultdbug
-; @pass file=blitz2/dbgmod|@WBRUN@
-; @pass jobline=menu=j001|9|blitz2:dbgmod
-End
+!TestCase{loaddmod_pointer}
+  !CheckEq{1,1,"driver"}
+!EndTestCase

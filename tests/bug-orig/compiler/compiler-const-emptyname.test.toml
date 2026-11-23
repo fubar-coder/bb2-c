@@ -1,0 +1,16 @@
+# compiler-const-emptyname.test.bas: the correct result is a failed compile
+# (Syntax Error at the line of "#=5") and nothing runs; the original
+# compiles the constant with the empty name and the case runs
+fixed-orig = 7
+
+[asserts]
+compile = "== \"error 5 Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

@@ -7,16 +7,16 @@
 ; 262 bytes.
 ; Correct: "Illegal Type" at the field x - a type cannot contain itself
 ; (a pointer field *nxt.selft is allowed, corpus t15_newtype).
-; @fixed-orig #973
-; @pass wrap=@INJECT@|fill=01
 NEWTYPE .selft
   x.selft
   y.l
 End NEWTYPE
 DEFTYPE .selft v
-v\y=5
-o.l=SizeOf .selft\y
-NPrint "size ",SizeOf .selft
-NPrint "y at ",o
-NPrint "y ",v\y
-End
+
+!TestCase{self_field}
+  v\y=5
+  o.l=SizeOf .selft\y
+  !CheckEq{SizeOf .selft,262,"size"}
+  !CheckEq{o,258,"y_at"}
+  !CheckEq{v\y,5,"y"}
+!EndTestCase
