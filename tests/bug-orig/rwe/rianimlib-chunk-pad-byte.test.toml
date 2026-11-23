@@ -1,0 +1,8 @@
+# rianimlib-chunk-pad-byte.test.bas: the original does not find the BMHD
+fixed-orig = 505
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-chunk-pad-byte.anim"]
+
+[deviations."compiler=orig210"]
+"check.pad_byte.depth" = "== fail"
+"check.pad_byte.depth.actual" = "== 0"

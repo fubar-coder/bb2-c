@@ -1,0 +1,7 @@
+# rianimlib-delta-count-zero.test.bas (#508, an open bug): the library writes
+# row 100 for the run of count 0
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-delta-count-zero.anim"]
+
+[deviations."compiler=orig210"]
+"check.count_zero.row_100" = "== fail"

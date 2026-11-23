@@ -1,0 +1,14 @@
+# rianimlib-initfindchunk-stack.test.bas: the original returns to the caller's
+# a1 and crashes (a session of its own)
+fixed-orig = 513
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+timeout = 30
+files = ["anim|@TESTDATA@/rianimlib-initfindchunk-stack.anim"]
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+requester = "contains \"Software Failure\""

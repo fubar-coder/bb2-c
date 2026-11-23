@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-result: 0
-frame 3's delta not played
-frame 2's delta not played
-rc=0

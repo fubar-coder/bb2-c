@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-before
-after
-b unchanged
-rc=0

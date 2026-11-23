@@ -1,0 +1,16 @@
+# riamosfunclib-bload-name-result.test.bas: inject fails the first allocation
+# of 4321 bytes and the first Read of the file; the original returns bank 0
+# for both and leaves it reserved
+fixed-orig = 486
+rwe = ["riamosfunclib"]
+runwrap = "@INJECT@|allocfail=4321-4321/1 readfail=bug-orig-bload4/1"
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\ninject: readfail: 1 reads failed\""
+
+[deviations."compiler=orig210"]
+"check.bload_name_result.reserve_fails" = "== fail"
+"check.bload_name_result.reserve_fails.actual" = "== 0"
+"check.bload_name_result.read_fails" = "== fail"
+"check.bload_name_result.read_fails.actual" = "== 0"
+"check.bload_name_result.bank_0_free" = "== fail"

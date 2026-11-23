@@ -1,0 +1,8 @@
+# rianimlib-anim7-short-form.test.bas: the original decodes the short data
+# as longs
+fixed-orig = 504
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-anim7-short-form.anim"]
+
+[deviations."compiler=orig210"]
+"check.short_form.short_data" = "== fail"

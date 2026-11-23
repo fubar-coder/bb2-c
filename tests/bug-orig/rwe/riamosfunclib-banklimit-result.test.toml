@@ -1,0 +1,7 @@
+# riamosfunclib-banklimit-result.test.bas: the original's BankLimit(60)
+# returns the address of its new start table
+fixed-orig = 483
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.banklimit_result.result" = "== fail"

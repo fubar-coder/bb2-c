@@ -1,0 +1,7 @@
+# riamosfunclib-devicename-no-task.test.bas: the original returns a string
+# read through the long at address 16
+fixed-orig = 494
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.devicename_no_task.empty" = "== fail"

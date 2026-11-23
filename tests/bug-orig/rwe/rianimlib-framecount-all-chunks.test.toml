@@ -1,0 +1,8 @@
+# rianimlib-framecount-all-chunks.test.bas: the original counts the ANNO chunk
+fixed-orig = 510
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-framecount-all-chunks.anim"]
+
+[deviations."compiler=orig210"]
+"check.framecount_all_chunks.count" = "== fail"
+"check.framecount_all_chunks.count.actual" = "== 4"

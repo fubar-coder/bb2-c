@@ -1,0 +1,7 @@
+# riamosfunclib-nextbank-d0.test.bas: the original starts at the 60 left in d0
+fixed-orig = 497
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.nextbank_d0.first_bank" = "== fail"
+"check.nextbank_d0.first_bank.actual" = "== -1"

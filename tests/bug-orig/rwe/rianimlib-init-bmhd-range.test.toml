@@ -1,0 +1,8 @@
+# rianimlib-init-bmhd-range.test.bas: the original accepts the ANIM
+fixed-orig = 511
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-init-bmhd-range.anim"]
+
+[deviations."compiler=orig210"]
+"check.init_bmhd_range.init" = "== fail"
+"check.init_bmhd_range.init.actual" = "== -1"

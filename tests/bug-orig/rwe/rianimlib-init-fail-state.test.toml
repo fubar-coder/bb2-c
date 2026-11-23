@@ -1,0 +1,11 @@
+# rianimlib-init-fail-state.test.bas: the original keeps the rejected ANIM
+# and the frame pointers of the one before
+fixed-orig = 512
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-init-fail-state.anim"]
+
+[deviations."compiler=orig210"]
+"check.init_fail_state.count" = "== fail"
+"check.init_fail_state.count.actual" = "== 1"
+"check.init_fail_state.next" = "== fail"
+"check.init_fail_state.next.actual" = "== -1"
