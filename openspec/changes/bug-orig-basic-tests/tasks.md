@@ -23,7 +23,7 @@
 - [x] 3.3 Round U2, libraries system/IO/text (~135 tests); verify: as 3.2
 - [x] 3.4 Round U3, libraries sound and compute (~45 tests); verify: as 3.2
 - [ ] 3.5 Round U4, compiler tests with a program run, regression, selftest (~100 tests); verify: as 3.2
-- [ ] 3.6 Rounds U5-U7, RWE user libraries in three groups (~170 tests each); verify: as 3.2 per round
+- [x] 3.6 Rounds U5-U7, RWE user libraries in three groups (~170 tests each); verify: as 3.2 per round
 
 ## 4. Closing
 
